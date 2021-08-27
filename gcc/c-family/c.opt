@@ -839,6 +839,10 @@ Wmissing-field-initializers
 C ObjC C++ ObjC++ Var(warn_missing_field_initializers) Warning EnabledBy(Wextra)
 Warn about missing fields in struct initializers.
 
+Wmissing-requires
+C++ ObjC++ Var(warn_missing_requires) Init(1) Warning
+Warn about likely missing requires keyword.
+
 Wmultistatement-macros
 C ObjC C++ ObjC++ Var(warn_multistatement_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about unsafe macros expanding to multiple statements used as a body of a clause such as if, else, while, switch, or for.

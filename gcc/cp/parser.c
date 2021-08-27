@@ -29911,6 +29911,25 @@ cp_parser_simple_requirement (cp_parser *parser)
   if (expr.get_location() == UNKNOWN_LOCATION)
     expr.set_location (start);
 
+  for (tree t = expr; ; )
+    {
+      if (TREE_CODE (t) == TRUTH_ANDIF_EXPR
+	  || TREE_CODE (t) == TRUTH_ORIF_EXPR)
+	{
+	  t = TREE_OPERAND (t, 0);
+	  continue;
+	}
+      if (concept_check_p (t))
+	{
+	  gcc_rich_location richloc (get_start (start));
+	  richloc.add_fixit_insert_before (start, "requires ");
+	  warning_at (&richloc, OPT_Wmissing_requires, "testing "
+		      "if a concept-id is a valid expression; add "
+		      "%<requires%> to check satisfaction");
+	}
+      break;
+    }
+
   return finish_simple_requirement (expr.get_location (), expr);
 }
 
