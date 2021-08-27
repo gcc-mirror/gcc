@@ -1,3 +1,12 @@
+2021-08-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-08-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98411
+	* gfortran.dg/pr98411.f90: Adjust testcase options to restrict to
+	F2008, and verify case of implicit SAVE.
+
 2021-08-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Backported from master:
