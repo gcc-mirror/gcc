@@ -11347,18 +11347,19 @@ package body Sem_Res is
       then
          null;
 
-      --  The discrete_range is specified by a subtype indication. Create a
-      --  shallow copy and inherit the type, parent and source location from
-      --  the discrete_range. This ensures that the range check is inserted
-      --  relative to the slice and that the runtime exception points to the
-      --  proper construct.
+      --  The discrete_range is specified by a subtype name. Create an
+      --  equivalent range attribute, apply checks to this attribute, but
+      --  insert them into the range expression of the slice itself.
 
       elsif Is_Entity_Name (Drange) then
-         Dexpr := New_Copy (Scalar_Range (Entity (Drange)));
+         Dexpr :=
+           Make_Attribute_Reference
+             (Sloc (Drange),
+              Prefix         =>
+                New_Occurrence_Of (Entity (Drange), Sloc (Drange)),
+              Attribute_Name => Name_Range);
 
-         Set_Etype  (Dexpr, Etype  (Drange));
-         Set_Parent (Dexpr, Parent (Drange));
-         Set_Sloc   (Dexpr, Sloc   (Drange));
+         Analyze_And_Resolve (Dexpr, Etype  (Drange));
 
       elsif Nkind (Drange) = N_Subtype_Indication then
          Dexpr := Range_Expression (Constraint (Drange));
@@ -11379,7 +11380,7 @@ package body Sem_Res is
       end if;
 
       if Present (Dexpr) then
-         Apply_Range_Check (Dexpr, Index_Type);
+         Apply_Range_Check (Dexpr, Index_Type, Insert_Node => Drange);
       end if;
 
       Set_Slice_Subtype (N);
