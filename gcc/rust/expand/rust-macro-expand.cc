@@ -2039,6 +2039,8 @@ public:
     else
       {
 	std::string mod_file = module.get_filename ();
+	if (!mod_file.empty ())
+	  rust_debug ("Module filename found: %s", mod_file.c_str ());
       }
 
     // strip items if required

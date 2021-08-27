@@ -35,11 +35,15 @@ public:
   RAIIFile &operator= (const RAIIFile &other) = delete;
 
   // have to specify setting file to nullptr, otherwise unintended fclose occurs
-  RAIIFile (RAIIFile &&other) : file (other.file) { other.file = nullptr; }
+  RAIIFile (RAIIFile &&other) : file (other.file), filename (other.filename)
+  {
+    other.file = nullptr;
+  }
   RAIIFile &operator= (RAIIFile &&other)
   {
     close ();
     file = other.file;
+    filename = other.filename;
     other.file = nullptr;
 
     return *this;
