@@ -60,9 +60,10 @@ class TypeCheckType : public TypeCheckBase
 public:
   static TyTy::BaseType *
   Resolve (HIR::Type *type,
-	   std::vector<TyTy::SubstitutionParamMapping> *mappings = nullptr)
+	   std::vector<TyTy::SubstitutionParamMapping> *subst_mappings
+	   = nullptr)
   {
-    TypeCheckType resolver (mappings);
+    TypeCheckType resolver (subst_mappings);
     type->accept_vis (resolver);
 
     if (resolver.translated == nullptr)
@@ -210,8 +211,8 @@ public:
   }
 
 private:
-  TypeCheckType (std::vector<TyTy::SubstitutionParamMapping> *mappings)
-    : TypeCheckBase (), mappings (mappings), translated (nullptr)
+  TypeCheckType (std::vector<TyTy::SubstitutionParamMapping> *subst_mappings)
+    : TypeCheckBase (), subst_mappings (subst_mappings), translated (nullptr)
   {}
 
   void
@@ -219,11 +220,15 @@ private:
   {
     std::map<std::string, Location> param_location_map;
     std::set<std::string> param_tys;
-    for (auto &mapping : *mappings)
+
+    if (subst_mappings != nullptr)
       {
-	std::string sym = mapping.get_param_ty ()->get_symbol ();
-	param_tys.insert (sym);
-	param_location_map[sym] = mapping.get_generic_param ().get_locus ();
+	for (auto &mapping : *subst_mappings)
+	  {
+	    std::string sym = mapping.get_param_ty ()->get_symbol ();
+	    param_tys.insert (sym);
+	    param_location_map[sym] = mapping.get_generic_param ().get_locus ();
+	  }
       }
 
     std::set<std::string> args;
@@ -241,7 +246,7 @@ private:
       }
   }
 
-  std::vector<TyTy::SubstitutionParamMapping> *mappings;
+  std::vector<TyTy::SubstitutionParamMapping> *subst_mappings;
   TyTy::BaseType *translated;
 };
 
