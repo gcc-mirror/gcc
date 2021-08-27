@@ -49,8 +49,7 @@ public:
 
     if (resolver.infered == nullptr)
       {
-	rust_error_at (expr->get_locus_slow (),
-		       "failed to type resolve expression");
+	rust_error_at (expr->get_locus (), "failed to type resolve expression");
 	return new TyTy::ErrorType (expr->get_mappings ().get_hirid ());
       }
 
@@ -67,7 +66,7 @@ public:
       = TypeCheckExpr::Resolve (expr.get_tuple_expr ().get (), inside_loop);
     if (resolved == nullptr)
       {
-	rust_error_at (expr.get_tuple_expr ()->get_locus_slow (),
+	rust_error_at (expr.get_tuple_expr ()->get_locus (),
 		       "failed to resolve TupleIndexExpr receiver");
 	return;
       }
@@ -76,7 +75,7 @@ public:
 			 || resolved->get_kind () == TyTy::TypeKind::TUPLE;
     if (!is_valid_type)
       {
-	rust_error_at (expr.get_tuple_expr ()->get_locus_slow (),
+	rust_error_at (expr.get_tuple_expr ()->get_locus (),
 		       "Expected Tuple or ADT got: %s",
 		       resolved->as_string ().c_str ());
 	return;
@@ -203,7 +202,7 @@ public:
       = TypeCheckExpr::Resolve (expr.get_receiver ().get (), false);
     if (receiver_tyty == nullptr)
       {
-	rust_error_at (expr.get_receiver ()->get_locus_slow (),
+	rust_error_at (expr.get_receiver ()->get_locus (),
 		       "failed to resolve receiver in MethodCallExpr");
 	return;
       }
@@ -771,7 +770,7 @@ public:
       = size_ty->unify (TypeCheckExpr::Resolve (expr.get_index_expr (), false));
     if (resolved_index_expr == nullptr)
       {
-	rust_error_at (expr.get_index_expr ()->get_locus_slow (),
+	rust_error_at (expr.get_index_expr ()->get_locus (),
 		       "Type Resolver failure in Index for ArrayIndexExpr");
 	return;
       }
@@ -782,13 +781,13 @@ public:
     expr.get_array_expr ()->accept_vis (*this);
     if (infered == nullptr)
       {
-	rust_error_at (expr.get_index_expr ()->get_locus_slow (),
+	rust_error_at (expr.get_index_expr ()->get_locus (),
 		       "failed to resolve array reference expression");
 	return;
       }
     else if (infered->get_kind () != TyTy::TypeKind::ARRAY)
       {
-	rust_error_at (expr.get_index_expr ()->get_locus_slow (),
+	rust_error_at (expr.get_index_expr ()->get_locus (),
 		       "expected an ArrayType got [%s]",
 		       infered->as_string ().c_str ());
 	infered = nullptr;
@@ -936,7 +935,7 @@ public:
       = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
     if (!block_expr->is_unit ())
       {
-	rust_error_at (expr.get_loop_block ()->get_locus_slow (),
+	rust_error_at (expr.get_loop_block ()->get_locus (),
 		       "expected %<()%> got %s",
 		       block_expr->as_string ().c_str ());
 	return;
@@ -965,7 +964,7 @@ public:
 
     if (!block_expr->is_unit ())
       {
-	rust_error_at (expr.get_loop_block ()->get_locus_slow (),
+	rust_error_at (expr.get_loop_block ()->get_locus (),
 		       "expected %<()%> got %s",
 		       block_expr->as_string ().c_str ());
 	return;

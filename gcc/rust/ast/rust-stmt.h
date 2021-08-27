@@ -38,9 +38,7 @@ public:
 
   EmptyStmt (Location locus) : locus (locus) {}
 
-  Location get_locus_slow () const final override { return get_locus (); }
-
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -137,9 +135,7 @@ public:
   LetStmt (LetStmt &&other) = default;
   LetStmt &operator= (LetStmt &&other) = default;
 
-  Location get_locus_slow () const final override { return get_locus (); }
-
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -188,9 +184,7 @@ class ExprStmt : public Stmt
   Location locus;
 
 public:
-  Location get_locus_slow () const final override { return get_locus (); }
-
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
 protected:
   ExprStmt (Location locus) : locus (locus) {}

@@ -199,16 +199,7 @@ public:
     // yet
     if (!is_main_fn)
       {
-	std::string substs_str = fntype->subst_as_string ();
-
-	Resolver::CanonicalPath mangle_me
-	  = substs_str.empty ()
-	      ? *canonical_path
-	      : canonical_path->append (
-		Resolver::CanonicalPath::new_seg (0,
-						  fntype->subst_as_string ()));
-
-	asm_name = ctx->mangle_item (fntype, mangle_me);
+	asm_name = ctx->mangle_item (fntype, *canonical_path);
       }
 
     Bfunction *fndecl

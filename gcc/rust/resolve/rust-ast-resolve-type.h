@@ -211,7 +211,7 @@ public:
     // https://github.com/rust-lang/rust/blob/1f94abcda6884893d4723304102089198caa0839/compiler/rustc_resolve/src/lib.rs#L1722
     if (!resolver->get_type_scope ().lookup (canonical_path, &resolved_node))
       {
-	rust_error_at (path.get_locus_slow (), "failed to resolve TypePath: %s",
+	rust_error_at (path.get_locus (), "failed to resolve TypePath: %s",
 		       canonical_path.get ().c_str ());
 	return UNKNOWN_NODEID;
       }
@@ -231,7 +231,7 @@ public:
     ResolveType resolver (parent, canonicalize_type_with_generics);
     type->accept_vis (resolver);
     if (!resolver.ok)
-      rust_error_at (type->get_locus_slow (), "unresolved type");
+      rust_error_at (type->get_locus (), "unresolved type");
 
     return resolver.resolved_node;
   };
@@ -311,7 +311,7 @@ public:
     ResolveTypeBound resolver (parent, canonicalize_type_with_generics);
     type->accept_vis (resolver);
     if (!resolver.ok)
-      rust_error_at (type->get_locus_slow (), "unresolved type bound");
+      rust_error_at (type->get_locus (), "unresolved type bound");
 
     return resolver.resolved_node;
   };
@@ -346,7 +346,7 @@ public:
     ResolveGenericParam resolver (parent);
     param->accept_vis (resolver);
     if (!resolver.ok)
-      rust_error_at (param->get_locus_slow (), "unresolved generic parameter");
+      rust_error_at (param->get_locus (), "unresolved generic parameter");
 
     return resolver.resolved_node;
   };

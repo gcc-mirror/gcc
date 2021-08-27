@@ -104,9 +104,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
-
-  Location get_locus_slow () const override final { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -704,7 +702,7 @@ public:
    * the module. */
   void add_crate_name (std::vector<std::string> &names) const override;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -754,7 +752,7 @@ public:
       as_clause_name (std::move (as_clause_name)), locus (locus)
   {}
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1019,7 +1017,7 @@ public:
   UseDeclaration (UseDeclaration &&other) = default;
   UseDeclaration &operator= (UseDeclaration &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1126,7 +1124,7 @@ public:
   Function (Function &&other) = default;
   Function &operator= (Function &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   Location get_impl_locus () const final { return get_locus (); }
 
@@ -1268,7 +1266,7 @@ public:
   TypeAlias (TypeAlias &&other) = default;
   TypeAlias &operator= (TypeAlias &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   Location get_impl_locus () const final { return get_locus (); }
 
@@ -1340,7 +1338,7 @@ public:
   // Returns whether struct has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
   {
@@ -1863,7 +1861,7 @@ public:
   Enum (Enum &&other) = default;
   Enum &operator= (Enum &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1953,7 +1951,7 @@ public:
 
   Identifier get_identifier () const { return union_name; }
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2017,7 +2015,7 @@ public:
   // as identifier) constant.
   bool is_unnamed () const { return identifier == std::string ("_"); }
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   Location get_impl_locus () const final { return get_locus (); }
 
@@ -2095,7 +2093,7 @@ public:
   StaticItem (StaticItem &&other) = default;
   StaticItem &operator= (StaticItem &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2534,7 +2532,7 @@ public:
   Trait (Trait &&other) = default;
   Trait &operator= (Trait &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2642,7 +2640,7 @@ public:
   // Returns whether impl has inner attributes.
   bool has_inner_attrs () const { return !inner_attrs.empty (); }
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   std::unique_ptr<Type> &get_type () { return impl_type; };
 
@@ -2998,7 +2996,7 @@ public:
   ExternBlock (ExternBlock &&other) = default;
   ExternBlock &operator= (ExternBlock &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 

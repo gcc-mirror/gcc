@@ -54,7 +54,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -62,8 +62,6 @@ public:
   {
     return mappings;
   }
-
-  Location get_locus_slow () const override final { return get_locus (); }
 
   BoundType get_bound_type () const final override { return TRAITBOUND; }
 

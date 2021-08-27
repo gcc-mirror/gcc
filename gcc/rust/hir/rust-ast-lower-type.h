@@ -106,8 +106,7 @@ public:
     rust_assert (resolver.translated != nullptr);
     resolver.mappings->insert_location (
       resolver.translated->get_mappings ().get_crate_num (),
-      resolver.translated->get_mappings ().get_hirid (),
-      type->get_locus_slow ());
+      resolver.translated->get_mappings ().get_hirid (), type->get_locus ());
 
     return resolver.translated;
   }
@@ -282,8 +281,7 @@ public:
     rust_assert (resolver.translated != nullptr);
     resolver.mappings->insert_location (
       resolver.translated->get_mappings ().get_crate_num (),
-      resolver.translated->get_mappings ().get_hirid (),
-      param->get_locus_slow ());
+      resolver.translated->get_mappings ().get_hirid (), param->get_locus ());
     resolver.mappings->insert_hir_generic_param (
       resolver.translated->get_mappings ().get_crate_num (),
       resolver.translated->get_mappings ().get_hirid (), resolver.translated);
@@ -356,7 +354,7 @@ public:
     resolver.mappings->insert_location (
       resolver.translated->get_mappings ().get_crate_num (),
       resolver.translated->get_mappings ().get_hirid (),
-      resolver.translated->get_locus_slow ());
+      resolver.translated->get_locus ());
 
     return resolver.translated;
   }

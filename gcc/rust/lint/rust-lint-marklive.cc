@@ -211,7 +211,7 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
   if (!tyctx->lookup_type (
 	expr.get_receiver_expr ()->get_mappings ().get_hirid (), &receiver))
     {
-      rust_error_at (expr.get_receiver_expr ()->get_locus_slow (),
+      rust_error_at (expr.get_receiver_expr ()->get_locus (),
 		     "unresolved type for receiver");
     }
   bool ok = receiver->get_kind () == TyTy::TypeKind::ADT;
@@ -223,7 +223,7 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
   adt->get_field (expr.get_field_name (), &index);
   if (index >= adt->num_fields ())
     {
-      rust_error_at (expr.get_receiver_expr ()->get_locus_slow (),
+      rust_error_at (expr.get_receiver_expr ()->get_locus (),
 		     "cannot access struct %s by index: %ld",
 		     adt->get_name ().c_str (), index);
       return;

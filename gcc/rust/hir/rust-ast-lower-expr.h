@@ -81,7 +81,7 @@ public:
     expr->accept_vis (resolver);
     if (resolver.translated == nullptr)
       {
-	rust_fatal_error (expr->get_locus_slow (), "Failed to lower expr: [%s]",
+	rust_fatal_error (expr->get_locus (), "Failed to lower expr: [%s]",
 			  expr->as_string ().c_str ());
 	return nullptr;
       }
@@ -91,8 +91,7 @@ public:
       resolver.translated->get_mappings ().get_hirid (), resolver.translated);
     resolver.mappings->insert_location (
       resolver.translated->get_mappings ().get_crate_num (),
-      resolver.translated->get_mappings ().get_hirid (),
-      expr->get_locus_slow ());
+      resolver.translated->get_mappings ().get_hirid (), expr->get_locus ());
 
     if (terminated != nullptr)
       *terminated = resolver.terminated;

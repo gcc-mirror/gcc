@@ -380,7 +380,7 @@ Mappings::insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr)
 {
   hirExprMappings[crateNum][id] = expr;
   nodeIdToHirMappings[crateNum][expr->get_mappings ().get_nodeid ()] = id;
-  insert_location (crateNum, id, expr->get_locus_slow ());
+  insert_location (crateNum, id, expr->get_locus ());
 }
 
 HIR::Expr *
@@ -430,7 +430,7 @@ Mappings::insert_hir_generic_param (CrateNum crateNum, HirId id,
 
   hirGenericParamMappings[crateNum][id] = param;
   nodeIdToHirMappings[crateNum][param->get_mappings ().get_nodeid ()] = id;
-  insert_location (crateNum, id, param->get_locus_slow ());
+  insert_location (crateNum, id, param->get_locus ());
 }
 
 HIR::GenericParam *

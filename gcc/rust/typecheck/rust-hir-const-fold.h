@@ -211,7 +211,7 @@ public:
     item.accept_vis (folder);
     if (folder.ctx->get_backend ()->is_error_expression (folder.folded))
       {
-	rust_error_at (item.get_locus_slow (), "non const value");
+	rust_error_at (item.get_locus (), "non const value");
 	return nullptr;
       }
 
@@ -240,7 +240,7 @@ public:
     expr->accept_vis (folder);
     if (folder.ctx->get_backend ()->is_error_expression (folder.folded))
       {
-	rust_error_at (expr->get_locus_slow (), "non const value");
+	rust_error_at (expr->get_locus (), "non const value");
 	return nullptr;
       }
 

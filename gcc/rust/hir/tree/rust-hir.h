@@ -100,9 +100,7 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
-  /* HACK: slow way of getting location from base expression through virtual
-   * methods. */
-  virtual Location get_locus_slow () const { return Location (); }
+  virtual Location get_locus () const = 0;
 
   virtual bool is_unit_check_needed () const { return false; }
 
@@ -194,9 +192,7 @@ public:
 
   virtual ~Expr () {}
 
-  /* HACK: slow way of getting location from base expression through virtual
-   * methods. */
-  virtual Location get_locus_slow () const { return Location (); }
+  virtual Location get_locus () const = 0;
 
   // HACK: strictly not needed, but faster than full downcast clone
   virtual bool is_expr_without_block () const = 0;
@@ -284,8 +280,7 @@ public:
     return "( " + ident + " (" + get_mappings ().as_string () + "))";
   }
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -426,7 +421,7 @@ public:
 
   virtual Analysis::NodeMapping get_mappings () const = 0;
 
-  virtual Location get_locus_slow () const = 0;
+  virtual Location get_locus () const = 0;
 
   virtual BoundType get_bound_type () const = 0;
 
@@ -476,14 +471,12 @@ public:
     return lifetime_type;
   }
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   Analysis::NodeMapping get_mappings () const override final
   {
     return mappings;
   }
-
-  Location get_locus_slow () const override final { return get_locus (); }
 
   BoundType get_bound_type () const final override { return LIFETIME; }
 
@@ -522,7 +515,7 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
-  virtual Location get_locus_slow () const = 0;
+  virtual Location get_locus () const = 0;
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
@@ -609,9 +602,7 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  Location get_locus () const { return locus; }
-
-  Location get_locus_slow () const override final { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

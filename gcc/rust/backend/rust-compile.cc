@@ -352,7 +352,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 	    {
 	      Bexpression *result_reference
 		= ctx->get_backend ()->var_expression (
-		  result, expr.get_final_expr ()->get_locus_slow ());
+		  result, expr.get_final_expr ()->get_locus ());
 
 	      Bstatement *assignment
 		= ctx->get_backend ()->assignment_statement (fnctx.fndecl,
@@ -490,7 +490,7 @@ HIRCompileBase::compile_function_body (
 
 	      auto ret = ctx->get_backend ()->return_statement (
 		fndecl, retstmts,
-		function_body->get_final_expr ()->get_locus_slow ());
+		function_body->get_final_expr ()->get_locus ());
 	      ctx->add_statement (ret);
 	    }
 	  else
