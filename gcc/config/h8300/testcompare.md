@@ -70,6 +70,22 @@
   "mov.w	%e0,%e0"
   [(set_attr "length" "2")])
 
+(define_insn "*cmp<mode>_c"
+  [(set (reg:CCC CC_REG)
+	(ltu (match_operand:QHSI 0 "h8300_dst_operand" "rQ")
+	     (match_operand:QHSI 1 "h8300_src_operand" "rQi")))]
+  "reload_completed"
+  {
+    if (<MODE>mode == QImode)
+      return "cmp.b	%X1,%X0";
+    else if (<MODE>mode == HImode)
+      return "cmp.w	%T1,%T0";
+    else if (<MODE>mode == SImode)
+      return "cmp.l	%S1,%S0";
+    gcc_unreachable ();
+  }
+  [(set_attr "length_table" "add")])
+
 (define_insn "*cmpqi"
   [(set (reg:CC CC_REG)
 	(compare (match_operand:QI 0 "h8300_dst_operand" "rQ")
@@ -144,3 +160,67 @@
   [(parallel [(set (reg:CCZN CC_REG) (compare:CCZN (match_dup 1) (const_int 0)))
 	      (set (match_dup 0) (match_dup 1))])])
 
+;; This exists solely to convince ifcvt to try some store-flag sequences.
+;;
+;; Essentially we don't want to expose a general store-flag capability.
+;; The only generally useful/profitable case is when we want to test the
+;; C bit.  In that case we can use addx, subx, bst, or bist to get the bit
+;; into a GPR.
+;;
+;; Others could be handled with stc, shifts and masking, but it likely isn't
+;; profitable.
+;;
+(define_expand "cstore<mode>4"
+  [(use (match_operator 1 "eqne_operator"
+         [(match_operand:QHSI 2 "h8300_dst_operand" "")
+          (match_operand:QHSI 3 "h8300_src_operand" "")]))
+   (clobber (match_operand:QHSI 0 "register_operand"))]
+  ""
+  {
+    FAIL;
+  })
+
+;; Storing the C bit is pretty simple since there are many ways to
+;; introduce it into a GPR.  addx, subx and a variety of bit manipulation
+;; instructions
+;;
+(define_insn "*store_c_<mode>"
+  [(set (match_operand:QHSI 0 "register_operand" "=r")
+	(eqne:QHSI (reg:CCC CC_REG) (const_int 0)))]
+  "reload_completed"
+  {
+    if (<CODE> == NE)
+      {
+	if (<MODE>mode == QImode)
+	  return "xor.b\t%X0,%X0\;bst\t#0,%X0";
+	else if (<MODE>mode == HImode)
+	  return "xor.w\t%T0,%T0\;bst\t#0,%s0";
+	else if (<MODE>mode == SImode)
+	  return "xor.l\t%S0,%S0\;bst\t#0,%w0";
+	gcc_unreachable ();
+      }
+    else if (<CODE> == EQ)
+      {
+	if (<MODE>mode == QImode)
+	  return "xor.b\t%X0,%X0\;bist\t#0,%X0";
+	else if (<MODE>mode == HImode)
+	  return "xor.w\t%T0,%T0\;bist\t#0,%s0";
+	else if (<MODE>mode == SImode)
+	  return "xor.l\t%S0,%S0\;bist\t#0,%w0";
+	gcc_unreachable ();
+      }
+  }
+  [(set (attr "length") (symbol_ref "<MODE>mode == SImode ? 6 : 4"))])
+
+;; Recognize this scc and generate code we can match
+(define_insn_and_split "*store_c_i_<mode>"
+  [(set (match_operand:QHSI 0 "register_operand" "=r")
+	(geultu:QHSI (match_operand:QHSI 1 "register_operand" "r")
+		     (match_operand:QHSI 2 "register_operand" "r")))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(set (reg:CCC CC_REG)
+	(ltu:CCC (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(<geultu_to_c>:QHSI (reg:CCC CC_REG) (const_int 0)))])
