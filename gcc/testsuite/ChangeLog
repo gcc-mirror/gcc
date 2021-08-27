@@ -1,3 +1,15 @@
+2021-08-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/tree-ssa/ssa-ccp-41.c: New test case.
+
+2021-08-26  Martin Liska  <mliska@suse.cz>
+	    Stefan Kneifel  <stefan.kneifel@bluewin.ch>
+
+	* gcc.target/i386/mvc5.c: Scan assembly names.
+	* gcc.target/i386/mvc7.c: Likewise.
+	* gcc.target/i386/pr95778-1.c: Update scanned patterns.
+	* gcc.target/i386/pr95778-2.c: Likewise.
+
 2021-08-25  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/evrp1.c: Add -details to dump option.
