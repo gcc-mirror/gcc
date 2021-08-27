@@ -1,3 +1,99 @@
+2021-08-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*btr<mode>_1): Call force_reg unconditionally.
+	(conditional moves with memory inputs splitters): Ditto.
+	* config/i386/sse.md (one_cmpl<mode>2): Simplify.
+
+2021-08-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.h (modref_access_node::try_merge_with): Restart
+	search after merging.
+
+2021-08-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-overload.def: Add remaining overloads.
+
+2021-08-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add cell stanza.
+
+2021-08-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add ieee128-hw, dfp,
+	crypto, and htm stanzas.
+
+2021-08-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add mma stanza.
+
+2021-08-26  Martin Sebor  <msebor@redhat.com>
+
+	* tree-ssa-uninit.c (warn_uninit): Refactor and simplify.
+	(warn_uninit_phi_uses): Remove argument from calls to warn_uninit.
+	(warn_uninitialized_vars): Same.  Reduce visibility of locals.
+	(warn_uninitialized_phi): Same.
+
+2021-08-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* tree-ssa-ccp.c (get_individual_bits): Helper function to
+	extract the individual bits from a widest_int constant (mask).
+	(gray_code_bit_flips): New read-only table for effiently
+	enumerating permutations/combinations of bits.
+	(bit_value_binop) [LROTATE_EXPR, RROTATE_EXPR]: Handle rotates
+	by unknown counts that are guaranteed less than the target
+	precision and four or fewer unknown bits by enumeration.
+	[LSHIFT_EXPR, RSHIFT_EXPR]: Likewise, also handle shifts by
+	enumeration under the same conditions.  Handle remaining
+	shifts as a mask based upon the minimum possible shift value.
+
+2021-08-26  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* match.pd (shift transformations): Remove a redundant
+	!POINTER_TYPE_P check.
+
+2021-08-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/102057
+	* config/i386/i386.md (cmove reg-reg move elimination peephole2s):
+	Set all_regs to true in the call to replace_rtx.
+
+2021-08-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.c (test_insert_search_collapse): Update test.
+	* ipa-modref-tree.h (modref_base_node::insert): Be smarter when
+	hiting --param modref-max-refs limit.
+	(modref_tree:insert_base): Be smarter when hitting
+	--param modref-max-bases limit. Add new parameter REF.
+	(modref_tree:insert): Update.
+	(modref_tree:merge): Update.
+	* ipa-modref.c (read_modref_records): Update.
+
+2021-08-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* params.opt: (modref-max-adjustments): Add full stop.
+
+2021-08-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.h (modref_ref_node::verify): New member
+	functoin.
+	(modref_ref_node::insert): Use it.
+	(modref_ref_node::try_mere_with): Fix off by one error.
+
+2021-08-26  Martin Liska  <mliska@suse.cz>
+	    Stefan Kneifel  <stefan.kneifel@bluewin.ch>
+
+	* cgraph.h (create_version_clone_with_body): Add new parameter.
+	* cgraphclones.c: Likewise.
+	* multiple_target.c (create_dispatcher_calls): Do not use
+	numbered suffixes.
+	(create_target_clone): Likewise here.
+
+2021-08-26  Jonathan Yong  <10walls@gmail.com>
+
+	* doc/extend.texi: Add note about reserved priorities
+	to the constructor attribute.
+
 2021-08-25  Martin Sebor  <msebor@redhat.com>
 
 	* gimple-range-cache.cc (ssa_global_cache::dump): Avoid printing

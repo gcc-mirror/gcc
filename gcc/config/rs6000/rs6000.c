@@ -5793,6 +5793,59 @@ rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
     default:
       break;
     }
+
+  machine_mode in_vmode = TYPE_MODE (type_in);
+  machine_mode out_vmode = TYPE_MODE (type_out);
+
+  /* Power10 supported vectorized built-in functions.  */
+  if (TARGET_POWER10
+      && in_vmode == out_vmode
+      && VECTOR_UNIT_ALTIVEC_OR_VSX_P (in_vmode))
+    {
+      machine_mode exp_mode = DImode;
+      machine_mode exp_vmode = V2DImode;
+      enum rs6000_builtins bif;
+      switch (fn)
+	{
+	case MISC_BUILTIN_DIVWE:
+	case MISC_BUILTIN_DIVWEU:
+	  exp_mode = SImode;
+	  exp_vmode = V4SImode;
+	  if (fn == MISC_BUILTIN_DIVWE)
+	    bif = P10V_BUILTIN_DIVES_V4SI;
+	  else
+	    bif = P10V_BUILTIN_DIVEU_V4SI;
+	  break;
+	case MISC_BUILTIN_DIVDE:
+	case MISC_BUILTIN_DIVDEU:
+	  if (fn == MISC_BUILTIN_DIVDE)
+	    bif = P10V_BUILTIN_DIVES_V2DI;
+	  else
+	    bif = P10V_BUILTIN_DIVEU_V2DI;
+	  break;
+	case P10_BUILTIN_CFUGED:
+	  bif = P10V_BUILTIN_VCFUGED;
+	  break;
+	case P10_BUILTIN_CNTLZDM:
+	  bif = P10V_BUILTIN_VCLZDM;
+	  break;
+	case P10_BUILTIN_CNTTZDM:
+	  bif = P10V_BUILTIN_VCTZDM;
+	  break;
+	case P10_BUILTIN_PDEPD:
+	  bif = P10V_BUILTIN_VPDEPD;
+	  break;
+	case P10_BUILTIN_PEXTD:
+	  bif = P10V_BUILTIN_VPEXTD;
+	  break;
+	default:
+	  return NULL_TREE;
+	}
+
+      if (in_mode == exp_mode && in_vmode == exp_vmode)
+	return rs6000_builtin_decls[bif];
+    }
+
   return NULL_TREE;
 }
 
@@ -7955,7 +8008,7 @@ rs6000_slow_unaligned_access (machine_mode mode, unsigned int align)
 unsigned int
 rs6000_special_adjust_field_align (tree type, unsigned int computed)
 {
-  if (computed <= 32)
+  if (computed <= 32 || TYPE_PACKED (type))
     return computed;
 
   /* Strip initial arrays.  */

@@ -9601,7 +9601,14 @@ proc check_effective_target_gas { } {
 	set status [remote_exec host "$gcc_as" "-v /dev/null"]
 	set as_output [lindex $status 1]
 	if { [ string first "GNU" $as_output ] >= 0 } {
-	    set use_gas_saved 1
+	    # Some Darwin versions have an assembler which is based on an old
+	    # version of GAS (and reports GNU assembler in its -v output) but
+	    # but doesn't support many of the modern GAS features.
+	    if { [ string first "cctools" $as_output ] >= 0 } {
+	        set use_gas_saved 0
+	    } else {
+	        set use_gas_saved 1
+	    }
 	} else {
 	    set use_gas_saved 0
 	}

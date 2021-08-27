@@ -17559,6 +17559,21 @@ ix86_vector_shift_count (tree arg1)
   return NULL_TREE;
 }
 
+/* Return true if arg_mask is all ones, ELEMS is elements number of
+   corresponding vector.  */
+static bool
+ix86_masked_all_ones (unsigned HOST_WIDE_INT elems, tree arg_mask)
+{
+  if (TREE_CODE (arg_mask) != INTEGER_CST)
+    return false;
+
+  unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (arg_mask);
+  if ((mask | (HOST_WIDE_INT_M1U << elems)) != HOST_WIDE_INT_M1U)
+    return false;
+
+  return true;
+}
+
 static tree
 ix86_fold_builtin (tree fndecl, int n_args,
 		   tree *args, bool ignore ATTRIBUTE_UNUSED)
@@ -18044,6 +18059,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   enum tree_code tcode;
   unsigned HOST_WIDE_INT count;
   bool is_vshift;
+  unsigned HOST_WIDE_INT elems;
 
   switch (fn_code)
     {
@@ -18367,17 +18383,11 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gcc_assert (n_args >= 2);
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
-      if (n_args > 2)
-	{
-	  /* This is masked shift.  Only optimize if the mask is all ones.  */
-	  tree argl = gimple_call_arg (stmt, n_args - 1);
-	  if (!tree_fits_uhwi_p (argl))
-	    break;
-	  unsigned HOST_WIDE_INT mask = tree_to_uhwi (argl);
-	  unsigned elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
-	  if ((mask | (HOST_WIDE_INT_M1U << elems)) != HOST_WIDE_INT_M1U)
-	    break;
-	}
+      elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      /* For masked shift, only optimize if the mask is all ones.  */
+      if (n_args > 2
+	  && !ix86_masked_all_ones (elems, gimple_call_arg (stmt, n_args - 1)))
+	break;
       if (is_vshift)
 	{
 	  if (TREE_CODE (arg1) != VECTOR_CST)
@@ -18426,25 +18436,62 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	}
       break;
 
+    case IX86_BUILTIN_SHUFPD512:
+    case IX86_BUILTIN_SHUFPS512:
     case IX86_BUILTIN_SHUFPD:
+    case IX86_BUILTIN_SHUFPD256:
+    case IX86_BUILTIN_SHUFPS:
+    case IX86_BUILTIN_SHUFPS256:
+      arg0 = gimple_call_arg (stmt, 0);
+      elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      /* This is masked shuffle.  Only optimize if the mask is all ones.  */
+      if (n_args > 3
+	  && !ix86_masked_all_ones (elems,
+				    gimple_call_arg (stmt, n_args - 1)))
+	break;
       arg2 = gimple_call_arg (stmt, 2);
       if (TREE_CODE (arg2) == INTEGER_CST)
 	{
+	  unsigned HOST_WIDE_INT shuffle_mask = TREE_INT_CST_LOW (arg2);
+	  /* Check valid imm, refer to gcc.target/i386/testimm-10.c.  */
+	  if (shuffle_mask > 255)
+	    return false;
+
+	  machine_mode imode = GET_MODE_INNER (TYPE_MODE (TREE_TYPE (arg0)));
 	  location_t loc = gimple_location (stmt);
-	  unsigned HOST_WIDE_INT imask = TREE_INT_CST_LOW (arg2);
-	  arg0 = gimple_call_arg (stmt, 0);
+	  tree itype = (imode == E_DFmode
+			? long_long_integer_type_node : integer_type_node);
+	  tree vtype = build_vector_type (itype, elems);
+	  tree_vector_builder elts (vtype, elems, 1);
+
+
+	  /* Transform integer shuffle_mask to vector perm_mask which
+	     is used by vec_perm_expr, refer to shuflp[sd]256/512 in sse.md.  */
+	  for (unsigned i = 0; i != elems; i++)
+	    {
+	      unsigned sel_idx;
+	      /* Imm[1:0](if VL > 128, then use Imm[3:2],Imm[5:4],Imm[7:6])
+		 provide 2 select constrols for each element of the
+		 destination.  */
+	      if (imode == E_DFmode)
+		sel_idx = (i & 1) * elems + (i & ~1)
+			  + ((shuffle_mask >> i) & 1);
+	      else
+		{
+		  /* Imm[7:0](if VL > 128, also use Imm[7:0]) provide 4 select
+		     controls for each element of the destination.  */
+		  unsigned j = i % 4;
+		  sel_idx = ((i >> 1) & 1) * elems + (i & ~3)
+			    + ((shuffle_mask >> 2 * j) & 3);
+		}
+	      elts.quick_push (build_int_cst (itype, sel_idx));
+	    }
+
+	  tree perm_mask = elts.build ();
 	  arg1 = gimple_call_arg (stmt, 1);
-	  tree itype = long_long_integer_type_node;
-	  tree vtype = build_vector_type (itype, 2); /* V2DI */
-	  tree_vector_builder elts (vtype, 2, 1);
-	  /* Ignore bits other than the lowest 2.  */
-	  elts.quick_push (build_int_cst (itype, imask & 1));
-	  imask >>= 1;
-	  elts.quick_push (build_int_cst (itype, 2 + (imask & 1)));
-	  tree omask = elts.build ();
 	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
 					   VEC_PERM_EXPR,
-					   arg0, arg1, omask);
+					   arg0, arg1, perm_mask);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;

@@ -260,6 +260,7 @@ AC_PROG_INSTALL
 #AC_MSG_NOTICE([====== Starting libtool configuration])
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
+LT_LIB_M
 ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)

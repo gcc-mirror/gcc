@@ -1104,6 +1104,9 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
    needed, and there is no need for the compiler to emit them.  */
 #define MIN_LD64_OMIT_STUBS "62.1"
 
+/* Emit start labels for init and term sections from this version.  */
+#define MIN_LD64_INIT_TERM_START_LABELS "136.0"
+
 /* If we have no definition for the linker version, pick the minimum version
    that will bootstrap the compiler.  */
 #ifndef LD64_VERSION

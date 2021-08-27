@@ -14318,10 +14318,10 @@
 		(match_dup 2)))]
   "TARGET_SSE"
 {
+  operands[2] = CONSTM1_RTX (<MODE>mode);
+
   if (!TARGET_AVX512F)
-    operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));
-  else
-    operands[2] = CONSTM1_RTX (<MODE>mode);
+    operands[2] = force_reg (<MODE>mode, operands[2]);
 })
 
 (define_insn "<mask_codefor>one_cmpl<mode>2<mask_name>"
@@ -24205,8 +24205,9 @@
   "TARGET_AVX512F"
 {
   operands[5]
-    = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, operands[0], operands[2],
-					operands[4]), UNSPEC_VSIBADDR);
+    = gen_rtx_UNSPEC (Pmode, gen_rtvec (4, operands[0], operands[2],
+					operands[4], operands[1]),
+					UNSPEC_VSIBADDR);
 })
 
 (define_insn "*avx512f_scattersi<VI48F:mode>"
@@ -24214,10 +24215,11 @@
 	  [(unspec:P
 	     [(match_operand:P 0 "vsib_address_operand" "Tv")
 	      (match_operand:<VEC_GATHER_IDXSI> 2 "register_operand" "v")
-	      (match_operand:SI 4 "const1248_operand" "n")]
+	      (match_operand:SI 4 "const1248_operand" "n")
+	      (match_operand:<avx512fmaskmode> 6 "register_operand" "1")]
 	     UNSPEC_VSIBADDR)])
 	(unspec:VI48F
-	  [(match_operand:<avx512fmaskmode> 6 "register_operand" "1")
+	  [(match_dup 6)
 	   (match_operand:VI48F 3 "register_operand" "v")]
 	  UNSPEC_SCATTER))
    (clobber (match_scratch:<avx512fmaskmode> 1 "=&Yk"))]
@@ -24243,8 +24245,9 @@
   "TARGET_AVX512F"
 {
   operands[5]
-    = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, operands[0], operands[2],
-					operands[4]), UNSPEC_VSIBADDR);
+    = gen_rtx_UNSPEC (Pmode, gen_rtvec (4, operands[0], operands[2],
+					operands[4], operands[1]),
+					UNSPEC_VSIBADDR);
 })
 
 (define_insn "*avx512f_scatterdi<VI48F:mode>"
@@ -24252,10 +24255,11 @@
 	  [(unspec:P
 	     [(match_operand:P 0 "vsib_address_operand" "Tv")
 	      (match_operand:<VEC_GATHER_IDXDI> 2 "register_operand" "v")
-	      (match_operand:SI 4 "const1248_operand" "n")]
+	      (match_operand:SI 4 "const1248_operand" "n")
+	      (match_operand:QI 6 "register_operand" "1")]
 	     UNSPEC_VSIBADDR)])
 	(unspec:VI48F
-	  [(match_operand:QI 6 "register_operand" "1")
+	  [(match_dup 6)
 	   (match_operand:<VEC_GATHER_SRCDI> 3 "register_operand" "v")]
 	  UNSPEC_SCATTER))
    (clobber (match_scratch:QI 1 "=&Yk"))]

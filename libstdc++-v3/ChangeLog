@@ -1,3 +1,45 @@
+2021-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (function): Adjust doxygen
+	comments.
+	* include/bits/unique_ptr.h (make_unique_for_overwrite):
+	Change parameter name to match doxygen comment.
+
+2021-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (_function_base::_Base_manager):
+	Replace _M_init_functor with a function template using a
+	forwarding reference, and a pair of _M_create function
+	templates. Reuse _M_create for the clone operation.
+	(function::_Decay_t): New alias template.
+	(function::_Callable): Simplify by using _Decay.
+	(function::function(F)): Change parameter to forwarding
+	reference, as per LWG 2447. Add noexcept-specifier. Simplify
+	constraints.
+	(function::operator=(F&&)): Add noexcept-specifier.
+	* testsuite/20_util/function/cons/lwg2774.cc: New test.
+	* testsuite/20_util/function/cons/noexcept.cc: New test.
+
+2021-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (function::function(F)): Add
+	static assertions to check constructibility requirements.
+
+2021-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100285
+	* configure.ac: Check for O_NONBLOCK.
+	* configure: Regenerate.
+	* include/experimental/internet: Include <ws2tcpip.h> for
+	Windows.  Use preprocessor conditions around more constants.
+	* include/experimental/socket: Use preprocessor conditions
+	around more constants.
+	* testsuite/experimental/net/internet/resolver/base.cc: Only use
+	constants when the corresponding C macro is defined.
+	* testsuite/experimental/net/socket/basic_socket.cc: Likewise.
+	* testsuite/experimental/net/socket/socket_base.cc: Likewise.
+	Make preprocessor checks more fine-grained.
+
 2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/17_intro/names.cc: Check 'sz'.
