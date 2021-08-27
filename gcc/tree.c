@@ -275,7 +275,7 @@ struct int_n_trees_t int_n_trees [NUM_INT_N_ENTS];
 
 bool tree_contains_struct[MAX_TREE_CODES][64];
 
-/* Number of operands for each OpenMP clause.  */
+/* Number of operands for each OMP clause.  */
 unsigned const char omp_clause_num_ops[] =
 {
   0, /* OMP_CLAUSE_ERROR  */
@@ -10289,7 +10289,7 @@ build_empty_stmt (location_t loc)
 }
 
 
-/* Build an OpenMP clause with code CODE.  LOC is the location of the
+/* Build an OMP clause with code CODE.  LOC is the location of the
    clause.  */
 
 tree
@@ -11091,130 +11091,12 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
       break;
 
     case OMP_CLAUSE:
-      switch (OMP_CLAUSE_CODE (*tp))
-	{
-	case OMP_CLAUSE_GANG:
-	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 1));
-	  /* FALLTHRU */
-
-	case OMP_CLAUSE_AFFINITY:
-	case OMP_CLAUSE_ASYNC:
-	case OMP_CLAUSE_WAIT:
-	case OMP_CLAUSE_WORKER:
-	case OMP_CLAUSE_VECTOR:
-	case OMP_CLAUSE_NUM_GANGS:
-	case OMP_CLAUSE_NUM_WORKERS:
-	case OMP_CLAUSE_VECTOR_LENGTH:
-	case OMP_CLAUSE_PRIVATE:
-	case OMP_CLAUSE_SHARED:
-	case OMP_CLAUSE_FIRSTPRIVATE:
-	case OMP_CLAUSE_COPYIN:
-	case OMP_CLAUSE_COPYPRIVATE:
-	case OMP_CLAUSE_FINAL:
-	case OMP_CLAUSE_IF:
-	case OMP_CLAUSE_NUM_THREADS:
-	case OMP_CLAUSE_SCHEDULE:
-	case OMP_CLAUSE_UNIFORM:
-	case OMP_CLAUSE_DEPEND:
-	case OMP_CLAUSE_NONTEMPORAL:
-	case OMP_CLAUSE_NUM_TEAMS:
-	case OMP_CLAUSE_THREAD_LIMIT:
-	case OMP_CLAUSE_DEVICE:
-	case OMP_CLAUSE_DIST_SCHEDULE:
-	case OMP_CLAUSE_SAFELEN:
-	case OMP_CLAUSE_SIMDLEN:
-	case OMP_CLAUSE_ORDERED:
-	case OMP_CLAUSE_PRIORITY:
-	case OMP_CLAUSE_GRAINSIZE:
-	case OMP_CLAUSE_NUM_TASKS:
-	case OMP_CLAUSE_HINT:
-	case OMP_CLAUSE_FILTER:
-	case OMP_CLAUSE_TO_DECLARE:
-	case OMP_CLAUSE_LINK:
-	case OMP_CLAUSE_DETACH:
-	case OMP_CLAUSE_USE_DEVICE_PTR:
-	case OMP_CLAUSE_USE_DEVICE_ADDR:
-	case OMP_CLAUSE_IS_DEVICE_PTR:
-	case OMP_CLAUSE_INCLUSIVE:
-	case OMP_CLAUSE_EXCLUSIVE:
-	case OMP_CLAUSE__LOOPTEMP_:
-	case OMP_CLAUSE__REDUCTEMP_:
-	case OMP_CLAUSE__CONDTEMP_:
-	case OMP_CLAUSE__SCANTEMP_:
-	case OMP_CLAUSE__SIMDUID_:
-	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 0));
-	  /* FALLTHRU */
-
-	case OMP_CLAUSE_INDEPENDENT:
-	case OMP_CLAUSE_NOWAIT:
-	case OMP_CLAUSE_DEFAULT:
-	case OMP_CLAUSE_UNTIED:
-	case OMP_CLAUSE_MERGEABLE:
-	case OMP_CLAUSE_PROC_BIND:
-	case OMP_CLAUSE_DEVICE_TYPE:
-	case OMP_CLAUSE_INBRANCH:
-	case OMP_CLAUSE_NOTINBRANCH:
-	case OMP_CLAUSE_FOR:
-	case OMP_CLAUSE_PARALLEL:
-	case OMP_CLAUSE_SECTIONS:
-	case OMP_CLAUSE_TASKGROUP:
-	case OMP_CLAUSE_NOGROUP:
-	case OMP_CLAUSE_THREADS:
-	case OMP_CLAUSE_SIMD:
-	case OMP_CLAUSE_DEFAULTMAP:
-	case OMP_CLAUSE_ORDER:
-	case OMP_CLAUSE_BIND:
-	case OMP_CLAUSE_AUTO:
-	case OMP_CLAUSE_SEQ:
-	case OMP_CLAUSE__SIMT_:
-	case OMP_CLAUSE_IF_PRESENT:
-	case OMP_CLAUSE_FINALIZE:
-	case OMP_CLAUSE_NOHOST:
-	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
-
-	case OMP_CLAUSE_LASTPRIVATE:
-	  WALK_SUBTREE (OMP_CLAUSE_DECL (*tp));
-	  WALK_SUBTREE (OMP_CLAUSE_LASTPRIVATE_STMT (*tp));
-	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
-
-	case OMP_CLAUSE_COLLAPSE:
-	case OMP_CLAUSE_TILE:
-	  {
-	    int i;
-	    for (i = 0; i < 3; i++)
-	      WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, i));
-	    WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
-	  }
-
-	case OMP_CLAUSE_LINEAR:
-	  WALK_SUBTREE (OMP_CLAUSE_DECL (*tp));
-	  WALK_SUBTREE (OMP_CLAUSE_LINEAR_STEP (*tp));
-	  WALK_SUBTREE (OMP_CLAUSE_LINEAR_STMT (*tp));
-	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
-
-	case OMP_CLAUSE_ALIGNED:
-	case OMP_CLAUSE_ALLOCATE:
-	case OMP_CLAUSE_FROM:
-	case OMP_CLAUSE_TO:
-	case OMP_CLAUSE_MAP:
-	case OMP_CLAUSE__CACHE_:
-	  WALK_SUBTREE (OMP_CLAUSE_DECL (*tp));
-	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 1));
-	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
-
-	case OMP_CLAUSE_REDUCTION:
-	case OMP_CLAUSE_TASK_REDUCTION:
-	case OMP_CLAUSE_IN_REDUCTION:
-	  {
-	    int i;
-	    for (i = 0; i < 5; i++)
-	      WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, i));
-	    WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
-	  }
-
-	default:
-	  gcc_unreachable ();
-	}
+      {
+	int len = omp_clause_num_ops[OMP_CLAUSE_CODE (*tp)];
+	for (int i = 0; i < len; i++)
+	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, i));
+	WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
+      }
       break;
 
     case TARGET_EXPR:
