@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "expr.h"
 #include "langhooks.h"
+#include "targhooks.h"
 #include "toplev.h"
 #include "lto-section-names.h"
 #include "intl.h"
@@ -3661,19 +3662,22 @@ darwin_rename_builtins (void)
     }
 }
 
+/* Implementation for the TARGET_LIBC_HAS_FUNCTION hook.  */
+
 bool
 darwin_libc_has_function (enum function_class fn_class,
 			  tree type ATTRIBUTE_UNUSED)
 {
-  if (fn_class == function_sincos)
+  if (fn_class == function_sincos && darwin_macosx_version_min)
     return (strverscmp (darwin_macosx_version_min, "10.9") >= 0);
-
+#if DARWIN_PPC && SUPPORT_DARWIN_LEGACY
   if (fn_class == function_c99_math_complex
       || fn_class == function_c99_misc)
     return (TARGET_64BIT
-	    || strverscmp (darwin_macosx_version_min, "10.3") >= 0);
-
-  return true;
+	    || (darwin_macosx_version_min &&
+		strverscmp (darwin_macosx_version_min, "10.3") >= 0));
+#endif
+  return default_libc_has_function (fn_class, type);
 }
 
 hashval_t
