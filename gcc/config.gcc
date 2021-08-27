@@ -2553,14 +2553,28 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 			target_cpu_default=MASK_SOFT_FLOAT_ABI
 			enable_mips_multilibs="yes"
 			;;
+		mipsisa64r6*-*-linux-gnuabi64)
+			default_mips_abi=64
+			default_mips_arch=mips64r6
+			enable_mips_multilibs="yes"
+			;;
 		mipsisa64r6*-*-linux*)
 			default_mips_abi=n32
 			default_mips_arch=mips64r6
 			enable_mips_multilibs="yes"
 			;;
+		mipsisa64r2*-*-linux-gnuabi64)
+			default_mips_abi=64
+			default_mips_arch=mips64r2
+			enable_mips_multilibs="yes"
+			;;
 		mipsisa64r2*-*-linux*)
 			default_mips_abi=n32
 			default_mips_arch=mips64r2
+			enable_mips_multilibs="yes"
+			;;
+		mips64*-*-linux-gnuabi64 | mipsisa64*-*-linux-gnuabi64)
+			default_mips_abi=64
 			enable_mips_multilibs="yes"
 			;;
 		mips64*-*-linux* | mipsisa64*-*-linux*)
