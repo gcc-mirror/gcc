@@ -1106,6 +1106,33 @@
     VEC_SET_V8HI nothing {set}
 
 
+; Cell builtins.
+[cell]
+  pure vsc __builtin_altivec_lvlx (signed long, const void *);
+    LVLX altivec_lvlx {ldvec}
+
+  pure vsc __builtin_altivec_lvlxl (signed long, const void *);
+    LVLXL altivec_lvlxl {ldvec}
+
+  pure vsc __builtin_altivec_lvrx (signed long, const void *);
+    LVRX altivec_lvrx {ldvec}
+
+  pure vsc __builtin_altivec_lvrxl (signed long, const void *);
+    LVRXL altivec_lvrxl {ldvec}
+
+  void __builtin_altivec_stvlx (vsc, signed long, void *);
+    STVLX altivec_stvlx {stvec}
+
+  void __builtin_altivec_stvlxl (vsc, signed long, void *);
+    STVLXL altivec_stvlxl {stvec}
+
+  void __builtin_altivec_stvrx (vsc, signed long, void *);
+    STVRX altivec_stvrx {stvec}
+
+  void __builtin_altivec_stvrxl (vsc, signed long, void *);
+    STVRXL altivec_stvrxl {stvec}
+
+
 ; VSX builtins.
 [vsx]
   pure vd __builtin_altivec_lvx_v2df (signed long, const void *);
@@ -2808,6 +2835,221 @@
     XL_LEN_R xl_len_r {}
 
 
+; Builtins requiring hardware support for IEEE-128 floating-point.
+[ieee128-hw]
+  fpmath _Float128 __builtin_addf128_round_to_odd (_Float128, _Float128);
+    ADDF128_ODD addkf3_odd {}
+
+  fpmath _Float128 __builtin_divf128_round_to_odd (_Float128, _Float128);
+    DIVF128_ODD divkf3_odd {}
+
+  fpmath _Float128 __builtin_fmaf128_round_to_odd (_Float128, _Float128, _Float128);
+    FMAF128_ODD fmakf4_odd {}
+
+  fpmath _Float128 __builtin_mulf128_round_to_odd (_Float128, _Float128);
+    MULF128_ODD mulkf3_odd {}
+
+  const signed int __builtin_vsx_scalar_cmp_exp_qp_eq (_Float128, _Float128);
+    VSCEQPEQ xscmpexpqp_eq_kf {}
+
+  const signed int __builtin_vsx_scalar_cmp_exp_qp_gt (_Float128, _Float128);
+    VSCEQPGT xscmpexpqp_gt_kf {}
+
+  const signed int __builtin_vsx_scalar_cmp_exp_qp_lt (_Float128, _Float128);
+    VSCEQPLT xscmpexpqp_lt_kf {}
+
+  const signed int __builtin_vsx_scalar_cmp_exp_qp_unordered (_Float128, _Float128);
+    VSCEQPUO xscmpexpqp_unordered_kf {}
+
+  fpmath _Float128 __builtin_sqrtf128_round_to_odd (_Float128);
+    SQRTF128_ODD sqrtkf2_odd {}
+
+  fpmath _Float128 __builtin_subf128_round_to_odd (_Float128, _Float128);
+    SUBF128_ODD subkf3_odd {}
+
+  fpmath double __builtin_truncf128_round_to_odd (_Float128);
+    TRUNCF128_ODD trunckfdf2_odd {}
+
+  const signed long long __builtin_vsx_scalar_extract_expq (_Float128);
+    VSEEQP xsxexpqp_kf {}
+
+  const signed __int128 __builtin_vsx_scalar_extract_sigq (_Float128);
+    VSESQP xsxsigqp_kf {}
+
+  const _Float128 __builtin_vsx_scalar_insert_exp_q (unsigned __int128, unsigned long long);
+    VSIEQP xsiexpqp_kf {}
+
+  const _Float128 __builtin_vsx_scalar_insert_exp_qp (_Float128, unsigned long long);
+    VSIEQPF xsiexpqpf_kf {}
+
+  const signed int __builtin_vsx_scalar_test_data_class_qp (_Float128, const int<7>);
+    VSTDCQP xststdcqp_kf {}
+
+  const signed int __builtin_vsx_scalar_test_neg_qp (_Float128);
+    VSTDCNQP xststdcnegqp_kf {}
+
+
+
+; Decimal floating-point builtins.
+[dfp]
+  const _Decimal64 __builtin_ddedpd (const int<2>, _Decimal64);
+    DDEDPD dfp_ddedpd_dd {}
+
+  const _Decimal128 __builtin_ddedpdq (const int<2>, _Decimal128);
+    DDEDPDQ dfp_ddedpd_td {}
+
+  const _Decimal64 __builtin_denbcd (const int<1>, _Decimal64);
+    DENBCD dfp_denbcd_dd {}
+
+  const _Decimal128 __builtin_denbcdq (const int<1>, _Decimal128);
+    DENBCDQ dfp_denbcd_td {}
+
+  const _Decimal128 __builtin_denb2dfp_v16qi (vsc);
+    DENB2DFP_V16QI dfp_denbcd_v16qi {}
+
+  const _Decimal64 __builtin_diex (signed long long, _Decimal64);
+    DIEX dfp_diex_dd {}
+
+  const _Decimal128 __builtin_diexq (signed long long, _Decimal128);
+    DIEXQ dfp_diex_td {}
+
+  const _Decimal64 __builtin_dscli (_Decimal64, const int<6>);
+    DSCLI dfp_dscli_dd {}
+
+  const _Decimal128 __builtin_dscliq (_Decimal128, const int<6>);
+    DSCLIQ dfp_dscli_td {}
+
+  const _Decimal64 __builtin_dscri (_Decimal64, const int<6>);
+    DSCRI dfp_dscri_dd {}
+
+  const _Decimal128 __builtin_dscriq (_Decimal128, const int<6>);
+    DSCRIQ dfp_dscri_td {}
+
+  const signed long long __builtin_dxex (_Decimal64);
+    DXEX dfp_dxex_dd {}
+
+  const signed long long __builtin_dxexq (_Decimal128);
+    DXEXQ dfp_dxex_td {}
+
+  const _Decimal128 __builtin_pack_dec128 (unsigned long long, unsigned long long);
+    PACK_TD packtd {}
+
+  void __builtin_set_fpscr_drn (const int[0,7]);
+    SET_FPSCR_DRN rs6000_set_fpscr_drn {}
+
+  const unsigned long __builtin_unpack_dec128 (_Decimal128, const int<1>);
+    UNPACK_TD unpacktd {}
+
+
+[crypto]
+  const vull __builtin_crypto_vcipher (vull, vull);
+    VCIPHER crypto_vcipher_v2di {}
+
+  const vuc __builtin_crypto_vcipher_be (vuc, vuc);
+    VCIPHER_BE crypto_vcipher_v16qi {}
+
+  const vull __builtin_crypto_vcipherlast (vull, vull);
+    VCIPHERLAST crypto_vcipherlast_v2di {}
+
+  const vuc __builtin_crypto_vcipherlast_be (vuc, vuc);
+    VCIPHERLAST_BE crypto_vcipherlast_v16qi {}
+
+  const vull __builtin_crypto_vncipher (vull, vull);
+    VNCIPHER crypto_vncipher_v2di {}
+
+  const vuc __builtin_crypto_vncipher_be (vuc, vuc);
+    VNCIPHER_BE crypto_vncipher_v16qi {}
+
+  const vull __builtin_crypto_vncipherlast (vull, vull);
+    VNCIPHERLAST crypto_vncipherlast_v2di {}
+
+  const vuc __builtin_crypto_vncipherlast_be (vuc, vuc);
+    VNCIPHERLAST_BE crypto_vncipherlast_v16qi {}
+
+  const vull __builtin_crypto_vsbox (vull);
+    VSBOX crypto_vsbox_v2di {}
+
+  const vuc __builtin_crypto_vsbox_be (vuc);
+    VSBOX_BE crypto_vsbox_v16qi {}
+
+  const vull __builtin_crypto_vshasigmad (vull, const int<1>, const int<4>);
+    VSHASIGMAD crypto_vshasigmad {}
+
+  const vui __builtin_crypto_vshasigmaw (vui, const int<1>, const int<4>);
+    VSHASIGMAW crypto_vshasigmaw {}
+
+
+[htm]
+  unsigned long long __builtin_get_texasr ();
+    GET_TEXASR nothing {htm,htmspr}
+
+  unsigned long long __builtin_get_texasru ();
+    GET_TEXASRU nothing {htm,htmspr}
+
+  unsigned long long __builtin_get_tfhar ();
+    GET_TFHAR nothing {htm,htmspr}
+
+  unsigned long long __builtin_get_tfiar ();
+    GET_TFIAR nothing {htm,htmspr}
+
+  void __builtin_set_texasr (unsigned long long);
+    SET_TEXASR nothing {htm,htmspr}
+
+  void __builtin_set_texasru (unsigned long long);
+    SET_TEXASRU nothing {htm,htmspr}
+
+  void __builtin_set_tfhar (unsigned long long);
+    SET_TFHAR nothing {htm,htmspr}
+
+  void __builtin_set_tfiar (unsigned long long);
+    SET_TFIAR nothing {htm,htmspr}
+
+  unsigned int __builtin_tabort (unsigned int);
+    TABORT tabort {htm,htmcr}
+
+  unsigned int __builtin_tabortdc (unsigned long long, unsigned long long, unsigned long long);
+    TABORTDC tabortdc {htm,htmcr}
+
+  unsigned int __builtin_tabortdci (unsigned long long, unsigned long long, unsigned long long);
+    TABORTDCI tabortdci {htm,htmcr}
+
+  unsigned int __builtin_tabortwc (unsigned int, unsigned int, unsigned int);
+    TABORTWC tabortwc {htm,htmcr}
+
+  unsigned int __builtin_tabortwci (unsigned int, unsigned int, unsigned int);
+    TABORTWCI tabortwci {htm,htmcr}
+
+  unsigned int __builtin_tbegin (unsigned int);
+    TBEGIN tbegin {htm,htmcr}
+
+  unsigned int __builtin_tcheck ();
+    TCHECK tcheck {htm,htmcr}
+
+  unsigned int __builtin_tend (unsigned int);
+    TEND tend {htm,htmcr}
+
+  unsigned int __builtin_tendall ();
+    TENDALL tend {htm,htmcr}
+
+  unsigned int __builtin_trechkpt ();
+    TRECHKPT trechkpt {htm,htmcr}
+
+  unsigned int __builtin_treclaim (unsigned int);
+    TRECLAIM treclaim {htm,htmcr}
+
+  unsigned int __builtin_tresume ();
+    TRESUME tsr {htm,htmcr}
+
+  unsigned int __builtin_tsr (unsigned int);
+    TSR tsr {htm,htmcr}
+
+  unsigned int __builtin_tsuspend ();
+    TSUSPEND tsr {htm,htmcr}
+
+  unsigned int __builtin_ttest ();
+    TTEST ttest {htm,htmcr}
+
+
 [power10]
   const vbq __builtin_altivec_cmpge_1ti (vsq, vsq);
     CMPGE_1TI vector_nltv1ti {}
@@ -3329,3 +3571,419 @@
 
   const unsigned long long __builtin_pextd (unsigned long long, unsigned long long);
     PEXTD pextd {}
+
+
+[mma]
+  void __builtin_mma_assemble_acc (v512 *, vuc, vuc, vuc, vuc);
+    ASSEMBLE_ACC nothing {mma}
+
+  v512 __builtin_mma_assemble_acc_internal (vuc, vuc, vuc, vuc);
+    ASSEMBLE_ACC_INTERNAL mma_assemble_acc {mma}
+
+  void __builtin_mma_assemble_pair (v256 *, vuc, vuc);
+    ASSEMBLE_PAIR nothing {mma}
+
+  v256 __builtin_mma_assemble_pair_internal (vuc, vuc);
+    ASSEMBLE_PAIR_INTERNAL vsx_assemble_pair {mma}
+
+  void __builtin_mma_build_acc (v512 *, vuc, vuc, vuc, vuc);
+    BUILD_ACC nothing {mma}
+
+  v512 __builtin_mma_build_acc_internal (vuc, vuc, vuc, vuc);
+    BUILD_ACC_INTERNAL mma_assemble_acc {mma}
+
+  void __builtin_mma_disassemble_acc (void *, v512 *);
+    DISASSEMBLE_ACC nothing {mma,quad}
+
+  vuc __builtin_mma_disassemble_acc_internal (v512, const int<2>);
+    DISASSEMBLE_ACC_INTERNAL mma_disassemble_acc {mma}
+
+  void __builtin_mma_disassemble_pair (void *, v256 *);
+    DISASSEMBLE_PAIR nothing {mma,pair}
+
+  vuc __builtin_mma_disassemble_pair_internal (v256, const int<2>);
+    DISASSEMBLE_PAIR_INTERNAL vsx_disassemble_pair {mma}
+
+  void __builtin_mma_pmxvbf16ger2 (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVBF16GER2 nothing {mma}
+
+  v512 __builtin_mma_pmxvbf16ger2_internal (vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVBF16GER2_INTERNAL mma_pmxvbf16ger2 {mma}
+
+  void __builtin_mma_pmxvbf16ger2nn (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVBF16GER2NN nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvbf16ger2nn_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVBF16GER2NN_INTERNAL mma_pmxvbf16ger2nn {mma,quad}
+
+  void __builtin_mma_pmxvbf16ger2np (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVBF16GER2NP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvbf16ger2np_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVBF16GER2NP_INTERNAL mma_pmxvbf16ger2np {mma,quad}
+
+  void __builtin_mma_pmxvbf16ger2pn (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVBF16GER2PN nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvbf16ger2pn_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVBF16GER2PN_INTERNAL mma_pmxvbf16ger2pn {mma,quad}
+
+  void __builtin_mma_pmxvbf16ger2pp (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVBF16GER2PP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvbf16ger2pp_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVBF16GER2PP_INTERNAL mma_pmxvbf16ger2pp {mma,quad}
+
+  void __builtin_mma_pmxvf16ger2 (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVF16GER2 nothing {mma}
+
+  v512 __builtin_mma_pmxvf16ger2_internal (vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVF16GER2_INTERNAL mma_pmxvf16ger2 {mma}
+
+  void __builtin_mma_pmxvf16ger2nn (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVF16GER2NN nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvf16ger2nn_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVF16GER2NN_INTERNAL mma_pmxvf16ger2nn {mma,quad}
+
+  void __builtin_mma_pmxvf16ger2np (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVF16GER2NP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvf16ger2np_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVF16GER2NP_INTERNAL mma_pmxvf16ger2np {mma,quad}
+
+  void __builtin_mma_pmxvf16ger2pn (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVF16GER2PN nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvf16ger2pn_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVF16GER2PN_INTERNAL mma_pmxvf16ger2pn {mma,quad}
+
+  void __builtin_mma_pmxvf16ger2pp (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVF16GER2PP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvf16ger2pp_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVF16GER2PP_INTERNAL mma_pmxvf16ger2pp {mma,quad}
+
+  void __builtin_mma_pmxvf32ger (v512 *, vuc, vuc, const int<4>, const int<4>);
+    PMXVF32GER nothing {mma}
+
+  v512 __builtin_mma_pmxvf32ger_internal (vuc, vuc, const int<4>, const int<4>);
+    PMXVF32GER_INTERNAL mma_pmxvf32ger {mma}
+
+  void __builtin_mma_pmxvf32gernn (v512 *, vuc, vuc, const int<4>, const int<4>);
+    PMXVF32GERNN nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvf32gernn_internal (v512, vuc, vuc, const int<4>, const int<4>);
+    PMXVF32GERNN_INTERNAL mma_pmxvf32gernn {mma,quad}
+
+  void __builtin_mma_pmxvf32gernp (v512 *, vuc, vuc, const int<4>, const int<4>);
+    PMXVF32GERNP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvf32gernp_internal (v512, vuc, vuc, const int<4>, const int<4>);
+    PMXVF32GERNP_INTERNAL mma_pmxvf32gernp {mma,quad}
+
+  void __builtin_mma_pmxvf32gerpn (v512 *, vuc, vuc, const int<4>, const int<4>);
+    PMXVF32GERPN nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvf32gerpn_internal (v512, vuc, vuc, const int<4>, const int<4>);
+    PMXVF32GERPN_INTERNAL mma_pmxvf32gerpn {mma,quad}
+
+  void __builtin_mma_pmxvf32gerpp (v512 *, vuc, vuc, const int<4>, const int<4>);
+    PMXVF32GERPP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvf32gerpp_internal (v512, vuc, vuc, const int<4>, const int<4>);
+    PMXVF32GERPP_INTERNAL mma_pmxvf32gerpp {mma,quad}
+
+  void __builtin_mma_pmxvf64ger (v512 *, v256, vuc, const int<4>, const int<2>);
+    PMXVF64GER nothing {mma,pair}
+
+  v512 __builtin_mma_pmxvf64ger_internal (v256, vuc, const int<4>, const int<2>);
+    PMXVF64GER_INTERNAL mma_pmxvf64ger {mma,pair}
+
+  void __builtin_mma_pmxvf64gernn (v512 *, v256, vuc, const int<4>, const int<2>);
+    PMXVF64GERNN nothing {mma,pair,quad}
+
+  v512 __builtin_mma_pmxvf64gernn_internal (v512, v256, vuc, const int<4>, const int<2>);
+    PMXVF64GERNN_INTERNAL mma_pmxvf64gernn {mma,pair,quad}
+
+  void __builtin_mma_pmxvf64gernp (v512 *, v256, vuc, const int<4>, const int<2>);
+    PMXVF64GERNP nothing {mma,pair,quad}
+
+  v512 __builtin_mma_pmxvf64gernp_internal (v512, v256, vuc, const int<4>, const int<2>);
+    PMXVF64GERNP_INTERNAL mma_pmxvf64gernp {mma,pair,quad}
+
+  void __builtin_mma_pmxvf64gerpn (v512 *, v256, vuc, const int<4>, const int<2>);
+    PMXVF64GERPN nothing {mma,pair,quad}
+
+  v512 __builtin_mma_pmxvf64gerpn_internal (v512, v256, vuc, const int<4>, const int<2>);
+    PMXVF64GERPN_INTERNAL mma_pmxvf64gerpn {mma,pair,quad}
+
+  void __builtin_mma_pmxvf64gerpp (v512 *, v256, vuc, const int<4>, const int<2>);
+    PMXVF64GERPP nothing {mma,pair,quad}
+
+  v512 __builtin_mma_pmxvf64gerpp_internal (v512, v256, vuc, const int<4>, const int<2>);
+    PMXVF64GERPP_INTERNAL mma_pmxvf64gerpp {mma,pair,quad}
+
+  void __builtin_mma_pmxvi16ger2 (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVI16GER2 nothing {mma}
+
+  v512 __builtin_mma_pmxvi16ger2_internal (vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVI16GER2_INTERNAL mma_pmxvi16ger2 {mma}
+
+  void __builtin_mma_pmxvi16ger2pp (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVI16GER2PP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvi16ger2pp_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVI16GER2PP_INTERNAL mma_pmxvi16ger2pp {mma,quad}
+
+  void __builtin_mma_pmxvi16ger2s (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVI16GER2S nothing {mma}
+
+  v512 __builtin_mma_pmxvi16ger2s_internal (vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVI16GER2S_INTERNAL mma_pmxvi16ger2s {mma}
+
+  void __builtin_mma_pmxvi16ger2spp (v512 *, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVI16GER2SPP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvi16ger2spp_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<2>);
+    PMXVI16GER2SPP_INTERNAL mma_pmxvi16ger2spp {mma,quad}
+
+  void __builtin_mma_pmxvi4ger8 (v512 *, vuc, vuc, const int<4>, const int<4>, const int<8>);
+    PMXVI4GER8 nothing {mma}
+
+  v512 __builtin_mma_pmxvi4ger8_internal (vuc, vuc, const int<4>, const int<4>, const int<8>);
+    PMXVI4GER8_INTERNAL mma_pmxvi4ger8 {mma}
+
+  void __builtin_mma_pmxvi4ger8pp (v512 *, vuc, vuc, const int<4>, const int<4>, const int<4>);
+    PMXVI4GER8PP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvi4ger8pp_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<4>);
+    PMXVI4GER8PP_INTERNAL mma_pmxvi4ger8pp {mma,quad}
+
+  void __builtin_mma_pmxvi8ger4 (v512 *, vuc, vuc, const int<4>, const int<4>, const int<4>);
+    PMXVI8GER4 nothing {mma}
+
+  v512 __builtin_mma_pmxvi8ger4_internal (vuc, vuc, const int<4>, const int<4>, const int<4>);
+    PMXVI8GER4_INTERNAL mma_pmxvi8ger4 {mma}
+
+  void __builtin_mma_pmxvi8ger4pp (v512 *, vuc, vuc, const int<4>, const int<4>, const int<4>);
+    PMXVI8GER4PP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvi8ger4pp_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<4>);
+    PMXVI8GER4PP_INTERNAL mma_pmxvi8ger4pp {mma,quad}
+
+  void __builtin_mma_pmxvi8ger4spp (v512 *, vuc, vuc, const int<4>, const int<4>, const int<4>);
+    PMXVI8GER4SPP nothing {mma,quad}
+
+  v512 __builtin_mma_pmxvi8ger4spp_internal (v512, vuc, vuc, const int<4>, const int<4>, const int<4>);
+    PMXVI8GER4SPP_INTERNAL mma_pmxvi8ger4spp {mma,quad}
+
+  void __builtin_mma_xvbf16ger2 (v512 *, vuc, vuc);
+    XVBF16GER2 nothing {mma}
+
+  v512 __builtin_mma_xvbf16ger2_internal (vuc, vuc);
+    XVBF16GER2_INTERNAL mma_xvbf16ger2 {mma}
+
+  void __builtin_mma_xvbf16ger2nn (v512 *, vuc, vuc);
+    XVBF16GER2NN nothing {mma,quad}
+
+  v512 __builtin_mma_xvbf16ger2nn_internal (v512, vuc, vuc);
+    XVBF16GER2NN_INTERNAL mma_xvbf16ger2nn {mma,quad}
+
+  void __builtin_mma_xvbf16ger2np (v512 *, vuc, vuc);
+    XVBF16GER2NP nothing {mma,quad}
+
+  v512 __builtin_mma_xvbf16ger2np_internal (v512, vuc, vuc);
+    XVBF16GER2NP_INTERNAL mma_xvbf16ger2np {mma,quad}
+
+  void __builtin_mma_xvbf16ger2pn (v512 *, vuc, vuc);
+    XVBF16GER2PN nothing {mma,quad}
+
+  v512 __builtin_mma_xvbf16ger2pn_internal (v512, vuc, vuc);
+    XVBF16GER2PN_INTERNAL mma_xvbf16ger2pn {mma,quad}
+
+  void __builtin_mma_xvbf16ger2pp (v512 *, vuc, vuc);
+    XVBF16GER2PP nothing {mma,quad}
+
+  v512 __builtin_mma_xvbf16ger2pp_internal (v512, vuc, vuc);
+    XVBF16GER2PP_INTERNAL mma_xvbf16ger2pp {mma,quad}
+
+  void __builtin_mma_xvf16ger2 (v512 *, vuc, vuc);
+    XVF16GER2 nothing {mma}
+
+  v512 __builtin_mma_xvf16ger2_internal (vuc, vuc);
+    XVF16GER2_INTERNAL mma_xvf16ger2 {mma}
+
+  void __builtin_mma_xvf16ger2nn (v512 *, vuc, vuc);
+    XVF16GER2NN nothing {mma,quad}
+
+  v512 __builtin_mma_xvf16ger2nn_internal (v512, vuc, vuc);
+    XVF16GER2NN_INTERNAL mma_xvf16ger2nn {mma,quad}
+
+  void __builtin_mma_xvf16ger2np (v512 *, vuc, vuc);
+    XVF16GER2NP nothing {mma,quad}
+
+  v512 __builtin_mma_xvf16ger2np_internal (v512, vuc, vuc);
+    XVF16GER2NP_INTERNAL mma_xvf16ger2np {mma,quad}
+
+  void __builtin_mma_xvf16ger2pn (v512 *, vuc, vuc);
+    XVF16GER2PN nothing {mma,quad}
+
+  v512 __builtin_mma_xvf16ger2pn_internal (v512, vuc, vuc);
+    XVF16GER2PN_INTERNAL mma_xvf16ger2pn {mma,quad}
+
+  void __builtin_mma_xvf16ger2pp (v512 *, vuc, vuc);
+    XVF16GER2PP nothing {mma,quad}
+
+  v512 __builtin_mma_xvf16ger2pp_internal (v512, vuc, vuc);
+    XVF16GER2PP_INTERNAL mma_xvf16ger2pp {mma,quad}
+
+  void __builtin_mma_xvf32ger (v512 *, vuc, vuc);
+    XVF32GER nothing {mma}
+
+  v512 __builtin_mma_xvf32ger_internal (vuc, vuc);
+    XVF32GER_INTERNAL mma_xvf32ger {mma}
+
+  void __builtin_mma_xvf32gernn (v512 *, vuc, vuc);
+    XVF32GERNN nothing {mma,quad}
+
+  v512 __builtin_mma_xvf32gernn_internal (v512, vuc, vuc);
+    XVF32GERNN_INTERNAL mma_xvf32gernn {mma,quad}
+
+  void __builtin_mma_xvf32gernp (v512 *, vuc, vuc);
+    XVF32GERNP nothing {mma,quad}
+
+  v512 __builtin_mma_xvf32gernp_internal (v512, vuc, vuc);
+    XVF32GERNP_INTERNAL mma_xvf32gernp {mma,quad}
+
+  void __builtin_mma_xvf32gerpn (v512 *, vuc, vuc);
+    XVF32GERPN nothing {mma,quad}
+
+  v512 __builtin_mma_xvf32gerpn_internal (v512, vuc, vuc);
+    XVF32GERPN_INTERNAL mma_xvf32gerpn {mma,quad}
+
+  void __builtin_mma_xvf32gerpp (v512 *, vuc, vuc);
+    XVF32GERPP nothing {mma,quad}
+
+  v512 __builtin_mma_xvf32gerpp_internal (v512, vuc, vuc);
+    XVF32GERPP_INTERNAL mma_xvf32gerpp {mma,quad}
+
+  void __builtin_mma_xvf64ger (v512 *, v256, vuc);
+    XVF64GER nothing {mma,pair}
+
+  v512 __builtin_mma_xvf64ger_internal (v256, vuc);
+    XVF64GER_INTERNAL mma_xvf64ger {mma,pair}
+
+  void __builtin_mma_xvf64gernn (v512 *, v256, vuc);
+    XVF64GERNN nothing {mma,pair,quad}
+
+  v512 __builtin_mma_xvf64gernn_internal (v512, v256, vuc);
+    XVF64GERNN_INTERNAL mma_xvf64gernn {mma,pair,quad}
+
+  void __builtin_mma_xvf64gernp (v512 *, v256, vuc);
+    XVF64GERNP nothing {mma,pair,quad}
+
+  v512 __builtin_mma_xvf64gernp_internal (v512, v256, vuc);
+    XVF64GERNP_INTERNAL mma_xvf64gernp {mma,pair,quad}
+
+  void __builtin_mma_xvf64gerpn (v512 *, v256, vuc);
+    XVF64GERPN nothing {mma,pair,quad}
+
+  v512 __builtin_mma_xvf64gerpn_internal (v512, v256, vuc);
+    XVF64GERPN_INTERNAL mma_xvf64gerpn {mma,pair,quad}
+
+  void __builtin_mma_xvf64gerpp (v512 *, v256, vuc);
+    XVF64GERPP nothing {mma,pair,quad}
+
+  v512 __builtin_mma_xvf64gerpp_internal (v512, v256, vuc);
+    XVF64GERPP_INTERNAL mma_xvf64gerpp {mma,pair,quad}
+
+  void __builtin_mma_xvi16ger2 (v512 *, vuc, vuc);
+    XVI16GER2 nothing {mma}
+
+  v512 __builtin_mma_xvi16ger2_internal (vuc, vuc);
+    XVI16GER2_INTERNAL mma_xvi16ger2 {mma}
+
+  void __builtin_mma_xvi16ger2pp (v512 *, vuc, vuc);
+    XVI16GER2PP nothing {mma,quad}
+
+  v512 __builtin_mma_xvi16ger2pp_internal (v512, vuc, vuc);
+    XVI16GER2PP_INTERNAL mma_xvi16ger2pp {mma,quad}
+
+  void __builtin_mma_xvi16ger2s (v512 *, vuc, vuc);
+    XVI16GER2S nothing {mma}
+
+  v512 __builtin_mma_xvi16ger2s_internal (vuc, vuc);
+    XVI16GER2S_INTERNAL mma_xvi16ger2s {mma}
+
+  void __builtin_mma_xvi16ger2spp (v512 *, vuc, vuc);
+    XVI16GER2SPP nothing {mma,quad}
+
+  v512 __builtin_mma_xvi16ger2spp_internal (v512, vuc, vuc);
+    XVI16GER2SPP_INTERNAL mma_xvi16ger2spp {mma,quad}
+
+  void __builtin_mma_xvi4ger8 (v512 *, vuc, vuc);
+    XVI4GER8 nothing {mma}
+
+  v512 __builtin_mma_xvi4ger8_internal (vuc, vuc);
+    XVI4GER8_INTERNAL mma_xvi4ger8 {mma}
+
+  void __builtin_mma_xvi4ger8pp (v512 *, vuc, vuc);
+    XVI4GER8PP nothing {mma,quad}
+
+  v512 __builtin_mma_xvi4ger8pp_internal (v512, vuc, vuc);
+    XVI4GER8PP_INTERNAL mma_xvi4ger8pp {mma,quad}
+
+  void __builtin_mma_xvi8ger4 (v512 *, vuc, vuc);
+    XVI8GER4 nothing {mma}
+
+  v512 __builtin_mma_xvi8ger4_internal (vuc, vuc);
+    XVI8GER4_INTERNAL mma_xvi8ger4 {mma}
+
+  void __builtin_mma_xvi8ger4pp (v512 *, vuc, vuc);
+    XVI8GER4PP nothing {mma,quad}
+
+  v512 __builtin_mma_xvi8ger4pp_internal (v512, vuc, vuc);
+    XVI8GER4PP_INTERNAL mma_xvi8ger4pp {mma,quad}
+
+  void __builtin_mma_xvi8ger4spp (v512 *, vuc, vuc);
+    XVI8GER4SPP nothing {mma,quad}
+
+  v512 __builtin_mma_xvi8ger4spp_internal (v512, vuc, vuc);
+    XVI8GER4SPP_INTERNAL mma_xvi8ger4spp {mma,quad}
+
+  void __builtin_mma_xxmfacc (v512 *);
+    XXMFACC nothing {mma,quad}
+
+  v512 __builtin_mma_xxmfacc_internal (v512);
+    XXMFACC_INTERNAL mma_xxmfacc {mma,quad}
+
+  void __builtin_mma_xxmtacc (v512 *);
+    XXMTACC nothing {mma,quad}
+
+  v512 __builtin_mma_xxmtacc_internal (v512);
+    XXMTACC_INTERNAL mma_xxmtacc {mma,quad}
+
+  void __builtin_mma_xxsetaccz (v512 *);
+    XXSETACCZ nothing {mma}
+
+  v512 __builtin_mma_xxsetaccz_internal ();
+    XXSETACCZ_INTERNAL mma_xxsetaccz {mma}
+
+  void __builtin_vsx_assemble_pair (v256 *, vuc, vuc);
+    ASSEMBLE_PAIR_V nothing {mma}
+
+  v256 __builtin_vsx_assemble_pair_internal (vuc, vuc);
+    ASSEMBLE_PAIR_V_INTERNAL vsx_assemble_pair {mma}
+
+  void __builtin_vsx_build_pair (v256 *, vuc, vuc);
+    BUILD_PAIR nothing {mma}
+
+  v256 __builtin_vsx_build_pair_internal (vuc, vuc);
+    BUILD_PAIR_INTERNAL vsx_assemble_pair {mma}
+
+  void __builtin_vsx_disassemble_pair (void *, v256 *);
+    DISASSEMBLE_PAIR_V nothing {mma,pair}
+
+  vuc __builtin_vsx_disassemble_pair_internal (v256, const int<2>);
+    DISASSEMBLE_PAIR_V_INTERNAL vsx_disassemble_pair {mma}

@@ -1,3 +1,16 @@
+2021-08-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/ibm-ldouble.c (ldouble_qadd_internal): Rename from
+	__gcc_qadd.
+	(__gcc_qadd): Call ldouble_qadd_internal.
+	(__gcc_qsub): Call ldouble_qadd_internal with second long double
+	argument negated.
+
+2021-08-26  Jonathan Yong  <10walls@gmail.com>
+
+	* config/i386/cygming-crtend.c: Fix register_frame_ctor
+	and register_frame_dtor warnings.
+
 2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/102035

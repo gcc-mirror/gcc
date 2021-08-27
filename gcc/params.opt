@@ -1015,7 +1015,7 @@ Maximum number of escape points tracked by modref per SSA-name.
 
 -param=modref-max-adjustments=
 Common Joined UInteger Var(param_modref_max_adjustments) Init(8) IntegerRange (0, 254) Param Optimization
-Maximum number of times a given range is adjusted during the dataflow
+Maximum number of times a given range is adjusted during the dataflow.
 
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization

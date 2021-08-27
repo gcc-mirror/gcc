@@ -322,6 +322,20 @@ struct GTY((user)) modref_ref_node
     every_access = true;
   }
 
+  /* Verify that list does not contain redundant accesses.  */
+  void verify ()
+  {
+    size_t i, i2;
+    modref_access_node *a, *a2;
+
+    FOR_EACH_VEC_SAFE_ELT (accesses, i, a)
+      {
+	FOR_EACH_VEC_SAFE_ELT (accesses, i2, a2)
+	  if (i != i2)
+	    gcc_assert (!a->contains (*a2));
+      }
+  }
+
   /* Insert access with OFFSET and SIZE.
      Collapse tree if it has more than MAX_ACCESSES entries.
      If RECORD_ADJUSTMENTs is true avoid too many interval extensions.
@@ -336,6 +350,9 @@ struct GTY((user)) modref_ref_node
     /* Otherwise, insert a node for the ref of the access under the base.  */
     size_t i;
     modref_access_node *a2;
+
+    if (flag_checking)
+      verify ();
 
     if (!a.useful_p ())
       {
@@ -388,18 +405,35 @@ private:
   void
   try_merge_with (size_t index)
   {
-    modref_access_node *a2;
     size_t i;
 
-    FOR_EACH_VEC_SAFE_ELT (accesses, i, a2)
+    for (i = 0; i < accesses->length ();)
       if (i != index)
-	if ((*accesses)[index].contains (*a2)
-	    || (*accesses)[index].merge (*a2, false))
 	{
-	  if (index == accesses->length () - 1)
-	    index = i;
-	  accesses->unordered_remove (i);
+	  bool found = false, restart = false;
+	  modref_access_node *a = &(*accesses)[i];
+	  modref_access_node *n = &(*accesses)[index];
+
+	  if (n->contains (*a))
+	    found = true;
+	  if (!found && n->merge (*a, false))
+	    found = restart = true;
+	  if (found)
+	    {
+	      accesses->unordered_remove (i);
+	      if (index == accesses->length ())
+		{
+		  index = i;
+		  i++;
+		}
+	      if (restart)
+		i = 0;
+	    }
+	  else
+	    i++;
 	}
+      else
+	i++;
   }
 };
 
@@ -444,17 +478,22 @@ struct GTY((user)) modref_base_node
     if (ref_node)
       return ref_node;
 
-    if (changed)
-      *changed = true;
-
-    /* Collapse the node if too full already.  */
-    if (refs && refs->length () >= max_refs)
+    /* We always allow inserting ref 0.  For non-0 refs there is upper
+       limit on number of entries and if exceeded,
+       drop ref conservatively to 0.  */
+    if (ref && refs && refs->length () >= max_refs)
       {
 	if (dump_file)
-	  fprintf (dump_file, "--param param=modref-max-refs limit reached\n");
-	collapse ();
-	return NULL;
+	  fprintf (dump_file, "--param param=modref-max-refs limit reached;"
+		   " using 0\n");
+	ref = 0;
+	ref_node = search (ref);
+	if (ref_node)
+	  return ref_node;
       }
+
+    if (changed)
+      *changed = true;
 
     ref_node = new (ggc_alloc <modref_ref_node <T> > ())modref_ref_node <T>
 								 (ref);
@@ -513,9 +552,10 @@ struct GTY((user)) modref_tree
 
   /* Insert BASE; collapse tree if there are more than MAX_REFS.
      Return inserted base and if CHANGED is non-null set it to true if
-     something changed.  */
+     something changed.
+     If table gets full, try to insert REF instead.  */
 
-  modref_base_node <T> *insert_base (T base, bool *changed = NULL)
+  modref_base_node <T> *insert_base (T base, T ref, bool *changed = NULL)
   {
     modref_base_node <T> *base_node;
 
@@ -528,17 +568,30 @@ struct GTY((user)) modref_tree
     if (base_node)
       return base_node;
 
+    /* We always allow inserting base 0.  For non-0 base there is upper
+       limit on number of entries and if exceeded,
+       drop base conservatively to ref and if it still does not fit to 0.  */
+    if (base && bases && bases->length () >= max_bases)
+      {
+	base_node = search (ref);
+	if (base_node)
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "--param param=modref-max-bases"
+		       " limit reached; using ref\n");
+	    return base_node;
+	  }
+	if (dump_file)
+	  fprintf (dump_file, "--param param=modref-max-bases"
+		   " limit reached; using 0\n");
+	base = 0;
+	base_node = search (base);
+	if (base_node)
+	  return base_node;
+      }
+
     if (changed)
       *changed = true;
-
-    /* Collapse the node if too full already.  */
-    if (bases && bases->length () >= max_bases)
-      {
-	if (dump_file)
-	  fprintf (dump_file, "--param param=modref-max-bases limit reached\n");
-	collapse ();
-	return NULL;
-      }
 
     base_node = new (ggc_alloc <modref_base_node <T> > ())
 			 modref_base_node <T> (base);
@@ -563,8 +616,15 @@ struct GTY((user)) modref_tree
 	return true;
       }
 
-    modref_base_node <T> *base_node = insert_base (base, &changed);
-    if (!base_node || base_node->every_ref)
+    modref_base_node <T> *base_node = insert_base (base, ref, &changed);
+    base = base_node->base;
+    /* If table got full we may end up with useless base.  */
+    if (!base && !ref && !a.useful_p ())
+      {
+	collapse ();
+	return true;
+      }
+    if (base_node->every_ref)
       return changed;
     gcc_checking_assert (search (base) != NULL);
 
@@ -577,40 +637,26 @@ struct GTY((user)) modref_tree
 
     modref_ref_node <T> *ref_node = base_node->insert_ref (ref, max_refs,
 							   &changed);
+    ref = ref_node->ref;
 
-    /* If we failed to insert ref, just see if there is a cleanup possible.  */
-    if (!ref_node)
+    if (ref_node->every_access)
+      return changed;
+    changed |= ref_node->insert_access (a, max_accesses,
+					record_adjustments);
+    /* See if we failed to add useful access.  */
+    if (ref_node->every_access)
       {
-	/* No useful ref information and no useful base; collapse everything.  */
-	if (!base && base_node->every_ref)
+	/* Collapse everything if there is no useful base and ref.  */
+	if (!base && !ref)
 	  {
 	    collapse ();
 	    gcc_checking_assert (changed);
 	  }
-	else if (changed)
-	  cleanup ();
-      }
-    else
-      {
-	if (ref_node->every_access)
-	  return changed;
-	changed |= ref_node->insert_access (a, max_accesses,
-					    record_adjustments);
-	/* See if we failed to add useful access.  */
-	if (ref_node->every_access)
+	/* Collapse base if there is no useful ref.  */
+	else if (!ref)
 	  {
-	    /* Collapse everything if there is no useful base and ref.  */
-	    if (!base && !ref)
-	      {
-		collapse ();
-		gcc_checking_assert (changed);
-	      }
-	    /* Collapse base if there is no useful ref.  */
-	    else if (!ref)
-	      {
-		base_node->collapse ();
-		gcc_checking_assert (changed);
-	      }
+	    base_node->collapse ();
+	    gcc_checking_assert (changed);
 	  }
       }
     return changed;
@@ -695,7 +741,7 @@ struct GTY((user)) modref_tree
       {
 	if (base_node->every_ref)
 	  {
-	    my_base_node = insert_base (base_node->base, &changed);
+	    my_base_node = insert_base (base_node->base, 0, &changed);
 	    if (my_base_node && !my_base_node->every_ref)
 	      {
 		my_base_node->collapse ();

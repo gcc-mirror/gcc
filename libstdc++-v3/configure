@@ -2701,6 +2701,52 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_cxx_check_type
+
+# ac_fn_c_check_decl LINENO SYMBOL VAR INCLUDES
+# ---------------------------------------------
+# Tests whether SYMBOL is declared in INCLUDES, setting cache variable VAR
+# accordingly.
+ac_fn_c_check_decl ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  as_decl_name=`echo $2|sed 's/ *(.*//'`
+  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
+$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+#ifndef $as_decl_name
+#ifdef __cplusplus
+  (void) $as_decl_use;
+#else
+  (void) $as_decl_name;
+#endif
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_decl
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -12130,7 +12176,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12133 "configure"
+#line 12179 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12236,7 +12282,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12239 "configure"
+#line 12285 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15918,7 +15964,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15921 "configure"
+#line 15967 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15953,7 +15999,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15956 "configure"
+#line 16002 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15988,7 +16034,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15991 "configure"
+#line 16037 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16024,7 +16070,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16027 "configure"
+#line 16073 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16177,7 +16223,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16180 "configure"
+#line 16226 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16219,7 +16265,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16222 "configure"
+#line 16268 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -76614,6 +76660,26 @@ fi
 
 done
 
+ac_fn_c_check_decl "$LINENO" "F_GETFL" "ac_cv_have_decl_F_GETFL" "fcntl.h
+"
+if test "x$ac_cv_have_decl_F_GETFL" = xyes; then :
+
+fi
+
+ac_fn_c_check_decl "$LINENO" "F_SETFL" "ac_cv_have_decl_F_SETFL" "fcntl.h
+"
+if test "x$ac_cv_have_decl_F_SETFL" = xyes; then :
+
+fi
+
+if  "$ac_cv_have_decl_F_GETFL$ac_cv_have_decl_F_SETFL" = 11 ; then
+  ac_fn_c_check_decl "$LINENO" "O_NONBLOCK" "ac_cv_have_decl_O_NONBLOCK" "fcntl.h
+"
+if test "x$ac_cv_have_decl_O_NONBLOCK" = xyes; then :
+
+fi
+
+fi
 
 # For Transactional Memory TS
 

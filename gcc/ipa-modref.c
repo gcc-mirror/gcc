@@ -2445,9 +2445,9 @@ read_modref_records (lto_input_block *ib, struct data_in *data_in,
       if (nolto_ret)
 	nolto_base_node = (*nolto_ret)->insert_base (base_tree
 						     ? get_alias_set (base_tree)
-						     : 0);
+						     : 0, 0);
       if (lto_ret)
-	lto_base_node = (*lto_ret)->insert_base (base_tree);
+	lto_base_node = (*lto_ret)->insert_base (base_tree, 0);
       size_t every_ref = streamer_read_uhwi (ib);
       size_t nref = streamer_read_uhwi (ib);
 

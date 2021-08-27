@@ -32,9 +32,15 @@ static_assert( __gnu_test::test_bitmask_values({
 #ifdef AI_NUMERICSERV
   resolver_base::numeric_service,
 #endif
+#ifdef AI_V4MAPPED
   resolver_base::v4_mapped,
+#endif
+#ifdef AI_ALL
   resolver_base::all_matching,
+#endif
+#ifdef AI_ADDRCONFIG
   resolver_base::address_configured
+#endif
 }), "each bitmask element is distinct" );
 
 static_assert( ! std::is_default_constructible<resolver_base>(), "protected" );
