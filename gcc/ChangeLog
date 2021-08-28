@@ -1,3 +1,91 @@
+2021-08-27  Jeff Law  <jlaw@localhost.localdomain>
+
+	* config/h8300/bitfield.md (cstore<mode>4): Remove expander.
+	* config/h8300/h8300.c (h8300_expand_branch): Remove function.
+	* config/h8300/h8300-protos.h (h8300_expadn_branch): Remove prototype.
+	* config/h8300/h8300.md (eqne): New code iterator.
+	(geultu, geultu_to_c): Similarly.
+	* config/h8300/testcompare.md (cstore<mode>4): Dummy expander.
+	(store_c_<mode>, store_c_i_<mode>): New define_insn_and_splits
+	(cmp<mode>_c): New pattern
+
+2021-08-27  Jeff Law  <jlaw@localhost.localdomain>
+
+	* tree-ssa-dom.c (reduce_vector_comparison_to_scalar_comparison): New
+	function.
+	(dom_opt_dom_walker::optimize_stmt): Use it.
+
+2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (finalize_ctors): Add a section-start linker-
+	visible symbol.
+	(finalize_dtors): Likewise.
+	* config/darwin.h (MIN_LD64_INIT_TERM_START_LABELS): New.
+
+2021-08-27  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000-builtins.h): New #include.
+	(rs6000_init_builtins): Call rs6000_init_generated_builtins.  Skip the
+	old initialization logic when new builtins are enabled.
+	* config/rs6000/rs6000-gen-builtins.c (write_decls): Rename
+	rs6000_autoinit_builtins to rs6000_init_generated_builtins.
+	(write_init_file): Likewise.
+
+2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.ac (darwin2[[0-9]]* | darwin19*): Alter use of
+	gcc_GAS_CHECK_FEATURE to remove an extraneous parameter.
+	(amdgcn-* | gcn-*) Likewise.
+
+2021-08-27  Anthony Sharp  <anthonysharp15@gmail.com>
+
+	* symbol-summary.h: Added missing template keyword.
+
+2021-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/45178
+	* tree-ssa-dce.c (find_obviously_necessary_stmts): For
+	infinite loops without exit do not mark control dependent
+	edges of the latch necessary.
+
+2021-08-27  konglin1  <lingling.kong@intel.com>
+
+	PR target/101472
+	* config/i386/sse.md: (<avx512>scattersi<mode>): Add mask operand to
+	UNSPEC_VSIBADDR.
+	(<avx512>scattersi<mode>): Likewise.
+	(*avx512f_scattersi<VI48F:mode>): Merge mask operand to set_dest.
+	(*avx512f_scatterdi<VI48F:mode>): Likewise
+
+2021-08-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_md_vectorized_function): Add
+	support for built-in functions MISC_BUILTIN_DIVWE, MISC_BUILTIN_DIVWEU,
+	MISC_BUILTIN_DIVDE, MISC_BUILTIN_DIVDEU, P10_BUILTIN_CFUGED,
+	P10_BUILTIN_CNTLZDM, P10_BUILTIN_CNTTZDM, P10_BUILTIN_PDEPD and
+	P10_BUILTIN_PEXTD on Power10.
+
+2021-08-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (builtin_function_type): Add unsigned
+	signedness for some Power10 bifs.
+
+2021-08-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/102068
+	* config/rs6000/rs6000.c (rs6000_adjust_field_align): Use
+	computed alignment if the entire struct has attribute packed.
+
+2021-08-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98167
+	PR target/43147
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Fold
+	IX86_BUILTIN_SHUFPD512, IX86_BUILTIN_SHUFPS512,
+	IX86_BUILTIN_SHUFPD256， IX86_BUILTIN_SHUFPS，
+	IX86_BUILTIN_SHUFPS256.
+	(ix86_masked_all_ones): New function.
+
 2021-08-26  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*btr<mode>_1): Call force_reg unconditionally.
