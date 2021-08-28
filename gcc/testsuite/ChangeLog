@@ -1,3 +1,9 @@
+2021-08-27  konglin1  <lingling.kong@intel.com>
+
+	PR target/101472
+	* gcc.target/i386/avx512f-pr101472.c: New test.
+	* gcc.target/i386/avx512vl-pr101472.c: New test.
+
 2021-08-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
