@@ -2563,6 +2563,7 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 
   TYPE_FIELDS (frame_rec_type) = fields;
   TYPE_READONLY (frame_rec_type) = 1;
+  TYPE_CXX_ODR_P (frame_rec_type) = 1;
   layout_type (frame_rec_type);
   d_keep (frame_rec_type);
 
