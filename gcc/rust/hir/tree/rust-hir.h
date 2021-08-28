@@ -663,7 +663,7 @@ public:
 
   virtual Analysis::NodeMapping get_impl_mappings () const = 0;
 
-  virtual Location get_impl_locus () const = 0;
+  virtual Location get_locus () const = 0;
 };
 
 // A crate HIR object - holds all the data for a single compilation unit
