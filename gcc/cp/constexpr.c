@@ -942,7 +942,6 @@ explain_invalid_constexpr_fn (tree fun)
 {
   static hash_set<tree> *diagnosed;
   tree body;
-  location_t save_loc;
   /* Only diagnose defaulted functions, lambdas, or instantiations.  */
   if (!DECL_DEFAULTED_FN (fun)
       && !LAMBDA_TYPE_P (CP_DECL_CONTEXT (fun))
@@ -957,7 +956,7 @@ explain_invalid_constexpr_fn (tree fun)
     /* Already explained.  */
     return;
 
-  save_loc = input_location;
+  iloc_sentinel ils = input_location;
   if (!lambda_static_thunk_p (fun))
     {
       /* Diagnostics should completely ignore the static thunk, so leave
@@ -985,7 +984,6 @@ explain_invalid_constexpr_fn (tree fun)
 	    cx_check_missing_mem_inits (DECL_CONTEXT (fun), body, true);
 	}
     }
-  input_location = save_loc;
 }
 
 /* Objects of this type represent calls to constexpr functions
