@@ -19817,9 +19817,12 @@ mips_set_architecture (const struct mips_cpu_info *info)
       mips_arch_info = info;
       mips_arch = info->cpu;
       mips_isa = info->isa;
-      if (mips_isa < 32)
+      if (mips_isa < MIPS_ISA_MIPS32)
 	mips_isa_rev = 0;
       else
+	/* we can do this is due to the
+	 * enum of MIPS32rN is from 32 to 37
+	 * enum of MIPS64rN is from 64 to 69 */
 	mips_isa_rev = (mips_isa & 31) + 1;
     }
 }
