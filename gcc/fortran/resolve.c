@@ -804,6 +804,15 @@ resolve_entries (gfc_namespace *ns)
 	     the same string length, i.e. both len=*, or both len=4.
 	     Having both len=<variable> is also possible, but difficult to
 	     check at compile time.  */
+	  else if (ts->type == BT_CHARACTER
+		   && (el->sym->result->attr.allocatable
+		       != ns->entries->sym->result->attr.allocatable))
+	    {
+	      gfc_error ("Function %s at %L has entry %s with mismatched "
+			 "characteristics", ns->entries->sym->name,
+			 &ns->entries->sym->declared_at, el->sym->name);
+	      return;
+	    }
 	  else if (ts->type == BT_CHARACTER && ts->u.cl && fts->u.cl
 		   && (((ts->u.cl->length && !fts->u.cl->length)
 			||(!ts->u.cl->length && fts->u.cl->length))
