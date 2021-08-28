@@ -176,6 +176,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Pointer_adapter<_Relative_pointer_impl<const void> >
                                                               const_pointer;
 
+      _ExtPtr_allocator() { }
+
+      template<typename _Up>
+	_ExtPtr_allocator(const _ExtPtr_allocator<_Up>&) { }
+
       template<typename _Up>
         struct rebind
         { typedef _ExtPtr_allocator<_Up> other; };
