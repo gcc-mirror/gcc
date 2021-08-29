@@ -1044,6 +1044,25 @@ dlang_identifier (string *decl, const char *mangled, struct dlang_info *info)
       && (mangled[2] == 'T' || mangled[2] == 'U'))
     return dlang_parse_template (decl, mangled, info, len);
 
+  /* There can be multiple different declarations in the same function that have
+     the same mangled name.  To make the mangled names unique, a fake parent in
+     the form `__Sddd' is added to the symbol.  */
+  if (len >= 4 && mangled[0] == '_' && mangled[1] == '_' && mangled[2] == 'S')
+    {
+      const char *numptr = mangled + 3;
+      while (numptr < (mangled + len) && ISDIGIT (*numptr))
+	numptr++;
+
+      if (mangled + len == numptr)
+	{
+	  /* Skip over the fake parent.  */
+	  mangled += len;
+	  return dlang_identifier (decl, mangled, info);
+	}
+
+      /* else demangle it as a plain identifier.  */
+    }
+
   return dlang_lname (decl, mangled, len);
 }
 
