@@ -83,7 +83,11 @@ demangle.test(ulong)
 #
 --format=dlang
 _D8demangle4testFnZv
-demangle.test(none)
+demangle.test(typeof(null))
+#
+--format=dlang
+_D8demangle4testFNnZv
+demangle.test(typeof(*null))
 #
 --format=dlang
 _D8demangle4testFoZv

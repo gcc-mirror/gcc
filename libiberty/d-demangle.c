@@ -573,9 +573,11 @@ dlang_attributes (string *decl, const char *mangled)
 	case 'g':
 	case 'h':
 	case 'k':
+	case 'n':
 	  /* inout parameter is represented as 'Ng'.
 	     vector parameter is represented as 'Nh'.
-	     return paramenter is represented as 'Nk'.
+	     return parameter is represented as 'Nk'.
+	     typeof(*null) parameter is represented as 'Nn'.
 	     If we see this, then we know we're really in the
 	     parameter list.  Rewind and break.  */
 	  mangled--;
@@ -787,6 +789,12 @@ dlang_type (string *decl, const char *mangled, struct dlang_info *info)
 	  string_append (decl, ")");
 	  return mangled;
 	}
+      else if (*mangled == 'n') /* typeof(*null) */
+	{
+	  mangled++;
+	  string_append (decl, "typeof(*null)");
+	  return mangled;
+	}
       else
 	return NULL;
     case 'A': /* dynamic array (T[]) */
@@ -884,7 +892,7 @@ dlang_type (string *decl, const char *mangled, struct dlang_info *info)
     /* Basic types */
     case 'n':
       mangled++;
-      string_append (decl, "none");
+      string_append (decl, "typeof(null)");
       return mangled;
     case 'v':
       mangled++;
