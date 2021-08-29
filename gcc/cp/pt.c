@@ -10885,8 +10885,13 @@ limit_bad_template_recursion (tree decl)
 {
   struct tinst_level *lev = current_tinst_level;
   int errs = errorcount + sorrycount;
-  if (lev == NULL || errs == 0 || !neglectable_inst_p (decl))
+  if (errs == 0 || !neglectable_inst_p (decl))
     return false;
+
+  /* Avoid instantiating members of an ill-formed class.  */
+  if (DECL_CLASS_SCOPE_P (decl)
+      && CLASSTYPE_ERRONEOUS (DECL_CONTEXT (decl)))
+    return true;
 
   for (; lev; lev = lev->next)
     if (neglectable_inst_p (lev->maybe_get_node ()))
@@ -12211,6 +12216,13 @@ instantiate_class_template_1 (tree type)
   unreverse_member_declarations (type);
   finish_struct_1 (type);
   TYPE_BEING_DEFINED (type) = 0;
+
+  /* Remember if instantiating this class ran into errors, so we can avoid
+     instantiating member functions in limit_bad_template_recursion.  We set
+     this flag even if the problem was in another instantiation triggered by
+     this one, as that will likely also cause trouble for member functions.  */
+  if (errorcount + sorrycount > current_tinst_level->errors)
+    CLASSTYPE_ERRONEOUS (type) = true;
 
   /* We don't instantiate default arguments for member functions.  14.7.1:
 

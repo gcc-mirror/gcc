@@ -2336,6 +2336,7 @@ struct GTY(()) lang_type {
   unsigned has_constexpr_ctor : 1;
   unsigned unique_obj_representations : 1;
   unsigned unique_obj_representations_set : 1;
+  bool erroneous : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -2344,7 +2345,7 @@ struct GTY(()) lang_type {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 5;
+  unsigned dummy : 4;
 
   tree primary_base;
   vec<tree_pair_s, va_gc> *vcall_indices;
@@ -2660,6 +2661,10 @@ struct GTY(()) lang_type {
 /* Nonzero if a _DECL node requires us to output debug info for this class.  */
 #define CLASSTYPE_DEBUG_REQUESTED(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->debug_requested)
+
+/* True if we saw errors while instantiating this class.  */
+#define CLASSTYPE_ERRONEOUS(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->erroneous)
 
 /* Additional macros for inheritance information.  */
 
