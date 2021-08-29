@@ -655,16 +655,21 @@ package body Einfo.Utils is
          P := Parent (Id);
       end if;
 
+      while Nkind (P) in N_Selected_Component | N_Expanded_Name
+        or else (Nkind (P) = N_Defining_Program_Unit_Name
+                   and then Is_Child_Unit (Id))
       loop
-         if Nkind (P) in N_Selected_Component | N_Expanded_Name
-           or else (Nkind (P) = N_Defining_Program_Unit_Name
-                     and then Is_Child_Unit (Id))
-         then
-            P := Parent (P);
-         else
-            return P;
-         end if;
+         P := Parent (P);
       end loop;
+
+      if Is_Itype (Id)
+        and then Nkind (P) not in
+          N_Full_Type_Declaration | N_Subtype_Declaration
+      then
+         P := Empty;
+      end if;
+
+      return P;
    end Declaration_Node;
 
    ---------------------

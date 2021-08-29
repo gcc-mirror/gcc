@@ -829,7 +829,9 @@ package Einfo is
 --       a private type, then we obtain the declaration node denoted by the
 --       full type, i.e. the full type declaration node. Also note that for
 --       subprograms, this returns the {function,procedure}_specification, not
---       the subprogram_declaration.
+--       the subprogram_declaration. If the parent of an Itype is a type or
+--       subtype declaration, we return the declaration node as for any other
+--       type. For other Itypes, we return Empty.
 
 --    Default_Aspect_Component_Value [base type only]
 --       Defined in array types. Holds the static value specified in a

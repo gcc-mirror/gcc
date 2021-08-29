@@ -710,6 +710,8 @@ package body Gen_IL.Gen is
                   Type_Table (T).Last  := T;
                   Add_Concrete_Descendant_To_Ancestors
                     (Type_Table (T).Parent, T);
+                  --  Parent cannot be No_Type here, because T is a concrete
+                  --  type, and therefore not a root type.
 
                when Abstract_Type =>
                   declare
