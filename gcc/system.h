@@ -1316,4 +1316,6 @@ endswith (const char *str, const char *suffix)
   return memcmp (str + str_len - suffix_len, suffix, suffix_len) == 0;
 }
 
+extern void clear_global_regs_cache (void);
+
 #endif /* ! GCC_SYSTEM_H */

@@ -2665,6 +2665,18 @@ gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::lvalue::set_register_name method in jit-recording.cc.  */
+
+void
+gcc_jit_lvalue_set_register_name (gcc_jit_lvalue *lvalue,
+				  const char *reg_name)
+{
+  lvalue->set_register_name (reg_name);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::function::new_local method in jit-recording.cc.  */
 
 gcc_jit_lvalue *

@@ -599,6 +599,8 @@ jit_langhook_init (void)
 
   build_common_builtin_nodes ();
 
+  clear_global_regs_cache ();
+
   /* The default precision for floating point numbers.  This is used
      for floating point constants with abstract type.  This may
      eventually be controllable by a command line option.  */

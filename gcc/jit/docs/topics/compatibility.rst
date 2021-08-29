@@ -322,3 +322,12 @@ section of a variable:
   * :c:macro:`GCC_JIT_TYPE_INT32_T`
   * :c:macro:`GCC_JIT_TYPE_INT64_T`
   * :c:macro:`GCC_JIT_TYPE_INT128_T`
+
+.. _LIBGCCJIT_ABI_21:
+
+``LIBGCCJIT_ABI_21``
+-----------------------
+``LIBGCCJIT_ABI_21`` covers the addition of an API entrypoint to set the
+register name of a variable:
+
+  * :func:`gcc_jit_lvalue_set_register_name`

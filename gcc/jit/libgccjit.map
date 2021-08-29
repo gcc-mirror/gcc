@@ -249,3 +249,8 @@ LIBGCCJIT_ABI_20 {
     gcc_jit_compatible_types;
     gcc_jit_type_get_size;
 } LIBGCCJIT_ABI_19;
+
+LIBGCCJIT_ABI_21 {
+  global:
+    gcc_jit_lvalue_set_register_name;
+} LIBGCCJIT_ABI_20;

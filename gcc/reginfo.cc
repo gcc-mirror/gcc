@@ -91,6 +91,14 @@ static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
    and are also considered fixed.  */
 char global_regs[FIRST_PSEUDO_REGISTER];
 
+void clear_global_regs_cache (void)
+{
+  for (size_t i = 0 ; i < FIRST_PSEUDO_REGISTER ; i++)
+  {
+    global_regs[i] = 0;
+  }
+}
+
 /* The set of global registers.  */
 HARD_REG_SET global_reg_set;
 
