@@ -1,3 +1,25 @@
+2021-08-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.h (modref_access_node::merge): Break out
+	logic combining offsets and logic merging ranges to ...
+	(modref_access_node::combined_offsets): ... here
+	(modref_access_node::update2): ... here
+	(modref_access_node::closer_pair_p): New member function.
+	(modref_access_node::forced_merge): New member function.
+	(modre_ref_node::insert): Do merging when table is full.
+
+2021-08-28  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	PR target/102089
+	* config.gcc: MIPS: use N64 ABI by default if the triple end
+	  with -gnuabi64, which is used by Debian since 2013.
+
+2021-08-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* ipa-modref.c (analyze_function): Skip debug stmts.
+	* tree-inline.c (estimate_num_insn): Consider builtins even
+	without a cgraph_node.
+
 2021-08-27  Jeff Law  <jlaw@localhost.localdomain>
 
 	* config/h8300/bitfield.md (cstore<mode>4): Remove expander.
