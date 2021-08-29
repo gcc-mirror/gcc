@@ -1,3 +1,47 @@
+2021-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-04-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99818
+	* interface.c (compare_parameter): The codimension attribute is
+	applied to the _data field of class formal arguments.
+
+2021-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93924
+	PR fortran/93925
+	* trans-expr.c (gfc_conv_procedure_call): Suppress the call to
+	gfc_conv_intrinsic_to_class for unlimited polymorphic procedure
+	pointers.
+	(gfc_trans_assignment_1): Similarly suppress class assignment
+	for class valued procedure pointers.
+
+2021-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93794
+	* trans-expr.c (gfc_conv_component_ref): Remove the condition
+	that deferred character length components only be allocatable.
+
+2021-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-03-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99125
+	* trans-array.c (gfc_conv_expr_descriptor): For deferred length
+	length components use the ss_info string length instead of
+	gfc_get_expr_charlen. Make sure that the deferred string length
+	is a variable before assigning to it. Otherwise use the expr.
+	* trans-expr.c (gfc_conv_string_length): Make sure that the
+	deferred string length is a variable before assigning to it.
+
 2021-08-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
