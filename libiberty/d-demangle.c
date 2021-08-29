@@ -191,7 +191,8 @@ static const char *dlang_function_args (string *, const char *,
 
 static const char *dlang_type (string *, const char *, struct dlang_info *);
 
-static const char *dlang_value (string *, const char *, const char *, char);
+static const char *dlang_value (string *, const char *, const char *, char,
+				struct dlang_info *);
 
 static const char *dlang_parse_qualified (string *, const char *,
 					  struct dlang_info *, int);
@@ -1386,7 +1387,8 @@ dlang_parse_string (string *decl, const char *mangled)
 /* Extract the static array value from MANGLED and append it to DECL.
    Return the remaining string on success or NULL on failure.  */
 static const char *
-dlang_parse_arrayliteral (string *decl, const char *mangled)
+dlang_parse_arrayliteral (string *decl, const char *mangled,
+			  struct dlang_info *info)
 {
   unsigned long elements;
 
@@ -1397,7 +1399,7 @@ dlang_parse_arrayliteral (string *decl, const char *mangled)
   string_append (decl, "[");
   while (elements--)
     {
-      mangled = dlang_value (decl, mangled, NULL, '\0');
+      mangled = dlang_value (decl, mangled, NULL, '\0', info);
       if (mangled == NULL)
 	return NULL;
 
@@ -1412,7 +1414,8 @@ dlang_parse_arrayliteral (string *decl, const char *mangled)
 /* Extract the associative array value from MANGLED and append it to DECL.
    Return the remaining string on success or NULL on failure.  */
 static const char *
-dlang_parse_assocarray (string *decl, const char *mangled)
+dlang_parse_assocarray (string *decl, const char *mangled,
+			struct dlang_info *info)
 {
   unsigned long elements;
 
@@ -1423,12 +1426,12 @@ dlang_parse_assocarray (string *decl, const char *mangled)
   string_append (decl, "[");
   while (elements--)
     {
-      mangled = dlang_value (decl, mangled, NULL, '\0');
+      mangled = dlang_value (decl, mangled, NULL, '\0', info);
       if (mangled == NULL)
 	return NULL;
 
       string_append (decl, ":");
-      mangled = dlang_value (decl, mangled, NULL, '\0');
+      mangled = dlang_value (decl, mangled, NULL, '\0', info);
       if (mangled == NULL)
 	return NULL;
 
@@ -1443,7 +1446,8 @@ dlang_parse_assocarray (string *decl, const char *mangled)
 /* Extract the struct literal value for NAME from MANGLED and append it to DECL.
    Return the remaining string on success or NULL on failure.  */
 static const char *
-dlang_parse_structlit (string *decl, const char *mangled, const char *name)
+dlang_parse_structlit (string *decl, const char *mangled, const char *name,
+		       struct dlang_info *info)
 {
   unsigned long args;
 
@@ -1457,7 +1461,7 @@ dlang_parse_structlit (string *decl, const char *mangled, const char *name)
   string_append (decl, "(");
   while (args--)
     {
-      mangled = dlang_value (decl, mangled, NULL, '\0');
+      mangled = dlang_value (decl, mangled, NULL, '\0', info);
       if (mangled == NULL)
 	return NULL;
 
@@ -1472,7 +1476,8 @@ dlang_parse_structlit (string *decl, const char *mangled, const char *name)
 /* Extract the value from MANGLED and append it to DECL.
    Return the remaining string on success or NULL on failure.  */
 static const char *
-dlang_value (string *decl, const char *mangled, const char *name, char type)
+dlang_value (string *decl, const char *mangled, const char *name, char type,
+	     struct dlang_info *info)
 {
   if (mangled == NULL || *mangled == '\0')
     return NULL;
@@ -1533,15 +1538,24 @@ dlang_value (string *decl, const char *mangled, const char *name, char type)
     case 'A':
       mangled++;
       if (type == 'H')
-	mangled = dlang_parse_assocarray (decl, mangled);
+	mangled = dlang_parse_assocarray (decl, mangled, info);
       else
-	mangled = dlang_parse_arrayliteral (decl, mangled);
+	mangled = dlang_parse_arrayliteral (decl, mangled, info);
       break;
 
       /* Struct values.  */
     case 'S':
       mangled++;
-      mangled = dlang_parse_structlit (decl, mangled, name);
+      mangled = dlang_parse_structlit (decl, mangled, name, info);
+      break;
+
+      /* Function literal symbol.  */
+    case 'f':
+      mangled++;
+      if (strncmp (mangled, "_D", 2) != 0
+	  || !dlang_symbol_name_p (mangled + 2, info))
+	return NULL;
+      mangled = dlang_parse_mangle (decl, mangled, info);
       break;
 
     default:
@@ -1814,7 +1828,7 @@ dlang_template_args (string *decl, const char *mangled, struct dlang_info *info)
 	  string_need (&name, 1);
 	  *(name.p) = '\0';
 
-	  mangled = dlang_value (decl, mangled, name.b, type);
+	  mangled = dlang_value (decl, mangled, name.b, type, info);
 	  string_delete (&name);
 	  break;
 	}
