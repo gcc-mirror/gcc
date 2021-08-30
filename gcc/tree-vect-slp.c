@@ -5275,34 +5275,6 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       vector_costs.safe_splice (instance->cost_vec);
       instance->cost_vec.release ();
     }
-  /* When we're vectorizing an if-converted loop body with the
-     very-cheap cost model make sure we vectorized all if-converted
-     code.  */
-  bool force_not_profitable = false;
-  if (orig_loop && flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP)
-    {
-      gcc_assert (bb_vinfo->bbs.length () == 1);
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bb_vinfo->bbs[0]);
-	   !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  /* The costing above left us with DCEable vectorized scalar
-	     stmts having the visited flag set.  */
-	  if (gimple_visited_p (gsi_stmt (gsi)))
-	    continue;
-
-	  if (gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi)))
-	    if (gimple_assign_rhs_code (ass) == COND_EXPR)
-	      {
-		force_not_profitable = true;
-		break;
-	      }
-	}
-    }
-
-  /* Unset visited flag.  */
-  stmt_info_for_cost *cost;
-  FOR_EACH_VEC_ELT (scalar_costs, i, cost)
-    gimple_set_visited  (cost->stmt_info->stmt, false);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "Cost model analysis: \n");
@@ -5319,6 +5291,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
     li_scalar_costs (scalar_costs.length ());
   auto_vec<std::pair<unsigned, stmt_info_for_cost *> >
     li_vector_costs (vector_costs.length ());
+  stmt_info_for_cost *cost;
   FOR_EACH_VEC_ELT (scalar_costs, i, cost)
     {
       unsigned l = gimple_bb (cost->stmt_info->stmt)->loop_father->num;
@@ -5341,6 +5314,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
   /* Now cost the portions individually.  */
   unsigned vi = 0;
   unsigned si = 0;
+  bool profitable = true;
   while (si < li_scalar_costs.length ()
 	 && vi < li_vector_costs.length ())
     {
@@ -5407,30 +5381,29 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 	 example).  */
       if (vec_outside_cost + vec_inside_cost > scalar_cost)
 	{
-	  scalar_costs.release ();
-	  vector_costs.release ();
-	  return false;
+	  profitable = false;
+	  break;
 	}
     }
-  if (vi < li_vector_costs.length ())
+  if (profitable && vi < li_vector_costs.length ())
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Excess vector cost for part in loop %d:\n",
 			 li_vector_costs[vi].first);
-      scalar_costs.release ();
-      vector_costs.release ();
-      return false;
+      profitable = false;
     }
 
-  if (dump_enabled_p () && force_not_profitable)
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "not profitable because of unprofitable if-converted "
-		     "scalar code\n");
+  /* Unset visited flag.  This is delayed when the subgraph is profitable
+     and we process the loop for remaining unvectorized if-converted code.  */
+  if (orig_loop && !profitable)
+    FOR_EACH_VEC_ELT (scalar_costs, i, cost)
+      gimple_set_visited  (cost->stmt_info->stmt, false);
 
   scalar_costs.release ();
   vector_costs.release ();
-  return !force_not_profitable;
+
+  return profitable;
 }
 
 /* qsort comparator for lane defs.  */
@@ -5884,9 +5857,8 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 
 	  bb_vinfo->shared->check_datarefs ();
 
-	  unsigned i;
-	  slp_instance instance;
-	  FOR_EACH_VEC_ELT (BB_VINFO_SLP_INSTANCES (bb_vinfo), i, instance)
+	  auto_vec<slp_instance> profitable_subgraphs;
+	  for (slp_instance instance : BB_VINFO_SLP_INSTANCES (bb_vinfo))
 	    {
 	      if (instance->subgraph_entries.is_empty ())
 		continue;
@@ -5894,9 +5866,7 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 	      vect_location = instance->location ();
 	      if (!unlimited_cost_model (NULL)
 		  && !vect_bb_vectorization_profitable_p
-			(bb_vinfo,
-			 orig_loop ? BB_VINFO_SLP_INSTANCES (bb_vinfo)
-			 : instance->subgraph_entries, orig_loop))
+			(bb_vinfo, instance->subgraph_entries, orig_loop))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5908,15 +5878,54 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 	      if (!dbg_cnt (vect_slp))
 		continue;
 
+	      profitable_subgraphs.safe_push (instance);
+	    }
+
+	  /* When we're vectorizing an if-converted loop body with the
+	     very-cheap cost model make sure we vectorized all if-converted
+	     code.  */
+	  if (!profitable_subgraphs.is_empty ()
+	      && orig_loop)
+	    {
+	      gcc_assert (bb_vinfo->bbs.length () == 1);
+	      for (gimple_stmt_iterator gsi = gsi_start_bb (bb_vinfo->bbs[0]);
+		   !gsi_end_p (gsi); gsi_next (&gsi))
+		{
+		  /* The costing above left us with DCEable vectorized scalar
+		     stmts having the visited flag set on profitable
+		     subgraphs.  Do the delayed clearing of the flag here.  */
+		  if (gimple_visited_p (gsi_stmt (gsi)))
+		    {
+		      gimple_set_visited (gsi_stmt (gsi), false);
+		      continue;
+		    }
+		  if (flag_vect_cost_model != VECT_COST_MODEL_VERY_CHEAP)
+		    continue;
+
+		  if (gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi)))
+		    if (gimple_assign_rhs_code (ass) == COND_EXPR)
+		      {
+			if (!profitable_subgraphs.is_empty ()
+			    && dump_enabled_p ())
+			  dump_printf_loc (MSG_NOTE, vect_location,
+					   "not profitable because of "
+					   "unprofitable if-converted scalar "
+					   "code\n");
+			profitable_subgraphs.truncate (0);
+		      }
+		}
+	    }
+
+	  /* Finally schedule the profitable subgraphs.  */
+	  for (slp_instance instance : profitable_subgraphs)
+	    {
 	      if (!vectorized && dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "Basic block will be vectorized "
 				 "using SLP\n");
 	      vectorized = true;
 
-	      vect_schedule_slp (bb_vinfo,
-				 orig_loop ? BB_VINFO_SLP_INSTANCES (bb_vinfo)
-				 : instance->subgraph_entries);
+	      vect_schedule_slp (bb_vinfo, instance->subgraph_entries);
 
 	      unsigned HOST_WIDE_INT bytes;
 	      if (dump_enabled_p ())
@@ -5931,11 +5940,6 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 				     "basic block part vectorized using "
 				     "variable length vectors\n");
 		}
-
-	      /* When we're called from loop vectorization we're considering
-		 all subgraphs at once.  */
-	      if (orig_loop)
-		break;
 	    }
 	}
       else
