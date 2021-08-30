@@ -982,6 +982,10 @@ private:
   // bool has_items;
   std::vector<std::unique_ptr<Item>> items;
 
+  // Filename the module refers to. Empty string on LOADED modules or if an
+  // error occured when dealing with UNLOADED modules
+  std::string module_file;
+
   void clone_items (const std::vector<std::unique_ptr<Item>> &other_items)
   {
     items.reserve (other_items.size ());
@@ -1051,8 +1055,9 @@ public:
     return *this;
   }
 
-  // Search for the filename associated with an external module
-  std::string get_filename ();
+  // Search for the filename associated with an external module, storing it in
+  // module_file
+  void get_filename ();
   // Load the items contained in an external module
   void load_items ();
 

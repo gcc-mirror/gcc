@@ -4027,14 +4027,15 @@ filename_from_path_attribute (std::vector<Attribute> &outer_attrs)
   return path_attr.get_attr_input ().as_string ();
 }
 
-std::string
+void
 Module::get_filename ()
 {
   rust_assert (kind == Module::ModuleKind::UNLOADED);
+  rust_assert (module_file.empty ());
 
   auto path_string = filename_from_path_attribute (get_outer_attrs ());
   if (!path_string.empty ())
-    return path_string;
+    return;
 
   // This corresponds to the path of the file 'including' the module. So the
   // file that contains the 'mod <file>;' directive
@@ -4080,38 +4081,41 @@ Module::get_filename ()
     rust_error_at (locus, "no candidate found for module %s",
 		   module_name.c_str ());
 
-  return file_mod_found ? expected_file_path
-			: current_directory_name + expected_dir_path;
+  module_file = file_mod_found ? expected_file_path
+			       : current_directory_name + expected_dir_path;
 }
 
 void
 Module::load_items ()
 {
-  std::string mod_file = get_filename ();
+  get_filename ();
 
   // We will already have errored out appropriately in the get_filename ()
   // method
-  if (mod_file.empty ())
+  if (module_file.empty ())
     return;
 
-  RAIIFile file_wrap (mod_file.c_str ());
+  RAIIFile file_wrap (module_file.c_str ());
   Linemap *linemap = Session::get_instance ().linemap;
 
   if (file_wrap.get_raw () == nullptr)
-    rust_fatal_error (Location (), "cannot open module file %s: %m",
-		      mod_file.c_str ());
+    {
+      rust_error_at (Location (), "cannot open module file %s: %m",
+		     module_file.c_str ());
+      return;
+    }
 
-  rust_debug ("Attempting to parse file %s", mod_file.c_str ());
+  rust_debug ("Attempting to parse file %s", module_file.c_str ());
 
-  Lexer lex (mod_file.c_str (), std::move (file_wrap), linemap);
+  Lexer lex (module_file.c_str (), std::move (file_wrap), linemap);
   Parser<Lexer> parser (std::move (lex));
 
-  auto items = parser.parse_items ();
+  auto parsed_items = parser.parse_items ();
 
   for (const auto &error : parser.get_errors ())
     error.emit_error ();
 
-  items = std::move(items);
+  items = std::move (parsed_items);
   kind = ModuleKind::LOADED;
 }
 

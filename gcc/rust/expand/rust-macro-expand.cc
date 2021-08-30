@@ -1896,11 +1896,14 @@ public:
 	    return;
 	  }
       }
-    else
+
+    // Parse the module's items if they haven't been expanded and the file
+    // should be parsed (i.e isn't hidden behind an untrue or impossible cfg
+    // directive)
+    if (!module.is_marked_for_strip ()
+	&& module.get_kind () == AST::Module::ModuleKind::UNLOADED)
       {
-	std::string mod_file = module.get_filename ();
-	if (!mod_file.empty ())
-	  rust_debug ("Module filename found: %s", mod_file.c_str ());
+	module.load_items ();
       }
 
     // strip items if required
