@@ -680,6 +680,7 @@ package Gen_IL.Fields is
       Is_Checked_Ghost_Entity,
       Is_Child_Unit,
       Is_Class_Wide_Equivalent_Type,
+      Is_Class_Wide_Wrapper,
       Is_Compilation_Unit,
       Is_Completely_Hidden,
       Is_Concurrent_Record_Type,

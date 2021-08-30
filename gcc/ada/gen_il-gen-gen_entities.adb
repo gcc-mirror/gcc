@@ -126,6 +126,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Character_Type, Flag),
         Sm (Is_Checked_Ghost_Entity, Flag),
         Sm (Is_Child_Unit, Flag),
+        Sm (Is_Class_Wide_Wrapper, Flag),
         Sm (Is_Class_Wide_Equivalent_Type, Flag),
         Sm (Is_Compilation_Unit, Flag),
         Sm (Is_Concurrent_Record_Type, Flag),

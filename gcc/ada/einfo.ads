@@ -2429,6 +2429,11 @@ package Einfo is
 --    Is_Class_Wide_Type (synthesized)
 --       Applies to all entities, true for class wide types and subtypes
 
+--    Is_Class_Wide_Wrapper
+--       Defined in subprogram entities. Indicates that it has been created as
+--       a wrapper in a generic/instance scenario involving a formal type and
+--       a generic primitive operation when the actual is a class-wide type.
+
 --    Is_Compilation_Unit
 --       Defined in all entities. Set if the entity is a package or subprogram
 --       entity for a compilation unit other than a subunit (since we treat
@@ -5562,6 +5567,7 @@ package Einfo is
    --    Ignore_SPARK_Mode_Pragmas
    --    Is_Abstract_Subprogram               (non-generic case only)
    --    Is_Called                            (non-generic case only)
+   --    Is_Class_Wide_Wrapper
    --    Is_Constructor
    --    Is_CUDA_Kernel                       (non-generic case only)
    --    Is_DIC_Procedure                     (non-generic case only)
@@ -5734,6 +5740,7 @@ package Einfo is
    --    Default_Expressions_Processed
    --    Has_Nested_Subprogram
    --    Ignore_SPARK_Mode_Pragmas
+   --    Is_Class_Wide_Wrapper
    --    Is_Elaboration_Checks_OK_Id
    --    Is_Elaboration_Warnings_OK_Id
    --    Is_Intrinsic_Subprogram
@@ -5924,6 +5931,7 @@ package Einfo is
    --    Is_Abstract_Subprogram               (non-generic case only)
    --    Is_Asynchronous
    --    Is_Called                            (non-generic case only)
+   --    Is_Class_Wide_Wrapper
    --    Is_Constructor
    --    Is_CUDA_Kernel
    --    Is_DIC_Procedure                     (non-generic case only)
