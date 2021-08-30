@@ -50,10 +50,6 @@
 #define ARM_SIGCONTEXT_R0		0xc
 #endif
 
-/* We add a prototype for abort here to avoid creating a dependency on
-   target headers.  */
-extern void abort (void);
-
 /* Definitions for C++ runtime support routines.  We make these weak
    declarations to avoid pulling in libsupc++ unnecessarily.  */
 typedef unsigned char bool;
