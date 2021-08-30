@@ -5,18 +5,30 @@ AC_PREREQ(2.68)
 AC_INIT([libffi], [3.4.2], [http://github.com/libffi/libffi/issues])
 AC_CONFIG_HEADERS([fficonfig.h])
 
+AM_ENABLE_MULTILIB(, ..)
+
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 
-case "${host}" in
-  frv*-elf)
-    LDFLAGS=`echo $LDFLAGS | sed "s/\-B[^ ]*libgloss\/frv\///"`\ -B`pwd`/../libgloss/frv/
-    ;;
-esac
+AM_INIT_AUTOMAKE([no-dist])
 
-AX_ENABLE_BUILDDIR
-
-AM_INIT_AUTOMAKE
+# We would like our source tree to be readonly. However when releases or
+# pre-releases are generated, the flex/bison generated files as well as the
+# various formats of manuals need to be included along with the rest of the
+# sources.  Therefore we have --enable-generated-files-in-srcdir to do
+# just that.
+AC_MSG_CHECKING(generated-files-in-srcdir)
+AC_ARG_ENABLE(generated-files-in-srcdir,
+AS_HELP_STRING([--enable-generated-files-in-srcdir],
+ [put copies of generated files in source dir intended for creating source tarballs for users without texinfo bison or flex]),
+[case "$enableval" in
+ yes) enable_generated_files_in_srcdir=yes ;;
+ no)  enable_generated_files_in_srcdir=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable version-specific libs]);;
+ esac],
+[enable_generated_files_in_srcdir=no])
+AC_MSG_RESULT($enable_generated_files_in_srcdir)
+AM_CONDITIONAL(GENINSRC, test "$enable_generated_files_in_srcdir" = yes)
 
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.
 # We must force CC to /not/ be precious variables; otherwise
@@ -39,24 +51,11 @@ AC_SUBST(CFLAGS)
 AM_PROG_AS
 AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
-AC_CONFIG_MACRO_DIR([m4])
 
 AC_CHECK_TOOL(READELF, readelf)
 
 # Test for 64-bit build.
 AC_CHECK_SIZEOF([size_t])
-
-AX_COMPILER_VENDOR
-AX_CC_MAXOPT
-# The AX_CFLAGS_WARN_ALL macro doesn't currently work for sunpro
-# compiler.
-if test "$ax_cv_c_compiler_vendor" != "sun"; then
-  AX_CFLAGS_WARN_ALL
-fi
-
-if test "x$GCC" = "xyes"; then
-  CFLAGS="$CFLAGS -fexceptions"
-fi
 
 cat > local.exp <<EOF
 set CC_FOR_TARGET "$CC"
@@ -212,11 +211,6 @@ AC_ARG_ENABLE(pax_emutramp,
       [Define this if you want to enable pax emulated trampolines])
   fi)
 
-LT_SYS_SYMBOL_USCORE
-if test "x$sys_symbol_underscore" = xyes; then
-    AC_DEFINE(SYMBOL_UNDERSCORE, 1, [Define if symbols are underscored.])
-fi
-
 FFI_EXEC_TRAMPOLINE_TABLE=0
 case "$target" in
      *arm*-apple-* | aarch64-apple-*)
@@ -266,13 +260,11 @@ EOF
 fi
 
 if test "x$GCC" = "xyes"; then
-  AX_CHECK_COMPILE_FLAG(-fno-lto, libffi_cv_no_lto=-fno-lto)
-
   AC_CACHE_CHECK([whether .eh_frame section should be read-only],
       libffi_cv_ro_eh_frame, [
   	libffi_cv_ro_eh_frame=yes
   	echo 'extern void foo (void); void bar (void) { foo (); foo (); }' > conftest.c
-  	if $CC $CFLAGS -c -fpic -fexceptions $libffi_cv_no_lto -o conftest.o conftest.c > /dev/null 2>&1; then
+  	if $CC $CFLAGS -c -fpic -fexceptions -fno-lto -o conftest.o conftest.c > /dev/null 2>&1; then
 	    if $READELF -WS conftest.o | grep -q -n 'eh_frame .* WA'; then
 	        libffi_cv_ro_eh_frame=no
 	    fi
@@ -306,12 +298,12 @@ if test "x$GCC" = "xyes"; then
   fi
 fi
 
-AC_ARG_ENABLE(docs,
-              AC_HELP_STRING([--disable-docs],
-                             [Disable building of docs (default: no)]),
-              [enable_docs=no],
-              [enable_docs=yes])
-AM_CONDITIONAL(BUILD_DOCS, [test x$enable_docs = xyes])
+# See if makeinfo has been installed and is modern enough
+# that we can use it.
+ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
+                   [GNU texinfo.* \([0-9][0-9.]*\)],
+                   [4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
+AM_CONDITIONAL(BUILD_DOCS, test $gcc_cv_prog_makeinfo_modern = "yes")
 
 AH_BOTTOM([
 #ifdef HAVE_HIDDEN_VISIBILITY_ATTRIBUTE
@@ -367,9 +359,9 @@ AC_ARG_ENABLE(raw-api,
   fi)
 
 AC_ARG_ENABLE(exec-static-tramp,
-[  --disable-exec-static-tramp  disable use of static exec trampolines (enabled by default)])
+[  --enable-exec-static-tramp  enable use of static exec trampolines])
 
-if test "$enable_exec_static_tramp" != no; then
+if test "$enable_exec_static_tramp" = yes; then
 case "$target" in
      *-cygwin*)
      ;;
@@ -386,36 +378,42 @@ AC_ARG_ENABLE(purify-safety,
     AC_DEFINE(USING_PURIFY, 1, [Define this if you are using Purify and want to suppress spurious messages.])
   fi)
 
-AC_ARG_ENABLE(multi-os-directory,
-[  --disable-multi-os-directory
-                          disable use of gcc --print-multi-os-directory to change the library installation directory])
-                          
-# These variables are only ever used when we cross-build to X86_WIN32.
-# And we only support this with GCC, so...
-if test "x$GCC" = "xyes"; then
-  if test -n "$with_cross_host" &&
-     test x"$with_cross_host" != x"no"; then
-    toolexecdir='${exec_prefix}'/'$(target_alias)'
-    toolexeclibdir='${toolexecdir}'/lib
-  else
-    toolexecdir='${libdir}'/gcc-lib/'$(target_alias)'
-    toolexeclibdir='${libdir}'
-  fi
-  if test x"$enable_multi_os_directory" != x"no"; then
-    multi_os_directory=`$CC $CFLAGS -print-multi-os-directory`
-    case $multi_os_directory in
-      .) ;; # Avoid trailing /.
-      ../*) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
-    esac
-  fi
-  AC_SUBST(toolexecdir)
+GCC_WITH_TOOLEXECLIBDIR
+
+if test -n "$with_cross_host" &&
+   test x"$with_cross_host" != x"no"; then
+  toolexecdir='$(exec_prefix)/$(target_alias)'
+  case ${with_toolexeclibdir} in
+    no)
+      toolexeclibdir='$(toolexecdir)/lib'
+      ;;
+    *)
+      toolexeclibdir=${with_toolexeclibdir}
+      ;;
+  esac
 else
-  toolexeclibdir='${libdir}'
+  toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+  toolexeclibdir='$(libdir)'
 fi
+multi_os_directory=`$CC -print-multi-os-directory`
+case $multi_os_directory in
+  .) ;; # Avoid trailing /.
+  *) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
+esac
+AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
+
+if test "${multilib}" = "yes"; then
+  multilib_arg="--enable-multilib"
+else
+  multilib_arg=
+fi
 
 # Check linker support.
 LIBFFI_ENABLE_SYMVERS
+
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
 
 AC_CONFIG_COMMANDS(include, [test -d include || mkdir include])
 AC_CONFIG_COMMANDS(src, [
@@ -423,10 +421,8 @@ test -d src || mkdir src
 test -d src/$TARGETDIR || mkdir src/$TARGETDIR
 ], [TARGETDIR="$TARGETDIR"])
 
-AC_CONFIG_FILES(include/Makefile include/ffi.h Makefile testsuite/Makefile man/Makefile doc/Makefile libffi.pc)
+AC_CONFIG_FILES(include/Makefile include/ffi.h Makefile testsuite/Makefile man/Makefile libffi.pc)
+
+AC_CONFIG_LINKS(include/ffitarget.h:src/$TARGETDIR/ffitarget.h)
 
 AC_OUTPUT
-
-# Copy this file instead of using AC_CONFIG_LINK in order to support
-# compiling with MSVC, which won't understand cygwin style symlinks.
-cp ${srcdir}/src/$TARGETDIR/ffitarget.h include/ffitarget.h
