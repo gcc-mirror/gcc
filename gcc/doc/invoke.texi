@@ -16410,7 +16410,8 @@ Note that this requires platform-specific runtime support that does
 not exist everywhere.  Moreover, it only allows @emph{trapping}
 instructions to throw exceptions, i.e.@: memory references or floating-point
 instructions.  It does not allow exceptions to be thrown from
-arbitrary signal handlers such as @code{SIGALRM}.
+arbitrary signal handlers such as @code{SIGALRM}.  This enables
+@option{-fexceptions}.
 
 @item -fdelete-dead-exceptions
 @opindex fdelete-dead-exceptions
