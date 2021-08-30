@@ -13297,15 +13297,23 @@ rs6000_init_builtins (void)
   tree ftype;
   tree t;
   machine_mode mode;
+  const char *str;
 
   if (TARGET_DEBUG_BUILTIN)
     fprintf (stderr, "rs6000_init_builtins%s%s\n",
 	     (TARGET_ALTIVEC)	   ? ", altivec" : "",
 	     (TARGET_VSX)	   ? ", vsx"	 : "");
 
-  V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64 ? "__vector long"
-				       : "__vector long long",
-				       long_long_integer_type_node, 2);
+  if (new_builtins_are_live)
+    V2DI_type_node = rs6000_vector_type ("__vector long long",
+					 long_long_integer_type_node, 2);
+  else
+    {
+      str = TARGET_POWERPC64 ? "__vector long" : "__vector long long";
+      V2DI_type_node = rs6000_vector_type (str,
+					   long_long_integer_type_node,
+					   2);
+    }
   ptr_V2DI_type_node
     = build_pointer_type (build_qualified_type (V2DI_type_node,
 						TYPE_QUAL_CONST));
@@ -13356,10 +13364,19 @@ rs6000_init_builtins (void)
     = build_pointer_type (build_qualified_type (unsigned_V4SI_type_node,
 						TYPE_QUAL_CONST));
 
-  unsigned_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
-				       ? "__vector unsigned long"
-				       : "__vector unsigned long long",
-				       long_long_unsigned_type_node, 2);
+  if (new_builtins_are_live)
+    unsigned_V2DI_type_node
+      = rs6000_vector_type ("__vector unsigned long long",
+			    long_long_unsigned_type_node, 2);
+  else
+    {
+      str = TARGET_POWERPC64
+	? "__vector unsigned long"
+	: "__vector unsigned long long";
+      unsigned_V2DI_type_node
+	= rs6000_vector_type (str, long_long_unsigned_type_node, 2);
+    }
+
   ptr_unsigned_V2DI_type_node
     = build_pointer_type (build_qualified_type (unsigned_V2DI_type_node,
 						TYPE_QUAL_CONST));
