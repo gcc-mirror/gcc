@@ -64,39 +64,6 @@ private:
   std::string &result;
 };
 
-class GetLocusFromImplItem : public TypeCheckBase
-{
-  using Rust::Resolver::TypeCheckBase::visit;
-
-public:
-  static bool Resolve (HIR::ImplItem *query, Location &locus)
-  {
-    GetLocusFromImplItem resolver (locus);
-    query->accept_vis (resolver);
-    return resolver.ok;
-  }
-
-  void visit (HIR::ConstantItem &constant) override
-  {
-    ok = true;
-    locus = constant.get_locus ();
-  }
-
-  void visit (HIR::Function &function) override
-  {
-    ok = true;
-    locus = function.get_locus ();
-  }
-
-private:
-  GetLocusFromImplItem (Location &locus)
-    : TypeCheckBase (), ok (false), locus (locus)
-  {}
-
-  bool ok;
-  Location &locus;
-};
-
 class OverlappingImplItemPass : public TypeCheckBase
 {
   using Rust::Resolver::TypeCheckBase::visit;
@@ -185,16 +152,8 @@ public:
   void collision_detected (HIR::ImplItem *query, HIR::ImplItem *dup,
 			   const std::string &name)
   {
-    Location qlocus; // query
-    bool ok = GetLocusFromImplItem::Resolve (query, qlocus);
-    rust_assert (ok);
-
-    Location dlocus; // dup
-    ok = GetLocusFromImplItem::Resolve (dup, dlocus);
-    rust_assert (ok);
-
-    RichLocation r (qlocus);
-    r.add_range (dlocus);
+    RichLocation r (query->get_locus ());
+    r.add_range (dup->get_locus ());
     rust_error_at (r, "duplicate definitions with name %s", name.c_str ());
   }
 

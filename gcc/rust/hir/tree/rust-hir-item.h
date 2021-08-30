@@ -1126,8 +1126,6 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  Location get_impl_locus () const final { return get_locus (); }
-
   void accept_vis (HIRVisitor &vis) override;
 
   Analysis::NodeMapping get_impl_mappings () const override
@@ -1267,8 +1265,6 @@ public:
   TypeAlias &operator= (TypeAlias &&other) = default;
 
   Location get_locus () const override final { return locus; }
-
-  Location get_impl_locus () const final { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2016,8 +2012,6 @@ public:
   bool is_unnamed () const { return identifier == std::string ("_"); }
 
   Location get_locus () const override final { return locus; }
-
-  Location get_impl_locus () const final { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
 
