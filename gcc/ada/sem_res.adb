@@ -7487,66 +7487,76 @@ package body Sem_Res is
      (N   : Node_Id;
       Typ : Entity_Id)
    is
-      Decl                 : Node_Id;
-      Need_Transient_Scope : Boolean := False;
+      Expr : constant Node_Id := Expression (N);
+
+      Decl  : Node_Id;
+      Local : Entity_Id := Empty;
+
+      function Replace_Local (N  : Node_Id) return Traverse_Result;
+      --  Use a tree traversal to replace each ocurrence of the name of
+      --  a local object declared in the construct, with the corresponding
+      --  entity. This replaces the usual way to perform name capture by
+      --  visibility, because it is not possible to place on the scope
+      --  stack the fake scope created for the analysis of the local
+      --  declarations; such a scope conflicts with the transient scopes
+      --  that may be generated if the expression includes function calls
+      --  requiring finalization.
+
+      -------------------
+      -- Replace_Local --
+      -------------------
+
+      function Replace_Local (N  : Node_Id) return Traverse_Result is
+      begin
+         --  The identifier may be the prefix of a selected component,
+         --  but not a selector name, because the local entities do not
+         --  have a scope that can be named: a selected component whose
+         --  selector is a homonym of a local entity must denote some
+         --  global entity.
+
+         if Nkind (N) = N_Identifier
+           and then Chars (N) = Chars (Local)
+           and then No (Entity (N))
+           and then
+             (Nkind (Parent (N)) /= N_Selected_Component
+               or else N = Prefix (Parent (N)))
+         then
+            Set_Entity (N, Local);
+            Set_Etype (N, Etype (Local));
+         end if;
+
+         return OK;
+      end Replace_Local;
+
+      procedure Replace_Local_Ref is new Traverse_Proc (Replace_Local);
+
+      --  Start of processing for  Resolve_Declare_Expression
+
    begin
-      --  Install the scope created for local declarations, if
-      --  any. The syntax allows a Declare_Expression with no
-      --  declarations, in analogy with block statements.
-      --  Note that that scope has no explicit declaration, but
-      --  appears as the scope of all entities declared therein.
 
       Decl := First (Actions (N));
+
       while Present (Decl) loop
-         exit when Nkind (Decl)
-                     in N_Object_Declaration | N_Object_Renaming_Declaration;
+         if Nkind (Decl) in
+            N_Object_Declaration | N_Object_Renaming_Declaration
+              and then Comes_From_Source (Defining_Identifier (Decl))
+         then
+            Local := Defining_Identifier (Decl);
+            Replace_Local_Ref (Expr);
+         end if;
+
          Next (Decl);
       end loop;
 
-      if Present (Decl) then
+      --  The end of the declarative list is a freeze point for the
+      --  local declarations.
 
-         --  Need to establish a transient scope in case Expression (N)
-         --  requires actions to be wrapped.
-
-         declare
-            Node : Node_Id;
-         begin
-            Node := First (Actions (N));
-            while Present (Node) loop
-               if Nkind (Node) = N_Object_Declaration
-                 and then Requires_Transient_Scope
-                            (Etype (Defining_Identifier (Node)))
-               then
-                  Need_Transient_Scope := True;
-                  exit;
-               end if;
-
-               Next (Node);
-            end loop;
-         end;
-
-         if Need_Transient_Scope then
-            Establish_Transient_Scope (Decl, Manage_Sec_Stack => True);
-         else
-            Push_Scope (Scope (Defining_Identifier (Decl)));
-         end if;
-
-         declare
-            E : Entity_Id := First_Entity (Current_Scope);
-         begin
-            while Present (E) loop
-               Set_Current_Entity (E);
-               Set_Is_Immediately_Visible (E);
-               Next_Entity (E);
-            end loop;
-         end;
-
-         Resolve (Expression (N), Typ);
-         End_Scope;
-
-      else
-         Resolve (Expression (N), Typ);
+      if Present (Local) then
+         Decl := Parent (Local);
+         Freeze_All (First_Entity (Scope (Local)), Decl);
       end if;
+
+      Resolve (Expr, Typ);
    end Resolve_Declare_Expression;
 
    -----------------------------------------
