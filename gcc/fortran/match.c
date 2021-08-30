@@ -4079,7 +4079,7 @@ gfc_match_goto (void)
 	}
       while (gfc_match_char (',') == MATCH_YES);
 
-      if (gfc_match (")%t") != MATCH_YES)
+      if (gfc_match (" )%t") != MATCH_YES)
 	goto syntax;
 
       if (head == NULL)
