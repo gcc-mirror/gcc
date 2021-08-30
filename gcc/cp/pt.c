@@ -10873,7 +10873,8 @@ neglectable_inst_p (tree d)
 {
   return (d && DECL_P (d)
 	  && !undeduced_auto_decl (d)
-	  && !(TREE_CODE (d) == FUNCTION_DECL ? DECL_DECLARED_CONSTEXPR_P (d)
+	  && !(TREE_CODE (d) == FUNCTION_DECL
+	       ? FNDECL_MANIFESTLY_CONST_EVALUATED (d)
 	       : decl_maybe_constant_var_p (d)));
 }
 

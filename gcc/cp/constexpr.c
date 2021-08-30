@@ -2572,6 +2572,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       location_t save_loc = input_location;
       input_location = loc;
       ++function_depth;
+      if (ctx->manifestly_const_eval)
+	FNDECL_MANIFESTLY_CONST_EVALUATED (fun) = true;
       instantiate_decl (fun, /*defer_ok*/false, /*expl_inst*/false);
       --function_depth;
       input_location = save_loc;

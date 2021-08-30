@@ -500,6 +500,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       OVL_LOOKUP_P (in OVERLOAD)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, NAMESPACE_DECL)
+      FNDECL_MANIFESTLY_CONST_EVALUATED (in FUNCTION_DECL)
    5: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
@@ -4212,6 +4213,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    DECL_SAVED_AUTO_RETURN_TYPE (NODE).   */
 #define FNDECL_USED_AUTO(NODE) \
   TREE_LANG_FLAG_2 (FUNCTION_DECL_CHECK (NODE))
+
+/* True if NODE is needed for a manifestly constant-evaluated expression.
+   This doesn't especially need to be a flag, since currently it's only
+   used for error recovery; if we run out of function flags it could move
+   to an attribute.  */
+#define FNDECL_MANIFESTLY_CONST_EVALUATED(NODE) \
+  TREE_LANG_FLAG_4 (FUNCTION_DECL_CHECK (NODE))
 
 /* True for artificial decls added for OpenMP privatized non-static
    data members.  */
