@@ -115,6 +115,8 @@ GTY(()) xint_hash_map_t *nowarn_map;
 bool
 warning_suppressed_at (location_t loc, opt_code opt /* = all_warnings */)
 {
+  gcc_checking_assert (!RESERVED_LOCATION_P (loc));
+
   if (!nowarn_map)
     return false;
 
@@ -137,6 +139,8 @@ bool
 suppress_warning_at (location_t loc, opt_code opt /* = all_warnings */,
 		     bool supp /* = true */)
 {
+  gcc_checking_assert (!RESERVED_LOCATION_P (loc));
+
   const nowarn_spec_t optspec (supp ? opt : opt_code ());
 
   if (nowarn_spec_t *pspec = nowarn_map ? nowarn_map->get (loc) : NULL)
@@ -173,8 +177,20 @@ copy_warning (location_t to, location_t from)
   if (!nowarn_map)
     return;
 
-  if (nowarn_spec_t *pspec = nowarn_map->get (from))
-    nowarn_map->put (to, *pspec);
+  nowarn_spec_t *from_spec;
+  if (RESERVED_LOCATION_P (from))
+    from_spec = NULL;
   else
-    nowarn_map->remove (to);
+    from_spec = nowarn_map->get (from);
+  if (RESERVED_LOCATION_P (to))
+    /* We cannot set no-warning dispositions for 'to', so we have no chance but
+       lose those potentially set for 'from'.  */
+    ;
+  else
+    {
+      if (from_spec)
+	nowarn_map->put (to, *from_spec);
+      else
+	nowarn_map->remove (to);
+    }
 }

@@ -89,7 +89,7 @@ get_nowarn_spec (const_tree expr)
 {
   const location_t loc = get_location (expr);
 
-  if (loc == UNKNOWN_LOCATION)
+  if (RESERVED_LOCATION_P (loc))
     return NULL;
 
   if (!get_no_warning_bit (expr))
@@ -104,6 +104,9 @@ static nowarn_spec_t *
 get_nowarn_spec (const gimple *stmt)
 {
   const location_t loc = get_location (stmt);
+
+  if (RESERVED_LOCATION_P (loc))
+    return NULL;
 
   if (!get_no_warning_bit (stmt))
     return NULL;
@@ -158,7 +161,8 @@ suppress_warning (tree expr, opt_code opt /* = all_warnings */,
 
   const location_t loc = get_location (expr);
 
-  supp = suppress_warning_at (loc, opt, supp) || supp;
+  if (!RESERVED_LOCATION_P (loc))
+    supp = suppress_warning_at (loc, opt, supp) || supp;
   set_no_warning_bit (expr, supp);
 }
 
@@ -174,7 +178,8 @@ suppress_warning (gimple *stmt, opt_code opt /* = all_warnings */,
 
   const location_t loc = get_location (stmt);
 
-  supp = suppress_warning_at (loc, opt, supp) || supp;
+  if (!RESERVED_LOCATION_P (loc))
+    supp = suppress_warning_at (loc, opt, supp) || supp;
   set_no_warning_bit (stmt, supp);
 }
 
@@ -186,24 +191,33 @@ void copy_warning (ToType to, FromType from)
 {
   const location_t to_loc = get_location (to);
 
-  if (nowarn_spec_t *from_map = get_nowarn_spec (from))
-    {
-      /* If there's an entry in the map the no-warning bit must be set.  */
-      gcc_assert (get_no_warning_bit (from));
+  bool supp = get_no_warning_bit (from);
 
-      gcc_checking_assert (nowarn_map);
-      nowarn_map->put (to_loc, *from_map);
-      set_no_warning_bit (to, true);
-    }
+  nowarn_spec_t *from_spec = get_nowarn_spec (from);
+  if (RESERVED_LOCATION_P (to_loc))
+    /* We cannot set no-warning dispositions for 'to', so we have no chance but
+       lose those potentially set for 'from'.  */
+    ;
   else
     {
-      if (nowarn_map)
-	nowarn_map->remove (to_loc);
+      if (from_spec)
+	{
+	  /* If there's an entry in the map the no-warning bit must be set.  */
+	  gcc_assert (supp);
 
-      /* The no-warning bit might be set even if there's no entry
-	 in the map.  */
-      set_no_warning_bit (to, get_no_warning_bit (from));
+	  gcc_checking_assert (nowarn_map);
+	  nowarn_map->put (to_loc, *from_spec);
+	}
+      else
+	{
+	  if (nowarn_map)
+	    nowarn_map->remove (to_loc);
+	}
     }
+
+  /* The no-warning bit might be set even if the map has not been consulted, or
+     otherwise if there's no entry in the map.  */
+  set_no_warning_bit (to, supp);
 }
 
 /* Copy the warning disposition mapping from one expression to another.  */
