@@ -645,7 +645,7 @@ def Main(argv):
   if retval:
     return 0
   else:
-    return 1
+    return 2
 
 
 if __name__ == '__main__':
