@@ -5382,7 +5382,7 @@ fi
 
 
   gdc_save_DFLAGS=$GDCFLAGS
-  GDCFLAGS="-fno-moduleinfo -nostdinc -I $phobos_cv_abs_srcdir/libdruntime  $GDCFLAGS"
+  GDCFLAGS="-fno-druntime -nostdinc -I $phobos_cv_abs_srcdir/libdruntime  $GDCFLAGS"
 
   ac_ext=d
 ac_compile='$GDC -c $GDCFLAGS conftest.$ac_ext >&5'
@@ -5392,7 +5392,7 @@ ac_compiler_gnu=yes
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking If $GDC can compile D sources" >&5
 $as_echo_n "checking If $GDC can compile D sources... " >&6; }
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 
 
 extern(C) int main() {
@@ -12097,7 +12097,7 @@ CC="$lt_save_CC"
 
 
   gdc_save_DFLAGS=$GDCFLAGS
-  GDCFLAGS="-fno-moduleinfo -nostdinc -I $phobos_cv_abs_srcdir/libdruntime  $GDCFLAGS"
+  GDCFLAGS="-fno-druntime -nostdinc -I $phobos_cv_abs_srcdir/libdruntime  $GDCFLAGS"
 
 
 # Source file extension for D test sources.
@@ -14089,7 +14089,7 @@ fi
 
 
   gdc_save_DFLAGS=$GDCFLAGS
-  GDCFLAGS="-fno-moduleinfo -nostdinc -I $phobos_cv_abs_srcdir/libdruntime -nophoboslib $GDCFLAGS"
+  GDCFLAGS="-fno-druntime -nostdinc -I $phobos_cv_abs_srcdir/libdruntime -nophoboslib $GDCFLAGS"
 
     ac_ext=d
 ac_compile='$GDC -c $GDCFLAGS conftest.$ac_ext >&5'
@@ -14098,7 +14098,7 @@ ac_compiler_gnu=yes
 
     GDCFLAGS="$GDCFLAGS -g -Werror -ffunction-sections -fdata-sections"
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 int foo; void bar() { }
 
 extern(C) int main() {
@@ -14562,7 +14562,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
   gdc_save_DFLAGS=$GDCFLAGS
-  GDCFLAGS="-fno-moduleinfo -nostdinc -I $phobos_cv_abs_srcdir/libdruntime -nophoboslib $GDCFLAGS"
+  GDCFLAGS="-fno-druntime -nostdinc -I $phobos_cv_abs_srcdir/libdruntime -nophoboslib $GDCFLAGS"
 
   ac_ext=d
 ac_compile='$GDC -c $GDCFLAGS conftest.$ac_ext >&5'
@@ -14576,7 +14576,7 @@ if ${ac_cv_search_malloc+:} false; then :
 else
   ac_func_search_save_LIBS=$LIBS
 cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
  extern(C) int malloc();
 
 extern(C) int main() {
@@ -14622,7 +14622,7 @@ if ${ac_cv_search_pthread_create+:} false; then :
 else
   ac_func_search_save_LIBS=$LIBS
 cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
  extern(C) int pthread_create();
 
 extern(C) int main() {
@@ -14668,7 +14668,7 @@ if ${ac_cv_search_cosf+:} false; then :
 else
   ac_func_search_save_LIBS=$LIBS
 cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
  extern(C) int cosf();
 
 extern(C) int main() {
@@ -14714,7 +14714,7 @@ if ${ac_cv_search_clock_gettime+:} false; then :
 else
   ac_func_search_save_LIBS=$LIBS
 cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
  extern(C) int clock_gettime();
 
 extern(C) int main() {
@@ -14765,7 +14765,7 @@ $as_echo_n "checking for atomic builtins for byte... " >&6; }
 else
 
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 import gcc.builtins;
 
 extern(C) int main() {
@@ -14799,7 +14799,7 @@ $as_echo_n "checking for atomic builtins for short... " >&6; }
 else
 
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 import gcc.builtins;
 
 extern(C) int main() {
@@ -14833,7 +14833,7 @@ $as_echo_n "checking for atomic builtins for int... " >&6; }
 else
 
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 import gcc.builtins;
 
 extern(C) int main() {
@@ -14867,7 +14867,7 @@ $as_echo_n "checking for atomic builtins for long... " >&6; }
 else
 
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 import gcc.builtins;
 
 extern(C) int main() {
