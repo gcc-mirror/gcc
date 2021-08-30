@@ -21896,7 +21896,6 @@ package body Sem_Util is
               or else (K = E_Component
                         and then not In_Protected_Function (E))
               or else (Present (Etype (E))
-                        and then Is_Access_Object_Type (Etype (E))
                         and then Is_Access_Variable (Etype (E))
                         and then Is_Dereferenced (N))
               or else K = E_Out_Parameter
