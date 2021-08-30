@@ -326,10 +326,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /**
-   *  @brief Primary class template for std::function.
+   *  @brief Polymorphic function wrapper.
    *  @ingroup functors
-   *
-   *  Polymorphic function wrapper.
+   *  @since C++11
    */
   template<typename _Res, typename... _ArgTypes>
     class function<_Res(_ArgTypes...)>
@@ -364,7 +363,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief Default construct creates an empty function call wrapper.
-       *  @post @c !(bool)*this
+       *  @post `!(bool)*this`
        */
       function() noexcept
       : _Function_base() { }
@@ -379,10 +378,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  @brief %Function copy constructor.
        *  @param __x A %function object with identical call signature.
-       *  @post @c bool(*this) == bool(__x)
+       *  @post `bool(*this) == bool(__x)`
        *
-       *  The newly-created %function contains a copy of the target of @a
-       *  __x (if it has one).
+       *  The newly-created %function contains a copy of the target of
+       *  `__x` (if it has one).
        */
       function(const function& __x)
       : _Function_base()
@@ -399,7 +398,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief %Function move constructor.
        *  @param __x A %function object rvalue with identical call signature.
        *
-       *  The newly-created %function contains the target of @a __x
+       *  The newly-created %function contains the target of `__x`
        *  (if it has one).
        */
       function(function&& __x) noexcept
@@ -418,22 +417,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief Builds a %function that targets a copy of the incoming
        *  function object.
        *  @param __f A %function object that is callable with parameters of
-       *  type @c T1, @c T2, ..., @c TN and returns a value convertible
-       *  to @c Res.
+       *  type `ArgTypes...` and returns a value convertible to `Res`.
        *
        *  The newly-created %function object will target a copy of
-       *  @a __f. If @a __f is @c reference_wrapper<F>, then this function
-       *  object will contain a reference to the function object @c
-       *  __f.get(). If @a __f is a NULL function pointer or NULL
-       *  pointer-to-member, the newly-created object will be empty.
+       *  `__f`. If `__f` is `reference_wrapper<F>`, then this function
+       *  object will contain a reference to the function object `__f.get()`.
+       *  If `__f` is a null function pointer, null pointer-to-member, or
+       *  empty `std::function`, the newly-created object will be empty.
        *
-       *  If @a __f is a non-NULL function pointer or an object of type @c
-       *  reference_wrapper<F>, this function will not throw.
+       *  If `__f` is a non-null function pointer or an object of type
+       *  `reference_wrapper<F>`, this function will not throw.
        */
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2774. std::function construction vs assignment
       template<typename _Functor,
-	       typename = _Requires<_Callable<_Functor>>>
+	       typename _Constraints = _Requires<_Callable<_Functor>>>
 	function(_Functor&& __f)
 	noexcept(_Handler<_Functor>::template _S_nothrow_init<_Functor>())
 	: _Function_base()

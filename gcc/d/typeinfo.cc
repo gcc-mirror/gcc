@@ -411,8 +411,7 @@ class TypeInfoVisitor : public Visitor
     this->layout_field (value);
   }
 
-
-  /* Write out the __vptr and __monitor fields of class CD.  */
+  /* Write out the __vptr and optionally __monitor fields of class CD.  */
 
   void layout_base (ClassDeclaration *cd)
   {
@@ -868,7 +867,7 @@ public:
 	this->layout_field (inv);
 
 	/* ClassFlags m_flags;  */
-	ClassFlags::Type flags = ClassFlags::hasOffTi;
+	int flags = ClassFlags::hasOffTi;
 	if (cd->isCOMclass ())
 	  flags |= ClassFlags::isCOMclass;
 
@@ -962,7 +961,7 @@ public:
 	this->layout_field (null_pointer_node);
 
 	/* ClassFlags m_flags;  */
-	ClassFlags::Type flags = ClassFlags::hasOffTi;
+	int flags = ClassFlags::hasOffTi;
 	flags |= ClassFlags::hasTypeInfo;
 	if (cd->isCOMinterface ())
 	  flags |= ClassFlags::isCOMclass;
@@ -1091,7 +1090,7 @@ public:
       this->layout_field (null_pointer_node);
 
     /* StructFlags m_flags;  */
-    StructFlags::Type m_flags = 0;
+    int m_flags = StructFlags::none;
     if (ti->hasPointers ())
       m_flags |= StructFlags::hasPointers;
     this->layout_field (build_integer_cst (m_flags, d_uint_type));

@@ -65,19 +65,12 @@ namespace posix = std::filesystem::__gnu_posix;
 fs::path
 fs::absolute(const path& p)
 {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
   error_code ec;
   path ret = absolute(p, ec);
   if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot make absolute path", p,
 					     ec));
   return ret;
-#else
-  if (p.empty())
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot make absolute path", p,
-	  make_error_code(std::errc::invalid_argument)));
-  return current_path() / p;
-#endif
 }
 
 fs::path

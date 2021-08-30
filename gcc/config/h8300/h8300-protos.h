@@ -45,7 +45,6 @@ extern int compute_a_shift_cc (rtx *, rtx_code);
 #ifdef HAVE_ATTR_cc
 extern enum attr_cc compute_plussi_cc (rtx *);
 #endif
-extern void h8300_expand_branch (rtx[]);
 extern void h8300_expand_store (rtx[]);
 extern bool expand_a_shift (machine_mode, enum rtx_code, rtx[]);
 extern int h8300_shift_needs_scratch_p (int, machine_mode, rtx_code);

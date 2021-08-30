@@ -27,12 +27,14 @@ void store (TYPE a, TYPE *p) { *p = a; }
 
 	lxvd2x	-- big endian power7/power8, little endian power8
 	lvx	-- Altivec
-	lxv	-- power9
-	plxv	-- power10
-	lxvx	-- X-form variant.
+	lxv	-- D-form power9
+	lxvx	-- X-form power9
+	plxv	-- prefixed power10
 	stxvd2x	-- big endian power7/power8, little endian power8
 	stvx	-- Altivec
-	stxvx	-- power9/power10.  */
+	stxvx	-- X-form vector store (power9/power10).
+	stv	-- D-form vector store (power9 and above).
+	pstv	-- prefixed vector store (power10 and above).  */
 
 /* { dg-final { scan-assembler {\mlxvd2x 34\M|\mlvx 2\M|\mp?lxvx? 34\M} } } */
-/* { dg-final { scan-assembler {\mstxvd2x 34\M|\mstvx 2\M|\mstxvx 34\M} } } */
+/* { dg-final { scan-assembler {\mstxvd2x 34\M|\mstvx 2\M|\mp?stxvx? 34\M} } } */

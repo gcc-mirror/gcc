@@ -196,8 +196,9 @@ struct GTY(()) modref_access_node
      was prolonged and punt when there are too many.  */
   bool merge (const modref_access_node &a, bool record_adjustments)
     {
-      poly_int64 aoffset_adj = 0, offset_adj = 0;
-      poly_int64 new_parm_offset = parm_offset;
+      poly_int64 offset1 = 0;
+      poly_int64 aoffset1 = 0;
+      poly_int64 new_parm_offset = 0;
 
       /* We assume that containment was tested earlier.  */
       gcc_checking_assert (!contains (a) && !a.contains (*this));
@@ -209,29 +210,13 @@ struct GTY(()) modref_access_node
 	    {
 	      if (!a.parm_offset_known)
 		return false;
-	      if (known_le (a.parm_offset, parm_offset))
-		{
-		  offset_adj = (parm_offset - a.parm_offset)
-				<< LOG2_BITS_PER_UNIT;
-		  aoffset_adj = 0;
-		  new_parm_offset = a.parm_offset;
-		}
-	      else if (known_le (parm_offset, a.parm_offset))
-		{
-		  aoffset_adj = (a.parm_offset - parm_offset)
-				 << LOG2_BITS_PER_UNIT;
-		  offset_adj = 0;
-		}
-	      else
+	      if (!combined_offsets (a, &new_parm_offset, &offset1, &aoffset1))
 		return false;
 	    }
 	}
       /* See if we can merge ranges.  */
       if (range_info_useful_p ())
 	{
-	  poly_int64 offset1 = offset + offset_adj;
-	  poly_int64 aoffset1 = a.offset + aoffset_adj;
-
 	  /* In this case we have containment that should be
 	     handled earlier.  */
 	  gcc_checking_assert (a.range_info_useful_p ());
@@ -255,45 +240,210 @@ struct GTY(()) modref_access_node
 	    return false;
 	  if (known_le (offset1, aoffset1))
 	    {
-	      if (!known_size_p (max_size))
+	      if (!known_size_p (max_size)
+		  || known_ge (offset1 + max_size, aoffset1))
 		{
-		  update (new_parm_offset, offset1, size, max_size,
-			  record_adjustments);
-		  return true;
-		}
-	      else if (known_ge (offset1 + max_size, aoffset1))
-		{
-		  poly_int64 new_max_size = max_size;
-		  if (known_le (max_size, a.max_size + aoffset1 - offset1))
-		    new_max_size = a.max_size + aoffset1 - offset1;
-		  update (new_parm_offset, offset1, size, new_max_size,
-			  record_adjustments);
+		  update2 (new_parm_offset, offset1, size, max_size,
+			   aoffset1, a.size, a.max_size,
+			   record_adjustments);
 		  return true;
 		}
 	    }
 	  else if (known_le (aoffset1, offset1))
 	    {
-	      if (!known_size_p (a.max_size))
+	      if (!known_size_p (a.max_size)
+		  || known_ge (aoffset1 + a.max_size, offset1))
 		{
-		  update (new_parm_offset, aoffset1, size, a.max_size,
-			  record_adjustments);
-		  return true;
-		}
-	      else if (known_ge (aoffset1 + a.max_size, offset1))
-		{
-		  poly_int64 new_max_size = a.max_size;
-		  if (known_le (a.max_size, max_size + offset1 - aoffset1))
-		    new_max_size = max_size + offset1 - aoffset1;
-		  update (new_parm_offset, aoffset1, size, new_max_size,
-			  record_adjustments);
+		  update2 (new_parm_offset, offset1, size, max_size,
+			   aoffset1, a.size, a.max_size,
+			   record_adjustments);
 		  return true;
 		}
 	    }
 	  return false;
 	}
-      update (new_parm_offset, offset + offset_adj,
+      update (new_parm_offset, offset1,
 	      size, max_size, record_adjustments);
       return true;
+    }
+  /* Return true if A1 and B1 can be merged with lower informatoin
+     less than A2 and B2.
+     Assume that no containment or lossless merging is possible.  */
+  static bool closer_pair_p (const modref_access_node &a1,
+			     const modref_access_node &b1,
+			     const modref_access_node &a2,
+			     const modref_access_node &b2)
+    {
+      /* Merging different parm indexes comes to complete loss
+	 of range info.  */
+      if (a1.parm_index != b1.parm_index)
+	return false;
+      if (a2.parm_index != b2.parm_index)
+	return true;
+      /* If parm is known and parm indexes are the same we should
+	 already have containment.  */
+      gcc_checking_assert (a1.parm_offset_known && b1.parm_offset_known);
+      gcc_checking_assert (a2.parm_offset_known && b2.parm_offset_known);
+
+      /* First normalize offsets for parm offsets.  */
+      poly_int64 new_parm_offset, offseta1, offsetb1, offseta2, offsetb2;
+      if (!a1.combined_offsets (b1, &new_parm_offset, &offseta1, &offsetb1)
+	  || !a2.combined_offsets (b2, &new_parm_offset, &offseta2, &offsetb2))
+	gcc_unreachable ();
+
+
+      /* Now compute distnace of the intervals.  */
+      poly_int64 dist1, dist2;
+      if (known_le (offseta1, offsetb1))
+	{
+	  if (!known_size_p (a1.max_size))
+	    dist1 = 0;
+	  else
+	    dist1 = offsetb1 - offseta1 - a1.max_size;
+	}
+      else
+	{
+	  if (!known_size_p (b1.max_size))
+	    dist1 = 0;
+	  else
+	    dist1 = offseta1 - offsetb1 - b1.max_size;
+	}
+      if (known_le (offseta2, offsetb2))
+	{
+	  if (!known_size_p (a2.max_size))
+	    dist2 = 0;
+	  else
+	    dist2 = offsetb2 - offseta2 - a2.max_size;
+	}
+      else
+	{
+	  if (!known_size_p (b2.max_size))
+	    dist2 = 0;
+	  else
+	    dist2 = offseta2 - offsetb2 - b2.max_size;
+	}
+      /* It may happen that intervals overlap in case size
+	 is different.  Preffer the overlap to non-overlap.  */
+      if (known_lt (dist1, 0) && known_ge (dist2, 0))
+	return true;
+      if (known_lt (dist2, 0) && known_ge (dist1, 0))
+	return false;
+      if (known_lt (dist1, 0))
+	/* If both overlaps minimize overlap.  */
+	return known_le (dist2, dist1);
+      else
+	/* If both are disjoint look for smaller distance.  */
+	return known_le (dist1, dist2);
+    }
+
+  /* Merge in access A while losing precision.  */
+  void forced_merge (const modref_access_node &a, bool record_adjustments)
+    {
+      if (parm_index != a.parm_index)
+	{
+	  gcc_checking_assert (parm_index != -1);
+	  parm_index = -1;
+	  return;
+	}
+
+      /* We assume that containment and lossless merging
+	 was tested earlier.  */
+      gcc_checking_assert (!contains (a) && !a.contains (*this)
+			   && !merge (a, record_adjustments));
+      gcc_checking_assert (parm_offset_known && a.parm_offset_known);
+
+      poly_int64 new_parm_offset, offset1, aoffset1;
+      if (!combined_offsets (a, &new_parm_offset, &offset1, &aoffset1))
+	{
+	  parm_offset_known = false;
+	  return;
+	}
+      gcc_checking_assert (range_info_useful_p ()
+			   && a.range_info_useful_p ());
+      if (record_adjustments)
+	adjustments += a.adjustments;
+      update2 (new_parm_offset,
+	       offset1, size, max_size,
+	       aoffset1, a.size, a.max_size,
+	       record_adjustments);
+    }
+private:
+  /* Merge two ranges both starting at parm_offset1 and update THIS
+     with result.  */
+  void update2 (poly_int64 parm_offset1,
+		poly_int64 offset1, poly_int64 size1, poly_int64 max_size1,
+		poly_int64 offset2, poly_int64 size2, poly_int64 max_size2,
+		bool record_adjustments)
+    {
+      poly_int64 new_size = size1;
+
+      if (!known_size_p (size2)
+	  || known_le (size2, size1))
+	new_size = size2;
+      else
+	gcc_checking_assert (known_le (size1, size2));
+
+      if (known_le (offset1, offset2))
+	;
+      else if (known_le (offset2, offset1))
+	{
+	  std::swap (offset1, offset2);
+	  std::swap (max_size1, max_size2);
+	}
+      else
+	gcc_unreachable ();
+
+      poly_int64 new_max_size;
+
+      if (!known_size_p (max_size1))
+	new_max_size = max_size1;
+      else if (!known_size_p (max_size2))
+	new_max_size = max_size2;
+      else
+	{
+	  max_size2 = max_size2 + offset2 - offset1;
+	  if (known_le (max_size, max_size2))
+	    new_max_size = max_size2;
+	  else if (known_le (max_size2, max_size))
+	    new_max_size = max_size;
+	  else
+	    gcc_unreachable ();
+	}
+
+      update (parm_offset1, offset1,
+	      new_size, new_max_size, record_adjustments);
+    }
+  /* Given access nodes THIS and A, return true if they
+     can be done with common parm_offsets.  In this case
+     return parm offset in new_parm_offset, new_offset
+     which is start of range in THIS and new_aoffset that
+     is start of range in A.  */
+  bool combined_offsets (const modref_access_node &a,
+			 poly_int64 *new_parm_offset,
+			 poly_int64 *new_offset,
+			 poly_int64 *new_aoffset) const
+    {
+      gcc_checking_assert (parm_offset_known && a.parm_offset_known);
+      if (known_le (a.parm_offset, parm_offset))
+	{
+	  *new_offset = offset
+			+ ((parm_offset - a.parm_offset)
+			   << LOG2_BITS_PER_UNIT);
+	  *new_aoffset = a.offset;
+	  *new_parm_offset = a.parm_offset;
+	  return true;
+	}
+      else if (known_le (parm_offset, a.parm_offset))
+	{
+	  *new_aoffset = a.offset
+	  		  + ((a.parm_offset - parm_offset)
+			     << LOG2_BITS_PER_UNIT);
+	  *new_offset = offset;
+	  *new_parm_offset = parm_offset;
+	  return true;
+	}
+      else
+	return false;
     }
 };
 
@@ -348,7 +498,7 @@ struct GTY((user)) modref_ref_node
       return false;
 
     /* Otherwise, insert a node for the ref of the access under the base.  */
-    size_t i;
+    size_t i, j;
     modref_access_node *a2;
 
     if (flag_checking)
@@ -390,11 +540,61 @@ struct GTY((user)) modref_ref_node
        all accesses and bail out.  */
     if (accesses && accesses->length () >= max_accesses)
       {
-	if (dump_file)
+	if (max_accesses < 2)
+	  {
+	    collapse ();
+	    if (dump_file)
+	      fprintf (dump_file,
+		       "--param param=modref-max-accesses limit reached;"
+		       " collapsing\n");
+	    return true;
+	  }
+	/* Find least harmful merge and perform it.  */
+	int best1 = -1, best2 = -1;
+	FOR_EACH_VEC_SAFE_ELT (accesses, i, a2)
+	  {
+	    for (j = i + 1; j < accesses->length (); j++)
+	      if (best1 < 0
+		  || modref_access_node::closer_pair_p
+		       (*a2, (*accesses)[j],
+			(*accesses)[best1],
+			best2 < 0 ? a : (*accesses)[best2]))
+		{
+		  best1 = i;
+		  best2 = j;
+		}
+	    if (modref_access_node::closer_pair_p
+		       (*a2, a,
+			(*accesses)[best1],
+			best2 < 0 ? a : (*accesses)[best2]))
+	      {
+		best1 = i;
+		best2 = -1;
+	      }
+	  }
+	(*accesses)[best1].forced_merge (best2 < 0 ? a : (*accesses)[best2],
+					 record_adjustments);
+	if (!(*accesses)[best1].useful_p ())
+	  {
+	    collapse ();
+	    if (dump_file)
+	      fprintf (dump_file,
+		       "--param param=modref-max-accesses limit reached;"
+		       " collapsing\n");
+	    return true;
+	  }
+	if (dump_file && best2 >= 0)
 	  fprintf (dump_file,
-		   "--param param=modref-max-accesses limit reached\n");
-	collapse ();
-	return true;
+		   "--param param=modref-max-accesses limit reached;"
+		   " merging %i and %i\n", best1, best2);
+	else if (dump_file)
+	  fprintf (dump_file,
+		   "--param param=modref-max-accesses limit reached;"
+		   " merging with %i\n", best1);
+	try_merge_with (best1);
+	if (best2 >= 0)
+	  insert_access (a, max_accesses, record_adjustments);
+	return 1;
       }
     a.adjustments = 0;
     vec_safe_push (accesses, a);

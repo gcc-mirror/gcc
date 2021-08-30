@@ -1891,6 +1891,66 @@ dom_opt_dom_walker::test_for_singularity (gimple *stmt,
     }
 }
 
+/* If STMT is a comparison of two uniform vectors reduce it to a comparison
+   of scalar objects, otherwise leave STMT unchanged.  */
+
+static void
+reduce_vector_comparison_to_scalar_comparison (gimple *stmt)
+{
+  if (gimple_code (stmt) == GIMPLE_COND)
+    {
+      tree lhs = gimple_cond_lhs (stmt);
+      tree rhs = gimple_cond_rhs (stmt);
+
+      /* We may have a vector comparison where both arms are uniform
+	 vectors.  If so, we can simplify the vector comparison down
+	 to a scalar comparison.  */
+      if (TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE
+	  && TREE_CODE (TREE_TYPE (rhs)) == VECTOR_TYPE)
+	{
+	  /* If either operand is an SSA_NAME, then look back to its
+	     defining statement to try and get at a suitable source.  */
+	  if (TREE_CODE (rhs) == SSA_NAME)
+	    {
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (rhs);
+	      if (gimple_assign_single_p (def_stmt))
+		rhs = gimple_assign_rhs1 (def_stmt);
+	    }
+
+	  if (TREE_CODE (lhs) == SSA_NAME)
+	    {
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (lhs);
+	      if (gimple_assign_single_p (def_stmt))
+		lhs = gimple_assign_rhs1 (def_stmt);
+	    }
+
+	  /* Now see if they are both uniform vectors and if so replace
+	     the vector comparison with a scalar comparison.  */
+	  tree rhs_elem = rhs ? uniform_vector_p (rhs) : NULL_TREE;
+	  tree lhs_elem = lhs ? uniform_vector_p (lhs) : NULL_TREE;
+	  if (rhs_elem && lhs_elem)
+	    {
+	      if (dump_file && dump_flags & TDF_DETAILS)
+		{
+		  fprintf (dump_file, "Reducing vector comparison: ");
+		  print_gimple_stmt (dump_file, stmt, 0);
+		}
+
+	      gimple_cond_set_rhs (as_a <gcond *>(stmt), rhs_elem);
+	      gimple_cond_set_lhs (as_a <gcond *>(stmt), lhs_elem);
+	      gimple_set_modified (stmt, true);
+
+	      if (dump_file && dump_flags & TDF_DETAILS)
+		{
+		  fprintf (dump_file, "To scalar equivalent: ");
+		  print_gimple_stmt (dump_file, stmt, 0);
+		  fprintf (dump_file, "\n");
+		}
+	    }
+	}
+    }
+}
+
 /* Optimize the statement in block BB pointed to by iterator SI.
 
    We try to perform some simplistic global redundancy elimination and
@@ -1932,6 +1992,11 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
 
   update_stmt_if_modified (stmt);
   opt_stats.num_stmts++;
+
+  /* STMT may be a comparison of uniform vectors that we can simplify
+     down to a comparison of scalars.  Do that transformation first
+     so that all the scalar optimizations from here onward apply.  */
+  reduce_vector_comparison_to_scalar_comparison (stmt);
 
   /* Const/copy propagate into USES, VUSES and the RHS of VDEFs.  */
   cprop_into_stmt (stmt, m_evrp_range_analyzer);

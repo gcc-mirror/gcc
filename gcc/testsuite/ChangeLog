@@ -1,3 +1,65 @@
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102094
+	* gdc.dg/lto/pr102094_0.d: New test.
+
+2021-08-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/analyzer/strndup-1.c: Skip for Darwin versions
+	without strndup support in libc.
+
+2021-08-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/modref-9.c: New test.
+
+2021-08-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/87737
+	* gfortran.dg/entry_24.f90: New test.
+
+2021-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-call.c: Update comments.
+
+2021-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-call.c: Fix test for IEEE 128-bit
+	long double and power10.
+
+2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-supports.exp: Exclude cctools assembler based on
+	GAS 1.38.
+
+2021-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/45178
+	* gcc.dg/tree-ssa/ssa-dce-3.c: Adjust testcase.
+
+2021-08-27  konglin1  <lingling.kong@intel.com>
+
+	PR target/101472
+	* gcc.target/i386/avx512f-pr101472.c: New test.
+	* gcc.target/i386/avx512vl-pr101472.c: New test.
+
+2021-08-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/dive-vectorize-1.c: New test.
+	* gcc.target/powerpc/dive-vectorize-1.h: New test.
+	* gcc.target/powerpc/dive-vectorize-2.c: New test.
+	* gcc.target/powerpc/dive-vectorize-2.h: New test.
+	* gcc.target/powerpc/dive-vectorize-run-1.c: New test.
+	* gcc.target/powerpc/dive-vectorize-run-2.c: New test.
+	* gcc.target/powerpc/p10-bifs-vectorize-1.c: New test.
+	* gcc.target/powerpc/p10-bifs-vectorize-1.h: New test.
+	* gcc.target/powerpc/p10-bifs-vectorize-run-1.c: New test.
+
+2021-08-27  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512f-vshufpd-1.c: Adjust testcase.
+	* gcc.target/i386/avx512f-vshufps-1.c: Adjust testcase.
+	* gcc.target/i386/pr43147.c: New test.
+
 2021-08-26  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.dg/tree-ssa/ssa-ccp-41.c: New test case.

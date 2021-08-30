@@ -1,3 +1,23 @@
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_identifier): Skip over fake parent manglings.
+	* testsuite/d-demangle-expected: Add tests.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_arrayliteral): Add 'info' parameter.
+	(dlang_parse_assocarray): Likewise.
+	(dlang_parse_structlit): Likewise.
+	(dlang_value): Likewise.  Handle function literal symbols.
+	(dlang_template_args): Pass 'info' to dlang_value.
+	* testsuite/d-demangle-expected: Add new test.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_attributes): Handle typeof(*null).
+	(dlang_type): Likewise.  Demangle 'n' as typeof(null).
+	* testsuite/d-demangle-expected: Update tests.
+
 2021-08-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* simple-object-mach-o.c (simple_object_mach_o_write_segment):

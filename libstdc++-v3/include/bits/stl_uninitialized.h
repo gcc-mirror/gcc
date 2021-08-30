@@ -162,7 +162,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_ValueType2;
 
       // _ValueType1 must be trivially-copyable to use memmove, so don't
-      // both optimizing to std::copy if it isn't.
+      // bother optimizing to std::copy if it isn't.
       // XXX Unnecessary because std::copy would check it anyway?
       const bool __can_memmove = __is_trivial(_ValueType1);
 

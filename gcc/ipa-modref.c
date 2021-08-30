@@ -2125,7 +2125,8 @@ analyze_function (function *f, bool ipa)
   FOR_EACH_BB_FN (bb, f)
     {
       gimple_stmt_iterator si;
-      for (si = gsi_after_labels (bb); !gsi_end_p (si); gsi_next (&si))
+      for (si = gsi_start_nondebug_after_labels_bb (bb);
+	   !gsi_end_p (si); gsi_next_nondebug (&si))
 	{
 	  if (!analyze_stmt (summary, summary_lto,
 			     gsi_stmt (si), ipa, &recursive_calls)

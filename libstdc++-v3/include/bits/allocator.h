@@ -61,12 +61,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   // Since C++20 the primary template should be used for allocator<void>,
-  // but then it would have a non-trivial default ctor and dtor, which
-  // would be an ABI change. So C++20 still uses the allocator<void> explicit
-  // specialization, with the historical ABI properties, but with the same
-  // members that are present in the primary template.
+  // but then it would have a non-trivial default ctor and dtor for C++20,
+  // but trivial for C++98-17, which would be an ABI incompatibiliy between
+  // different standard dialects. So C++20 still uses the allocator<void>
+  // explicit specialization, with the historical ABI properties, but with
+  // the same members that are present in the primary template.
 
-#if ! _GLIBCXX_INLINE_VERSION
   /// allocator<void> specialization.
   template<>
     class allocator<void>
@@ -77,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef ptrdiff_t   difference_type;
 
 #if __cplusplus <= 201703L
-      // These were removed for C++20.
+      // These were removed for C++20, allocator_traits does the right thing.
       typedef void*       pointer;
       typedef const void* const_pointer;
 
@@ -96,7 +96,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= true_type;
 
 #if __cplusplus >= 202002L
+      // As noted above, these members are present for C++20 to provide the
+      // same API as the primary template, but still trivial as in pre-C++20.
       allocator() = default;
+      ~allocator() = default;
 
       template<typename _Up>
 	constexpr
@@ -105,28 +108,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // No allocate member because it's ill-formed by LWG 3307.
       // No deallocate member because it would be undefined to call it
       // with any pointer which wasn't obtained from allocate.
-
-#else // ! C++20
-    private:
-      // This uses construct and destroy in C++11/14/17 modes.
-      friend allocator_traits<allocator<void>>;
-
-      template<typename _Up, typename... _Args>
-	void
-	construct(_Up* __p, _Args&&... __args)
-	noexcept(std::is_nothrow_constructible<_Up, _Args...>::value)
-	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
-
-      template<typename _Up>
-	void
-	destroy(_Up* __p)
-	noexcept(std::is_nothrow_destructible<_Up>::value)
-	{ __p->~_Up(); }
-#endif // C++17
+#endif // C++20
 #endif // C++11
-
     };
-#endif // ! _GLIBCXX_INLINE_VERSION
 
   /**
    * @brief  The @a standard allocator, as per C++03 [20.4.1].
@@ -212,7 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return;
 	  }
 #endif
-	  __allocator_base<_Tp>::deallocate(__p, __n);
+	__allocator_base<_Tp>::deallocate(__p, __n);
       }
 #endif // C++20
 

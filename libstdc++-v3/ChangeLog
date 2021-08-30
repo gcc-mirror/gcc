@@ -1,3 +1,29 @@
+2021-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits): Add explicit
+	specialization for allocator<void>. Improve doxygen comments.
+	* include/bits/allocator.h (allocator<void>): Restore for the
+	versioned namespace.
+	(allocator<void>::construct, allocator<void>::destroy): Remove.
+	* include/ext/extptr_allocator.h (_Extptr_allocator<void>):
+	Add default constructor and converting constructor.
+
+2021-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h: Fix typo in comment.
+
+2021-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99876
+	* src/c++17/fs_ops.cc (fs::absolute): Call non-throwing form,
+	to avoid unnecessary current_path() call.
+
+2021-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (function::function(F&&)): Give
+	name to defaulted template parameter, to improve diagnostics.
+	Use markdown for more doxygen comments.
+
 2021-08-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/std_function.h (function): Adjust doxygen
