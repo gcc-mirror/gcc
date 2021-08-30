@@ -1,3 +1,13 @@
+2021-08-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_libc_has_function): Do not run
+	the checks for x86 or modern Darwin.  Make sure that there
+	is a value set for darwin_macosx_version_min before testing.
+
+2021-08-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h (CLEAR_INSN_CACHE): New.
+
 2021-08-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-modref-tree.h (modref_access_node::merge): Break out

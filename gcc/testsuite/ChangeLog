@@ -1,3 +1,13 @@
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102094
+	* gdc.dg/lto/pr102094_0.d: New test.
+
+2021-08-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/analyzer/strndup-1.c: Skip for Darwin versions
+	without strndup support in libc.
+
 2021-08-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/modref-9.c: New test.
