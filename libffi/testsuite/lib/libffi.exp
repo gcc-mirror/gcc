@@ -15,12 +15,15 @@
 # <http://www.gnu.org/licenses/>.
 
 proc load_gcc_lib { filename } {
-    global srcdir
-    load_file $srcdir/lib/$filename
+    global srcdir loaded_libs
+    load_file $srcdir/../../gcc/testsuite/lib/$filename
+    set loaded_libs($filename) ""
 }
 
 load_lib dg.exp
 load_lib libgloss.exp
+load_gcc_lib target-supports.exp
+load_gcc_lib target-supports-dg.exp
 load_gcc_lib target-libpath.exp
 load_gcc_lib wrapper.exp
 
@@ -277,6 +280,7 @@ proc libffi-init { args } {
     global srcdir
     global blddirffi
     global objdir
+    global blddircxx
     global TOOL_OPTIONS
     global tool
     global libffi_include
@@ -285,13 +289,13 @@ proc libffi-init { args } {
     global ld_library_path
     global compiler_vendor
 
-    if ![info exists blddirffi] {
-	set blddirffi [pwd]/..
-    }
-
+    set blddirffi [lookfor_file [get_multilibs] libffi]
     verbose "libffi $blddirffi"
+    set blddircxx [lookfor_file [get_multilibs] libstdc++-v3]
+    verbose "libstdc++ $blddircxx"
 
-    # Which compiler are we building with?
+    set compiler_vendor "gnu"
+
     if { [string match $compiler_vendor "gnu"] } {
         set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
         if {$gccdir != ""} {
@@ -320,6 +324,8 @@ proc libffi-init { args } {
 
     # add the library path for libffi.
     append ld_library_path ":${blddirffi}/.libs"
+    # add the library path for libstdc++ as well.
+    append ld_library_path ":${blddircxx}/src/.libs"
 
     verbose "ld_library_path: $ld_library_path"
 
@@ -332,6 +338,7 @@ proc libffi-init { args } {
     if { $libffi_dir != "" } {
 	set libffi_dir [file dirname ${libffi_dir}]
 	set libffi_link_flags "-L${libffi_dir}/.libs"
+	lappend libffi_link_flags "-L${blddircxx}/src/.libs"
     }
 
     set_ld_library_path_env_vars
@@ -398,9 +405,8 @@ proc libffi_target_compile { source dest type options } {
 	lappend options "libs= -lpthread"
     }
 
-    # this may be required for g++, but just confused clang.
     if { [string match "*.cc" $source] } {
-        lappend options "c++"
+	lappend options "ldflags=-shared-libgcc -lstdc++"
     }
 
     if { [string match "arc*-*-linux*" $target_triplet] } {
