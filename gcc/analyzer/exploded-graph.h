@@ -37,6 +37,7 @@ class impl_region_model_context : public region_model_context
 			     const program_state *old_state,
 			     program_state *new_state,
 			     uncertainty_t *uncertainty,
+			     path_context *path_ctxt,
 
 			     const gimple *stmt,
 			     stmt_finder *stmt_finder = NULL);
@@ -76,6 +77,16 @@ class impl_region_model_context : public region_model_context
 
   void purge_state_involving (const svalue *sval) FINAL OVERRIDE;
 
+  void bifurcate (custom_edge_info *info) FINAL OVERRIDE;
+  void terminate_path () FINAL OVERRIDE;
+  const extrinsic_state *get_ext_state () const FINAL OVERRIDE
+  {
+    return &m_ext_state;
+  }
+  bool get_malloc_map (sm_state_map **out_smap,
+		       const state_machine **out_sm,
+		       unsigned *out_sm_idx) FINAL OVERRIDE;
+
   exploded_graph *m_eg;
   log_user m_logger;
   exploded_node *m_enode_for_diag;
@@ -85,6 +96,7 @@ class impl_region_model_context : public region_model_context
   stmt_finder *m_stmt_finder;
   const extrinsic_state &m_ext_state;
   uncertainty_t *m_uncertainty;
+  path_context *m_path_ctxt;
 };
 
 /* A <program_point, program_state> pair, used internally by
@@ -224,7 +236,8 @@ class exploded_node : public dnode<eg_traits>
 			 const supernode *snode,
 			 const gimple *stmt,
 			 program_state *state,
-			 uncertainty_t *uncertainty);
+			 uncertainty_t *uncertainty,
+			 path_context *path_ctxt);
   void on_stmt_pre (exploded_graph &eg,
 		    const gimple *stmt,
 		    program_state *state,
@@ -319,28 +332,9 @@ public:
 class exploded_edge : public dedge<eg_traits>
 {
  public:
-  /* Abstract base class for associating custom data with an
-     exploded_edge, for handling non-standard edges such as
-     rewinding from a longjmp, signal handlers, etc.  */
-  class custom_info_t
-  {
-  public:
-    virtual ~custom_info_t () {}
-
-    /* Hook for making .dot label more readable .  */
-    virtual void print (pretty_printer *pp) = 0;
-
-    /* Hook for updating MODEL within exploded_path::feasible_p.  */
-    virtual void update_model (region_model *model,
-			       const exploded_edge &eedge) = 0;
-
-    virtual void add_events_to_path (checker_path *emission_path,
-				     const exploded_edge &eedge) = 0;
-  };
-
   exploded_edge (exploded_node *src, exploded_node *dest,
 		 const superedge *sedge,
-		 custom_info_t *custom_info);
+		 custom_edge_info *custom_info);
   ~exploded_edge ();
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const FINAL OVERRIDE;
@@ -356,7 +350,7 @@ class exploded_edge : public dedge<eg_traits>
      a signal is delivered to a signal-handler.
 
      Owned by this class.  */
-  custom_info_t *m_custom_info;
+  custom_edge_info *m_custom_info;
 
 private:
   DISABLE_COPY_AND_ASSIGN (exploded_edge);
@@ -365,7 +359,7 @@ private:
 /* Extra data for an exploded_edge that represents dynamic call info ( calls
    that doesn't have an underlying superedge representing the call ).  */
 
-class dynamic_call_info_t : public exploded_edge::custom_info_t
+class dynamic_call_info_t : public custom_edge_info
 {
 public:
   dynamic_call_info_t (const gcall *dynamic_call,
@@ -374,7 +368,7 @@ public:
     m_is_returning_call (is_returning_call)
   {}
 
-  void print (pretty_printer *pp) FINAL OVERRIDE
+  void print (pretty_printer *pp) const FINAL OVERRIDE
   {
     if (m_is_returning_call)
       pp_string (pp, "dynamic_return");
@@ -382,11 +376,12 @@ public:
       pp_string (pp, "dynamic_call");
   }
 
-  void update_model (region_model *model,
-		     const exploded_edge &eedge) FINAL OVERRIDE;
+  bool update_model (region_model *model,
+		     const exploded_edge *eedge,
+		     region_model_context *ctxt) const FINAL OVERRIDE;
 
   void add_events_to_path (checker_path *emission_path,
-			   const exploded_edge &eedge) FINAL OVERRIDE;
+			   const exploded_edge &eedge) const FINAL OVERRIDE;
 private:
   const gcall *m_dynamic_call;
   const bool m_is_returning_call;
@@ -396,7 +391,7 @@ private:
 /* Extra data for an exploded_edge that represents a rewind from a
    longjmp to a setjmp (or from a siglongjmp to a sigsetjmp).  */
 
-class rewind_info_t : public exploded_edge::custom_info_t
+class rewind_info_t : public custom_edge_info
 {
 public:
   rewind_info_t (const setjmp_record &setjmp_record,
@@ -405,16 +400,17 @@ public:
     m_longjmp_call (longjmp_call)
   {}
 
-  void print (pretty_printer *pp) FINAL OVERRIDE
+  void print (pretty_printer *pp) const FINAL OVERRIDE
   {
     pp_string (pp, "rewind");
   }
 
-  void update_model (region_model *model,
-		     const exploded_edge &eedge) FINAL OVERRIDE;
+  bool update_model (region_model *model,
+		     const exploded_edge *eedge,
+		     region_model_context *ctxt) const FINAL OVERRIDE;
 
   void add_events_to_path (checker_path *emission_path,
-			   const exploded_edge &eedge) FINAL OVERRIDE;
+			   const exploded_edge &eedge) const FINAL OVERRIDE;
 
   const program_point &get_setjmp_point () const
   {
@@ -829,7 +825,7 @@ public:
 				     exploded_node *enode_for_diag);
   exploded_edge *add_edge (exploded_node *src, exploded_node *dest,
 			   const superedge *sedge,
-			   exploded_edge::custom_info_t *custom = NULL);
+			   custom_edge_info *custom = NULL);
 
   per_program_point_data *
   get_or_create_per_program_point_data (const program_point &);

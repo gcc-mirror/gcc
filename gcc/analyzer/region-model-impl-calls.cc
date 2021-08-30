@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
+#include "analyzer/call-info.h"
 #include "gimple-pretty-print.h"
 
 #if ENABLE_ANALYZER
@@ -156,6 +157,15 @@ call_details::get_arg_string_literal (unsigned idx) const
 	return TREE_STRING_POINTER (string_cst);
       }
   return NULL;
+}
+
+/* Attempt to get the fndecl used at this call, if known, or NULL_TREE
+   otherwise.  */
+
+tree
+call_details::get_fndecl_for_call () const
+{
+  return m_model->get_fndecl_for_call (m_call, m_ctxt);
 }
 
 /* Dump a multiline representation of this call to PP.  */
@@ -486,15 +496,169 @@ region_model::impl_call_operator_delete (const call_details &cd)
     }
 }
 
-/* Handle the on_call_pre part of "realloc".  */
+/* Handle the on_call_post part of "realloc":
+
+     void *realloc(void *ptr, size_t size);
+
+   realloc(3) is awkward, since it has various different outcomes
+   that are best modelled as separate exploded nodes/edges.
+
+   We first check for sm-state, in
+   malloc_state_machine::on_realloc_call, so that we
+   can complain about issues such as realloc of a non-heap
+   pointer, and terminate the path for such cases (and issue
+   the complaints at the call's exploded node).
+
+   Assuming that these checks pass, we split the path here into
+   three special cases (and terminate the "standard" path):
+   (A) failure, returning NULL
+   (B) success, growing the buffer in-place without moving it
+   (C) success, allocating a new buffer, copying the content
+   of the old buffer to it, and freeing the old buffer.
+
+   Each of these has a custom_edge_info subclass, which updates
+   the region_model and sm-state of the destination state.  */
 
 void
-region_model::impl_call_realloc (const call_details &)
+region_model::impl_call_realloc (const call_details &cd)
 {
-  /* Currently we don't support bifurcating state, so there's no good
-     way to implement realloc(3).
-     For now, malloc_state_machine::on_realloc_call has a minimal
-     implementation to suppress false positives.  */
+  /* Three custom subclasses of custom_edge_info, for handling the various
+     outcomes of "realloc".  */
+
+  /* Concrete custom_edge_info: a realloc call that fails, returning NULL.  */
+  class failure : public failed_call_info
+  {
+  public:
+    failure (const call_details &cd)
+    : failed_call_info (cd)
+    {
+    }
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const FINAL OVERRIDE
+    {
+      /* Return NULL; everything else is unchanged.  */
+      const call_details cd (get_call_details (model, ctxt));
+      const svalue *zero
+	= model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+      model->set_value (cd.get_lhs_region (),
+			zero,
+			cd.get_ctxt ());
+      return true;
+    }
+  };
+
+  /* Concrete custom_edge_info: a realloc call that succeeds, growing
+     the existing buffer without moving it.  */
+  class success_no_move : public call_info
+  {
+  public:
+    success_no_move (const call_details &cd)
+    : call_info (cd)
+    {
+    }
+
+    label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+    {
+      return make_label_text (can_colorize,
+			      "when %qE succeeds, without moving buffer",
+			      get_fndecl ());
+    }
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const FINAL OVERRIDE
+    {
+      /* Update size of buffer and return the ptr unchanged.  */
+      const call_details cd (get_call_details (model, ctxt));
+      const svalue *ptr_sval = cd.get_arg_svalue (0);
+      const svalue *size_sval = cd.get_arg_svalue (1);
+      if (const region *buffer_reg = ptr_sval->maybe_get_region ())
+	model->set_dynamic_extents (buffer_reg, size_sval);
+      model->set_value (cd.get_lhs_region (), ptr_sval, cd.get_ctxt ());
+      const svalue *zero
+	= model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+      return model->add_constraint (ptr_sval, NE_EXPR, zero, cd.get_ctxt ());
+    }
+  };
+
+  /* Concrete custom_edge_info: a realloc call that succeeds, freeing
+     the existing buffer and moving the content to a freshly allocated
+     buffer.  */
+  class success_with_move : public call_info
+  {
+  public:
+    success_with_move (const call_details &cd)
+    : call_info (cd)
+    {
+    }
+
+    label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+    {
+      return make_label_text (can_colorize,
+			      "when %qE succeeds, moving buffer",
+			      get_fndecl ());
+    }
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const FINAL OVERRIDE
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      const svalue *old_ptr_sval = cd.get_arg_svalue (0);
+      const svalue *new_size_sval = cd.get_arg_svalue (1);
+
+      /* Create the new region.  */
+      const region *new_reg
+	= model->create_region_for_heap_alloc (new_size_sval);
+      const svalue *new_ptr_sval
+	= model->m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+      if (cd.get_lhs_type ())
+	cd.maybe_set_lhs (new_ptr_sval);
+
+      if (const region *freed_reg = old_ptr_sval->maybe_get_region ())
+	{
+	  /* Copy the data.  */
+	  const svalue *old_size_sval = model->get_dynamic_extents (freed_reg);
+	  if (old_size_sval)
+	    {
+	      const region *sized_old_reg
+		= model->m_mgr->get_sized_region (freed_reg, NULL,
+						  old_size_sval);
+	      const svalue *buffer_content_sval
+		= model->get_store_value (sized_old_reg, cd.get_ctxt ());
+	      model->set_value (new_reg, buffer_content_sval, cd.get_ctxt ());
+	    }
+
+	  /* Free the old region, so that pointers to the old buffer become
+	     invalid.  */
+
+	  /* If the ptr points to an underlying heap region, delete it,
+	     poisoning pointers.  */
+	  model->unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
+	  model->m_dynamic_extents.remove (freed_reg);
+	}
+
+      /* Update the sm-state: mark the old_ptr_sval as "freed",
+	 and the new_ptr_sval as "nonnull".  */
+      model->on_realloc_with_move (cd, old_ptr_sval, new_ptr_sval);
+
+      const svalue *zero
+	= model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+      return model->add_constraint (new_ptr_sval, NE_EXPR, zero,
+				    cd.get_ctxt ());
+    }
+  };
+
+  /* Body of region_model::impl_call_realloc.  */
+
+  if (cd.get_ctxt ())
+    {
+      cd.get_ctxt ()->bifurcate (new failure (cd));
+      cd.get_ctxt ()->bifurcate (new success_no_move (cd));
+      cd.get_ctxt ()->bifurcate (new success_with_move (cd));
+      cd.get_ctxt ()->terminate_path ();
+    }
 }
 
 /* Handle the on_call_pre part of "strcpy" and "__builtin_strcpy_chk".  */

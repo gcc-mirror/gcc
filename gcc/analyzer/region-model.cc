@@ -1132,7 +1132,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    return false;
 	    break;
 	  case BUILT_IN_REALLOC:
-	    impl_call_realloc (cd);
 	    return false;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
@@ -1276,9 +1275,9 @@ region_model::on_call_post (const gcall *call,
 {
   if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
     {
+      call_details cd (call, this, ctxt);
       if (is_named_call_p (callee_fndecl, "free", call, 1))
 	{
-	  call_details cd (call, this, ctxt);
 	  impl_call_free (cd);
 	  return;
 	}
@@ -1286,7 +1285,6 @@ region_model::on_call_post (const gcall *call,
 	  || is_named_call_p (callee_fndecl, "operator delete", call, 2)
 	  || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
 	{
-	  call_details cd (call, this, ctxt);
 	  impl_call_operator_delete (cd);
 	  return;
 	}
@@ -1294,10 +1292,19 @@ region_model::on_call_post (const gcall *call,
 	 __attribute__((malloc(FOO)))?  */
       if (lookup_attribute ("*dealloc", DECL_ATTRIBUTES (callee_fndecl)))
 	{
-	  call_details cd (call, this, ctxt);
 	  impl_deallocation_call (cd);
 	  return;
 	}
+      if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
+	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
+	switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
+	  {
+	  default:
+	    break;
+	  case BUILT_IN_REALLOC:
+	    impl_call_realloc (cd);
+	    return;
+	  }
     }
 
   if (unknown_side_effects)
@@ -3763,6 +3770,19 @@ void
 region_model::unset_dynamic_extents (const region *reg)
 {
   m_dynamic_extents.remove (reg);
+}
+
+/* class noop_region_model_context : public region_model_context.  */
+
+void
+noop_region_model_context::bifurcate (custom_edge_info *info)
+{
+  delete info;
+}
+
+void
+noop_region_model_context::terminate_path ()
+{
 }
 
 /* struct model_merger.  */

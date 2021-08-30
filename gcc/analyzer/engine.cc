@@ -62,9 +62,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-path.h"
 #include "analyzer/state-purge.h"
 #include "analyzer/bar-chart.h"
+#include "analyzer/call-info.h"
 #include <zlib.h>
 #include "plugin.h"
 #include "target.h"
+#include <memory>
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -80,6 +82,7 @@ impl_region_model_context (exploded_graph &eg,
 			   const program_state *old_state,
 			   program_state *new_state,
 			   uncertainty_t *uncertainty,
+			   path_context *path_ctxt,
 			   const gimple *stmt,
 			   stmt_finder *stmt_finder)
 : m_eg (&eg), m_logger (eg.get_logger ()),
@@ -89,7 +92,8 @@ impl_region_model_context (exploded_graph &eg,
   m_stmt (stmt),
   m_stmt_finder (stmt_finder),
   m_ext_state (eg.get_ext_state ()),
-  m_uncertainty (uncertainty)
+  m_uncertainty (uncertainty),
+  m_path_ctxt (path_ctxt)
 {
 }
 
@@ -104,7 +108,8 @@ impl_region_model_context (program_state *state,
   m_stmt (NULL),
   m_stmt_finder (NULL),
   m_ext_state (ext_state),
-  m_uncertainty (uncertainty)
+  m_uncertainty (uncertainty),
+  m_path_ctxt (NULL)
 {
 }
 
@@ -183,6 +188,37 @@ impl_region_model_context::purge_state_involving (const svalue *sval)
     smap->purge_state_involving (sval, m_ext_state);
 }
 
+void
+impl_region_model_context::bifurcate (custom_edge_info *info)
+{
+  if (m_path_ctxt)
+    m_path_ctxt->bifurcate (info);
+  else
+    delete info;
+}
+
+void
+impl_region_model_context::terminate_path ()
+{
+  if (m_path_ctxt)
+    return m_path_ctxt->terminate_path ();
+}
+
+bool
+impl_region_model_context::get_malloc_map (sm_state_map **out_smap,
+					   const state_machine **out_sm,
+					   unsigned *out_sm_idx)
+{
+  unsigned malloc_sm_idx;
+  if (!m_ext_state.get_sm_idx_by_name ("malloc", &malloc_sm_idx))
+    return false;
+
+  *out_smap = m_new_state->m_checker_states[malloc_sm_idx];
+  *out_sm = &m_ext_state.get_sm (malloc_sm_idx);
+  *out_sm_idx = malloc_sm_idx;
+  return true;
+}
+
 /* struct setjmp_record.  */
 
 int
@@ -237,12 +273,14 @@ public:
 		   program_state *new_state,
 		   const sm_state_map *old_smap,
 		   sm_state_map *new_smap,
+		   path_context *path_ctxt,
 		   stmt_finder *stmt_finder = NULL)
   : sm_context (sm_idx, sm),
     m_logger (eg.get_logger ()),
     m_eg (eg), m_enode_for_diag (enode_for_diag),
     m_old_state (old_state), m_new_state (new_state),
     m_old_smap (old_smap), m_new_smap (new_smap),
+    m_path_ctxt (path_ctxt),
     m_stmt_finder (stmt_finder)
   {
   }
@@ -252,7 +290,7 @@ public:
   tree get_fndecl_for_call (const gcall *call) FINAL OVERRIDE
   {
     impl_region_model_context old_ctxt
-      (m_eg, m_enode_for_diag, NULL, NULL/*m_enode->get_state ()*/,
+      (m_eg, m_enode_for_diag, NULL, NULL, NULL/*m_enode->get_state ()*/,
        NULL, call);
     region_model *model = m_new_state->m_region_model;
     return model->get_fndecl_for_call (call, &old_ctxt);
@@ -292,7 +330,7 @@ public:
     LOG_FUNC (logger);
     impl_region_model_context new_ctxt (m_eg, m_enode_for_diag,
 					m_old_state, m_new_state,
-					NULL,
+					NULL, NULL,
 					stmt);
     const svalue *var_new_sval
       = m_new_state->m_region_model->get_rvalue (var, &new_ctxt);
@@ -320,12 +358,12 @@ public:
     logger * const logger = get_logger ();
     LOG_FUNC (logger);
     impl_region_model_context old_ctxt
-      (m_eg, m_enode_for_diag, NULL, NULL/*m_enode->get_state ()*/,
+      (m_eg, m_enode_for_diag, NULL, NULL, NULL/*m_enode->get_state ()*/,
        NULL, stmt);
 
     impl_region_model_context new_ctxt (m_eg, m_enode_for_diag,
 					m_old_state, m_new_state,
-					NULL,
+					NULL, NULL,
 					stmt);
     const svalue *origin_new_sval
       = m_new_state->m_region_model->get_rvalue (origin, &new_ctxt);
@@ -353,7 +391,7 @@ public:
     LOG_FUNC (get_logger ());
     gcc_assert (d); // take ownership
     impl_region_model_context old_ctxt
-      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL);
+      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL, NULL);
 
     const svalue *var_old_sval
       = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
@@ -418,7 +456,7 @@ public:
     if (!assign_stmt)
      return NULL_TREE;
     impl_region_model_context old_ctxt
-      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, stmt);
+      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL, stmt);
     if (const svalue *sval
 	= m_new_state->m_region_model->get_gassign_result (assign_stmt,
 							    &old_ctxt))
@@ -428,6 +466,11 @@ public:
     return NULL_TREE;
   }
 
+  path_context *get_path_context () const FINAL OVERRIDE
+  {
+    return m_path_ctxt;
+  }
+
   log_user m_logger;
   exploded_graph &m_eg;
   exploded_node *m_enode_for_diag;
@@ -435,6 +478,7 @@ public:
   program_state *m_new_state;
   const sm_state_map *m_old_smap;
   sm_state_map *m_new_smap;
+  path_context *m_path_ctxt;
   stmt_finder *m_stmt_finder;
 };
 
@@ -751,9 +795,13 @@ impl_region_model_context::on_condition (const svalue *lhs,
       impl_sm_context sm_ctxt (*m_eg, sm_idx, sm, m_enode_for_diag,
 			       m_old_state, m_new_state,
 			       m_old_state->m_checker_states[sm_idx],
-			       m_new_state->m_checker_states[sm_idx]);
+			       m_new_state->m_checker_states[sm_idx],
+			       m_path_ctxt);
       sm.on_condition (&sm_ctxt,
-		       m_enode_for_diag->get_supernode (), m_stmt,
+		       (m_enode_for_diag
+			? m_enode_for_diag->get_supernode ()
+			: NULL),
+		       m_stmt,
 		       lhs, op, rhs);
     }
 }
@@ -773,7 +821,8 @@ impl_region_model_context::on_phi (const gphi *phi, tree rhs)
       impl_sm_context sm_ctxt (*m_eg, sm_idx, sm, m_enode_for_diag,
 			       m_old_state, m_new_state,
 			       m_old_state->m_checker_states[sm_idx],
-			       m_new_state->m_checker_states[sm_idx]);
+			       m_new_state->m_checker_states[sm_idx],
+			       m_path_ctxt);
       sm.on_phi (&sm_ctxt, m_enode_for_diag->get_supernode (), phi, rhs);
     }
 }
@@ -1190,7 +1239,8 @@ exploded_node::on_stmt (exploded_graph &eg,
 			const supernode *snode,
 			const gimple *stmt,
 			program_state *state,
-			uncertainty_t *uncertainty)
+			uncertainty_t *uncertainty,
+			path_context *path_ctxt)
 {
   logger *logger = eg.get_logger ();
   LOG_SCOPE (logger);
@@ -1215,7 +1265,7 @@ exploded_node::on_stmt (exploded_graph &eg,
 
   impl_region_model_context ctxt (eg, this,
 				  &old_state, state, uncertainty,
-				  stmt);
+				  path_ctxt, stmt);
 
   bool unknown_side_effects = false;
   bool terminate_path = false;
@@ -1235,12 +1285,15 @@ exploded_node::on_stmt (exploded_graph &eg,
 	= old_state.m_checker_states[sm_idx];
       sm_state_map *new_smap = state->m_checker_states[sm_idx];
       impl_sm_context sm_ctxt (eg, sm_idx, sm, this, &old_state, state,
-			       old_smap, new_smap);
+			       old_smap, new_smap, path_ctxt);
 
       /* Allow the state_machine to handle the stmt.  */
       if (sm.on_stmt (&sm_ctxt, snode, stmt))
 	unknown_side_effects = false;
     }
+
+  if (path_ctxt->terminate_path_p ())
+    return on_stmt_flags::terminate_path ();
 
   on_stmt_post (stmt, state, unknown_side_effects, &ctxt);
 
@@ -1592,7 +1645,7 @@ exploded_node::detect_leaks (exploded_graph &eg)
 
   uncertainty_t uncertainty;
   impl_region_model_context ctxt (eg, this,
-				  &old_state, &new_state, &uncertainty,
+				  &old_state, &new_state, &uncertainty, NULL,
 				  get_stmt ());
   const svalue *result = NULL;
   new_state.m_region_model->pop_frame (NULL, &result, &ctxt);
@@ -1627,27 +1680,30 @@ exploded_node::dump_succs_and_preds (FILE *outf) const
   }
 }
 
-/* class dynamic_call_info_t : public exploded_edge::custom_info_t.  */
+/* class dynamic_call_info_t : public custom_edge_info.  */
 
-/* Implementation of exploded_edge::custom_info_t::update_model vfunc
+/* Implementation of custom_edge_info::update_model vfunc
    for dynamic_call_info_t.
 
    Update state for the dynamically discorverd calls */
 
-void
+bool
 dynamic_call_info_t::update_model (region_model *model,
-				   const exploded_edge &eedge)
+				   const exploded_edge *eedge,
+				   region_model_context *) const
 {
-  const program_state &dest_state = eedge.m_dest->get_state ();
+  gcc_assert (eedge);
+  const program_state &dest_state = eedge->m_dest->get_state ();
   *model = *dest_state.m_region_model;
+  return true;
 }
 
-/* Implementation of exploded_edge::custom_info_t::add_events_to_path vfunc
+/* Implementation of custom_edge_info::add_events_to_path vfunc
    for dynamic_call_info_t.  */
 
 void
 dynamic_call_info_t::add_events_to_path (checker_path *emission_path,
-				   const exploded_edge &eedge)
+				   const exploded_edge &eedge) const
 {
   const exploded_node *src_node = eedge.m_src;
   const program_point &src_point = src_node->get_point ();
@@ -1671,21 +1727,23 @@ dynamic_call_info_t::add_events_to_path (checker_path *emission_path,
 
 }
 
-/* class rewind_info_t : public exploded_edge::custom_info_t.  */
+/* class rewind_info_t : public custom_edge_info.  */
 
-/* Implementation of exploded_edge::custom_info_t::update_model vfunc
+/* Implementation of custom_edge_info::update_model vfunc
    for rewind_info_t.
 
    Update state for the special-case of a rewind of a longjmp
    to a setjmp (which doesn't have a superedge, but does affect
    state).  */
 
-void
+bool
 rewind_info_t::update_model (region_model *model,
-			     const exploded_edge &eedge)
+			     const exploded_edge *eedge,
+			     region_model_context *) const
 {
-  const program_point &longjmp_point = eedge.m_src->get_point ();
-  const program_point &setjmp_point = eedge.m_dest->get_point ();
+  gcc_assert (eedge);
+  const program_point &longjmp_point = eedge->m_src->get_point ();
+  const program_point &setjmp_point = eedge->m_dest->get_point ();
 
   gcc_assert (longjmp_point.get_stack_depth ()
 	      >= setjmp_point.get_stack_depth ());
@@ -1693,14 +1751,15 @@ rewind_info_t::update_model (region_model *model,
   model->on_longjmp (get_longjmp_call (),
 		     get_setjmp_call (),
 		     setjmp_point.get_stack_depth (), NULL);
+  return true;
 }
 
-/* Implementation of exploded_edge::custom_info_t::add_events_to_path vfunc
+/* Implementation of custom_edge_info::add_events_to_path vfunc
    for rewind_info_t.  */
 
 void
 rewind_info_t::add_events_to_path (checker_path *emission_path,
-				   const exploded_edge &eedge)
+				   const exploded_edge &eedge) const
 {
   const exploded_node *src_node = eedge.m_src;
   const program_point &src_point = src_node->get_point ();
@@ -1727,7 +1786,7 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
 
 exploded_edge::exploded_edge (exploded_node *src, exploded_node *dest,
 			      const superedge *sedge,
-			      custom_info_t *custom_info)
+			      custom_edge_info *custom_info)
 : dedge<eg_traits> (src, dest), m_sedge (sedge),
   m_custom_info (custom_info)
 {
@@ -2432,7 +2491,7 @@ exploded_graph::get_or_create_node (const program_point &point,
 exploded_edge *
 exploded_graph::add_edge (exploded_node *src, exploded_node *dest,
 			  const superedge *sedge,
-			  exploded_edge::custom_info_t *custom_info)
+			  custom_edge_info *custom_info)
 {
   if (get_logger ())
     get_logger ()->log ("creating edge EN: %i -> EN: %i",
@@ -2866,7 +2925,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
 	  uncertainty_t uncertainty;
 	  impl_region_model_context ctxt (*this, iter_enode,
 					  &state, next_state,
-					  &uncertainty, NULL);
+					  &uncertainty, NULL, NULL);
 	  const cfg_superedge *last_cfg_superedge
 	    = iter_sedge->dyn_cast_cfg_superedge ();
 	  if (last_cfg_superedge)
@@ -3095,6 +3154,72 @@ exploded_graph::maybe_create_dynamic_call (const gcall *call,
   return false;
 }
 
+/* Subclass of path_context for use within exploded_graph::process_node,
+   so that we can split states e.g. at "realloc" calls.  */
+
+class impl_path_context : public path_context
+{
+public:
+  impl_path_context (const program_state *cur_state)
+  : m_cur_state (cur_state),
+    m_terminate_path (false)
+  {
+  }
+
+  bool bifurcation_p () const
+  {
+    return m_custom_eedge_infos.length () > 0;
+  }
+
+  const program_state &get_state_at_bifurcation () const
+  {
+    gcc_assert (m_state_at_bifurcation);
+    return *m_state_at_bifurcation;
+  }
+
+  void
+  bifurcate (custom_edge_info *info) FINAL OVERRIDE
+  {
+    if (m_state_at_bifurcation)
+      /* Verify that the state at bifurcation is consistent when we
+	 split into multiple out-edges.  */
+      gcc_assert (*m_state_at_bifurcation == *m_cur_state);
+    else
+      /* Take a copy of the cur_state at the moment when bifurcation
+	 happens.  */
+      m_state_at_bifurcation
+	= std::unique_ptr<program_state> (new program_state (*m_cur_state));
+
+    /* Take ownership of INFO.  */
+    m_custom_eedge_infos.safe_push (info);
+  }
+
+  void terminate_path () FINAL OVERRIDE
+  {
+    m_terminate_path = true;
+  }
+
+  bool terminate_path_p () const FINAL OVERRIDE
+  {
+    return m_terminate_path;
+  }
+
+  const vec<custom_edge_info *> & get_custom_eedge_infos ()
+  {
+    return m_custom_eedge_infos;
+  }
+
+private:
+  const program_state *m_cur_state;
+
+  /* Lazily-created copy of the state before the split.  */
+  std::unique_ptr<program_state> m_state_at_bifurcation;
+
+  auto_vec <custom_edge_info *> m_custom_eedge_infos;
+
+  bool m_terminate_path;
+};
+
 /* The core of exploded_graph::process_worklist (the main analysis loop),
    handling one node in the worklist.
 
@@ -3150,7 +3275,7 @@ exploded_graph::process_node (exploded_node *node)
 	  {
 	    impl_region_model_context ctxt (*this, node,
 					    &state, &next_state,
-					    &uncertainty, NULL);
+					    &uncertainty, NULL, NULL);
 	    const cfg_superedge *last_cfg_superedge
 	      = point.get_from_edge ()->dyn_cast_cfg_superedge ();
 	    if (last_cfg_superedge)
@@ -3188,6 +3313,9 @@ exploded_graph::process_node (exploded_node *node)
 	   the sm-state-change occurs on an edge where the src enode has
 	   exactly one stmt, the one that caused the change. */
 	program_state next_state (state);
+
+	impl_path_context path_ctxt (&next_state);
+
 	uncertainty_t uncertainty;
 	const supernode *snode = point.get_supernode ();
 	unsigned stmt_idx;
@@ -3210,7 +3338,8 @@ exploded_graph::process_node (exploded_node *node)
 
 	    /* Process the stmt.  */
 	    exploded_node::on_stmt_flags flags
-	      = node->on_stmt (*this, snode, stmt, &next_state, &uncertainty);
+	      = node->on_stmt (*this, snode, stmt, &next_state, &uncertainty,
+			       &path_ctxt);
 	    node->m_num_processed_stmts++;
 
 	    /* If flags.m_terminate_path, stop analyzing; any nodes/edges
@@ -3222,7 +3351,7 @@ exploded_graph::process_node (exploded_node *node)
 	      {
 		impl_region_model_context ctxt (*this, node,
 						&old_state, &next_state,
-						&uncertainty, stmt);
+						&uncertainty, NULL, stmt);
 		program_state::detect_leaks (old_state, next_state, NULL,
 					     get_ext_state (), &ctxt);
 	      }
@@ -3238,7 +3367,9 @@ exploded_graph::process_node (exploded_node *node)
 						     &uncertainty);
 
 	    if (flag_analyzer_fine_grained
-		|| state_change_requires_new_enode_p (old_state, next_state))
+		|| state_change_requires_new_enode_p (old_state, next_state)
+		|| path_ctxt.bifurcation_p ()
+		|| path_ctxt.terminate_path_p ())
 	      {
 		program_point split_point
 		  = program_point::before_stmt (point.get_supernode (),
@@ -3282,9 +3413,66 @@ exploded_graph::process_node (exploded_node *node)
 					   point.get_call_string ())
 	     : program_point::after_supernode (point.get_supernode (),
 					       point.get_call_string ()));
-	exploded_node *next = get_or_create_node (next_point, next_state, node);
-	if (next)
-	  add_edge (node, next, NULL);
+	if (path_ctxt.terminate_path_p ())
+	  {
+	    if (logger)
+	      logger->log ("not adding node: terminating path");
+	  }
+	else
+	  {
+	    exploded_node *next
+	      = get_or_create_node (next_point, next_state, node);
+	    if (next)
+	      add_edge (node, next, NULL);
+	  }
+
+	/* If we have custom edge infos, "bifurcate" the state
+	   accordingly, potentially creating a new state/enode/eedge
+	   instances.  For example, to handle a "realloc" call, we
+	   might split into 3 states, for the "failure",
+	   "resizing in place", and "moving to a new buffer" cases.  */
+	for (auto edge_info : path_ctxt.get_custom_eedge_infos ())
+	  {
+	    if (logger)
+	      {
+		logger->start_log_line ();
+		logger->log_partial ("bifurcating for edge: ");
+		edge_info->print (logger->get_printer ());
+		logger->end_log_line ();
+	      }
+	    program_state bifurcated_new_state
+	      (path_ctxt.get_state_at_bifurcation ());
+
+	    /* Apply edge_info to state.  */
+	    impl_region_model_context
+	      bifurcation_ctxt (*this,
+				NULL, // enode_for_diag
+				&path_ctxt.get_state_at_bifurcation (),
+				&bifurcated_new_state,
+				NULL, // uncertainty_t *uncertainty
+				NULL, // path_context *path_ctxt
+				stmt);
+	    if (edge_info->update_model (bifurcated_new_state.m_region_model,
+					 NULL, /* no exploded_edge yet.  */
+					 &bifurcation_ctxt))
+	      {
+		exploded_node *next2
+		  = get_or_create_node (next_point, bifurcated_new_state, node);
+		if (next2)
+		  {
+		    /* Take ownership of edge_info.  */
+		    add_edge (node, next2, NULL, edge_info);
+		  }
+		else
+		  delete edge_info;
+	      }
+	    else
+	      {
+		if (logger)
+		  logger->log ("infeasible state, not adding node");
+		delete edge_info;
+	      }
+	  }
       }
       break;
     case PK_AFTER_SUPERNODE:
@@ -3351,6 +3539,7 @@ exploded_graph::process_node (exploded_node *node)
                                                 &state,
                                                 &next_state,
                                                 &uncertainty,
+						NULL,
                                                 point.get_stmt());
 
                 region_model *model = state.m_region_model;
@@ -3968,7 +4157,7 @@ feasibility_state::maybe_update_for_edge (logger *logger,
 	}
       else if (eedge->m_custom_info)
 	{
-	  eedge->m_custom_info->update_model (&m_model, *eedge);
+	  eedge->m_custom_info->update_model (&m_model, eedge, NULL);
 	}
     }
 
