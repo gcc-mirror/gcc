@@ -28,6 +28,7 @@ namespace HIR {
 
 class ASTLowerTypePath : public ASTLoweringBase
 {
+protected:
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
@@ -88,9 +89,30 @@ public:
     mappings->insert_hir_type (crate_num, hirid, translated);
   }
 
+protected:
+  HIR::TypePathSegment *translated_segment;
+
 private:
   HIR::TypePath *translated;
-  HIR::TypePathSegment *translated_segment;
+};
+
+class ASTLowerQualifiedPathInType : public ASTLowerTypePath
+{
+  using ASTLowerTypePath::visit;
+
+public:
+  static HIR::QualifiedPathInType *translate (AST::QualifiedPathInType &type)
+  {
+    ASTLowerQualifiedPathInType resolver;
+    type.accept_vis (resolver);
+    rust_assert (resolver.translated != nullptr);
+    return resolver.translated;
+  }
+
+  void visit (AST::QualifiedPathInType &path) override;
+
+private:
+  HIR::QualifiedPathInType *translated;
 };
 
 class ASTLoweringType : public ASTLoweringBase
@@ -185,6 +207,11 @@ public:
   void visit (AST::TypePath &path) override
   {
     translated = ASTLowerTypePath::translate (path);
+  }
+
+  void visit (AST::QualifiedPathInType &path) override
+  {
+    translated = ASTLowerQualifiedPathInType::translate (path);
   }
 
   void visit (AST::ArrayType &type) override

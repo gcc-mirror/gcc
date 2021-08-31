@@ -450,6 +450,62 @@ ASTLowerTypePath::visit (AST::TypePathSegmentGeneric &segment)
     segment.get_locus ());
 }
 
+void
+ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
+{
+  auto crate_num = mappings->get_current_crate ();
+  auto hirid = mappings->get_next_hir_id (crate_num);
+  Analysis::NodeMapping qual_mappings (
+    crate_num, path.get_qualified_path_type ().get_node_id (), hirid,
+    UNKNOWN_LOCAL_DEFID);
+
+  HIR::Type *qual_type = ASTLoweringType::translate (
+    path.get_qualified_path_type ().get_type ().get ());
+  HIR::TypePath *qual_trait = ASTLowerTypePath::translate (
+    path.get_qualified_path_type ().get_as_type_path ());
+
+  HIR::QualifiedPathType qual_path_type (
+    qual_mappings, std::unique_ptr<HIR::Type> (qual_type),
+    std::unique_ptr<HIR::TypePath> (qual_trait),
+    path.get_qualified_path_type ().get_locus ());
+
+  translated_segment = nullptr;
+  path.get_associated_segment ()->accept_vis (*this);
+  if (translated_segment == nullptr)
+    {
+      rust_fatal_error (path.get_associated_segment ()->get_locus (),
+			"failed to translate AST TypePathSegment");
+      return;
+    }
+  std::unique_ptr<HIR::TypePathSegment> associated_segment (translated_segment);
+
+  std::vector<std::unique_ptr<HIR::TypePathSegment> > translated_segments;
+  path.iterate_segments ([&] (AST::TypePathSegment *seg) mutable -> bool {
+    translated_segment = nullptr;
+    seg->accept_vis (*this);
+    if (translated_segment == nullptr)
+      {
+	rust_fatal_error (seg->get_locus (),
+			  "failed to translate AST TypePathSegment");
+	return false;
+      }
+
+    translated_segments.push_back (
+      std::unique_ptr<HIR::TypePathSegment> (translated_segment));
+    return true;
+  });
+
+  Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
+				 mappings->get_next_localdef_id (crate_num));
+
+  translated = new HIR::QualifiedPathInType (std::move (mapping),
+					     std::move (qual_path_type),
+					     std::move (associated_segment),
+					     std::move (translated_segments),
+					     path.get_locus ());
+  mappings->insert_hir_type (crate_num, hirid, translated);
+}
+
 // rust-ast-lower-base
 
 HIR::Type *
