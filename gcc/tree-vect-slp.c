@@ -5396,7 +5396,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 
   /* Unset visited flag.  This is delayed when the subgraph is profitable
      and we process the loop for remaining unvectorized if-converted code.  */
-  if (orig_loop && !profitable)
+  if (!orig_loop || !profitable)
     FOR_EACH_VEC_ELT (scalar_costs, i, cost)
       gimple_set_visited  (cost->stmt_info->stmt, false);
 
