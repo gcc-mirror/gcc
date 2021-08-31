@@ -939,6 +939,7 @@ protected:
 class QualifiedPathInType : public TypeNoBounds
 {
   QualifiedPathType path_type;
+  std::unique_ptr<TypePathSegment> associated_segment;
   std::vector<std::unique_ptr<TypePathSegment> > segments;
   Location locus;
 
@@ -953,9 +954,11 @@ protected:
 public:
   QualifiedPathInType (
     QualifiedPathType qual_path_type,
+    std::unique_ptr<TypePathSegment> associated_segment,
     std::vector<std::unique_ptr<TypePathSegment> > path_segments,
-    Location locus = Location ())
+    Location locus)
     : path_type (std::move (qual_path_type)),
+      associated_segment (std::move (associated_segment)),
       segments (std::move (path_segments)), locus (locus)
   {}
 
@@ -995,8 +998,8 @@ public:
   static QualifiedPathInType create_error ()
   {
     return QualifiedPathInType (
-      QualifiedPathType::create_error (),
-      std::vector<std::unique_ptr<TypePathSegment> > ());
+      QualifiedPathType::create_error (), nullptr,
+      std::vector<std::unique_ptr<TypePathSegment> > (), Location ());
   }
 
   std::string as_string () const override;
@@ -1008,6 +1011,11 @@ public:
   {
     rust_assert (!path_type.is_error ());
     return path_type;
+  }
+
+  std::unique_ptr<TypePathSegment> &get_associated_segment ()
+  {
+    return associated_segment;
   }
 
   // TODO: this seems kinda dodgy

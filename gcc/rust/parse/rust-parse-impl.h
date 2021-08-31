@@ -6742,10 +6742,6 @@ Parser<ManagedTokenSource>::parse_qualified_path_in_type ()
       return AST::QualifiedPathInType::create_error ();
     }
 
-  // parse path segments
-  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
-  segments.reserve (1);
-
   // parse initial required segment
   if (!expect_token (SCOPE_RESOLUTION))
     {
@@ -6765,9 +6761,9 @@ Parser<ManagedTokenSource>::parse_qualified_path_in_type ()
 
       return AST::QualifiedPathInType::create_error ();
     }
-  segments.push_back (std::move (initial_segment));
 
   // parse optional segments (as long as scope resolution operator exists)
+  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () == SCOPE_RESOLUTION)
     {
@@ -6796,6 +6792,7 @@ Parser<ManagedTokenSource>::parse_qualified_path_in_type ()
   segments.shrink_to_fit ();
 
   return AST::QualifiedPathInType (std::move (qual_path_type),
+				   std::move (initial_segment),
 				   std::move (segments), locus);
 }
 
