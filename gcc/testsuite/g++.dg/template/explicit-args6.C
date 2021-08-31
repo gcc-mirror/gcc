@@ -24,10 +24,12 @@ frob()
 
   // narrowing check, reject negative values
   return unsigned{N};		// { dg-prune-output "narrowing" }
-} // { dg-prune-output "flows off the end" }
-// { dg-prune-output "not a return-statement" }
+}
 
-template<int N> void get_n(tuple& t) { get<frob<N>()>(t); } // { dg-error "" }
+// This complains about calling frob only in C++11 because
+// maybe_save_constexpr_fundef fails; in later standards it succeeds,
+// and the evaluation failure is silent due to the earlier errors.
+template<int N> void get_n(tuple& t) { get<frob<N>()>(t); } // { dg-error "" "" { target c++11_only } }
 
 int main()
 {

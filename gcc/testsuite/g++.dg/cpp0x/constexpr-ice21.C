@@ -3,7 +3,7 @@
 
 struct NoMut1 { int a, b; };
 struct NoMut3 : virtual NoMut1 {
-  constexpr NoMut3(int a, int b) // { dg-error "virtual base" "" { target c++23 } }
+  constexpr NoMut3(int a, int b)
     : NoMut1{a, b}
   {} // { dg-error "virtual base" }
 };
