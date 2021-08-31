@@ -44,8 +44,6 @@
 #undef  PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT PROCESSOR_AM33_2
 
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 extern int mn10300_protect_label;
 
 #undef  PRINT_OPERAND

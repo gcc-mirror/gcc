@@ -649,9 +649,6 @@ do {									     \
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
 
-/* We don't have to worry about dbx compatibility for the mn10300.  */
-#define DEFAULT_GDB_EXTENSIONS 1
-
 /* Use dwarf2 debugging info by default.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG

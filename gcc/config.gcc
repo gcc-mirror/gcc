@@ -1532,7 +1532,7 @@ cr16-*-elf)
         use_collect2=no
         ;;
 cris-*-elf | cris-*-none)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="cris/t-cris cris/t-elfmulti"
 	gas=yes
 	extra_options="${extra_options} cris/elf.opt"
@@ -2293,13 +2293,13 @@ lm32-*-uclinux*)
 	tmake_file="${tmake_file} lm32/t-lm32"
         ;;
 m32r-*-elf*)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
  	;;
 m32rle-*-elf*)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h m32r/little.h ${tm_file}"
+	tm_file="elfos.h newlib-stdint.h m32r/little.h ${tm_file}"
 	;;
 m32r-*-linux*)
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
 	tmake_file="${tmake_file} m32r/t-linux t-slibgcc"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -2307,7 +2307,7 @@ m32r-*-linux*)
 	fi
  	;;
 m32rle-*-linux*)
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
 	tmake_file="${tmake_file} m32r/t-linux t-slibgcc"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -2736,11 +2736,7 @@ mmix-knuth-mmixware)
 	use_gcc_stdint=wrap
 	;;
 mn10300-*-*)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	if test x$stabs = xyes
-	then
-		tm_file="${tm_file} dbx.h"
-	fi
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
 	use_collect2=no
 	use_gcc_stdint=wrap
 	;;
@@ -3555,30 +3551,30 @@ xstormy16-*-elf)
 	tmake_file="stormy16/t-stormy16"
 	;;
 xtensa*-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h xtensa/elf.h"
+	tm_file="${tm_file} elfos.h newlib-stdint.h xtensa/elf.h"
 	extra_options="${extra_options} xtensa/elf.opt"
 	;;
 xtensa*-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/linux.h"
+	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/linux.h"
 	tmake_file="${tmake_file} xtensa/t-xtensa"
 	;;
 xtensa*-*-uclinux*)
-	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/uclinux.h"
+	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/uclinux.h"
 	tmake_file="${tmake_file} xtensa/t-xtensa"
 	extra_options="${extra_options} xtensa/uclinux.opt"
 	;;
 am33_2.0-*-linux*)
-	tm_file="mn10300/mn10300.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
+	tm_file="mn10300/mn10300.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
 	gas=yes gnu_ld=yes
 	use_collect2=no
 	;;
 m32c-*-rtems*)
-	tm_file="dbxelf.h elfos.h ${tm_file} m32c/rtems.h rtems.h newlib-stdint.h"
+	tm_file="elfos.h ${tm_file} m32c/rtems.h rtems.h newlib-stdint.h"
 	c_target_objs="m32c-pragma.o"
 	cxx_target_objs="m32c-pragma.o"
  	;;
 m32c-*-elf*)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
 	c_target_objs="m32c-pragma.o"
 	cxx_target_objs="m32c-pragma.o"
  	;;
