@@ -922,46 +922,6 @@ validate_subreg (machine_mode omode, machine_mode imode,
 
   poly_uint64 regsize = REGMODE_NATURAL_SIZE (imode);
 
-  /* ??? This should not be here.  Temporarily continue to allow word_mode
-     subregs of anything.  The most common offender is (subreg:SI (reg:DF)).
-     Generally, backends are doing something sketchy but it'll take time to
-     fix them all.  */
-  if (omode == word_mode)
-    ;
-  /* ??? Similarly, e.g. with (subreg:DF (reg:TI)).  Though store_bit_field
-     is the culprit here, and not the backends.  */
-  else if (known_ge (osize, regsize) && known_ge (isize, osize))
-    ;
-  /* Allow component subregs of complex and vector.  Though given the below
-     extraction rules, it's not always clear what that means.  */
-  else if ((COMPLEX_MODE_P (imode) || VECTOR_MODE_P (imode))
-	   && GET_MODE_INNER (imode) == omode)
-    ;
-  /* ??? x86 sse code makes heavy use of *paradoxical* vector subregs,
-     i.e. (subreg:V4SF (reg:SF) 0) or (subreg:V4SF (reg:V2SF) 0).  This
-     surely isn't the cleanest way to represent this.  It's questionable
-     if this ought to be represented at all -- why can't this all be hidden
-     in post-reload splitters that make arbitrarily mode changes to the
-     registers themselves.  */
-  else if (VECTOR_MODE_P (omode)
-	   && GET_MODE_INNER (omode) == GET_MODE_INNER (imode))
-    ;
-  /* Subregs involving floating point modes are not allowed to
-     change size.  Therefore (subreg:DI (reg:DF) 0) is fine, but
-     (subreg:SI (reg:DF) 0) isn't.  */
-  else if (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))
-    {
-      if (! (known_eq (isize, osize)
-	     /* LRA can use subreg to store a floating point value in
-		an integer mode.  Although the floating point and the
-		integer modes need the same number of hard registers,
-		the size of floating point mode can be less than the
-		integer mode.  LRA also uses subregs for a register
-		should be used in different mode in on insn.  */
-	     || lra_in_progress))
-	return false;
-    }
-
   /* Paradoxical subregs must have offset zero.  */
   if (maybe_gt (osize, isize))
     return known_eq (offset, 0U);
