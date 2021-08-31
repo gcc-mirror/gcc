@@ -170,7 +170,7 @@
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
-   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip"
+   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -1326,11 +1326,17 @@
   [(set_attr "move_type" "shift_shift,load")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "zero_extendhi<GPR:mode>2"
+(define_expand "zero_extendhi<GPR:mode>2"
+  [(set (match_operand:GPR    0 "register_operand")
+	(zero_extend:GPR
+	    (match_operand:HI 1 "nonimmediate_operand")))]
+  "")
+
+(define_insn_and_split "*zero_extendhi<GPR:mode>2"
   [(set (match_operand:GPR    0 "register_operand"     "=r,r")
 	(zero_extend:GPR
 	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
-  ""
+  "!TARGET_ZBB"
   "@
    #
    lhu\t%0,%1"
@@ -1377,11 +1383,16 @@
   [(set_attr "move_type" "move,load")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "extend<SHORT:mode><SUPERQI:mode>2"
+(define_expand "extend<SHORT:mode><SUPERQI:mode>2"
+  [(set (match_operand:SUPERQI 0 "register_operand")
+	(sign_extend:SUPERQI (match_operand:SHORT 1 "nonimmediate_operand")))]
+  "")
+
+(define_insn_and_split "*extend<SHORT:mode><SUPERQI:mode>2"
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
-  ""
+  "!TARGET_ZBB"
   "@
    #
    l<SHORT:size>\t%0,%1"

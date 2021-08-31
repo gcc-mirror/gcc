@@ -17,6 +17,30 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(define_code_iterator bitmanip_bitwise [and ior])
+
+(define_code_iterator bitmanip_minmax [smin umin smax umax])
+
+(define_code_iterator clz_ctz_pcnt [clz ctz popcount])
+
+(define_code_attr bitmanip_optab [(smin "smin")
+				  (smax "smax")
+				  (umin "umin")
+				  (umax "umax")
+				  (clz "clz")
+				  (ctz "ctz")
+				  (popcount "popcount")])
+
+
+(define_code_attr bitmanip_insn [(smin "min")
+				 (smax "max")
+				 (umin "minu")
+				 (umax "maxu")
+				 (clz "clz")
+				 (ctz "ctz")
+				 (popcount "cpop")])
+
+
 ;; ZBA extension.
 
 (define_insn "*zero_extendsidi2_bitmanip"
@@ -74,3 +98,143 @@
   "slli.uw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "DI")])
+
+;; ZBB extension.
+
+(define_insn "*<optab>_not<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (bitmanip_bitwise:X (not:X (match_operand:X 1 "register_operand" "r"))
+                            (match_operand:X 2 "register_operand" "r")))]
+  "TARGET_ZBB"
+  "<insn>n\t%0,%2,%1"
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "<X:MODE>")])
+
+(define_insn "*xor_not<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (not:X (xor:X (match_operand:X 1 "register_operand" "r")
+                      (match_operand:X 2 "register_operand" "r"))))]
+  "TARGET_ZBB"
+  "xnor\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "<X:MODE>")])
+
+(define_insn "<bitmanip_optab>si2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_ZBB"
+  { return TARGET_64BIT ? "<bitmanip_insn>w\t%0,%1" : "<bitmanip_insn>\t%0,%1"; }
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "SI")])
+
+(define_insn "*<bitmanip_optab>disi2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (sign_extend:DI
+          (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r"))))]
+  "TARGET_64BIT && TARGET_ZBB"
+  "<bitmanip_insn>w\t%0,%1"
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "SI")])
+
+(define_insn "<bitmanip_optab>di2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (clz_ctz_pcnt:DI (match_operand:DI 1 "register_operand" "r")))]
+  "TARGET_64BIT && TARGET_ZBB"
+  "<bitmanip_insn>\t%0,%1"
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "DI")])
+
+(define_insn "*zero_extendhi<GPR:mode>2_bitmanip"
+  [(set (match_operand:GPR 0 "register_operand" "=r,r")
+        (zero_extend:GPR (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_ZBB"
+  "@
+   zext.h\t%0,%1
+   lhu\t%0,%1"
+  [(set_attr "type" "bitmanip,load")
+   (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "*extend<SHORT:mode><SUPERQI:mode>2_zbb"
+  [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
+	(sign_extend:SUPERQI
+	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
+  "TARGET_ZBB"
+  "@
+   sext.<SHORT:size>\t%0,%1
+   l<SHORT:size>\t%0,%1"
+  [(set_attr "type" "bitmanip,load")
+   (set_attr "mode" "<SUPERQI:MODE>")])
+
+(define_insn "*zero_extendhi<GPR:mode>2_zbb"
+  [(set (match_operand:GPR    0 "register_operand"     "=r,r")
+	(zero_extend:GPR
+	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
+  "TARGET_ZBB"
+  "@
+   zext.h\t%0,%1
+   lhu\t%0,%1"
+  [(set_attr "type" "bitmanip,load")
+   (set_attr "mode" "HI")])
+
+(define_insn "rotrsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(rotatert:SI (match_operand:SI 1 "register_operand" "r")
+		     (match_operand:QI 2 "arith_operand" "rI")))]
+  "TARGET_ZBB"
+  { return TARGET_64BIT ? "ror%i2w\t%0,%1,%2" : "ror%i2\t%0,%1,%2"; }
+  [(set_attr "type" "bitmanip")])
+
+(define_insn "rotrdi3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(rotatert:DI (match_operand:DI 1 "register_operand" "r")
+		     (match_operand:QI 2 "arith_operand" "rI")))]
+  "TARGET_64BIT && TARGET_ZBB"
+  "ror%i2\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+(define_insn "rotrsi3_sext"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (rotatert:SI (match_operand:SI 1 "register_operand" "r")
+				     (match_operand:QI 2 "register_operand" "r"))))]
+  "TARGET_64BIT && TARGET_ZBB"
+  "rorw\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+(define_insn "rotlsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(rotate:SI (match_operand:SI 1 "register_operand" "r")
+		   (match_operand:QI 2 "register_operand" "r")))]
+  "TARGET_ZBB"
+  { return TARGET_64BIT ? "rolw\t%0,%1,%2" : "rol\t%0,%1,%2"; }
+  [(set_attr "type" "bitmanip")])
+
+(define_insn "rotldi3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(rotate:DI (match_operand:DI 1 "register_operand" "r")
+		   (match_operand:QI 2 "register_operand" "r")))]
+  "TARGET_64BIT && TARGET_ZBB"
+  "rol\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+(define_insn "rotlsi3_sext"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (rotate:SI (match_operand:SI 1 "register_operand" "r")
+				   (match_operand:QI 2 "register_operand" "r"))))]
+  "TARGET_64BIT && TARGET_ZBB"
+  "rolw\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+(define_insn "bswap<mode>2"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (bswap:X (match_operand:X 1 "register_operand" "r")))]
+  "TARGET_64BIT && TARGET_ZBB"
+  "rev8\t%0,%1"
+  [(set_attr "type" "bitmanip")])
+
+(define_insn "<bitmanip_optab><mode>3"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (bitmanip_minmax:X (match_operand:X 1 "register_operand" "r")
+			   (match_operand:X 2 "register_operand" "r")))]
+  "TARGET_ZBB"
+  "<bitmanip_insn>\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
