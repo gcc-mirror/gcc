@@ -56,9 +56,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __detail
   {
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
+#define _GLIBCXX_HAVE_PLATFORM_WAIT 1
     using __platform_wait_t = int;
     static constexpr size_t __platform_wait_alignment = 4;
 #else
+// define _GLIBCX_HAVE_PLATFORM_WAIT and implement __platform_wait()
+// and __platform_notify() if there is a more efficient primitive supported
+// by the platform (e.g. __ulock_wait()/__ulock_wake()) which is better than
+// a mutex/condvar based wait.
     using __platform_wait_t = uint64_t;
     static constexpr size_t __platform_wait_alignment
       = __alignof__(__platform_wait_t);
@@ -70,7 +75,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
       = is_scalar_v<_Tp>
 	&& ((sizeof(_Tp) == sizeof(__detail::__platform_wait_t))
-	&& (alignof(_Tp*) >= __platform_wait_alignment));
+	&& (alignof(_Tp*) >= __detail::__platform_wait_alignment));
 #else
       = false;
 #endif
@@ -78,7 +83,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __detail
   {
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
-#define _GLIBCXX_HAVE_PLATFORM_WAIT 1
     enum class __futex_wait_flags : int
     {
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX_PRIVATE
@@ -118,11 +122,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 static_cast<int>(__futex_wait_flags::__wake_private),
 		 __all ? INT_MAX : 1);
       }
-#else
-// define _GLIBCX_HAVE_PLATFORM_WAIT and implement __platform_wait()
-// and __platform_notify() if there is a more efficient primitive supported
-// by the platform (e.g. __ulock_wait()/__ulock_wake()) which is better than
-// a mutex/condvar based wait
 #endif
 
     inline void
@@ -331,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	    if constexpr (__platform_wait_uses_type<_Up>)
 	      {
-		__val == __old;
+		__builtin_memcpy(&__val, &__old, sizeof(__val));
 	      }
 	    else
 	      {
