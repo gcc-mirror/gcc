@@ -83,6 +83,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check-util.o \
     rust/rust-hir-trait-resolve.o \
     rust/rust-hir-const-fold.o \
+    rust/rust-hir-type-check-type.o \
     rust/rust-lint-marklive.o \
     rust/rust-hir-type-check-path.o \
     $(END)
