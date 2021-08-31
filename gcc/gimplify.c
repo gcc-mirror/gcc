@@ -10830,6 +10830,38 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_DEVICE:
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE
+	      && OMP_CLAUSE_DEVICE_ANCESTOR (c))
+	    {
+	      if (code != OMP_TARGET)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<device%> clause with %<ancestor%> is only "
+			    "allowed on %<target%> construct");
+		  remove = true;
+		  break;
+		}
+
+	      tree clauses = *orig_list_p;
+	      for (; clauses ; clauses = OMP_CLAUSE_CHAIN (clauses))
+		if (OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_DEVICE
+		    && OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_FIRSTPRIVATE
+		    && OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_PRIVATE
+		    && OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_DEFAULTMAP
+		    && OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_MAP
+		   )
+		  {
+		    error_at (OMP_CLAUSE_LOCATION (c),
+			      "with %<ancestor%>, only the %<device%>, "
+			      "%<firstprivate%>, %<private%>, %<defaultmap%>, "
+			      "and %<map%> clauses may appear on the "
+			      "construct");
+		    remove = true;
+		    break;
+		  }
+	    }
+	  /* Fall through.  */
+
 	case OMP_CLAUSE_PRIORITY:
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:

@@ -7400,6 +7400,15 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"%<device%> id must be integral");
 	      remove = true;
 	    }
+	  else if (OMP_CLAUSE_DEVICE_ANCESTOR (c)
+		   && TREE_CODE (t) == INTEGER_CST
+		   && !integer_onep (t))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"the %<device%> clause expression must evaluate to "
+			"%<1%>");
+	      remove = true;
+	    }
 	  else
 	    {
 	      t = mark_rvalue_use (t);

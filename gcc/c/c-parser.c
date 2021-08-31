@@ -15963,37 +15963,87 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
 }
 
 /* OpenMP 4.0:
-   device ( expression ) */
+   device ( expression )
+
+   OpenMP 5.0:
+   device ( [device-modifier :] integer-expression )
+
+   device-modifier:
+     ancestor | device_num */
 
 static tree
 c_parser_omp_clause_device (c_parser *parser, tree list)
 {
   location_t clause_loc = c_parser_peek_token (parser)->location;
+  location_t expr_loc;
+  c_expr expr;
+  tree c, t;
+  bool ancestor = false;
+
   matching_parens parens;
-  if (parens.require_open (parser))
+  if (!parens.require_open (parser))
+    return list;
+
+  if (c_parser_next_token_is (parser, CPP_NAME)
+      && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
     {
-      location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr expr = c_parser_expr_no_commas (parser, NULL);
-      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
-      tree c, t = expr.value;
-      t = c_fully_fold (t, false, NULL);
-
-      parens.skip_until_found_close (parser);
-
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+      c_token *tok = c_parser_peek_token (parser);
+      const char *p = IDENTIFIER_POINTER (tok->value);
+      if (strcmp ("ancestor", p) == 0)
 	{
-	  c_parser_error (parser, "expected integer expression");
+	  /* A requires directive with the reverse_offload clause must be
+	  specified.  */
+	  if ((omp_requires_mask & OMP_REQUIRES_REVERSE_OFFLOAD) == 0)
+	    {
+	      error_at (tok->location, "%<ancestor%> device modifier not "
+				       "preceded by %<requires%> directive "
+				       "with %<reverse_offload%> clause");
+	      parens.skip_until_found_close (parser);
+	      return list;
+	    }
+	  ancestor = true;
+	}
+      else if (strcmp ("device_num", p) == 0)
+	;
+      else
+	{
+	  error_at (tok->location, "expected %<ancestor%> or %<device_num%>");
+	  parens.skip_until_found_close (parser);
 	  return list;
 	}
-
-      check_no_duplicate_clause (list, OMP_CLAUSE_DEVICE, "device");
-
-      c = build_omp_clause (clause_loc, OMP_CLAUSE_DEVICE);
-      OMP_CLAUSE_DEVICE_ID (c) = t;
-      OMP_CLAUSE_CHAIN (c) = list;
-      list = c;
+      c_parser_consume_token (parser);
+      c_parser_consume_token (parser);
     }
 
+  expr_loc = c_parser_peek_token (parser)->location;
+  expr = c_parser_expr_no_commas (parser, NULL);
+  expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+  t = expr.value;
+  t = c_fully_fold (t, false, NULL);
+
+  parens.skip_until_found_close (parser);
+
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+    {
+      c_parser_error (parser, "expected integer expression");
+      return list;
+    }
+  if (ancestor && TREE_CODE (t) == INTEGER_CST && !integer_onep (t))
+    {
+      error_at (expr_loc, "the %<device%> clause expression must evaluate to "
+			  "%<1%>");
+      return list;
+    }
+
+  check_no_duplicate_clause (list, OMP_CLAUSE_DEVICE, "device");
+
+  c = build_omp_clause (clause_loc, OMP_CLAUSE_DEVICE);
+
+  OMP_CLAUSE_DEVICE_ID (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+  OMP_CLAUSE_DEVICE_ANCESTOR (c) = ancestor;
+
+  list = c;
   return list;
 }
 

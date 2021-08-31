@@ -1037,6 +1037,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_DEVICE:
       pp_string (pp, "device(");
+      if (OMP_CLAUSE_DEVICE_ANCESTOR (clause))
+	pp_string (pp, "ancestor:");
       dump_generic_node (pp, OMP_CLAUSE_DEVICE_ID (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
