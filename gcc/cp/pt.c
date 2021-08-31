@@ -10873,7 +10873,8 @@ neglectable_inst_p (tree d)
 {
   return (d && DECL_P (d)
 	  && !undeduced_auto_decl (d)
-	  && !(TREE_CODE (d) == FUNCTION_DECL ? DECL_DECLARED_CONSTEXPR_P (d)
+	  && !(TREE_CODE (d) == FUNCTION_DECL
+	       ? FNDECL_MANIFESTLY_CONST_EVALUATED (d)
 	       : decl_maybe_constant_var_p (d)));
 }
 
@@ -10885,8 +10886,13 @@ limit_bad_template_recursion (tree decl)
 {
   struct tinst_level *lev = current_tinst_level;
   int errs = errorcount + sorrycount;
-  if (lev == NULL || errs == 0 || !neglectable_inst_p (decl))
+  if (errs == 0 || !neglectable_inst_p (decl))
     return false;
+
+  /* Avoid instantiating members of an ill-formed class.  */
+  if (DECL_CLASS_SCOPE_P (decl)
+      && CLASSTYPE_ERRONEOUS (DECL_CONTEXT (decl)))
+    return true;
 
   for (; lev; lev = lev->next)
     if (neglectable_inst_p (lev->maybe_get_node ()))
@@ -12211,6 +12217,13 @@ instantiate_class_template_1 (tree type)
   unreverse_member_declarations (type);
   finish_struct_1 (type);
   TYPE_BEING_DEFINED (type) = 0;
+
+  /* Remember if instantiating this class ran into errors, so we can avoid
+     instantiating member functions in limit_bad_template_recursion.  We set
+     this flag even if the problem was in another instantiation triggered by
+     this one, as that will likely also cause trouble for member functions.  */
+  if (errorcount + sorrycount > current_tinst_level->errors)
+    CLASSTYPE_ERRONEOUS (type) = true;
 
   /* We don't instantiate default arguments for member functions.  14.7.1:
 
@@ -19465,6 +19478,63 @@ out:
   return r;
 }
 
+/* Subroutine of maybe_fold_fn_template_args.  */
+
+static bool
+fold_targs_r (tree targs, tsubst_flags_t complain)
+{
+  int len = TREE_VEC_LENGTH (targs);
+  for (int i = 0; i < len; ++i)
+    {
+      tree &elt = TREE_VEC_ELT (targs, i);
+      if (!elt || TYPE_P (elt)
+	  || TREE_CODE (elt) == TEMPLATE_DECL)
+	continue;
+      if (TREE_CODE (elt) == NONTYPE_ARGUMENT_PACK)
+	{
+	  if (!fold_targs_r (ARGUMENT_PACK_ARGS (elt), complain))
+	    return false;
+	}
+      else if (/* We can only safely preevaluate scalar prvalues.  */
+	       SCALAR_TYPE_P (TREE_TYPE (elt))
+	       && !glvalue_p (elt)
+	       && !TREE_CONSTANT (elt))
+	{
+	  elt = cxx_constant_value_sfinae (elt, complain);
+	  if (elt == error_mark_node)
+	    return false;
+	}
+    }
+
+  return true;
+}
+
+/* Try to do constant evaluation of any explicit template arguments in FN
+   before overload resolution, to get any errors only once.  Return true iff
+   we didn't have any problems folding.  */
+
+static bool
+maybe_fold_fn_template_args (tree fn, tsubst_flags_t complain)
+{
+  if (processing_template_decl || fn == NULL_TREE)
+    return true;
+  if (fn == error_mark_node)
+    return false;
+  if (TREE_CODE (fn) == OFFSET_REF
+      || TREE_CODE (fn) == COMPONENT_REF)
+    fn = TREE_OPERAND (fn, 1);
+  if (BASELINK_P (fn))
+    fn = BASELINK_FUNCTIONS (fn);
+  if (TREE_CODE (fn) != TEMPLATE_ID_EXPR)
+    return true;
+  tree targs = TREE_OPERAND (fn, 1);
+  if (targs == NULL_TREE)
+    return true;
+  if (targs == error_mark_node)
+    return false;
+  return fold_targs_r (targs, complain);
+}
+
 /* Like tsubst but deals with expressions and performs semantic
    analysis.  FUNCTION_P is true if T is the "F" in "F (ARGS)" or
    "F<TARGS> (ARGS)".  */
@@ -20342,6 +20412,9 @@ tsubst_copy_and_build (tree t,
 	    && DECL_P (function)
 	    && !mark_used (function, complain) && !(complain & tf_error))
 	  RETURN (error_mark_node);
+
+	if (!maybe_fold_fn_template_args (function, complain))
+	  return error_mark_node;
 
 	/* Put back tf_decltype for the actual call.  */
 	complain |= decltype_flag;

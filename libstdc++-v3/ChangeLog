@@ -1,3 +1,9 @@
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96286
+	* testsuite/30_threads/promise/requirements/lwg3466.cc:
+	Remove dg-prune-outputs.
+
 2021-08-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/alloc_traits.h (allocator_traits): Add explicit

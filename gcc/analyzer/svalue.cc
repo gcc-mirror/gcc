@@ -105,7 +105,8 @@ svalue::to_json () const
 tree
 svalue::maybe_get_constant () const
 {
-  if (const constant_svalue *cst_sval = dyn_cast_constant_svalue ())
+  const svalue *sval = unwrap_any_unmergeable ();
+  if (const constant_svalue *cst_sval = sval->dyn_cast_constant_svalue ())
     return cst_sval->get_constant ();
   else
     return NULL_TREE;

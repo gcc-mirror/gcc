@@ -1695,7 +1695,8 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	      /* Logical right shift, or zero sign bit.  */
 	      widest_int arg = r1val | r1mask;
 	      int lzcount = wi::clz (arg);
-	      lzcount -= wi::get_precision (arg) - width;
+	      if (lzcount)
+		lzcount -= wi::get_precision (arg) - width;
 	      widest_int tmp = wi::mask <widest_int> (width, false);
 	      tmp = wi::lrshift (tmp, lzcount);
 	      tmp = wi::lrshift (tmp, wi::bit_and_not (r2val, r2mask));

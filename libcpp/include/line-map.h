@@ -1670,6 +1670,12 @@ class rich_location
   /* Destructor.  */
   ~rich_location ();
 
+  /* The class manages the memory pointed to by the elements of
+     the M_FIXIT_HINTS vector and is not meant to be copied or
+     assigned.  */
+  rich_location (const rich_location &) = delete;
+  void operator= (const rich_location &) = delete;
+
   /* Accessors.  */
   location_t get_loc () const { return get_loc (0); }
   location_t get_loc (unsigned int idx) const;

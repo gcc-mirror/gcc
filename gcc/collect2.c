@@ -301,7 +301,6 @@ const char tool_name[] = "collect2";
 
 static symkind is_ctor_dtor (const char *);
 
-static void handler (int);
 static void maybe_unlink_list (char **);
 static void add_to_list (struct head *, const char *);
 static int extract_init_priority (const char *);
@@ -408,14 +407,6 @@ collect_atexit (void)
   tool_cleanup (false);
 }
 
-static void
-handler (int signo)
-{
-  tool_cleanup (true);
-
-  signal (signo, SIG_DFL);
-  raise (signo);
-}
 /* Notify user of a non-error, without translating the format string.  */
 void
 notice_translated (const char *cmsgid, ...)
@@ -907,11 +898,7 @@ main (int argc, char **argv)
   COLLECT2_HOST_INITIALIZATION;
 #endif
 
-#ifdef SIGCHLD
-  /* We *MUST* set SIGCHLD to SIG_DFL so that the wait4() call will
-     receive the signal.  A different setting is inheritable */
-  signal (SIGCHLD, SIG_DFL);
-#endif
+  setup_signals ();
 
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
@@ -1050,27 +1037,6 @@ main (int argc, char **argv)
 
   if (argc < 2)
     fatal_error (input_location, "no arguments");
-
-#ifdef SIGQUIT
-  if (signal (SIGQUIT, SIG_IGN) != SIG_IGN)
-    signal (SIGQUIT, handler);
-#endif
-  if (signal (SIGINT, SIG_IGN) != SIG_IGN)
-    signal (SIGINT, handler);
-#ifdef SIGALRM
-  if (signal (SIGALRM, SIG_IGN) != SIG_IGN)
-    signal (SIGALRM, handler);
-#endif
-#ifdef SIGHUP
-  if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
-    signal (SIGHUP, handler);
-#endif
-  if (signal (SIGSEGV, SIG_IGN) != SIG_IGN)
-    signal (SIGSEGV, handler);
-#ifdef SIGBUS
-  if (signal (SIGBUS, SIG_IGN) != SIG_IGN)
-    signal (SIGBUS, handler);
-#endif
 
   /* Extract COMPILER_PATH and PATH into our prefix list.  */
   prefix_from_env ("COMPILER_PATH", &cpath);

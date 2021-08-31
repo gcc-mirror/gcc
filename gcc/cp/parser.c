@@ -12848,7 +12848,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	    IF_STMT_CONSTEVAL_P (statement) = true;
 	    condition = finish_if_stmt_cond (boolean_false_node, statement);
 
-	    gcc_rich_location richloc = tok->location;
+	    gcc_rich_location richloc (tok->location);
 	    bool non_compound_stmt_p = false;
 	    if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
 	      {
@@ -12876,7 +12876,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 						RID_ELSE))
 	      {
 		cp_token *else_tok = cp_lexer_peek_token (parser->lexer);
-		gcc_rich_location else_richloc = else_tok->location;
+		gcc_rich_location else_richloc (else_tok->location);
 		guard_tinfo = get_token_indent_info (else_tok);
 		/* Consume the `else' keyword.  */
 		cp_lexer_consume_token (parser->lexer);
@@ -29911,6 +29911,25 @@ cp_parser_simple_requirement (cp_parser *parser)
   if (expr.get_location() == UNKNOWN_LOCATION)
     expr.set_location (start);
 
+  for (tree t = expr; ; )
+    {
+      if (TREE_CODE (t) == TRUTH_ANDIF_EXPR
+	  || TREE_CODE (t) == TRUTH_ORIF_EXPR)
+	{
+	  t = TREE_OPERAND (t, 0);
+	  continue;
+	}
+      if (concept_check_p (t))
+	{
+	  gcc_rich_location richloc (get_start (start));
+	  richloc.add_fixit_insert_before (start, "requires ");
+	  warning_at (&richloc, OPT_Wmissing_requires, "testing "
+		      "if a concept-id is a valid expression; add "
+		      "%<requires%> to check satisfaction");
+	}
+      break;
+    }
+
   return finish_simple_requirement (expr.get_location (), expr);
 }
 
@@ -39030,17 +39049,56 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list)
 }
 
 /* OpenMP 4.0:
-   device ( expression ) */
+   device ( expression )
+
+   OpenMP 5.0:
+   device ( [device-modifier :] integer-expression )
+
+   device-modifier:
+     ancestor | device_num */
 
 static tree
 cp_parser_omp_clause_device (cp_parser *parser, tree list,
 			     location_t location)
 {
   tree t, c;
+  bool ancestor = false;
 
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON))
+    {
+      cp_token *tok = cp_lexer_peek_token (parser->lexer);
+      const char *p = IDENTIFIER_POINTER (tok->u.value);
+      if (strcmp ("ancestor", p) == 0)
+	{
+	  ancestor = true;
+
+	  /* A requires directive with the reverse_offload clause must be
+	  specified.  */
+	  if ((omp_requires_mask & OMP_REQUIRES_REVERSE_OFFLOAD) == 0)
+	    {
+	      error_at (tok->location, "%<ancestor%> device modifier not "
+				       "preceded by %<requires%> directive "
+				       "with %<reverse_offload%> clause");
+	      cp_parser_skip_to_closing_parenthesis (parser, true, false, true);
+	      return list;
+	    }
+	}
+      else if (strcmp ("device_num", p) == 0)
+	;
+      else
+	{
+	  error_at (tok->location, "expected %<ancestor%> or %<device_num%>");
+	  cp_parser_skip_to_closing_parenthesis (parser, true, false, true);
+	  return list;
+	}
+      cp_lexer_consume_token (parser->lexer);
+      cp_lexer_consume_token (parser->lexer);
+    }
 
   t = cp_parser_assignment_expression (parser);
 
@@ -39056,6 +39114,7 @@ cp_parser_omp_clause_device (cp_parser *parser, tree list,
   c = build_omp_clause (location, OMP_CLAUSE_DEVICE);
   OMP_CLAUSE_DEVICE_ID (c) = t;
   OMP_CLAUSE_CHAIN (c) = list;
+  OMP_CLAUSE_DEVICE_ANCESTOR (c) = ancestor;
 
   return c;
 }

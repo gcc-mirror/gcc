@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_int } */
-/* { dg-options "-O3 -fdump-tree-vect-details" } */
+/* { dg-additional-options "-O3" } */
 #define TYPE unsigned char
 #define MIN 0
 #define MAX 255

@@ -76660,20 +76660,20 @@ fi
 
 done
 
-ac_fn_c_check_decl "$LINENO" "F_GETFL" "ac_cv_have_decl_F_GETFL" "fcntl.h
+ac_fn_c_check_decl "$LINENO" "F_GETFL" "ac_cv_have_decl_F_GETFL" "#include <fcntl.h>
 "
 if test "x$ac_cv_have_decl_F_GETFL" = xyes; then :
 
 fi
 
-ac_fn_c_check_decl "$LINENO" "F_SETFL" "ac_cv_have_decl_F_SETFL" "fcntl.h
+ac_fn_c_check_decl "$LINENO" "F_SETFL" "ac_cv_have_decl_F_SETFL" "#include <fcntl.h>
 "
 if test "x$ac_cv_have_decl_F_SETFL" = xyes; then :
 
 fi
 
-if  "$ac_cv_have_decl_F_GETFL$ac_cv_have_decl_F_SETFL" = 11 ; then
-  ac_fn_c_check_decl "$LINENO" "O_NONBLOCK" "ac_cv_have_decl_O_NONBLOCK" "fcntl.h
+if test "$ac_cv_have_decl_F_GETFL$ac_cv_have_decl_F_SETFL" = yesyes ; then
+  ac_fn_c_check_decl "$LINENO" "O_NONBLOCK" "ac_cv_have_decl_O_NONBLOCK" "#include <fcntl.h>
 "
 if test "x$ac_cv_have_decl_O_NONBLOCK" = xyes; then :
 

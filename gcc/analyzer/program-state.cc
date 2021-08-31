@@ -1013,7 +1013,7 @@ program_state::on_edge (exploded_graph &eg,
   impl_region_model_context ctxt (eg, enode,
 				  &enode->get_state (),
 				  this,
-				  uncertainty,
+				  uncertainty, NULL,
 				  last_stmt);
   if (!m_region_model->maybe_update_for_edge (*succ,
 					      last_stmt,
@@ -1052,6 +1052,7 @@ program_state::push_call (exploded_graph &eg,
                                   &enode->get_state (),
                                   this,
                                   uncertainty,
+				  NULL,
                                   last_stmt);
   m_region_model->update_for_gcall (call_stmt, &ctxt);
 }
@@ -1074,6 +1075,7 @@ program_state::returning_call (exploded_graph &eg,
                                   &enode->get_state (),
                                   this,
                                   uncertainty,
+				  NULL,
                                   last_stmt);
   m_region_model->update_for_return_gcall (call_stmt, &ctxt);
 }
@@ -1152,7 +1154,7 @@ program_state::prune_for_point (exploded_graph &eg,
 	  impl_region_model_context ctxt (eg, enode_for_diag,
 					  this,
 					  &new_state,
-					  uncertainty,
+					  uncertainty, NULL,
 					  point.get_stmt ());
 	  detect_leaks (*this, new_state, NULL, eg.get_ext_state (), &ctxt);
 	}

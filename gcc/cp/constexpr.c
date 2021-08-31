@@ -942,7 +942,6 @@ explain_invalid_constexpr_fn (tree fun)
 {
   static hash_set<tree> *diagnosed;
   tree body;
-  location_t save_loc;
   /* Only diagnose defaulted functions, lambdas, or instantiations.  */
   if (!DECL_DEFAULTED_FN (fun)
       && !LAMBDA_TYPE_P (CP_DECL_CONTEXT (fun))
@@ -957,7 +956,7 @@ explain_invalid_constexpr_fn (tree fun)
     /* Already explained.  */
     return;
 
-  save_loc = input_location;
+  iloc_sentinel ils = input_location;
   if (!lambda_static_thunk_p (fun))
     {
       /* Diagnostics should completely ignore the static thunk, so leave
@@ -985,7 +984,6 @@ explain_invalid_constexpr_fn (tree fun)
 	    cx_check_missing_mem_inits (DECL_CONTEXT (fun), body, true);
 	}
     }
-  input_location = save_loc;
 }
 
 /* Objects of this type represent calls to constexpr functions
@@ -2572,6 +2570,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       location_t save_loc = input_location;
       input_location = loc;
       ++function_depth;
+      if (ctx->manifestly_const_eval)
+	FNDECL_MANIFESTLY_CONST_EVALUATED (fun) = true;
       instantiate_decl (fun, /*defer_ok*/false, /*expl_inst*/false);
       --function_depth;
       input_location = save_loc;
@@ -7445,6 +7445,11 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	}
     }
 
+  /* Remember the original location if that wouldn't need a wrapper.  */
+  if (location_t loc = EXPR_LOCATION (t))
+    if (CAN_HAVE_LOCATION_P (r))
+      SET_EXPR_LOCATION (r, loc);
+
   return r;
 }
 
@@ -7456,6 +7461,18 @@ tree
 cxx_constant_value (tree t, tree decl)
 {
   return cxx_eval_outermost_constant_expr (t, false, true, true, false, decl);
+}
+
+/* As above, but respect SFINAE.  */
+
+tree
+cxx_constant_value_sfinae (tree t, tsubst_flags_t complain)
+{
+  bool sfinae = !(complain & tf_error);
+  tree r = cxx_eval_outermost_constant_expr (t, sfinae, true, true);
+  if (sfinae && !TREE_CONSTANT (r))
+    r = error_mark_node;
+  return r;
 }
 
 /* Like cxx_constant_value, but used for evaluation of constexpr destructors

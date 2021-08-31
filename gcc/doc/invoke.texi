@@ -8752,6 +8752,28 @@ s x = @{ @};
 This warning is included in @option{-Wextra}.  To get other @option{-Wextra}
 warnings without this one, use @option{-Wextra -Wno-missing-field-initializers}.
 
+@item -Wno-missing-requires
+@opindex Wmissing-requires
+@opindex Wno-missing-requires
+
+By default, the compiler warns about a concept-id appearing as a C++20 simple-requirement:
+
+@smallexample
+bool satisfied = requires @{ C<T> @};
+@end smallexample
+
+Here @samp{satisfied} will be true if @samp{C<T>} is a valid
+expression, which it is for all T.  Presumably the user meant to write
+
+@smallexample
+bool satisfied = requires @{ requires C<T> @};
+@end smallexample
+
+so @samp{satisfied} is only true if concept @samp{C} is satisfied for
+type @samp{T}.
+
+This warning can be disabled with @option{-Wno-missing-requires}.
+
 @item -Wno-multichar
 @opindex Wno-multichar
 @opindex Wmultichar

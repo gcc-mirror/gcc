@@ -9841,6 +9841,44 @@ mips_mdebug_abi_name (void)
     }
 }
 
+static const char *
+mips_module_isa_name ()
+{
+  switch (mips_isa)
+    {
+    case MIPS_ISA_MIPS1:
+      return "mips1";
+    case MIPS_ISA_MIPS2:
+      return "mips2";
+    case MIPS_ISA_MIPS3:
+      return "mips3";
+    case MIPS_ISA_MIPS4:
+      return "mips4";
+    case MIPS_ISA_MIPS32:
+      return "mips32";
+    case MIPS_ISA_MIPS32R2:
+      return "mips32r2";
+    case MIPS_ISA_MIPS32R3:
+      return "mips32r3";
+    case MIPS_ISA_MIPS32R5:
+      return "mips32r5";
+    case MIPS_ISA_MIPS32R6:
+      return "mips32r6";
+    case MIPS_ISA_MIPS64:
+      return "mips64";
+    case MIPS_ISA_MIPS64R2:
+      return "mips64r2";
+    case MIPS_ISA_MIPS64R3:
+      return "mips64r3";
+    case MIPS_ISA_MIPS64R5:
+      return "mips64r5";
+    case MIPS_ISA_MIPS64R6:
+      return "mips64r6";
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Implement TARGET_ASM_FILE_START.  */
 
 static void
@@ -9873,6 +9911,9 @@ mips_file_start (void)
 	     mips_nan == MIPS_IEEE_754_2008 ? "2008" : "legacy");
 
 #ifdef HAVE_AS_DOT_MODULE
+  fprintf (asm_out_file, "\t.module\t%s\n",
+	   mips_module_isa_name ());
+
   /* Record the FP ABI.  See below for comments.  */
   if (TARGET_NO_FLOAT)
 #ifdef HAVE_AS_GNU_ATTRIBUTE
@@ -19817,9 +19858,12 @@ mips_set_architecture (const struct mips_cpu_info *info)
       mips_arch_info = info;
       mips_arch = info->cpu;
       mips_isa = info->isa;
-      if (mips_isa < 32)
+      if (mips_isa < MIPS_ISA_MIPS32)
 	mips_isa_rev = 0;
       else
+	/* we can do this is due to the
+	 * enum of MIPS32rN is from 32 to 37
+	 * enum of MIPS64rN is from 64 to 69 */
 	mips_isa_rev = (mips_isa & 31) + 1;
     }
 }

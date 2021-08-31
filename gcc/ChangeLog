@@ -1,3 +1,78 @@
+2021-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99260
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/call-info.o.
+
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Document -Wmissing-requires.
+
+2021-08-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Remove
+	TARGET_EXTRA_BUILTINS guard.
+
+2021-08-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Change
+	initialization of V2DI_type_node and unsigned_V2DI_type_node.
+
+2021-08-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/darwin.h (SUBTARGET_INIT_BUILTINS): Use the new
+	decl when new_builtins_are_live.
+	* config/rs6000/rs6000-builtin-new.def (__builtin_cfstring): New
+	built-in.
+
+2021-08-30  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (ISA_3_1_MASKS_SERVER): Add
+	OPTION_MASK_P10_FUSION_2STORE.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Enable
+	store fusion for Power10.
+	(is_fusable_store): New.
+	(power10_sched_reorder): Likewise.
+	(rs6000_sched_reorder): Do Power10 specific reordering.
+	(rs6000_sched_reorder2): Likewise.
+	* config/rs6000/rs6000.opt: Add new option.
+
+2021-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102128
+	* tree-vect-slp.c (vect_bb_vectorization_profitable_p):
+	Move scanning for if-converted scalar code to the caller
+	and instead delay clearing the visited flag for profitable
+	subgraphs.
+	(vect_slp_region): Cost all subgraphs before scheduling.
+	For if-converted BB vectorization scan for scalar COND_EXPRs
+	and do not vectorize if any found and the cost model is
+	very-cheap.
+
+2021-08-30  Richard Biener  <rguenther@suse.de>
+
+	* common.opt (fexceptions): Mark
+	EnabledBy(fnon-call-exceptions).
+	* doc/invoke.texi (fnon-call-exceptions): Document this
+	enables -fexceptions.
+
+2021-08-30  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* tsystem.h (abort): Define abort() if inhibit_libc is defined and it
+	is not already defined.
+
+2021-08-30  liuhongt  <hongtao.liu@intel.com>
+
+	* expmed.c (extract_bit_field_1): Make sure we're playing with
+	integral modes before call extract_integral_bit_field.
+	(extract_integral_bit_field): Add a parameter of type
+	scalar_int_mode which corresponds to of tmode.
+	And call extract_and_convert_fixed_bit_field instead of
+	extract_fixed_bit_field and convert_extracted_bit_field.
+	(extract_and_convert_fixed_bit_field): New function, it's a
+	combination of extract_fixed_bit_field and
+	convert_extracted_bit_field.
+
 2021-08-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (darwin_libc_has_function): Do not run

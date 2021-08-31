@@ -841,7 +841,7 @@ x86_64_elf_unique_section (tree decl, int reloc)
 void
 x86_elf_aligned_decl_common (FILE *file, tree decl,
 			const char *name, unsigned HOST_WIDE_INT size,
-			int align)
+			unsigned align)
 {
   if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
       && size > (unsigned int)ix86_section_threshold)
@@ -862,7 +862,7 @@ x86_elf_aligned_decl_common (FILE *file, tree decl,
 
 void
 x86_output_aligned_bss (FILE *file, tree decl, const char *name,
-		       	unsigned HOST_WIDE_INT size, int align)
+		       	unsigned HOST_WIDE_INT size, unsigned align)
 {
   if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
       && size > (unsigned int)ix86_section_threshold)

@@ -61237,6 +61237,7 @@ all-gdb: maybe-all-libiconv
 all-gdb: maybe-all-opcodes
 all-gdb: maybe-all-libdecnumber
 all-gdb: maybe-all-libctf
+all-gdb: maybe-all-libbacktrace
 all-gdbserver: maybe-all-libiberty
 configure-gdbsupport: maybe-configure-intl
 all-gdbsupport: maybe-all-intl
