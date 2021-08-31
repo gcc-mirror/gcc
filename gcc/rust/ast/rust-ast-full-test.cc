@@ -3309,48 +3309,6 @@ StructExprStructFields::as_string () const
 }
 
 std::string
-EnumExprStruct::as_string () const
-{
-  std::string str ("EnumExprStruct (or subclass): ");
-
-  str += "\n Path: " + get_enum_variant_path ().as_string ();
-
-  str += "\n Fields: ";
-  if (fields.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &field : fields)
-	str += "\n  " + field->as_string ();
-    }
-
-  return str;
-}
-
-std::string
-EnumExprFieldWithVal::as_string () const
-{
-  // used to get value string
-  return value->as_string ();
-}
-
-std::string
-EnumExprFieldIdentifierValue::as_string () const
-{
-  // TODO: rewrite to work with non-linearisable exprs
-  return field_name + " : " + EnumExprFieldWithVal::as_string ();
-}
-
-std::string
-EnumExprFieldIndexValue::as_string () const
-{
-  // TODO: rewrite to work with non-linearisable exprs
-  return std::to_string (index) + " : " + EnumExprFieldWithVal::as_string ();
-}
-
-std::string
 EnumItem::as_string () const
 {
   // outer attributes
@@ -5180,42 +5138,6 @@ StructExprStructFields::accept_vis (ASTVisitor &vis)
 
 void
 StructExprStructBase::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIdentifier::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIdentifierValue::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIndexValue::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprStruct::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprTuple::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldless::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

@@ -96,13 +96,6 @@ public:
   virtual void visit (AST::StructExprFieldIndexValue &field) {}
   virtual void visit (AST::StructExprStructFields &expr) {}
   virtual void visit (AST::StructExprStructBase &expr) {}
-  //  virtual void visit(EnumExprField& field) {}
-  virtual void visit (AST::EnumExprFieldIdentifier &field) {}
-  virtual void visit (AST::EnumExprFieldIdentifierValue &field) {}
-  virtual void visit (AST::EnumExprFieldIndexValue &field) {}
-  virtual void visit (AST::EnumExprStruct &expr) {}
-  virtual void visit (AST::EnumExprTuple &expr) {}
-  virtual void visit (AST::EnumExprFieldless &expr) {}
   virtual void visit (AST::CallExpr &expr) {}
   virtual void visit (AST::MethodCallExpr &expr) {}
   virtual void visit (AST::FieldAccessExpr &expr) {}

@@ -3931,42 +3931,6 @@ StructExprStructBase::accept_vis (HIRVisitor &vis)
 }
 
 void
-EnumExprFieldIdentifier::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIdentifierValue::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIndexValue::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprStruct::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprTuple::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldless::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 CallExpr::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
