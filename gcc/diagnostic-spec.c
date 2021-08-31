@@ -105,7 +105,7 @@ nowarn_spec_t::nowarn_spec_t (opt_code opt)
     }
 }
 
-/* Map from location to its no-warning disposition.  */
+/* A mapping from a 'location_t' to the warning spec set for it.  */
 
 GTY(()) xint_hash_map_t *nowarn_map;
 
