@@ -1512,12 +1512,28 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	 target mode is the same as the variable's promotion.  */
       if (GET_CODE (op) == SUBREG
 	  && SUBREG_PROMOTED_VAR_P (op)
-	  && SUBREG_PROMOTED_SIGNED_P (op)
-	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (op))))
+	  && SUBREG_PROMOTED_SIGNED_P (op))
 	{
-	  temp = rtl_hooks.gen_lowpart_no_emit (mode, SUBREG_REG (op));
-	  if (temp)
-	    return temp;
+	  rtx subreg = SUBREG_REG (op);
+	  machine_mode subreg_mode = GET_MODE (subreg);
+	  if (!paradoxical_subreg_p (mode, subreg_mode))
+	    {
+	      temp = rtl_hooks.gen_lowpart_no_emit (mode, subreg);
+	      if (temp)
+		{
+		  /* Preserve SUBREG_PROMOTED_VAR_P.  */
+		  if (partial_subreg_p (temp))
+		    {
+		      SUBREG_PROMOTED_VAR_P (temp) = 1;
+		      SUBREG_PROMOTED_SET (temp, 1);
+		    }
+		  return temp;
+		}
+	    }
+	  else
+	    /* Sign-extending a sign-extended subreg.  */
+	    return simplify_gen_unary (SIGN_EXTEND, mode,
+				       subreg, subreg_mode);
 	}
 
       /* (sign_extend:M (sign_extend:N <X>)) is (sign_extend:M <X>).
@@ -1631,12 +1647,28 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	 target mode is the same as the variable's promotion.  */
       if (GET_CODE (op) == SUBREG
 	  && SUBREG_PROMOTED_VAR_P (op)
-	  && SUBREG_PROMOTED_UNSIGNED_P (op)
-	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (op))))
+	  && SUBREG_PROMOTED_UNSIGNED_P (op))
 	{
-	  temp = rtl_hooks.gen_lowpart_no_emit (mode, SUBREG_REG (op));
-	  if (temp)
-	    return temp;
+	  rtx subreg = SUBREG_REG (op);
+	  machine_mode subreg_mode = GET_MODE (subreg);
+	  if (!paradoxical_subreg_p (mode, subreg_mode))
+	    {
+	      temp = rtl_hooks.gen_lowpart_no_emit (mode, subreg);
+	      if (temp)
+		{
+		  /* Preserve SUBREG_PROMOTED_VAR_P.  */
+		  if (partial_subreg_p (temp))
+		    {
+		      SUBREG_PROMOTED_VAR_P (temp) = 1;
+		      SUBREG_PROMOTED_SET (temp, 0);
+		    }
+		  return temp;
+		}
+	    }
+	  else
+	    /* Zero-extending a zero-extended subreg.  */
+	    return simplify_gen_unary (ZERO_EXTEND, mode,
+				       subreg, subreg_mode);
 	}
 
       /* Extending a widening multiplication should be canonicalized to

@@ -688,7 +688,24 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
       && (GET_MODE_PRECISION (subreg_promoted_mode (x))
 	  >= GET_MODE_PRECISION (int_mode))
       && SUBREG_CHECK_PROMOTED_SIGN (x, unsignedp))
-    x = gen_lowpart (int_mode, SUBREG_REG (x));
+    {
+      scalar_int_mode int_orig_mode;
+      machine_mode orig_mode = GET_MODE (x);
+      x = gen_lowpart (int_mode, SUBREG_REG (x));
+
+      /* Preserve SUBREG_PROMOTED_VAR_P if the new mode is wider than
+	 the original mode, but narrower than the inner mode.  */
+      if (GET_CODE (x) == SUBREG
+	  && GET_MODE_PRECISION (subreg_promoted_mode (x))
+	     > GET_MODE_PRECISION (int_mode)
+	  && is_a <scalar_int_mode> (orig_mode, &int_orig_mode)
+	  && GET_MODE_PRECISION (int_mode)
+	     > GET_MODE_PRECISION (int_orig_mode))
+	{
+	  SUBREG_PROMOTED_VAR_P (x) = 1;
+	  SUBREG_PROMOTED_SET (x, unsignedp);
+	}
+    }
 
   if (GET_MODE (x) != VOIDmode)
     oldmode = GET_MODE (x);
