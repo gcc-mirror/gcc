@@ -1,3 +1,12 @@
+2021-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-08-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/87737
+	* resolve.c (resolve_entries): For functions of type CHARACTER
+	tighten the checks for matching characteristics.
+
 2021-08-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
