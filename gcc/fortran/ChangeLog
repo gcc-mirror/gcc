@@ -1,3 +1,23 @@
+2021-08-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/46691
+	PR fortran/99819
+	* class.c (gfc_build_class_symbol): Remove the error that
+	disables assumed size class arrays. Class array types that are
+	not deferred shape or assumed rank are given a unique name and
+	placed in the procedure namespace.
+	* trans-array.c (gfc_trans_g77_array): Obtain the data pointer
+	for class arrays.
+	(gfc_trans_dummy_array_bias): Suppress the runtime error for
+	extent violations in explicit shape class arrays because it
+	always fails.
+	* trans-expr.c (gfc_conv_procedure_call): Handle assumed size
+	class actual arguments passed to non-descriptor formal args by
+	using the data pointer, stored as the symbol's backend decl.
+
 2021-08-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
