@@ -1249,7 +1249,8 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
          than HOST_BITS_PER_WIDE_INT.  */
       if (HWI_COMPUTABLE_MODE_P (mode)
 	  && COMPARISON_P (op)
-	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0)
+	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0
+	  && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op)))
 	{
 	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
 	  if (temp)

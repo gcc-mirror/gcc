@@ -5903,7 +5903,8 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
       if (HWI_COMPUTABLE_MODE_P (mode)
 	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0
 	  && (temp = get_last_value (XEXP (x, 0)))
-	  && COMPARISON_P (temp))
+	  && COMPARISON_P (temp)
+	  && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (XEXP (x, 0))))
 	return gen_lowpart (mode, XEXP (x, 0));
       break;
 
