@@ -46,6 +46,18 @@ program p
     integer, parameter :: l9 = len (r(1)%u(:)(3:4))
     if (l9 /= 2) stop 13
   end block
+
+  call sub (42, "abcde")
+contains
+  subroutine sub (m, c)
+    integer,          intent(in) :: m
+    character(len=*), intent(in) :: c
+    character(len=m)    :: p, o(3)
+    integer, parameter  :: l10 = len (p(6:7))
+    integer, parameter  :: l11 = len (o(:)(6:7))
+    integer, parameter  :: l12 = len (c(2:3))
+    if (l10 /= 2 .or. l11 /= 2 .or. l12 /= 2) stop 14
+  end subroutine sub
 end
 
 ! { dg-final { scan-tree-dump-times "_gfortran_stop_numeric" 2 "original" } }
