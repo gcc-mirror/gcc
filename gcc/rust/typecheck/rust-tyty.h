@@ -1709,7 +1709,11 @@ public:
 
   std::string get_name () const override final { return as_string (); }
 
-  bool is_unit () const override { return true; }
+  bool is_unit () const override
+  {
+    rust_assert (can_resolve ());
+    return resolve ()->is_unit ();
+  }
 
   std::string get_symbol () const { return symbol; }
 
