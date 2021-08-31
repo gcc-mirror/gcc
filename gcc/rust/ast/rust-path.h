@@ -1029,6 +1029,15 @@ public:
   }
 
   Location get_locus () const override final { return locus; }
+
+  void iterate_segments (std::function<bool (TypePathSegment *)> cb)
+  {
+    for (auto it = segments.begin (); it != segments.end (); it++)
+      {
+	if (!cb ((*it).get ()))
+	  return;
+      }
+  }
 };
 } // namespace AST
 } // namespace Rust
