@@ -243,6 +243,12 @@
 #endif
 
 #ifdef __sun__
+// <fenv.h> defines these as members of fex_numeric_t
+#undef l
+#undef f
+#undef d
+#undef q
+#undef p
 // See https://gcc.gnu.org/ml/libstdc++/2019-05/msg00175.html
 #undef ptr
 #endif
