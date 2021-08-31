@@ -1,3 +1,106 @@
+2021-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99260
+	* analyzer.h (class custom_edge_info): New class, adapted from
+	exploded_edge::custom_info_t.  Make member functions const.
+	Make update_model return bool, converting edge param from
+	reference to a pointer, and adding a ctxt param.
+	(class path_context): New class.
+	* call-info.cc: New file.
+	* call-info.h: New file.
+	* engine.cc: Include "analyzer/call-info.h" and <memory>.
+	(impl_region_model_context::impl_region_model_context): Update for
+	new m_path_ctxt field.
+	(impl_region_model_context::bifurcate): New.
+	(impl_region_model_context::terminate_path): New.
+	(impl_region_model_context::get_malloc_map): New.
+	(impl_sm_context::impl_sm_context): Update for new m_path_ctxt
+	field.
+	(impl_sm_context::get_fndecl_for_call): Likewise.
+	(impl_sm_context::set_next_state): Likewise.
+	(impl_sm_context::warn): Likewise.
+	(impl_sm_context::is_zero_assignment): Likewise.
+	(impl_sm_context::get_path_context): New.
+	(impl_sm_context::m_path_ctxt): New.
+	(impl_region_model_context::on_condition): Update for new
+	path_ctxt param.  Handle m_enode_for_diag being NULL.
+	(impl_region_model_context::on_phi): Update for new path_ctxt
+	param.
+	(exploded_node::on_stmt): Add path_ctxt param, updating ctor calls
+	to use it as necessary.  Use it to bail out after sm-handling,
+	if needed.
+	(exploded_node::detect_leaks): Update for new path_ctxt param.
+	(dynamic_call_info_t::update_model): Update for conversion of
+	exploded_edge::custom_info_t to custom_edge_info.
+	(dynamic_call_info_t::add_events_to_path): Likewise.
+	(rewind_info_t::update_model): Likewise.
+	(rewind_info_t::add_events_to_path): Likewise.
+	(exploded_edge::exploded_edge): Likewise.
+	(exploded_graph::add_edge): Likewise.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	Update for new path_ctxt param.
+	(class impl_path_context): New.
+	(exploded_graph::process_node): Update for new path_ctxt param.
+	Create an impl_path_context and pass it to exploded_node::on_stmt.
+	Use it to terminate iterating stmts if terminate_path is called
+	on it.  After processing a run of stmts, query path_ctxt to
+	potentially terminate the analysis path, and/or to "bifurcate" the
+	analysis into multiple additional paths.
+	(feasibility_state::maybe_update_for_edge): Update for new
+	update_model ctxt param.
+	* exploded-graph.h
+	(impl_region_model_context::impl_region_model_context): Add
+	path_ctxt param.
+	(impl_region_model_context::bifurcate): New.
+	(impl_region_model_context::terminate_path): New
+	(impl_region_model_context::get_ext_state): New.
+	(impl_region_model_context::get_malloc_map): New.
+	(impl_region_model_context::m_path_ctxt): New field.
+	(exploded_node::on_stmt): Add path_ctxt param.
+	(class exploded_edge::custom_info_t): Move to analyzer.h, renaming
+	to custom_edge_info, and making the changes as noted in analyzer.h
+	above.
+	(exploded_edge::exploded_edge): Update for these changes to
+	exploded_edge::custom_info_t.
+	(exploded_edge::m_custom_info): Likewise.
+	(class dynamic_call_info_t): Likewise.
+	(class rewind_info_t): Likewise.
+	(exploded_graph::add_edge): Likewise.
+	* program-state.cc (program_state::on_edge): Update for new
+	path_ctxt param.
+	(program_state::push_call): Likewise.
+	(program_state::returning_call): Likewise.
+	(program_state::prune_for_point): Likewise.
+	* region-model-impl-calls.cc: Include "analyzer/call-info.h".
+	(call_details::get_fndecl_for_call): New.
+	(region_model::impl_call_realloc): Reimplement.
+	* region-model.cc (region_model::on_call_pre): Move call to
+	impl_call_realloc to...
+	(region_model::on_call_post): ...here.  Consolidate creation
+	of call_details instance.
+	(noop_region_model_context::bifurcate): New.
+	(noop_region_model_context::terminate_path): New.
+	* region-model.h (call_details::get_call_stmt): New.
+	(call_details::get_fndecl_for_call): New.
+	(region_model::on_realloc_with_move): New.
+	(region_model_context::bifurcate): New.
+	(region_model_context::terminate_path): New.
+	(region_model_context::get_ext_state): New.
+	(region_model_context::get_malloc_map): New.
+	(noop_region_model_context::bifurcate): New.
+	(noop_region_model_context::terminate_path): New.
+	(noop_region_model_context::get_ext_state): New.
+	(noop_region_model_context::get_malloc_map): New.
+	* sm-malloc.cc: Include "analyzer/program-state.h".
+	(malloc_state_machine::on_realloc_call): Reimplement.
+	(malloc_state_machine::on_realloc_with_move): New.
+	(region_model::on_realloc_with_move): New.
+	* sm-signal.cc (class signal_delivery_edge_info_t): Update for
+	conversion from exploded_edge::custom_info_t to custom_edge_info.
+	* sm.h (sm_context::get_path_context): New.
+	* svalue.cc (svalue::maybe_get_constant): Call
+	unwrap_any_unmergeable.
+
 2021-08-25  Ankur Saini  <arsenic@sourceware.org>
 
 	PR analyzer/101980

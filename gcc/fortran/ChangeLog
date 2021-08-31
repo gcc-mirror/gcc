@@ -1,3 +1,16 @@
+2021-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102113
+	* match.c (gfc_match_goto): Allow for whitespace in parsing list
+	of labels.
+
+2021-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101349
+	* resolve.c (resolve_allocate_expr): An unlimited polymorphic
+	argument to ALLOCATE must be ALLOCATABLE or a POINTER.  Fix the
+	corresponding check.
+
 2021-08-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/87737

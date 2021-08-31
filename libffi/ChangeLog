@@ -1,3 +1,9 @@
+2021-08-30  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	PR libffi/83636
+	* src/mips/n32.S: disable .set mips4
+	* src/mips/ffi.c: use different JR encoding for r6.
+
 2021-07-09  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR libffi/101336

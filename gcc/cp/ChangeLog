@@ -1,3 +1,30 @@
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96286
+	* cp-tree.h (struct lang_type): Add erroneous bit-field.
+	(CLASSTYPE_ERRONEOUS): New.
+	* pt.c (limit_bad_template_recursion): Check it.
+	(instantiate_class_template_1): Set it.
+
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_outermost_constant_expr): Copy
+	expr location to result.
+
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101460
+	* cp-tree.h (cxx_constant_value_sfinae): Declare.
+	* constexpr.c (cxx_constant_value_sfinae): New.
+	* pt.c (fold_targs_r, maybe_fold_fn_template_args): New.
+	(tsubst_copy_and_build) [CALL_EXPR]: Call
+	maybe_fold_fn_template_args.
+
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_simple_requirement): Warn about missing
+	requires.
+
 2021-08-27  Jason Merrill  <jason@redhat.com>
 
 	* typeck2.c (build_x_arrow): Do set TREE_TYPE when operand is

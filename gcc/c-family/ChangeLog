@@ -1,3 +1,7 @@
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Wmissing-requires.
+
 2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR other/93067
