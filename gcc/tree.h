@@ -4365,11 +4365,14 @@ tree_strip_any_location_wrapper (tree exp)
 #define long_long_integer_type_node	integer_types[itk_long_long]
 #define long_long_unsigned_type_node	integer_types[itk_unsigned_long_long]
 
-/* True if NODE is an erroneous expression.  */
+/* True if T is an erroneous expression.  */
 
-#define error_operand_p(NODE)					\
-  ((NODE) == error_mark_node					\
-   || ((NODE) && TREE_TYPE ((NODE)) == error_mark_node))
+inline bool
+error_operand_p (const_tree t)
+{
+  return (t == error_mark_node
+	  || (t && TREE_TYPE (t) == error_mark_node));
+}
 
 /* Return the number of elements encoded directly in a VECTOR_CST.  */
 
