@@ -9135,12 +9135,26 @@ package body Sem_Attr is
       -- Leading_Part --
       ------------------
 
-      when Attribute_Leading_Part =>
+      when Attribute_Leading_Part => Leading_Part : declare
+         Radix_Digits : constant Uint := Expr_Value (E2);
+
+      begin
+         if UI_Le (Radix_Digits, Uint_0) then
+            Apply_Compile_Time_Constraint_Error
+              (N, "Radix_Digits in Leading_Part is zero or negative",
+               CE_Explicit_Raise,
+               Warn => not Static);
+
+            Check_Expressions;
+            return;
+         end if;
+
          Fold_Ureal
            (N,
             Eval_Fat.Leading_Part
-              (P_Base_Type, Expr_Value_R (E1), Expr_Value (E2)),
+              (P_Base_Type, Expr_Value_R (E1), Radix_Digits),
             Static);
+      end Leading_Part;
 
       ------------
       -- Length --
