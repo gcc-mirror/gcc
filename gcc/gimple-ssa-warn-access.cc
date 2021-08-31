@@ -2433,7 +2433,7 @@ maybe_warn_alloc_args_overflow (gimple *stmt, const tree args[2],
 	}
     }
 
-  if (!argrange[0])
+  if (!argrange[0][0])
     return;
 
   /* For a two-argument alloc_size, validate the product of the two
