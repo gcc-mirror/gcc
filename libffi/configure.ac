@@ -1,40 +1,22 @@
 dnl Process this with autoconf to create configure
 
+AC_PREREQ(2.68)
 
-AC_INIT([libffi], [3.99999], [http://github.com/atgreen/libffi/issues])
+AC_INIT([libffi], [3.4.2], [http://github.com/libffi/libffi/issues])
 AC_CONFIG_HEADERS([fficonfig.h])
-
-AM_ENABLE_MULTILIB(, ..)
 
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 
-AM_INIT_AUTOMAKE([no-dist])
+case "${host}" in
+  frv*-elf)
+    LDFLAGS=`echo $LDFLAGS | sed "s/\-B[^ ]*libgloss\/frv\///"`\ -B`pwd`/../libgloss/frv/
+    ;;
+esac
 
-# See if makeinfo has been installed and is modern enough
-# that we can use it.
-ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
-                   [GNU texinfo.* \([0-9][0-9.]*\)],
-                   [4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
-AM_CONDITIONAL(BUILD_INFO, test $gcc_cv_prog_makeinfo_modern = "yes")
+AX_ENABLE_BUILDDIR
 
-# We would like our source tree to be readonly. However when releases or
-# pre-releases are generated, the flex/bison generated files as well as the
-# various formats of manuals need to be included along with the rest of the
-# sources.  Therefore we have --enable-generated-files-in-srcdir to do
-# just that.
-AC_MSG_CHECKING(generated-files-in-srcdir)
-AC_ARG_ENABLE(generated-files-in-srcdir,
-AS_HELP_STRING([--enable-generated-files-in-srcdir],
- [put copies of generated files in source dir intended for creating source tarballs for users without texinfo bison or flex]),
-[case "$enableval" in
- yes) enable_generated_files_in_srcdir=yes ;;
- no)  enable_generated_files_in_srcdir=no ;;
- *)   AC_MSG_ERROR([Unknown argument to enable/disable version-specific libs]);;
- esac],
-[enable_generated_files_in_srcdir=no])
-AC_MSG_RESULT($enable_generated_files_in_srcdir)
-AM_CONDITIONAL(GENINSRC, test "$enable_generated_files_in_srcdir" = yes)
+AM_INIT_AUTOMAKE
 
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.
 # We must force CC to /not/ be precious variables; otherwise
@@ -57,19 +39,38 @@ AC_SUBST(CFLAGS)
 AM_PROG_AS
 AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
+AC_CONFIG_MACRO_DIR([m4])
+
+AC_CHECK_TOOL(READELF, readelf)
 
 # Test for 64-bit build.
 AC_CHECK_SIZEOF([size_t])
 
+AX_COMPILER_VENDOR
+AX_CC_MAXOPT
+# The AX_CFLAGS_WARN_ALL macro doesn't currently work for sunpro
+# compiler.
+if test "$ax_cv_c_compiler_vendor" != "sun"; then
+  AX_CFLAGS_WARN_ALL
+fi
+
+if test "x$GCC" = "xyes"; then
+  CFLAGS="$CFLAGS -fexceptions"
+fi
+
 cat > local.exp <<EOF
 set CC_FOR_TARGET "$CC"
 set CXX_FOR_TARGET "$CXX"
+set compiler_vendor "$ax_cv_c_compiler_vendor"
 EOF
 
 AM_MAINTAINER_MODE
 
+AC_CHECK_HEADERS(sys/memfd.h)
+AC_CHECK_FUNCS([memfd_create])
+
 AC_CHECK_HEADERS(sys/mman.h)
-AC_CHECK_FUNCS([mmap mkostemp])
+AC_CHECK_FUNCS([mmap mkostemp mkstemp])
 AC_FUNC_MMAP_BLACKLIST
 
 dnl The -no-testsuite modules omit the test subdir.
@@ -181,6 +182,28 @@ case "$TARGET" in
     ;;
 esac
 
+AC_CACHE_CHECK([whether compiler supports pointer authentication],
+   libffi_cv_as_ptrauth, [
+   libffi_cv_as_ptrauth=unknown
+   AC_TRY_COMPILE(,[
+#ifdef __clang__
+# if __has_feature(ptrauth_calls)
+#  define HAVE_PTRAUTH 1
+# endif
+#endif
+
+#ifndef HAVE_PTRAUTH
+# error Pointer authentication not supported
+#endif
+		   ],
+		   [libffi_cv_as_ptrauth=yes],
+		   [libffi_cv_as_ptrauth=no])
+])
+if test "x$libffi_cv_as_ptrauth" = xyes; then
+    AC_DEFINE(HAVE_PTRAUTH, 1,
+	      [Define if your compiler supports pointer authentication.])
+fi
+
 # On PaX enable kernels that have MPROTECT enable we can't use PROT_EXEC.
 AC_ARG_ENABLE(pax_emutramp,
   [  --enable-pax_emutramp       enable pax emulated trampolines, for we can't use PROT_EXEC],
@@ -189,15 +212,20 @@ AC_ARG_ENABLE(pax_emutramp,
       [Define this if you want to enable pax emulated trampolines])
   fi)
 
+LT_SYS_SYMBOL_USCORE
+if test "x$sys_symbol_underscore" = xyes; then
+    AC_DEFINE(SYMBOL_UNDERSCORE, 1, [Define if symbols are underscored.])
+fi
+
 FFI_EXEC_TRAMPOLINE_TABLE=0
 case "$target" in
-     *arm*-apple-darwin* | aarch64-apple-darwin*)
+     *arm*-apple-* | aarch64-apple-*)
        FFI_EXEC_TRAMPOLINE_TABLE=1
        AC_DEFINE(FFI_EXEC_TRAMPOLINE_TABLE, 1,
                  [Cannot use PROT_EXEC on this target, so, we revert to
                    alternative means])
      ;;
-     *-apple-darwin1* | *-*-freebsd* | *-*-kfreebsd* | *-*-openbsd* | *-pc-solaris*)
+     *-apple-* | *-*-freebsd* | *-*-kfreebsd* | *-*-openbsd* | *-pc-solaris* | *-linux-android*)
        AC_DEFINE(FFI_MMAP_EXEC_WRIT, 1,
                  [Cannot use malloc on this target, so, we revert to
                    alternative means])
@@ -238,19 +266,15 @@ EOF
 fi
 
 if test "x$GCC" = "xyes"; then
+  AX_CHECK_COMPILE_FLAG(-fno-lto, libffi_cv_no_lto=-fno-lto)
+
   AC_CACHE_CHECK([whether .eh_frame section should be read-only],
       libffi_cv_ro_eh_frame, [
-  	libffi_cv_ro_eh_frame=no
+  	libffi_cv_ro_eh_frame=yes
   	echo 'extern void foo (void); void bar (void) { foo (); foo (); }' > conftest.c
-  	if $CC $CFLAGS -c -fpic -fexceptions -o conftest.o conftest.c > /dev/null 2>&1; then
-	    objdump -h conftest.o > conftest.dump 2>&1
-	    libffi_eh_frame_line=`grep -n eh_frame conftest.dump | cut -d: -f 1`
-	    if test "x$libffi_eh_frame_line" != "x"; then
-	        libffi_test_line=`expr $libffi_eh_frame_line + 1`p
-	        sed -n $libffi_test_line conftest.dump > conftest.line
-	        if grep READONLY conftest.line > /dev/null; then
-	            libffi_cv_ro_eh_frame=yes
-	        fi
+  	if $CC $CFLAGS -c -fpic -fexceptions $libffi_cv_no_lto -o conftest.o conftest.c > /dev/null 2>&1; then
+	    if $READELF -WS conftest.o | grep -q -n 'eh_frame .* WA'; then
+	        libffi_cv_ro_eh_frame=no
 	    fi
   	fi
   	rm -f conftest.*
@@ -270,7 +294,7 @@ if test "x$GCC" = "xyes"; then
   	echo 'int __attribute__ ((visibility ("hidden"))) foo (void) { return 1  ; }' > conftest.c
   	libffi_cv_hidden_visibility_attribute=no
   	if AC_TRY_COMMAND(${CC-cc} -Werror -S conftest.c -o conftest.s 1>&AS_MESSAGE_LOG_FD); then
-  	    if grep '\.hidden.*foo' conftest.s >/dev/null; then
+  	    if egrep '(\.hidden|\.private_extern).*foo' conftest.s >/dev/null; then
   		libffi_cv_hidden_visibility_attribute=yes
   	    fi
   	fi
@@ -282,10 +306,21 @@ if test "x$GCC" = "xyes"; then
   fi
 fi
 
+AC_ARG_ENABLE(docs,
+              AC_HELP_STRING([--disable-docs],
+                             [Disable building of docs (default: no)]),
+              [enable_docs=no],
+              [enable_docs=yes])
+AM_CONDITIONAL(BUILD_DOCS, [test x$enable_docs = xyes])
+
 AH_BOTTOM([
 #ifdef HAVE_HIDDEN_VISIBILITY_ATTRIBUTE
 #ifdef LIBFFI_ASM
+#ifdef __APPLE__
+#define FFI_HIDDEN(name) .private_extern name
+#else
 #define FFI_HIDDEN(name) .hidden name
+#endif
 #else
 #define FFI_HIDDEN __attribute__ ((visibility ("hidden")))
 #endif
@@ -331,48 +366,56 @@ AC_ARG_ENABLE(raw-api,
     AC_DEFINE(FFI_NO_RAW_API, 1, [Define this if you do not want support for the raw API.])
   fi)
 
+AC_ARG_ENABLE(exec-static-tramp,
+[  --disable-exec-static-tramp  disable use of static exec trampolines (enabled by default)])
+
+if test "$enable_exec_static_tramp" != no; then
+case "$target" in
+     *-cygwin*)
+     ;;
+     *arm*-*-linux-* | aarch64*-*-linux-* | i*86-*-linux-* | x86_64-*-linux-*)
+       AC_DEFINE(FFI_EXEC_STATIC_TRAMP, 1,
+                 [Define this if you want statically defined trampolines])
+     ;;
+esac
+fi
+
 AC_ARG_ENABLE(purify-safety,
 [  --enable-purify-safety  purify-safe mode],
   if test "$enable_purify_safety" = "yes"; then
     AC_DEFINE(USING_PURIFY, 1, [Define this if you are using Purify and want to suppress spurious messages.])
   fi)
 
-GCC_WITH_TOOLEXECLIBDIR
-
-if test -n "$with_cross_host" &&
-   test x"$with_cross_host" != x"no"; then
-  toolexecdir='$(exec_prefix)/$(target_alias)'
-  case ${with_toolexeclibdir} in
-    no)
-      toolexeclibdir='$(toolexecdir)/lib'
-      ;;
-    *)
-      toolexeclibdir=${with_toolexeclibdir}
-      ;;
-  esac
+AC_ARG_ENABLE(multi-os-directory,
+[  --disable-multi-os-directory
+                          disable use of gcc --print-multi-os-directory to change the library installation directory])
+                          
+# These variables are only ever used when we cross-build to X86_WIN32.
+# And we only support this with GCC, so...
+if test "x$GCC" = "xyes"; then
+  if test -n "$with_cross_host" &&
+     test x"$with_cross_host" != x"no"; then
+    toolexecdir='${exec_prefix}'/'$(target_alias)'
+    toolexeclibdir='${toolexecdir}'/lib
+  else
+    toolexecdir='${libdir}'/gcc-lib/'$(target_alias)'
+    toolexeclibdir='${libdir}'
+  fi
+  if test x"$enable_multi_os_directory" != x"no"; then
+    multi_os_directory=`$CC $CFLAGS -print-multi-os-directory`
+    case $multi_os_directory in
+      .) ;; # Avoid trailing /.
+      ../*) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
+    esac
+  fi
+  AC_SUBST(toolexecdir)
 else
-  toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
-  toolexeclibdir='$(libdir)'
+  toolexeclibdir='${libdir}'
 fi
-multi_os_directory=`$CC -print-multi-os-directory`
-case $multi_os_directory in
-  .) ;; # Avoid trailing /.
-  *) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
-esac
-AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-if test "${multilib}" = "yes"; then
-  multilib_arg="--enable-multilib"
-else
-  multilib_arg=
-fi
-
 # Check linker support.
-LIBAT_ENABLE_SYMVERS
-
-# Determine what GCC version number to use in filesystem paths.
-GCC_BASE_VER
+LIBFFI_ENABLE_SYMVERS
 
 AC_CONFIG_COMMANDS(include, [test -d include || mkdir include])
 AC_CONFIG_COMMANDS(src, [
@@ -380,8 +423,10 @@ test -d src || mkdir src
 test -d src/$TARGETDIR || mkdir src/$TARGETDIR
 ], [TARGETDIR="$TARGETDIR"])
 
-AC_CONFIG_LINKS(include/ffitarget.h:src/$TARGETDIR/ffitarget.h)
-
-AC_CONFIG_FILES(include/Makefile include/ffi.h Makefile testsuite/Makefile man/Makefile libffi.pc)
+AC_CONFIG_FILES(include/Makefile include/ffi.h Makefile testsuite/Makefile man/Makefile doc/Makefile libffi.pc)
 
 AC_OUTPUT
+
+# Copy this file instead of using AC_CONFIG_LINK in order to support
+# compiling with MSVC, which won't understand cygwin style symlinks.
+cp ${srcdir}/src/$TARGETDIR/ffitarget.h include/ffitarget.h

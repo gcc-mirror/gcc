@@ -89,7 +89,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   /* Round the stack up to a full 4 register frame, just in case
      (we use this size in movsp). This way, it's also a  multiple of
      8 bytes for 64-bit arguments.  */
-  cif->bytes = ALIGN(cif->bytes, 16);
+  cif->bytes = FFI_ALIGN(cif->bytes, 16);
 
   return FFI_OK;
 }
@@ -205,7 +205,7 @@ void ffi_call(ffi_cif* cif, void(*fn)(void), void *rvalue, void **avalue)
 
   if (flags == FFI_TYPE_STRUCT && (rsize <= 16 || rvalue == NULL))
   {
-    alloc = alloca(ALIGN(rsize, 4));
+    alloc = alloca(FFI_ALIGN(rsize, 4));
     ecif.rvalue = alloc;
   }
   else

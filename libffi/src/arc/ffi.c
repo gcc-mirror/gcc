@@ -46,12 +46,10 @@ void
 ffi_prep_args (char *stack, extended_cif * ecif)
 {
   unsigned int i;
-  int tmp;
   void **p_argv;
   char *argp;
   ffi_type **p_arg;
 
-  tmp = 0;
   argp = stack;
 
   if (ecif->cif->rtype->type == FFI_TYPE_STRUCT)
@@ -73,7 +71,7 @@ ffi_prep_args (char *stack, extended_cif * ecif)
 
       /* Align if necessary.  */
       if ((alignment - 1) & (unsigned) argp)
-	argp = (char *) ALIGN (argp, alignment);
+	argp = (char *) FFI_ALIGN (argp, alignment);
 
       z = (*p_arg)->size;
       if (z < sizeof (int))
@@ -225,7 +223,7 @@ ffi_closure_inner_ARCompact (ffi_closure * closure, void *rvalue,
 
       /* Align if necessary.  */
       if ((alignment - 1) & (unsigned) argp)
-	argp = (char *) ALIGN (argp, alignment);
+	argp = (char *) FFI_ALIGN (argp, alignment);
 
       z = (*p_argt)->size;
       *p_argv = (void *) argp;

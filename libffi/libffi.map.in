@@ -3,7 +3,10 @@
 #include <fficonfig.h>
 #include <ffitarget.h>
 
-LIBFFI_BASE_7.0 {
+/* These version numbers correspond to the libtool-version abi numbers,
+   not to the libffi release numbers.  */
+
+LIBFFI_BASE_8.0 {
   global:
 	/* Exported data variables.  */
 	ffi_type_void;
@@ -35,28 +38,23 @@ LIBFFI_BASE_7.0 {
 	ffi_java_raw_to_ptrarray;
 	ffi_java_raw_size;
 
-	/* Functions in the ffi.h header, but not exported.
-	   These are listed here for documentation purposes only.
-	ffi_prep_types
-	ffi_prep_cif_core
-	*/
-
+	ffi_get_struct_offsets;
   local:
 	*;
 };
 
 #ifdef FFI_TARGET_HAS_COMPLEX_TYPE
-LIBFFI_COMPLEX_7.0 {
+LIBFFI_COMPLEX_8.0 {
   global:
 	/* Exported data variables.  */
 	ffi_type_complex_float;
 	ffi_type_complex_double;
 	ffi_type_complex_longdouble;
-} LIBFFI_BASE_7.0;
+} LIBFFI_BASE_8.0;
 #endif
 
 #if FFI_CLOSURES
-LIBFFI_CLOSURE_7.0 {
+LIBFFI_CLOSURE_8.0 {
   global:
 	ffi_closure_alloc;
 	ffi_closure_free;
@@ -66,13 +64,13 @@ LIBFFI_CLOSURE_7.0 {
 	ffi_prep_raw_closure_loc;
 	ffi_prep_java_raw_closure;
 	ffi_prep_java_raw_closure_loc;
-} LIBFFI_BASE_7.0;
+} LIBFFI_BASE_8.0;
 #endif
 
 #if FFI_GO_CLOSURES
-LIBFFI_GO_CLOSURE_7.0 {
+LIBFFI_GO_CLOSURE_8.0 {
   global:
 	ffi_call_go;
 	ffi_prep_go_closure;
-} LIBFFI_CLOSURE_7.0;
+} LIBFFI_CLOSURE_8.0;
 #endif
