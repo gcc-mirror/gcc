@@ -35,9 +35,13 @@
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore.
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  ghost code should not be executed at runtime as well, in order not to slow
+--  down the execution of these functions.
 
-pragma Assertion_Policy (Pre => Ignore);
+pragma Assertion_Policy (Pre   => Ignore,
+                         Post  => Ignore,
+                         Ghost => Ignore);
 
 with Ada.Characters.Latin_1;
 
@@ -210,9 +214,24 @@ package Ada.Strings.Maps is
    pragma Preelaborable_Initialization (Character_Mapping);
    --  Representation for a character to character mapping:
 
+   type SPARK_Proof_Character_Mapping_Model is
+     array (Character) of Character
+   with Ghost;
+   --  Publicly visible model of a Character_Mapping
+
+   function SPARK_Proof_Model
+     (Map : Character_Mapping)
+      return SPARK_Proof_Character_Mapping_Model
+   with Ghost;
+   --  Creation of a publicly visible model of a Character_Mapping
+
    function Value
      (Map     : Character_Mapping;
-      Element : Character) return Character;
+      Element : Character) return Character
+   with
+     Post => Value'Result = SPARK_Proof_Model (Map) (Element);
+   --  The function Value returns the Character value to which Element maps
+   --  with respect to the mapping represented by Map.
 
    Identity : constant Character_Mapping;
 
@@ -284,6 +303,12 @@ private
    Null_Set : constant Character_Set := (others => False);
 
    type Character_Mapping is array (Character) of Character;
+
+   function SPARK_Proof_Model
+     (Map : Character_Mapping)
+      return SPARK_Proof_Character_Mapping_Model
+   is
+     (SPARK_Proof_Character_Mapping_Model (Map));
 
    package L renames Ada.Characters.Latin_1;
 
