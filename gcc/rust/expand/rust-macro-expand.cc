@@ -939,36 +939,6 @@ public:
 		     "cannot strip expression in this position - outer "
 		     "attributes not allowed");
   }
-  void visit (AST::StructExprTuple &expr) override
-  {
-    // initial strip test based on outer attrs
-    expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
-      {
-	expr.mark_for_strip ();
-	return;
-      }
-
-    /* strip test based on inner attrs - spec says these are inner
-     * attributes, not outer attributes of inner expr */
-    expander.expand_cfg_attrs (expr.get_inner_attrs ());
-    if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
-      {
-	expr.mark_for_strip ();
-	return;
-      }
-
-    // strip sub-exprs of path
-    auto &struct_name = expr.get_struct_name ();
-    visit (struct_name);
-    if (struct_name.is_marked_for_strip ())
-      rust_error_at (struct_name.get_locus (),
-		     "cannot strip path in this position");
-
-    /* spec says outer attributes are specifically allowed for elements
-     * of tuple-style struct expressions, so full stripping possible */
-    expand_pointer_allow_strip (expr.get_elems ());
-  }
   void visit (AST::StructExprUnit &expr) override
   {
     // initial strip test based on outer attrs

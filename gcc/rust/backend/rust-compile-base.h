@@ -72,7 +72,6 @@ public:
   virtual void visit (HIR::StructExprFieldIndexValue &field) {}
   virtual void visit (HIR::StructExprStructFields &expr) {}
   virtual void visit (HIR::StructExprStructBase &expr) {}
-  virtual void visit (HIR::StructExprTuple &expr) {}
   virtual void visit (HIR::StructExprUnit &expr) {}
   // virtual void visit(EnumExprField& field) {}
   virtual void visit (HIR::EnumExprFieldIdentifier &field) {}

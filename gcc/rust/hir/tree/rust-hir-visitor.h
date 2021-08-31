@@ -60,7 +60,6 @@ public:
   virtual void visit (StructExprFieldIndexValue &field) = 0;
   virtual void visit (StructExprStructFields &expr) = 0;
   virtual void visit (StructExprStructBase &expr) = 0;
-  virtual void visit (StructExprTuple &expr) = 0;
   virtual void visit (StructExprUnit &expr) = 0;
   virtual void visit (EnumExprFieldIdentifier &field) = 0;
   virtual void visit (EnumExprFieldIdentifierValue &field) = 0;

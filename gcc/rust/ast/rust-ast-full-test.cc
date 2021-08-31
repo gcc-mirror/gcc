@@ -3240,44 +3240,6 @@ StructExpr::as_string () const
 }
 
 std::string
-StructExprTuple::as_string () const
-{
-  std::string str = StructExpr::as_string ();
-
-  if (exprs.empty ())
-    {
-      str += "()";
-    }
-  else
-    {
-      auto i = exprs.begin ();
-      auto e = exprs.end ();
-
-      // debug - null pointer check
-      if (*i == nullptr)
-	return "ERROR_MARK_STRING - nullptr struct expr tuple field";
-
-      str += '(';
-      for (; i != e; i++)
-	{
-	  str += (*i)->as_string ();
-	  if (e != i + 1)
-	    str += ", ";
-	}
-      str += ')';
-    }
-
-  indent_spaces (enter);
-  indent_spaces (enter);
-  // inner attributes
-  str += append_attributes (inner_attrs, INNER);
-  indent_spaces (out);
-  indent_spaces (out);
-
-  return str;
-}
-
-std::string
 StructExprStruct::as_string () const
 {
   // TODO: doesn't this require data from StructExpr?
@@ -5218,12 +5180,6 @@ StructExprStructFields::accept_vis (ASTVisitor &vis)
 
 void
 StructExprStructBase::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-StructExprTuple::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
