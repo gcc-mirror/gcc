@@ -1578,41 +1578,6 @@ protected:
   }
 };
 
-// HIR node of a "unit" struct creator (no fields and no braces)
-class StructExprUnit : public StructExpr
-{
-  Location locus;
-
-public:
-  std::string as_string () const override { return struct_name.as_string (); }
-
-  StructExprUnit (Analysis::NodeMapping mappings, PathInExpression struct_path,
-		  AST::AttrVec outer_attribs, Location locus)
-    : StructExpr (std::move (mappings), std::move (struct_path),
-		  std::move (outer_attribs)),
-      locus (locus)
-  {}
-
-  Location get_locus () const override final { return locus; }
-
-  void accept_vis (HIRVisitor &vis) override;
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  StructExprUnit *clone_expr_impl () const override
-  {
-    return new StructExprUnit (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  StructExprUnit *clone_expr_without_block_impl () const override
-  {
-    return new StructExprUnit (*this);
-  }
-};
-
 // aka EnumerationVariantExpr
 // Base HIR node representing creation of an enum variant instance - abstract
 class EnumVariantExpr : public ExprWithoutBlock

@@ -939,23 +939,6 @@ public:
 		     "cannot strip expression in this position - outer "
 		     "attributes not allowed");
   }
-  void visit (AST::StructExprUnit &expr) override
-  {
-    // initial strip test based on outer attrs
-    expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
-      {
-	expr.mark_for_strip ();
-	return;
-      }
-
-    // strip sub-exprs of path
-    auto &struct_name = expr.get_struct_name ();
-    visit (struct_name);
-    if (struct_name.is_marked_for_strip ())
-      rust_error_at (struct_name.get_locus (),
-		     "cannot strip path in this position");
-  }
   void visit (AST::EnumExprFieldIdentifier &) override
   {
     // as no attrs (at moment, at least), no stripping possible

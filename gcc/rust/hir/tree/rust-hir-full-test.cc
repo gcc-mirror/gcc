@@ -3931,12 +3931,6 @@ StructExprStructBase::accept_vis (HIRVisitor &vis)
 }
 
 void
-StructExprUnit::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 EnumExprFieldIdentifier::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);

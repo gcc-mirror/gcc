@@ -5185,12 +5185,6 @@ StructExprStructBase::accept_vis (ASTVisitor &vis)
 }
 
 void
-StructExprUnit::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 EnumExprFieldIdentifier::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);

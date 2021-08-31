@@ -109,7 +109,6 @@ class StructExprFieldIdentifierValue;
 class StructExprFieldIndexValue;
 class StructExprStructFields;
 class StructExprStructBase;
-class StructExprUnit;
 class EnumVariantExpr;
 class EnumExprField;
 class EnumExprFieldIdentifier;

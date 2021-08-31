@@ -1852,36 +1852,6 @@ protected:
   }
 };
 
-// AST node of a "unit" struct creator (no fields and no braces)
-class StructExprUnit : public StructExpr
-{
-  Location locus;
-
-public:
-  std::string as_string () const override
-  {
-    return get_struct_name ().as_string ();
-  }
-
-  StructExprUnit (PathInExpression struct_path,
-		  std::vector<Attribute> outer_attribs, Location locus)
-    : StructExpr (std::move (struct_path), std::move (outer_attribs)),
-      locus (locus)
-  {}
-
-  Location get_locus () const override final { return locus; }
-
-  void accept_vis (ASTVisitor &vis) override;
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  StructExprUnit *clone_expr_without_block_impl () const override
-  {
-    return new StructExprUnit (*this);
-  }
-};
-
 // aka EnumerationVariantExpr
 // Base AST node representing creation of an enum variant instance - abstract
 class EnumVariantExpr : public ExprWithoutBlock
