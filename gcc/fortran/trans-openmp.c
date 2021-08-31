@@ -3950,6 +3950,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_DEVICE);
       OMP_CLAUSE_DEVICE_ID (c) = device;
+
+      if (clauses->ancestor)
+	OMP_CLAUSE_DEVICE_ANCESTOR (c) = 1;
+
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 

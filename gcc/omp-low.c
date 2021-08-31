@@ -3114,6 +3114,16 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
       if (gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
 	  && gimple_omp_target_kind (ctx->stmt) == GF_OMP_TARGET_KIND_REGION)
 	{
+	  c = omp_find_clause (gimple_omp_target_clauses (ctx->stmt),
+			       OMP_CLAUSE_DEVICE);
+	  if (c && OMP_CLAUSE_DEVICE_ANCESTOR (c))
+	    {
+	      error_at (gimple_location (stmt),
+			"OpenMP constructs are not allowed in target region "
+			"with %<ancestor%>");
+	      return false;
+	    }
+
 	  if (gimple_code (stmt) == GIMPLE_OMP_TEAMS && !ctx->teams_nested_p)
 	    ctx->teams_nested_p = true;
 	  else
@@ -4062,6 +4072,17 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 		  error_at (gimple_location (stmt),
 			    "OpenMP runtime API call %qD in a region with "
 			    "%<order(concurrent)%> clause", fndecl);
+		}
+	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
+		  && (gimple_omp_target_kind (ctx->stmt)
+		      == GF_OMP_TARGET_KIND_REGION))
+		{
+		  tree tgt_clauses = gimple_omp_target_clauses (ctx->stmt);
+		  tree c = omp_find_clause (tgt_clauses, OMP_CLAUSE_DEVICE);
+		  if (c && OMP_CLAUSE_DEVICE_ANCESTOR (c))
+		    error_at (gimple_location (stmt),
+			      "OpenMP runtime API call %qD in a region with "
+			      "%<device(ancestor)%> clause", fndecl);
 		}
 	    }
 	}

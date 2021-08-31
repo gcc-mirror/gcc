@@ -9613,6 +9613,8 @@ expand_omp_target (struct omp_region *region)
 	{
 	  device = OMP_CLAUSE_DEVICE_ID (c);
 	  device_loc = OMP_CLAUSE_LOCATION (c);
+	  if (OMP_CLAUSE_DEVICE_ANCESTOR (c))
+	    sorry_at (device_loc, "%<ancestor%> not yet supported");
 	}
       else
 	{
