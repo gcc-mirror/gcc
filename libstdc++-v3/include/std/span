@@ -165,6 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      __glibcxx_assert(__count == _Extent);
 	    }
+	  __glibcxx_requires_valid_range(__first, __first + __count);
 	}
 
       template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
@@ -180,6 +181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      __glibcxx_assert((__last - __first) == _Extent);
 	    }
+	  __glibcxx_requires_valid_range(__first, __last);
 	}
 
       template<size_t _ArrayExtent>
