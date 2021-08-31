@@ -213,6 +213,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      lock_guard<mutex> __l(_M_mtx);
 	      return __cond_wait_until(_M_cv, _M_mtx, __atime);
 	    }
+	  else
+	    return true;
 #endif // _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT
 	}
     };
