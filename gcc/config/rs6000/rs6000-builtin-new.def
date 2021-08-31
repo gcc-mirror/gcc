@@ -208,6 +208,12 @@
   double __builtin_mffs ();
     MFFS rs6000_mffs {}
 
+; Although the mffsl instruction is only available on POWER9 and later
+; processors, this builtin automatically falls back to mffs on older
+; platforms.  Thus it appears here in the [always] stanza.
+  double __builtin_mffsl ();
+    MFFSL rs6000_mffsl {}
+
 ; This thing really assumes long double == __ibm128, and I'm told it has
 ; been used as such within libgcc.  Given that __builtin_pack_ibm128
 ; exists for the same purpose, this should really not be used at all.
@@ -2783,9 +2789,6 @@
 
   signed long long __builtin_darn_raw ();
     DARN_RAW darn_raw {}
-
-  double __builtin_mffsl ();
-    MFFSL rs6000_mffsl {}
 
   const signed int __builtin_dtstsfi_eq_dd (const int<6>, _Decimal64);
     TSTSFI_EQ_DD dfptstsfi_eq_dd {}
