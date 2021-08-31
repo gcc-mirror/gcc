@@ -107,7 +107,7 @@ nowarn_spec_t::nowarn_spec_t (opt_code opt)
 
 /* A mapping from a 'location_t' to the warning spec set for it.  */
 
-GTY(()) xint_hash_map_t *nowarn_map;
+GTY(()) nowarn_map_t *nowarn_map;
 
 /* Return the no-warning disposition for location LOC and option OPT
    or for all/any otions by default.  */
@@ -163,7 +163,7 @@ suppress_warning_at (location_t loc, opt_code opt /* = all_warnings */,
     return false;
 
   if (!nowarn_map)
-    nowarn_map = xint_hash_map_t::create_ggc (32);
+    nowarn_map = nowarn_map_t::create_ggc (32);
 
   nowarn_map->put (loc, optspec);
   return true;
