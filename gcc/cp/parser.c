@@ -12848,7 +12848,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	    IF_STMT_CONSTEVAL_P (statement) = true;
 	    condition = finish_if_stmt_cond (boolean_false_node, statement);
 
-	    gcc_rich_location richloc = tok->location;
+	    gcc_rich_location richloc (tok->location);
 	    bool non_compound_stmt_p = false;
 	    if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
 	      {
@@ -12876,7 +12876,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 						RID_ELSE))
 	      {
 		cp_token *else_tok = cp_lexer_peek_token (parser->lexer);
-		gcc_rich_location else_richloc = else_tok->location;
+		gcc_rich_location else_richloc (else_tok->location);
 		guard_tinfo = get_token_indent_info (else_tok);
 		/* Consume the `else' keyword.  */
 		cp_lexer_consume_token (parser->lexer);
