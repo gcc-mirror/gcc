@@ -455,8 +455,8 @@ struct rejection_reason {
       int expected;
       /* The actual number of arguments in the call.  */
       int actual;
-      /* Whether the call was a varargs call.  */
-      bool call_varargs_p;
+      /* Whether EXPECTED should be treated as a lower bound.  */
+      bool least_p;
     } arity;
     /* Information about an argument conversion mismatch.  */
     struct conversion_info conversion;
@@ -628,12 +628,13 @@ alloc_rejection (enum rejection_reason_code code)
 }
 
 static struct rejection_reason *
-arity_rejection (tree first_arg, int expected, int actual)
+arity_rejection (tree first_arg, int expected, int actual, bool least_p = false)
 {
   struct rejection_reason *r = alloc_rejection (rr_arity);
   int adjust = first_arg != NULL_TREE;
   r->u.arity.expected = expected - adjust;
   r->u.arity.actual = actual - adjust;
+  r->u.arity.least_p = least_p;
   return r;
 }
 
@@ -3452,6 +3453,44 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
     }
   gcc_assert (ia == nargs_without_in_chrg);
 
+  if (!obj && explicit_targs)
+    {
+      /* Check that there's no obvious arity mismatch before proceeding with
+	 deduction.  This avoids substituting explicit template arguments
+	 into the template (which could result in an error outside the
+	 immediate context) when the resulting candidate would be unviable
+	 anyway.  */
+      int min_arity = 0, max_arity = 0;
+      tree parms = TYPE_ARG_TYPES (TREE_TYPE (tmpl));
+      parms = skip_artificial_parms_for (tmpl, parms);
+      for (; parms != void_list_node; parms = TREE_CHAIN (parms))
+	{
+	  if (!parms || PACK_EXPANSION_P (TREE_VALUE (parms)))
+	    {
+	      max_arity = -1;
+	      break;
+	    }
+	  if (TREE_PURPOSE (parms))
+	    /* A parameter with a default argument.  */
+	    ++max_arity;
+	  else
+	    ++min_arity, ++max_arity;
+	}
+      if (ia < (unsigned)min_arity)
+	{
+	  /* Too few arguments.  */
+	  reason = arity_rejection (NULL_TREE, min_arity, ia,
+				    /*least_p=*/(max_arity == -1));
+	  goto fail;
+	}
+      else if (max_arity != -1 && ia > (unsigned)max_arity)
+	{
+	  /* Too many arguments.  */
+	  reason = arity_rejection (NULL_TREE, max_arity, ia);
+	  goto fail;
+	}
+    }
+
   errs = errorcount+sorrycount;
   if (!obj)
     convs = alloc_conversions (nargs);
@@ -3725,12 +3764,19 @@ print_conversion_rejection (location_t loc, struct conversion_info *info,
    HAVE.  */
 
 static void
-print_arity_information (location_t loc, unsigned int have, unsigned int want)
+print_arity_information (location_t loc, unsigned int have, unsigned int want,
+			 bool least_p)
 {
-  inform_n (loc, want,
-	    "  candidate expects %d argument, %d provided",
-	    "  candidate expects %d arguments, %d provided",
-	    want, have);
+  if (least_p)
+    inform_n (loc, want,
+	      "  candidate expects at least %d argument, %d provided",
+	      "  candidate expects at least %d arguments, %d provided",
+	      want, have);
+  else
+    inform_n (loc, want,
+	      "  candidate expects %d argument, %d provided",
+	      "  candidate expects %d arguments, %d provided",
+	      want, have);
 }
 
 /* Print information about one overload candidate CANDIDATE.  MSGSTR
@@ -3794,7 +3840,8 @@ print_z_candidate (location_t loc, const char *msgstr,
 	{
 	case rr_arity:
 	  print_arity_information (cloc, r->u.arity.actual,
-				   r->u.arity.expected);
+				   r->u.arity.expected,
+				   r->u.arity.least_p);
 	  break;
 	case rr_arg_conversion:
 	  print_conversion_rejection (cloc, &r->u.conversion, fn);
