@@ -97,6 +97,7 @@ public:
 
 class ResolveTypeToCanonicalPath : public ResolverBase
 {
+protected:
   using Rust::Resolver::ResolverBase::visit;
 
 public:
@@ -128,7 +129,7 @@ public:
 
   static bool type_resolve_generic_args (AST::GenericArgs &args);
 
-private:
+protected:
   ResolveTypeToCanonicalPath (bool include_generic_args,
 			      bool type_resolve_generic_args)
     : ResolverBase (UNKNOWN_NODEID), result (CanonicalPath::create_empty ()),
@@ -182,8 +183,10 @@ public:
   }
 };
 
-class ResolveRelativeTypePath
+class ResolveRelativeTypePath : public ResolveTypeToCanonicalPath
 {
+  using ResolveTypeToCanonicalPath::visit;
+
 public:
   static NodeId go (AST::TypePath &path, NodeId parent,
 		    const CanonicalPath &prefix,
@@ -218,6 +221,64 @@ public:
 
     return resolved_node;
   }
+
+  static NodeId go (AST::QualifiedPathInType &path, NodeId parent,
+		    const CanonicalPath &prefix,
+		    bool canonicalize_type_with_generics)
+  {
+    auto &qualified_path = path.get_qualified_path_type ();
+    CanonicalPath result = prefix;
+    if (!resolve_qual_seg (qualified_path, result))
+      return UNKNOWN_NODEID;
+
+    // resolve the associated impl
+    auto resolver = Resolver::get ();
+    NodeId projection_resolved_id = UNKNOWN_NODEID;
+    if (!resolver->get_name_scope ().lookup (result, &projection_resolved_id))
+      {
+	rust_error_at (path.get_locus (),
+		       "failed to resolve associated path: %s",
+		       result.get ().c_str ());
+
+	return UNKNOWN_NODEID;
+      }
+    // mark the resolution for this
+    resolver->insert_resolved_name (qualified_path.get_node_id (),
+				    projection_resolved_id);
+
+    // qualified types are similar to other paths in that we cannot guarantee
+    // that we can resolve the path at name resolution. We must look up
+    // associated types and type information to figure this out properly
+
+    ResolveRelativeTypePath o (result);
+    std::unique_ptr<AST::TypePathSegment> &associated
+      = path.get_associated_segment ();
+
+    associated->accept_vis (o);
+    if (o.failure_flag)
+      return UNKNOWN_NODEID;
+
+    for (auto &seg : path.get_segments ())
+      {
+	seg->accept_vis (o);
+	if (o.failure_flag)
+	  return UNKNOWN_NODEID;
+      }
+
+    // we only return the projection id for now since we need the type system to
+    // resolve the associated types in this path
+    return projection_resolved_id;
+  }
+
+private:
+  ResolveRelativeTypePath (CanonicalPath qualified_path)
+    : ResolveTypeToCanonicalPath (true, true)
+  {
+    result = qualified_path;
+  }
+
+  static bool resolve_qual_seg (AST::QualifiedPathType &seg,
+				CanonicalPath &result);
 };
 
 class ResolveType : public ResolverBase
@@ -273,6 +334,15 @@ public:
 					 Definition{path.get_node_id (),
 						    parent});
       }
+  }
+
+  void visit (AST::QualifiedPathInType &path) override
+  {
+    resolved_node
+      = ResolveRelativeTypePath::go (path, parent,
+				     CanonicalPath::create_empty (),
+				     canonicalize_type_with_generics);
+    ok = resolved_node != UNKNOWN_NODEID;
   }
 
   void visit (AST::ArrayType &type) override;
