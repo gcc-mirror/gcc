@@ -70,16 +70,7 @@ public:
   virtual void visit (HIR::StructExprFieldIndexValue &) override {}
   virtual void visit (HIR::StructExprStructFields &) override {}
   virtual void visit (HIR::StructExprStructBase &) override {}
-  virtual void visit (HIR::StructExprTuple &) override {}
-  virtual void visit (HIR::StructExprUnit &) override {}
 
-  virtual void visit (HIR::EnumExprFieldIdentifier &) override {}
-  virtual void visit (HIR::EnumExprFieldIdentifierValue &) override {}
-
-  virtual void visit (HIR::EnumExprFieldIndexValue &) override {}
-  virtual void visit (HIR::EnumExprStruct &) override {}
-  virtual void visit (HIR::EnumExprTuple &) override {}
-  virtual void visit (HIR::EnumExprFieldless &) override {}
   virtual void visit (HIR::CallExpr &) override {}
   virtual void visit (HIR::MethodCallExpr &) override {}
   virtual void visit (HIR::FieldAccessExpr &) override {}

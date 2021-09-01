@@ -73,14 +73,6 @@ public:
   void visit (AST::StructExprFieldIndexValue &) {}
   void visit (AST::StructExprStructFields &) {}
   void visit (AST::StructExprStructBase &) {}
-  void visit (AST::StructExprTuple &) {}
-  void visit (AST::StructExprUnit &) {}
-  void visit (AST::EnumExprFieldIdentifier &) {}
-  void visit (AST::EnumExprFieldIdentifierValue &) {}
-  void visit (AST::EnumExprFieldIndexValue &) {}
-  void visit (AST::EnumExprStruct &) {}
-  void visit (AST::EnumExprTuple &) {}
-  void visit (AST::EnumExprFieldless &) {}
   void visit (AST::CallExpr &) {}
   void visit (AST::MethodCallExpr &) {}
   void visit (AST::FieldAccessExpr &) {}

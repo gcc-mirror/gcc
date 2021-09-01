@@ -2995,59 +2995,6 @@ StructExpr::as_string () const
 }
 
 std::string
-StructExprTuple::as_string () const
-{
-  std::string str = StructExpr::as_string ();
-
-  if (exprs.empty ())
-    {
-      str += "()";
-    }
-  else
-    {
-      auto i = exprs.begin ();
-      auto e = exprs.end ();
-
-      // debug - null pointer check
-      if (*i == nullptr)
-	{
-	  return "ERROR_MARK_STRING - nullptr struct expr tuple field";
-	}
-
-      str += '(';
-      for (; i != e; i++)
-	{
-	  str += (*i)->as_string ();
-	  if (e != i + 1)
-	    str += ", ";
-	}
-      str += ')';
-    }
-
-  indent_spaces (enter);
-  indent_spaces (enter);
-  // inner attributes
-  str += "\n" + indent_spaces (stay) + "inner attributes:";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	{
-	  str += "\n" + indent_spaces (stay) + attr.as_string ();
-	}
-    }
-  indent_spaces (out);
-  indent_spaces (out);
-
-  return str;
-}
-
-std::string
 StructExprStruct::as_string () const
 {
   std::string str ("StructExprStruct (or subclass): ");
@@ -3979,54 +3926,6 @@ StructExprStructFields::accept_vis (HIRVisitor &vis)
 
 void
 StructExprStructBase::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-StructExprTuple::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-StructExprUnit::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIdentifier::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIdentifierValue::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIndexValue::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprStruct::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprTuple::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldless::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }

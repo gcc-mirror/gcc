@@ -3240,44 +3240,6 @@ StructExpr::as_string () const
 }
 
 std::string
-StructExprTuple::as_string () const
-{
-  std::string str = StructExpr::as_string ();
-
-  if (exprs.empty ())
-    {
-      str += "()";
-    }
-  else
-    {
-      auto i = exprs.begin ();
-      auto e = exprs.end ();
-
-      // debug - null pointer check
-      if (*i == nullptr)
-	return "ERROR_MARK_STRING - nullptr struct expr tuple field";
-
-      str += '(';
-      for (; i != e; i++)
-	{
-	  str += (*i)->as_string ();
-	  if (e != i + 1)
-	    str += ", ";
-	}
-      str += ')';
-    }
-
-  indent_spaces (enter);
-  indent_spaces (enter);
-  // inner attributes
-  str += append_attributes (inner_attrs, INNER);
-  indent_spaces (out);
-  indent_spaces (out);
-
-  return str;
-}
-
-std::string
 StructExprStruct::as_string () const
 {
   // TODO: doesn't this require data from StructExpr?
@@ -3344,48 +3306,6 @@ StructExprStructFields::as_string () const
     str += struct_base.as_string ();
 
   return str;
-}
-
-std::string
-EnumExprStruct::as_string () const
-{
-  std::string str ("EnumExprStruct (or subclass): ");
-
-  str += "\n Path: " + get_enum_variant_path ().as_string ();
-
-  str += "\n Fields: ";
-  if (fields.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &field : fields)
-	str += "\n  " + field->as_string ();
-    }
-
-  return str;
-}
-
-std::string
-EnumExprFieldWithVal::as_string () const
-{
-  // used to get value string
-  return value->as_string ();
-}
-
-std::string
-EnumExprFieldIdentifierValue::as_string () const
-{
-  // TODO: rewrite to work with non-linearisable exprs
-  return field_name + " : " + EnumExprFieldWithVal::as_string ();
-}
-
-std::string
-EnumExprFieldIndexValue::as_string () const
-{
-  // TODO: rewrite to work with non-linearisable exprs
-  return std::to_string (index) + " : " + EnumExprFieldWithVal::as_string ();
 }
 
 std::string
@@ -5218,54 +5138,6 @@ StructExprStructFields::accept_vis (ASTVisitor &vis)
 
 void
 StructExprStructBase::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-StructExprTuple::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-StructExprUnit::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIdentifier::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIdentifierValue::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldIndexValue::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprStruct::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprTuple::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-EnumExprFieldless::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
