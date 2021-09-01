@@ -9253,7 +9253,7 @@ package body Sem_Res is
    -------------------------------
 
    procedure Resolve_Indexed_Component (N : Node_Id; Typ : Entity_Id) is
-      Name       : constant Node_Id := Prefix (N);
+      Pref       : constant Node_Id := Prefix (N);
       Expr       : Node_Id;
       Array_Type : Entity_Id := Empty; -- to prevent junk warning
       Index      : Node_Id;
@@ -9264,7 +9264,7 @@ package body Sem_Res is
          return;
       end if;
 
-      if Is_Overloaded (Name) then
+      if Is_Overloaded (Pref) then
 
          --  Use the context type to select the prefix that yields the correct
          --  component type.
@@ -9273,11 +9273,10 @@ package body Sem_Res is
             I     : Interp_Index;
             It    : Interp;
             I1    : Interp_Index := 0;
-            P     : constant Node_Id := Prefix (N);
             Found : Boolean := False;
 
          begin
-            Get_First_Interp (P, I, It);
+            Get_First_Interp (Pref, I, It);
             while Present (It.Typ) loop
                if (Is_Array_Type (It.Typ)
                      and then Covers (Typ, Component_Type (It.Typ)))
@@ -9289,7 +9288,7 @@ package body Sem_Res is
                                  Component_Type (Designated_Type (It.Typ))))
                then
                   if Found then
-                     It := Disambiguate (P, I1, I, Any_Type);
+                     It := Disambiguate (Pref, I1, I, Any_Type);
 
                      if It = No_Interp then
                         Error_Msg_N ("ambiguous prefix for indexing",  N);
@@ -9314,11 +9313,11 @@ package body Sem_Res is
          end;
 
       else
-         Array_Type := Etype (Name);
+         Array_Type := Etype (Pref);
       end if;
 
-      Resolve (Name, Array_Type);
-      Array_Type := Get_Actual_Subtype_If_Available (Name);
+      Resolve (Pref, Array_Type);
+      Array_Type := Get_Actual_Subtype_If_Available (Pref);
 
       --  If the prefix's type is an access type, get to the real array type.
       --  Note: we do not apply an access check because an explicit dereference
@@ -9361,19 +9360,18 @@ package body Sem_Res is
          end loop;
       end if;
 
-      Resolve_Implicit_Dereference (Prefix (N));
+      Resolve_Implicit_Dereference (Pref);
       Analyze_Dimension (N);
 
       --  Do not generate the warning on suspicious index if we are analyzing
       --  package Ada.Tags; otherwise we will report the warning with the
       --  Prims_Ptr field of the dispatch table.
 
-      if Scope (Etype (Prefix (N))) = Standard_Standard
+      if Scope (Etype (Pref)) = Standard_Standard
         or else not
-          Is_RTU (Cunit_Entity (Get_Source_Unit (Etype (Prefix (N)))),
-                  Ada_Tags)
+          Is_RTU (Cunit_Entity (Get_Source_Unit (Etype (Pref))), Ada_Tags)
       then
-         Warn_On_Suspicious_Index (Name, First (Expressions (N)));
+         Warn_On_Suspicious_Index (Pref, First (Expressions (N)));
          Eval_Indexed_Component (N);
       end if;
 
@@ -9385,16 +9383,16 @@ package body Sem_Res is
       if Nkind (N) = N_Indexed_Component
         and then Is_Atomic_Ref_With_Address (N)
         and then not (Has_Atomic_Components (Array_Type)
-                       or else (Is_Entity_Name (Prefix (N))
+                       or else (Is_Entity_Name (Pref)
                                  and then Has_Atomic_Components
-                                            (Entity (Prefix (N)))))
+                                            (Entity (Pref))))
         and then not Is_Atomic (Component_Type (Array_Type))
         and then Ada_Version < Ada_2022
       then
          Error_Msg_N
-           ("??access to non-atomic component of atomic array", Prefix (N));
+           ("??access to non-atomic component of atomic array", Pref);
          Error_Msg_N
-           ("??\may cause unexpected accesses to atomic object", Prefix (N));
+           ("??\may cause unexpected accesses to atomic object", Pref);
       end if;
    end Resolve_Indexed_Component;
 
@@ -11202,13 +11200,13 @@ package body Sem_Res is
 
    procedure Resolve_Slice (N : Node_Id; Typ : Entity_Id) is
       Drange     : constant Node_Id := Discrete_Range (N);
-      Name       : constant Node_Id := Prefix (N);
+      Pref       : constant Node_Id := Prefix (N);
       Array_Type : Entity_Id        := Empty;
       Dexpr      : Node_Id          := Empty;
       Index_Type : Entity_Id;
 
    begin
-      if Is_Overloaded (Name) then
+      if Is_Overloaded (Pref) then
 
          --  Use the context type to select the prefix that yields the correct
          --  array type.
@@ -11217,11 +11215,10 @@ package body Sem_Res is
             I      : Interp_Index;
             I1     : Interp_Index := 0;
             It     : Interp;
-            P      : constant Node_Id := Prefix (N);
             Found  : Boolean := False;
 
          begin
-            Get_First_Interp (P, I,  It);
+            Get_First_Interp (Pref, I,  It);
             while Present (It.Typ) loop
                if (Is_Array_Type (It.Typ)
                     and then Covers (Typ,  It.Typ))
@@ -11230,7 +11227,7 @@ package body Sem_Res is
                            and then Covers (Typ, Designated_Type (It.Typ)))
                then
                   if Found then
-                     It := Disambiguate (P, I1, I, Any_Type);
+                     It := Disambiguate (Pref, I1, I, Any_Type);
 
                      if It = No_Interp then
                         Error_Msg_N ("ambiguous prefix for slicing",  N);
@@ -11253,10 +11250,10 @@ package body Sem_Res is
          end;
 
       else
-         Array_Type := Etype (Name);
+         Array_Type := Etype (Pref);
       end if;
 
-      Resolve (Name, Array_Type);
+      Resolve (Pref, Array_Type);
 
       --  If the prefix's type is an access type, get to the real array type.
       --  Note: we do not apply an access check because an explicit dereference
@@ -11272,12 +11269,12 @@ package body Sem_Res is
          --  subtype.
 
          if not Is_Constrained (Array_Type) then
-            Remove_Side_Effects (Prefix (N));
+            Remove_Side_Effects (Pref);
 
             declare
                Obj : constant Node_Id :=
                        Make_Explicit_Dereference (Sloc (N),
-                         Prefix => New_Copy_Tree (Prefix (N)));
+                         Prefix => New_Copy_Tree (Pref));
             begin
                Set_Etype (Obj, Array_Type);
                Set_Parent (Obj, Parent (N));
@@ -11290,30 +11287,30 @@ package body Sem_Res is
       --  returning an unconstrained string. Same for the Wide variants of
       --  attribute Image.
 
-      elsif Is_Entity_Name (Name)
-        or else Nkind (Name) = N_Explicit_Dereference
-        or else (Nkind (Name) = N_Function_Call
-                  and then not Is_Constrained (Etype (Name)))
+      elsif Is_Entity_Name (Pref)
+        or else Nkind (Pref) = N_Explicit_Dereference
+        or else (Nkind (Pref) = N_Function_Call
+                  and then not Is_Constrained (Etype (Pref)))
         or else (CodePeer_Mode
-                  and then Nkind (Name) = N_Attribute_Reference
-                  and then Attribute_Name (Name) in Name_Image
+                  and then Nkind (Pref) = N_Attribute_Reference
+                  and then Attribute_Name (Pref) in Name_Image
                                                   | Name_Wide_Image
                                                   | Name_Wide_Wide_Image)
       then
-         Array_Type := Get_Actual_Subtype (Name);
+         Array_Type := Get_Actual_Subtype (Pref);
 
       --  If the name is a selected component that depends on discriminants,
       --  build an actual subtype for it. This can happen only when the name
       --  itself is overloaded; otherwise the actual subtype is created when
       --  the selected component is analyzed.
 
-      elsif Nkind (Name) = N_Selected_Component
+      elsif Nkind (Pref) = N_Selected_Component
         and then Full_Analysis
         and then Depends_On_Discriminant (First_Index (Array_Type))
       then
          declare
             Act_Decl : constant Node_Id :=
-                         Build_Actual_Subtype_Of_Component (Array_Type, Name);
+                         Build_Actual_Subtype_Of_Component (Array_Type, Pref);
          begin
             Insert_Action (N, Act_Decl);
             Array_Type := Defining_Identifier (Act_Decl);
@@ -11326,8 +11323,8 @@ package body Sem_Res is
       --  check applied below (the range check won't get done if the
       --  unconstrained subtype of the 'Image is used).
 
-      elsif Nkind (Name) = N_Slice then
-         Array_Type := Etype (Name);
+      elsif Nkind (Pref) = N_Slice then
+         Array_Type := Etype (Pref);
       end if;
 
       --  Obtain the type of the array index
@@ -11350,9 +11347,9 @@ package body Sem_Res is
 
       if Tagged_Type_Expansion
         and then RTU_Loaded (Ada_Tags)
-        and then Nkind (Prefix (N)) = N_Selected_Component
-        and then Present (Entity (Selector_Name (Prefix (N))))
-        and then Entity (Selector_Name (Prefix (N))) =
+        and then Nkind (Pref) = N_Selected_Component
+        and then Present (Entity (Selector_Name (Pref)))
+        and then Entity (Selector_Name (Pref)) =
                    RTE_Record_Component (RE_Prims_Ptr)
       then
          null;
@@ -11418,11 +11415,11 @@ package body Sem_Res is
       --  Otherwise here is where we check suspicious indexes
 
       if Nkind (Drange) = N_Range then
-         Warn_On_Suspicious_Index (Name, Low_Bound  (Drange));
-         Warn_On_Suspicious_Index (Name, High_Bound (Drange));
+         Warn_On_Suspicious_Index (Pref, Low_Bound  (Drange));
+         Warn_On_Suspicious_Index (Pref, High_Bound (Drange));
       end if;
 
-      Resolve_Implicit_Dereference (Prefix (N));
+      Resolve_Implicit_Dereference (Pref);
       Analyze_Dimension (N);
       Eval_Slice (N);
    end Resolve_Slice;
