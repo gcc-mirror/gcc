@@ -5003,7 +5003,8 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
 	 being not equal to zero; "out" is leaving it alone.  */
       if (low == NULL_TREE || high == NULL_TREE
 	  || ! integer_zerop (low) || ! integer_zerop (high)
-	  || TREE_CODE (arg1) != INTEGER_CST)
+	  || TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_CODE (arg0_type) == NULLPTR_TYPE)
 	return NULL_TREE;
 
       switch (code)
