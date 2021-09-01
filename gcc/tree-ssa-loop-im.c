@@ -3025,77 +3025,74 @@ do_store_motion (void)
 /* Fills ALWAYS_EXECUTED_IN information for basic blocks of LOOP, i.e.
    for each such basic block bb records the outermost loop for that execution
    of its header implies execution of bb.  CONTAINS_CALL is the bitmap of
-   blocks that contain a nonpure call.  */
+   blocks that contain a nonpure call.  The blocks of LOOP start at index
+   START of the RPO array of size N.  */
 
 static void
-fill_always_executed_in_1 (class loop *loop, sbitmap contains_call)
+fill_always_executed_in_1 (function *fun, class loop *loop,
+			   int *rpo, int start, int n, sbitmap contains_call)
 {
-  basic_block bb = NULL, *bbs, last = NULL;
-  unsigned i;
-  edge e;
+  basic_block last = NULL;
   class loop *inn_loop = loop;
 
-  if (ALWAYS_EXECUTED_IN (loop->header) == NULL)
+  for (int i = start; i < n; i++)
     {
-      bbs = get_loop_body_in_dom_order (loop);
+      basic_block bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
+      /* Stop when we iterated over all blocks in this loop.  */
+      if (!flow_bb_inside_loop_p (loop, bb))
+	break;
 
-      for (i = 0; i < loop->num_nodes; i++)
+      if (dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
+	last = bb;
+
+      if (bitmap_bit_p (contains_call, bb->index))
+	break;
+
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  edge_iterator ei;
-	  bb = bbs[i];
-
-	  if (dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
-	    last = bb;
-
-	  if (bitmap_bit_p (contains_call, bb->index))
+	  /* If there is an exit from this BB.  */
+	  if (!flow_bb_inside_loop_p (loop, e->dest))
 	    break;
-
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    {
-	      /* If there is an exit from this BB.  */
-	      if (!flow_bb_inside_loop_p (loop, e->dest))
-		break;
-	      /* Or we enter a possibly non-finite loop.  */
-	      if (flow_loop_nested_p (bb->loop_father,
-				      e->dest->loop_father)
-		  && ! finite_loop_p (e->dest->loop_father))
-		break;
-	    }
-	  if (e)
+	  /* Or we enter a possibly non-finite loop.  */
+	  if (flow_loop_nested_p (bb->loop_father,
+				  e->dest->loop_father)
+	      && ! finite_loop_p (e->dest->loop_father))
 	    break;
-
-	  /* A loop might be infinite (TODO use simple loop analysis
-	     to disprove this if possible).  */
-	  if (bb->flags & BB_IRREDUCIBLE_LOOP)
-	    break;
-
-	  if (!flow_bb_inside_loop_p (inn_loop, bb))
-	    break;
-
-	  if (bb->loop_father->header == bb)
-	    {
-	      if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
-		break;
-
-	      /* In a loop that is always entered we may proceed anyway.
-		 But record that we entered it and stop once we leave it.  */
-	      inn_loop = bb->loop_father;
-	    }
 	}
+      if (e)
+	break;
 
-      while (1)
+      /* A loop might be infinite (TODO use simple loop analysis
+	 to disprove this if possible).  */
+      if (bb->flags & BB_IRREDUCIBLE_LOOP)
+	break;
+
+      if (!flow_bb_inside_loop_p (inn_loop, bb))
+	break;
+
+      if (bb->loop_father->header == bb)
 	{
-	  SET_ALWAYS_EXECUTED_IN (last, loop);
-	  if (last == loop->header)
+	  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
 	    break;
-	  last = get_immediate_dominator (CDI_DOMINATORS, last);
-	}
 
-      free (bbs);
+	  /* In a loop that is always entered we may proceed anyway.
+	     But record that we entered it and stop once we leave it.  */
+	  inn_loop = bb->loop_father;
+	}
     }
 
-  for (loop = loop->inner; loop; loop = loop->next)
-    fill_always_executed_in_1 (loop, contains_call);
+  while (1)
+    {
+      SET_ALWAYS_EXECUTED_IN (last, loop);
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "bb %d is always executed in loop %d\n",
+		     last->index, loop->num);
+      if (last == loop->header)
+	break;
+      last = get_immediate_dominator (CDI_DOMINATORS, last);
+    }
 }
 
 /* Fills ALWAYS_EXECUTED_IN information for basic blocks, i.e.
@@ -3103,14 +3100,13 @@ fill_always_executed_in_1 (class loop *loop, sbitmap contains_call)
    of its header implies execution of bb.  */
 
 static void
-fill_always_executed_in (void)
+fill_always_executed_in (function *fun, int *rpo, int n)
 {
   basic_block bb;
-  class loop *loop;
 
-  auto_sbitmap contains_call (last_basic_block_for_fn (cfun));
+  auto_sbitmap contains_call (last_basic_block_for_fn (fun));
   bitmap_clear (contains_call);
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -3123,8 +3119,18 @@ fill_always_executed_in (void)
 	bitmap_set_bit (contains_call, bb->index);
     }
 
-  for (loop = current_loops->tree_root->inner; loop; loop = loop->next)
-    fill_always_executed_in_1 (loop, contains_call);
+  /* The RPO order we iterate over is one that visits all blocks of a CFG
+     cycle before leaving it.  That means we can visit a loop once we
+     run into its header and we can skip it if it was determined as always
+     entering when proccessing the containing loop.  */
+  for (int i = 0; i < n; ++i)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
+      if (bb->loop_father->header == bb
+	  && !ALWAYS_EXECUTED_IN (bb))
+	fill_always_executed_in_1 (fun, bb->loop_father,
+				   rpo, i, n, contains_call);
+    }
 }
 
 
@@ -3227,23 +3233,27 @@ loop_invariant_motion_in_fun (function *fun, bool store_motion)
   /* Gathers information about memory accesses in the loops.  */
   analyze_memory_references (store_motion);
 
-  /* Fills ALWAYS_EXECUTED_IN information for basic blocks.  */
-  fill_always_executed_in ();
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (fun) - NUM_FIXED_BLOCKS);
+  auto_bitmap exit_bbs;
+  bitmap_set_bit (exit_bbs, EXIT_BLOCK);
+  edge entry = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (fun));
+  int n = rev_post_order_and_mark_dfs_back_seme (fun, entry, exit_bbs, true,
+						 rpo, NULL);
 
-  int *rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
-  int n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+  /* Fills ALWAYS_EXECUTED_IN information for basic blocks.  */
+  fill_always_executed_in (fun, rpo, n);
 
   /* For each statement determine the outermost loop in that it is
      invariant and cost for computing the invariant.  */
   for (int i = 0; i < n; ++i)
     compute_invariantness (BASIC_BLOCK_FOR_FN (fun, rpo[i]));
+  free (rpo);
 
   /* Execute store motion.  Force the necessary invariants to be moved
      out of the loops as well.  */
   if (store_motion)
     do_store_motion ();
 
-  free (rpo);
   rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
   n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
 
