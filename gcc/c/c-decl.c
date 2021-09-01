@@ -2957,6 +2957,17 @@ duplicate_decls (tree newdecl, tree olddecl)
     {
       /* Avoid `unused variable' and other warnings for OLDDECL.  */
       suppress_warning (olddecl, OPT_Wunused);
+      /* If the types are completely different, poison them both with
+ 	 error_mark_node.  */
+      if (TREE_CODE (TREE_TYPE (newdecl)) != TREE_CODE (TREE_TYPE (olddecl))
+	  && olddecl != error_mark_node
+	  && seen_error ())
+	{
+	  if (TREE_CODE (olddecl) != FUNCTION_DECL)
+	    TREE_TYPE (olddecl) = error_mark_node;
+	  if (TREE_CODE (newdecl) != FUNCTION_DECL)
+	    TREE_TYPE (newdecl) = error_mark_node;
+	}
       return false;
     }
 
@@ -12209,7 +12220,7 @@ free_attr_access_data ()
 	  attr_access::free_lang_data (attrs);
 
       tree fntype = TREE_TYPE (n->decl);
-      if (!fntype)
+      if (!fntype || fntype == error_mark_node)
 	continue;
       tree attrs = TYPE_ATTRIBUTES (fntype);
       if (!attrs)
