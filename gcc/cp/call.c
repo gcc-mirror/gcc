@@ -9506,7 +9506,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  already_used = true;
 	}
       else
-	cp_warn_deprecated_use (fn, complain);
+	cp_handle_deprecated_or_unavailable (fn, complain);
 
       if (eliding_temp && DECL_BASE_CONSTRUCTOR_P (fn)
 	  && !make_base_init_ok (arg))
@@ -9580,7 +9580,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
           suppress_warning (val, OPT_Wunused);
 	}
 
-      cp_warn_deprecated_use (fn, complain);
+      cp_handle_deprecated_or_unavailable (fn, complain);
 
       return val;
     }

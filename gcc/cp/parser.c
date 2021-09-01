@@ -13474,17 +13474,15 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
 static tree
 build_range_temp (tree range_expr)
 {
-  tree range_type, range_temp;
-
   /* Find out the type deduced by the declaration
      `auto &&__range = range_expr'.  */
-  range_type = cp_build_reference_type (make_auto (), true);
-  range_type = do_auto_deduction (range_type, range_expr,
-				  type_uses_auto (range_type));
+  tree auto_node = make_auto ();
+  tree range_type = cp_build_reference_type (auto_node, true);
+  range_type = do_auto_deduction (range_type, range_expr, auto_node);
 
   /* Create the __range variable.  */
-  range_temp = build_decl (input_location, VAR_DECL, for_range__identifier,
-			   range_type);
+  tree range_temp = build_decl (input_location, VAR_DECL,
+				for_range__identifier, range_type);
   TREE_USED (range_temp) = 1;
   DECL_ARTIFICIAL (range_temp) = 1;
 
@@ -18430,18 +18428,26 @@ cp_parser_template_name (cp_parser* parser,
   /* If DECL is a template, then the name was a template-name.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
-      if (TREE_DEPRECATED (decl)
-	  && deprecated_state != DEPRECATED_SUPPRESS)
+      if ((TREE_DEPRECATED (decl) || TREE_UNAVAILABLE (decl))
+	  && deprecated_state != UNAVAILABLE_DEPRECATED_SUPPRESS)
 	{
 	  tree d = DECL_TEMPLATE_RESULT (decl);
 	  tree attr;
 	  if (TREE_CODE (d) == TYPE_DECL)
-	    attr = lookup_attribute ("deprecated",
-				     TYPE_ATTRIBUTES (TREE_TYPE (d)));
+	    attr = TYPE_ATTRIBUTES (TREE_TYPE (d));
 	  else
-	    attr = lookup_attribute ("deprecated",
-				     DECL_ATTRIBUTES (d));
-	  warn_deprecated_use (decl, attr);
+	    attr = DECL_ATTRIBUTES (d);
+	  if (TREE_UNAVAILABLE (decl))
+	    {
+	      attr = lookup_attribute ("unavailable", attr);
+	      error_unavailable_use (decl, attr);
+	    }
+	  else if (TREE_DEPRECATED (decl)
+		   && deprecated_state != DEPRECATED_SUPPRESS)
+	    {
+	      attr = lookup_attribute ("deprecated", attr);
+	      warn_deprecated_use (decl, attr);
+	    }
 	}
     }
   else
@@ -18692,7 +18698,9 @@ cp_parser_template_argument (cp_parser* parser)
     }
   if (cp_parser_parse_definitely (parser))
     {
-      if (TREE_DEPRECATED (argument))
+      if (TREE_UNAVAILABLE (argument))
+	error_unavailable_use (argument, NULL_TREE);
+      else if (TREE_DEPRECATED (argument))
 	warn_deprecated_use (argument, NULL_TREE);
       return argument;
     }
@@ -24353,9 +24361,9 @@ cp_parser_parameter_declaration_list (cp_parser* parser, cp_parser_flags flags)
 					   /*template_parm_p=*/false,
 					   &parenthesized_p);
 
-      /* We don't know yet if the enclosing context is deprecated, so wait
-	 and warn in grokparms if appropriate.  */
-      deprecated_state = DEPRECATED_SUPPRESS;
+      /* We don't know yet if the enclosing context is unavailable or deprecated,
+	 so wait and deal with it in grokparms if appropriate.  */
+      deprecated_state = UNAVAILABLE_DEPRECATED_SUPPRESS;
 
       if (parameter && !cp_parser_error_occurred (parser))
 	{
@@ -25910,7 +25918,8 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	     so that maybe_instantiate_noexcept can tsubst the NOEXCEPT_EXPR
 	     in the pattern.  */
 	  for (tree i : DEFPARSE_INSTANTIATIONS (def_parse))
-	    DEFERRED_NOEXCEPT_PATTERN (TREE_PURPOSE (i)) = TREE_PURPOSE (spec);
+	    DEFERRED_NOEXCEPT_PATTERN (TREE_PURPOSE (i))
+	      = spec ? TREE_PURPOSE (spec) : error_mark_node;
 
 	  /* Restore the state of local_variables_forbidden_p.  */
 	  parser->local_variables_forbidden_p = local_variables_forbidden_p;

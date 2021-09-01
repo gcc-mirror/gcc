@@ -1,3 +1,16 @@
+2021-08-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* simplify.c (substring_has_constant_len): Minimize checks for
+	substring expressions being allowed.
+
+2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gfortran.h: Add variable for 'ancestor' in struct gfc_omp_clauses.
+	* openmp.c (gfc_match_omp_clauses): Parse device-modifiers 'device_num'
+	and 'ancestor' in 'target device' clauses.
+	* trans-openmp.c (gfc_trans_omp_clauses): Set OMP_CLAUSE_DEVICE_ANCESTOR.
+
 2021-08-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102113

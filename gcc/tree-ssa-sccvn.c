@@ -5851,6 +5851,7 @@ vn_reference_may_trap (vn_reference_t ref)
     case MODIFY_EXPR:
     case CALL_EXPR:
       /* We do not handle calls.  */
+      return true;
     case ADDR_EXPR:
       /* And toplevel address computations never trap.  */
       return false;

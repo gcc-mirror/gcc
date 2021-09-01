@@ -106,10 +106,11 @@ struct stmt_info_for_cost {
 
 typedef vec<stmt_info_for_cost> stmt_vector_for_cost;
 
-/* Maps base addresses to an innermost_loop_behavior that gives the maximum
-   known alignment for that base.  */
+/* Maps base addresses to an innermost_loop_behavior and the stmt it was
+   derived from that gives the maximum known alignment for that base.  */
 typedef hash_map<tree_operand_hash,
-		 innermost_loop_behavior *> vec_base_alignments;
+		 std::pair<stmt_vec_info, innermost_loop_behavior *> >
+	  vec_base_alignments;
 
 /************************************************************************
   SLP
@@ -1059,6 +1060,9 @@ public:
   data_reference *dr;
   /* The statement that contains the data reference.  */
   stmt_vec_info stmt;
+  /* The analysis group this DR belongs to when doing BB vectorization.
+     DRs of the same group belong to the same conditional execution context.  */
+  unsigned group;
   /* The misalignment in bytes of the reference, or -1 if not known.  */
   int misalignment;
   /* The byte alignment that we'd ideally like the reference to have,

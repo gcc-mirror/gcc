@@ -1,3 +1,8 @@
+2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_device): Parse device-modifiers 'device_num'
+	and 'ancestor' in 'target device' clauses.
+
 2021-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_num_tasks,

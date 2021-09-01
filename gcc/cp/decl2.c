@@ -1635,6 +1635,17 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 	if (*decl == pattern)
 	  TREE_DEPRECATED (tmpl) = true;
       }
+
+  /* Likewise, propagate unavailability out to the template.  */
+  if (TREE_UNAVAILABLE (*decl))
+    if (tree ti = get_template_info (*decl))
+      {
+	tree tmpl = TI_TEMPLATE (ti);
+	tree pattern = (TYPE_P (*decl) ? TREE_TYPE (tmpl)
+			: DECL_TEMPLATE_RESULT (tmpl));
+	if (*decl == pattern)
+	  TREE_UNAVAILABLE (tmpl) = true;
+      }
 }
 
 /* Walks through the namespace- or function-scope anonymous union
@@ -5498,14 +5509,47 @@ maybe_instantiate_decl (tree decl)
     }
 }
 
-/* Maybe warn if DECL is deprecated, subject to COMPLAIN.  Returns whether or
-   not a warning was emitted.  */
+/* Error if the DECL is unavailable (unless this is currently suppressed).
+   Maybe warn if DECL is deprecated, subject to COMPLAIN.  Returns true if
+   an error or warning was emitted.  */
 
 bool
-cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
+cp_handle_deprecated_or_unavailable (tree decl, tsubst_flags_t complain)
 {
-  if (!(complain & tf_warning) || !decl
-      || deprecated_state == DEPRECATED_SUPPRESS)
+  if (!decl)
+    return false;
+
+  if ((complain & tf_error)
+      && deprecated_state != UNAVAILABLE_DEPRECATED_SUPPRESS)
+    {
+      if (TREE_UNAVAILABLE (decl))
+	{
+	  error_unavailable_use (decl, NULL_TREE);
+	  return true;
+	}
+      else
+	{
+	  /* Perhaps this is an unavailable typedef.  */
+	  if (TYPE_P (decl)
+	      && TYPE_NAME (decl)
+	      && TREE_UNAVAILABLE (TYPE_NAME (decl)))
+	    {
+	      decl = TYPE_NAME (decl);
+	      /* Don't error within members of a unavailable type.  */
+	      if (TYPE_P (decl)
+		  && currently_open_class (decl))
+		return false;
+
+	      error_unavailable_use (decl, NULL_TREE);
+	      return true;
+	    }
+	}
+      /* Carry on to consider deprecatedness.  */
+    }
+
+  if (!(complain & tf_warning)
+      || deprecated_state == DEPRECATED_SUPPRESS
+      || deprecated_state == UNAVAILABLE_DEPRECATED_SUPPRESS)
     return false;
 
   if (!TREE_DEPRECATED (decl))
@@ -5565,7 +5609,7 @@ cp_warn_deprecated_use_scopes (tree scope)
 	 && scope != global_namespace)
     {
       if ((TREE_CODE (scope) == NAMESPACE_DECL || OVERLOAD_TYPE_P (scope))
-	  && cp_warn_deprecated_use (scope))
+	  && cp_handle_deprecated_or_unavailable (scope))
 	return;
       if (TYPE_P (scope))
 	scope = CP_TYPE_CONTEXT (scope);
@@ -5677,7 +5721,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       TREE_USED (decl) = true;
     }
 
-  cp_warn_deprecated_use (decl, complain);
+  cp_handle_deprecated_or_unavailable (decl, complain);
 
   /* We can only check DECL_ODR_USED on variables or functions with
      DECL_LANG_SPECIFIC set, and these are also the only decls that we

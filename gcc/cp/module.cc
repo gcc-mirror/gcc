@@ -17977,7 +17977,7 @@ module_state::read_language (bool outermost)
 
   function_depth++; /* Prevent unexpected GCs.  */
 
-  if (counts[MSC_entities] != entity_num)
+  if (ok && counts[MSC_entities] != entity_num)
     ok = false;
   if (ok && counts[MSC_entities]
       && !read_entities (counts[MSC_entities],

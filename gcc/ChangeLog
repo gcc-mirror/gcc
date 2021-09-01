@@ -1,3 +1,149 @@
+2021-08-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree.c (walk_tree_1) <OMP_CLAUSE_TILE>: Handle three operands.
+
+2021-08-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-general.h (omp_is_reference): Rename to...
+	(omp_privatize_by_reference): ... this.  Adjust all users...
+	* omp-general.c: ... here, ...
+	* gimplify.c: ... here, ...
+	* omp-expand.c: ... here, ...
+	* omp-low.c: ... here.
+
+2021-08-31  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-ssa-warn-access.cc (maybe_warn_alloc_args_overflow): Test
+	pointer element for equality to zero, not that of the cotaining
+	array.
+
+2021-08-31  Martin Sebor  <msebor@redhat.com>
+
+	* gcc-rich-location.h (gcc_rich_location): Make ctor explicit.
+
+2021-08-31  Martin Sebor  <msebor@redhat.com>
+
+	* function.h (function): Add comments.
+	(get_range_query): Same.  Add attribute returns nonnull.
+
+2021-08-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expr.c (convert_modes): Don't use subreg_promoted_mode on a
+	SUBREG if it can't be guaranteed to a SUBREG_PROMOTED_VAR_P set.
+	Instead use the standard (safer) is_a <scalar_int_mode> idiom.
+
+2021-08-31  Jeff Law  <jlaw@localhost.localdomain>
+
+	* config.gcc (cris-*-elf, cris-*-none): Remove dbxelf.h from
+	tm_file.
+	(m32r-*-elf, m32rle-*-elf, m32r-*-linux): Likewise.
+	(mn10300-*-*, am33_2.0-*-linux*): Likewise.
+	(xtensa*-*-elf, xtensa*-*-linux, xtensa*-*-uclinux): Likewise.
+	(m32c-*-elf*, m32c-*-rtems*): Likewise.
+	* config/cris/cris.h (DBX_NO_XREFS): Remove.
+	(DBX_CONTIN_LENGTH, DBX_CONTIN_CHAR): Likewise.
+	* config/m32r/m32r.h (DBXOUT_SOURCE_LINE): Likewise.
+	(DBX_DEBUGGING_INFO, DBX_CONTIN_LENGTH): Likewise.
+	* config/mn10300/mn10300.h (DEFAULT_GDB_EXTENSIONS): Likewise.
+	* config/mn10300/linux.h (DBX_REGISTER_NAMES): Likewise.
+
+2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Error handling. 'ancestor' only
+	allowed on target constructs and only with particular other clauses.
+	* omp-expand.c (expand_omp_target): Output of 'sorry, not supported' if
+	'ancestor' is used.
+	* omp-low.c (check_omp_nesting_restrictions): Error handling. No nested OpenMP
+	structs when 'ancestor' is used.
+	(scan_omp_1_stmt): No usage of OpenMP runtime routines in a target region when
+	'ancestor' is used.
+	* tree-pretty-print.c (dump_omp_clause): Append 'ancestor'.
+	* tree.h (OMP_CLAUSE_DEVICE_ANCESTOR): Define macro.
+
+2021-08-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expr.c (convert_modes): Preserve SUBREG_PROMOTED_VAR_P when
+	creating a (wider) partial subreg from a SUBREG_PROMOTED_VAR_P
+	subreg.
+	* simplify-rtx.c (simplify_unary_operation_1) [SIGN_EXTEND]:
+	Likewise, preserve SUBREG_PROMOTED_VAR_P when creating a (wider)
+	partial subreg from a SUBREG_PROMOTED_VAR_P subreg.  Generate
+	SIGN_EXTEND of the SUBREG_REG when a subreg would be paradoxical.
+	[ZERO_EXTEND]: Likewise, preserve SUBREG_PROMOTED_VAR_P when
+	creating a (wider) partial subreg from a SUBREG_PROMOTED_VAR_P
+	subreg.  Generate ZERO_EXTEND of the SUBREG_REG when a subreg
+	would be paradoxical.
+
+2021-08-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* combine.c (combine_simplify_rtx): Avoid converting an explicit
+	TRUNCATE into a lowpart SUBREG on !TRULY_NOOP_TRUNCATION targets.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+
+2021-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102142
+	* tree-vect-slp.c (vect_bb_vectorization_profitable_p): Fix
+	condition under which to unset the visited flag.
+
+2021-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102129
+	* tree-ssa-ter.c (find_replaceable_in_bb): Do not move
+	possibly trapping expressions across calls.
+
+2021-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102134
+	* tree-ssa-ccp.c (bit_value_binop) <case RSHIFT_EXPR>: If sgn is
+	UNSIGNED and r1val | r1mask has MSB set, ensure lzcount doesn't
+	become negative.
+
+2021-08-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR driver/79181
+	* collect-utils.c (setup_signals): New declaration.
+	* collect-utils.h (setup_signals): New function.
+	* collect2.c (handler): Delete.
+	(main): Instead of manually setting up the signals,
+	just call setup_signals.
+	* lto-wrapper.c (main): Likewise.
+
+2021-08-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/56337
+	* config/i386/i386-protos.h (x86_output_aligned_bss):
+	Change align argument to unsigned type.
+	(x86_elf_aligned_decl_common): Likewise.
+	* config/i386/i386.c (x86_elf_aligned_decl_common): Likewise.
+	(x86_output_aligned_bss): Likewise.
+
+2021-08-31  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.c (mips_module_isa_name): New.
+	  mips_file_start: add .module mipsREV to all asm output
+
+2021-08-31  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.h (struct mips_cpu_info): define enum mips_isa;
+	  use enum instead of int for 'isa' member.
+	* config.gcc, config/mips/mips.c, config/mips/mips-cpus.def,
+	  config/mips/netbsd.h: replace hardcoded numbers with enum.
+
+2021-08-31  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (*<avx512>_ucmp<mode>3_1): Change from
+	define_split to define_insn_and_split.
+	(*avx2_eq<mode>3): Removed.
+	(<avx512>_eq<mode>3<mask_scalar_merge_name>): Adjust pattern
+	(<avx512>_eq<mode>3<mask_scalar_merge_name>_1): Rename to ..
+	(*<avx512>_eq<mode>3<mask_scalar_merge_name>_1): .. this, and
+	adjust pattern.
+	(*avx2_gt<mode>3): Removed.
+	(<avx512>_gt<mode>3<mask_scalar_merge_name>): Change from
+	define_insn to define_expand, and adjust pattern.
+	(UNSPEC_MASKED_EQ, UNSPEC_MASKED_GT): Removed.
+
 2021-08-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99260

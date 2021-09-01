@@ -1,3 +1,47 @@
+2021-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98421
+	* include/std/span (span(Iter, size_type), span(Iter, Iter)):
+	Add valid range checks.
+	* testsuite/23_containers/span/cons_1_assert_neg.cc: New test.
+	* testsuite/23_containers/span/cons_2_assert_neg.cc: New test.
+
+2021-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Fix checks for F_GETFL, F_SETFL and O_NONBLOCK.
+	* configure: Regenerate.
+
+2021-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/system_error.cc (error_category::~error_category()):
+	Remove noexcept-specifier.
+	(system_error::~system_error()): Likewise.
+	* testsuite/19_diagnostics/error_category/noexcept.cc: New test.
+	* testsuite/19_diagnostics/system_error/noexcept.cc: New test.
+
+2021-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102074
+	* include/bits/atomic_timed_wait.h (__timed_waiter_pool)
+	[!_GLIBCXX_HAVE_PLATFORM_TIMED_WAIT]: Add missing return.
+
+2021-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (__make_resolver_error_code):
+	Handle EAI_SYSTEM errors.
+	(basic_resolver_results): Use __make_resolver_error_code. Use
+	Glibc NI_MAXHOST and NI_MAXSERV values for buffer sizes.
+
+2021-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc:
+	Try other service if "http" fails.
+
+2021-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Undefine some more names used
+	by Solaris system headers.
+
 2021-08-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96286

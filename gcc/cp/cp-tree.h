@@ -6549,7 +6549,7 @@ extern void validate_conversion_obstack		(void);
 extern void mark_versions_used			(tree);
 extern int unsafe_return_slot_p			(tree);
 extern bool make_safe_copy_elision		(tree, tree);
-extern bool cp_warn_deprecated_use		(tree, tsubst_flags_t = tf_warning_or_error);
+extern bool cp_handle_deprecated_or_unavailable (tree, tsubst_flags_t = tf_warning_or_error);
 extern void cp_warn_deprecated_use_scopes	(tree);
 extern tree get_function_version_dispatcher	(tree);
 

@@ -1,3 +1,87 @@
+2021-08-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* gfortran.dg/pr100950.f90: Extend coverage.
+
+2021-08-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/12672
+	* g++.dg/cpp0x/decltype29.C: Adjust.
+	* g++.dg/template/error56.C: Adjust.
+	* g++.old-deja/g++.pt/unify6.C: Adjust.
+	* g++.dg/template/explicit-args7.C: New test.
+
+2021-08-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92193
+	* g++.dg/diagnostic/static_assert4.C: New test.
+
+2021-08-31  Jeff Law  <jlaw@localhost.localdomain>
+
+	* gcc.target/mips/mips.exp: Add tree-vrp to mips_option_group.
+	* gcc.target/mips/data-sym-multi-pool.c: Add -fno-tree-vrp.
+
+2021-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/101145
+	* gcc.dg/vect/pr101145.c: Use dg-additional-options with just -O3
+	instead of dg-options with -O3 -fdump-tree-vect-details.
+	* gcc.dg/vect/pr101145_1.c: Likewise.
+	* gcc.dg/vect/pr101145_2.c: Likewise.
+	* gcc.dg/vect/pr101145_3.c: Likewise.
+
+2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/target-device-1.c: New test.
+	* c-c++-common/gomp/target-device-2.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-1.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-2.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-3.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-4.c: New test.
+	* gfortran.dg/gomp/target-device-1.f90: New test.
+	* gfortran.dg/gomp/target-device-2.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-1.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-2.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-3.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-4.f90: New test.
+
+2021-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102142
+	* g++.dg/torture/pr102142.C: New testcase.
+
+2021-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102134
+	* gcc.c-torture/execute/pr102134.c: New test.
+
+2021-08-31  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/arm/pr51534.c: Adjust test-case for soft fp targets.
+
+2021-08-31  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/ipa/inline-8.c: Mark cmp and move as
+	static so they both bind local and available for
+	inlinine.
+
+2021-08-31  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-vpcmpeqb-1.c: Adjust testcase.
+	* gcc.target/i386/avx512bw-vpcmpeqw-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpcmpgtb-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpcmpgtw-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpeqd-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpeqq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpgtd-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpgtq-1.c: Ditto.
+	* gcc.target/i386/bitwise_mask_op-1.c: Ditto.
+	* gcc.target/i386/bitwise_mask_op-2.c: Ditto.
+
 2021-08-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99260

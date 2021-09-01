@@ -979,7 +979,7 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
 	}
 
       if (UNLIMITED_POLY (csym))
-	gfc_error_now ("%qs in cannot appear in COMMON at %L "
+	gfc_error_now ("%qs at %L cannot appear in COMMON "
 		       "[F2008:C5100]", csym->name, &csym->declared_at);
 
       if (csym->ts.type != BT_DERIVED)

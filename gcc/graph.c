@@ -133,10 +133,11 @@ draw_cfg_node_succ_edges (pretty_printer *pp, int funcdef_no, basic_block bb)
 	  weight = 10;
 	}
       else if (e->flags & EDGE_FALLTHRU)
-	{
-	  color = "blue";
-	  weight = 100;
-	}
+	weight = 100;
+      else if (e->flags & EDGE_TRUE_VALUE)
+	color = "forestgreen";
+      else if (e->flags & EDGE_FALSE_VALUE)
+	color = "darkorange";
 
       if (e->flags & EDGE_ABNORMAL)
 	color = "red";

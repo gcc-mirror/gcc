@@ -1739,15 +1739,16 @@ build_v2_build_objc_method_call (int super, tree method_prototype,
   /* Param list + 2 slots for object and selector.  */
   vec_alloc (parms, nparm + 2);
 
-  /* If we are returning a struct in memory, and the address
-     of that memory location is passed as a hidden first
-     argument, then change which messenger entry point this
-     expr will call.  NB: Note that sender_cast remains
-     unchanged (it already has a struct return type).  */
-  if (!targetm.calls.struct_value_rtx (0, 0)
-      && (TREE_CODE (ret_type) == RECORD_TYPE
-	  || TREE_CODE (ret_type) == UNION_TYPE)
-      && targetm.calls.return_in_memory (ret_type, 0))
+  /* If we are returning an item that must be returned in memory, and the
+     target ABI does this by an invisible pointer provided as the first arg,
+     we need to adjust the message signature to include this.  The second
+     part of this excludes targets that provide some alternate scheme for
+     structure returns.  */
+  if (ret_type && !VOID_TYPE_P (ret_type)
+      && targetm.calls.return_in_memory (ret_type, 0)
+      && !(targetm.calls.struct_value_rtx (0, 0)
+	   && (TREE_CODE (ret_type) == RECORD_TYPE
+	       || TREE_CODE (ret_type) == UNION_TYPE)))
     {
       if (super)
 	sender = umsg_id_super2_stret_fixup_decl;
@@ -1849,10 +1850,12 @@ next_runtime_abi_02_build_objc_method_call (location_t loc,
 	     ? TREE_VALUE (TREE_TYPE (method_prototype))
 	     : objc_object_type;
 
-  if (!targetm.calls.struct_value_rtx (0, 0)
-      && (TREE_CODE (ret_type) == RECORD_TYPE
-	  || TREE_CODE (ret_type) == UNION_TYPE)
-      && targetm.calls.return_in_memory (ret_type, 0))
+  /* See comment for the fixup version above.  */
+  if (ret_type && !VOID_TYPE_P (ret_type)
+      && targetm.calls.return_in_memory (ret_type, 0)
+      && !(targetm.calls.struct_value_rtx (0, 0)
+	   && (TREE_CODE (ret_type) == RECORD_TYPE
+	       || TREE_CODE (ret_type) == UNION_TYPE)))
     {
       if (super)
 	message_func_decl = umsg_id_super2_stret_fixup_decl;
