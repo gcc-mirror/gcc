@@ -1,3 +1,47 @@
+2021-08-31  Jason Merrill  <jason@redhat.com>
+
+	* coroutines.cc (flatten_await_stmt): Fix copyo.
+	* decl.c (reshape_init_class): Simplify.
+	* module.cc (module_state::read_language): Add null check.
+	* parser.c (build_range_temp): Avoid type_uses_auto.
+	(cp_parser_class_specifier_1): Add null check.
+
+2021-08-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/12672
+	* call.c (rejection_reason::call_varargs_p): Rename this
+	previously unused member to ...
+	(rejection_reason::least_p): ... this.
+	(arity_rejection): Add least_p parameter.
+	(add_template_candidate_real): When there are explicit
+	template arguments, check that the arity of the call agrees with
+	the arity of the function before attempting deduction.
+	(print_arity_information): Add least_p parameter.
+	(print_z_candidate): Adjust call to print_arity_information.
+
+2021-08-31  Martin Sebor  <msebor@redhat.com>
+
+	* parser.c (cp_parser_selection_statement): Use direct initialization
+	instead of copy.
+
+2021-08-31  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (explain_invalid_constexpr_fn): Use iloc_sentinel.
+
+2021-08-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92193
+	* cp-tree.h (FNDECL_MANIFESTLY_CONST_EVALUATED): New.
+	* constexpr.c (cxx_eval_call_expression): Set it.
+	* pt.c (neglectable_inst_p): Check it.
+
+2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_device): Parse device-modifiers 'device_num'
+	and 'ancestor' in 'target device' clauses.
+	* semantics.c (finish_omp_clauses): Error handling. Constant device ids must
+	evaluate to '1' if 'ancestor' is used.
+
 2021-08-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96286

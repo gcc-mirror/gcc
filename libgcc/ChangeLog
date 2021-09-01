@@ -1,3 +1,11 @@
+2021-08-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/value-unwind.h: Add missing runtime exception
+	paragraph.
+	* config/frv/frv-abi.h: Likewise.
+	* config/i386/value-unwind.h: Likewise.
+	* config/pa/pa64-hpux-lib.h: Likewise.
+
 2021-08-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/ibm-ldouble.c (ldouble_qadd_internal): Rename from

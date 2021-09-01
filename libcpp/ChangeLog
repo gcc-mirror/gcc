@@ -1,3 +1,8 @@
+2021-08-31  Martin Sebor  <msebor@redhat.com>
+
+	* include/line-map.h (class rich_location): Disable copying and
+	assignment.
+
 2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR other/93067
