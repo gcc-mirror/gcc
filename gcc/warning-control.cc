@@ -188,9 +188,7 @@ void copy_warning (ToType to, FromType from)
       /* If there's an entry in the map the no-warning bit must be set.  */
       gcc_assert (get_no_warning_bit (from));
 
-      if (!nowarn_map)
-	nowarn_map = xint_hash_map_t::create_ggc (32);
-
+      gcc_checking_assert (nowarn_map);
       nowarn_map->put (to_key, *from_map);
       set_no_warning_bit (to, true);
     }
