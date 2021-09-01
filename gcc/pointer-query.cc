@@ -34,10 +34,13 @@
 #include "stringpool.h"
 #include "attribs.h"
 #include "gimple-fold.h"
+#include "gimple-ssa.h"
 #include "intl.h"
 #include "attr-fnspec.h"
 #include "gimple-range.h"
 #include "pointer-query.h"
+#include "tree-pretty-print.h"
+#include "tree-ssanames.h"
 
 static bool compute_objsize_r (tree, int, access_ref *, ssa_name_limit_t &,
 			       pointer_query *);
@@ -307,7 +310,7 @@ get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
   enum value_range_kind range_type;
 
   if (!query)
-    query = get_global_range_query ();
+    query = get_range_query (cfun);
 
   if (integral)
     {
@@ -628,7 +631,7 @@ access_ref::phi () const
     return NULL;
 
   gimple *def_stmt = SSA_NAME_DEF_STMT (ref);
-  if (gimple_code (def_stmt) != GIMPLE_PHI)
+  if (!def_stmt || gimple_code (def_stmt) != GIMPLE_PHI)
     return NULL;
 
   return as_a <gphi *> (def_stmt);
@@ -1038,6 +1041,9 @@ access_ref::inform_access (access_mode mode) const
   if (TREE_CODE (ref) == SSA_NAME)
     {
       gimple *stmt = SSA_NAME_DEF_STMT (ref);
+      if (!stmt)
+	return;
+
       if (is_gimple_call (stmt))
 	{
 	  loc = gimple_location (stmt);
@@ -1339,7 +1345,7 @@ pointer_query::put_ref (tree ptr, const access_ref &ref, int ostype /* = 1 */)
   if (var_cache->access_refs.length () <= cache_idx)
     var_cache->access_refs.safe_grow_cleared (cache_idx + 1);
 
-  access_ref cache_ref = var_cache->access_refs[cache_idx - 1];
+  access_ref &cache_ref = var_cache->access_refs[cache_idx];
   if (cache_ref.ref)
   {
     gcc_checking_assert (cache_ref.ref == ref.ref);
@@ -1358,6 +1364,102 @@ pointer_query::flush_cache ()
     return;
   var_cache->indices.release ();
   var_cache->access_refs.release ();
+}
+
+/* Dump statistics and, optionally, cache contents to DUMP_FILE.  */
+
+void
+pointer_query::dump (FILE *dump_file, bool contents /* = false */)
+{
+  unsigned nused = 0, nrefs = 0;
+  unsigned nidxs = var_cache->indices.length ();
+  for (unsigned i = 0; i != nidxs; ++i)
+    {
+      unsigned ari = var_cache->indices[i];
+      if (!ari)
+	continue;
+
+      ++nused;
+
+      const access_ref &aref = var_cache->access_refs[ari];
+      if (!aref.ref)
+	continue;
+
+      ++nrefs;
+    }
+
+  fprintf (dump_file, "pointer_query counters:\n"
+	   "  index cache size:   %u\n"
+	   "  index entries:      %u\n"
+	   "  access cache size:  %u\n"
+	   "  access entries:     %u\n"
+	   "  hits:               %u\n"
+	   "  misses:             %u\n"
+	   "  failures:           %u\n"
+	   "  max_depth:          %u\n",
+	   nidxs, nused,
+	   var_cache->access_refs.length (), nrefs,
+	   hits, misses, failures, max_depth);
+
+  if (!contents || !nidxs)
+    return;
+
+  fputs ("\npointer_query cache contents:\n", dump_file);
+
+  for (unsigned i = 0; i != nidxs; ++i)
+    {
+      unsigned ari = var_cache->indices[i];
+      if (!ari)
+	continue;
+
+      const access_ref &aref = var_cache->access_refs[ari];
+      if (!aref.ref)
+	continue;
+
+      /* The level-1 cache index corresponds to the SSA_NAME_VERSION
+	 shifted left by one and ORed with the Object Size Type in
+	 the lowest bit.  Print the two separately.  */
+      unsigned ver = i >> 1;
+      unsigned ost = i & 1;
+
+      fprintf (dump_file, "  %u.%u[%u]: ", ver, ost, ari);
+      if (tree name = ssa_name (ver))
+	{
+	  print_generic_expr (dump_file, name);
+	  fputs (" = ", dump_file);
+	}
+      else
+	fprintf (dump_file, "  _%u = ", ver);
+
+      if (gphi *phi = aref.phi ())
+	{
+	  fputs ("PHI <", dump_file);
+	  unsigned nargs = gimple_phi_num_args (phi);
+	  for (unsigned i = 0; i != nargs; ++i)
+	    {
+	      tree arg = gimple_phi_arg_def (phi, i);
+	      print_generic_expr (dump_file, arg);
+	      if (i + 1 < nargs)
+		fputs (", ", dump_file);
+	    }
+	  fputc ('>', dump_file);
+	}
+      else
+	print_generic_expr (dump_file, aref.ref);
+
+      if (aref.offrng[0] != aref.offrng[1])
+	fprintf (dump_file, " + [%lli, %lli]",
+		 (long long) aref.offrng[0].to_shwi (),
+		 (long long) aref.offrng[1].to_shwi ());
+      else if (aref.offrng[0] != 0)
+	fprintf (dump_file, " %c %lli",
+		 aref.offrng[0] < 0 ? '-' : '+',
+		 (long long) aref.offrng[0].to_shwi ());
+
+      fputc ('\n', dump_file);
+    }
+
+  fputc ('\n', dump_file);
 }
 
 /* A helper of compute_objsize_r() to determine the size from an assignment
@@ -1782,8 +1884,14 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 	  if (const access_ref *cache_ref = qry->get_ref (ptr))
 	    {
 	      /* If the pointer is in the cache set *PREF to what it refers
-		 to and return success.  */
+		 to and return success.
+		 FIXME: BNDRNG is determined by each access and so it doesn't
+		 belong in access_ref.  Until the design is changed, keep it
+		 unchanged here.  */
+	      const offset_int bndrng[2] = { pref->bndrng[0], pref->bndrng[1] };
 	      *pref = *cache_ref;
+	      pref->bndrng[0] = bndrng[0];
+	      pref->bndrng[1] = bndrng[1];
 	      return true;
 	    }
 	}
@@ -1928,13 +2036,18 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 	    pref->add_offset (orng[0], orng[1]);
 	  else
 	    pref->add_max_offset ();
+
 	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
 
-      if (code == ADDR_EXPR
-	  || code == SSA_NAME)
-	return compute_objsize_r (rhs, ostype, pref, snlim, qry);
+      if (code == ADDR_EXPR || code == SSA_NAME)
+	{
+	  if (!compute_objsize_r (rhs, ostype, pref, snlim, qry))
+	    return false;
+	  qry->put_ref (ptr, *pref);
+	  return true;
+	}
 
       /* (This could also be an assignment from a nonlocal pointer.)  Save
 	 PTR to mention in diagnostics but otherwise treat it as a pointer

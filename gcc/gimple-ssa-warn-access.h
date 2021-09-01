@@ -45,7 +45,6 @@ class access_data;
 extern bool check_access (tree, tree, tree, tree, tree, access_mode,
 			  const access_data * = NULL);
 
-extern bool check_memop_access (tree, tree, tree, tree);
 extern bool check_read_access (gimple *, tree, tree = NULL_TREE, int ost = 1);
 extern bool check_read_access (tree, tree, tree = NULL_TREE, int = 1);
 
