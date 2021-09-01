@@ -1,3 +1,10 @@
+2021-08-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2021-08-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree.c (walk_tree_1) <OMP_CLAUSE_TILE>: Handle three operands.
+
 2021-08-30  Haochen Gui  <guihaoc@gcc.gnu.org>
 
 	Backported from master:
