@@ -1768,19 +1768,34 @@ package body Sem_Ch7 is
          end if;
 
          --  Check preelaborable initialization for full type completing a
-         --  private type when aspect Preelaborable_Initialization is True.
-         --  We pass True for the parameter Formal_Types_Have_Preelab_Init
-         --  to take into account the rule that presumes that subcomponents
-         --  of generic formal types mentioned in the type's P_I aspect have
-         --  preelaborable initialization (see RM 10.2.1(11.8/5)).
+         --  private type when aspect Preelaborable_Initialization is True
+         --  or is specified by Preelaborable_Initialization attributes
+         --  (in the case of a private type in a generic unit). We pass
+         --  the expression of the aspect (when present) to the parameter
+         --  Preelab_Init_Expr to take into account the rule that presumes
+         --  that subcomponents of generic formal types mentioned in the
+         --  type's P_I aspect have preelaborable initialization (see
+         --  AI12-0409 and RM 10.2.1(11.8/5)).
 
-         if Is_Type (E)
-           and then Must_Have_Preelab_Init (E)
-           and then not Has_Preelaborable_Initialization
-                          (E, Formal_Types_Have_Preelab_Init => True)
-         then
-            Error_Msg_N
-              ("full view of & does not have preelaborable initialization", E);
+         if Is_Type (E) and then Must_Have_Preelab_Init (E) then
+            declare
+               PI_Aspect : constant Node_Id :=
+                             Find_Aspect
+                               (E, Aspect_Preelaborable_Initialization);
+               PI_Expr   : Node_Id := Empty;
+            begin
+               if Present (PI_Aspect) then
+                  PI_Expr := Expression (PI_Aspect);
+               end if;
+
+               if not Has_Preelaborable_Initialization
+                        (E, Preelab_Init_Expr => PI_Expr)
+               then
+                  Error_Msg_N
+                    ("full view of & does not have "
+                     & "preelaborable initialization", E);
+               end if;
+            end;
          end if;
 
          Next_Entity (E);

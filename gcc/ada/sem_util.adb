@@ -13331,14 +13331,20 @@ package body Sem_Util is
    --------------------------------------
 
    function Has_Preelaborable_Initialization
-     (E                              : Entity_Id;
-      Formal_Types_Have_Preelab_Init : Boolean := False) return Boolean
+     (E                 : Entity_Id;
+      Preelab_Init_Expr : Node_Id := Empty) return Boolean
    is
       Has_PE : Boolean;
 
       procedure Check_Components (E : Entity_Id);
       --  Check component/discriminant chain, sets Has_PE False if a component
       --  or discriminant does not meet the preelaborable initialization rules.
+
+      function Type_Named_In_Preelab_Init_Expression
+        (Typ  : Entity_Id;
+         Expr : Node_Id) return Boolean;
+      --  Returns True iff Typ'Preelaborable_Initialization occurs in Expr
+      --  (where Expr may be a conjunction of one or more P_I attributes).
 
       ----------------------
       -- Check_Components --
@@ -13388,7 +13394,7 @@ package body Sem_Util is
 
             if No (Exp) then
                if not Has_Preelaborable_Initialization
-                        (Etype (Ent), Formal_Types_Have_Preelab_Init)
+                        (Etype (Ent), Preelab_Init_Expr)
                then
                   Has_PE := False;
                   exit;
@@ -13405,6 +13411,44 @@ package body Sem_Util is
             Next_Entity (Ent);
          end loop;
       end Check_Components;
+
+      --------------------------------------
+      -- Type_Named_In_Preelab_Expression --
+      --------------------------------------
+
+      function Type_Named_In_Preelab_Init_Expression
+        (Typ  : Entity_Id;
+         Expr : Node_Id) return Boolean
+      is
+      begin
+         --  Return True if Expr is a Preelaborable_Initialization attribute
+         --  and the prefix is a subtype that has the same type as Typ.
+
+         if Nkind (Expr) = N_Attribute_Reference
+           and then Attribute_Name (Expr) = Name_Preelaborable_Initialization
+           and then Is_Entity_Name (Prefix (Expr))
+           and then Base_Type (Entity (Prefix (Expr))) = Base_Type (Typ)
+         then
+            return True;
+
+         --  In the case where Expr is a conjunction, test whether either
+         --  operand is a Preelaborable_Initialization attribute whose prefix
+         --  has the same type as Typ, and return True if so.
+
+         elsif Nkind (Expr) = N_Op_And
+           and then
+            (Type_Named_In_Preelab_Init_Expression (Typ, Left_Opnd (Expr))
+              or else
+             Type_Named_In_Preelab_Init_Expression (Typ, Right_Opnd (Expr)))
+         then
+            return True;
+
+         --  Typ not named in a Preelaborable_Initialization attribute of Expr
+
+         else
+            return False;
+         end if;
+      end Type_Named_In_Preelab_Init_Expression;
 
    --  Start of processing for Has_Preelaborable_Initialization
 
@@ -13436,7 +13480,7 @@ package body Sem_Util is
 
       elsif Is_Array_Type (E) then
          Has_PE := Has_Preelaborable_Initialization
-                     (Component_Type (E), Formal_Types_Have_Preelab_Init);
+                     (Component_Type (E), Preelab_Init_Expr);
 
       --  A derived type has preelaborable initialization if its parent type
       --  has preelaborable initialization and (in the case of a derived record
@@ -13451,7 +13495,11 @@ package body Sem_Util is
          --  of a generic formal derived type has preelaborable initialization.
          --  (See comment on spec of Has_Preelaborable_Initialization.)
 
-         if Is_Generic_Type (E) and then Formal_Types_Have_Preelab_Init then
+         if Is_Generic_Type (E)
+           and then Present (Preelab_Init_Expr)
+           and then
+             Type_Named_In_Preelab_Init_Expression (E, Preelab_Init_Expr)
+         then
             return True;
          end if;
 
@@ -13464,7 +13512,8 @@ package body Sem_Util is
 
          --  First check whether ancestor type has preelaborable initialization
 
-         Has_PE := Has_Preelaborable_Initialization (Etype (Base_Type (E)));
+         Has_PE := Has_Preelaborable_Initialization
+                     (Etype (Base_Type (E)), Preelab_Init_Expr);
 
          --  If OK, check extension components (if any)
 
@@ -13495,7 +13544,11 @@ package body Sem_Util is
          --  of a generic formal private type has preelaborable initialization.
          --  (See comment on spec of Has_Preelaborable_Initialization.)
 
-         if Is_Generic_Type (E) and then Formal_Types_Have_Preelab_Init then
+         if Is_Generic_Type (E)
+           and then Present (Preelab_Init_Expr)
+           and then
+             Type_Named_In_Preelab_Init_Expression (E, Preelab_Init_Expr)
+         then
             return True;
          else
             return False;
