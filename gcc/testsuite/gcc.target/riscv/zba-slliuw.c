@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zba -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gc_zba_zbs -mabi=lp64 -O2" } */
 
 long
 foo (long i)
@@ -8,4 +8,4 @@ foo (long i)
 }
 /* XXX: This pattern need combine improvement or intermediate instruction
  *      from zbs.   */
-/* { dg-final { scan-assembler-not "slli.uw" } } */
+/* { dg-final { scan-assembler "slli.uw" } } */
