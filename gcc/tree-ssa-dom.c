@@ -1990,13 +1990,13 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
 
-  update_stmt_if_modified (stmt);
-  opt_stats.num_stmts++;
-
   /* STMT may be a comparison of uniform vectors that we can simplify
      down to a comparison of scalars.  Do that transformation first
      so that all the scalar optimizations from here onward apply.  */
   reduce_vector_comparison_to_scalar_comparison (stmt);
+
+  update_stmt_if_modified (stmt);
+  opt_stats.num_stmts++;
 
   /* Const/copy propagate into USES, VUSES and the RHS of VDEFs.  */
   cprop_into_stmt (stmt, m_evrp_range_analyzer);
