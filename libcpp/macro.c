@@ -2026,7 +2026,6 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
   i = 0;
   vaopt_state vaopt_tracker (pfile, macro->variadic, &args[macro->paramc - 1]);
   const cpp_token **vaopt_start = NULL;
-  unsigned vaopt_padding_tokens = 0;
   for (src = macro->exp.tokens; src < limit; src++)
     {
       unsigned int arg_tokens_count;
@@ -2059,16 +2058,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	      const cpp_token **start = vaopt_start;
 	      vaopt_start = NULL;
 
-	      /* Remove any tail padding from inside the __VA_OPT__.  */
 	      paste_flag = tokens_buff_last_token_ptr (buff);
-	      while (vaopt_padding_tokens--
-		     && paste_flag
-		     && paste_flag != start
-		     && (*paste_flag)->type == CPP_PADDING)
-		{
-		  tokens_buff_remove_last_token (buff);
-		  paste_flag = tokens_buff_last_token_ptr (buff);
-		}
 
 	      if (vaopt_tracker.stringify ())
 		{
@@ -2089,6 +2079,14 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		}
 	      else if (src->flags & PASTE_LEFT)
 		{
+		  /* Don't avoid paste after all.  */
+		  while (paste_flag && paste_flag != start
+			 && *paste_flag == &pfile->avoid_paste)
+		    {
+		      tokens_buff_remove_last_token (buff);
+		      paste_flag = tokens_buff_last_token_ptr (buff);
+		    }
+
 		  /* With a non-empty __VA_OPT__ on the LHS of ##, the last
 		     token should be flagged PASTE_LEFT.  */
 		  if (paste_flag && (*paste_flag)->type != CPP_PADDING)
@@ -2107,7 +2105,6 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	  continue;
 	}
 
-      vaopt_padding_tokens = 0;
       if (src->type != CPP_MACRO_ARG)
 	{
 	  /* Allocate a virtual location for token SRC, and add that
@@ -2263,10 +2260,6 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 
 	      index = expanded_token_index (pfile, macro, src, token_index);
 	      const cpp_token *tok = macro_arg_token_iter_get_token (&from);
-	      if (tok->type == CPP_PADDING)
-		vaopt_padding_tokens++;
-	      else
-		vaopt_padding_tokens = 0;
 	      tokens_buff_add_token (buff, virt_locs, tok,
 				     macro_arg_token_iter_get_location (&from),
 				     src->src_loc, map, index);
@@ -2313,7 +2306,6 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	  tokens_buff_add_token (buff, virt_locs,
 				 t, t->src_loc, t->src_loc,
 				 NULL, 0);
-	  vaopt_padding_tokens++;
 	}
 
       /* Add a new paste flag, or remove an unwanted one.  */
