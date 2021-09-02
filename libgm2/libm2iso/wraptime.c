@@ -27,23 +27,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "config.h"
 
 #if defined(HAVE_SYS_TYPES_H)
-#include <sys/types.h>
+#include "sys/types.h"
 #endif
 
 #if defined(HAVE_SYS_TIME_H)
-#include <sys/time.h>
+#include "sys/time.h"
 #endif
 
 #if defined(HAVE_TIME_H)
-#include <time.h>
+#include "time.h"
 #endif
 
 #if defined(HAVE_MALLOC_H)
-#include <malloc.h>
+#include "malloc.h"
 #endif
 
 #if defined(HAVE_LIMITS_H)
-#include <limits.h>
+#include "limits.h"
 #endif
 
 #if !defined(TRUE)

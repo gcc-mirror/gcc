@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "ChanConsts.h"
 
 #if defined(HAVE_ERRNO_H)
-#include <errno.h>
+#include "errno.h"
 #endif
 
 #if defined(HAVE_SYS_ERRNO_H)
-#include <sys/errno.h>
+#include "sys/errno.h"
 #endif
 
 #if !defined(FALSE)

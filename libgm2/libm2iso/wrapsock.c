@@ -27,51 +27,51 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "config.h"
 
 #if defined(HAVE_SYS_TYPES_H)
-#include <sys/types.h>
+#include "sys/types.h"
 #endif
 
 #if defined(HAVE_SYS_SOCKET_H)
-#include <sys/socket.h>
+#include "sys/socket.h"
 #endif
 
 #if defined(HAVE_NETINET_IN_H)
-#include <netinet/in.h>
+#include "netinet/in.h"
 #endif
 
 #if defined(HAVE_NETDB_H)
-#include <netdb.h>
+#include "netdb.h"
 #endif
 
 #if defined(HAVE_UNISTD_H)
-#include <unistd.h>
+#include "unistd.h"
 #endif
 
 #if defined(HAVE_SIGNAL_H)
-#include <signal.h>
+#include "signal.h"
 #endif
 
 #if defined(HAVE_SYS_ERRNO_H)
-#include <sys/errno.h>
+#include "sys/errno.h"
 #endif
 
 #if defined(HAVE_ERRNO_H)
-#include <errno.h>
+#include "errno.h"
 #endif
 
 #if defined(HAVE_MALLOC_H)
-#include <malloc.h>
+#include "malloc.h"
 #endif
 
 #if defined(HAVE_MALLOC_H)
-#include <signal.h>
+#include "signal.h"
 #endif
 
 #if defined(HAVE_STRING_H)
-#include <string.h>
+#include "string.h"
 #endif
 
 #if defined(HAVE_STDLIB_H)
-#include <stdlib.h>
+#include "stdlib.h"
 #endif
 
 #if !defined(TRUE)
