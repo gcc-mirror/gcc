@@ -96,6 +96,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__invoke(std::forward<_Callable>(__fn),
 			   std::forward<_Args>(__args)...);
     }
+
+#if __cplusplus > 202002L
+# define __cpp_lib_invoke_r 202106L
+
+  /// Invoke a callable object and convert the result to _Res.
+  template<typename _Res, typename _Callable, typename... _Args>
+    requires is_invocable_r_v<_Res, _Callable, _Args...>
+    constexpr _Res
+    invoke_r(_Callable&& __fn, _Args&&... __args)
+    noexcept(is_nothrow_invocable_r_v<_Res, _Callable, _Args...>)
+    {
+      return std::__invoke_r<_Res>(std::forward<_Callable>(__fn),
+				   std::forward<_Args>(__args)...);
+    }
+#endif // C++23
 #endif // C++17
 
   template<typename _MemFunPtr,
