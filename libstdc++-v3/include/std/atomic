@@ -320,6 +320,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) noexcept
       {
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
+
 	return __atomic_compare_exchange(std::__addressof(_M_i),
 					 std::__addressof(__e),
 					 std::__addressof(__i),
@@ -330,6 +332,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) volatile noexcept
       {
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
+
 	return __atomic_compare_exchange(std::__addressof(_M_i),
 					 std::__addressof(__e),
 					 std::__addressof(__i),
@@ -352,6 +356,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) noexcept
       {
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
+
 	return __atomic_compare_exchange(std::__addressof(_M_i),
 					 std::__addressof(__e),
 					 std::__addressof(__i),
@@ -362,6 +368,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) volatile noexcept
       {
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
+
 	return __atomic_compare_exchange(std::__addressof(_M_i),
 					 std::__addressof(__e),
 					 std::__addressof(__i),
