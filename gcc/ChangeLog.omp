@@ -1,3 +1,11 @@
+2021-09-02  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	Backported from master:
+	2021-09-02  Marcel Vollweiler  <marcel@codesourcery.com>
+
+        * gfortran.dg/gomp/target-device-ancestor-4.f90: Comment out dg-final to avoid
+        UNRESOLVED.
+
 2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	Backported from master:
