@@ -804,6 +804,15 @@ resolve_entries (gfc_namespace *ns)
 	     the same string length, i.e. both len=*, or both len=4.
 	     Having both len=<variable> is also possible, but difficult to
 	     check at compile time.  */
+	  else if (ts->type == BT_CHARACTER
+		   && (el->sym->result->attr.allocatable
+		       != ns->entries->sym->result->attr.allocatable))
+	    {
+	      gfc_error ("Function %s at %L has entry %s with mismatched "
+			 "characteristics", ns->entries->sym->name,
+			 &ns->entries->sym->declared_at, el->sym->name);
+	      return;
+	    }
 	  else if (ts->type == BT_CHARACTER && ts->u.cl && fts->u.cl
 		   && (((ts->u.cl->length && !fts->u.cl->length)
 			||(!ts->u.cl->length && fts->u.cl->length))
@@ -970,7 +979,7 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
 	}
 
       if (UNLIMITED_POLY (csym))
-	gfc_error_now ("%qs in cannot appear in COMMON at %L "
+	gfc_error_now ("%qs at %L cannot appear in COMMON "
 		       "[F2008:C5100]", csym->name, &csym->declared_at);
 
       if (csym->ts.type != BT_DERIVED)
@@ -7820,8 +7829,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	}
     }
 
-  /* Check for F08:C628.  */
-  if (allocatable == 0 && pointer == 0 && !unlimited)
+  /* Check for F08:C628 (F2018:C932).  Each allocate-object shall be a data
+     pointer or an allocatable variable.  */
+  if (allocatable == 0 && pointer == 0)
     {
       gfc_error ("Allocate-object at %L must be ALLOCATABLE or a POINTER",
 		 &e->where);

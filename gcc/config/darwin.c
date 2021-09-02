@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "expr.h"
 #include "langhooks.h"
+#include "targhooks.h"
 #include "toplev.h"
 #include "lto-section-names.h"
 #include "intl.h"
@@ -108,6 +109,9 @@ static bool ld_uses_coal_sects = false;
 /* Very old (ld_classic) linkers need a symbol to mark the start of
    each FDE.  */
 static bool ld_needs_eh_markers = false;
+
+/* Emit a section-start symbol for mod init and term sections.  */
+static bool ld_init_term_start_labels = false;
 
 /* Section names.  */
 section * darwin_sections[NUM_DARWIN_SECTIONS];
@@ -1838,6 +1842,11 @@ finalize_ctors ()
   else
     switch_to_section (darwin_sections[constructor_section]);
 
+  /* Where needed, provide a linker-visible section-start symbol so that we
+     have stable output between debug and non-debug.  */
+  if (ld_init_term_start_labels)
+    fputs (MACHOPIC_INDIRECT ? "_Mod.init:\n" : "_CTOR.sect:\n", asm_out_file);
+
   if (vec_safe_length (ctors) > 1)
     ctors->qsort (sort_cdtor_records);
   FOR_EACH_VEC_SAFE_ELT (ctors, i, elt)
@@ -1857,6 +1866,11 @@ finalize_dtors ()
     switch_to_section (darwin_sections[mod_term_section]);
   else
     switch_to_section (darwin_sections[destructor_section]);
+
+  /* Where needed, provide a linker-visible section-start symbol so that we
+     have stable output between debug and non-debug.  */
+  if (ld_init_term_start_labels)
+    fputs (MACHOPIC_INDIRECT ? "_Mod.term:\n" : "_DTOR.sect:\n", asm_out_file);
 
   if (vec_safe_length (dtors) > 1)
     dtors->qsort (sort_cdtor_records);
@@ -3228,11 +3242,25 @@ darwin_override_options (void)
       /* Earlier versions are not specifically accounted, until required.  */
     }
 
-  /* Older Darwin ld could not coalesce weak entities without them being
-     placed in special sections.  */
-  if (darwin_target_linker
-      && (strverscmp (darwin_target_linker, MIN_LD64_NO_COAL_SECTS) < 0))
-    ld_uses_coal_sects = true;
+  /* Some codegen needs to account for the capabilities of the target
+     linker.  */
+  if (darwin_target_linker)
+    {
+      /* Older Darwin ld could not coalesce weak entities without them being
+	 placed in special sections.  */
+      if (strverscmp (darwin_target_linker, MIN_LD64_NO_COAL_SECTS) < 0)
+	ld_uses_coal_sects = true;
+
+      /* Some newer assemblers emit section start temp symbols for mod init
+	 and term sections if there is no suitable symbol present already.
+	 The temp symbols are linker visible and therefore appear in the
+	 symbol tables.  Since the temp symbol number can vary when debug is
+	 enabled, that causes compare-debug fails.  The solution is to provide
+	 a stable linker-visible symbol.  */
+      if (strverscmp (darwin_target_linker,
+		      MIN_LD64_INIT_TERM_START_LABELS) >= 0)
+	ld_init_term_start_labels = true;
+    }
 
   /* In principle, this should be c-family only.  However, we really need to
      set sensible defaults for LTO as well, since the section selection stuff
@@ -3634,19 +3662,22 @@ darwin_rename_builtins (void)
     }
 }
 
+/* Implementation for the TARGET_LIBC_HAS_FUNCTION hook.  */
+
 bool
 darwin_libc_has_function (enum function_class fn_class,
 			  tree type ATTRIBUTE_UNUSED)
 {
-  if (fn_class == function_sincos)
+  if (fn_class == function_sincos && darwin_macosx_version_min)
     return (strverscmp (darwin_macosx_version_min, "10.9") >= 0);
-
+#if DARWIN_PPC && SUPPORT_DARWIN_LEGACY
   if (fn_class == function_c99_math_complex
       || fn_class == function_c99_misc)
     return (TARGET_64BIT
-	    || strverscmp (darwin_macosx_version_min, "10.3") >= 0);
-
-  return true;
+	    || (darwin_macosx_version_min &&
+		strverscmp (darwin_macosx_version_min, "10.3") >= 0));
+#endif
+  return default_libc_has_function (fn_class, type);
 }
 
 hashval_t

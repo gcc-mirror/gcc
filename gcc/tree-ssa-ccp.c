@@ -1448,6 +1448,34 @@ bit_value_mult_const (signop sgn, int width,
   *mask = wi::ext (sum_mask, width, sgn);
 }
 
+/* Fill up to MAX values in the BITS array with values representing
+   each of the non-zero bits in the value X.  Returns the number of
+   bits in X (capped at the maximum value MAX).  For example, an X
+   value 11, places 1, 2 and 8 in BITS and returns the value 3.  */
+
+unsigned int
+get_individual_bits (widest_int *bits, widest_int x, unsigned int max)
+{
+  unsigned int count = 0;
+  while (count < max && x != 0)
+    {
+      int bitpos = wi::ctz (x);
+      bits[count] = wi::lshift (1, bitpos);
+      x ^= bits[count];
+      count++;
+    }
+  return count;
+}
+
+/* Array of 2^N - 1 values representing the bits flipped between
+   consecutive Gray codes.  This is used to efficiently enumerate
+   all permutations on N bits using XOR.  */
+static const unsigned char gray_code_bit_flips[63] = {
+  0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4,
+  0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5,
+  0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4,
+  0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
+};
 
 /* Apply the operation CODE in type TYPE to the value, mask pairs
    R1VAL, R1MASK and R2VAL, R2MASK representing a values of type R1TYPE
@@ -1525,6 +1553,48 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 		}
 	    }
 	}
+      else if (wi::ltu_p (r2val | r2mask, width)
+	       && wi::popcount (r2mask) <= 4)
+	{
+	  widest_int bits[4];
+	  widest_int res_val, res_mask;
+	  widest_int tmp_val, tmp_mask;
+	  widest_int shift = wi::bit_and_not (r2val, r2mask);
+	  unsigned int bit_count = get_individual_bits (bits, r2mask, 4);
+	  unsigned int count = (1 << bit_count) - 1;
+
+	  /* Initialize result to rotate by smallest value of shift.  */
+	  if (code == RROTATE_EXPR)
+	    {
+	      res_mask = wi::rrotate (r1mask, shift, width);
+	      res_val = wi::rrotate (r1val, shift, width);
+	    }
+	  else
+	    {
+	      res_mask = wi::lrotate (r1mask, shift, width);
+	      res_val = wi::lrotate (r1val, shift, width);
+	    }
+
+	  /* Iterate through the remaining values of shift.  */
+	  for (unsigned int i=0; i<count; i++)
+	    {
+	      shift ^= bits[gray_code_bit_flips[i]];
+	      if (code == RROTATE_EXPR)
+		{
+		  tmp_mask = wi::rrotate (r1mask, shift, width);
+		  tmp_val = wi::rrotate (r1val, shift, width);
+		}
+	      else
+		{
+		  tmp_mask = wi::lrotate (r1mask, shift, width);
+		  tmp_val = wi::lrotate (r1val, shift, width);
+		}
+	      /* Accumulate the result.  */
+	      res_mask |= tmp_mask | (res_val ^ tmp_val);
+	    }
+	  *val = wi::bit_and_not (res_val, res_mask);
+	  *mask = res_mask;
+	}
       break;
 
     case LSHIFT_EXPR:
@@ -1554,6 +1624,97 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 		  *mask = wi::ext (r1mask << shift, width, sgn);
 		  *val = wi::ext (r1val << shift, width, sgn);
 		}
+	    }
+	}
+      else if (wi::ltu_p (r2val | r2mask, width))
+	{
+	  if (wi::popcount (r2mask) <= 4)
+	    {
+	      widest_int bits[4];
+	      widest_int arg_val, arg_mask;
+	      widest_int res_val, res_mask;
+	      widest_int tmp_val, tmp_mask;
+	      widest_int shift = wi::bit_and_not (r2val, r2mask);
+	      unsigned int bit_count = get_individual_bits (bits, r2mask, 4);
+	      unsigned int count = (1 << bit_count) - 1;
+
+	      /* Initialize result to shift by smallest value of shift.  */
+	      if (code == RSHIFT_EXPR)
+		{
+		  arg_mask = wi::ext (r1mask, width, sgn);
+		  arg_val = wi::ext (r1val, width, sgn);
+		  res_mask = wi::rshift (arg_mask, shift, sgn);
+		  res_val = wi::rshift (arg_val, shift, sgn);
+		}
+	      else
+		{
+		  arg_mask = r1mask;
+		  arg_val = r1val;
+		  res_mask = arg_mask << shift;
+		  res_val = arg_val << shift;
+		}
+
+	      /* Iterate through the remaining values of shift.  */
+	      for (unsigned int i=0; i<count; i++)
+		{
+		  shift ^= bits[gray_code_bit_flips[i]];
+		  if (code == RSHIFT_EXPR)
+		    {
+		      tmp_mask = wi::rshift (arg_mask, shift, sgn);
+		      tmp_val = wi::rshift (arg_val, shift, sgn);
+		    }
+		  else
+		    {
+		      tmp_mask = arg_mask << shift;
+		      tmp_val = arg_val << shift;
+		    }
+		  /* Accumulate the result.  */
+		  res_mask |= tmp_mask | (res_val ^ tmp_val);
+		}
+	      res_mask = wi::ext (res_mask, width, sgn);
+	      res_val = wi::ext (res_val, width, sgn);
+	      *val = wi::bit_and_not (res_val, res_mask);
+	      *mask = res_mask;
+	    }
+	  else if ((r1val | r1mask) == 0)
+	    {
+	      /* Handle shifts of zero to avoid undefined wi::ctz below.  */
+	      *mask = 0;
+	      *val = 0;
+	    }
+	  else if (code == LSHIFT_EXPR)
+	    {
+	      widest_int tmp = wi::mask <widest_int> (width, false);
+	      tmp <<= wi::ctz (r1val | r1mask);
+	      tmp <<= wi::bit_and_not (r2val, r2mask);
+	      *mask = wi::ext (tmp, width, sgn);
+	      *val = 0;
+	    }
+	  else if (!wi::neg_p (r1val | r1mask, sgn))
+	    {
+	      /* Logical right shift, or zero sign bit.  */
+	      widest_int arg = r1val | r1mask;
+	      int lzcount = wi::clz (arg);
+	      if (lzcount)
+		lzcount -= wi::get_precision (arg) - width;
+	      widest_int tmp = wi::mask <widest_int> (width, false);
+	      tmp = wi::lrshift (tmp, lzcount);
+	      tmp = wi::lrshift (tmp, wi::bit_and_not (r2val, r2mask));
+	      *mask = wi::ext (tmp, width, sgn);
+	      *val = 0;
+	    }
+	  else if (!wi::neg_p (r1mask))
+	    {
+	      /* Arithmetic right shift with set sign bit.  */
+	      widest_int arg = wi::bit_and_not (r1val, r1mask);
+	      int sbcount = wi::clrsb (arg);
+	      sbcount -= wi::get_precision (arg) - width;
+	      widest_int tmp = wi::mask <widest_int> (width, false);
+	      tmp = wi::lrshift (tmp, sbcount);
+	      tmp = wi::lrshift (tmp, wi::bit_and_not (r2val, r2mask));
+	      *mask = wi::sext (tmp, width);
+	      tmp = wi::bit_not (tmp);
+	      *val = wi::sext (tmp, width);
 	    }
 	}
       break;

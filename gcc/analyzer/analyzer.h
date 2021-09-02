@@ -220,6 +220,57 @@ enum access_direction
   DIR_WRITE
 };
 
+/* Abstract base class for associating custom data with an
+   exploded_edge, for handling non-standard edges such as
+   rewinding from a longjmp, signal handlers, etc.
+   Also used when "bifurcating" state: splitting the execution
+   path in non-standard ways (e.g. for simulating the various
+   outcomes of "realloc").  */
+
+class custom_edge_info
+{
+public:
+  virtual ~custom_edge_info () {}
+
+  /* Hook for making .dot label more readable.  */
+  virtual void print (pretty_printer *pp) const = 0;
+
+  /* Hook for updating MODEL within exploded_path::feasible_p
+     and when handling bifurcation.  */
+  virtual bool update_model (region_model *model,
+			     const exploded_edge *eedge,
+			     region_model_context *ctxt) const = 0;
+
+  virtual void add_events_to_path (checker_path *emission_path,
+				   const exploded_edge &eedge) const = 0;
+};
+
+/* Abstract base class for splitting state.
+
+   Most of the state-management code in the analyzer involves
+   modifying state objects in-place, which assumes a single outcome.
+
+   This class provides an escape hatch to allow for multiple outcomes
+   for such updates e.g. for modelling multiple outcomes from function
+   calls, such as the various outcomes of "realloc".  */
+
+class path_context
+{
+public:
+  virtual ~path_context () {}
+
+  /* Hook for clients to split state with a non-standard path.
+     Take ownership of INFO.  */
+  virtual void bifurcate (custom_edge_info *info) = 0;
+
+  /* Hook for clients to terminate the standard path.  */
+  virtual void terminate_path () = 0;
+
+  /* Hook for clients to determine if the standard path has been
+     terminated.  */
+  virtual bool terminate_path_p () const = 0;
+};
+
 } // namespace ana
 
 extern bool is_special_named_call_p (const gcall *call, const char *funcname,

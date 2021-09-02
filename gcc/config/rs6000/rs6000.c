@@ -4498,6 +4498,10 @@ rs6000_option_override_internal (bool global_init_p)
       && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2ADD) == 0)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2ADD;
 
+  if (TARGET_POWER10
+      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2STORE) == 0)
+    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2STORE;
+
   /* Turn off vector pair/mma options on non-power10 systems.  */
   else if (!TARGET_POWER10 && TARGET_MMA)
     {
@@ -5793,6 +5797,59 @@ rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
     default:
       break;
     }
+
+  machine_mode in_vmode = TYPE_MODE (type_in);
+  machine_mode out_vmode = TYPE_MODE (type_out);
+
+  /* Power10 supported vectorized built-in functions.  */
+  if (TARGET_POWER10
+      && in_vmode == out_vmode
+      && VECTOR_UNIT_ALTIVEC_OR_VSX_P (in_vmode))
+    {
+      machine_mode exp_mode = DImode;
+      machine_mode exp_vmode = V2DImode;
+      enum rs6000_builtins bif;
+      switch (fn)
+	{
+	case MISC_BUILTIN_DIVWE:
+	case MISC_BUILTIN_DIVWEU:
+	  exp_mode = SImode;
+	  exp_vmode = V4SImode;
+	  if (fn == MISC_BUILTIN_DIVWE)
+	    bif = P10V_BUILTIN_DIVES_V4SI;
+	  else
+	    bif = P10V_BUILTIN_DIVEU_V4SI;
+	  break;
+	case MISC_BUILTIN_DIVDE:
+	case MISC_BUILTIN_DIVDEU:
+	  if (fn == MISC_BUILTIN_DIVDE)
+	    bif = P10V_BUILTIN_DIVES_V2DI;
+	  else
+	    bif = P10V_BUILTIN_DIVEU_V2DI;
+	  break;
+	case P10_BUILTIN_CFUGED:
+	  bif = P10V_BUILTIN_VCFUGED;
+	  break;
+	case P10_BUILTIN_CNTLZDM:
+	  bif = P10V_BUILTIN_VCLZDM;
+	  break;
+	case P10_BUILTIN_CNTTZDM:
+	  bif = P10V_BUILTIN_VCTZDM;
+	  break;
+	case P10_BUILTIN_PDEPD:
+	  bif = P10V_BUILTIN_VPDEPD;
+	  break;
+	case P10_BUILTIN_PEXTD:
+	  bif = P10V_BUILTIN_VPEXTD;
+	  break;
+	default:
+	  return NULL_TREE;
+	}
+
+      if (in_mode == exp_mode && in_vmode == exp_vmode)
+	return rs6000_builtin_decls[bif];
+    }
+
   return NULL_TREE;
 }
 
@@ -7955,7 +8012,7 @@ rs6000_slow_unaligned_access (machine_mode mode, unsigned int align)
 unsigned int
 rs6000_special_adjust_field_align (tree type, unsigned int computed)
 {
-  if (computed <= 32)
+  if (computed <= 32 || TYPE_PACKED (type))
     return computed;
 
   /* Strip initial arrays.  */
@@ -18880,6 +18937,89 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
   return cached_can_issue_more;
 }
 
+/* Determine if INSN is a store to memory that can be fused with a similar
+   adjacent store.  */
+
+static bool
+is_fusable_store (rtx_insn *insn, rtx *str_mem)
+{
+  /* Insn must be a non-prefixed base+disp form store.  */
+  if (is_store_insn (insn, str_mem)
+      && get_attr_prefixed (insn) == PREFIXED_NO
+      && get_attr_update (insn) == UPDATE_NO
+      && get_attr_indexed (insn) == INDEXED_NO)
+    {
+      /* Further restrictions by mode and size.  */
+      if (!MEM_SIZE_KNOWN_P (*str_mem))
+	return false;
+
+      machine_mode mode = GET_MODE (*str_mem);
+      HOST_WIDE_INT size = MEM_SIZE (*str_mem);
+
+      if (INTEGRAL_MODE_P (mode))
+	/* Must be word or dword size.  */
+	return (size == 4 || size == 8);
+      else if (FLOAT_MODE_P (mode))
+	/* Must be dword size.  */
+	return (size == 8);
+    }
+
+  return false;
+}
+
+/* Do Power10 specific reordering of the ready list.  */
+
+static int
+power10_sched_reorder (rtx_insn **ready, int lastpos)
+{
+  rtx mem1;
+
+  /* Do store fusion during sched2 only.  */
+  if (!reload_completed)
+    return cached_can_issue_more;
+
+  /* If the prior insn finished off a store fusion pair then simply
+     reset the counter and return, nothing more to do.  */
+  if (load_store_pendulum != 0)
+    {
+      load_store_pendulum = 0;
+      return cached_can_issue_more;
+    }
+
+  /* Try to pair certain store insns to adjacent memory locations
+     so that the hardware will fuse them to a single operation.  */
+  if (TARGET_P10_FUSION && TARGET_P10_FUSION_2STORE
+      && is_fusable_store (last_scheduled_insn, &mem1))
+    {
+
+      /* A fusable store was just scheduled.  Scan the ready list for another
+	 store that it can fuse with.  */
+      int pos = lastpos;
+      while (pos >= 0)
+	{
+	  rtx mem2;
+	  /* GPR stores can be ascending or descending offsets, FPR/VSR stores
+	     must be ascending only.  */
+	  if (is_fusable_store (ready[pos], &mem2)
+	      && ((INTEGRAL_MODE_P (GET_MODE (mem1))
+		   && adjacent_mem_locations (mem1, mem2))
+		  || (FLOAT_MODE_P (GET_MODE (mem1))
+		   && (adjacent_mem_locations (mem1, mem2) == mem1))))
+	    {
+	      /* Found a fusable store.  Move it to the end of the ready list
+		 so it is scheduled next.  */
+	      move_to_end_of_ready (ready, pos, lastpos);
+
+	      load_store_pendulum = -1;
+	      break;
+	    }
+	  pos--;
+	}
+    }
+
+  return cached_can_issue_more;
+}
+
 /* We are about to begin issuing insns for this clock cycle. */
 
 static int
@@ -18906,6 +19046,10 @@ rs6000_sched_reorder (FILE *dump ATTRIBUTE_UNUSED, int sched_verbose,
   if (rs6000_tune == PROCESSOR_POWER6)
     load_store_pendulum = 0;
 
+  /* Do Power10 dependent reordering.  */
+  if (rs6000_tune == PROCESSOR_POWER10 && last_scheduled_insn)
+    power10_sched_reorder (ready, n_ready - 1);
+
   return rs6000_issue_rate ();
 }
 
@@ -18926,6 +19070,10 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx_insn **ready,
   if (rs6000_tune == PROCESSOR_POWER9 && last_scheduled_insn
       && recog_memoized (last_scheduled_insn) >= 0)
     return power9_sched_reorder2 (ready, *pn_ready - 1);
+
+  /* Do Power10 dependent reordering.  */
+  if (rs6000_tune == PROCESSOR_POWER10 && last_scheduled_insn)
+    return power10_sched_reorder (ready, *pn_ready - 1);
 
   return cached_can_issue_more;
 }

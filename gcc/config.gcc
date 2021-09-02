@@ -1532,7 +1532,7 @@ cr16-*-elf)
         use_collect2=no
         ;;
 cris-*-elf | cris-*-none)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="cris/t-cris cris/t-elfmulti"
 	gas=yes
 	extra_options="${extra_options} cris/elf.opt"
@@ -2293,13 +2293,13 @@ lm32-*-uclinux*)
 	tmake_file="${tmake_file} lm32/t-lm32"
         ;;
 m32r-*-elf*)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
  	;;
 m32rle-*-elf*)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h m32r/little.h ${tm_file}"
+	tm_file="elfos.h newlib-stdint.h m32r/little.h ${tm_file}"
 	;;
 m32r-*-linux*)
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
 	tmake_file="${tmake_file} m32r/t-linux t-slibgcc"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -2307,7 +2307,7 @@ m32r-*-linux*)
 	fi
  	;;
 m32rle-*-linux*)
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
 	tmake_file="${tmake_file} m32r/t-linux t-slibgcc"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -2512,7 +2512,7 @@ mips*-img-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h mips/linux-common.h mips/mti-linux.h"
 	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} mips/t-img-linux"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=37 MIPS_ABI_DEFAULT=ABI_32"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32R6 MIPS_ABI_DEFAULT=ABI_32"
 	with_arch_32="mips32r6"
 	with_arch_64="mips64r6"
 	gnu_ld=yes
@@ -2522,7 +2522,7 @@ mips*-mti-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h mips/linux-common.h mips/mti-linux.h"
 	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} mips/t-mti-linux"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32R2 MIPS_ABI_DEFAULT=ABI_32"
 	with_arch_32="mips32r2"
 	with_arch_64="mips64r2"
 	gnu_ld=yes
@@ -2553,14 +2553,28 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 			target_cpu_default=MASK_SOFT_FLOAT_ABI
 			enable_mips_multilibs="yes"
 			;;
+		mipsisa64r6*-*-linux-gnuabi64)
+			default_mips_abi=64
+			default_mips_arch=mips64r6
+			enable_mips_multilibs="yes"
+			;;
 		mipsisa64r6*-*-linux*)
 			default_mips_abi=n32
 			default_mips_arch=mips64r6
 			enable_mips_multilibs="yes"
 			;;
+		mipsisa64r2*-*-linux-gnuabi64)
+			default_mips_abi=64
+			default_mips_arch=mips64r2
+			enable_mips_multilibs="yes"
+			;;
 		mipsisa64r2*-*-linux*)
 			default_mips_abi=n32
 			default_mips_arch=mips64r2
+			enable_mips_multilibs="yes"
+			;;
+		mips64*-*-linux-gnuabi64 | mipsisa64*-*-linux-gnuabi64)
+			default_mips_abi=64
 			enable_mips_multilibs="yes"
 			;;
 		mips64*-*-linux* | mipsisa64*-*-linux*)
@@ -2578,14 +2592,14 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 mips*-mti-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"
 	tmake_file="mips/t-mti-elf"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32R2 MIPS_ABI_DEFAULT=ABI_32"
 	with_arch_32="mips32r2"
 	with_arch_64="mips64r2"
 	;;
 mips*-img-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"
 	tmake_file="mips/t-img-elf"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=37 MIPS_ABI_DEFAULT=ABI_32"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32R6 MIPS_ABI_DEFAULT=ABI_32"
 	with_arch_32="mips32r6"
 	with_arch_64="mips64r6"
 	;;
@@ -2610,22 +2624,22 @@ mips*-sde-elf*)
 	esac
 	case ${target} in
 	  mipsisa32r6*)
-	    tm_defines="MIPS_ISA_DEFAULT=37 MIPS_ABI_DEFAULT=ABI_32"
+	    tm_defines="MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32R6 MIPS_ABI_DEFAULT=ABI_32"
 	    ;;
 	  mipsisa32r2*)
-	    tm_defines="MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
+	    tm_defines="MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32R2 MIPS_ABI_DEFAULT=ABI_32"
 	    ;;
 	  mipsisa32*)
-	    tm_defines="MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_32"
+	    tm_defines="MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32 MIPS_ABI_DEFAULT=ABI_32"
 	    ;;
 	  mipsisa64r6*)
-	    tm_defines="MIPS_ISA_DEFAULT=69 MIPS_ABI_DEFAULT=ABI_N32"
+	    tm_defines="MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64R6 MIPS_ABI_DEFAULT=ABI_N32"
 	    ;;
 	  mipsisa64r2*)
-	    tm_defines="MIPS_ISA_DEFAULT=65 MIPS_ABI_DEFAULT=ABI_N32"
+	    tm_defines="MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64R2 MIPS_ABI_DEFAULT=ABI_N32"
 	    ;;
 	  mipsisa64*)
-	    tm_defines="MIPS_ISA_DEFAULT=64 MIPS_ABI_DEFAULT=ABI_N32"
+	    tm_defines="MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64 MIPS_ABI_DEFAULT=ABI_N32"
 	    ;;
 	esac
 	;;
@@ -2639,22 +2653,22 @@ mipsisa64r6-*-elf* | mipsisa64r6el-*-elf*)
 	tmake_file="mips/t-isa3264"
 	case ${target} in
 	  mipsisa32r6*)
-	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=37"
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32R6"
 	    ;;
 	  mipsisa32r2*)
-	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33"
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32R2"
 	    ;;
 	  mipsisa32*)
-	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32"
 	    ;;
 	  mipsisa64r6*)
-	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=69"
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64R6"
 	    ;;
 	  mipsisa64r2*)
-	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=65"
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64R2"
 	    ;;
 	  mipsisa64*)
-	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64"
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64"
 	    ;;
 	esac
 	case ${target} in
@@ -2674,12 +2688,12 @@ mipsisa64r6-*-elf* | mipsisa64r6el-*-elf*)
 mipsisa64sr71k-*-elf*)
         tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
         tmake_file=mips/t-sr71k
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sr71000\\\" MIPS_ABI_DEFAULT=ABI_EABI"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64 MIPS_CPU_STRING_DEFAULT=\\\"sr71000\\\" MIPS_ABI_DEFAULT=ABI_EABI"
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-elf mips/t-sb1"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sb1\\\" MIPS_ABI_DEFAULT=ABI_O64"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64 MIPS_CPU_STRING_DEFAULT=\\\"sb1\\\" MIPS_ABI_DEFAULT=ABI_O64"
 	;;
 mips-*-elf* | mipsel-*-elf* | mipsr5900-*-elf* | mipsr5900el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
@@ -2688,12 +2702,12 @@ mips-*-elf* | mipsel-*-elf* | mipsr5900-*-elf* | mipsr5900el-*-elf*)
 mips64r5900-*-elf* | mips64r5900el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h"
 	tmake_file="mips/t-elf"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS3 MIPS_ABI_DEFAULT=ABI_N32"
 	;;
 mips64-*-elf* | mips64el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-elf"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS3 MIPS_ABI_DEFAULT=ABI_O64"
 	;;
 mips64vr-*-elf* | mips64vrel-*-elf*)
         tm_file="elfos.h newlib-stdint.h ${tm_file} mips/vr.h mips/elf.h"
@@ -2703,7 +2717,7 @@ mips64vr-*-elf* | mips64vrel-*-elf*)
 mips64orion-*-elf* | mips64orionel-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elforion.h mips/elf.h"
 	tmake_file="mips/t-elf"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=MIPS_ISA_MIPS3 MIPS_ABI_DEFAULT=ABI_O64"
 	;;
 mips*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/rtems.h rtems.h"
@@ -2722,11 +2736,7 @@ mmix-knuth-mmixware)
 	use_gcc_stdint=wrap
 	;;
 mn10300-*-*)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	if test x$stabs = xyes
-	then
-		tm_file="${tm_file} dbx.h"
-	fi
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
 	use_collect2=no
 	use_gcc_stdint=wrap
 	;;
@@ -3541,30 +3551,30 @@ xstormy16-*-elf)
 	tmake_file="stormy16/t-stormy16"
 	;;
 xtensa*-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h xtensa/elf.h"
+	tm_file="${tm_file} elfos.h newlib-stdint.h xtensa/elf.h"
 	extra_options="${extra_options} xtensa/elf.opt"
 	;;
 xtensa*-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/linux.h"
+	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/linux.h"
 	tmake_file="${tmake_file} xtensa/t-xtensa"
 	;;
 xtensa*-*-uclinux*)
-	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/uclinux.h"
+	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/uclinux.h"
 	tmake_file="${tmake_file} xtensa/t-xtensa"
 	extra_options="${extra_options} xtensa/uclinux.opt"
 	;;
 am33_2.0-*-linux*)
-	tm_file="mn10300/mn10300.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
+	tm_file="mn10300/mn10300.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
 	gas=yes gnu_ld=yes
 	use_collect2=no
 	;;
 m32c-*-rtems*)
-	tm_file="dbxelf.h elfos.h ${tm_file} m32c/rtems.h rtems.h newlib-stdint.h"
+	tm_file="elfos.h ${tm_file} m32c/rtems.h rtems.h newlib-stdint.h"
 	c_target_objs="m32c-pragma.o"
 	cxx_target_objs="m32c-pragma.o"
  	;;
 m32c-*-elf*)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
 	c_target_objs="m32c-pragma.o"
 	cxx_target_objs="m32c-pragma.o"
  	;;
@@ -5353,16 +5363,16 @@ case ${target} in
 			default_mips_abi=$with_abi
 		fi
 		case ${default_mips_arch} in
-		    mips1)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=1" ;;
-		    mips2)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=2" ;;
-		    mips3)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=3" ;;
-		    mips4)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=4" ;;
-		    mips32)   tm_defines="$tm_defines MIPS_ISA_DEFAULT=32" ;;
-		    mips32r2) tm_defines="$tm_defines MIPS_ISA_DEFAULT=33" ;;
-		    mips32r6) tm_defines="$tm_defines MIPS_ISA_DEFAULT=37" ;;
-		    mips64)   tm_defines="$tm_defines MIPS_ISA_DEFAULT=64" ;;
-		    mips64r2) tm_defines="$tm_defines MIPS_ISA_DEFAULT=65" ;;
-		    mips64r6) tm_defines="$tm_defines MIPS_ISA_DEFAULT=69" ;;
+		    mips1)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=MIPS_ISA_MIPS1" ;;
+		    mips2)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=MIPS_ISA_MIPS2" ;;
+		    mips3)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=MIPS_ISA_MIPS3" ;;
+		    mips4)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=MIPS_ISA_MIPS4" ;;
+		    mips32)   tm_defines="$tm_defines MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32" ;;
+		    mips32r2) tm_defines="$tm_defines MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32R2" ;;
+		    mips32r6) tm_defines="$tm_defines MIPS_ISA_DEFAULT=MIPS_ISA_MIPS32R6" ;;
+		    mips64)   tm_defines="$tm_defines MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64" ;;
+		    mips64r2) tm_defines="$tm_defines MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64R2" ;;
+		    mips64r6) tm_defines="$tm_defines MIPS_ISA_DEFAULT=MIPS_ISA_MIPS64R6" ;;
 		esac
 		case ${default_mips_abi} in
 		    32)   tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_32" ;;

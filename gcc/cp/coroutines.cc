@@ -2331,6 +2331,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   finish_switch_stmt (destroy_dispatcher);
 
   finish_then_clause (lsb_if);
+  begin_else_clause (lsb_if);
 
   tree dispatcher = begin_switch_stmt ();
   finish_switch_cond (rat, dispatcher);
@@ -2368,6 +2369,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   /* Insert the prototype dispatcher.  */
   finish_switch_stmt (dispatcher);
+  finish_else_clause (lsb_if);
 
   finish_if_stmt (lsb_if);
 
@@ -2905,7 +2907,7 @@ flatten_await_stmt (var_nest_node *n, hash_set<tree> *promoted,
 	  tree else_cl = COND_EXPR_ELSE (old_expr);
 	  if (!VOID_TYPE_P (TREE_TYPE (else_cl)))
 	    {
-	      gcc_checking_assert (TREE_CODE (then_cl) != STATEMENT_LIST);
+	      gcc_checking_assert (TREE_CODE (else_cl) != STATEMENT_LIST);
 	      else_cl
 		= build2 (init_expr ? INIT_EXPR : MODIFY_EXPR, var_type,
 			  var, else_cl);
@@ -3824,8 +3826,8 @@ await_statement_walker (tree *stmt, int *do_subtree, void *d)
 	       the parameter to return_value().  */
 	    if (!maybe_await_stmt)
 	      maybe_await_stmt = tsi_stmt_ptr (tsi_last (ret_list));
-	    expr = build1_loc (loc, GOTO_EXPR, void_type_node, awpts->fs_label);
-	    finish_expr_stmt (expr);
+	    TREE_USED (awpts->fs_label) = 1;
+	    add_stmt (build_stmt (loc, GOTO_EXPR, awpts->fs_label));
 	    *stmt = pop_stmt_list (ret_list);
 	    /* Once this is complete, we will have processed subtrees.  */
 	    *do_subtree = 0;

@@ -3044,23 +3044,27 @@ fill_always_executed_in_1 (class loop *loop, sbitmap contains_call)
 	  edge_iterator ei;
 	  bb = bbs[i];
 
+	  if (!flow_bb_inside_loop_p (inn_loop, bb))
+	    {
+	      /* When we are leaving a possibly infinite inner loop
+		 we have to stop processing.  */
+	      if (!finite_loop_p (inn_loop))
+		break;
+	      /* If the loop was finite we can continue with processing
+		 the loop we exited to.  */
+	      inn_loop = bb->loop_father;
+	    }
+
 	  if (dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
 	    last = bb;
 
 	  if (bitmap_bit_p (contains_call, bb->index))
 	    break;
 
+	  /* If LOOP exits from this BB stop processing.  */
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    {
-	      /* If there is an exit from this BB.  */
-	      if (!flow_bb_inside_loop_p (loop, e->dest))
-		break;
-	      /* Or we enter a possibly non-finite loop.  */
-	      if (flow_loop_nested_p (bb->loop_father,
-				      e->dest->loop_father)
-		  && ! finite_loop_p (e->dest->loop_father))
-		break;
-	    }
+	    if (!flow_bb_inside_loop_p (loop, e->dest))
+	      break;
 	  if (e)
 	    break;
 
@@ -3069,22 +3073,23 @@ fill_always_executed_in_1 (class loop *loop, sbitmap contains_call)
 	  if (bb->flags & BB_IRREDUCIBLE_LOOP)
 	    break;
 
-	  if (!flow_bb_inside_loop_p (inn_loop, bb))
-	    break;
-
 	  if (bb->loop_father->header == bb)
 	    {
 	      if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
 		break;
 
 	      /* In a loop that is always entered we may proceed anyway.
-		 But record that we entered it and stop once we leave it.  */
+		 But record that we entered it and stop once we leave it
+		 since it might not be finite.  */
 	      inn_loop = bb->loop_father;
 	    }
 	}
 
       while (1)
 	{
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_NOTE, "BB %d is always executed in loop %d\n",
+			 last->index, loop->num);
 	  SET_ALWAYS_EXECUTED_IN (last, loop);
 	  if (last == loop->header)
 	    break;

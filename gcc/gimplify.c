@@ -1831,7 +1831,8 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	      gimplify_and_add (init, seq_p);
 	      ggc_free (init);
 	      /* Clear TREE_READONLY if we really have an initialization.  */
-	      if (!DECL_INITIAL (decl) && !omp_is_reference (decl))
+	      if (!DECL_INITIAL (decl)
+		  && !omp_privatize_by_reference (decl))
 		TREE_READONLY (decl) = 0;
 	    }
 	  else
@@ -7064,7 +7065,7 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
 	omp_notice_variable (ctx, TYPE_SIZE_UNIT (TREE_TYPE (decl)), true);
     }
   else if ((flags & (GOVD_MAP | GOVD_LOCAL)) == 0
-	   && lang_hooks.decls.omp_privatize_by_reference (decl))
+	   && omp_privatize_by_reference (decl))
     {
       omp_firstprivatize_type_sizes (ctx, TREE_TYPE (decl));
 
@@ -7322,7 +7323,7 @@ oacc_default_clause (struct gimplify_omp_ctx *ctx, tree decl, unsigned flags)
   bool declared = is_oacc_declared (decl);
   tree type = TREE_TYPE (decl);
 
-  if (lang_hooks.decls.omp_privatize_by_reference (decl))
+  if (omp_privatize_by_reference (decl))
     type = TREE_TYPE (type);
 
   /* For Fortran COMMON blocks, only used variables in those blocks are
@@ -7586,7 +7587,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	      tree type = TREE_TYPE (decl);
 
 	      if (gimplify_omp_ctxp->target_firstprivatize_array_bases
-		  && lang_hooks.decls.omp_privatize_by_reference (decl))
+		  && omp_privatize_by_reference (decl))
 		type = TREE_TYPE (type);
 	      if (!lang_hooks.types.omp_mappable_type (type))
 		{
@@ -7660,7 +7661,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	  n2 = splay_tree_lookup (ctx->variables, (splay_tree_key) t);
 	  n2->value |= GOVD_SEEN;
 	}
-      else if (lang_hooks.decls.omp_privatize_by_reference (decl)
+      else if (omp_privatize_by_reference (decl)
 	       && TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)))
 	       && (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))))
 		   != INTEGER_CST))
@@ -7785,7 +7786,7 @@ omp_check_private (struct gimplify_omp_ctx *ctx, tree decl, bool copyprivate)
 	  if (copyprivate)
 	    return true;
 
-	  if (lang_hooks.decls.omp_privatize_by_reference (decl))
+	  if (omp_privatize_by_reference (decl))
 	    return false;
 
 	  /* Treat C++ privatized non-static data members outside
@@ -10107,6 +10108,38 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_DEVICE:
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE
+	      && OMP_CLAUSE_DEVICE_ANCESTOR (c))
+	    {
+	      if (code != OMP_TARGET)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<device%> clause with %<ancestor%> is only "
+			    "allowed on %<target%> construct");
+		  remove = true;
+		  break;
+		}
+
+	      tree clauses = *orig_list_p;
+	      for (; clauses ; clauses = OMP_CLAUSE_CHAIN (clauses))
+		if (OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_DEVICE
+		    && OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_FIRSTPRIVATE
+		    && OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_PRIVATE
+		    && OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_DEFAULTMAP
+		    && OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_MAP
+		   )
+		  {
+		    error_at (OMP_CLAUSE_LOCATION (c),
+			      "with %<ancestor%>, only the %<device%>, "
+			      "%<firstprivate%>, %<private%>, %<defaultmap%>, "
+			      "and %<map%> clauses may appear on the "
+			      "construct");
+		    remove = true;
+		    break;
+		  }
+	    }
+	  /* Fall through.  */
+
 	case OMP_CLAUSE_PRIORITY:
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:
@@ -10373,7 +10406,7 @@ omp_shared_to_firstprivate_optimizable_decl_p (tree decl)
   HOST_WIDE_INT len = int_size_in_bytes (type);
   if (len == -1 || len > 4 * POINTER_SIZE / BITS_PER_UNIT)
     return false;
-  if (lang_hooks.decls.omp_privatize_by_reference (decl))
+  if (omp_privatize_by_reference (decl))
     return false;
   return true;
 }
@@ -10698,7 +10731,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  OMP_CLAUSE_CHAIN (clause) = nc;
 	}
       else if (gimplify_omp_ctxp->target_firstprivatize_array_bases
-	       && lang_hooks.decls.omp_privatize_by_reference (decl))
+	       && omp_privatize_by_reference (decl))
 	{
 	  OMP_CLAUSE_DECL (clause) = build_simple_mem_ref (decl);
 	  OMP_CLAUSE_SIZE (clause)

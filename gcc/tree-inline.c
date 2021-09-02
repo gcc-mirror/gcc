@@ -4436,8 +4436,8 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
 	    /* Do not special case builtins where we see the body.
 	       This just confuse inliner.  */
 	    struct cgraph_node *node;
-	    if (!(node = cgraph_node::get (decl))
-		|| node->definition)
+	    if ((node = cgraph_node::get (decl))
+		&& node->definition)
 	      ;
 	    /* For buitins that are likely expanded to nothing or
 	       inlined do not account operand costs.  */

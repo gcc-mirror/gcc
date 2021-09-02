@@ -1190,10 +1190,11 @@ warn_for_access (location_t loc, tree func, tree expr, int opt,
    by BNDRNG if nonnull and valid.  */
 
 static void
-get_size_range (tree bound, tree range[2], const offset_int bndrng[2])
+get_size_range (range_query *query, tree bound, tree range[2],
+		const offset_int bndrng[2])
 {
   if (bound)
-    get_size_range (bound, range);
+    get_size_range (query, bound, NULL, range);
 
   if (!bndrng || (bndrng[0] == 0 && bndrng[1] == HOST_WIDE_INT_M1U))
     return;
@@ -1337,7 +1338,7 @@ check_access (GimpleOrTree exp, tree dstwrite,
 
   /* Set RANGE to that of DSTWRITE if non-null, bounded by PAD->DST.BNDRNG
      if valid.  */
-  get_size_range (dstwrite, range, pad ? pad->dst.bndrng : NULL);
+  get_size_range (NULL, dstwrite, range, pad ? pad->dst.bndrng : NULL);
 
   tree func = get_callee_fndecl (exp);
   /* Read vs write access by built-ins can be determined from the const
@@ -1431,7 +1432,7 @@ check_access (GimpleOrTree exp, tree dstwrite,
     {
       /* Set RANGE to that of MAXREAD, bounded by PAD->SRC.BNDRNG if
 	 PAD is nonnull and BNDRNG is valid.  */
-      get_size_range (maxread, range, pad ? pad->src.bndrng : NULL);
+      get_size_range (NULL, maxread, range, pad ? pad->src.bndrng : NULL);
 
       location_t loc = get_location (exp);
       tree size = dstsize;
@@ -1478,7 +1479,7 @@ check_access (GimpleOrTree exp, tree dstwrite,
     {
       /* Set RANGE to that of MAXREAD, bounded by PAD->SRC.BNDRNG if
 	 PAD is nonnull and BNDRNG is valid.  */
-      get_size_range (maxread, range, pad ? pad->src.bndrng : NULL);
+      get_size_range (NULL, maxread, range, pad ? pad->src.bndrng : NULL);
       /* Set OVERREAD for reads starting just past the end of an object.  */
       overread = pad->src.sizrng[1] - pad->src.offrng[0] < pad->src.bndrng[0];
       range[0] = wide_int_to_tree (sizetype, pad->src.bndrng[0]);
@@ -1527,41 +1528,6 @@ check_access (tree expr, tree dstwrite,
 {
   return check_access<tree>(expr, dstwrite, maxread, srcstr, dstsize,
 			    mode, pad);
-}
-
-/* Helper to determine and check the sizes of the source and the destination
-   of calls to __builtin_{bzero,memcpy,mempcpy,memset} calls.  EXP is the
-   call expression, DEST is the destination argument, SRC is the source
-   argument or null, and LEN is the number of bytes.  Use Object Size type-0
-   regardless of the OPT_Wstringop_overflow_ setting.  Return true on success
-   (no overflow or invalid sizes), false otherwise.  */
-
-template <class GimpleOrTree>
-static bool
-check_memop_access (GimpleOrTree expr, tree dest, tree src, tree size)
-{
-  /* For functions like memset and memcpy that operate on raw memory
-     try to determine the size of the largest source and destination
-     object using type-0 Object Size regardless of the object size
-     type specified by the option.  */
-  access_data data (expr, access_read_write);
-  tree srcsize = src ? compute_objsize (src, 0, &data.src) : NULL_TREE;
-  tree dstsize = compute_objsize (dest, 0, &data.dst);
-
-  return check_access (expr, size, /*maxread=*/NULL_TREE,
-		       srcsize, dstsize, data.mode, &data);
-}
-
-bool
-check_memop_access (gimple *stmt, tree dest, tree src, tree size)
-{
-  return check_memop_access<gimple *>(stmt, dest, src, size);
-}
-
-bool
-check_memop_access (tree expr, tree dest, tree src, tree size)
-{
-  return check_memop_access<tree>(expr, dest, src, size);
 }
 
 /* A convenience wrapper for check_access above to check access
@@ -2111,135 +2077,6 @@ warn_dealloc_offset (location_t loc, gimple *call, const access_ref &aref)
   return true;
 }
 
-/* Issue a warning if a deallocation function such as free, realloc,
-   or C++ operator delete is called with an argument not returned by
-   a matching allocation function such as malloc or the corresponding
-   form of C++ operatorn new.  */
-
-static void
-maybe_check_dealloc_call (gcall *call)
-{
-  tree fndecl = gimple_call_fndecl (call);
-  if (!fndecl)
-    return;
-
-  unsigned argno = fndecl_dealloc_argno (fndecl);
-  if ((unsigned) call_nargs (call) <= argno)
-    return;
-
-  tree ptr = gimple_call_arg (call, argno);
-  if (integer_zerop (ptr))
-    return;
-
-  access_ref aref;
-  if (!compute_objsize (ptr, 0, &aref))
-    return;
-
-  tree ref = aref.ref;
-  if (integer_zerop (ref))
-    return;
-
-  tree dealloc_decl = fndecl;
-  location_t loc = gimple_location (call);
-
-  if (DECL_P (ref) || EXPR_P (ref))
-    {
-      /* Diagnose freeing a declared object.  */
-      if (aref.ref_declared ()
-	  && warning_at (loc, OPT_Wfree_nonheap_object,
-			 "%qD called on unallocated object %qD",
-			 dealloc_decl, ref))
-	{
-	  inform (get_location (ref), "declared here");
-	  return;
-	}
-
-      /* Diagnose freeing a pointer that includes a positive offset.
-	 Such a pointer cannot refer to the beginning of an allocated
-	 object.  A negative offset may refer to it.  */
-      if (aref.sizrng[0] != aref.sizrng[1]
-	  && warn_dealloc_offset (loc, call, aref))
-	return;
-    }
-  else if (CONSTANT_CLASS_P (ref))
-    {
-      if (warning_at (loc, OPT_Wfree_nonheap_object,
-		      "%qD called on a pointer to an unallocated "
-		      "object %qE", dealloc_decl, ref))
-	{
-	  if (TREE_CODE (ptr) == SSA_NAME)
-	    {
-	      gimple *def_stmt = SSA_NAME_DEF_STMT (ptr);
-	      if (is_gimple_assign (def_stmt))
-		{
-		  location_t loc = gimple_location (def_stmt);
-		  inform (loc, "assigned here");
-		}
-	    }
-	  return;
-	}
-    }
-  else if (TREE_CODE (ref) == SSA_NAME)
-    {
-      /* Also warn if the pointer argument refers to the result
-	 of an allocation call like alloca or VLA.  */
-      gimple *def_stmt = SSA_NAME_DEF_STMT (ref);
-      if (is_gimple_call (def_stmt))
-	{
-	  bool warned = false;
-	  if (gimple_call_alloc_p (def_stmt))
-	    {
-	      if (matching_alloc_calls_p (def_stmt, dealloc_decl))
-		{
-		  if (warn_dealloc_offset (loc, call, aref))
-		    return;
-		}
-	      else
-		{
-		  tree alloc_decl = gimple_call_fndecl (def_stmt);
-		  const opt_code opt =
-		    (DECL_IS_OPERATOR_NEW_P (alloc_decl)
-		     || DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
-		     ? OPT_Wmismatched_new_delete
-		     : OPT_Wmismatched_dealloc);
-		  warned = warning_at (loc, opt,
-				       "%qD called on pointer returned "
-				       "from a mismatched allocation "
-				       "function", dealloc_decl);
-		}
-	    }
-	  else if (gimple_call_builtin_p (def_stmt, BUILT_IN_ALLOCA)
-		   || gimple_call_builtin_p (def_stmt,
-					     BUILT_IN_ALLOCA_WITH_ALIGN))
-	    warned = warning_at (loc, OPT_Wfree_nonheap_object,
-				 "%qD called on pointer to "
-				 "an unallocated object",
-				 dealloc_decl);
-	  else if (warn_dealloc_offset (loc, call, aref))
-	    return;
-
-	  if (warned)
-	    {
-	      tree fndecl = gimple_call_fndecl (def_stmt);
-	      inform (gimple_location (def_stmt),
-		      "returned from %qD", fndecl);
-	      return;
-	    }
-	}
-      else if (gimple_nop_p (def_stmt))
-	{
-	  ref = SSA_NAME_VAR (ref);
-	  /* Diagnose freeing a pointer that includes a positive offset.  */
-	  if (TREE_CODE (ref) == PARM_DECL
-	      && !aref.deref
-	      && aref.sizrng[0] != aref.sizrng[1]
-	      && aref.offrng[0] > 0 && aref.offrng[1] > 0
-	      && warn_dealloc_offset (loc, call, aref))
-	    return;
-	}
-    }
-}
-
 namespace {
 
 const pass_data pass_data_waccess = {
@@ -2267,6 +2104,11 @@ class pass_waccess : public gimple_opt_pass
   virtual bool gate (function *);
   virtual unsigned int execute (function *);
 
+private:
+  /* Not copyable or assignable.  */
+  pass_waccess (pass_waccess &) = delete;
+  void operator= (pass_waccess &) = delete;
+
   /* Check a call to a built-in function.  */
   bool check_builtin (gcall *);
 
@@ -2277,28 +2119,33 @@ class pass_waccess : public gimple_opt_pass
   void check (basic_block);
 
   /* Check a call to a function.  */
- void check (gcall *);
+  void check (gcall *);
 
-private:
-  /* Not copyable or assignable.  */
-  pass_waccess (pass_waccess &) = delete;
-  void operator= (pass_waccess &) = delete;
+  /* Check a call to the named built-in function.  */
+  void check_alloca (gcall *);
+  void check_alloc_size_call (gcall *);
+  void check_strcat (gcall *);
+  void check_strncat (gcall *);
+  void check_stxcpy (gcall *);
+  void check_stxncpy (gcall *);
+  void check_strncmp (gcall *);
+  void check_memop_access (gimple *, tree, tree, tree);
+
+  void maybe_check_dealloc_call (gcall *);
+  void maybe_check_access_sizes (rdwr_map *, tree, tree, gimple *);
 
   /* A pointer_query object and its cache to store information about
      pointers and their targets in.  */
-  pointer_query ptr_qry;
-  pointer_query::cache_type var_cache;
-
-  gimple_ranger *m_ranger;
+  pointer_query m_ptr_qry;
+  pointer_query::cache_type m_var_cache;
 };
 
 /* Construct the pass.  */
 
 pass_waccess::pass_waccess (gcc::context *ctxt)
   : gimple_opt_pass (pass_data_waccess, ctxt),
-    ptr_qry (m_ranger, &var_cache),
-    var_cache (),
-    m_ranger ()
+    m_ptr_qry (NULL, &m_var_cache),
+    m_var_cache ()
 {
 }
 
@@ -2306,7 +2153,7 @@ pass_waccess::pass_waccess (gcc::context *ctxt)
 
 pass_waccess::~pass_waccess ()
 {
-  ptr_qry.flush_cache ();
+  m_ptr_qry.flush_cache ();
 }
 
 /* Return true when any checks performed by the pass are enabled.  */
@@ -2433,7 +2280,7 @@ maybe_warn_alloc_args_overflow (gimple *stmt, const tree args[2],
 	}
     }
 
-  if (!argrange[0])
+  if (!argrange[0][0])
     return;
 
   /* For a two-argument alloc_size, validate the product of the two
@@ -2494,8 +2341,8 @@ maybe_warn_alloc_args_overflow (gimple *stmt, const tree args[2],
 
 /* Check a call to an alloca function for an excessive size.  */
 
-static void
-check_alloca (gimple *stmt)
+void
+pass_waccess::check_alloca (gcall *stmt)
 {
   if ((warn_vla_limit >= HOST_WIDE_INT_MAX
        && warn_alloc_size_limit < warn_vla_limit)
@@ -2515,8 +2362,8 @@ check_alloca (gimple *stmt)
 
 /* Check a call to an allocation function for an excessive size.  */
 
-static void
-check_alloc_size_call (gimple *stmt)
+void
+pass_waccess::check_alloc_size_call (gcall *stmt)
 {
   if (gimple_call_num_args (stmt) < 1)
     /* Avoid invalid calls to functions without a prototype.  */
@@ -2565,8 +2412,8 @@ check_alloc_size_call (gimple *stmt)
 
 /* Check a call STMT to strcat() for overflow and warn if it does.  */
 
-static void
-check_strcat (gimple *stmt)
+void
+pass_waccess::check_strcat (gcall *stmt)
 {
   if (!warn_stringop_overflow && !warn_stringop_overread)
     return;
@@ -2581,8 +2428,8 @@ check_strcat (gimple *stmt)
   access_data data (stmt, access_read_write, NULL_TREE, true,
 		    NULL_TREE, true);
   const int ost = warn_stringop_overflow ? warn_stringop_overflow - 1 : 1;
-  compute_objsize (src, ost, &data.src);
-  tree destsize = compute_objsize (dest, ost, &data.dst);
+  compute_objsize (src, ost, &data.src, &m_ptr_qry);
+  tree destsize = compute_objsize (dest, ost, &data.dst, &m_ptr_qry);
 
   check_access (stmt, /*dstwrite=*/NULL_TREE, /*maxread=*/NULL_TREE,
 		src, destsize, data.mode, &data);
@@ -2590,8 +2437,8 @@ check_strcat (gimple *stmt)
 
 /* Check a call STMT to strcat() for overflow and warn if it does.  */
 
-static void
-check_strncat (gimple *stmt)
+void
+pass_waccess::check_strncat (gcall *stmt)
 {
   if (!warn_stringop_overflow && !warn_stringop_overread)
     return;
@@ -2623,7 +2470,8 @@ check_strncat (gimple *stmt)
   /* Try to verify that the destination is big enough for the shortest
      string.  First try to determine the size of the destination object
      into which the source is being copied.  */
-  tree destsize = compute_objsize (dest, warn_stringop_overflow - 1, &data.dst);
+  const int ost = warn_stringop_overflow - 1;
+  tree destsize = compute_objsize (dest, ost, &data.dst, &m_ptr_qry);
 
   /* Add one for the terminating nul.  */
   tree srclen = (maxlen
@@ -2658,8 +2506,8 @@ check_strncat (gimple *stmt)
 /* Check a call STMT to stpcpy() or strcpy() for overflow and warn
    if it does.  */
 
-static void
-check_stxcpy (gimple *stmt)
+void
+pass_waccess::check_stxcpy (gcall *stmt)
 {
   tree dst = call_arg (stmt, 0);
   tree src = call_arg (stmt, 1);
@@ -2679,8 +2527,8 @@ check_stxcpy (gimple *stmt)
       access_data data (stmt, access_read_write, NULL_TREE, true,
 			NULL_TREE, true);
       const int ost = warn_stringop_overflow ? warn_stringop_overflow - 1 : 1;
-      compute_objsize (src, ost, &data.src);
-      tree dstsize = compute_objsize (dst, ost, &data.dst);
+      compute_objsize (src, ost, &data.src, &m_ptr_qry);
+      tree dstsize = compute_objsize (dst, ost, &data.dst, &m_ptr_qry);
       check_access (stmt, /*dstwrite=*/ NULL_TREE,
 		    /*maxread=*/ NULL_TREE, /*srcstr=*/ src,
 		    dstsize, data.mode, &data);
@@ -2696,8 +2544,8 @@ check_stxcpy (gimple *stmt)
 /* Check a call STMT to stpncpy() or strncpy() for overflow and warn
    if it does.  */
 
-static void
-check_stxncpy (gimple *stmt)
+void
+pass_waccess::check_stxncpy (gcall *stmt)
 {
   if (!warn_stringop_overflow)
     return;
@@ -2709,8 +2557,8 @@ check_stxncpy (gimple *stmt)
 
   access_data data (stmt, access_read_write, len, true, len, true);
   const int ost = warn_stringop_overflow ? warn_stringop_overflow - 1 : 1;
-  compute_objsize (src, ost, &data.src);
-  tree dstsize = compute_objsize (dst, ost, &data.dst);
+  compute_objsize (src, ost, &data.src, &m_ptr_qry);
+  tree dstsize = compute_objsize (dst, ost, &data.dst, &m_ptr_qry);
 
   check_access (stmt, /*dstwrite=*/len,
 		/*maxread=*/len, src, dstsize, data.mode, &data);
@@ -2719,8 +2567,8 @@ check_stxncpy (gimple *stmt)
 /* Check a call STMT to stpncpy() or strncpy() for overflow and warn
    if it does.  */
 
-static void
-check_strncmp (gimple *stmt)
+void
+pass_waccess::check_strncmp (gcall *stmt)
 {
   if (!warn_stringop_overread)
     return;
@@ -2764,7 +2612,7 @@ check_strncmp (gimple *stmt)
   /* Determine the range of the bound first and bail if it fails; it's
      cheaper than computing the size of the objects.  */
   tree bndrng[2] = { NULL_TREE, NULL_TREE };
-  get_size_range (bound, bndrng, adata1.src.bndrng);
+  get_size_range (m_ptr_qry.rvals, bound, bndrng, adata1.src.bndrng);
   if (!bndrng[0] || integer_zerop (bndrng[0]))
     return;
 
@@ -2775,8 +2623,8 @@ check_strncmp (gimple *stmt)
 
   /* compute_objsize almost never fails (and ultimately should never
      fail).  Don't bother to handle the rare case when it does.  */
-  if (!compute_objsize (arg1, 1, &adata1.src)
-      || !compute_objsize (arg2, 1, &adata2.src))
+  if (!compute_objsize (arg1, 1, &adata1.src, &m_ptr_qry)
+      || !compute_objsize (arg2, 1, &adata2.src, &m_ptr_qry))
     return;
 
   /* Compute the size of the remaining space in each array after
@@ -2808,6 +2656,29 @@ check_strncmp (gimple *stmt)
 			    bndrng, wide_int_to_tree (sizetype, maxrem),
 			    pad);
     }
+}
+
+/* Determine and check the sizes of the source and the destination
+   of calls to __builtin_{bzero,memcpy,mempcpy,memset} calls.  STMT is
+   the call statement, DEST is the destination argument, SRC is the source
+   argument or null, and SIZE is the number of bytes being accessed.  Use
+   Object Size type-0 regardless of the OPT_Wstringop_overflow_ setting.
+   Return true on success (no overflow or invalid sizes), false otherwise.  */
+
+void
+pass_waccess::check_memop_access (gimple *stmt, tree dest, tree src, tree size)
+{
+  /* For functions like memset and memcpy that operate on raw memory
+     try to determine the size of the largest source and destination
+     object using type-0 Object Size regardless of the object size
+     type specified by the option.  */
+  access_data data (stmt, access_read_write);
+  tree srcsize
+    = src ? compute_objsize (src, 0, &data.src, &m_ptr_qry) : NULL_TREE;
+  tree dstsize = compute_objsize (dest, 0, &data.dst, &m_ptr_qry);
+
+  check_access (stmt, size, /*maxread=*/NULL_TREE,
+		srcsize, dstsize, data.mode, &data);
 }
 
 /* Check call STMT to a built-in function for invalid accesses.  Return
@@ -2968,8 +2839,9 @@ append_attrname (const std::pair<int, attr_access> &access,
    arguments and diagnose past-the-end accesses and related problems
    in the function call EXP.  */
 
-static void
-maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, gimple *stmt)
+void
+pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
+					gimple *stmt)
 {
   auto_diagnostic_group adg;
 
@@ -3028,7 +2900,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, gimple *stmt)
       /* Format the value or range to avoid an explosion of messages.  */
       char sizstr[80];
       tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };
-      if (get_size_range (access_size, sizrng, true))
+      if (get_size_range (m_ptr_qry.rvals, access_size, NULL, sizrng, 1))
 	{
 	  char *s0 = print_generic_expr_to_str (sizrng[0]);
 	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
@@ -3160,7 +3032,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, gimple *stmt)
 			NULL_TREE, false);
       access_ref* const pobj = (access.second.mode == access_write_only
 				? &data.dst : &data.src);
-      tree objsize = compute_objsize (ptr, 1, pobj);
+      tree objsize = compute_objsize (ptr, 1, pobj, &m_ptr_qry);
 
       /* The size of the destination or source object.  */
       tree dstsize = NULL_TREE, srcsize = NULL_TREE;
@@ -3276,7 +3148,7 @@ pass_waccess::check_call (gcall *stmt)
 
   /* Check attribute access arguments.  */
   tree fndecl = gimple_call_fndecl (stmt);
-  maybe_warn_rdwr_sizes (&rdwr_idx, fndecl, fntype, stmt);
+  maybe_check_access_sizes (&rdwr_idx, fndecl, fntype, stmt);
 
   check_alloc_size_call (stmt);
   return true;
@@ -3292,6 +3164,138 @@ check_nonstring_args (gcall *stmt)
   /* Detect passing non-string arguments to functions expecting
      nul-terminated strings.  */
   maybe_warn_nonstring_arg (fndecl, stmt);
+}
+
+/* Issue a warning if a deallocation function such as free, realloc,
+   or C++ operator delete is called with an argument not returned by
+   a matching allocation function such as malloc or the corresponding
+   form of C++ operatorn new.  */
+
+void
+pass_waccess::maybe_check_dealloc_call (gcall *call)
+{
+  tree fndecl = gimple_call_fndecl (call);
+  if (!fndecl)
+    return;
+
+  unsigned argno = fndecl_dealloc_argno (fndecl);
+  if ((unsigned) call_nargs (call) <= argno)
+    return;
+
+  tree ptr = gimple_call_arg (call, argno);
+  if (integer_zerop (ptr))
+    return;
+
+  access_ref aref;
+  if (!compute_objsize (ptr, 0, &aref, &m_ptr_qry))
+    return;
+
+  tree ref = aref.ref;
+  if (integer_zerop (ref))
+    return;
+
+  tree dealloc_decl = fndecl;
+  location_t loc = gimple_location (call);
+
+  if (DECL_P (ref) || EXPR_P (ref))
+    {
+      /* Diagnose freeing a declared object.  */
+      if (aref.ref_declared ()
+	  && warning_at (loc, OPT_Wfree_nonheap_object,
+			 "%qD called on unallocated object %qD",
+			 dealloc_decl, ref))
+	{
+	  inform (get_location (ref), "declared here");
+	  return;
+	}
+
+      /* Diagnose freeing a pointer that includes a positive offset.
+	 Such a pointer cannot refer to the beginning of an allocated
+	 object.  A negative offset may refer to it.  */
+      if (aref.sizrng[0] != aref.sizrng[1]
+	  && warn_dealloc_offset (loc, call, aref))
+	return;
+    }
+  else if (CONSTANT_CLASS_P (ref))
+    {
+      if (warning_at (loc, OPT_Wfree_nonheap_object,
+		      "%qD called on a pointer to an unallocated "
+		      "object %qE", dealloc_decl, ref))
+	{
+	  if (TREE_CODE (ptr) == SSA_NAME)
+	    {
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (ptr);
+	      if (is_gimple_assign (def_stmt))
+		{
+		  location_t loc = gimple_location (def_stmt);
+		  inform (loc, "assigned here");
+		}
+	    }
+	  return;
+	}
+    }
+  else if (TREE_CODE (ref) == SSA_NAME)
+    {
+      /* Also warn if the pointer argument refers to the result
+	 of an allocation call like alloca or VLA.  */
+      gimple *def_stmt = SSA_NAME_DEF_STMT (ref);
+      if (!def_stmt)
+	return;
+
+      if (is_gimple_call (def_stmt))
+	{
+	  bool warned = false;
+	  if (gimple_call_alloc_p (def_stmt))
+	    {
+	      if (matching_alloc_calls_p (def_stmt, dealloc_decl))
+		{
+		  if (warn_dealloc_offset (loc, call, aref))
+		    return;
+		}
+	      else
+		{
+		  tree alloc_decl = gimple_call_fndecl (def_stmt);
+		  const opt_code opt =
+		    (DECL_IS_OPERATOR_NEW_P (alloc_decl)
+		     || DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
+		     ? OPT_Wmismatched_new_delete
+		     : OPT_Wmismatched_dealloc);
+		  warned = warning_at (loc, opt,
+				       "%qD called on pointer returned "
+				       "from a mismatched allocation "
+				       "function", dealloc_decl);
+		}
+	    }
+	  else if (gimple_call_builtin_p (def_stmt, BUILT_IN_ALLOCA)
+		   || gimple_call_builtin_p (def_stmt,
+					     BUILT_IN_ALLOCA_WITH_ALIGN))
+	    warned = warning_at (loc, OPT_Wfree_nonheap_object,
+				 "%qD called on pointer to "
+				 "an unallocated object",
+				 dealloc_decl);
+	  else if (warn_dealloc_offset (loc, call, aref))
+	    return;
+
+	  if (warned)
+	    {
+	      tree fndecl = gimple_call_fndecl (def_stmt);
+	      inform (gimple_location (def_stmt),
+		      "returned from %qD", fndecl);
+	      return;
+	    }
+	}
+      else if (gimple_nop_p (def_stmt))
+	{
+	  ref = SSA_NAME_VAR (ref);
+	  /* Diagnose freeing a pointer that includes a positive offset.  */
+	  if (TREE_CODE (ref) == PARM_DECL
+	      && !aref.deref
+	      && aref.sizrng[0] != aref.sizrng[1]
+	      && aref.offrng[0] > 0 && aref.offrng[1] > 0
+	      && warn_dealloc_offset (loc, call, aref))
+	    return;
+	}
+    }
 }
 
 /* Check call STMT for invalid accesses.  */
@@ -3329,14 +3333,21 @@ unsigned
 pass_waccess::execute (function *fun)
 {
   /* Create a new ranger instance and associate it with FUN.  */
-  m_ranger = enable_ranger (fun);
+  m_ptr_qry.rvals = enable_ranger (fun);
 
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     check (bb);
 
-  /* Release the ranger instance and replace it with a global ranger.  */
+  if (dump_file)
+    m_ptr_qry.dump (dump_file, (dump_flags & TDF_DETAILS) != 0);
+
+  m_ptr_qry.flush_cache ();
+
+  /* Release the ranger instance and replace it with a global ranger.
+     Also reset the pointer since calling disable_ranger() deletes it.  */
   disable_ranger (fun);
+  m_ptr_qry.rvals = NULL;
 
   return 0;
 }

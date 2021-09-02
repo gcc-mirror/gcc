@@ -1509,7 +1509,7 @@ Common Var(flag_emit_class_debug_always) Init(0)
 Do not suppress C++ class debug information.
 
 fexceptions
-Common Var(flag_exceptions) Optimization
+Common Var(flag_exceptions) Optimization EnabledBy(fnon-call-exceptions)
 Enable exception handling.
 
 fexpensive-optimizations

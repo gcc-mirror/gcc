@@ -1,3 +1,13 @@
+2021-08-30  Andrew Pinski  <apinski@marvell.com>
+
+	* download_prerequisites (md5_check): Replace == inside
+	test with = to be more portable.
+
+2021-08-26  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Use file.{source,target}_file for proper rename
+	handling.
+
 2021-08-24  Andrew Pinski  <apinski@marvell.com>
 
 	PR other/82704

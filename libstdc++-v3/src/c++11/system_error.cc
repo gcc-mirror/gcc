@@ -338,7 +338,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_THROW_OR_ABORT(system_error(error_code(__i, generic_category())));
   }
 
-  error_category::~error_category() noexcept = default;
+  error_category::~error_category() = default;
 
   const error_category&
   _V2::system_category() noexcept { return system_category_instance; }
@@ -346,7 +346,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const error_category&
   _V2::generic_category() noexcept { return generic_category_instance; }
 
-  system_error::~system_error() noexcept = default;
+  system_error::~system_error() = default;
 
   error_condition
   error_category::default_error_condition(int __i) const noexcept

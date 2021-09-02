@@ -3957,6 +3957,7 @@ compute_avail (function *fun)
 
       /* Now compute value numbers and populate value sets with all
 	 the expressions computed in BLOCK.  */
+      bool set_bb_may_notreturn = false;
       for (gimple_stmt_iterator gsi = gsi_start_bb (block); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
@@ -3964,6 +3965,12 @@ compute_avail (function *fun)
 	  tree op;
 
 	  stmt = gsi_stmt (gsi);
+
+	  if (set_bb_may_notreturn)
+	    {
+	      BB_MAY_NOTRETURN (block) = 1;
+	      set_bb_may_notreturn = false;
+	    }
 
 	  /* Cache whether the basic-block has any non-visible side-effect
 	     or control flow.
@@ -3976,10 +3983,12 @@ compute_avail (function *fun)
 		 that forbids hoisting possibly trapping expressions
 		 before it.  */
 	      int flags = gimple_call_flags (stmt);
-	      if (!(flags & ECF_CONST)
+	      if (!(flags & (ECF_CONST|ECF_PURE))
 		  || (flags & ECF_LOOPING_CONST_OR_PURE)
 		  || stmt_can_throw_external (fun, stmt))
-		BB_MAY_NOTRETURN (block) = 1;
+		/* Defer setting of BB_MAY_NOTRETURN to avoid it
+		   influencing the processing of the call itself.  */
+		set_bb_may_notreturn = true;
 	    }
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
@@ -4030,11 +4039,16 @@ compute_avail (function *fun)
 		/* If the value of the call is not invalidated in
 		   this block until it is computed, add the expression
 		   to EXP_GEN.  */
-		if (!gimple_vuse (stmt)
-		    || gimple_code
-		         (SSA_NAME_DEF_STMT (gimple_vuse (stmt))) == GIMPLE_PHI
-		    || gimple_bb (SSA_NAME_DEF_STMT
-				    (gimple_vuse (stmt))) != block)
+		if ((!gimple_vuse (stmt)
+		     || gimple_code
+			  (SSA_NAME_DEF_STMT (gimple_vuse (stmt))) == GIMPLE_PHI
+		     || gimple_bb (SSA_NAME_DEF_STMT
+				   (gimple_vuse (stmt))) != block)
+		    /* If the REFERENCE traps and there was a preceding
+		       point in the block that might not return avoid
+		       adding the reference to EXP_GEN.  */
+		    && (!BB_MAY_NOTRETURN (block)
+			|| !vn_reference_may_trap (ref)))
 		  {
 		    result = get_or_alloc_expr_for_reference
 			       (ref, gimple_location (stmt));
@@ -4219,6 +4233,11 @@ compute_avail (function *fun)
 	    default:
 	      break;
 	    }
+	}
+      if (set_bb_may_notreturn)
+	{
+	  BB_MAY_NOTRETURN (block) = 1;
+	  set_bb_may_notreturn = false;
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))

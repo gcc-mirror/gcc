@@ -333,6 +333,7 @@ foreach option {
     schedule-insns2
     split-wide-types
     tree-vectorize
+    tree-vrp
     unroll-all-loops
     unroll-loops
     ipa-ra

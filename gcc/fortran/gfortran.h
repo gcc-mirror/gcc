@@ -1482,6 +1482,7 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *dist_chunk_size;
   struct gfc_expr *message;
   const char *critical_name;
+  bool ancestor;
   enum gfc_omp_default_sharing default_sharing;
   enum gfc_omp_atomic_op atomic_op;
   enum gfc_omp_defaultmap defaultmap[OMP_DEFAULTMAP_CAT_NUM];

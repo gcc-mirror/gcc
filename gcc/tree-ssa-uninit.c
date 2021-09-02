@@ -131,20 +131,19 @@ uninit_undefined_value_p (tree t)
    again for plain uninitialized variables, since optimization may have
    changed conditionally uninitialized to unconditionally uninitialized.  */
 
-/* Emit a warning for EXPR based on variable VAR at the point in the
-   program T, an SSA_NAME, is used being uninitialized.  The exact
-   warning text is in MSGID and DATA is the gimple stmt with info about
-   the location in source code.  When DATA is a GIMPLE_PHI, PHIARG_IDX
-   gives which argument of the phi node to take the location from.  WC
-   is the warning code.  */
+/* Emit warning OPT for variable VAR at the point in the program where
+   the SSA_NAME T is being used uninitialized.  The warning text is in
+   MSGID and STMT is the statement that does the uninitialized read.
+   PHI_ARG_LOC is the location of the PHI argument if T and VAR are one,
+   or UNKNOWN_LOCATION otherwise.  */
 
 static void
-warn_uninit (enum opt_code wc, tree t, tree expr, tree var,
-	     const char *gmsgid, void *data, location_t phiarg_loc)
+warn_uninit (opt_code opt, tree t, tree var, const char *gmsgid,
+	     gimple *context, location_t phi_arg_loc = UNKNOWN_LOCATION)
 {
-  gimple *context = (gimple *) data;
-  location_t location, cfun_loc;
-  expanded_location xloc, floc;
+  /* Bail if the value isn't provably uninitialized.  */
+  if (!has_undefined_value_p (t))
+    return;
 
   /* Ignore COMPLEX_EXPR as initializing only a part of a complex
      turns in a COMPLEX_EXPR with the not initialized part being
@@ -152,65 +151,62 @@ warn_uninit (enum opt_code wc, tree t, tree expr, tree var,
   if (is_gimple_assign (context)
       && gimple_assign_rhs_code (context) == COMPLEX_EXPR)
     return;
-  if (!has_undefined_value_p (t))
-    return;
-
   /* Anonymous SSA_NAMEs shouldn't be uninitialized, but ssa_undefined_value_p
-     can return true if the def stmt of anonymous SSA_NAME is COMPLEX_EXPR
+     can return true if the def stmt of an anonymous SSA_NAME is COMPLEX_EXPR
      created for conversion from scalar to complex.  Use the underlying var of
      the COMPLEX_EXPRs real part in that case.  See PR71581.  */
-  if (expr == NULL_TREE
-      && var == NULL_TREE
-      && SSA_NAME_VAR (t) == NULL_TREE
-      && is_gimple_assign (SSA_NAME_DEF_STMT (t))
-      && gimple_assign_rhs_code (SSA_NAME_DEF_STMT (t)) == COMPLEX_EXPR)
+  if (!var && !SSA_NAME_VAR (t))
     {
-      tree v = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (t));
-      if (TREE_CODE (v) == SSA_NAME
-	  && has_undefined_value_p (v)
-	  && zerop (gimple_assign_rhs2 (SSA_NAME_DEF_STMT (t))))
+      gimple *def_stmt = SSA_NAME_DEF_STMT (t);
+      if (is_gimple_assign (def_stmt)
+	  && gimple_assign_rhs_code (def_stmt) == COMPLEX_EXPR)
 	{
-	  expr = SSA_NAME_VAR (v);
-	  var = expr;
+	  tree v = gimple_assign_rhs1 (def_stmt);
+	  if (TREE_CODE (v) == SSA_NAME
+	      && has_undefined_value_p (v)
+	      && zerop (gimple_assign_rhs2 (def_stmt)))
+	    var = SSA_NAME_VAR (v);
 	}
     }
 
-  if (expr == NULL_TREE)
+  if (var == NULL_TREE)
     return;
 
-  /* TREE_NO_WARNING either means we already warned, or the front end
-     wishes to suppress the warning.  */
-  if ((context
-       && (warning_suppressed_p (context, OPT_Wuninitialized)
-	   || (gimple_assign_single_p (context)
-	       && get_no_uninit_warning (gimple_assign_rhs1 (context)))))
-      || get_no_uninit_warning (expr))
+  /* Avoid warning if we've already done so or if the warning has been
+     suppressed.  */
+  if (((warning_suppressed_p (context, OPT_Wuninitialized)
+	|| (gimple_assign_single_p (context)
+	    && get_no_uninit_warning (gimple_assign_rhs1 (context)))))
+      || get_no_uninit_warning (var))
     return;
 
-  if (context != NULL && gimple_has_location (context))
+  /* Use either the location of the read statement or that of the PHI
+     argument, or that of the uninitialized variable, in that order,
+     whichever is valid.  */
+  location_t location;
+  if (gimple_has_location (context))
     location = gimple_location (context);
-  else if (phiarg_loc != UNKNOWN_LOCATION)
-    location = phiarg_loc;
+  else if (phi_arg_loc != UNKNOWN_LOCATION)
+    location = phi_arg_loc;
   else
     location = DECL_SOURCE_LOCATION (var);
   location = linemap_resolve_location (line_table, location,
 				       LRK_SPELLING_LOCATION, NULL);
-  cfun_loc = DECL_SOURCE_LOCATION (cfun->decl);
-  xloc = expand_location (location);
-  floc = expand_location (cfun_loc);
-  auto_diagnostic_group d;
-  if (warning_at (location, wc, gmsgid, expr))
-    {
-      suppress_warning (expr, wc);
 
-      if (location == DECL_SOURCE_LOCATION (var))
-	return;
-      if (xloc.file != floc.file
-	  || linemap_location_before_p (line_table, location, cfun_loc)
-	  || linemap_location_before_p (line_table, cfun->function_end_locus,
-					location))
-	inform (DECL_SOURCE_LOCATION (var), "%qD was declared here", var);
-    }
+  auto_diagnostic_group d;
+  if (!warning_at (location, opt, gmsgid, var))
+    return;
+
+  /* Avoid subsequent warnings for reads of the same variable again.  */
+  suppress_warning (var, opt);
+
+  /* Issue a note pointing to the read variable unless the warning
+     is at the same location.  */
+  location_t var_loc = DECL_SOURCE_LOCATION (var);
+  if (location == var_loc)
+    return;
+
+  inform (var_loc, "%qD was declared here", var);
 }
 
 struct check_defs_data
@@ -845,13 +841,14 @@ warn_uninit_phi_uses (basic_block bb)
 	}
       if (use_stmt)
 	warn_uninit (OPT_Wuninitialized, def, SSA_NAME_VAR (def),
-		     SSA_NAME_VAR (def),
-		     "%qD is used uninitialized", use_stmt,
-		     UNKNOWN_LOCATION);
+		     "%qD is used uninitialized", use_stmt);
     }
 }
 
-static unsigned int
+/* Issue warnings about reads of uninitialized variables.  WMAYBE_UNINIT
+   is true to issue -Wmaybe-uninitialized, otherwise -Wuninitialized.  */
+
+static void
 warn_uninitialized_vars (bool wmaybe_uninit)
 {
   /* Counters and limits controlling the the depth of the warning.  */
@@ -871,15 +868,13 @@ warn_uninitialized_vars (bool wmaybe_uninit)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-	  use_operand_p use_p;
-	  ssa_op_iter op_iter;
-	  tree use;
-
 	  if (is_gimple_debug (stmt))
 	    continue;
 
 	  /* We only do data flow with SSA_NAMEs, so that's all we
 	     can warn about.  */
+	  use_operand_p use_p;
+	  ssa_op_iter op_iter;
 	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, op_iter, SSA_OP_USE)
 	    {
 	      /* BIT_INSERT_EXPR first operand should not be considered
@@ -890,17 +885,13 @@ warn_uninitialized_vars (bool wmaybe_uninit)
 		      && use_p->use == gimple_assign_rhs1_ptr (ass))
 		    continue;
 		}
-	      use = USE_FROM_PTR (use_p);
+	      tree use = USE_FROM_PTR (use_p);
 	      if (wlims.always_executed)
 		warn_uninit (OPT_Wuninitialized, use, SSA_NAME_VAR (use),
-			     SSA_NAME_VAR (use),
-			     "%qD is used uninitialized", stmt,
-			     UNKNOWN_LOCATION);
+			     "%qD is used uninitialized", stmt);
 	      else if (wmaybe_uninit)
 		warn_uninit (OPT_Wmaybe_uninitialized, use, SSA_NAME_VAR (use),
-			     SSA_NAME_VAR (use),
-			     "%qD may be used uninitialized",
-			     stmt, UNKNOWN_LOCATION);
+			     "%qD may be used uninitialized", stmt);
 	    }
 
 	  /* For limiting the alias walk below we count all
@@ -930,8 +921,6 @@ warn_uninitialized_vars (bool wmaybe_uninit)
 	    }
 	}
     }
-
-  return 0;
 }
 
 /* Checks if the operand OPND of PHI is defined by
@@ -943,16 +932,13 @@ warn_uninitialized_vars (bool wmaybe_uninit)
 static bool
 can_skip_redundant_opnd (tree opnd, gimple *phi)
 {
-  gimple *op_def;
-  tree phi_def;
-  int i, n;
-
-  phi_def = gimple_phi_result (phi);
-  op_def = SSA_NAME_DEF_STMT (opnd);
+  tree phi_def = gimple_phi_result (phi);
+  gimple *op_def = SSA_NAME_DEF_STMT (opnd);
   if (gimple_code (op_def) != GIMPLE_PHI)
     return false;
-  n = gimple_phi_num_args (op_def);
-  for (i = 0; i < n; ++i)
+
+  unsigned n = gimple_phi_num_args (op_def);
+  for (unsigned i = 0; i < n; ++i)
     {
       tree op = gimple_phi_arg_def (op_def, i);
       if (TREE_CODE (op) != SSA_NAME)
@@ -970,15 +956,14 @@ can_skip_redundant_opnd (tree opnd, gimple *phi)
 static unsigned
 compute_uninit_opnds_pos (gphi *phi)
 {
-  size_t i, n;
   unsigned uninit_opnds = 0;
 
-  n = gimple_phi_num_args (phi);
+  unsigned n = gimple_phi_num_args (phi);
   /* Bail out for phi with too many args.  */
   if (n > max_phi_args)
     return 0;
 
-  for (i = 0; i < n; ++i)
+  for (unsigned i = 0; i < n; ++i)
     {
       tree op = gimple_phi_arg_def (phi, i);
       if (TREE_CODE (op) == SSA_NAME
@@ -998,8 +983,7 @@ compute_uninit_opnds_pos (gphi *phi)
   return uninit_opnds;
 }
 
-/* Find the immediate postdominator PDOM of the specified
-   basic block BLOCK.  */
+/* Find the immediate postdominator of the specified basic block BLOCK.  */
 
 static inline basic_block
 find_pdom (basic_block block)
@@ -1015,7 +999,7 @@ find_pdom (basic_block block)
     }
 }
 
-/* Find the immediate DOM of the specified basic block BLOCK.  */
+/* Find the immediate dominator of the specified basic block BLOCK.  */
 
 static inline basic_block
 find_dom (basic_block block)
@@ -1053,9 +1037,7 @@ is_non_loop_exit_postdominating (basic_block bb1, basic_block bb2)
 static inline basic_block
 find_control_equiv_block (basic_block bb)
 {
-  basic_block pdom;
-
-  pdom = find_pdom (bb);
+  basic_block pdom = find_pdom (bb);
 
   /* Skip the postdominating bb that is also loop exit.  */
   if (!is_non_loop_exit_postdominating (pdom, bb))
@@ -3193,18 +3175,11 @@ static void
 warn_uninitialized_phi (gphi *phi, vec<gphi *> *worklist,
 			hash_set<gphi *> *added_to_worklist)
 {
-  unsigned uninit_opnds;
-  gimple *uninit_use_stmt = 0;
-  tree uninit_op;
-  int phiarg_index;
-  location_t loc;
-
   /* Don't look at virtual operands.  */
   if (virtual_operand_p (gimple_phi_result (phi)))
     return;
 
-  uninit_opnds = compute_uninit_opnds_pos (phi);
-
+  unsigned uninit_opnds = compute_uninit_opnds_pos (phi);
   if (MASK_EMPTY (uninit_opnds))
     return;
 
@@ -3215,25 +3190,23 @@ warn_uninitialized_phi (gphi *phi, vec<gphi *> *worklist,
     }
 
   /* Now check if we have any use of the value without proper guard.  */
-  uninit_use_stmt = find_uninit_use (phi, uninit_opnds,
-				     worklist, added_to_worklist);
+  gimple *uninit_use_stmt = find_uninit_use (phi, uninit_opnds,
+					     worklist, added_to_worklist);
 
   /* All uses are properly guarded.  */
   if (!uninit_use_stmt)
     return;
 
-  phiarg_index = MASK_FIRST_SET_BIT (uninit_opnds);
-  uninit_op = gimple_phi_arg_def (phi, phiarg_index);
+  int phiarg_index = MASK_FIRST_SET_BIT (uninit_opnds);
+  tree uninit_op = gimple_phi_arg_def (phi, phiarg_index);
   if (SSA_NAME_VAR (uninit_op) == NULL_TREE)
     return;
-  if (gimple_phi_arg_has_location (phi, phiarg_index))
-    loc = gimple_phi_arg_location (phi, phiarg_index);
-  else
-    loc = UNKNOWN_LOCATION;
-  warn_uninit (OPT_Wmaybe_uninitialized, uninit_op, SSA_NAME_VAR (uninit_op),
+
+  location_t phi_arg_loc = gimple_phi_arg_location (phi, phiarg_index);
+  warn_uninit (OPT_Wmaybe_uninitialized, uninit_op,
 	       SSA_NAME_VAR (uninit_op),
 	       "%qD may be used uninitialized in this function",
-	       uninit_use_stmt, loc);
+	       uninit_use_stmt, phi_arg_loc);
 }
 
 static bool

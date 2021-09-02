@@ -79,10 +79,11 @@ omp_check_optional_argument (tree decl, bool for_present_check)
   return lang_hooks.decls.omp_check_optional_argument (decl, for_present_check);
 }
 
-/* Return true if DECL is a reference type.  */
+/* True if OpenMP should privatize what this DECL points to rather
+   than the DECL itself.  */
 
 bool
-omp_is_reference (tree decl)
+omp_privatize_by_reference (tree decl)
 {
   return lang_hooks.decls.omp_privatize_by_reference (decl);
 }

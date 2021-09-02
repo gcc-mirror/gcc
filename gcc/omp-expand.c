@@ -4232,9 +4232,8 @@ expand_omp_for_generic (struct omp_region *region,
 	  && !OMP_CLAUSE_LINEAR_NO_COPYIN (c))
 	{
 	  tree d = OMP_CLAUSE_DECL (c);
-	  bool is_ref = omp_is_reference (d);
 	  tree t = d, a, dest;
-	  if (is_ref)
+	  if (omp_privatize_by_reference (t))
 	    t = build_simple_mem_ref_loc (OMP_CLAUSE_LOCATION (c), t);
 	  tree type = TREE_TYPE (t);
 	  if (POINTER_TYPE_P (type))
@@ -5236,9 +5235,8 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 	  && !OMP_CLAUSE_LINEAR_NO_COPYIN (c))
 	{
 	  tree d = OMP_CLAUSE_DECL (c);
-	  bool is_ref = omp_is_reference (d);
 	  tree t = d, a, dest;
-	  if (is_ref)
+	  if (omp_privatize_by_reference (t))
 	    t = build_simple_mem_ref_loc (OMP_CLAUSE_LOCATION (c), t);
 	  if (itercnt == NULL_TREE)
 	    {
@@ -5952,9 +5950,8 @@ expand_omp_for_static_chunk (struct omp_region *region,
 	  && !OMP_CLAUSE_LINEAR_NO_COPYIN (c))
 	{
 	  tree d = OMP_CLAUSE_DECL (c);
-	  bool is_ref = omp_is_reference (d);
 	  tree t = d, a, dest;
-	  if (is_ref)
+	  if (omp_privatize_by_reference (t))
 	    t = build_simple_mem_ref_loc (OMP_CLAUSE_LOCATION (c), t);
 	  tree type = TREE_TYPE (t);
 	  if (POINTER_TYPE_P (type))
@@ -9613,6 +9610,8 @@ expand_omp_target (struct omp_region *region)
 	{
 	  device = OMP_CLAUSE_DEVICE_ID (c);
 	  device_loc = OMP_CLAUSE_LOCATION (c);
+	  if (OMP_CLAUSE_DEVICE_ANCESTOR (c))
+	    sorry_at (device_loc, "%<ancestor%> not yet supported");
 	}
       else
 	{

@@ -44,7 +44,8 @@ extern void name_unnamed_type (tree, tree);
 
 enum deprecated_states {
   DEPRECATED_NORMAL,
-  DEPRECATED_SUPPRESS
+  DEPRECATED_SUPPRESS,
+  UNAVAILABLE_DEPRECATED_SUPPRESS
 };
 
 extern enum deprecated_states deprecated_state;

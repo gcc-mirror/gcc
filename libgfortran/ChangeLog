@@ -1,3 +1,11 @@
+2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Use configured libm availability.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use libtool macro to find libm availability.
+	* libgfortran.spec.in: Use configured libm availability.
+
 2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR libfortran/101305

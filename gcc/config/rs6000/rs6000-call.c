@@ -69,6 +69,7 @@
 #include "opts.h"
 
 #include "rs6000-internal.h"
+#include "rs6000-builtins.h"
 
 #if TARGET_MACHO
 #include "gstab.h"  /* for N_SLINE */
@@ -13296,15 +13297,23 @@ rs6000_init_builtins (void)
   tree ftype;
   tree t;
   machine_mode mode;
+  const char *str;
 
   if (TARGET_DEBUG_BUILTIN)
     fprintf (stderr, "rs6000_init_builtins%s%s\n",
 	     (TARGET_ALTIVEC)	   ? ", altivec" : "",
 	     (TARGET_VSX)	   ? ", vsx"	 : "");
 
-  V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64 ? "__vector long"
-				       : "__vector long long",
-				       long_long_integer_type_node, 2);
+  if (new_builtins_are_live)
+    V2DI_type_node = rs6000_vector_type ("__vector long long",
+					 long_long_integer_type_node, 2);
+  else
+    {
+      str = TARGET_POWERPC64 ? "__vector long" : "__vector long long";
+      V2DI_type_node = rs6000_vector_type (str,
+					   long_long_integer_type_node,
+					   2);
+    }
   ptr_V2DI_type_node
     = build_pointer_type (build_qualified_type (V2DI_type_node,
 						TYPE_QUAL_CONST));
@@ -13355,10 +13364,19 @@ rs6000_init_builtins (void)
     = build_pointer_type (build_qualified_type (unsigned_V4SI_type_node,
 						TYPE_QUAL_CONST));
 
-  unsigned_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
-				       ? "__vector unsigned long"
-				       : "__vector unsigned long long",
-				       long_long_unsigned_type_node, 2);
+  if (new_builtins_are_live)
+    unsigned_V2DI_type_node
+      = rs6000_vector_type ("__vector unsigned long long",
+			    long_long_unsigned_type_node, 2);
+  else
+    {
+      str = TARGET_POWERPC64
+	? "__vector unsigned long"
+	: "__vector unsigned long long";
+      unsigned_V2DI_type_node
+	= rs6000_vector_type (str, long_long_unsigned_type_node, 2);
+    }
+
   ptr_unsigned_V2DI_type_node
     = build_pointer_type (build_qualified_type (unsigned_V2DI_type_node,
 						TYPE_QUAL_CONST));
@@ -13533,32 +13551,29 @@ rs6000_init_builtins (void)
     ieee128_float_type_node = ibm128_float_type_node = long_double_type_node;
 
   /* Vector pair and vector quad support.  */
-  if (TARGET_EXTRA_BUILTINS)
-    {
-      vector_pair_type_node = make_node (OPAQUE_TYPE);
-      SET_TYPE_MODE (vector_pair_type_node, OOmode);
-      TYPE_SIZE (vector_pair_type_node) = bitsize_int (GET_MODE_BITSIZE (OOmode));
-      TYPE_PRECISION (vector_pair_type_node) = GET_MODE_BITSIZE (OOmode);
-      TYPE_SIZE_UNIT (vector_pair_type_node) = size_int (GET_MODE_SIZE (OOmode));
-      SET_TYPE_ALIGN (vector_pair_type_node, 256);
-      TYPE_USER_ALIGN (vector_pair_type_node) = 0;
-      lang_hooks.types.register_builtin_type (vector_pair_type_node,
-					      "__vector_pair");
-      t = build_qualified_type (vector_pair_type_node, TYPE_QUAL_CONST);
-      ptr_vector_pair_type_node = build_pointer_type (t);
+  vector_pair_type_node = make_node (OPAQUE_TYPE);
+  SET_TYPE_MODE (vector_pair_type_node, OOmode);
+  TYPE_SIZE (vector_pair_type_node) = bitsize_int (GET_MODE_BITSIZE (OOmode));
+  TYPE_PRECISION (vector_pair_type_node) = GET_MODE_BITSIZE (OOmode);
+  TYPE_SIZE_UNIT (vector_pair_type_node) = size_int (GET_MODE_SIZE (OOmode));
+  SET_TYPE_ALIGN (vector_pair_type_node, 256);
+  TYPE_USER_ALIGN (vector_pair_type_node) = 0;
+  lang_hooks.types.register_builtin_type (vector_pair_type_node,
+					  "__vector_pair");
+  t = build_qualified_type (vector_pair_type_node, TYPE_QUAL_CONST);
+  ptr_vector_pair_type_node = build_pointer_type (t);
 
-      vector_quad_type_node = make_node (OPAQUE_TYPE);
-      SET_TYPE_MODE (vector_quad_type_node, XOmode);
-      TYPE_SIZE (vector_quad_type_node) = bitsize_int (GET_MODE_BITSIZE (XOmode));
-      TYPE_PRECISION (vector_quad_type_node) = GET_MODE_BITSIZE (XOmode);
-      TYPE_SIZE_UNIT (vector_quad_type_node) = size_int (GET_MODE_SIZE (XOmode));
-      SET_TYPE_ALIGN (vector_quad_type_node, 512);
-      TYPE_USER_ALIGN (vector_quad_type_node) = 0;
-      lang_hooks.types.register_builtin_type (vector_quad_type_node,
-					      "__vector_quad");
-      t = build_qualified_type (vector_quad_type_node, TYPE_QUAL_CONST);
-      ptr_vector_quad_type_node = build_pointer_type (t);
-    }
+  vector_quad_type_node = make_node (OPAQUE_TYPE);
+  SET_TYPE_MODE (vector_quad_type_node, XOmode);
+  TYPE_SIZE (vector_quad_type_node) = bitsize_int (GET_MODE_BITSIZE (XOmode));
+  TYPE_PRECISION (vector_quad_type_node) = GET_MODE_BITSIZE (XOmode);
+  TYPE_SIZE_UNIT (vector_quad_type_node) = size_int (GET_MODE_SIZE (XOmode));
+  SET_TYPE_ALIGN (vector_quad_type_node, 512);
+  TYPE_USER_ALIGN (vector_quad_type_node) = 0;
+  lang_hooks.types.register_builtin_type (vector_quad_type_node,
+					  "__vector_quad");
+  t = build_qualified_type (vector_quad_type_node, TYPE_QUAL_CONST);
+  ptr_vector_quad_type_node = build_pointer_type (t);
 
   /* Initialize the modes for builtin_function_type, mapping a machine mode to
      tree type node.  */
@@ -13646,6 +13661,17 @@ rs6000_init_builtins (void)
   pcvoid_type_node
     = build_pointer_type (build_qualified_type (void_type_node,
 						TYPE_QUAL_CONST));
+
+  /* Execute the autogenerated initialization code for builtins.  */
+  rs6000_init_generated_builtins ();
+
+  if (new_builtins_are_live)
+    {
+#ifdef SUBTARGET_INIT_BUILTINS
+      SUBTARGET_INIT_BUILTINS;
+#endif
+      return;
+    }
 
   /* Create Altivec, VSX and MMA builtins on machines with at least the
      general purpose extensions (970 and newer) to allow the use of
@@ -14823,6 +14849,11 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case P8V_BUILTIN_ORC_V4SI_UNS:
     case P8V_BUILTIN_ORC_V2DI_UNS:
     case P8V_BUILTIN_ORC_V1TI_UNS:
+    case P10_BUILTIN_CFUGED:
+    case P10_BUILTIN_CNTLZDM:
+    case P10_BUILTIN_CNTTZDM:
+    case P10_BUILTIN_PDEPD:
+    case P10_BUILTIN_PEXTD:
     case P10V_BUILTIN_VCFUGED:
     case P10V_BUILTIN_VCLZDM:
     case P10V_BUILTIN_VCTZDM:

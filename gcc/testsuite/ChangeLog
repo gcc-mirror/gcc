@@ -1,3 +1,315 @@
+2021-09-01  Jeff Law  <jlaw@localhost.localdomain>
+
+	PR tree-optimization/102152
+	* gcc.dg/pr102152.c: New test
+
+2021-09-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101934
+	* gcc.target/aarch64/memset-strict-align-1.c: New test.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* g++.dg/cpp23/normalize1.C: New test.
+	* g++.dg/cpp23/normalize2.C: New test.
+	* g++.dg/cpp23/normalize3.C: New test.
+	* g++.dg/cpp23/normalize4.C: New test.
+	* g++.dg/cpp23/normalize5.C: New test.
+	* g++.dg/cpp23/normalize6.C: New test.
+	* g++.dg/cpp23/normalize7.C: New test.
+	* g++.dg/cpp23/ucnid-1-utf8.C: New test.
+	* g++.dg/cpp23/ucnid-2-utf8.C: New test.
+	* gcc.dg/cpp/ucnid-4.c: Don't expect
+	"not valid at the start of an identifier" errors.
+	* gcc.dg/cpp/ucnid-4-utf8.c: Likewise.
+	* gcc.dg/cpp/ucnid-5-utf8.c: New test.
+
+2021-09-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR testsuite/51748
+	* gcc.misc-tests/linkage.exp: Add mips*-linux-* support.
+
+2021-09-01  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-11.c: Remove xfails.
+	* gcc.dg/Wstringop-overflow-12.c: Same.
+	* gcc.dg/Wstringop-overflow-43.c: Add xfails.
+	* gcc.dg/Wstringop-overflow-73.c: New test.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/101488
+	* c-c++-common/cpp/va-opt-3.c: Adjust expected output.
+	* c-c++-common/cpp/va-opt-7.c: New test.
+
+2021-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101592
+	* g++.dg/warn/Wlogical-op-3.C: New test.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/ext/attr-unavailable-1.C: New test.
+	* g++.dg/ext/attr-unavailable-2.C: New test.
+	* g++.dg/ext/attr-unavailable-3.C: New test.
+	* g++.dg/ext/attr-unavailable-4.C: New test.
+	* g++.dg/ext/attr-unavailable-5.C: New test.
+	* g++.dg/ext/attr-unavailable-6.C: New test.
+	* g++.dg/ext/attr-unavailable-7.C: New test.
+	* g++.dg/ext/attr-unavailable-8.C: New test.
+	* g++.dg/ext/attr-unavailable-9.C: New test.
+	* gcc.dg/attr-unavailable-1.c: New test.
+	* gcc.dg/attr-unavailable-2.c: New test.
+	* gcc.dg/attr-unavailable-3.c: New test.
+	* gcc.dg/attr-unavailable-4.c: New test.
+	* gcc.dg/attr-unavailable-5.c: New test.
+	* gcc.dg/attr-unavailable-6.c: New test.
+	* obj-c++.dg/attributes/method-unavailable-1.mm: New test.
+	* obj-c++.dg/attributes/method-unavailable-2.mm: New test.
+	* obj-c++.dg/attributes/method-unavailable-3.mm: New test.
+	* obj-c++.dg/property/at-property-unavailable-1.mm: New test.
+	* obj-c++.dg/property/at-property-unavailable-2.mm: New test.
+	* obj-c++.dg/property/dotsyntax-unavailable-1.mm: New test.
+	* objc.dg/attributes/method-unavailable-1.m: New test.
+	* objc.dg/attributes/method-unavailable-2.m: New test.
+	* objc.dg/attributes/method-unavailable-3.m: New test.
+	* objc.dg/property/at-property-unavailable-1.m: New test.
+	* objc.dg/property/at-property-unavailable-2.m: New test.
+	* objc.dg/property/dotsyntax-unavailable-1.m: New test.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102124
+	* gcc.dg/torture/pr102124.c: New test.
+
+2021-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93491
+	* gcc.dg/torture/pr93491.c: New testcase.
+	* gcc.dg/tree-ssa/pr88087.c: Change to valid PRE opportunity.
+
+2021-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102139
+	* gcc.dg/torture/pr102139.c: New testcase.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102141
+	* gcc.dg/pr102141.c: New test.
+
+2021-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102149
+	* gcc.dg/torture/pr102149.c: New testcase.
+
+2021-09-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/79412
+	* gcc.dg/pr79412.c: New test case.
+	* gcc.dg/typedef-var-2.c: Update expeted errors.
+
+2021-08-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* gfortran.dg/pr100950.f90: Extend coverage.
+
+2021-08-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/12672
+	* g++.dg/cpp0x/decltype29.C: Adjust.
+	* g++.dg/template/error56.C: Adjust.
+	* g++.old-deja/g++.pt/unify6.C: Adjust.
+	* g++.dg/template/explicit-args7.C: New test.
+
+2021-08-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92193
+	* g++.dg/diagnostic/static_assert4.C: New test.
+
+2021-08-31  Jeff Law  <jlaw@localhost.localdomain>
+
+	* gcc.target/mips/mips.exp: Add tree-vrp to mips_option_group.
+	* gcc.target/mips/data-sym-multi-pool.c: Add -fno-tree-vrp.
+
+2021-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/101145
+	* gcc.dg/vect/pr101145.c: Use dg-additional-options with just -O3
+	instead of dg-options with -O3 -fdump-tree-vect-details.
+	* gcc.dg/vect/pr101145_1.c: Likewise.
+	* gcc.dg/vect/pr101145_2.c: Likewise.
+	* gcc.dg/vect/pr101145_3.c: Likewise.
+
+2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/target-device-1.c: New test.
+	* c-c++-common/gomp/target-device-2.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-1.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-2.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-3.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-4.c: New test.
+	* gfortran.dg/gomp/target-device-1.f90: New test.
+	* gfortran.dg/gomp/target-device-2.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-1.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-2.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-3.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-4.f90: New test.
+
+2021-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102142
+	* g++.dg/torture/pr102142.C: New testcase.
+
+2021-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102134
+	* gcc.c-torture/execute/pr102134.c: New test.
+
+2021-08-31  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/arm/pr51534.c: Adjust test-case for soft fp targets.
+
+2021-08-31  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/ipa/inline-8.c: Mark cmp and move as
+	static so they both bind local and available for
+	inlinine.
+
+2021-08-31  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-vpcmpeqb-1.c: Adjust testcase.
+	* gcc.target/i386/avx512bw-vpcmpeqw-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpcmpgtb-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpcmpgtw-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpeqd-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpeqq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpgtd-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpgtq-1.c: Ditto.
+	* gcc.target/i386/bitwise_mask_op-1.c: Ditto.
+	* gcc.target/i386/bitwise_mask_op-2.c: Ditto.
+
+2021-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99260
+	* gcc.dg/analyzer/capacity-2.c: Update for changes to realloc
+	analysis.
+	* gcc.dg/analyzer/pr99193-1.c: Likewise.
+	* gcc.dg/analyzer/pr99193-3.c: Likewise.
+	* gcc.dg/analyzer/realloc-1.c: Likewise.  Add test coverage for
+	realloc of non-heap pointer, realloc from mismatching allocator,
+	and realloc on a freed pointer.
+	* gcc.dg/analyzer/realloc-2.c: New test.
+
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96286
+	* g++.dg/template/access2.C: Split struct A.
+
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101460
+	* g++.dg/template/explicit-args6.C: New test.
+
+2021-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102113
+	* gfortran.dg/goto_9.f90: New test.
+
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/concepts-lambda14.C: Add expected warnings.
+
+2021-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101349
+	* gfortran.dg/unlimited_polymorphic_33.f90: New test.
+
+2021-08-30  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-stst.c: New test.
+	* gcc.target/powerpc/fusion-p10-stst2.c: New test.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102094
+	* gdc.dg/lto/pr102094_0.d: New test.
+
+2021-08-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/analyzer/strndup-1.c: Skip for Darwin versions
+	without strndup support in libc.
+
+2021-08-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/modref-9.c: New test.
+
+2021-08-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/87737
+	* gfortran.dg/entry_24.f90: New test.
+
+2021-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-call.c: Update comments.
+
+2021-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-call.c: Fix test for IEEE 128-bit
+	long double and power10.
+
+2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-supports.exp: Exclude cctools assembler based on
+	GAS 1.38.
+
+2021-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/45178
+	* gcc.dg/tree-ssa/ssa-dce-3.c: Adjust testcase.
+
+2021-08-27  konglin1  <lingling.kong@intel.com>
+
+	PR target/101472
+	* gcc.target/i386/avx512f-pr101472.c: New test.
+	* gcc.target/i386/avx512vl-pr101472.c: New test.
+
+2021-08-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/dive-vectorize-1.c: New test.
+	* gcc.target/powerpc/dive-vectorize-1.h: New test.
+	* gcc.target/powerpc/dive-vectorize-2.c: New test.
+	* gcc.target/powerpc/dive-vectorize-2.h: New test.
+	* gcc.target/powerpc/dive-vectorize-run-1.c: New test.
+	* gcc.target/powerpc/dive-vectorize-run-2.c: New test.
+	* gcc.target/powerpc/p10-bifs-vectorize-1.c: New test.
+	* gcc.target/powerpc/p10-bifs-vectorize-1.h: New test.
+	* gcc.target/powerpc/p10-bifs-vectorize-run-1.c: New test.
+
+2021-08-27  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512f-vshufpd-1.c: Adjust testcase.
+	* gcc.target/i386/avx512f-vshufps-1.c: Adjust testcase.
+	* gcc.target/i386/pr43147.c: New test.
+
+2021-08-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/tree-ssa/ssa-ccp-41.c: New test case.
+
+2021-08-26  Martin Liska  <mliska@suse.cz>
+	    Stefan Kneifel  <stefan.kneifel@bluewin.ch>
+
+	* gcc.target/i386/mvc5.c: Scan assembly names.
+	* gcc.target/i386/mvc7.c: Likewise.
+	* gcc.target/i386/pr95778-1.c: Update scanned patterns.
+	* gcc.target/i386/pr95778-2.c: Likewise.
+
 2021-08-25  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/evrp1.c: Add -details to dump option.

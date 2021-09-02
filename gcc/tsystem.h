@@ -59,7 +59,7 @@ extern int atexit (void (*)(void));
 #endif
 
 #ifndef abort
-extern void abort (void) __attribute__ ((__noreturn__));
+#define abort() __builtin_trap ()
 #endif
 
 #ifndef strlen

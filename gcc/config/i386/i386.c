@@ -387,6 +387,7 @@ enum x86_64_reg_class
     X86_64_INTEGER_CLASS,
     X86_64_INTEGERSI_CLASS,
     X86_64_SSE_CLASS,
+    X86_64_SSEHF_CLASS,
     X86_64_SSESF_CLASS,
     X86_64_SSEDF_CLASS,
     X86_64_SSEUP_CLASS,
@@ -841,7 +842,7 @@ x86_64_elf_unique_section (tree decl, int reloc)
 void
 x86_elf_aligned_decl_common (FILE *file, tree decl,
 			const char *name, unsigned HOST_WIDE_INT size,
-			int align)
+			unsigned align)
 {
   if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
       && size > (unsigned int)ix86_section_threshold)
@@ -862,7 +863,7 @@ x86_elf_aligned_decl_common (FILE *file, tree decl,
 
 void
 x86_output_aligned_bss (FILE *file, tree decl, const char *name,
-		       	unsigned HOST_WIDE_INT size, int align)
+		       	unsigned HOST_WIDE_INT size, unsigned align)
 {
   if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
       && size > (unsigned int)ix86_section_threshold)
@@ -2027,8 +2028,10 @@ merge_classes (enum x86_64_reg_class class1, enum x86_64_reg_class class2)
     return X86_64_MEMORY_CLASS;
 
   /* Rule #4: If one of the classes is INTEGER, the result is INTEGER.  */
-  if ((class1 == X86_64_INTEGERSI_CLASS && class2 == X86_64_SSESF_CLASS)
-      || (class2 == X86_64_INTEGERSI_CLASS && class1 == X86_64_SSESF_CLASS))
+  if ((class1 == X86_64_INTEGERSI_CLASS
+       && (class2 == X86_64_SSESF_CLASS || class2 == X86_64_SSEHF_CLASS))
+      || (class2 == X86_64_INTEGERSI_CLASS
+	  && (class1 == X86_64_SSESF_CLASS || class1 == X86_64_SSEHF_CLASS)))
     return X86_64_INTEGERSI_CLASS;
   if (class1 == X86_64_INTEGER_CLASS || class1 == X86_64_INTEGERSI_CLASS
       || class2 == X86_64_INTEGER_CLASS || class2 == X86_64_INTEGERSI_CLASS)
@@ -2181,6 +2184,8 @@ classify_argument (machine_mode mode, const_tree type,
 
 	    /* The partial classes are now full classes.  */
 	    if (subclasses[0] == X86_64_SSESF_CLASS && bytes != 4)
+	      subclasses[0] = X86_64_SSE_CLASS;
+	    if (subclasses[0] == X86_64_SSEHF_CLASS && bytes != 2)
 	      subclasses[0] = X86_64_SSE_CLASS;
 	    if (subclasses[0] == X86_64_INTEGERSI_CLASS
 		&& !((bit_offset % 64) == 0 && bytes == 4))
@@ -2354,6 +2359,12 @@ classify_argument (machine_mode mode, const_tree type,
       gcc_unreachable ();
     case E_CTImode:
       return 0;
+    case E_HFmode:
+      if (!(bit_offset % 64))
+	classes[0] = X86_64_SSEHF_CLASS;
+      else
+	classes[0] = X86_64_SSE_CLASS;
+      return 1;
     case E_SFmode:
       if (!(bit_offset % 64))
 	classes[0] = X86_64_SSESF_CLASS;
@@ -2371,6 +2382,15 @@ classify_argument (machine_mode mode, const_tree type,
       classes[0] = X86_64_SSE_CLASS;
       classes[1] = X86_64_SSEUP_CLASS;
       return 2;
+    case E_HCmode:
+      classes[0] = X86_64_SSE_CLASS;
+      if (!(bit_offset % 64))
+	return 1;
+      else
+	{
+	  classes[1] = X86_64_SSEHF_CLASS;
+	  return 2;
+	}
     case E_SCmode:
       classes[0] = X86_64_SSE_CLASS;
       if (!(bit_offset % 64))
@@ -2485,6 +2505,7 @@ examine_argument (machine_mode mode, const_tree type, int in_return,
 	(*int_nregs)++;
 	break;
       case X86_64_SSE_CLASS:
+      case X86_64_SSEHF_CLASS:
       case X86_64_SSESF_CLASS:
       case X86_64_SSEDF_CLASS:
 	(*sse_nregs)++;
@@ -2584,13 +2605,14 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 
   /* First construct simple cases.  Avoid SCmode, since we want to use
      single register to pass this type.  */
-  if (n == 1 && mode != SCmode)
+  if (n == 1 && mode != SCmode && mode != HCmode)
     switch (regclass[0])
       {
       case X86_64_INTEGER_CLASS:
       case X86_64_INTEGERSI_CLASS:
 	return gen_rtx_REG (mode, intreg[0]);
       case X86_64_SSE_CLASS:
+      case X86_64_SSEHF_CLASS:
       case X86_64_SSESF_CLASS:
       case X86_64_SSEDF_CLASS:
 	if (mode != BLKmode)
@@ -2686,6 +2708,14 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 				   gen_rtx_REG (tmpmode, *intreg),
 				   GEN_INT (i*8));
 	    intreg++;
+	    break;
+	  case X86_64_SSEHF_CLASS:
+	    exp [nexps++]
+	      = gen_rtx_EXPR_LIST (VOIDmode,
+				   gen_rtx_REG (HFmode,
+						GET_SSE_REGNO (sse_regno)),
+				   GEN_INT (i*8));
+	    sse_regno++;
 	    break;
 	  case X86_64_SSESF_CLASS:
 	    exp [nexps++]
@@ -3907,6 +3937,19 @@ function_value_32 (machine_mode orig_mode, machine_mode mode,
     /* Most things go in %eax.  */
     regno = AX_REG;
 
+  /* Return _Float16/_Complex _Foat16 by sse register.  */
+  if (mode == HFmode)
+    regno = FIRST_SSE_REG;
+  if (mode == HCmode)
+    {
+      rtx ret = gen_rtx_PARALLEL (mode, rtvec_alloc(1));
+      XVECEXP (ret, 0, 0)
+	= gen_rtx_EXPR_LIST (VOIDmode,
+			     gen_rtx_REG (SImode, FIRST_SSE_REG),
+			     GEN_INT (0));
+      return ret;
+    }
+
   /* Override FP return register with %xmm0 for local functions when
      SSE math is enabled or for functions with sseregparm attribute.  */
   if ((fn || fntype) && (mode == SFmode || mode == DFmode))
@@ -3943,6 +3986,8 @@ function_value_64 (machine_mode orig_mode, machine_mode mode,
 
       switch (mode)
 	{
+	case E_HFmode:
+	case E_HCmode:
 	case E_SFmode:
 	case E_SCmode:
 	case E_DFmode:
@@ -13455,6 +13500,15 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  (file, addr, MEM_ADDR_SPACE (x), code == 'p' || code == 'P');
     }
 
+  else if (CONST_DOUBLE_P (x) && GET_MODE (x) == HFmode)
+    {
+      long l = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (x),
+			       REAL_MODE_FORMAT (HFmode));
+      if (ASSEMBLER_DIALECT == ASM_ATT)
+	putc ('$', file);
+      fprintf (file, "0x%04x", (unsigned int) l);
+    }
+
   else if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
     {
       long l;
@@ -17559,6 +17613,21 @@ ix86_vector_shift_count (tree arg1)
   return NULL_TREE;
 }
 
+/* Return true if arg_mask is all ones, ELEMS is elements number of
+   corresponding vector.  */
+static bool
+ix86_masked_all_ones (unsigned HOST_WIDE_INT elems, tree arg_mask)
+{
+  if (TREE_CODE (arg_mask) != INTEGER_CST)
+    return false;
+
+  unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (arg_mask);
+  if ((mask | (HOST_WIDE_INT_M1U << elems)) != HOST_WIDE_INT_M1U)
+    return false;
+
+  return true;
+}
+
 static tree
 ix86_fold_builtin (tree fndecl, int n_args,
 		   tree *args, bool ignore ATTRIBUTE_UNUSED)
@@ -18044,6 +18113,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   enum tree_code tcode;
   unsigned HOST_WIDE_INT count;
   bool is_vshift;
+  unsigned HOST_WIDE_INT elems;
 
   switch (fn_code)
     {
@@ -18367,17 +18437,11 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gcc_assert (n_args >= 2);
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
-      if (n_args > 2)
-	{
-	  /* This is masked shift.  Only optimize if the mask is all ones.  */
-	  tree argl = gimple_call_arg (stmt, n_args - 1);
-	  if (!tree_fits_uhwi_p (argl))
-	    break;
-	  unsigned HOST_WIDE_INT mask = tree_to_uhwi (argl);
-	  unsigned elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
-	  if ((mask | (HOST_WIDE_INT_M1U << elems)) != HOST_WIDE_INT_M1U)
-	    break;
-	}
+      elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      /* For masked shift, only optimize if the mask is all ones.  */
+      if (n_args > 2
+	  && !ix86_masked_all_ones (elems, gimple_call_arg (stmt, n_args - 1)))
+	break;
       if (is_vshift)
 	{
 	  if (TREE_CODE (arg1) != VECTOR_CST)
@@ -18426,25 +18490,62 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	}
       break;
 
+    case IX86_BUILTIN_SHUFPD512:
+    case IX86_BUILTIN_SHUFPS512:
     case IX86_BUILTIN_SHUFPD:
+    case IX86_BUILTIN_SHUFPD256:
+    case IX86_BUILTIN_SHUFPS:
+    case IX86_BUILTIN_SHUFPS256:
+      arg0 = gimple_call_arg (stmt, 0);
+      elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      /* This is masked shuffle.  Only optimize if the mask is all ones.  */
+      if (n_args > 3
+	  && !ix86_masked_all_ones (elems,
+				    gimple_call_arg (stmt, n_args - 1)))
+	break;
       arg2 = gimple_call_arg (stmt, 2);
       if (TREE_CODE (arg2) == INTEGER_CST)
 	{
+	  unsigned HOST_WIDE_INT shuffle_mask = TREE_INT_CST_LOW (arg2);
+	  /* Check valid imm, refer to gcc.target/i386/testimm-10.c.  */
+	  if (shuffle_mask > 255)
+	    return false;
+
+	  machine_mode imode = GET_MODE_INNER (TYPE_MODE (TREE_TYPE (arg0)));
 	  location_t loc = gimple_location (stmt);
-	  unsigned HOST_WIDE_INT imask = TREE_INT_CST_LOW (arg2);
-	  arg0 = gimple_call_arg (stmt, 0);
+	  tree itype = (imode == E_DFmode
+			? long_long_integer_type_node : integer_type_node);
+	  tree vtype = build_vector_type (itype, elems);
+	  tree_vector_builder elts (vtype, elems, 1);
+
+
+	  /* Transform integer shuffle_mask to vector perm_mask which
+	     is used by vec_perm_expr, refer to shuflp[sd]256/512 in sse.md.  */
+	  for (unsigned i = 0; i != elems; i++)
+	    {
+	      unsigned sel_idx;
+	      /* Imm[1:0](if VL > 128, then use Imm[3:2],Imm[5:4],Imm[7:6])
+		 provide 2 select constrols for each element of the
+		 destination.  */
+	      if (imode == E_DFmode)
+		sel_idx = (i & 1) * elems + (i & ~1)
+			  + ((shuffle_mask >> i) & 1);
+	      else
+		{
+		  /* Imm[7:0](if VL > 128, also use Imm[7:0]) provide 4 select
+		     controls for each element of the destination.  */
+		  unsigned j = i % 4;
+		  sel_idx = ((i >> 1) & 1) * elems + (i & ~3)
+			    + ((shuffle_mask >> 2 * j) & 3);
+		}
+	      elts.quick_push (build_int_cst (itype, sel_idx));
+	    }
+
+	  tree perm_mask = elts.build ();
 	  arg1 = gimple_call_arg (stmt, 1);
-	  tree itype = long_long_integer_type_node;
-	  tree vtype = build_vector_type (itype, 2); /* V2DI */
-	  tree_vector_builder elts (vtype, 2, 1);
-	  /* Ignore bits other than the lowest 2.  */
-	  elts.quick_push (build_int_cst (itype, imask & 1));
-	  imask >>= 1;
-	  elts.quick_push (build_int_cst (itype, 2 + (imask & 1)));
-	  tree omask = elts.build ();
 	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
 					   VEC_PERM_EXPR,
-					   arg0, arg1, omask);
+					   arg0, arg1, perm_mask);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
@@ -19058,6 +19159,16 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 	return Q_REGS;
 
       return NO_REGS;
+    }
+
+  /* Require movement to gpr, and then store to memory.  */
+  if (mode == HFmode
+      && !TARGET_SSE4_1
+      && SSE_CLASS_P (rclass)
+      && !in_p && MEM_P (x))
+    {
+      sri->extra_cost = 1;
+      return GENERAL_REGS;
     }
 
   /* This condition handles corner case where an expression involving
@@ -21734,8 +21845,25 @@ ix86_scalar_mode_supported_p (scalar_mode mode)
     return default_decimal_float_supported_p ();
   else if (mode == TFmode)
     return true;
+  else if (mode == HFmode && TARGET_SSE2)
+    return true;
   else
     return default_scalar_mode_supported_p (mode);
+}
+
+/* Implement TARGET_LIBGCC_FLOATING_POINT_MODE_SUPPORTED_P - return TRUE
+   if MODE is HFmode, and punt to the generic implementation otherwise.  */
+
+static bool
+ix86_libgcc_floating_mode_supported_p (scalar_float_mode mode)
+{
+  /* NB: Always return TRUE for HFmode so that the _Float16 type will
+     be defined by the C front-end for AVX512FP16 intrinsics.  We will
+     issue an error in ix86_expand_move for HFmode if AVX512FP16 isn't
+     enabled.  */
+  return ((mode == HFmode && TARGET_SSE2)
+	  ? true
+	  : default_libgcc_floating_mode_supported_p (mode));
 }
 
 /* Implements target hook vector_mode_supported_p.  */
@@ -24019,6 +24147,10 @@ ix86_run_selftests (void)
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P ix86_scalar_mode_supported_p
+
+#undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
+#define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P	\
+ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P ix86_vector_mode_supported_p

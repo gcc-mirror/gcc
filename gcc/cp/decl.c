@@ -2418,6 +2418,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       if (TREE_DEPRECATED (newdecl))
 	TREE_DEPRECATED (olddecl) = 1;
 
+      /* Merge unavailability.  */
+      if (TREE_UNAVAILABLE (newdecl))
+	TREE_UNAVAILABLE (olddecl) = 1;
+
       /* Preserve function specific target and optimization options */
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{
@@ -6563,8 +6567,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
     continue_:
       if (base_binfo)
 	{
-	  BINFO_BASE_ITERATE (binfo, ++binfo_idx, base_binfo);
-	  if (base_binfo)
+	  if (BINFO_BASE_ITERATE (binfo, ++binfo_idx, base_binfo))
 	    field = base_binfo;
 	  else
 	    field = next_initializable_field (TYPE_FIELDS (type));
@@ -11758,20 +11761,24 @@ grokdeclarator (const cp_declarator *declarator,
   if (attrlist && *attrlist == error_mark_node)
     *attrlist = NULL_TREE;
 
-  /* An object declared as __attribute__((deprecated)) suppresses
-     warnings of uses of other deprecated items.  */
+  /* An object declared as __attribute__((unavailable)) suppresses
+     any reports of being declared with unavailable or deprecated
+     items.  An object declared as __attribute__((deprecated))
+     suppresses warnings of uses of other deprecated items.  */
   auto ds = make_temp_override (deprecated_state);
-  if (attrlist && lookup_attribute ("deprecated", *attrlist))
+  if (attrlist && lookup_attribute ("unavailable", *attrlist))
+    deprecated_state = UNAVAILABLE_DEPRECATED_SUPPRESS;
+  else if (attrlist && lookup_attribute ("deprecated", *attrlist))
     deprecated_state = DEPRECATED_SUPPRESS;
 
-  cp_warn_deprecated_use (type);
+  cp_handle_deprecated_or_unavailable (type);
   if (type && TREE_CODE (type) == TYPE_DECL)
     {
       cp_warn_deprecated_use_scopes (CP_DECL_CONTEXT (type));
       typedef_decl = type;
       type = TREE_TYPE (typedef_decl);
       if (DECL_ARTIFICIAL (typedef_decl))
-	cp_warn_deprecated_use (type);
+	cp_handle_deprecated_or_unavailable (type);
     }
   /* No type at all: default to `int', and set DEFAULTED_INT
      because it was not a user-defined typedef.  */
@@ -14418,6 +14425,43 @@ type_is_deprecated (tree type)
   return NULL_TREE;
 }
 
+/* Returns an unavailable type used within TYPE, or NULL_TREE if none.  */
+
+static tree
+type_is_unavailable (tree type)
+{
+  enum tree_code code;
+  if (TREE_UNAVAILABLE (type))
+    return type;
+  if (TYPE_NAME (type))
+    {
+      if (TREE_UNAVAILABLE (TYPE_NAME (type)))
+	return type;
+      else
+	{
+	  cp_warn_deprecated_use_scopes (CP_DECL_CONTEXT (TYPE_NAME (type)));
+	  return NULL_TREE;
+	}
+    }
+
+  /* Do warn about using typedefs to a deprecated class.  */
+  if (OVERLOAD_TYPE_P (type) && type != TYPE_MAIN_VARIANT (type))
+    return type_is_deprecated (TYPE_MAIN_VARIANT (type));
+
+  code = TREE_CODE (type);
+
+  if (code == POINTER_TYPE || code == REFERENCE_TYPE
+      || code == OFFSET_TYPE || code == FUNCTION_TYPE
+      || code == METHOD_TYPE || code == ARRAY_TYPE)
+    return type_is_unavailable (TREE_TYPE (type));
+
+  if (TYPE_PTRMEMFUNC_P (type))
+    return type_is_unavailable
+      (TREE_TYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type))));
+
+  return NULL_TREE;
+}
+
 /* Decode the list of parameter types for a function type.
    Given the list of things declared inside the parens,
    return a list of types.
@@ -14477,11 +14521,18 @@ grokparms (tree parmlist, tree *parms)
 
       if (type != error_mark_node)
 	{
-	  if (deprecated_state != DEPRECATED_SUPPRESS)
+	  if (deprecated_state != UNAVAILABLE_DEPRECATED_SUPPRESS)
+	    {
+	      tree unavailtype = type_is_unavailable (type);
+	      if (unavailtype)
+		cp_handle_deprecated_or_unavailable (unavailtype);
+	    }
+	  if (deprecated_state != DEPRECATED_SUPPRESS
+	      && deprecated_state != UNAVAILABLE_DEPRECATED_SUPPRESS)
 	    {
 	      tree deptype = type_is_deprecated (type);
 	      if (deptype)
-		cp_warn_deprecated_use (deptype);
+		cp_handle_deprecated_or_unavailable (deptype);
 	    }
 
 	  /* [dcl.fct] "A parameter with volatile-qualified type is

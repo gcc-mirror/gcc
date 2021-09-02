@@ -1,0 +1,1 @@
+softfp_extras := fixhfti fixunshfti floattihf floatuntihf

@@ -1102,6 +1102,7 @@ typedef _Complex float __attribute__((mode(IC))) _Complex_ibm128;
 @section Half-Precision Floating Point
 @cindex half-precision floating point
 @cindex @code{__fp16} data type
+@cindex @code{__Float16} data type
 
 On ARM and AArch64 targets, GCC supports half-precision (16-bit) floating
 point via the @code{__fp16} type defined in the ARM C Language Extensions.
@@ -1149,6 +1150,18 @@ calls.
 
 It is recommended that portable code use the @code{_Float16} type defined
 by ISO/IEC TS 18661-3:2015.  @xref{Floating Types}.
+
+On x86 targets with @code{target("sse2")} and above, GCC supports half-precision
+(16-bit) floating point via the @code{_Float16} type which is defined by
+18661-3:2015. For C++, x86 provide a builtin type named @code{_Float16}
+which contains same data format as C.
+
+Without @option{-mavx512fp16}, @code{_Float16} type is storage only, all
+operations will be emulated by software emulation and the @code{float}
+instructions. The default behavior for @code{FLT_EVAL_METHOD} is to keep
+the intermediate result of the operation as 32-bit precision. This may lead
+to inconsistent behavior between software emulation and AVX512-FP16
+instructions.
 
 @node Decimal Float
 @section Decimal Floating Types
@@ -2864,6 +2877,19 @@ types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
 
 The message attached to the attribute is affected by the setting of
 the @option{-fmessage-length} option.
+
+@item unavailable
+@itemx unavailable (@var{msg})
+@cindex @code{unavailable} function attribute
+The @code{unavailable} attribute results in an error if the function
+is used anywhere in the source file.  This is useful when identifying
+functions that have been removed from a particular variation of an
+interface.  Other than emitting an error rather than a warning, the
+@code{unavailable} attribute behaves in the same manner as
+@code{deprecated}.
+
+The @code{unavailable} attribute can also be used for variables and
+types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
 
 @item error ("@var{message}")
 @itemx warning ("@var{message}")
@@ -7402,6 +7428,22 @@ types (@pxref{Common Function Attributes},
 The message attached to the attribute is affected by the setting of
 the @option{-fmessage-length} option.
 
+@item unavailable
+@itemx unavailable (@var{msg})
+@cindex @code{unavailable} variable attribute
+The @code{unavailable} attribute indicates that the variable so marked
+is not available, if it is used anywhere in the source file.  It behaves
+in the same manner as the @code{deprecated} attribute except that the
+compiler will emit an error rather than a warning.
+
+It is expected that items marked as @code{deprecated} will eventually be
+withdrawn from interfaces, and then become unavailable.  This attribute
+allows for marking them appropriately.
+
+The @code{unavailable} attribute can also be used for functions and
+types (@pxref{Common Function Attributes},
+@pxref{Common Type Attributes}).
+
 @item mode (@var{mode})
 @cindex @code{mode} variable attribute
 This attribute specifies the data type for the declaration---whichever
@@ -8461,6 +8503,17 @@ variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
 The message attached to the attribute is affected by the setting of
 the @option{-fmessage-length} option.
 
+@item unavailable
+@itemx unavailable (@var{msg})
+@cindex @code{unavailable} type attribute
+The @code{unavailable} attribute behaves in the same manner as the
+@code{deprecated} one, but emits an error rather than a warning.  It is
+used to indicate that a (perhaps previously @code{deprecated}) type is
+no longer usable.
+
+The @code{unavailable} attribute can also be used for functions and
+variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
+
 @item designated_init
 @cindex @code{designated_init} type attribute
 This attribute may only be applied to structure types.  It indicates
@@ -8937,6 +8990,12 @@ program.  The warning also includes the location of the declaration
 of the deprecated enumerator, to enable users to easily find further
 information about why the enumerator is deprecated, or what they should
 do instead.  Note that the warnings only occurs for uses.
+
+@item unavailable
+@cindex @code{unavailable} enumerator attribute
+The @code{unavailable} attribute results in an error if the enumerator
+is used anywhere in the source file.  In other respects it behaves in the
+same manner as the @code{deprecated} attribute.
 
 @end table
 

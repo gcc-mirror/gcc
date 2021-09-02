@@ -1,3 +1,68 @@
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc: Include dmd/module.h.
+	(build_filename_from_loc): New function.
+	(d_assert_call): Rename to...
+	(build_assert_call): ...this.
+	(build_array_bounds_call): Call arrayboundsp variant of the array
+	bounds failure callback.
+	(build_bounds_condition): Rename to...
+	(build_bounds_index_condition): ...this.  Update signature.
+	(build_bounds_slice_condition): New function.
+	(checkaction_trap_p): New function.
+	(d_assert_call): Call assertp variant of assert failure callback.
+	* d-tree.h (class IndexExp): Declare.
+	(class SliceExp): Declare.
+	(build_bounds_condition): Remove.
+	(build_assert_call): Declare.
+	(build_bounds_index_condition): Declare.
+	(build_bounds_slice_condition): Declare.
+	(checkaction_trap_p): Declare.
+	(d_assert_call): Remove.
+	* expr.cc (ExprVisitor::visit(IndexExp *)): Call
+	build_bounds_index_condition.
+	(ExprVisitor::visit(SliceExp *)): Call build_bounds_slice_condition.
+	(ExprVisitor::visit(AssertExp *)): Update setting of libcall.
+	* runtime.cc (enum d_libcall_type): Add LCT_IMMUTABLE_CHARPTR.
+	(get_libcall_type): Handle LCT_IMMUTABLE_CHARPTR.
+	* runtime.def (ASSERT): Rename to...
+	(ASSERTP): ...this.  Update signature.
+	(UNITTEST): Rename to...
+	(UNITTESTP): ...this.  Update signature.
+	(ARRAY_BOUNDS): Rename to...
+	(ARRAYBOUNDSP): ...this.  Updates signature.
+	* toir.cc (IRVisitor::visit(SwitchErrorStatement *)): Update call.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* typeinfo.cc (class TypeInfoVisitor::layout_base): Update comment.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* typeinfo.cc (TypeInfoVisitor::visit(TypeInfoClassDeclaration *)):
+	Use int to store type flags.
+	(TypeInfoVisitor::visit(TypeInfoStructDeclaration *)): Likewise.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* types.cc (TypeVisitor::visit(TypeEnum*)): Get wchar_t type from
+	build_frontend_type.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-convert.cc (convert_for_rvalue): Convert switch statement into if
+	condition.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_init_versions): Use POINTER_SIZE for testing
+	whether to predefine D_LP64.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102094
+	* d-codegen.cc (build_frame_type): Set TYPE_CXX_ODR_P.
+
 2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR other/93067

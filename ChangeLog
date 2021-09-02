@@ -1,3 +1,12 @@
+2021-09-01  YunQiang Su  <syq@debian.org>
+
+	* MAINTAINERS: Add myself for write after approval.
+
+2021-08-31  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* Makefile.def: Add all-gdb dependency on all-libbacktrace.
+	* Makefile.in: Regenerate.
+
 2021-08-21  Dragan Mladjenovic  <Dragan.Mladjenovic@syrmia.com>
 
 	* MAINTAINERS: Add myself for write after approval.

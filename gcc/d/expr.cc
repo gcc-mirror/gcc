@@ -1304,8 +1304,8 @@ public:
 
 	/* If it's a static array and the index is constant, the front end has
 	   already checked the bounds.  */
-	if (tb1->ty != Tpointer && !e->indexIsInBounds)
-	  index = build_bounds_condition (e->e2->loc, index, length, false);
+	if (tb1->ty != Tpointer)
+	  index = build_bounds_index_condition (e, index, length);
 
 	/* Index the .ptr.  */
 	ptr = void_okay_p (ptr);
@@ -1412,8 +1412,6 @@ public:
 	ptr = build_array_index (void_okay_p (ptr), lwr_tree);
 	ptr = build_nop (ptrtype, ptr);
       }
-    else
-      lwr_tree = NULL_TREE;
 
     /* Nothing more to do for static arrays, their bounds checking has been
        done at compile-time.  */
@@ -1426,46 +1424,8 @@ public:
       gcc_assert (tb->ty == Tarray);
 
     /* Generate bounds checking code.  */
-    tree newlength;
-
-    if (!e->upperIsInBounds)
-      {
-	if (length)
-	  {
-	    newlength = build_bounds_condition (e->upr->loc, upr_tree,
-						length, true);
-	  }
-	else
-	  {
-	    /* Still need to check bounds lwr <= upr for pointers.  */
-	    gcc_assert (tb1->ty == Tpointer);
-	    newlength = upr_tree;
-	  }
-      }
-    else
-      newlength = upr_tree;
-
-    if (lwr_tree)
-      {
-	/* Enforces lwr <= upr.  No need to check lwr <= length as
-	   we've already ensured that upr <= length.  */
-	if (!e->lowerIsLessThanUpper)
-	  {
-	    tree cond = build_bounds_condition (e->lwr->loc, lwr_tree,
-						upr_tree, true);
-
-	    /* When bounds checking is off, the index value is
-	       returned directly.  */
-	    if (cond != lwr_tree)
-	      newlength = compound_expr (cond, newlength);
-	  }
-
-	/* Need to ensure lwr always gets evaluated first, as it may be a
-	   function call.  Generates (lwr, upr) - lwr.  */
-	newlength = fold_build2 (MINUS_EXPR, TREE_TYPE (newlength),
-				 compound_expr (lwr_tree, newlength), lwr_tree);
-      }
-
+    tree newlength = build_bounds_slice_condition (e, lwr_tree, upr_tree,
+						   length);
     tree result = d_array_value (build_ctype (e->type), newlength, ptr);
     this->result_ = compound_expr (array, result);
   }
@@ -2023,8 +1983,7 @@ public:
     tree assert_pass = void_node;
     tree assert_fail;
 
-    if (global.params.useAssert == CHECKENABLEon
-	&& global.params.checkAction == CHECKACTION_D)
+    if (global.params.useAssert == CHECKENABLEon && !checkaction_trap_p ())
       {
 	/* Generate: ((bool) e1  ? (void)0 : _d_assert (...))
 		 or: (e1 != null ? e1._invariant() : _d_assert (...))  */
@@ -2037,10 +1996,10 @@ public:
 	    libcall = unittest_p ? LIBCALL_UNITTEST_MSG : LIBCALL_ASSERT_MSG;
 	  }
 	else
-	  libcall = unittest_p ? LIBCALL_UNITTEST : LIBCALL_ASSERT;
+	  libcall = unittest_p ? LIBCALL_UNITTESTP : LIBCALL_ASSERTP;
 
 	/* Build a call to _d_assert().  */
-	assert_fail = d_assert_call (e->loc, libcall, tmsg);
+	assert_fail = build_assert_call (e->loc, libcall, tmsg);
 
 	if (global.params.useInvariants == CHECKENABLEon)
 	  {
@@ -2068,8 +2027,7 @@ public:
 	      }
 	  }
       }
-    else if (global.params.useAssert == CHECKENABLEon
-	     && global.params.checkAction == CHECKACTION_C)
+    else if (global.params.useAssert == CHECKENABLEon && checkaction_trap_p ())
       {
 	/* Generate: __builtin_trap()  */
 	tree fn = builtin_decl_explicit (BUILT_IN_TRAP);

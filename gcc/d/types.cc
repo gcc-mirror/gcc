@@ -886,7 +886,8 @@ public:
 	else if (strcmp (ident, "ulong") == 0)
 	  underlying = build_frontend_type (long_unsigned_type_node);
 	else if (strcmp (ident, "wchar_t") == 0)
-	  underlying = target.c.twchar_t;
+	  underlying =
+	    build_frontend_type (make_unsigned_type (WCHAR_TYPE_SIZE));
 	else if (strcmp (ident, "longlong") == 0)
 	  underlying = build_frontend_type (long_long_integer_type_node);
 	else if (strcmp (ident, "ulonglong") == 0)

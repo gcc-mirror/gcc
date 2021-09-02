@@ -1,3 +1,19 @@
+2021-09-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* m4/druntime/os.m4: Update comment for DRUNTIME_OS_SOURCES.
+
+2021-09-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/Makefile.am: Don't add zlib when ENABLE_LIBDRUNTIME_ONLY.
+	* src/Makefile.in: Regenerate.
+
+2021-08-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* m4/autoconf.m4 (AC_LANG_PROGRAM): Declare module name 'object'.
+	* m4/gcc_support.m4 (WITH_LOCAL_DRUNTIME): Compile tests with
+	-fno-druntime.
+
 2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/100999

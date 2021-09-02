@@ -11074,6 +11074,8 @@ The syntax is as follows:
 (define_c_enum "@var{name}" [
   @var{value0}
   @var{value1}
+  (@var{value32} 32)
+  @var{value33}
   @dots{}
   @var{valuen}
 ])
@@ -11086,6 +11088,8 @@ in @file{insn-constants.h}:
 enum @var{name} @{
   @var{value0} = 0,
   @var{value1} = 1,
+  @var{value32} = 32,
+  @var{value33} = 33,
   @dots{}
   @var{valuen} = @var{n}
 @};

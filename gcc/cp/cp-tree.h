@@ -500,6 +500,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       OVL_LOOKUP_P (in OVERLOAD)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, NAMESPACE_DECL)
+      FNDECL_MANIFESTLY_CONST_EVALUATED (in FUNCTION_DECL)
    5: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
@@ -2336,6 +2337,7 @@ struct GTY(()) lang_type {
   unsigned has_constexpr_ctor : 1;
   unsigned unique_obj_representations : 1;
   unsigned unique_obj_representations_set : 1;
+  bool erroneous : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -2344,7 +2346,7 @@ struct GTY(()) lang_type {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 5;
+  unsigned dummy : 4;
 
   tree primary_base;
   vec<tree_pair_s, va_gc> *vcall_indices;
@@ -2660,6 +2662,10 @@ struct GTY(()) lang_type {
 /* Nonzero if a _DECL node requires us to output debug info for this class.  */
 #define CLASSTYPE_DEBUG_REQUESTED(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->debug_requested)
+
+/* True if we saw errors while instantiating this class.  */
+#define CLASSTYPE_ERRONEOUS(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->erroneous)
 
 /* Additional macros for inheritance information.  */
 
@@ -4207,6 +4213,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    DECL_SAVED_AUTO_RETURN_TYPE (NODE).   */
 #define FNDECL_USED_AUTO(NODE) \
   TREE_LANG_FLAG_2 (FUNCTION_DECL_CHECK (NODE))
+
+/* True if NODE is needed for a manifestly constant-evaluated expression.
+   This doesn't especially need to be a flag, since currently it's only
+   used for error recovery; if we run out of function flags it could move
+   to an attribute.  */
+#define FNDECL_MANIFESTLY_CONST_EVALUATED(NODE) \
+  TREE_LANG_FLAG_4 (FUNCTION_DECL_CHECK (NODE))
 
 /* True for artificial decls added for OpenMP privatized non-static
    data members.  */
@@ -6536,7 +6549,7 @@ extern void validate_conversion_obstack		(void);
 extern void mark_versions_used			(tree);
 extern int unsafe_return_slot_p			(tree);
 extern bool make_safe_copy_elision		(tree, tree);
-extern bool cp_warn_deprecated_use		(tree, tsubst_flags_t = tf_warning_or_error);
+extern bool cp_handle_deprecated_or_unavailable (tree, tsubst_flags_t = tf_warning_or_error);
 extern void cp_warn_deprecated_use_scopes	(tree);
 extern tree get_function_version_dispatcher	(tree);
 
@@ -8266,6 +8279,7 @@ extern bool require_constant_expression (tree);
 extern bool require_rvalue_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
+extern tree cxx_constant_value_sfinae		(tree, tsubst_flags_t);
 extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);

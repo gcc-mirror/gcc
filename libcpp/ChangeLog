@@ -1,3 +1,47 @@
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* include/cpplib.h (struct cpp_options): Add cxx23_identifiers.
+	* charset.c (CXX23, NXX23): New enumerators.
+	(CID, NFC, NKC, CTX): Renumber.
+	(ucn_valid_in_identifier): Implement P1949R7 - use CXX23 and
+	NXX23 flags for cxx23_identifiers.  For start character in
+	non-pedantic mode, allow characters that are allowed as start
+	characters in any of the supported language modes, rather than
+	disallowing characters allowed only as non-start characters in
+	current mode but for characters from other language modes allowing
+	them even if they are never allowed at start.
+	* init.c (struct lang_flags): Add cxx23_identifiers.
+	(lang_defaults): Add cxx23_identifiers column.
+	(cpp_set_lang): Initialize CPP_OPTION (pfile, cxx23_identifiers).
+	* lex.c (warn_about_normalization): If cxx23_identifiers, use
+	cpp_pedwarning_with_line instead of cpp_warning_with_line for
+	"is not in NFC" diagnostics.
+	* makeucnid.c: Adjust usage comment.
+	(CXX23, NXX23): New enumerators.
+	(all_languages): Add CXX23.
+	(not_NFC, not_NFKC, maybe_not_NFC): Renumber.
+	(read_derivedcore): New function.
+	(write_table): Print also CXX23 and NXX23 columns.
+	(main): Require 5 arguments instead of 4, call read_derivedcore.
+	* ucnid.h: Regenerated using Unicode 13.0.0 files.
+
+2021-09-01  Jason Merrill  <jason@redhat.com>
+
+	* macro.c (replace_args): When __VA_OPT__ is on the LHS of ##,
+	remove trailing avoid_paste tokens.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/101488
+	* macro.c (replace_args): Fix up handling of CPP_PADDING tokens at the
+	start or end of __VA_OPT__ arguments when preceeded or followed by ##.
+
+2021-08-31  Martin Sebor  <msebor@redhat.com>
+
+	* include/line-map.h (class rich_location): Disable copying and
+	assignment.
+
 2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR other/93067

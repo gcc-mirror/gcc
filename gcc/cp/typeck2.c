@@ -1913,11 +1913,17 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 
   if (processing_template_decl)
     {
-      if (type && TYPE_PTR_P (type)
-	  && !dependent_scope_p (TREE_TYPE (type)))
+      tree ttype = NULL_TREE;
+      if (type && TYPE_PTR_P (type))
+	ttype = TREE_TYPE (type);
+      if (ttype && !dependent_scope_p (ttype))
 	/* Pointer to current instantiation, don't treat as dependent.  */;
       else if (type_dependent_expression_p (expr))
-	return build_min_nt_loc (loc, ARROW_EXPR, expr);
+	{
+	  expr = build_min_nt_loc (loc, ARROW_EXPR, expr);
+	  TREE_TYPE (expr) = ttype;
+	  return expr;
+	}
       expr = build_non_dependent_expr (expr);
     }
 
@@ -2157,7 +2163,7 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
       type = TREE_TYPE (exp);
 
       if (DECL_ARTIFICIAL (exp))
-	cp_warn_deprecated_use (type);
+	cp_handle_deprecated_or_unavailable (type);
     }
   else
     type = exp;

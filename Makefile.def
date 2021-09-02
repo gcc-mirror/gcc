@@ -429,6 +429,7 @@ dependencies = { module=all-gdb; on=all-sim; };
 dependencies = { module=all-gdb; on=all-libdecnumber; };
 dependencies = { module=all-gdb; on=all-libtermcap; };
 dependencies = { module=all-gdb; on=all-libctf; };
+dependencies = { module=all-gdb; on=all-libbacktrace; };
 
 // Host modules specific to gdbserver.
 dependencies = { module=configure-gdbserver; on=all-gnulib; };

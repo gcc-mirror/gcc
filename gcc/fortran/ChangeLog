@@ -1,3 +1,41 @@
+2021-09-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/56985
+	* resolve.c (resolve_common_vars): Fix grammar and improve wording
+	of error message rejecting an unlimited polymorphic in COMMON.
+
+2021-08-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* simplify.c (substring_has_constant_len): Minimize checks for
+	substring expressions being allowed.
+
+2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gfortran.h: Add variable for 'ancestor' in struct gfc_omp_clauses.
+	* openmp.c (gfc_match_omp_clauses): Parse device-modifiers 'device_num'
+	and 'ancestor' in 'target device' clauses.
+	* trans-openmp.c (gfc_trans_omp_clauses): Set OMP_CLAUSE_DEVICE_ANCESTOR.
+
+2021-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102113
+	* match.c (gfc_match_goto): Allow for whitespace in parsing list
+	of labels.
+
+2021-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101349
+	* resolve.c (resolve_allocate_expr): An unlimited polymorphic
+	argument to ALLOCATE must be ALLOCATABLE or a POINTER.  Fix the
+	corresponding check.
+
+2021-08-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/87737
+	* resolve.c (resolve_entries): For functions of type CHARACTER
+	tighten the checks for matching characteristics.
+
 2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR other/93067
