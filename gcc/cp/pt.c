@@ -10890,15 +10890,27 @@ limit_bad_template_recursion (tree decl)
     return false;
 
   /* Avoid instantiating members of an ill-formed class.  */
-  if (DECL_CLASS_SCOPE_P (decl)
-      && CLASSTYPE_ERRONEOUS (DECL_CONTEXT (decl)))
-    return true;
+  bool refuse
+    = (DECL_CLASS_SCOPE_P (decl)
+       && CLASSTYPE_ERRONEOUS (DECL_CONTEXT (decl)));
 
-  for (; lev; lev = lev->next)
-    if (neglectable_inst_p (lev->maybe_get_node ()))
-      break;
+  if (!refuse)
+    {
+      for (; lev; lev = lev->next)
+	if (neglectable_inst_p (lev->maybe_get_node ()))
+	  break;
+      refuse = (lev && errs > lev->errors);
+    }
 
-  return (lev && errs > lev->errors);
+  if (refuse)
+    {
+      /* Don't warn about it not being defined.  */
+      suppress_warning (decl, OPT_Wunused);
+      tree clone;
+      FOR_EACH_CLONE (clone, decl)
+	suppress_warning (clone, OPT_Wunused);
+    }
+  return refuse;
 }
 
 static int tinst_depth;
