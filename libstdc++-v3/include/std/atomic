@@ -595,13 +595,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
 			    memory_order __m1, memory_order __m2) noexcept
-      { return _M_b.compare_exchange_strong(__p1, __p2, __m1, __m2); }
+      { return _M_b.compare_exchange_weak(__p1, __p2, __m1, __m2); }
 
       bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
 			    memory_order __m1,
 			    memory_order __m2) volatile noexcept
-      { return _M_b.compare_exchange_strong(__p1, __p2, __m1, __m2); }
+      { return _M_b.compare_exchange_weak(__p1, __p2, __m1, __m2); }
 
       bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,

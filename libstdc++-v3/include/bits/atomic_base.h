@@ -847,6 +847,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       _GLIBCXX_ALWAYS_INLINE bool
+      compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
+			    memory_order __m1,
+			    memory_order __m2) noexcept
+      {
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__m2));
+
+	return __atomic_compare_exchange_n(&_M_p, &__p1, __p2, 1,
+					   int(__m1), int(__m2));
+      }
+
+      _GLIBCXX_ALWAYS_INLINE bool
+      compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
+			    memory_order __m1,
+			    memory_order __m2) volatile noexcept
+      {
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__m2));
+
+	return __atomic_compare_exchange_n(&_M_p, &__p1, __p2, 1,
+					   int(__m1), int(__m2));
+      }
+
+      _GLIBCXX_ALWAYS_INLINE bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 			      memory_order __m1,
 			      memory_order __m2) noexcept
