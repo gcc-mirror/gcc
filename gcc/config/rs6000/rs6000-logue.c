@@ -3254,10 +3254,13 @@ rs6000_emit_prologue (void)
 
   /* If we need to save CR, put it into r12 or r11.  Choose r12 except when
      r12 will be needed by out-of-line gpr save.  */
-  cr_save_regno = ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
-		   && !(strategy & (SAVE_INLINE_GPRS
-				    | SAVE_NOINLINE_GPRS_SAVES_LR))
-		   ? 11 : 12);
+  if (DEFAULT_ABI == ABI_AIX
+      && !(strategy & (SAVE_INLINE_GPRS | SAVE_NOINLINE_GPRS_SAVES_LR)))
+    cr_save_regno = 11;
+  else if (DEFAULT_ABI == ABI_ELFv2)
+    cr_save_regno = 11;
+  else
+    cr_save_regno = 12;
   if (!WORLD_SAVE_P (info)
       && info->cr_save_p
       && REGNO (frame_reg_rtx) != cr_save_regno
