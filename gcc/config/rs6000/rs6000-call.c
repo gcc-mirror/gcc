@@ -10848,12 +10848,10 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
   gimple *new_call;
   tree new_decl;
 
-  if (rs6000_builtin_info[fncode + 1].icode == CODE_FOR_nothing)
+  if (fncode == MMA_BUILTIN_DISASSEMBLE_ACC
+      || fncode == VSX_BUILTIN_DISASSEMBLE_PAIR)
     {
       /* This is an MMA disassemble built-in function.  */
-      gcc_assert (fncode == MMA_BUILTIN_DISASSEMBLE_ACC
-		  || fncode == VSX_BUILTIN_DISASSEMBLE_PAIR);
-
       push_gimplify_context (true);
       tree dst_ptr = gimple_call_arg (stmt, 0);
       tree src_ptr = gimple_call_arg (stmt, 1);
@@ -13216,12 +13214,11 @@ mma_init_builtins (void)
 	  gcc_assert (attr_args == insn_data[icode].n_operands - 1);
 	}
 
-      if (icode == CODE_FOR_nothing)
+      if (d->code == MMA_BUILTIN_DISASSEMBLE_ACC
+	  || d->code == VSX_BUILTIN_DISASSEMBLE_PAIR)
 	{
 	  /* This is a disassemble MMA built-in function.  */
-	  gcc_assert (attr_args == RS6000_BTC_BINARY
-		      && (d->code == MMA_BUILTIN_DISASSEMBLE_ACC
-			  || d->code == VSX_BUILTIN_DISASSEMBLE_PAIR));
+	  gcc_assert (attr_args == RS6000_BTC_BINARY);
 	  op[nopnds++] = build_pointer_type (void_type_node);
 	  if (attr & RS6000_BTC_QUAD)
 	    op[nopnds++] = build_pointer_type (vector_quad_type_node);
