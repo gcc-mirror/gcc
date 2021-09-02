@@ -1,3 +1,19 @@
+2021-09-01  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101592
+	* fold-const.c (make_range_step): Return NULL_TREE for NULLPTR_TYPE.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102124
+	* tree-vect-patterns.c (vect_recog_widen_op_pattern): For ORIG_CODE
+	MINUS_EXPR, if itype is unsigned with smaller precision than type,
+	add an extra cast to signed variant of itype to ensure sign-extension.
+
 2021-08-31  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

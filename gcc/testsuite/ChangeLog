@@ -1,3 +1,17 @@
+2021-09-01  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101592
+	* g++.dg/warn/Wlogical-op-3.C: New test.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102124
+	* gcc.dg/torture/pr102124.c: New test.
+
 2021-08-30  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
