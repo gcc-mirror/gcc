@@ -1,3 +1,32 @@
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/101718
+	* objc-next-runtime-abi-02.c (build_v2_build_objc_method_call):
+	Revise for cases where scalar objects use an sret parameter.
+	(next_runtime_abi_02_build_objc_method_call): Likwise.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_add_property_declaration): Register unavailable
+	attribute.
+	(maybe_make_artificial_property_decl): Set available.
+	(objc_maybe_build_component_ref): Generalise to the method prototype
+	to count availability.
+	(objc_build_class_component_ref): Likewise.
+	(build_private_template): Likewise.
+	(objc_decl_method_attributes): Handle unavailable attribute.
+	(lookup_method_in_hash_lists): Amend comments.
+	(objc_finish_message_expr): Handle unavailability in addition to
+	deprecation.
+	(start_class): Likewise.
+	(finish_class): Likewise.
+	(lookup_protocol): Likewise.
+	(objc_declare_protocol): Likewise.
+	(start_protocol): Register unavailable attribute.
+	(really_start_method): Likewise.
+	(objc_gimplify_property_ref): Emit error on encountering an
+	unavailable entity (and a warning for a deprecated one).
+
 2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-next-runtime-abi-02.c (objc_next_runtime_abi_02_init):

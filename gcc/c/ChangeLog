@@ -1,3 +1,27 @@
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-decl.c (enum deprecated_states): Add unavailable state.
+	(merge_decls): Copy unavailability.
+	(quals_from_declspecs): Handle unavailable case.
+	(start_decl): Amend the logic handling suppression of nested
+	deprecation states to include unavailability.
+	(smallest_type_quals_location): Amend comment.
+	(grokdeclarator): Handle the unavailable deprecation state.
+	(declspecs_add_type): Set TREE_UNAVAILABLE from the decl specs.
+	* c-tree.h (struct c_declspecs): Add unavailable_p.
+	* c-typeck.c (build_component_ref): Handle unavailability.
+	(build_external_ref): Likewise.
+
+2021-09-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/79412
+	* c-decl.c (duplicate_decls): On significant mismatches, mark the
+	types of both (non-function) decls as error_mark_node, so that the
+	middle-end can see the code is malformed.
+	(free_attr_access_data): Don't process if the type has been set to
+	error_mark_node.
+
 2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* c-parser.c (c_parser_omp_clause_device): Parse device-modifiers 'device_num'

@@ -1,3 +1,116 @@
+2021-09-01  Jeff Law  <jlaw@localhost.localdomain>
+
+	PR tree-optimization/102152
+	* gcc.dg/pr102152.c: New test
+
+2021-09-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101934
+	* gcc.target/aarch64/memset-strict-align-1.c: New test.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* g++.dg/cpp23/normalize1.C: New test.
+	* g++.dg/cpp23/normalize2.C: New test.
+	* g++.dg/cpp23/normalize3.C: New test.
+	* g++.dg/cpp23/normalize4.C: New test.
+	* g++.dg/cpp23/normalize5.C: New test.
+	* g++.dg/cpp23/normalize6.C: New test.
+	* g++.dg/cpp23/normalize7.C: New test.
+	* g++.dg/cpp23/ucnid-1-utf8.C: New test.
+	* g++.dg/cpp23/ucnid-2-utf8.C: New test.
+	* gcc.dg/cpp/ucnid-4.c: Don't expect
+	"not valid at the start of an identifier" errors.
+	* gcc.dg/cpp/ucnid-4-utf8.c: Likewise.
+	* gcc.dg/cpp/ucnid-5-utf8.c: New test.
+
+2021-09-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR testsuite/51748
+	* gcc.misc-tests/linkage.exp: Add mips*-linux-* support.
+
+2021-09-01  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-11.c: Remove xfails.
+	* gcc.dg/Wstringop-overflow-12.c: Same.
+	* gcc.dg/Wstringop-overflow-43.c: Add xfails.
+	* gcc.dg/Wstringop-overflow-73.c: New test.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/101488
+	* c-c++-common/cpp/va-opt-3.c: Adjust expected output.
+	* c-c++-common/cpp/va-opt-7.c: New test.
+
+2021-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101592
+	* g++.dg/warn/Wlogical-op-3.C: New test.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/ext/attr-unavailable-1.C: New test.
+	* g++.dg/ext/attr-unavailable-2.C: New test.
+	* g++.dg/ext/attr-unavailable-3.C: New test.
+	* g++.dg/ext/attr-unavailable-4.C: New test.
+	* g++.dg/ext/attr-unavailable-5.C: New test.
+	* g++.dg/ext/attr-unavailable-6.C: New test.
+	* g++.dg/ext/attr-unavailable-7.C: New test.
+	* g++.dg/ext/attr-unavailable-8.C: New test.
+	* g++.dg/ext/attr-unavailable-9.C: New test.
+	* gcc.dg/attr-unavailable-1.c: New test.
+	* gcc.dg/attr-unavailable-2.c: New test.
+	* gcc.dg/attr-unavailable-3.c: New test.
+	* gcc.dg/attr-unavailable-4.c: New test.
+	* gcc.dg/attr-unavailable-5.c: New test.
+	* gcc.dg/attr-unavailable-6.c: New test.
+	* obj-c++.dg/attributes/method-unavailable-1.mm: New test.
+	* obj-c++.dg/attributes/method-unavailable-2.mm: New test.
+	* obj-c++.dg/attributes/method-unavailable-3.mm: New test.
+	* obj-c++.dg/property/at-property-unavailable-1.mm: New test.
+	* obj-c++.dg/property/at-property-unavailable-2.mm: New test.
+	* obj-c++.dg/property/dotsyntax-unavailable-1.mm: New test.
+	* objc.dg/attributes/method-unavailable-1.m: New test.
+	* objc.dg/attributes/method-unavailable-2.m: New test.
+	* objc.dg/attributes/method-unavailable-3.m: New test.
+	* objc.dg/property/at-property-unavailable-1.m: New test.
+	* objc.dg/property/at-property-unavailable-2.m: New test.
+	* objc.dg/property/dotsyntax-unavailable-1.m: New test.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102124
+	* gcc.dg/torture/pr102124.c: New test.
+
+2021-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93491
+	* gcc.dg/torture/pr93491.c: New testcase.
+	* gcc.dg/tree-ssa/pr88087.c: Change to valid PRE opportunity.
+
+2021-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102139
+	* gcc.dg/torture/pr102139.c: New testcase.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102141
+	* gcc.dg/pr102141.c: New test.
+
+2021-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102149
+	* gcc.dg/torture/pr102149.c: New testcase.
+
+2021-09-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/79412
+	* gcc.dg/pr79412.c: New test case.
+	* gcc.dg/typedef-var-2.c: Update expeted errors.
+
 2021-08-31  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/100950

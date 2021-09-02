@@ -1,3 +1,137 @@
+2021-09-01  Jeff Law  <jlaw@localhost.localdomain>
+
+	PR tree-optimization/102152
+	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Reduce a vector
+	comparison to a scalar comparison before calling
+	update_stmt_if_modified.
+
+2021-09-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101934
+	* config/aarch64/aarch64.c (aarch64_expand_setmem):
+	Check STRICT_ALIGNMENT before creating an overlapping
+	store.
+
+2021-09-01  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-ssa-warn-access.cc (get_size_range): Add argument.
+	(check_access): Pass additional argument.
+	(check_memop_access): Remove template and make a member function.
+	(maybe_check_dealloc_call): Make a pass_waccess member function.
+	(class pass_waccess): Add, rename, and remove members.
+	(pass_waccess::pass_waccess): Adjust to name change.
+	(pass_waccess::~pass_waccess): Same.
+	(check_alloca): Make a member function.
+	(check_alloc_size_call): Same.
+	(check_strcat): Same.
+	(check_strncat): Same.
+	(check_stxcpy): Same.
+	(check_stxncpy): Same.
+	(check_strncmp): Same.
+	(maybe_warn_rdwr_sizes): Rename...
+	(pass_waccess::maybe_check_access_sizes): ...to this.
+	(pass_waccess::check_call): Adjust to name changes.
+	(pass_waccess::maybe_check_dealloc_call): Make a pass_waccess member
+	function.
+	(pass_waccess::execute): Adjust to name changes.
+	* gimple-ssa-warn-access.h (check_memop_access): Remove.
+	* pointer-query.cc (access_ref::phi): Handle null pointer.
+	(access_ref::inform_access): Same.
+	(pointer_query::put_ref): Modify a cached value, not a copy of it.
+	(pointer_query::dump): New function.
+	(compute_objsize_r): Avoid overwriting access_ref::bndrng.  Cache
+	more results.
+	* pointer-query.h (pointer_query::dump): Declare.
+	* tree-ssa-strlen.c (get_range): Simplify.  Use function query.
+	(dump_strlen_info): Use function query.
+	(printf_strlen_execute): Factor code out into pointer_query::put_ref.
+
+2021-09-01  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree.c (walk_tree_1) <OMP_CLAUSE>: Simplify.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* doc/extend.texi: Document unavailable attribute.
+	* print-tree.c (print_node): Handle unavailable attribute.
+	* tree-core.h (struct tree_base): Add a bit to carry unavailability.
+	* tree.c (error_unavailable_use): New.
+	* tree.h (TREE_UNAVAILABLE): New.
+	(error_unavailable_use): New.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102124
+	* tree-vect-patterns.c (vect_recog_widen_op_pattern): For ORIG_CODE
+	MINUS_EXPR, if itype is unsigned with smaller precision than type,
+	add an extra cast to signed variant of itype to ensure sign-extension.
+
+2021-09-01  Martin Liska  <mliska@suse.cz>
+
+	* graph.c (draw_cfg_node_succ_edges): Do not color fallthru
+	  edges and rather use colors for TRUE and FALSE edges.
+
+2021-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93491
+	* tree-ssa-pre.c (compute_avail): Set BB_MAY_NOTRETURN
+	after processing the stmt itself.  Do not consider
+	pure functions possibly not returning.  Properly avoid
+	adding possibly trapping calls to EXP_GEN when there's
+	a preceeding possibly not returning call.
+	* tree-ssa-sccvn.c (vn_reference_may_trap): Conservatively
+	not handle calls.
+
+2021-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102139
+	* tree-vectorizer.h (vec_base_alignments): Adjust hash-map
+	type to record a std::pair of the stmt-info and the innermost
+	loop behavior.
+	(dr_vec_info::group): New member.
+	* tree-vect-data-refs.c (vect_record_base_alignment): Adjust.
+	(vect_compute_data_ref_alignment): Verify the recorded
+	base alignment can be used.
+	(data_ref_pair): Remove.
+	(dr_group_sort_cmp): Adjust.
+	(vect_analyze_data_ref_accesses): Store the group-ID in the
+	dr_vec_info and operate on a vector of dr_vec_infos.
+
+2021-09-01  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* read-md.c (md_reader::handle_enum): support value assignation.
+	* doc/md.texi: record define_c_enum value assignation support.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102141
+	* gimple-ssa-store-merging.c (bswap_view_convert): Add BEFORE
+	argument.  If false, emit stmts after gsi instead of before, and
+	with GSI_NEW_STMT.
+	(bswap_replace): Adjust callers.  When converting output of bswap,
+	emit VIEW_CONVERT prepratation stmts after a copy of gsi instead
+	of before it.
+
+2021-09-01  liuhongt  <hongtao.liu@intel.com>
+
+	* emit-rtl.c (validate_subreg): Get rid of all float-int
+	special cases.
+
+2021-09-01  liuhongt  <hongtao.liu@intel.com>
+
+	Revert:
+	2021-08-30  liuhongt  <hongtao.liu@intel.com>
+
+	* expmed.c (extract_bit_field_1): Make sure we're playing with
+	integral modes before call extract_integral_bit_field.
+	(extract_integral_bit_field): Add a parameter of type
+	scalar_int_mode which corresponds to of tmode.
+	And call extract_and_convert_fixed_bit_field instead of
+	extract_fixed_bit_field and convert_extracted_bit_field.
+	(extract_and_convert_fixed_bit_field): New function, it's a
+	combination of extract_fixed_bit_field and
+	convert_extracted_bit_field.
+
 2021-08-31  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree.c (walk_tree_1) <OMP_CLAUSE_TILE>: Handle three operands.

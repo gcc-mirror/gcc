@@ -1,3 +1,10 @@
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Do not search for sbrk on Darwin.
+	* xmalloc.c: Do not declare sbrk unless it has been found
+	by configure.
+
 2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-demangle.c (dlang_identifier): Skip over fake parent manglings.
