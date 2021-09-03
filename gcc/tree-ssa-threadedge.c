@@ -95,6 +95,21 @@ jump_threader::thread_through_all_blocks (bool may_peel_loop_headers)
   return m_registry->thread_through_all_blocks (may_peel_loop_headers);
 }
 
+static inline bool
+has_phis_p (basic_block bb)
+{
+  return !gsi_end_p (gsi_start_phis (bb));
+}
+
+/* Return TRUE for a forwarder block which is defined as having PHIs
+   but no instructions.  */
+
+static bool
+forwarder_block_p (basic_block bb)
+{
+  return gsi_end_p (gsi_start_nondebug_bb (bb)) && has_phis_p (bb);
+}
+
 /* Return TRUE if we may be able to thread an incoming edge into
    BB to an outgoing edge from BB.  Return FALSE otherwise.  */
 
@@ -107,9 +122,8 @@ potentially_threadable_block (basic_block bb)
      not optimized away because they forward from outside a loop
      to the loop header.   We want to thread through them as we can
      sometimes thread to the loop exit, which is obviously profitable.
-     the interesting case here is when the block has PHIs.  */
-  if (gsi_end_p (gsi_start_nondebug_bb (bb))
-      && !gsi_end_p (gsi_start_phis (bb)))
+     The interesting case here is when the block has PHIs.  */
+  if (forwarder_block_p (bb))
     return true;
 
   /* If BB has a single successor or a single predecessor, then
@@ -854,7 +868,7 @@ jump_threader::thread_around_empty_blocks (vec<jump_thread_edge *> *path,
   /* The key property of these blocks is that they need not be duplicated
      when threading.  Thus they cannot have visible side effects such
      as PHI nodes.  */
-  if (!gsi_end_p (gsi_start_phis (bb)))
+  if (has_phis_p (bb))
     return false;
 
   /* Skip over DEBUG statements at the start of the block.  */
@@ -994,8 +1008,7 @@ jump_threader::thread_through_normal_block (vec<jump_thread_edge *> *path,
     {
       /* First case.  The statement simply doesn't have any instructions, but
 	 does have PHIs.  */
-      if (gsi_end_p (gsi_start_nondebug_bb (e->dest))
-	  && !gsi_end_p (gsi_start_phis (e->dest)))
+      if (forwarder_block_p (e->dest))
 	return 0;
 
       /* Second case.  */
