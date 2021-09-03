@@ -1,1 +1,6 @@
 softfp_extras := fixhfti fixunshfti floattihf floatuntihf
+
+CFLAGS-fixhfti.c += -msse2
+CFLAGS-fixunshfti.c += -msse2
+CFLAGS-floattihf.c += -msse2
+CFLAGS-floatunstihf.c += -msse2

@@ -1,6 +1,26 @@
 LIB2ADD += $(srcdir)/config/i386/sfp-exceptions.c
 
+# Replace _divhc3 and _mulhc3.
+libgcc2-hf-functions = _divhc3 _mulhc3
+LIB2FUNCS_EXCLUDE += $(libgcc2-hf-functions)
+libgcc2-hf-extras = $(addsuffix .c, $(libgcc2-hf-functions))
+LIB2ADD_ST += $(addprefix $(srcdir)/config/i386/, $(libgcc2-hf-extras))
+
 softfp_extensions := hfsf hfdf hftf hfxf sfdf sftf dftf xftf
 softfp_truncations := tfhf xfhf dfhf sfhf tfsf dfsf tfdf tfxf
 
 softfp_extras += eqhf2
+
+CFLAGS-extendhfsf2.c += -msse2
+CFLAGS-extendhfdf2.c += -msse2
+CFLAGS-extendhftf2.c += -msse2
+CFLAGS-extendhfxf2.c += -msse2
+
+CFLAGS-truncsfhf2.c += -msse2
+CFLAGS-truncdfhf2.c += -msse2
+CFLAGS-truncxfhf2.c += -msse2
+CFLAGS-trunctfhf2.c += -msse2
+
+CFLAGS-eqhf2.c += -msse2
+CFLAGS-_divhc3.c += -msse2
+CFLAGS-_mulhc3.c += -msse2
