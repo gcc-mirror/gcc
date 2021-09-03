@@ -130,7 +130,7 @@ range_tracer::trailer (unsigned counter, const char *caller, bool result,
 
 // Query all statements in the IL to precalculate computable ranges in RANGER.
 
-static DEBUG_FUNCTION void
+DEBUG_FUNCTION void
 debug_seed_ranger (gimple_ranger &ranger)
 {
   // Recalculate SCEV to make sure the dump lists everything.
@@ -161,6 +161,11 @@ DEBUG_FUNCTION void
 dump_ranger (FILE *out)
 {
   gimple_ranger ranger;
+
+  fprintf (out, ";; Function ");
+  print_generic_expr (out, current_function_decl);
+  fprintf (out, "\n");
+
   debug_seed_ranger (ranger);
   ranger.dump (out);
 }
