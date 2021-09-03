@@ -92,7 +92,7 @@ path_range_query::dump (FILE *dump_file)
   bitmap_iterator bi;
   extern void dump_ranger (FILE *, const vec<basic_block> &);
 
-  fprintf (dump_file, "Path is:\n");
+  fprintf (dump_file, "Path is (length=%d):\n", m_path->length ());
   dump_ranger (dump_file, *m_path);
 
   fprintf (dump_file, "Imports:\n");
@@ -315,7 +315,17 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
   m_imports = imports;
 
   if (DEBUG_SOLVER)
-    fprintf (dump_file, "path_range_query: precompute_ranges\n");
+    {
+      fprintf (dump_file, "\npath_range_query: precompute_ranges for path: ");
+      for (unsigned i = path.length (); i > 0; --i)
+	{
+	  basic_block bb = path[i - 1];
+	  fprintf (dump_file, "BB %d", bb->index);
+	  if (i > 1)
+	    fprintf (dump_file, ", ");
+	}
+      fprintf (dump_file, "\n");
+    }
 
   while (1)
     {
