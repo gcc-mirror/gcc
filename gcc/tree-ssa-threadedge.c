@@ -1323,8 +1323,10 @@ jt_state::jt_state (const_and_copies *copies,
 void
 jt_state::push (edge)
 {
-  m_copies->push_marker ();
-  m_exprs->push_marker ();
+  if (m_copies)
+    m_copies->push_marker ();
+  if (m_exprs)
+    m_exprs->push_marker ();
   if (m_evrp)
     m_evrp->push_marker ();
 }
@@ -1334,8 +1336,10 @@ jt_state::push (edge)
 void
 jt_state::pop ()
 {
-  m_copies->pop_to_marker ();
-  m_exprs->pop_to_marker ();
+  if (m_copies)
+    m_copies->pop_to_marker ();
+  if (m_exprs)
+    m_exprs->pop_to_marker ();
   if (m_evrp)
     m_evrp->pop_to_marker ();
 }
@@ -1346,7 +1350,8 @@ jt_state::pop ()
 void
 jt_state::register_equiv (tree dst, tree src, bool update_range)
 {
-  m_copies->record_const_or_copy (dst, src);
+  if (m_copies)
+    m_copies->record_const_or_copy (dst, src);
 
   /* If requested, update the value range associated with DST, using
      the range from SRC.  */
@@ -1396,7 +1401,8 @@ jt_state::record_ranges_from_stmt (gimple *stmt, bool temporary)
 void
 jt_state::register_equivs_on_edge (edge e)
 {
-  record_temporary_equivalences (e, m_copies, m_exprs);
+  if (m_copies && m_exprs)
+    record_temporary_equivalences (e, m_copies, m_exprs);
 }
 
 jump_threader_simplifier::jump_threader_simplifier (vr_values *v)
