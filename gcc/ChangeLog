@@ -1,3 +1,86 @@
+2021-09-02  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/17506
+	PR testsuite/37182
+	* tree-ssa-uninit.c (warn_uninit): Remove conditional guarding note.
+
+2021-09-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (fill_always_executed_in_1): Refine
+	fix for PR78185 and continue processing when leaving
+	finite inner loops.
+
+2021-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99591
+	* match.pd: Demote operands of IFN_{ADD,SUB,MUL}_OVERFLOW if they
+	were promoted.
+
+2021-09-02  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2021-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102155
+	* tree-ssa-loop-im.c (fill_always_executed_in_1): Iterate
+	over a part of the RPO array and do not recurse here.
+	Dump blocks marked as always executed.
+	(fill_always_executed_in): Walk over the RPO array and
+	process loops whose header we run into.
+	(loop_invariant_motion_in_fun): Compute the first RPO
+	using rev_post_order_and_mark_dfs_back_seme in iteration
+	order and pass that to fill_always_executed_in.
+
+2021-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-modes.def (FLOAT_MODE): Define ieee HFmode.
+	* config/i386/i386.c (enum x86_64_reg_class): Add
+	X86_64_SSEHF_CLASS.
+	(merge_classes): Handle X86_64_SSEHF_CLASS.
+	(examine_argument): Ditto.
+	(construct_container): Ditto.
+	(classify_argument): Ditto, and set HFmode/HCmode to
+	X86_64_SSEHF_CLASS.
+	(function_value_32): Return _FLoat16/Complex Float16 by
+	%xmm0.
+	(function_value_64): Return _Float16/Complex Float16 by SSE
+	register.
+	(ix86_print_operand): Handle CONST_DOUBLE HFmode.
+	(ix86_secondary_reload): Require gpr as intermediate register
+	to store _Float16 from sse register when sse4 is not
+	available.
+	(ix86_libgcc_floating_mode_supported_p): Enable _FLoat16 under
+	sse2.
+	(ix86_scalar_mode_supported_p): Ditto.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Defined.
+	* config/i386/i386.h (VALID_SSE2_REG_MODE): Add HFmode.
+	(VALID_INT_MODE_P): Add HFmode and HCmode.
+	* config/i386/i386.md (*pushhf_rex64): New define_insn.
+	(*pushhf): Ditto.
+	(*movhf_internal): Ditto.
+	* doc/extend.texi (Half-Precision Floating Point): Documemt
+	_Float16 for x86.
+
+2021-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102155
+	* tree-ssa-loop-im.c (fill_always_executed_in_1): Iterate
+	over a part of the RPO array and do not recurse here.
+	Dump blocks marked as always executed.
+	(fill_always_executed_in): Walk over the RPO array and
+	process loops whose header we run into.
+	(loop_invariant_motion_in_fun): Compute the first RPO
+	using rev_post_order_and_mark_dfs_back_seme in iteration
+	order and pass that to fill_always_executed_in.
+
+2021-09-02  YunQiang Su  <syq@debian.org>
+
+	Revert:
+	2021-08-31  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.c (mips_module_isa_name): New.
+	  mips_file_start: add .module mipsREV to all asm output
+
 2021-09-01  Jeff Law  <jlaw@localhost.localdomain>
 
 	PR tree-optimization/102152

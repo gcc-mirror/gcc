@@ -1,3 +1,8 @@
+2021-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	* lto-lang.c (lto_type_for_mode): Return float16_type_node
+	when mode == TYPE_MODE (float16_type_node).
+
 2021-05-31  Martin Liska  <mliska@suse.cz>
 
 	* lto-common.c (compare_tree_sccs_1): Compare

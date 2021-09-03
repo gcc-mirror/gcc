@@ -1,3 +1,38 @@
+2021-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_base<P*>::compare_exchange_weak):
+	Add new functions.
+	* include/std/atomic (atomic<T*>::compare_exchange_weak): Use
+	it.
+
+2021-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic: Tweak whitespace.
+
+2021-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/102177
+	* include/bits/atomic_base.h (__is_valid_cmpexch_failure_order):
+	New function to check if a memory order is valid for the failure
+	case of compare exchange operations.
+	(__atomic_base<I>::compare_exchange_weak): Simplify assertions
+	by using __is_valid_cmpexch_failure_order.
+	(__atomic_base<I>::compare_exchange_strong): Likewise.
+	(__atomic_base<P*>::compare_exchange_weak): Likewise.
+	(__atomic_base<P*>::compare_exchange_strong): Likewise.
+	(__atomic_impl::compare_exchange_weak): Add assertion.
+	(__atomic_impl::compare_exchange_strong): Likewise.
+	* include/std/atomic (atomic::compare_exchange_weak): Likewise.
+	(atomic::compare_exchange_strong): Likewise.
+
+2021-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (invoke_r): Define.
+	* include/std/version (__cpp_lib_invoke_r): Define.
+	* testsuite/20_util/function_objects/invoke/version.cc: Check
+	for __cpp_lib_invoke_r as well as __cpp_lib_invoke.
+	* testsuite/20_util/function_objects/invoke/4.cc: New test.
+
 2021-08-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/98421

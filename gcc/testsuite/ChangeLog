@@ -1,3 +1,234 @@
+2021-09-02  Sandra Loosemore  <sandra@codesourcery.com>
+	    José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100911
+	PR fortran/100915
+	PR fortran/100916
+	* gfortran.dg/PR100911.c: New file.
+	* gfortran.dg/PR100911.f90: New file.
+	* gfortran.dg/PR100914.c: New file.
+	* gfortran.dg/PR100914.f90: New file.
+	* gfortran.dg/PR100915.c: New file.
+	* gfortran.dg/PR100915.f90: New file.
+
+2021-09-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.dg/c-interop/allocatable-dummy-c.c: New file.
+	* gfortran.dg/c-interop/allocatable-dummy.f90: New file.
+	* gfortran.dg/c-interop/allocatable-optional-pointer.f90: New file.
+	* gfortran.dg/c-interop/allocate-c.c: New file.
+	* gfortran.dg/c-interop/allocate-errors-c.c: New file.
+	* gfortran.dg/c-interop/allocate-errors.f90: New file.
+	* gfortran.dg/c-interop/allocate.f90: New file.
+	* gfortran.dg/c-interop/argument-association-assumed-rank-1.f90:
+	New file.
+	* gfortran.dg/c-interop/argument-association-assumed-rank-2.f90:
+	New file.
+	* gfortran.dg/c-interop/argument-association-assumed-rank-3.f90:
+	New file.
+	* gfortran.dg/c-interop/argument-association-assumed-rank-4.f90:
+	New file.
+	* gfortran.dg/c-interop/argument-association-assumed-rank-5.f90:
+	New file.
+	* gfortran.dg/c-interop/argument-association-assumed-rank-6.f90:
+	New file.
+	* gfortran.dg/c-interop/argument-association-assumed-rank-7.f90:
+	New file.
+	* gfortran.dg/c-interop/argument-association-assumed-rank-8.f90:
+	New file.
+	* gfortran.dg/c-interop/assumed-type-dummy.f90: New file.
+	* gfortran.dg/c-interop/c-interop.exp: New file.
+	* gfortran.dg/c-interop/c1255-1.f90: New file.
+	* gfortran.dg/c-interop/c1255-2.f90: New file.
+	* gfortran.dg/c-interop/c1255a.f90: New file.
+	* gfortran.dg/c-interop/c407a-1.f90: New file.
+	* gfortran.dg/c-interop/c407a-2.f90: New file.
+	* gfortran.dg/c-interop/c407b-1.f90: New file.
+	* gfortran.dg/c-interop/c407b-2.f90: New file.
+	* gfortran.dg/c-interop/c407c-1.f90: New file.
+	* gfortran.dg/c-interop/c516.f90: New file.
+	* gfortran.dg/c-interop/c524a.f90: New file.
+	* gfortran.dg/c-interop/c535a-1.f90: New file.
+	* gfortran.dg/c-interop/c535a-2.f90: New file.
+	* gfortran.dg/c-interop/c535b-1.f90: New file.
+	* gfortran.dg/c-interop/c535b-2.f90: New file.
+	* gfortran.dg/c-interop/c535b-3.f90: New file.
+	* gfortran.dg/c-interop/c535c-1.f90: New file.
+	* gfortran.dg/c-interop/c535c-2.f90: New file.
+	* gfortran.dg/c-interop/c535c-3.f90: New file.
+	* gfortran.dg/c-interop/c535c-4.f90: New file.
+	* gfortran.dg/c-interop/cf-descriptor-1-c.c: New file.
+	* gfortran.dg/c-interop/cf-descriptor-1.f90: New file.
+	* gfortran.dg/c-interop/cf-descriptor-2-c.c: New file.
+	* gfortran.dg/c-interop/cf-descriptor-2.f90: New file.
+	* gfortran.dg/c-interop/cf-descriptor-3-c.c: New file.
+	* gfortran.dg/c-interop/cf-descriptor-3.f90: New file.
+	* gfortran.dg/c-interop/cf-descriptor-4-c.c: New file.
+	* gfortran.dg/c-interop/cf-descriptor-4.f90: New file.
+	* gfortran.dg/c-interop/cf-descriptor-5-c.c: New file.
+	* gfortran.dg/c-interop/cf-descriptor-5.f90: New file.
+	* gfortran.dg/c-interop/cf-descriptor-6-c.c: New file.
+	* gfortran.dg/c-interop/cf-descriptor-6.f90: New file.
+	* gfortran.dg/c-interop/cf-descriptor-7-c.c: New file.
+	* gfortran.dg/c-interop/cf-descriptor-7.f90: New file.
+	* gfortran.dg/c-interop/cf-descriptor-8-c.c: New file.
+	* gfortran.dg/c-interop/cf-descriptor-8.f90: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-1-c.c: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-1.f90: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-2-c.c: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-2.f90: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-3-c.c: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-3.f90: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-4-c.c: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-4.f90: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-5-c.c: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-5.f90: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-6-c.c: New file.
+	* gfortran.dg/c-interop/cf-out-descriptor-6.f90: New file.
+	* gfortran.dg/c-interop/contiguous-1-c.c: New file.
+	* gfortran.dg/c-interop/contiguous-1.f90: New file.
+	* gfortran.dg/c-interop/contiguous-2-c.c: New file.
+	* gfortran.dg/c-interop/contiguous-2.f90: New file.
+	* gfortran.dg/c-interop/contiguous-3-c.c: New file.
+	* gfortran.dg/c-interop/contiguous-3.f90: New file.
+	* gfortran.dg/c-interop/deferred-character-1.f90: New file.
+	* gfortran.dg/c-interop/deferred-character-2.f90: New file.
+	* gfortran.dg/c-interop/dump-descriptors.c: New file.
+	* gfortran.dg/c-interop/dump-descriptors.h: New file.
+	* gfortran.dg/c-interop/establish-c.c: New file.
+	* gfortran.dg/c-interop/establish-errors-c.c: New file.
+	* gfortran.dg/c-interop/establish-errors.f90: New file.
+	* gfortran.dg/c-interop/establish.f90: New file.
+	* gfortran.dg/c-interop/explicit-interface.f90: New file.
+	* gfortran.dg/c-interop/fc-descriptor-1-c.c: New file.
+	* gfortran.dg/c-interop/fc-descriptor-1.f90: New file.
+	* gfortran.dg/c-interop/fc-descriptor-2-c.c: New file.
+	* gfortran.dg/c-interop/fc-descriptor-2.f90: New file.
+	* gfortran.dg/c-interop/fc-descriptor-3-c.c: New file.
+	* gfortran.dg/c-interop/fc-descriptor-3.f90: New file.
+	* gfortran.dg/c-interop/fc-descriptor-4-c.c: New file.
+	* gfortran.dg/c-interop/fc-descriptor-4.f90: New file.
+	* gfortran.dg/c-interop/fc-descriptor-5-c.c: New file.
+	* gfortran.dg/c-interop/fc-descriptor-5.f90: New file.
+	* gfortran.dg/c-interop/fc-descriptor-6-c.c: New file.
+	* gfortran.dg/c-interop/fc-descriptor-6.f90: New file.
+	* gfortran.dg/c-interop/fc-descriptor-7-c.c: New file.
+	* gfortran.dg/c-interop/fc-descriptor-7.f90: New file.
+	* gfortran.dg/c-interop/fc-descriptor-8-c.c: New file.
+	* gfortran.dg/c-interop/fc-descriptor-8.f90: New file.
+	* gfortran.dg/c-interop/fc-descriptor-9-c.c: New file.
+	* gfortran.dg/c-interop/fc-descriptor-9.f90: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-1-c.c: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-1.f90: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-2-c.c: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-2.f90: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-3-c.c: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-3.f90: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-4-c.c: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-4.f90: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-5-c.c: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-5.f90: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-6-c.c: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-6.f90: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-7-c.c: New file.
+	* gfortran.dg/c-interop/fc-out-descriptor-7.f90: New file.
+	* gfortran.dg/c-interop/ff-descriptor-1.f90: New file.
+	* gfortran.dg/c-interop/ff-descriptor-2.f90: New file.
+	* gfortran.dg/c-interop/ff-descriptor-3.f90: New file.
+	* gfortran.dg/c-interop/ff-descriptor-4.f90: New file.
+	* gfortran.dg/c-interop/ff-descriptor-5.f90: New file.
+	* gfortran.dg/c-interop/ff-descriptor-6.f90: New file.
+	* gfortran.dg/c-interop/ff-descriptor-7.f90: New file.
+	* gfortran.dg/c-interop/note-5-3.f90: New file.
+	* gfortran.dg/c-interop/note-5-4-c.c: New file.
+	* gfortran.dg/c-interop/note-5-4.f90: New file.
+	* gfortran.dg/c-interop/optional-c.c: New file.
+	* gfortran.dg/c-interop/optional.f90: New file.
+	* gfortran.dg/c-interop/rank-class.f90: New file.
+	* gfortran.dg/c-interop/rank.f90: New file.
+	* gfortran.dg/c-interop/removed-restrictions-1.f90: New file.
+	* gfortran.dg/c-interop/removed-restrictions-2.f90: New file.
+	* gfortran.dg/c-interop/removed-restrictions-3.f90: New file.
+	* gfortran.dg/c-interop/removed-restrictions-4.f90: New file.
+	* gfortran.dg/c-interop/section-1-c.c: New file.
+	* gfortran.dg/c-interop/section-1.f90: New file.
+	* gfortran.dg/c-interop/section-1p.f90: New file.
+	* gfortran.dg/c-interop/section-2-c.c: New file.
+	* gfortran.dg/c-interop/section-2.f90: New file.
+	* gfortran.dg/c-interop/section-2p.f90: New file.
+	* gfortran.dg/c-interop/section-3-c.c: New file.
+	* gfortran.dg/c-interop/section-3.f90: New file.
+	* gfortran.dg/c-interop/section-3p.f90: New file.
+	* gfortran.dg/c-interop/section-4-c.c: New file.
+	* gfortran.dg/c-interop/section-4.f90: New file.
+	* gfortran.dg/c-interop/section-errors-c.c: New file.
+	* gfortran.dg/c-interop/section-errors.f90: New file.
+	* gfortran.dg/c-interop/select-c.c: New file.
+	* gfortran.dg/c-interop/select-errors-c.c: New file.
+	* gfortran.dg/c-interop/select-errors.f90: New file.
+	* gfortran.dg/c-interop/select.f90: New file.
+	* gfortran.dg/c-interop/setpointer-c.c: New file.
+	* gfortran.dg/c-interop/setpointer-errors-c.c: New file.
+	* gfortran.dg/c-interop/setpointer-errors.f90: New file.
+	* gfortran.dg/c-interop/setpointer.f90: New file.
+	* gfortran.dg/c-interop/shape.f90: New file.
+	* gfortran.dg/c-interop/size.f90: New file.
+	* gfortran.dg/c-interop/tkr.f90: New file.
+	* gfortran.dg/c-interop/typecodes-array-basic-c.c: New file.
+	* gfortran.dg/c-interop/typecodes-array-basic.f90: New file.
+	* gfortran.dg/c-interop/typecodes-array-char-c.c: New file.
+	* gfortran.dg/c-interop/typecodes-array-char.f90: New file.
+	* gfortran.dg/c-interop/typecodes-array-float128-c.c: New file.
+	* gfortran.dg/c-interop/typecodes-array-float128.f90: New file.
+	* gfortran.dg/c-interop/typecodes-array-int128-c.c: New file.
+	* gfortran.dg/c-interop/typecodes-array-int128.f90: New file.
+	* gfortran.dg/c-interop/typecodes-array-longdouble-c.c: New file.
+	* gfortran.dg/c-interop/typecodes-array-longdouble.f90: New file.
+	* gfortran.dg/c-interop/typecodes-sanity-c.c: New file.
+	* gfortran.dg/c-interop/typecodes-sanity.f90: New file.
+	* gfortran.dg/c-interop/typecodes-scalar-basic-c.c: New file.
+	* gfortran.dg/c-interop/typecodes-scalar-basic.f90: New file.
+	* gfortran.dg/c-interop/typecodes-scalar-float128-c.c: New file.
+	* gfortran.dg/c-interop/typecodes-scalar-float128.f90: New file.
+	* gfortran.dg/c-interop/typecodes-scalar-int128-c.c: New file.
+	* gfortran.dg/c-interop/typecodes-scalar-int128.f90: New file.
+	* gfortran.dg/c-interop/typecodes-scalar-longdouble-c.c: New file.
+	* gfortran.dg/c-interop/typecodes-scalar-longdouble.f90: New file.
+	* gfortran.dg/c-interop/ubound.f90: New file.
+	* lib/target-supports.exp
+	(check_effective_target_fortran_real_c_float128): New function.
+
+2021-09-02  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/17506
+	PR testsuite/37182
+	* gcc.dg/diagnostic-tree-expr-ranges-2.c: Add expected output.
+	* gcc.dg/uninit-15-O0.c: Remove xfail.
+	* gcc.dg/uninit-15.c: Same.
+
+2021-09-02  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gfortran.dg/gomp/target-device-ancestor-4.f90: Comment out dg-final to avoid
+	UNRESOLVED.
+
+2021-09-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-lim-16.c: New testcase.
+
+2021-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99591
+	* gcc.target/i386/pr99591.c: New test.
+	* gcc.target/i386/pr97950.c: Match or reject setb or jn?b instructions
+	together with seta or jn?a.
+
+2021-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/sse2-float16-1.c: New test.
+	* gcc.target/i386/sse2-float16-2.c: Ditto.
+	* gcc.target/i386/sse2-float16-3.c: Ditto.
+	* gcc.target/i386/float16-5.c: New test.
+
 2021-09-01  Jeff Law  <jlaw@localhost.localdomain>
 
 	PR tree-optimization/102152
