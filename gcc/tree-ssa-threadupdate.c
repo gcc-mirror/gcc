@@ -245,6 +245,23 @@ debug (const vec<jump_thread_edge *> *path)
   debug (*path);
 }
 
+/* Release the memory associated with PATH, and if dumping is enabled,
+   dump out the reason why the thread was canceled.  */
+
+static void
+cancel_thread (vec<jump_thread_edge *> *path, const char *reason = NULL)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      if (reason)
+	fprintf (dump_file, "%s:\n", reason);
+
+      dump_jump_thread_path (dump_file, *path, false);
+      fprintf (dump_file, "\n");
+    }
+  path->release ();
+}
+
 /* Simple hashing function.  For any given incoming edge E, we're going
    to be most concerned with the final destination of its jump thread
    path.  So hash on the block index of the final edge in the path.  */
@@ -1449,7 +1466,7 @@ jump_thread_path_registry::thread_block_1 (basic_block bb,
 	      /* Since this case is not handled by our special code
 		 to thread through a loop header, we must explicitly
 		 cancel the threading request here.  */
-	      path->release ();
+	      cancel_thread (path, "Threading through unhandled loop header");
 	      e->aux = NULL;
 	      continue;
 	    }
@@ -1488,7 +1505,7 @@ jump_thread_path_registry::thread_block_1 (basic_block bb,
 
 	      if (i != path->length ())
 		{
-		  path->release ();
+		  cancel_thread (path, "Threading through loop exit");
 		  e->aux = NULL;
 		  continue;
 		}
@@ -1847,7 +1864,7 @@ fail:
 
       if (path)
 	{
-	  path->release ();
+	  cancel_thread (path, "Failure in thread_through_loop_header");
 	  e->aux = NULL;
 	}
     }
@@ -1975,9 +1992,7 @@ jump_thread_path_registry::mark_threaded_blocks (bitmap threaded_blocks)
 	  else
 	    {
 	      m_paths.unordered_remove (i);
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		dump_jump_thread_path (dump_file, *path, false);
-	      path->release ();
+	      cancel_thread (path);
 	    }
 	}
       else
@@ -2012,9 +2027,7 @@ jump_thread_path_registry::mark_threaded_blocks (bitmap threaded_blocks)
 	    {
 	      e->aux = NULL;
 	      m_paths.unordered_remove (i);
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		dump_jump_thread_path (dump_file, *path, false);
-	      path->release ();
+	      cancel_thread (path);
 	    }
 	}
       else
@@ -2060,9 +2073,7 @@ jump_thread_path_registry::mark_threaded_blocks (bitmap threaded_blocks)
 
 		if (j != path->length ())
 		  {
-		    if (dump_file && (dump_flags & TDF_DETAILS))
-		      dump_jump_thread_path (dump_file, *path, false);
-		    path->release ();
+		    cancel_thread (path);
 		    e->aux = NULL;
 		  }
 		else
@@ -2109,7 +2120,7 @@ jump_thread_path_registry::mark_threaded_blocks (bitmap threaded_blocks)
 
 		  if (e2 && !phi_args_equal_on_edges (e2, final_edge))
 		    {
-		      path->release ();
+		      cancel_thread (path);
 		      e->aux = NULL;
 		    }
 		}
@@ -2332,9 +2343,7 @@ jump_thread_path_registry::adjust_paths_after_duplication
 	  if (j == cand_path->length ())
 	    {
 	    remove_candidate_from_list:
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "adjusted candidate: [EMPTY]\n");
-	      cand_path->release ();
+	      cancel_thread (cand_path, "Adjusted candidate is EMPTY");
 	      m_paths.unordered_remove (cand_path_num);
 	      continue;
 	    }
@@ -2595,7 +2604,7 @@ jump_thread_path_registry::thread_through_all_blocks
 
 	if (j != path->length ())
 	  {
-	    path->release ();
+	    cancel_thread (path, "Thread references removed edge");
 	    m_paths.unordered_remove (i);
 	    continue;
 	  }
@@ -2629,7 +2638,7 @@ jump_thread_path_registry::thread_through_all_blocks
 	  || !valid_jump_thread_path (path))
 	{
 	  /* Remove invalid FSM jump-thread paths.  */
-	  path->release ();
+	  cancel_thread (path, "Invalid FSM jump-thread path");
 	  m_paths.unordered_remove (i);
 	  continue;
 	}
@@ -2665,7 +2674,7 @@ jump_thread_path_registry::thread_through_all_blocks
       /* Do not jump-thread twice from the same block.  */
       if (visited_starting_edges.contains (entry))
 	{
-	  path->release ();
+	  cancel_thread (path, "Avoiding threading twice from same BB");
 	  m_paths.unordered_remove (i);
 	}
       else
@@ -2766,14 +2775,7 @@ jump_thread_path_registry::register_jump_thread (vec<jump_thread_edge *> *path)
     {
       if ((*path)[i]->e == NULL)
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file,
-		       "Found NULL edge in jump threading path.  Cancelling jump thread:\n");
-	      dump_jump_thread_path (dump_file, *path, false);
-	    }
-
-	  path->release ();
+	  cancel_thread (path, "Found NULL edge in jump threading path");
 	  return false;
 	}
 
