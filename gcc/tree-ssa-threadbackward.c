@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range-path.h"
 #include "ssa.h"
 #include "tree-cfgcleanup.h"
+#include "tree-pretty-print.h"
 
 // Path registry for the backwards threader.  After all paths have been
 // registered with register_path(), thread_through_all_blocks() is called
@@ -89,6 +90,8 @@ private:
   edge find_taken_edge (const vec<basic_block> &path);
   edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
   edge find_taken_edge_switch (const vec<basic_block> &path, gswitch *);
+  virtual void debug ();
+  virtual void dump (FILE *out);
 
   back_threader_registry m_registry;
   back_threader_profitability m_profit;
@@ -519,6 +522,30 @@ debug (const vec <basic_block> &path)
   dump_path (stderr, path);
 }
 
+void
+back_threader::dump (FILE *out)
+{
+  m_solver.dump (out);
+  fprintf (out, "\nCandidates for pre-computation:\n");
+  fprintf (out, "===================================\n");
+
+  bitmap_iterator bi;
+  unsigned i;
+
+  EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
+    {
+      tree name = ssa_name (i);
+      print_generic_expr (out, name, TDF_NONE);
+      fprintf (out, "\n");
+    }
+}
+
+void
+back_threader::debug ()
+{
+  dump (stderr);
+}
+
 back_threader_registry::back_threader_registry (int max_allowable_paths)
   : m_max_allowable_paths (max_allowable_paths)
 {
@@ -607,6 +634,14 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
 	  if (bb->loop_father != loop)
 	    {
 	      path_crosses_loops = true;
+
+	      // Dump rest of blocks.
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		for (j++; j < m_path.length (); j++)
+		  {
+		    bb = m_path[j];
+		    fprintf (dump_file, " bb:%i", bb->index);
+		  }
 	      break;
 	    }
 
