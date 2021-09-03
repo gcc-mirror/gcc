@@ -1,3 +1,12 @@
+2021-09-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101849
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Cast
+	pointer to __vector_pair *.
+
 2021-09-01  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
