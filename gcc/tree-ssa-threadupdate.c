@@ -239,6 +239,12 @@ debug (const vec<jump_thread_edge *> &path)
   dump_jump_thread_path (stderr, path, true);
 }
 
+DEBUG_FUNCTION void
+debug (const vec<jump_thread_edge *> *path)
+{
+  debug (*path);
+}
+
 /* Simple hashing function.  For any given incoming edge E, we're going
    to be most concerned with the final destination of its jump thread
    path.  So hash on the block index of the final edge in the path.  */
