@@ -1,9 +1,16 @@
-/* { dg-skip-if "" { ! "powerpc*-*-linux*" } } */
+/* { dg-require-effective-target dfp } */
 
-/* Test decimal float conversions to and from IBM 128-bit long double. 
-   Checks are skipped at runtime if long double is not 128 bits.
-   Don't force 128-bit long doubles because runtime support depends
-   on glibc.  */
+/* We need the long double type to be IBM 128-bit because the CONVERT_TO_PINF
+   tests will fail if we use IEEE 128-bit floating point.  This is due to IEEE
+   128-bit having a larger exponent range than IBM 128-bit extended double.  So
+   tests that would generate an infinity with IBM 128-bit will generate a
+   normal number with IEEE 128-bit.  */
+
+/* { dg-require-effective-target long_double_ibm128 } */
+/* { dg-options "-O2" } */
+/* { dg-add-options long_double_ibm128 } */
+
+/* Test decimal float conversions to and from IBM 128-bit long double.   */
 
 #include "convert.h"
 
@@ -36,9 +43,6 @@ CONVERT_TO_PINF (312, tf, sd, 1.6e+308L, d32)
 int
 main ()
 {
-  if (sizeof (long double) != 16)
-    return 0;
-
   convert_101 ();
   convert_102 ();
 
