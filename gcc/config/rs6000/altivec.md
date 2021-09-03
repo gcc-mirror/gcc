@@ -854,7 +854,7 @@
 		     UNSPEC_XXSPLTIW))]
  "TARGET_POWER10"
  "xxspltiw %x0,%1"
- [(set_attr "type" "vecsimple")
+ [(set_attr "type" "vecperm")
   (set_attr "prefixed" "yes")])
 
 (define_expand "xxspltiw_v4sf"
@@ -874,7 +874,7 @@
 		     UNSPEC_XXSPLTIW))]
  "TARGET_POWER10"
  "xxspltiw %x0,%1"
- [(set_attr "type" "vecsimple")
+ [(set_attr "type" "vecperm")
   (set_attr "prefixed" "yes")])
 
 (define_expand "xxspltidp_v2df"
@@ -894,7 +894,7 @@
 		     UNSPEC_XXSPLTID))]
   "TARGET_POWER10"
   "xxspltidp %x0,%1"
-  [(set_attr "type" "vecsimple")
+  [(set_attr "type" "vecperm")
    (set_attr "prefixed" "yes")])
 
 (define_expand "xxsplti32dx_v4si"
@@ -914,7 +914,7 @@
 					 GEN_INT (index), operands[3]));
    DONE;
 }
- [(set_attr "type" "vecsimple")])
+ [(set_attr "type" "vecperm")])
 
 (define_insn "xxsplti32dx_v4si_inst"
   [(set (match_operand:V4SI 0 "register_operand" "=wa")
@@ -924,7 +924,7 @@
 		     UNSPEC_XXSPLTI32DX))]
   "TARGET_POWER10"
   "xxsplti32dx %x0,%2,%3"
-  [(set_attr "type" "vecsimple")
+  [(set_attr "type" "vecperm")
    (set_attr "prefixed" "yes")])
 
 (define_expand "xxsplti32dx_v4sf"
@@ -953,7 +953,7 @@
 		     UNSPEC_XXSPLTI32DX))]
   "TARGET_POWER10"
   "xxsplti32dx %x0,%2,%3"
-  [(set_attr "type" "vecsimple")
+  [(set_attr "type" "vecperm")
    (set_attr "prefixed" "yes")])
 
 (define_insn "xxblend_<mode>"
@@ -964,7 +964,7 @@
 		    UNSPEC_XXBLEND))]
   "TARGET_POWER10"
   "xxblendv<VM3_char> %x0,%x1,%x2,%x3"
-  [(set_attr "type" "vecsimple")
+  [(set_attr "type" "vecperm")
    (set_attr "prefixed" "yes")])
 
 (define_expand "xxpermx"
@@ -998,7 +998,7 @@
 
   DONE;
 }
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecperm")])
 
 (define_insn "xxpermx_inst"
   [(set (match_operand:V2DI 0 "register_operand" "+v")
@@ -1009,7 +1009,7 @@
 		     UNSPEC_XXPERMX))]
   "TARGET_POWER10"
   "xxpermx %x0,%x1,%x2,%x3,%4"
-  [(set_attr "type" "vecsimple")
+  [(set_attr "type" "vecperm")
    (set_attr "prefixed" "yes")])
 
 (define_expand "vstrir_<mode>"
@@ -3871,7 +3871,7 @@
 		     UNSPEC_XXEVAL))]
    "TARGET_POWER10"
    "xxeval %0,%1,%2,%3,%4"
-   [(set_attr "type" "vecsimple")
+   [(set_attr "type" "vecperm")
     (set_attr "prefixed" "yes")])
 
 (define_expand "vec_unpacku_hi_v16qi"
