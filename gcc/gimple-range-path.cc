@@ -221,6 +221,9 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
   else if (!fold_range (r, def_stmt, this))
     r.set_varying (TREE_TYPE (name));
 
+  if (bb)
+    m_non_null.adjust_range (r, name, bb);
+
   if (DEBUG_SOLVER && (bb || !r.varying_p ()))
     {
       fprintf (dump_file, "range_defined_in_block (BB%d) for ", bb ? bb->index : -1);
@@ -302,6 +305,35 @@ path_range_query::precompute_ranges_in_block (basic_block bb)
     }
 }
 
+// Adjust all pointer imports in BB with non-null information.
+
+void
+path_range_query::adjust_for_non_null_uses (basic_block bb)
+{
+  int_range_max r;
+  bitmap_iterator bi;
+  unsigned i;
+
+  EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
+    {
+      tree name = ssa_name (i);
+
+      if (!POINTER_TYPE_P (TREE_TYPE (name)))
+	continue;
+
+      if (get_cache (r, name))
+	{
+	  if (r.nonzero_p ())
+	    continue;
+	}
+      else
+	r.set_varying (TREE_TYPE (name));
+
+      if (m_non_null.adjust_range (r, name, bb))
+	set_cache (r, name);
+    }
+}
+
 // Precompute the ranges for IMPORTS along PATH.
 //
 // IMPORTS are the set of SSA names, any of which could potentially
@@ -332,6 +364,7 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
       basic_block bb = curr_bb ();
 
       precompute_ranges_in_block (bb);
+      adjust_for_non_null_uses (bb);
 
       if (at_exit ())
 	break;

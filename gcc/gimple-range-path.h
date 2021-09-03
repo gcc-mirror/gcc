@@ -53,6 +53,7 @@ private:
   // Methods to precompute ranges for the given path.
   bool range_defined_in_block (irange &, tree name, basic_block bb);
   void precompute_ranges_in_block (basic_block bb);
+  void adjust_for_non_null_uses (basic_block bb);
   void ssa_range_in_phi (irange &r, gphi *phi);
 
   // Path navigation.
@@ -80,6 +81,7 @@ private:
 
   const bitmap_head *m_imports;
   gimple_ranger &m_ranger;
+  non_null_ref m_non_null;
 };
 
 #endif // GCC_TREE_SSA_THREADSOLVER_H
