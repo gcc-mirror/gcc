@@ -1360,6 +1360,10 @@ fold_using_range::postfold_gcond_edges (gcond *s, irange& lhs_range,
   range_operator *handler;
   basic_block bb = gimple_bb (s);
 
+  // We may get asked to fold an artificial statement not in the CFG.
+  if (!bb)
+    return;
+
   edge e0 = EDGE_SUCC (bb, 0);
   if (!single_pred_p (e0->dest))
     e0 = NULL;

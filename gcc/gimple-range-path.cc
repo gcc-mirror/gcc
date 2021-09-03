@@ -221,14 +221,19 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
   else if (!fold_range (r, def_stmt, this))
     r.set_varying (TREE_TYPE (name));
 
-  if (DEBUG_SOLVER)
+  if (DEBUG_SOLVER && (bb || !r.varying_p ()))
     {
-      fprintf (dump_file, "range_defined_in_block (BB%d) for ", bb->index);
+      fprintf (dump_file, "range_defined_in_block (BB%d) for ", bb ? bb->index : -1);
       print_generic_expr (dump_file, name, TDF_SLIM);
       fprintf (dump_file, " is ");
       r.dump (dump_file);
       fprintf (dump_file, "\n");
     }
+
+  // We may have an artificial statement not in the IL.
+  if (!bb && r.varying_p ())
+    return false;
+
   return true;
 }
 
