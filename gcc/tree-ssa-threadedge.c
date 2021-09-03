@@ -1155,9 +1155,9 @@ jump_threader::thread_across_edge (edge e)
     {
       propagate_threaded_block_debug_into (path->last ()->e->dest,
 					   e->dest);
-      m_state->pop ();
       BITMAP_FREE (visited);
       m_registry->register_jump_thread (path);
+      m_state->pop ();
       return;
     }
   else
