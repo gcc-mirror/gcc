@@ -1,3 +1,182 @@
+2021-09-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101849
+	* gcc.target/powerpc/pr101849.c: New test.
+
+2021-09-01  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101592
+	* g++.dg/warn/Wlogical-op-3.C: New test.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102124
+	* gcc.dg/torture/pr102124.c: New test.
+
+2021-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-08-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/87737
+	* gfortran.dg/entry_24.f90: New test.
+
+2021-08-30  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2021-07-29  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/100952
+	* gcc.target/powerpc/pr56605.c: Change matching
+	conditions.
+	* gcc.target/powerpc/pr81348.c: Likewise.
+
+2021-08-30  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2021-06-04  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/not-promote-mode.c: New.
+
+2021-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/46691
+	PR fortran/99819
+	* gfortran.dg/class_dummy_6.f90: New test.
+	* gfortran.dg/class_dummy_7.f90: New test.
+
+2021-08-27  konglin1  <lingling.kong@intel.com>
+
+	PR target/101472
+	* gcc.target/i386/avx512f-pr101472.c: New test.
+	* gcc.target/i386/avx512vl-pr101472.c: New test.
+
+2021-08-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-08-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98411
+	* gfortran.dg/pr98411.f90: Adjust testcase options to restrict to
+	F2008, and verify case of implicit SAVE.
+
+2021-08-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Backported from master:
+	2021-05-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (plugin_init): Fix caret_max_with.
+	* gcc.dg/plugin/diagnostic_plugin_test_inlining.c
+	(plugin_init): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c (plugin_init): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.c
+	(plugin_init): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.c
+	(plugin_init): Likewise.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-08-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99744
+	* gcc.target/i386/pr99744-3.c: New test.
+	* gcc.target/i386/pr99744-4.c: Likewise.
+	* gcc.target/i386/pr99744-5.c: Likewise.
+	* gcc.target/i386/pr99744-6.c: Likewise.
+	* gcc.target/i386/pr99744-7.c: Likewise.
+	* gcc.target/i386/pr99744-8.c: Likewise.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101492
+	* gcc.target/i386/pr101492-1.c: New test.
+	* gcc.target/i386/pr101492-2.c: Likewise.
+	* gcc.target/i386/pr101492-3.c: Likewise.
+	* gcc.target/i386/pr101492-4.c: Likewise.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-07-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101549
+	* gcc.target/i386/crc32-6.c: New test.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-04-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/monitor-2.c: New test.
+
+2021-08-25  konglin1  <lingling.kong@intel.com>
+
+	PR target/101471
+	* gcc.target/i386/avx512f-pr101471.c: New test.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13a.c: New test.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-7a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8a.c: Likewise.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_cmse_hw):
+	New function.
+
+2021-08-24  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-08-22  Jan Hubicka  <hubicka@ucw.cz>
+		    Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/lto/pr101949_0.c: New test.
+	* gcc.dg/lto/pr101949_1.c: New test.
+
+2021-08-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/97565
+	* g++.dg/lto/pr97565_0.C: New testcase.
+	* g++.dg/lto/pr97565_1.C: Likewise.
+
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101905
+	* gcc.dg/guality/pr101905.c: New test.
+
 2021-08-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

@@ -6772,7 +6772,9 @@ rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 			      int *punsignedp ATTRIBUTE_UNUSED,
 			      const_tree, int for_return ATTRIBUTE_UNUSED)
 {
-  PROMOTE_MODE (mode, *punsignedp, type);
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && GET_MODE_SIZE (mode) < (TARGET_32BIT ? 4 : 8))
+    mode = TARGET_32BIT ? SImode : DImode;
 
   return mode;
 }
@@ -11944,6 +11946,9 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
       tree offset = gimple_call_arg (stmt, 0);
       tree ptr = gimple_call_arg (stmt, 1);
       tree lhs = gimple_call_lhs (stmt);
+      if (TREE_TYPE (TREE_TYPE (ptr)) != vector_pair_type_node)
+	ptr = build1 (VIEW_CONVERT_EXPR,
+		      build_pointer_type (vector_pair_type_node), ptr);
       tree mem = build_simple_mem_ref (build2 (POINTER_PLUS_EXPR,
 					       TREE_TYPE (ptr), ptr, offset));
       gimplify_assign (lhs, mem, &new_seq);
@@ -11957,6 +11962,9 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
       tree src = gimple_call_arg (stmt, 0);
       tree offset = gimple_call_arg (stmt, 1);
       tree ptr = gimple_call_arg (stmt, 2);
+      if (TREE_TYPE (TREE_TYPE (ptr)) != vector_pair_type_node)
+	ptr = build1 (VIEW_CONVERT_EXPR,
+		      build_pointer_type (vector_pair_type_node), ptr);
       tree mem = build_simple_mem_ref (build2 (POINTER_PLUS_EXPR,
 					       TREE_TYPE (ptr), ptr, offset));
       gimplify_assign (mem, src, &new_seq);

@@ -667,17 +667,6 @@ extern unsigned char rs6000_recip_bits[];
 
 /* Target machine storage layout.  */
 
-/* Define this macro if it is advisable to hold scalars in registers
-   in a wider mode than that declared by the program.  In such cases,
-   the value is constrained to be within the bounds of the declared
-   type, but kept valid in the wider mode.  The signedness of the
-   extension may differ from that of the type.  */
-
-#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)	\
-  if (GET_MODE_CLASS (MODE) == MODE_INT		\
-      && GET_MODE_SIZE (MODE) < (TARGET_32BIT ? 4 : 8)) \
-    (MODE) = TARGET_32BIT ? SImode : DImode;
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 /* That is true on RS/6000.  */

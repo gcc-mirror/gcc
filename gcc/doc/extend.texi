@@ -6665,6 +6665,11 @@ Enable/disable the generation of the MOVDIR64B instructions.
 @cindex @code{target("movdiri")} function attribute, x86
 Enable/disable the generation of the MOVDIRI instructions.
 
+@item mwait
+@itemx no-mwait
+@cindex @code{target("mwait")} function attribute, x86
+Enable/disable the generation of the MWAIT and MONITOR instructions.
+
 @item mwaitx
 @itemx no-mwaitx
 @cindex @code{target("mwaitx")} function attribute, x86

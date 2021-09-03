@@ -806,6 +806,7 @@ Objective-C and Objective-C++ Dialects}.
 -mverbose-cost-dump @gol
 -mpure-code @gol
 -mcmse @gol
+-mfix-cmse-cve-2021-35465 @gol
 -mfdpic}
 
 @emph{AVR Options}
@@ -1375,7 +1376,7 @@ See RS/6000 and PowerPC Options.
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} @gol
 -mincoming-stack-boundary=@var{num} @gol
--mcld  -mcx16  -msahf  -mmovbe  -mcrc32 @gol
+-mcld  -mcx16  -msahf  -mmovbe  -mcrc32 -mmwait @gol
 -mrecip  -mrecip=@var{opt} @gol
 -mvzeroupper  -mprefer-avx128  -mprefer-vector-width=@var{opt} @gol
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx @gol
@@ -20590,6 +20591,14 @@ Generate secure code as per the "ARMv8-M Security Extensions: Requirements on
 Development Tools Engineering Specification", which can be found on
 @url{https://developer.arm.com/documentation/ecm0359818/latest/}.
 
+@item -mfix-cmse-cve-2021-35465
+@opindex mfix-cmse-cve-2021-35465
+Mitigate against a potential security issue with the @code{VLLDM} instruction
+in some M-profile devices when using CMSE (CVE-2021-365465).  This option is
+enabled by default when the option @option{-mcpu=} is used with
+@code{cortex-m33}, @code{cortex-m35p} or @code{cortex-m55}.  The option
+@option{-mno-fix-cmse-cve-2021-35465} can be used to disable the mitigation.
+
 @item -mfdpic
 @itemx -mno-fdpic
 @opindex mfdpic
@@ -31282,6 +31291,12 @@ from x86 Control-flow Enforcement Technology (CET).
 This option enables built-in functions @code{__builtin_ia32_crc32qi},
 @code{__builtin_ia32_crc32hi}, @code{__builtin_ia32_crc32si} and
 @code{__builtin_ia32_crc32di} to generate the @code{crc32} machine instruction.
+
+@item -mmwait
+@opindex mmwait
+This option enables built-in functions @code{__builtin_ia32_monitor},
+and @code{__builtin_ia32_mwait} to generate the @code{monitor} and
+@code{mwait} machine instructions.
 
 @item -mrecip
 @opindex mrecip

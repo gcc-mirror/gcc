@@ -1,3 +1,241 @@
+2021-09-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101849
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Cast
+	pointer to __vector_pair *.
+
+2021-09-01  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101592
+	* fold-const.c (make_range_step): Return NULL_TREE for NULLPTR_TYPE.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102124
+	* tree-vect-patterns.c (vect_recog_widen_op_pattern): For ORIG_CODE
+	MINUS_EXPR, if itype is unsigned with smaller precision than type,
+	add an extra cast to signed variant of itype to ensure sign-extension.
+
+2021-08-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2021-08-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree.c (walk_tree_1) <OMP_CLAUSE_TILE>: Handle three operands.
+
+2021-08-30  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2021-06-04  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000-call.c (rs6000_promote_function_mode):
+	Replace PROMOTE_MODE marco with its content.
+
+2021-08-30  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2021-06-04  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.h (PROMOTE_MODE): Remove.
+
+2021-08-27  konglin1  <lingling.kong@intel.com>
+
+	PR target/101472
+	* config/i386/sse.md: (<avx512>scattersi<mode>): Add mask operand to
+	UNSPEC_VSIBADDR.
+	(<avx512>scattersi<mode>): Likewise.
+	(*avx512f_scattersi<VI48F:mode>): Merge mask operand to set_dest.
+	(*avx512f_scatterdi<VI48F:mode>): Likewise
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-08-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99744
+	* config/i386/i386.c (ix86_can_inline_p): Ignore MASK_80387 if
+	callee only uses GPRs.
+	* config/i386/ia32intrin.h: Revert commit 5463cee2770.
+	* config/i386/serializeintrin.h: Revert commit 71958f740f1.
+	* config/i386/x86gprintrin.h: Add
+	#pragma GCC target("general-regs-only") and #pragma GCC pop_options
+	to disable non-GPR ISAs.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101492
+	* common/config/i386/i386-common.c (ix86_handle_option): For
+	-mgeneral-regs-only, enable the GPR only instructions which are
+	enabled implicitly by SSE ISAs unless they have been disabled
+	explicitly.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-07-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101549
+	* config/i386/i386-builtin.def: Remove OPTION_MASK_ISA_SSE4_2
+	from CRC32 _builtin functions.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-04-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__CRC32__ for -mcrc32.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Enable crc32 instruction for -msse4.2.
+	* config/i386/i386.md (sse4_2_crc32<mode>): Remove TARGET_SSE4_2
+	check.
+	(sse4_2_crc32di): Likewise.
+	* config/i386/ia32intrin.h: Use crc32 target option for CRC32
+	intrinsics.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-04-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config.gcc: Install mwaitintrin.h for i[34567]86-*-* and
+	x86_64-*-* targets.
+	* lto-streamer.h (LTO_minor_version): Bump.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_MWAIT_SET):
+	New.
+	(OPTION_MASK_ISA2_MWAIT_UNSET): Likewise.
+	(ix86_handle_option): Handle -mmwait.
+	* config/i386/i386-builtins.c (ix86_init_mmx_sse_builtins):
+	Replace OPTION_MASK_ISA_SSE3 with OPTION_MASK_ISA2_MWAIT on
+	__builtin_ia32_monitor and __builtin_ia32_mwait.
+	* config/i386/i386-options.c (isa2_opts): Add -mmwait.
+	(ix86_valid_target_attribute_inner_p): Likewise.
+	(ix86_option_override_internal): Enable mwait/monitor
+	instructions for -msse3.
+	* config/i386/i386.h (TARGET_MWAIT): New.
+	(TARGET_MWAIT_P): Likewise.
+	* config/i386/i386.opt: Add -mmwait.
+	* config/i386/mwaitintrin.h: New file.
+	* config/i386/pmmintrin.h: Include <mwaitintrin.h>.
+	* config/i386/sse.md (sse3_mwait): Replace TARGET_SSE3 with
+	TARGET_MWAIT.
+	(@sse3_monitor_<mode>): Likewise.
+	* config/i386/x86gprintrin.h: Include <mwaitintrin.h>.
+	* doc/extend.texi: Document mwait target attribute.
+	* doc/invoke.texi: Document -mmwait.
+
+2021-08-25  konglin1  <lingling.kong@intel.com>
+
+	PR target/101471
+	* config/i386/avx512dqintrin.h (_mm512_fpclass_ps_mask): Fix
+	macro define in O0.
+	(_mm512_mask_fpclass_ps_mask): Ditto.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* config/arm/arm.md (attribute arch): Add fix_vlldm.
+	(arch_enabled): Use it.
+	* config/arm/vfp.md (lazy_store_multiple_insn): Add alternative to
+	use when erratum mitigation is needed.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* config/arm/arm.opt (mfix-cmse-cve-2021-35465): New option.
+	* doc/invoke.texi (Arm Options): Document it.
+	* config/arm/arm-cpus.in (quirk_vlldm): New feature bit.
+	(ALL_QUIRKS): Add quirk_vlldm.
+	(cortex-m33): Add quirk_vlldm.
+	(cortex-m35p, cortex-m55): Likewise.
+	* config/arm/arm.c (arm_option_override): Enable fix_vlldm if
+	targetting an affected CPU and not explicitly controlled on
+	the command line.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/vfp.md (lazy_store_multiple_insn): Rewrite as valid RTL.
+	(lazy_load_multiple_insn): Likewise.
+
+2021-08-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2021-08-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/101949
+	* ipa-modref.c (analyze_ssa_name_flags): Fix merging of
+	EAF_NOCLOBBER
+
+2021-08-24  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-08-22  Jan Hubicka  <hubicka@ucw.cz>
+		    Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/101949
+	* ipa-modref.c (analyze_ssa_name_flags): Indirect call implies
+	~EAF_NOCLOBBER.
+
+2021-08-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/97565
+	* tree-ssa-structalias.c (ipa_pta_execute): Check in_other_partition
+	in addition to has_gimple_body.
+
+2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	Backported from master:
+	2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	* config/arm/arm_mve.h: Fix __arm_vctp16q return type.
+
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101905
+	* dwarf2out.c (gen_variable_die): Add DW_AT_location for global
+	register variables already during early_dwarf if possible.
+
+2021-08-23  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-08-20  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/89961
+	* gcov.c (make_gcov_file_name): Rewrite using std::string.
+	(mangle_name): Simplify, do not used the second argument.
+	(strip_extention): New function.
+	(get_md5sum): Likewise.
+	(get_gcov_intermediate_filename): Handle properly -p and -x
+	options.
+	(output_gcov_file): Use string type.
+	(generate_results): Likewise.
+	(md5sum_to_hex): Remove.
+
 2021-08-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:

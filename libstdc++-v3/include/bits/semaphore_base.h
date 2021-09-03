@@ -39,8 +39,10 @@
 #endif // __cpp_lib_atomic_wait
 
 #ifdef _GLIBCXX_HAVE_POSIX_SEMAPHORE
-# include <limits.h>
-# include <semaphore.h>
+# include <exception>	// std::terminate
+# include <cerrno>	// errno, EINTR, EAGAIN etc.
+# include <limits.h>	// SEM_VALUE_MAX
+# include <semaphore.h>	// sem_t, sem_init, sem_wait, sem_post etc.
 #endif
 
 #include <chrono>

@@ -6073,7 +6073,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _M_v()
     { }
 
-    template<typename _IntType>
+    template<typename _IntType, typename = _Require<is_integral<_IntType>>>
       seed_seq(std::initializer_list<_IntType> __il);
 
     template<typename _InputIterator>

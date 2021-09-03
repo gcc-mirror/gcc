@@ -553,7 +553,7 @@ ix86_can_inline_p (tree caller, tree callee)
 
   /* Changes of those flags can be tolerated for always inlines. Lets hope
      user knows what he is doing.  */
-  const unsigned HOST_WIDE_INT always_inline_safe_mask
+  unsigned HOST_WIDE_INT always_inline_safe_mask
 	 = (MASK_USE_8BIT_IDIV | MASK_ACCUMULATE_OUTGOING_ARGS
 	    | MASK_NO_ALIGN_STRINGOPS | MASK_AVX256_SPLIT_UNALIGNED_LOAD
 	    | MASK_AVX256_SPLIT_UNALIGNED_STORE | MASK_CLD
@@ -577,6 +577,10 @@ ix86_can_inline_p (tree caller, tree callee)
     = (DECL_DISREGARD_INLINE_LIMITS (callee)
        && lookup_attribute ("always_inline",
 			    DECL_ATTRIBUTES (callee)));
+
+  /* If callee only uses GPRs, ignore MASK_80387.  */
+  if (TARGET_GENERAL_REGS_ONLY_P (callee_opts->x_ix86_target_flags))
+    always_inline_safe_mask |= MASK_80387;
 
   cgraph_node *callee_node = cgraph_node::get (callee);
   /* Callee's isa options should be a subset of the caller's, i.e. a SSE4

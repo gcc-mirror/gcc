@@ -336,12 +336,10 @@ namespace __detail
 	  *__first = '0';
 	  return { __first + 1, errc{} };
 	}
-
-      if _GLIBCXX17_CONSTEXPR (std::is_signed<_Tp>::value)
+      else if _GLIBCXX17_CONSTEXPR (std::is_signed<_Tp>::value)
 	if (__value < 0)
 	  {
-	    if (__builtin_expect(__first != __last, 1))
-	      *__first++ = '-';
+	    *__first++ = '-';
 	    __unsigned_val = _Up(~__value) + _Up(1);
 	  }
 

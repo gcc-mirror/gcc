@@ -150,6 +150,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_F16C_SET \
   (OPTION_MASK_ISA_F16C | OPTION_MASK_ISA_AVX_SET)
 #define OPTION_MASK_ISA2_MWAITX_SET OPTION_MASK_ISA2_MWAITX
+#define OPTION_MASK_ISA2_MWAIT_SET OPTION_MASK_ISA2_MWAIT
 #define OPTION_MASK_ISA2_CLZERO_SET OPTION_MASK_ISA2_CLZERO
 #define OPTION_MASK_ISA_PKU_SET OPTION_MASK_ISA_PKU
 #define OPTION_MASK_ISA2_RDPID_SET OPTION_MASK_ISA2_RDPID
@@ -245,6 +246,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_XSAVES_UNSET OPTION_MASK_ISA_XSAVES
 #define OPTION_MASK_ISA_CLWB_UNSET OPTION_MASK_ISA_CLWB
 #define OPTION_MASK_ISA2_MWAITX_UNSET OPTION_MASK_ISA2_MWAITX
+#define OPTION_MASK_ISA2_MWAIT_UNSET OPTION_MASK_ISA2_MWAIT
 #define OPTION_MASK_ISA2_CLZERO_UNSET OPTION_MASK_ISA2_CLZERO
 #define OPTION_MASK_ISA_PKU_UNSET OPTION_MASK_ISA_PKU
 #define OPTION_MASK_ISA2_RDPID_UNSET OPTION_MASK_ISA2_RDPID
@@ -352,16 +354,42 @@ ix86_handle_option (struct gcc_options *opts,
     case OPT_mgeneral_regs_only:
       if (value)
 	{
+	  HOST_WIDE_INT general_regs_only_flags = 0;
+	  HOST_WIDE_INT general_regs_only_flags2 = 0;
+
+	  /* NB: Enable the GPR only instructions which are enabled
+	     implicitly by SSE ISAs unless they have been disabled
+	     explicitly.  */
+	  if (TARGET_SSE4_2_P (opts->x_ix86_isa_flags))
+	    {
+	      if ((opts->x_ix86_isa_flags_explicit
+		   & OPTION_MASK_ISA_CRC32) == 0)
+		general_regs_only_flags |= OPTION_MASK_ISA_CRC32;
+	      if ((opts->x_ix86_isa_flags_explicit
+		   & OPTION_MASK_ISA_POPCNT) == 0)
+		general_regs_only_flags |= OPTION_MASK_ISA_POPCNT;
+	    }
+	  if (TARGET_SSE3_P (opts->x_ix86_isa_flags))
+	    {
+	      if ((opts->x_ix86_isa_flags2_explicit
+		   & OPTION_MASK_ISA2_MWAIT) == 0)
+		general_regs_only_flags2 |= OPTION_MASK_ISA2_MWAIT;
+	    }
+
 	  /* Disable MMX, SSE and x87 instructions if only
 	     general registers are allowed.  */
 	  opts->x_ix86_isa_flags
 	    &= ~OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
 	  opts->x_ix86_isa_flags2
 	    &= ~OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET;
+	  opts->x_ix86_isa_flags |= general_regs_only_flags;
+	  opts->x_ix86_isa_flags2 |= general_regs_only_flags2;
 	  opts->x_ix86_isa_flags_explicit
-	    |= OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
+	    |= (OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET
+		| general_regs_only_flags);
 	  opts->x_ix86_isa_flags2_explicit
-	    |= OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET;
+	    |= (OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET
+		| general_regs_only_flags2);
 
 	  opts->x_target_flags &= ~MASK_80387;
 	}
@@ -1543,6 +1571,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_MWAITX_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_MWAITX_UNSET;
+	}
+      return true;
+
+    case OPT_mmwait:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MWAIT_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_MWAIT_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_MWAIT_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_MWAIT_UNSET;
 	}
       return true;
 

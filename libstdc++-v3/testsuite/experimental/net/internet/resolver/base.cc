@@ -15,50 +15,31 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run { target c++14 } }
+// { dg-do compile { target c++14 } }
+// { dg-require-effective-target net_ts_ip }
 // { dg-add-options net_ts }
 
 #include <experimental/internet>
+#include <testsuite_common_types.h>
 #include <testsuite_hooks.h>
 
-void
-test01()
-{
-  bool test __attribute__((unused)) = false;
+using std::experimental::net::ip::resolver_base;
 
-  using resolver = std::experimental::net::ip::resolver_base;
-
-  resolver::flags f = resolver::passive;
-
-  VERIFY( (f & resolver::numeric_host) == 0);
-  f &= resolver::numeric_host;
-  VERIFY( f == 0 );
-
-  VERIFY( (f | resolver::numeric_host) == resolver::numeric_host);
-  f |= resolver::numeric_host;
-  VERIFY( f == resolver::numeric_host );
-
-  VERIFY( (f ^ resolver::numeric_host) == 0 );
-  f ^= resolver::numeric_host;
-  VERIFY( f == 0 );
-
-  f = ~resolver::numeric_host;
-  VERIFY( (f & resolver::numeric_host) == 0);
-  VERIFY( (f | resolver::numeric_host) == ~resolver::flags{} );
-
-  (void) resolver::passive;
-  (void) resolver::canonical_name;
-  (void) resolver::numeric_host;
+static_assert( __gnu_test::test_bitmask_values({
+  resolver_base::passive,
+  resolver_base::canonical_name,
+  resolver_base::numeric_host,
 #ifdef AI_NUMERICSERV
-  (void) resolver::numeric_service;
+  resolver_base::numeric_service,
 #endif
-  (void) resolver::v4_mapped;
-  (void) resolver::all_matching;
-  (void) resolver::address_configured;
-}
+  resolver_base::v4_mapped,
+  resolver_base::all_matching,
+  resolver_base::address_configured
+}), "each bitmask element is distinct" );
 
-int
-main()
-{
-  test01();
-}
+static_assert( ! std::is_default_constructible<resolver_base>(), "protected" );
+static_assert( ! std::is_destructible<resolver_base>(), "protected" );
+
+struct Res : resolver_base { };
+static_assert( std::is_default_constructible<Res>(), "" );
+static_assert( std::is_destructible<Res>(), "" );
