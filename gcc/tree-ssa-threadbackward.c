@@ -53,7 +53,7 @@ class back_threader_registry
 public:
   back_threader_registry (int max_allowable_paths);
   bool register_path (const vec<basic_block> &, edge taken);
-  bool thread_through_all_blocks ();
+  bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   jump_thread_path_registry m_lowlevel_registry;
   const int m_max_allowable_paths;
@@ -80,7 +80,7 @@ public:
   back_threader (bool speed_p);
   ~back_threader ();
   void maybe_thread_block (basic_block bb);
-  bool thread_through_all_blocks ();
+  bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   void find_paths (basic_block bb, tree name);
   void maybe_register_path (edge taken_edge);
@@ -497,9 +497,9 @@ back_threader::maybe_thread_block (basic_block bb)
 // Perform the actual jump threading for the all queued paths.
 
 bool
-back_threader::thread_through_all_blocks ()
+back_threader::thread_through_all_blocks (bool may_peel_loop_headers)
 {
-  return m_registry.thread_through_all_blocks ();
+  return m_registry.thread_through_all_blocks (may_peel_loop_headers);
 }
 
 // Dump a sequence of BBs through the CFG.
@@ -553,9 +553,9 @@ back_threader_registry::back_threader_registry (int max_allowable_paths)
 }
 
 bool
-back_threader_registry::thread_through_all_blocks ()
+back_threader_registry::thread_through_all_blocks (bool may_peel_loop_headers)
 {
-  return m_lowlevel_registry.thread_through_all_blocks (true);
+  return m_lowlevel_registry.thread_through_all_blocks (may_peel_loop_headers);
 }
 
 /* Examine jump threading path PATH and return TRUE if it is profitable to
@@ -947,7 +947,7 @@ try_thread_blocks (function *fun)
       if (EDGE_COUNT (bb->succs) > 1)
 	threader.maybe_thread_block (bb);
     }
-  return threader.thread_through_all_blocks ();
+  return threader.thread_through_all_blocks (/*peel_loop_headers=*/true);
 }
 
 unsigned int
@@ -1016,7 +1016,7 @@ pass_early_thread_jumps::execute (function *fun)
       if (EDGE_COUNT (bb->succs) > 1)
 	threader.maybe_thread_block (bb);
     }
-  threader.thread_through_all_blocks ();
+  threader.thread_through_all_blocks (/*peel_loop_headers=*/true);
 
   loop_optimizer_finalize ();
   return 0;
