@@ -1,49 +1,57 @@
+2021-09-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	2021-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_atomic_pipeline): Use
+	IFN_ATOMIC_COMPARE_EXCHANGE instead of
+	BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_? so that memory order
+	can be provided.
+
 2021-09-02  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	Backported from master:
 	2021-09-02  Marcel Vollweiler  <marcel@codesourcery.com>
 
-        * gfortran.dg/gomp/target-device-ancestor-4.f90: Comment out dg-final to avoid
-        UNRESOLVED.
+	* gfortran.dg/gomp/target-device-ancestor-4.f90: Comment out dg-final to avoid
+	UNRESOLVED.
 
 2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	Backported from master:
 	2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
 
-        * c-parser.c (c_parser_omp_clause_device): Parse device-modifiers 'device_num'
-        and 'ancestor' in 'target device' clauses.
-        * parser.c (cp_parser_omp_clause_device): Parse device-modifiers 'device_num'
-        and 'ancestor' in 'target device' clauses.
-        * semantics.c (finish_omp_clauses): Error handling. Constant device ids must
-        evaluate to '1' if 'ancestor' is used.
-        * gfortran.h: Add variable for 'ancestor' in struct gfc_omp_clauses.
-        * openmp.c (gfc_match_omp_clauses): Parse device-modifiers 'device_num'
-        and 'ancestor' in 'target device' clauses.
-        * trans-openmp.c (gfc_trans_omp_clauses): Set OMP_CLAUSE_DEVICE_ANCESTOR.
-        * gimplify.c (gimplify_scan_omp_clauses): Error handling. 'ancestor' only
-        allowed on target constructs and only with particular other clauses.
-        * omp-expand.c (expand_omp_target): Output of 'sorry, not supported' if
-        'ancestor' is used.
-        * omp-low.c (check_omp_nesting_restrictions): Error handling. No nested OpenMP
-        structs when 'ancestor' is used.
-        (scan_omp_1_stmt): No usage of OpenMP runtime routines in a target region when
-        'ancestor' is used.
-        * tree-pretty-print.c (dump_omp_clause): Append 'ancestor'.
-        * tree.h (OMP_CLAUSE_DEVICE_ANCESTOR): Define macro.
-        * c-c++-common/gomp/target-device-1.c: New test.
-        * c-c++-common/gomp/target-device-2.c: New test.
-        * c-c++-common/gomp/target-device-ancestor-1.c: New test.
-        * c-c++-common/gomp/target-device-ancestor-2.c: New test.
-        * c-c++-common/gomp/target-device-ancestor-3.c: New test.
-        * c-c++-common/gomp/target-device-ancestor-4.c: New test.
-        * gfortran.dg/gomp/target-device-1.f90: New test.
-        * gfortran.dg/gomp/target-device-2.f90: New test.
-        * gfortran.dg/gomp/target-device-ancestor-1.f90: New test.
-        * gfortran.dg/gomp/target-device-ancestor-2.f90: New test.
-        * gfortran.dg/gomp/target-device-ancestor-3.f90: New test.
-        * gfortran.dg/gomp/target-device-ancestor-4.f90: New test.
-
+	* c-parser.c (c_parser_omp_clause_device): Parse device-modifiers 'device_num'
+	and 'ancestor' in 'target device' clauses.
+	* parser.c (cp_parser_omp_clause_device): Parse device-modifiers 'device_num'
+	and 'ancestor' in 'target device' clauses.
+	* semantics.c (finish_omp_clauses): Error handling. Constant device ids must
+	evaluate to '1' if 'ancestor' is used.
+	* gfortran.h: Add variable for 'ancestor' in struct gfc_omp_clauses.
+	* openmp.c (gfc_match_omp_clauses): Parse device-modifiers 'device_num'
+	and 'ancestor' in 'target device' clauses.
+	* trans-openmp.c (gfc_trans_omp_clauses): Set OMP_CLAUSE_DEVICE_ANCESTOR.
+	* gimplify.c (gimplify_scan_omp_clauses): Error handling. 'ancestor' only
+	allowed on target constructs and only with particular other clauses.
+	* omp-expand.c (expand_omp_target): Output of 'sorry, not supported' if
+	'ancestor' is used.
+	* omp-low.c (check_omp_nesting_restrictions): Error handling. No nested OpenMP
+	structs when 'ancestor' is used.
+	(scan_omp_1_stmt): No usage of OpenMP runtime routines in a target region when
+	'ancestor' is used.
+	* tree-pretty-print.c (dump_omp_clause): Append 'ancestor'.
+	* tree.h (OMP_CLAUSE_DEVICE_ANCESTOR): Define macro.
+	* c-c++-common/gomp/target-device-1.c: New test.
+	* c-c++-common/gomp/target-device-2.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-1.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-2.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-3.c: New test.
+	* c-c++-common/gomp/target-device-ancestor-4.c: New test.
+	* gfortran.dg/gomp/target-device-1.f90: New test.
+	* gfortran.dg/gomp/target-device-2.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-1.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-2.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-3.f90: New test.
+	* gfortran.dg/gomp/target-device-ancestor-4.f90: New test.
 
 2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
