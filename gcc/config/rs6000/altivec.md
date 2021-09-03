@@ -181,7 +181,7 @@
    UNSPEC_SLDB
    UNSPEC_SRDB
    UNSPEC_XXSPLTIW
-   UNSPEC_XXSPLTID
+   UNSPEC_XXSPLTIDP
    UNSPEC_XXSPLTI32DX
    UNSPEC_XXBLEND
    UNSPEC_XXPERMX
@@ -880,7 +880,7 @@
 (define_expand "xxspltidp_v2df"
   [(set (match_operand:V2DF 0 "register_operand" )
 	(unspec:V2DF [(match_operand:SF 1 "const_double_operand")]
-		     UNSPEC_XXSPLTID))]
+		     UNSPEC_XXSPLTIDP))]
  "TARGET_POWER10"
 {
   long value = rs6000_const_f32_to_i32 (operands[1]);
@@ -891,7 +891,7 @@
 (define_insn "xxspltidp_v2df_inst"
   [(set (match_operand:V2DF 0 "register_operand" "=wa")
 	(unspec:V2DF [(match_operand:SI 1 "c32bit_cint_operand" "n")]
-		     UNSPEC_XXSPLTID))]
+		     UNSPEC_XXSPLTIDP))]
   "TARGET_POWER10"
   "xxspltidp %x0,%1"
   [(set_attr "type" "vecperm")
