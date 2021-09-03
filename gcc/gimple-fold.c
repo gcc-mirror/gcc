@@ -67,6 +67,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vector-builder.h"
 #include "tree-ssa-strlen.h"
 #include "varasm.h"
+#include "memmodel.h"
+#include "optabs.h"
 
 enum strlen_range_kind {
   /* Compute the exact constant string length.  */
@@ -957,14 +959,17 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	= build_int_cst (build_pointer_type_for_mode (char_type_node,
 						      ptr_mode, true), 0);
 
-      /* If we can perform the copy efficiently with first doing all loads
-         and then all stores inline it that way.  Currently efficiently
-	 means that we can load all the memory into a single integer
-	 register which is what MOVE_MAX gives us.  */
+      /* If we can perform the copy efficiently with first doing all loads and
+	 then all stores inline it that way.  Currently efficiently means that
+	 we can load all the memory with a single set operation and that the
+	 total size is less than MOVE_MAX * MOVE_RATIO.  */
       src_align = get_pointer_alignment (src);
       dest_align = get_pointer_alignment (dest);
       if (tree_fits_uhwi_p (len)
-	  && compare_tree_int (len, MOVE_MAX) <= 0
+	  && (compare_tree_int
+	      (len, (MOVE_MAX
+		     * MOVE_RATIO (optimize_function_for_size_p (cfun))))
+	      <= 0)
 	  /* FIXME: Don't transform copies from strings with known length.
 	     Until GCC 9 this prevented a case in gcc.dg/strlenopt-8.c
 	     from being handled, and the case was XFAILed for that reason.
@@ -1000,6 +1005,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	      if (type
 		  && is_a <scalar_int_mode> (TYPE_MODE (type), &mode)
 		  && GET_MODE_SIZE (mode) * BITS_PER_UNIT == ilen * 8
+		  && have_insn_for (SET, mode)
 		  /* If the destination pointer is not aligned we must be able
 		     to emit an unaligned store.  */
 		  && (dest_align >= GET_MODE_ALIGNMENT (mode)
