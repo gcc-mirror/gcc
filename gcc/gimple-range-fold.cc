@@ -369,14 +369,78 @@ adjust_pointer_diff_expr (irange &res, const gimple *diff_stmt)
     }
 }
 
+// Adjust the range for an IMAGPART_EXPR.
+
+static void
+adjust_imagpart_expr (irange &res, const gimple *stmt)
+{
+  tree name = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
+
+  if (TREE_CODE (name) != SSA_NAME || !SSA_NAME_DEF_STMT (name))
+    return;
+
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+  if (is_gimple_call (def_stmt) && gimple_call_internal_p (def_stmt))
+    {
+      switch (gimple_call_internal_fn (def_stmt))
+	{
+	case IFN_ADD_OVERFLOW:
+	case IFN_SUB_OVERFLOW:
+	case IFN_MUL_OVERFLOW:
+	case IFN_ATOMIC_COMPARE_EXCHANGE:
+	  {
+	    int_range<2> r;
+	    r.set_varying (boolean_type_node);
+	    tree type = TREE_TYPE (gimple_assign_lhs (stmt));
+	    range_cast (r, type);
+	    res.intersect (r);
+	  }
+	default:
+	  break;
+	}
+      return;
+    }
+  if (is_gimple_assign (def_stmt))
+    {
+      tree cst = gimple_assign_rhs1 (def_stmt);
+      if (TREE_CODE (cst) == COMPLEX_CST)
+	{
+	  tree imag = TREE_IMAGPART (cst);
+	  int_range<2> tmp (imag, imag);
+	  res.intersect (tmp);
+	}
+    }
+}
+
+// Adjust the range for a REALPART_EXPR.
+
+static void
+adjust_realpart_expr (irange &res, const gimple *stmt)
+{
+  tree name = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
+
+  if (TREE_CODE (name) != SSA_NAME)
+    return;
+
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+  if (!SSA_NAME_DEF_STMT (name))
+    return;
+
+  if (is_gimple_assign (def_stmt))
+    {
+      tree cst = gimple_assign_rhs1 (def_stmt);
+      if (TREE_CODE (cst) == COMPLEX_CST)
+	{
+	  tree imag = TREE_REALPART (cst);
+	  int_range<2> tmp (imag, imag);
+	  res.intersect (tmp);
+	}
+    }
+}
+
 // This function looks for situations when walking the use/def chains
 // may provide additonal contextual range information not exposed on
-// this statement.  Like knowing the IMAGPART return value from a
-// builtin function is a boolean result.
-
-// We should rework how we're called, as we have an op_unknown entry
-// for IMAGPART_EXPR and POINTER_DIFF_EXPR in range-ops just so this
-// function gets called.
+// this statement.
 
 static void
 gimple_range_adjustment (irange &res, const gimple *stmt)
@@ -388,34 +452,12 @@ gimple_range_adjustment (irange &res, const gimple *stmt)
       return;
 
     case IMAGPART_EXPR:
-      {
-	tree name = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
-	if (TREE_CODE (name) == SSA_NAME)
-	  {
-	    gimple *def_stmt = SSA_NAME_DEF_STMT (name);
-	    if (def_stmt && is_gimple_call (def_stmt)
-		&& gimple_call_internal_p (def_stmt))
-	      {
-		switch (gimple_call_internal_fn (def_stmt))
-		  {
-		  case IFN_ADD_OVERFLOW:
-		  case IFN_SUB_OVERFLOW:
-		  case IFN_MUL_OVERFLOW:
-		  case IFN_ATOMIC_COMPARE_EXCHANGE:
-		    {
-		      int_range<2> r;
-		      r.set_varying (boolean_type_node);
-		      tree type = TREE_TYPE (gimple_assign_lhs (stmt));
-		      range_cast (r, type);
-		      res.intersect (r);
-		    }
-		  default:
-		    break;
-		  }
-	      }
-	  }
-	break;
-      }
+      adjust_imagpart_expr (res, stmt);
+      return;
+
+    case REALPART_EXPR:
+      adjust_realpart_expr (res, stmt);
+      return;
 
     default:
       break;

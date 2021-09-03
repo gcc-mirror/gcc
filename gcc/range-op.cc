@@ -4017,6 +4017,7 @@ integral_table::integral_table ()
   set (PAREN_EXPR, op_identity);
   set (OBJ_TYPE_REF, op_identity);
   set (IMAGPART_EXPR, op_unknown);
+  set (REALPART_EXPR, op_unknown);
   set (POINTER_DIFF_EXPR, op_unknown);
   set (ABS_EXPR, op_abs);
   set (ABSU_EXPR, op_absu);
