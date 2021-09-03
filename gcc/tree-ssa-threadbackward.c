@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range-path.h"
 #include "ssa.h"
 #include "tree-cfgcleanup.h"
+#include "tree-pretty-print.h"
 
 // Path registry for the backwards threader.  After all paths have been
 // registered with register_path(), thread_through_all_blocks() is called
@@ -52,7 +53,7 @@ class back_threader_registry
 public:
   back_threader_registry (int max_allowable_paths);
   bool register_path (const vec<basic_block> &, edge taken);
-  bool thread_through_all_blocks ();
+  bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   jump_thread_path_registry m_lowlevel_registry;
   const int m_max_allowable_paths;
@@ -79,7 +80,7 @@ public:
   back_threader (bool speed_p);
   ~back_threader ();
   void maybe_thread_block (basic_block bb);
-  bool thread_through_all_blocks ();
+  bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   void find_paths (basic_block bb, tree name);
   void maybe_register_path (edge taken_edge);
@@ -89,6 +90,8 @@ private:
   edge find_taken_edge (const vec<basic_block> &path);
   edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
   edge find_taken_edge_switch (const vec<basic_block> &path, gswitch *);
+  virtual void debug ();
+  virtual void dump (FILE *out);
 
   back_threader_registry m_registry;
   back_threader_profitability m_profit;
@@ -494,9 +497,9 @@ back_threader::maybe_thread_block (basic_block bb)
 // Perform the actual jump threading for the all queued paths.
 
 bool
-back_threader::thread_through_all_blocks ()
+back_threader::thread_through_all_blocks (bool may_peel_loop_headers)
 {
-  return m_registry.thread_through_all_blocks ();
+  return m_registry.thread_through_all_blocks (may_peel_loop_headers);
 }
 
 // Dump a sequence of BBs through the CFG.
@@ -519,6 +522,30 @@ debug (const vec <basic_block> &path)
   dump_path (stderr, path);
 }
 
+void
+back_threader::dump (FILE *out)
+{
+  m_solver.dump (out);
+  fprintf (out, "\nCandidates for pre-computation:\n");
+  fprintf (out, "===================================\n");
+
+  bitmap_iterator bi;
+  unsigned i;
+
+  EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
+    {
+      tree name = ssa_name (i);
+      print_generic_expr (out, name, TDF_NONE);
+      fprintf (out, "\n");
+    }
+}
+
+void
+back_threader::debug ()
+{
+  dump (stderr);
+}
+
 back_threader_registry::back_threader_registry (int max_allowable_paths)
   : m_max_allowable_paths (max_allowable_paths)
 {
@@ -526,9 +553,9 @@ back_threader_registry::back_threader_registry (int max_allowable_paths)
 }
 
 bool
-back_threader_registry::thread_through_all_blocks ()
+back_threader_registry::thread_through_all_blocks (bool may_peel_loop_headers)
 {
-  return m_lowlevel_registry.thread_through_all_blocks (true);
+  return m_lowlevel_registry.thread_through_all_blocks (may_peel_loop_headers);
 }
 
 /* Examine jump threading path PATH and return TRUE if it is profitable to
@@ -607,6 +634,14 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
 	  if (bb->loop_father != loop)
 	    {
 	      path_crosses_loops = true;
+
+	      // Dump rest of blocks.
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		for (j++; j < m_path.length (); j++)
+		  {
+		    bb = m_path[j];
+		    fprintf (dump_file, " bb:%i", bb->index);
+		  }
 	      break;
 	    }
 
@@ -912,7 +947,7 @@ try_thread_blocks (function *fun)
       if (EDGE_COUNT (bb->succs) > 1)
 	threader.maybe_thread_block (bb);
     }
-  return threader.thread_through_all_blocks ();
+  return threader.thread_through_all_blocks (/*peel_loop_headers=*/true);
 }
 
 unsigned int
@@ -981,7 +1016,7 @@ pass_early_thread_jumps::execute (function *fun)
       if (EDGE_COUNT (bb->succs) > 1)
 	threader.maybe_thread_block (bb);
     }
-  threader.thread_through_all_blocks ();
+  threader.thread_through_all_blocks (/*peel_loop_headers=*/true);
 
   loop_optimizer_finalize ();
   return 0;

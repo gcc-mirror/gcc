@@ -992,6 +992,9 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
     return unsigned_p ? unsigned_intTI_type_node : intTI_type_node;
 #endif
 
+  if (float16_type_node && mode == TYPE_MODE (float16_type_node))
+    return float16_type_node;
+
   if (mode == TYPE_MODE (float_type_node))
     return float_type_node;
 

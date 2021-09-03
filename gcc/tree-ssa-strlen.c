@@ -200,61 +200,29 @@ static bool handle_assign (gimple_stmt_iterator *, tree, bool *,
 /* Sets MINMAX to either the constant value or the range VAL is in
    and returns either the constant value or VAL on success or null
    when the range couldn't be determined.  Uses RVALS when nonnull
-   to determine the range, otherwise uses global range info.  */
+   to determine the range, otherwise uses CFUN or global range info,
+   whichever is nonnull.  */
 
 tree
 get_range (tree val, gimple *stmt, wide_int minmax[2],
 	   range_query *rvals /* = NULL */)
 {
-  if (TREE_CODE (val) == INTEGER_CST)
-    {
-      minmax[0] = minmax[1] = wi::to_wide (val);
-      return val;
-    }
-
-  if (TREE_CODE (val) != SSA_NAME)
-    return NULL_TREE;
+  if (!rvals)
+    rvals = get_range_query (cfun);
 
   value_range vr;
-  if (rvals && stmt)
-    {
-      if (!rvals->range_of_expr (vr, val, stmt))
-	return NULL_TREE;
-      value_range_kind rng = vr.kind ();
-      if (rng != VR_RANGE)
-	return NULL_TREE;
+  if (!rvals->range_of_expr (vr, val, stmt))
+    return NULL_TREE;
 
+  value_range_kind rng = vr.kind ();
+  if (rng == VR_RANGE)
+    {
+      /* Only handle straight ranges.  */
       minmax[0] = wi::to_wide (vr.min ());
       minmax[1] = wi::to_wide (vr.max ());
       return val;
     }
 
-  // ?? This entire function should use get_range_query or get_global_range_query (),
-  // instead of doing something different for RVALS and global ranges.
-
-  if (!get_global_range_query ()->range_of_expr (vr, val) || vr.undefined_p ())
-    return NULL_TREE;
-
-  minmax[0] = wi::to_wide (vr.min ());
-  minmax[1] = wi::to_wide (vr.max ());
-  value_range_kind rng = vr.kind ();
-  if (rng == VR_RANGE)
-    /* This may be an inverted range whose MINMAX[1] < MINMAX[0].  */
-    return val;
-
-  if (rng == VR_ANTI_RANGE)
-    {
-      /* An anti-range is the same as an ordinary range with inverted
-	 bounds (where MINMAX[1] < MINMAX[0] is true) that may result
-	 from the conversion of a signed anti-range to unsigned.  */
-      wide_int tmp = minmax[0];
-      minmax[0] = minmax[1] + 1;
-      minmax[1] = wi::sub (tmp, 1);
-      return val;
-    }
-
-  /* Do not handle anti-ranges and instead make use of the on-demand
-     VRP if/when it becomes available (hopefully in GCC 11).  */
   return NULL_TREE;
 }
 
@@ -943,8 +911,8 @@ dump_strlen_info (FILE *fp, gimple *stmt, range_query *rvals)
 		      else
 			{
 			  value_range vr;
-			  get_global_range_query ()->range_of_expr (vr,
-							     si->nonzero_chars);
+			  get_range_query (cfun)
+			    ->range_of_expr (vr, si->nonzero_chars);
 			  rng = vr.kind ();
 			  if (!vr.undefined_p ())
 			    {
@@ -5820,27 +5788,7 @@ printf_strlen_execute (function *fun, bool warn_only)
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      unsigned nused = 0;
-      unsigned nidxs = walker.ptr_qry.var_cache->indices.length ();
-      for (unsigned i = 0; i != nidxs; ++i)
-	if (walker.ptr_qry.var_cache->indices[i])
-	  ++nused;
-
-      fprintf (dump_file, "pointer_query counters\n"
-	       "  index cache size:  %u\n"
-	       "  utilization:       %u%%\n"
-	       "  access cache size: %u\n"
-	       "  hits:              %u\n"
-	       "  misses:            %u\n"
-	       "  failures:          %u\n"
-	       "  max_depth:         %u\n",
-	       nidxs,
-	       nidxs == 0 ? 0 : (nused * 100) / nidxs,
-	       walker.ptr_qry.var_cache->access_refs.length (),
-	       walker.ptr_qry.hits, walker.ptr_qry.misses,
-	       walker.ptr_qry.failures, walker.ptr_qry.max_depth);
-    }
+    walker.ptr_qry.dump (dump_file);
 
   ssa_ver_to_stridx.release ();
   strinfo_pool.release ();

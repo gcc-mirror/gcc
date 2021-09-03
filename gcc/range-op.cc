@@ -1372,13 +1372,14 @@ operator_minus::wi_fold (irange &r, tree type,
 }
 
 // Check to see if the relation REL between OP1 and OP2 has any effect on the
-// LHS of the expression.  If so, apply it to LHS_RANGE.
+// LHS of the expression.  If so, apply it to LHS_RANGE.  This is a helper
+// function for both MINUS_EXPR and POINTER_DIFF_EXPR.
 
-bool
-operator_minus::op1_op2_relation_effect (irange &lhs_range, tree type,
-				      const irange &op1_range ATTRIBUTE_UNUSED,
-				      const irange &op2_range ATTRIBUTE_UNUSED,
-				      relation_kind rel) const
+static bool
+minus_op1_op2_relation_effect (irange &lhs_range, tree type,
+			       const irange &op1_range ATTRIBUTE_UNUSED,
+			       const irange &op2_range ATTRIBUTE_UNUSED,
+			       relation_kind rel)
 {
   if (rel == VREL_NONE)
     return false;
@@ -1441,6 +1442,16 @@ operator_minus::op1_op2_relation_effect (irange &lhs_range, tree type,
 }
 
 bool
+operator_minus::op1_op2_relation_effect (irange &lhs_range, tree type,
+					 const irange &op1_range,
+					 const irange &op2_range,
+					 relation_kind rel) const
+{
+  return minus_op1_op2_relation_effect (lhs_range, type, op1_range, op2_range,
+					rel);
+}
+
+bool
 operator_minus::op1_range (irange &r, tree type,
 			   const irange &lhs,
 			   const irange &op2,
@@ -1456,6 +1467,26 @@ operator_minus::op2_range (irange &r, tree type,
 			   relation_kind rel ATTRIBUTE_UNUSED) const
 {
   return fold_range (r, type, op1, lhs);
+}
+
+
+class operator_pointer_diff : public range_operator
+{
+  virtual bool op1_op2_relation_effect (irange &lhs_range,
+					tree type,
+					const irange &op1_range,
+					const irange &op2_range,
+					relation_kind rel) const;
+} op_pointer_diff;
+
+bool
+operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
+						const irange &op1_range,
+						const irange &op2_range,
+						relation_kind rel) const
+{
+  return minus_op1_op2_relation_effect (lhs_range, type, op1_range, op2_range,
+					rel);
 }
 
 
@@ -4017,7 +4048,8 @@ integral_table::integral_table ()
   set (PAREN_EXPR, op_identity);
   set (OBJ_TYPE_REF, op_identity);
   set (IMAGPART_EXPR, op_unknown);
-  set (POINTER_DIFF_EXPR, op_unknown);
+  set (REALPART_EXPR, op_unknown);
+  set (POINTER_DIFF_EXPR, op_pointer_diff);
   set (ABS_EXPR, op_abs);
   set (ABSU_EXPR, op_absu);
   set (NEGATE_EXPR, op_negate);

@@ -1,3 +1,42 @@
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* call.c (build_over_call): Handle unavailable state in addition to
+	deprecation.
+	* class.c (type_build_ctor_call): Likewise.
+	(type_build_dtor_call): Likewise.
+	* cp-tree.h: Rename cp_warn_deprecated_use to
+	cp_handle_deprecated_or_unavailable.
+	* decl.c (duplicate_decls): Merge unavailability.
+	(grokdeclarator): Handle unavailability in addition to deprecation.
+	(type_is_unavailable): New.
+	(grokparms): Handle unavailability in addition to deprecation.
+	* decl.h (enum deprecated_states): Add
+	UNAVAILABLE_DEPRECATED_SUPPRESS.
+	* decl2.c (cplus_decl_attributes): Propagate unavailability to
+	templates.
+	(cp_warn_deprecated_use): Rename to ...
+	(cp_handle_deprecated_or_unavailable): ... this and amend to handle
+	the unavailable case. It remains a warning in the case of deprecation
+	but becomes an error in the case of unavailability.
+	(cp_warn_deprecated_use_scopes): Handle unavailability.
+	(mark_used): Likewise.
+	* parser.c (cp_parser_template_name): Likewise.
+	(cp_parser_template_argument): Likewise.
+	(cp_parser_parameter_declaration_list): Likewise.
+	* typeck.c (build_class_member_access_expr): Likewise.
+	(finish_class_member_access_expr): Likewise.
+	* typeck2.c (build_functional_cast_1): Likewise.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Add begin/finish clauses
+	to the initial test in the actor function.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (await_statement_walker): Use build_stmt and
+	add_stmt instead of build1 and finish_expr_stmt.
+
 2021-08-31  Jason Merrill  <jason@redhat.com>
 
 	* coroutines.cc (flatten_await_stmt): Fix copyo.

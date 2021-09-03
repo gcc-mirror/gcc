@@ -1,1 +1,6 @@
 LIB2ADD += $(srcdir)/config/i386/sfp-exceptions.c
+
+softfp_extensions := hfsf hfdf hftf hfxf sfdf sftf dftf xftf
+softfp_truncations := tfhf xfhf dfhf sfhf tfsf dfsf tfdf tfxf
+
+softfp_extras += eqhf2

@@ -11,4 +11,4 @@
 
 end
 
-! { dg-final { scan-tree-dump "pragma omp target \[^\n\r)]*device\\(ancestor:1\\)" "original" } }
+! TODO: dg-final { scan-tree-dump-times "pragma omp target \[^\n\r)]*device\\(ancestor:1\\)" 1 "original" } }

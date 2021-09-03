@@ -206,14 +206,7 @@ warn_uninit (opt_code opt, tree t, tree var, const char *gmsgid,
   if (location == var_loc)
     return;
 
-  location_t cfun_loc = DECL_SOURCE_LOCATION (cfun->decl);
-  expanded_location xloc = expand_location (location);
-  expanded_location floc = expand_location (cfun_loc);
-  if (xloc.file != floc.file
-      || linemap_location_before_p (line_table, location, cfun_loc)
-      || linemap_location_before_p (line_table, cfun->function_end_locus,
-					location))
-    inform (var_loc, "%qD was declared here", var);
+  inform (var_loc, "%qD was declared here", var);
 }
 
 struct check_defs_data

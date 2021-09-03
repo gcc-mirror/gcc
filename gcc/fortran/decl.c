@@ -1551,11 +1551,15 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 			     sym->ns->proc_name->name);
 	    }
 
+	  /* Per F2018, 18.3.6 (5), pointer + contiguous is not permitted.  */
+	  if (sym->attr.pointer && sym->attr.contiguous)
+	    gfc_error ("Dummy argument %qs at %L may not be a pointer with "
+		       "CONTIGUOUS attribute as procedure %qs is BIND(C)",
+		       sym->name, &sym->declared_at, sym->ns->proc_name->name);
+
           /* Character strings are only C interoperable if they have a
-	     length of 1.  However, as argument they are either iteroperable
-	     when passed as descriptor (which requires len=: or len=*) or
-	     when having a constant length or are always passed by
-	     descriptor.  */
+	     length of 1.  However, as an argument they are also iteroperable
+	     when passed as descriptor (which requires len=: or len=*).  */
 	  if (sym->ts.type == BT_CHARACTER)
 	    {
 	      gfc_charlen *cl = sym->ts.u.cl;
@@ -1607,7 +1611,8 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	      else if (!cl || !cl->length)
 		{
 		  /* Assumed length; F2018, 18.3.6 (5)(2).
-		     Uses the CFI array descriptor.  */
+		     Uses the CFI array descriptor - also for scalars and
+		     explicit-size/assumed-size arrays.  */
 		  if (!gfc_notify_std (GFC_STD_F2018,
 				      "Assumed-length character dummy argument "
 				      "%qs at %L of procedure %qs with BIND(C) "
@@ -1629,7 +1634,8 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 		      retval = false;
 		    }
 		}
-	      else if (cl->length->expr_type != EXPR_CONSTANT)
+	      else if (cl->length->expr_type != EXPR_CONSTANT
+		       || mpz_cmp_si (cl->length->value.integer, 1) != 0)
 		{
 		  /* F2018, 18.3.6, (5), item 4.  */
 		  if (!sym->attr.dimension
@@ -1637,30 +1643,17 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 		      || sym->as->type == AS_EXPLICIT)
 		    {
 		      gfc_error ("Character dummy argument %qs at %L must be "
-				 "of constant length or assumed length, "
+				 "of constant length of one or assumed length, "
 				 "unless it has assumed shape or assumed rank, "
 				 "as procedure %qs has the BIND(C) attribute",
 				 sym->name, &sym->declared_at,
 				 sym->ns->proc_name->name);
 		      retval = false;
 		    }
-		  else if (!gfc_notify_std (GFC_STD_F2018,
-					    "Character dummy argument %qs at "
-					    "%L with nonconstant length as "
-					    "procedure %qs is BIND(C)",
-					    sym->name, &sym->declared_at,
-					    sym->ns->proc_name->name))
-		    retval = false;
+		  /* else: valid only since F2018 - and an assumed-shape/rank
+		     array; however, gfc_notify_std is already called when
+		     those array types are used. Thus, silently accept F200x. */
 		}
-	     else if (mpz_cmp_si (cl->length->value.integer, 1) != 0
-		      && !gfc_notify_std (GFC_STD_F2008,
-					  "Character dummy argument %qs at %L "
-					  "with length greater than 1 for "
-					  "procedure %qs with BIND(C) "
-					  "attribute",
-					  sym->name, &sym->declared_at,
-					  sym->ns->proc_name->name))
-	       retval = false;
 	    }
 
 	  /* We have to make sure that any param to a bind(c) routine does

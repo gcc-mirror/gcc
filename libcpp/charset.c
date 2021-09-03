@@ -894,14 +894,18 @@ enum {
   C11 = 8,
   /* Valid in a C11/C++11 identifier, but not as the first character?  */
   N11 = 16,
+  /* Valid in a C++23 identifier?  */
+  CXX23 = 32,
+  /* Valid in a C++23 identifier, but not as the first character?  */
+  NXX23 = 64,
   /* NFC representation is not valid in an identifier?  */
-  CID = 32,
+  CID = 128,
   /* Might be valid NFC form?  */
-  NFC = 64,
+  NFC = 256,
   /* Might be valid NFKC form?  */
-  NKC = 128,
+  NKC = 512,
   /* Certain preceding characters might make it not valid NFC/NKFC form?  */
-  CTX = 256
+  CTX = 1024
 };
 
 struct ucnrange {
@@ -948,10 +952,12 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
   /* When -pedantic, we require the character to have been listed by
      the standard for the current language.  Otherwise, we accept the
      union of the acceptable sets for all supported language versions.  */
-  valid_flags = C99 | CXX | C11;
+  valid_flags = C99 | CXX | C11 | CXX23;
   if (CPP_PEDANTIC (pfile))
     {
-      if (CPP_OPTION (pfile, c11_identifiers))
+      if (CPP_OPTION (pfile, cxx23_identifiers))
+	valid_flags = CXX23;
+      else if (CPP_OPTION (pfile, c11_identifiers))
 	valid_flags = C11;
       else if (CPP_OPTION (pfile, c99))
 	valid_flags = C99;
@@ -960,12 +966,6 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
     }
   if (! (ucnranges[mn].flags & valid_flags))
       return 0;
-  if (CPP_OPTION (pfile, c11_identifiers))
-    invalid_start_flags = N11;
-  else if (CPP_OPTION (pfile, c99))
-    invalid_start_flags = N99;
-  else
-    invalid_start_flags = 0;
 
   /* Update NST.  */
   if (ucnranges[mn].combine != 0 && ucnranges[mn].combine < nst->prev_class)
@@ -1007,6 +1007,28 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
   if (ucnranges[mn].combine == 0)
     nst->previous = c;
   nst->prev_class = ucnranges[mn].combine;
+
+  if (!CPP_PEDANTIC (pfile))
+    {
+      /* If not -pedantic, accept as character that may
+	 begin an identifier a union of characters allowed
+	 at that position in each of the character sets.  */
+      if ((ucnranges[mn].flags & (C99 | N99)) == C99
+	  || (ucnranges[mn].flags & CXX) != 0
+	  || (ucnranges[mn].flags & (C11 | N11)) == C11
+	  || (ucnranges[mn].flags & (CXX23 | NXX23)) == CXX23)
+	return 1;
+      return 2;
+    }
+
+  if (CPP_OPTION (pfile, cxx23_identifiers))
+    invalid_start_flags = NXX23;
+  else if (CPP_OPTION (pfile, c11_identifiers))
+    invalid_start_flags = N11;
+  else if (CPP_OPTION (pfile, c99))
+    invalid_start_flags = N99;
+  else
+    invalid_start_flags = 0;
 
   /* In C99, UCN digits may not begin identifiers.  In C11 and C++11,
      UCN combining characters may not begin identifiers.  */

@@ -1025,7 +1025,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
    || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
-   || (MODE) == V2DImode || (MODE) == DFmode)
+   || (MODE) == V2DImode || (MODE) == DFmode || (MODE) == HFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
   ((MODE) == V1TImode || (MODE) == TImode				\
@@ -1054,6 +1054,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == CQImode || (MODE) == CHImode				\
    || (MODE) == CSImode || (MODE) == CDImode				\
    || (MODE) == SDmode || (MODE) == DDmode				\
+   || (MODE) == HFmode || (MODE) == HCmode				\
    || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (TARGET_64BIT							\
        && ((MODE) == TImode || (MODE) == CTImode			\

@@ -1164,3 +1164,9 @@ relation_oracle::dump (FILE *f) const
 	dump (f, BASIC_BLOCK_FOR_FN (cfun, i));
       }
 }
+
+void
+relation_oracle::debug () const
+{
+  dump (stderr);
+}

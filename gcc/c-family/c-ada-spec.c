@@ -3440,11 +3440,12 @@ dump_ads (const char *source_file,
       dump_ada_nodes (&pp, source_file);
 
       /* We require Ada 2012 syntax, so generate corresponding pragma.  */
-      fputs ("pragma Ada_2012;\n", f);
+      fputs ("pragma Ada_2012;\n\n", f);
 
       /* Disable style checks and warnings on unused entities since this file
 	 is auto-generated and always has a with clause for Interfaces.C.  */
-      fputs ("pragma Style_Checks (Off);\npragma Warnings (\"U\");\n\n", f);
+      fputs ("pragma Style_Checks (Off);\n", f);
+      fputs ("pragma Warnings (Off, \"-gnatwu\");\n\n", f);
 
       /* Dump withs.  */
       dump_ada_withs (f);
@@ -3452,7 +3453,10 @@ dump_ads (const char *source_file,
       fprintf (f, "\npackage %s is\n\n", pkg_name);
       pp_write_text_to_stream (&pp);
       /* ??? need to free pp */
-      fprintf (f, "end %s;\n", pkg_name);
+      fprintf (f, "end %s;\n\n", pkg_name);
+
+      fputs ("pragma Style_Checks (On);\n", f);
+      fputs ("pragma Warnings (On, \"-gnatwu\");\n", f);
       fclose (f);
     }
 
