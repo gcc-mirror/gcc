@@ -482,18 +482,17 @@ package System.Regpat is
    --    Data_First is the lower bound for the match, i.e. Data (Data_First)
    --    will be the first character to be examined. If Data_First is set to
    --    the special value of -1 (the default), then the first character to
-   --    be examined is Data (Data_First). However, the regular expression
-   --    character ^ (start of string) still refers to the first character
+   --    be examined is Data (Data'First). However, the regular expression
+   --    character ^ (start of string) always refers to the first character
    --    of the full string (Data (Data'First)), which is why there is a
    --    separate mechanism for specifying Data_First.
 
    --    Data_Last is the upper bound for the match, i.e. Data (Data_Last)
    --    will be the last character to be examined. If Data_Last is set to
    --    the special value of Positive'Last (the default), then the last
-   --    character to be examined is Data (Data_Last). However, the regular
-   --    expression character $ (end of string) still refers to the last
-   --    character of the full string (Data (Data'Last)), which is why there
-   --    is a separate mechanism for specifying Data_Last.
+   --    character to be examined is Data (Data'Last). However, the regular
+   --    expression character $ (end of string) always refers to the last
+   --    character of the full string (Data (Data'Last)).
 
    --    Note: the use of Data_First and Data_Last is not equivalent to
    --    simply passing a slice as Expression because of the handling of
