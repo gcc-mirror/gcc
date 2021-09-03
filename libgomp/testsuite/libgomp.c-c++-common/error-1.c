@@ -53,7 +53,7 @@ main ()
   return 0;
 }
 
-/* { dg-output "libgomp: error directive encountered(\n|\r|\n\r)(\n|\r|\n\r)" } */
-/* { dg-output "libgomp: error directive encountered: message(\n|\r|\n\r)(\n|\r|\n\r)" } */
-/* { dg-output "libgomp: error directive encountered: hello from a distance(\n|\r|\n\r)(\n|\r|\n\r)" } */
+/* { dg-output "libgomp: error directive encountered(\n|\r|\r\n)(\n|\r|\r\n)" } */
+/* { dg-output "libgomp: error directive encountered: message(\n|\r|\r\n)(\n|\r|\r\n)" } */
+/* { dg-output "libgomp: error directive encountered: hello from a distance(\n|\r|\r\n)(\n|\r|\r\n)" } */
 /* { dg-output "libgomp: fatal error: error directive encountered: my message" } */
