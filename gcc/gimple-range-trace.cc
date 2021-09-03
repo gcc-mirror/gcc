@@ -155,11 +155,31 @@ debug_seed_ranger (gimple_ranger &ranger)
       }
 }
 
+// Change the current dump_file and dump_flags to F and FLAGS while
+// saving them for later restoring.
+
+push_dump_file::push_dump_file (FILE *f, dump_flags_t flags)
+{
+  old_dump_file = dump_file;
+  old_dump_flags = dump_flags;
+  dump_file = f;
+  dump_flags = flags;
+}
+
+// Restore saved dump_file and dump_flags.
+
+push_dump_file::~push_dump_file ()
+{
+  dump_file = old_dump_file;
+  dump_flags = old_dump_flags;
+}
+
 // Dump all that ranger knows for the current function.
 
 DEBUG_FUNCTION void
 dump_ranger (FILE *out)
 {
+  push_dump_file save (out, dump_flags);
   gimple_ranger ranger;
 
   fprintf (out, ";; Function ");
