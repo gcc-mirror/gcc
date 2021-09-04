@@ -243,8 +243,8 @@ Resolver::lookup_resolved_name (NodeId refId, NodeId *defId)
 void
 Resolver::insert_resolved_type (NodeId refId, NodeId defId)
 {
-  auto it = resolved_types.find (refId);
-  rust_assert (it == resolved_types.end ());
+  // auto it = resolved_types.find (refId);
+  // rust_assert (it == resolved_types.end ());
 
   resolved_types[refId] = defId;
   get_type_scope ().append_reference_for_def (refId, defId);
@@ -560,17 +560,15 @@ ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
   ResolveType::go (root_segment.get_type ().get (), root_segment.get_node_id (),
 		   canonicalize_type_with_generics);
 
-  bool canonicalize_type_args = true;
   bool type_resolve_generic_args = true;
-
   CanonicalPath impl_type_seg
     = ResolveTypeToCanonicalPath::resolve (*root_segment.get_type ().get (),
-					   canonicalize_type_args,
+					   canonicalize_type_with_generics,
 					   type_resolve_generic_args);
 
   CanonicalPath trait_type_seg
     = ResolveTypeToCanonicalPath::resolve (root_segment.get_as_type_path (),
-					   canonicalize_type_args,
+					   canonicalize_type_with_generics,
 					   type_resolve_generic_args);
   CanonicalPath root_seg_path
     = TraitImplProjection::resolve (root_segment.get_node_id (), trait_type_seg,
@@ -756,16 +754,16 @@ ResolveRelativeTypePath::resolve_qual_seg (AST::QualifiedPathType &seg,
 		     seg.as_string ().c_str ());
       return false;
     }
+  bool include_generic_args_in_path = false;
 
-  bool canonicalize_type_with_generics = true;
   NodeId type_resolved_node
-    = ResolveType::go (seg.get_type ().get (), seg.get_node_id (),
-		       canonicalize_type_with_generics);
+    = ResolveType::go (seg.get_type ().get (), seg.get_node_id ());
   if (type_resolved_node == UNKNOWN_NODEID)
     return false;
 
   CanonicalPath impl_type_seg
-    = ResolveTypeToCanonicalPath::resolve (*seg.get_type ().get ());
+    = ResolveTypeToCanonicalPath::resolve (*seg.get_type ().get (),
+					   include_generic_args_in_path);
   if (!seg.has_as_clause ())
     {
       result = result.append (impl_type_seg);
@@ -773,14 +771,13 @@ ResolveRelativeTypePath::resolve_qual_seg (AST::QualifiedPathType &seg,
     }
 
   NodeId trait_resolved_node
-    = ResolveType::go (&seg.get_as_type_path (), seg.get_node_id (),
-		       canonicalize_type_with_generics);
-
+    = ResolveType::go (&seg.get_as_type_path (), seg.get_node_id ());
   if (trait_resolved_node == UNKNOWN_NODEID)
     return false;
 
   CanonicalPath trait_type_seg
-    = ResolveTypeToCanonicalPath::resolve (seg.get_as_type_path ());
+    = ResolveTypeToCanonicalPath::resolve (seg.get_as_type_path (),
+					   include_generic_args_in_path);
   CanonicalPath projection
     = TraitImplProjection::resolve (seg.get_node_id (), trait_type_seg,
 				    impl_type_seg);
