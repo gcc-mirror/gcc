@@ -3535,7 +3535,16 @@ public:
 
   void insert_implict_self (std::unique_ptr<AST::GenericParam> &&param)
   {
-    generic_params.push_back (std::move (param));
+    std::vector<std::unique_ptr<GenericParam>> new_list;
+    new_list.reserve (generic_params.size () + 1);
+
+    new_list.push_back (std::move (param));
+    for (auto &p : generic_params)
+      {
+	new_list.push_back (std::move (p));
+      }
+
+    generic_params = std::move (new_list);
   }
 
 protected:
