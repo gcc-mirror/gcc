@@ -2279,21 +2279,24 @@ void
 ix86_split_xorsign (rtx operands[])
 {
   machine_mode mode, vmode;
-  rtx dest, op0, mask, x;
+  rtx dest, op0, op1, mask, x;
 
   dest = operands[0];
   op0 = operands[1];
+  op1 = operands[2];
   mask = operands[3];
 
   mode = GET_MODE (dest);
   vmode = GET_MODE (mask);
 
-  dest = lowpart_subreg (vmode, dest, mode);
-  x = gen_rtx_AND (vmode, dest, mask);
-  emit_insn (gen_rtx_SET (dest, x));
+  op1 = lowpart_subreg (vmode, op1, mode);
+  x = gen_rtx_AND (vmode, op1, mask);
+  emit_insn (gen_rtx_SET (op1, x));
 
   op0 = lowpart_subreg (vmode, op0, mode);
-  x = gen_rtx_XOR (vmode, dest, op0);
+  x = gen_rtx_XOR (vmode, op1, op0);
+
+  dest = lowpart_subreg (vmode, dest, mode);
   emit_insn (gen_rtx_SET (dest, x));
 }
 
