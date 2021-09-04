@@ -1,3 +1,8 @@
+2021-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ads): Generate pragmas to disable style checks
+	and -gnatwu warning for the package specification.
+
 2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-attribs.c (handle_unavailable_attribute): New.

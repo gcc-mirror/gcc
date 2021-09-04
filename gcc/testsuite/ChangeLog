@@ -1,3 +1,24 @@
+2021-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101904
+	* g++.dg/template/conv17.C: New test.
+
+2021-09-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/bind_c_char_6.f90: Update dg-error.
+	* gfortran.dg/bind_c_char_7.f90: Likewise.
+	* gfortran.dg/bind_c_char_8.f90: Likewise.
+	* gfortran.dg/iso_c_binding_char_1.f90: Likewise.
+	* gfortran.dg/pr32599.f03: Likewise.
+	* gfortran.dg/bind_c_char_9.f90: Comment testcase bits which are
+	implementable but not valid F2018.
+	* gfortran.dg/bind_c_contiguous.f90: New test.
+
+2021-09-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102166
+	* g++.target/i386/pr102166.C: New test.
+
 2021-09-02  Sandra Loosemore  <sandra@codesourcery.com>
 	    José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 

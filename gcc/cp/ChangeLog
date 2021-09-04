@@ -1,3 +1,59 @@
+2021-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (register_local_var_uses): Do not mangle
+	frame entries for the outermost scope.  Record the outer
+	scope as nesting depth 0.
+
+2021-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (coro_build_artificial_var): New.
+	(build_actor_fn): Use var builder, rename vars to use
+	implementation namespace.
+	(coro_rewrite_function_body): Likewise.
+	(morph_fn_to_coro): Likewise.
+
+2021-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (transform_local_var_uses): Record
+	frame offset expressions as DECL_VALUE_EXPRs instead of
+	rewriting them.
+
+2021-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101904
+	* call.c (build_this_conversion): New function, split out from
+	add_function_candidate.
+	(add_function_candidate): New parameter shortcut_bad_convs.
+	Document it.  Use build_this_conversion.  Stop at the first bad
+	argument conversion when shortcut_bad_convs is true.
+	(add_template_candidate_real): New parameter shortcut_bad_convs.
+	Use build_this_conversion to check the 'this' conversion before
+	attempting deduction.  When the rejection reason code is
+	rr_bad_arg_conversion, pass -1 instead of 0 as the viable
+	parameter to add_candidate.  Pass 'convs' to add_candidate.
+	(add_template_candidate): New parameter shortcut_bad_convs.
+	(add_template_conv_candidate): Pass false as shortcut_bad_convs
+	to add_template_candidate_real.
+	(add_candidates): Prefer to shortcut bad conversions during
+	overload resolution under the assumption that we'll eventually
+	see a strictly viable candidate.  If this assumption turns out
+	to be false, re-process the non-strictly viable candidates
+	without shortcutting those bad conversions.
+
+2021-09-03  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (limit_bad_template_recursion): Suppress -Wunused for decls
+	we decide not to instantiate.
+
+2021-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102024
+	* class.c (build_base_field): Use SET_DECL_FIELD_ABI_IGNORED
+	instead of writing to DECL_FIELD_ABI_IGNORED.
+	(layout_class_type): Likewise.  In the place where zero-width
+	bitfields used to be removed, use
+	SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD on those fields instead.
+
 2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* call.c (build_over_call): Handle unavailable state in addition to

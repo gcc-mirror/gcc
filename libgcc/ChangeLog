@@ -1,3 +1,11 @@
+2021-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/sfp-machine.h (alias_HFtype, alias_SFtype
+	alias_DFtype, alias_TFtype): New.
+	(ALIAS_SELECTOR): New.
+	(strong_alias): Use __typeof and a _Generic selector to
+	provide the type to the synthesized function.
+
 2021-09-02  liuhongt  <hongtao.liu@intel.com>
 
 	* config/i386/32/sfp-machine.h (_FP_NANFRAC_H): New macro.
