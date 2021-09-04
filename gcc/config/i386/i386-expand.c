@@ -1851,12 +1851,21 @@ ix86_expand_convert_uns_sisf_sse (rtx target, rtx input)
   fp_lo = gen_reg_rtx (SFmode);
   emit_insn (gen_floatsisf2 (fp_hi, int_hi));
   emit_insn (gen_floatsisf2 (fp_lo, int_lo));
-  fp_hi = expand_simple_binop (SFmode, MULT, fp_hi, x, fp_hi,
-			       0, OPTAB_DIRECT);
-  fp_hi = expand_simple_binop (SFmode, PLUS, fp_hi, fp_lo, target,
-			       0, OPTAB_DIRECT);
-  if (!rtx_equal_p (target, fp_hi))
-    emit_move_insn (target, fp_hi);
+  if (TARGET_FMA)
+    {
+      x = validize_mem (force_const_mem (SFmode, x));
+      fp_hi = gen_rtx_FMA (SFmode, fp_hi, x, fp_lo);
+      emit_move_insn (target, fp_hi);
+    }
+  else
+    {
+      fp_hi = expand_simple_binop (SFmode, MULT, fp_hi, x, fp_hi,
+				   0, OPTAB_DIRECT);
+      fp_hi = expand_simple_binop (SFmode, PLUS, fp_hi, fp_lo, target,
+				   0, OPTAB_DIRECT);
+      if (!rtx_equal_p (target, fp_hi))
+	emit_move_insn (target, fp_hi);
+    }
 }
 
 /* floatunsv{4,8}siv{4,8}sf2 expander.  Expand code to convert
@@ -1888,12 +1897,20 @@ ix86_expand_vector_convert_uns_vsivsf (rtx target, rtx val)
   real_ldexp (&TWO16r, &dconst1, 16);
   tmp[5] = const_double_from_real_value (TWO16r, SFmode);
   tmp[5] = force_reg (fltmode, ix86_build_const_vector (fltmode, 1, tmp[5]));
-  tmp[6] = expand_simple_binop (fltmode, MULT, tmp[4], tmp[5], NULL_RTX, 1,
-				OPTAB_DIRECT);
-  tmp[7] = expand_simple_binop (fltmode, PLUS, tmp[3], tmp[6], target, 1,
-				OPTAB_DIRECT);
-  if (tmp[7] != target)
-    emit_move_insn (target, tmp[7]);
+  if (TARGET_FMA)
+    {
+      tmp[6] = gen_rtx_FMA (fltmode, tmp[4], tmp[5], tmp[3]);
+      emit_move_insn (target, tmp[6]);
+    }
+  else
+    {
+      tmp[6] = expand_simple_binop (fltmode, MULT, tmp[4], tmp[5],
+				    NULL_RTX, 1, OPTAB_DIRECT);
+      tmp[7] = expand_simple_binop (fltmode, PLUS, tmp[3], tmp[6],
+				    target, 1, OPTAB_DIRECT);
+      if (tmp[7] != target)
+	emit_move_insn (target, tmp[7]);
+    }
 }
 
 /* Adjust a V*SFmode/V*DFmode value VAL so that *sfix_trunc* resp. fix_trunc*
