@@ -139,7 +139,6 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     = context->lookup_associated_trait_impl (impl_block_id, &lookup_associated);
   rust_assert (found_impl_trait);
 
-  DefId resolved_item_id = UNKNOWN_DEFID;
   std::unique_ptr<HIR::TypePathSegment> &item_seg
     = path.get_associated_segment ();
 
@@ -152,14 +151,17 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
       rust_error_at (item_seg->get_locus (), "unknown associated item");
       return;
     }
-  resolved_item_id = trait_item_ref->get_mappings ().get_defid ();
 
   // project
   lookup_associated->setup_associated_types ();
 
+  HIR::GenericArgs trait_generics = qual_path_type.trait_has_generic_args ()
+				      ? qual_path_type.get_trait_generic_args ()
+				      : HIR::GenericArgs::create_empty ();
+
   translated = lookup_associated->get_projected_type (
     trait_item_ref, root, item_seg->get_mappings ().get_hirid (),
-    item_seg->get_locus ());
+    trait_generics, item_seg->get_locus ());
 
   if (translated->get_kind () == TyTy::TypeKind::PLACEHOLDER)
     {
@@ -193,12 +195,6 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 					     &generic_seg.get_generic_args ());
 	}
     }
-
-  TyTy::ProjectionType *projection
-    = new TyTy::ProjectionType (qual_path_type.get_mappings ().get_hirid (),
-				TyTy::TyVar (root->get_ref ()), trait_ref,
-				resolved_item_id, lookup_associated);
-  context->insert_type (qual_path_type.get_mappings (), projection);
 
   // continue on as a path-in-expression
   NodeId root_resolved_node_id = trait_item_ref->get_mappings ().get_nodeid ();

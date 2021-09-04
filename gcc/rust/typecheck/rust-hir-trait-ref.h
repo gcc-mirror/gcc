@@ -47,26 +47,7 @@ public:
 
   TraitItemReference (TraitItemReference const &other);
 
-  TraitItemReference &operator= (TraitItemReference const &other)
-  {
-    identifier = other.identifier;
-    optional_flag = other.optional_flag;
-    type = other.type;
-    hir_trait_item = other.hir_trait_item;
-    self = other.self;
-    locus = other.locus;
-    context = other.context;
-
-    inherited_substitutions.clear ();
-    inherited_substitutions.reserve (other.inherited_substitutions.size ());
-    for (size_t i = 0; i < other.inherited_substitutions.size (); i++)
-      inherited_substitutions.push_back (other.inherited_substitutions.at (i));
-
-    return *this;
-  }
-
-  TraitItemReference (TraitItemReference &&other) = default;
-  TraitItemReference &operator= (TraitItemReference &&other) = default;
+  TraitItemReference &operator= (TraitItemReference const &other);
 
   static TraitItemReference error ()
   {
@@ -368,6 +349,7 @@ public:
 
   TyTy::BaseType *get_projected_type (const TraitItemReference *trait_item_ref,
 				      TyTy::BaseType *reciever, HirId ref,
+				      HIR::GenericArgs &trait_generics,
 				      Location expr_locus);
 
 private:

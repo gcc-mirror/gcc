@@ -37,9 +37,9 @@ public:
   Resolve (HIR::TraitItem &item, TyTy::BaseType *self,
 	   std::vector<TyTy::SubstitutionParamMapping> substitutions)
   {
-    ResolveTraitItemToRef resolver (self, substitutions);
+    ResolveTraitItemToRef resolver (self, std::move (substitutions));
     item.accept_vis (resolver);
-    return resolver.resolved;
+    return std::move (resolver.resolved);
   }
 
   void visit (HIR::TraitItemType &type) override;
@@ -51,9 +51,9 @@ public:
 private:
   ResolveTraitItemToRef (
     TyTy::BaseType *self,
-    std::vector<TyTy::SubstitutionParamMapping> substitutions)
+    std::vector<TyTy::SubstitutionParamMapping> &&substitutions)
     : TypeCheckBase (), resolved (TraitItemReference::error ()), self (self),
-      substitutions (substitutions)
+      substitutions (std::move (substitutions))
   {}
 
   TraitItemReference resolved;
@@ -146,8 +146,14 @@ private:
     std::vector<TraitItemReference> item_refs;
     for (auto &item : trait_reference->get_trait_items ())
       {
+	// make a copy of the substs
+	std::vector<TyTy::SubstitutionParamMapping> item_subst;
+	for (auto &sub : substitutions)
+	  item_subst.push_back (sub.clone ());
+
 	TraitItemReference trait_item_ref
-	  = ResolveTraitItemToRef::Resolve (*item.get (), self, substitutions);
+	  = ResolveTraitItemToRef::Resolve (*item.get (), self,
+					    std::move (item_subst));
 	item_refs.push_back (std::move (trait_item_ref));
       }
 

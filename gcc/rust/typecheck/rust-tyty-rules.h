@@ -76,6 +76,11 @@ public:
 	    other = p->resolve ();
 	  }
       }
+    else if (other->get_kind () == TypeKind::PROJECTION)
+      {
+	ProjectionType *p = static_cast<ProjectionType *> (other);
+	other = p->get ();
+      }
 
     other->accept_vis (*this);
     if (resolved->get_kind () == TyTy::TypeKind::ERROR)

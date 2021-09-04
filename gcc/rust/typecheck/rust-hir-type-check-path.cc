@@ -74,7 +74,6 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
     = context->lookup_associated_trait_impl (impl_block_id, &lookup_associated);
   rust_assert (found_impl_trait);
 
-  DefId resolved_item_id = UNKNOWN_DEFID;
   HIR::PathExprSegment &item_seg = expr.get_segments ().at (0);
 
   const TraitItemReference *trait_item_ref = nullptr;
@@ -85,10 +84,14 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
       rust_error_at (item_seg.get_locus (), "unknown associated item");
       return;
     }
-  resolved_item_id = trait_item_ref->get_mappings ().get_defid ();
 
+  HIR::GenericArgs trait_generics = qual_path_type.trait_has_generic_args ()
+				      ? qual_path_type.get_trait_generic_args ()
+				      : HIR::GenericArgs::create_empty ();
+
+  lookup_associated->setup_associated_types ();
   infered = lookup_associated->get_projected_type (
-    trait_item_ref, root, item_seg.get_mappings ().get_hirid (),
+    trait_item_ref, root, item_seg.get_mappings ().get_hirid (), trait_generics,
     item_seg.get_locus ());
 
   // turbo-fish segment path::<ty>
@@ -105,12 +108,6 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
       infered = SubstMapper::Resolve (infered, expr.get_locus (),
 				      &item_seg.get_generic_args ());
     }
-
-  TyTy::ProjectionType *projection
-    = new TyTy::ProjectionType (qual_path_type.get_mappings ().get_hirid (),
-				TyTy::TyVar (root->get_ref ()), trait_ref,
-				resolved_item_id, lookup_associated);
-  context->insert_type (qual_path_type.get_mappings (), projection);
 
   // continue on as a path-in-expression
   NodeId root_resolved_node_id = trait_item_ref->get_mappings ().get_nodeid ();
@@ -340,6 +337,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  candidates
 	    = PathProbeType::Probe (prev_segment, seg.get_segment (), false,
 				    probe_bounds, ignore_mandatory_trait_items);
+
 	  if (candidates.size () == 0)
 	    {
 	      rust_error_at (

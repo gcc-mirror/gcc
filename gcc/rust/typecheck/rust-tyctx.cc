@@ -83,6 +83,13 @@ TypeCheckContext::insert_type (const Analysis::NodeMapping &mappings,
   resolved[id] = type;
 }
 
+void
+TypeCheckContext::insert_implicit_type (HirId id, TyTy::BaseType *type)
+{
+  rust_assert (type != nullptr);
+  resolved[id] = type;
+}
+
 bool
 TypeCheckContext::lookup_type (HirId id, TyTy::BaseType **type)
 {

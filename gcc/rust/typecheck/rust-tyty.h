@@ -1727,26 +1727,38 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
+  bool contains_type_parameters () const override
+  {
+    rust_assert (can_resolve ());
+    return resolve ()->contains_type_parameters ();
+  }
+
 private:
   std::string symbol;
 };
 
-class ProjectionType : public BaseType
+class ProjectionType : public BaseType, public SubstitutionRef
 {
 public:
-  ProjectionType (HirId ref, TyVar base, Resolver::TraitReference *trait,
-		  DefId item, Resolver::AssociatedImplTrait *associated,
+  ProjectionType (HirId ref, BaseType *base, Resolver::TraitReference *trait,
+		  DefId item, std::vector<SubstitutionParamMapping> subst_refs,
+		  SubstitutionArgumentMappings generic_arguments
+		  = SubstitutionArgumentMappings::error (),
 		  std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::PROJECTION, refs), base (base),
-      trait (trait), item (item), associated (associated)
+    : BaseType (ref, ref, TypeKind::PROJECTION, refs),
+      SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
+      base (base), trait (trait), item (item)
   {}
 
-  ProjectionType (HirId ref, HirId ty_ref, TyVar base,
+  ProjectionType (HirId ref, HirId ty_ref, BaseType *base,
 		  Resolver::TraitReference *trait, DefId item,
-		  Resolver::AssociatedImplTrait *associated,
+		  std::vector<SubstitutionParamMapping> subst_refs,
+		  SubstitutionArgumentMappings generic_arguments
+		  = SubstitutionArgumentMappings::error (),
 		  std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::PROJECTION, refs), base (base),
-      trait (trait), item (item), associated (associated)
+    : BaseType (ref, ty_ref, TypeKind::PROJECTION, refs),
+      SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
+      base (base), trait (trait), item (item)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1765,11 +1777,32 @@ public:
 
   bool is_unit () const override { return false; }
 
+  bool needs_generic_substitutions () const override final
+  {
+    return needs_substitution ();
+  }
+
+  bool supports_substitutions () const override final { return true; }
+
+  bool has_subsititions_defined () const override final
+  {
+    return has_substitutions ();
+  }
+
+  BaseType *get () { return base; }
+
+  bool contains_type_parameters () const override
+  {
+    return base->contains_type_parameters ();
+  }
+
+  ProjectionType *
+  handle_substitions (SubstitutionArgumentMappings mappings) override final;
+
 private:
-  TyVar base;
+  BaseType *base;
   Resolver::TraitReference *trait;
   DefId item;
-  Resolver::AssociatedImplTrait *associated;
 };
 
 } // namespace TyTy

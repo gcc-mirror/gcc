@@ -276,6 +276,18 @@ protected:
 
 	TyTy::BaseType *trait_item_tyty = trait_item_ref->get_tyty ();
 
+	if (impl != nullptr)
+	  {
+	    HirId impl_block_id = impl->get_mappings ().get_hirid ();
+	    AssociatedImplTrait *lookup_associated = nullptr;
+	    bool found_impl_trait
+	      = context->lookup_associated_trait_impl (impl_block_id,
+						       &lookup_associated);
+	    // see testsuite/rust/compile/torture/traits10.rs this can be false
+	    if (found_impl_trait)
+	      lookup_associated->setup_associated_types ();
+	  }
+
 	// we can substitute the Self with the receiver here
 	if (trait_item_tyty->get_kind () == TyTy::TypeKind::FNDEF)
 	  {

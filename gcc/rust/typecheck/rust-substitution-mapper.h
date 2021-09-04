@@ -90,6 +90,36 @@ public:
       resolved = concrete;
   }
 
+  void visit (TyTy::PlaceholderType &type) override
+  {
+    rust_assert (type.can_resolve ());
+    resolved = SubstMapper::Resolve (type.resolve (), locus, generics);
+  }
+
+  void visit (TyTy::ProjectionType &type) override
+  {
+    TyTy::ProjectionType *concrete = nullptr;
+    if (!have_generic_args ())
+      {
+	TyTy::BaseType *substs = type.infer_substitions (locus);
+	rust_assert (substs->get_kind () == TyTy::TypeKind::ADT);
+	concrete = static_cast<TyTy::ProjectionType *> (substs);
+      }
+    else
+      {
+	TyTy::SubstitutionArgumentMappings mappings
+	  = type.get_mappings_from_generic_args (*generics);
+	if (mappings.is_error ())
+	  return;
+
+	concrete = type.handle_substitions (mappings);
+      }
+
+    if (concrete != nullptr)
+      resolved = concrete;
+  }
+
+  // nothing to do for these
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
   void visit (TyTy::TupleType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
@@ -107,8 +137,6 @@ public:
   void visit (TyTy::ParamType &) override { gcc_unreachable (); }
   void visit (TyTy::StrType &) override { gcc_unreachable (); }
   void visit (TyTy::NeverType &) override { gcc_unreachable (); }
-  void visit (TyTy::PlaceholderType &) override { gcc_unreachable (); }
-  void visit (TyTy::ProjectionType &) override { gcc_unreachable (); }
 
 private:
   SubstMapper (HirId ref, HIR::GenericArgs *generics, Location locus)
@@ -177,6 +205,17 @@ public:
     resolved = type.handle_substitions (mappings);
   }
 
+  void visit (TyTy::PlaceholderType &type) override
+  {
+    rust_assert (type.can_resolve ());
+    resolved = SubstMapperInternal::Resolve (type.resolve (), mappings);
+  }
+
+  void visit (TyTy::ProjectionType &type) override
+  {
+    resolved = type.handle_substitions (mappings);
+  }
+
   // nothing to do for these
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
@@ -191,8 +230,6 @@ public:
   void visit (TyTy::CharType &) override { gcc_unreachable (); }
   void visit (TyTy::StrType &) override { gcc_unreachable (); }
   void visit (TyTy::NeverType &) override { gcc_unreachable (); }
-  void visit (TyTy::PlaceholderType &) override { gcc_unreachable (); }
-  void visit (TyTy::ProjectionType &) override { gcc_unreachable (); }
 
 private:
   SubstMapperInternal (HirId ref, TyTy::SubstitutionArgumentMappings &mappings)
