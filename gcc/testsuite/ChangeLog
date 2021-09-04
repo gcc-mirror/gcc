@@ -1,3 +1,19 @@
+2021-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101849
+	* gcc.target/powerpc/pr101849.c: New test.
+
+2021-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-7.c: New test.
+	* gcc.target/powerpc/mma-builtin-8.c: New test.
+
 2021-08-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

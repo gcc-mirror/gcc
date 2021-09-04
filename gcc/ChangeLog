@@ -1,3 +1,40 @@
+2021-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101849
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Cast
+	pointer to __vector_pair *.
+
+2021-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (mma_init_builtins): Use VSX_BUILTIN_LXVP
+	and VSX_BUILTIN_STXVP.
+
+2021-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_MMA_PAIR_LD, BU_MMA_PAIR_ST):
+	New macros.
+	(__builtin_vsx_lxvp, __builtin_vsx_stxvp): New built-ins.
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Expand
+	lxvp and stxvp built-ins.
+	(mma_init_builtins): Handle lxvp and stxvp built-ins.
+	(builtin_function_type): Likewise.
+	* doc/extend.texi (__builtin_vsx_lxvp, __builtin_mma_stxvp): Document.
+
+2021-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (mma_init_builtins): Test for
+	MMA_BUILTIN_DISASSEMBLE_ACC and VSX_BUILTIN_DISASSEMBLE_PAIR.
+	(rs6000_gimple_fold_mma_builtin): Likewise.
+
 2021-08-31  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
