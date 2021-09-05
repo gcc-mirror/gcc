@@ -3311,10 +3311,8 @@ StructExprStructFields::as_string () const
 std::string
 EnumItem::as_string () const
 {
-  // outer attributes
-  std::string str = append_attributes (outer_attrs, OUTER);
-
-  str += "\n" + variant_name;
+  std::string str = VisItem::as_string ();
+  str += variant_name;
 
   return str;
 }
