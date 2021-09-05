@@ -1636,12 +1636,11 @@ protected:
 };
 
 /* An item used in an "enum" tagged union - not abstract: base represents a
- * name-only enum */
-class EnumItem
+   name-only enum. Syntactically EnumItem's can have a Visibility. But not
+   Semantically. So check there is no Visibility when lowering and make this
+   an Item, not an VisItem.  */
+class EnumItem : public Item
 {
-  // bool has_attrs;
-  AST::AttrVec outer_attrs;
-
   Identifier variant_name;
 
   Location locus;
@@ -1649,18 +1648,16 @@ class EnumItem
 public:
   virtual ~EnumItem () {}
 
-  // Returns whether enum item has outer attributes.
-  bool has_outer_attrs () const { return !outer_attrs.empty (); }
-
-  EnumItem (Identifier variant_name, AST::AttrVec outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)),
+  EnumItem (Analysis::NodeMapping mappings, Identifier variant_name,
+	    AST::AttrVec outer_attrs, Location locus)
+    : Item (std::move (mappings), std::move (outer_attrs)),
       variant_name (std::move (variant_name)), locus (locus)
   {}
 
   // Unique pointer custom clone function
   std::unique_ptr<EnumItem> clone_enum_item () const
   {
-    return std::unique_ptr<EnumItem> (clone_enum_item_impl ());
+    return std::unique_ptr<EnumItem> (clone_item_impl ());
   }
 
   virtual std::string as_string () const;
@@ -1668,12 +1665,12 @@ public:
   // not pure virtual as not abstract
   virtual void accept_vis (HIRVisitor &vis);
 
+  Location get_locus () const { return locus; }
+
+  Identifier get_identifier () const { return variant_name; }
+
 protected:
-  // Clone function implementation as (not pure) virtual method
-  virtual EnumItem *clone_enum_item_impl () const
-  {
-    return new EnumItem (*this);
-  }
+  EnumItem *clone_item_impl () const override { return new EnumItem (*this); }
 };
 
 // A tuple item used in an "enum" tagged union
@@ -1686,9 +1683,11 @@ public:
   // Returns whether tuple enum item has tuple fields.
   bool has_tuple_fields () const { return !tuple_fields.empty (); }
 
-  EnumItemTuple (Identifier variant_name, std::vector<TupleField> tuple_fields,
-		 AST::AttrVec outer_attrs, Location locus)
-    : EnumItem (std::move (variant_name), std::move (outer_attrs), locus),
+  EnumItemTuple (Analysis::NodeMapping mappings, Identifier variant_name,
+		 std::vector<TupleField> tuple_fields, AST::AttrVec outer_attrs,
+		 Location locus)
+    : EnumItem (std::move (mappings), std::move (variant_name),
+		std::move (outer_attrs), locus),
       tuple_fields (std::move (tuple_fields))
   {}
 
@@ -1698,7 +1697,7 @@ public:
 
 protected:
   // Clone function implementation as (not pure) virtual method
-  EnumItemTuple *clone_enum_item_impl () const override
+  EnumItemTuple *clone_item_impl () const override
   {
     return new EnumItemTuple (*this);
   }
@@ -1714,10 +1713,11 @@ public:
   // Returns whether struct enum item has struct fields.
   bool has_struct_fields () const { return !struct_fields.empty (); }
 
-  EnumItemStruct (Identifier variant_name,
+  EnumItemStruct (Analysis::NodeMapping mappings, Identifier variant_name,
 		  std::vector<StructField> struct_fields,
 		  AST::AttrVec outer_attrs, Location locus)
-    : EnumItem (std::move (variant_name), std::move (outer_attrs), locus),
+    : EnumItem (std::move (mappings), std::move (variant_name),
+		std::move (outer_attrs), locus),
       struct_fields (std::move (struct_fields))
   {}
 
@@ -1727,7 +1727,7 @@ public:
 
 protected:
   // Clone function implementation as (not pure) virtual method
-  EnumItemStruct *clone_enum_item_impl () const override
+  EnumItemStruct *clone_item_impl () const override
   {
     return new EnumItemStruct (*this);
   }
@@ -1739,9 +1739,11 @@ class EnumItemDiscriminant : public EnumItem
   std::unique_ptr<Expr> expression;
 
 public:
-  EnumItemDiscriminant (Identifier variant_name, std::unique_ptr<Expr> expr,
-			AST::AttrVec outer_attrs, Location locus)
-    : EnumItem (std::move (variant_name), std::move (outer_attrs), locus),
+  EnumItemDiscriminant (Analysis::NodeMapping mappings, Identifier variant_name,
+			std::unique_ptr<Expr> expr, AST::AttrVec outer_attrs,
+			Location locus)
+    : EnumItem (std::move (mappings), std::move (variant_name),
+		std::move (outer_attrs), locus),
       expression (std::move (expr))
   {}
 
@@ -1771,7 +1773,7 @@ public:
 
 protected:
   // Clone function implementation as (not pure) virtual method
-  EnumItemDiscriminant *clone_enum_item_impl () const override
+  EnumItemDiscriminant *clone_item_impl () const override
   {
     return new EnumItemDiscriminant (*this);
   }
@@ -1860,6 +1862,8 @@ public:
   Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Identifier get_identifier () const { return enum_name; }
 
 protected:
   /* Use covariance to implement clone function as returning this object

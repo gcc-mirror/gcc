@@ -27,6 +27,11 @@
 namespace Rust {
 namespace HIR {
 
+/* Checks whether the name of a field already exists.  Returns true
+   and produces an error if so.  */
+bool
+struct_field_name_exists (std::vector<HIR::StructField> &fields,
+			  HIR::StructField &new_field);
 class ASTLowering
 {
 public:
