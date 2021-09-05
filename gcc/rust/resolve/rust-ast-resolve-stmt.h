@@ -33,9 +33,11 @@ class ResolveStmt : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Stmt *stmt, NodeId parent)
+  static void go (AST::Stmt *stmt, NodeId parent,
+		  const CanonicalPath &enum_prefix
+		  = CanonicalPath::create_empty ())
   {
-    ResolveStmt resolver (parent);
+    ResolveStmt resolver (parent, enum_prefix);
     stmt->accept_vis (resolver);
   };
 
@@ -96,6 +98,97 @@ public:
     });
 
     resolver->get_type_scope ().pop ();
+  }
+
+  void visit (AST::Enum &enum_decl) override
+  {
+    auto enum_path = CanonicalPath::new_seg (enum_decl.get_node_id (),
+					     enum_decl.get_identifier ());
+    resolver->get_type_scope ().insert (
+      enum_path, enum_decl.get_node_id (), enum_decl.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (enum_decl.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    NodeId scope_node_id = enum_decl.get_node_id ();
+    resolver->get_type_scope ().push (scope_node_id);
+
+    if (enum_decl.has_generics ())
+      {
+	for (auto &generic : enum_decl.get_generic_params ())
+	  {
+	    ResolveGenericParam::go (generic.get (), enum_decl.get_node_id ());
+	  }
+      }
+
+    for (auto &variant : enum_decl.get_variants ())
+      ResolveStmt::go (variant.get (), parent, enum_path);
+
+    resolver->get_type_scope ().pop ();
+  }
+
+  void visit (AST::EnumItem &item) override
+  {
+    auto path = enum_prefix.append (
+      CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, item.get_node_id (), item.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (item.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    // Done, no fields.
+  }
+
+  void visit (AST::EnumItemTuple &item) override
+  {
+    auto path = enum_prefix.append (
+      CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, item.get_node_id (), item.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (item.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    for (auto &field : item.get_tuple_fields ())
+      ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+  }
+
+  void visit (AST::EnumItemStruct &item) override
+  {
+    auto path = enum_prefix.append (
+      CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, item.get_node_id (), item.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (item.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    for (auto &field : item.get_struct_fields ())
+      ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+  }
+
+  void visit (AST::EnumItemDiscriminant &item) override
+  {
+    auto path = enum_prefix.append (
+      CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, item.get_node_id (), item.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (item.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    // Done, no fields.
   }
 
   void visit (AST::StructStruct &struct_decl) override
@@ -219,7 +312,13 @@ public:
   }
 
 private:
-  ResolveStmt (NodeId parent) : ResolverBase (parent) {}
+  ResolveStmt (NodeId parent, const CanonicalPath &enum_prefix)
+    : ResolverBase (parent), enum_prefix (enum_prefix)
+  {}
+
+  /* item declaration statements are not given a canonical path, but enum items
+   * (variants) do inherit the enum path/identifier name.  */
+  const CanonicalPath &enum_prefix;
 };
 
 } // namespace Resolver
