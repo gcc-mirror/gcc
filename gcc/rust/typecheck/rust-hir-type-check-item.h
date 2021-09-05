@@ -43,6 +43,33 @@ public:
 
   void visit (HIR::ImplBlock &impl_block) override
   {
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
+    if (impl_block.has_generics ())
+      {
+	for (auto &generic_param : impl_block.get_generic_params ())
+	  {
+	    switch (generic_param.get ()->get_kind ())
+	      {
+	      case HIR::GenericParam::GenericKind::LIFETIME:
+		// Skipping Lifetime completely until better handling.
+		break;
+
+		case HIR::GenericParam::GenericKind::TYPE: {
+		  TyTy::BaseType *l = nullptr;
+		  bool ok = context->lookup_type (
+		    generic_param->get_mappings ().get_hirid (), &l);
+		  if (ok && l->get_kind () == TyTy::TypeKind::PARAM)
+		    {
+		      substitutions.push_back (TyTy::SubstitutionParamMapping (
+			static_cast<HIR::TypeParam &> (*generic_param),
+			static_cast<TyTy::ParamType *> (l)));
+		    }
+		}
+		break;
+	      }
+	  }
+      }
+
     TraitReference *trait_reference = &TraitReference::error_node ();
     if (impl_block.has_trait_ref ())
       {
@@ -72,7 +99,8 @@ public:
 	  {
 	    auto &trait_item_ref
 	      = TypeCheckImplItemWithTrait::Resolve (impl_item.get (), self,
-						     *trait_reference);
+						     *trait_reference,
+						     substitutions);
 	    trait_item_refs.push_back (trait_item_ref);
 	  }
       }

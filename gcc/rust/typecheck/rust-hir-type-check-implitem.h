@@ -303,11 +303,12 @@ class TypeCheckImplItemWithTrait : public TypeCheckImplItem
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static const TraitItemReference &Resolve (HIR::ImplItem *item,
-					    TyTy::BaseType *self,
-					    TraitReference &trait_reference)
+  static const TraitItemReference &
+  Resolve (HIR::ImplItem *item, TyTy::BaseType *self,
+	   TraitReference &trait_reference,
+	   std::vector<TyTy::SubstitutionParamMapping> substitutions)
   {
-    TypeCheckImplItemWithTrait resolver (self, trait_reference);
+    TypeCheckImplItemWithTrait resolver (self, trait_reference, substitutions);
     item->accept_vis (resolver);
     return resolver.resolved_trait_item;
   }
@@ -383,7 +384,17 @@ public:
 	  trait_reference.get_name ().c_str ());
       }
 
-    resolved_trait_item.associated_type_set (lookup);
+    rust_debug_loc (type.get_locus (), "type-alias within impl block");
+    lookup->debug ();
+
+    // its actually a projection, since we need a way to actually bind the
+    // generic substitutions to the type itself
+    TyTy::ProjectionType *projection = new TyTy::ProjectionType (
+      type.get_mappings ().get_hirid (), lookup, &trait_reference,
+      resolved_trait_item.get_mappings ().get_defid (), substitutions);
+
+    context->insert_type (type.get_mappings (), projection);
+    resolved_trait_item.associated_type_set (projection);
   }
 
   void visit (HIR::Function &function) override
@@ -452,10 +463,12 @@ public:
   }
 
 private:
-  TypeCheckImplItemWithTrait (TyTy::BaseType *self,
-			      TraitReference &trait_reference)
+  TypeCheckImplItemWithTrait (
+    TyTy::BaseType *self, TraitReference &trait_reference,
+    std::vector<TyTy::SubstitutionParamMapping> substitutions)
     : TypeCheckImplItem (self), trait_reference (trait_reference),
-      resolved_trait_item (TraitItemReference::error_node ())
+      resolved_trait_item (TraitItemReference::error_node ()),
+      substitutions (substitutions)
   {
     rust_assert (is_trait_impl_block ());
   }
@@ -464,6 +477,7 @@ private:
 
   TraitReference &trait_reference;
   TraitItemReference &resolved_trait_item;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
 };
 
 } // namespace Resolver

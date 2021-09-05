@@ -58,7 +58,7 @@ ResolveTraitItemToRef::visit (HIR::TraitItemFunc &fn)
 
   resolved = TraitItemReference (identifier, is_optional,
 				 TraitItemReference::TraitItemType::FN, &fn,
-				 self, substitutions, locus);
+				 self, std::move (substitutions), locus);
 }
 
 // TraitItemReference items
@@ -196,7 +196,7 @@ TraitItemReference::get_parent_trait_mappings () const
 TyTy::BaseType *
 AssociatedImplTrait::get_projected_type (
   const TraitItemReference *trait_item_ref, TyTy::BaseType *receiver, HirId ref,
-  Location expr_locus)
+  HIR::GenericArgs &trait_generics, Location expr_locus)
 {
   TyTy::BaseType *trait_item_tyty = trait_item_ref->get_tyty ()->clone ();
 
@@ -219,9 +219,15 @@ AssociatedImplTrait::get_projected_type (
       std::vector<TyTy::SubstitutionArg> mappings;
       mappings.push_back (TyTy::SubstitutionArg (param, receiver->clone ()));
 
-      Location locus; // FIXME
-      TyTy::SubstitutionArgumentMappings args (std::move (mappings), locus);
+      TyTy::SubstitutionArgumentMappings args (std::move (mappings),
+					       expr_locus);
       trait_item_tyty = SubstMapperInternal::Resolve (trait_item_tyty, args);
+    }
+
+  if (!trait_generics.is_empty ())
+    {
+      trait_item_tyty
+	= SubstMapper::Resolve (trait_item_tyty, expr_locus, &trait_generics);
     }
 
   return trait_item_tyty;

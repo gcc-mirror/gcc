@@ -1,4 +1,3 @@
-
 // Copyright (C) 2020 Free Software Foundation, Inc.
 
 // This file is part of GCC.
@@ -117,72 +116,9 @@ public:
       = new TyTy::TupleType (tuple.get_mappings ().get_hirid (), fields);
   }
 
-  void visit (HIR::TypePath &path) override
-  {
-    // lookup the Node this resolves to
-    NodeId ref;
-    auto nid = path.get_mappings ().get_nodeid ();
-    if (!resolver->lookup_resolved_type (nid, &ref))
-      {
-	rust_fatal_error (path.get_locus (),
-			  "failed to resolve node '%d' to HIR", nid);
-	return;
-      }
+  void visit (HIR::TypePath &path) override;
 
-    HirId hir_lookup;
-    if (!context->lookup_type_by_node_id (ref, &hir_lookup))
-      {
-	rust_error_at (path.get_locus (),
-		       "failed to lookup HIR %d for node '%s'", ref,
-		       path.as_string ().c_str ());
-	return;
-      }
-
-    TyTy::BaseType *lookup = nullptr;
-    if (!context->lookup_type (hir_lookup, &lookup))
-      {
-	rust_error_at (path.get_locus (), "failed to lookup HIR TyTy");
-	return;
-      }
-
-    TyTy::BaseType *path_type = lookup->clone ();
-    path_type->set_ref (path.get_mappings ().get_hirid ());
-
-    HIR::TypePathSegment *final_seg = path.get_final_segment ().get ();
-    HIR::GenericArgs args
-      = TypeCheckResolveGenericArguments::resolve (final_seg);
-
-    bool is_big_self = final_seg->is_ident_only ()
-		       && (final_seg->as_string ().compare ("Self") == 0);
-
-    if (path_type->needs_generic_substitutions ())
-      {
-	if (is_big_self)
-	  {
-	    translated = path_type;
-	    return;
-	  }
-
-	translated = SubstMapper::Resolve (path_type, path.get_locus (), &args);
-	if (translated->get_kind () != TyTy::TypeKind::ERROR
-	    && mappings != nullptr)
-	  {
-	    check_for_unconstrained (args.get_type_args ());
-	  }
-      }
-    else if (!args.is_empty ())
-      {
-	rust_error_at (path.get_locus (),
-		       "TypePath %s declares generic arguments but "
-		       "the type %s does not have any",
-		       path.as_string ().c_str (),
-		       translated->as_string ().c_str ());
-      }
-    else
-      {
-	translated = path_type;
-      }
-  }
+  void visit (HIR::QualifiedPathInType &path) override;
 
   void visit (HIR::ArrayType &type) override;
 
@@ -245,6 +181,12 @@ private:
 	  }
       }
   }
+
+  void resolve_segments (
+    NodeId root_resolved_node_id,
+    std::vector<std::unique_ptr<HIR::TypePathSegment>> &segments, size_t offset,
+    TyTy::BaseType *tyseg, const Analysis::NodeMapping &expr_mappings,
+    Location expr_locus);
 
   std::vector<TyTy::SubstitutionParamMapping> *subst_mappings;
   TyTy::BaseType *translated;

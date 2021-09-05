@@ -42,6 +42,8 @@ public:
 		    TyTy::BaseType *type);
   bool lookup_type (HirId id, TyTy::BaseType **type);
 
+  void insert_implicit_type (HirId id, TyTy::BaseType *type);
+
   void insert_type_by_node_id (NodeId ref, HirId id);
   bool lookup_type_by_node_id (NodeId ref, HirId *id);
 

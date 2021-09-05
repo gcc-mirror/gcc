@@ -767,6 +767,27 @@ public:
     rust_assert (has_as_clause ());
     return trait;
   }
+
+  bool trait_has_generic_args () const
+  {
+    rust_assert (has_as_clause ());
+    bool is_generic_seg = trait->get_final_segment ()->get_type ()
+			  == TypePathSegment::SegmentType::GENERIC;
+    if (!is_generic_seg)
+      return false;
+
+    TypePathSegmentGeneric *seg = static_cast<TypePathSegmentGeneric *> (
+      trait->get_final_segment ().get ());
+    return seg->has_generic_args ();
+  }
+
+  GenericArgs &get_trait_generic_args ()
+  {
+    rust_assert (trait_has_generic_args ());
+    TypePathSegmentGeneric *seg = static_cast<TypePathSegmentGeneric *> (
+      trait->get_final_segment ().get ());
+    return seg->get_generic_args ();
+  }
 };
 
 /* HIR node representing a qualified path-in-expression pattern (path that
@@ -819,6 +840,7 @@ protected:
 class QualifiedPathInType : public TypeNoBounds
 {
   QualifiedPathType path_type;
+  std::unique_ptr<TypePathSegment> associated_segment;
   std::vector<std::unique_ptr<TypePathSegment> > segments;
   Location locus;
 
@@ -840,9 +862,11 @@ protected:
 public:
   QualifiedPathInType (
     Analysis::NodeMapping mappings, QualifiedPathType qual_path_type,
+    std::unique_ptr<TypePathSegment> associated_segment,
     std::vector<std::unique_ptr<TypePathSegment> > path_segments,
     Location locus = Location ())
     : TypeNoBounds (mappings), path_type (std::move (qual_path_type)),
+      associated_segment (std::move (associated_segment)),
       segments (std::move (path_segments)), locus (locus)
   {}
 
@@ -883,6 +907,20 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  QualifiedPathType &get_path_type () { return path_type; }
+
+  std::unique_ptr<TypePathSegment> &get_associated_segment ()
+  {
+    return associated_segment;
+  }
+
+  std::vector<std::unique_ptr<TypePathSegment> > &get_segments ()
+  {
+    return segments;
+  }
+
+  Location get_locus () { return locus; }
 };
 } // namespace HIR
 } // namespace Rust

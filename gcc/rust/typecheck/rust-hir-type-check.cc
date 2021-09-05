@@ -408,8 +408,9 @@ TraitItemReference::TraitItemReference (
   HIR::TraitItem *hir_trait_item, TyTy::BaseType *self,
   std::vector<TyTy::SubstitutionParamMapping> substitutions, Location locus)
   : identifier (identifier), optional_flag (optional), type (type),
-    hir_trait_item (hir_trait_item), inherited_substitutions (substitutions),
-    locus (locus), self (self), context (TypeCheckContext::get ())
+    hir_trait_item (hir_trait_item),
+    inherited_substitutions (std::move (substitutions)), locus (locus),
+    self (self), context (TypeCheckContext::get ())
 {}
 
 TraitItemReference::TraitItemReference (TraitItemReference const &other)
@@ -420,7 +421,28 @@ TraitItemReference::TraitItemReference (TraitItemReference const &other)
   inherited_substitutions.clear ();
   inherited_substitutions.reserve (other.inherited_substitutions.size ());
   for (size_t i = 0; i < other.inherited_substitutions.size (); i++)
-    inherited_substitutions.push_back (other.inherited_substitutions.at (i));
+    inherited_substitutions.push_back (
+      other.inherited_substitutions.at (i).clone ());
+}
+
+TraitItemReference &
+TraitItemReference::operator= (TraitItemReference const &other)
+{
+  identifier = other.identifier;
+  optional_flag = other.optional_flag;
+  type = other.type;
+  hir_trait_item = other.hir_trait_item;
+  self = other.self;
+  locus = other.locus;
+  context = other.context;
+
+  inherited_substitutions.clear ();
+  inherited_substitutions.reserve (other.inherited_substitutions.size ());
+  for (size_t i = 0; i < other.inherited_substitutions.size (); i++)
+    inherited_substitutions.push_back (
+      other.inherited_substitutions.at (i).clone ());
+
+  return *this;
 }
 
 TyTy::BaseType *
@@ -524,10 +546,13 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
       context->insert_type (param.get_mappings (), param_tyty);
     }
 
-  return new TyTy::FnType (fn.get_mappings ().get_hirid (),
-			   fn.get_mappings ().get_defid (),
-			   function.get_function_name (), function.is_method (),
-			   std::move (params), ret_type, substitutions);
+  auto resolved
+    = new TyTy::FnType (fn.get_mappings ().get_hirid (),
+			fn.get_mappings ().get_defid (),
+			function.get_function_name (), function.is_method (),
+			std::move (params), ret_type, substitutions);
+  context->insert_type (fn.get_mappings (), resolved);
+  return resolved;
 }
 
 } // namespace Resolver

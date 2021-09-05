@@ -414,8 +414,6 @@ SubstitutionArgumentMappings
 SubstitutionRef::adjust_mappings_for_this (
   SubstitutionArgumentMappings &mappings)
 {
-  Analysis::Mappings *mappings_table = Analysis::Mappings::get ();
-
   std::vector<SubstitutionArg> resolved_mappings;
   for (size_t i = 0; i < substitutions.size (); i++)
     {
@@ -442,19 +440,15 @@ SubstitutionRef::adjust_mappings_for_this (
 	}
 
       bool ok = !arg.is_error ();
-      if (!ok)
+      if (ok)
 	{
-	  rust_error_at (mappings_table->lookup_location (
-			   subst.get_param_ty ()->get_ref ()),
-			 "failed to find parameter type: %s vs mappings [%s]",
-			 subst.get_param_ty ()->as_string ().c_str (),
-			 mappings.as_string ().c_str ());
-	  return SubstitutionArgumentMappings::error ();
+	  SubstitutionArg adjusted (&subst, arg.get_tyty ());
+	  resolved_mappings.push_back (std::move (adjusted));
 	}
-
-      SubstitutionArg adjusted (&subst, arg.get_tyty ());
-      resolved_mappings.push_back (std::move (adjusted));
     }
+
+  if (resolved_mappings.empty ())
+    return SubstitutionArgumentMappings::error ();
 
   return SubstitutionArgumentMappings (resolved_mappings,
 				       mappings.get_locus ());
@@ -907,7 +901,9 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
+	{
+	  sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
+	}
     }
 
   auto fty = fn->get_return_type ();
@@ -2139,42 +2135,106 @@ ProjectionType::accept_vis (TyConstVisitor &vis) const
 std::string
 ProjectionType::as_string () const
 {
-  return "<Projection>";
+  return "<Projection=" + subst_as_string () + "::" + base->as_string () + ">";
 }
 
 BaseType *
 ProjectionType::unify (BaseType *other)
 {
-  gcc_unreachable ();
-  return nullptr;
+  return base->unify (other);
 }
 
 BaseType *
 ProjectionType::coerce (BaseType *other)
 {
-  gcc_unreachable ();
-  return nullptr;
+  return base->coerce (other);
 }
 
 BaseType *
 ProjectionType::cast (BaseType *other)
 {
-  gcc_unreachable ();
-  return nullptr;
+  return base->cast (other);
 }
 
 bool
 ProjectionType::can_eq (const BaseType *other, bool emit_errors) const
 {
-  gcc_unreachable ();
-  return false;
+  return base->can_eq (other, emit_errors);
 }
 
 BaseType *
 ProjectionType::clone () const
 {
   return new ProjectionType (get_ref (), get_ty_ref (), base, trait, item,
-			     associated, get_combined_refs ());
+			     clone_substs (), used_arguments,
+			     get_combined_refs ());
+}
+
+ProjectionType *
+ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
+{
+  ProjectionType *projection = static_cast<ProjectionType *> (clone ());
+  projection->set_ty_ref (mappings->get_next_hir_id ());
+  projection->used_arguments = subst_mappings;
+
+  auto context = Resolver::TypeCheckContext::get ();
+  context->insert_implicit_type (projection->get_ty_ref (), projection);
+
+  for (auto &sub : projection->get_substs ())
+    {
+      SubstitutionArg arg = SubstitutionArg::error ();
+      bool ok
+	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
+      if (ok)
+	sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
+    }
+
+  auto fty = projection->base;
+  bool is_param_ty = fty->get_kind () == TypeKind::PARAM;
+  if (is_param_ty)
+    {
+      ParamType *p = static_cast<ParamType *> (fty);
+
+      SubstitutionArg arg = SubstitutionArg::error ();
+      bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
+      if (ok)
+	{
+	  auto argt = arg.get_tyty ();
+	  bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
+	  bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
+
+	  if (arg_is_param || arg_is_concrete)
+	    {
+	      auto new_field = argt->clone ();
+	      new_field->set_ref (fty->get_ref ());
+	      projection->base = new_field;
+	    }
+	  else
+	    {
+	      fty->set_ty_ref (argt->get_ref ());
+	    }
+	}
+    }
+  else if (fty->needs_generic_substitutions ()
+	   || fty->contains_type_parameters ())
+    {
+      BaseType *concrete
+	= Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
+
+      if (concrete == nullptr || concrete->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (subst_mappings.get_locus (),
+			 "Failed to resolve field substitution type: %s",
+			 fty->as_string ().c_str ());
+	  return nullptr;
+	}
+
+      auto new_field = concrete->clone ();
+      new_field->set_ref (fty->get_ref ());
+      projection->base = new_field;
+    }
+
+  return projection;
 }
 
 // rust-tyty-call.h
