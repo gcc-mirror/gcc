@@ -115,7 +115,7 @@ path_range_query::debug ()
 // Return the range of NAME at the end of the path being analyzed.
 
 bool
-path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
+path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
 {
   if (!irange::supports_type_p (TREE_TYPE (name)))
     return false;
@@ -133,6 +133,25 @@ path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
 
   r.set_varying (TREE_TYPE (name));
   return true;
+}
+
+bool
+path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
+{
+  if (internal_range_of_expr (r, name, stmt))
+    {
+      if (r.undefined_p ())
+	m_undefined_path = true;
+
+      return true;
+    }
+  return false;
+}
+
+bool
+path_range_query::unreachable_path_p ()
+{
+  return m_undefined_path;
 }
 
 // Return the range of STMT at the end of the path being analyzed.
@@ -345,6 +364,7 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
 {
   set_path (path);
   m_imports = imports;
+  m_undefined_path = false;
 
   if (DEBUG_SOLVER)
     {

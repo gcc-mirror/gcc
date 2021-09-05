@@ -213,19 +213,13 @@ edge
 back_threader::find_taken_edge_cond (const vec<basic_block> &path,
 				     gcond *cond)
 {
-  m_solver.precompute_ranges (path, m_imports);
-
-  // Check if either operand is unreachable since this knowledge could
-  // help the caller cut down the search space.
   int_range_max r;
-  m_solver.range_of_expr (r, gimple_cond_lhs (cond));
-  if (r.undefined_p ())
-    return UNREACHABLE_EDGE;
-  m_solver.range_of_expr (r, gimple_cond_rhs (cond));
-  if (r.undefined_p ())
-    return UNREACHABLE_EDGE;
 
+  m_solver.precompute_ranges (path, m_imports);
   m_solver.range_of_stmt (r, cond);
+
+  if (m_solver.unreachable_path_p ())
+    return UNREACHABLE_EDGE;
 
   int_range<2> true_range (boolean_true_node, boolean_true_node);
   int_range<2> false_range (boolean_false_node, boolean_false_node);
