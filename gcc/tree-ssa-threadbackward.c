@@ -83,7 +83,7 @@ public:
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   void find_paths (basic_block bb, tree name);
-  void maybe_register_path (edge taken_edge);
+  edge maybe_register_path ();
   bool find_paths_to_names (basic_block bb, bitmap imports);
   bool resolve_def (tree name, bitmap interesting, vec<tree> &worklist);
   bool resolve_phi (gphi *phi, bitmap imports);
@@ -134,22 +134,31 @@ back_threader::~back_threader ()
 }
 
 // Register the current path for jump threading if it's profitable to
-// do so.  TAKEN_EDGE is the known edge out of the path.
+// do so.
+//
+// Return the known taken edge out of the path, even if the path was
+// not registered, or NULL if the taken edge could not be determined.
 
-void
-back_threader::maybe_register_path (edge taken_edge)
+edge
+back_threader::maybe_register_path ()
 {
-  bool irreducible = false;
-  bool profitable
-    = m_profit.profitable_path_p (m_path, m_name, taken_edge, &irreducible);
+  edge taken_edge = find_taken_edge (m_path);
 
-  if (profitable)
+  if (taken_edge && taken_edge != UNREACHABLE_EDGE)
     {
-      m_registry.register_path (m_path, taken_edge);
+      bool irreducible = false;
+      bool profitable
+	= m_profit.profitable_path_p (m_path, m_name, taken_edge, &irreducible);
 
-      if (irreducible)
-	vect_free_loop_info_assumptions (m_path[0]->loop_father);
+      if (profitable)
+	{
+	  m_registry.register_path (m_path, taken_edge);
+
+	  if (irreducible)
+	    vect_free_loop_info_assumptions (m_path[0]->loop_father);
+	}
     }
+  return taken_edge;
 }
 
 // Return the known taken edge out of a path.  If the path can be
@@ -295,12 +304,9 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
       else if (TREE_CODE (arg) == INTEGER_CST)
 	{
 	  m_path.safe_push (e->src);
-	  edge taken_edge = find_taken_edge (m_path);
+	  edge taken_edge = maybe_register_path ();
 	  if (taken_edge && taken_edge != UNREACHABLE_EDGE)
-	    {
-	      maybe_register_path (taken_edge);
-	      done = true;
-	    }
+	    done = true;
 	  m_path.pop ();
 	}
     }
@@ -388,12 +394,8 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
 	   || bitmap_bit_p (m_ranger.gori ().exports (bb), i))
 	  && m_path.length () > 1)
 	{
-	  edge taken_edge = find_taken_edge (m_path);
-	  if (taken_edge)
+	  if (maybe_register_path ())
 	    {
-	      if (taken_edge != UNREACHABLE_EDGE)
-		maybe_register_path (taken_edge);
-
 	      done = true;
 	      goto leave_bb;
 	    }
