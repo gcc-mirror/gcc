@@ -2991,7 +2991,15 @@ package body Sem_Ch13 is
             --  Copy expression for later processing by the procedures
             --  Check_Aspect_At_[Freeze_Point | End_Of_Declarations]
 
-            Set_Entity (Id, New_Copy_Tree (Expr));
+            --  The expression may be a subprogram name, and can
+            --  be an operator name that appears as a string, but
+            --  requires its own analysis procedure (see sem_ch6).
+
+            if Nkind (Expr) = N_Operator_Symbol then
+               Set_Entity (Id, Expr);
+            else
+               Set_Entity (Id, New_Copy_Tree (Expr));
+            end if;
 
             --  Set Delay_Required as appropriate to aspect
 
@@ -16668,7 +16676,15 @@ package body Sem_Ch13 is
       end if;
 
       if not Overloaded and then not Present (Entity (Func_Name)) then
-         Analyze (Func_Name);
+         --  The aspect is specified by a subprogram name, which
+         --  may be an operator name given originally by a string.
+
+         if Is_Operator_Name (Chars (Func_Name)) then
+            Analyze_Operator_Symbol (Func_Name);
+         else
+            Analyze (Func_Name);
+         end if;
+
          Overloaded := Is_Overloaded (Func_Name);
       end if;
 

@@ -2126,8 +2126,15 @@ package body Sem_Ch6 is
                   and then Attribute_Name (Par) /= Name_Value)
         or else (Nkind (Maybe_Aspect_Spec) = N_Aspect_Specification
                   and then Get_Aspect_Id (Maybe_Aspect_Spec)
-                            --  include other aspects here ???
-                            in Aspect_Stable_Properties | Aspect_Aggregate)
+
+                            --  Include aspects that can be specified by a
+                            --  subprogram name, which can be an operator.
+
+                            in  Aspect_Stable_Properties
+                              | Aspect_Integer_Literal
+                              | Aspect_Real_Literal
+                              | Aspect_String_Literal
+                              | Aspect_Aggregate)
       then
          Find_Direct_Name (N);
 
