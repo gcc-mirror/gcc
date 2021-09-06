@@ -1,4 +1,6 @@
 /* { dg-do run } */
+/* { dg-additional-options "-foffload-options=nvptx-none=-latomic" { target { offload_target_nvptx } } } */
+
 #include <stdlib.h>
 
 #define N 32

@@ -1,3 +1,10 @@
+2021-09-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/target-43.c: '-latomic' for nvptx offloading.
+
 2021-08-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
