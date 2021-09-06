@@ -42,7 +42,7 @@ AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
 
-AM_INIT_AUTOMAKE([1.9.3 foreign no-dist -Wall -Wno-portability])
+AM_INIT_AUTOMAKE([1.9.3 no-define foreign no-dist -Wall -Wno-portability])
 
 AH_TEMPLATE(PACKAGE, [Name of package])
 AH_TEMPLATE(VERSION, [Version number of package])

@@ -4531,15 +4531,6 @@ fi
  VERSION='version-unused'
 
 
-cat >>confdefs.h <<_ACEOF
-#define PACKAGE "$PACKAGE"
-_ACEOF
-
-
-cat >>confdefs.h <<_ACEOF
-#define VERSION "$VERSION"
-_ACEOF
-
 # Some tools Automake needs.
 
 ACLOCAL=${ACLOCAL-"${am_missing_run}aclocal-${am__api_version}"}
@@ -12694,7 +12685,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12697 "configure"
+#line 12688 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12800,7 +12791,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12803 "configure"
+#line 12794 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
