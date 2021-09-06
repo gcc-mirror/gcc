@@ -1,3 +1,22 @@
+2021-09-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-08-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* simplify.c (substring_has_constant_len): Minimize checks for
+	substring expressions being allowed.
+
+2021-09-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-08-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* simplify.c (substring_has_constant_len): New.
+	(gfc_simplify_len): Handle case of substrings with constant
+	bounds.
+
 2021-09-03  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

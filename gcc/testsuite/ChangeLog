@@ -1,3 +1,19 @@
+2021-09-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-08-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* gfortran.dg/pr100950.f90: Extend coverage.
+
+2021-09-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-08-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* gfortran.dg/pr100950.f90: New test.
+
 2021-09-03  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
