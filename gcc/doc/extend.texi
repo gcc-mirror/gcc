@@ -1076,9 +1076,10 @@ systems where @code{__float128} is supported.  The @code{_Float32}
 type is supported on all systems supporting IEEE binary32; the
 @code{_Float64} and @code{_Float32x} types are supported on all systems
 supporting IEEE binary64.  The @code{_Float16} type is supported on AArch64
-systems by default, and on ARM systems when the IEEE format for 16-bit
-floating-point types is selected with @option{-mfp16-format=ieee}.
-GCC does not currently support @code{_Float128x} on any systems.
+systems by default, on ARM systems when the IEEE format for 16-bit
+floating-point types is selected with @option{-mfp16-format=ieee} and,
+for both C and C++, on x86 systems with SSE2 enabled. GCC does not currently
+support @code{_Float128x} on any systems.
 
 On the i386, x86_64, IA-64, and HP-UX targets, you can declare complex
 types using the corresponding internal complex type, @code{XCmode} for
@@ -1108,6 +1109,9 @@ On ARM and AArch64 targets, GCC supports half-precision (16-bit) floating
 point via the @code{__fp16} type defined in the ARM C Language Extensions.
 On ARM systems, you must enable this type explicitly with the
 @option{-mfp16-format} command-line option in order to use it.
+On x86 targets with SSE2 enabled, GCC supports half-precision (16-bit)
+floating point via the @code{_Float16} type. For C++, x86 provides a builtin
+type named @code{_Float16} which contains same data format as C.
 
 ARM targets support two incompatible representations for half-precision
 floating-point values.  You must choose one of the representations and
@@ -1151,17 +1155,12 @@ calls.
 It is recommended that portable code use the @code{_Float16} type defined
 by ISO/IEC TS 18661-3:2015.  @xref{Floating Types}.
 
-On x86 targets with @code{target("sse2")} and above, GCC supports half-precision
-(16-bit) floating point via the @code{_Float16} type which is defined by
-18661-3:2015. For C++, x86 provide a builtin type named @code{_Float16}
-which contains same data format as C.
-
-Without @option{-mavx512fp16}, @code{_Float16} type is storage only, all
-operations will be emulated by software emulation and the @code{float}
-instructions. The default behavior for @code{FLT_EVAL_METHOD} is to keep
-the intermediate result of the operation as 32-bit precision. This may lead
-to inconsistent behavior between software emulation and AVX512-FP16
-instructions.
+On x86 targets with SSE2 enabled, without @option{-mavx512fp16},
+@code{_Float16} type is storage only, all operations will be emulated by
+software emulation and the @code{float} instructions. The default behavior
+for @code{FLT_EVAL_METHOD} is to keep the intermediate result of the operation
+as 32-bit precision. This may lead to inconsistent behavior between software
+emulation and AVX512-FP16 instructions.
 
 @node Decimal Float
 @section Decimal Floating Types
