@@ -1,3 +1,33 @@
+2021-09-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/altivec.md (UNSPEC_XXSPLTIDP): Rename from
+	UNSPEC_XXSPLTID.
+	(xxspltidp_v2df): Likewise.
+	(xxspltidp_v2df_inst): Likewise.
+
+2021-09-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/altivec.md (xxspltiw_v4si): Use vecperm type
+	attribute.  Backport from master, 2021-08-24.
+	(xxspltiw_v4si_inst): Likewise.
+	(xxspltiw_v4sf_inst): Likewise.
+	(xxspltidp_v2df): Likewise.
+	(xxspltidp_v2df_inst): Likewise.
+	(xxsplti32dx_v4si): Likewise.
+	(xxsplti32dx_v4si_inst): Likewise.
+	(xxsplti32dx_v4sf_inst): Likewise.
+	(xxblend_<mode>): Likewise.
+	(xxpermx): Likewise.
+	(xxpermx_inst): Likewise.
+	(xxeval): Likewise.
+
+2021-09-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102166
+	* config/i386/amxbf16intrin.h : Remove macro check for __AMX_BF16__.
+	* config/i386/amxint8intrin.h : Remove macro check for __AMX_INT8__.
+	* config/i386/amxtileintrin.h : Remove macro check for __AMX_TILE__.
+
 2021-09-02  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

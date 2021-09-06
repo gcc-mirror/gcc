@@ -181,7 +181,7 @@
    UNSPEC_SLDB
    UNSPEC_SRDB
    UNSPEC_XXSPLTIW
-   UNSPEC_XXSPLTID
+   UNSPEC_XXSPLTIDP
    UNSPEC_XXSPLTI32DX
    UNSPEC_XXBLEND
    UNSPEC_XXPERMX
@@ -854,7 +854,7 @@
 		     UNSPEC_XXSPLTIW))]
  "TARGET_POWER10"
  "xxspltiw %x0,%1"
- [(set_attr "type" "vecsimple")
+ [(set_attr "type" "vecperm")
   (set_attr "prefixed" "yes")])
 
 (define_expand "xxspltiw_v4sf"
@@ -874,13 +874,13 @@
 		     UNSPEC_XXSPLTIW))]
  "TARGET_POWER10"
  "xxspltiw %x0,%1"
- [(set_attr "type" "vecsimple")
+ [(set_attr "type" "vecperm")
   (set_attr "prefixed" "yes")])
 
 (define_expand "xxspltidp_v2df"
   [(set (match_operand:V2DF 0 "register_operand" )
 	(unspec:V2DF [(match_operand:SF 1 "const_double_operand")]
-		     UNSPEC_XXSPLTID))]
+		     UNSPEC_XXSPLTIDP))]
  "TARGET_POWER10"
 {
   long value = rs6000_const_f32_to_i32 (operands[1]);
@@ -891,10 +891,10 @@
 (define_insn "xxspltidp_v2df_inst"
   [(set (match_operand:V2DF 0 "register_operand" "=wa")
 	(unspec:V2DF [(match_operand:SI 1 "c32bit_cint_operand" "n")]
-		     UNSPEC_XXSPLTID))]
+		     UNSPEC_XXSPLTIDP))]
   "TARGET_POWER10"
   "xxspltidp %x0,%1"
-  [(set_attr "type" "vecsimple")
+  [(set_attr "type" "vecperm")
    (set_attr "prefixed" "yes")])
 
 (define_expand "xxsplti32dx_v4si"
@@ -914,7 +914,7 @@
 					 GEN_INT (index), operands[3]));
    DONE;
 }
- [(set_attr "type" "vecsimple")])
+ [(set_attr "type" "vecperm")])
 
 (define_insn "xxsplti32dx_v4si_inst"
   [(set (match_operand:V4SI 0 "register_operand" "=wa")
@@ -924,7 +924,7 @@
 		     UNSPEC_XXSPLTI32DX))]
   "TARGET_POWER10"
   "xxsplti32dx %x0,%2,%3"
-  [(set_attr "type" "vecsimple")
+  [(set_attr "type" "vecperm")
    (set_attr "prefixed" "yes")])
 
 (define_expand "xxsplti32dx_v4sf"
@@ -953,7 +953,7 @@
 		     UNSPEC_XXSPLTI32DX))]
   "TARGET_POWER10"
   "xxsplti32dx %x0,%2,%3"
-  [(set_attr "type" "vecsimple")
+  [(set_attr "type" "vecperm")
    (set_attr "prefixed" "yes")])
 
 (define_insn "xxblend_<mode>"
@@ -964,7 +964,7 @@
 		    UNSPEC_XXBLEND))]
   "TARGET_POWER10"
   "xxblendv<VM3_char> %x0,%x1,%x2,%x3"
-  [(set_attr "type" "vecsimple")
+  [(set_attr "type" "vecperm")
    (set_attr "prefixed" "yes")])
 
 (define_expand "xxpermx"
@@ -998,7 +998,7 @@
 
   DONE;
 }
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecperm")])
 
 (define_insn "xxpermx_inst"
   [(set (match_operand:V2DI 0 "register_operand" "+v")
@@ -1009,7 +1009,7 @@
 		     UNSPEC_XXPERMX))]
   "TARGET_POWER10"
   "xxpermx %x0,%x1,%x2,%x3,%4"
-  [(set_attr "type" "vecsimple")
+  [(set_attr "type" "vecperm")
    (set_attr "prefixed" "yes")])
 
 (define_expand "vstrir_<mode>"
@@ -3871,7 +3871,7 @@
 		     UNSPEC_XXEVAL))]
    "TARGET_POWER10"
    "xxeval %0,%1,%2,%3,%4"
-   [(set_attr "type" "vecsimple")
+   [(set_attr "type" "vecperm")
     (set_attr "prefixed" "yes")])
 
 (define_expand "vec_unpacku_hi_v16qi"
