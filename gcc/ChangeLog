@@ -1,3 +1,37 @@
+2021-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::range_of_stmt): Remove
+	GIMPLE_COND special casing.
+	(path_range_query::range_defined_in_block): Use range_of_stmt
+	instead of calling fold_range directly.
+
+2021-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::range_of_expr): Set
+	m_undefined_path when appropriate.
+	(path_range_query::internal_range_of_expr): Copy from range_of_expr.
+	(path_range_query::unreachable_path_p): New.
+	(path_range_query::precompute_ranges): Set m_undefined_path.
+	* gimple-range-path.h (path_range_query::unreachable_path_p): New.
+	(path_range_query::internal_range_of_expr): New.
+	* tree-ssa-threadbackward.c (back_threader::find_taken_edge_cond):
+	Use unreachable_path_p.
+
+2021-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::maybe_register_path):
+	Remove argument and call find_taken_edge.
+	(back_threader::resolve_phi): Do not calculate taken edge before
+	calling maybe_register_path.
+	(back_threader::find_paths_to_names): Same.
+
+2021-09-05  Jeff Law  <jlaw@localhost.localdomain>
+
+	* config/h8300/h8300.md (QHSI2 mode iterator): New mode iterator.
+	* config/h8300/testcompare.md (store_c): Update name, use new
+	QHSI2 iterator.
+	(store_neg_c, store_shifted_c): New patterns.
+
 2021-09-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/102107
