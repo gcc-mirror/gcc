@@ -5,7 +5,7 @@
 struct shared_count {
   shared_count () { }
   shared_count (shared_count &r)
-    : pi (r.pi) { }     // { dg-warning "\\\[-Wuninitialized" }
+    : pi (r.pi) { }     // { dg-warning "\\\[-Wuninitialized" "" { xfail { i?86-*-* x86_64-*-* } } }
   int pi;
 };
 

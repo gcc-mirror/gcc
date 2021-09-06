@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-store-merging" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-store-merging" } */
 
 void f (void*);
 

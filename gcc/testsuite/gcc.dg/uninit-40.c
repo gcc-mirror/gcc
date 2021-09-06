@@ -1,6 +1,6 @@
 /* PR tree-optimization/98597 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wuninitialized" } */
+/* { dg-options "-O2 -fno-tree-vectorize -Wuninitialized" } */
 
 union U { double d; int i; float f; };
 struct S { char a; int b; char c; unsigned d; union U e; int f[3]; unsigned g[3]; };

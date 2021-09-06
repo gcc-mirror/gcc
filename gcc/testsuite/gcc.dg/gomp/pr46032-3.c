@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fopenmp -std=c99 -fipa-pta -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fopenmp -std=c99 -fipa-pta -fdump-tree-optimized" } */
 
 #define N 2
 

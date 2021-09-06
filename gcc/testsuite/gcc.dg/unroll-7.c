@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-rtl-loop2_unroll-details -funroll-loops" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-rtl-loop2_unroll-details -funroll-loops" } */
 /* { dg-require-effective-target int32plus } */
 
 extern int *a;
