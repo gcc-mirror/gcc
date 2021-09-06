@@ -26,8 +26,9 @@ class Mangler
 public:
   enum MangleVersion
   {
+    // Values defined in rust/lang.opt
     LEGACY = 0,
-    V0,
+    V0 = 1,
   };
 
   // this needs to support Legacy and V0 see github #429 or #305
@@ -40,18 +41,12 @@ public:
 				const std::string &name,
 				const std::string &crate_name) const;
 
-  static bool choose_mangling (std::string arg)
+  static void set_mangling (int frust_mangling_value)
   {
-    if (arg == "legacy")
-      version = MangleVersion::LEGACY;
-    else if (arg == "v0")
-      version = MangleVersion::V0;
-    else
-      return false;
-
-    return true;
+    version = static_cast<MangleVersion> (frust_mangling_value);
   }
 
+private:
   static enum MangleVersion version;
 };
 } // namespace Compile

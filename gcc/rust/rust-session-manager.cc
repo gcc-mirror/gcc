@@ -371,8 +371,7 @@ Session::handle_option (
 	}
       break;
     case OPT_frust_mangling_:
-      if (arg != nullptr)
-	ret = Compile::Mangler::choose_mangling (std::string (arg));
+      Compile::Mangler::set_mangling (flag_rust_mangling);
     // no option handling for -o
     default:
       // return 1 to indicate option is valid
