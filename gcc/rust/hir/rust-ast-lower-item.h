@@ -22,6 +22,7 @@
 #include "rust-diagnostics.h"
 
 #include "rust-ast-lower-base.h"
+#include "rust-ast-lower-enumitem.h"
 #include "rust-ast-lower-type.h"
 #include "rust-ast-lower-implitem.h"
 #include "rust-ast-lower-stmt.h"
@@ -65,7 +66,7 @@ public:
     // should be lowered from module.get_vis()
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
-    auto items = std::vector<std::unique_ptr<Item> > ();
+    auto items = std::vector<std::unique_ptr<Item>> ();
 
     for (auto &item : module.get_items ())
       {
@@ -93,11 +94,11 @@ public:
 
   void visit (AST::TypeAlias &alias) override
   {
-    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (alias.has_generics ())
       generic_params = lower_generic_params (alias.get_generic_params ());
 
@@ -125,14 +126,14 @@ public:
 
   void visit (AST::TupleStruct &struct_decl) override
   {
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (struct_decl.has_generics ())
       {
 	generic_params
 	  = lower_generic_params (struct_decl.get_generic_params ());
       }
 
-    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
@@ -175,35 +176,16 @@ public:
 			       struct_decl.get_locus ());
   }
 
-  /* Checks whether the name of a field already exists.  Returns true
-     and produces an error if so.  */
-  static bool struct_field_name_exists (std::vector<HIR::StructField> &fields,
-					HIR::StructField &new_field)
-  {
-    for (auto &field : fields)
-      {
-	if (field.get_field_name ().compare (new_field.get_field_name ()) == 0)
-	  {
-	    RichLocation r (new_field.get_locus ());
-	    r.add_range (field.get_locus ());
-	    rust_error_at (r, "duplicate field name %qs",
-			   field.get_field_name ().c_str ());
-	    return true;
-	  }
-      }
-    return false;
-  }
-
   void visit (AST::StructStruct &struct_decl) override
   {
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (struct_decl.has_generics ())
       {
 	generic_params
 	  = lower_generic_params (struct_decl.get_generic_params ());
       }
 
-    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
@@ -251,16 +233,55 @@ public:
 			       struct_decl.get_locus ());
   }
 
+  void visit (AST::Enum &enum_decl) override
+  {
+    std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
+    if (enum_decl.has_generics ())
+      {
+	generic_params = lower_generic_params (enum_decl.get_generic_params ());
+      }
+
+    std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    // bool is_unit = enum_decl.is_zero_variant ();
+    std::vector<std::unique_ptr<HIR::EnumItem>> items;
+    for (auto &variant : enum_decl.get_variants ())
+      {
+	HIR::EnumItem *hir_item
+	  = ASTLoweringEnumItem::translate (variant.get ());
+	items.push_back (std::unique_ptr<HIR::EnumItem> (hir_item));
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, enum_decl.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::Enum (mapping, enum_decl.get_identifier (), vis,
+				std::move (generic_params),
+				std::move (where_clause), /* is_unit, */
+				std::move (items), enum_decl.get_outer_attrs (),
+				enum_decl.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       enum_decl.get_locus ());
+  }
+
   void visit (AST::Union &union_decl) override
   {
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (union_decl.has_generics ())
       {
 	generic_params
 	  = lower_generic_params (union_decl.get_generic_params ());
       }
 
-    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
@@ -359,14 +380,14 @@ public:
   void visit (AST::Function &function) override
   {
     // ignore for now and leave empty
-    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers (
       HIR::FunctionQualifiers::AsyncConstStatus::NONE, false);
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     // need
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (function.has_generics ())
       {
 	generic_params = lower_generic_params (function.get_generic_params ());
@@ -443,12 +464,12 @@ public:
 
   void visit (AST::InherentImpl &impl_block) override
   {
-    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (impl_block.has_generics ())
       {
 	generic_params
@@ -486,7 +507,7 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    std::vector<std::unique_ptr<HIR::ImplItem> > impl_items;
+    std::vector<std::unique_ptr<HIR::ImplItem>> impl_items;
     std::vector<HirId> impl_item_ids;
     for (auto &impl_item : impl_block.get_impl_items ())
       {
@@ -523,12 +544,12 @@ public:
 
   void visit (AST::Trait &trait) override
   {
-    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (trait.has_generics ())
       {
 	generic_params = lower_generic_params (trait.get_generic_params ());
@@ -557,9 +578,9 @@ public:
 	  }
       }
 
-    std::vector<std::unique_ptr<HIR::TypeParamBound> > type_param_bounds;
+    std::vector<std::unique_ptr<HIR::TypeParamBound>> type_param_bounds;
 
-    std::vector<std::unique_ptr<HIR::TraitItem> > trait_items;
+    std::vector<std::unique_ptr<HIR::TraitItem>> trait_items;
     std::vector<HirId> trait_item_ids;
     for (auto &item : trait.get_trait_items ())
       {
@@ -595,12 +616,12 @@ public:
 
   void visit (AST::TraitImpl &impl_block) override
   {
-    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (impl_block.has_generics ())
       {
 	generic_params
@@ -640,7 +661,7 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    std::vector<std::unique_ptr<HIR::ImplItem> > impl_items;
+    std::vector<std::unique_ptr<HIR::ImplItem>> impl_items;
     std::vector<HirId> impl_item_ids;
     for (auto &impl_item : impl_block.get_impl_items ())
       {
@@ -680,7 +701,7 @@ public:
   {
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
-    std::vector<std::unique_ptr<HIR::ExternalItem> > extern_items;
+    std::vector<std::unique_ptr<HIR::ExternalItem>> extern_items;
     for (auto &item : extern_block.get_extern_items ())
       {
 	HIR::ExternalItem *lowered

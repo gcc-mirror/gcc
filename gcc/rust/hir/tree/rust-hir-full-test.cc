@@ -3086,23 +3086,8 @@ StructExprStructFields::as_string () const
 std::string
 EnumItem::as_string () const
 {
-  // outer attributes
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	{
-	  str += "\n  " + attr.as_string ();
-	}
-    }
-
-  str += "\n" + variant_name;
+  std::string str = Item::as_string ();
+  str += variant_name;
 
   return str;
 }

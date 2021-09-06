@@ -260,6 +260,42 @@ public:
     resolver->get_type_scope ().pop ();
   }
 
+  void visit (AST::Enum &enum_decl) override
+  {
+    NodeId scope_node_id = enum_decl.get_node_id ();
+    resolver->get_type_scope ().push (scope_node_id);
+
+    if (enum_decl.has_generics ())
+      {
+	for (auto &generic : enum_decl.get_generic_params ())
+	  {
+	    ResolveGenericParam::go (generic.get (), enum_decl.get_node_id ());
+	  }
+      }
+
+    /* The actual fields are inside the variants.  */
+    for (auto &variant : enum_decl.get_variants ())
+      ResolveItem::go (variant.get ());
+
+    resolver->get_type_scope ().pop ();
+  }
+
+  /* EnumItem doesn't need to be handled, no fields.  */
+
+  void visit (AST::EnumItemTuple &item) override
+  {
+    for (auto &field : item.get_tuple_fields ())
+      ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+  }
+
+  void visit (AST::EnumItemStruct &item) override
+  {
+    for (auto &field : item.get_struct_fields ())
+      ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+  }
+
+  /* EnumItemDiscriminant doesn't need to be handled, no fields.  */
+
   void visit (AST::StructStruct &struct_decl) override
   {
     NodeId scope_node_id = struct_decl.get_node_id ();

@@ -4431,6 +4431,9 @@ Parser<ManagedTokenSource>::parse_enum_item ()
   // parse outer attributes if they exist
   AST::AttrVec outer_attrs = parse_outer_attributes ();
 
+  // parse visibility, which may or may not exist
+  AST::Visibility vis = parse_visibility ();
+
   // parse name for enum item, which is required
   const_TokenPtr item_name_tok = lexer.peek_token ();
   if (item_name_tok->get_id () != IDENTIFIER)
@@ -4463,7 +4466,7 @@ Parser<ManagedTokenSource>::parse_enum_item ()
 	  }
 
 	return std::unique_ptr<AST::EnumItemTuple> (new AST::EnumItemTuple (
-	  std::move (item_name), std::move (tuple_fields),
+	  std::move (item_name), std::move (vis), std::move (tuple_fields),
 	  std::move (outer_attrs), item_name_tok->get_locus ()));
       }
       case LEFT_CURLY: {
@@ -4480,7 +4483,7 @@ Parser<ManagedTokenSource>::parse_enum_item ()
 	  }
 
 	return std::unique_ptr<AST::EnumItemStruct> (new AST::EnumItemStruct (
-	  std::move (item_name), std::move (struct_fields),
+	  std::move (item_name), std::move (vis), std::move (struct_fields),
 	  std::move (outer_attrs), item_name_tok->get_locus ()));
       }
       case EQUAL: {
@@ -4490,7 +4493,7 @@ Parser<ManagedTokenSource>::parse_enum_item ()
 	std::unique_ptr<AST::Expr> discriminant_expr = parse_expr ();
 
 	return std::unique_ptr<AST::EnumItemDiscriminant> (
-	  new AST::EnumItemDiscriminant (std::move (item_name),
+	  new AST::EnumItemDiscriminant (std::move (item_name), std::move (vis),
 					 std::move (discriminant_expr),
 					 std::move (outer_attrs),
 					 item_name_tok->get_locus ()));
@@ -4498,7 +4501,8 @@ Parser<ManagedTokenSource>::parse_enum_item ()
     default:
       // regular enum with just an identifier
       return std::unique_ptr<AST::EnumItem> (
-	new AST::EnumItem (std::move (item_name), std::move (outer_attrs),
+	new AST::EnumItem (std::move (item_name), std::move (vis),
+			   std::move (outer_attrs),
 			   item_name_tok->get_locus ()));
     }
 }

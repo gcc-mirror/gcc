@@ -1,4 +1,9 @@
-enum E { T0(), T1(i32), T2(i32,u32) }
+enum E        // { dg-warning "unused name" }
+{
+  T0(),       // { dg-warning "unused name" }
+  T1(i32),    // { dg-warning "unused name" }
+  T2(i32,u32) // { dg-warning "unused name" }
+}
 
 /* The following doesn't parse yet...
 fn f(e0: E, e1: E, e2: E) -> (E,E,E,())

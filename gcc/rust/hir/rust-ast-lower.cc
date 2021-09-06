@@ -520,5 +520,25 @@ ASTLoweringBase::lower_bound (AST::TypeParamBound *bound)
   return ASTLoweringTypeBounds::translate (bound);
 }
 
+/* Checks whether the name of a field already exists.  Returns true
+   and produces an error if so.  */
+bool
+struct_field_name_exists (std::vector<HIR::StructField> &fields,
+			  HIR::StructField &new_field)
+{
+  for (auto &field : fields)
+    {
+      if (field.get_field_name ().compare (new_field.get_field_name ()) == 0)
+	{
+	  RichLocation r (new_field.get_locus ());
+	  r.add_range (field.get_locus ());
+	  rust_error_at (r, "duplicate field name %qs",
+			 field.get_field_name ().c_str ());
+	  return true;
+	}
+    }
+  return false;
+}
+
 } // namespace HIR
 } // namespace Rust

@@ -88,6 +88,75 @@ public:
       });
   }
 
+  void visit (AST::Enum &enum_decl) override
+  {
+    auto path
+      = prefix.append (CanonicalPath::new_seg (enum_decl.get_node_id (),
+					       enum_decl.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, enum_decl.get_node_id (), enum_decl.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (enum_decl.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    for (auto &variant : enum_decl.get_variants ())
+      ResolveTopLevel::go (variant.get (), path);
+  }
+
+  void visit (AST::EnumItem &item) override
+  {
+    auto path = prefix.append (
+      CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, item.get_node_id (), item.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (item.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+  }
+
+  void visit (AST::EnumItemTuple &item) override
+  {
+    auto path = prefix.append (
+      CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, item.get_node_id (), item.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (item.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+  }
+
+  void visit (AST::EnumItemStruct &item) override
+  {
+    auto path = prefix.append (
+      CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, item.get_node_id (), item.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (item.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+  }
+
+  void visit (AST::EnumItemDiscriminant &item) override
+  {
+    auto path = prefix.append (
+      CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, item.get_node_id (), item.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (item.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+  }
+
   void visit (AST::StructStruct &struct_decl) override
   {
     auto path
