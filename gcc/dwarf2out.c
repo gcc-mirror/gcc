@@ -13542,6 +13542,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
   tree qualified_type;
   tree name, low, high;
   dw_die_ref mod_scope;
+  struct array_descr_info info;
   /* Only these cv-qualifiers are currently handled.  */
   const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
 			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC | 
@@ -13786,6 +13787,13 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	    }
 	}
     }
+  else if (code == ARRAY_TYPE
+	   || (lang_hooks.types.get_array_descr_info
+	       && lang_hooks.types.get_array_descr_info (type, &info)))
+    {
+      gen_type_die (type, context_die);
+      return lookup_type_die (type);
+    }
   else if (code == INTEGER_TYPE
 	   && TREE_TYPE (type) != NULL_TREE
 	   && subrange_type_for_debug_p (type, &low, &high))
@@ -13822,8 +13830,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	 copy was created to help us keep track of typedef names) and
 	 that copy might have a different TYPE_UID from the original
 	 ..._TYPE node.  */
-      if (TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE)
+      if (code == FUNCTION_TYPE || code == METHOD_TYPE)
 	{
 	  /* For function/method types, can't just use type_main_variant here,
 	     because that can have different ref-qualifiers for C++,
@@ -13836,13 +13843,12 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	      return lookup_type_die (t);
 	  return lookup_type_die (type);
 	}
-      else if (TREE_CODE (type) != VECTOR_TYPE
-	       && TREE_CODE (type) != ARRAY_TYPE)
-	return lookup_type_die (type_main_variant (type));
-      else
-	/* Vectors have the debugging information in the type,
-	   not the main variant.  */
+      /* Vectors have the debugging information in the type,
+	 not the main variant.  */
+      else if (code == VECTOR_TYPE)
 	return lookup_type_die (type);
+      else
+	return lookup_type_die (type_main_variant (type));
     }
 
   /* Builtin types don't have a DECL_ORIGINAL_TYPE.  For those,
