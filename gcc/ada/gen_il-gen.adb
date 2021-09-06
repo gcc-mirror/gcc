@@ -2423,7 +2423,8 @@ package body Gen_IL.Gen is
             end if;
          end loop;
 
-         Put (S, ")" & LF & "return " & Node_Or_Entity (Root) & "_Id");
+         Put (S, ")" & LF);
+         Put (S, "return " & Node_Or_Entity (Root) & "_Id");
          Decrease_Indent (S, 2);
          Decrease_Indent (S, 1);
       end Put_Make_Spec;
