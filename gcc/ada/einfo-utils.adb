@@ -698,6 +698,30 @@ package body Einfo.Utils is
          P := Empty;
       end if;
 
+      --  Declarations are sometimes removed by replacing them with other
+      --  irrelevant nodes. For example, a declare expression can be turned
+      --  into a literal by constant folding. In these cases we want to
+      --  return Empty.
+
+      if Nkind (P) in
+          N_Assignment_Statement
+        | N_Integer_Literal
+        | N_Procedure_Call_Statement
+        | N_Subtype_Indication
+        | N_Type_Conversion
+      then
+         P := Empty;
+      end if;
+
+      --  The following Assert indicates what kinds of nodes can be returned;
+      --  they are not all "declarations".
+
+      if Serious_Errors_Detected = 0 then
+         pragma Assert
+           (Nkind (P) in N_Is_Decl | N_Empty,
+            "Declaration_Node incorrect kind: " & Node_Kind'Image (Nkind (P)));
+      end if;
+
       return P;
    end Declaration_Node;
 
