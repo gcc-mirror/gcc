@@ -2063,6 +2063,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (ptr_difference_const (@0, @1, &diff))
     { build_int_cst_type (type, diff); }))))
 
+/* (&a+b) - (&a[1] + c) -> sizeof(a[0]) + (b - c) */
+(simplify
+ (pointer_diff (pointer_plus ADDR_EXPR@0 @1) (pointer_plus ADDR_EXPR@2 @3))
+ (with { poly_int64 diff; }
+   (if (ptr_difference_const (@0, @2, &diff))
+    (plus { build_int_cst_type (type, diff); } (convert (minus @1 @3))))))
+
+/* (&a+b) !=/== (&a[1] + c) ->  sizeof(a[0]) + b !=/== c */
+(for neeq (ne eq)
+ (simplify
+  (neeq (pointer_plus ADDR_EXPR@0 @1) (pointer_plus ADDR_EXPR@2 @3))
+   (with { poly_int64 diff; tree inner_type = TREE_TYPE (@1);}
+    (if (ptr_difference_const (@0, @2, &diff))
+     (neeq (plus { build_int_cst_type (inner_type, diff); } @1) @3)))))
+
 /* Canonicalize (T *)(ptr - ptr-cst) to &MEM[ptr + -ptr-cst].  */
 (simplify
  (convert (pointer_diff @0 INTEGER_CST@1))
