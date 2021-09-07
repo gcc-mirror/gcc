@@ -60771,6 +60771,12 @@ all-stageautoprofile-ld: maybe-all-stageautoprofile-libctf
 all-stageautofeedback-ld: maybe-all-stageautofeedback-libctf
 install-binutils: maybe-install-opcodes
 install-strip-binutils: maybe-install-strip-opcodes
+install-libctf: maybe-install-bfd
+install-ld: maybe-install-bfd
+install-ld: maybe-install-libctf
+install-strip-libctf: maybe-install-strip-bfd
+install-strip-ld: maybe-install-strip-bfd
+install-strip-ld: maybe-install-strip-libctf
 install-opcodes: maybe-install-bfd
 install-strip-opcodes: maybe-install-strip-bfd
 configure-gas: maybe-configure-intl
@@ -61139,6 +61145,8 @@ check-stagetrain-libctf: maybe-all-stagetrain-ld
 check-stagefeedback-libctf: maybe-all-stagefeedback-ld
 check-stageautoprofile-libctf: maybe-all-stageautoprofile-ld
 check-stageautofeedback-libctf: maybe-all-stageautofeedback-ld
+distclean-gnulib: maybe-distclean-gdb
+distclean-gnulib: maybe-distclean-gdbserver
 all-bison: maybe-all-build-texinfo
 all-flex: maybe-all-build-bison
 all-flex: maybe-all-m4

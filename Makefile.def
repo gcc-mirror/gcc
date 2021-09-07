@@ -471,6 +471,14 @@ dependencies = { module=all-ld; on=all-libctf; };
 dependencies = { module=install-binutils; on=install-opcodes; };
 dependencies = { module=install-strip-binutils; on=install-strip-opcodes; };
 
+// Likewise for ld, libctf, and bfd.
+dependencies = { module=install-libctf; on=install-bfd; };
+dependencies = { module=install-ld; on=install-bfd; };
+dependencies = { module=install-ld; on=install-libctf; };
+dependencies = { module=install-strip-libctf; on=install-strip-bfd; };
+dependencies = { module=install-strip-ld; on=install-strip-bfd; };
+dependencies = { module=install-strip-ld; on=install-strip-libctf; };
+
 // libopcodes depends on libbfd
 dependencies = { module=install-opcodes; on=install-bfd; };
 dependencies = { module=install-strip-opcodes; on=install-strip-bfd; };
@@ -563,6 +571,12 @@ dependencies = { module=configure-libctf; on=all-intl; };
 dependencies = { module=configure-libctf; on=all-zlib; };
 dependencies = { module=configure-libctf; on=all-libiconv; };
 dependencies = { module=check-libctf; on=all-ld; };
+
+// The Makefiles in gdb and gdbserver pull in a file that configure
+// generates in the gnulib directory, so distclean gnulib only after
+// gdb and gdbserver.
+dependencies = { module=distclean-gnulib; on=distclean-gdb; };
+dependencies = { module=distclean-gnulib; on=distclean-gdbserver; };
 
 // Warning, these are not well tested.
 dependencies = { module=all-bison; on=all-intl; };
