@@ -31,7 +31,7 @@ version_dep =
 endif
 
 gfor_c_HEADERS = ISO_Fortran_binding.h
-gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/include
+gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
@@ -1079,15 +1079,9 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 # Place ISO_Fortran_binding.h also under include/ in the build directory such
 # that it can be used for in-built-tree testsuite runs without interference of
 # other files in the build dir - like intrinsic .mod files or other .h files.
-ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding-1-tmpl.h \
-		       $(srcdir)/ISO_Fortran_binding-2-tmpl.h \
-		       $(srcdir)/ISO_Fortran_binding-3-tmpl.h \
-		       kinds.inc
+ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding.h
 	-rm -f $@
-	cp $(srcdir)/ISO_Fortran_binding-1-tmpl.h $@
-	$(COMPILE) -E -dD $(srcdir)/ISO_Fortran_binding-2-tmpl.h \
-	| grep '^#define CFI_type' >> $@
-	cat $(srcdir)/ISO_Fortran_binding-3-tmpl.h >> $@
+	cp $(srcdir)/ISO_Fortran_binding.h $@
 	$(MKDIR_P) include
 	-rm -f include/ISO_Fortran_binding.h
 	cp $@ include/ISO_Fortran_binding.h
