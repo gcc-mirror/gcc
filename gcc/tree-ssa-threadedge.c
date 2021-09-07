@@ -101,11 +101,10 @@ has_phis_p (basic_block bb)
   return !gsi_end_p (gsi_start_phis (bb));
 }
 
-/* Return TRUE for a forwarder block which is defined as having PHIs
-   but no instructions.  */
+/* Return TRUE for a block with PHIs but no statements.  */
 
 static bool
-forwarder_block_p (basic_block bb)
+empty_block_with_phis_p (basic_block bb)
 {
   return gsi_end_p (gsi_start_nondebug_bb (bb)) && has_phis_p (bb);
 }
@@ -123,7 +122,7 @@ potentially_threadable_block (basic_block bb)
      to the loop header.   We want to thread through them as we can
      sometimes thread to the loop exit, which is obviously profitable.
      The interesting case here is when the block has PHIs.  */
-  if (forwarder_block_p (bb))
+  if (empty_block_with_phis_p (bb))
     return true;
 
   /* If BB has a single successor or a single predecessor, then
@@ -1008,7 +1007,7 @@ jump_threader::thread_through_normal_block (vec<jump_thread_edge *> *path,
     {
       /* First case.  The statement simply doesn't have any instructions, but
 	 does have PHIs.  */
-      if (forwarder_block_p (e->dest))
+      if (empty_block_with_phis_p (e->dest))
 	return 0;
 
       /* Second case.  */
