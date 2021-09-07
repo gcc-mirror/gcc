@@ -1,3 +1,53 @@
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101394
+	* tree-ssa-pre.c (do_pre_regular_insertion): Avoid inserting
+	copies from abnormals for a full redundancy.
+
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101291
+	* cfgloopmanip.c (loop_version): Set the loop copy of the
+	versioned loop to the new loop.
+
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101173
+	PR tree-optimization/101280
+	* gimple-loop-interchange.cc
+	(tree_loop_interchange::valid_data_dependences): Properly
+	guard all dependence checks with DDR_REVERSED_P or its
+	inverse.
+
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101105
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list):
+	Only ignore steps when they are equal or scalar order is preserved.
+
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101009
+	* tree-data-ref.c (build_classic_dist_vector_1): Make sure
+	to set *init_b to true when we encounter a constant equal
+	index pair.
+	(compute_affine_dependence): Also dump the actual DR_REF.
+
 2021-09-03  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
