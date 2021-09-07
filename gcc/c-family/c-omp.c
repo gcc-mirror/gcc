@@ -606,7 +606,7 @@ c_finish_omp_flush (location_t loc, int mo)
 {
   tree x;
 
-  if (mo == MEMMODEL_LAST)
+  if (mo == MEMMODEL_LAST || mo == MEMMODEL_SEQ_CST)
     {
       x = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
       x = build_call_expr_loc (loc, x, 0);
