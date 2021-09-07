@@ -7755,11 +7755,11 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 						  (reduc_info),
 						&stmts);
 	    }
+	  if (!useless_type_conversion_p (vectype_out, TREE_TYPE (def)))
+	    def = gimple_convert (&stmts, vectype_out, def);
 	  /* Adjust the input so we pick up the partially reduced value
 	     for the skip edge in vect_create_epilog_for_reduction.  */
 	  accumulator->reduc_input = def;
-	  if (!useless_type_conversion_p (vectype_out, TREE_TYPE (def)))
-	    def = gimple_convert (&stmts, vectype_out, def);
 	  if (loop_vinfo->main_loop_edge)
 	    {
 	      /* While we'd like to insert on the edge this will split
