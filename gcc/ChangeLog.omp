@@ -1,3 +1,24 @@
+2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	Backported from master:
+	2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-omp.c (c_finish_omp_flush): Handle MEMMODEL_SEQ_CST.
+	* c-parser.c (c_parser_omp_flush): Parse 'seq_cst' clause on 'flush'
+	directive.
+	* parser.c (cp_parser_omp_flush): Parse 'seq_cst' clause on 'flush'
+	directive.
+	* semantics.c (finish_omp_flush): Handle MEMMODEL_SEQ_CST.
+	* openmp.c (gfc_match_omp_flush): Parse 'seq_cst' clause on 'flush'
+	directive.
+	* trans-openmp.c (gfc_trans_omp_flush): Handle OMP_MEMORDER_SEQ_CST.
+	* c-c++-common/gomp/flush-1.c: Add test case for 'seq_cst'.
+	* c-c++-common/gomp/flush-2.c: Add test case for 'seq_cst'.
+	* g++.dg/gomp/attrs-1.C: Adapt test to handle all flush clauses.
+	* g++.dg/gomp/attrs-2.C: Adapt test to handle all flush clauses.
+	* gfortran.dg/gomp/flush-1.f90: Add test case for 'seq_cst'.
+	* gfortran.dg/gomp/flush-2.f90: Add test case for 'seq_cst'.
+
 2021-09-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	2021-09-03  Jakub Jelinek  <jakub@redhat.com>

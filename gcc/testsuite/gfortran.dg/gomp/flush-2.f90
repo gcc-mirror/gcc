@@ -9,10 +9,11 @@ subroutine foo (void)
   !$omp flush acquire
   !$omp flush release
   !$omp flush acq_rel
-  !$omp flush relaxed		! { dg-error "Expected AQC_REL, RELEASE, or ACQUIRE" }
-  !$omp flush seq_cst		! { dg-error "Expected AQC_REL, RELEASE, or ACQUIRE" }
-  !$omp flush foobar		! { dg-error "Expected AQC_REL, RELEASE, or ACQUIRE" }
+  !$omp flush seq_cst
+  !$omp flush relaxed		! { dg-error "Expected SEQ_CST, AQC_REL, RELEASE, or ACQUIRE" }
+  !$omp flush foobar		! { dg-error "Expected SEQ_CST, AQC_REL, RELEASE, or ACQUIRE" }
   !$omp flush acquire (a, b)	! { dg-error "List specified together with memory order clause in FLUSH directive" }
   !$omp flush release (a, b)	! { dg-error "List specified together with memory order clause in FLUSH directive" }
   !$omp flush acq_rel (a, b)	! { dg-error "List specified together with memory order clause in FLUSH directive" }
-end
+  !$omp flush seq_cst (a, b)	! { dg-error "List specified together with memory order clause in FLUSH directive" }
+  end

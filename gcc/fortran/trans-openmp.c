@@ -5450,7 +5450,8 @@ gfc_trans_omp_flush (gfc_code *code)
 {
   tree call;
   if (!code->ext.omp_clauses
-      || code->ext.omp_clauses->memorder == OMP_MEMORDER_UNSET)
+      || code->ext.omp_clauses->memorder == OMP_MEMORDER_UNSET
+      || code->ext.omp_clauses->memorder == OMP_MEMORDER_SEQ_CST)
     {
       call = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
       call = build_call_expr_loc (input_location, call, 0);

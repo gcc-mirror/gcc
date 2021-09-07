@@ -18363,7 +18363,9 @@ c_parser_omp_flush (c_parser *parser)
       const char *p
 	= IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
 
-      if (!strcmp (p, "acq_rel"))
+      if (!strcmp (p, "seq_cst"))
+	mo = MEMMODEL_SEQ_CST;
+      else if (!strcmp (p, "acq_rel"))
 	mo = MEMMODEL_ACQ_REL;
       else if (!strcmp (p, "release"))
 	mo = MEMMODEL_RELEASE;
@@ -18371,7 +18373,8 @@ c_parser_omp_flush (c_parser *parser)
 	mo = MEMMODEL_ACQUIRE;
       else
 	error_at (c_parser_peek_token (parser)->location,
-		  "expected %<acq_rel%>, %<release%> or %<acquire%>");
+		  "expected %<seq_cst%>, %<acq_rel%>, %<release%> or "
+		  "%<acquire%>");
       c_parser_consume_token (parser);
     }
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))

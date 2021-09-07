@@ -10663,7 +10663,7 @@ finish_omp_flush (int mo)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
   releasing_vec vec;
-  if (mo != MEMMODEL_LAST)
+  if (mo != MEMMODEL_LAST && mo != MEMMODEL_SEQ_CST)
     {
       fn = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
       vec->quick_push (build_int_cst (integer_type_node, mo));

@@ -40546,7 +40546,9 @@ cp_parser_omp_flush (cp_parser *parser, cp_token *pragma_tok)
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
-      if (!strcmp (p, "acq_rel"))
+      if (!strcmp (p, "seq_cst"))
+	mo = MEMMODEL_SEQ_CST;
+      else if (!strcmp (p, "acq_rel"))
 	mo = MEMMODEL_ACQ_REL;
       else if (!strcmp (p, "release"))
 	mo = MEMMODEL_RELEASE;
@@ -40554,7 +40556,8 @@ cp_parser_omp_flush (cp_parser *parser, cp_token *pragma_tok)
 	mo = MEMMODEL_ACQUIRE;
       else
 	error_at (cp_lexer_peek_token (parser->lexer)->location,
-		  "expected %<acq_rel%>, %<release%> or %<acquire%>");
+		  "expected %<seq_cst%>, %<acq_rel%>, %<release%> or "
+		  "%<acquire%>");
       cp_lexer_consume_token (parser->lexer);
     }
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))

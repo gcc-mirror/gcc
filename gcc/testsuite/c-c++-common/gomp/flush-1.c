@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fdump-tree-gimple" } */
+/* { dg-final { scan-tree-dump "foo \\(6\\);\[\n\r]*  __sync_synchronize \\(\\);\[\n\r]*  foo \\(6\\);" "gimple" } } */
 /* { dg-final { scan-tree-dump "foo \\(4\\);\[\n\r]*  __atomic_thread_fence \\(4\\);\[\n\r]*  foo \\(4\\);" "gimple" } } */
 /* { dg-final { scan-tree-dump "foo \\(3\\);\[\n\r]*  __atomic_thread_fence \\(3\\);\[\n\r]*  foo \\(3\\);" "gimple" } } */
 /* { dg-final { scan-tree-dump "foo \\(2\\);\[\n\r]*  __atomic_thread_fence \\(2\\);\[\n\r]*  foo \\(2\\);" "gimple" } } */
@@ -36,4 +37,12 @@ f4 (void)
   foo (5);
   #pragma omp flush
   foo (5);
+}
+
+void
+f5 (void)
+{
+  foo (6);
+  #pragma omp flush seq_cst
+  foo (6);
 }
