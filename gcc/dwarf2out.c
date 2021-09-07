@@ -30295,6 +30295,40 @@ mark_base_types (dw_loc_descr_ref loc)
     }
 }
 
+/* Stripped-down variant of resolve_addr, mark DW_TAG_base_type nodes
+   referenced from typed stack ops and count how often they are used.  */
+
+static void
+mark_base_types (dw_die_ref die)
+{
+  dw_die_ref c;
+  dw_attr_node *a;
+  dw_loc_list_ref *curr;
+  unsigned ix;
+
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
+    switch (AT_class (a))
+      {
+      case dw_val_class_loc_list:
+	curr = AT_loc_list_ptr (a);
+	while (*curr)
+	  {
+	    mark_base_types ((*curr)->expr);
+	    curr = &(*curr)->dw_loc_next;
+	  }
+	break;
+
+      case dw_val_class_loc:
+	mark_base_types (AT_loc (a));
+	break;
+
+      default:
+	break;
+      }
+
+  FOR_EACH_CHILD (die, c, mark_base_types (c));
+}
+
 /* Comparison function for sorting marked base types.  */
 
 static int
@@ -32697,6 +32731,7 @@ ctf_debug_do_cu (dw_die_ref die)
 static void
 dwarf2out_early_finish (const char *filename)
 {
+  comdat_type_node *ctnode;
   set_early_dwarf s;
   char dl_section_ref[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -32776,8 +32811,7 @@ dwarf2out_early_finish (const char *filename)
       /* For each new comdat type unit, copy declarations for incomplete
          types to make the new unit self-contained (i.e., no direct
          references to the main compile unit).  */
-      for (comdat_type_node *ctnode = comdat_type_list;
-	   ctnode != NULL; ctnode = ctnode->next)
+      for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
         copy_decls_for_unworthy_types (ctnode->root_die);
       copy_decls_for_unworthy_types (comp_unit_die ());
 
@@ -32792,8 +32826,7 @@ dwarf2out_early_finish (const char *filename)
   note_variable_value (comp_unit_die ());
   for (limbo_die_node *node = cu_die_list; node; node = node->next)
     note_variable_value (node->die);
-  for (comdat_type_node *ctnode = comdat_type_list; ctnode != NULL;
-       ctnode = ctnode->next)
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     note_variable_value (ctnode->root_die);
   for (limbo_die_node *node = limbo_die_list; node; node = node->next)
     note_variable_value (node->die);
@@ -32845,13 +32878,17 @@ dwarf2out_early_finish (const char *filename)
      location related output removed and some LTO specific changes.
      Some refactoring might make both smaller and easier to match up.  */
 
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
+    mark_base_types (ctnode->root_die);
+  mark_base_types (comp_unit_die ());
+  move_marked_base_types ();
+
   /* Traverse the DIE's and add sibling attributes to those DIE's
      that have children.  */
   add_sibling_attributes (comp_unit_die ());
   for (limbo_die_node *node = limbo_die_list; node; node = node->next)
     add_sibling_attributes (node->die);
-  for (comdat_type_node *ctnode = comdat_type_list;
-       ctnode != NULL; ctnode = ctnode->next)
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     add_sibling_attributes (ctnode->root_die);
 
   /* AIX Assembler inserts the length, so adjust the reference to match the
@@ -32881,8 +32918,7 @@ dwarf2out_early_finish (const char *filename)
     output_comp_unit (node->die, 0, NULL);
 
   hash_table<comdat_type_hasher> comdat_type_table (100);
-  for (comdat_type_node *ctnode = comdat_type_list;
-       ctnode != NULL; ctnode = ctnode->next)
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     {
       comdat_type_node **slot = comdat_type_table.find_slot (ctnode, INSERT);
 
