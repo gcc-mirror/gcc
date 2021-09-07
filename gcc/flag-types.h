@@ -31,7 +31,8 @@ enum debug_info_type
   DINFO_TYPE_VMS = 4,		  /* VMS debug info.  */
   DINFO_TYPE_CTF = 5,		  /* CTF debug info.  */
   DINFO_TYPE_BTF = 6,		  /* BTF debug info.  */
-  DINFO_TYPE_MAX = DINFO_TYPE_BTF /* Marker only.  */
+  DINFO_TYPE_BTF_WITH_CORE = 7,	  /* BTF debug info with CO-RE relocations.  */
+  DINFO_TYPE_MAX = DINFO_TYPE_BTF_WITH_CORE /* Marker only.  */
 };
 
 #define NO_DEBUG      (0U)
@@ -47,6 +48,9 @@ enum debug_info_type
 #define CTF_DEBUG     (1U << DINFO_TYPE_CTF)
 /* Write BTF debug info (using btfout.c).  */
 #define BTF_DEBUG     (1U << DINFO_TYPE_BTF)
+/* Write BTF debug info for BPF CO-RE usecase (using btfout.c).  */
+#define BTF_WITH_CORE_DEBUG     (1U << DINFO_TYPE_BTF_WITH_CORE)
+
 /* Note: Adding new definitions to handle -combination- of debug formats,
    like VMS_AND_DWARF2_DEBUG is not recommended.  This definition remains
    here for historical reasons.  */

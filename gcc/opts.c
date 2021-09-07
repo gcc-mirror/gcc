@@ -135,6 +135,14 @@ btf_debuginfo_p ()
   return (write_symbols & BTF_DEBUG);
 }
 
+/* Return TRUE iff BTF with CO-RE debug info is enabled.  */
+
+bool
+btf_with_core_debuginfo_p ()
+{
+  return (write_symbols & BTF_WITH_CORE_DEBUG);
+}
+
 /* Return TRUE iff CTF debug info is enabled.  */
 
 bool
