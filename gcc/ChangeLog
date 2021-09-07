@@ -1,3 +1,35 @@
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102046
+	* tree-vect-slp.c (vect_build_slp_tree_2): Conservatively
+	update ->any_pattern when swapping operands.
+
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101925
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Set
+	reverse on COMPONENT_REF and ARRAY_REF according to
+	what reverse_storage_order_for_component_p does.
+	(vn_reference_eq): Compare reversed on reference ops.
+	(reverse_storage_order_for_component_p): New overload.
+	(vn_reference_lookup_3): Check reverse_storage_order_for_component_p
+	on the reference looked up.
+
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101824
+	* tree-nested.c (get_frame_field): Mark the COMPONENT_REF as
+	volatile in case the variable was.
+
 2021-09-03  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/altivec.md (UNSPEC_XXSPLTIDP): Rename from
