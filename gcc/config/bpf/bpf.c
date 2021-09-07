@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "predict.h"
 #include "langhooks.h"
+#include "flags.h"
 
 /* Per-function machine data.  */
 struct GTY(()) machine_function
@@ -158,6 +159,30 @@ bpf_option_override (void)
 {
   /* Set the initializer for the per-function status structure.  */
   init_machine_status = bpf_init_machine_status;
+
+  /* BPF CO-RE support requires BTF debug info generation.  */
+  if (TARGET_BPF_CORE && !btf_debuginfo_p ())
+    error ("BPF CO-RE requires BTF debugging information, use %<-gbtf%>");
+
+  /* To support the portability needs of BPF CO-RE approach, BTF debug
+     information includes the BPF CO-RE relocations.  */
+  if (TARGET_BPF_CORE)
+    write_symbols |= BTF_WITH_CORE_DEBUG;
+
+  /* Unlike much of the other BTF debug information, the information necessary
+     for CO-RE relocations is added to the CTF container by the BPF backend.
+     Enabling LTO adds some complications in the generation of the BPF CO-RE
+     relocations because if LTO is in effect, the relocations need to be
+     generated late in the LTO link phase.  This poses a new challenge for the
+     compiler to now provide means to combine the early BTF and late BTF CO-RE
+     debug info, similar to DWARF debug info.  BTF/CO-RE debug info is not
+     amenable to such a split generation and a later merging.
+
+     In any case, in absence of linker support for BTF sections at this time,
+     it is acceptable to simply disallow LTO for BPF CO-RE compilations.  */
+
+  if (flag_lto && TARGET_BPF_CORE)
+    sorry ("BPF CO-RE does not support LTO");
 }
 
 #undef TARGET_OPTION_OVERRIDE

@@ -127,3 +127,7 @@ Generate little-endian eBPF.
 mframe-limit=
 Target Joined RejectNegative UInteger IntegerRange(0, 32767) Var(bpf_frame_limit) Init(512)
 Set a hard limit for the size of each stack frame, in bytes.
+
+mco-re
+Target Mask(BPF_CORE)
+Generate all necessary information for BPF Compile Once - Run Everywhere.
