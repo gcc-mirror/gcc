@@ -31953,6 +31953,11 @@ dwarf2out_finish (const char *filename)
   unsigned char checksum[16];
   char dl_section_ref[MAX_ARTIFICIAL_LABEL_BYTES];
 
+  /* Generate CTF/BTF debug info.  */
+  if ((ctf_debug_info_level > CTFINFO_LEVEL_NONE
+       || btf_debuginfo_p ()) && lang_GNU_C ())
+    ctf_debug_finish (filename);
+
   /* Skip emitting DWARF if not required.  */
   if (!dwarf_debuginfo_p ())
     return;
@@ -32856,8 +32861,8 @@ dwarf2out_early_finish (const char *filename)
 	ctf_debug_do_cu (node->die);
       /* Post process the debug data in the CTF container if necessary.  */
       ctf_debug_init_postprocess (btf_debuginfo_p ());
-      /* Emit CTF/BTF debug info.  */
-      ctf_debug_finalize (filename, btf_debuginfo_p ());
+
+      ctf_debug_early_finish (filename);
     }
 
   /* Do not generate DWARF assembler now when not producing LTO bytecode.  */
