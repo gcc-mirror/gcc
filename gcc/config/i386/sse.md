@@ -2995,19 +2995,36 @@
    (set_attr "prefix_rep" "1,*")
    (set_attr "mode" "V4SF")])
 
-(define_mode_iterator REDUC_SSE_PLUS_MODE
- [(V2DF "TARGET_SSE") (V4SF "TARGET_SSE")])
-
-(define_expand "reduc_plus_scal_<mode>"
- [(plus:REDUC_SSE_PLUS_MODE
-   (match_operand:<ssescalarmode> 0 "register_operand")
-   (match_operand:REDUC_SSE_PLUS_MODE 1 "register_operand"))]
- ""
+(define_expand "reduc_plus_scal_v4sf"
+ [(plus:V4SF
+   (match_operand:SF 0 "register_operand")
+   (match_operand:V4SF 1 "register_operand"))]
+ "TARGET_SSE"
 {
-  rtx tmp = gen_reg_rtx (<MODE>mode);
-  ix86_expand_reduc (gen_add<mode>3, tmp, operands[1]);
-  emit_insn (gen_vec_extract<mode><ssescalarmodelower> (operands[0], tmp,
-                                                        const0_rtx));
+  rtx vtmp = gen_reg_rtx (V4SFmode);
+  rtx stmp = gen_reg_rtx (SFmode);
+  if (TARGET_SSE3)
+    emit_insn (gen_sse3_movshdup (vtmp, operands[1]));
+  else
+    emit_insn (gen_sse_shufps (vtmp, operands[1], operands[1], GEN_INT(177)));
+
+  emit_insn (gen_addv4sf3 (operands[1], operands[1], vtmp));
+  emit_insn (gen_sse_movhlps (vtmp, vtmp, operands[1]));
+  emit_insn (gen_vec_extractv4sfsf (stmp, vtmp, const0_rtx));
+  emit_insn (gen_vec_extractv4sfsf (operands[0], operands[1], const0_rtx));
+  emit_insn (gen_addsf3 (operands[0], operands[0], stmp));
+  DONE;
+})
+
+(define_expand "reduc_plus_scal_v2df"
+ [(plus:V2DF
+   (match_operand:DF 0 "register_operand")
+   (match_operand:V2DF 1 "register_operand"))]
+ "TARGET_SSE"
+{
+  rtx tmp = gen_reg_rtx (V2DFmode);
+  ix86_expand_reduc (gen_addv2df3, tmp, operands[1]);
+  emit_insn (gen_vec_extractv2dfdf (operands[0], tmp, const0_rtx));
   DONE;
 })
 
