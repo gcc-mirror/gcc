@@ -12,4 +12,4 @@ int bar()
   return foo();
 }
 
-/* { dg-final { scan-tree-dump-not" = foo \\(\\)" "optimized"} } */
+/* { dg-final { scan-tree-dump-not " = foo \\(\\)" "optimized"} } */
