@@ -1,3 +1,55 @@
+2021-09-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* wide-int.cc (wi::clz): Reorder tests to ensure the result
+	is zero for all negative values.
+
+2021-09-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (-foffload-options): Fix @opindex.
+
+2021-09-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/89984
+	* config/i386/i386-expand.c (ix86_split_xorsign): Use operands[2].
+	* config/i386/i386.md (@xorsign<mode>3_1): Add non-destructive
+	source alternative for AVX.
+
+2021-09-06  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/102182
+	* optabs.c (expand_fix): Add from1 to avoid from being
+	overwritten.
+
+2021-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (modified_type_die): Deal with all array types earlier
+	and use local variable consistently throughout the function.
+
+2021-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102207
+	* match.pd: Don't demote operands of IFN_{ADD,SUB,MUL}_OVERFLOW if they
+	were promoted from signed to wider unsigned type.
+
+2021-09-06  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/63184
+	* match.pd: Add simplification of pointer_diff of two pointer_plus
+	with addr_expr in the first operand of each pointer_plus.
+	Add simplificatoin of ne/eq of two pointer_plus with addr_expr
+	in the first operand of each pointer_plus.
+
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102176
+	* tree-vect-slp.c (vect_slp_gather_vectorized_scalar_stmts):
+	New function.
+	(vect_bb_slp_scalar_cost): Use the computed set of
+	vectorized scalar stmts instead of relying on the out-of-date
+	and not accurate PURE_SLP_STMT.
+	(vect_bb_vectorization_profitable_p): Compute the set
+	of vectorized scalar stmts.
+
 2021-09-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-range-path.cc (path_range_query::range_of_stmt): Remove

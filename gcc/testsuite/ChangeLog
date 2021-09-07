@@ -1,3 +1,26 @@
+2021-09-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/89984
+	* gcc.target/i386/pr89984-1.c: New test.
+	* gcc.target/i386/pr89984-2.c: Likewise.
+	* gcc.target/i386/xorsign-avx.c: Likewise.
+
+2021-09-06  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/102182
+	* gcc.target/i386/pr101282.c: New test.
+
+2021-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102207
+	* gcc.dg/pr102207.c: New test.
+
+2021-09-06  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/63184
+	* c-c++-common/pr19807-2.c: Enable for all targets and remove the xfail.
+	* c-c++-common/pr19807-3.c: Likewise.
+
 2021-09-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101904

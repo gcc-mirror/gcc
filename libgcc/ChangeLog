@@ -1,3 +1,13 @@
+2021-09-06  liuhongt  <hongtao.liu@intel.com>
+
+	* Makefile.in: Adjust to support specific CFLAGS for each
+	libgcc source file.
+	* config/i386/64/t-softfp: Explicitly add -msse2 for HF
+	related libgcc source files.
+	* config/i386/t-softfp: Ditto.
+	* config/i386/_divhc3.c: New file.
+	* config/i386/_mulhc3.c: New file.
+
 2021-09-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/sfp-machine.h (alias_HFtype, alias_SFtype

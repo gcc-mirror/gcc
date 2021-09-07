@@ -1,3 +1,9 @@
+2021-09-06  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	* gcc_update: Derive human readable name for HEAD using git describe
+	like "git gcc-descr" with short commit hash.  Drop "revision" from
+	gcc/REVISION.
+
 2021-08-30  Andrew Pinski  <apinski@marvell.com>
 
 	* download_prerequisites (md5_check): Replace == inside
