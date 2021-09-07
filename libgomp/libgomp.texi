@@ -95,6 +95,7 @@ changed to GNU Offloading and Multi Processing Runtime Library.
 @comment
 @menu
 * Enabling OpenMP::            How to enable OpenMP for your applications.
+* OpenMP Implementation Status:: List of implemented features by OpenMP version
 * OpenMP Runtime Library Routines: Runtime Library Routines.
                                The OpenMP runtime application programming
                                interface.
@@ -141,9 +142,113 @@ flag @command{-fopenmp} must be specified.  This enables the OpenMP directive
 arranges for automatic linking of the OpenMP runtime library 
 (@ref{Runtime Library Routines}).
 
-A complete description of all OpenMP directives accepted may be found in 
-the @uref{https://www.openmp.org, OpenMP Application Program Interface} manual,
-version 4.5.
+A complete description of all OpenMP directives may be found in the
+@uref{https://www.openmp.org, OpenMP Application Program Interface} manuals.
+See also @ref{OpenMP Implementation Status}.
+
+
+@c ---------------------------------------------------------------------
+@c OpenMP Implementation Status
+@c ---------------------------------------------------------------------
+
+@node OpenMP Implementation Status
+@chapter OpenMP Implementation Status
+
+@menu
+* OpenMP 4.5:: Feature completion status to 4.5 specification
+* OpenMP 5.0:: Feature completion status to 5.0 specification
+* OpenMP 5.1:: Feature completion status to 5.1 specification
+@end menu
+
+The @code{_OPENMP} preprocessor macro and Fortran's @code{openmp_version}
+parameter, provided by @code{omp_lib.h} and the @code{omp_lib} module, have
+the value @code{201511} (i.e. OpenMP 4.5).
+
+@node OpenMP 4.5
+@section OpenMP 4.5
+
+The OpenMP 4.5 specification is fully supported.
+
+@node OpenMP 5.0
+@section OpenMP 5.0
+
+Partial support of the OpenMP 5.0 specification. The OMPT and the OMPD
+interfaces are unsupported.
+
+@node OpenMP 5.1
+@section OpenMP 5.1
+
+@unnumberedsubsec New features listed in Appendix B of the OpenMP specification
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item OpenMP directive as C++ attribute specifiers @tab Y @tab
+@item @code{omp_all_memory} reserved locator @tab N @tab
+@item @emph{target_device trait} in OpenMP Context @tab N @tab
+@item @code{target_device} selector set in context selectors @tab N @tab
+@item C/C++'s @code{declare variante} directive: elision support of
+      preprocessed code @tab N @tab
+@item @code{declare variante}: new clauses @code{adjust_args} and
+      @code{append_args} @tab N @tab
+@item @code{dispatch} construct @tab N @tab
+@item device-specific ICV settings the environment variables @tab N @tab
+@item assume directive @tab N @tab
+@item @code{nothing} directive @tab Y @tab
+@item @code{error} directive @tab Y @tab
+@item @code{masked} construct @tab Y @tab
+@item @code{scope} directive @tab Y @tab
+@item Loop transformation constructs @tab N @tab
+@item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
+      clauses of the taskloop construct @tab Y @tab
+@item @code{align} clause/modifier in @code{allocate} directive/clause
+      and @code{allocator} directive @tab N @tab
+@item @code{thread_limit} clause to @code{target} construct @tab N @tab
+@item @code{has_device_addr} clause to @code{target} construct @tab N @tab
+@item iterators in @code{target update} motion clauses and @code{map}
+      clauses @tab N @tab
+@item indirect calls to the device version of a procedure or function in
+      @code{target} regions @tab N @tab
+@item @code{interop} directive @tab N @tab
+@item @code{omp_interop_t} object support in runtime routines @tab N @tab
+@item @code{nowait} clause in @code{taskwait} directive @tab N @tab
+@item Extensions to the @code{atomic} directive @tab N @tab
+@item @code{seq_cst} clause on a @code{flush} construct @tab Y @tab
+@item @code{inoutset} argument to the @code{depend} clause @tab N @tab
+@item @code{private} and @code{firstprivate} argument to @code{default}
+      clause in C and C++ @tab N @tab
+@item @code{present} argument to @code{defaultmap} clause @tab N @tab
+@item @code{omp_set_num_teams}, @code{omp_set_teams_thread_limit},
+      @code{omp_get_max_teams}, @code{omp_get_teams_thread_limit} runtime
+      routines @tab N @tab
+@item @code{omp_target_is_accessible} runtime routine @tab N @tab
+@item @code{omp_target_memcpy_async} and @code{omp_target_memcpy_rect_async}
+      runtime routines @tab N @tab
+@item @code{omp_get_mapped_ptr} runtime routine @tab N @tab
+@item @code{omp_calloc}, @code{omp_realloc}, @code{omp_aligned_alloc} and
+      @code{omp_aligned_calloc} runtime routines @tab N @tab
+@item @code{omp_alloctrait_key_t} enum: @code{omp_atv_serialized} added,
+      @code{omp_atv_default} changed @tab Y @tab
+@item @code{omp_display_env} runtime routine @tab P
+      @tab Not inside @code{target} regions
+@item @code{ompt_scope_endpoint_t} enum: @code{ompt_scope_beginend} @tab N @tab
+@item @code{ompt_sync_region_t} enum additions @tab N @tab
+@item @code{ompt_state_t} enum: @code{ompt_state_wait_barrier_implementation}
+      and @code{ompt_state_wait_barrier_teams} @tab N @tab
+@item @code{ompt_callback_target_data_op_emi_t},
+      @code{ompt_callback_target_emi_t}, @code{ompt_callback_target_map_emi_t}
+      and @code{ompt_callback_target_submit_emi_t} @tab N @tab
+@item @code{ompt_callback_error_t} type @tab N @tab
+@item @code{OMP_PLACES} syntax was extension @tab N @tab
+@item @code{OMP_NUM_TEAMS} and @code{OMP_TEAMS_THREAD_LIMIT} environment
+      variables @tab N @tab
+@end multitable
+
+@unnumberedsubsec Other new OpenMP 5.1 features
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item Suppport of strictly structured blocks in Fortran @tab N @tab
+@end multitable
 
 
 @c ---------------------------------------------------------------------
