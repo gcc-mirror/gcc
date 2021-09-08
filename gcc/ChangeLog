@@ -1,3 +1,13 @@
+2021-09-07  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backported from master:
+	2021-09-07  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	PR target/102115
+	* config/xtensa/xtensa.c (xtensa_emit_move_sequence): Add
+	'CONST_INT_P (src)' to the condition of the block that tries to
+	eliminate literal when loading integer contant.
+
 2021-09-06  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

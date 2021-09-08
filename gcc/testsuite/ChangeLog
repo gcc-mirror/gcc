@@ -1,3 +1,11 @@
+2021-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100495
+	* g++.dg/cpp2a/constexpr-new21.C: New test.
+
 2021-09-06  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
