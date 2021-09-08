@@ -138,7 +138,6 @@ extern void ix86_expand_copysign (rtx []);
 extern void ix86_split_copysign_const (rtx []);
 extern void ix86_split_copysign_var (rtx []);
 extern void ix86_expand_xorsign (rtx []);
-extern void ix86_split_xorsign (rtx []);
 extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[]);
 extern bool ix86_match_ccmode (rtx, machine_mode);
 extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);

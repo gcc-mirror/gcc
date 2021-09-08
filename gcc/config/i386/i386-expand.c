@@ -2270,7 +2270,7 @@ void
 ix86_expand_xorsign (rtx operands[])
 {
   machine_mode mode, vmode;
-  rtx dest, op0, op1, mask;
+  rtx dest, op0, op1, mask, x, temp;
 
   dest = operands[0];
   op0 = operands[1];
@@ -2285,60 +2285,15 @@ ix86_expand_xorsign (rtx operands[])
   else
     gcc_unreachable ();
 
+  temp = gen_reg_rtx (vmode);
   mask = ix86_build_signbit_mask (vmode, 0, 0);
 
-  emit_insn (gen_xorsign3_1 (mode, dest, op0, op1, mask));
-}
+  op1 = lowpart_subreg (vmode, op1, mode);
+  x = gen_rtx_AND (vmode, op1, mask);
+  emit_insn (gen_rtx_SET (temp, x));
 
-/* Deconstruct an xorsign operation into bit masks.  */
-
-void
-ix86_split_xorsign (rtx operands[])
-{
-  machine_mode mode, vmode;
-  rtx dest, op0, op1, mask, x;
-
-  dest = operands[0];
-  op0 = operands[1];
-  op1 = operands[2];
-  mask = operands[3];
-
-  mode = GET_MODE (dest);
-  vmode = GET_MODE (mask);
-
-  /* The constraints ensure that for non-AVX dest == op1 is
-     different from op0, and for AVX that at most two of
-     dest, op0 and op1 are the same register but the third one
-     is different.  */
-  if (rtx_equal_p (op0, op1))
-    {
-      gcc_assert (TARGET_AVX && !rtx_equal_p (op0, dest));
-      if (vmode == V4SFmode)
-	vmode = V4SImode;
-      else
-	{
-	  gcc_assert (vmode == V2DFmode);
-	  vmode = V2DImode;
-	}
-      mask = lowpart_subreg (vmode, mask, GET_MODE (mask));
-      if (MEM_P (mask))
-	{
-	  rtx msk = lowpart_subreg (vmode, dest, mode);
-	  emit_insn (gen_rtx_SET (msk, mask));
-	  mask = msk;
-	}
-      op0 = lowpart_subreg (vmode, op0, mode);
-      x = gen_rtx_AND (vmode, gen_rtx_NOT (vmode, mask), op0);
-    }
-  else
-    {
-      op1 = lowpart_subreg (vmode, op1, mode);
-      x = gen_rtx_AND (vmode, op1, mask);
-      emit_insn (gen_rtx_SET (op1, x));
-
-      op0 = lowpart_subreg (vmode, op0, mode);
-      x = gen_rtx_XOR (vmode, op1, op0);
-    }
+  op0 = lowpart_subreg (vmode, op0, mode);
+  x = gen_rtx_XOR (vmode, temp, op0);
 
   dest = lowpart_subreg (vmode, dest, mode);
   emit_insn (gen_rtx_SET (dest, x));

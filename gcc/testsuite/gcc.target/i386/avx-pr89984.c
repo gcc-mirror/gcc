@@ -1,4 +1,4 @@
-/* PR target/102224 */
+/* PR target/89984 */
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx" } */
 /* { dg-require-effective-target avx } */
@@ -11,7 +11,7 @@
 #endif
 
 #define main main1
-#include "../../gcc.dg/pr102224.c"
+#include "../../gcc.dg/pr89984.c"
 #undef main
 
 #include CHECK_H
