@@ -11859,8 +11859,9 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 		{
 		  CLASSTYPE_BEFRIENDING_CLASSES (type_dup)
 		    = CLASSTYPE_BEFRIENDING_CLASSES (type);
-		  CLASSTYPE_TYPEINFO_VAR (type_dup)
-		    = CLASSTYPE_TYPEINFO_VAR (type);
+		  if (!ANON_AGGR_TYPE_P (type))
+		    CLASSTYPE_TYPEINFO_VAR (type_dup)
+		      = CLASSTYPE_TYPEINFO_VAR (type);
 		}
 	      for (tree v = type; v; v = TYPE_NEXT_VARIANT (v))
 		TYPE_LANG_SPECIFIC (v) = ls;
@@ -11890,6 +11891,11 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	      gcc_checking_assert (!*chain == !DECL_CLONED_FUNCTION_P (decl));
 	      *chain = decl;
 	      chain = &DECL_CHAIN (decl);
+
+	      if (TREE_CODE (decl) == FIELD_DECL
+		  && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
+		ANON_AGGR_TYPE_FIELD
+		  (TYPE_MAIN_VARIANT (TREE_TYPE (decl))) = decl;
 
 	      if (TREE_CODE (decl) == USING_DECL
 		  && TREE_CODE (USING_DECL_SCOPE (decl)) == RECORD_TYPE)

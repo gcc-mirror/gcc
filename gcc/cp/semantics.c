@@ -3489,6 +3489,14 @@ finish_member_declaration (tree decl)
   if (TREE_CODE (decl) != CONST_DECL)
     DECL_CONTEXT (decl) = current_class_type;
 
+  /* Remember the single FIELD_DECL an anonymous aggregate type is used for.  */
+  if (TREE_CODE (decl) == FIELD_DECL
+      && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
+    {
+      gcc_assert (!ANON_AGGR_TYPE_FIELD (TYPE_MAIN_VARIANT (TREE_TYPE (decl))));
+      ANON_AGGR_TYPE_FIELD (TYPE_MAIN_VARIANT (TREE_TYPE (decl))) = decl;
+    }
+
   if (TREE_CODE (decl) == USING_DECL)
     /* For now, ignore class-scope USING_DECLS, so that debugging
        backends do not see them. */

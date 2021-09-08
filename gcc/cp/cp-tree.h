@@ -4800,6 +4800,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define ANON_UNION_TYPE_P(NODE) \
   (TREE_CODE (NODE) == UNION_TYPE && ANON_AGGR_TYPE_P (NODE))
 
+/* For an ANON_AGGR_TYPE_P the single FIELD_DECL it is used with.  */
+#define ANON_AGGR_TYPE_FIELD(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->typeinfo_var)
+
 /* Define fields and accessors for nodes representing declared names.  */
 
 /* True if TYPE is an unnamed structured type with a typedef for
