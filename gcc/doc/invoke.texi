@@ -904,7 +904,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{eBPF Options}
 @gccoptlist{-mbig-endian -mlittle-endian -mkernel=@var{version}
--mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re}
+-mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re
+-mjmpext -mjmp32 -malu32 -mcpu=@var{version}}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -22670,6 +22671,42 @@ Generate code for a big-endian target.
 @item -mlittle-endian
 @opindex mlittle-endian
 Generate code for a little-endian target.  This is the default.
+
+@item -mjmpext
+@opindex mjmpext
+Enable generation of extra conditional-branch instructions.
+Enabled for CPU v2 and above.
+
+@item -mjmp32
+@opindex mjmp32
+Enable 32-bit jump instructions. Enabled for CPU v3 and above.
+
+@item -malu32
+@opindex malu32
+Enable 32-bit ALU instructions. Enabled for CPU v3 and above.
+
+@item -mcpu=@var{version}
+@opindex mcpu
+This specifies which version of the eBPF ISA to target. Newer versions
+may not be supported by all kernels. The default is @samp{v3}.
+
+Supported values for @var{version} are:
+
+@table @samp
+@item v1
+The first stable eBPF ISA with no special features or extensions.
+
+@item v2
+Supports the jump extensions, as in @option{-mjmpext}.
+
+@item v3
+All features of v2, plus:
+@itemize @minus
+@item 32-bit jump operations, as in @option{-mjmp32}
+@item 32-bit ALU operations, as in @option{-malu32}
+@end itemize
+
+@end table
 
 @item -mco-re
 @opindex mco-re
