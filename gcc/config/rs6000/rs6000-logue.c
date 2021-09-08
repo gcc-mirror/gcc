@@ -4776,6 +4776,10 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
       else if (REGNO (frame_reg_rtx) == 12)
 	cr_save_regno = 11;
 
+      /* For ELFv2 r12 is already in use as the GEP.  */
+      if (DEFAULT_ABI == ABI_ELFv2)
+	cr_save_regno = 11;
+
       cr_save_reg = load_cr_save (cr_save_regno, frame_reg_rtx,
 				  info->cr_save_offset + frame_off,
 				  exit_func);
