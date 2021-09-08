@@ -233,6 +233,12 @@
    V16SF (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
    V8DF  (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
+(define_mode_iterator V48_256_512_AVX512VL
+  [V16SI (V8SI "TARGET_AVX512VL")
+   V8DI  (V4DI "TARGET_AVX512VL")
+   V16SF (V8SF "TARGET_AVX512VL")
+   V8DF  (V4DF "TARGET_AVX512VL")])
+
 ;; 1,2 byte AVX-512{BW,VL} vector modes. Supposed TARGET_AVX512BW baseline.
 (define_mode_iterator VI12_AVX512VL
   [V64QI (V16QI "TARGET_AVX512VL") (V32QI "TARGET_AVX512VL")
@@ -826,6 +832,15 @@
    (V8SF "V8SF") (V4DF "V4DF")
    (V4SF "V4SF") (V2DF "V2DF")
    (V8HF "TI") (V16HF "OI") (V32HF "XI")
+   (TI "TI")])
+
+(define_mode_attr sseintvecinsnmode
+  [(V64QI "XI") (V32HI "XI") (V16SI "XI") (V8DI "XI") (V4TI "XI")
+   (V32QI "OI") (V16HI "OI") (V8SI "OI") (V4DI "OI") (V2TI "OI")
+   (V16QI "TI") (V8HI "TI") (V4SI "TI") (V2DI "TI") (V1TI "TI")
+   (V16SF "XI") (V8DF "XI")
+   (V8SF "OI") (V4DF "OI")
+   (V4SF "TI") (V2DF "TI")
    (TI "TI")])
 
 ;; SSE constant -1 constraint
@@ -10516,6 +10531,23 @@
   "valign<ssemodesuffix>\t{%3, %2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2, %3}";
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_mode_attr vec_extract_imm_predicate
+  [(V16SF "const_0_to_15_operand") (V8SF "const_0_to_7_operand")
+   (V16SI "const_0_to_15_operand") (V8SI "const_0_to_7_operand")
+   (V8DF "const_0_to_7_operand") (V4DF "const_0_to_3_operand")
+   (V8DI "const_0_to_7_operand") (V4DI "const_0_to_3_operand")])
+
+(define_insn "*vec_extract<mode><ssescalarmodelower>_valign"
+  [(set (match_operand:<ssescalarmode> 0 "register_operand" "=v")
+	(vec_select:<ssescalarmode>
+	  (match_operand:V48_256_512_AVX512VL 1 "register_operand" "v")
+	  (parallel [(match_operand 2 "<vec_extract_imm_predicate>")])))]
+  "TARGET_AVX512F
+   && INTVAL(operands[2]) >= 16 / GET_MODE_SIZE (<ssescalarmode>mode)"
+  "valign<ternlogsuffix>\t{%2, %1, %1, %<xtg_mode>0|%<xtg_mode>0, %1, %1, %2}";
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseintvecinsnmode>")])
 
 (define_expand "avx512f_shufps512_mask"
   [(match_operand:V16SF 0 "register_operand")
