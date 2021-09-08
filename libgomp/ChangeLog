@@ -1,3 +1,15 @@
+2021-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Implementation Status): Extend
+	OpenMP 5.0 section.
+	(OpenACC Profiling Interface): Fix typo.
+
+2021-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Enabling OpenMP): Refer to OMP spec in general
+	not to 4.5; link to new section.
+	(OpenMP Implementation Status): New.
+
 2021-09-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c/target-43.c: '-latomic' for nvptx offloading.

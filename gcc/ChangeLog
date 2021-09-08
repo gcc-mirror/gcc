@@ -1,3 +1,153 @@
+2021-09-07  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	PR target/102115
+	* config/xtensa/xtensa.c (xtensa_emit_move_sequence): Add
+	'CONST_INT_P (src)' to the condition of the block that tries to
+	eliminate literal when loading integer contant.
+
+2021-09-07  David Faust  <david.faust@oracle.com>
+
+	* doc/extend.texi (BPF Type Attributes) New node.
+	Document new preserve_access_index attribute.
+	Document new preserve_access_index builtin.
+	* doc/invoke.texi: Document -mco-re and -mno-co-re options.
+
+2021-09-07  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.c: Adjust includes.
+	(bpf_handle_preserve_access_index_attribute): New function.
+	(bpf_attribute_table): Use it here.
+	(bpf_builtins): Add BPF_BUILTIN_PRESERVE_ACCESS_INDEX.
+	(bpf_option_override): Handle "-mco-re" option.
+	(bpf_asm_init_sections): New.
+	(TARGET_ASM_INIT_SECTIONS): Redefine.
+	(bpf_file_end): New.
+	(TARGET_ASM_FILE_END): Redefine.
+	(bpf_init_builtins): Add "__builtin_preserve_access_index".
+	(bpf_core_compute, bpf_core_get_index): New.
+	(is_attr_preserve_access): New.
+	(bpf_expand_builtin): Handle new builtins.
+	(bpf_core_newdecl, bpf_core_is_maybe_aggregate_access): New.
+	(bpf_core_walk): New.
+	(bpf_resolve_overloaded_builtin): New.
+	(TARGET_RESOLVE_OVERLOADED_BUILTIN): Redefine.
+	(handle_attr): New.
+	(pass_bpf_core_attr): New RTL pass.
+	* config/bpf/bpf-passes.def: New file.
+	* config/bpf/bpf-protos.h (make_pass_bpf_core_attr): New.
+	* config/bpf/coreout.c: New file.
+	* config/bpf/coreout.h: Likewise.
+	* config/bpf/t-bpf (TM_H): Add $(srcdir)/config/bpf/coreout.h.
+	(coreout.o): New rule.
+	(PASSES_EXTRA): Add $(srcdir)/config/bpf/bpf-passes.def.
+	* config.gcc (bpf): Add coreout.h to extra_headers.
+	Add coreout.o to extra_objs.
+	Add $(srcdir)/config/bpf/coreout.c to target_gtfiles.
+
+2021-09-07  David Faust  <david.faust@oracle.com>
+
+	* btfout.c (get_btf_id): Function is no longer static.
+	* ctfc.h: Expose it here.
+
+2021-09-07  David Faust  <david.faust@oracle.com>
+
+	* ctfc.c (ctf_lookup_tree_type): New function.
+	* ctfc.h: Likewise.
+
+2021-09-07  David Faust  <david.faust@oracle.com>
+
+	* ctfc.c (ctf_dtd_lookup): Function is no longer static.
+	* ctfc.h: Analogous change.
+
+2021-09-07  David Faust  <david.faust@oracle.com>
+
+	* dwarf2out.c (lookup_type_die): Function is no longer static.
+	* dwarf2out.h: Expose it here.
+
+2021-09-07  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* dwarf2ctf.c (ctf_debug_finalize): Make it static.
+	(ctf_debug_early_finish): New definition.
+	(ctf_debug_finish): Likewise.
+	* dwarf2ctf.h (ctf_debug_finalize): Remove declaration.
+	(ctf_debug_early_finish): New declaration.
+	(ctf_debug_finish): Likewise.
+	* dwarf2out.c (dwarf2out_finish): Invoke ctf_debug_finish.
+	(dwarf2out_early_finish): Invoke ctf_debug_early_finish.
+
+2021-09-07  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* config/bpf/bpf.c (bpf_option_override): For BPF backend, disable LTO
+	support when compiling for CO-RE.
+	* config/bpf/bpf.opt: Add new command line option -mco-re.
+
+2021-09-07  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* flag-types.h (enum debug_info_type): Add new enum
+	DINFO_TYPE_BTF_WITH_CORE.
+	(BTF_WITH_CORE_DEBUG): New bitmask.
+	* flags.h (btf_with_core_debuginfo_p): New declaration.
+	* opts.c (btf_with_core_debuginfo_p): New definition.
+
+2021-09-07  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (error_operand_p): Change to inline function.
+
+2021-09-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadedge.c (forwarder_block_p): Rename to...
+	(empty_block_with_phis_p): ...this.
+	(potentially_threadable_block): Same.
+	(jump_threader::thread_through_normal_block): Same.
+
+2021-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/101947
+	* dwarf2out.c (mark_base_types): New overloaded function.
+	(dwarf2out_early_finish): Invoke it on the COMDAT type list as well
+	as the compilation unit, and call move_marked_base_types afterward.
+
+2021-09-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/85819
+	* config/i386/i386-expand.c (ix86_expand_convert_uns_sisf_sse):
+	Enable FMA.
+	(ix86_expand_vector_convert_uns_vsivsf): Likewise.
+
+2021-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102226
+	* tree-vect-loop.c (vect_transform_cycle_phi): Record
+	the converted value for the epilogue PHI use.
+
+2021-09-07  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/80223
+	* ipa-inline.c (can_inline_edge_p): Similarly to sanitizer
+	options, do not inline when no_profile_instrument_function
+	attributes are different in early inliner. It's fine to inline
+	it after PGO instrumentation.
+
+2021-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101555
+	* tree-ssa-pre.c (translate_vuse_through_block): Do not
+	perform an alias walk to determine the validity of the
+	mem at the start of the block which is already guaranteed
+	by means of prune_clobbered_mems.
+	(phi_translate_1): Pass edge to translate_vuse_through_block.
+
+2021-09-07  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/97142
+	* config/rs6000/rs6000.md (fmod<mode>3): New define_expand.
+	(remainder<mode>3): Likewise.
+
+2021-09-07  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.c (mips_file_start): add .module for
+	  arch and ase.
+
 2021-09-06  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* wide-int.cc (wi::clz): Reorder tests to ensure the result

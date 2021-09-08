@@ -1,3 +1,7 @@
+2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-omp.c (c_finish_omp_flush): Handle MEMMODEL_SEQ_CST.
+
 2021-09-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_ads): Generate pragmas to disable style checks

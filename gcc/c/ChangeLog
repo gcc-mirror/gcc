@@ -1,3 +1,8 @@
+2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_flush): Parse 'seq_cst' clause on 'flush'
+	directive.
+
 2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-decl.c (enum deprecated_states): Add unavailable state.

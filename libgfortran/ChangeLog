@@ -1,3 +1,23 @@
+2021-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* Makefile.am (gfor_built_src): Depend on
+	include/ISO_Fortran_binding.h not on ISO_Fortran_binding.h.
+	(ISO_Fortran_binding.h): Rename make target to ...
+	(include/ISO_Fortran_binding.h): ... this.
+	* Makefile.in: Regenerate.
+
+2021-09-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* ISO_Fortran_binding-1-tmpl.h: Deleted.
+	* ISO_Fortran_binding-2-tmpl.h: Deleted.
+	* ISO_Fortran_binding-3-tmpl.h: Deleted.
+	* ISO_Fortran_binding.h: New file to replace the above.
+	* Makefile.am (gfor_cdir): Remove MULTISUBDIR.
+	(ISO_Fortran_binding.h): Simplify to just copy the file.
+	* Makefile.in: Regenerated.
+	* mk-kinds-h.sh: Revert pieces no longer needed for
+	ISO_Fortran_binding.h.
+
 2021-09-02  Sandra Loosemore  <sandra@codesourcery.com>
 	    José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 

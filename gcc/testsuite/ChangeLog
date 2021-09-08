@@ -1,3 +1,67 @@
+2021-09-07  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/core-attr-1.c: New test.
+	* gcc.target/bpf/core-attr-2.c: Likewise.
+	* gcc.target/bpf/core-attr-3.c: Likewise.
+	* gcc.target/bpf/core-attr-4.c: Likewise
+	* gcc.target/bpf/core-builtin-1.c: Likewise
+	* gcc.target/bpf/core-builtin-2.c: Likewise.
+	* gcc.target/bpf/core-builtin-3.c: Likewise.
+	* gcc.target/bpf/core-section-1.c: Likewise.
+
+2021-09-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/no_profile_instrument_function-attr-2.c: Fix
+	typo in last change.
+
+2021-09-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101327
+	* gfortran.dg/pr101327.f90: New test.
+
+2021-09-07  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* gcc.target/bpf/core-lto-1.c: New test.
+
+2021-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100495
+	* g++.dg/cpp2a/constexpr-new21.C: New test.
+
+2021-09-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/85819
+	* gcc.target/i386/pr85819-1a.c: New test.
+	* gcc.target/i386/pr85819-1b.c: Likewise.
+	* gcc.target/i386/pr85819-2a.c: Likewise.
+	* gcc.target/i386/pr85819-2b.c: Likewise.
+	* gcc.target/i386/pr85819-2c.c: Likewise.
+	* gcc.target/i386/pr85819-3.c: Likewise.
+
+2021-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102226
+	* g++.dg/vect/pr102226.cc: New testcase.
+
+2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/flush-1.c: Add test case for 'seq_cst'.
+	* c-c++-common/gomp/flush-2.c: Add test case for 'seq_cst'.
+	* g++.dg/gomp/attrs-1.C: Adapt test to handle all flush clauses.
+	* g++.dg/gomp/attrs-2.C: Adapt test to handle all flush clauses.
+	* gfortran.dg/gomp/flush-1.f90: Add test case for 'seq_cst'.
+	* gfortran.dg/gomp/flush-2.f90: Add test case for 'seq_cst'.
+
+2021-09-07  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/80223
+	* gcc.dg/no_profile_instrument_function-attr-2.c: New test.
+
+2021-09-07  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/97142
+	* gcc.target/powerpc/pr97142.c: New test.
+
 2021-09-06  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/89984
