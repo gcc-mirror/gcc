@@ -882,7 +882,7 @@ FnType::clone () const
       std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
 
   return new FnType (get_ref (), get_ty_ref (), get_id (), get_identifier (),
-		     flags, std::move (cloned_params),
+		     flags, abi, std::move (cloned_params),
 		     get_return_type ()->clone (), clone_substs (),
 		     get_combined_refs ());
 }
