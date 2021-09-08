@@ -28,6 +28,7 @@
 #include "rust-ast-full.h"
 #include "rust-hir-full.h"
 #include "rust-hir-const-fold-ctx.h"
+#include "rust-mangle.h"
 
 namespace Rust {
 namespace Compile {
@@ -45,7 +46,7 @@ public:
     : backend (backend), resolver (Resolver::Resolver::get ()),
       tyctx (Resolver::TypeCheckContext::get ()),
       mappings (Analysis::Mappings::get ()),
-      const_ctx (ConstFold::Context::get ())
+      const_ctx (ConstFold::Context::get ()), mangler (Mangler ())
   {
     // insert the builtins
     auto builtins = resolver->get_builtin_types ();
@@ -285,13 +286,19 @@ public:
     return pop;
   }
 
-  // this needs to support Legacy and V0 see github #429 or #305
   std::string mangle_item (const TyTy::BaseType *ty,
-			   const Resolver::CanonicalPath &path) const;
+			   const Resolver::CanonicalPath &path) const
+  {
+    return mangler.mangle_item (ty, path, mappings->get_current_crate_name ());
+  }
 
   std::string mangle_impl_item (const TyTy::BaseType *self,
 				const TyTy::BaseType *ty,
-				const std::string &name) const;
+				const std::string &name) const
+  {
+    return mangler.mangle_impl_item (self, ty, name,
+				     mappings->get_current_crate_name ());
+  }
 
 private:
   ::Backend *backend;
@@ -300,6 +307,7 @@ private:
   Analysis::Mappings *mappings;
   ConstFold::Context *const_ctx;
   std::set<HirId> builtin_range;
+  Mangler mangler;
 
   // state
   std::vector<fncontext> fn_stack;

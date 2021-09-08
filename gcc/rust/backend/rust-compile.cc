@@ -22,7 +22,6 @@
 #include "rust-compile-struct-field-expr.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
-#include "fnv-hash.h"
 
 namespace Rust {
 namespace Compile {
@@ -538,107 +537,5 @@ HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, Bfunction *fndecl,
 
   return true;
 }
-
-// Mr Mangle time
-
-static const std::string kMangledSymbolPrefix = "_ZN";
-static const std::string kMangledSymbolDelim = "E";
-static const std::string kMangledGenericDelim = "$C$";
-static const std::string kMangledSubstBegin = "$LT$";
-static const std::string kMangledSubstEnd = "$GT$";
-
-static std::string
-mangle_name (const std::string &name)
-{
-  return std::to_string (name.size ()) + name;
-}
-
-static std::string
-mangle_canonical_path (const Resolver::CanonicalPath &path)
-{
-  std::string buffer;
-  path.iterate_segs ([&] (const Resolver::CanonicalPath &p) -> bool {
-    buffer += mangle_name (p.get ());
-    return true;
-  });
-  return buffer;
-}
-
-// rustc uses a sip128 hash for legacy mangling, but an fnv 128 was quicker to
-// implement for now
-static std::string
-legacy_hash (const std::string &fingerprint)
-{
-  Hash::FNV128 hasher;
-  hasher.write ((const unsigned char *) fingerprint.c_str (),
-		fingerprint.size ());
-
-  uint64_t hi, lo;
-  hasher.sum (&hi, &lo);
-
-  char hex[16 + 1];
-  memset (hex, 0, sizeof hex);
-  snprintf (hex, sizeof hex, "%08" PRIx64 "%08" PRIx64, lo, hi);
-
-  return "h" + std::string (hex, sizeof (hex) - 1);
-}
-
-static std::string
-mangle_self (const TyTy::BaseType *self)
-{
-  if (self->get_kind () != TyTy::TypeKind::ADT)
-    return mangle_name (self->get_name ());
-
-  const TyTy::ADTType *s = static_cast<const TyTy::ADTType *> (self);
-  std::string buf = s->get_identifier ();
-
-  if (s->has_subsititions_defined ())
-    {
-      buf += kMangledSubstBegin;
-
-      const std::vector<TyTy::SubstitutionParamMapping> &params
-	= s->get_substs ();
-      for (size_t i = 0; i < params.size (); i++)
-	{
-	  const TyTy::SubstitutionParamMapping &sub = params.at (i);
-	  buf += sub.as_string ();
-
-	  if ((i + 1) < params.size ())
-	    buf += kMangledGenericDelim;
-	}
-
-      buf += kMangledSubstEnd;
-    }
-
-  return mangle_name (buf);
-}
-
-std::string
-Context::mangle_item (const TyTy::BaseType *ty,
-		      const Resolver::CanonicalPath &path) const
-{
-  const std::string &crate_name = mappings->get_current_crate_name ();
-
-  const std::string hash = legacy_hash (ty->as_string ());
-  const std::string hash_sig = mangle_name (hash);
-
-  return kMangledSymbolPrefix + mangle_name (crate_name)
-	 + mangle_canonical_path (path) + hash_sig + kMangledSymbolDelim;
-}
-
-// FIXME this is a wee bit broken
-std::string
-Context::mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
-			   const std::string &name) const
-{
-  const std::string &crate_name = mappings->get_current_crate_name ();
-
-  const std::string hash = legacy_hash (ty->as_string ());
-  const std::string hash_sig = mangle_name (hash);
-
-  return kMangledSymbolPrefix + mangle_name (crate_name) + mangle_self (self)
-	 + mangle_name (name) + hash_sig + kMangledSymbolDelim;
-}
-
 } // namespace Compile
 } // namespace Rust

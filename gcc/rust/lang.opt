@@ -43,6 +43,19 @@ frust-dump-
 Rust Joined RejectNegative
 -frust-dump-<type>	Dump Rust frontend internal information.
 
+frust-mangling=
+Rust Joined RejectNegative Enum(frust_mangling) Var(flag_rust_mangling)
+-frust-mangling=[legacy|v0]     Choose which version to use for name mangling
+
+Enum
+Name(frust_mangling) Type(int) UnknownError(unknown rust mangling option %qs)
+
+EnumValue
+Enum(frust_mangling) String(legacy) Value(0)
+
+EnumValue
+Enum(frust_mangling) String(v0) Value(1)
+
 o
 Rust Joined Separate
 ; Documented in common.opt
