@@ -29,6 +29,7 @@ extern void bpf_print_operand (FILE *, rtx, int);
 extern void bpf_print_operand_address (FILE *, rtx);
 extern void bpf_expand_prologue (void);
 extern void bpf_expand_epilogue (void);
+extern void bpf_expand_cbranch (machine_mode, rtx *);
 
 rtl_opt_pass * make_pass_bpf_core_attr (gcc::context *);
 

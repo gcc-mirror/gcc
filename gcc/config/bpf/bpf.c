@@ -242,6 +242,17 @@ bpf_option_override (void)
       target_flags |= MASK_BPF_CORE;
       write_symbols |= BTF_WITH_CORE_DEBUG;
     }
+
+  /* Determine available features from ISA setting (-mcpu=).  */
+  if (bpf_has_jmpext == -1)
+    bpf_has_jmpext = (bpf_isa >= ISA_V2);
+
+  if (bpf_has_alu32 == -1)
+    bpf_has_alu32 = (bpf_isa >= ISA_V3);
+
+  if (bpf_has_jmp32 == -1)
+    bpf_has_jmp32 = (bpf_isa >= ISA_V3);
+
 }
 
 #undef TARGET_OPTION_OVERRIDE
@@ -538,6 +549,36 @@ bpf_expand_epilogue (void)
     }
 
   emit_jump_insn (gen_exit ());
+}
+
+/* Expand to the instructions for a conditional branch. This function
+   is called when expanding the 'cbranch<mode>4' pattern in bpf.md.  */
+
+void
+bpf_expand_cbranch (machine_mode mode, rtx *operands)
+{
+  /* If all jump instructions are available, nothing special to do here.  */
+  if (bpf_has_jmpext)
+    return;
+
+  enum rtx_code code = GET_CODE (operands[0]);
+
+  /* Without the conditional branch instructions jslt, jsle, jlt, jle, we need
+     to convert conditional branches that would use them to an available
+     operation instead by reversing the comparison.  */
+  if ((code == LT || code == LE || code == LTU || code == LEU))
+    {
+      /* Reverse the condition.  */
+      PUT_CODE (operands[0], reverse_condition (code));
+
+      /* Swap the operands, and ensure that the first is a register.  */
+      if (!register_operand (operands[2], mode))
+	operands[2] = force_reg (mode, operands[2]);
+
+      rtx tmp = operands[1];
+      operands[1] = operands[2];
+      operands[2] = tmp;
+    }
 }
 
 /* Return the initial difference between the specified pair of
