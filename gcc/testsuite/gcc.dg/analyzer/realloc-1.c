@@ -88,3 +88,8 @@ void test_9 (void *p)
   free (p);
   void *q = realloc (p, 1024); /* { dg-warning "double-'free' of 'p'" } */
 }
+
+void test_10 (char *s, int n)
+{
+  __builtin_realloc(s, n); /* { dg-warning "ignoring return value of '__builtin_realloc' declared with attribute 'warn_unused_result'" } */
+} /* { dg-warning "leak" } */

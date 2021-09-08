@@ -540,11 +540,14 @@ region_model::impl_call_realloc (const call_details &cd)
     {
       /* Return NULL; everything else is unchanged.  */
       const call_details cd (get_call_details (model, ctxt));
-      const svalue *zero
-	= model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
-      model->set_value (cd.get_lhs_region (),
-			zero,
-			cd.get_ctxt ());
+      if (cd.get_lhs_type ())
+	{
+	  const svalue *zero
+	    = model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+	  model->set_value (cd.get_lhs_region (),
+			    zero,
+			    cd.get_ctxt ());
+	}
       return true;
     }
   };
@@ -575,11 +578,17 @@ region_model::impl_call_realloc (const call_details &cd)
       const svalue *ptr_sval = cd.get_arg_svalue (0);
       const svalue *size_sval = cd.get_arg_svalue (1);
       if (const region *buffer_reg = ptr_sval->maybe_get_region ())
-	model->set_dynamic_extents (buffer_reg, size_sval);
-      model->set_value (cd.get_lhs_region (), ptr_sval, cd.get_ctxt ());
-      const svalue *zero
-	= model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
-      return model->add_constraint (ptr_sval, NE_EXPR, zero, cd.get_ctxt ());
+	if (compat_types_p (size_sval->get_type (), size_type_node))
+	  model->set_dynamic_extents (buffer_reg, size_sval);
+      if (cd.get_lhs_region ())
+	{
+	  model->set_value (cd.get_lhs_region (), ptr_sval, cd.get_ctxt ());
+	  const svalue *zero
+	    = model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+	  return model->add_constraint (ptr_sval, NE_EXPR, zero, cd.get_ctxt ());
+	}
+      else
+	return true;
     }
   };
 
@@ -643,10 +652,15 @@ region_model::impl_call_realloc (const call_details &cd)
 	 and the new_ptr_sval as "nonnull".  */
       model->on_realloc_with_move (cd, old_ptr_sval, new_ptr_sval);
 
-      const svalue *zero
-	= model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
-      return model->add_constraint (new_ptr_sval, NE_EXPR, zero,
-				    cd.get_ctxt ());
+      if (cd.get_lhs_type ())
+	{
+	  const svalue *zero
+	    = model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+	  return model->add_constraint (new_ptr_sval, NE_EXPR, zero,
+					cd.get_ctxt ());
+	}
+      else
+	return true;
     }
   };
 

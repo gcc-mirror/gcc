@@ -1713,7 +1713,7 @@ assert_compat_types (tree src_type, tree dst_type)
 
 /* Return true if SRC_TYPE can be converted to DST_TYPE as a no-op.  */
 
-static bool
+bool
 compat_types_p (tree src_type, tree dst_type)
 {
   if (src_type && dst_type && !VOID_TYPE_P (dst_type))
