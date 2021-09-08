@@ -1,5 +1,3 @@
-
-
 // This file is part of GCC.
 
 // GCC is free software; you can redistribute it and/or modify it under
