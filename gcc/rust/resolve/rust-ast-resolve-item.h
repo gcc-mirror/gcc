@@ -593,6 +593,14 @@ public:
     resolver->get_type_scope ().append_reference_for_def (
       Self.get_id (), implicit_self->get_node_id ());
 
+    if (trait.has_type_param_bounds ())
+      {
+	for (auto &bound : trait.get_type_param_bounds ())
+	  {
+	    ResolveTypeBound::go (bound.get (), trait.get_node_id ());
+	  }
+      }
+
     for (auto &item : trait.get_trait_items ())
       {
 	ResolveTraitItems::go (item.get (), Self);
