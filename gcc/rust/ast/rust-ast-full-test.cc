@@ -4028,7 +4028,7 @@ filename_from_path_attribute (std::vector<Attribute> &outer_attrs)
 }
 
 void
-Module::get_filename ()
+Module::process_file_path ()
 {
   rust_assert (kind == Module::ModuleKind::UNLOADED);
   rust_assert (module_file.empty ());
@@ -4088,9 +4088,9 @@ Module::get_filename ()
 void
 Module::load_items ()
 {
-  get_filename ();
+  process_file_path ();
 
-  // We will already have errored out appropriately in the get_filename ()
+  // We will already have errored out appropriately in the process_file_path ()
   // method
   if (module_file.empty ())
     return;

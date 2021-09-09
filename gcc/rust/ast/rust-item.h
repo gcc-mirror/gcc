@@ -1057,7 +1057,7 @@ public:
 
   // Search for the filename associated with an external module, storing it in
   // module_file
-  void get_filename ();
+  void process_file_path ();
   // Load the items contained in an external module
   void load_items ();
 
