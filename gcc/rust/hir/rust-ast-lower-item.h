@@ -579,6 +579,15 @@ public:
       }
 
     std::vector<std::unique_ptr<HIR::TypeParamBound>> type_param_bounds;
+    if (trait.has_type_param_bounds ())
+      {
+	for (auto &bound : trait.get_type_param_bounds ())
+	  {
+	    HIR::TypeParamBound *b = lower_bound (bound.get ());
+	    type_param_bounds.push_back (
+	      std::unique_ptr<HIR::TypeParamBound> (b));
+	  }
+      }
 
     std::vector<std::unique_ptr<HIR::TraitItem>> trait_items;
     std::vector<HirId> trait_item_ids;

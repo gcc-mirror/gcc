@@ -113,6 +113,10 @@ private:
 	return tref;
       }
 
+    // Check if there is a super-trait, and apply this bound to the Self
+    // TypeParam
+    // FIXME
+
     TyTy::BaseType *self = nullptr;
     std::vector<TyTy::SubstitutionParamMapping> substitutions;
     for (auto &generic_param : trait_reference->get_generic_params ())
