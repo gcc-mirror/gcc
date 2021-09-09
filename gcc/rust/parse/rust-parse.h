@@ -595,7 +595,6 @@ private:
   bool done_end_of_file ();
 
   void add_error (Error error) { error_table.push_back (std::move (error)); }
-  std::vector<Error> &get_errors () { return error_table; }
 
 public:
   // Construct parser with specified "managed" token source.
@@ -614,6 +613,9 @@ public:
 
   // Returns whether any parsing errors have occurred.
   bool has_errors () const { return !error_table.empty (); }
+
+  // Get a reference to the list of errors encountered
+  std::vector<Error> &get_errors () { return error_table; }
 
 private:
   // The token source (usually lexer) associated with the parser.

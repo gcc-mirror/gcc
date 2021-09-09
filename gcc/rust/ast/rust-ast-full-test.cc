@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-diagnostics.h"
 #include "rust-ast-visitor.h"
 #include "rust-session-manager.h"
+#include "rust-lex.h"
+#include "rust-parse.h"
 #include "operator.h"
 
 /* Compilation unit used for various AST-related functions that would make
@@ -4023,14 +4025,15 @@ filename_from_path_attribute (std::vector<Attribute> &outer_attrs)
   return path_attr.get_attr_input ().as_string ();
 }
 
-std::string
-Module::get_filename ()
+void
+Module::process_file_path ()
 {
   rust_assert (kind == Module::ModuleKind::UNLOADED);
+  rust_assert (module_file.empty ());
 
   auto path_string = filename_from_path_attribute (get_outer_attrs ());
   if (!path_string.empty ())
-    return path_string;
+    return;
 
   // This corresponds to the path of the file 'including' the module. So the
   // file that contains the 'mod <file>;' directive
@@ -4076,8 +4079,42 @@ Module::get_filename ()
     rust_error_at (locus, "no candidate found for module %s",
 		   module_name.c_str ());
 
-  return file_mod_found ? expected_file_path
-			: current_directory_name + expected_dir_path;
+  module_file = file_mod_found ? expected_file_path
+			       : current_directory_name + expected_dir_path;
+}
+
+void
+Module::load_items ()
+{
+  process_file_path ();
+
+  // We will already have errored out appropriately in the process_file_path ()
+  // method
+  if (module_file.empty ())
+    return;
+
+  RAIIFile file_wrap (module_file.c_str ());
+  Linemap *linemap = Session::get_instance ().linemap;
+
+  if (file_wrap.get_raw () == nullptr)
+    {
+      rust_error_at (Location (), "cannot open module file %s: %m",
+		     module_file.c_str ());
+      return;
+    }
+
+  rust_debug ("Attempting to parse file %s", module_file.c_str ());
+
+  Lexer lex (module_file.c_str (), std::move (file_wrap), linemap);
+  Parser<Lexer> parser (std::move (lex));
+
+  auto parsed_items = parser.parse_items ();
+
+  for (const auto &error : parser.get_errors ())
+    error.emit_error ();
+
+  items = std::move (parsed_items);
+  kind = ModuleKind::LOADED;
 }
 
 void
