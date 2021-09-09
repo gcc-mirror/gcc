@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "tree-cfgcleanup.h"
 #include "tree-pretty-print.h"
+#include "cfghooks.h"
 
 // Path registry for the backwards threader.  After all paths have been
 // registered with register_path(), thread_through_all_blocks() is called
@@ -564,7 +565,10 @@ back_threader_registry::thread_through_all_blocks (bool may_peel_loop_headers)
    TAKEN_EDGE, otherwise it is NULL.
 
    CREATES_IRREDUCIBLE_LOOP, if non-null is set to TRUE if threading this path
-   would create an irreducible loop.  */
+   would create an irreducible loop.
+
+   ?? It seems we should be able to loosen some of the restrictions in
+   this function after loop optimizations have run.  */
 
 bool
 back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
@@ -725,7 +729,11 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
 	 the last entry in the array when determining if we thread
 	 through the loop latch.  */
       if (loop->latch == bb)
-	threaded_through_latch = true;
+	{
+	  threaded_through_latch = true;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " (latch)");
+	}
     }
 
   gimple *stmt = get_gimple_control_stmt (m_path[0]);
@@ -844,6 +852,22 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
 		 "  FAIL: FSM Thread through multiway branch without threading "
 		 "a multiway branch.\n");
       return false;
+    }
+
+  /* Threading through an empty latch would cause code to be added to
+     the latch.  This could alter the loop form sufficiently to cause
+     loop optimizations to fail.  Disable these threads until after
+     loop optimizations have run.  */
+  if ((threaded_through_latch
+       || (taken_edge && taken_edge->dest == loop->latch))
+      && !(cfun->curr_properties & PROP_loop_opts_done)
+      && empty_block_p (loop->latch))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  FAIL: FSM Thread through latch before loop opts would create non-empty latch\n");
+      return false;
+
     }
   return true;
 }

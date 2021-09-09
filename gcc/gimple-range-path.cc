@@ -127,6 +127,9 @@ path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
   basic_block bb = stmt ? gimple_bb (stmt) : exit_bb ();
   if (stmt && range_defined_in_block (r, name, bb))
     {
+      if (TREE_CODE (name) == SSA_NAME)
+	r.intersect (gimple_range_global (name));
+
       set_cache (r, name);
       return true;
     }
