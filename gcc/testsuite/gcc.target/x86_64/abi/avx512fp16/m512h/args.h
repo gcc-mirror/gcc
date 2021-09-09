@@ -33,9 +33,9 @@ typedef union {
   _Float16 __Float16[32];
   float _float[16];
   double _double[8];
-  long _long[8];
+  long long _longlong[8];
   int _int[16];
-  unsigned long _ulong[8];
+  unsigned long long _ulonglong[8];
   __m64 _m64[8];
   __m128 _m128[4];
   __m256 _m256[2];
@@ -47,13 +47,13 @@ typedef union {
   float _float;
   double _double;
   long double _ldouble;
-  unsigned long _ulong[2];
+  unsigned long long _ulonglong[2];
 } X87_T;
 extern void (*callthis)(void);
-extern unsigned long rax,rbx,rcx,rdx,rsi,rdi,rsp,rbp,r8,r9,r10,r11,r12,r13,r14,r15;
+extern unsigned long long rax,rbx,rcx,rdx,rsi,rdi,rsp,rbp,r8,r9,r10,r11,r12,r13,r14,r15;
 ZMM_T zmm_regs[32];
 X87_T x87_regs[8];
-extern volatile unsigned long volatile_var;
+extern volatile unsigned long long volatile_var;
 extern void snapshot (void);
 extern void snapshot_ret (void);
 #define WRAP_CALL(N) \
@@ -84,7 +84,7 @@ extern void snapshot_ret (void);
    these are used or even really available.  */
 struct IntegerRegisters
 {
-  unsigned long rax, rbx, rcx, rdx, rsi, rdi, r8, r9, r10, r11, r12, r13, r14, r15;
+  unsigned long long rax, rbx, rcx, rdx, rsi, rdi, r8, r9, r10, r11, r12, r13, r14, r15;
 };
 struct FloatRegisters
 {

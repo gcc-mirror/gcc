@@ -47,16 +47,16 @@ do_test (void)
   test_64 = (__m64){72,0};
   xmmt1._m64[0] = test_64;
   xmmt2._m64[0] = WRAP_RET (fun_test_returning___m64)();
-  if (xmmt1._long[0] != xmmt2._long[0]
-      || xmmt1._long[0] != xmm_regs[0]._long[0])
+  if (xmmt1._longlong[0] != xmmt2._longlong[0]
+      || xmmt1._longlong[0] != xmm_regs[0]._longlong[0])
     printf ("fail m64\n"), failed++;
 
   clear_struct_registers;
   test_128 = (__m128){73,0};
   xmmt1._m128[0] = test_128;
   xmmt2._m128[0] = WRAP_RET (fun_test_returning___m128)();
-  if (xmmt1._long[0] != xmmt2._long[0]
-      || xmmt1._long[0] != xmm_regs[0]._long[0])
+  if (xmmt1._longlong[0] != xmmt2._longlong[0]
+      || xmmt1._longlong[0] != xmm_regs[0]._longlong[0])
     printf ("fail m128\n"), failed++;
 
   clear_struct_registers;
@@ -64,8 +64,8 @@ do_test (void)
                         6.6f16, 7.7f16, 8.8f16};
   xmmt1._m128h[0] = test_128h;
   xmmt2._m128h[0] = WRAP_RET (fun_test_returning___m128h)();
-  if (xmmt1._long[0] != xmmt2._long[0]
-      || xmmt1._long[0] != xmm_regs[0]._long[0])
+  if (xmmt1._longlong[0] != xmmt2._longlong[0]
+      || xmmt1._longlong[0] != xmm_regs[0]._longlong[0])
     printf ("fail m128h\n"), failed++;
 
   if (failed)

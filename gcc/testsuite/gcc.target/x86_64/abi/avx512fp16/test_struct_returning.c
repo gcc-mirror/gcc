@@ -124,7 +124,7 @@ D(313,long long m1; _Float16 m2)
 void check_300 (void)
 {
   XMM_T x;
-  x._ulong[0] = rax;
+  x._ulonglong[0] = rax;
   switch (current_test) {
     case 300: assert ((rax & 0xff) == 42 && x._float[1] == 43); break;
     case 301: assert ((rax & 0xff) == 42 && xmm0d[0] == 43); break;

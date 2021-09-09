@@ -4,7 +4,7 @@
 /* Get __m64 and __m128. */
 #include <immintrin.h>
 
-typedef unsigned long ulong;
+typedef unsigned long long ulonglong;
 typedef long double ldouble;
 
 /* These defines determines what part of the test should be run.  When
@@ -47,7 +47,11 @@ typedef long double ldouble;
 #define TYPE_SIZE_CHAR         1
 #define TYPE_SIZE_SHORT        2
 #define TYPE_SIZE_INT          4
-#define TYPE_SIZE_LONG         8
+#ifdef __ILP32__
+# define TYPE_SIZE_LONG        4
+#else
+# define TYPE_SIZE_LONG        8
+#endif
 #define TYPE_SIZE_LONG_LONG    8
 #define TYPE_SIZE_INT128       16
 #define TYPE_SIZE_FLOAT16      2
@@ -58,12 +62,20 @@ typedef long double ldouble;
 #define TYPE_SIZE_M64          8
 #define TYPE_SIZE_M128         16
 #define TYPE_SIZE_ENUM         4
-#define TYPE_SIZE_POINTER      8
+#ifdef __ILP32__
+# define TYPE_SIZE_POINTER     4
+#else
+# define TYPE_SIZE_POINTER     8
+#endif
 
 #define TYPE_ALIGN_CHAR        1
 #define TYPE_ALIGN_SHORT       2
 #define TYPE_ALIGN_INT         4
-#define TYPE_ALIGN_LONG        8
+#ifdef __ILP32__
+# define TYPE_ALIGN_LONG       4
+#else
+# define TYPE_ALIGN_LONG       8
+#endif
 #define TYPE_ALIGN_LONG_LONG   8
 #define TYPE_ALIGN_INT128      16
 #define TYPE_ALIGN_FLOAT16     2
@@ -74,7 +86,11 @@ typedef long double ldouble;
 #define TYPE_ALIGN_M64         8
 #define TYPE_ALIGN_M128        16
 #define TYPE_ALIGN_ENUM        4
-#define TYPE_ALIGN_POINTER     8
+#ifdef __ILP32__
+# define TYPE_ALIGN_POINTER    4
+#else
+# define TYPE_ALIGN_POINTER    8
+#endif
 
 /* These defines control the building of the list of types to check. There
    is a string identifying the type (with a comma after), a size of the type
