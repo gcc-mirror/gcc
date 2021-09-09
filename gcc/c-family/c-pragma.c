@@ -771,7 +771,7 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
   if (token != CPP_NAME)
     {
       warning_at (loc, OPT_Wpragmas,
-		  "missing [error|warning|ignored|push|pop]"
+		  "missing [error|warning|ignored|push|pop|ignored_attributes]"
 		  " after %<#pragma GCC diagnostic%>");
       return;
     }
@@ -794,10 +794,43 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
       diagnostic_pop_diagnostics (global_dc, input_location);
       return;
     }
+  else if (strcmp (kind_string, "ignored_attributes") == 0)
+    {
+      token = pragma_lex (&x, &loc);
+      if (token != CPP_STRING)
+	{
+	  warning_at (loc, OPT_Wpragmas,
+		      "missing attribute name after %<#pragma GCC diagnostic "
+		      "ignored_attributes%>");
+	  return;
+	}
+      char *args = xstrdup (TREE_STRING_POINTER (x));
+      const size_t l = strlen (args);
+      if (l == 0)
+	{
+	  warning_at (loc, OPT_Wpragmas, "missing argument to %<#pragma GCC "
+		      "diagnostic ignored_attributes%>");
+	  free (args);
+	  return;
+	}
+      else if (args[l - 1] == ',')
+	{
+	  warning_at (loc, OPT_Wpragmas, "trailing %<,%> in arguments for "
+		      "%<#pragma GCC diagnostic ignored_attributes%>");
+	  free (args);
+	  return;
+	}
+      auto_vec<char *> v;
+      for (char *p = strtok (args, ","); p; p = strtok (NULL, ","))
+	v.safe_push (p);
+      handle_ignored_attributes_option (&v);
+      free (args);
+      return;
+    }
   else
     {
       warning_at (loc, OPT_Wpragmas,
-		  "expected [error|warning|ignored|push|pop]"
+		  "expected [error|warning|ignored|push|pop|ignored_attributes]"
 		  " after %<#pragma GCC diagnostic%>");
       return;
     }

@@ -2611,6 +2611,26 @@ common_handle_option (struct gcc_options *opts,
       /* Currently handled in a prescan.  */
       break;
 
+    case OPT_Wattributes_:
+      if (lang_mask == CL_DRIVER)
+	break;
+
+      if (value)
+	{
+	  error_at (loc, "arguments ignored for %<-Wattributes=%>; use "
+		    "%<-Wno-attributes=%> instead");
+	  break;
+	}
+      else if (arg[strlen (arg) - 1] == ',')
+	{
+	  error_at (loc, "trailing %<,%> in arguments for "
+		    "%<-Wno-attributes=%>");
+	  break;
+	}
+
+      add_comma_separated_to_vector (&opts->x_flag_ignored_attributes, arg);
+      break;
+
     case OPT_Werror:
       dc->warning_as_error_requested = value;
       break;

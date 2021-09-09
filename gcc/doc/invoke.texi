@@ -8707,6 +8707,26 @@ unrecognized attributes, function attributes applied to variables,
 etc.  This does not stop errors for incorrect use of supported
 attributes.
 
+Additionally, using @option{-Wno-attributes=}, it is possible to suppress
+warnings about unknown scoped attributes (in C++11 and C2X).  For example,
+@option{-Wno-attributes=vendor::attr} disables warning about the following
+declaration:
+
+@smallexample
+[[vendor::attr]] void f();
+@end smallexample
+
+It is also possible to disable warning about all attributes in a namespace
+using @option{-Wno-attributes=vendor::} which prevents warning about both
+of these declarations:
+
+@smallexample
+[[vendor::safe]] void f();
+[[vendor::unsafe]] void f2();
+@end smallexample
+
+Note that @option{-Wno-attributes=} does not imply @option{-Wno-attributes}.
+
 @item -Wno-builtin-declaration-mismatch
 @opindex Wno-builtin-declaration-mismatch
 @opindex Wbuiltin-declaration-mismatch
