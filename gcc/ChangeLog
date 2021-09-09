@@ -1,3 +1,12 @@
+2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/60318
+	* doc/trouble.texi (Copy Assignment): Fix description of
+	behaviour and fix code in example.
+
 2021-09-06  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
