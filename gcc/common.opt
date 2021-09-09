@@ -3081,6 +3081,22 @@ ftree-scev-cprop
 Common Var(flag_tree_scev_cprop) Init(1) Optimization
 Enable copy propagation of scalar-evolution information.
 
+ftrivial-auto-var-init=
+Common Joined RejectNegative Enum(auto_init_type) Var(flag_auto_var_init) Init(AUTO_INIT_UNINITIALIZED) Optimization
+-ftrivial-auto-var-init=[uninitialized|pattern|zero]	Add initializations to automatic variables.
+
+Enum
+Name(auto_init_type) Type(enum auto_init_type) UnknownError(unrecognized automatic variable initialization type %qs)
+
+EnumValue
+Enum(auto_init_type) String(uninitialized) Value(AUTO_INIT_UNINITIALIZED)
+
+EnumValue
+Enum(auto_init_type) String(pattern) Value(AUTO_INIT_PATTERN)
+
+EnumValue
+Enum(auto_init_type) String(zero) Value(AUTO_INIT_ZERO)
+
 ; -fverbose-asm causes extra commentary information to be produced in
 ; the generated assembly code (to make it more readable).  This option
 ; is generally only of use to those who actually need to read the

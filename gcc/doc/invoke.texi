@@ -573,9 +573,9 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-parallelize-loops=@var{n}  -ftree-pre  -ftree-partial-pre  -ftree-pta @gol
 -ftree-reassoc  -ftree-scev-cprop  -ftree-sink  -ftree-slsr  -ftree-sra @gol
 -ftree-switch-conversion  -ftree-tail-merge @gol
--ftree-ter  -ftree-vectorize  -ftree-vrp  -funconstrained-commons @gol
--funit-at-a-time  -funroll-all-loops  -funroll-loops @gol
--funsafe-math-optimizations  -funswitch-loops @gol
+-ftree-ter  -ftree-vectorize  -ftree-vrp  -ftrivial-auto-var-init @gol
+-funconstrained-commons -funit-at-a-time  -funroll-all-loops @gol
+-funroll-loops -funsafe-math-optimizations  -funswitch-loops @gol
 -fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt @gol
 -fweb  -fwhole-program  -fwpa  -fuse-linker-plugin -fzero-call-used-regs @gol
 --param @var{name}=@var{value}
@@ -11842,6 +11842,41 @@ and @option{-fauto-profile}.
 Perform basic block vectorization on trees. This flag is enabled by default at
 @option{-O3} and by @option{-ftree-vectorize}, @option{-fprofile-use},
 and @option{-fauto-profile}.
+
+@item -ftrivial-auto-var-init=@var{choice}
+@opindex ftrivial-auto-var-init
+Initialize automatic variables with either a pattern or with zeroes to increase
+the security and predictability of a program by preventing uninitialized memory
+disclosure and use.
+GCC still considers an automatic variable that doesn't have an explicit
+initializer as uninitialized, -Wuninitialized will still report warning messages
+on such automatic variables.
+With this option, GCC will also initialize any padding of automatic variables
+that have structure or union types to zeroes.
+
+The three values of @var{choice} are:
+
+@itemize @bullet
+@item
+@samp{uninitialized} doesn't initialize any automatic variables.
+This is C and C++'s default.
+
+@item
+@samp{pattern} Initialize automatic variables with values which will likely
+transform logic bugs into crashes down the line, are easily recognized in a
+crash dump and without being values that programmers can rely on for useful
+program semantics.
+The current value is byte-repeatable pattern with byte "0xFE".
+The values used for pattern initialization might be changed in the future.
+
+@item
+@samp{zero} Initialize automatic variables with zeroes.
+@end itemize
+
+The default is @samp{uninitialized}.
+
+You can control this behavior for a specific variable by using the variable
+attribute @code{uninitialized} (@pxref{Variable Attributes}).
 
 @item -fvect-cost-model=@var{model}
 @opindex fvect-cost-model

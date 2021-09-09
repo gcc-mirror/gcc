@@ -281,6 +281,13 @@ enum vect_cost_model {
   VECT_COST_MODEL_DEFAULT = 1
 };
 
+/* Automatic variable initialization type.  */
+enum auto_init_type {
+  AUTO_INIT_UNINITIALIZED = 0,
+  AUTO_INIT_PATTERN = 1,
+  AUTO_INIT_ZERO = 2
+};
+
 /* Different instrumentation modes.  */
 enum sanitize_code {
   /* AddressSanitizer.  */

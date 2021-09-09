@@ -7610,6 +7610,22 @@ will be placed in new, unique sections.
 
 This additional functionality requires Binutils version 2.36 or later.
 
+@item uninitialized
+@cindex @code{uninitialized} variable attribute
+This attribute, attached to a variable with automatic storage, means that
+the variable should not be automatically initialized by the compiler when
+the option @code{-ftrivial-auto-var-init} presents.
+
+With the option @code{-ftrivial-auto-var-init}, all the automatic variables
+that do not have explicit initializers will be initialized by the compiler.
+These additional compiler initializations might incur run-time overhead,
+sometimes dramatically.  This attribute can be used to mark some variables
+to be excluded from such automatical initialization in order to reduce runtime
+overhead.
+
+This attribute has no effect when the option @code{-ftrivial-auto-var-init}
+does not present.
+
 @item vector_size (@var{bytes})
 @cindex @code{vector_size} variable attribute
 This attribute specifies the vector size for the type of the declared

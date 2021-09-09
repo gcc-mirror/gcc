@@ -114,6 +114,7 @@ extern rtx builtin_strncpy_read_str (void *, void *, HOST_WIDE_INT,
 				     fixed_size_mode);
 extern rtx builtin_memset_read_str (void *, void *, HOST_WIDE_INT,
 				    fixed_size_mode);
+extern rtx expand_builtin_memset (tree, rtx, machine_mode);
 extern rtx expand_builtin_saveregs (void);
 extern tree std_build_builtin_va_list (void);
 extern tree std_fn_abi_va_list (tree);

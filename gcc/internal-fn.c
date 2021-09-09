@@ -53,6 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "gimple-range.h"
 
+/* For lang_hooks.types.type_for_mode.  */
+#include "langhooks.h"
+
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) #CODE,
@@ -2975,6 +2978,102 @@ expand_UNIQUE (internal_fn, gcall *stmt)
 
   if (pattern)
     emit_insn (pattern);
+}
+
+/* Expand the IFN_DEFERRED_INIT function:
+   LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, IS_VLA);
+
+   if IS_VLA is false, the LHS is the DECL itself,
+   if IS_VLA is true, the LHS is a MEM_REF whose address is the pointer
+   to this DECL.
+
+   Initialize the LHS with zero/pattern according to its second argument
+   INIT_TYPE:
+   if INIT_TYPE is AUTO_INIT_ZERO, use zeroes to initialize;
+   if INIT_TYPE is AUTO_INIT_PATTERN, use 0xFE byte-repeatable pattern
+     to initialize;
+   The LHS variable is initialized including paddings.
+   The reasons to choose 0xFE for pattern initialization are:
+     1. It is a non-canonical virtual address on x86_64, and at the
+	high end of the i386 kernel address space.
+     2. It is a very large float value (-1.694739530317379e+38).
+     3. It is also an unusual number for integers.  */
+#define INIT_PATTERN_VALUE  0xFE
+static void
+expand_DEFERRED_INIT (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree var_size = gimple_call_arg (stmt, 0);
+  enum auto_init_type init_type
+    = (enum auto_init_type) TREE_INT_CST_LOW (gimple_call_arg (stmt, 1));
+  bool is_vla = (bool) TREE_INT_CST_LOW (gimple_call_arg (stmt, 2));
+  bool reg_lhs = true;
+
+  tree var_type = TREE_TYPE (lhs);
+  gcc_assert (init_type > AUTO_INIT_UNINITIALIZED);
+
+  if (DECL_P (lhs))
+    {
+      rtx tem = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+      reg_lhs = !MEM_P (tem);
+    }
+  else if (TREE_CODE (lhs) == SSA_NAME)
+    reg_lhs = true;
+  else
+    {
+      gcc_assert (is_vla);
+      reg_lhs = false;
+    }
+
+
+  if (!reg_lhs)
+    {
+    /* If this is a VLA or the variable is not in register,
+       expand to a memset to initialize it.  */
+
+      mark_addressable (lhs);
+      tree var_addr = build_fold_addr_expr (lhs);
+
+      tree value = (init_type == AUTO_INIT_PATTERN) ?
+		    build_int_cst (integer_type_node,
+				   INIT_PATTERN_VALUE) :
+		    integer_zero_node;
+      tree m_call = build_call_expr (builtin_decl_implicit (BUILT_IN_MEMSET),
+				     3, var_addr, value, var_size);
+      /* Expand this memset call.  */
+      expand_builtin_memset (m_call, NULL_RTX, TYPE_MODE (var_type));
+    }
+  else
+    {
+    /* If this variable is in a register, use expand_assignment might
+       generate better code.  */
+      tree init = build_zero_cst (var_type);
+      unsigned HOST_WIDE_INT total_bytes
+	= tree_to_uhwi (TYPE_SIZE_UNIT (var_type));
+
+      if (init_type == AUTO_INIT_PATTERN)
+	{
+	  tree alt_type = NULL_TREE;
+	  if (!can_native_interpret_type_p (var_type))
+	    {
+	      alt_type
+		= lang_hooks.types.type_for_mode (TYPE_MODE (var_type),
+						  TYPE_UNSIGNED (var_type));
+	      gcc_assert (can_native_interpret_type_p (alt_type));
+	    }
+
+	  unsigned char *buf = (unsigned char *) xmalloc (total_bytes);
+	  memset (buf, INIT_PATTERN_VALUE, total_bytes);
+	  init = native_interpret_expr (alt_type ? alt_type : var_type,
+					buf, total_bytes);
+	  gcc_assert (init);
+
+	  if (alt_type)
+	    init = build1 (VIEW_CONVERT_EXPR, var_type, init);
+	}
+
+      expand_assignment (lhs, init, false);
+    }
 }
 
 /* The size of an OpenACC compute dimension.  */
