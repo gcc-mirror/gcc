@@ -33,9 +33,9 @@ class TypeCheckTopLevelExternItem : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static void Resolve (HIR::ExternalItem *item)
+  static void Resolve (HIR::ExternalItem *item, const HIR::ExternBlock &parent)
   {
-    TypeCheckTopLevelExternItem resolver;
+    TypeCheckTopLevelExternItem resolver (parent);
     item->accept_vis (resolver);
   }
 
@@ -115,16 +115,21 @@ public:
     if (function.is_variadic ())
       flags |= FNTYPE_IS_VARADIC_FLAG;
 
-    auto fnType
-      = new TyTy::FnType (function.get_mappings ().get_hirid (),
-			  function.get_mappings ().get_defid (),
-			  function.get_item_name (), flags, std::move (params),
-			  ret_type, std::move (substitutions));
+    auto fnType = new TyTy::FnType (
+      function.get_mappings ().get_hirid (),
+      function.get_mappings ().get_defid (), function.get_item_name (), flags,
+      TyTy::FnType::get_abi_from_string (parent.get_abi (),
+					 parent.get_locus ()),
+      std::move (params), ret_type, std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
 
 private:
-  TypeCheckTopLevelExternItem () : TypeCheckBase () {}
+  TypeCheckTopLevelExternItem (const HIR::ExternBlock &parent)
+    : TypeCheckBase (), parent (parent)
+  {}
+
+  const HIR::ExternBlock &parent;
 };
 
 class TypeCheckTopLevelImplItem : public TypeCheckBase
@@ -233,11 +238,14 @@ public:
 	context->insert_type (param.get_mappings (), param_tyty);
       }
 
-    auto fnType = new TyTy::FnType (
-      function.get_mappings ().get_hirid (),
-      function.get_mappings ().get_defid (), function.get_function_name (),
-      function.is_method () ? FNTYPE_IS_METHOD_FLAG : FNTYPE_DEFAULT_FLAGS,
-      std::move (params), ret_type, std::move (substitutions));
+    auto fnType
+      = new TyTy::FnType (function.get_mappings ().get_hirid (),
+			  function.get_mappings ().get_defid (),
+			  function.get_function_name (),
+			  function.is_method () ? FNTYPE_IS_METHOD_FLAG
+						: FNTYPE_DEFAULT_FLAGS,
+			  TyTy::FnType::ABI::RUST, std::move (params), ret_type,
+			  std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
 

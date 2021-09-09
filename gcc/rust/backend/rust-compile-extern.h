@@ -20,6 +20,7 @@
 #define RUST_COMPILE_EXTERN_ITEM
 
 #include "rust-compile-base.h"
+#include "rust-compile-intrinsic.h"
 #include "rust-compile-tyty.h"
 #include "rust-compile-implitem.h"
 #include "rust-compile-var-decl.h"
@@ -118,6 +119,15 @@ public:
 	fntype->override_context ();
       }
 
+    if (fntype->get_abi () == TyTy::FnType::ABI::INTRINSIC)
+      {
+	Intrinsics compile (ctx);
+	Bfunction *fndecl = compile.compile (fntype);
+	ctx->insert_function_decl (fntype->get_ty_ref (), fndecl, fntype);
+	return;
+      }
+
+    rust_assert (fntype->get_abi () == TyTy::FnType::ABI::C);
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     const unsigned int flags

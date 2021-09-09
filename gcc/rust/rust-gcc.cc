@@ -512,7 +512,9 @@ public:
 
   bool function_set_body (Bfunction *function, Bstatement *code_stmt);
 
-  Bfunction *lookup_builtin (const std::string &);
+  Bfunction *lookup_gcc_builtin (const std::string &);
+
+  Bfunction *lookup_builtin_by_rust_name (const std::string &);
 
   void write_global_definitions (const std::vector<Btype *> &,
 				 const std::vector<Bexpression *> &,
@@ -546,11 +548,13 @@ private:
   static const int builtin_noreturn = 1 << 1;
   static const int builtin_novops = 1 << 2;
 
-  void define_builtin (built_in_function bcode, const char *name,
-		       const char *libname, tree fntype, int flags);
+  void define_builtin (const std::string rust_name, built_in_function bcode,
+		       const char *name, const char *libname, tree fntype,
+		       int flags);
 
   // A mapping of the GCC built-ins exposed to GCCRust.
   std::map<std::string, Bfunction *> builtin_functions_;
+  std::map<std::string, std::string> rust_intrinsic_to_gcc_builtin;
 };
 
 // A helper function to create a GCC identifier from a C++ string.
@@ -567,303 +571,230 @@ Gcc_backend::Gcc_backend ()
 {
   /* We need to define the fetch_and_add functions, since we use them
      for ++ and --.  */
-  tree t = this->integer_type (true, BITS_PER_UNIT)->get_tree ();
-  tree p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
-  this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_1, "__sync_fetch_and_add_1",
-			NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
+  // tree t = this->integer_type (true, BITS_PER_UNIT)->get_tree ();
+  // tree p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
+  // this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_1,
+  // "__sync_fetch_and_add_1",
+  //       		NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
 
-  t = this->integer_type (true, BITS_PER_UNIT * 2)->get_tree ();
-  p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
-  this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_2, "__sync_fetch_and_add_2",
-			NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
+  // t = this->integer_type (true, BITS_PER_UNIT * 2)->get_tree ();
+  // p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
+  // this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_2,
+  // "__sync_fetch_and_add_2",
+  //       		NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
 
-  t = this->integer_type (true, BITS_PER_UNIT * 4)->get_tree ();
-  p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
-  this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_4, "__sync_fetch_and_add_4",
-			NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
+  // t = this->integer_type (true, BITS_PER_UNIT * 4)->get_tree ();
+  // p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
+  // this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_4,
+  // "__sync_fetch_and_add_4",
+  //       		NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
 
-  t = this->integer_type (true, BITS_PER_UNIT * 8)->get_tree ();
-  p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
-  this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_8, "__sync_fetch_and_add_8",
-			NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
+  // t = this->integer_type (true, BITS_PER_UNIT * 8)->get_tree ();
+  // p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
+  // this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_8,
+  // "__sync_fetch_and_add_8",
+  //       		NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
 
-  // We use __builtin_expect for magic import functions.
-  this->define_builtin (BUILT_IN_EXPECT, "__builtin_expect", NULL,
-			build_function_type_list (long_integer_type_node,
-						  long_integer_type_node,
-						  long_integer_type_node,
-						  NULL_TREE),
-			builtin_const);
+  // // We use __builtin_expect for magic import functions.
+  // this->define_builtin (BUILT_IN_EXPECT, "__builtin_expect", NULL,
+  //       		build_function_type_list (long_integer_type_node,
+  //       					  long_integer_type_node,
+  //       					  long_integer_type_node,
+  //       					  NULL_TREE),
+  //       		builtin_const);
 
-  // We use __builtin_memcmp for struct comparisons.
-  this->define_builtin (BUILT_IN_MEMCMP, "__builtin_memcmp", "memcmp",
-			build_function_type_list (integer_type_node,
-						  const_ptr_type_node,
-						  const_ptr_type_node,
-						  size_type_node, NULL_TREE),
-			0);
+  // // We use __builtin_memcmp for struct comparisons.
+  // this->define_builtin (BUILT_IN_MEMCMP, "__builtin_memcmp", "memcmp",
+  //       		build_function_type_list (integer_type_node,
+  //       					  const_ptr_type_node,
+  //       					  const_ptr_type_node,
+  //       					  size_type_node, NULL_TREE),
+  //       		0);
 
-  // We use __builtin_memmove for copying data.
-  this->define_builtin (BUILT_IN_MEMMOVE, "__builtin_memmove", "memmove",
-			build_function_type_list (void_type_node, ptr_type_node,
-						  const_ptr_type_node,
-						  size_type_node, NULL_TREE),
-			0);
+  // // We use __builtin_memmove for copying data.
+  // this->define_builtin (BUILT_IN_MEMMOVE, "__builtin_memmove", "memmove",
+  //       		build_function_type_list (void_type_node, ptr_type_node,
+  //       					  const_ptr_type_node,
+  //       					  size_type_node, NULL_TREE),
+  //       		0);
 
-  // We use __builtin_memset for zeroing data.
-  this->define_builtin (BUILT_IN_MEMSET, "__builtin_memset", "memset",
-			build_function_type_list (void_type_node, ptr_type_node,
-						  integer_type_node,
-						  size_type_node, NULL_TREE),
-			0);
+  // // We use __builtin_memset for zeroing data.
+  // this->define_builtin (BUILT_IN_MEMSET, "__builtin_memset", "memset",
+  //       		build_function_type_list (void_type_node, ptr_type_node,
+  //       					  integer_type_node,
+  //       					  size_type_node, NULL_TREE),
+  //       		0);
 
-  // Used by runtime/internal/sys and math/bits.
-  this->define_builtin (BUILT_IN_CTZ, "__builtin_ctz", "ctz",
-			build_function_type_list (integer_type_node,
-						  unsigned_type_node,
-						  NULL_TREE),
-			builtin_const);
-  this->define_builtin (BUILT_IN_CTZLL, "__builtin_ctzll", "ctzll",
-			build_function_type_list (integer_type_node,
-						  long_long_unsigned_type_node,
-						  NULL_TREE),
-			builtin_const);
-  this->define_builtin (BUILT_IN_CLZ, "__builtin_clz", "clz",
-			build_function_type_list (integer_type_node,
-						  unsigned_type_node,
-						  NULL_TREE),
-			builtin_const);
-  this->define_builtin (BUILT_IN_CLZLL, "__builtin_clzll", "clzll",
-			build_function_type_list (integer_type_node,
-						  long_long_unsigned_type_node,
-						  NULL_TREE),
-			builtin_const);
-  this->define_builtin (BUILT_IN_POPCOUNT, "__builtin_popcount", "popcount",
-			build_function_type_list (integer_type_node,
-						  unsigned_type_node,
-						  NULL_TREE),
-			builtin_const);
-  this->define_builtin (BUILT_IN_POPCOUNTLL, "__builtin_popcountll",
-			"popcountll",
-			build_function_type_list (integer_type_node,
-						  long_long_unsigned_type_node,
-						  NULL_TREE),
-			builtin_const);
-  this->define_builtin (BUILT_IN_BSWAP16, "__builtin_bswap16", "bswap16",
-			build_function_type_list (uint16_type_node,
-						  uint16_type_node, NULL_TREE),
-			builtin_const);
-  this->define_builtin (BUILT_IN_BSWAP32, "__builtin_bswap32", "bswap32",
-			build_function_type_list (uint32_type_node,
-						  uint32_type_node, NULL_TREE),
-			builtin_const);
-  this->define_builtin (BUILT_IN_BSWAP64, "__builtin_bswap64", "bswap64",
-			build_function_type_list (uint64_type_node,
-						  uint64_type_node, NULL_TREE),
-			builtin_const);
+  // // Used by runtime/internal/sys and math/bits.
+  // this->define_builtin (BUILT_IN_CTZ, "__builtin_ctz", "ctz",
+  //       		build_function_type_list (integer_type_node,
+  //       					  unsigned_type_node,
+  //       					  NULL_TREE),
+  //       		builtin_const);
+  // this->define_builtin (BUILT_IN_CTZLL, "__builtin_ctzll", "ctzll",
+  //       		build_function_type_list (integer_type_node,
+  //       					  long_long_unsigned_type_node,
+  //       					  NULL_TREE),
+  //       		builtin_const);
+  // this->define_builtin (BUILT_IN_CLZ, "__builtin_clz", "clz",
+  //       		build_function_type_list (integer_type_node,
+  //       					  unsigned_type_node,
+  //       					  NULL_TREE),
+  //       		builtin_const);
+  // this->define_builtin (BUILT_IN_CLZLL, "__builtin_clzll", "clzll",
+  //       		build_function_type_list (integer_type_node,
+  //       					  long_long_unsigned_type_node,
+  //       					  NULL_TREE),
+  //       		builtin_const);
+  // this->define_builtin (BUILT_IN_POPCOUNT, "__builtin_popcount", "popcount",
+  //       		build_function_type_list (integer_type_node,
+  //       					  unsigned_type_node,
+  //       					  NULL_TREE),
+  //       		builtin_const);
+  // this->define_builtin (BUILT_IN_POPCOUNTLL, "__builtin_popcountll",
+  //       		"popcountll",
+  //       		build_function_type_list (integer_type_node,
+  //       					  long_long_unsigned_type_node,
+  //       					  NULL_TREE),
+  //       		builtin_const);
+  // this->define_builtin (BUILT_IN_BSWAP16, "__builtin_bswap16", "bswap16",
+  //       		build_function_type_list (uint16_type_node,
+  //       					  uint16_type_node, NULL_TREE),
+  //       		builtin_const);
+  // this->define_builtin (BUILT_IN_BSWAP32, "__builtin_bswap32", "bswap32",
+  //       		build_function_type_list (uint32_type_node,
+  //       					  uint32_type_node, NULL_TREE),
+  //       		builtin_const);
+  // this->define_builtin (BUILT_IN_BSWAP64, "__builtin_bswap64", "bswap64",
+  //       		build_function_type_list (uint64_type_node,
+  //       					  uint64_type_node, NULL_TREE),
+  //       		builtin_const);
 
   // We provide some functions for the math library.
-  tree math_function_type
-    = build_function_type_list (double_type_node, double_type_node, NULL_TREE);
-  tree math_function_type_long
-    = build_function_type_list (long_double_type_node, long_double_type_node,
-				NULL_TREE);
-  tree math_function_type_two
-    = build_function_type_list (double_type_node, double_type_node,
-				double_type_node, NULL_TREE);
-  tree math_function_type_long_two
-    = build_function_type_list (long_double_type_node, long_double_type_node,
-				long_double_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_ACOS, "__builtin_acos", "acos",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_ACOSL, "__builtin_acosl", "acosl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_ASIN, "__builtin_asin", "asin",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_ASINL, "__builtin_asinl", "asinl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_ATAN, "__builtin_atan", "atan",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_ATANL, "__builtin_atanl", "atanl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_ATAN2, "__builtin_atan2", "atan2",
-			math_function_type_two, builtin_const);
-  this->define_builtin (BUILT_IN_ATAN2L, "__builtin_atan2l", "atan2l",
-			math_function_type_long_two, builtin_const);
-  this->define_builtin (BUILT_IN_CEIL, "__builtin_ceil", "ceil",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_CEILL, "__builtin_ceill", "ceill",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_COS, "__builtin_cos", "cos",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_COSL, "__builtin_cosl", "cosl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_EXP, "__builtin_exp", "exp",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_EXPL, "__builtin_expl", "expl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_EXPM1, "__builtin_expm1", "expm1",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_EXPM1L, "__builtin_expm1l", "expm1l",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_FABS, "__builtin_fabs", "fabs",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_FABSL, "__builtin_fabsl", "fabsl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_FLOOR, "__builtin_floor", "floor",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_FLOORL, "__builtin_floorl", "floorl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_FMOD, "__builtin_fmod", "fmod",
-			math_function_type_two, builtin_const);
-  this->define_builtin (BUILT_IN_FMODL, "__builtin_fmodl", "fmodl",
-			math_function_type_long_two, builtin_const);
-  this->define_builtin (BUILT_IN_LDEXP, "__builtin_ldexp", "ldexp",
-			build_function_type_list (double_type_node,
-						  double_type_node,
-						  integer_type_node, NULL_TREE),
-			builtin_const);
-  this->define_builtin (BUILT_IN_LDEXPL, "__builtin_ldexpl", "ldexpl",
-			build_function_type_list (long_double_type_node,
-						  long_double_type_node,
-						  integer_type_node, NULL_TREE),
-			builtin_const);
-  this->define_builtin (BUILT_IN_LOG, "__builtin_log", "log",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_LOGL, "__builtin_logl", "logl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_LOG1P, "__builtin_log1p", "log1p",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_LOG1PL, "__builtin_log1pl", "log1pl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_LOG10, "__builtin_log10", "log10",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_LOG10L, "__builtin_log10l", "log10l",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_LOG2, "__builtin_log2", "log2",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_LOG2L, "__builtin_log2l", "log2l",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_SIN, "__builtin_sin", "sin",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_SINL, "__builtin_sinl", "sinl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_SQRT, "__builtin_sqrt", "sqrt",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_SQRTL, "__builtin_sqrtl", "sqrtl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_TAN, "__builtin_tan", "tan",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_TANL, "__builtin_tanl", "tanl",
-			math_function_type_long, builtin_const);
-  this->define_builtin (BUILT_IN_TRUNC, "__builtin_trunc", "trunc",
-			math_function_type, builtin_const);
-  this->define_builtin (BUILT_IN_TRUNCL, "__builtin_truncl", "truncl",
-			math_function_type_long, builtin_const);
+  tree math_function_type_f32
+    = build_function_type_list (float_type_node, float_type_node, NULL_TREE);
+
+  this->define_builtin ("sinf32", BUILT_IN_SINF, "__builtin_sinf", "sinf",
+			math_function_type_f32, builtin_const);
+
+  this->define_builtin ("sqrtf32", BUILT_IN_SQRTF, "__builtin_sqrtf", "sqrtf",
+			math_function_type_f32, builtin_const);
 
   // We use __builtin_return_address in the thunk we build for
   // functions which call recover, and for runtime.getcallerpc.
-  t = build_function_type_list (ptr_type_node, unsigned_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_RETURN_ADDRESS, "__builtin_return_address",
-			NULL, t, 0);
+  // t = build_function_type_list (ptr_type_node, unsigned_type_node,
+  // NULL_TREE); this->define_builtin (BUILT_IN_RETURN_ADDRESS,
+  // "__builtin_return_address",
+  //       		NULL, t, 0);
 
   // The runtime calls __builtin_dwarf_cfa for runtime.getcallersp.
-  t = build_function_type_list (ptr_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_DWARF_CFA, "__builtin_dwarf_cfa", NULL, t, 0);
+  // t = build_function_type_list (ptr_type_node, NULL_TREE);
+  // this->define_builtin (BUILT_IN_DWARF_CFA, "__builtin_dwarf_cfa", NULL, t,
+  // 0);
 
   // The runtime calls __builtin_extract_return_addr when recording
   // the address to which a function returns.
-  this->define_builtin (
-    BUILT_IN_EXTRACT_RETURN_ADDR, "__builtin_extract_return_addr", NULL,
-    build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE), 0);
+  // this->define_builtin (
+  //   BUILT_IN_EXTRACT_RETURN_ADDR, "__builtin_extract_return_addr", NULL,
+  //   build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE), 0);
 
   // The compiler uses __builtin_trap for some exception handling
   // cases.
-  this->define_builtin (BUILT_IN_TRAP, "__builtin_trap", NULL,
-			build_function_type (void_type_node, void_list_node),
-			builtin_noreturn);
+  // this->define_builtin (BUILT_IN_TRAP, "__builtin_trap", NULL,
+  //       		build_function_type (void_type_node, void_list_node),
+  //       		builtin_noreturn);
 
   // The runtime uses __builtin_prefetch.
-  this->define_builtin (BUILT_IN_PREFETCH, "__builtin_prefetch", NULL,
-			build_varargs_function_type_list (void_type_node,
-							  const_ptr_type_node,
-							  NULL_TREE),
-			builtin_novops);
+  // this->define_builtin (BUILT_IN_PREFETCH, "__builtin_prefetch", NULL,
+  //       		build_varargs_function_type_list (void_type_node,
+  //       						  const_ptr_type_node,
+  //       						  NULL_TREE),
+  //       		builtin_novops);
 
   // The compiler uses __builtin_unreachable for cases that cannot
   // occur.
-  this->define_builtin (BUILT_IN_UNREACHABLE, "__builtin_unreachable", NULL,
-			build_function_type (void_type_node, void_list_node),
-			builtin_const | builtin_noreturn);
+  // this->define_builtin (BUILT_IN_UNREACHABLE, "__builtin_unreachable", NULL,
+  //       		build_function_type (void_type_node, void_list_node),
+  //       		builtin_const | builtin_noreturn);
 
   // We provide some atomic functions.
-  t = build_function_type_list (uint32_type_node, ptr_type_node,
-				integer_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_LOAD_4, "__atomic_load_4", NULL, t, 0);
+  // t = build_function_type_list (uint32_type_node, ptr_type_node,
+  //       			integer_type_node, NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_LOAD_4, "__atomic_load_4", NULL, t,
+  // 0);
 
-  t = build_function_type_list (uint64_type_node, ptr_type_node,
-				integer_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_LOAD_8, "__atomic_load_8", NULL, t, 0);
+  // t = build_function_type_list (uint64_type_node, ptr_type_node,
+  //       			integer_type_node, NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_LOAD_8, "__atomic_load_8", NULL, t,
+  // 0);
 
-  t = build_function_type_list (void_type_node, ptr_type_node, uint32_type_node,
-				integer_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_STORE_4, "__atomic_store_4", NULL, t,
-			0);
+  // t = build_function_type_list (void_type_node, ptr_type_node,
+  // uint32_type_node,
+  //       			integer_type_node, NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_STORE_4, "__atomic_store_4", NULL, t,
+  //       		0);
 
-  t = build_function_type_list (void_type_node, ptr_type_node, uint64_type_node,
-				integer_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_STORE_8, "__atomic_store_8", NULL, t,
-			0);
+  // t = build_function_type_list (void_type_node, ptr_type_node,
+  // uint64_type_node,
+  //       			integer_type_node, NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_STORE_8, "__atomic_store_8", NULL, t,
+  //       		0);
 
-  t = build_function_type_list (uint32_type_node, ptr_type_node,
-				uint32_type_node, integer_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_EXCHANGE_4, "__atomic_exchange_4", NULL,
-			t, 0);
+  // t = build_function_type_list (uint32_type_node, ptr_type_node,
+  //       			uint32_type_node, integer_type_node, NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_EXCHANGE_4, "__atomic_exchange_4",
+  // NULL,
+  //       		t, 0);
 
-  t = build_function_type_list (uint64_type_node, ptr_type_node,
-				uint64_type_node, integer_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_EXCHANGE_8, "__atomic_exchange_8", NULL,
-			t, 0);
+  // t = build_function_type_list (uint64_type_node, ptr_type_node,
+  //       			uint64_type_node, integer_type_node, NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_EXCHANGE_8, "__atomic_exchange_8",
+  // NULL,
+  //       		t, 0);
 
-  t = build_function_type_list (boolean_type_node, ptr_type_node, ptr_type_node,
-				uint32_type_node, boolean_type_node,
-				integer_type_node, integer_type_node,
-				NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4,
-			"__atomic_compare_exchange_4", NULL, t, 0);
+  // t = build_function_type_list (boolean_type_node, ptr_type_node,
+  // ptr_type_node,
+  //       			uint32_type_node, boolean_type_node,
+  //       			integer_type_node, integer_type_node,
+  //       			NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4,
+  //       		"__atomic_compare_exchange_4", NULL, t, 0);
 
-  t = build_function_type_list (boolean_type_node, ptr_type_node, ptr_type_node,
-				uint64_type_node, boolean_type_node,
-				integer_type_node, integer_type_node,
-				NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8,
-			"__atomic_compare_exchange_8", NULL, t, 0);
+  // t = build_function_type_list (boolean_type_node, ptr_type_node,
+  // ptr_type_node,
+  //       			uint64_type_node, boolean_type_node,
+  //       			integer_type_node, integer_type_node,
+  //       			NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8,
+  //       		"__atomic_compare_exchange_8", NULL, t, 0);
 
-  t = build_function_type_list (uint32_type_node, ptr_type_node,
-				uint32_type_node, integer_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_ADD_FETCH_4, "__atomic_add_fetch_4",
-			NULL, t, 0);
+  // t = build_function_type_list (uint32_type_node, ptr_type_node,
+  //       			uint32_type_node, integer_type_node, NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_ADD_FETCH_4, "__atomic_add_fetch_4",
+  //       		NULL, t, 0);
 
-  t = build_function_type_list (uint64_type_node, ptr_type_node,
-				uint64_type_node, integer_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_ADD_FETCH_8, "__atomic_add_fetch_8",
-			NULL, t, 0);
+  // t = build_function_type_list (uint64_type_node, ptr_type_node,
+  //       			uint64_type_node, integer_type_node, NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_ADD_FETCH_8, "__atomic_add_fetch_8",
+  //       		NULL, t, 0);
 
-  t = build_function_type_list (unsigned_char_type_node, ptr_type_node,
-				unsigned_char_type_node, integer_type_node,
-				NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_AND_FETCH_1, "__atomic_and_fetch_1",
-			NULL, t, 0);
-  this->define_builtin (BUILT_IN_ATOMIC_FETCH_AND_1, "__atomic_fetch_and_1",
-			NULL, t, 0);
+  // t = build_function_type_list (unsigned_char_type_node, ptr_type_node,
+  //       			unsigned_char_type_node, integer_type_node,
+  //       			NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_AND_FETCH_1, "__atomic_and_fetch_1",
+  //       		NULL, t, 0);
+  // this->define_builtin (BUILT_IN_ATOMIC_FETCH_AND_1, "__atomic_fetch_and_1",
+  //       		NULL, t, 0);
 
-  t = build_function_type_list (unsigned_char_type_node, ptr_type_node,
-				unsigned_char_type_node, integer_type_node,
-				NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_OR_FETCH_1, "__atomic_or_fetch_1", NULL,
-			t, 0);
-  this->define_builtin (BUILT_IN_ATOMIC_FETCH_OR_1, "__atomic_fetch_or_1", NULL,
-			t, 0);
+  // t = build_function_type_list (unsigned_char_type_node, ptr_type_node,
+  //       			unsigned_char_type_node, integer_type_node,
+  //       			NULL_TREE);
+  // this->define_builtin (BUILT_IN_ATOMIC_OR_FETCH_1, "__atomic_or_fetch_1",
+  // NULL,
+  //       		t, 0);
+  // this->define_builtin (BUILT_IN_ATOMIC_FETCH_OR_1, "__atomic_fetch_or_1",
+  // NULL,
+  //       		t, 0);
 }
 
 // Get an unnamed integer type.
@@ -3490,11 +3421,21 @@ Gcc_backend::function_set_body (Bfunction *function, Bstatement *code_stmt)
 // Returns NULL if no built-in function by that name exists.
 
 Bfunction *
-Gcc_backend::lookup_builtin (const std::string &name)
+Gcc_backend::lookup_gcc_builtin (const std::string &name)
 {
   if (this->builtin_functions_.count (name) != 0)
     return this->builtin_functions_[name];
   return NULL;
+}
+
+Bfunction *
+Gcc_backend::lookup_builtin_by_rust_name (const std::string &name)
+{
+  auto it = rust_intrinsic_to_gcc_builtin.find (name);
+  if (it == rust_intrinsic_to_gcc_builtin.end ())
+    return NULL;
+
+  return lookup_gcc_builtin (it->second);
 }
 
 // Write the definitions for all TYPE_DECLS, CONSTANT_DECLS,
@@ -3587,7 +3528,8 @@ Gcc_backend::write_export_data (const char *bytes, unsigned int size)
 // NORETURN_P is true if the function has the noreturn attribute.
 
 void
-Gcc_backend::define_builtin (built_in_function bcode, const char *name,
+Gcc_backend::define_builtin (const std::string rust_name,
+			     built_in_function bcode, const char *name,
 			     const char *libname, tree fntype, int flags)
 {
   tree decl = add_builtin_function (name, fntype, bcode, BUILT_IN_NORMAL,
@@ -3612,6 +3554,8 @@ Gcc_backend::define_builtin (built_in_function bcode, const char *name,
 	DECL_IS_NOVOPS (decl) = 1;
       this->builtin_functions_[libname] = this->make_function (decl);
     }
+
+  rust_intrinsic_to_gcc_builtin[rust_name] = name;
 }
 
 // Return the backend generator.

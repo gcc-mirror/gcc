@@ -1071,12 +1071,51 @@ private:
 class FnType : public BaseType, public SubstitutionRef
 {
 public:
+  // FIXME these could be constants
 #define FNTYPE_DEFAULT_FLAGS 0x00
 #define FNTYPE_IS_METHOD_FLAG 0x01
 #define FNTYPE_IS_EXTERN_FLAG 0x02
 #define FNTYPE_IS_VARADIC_FLAG 0X04
 
-  FnType (HirId ref, DefId id, std::string identifier, uint8_t flags,
+  enum ABI
+  {
+    UNKNOWN,
+    RUST,
+    INTRINSIC,
+    C,
+  };
+
+  static ABI get_abi_from_string (const std::string &abi, Location locus)
+  {
+    if (abi.compare ("rust") == 0)
+      return ABI::C;
+    else if (abi.compare ("rust-intrinsic") == 0)
+      return ABI::INTRINSIC;
+    else if (abi.compare ("C") == 0)
+      return ABI::C;
+
+    rust_error_at (locus, "unknown abi specified");
+    return ABI::UNKNOWN;
+  }
+
+  static std::string get_string_from_abi (ABI abi)
+  {
+    switch (abi)
+      {
+      case ABI::RUST:
+	return "rust";
+      case ABI::INTRINSIC:
+	return "rust-intrinsic";
+      case ABI::C:
+	return "C";
+
+      case ABI::UNKNOWN:
+	return "unknown";
+      }
+    return "unknown";
+  }
+
+  FnType (HirId ref, DefId id, std::string identifier, uint8_t flags, ABI abi,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
@@ -1084,14 +1123,14 @@ public:
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
       params (std::move (params)), type (type), flags (flags),
-      identifier (identifier), id (id)
+      identifier (identifier), id (id), abi (abi)
   {
     LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
   }
 
   FnType (HirId ref, HirId ty_ref, DefId id, std::string identifier,
-	  uint8_t flags,
+	  uint8_t flags, ABI abi,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
@@ -1099,7 +1138,7 @@ public:
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
       params (params), type (type), flags (flags), identifier (identifier),
-      id (id)
+      id (id), abi (abi)
   {
     LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
@@ -1184,12 +1223,15 @@ public:
   FnType *
   handle_substitions (SubstitutionArgumentMappings mappings) override final;
 
+  ABI get_abi () const { return abi; }
+
 private:
   std::vector<std::pair<HIR::Pattern *, BaseType *>> params;
   BaseType *type;
   uint8_t flags;
   std::string identifier;
   DefId id;
+  ABI abi;
 };
 
 class FnPtr : public BaseType

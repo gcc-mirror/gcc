@@ -842,7 +842,9 @@ public:
 
   // Look up a named built-in function in the current backend implementation.
   // Returns NULL if no built-in function by that name exists.
-  virtual Bfunction *lookup_builtin (const std::string &) = 0;
+  virtual Bfunction *lookup_gcc_builtin (const std::string &) = 0;
+
+  virtual Bfunction *lookup_builtin_by_rust_name (const std::string &) = 0;
 
   // Utility.
 
