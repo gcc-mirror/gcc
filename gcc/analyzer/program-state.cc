@@ -273,6 +273,7 @@ DEBUG_FUNCTION void
 sm_state_map::dump (bool simple) const
 {
   pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
   pp.buffer->stream = stderr;
   print (NULL, simple, true, &pp);
