@@ -2115,13 +2115,9 @@ void
 ix86_expand_copysign (rtx operands[])
 {
   machine_mode mode, vmode;
-  rtx dest, op0, op1, mask;
+  rtx dest, op0, op1, mask, op2, op3;
 
-  dest = operands[0];
-  op0 = operands[1];
-  op1 = operands[2];
-
-  mode = GET_MODE (dest);
+  mode = GET_MODE (operands[0]);
 
   if (mode == SFmode)
     vmode = V4SFmode;
@@ -2132,136 +2128,40 @@ ix86_expand_copysign (rtx operands[])
   else
     gcc_unreachable ();
 
-  mask = ix86_build_signbit_mask (vmode, 0, 0);
-
-  if (CONST_DOUBLE_P (op0))
+  if (rtx_equal_p (operands[1], operands[2]))
     {
-      if (real_isneg (CONST_DOUBLE_REAL_VALUE (op0)))
-	op0 = simplify_unary_operation (ABS, mode, op0, mode);
-
-      if (mode == SFmode || mode == DFmode)
-	{
-	  if (op0 == CONST0_RTX (mode))
-	    op0 = CONST0_RTX (vmode);
-	  else
-	    {
-	      rtx v = ix86_build_const_vector (vmode, false, op0);
-
-	      op0 = force_reg (vmode, v);
-	    }
-	}
-      else if (op0 != CONST0_RTX (mode))
-	op0 = force_reg (mode, op0);
-
-      emit_insn (gen_copysign3_const (mode, dest, op0, op1, mask));
-    }
-  else
-    {
-      rtx nmask = ix86_build_signbit_mask (vmode, 0, 1);
-
-      emit_insn (gen_copysign3_var
-		 (mode, dest, NULL_RTX, op0, op1, nmask, mask));
-    }
-}
-
-/* Deconstruct a copysign operation into bit masks.  Operand 0 is known to
-   be a constant, and so has already been expanded into a vector constant.  */
-
-void
-ix86_split_copysign_const (rtx operands[])
-{
-  machine_mode mode, vmode;
-  rtx dest, op0, mask, x;
-
-  dest = operands[0];
-  op0 = operands[1];
-  mask = operands[3];
-
-  mode = GET_MODE (dest);
-  vmode = GET_MODE (mask);
-
-  dest = lowpart_subreg (vmode, dest, mode);
-  x = gen_rtx_AND (vmode, dest, mask);
-  emit_insn (gen_rtx_SET (dest, x));
-
-  if (op0 != CONST0_RTX (vmode))
-    {
-      x = gen_rtx_IOR (vmode, dest, op0);
-      emit_insn (gen_rtx_SET (dest, x));
-    }
-}
-
-/* Deconstruct a copysign operation into bit masks.  Operand 0 is variable,
-   so we have to do two masks.  */
-
-void
-ix86_split_copysign_var (rtx operands[])
-{
-  machine_mode mode, vmode;
-  rtx dest, scratch, op0, op1, mask, nmask, x;
-
-  dest = operands[0];
-  scratch = operands[1];
-  op0 = operands[2];
-  op1 = operands[3];
-  nmask = operands[4];
-  mask = operands[5];
-
-  mode = GET_MODE (dest);
-  vmode = GET_MODE (mask);
-
-  if (rtx_equal_p (op0, op1))
-    {
-      /* Shouldn't happen often (it's useless, obviously), but when it does
-	 we'd generate incorrect code if we continue below.  */
-      emit_move_insn (dest, op0);
+      emit_move_insn (operands[0], operands[1]);
       return;
     }
 
-  if (REG_P (mask) && REGNO (dest) == REGNO (mask))	/* alternative 0 */
+  dest = lowpart_subreg (vmode, operands[0], mode);
+  op1 = lowpart_subreg (vmode, operands[2], mode);
+  mask = ix86_build_signbit_mask (vmode, 0, 0);
+
+  if (CONST_DOUBLE_P (operands[1]))
     {
-      gcc_assert (REGNO (op1) == REGNO (scratch));
+      op0 = simplify_unary_operation (ABS, mode, operands[1], mode);
+      /* Optimize for 0, simplify b = copy_signf (0.0f, a) to b = mask & a.  */
+      if (op0 == CONST0_RTX (mode))
+	{
+	  emit_move_insn (dest, gen_rtx_AND (vmode, mask, op1));
+	  return;
+	}
 
-      x = gen_rtx_AND (vmode, scratch, mask);
-      emit_insn (gen_rtx_SET (scratch, x));
-
-      dest = mask;
-      op0 = lowpart_subreg (vmode, op0, mode);
-      x = gen_rtx_NOT (vmode, dest);
-      x = gen_rtx_AND (vmode, x, op0);
-      emit_insn (gen_rtx_SET (dest, x));
+      if (GET_MODE_SIZE (mode) < 16)
+	op0 = ix86_build_const_vector (vmode, false, op0);
+      op0 = force_reg (vmode, op0);
     }
   else
-    {
-      if (REGNO (op1) == REGNO (scratch))		/* alternative 1,3 */
-	{
-	  x = gen_rtx_AND (vmode, scratch, mask);
-	}
-      else						/* alternative 2,4 */
-	{
-          gcc_assert (REGNO (mask) == REGNO (scratch));
-          op1 = lowpart_subreg (vmode, op1, mode);
-	  x = gen_rtx_AND (vmode, scratch, op1);
-	}
-      emit_insn (gen_rtx_SET (scratch, x));
+    op0 = lowpart_subreg (vmode, operands[1], mode);
 
-      if (REGNO (op0) == REGNO (dest))			/* alternative 1,2 */
-	{
-	  dest = lowpart_subreg (vmode, op0, mode);
-	  x = gen_rtx_AND (vmode, dest, nmask);
-	}
-      else						/* alternative 3,4 */
-	{
-          gcc_assert (REGNO (nmask) == REGNO (dest));
-	  dest = nmask;
-	  op0 = lowpart_subreg (vmode, op0, mode);
-	  x = gen_rtx_AND (vmode, dest, op0);
-	}
-      emit_insn (gen_rtx_SET (dest, x));
-    }
-
-  x = gen_rtx_IOR (vmode, dest, scratch);
-  emit_insn (gen_rtx_SET (dest, x));
+  op2 = gen_reg_rtx (vmode);
+  op3 = gen_reg_rtx (vmode);
+  emit_move_insn (op2, gen_rtx_AND (vmode,
+				    gen_rtx_NOT (vmode, mask),
+				    op0));
+  emit_move_insn (op3, gen_rtx_AND (vmode, mask, op1));
+  emit_move_insn (dest, gen_rtx_IOR (vmode, op2, op3));
 }
 
 /* Expand an xorsign operation.  */
