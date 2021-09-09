@@ -3098,6 +3098,24 @@ package body Sem_Res is
                      Error_Msg_N ("\use -gnatf for details", N);
                   end if;
 
+               --  Recognize the case of a quantified expression being mistaken
+               --  for an iterated component association because the user
+               --  forgot the "all" or "some" keyword after "for". Because the
+               --  error message starts with "missing ALL", we automatically
+               --  benefit from the associated CODEFIX, which requires that
+               --  the message is located on the identifier following "for"
+               --  in order for the CODEFIX to insert "all" in the right place.
+
+               elsif Nkind (N) = N_Aggregate
+                 and then List_Length (Component_Associations (N)) = 1
+                 and then Nkind (First (Component_Associations (N)))
+                   = N_Iterated_Component_Association
+                 and then Is_Boolean_Type (Typ)
+               then
+                  Error_Msg_N -- CODEFIX
+                    ("missing ALL or SOME in quantified expression",
+                     Defining_Identifier (First (Component_Associations (N))));
+
                else
                   Wrong_Type (N, Typ);
                end if;
