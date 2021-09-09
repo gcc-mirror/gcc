@@ -2630,7 +2630,9 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
   if (!CONSTANT_CLASS_P (tmp) && !DECL_P (tmp))
     end.expr = gfc_evaluate_now (end.expr, &se->pre);
 
-  if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+  if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+      && (ref->u.ss.start->symtree
+	  && !ref->u.ss.start->symtree->n.sym->attr.implied_index))
     {
       tree nonempty = fold_build2_loc (input_location, LE_EXPR,
 				       logical_type_node, start.expr,
