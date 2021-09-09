@@ -1,3 +1,274 @@
+2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/60318
+	* doc/trouble.texi (Copy Assignment): Fix description of
+	behaviour and fix code in example.
+
+2021-09-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/102107
+	* config/rs6000/rs6000-logue.c (rs6000_emit_epilogue): For ELFv2 use
+	r11 instead of r12 for restoring CR.
+
+2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+	    liuhongt  <hongtao.liu@intel.com>
+
+	PR target/89984
+	* config/i386/i386.md (@xorsign<mode>3_1): Remove.
+	* config/i386/i386-expand.c (ix86_expand_xorsign): Expand right away
+	into AND with mask and XOR, using paradoxical subregs.
+	(ix86_split_xorsign): Remove.
+	* config/i386/i386-protos.h (ix86_split_xorsign): Remove.
+
+2021-09-08  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	* tree-ssa-sccvn.c (vn_nary_op_insert_into): fix result compare
+
+2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102224
+	* config/i386/i386.md (xorsign<mode>3): If operands[1] is equal to
+	operands[2], emit abs<mode>2 instead.
+	(@xorsign<mode>3_1): Add early-clobbers for output operand, enable
+	first alternative even for avx, add another alternative with
+	=&Yv <- 0, Yv, Yvm constraints.
+	* config/i386/i386-expand.c (ix86_split_xorsign): If op0 is equal
+	to op1, emit vpandn instead.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm_set_ph): New intrinsic.
+	(_mm256_set_ph): Likewise.
+	(_mm512_set_ph): Likewise.
+	(_mm_setr_ph): Likewise.
+	(_mm256_setr_ph): Likewise.
+	(_mm512_setr_ph): Likewise.
+	(_mm_set1_ph): Likewise.
+	(_mm256_set1_ph): Likewise.
+	(_mm512_set1_ph): Likewise.
+	(_mm_setzero_ph): Likewise.
+	(_mm256_setzero_ph): Likewise.
+	(_mm512_setzero_ph): Likewise.
+	(_mm_set_sh): Likewise.
+	(_mm_load_sh): Likewise.
+	(_mm_store_sh): Likewise.
+	* config/i386/i386-builtin-types.def (V8HF): New type.
+	(DEF_FUNCTION_TYPE (V8HF, V8HI)): New builtin function type
+	* config/i386/i386-expand.c (ix86_expand_vector_init_duplicate):
+	Support vector HFmodes.
+	(ix86_expand_vector_init_one_nonzero): Likewise.
+	(ix86_expand_vector_init_one_var): Likewise.
+	(ix86_expand_vector_init_interleave): Likewise.
+	(ix86_expand_vector_init_general): Likewise.
+	(ix86_expand_vector_set): Likewise.
+	(ix86_expand_vector_extract): Likewise.
+	(ix86_expand_vector_init_concat): Likewise.
+	(ix86_expand_sse_movcc): Handle vector HFmodes.
+	(ix86_expand_vector_set_var): Ditto.
+	* config/i386/i386-modes.def: Add HF vector modes in comment.
+	* config/i386/i386.c (classify_argument): Add HF vector modes.
+	(ix86_hard_regno_mode_ok): Allow HF vector modes for AVX512FP16.
+	(ix86_vector_mode_supported_p): Likewise.
+	(ix86_set_reg_reg_cost): Handle vector HFmode.
+	(ix86_get_ssemov): Handle vector HFmode.
+	(function_arg_advance_64): Pass unamed V16HFmode and V32HFmode
+	by stack.
+	(function_arg_advance_32): Pass V8HF/V16HF/V32HF by sse reg for 32bit
+	mode.
+	(function_arg_advance_32): Ditto.
+	* config/i386/i386.h (VALID_AVX512FP16_REG_MODE): New.
+	(VALID_AVX256_REG_OR_OI_MODE): Rename to ..
+	(VALID_AVX256_REG_OR_OI_VHF_MODE): .. this, and add V16HF.
+	(VALID_SSE2_REG_VHF_MODE): New.
+	(VALID_AVX512VL_128_REG_MODE): Add V8HF and TImode.
+	(SSE_REG_MODE_P): Add vector HFmode.
+	* config/i386/i386.md (mode): Add HF vector modes.
+	(MODE_SIZE): Likewise.
+	(ssemodesuffix): Add ph suffix for HF vector modes.
+	* config/i386/sse.md (VFH_128): New mode iterator.
+	(VMOVE): Adjust for HF vector modes.
+	(V): Likewise.
+	(V_256_512): Likewise.
+	(avx512): Likewise.
+	(avx512fmaskmode): Likewise.
+	(shuffletype): Likewise.
+	(sseinsnmode): Likewise.
+	(ssedoublevecmode): Likewise.
+	(ssehalfvecmode): Likewise.
+	(ssehalfvecmodelower): Likewise.
+	(ssePScmode): Likewise.
+	(ssescalarmode): Likewise.
+	(ssescalarmodelower): Likewise.
+	(sseintprefix): Likewise.
+	(i128): Likewise.
+	(bcstscalarsuff): Likewise.
+	(xtg_mode): Likewise.
+	(VI12HF_AVX512VL): New mode_iterator.
+	(VF_AVX512FP16): Likewise.
+	(VIHF): Likewise.
+	(VIHF_256): Likewise.
+	(VIHF_AVX512BW): Likewise.
+	(V16_256): Likewise.
+	(V32_512): Likewise.
+	(sseintmodesuffix): New mode_attr.
+	(sse): Add scalar and vector HFmodes.
+	(ssescalarmode): Add vector HFmode mapping.
+	(ssescalarmodesuffix): Add sh suffix for HFmode.
+	(*<sse>_vm<insn><mode>3): Use VFH_128.
+	(*<sse>_vm<multdiv_mnemonic><mode>3): Likewise.
+	(*ieee_<ieee_maxmin><mode>3): Likewise.
+	(<avx512>_blendm<mode>): New define_insn.
+	(vec_setv8hf): New define_expand.
+	(vec_set<mode>_0): New define_insn for HF vector set.
+	(*avx512fp16_movsh): Likewise.
+	(avx512fp16_movsh): Likewise.
+	(vec_extract_lo_v32hi): Rename to ...
+	(vec_extract_lo_<mode>): ... this, and adjust to allow HF
+	vector modes.
+	(vec_extract_hi_v32hi): Likewise.
+	(vec_extract_hi_<mode>): Likewise.
+	(vec_extract_lo_v16hi): Likewise.
+	(vec_extract_lo_<mode>): Likewise.
+	(vec_extract_hi_v16hi): Likewise.
+	(vec_extract_hi_<mode>): Likewise.
+	(vec_set_hi_v16hi): Likewise.
+	(vec_set_hi_<mode>): Likewise.
+	(vec_set_lo_v16hi): Likewise.
+	(vec_set_lo_<mode>): Likewise.
+	(*vec_extract<mode>_0): New define_insn_and_split for HF
+	vector extract.
+	(*vec_extracthf): New define_insn.
+	(VEC_EXTRACT_MODE): Add HF vector modes.
+	(PINSR_MODE): Add V8HF.
+	(sse2p4_1): Likewise.
+	(pinsr_evex_isa): Likewise.
+	(<sse2p4_1>_pinsr<ssemodesuffix>): Adjust to support
+	insert for V8HFmode.
+	(pbroadcast_evex_isa): Add HF vector modes.
+	(AVX2_VEC_DUP_MODE): Likewise.
+	(VEC_INIT_MODE): Likewise.
+	(VEC_INIT_HALF_MODE): Likewise.
+	(avx2_pbroadcast<mode>): Adjust to support HF vector mode
+	broadcast.
+	(avx2_pbroadcast<mode>_1): Likewise.
+	(<avx512>_vec_dup<mode>_1): Likewise.
+	(<avx512>_vec_dup<mode><mask_name>): Likewise.
+	(<mask_codefor><avx512>_vec_dup_gpr<mode><mask_name>):
+	Likewise.
+
+2021-09-08  Guo, Xuepeng  <xuepeng.guo@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+	    Liu Hongtao  <hongtao.liu@intel.com>
+	    Wang Hongyu  <hongyu.wang@intel.com>
+	    Xu Dianhong  <dianhong.xu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect FEATURE_AVX512FP16.
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX512FP16_SET,
+	OPTION_MASK_ISA_AVX512FP16_UNSET,
+	OPTION_MASK_ISA2_AVX512FP16_SET,
+	OPTION_MASK_ISA2_AVX512FP16_UNSET): New.
+	(OPTION_MASK_ISA2_AVX512BW_UNSET,
+	OPTION_MASK_ISA2_AVX512BF16_UNSET): Add AVX512FP16.
+	(ix86_handle_option): Handle -mavx512fp16.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AVX512FP16.
+	* common/config/i386/i386-isas.h: Add entry for AVX512FP16.
+	* config.gcc: Add avx512fp16intrin.h.
+	* config/i386/avx512fp16intrin.h: New intrinsic header.
+	* config/i386/cpuid.h: Add bit_AVX512FP16.
+	* config/i386/i386-builtin-types.def: (FLOAT16): New primitive type.
+	* config/i386/i386-builtins.c: Support _Float16 type for i386
+	backend.
+	(ix86_register_float16_builtin_type): New function.
+	(ix86_float16_type_node): New.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__AVX512FP16__.
+	* config/i386/i386-expand.c (ix86_expand_branch): Support
+	HFmode.
+	(ix86_prepare_fp_compare_args): Adjust TARGET_SSE_MATH &&
+	SSE_FLOAT_MODE_P to SSE_FLOAT_MODE_SSEMATH_OR_HF_P.
+	(ix86_expand_fp_movcc): Ditto.
+	* config/i386/i386-isa.def: Add PTA define for AVX512FP16.
+	* config/i386/i386-options.c (isa2_opts): Add -mavx512fp16.
+	(ix86_valid_target_attribute_inner_p): Add avx512fp16 attribute.
+	* config/i386/i386.c (ix86_get_ssemov): Use
+	vmovdqu16/vmovw/vmovsh for HFmode/HImode scalar or vector.
+	(ix86_get_excess_precision): Use
+	FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16 when TARGET_AVX512FP16
+	existed.
+	(sse_store_index): Use SFmode cost for HFmode cost.
+	(inline_memory_move_cost): Add HFmode, and perfer SSE cost over
+	GPR cost for HFmode.
+	(ix86_hard_regno_mode_ok): Allow HImode in sse register.
+	(ix86_mangle_type): Add manlging for _Float16 type.
+	(inline_secondary_memory_needed): No memory is needed for
+	16bit movement between gpr and sse reg under
+	TARGET_AVX512FP16.
+	(ix86_multiplication_cost): Adjust TARGET_SSE_MATH &&
+	SSE_FLOAT_MODE_P to SSE_FLOAT_MODE_SSEMATH_OR_HF_P.
+	(ix86_division_cost): Ditto.
+	(ix86_rtx_costs): Ditto.
+	(ix86_add_stmt_cost): Ditto.
+	(ix86_optab_supported_p): Ditto.
+	* config/i386/i386.h (VALID_AVX512F_SCALAR_MODE): Add HFmode.
+	(SSE_FLOAT_MODE_SSEMATH_OR_HF_P): Add HFmode.
+	(PTA_SAPPHIRERAPIDS): Add PTA_AVX512FP16.
+	* config/i386/i386.md (mode): Add HFmode.
+	(MODE_SIZE): Add HFmode.
+	(isa): Add avx512fp16.
+	(enabled): Handle avx512fp16.
+	(ssemodesuffix): Add sh suffix for HFmode.
+	(comm): Add mult, div.
+	(plusminusmultdiv): New code iterator.
+	(insn): Add mult, div.
+	(*movhf_internal): Adjust for avx512fp16 instruction.
+	(*movhi_internal): Ditto.
+	(*cmpi<unord>hf): New define_insn for HFmode.
+	(*ieee_s<ieee_maxmin>hf3): Likewise.
+	(extendhf<mode>2): Likewise.
+	(trunc<mode>hf2): Likewise.
+	(float<floatunssuffix><mode>hf2): Likewise.
+	(*<insn>hf): Likewise.
+	(cbranchhf4): New expander.
+	(movhfcc): Likewise.
+	(<insn>hf3): Likewise.
+	(mulhf3): Likewise.
+	(divhf3): Likewise.
+	* config/i386/i386.opt: Add mavx512fp16.
+	* config/i386/immintrin.h: Include avx512fp16intrin.h.
+	* doc/invoke.texi: Add mavx512fp16.
+	* doc/extend.texi: Add avx512fp16 Usage Notes.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* common.opt: Support -fexcess-precision=16.
+	* config/aarch64/aarch64.c (aarch64_excess_precision): Return
+	FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16 when
+	EXCESS_PRECISION_TYPE_FLOAT16.
+	* config/arm/arm.c (arm_excess_precision): Ditto.
+	* config/i386/i386.c (ix86_get_excess_precision): Ditto.
+	* config/m68k/m68k.c (m68k_excess_precision): Issue an error
+	when EXCESS_PRECISION_TYPE_FLOAT16.
+	* config/s390/s390.c (s390_excess_precision): Ditto.
+	* coretypes.h (enum excess_precision_type): Add
+	EXCESS_PRECISION_TYPE_FLOAT16.
+	* doc/tm.texi (TARGET_C_EXCESS_PRECISION): Update documents.
+	* doc/tm.texi.in (TARGET_C_EXCESS_PRECISION): Ditto.
+	* doc/extend.texi (Half-Precision): Document
+	-fexcess-precision=16.
+	* flag-types.h (enum excess_precision): Add
+	EXCESS_PRECISION_FLOAT16.
+	* target.def (excess_precision): Update document.
+	* tree.c (excess_precision_type): Set excess_precision_type to
+	EXCESS_PRECISION_FLOAT16 when -fexcess-precision=16.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* doc/extend.texi: (@node Floating Types): Adjust the wording.
+	(@node Half-Precision): Ditto.
+
 2021-09-07  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	PR target/102115

@@ -1,3 +1,18 @@
+2021-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR c++/102228
+	* cp-tree.h (ANON_AGGR_TYPE_FIELD): New define.
+	* decl.c (fixup_anonymous_aggr): Wipe RTTI info put in
+	place on invalid code.
+	* decl2.c (reset_type_linkage): Guard CLASSTYPE_TYPEINFO_VAR
+	access.
+	* module.cc (trees_in::read_class_def): Likewise.  Reconstruct
+	ANON_AGGR_TYPE_FIELD.
+	* semantics.c (finish_member_declaration): Populate
+	ANON_AGGR_TYPE_FIELD for anon aggregate typed members.
+	* typeck.c (lookup_anon_field): Remove DFS search and return
+	ANON_AGGR_TYPE_FIELD directly.
+
 2021-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/100495

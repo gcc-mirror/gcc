@@ -1,3 +1,168 @@
+2021-09-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102225
+	* gcc.dg/analyzer/realloc-1.c (test_10): New.
+	* gcc.dg/analyzer/torture/pr102225.c: New test.
+
+2021-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/array-quals-1.c: Allow .sdata section in more cases.
+
+2021-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/tree-ssa/pr89430-1.c, gcc.dg/tree-ssa/pr89430-2.c,
+	gcc.dg/tree-ssa/pr89430-3.c, gcc.dg/tree-ssa/pr89430-4.c,
+	gcc.dg/tree-ssa/pr89430-5.c, gcc.dg/tree-ssa/pr89430-6.c,
+	gcc.dg/tree-ssa/pr89430-7-comp-ref.c,
+	gcc.dg/tree-ssa/pr89430-8-mem-ref-size.c,
+	gcc.dg/tree-ssa/pr99473-1.c: Use -ftree-cselim.
+
+2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+	    liuhongt  <hongtao.liu@intel.com>
+
+	PR target/89984
+	* gcc.target/i386/avx-pr102224.c: Fix up PR number.
+	* gcc.dg/pr89984.c: New test.
+	* gcc.target/i386/avx-pr89984.c: New test.
+
+2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102224
+	* gcc.dg/pr102224.c: New test.
+	* gcc.target/i386/avx-pr102224.c: New test.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/x86_64/abi/avx512fp16/m512h/abi-avx512fp16-zmm.exp:
+	New file.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/args.h: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/avx512fp16-zmm-check.h:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/test_m512_returning.c:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/test_passing_m512.c:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/test_passing_structs.c:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/test_passing_unions.c:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/test_varargs-m512.c:
+	Likewise.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/x86_64/abi/avx512fp16/m256h/abi-avx512fp16-ymm.exp:
+	New exp file.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/args.h: New header.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/avx512fp16-ymm-check.h:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/asm-support.S: New.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/test_m256_returning.c:
+	New test.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/test_passing_m256.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/test_passing_structs.c:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/test_passing_unions.c:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/test_varargs-m256.c: Likewise.
+
+2021-09-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/x86_64/abi/avx512fp16/abi-avx512fp16-xmm.exp: New exp
+	file for abi test.
+	* gcc.target/x86_64/abi/avx512fp16/args.h: New header file for abi test.
+	* gcc.target/x86_64/abi/avx512fp16/avx512fp16-check.h: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/avx512fp16-xmm-check.h: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/defines.h: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/macros.h: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/asm-support.S: New asm for abi check.
+	* gcc.target/x86_64/abi/avx512fp16/test_3_element_struct_and_unions.c:
+	New test.
+	* gcc.target/x86_64/abi/avx512fp16/test_basic_alignment.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_basic_array_size_and_align.c:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_basic_returning.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_basic_sizes.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_basic_struct_size_and_align.c:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_basic_union_size_and_align.c:
+	Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_complex_returning.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_m64m128_returning.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_passing_floats.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_passing_m64m128.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_passing_structs.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_passing_unions.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_struct_returning.c: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/test_varargs-m128.c: Likewise.
+
+2021-09-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/avx512fp16-vararg-1.c: New test.
+	* gcc.target/i386/avx512fp16-vararg-2.c: Ditto.
+	* gcc.target/i386/avx512fp16-vararg-3.c: Ditto.
+	* gcc.target/i386/avx512fp16-vararg-4.c: Ditto.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/m512-check.h: Add union128h, union256h, union512h.
+	* gcc.target/i386/avx512fp16-10a.c: New test.
+	* gcc.target/i386/avx512fp16-10b.c: Ditto.
+	* gcc.target/i386/avx512fp16-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-1c.c: Ditto.
+	* gcc.target/i386/avx512fp16-1d.c: Ditto.
+	* gcc.target/i386/avx512fp16-1e.c: Ditto.
+	* gcc.target/i386/avx512fp16-2a.c: Ditto.
+	* gcc.target/i386/avx512fp16-2b.c: Ditto.
+	* gcc.target/i386/avx512fp16-2c.c: Ditto.
+	* gcc.target/i386/avx512fp16-3a.c: Ditto.
+	* gcc.target/i386/avx512fp16-3b.c: Ditto.
+	* gcc.target/i386/avx512fp16-3c.c: Ditto.
+	* gcc.target/i386/avx512fp16-4.c: Ditto.
+	* gcc.target/i386/avx512fp16-5.c: Ditto.
+	* gcc.target/i386/avx512fp16-6.c: Ditto.
+	* gcc.target/i386/avx512fp16-7.c: Ditto.
+	* gcc.target/i386/avx512fp16-8.c: Ditto.
+	* gcc.target/i386/avx512fp16-9a.c: Ditto.
+	* gcc.target/i386/avx512fp16-9b.c: Ditto.
+	* gcc.target/i386/pr54855-13.c: Ditto.
+	* gcc.target/i386/avx512fp16-vec_set_var.c: Ditto.
+
+2021-09-08  Guo, Xuepeng  <xuepeng.guo@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+	    Liu Hongtao  <hongtao.liu@intel.com>
+	    Wang Hongyu  <hongyu.wang@intel.com>
+	    Xu Dianhong  <dianhong.xu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add -mavx512fp16 in dg-options.
+	* gcc.target/i386/avx-2.c: Ditto.
+	* gcc.target/i386/avx512-check.h: Check cpuid for AVX512FP16.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute check.
+	* gcc.target/i386/sse-13.c: Add -mavx512fp16.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp: (check_effective_target_avx512fp16): New.
+	* g++.target/i386/float16-1.C: New test.
+	* g++.target/i386/float16-2.C: Ditto.
+	* g++.target/i386/float16-3.C: Ditto.
+	* gcc.target/i386/avx512fp16-12a.c: Ditto.
+	* gcc.target/i386/avx512fp16-12b.c: Ditto.
+	* gcc.target/i386/float16-3a.c: Ditto.
+	* gcc.target/i386/float16-3b.c: Ditto.
+	* gcc.target/i386/float16-4a.c: Ditto.
+	* gcc.target/i386/float16-4b.c: Ditto.
+	* gcc.target/i386/pr54855-12.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/float16-6.c: New test.
+	* gcc.target/i386/float16-7.c: New test.
+
 2021-09-07  David Faust  <david.faust@oracle.com>
 
 	* gcc.target/bpf/core-attr-1.c: New test.

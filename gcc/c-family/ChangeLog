@@ -1,3 +1,12 @@
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* c-common.c (excess_precision_mode_join): Update below comments.
+	(c_ts18661_flt_eval_method): Set excess_precision_type to
+	EXCESS_PRECISION_TYPE_FLOAT16 when -fexcess-precision=16.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Update below comments.
+	(c_cpp_flt_eval_method_iec_559): Set excess_precision_type to
+	EXCESS_PRECISION_TYPE_FLOAT16 when -fexcess-precision=16.
+
 2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* c-omp.c (c_finish_omp_flush): Handle MEMMODEL_SEQ_CST.

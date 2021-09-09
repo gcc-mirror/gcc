@@ -1,3 +1,15 @@
+2021-09-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102225
+	* analyzer.h (compat_types_p): New decl.
+	* constraint-manager.cc
+	(constraint_manager::get_or_add_equiv_class): Guard against NULL
+	type when checking for pointer types.
+	* region-model-impl-calls.cc (region_model::impl_call_realloc):
+	Guard against NULL lhs type/region.  Guard against the size value
+	not being of a compatible type for dynamic extents.
+	* region-model.cc (compat_types_p): Make non-static.
+
 2021-08-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99260

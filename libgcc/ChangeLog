@@ -1,3 +1,14 @@
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/t-softfp: Compile __{mul,div}hc3 into
+	libgcc_s.so.1.
+
+2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/libgcc-glibc.ver: Add %inherit GCC_12.0.0 GCC_7.0.0
+	and export *hf* and *hc* functions at GCC_12.0.0.
+
 2021-09-06  liuhongt  <hongtao.liu@intel.com>
 
 	* Makefile.in: Adjust to support specific CFLAGS for each
