@@ -3074,15 +3074,13 @@ fill_always_executed_in_1 (class loop *loop, sbitmap contains_call)
 	    break;
 
 	  if (bb->loop_father->header == bb)
-	    {
-	      if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
-		break;
-
-	      /* In a loop that is always entered we may proceed anyway.
-		 But record that we entered it and stop once we leave it
-		 since it might not be finite.  */
-	      inn_loop = bb->loop_father;
-	    }
+	    /* Record that we enter into a subloop since it might not
+	       be finite.  */
+	    /* ???  Entering into a not always executed subloop makes
+	       fill_always_executed_in quadratic in loop depth since
+	       we walk those loops N times.  This is not a problem
+	       in practice though, see PR102253 for a worst-case testcase.  */
+	    inn_loop = bb->loop_father;
 
 	  /* Walk the body of LOOP sorted by dominance relation.  Additionally,
 	     if a basic block S dominates the latch, then only blocks dominated
