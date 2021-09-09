@@ -1,3 +1,30 @@
+2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102224
+	* gcc.dg/pr102224.c: New test.
+	* gcc.target/i386/avx-pr102224.c: New test.
+
+2021-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	Backported from master:
+	2021-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/array-quals-1.c: Allow .sdata section in more cases.
+
+2021-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	Backported from master:
+	2021-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/tree-ssa/pr89430-1.c, gcc.dg/tree-ssa/pr89430-2.c,
+	gcc.dg/tree-ssa/pr89430-3.c, gcc.dg/tree-ssa/pr89430-4.c,
+	gcc.dg/tree-ssa/pr89430-5.c, gcc.dg/tree-ssa/pr89430-6.c,
+	gcc.dg/tree-ssa/pr89430-7-comp-ref.c,
+	gcc.dg/tree-ssa/pr89430-8-mem-ref-size.c: Use -ftree-cselim.
+
 2021-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

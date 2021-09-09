@@ -1,3 +1,22 @@
+2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/60318
+	* doc/trouble.texi (Copy Assignment): Fix description of
+	behaviour and fix code in example.
+
+2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102224
+	* config/i386/i386.md (xorsign<mode>3): If operands[1] is equal to
+	operands[2], emit abs<mode>2 instead.
+	(@xorsign<mode>3_1): Add early-clobber for output operand.
+
 2021-09-07  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backported from master:
