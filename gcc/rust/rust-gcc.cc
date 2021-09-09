@@ -44,6 +44,7 @@
 #include "realmpfr.h"
 #include "builtins.h"
 #include "print-tree.h"
+#include "attribs.h"
 
 #include "rust-location.h"
 #include "rust-linemap.h"
@@ -250,6 +251,10 @@ public:
   Btype *reference_type (Btype *);
 
   Btype *immutable_type (Btype *);
+
+  Btype *specify_abi_attribute (Btype *, Rust::ABI);
+
+  Btype *insert_type_attribute (Btype *, const std::string &);
 
   Btype *function_type (const Btyped_identifier &,
 			const std::vector<Btyped_identifier> &,
@@ -923,6 +928,52 @@ Gcc_backend::immutable_type (Btype *base)
     return this->error_type ();
   tree constified = build_qualified_type (type_tree, TYPE_QUAL_CONST);
   return this->make_type (constified);
+}
+
+// ABI
+
+Btype *
+Gcc_backend::specify_abi_attribute (Btype *type, Rust::ABI abi)
+{
+  std::string abi_string;
+  switch (abi)
+    {
+    case Rust::ABI::UNKNOWN:
+      return error_type ();
+
+    case Rust::ABI::RUST:
+    case Rust::ABI::INTRINSIC:
+    case Rust::ABI::C:
+    case Rust::ABI::CDECL:
+      abi_string = "cdecl";
+      break;
+
+    case Rust::ABI::STDCALL:
+      abi_string = "stdcall";
+      break;
+    case Rust::ABI::FASTCALL:
+      abi_string = "fastcall";
+      break;
+    }
+
+  return insert_type_attribute (type, abi_string);
+}
+
+Btype *
+Gcc_backend::insert_type_attribute (Btype *type, const std::string &attrname)
+{
+  tree ident = get_identifier (attrname.c_str ());
+
+  tree attribs = NULL_TREE;
+  tree old_attrs = TYPE_ATTRIBUTES (type->get_tree ());
+  if (old_attrs)
+    attribs = merge_type_attributes (old_attrs,
+				     tree_cons (ident, NULL_TREE, NULL_TREE));
+  else
+    attribs = tree_cons (ident, NULL_TREE, NULL_TREE);
+
+  tree res = build_type_attribute_variant (type->get_tree (), attribs);
+  return this->make_type (res);
 }
 
 // Make a function type.

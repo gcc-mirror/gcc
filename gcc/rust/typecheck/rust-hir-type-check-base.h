@@ -24,6 +24,7 @@
 #include "rust-name-resolver.h"
 #include "rust-hir-visitor.h"
 #include "rust-hir-map.h"
+#include "rust-backend.h"
 
 namespace Rust {
 namespace Resolver {

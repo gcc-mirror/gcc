@@ -23,6 +23,7 @@
 #include "rust-hir-map.h"
 #include "rust-hir-full.h"
 #include "rust-diagnostics.h"
+#include "rust-abi.h"
 
 namespace Rust {
 namespace Resolver {
@@ -1076,44 +1077,6 @@ public:
 #define FNTYPE_IS_METHOD_FLAG 0x01
 #define FNTYPE_IS_EXTERN_FLAG 0x02
 #define FNTYPE_IS_VARADIC_FLAG 0X04
-
-  enum ABI
-  {
-    UNKNOWN,
-    RUST,
-    INTRINSIC,
-    C,
-  };
-
-  static ABI get_abi_from_string (const std::string &abi, Location locus)
-  {
-    if (abi.compare ("rust") == 0)
-      return ABI::C;
-    else if (abi.compare ("rust-intrinsic") == 0)
-      return ABI::INTRINSIC;
-    else if (abi.compare ("C") == 0)
-      return ABI::C;
-
-    rust_error_at (locus, "unknown abi specified");
-    return ABI::UNKNOWN;
-  }
-
-  static std::string get_string_from_abi (ABI abi)
-  {
-    switch (abi)
-      {
-      case ABI::RUST:
-	return "rust";
-      case ABI::INTRINSIC:
-	return "rust-intrinsic";
-      case ABI::C:
-	return "C";
-
-      case ABI::UNKNOWN:
-	return "unknown";
-      }
-    return "unknown";
-  }
 
   FnType (HirId ref, DefId id, std::string identifier, uint8_t flags, ABI abi,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,

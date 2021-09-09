@@ -119,7 +119,7 @@ public:
 	fntype->override_context ();
       }
 
-    if (fntype->get_abi () == TyTy::FnType::ABI::INTRINSIC)
+    if (fntype->get_abi () == ABI::INTRINSIC)
       {
 	Intrinsics compile (ctx);
 	Bfunction *fndecl = compile.compile (fntype);
@@ -127,19 +127,21 @@ public:
 	return;
       }
 
-    rust_assert (fntype->get_abi () == TyTy::FnType::ABI::C);
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+    compiled_fn_type
+      = ctx->get_backend ()->specify_abi_attribute (compiled_fn_type,
+						    fntype->get_abi ());
 
     const unsigned int flags
       = Backend::function_is_declaration | Backend::function_is_visible;
 
     std::string ir_symbol_name = function.get_item_name ();
-    // FIXME this assumes C ABI
     std::string asm_name = function.get_item_name ();
 
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 				       asm_name, flags, function.get_locus ());
+
     ctx->insert_function_decl (fntype->get_ty_ref (), fndecl, fntype);
   }
 

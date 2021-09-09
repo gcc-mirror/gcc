@@ -118,8 +118,7 @@ public:
     auto fnType = new TyTy::FnType (
       function.get_mappings ().get_hirid (),
       function.get_mappings ().get_defid (), function.get_item_name (), flags,
-      TyTy::FnType::get_abi_from_string (parent.get_abi (),
-					 parent.get_locus ()),
+      ::Backend::get_abi_from_string (parent.get_abi (), parent.get_locus ()),
       std::move (params), ret_type, std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
@@ -238,14 +237,11 @@ public:
 	context->insert_type (param.get_mappings (), param_tyty);
       }
 
-    auto fnType
-      = new TyTy::FnType (function.get_mappings ().get_hirid (),
-			  function.get_mappings ().get_defid (),
-			  function.get_function_name (),
-			  function.is_method () ? FNTYPE_IS_METHOD_FLAG
-						: FNTYPE_DEFAULT_FLAGS,
-			  TyTy::FnType::ABI::RUST, std::move (params), ret_type,
-			  std::move (substitutions));
+    auto fnType = new TyTy::FnType (
+      function.get_mappings ().get_hirid (),
+      function.get_mappings ().get_defid (), function.get_function_name (),
+      function.is_method () ? FNTYPE_IS_METHOD_FLAG : FNTYPE_DEFAULT_FLAGS,
+      ABI::RUST, std::move (params), ret_type, std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
 
