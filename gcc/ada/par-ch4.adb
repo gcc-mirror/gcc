@@ -3518,62 +3518,62 @@ package body Ch4 is
       Assoc_Node :=
         New_Node (N_Iterated_Component_Association, Prev_Token_Ptr);
 
-      if Token = Tok_In then
-         Set_Defining_Identifier (Assoc_Node, Id);
-         T_In;
-         Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
+      case Token is
+         when Tok_In =>
+            Set_Defining_Identifier (Assoc_Node, Id);
+            T_In;
+            Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
 
-         --  The iterator may include a filter
+            --  The iterator may include a filter
 
-         if Token = Tok_When then
-            Scan;    -- past WHEN
-            Filter := P_Condition;
-         end if;
+            if Token = Tok_When then
+               Scan;    -- past WHEN
+               Filter := P_Condition;
+            end if;
 
-         if Token = Tok_Use then
+            if Token = Tok_Use then
 
-            --  Ada 2022 Key-expression is present, rewrite node as an
-            --  Iterated_Element_Association.
+               --  Ada 2022 Key-expression is present, rewrite node as an
+               --  Iterated_Element_Association.
 
-            Scan;  --  past USE
-            Build_Iterated_Element_Association;
-            Set_Key_Expression (Assoc_Node, P_Expression);
+               Scan;  --  past USE
+               Build_Iterated_Element_Association;
+               Set_Key_Expression (Assoc_Node, P_Expression);
 
-         elsif Present (Filter) then
-            --  A loop_parameter_specification also indicates an Ada 2022
-            --  construct, in contrast with a subtype indication used in
-            --  array aggregates.
+            elsif Present (Filter) then
+               --  A loop_parameter_specification also indicates an Ada 2022
+               --  construct, in contrast with a subtype indication used in
+               --  array aggregates.
 
-            Build_Iterated_Element_Association;
-         end if;
+               Build_Iterated_Element_Association;
+            end if;
 
-         TF_Arrow;
-         Set_Expression (Assoc_Node, P_Expression);
+            TF_Arrow;
+            Set_Expression (Assoc_Node, P_Expression);
 
-      elsif Ada_Version >= Ada_2022
-        and then Token = Tok_Of
-      then
-         Restore_Scan_State (State);
-         Scan;  -- past OF
-         Set_Defining_Identifier (Assoc_Node, Id);
-         Iter_Spec := P_Iterator_Specification (Id);
-         Set_Iterator_Specification (Assoc_Node, Iter_Spec);
-
-         if Token = Tok_Use then
-            Scan;  -- past USE
-            --  This is an iterated_element_association
-
-            Assoc_Node :=
-              New_Node (N_Iterated_Element_Association, Prev_Token_Ptr);
+         when Tok_Of =>
+            Restore_Scan_State (State);
+            Scan;  -- past OF
+            Set_Defining_Identifier (Assoc_Node, Id);
+            Iter_Spec := P_Iterator_Specification (Id);
             Set_Iterator_Specification (Assoc_Node, Iter_Spec);
-            Set_Key_Expression (Assoc_Node, P_Expression);
-         end if;
 
-         TF_Arrow;
-         Set_Expression (Assoc_Node, P_Expression);
-      end if;
+            if Token = Tok_Use then
+               Scan;  -- past USE
+               --  This is an iterated_element_association
 
-      Error_Msg_Ada_2022_Feature ("iterated component", Token_Ptr);
+               Assoc_Node :=
+                 New_Node (N_Iterated_Element_Association, Prev_Token_Ptr);
+               Set_Iterator_Specification (Assoc_Node, Iter_Spec);
+               Set_Key_Expression (Assoc_Node, P_Expression);
+            end if;
+
+            TF_Arrow;
+            Set_Expression (Assoc_Node, P_Expression);
+
+         when others =>
+            Error_Msg_AP ("missing IN or OF");
+      end case;
 
       return Assoc_Node;
    end P_Iterated_Component_Association;
