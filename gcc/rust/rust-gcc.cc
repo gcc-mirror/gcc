@@ -3499,6 +3499,7 @@ Gcc_backend::write_global_definitions (
 	  rust_preserve_from_gc (decl);
 	  if (DECL_STRUCT_FUNCTION (decl) == NULL)
 	    allocate_struct_function (decl, false);
+	  dump_function (TDI_original, decl);
 	  cgraph_node::finalize_function (decl, true);
 
 	  defs[i] = decl;
