@@ -312,11 +312,10 @@ package Tbuild is
      (Def_Id : Entity_Id;
       Loc    : Source_Ptr) return Node_Id;
    --  New_Occurrence_Of creates an N_Identifier node that is an occurrence of
-   --  the defining identifier Def_Id. The Entity and Etype of the result are
-   --  set from the given defining identifier as follows: Entity is a copy of
-   --  Def_Id. Etype is a copy of Def_Id for types, and a copy of the Etype of
-   --  Def_Id for other entities. Note that Is_Static_Expression is set if this
-   --  call creates an occurrence of an enumeration literal.
+   --  the defining identifier Def_Id. The Entity of the result is Def_Id. The
+   --  Etype of the result is Def_Id for types, and Etype (Def_Id) otherwise.
+   --  Is_Static_Expression is set if this call creates an occurrence of an
+   --  enumeration literal.
 
    function New_Suffixed_Name
      (Related_Id : Name_Id;

@@ -571,7 +571,7 @@ package body Repinfo is
                --  as for some Java bindings and for generic instances).
 
                if Ekind (E) = E_Package then
-                  if No (Renamed_Object (E)) then
+                  if No (Renamed_Entity (E)) then
                      List_Entities (E, Bytes_Big_Endian);
                   end if;
 

@@ -3898,8 +3898,8 @@ package body Exp_Attr is
          if Ptyp = Standard_Exception_Type then
             Id_Kind := RTE (RE_Exception_Id);
 
-            if Present (Renamed_Object (Entity (Pref))) then
-               Set_Entity (Pref, Renamed_Object (Entity (Pref)));
+            if Present (Renamed_Entity (Entity (Pref))) then
+               Set_Entity (Pref, Renamed_Entity (Entity (Pref)));
             end if;
 
             Rewrite (N,

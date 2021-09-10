@@ -2408,12 +2408,12 @@ package body Sem_Warn is
 
             E1 := First_Entity (P);
             while Present (E1) loop
-               if Ekind (E1) = E_Package and then Renamed_Object (E1) = L then
+               if Ekind (E1) = E_Package and then Renamed_Entity (E1) = L then
                   Is_Visible_Renaming := not Is_Hidden (E1);
                   return E1;
 
                elsif Ekind (E1) = E_Package
-                 and then No (Renamed_Object (E1))
+                 and then No (Renamed_Entity (E1))
                  and then not Is_Generic_Instance (E1)
                then
                   R := Find_Package_Renaming (E1, L);

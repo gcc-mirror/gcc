@@ -11981,11 +11981,11 @@ package body Sem_Ch6 is
          --  renaming declaration becomes hidden.
 
          if Ekind (E) = E_Package
-           and then Present (Renamed_Object (E))
-           and then Renamed_Object (E) = Current_Scope
-           and then Nkind (Parent (Renamed_Object (E))) =
+           and then Present (Renamed_Entity (E))
+           and then Renamed_Entity (E) = Current_Scope
+           and then Nkind (Parent (Renamed_Entity (E))) =
                                                      N_Package_Specification
-           and then Present (Generic_Parent (Parent (Renamed_Object (E))))
+           and then Present (Generic_Parent (Parent (Renamed_Entity (E))))
          then
             Set_Is_Hidden (E);
             Set_Is_Immediately_Visible (E, False);

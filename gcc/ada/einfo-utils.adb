@@ -43,23 +43,86 @@ package body Einfo.Utils is
    --  Determine whether abstract state State_Id has particular option denoted
    --  by the name Option_Nam.
 
-   -----------------------------------
-   -- Renamings of Renamed_Or_Alias --
-   -----------------------------------
+   -------------------------------------------
+   -- Aliases/Renamings of Renamed_Or_Alias --
+   -------------------------------------------
 
    function Alias (N : Entity_Id) return Node_Id is
    begin
-      pragma Assert
-        (Is_Overloadable (N) or else Ekind (N) = E_Subprogram_Type);
-      return Renamed_Or_Alias (N);
+      return Val : constant Node_Id := Renamed_Or_Alias (N) do
+         pragma Assert
+           (Is_Overloadable (N) or else Ekind (N) = E_Subprogram_Type);
+         pragma Assert (Val in N_Entity_Id | N_Empty_Id);
+      end return;
    end Alias;
 
    procedure Set_Alias (N : Entity_Id; Val : Node_Id) is
    begin
       pragma Assert
         (Is_Overloadable (N) or else Ekind (N) = E_Subprogram_Type);
+      pragma Assert (Val in N_Entity_Id | N_Empty_Id);
+
       Set_Renamed_Or_Alias (N, Val);
    end Set_Alias;
+
+   function Renamed_Entity (N : Entity_Id) return Node_Id is
+   begin
+      return Val : constant Node_Id := Renamed_Or_Alias (N) do
+         pragma Assert (not Is_Object (N) or else Etype (N) = Any_Type);
+         pragma Assert (Val in N_Entity_Id | N_Empty_Id);
+      end return;
+   end Renamed_Entity;
+
+   procedure Set_Renamed_Entity (N : Entity_Id; Val : Node_Id) is
+   begin
+      pragma Assert (not Is_Object (N));
+      pragma Assert (Val in N_Entity_Id);
+
+      Set_Renamed_Or_Alias (N, Val);
+   end Set_Renamed_Entity;
+
+   function Renamed_Object (N : Entity_Id) return Node_Id is
+   begin
+      return Val : constant Node_Id := Renamed_Or_Alias (N) do
+         --  Formal_Kind uses the entity, not a name of it. This happens
+         --  in front-end inlining, which also sets to Empty. Also in
+         --  Exp_Ch9, where formals are renamed for the benefit of gdb.
+
+         if Ekind (N) not in Formal_Kind then
+            pragma Assert (Is_Object (N));
+            pragma Assert (Val in N_Subexpr_Id | N_Empty_Id);
+            null;
+         end if;
+      end return;
+   end Renamed_Object;
+
+   procedure Set_Renamed_Object (N : Entity_Id; Val : Node_Id) is
+   begin
+      if Ekind (N) not in Formal_Kind then
+         pragma Assert (Is_Object (N));
+         pragma Assert (Val in N_Subexpr_Id | N_Empty_Id);
+         null;
+      end if;
+
+      Set_Renamed_Or_Alias (N, Val);
+   end Set_Renamed_Object;
+
+   function Renamed_Entity_Or_Object (N : Entity_Id) return Node_Id is
+   begin
+      if Is_Object (N) then
+         return Renamed_Object (N);
+      else
+         return Renamed_Entity (N);
+      end if;
+   end Renamed_Entity_Or_Object;
+
+   procedure Set_Renamed_Object_Of_Possibly_Void
+     (N : Entity_Id; Val : Node_Id)
+   is
+   begin
+      pragma Assert (Val in N_Subexpr_Id);
+      Set_Renamed_Or_Alias (N, Val);
+   end Set_Renamed_Object_Of_Possibly_Void;
 
    ----------------
    -- Has_Option --

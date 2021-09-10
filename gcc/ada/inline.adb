@@ -327,8 +327,8 @@ package body Inline is
    --    Unreferenced
 
    procedure Reset_Actual_Mapping_For_Inlined_Call (Subp : Entity_Id);
-   --  Reset the Renamed_Object flags on the formals of Subp, which can be set
-   --  by a call to Establish_Actual_Mapping_For_Inlined_Call.
+   --  Reset the Renamed_Object field to Empty on all formals of Subp, which
+   --  can be set by a call to Establish_Actual_Mapping_For_Inlined_Call.
 
    ------------------------------
    -- Deferred Cleanup Actions --

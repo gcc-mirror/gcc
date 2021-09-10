@@ -723,17 +723,11 @@ package body Sem_Util is
             --  Note: We check if the original node of the renaming comes
             --  from source because the node may have been rewritten.
 
-            elsif Present (Renamed_Object (E))
-              and then Comes_From_Source (Original_Node (Renamed_Object (E)))
+            elsif Present (Renamed_Entity_Or_Object (E))
+              and then Comes_From_Source
+                (Original_Node (Renamed_Entity_Or_Object (E)))
             then
-               return Accessibility_Level (Renamed_Object (E));
-
-            --  Move up renamed entities
-
-            elsif Present (Renamed_Entity (E))
-              and then Comes_From_Source (Original_Node (Renamed_Entity (E)))
-            then
-               return Accessibility_Level (Renamed_Entity (E));
+               return Accessibility_Level (Renamed_Entity_Or_Object (E));
 
             --  Named access types get their level from their associated type
 
@@ -7369,7 +7363,7 @@ package body Sem_Util is
       function Is_Valid_Renaming (N : Node_Id) return Boolean is
       begin
          if Is_Object_Renaming (N)
-           and then not Is_Valid_Renaming (Renamed_Entity (Entity (N)))
+           and then not Is_Valid_Renaming (Renamed_Object (Entity (N)))
          then
             return False;
          end if;
@@ -7561,12 +7555,12 @@ package body Sem_Util is
       elsif Is_Object_Renaming (A1)
         and then Is_Valid_Renaming (A1)
       then
-         return Denotes_Same_Object (Renamed_Entity (Entity (A1)), A2);
+         return Denotes_Same_Object (Renamed_Object (Entity (A1)), A2);
 
       elsif Is_Object_Renaming (A2)
         and then Is_Valid_Renaming (A2)
       then
-         return Denotes_Same_Object (A1, Renamed_Entity (Entity (A2)));
+         return Denotes_Same_Object (A1, Renamed_Object (Entity (A2)));
 
       else
          return False;
@@ -10888,8 +10882,8 @@ package body Sem_Util is
    function Get_Generic_Entity (N : Node_Id) return Entity_Id is
       Ent : constant Entity_Id := Entity (Name (N));
    begin
-      if Present (Renamed_Object (Ent)) then
-         return Renamed_Object (Ent);
+      if Present (Renamed_Entity (Ent)) then
+         return Renamed_Entity (Ent);
       else
          return Ent;
       end if;
@@ -11406,10 +11400,8 @@ package body Sem_Util is
    ------------------------
 
    function Get_Renamed_Entity (E : Entity_Id) return Entity_Id is
-      R : Entity_Id;
-
+      R : Entity_Id := E;
    begin
-      R := E;
       while Present (Renamed_Entity (R)) loop
          R := Renamed_Entity (R);
       end loop;
@@ -24097,7 +24089,8 @@ package body Sem_Util is
             --  declaration.
 
             elsif Nkind (N) = N_Object_Renaming_Declaration then
-               Set_Renamed_Object (Defining_Entity (Result), Name (Result));
+               Set_Renamed_Object_Of_Possibly_Void
+                 (Defining_Entity (Result), Name (Result));
 
             --  Update the First_Real_Statement attribute of a replicated
             --  handled sequence of statements.

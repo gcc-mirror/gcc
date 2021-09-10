@@ -2337,7 +2337,7 @@ package body Freeze is
             --  created for entry parameters must be frozen.
 
             if Ekind (E) = E_Package
-              and then No (Renamed_Object (E))
+              and then No (Renamed_Entity (E))
               and then not Is_Child_Unit (E)
               and then not Is_Frozen (E)
             then

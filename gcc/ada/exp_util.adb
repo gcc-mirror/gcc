@@ -11257,6 +11257,7 @@ package body Exp_Util is
 
          when others =>
             if Is_Entity_Name (N)
+              and then Is_Object (Entity (N))
               and then Present (Renamed_Object (Entity (N)))
             then
                return

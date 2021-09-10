@@ -1667,8 +1667,8 @@ package body Exp_Ch11 is
             --  If the exception is a renaming, use the exception that it
             --  renames (which might be a predefined exception, e.g.).
 
-            if Present (Renamed_Object (Id)) then
-               Id := Renamed_Object (Id);
+            if Present (Renamed_Entity (Id)) then
+               Id := Renamed_Entity (Id);
             end if;
 
             --  Build a C-compatible string in case of no exception handlers,

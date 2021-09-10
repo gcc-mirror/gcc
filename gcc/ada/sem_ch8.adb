@@ -576,10 +576,10 @@ package body Sem_Ch8 is
         and then Present (Entity (Nam))
         and then Ekind (Entity (Nam)) = E_Exception
       then
-         if Present (Renamed_Object (Entity (Nam))) then
-            Set_Renamed_Object (Id, Renamed_Object (Entity (Nam)));
+         if Present (Renamed_Entity (Entity (Nam))) then
+            Set_Renamed_Entity (Id, Renamed_Entity (Entity (Nam)));
          else
-            Set_Renamed_Object (Id, Entity (Nam));
+            Set_Renamed_Entity (Id, Entity (Nam));
          end if;
 
          --  The exception renaming declaration may become Ghost if it renames
@@ -706,10 +706,10 @@ package body Sem_Ch8 is
          Error_Msg_N ("invalid generic unit name", Name (N));
 
       else
-         if Present (Renamed_Object (Old_P)) then
-            Set_Renamed_Object (New_P, Renamed_Object (Old_P));
+         if Present (Renamed_Entity (Old_P)) then
+            Set_Renamed_Entity (New_P, Renamed_Entity (Old_P));
          else
-            Set_Renamed_Object (New_P, Old_P);
+            Set_Renamed_Entity (New_P, Old_P);
          end if;
 
          --  The generic renaming declaration may become Ghost if it renames a
@@ -1658,10 +1658,10 @@ package body Sem_Ch8 is
          Mutate_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
 
-         if Present (Renamed_Object (Old_P)) then
-            Set_Renamed_Object (New_P, Renamed_Object (Old_P));
+         if Present (Renamed_Entity (Old_P)) then
+            Set_Renamed_Entity (New_P, Renamed_Entity (Old_P));
          else
-            Set_Renamed_Object (New_P, Old_P);
+            Set_Renamed_Entity (New_P, Old_P);
          end if;
 
          --  The package renaming declaration may become Ghost if it renames a
@@ -5008,9 +5008,9 @@ package body Sem_Ch8 is
                Next_Entity (Id);
             end loop;
 
-            if Present (Renamed_Object (Pack)) then
-               Set_In_Use (Renamed_Object (Pack), False);
-               Set_Current_Use_Clause (Renamed_Object (Pack), Empty);
+            if Present (Renamed_Entity (Pack)) then
+               Set_In_Use (Renamed_Entity (Pack), False);
+               Set_Current_Use_Clause (Renamed_Entity (Pack), Empty);
             end if;
 
             if Chars (Pack) = Name_System
@@ -5224,8 +5224,8 @@ package body Sem_Ch8 is
          ------------------------
 
          function Declared_In_Actual (Pack : Entity_Id) return Boolean is
+            pragma Assert (Ekind (Pack) = E_Package);
             Act : Entity_Id;
-
          begin
             if No (Associated_Formal_Package (Pack)) then
                return False;
@@ -5233,13 +5233,13 @@ package body Sem_Ch8 is
             else
                Act := First_Entity (Pack);
                while Present (Act) loop
-                  if Renamed_Object (Pack) = Scop then
+                  if Renamed_Entity (Pack) = Scop then
                      return True;
 
                   --  Check for end of list of actuals
 
                   elsif Ekind (Act) = E_Package
-                    and then Renamed_Object (Act) = Pack
+                    and then Renamed_Entity (Act) = Pack
                   then
                      return False;
 
@@ -6056,9 +6056,9 @@ package body Sem_Ch8 is
 
                if Scope (E) = Scope (E2)
                  and then Ekind (E) = E_Package
-                 and then Present (Renamed_Object (E))
-                 and then Is_Generic_Instance (Renamed_Object (E))
-                 and then In_Open_Scopes (Renamed_Object (E))
+                 and then Present (Renamed_Entity (E))
+                 and then Is_Generic_Instance (Renamed_Entity (E))
+                 and then In_Open_Scopes (Renamed_Entity (E))
                  and then Comes_From_Source (N)
                then
                   Set_Is_Immediately_Visible (E, False);
@@ -6389,9 +6389,9 @@ package body Sem_Ch8 is
       --  original package.
 
       if Ekind (P_Name) = E_Package
-        and then Present (Renamed_Object (P_Name))
+        and then Present (Renamed_Entity (P_Name))
       then
-         P_Name := Renamed_Object (P_Name);
+         P_Name := Renamed_Entity (P_Name);
 
          if From_Limited_With (P_Name)
            and then not Unit_Is_Visible (Cunit (Get_Source_Unit (P_Name)))
@@ -7196,9 +7196,9 @@ package body Sem_Ch8 is
                Scop := Entity (Prefix (Nam));
 
                if Ekind (Scop) = E_Package
-                 and then Present (Renamed_Object (Scop))
+                 and then Present (Renamed_Entity (Scop))
                then
-                  Scop := Renamed_Object (Scop);
+                  Scop := Renamed_Entity (Scop);
                end if;
 
                --  Operator is visible if prefix of expanded name denotes
@@ -9882,8 +9882,8 @@ package body Sem_Ch8 is
          --  When a renaming exists we must check it for redundancy. The
          --  original package would have already been seen at this point.
 
-         if Present (Renamed_Object (Entity (Pack_Name))) then
-            P := Renamed_Object (Entity (Pack_Name));
+         if Present (Renamed_Entity (Entity (Pack_Name))) then
+            P := Renamed_Entity (Entity (Pack_Name));
          else
             P := Entity (Pack_Name);
          end if;
@@ -9949,10 +9949,10 @@ package body Sem_Ch8 is
       --  also in use (the flags on both entities must remain consistent, and a
       --  subsequent use of either of them should be recognized as redundant).
 
-      if Present (Renamed_Object (P)) then
-         Set_In_Use (Renamed_Object (P));
-         Set_Current_Use_Clause (Renamed_Object (P), N);
-         Real_P := Renamed_Object (P);
+      if Present (Renamed_Entity (P)) then
+         Set_In_Use (Renamed_Entity (P));
+         Set_Current_Use_Clause (Renamed_Entity (P), N);
+         Real_P := Renamed_Entity (P);
       else
          Real_P := P;
       end if;
