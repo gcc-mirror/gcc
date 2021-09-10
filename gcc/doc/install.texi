@@ -5131,6 +5131,10 @@ GCC will build with and support only MinGW runtime 3.12 and later.
 Earlier versions of headers are incompatible with the new default semantics
 of @code{extern inline} in @code{-std=c99} and @code{-std=gnu99} modes.
 
+To support emitting DWARF debugging info you need to use GNU binutils
+version 2.16 or above containing support for the @code{.secrel32}
+assembler pseudo-op.
+
 @html
 <hr />
 @end html
