@@ -2542,6 +2542,17 @@ public:
     return generic_params;
   }
 
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+
+  const std::vector<std::unique_ptr<TypeParamBound>> &
+  get_type_param_bounds () const
+  {
+    return type_param_bounds;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
