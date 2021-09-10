@@ -257,6 +257,9 @@ public:
 
   void inherit_bounds (const BaseType &other);
 
+  void inherit_bounds (
+    const std::vector<TyTy::TypeBoundPredicate> &specified_bounds);
+
   virtual bool is_unit () const { return false; }
 
   virtual bool is_concrete () const { return true; }

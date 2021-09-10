@@ -113,10 +113,6 @@ private:
 	return tref;
       }
 
-    // Check if there is a super-trait, and apply this bound to the Self
-    // TypeParam
-    // FIXME
-
     TyTy::BaseType *self = nullptr;
     std::vector<TyTy::SubstitutionParamMapping> substitutions;
     for (auto &generic_param : trait_reference->get_generic_params ())
@@ -146,6 +142,38 @@ private:
       }
 
     rust_assert (self != nullptr);
+
+    // Check if there is a super-trait, and apply this bound to the Self
+    // TypeParam
+    std::vector<TyTy::TypeBoundPredicate> specified_bounds;
+
+    // They also inherit themselves as a bound this enables a trait item to
+    // reference other Self::trait_items
+    specified_bounds.push_back (
+      TyTy::TypeBoundPredicate (trait_reference->get_mappings ().get_defid (),
+				trait_reference->get_locus ()));
+
+    if (trait_reference->has_type_param_bounds ())
+      {
+	for (auto &bound : trait_reference->get_type_param_bounds ())
+	  {
+	    if (bound->get_bound_type ()
+		== HIR::TypeParamBound::BoundType::TRAITBOUND)
+	      {
+		HIR::TraitBound *b
+		  = static_cast<HIR::TraitBound *> (bound.get ());
+
+		// FIXME this might be recursive we need a check for that
+
+		TraitReference *trait = resolve_trait_path (b->get_path ());
+		TyTy::TypeBoundPredicate predicate (
+		  trait->get_mappings ().get_defid (), bound->get_locus ());
+
+		specified_bounds.push_back (std::move (predicate));
+	      }
+	  }
+      }
+    self->inherit_bounds (specified_bounds);
 
     std::vector<TraitItemReference> item_refs;
     for (auto &item : trait_reference->get_trait_items ())
