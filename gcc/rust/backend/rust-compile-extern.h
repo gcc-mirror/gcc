@@ -100,14 +100,15 @@ public:
     // items can be forward compiled which means we may not need to invoke this
     // code. We might also have already compiled this generic function as well.
     Bfunction *lookup = nullptr;
-    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup, fntype))
+    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
+				   fntype->get_id (), fntype))
       {
 	// has this been added to the list then it must be finished
 	if (ctx->function_completed (lookup))
 	  {
 	    Bfunction *dummy = nullptr;
 	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	      ctx->insert_function_decl (fntype->get_ty_ref (), lookup, fntype);
+	      ctx->insert_function_decl (fntype, lookup);
 
 	    return;
 	  }
@@ -123,7 +124,7 @@ public:
       {
 	Intrinsics compile (ctx);
 	Bfunction *fndecl = compile.compile (fntype);
-	ctx->insert_function_decl (fntype->get_ty_ref (), fndecl, fntype);
+	ctx->insert_function_decl (fntype, fndecl);
 	return;
       }
 
@@ -141,8 +142,7 @@ public:
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 				       asm_name, flags, function.get_locus ());
-
-    ctx->insert_function_decl (fntype->get_ty_ref (), fndecl, fntype);
+    ctx->insert_function_decl (fntype, fndecl);
   }
 
 private:

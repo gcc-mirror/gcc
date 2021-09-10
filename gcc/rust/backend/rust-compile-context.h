@@ -160,32 +160,41 @@ public:
     return true;
   }
 
-  void insert_function_decl (HirId id, ::Bfunction *fn,
-			     const TyTy::BaseType *ref)
+  void insert_function_decl (const TyTy::FnType *ref, ::Bfunction *fn)
   {
+    auto id = ref->get_ty_ref ();
+    auto dId = ref->get_id ();
+
     rust_assert (compiled_fn_map.find (id) == compiled_fn_map.end ());
     compiled_fn_map[id] = fn;
-    if (ref != nullptr)
-      {
-	std::pair<HirId, ::Bfunction *> elem (id, fn);
-	mono_fns[ref] = std::move (elem);
-      }
+
+    auto it = mono_fns.find (dId);
+    if (it == mono_fns.end ())
+      mono_fns[dId] = {};
+
+    mono_fns[dId].push_back ({ref, fn});
   }
 
   bool lookup_function_decl (HirId id, ::Bfunction **fn,
+			     DefId dId = UNKNOWN_DEFID,
 			     const TyTy::BaseType *ref = nullptr)
   {
     // for for any monomorphized fns
     if (ref != nullptr)
       {
-	for (auto it = mono_fns.begin (); it != mono_fns.end (); it++)
+	rust_assert (dId != UNKNOWN_DEFID);
+
+	auto it = mono_fns.find (dId);
+	if (it == mono_fns.end ())
+	  return false;
+
+	for (auto &e : mono_fns[dId])
 	  {
-	    std::pair<HirId, ::Bfunction *> &val = it->second;
-	    const TyTy::BaseType *r = it->first;
+	    const TyTy::BaseType *r = e.first;
+	    ::Bfunction *f = e.second;
 	    if (ref->is_equal (*r))
 	      {
-		*fn = val.second;
-
+		*fn = f;
 		return true;
 	      }
 	  }
@@ -316,18 +325,19 @@ private:
   std::map<HirId, ::Bfunction *> compiled_fn_map;
   std::map<HirId, ::Bexpression *> compiled_consts;
   std::map<HirId, ::Blabel *> compiled_labels;
-  std::vector< ::std::vector<Bstatement *> > statements;
-  std::vector< ::Bblock *> scope_stack;
-  std::vector< ::Bvariable *> loop_value_stack;
-  std::vector< ::Blabel *> loop_begin_labels;
-  std::map<const TyTy::BaseType *, std::pair<HirId, ::Btype *> > mono;
-  std::map<const TyTy::BaseType *, std::pair<HirId, ::Bfunction *> > mono_fns;
+  std::vector<::std::vector<Bstatement *>> statements;
+  std::vector<::Bblock *> scope_stack;
+  std::vector<::Bvariable *> loop_value_stack;
+  std::vector<::Blabel *> loop_begin_labels;
+  std::map<const TyTy::BaseType *, std::pair<HirId, ::Btype *>> mono;
+  std::map<DefId, std::vector<std::pair<const TyTy::BaseType *, ::Bfunction *>>>
+    mono_fns;
 
   // To GCC middle-end
-  std::vector< ::Btype *> type_decls;
-  std::vector< ::Bvariable *> var_decls;
-  std::vector< ::Bexpression *> const_decls;
-  std::vector< ::Bfunction *> func_decls;
+  std::vector<::Btype *> type_decls;
+  std::vector<::Bvariable *> var_decls;
+  std::vector<::Bexpression *> const_decls;
+  std::vector<::Bfunction *> func_decls;
 };
 
 class TyTyResolveCompile : public TyTy::TyVisitor
