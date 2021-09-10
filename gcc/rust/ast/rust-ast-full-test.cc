@@ -4010,7 +4010,15 @@ filename_from_path_attribute (std::vector<Attribute> &outer_attrs)
       return "";
     }
 
-  auto path = path_attr.get_attr_input ().as_string ();
+  auto path_value = path_attr.get_attr_input ().as_string ();
+
+  // At this point, the 'path' is of the following format: '= "<file.rs>"'
+  // We need to remove the equal sign and only keep the actual filename.
+  // In order to do this, we can simply go through the string until we find
+  // a character that is not an equal sign or whitespace
+  auto filename_begin = path_value.find_first_not_of ("=\t ");
+
+  auto path = path_value.substr (filename_begin);
 
   // On windows, the path might mix '/' and '\' separators. Replace the
   // UNIX-like separators by MSDOS separators to make sure the path will resolve
@@ -4022,7 +4030,7 @@ filename_from_path_attribute (std::vector<Attribute> &outer_attrs)
   path.replace ('/', '\\');
 #endif /* HAVE_DOS_BASED_FILE_SYSTEM */
 
-  return path_attr.get_attr_input ().as_string ();
+  return path;
 }
 
 void
@@ -4030,10 +4038,6 @@ Module::process_file_path ()
 {
   rust_assert (kind == Module::ModuleKind::UNLOADED);
   rust_assert (module_file.empty ());
-
-  auto path_string = filename_from_path_attribute (get_outer_attrs ());
-  if (!path_string.empty ())
-    return;
 
   // This corresponds to the path of the file 'including' the module. So the
   // file that contains the 'mod <file>;' directive
@@ -4052,6 +4056,13 @@ Module::process_file_path ()
   else
     current_directory_name
       = including_fname.substr (0, dir_slash_pos) + file_separator;
+
+  auto path_string = filename_from_path_attribute (get_outer_attrs ());
+  if (!path_string.empty ())
+    {
+      module_file = current_directory_name + path_string;
+      return;
+    }
 
   // FIXME: We also have to search for
   // <directory>/<including_fname>/<module_name>.rs In rustc, this is done via
@@ -4079,6 +4090,9 @@ Module::process_file_path ()
     rust_error_at (locus, "no candidate found for module %s",
 		   module_name.c_str ());
 
+  if (no_candidates_found || multiple_candidates_found)
+    return;
+
   module_file = file_mod_found ? expected_file_path
 			       : current_directory_name + expected_dir_path;
 }
@@ -4098,7 +4112,7 @@ Module::load_items ()
 
   if (file_wrap.get_raw () == nullptr)
     {
-      rust_error_at (Location (), "cannot open module file %s: %m",
+      rust_error_at (get_locus (), "cannot open module file %s: %m",
 		     module_file.c_str ());
       return;
     }
