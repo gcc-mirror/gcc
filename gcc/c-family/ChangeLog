@@ -1,3 +1,8 @@
+2021-09-09  qing zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.c (handle_uninitialized_attribute): New function.
+	(c_common_attribute_table): Add "uninitialized" attribute.
+
 2021-09-08  liuhongt  <hongtao.liu@intel.com>
 
 	* c-common.c (excess_precision_mode_join): Update below comments.

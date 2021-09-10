@@ -1,3 +1,10 @@
+2021-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98490
+	* trans-expr.c (gfc_conv_substring): Do not generate substring
+	bounds check for implied do loop index variable before it actually
+	becomes defined.
+
 2021-09-08  liuhongt  <hongtao.liu@intel.com>
 
 	* options.c (gfc_post_options): Issue an error for

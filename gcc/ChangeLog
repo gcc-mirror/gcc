@@ -1,3 +1,117 @@
+2021-09-09  qing zhao  <qing.zhao@oracle.com>
+
+	* builtins.c (expand_builtin_memset): Make external visible.
+	* builtins.h (expand_builtin_memset): Declare extern.
+	* common.opt (ftrivial-auto-var-init=): New option.
+	* doc/extend.texi: Document the uninitialized attribute.
+	* doc/invoke.texi: Document -ftrivial-auto-var-init.
+	* flag-types.h (enum auto_init_type): New enumerated type
+	auto_init_type.
+	* gimple-fold.c (clear_padding_type): Add one new parameter.
+	(clear_padding_union): Likewise.
+	(clear_padding_emit_loop): Likewise.
+	(clear_type_padding_in_mask): Likewise.
+	(gimple_fold_builtin_clear_padding): Handle this new parameter.
+	* gimplify.c (gimple_add_init_for_auto_var): New function.
+	(gimple_add_padding_init_for_auto_var): New function.
+	(is_var_need_auto_init): New function.
+	(gimplify_decl_expr): Add initialization to automatic variables per
+	users' requests.
+	(gimplify_call_expr): Add one new parameter for call to
+	__builtin_clear_padding.
+	(gimplify_init_constructor): Add padding initialization in the end.
+	* internal-fn.c (INIT_PATTERN_VALUE): New macro.
+	(expand_DEFERRED_INIT): New function.
+	* internal-fn.def (DEFERRED_INIT): New internal function.
+	* tree-cfg.c (verify_gimple_call): Verify calls to .DEFERRED_INIT.
+	* tree-sra.c (generate_subtree_deferred_init): New function.
+	(scan_function): Avoid setting cannot_scalarize_away_bitmap for
+	calls to .DEFERRED_INIT.
+	(sra_modify_deferred_init): New function.
+	(sra_modify_function_body): Handle calls to DEFERRED_INIT specially.
+	* tree-ssa-structalias.c (find_func_aliases_for_call): Likewise.
+	* tree-ssa-uninit.c (warn_uninit): Handle calls to DEFERRED_INIT
+	specially.
+	(check_defs): Likewise.
+	(warn_uninitialized_vars): Likewise.
+	* tree-ssa.c (ssa_undefined_value_p): Likewise.
+	* tree.c (build_common_builtin_nodes): Build tree node for
+	BUILT_IN_CLEAR_PADDING when needed.
+
+2021-09-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (fill_always_executed_in_1): Walk
+	into all subloops.
+
+2021-09-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (fill_always_executed_in_1): Integrate
+	DOM walk from get_loop_body_in_dom_order using a worklist
+	approach.
+
+2021-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	* config.gcc: Add avx512fp16vlintrin.h.
+	* config/i386/avx512fp16intrin.h: (_mm512_add_ph): New intrinsic.
+	(_mm512_mask_add_ph): Likewise.
+	(_mm512_maskz_add_ph): Likewise.
+	(_mm512_sub_ph): Likewise.
+	(_mm512_mask_sub_ph): Likewise.
+	(_mm512_maskz_sub_ph): Likewise.
+	(_mm512_mul_ph): Likewise.
+	(_mm512_mask_mul_ph): Likewise.
+	(_mm512_maskz_mul_ph): Likewise.
+	(_mm512_div_ph): Likewise.
+	(_mm512_mask_div_ph): Likewise.
+	(_mm512_maskz_div_ph): Likewise.
+	(_mm512_add_round_ph): Likewise.
+	(_mm512_mask_add_round_ph): Likewise.
+	(_mm512_maskz_add_round_ph): Likewise.
+	(_mm512_sub_round_ph): Likewise.
+	(_mm512_mask_sub_round_ph): Likewise.
+	(_mm512_maskz_sub_round_ph): Likewise.
+	(_mm512_mul_round_ph): Likewise.
+	(_mm512_mask_mul_round_ph): Likewise.
+	(_mm512_maskz_mul_round_ph): Likewise.
+	(_mm512_div_round_ph): Likewise.
+	(_mm512_mask_div_round_ph): Likewise.
+	(_mm512_maskz_div_round_ph): Likewise.
+	* config/i386/avx512fp16vlintrin.h: New header.
+	* config/i386/i386-builtin-types.def (V16HF, V8HF, V32HF):
+	Add new builtin types.
+	* config/i386/i386-builtin.def: Add corresponding builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtin types.
+	(ix86_expand_round_builtin): Likewise.
+	* config/i386/immintrin.h: Include avx512fp16vlintrin.h
+	* config/i386/sse.md (VFH): New mode_iterator.
+	(VF2H): Likewise.
+	(avx512fmaskmode): Add HF vector modes.
+	(avx512fmaskhalfmode): Likewise.
+	(<plusminus_insn><mode>3<mask_name><round_name>): Adjust to for
+	HF vector modes.
+	(*<plusminus_insn><mode>3<mask_name><round_name>): Likewise.
+	(mul<mode>3<mask_name><round_name>): Likewise.
+	(*mul<mode>3<mask_name><round_name>): Likewise.
+	(div<mode>3): Likewise.
+	(<sse>_div<mode>3<mask_name><round_name>): Likewise.
+	* config/i386/subst.md (SUBST_V): Add HF vector modes.
+	(SUBST_A): Likewise.
+	(round_mode512bit_condition): Adjust for V32HFmode.
+
+2021-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101059
+	* config/i386/sse.md (reduc_plus_scal_<mode>): Split to ..
+	(reduc_plus_scal_v4sf): .. this, New define_expand.
+	(reduc_plus_scal_v2df): .. and this, New define_expand.
+
+2021-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/91103
+	* config/i386/sse.md (*vec_extract<mode><ssescalarmodelower>_valign):
+	New define_insn.
+
 2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/60318
