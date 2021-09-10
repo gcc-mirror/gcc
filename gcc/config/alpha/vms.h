@@ -244,7 +244,7 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
  while (0)
 
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE VMS_AND_DWARF2_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 #define ASM_PN_FORMAT "%s___%lu"
 
