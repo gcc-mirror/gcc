@@ -9956,7 +9956,7 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	  return;
 	}
       stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs,
-				  v, lhs1, rhs1, swapped, mo,
+				  v, lhs1, rhs1, NULL_TREE, swapped, mo, false,
 				  processing_template_decl != 0);
       if (stmt == error_mark_node)
 	return;

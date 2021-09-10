@@ -1492,7 +1492,7 @@ dump_block_node (pretty_printer *pp, tree block, int spc, dump_flags_t flags)
 void
 dump_omp_atomic_memory_order (pretty_printer *pp, enum omp_memory_order mo)
 {
-  switch (mo)
+  switch (mo & OMP_MEMORY_ORDER_MASK)
     {
     case OMP_MEMORY_ORDER_RELAXED:
       pp_string (pp, " relaxed");
@@ -1510,6 +1510,22 @@ dump_omp_atomic_memory_order (pretty_printer *pp, enum omp_memory_order mo)
       pp_string (pp, " release");
       break;
     case OMP_MEMORY_ORDER_UNSPECIFIED:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  switch (mo & OMP_FAIL_MEMORY_ORDER_MASK)
+    {
+    case OMP_FAIL_MEMORY_ORDER_RELAXED:
+      pp_string (pp, " fail(relaxed)");
+      break;
+    case OMP_FAIL_MEMORY_ORDER_SEQ_CST:
+      pp_string (pp, " fail(seq_cst)");
+      break;
+    case OMP_FAIL_MEMORY_ORDER_ACQUIRE:
+      pp_string (pp, " fail(acquire)");
+      break;
+    case OMP_FAIL_MEMORY_ORDER_UNSPECIFIED:
       break;
     default:
       gcc_unreachable ();
@@ -3629,6 +3645,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_ATOMIC:
       pp_string (pp, "#pragma omp atomic");
+      if (OMP_ATOMIC_WEAK (node))
+	pp_string (pp, " weak");
       dump_omp_atomic_memory_order (pp, OMP_ATOMIC_MEMORY_ORDER (node));
       newline_and_indent (pp, spc + 2);
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
@@ -3649,6 +3667,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
       pp_string (pp, "#pragma omp atomic capture");
+      if (OMP_ATOMIC_WEAK (node))
+	pp_string (pp, " weak");
       dump_omp_atomic_memory_order (pp, OMP_ATOMIC_MEMORY_ORDER (node));
       newline_and_indent (pp, spc + 2);
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);

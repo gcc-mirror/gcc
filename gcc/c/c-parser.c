@@ -7663,10 +7663,21 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
   c_inhibit_evaluation_warnings -= cond.value == truthvalue_true_node;
   location_t loc1 = make_location (exp1.get_start (), exp1.src_range);
   location_t loc2 = make_location (exp2.get_start (), exp2.src_range);
-  ret.value = build_conditional_expr (colon_loc, cond.value,
-				      cond.original_code == C_MAYBE_CONST_EXPR,
-				      exp1.value, exp1.original_type, loc1,
-				      exp2.value, exp2.original_type, loc2);
+  if (__builtin_expect (omp_atomic_lhs != NULL, 0)
+      && (TREE_CODE (cond.value) == GT_EXPR
+	  || TREE_CODE (cond.value) == LT_EXPR
+	  || TREE_CODE (cond.value) == EQ_EXPR)
+      && c_tree_equal (exp2.value, omp_atomic_lhs)
+      && (c_tree_equal (TREE_OPERAND (cond.value, 0), omp_atomic_lhs)
+	  || c_tree_equal (TREE_OPERAND (cond.value, 1), omp_atomic_lhs)))
+    ret.value = build3_loc (colon_loc, COND_EXPR, TREE_TYPE (omp_atomic_lhs),
+			    cond.value, exp1.value, exp2.value);
+  else
+    ret.value
+      = build_conditional_expr (colon_loc, cond.value,
+				cond.original_code == C_MAYBE_CONST_EXPR,
+				exp1.value, exp1.original_type, loc1,
+				exp2.value, exp2.original_type, loc2);
   ret.original_code = ERROR_MARK;
   if (exp1.value == error_mark_node || exp2.value == error_mark_node)
     ret.original_type = NULL;
@@ -7849,15 +7860,27 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
       = convert_lvalue_to_rvalue (stack[sp].loc,			      \
 				  stack[sp].expr, true, true);		      \
     if (__builtin_expect (omp_atomic_lhs != NULL_TREE, 0) && sp == 1	      \
-	&& c_parser_peek_token (parser)->type == CPP_SEMICOLON		      \
-	&& ((1 << stack[sp].prec)					      \
-	    & ((1 << PREC_BITOR) | (1 << PREC_BITXOR) | (1 << PREC_BITAND)    \
-	       | (1 << PREC_SHIFT) | (1 << PREC_ADD) | (1 << PREC_MULT)))     \
+	&& ((c_parser_next_token_is (parser, CPP_SEMICOLON)		      \
+	     && ((1 << stack[sp].prec)					      \
+		 & ((1 << PREC_BITOR) | (1 << PREC_BITXOR)		      \
+		     | (1 << PREC_BITAND) | (1 << PREC_SHIFT)		      \
+		     | (1 << PREC_ADD) | (1 << PREC_MULT)		      \
+		     | (1 << PREC_EQ))))				      \
+	    || ((c_parser_next_token_is (parser, CPP_QUERY)		      \
+		 || (omp_atomic_lhs == void_list_node			      \
+		     && c_parser_next_token_is (parser, CPP_CLOSE_PAREN)))    \
+		&& (stack[sp].prec == PREC_REL || stack[sp].prec == PREC_EQ)))\
 	&& stack[sp].op != TRUNC_MOD_EXPR				      \
+	&& stack[sp].op != GE_EXPR					      \
+	&& stack[sp].op != LE_EXPR					      \
+	&& stack[sp].op != NE_EXPR					      \
 	&& stack[0].expr.value != error_mark_node			      \
 	&& stack[1].expr.value != error_mark_node			      \
-	&& (c_tree_equal (stack[0].expr.value, omp_atomic_lhs)		      \
-	    || c_tree_equal (stack[1].expr.value, omp_atomic_lhs)))	      \
+	&& (omp_atomic_lhs == void_list_node				      \
+	    || c_tree_equal (stack[0].expr.value, omp_atomic_lhs)	      \
+	    || c_tree_equal (stack[1].expr.value, omp_atomic_lhs)	      \
+	    || (stack[sp].op == EQ_EXPR					      \
+		&& c_parser_peek_2nd_token (parser)->keyword == RID_IF)))     \
       {									      \
 	tree t = make_node (stack[1].op);				      \
 	TREE_TYPE (t) = TREE_TYPE (stack[0].expr.value);		      \
@@ -17655,14 +17678,45 @@ c_parser_omp_allocate (location_t loc, c_parser *parser)
    capture-block:
      { v = x; update-stmt; } | { update-stmt; v = x; } | { v = x; x = expr; }
 
-  where x and v are lvalue expressions with scalar type.
+   OpenMP 5.1:
+   # pragma omp atomic compare new-line
+     conditional-update-atomic
+
+   # pragma omp atomic compare capture new-line
+     conditional-update-capture-atomic
+
+   conditional-update-atomic:
+     cond-expr-stmt | cond-update-stmt
+   cond-expr-stmt:
+     x = expr ordop x ? expr : x;
+     x = x ordop expr ? expr : x;
+     x = x == e ? d : x;
+   cond-update-stmt:
+     if (expr ordop x) { x = expr; }
+     if (x ordop expr) { x = expr; }
+     if (x == e) { x = d; }
+   ordop:
+     <, >
+   conditional-update-capture-atomic:
+     v = cond-expr-stmt
+     { v = x; cond-expr-stmt }
+     { cond-expr-stmt v = x; }
+     { v = x; cond-update-stmt }
+     { cond-update-stmt v = x; }
+     if (x == e) { x = d; } else { v = x; }
+     { r = x == e; if (r) { x = d; } }
+     { r = x == e; if (r) { x = d; } else { v = x; } }
+
+  where x, r and v are lvalue expressions with scalar type,
+  expr, e and d are expressions with scalar type and e might be
+  the same as v.
 
   LOC is the location of the #pragma token.  */
 
 static void
 c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 {
-  tree lhs = NULL_TREE, rhs = NULL_TREE, v = NULL_TREE;
+  tree lhs = NULL_TREE, rhs = NULL_TREE, v = NULL_TREE, r = NULL_TREE;
   tree lhs1 = NULL_TREE, rhs1 = NULL_TREE;
   tree stmt, orig_lhs, unfolded_lhs = NULL_TREE, unfolded_lhs1 = NULL_TREE;
   enum tree_code code = ERROR_MARK, opcode = NOP_EXPR;
@@ -17674,6 +17728,12 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
   bool non_lvalue_p;
   bool first = true;
   tree clauses = NULL_TREE;
+  bool capture = false;
+  bool compare = false;
+  bool weak = false;
+  enum omp_memory_order fail = OMP_MEMORY_ORDER_UNSPECIFIED;
+  bool no_semicolon = false;
+  bool extra_scope = false;
 
   while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     {
@@ -17692,6 +17752,10 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 	  enum tree_code new_code = ERROR_MARK;
 	  enum omp_memory_order new_memory_order
 	    = OMP_MEMORY_ORDER_UNSPECIFIED;
+	  bool new_capture = false;
+	  bool new_compare = false;
+	  bool new_weak = false;
+	  enum omp_memory_order new_fail = OMP_MEMORY_ORDER_UNSPECIFIED;
 
 	  if (!strcmp (p, "read"))
 	    new_code = OMP_ATOMIC_READ;
@@ -17699,13 +17763,54 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 	    new_code = NOP_EXPR;
 	  else if (!strcmp (p, "update"))
 	    new_code = OMP_ATOMIC;
-	  else if (!strcmp (p, "capture"))
+	  else if (openacc && !strcmp (p, "capture"))
 	    new_code = OMP_ATOMIC_CAPTURE_NEW;
 	  else if (openacc)
 	    {
 	      p = NULL;
 	      error_at (cloc, "expected %<read%>, %<write%>, %<update%>, "
 			      "or %<capture%> clause");
+	    }
+	  else if (!strcmp (p, "capture"))
+	    new_capture = true;
+	  else if (!strcmp (p, "compare"))
+	    new_compare = true;
+	  else if (!strcmp (p, "weak"))
+	    new_weak = true;
+	  else if (!strcmp (p, "fail"))
+	    {
+	      matching_parens parens;
+
+	      c_parser_consume_token (parser);
+	      if (!parens.require_open (parser))
+		continue;
+
+	      if (c_parser_next_token_is (parser, CPP_NAME))
+		{
+		  const char *q
+		    = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+
+		  if (!strcmp (q, "seq_cst"))
+		    new_fail = OMP_MEMORY_ORDER_SEQ_CST;
+		  else if (!strcmp (q, "acquire"))
+		    new_fail = OMP_MEMORY_ORDER_ACQUIRE;
+		  else if (!strcmp (q, "relaxed"))
+		    new_fail = OMP_MEMORY_ORDER_RELAXED;
+		}
+
+	      if (new_fail != OMP_MEMORY_ORDER_UNSPECIFIED)
+		{
+		  c_parser_consume_token (parser);
+		  if (fail != OMP_MEMORY_ORDER_UNSPECIFIED)
+		    error_at (cloc, "too many %qs clauses", "fail");
+		  else
+		    fail = new_fail;
+		}
+	      else
+		c_parser_error (parser, "expected %<seq_cst%>, %<acquire%> "
+					"or %<relaxed%>");
+	      parens.skip_until_found_close (parser);
+	      continue;
 	    }
 	  else if (!strcmp (p, "seq_cst"))
 	    new_memory_order = OMP_MEMORY_ORDER_SEQ_CST;
@@ -17727,8 +17832,9 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 	    {
 	      p = NULL;
 	      error_at (cloc, "expected %<read%>, %<write%>, %<update%>, "
-			      "%<capture%>, %<seq_cst%>, %<acq_rel%>, "
-			      "%<release%>, %<relaxed%> or %<hint%> clause");
+			      "%<capture%>, %<compare%>, %<weak%>, %<fail%>, "
+			      "%<seq_cst%>, %<acq_rel%>, %<release%>, "
+			      "%<relaxed%> or %<hint%> clause");
 	    }
 	  if (p)
 	    {
@@ -17751,6 +17857,27 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 		  else
 		    memory_order = new_memory_order;
 		}
+	      else if (new_capture)
+		{
+		  if (capture)
+		    error_at (cloc, "too many %qs clauses", "capture");
+		  else
+		    capture = true;
+		}
+	      else if (new_compare)
+		{
+		  if (compare)
+		    error_at (cloc, "too many %qs clauses", "compare");
+		  else
+		    compare = true;
+		}
+	      else if (new_weak)
+		{
+		  if (weak)
+		    error_at (cloc, "too many %qs clauses", "weak");
+		  else
+		    weak = true;
+		}
 	      c_parser_consume_token (parser);
 	      continue;
 	    }
@@ -17761,6 +17888,30 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 
   if (code == ERROR_MARK)
     code = OMP_ATOMIC;
+  if (capture)
+    {
+      if (code != OMP_ATOMIC)
+	error_at (loc, "%qs clause is incompatible with %<read%> or %<write%> "
+		       "clauses", "capture");
+      else
+	code = OMP_ATOMIC_CAPTURE_NEW;
+    }
+  if (compare && code != OMP_ATOMIC && code != OMP_ATOMIC_CAPTURE_NEW)
+    {
+      error_at (loc, "%qs clause is incompatible with %<read%> or %<write%> "
+		      "clauses", "compare");
+      compare = false;
+    }
+  if (fail != OMP_MEMORY_ORDER_UNSPECIFIED && !compare)
+    {
+      error_at (loc, "%qs clause requires %qs clause", "fail", "compare");
+      fail = OMP_MEMORY_ORDER_UNSPECIFIED;
+    }
+  if (weak && !compare)
+    {
+      error_at (loc, "%qs clause requires %qs clause", "weak", "compare");
+      weak = false;
+    }
   if (openacc)
     memory_order = OMP_MEMORY_ORDER_RELAXED;
   else if (memory_order == OMP_MEMORY_ORDER_UNSPECIFIED)
@@ -17785,7 +17936,6 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 	      memory_order = OMP_MEMORY_ORDER_ACQUIRE;
 	      break;
 	    case NOP_EXPR: /* atomic write */
-	    case OMP_ATOMIC:
 	      memory_order = OMP_MEMORY_ORDER_RELEASE;
 	      break;
 	    default:
@@ -17801,36 +17951,32 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
     switch (code)
       {
       case OMP_ATOMIC_READ:
-	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
-	    || memory_order == OMP_MEMORY_ORDER_RELEASE)
+	if (memory_order == OMP_MEMORY_ORDER_RELEASE)
 	  {
 	    error_at (loc, "%<#pragma omp atomic read%> incompatible with "
-			   "%<acq_rel%> or %<release%> clauses");
+			   "%<release%> clause");
 	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
 	  }
+	else if (memory_order == OMP_MEMORY_ORDER_ACQ_REL)
+	  memory_order = OMP_MEMORY_ORDER_ACQUIRE;
 	break;
       case NOP_EXPR: /* atomic write */
-	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
-	    || memory_order == OMP_MEMORY_ORDER_ACQUIRE)
+	if (memory_order == OMP_MEMORY_ORDER_ACQUIRE)
 	  {
 	    error_at (loc, "%<#pragma omp atomic write%> incompatible with "
-			   "%<acq_rel%> or %<acquire%> clauses");
+			   "%<acquire%> clause");
 	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
 	  }
-	break;
-      case OMP_ATOMIC:
-     /* case OMP_ATOMIC_CAPTURE_NEW: - or update to OpenMP 5.1 */
-	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
-	    || memory_order == OMP_MEMORY_ORDER_ACQUIRE)
-	  {
-	    error_at (loc, "%<#pragma omp atomic update%> incompatible with "
-			   "%<acq_rel%> or %<acquire%> clauses");
-	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
-	  }
+	else if (memory_order == OMP_MEMORY_ORDER_ACQ_REL)
+	  memory_order = OMP_MEMORY_ORDER_RELEASE;
 	break;
       default:
 	break;
       }
+  if (fail != OMP_MEMORY_ORDER_UNSPECIFIED)
+    memory_order
+      = (enum omp_memory_order) (memory_order
+				 | (fail << OMP_FAIL_MEMORY_ORDER_SHIFT));
 
   switch (code)
     {
@@ -17879,6 +18025,9 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 	  c_parser_consume_token (parser);
 	  structured_block = true;
 	}
+      else if (compare
+	       && c_parser_next_token_is_keyword (parser, RID_IF))
+	break;
       else
 	{
 	  v = c_parser_cast_expression (parser, NULL).value;
@@ -17890,6 +18039,12 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 	    v = non_lvalue (v);
 	  if (!c_parser_require (parser, CPP_EQ, "expected %<=%>"))
 	    goto saw_error;
+	  if (compare && c_parser_next_token_is_keyword (parser, RID_IF))
+	    {
+	      eloc = c_parser_peek_token (parser)->location;
+	      error_at (eloc, "expected expression");
+	      goto saw_error;
+	    }
 	}
       break;
     default:
@@ -17899,6 +18054,179 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
   /* For structured_block case we don't know yet whether
      old or new x should be captured.  */
 restart:
+  if (compare && c_parser_next_token_is_keyword (parser, RID_IF))
+    {
+      c_parser_consume_token (parser);
+
+      matching_parens parens;
+      if (!parens.require_open (parser))
+	goto saw_error;
+      eloc = c_parser_peek_token (parser)->location;
+      c_expr cmp_expr;
+      if (r)
+	{
+	  cmp_expr = c_parser_cast_expression (parser, NULL);
+	  cmp_expr = default_function_array_conversion (eloc, cmp_expr);
+	}
+      else
+	cmp_expr = c_parser_binary_expression (parser, NULL, void_list_node);
+      parens.skip_until_found_close (parser);
+      if (cmp_expr.value == error_mark_node)
+	goto saw_error;
+      if (r)
+	{
+	  if (!c_tree_equal (cmp_expr.value, unfolded_lhs))
+	    goto bad_if;
+	  cmp_expr.value = rhs1;
+	  rhs1 = NULL_TREE;
+	  gcc_assert (TREE_CODE (cmp_expr.value) == EQ_EXPR);
+	}
+      if (TREE_CODE (cmp_expr.value) == EQ_EXPR)
+	;
+      else if (!structured_block && code == OMP_ATOMIC_CAPTURE_NEW)
+	{
+	  error_at (EXPR_LOC_OR_LOC (cmp_expr.value, eloc),
+		    "expected %<==%> comparison in %<if%> condition");
+	  goto saw_error;
+	}
+      else if (TREE_CODE (cmp_expr.value) != GT_EXPR
+	       && TREE_CODE (cmp_expr.value) != LT_EXPR)
+	{
+	  error_at (EXPR_LOC_OR_LOC (cmp_expr.value, eloc),
+		    "expected %<==%>, %<<%> or %<>%> comparison in %<if%> "
+		    "condition");
+	  goto saw_error;
+	}
+      if (!c_parser_require (parser, CPP_OPEN_BRACE, "expected %<{%>"))
+	goto saw_error;
+
+      extra_scope = true;
+      eloc = c_parser_peek_token (parser)->location;
+      expr = c_parser_cast_expression (parser, NULL);
+      lhs = expr.value;
+      expr = default_function_array_conversion (eloc, expr);
+      unfolded_lhs = expr.value;
+      lhs = c_fully_fold (lhs, false, NULL, true);
+      orig_lhs = lhs;
+      if (lhs == error_mark_node)
+	goto saw_error;
+      if (!lvalue_p (unfolded_lhs))
+	lhs = non_lvalue (lhs);
+      if (!c_parser_next_token_is (parser, CPP_EQ))
+	{
+	  c_parser_error (parser, "expected %<=%>");
+	  goto saw_error;
+	}
+      c_parser_consume_token (parser);
+      eloc = c_parser_peek_token (parser)->location;
+      expr = c_parser_expr_no_commas (parser, NULL);
+      rhs1 = expr.value;
+
+      if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
+	goto saw_error;
+
+      if (!c_parser_require (parser, CPP_CLOSE_BRACE, "expected %<}%>"))
+	goto saw_error;
+
+      extra_scope = false;
+      no_semicolon = true;
+
+      if (c_tree_equal (TREE_OPERAND (cmp_expr.value, 0), unfolded_lhs))
+	{
+	  if (TREE_CODE (cmp_expr.value) == EQ_EXPR)
+	    {
+	      opcode = COND_EXPR;
+	      rhs = c_fully_fold (TREE_OPERAND (cmp_expr.value, 1),
+				  false, NULL, true);
+	      rhs1 = c_fully_fold (rhs1, false, NULL, true);
+	    }
+	  else if (c_tree_equal (TREE_OPERAND (cmp_expr.value, 1), rhs1))
+	    {
+	      opcode = (TREE_CODE (cmp_expr.value) == GT_EXPR
+			? MIN_EXPR : MAX_EXPR);
+	      rhs = c_fully_fold (rhs1, false, NULL, true);
+	      rhs1 = c_fully_fold (TREE_OPERAND (cmp_expr.value, 0),
+				   false, NULL, true);
+	    }
+	  else
+	    goto bad_if;
+	}
+      else if (TREE_CODE (cmp_expr.value) == EQ_EXPR)
+	goto bad_if;
+      else if (c_tree_equal (TREE_OPERAND (cmp_expr.value, 1), unfolded_lhs)
+	       && c_tree_equal (TREE_OPERAND (cmp_expr.value, 0), rhs1))
+	{
+	  opcode = (TREE_CODE (cmp_expr.value) == GT_EXPR
+		    ? MAX_EXPR : MIN_EXPR);
+	  rhs = c_fully_fold (rhs1, false, NULL, true);
+	  rhs1 = c_fully_fold (TREE_OPERAND (cmp_expr.value, 1),
+			       false, NULL, true);
+	}
+      else
+	{
+	bad_if:
+	  c_parser_error (parser,
+			  "invalid form of %<#pragma omp atomic compare%>");
+	  goto saw_error;
+	}
+
+      if (c_parser_next_token_is_keyword (parser, RID_ELSE))
+	{
+	  if (code != OMP_ATOMIC_CAPTURE_NEW
+	      || (structured_block && r == NULL_TREE)
+	      || TREE_CODE (cmp_expr.value) != EQ_EXPR)
+	    {
+	      eloc = c_parser_peek_token (parser)->location;
+	      error_at (eloc, "unexpected %<else%>");
+	      goto saw_error;
+	    }
+
+	  c_parser_consume_token (parser);
+
+	  if (!c_parser_require (parser, CPP_OPEN_BRACE, "expected %<{%>"))
+	    goto saw_error;
+
+	  extra_scope = true;
+	  v = c_parser_cast_expression (parser, NULL).value;
+	  non_lvalue_p = !lvalue_p (v);
+	  v = c_fully_fold (v, false, NULL, true);
+	  if (v == error_mark_node)
+	    goto saw_error;
+	  if (non_lvalue_p)
+	    v = non_lvalue (v);
+	  if (!c_parser_require (parser, CPP_EQ, "expected %<=%>"))
+	    goto saw_error;
+
+	  expr = c_parser_expr_no_commas (parser, NULL);
+
+	  if (!c_tree_equal (expr.value, unfolded_lhs))
+	    goto bad_if;
+
+	  if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
+	    goto saw_error;
+
+	  if (!c_parser_require (parser, CPP_CLOSE_BRACE, "expected %<}%>"))
+	    goto saw_error;
+
+	  extra_scope = false;
+	  code = OMP_ATOMIC_CAPTURE_OLD;
+	  if (r == NULL_TREE)
+	    /* Signal to c_finish_omp_atomic that in
+	       if (x == e) { x = d; } else { v = x; }
+	       case the store to v should be conditional.  */
+	    r = void_list_node;
+	}
+      else if (code == OMP_ATOMIC_CAPTURE_NEW && !structured_block)
+	{
+	  c_parser_require_keyword (parser, RID_ELSE, "expected %<else%>");
+	  goto saw_error;
+	}
+      else if (code == OMP_ATOMIC_CAPTURE_NEW
+	       && r != NULL_TREE
+	       && v == NULL_TREE)
+	code = OMP_ATOMIC;
+      goto stmt_done;
+    }
   eloc = c_parser_peek_token (parser)->location;
   expr = c_parser_cast_expression (parser, NULL);
   lhs = expr.value;
@@ -17908,9 +18236,14 @@ restart:
   orig_lhs = lhs;
   switch (TREE_CODE (lhs))
     {
+    invalid_compare:
+      error_at (eloc, "invalid form of %<pragma omp atomic compare%>");
+      /* FALLTHRU */
     case ERROR_MARK:
     saw_error:
       c_parser_skip_to_end_of_block_or_statement (parser);
+      if (extra_scope && c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
+	c_parser_consume_token (parser);
       if (structured_block)
 	{
 	  if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
@@ -17933,6 +18266,8 @@ restart:
       unfolded_lhs = NULL_TREE;
       opcode = PLUS_EXPR;
       rhs = integer_one_node;
+      if (compare)
+	goto invalid_compare;
       break;
 
     case POSTDECREMENT_EXPR:
@@ -17944,6 +18279,8 @@ restart:
       unfolded_lhs = NULL_TREE;
       opcode = MINUS_EXPR;
       rhs = integer_one_node;
+      if (compare)
+	goto invalid_compare;
       break;
 
     case COMPOUND_EXPR:
@@ -17973,6 +18310,8 @@ restart:
 		  && !structured_block
 		  && TREE_CODE (orig_lhs) == COMPOUND_EXPR)
 		code = OMP_ATOMIC_CAPTURE_OLD;
+	      if (compare)
+		goto invalid_compare;
 	      break;
 	    }
 	  if (TREE_CODE (TREE_OPERAND (lhs, 1)) == TRUTH_NOT_EXPR
@@ -17988,6 +18327,8 @@ restart:
 		  && !structured_block
 		  && TREE_CODE (orig_lhs) == COMPOUND_EXPR)
 		code = OMP_ATOMIC_CAPTURE_OLD;
+	      if (compare)
+		goto invalid_compare;
 	      break;
 	    }
 	}
@@ -17995,6 +18336,11 @@ restart:
     default:
       if (!lvalue_p (unfolded_lhs))
 	lhs = non_lvalue (lhs);
+      if (compare && !c_parser_next_token_is (parser, CPP_EQ))
+	{
+	  c_parser_error (parser, "expected %<=%>");
+	  goto saw_error;
+	}
       switch (c_parser_peek_token (parser)->type)
 	{
 	case CPP_MULT_EQ:
@@ -18041,6 +18387,8 @@ restart:
 	    case BIT_AND_EXPR:
 	    case BIT_IOR_EXPR:
 	    case BIT_XOR_EXPR:
+	      if (compare)
+		break;
 	      if (c_tree_equal (TREE_OPERAND (rhs1, 0), unfolded_lhs))
 		{
 		  opcode = TREE_CODE (rhs1);
@@ -18059,6 +18407,78 @@ restart:
 				       true);
 		  swapped = !commutative_tree_code (opcode);
 		  goto stmt_done;
+		}
+	      break;
+	    case COND_EXPR:
+	      if (!compare)
+		break;
+	      if (TREE_CODE (TREE_OPERAND (rhs1, 0)) != GT_EXPR
+		  && TREE_CODE (TREE_OPERAND (rhs1, 0)) != LT_EXPR
+		  && TREE_CODE (TREE_OPERAND (rhs1, 0)) != EQ_EXPR)
+		break;
+	      if (!TREE_OPERAND (rhs1, 1))
+		break;
+	      if (!c_tree_equal (TREE_OPERAND (rhs1, 2), unfolded_lhs))
+		break;
+	      if (c_tree_equal (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0),
+				unfolded_lhs))
+		{
+		  if (TREE_CODE (TREE_OPERAND (rhs1, 0)) == EQ_EXPR)
+		    {
+		      opcode = COND_EXPR;
+		      rhs = c_fully_fold (TREE_OPERAND (TREE_OPERAND (rhs1,
+								      0), 1),
+					  false, NULL, true);
+		      rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 1), false,
+					   NULL, true);
+		      goto stmt_done;
+		    }
+		  if (c_tree_equal (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1),
+				    TREE_OPERAND (rhs1, 1)))
+		    {
+		      opcode = (TREE_CODE (TREE_OPERAND (rhs1, 0)) == GT_EXPR
+				? MIN_EXPR : MAX_EXPR);
+		      rhs = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL,
+					  true);
+		      rhs1 = c_fully_fold (TREE_OPERAND (TREE_OPERAND (rhs1,
+								       0), 0),
+					   false, NULL, true);
+		      goto stmt_done;
+		    }
+		}
+	      else if (TREE_CODE (TREE_OPERAND (rhs1, 0)) == EQ_EXPR)
+		break;
+	      else if (c_tree_equal (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1),
+				     unfolded_lhs))
+		{
+		  if (c_tree_equal (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0),
+				    TREE_OPERAND (rhs1, 1)))
+		    {
+		      opcode = (TREE_CODE (TREE_OPERAND (rhs1, 0)) == GT_EXPR
+				? MAX_EXPR : MIN_EXPR);
+		      rhs = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL,
+					  true);
+		      rhs1 = c_fully_fold (TREE_OPERAND (TREE_OPERAND (rhs1,
+								       0), 1),
+					   false, NULL, true);
+		      goto stmt_done;
+		    }
+		}
+	      break;
+	    case EQ_EXPR:
+	      if (!compare
+		  || code != OMP_ATOMIC_CAPTURE_NEW
+		  || !structured_block
+		  || v
+		  || r)
+		break;
+	      if (c_parser_next_token_is (parser, CPP_SEMICOLON)
+		  && c_parser_peek_2nd_token (parser)->keyword == RID_IF)
+		{
+		  r = lhs;
+		  lhs = NULL_TREE;
+		  c_parser_consume_token (parser);
+		  goto restart;
 		}
 	      break;
 	    case ERROR_MARK:
@@ -18109,10 +18529,12 @@ restart:
       break;
     }
 stmt_done:
-  if (structured_block && code == OMP_ATOMIC_CAPTURE_NEW)
+  if (structured_block && code == OMP_ATOMIC_CAPTURE_NEW && r == NULL_TREE)
     {
-      if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
+      if (!no_semicolon
+	  && !c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
 	goto saw_error;
+      no_semicolon = false;
       v = c_parser_cast_expression (parser, NULL).value;
       non_lvalue_p = !lvalue_p (v);
       v = c_fully_fold (v, false, NULL, true);
@@ -18135,10 +18557,16 @@ stmt_done:
     }
   if (structured_block)
     {
-      c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+      if (!no_semicolon)
+	c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
       c_parser_require (parser, CPP_CLOSE_BRACE, "expected %<}%>");
     }
 done:
+  if (weak && opcode != COND_EXPR)
+    {
+      error_at (loc, "%<weak%> clause requires atomic equality comparison");
+      weak = false;
+    }
   if (unfolded_lhs && unfolded_lhs1
       && !c_tree_equal (unfolded_lhs, unfolded_lhs1))
     {
@@ -18147,12 +18575,12 @@ done:
       stmt = error_mark_node;
     }
   else
-    stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs, v, lhs1, rhs1,
-				swapped, memory_order);
+    stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs, v, lhs1, rhs1, r,
+				swapped, memory_order, weak);
   if (stmt != error_mark_node)
     add_stmt (stmt);
 
-  if (!structured_block)
+  if (!structured_block && !no_semicolon)
     c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 }
 

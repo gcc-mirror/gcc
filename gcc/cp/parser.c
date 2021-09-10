@@ -40193,7 +40193,6 @@ cp_parser_omp_atomic (cp_parser *parser, cp_token *pragma_tok, bool openacc)
 	      memory_order = OMP_MEMORY_ORDER_ACQUIRE;
 	      break;
 	    case NOP_EXPR: /* atomic write */
-	    case OMP_ATOMIC:
 	      memory_order = OMP_MEMORY_ORDER_RELEASE;
 	      break;
 	    default:
@@ -40209,31 +40208,24 @@ cp_parser_omp_atomic (cp_parser *parser, cp_token *pragma_tok, bool openacc)
     switch (code)
       {
       case OMP_ATOMIC_READ:
-	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
-	    || memory_order == OMP_MEMORY_ORDER_RELEASE)
+	if (memory_order == OMP_MEMORY_ORDER_RELEASE)
 	  {
 	    error_at (loc, "%<#pragma omp atomic read%> incompatible with "
-			   "%<acq_rel%> or %<release%> clauses");
+			   "%<release%> clause");
 	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
 	  }
+	else if (memory_order == OMP_MEMORY_ORDER_ACQ_REL)
+	  memory_order = OMP_MEMORY_ORDER_ACQUIRE;
 	break;
       case NOP_EXPR: /* atomic write */
-	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
-	    || memory_order == OMP_MEMORY_ORDER_ACQUIRE)
+	if (memory_order == OMP_MEMORY_ORDER_ACQUIRE)
 	  {
 	    error_at (loc, "%<#pragma omp atomic write%> incompatible with "
-			   "%<acq_rel%> or %<acquire%> clauses");
+			   "%<acquire%> clause");
 	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
 	  }
-	break;
-      case OMP_ATOMIC:
-	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
-	    || memory_order == OMP_MEMORY_ORDER_ACQUIRE)
-	  {
-	    error_at (loc, "%<#pragma omp atomic update%> incompatible with "
-			   "%<acq_rel%> or %<acquire%> clauses");
-	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
-	  }
+	else if (memory_order == OMP_MEMORY_ORDER_ACQ_REL)
+	  memory_order = OMP_MEMORY_ORDER_RELEASE;
 	break;
       default:
 	break;

@@ -37,7 +37,8 @@ foo ()
 
 /* { dg-final { scan-tree-dump-times "i = #pragma omp atomic read acquire" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "i = #pragma omp atomic read relaxed" 1 "original" } } */
-/* { dg-final { scan-tree-dump-times "#pragma omp atomic release" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "#pragma omp atomic acq_rel" 1 "original" } } */
+/* { dg-final { scan-tree-dump-times "#pragma omp atomic release" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "#pragma omp atomic relaxed" 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "v = #pragma omp atomic capture acq_rel" 1  "original" } } */
 /* { dg-final { scan-tree-dump-times "v = #pragma omp atomic capture relaxed" 2 "original" } } */
