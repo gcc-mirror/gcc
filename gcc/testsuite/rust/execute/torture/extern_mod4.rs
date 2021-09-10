@@ -6,7 +6,7 @@ extern "C" {
     fn printf(s: *const i8, ...);
 }
 
-fn main() {
+fn main() -> i32 {
     unsafe {
         let fmt_s = "%d\n\0";
         let fmt_p = fmt_s as *const str;
@@ -14,4 +14,6 @@ fn main() {
 
         printf(fmt_i8, modules::return_12());
     }
+
+    return 0;
 }
