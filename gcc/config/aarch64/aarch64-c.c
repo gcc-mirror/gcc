@@ -296,6 +296,8 @@ aarch64_pragma_aarch64 (cpp_reader *)
   const char *name = TREE_STRING_POINTER (x);
   if (strcmp (name, "arm_sve.h") == 0)
     aarch64_sve::handle_arm_sve_h ();
+  else if (strcmp (name, "arm_neon.h") == 0)
+    handle_arm_neon_h ();
   else
     error ("unknown %<#pragma GCC aarch64%> option %qs", name);
 }

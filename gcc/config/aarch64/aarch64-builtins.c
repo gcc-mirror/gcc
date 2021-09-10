@@ -1046,32 +1046,22 @@ aarch64_init_fcmla_laneq_builtins (void)
 }
 
 void
-aarch64_init_simd_builtins (void)
+aarch64_init_simd_builtin_functions (bool called_from_pragma)
 {
   unsigned int i, fcode = AARCH64_SIMD_PATTERN_START;
 
-  if (aarch64_simd_builtins_initialized_p)
-    return;
-
-  aarch64_simd_builtins_initialized_p = true;
-
-  aarch64_init_simd_builtin_types ();
-
-  /* Strong-typing hasn't been implemented for all AdvSIMD builtin intrinsics.
-     Therefore we need to preserve the old __builtin scalar types.  It can be
-     removed once all the intrinsics become strongly typed using the qualifier
-     system.  */
-  aarch64_init_simd_builtin_scalar_types ();
- 
-  tree lane_check_fpr = build_function_type_list (void_type_node,
-						  size_type_node,
-						  size_type_node,
-						  intSI_type_node,
-						  NULL);
-  aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_LANE_CHECK]
-    = aarch64_general_add_builtin ("__builtin_aarch64_im_lane_boundsi",
-				   lane_check_fpr,
-				   AARCH64_SIMD_BUILTIN_LANE_CHECK);
+  if (!called_from_pragma)
+    {
+      tree lane_check_fpr = build_function_type_list (void_type_node,
+						      size_type_node,
+						      size_type_node,
+						      intSI_type_node,
+						      NULL);
+      aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_LANE_CHECK]
+	= aarch64_general_add_builtin ("__builtin_aarch64_im_lane_boundsi",
+				       lane_check_fpr,
+				       AARCH64_SIMD_BUILTIN_LANE_CHECK);
+    }
 
   for (i = 0; i < ARRAY_SIZE (aarch64_simd_builtin_data); i++, fcode++)
     {
@@ -1100,6 +1090,18 @@ aarch64_init_simd_builtins (void)
 		      : op_num;
       tree return_type = void_type_node, args = void_list_node;
       tree eltype;
+
+      int struct_mode_args = 0;
+      for (int j = op_num; j >= 0; j--)
+	{
+	  machine_mode op_mode = insn_data[d->code].operand[j].mode;
+	  if (aarch64_advsimd_struct_mode_p (op_mode))
+	    struct_mode_args++;
+	}
+
+      if ((called_from_pragma && struct_mode_args == 0)
+	  || (!called_from_pragma && struct_mode_args > 0))
+	continue;
 
       /* Build a function type directly from the insn_data for this
 	 builtin.  The build_function_type () function takes care of
@@ -1174,9 +1176,82 @@ aarch64_init_simd_builtins (void)
       fndecl = aarch64_general_add_builtin (namebuf, ftype, fcode, attrs);
       aarch64_builtin_decls[fcode] = fndecl;
     }
+}
 
-   /* Initialize the remaining fcmla_laneq intrinsics.  */
-   aarch64_init_fcmla_laneq_builtins ();
+/* Register the tuple type that contains NUM_VECTORS of the AdvSIMD type
+   indexed by TYPE_INDEX.  */
+static void
+register_tuple_type (unsigned int num_vectors, unsigned int type_index)
+{
+  aarch64_simd_type_info *type = &aarch64_simd_types[type_index];
+
+  /* Synthesize the name of the user-visible vector tuple type.  */
+  const char *vector_type_name = type->name;
+  char tuple_type_name[sizeof ("bfloat16x4x2_t")];
+  snprintf (tuple_type_name, sizeof (tuple_type_name), "%.*sx%d_t",
+	    (int) strlen (vector_type_name) - 4, vector_type_name + 2,
+	    num_vectors);
+  tuple_type_name[0] = TOLOWER (tuple_type_name[0]);
+
+  tree vector_type = type->itype;
+  tree array_type = build_array_type_nelts (vector_type, num_vectors);
+  unsigned int alignment
+	= (known_eq (GET_MODE_SIZE (type->mode), 16) ? 128 : 64);
+  gcc_assert (TYPE_MODE_RAW (array_type) == TYPE_MODE (array_type)
+	      && TYPE_ALIGN (array_type) == alignment);
+
+  tree field = build_decl (input_location, FIELD_DECL,
+			   get_identifier ("val"), array_type);
+
+  tree t = lang_hooks.types.simulate_record_decl (input_location,
+						  tuple_type_name,
+						  make_array_slice (&field,
+								    1));
+  gcc_assert (TYPE_MODE_RAW (t) == TYPE_MODE (t)
+	      && TYPE_ALIGN (t) == alignment);
+}
+
+static bool
+aarch64_scalar_builtin_type_p (aarch64_simd_type t)
+{
+  return (t == Poly8_t || t == Poly16_t || t == Poly64_t || t == Poly128_t);
+}
+
+/* Implement #pragma GCC aarch64 "arm_neon.h".  */
+void
+handle_arm_neon_h (void)
+{
+  /* Register the AdvSIMD vector tuple types.  */
+  for (unsigned int i = 0; i < ARM_NEON_H_TYPES_LAST; i++)
+    for (unsigned int count = 2; count <= 4; ++count)
+      if (!aarch64_scalar_builtin_type_p (aarch64_simd_types[i].type))
+	register_tuple_type (count, i);
+
+  aarch64_init_simd_builtin_functions (true);
+}
+
+void
+aarch64_init_simd_builtins (void)
+{
+  if (aarch64_simd_builtins_initialized_p)
+    return;
+
+  aarch64_simd_builtins_initialized_p = true;
+
+  aarch64_init_simd_builtin_types ();
+
+  /* Strong-typing hasn't been implemented for all AdvSIMD builtin intrinsics.
+     Therefore we need to preserve the old __builtin scalar types.  It can be
+     removed once all the intrinsics become strongly typed using the qualifier
+     system.  */
+  aarch64_init_simd_builtin_scalar_types ();
+
+  aarch64_init_simd_builtin_functions (false);
+  if (in_lto_p)
+    handle_arm_neon_h ();
+
+  /* Initialize the remaining fcmla_laneq intrinsics.  */
+  aarch64_init_fcmla_laneq_builtins ();
 }
 
 static void

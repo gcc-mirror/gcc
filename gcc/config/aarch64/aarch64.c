@@ -2864,7 +2864,7 @@ aarch64_estimated_sve_vq ()
 }
 
 /* Return true if MODE is any of the Advanced SIMD structure modes.  */
-static bool
+bool
 aarch64_advsimd_struct_mode_p (machine_mode mode)
 {
   return (TARGET_SIMD
