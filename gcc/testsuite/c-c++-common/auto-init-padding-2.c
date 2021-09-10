@@ -1,7 +1,7 @@
 /* To test that the compiler can fill all the paddings to zeroes for the 
    structures when the auto variable is partially initialized,  fully 
    initialized, or not initialized for -ftrivial-auto-var-init=zero.  */
-/* { dg-do run} */
+/* { dg-do run } */
 /* { dg-options "-ftrivial-auto-var-init=zero" } */
 
 /* Structure with no padding. */
