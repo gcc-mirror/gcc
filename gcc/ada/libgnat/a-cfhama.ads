@@ -69,6 +69,7 @@ is
 
    pragma Assertion_Policy (Pre => Ignore);
    pragma Assertion_Policy (Post => Ignore);
+   pragma Assertion_Policy (Contract_Cases => Ignore);
    pragma Annotate (CodePeer, Skip_Analysis);
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is private with
