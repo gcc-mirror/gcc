@@ -21,6 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_SOM
 #define TARGET_SOM 1
 
+/* With SOM we can only do STABS.  */
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
 /* We do not use BINCL stabs in SOM.
    ??? If it does not hurt, we probably should to avoid useless divergence
    from other embedded stabs implementations.  */

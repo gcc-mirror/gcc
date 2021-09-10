@@ -1435,6 +1435,11 @@ process_options (bool no_backend)
       && ctf_debug_info_level == CTFINFO_LEVEL_NONE)
     write_symbols = NO_DEBUG;
 
+  /* Warn if STABS debug gets enabled and is not the default.  */
+  if (PREFERRED_DEBUGGING_TYPE != DBX_DEBUG && (write_symbols & DBX_DEBUG))
+    warning (0, "STABS debugging information is obsolete and not "
+	     "supported anymore");
+
   if (write_symbols == NO_DEBUG)
     ;
 #if defined(DBX_DEBUGGING_INFO)
