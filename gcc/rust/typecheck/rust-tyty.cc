@@ -310,7 +310,8 @@ StructFieldType::clone () const
 void
 SubstitutionParamMapping::override_context ()
 {
-  rust_assert (param->can_resolve ());
+  if (!param->can_resolve ())
+    return;
 
   auto mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
