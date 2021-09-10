@@ -3006,31 +3006,23 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
   tree var_size = gimple_call_arg (stmt, 0);
   enum auto_init_type init_type
     = (enum auto_init_type) TREE_INT_CST_LOW (gimple_call_arg (stmt, 1));
-  bool is_vla = (bool) TREE_INT_CST_LOW (gimple_call_arg (stmt, 2));
   bool reg_lhs = true;
 
   tree var_type = TREE_TYPE (lhs);
   gcc_assert (init_type > AUTO_INIT_UNINITIALIZED);
 
-  if (DECL_P (lhs))
+  if (TREE_CODE (lhs) == SSA_NAME)
+    reg_lhs = true;
+  else
     {
       rtx tem = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
       reg_lhs = !MEM_P (tem);
     }
-  else if (TREE_CODE (lhs) == SSA_NAME)
-    reg_lhs = true;
-  else
-    {
-      gcc_assert (is_vla);
-      reg_lhs = false;
-    }
-
 
   if (!reg_lhs)
     {
-    /* If this is a VLA or the variable is not in register,
-       expand to a memset to initialize it.  */
-
+      /* If this is a VLA or the variable is not in register,
+	 expand to a memset to initialize it.  */
       mark_addressable (lhs);
       tree var_addr = build_fold_addr_expr (lhs);
 
@@ -3045,8 +3037,8 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
     }
   else
     {
-    /* If this variable is in a register, use expand_assignment might
-       generate better code.  */
+      /* If this variable is in a register, use expand_assignment might
+	 generate better code.  */
       tree init = build_zero_cst (var_type);
       unsigned HOST_WIDE_INT total_bytes
 	= tree_to_uhwi (TYPE_SIZE_UNIT (var_type));
