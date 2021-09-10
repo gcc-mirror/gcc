@@ -113,7 +113,8 @@ public:
     // items can be forward compiled which means we may not need to invoke this
     // code. We might also have already compiled this generic function as well.
     Bfunction *lookup = nullptr;
-    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup, fntype))
+    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
+				   fntype->get_id (), fntype))
       {
 	// has this been added to the list then it must be finished
 	if (ctx->function_completed (lookup))
@@ -121,8 +122,7 @@ public:
 	    Bfunction *dummy = nullptr;
 	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
 	      {
-		ctx->insert_function_decl (fntype->get_ty_ref (), lookup,
-					   fntype);
+		ctx->insert_function_decl (fntype, lookup);
 	      }
 	    reference
 	      = ctx->get_backend ()->function_code_expression (lookup,
@@ -160,7 +160,7 @@ public:
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 				       asm_name, flags, function.get_locus ());
-    ctx->insert_function_decl (fntype->get_ty_ref (), fndecl, fntype);
+    ctx->insert_function_decl (fntype, fndecl);
 
     // setup the params
     TyTy::BaseType *tyret = fntype->get_return_type ();
@@ -381,7 +381,8 @@ public:
     // items can be forward compiled which means we may not need to invoke this
     // code. We might also have already compiled this generic function as well.
     Bfunction *lookup = nullptr;
-    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup))
+    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
+				   fntype->get_id (), fntype))
       {
 	// has this been added to the list then it must be finished
 	if (ctx->function_completed (lookup))
@@ -389,8 +390,7 @@ public:
 	    Bfunction *dummy = nullptr;
 	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
 	      {
-		ctx->insert_function_decl (fntype->get_ty_ref (), lookup,
-					   fntype);
+		ctx->insert_function_decl (fntype, lookup);
 	      }
 	    reference
 	      = ctx->get_backend ()->function_code_expression (lookup,
@@ -422,7 +422,7 @@ public:
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
 				       asm_name, flags, func.get_locus ());
-    ctx->insert_function_decl (fntype->get_ty_ref (), fndecl, fntype);
+    ctx->insert_function_decl (fntype, fndecl);
 
     // setup the params
     TyTy::BaseType *tyret = fntype->get_return_type ();
