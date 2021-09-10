@@ -16111,6 +16111,14 @@ package body Sem_Ch3 is
 
       Set_No_Return (New_Subp, No_Return (Parent_Subp));
 
+      --  If the parent subprogram is marked as Ghost, then so is the derived
+      --  subprogram. The ghost policy for the derived subprogram is set from
+      --  the effective ghost policy at the point of derived type declaration.
+
+      if Is_Ghost_Entity (Parent_Subp) then
+         Set_Is_Ghost_Entity (New_Subp);
+      end if;
+
       --  A derived function with a controlling result is abstract. If the
       --  Derived_Type is a nonabstract formal generic derived type, then
       --  inherited operations are not abstract: the required check is done at
