@@ -40,7 +40,7 @@ class TypeParam : public GenericParam
 
   // bool has_type_param_bounds;
   // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound> >
+  std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
 
   // bool has_type;
@@ -60,8 +60,8 @@ public:
 
   TypeParam (Analysis::NodeMapping mappings, Identifier type_representation,
 	     Location locus = Location (),
-	     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds
-	     = std::vector<std::unique_ptr<TypeParamBound> > (),
+	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
+	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
 	     AST::Attribute outer_attr = AST::Attribute::create_empty ())
     : GenericParam (mappings), outer_attr (std::move (outer_attr)),
@@ -122,7 +122,7 @@ public:
     return type->get_mappings ();
   }
 
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
     return type_param_bounds;
   }
@@ -197,7 +197,7 @@ class TypeBoundWhereClauseItem : public WhereClauseItem
 
   // bool has_type_param_bounds;
   // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound> >
+  std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
 
   // should this store location info?
@@ -211,7 +211,7 @@ public:
 
   TypeBoundWhereClauseItem (
     std::vector<LifetimeParam> for_lifetimes, std::unique_ptr<Type> bound_type,
-    std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds)
+    std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds)
     : for_lifetimes (std::move (for_lifetimes)),
       bound_type (std::move (bound_type)),
       type_param_bounds (std::move (type_param_bounds))
@@ -261,13 +261,12 @@ protected:
 struct WhereClause
 {
 private:
-  std::vector<std::unique_ptr<WhereClauseItem> > where_clause_items;
+  std::vector<std::unique_ptr<WhereClauseItem>> where_clause_items;
 
   // should this store location info?
 
 public:
-  WhereClause (
-    std::vector<std::unique_ptr<WhereClauseItem> > where_clause_items)
+  WhereClause (std::vector<std::unique_ptr<WhereClauseItem>> where_clause_items)
     : where_clause_items (std::move (where_clause_items))
   {}
 
@@ -296,7 +295,7 @@ public:
   // Creates a WhereClause with no items.
   static WhereClause create_empty ()
   {
-    return WhereClause (std::vector<std::unique_ptr<WhereClauseItem> > ());
+    return WhereClause (std::vector<std::unique_ptr<WhereClauseItem>> ());
   }
 
   // Returns whether the WhereClause has no items.
@@ -645,7 +644,7 @@ class Module : public VisItem
   // bool has_inner_attrs;
   AST::AttrVec inner_attrs;
   // bool has_items;
-  std::vector<std::unique_ptr<Item> > items;
+  std::vector<std::unique_ptr<Item>> items;
 
 public:
   std::string as_string () const override;
@@ -658,7 +657,7 @@ public:
 
   // Full constructor
   Module (Analysis::NodeMapping mappings, Identifier module_name,
-	  Location locus, std::vector<std::unique_ptr<Item> > items,
+	  Location locus, std::vector<std::unique_ptr<Item>> items,
 	  Visibility visibility = Visibility::create_error (),
 	  AST::AttrVec inner_attrs = AST::AttrVec (),
 	  AST::AttrVec outer_attrs = AST::AttrVec ())
@@ -696,7 +695,7 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  std::vector<std::unique_ptr<Item> > &get_items () { return items; };
+  std::vector<std::unique_ptr<Item>> &get_items () { return items; };
 
   /* Override that runs the function recursively on all items contained within
    * the module. */
@@ -867,11 +866,11 @@ private:
   PathType path_type;
   AST::SimplePath path;
 
-  std::vector<std::unique_ptr<UseTree> > trees;
+  std::vector<std::unique_ptr<UseTree>> trees;
 
 public:
   UseTreeList (PathType path_type, AST::SimplePath path,
-	       std::vector<std::unique_ptr<UseTree> > trees, Location locus)
+	       std::vector<std::unique_ptr<UseTree>> trees, Location locus)
     : UseTree (locus), path_type (path_type), path (std::move (path)),
       trees (std::move (trees))
   {
@@ -1043,7 +1042,7 @@ class Function : public VisItem, public ImplItem
 {
   FunctionQualifiers qualifiers;
   Identifier function_name;
-  std::vector<std::unique_ptr<GenericParam> > generic_params;
+  std::vector<std::unique_ptr<GenericParam>> generic_params;
   std::vector<FunctionParam> function_params;
   std::unique_ptr<Type> return_type;
   WhereClause where_clause;
@@ -1069,7 +1068,7 @@ public:
   // Mega-constructor with all possible fields
   Function (Analysis::NodeMapping mappings, Identifier function_name,
 	    FunctionQualifiers qualifiers,
-	    std::vector<std::unique_ptr<GenericParam> > generic_params,
+	    std::vector<std::unique_ptr<GenericParam>> generic_params,
 	    std::vector<FunctionParam> function_params,
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    std::unique_ptr<BlockExpr> function_body, Visibility vis,
@@ -1139,11 +1138,11 @@ public:
     return function_params;
   }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -1203,7 +1202,7 @@ class TypeAlias : public VisItem, public ImplItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
@@ -1223,7 +1222,7 @@ public:
 
   // Mega-constructor with all possible fields
   TypeAlias (Analysis::NodeMapping mappings, Identifier new_type_name,
-	     std::vector<std::unique_ptr<GenericParam> > generic_params,
+	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     WhereClause where_clause, std::unique_ptr<Type> existing_type,
 	     Visibility vis, AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
@@ -1268,11 +1267,11 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -1318,7 +1317,7 @@ protected:
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
@@ -1336,14 +1335,14 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
 
 protected:
   Struct (Analysis::NodeMapping mappings, Identifier struct_name,
-	  std::vector<std::unique_ptr<GenericParam> > generic_params,
+	  std::vector<std::unique_ptr<GenericParam>> generic_params,
 	  WhereClause where_clause, Visibility vis, Location locus,
 	  AST::AttrVec outer_attrs = AST::AttrVec ())
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
@@ -1465,7 +1464,7 @@ public:
   // Mega-constructor with all possible fields
   StructStruct (Analysis::NodeMapping mappings, std::vector<StructField> fields,
 		Identifier struct_name,
-		std::vector<std::unique_ptr<GenericParam> > generic_params,
+		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		WhereClause where_clause, bool is_unit, Visibility vis,
 		AST::AttrVec outer_attrs, Location locus)
     : Struct (std::move (mappings), std::move (struct_name),
@@ -1476,7 +1475,7 @@ public:
 
   // Unit struct constructor
   StructStruct (Analysis::NodeMapping mappings, Identifier struct_name,
-		std::vector<std::unique_ptr<GenericParam> > generic_params,
+		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		WhereClause where_clause, Visibility vis,
 		AST::AttrVec outer_attrs, Location locus)
     : Struct (std::move (mappings), std::move (struct_name),
@@ -1597,7 +1596,7 @@ public:
   // Mega-constructor with all possible fields
   TupleStruct (Analysis::NodeMapping mappings, std::vector<TupleField> fields,
 	       Identifier struct_name,
-	       std::vector<std::unique_ptr<GenericParam> > generic_params,
+	       std::vector<std::unique_ptr<GenericParam>> generic_params,
 	       WhereClause where_clause, Visibility vis,
 	       AST::AttrVec outer_attrs, Location locus)
     : Struct (std::move (mappings), std::move (struct_name),
@@ -1786,12 +1785,12 @@ class Enum : public VisItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
 
-  std::vector<std::unique_ptr<EnumItem> > items;
+  std::vector<std::unique_ptr<EnumItem>> items;
 
   Location locus;
 
@@ -1810,8 +1809,8 @@ public:
 
   // Mega-constructor
   Enum (Analysis::NodeMapping mappings, Identifier enum_name, Visibility vis,
-	std::vector<std::unique_ptr<GenericParam> > generic_params,
-	WhereClause where_clause, std::vector<std::unique_ptr<EnumItem> > items,
+	std::vector<std::unique_ptr<GenericParam>> generic_params,
+	WhereClause where_clause, std::vector<std::unique_ptr<EnumItem>> items,
 	AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       enum_name (std::move (enum_name)),
@@ -1884,7 +1883,7 @@ class Union : public VisItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
@@ -1903,7 +1902,7 @@ public:
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
   Union (Analysis::NodeMapping mappings, Identifier union_name, Visibility vis,
-	 std::vector<std::unique_ptr<GenericParam> > generic_params,
+	 std::vector<std::unique_ptr<GenericParam>> generic_params,
 	 WhereClause where_clause, std::vector<StructField> variants,
 	 AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
@@ -1944,7 +1943,7 @@ public:
   Union (Union &&other) = default;
   Union &operator= (Union &&other) = default;
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
@@ -2116,7 +2115,7 @@ struct TraitFunctionDecl
 private:
   FunctionQualifiers qualifiers;
   Identifier function_name;
-  std::vector<std::unique_ptr<GenericParam> > generic_params;
+  std::vector<std::unique_ptr<GenericParam>> generic_params;
   std::vector<FunctionParam> function_params;
   std::unique_ptr<Type> return_type;
   WhereClause where_clause;
@@ -2125,7 +2124,7 @@ private:
 public:
   // Mega-constructor
   TraitFunctionDecl (Identifier function_name, FunctionQualifiers qualifiers,
-		     std::vector<std::unique_ptr<GenericParam> > generic_params,
+		     std::vector<std::unique_ptr<GenericParam>> generic_params,
 		     SelfParam self, std::vector<FunctionParam> function_params,
 		     std::unique_ptr<Type> return_type,
 		     WhereClause where_clause)
@@ -2196,7 +2195,7 @@ public:
 
   Identifier get_function_name () const { return function_name; }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
@@ -2366,7 +2365,7 @@ class TraitItemType : public TraitItem
   AST::AttrVec outer_attrs;
 
   Identifier name;
-  std::vector<std::unique_ptr<TypeParamBound> >
+  std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
   Location locus;
 
@@ -2374,10 +2373,9 @@ public:
   // Returns whether trait item type has type param bounds.
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
 
-  TraitItemType (
-    Analysis::NodeMapping mappings, Identifier name,
-    std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
-    AST::AttrVec outer_attrs, Location locus)
+  TraitItemType (Analysis::NodeMapping mappings, Identifier name,
+		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
+		 AST::AttrVec outer_attrs, Location locus)
     : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
       name (std::move (name)),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
@@ -2421,7 +2419,7 @@ public:
 
   Identifier get_name () const { return name; }
 
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
     return type_param_bounds;
   }
@@ -2441,10 +2439,10 @@ class Trait : public VisItem
 {
   bool has_unsafe;
   Identifier name;
-  std::vector<std::unique_ptr<GenericParam> > generic_params;
-  std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
+  std::vector<std::unique_ptr<GenericParam>> generic_params;
+  std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
   WhereClause where_clause;
-  std::vector<std::unique_ptr<TraitItem> > trait_items;
+  std::vector<std::unique_ptr<TraitItem>> trait_items;
   Location locus;
 
 public:
@@ -2462,7 +2460,7 @@ public:
   // Returns whether trait has trait items.
   bool has_trait_items () const { return !trait_items.empty (); }
 
-  std::vector<std::unique_ptr<TraitItem> > &get_trait_items ()
+  std::vector<std::unique_ptr<TraitItem>> &get_trait_items ()
   {
     return trait_items;
   }
@@ -2471,10 +2469,10 @@ public:
 
   // Mega-constructor
   Trait (Analysis::NodeMapping mappings, Identifier name, bool is_unsafe,
-	 std::vector<std::unique_ptr<GenericParam> > generic_params,
-	 std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
+	 std::vector<std::unique_ptr<GenericParam>> generic_params,
+	 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 	 WhereClause where_clause,
-	 std::vector<std::unique_ptr<TraitItem> > trait_items, Visibility vis,
+	 std::vector<std::unique_ptr<TraitItem>> trait_items, Visibility vis,
 	 AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       has_unsafe (is_unsafe), name (std::move (name)),
@@ -2534,12 +2532,12 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
 
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -2552,18 +2550,18 @@ protected:
 
 class ImplBlock : public VisItem
 {
-  std::vector<std::unique_ptr<GenericParam> > generic_params;
+  std::vector<std::unique_ptr<GenericParam>> generic_params;
   std::unique_ptr<Type> impl_type;
   std::unique_ptr<TypePath> trait_ref;
   WhereClause where_clause;
   AST::AttrVec inner_attrs;
   Location locus;
-  std::vector<std::unique_ptr<ImplItem> > impl_items;
+  std::vector<std::unique_ptr<ImplItem>> impl_items;
 
 public:
   ImplBlock (Analysis::NodeMapping mappings,
-	     std::vector<std::unique_ptr<ImplItem> > impl_items,
-	     std::vector<std::unique_ptr<GenericParam> > generic_params,
+	     std::vector<std::unique_ptr<ImplItem>> impl_items,
+	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     std::unique_ptr<Type> impl_type,
 	     std::unique_ptr<TypePath> trait_ref, WhereClause where_clause,
 	     Visibility vis, AST::AttrVec inner_attrs, AST::AttrVec outer_attrs,
@@ -2619,12 +2617,12 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  std::vector<std::unique_ptr<ImplItem> > &get_impl_items ()
+  std::vector<std::unique_ptr<ImplItem>> &get_impl_items ()
   {
     return impl_items;
   };
 
-  const std::vector<std::unique_ptr<ImplItem> > &get_impl_items () const
+  const std::vector<std::unique_ptr<ImplItem>> &get_impl_items () const
   {
     return impl_items;
   };
@@ -2642,7 +2640,7 @@ public:
 
   std::unique_ptr<Type> &get_type () { return impl_type; };
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
@@ -2832,7 +2830,7 @@ class ExternalFunctionItem : public ExternalItem
 {
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_return_type;
   // FunctionReturnType return_type;
@@ -2856,7 +2854,7 @@ public:
 
   ExternalFunctionItem (
     Analysis::NodeMapping mappings, Identifier item_name,
-    std::vector<std::unique_ptr<GenericParam> > generic_params,
+    std::vector<std::unique_ptr<GenericParam>> generic_params,
     std::unique_ptr<Type> return_type, WhereClause where_clause,
     std::vector<NamedFunctionParam> function_params, bool has_variadics,
     Visibility vis, AST::AttrVec outer_attrs, Location locus)
@@ -2905,7 +2903,7 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
@@ -2938,7 +2936,7 @@ class ExternBlock : public VisItem
   AST::AttrVec inner_attrs;
 
   // bool has_extern_items;
-  std::vector<std::unique_ptr<ExternalItem> > extern_items;
+  std::vector<std::unique_ptr<ExternalItem>> extern_items;
 
   Location locus;
 
@@ -2957,7 +2955,7 @@ public:
   std::string get_abi () const { return abi; }
 
   ExternBlock (Analysis::NodeMapping mappings, std::string abi,
-	       std::vector<std::unique_ptr<ExternalItem> > extern_items,
+	       std::vector<std::unique_ptr<ExternalItem>> extern_items,
 	       Visibility vis, AST::AttrVec inner_attrs,
 	       AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
@@ -2998,7 +2996,7 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  std::vector<std::unique_ptr<ExternalItem> > &get_extern_items ()
+  std::vector<std::unique_ptr<ExternalItem>> &get_extern_items ()
   {
     return extern_items;
   }
