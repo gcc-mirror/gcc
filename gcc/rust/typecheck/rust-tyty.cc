@@ -99,7 +99,14 @@ BaseType::bounds_compatible (const BaseType &other, Location locus) const
 void
 BaseType::inherit_bounds (const BaseType &other)
 {
-  for (auto &bound : other.get_specified_bounds ())
+  inherit_bounds (other.get_specified_bounds ());
+}
+
+void
+BaseType::inherit_bounds (
+  const std::vector<TyTy::TypeBoundPredicate> &specified_bounds)
+{
+  for (auto &bound : specified_bounds)
     {
       add_bound (bound);
     }
@@ -310,7 +317,8 @@ StructFieldType::clone () const
 void
 SubstitutionParamMapping::override_context ()
 {
-  rust_assert (param->can_resolve ());
+  if (!param->can_resolve ())
+    return;
 
   auto mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
