@@ -24,8 +24,9 @@ Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 Bfunction *
 Intrinsics::compile (TyTy::FnType *fntype)
 {
-  rust_assert (fntype->get_abi () == TyTy::FnType::ABI::INTRINSIC);
+  rust_assert (fntype->get_abi () == ABI::INTRINSIC);
 
+  // https://github.com/rust-lang/rust/blob/master/library/core/src/intrinsics.rs
   // https://github.com/rust-lang/rust/blob/master/compiler/rustc_codegen_llvm/src/intrinsic.rs
   // https://github.com/Rust-GCC/gccrs/issues/658
 

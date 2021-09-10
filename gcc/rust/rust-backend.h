@@ -25,7 +25,9 @@
 
 #include "rust-location.h"
 #include "rust-linemap.h"
+#include "rust-diagnostics.h"
 #include "operator.h"
+#include "rust-abi.h"
 
 extern bool
 saw_errors (void);
@@ -97,6 +99,49 @@ public:
   virtual bool const_size_cast (Bexpression *, size_t *) = 0;
   virtual std::string const_size_val_to_string (Bexpression *) = 0;
   virtual bool const_values_equal (Bexpression *, Bexpression *) = 0;
+
+  static Rust::ABI get_abi_from_string (const std::string &abi, Location locus)
+  {
+    if (abi.compare ("rust") == 0)
+      return Rust::ABI::C;
+    else if (abi.compare ("rust-intrinsic") == 0)
+      return Rust::ABI::INTRINSIC;
+    else if (abi.compare ("C") == 0)
+      return Rust::ABI::C;
+    else if (abi.compare ("cdecl") == 0)
+      return Rust::ABI::CDECL;
+    else if (abi.compare ("stdcall") == 0)
+      return Rust::ABI::STDCALL;
+    else if (abi.compare ("fastcall") == 0)
+      return Rust::ABI::FASTCALL;
+
+    rust_error_at (locus, "unknown abi specified");
+
+    return Rust::ABI::UNKNOWN;
+  }
+
+  static std::string get_string_from_abi (Rust::ABI abi)
+  {
+    switch (abi)
+      {
+      case Rust::ABI::RUST:
+	return "rust";
+      case Rust::ABI::INTRINSIC:
+	return "rust-intrinsic";
+      case Rust::ABI::C:
+	return "C";
+      case Rust::ABI::CDECL:
+	return "cdecl";
+      case Rust::ABI::STDCALL:
+	return "stdcall";
+      case Rust::ABI::FASTCALL:
+	return "fastcall";
+
+      case Rust::ABI::UNKNOWN:
+	return "unknown";
+      }
+    return "unknown";
+  }
 
   // Types.
 
@@ -817,6 +862,8 @@ public:
 			       const std::string &asm_name, unsigned int flags,
 			       Location)
     = 0;
+
+  virtual Btype *specify_abi_attribute (Btype *type, Rust::ABI abi) = 0;
 
   // Create a statement that runs all deferred calls for FUNCTION.  This should
   // be a statement that looks like this in C++:

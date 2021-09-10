@@ -291,7 +291,7 @@ public:
       = new TyTy::FnType (function.get_mappings ().get_hirid (),
 			  function.get_mappings ().get_defid (),
 			  function.get_function_name (), FNTYPE_DEFAULT_FLAGS,
-			  TyTy::FnType::ABI::RUST, std::move (params), ret_type,
+			  ABI::RUST, std::move (params), ret_type,
 			  std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
