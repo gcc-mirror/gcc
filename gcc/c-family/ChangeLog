@@ -1,3 +1,10 @@
+2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_atomic): Add r and weak arguments.
+	* c-omp.c: Include gimple-fold.h.
+	(c_finish_omp_atomic): Add r and weak arguments.  Add support for
+	OpenMP 5.1 atomics.
+
 2021-09-09  qing zhao  <qing.zhao@oracle.com>
 
 	* c-attribs.c (handle_uninitialized_attribute): New function.

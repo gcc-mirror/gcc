@@ -1,3 +1,142 @@
+2021-09-10  Petter Tomner  <tomner@kth.se>
+
+	* jit.dg/test-error-array-bounds.c: Array is not unsigned
+	* jit.dg/jit.exp: Helper function
+	* jit.dg/test-debuginfo.c: New testcase
+
+2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/atomic-17.c (foo): Add tests for atomic read,
+	write or update with acq_rel clause and atomic update with acquire clause.
+	* c-c++-common/gomp/atomic-18.c (foo): Adjust expected diagnostics
+	wording, remove tests moved to atomic-17.c.
+	* c-c++-common/gomp/atomic-21.c: Expect only 2 omp atomic release and
+	2 omp atomic acq_rel directives instead of 4 omp atomic release.
+	* c-c++-common/gomp/atomic-25.c: New test.
+	* c-c++-common/gomp/atomic-26.c: New test.
+	* c-c++-common/gomp/atomic-27.c: New test.
+	* c-c++-common/gomp/atomic-28.c: New test.
+	* c-c++-common/gomp/atomic-29.c: New test.
+	* c-c++-common/gomp/atomic-30.c: New test.
+	* c-c++-common/goacc-gomp/atomic.c: Expect 1 omp atomic release and
+	1 omp atomic_acq_rel instead of 2 omp atomic release directives.
+	* gcc.dg/gomp/atomic-5.c: Adjust expected error diagnostic wording.
+	* g++.dg/gomp/atomic-18.C:Expect 4 omp atomic release and
+	1 omp atomic_acq_rel instead of 5 omp atomic release directives.
+
+2021-09-10  Aldy Hernandez  <aldyh@redhat.com>
+	    Michael Matz  <matz@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-2b.c: Adjust for disabling of
+	threading through latches.
+	* gcc.dg/tree-ssa/ssa-dom-thread-6.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Same.
+
+2021-09-10  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/alu-1.c: New test.
+	* gcc.target/bpf/jmp-1.c: New test.
+
+2021-09-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102273
+	* gcc.dg/pr102273.c: New testcase.
+
+2021-09-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/auto-init-padding-2.c: Fix 'dg-do run' syntax.
+	* c-c++-common/auto-init-padding-3.c: Likewise.
+
+2021-09-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102269
+	* gcc.dg/pr102269.c: New testcase.
+
+2021-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-helper.h
+	(check_results_mask): New check_function.
+	* gcc.target/i386/avx512fp16-vcmpph-1a.c: New test.
+	* gcc.target/i386/avx512fp16-vcmpph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vcmpsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vcmpsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vcomish-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vcomish-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vcomish-1c.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vcmpph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vcmpph-1b.c: Ditto.
+
+2021-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add test for new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add test for new intrinsics.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2021-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-vmaxph-1a.c: New test.
+	* gcc.target/i386/avx512fp16-vmaxph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vmaxsh-1.c: Ditto.
+	* gcc.target/i386/avx512fp16-vmaxsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vminph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vminph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vminsh-1.c: Ditto.
+	* gcc.target/i386/avx512fp16-vminsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vmaxph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vmaxph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vminph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vminph-1b.c: Ditto.
+
+2021-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add test for new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add test for new intrinsics.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2021-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-vaddsh-1a.c: New test.
+	* gcc.target/i386/avx512fp16-vaddsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vdivsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vdivsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vmulsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vmulsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vsubsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vsubsh-1b.c: Ditto.
+	* gcc.target/i386/pr54855-11.c: Ditto.
+
+2021-09-10  Liu, Hongtao  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add test for new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add test for new intrinsics.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2021-09-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/vect-float16-1.c: New test.
+	* gcc.target/i386/vect-float16-10.c: Ditto.
+	* gcc.target/i386/vect-float16-11.c: Ditto.
+	* gcc.target/i386/vect-float16-12.c: Ditto.
+	* gcc.target/i386/vect-float16-2.c: Ditto.
+	* gcc.target/i386/vect-float16-3.c: Ditto.
+	* gcc.target/i386/vect-float16-4.c: Ditto.
+	* gcc.target/i386/vect-float16-5.c: Ditto.
+	* gcc.target/i386/vect-float16-6.c: Ditto.
+	* gcc.target/i386/vect-float16-7.c: Ditto.
+	* gcc.target/i386/vect-float16-8.c: Ditto.
+	* gcc.target/i386/vect-float16-9.c: Ditto.
+
+2021-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512dq-abs-copysign-1.c: Adjust testcase.
+	* gcc.target/i386/avx512vl-abs-copysign-1.c: Adjust testcase.
+
 2021-09-09  qing zhao  <qing.zhao@oracle.com>
 
 	* c-c++-common/auto-init-1.c: New test.

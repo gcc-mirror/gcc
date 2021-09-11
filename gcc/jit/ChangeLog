@@ -1,3 +1,11 @@
+2021-09-10  Petter Tomner  <tomner@kth.se>
+
+	* jit-playback.c: Moved global var processing to after loc handling.
+	  Setting TYPE_NAME for fundamental types.
+	  Using common functions for finalizing globals.
+	* jit-playback.h: New method init_types().
+	  Changed get_tree_node_for_type() to method.
+
 2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* docs/examples/tut04-toyvm/toyvm.c: Include jit-dejagnu.h.

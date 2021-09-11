@@ -1,3 +1,280 @@
+2021-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	Revert:
+	2021-09-01  liuhongt  <hongtao.liu@intel.com>
+
+	* emit-rtl.c (validate_subreg): Get rid of all float-int
+	special cases.
+
+2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_memory_order): Add OMP_MEMORY_ORDER_MASK,
+	OMP_FAIL_MEMORY_ORDER_UNSPECIFIED, OMP_FAIL_MEMORY_ORDER_RELAXED,
+	OMP_FAIL_MEMORY_ORDER_ACQUIRE, OMP_FAIL_MEMORY_ORDER_RELEASE,
+	OMP_FAIL_MEMORY_ORDER_ACQ_REL, OMP_FAIL_MEMORY_ORDER_SEQ_CST and
+	OMP_FAIL_MEMORY_ORDER_MASK enumerators.
+	(OMP_FAIL_MEMORY_ORDER_SHIFT): Define.
+	* gimple-pretty-print.c (dump_gimple_omp_atomic_load,
+	dump_gimple_omp_atomic_store): Print [weak] for weak atomic
+	load/store.
+	* gimple.h (enum gf_mask): Change GF_OMP_ATOMIC_MEMORY_ORDER
+	to 6-bit mask, adjust GF_OMP_ATOMIC_NEED_VALUE value and add
+	GF_OMP_ATOMIC_WEAK.
+	(gimple_omp_atomic_weak_p, gimple_omp_atomic_set_weak): New inline
+	functions.
+	* tree.h (OMP_ATOMIC_WEAK): Define.
+	* tree-pretty-print.c (dump_omp_atomic_memory_order): Adjust for
+	fail memory order being encoded in the same enum and also print
+	fail clause if present.
+	(dump_generic_node): Print weak clause if OMP_ATOMIC_WEAK.
+	* gimplify.c (goa_stabilize_expr): Add target_expr and rhs arguments,
+	handle pre_p == NULL case as a test mode that only returns value
+	but doesn't change gimplify nor change anything otherwise, adjust
+	recursive calls, add MODIFY_EXPR, ADDR_EXPR, COND_EXPR, TARGET_EXPR
+	and CALL_EXPR handling, adjust COMPOUND_EXPR handling for
+	__builtin_clear_padding calls, for !rhs gimplify as lvalue rather
+	than rvalue.
+	(gimplify_omp_atomic): Adjust goa_stabilize_expr caller.  Handle
+	COND_EXPR rhs.  Set weak flag on gimple load/store for
+	OMP_ATOMIC_WEAK.
+	* omp-expand.c (omp_memory_order_to_fail_memmodel): New function.
+	(omp_memory_order_to_memmodel): Adjust for fail clause encoded
+	in the same enum.
+	(expand_omp_atomic_cas): New function.
+	(expand_omp_atomic_pipeline): Use omp_memory_order_to_fail_memmodel
+	function.
+	(expand_omp_atomic): Attempt to optimize atomic compare and exchange
+	using expand_omp_atomic_cas.
+
+2021-09-10  Aldy Hernandez  <aldyh@redhat.com>
+	    Michael Matz  <matz@suse.de>
+
+	* tree-pass.h (PROP_loop_opts_done): New.
+	* gimple-range-path.cc (path_range_query::internal_range_of_expr):
+	Intersect with global range.
+	* tree-ssa-loop.c (tree_ssa_loop_done): Set PROP_loop_opts_done.
+	* tree-ssa-threadbackward.c
+	(back_threader_profitability::profitable_path_p): Disable
+	threading through latches until after loop optimizations have run.
+
+2021-09-10  David Faust  <david.faust@oracle.com>
+
+	* doc/invoke.texi: Document BPF -mcpu, -mjmpext, -mjmp32 and -malu32
+	options.
+
+2021-09-10  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf-opts.h (bpf_isa_version): New enum.
+	* config/bpf/bpf-protos.h (bpf_expand_cbranch): New.
+	* config/bpf/bpf.c (bpf_option_override): Handle -mcpu option.
+	(bpf_expand_cbranch): New function.
+	* config/bpf/bpf.md (AM mode iterator): Conditionalize support for SI
+	mode.
+	(zero_extendsidi2): Only use mov32 instruction if it is available.
+	(SIM mode iterator): Conditionalize support for SI mode.
+	(JM mode iterator): New.
+	(cbranchdi4): Update name, use new JM iterator. Use bpf_expand_cbranch.
+	(*branch_on_di): Update name, use new JM iterator.
+	* config/bpf/bpf.opt: (mjmpext): New option.
+	(malu32): Likewise.
+	(mjmp32): Likewise.
+	(mcpu): Likewise.
+	(bpf_isa): New enum.
+
+2021-09-10  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.md (zero_extendhidi2): Add new output template
+	for register-to-register extensions.
+	(zero_extendqidi2): Likewise.
+
+2021-09-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102273
+	* internal-fn.c (expand_DEFERRED_INIT): Always expand non-SSA vars.
+
+2021-09-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102269
+	* gimplify.c (is_var_need_auto_init): Empty types do not need
+	initialization.
+
+2021-09-10  Richard Biener  <rguenther@suse.de>
+
+	* configure.ac (--with-stabs): Remove.
+	* configure: Regenerate.
+	* doc/install.texi: Remove --with-stabs documentation.
+
+2021-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h: (_mm512_cmp_ph_mask):
+	New intrinsic.
+	(_mm512_mask_cmp_ph_mask): Likewise.
+	(_mm512_cmp_round_ph_mask): Likewise.
+	(_mm512_mask_cmp_round_ph_mask): Likewise.
+	(_mm_cmp_sh_mask): Likewise.
+	(_mm_mask_cmp_sh_mask): Likewise.
+	(_mm_cmp_round_sh_mask): Likewise.
+	(_mm_mask_cmp_round_sh_mask): Likewise.
+	(_mm_comieq_sh): Likewise.
+	(_mm_comilt_sh): Likewise.
+	(_mm_comile_sh): Likewise.
+	(_mm_comigt_sh): Likewise.
+	(_mm_comige_sh): Likewise.
+	(_mm_comineq_sh): Likewise.
+	(_mm_ucomieq_sh): Likewise.
+	(_mm_ucomilt_sh): Likewise.
+	(_mm_ucomile_sh): Likewise.
+	(_mm_ucomigt_sh): Likewise.
+	(_mm_ucomige_sh): Likewise.
+	(_mm_ucomineq_sh): Likewise.
+	(_mm_comi_round_sh): Likewise.
+	(_mm_comi_sh): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_cmp_ph_mask): New intrinsic.
+	(_mm_mask_cmp_ph_mask): Likewise.
+	(_mm256_cmp_ph_mask): Likewise.
+	(_mm256_mask_cmp_ph_mask): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtin types.
+	(ix86_expand_round_builtin): Ditto.
+	* config/i386/i386.md (ssevecmode): Add HF mode.
+	(MODEFH): New mode iterator.
+	* config/i386/sse.md
+	(V48H_AVX512VL): New mode iterator to support HF vector modes.
+	Ajdust corresponding description.
+	(ssecmpintprefix): New.
+	(VI12_AVX512VL): Adjust to support HF vector modes.
+	(cmp_imm_predicate): Likewise.
+	(<avx512>_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>):
+	Likewise.
+	(avx512f_vmcmp<mode>3<round_saeonly_name>): Likewise.
+	(avx512f_vmcmp<mode>3_mask<round_saeonly_name>): Likewise.
+	(<sse>_<unord>comi<round_saeonly_name>): Likewise.
+
+2021-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h: (_mm512_max_ph): New intrinsic.
+	(_mm512_mask_max_ph): Likewise.
+	(_mm512_maskz_max_ph): Likewise.
+	(_mm512_min_ph): Likewise.
+	(_mm512_mask_min_ph): Likewise.
+	(_mm512_maskz_min_ph): Likewise.
+	(_mm512_max_round_ph): Likewise.
+	(_mm512_mask_max_round_ph): Likewise.
+	(_mm512_maskz_max_round_ph): Likewise.
+	(_mm512_min_round_ph): Likewise.
+	(_mm512_mask_min_round_ph): Likewise.
+	(_mm512_maskz_min_round_ph): Likewise.
+	(_mm_max_sh): Likewise.
+	(_mm_mask_max_sh): Likewise.
+	(_mm_maskz_max_sh): Likewise.
+	(_mm_min_sh): Likewise.
+	(_mm_mask_min_sh): Likewise.
+	(_mm_maskz_min_sh): Likewise.
+	(_mm_max_round_sh): Likewise.
+	(_mm_mask_max_round_sh): Likewise.
+	(_mm_maskz_max_round_sh): Likewise.
+	(_mm_min_round_sh): Likewise.
+	(_mm_mask_min_round_sh): Likewise.
+	(_mm_maskz_min_round_sh): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_max_ph): New intrinsic.
+	(_mm256_max_ph): Likewise.
+	(_mm_mask_max_ph): Likewise.
+	(_mm256_mask_max_ph): Likewise.
+	(_mm_maskz_max_ph): Likewise.
+	(_mm256_maskz_max_ph): Likewise.
+	(_mm_min_ph): Likewise.
+	(_mm256_min_ph): Likewise.
+	(_mm_mask_min_ph): Likewise.
+	(_mm256_mask_min_ph): Likewise.
+	(_mm_maskz_min_ph): Likewise.
+	(_mm256_maskz_min_ph): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtin types.
+	* config/i386/sse.md
+	(<code><mode>3<mask_name><round_saeonly_name>): Adjust to
+	support HF vector modes.
+	(*<code><mode>3<mask_name><round_saeonly_name>): Likewise.
+	(ieee_<ieee_maxmin><mode>3<mask_name><round_saeonly_name>):
+	Likewise.
+	(<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>):
+	Likewise.
+	* config/i386/subst.md (round_saeonly_mode512bit_condition):
+	Adjust for HF vector modes.
+
+2021-09-10  Liu, Hongtao  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm_add_sh): New intrinsic.
+	(_mm_mask_add_sh): Likewise.
+	(_mm_maskz_add_sh): Likewise.
+	(_mm_sub_sh): Likewise.
+	(_mm_mask_sub_sh): Likewise.
+	(_mm_maskz_sub_sh): Likewise.
+	(_mm_mul_sh): Likewise.
+	(_mm_mask_mul_sh): Likewise.
+	(_mm_maskz_mul_sh): Likewise.
+	(_mm_div_sh): Likewise.
+	(_mm_mask_div_sh): Likewise.
+	(_mm_maskz_div_sh): Likewise.
+	(_mm_add_round_sh): Likewise.
+	(_mm_mask_add_round_sh): Likewise.
+	(_mm_maskz_add_round_sh): Likewise.
+	(_mm_sub_round_sh): Likewise.
+	(_mm_mask_sub_round_sh): Likewise.
+	(_mm_maskz_sub_round_sh): Likewise.
+	(_mm_mul_round_sh): Likewise.
+	(_mm_mask_mul_round_sh): Likewise.
+	(_mm_maskz_mul_round_sh): Likewise.
+	(_mm_div_round_sh): Likewise.
+	(_mm_mask_div_round_sh): Likewise.
+	(_mm_maskz_div_round_sh): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_round_builtin): Handle new builtins.
+	* config/i386/sse.md (VF_128): Change description.
+	(<sse>_vm<plusminus_insn><mode>3<mask_scalar_name><round_scalar_name>):
+	Adjust to support HF vector modes.
+	(<sse>_vm<multdiv_mnemonic><mode>3<mask_scalar_name><round_scalar_name>):
+	Likewise.
+
+2021-09-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-expand.c
+	(ix86_avx256_split_vector_move_misalign): Handle V16HF mode.
+	* config/i386/i386.c
+	(ix86_preferred_simd_mode): Handle HF mode.
+	* config/i386/sse.md (V_256H): New mode iterator.
+	(avx_vextractf128<mode>): Use it.
+	(VEC_INIT_MODE): Align vector HFmode condition to vector
+	HImodes since there're no real HF instruction used.
+	(VEC_INIT_HALF_MODE): Ditto.
+	(VIHF): Ditto.
+	(VIHF_AVX512BW): Ditto.
+	(*vec_extracthf): Ditto.
+	(VEC_EXTRACT_MODE): Ditto.
+
+2021-09-10  Richard Biener  <rguenther@suse.de>
+
+	PR target/102255
+	* config/dbx.h: Remove.
+	* config/dbxcoff.h: Do not define PREFERRED_DEBUGGING_TYPE.
+	* config/lynx.h: Likewise.
+
+2021-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.c (ix86_expand_copysign): Expand
+	right into ANDNOT + AND + IOR, using paradoxical subregs.
+	(ix86_split_copysign_const): Remove.
+	(ix86_split_copysign_var): Ditto.
+	* config/i386/i386-protos.h (ix86_split_copysign_const): Dotto.
+	(ix86_split_copysign_var): Ditto.
+	* config/i386/i386.md (@copysign<mode>3_const): Ditto.
+	(@copysign<mode>3_var): Ditto.
+
 2021-09-09  qing zhao  <qing.zhao@oracle.com>
 
 	* builtins.c (expand_builtin_memset): Make external visible.

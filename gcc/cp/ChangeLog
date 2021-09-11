@@ -1,3 +1,9 @@
+2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_atomic): Allow acq_rel on atomic read/write
+	and acq_rel/acquire clauses on update.
+	* semantics.c (finish_omp_atomic): Adjust c_finish_omp_atomic caller.
+
 2021-09-08  Richard Biener  <rguenther@suse.de>
 
 	PR c++/102228
