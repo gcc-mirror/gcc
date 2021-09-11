@@ -21,5 +21,5 @@
 	 condition.
 
    All the cases are picked up by VRP1 as jump threads.  */
-/* { dg-final { scan-tree-dump-times "Registering FSM jump" 6 "thread1" } } */
+/* { dg-final { scan-tree-dump-times "Registering jump" 6 "thread1" } } */
 /* { dg-final { scan-tree-dump-times "Threaded" 2 "vrp1" } } */

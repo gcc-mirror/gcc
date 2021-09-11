@@ -167,10 +167,11 @@ jump_thread_path_allocator::allocate_thread_path ()
   return new (r) vec<jump_thread_edge *> ();
 }
 
-jt_path_registry::jt_path_registry ()
+jt_path_registry::jt_path_registry (bool backedge_threads)
 {
   m_paths.create (5);
   m_num_threaded_edges = 0;
+  m_backedge_threads = backedge_threads;
 }
 
 jt_path_registry::~jt_path_registry ()
@@ -179,6 +180,7 @@ jt_path_registry::~jt_path_registry ()
 }
 
 fwd_jt_path_registry::fwd_jt_path_registry ()
+  : jt_path_registry (/*backedge_threads=*/false)
 {
   m_removed_edges = new hash_table<struct removed_edges> (17);
   m_redirection_data = NULL;
@@ -187,6 +189,11 @@ fwd_jt_path_registry::fwd_jt_path_registry ()
 fwd_jt_path_registry::~fwd_jt_path_registry ()
 {
   delete m_removed_edges;
+}
+
+back_jt_path_registry::back_jt_path_registry ()
+  : jt_path_registry (/*backedge_threads=*/true)
+{
 }
 
 jump_thread_edge *
@@ -210,9 +217,8 @@ dump_jump_thread_path (FILE *dump_file,
 		       bool registering)
 {
   fprintf (dump_file,
-	   "  %s%s jump thread: (%d, %d) incoming edge; ",
+	   "  %s jump thread: (%d, %d) incoming edge; ",
 	   (registering ? "Registering" : "Cancelling"),
-	   (path[0]->type == EDGE_FSM_THREAD ? " FSM": ""),
 	   path[0]->e->src->index, path[0]->e->dest->index);
 
   for (unsigned int i = 1; i < path.length (); i++)
@@ -224,20 +230,24 @@ dump_jump_thread_path (FILE *dump_file,
       if (path[i]->e == NULL)
 	continue;
 
-      if (path[i]->type == EDGE_COPY_SRC_JOINER_BLOCK)
-	fprintf (dump_file, " (%d, %d) joiner; ",
-		 path[i]->e->src->index, path[i]->e->dest->index);
-      if (path[i]->type == EDGE_COPY_SRC_BLOCK)
-       fprintf (dump_file, " (%d, %d) normal;",
-		 path[i]->e->src->index, path[i]->e->dest->index);
-      if (path[i]->type == EDGE_NO_COPY_SRC_BLOCK)
-       fprintf (dump_file, " (%d, %d) nocopy;",
-		 path[i]->e->src->index, path[i]->e->dest->index);
-      if (path[0]->type == EDGE_FSM_THREAD)
-	fprintf (dump_file, " (%d, %d) ",
-		 path[i]->e->src->index, path[i]->e->dest->index);
+      fprintf (dump_file, " (%d, %d) ",
+	       path[i]->e->src->index, path[i]->e->dest->index);
+      switch (path[i]->type)
+	{
+	case EDGE_COPY_SRC_JOINER_BLOCK:
+	  fprintf (dump_file, "joiner");
+	  break;
+	case EDGE_COPY_SRC_BLOCK:
+	  fprintf (dump_file, "normal");
+	  break;
+	case EDGE_NO_COPY_SRC_BLOCK:
+	  fprintf (dump_file, "nocopy");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
     }
-  fputc ('\n', dump_file);
+  fprintf (dump_file, "; \n");
 }
 
 DEBUG_FUNCTION void
@@ -2256,8 +2266,8 @@ back_jt_path_registry::rewire_first_differing_edge (unsigned path_num,
   return true;
 }
 
-/* After an FSM path has been jump threaded, adjust the remaining FSM
-   paths that are subsets of this path, so these paths can be safely
+/* After a path has been jump threaded, adjust the remaining paths
+   that are subsets of this path, so these paths can be safely
    threaded within the context of the new threaded path.
 
    For example, suppose we have just threaded:
@@ -2293,10 +2303,9 @@ back_jt_path_registry::adjust_paths_after_duplication (unsigned curr_path_num)
 	  continue;
 	}
       /* Make sure the candidate to adjust starts with the same path
-	 as the recently threaded path and is an FSM thread.  */
+	 as the recently threaded path.  */
       vec<jump_thread_edge *> *cand_path = m_paths[cand_path_num];
-      if ((*cand_path)[0]->type != EDGE_FSM_THREAD
-	  || (*cand_path)[0]->e != (*curr_path)[0]->e)
+      if ((*cand_path)[0]->e != (*curr_path)[0]->e)
 	{
 	  ++cand_path_num;
 	  continue;
@@ -2350,16 +2359,11 @@ back_jt_path_registry::adjust_paths_after_duplication (unsigned curr_path_num)
 	      m_paths.unordered_remove (cand_path_num);
 	      continue;
 	    }
-	  if ((*cand_path)[j]->type != EDGE_FSM_THREAD)
-	    {
-	      /* If all the EDGE_FSM_THREADs are common, all that's
-		 left is the final EDGE_NO_COPY_SRC_BLOCK.  */
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "Dropping illformed candidate.\n");
-	    }
-	  else
-	    /* Otherwise, just remove the redundant sub-path.  */
+	  /* Otherwise, just remove the redundant sub-path.  */
+	  if (cand_path->length () - j > 1)
 	    cand_path->block_remove (0, j);
+	  else if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Dropping illformed candidate.\n");
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -2616,8 +2620,6 @@ back_jt_path_registry::update_cfg (bool /*peel_loop_headers*/)
       vec<jump_thread_edge *> *path = m_paths[0];
       edge entry = (*path)[0]->e;
 
-      gcc_checking_assert ((*path)[0]->type == EDGE_FSM_THREAD);
-
       /* Do not jump-thread twice from the same starting edge.
 
 	 Previously we only checked that we weren't threading twice
@@ -2631,7 +2633,7 @@ back_jt_path_registry::update_cfg (bool /*peel_loop_headers*/)
 	     various reasons.  So check it first.  */
 	  || !valid_jump_thread_path (path))
 	{
-	  /* Remove invalid FSM jump-thread paths.  */
+	  /* Remove invalid jump-thread paths.  */
 	  cancel_thread (path, "Avoiding threading twice from same edge");
 	  m_paths.unordered_remove (0);
 	  continue;
@@ -2782,10 +2784,7 @@ jt_path_registry::register_jump_thread (vec<jump_thread_edge *> *path)
 	  return false;
 	}
 
-      /* Only the FSM threader is allowed to thread across
-	 backedges in the CFG.  */
-      if (flag_checking
-	  && (*path)[0]->type != EDGE_FSM_THREAD)
+      if (flag_checking && !m_backedge_threads)
 	gcc_assert (((*path)[i]->e->flags & EDGE_DFS_BACK) == 0);
     }
 

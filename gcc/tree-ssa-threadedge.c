@@ -456,17 +456,17 @@ jump_threader::simplify_control_stmt_condition (edge e, gimple *stmt)
 	= simplify_control_stmt_condition_1 (e, stmt, op0, cond_code, op1,
 					     recursion_limit);
 
-      /* If we were testing an integer/pointer against a constant, then
-	 we can use the FSM code to trace the value of the SSA_NAME.  If
-	 a value is found, then the condition will collapse to a constant.
+      /* If we were testing an integer/pointer against a constant,
+	 then we can trace the value of the SSA_NAME.  If a value is
+	 found, then the condition will collapse to a constant.
 
 	 Return the SSA_NAME we want to trace back rather than the full
-	 expression and give the FSM threader a chance to find its value.  */
+	 expression and give the threader a chance to find its value.  */
       if (cached_lhs == NULL)
 	{
 	  /* Recover the original operands.  They may have been simplified
 	     using context sensitive equivalences.  Those context sensitive
-	     equivalences may not be valid on paths found by the FSM optimizer.  */
+	     equivalences may not be valid on paths.  */
 	  tree op0 = gimple_cond_lhs (stmt);
 	  tree op1 = gimple_cond_rhs (stmt);
 

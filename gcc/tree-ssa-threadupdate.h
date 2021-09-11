@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 enum jump_thread_edge_type
 {
   EDGE_START_JUMP_THREAD,
-  EDGE_FSM_THREAD,
   EDGE_COPY_SRC_BLOCK,
   EDGE_COPY_SRC_JOINER_BLOCK,
   EDGE_NO_COPY_SRC_BLOCK
@@ -63,7 +62,7 @@ private:
 class jt_path_registry
 {
 public:
-  jt_path_registry ();
+  jt_path_registry (bool backedge_threads);
   virtual ~jt_path_registry ();
   bool register_jump_thread (vec<jump_thread_edge *> *);
   bool thread_through_all_blocks (bool peel_loop_headers);
@@ -77,6 +76,9 @@ protected:
 private:
   virtual bool update_cfg (bool peel_loop_headers) = 0;
   jump_thread_path_allocator m_allocator;
+  // True if threading through back edges is allowed.  This is only
+  // allowed in the generic copier in the backward threader.
+  bool m_backedge_threads;
   DISABLE_COPY_AND_ASSIGN (jt_path_registry);
 };
 
@@ -107,6 +109,8 @@ private:
 
 class back_jt_path_registry : public jt_path_registry
 {
+public:
+  back_jt_path_registry ();
 private:
   bool update_cfg (bool peel_loop_headers) override;
   void adjust_paths_after_duplication (unsigned curr_path_num);
