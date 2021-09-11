@@ -1,6 +1,6 @@
 /* Verify the padding initialization for pattern initialization, we always emit
  * a call to __builtin_clear_padding to initialize the paddings to zero.  */
-/* { dg-do compile } */
+/* { dg-do compile { target { ilp32 || lp64 } } } */
 /* { dg-options "-ftrivial-auto-var-init=pattern -fdump-tree-gimple" } */
 
 
@@ -9,7 +9,7 @@ struct test_small_hole {
   char two;
   /* 3 byte padding hole here. */
   int three;
-  unsigned long four;
+  unsigned long long four __attribute__((aligned (8)));
 };
 
 extern void g (struct test_small_hole);

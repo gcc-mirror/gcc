@@ -1,5 +1,5 @@
 /* Verify pattern initialization for integer and pointer type automatic variables.  */
-/* { dg-do compile } */
+/* { dg-do compile { target { ilp32 || lp64 } } } */
 /* { dg-options "-ftrivial-auto-var-init=pattern -fdump-tree-gimple" } */
 
 #ifndef __cplusplus
@@ -33,7 +33,9 @@ void foo()
 /* { dg-final { scan-tree-dump "temp2 = .DEFERRED_INIT \\(2, 1, 0\\)" "gimple" } } */
 /* { dg-final { scan-tree-dump "temp3 = .DEFERRED_INIT \\(4, 1, 0\\)" "gimple" } } */
 /* { dg-final { scan-tree-dump "temp4 = .DEFERRED_INIT \\(4, 1, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp5 = .DEFERRED_INIT \\(8, 1, 0\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp5 = .DEFERRED_INIT \\(4, 1, 0\\)" "gimple" { target ilp32 } } } */
+/* { dg-final { scan-tree-dump "temp5 = .DEFERRED_INIT \\(8, 1, 0\\)" "gimple" { target lp64 } } } */
 /* { dg-final { scan-tree-dump "temp6 = .DEFERRED_INIT \\(8, 1, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp7 = .DEFERRED_INIT \\(8, 1, 0\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp7 = .DEFERRED_INIT \\(4, 1, 0\\)" "gimple" { target ilp32 } } } */
+/* { dg-final { scan-tree-dump "temp7 = .DEFERRED_INIT \\(8, 1, 0\\)" "gimple" { target lp64 } } } */
 /* { dg-final { scan-tree-dump "temp8 = .DEFERRED_INIT \\(1, 1, 0\\)" "gimple" } } */

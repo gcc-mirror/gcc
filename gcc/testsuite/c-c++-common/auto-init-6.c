@@ -17,5 +17,5 @@ _Complex long double foo()
 
 /* { dg-final { scan-tree-dump "temp1 = .DEFERRED_INIT \\(8, 1, 0\\)" "gimple" } } */
 /* { dg-final { scan-tree-dump "temp2 = .DEFERRED_INIT \\(16, 1, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp3 = .DEFERRED_INIT \\(32, 1, 0\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp3 = .DEFERRED_INIT \\((16|24|32), 1, 0\\)" "gimple" } } */
 
