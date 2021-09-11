@@ -1,3 +1,47 @@
+2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-12-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/97612
+	* gfortran.dg/structure_constructor_17.f90: New test.
+
+2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-01-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98565
+	* gfortran.dg/associated_target_7.f90 : New test.
+
+2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93701
+	* gfortran.dg/associate_54.f90: New test.
+	* gfortran.dg/associate_55.f90: New test.
+	* gfortran.dg/associate_56.f90: New test.
+
+2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98472
+	* gfortran.dg/elemental_function_5.f90 : New test.
+
+2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-04-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/100110
+	* gfortran.dg/pdt_31.f03: New test.
+	* gfortran.dg/pdt_26.f03: Reduce 'builtin_malloc' count from 9
+	to 8.
+
 2021-09-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

@@ -1,3 +1,53 @@
+2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-12-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/97612
+	* primary.c (build_actual_constructor): Missing allocatable
+	components are set unallocated using EXPR_NULL. Then missing
+	components are tested for a default initializer.
+
+2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-01-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98565
+	* trans-intrinsic.c (gfc_conv_associated): Do not add a _data
+	component for scalar class function targets. Instead, fix the
+	function result and access the _data from that.
+
+2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93701
+	* resolve.c (find_array_spec): Put static prototype for
+	resolve_assoc_var before this function and call for associate
+	variables.
+
+2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98472
+	* trans-array.c (gfc_conv_expr_descriptor): Include elemental
+	procedure pointers in the assert under the comment 'elemental
+	function' and eliminate the second, spurious assert.
+
+2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-04-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/100110
+	* trans-decl.c (gfc_get_symbol_decl): Replace test for host
+	association with a check that the current and symbol namespaces
+	are the same.
+
 2021-09-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
