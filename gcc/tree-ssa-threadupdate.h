@@ -54,49 +54,65 @@ private:
   obstack m_obstack;
 };
 
-// This is the underlying jump thread registry.  When all candidates
-// have been registered with register_jump_thread(),
-// thread_through_all_blocks() is called to actually change the CFG.
+// Abstract class for the jump thread registry.
+//
+// When all candidates have been registered with
+// register_jump_thread(), thread_through_all_blocks() is called to
+// update the CFG.
 
-class jump_thread_path_registry
+class jt_path_registry
 {
 public:
-  jump_thread_path_registry ();
-  ~jump_thread_path_registry ();
+  jt_path_registry ();
+  virtual ~jt_path_registry ();
   bool register_jump_thread (vec<jump_thread_edge *> *);
-  void remove_jump_threads_including (edge);
-  bool thread_through_all_blocks (bool);
+  bool thread_through_all_blocks (bool peel_loop_headers);
   jump_thread_edge *allocate_thread_edge (edge e, jump_thread_edge_type t);
   vec<jump_thread_edge *> *allocate_thread_path ();
-  void dump ();
-
-private:
+  void debug ();
+protected:
   void debug_path (FILE *, int pathno);
+  vec<vec<jump_thread_edge *> *> m_paths;
+  unsigned long m_num_threaded_edges;
+private:
+  virtual bool update_cfg (bool peel_loop_headers) = 0;
+  jump_thread_path_allocator m_allocator;
+  DISABLE_COPY_AND_ASSIGN (jt_path_registry);
+};
+
+// Forward threader path registry using a custom BB copier.
+
+class fwd_jt_path_registry : public jt_path_registry
+{
+public:
+  fwd_jt_path_registry ();
+  ~fwd_jt_path_registry ();
+  void remove_jump_threads_including (edge);
+private:
+  bool update_cfg (bool peel_loop_headers) override;
   void mark_threaded_blocks (bitmap threaded_blocks);
-  bool rewire_first_differing_edge (unsigned path_num, unsigned edge_num);
-  void adjust_paths_after_duplication (unsigned curr_path_num);
-  bool duplicate_thread_path (edge entry,
-			      edge exit,
-			      basic_block *region,
-			      unsigned n_region,
-			      unsigned current_path_no);
   bool thread_block_1 (basic_block, bool noloop_only, bool joiners);
   bool thread_block (basic_block, bool noloop_only);
   bool thread_through_loop_header (class loop *loop,
 				   bool may_peel_loop_headers);
   class redirection_data *lookup_redirection_data (edge e, enum insert_option);
 
-  vec<vec<jump_thread_edge *> *> m_paths;
-
   hash_table<struct removed_edges> *m_removed_edges;
 
   // Main data structure to hold information for duplicates of BB.
   hash_table<redirection_data> *m_redirection_data;
+};
 
-  // Jump threading statistics.
-  unsigned long m_num_threaded_edges;
+// Backward threader path registry using a generic BB copier.
 
-  jump_thread_path_allocator m_allocator;
+class back_jt_path_registry : public jt_path_registry
+{
+private:
+  bool update_cfg (bool peel_loop_headers) override;
+  void adjust_paths_after_duplication (unsigned curr_path_num);
+  bool duplicate_thread_path (edge entry, edge exit, basic_block *region,
+			      unsigned n_region, unsigned current_path_no);
+  bool rewire_first_differing_edge (unsigned path_num, unsigned edge_num);
 };
 
 // Rather than search all the edges in jump thread paths each time DOM

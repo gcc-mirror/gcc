@@ -71,7 +71,7 @@ jump_threader::jump_threader (jump_threader_simplifier *simplifier,
   dummy_cond = gimple_build_cond (NE_EXPR, integer_zero_node,
 				  integer_zero_node, NULL, NULL);
 
-  m_registry = new jump_thread_path_registry ();
+  m_registry = new fwd_jt_path_registry ();
   m_simplifier = simplifier;
   m_state = state;
 }

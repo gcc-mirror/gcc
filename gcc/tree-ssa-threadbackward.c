@@ -56,7 +56,7 @@ public:
   bool register_path (const vec<basic_block> &, edge taken);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
-  jump_thread_path_registry m_lowlevel_registry;
+  back_jt_path_registry m_lowlevel_registry;
   const int m_max_allowable_paths;
   int m_threaded_paths;
 };
