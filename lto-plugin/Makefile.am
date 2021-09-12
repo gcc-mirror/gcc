@@ -21,7 +21,8 @@ in_gcc_libs = $(foreach lib, $(libexecsub_LTLIBRARIES), $(gcc_build_dir)/$(lib))
 liblto_plugin_la_SOURCES = lto-plugin.c
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS.
 liblto_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
-	$(lt_host_flags) -module -avoid-version -bindir $(libexecsubdir)
+	$(lt_host_flags) -module -avoid-version -bindir $(libexecsubdir) \
+	-export-symbols-regex onload
 # Can be simplified when libiberty becomes a normal convenience library.
 libiberty = $(with_libiberty)/libiberty.a
 libiberty_noasan = $(with_libiberty)/noasan/libiberty.a
