@@ -1,3 +1,21 @@
+2021-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/auto-init-1.c: Enable test only on ilp32 or lp64
+	targets, expect different long and pointer sizes between ilp32 and
+	lp64.
+	* c-c++-common/auto-init-2.c: Likewise.
+	* c-c++-common/auto-init-3.c: Expect one of the common long double
+	sizes (8/12/16 bytes) instead of hardcoding 16 bytes.
+	* c-c++-common/auto-init-4.c: Likewise.
+	* c-c++-common/auto-init-5.c: Expect one of the common
+	_Complex long double sizes (16/24/32 bytes) instead of hardcoding 32
+	bytes.
+	* c-c++-common/auto-init-6.c: Likewise.
+	* c-c++-common/auto-init-padding-1.c: Enable test only on ilp32 or lp64
+	targets.
+	(struct test_small_hole): Change type of four to unsigned long long
+	and add aligned attribute.
+
 2021-09-10  Petter Tomner  <tomner@kth.se>
 
 	* jit.dg/test-error-array-bounds.c: Array is not unsigned
