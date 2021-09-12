@@ -1,3 +1,19 @@
+2021-09-11  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98490
+	* gfortran.dg/bounds_check_23.f90: New test.
+
+2021-09-11  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101327
+	* gfortran.dg/pr101327.f90: New test.
+
 2021-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
