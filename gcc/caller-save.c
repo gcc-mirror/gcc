@@ -1,5 +1,5 @@
 /* Save and restore call-clobbered registers which are live across a call.
-   Copyright (C) 1989-2020 Free Software Foundation, Inc.
+   Copyright (C) 1989-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1012,7 +1012,7 @@ mark_referenced_regs (rtx *loc, refmarker_fn *mark, void *arg)
       loc = &SET_DEST (*loc);
       code = GET_CODE (*loc);
       if ((code == REG && REGNO (*loc) < FIRST_PSEUDO_REGISTER)
-	  || code == PC || code == CC0
+	  || code == PC
 	  || (code == SUBREG && REG_P (SUBREG_REG (*loc))
 	      && REGNO (SUBREG_REG (*loc)) < FIRST_PSEUDO_REGISTER
 	      /* If we're setting only part of a multi-word register,
@@ -1339,17 +1339,6 @@ insert_one_insn (class insn_chain *chain, int before_p, int code, rtx pat)
 {
   rtx_insn *insn = chain->insn;
   class insn_chain *new_chain;
-
-  /* If INSN references CC0, put our insns in front of the insn that sets
-     CC0.  This is always safe, since the only way we could be passed an
-     insn that references CC0 is for a restore, and doing a restore earlier
-     isn't a problem.  We do, however, assume here that CALL_INSNs don't
-     reference CC0.  Guard against non-INSN's like CODE_LABEL.  */
-
-  if (HAVE_cc0 && (NONJUMP_INSN_P (insn) || JUMP_P (insn))
-      && before_p
-      && reg_referenced_p (cc0_rtx, PATTERN (insn)))
-    chain = chain->prev, insn = chain->insn;
 
   new_chain = new_insn_chain ();
   if (before_p)

@@ -44,19 +44,18 @@ vector unsigned char testuu_cst (unsigned char x, vector unsigned char v)
        return vec_insert (x, v, 12);
 }
 
-/* load immediate, add, store, stb, load variable test.  */
-/* { dg-final { scan-assembler-times {\mstxv\M|\mstvx\M} 4 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mstb\M} 4 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mlvebx\M|\mlxv\M|\mlvx\M} 4 { target lp64} } } */
+/* no store per _var test.  */
+/* { dg-final { scan-assembler-times {\mstxv\M|\mstvx\M} 0 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mstb\M} 0 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mlvebx\M|\mlxv\M|\mlvx\M} 0 { target lp64} } } */
 /* an insert and a move per constant test. */
-/* { dg-final { scan-assembler-times {\mmtvsrwz\M} 4 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mvinsertb\M} 4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mmtvsrwz\M} 8 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mvinsertb\M} 8 { target lp64 } } } */
 
 /* -m32 codegen. */
 /* { dg-final { scan-assembler-times {\mrlwinm\M} 4 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\madd\M} 4 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mstxv\M} 4 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mstb\M} 8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstb\M} 4 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlxv\M} 8 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlvebx\M} 4 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mvperm\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mxxperm\M} 8 { target ilp32 } } } */

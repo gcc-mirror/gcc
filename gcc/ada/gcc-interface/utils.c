@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -467,6 +467,11 @@ make_dummy_type (Entity_Id gnat_type)
     = create_type_stub_decl (TYPE_NAME (gnu_type), gnu_type);
   if (Is_By_Reference_Type (gnat_equiv))
     TYPE_BY_REFERENCE_P (gnu_type) = 1;
+  if (Has_Discriminants (gnat_equiv))
+    decl_attributes (&gnu_type,
+		     tree_cons (get_identifier ("may_alias"), NULL_TREE,
+				NULL_TREE),
+		     ATTR_FLAG_TYPE_IN_PLACE);
 
   SET_DUMMY_NODE (gnat_equiv, gnu_type);
 
@@ -516,10 +521,10 @@ build_dummy_unc_pointer_types (Entity_Id gnat_desig_type, tree gnu_desig_type)
     = create_type_stub_decl (create_concat_name (gnat_desig_type, "XUP"),
 			     gnu_fat_type);
   fields = create_field_decl (get_identifier ("P_ARRAY"), gnu_ptr_array,
-			      gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
+			      gnu_fat_type, NULL_TREE, NULL_TREE, 0, 1);
   DECL_CHAIN (fields)
     = create_field_decl (get_identifier ("P_BOUNDS"), gnu_ptr_template,
-			 gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
+			 gnu_fat_type, NULL_TREE, NULL_TREE, 0, 1);
   finish_fat_pointer_type (gnu_fat_type, fields);
   SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_desig_type);
   /* Suppress debug info until after the type is completed.  */
@@ -779,7 +784,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   tree context = NULL_TREE;
   struct deferred_decl_context_node *deferred_decl_context = NULL;
 
-  /* If explicitely asked to make DECL global or if it's an imported nested
+  /* If explicitly asked to make DECL global or if it's an imported nested
      object, short-circuit the regular Scope-based context computation.  */
   if (!((TREE_PUBLIC (decl) && DECL_EXTERNAL (decl)) || force_global == 1))
     {
@@ -831,7 +836,8 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   if (!deferred_decl_context)
     DECL_CONTEXT (decl) = context;
 
-  TREE_NO_WARNING (decl) = (No (gnat_node) || Warnings_Off (gnat_node));
+  suppress_warning (decl, all_warnings,
+		    No (gnat_node) || Warnings_Off (gnat_node));
 
   /* Set the location of DECL and emit a declaration for it.  */
   if (Present (gnat_node) && !renaming_from_instantiation_p (gnat_node))
@@ -1271,7 +1277,7 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
 
   finish_record_type (new_type, nreverse (new_field_list), 2, false);
   relate_alias_sets (new_type, type, ALIAS_SET_COPY);
-  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
     SET_TYPE_DEBUG_TYPE (new_type, TYPE_DEBUG_TYPE (type));
   else if (TYPE_STUB_DECL (type))
     SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
@@ -1542,7 +1548,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   TYPE_SIZE (record) = size ? size : orig_size;
   TYPE_SIZE_UNIT (record)
     = convert (sizetype,
-	       size_binop (CEIL_DIV_EXPR, TYPE_SIZE (record),
+	       size_binop (EXACT_DIV_EXPR, TYPE_SIZE (record),
 			   bitsize_unit_node));
 
   /* If we are changing the alignment and the input type is a record with
@@ -1571,7 +1577,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     {
       tree packable_type = make_packable_type (type, true, align);
       if (TYPE_MODE (packable_type) != BLKmode
-	  && align >= TYPE_ALIGN (packable_type))
+	  && compare_tree_int (TYPE_SIZE (packable_type), align) <= 0)
         type = packable_type;
     }
 
@@ -1604,7 +1610,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     }
 
   /* Make the inner type the debug type of the padded type.  */
-  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
     SET_TYPE_DEBUG_TYPE (record, maybe_debug_type (type));
 
   /* Unless debugging information isn't being written for the input type,
@@ -1632,14 +1638,14 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	    = create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
 			      size_unit, true, global_bindings_p (),
 			      !definition && global_bindings_p (), false,
-			      false, true, true, NULL, gnat_entity);
+			      false, true, true, NULL, gnat_entity, false);
 	  TYPE_SIZE_UNIT (record) = size_unit;
 	}
 
       /* There is no need to show what we are a subtype of when outputting as
 	 few encodings as possible: regular debugging infomation makes this
 	 redundant.  */
-      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 	{
 	  tree marker = make_node (RECORD_TYPE);
 	  tree orig_name = TYPE_IDENTIFIER (type);
@@ -1716,11 +1722,11 @@ built:
       if (Comes_From_Source (gnat_entity))
 	{
 	  if (is_component_type)
-	    post_error_ne_tree ("component of& padded{ by ^ bits}?",
+	    post_error_ne_tree ("component of& padded{ by ^ bits}??",
 				gnat_entity, gnat_entity,
 				size_diffop (size, orig_size));
 	  else if (Present (gnat_error_node))
-	    post_error_ne_tree ("{^ }bits of & unused?",
+	    post_error_ne_tree ("{^ }bits of & unused??",
 				gnat_error_node, gnat_entity,
 				size_diffop (size, orig_size));
 	}
@@ -1965,7 +1971,6 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 {
   const enum tree_code orig_code = TREE_CODE (record_type);
   const bool had_size = TYPE_SIZE (record_type) != NULL_TREE;
-  const bool had_size_unit = TYPE_SIZE_UNIT (record_type) != NULL_TREE;
   const bool had_align = TYPE_ALIGN (record_type) > 0;
   /* For all-repped records with a size specified, lay the QUAL_UNION_TYPE
      out just like a UNION_TYPE, since the size will be fixed.  */
@@ -1992,9 +1997,6 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 
       if (!had_size)
 	TYPE_SIZE (record_type) = bitsize_zero_node;
-
-      if (!had_size_unit)
-	TYPE_SIZE_UNIT (record_type) = size_zero_node;
     }
   else
     {
@@ -2046,7 +2048,6 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	this_ada_size = this_size;
 
       const bool variant_part = (TREE_CODE (type) == QUAL_UNION_TYPE);
-      const bool variant_part_at_zero = variant_part && integer_zerop (pos);
 
       /* Clear DECL_BIT_FIELD for the cases layout_decl does not handle.  */
       if (DECL_BIT_FIELD (field)
@@ -2089,7 +2090,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
       /* Clear DECL_BIT_FIELD_TYPE for a variant part at offset 0, it's simply
 	 not supported by the DECL_BIT_FIELD_REPRESENTATIVE machinery because
 	 the variant part is always the last field in the list.  */
-      if (variant_part_at_zero)
+      if (variant_part && integer_zerop (pos))
 	DECL_BIT_FIELD_TYPE (field) = NULL_TREE;
 
       /* If we still have DECL_BIT_FIELD set at this point, we know that the
@@ -2124,18 +2125,20 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	case RECORD_TYPE:
 	  /* Since we know here that all fields are sorted in order of
 	     increasing bit position, the size of the record is one
-	     higher than the ending bit of the last field processed,
-	     unless we have a variant part at offset 0, since in this
-	     case we might have a field outside the variant part that
-	     has a higher ending position; so use a MAX in this case.
-	     Also, if this field is a QUAL_UNION_TYPE, we need to take
-	     into account the previous size in the case of empty variants.  */
+	     higher than the ending bit of the last field processed
+	     unless we have a rep clause, because we might be processing
+	     the REP part of a record with a variant part for which the
+	     variant part has a rep clause but not the fixed part, in
+	     which case this REP part may contain overlapping fields
+	     and thus needs to be treated like a union tyoe above, so
+	     use a MAX in that case.  Also, if this field is a variant
+	     part, we need to take into account the previous size in
+	     the case of empty variants.  */
 	  ada_size
-	    = merge_sizes (ada_size, pos, this_ada_size, variant_part,
-			   variant_part_at_zero);
+	    = merge_sizes (ada_size, pos, this_ada_size, rep_level > 0,
+			   variant_part);
 	  size
-	    = merge_sizes (size, pos, this_size, variant_part,
-			   variant_part_at_zero);
+	    = merge_sizes (size, pos, this_size, rep_level > 0, variant_part);
 	  break;
 
 	default:
@@ -2149,19 +2152,22 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
   /* We need to set the regular sizes if REP_LEVEL is one.  */
   if (rep_level == 1)
     {
-      /* If this is a padding record, we never want to make the size smaller
-	 than what was specified in it, if any.  */
-      if (TYPE_IS_PADDING_P (record_type) && TYPE_SIZE (record_type))
-	size = TYPE_SIZE (record_type);
-
-      tree size_unit = had_size_unit
-		       ? TYPE_SIZE_UNIT (record_type)
-		       : convert (sizetype,
-				  size_binop (CEIL_DIV_EXPR, size,
-					      bitsize_unit_node));
+      /* We round TYPE_SIZE and TYPE_SIZE_UNIT up to TYPE_ALIGN separately
+	 to avoid having very large masking constants in TYPE_SIZE_UNIT.  */
       const unsigned int align = TYPE_ALIGN (record_type);
 
+      /* If this is a padding record, we never want to make the size smaller
+	 than what was specified in it, if any.  */
+      if (TYPE_IS_PADDING_P (record_type) && had_size)
+	size = TYPE_SIZE (record_type);
+      else
+	size = round_up (size, BITS_PER_UNIT);
+
       TYPE_SIZE (record_type) = variable_size (round_up (size, align));
+
+      tree size_unit
+	= convert (sizetype,
+		   size_binop (EXACT_DIV_EXPR, size, bitsize_unit_node));
       TYPE_SIZE_UNIT (record_type)
 	= variable_size (round_up (size_unit, align / BITS_PER_UNIT));
     }
@@ -2268,7 +2274,7 @@ rest_of_record_type_compilation (tree record_type)
 
   /* If this record type is of variable size, make a parallel record type that
      will tell the debugger how the former is laid out (see exp_dbug.ads).  */
-  if (var_size && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (var_size && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
     {
       tree new_record_type
 	= make_node (TREE_CODE (record_type) == QUAL_UNION_TYPE
@@ -2427,14 +2433,14 @@ rest_of_record_type_compilation (tree record_type)
 }
 
 /* Utility function of above to merge LAST_SIZE, the previous size of a record
-   with FIRST_BIT and SIZE that describe a field.  SPECIAL is true if this
-   represents a QUAL_UNION_TYPE in which case we must look for COND_EXPRs and
-   replace a value of zero with the old size.  If MAX is true, we take the
+   with FIRST_BIT and SIZE that describe a field.  If MAX is true, we take the
    MAX of the end position of this field with LAST_SIZE.  In all other cases,
-   we use FIRST_BIT plus SIZE.  Return an expression for the size.  */
+   we use FIRST_BIT plus SIZE.  SPECIAL is true if it's for a QUAL_UNION_TYPE,
+   in which case we must look for COND_EXPRs and replace a value of zero with
+   the old size.  Return an expression for the size.  */
 
 static tree
-merge_sizes (tree last_size, tree first_bit, tree size, bool special, bool max)
+merge_sizes (tree last_size, tree first_bit, tree size, bool max, bool special)
 {
   tree type = TREE_TYPE (last_size);
   tree new_size;
@@ -2451,11 +2457,11 @@ merge_sizes (tree last_size, tree first_bit, tree size, bool special, bool max)
 			    integer_zerop (TREE_OPERAND (size, 1))
 			    ? last_size : merge_sizes (last_size, first_bit,
 						       TREE_OPERAND (size, 1),
-						       1, max),
+						       max, special),
 			    integer_zerop (TREE_OPERAND (size, 2))
 			    ? last_size : merge_sizes (last_size, first_bit,
 						       TREE_OPERAND (size, 2),
-						       1, max));
+						       max, special));
 
   /* We don't need any NON_VALUE_EXPRs and they can confuse us (especially
      when fed through SUBSTITUTE_IN_EXPR) into thinking that a constant
@@ -3521,6 +3527,12 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 void
 finish_subprog_decl (tree decl, tree asm_name, tree type)
 {
+  /* DECL_ARGUMENTS is set by the caller, but not its context.  */
+  for (tree param_decl = DECL_ARGUMENTS (decl);
+       param_decl;
+       param_decl = DECL_CHAIN (param_decl))
+    DECL_CONTEXT (param_decl) = decl;
+
   tree result_decl
     = build_decl (DECL_SOURCE_LOCATION (decl), RESULT_DECL, NULL_TREE,
 		  TREE_TYPE (type));
@@ -3530,9 +3542,6 @@ finish_subprog_decl (tree decl, tree asm_name, tree type)
   DECL_CONTEXT (result_decl) = decl;
   DECL_BY_REFERENCE (result_decl) = TREE_ADDRESSABLE (type);
   DECL_RESULT (decl) = result_decl;
-
-  /* Propagate the "const" property.  */
-  TREE_READONLY (decl) = TYPE_READONLY (type);
 
   /* Propagate the "pure" property.  */
   DECL_PURE_P (decl) = TYPE_RESTRICT (type);
@@ -3566,8 +3575,6 @@ finish_subprog_decl (tree decl, tree asm_name, tree type)
 void
 begin_subprog_body (tree subprog_decl)
 {
-  tree param_decl;
-
   announce_function (subprog_decl);
 
   /* This function is being defined.  */
@@ -3583,10 +3590,6 @@ begin_subprog_body (tree subprog_decl)
   /* Enter a new binding level and show that all the parameters belong to
      this function.  */
   gnat_pushlevel ();
-
-  for (param_decl = DECL_ARGUMENTS (subprog_decl); param_decl;
-       param_decl = DECL_CHAIN (param_decl))
-    DECL_CONTEXT (param_decl) = subprog_decl;
 }
 
 /* Finish translating the current subprogram and set its BODY.  */
@@ -7010,8 +7013,7 @@ def_builtin_1 (enum built_in_function fncode,
     return;
 
   gcc_assert ((!both_p && !fallback_p)
-	      || !strncmp (name, "__builtin_",
-			   strlen ("__builtin_")));
+	      || startswith (name, "__builtin_"));
 
   libname = name + strlen ("__builtin_");
   decl = add_builtin_function (name, fntype, fncode, fnclass,

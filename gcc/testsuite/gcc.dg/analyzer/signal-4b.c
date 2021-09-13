@@ -20,14 +20,14 @@ static void int_handler(int signum)
   custom_logger("got signal");
 }
 
-static void register_handler ()
+static void __analyzer_register_handler ()
 {
   signal(SIGINT, int_handler);
 }
 
 void test (void)
 {
-  register_handler ();
+  __analyzer_register_handler ();
   body_of_program();
 }
 
@@ -42,17 +42,17 @@ void test (void)
     |      |      |
     |      |      (1) entry to 'test'
     |   NN | {
-    |   NN |   register_handler ();
-    |      |   ~~~~~~~~~~~~~~~~~~~
+    |   NN |   __analyzer_register_handler ();
+    |      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     |      |   |
-    |      |   (2) calling 'register_handler' from 'test'
+    |      |   (2) calling '__analyzer_register_handler' from 'test'
     |
-    +--> 'register_handler': events 3-4
+    +--> '__analyzer_register_handler': events 3-4
            |
-           |   NN | static void register_handler ()
-           |      |             ^~~~~~~~~~~~~~~~
+           |   NN | static void __analyzer_register_handler ()
+           |      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
            |      |             |
-           |      |             (3) entry to 'register_handler'
+           |      |             (3) entry to '__analyzer_register_handler'
            |   NN | {
            |   NN |   signal(SIGINT, int_handler);
            |      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~

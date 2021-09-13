@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,24 +15,34 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-options "-std=gnu++20" }
+// { dg-do run { target c++20 } }
 
 #include <string_view>
 #include <vector>
 #include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
 
 constexpr char str[] = "abcdefg";
-constexpr std::basic_string_view s(std::begin(str), std::cend(str) - 1);
+constexpr std::basic_string_view<char> s(std::begin(str), std::cend(str) - 1);
 static_assert( s == str );
 static_assert( s.data() == str );
+constexpr std::basic_string_view ctad(std::begin(str), std::cend(str) - 1);
+static_assert( ctad == s );
+
+// The standard does not require this constructor to have a noexcept-specifier.
+static_assert( noexcept(std::basic_string_view<char>(str, str)) );
+using I = __gnu_test::contiguous_iterator_wrapper<char>;
+static_assert( ! noexcept(std::basic_string_view<char>(I{}, I{})) );
 
 void
 test01()
 {
   std::vector<char> v{'a', 'b', 'c'};
-  std::basic_string_view s(v.begin(), v.end());
+  std::basic_string_view<char> s(v.begin(), v.end());
   VERIFY( s.data() == v.data() );
+  std::basic_string_view ctad(v.begin(), v.end());
+  VERIFY( ctad == s );
 }
 
 int

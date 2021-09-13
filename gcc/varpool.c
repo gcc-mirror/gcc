@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-pass.h"
 
 const char * const tls_model_names[]={"none", "emulated",
 				      "global-dynamic", "local-dynamic",
@@ -412,6 +413,13 @@ ctor_for_folding (tree decl)
   if (!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
     {
       gcc_assert (!TREE_PUBLIC (decl));
+      /* Unless this is called during FE folding.  */
+      if (cfun
+	  && (cfun->curr_properties & (PROP_gimple | PROP_rtl)) == 0
+	  && TREE_READONLY (decl)
+	  && !TREE_SIDE_EFFECTS (decl)
+	  && DECL_INITIAL (decl))
+	return DECL_INITIAL (decl);
       return error_mark_node;
     }
 

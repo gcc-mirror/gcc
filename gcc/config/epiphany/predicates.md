@@ -1,5 +1,5 @@
 ;; Predicate definitions for code generation on the EPIPHANY cpu.
-;; Copyright (C) 1994-2020 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2021 Free Software Foundation, Inc.
 ;; Contributed by Embecosm on behalf of Adapteva, Inc.
 ;;
 ;; This file is part of GCC.

@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2020 Free Software Foundation, Inc.
+# Copyright (C) 2008-2021 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -194,3 +194,23 @@ GCC_4.8.0 {
   __cpu_indicator_init
 }
 %endif
+
+%inherit GCC_12.0.0 GCC_7.0.0
+GCC_12.0.0 {
+  __divhc3
+  __mulhc3
+  __eqhf2
+  __nehf2
+  __extendhfdf2
+  __extendhfsf2
+  __extendhftf2
+  __extendhfxf2
+  __fixhfti
+  __fixunshfti
+  __floattihf
+  __floatuntihf
+  __truncdfhf2
+  __truncsfhf2
+  __trunctfhf2
+  __truncxfhf2
+}

@@ -1,5 +1,5 @@
 /* runtime.def -- Definitions for D runtime functions.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,27 +26,31 @@ along with GCC; see the file COPYING3.  If not see
    extern(C) - for those that are not, ensure to use correct mangling.  */
 
 /* Helper macros for parameter building.  */
-#define P0()		    0
-#define P1(T1)		    1, LCT_ ## T1
-#define P2(T1, T2)	    2, LCT_ ## T1, LCT_ ## T2
-#define P3(T1, T2, T3)	    3, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3
-#define P4(T1, T2, T3, T4)  4, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3, LCT_ ## T4
-#define RT(T1)		    LCT_ ## T1
+#define P0()	0
+#define P1(T1)	1, LCT_ ## T1
+#define P2(T1, T2) \
+		2, LCT_ ## T1, LCT_ ## T2
+#define P3(T1, T2, T3) \
+		3, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3
+#define P4(T1, T2, T3, T4) \
+		4, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3, LCT_ ## T4
+#define RT(T1)	LCT_ ## T1
 
 /* Used when an assert() contract fails.  */
-DEF_D_RUNTIME (ASSERT, "_d_assert", RT(VOID), P2(STRING, UINT), ECF_NORETURN)
+DEF_D_RUNTIME (ASSERTP, "_d_assertp", RT(VOID), P2(IMMUTABLE_CHARPTR, UINT),
+	       ECF_NORETURN)
 DEF_D_RUNTIME (ASSERT_MSG, "_d_assert_msg", RT(VOID), P3(STRING, STRING, UINT),
 	       ECF_NORETURN)
 
 /* Used when an assert() contract fails in a unittest function.  */
-DEF_D_RUNTIME (UNITTEST, "_d_unittest", RT(VOID), P2(STRING, UINT),
+DEF_D_RUNTIME (UNITTESTP, "_d_unittestp", RT(VOID), P2(IMMUTABLE_CHARPTR, UINT),
 	       ECF_NORETURN)
 DEF_D_RUNTIME (UNITTEST_MSG, "_d_unittest_msg", RT(VOID),
 	       P3(STRING, STRING, UINT), ECF_NORETURN)
 
 /* Used when an array index outside the bounds of its range.  */
-DEF_D_RUNTIME (ARRAY_BOUNDS, "_d_arraybounds", RT(VOID), P2(STRING, UINT),
-	       ECF_NORETURN)
+DEF_D_RUNTIME (ARRAYBOUNDSP, "_d_arrayboundsp", RT(VOID),
+	       P2(IMMUTABLE_CHARPTR, UINT), ECF_NORETURN)
 
 /* Used when calling new on a class.  */
 DEF_D_RUNTIME (NEWCLASS, "_d_newclass", RT(OBJECT), P1(CONST_CLASSINFO), 0)

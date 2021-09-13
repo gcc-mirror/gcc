@@ -1,3 +1,38 @@
+2021-04-06  Nathan Sidwell  <nathan@acm.org>
+
+	* LICENSE.gcc: Delete.
+
+2021-01-12  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in: Remove auto parallelize, swallow Makesub.in. Don't
+	check compiler name here.
+	* Makesub.in: Delete.
+	* build-aux/config.guess: Delete.
+	* build-aux/config.sub: Delete.
+	* build-aux/install-sh: Delete.
+	* dox.cfg.in: Delete.
+	* gdbinit.in: Delete.
+	* internal.hh (BuildNote): Delete.
+	* fatal.cc (BuildNote): Delete.
+	* config.m4: Remove unneeded fns.
+	* configure.ac: Remove unneccessary checks and configures.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+
+2021-01-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR bootstrap/98506
+	* resolver.cc: Only use fstatat when _POSIX_C_SOURCE >= 200809L.
+
+2021-01-04  Nathan Sidwell  <nathan@acm.org>
+
+	* client.cc (Client::ProcessResponse): Remove std::move
+	inside ?:
+
+2021-01-04  Mateusz Wajchęprzełóż  <mati271828@gmail.com>
+
+	* resolver.cc (IsAbsDir): Fix string indexing.
+
 2020-12-23  Nathan Sidwell  <nathan@acm.org>
 
 	* Makefile.in (LDFLAGS): Drop -L..
@@ -132,7 +167,7 @@
 	* tests/jouster: New.
 
 
-Copyright (C) 2020 Free Software Foundation, Inc.
+Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

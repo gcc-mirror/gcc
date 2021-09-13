@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -481,7 +481,10 @@ enum gomp_task_kind
      but not yet completed.  Once that completes, they will be readded
      into the queues as GOMP_TASK_WAITING in order to perform the var
      unmapping.  */
-  GOMP_TASK_ASYNC_RUNNING
+  GOMP_TASK_ASYNC_RUNNING,
+  /* Task that has finished executing but is waiting for its
+     completion event to be fulfilled.  */
+  GOMP_TASK_DETACHED
 };
 
 struct gomp_task_depend_entry
@@ -536,6 +539,16 @@ struct gomp_task
      0, we have no unsatisfied dependencies, and this task can be put
      into the various queues to be scheduled.  */
   size_t num_dependees;
+
+  union {
+      /* Valid only if deferred_p is false.  */
+      gomp_sem_t *completion_sem;
+      /* Valid only if deferred_p is true.  Set to the team that executes the
+	 task if the task is detached and the completion event has yet to be
+	 fulfilled.  */
+      struct gomp_team *detach_team;
+    };
+  bool deferred_p;
 
   /* Priority of this task.  */
   int priority;
@@ -684,6 +697,9 @@ struct gomp_team
   unsigned int task_running_count;
   int work_share_cancelled;
   int team_cancelled;
+
+  /* Number of tasks waiting for their completion event to be fulfilled.  */
+  unsigned int task_detach_count;
 
   /* This array contains structures for implicit tasks.  */
   struct gomp_task implicit_task[];
@@ -996,11 +1012,35 @@ struct target_mem_desc {
   struct target_var_desc list[];
 };
 
+/* Special value for refcount - mask to indicate existence of special
+   values. Right now we allocate 3 bits.  */
+#define REFCOUNT_SPECIAL (~(uintptr_t) 0x7)
+
 /* Special value for refcount - infinity.  */
-#define REFCOUNT_INFINITY (~(uintptr_t) 0)
+#define REFCOUNT_INFINITY (REFCOUNT_SPECIAL | 0)
 /* Special value for refcount - tgt_offset contains target address of the
    artificial pointer to "omp declare target link" object.  */
-#define REFCOUNT_LINK (~(uintptr_t) 1)
+#define REFCOUNT_LINK     (REFCOUNT_SPECIAL | 1)
+
+/* Special value for refcount - structure element sibling list items.
+   All such key refounts have REFCOUNT_STRUCTELEM bits set, with _FLAG_FIRST
+   and _FLAG_LAST indicating first and last in the created sibling sequence.  */
+#define REFCOUNT_STRUCTELEM (REFCOUNT_SPECIAL | 4)
+#define REFCOUNT_STRUCTELEM_P(V)			\
+  (((V) & REFCOUNT_STRUCTELEM) == REFCOUNT_STRUCTELEM)
+/* The first leading key with _FLAG_FIRST set houses the actual reference count
+   in the structelem_refcount field. Other siblings point to this counter value
+   through its structelem_refcount_ptr field.  */
+#define REFCOUNT_STRUCTELEM_FLAG_FIRST (1)
+/* The last key in the sibling sequence has this set. This is required to
+   indicate the sequence boundary, when we remove the structure sibling list
+   from the map.  */
+#define REFCOUNT_STRUCTELEM_FLAG_LAST  (2)
+
+#define REFCOUNT_STRUCTELEM_FIRST_P(V)					\
+  (REFCOUNT_STRUCTELEM_P (V) && ((V) & REFCOUNT_STRUCTELEM_FLAG_FIRST))
+#define REFCOUNT_STRUCTELEM_LAST_P(V)					\
+  (REFCOUNT_STRUCTELEM_P (V) && ((V) & REFCOUNT_STRUCTELEM_FLAG_LAST))
 
 /* Special offset values.  */
 #define OFFSET_INLINED (~(uintptr_t) 0)
@@ -1028,8 +1068,22 @@ struct splay_tree_key_s {
   uintptr_t tgt_offset;
   /* Reference count.  */
   uintptr_t refcount;
-  /* Dynamic reference count.  */
-  uintptr_t dynamic_refcount;
+  union {
+    /* Dynamic reference count.  */
+    uintptr_t dynamic_refcount;
+
+    /* Unified reference count for structure element siblings, this is used
+       when REFCOUNT_STRUCTELEM_FIRST_P(k->refcount) == true, the first sibling
+       in a structure element sibling list item sequence.  */
+    uintptr_t structelem_refcount;
+
+    /* When REFCOUNT_STRUCTELEM_P (k->refcount) == true, this field points
+       into the (above) structelem_refcount field of the _FIRST splay_tree_key,
+       the first key in the created sequence. All structure element siblings
+       share a single refcount in this manner. Since these two fields won't be
+       used at the same time, they are stashed in a union.  */
+    uintptr_t *structelem_refcount_ptr;
+  };
   struct splay_tree_aux *aux;
 };
 
@@ -1172,7 +1226,7 @@ extern void gomp_acc_declare_allocate (bool, size_t, void **, size_t *,
 struct gomp_coalesce_buf;
 extern void gomp_copy_host2dev (struct gomp_device_descr *,
 				struct goacc_asyncqueue *, void *, const void *,
-				size_t, struct gomp_coalesce_buf *);
+				size_t, bool, struct gomp_coalesce_buf *);
 extern void gomp_copy_dev2host (struct gomp_device_descr *,
 				struct goacc_asyncqueue *, void *, const void *,
 				size_t);
@@ -1184,19 +1238,13 @@ extern void gomp_attach_pointer (struct gomp_device_descr *,
 extern void gomp_detach_pointer (struct gomp_device_descr *,
 				 struct goacc_asyncqueue *, splay_tree_key,
 				 uintptr_t, bool, struct gomp_coalesce_buf *);
-
-extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
-					      size_t, void **, void **,
-					      size_t *, void *, bool,
-					      enum gomp_map_vars_kind);
-extern struct target_mem_desc *gomp_map_vars_async (struct gomp_device_descr *,
-						    struct goacc_asyncqueue *,
-						    size_t, void **, void **,
-						    size_t *, void *, bool,
-						    enum gomp_map_vars_kind);
-extern void gomp_unmap_vars (struct target_mem_desc *, bool);
-extern void gomp_unmap_vars_async (struct target_mem_desc *, bool,
-				   struct goacc_asyncqueue *);
+extern struct target_mem_desc *goacc_map_vars (struct gomp_device_descr *,
+					       struct goacc_asyncqueue *,
+					       size_t, void **, void **,
+					       size_t *, void *, bool,
+					       enum gomp_map_vars_kind);
+extern void goacc_unmap_vars (struct target_mem_desc *, bool,
+			      struct goacc_asyncqueue *);
 extern void gomp_init_device (struct gomp_device_descr *);
 extern bool gomp_fini_device (struct gomp_device_descr *);
 extern void gomp_unload_device (struct gomp_device_descr *);

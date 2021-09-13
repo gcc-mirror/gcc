@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,7 +56,7 @@ package Stringt is
    --------------------------------------
 
    procedure Initialize;
-   --  Initializes the strings table for a new compilation.
+   --  Initializes the strings table for a new compilation
 
    procedure Lock;
    --  Lock internal tables before calling back end

@@ -8,9 +8,10 @@
  */
 module core.sys.windows.exdisp;
 version (Windows):
+@system:
 
 import core.sys.windows.docobj, core.sys.windows.oaidl, core.sys.windows.ocidl;
-private import core.sys.windows.basetyps, core.sys.windows.windef, core.sys.windows.wtypes;
+import core.sys.windows.basetyps, core.sys.windows.windef, core.sys.windows.wtypes;
 
 
 enum BrowserNavConstants {

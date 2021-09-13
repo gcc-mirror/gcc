@@ -1,5 +1,5 @@
 /* GCC instrumentation plugin for ThreadSanitizer.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Dmitry Vyukov <dvyukov@google.com>
 
 This file is part of GCC.
@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "tree-cfg.h"
 #include "tree-iterator.h"
-#include "tree-ssa-propagate.h"
+#include "gimple-fold.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-eh.h"
 #include "tsan.h"

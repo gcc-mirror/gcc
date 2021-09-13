@@ -1,6 +1,6 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997-2020 Free Software Foundation, Inc.
+// Copyright (C) 1997-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -80,6 +80,8 @@
 //   _GLIBCXX_DEPRECATED_SUGGEST( string-literal )
 //   _GLIBCXX11_DEPRECATED
 //   _GLIBCXX11_DEPRECATED_SUGGEST( string-literal )
+//   _GLIBCXX14_DEPRECATED
+//   _GLIBCXX14_DEPRECATED_SUGGEST( string-literal )
 //   _GLIBCXX17_DEPRECATED
 //   _GLIBCXX17_DEPRECATED_SUGGEST( string-literal )
 //   _GLIBCXX20_DEPRECATED( string-literal )
@@ -103,6 +105,14 @@
 #else
 # define _GLIBCXX11_DEPRECATED
 # define _GLIBCXX11_DEPRECATED_SUGGEST(ALT)
+#endif
+
+#if defined(__DEPRECATED) && (__cplusplus >= 201403L)
+# define _GLIBCXX14_DEPRECATED _GLIBCXX_DEPRECATED
+# define _GLIBCXX14_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
+#else
+# define _GLIBCXX14_DEPRECATED
+# define _GLIBCXX14_DEPRECATED_SUGGEST(ALT)
 #endif
 
 #if defined(__DEPRECATED) && (__cplusplus >= 201703L)
@@ -425,9 +435,12 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // GLIBCXX_ABI Deprecated
 // Define if compatibility should be provided for -mlong-double-64.
 #undef _GLIBCXX_LONG_DOUBLE_COMPAT
+
 // Define if compatibility should be provided for alternative 128-bit long
-// double formats.
+// double formats. Not possible for Clang until __ibm128 is supported.
+#ifndef __clang__
 #undef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+#endif
 
 // Inline namespaces for long double 128 modes.
 #if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
@@ -484,9 +497,20 @@ namespace std
 # define _GLIBCXX_EXTERN_TEMPLATE -1
 #endif
 
+
+#if __has_builtin(__builtin_is_constant_evaluated)
+# define __glibcxx_constexpr_assert(cond) \
+  if (__builtin_is_constant_evaluated() && !bool(cond))	\
+    __builtin_unreachable() /* precondition violation detected! */
+#else
+# define __glibcxx_constexpr_assert(unevaluated)
+#endif
+
+
 // Assert.
 #if defined(_GLIBCXX_ASSERTIONS) \
   || defined(_GLIBCXX_PARALLEL) || defined(_GLIBCXX_PARALLEL_ASSERTIONS)
+# if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE
 namespace std
 {
   // Avoid the use of assert, because we're trying to keep the <cassert>
@@ -495,6 +519,7 @@ namespace std
   inline void
   __replacement_assert(const char* __file, int __line,
 		       const char* __function, const char* __condition)
+  _GLIBCXX_NOEXCEPT
   {
     __builtin_printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
 		     __function, __condition);
@@ -503,14 +528,27 @@ namespace std
 }
 #define __glibcxx_assert_impl(_Condition)			       \
   if (__builtin_expect(!bool(_Condition), false))		       \
+  {								       \
+    __glibcxx_constexpr_assert(false);				       \
     std::__replacement_assert(__FILE__, __LINE__, __PRETTY_FUNCTION__, \
-			      #_Condition)
+			      #_Condition);			       \
+  }
+# else // ! VERBOSE
+# define __glibcxx_assert_impl(_Condition)		\
+  if (__builtin_expect(!bool(_Condition), false))	\
+  {							\
+    __glibcxx_constexpr_assert(false);			\
+    __builtin_abort();					\
+  }
+#endif
 #endif
 
 #if defined(_GLIBCXX_ASSERTIONS)
-# define __glibcxx_assert_2(_Condition) __glibcxx_assert_impl(_Condition)
+# define __glibcxx_assert(cond) \
+  do { __glibcxx_assert_impl(cond); } while (false)
 #else
-# define __glibcxx_assert_2(_Condition)
+# define __glibcxx_assert(cond) \
+  do { __glibcxx_constexpr_assert(cond); } while (false)
 #endif
 
 // Macros for race detectors.
@@ -732,25 +770,6 @@ namespace std
 #endif
 
 #undef _GLIBCXX_HAS_BUILTIN
-
-#if _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED && __cplusplus >= 201402L
-# define __glibcxx_assert_1(_Condition)		\
-    if (__builtin_is_constant_evaluated())	\
-     {						\
-       void __failed_assertion();	\
-       if (!bool(_Condition))			\
-	 __failed_assertion();	\
-     }						\
-    else
-#else
-# define __glibcxx_assert_1(_Condition)
-#endif
-
-# define __glibcxx_assert(_Condition)	  \
-  do {					  \
-    __glibcxx_assert_1(_Condition)	  \
-    { __glibcxx_assert_2(_Condition); }   \
-  } while (false)
 
 
 // PSTL configuration

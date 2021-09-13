@@ -1,5 +1,5 @@
 /* intl.h - internationalization
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
 
    GCC is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -47,14 +47,18 @@ extern const char *fake_ngettext (const char *singular, const char *plural,
 
 #endif
 
+/* Used to immediately translate the argument.  */
 #ifndef _
 # define _(msgid) gettext (msgid)
 #endif
 
+/* Used to mark strings that will be translated later.  */
 #ifndef N_
 # define N_(msgid) msgid
 #endif
 
+/* Like N_, but for GCC diagnostic format strings.  See ABOUT-GCC-NLS for
+   details.  */
 #ifndef G_
 # define G_(gmsgid) gmsgid
 #endif

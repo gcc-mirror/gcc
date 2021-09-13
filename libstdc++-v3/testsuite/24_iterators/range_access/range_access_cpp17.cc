@@ -1,7 +1,6 @@
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
-// Copyright (C) 2017-2020 Free Software Foundation, Inc.
+// Copyright (C) 2017-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,6 +40,16 @@ test02()
   static int i[] = { 1, 2 };
   static_assert(std::distance(std::begin(i), std::end(i)) == 2);
   static_assert(std::distance(std::cbegin(i), std::cend(i)) == 2);
+
+  // LWG 2280
+  static_assert( noexcept(std::begin(i)),  "LWG 2280" );
+  static_assert( noexcept(std::end(i)),    "LWG 2280" );
+  static_assert( noexcept(std::cbegin(i)), "LWG 2280" );
+  static_assert( noexcept(std::cend(i)),   "LWG 2280" );
+
+  // LWG 3537
+  static_assert( noexcept(std::rbegin(i)),  "LWG 3537" );
+  static_assert( noexcept(std::rend(i)),    "LWG 3537" );
 }
 
 void
@@ -54,4 +63,8 @@ test03()
   static_assert(std::rend(il) == reverse_iterator<const int*>(il.begin()));
   static_assert(std::crbegin(il) == reverse_iterator<const int*>(il.end()));
   static_assert(std::crend(il) == reverse_iterator<const int*>(il.begin()));
+
+  // LWG 3537
+  static_assert( noexcept(std::rbegin(il)),  "LWG 3537" );
+  static_assert( noexcept(std::rend(il)),    "LWG 3537" );
 }

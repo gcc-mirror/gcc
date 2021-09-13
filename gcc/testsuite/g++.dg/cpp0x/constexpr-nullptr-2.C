@@ -163,7 +163,7 @@ constexpr const void *pv2 = pv0;
 constexpr void *pv3 = pv2;      // { dg-error "invalid conversion|not a constant expression" }
 constexpr const void *pv4 = pv2;
 
-constexpr X *px4 = pv0;	 // { dg-error "invalid conversion|not a constant expression" }
+constexpr X *px4 = pv0;	 // { dg-error "cast from|invalid conversion|not a constant expression" }
 
 }
 
@@ -226,7 +226,7 @@ constexpr A *pa3 = pd0;		   // { dg-error "ambiguous base" }
 constexpr A *pa4 = static_cast<A*>(pd0);  // { dg-error "ambiguous base" }
 
 constexpr B *pb1 = pa0;		   // { dg-error "invalid conversion|not a constant expression" }
-constexpr B *pb2 = static_cast<B*>(pa0);  // { dg-error "not a constant expression" }
+constexpr B *pb2 = static_cast<B*>(pa0);
 
 constexpr C *pc1 = pa0;		   // { dg-error "invalid conversion|not a constant expression" }
 constexpr D *pd1 = pa0;		   // { dg-error "ambiguous base|invalid conversion" }

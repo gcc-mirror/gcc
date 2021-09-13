@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -247,6 +247,17 @@ sanitize_flags_p (unsigned int flag, const_tree fn = current_function_decl)
     }
 
   return result_flags;
+}
+
+/* Return true when coverage sanitization should happend for FN function.  */
+
+static inline bool
+sanitize_coverage_p (const_tree fn = current_function_decl)
+{
+  return (flag_sanitize_coverage
+	  && (fn == NULL_TREE
+	      || lookup_attribute ("no_sanitize_coverage",
+				   DECL_ATTRIBUTES (fn)) == NULL_TREE));
 }
 
 #endif /* TREE_ASAN */

@@ -8,13 +8,14 @@
  */
 module core.sys.windows.wingdi;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "gdi32");
 
 // FIXME: clean up Windows version support
 
-private import core.sys.windows.w32api, core.sys.windows.windef, core.sys.windows.winver;
+import core.sys.windows.w32api, core.sys.windows.windef, core.sys.windows.winver;
 
 // BITMAPINFOHEADER.biCompression
 enum : DWORD {
@@ -2057,13 +2058,13 @@ struct RGBQUAD {
     BYTE rgbGreen;
     BYTE rgbRed;
     BYTE rgbReserved;
-};
+}
 alias RGBQUAD* LPRGBQUAD;
 
 struct BITMAPINFO {
     BITMAPINFOHEADER bmiHeader;
     RGBQUAD[1]       bmiColors;
-};
+}
 alias BITMAPINFO* PBITMAPINFO, LPBITMAPINFO;
 
 alias int FXPT16DOT16;

@@ -1,6 +1,6 @@
 /* Subroutines used to remove unnecessary doubleword swaps
    for p8 little-endian VSX code.
-   Copyright (C) 1991-2020 Free Software Foundation, Inc.
+   Copyright (C) 1991-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -250,6 +250,21 @@ union_uses (swap_web_entry *insn_entry, rtx insn, df_ref def)
     }
 }
 
+/* Return 1 iff PAT (a SINGLE_SET) is a rotate 64 bit expression; else return
+   0.  */
+
+static bool
+pattern_is_rotate64 (rtx pat)
+{
+  rtx rot = SET_SRC (pat);
+
+  if (GET_CODE (rot) == ROTATE && CONST_INT_P (XEXP (rot, 1))
+      && INTVAL (XEXP (rot, 1)) == 64)
+    return true;
+
+  return false;
+}
+
 /* Return 1 iff INSN is a load insn, including permuting loads that
    represent an lvxd2x instruction; else return 0.  */
 static unsigned int
@@ -264,6 +279,9 @@ insn_is_load_p (rtx insn)
 
       if (GET_CODE (SET_SRC (body)) == VEC_SELECT
 	  && MEM_P (XEXP (SET_SRC (body), 0)))
+	return 1;
+
+      if (pattern_is_rotate64 (body) && MEM_P (XEXP (SET_SRC (body), 0)))
 	return 1;
 
       return 0;
@@ -305,6 +323,8 @@ insn_is_swap_p (rtx insn)
   if (GET_CODE (body) != SET)
     return 0;
   rtx rhs = SET_SRC (body);
+  if (pattern_is_rotate64 (body))
+    return 1;
   if (GET_CODE (rhs) != VEC_SELECT)
     return 0;
   rtx parallel = XEXP (rhs, 1);
@@ -392,7 +412,8 @@ quad_aligned_load_p (swap_web_entry *insn_entry, rtx_insn *insn)
      false.  */
   rtx body = PATTERN (def_insn);
   if (GET_CODE (body) != SET
-      || GET_CODE (SET_SRC (body)) != VEC_SELECT
+      || !(GET_CODE (SET_SRC (body)) == VEC_SELECT
+	   || pattern_is_rotate64 (body))
       || !MEM_P (XEXP (SET_SRC (body), 0)))
     return false;
 
@@ -531,7 +552,8 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 	 false.  */
       rtx body = PATTERN (def_insn);
       if (GET_CODE (body) != SET
-	  || GET_CODE (SET_SRC (body)) != VEC_SELECT
+	  || !(GET_CODE (SET_SRC (body)) == VEC_SELECT
+	       || pattern_is_rotate64 (body))
 	  || !MEM_P (XEXP (SET_SRC (body), 0)))
 	return false;
 
@@ -1501,6 +1523,22 @@ replace_swap_with_copy (swap_web_entry *insn_entry, unsigned i)
   insn->set_deleted ();
 }
 
+/* INSN is known to contain a SUBREG, which we can normally handle,
+   but if the SUBREG itself contains a MULT then we need to leave it alone
+   to avoid turning a mult_hipart into a mult_lopart, for example.  */
+static bool
+has_part_mult (rtx_insn *insn)
+{
+  rtx body = PATTERN (insn);
+  if (GET_CODE (body) != SET)
+    return false;
+  rtx src = SET_SRC (body);
+  if (GET_CODE (src) != SUBREG)
+    return false;
+  rtx inner = XEXP (src, 0);
+  return (GET_CODE (inner) == MULT);
+}
+
 /* Make NEW_MEM_EXP's attributes and flags resemble those of
    ORIGINAL_MEM_EXP.  */
 static void
@@ -1732,7 +1770,8 @@ replace_swapped_aligned_load (swap_web_entry *insn_entry, rtx swap_insn)
      swap (indicated by code VEC_SELECT).  */
   rtx body = PATTERN (def_insn);
   gcc_assert ((GET_CODE (body) == SET)
-	      && (GET_CODE (SET_SRC (body)) == VEC_SELECT)
+	      && (GET_CODE (SET_SRC (body)) == VEC_SELECT
+		  || pattern_is_rotate64 (body))
 	      && MEM_P (XEXP (SET_SRC (body), 0)));
 
   rtx src_exp = XEXP (SET_SRC (body), 0);
@@ -2150,7 +2189,8 @@ recombine_lvx_pattern (rtx_insn *insn, del_info *to_delete)
 {
   rtx body = PATTERN (insn);
   gcc_assert (GET_CODE (body) == SET
-	      && GET_CODE (SET_SRC (body)) == VEC_SELECT
+	      && (GET_CODE (SET_SRC (body)) == VEC_SELECT
+		  || pattern_is_rotate64 (body))
 	      && MEM_P (XEXP (SET_SRC (body), 0)));
 
   rtx mem = XEXP (SET_SRC (body), 0);
@@ -2227,7 +2267,8 @@ recombine_stvx_pattern (rtx_insn *insn, del_info *to_delete)
   rtx body = PATTERN (insn);
   gcc_assert (GET_CODE (body) == SET
 	      && MEM_P (SET_DEST (body))
-	      && GET_CODE (SET_SRC (body)) == VEC_SELECT);
+	      && (GET_CODE (SET_SRC (body)) == VEC_SELECT
+		  || pattern_is_rotate64 (body)));
   rtx mem = SET_DEST (body);
   rtx base_reg = XEXP (mem, 0);
 
@@ -2476,6 +2517,9 @@ rs6000_analyze_swaps (function *fun)
 		    insn_entry[uid].is_swappable = 0;
 		  else if (special != SH_NONE)
 		    insn_entry[uid].special_handling = special;
+		  else if (insn_entry[uid].contains_subreg
+			   && has_part_mult (insn))
+		    insn_entry[uid].is_swappable = 0;
 		  else if (insn_entry[uid].contains_subreg)
 		    insn_entry[uid].special_handling = SH_SUBREG;
 		}

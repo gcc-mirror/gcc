@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2020, Free Software Foundation, Inc.           --
+--             Copyright (C) 2020-2021, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,8 +27,9 @@ with Types; use Types;
 
 package Exp_Put_Image is
 
-   --  Routines to build Put_Image calls. See Ada.Strings.Text_Output.Utils and
-   --  System.Put_Images for the run-time routines we are generating calls to.
+   --  Routines to build Put_Image calls. See Ada.Strings.Text_Buffers.Utils
+   --  and System.Put_Images for the run-time routines we are generating calls
+   --  to.
 
    --  For a call to T'Put_Image, if T is elementary, we expand the code
    --  inline. If T is a tagged type, then Put_Image is a primitive procedure
@@ -94,10 +95,10 @@ package Exp_Put_Image is
    --  to call T'Put_Image into a buffer and then extract the string from the
    --  buffer.
 
-   procedure Preload_Sink (Compilation_Unit : Node_Id);
-   --  Call RTE (RE_Sink) if necessary, to load the packages involved in
-   --  Put_Image. We need to do this explicitly, fairly early during
-   --  compilation, because otherwise it happens during freezing, which
+   procedure Preload_Root_Buffer_Type (Compilation_Unit : Node_Id);
+   --  Call RTE (RE_Root_Buffer_Type) if necessary, to load the packages
+   --  involved in Put_Image. We need to do this explicitly, fairly early
+   --  during compilation, because otherwise it happens during freezing, which
    --  triggers visibility bugs in generic instantiations.
 
 end Exp_Put_Image;

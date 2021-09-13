@@ -3,10 +3,13 @@ struct coro1 {
   struct promise_type {
 
   promise_type () : vv(-1) {  PRINT ("Promise def. CTOR"); }
-  promise_type (int __x) : vv(__x) {  PRINTF ("Created Promise with %d\n",__x); }
+  promise_type (int __x) : vv(__x) {  PRINTF ("promise_type1 with %d\n",__x); }
   promise_type (int __x, int& __y, int&& __z)
     : vv(__x), v2(__y), v3(__z)
-    {  PRINTF ("Created Promise with %d, %d, %d\n", __x, __y, __z); }
+    {  PRINTF ("promise_type2 with %d, %d, %d\n", __x, __y, __z); }
+  promise_type (int __x, int& __y, int& __z)
+    : vv(__x), v2(__y), v3(__z)
+    {  PRINTF ("promise_type3 with %d, %d, %d\n", __x, __y, __z); }
 
   ~promise_type() { PRINT ("Destroyed Promise"); }
 
@@ -19,7 +22,7 @@ struct coro1 {
     PRINT ("get initial_suspend (always)");
     return suspend_always_prt{};
   }
-  auto final_suspend () {
+  auto final_suspend () noexcept {
     PRINT ("get final_suspend (always)");
     return suspend_always_prt{};
   }

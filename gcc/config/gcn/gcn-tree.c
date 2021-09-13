@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
    
@@ -548,13 +548,40 @@ gcn_goacc_reduction (gcall *call)
     }
 }
 
-/* Implement TARGET_GOACC_ADJUST_PROPAGATION_RECORD.
- 
-   Tweak (worker) propagation record, e.g. to put it in shared memory.  */
+tree
+gcn_goacc_adjust_private_decl (location_t, tree var, int level)
+{
+  if (level != GOMP_DIM_GANG)
+    return var;
+
+  tree type = TREE_TYPE (var);
+  tree lds_type = build_qualified_type (type,
+		    TYPE_QUALS_NO_ADDR_SPACE (type)
+		    | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_LDS));
+  machine_function *machfun = cfun->machine;
+
+  TREE_TYPE (var) = lds_type;
+  TREE_STATIC (var) = 1;
+
+  /* We're making VAR static.  We have to mangle the name to avoid collisions
+     between different local variables that share the same names.  */
+  lhd_set_decl_assembler_name (var);
+
+  varpool_node::finalize_decl (var);
+
+  if (machfun)
+    machfun->use_flat_addressing = true;
+
+  return var;
+}
+
+/* Implement TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD.
+
+   Create OpenACC worker state propagation record in shared memory.  */
 
 tree
-gcn_goacc_adjust_propagation_record (tree record_type, bool sender,
-				     const char *name)
+gcn_goacc_create_worker_broadcast_record (tree record_type, bool sender,
+					  const char *name)
 {
   tree type = record_type;
 
@@ -575,28 +602,6 @@ gcn_goacc_adjust_propagation_record (tree record_type, bool sender,
     varpool_node::finalize_decl (decl);
 
   return decl;
-}
-
-void
-gcn_goacc_adjust_gangprivate_decl (tree var)
-{
-  tree type = TREE_TYPE (var);
-  tree lds_type = build_qualified_type (type,
-		    TYPE_QUALS_NO_ADDR_SPACE (type)
-		    | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_LDS));
-  machine_function *machfun = cfun->machine;
-
-  TREE_TYPE (var) = lds_type;
-  TREE_STATIC (var) = 1;
-
-  /* We're making VAR static.  We have to mangle the name to avoid collisions
-     between different local variables that share the same names.  */
-  lhd_set_decl_assembler_name (var);
-
-  varpool_node::finalize_decl (var);
-
-  if (machfun)
-    machfun->use_flat_addressing = true;
 }
 
 /* }}}  */

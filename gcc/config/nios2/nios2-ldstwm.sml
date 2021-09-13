@@ -1,5 +1,5 @@
 (* Auto-generate Nios II R2 CDX ldwm/stwm/push.n/pop.n patterns
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Contributed by Mentor Graphics.
 
    This file is part of GCC.
@@ -233,7 +233,7 @@ print
  "   This file was automatically generated using nios2-ldstwm.sml.\n" ^
  "   Please do not edit manually.\n" ^
  "\n" ^
- "   Copyright (C) 2014-2020 Free Software Foundation, Inc.\n" ^
+ "   Copyright (C) 2014-2021 Free Software Foundation, Inc.\n" ^
  "   Contributed by Mentor Graphics.\n" ^
  "\n" ^
  "   This file is part of GCC.\n" ^

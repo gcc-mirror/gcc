@@ -56,7 +56,7 @@ struct r_debug
     int             r_version;
     link_map*       r_map;
     void function(r_debug*, link_map*) r_brk;
-};
+}
 
 struct dl_phdr_info
 {
@@ -68,7 +68,7 @@ struct dl_phdr_info
     uint64_t        dlpi_subs;
     size_t          dlpi_tls_modid;
     void*           dlpi_tls_data;
-};
+}
 
 
 private alias extern(C) int function(dl_phdr_info*, size_t, void *) dl_iterate_phdr_cb;

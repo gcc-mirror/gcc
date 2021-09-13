@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
 This file is part of GCC.
@@ -183,6 +183,19 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 	}
     }
 
+  if (start < 0)
+    {
+      gfc_error ("Substring start index at %L is less than one",
+		 &ref->u.ss.start->where);
+      return NULL;
+    }
+  if (end > init->value.character.length)
+    {
+      gfc_error ("Substring end index at %L exceeds the string length",
+		 &ref->u.ss.end->where);
+      return NULL;
+    }
+
   if (rvalue->ts.type == BT_HOLLERITH)
     {
       for (size_t i = 0; i < (size_t) len; i++)
@@ -231,6 +244,13 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 		    "array-element nor a scalar-structure-component";
 
   symbol = lvalue->symtree->n.sym;
+  if (symbol->attr.flavor == FL_PARAMETER)
+    {
+      gfc_error ("PARAMETER %qs shall not appear in a DATA statement at %L",
+		 symbol->name, &lvalue->where);
+      return false;
+    }
+
   init = symbol->value;
   last_ts = &symbol->ts;
   last_con = NULL;
@@ -575,7 +595,12 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
       /* An initializer has to be constant.  */
       if (lvalue->ts.u.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
 	return false;
+      if (lvalue->ts.u.cl->length
+	  && lvalue->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+	return false;
       expr = create_character_initializer (init, last_ts, ref, rvalue);
+      if (!expr)
+	return false;
     }
   else
     {

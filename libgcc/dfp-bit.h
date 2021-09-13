@@ -1,5 +1,5 @@
 /* Header file for dfp-bit.c.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -241,6 +241,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #elif defined (L_sd_to_tf) || defined (L_dd_to_tf) || defined (L_td_to_tf) \
  ||   defined (L_tf_to_sd) || defined (L_tf_to_dd) || defined (L_tf_to_td)
 #define BFP_KIND 4
+#elif defined (L_sd_to_kf) || defined (L_dd_to_kf) || defined (L_td_to_kf) \
+ ||   defined (L_kf_to_sd) || defined (L_kf_to_dd) || defined (L_kf_to_td)
+#define BFP_KIND 5
 #endif
 
 /*  If BFP_KIND is defined, define additional macros:
@@ -290,6 +293,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STR_TO_BFP strtold
 #define BFP_VIA_TYPE long double
 #endif /* LONG_DOUBLE_HAS_TF_MODE */
+
+#elif BFP_KIND == 5
+#define BFP_TYPE _Float128
+#define BFP_FMT "%.36Le"
+#define BFP_VIA_TYPE _Float128
+#define STR_TO_BFP __strtoieee128
+extern _Float128 __strtoieee128 (const char *, char **);
 
 #endif /* BFP_KIND */
 
@@ -490,6 +500,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #elif BFP_KIND == 4
 #define BFP_TO_DFP	DPD_BID_NAME(__dpd_trunctfsd,__bid_trunctfsd)
 #define DFP_TO_BFP	DPD_BID_NAME(__dpd_extendsdtf,__bid_extendsdtf)
+#elif BFP_KIND == 5
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_trunckfsd,__bid_trunckfsd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_extendsdkf,__bid_extendsdkf)
 #endif /* BFP_KIND */
 
 #elif WIDTH == 64
@@ -505,6 +518,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #elif BFP_KIND == 4
 #define BFP_TO_DFP	DPD_BID_NAME(__dpd_trunctfdd,__bid_trunctfdd)
 #define DFP_TO_BFP	DPD_BID_NAME(__dpd_extendddtf,__bid_extendddtf)
+#elif BFP_KIND == 5
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_trunckfdd,__bid_trunckfdd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_extendddkf,__bid_extendddkf)
 #endif /* BFP_KIND */
 
 #elif WIDTH == 128
@@ -520,6 +536,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #elif BFP_KIND == 4
 #define BFP_TO_DFP	DPD_BID_NAME(__dpd_extendtftd,__bid_extendtftd)
 #define DFP_TO_BFP	DPD_BID_NAME(__dpd_trunctdtf,__bid_trunctdtf)
+#elif BFP_KIND == 5
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_extendkftd,__bid_extendkftd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_trunctdkf,__bid_trunctdkf)
 #endif /* BFP_KIND */
 
 #endif /* WIDTH */
@@ -609,6 +628,7 @@ extern DFP_C_TYPE INT_TO_DFP (INT_TYPE);
 
 #if defined (L_sd_to_sf) || defined (L_dd_to_sf) || defined (L_td_to_sf) \
  || defined (L_sd_to_df) || defined (L_dd_to_df) || defined (L_td_to_df) \
+ || defined (L_sd_to_kf) || defined (L_dd_to_kf) || defined (L_td_to_kf) \
  || ((defined (L_sd_to_xf) || defined (L_dd_to_xf) || defined (L_td_to_xf)) \
      && LONG_DOUBLE_HAS_XF_MODE) \
  || ((defined (L_sd_to_tf) || defined (L_dd_to_tf) || defined (L_td_to_tf)) \
@@ -623,6 +643,12 @@ extern BFP_TYPE DFP_TO_BFP (DFP_C_TYPE);
  || ((defined (L_tf_to_sd) || defined (L_tf_to_dd) || defined (L_tf_to_td)) \
      && LONG_DOUBLE_HAS_TF_MODE)
 extern DFP_C_TYPE BFP_TO_DFP (BFP_TYPE);
+#define BFP_SPRINTF sprintf
+
+#elif defined (L_kf_to_sd) || defined (L_kf_to_dd) || defined (L_kf_to_td)
+extern DFP_C_TYPE BFP_TO_DFP (BFP_TYPE);
+extern int __sprintfieee128 (char *restrict, const char *restrict, ...);
+#define BFP_SPRINTF __sprintfieee128
 #endif
 
 #endif /* _DFPBIT_H */

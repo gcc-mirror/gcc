@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@ test01()
 	ranges::sort(v);
 
 	test_range<int, bidirectional_iterator_wrapper> rz(v.data(), v.data()+i+j);
-	auto result = ranges::inplace_merge(rz, next(ranges::begin(rz), i));
+	auto result = ranges::inplace_merge(rz, ranges::next(ranges::begin(rz), i));
 	VERIFY( result == rz.end() );
 
 	VERIFY( ranges::is_sorted(rz) );

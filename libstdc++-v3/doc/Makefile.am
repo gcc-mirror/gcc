@@ -1,6 +1,6 @@
 ## Makefile for the doc subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2008-2020 Free Software Foundation, Inc.
+## Copyright (C) 2008-2021 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -226,10 +226,10 @@ ${doxygen_outdir}/man:
 	mkdir -p ${doxygen_outdir}/man
 
 stamp-xml-doxygen: ${doxygen_outdir}/xml
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	@builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doxygen_script} \
-	  --host_alias=${host_alias} --mode=xml $${srcdir} $${builddir} NO)
+	  --host_alias=${host_alias} --mode=xml \
+	  "${top_srcdir}" "$${builddir}" NO || true
 	$(STAMP) stamp-xml-doxygen
 
 stamp-xml-single-doxygen: stamp-xml-doxygen
@@ -239,43 +239,45 @@ stamp-xml-single-doxygen: stamp-xml-doxygen
 	$(STAMP) stamp-xml-single-doxygen
 
 stamp-html-doxygen: ${doxygen_outdir}/html
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	@builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doxygen_script} \
-	  --host_alias=${host_alias} --mode=html $${srcdir} $${builddir} YES)
+	  --host_alias=${host_alias} --mode=html \
+	  "${top_srcdir}" "$${builddir}" YES || true
 	$(STAMP) stamp-html-doxygen
 
 stamp-latex-doxygen: ${doxygen_outdir}/latex
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	@builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doxygen_script} \
-	  --host_alias=${host_alias} --mode=latex $${srcdir} $${builddir} NO)
+	  --host_alias=${host_alias} --mode=latex --latex_cmd=$(LATEX_CMD) \
+	  "${top_srcdir}" "$${builddir}" NO || true
 	$(STAMP) stamp-latex-doxygen
 
 # Chance of loooooonnggg creation time on this rule.  Iff this fails,
 # look at refman.log and see if TeX's memory is exhausted. Symptoms
 # include asking a wizard to enlarge capacity. If this is the case,
 # find texmf.cnf and add a zero for pool_size, string_vacancies,
-# max_strings, and pool_free values.
+# max_strings, and pool_free values. A much simpler workaround is to
+# install lualatex and set LATEX_CMD=lualatex when running make.
 # Errors like "File `foo.sty' not found" mean a TeX package is missing.
 stamp-pdf-doxygen: stamp-latex-doxygen ${doxygen_outdir}/pdf
-	-(cd ${doxygen_outdir}/latex && $(MAKE) -i pdf;)
-	echo "Generating doxygen pdf file...";
-	if [ -f ${doxygen_pdf} ]; then \
+	@echo "Generating doxygen pdf file...";
+	-$(MAKE) -C ${doxygen_outdir}/latex -i pdf
+	@if [ -f ${doxygen_pdf} ]; then \
 	  mv ${doxygen_pdf} ${api_pdf} ; \
 	  echo ":: PDF file is ${api_pdf}"; \
 	else \
 	  echo "... error"; \
 	  grep -F 'LaTeX Error' ${doxygen_outdir}/latex/refman.log; \
+	  grep -F 'TeX capacity exceeded, sorry' ${doxygen_outdir}/latex/refman.log; \
 	  exit 12; \
 	fi
 	$(STAMP) stamp-pdf-doxygen
 
 stamp-man-doxygen: ${doxygen_outdir}/man
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	@builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doxygen_script} \
-	  --host_alias=${host_alias} --mode=man $${srcdir} $${builddir} YES)
+	  --host_alias=${host_alias} --mode=man \
+	  "${top_srcdir}" "$${builddir}" YES || true
 	$(STAMP) stamp-man-doxygen
 
 doc-xml-doxygen: stamp-xml-doxygen

@@ -1,10 +1,10 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target R_flag_in_section } */
-/* { dg-final { scan-assembler ".text.*,\"axR\"" } } */
-/* { dg-final { scan-assembler ".bss.*,\"awR\"" } } */
-/* { dg-final { scan-assembler ".data.*,\"awR\"" } } */
-/* { dg-final { scan-assembler ".rodata.*,\"aR\"" } } */
-/* { dg-final { scan-assembler ".data.used_foo_sec,\"awR\"" } } */
+/* { dg-final { scan-assembler-not ".text.*,\"axR\"" } } */
+/* { dg-final { scan-assembler-not ".bss.*,\"awR\"" } } */
+/* { dg-final { scan-assembler-not ".data.*,\"awR\"" } } */
+/* { dg-final { scan-assembler-not ".rodata.*,\"aR\"" } } */
+/* { dg-final { scan-assembler-not ".data.used_foo_sec,\"awR\"" } } */
 
 void __attribute__((used)) used_fn (void) { }
 void unused_fn (void) { }

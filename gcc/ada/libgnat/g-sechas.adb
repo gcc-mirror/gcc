@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ package body GNAT.Secure_Hashes is
                  "0123456789abcdef";
 
    type Fill_Buffer_Access is
-     access procedure
+     not null access procedure
        (M     : in out Message_State;
         SEA   : Stream_Element_Array;
         First : Stream_Element_Offset;

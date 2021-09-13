@@ -1,6 +1,6 @@
 // <max_size_type.h> -*- C++ -*-
 
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file bits/max_size_type.h.
+/** @file bits/max_size_type.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{iterator}
  */
@@ -71,7 +71,8 @@ namespace ranges
       __max_size_type(const __max_diff_type& __d) noexcept;
 
       template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
-	constexpr explicit operator _Tp() const noexcept
+	constexpr explicit
+	operator _Tp() const noexcept
 	{ return _M_val; }
 
       constexpr explicit
@@ -89,6 +90,30 @@ namespace ranges
       constexpr __max_size_type
       operator-() const noexcept
       { return operator~() + 1; }
+
+      constexpr __max_size_type&
+      operator++() noexcept
+      { return *this += 1; }
+
+      constexpr __max_size_type
+      operator++(int) noexcept
+      {
+	auto __tmp = *this;
+	++*this;
+	return __tmp;
+      }
+
+      constexpr __max_size_type&
+      operator--() noexcept
+      { return *this -= 1; }
+
+      constexpr __max_size_type
+      operator--(int) noexcept
+      {
+	auto __tmp = *this;
+	--*this;
+	return __tmp;
+      }
 
       constexpr __max_size_type&
       operator+=(const __max_size_type& __r) noexcept
@@ -355,6 +380,16 @@ namespace ranges
       operator==(const __max_size_type& __l, const __max_size_type& __r) noexcept
       { return __l._M_val == __r._M_val && __l._M_msb == __r._M_msb; }
 
+#if __cpp_lib_three_way_comparison
+      friend constexpr strong_ordering
+      operator<=>(const __max_size_type& __l, const __max_size_type& __r) noexcept
+      {
+	if (__l._M_msb ^ __r._M_msb)
+	  return __l._M_msb ? strong_ordering::greater : strong_ordering::less;
+	else
+	  return __l._M_val <=> __r._M_val;
+      }
+#else
       friend constexpr bool
       operator!=(const __max_size_type& __l, const __max_size_type& __r) noexcept
       { return !(__l == __r); }
@@ -379,8 +414,10 @@ namespace ranges
       friend constexpr bool
       operator>=(const __max_size_type& __l, const __max_size_type& __r) noexcept
       { return __r <= __l; }
+#endif
 
 #if __SIZEOF_INT128__
+      __extension__
       using __rep = unsigned __int128;
 #else
       using __rep = unsigned long long;
@@ -417,7 +454,8 @@ namespace ranges
       { }
 
       template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
-	constexpr explicit operator _Tp() const noexcept
+	constexpr explicit
+	operator _Tp() const noexcept
 	{ return static_cast<_Tp>(_M_rep); }
 
       constexpr explicit
@@ -435,6 +473,30 @@ namespace ranges
       constexpr __max_diff_type
       operator~() const noexcept
       { return __max_diff_type(~_M_rep); }
+
+      constexpr __max_diff_type&
+      operator++() noexcept
+      { return *this += 1; }
+
+      constexpr __max_diff_type
+      operator++(int) noexcept
+      {
+	auto __tmp = *this;
+	++*this;
+	return __tmp;
+      }
+
+      constexpr __max_diff_type&
+      operator--() noexcept
+      { return *this -= 1; }
+
+      constexpr __max_diff_type
+      operator--(int) noexcept
+      {
+	auto __tmp = *this;
+	--*this;
+	return __tmp;
+      }
 
       constexpr __max_diff_type&
       operator+=(const __max_diff_type& __r) noexcept
@@ -647,6 +709,18 @@ namespace ranges
       operator==(const __max_diff_type& __l, const __max_diff_type& __r) noexcept
       { return __l._M_rep == __r._M_rep; }
 
+#if __cpp_lib_three_way_comparison
+      constexpr strong_ordering
+      operator<=>(const __max_diff_type& __r) const noexcept
+      {
+	const auto __lsign = _M_rep._M_msb;
+	const auto __rsign = __r._M_rep._M_msb;
+	if (__lsign ^ __rsign)
+	  return __lsign ? strong_ordering::less : strong_ordering::greater;
+	else
+	  return _M_rep <=> __r._M_rep;
+      }
+#else
       friend constexpr bool
       operator!=(const __max_diff_type& __l, const __max_diff_type& __r) noexcept
       { return !(__l == __r); }
@@ -673,6 +747,7 @@ namespace ranges
       friend constexpr bool
       operator>=(const __max_diff_type& __l, const __max_diff_type& __r) noexcept
       { return !(__l < __r); }
+#endif
 
     private:
       __max_size_type _M_rep = 0;
@@ -696,14 +771,8 @@ namespace ranges
       static constexpr bool is_signed = false;
       static constexpr bool is_integer = true;
       static constexpr bool is_exact = true;
-#if __SIZEOF_INT128__
-      static_assert(same_as<_Sp::__rep, unsigned __int128>);
-      static constexpr int digits = 129;
-#else
-      static_assert(same_as<_Sp::__rep, unsigned long long>);
       static constexpr int digits
-	= __gnu_cxx::__int_traits<unsigned long long>::__digits + 1;
-#endif
+	= __gnu_cxx::__int_traits<_Sp::__rep>::__digits + 1;
       static constexpr int digits10
 	= static_cast<int>(digits * numbers::ln2 / numbers::ln10);
 

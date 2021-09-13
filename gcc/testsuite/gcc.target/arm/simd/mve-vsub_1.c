@@ -5,52 +5,25 @@
 
 #include <stdint.h>
 
-void test_vsub_i32 (int32_t * dest, int32_t * a, int32_t * b) {
-  int i;
-  for (i=0; i<4; i++) {
-    dest[i] = a[i] - b[i];
-  }
+#define FUNC(SIGN, TYPE, BITS, NB, OP, NAME)				\
+  void test_ ## NAME ##_ ## SIGN ## BITS ## x ## NB (TYPE##BITS##_t * __restrict__ dest, \
+						     TYPE##BITS##_t *a, TYPE##BITS##_t *b) { \
+    int i;								\
+    for (i=0; i<NB; i++) {						\
+      dest[i] = a[i] OP b[i];						\
+    }									\
 }
 
-void test_vsub_i32_u (uint32_t * dest, uint32_t * a, uint32_t * b) {
-  int i;
-  for (i=0; i<4; i++) {
-    dest[i] = a[i] - b[i];
-  }
-}
+/* 128-bit vectors.  */
+FUNC(s, int, 32, 4, -, vsub)
+FUNC(u, uint, 32, 4, -, vsub)
+FUNC(s, int, 16, 8, -, vsub)
+FUNC(u, uint, 16, 8, -, vsub)
+FUNC(s, int, 8, 16, -, vsub)
+FUNC(u, uint, 8, 16, -, vsub)
 
 /* { dg-final { scan-assembler-times {vsub\.i32\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } } */
-
-void test_vsub_i16 (int16_t * dest, int16_t * a, int16_t * b) {
-  int i;
-  for (i=0; i<8; i++) {
-    dest[i] = a[i] - b[i];
-  }
-}
-
-void test_vsub_i16_u (uint16_t * dest, uint16_t * a, uint16_t * b) {
-  int i;
-  for (i=0; i<8; i++) {
-    dest[i] = a[i] - b[i];
-  }
-}
-
 /* { dg-final { scan-assembler-times {vsub\.i16\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } } */
-
-void test_vsub_i8 (int8_t * dest, int8_t * a, int8_t * b) {
-  int i;
-  for (i=0; i<16; i++) {
-    dest[i] = a[i] - b[i];
-  }
-}
-
-void test_vsub_i8_u (uint8_t * dest, uint8_t * a, uint8_t * b) {
-  int i;
-  for (i=0; i<16; i++) {
-    dest[i] = a[i] - b[i];
-  }
-}
-
 /* { dg-final { scan-assembler-times {vsub\.i8\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } } */
 
 void test_vsub_f32 (float * dest, float * a, float * b) {
@@ -59,6 +32,15 @@ void test_vsub_f32 (float * dest, float * a, float * b) {
     dest[i] = a[i] - b[i];
   }
 }
-
 /* { dg-final { scan-assembler-times {vsub\.f32\tq[0-9]+, q[0-9]+, q[0-9]+} 1 } } */
+
+
+void test_vsub_f16 (__fp16 * dest, __fp16 * a, __fp16 * b) {
+  int i;
+  for (i=0; i<8; i++) {
+    dest[i] = a[i] - b[i];
+  }
+}
+
+/* { dg-final { scan-assembler-times {vsub\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 1 } } */
 

@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2020 Free Software Foundation, Inc.
+   Copyright (C) 1990-2021 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "auto-profile.h"
 #include "profile.h"
 #include "diagnostic.h"
+#include "varasm.h"
 
 #include "gcov-io.c"
 
@@ -145,7 +146,7 @@ tree
 get_gcov_type (void)
 {
   scalar_int_mode mode
-    = smallest_int_mode_for_size (LONG_LONG_TYPE_SIZE > 32 ? 64 : 32);
+    = smallest_int_mode_for_size (targetm.gcov_type_size ());
   return lang_hooks.types.type_for_mode (mode, false);
 }
 
@@ -488,9 +489,9 @@ coverage_checksum_string (unsigned chksum, const char *string)
   for (i = 0; string[i]; i++)
     {
       int offset = 0;
-      if (!strncmp (string + i, "_GLOBAL__N_", 11))
+      if (startswith (string + i, "_GLOBAL__N_"))
       offset = 11;
-      if (!strncmp (string + i, "_GLOBAL__", 9))
+      if (startswith (string + i, "_GLOBAL__"))
       offset = 9;
 
       /* C++ namespaces do have scheme:
@@ -622,18 +623,16 @@ coverage_compute_cfg_checksum (struct function *fn)
 int
 coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
 {
-  expanded_location xloc;
-  unsigned long offset;
-
   /* We don't need to output .gcno file unless we're under -ftest-coverage
      (e.g. -fprofile-arcs/generate/use don't need .gcno to work). */
   if (no_coverage || !bbg_file_name)
     return 0;
 
-  xloc = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
+  expanded_location startloc
+    = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
 
   /* Announce function */
-  offset = gcov_write_tag (GCOV_TAG_FUNCTION);
+  unsigned long offset = gcov_write_tag (GCOV_TAG_FUNCTION);
   if (param_profile_func_internal_id)
     gcov_write_unsigned (current_function_funcdef_no + 1);
   else
@@ -650,16 +649,27 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl)
 		       && !DECL_FUNCTION_VERSIONED (current_function_decl)
 		       && !DECL_LAMBDA_FUNCTION_P (current_function_decl));
-  gcov_write_filename (xloc.file);
-  gcov_write_unsigned (xloc.line);
-  gcov_write_unsigned (xloc.column);
+  gcov_write_filename (startloc.file);
+  gcov_write_unsigned (startloc.line);
+  gcov_write_unsigned (startloc.column);
 
   expanded_location endloc = expand_location (cfun->function_end_locus);
 
   /* Function can start in a single file and end in another one.  */
-  int end_line = endloc.file == xloc.file ? endloc.line : xloc.line;
-  int end_column = endloc.file == xloc.file ? endloc.column: xloc.column;
-  gcc_assert (xloc.line <= end_line);
+  int end_line
+    = endloc.file == startloc.file ? endloc.line : startloc.line;
+  int end_column
+    = endloc.file == startloc.file ? endloc.column: startloc.column;
+
+  if (startloc.line > end_line)
+    {
+      warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		  OPT_Wcoverage_invalid_line_number,
+		  "function starts on a higher line number than it ends");
+      end_line = startloc.line;
+      end_column = startloc.column;
+    }
+
   gcov_write_unsigned (end_line);
   gcov_write_unsigned (end_column);
   gcov_write_length (offset);
@@ -1112,6 +1122,7 @@ build_gcov_info_var_registration (tree gcov_info_type)
   DECL_NAME (var) = get_identifier (name_buf);
   get_section (profile_info_section, SECTION_UNNAMED, NULL);
   set_decl_section_name (var, profile_info_section);
+  mark_decl_referenced (var);
   DECL_INITIAL (var) = build_fold_addr_expr (gcov_info_var);
   varpool_node::finalize_decl (var);
 }
@@ -1256,8 +1267,7 @@ coverage_init (const char *filename)
 	  filename = concat (getpwd (), separator, filename, NULL);
 	  if (profile_prefix_path)
 	    {
-	      if (!strncmp (filename, profile_prefix_path,
-			    strlen (profile_prefix_path)))
+	      if (startswith (filename, profile_prefix_path))
 		{
 		  filename += strlen (profile_prefix_path);
 		  while (*filename == *separator)

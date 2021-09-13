@@ -1,5 +1,5 @@
 /* d-system.h -- DMD frontend inclusion of gcc header files.
- * Copyright (C) 2018-2020 Free Software Foundation, Inc.
+ * Copyright (C) 2018-2021 Free Software Foundation, Inc.
  *
  * GCC is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,11 @@
 #ifndef GCC_D_SYSTEM_H
 #define GCC_D_SYSTEM_H
 
+#ifdef GENERATOR_FILE
+#include "bconfig.h"
+#else
 #include "config.h"
+#endif
 #include "system.h"
 
 /* Used by the dmd front-end to determine if we have POSIX-style IO.  */

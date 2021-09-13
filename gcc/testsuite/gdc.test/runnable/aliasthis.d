@@ -1,3 +1,29 @@
+/*
+TEST_OUTPUT:
+---
+false
+[] = int
+[] = string
+[0] = int
+[1] = string
+[] = string
+[] = int
+[1] = string
+[0] = int
+---
+
+RUN_OUTPUT:
+---
+1 1.1
+ctor
+cpctor
+dtor
+cpctor
+dtor
+dtor
+Success
+---
+*/
 
 extern (C) int printf(const(char*) fmt, ...);
 import core.vararg;
@@ -551,7 +577,7 @@ void test2781()
     }
 
     eval = 0;
-    foreach (i, e; tup(tup((eval++, 10), 3.14), tup("str", [1,2])))
+    foreach (i, e; tup(tup((){eval++; return 10;}(), 3.14), tup("str", [1,2])))
     {
         static if (i == 0) assert(e == tup(10, 3.14));
         static if (i == 1) assert(e == tup("str", [1,2]));
@@ -559,7 +585,7 @@ void test2781()
     assert(eval == 1);
 
     eval = 0;
-    foreach (i, e; tup((eval++,10), tup(3.14, tup("str", tup([1,2])))))
+    foreach (i, e; tup((){eval++; return 10;}(), tup(3.14, tup("str", tup([1,2])))))
     {
         static if (i == 0) assert(e == 10);
         static if (i == 1) assert(e == tup(3.14, tup("str", tup([1,2]))));
@@ -836,7 +862,7 @@ void test6369c()
 void test6369d()
 {
     int eval = 0;
-    Seq!(int, string) t = tup((++eval, 10), "str");
+    Seq!(int, string) t = tup((){++eval; return 10;}(), "str");
     assert(eval == 1);
     assert(t[0] == 10);
     assert(t[1] == "str");

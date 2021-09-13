@@ -22,10 +22,23 @@ fp128_softfp_static_obj	= $(addsuffix -sw$(objext),$(fp128_softfp_funcs))
 fp128_softfp_shared_obj	= $(addsuffix -sw_s$(objext),$(fp128_softfp_funcs))
 fp128_softfp_obj	= $(fp128_softfp_static_obj) $(fp128_softfp_shared_obj)
 
+# Decimal <-> _Float128 conversions
+fp128_dec_funcs		= _kf_to_sd _kf_to_dd _kf_to_td \
+			  _sd_to_kf _dd_to_kf _td_to_kf
+
+# Decimal <-> __ibm128 conversions
+ibm128_dec_funcs	= _tf_to_sd _tf_to_dd _tf_to_td \
+			  _sd_to_tf _dd_to_tf _td_to_tf
+
 # New functions for software emulation
-fp128_ppc_funcs		= floattikf floatuntikf fixkfti fixunskfti \
+fp128_ppc_funcs		= floattikf-sw floatuntikf-sw \
+			  fixkfti-sw fixunskfti-sw \
 			  extendkftf2-sw trunctfkf2-sw \
 			  sfp-exceptions _mulkc3 _divkc3 _powikf2
+
+ifeq ($(decimal_float),yes)
+fp128_ppc_funcs        += $(fp128_dec_funcs)
+endif
 
 fp128_ppc_src		= $(addprefix $(srcdir)/config/rs6000/,$(addsuffix \
 				.c,$(fp128_ppc_funcs)))
@@ -35,13 +48,16 @@ fp128_ppc_obj		= $(fp128_ppc_static_obj) $(fp128_ppc_shared_obj)
 
 # All functions
 fp128_funcs		= $(fp128_softfp_funcs) $(fp128_ppc_funcs) \
-			  $(fp128_hw_funcs) $(fp128_ifunc_funcs)
+			  $(fp128_hw_funcs) $(fp128_ifunc_funcs) \
+			  $(fp128_3_1_hw_funcs)
 
 fp128_src		= $(fp128_softfp_src) $(fp128_ppc_src) \
-			  $(fp128_hw_src) $(fp128_ifunc_src)
+			  $(fp128_hw_src) $(fp128_ifunc_src) \
+			  $(fp128_3_1_hw_src)
 
 fp128_obj		= $(fp128_softfp_obj) $(fp128_ppc_obj) \
-			  $(fp128_hw_obj) $(fp128_ifunc_obj)
+			  $(fp128_hw_obj) $(fp128_ifunc_obj) \
+			  $(fp128_3_1_hw_obj)
 
 fp128_sed		= $(srcdir)/config/rs6000/float128-sed$(fp128_sed_hw)
 fp128_dep		= $(fp128_sed) $(srcdir)/config/rs6000/t-float128
@@ -68,6 +84,21 @@ $(fp128_softfp_obj)	 : INTERNAL_CFLAGS += $(FP128_CFLAGS_SW)
 $(fp128_ppc_obj)	 : INTERNAL_CFLAGS += $(FP128_CFLAGS_SW)
 $(fp128_obj)		 : $(fp128_includes)
 $(fp128_obj)		 : $(srcdir)/config/rs6000/quad-float128.h
+
+# Force the TF mode to/from decimal functions to be compiled with IBM long
+# double.  Add building the KF mode to/from decimal conversions with explict
+# IEEE long double.
+fp128_dec_objs		= $(addsuffix $(objext),$(fp128_dec_funcs)) \
+			  $(addsuffix _s$(objext),$(fp128_dec_funcs))
+
+ibm128_dec_objs		= $(addsuffix $(objext),$(ibm128_dec_funcs)) \
+			  $(addsuffix _s$(objext),$(ibm128_dec_funcs))
+
+FP128_CFLAGS_DECIMAL	= -mno-gnu-attribute -Wno-psabi -mabi=ieeelongdouble
+IBM128_CFLAGS_DECIMAL	= -mno-gnu-attribute -Wno-psabi -mabi=ibmlongdouble
+
+$(fp128_dec_objs)	: INTERNAL_CFLAGS += $(FP128_CFLAGS_DECIMAL)
+$(ibm128_dec_objs)	: INTERNAL_CFLAGS += $(IBM128_CFLAGS_DECIMAL)
 
 $(fp128_softfp_src) : $(srcdir)/soft-fp/$(subst -sw,,$(subst kf,tf,$@)) $(fp128_dep)
 	@src="$(srcdir)/soft-fp/$(subst -sw,,$(subst kf,tf,$@))"; \

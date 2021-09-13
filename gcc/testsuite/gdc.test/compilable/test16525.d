@@ -12,8 +12,8 @@ extern(C++) struct CPP
 
 void test()
 {
-    pragma(msg, templ!(D.memvar));
-    pragma(msg, templ!(CPP.memvar));
-    // root cause, C++ member variables have no mangling
-    pragma(msg, CPP.memvar.mangleof);
+    static assert(templ!(D.memvar) == 1234);
+    static assert(templ!(CPP.memvar) == 1234);
+    // ICE: root cause, C++ member variables have no mangling
+    enum CPPmemvar = CPP.memvar.mangleof;
 }

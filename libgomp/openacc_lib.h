@@ -1,6 +1,6 @@
 !  OpenACC Runtime Library Definitions.			-*- mode: fortran -*-
 
-!  Copyright (C) 2014-2020 Free Software Foundation, Inc.
+!  Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 !  Contributed by Tobias Burnus <burnus@net-b.de>
 !              and Mentor Embedded.

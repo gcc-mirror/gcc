@@ -130,7 +130,4 @@ inline void Unreachable () noexcept
 }
 #endif
 
-// FIXME: This should be user visible in some way
-void BuildNote (FILE *stream) noexcept;
-
 }

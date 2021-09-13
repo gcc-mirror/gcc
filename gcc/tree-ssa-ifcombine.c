@@ -1,5 +1,5 @@
 /* Combining of if-expressions on trees.
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"
+#include "attribs.h"
+#include "asan.h"
 
 #ifndef LOGICAL_OP_NON_SHORT_CIRCUIT
 #define LOGICAL_OP_NON_SHORT_CIRCUIT \
@@ -567,7 +569,7 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	  if (param_logical_op_non_short_circuit != -1)
 	    logical_op_non_short_circuit
 	      = param_logical_op_non_short_circuit;
-	  if (!logical_op_non_short_circuit || flag_sanitize_coverage)
+	  if (!logical_op_non_short_circuit || sanitize_coverage_p ())
 	    return false;
 	  /* Only do this optimization if the inner bb contains only the conditional. */
 	  if (!gsi_one_before_end_p (gsi_start_nondebug_after_labels_bb (inner_cond_bb)))

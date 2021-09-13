@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'libgccjit'
-copyright = u'2014-2020 Free Software Foundation, Inc.'
+copyright = u'2014-2021 Free Software Foundation, Inc.'
 
 # GCC-specific: extract version information from "gcc" src subdir for
 # use in "version" and "release" below.

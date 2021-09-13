@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1217,6 +1217,21 @@ If there is no message for that line or if the text of that message is
 not matched by @var{regexp} then the check fails and @var{comment} is
 included in the @code{FAIL} message.
 
+@item @{ dg-note @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] ]] @}
+The line is expected to get a @samp{note} message.
+If there is no message for that line or if the text of that message is
+not matched by @var{regexp} then the check fails and @var{comment} is
+included in the @code{FAIL} message.
+
+By default, any @emph{excess} @samp{note} messages are pruned, meaning
+their appearance doesn't trigger @emph{excess errors}.
+However, if @samp{dg-note} is used at least once in a testcase,
+they're not pruned and instead must @emph{all} be handled explicitly.
+Thus, if looking for just single instances of messages with
+@samp{note: } prefixes without caring for all of them, use
+@samp{dg-message "note: [@dots{}]"} instead of @samp{dg-note}, or use
+@samp{dg-note} together with @samp{dg-prune-output "note: "}.
+
 @item @{ dg-bogus @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] ]] @}
 This DejaGnu directive appears on a source line that should not get a
 message matching @var{regexp}, or else specifies the source line
@@ -1227,7 +1242,8 @@ targets.
 @item @{ dg-line @var{linenumvar} @}
 This DejaGnu directive sets the variable @var{linenumvar} to the line number of
 the source line.  The variable @var{linenumvar} can then be used in subsequent
-@code{dg-error}, @code{dg-warning}, @code{dg-message} and @code{dg-bogus}
+@code{dg-error}, @code{dg-warning}, @code{dg-message}, @code{dg-note}
+and @code{dg-bogus}
 directives.  For example:
 
 @smallexample
@@ -1239,7 +1255,9 @@ float a; /* @{ dg-error "conflicting types of" @} */
 @item @{ dg-excess-errors @var{comment} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive indicates that the test is expected to fail due
 to compiler messages that are not handled by @samp{dg-error},
-@samp{dg-warning} or @samp{dg-bogus}.  For this directive @samp{xfail}
+@samp{dg-warning}, @code{dg-message}, @samp{dg-note} or
+@samp{dg-bogus}.
+For this directive @samp{xfail}
 has the same effect as @samp{target}.
 
 @item @{ dg-prune-output @var{regexp} @}
@@ -1301,6 +1319,8 @@ A selector is:
 @item one or more target triplets, possibly including wildcard characters;
 use @samp{*-*-*} to match any target
 @item a single effective-target keyword (@pxref{Effective-Target Keywords})
+@item a list of compiler options that should be included or excluded
+(as described in more detail below)
 @item a logical expression
 @end itemize
 
@@ -1313,14 +1333,96 @@ test to fail for targets that match @var{selector2}.
 
 A selector expression appears within curly braces and uses a single
 logical operator: one of @samp{!}, @samp{&&}, or @samp{||}.  An
-operand is another selector expression, an effective-target keyword,
-a single target triplet, or a list of target triplets within quotes or
-curly braces.  For example:
+operand is one of the following:
+
+@itemize @bullet
+@item
+another selector expression, in curly braces
+
+@item
+an effective-target keyword, such as @code{lp64}
+
+@item
+a single target triplet
+
+@item
+a list of target triplets within quotes or curly braces
+
+@item
+one of the following:
+
+@table @samp
+@item @{ any-opts @var{opt1} @dots{} @var{optn} @}
+Each of @var{opt1} to @var{optn} is a space-separated list of option globs.
+The selector expression evaluates to true if, for one of these strings,
+every glob in the string matches an option that was passed to the compiler.
+For example:
+
+@smallexample
+@{ any-opts "-O3 -flto" "-O[2g]" @}
+@end smallexample
+
+is true if any of the following are true:
+
+@itemize @bullet
+@item
+@option{-O2} was passed to the compiler
+
+@item
+@option{-Og} was passed to the compiler
+
+@item
+both @option{-O3} and @option{-flto} were passed to the compiler
+@end itemize
+
+This kind of selector can only be used within @code{dg-final} directives.
+Use @code{dg-skip-if}, @code{dg-xfail-if} or @code{dg-xfail-run-if} to
+skip whole tests based on options, or to mark them as expected to fail
+with certain options.
+
+@item @{ no-opts @var{opt1} @dots{} @var{optn} @}
+As for @code{any-opts} above, each of @var{opt1} to @var{optn} is a
+space-separated list of option globs.  The selector expression
+evaluates to true if, for all of these strings, there is at least
+one glob that does not match an option that was passed to the compiler.
+It is shorthand for:
+
+@smallexample
+@{ ! @{ any-opts @var{opt1} @dots{} @var{optn} @} @}
+@end smallexample
+
+For example:
+
+@smallexample
+@{ no-opts "-O3 -flto" "-O[2g]" @}
+@end smallexample
+
+is true if all of the following are true:
+
+@itemize @bullet
+@item
+@option{-O2} was not passed to the compiler
+
+@item
+@option{-Og} was not passed to the compiler
+
+@item
+at least one of @option{-O3} or @option{-flto} was not passed to the compiler
+@end itemize
+
+Like @code{any-opts}, this kind of selector can only be used within
+@code{dg-final} directives.
+
+@end table
+@end itemize
+
+Here are some examples of full target selectors:
 
 @smallexample
 @{ target @{ ! "hppa*-*-* ia64*-*-*" @} @}
 @{ target @{ powerpc*-*-* && lp64 @} @}
 @{ xfail @{ lp64 || vect_no_align @} @}
+@{ xfail @{ aarch64*-*-* && @{ any-opts "-O2" @} @} @}
 @end smallexample
 
 @node Effective-Target Keywords
@@ -1638,6 +1740,12 @@ circumstances.
 @item vect_variable_length
 Target has variable-length vectors.
 
+@item vect64
+Target supports vectors of 64 bits.
+
+@item vect32
+Target supports vectors of 32 bits.
+
 @item vect_widen_sum_hi_to_si
 Target supports a vector widening summation of @code{short} operands
 into @code{int} results, or can promote (unpack) from @code{short}
@@ -1671,6 +1779,10 @@ Target supports a vector dot-product of @code{signed char}.
 
 @item vect_udot_qi
 Target supports a vector dot-product of @code{unsigned char}.
+
+@item vect_usdot_qi
+Target supports a vector dot-product where one operand of the multiply is
+@code{signed char} and the other of @code{unsigned char}.
 
 @item vect_sdot_hi
 Target supports a vector dot-product of @code{signed short}.
@@ -1947,6 +2059,11 @@ ARM target supports executing instructions from ARMv8.2-A with the Dot
 Product extension. Some multilibs may be incompatible with these options.
 Implies arm_v8_2a_dotprod_neon_ok.
 
+@item arm_v8_2a_i8mm_neon_hw
+ARM target supports executing instructions from ARMv8.2-A with the 8-bit
+Matrix Multiply extension.  Some multilibs may be incompatible with these
+options.  Implies arm_v8_2a_i8mm_ok.
+
 @item arm_fp16fml_neon_ok
 @anchor{arm_fp16fml_neon_ok}
 ARM target supports extensions to generate the @code{VFMAL} and @code{VFMLS}
@@ -2012,6 +2129,9 @@ div instruction.
 ARM target supports ARMv8-M Security Extensions, enabled by the @code{-mcmse}
 option.
 
+@item arm_cmse_hw
+Test system supports executing CMSE instructions.
+
 @item arm_coproc1_ok
 @anchor{arm_coproc1_ok}
 ARM target supports the following coprocessor instructions: @code{CDP},
@@ -2038,10 +2158,16 @@ ARM Target supports options suitable for accessing the SIMD32 intrinsics from
 @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
 
-@item arm_qbit_ok
-@anchor{arm_qbit_ok}
-ARM Target supports options suitable for accessing the Q-bit manipulation
+@item arm_sat_ok
+@anchor{arm_sat_ok}
+ARM Target supports options suitable for accessing the saturation
 intrinsics from @code{arm_acle.h}.
+Some multilibs may be incompatible with these options.
+
+@item arm_dsp_ok
+@anchor{arm_dsp_ok}
+ARM Target supports options suitable for accessing the DSP intrinsics
+from @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
 
 @item arm_softfp_ok
@@ -2057,6 +2183,11 @@ ARM target supports the @code{-mfloat-abi=hard} option.
 ARM Target supports executing the Armv8.1-M Mainline Low Overhead Loop
 instructions @code{DLS} and @code{LE}.
 Some multilibs may be incompatible with these options.
+
+@item arm_thumb2_no_arm_v8_1_lob
+ARM target where Thumb-2 is used without options but does not support
+executing the Armv8.1-M Mainline Low Overhead Loop instructions
+@code{DLS} and @code{LE}.
 
 @item arm_thumb2_ok_no_arm_v8_1_lob
 ARM target generates Thumb-2 code for @code{-mthumb} but does not
@@ -2436,8 +2567,15 @@ Target has the basic signed and unsigned C types in @code{stdint.h}.
 This will be obsolete when GCC ensures a working @code{stdint.h} for
 all targets.
 
+@item stdint_types_mbig_endian
+Target accepts the option @option{-mbig-endian} and @code{stdint.h}
+can be included without error when @option{-mbig-endian} is passed.
+
 @item stpcpy
 Target provides @code{stpcpy} function.
+
+@item sysconf
+Target supports @code{sysconf}.
 
 @item trampolines
 Target supports trampolines.
@@ -2519,6 +2657,9 @@ Target keeps null pointer checks, either due to the use of
 
 @item llvm_binutils
 Target is using an LLVM assembler and/or linker, instead of GNU Binutils.
+
+@item lra
+Target supports local register allocator (LRA).
 
 @item lto
 Compiler has been configured to support link-time optimization (LTO).
@@ -2629,6 +2770,10 @@ constant.
 
 @item lgccjit
 Target supports -lgccjit, i.e. libgccjit.so can be linked into jit tests.
+
+@item __OPTIMIZE__
+Optimizations are enabled (@code{__OPTIMIZE__}) per the current
+compiler flags.
 @end table
 
 @subsubsection Local to tests in @code{gcc.target/i386}
@@ -2769,6 +2914,11 @@ supported by the target; see the
 Add options to enable generation of the @code{VFMAL} and @code{VFMSL}
 instructions, if this is supported by the target; see the
 @ref{arm_fp16fml_neon_ok} effective target keyword.
+
+@item arm_dsp
+Add options for ARM DSP intrinsics support, if this is supported by
+the target; see the @ref{arm_dsp_ok,,arm_dsp_ok effective target
+keyword}.
 
 @item bind_pic_locally
 Add the target-specific flags needed to enable functions to bind
@@ -3092,6 +3242,10 @@ Check line counts in @command{gcov} tests.
 @item run-gcov [branches] [calls] @{ @var{opts} @var{sourcefile} @}
 Check branch and/or call counts, in addition to line counts, in
 @command{gcov} tests.
+
+@item run-gcov-pytest @{ @var{sourcefile} @var{pytest_file} @}
+Check output of @command{gcov} intermediate format with a pytest
+script.
 @end table
 
 @subsubsection Clean up generated test files

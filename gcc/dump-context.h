@@ -1,5 +1,5 @@
 /* Support code for handling the various dump_* calls in dumpfile.h
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -204,7 +204,7 @@ private:
 class debug_dump_context
 {
  public:
-  debug_dump_context ();
+  debug_dump_context (FILE *f = stderr);
   ~debug_dump_context ();
 
  private:

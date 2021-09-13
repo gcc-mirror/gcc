@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Runs doxygen and massages the output files.
-# Copyright (C) 2001-2020 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # Synopsis:  run_doxygen --mode=[html|latex|man|xml] --host_alias=<alias> \
 #                        v3srcdir \
@@ -35,8 +35,7 @@ find_doxygen() {
       fi
     done
     if test -z "$doxygen"; then
-	echo run_doxygen error:  Could not find Doxygen $DOXYVER in path. 1>&2
-	print_usage
+	fail "Could not find Doxygen $DOXYVER in path."
     fi
     # We need to use other tools from the same package/version.
     echo :: Using Doxygen tools from ${dir}.
@@ -45,8 +44,8 @@ find_doxygen() {
 }
 
 print_usage() {
-    cat 1>&2 <<EOF
-Usage:  run_doxygen --mode=MODE --host_alias=BUILD_ALIAS [<options>]
+    cat <<EOF
+Usage:  run_doxygen --mode=MODE --host_alias=HOST_ALIAS [<options>]
 		    <v3-src-dir> <v3-build-dir> <shortnamesp>
       MODE is one of:
 	  html           Generate user-level HTML library documentation.
@@ -54,48 +53,67 @@ Usage:  run_doxygen --mode=MODE --host_alias=BUILD_ALIAS [<options>]
 	  xml            Generate user-level XML pages.
 	  latex          Generate user-level LaTeX pages.
 
-      BUILD_ALIAS is the GCC build alias set at configure time.
+      HOST_ALIAS is the GCC host alias triplet set at configure time.
+
+      shortnamesp is one of YES or NO and is used as the SHORT_NAMES value
+      in the Doxygen config file.
+
+      Supported options:
+
+      --help | -h      Print this message and exit.
+      --latex_cmd=CMD  Set LATEX_CMD_NAME=CMD in the Doxygen config file.
 
 Note:  Requires Doxygen ${DOXYVER} or later; get it at
        ftp://ftp.stack.nl/pub/users/dimitri/doxygen-${DOXYVER}.src.tar.gz
 
 EOF
-    exit 1
+}
+
+# Print an error message followed by usage to stderr, then exit.
+fail() {
+  echo "$0: error: $*" 1>&2
+  echo 1>&2
+  print_usage 1>&2
+  exit 1
 }
 
 parse_options() {
-  for o
+  while [ $# -ne 0 ]
   do
     # Blatantly ripped from autoconf, er, I mean, "gratefully standing
     # on the shoulders of those giants who have gone before us."
-    case "$o" in
-      -*=*) arg=`echo "$o" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    case "$1" in
+      -*=*) arg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
       *) arg= ;;
     esac
 
-    case "$o" in
+    case "$1" in
       --mode=*)
 	mode=$arg ;;
       --host_alias=*)
 	host_alias=$arg ;;
-      --mode | --host_alias | --help | -h)
-	print_usage ;;
+      --help | -h)
+	print_usage ; exit ;;
+      --mode | --host_alias)
+	fail "missing argument: $1" ;;
+      --latex_cmd=*)
+	latex_cmd=$arg ;;
+      --*)
+	fail "invalid option: $1" ;;
       *)
-	# this turned out to be a mess, maybe change to --srcdir=, etc
-	if test $srcdir = unset; then
-	  srcdir=$o
-	elif test $outdir = unset; then
-	  builddir=${o}
-	  outdir=${o}/doc/doxygen
-	elif test $shortname = unset; then
-	  shortname=$o
-	else
-	  echo run_doxygen error:  Too many arguments 1>&2
-	  exit 1
-	fi
-	;;
-      esac
+	break ;;
+    esac
+    shift
   done
+
+  if [ $# -ne 3 ]
+  then
+    fail "wrong number of arguments"
+  fi
+  srcdir="$1"
+  builddir="$2"
+  outdir="$2/doc/doxygen"
+  shortname="$3"
 }
 
 
@@ -109,6 +127,7 @@ do_html=false
 do_man=false
 do_xml=false
 do_latex=false
+latex_cmd=
 enabled_sections=
 generate_tagfile=
 DATEtext=`date '+%Y-%m-%d'`
@@ -121,8 +140,7 @@ find_doxygen
 
 if test $srcdir = unset || test $outdir = unset || test $mode = unset || test $shortname = unset || test $host_alias = unset; then
     # this could be better
-    echo run_doxygen error:  You have not given enough information...! 1>&2
-    print_usage
+    fail "You have not given enough information...!  $srcdir - "
 fi
 
 case x"$mode" in
@@ -173,6 +191,7 @@ chmod u+w $outdir
 	-e "s=@enabled_sections@=${enabled_sections}=" \
 	-e "s=@do_html@=${do_html}=" \
 	-e "s=@do_latex@=${do_latex}=" \
+	-e "s=@latex_cmd@=${latex_cmd}=" \
 	-e "s=@do_man@=${do_man}=" \
 	-e "s=@do_xml@=${do_xml}=" \
 	-e "s=@generate_tagfile@=${generate_tagfile}=" \

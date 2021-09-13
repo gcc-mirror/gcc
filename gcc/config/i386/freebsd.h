@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running FreeBSD with ELF format
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
    Adapted from GNU/Linux version by John Polstra.
@@ -95,19 +95,6 @@ along with GCC; see the file COPYING3.  If not see
    bytes if it is within MAX_SKIP bytes.  */
 
 #define SUBALIGN_LOG 3
-
-#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
-#undef  ASM_OUTPUT_MAX_SKIP_ALIGN
-#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)			\
-  do {									\
-    if ((LOG) != 0) {							\
-      if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)		\
-	fprintf ((FILE), "\t.p2align %d\n", (LOG));			\
-      else								\
-	fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
-    }									\
-  } while (0)
-#endif
 
 /* Don't default to pcc-struct-return, we want to retain compatibility with
    older gcc versions AND pcc-struct-return is nonreentrant.

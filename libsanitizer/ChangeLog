@@ -1,3 +1,81 @@
+2021-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_common_interceptors.inc: Cherry-pick
+	llvm-project revision faef0d042f523357fe5590e7cb6a8391cf0351a8.
+
+2021-08-03  Mosè Giordano  <mose@gnu.org>
+
+	PR sanitizer/101111
+	* configure.tgt: Fix bashism in setting of `EXTRA_CXXFLAGS'.
+
+2021-07-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* configure.tgt (s390*-*-linux*): Enable LSan and TSan for
+	s390x.
+
+2021-07-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* asan/libtool-version: Bump version.
+	* tsan/libtool-version: Likewise.
+
+2021-07-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Update to the corresponding revision.
+
+2021-05-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR sanitizer/100379
+	* sanitizer_common/sanitizer_common_interceptors_ioctl.inc: Cherry-pick
+	llvm-project revision f7c5351552387bd43f6ca3631016d7f0dfe0f135.
+	* sanitizer_common/sanitizer_platform_limits_posix.cpp: Likewise.
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Likewise.
+
+2021-05-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* LOCAL_PATCHES: Add Darwin patch for __builtin_os_log_format.
+
+2021-05-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* sanitizer_common/sanitizer_mac.cpp : Check for the
+	availability of __builtin_os_log_format before trying to
+	include a header depending on it.
+	(OS_LOG_DEFAULT): New.
+	(os_log_error): Define to a fall-back using an older API.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update to the corresponding revision.
+
+2021-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/100114
+	* sanitizer_common/sanitizer_posix_libcdep.cpp: Cherry-pick
+	llvm-project revisions 82150606fb11d28813ae6da1101f5bda638165fe
+	and b93629dd335ffee2fc4b9b619bf86c3f9e6b0023.
+
+2021-03-08  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/98920
+	* asan/asan_interceptors.cpp (COMMON_INTERCEPT_FUNCTION_VER):
+	Cherry pick.
+	(COMMON_INTERCEPT_FUNCTION_VER_UNVERSIONED_FALLBACK): Likewise.
+	* asan/asan_interceptors.h (ASAN_INTERCEPT_FUNC_VER_UNVERSIONED_FALLBACK): Likewise.
+	* sanitizer_common/sanitizer_common_interceptors.inc
+	(COMMON_INTERCEPT_FUNCTION_GLIBC_VER_MIN): Likewise.
+	(INIT_REGEX): Likewise.
+	* tsan/tsan_interceptors_posix.cpp (COMMON_INTERCEPT_FUNCTION_VER_UNVERSIONED_FALLBACK):
+	Likewise.
+
+2021-01-26  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/98828
+	* lsan/Makefile.am: Add missing lsan_posix.cpp file.
+	* lsan/Makefile.in: Likewise.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865

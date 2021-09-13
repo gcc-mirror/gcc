@@ -37,6 +37,11 @@ func unminit() {
 	unminitSignals()
 }
 
+// Called from exitm, but not from drop, to undo the effect of thread-owned
+// resources in minit, semacreate, or elsewhere. Do not take locks after calling this.
+func mdestroy(mp *m) {
+}
+
 var urandom_dev = []byte("/dev/urandom\x00")
 
 func getRandomData(r []byte) {
@@ -91,4 +96,12 @@ func setNonblock(fd int32) {
 	if errno == 0 {
 		fcntlUintptr(uintptr(fd), _F_SETFL, flags|_O_NONBLOCK)
 	}
+}
+
+// For gccgo this is in the C code.
+func osyield()
+
+//go:nosplit
+func osyield_no_g() {
+	osyield()
 }

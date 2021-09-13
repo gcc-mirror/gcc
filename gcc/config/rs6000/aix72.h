@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V7.2.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -62,6 +63,9 @@ do {									\
       /* aix/ppc doesn't support -mvsx and -maltivec with Go */		\
       rs6000_isa_flags &= ~(OPTION_MASK_VSX | OPTION_MASK_ALTIVEC);	\
     }									\
+  if (!global_options_set.x_dwarf_version)				\
+    /* AIX only supports DWARF 4.  */					\
+    dwarf_version = 4;							\
 } while (0)
 
 #define ASM_SPEC32 "-a32"
@@ -75,6 +79,7 @@ do {									\
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
 "%{mcpu=native: %(asm_cpu_native); \
+  mcpu=power10: -mpwr10; \
   mcpu=power9: -mpwr9; \
   mcpu=power8: -mpwr8; \
   mcpu=power7: -mpwr7; \
@@ -120,7 +125,7 @@ do {									\
   %{mpe: -I%R/usr/lpp/ppe.poe/include}		\
   %{pthread: -D_THREAD_SAFE}"
 
-/* The GNU C++ standard library requires that these macros be 
+/* The GNU C++ standard library requires that these macros be
    defined.  Synchronize with libstdc++ os_defines.h.  */
 #define CPLUSPLUS_CPP_SPEC_COMMON		\
   "-D_ALL_SOURCE -D__COMPATMATH__		\
@@ -250,7 +255,7 @@ do {									\
 #define LD_INIT_SWITCH "-binitfini"
 
 #ifndef _AIX52
-extern long long int    atoll(const char *);  
+extern long long int    atoll(const char *);
 #endif
 
 /* This target uses the aix64.opt file.  */
@@ -265,14 +270,17 @@ extern long long int    atoll(const char *);
 #define SET_CMODEL(opt) do {} while (0)
 #endif
 
+/* System headers are not C++-aware.  */
+#define SYSTEM_IMPLICIT_EXTERN_C 1
+
 /* This target defines SUPPORTS_WEAK and TARGET_ASM_NAMED_SECTION,
    but does not have crtbegin/end.  */
 
 #define TARGET_AIX_VERSION 72
 
-/* AIX 7.2 supports DWARF3 debugging, but XCOFF remains the default.  */
+/* AIX 7.2 supports DWARF3+ debugging.  */
 #define DWARF2_DEBUGGING_INFO 1
-#define PREFERRED_DEBUGGING_TYPE XCOFF_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 #define DEBUG_INFO_SECTION	"0x10000"
 #define DEBUG_LINE_SECTION	"0x20000"
 #define DEBUG_PUBNAMES_SECTION	"0x30000"

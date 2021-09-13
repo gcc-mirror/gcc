@@ -1,5 +1,5 @@
 /* Dummy flag and argument handling of the jit "front-end".
-   Copyright (C) 2015-2020 Free Software Foundation, Inc.
+   Copyright (C) 2015-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

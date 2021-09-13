@@ -1,5 +1,5 @@
 /* Natural loop analysis code for GNU compiler.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -113,7 +113,7 @@ mark_irreducible_loops (void)
 
 	/* Ignore latch edges.  */
 	if (e->dest->loop_father->header == e->dest
-	    && e->dest->loop_father->latch == act)
+	    && dominated_by_p (CDI_DOMINATORS, act, e->dest))
 	  continue;
 
 	/* Edges inside a single loop should be left where they are.  Edges
@@ -470,7 +470,7 @@ mark_loop_exit_edges (void)
    to noreturn call.  */
 
 edge
-single_likely_exit (class loop *loop, vec<edge> exits)
+single_likely_exit (class loop *loop, const vec<edge> &exits)
 {
   edge found = single_exit (loop);
   unsigned i;
@@ -500,11 +500,11 @@ single_likely_exit (class loop *loop, vec<edge> exits)
    order against direction of edges from latch.  Specially, if
    header != latch, latch is the 1-st block.  */
 
-vec<basic_block>
+auto_vec<basic_block>
 get_loop_hot_path (const class loop *loop)
 {
   basic_block bb = loop->header;
-  vec<basic_block> path = vNULL;
+  auto_vec<basic_block> path;
   bitmap visited = BITMAP_ALLOC (NULL);
 
   while (true)

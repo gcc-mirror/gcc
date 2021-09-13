@@ -1,6 +1,6 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000-2020 Free Software Foundation, Inc.
+// Copyright (C) 2000-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,9 @@
 #define _CODECVT_H 1
 
 #pragma GCC system_header
+
+#include <bits/c++config.h>
+#include <bits/locale_classes.h> // locale::facet
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

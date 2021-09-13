@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,29 +37,122 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __divkc3 __divkc3_sw
 #endif
 
+#ifndef __LONG_DOUBLE_IEEE128__
+#define RBIG   (__LIBGCC_KF_MAX__ / 2)
+#define RMIN   (__LIBGCC_KF_MIN__)
+#define RMIN2  (__LIBGCC_KF_EPSILON__)
+#define RMINSCAL (1 / __LIBGCC_KF_EPSILON__)
+#define RMAX2  (RBIG * RMIN2)
+#else
+#define RBIG   (__LIBGCC_TF_MAX__ / 2)
+#define RMIN   (__LIBGCC_TF_MIN__)
+#define RMIN2  (__LIBGCC_TF_EPSILON__)
+#define RMINSCAL (1 / __LIBGCC_TF_EPSILON__)
+#define RMAX2  (RBIG * RMIN2)
+#endif
+
 TCtype
 __divkc3 (TFtype a, TFtype b, TFtype c, TFtype d)
 {
   TFtype denom, ratio, x, y;
   TCtype res;
 
-  /* ??? We can get better behavior from logarithmic scaling instead of
-     the division.  But that would mean starting to link libgcc against
-     libm.  We could implement something akin to ldexp/frexp as gcc builtins
-     fairly easily...  */
+  /* long double has significant potential underflow/overflow errors that
+     can be greatly reduced with a limited number of tests and adjustments.
+  */
+
+  /* Scale by max(c,d) to reduce chances of denominator overflowing.  */
   if (FABS (c) < FABS (d))
     {
+      /* Prevent underflow when denominator is near max representable.  */
+      if (FABS (d) >= RBIG)
+	{
+	  a = a / 2;
+	  b = b / 2;
+	  c = c / 2;
+	  d = d / 2;
+	}
+      /* Avoid overflow/underflow issues when c and d are small.
+	 Scaling up helps avoid some underflows.
+	 No new overflow possible since c&d < RMIN2.  */
+      if (FABS (d) < RMIN2)
+	{
+	  a = a * RMINSCAL;
+	  b = b * RMINSCAL;
+	  c = c * RMINSCAL;
+	  d = d * RMINSCAL;
+	}
+      else
+	{
+	  if (((FABS (a) < RMIN) && (FABS (b) < RMAX2) && (FABS (d) < RMAX2))
+	      || ((FABS (b) < RMIN) && (FABS (a) < RMAX2)
+		  && (FABS (d) < RMAX2)))
+	    {
+	      a = a * RMINSCAL;
+	      b = b * RMINSCAL;
+	      c = c * RMINSCAL;
+	      d = d * RMINSCAL;
+	    }
+	}
       ratio = c / d;
       denom = (c * ratio) + d;
-      x = ((a * ratio) + b) / denom;
-      y = ((b * ratio) - a) / denom;
+      /* Choose alternate order of computation if ratio is subnormal.  */
+      if (FABS (ratio) > RMIN)
+	{
+	  x = ((a * ratio) + b) / denom;
+	  y = ((b * ratio) - a) / denom;
+	}
+      else
+	{
+	  x = ((c * (a / d)) + b) / denom;
+	  y = ((c * (b / d)) - a) / denom;
+	}
     }
   else
     {
+      /* Prevent underflow when denominator is near max representable.  */
+      if (FABS (c) >= RBIG)
+	{
+	  a = a / 2;
+	  b = b / 2;
+	  c = c / 2;
+	  d = d / 2;
+	}
+      /* Avoid overflow/underflow issues when both c and d are small.
+	 Scaling up helps avoid some underflows.
+	 No new overflow possible since both c&d are less than RMIN2.  */
+      if (FABS (c) < RMIN2)
+	{
+	  a = a * RMINSCAL;
+	  b = b * RMINSCAL;
+	  c = c * RMINSCAL;
+	  d = d * RMINSCAL;
+	}
+      else
+	{
+	  if (((FABS (a) < RMIN) && (FABS (b) < RMAX2) && (FABS (c) < RMAX2))
+	      || ((FABS (b) < RMIN) && (FABS (a) < RMAX2)
+		  && (FABS (c) < RMAX2)))
+	    {
+	      a = a * RMINSCAL;
+	      b = b * RMINSCAL;
+	      c = c * RMINSCAL;
+	      d = d * RMINSCAL;
+	    }
+	}
       ratio = d / c;
       denom = (d * ratio) + c;
-      x = ((b * ratio) + a) / denom;
-      y = (b - (a * ratio)) / denom;
+      /* Choose alternate order of computation if ratio is subnormal.  */
+      if (FABS (ratio) > RMIN)
+	{
+	  x = ((b * ratio) + a) / denom;
+	  y = (b - (a * ratio)) / denom;
+	}
+      else
+	{
+	  x = (a + (d * (b / c))) / denom;
+	  y = (b - (d * (a / c))) / denom;
+	}
     }
 
   /* Recover infinities and zeros that computed as NaN+iNaN; the only cases

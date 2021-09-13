@@ -1,6 +1,6 @@
 ; OpenRISC command line options
 
-; Copyright (C) 2010-2020 Free Software Foundation, Inc.
+; Copyright (C) 2010-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -20,6 +20,9 @@
 
 ; See the GCC internals manual (options.texi) for a description of
 ; this file's format.
+
+HeaderInclude
+config/or1k/or1k-opts.h
 
 mhard-div
 Target RejectNegative InverseMask(SOFT_DIV)
@@ -62,6 +65,22 @@ Target RejectNegative Mask(FP_UNORDERED)
 When -mhard-float is selected, enables generation of unordered floating point
 compare and set flag (lf.sfun*) instructions.  By default functions from libgcc
 are used to perform unordered floating point compare and set flag operations.
+
+mcmodel=
+Target RejectNegative Joined Enum(or1k_cmodel_type) Var(or1k_code_model) Init(CMODEL_SMALL)
+Specify the code model used for accessing memory addresses.  Specifying large
+enables generating binaries with large global offset tables.  By default the
+value is small.
+
+Enum
+Name(or1k_cmodel_type) Type(enum or1k_cmodel_type)
+Known code model types (for use with the -mcmodel= option):
+
+EnumValue
+Enum(or1k_cmodel_type) String(small) Value(CMODEL_SMALL)
+
+EnumValue
+Enum(or1k_cmodel_type) String(large) Value(CMODEL_LARGE)
 
 mcmov
 Target RejectNegative Mask(CMOV)

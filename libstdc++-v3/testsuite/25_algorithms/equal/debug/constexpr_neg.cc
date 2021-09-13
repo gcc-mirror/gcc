@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,4 +48,4 @@ static_assert(test02()); // { dg-error "outside the bounds" }
 
 // { dg-prune-output "non-constant condition" }
 // { dg-prune-output "in 'constexpr'" }
-// { dg-prune-output "failed_assertion" }
+// { dg-prune-output "builtin_unreachable" }

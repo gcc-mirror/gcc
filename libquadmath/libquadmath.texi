@@ -6,7 +6,7 @@
 @c %**end of header
 
 @copying
-Copyright @copyright{} 2010-2020 Free Software Foundation, Inc.
+Copyright @copyright{} 2010-2021 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -309,7 +309,7 @@ the format.
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{s}    @tab output string
-@item @var{size} @tab byte size of the string, including tailing NUL
+@item @var{size} @tab byte size of the string, including trailing NUL
 @item @var{format} @tab conversion specifier string
 @end multitable
 

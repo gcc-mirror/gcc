@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail341.d(26): Error: struct fail341.S is not copyable because it is annotated with @disable
-fail_compilation/fail341.d(27): Error: function fail341.foo is not callable because it is annotated with @disable
+fail_compilation/fail341.d(26): Error: struct fail341.S is not copyable because it is annotated with `@disable`
+fail_compilation/fail341.d(27): Error: function `fail341.foo` cannot be used because it is annotated with `@disable`
 ---
 */
 

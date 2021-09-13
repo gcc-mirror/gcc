@@ -1,5 +1,5 @@
 /* Variable tracking routines for the GNU compiler.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2450,7 +2450,6 @@ unsuitable_loc (rtx loc)
     {
     case PC:
     case SCRATCH:
-    case CC0:
     case ASM_INPUT:
     case ASM_OPERANDS:
       return true;
@@ -5661,7 +5660,6 @@ non_suitable_const (const_rtx x)
 	case DEBUG_EXPR:
 	case PC:
 	case SCRATCH:
-	case CC0:
 	case ASM_INPUT:
 	case ASM_OPERANDS:
 	  return true;

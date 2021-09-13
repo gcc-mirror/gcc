@@ -1,7 +1,7 @@
 // { dg-require-namedlocale "de_DE.ISO8859-15" }
 // { dg-require-namedlocale "es_ES.ISO8859-15" }
 
-// Copyright (C) 2004-2020 Free Software Foundation, Inc.
+// Copyright (C) 2004-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

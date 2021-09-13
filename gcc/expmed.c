@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -629,9 +629,16 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
       /* If xop0 is a register, we need it in OP_MODE
 	 to make it acceptable to the format of insv.  */
       if (GET_CODE (xop0) == SUBREG)
-	/* We can't just change the mode, because this might clobber op0,
-	   and we will need the original value of op0 if insv fails.  */
-	xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
+	{
+	  /* If such a SUBREG can't be created, give up.  */
+	  if (!validate_subreg (op_mode, GET_MODE (SUBREG_REG (xop0)),
+				SUBREG_REG (xop0), SUBREG_BYTE (xop0)))
+	    return false;
+	  /* We can't just change the mode, because this might clobber op0,
+	     and we will need the original value of op0 if insv fails.  */
+	  xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0),
+				 SUBREG_BYTE (xop0));
+	}
       if (REG_P (xop0) && GET_MODE (xop0) != op_mode)
 	xop0 = gen_lowpart_SUBREG (op_mode, xop0);
     }
@@ -914,7 +921,10 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	}
 
       subreg_off = bitnum / BITS_PER_UNIT;
-      if (validate_subreg (fieldmode, GET_MODE (arg0), arg0, subreg_off))
+      if (validate_subreg (fieldmode, GET_MODE (arg0), arg0, subreg_off)
+	  /* STRICT_LOW_PART must have a non-paradoxical subreg as
+	     operand.  */
+	  && !paradoxical_subreg_p (fieldmode, GET_MODE (arg0)))
 	{
 	  arg0 = gen_rtx_SUBREG (fieldmode, arg0, subreg_off);
 
@@ -1561,14 +1571,16 @@ extract_bit_field_using_extv (const extraction_insn *extv, rtx op0,
 
   if (GET_MODE (target) != ext_mode)
     {
+      rtx temp;
       /* Don't use LHS paradoxical subreg if explicit truncation is needed
 	 between the mode of the extraction (word_mode) and the target
 	 mode.  Instead, create a temporary and use convert_move to set
 	 the target.  */
       if (REG_P (target)
-	  && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (target), ext_mode))
+	  && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (target), ext_mode)
+	  && (temp = gen_lowpart_if_possible (ext_mode, target)))
 	{
-	  target = gen_lowpart (ext_mode, target);
+	  target = temp;
 	  if (partial_subreg_p (GET_MODE (spec_target), ext_mode))
 	    spec_target_subreg = target;
 	}

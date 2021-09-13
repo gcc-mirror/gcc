@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1551,20 +1551,108 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 			     sym->ns->proc_name->name);
 	    }
 
+	  /* Per F2018, 18.3.6 (5), pointer + contiguous is not permitted.  */
+	  if (sym->attr.pointer && sym->attr.contiguous)
+	    gfc_error ("Dummy argument %qs at %L may not be a pointer with "
+		       "CONTIGUOUS attribute as procedure %qs is BIND(C)",
+		       sym->name, &sym->declared_at, sym->ns->proc_name->name);
+
           /* Character strings are only C interoperable if they have a
-             length of 1.  */
-          if (sym->ts.type == BT_CHARACTER && !sym->attr.dimension)
+	     length of 1.  However, as an argument they are also iteroperable
+	     when passed as descriptor (which requires len=: or len=*).  */
+	  if (sym->ts.type == BT_CHARACTER)
 	    {
 	      gfc_charlen *cl = sym->ts.u.cl;
-	      if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT
-                  || mpz_cmp_si (cl->length->value.integer, 1) != 0)
+
+	      if (sym->attr.allocatable || sym->attr.pointer)
 		{
-		  gfc_error ("Character argument %qs at %L "
-			     "must be length 1 because "
-			     "procedure %qs is BIND(C)",
-			     sym->name, &sym->declared_at,
-			     sym->ns->proc_name->name);
+		  /* F2018, 18.3.6 (6).  */
+		  if (!sym->ts.deferred)
+		    {
+		      if (sym->attr.allocatable)
+			gfc_error ("Allocatable character dummy argument %qs "
+				   "at %L must have deferred length as "
+				   "procedure %qs is BIND(C)", sym->name,
+				   &sym->declared_at, sym->ns->proc_name->name);
+		      else
+			gfc_error ("Pointer character dummy argument %qs at %L "
+				   "must have deferred length as procedure %qs "
+				   "is BIND(C)", sym->name, &sym->declared_at,
+				   sym->ns->proc_name->name);
+		      retval = false;
+		    }
+		  else if (!gfc_notify_std (GFC_STD_F2018,
+					    "Deferred-length character dummy "
+					    "argument %qs at %L of procedure "
+					    "%qs with BIND(C) attribute",
+					    sym->name, &sym->declared_at,
+					    sym->ns->proc_name->name))
+		    retval = false;
+		  else if (!sym->attr.dimension)
+		    {
+		      /* FIXME: Use CFI array descriptor for scalars.  */
+		      gfc_error ("Sorry, deferred-length scalar character dummy "
+				 "argument %qs at %L of procedure %qs with "
+				 "BIND(C) not yet supported", sym->name,
+				 &sym->declared_at, sym->ns->proc_name->name);
+		      retval = false;
+		    }
+		}
+	      else if (sym->attr.value
+		       && (!cl || !cl->length
+			   || cl->length->expr_type != EXPR_CONSTANT
+			   || mpz_cmp_si (cl->length->value.integer, 1) != 0))
+		{
+		  gfc_error ("Character dummy argument %qs at %L must be "
+			     "of length 1 as it has the VALUE attribute",
+			     sym->name, &sym->declared_at);
 		  retval = false;
+		}
+	      else if (!cl || !cl->length)
+		{
+		  /* Assumed length; F2018, 18.3.6 (5)(2).
+		     Uses the CFI array descriptor - also for scalars and
+		     explicit-size/assumed-size arrays.  */
+		  if (!gfc_notify_std (GFC_STD_F2018,
+				      "Assumed-length character dummy argument "
+				      "%qs at %L of procedure %qs with BIND(C) "
+				      "attribute", sym->name, &sym->declared_at,
+				      sym->ns->proc_name->name))
+		    retval = false;
+		  else if (!sym->attr.dimension
+			   || sym->as->type == AS_ASSUMED_SIZE
+			   || sym->as->type == AS_EXPLICIT)
+		    {
+		      /* FIXME: Valid - should use the CFI array descriptor, but
+			 not yet handled for scalars and assumed-/explicit-size
+			 arrays.  */
+		      gfc_error ("Sorry, character dummy argument %qs at %L "
+				 "with assumed length is not yet supported for "
+				 "procedure %qs with BIND(C) attribute",
+				 sym->name, &sym->declared_at,
+				 sym->ns->proc_name->name);
+		      retval = false;
+		    }
+		}
+	      else if (cl->length->expr_type != EXPR_CONSTANT
+		       || mpz_cmp_si (cl->length->value.integer, 1) != 0)
+		{
+		  /* F2018, 18.3.6, (5), item 4.  */
+		  if (!sym->attr.dimension
+		      || sym->as->type == AS_ASSUMED_SIZE
+		      || sym->as->type == AS_EXPLICIT)
+		    {
+		      gfc_error ("Character dummy argument %qs at %L must be "
+				 "of constant length of one or assumed length, "
+				 "unless it has assumed shape or assumed rank, "
+				 "as procedure %qs has the BIND(C) attribute",
+				 sym->name, &sym->declared_at,
+				 sym->ns->proc_name->name);
+		      retval = false;
+		    }
+		  /* else: valid only since F2018 - and an assumed-shape/rank
+		     array; however, gfc_notify_std is already called when
+		     those array types are used. Thus, silently accept F200x. */
 		}
 	    }
 
@@ -2721,7 +2809,7 @@ variable_decl (int elem)
     }
 
   /* %FILL components may not have initializers.  */
-  if (gfc_str_startswith (name, "%FILL") && gfc_match_eos () != MATCH_YES)
+  if (startswith (name, "%FILL") && gfc_match_eos () != MATCH_YES)
     {
       gfc_error ("%qs entity cannot have an initializer at %C", "%FILL");
       m = MATCH_ERROR;
@@ -3066,8 +3154,7 @@ gfc_match_old_kind_spec (gfc_typespec *ts)
 	  if (flag_real4_kind == 16)
 	    ts->kind = 16;
 	}
-
-      if (ts->kind == 8)
+      else if (ts->kind == 8)
 	{
 	  if (flag_real8_kind == 4)
 	    ts->kind = 4;
@@ -3246,8 +3333,7 @@ close_brackets:
 	  if (flag_real4_kind == 16)
 	    ts->kind = 16;
 	}
-
-      if (ts->kind == 8)
+      else if (ts->kind == 8)
 	{
 	  if (flag_real8_kind == 4)
 	    ts->kind = 4;
@@ -8223,7 +8309,7 @@ gfc_match_end (gfc_statement *st)
     {
     case COMP_ASSOCIATE:
     case COMP_BLOCK:
-      if (gfc_str_startswith (block_name, "block@"))
+      if (startswith (block_name, "block@"))
 	block_name = NULL;
       break;
 
@@ -9856,7 +9942,8 @@ gfc_match_modproc (void)
   gfc_namespace *module_ns;
   gfc_interface *old_interface_head, *interface;
 
-  if (gfc_state_stack->state != COMP_INTERFACE
+  if ((gfc_state_stack->state != COMP_INTERFACE
+       && gfc_state_stack->state != COMP_CONTAINS)
       || gfc_state_stack->previous == NULL
       || current_interface.type == INTERFACE_NAMELESS
       || current_interface.type == INTERFACE_ABSTRACT)

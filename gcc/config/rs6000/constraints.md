@@ -1,5 +1,5 @@
 ;; Constraint definitions for RS6000
-;; Copyright (C) 2006-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -17,7 +17,7 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-;; Available constraint letters: e k q t u A B C D S T
+;; Available constraint letters: k q t u A B C D S T
 
 ;; Register constraints
 

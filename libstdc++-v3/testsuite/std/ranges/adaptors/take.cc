@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -62,7 +62,7 @@ test03()
   int x[] = {0,1,2,3,4,5};
   auto is_odd = [] (int i) { return i%2 == 1; };
   auto v = x | views::filter(is_odd) | views::take(3);
-  ranges::begin(v);
+  (void) ranges::begin(v);
   using R = decltype(v);
   static_assert(ranges::view<R>);
   static_assert(!ranges::sized_range<R>);
@@ -100,6 +100,23 @@ test05()
   b = ranges::end(v);
 }
 
+template<auto take = views::take>
+void
+test06()
+{
+  // Verify SFINAE behavior.
+  extern int x[5];
+  int* n = 0;
+  static_assert(!requires { take(); });
+  static_assert(!requires { take(x, n, n); });
+  static_assert(!requires { take(x, n); });
+  static_assert(!requires { take(n)(x); });
+  static_assert(!requires { x | (take(n) | views::all); });
+  static_assert(!requires { (take(n) | views::all)(x); });
+  static_assert(!requires { take | views::all; });
+  static_assert(!requires { views::all | take; });
+}
+
 int
 main()
 {
@@ -108,4 +125,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

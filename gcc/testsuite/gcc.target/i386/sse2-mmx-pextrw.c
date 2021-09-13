@@ -32,7 +32,7 @@ test_pextrw (__m64 *i, unsigned int imm, int *r)
 static void
 compute_correct_result (__m64 *src_p, unsigned int imm, int *res_p)
 {
-  short *src = (short *) src_p;
+  unsigned short *src = (unsigned short *) src_p;
   if (imm < 4)
     *res_p = src[imm];
 }

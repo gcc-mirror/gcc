@@ -1,5 +1,5 @@
 /* Utility functions for the analyzer.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -60,6 +60,160 @@ get_stmt_location (const gimple *stmt, function *fun)
   return stmt->location;
 }
 
+static tree
+fixup_tree_for_diagnostic_1 (tree expr, hash_set<tree> *visited);
+
+/* Attemp to generate a tree for the LHS of ASSIGN_STMT.
+   VISITED must be non-NULL; it is used to ensure termination.  */
+
+static tree
+get_diagnostic_tree_for_gassign_1 (const gassign *assign_stmt,
+				   hash_set<tree> *visited)
+{
+  enum tree_code code = gimple_assign_rhs_code (assign_stmt);
+
+  /* Reverse the effect of extract_ops_from_tree during
+     gimplification.  */
+  switch (get_gimple_rhs_class (code))
+    {
+    default:
+    case GIMPLE_INVALID_RHS:
+      gcc_unreachable ();
+    case GIMPLE_TERNARY_RHS:
+    case GIMPLE_BINARY_RHS:
+    case GIMPLE_UNARY_RHS:
+      {
+	tree t = make_node (code);
+	TREE_TYPE (t) = TREE_TYPE (gimple_assign_lhs (assign_stmt));
+	unsigned num_rhs_args = gimple_num_ops (assign_stmt) - 1;
+	for (unsigned i = 0; i < num_rhs_args; i++)
+	  {
+	    tree op = gimple_op (assign_stmt, i + 1);
+	    if (op)
+	      {
+		op = fixup_tree_for_diagnostic_1 (op, visited);
+		if (op == NULL_TREE)
+		  return NULL_TREE;
+	      }
+	    TREE_OPERAND (t, i) = op;
+	  }
+	return t;
+      }
+    case GIMPLE_SINGLE_RHS:
+      {
+	tree op = gimple_op (assign_stmt, 1);
+	op = fixup_tree_for_diagnostic_1 (op, visited);
+	return op;
+      }
+    }
+}
+
+/*  Subroutine of fixup_tree_for_diagnostic_1, called on SSA names.
+    Attempt to reconstruct a a tree expression for SSA_NAME
+    based on its def-stmt.
+    SSA_NAME must be non-NULL.
+    VISITED must be non-NULL; it is used to ensure termination.
+
+    Return NULL_TREE if there is a problem.  */
+
+static tree
+maybe_reconstruct_from_def_stmt (tree ssa_name,
+				 hash_set<tree> *visited)
+{
+  /* Ensure termination.  */
+  if (visited->contains (ssa_name))
+    return NULL_TREE;
+  visited->add (ssa_name);
+
+  gimple *def_stmt = SSA_NAME_DEF_STMT (ssa_name);
+
+  switch (gimple_code (def_stmt))
+    {
+    default:
+      gcc_unreachable ();
+    case GIMPLE_ASM:
+    case GIMPLE_NOP:
+    case GIMPLE_PHI:
+      /* Can't handle these.  */
+      return NULL_TREE;
+    case GIMPLE_ASSIGN:
+      return get_diagnostic_tree_for_gassign_1
+	(as_a <const gassign *> (def_stmt), visited);
+    case GIMPLE_CALL:
+      {
+	gcall *call_stmt = as_a <gcall *> (def_stmt);
+	tree return_type = gimple_call_return_type (call_stmt);
+	tree fn = fixup_tree_for_diagnostic_1 (gimple_call_fn (call_stmt),
+					       visited);
+	if (fn == NULL_TREE)
+	  return NULL_TREE;
+	unsigned num_args = gimple_call_num_args (call_stmt);
+	auto_vec<tree> args (num_args);
+	for (unsigned i = 0; i < num_args; i++)
+	  {
+	    tree arg = gimple_call_arg (call_stmt, i);
+	    arg = fixup_tree_for_diagnostic_1 (arg, visited);
+	    if (arg == NULL_TREE)
+	      return NULL_TREE;
+	    args.quick_push (arg);
+	  }
+	gcc_assert (fn);
+	return build_call_array_loc (gimple_location (call_stmt),
+				     return_type, fn,
+				     num_args, args.address ());
+      }
+      break;
+    }
+}
+
+/* Subroutine of fixup_tree_for_diagnostic: attempt to fixup EXPR,
+   which can be NULL.
+   VISITED must be non-NULL; it is used to ensure termination.  */
+
+static tree
+fixup_tree_for_diagnostic_1 (tree expr, hash_set<tree> *visited)
+{
+  if (expr
+      && TREE_CODE (expr) == SSA_NAME
+      && (SSA_NAME_VAR (expr) == NULL_TREE
+	  || DECL_ARTIFICIAL (SSA_NAME_VAR (expr))))
+    {
+      if (tree var = SSA_NAME_VAR (expr))
+	if (VAR_P (var) && DECL_HAS_DEBUG_EXPR_P (var))
+	  return DECL_DEBUG_EXPR (var);
+      if (tree expr2 = maybe_reconstruct_from_def_stmt (expr, visited))
+	return expr2;
+    }
+  return expr;
+}
+
+/* We don't want to print '<unknown>' in our diagnostics (PR analyzer/99771),
+   but sometimes we generate diagnostics involving an ssa name for a
+   temporary.
+
+   Work around this by attempting to reconstruct a tree expression for
+   such temporaries based on their def-stmts.
+
+   Otherwise return EXPR.
+
+   EXPR can be NULL.  */
+
+tree
+fixup_tree_for_diagnostic (tree expr)
+{
+  hash_set<tree> visited;
+  return fixup_tree_for_diagnostic_1 (expr, &visited);
+}
+
+/* Attempt to generate a tree for the LHS of ASSIGN_STMT.  */
+
+tree
+get_diagnostic_tree_for_gassign (const gassign *assign_stmt)
+{
+  hash_set<tree> visited;
+  return get_diagnostic_tree_for_gassign_1 (assign_stmt, &visited);
+}
+
 } // namespace ana
 
 /* Helper function for checkers.  Is the CALL to the given function name,
@@ -90,7 +244,7 @@ is_special_named_call_p (const gcall *call, const char *funcname,
    Compare with special_function_p in calls.c.  */
 
 bool
-is_named_call_p (tree fndecl, const char *funcname)
+is_named_call_p (const_tree fndecl, const char *funcname)
 {
   gcc_assert (fndecl);
   gcc_assert (funcname);
@@ -142,7 +296,7 @@ is_std_function_p (const_tree fndecl)
 /* Like is_named_call_p, but look for std::FUNCNAME.  */
 
 bool
-is_std_named_call_p (tree fndecl, const char *funcname)
+is_std_named_call_p (const_tree fndecl, const char *funcname)
 {
   gcc_assert (fndecl);
   gcc_assert (funcname);
@@ -164,7 +318,7 @@ is_std_named_call_p (tree fndecl, const char *funcname)
    arguments?  */
 
 bool
-is_named_call_p (tree fndecl, const char *funcname,
+is_named_call_p (const_tree fndecl, const char *funcname,
 		 const gcall *call, unsigned int num_args)
 {
   gcc_assert (fndecl);
@@ -182,7 +336,7 @@ is_named_call_p (tree fndecl, const char *funcname,
 /* Like is_named_call_p, but check for std::FUNCNAME.  */
 
 bool
-is_std_named_call_p (tree fndecl, const char *funcname,
+is_std_named_call_p (const_tree fndecl, const char *funcname,
 		     const gcall *call, unsigned int num_args)
 {
   gcc_assert (fndecl);

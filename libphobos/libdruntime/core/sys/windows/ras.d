@@ -8,11 +8,12 @@
  */
 module core.sys.windows.ras;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "rasapi32");
 
-private import core.sys.windows.basetyps, core.sys.windows.lmcons, core.sys.windows.w32api, core.sys.windows.windef;
+import core.sys.windows.basetyps, core.sys.windows.lmcons, core.sys.windows.w32api, core.sys.windows.windef;
 
 align(4):
 

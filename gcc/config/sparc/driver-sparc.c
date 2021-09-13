@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -148,7 +148,7 @@ host_detect_local_cpu (int argc, const char **argv)
     return NULL;
 
   while (fgets (buf, sizeof (buf), f) != NULL)
-    if (strncmp (buf, "cpu\t\t:", sizeof ("cpu\t\t:") - 1) == 0)
+    if (startswith (buf, "cpu\t\t:"))
       {
         for (i = 0; cpu_names [i].name; i++)
           if (strstr (buf, cpu_names [i].name) != NULL)

@@ -1,9 +1,6 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Bug reporting location */
-#undef BUGURL
-
-/* Enable checking */
+/* Define to 1 if you want more run-time sanity checks. */
 #undef NMS_CHECKING
 
 /* Define to the address where bug reports for this package should be sent. */

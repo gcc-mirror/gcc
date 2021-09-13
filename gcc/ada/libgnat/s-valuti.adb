@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,10 +68,10 @@ package body System.Val_Util is
          F := F + 1;
       end loop;
 
-      --  Check for case when the string contained no characters
+      --  Case of no nonspace characters found
 
       if F > L then
-         Bad_Value (S);
+         return;
       end if;
 
       --  Scan for trailing spaces

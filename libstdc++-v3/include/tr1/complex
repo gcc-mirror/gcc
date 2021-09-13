@@ -1,6 +1,6 @@
 // TR1 complex -*- C++ -*-
 
-// Copyright (C) 2006-2020 Free Software Foundation, Inc.
+// Copyright (C) 2006-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -411,7 +411,7 @@ namespace tr1
     pow(const std::complex<_Tp>& __x, const std::complex<_Tp>& __y)
     { return std::pow(__x, __y); }
 
-// @} group complex_numbers
+/// @} group complex_numbers
 }
 
 _GLIBCXX_END_NAMESPACE_VERSION

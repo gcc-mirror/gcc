@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -61,5 +61,14 @@ static inline void
 gomp_sem_post (gomp_sem_t *sem)
 {
   (void) __atomic_add_fetch (sem, 1, MEMMODEL_RELEASE);
+}
+
+static inline int
+gomp_sem_getcount (gomp_sem_t *sem)
+{
+  int count = __atomic_load_n (sem, MEMMODEL_RELAXED);
+  if (count < 0)
+    return -1;
+  return count;
 }
 #endif /* GOMP_SEM_H */

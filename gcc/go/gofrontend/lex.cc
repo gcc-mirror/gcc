@@ -2035,6 +2035,8 @@ Lex::skip_cpp_comment()
 	  (*this->linknames_)[go_name] = Linkname(ext_name, is_exported, loc);
 	}
     }
+  else if (verb == "go:embed")
+    this->gather_embed(ps, pend);
   else if (verb == "go:nointerface")
     {
       // For field tracking analysis: a //go:nointerface comment means
@@ -2108,6 +2110,98 @@ Lex::skip_cpp_comment()
       // converted to uintptr, then the pointer escapes.
       // FIXME: Not implemented.
       this->pragmas_ |= GOPRAGMA_UINTPTRESCAPES;
+    }
+}
+
+// Read a go:embed directive.  This is a series of space-separated
+// patterns.  Each pattern may be a quoted or backquoted string.
+
+void
+Lex::gather_embed(const char *p, const char *pend)
+{
+  while (true)
+    {
+      // Skip spaces to find the start of the next pattern.  We do a
+      // fast skip of space and tab, but we also permit and skip
+      // Unicode space characters.
+      while (p < pend && (*p == ' ' || *p == '\t'))
+	++p;
+      if (p >= pend)
+	break;
+      unsigned int c;
+      bool issued_error;
+      const char *pnext = this->advance_one_utf8_char(p, &c, &issued_error);
+      if (issued_error)
+	return;
+      if (Lex::is_unicode_space(c))
+	{
+	  p = pnext;
+	  continue;
+	}
+
+      // Here P points to the start of the next pattern, PNEXT points
+      // to the second character in the pattern, and C is the first
+      // character in that pattern (the character to which P points).
+
+      if (c == '"' || c == '`')
+	{
+	  Location loc = this->location();
+	  const unsigned char quote = c;
+	  std::string value;
+	  p = pnext;
+	  while (p < pend && *p != quote)
+	    {
+	      bool is_character;
+	      if (quote == '"')
+		p = this->advance_one_char(p, false, &c, &is_character);
+	      else
+		{
+		  p = this->advance_one_utf8_char(p, &c, &issued_error);
+		  if (issued_error)
+		    return;
+		  // "Carriage return characters ('\r') inside raw string
+		  // literals are discarded from the raw string value."
+		  if (c == '\r')
+		    continue;
+		  is_character = true;
+		}
+	      Lex::append_char(c, is_character, &value, loc);
+	    }
+	  if (p >= pend)
+	    {
+	      // Note that within a go:embed directive we do not
+	      // permit raw strings to cross multiple lines.
+	      go_error_at(loc, "unterminated string");
+	      return;
+	    }
+	  this->embeds_.push_back(value);
+	  ++p;
+	}
+      else
+	{
+	  const char *start = p;
+	  p = pnext;
+	  while (p < pend)
+	    {
+	      c = *p;
+	      if (c == ' ' || c == '\t')
+		break;
+	      if (c > ' ' && c <= 0x7f)
+		{
+		  // ASCII non-space character.
+		  ++p;
+		  continue;
+		}
+	      pnext = this->advance_one_utf8_char(p, &c, &issued_error);
+	      if (issued_error)
+		return;
+	      if (Lex::is_unicode_space(c))
+		break;
+	      p = pnext;
+	    }
+
+	  this->embeds_.push_back(std::string(start, p - start));
+	}
     }
 }
 

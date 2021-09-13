@@ -17,9 +17,6 @@
 #ifndef RYU_GENERIC128_H
 #define RYU_GENERIC128_H
 
-
-typedef __uint128_t uint128_t;
-
 #define FLOAT_128_POW5_INV_BITCOUNT 249
 #define FLOAT_128_POW5_BITCOUNT 249
 #define POW5_TABLE_SIZE 56

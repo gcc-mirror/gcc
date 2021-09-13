@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -337,6 +337,7 @@ const struct s390_processor processor_table[] =
   { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
   { "z15",    "arch13", PROCESSOR_8561_Z15,    &zEC12_cost,  13 },
+  { "arch14", "arch14", PROCESSOR_ARCH14,      &zEC12_cost,  14 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -733,15 +734,41 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
 {
   if (O_UIMM_P (op_flags))
     {
-      int bitwidths[] = { 1, 2, 3, 4, 5, 8, 12, 16, 32 };
-      int bitwidth = bitwidths[op_flags - O_U1];
+      unsigned HOST_WIDE_INT bitwidths[] = { 1, 2, 3, 4, 5, 8, 12, 16, 32, 4 };
+      unsigned HOST_WIDE_INT bitmasks[]  = { 0, 0, 0, 0, 0, 0,  0,  0,  0, 12 };
+      unsigned HOST_WIDE_INT bitwidth = bitwidths[op_flags - O_U1];
+      unsigned HOST_WIDE_INT bitmask = bitmasks[op_flags - O_U1];
+
+      gcc_assert(ARRAY_SIZE(bitwidths) == (O_M12 - O_U1 + 1));
+      gcc_assert(ARRAY_SIZE(bitmasks) == (O_M12 - O_U1 + 1));
 
       if (!tree_fits_uhwi_p (arg)
-	  || tree_to_uhwi (arg) > (HOST_WIDE_INT_1U << bitwidth) - 1)
+	  || tree_to_uhwi (arg) > (HOST_WIDE_INT_1U << bitwidth) - 1
+	  || (bitmask && tree_to_uhwi (arg) & ~bitmask))
 	{
-	  error ("constant argument %d for builtin %qF is out of range "
-		 "(0..%wu)", argnum, decl,
-		 (HOST_WIDE_INT_1U << bitwidth) - 1);
+	  if (bitmask)
+	    {
+	      gcc_assert (bitmask < 16);
+	      char values[120] = "";
+
+	      for (unsigned HOST_WIDE_INT i = 0; i <= bitmask; i++)
+		{
+		  char buf[5];
+		  if (i & ~bitmask)
+		    continue;
+		  int ret = snprintf (buf, 5, HOST_WIDE_INT_PRINT_UNSIGNED, i & bitmask);
+		  gcc_assert (ret < 5);
+		  strcat (values, buf);
+		  if (i < bitmask)
+		    strcat (values, ", ");
+		}
+	      error ("constant argument %d for builtin %qF is invalid (%s)",
+		     argnum, decl, values);
+	    }
+	  else
+	    error ("constant argument %d for builtin %qF is out of range (0..%wu)",
+		   argnum, decl, (HOST_WIDE_INT_1U << bitwidth) - 1);
+
 	  return false;
 	}
     }
@@ -824,6 +851,12 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if ((bflags & B_VXE2) && !TARGET_VXE2)
 	{
 	  error ("Builtin %qF requires z15 or higher.", fndecl);
+	  return const0_rtx;
+	}
+
+      if ((bflags & B_NNPA) && !TARGET_NNPA)
+	{
+	  error ("Builtin %qF requires arch14 or higher.", fndecl);
 	  return const0_rtx;
 	}
     }
@@ -3258,7 +3291,7 @@ s390_loadrelative_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
   if (GET_CODE (addr) == SYMBOL_REF
       || (GET_CODE (addr) == UNSPEC
 	  && (XINT (addr, 1) == UNSPEC_GOTENT
-	      || XINT (addr, 1) == UNSPEC_PLT)))
+	      || XINT (addr, 1) == UNSPEC_PLT31)))
     {
       if (symref)
 	*symref = addr;
@@ -4931,7 +4964,7 @@ legitimize_pic_address (rtx orig, rtx reg)
        || (SYMBOL_REF_P (addr) && s390_rel_address_ok_p (addr))
        || (GET_CODE (addr) == UNSPEC &&
 	   (XINT (addr, 1) == UNSPEC_GOTENT
-	    || XINT (addr, 1) == UNSPEC_PLT)))
+	    || XINT (addr, 1) == UNSPEC_PLT31)))
       && GET_CODE (addend) == CONST_INT)
     {
       /* This can be locally addressed.  */
@@ -5092,7 +5125,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 
 	  /* For @PLT larl is used.  This is handled like local
 	     symbol refs.  */
-	case UNSPEC_PLT:
+	case UNSPEC_PLT31:
 	  gcc_unreachable ();
 	  break;
 
@@ -5158,7 +5191,10 @@ s390_emit_tls_call_insn (rtx result_reg, rtx tls_call)
     emit_insn (s390_load_got ());
 
   if (!s390_tls_symbol)
-    s390_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tls_get_offset");
+    {
+      s390_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tls_get_offset");
+      SYMBOL_REF_FLAGS (s390_tls_symbol) |= SYMBOL_FLAG_FUNCTION;
+    }
 
   insn = s390_emit_call (s390_tls_symbol, tls_call, result_reg,
 			 gen_rtx_REG (Pmode, RETURN_REGNUM));
@@ -6562,6 +6598,7 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 
   if (GET_MODE_CLASS (GET_MODE (cmp_op1)) == MODE_VECTOR_FLOAT)
     {
+      cmp_op2 = force_reg (GET_MODE (cmp_op1), cmp_op2);
       switch (cond)
 	{
 	  /* NE a != b -> !(a == b) */
@@ -6600,6 +6637,19 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
     }
   else
     {
+      /* Turn x < 0 into x >> (bits per element - 1)  */
+      if (cond == LT && cmp_op2 == CONST0_RTX (mode))
+	{
+	  int shift = GET_MODE_BITSIZE (GET_MODE_INNER (mode)) - 1;
+	  rtx res = expand_simple_binop (mode, ASHIFTRT, cmp_op1,
+					 GEN_INT (shift), target,
+					 0, OPTAB_DIRECT);
+	  if (res != target)
+	    emit_move_insn (target, res);
+	  return;
+	}
+      cmp_op2 = force_reg (GET_MODE (cmp_op1), cmp_op2);
+
       switch (cond)
 	{
 	  /* NE: a != b -> !(a == b) */
@@ -6817,11 +6867,7 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
   if (!REG_P (cmp_op1))
     cmp_op1 = force_reg (GET_MODE (cmp_op1), cmp_op1);
 
-  if (!REG_P (cmp_op2))
-    cmp_op2 = force_reg (GET_MODE (cmp_op2), cmp_op2);
-
-  s390_expand_vec_compare (result_target, cond,
-			   cmp_op1, cmp_op2);
+  s390_expand_vec_compare (result_target, cond, cmp_op1, cmp_op2);
 
   /* If the results are supposed to be either -1 or 0 we are done
      since this is what our compare instructions generate anyway.  */
@@ -6966,6 +7012,42 @@ s390_expand_vec_init (rtx target, rtx vals)
 							 GEN_INT (i), target),
 					      UNSPEC_VEC_SET)));
     }
+}
+
+/* Return a parallel of constant integers to be used as permutation
+   vector for a vector merge operation in MODE.  If HIGH_P is true the
+   left-most elements of the source vectors are merged otherwise the
+   right-most elements.  */
+rtx
+s390_expand_merge_perm_const (machine_mode mode, bool high_p)
+{
+  int nelts = GET_MODE_NUNITS (mode);
+  rtx perm[16];
+  int addend = high_p ? 0 : nelts;
+
+  for (int i = 0; i < nelts; i++)
+    perm[i] = GEN_INT ((i + addend) / 2 + (i % 2) * nelts);
+
+  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nelts, perm));
+}
+
+/* Emit RTL to implement a vector merge operation of SRC1 and SRC2
+   which creates the result in TARGET. HIGH_P determines whether a
+   merge hi or lo will be generated.  */
+void
+s390_expand_merge (rtx target, rtx src1, rtx src2, bool high_p)
+{
+  machine_mode mode = GET_MODE (target);
+  opt_machine_mode opt_mode_2x = mode_for_vector (GET_MODE_INNER (mode),
+						  2 * GET_MODE_NUNITS (mode));
+  gcc_assert (opt_mode_2x.exists ());
+  machine_mode mode_double_nelts = opt_mode_2x.require ();
+  rtx constv = s390_expand_merge_perm_const (mode, high_p);
+  src1 = force_reg (GET_MODE (src1), src1);
+  src2 = force_reg (GET_MODE (src2), src2);
+  rtx x = gen_rtx_VEC_CONCAT (mode_double_nelts, src1, src2);
+  x = gen_rtx_VEC_SELECT (mode, x, constv);
+  emit_insn (gen_rtx_SET (target, x));
 }
 
 /* Emit a vector constant that contains 1s in each element's sign bit position
@@ -7553,7 +7635,7 @@ s390_delegitimize_address (rtx orig_x)
       y = XEXP (x, 0);
       if (GET_CODE (y) == UNSPEC
 	  && (XINT (y, 1) == UNSPEC_GOTENT
-	      || XINT (y, 1) == UNSPEC_PLT))
+	      || XINT (y, 1) == UNSPEC_PLT31))
 	y = XVECEXP (y, 0, 0);
       else
 	return orig_x;
@@ -7806,7 +7888,7 @@ s390_output_addr_const_extra (FILE *file, rtx x)
 	output_addr_const (file, XVECEXP (x, 0, 0));
 	fprintf (file, "@GOTOFF");
 	return true;
-      case UNSPEC_PLT:
+      case UNSPEC_PLT31:
 	output_addr_const (file, XVECEXP (x, 0, 0));
 	fprintf (file, "@PLT");
 	return true;
@@ -7900,6 +7982,7 @@ print_operand_address (FILE *file, rtx addr)
     'E': print opcode suffix for branch on index instruction.
     'G': print the size of the operand in bytes.
     'J': print tls_load/tls_gdcall/tls_ldcall suffix
+    'K': print @PLT suffix for call targets and load address values.
     'M': print the second word of a TImode operand.
     'N': print the second word of a DImode operand.
     'O': print only the displacement of a memory reference or address.
@@ -8085,6 +8168,29 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'Y':
       print_shift_count_operand (file, x);
+      return;
+
+    case 'K':
+      /* Append @PLT to both local and non-local symbols in order to support
+	 Linux Kernel livepatching: patches contain individual functions and
+	 are loaded further than 2G away from vmlinux, and therefore they must
+	 call even static functions via PLT.  ld will optimize @PLT away for
+	 normal code, and keep it for patches.
+
+	 Do not indiscriminately add @PLT in 31-bit mode due to the %r12
+	 restriction, use UNSPEC_PLT31 instead.
+
+	 @PLT only makes sense for functions, data is taken care of by
+	 -mno-pic-data-is-text-relative.
+
+	 Adding @PLT interferes with handling of weak symbols in non-PIC code,
+	 since their addresses are loaded with larl, which then always produces
+	 a non-NULL result, so skip them here as well.  */
+      if (TARGET_64BIT
+	  && GET_CODE (x) == SYMBOL_REF
+	  && SYMBOL_REF_FUNCTION_P (x)
+	  && !(SYMBOL_REF_WEAK (x) && !flag_pic))
+	fprintf (file, "@PLT");
       return;
     }
 
@@ -8409,6 +8515,7 @@ s390_issue_rate (void)
     case PROCESSOR_2827_ZEC12:
     case PROCESSOR_2964_Z13:
     case PROCESSOR_3906_Z14:
+    case PROCESSOR_ARCH14:
     default:
       return 1;
     }
@@ -13066,33 +13173,26 @@ output_asm_nops (const char *user, int hw)
     }
 }
 
-/* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  */
+/* Output assembler code to FILE to call a profiler hook.  */
 
 void
-s390_function_profiler (FILE *file, int labelno)
+s390_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 {
-  rtx op[8];
-
-  char label[128];
-  ASM_GENERATE_INTERNAL_LABEL (label, "LP", labelno);
+  rtx op[4];
 
   fprintf (file, "# function profiler \n");
 
   op[0] = gen_rtx_REG (Pmode, RETURN_REGNUM);
   op[1] = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
   op[1] = gen_rtx_MEM (Pmode, plus_constant (Pmode, op[1], UNITS_PER_LONG));
-  op[7] = GEN_INT (UNITS_PER_LONG);
+  op[3] = GEN_INT (UNITS_PER_LONG);
 
-  op[2] = gen_rtx_REG (Pmode, 1);
-  op[3] = gen_rtx_SYMBOL_REF (Pmode, label);
-  SYMBOL_REF_FLAGS (op[3]) = SYMBOL_FLAG_LOCAL;
-
-  op[4] = gen_rtx_SYMBOL_REF (Pmode, flag_fentry ? "__fentry__" : "_mcount");
-  if (flag_pic)
+  op[2] = gen_rtx_SYMBOL_REF (Pmode, flag_fentry ? "__fentry__" : "_mcount");
+  SYMBOL_REF_FLAGS (op[2]) |= SYMBOL_FLAG_FUNCTION;
+  if (flag_pic && !TARGET_64BIT)
     {
-      op[4] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[4]), UNSPEC_PLT);
-      op[4] = gen_rtx_CONST (Pmode, op[4]);
+      op[2] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[2]), UNSPEC_PLT31);
+      op[2] = gen_rtx_CONST (Pmode, op[2]);
     }
 
   if (flag_record_mcount)
@@ -13106,20 +13206,19 @@ s390_function_profiler (FILE *file, int labelno)
 	warning (OPT_Wcannot_profile, "nested functions cannot be profiled "
 		 "with %<-mfentry%> on s390");
       else
-	output_asm_insn ("brasl\t0,%4", op);
+	output_asm_insn ("brasl\t0,%2%K2", op);
     }
   else if (TARGET_64BIT)
     {
       if (flag_nop_mcount)
-	output_asm_nops ("-mnop-mcount", /* stg */ 3 + /* larl */ 3 +
-			 /* brasl */ 3 + /* lg */ 3);
+	output_asm_nops ("-mnop-mcount", /* stg */ 3 + /* brasl */ 3 +
+			 /* lg */ 3);
       else
 	{
 	  output_asm_insn ("stg\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
-	    output_asm_insn (".cfi_rel_offset\t%0,%7", op);
-	  output_asm_insn ("larl\t%2,%3", op);
-	  output_asm_insn ("brasl\t%0,%4", op);
+	    output_asm_insn (".cfi_rel_offset\t%0,%3", op);
+	  output_asm_insn ("brasl\t%0,%2%K2", op);
 	  output_asm_insn ("lg\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
 	    output_asm_insn (".cfi_restore\t%0", op);
@@ -13128,15 +13227,14 @@ s390_function_profiler (FILE *file, int labelno)
   else
     {
       if (flag_nop_mcount)
-	output_asm_nops ("-mnop-mcount", /* st */ 2 + /* larl */ 3 +
-			 /* brasl */ 3 + /* l */ 2);
+	output_asm_nops ("-mnop-mcount", /* st */ 2 + /* brasl */ 3 +
+			 /* l */ 2);
       else
 	{
 	  output_asm_insn ("st\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
-	    output_asm_insn (".cfi_rel_offset\t%0,%7", op);
-	  output_asm_insn ("larl\t%2,%3", op);
-	  output_asm_insn ("brasl\t%0,%4", op);
+	    output_asm_insn (".cfi_rel_offset\t%0,%3", op);
+	  output_asm_insn ("brasl\t%0,%2%K2", op);
 	  output_asm_insn ("l\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
 	    output_asm_insn (".cfi_restore\t%0", op);
@@ -13212,9 +13310,11 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   if (flag_pic && !SYMBOL_REF_LOCAL_P (op[0]))
     {
       nonlocal = 1;
-      op[0] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[0]),
-			      TARGET_64BIT ? UNSPEC_PLT : UNSPEC_GOT);
-      op[0] = gen_rtx_CONST (Pmode, op[0]);
+      if (!TARGET_64BIT)
+	{
+	  op[0] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[0]), UNSPEC_GOT);
+	  op[0] = gen_rtx_CONST (Pmode, op[0]);
+	}
     }
 
   /* Operand 1 is the 'this' pointer.  */
@@ -13304,7 +13404,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	}
 
       /* Jump to target.  */
-      output_asm_insn ("jg\t%0", op);
+      output_asm_insn ("jg\t%0%K0", op);
 
       /* Output literal pool if required.  */
       if (op[5])
@@ -13695,7 +13795,7 @@ rtx_insn *
 s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
 		rtx retaddr_reg)
 {
-  bool plt_call = false;
+  bool plt31_call_p = false;
   rtx_insn *insn;
   rtx vec[4] = { NULL_RTX };
   int elts = 0;
@@ -13710,15 +13810,15 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
     {
       /* When calling a global routine in PIC mode, we must
 	 replace the symbol itself with the PLT stub.  */
-      if (flag_pic && !SYMBOL_REF_LOCAL_P (addr_location))
+      if (flag_pic && !SYMBOL_REF_LOCAL_P (addr_location) && !TARGET_64BIT)
 	{
-	  if (TARGET_64BIT || retaddr_reg != NULL_RTX)
+	  if (retaddr_reg != NULL_RTX)
 	    {
 	      addr_location = gen_rtx_UNSPEC (Pmode,
 					      gen_rtvec (1, addr_location),
-					      UNSPEC_PLT);
+					      UNSPEC_PLT31);
 	      addr_location = gen_rtx_CONST (Pmode, addr_location);
-	      plt_call = true;
+	      plt31_call_p = true;
 	    }
 	  else
 	    /* For -fpic code the PLT entries might use r12 which is
@@ -13739,7 +13839,7 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
      register 1.  */
   if (retaddr_reg == NULL_RTX
       && GET_CODE (addr_location) != SYMBOL_REF
-      && !plt_call)
+      && !plt31_call_p)
     {
       emit_move_insn (gen_rtx_REG (Pmode, SIBCALL_REGNUM), addr_location);
       addr_location = gen_rtx_REG (Pmode, SIBCALL_REGNUM);
@@ -13747,7 +13847,7 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
 
   if (TARGET_INDIRECT_BRANCH_NOBP_CALL
       && GET_CODE (addr_location) != SYMBOL_REF
-      && !plt_call)
+      && !plt31_call_p)
     {
       /* Indirect branch thunks require the target to be a single GPR.  */
       addr_location = force_reg (Pmode, addr_location);
@@ -13799,7 +13899,7 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
   insn = emit_call_insn (*call);
 
   /* 31-bit PLT stubs and tls calls use the GOT register implicitly.  */
-  if ((!TARGET_64BIT && plt_call) || tls_call != NULL_RTX)
+  if (plt31_call_p || tls_call != NULL_RTX)
     {
       /* s390_function_ok_for_sibcall should
 	 have denied sibcalls in this case.  */
@@ -13855,7 +13955,10 @@ s390_emit_tpf_eh_return (rtx target)
   rtx reg, orig_ra;
 
   if (!s390_tpf_eh_return_symbol)
-    s390_tpf_eh_return_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tpf_eh_return");
+    {
+      s390_tpf_eh_return_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tpf_eh_return");
+      SYMBOL_REF_FLAGS (s390_tpf_eh_return_symbol) |= SYMBOL_FLAG_FUNCTION;
+    }
 
   reg = gen_rtx_REG (Pmode, 2);
   orig_ra = gen_rtx_REG (Pmode, 3);
@@ -14412,15 +14515,13 @@ s390_adjust_loop_scan_osc (struct loop* loop)
 static void
 s390_adjust_loops ()
 {
-  struct loop *loop = NULL;
-
   df_analyze ();
   compute_bb_for_insn ();
 
   /* Find the loops.  */
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     {
       if (dump_file)
 	{
@@ -14768,6 +14869,7 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     case PROCESSOR_8561_Z15:
+    case PROCESSOR_ARCH14:
       if (get_attr_z15_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z15_expanded (insn))
@@ -14815,6 +14917,7 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
 	mask |= 1 << 3;
       break;
     case PROCESSOR_8561_Z15:
+    case PROCESSOR_ARCH14:
       *units = 4;
       if (get_attr_z15_unit_lsu (insn))
 	mask |= 1 << 0;
@@ -16446,6 +16549,9 @@ s390_excess_precision (enum excess_precision_type type)
 	   ensure consistency with the implementation in glibc, report that
 	   float is evaluated to the range and precision of double.  */
 	return FLT_EVAL_METHOD_PROMOTE_TO_DOUBLE;
+      case EXCESS_PRECISION_TYPE_FLOAT16:
+	error ("%<-fexcess-precision=16%> is not supported on this target");
+	break;
       default:
 	gcc_unreachable ();
     }
@@ -16686,6 +16792,289 @@ static unsigned HOST_WIDE_INT
 s390_shift_truncation_mask (machine_mode mode)
 {
   return mode == DImode || mode == SImode ? 63 : 0;
+}
+
+/* Return TRUE iff CONSTRAINT is an "f" constraint, possibly with additional
+   modifiers.  */
+
+static bool
+f_constraint_p (const char *constraint)
+{
+  bool seen_f_p = false;
+  bool seen_v_p = false;
+
+  for (size_t i = 0, c_len = strlen (constraint); i < c_len;
+       i += CONSTRAINT_LEN (constraint[i], constraint + i))
+    {
+      if (constraint[i] == 'f')
+	seen_f_p = true;
+      if (constraint[i] == 'v')
+	seen_v_p = true;
+    }
+
+  /* Treat "fv" constraints as "v", because LRA will choose the widest register
+   * class.  */
+  return seen_f_p && !seen_v_p;
+}
+
+/* Return TRUE iff X is a hard floating-point (and not a vector) register.  */
+
+static bool
+s390_hard_fp_reg_p (rtx x)
+{
+  if (!(REG_P (x) && HARD_REGISTER_P (x) && REG_ATTRS (x)))
+    return false;
+
+  tree decl = REG_EXPR (x);
+  if (!(HAS_DECL_ASSEMBLER_NAME_P (decl) && DECL_ASSEMBLER_NAME_SET_P (decl)))
+    return false;
+
+  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  return name[0] == '*' && name[1] == 'f';
+}
+
+/* Implement TARGET_MD_ASM_ADJUST hook in order to fix up "f"
+   constraints when long doubles are stored in vector registers.  */
+
+static rtx_insn *
+s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
+		    vec<machine_mode> &input_modes,
+		    vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
+		    HARD_REG_SET & /*clobbered_regs*/, location_t /*loc*/)
+{
+  if (!TARGET_VXE)
+    /* Long doubles are stored in FPR pairs - nothing to do.  */
+    return NULL;
+
+  rtx_insn *after_md_seq = NULL, *after_md_end = NULL;
+
+  unsigned ninputs = inputs.length ();
+  unsigned noutputs = outputs.length ();
+  for (unsigned i = 0; i < noutputs; i++)
+    {
+      if (GET_MODE (outputs[i]) != TFmode)
+	/* Not a long double - nothing to do.  */
+	continue;
+      const char *constraint = constraints[i];
+      bool allows_mem, allows_reg, is_inout;
+      bool ok = parse_output_constraint (&constraint, i, ninputs, noutputs,
+					 &allows_mem, &allows_reg, &is_inout);
+      gcc_assert (ok);
+      if (!f_constraint_p (constraint))
+	/* Long double with a constraint other than "=f" - nothing to do.  */
+	continue;
+      gcc_assert (allows_reg);
+      gcc_assert (!is_inout);
+      /* Copy output value from a FPR pair into a vector register.  */
+      rtx fprx2;
+      push_to_sequence2 (after_md_seq, after_md_end);
+      if (s390_hard_fp_reg_p (outputs[i]))
+	{
+	  fprx2 = gen_rtx_REG (FPRX2mode, REGNO (outputs[i]));
+	  /* The first half is already at the correct location, copy only the
+	   * second one.  Use the UNSPEC pattern instead of the SUBREG one,
+	   * since s390_can_change_mode_class() rejects
+	   * (subreg:DF (reg:TF %fN) 8) and thus subreg validation fails.  */
+	  rtx v1 = gen_rtx_REG (V2DFmode, REGNO (outputs[i]));
+	  rtx v3 = gen_rtx_REG (V2DFmode, REGNO (outputs[i]) + 1);
+	  emit_insn (gen_vec_permiv2df (v1, v1, v3, const0_rtx));
+	}
+      else
+	{
+	  fprx2 = gen_reg_rtx (FPRX2mode);
+	  emit_insn (gen_fprx2_to_tf (outputs[i], fprx2));
+	}
+      after_md_seq = get_insns ();
+      after_md_end = get_last_insn ();
+      end_sequence ();
+      outputs[i] = fprx2;
+    }
+
+  for (unsigned i = 0; i < ninputs; i++)
+    {
+      if (GET_MODE (inputs[i]) != TFmode)
+	/* Not a long double - nothing to do.  */
+	continue;
+      const char *constraint = constraints[noutputs + i];
+      bool allows_mem, allows_reg;
+      bool ok = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
+					constraints.address (), &allows_mem,
+					&allows_reg);
+      gcc_assert (ok);
+      if (!f_constraint_p (constraint))
+	/* Long double with a constraint other than "f" (or "=f" for inout
+	   operands) - nothing to do.  */
+	continue;
+      gcc_assert (allows_reg);
+      /* Copy input value from a vector register into a FPR pair.  */
+      rtx fprx2;
+      if (s390_hard_fp_reg_p (inputs[i]))
+	{
+	  fprx2 = gen_rtx_REG (FPRX2mode, REGNO (inputs[i]));
+	  /* Copy only the second half.  */
+	  rtx v1 = gen_rtx_REG (V2DFmode, REGNO (inputs[i]) + 1);
+	  rtx v2 = gen_rtx_REG (V2DFmode, REGNO (inputs[i]));
+	  emit_insn (gen_vec_permiv2df (v1, v2, v1, GEN_INT (3)));
+	}
+      else
+	{
+	  fprx2 = gen_reg_rtx (FPRX2mode);
+	  emit_insn (gen_tf_to_fprx2 (fprx2, inputs[i]));
+	}
+      inputs[i] = fprx2;
+      input_modes[i] = FPRX2mode;
+    }
+
+  return after_md_seq;
+}
+
+#define MAX_VECT_LEN	16
+
+struct expand_vec_perm_d
+{
+  rtx target, op0, op1;
+  unsigned char perm[MAX_VECT_LEN];
+  machine_mode vmode;
+  unsigned char nelt;
+  bool testing_p;
+};
+
+/* Try to expand the vector permute operation described by D using the
+   vector merge instructions vml and vmh.  Return true if vector merge
+   could be used.  */
+static bool
+expand_perm_with_merge (const struct expand_vec_perm_d &d)
+{
+  bool merge_lo_p = true;
+  bool merge_hi_p = true;
+
+  if (d.nelt % 2)
+    return false;
+
+  // For V4SI this checks for: { 0, 4, 1, 5 }
+  for (int telt = 0; telt < d.nelt; telt++)
+    if (d.perm[telt] != telt / 2 + (telt % 2) * d.nelt)
+      {
+	merge_hi_p = false;
+	break;
+      }
+
+  if (!merge_hi_p)
+    {
+      // For V4SI this checks for: { 2, 6, 3, 7 }
+      for (int telt = 0; telt < d.nelt; telt++)
+	if (d.perm[telt] != (telt + d.nelt) / 2 + (telt % 2) * d.nelt)
+	  {
+	    merge_lo_p = false;
+	    break;
+	  }
+    }
+  else
+    merge_lo_p = false;
+
+  if (d.testing_p)
+    return merge_lo_p || merge_hi_p;
+
+  if (merge_lo_p || merge_hi_p)
+    s390_expand_merge (d.target, d.op0, d.op1, merge_hi_p);
+
+  return merge_lo_p || merge_hi_p;
+}
+
+/* Try to expand the vector permute operation described by D using the
+   vector permute doubleword immediate instruction vpdi.  Return true
+   if vpdi could be used.
+
+   VPDI allows 4 different immediate values (0, 1, 4, 5). The 0 and 5
+   cases are covered by vmrhg and vmrlg already.  So we only care
+   about the 1, 4 cases here.
+   1 - First element of src1 and second of src2
+   4 - Second element of src1 and first of src2  */
+static bool
+expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
+{
+  bool vpdi1_p = false;
+  bool vpdi4_p = false;
+  rtx op0_reg, op1_reg;
+
+  // Only V2DI and V2DF are supported here.
+  if (d.nelt != 2)
+    return false;
+
+  if (d.perm[0] == 0 && d.perm[1] == 3)
+    vpdi1_p = true;
+
+  if (d.perm[0] == 1 && d.perm[1] == 2)
+    vpdi4_p = true;
+
+  if (!vpdi1_p && !vpdi4_p)
+    return false;
+
+  if (d.testing_p)
+    return true;
+
+  op0_reg = force_reg (GET_MODE (d.op0), d.op0);
+  op1_reg = force_reg (GET_MODE (d.op1), d.op1);
+
+  if (vpdi1_p)
+    emit_insn (gen_vpdi1 (d.vmode, d.target, op0_reg, op1_reg));
+
+  if (vpdi4_p)
+    emit_insn (gen_vpdi4 (d.vmode, d.target, op0_reg, op1_reg));
+
+  return true;
+}
+
+/* Try to find the best sequence for the vector permute operation
+   described by D.  Return true if the operation could be
+   expanded.  */
+static bool
+vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
+{
+  if (expand_perm_with_merge (d))
+    return true;
+
+  if (expand_perm_with_vpdi (d))
+    return true;
+
+  return false;
+}
+
+/* Return true if we can emit instructions for the constant
+   permutation vector in SEL.  If OUTPUT, IN0, IN1 are non-null the
+   hook is supposed to emit the required INSNs.  */
+
+bool
+s390_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
+			       const vec_perm_indices &sel)
+{
+  struct expand_vec_perm_d d;
+  unsigned int i, nelt;
+
+  if (!s390_vector_mode_supported_p (vmode) || GET_MODE_SIZE (vmode) != 16)
+    return false;
+
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
+
+  d.vmode = vmode;
+  gcc_assert (VECTOR_MODE_P (d.vmode));
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = target == NULL_RTX;
+
+  gcc_assert (target == NULL_RTX || REG_P (target));
+  gcc_assert (sel.length () == nelt);
+
+  for (i = 0; i < nelt; i++)
+    {
+      unsigned char e = sel[i];
+      gcc_assert (e < 2 * nelt);
+      d.perm[i] = e;
+    }
+
+  return vectorize_vec_perm_const_1 (d);
 }
 
 /* Initialize GCC target structure.  */
@@ -16994,6 +17383,13 @@ s390_shift_truncation_mask (machine_mode mode)
    the floating point instructions.  */
 #undef TARGET_MAX_ANCHOR_OFFSET
 #define TARGET_MAX_ANCHOR_OFFSET 0xfff
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST s390_md_asm_adjust
+
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST s390_vectorize_vec_perm_const
+
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

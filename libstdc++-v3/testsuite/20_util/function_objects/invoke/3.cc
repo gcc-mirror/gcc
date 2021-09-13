@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2020 Free Software Foundation, Inc.
+// Copyright (C) 2016-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,10 +15,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
 #include <functional>
+
+#ifndef __cpp_lib_invoke
+# error Feature-test macro for invoke is missing in <functional>
+#elif __cpp_lib_invoke < 201411L
+# error Feature-test macro for invoke has the wrong value in <functional>
+#endif
 
 struct abstract {
   virtual ~abstract() = 0;

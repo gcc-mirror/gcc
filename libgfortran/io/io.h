@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -1083,11 +1083,11 @@ default_precision_for_float (int kind)
 #endif
 
 extern void
-st_write_done_worker (st_parameter_dt *);
+st_write_done_worker (st_parameter_dt *, bool);
 internal_proto (st_write_done_worker);
 
 extern void
-st_read_done_worker (st_parameter_dt *);
+st_read_done_worker (st_parameter_dt *, bool);
 internal_proto (st_read_done_worker);
 
 extern void

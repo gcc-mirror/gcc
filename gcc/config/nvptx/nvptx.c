@@ -1,5 +1,5 @@
 /* Target code for NVPTX.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -74,6 +74,8 @@
 #include "cfgloop.h"
 #include "fold-const.h"
 #include "intl.h"
+#include "opts.h"
+#include "tree-pretty-print.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -166,6 +168,12 @@ static unsigned vector_red_align;
 static unsigned vector_red_partition;
 static GTY(()) rtx vector_red_sym;
 
+/* Shared memory block for gang-private variables.  */
+static unsigned gang_private_shared_size;
+static unsigned gang_private_shared_align;
+static GTY(()) rtx gang_private_shared_sym;
+static hash_map<tree_decl_hash, unsigned int> gang_private_shared_hmap;
+
 /* Global lock variable, needed for 128bit worker & gang reductions.  */
 static GTY(()) tree global_lock_var;
 
@@ -219,7 +227,10 @@ nvptx_option_override (void)
     flag_no_common = 1;
 
   /* The patch area requires nops, which we don't have.  */
-  if (function_entry_patch_area_size > 0)
+  HOST_WIDE_INT patch_area_size, patch_area_entry;
+  parse_and_check_patch_area (flag_patchable_function_entry, false,
+			      &patch_area_size, &patch_area_entry);
+  if (patch_area_size > 0)
     sorry ("not generating patch area, nops not supported");
 
   /* Assumes that it will see only hard registers.  */
@@ -246,6 +257,10 @@ nvptx_option_override (void)
   SET_SYMBOL_DATA_AREA (vector_red_sym, DATA_AREA_SHARED);
   vector_red_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
   vector_red_partition = 0;
+
+  gang_private_shared_sym = gen_rtx_SYMBOL_REF (Pmode, "__gang_private_shared");
+  SET_SYMBOL_DATA_AREA (gang_private_shared_sym, DATA_AREA_SHARED);
+  gang_private_shared_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
 
   diagnose_openacc_conflict (TARGET_GOMP, "-mgomp");
   diagnose_openacc_conflict (TARGET_SOFT_STACK, "-msoft-stack");
@@ -2440,6 +2455,53 @@ nvptx_output_mov_insn (rtx dst, rtx src)
   return "%.\tcvt%t0%t1\t%0, %1;";
 }
 
+/* Output a pre/post barrier for MEM_OPERAND according to MEMMODEL.  */
+
+static void
+nvptx_output_barrier (rtx *mem_operand, int memmodel, bool pre_p)
+{
+  bool post_p = !pre_p;
+
+  switch (memmodel)
+    {
+    case MEMMODEL_RELAXED:
+      return;
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_ACQUIRE:
+    case MEMMODEL_SYNC_ACQUIRE:
+      if (post_p)
+	break;
+      return;
+    case MEMMODEL_RELEASE:
+    case MEMMODEL_SYNC_RELEASE:
+      if (pre_p)
+	break;
+      return;
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+    case MEMMODEL_SYNC_SEQ_CST:
+      if (pre_p || post_p)
+	break;
+      return;
+    default:
+      gcc_unreachable ();
+    }
+
+  output_asm_insn ("%.\tmembar%B0;", mem_operand);
+}
+
+const char *
+nvptx_output_atomic_insn (const char *asm_template, rtx *operands, int mem_pos,
+			  int memmodel_pos)
+{
+  nvptx_output_barrier (&operands[mem_pos], INTVAL (operands[memmodel_pos]),
+			true);
+  output_asm_insn (asm_template, operands);
+  nvptx_output_barrier (&operands[mem_pos], INTVAL (operands[memmodel_pos]),
+			false);
+  return "";
+}
+
 static void nvptx_print_operand (FILE *, rtx, int);
 
 /* Output INSN, which is a call to CALLEE with result RESULT.  For ptx, this
@@ -2656,6 +2718,36 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 
   switch (code)
     {
+    case 'B':
+      if (SYMBOL_REF_P (XEXP (x, 0)))
+	switch (SYMBOL_DATA_AREA (XEXP (x, 0)))
+	  {
+	  case DATA_AREA_GENERIC:
+	    /* Assume worst-case: global.  */
+	    gcc_fallthrough (); /* FALLTHROUGH.  */
+	  case DATA_AREA_GLOBAL:
+	    break;
+	  case DATA_AREA_SHARED:
+	    fputs (".cta", file);
+	    return;
+	  case DATA_AREA_LOCAL:
+	  case DATA_AREA_CONST:
+	  case DATA_AREA_PARAM:
+	  default:
+	    gcc_unreachable ();
+	  }
+
+      /* There are 2 cases where membar.sys differs from membar.gl:
+	 - host accesses global memory (f.i. systemwide atomics)
+	 - 2 or more devices are setup in peer-to-peer mode, and one
+	   peer can access global memory of other peer.
+	 Neither are currently supported by openMP/OpenACC on nvptx, but
+	 that could change, so we default to membar.sys.  We could support
+	 this more optimally by adding DATA_AREA_SYS and then emitting
+	 .gl for DATA_AREA_GLOBAL and .sys for DATA_AREA_SYS.  */
+      fputs (".sys", file);
+      return;
+
     case 'A':
       x = XEXP (x, 0);
       gcc_fallthrough (); /* FALLTHROUGH. */
@@ -3113,6 +3205,7 @@ nvptx_mach_vector_length ()
 
 /* Loop structure of the function.  The entire function is described as
    a NULL loop.  */
+/* See also 'gcc/omp-oacc-neuter-broadcast.cc:struct parallel_g'.  */
 
 struct parallel
 {
@@ -3190,6 +3283,7 @@ typedef auto_vec<insn_bb_t> insn_bb_vec_t;
    partitioning mode of the function as a whole.  Populate MAP with
    head and tail blocks.  We also clear the BB visited flag, which is
    used when finding partitions.  */
+/* See also 'gcc/omp-oacc-neuter-broadcast.cc:omp_sese_split_blocks'.  */
 
 static void
 nvptx_split_blocks (bb_insn_map_t *map)
@@ -3291,6 +3385,7 @@ nvptx_discover_pre (basic_block block, int expected)
 }
 
 /* Dump this parallel and all its inner parallels.  */
+/* See also 'gcc/omp-oacc-neuter-broadcast.cc:omp_sese_dump_pars'.  */
 
 static void
 nvptx_dump_pars (parallel *par, unsigned depth)
@@ -3316,6 +3411,7 @@ nvptx_dump_pars (parallel *par, unsigned depth)
 /* If BLOCK contains a fork/join marker, process it to create or
    terminate a loop structure.  Add this block to the current loop,
    and then walk successor blocks.   */
+/* See also 'gcc/omp-oacc-neuter-broadcast.cc:omp_sese_find_par'.  */
 
 static parallel *
 nvptx_find_par (bb_insn_map_t *map, parallel *par, basic_block block)
@@ -3396,6 +3492,7 @@ nvptx_find_par (bb_insn_map_t *map, parallel *par, basic_block block)
    to head & tail markers, discovered when splitting blocks.  This
    speeds up the discovery.  We rely on the BB visited flag having
    been cleared when splitting blocks.  */
+/* See also 'gcc/omp-oacc-neuter-broadcast.cc:omp_sese_discover_pars'.  */
 
 static parallel *
 nvptx_discover_pars (bb_insn_map_t *map)
@@ -3678,9 +3775,9 @@ nvptx_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
   edge e;
   edge_iterator ei;
   int hi_back = depth;
-  pseudo_node_t node_back (0, depth);
+  pseudo_node_t node_back (nullptr, depth);
   int hi_child = depth;
-  pseudo_node_t node_child (0, depth);
+  pseudo_node_t node_child (nullptr, depth);
   basic_block child = NULL;
   unsigned num_children = 0;
   int usd = -dir * sese->dir;
@@ -3747,7 +3844,7 @@ nvptx_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
       else
 	{ /* Fallen off graph, backlink to entry node.  */
 	  hi_back = 0;
-	  node_back = pseudo_node_t (0, 0);
+	  node_back = pseudo_node_t (nullptr, 0);
 	}
     }
 
@@ -3768,7 +3865,7 @@ nvptx_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
       else
 	{
 	  /* back edge to entry node */
-	  sese->push (pseudo_node_t (0, 0));
+	  sese->push (pseudo_node_t (nullptr, 0));
 	}
     }
   
@@ -3777,7 +3874,7 @@ nvptx_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
   if (!sese->brackets.length () || !edges || !edges->length ())
     {
       hi_back = 0;
-      node_back = pseudo_node_t (0, 0);
+      node_back = pseudo_node_t (nullptr, 0);
       sese->push (node_back);
     }
 
@@ -5305,7 +5402,10 @@ static void
 nvptx_file_start (void)
 {
   fputs ("// BEGIN PREAMBLE\n", asm_out_file);
-  fputs ("\t.version\t3.1\n", asm_out_file);
+  if (TARGET_PTX_6_3)
+    fputs ("\t.version\t6.3\n", asm_out_file);
+  else
+    fputs ("\t.version\t3.1\n", asm_out_file);
   if (TARGET_SM35)
     fputs ("\t.target\tsm_35\n", asm_out_file);
   else
@@ -5350,6 +5450,10 @@ nvptx_file_end (void)
   if (vector_red_size)
     write_shared_buffer (asm_out_file, vector_red_sym,
 			 vector_red_align, vector_red_size);
+
+  if (gang_private_shared_size)
+    write_shared_buffer (asm_out_file, gang_private_shared_sym,
+			 gang_private_shared_align, gang_private_shared_size);
 
   if (need_softstack_decl)
     {
@@ -6578,6 +6682,108 @@ nvptx_truly_noop_truncation (poly_uint64, poly_uint64)
   return false;
 }
 
+/* Implement TARGET_GOACC_ADJUST_PRIVATE_DECL.  */
+
+static tree
+nvptx_goacc_adjust_private_decl (location_t loc, tree decl, int level)
+{
+  gcc_checking_assert (!lookup_attribute ("oacc gang-private",
+					  DECL_ATTRIBUTES (decl)));
+
+  /* Set "oacc gang-private" attribute for gang-private variable
+     declarations.  */
+  if (level == GOMP_DIM_GANG)
+    {
+      tree id = get_identifier ("oacc gang-private");
+      /* For later diagnostic purposes, pass LOC as VALUE (wrapped as a
+	 TREE).  */
+      tree loc_tree = build_empty_stmt (loc);
+      DECL_ATTRIBUTES (decl)
+	= tree_cons (id, loc_tree, DECL_ATTRIBUTES (decl));
+    }
+
+  return decl;
+}
+
+/* Implement TARGET_GOACC_EXPAND_VAR_DECL.  */
+
+static rtx
+nvptx_goacc_expand_var_decl (tree var)
+{
+  /* Place "oacc gang-private" variables in shared memory.  */
+  if (tree attr = lookup_attribute ("oacc gang-private",
+				    DECL_ATTRIBUTES (var)))
+    {
+      gcc_checking_assert (VAR_P (var));
+
+      unsigned int offset, *poffset;
+      poffset = gang_private_shared_hmap.get (var);
+      if (poffset)
+	offset = *poffset;
+      else
+	{
+	  unsigned HOST_WIDE_INT align = DECL_ALIGN (var);
+	  gang_private_shared_size
+	    = (gang_private_shared_size + align - 1) & ~(align - 1);
+	  if (gang_private_shared_align < align)
+	    gang_private_shared_align = align;
+
+	  offset = gang_private_shared_size;
+	  bool existed = gang_private_shared_hmap.put (var, offset);
+	  gcc_checking_assert (!existed);
+	  gang_private_shared_size += tree_to_uhwi (DECL_SIZE_UNIT (var));
+
+	  location_t loc = EXPR_LOCATION (TREE_VALUE (attr));
+#if 0 /* For some reason, this doesn't work.  */
+	  if (dump_enabled_p ())
+	    {
+	      dump_flags_t l_dump_flags
+		= get_openacc_privatization_dump_flags ();
+
+	      const dump_user_location_t d_u_loc
+		= dump_user_location_t::from_location_t (loc);
+/* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+	      dump_printf_loc (l_dump_flags, d_u_loc,
+			       "variable %<%T%> adjusted for OpenACC"
+			       " privatization level: %qs\n",
+			       var, "gang");
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+	    }
+#else /* ..., thus emulate that, good enough for testsuite usage.  */
+	  if (param_openacc_privatization != OPENACC_PRIVATIZATION_QUIET)
+	    inform (loc,
+		    "variable %qD adjusted for OpenACC privatization level:"
+		    " %qs",
+		    var, "gang");
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      /* 'dumpfile.c:dump_loc' */
+	      fprintf (dump_file, "%s:%d:%d: ", LOCATION_FILE (loc),
+		       LOCATION_LINE (loc), LOCATION_COLUMN (loc));
+	      fprintf (dump_file, "%s: ", "note");
+
+	      fprintf (dump_file,
+		       "variable '");
+	      print_generic_expr (dump_file, var, TDF_SLIM);
+	      fprintf (dump_file,
+		       "' adjusted for OpenACC privatization level: '%s'\n",
+		       "gang");
+	    }
+#endif
+	}
+      rtx addr = plus_constant (Pmode, gang_private_shared_sym, offset);
+      return gen_rtx_MEM (TYPE_MODE (TREE_TYPE (var)), addr);
+    }
+
+  return NULL_RTX;
+}
+
 static GTY(()) tree nvptx_previous_fndecl;
 
 static void
@@ -6586,6 +6792,7 @@ nvptx_set_current_function (tree fndecl)
   if (!fndecl || fndecl == nvptx_previous_fndecl)
     return;
 
+  gang_private_shared_hmap.empty ();
   nvptx_previous_fndecl = fndecl;
   vector_red_partition = 0;
   oacc_bcast_partition = 0;
@@ -6749,6 +6956,12 @@ nvptx_libc_has_function (enum function_class fn_class, tree type)
 
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_GOACC_ADJUST_PRIVATE_DECL
+#define TARGET_GOACC_ADJUST_PRIVATE_DECL nvptx_goacc_adjust_private_decl
+
+#undef TARGET_GOACC_EXPAND_VAR_DECL
+#define TARGET_GOACC_EXPAND_VAR_DECL nvptx_goacc_expand_var_decl
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION nvptx_set_current_function

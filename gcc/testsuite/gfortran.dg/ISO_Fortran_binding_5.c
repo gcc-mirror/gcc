@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include <ISO_Fortran_binding.h>
 
 typedef struct {
   int i;

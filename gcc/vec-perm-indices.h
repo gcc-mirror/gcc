@@ -1,5 +1,5 @@
 /* A representation of vector permutation indices.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -57,6 +57,7 @@ public:
 
   void new_vector (const vec_perm_builder &, unsigned int, poly_uint64);
   void new_expanded_vector (const vec_perm_indices &, unsigned int);
+  bool new_shrunk_vector (const vec_perm_indices &, unsigned int);
   void rotate_inputs (int delta);
 
   /* Return the underlying vector encoding.  */

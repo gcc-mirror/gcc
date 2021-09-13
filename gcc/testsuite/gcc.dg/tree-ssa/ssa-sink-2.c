@@ -9,4 +9,4 @@ bar (int a, int b, int c)
   return y;
 }
 /* We should sink the x = a * b calculation into the else branch  */
-/* { dg-final { scan-tree-dump-times "Sunk statements: 1" 1 "sink" } } */
+/* { dg-final { scan-tree-dump-times "Sunk statements: 1" 1 "sink1" } } */

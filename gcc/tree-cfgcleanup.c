@@ -1,5 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -950,9 +950,7 @@ cleanup_control_flow_pre ()
   /* If we've marked .ABNORMAL_DISPATCHER basic block(s) as visited
      above, but haven't marked any of their successors as visited,
      unmark them now, so that they can be removed as useless.  */
-  basic_block dispatcher_bb;
-  unsigned int k;
-  FOR_EACH_VEC_ELT (abnormal_dispatchers, k, dispatcher_bb)
+  for (basic_block dispatcher_bb : abnormal_dispatchers)
     {
       edge e;
       edge_iterator ei;
@@ -1015,9 +1013,7 @@ cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
       if (!dom_info_available_p (CDI_DOMINATORS))
 	mark_dfs_back_edges ();
 
-      loop_p loop;
-      unsigned i;
-      FOR_EACH_VEC_ELT (*get_loops (cfun), i, loop)
+      for (loop_p loop : *get_loops (cfun))
 	if (loop && loop->header)
 	  {
 	    basic_block bb = loop->header;

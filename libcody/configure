@@ -587,15 +587,11 @@ PACKAGE_URL=''
 ac_unique_file="cody.hh"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-ALOY
-DOXYGEN
+configure_args
 AR
 RANLIB
 EXCEPTIONS
 PICFLAG
-CONFIG_FILES
-SUBDIRS
-configure_args
 OBJEXT
 EXEEXT
 ac_ct_CXX
@@ -604,8 +600,6 @@ LDFLAGS
 CXXFLAGS
 CXX
 MAINTAINER
-NUM_CPUS
-tools
 host_os
 host_vendor
 host_cpu
@@ -655,10 +649,8 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-with_tools
 enable_maintainer_mode
 with_compiler
-with_bugurl
 enable_checking
 enable_host_shared
 enable_exceptions
@@ -1299,9 +1291,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-tools=DIR        tool directory
   --with-compiler=NAME    which compiler to use
-  --with-bugurl=URL       where to report bugs
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -1836,27 +1826,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-# thanks to Zack Weinberg for fixing this!
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1869,7 +1838,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 ac_aux_dir=
-for ac_dir in build-aux "$srcdir"/build-aux; do
+for ac_dir in .. "$srcdir"/..; do
   if test -f "$ac_dir/install-sh"; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -1885,7 +1854,7 @@ for ac_dir in build-aux "$srcdir"/build-aux; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in build-aux \"$srcdir\"/build-aux" "$LINENO" 5
+  as_fn_error $? "cannot find install-sh, install.sh, or shtool in .. \"$srcdir\"/.." "$LINENO" 5
 fi
 
 # These three variables are undocumented and unsupported,
@@ -1899,9 +1868,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 
-if test -e configure ; then
-as_fn_error $? "Do not build in the source tree.  Reasons" "$LINENO" 5
-fi
 # Make sure we can run config.sub.
 $SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
   as_fn_error $? "cannot run $SHELL $ac_aux_dir/config.sub" "$LINENO" 5
@@ -1973,43 +1939,6 @@ IFS=$ac_save_IFS
 case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 
-
-
-
-# Check whether --with-tools was given.
-if test "${with_tools+set}" = set; then :
-  withval=$with_tools; case $withval in #(
-  yes) :
-    as_fn_error $? "--with-tools requires an argument" "$LINENO" 5 ;; #(
-  no) :
-    : ;; #(
-  *) :
-    tools="${withval%/bin}" ;;
-esac
-fi
-
-
-if test -n "$tools" ; then
-  if test -d "$tools/bin"; then
-    PATH="$tools/bin:$PATH"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Using tools in $tools" >&5
-$as_echo "$as_me: Using tools in $tools" >&6;}
-  else
-    as_fn_error $? "tool location does not exist" "$LINENO" 5
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking number of CPUs" >&5
-$as_echo_n "checking number of CPUs... " >&6; }
-case $build in #(
-  *-*-darwin*) :
-    NUM_CPUS=$(sysctl -n hw.ncpu 2>/dev/null) ;; #(
-  *) :
-    NUM_CPUS=$(grep -c '^processor' /proc/cpuinfo 2>/dev/null) ;;
-esac
-test "$NUM_CPUS" = 0 && NUM_CPUS=
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${NUM_CPUS:-unknown}" >&5
-$as_echo "${NUM_CPUS:-unknown}" >&6; }
-test "$NUM_CPUS" = 1 && NUM_CPUS=
 
 # Check whether --enable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then :
@@ -2634,17 +2563,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 unset CXX_ORIG
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-if test "$tools" && test -d "$tools/include" ; then
-  CXX="$CXX -I$tools/include"
-fi
-if test "$tools" && test -d "$tools/lib" ; then
-  toollib="$tools/lib"
-  if os=$(CXX -print-multi-os-directory 2>/dev/null) ; then
-    toollib="$toollib/${os}"
-  fi
-  LDFLAGS="$LDFLAGS -L $toollib"
-  unset toollib
-fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking adding -Wl,--no-undefined to linker" >&5
 $as_echo_n "checking adding -Wl,--no-undefined to linker... " >&6; }
 ORIG_LDFLAGS="$LDFLAGS"
@@ -2671,24 +2589,6 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 unset ORIG_LDFLAGS
-CONFIG_FILES="Makefile gdbinit dox.cfg"
-SUBDIRS=""
-for generated in config.h.in configure ; do
-  if test $srcdir/configure.ac -nt $srcdir/$generated ; then
-    touch $srcdir/$generated
-  fi
-done
-for dir in . $SUBDIRS
-do
-  CONFIG_FILES="$CONFIG_FILES $dir/Makesub"
-  test -f ${srcdir}/$dir/tests/Makesub.in && CONFIG_FILES="$CONFIG_FILES $dir/tests/Makesub"
-done
-ac_config_files="$ac_config_files $CONFIG_FILES"
-
-configure_args=$ac_configure_args
-
-
-
 
 # Enable expensive internal checks
 is_release=
@@ -2697,30 +2597,6 @@ if test -d $srcdir/../gcc \
    && test x"`cat $srcdir/../gcc/DEV-PHASE`" != xexperimental; then
   is_release=yes
 fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking bugurl" >&5
-$as_echo_n "checking bugurl... " >&6; }
-
-# Check whether --with-bugurl was given.
-if test "${with_bugurl+set}" = set; then :
-  withval=$with_bugurl; case "$withval" in #(
-  yes) :
-    as_fn_error $? "--with-bugurl requires an argument" "$LINENO" 5 ;; #(
-  no) :
-    BUGURL="" ;; #(
-  *) :
-    BUGURL="${withval}" ;;
-esac
-else
-  BUGURL="${PACKAGE_BUGREPORT}"
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $BUGURL" >&5
-$as_echo "$BUGURL" >&6; }
-
-cat >>confdefs.h <<_ACEOF
-#define BUGURL "$BUGURL"
-_ACEOF
 
 # Check whether --enable-checking was given.
 if test "${enable_checking+set}" = set; then :
@@ -2789,8 +2665,6 @@ if test "$nms_exceptions" != no ; then
   EXCEPTIONS=yes
 fi
 
-
-ac_config_headers="$ac_config_headers config.h"
 
 if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}ranlib", so it can be a program name with args.
@@ -2976,83 +2850,14 @@ else
   AR="$ac_cv_prog_AR"
 fi
 
-# Extract the first word of "doxygen", so it can be a program name with args.
-set dummy doxygen; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_DOXYGEN+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$DOXYGEN"; then
-  ac_cv_prog_DOXYGEN="$DOXYGEN" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_DOXYGEN="doxygen"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_DOXYGEN" && ac_cv_prog_DOXYGEN=": NOTdoxygen"
-fi
-fi
-DOXYGEN=$ac_cv_prog_DOXYGEN
-if test -n "$DOXYGEN"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOXYGEN" >&5
-$as_echo "$DOXYGEN" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
 
 
-# Extract the first word of "aloy", so it can be a program name with args.
-set dummy aloy; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_ALOY+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$ALOY"; then
-  ac_cv_prog_ALOY="$ALOY" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_ALOY="aloy"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_ALOY" && ac_cv_prog_ALOY=": Joust testsuite missing"
-fi
-fi
-ALOY=$ac_cv_prog_ALOY
-if test -n "$ALOY"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ALOY" >&5
-$as_echo "$ALOY" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
+ac_config_headers="$ac_config_headers config.h"
 
 
+ac_config_files="$ac_config_files Makefile"
 
+configure_args=$ac_configure_args
 
 
 cat >confcache <<\_ACEOF
@@ -3744,8 +3549,8 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
-    "$CONFIG_FILES") CONFIG_FILES="$CONFIG_FILES $CONFIG_FILES" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
+    "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

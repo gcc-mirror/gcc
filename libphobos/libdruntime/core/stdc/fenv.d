@@ -149,10 +149,10 @@ version (GNUFP)
         alias fexcept_t = uint;
     }
     // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/sparc/fpu/bits/fenv.h
-    else version (SPARC64)
+    else version (SPARC_Any)
     {
-        alias fenv_t = ulong;
-        alias fexcept_t = ulong;
+        alias fenv_t = c_ulong;
+        alias fexcept_t = c_ulong;
     }
     // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/s390/fpu/bits/fenv.h
     else version (IBMZ_Any)
@@ -237,7 +237,7 @@ else version (NetBSD)
                     uint status;        /* Status word register */
                     uint tag;           /* Tag word register */
                     uint[4] others;     /* EIP, Pointer Selector, etc */
-            };
+            }
             _x87 x87;
 
             uint mxcsr;                 /* Control and status register */
@@ -256,10 +256,10 @@ else version (NetBSD)
                     ushort tag;         /* Tag word register */
                     ushort unused3;
                     uint[4] others;     /* EIP, Pointer Selector, etc */
-            };
+            }
             _x87 x87;
             uint mxcsr;                 /* Control and status register */
-        };
+        }
 
     }
 
@@ -291,7 +291,7 @@ else version (DragonFlyBSD)
                 uint status;
                 uint tag;
                 uint[4] others;
-        };
+        }
         _x87 x87;
 
         uint mxcsr;
@@ -877,7 +877,7 @@ int feholdexcept(fenv_t* envp);
 ///
 int fegetexceptflag(fexcept_t* flagp, int excepts);
 ///
-int fesetexceptflag(in fexcept_t* flagp, int excepts);
+int fesetexceptflag(const scope fexcept_t* flagp, int excepts);
 
 ///
 int fegetround();
@@ -887,7 +887,7 @@ int fesetround(int round);
 ///
 int fegetenv(fenv_t* envp);
 ///
-int fesetenv(in fenv_t* envp);
+int fesetenv(const scope fenv_t* envp);
 
 // MS define feraiseexcept() and feupdateenv() inline.
 version (CRuntime_Microsoft) // supported since MSVCRT 12 (VS 2013) only
@@ -925,7 +925,7 @@ version (CRuntime_Microsoft) // supported since MSVCRT 12 (VS 2013) only
     }
 
     ///
-    int feupdateenv()(in fenv_t* envp)
+    int feupdateenv()(const scope fenv_t* envp)
     {
         int excepts = fetestexcept(FE_ALL_EXCEPT);
         return (fesetenv(envp) != 0 || feraiseexcept(excepts) != 0 ? 1 : 0);
@@ -936,5 +936,5 @@ else
     ///
     int feraiseexcept(int excepts);
     ///
-    int feupdateenv(in fenv_t* envp);
+    int feupdateenv(const scope fenv_t* envp);
 }

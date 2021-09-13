@@ -1,4 +1,4 @@
 import std.typecons : tuple;
 enum foo = tuple(1, 2).expand;
-pragma(msg, typeof(foo).stringof);
-pragma(msg, foo.stringof);
+static assert(typeof(foo).stringof == "(int, int)");
+static assert(foo.stringof == "tuple(1, 2)");

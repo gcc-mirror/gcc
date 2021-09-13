@@ -1,5 +1,5 @@
 /* Classes for representing locations within the program.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -293,7 +293,8 @@ public:
   }
 
   bool on_edge (exploded_graph &eg, const superedge *succ);
-
+  void push_to_call_stack (const supernode *caller, const supernode *callee);
+  void pop_from_call_stack ();
   void validate () const;
 
   /* For before_stmt, go to next stmt.  */

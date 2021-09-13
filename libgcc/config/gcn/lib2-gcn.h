@@ -1,6 +1,6 @@
 /* Integer arithmetic support for gcn.
 
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Altera and Mentor Graphics, Inc.
 
    This file is free software; you can redistribute it and/or modify it
@@ -33,13 +33,21 @@ typedef short HItype __attribute__ ((mode (HI)));
 typedef unsigned short UHItype __attribute__ ((mode (HI)));
 typedef int SItype __attribute__ ((mode (SI)));
 typedef unsigned int USItype __attribute__ ((mode (SI)));
+typedef int DItype __attribute__ ((mode (DI)));
+typedef unsigned int UDItype __attribute__ ((mode (DI)));
+typedef int TItype __attribute__ ((mode (TI)));
+typedef unsigned int UTItype __attribute__ ((mode (TI)));
 typedef int word_type __attribute__ ((mode (__word__)));
 
 /* Exported functions.  */
+extern DItype __divdi3 (DItype, DItype);
+extern DItype __moddi3 (DItype, DItype);
+extern UDItype __udivdi3 (UDItype, UDItype);
+extern UDItype __umoddi3 (UDItype, UDItype);
 extern SItype __divsi3 (SItype, SItype);
 extern SItype __modsi3 (SItype, SItype);
-extern SItype __udivsi3 (SItype, SItype);
-extern SItype __umodsi3 (SItype, SItype);
+extern USItype __udivsi3 (USItype, USItype);
+extern USItype __umodsi3 (USItype, USItype);
 extern HItype __divhi3 (HItype, HItype);
 extern HItype __modhi3 (HItype, HItype);
 extern UHItype __udivhi3 (UHItype, UHItype);

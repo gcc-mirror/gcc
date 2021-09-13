@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -171,15 +171,15 @@ is
       --  is required (RM A.10.3(23)) but it seems reasonable, and besides
       --  ACVC test CE3208A expects this behavior.
 
-      if File_Type (File) = Current_In then
+      if File = Current_In then
          Current_In := null;
-      elsif File_Type (File) = Current_Out then
+      elsif File = Current_Out then
          Current_Out := null;
-      elsif File_Type (File) = Current_Err then
+      elsif File = Current_Err then
          Current_Err := null;
       end if;
 
-      Terminate_Line (File_Type (File));
+      Terminate_Line (File.all'Access);
    end AFCB_Close;
 
    ---------------
@@ -187,10 +187,9 @@ is
    ---------------
 
    procedure AFCB_Free (File : not null access Text_AFCB) is
-      type FCB_Ptr is access all Text_AFCB;
-      FT : FCB_Ptr := FCB_Ptr (File);
+      FT : File_Type := File.all'Access;
 
-      procedure Free is new Ada.Unchecked_Deallocation (Text_AFCB, FCB_Ptr);
+      procedure Free is new Ada.Unchecked_Deallocation (Text_AFCB, File_Type);
 
    begin
       Free (FT);

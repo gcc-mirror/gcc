@@ -102,7 +102,7 @@ MOSTLYCLEANFILES = \
 mostlyclean-local:
 	if test -d check-go-dir; then chmod -R u+w check-go-dir; fi
 	rm -rf check-go-dir cgo-test-dir carchive-test-dir \
-	check-vet-dir gocache-test
+	check-vet-dir check-embed-dir gocache-test
 
 if NATIVE
 
@@ -307,11 +307,28 @@ check-vet: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	(cd check-vet-dir/src/cmd/vet && $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> cmd_vet-testlog 2>&1 || echo "--- $${fl}: go test cmd/vet (0.00s)" >> cmd_vet-testlog
 	grep '^--- ' cmd_vet-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
+# check-embed runs `go test embed/internal/embedtest` in our environment.
+check-embed: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
+	rm -rf check-embed-dir embed-testlog
+	$(MKDIR_P) check-embed-dir/src/embed/internal
+	cp $(libgosrcdir)/go.mod check-embed-dir/src/
+	$(MKDIR_P) check-embed-dir/src/vendor
+	cp $(libgosrcdir)/vendor/modules.txt check-embed-dir/src/vendor/
+	cp -r $(libgosrcdir)/embed/internal/embedtest check-embed-dir/src/embed/internal
+	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
+	abs_checkdir=`cd check-embed-dir && $(PWD_COMMAND)`; \
+	echo "cd check-embed-dir/src/embed/internal/embedtest && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > embed-testlog
+	$(CHECK_ENV) \
+	GOPATH=`cd check-embed-dir && $(PWD_COMMAND)`; \
+	export GOPATH; \
+	(cd check-embed-dir/src/embed/internal/embedtest && $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> embed-testlog 2>&1 || echo "--- $${fl}: go test embed/internal/embedtest (0.00s)" >> embed-testlog
+	grep '^--- ' embed-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
+
 # The check targets runs the tests and assembles the output files.
-check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet
+check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet check-embed
 	@mv gotools.head gotools.sum
 	@cp gotools.sum gotools.log
-	@for file in cmd_go-testlog runtime-testlog cgo-testlog carchive-testlog cmd_vet-testlog; do \
+	@for file in cmd_go-testlog runtime-testlog cgo-testlog carchive-testlog cmd_vet-testlog embed-testlog; do \
 	  testname=`echo $${file} | sed -e 's/-testlog//' -e 's|_|/|'`; \
 	  echo "Running $${testname}" >> gotools.sum; \
 	  echo "Running $${testname}" >> gotools.log; \
@@ -337,7 +354,8 @@ check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test
 	@echo "runtest completed at `date`" >> gotools.log
 	@if grep '^FAIL' gotools.sum >/dev/null 2>&1; then exit 1; fi
 
-.PHONY: check check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet
+.PHONY: check check-head check-go-tool check-runtime check-cgo-test
+.PHONY: check-carchive-test check-vet check-embed
 
 else
 

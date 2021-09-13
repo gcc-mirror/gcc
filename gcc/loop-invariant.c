@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -212,7 +212,6 @@ check_maybe_invariant (rtx x)
       return true;
 
     case PC:
-    case CC0:
     case UNSPEC_VOLATILE:
     case CALL:
       return false;
@@ -1094,10 +1093,6 @@ find_invariant_insn (rtx_insn *insn, bool always_reached, bool always_executed)
   rtx set, dest;
   bool simple = true;
   struct invariant *inv;
-
-  /* We can't move a CC0 setter without the user.  */
-  if (HAVE_cc0 && sets_cc0_p (insn))
-    return;
 
   /* Jumps have control flow side-effects.  */
   if (JUMP_P (insn))
@@ -2141,7 +2136,7 @@ calculate_loop_reg_pressure (void)
   rtx link;
   class loop *loop, *parent;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     if (loop->aux == NULL)
       {
 	loop->aux = xcalloc (1, sizeof (class loop_data));
@@ -2208,7 +2203,7 @@ calculate_loop_reg_pressure (void)
   bitmap_release (&curr_regs_live);
   if (flag_ira_region == IRA_REGION_MIXED
       || flag_ira_region == IRA_REGION_ALL)
-    FOR_EACH_LOOP (loop, 0)
+    for (auto loop : loops_list (cfun, 0))
       {
 	EXECUTE_IF_SET_IN_BITMAP (&LOOP_DATA (loop)->regs_live, 0, j, bi)
 	  if (! bitmap_bit_p (&LOOP_DATA (loop)->regs_ref, j))
@@ -2222,7 +2217,7 @@ calculate_loop_reg_pressure (void)
       }
   if (dump_file == NULL)
     return;
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       parent = loop_outer (loop);
       fprintf (dump_file, "\n  Loop %d (parent %d, header bb%d, depth %d)\n",
@@ -2256,8 +2251,6 @@ calculate_loop_reg_pressure (void)
 void
 move_loop_invariants (void)
 {
-  class loop *loop;
-
   if (optimize == 1)
     df_live_add_problem ();
   /* ??? This is a hack.  We should only need to call df_live_set_all_dirty
@@ -2276,7 +2269,7 @@ move_loop_invariants (void)
     }
   df_set_flags (DF_EQ_NOTES + DF_DEFER_INSN_RESCAN);
   /* Process the loops, innermost first.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       curr_loop = loop;
       /* move_single_loop_invariants for very large loops is time consuming
@@ -2289,10 +2282,8 @@ move_loop_invariants (void)
 	move_single_loop_invariants (loop);
     }
 
-  FOR_EACH_LOOP (loop, 0)
-    {
+  for (auto loop : loops_list (cfun, 0))
       free_loop_data (loop);
-    }
 
   if (flag_ira_loop_pressure)
     /* There is no sense to keep this info because it was most

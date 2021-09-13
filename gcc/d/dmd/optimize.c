@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0
@@ -21,8 +21,6 @@
 #include "ctfe.h"
 #include "errors.h"
 
-Expression *semantic(Expression *e, Scope *sc);
-
 /*************************************
  * If variable has a const initializer,
  * return that initializer.
@@ -36,7 +34,7 @@ Expression *expandVar(int result, VarDeclaration *v)
     if (!v)
         return e;
     if (!v->originalType && v->semanticRun < PASSsemanticdone) // semantic() not yet run
-        v->semantic(NULL);
+        dsymbolSemantic(v, NULL);
 
     if (v->isConst() || v->isImmutable() || v->storage_class & STCmanifest)
     {
@@ -97,7 +95,7 @@ Expression *expandVar(int result, VarDeclaration *v)
                     {
                         // const var initialized with non-const expression
                         ei = ei->implicitCastTo(NULL, v->type);
-                        ei = semantic(ei, NULL);
+                        ei = expressionSemantic(ei, NULL);
                     }
                     else
                         goto L1;

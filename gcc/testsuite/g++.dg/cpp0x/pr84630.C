@@ -5,3 +5,4 @@ template <typename...> struct c {
   template <int> __attribute__((noinline([] {}))) int b();  // { dg-error "wrong number of arguments" }
 };
 c<> a;
+int i = a.b<42>();

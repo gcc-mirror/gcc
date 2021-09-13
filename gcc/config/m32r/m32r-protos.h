@@ -1,5 +1,5 @@
 /* Prototypes for m32r.c functions used in the md file & elsewhere.
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -49,13 +49,13 @@ extern rtx    m32r_return_addr (int);
 extern rtx    m32r_function_symbol (const char *);
 
 #ifdef HAVE_MACHINE_MODES
-extern int    call_operand (rtx, machine_mode);
-extern int    small_data_operand (rtx, machine_mode);
+extern bool    call_operand (rtx, machine_mode);
+extern bool    small_data_operand (rtx, machine_mode);
 extern int    addr24_operand (rtx, machine_mode);
 extern int    addr32_operand (rtx, machine_mode);
 extern int    call26_operand (rtx, machine_mode);
-extern int    memreg_operand (rtx, machine_mode);
-extern int    small_insn_p (rtx, machine_mode);
+extern bool    memreg_operand (rtx, machine_mode);
+extern bool    small_insn_p (rtx, machine_mode);
 
 #endif /* HAVE_MACHINE_MODES */
 

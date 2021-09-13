@@ -4,5 +4,5 @@
 void
 profileme (void)
 {
-  /* { dg-final { scan-assembler "NOPs for -mnop-mcount \\(12 halfwords\\)\n.*brcl\t0,0\n.*brcl\t0,0\n.*brcl\t0,0\n.*brcl\t0,0" } } */
+  /* { dg-final { scan-assembler "NOPs for -mnop-mcount \\(9 halfwords\\)\n.*brcl\t0,0\n.*brcl\t0,0\n.*brcl\t0,0" } } */
 }

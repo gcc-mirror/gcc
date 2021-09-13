@@ -1,5 +1,5 @@
 // PR c++/95066 - explicit malfunction with dependent expression.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <typename T>
 struct Foo {

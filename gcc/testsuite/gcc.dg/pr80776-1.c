@@ -17,7 +17,15 @@ Foo (void)
     __builtin_unreachable ();
   if (! (0 <= i && i <= 999999))
     __builtin_unreachable ();
-  /* The correctness bits for [E]VRP cannot handle chained conditionals
-     when deciding to ignore a unreachable branch for setting SSA range info. */
-  sprintf (number, "%d", i); /* { dg-bogus "writing" "" { xfail *-*-* } } */
+
+  /* Legacy evrp sets the range of i to [0, MAX] *before* the first conditional,
+     and to [0,999999] *before* the second conditional.  This is because both
+     evrp and VRP use trickery to set global ranges when this particular use of
+     a __builtin_unreachable is in play (see uses of
+     assert_unreachable_fallthru_edge_p).
+
+     Setting these ranges at the definition site, causes VRP to remove the
+     unreachable code altogether, leaving the following sprintf unguarded.  This
+     causes the bogus warning below.  */
+  sprintf (number, "%d", i); /* { dg-bogus "writing" "" } */
 }

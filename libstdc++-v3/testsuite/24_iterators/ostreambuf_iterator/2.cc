@@ -1,6 +1,6 @@
 // 2001-04-30  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,7 +45,7 @@ void test02(void)
   VERIFY( !ostrb_it01.failed() );
   ostrb_it01 = 'a';
   VERIFY( !ostrb_it01.failed() );
-  *ostrb_it01;
+  (void) *ostrb_it01;
   VERIFY( !ostrb_it01.failed() );
 
   costreambuf_iter ostrb_it02(0);
@@ -53,11 +53,11 @@ void test02(void)
   ostrb_it02++;
   ++ostrb_it02;
   VERIFY( ostrb_it02.failed() );
-  *ostrb_it02;
+  (void) *ostrb_it02;
   VERIFY( ostrb_it02.failed() );
   ostrb_it02 = 'a';
   VERIFY( ostrb_it02.failed() );
-  
+
   // charT operator*() const
   // ostreambuf_iterator& operator++();
   // ostreambuf_iterator& operator++(int);

@@ -1,5 +1,5 @@
 /* IRA conflict builder.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -233,19 +233,30 @@ go_through_subreg (rtx x, int *offset)
   return reg;
 }
 
+/* Return the recomputed frequency for this shuffle copy or its similar
+   case, since it's not for a real move insn, make it smaller.  */
+
+static int
+get_freq_for_shuffle_copy (int freq)
+{
+  return freq < 8 ? 1 : freq / 8;
+}
+
 /* Process registers REG1 and REG2 in move INSN with execution
    frequency FREQ.  The function also processes the registers in a
    potential move insn (INSN == NULL in this case) with frequency
    FREQ.  The function can modify hard register costs of the
    corresponding allocnos or create a copy involving the corresponding
    allocnos.  The function does nothing if the both registers are hard
-   registers.  When nothing is changed, the function returns
-   FALSE.  */
+   registers.  When nothing is changed, the function returns FALSE.
+   SINGLE_INPUT_OP_HAS_CSTR_P is only meaningful when constraint_p
+   is true, see function ira_get_dup_out_num for its meaning.  */
 static bool
-process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
-		       rtx_insn *insn, int freq)
+process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p, rtx_insn *insn,
+		       int freq, bool single_input_op_has_cstr_p = true)
 {
-  int allocno_preferenced_hard_regno, cost, index, offset1, offset2;
+  int allocno_preferenced_hard_regno, index, offset1, offset2;
+  int cost, conflict_cost, move_cost;
   bool only_regs_p;
   ira_allocno_t a;
   reg_class_t rclass, aclass;
@@ -275,7 +286,10 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
       ira_allocno_t a1 = ira_curr_regno_allocno_map[REGNO (reg1)];
       ira_allocno_t a2 = ira_curr_regno_allocno_map[REGNO (reg2)];
 
-      if (!allocnos_conflict_for_copy_p (a1, a2) && offset1 == offset2)
+      if (!allocnos_conflict_for_copy_p (a1, a2)
+	  && offset1 == offset2
+	  && ordered_p (GET_MODE_PRECISION (ALLOCNO_MODE (a1)),
+			GET_MODE_PRECISION (ALLOCNO_MODE (a2))))
 	{
 	  cp = ira_add_allocno_copy (a1, a2, freq, constraint_p, insn,
 				     ira_curr_loop_tree_node);
@@ -303,9 +317,52 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
     return false;
   ira_init_register_move_cost_if_necessary (mode);
   if (HARD_REGISTER_P (reg1))
-    cost = ira_register_move_cost[mode][aclass][rclass] * freq;
+    move_cost = ira_register_move_cost[mode][aclass][rclass];
   else
-    cost = ira_register_move_cost[mode][rclass][aclass] * freq;
+    move_cost = ira_register_move_cost[mode][rclass][aclass];
+
+  if (!single_input_op_has_cstr_p)
+    {
+      /* When this is a constraint copy and the matching constraint
+	 doesn't only exist for this given operand but also for some
+	 other operand(s), it means saving the possible move cost does
+	 NOT need to require reg1 and reg2 to use the same hardware
+	 register, so this hardware preference isn't required to be
+	 fixed.  To avoid it to over prefer this hardware register,
+	 and over disparage this hardware register on conflicted
+	 objects, we need some cost tweaking here, similar to what
+	 we do for shuffle copy.  */
+      gcc_assert (constraint_p);
+      int reduced_freq = get_freq_for_shuffle_copy (freq);
+      if (HARD_REGISTER_P (reg1))
+	/* For reg2 = opcode(reg1, reg3 ...), assume that reg3 is a
+	   pseudo register which has matching constraint on reg2,
+	   even if reg2 isn't assigned by reg1, it's still possible
+	   not to have register moves if reg2 and reg3 use the same
+	   hardware register.  So to avoid the allocation to over
+	   prefer reg1, we can just take it as a shuffle copy.  */
+	cost = conflict_cost = move_cost * reduced_freq;
+      else
+	{
+	  /* For reg1 = opcode(reg2, reg3 ...), assume that reg3 is a
+	     pseudo register which has matching constraint on reg2,
+	     to save the register move, it's better to assign reg1
+	     to either of reg2 and reg3 (or one of other pseudos like
+	     reg3), it's reasonable to use freq for the cost.  But
+	     for conflict_cost, since reg2 and reg3 conflicts with
+	     each other, both of them has the chance to be assigned
+	     by reg1, assume reg3 has one copy which also conflicts
+	     with reg2, we shouldn't make it less preferred on reg1
+	     since reg3 has the same chance to be assigned by reg1.
+	     So it adjusts the conflic_cost to make it same as what
+	     we use for shuffle copy.  */
+	  cost = move_cost * freq;
+	  conflict_cost = move_cost * reduced_freq;
+	}
+    }
+  else
+    cost = conflict_cost = move_cost * freq;
+
   do
     {
       ira_allocate_and_set_costs
@@ -314,7 +371,7 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
       ira_allocate_and_set_costs
 	(&ALLOCNO_CONFLICT_HARD_REG_COSTS (a), aclass, 0);
       ALLOCNO_HARD_REG_COSTS (a)[index] -= cost;
-      ALLOCNO_CONFLICT_HARD_REG_COSTS (a)[index] -= cost;
+      ALLOCNO_CONFLICT_HARD_REG_COSTS (a)[index] -= conflict_cost;
       if (ALLOCNO_HARD_REG_COSTS (a)[index] < ALLOCNO_CLASS_COST (a))
 	ALLOCNO_CLASS_COST (a) = ALLOCNO_HARD_REG_COSTS (a)[index];
       ira_add_allocno_pref (a, allocno_preferenced_hard_regno, freq);
@@ -417,7 +474,8 @@ add_insn_allocno_copies (rtx_insn *insn)
       operand = recog_data.operand[i];
       if (! REG_SUBREG_P (operand))
 	continue;
-      if ((n = ira_get_dup_out_num (i, alts)) >= 0)
+      bool single_input_op_has_cstr_p;
+      if ((n = ira_get_dup_out_num (i, alts, single_input_op_has_cstr_p)) >= 0)
 	{
 	  bound_p[n] = true;
 	  dup = recog_data.operand[n];
@@ -426,8 +484,8 @@ add_insn_allocno_copies (rtx_insn *insn)
 				REG_P (operand)
 				? operand
 				: SUBREG_REG (operand)) != NULL_RTX)
-	    process_regs_for_copy (operand, dup, true, NULL,
-				   freq);
+	    process_regs_for_copy (operand, dup, true, NULL, freq,
+				   single_input_op_has_cstr_p);
 	}
     }
   for (i = 0; i < recog_data.n_operands; i++)
@@ -437,13 +495,15 @@ add_insn_allocno_copies (rtx_insn *insn)
 	  && find_reg_note (insn, REG_DEAD,
 			    REG_P (operand)
 			    ? operand : SUBREG_REG (operand)) != NULL_RTX)
-	/* If an operand dies, prefer its hard register for the output
-	   operands by decreasing the hard register cost or creating
-	   the corresponding allocno copies.  The cost will not
-	   correspond to a real move insn cost, so make the frequency
-	   smaller.  */
-	process_reg_shuffles (insn, operand, i, freq < 8 ? 1 : freq / 8,
-			      bound_p);
+	{
+	  /* If an operand dies, prefer its hard register for the output
+	     operands by decreasing the hard register cost or creating
+	     the corresponding allocno copies.  The cost will not
+	     correspond to a real move insn cost, so make the frequency
+	     smaller.  */
+	  int new_freq = get_freq_for_shuffle_copy (freq);
+	  process_reg_shuffles (insn, operand, i, new_freq, bound_p);
+	}
     }
 }
 

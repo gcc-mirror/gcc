@@ -1,5 +1,5 @@
 ;; Machine description for SPARC.
-;; Copyright (C) 1987-2020 Free Software Foundation, Inc.
+;; Copyright (C) 1987-2021 Free Software Foundation, Inc.
 ;; Contributed by Michael Tiemann (tiemann@cygnus.com)
 ;; 64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
 ;; at Cygnus Support.
@@ -855,7 +855,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_VIS3"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (ltu:W (reg:CCXC CC_REG) (const_int 0)))]
   ""
@@ -882,7 +882,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_SUBXC"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (neg:W (ltu:W (reg:CCXC CC_REG) (const_int 0))))]
   ""
@@ -984,7 +984,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_VIS3"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (plus:W (ltu:W (reg:CCXC CC_REG) (const_int 0))
 			      (match_dup 2)))]
@@ -1000,7 +1000,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_VIS3"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (plus:W (plus:W (ltu:W (reg:CCXC CC_REG) (const_int 0))
 				      (match_dup 2))
@@ -1048,7 +1048,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_SUBXC"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (minus:W (match_dup 2)
 			       (ltu:W (reg:CCXC CC_REG) (const_int 0))))]
@@ -1064,7 +1064,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_SUBXC"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (minus:W (minus:W (match_dup 2)
 				        (ltu:W (reg:CCXC CC_REG) (const_int 0)))
@@ -1592,7 +1592,7 @@
 ;; because the RDPC instruction is extremely expensive and incurs a complete
 ;; instruction pipeline flush.
 
-(define_insn "load_pcrel_sym<P:mode>"
+(define_insn "@load_pcrel_sym<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(unspec:P [(match_operand:P 1 "symbolic_operand" "")
 		   (match_operand:P 2 "call_address_operand" "")
@@ -1869,8 +1869,8 @@ visl")
    (set_attr "lra" "*,*,disabled,disabled,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 (define_insn "*movdi_insn_sp64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,  W,b,b")
-        (match_operand:DI 1 "input_operand"        "rI,N,m,rJ,*e, r, *e,  W,?*e,J,P"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,  m,b,b")
+        (match_operand:DI 1 "input_operand"        "rI,N,m,rJ,*e, r, *e,  m,?*e,J,P"))]
   "TARGET_ARCH64
    && (register_operand (operands[0], DImode)
        || register_or_zero_or_all_ones_operand (operands[1], DImode))"
@@ -2498,8 +2498,8 @@ visl")
    (set_attr "lra" "*,*,*,*,*,*,*,*,*,*,disabled,disabled,*,*,*,*,*")])
 
 (define_insn "*movdf_insn_sp64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,*r, e,  e,W, *r,*r,  m,*r")
-	(match_operand:DF 1 "input_operand"         "G,C,e, e,*r,W#F,e,*rG, m,*rG, F"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,*r, e,  e,m, *r,*r,  m,*r")
+	(match_operand:DF 1 "input_operand"         "G,C,e, e,*r,m#F,e,*rG, m,*rG, F"))]
   "TARGET_ARCH64
    && (register_operand (operands[0], DFmode)
        || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
@@ -7290,7 +7290,7 @@ visl")
     = adjust_address (operands[0], GET_MODE (operands[0]), SPARC_STACK_BIAS);
 })
 
-(define_insn "probe_stack_range<P:mode>"
+(define_insn "@probe_stack_range<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(unspec_volatile:P [(match_operand:P 1 "register_operand" "0")
 			    (match_operand:P 2 "register_operand" "r")]
@@ -7468,7 +7468,7 @@ visl")
 
 ;; Special pattern for the FLUSH instruction.
 
-(define_insn "flush<P:mode>"
+(define_insn "@flush<P:mode>"
   [(unspec_volatile [(match_operand:P 0 "memory_operand" "m")] UNSPECV_FLUSH)]
   ""
 {
@@ -7935,14 +7935,14 @@ visl")
 
 ;; TLS support instructions.
 
-(define_insn "tgd_hi22<P:mode>"
+(define_insn "@tgd_hi22<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
         (high:P (unspec:P [(match_operand 1 "tgd_symbolic_operand" "")]
 			  UNSPEC_TLSGD)))]
   "TARGET_TLS"
   "sethi\\t%%tgd_hi22(%a1), %0")
 
-(define_insn "tgd_lo10<P:mode>"
+(define_insn "@tgd_lo10<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(lo_sum:P (match_operand:P 1 "register_operand" "r")
 		  (unspec:P [(match_operand 2 "tgd_symbolic_operand" "")]
@@ -7950,7 +7950,7 @@ visl")
   "TARGET_TLS"
   "add\\t%1, %%tgd_lo10(%a2), %0")
 
-(define_insn "tgd_add<P:mode>"
+(define_insn "@tgd_add<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(plus:P (match_operand:P 1 "register_operand" "r")
 		(unspec:P [(match_operand:P 2 "register_operand" "r")
@@ -7959,7 +7959,7 @@ visl")
   "TARGET_TLS"
   "add\\t%1, %2, %0, %%tgd_add(%a3)")
 
-(define_insn "tgd_call<P:mode>"
+(define_insn "@tgd_call<P:mode>"
   [(set (match_operand 0 "register_operand" "=r")
 	(call (mem:P (unspec:P [(match_operand:P 1 "symbolic_operand" "s")
 				(match_operand 2 "tgd_symbolic_operand" "")]
@@ -7972,20 +7972,20 @@ visl")
                                     (const_string "call")
                                     (const_string "call_no_delay_slot")))])
 
-(define_insn "tldm_hi22<P:mode>"
+(define_insn "@tldm_hi22<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
         (high:P (unspec:P [(const_int 0)] UNSPEC_TLSLDM)))]
   "TARGET_TLS"
   "sethi\\t%%tldm_hi22(%&), %0")
 
-(define_insn "tldm_lo10<P:mode>"
+(define_insn "@tldm_lo10<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(lo_sum:P (match_operand:P 1 "register_operand" "r")
 		  (unspec:P [(const_int 0)] UNSPEC_TLSLDM)))]
   "TARGET_TLS"
   "add\\t%1, %%tldm_lo10(%&), %0")
 
-(define_insn "tldm_add<P:mode>"
+(define_insn "@tldm_add<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(plus:P (match_operand:P 1 "register_operand" "r")
 		(unspec:P [(match_operand:P 2 "register_operand" "r")]
@@ -7993,7 +7993,7 @@ visl")
   "TARGET_TLS"
   "add\\t%1, %2, %0, %%tldm_add(%&)")
 
-(define_insn "tldm_call<P:mode>"
+(define_insn "@tldm_call<P:mode>"
   [(set (match_operand 0 "register_operand" "=r")
 	(call (mem:P (unspec:P [(match_operand:P 1 "symbolic_operand" "s")]
 			       UNSPEC_TLSLDM))
@@ -8005,14 +8005,14 @@ visl")
                                     (const_string "call")
                                     (const_string "call_no_delay_slot")))])
 
-(define_insn "tldo_hix22<P:mode>"
+(define_insn "@tldo_hix22<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
         (high:P (unspec:P [(match_operand 1 "tld_symbolic_operand" "")]
 			  UNSPEC_TLSLDO)))]
   "TARGET_TLS"
   "sethi\\t%%tldo_hix22(%a1), %0")
 
-(define_insn "tldo_lox10<P:mode>"
+(define_insn "@tldo_lox10<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(lo_sum:P (match_operand:P 1 "register_operand" "r")
 		  (unspec:P [(match_operand 2 "tld_symbolic_operand" "")]
@@ -8020,7 +8020,7 @@ visl")
   "TARGET_TLS"
   "xor\\t%1, %%tldo_lox10(%a2), %0")
 
-(define_insn "tldo_add<P:mode>"
+(define_insn "@tldo_add<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(plus:P (match_operand:P 1 "register_operand" "r")
 		(unspec:P [(match_operand:P 2 "register_operand" "r")
@@ -8029,14 +8029,14 @@ visl")
   "TARGET_TLS"
   "add\\t%1, %2, %0, %%tldo_add(%a3)")
 
-(define_insn "tie_hi22<P:mode>"
+(define_insn "@tie_hi22<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
         (high:P (unspec:P [(match_operand 1 "tie_symbolic_operand" "")]
 			  UNSPEC_TLSIE)))]
   "TARGET_TLS"
   "sethi\\t%%tie_hi22(%a1), %0")
 
-(define_insn "tie_lo10<P:mode>"
+(define_insn "@tie_lo10<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(lo_sum:P (match_operand:P 1 "register_operand" "r")
 		  (unspec:P [(match_operand 2 "tie_symbolic_operand" "")]
@@ -8068,7 +8068,7 @@ visl")
   [(set_attr "type" "load")
    (set_attr "subtype" "regular")])
 
-(define_insn "tie_add<P:mode>"
+(define_insn "@tie_add<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(plus:P (match_operand:P 1 "register_operand" "r")
 		(unspec:P [(match_operand:P 2 "register_operand" "r")
@@ -8077,14 +8077,14 @@ visl")
   "TARGET_SUN_TLS"
   "add\\t%1, %2, %0, %%tie_add(%a3)")
 
-(define_insn "tle_hix22<P:mode>"
+(define_insn "@tle_hix22<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
         (high:P (unspec:P [(match_operand 1 "tle_symbolic_operand" "")]
 			  UNSPEC_TLSLE)))]
   "TARGET_TLS"
   "sethi\\t%%tle_hix22(%a1), %0")
 
-(define_insn "tle_lox10<P:mode>"
+(define_insn "@tle_lox10<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(lo_sum:P (match_operand:P 1 "register_operand" "r")
 		  (unspec:P [(match_operand 2 "tle_symbolic_operand" "")]
@@ -8342,13 +8342,13 @@ visl")
   operands[1] = gen_rtx_MEM (Pmode, addr);
 #endif
   if (TARGET_ARCH64)
-    emit_insn (gen_stack_protect_setdi (operands[0], operands[1]));
+    emit_insn (gen_stack_protect_set64 (operands[0], operands[1]));
   else
-    emit_insn (gen_stack_protect_setsi (operands[0], operands[1]));
+    emit_insn (gen_stack_protect_set32 (operands[0], operands[1]));
   DONE;
 })
 
-(define_insn "stack_protect_setsi"
+(define_insn "stack_protect_set32"
   [(set (match_operand:SI 0 "memory_operand" "=m")
 	(unspec:SI [(match_operand:SI 1 "memory_operand" "m")] UNSPEC_SP_SET))
    (set (match_scratch:SI 2 "=&r") (const_int 0))]
@@ -8357,7 +8357,7 @@ visl")
   [(set_attr "type" "multi")
    (set_attr "length" "3")])
 
-(define_insn "stack_protect_setdi"
+(define_insn "stack_protect_set64"
   [(set (match_operand:DI 0 "memory_operand" "=m")
 	(unspec:DI [(match_operand:DI 1 "memory_operand" "m")] UNSPEC_SP_SET))
    (set (match_scratch:DI 2 "=&r") (const_int 0))]
@@ -8381,13 +8381,13 @@ visl")
   if (TARGET_ARCH64)
     {
       result = gen_reg_rtx (Pmode);
-      emit_insn (gen_stack_protect_testdi (result, operands[0], operands[1]));
+      emit_insn (gen_stack_protect_test64 (result, operands[0], operands[1]));
       test = gen_rtx_EQ (VOIDmode, result, const0_rtx);
       emit_jump_insn (gen_cbranchdi4 (test, result, const0_rtx, operands[2]));
     }
   else
     {
-      emit_insn (gen_stack_protect_testsi (operands[0], operands[1]));
+      emit_insn (gen_stack_protect_test32 (operands[0], operands[1]));
       result = gen_rtx_REG (CCmode, SPARC_ICC_REG);
       test = gen_rtx_EQ (VOIDmode, result, const0_rtx);
       emit_jump_insn (gen_cbranchcc4 (test, result, const0_rtx, operands[2]));
@@ -8395,7 +8395,7 @@ visl")
   DONE;
 })
 
-(define_insn "stack_protect_testsi"
+(define_insn "stack_protect_test32"
   [(set (reg:CC CC_REG)
 	(unspec:CC [(match_operand:SI 0 "memory_operand" "m")
 		    (match_operand:SI 1 "memory_operand" "m")]
@@ -8407,7 +8407,7 @@ visl")
   [(set_attr "type" "multi")
    (set_attr "length" "4")])
 
-(define_insn "stack_protect_testdi"
+(define_insn "stack_protect_test64"
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(unspec:DI [(match_operand:DI 1 "memory_operand" "m")
 		    (match_operand:DI 2 "memory_operand" "m")]
@@ -8467,8 +8467,8 @@ visl")
    (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,*,vis3,vis3")])
 
 (define_insn "*mov<VM64:mode>_insn_sp64"
-  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,e,W,m,*r, m,*r, e,*r")
-	(match_operand:VM64 1 "input_operand"         "Y,Z,e,W,e,Y, m,*r, e,*r,*r"))]
+  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,e,m,m,*r, m,*r, e,*r")
+	(match_operand:VM64 1 "input_operand"         "Y,Z,e,m,e,Y, m,*r, e,*r,*r"))]
   "TARGET_VIS
    && TARGET_ARCH64
    && (register_operand (operands[0], <VM64:MODE>mode)

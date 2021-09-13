@@ -1,6 +1,6 @@
 // Filesystem TS operations -*- C++ -*-
 
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -426,7 +426,7 @@ fs::create_directories(const path& p, error_code& ec) noexcept
       return false;
     }
 
-  file_status st = symlink_status(p, ec);
+  file_status st = status(p, ec);
   if (is_directory(st))
     return false;
   else if (ec && !status_known(st))
@@ -590,7 +590,7 @@ fs::create_hard_link(const path& to, const path& new_hard_link,
   if (CreateHardLinkW(new_hard_link.c_str(), to.c_str(), NULL))
     ec.clear();
   else
-    ec.assign((int)GetLastError(), generic_category());
+    ec.assign((int)GetLastError(), system_category());
 #else
   ec = std::make_error_code(std::errc::not_supported);
 #endif
@@ -1062,7 +1062,7 @@ fs::remove(const path& p, error_code& ec) noexcept
 	  return true;
 	}
       else if (!ec)
-	ec.assign((int)GetLastError(), generic_category());
+	ec.assign((int)GetLastError(), system_category());
     }
   else if (status_known(st))
     ec.clear();
@@ -1289,7 +1289,8 @@ fs::system_complete(const path& p, error_code& ec)
 #endif
 }
 
-fs::path fs::temp_directory_path()
+fs::path
+fs::temp_directory_path()
 {
   error_code ec;
   path tmp = temp_directory_path(ec);
@@ -1298,31 +1299,12 @@ fs::path fs::temp_directory_path()
   return tmp;
 }
 
-fs::path fs::temp_directory_path(error_code& ec)
+fs::path
+fs::temp_directory_path(error_code& ec)
 {
-  path p;
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  unsigned len = 1024;
-  std::wstring buf;
-  do
-    {
-      buf.resize(len);
-      len = GetTempPathW(buf.size(), buf.data());
-    } while (len > buf.size());
-
-  if (len == 0)
-    {
-      ec.assign((int)GetLastError(), std::system_category());
-      return p;
-    }
-  buf.resize(len);
-  p = std::move(buf);
-#else
-  const char* tmpdir = nullptr;
-  const char* env[] = { "TMPDIR", "TMP", "TEMP", "TEMPDIR", nullptr };
-  for (auto e = env; tmpdir == nullptr && *e != nullptr; ++e)
-    tmpdir = ::getenv(*e);
-  p = tmpdir ? tmpdir : "/tmp";
+  path p = fs::get_temp_directory_from_env(ec);
+  if (ec)
+    return p;
   auto st = status(p, ec);
   if (ec)
     p.clear();
@@ -1331,7 +1313,5 @@ fs::path fs::temp_directory_path(error_code& ec)
       p.clear();
       ec = std::make_error_code(std::errc::not_a_directory);
     }
-#endif
   return p;
 }
-

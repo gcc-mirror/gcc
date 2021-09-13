@@ -16,4 +16,4 @@ void foo (void)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Sinking # VUSE" 4 "sink" } } */
+/* { dg-final { scan-tree-dump-times "Sinking # VUSE" 4 "sink1" } } */

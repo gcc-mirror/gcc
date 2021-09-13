@@ -1,5 +1,5 @@
 /* Header file for libgcov-*.c.
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -45,10 +45,14 @@
 #include "libgcc_tm.h"
 #include "gcov.h"
 
+#if HAVE_SYS_MMAN_H
+#include <sys/mman.h>
+#endif
+
 #if __CHAR_BIT__ == 8
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (SI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (SI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __LIBGCC_GCOV_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (DI)));
 typedef unsigned gcov_type_unsigned __attribute__ ((mode (DI)));
 #else
@@ -59,7 +63,7 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (SI)));
 #if __CHAR_BIT__ == 16
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (HI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (HI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __LIBGCC_GCOV_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (SI)));
 typedef unsigned gcov_type_unsigned __attribute__ ((mode (SI)));
 #else
@@ -69,7 +73,7 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (HI)));
 #else
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (QI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (QI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __LIBGCC_GCOV_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (HI)));
 typedef unsigned gcov_type_unsigned __attribute__ ((mode (HI)));
 #else
@@ -83,6 +87,12 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define GCOV_LOCKED 1
 #else
 #define GCOV_LOCKED 0
+#endif
+
+#if defined (__MSVCRT__)
+#define GCOV_LOCKED_WITH_LOCKING 1
+#else
+#define GCOV_LOCKED_WITH_LOCKING 0
 #endif
 
 #ifndef GCOV_SUPPORTS_ATOMIC
@@ -104,13 +114,11 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define gcov_var __gcov_var
 #define gcov_open __gcov_open
 #define gcov_close __gcov_close
-#define gcov_write_tag_length __gcov_write_tag_length
 #define gcov_position __gcov_position
 #define gcov_seek __gcov_seek
 #define gcov_rewrite __gcov_rewrite
 #define gcov_is_error __gcov_is_error
 #define gcov_write_unsigned __gcov_write_unsigned
-#define gcov_write_counter __gcov_write_counter
 #define gcov_write_summary __gcov_write_summary
 #define gcov_read_unsigned __gcov_read_unsigned
 #define gcov_read_counter __gcov_read_counter
@@ -129,10 +137,17 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 typedef unsigned gcov_unsigned_t;
 typedef unsigned gcov_position_t;
 /* gcov_type is typedef'd elsewhere for the compiler */
+
 #if defined (HOST_HAS_F_SETLKW)
 #define GCOV_LOCKED 1
 #else
 #define GCOV_LOCKED 0
+#endif
+
+#if defined (HOST_HAS_LK_LOCK)
+#define GCOV_LOCKED_WITH_LOCKING 1
+#else
+#define GCOV_LOCKED_WITH_LOCKING 0
 #endif
 
 /* Some Macros specific to gcov-tool.  */
@@ -166,6 +181,16 @@ extern struct gcov_info *gcov_list;
 #define ATTRIBUTE_HIDDEN  __attribute__ ((__visibility__ ("hidden")))
 #else
 #define ATTRIBUTE_HIDDEN
+#endif
+
+#if HAVE_SYS_MMAN_H
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
+
+#if !defined (MAP_ANONYMOUS) && defined (MAP_ANON)
+#define MAP_ANONYMOUS MAP_ANON
+#endif
 #endif
 
 #include "gcov-io.h"
@@ -250,8 +275,9 @@ struct indirect_call_tuple
   
 /* Exactly one of these will be active in the process.  */
 extern struct gcov_master __gcov_master;
-extern struct gcov_kvp __gcov_kvp_pool[GCOV_PREALLOCATED_KVP];
-extern unsigned __gcov_kvp_pool_index;
+extern struct gcov_kvp *__gcov_kvp_dynamic_pool;
+extern unsigned __gcov_kvp_dynamic_pool_index;
+extern unsigned __gcov_kvp_dynamic_pool_size;
 
 /* Dump a set of gcov objects.  */
 extern void __gcov_dump_one (struct gcov_root *) ATTRIBUTE_HIDDEN;
@@ -317,9 +343,6 @@ extern int __gcov_execve (const char *, char  *const [], char *const [])
 
 /* Functions that only available in libgcov.  */
 GCOV_LINKAGE int gcov_open (const char */*name*/) ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE void gcov_write_counter (gcov_type) ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE void gcov_write_tag_length (gcov_unsigned_t, gcov_unsigned_t)
-    ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_write_summary (gcov_unsigned_t /*tag*/,
                                       const struct gcov_summary *)
     ATTRIBUTE_HIDDEN;
@@ -404,45 +427,82 @@ gcov_counter_add (gcov_type *counter, gcov_type value,
     *counter += value;
 }
 
+#if HAVE_SYS_MMAN_H
+
+/* Allocate LENGTH with mmap function.  */
+
+static inline void *
+malloc_mmap (size_t length)
+{
+  return mmap (NULL, length, PROT_READ | PROT_WRITE,
+	       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+}
+
+#endif
+
 /* Allocate gcov_kvp from statically pre-allocated pool,
    or use heap otherwise.  */
 
 static inline struct gcov_kvp *
 allocate_gcov_kvp (void)
 {
+#define MMAP_CHUNK_SIZE	(128 * 1024)
   struct gcov_kvp *new_node = NULL;
+  unsigned kvp_sizeof = sizeof(struct gcov_kvp);
 
-#if !defined(IN_GCOV_TOOL) && !defined(L_gcov_merge_topn)
-  if (__gcov_kvp_pool_index < GCOV_PREALLOCATED_KVP)
+  /* Try mmaped pool if available.  */
+#if !defined(IN_GCOV_TOOL) && !defined(L_gcov_merge_topn) && HAVE_SYS_MMAN_H
+  if (__gcov_kvp_dynamic_pool == NULL
+      || __gcov_kvp_dynamic_pool_index >= __gcov_kvp_dynamic_pool_size)
+    {
+      void *ptr = malloc_mmap (MMAP_CHUNK_SIZE);
+      if (ptr != MAP_FAILED)
+	{
+	  __gcov_kvp_dynamic_pool = ptr;
+	  __gcov_kvp_dynamic_pool_size = MMAP_CHUNK_SIZE / kvp_sizeof;
+	  __gcov_kvp_dynamic_pool_index = 0;
+	}
+    }
+
+  if (__gcov_kvp_dynamic_pool != NULL)
     {
       unsigned index;
 #if GCOV_SUPPORTS_ATOMIC
       index
-	= __atomic_fetch_add (&__gcov_kvp_pool_index, 1, __ATOMIC_RELAXED);
+	= __atomic_fetch_add (&__gcov_kvp_dynamic_pool_index, 1,
+			      __ATOMIC_RELAXED);
 #else
-      index = __gcov_kvp_pool_index++;
+      index = __gcov_kvp_dynamic_pool_index++;
 #endif
-      if (index < GCOV_PREALLOCATED_KVP)
-	new_node = &__gcov_kvp_pool[index];
+      if (index < __gcov_kvp_dynamic_pool_size)
+	new_node = __gcov_kvp_dynamic_pool + index;
     }
 #endif
 
+  /* Fallback to malloc.  */
   if (new_node == NULL)
-    new_node = (struct gcov_kvp *)xcalloc (1, sizeof (struct gcov_kvp));
+    new_node = (struct gcov_kvp *)xcalloc (1, kvp_sizeof);
 
   return new_node;
 }
 
 /* Add key value pair VALUE:COUNT to a top N COUNTERS.  When INCREMENT_TOTAL
    is true, add COUNT to total of the TOP counter.  If USE_ATOMIC is true,
-   do it in atomic way.  */
+   do it in atomic way.  Return true when the counter is full, otherwise
+   return false.  */
 
-static inline void
+static inline unsigned
 gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
 		     int use_atomic, int increment_total)
 {
   if (increment_total)
-    gcov_counter_add (&counters[0], 1, use_atomic);
+    {
+      /* In the multi-threaded mode, we can have an already merged profile
+	 with a negative total value.  In that case, we should bail out.  */
+      if (counters[0] < 0)
+	return 0;
+      gcov_counter_add (&counters[0], 1, use_atomic);
+    }
 
   struct gcov_kvp *prev_node = NULL;
   struct gcov_kvp *minimal_node = NULL;
@@ -453,7 +513,7 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
       if (current_node->value == value)
 	{
 	  gcov_counter_add (&current_node->count, count, use_atomic);
-	  return;
+	  return 0;
 	}
 
       if (minimal_node == NULL
@@ -471,12 +531,14 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
 	  minimal_node->value = value;
 	  minimal_node->count = count;
 	}
+
+      return 1;
     }
   else
     {
       struct gcov_kvp *new_node = allocate_gcov_kvp ();
       if (new_node == NULL)
-	return;
+	return 0;
 
       new_node->value = value;
       new_node->count = count;
@@ -515,6 +577,8 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
       if (success)
 	gcov_counter_add (&counters[1], 1, use_atomic);
     }
+
+  return 0;
 }
 
 #endif /* !inhibit_libc */

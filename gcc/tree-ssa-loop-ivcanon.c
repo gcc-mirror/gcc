@@ -1,5 +1,5 @@
 /* Induction variable canonicalization and loop peeling.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -218,7 +218,7 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
   gimple_stmt_iterator gsi;
   unsigned int i;
   bool after_exit;
-  vec<basic_block> path = get_loop_hot_path (loop);
+  auto_vec<basic_block> path = get_loop_hot_path (loop);
 
   size->overall = 0;
   size->eliminated_by_peeling = 0;
@@ -342,7 +342,6 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 	      - size->last_iteration_eliminated_by_peeling) > upper_bound)
 	    {
               free (body);
-	      path.release ();
 	      return true;
 	    }
 	}
@@ -379,7 +378,7 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 	    size->num_branches_on_hot_path++;
 	}
     }
-  path.release ();
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "size: %i-%i, last_iteration: %i-%i\n", size->overall,
     	     size->eliminated_by_peeling, size->last_iteration,
@@ -1286,14 +1285,13 @@ canonicalize_loop_induction_variables (class loop *loop,
 unsigned int
 canonicalize_induction_variables (void)
 {
-  class loop *loop;
   bool changed = false;
   bool irred_invalidated = false;
   bitmap loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
   estimate_numbers_of_iterations (cfun);
 
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       changed |= canonicalize_loop_induction_variables (loop,
 							true, UL_SINGLE_ITER,

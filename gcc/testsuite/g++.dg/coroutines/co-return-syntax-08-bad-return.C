@@ -24,7 +24,7 @@ struct Coro {
   ~promise_type() {}
   Coro get_return_object () { return Coro (handle_type::from_promise (*this)); }
   auto initial_suspend () { return coro::suspend_always{}; }
-  auto final_suspend () { return coro::suspend_always{}; }
+  auto final_suspend () noexcept { return coro::suspend_always{}; }
   void return_void () { }
    void unhandled_exception() { }
   };

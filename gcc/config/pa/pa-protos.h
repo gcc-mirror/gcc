@@ -1,5 +1,5 @@
 /* Prototypes for pa.c functions used in the md file & elsewhere.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -115,3 +115,4 @@ extern const int pa_magic_milli[];
 
 /* Routines implemented in pa-d.c  */
 extern void pa_d_target_versions (void);
+extern void pa_d_register_target_info (void);

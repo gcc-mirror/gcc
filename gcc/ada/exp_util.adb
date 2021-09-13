@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,46 +23,50 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Aggr; use Exp_Aggr;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch11; use Exp_Ch11;
-with Ghost;    use Ghost;
-with Inline;   use Inline;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Disp; use Sem_Disp;
-with Sem_Elab; use Sem_Elab;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Validsw;  use Validsw;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Aggr;       use Exp_Aggr;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch11;       use Exp_Ch11;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Inline;         use Inline;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Validsw;        use Validsw;
 
 with GNAT.HTable;
 package body Exp_Util is
@@ -834,7 +838,7 @@ package body Exp_Util is
       --  Optimize the case where we are using the default Global_Pool_Object,
       --  and we don't need the heavy finalization machinery.
 
-      elsif Pool_Id = RTE (RE_Global_Pool_Object)
+      elsif Is_RTE (Pool_Id, RE_Global_Pool_Object)
         and then not Needs_Finalization (Desig_Typ)
       then
          return;
@@ -1327,6 +1331,7 @@ package body Exp_Util is
                  and then Is_Primitive_Wrapper (New_E)
                  and then Is_Primitive_Wrapper (Subp)
                  and then Scope (Subp) = Scope (New_E)
+                 and then Chars (Pragma_Identifier (Prag)) = Name_Precondition
                then
                   Error_Msg_Node_2 := Wrapped_Entity (Subp);
                   Error_Msg_NE
@@ -1462,9 +1467,7 @@ package body Exp_Util is
         Make_Procedure_Call_Statement (Loc,
           Name                   => New_Occurrence_Of (Proc_Id, Loc),
           Parameter_Associations => New_List (
-            Make_Unchecked_Type_Conversion (Loc,
-              Subtype_Mark => New_Occurrence_Of (Formal_Typ, Loc),
-              Expression   => Obj_Name)));
+            Unchecked_Convert_To (Formal_Typ, Obj_Name)));
    end Build_DIC_Call;
 
    ------------------------------
@@ -1854,12 +1857,18 @@ package body Exp_Util is
          end if;
 
          --  Once the DIC assertion expression is fully processed, add a check
-         --  to the statements of the DIC procedure.
+         --  to the statements of the DIC procedure (unless the type is an
+         --  abstract type, in which case we don't want the possibility of
+         --  generating a call to an abstract function of the type; such DIC
+         --  procedures can never be called in any case, so not generating the
+         --  check at all is OK).
 
-         Add_DIC_Check
-           (DIC_Prag => DIC_Prag,
-            DIC_Expr => Expr,
-            Stmts    => Stmts);
+         if not Is_Abstract_Type (DIC_Typ) or else GNATprove_Mode then
+            Add_DIC_Check
+              (DIC_Prag => DIC_Prag,
+               DIC_Expr => Expr,
+               Stmts    => Stmts);
+         end if;
       end Add_Own_DIC;
 
       ---------------------
@@ -2180,7 +2189,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the body is not analyzed
 
-      Set_Ekind        (Proc_Body_Id, E_Subprogram_Body);
+      Mutate_Ekind     (Proc_Body_Id, E_Subprogram_Body);
       Set_Etype        (Proc_Body_Id, Standard_Void_Type);
       Set_Scope        (Proc_Body_Id, Current_Scope);
       Set_SPARK_Pragma (Proc_Body_Id, SPARK_Pragma (Proc_Id));
@@ -2347,7 +2356,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the declaration is not analyzed
 
-      Set_Ekind                  (Proc_Id, E_Procedure);
+      Mutate_Ekind               (Proc_Id, E_Procedure);
       Set_Etype                  (Proc_Id, Standard_Void_Type);
       Set_Is_DIC_Procedure       (Proc_Id);
       Set_Scope                  (Proc_Id, Current_Scope);
@@ -2399,7 +2408,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the declaration is not analyzed
 
-      Set_Ekind (Obj_Id, E_In_Parameter);
+      Mutate_Ekind (Obj_Id, E_In_Parameter);
       Set_Etype (Obj_Id, Work_Typ);
       Set_Scope (Obj_Id, Proc_Id);
 
@@ -3669,7 +3678,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the body is not analyzed
 
-      Set_Ekind (Proc_Body_Id, E_Subprogram_Body);
+      Mutate_Ekind (Proc_Body_Id, E_Subprogram_Body);
       Set_Etype (Proc_Body_Id, Standard_Void_Type);
       Set_Scope (Proc_Body_Id, Current_Scope);
 
@@ -3807,7 +3816,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the declaration is not analyzed
 
-      Set_Ekind (Proc_Id, E_Procedure);
+      Mutate_Ekind (Proc_Id, E_Procedure);
       Set_Etype (Proc_Id, Standard_Void_Type);
       Set_Scope (Proc_Id, Current_Scope);
 
@@ -3893,7 +3902,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the declaration is not analyzed
 
-      Set_Ekind (Obj_Id, E_In_Parameter);
+      Mutate_Ekind (Obj_Id, E_In_Parameter);
       Set_Etype (Obj_Id, Obj_Typ);
       Set_Scope (Obj_Id, Proc_Id);
 
@@ -4697,7 +4706,7 @@ package body Exp_Util is
       --    type Ptr_Typ is access all Desig_Typ;
 
       Ptr_Typ := Make_Temporary (Loc, 'A');
-      Set_Ekind (Ptr_Typ, E_General_Access_Type);
+      Mutate_Ekind (Ptr_Typ, E_General_Access_Type);
       Set_Directly_Designated_Type (Ptr_Typ, Desig_Typ);
 
       Ptr_Decl :=
@@ -4714,7 +4723,7 @@ package body Exp_Util is
       --    Hook : Ptr_Typ := null;
 
       Hook_Id := Make_Temporary (Loc, 'T');
-      Set_Ekind (Hook_Id, E_Variable);
+      Mutate_Ekind (Hook_Id, E_Variable);
       Set_Etype (Hook_Id, Ptr_Typ);
 
       Hook_Decl :=
@@ -5305,6 +5314,195 @@ package body Exp_Util is
       end if;
    end Evolve_Or_Else;
 
+   -------------------------------
+   -- Expand_Sliding_Conversion --
+   -------------------------------
+
+   procedure Expand_Sliding_Conversion (N : Node_Id; Arr_Typ : Entity_Id) is
+
+      pragma Assert (Is_Array_Type (Arr_Typ)
+                      and then not Is_Constrained (Arr_Typ)
+                      and then Is_Fixed_Lower_Bound_Array_Subtype (Arr_Typ));
+
+      Constraints : List_Id;
+      Index       : Node_Id := First_Index (Arr_Typ);
+      Loc         : constant Source_Ptr := Sloc (N);
+      Subt_Decl   : Node_Id;
+      Subt        : Entity_Id;
+      Subt_Low    : Node_Id;
+      Subt_High   : Node_Id;
+
+      Act_Subt    : Entity_Id;
+      Act_Index   : Node_Id;
+      Act_Low     : Node_Id;
+      Act_High    : Node_Id;
+      Adjust_Incr : Node_Id;
+      Dimension   : Int := 0;
+      All_FLBs_Match : Boolean := True;
+
+   begin
+      --  This procedure is called during semantic analysis, and we only expand
+      --  a sliding conversion when Expander_Active, to avoid doing it during
+      --  preanalysis (which can lead to problems with the target subtype not
+      --  getting properly expanded during later full analysis). Also, sliding
+      --  should never be needed for string literals, because their bounds are
+      --  determined directly based on the fixed lower bound of Arr_Typ and
+      --  their length.
+
+      if Expander_Active and then Nkind (N) /= N_String_Literal then
+         Constraints := New_List;
+
+         Act_Subt  := Get_Actual_Subtype (N);
+         Act_Index := First_Index (Act_Subt);
+
+         --  Loop over the indexes of the fixed-lower-bound array type or
+         --  subtype to build up an index constraint for constructing the
+         --  subtype that will be the target of a conversion of the array
+         --  object that may need a sliding conversion.
+
+         while Present (Index) loop
+            pragma Assert (Present (Act_Index));
+
+            Dimension := Dimension + 1;
+
+            Get_Index_Bounds (Act_Index, Act_Low, Act_High);
+
+            --  If Index defines a normal unconstrained range (range <>),
+            --  then we will simply use the bounds of the actual subtype's
+            --  corresponding index range.
+
+            if not Is_Fixed_Lower_Bound_Index_Subtype (Etype (Index)) then
+               Subt_Low  := Act_Low;
+               Subt_High := Act_High;
+
+            --  Otherwise, a range will be created with a low bound given by
+            --  the fixed lower bound of the array subtype's index, and with
+            --  high bound given by (Actual'Length + fixed lower bound - 1).
+
+            else
+               if Nkind (Index) = N_Subtype_Indication then
+                  Subt_Low :=
+                    New_Copy_Tree
+                      (Low_Bound (Range_Expression (Constraint (Index))));
+               else
+                  pragma Assert (Nkind (Index) = N_Range);
+
+                  Subt_Low := New_Copy_Tree (Low_Bound (Index));
+               end if;
+
+               --  If either we have a nonstatic lower bound, or the target and
+               --  source subtypes are statically known to have unequal lower
+               --  bounds, then we will need to make a subtype conversion to
+               --  slide the bounds. However, if all of the indexes' lower
+               --  bounds are static and known to be equal (the common case),
+               --  then no conversion will be needed, and we'll end up not
+               --  creating the subtype or the conversion (though we still
+               --  build up the index constraint, which will simply be unused).
+
+               if not (Compile_Time_Known_Value (Subt_Low)
+                        and then Compile_Time_Known_Value (Act_Low))
+                 or else Expr_Value (Subt_Low) /= Expr_Value (Act_Low)
+               then
+                  All_FLBs_Match := False;
+               end if;
+
+               --  Apply 'Pos to lower bound, which may be of an enumeration
+               --  type, before subtracting.
+
+               Adjust_Incr :=
+                 Make_Op_Subtract (Loc,
+                   Make_Attribute_Reference (Loc,
+                      Prefix         =>
+                        New_Occurrence_Of (Etype (Act_Index), Loc),
+                      Attribute_Name =>
+                        Name_Pos,
+                      Expressions    =>
+                        New_List (New_Copy_Tree (Subt_Low))),
+                   Make_Integer_Literal (Loc, 1));
+
+               --  Apply 'Val to the result of adding the increment to the
+               --  length, to handle indexes of enumeration types.
+
+               Subt_High :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                     New_Occurrence_Of (Etype (Act_Index), Loc),
+                   Attribute_Name =>
+                     Name_Val,
+                   Expressions    =>
+                     New_List (Make_Op_Add (Loc,
+                                 Make_Attribute_Reference (Loc,
+                                   Prefix         =>
+                                     New_Occurrence_Of (Act_Subt, Loc),
+                                   Attribute_Name =>
+                                     Name_Length,
+                                   Expressions    =>
+                                     New_List
+                                       (Make_Integer_Literal
+                                          (Loc, Dimension))),
+                                 Adjust_Incr)));
+            end if;
+
+            Append (Make_Range (Loc, Subt_Low, Subt_High), Constraints);
+
+            Next (Index);
+            Next (Act_Index);
+         end loop;
+
+         --  If for each index with a fixed lower bound (FLB), the lower bound
+         --  of the corresponding index of the actual subtype is statically
+         --  known be equal to the FLB, then a sliding conversion isn't needed
+         --  at all, so just return without building a subtype or conversion.
+
+         if All_FLBs_Match then
+            return;
+         end if;
+
+         --  A sliding conversion is needed, so create the target subtype using
+         --  the index constraint created above, and rewrite the expression
+         --  as a conversion to that subtype.
+
+         Subt := Make_Temporary (Loc, 'S', Related_Node => N);
+         Set_Is_Internal (Subt);
+
+         Subt_Decl :=
+           Make_Subtype_Declaration (Loc,
+             Defining_Identifier => Subt,
+             Subtype_Indication  =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Occurrence_Of (Arr_Typ,  Loc),
+                 Constraint   =>
+                   Make_Index_Or_Discriminant_Constraint (Loc,
+                     Constraints => Constraints)));
+
+         Mark_Rewrite_Insertion (Subt_Decl);
+
+         --  The actual subtype is an Itype, so we analyze the declaration,
+         --  but do not attach it to the tree.
+
+         Set_Parent (Subt_Decl, N);
+         Set_Is_Itype (Subt);
+         Analyze (Subt_Decl, Suppress => All_Checks);
+         Set_Associated_Node_For_Itype (Subt, N);
+         Set_Has_Delayed_Freeze (Subt, False);
+
+         --  We need to freeze the actual subtype immediately.  This is needed
+         --  because otherwise this Itype will not get frozen at all, and it is
+         --  always safe to freeze on creation because any associated types
+         --  must be frozen at this point.
+
+         Freeze_Itype (Subt, N);
+
+         Rewrite (N,
+                  Make_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of (Subt, Loc),
+                    Expression   => Relocate_Node (N)));
+         Analyze (N);
+      end if;
+   end Expand_Sliding_Conversion;
+
    -----------------------------------------
    -- Expand_Static_Predicates_In_Choices --
    -----------------------------------------
@@ -5312,7 +5510,7 @@ package body Exp_Util is
    procedure Expand_Static_Predicates_In_Choices (N : Node_Id) is
       pragma Assert (Nkind (N) in N_Case_Statement_Alternative | N_Variant);
 
-      Choices : constant List_Id := Discrete_Choices (N);
+      Choices : List_Id := Discrete_Choices (N);
 
       Choice : Node_Id;
       Next_C : Node_Id;
@@ -5320,6 +5518,13 @@ package body Exp_Util is
       C      : Node_Id;
 
    begin
+      --  If this is an "others" alternative, we need to process any static
+      --  predicates in its Others_Discrete_Choices.
+
+      if Nkind (First (Choices)) = N_Others_Choice then
+         Choices := Others_Discrete_Choices (First (Choices));
+      end if;
+
       Choice := First (Choices);
       while Present (Choice) loop
          Next_C := Next (Choice);
@@ -6203,6 +6408,9 @@ package body Exp_Util is
                                         | N_Discriminant_Association
                                         | N_Parameter_Association
                                         | N_Pragma_Argument_Association
+                                        | N_Aggregate
+                                        | N_Delta_Aggregate
+                                        | N_Extension_Aggregate
               and then Nkind (Parent (Par)) not in N_Function_Call
                                                  | N_Procedure_Call_Statement
                                                  | N_Entry_Call_Statement
@@ -7193,8 +7401,8 @@ package body Exp_Util is
 
                   --  Actions belong to the then expression, temporarily place
                   --  them as Then_Actions of the if expression. They will be
-                  --  moved to the proper place later when the if expression
-                  --  is expanded.
+                  --  moved to the proper place later when the if expression is
+                  --  expanded.
 
                   elsif N = ThenX then
                      if Present (Then_Actions (P)) then
@@ -7207,10 +7415,7 @@ package body Exp_Util is
 
                      return;
 
-                  --  Actions belong to the else expression, temporarily place
-                  --  them as Else_Actions of the if expression. They will be
-                  --  moved to the proper place later when the if expression
-                  --  is expanded.
+                  --  Else_Actions is treated the same as Then_Actions above
 
                   elsif N = ElseX then
                      if Present (Else_Actions (P)) then
@@ -8727,26 +8932,6 @@ package body Exp_Util is
                end if;
             end if;
 
-            --  The following code is historical, it used to be present but it
-            --  is too cautious, because the front-end does not know the proper
-            --  default alignments for the target. Also, if the alignment is
-            --  not known, the front end can't know in any case. If a copy is
-            --  needed, the back-end will take care of it. This whole section
-            --  including this comment can be removed later ???
-
-            --  If the component reference is for a record that has a specified
-            --  alignment, and we either know it is too small, or cannot tell,
-            --  then the component may be unaligned.
-
-            --  What is the following commented out code ???
-
-            --  if Known_Alignment (Etype (P))
-            --    and then Alignment (Etype (P)) < Ttypes.Maximum_Alignment
-            --    and then M > Alignment (Etype (P))
-            --  then
-            --     return True;
-            --  end if;
-
             --  Case of component clause present which may specify an
             --  unaligned position.
 
@@ -8863,7 +9048,7 @@ package body Exp_Util is
 
                if Target_Strict_Alignment
                  and then Known_Alignment (Ptyp)
-                 and then (Unknown_Alignment (Styp)
+                 and then (not Known_Alignment (Styp)
                             or else Alignment (Styp) > Alignment (Ptyp))
                then
                   return True;
@@ -8887,7 +9072,7 @@ package body Exp_Util is
                begin
                   if Present (Component_Clause (Field))
                     and then
-                      (Unknown_Alignment (Styp)
+                      (not Known_Alignment (Styp)
                         or else
                          (Component_Bit_Offset (Field) mod
                            (System_Storage_Unit * Alignment (Styp))) /= 0)
@@ -9075,7 +9260,7 @@ package body Exp_Util is
         Is_Class_Wide_Type (Etype (Obj_Id))
           and then Present (Expr)
           and then Nkind (Expr) = N_Unchecked_Type_Conversion
-          and then Etype (Expression (Expr)) = RTE (RE_Tag);
+          and then Is_RTE (Etype (Expression (Expr)), RE_Tag);
    end Is_Tag_To_Class_Wide_Conversion;
 
    --------------------------------
@@ -9196,7 +9381,7 @@ package body Exp_Util is
 
       --  True if object reference with volatile type
 
-      elsif Is_Volatile_Object (N) then
+      elsif Is_Volatile_Object_Ref (N) then
          return True;
 
       --  True if reference to volatile entity
@@ -9251,28 +9436,33 @@ package body Exp_Util is
          if W then
 
             --  We suppress the warning if this code is under control of an
-            --  if statement, whose condition is a simple identifier, and
-            --  either we are in an instance, or warnings off is set for this
-            --  identifier. The reason for killing it in the instance case is
-            --  that it is common and reasonable for code to be deleted in
-            --  instances for various reasons.
+            --  if/case statement and either
+            --    a) we are in an instance and the condition/selector
+            --       has a statically known value; or
+            --    b) the condition/selector is a simple identifier and
+            --       warnings off is set for this identifier.
+            --  Dead code is common and reasonable in instances, so we don't
+            --  want a warning in that case.
 
-            --  Could we use Is_Statically_Unevaluated here???
+            declare
+               C : Node_Id := Empty;
+            begin
+               if Nkind (Parent (N)) = N_If_Statement then
+                  C := Condition (Parent (N));
+               elsif Nkind (Parent (N)) = N_Case_Statement_Alternative then
+                  C := Expression (Parent (Parent (N)));
+               end if;
 
-            if Nkind (Parent (N)) = N_If_Statement then
-               declare
-                  C : constant Node_Id := Condition (Parent (N));
-               begin
-                  if Nkind (C) = N_Identifier
-                    and then
-                      (In_Instance
-                        or else (Present (Entity (C))
-                                  and then Has_Warnings_Off (Entity (C))))
+               if Present (C) then
+                  if (In_Instance and Compile_Time_Known_Value (C))
+                    or else (Nkind (C) = N_Identifier
+                             and then Present (Entity (C))
+                             and then Has_Warnings_Off (Entity (C)))
                   then
                      W := False;
                   end if;
-               end;
-            end if;
+               end if;
+            end;
 
             --  Generate warning if not suppressed
 
@@ -9505,7 +9695,7 @@ package body Exp_Util is
       --  end Equiv_T;
 
       Equiv_Type := Make_Temporary (Loc, 'T');
-      Set_Ekind (Equiv_Type, E_Record_Type);
+      Mutate_Ekind (Equiv_Type, E_Record_Type);
       Set_Parent_Subtype (Equiv_Type, Constr_Root);
 
       --  Set Is_Class_Wide_Equivalent_Type very early to trigger the special
@@ -9997,7 +10187,7 @@ package body Exp_Util is
 
          --  Define the dummy private subtype
 
-         Set_Ekind          (Priv_Subtyp, Subtype_Kind (Ekind (Unc_Typ)));
+         Mutate_Ekind       (Priv_Subtyp, Subtype_Kind (Ekind (Unc_Typ)));
          Set_Etype          (Priv_Subtyp, Base_Type (Unc_Typ));
          Set_Scope          (Priv_Subtyp, Full_Subtyp);
          Set_Is_Constrained (Priv_Subtyp);
@@ -10923,7 +11113,7 @@ package body Exp_Util is
 
       Set_Associated_Node_For_Itype (Res, N);
       Set_Comes_From_Source         (Res, False);
-      Set_Ekind                     (Res, E_Class_Wide_Subtype);
+      Mutate_Ekind                  (Res, E_Class_Wide_Subtype);
       Set_Etype                     (Res, Base_Type (CW_Typ));
       Set_Freeze_Node               (Res, Empty);
       Set_Is_Frozen                 (Res, False);
@@ -11343,7 +11533,7 @@ package body Exp_Util is
 
       Init_Call : Node_Id;
 
-   --  Start of processing for Find_Init_Call
+   --  Start of processing for Remove_Init_Call
 
    begin
       if Present (Initialization_Statements (Var)) then
@@ -11395,8 +11585,29 @@ package body Exp_Util is
       end if;
 
       if Present (Init_Call) then
+         --  If restrictions have forbidden Aborts, the initialization call
+         --  for objects that require deep initialization has not been wrapped
+         --  into the following block (see Exp_Ch3, Default_Initialize_Object)
+         --  so if present remove it as well, and include the IP call in it,
+         --  in the rare case the caller may need to simply displace the
+         --  initialization, as is done for a later address specification.
+
+         if Nkind (Next (Init_Call)) = N_Block_Statement
+           and then Is_Initialization_Block (Next (Init_Call))
+         then
+            declare
+               IP_Call : constant Node_Id := Init_Call;
+            begin
+               Init_Call := Next (IP_Call);
+               Remove (IP_Call);
+               Prepend (IP_Call,
+                 Statements (Handled_Statement_Sequence (Init_Call)));
+            end;
+         end if;
+
          Remove (Init_Call);
       end if;
+
       return Init_Call;
    end Remove_Init_Call;
 
@@ -11477,7 +11688,8 @@ package body Exp_Util is
          return not Inside_A_Generic
            and then Full_Analysis
            and then Nkind (Enclosing_Declaration (Exp)) in
-                      N_Full_Type_Declaration
+                      N_Component_Declaration
+                    | N_Full_Type_Declaration
                     | N_Iterator_Specification
                     | N_Loop_Parameter_Specification
                     | N_Object_Renaming_Declaration
@@ -12063,7 +12275,9 @@ package body Exp_Util is
 
          --  Local variables
 
-         Context : constant Node_Id    := Parent (Ref);
+         Context : constant Node_Id :=
+           (if No (Ref) then Empty else Parent (Ref));
+
          Loc     : constant Source_Ptr := Sloc (Ref);
          Ref_Id  : Entity_Id;
          Result  : Traverse_Result;
@@ -12195,15 +12409,28 @@ package body Exp_Util is
                if Nkind (Context) in N_Subprogram_Call
                  and then No (Type_Map.Get (Entity (Name (Context))))
                then
-                  New_Ref :=
-                    Convert_To (Type_Of_Formal (Context, Old_Ref), New_Ref);
+                  declare
+                     --  We need to use the Original_Node of the callee, in
+                     --  case it was already modified. Note that we are using
+                     --  Traverse_Proc to walk the tree, and it is defined to
+                     --  walk subtrees in an arbitrary order.
 
-                  --  Do not process the generated type conversion because
-                  --  both the parent type and the derived type are in the
-                  --  Type_Map table. This will clobber the type conversion
-                  --  by resetting its subtype mark.
+                     Callee : constant Entity_Id :=
+                       Entity (Original_Node (Name (Context)));
+                  begin
+                     if No (Type_Map.Get (Callee)) then
+                        New_Ref :=
+                          Convert_To
+                            (Type_Of_Formal (Context, Old_Ref), New_Ref);
 
-                  Result := Skip;
+                        --  Do not process the generated type conversion
+                        --  because both the parent type and the derived type
+                        --  are in the Type_Map table. This will clobber the
+                        --  type conversion by resetting its subtype mark.
+
+                        Result := Skip;
+                     end if;
+                  end;
                end if;
 
             --  Otherwise there is nothing to replace
@@ -13266,7 +13493,7 @@ package body Exp_Util is
          --  modification of that variable within the loop may incorrectly
          --  affect the execution of the loop.
 
-         elsif Nkind (Parent (Parent (N))) = N_Loop_Parameter_Specification
+         elsif Parent_Kind (Parent (N)) = N_Loop_Parameter_Specification
            and then Within_In_Parameter (Prefix (N))
            and then Variable_Ref
          then
@@ -13436,15 +13663,25 @@ package body Exp_Util is
 
          --  A binary operator is side effect free if and both operands are
          --  side effect free. For this purpose binary operators include
-         --  membership tests and short circuit forms.
+         --  short circuit forms.
 
          when N_Binary_Op
-            | N_Membership_Test
             | N_Short_Circuit
          =>
             return Side_Effect_Free (Left_Opnd  (N), Name_Req, Variable_Ref)
                      and then
                    Side_Effect_Free (Right_Opnd (N), Name_Req, Variable_Ref);
+
+         --  Membership tests may have either Right_Opnd or Alternatives set
+
+         when N_Membership_Test =>
+            return Side_Effect_Free (Left_Opnd (N), Name_Req, Variable_Ref)
+                     and then
+                   (if Present (Right_Opnd (N))
+                    then Side_Effect_Free
+                           (Right_Opnd (N), Name_Req, Variable_Ref)
+                    else Side_Effect_Free
+                           (Alternatives (N), Name_Req, Variable_Ref));
 
          --  An explicit dereference is side effect free only if it is
          --  a side effect free prefixed reference.

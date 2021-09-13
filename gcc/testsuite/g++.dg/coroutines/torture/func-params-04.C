@@ -12,6 +12,7 @@ struct nontriv {
   int a, b, c;
   nontriv (int _a, int _b, int _c) : a(_a), b(_b), c(_c) {}
   virtual int getA () { return a; }
+  ~nontriv() { a = -1; }
 };
 
 struct coro1
@@ -19,12 +20,12 @@ f (nontriv t) noexcept
 {
   if (t.a > 30)
     {
-      PRINTF ("coro1: about to return %d", t.b);
+      PRINTF ("coro1: about to return %d\n", t.b);
       co_return t.b;
     }
   else if (t.a > 20)
     {
-      PRINTF ("coro1: about to co-return %d", t.c);
+      PRINTF ("coro1: about to co-return %d\n", t.c);
       co_return t.c;
     }
   else

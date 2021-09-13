@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfc-internals.info
-@set copyrights-gfortran 2007-2020
+@set copyrights-gfortran 2007-2021
 
 @include gcc-common.texi
 

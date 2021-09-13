@@ -1,6 +1,6 @@
 // <decimal> -*- C++ -*-
 
-// Copyright (C) 2009-2020 Free Software Foundation, Inc.
+// Copyright (C) 2009-2021 Free Software Foundation, Inc.
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the
@@ -484,7 +484,7 @@ namespace decimal
 
 #define _GLIBCXX_USE_DECIMAL_ 1
 } // namespace decimal
-  // @} group decimal
+  /// @} group decimal
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

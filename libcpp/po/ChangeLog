@@ -1,3 +1,33 @@
+2021-08-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2021-07-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* cpplib.pot: Regenerate.
+
+2021-03-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* sr.po: Update.
+
+2021-03-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* eo.po: Update.
+
+2021-02-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* be.po, ca.po, da.po, de.po, el.po, eo.po, es.po, fi.po, fr.po,
+	id.po, ja.po, nl.po, pt_BR.po, ru.po, sr.po, sv.po, tr.po, uk.po,
+	vi.po, zh_CN.po, zh_TW.po: Update.
+
+2021-02-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* cpplib.pot: Regenerate.
+
+2021-01-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* es.po: Update.
+
 2020-07-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* cpplib.pot: Regenerate.

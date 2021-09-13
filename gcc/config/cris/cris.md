@@ -1,5 +1,5 @@
 ;; GCC machine description for CRIS cpu cores.
-;; Copyright (C) 1998-2020 Free Software Foundation, Inc.
+;; Copyright (C) 1998-2021 Free Software Foundation, Inc.
 ;; Contributed by Axis Communications.
 
 ;; This file is part of GCC.
@@ -58,13 +58,14 @@
 ;; Register numbers.
 (define_constants
   [(CRIS_STATIC_CHAIN_REGNUM 7)
-   (CRIS_FP_REGNUM 8)
+   (CRIS_REAL_FP_REGNUM 8)
    (CRIS_SP_REGNUM 14)
    (CRIS_ACR_REGNUM 15)
    (CRIS_SRP_REGNUM 16)
    (CRIS_MOF_REGNUM 17)
    (CRIS_AP_REGNUM 18)
-   (CRIS_CC0_REGNUM 19)]
+   (CRIS_CC0_REGNUM 19)
+   (CRIS_FP_REGNUM 20)]
 )
 
 ;; We need an attribute to define whether an instruction can be put in
@@ -1278,17 +1279,42 @@
 (define_insn "*addi"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI
+	 (ashift:SI (match_operand:SI 2 "register_operand" "r")
+		    (match_operand:SI 3 "const_int_operand" "n"))
+	 (match_operand:SI 1 "register_operand" "0")))]
+  "operands[0] != frame_pointer_rtx
+   && operands[1] != frame_pointer_rtx
+   && CONST_INT_P (operands[3])
+   && (INTVAL (operands[3]) == 1 || INTVAL (operands[3]) == 2)"
+  "addi %2%T3,%0"
+  [(set_attr "slottable" "yes")
+   (set_attr "cc" "none")])
+
+;; The mult-vs-ashift canonicalization-cleanup plagues us: nothing in
+;; reload transforms a "scaled multiplication" into an ashift in a
+;; reloaded address; it's passed as-is and expected to be recognized,
+;; or else we get a tell-tale "unrecognizable insn".
+;; On top of that, we *should* match the bare insn, as a *matching
+;; pattern* (as opposed to e.g. a reload_load_address expander
+;; changing the mul into an ashift), so can_reload_into will re-use
+;; registers in the reloaded expression instead of allocating a new
+;; register.
+(define_insn_and_split "*addi_reload"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI
 	 (mult:SI (match_operand:SI 2 "register_operand" "r")
 		  (match_operand:SI 3 "const_int_operand" "n"))
 	 (match_operand:SI 1 "register_operand" "0")))]
   "operands[0] != frame_pointer_rtx
    && operands[1] != frame_pointer_rtx
    && CONST_INT_P (operands[3])
-   && (INTVAL (operands[3]) == 1
-       || INTVAL (operands[3]) == 2 || INTVAL (operands[3]) == 4)"
-  "addi %2%T3,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "none")])
+   && (INTVAL (operands[3]) == 2 || INTVAL (operands[3]) == 4)
+   && (reload_in_progress || reload_completed)"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(plus:SI (ashift:SI (match_dup 2) (match_dup 3)) (match_dup 1)))]
+  "operands[3] = operands[3] == const2_rtx ? const1_rtx : const2_rtx;")
 
 ;; This pattern is usually generated after reload, so a '%' is
 ;; ineffective; use explicit combinations.

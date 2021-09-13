@@ -1,5 +1,5 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1772,8 +1772,8 @@ gfc_add_flavor (symbol_attribute *attr, sym_flavor f, const char *name,
   /* Copying a procedure dummy argument for a module procedure in a
      submodule results in the flavor being copied and would result in
      an error without this.  */
-  if (gfc_new_block && gfc_new_block->abr_modproc_decl
-      && attr->flavor == f && f == FL_PROCEDURE)
+  if (attr->flavor == f && f == FL_PROCEDURE
+      && gfc_new_block && gfc_new_block->abr_modproc_decl)
     return true;
 
   if (attr->flavor != FL_UNKNOWN)
@@ -4391,7 +4391,7 @@ get_iso_c_binding_dt (int sym_id)
 	  if (dt_list->from_intmod != INTMOD_NONE
 	      && dt_list->intmod_sym_id == sym_id)
 	    return dt_list;
-	
+
 	  dt_list = dt_list->dt_next;
 	}
     }

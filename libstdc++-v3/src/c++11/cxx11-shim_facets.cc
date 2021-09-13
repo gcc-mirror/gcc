@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -469,21 +469,21 @@ namespace __facet_shims
 	}
       };
 
-    template class numpunct_shim<char>;
-    template class collate_shim<char>;
-    template class moneypunct_shim<char, true>;
-    template class moneypunct_shim<char, false>;
-    template class money_get_shim<char>;
-    template class money_put_shim<char>;
-    template class messages_shim<char>;
+    template struct numpunct_shim<char>;
+    template struct collate_shim<char>;
+    template struct moneypunct_shim<char, true>;
+    template struct moneypunct_shim<char, false>;
+    template struct money_get_shim<char>;
+    template struct money_put_shim<char>;
+    template struct messages_shim<char>;
 #ifdef _GLIBCXX_USE_WCHAR_T
-    template class numpunct_shim<wchar_t>;
-    template class collate_shim<wchar_t>;
-    template class moneypunct_shim<wchar_t, true>;
-    template class moneypunct_shim<wchar_t, false>;
-    template class money_get_shim<wchar_t>;
-    template class money_put_shim<wchar_t>;
-    template class messages_shim<wchar_t>;
+    template struct numpunct_shim<wchar_t>;
+    template struct collate_shim<wchar_t>;
+    template struct moneypunct_shim<wchar_t, true>;
+    template struct moneypunct_shim<wchar_t, false>;
+    template struct money_get_shim<wchar_t>;
+    template struct money_put_shim<wchar_t>;
+    template struct messages_shim<wchar_t>;
 #endif
 
     template<typename C>

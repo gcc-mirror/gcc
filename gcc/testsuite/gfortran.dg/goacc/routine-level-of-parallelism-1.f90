@@ -2,8 +2,14 @@
 ! with the OpenACC routine directive.  The C/C++ counterpart is
 ! '../../c-c++-common/goacc/routine-level-of-parallelism-2.c'.
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 subroutine g_1
   !$acc routine gang
+  ! { dg-warning "region is gang partitioned but does not contain gang partitioned code" "" { target *-*-* } .-2 }
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-3 }
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-4 }
 end subroutine g_1
 
 subroutine s_1_2a

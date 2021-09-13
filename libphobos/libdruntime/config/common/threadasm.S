@@ -1,5 +1,5 @@
 /* Support code for fibers and multithreading.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#if (__linux__ || __FreeBSD__ || __NetBSD__ || __DragonFly__) && __ELF__
+#if (__linux__ || __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __DragonFly__) && __ELF__
 /*
  * Mark the resulting object file as not requiring execution permissions on
  * stack memory. The absence of this section would mark the whole resulting

@@ -6,12 +6,13 @@
 // Subject:  g++ 2.5.5 doesn't warn about inaccessible virtual base ctor
 // Message-ID: <9403030024.AA04534@ses.com>
 
-class ForceLeafSterile { // { dg-message "" } 
+class ForceLeafSterile { 
     friend class Sterile;
       ForceLeafSterile() {} // { dg-message "" } 
 };
 
-class Sterile : private virtual ForceLeafSterile {
+class Sterile : private virtual ForceLeafSterile // { dg-message "" } 
+{
 public:
     Sterile() {}
     Sterile(const char* /*blah*/) {}

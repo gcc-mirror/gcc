@@ -25,19 +25,19 @@ void ppax (int (**)[*]);                // { dg-message "previously declared as 
 void ppax (int (**)[n]);                // { dg-warning "\\\[-Wvla-parameter" }
 /* A VLA with an unspecified bound is represented the same as [0] so
    so the pretty printer can't differentiate between the two forms.  */
-void ppax (int (**)[1]);                // { dg-bogus "\\\[-Warray-parameter" "pr?????" { xfail *-*-* } }
-                                        // { dg-warning "\\\[-Wvla-parameter" "pr?????" { xfail *-*-* } .-1 }
+void ppax (int (**)[1]);                // { dg-bogus "\\\[-Warray-parameter" "pr100420 (expected)" { xfail *-*-* } }
+                                        // { dg-warning "\\\[-Wvla-parameter" "pr100420 (expected)" { xfail *-*-* } .-1 }
 void ppax (int (**)[n + 1]);            // { dg-warning "mismatch in bound 1 of argument 1 declared as 'int *\\\(\\\*\\\*\\\)\\\[n \\\+ 1\\\]'" }
 
 
 void pa1_n (int (*)[1][n]);
 void pa1_n (int (*)[1][n]);
-void pa1_n (int (*)[*][n]);             // { dg-warning "mismatch in bound 1 of argument 1 declared as 'int \\\(\\\*\\\)\\\[\\\*]\\\[n]'" "pr?????" { xfail *-*-*} }
-                                        // { dg-warning "mismatch in bound 1 of argument 1 declared as 'int \\\(\\\*\\\)\\\[0]\\\[n]'" "pr?????" { target *-*-* } .-1 }
+void pa1_n (int (*)[*][n]);             // { dg-warning "mismatch in bound 1 of argument 1 declared as 'int \\\(\\\*\\\)\\\[\\\*]\\\[n]'" "pr100420 (expected)" { xfail *-*-*} }
+                                        // { dg-warning "mismatch in bound 1 of argument 1 declared as 'int \\\(\\\*\\\)\\\[0]\\\[n]'" "pr100420" { target *-*-* } .-1 }
 
 void pa1_n_2 (int (*)[1][n][2]);
-void pa1_n_2 (int (*)[1][n][*]);        // { dg-warning "mismatch in bound 3 of argument 1 declared as 'int \\\(\\\*\\\)\\\[1]\\\[n]\\\[\\\*]'" "pr?????" { xfail *-*-* } }
-                                        // { dg-warning "mismatch in bound 3 of argument 1 declared as 'int \\\(\\\*\\\)\\\[1]\\\[n]\\\[0]'" "pr?????" { target *-*-* } .-1 }
+void pa1_n_2 (int (*)[1][n][*]);        // { dg-warning "mismatch in bound 3 of argument 1 declared as 'int \\\(\\\*\\\)\\\[1]\\\[n]\\\[\\\*]'" "pr100420 (expected)" { xfail *-*-* } }
+                                        // { dg-warning "mismatch in bound 3 of argument 1 declared as 'int \\\(\\\*\\\)\\\[1]\\\[n]\\\[0]'" "pr100420" { target *-*-* } .-1 }
 
 
 void pa1_n_2_a1_n_2 (int (*)[1][n][2], int (*)[1][n][2]);

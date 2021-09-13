@@ -1,6 +1,6 @@
 #!/bin/sh
 # Generate rs6000-tables.opt from the list of CPUs in rs6000-cpus.def.
-# Copyright (C) 2011-2020 Free Software Foundation, Inc.
+# Copyright (C) 2011-2021 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,7 +22,7 @@ cat <<EOF
 ; -*- buffer-read-only: t -*-
 ; Generated automatically by genopt.sh from rs6000-cpus.def.
 
-; Copyright (C) 2011-2020 Free Software Foundation, Inc.
+; Copyright (C) 2011-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;

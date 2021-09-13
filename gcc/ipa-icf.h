@@ -1,5 +1,5 @@
 /* Interprocedural semantic function equality pass
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -372,7 +372,7 @@ public:
   hashval_t gcode_hash;
 
   /* Vector of subpart of memory access types.  */
-  vec<tree> memory_access_types;
+  auto_vec<tree> memory_access_types;
 
   /* Total number of SSA names used in the function.  */
   unsigned ssa_names_size;

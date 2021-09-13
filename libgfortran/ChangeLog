@@ -1,51 +1,186 @@
-2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+2021-09-07  Tobias Burnus  <tobias@codesourcery.com>
 
-	PR target/97865
+	* Makefile.am (gfor_built_src): Depend on
+	include/ISO_Fortran_binding.h not on ISO_Fortran_binding.h.
+	(ISO_Fortran_binding.h): Rename make target to ...
+	(include/ISO_Fortran_binding.h): ... this.
+	* Makefile.in: Regenerate.
+
+2021-09-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* ISO_Fortran_binding-1-tmpl.h: Deleted.
+	* ISO_Fortran_binding-2-tmpl.h: Deleted.
+	* ISO_Fortran_binding-3-tmpl.h: Deleted.
+	* ISO_Fortran_binding.h: New file to replace the above.
+	* Makefile.am (gfor_cdir): Remove MULTISUBDIR.
+	(ISO_Fortran_binding.h): Simplify to just copy the file.
+	* Makefile.in: Regenerated.
+	* mk-kinds-h.sh: Revert pieces no longer needed for
+	ISO_Fortran_binding.h.
+
+2021-09-02  Sandra Loosemore  <sandra@codesourcery.com>
+	    José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100907
+	PR fortran/100911
+	PR fortran/100914
+	PR fortran/100915
+	PR fortran/100917
+	* ISO_Fortran_binding-1-tmpl.h (CFI_type_cfunptr): Make equivalent
+	to CFI_type_cptr.
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Fix
+	handling of CFI_type_cptr and CFI_type_cfunptr.  Additional error
+	checking and code cleanup.
+	(gfc_desc_to_cfi_desc): Likewise.  Also correct kind mapping
+	for character, complex, and long double types.
+
+2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Use configured libm availability.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use libtool macro to find libm availability.
+	* libgfortran.spec.in: Use configured libm availability.
+
+2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/101305
+	PR fortran/101660
+	PR testsuite/101847
+	* Makefile.am (ISO_Fortran_binding.h): Create include/ in the build dir
+	and copy the include file to it.
+	(clean-local): Add for removing the 'include' directory.
+	* Makefile.in: Regenerate.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101317
+	* runtime/ISO_Fortran_binding.c: Include <inttypes.h>.
+	(CFI_address): Tidy error messages and comments.
+	(CFI_allocate): Likewise.
+	(CFI_deallocate): Likewise.
+	(CFI_establish): Likewise.  Add new checks for validity of
+	elem_len when it's used, plus type argument and extents.
+	(CFI_is_contiguous): Tidy error messages and comments.
+	(CFI_section): Likewise.  Refactor some repetitive code to
+	make it more understandable.
+	(CFI_select_part): Likewise.
+	(CFI_setpointer): Likewise.  Check that source is not an
+	unallocated allocatable array or an assumed-size array.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101310
+	* runtime/ISO_Fortran_binding.c (CFI_section): Fix the base
+	address computation and simplify the code.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101305
+	* runtime/ISO_Fortran_binding.c (CFI_establish): Special-case
+	CFI_type_cptr and CFI_type_cfunptr.  Correct size of long double
+	on targets where it has kind 10.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/101305
+	* ISO_Fortran_binding.h: Fix hard-coded sizes and split into...
+	* ISO_Fortran_binding-1-tmpl.h: New file.
+	* ISO_Fortran_binding-2-tmpl.h: New file.
+	* ISO_Fortran_binding-3-tmpl.h: New file.
+	* Makefile.am: Add rule for generating ISO_Fortran_binding.h.
+	Adjust pathnames to that file.
+	* Makefile.in: Regenerated.
+	* mk-kinds-h.sh: New file.
+	* runtime/ISO_Fortran_binding.c: Fix include path.
+
+2021-07-26  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93308
+	PR fortran/93963
+	PR fortran/94327
+	PR fortran/94331
+	PR fortran/97046
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Add code
+	to verify the descriptor. Correct bounds calculation.
+	(gfc_desc_to_cfi_desc): Add code to verify the descriptor.
+
+2021-07-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* runtime/ISO_Fortran_binding.c (CFI_allocate): Don't use elem_len
+	for CFI_type_signed_char.
+	(CFI_select_part): Likewise.
+
+2021-07-01  Tobias Burnus  <tobias@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc):
+	Initialize version field to 0.
+	(gfc_desc_to_cfi_desc): Initialize version field to CFI_VERSION.
+
+2021-06-29  Julian Brown  <julian@codesourcery.com>
+
+	PR target/96306
+	* configure.ac: Remove stanza that removes KIND=16 integers for AMD GCN.
 	* configure: Regenerate.
 
-2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+2021-06-22  Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
 
-	* configure: Regenerate.
+	PR fortran/93524
+	* runtime/ISO_Fortran_binding.c (CFI_allocate): Fix
+	sm computation.
 
-2020-11-26  Maciej W. Rozycki  <macro@linux-mips.org>
+2021-06-08  Martin Liska  <mliska@suse.cz>
 
-	* io/io.h [HAVE_NEWLOCALE]: Also check for HAVE_FREELOCALE and
-	HAVE_USELOCALE.
-	[HAVE_FREELOCALE && HAVE_NEWLOCALE && HAVE_USELOCALE]
-	(HAVE_POSIX_2008_LOCALE): New macro.
-	(st_parameter_dt) [HAVE_NEWLOCALE]: Check for
-	HAVE_POSIX_2008_LOCALE instead.
-	* io/transfer.c (data_transfer_init_worker, finalize_transfer)
-	[HAVE_USELOCALE]: Check for HAVE_POSIX_2008_LOCALE instead.
-	* io/unit.c [HAVE_NEWLOCALE]: Likewise.
-	(init_units) [HAVE_NEWLOCALE]: Likewise.
-	(close_units) [HAVE_FREELOCALE]: Likewise.
-	* runtime/error.c (gf_strerror) [HAVE_USELOCALE]: Likewise.
+	* intrinsics/chmod.c (chmod_internal): Fix typo.
+	* io/transfer.c (read_sf): Likewise.
 
-2020-11-26  Maciej W. Rozycki  <macro@linux-mips.org>
+2021-06-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
-	* libgfortran.h: Use #if rather than #ifdef with
-	__FLT_HAS_INFINITY__, __DBL_HAS_INFINITY__,
-	__LDBL_HAS_INFINITY__, __FLT_HAS_QUIET_NAN__,
-	__DBL_HAS_QUIET_NAN__, and __LDBL_HAS_QUIET_NAN__.
+	PR fortran/100120
+	* intrinsics/associated.c (associated): have associated verify if
+	the "span" matches insted of the "elem_len".
+	* libgfortran.h (GFC_DESCRIPTOR_SPAN): add macro to retrive the
+	descriptor "span".
 
-2020-11-21  Iain Sandoe  <iain@sandoe.co.uk>
+2021-05-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
-	* intrinsics/execute_command_line.c (environ): Use
-	_NSGetEnviron to get the environment pointer on Darwin.
+	PR fortran/98301
+	* caf/libcaf.h (_gfortran_caf_random_init): New function.
+	* caf/single.c (_gfortran_caf_random_init): New function.
+	* gfortran.map: Added fndecl.
+	* intrinsics/random_init.f90: Implement random_init.
 
-2020-10-30  Harald Anlauf  <anlauf@gmx.de>
+2021-05-05  Tobias Burnus  <tobias@codesourcery.com>
 
-	* intrinsics/random.c (SZ_IN_INT_4): Define size of state in int32_t.
-	(SZ_IN_INT_8): Define size of state in int64_t.
-	(SZ): Remove.
-	(random_seed_i4): Use size SZ_IN_INT_4 instead of SZ.
-	(random_seed_i8): Use size SZ_IN_INT_8 instead of SZ.
+	* intrinsics/chmod.c (chmod_internal): Only declare mode_mask var
+	if HAVE_UMASK.
 
-2020-10-18  Harald Anlauf  <anlauf@gmx.de>
+2021-05-02  Tobias Burnus  <tobias@codesourcery.com>
 
-	* m4/matmul_internal.m4: Move check for rank-1 times rank-2 before
-	checks on strides for rank-2 times rank-2.
+	PR libgomp/100352
+	* io/transfer.c (st_read_done_worker, st_write_done_worker): Add new
+	arg whether to unlock unit.
+	(st_read_done, st_write_done): Call it with true.
+	* io/async.c (async_io): Call it with false.
+	* io/io.h (st_write_done_worker, st_read_done_worker): Update prototype.
+
+2021-03-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* io/transfer.c (st_read_done_worker, st_write_done_worker):
+	Call unlock_unit here, add unit_lock lock around newunit_free call.
+	(st_read_done, st_write_done): Only call unlock_unit when not
+	calling the worker function.
+	* io/unit.c (set_internal_unit): Don't reset the unit_number
+	to the same number as this cause race warnings.
+
+2021-03-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/99218
+	* m4/matmul_internal.m4: Invoke tuned matmul only for rank(b)>1.
 	* generated/matmul_c10.c: Regenerated.
 	* generated/matmul_c16.c: Likewise.
 	* generated/matmul_c4.c: Likewise.
@@ -73,318 +208,46 @@
 	* generated/matmulavx128_r4.c: Likewise.
 	* generated/matmulavx128_r8.c: Likewise.
 
-2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
+2021-03-03  Vittorio Zecca  <zeccav@gmail.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
 
-	* m4/unpack.m4 (unpack0_'rtype_code`,
-	unpack1_'rtype_code`): Move 'rstride[0]' initialization outside
-	conditional branch to silence -Wmaybe-uninitialized.
-	* generated/unpack_c10.c: Regenerate.
-	* generated/unpack_c16.c: Regenerate.
-	* generated/unpack_c4.c: Regenerate.
-	* generated/unpack_c8.c: Regenerate.
-	* generated/unpack_i1.c: Regenerate.
-	* generated/unpack_i16.c: Regenerate.
-	* generated/unpack_i2.c: Regenerate.
-	* generated/unpack_i4.c: Regenerate.
-	* generated/unpack_i8.c: Regenerate.
-	* generated/unpack_r10.c: Regenerate.
-	* generated/unpack_r16.c: Regenerate.
-	* generated/unpack_r4.c: Regenerate.
-	* generated/unpack_r8.c: Regenerate.
+	PR libfortran/81986
+	* runtime/string.c (gfc_itoa): Cast to unsigned before
+	negating.
 
-2020-09-27  Clement Chigot  <clement.chigot@atos.net>
+2021-02-12  Steve Kargl  <sgk@troutmask.apl.washington.edu>
 
-	* config/t-aix: Use $(AR) without -X32_64.
+	PR libfortran/95647
+	* ieee/ieee_arithmetic.F90: Flip interfaces of operators .eq. to
+	== and .ne. to /= .
 
-2020-09-03  Harald Anlauf  <anlauf@gmx.de>
+2021-02-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	* m4/iall.m4: Initial value for result should be -1.
-	* generated/iall_i1.c (miall_i1): Generated.
-	* generated/iall_i16.c (miall_i16): Likewise.
-	* generated/iall_i2.c (miall_i2): Likewise.
-	* generated/iall_i4.c (miall_i4): Likewise.
-	* generated/iall_i8.c (miall_i8): Likewise.
+	PR libfortran/98825
+	* io/transfer.c (next_record_w): Insert check for seen_dollar and if
+	so, skip issueing next record.
 
-2020-08-24  Mark Eggleston  <markeggleston@gcc.gnu.org>
+2021-01-27  Harris Snyder  <hsnyder@structura.bio>
 
-	PR fortran/96486
-	* intrinsics/env.c: If value_len is > 0 blank the string.
-	Copy the result only if its length is > 0.
+	* runtime/ISO_Fortran_binding.c (CFI_establish): fixed
+	strides for rank >2 arrays.
 
-2020-08-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+2021-01-15  Harris Snyder  <hsnyder@structura.bio>
 
-	PR fortran/96436
-	* io/format.c (parse_format_list):  Add new local variable
-	"standard" to hold the required standard to check. If the
-	format width is zero select standard depending on descriptor.
-	Call notification_std using the new standard variable.
+	* runtime/ISO_Fortran_binding.c (CFI_establish): Fixed signed
+	  char arrays. Signed char or uint8_t arrays would cause
+	  crashes unless an element size is specified.
 
-2020-08-17  David Edelsohn  <dje.gcc@gmail.com>
-	    Clement Chigot  <clement.chigot@atos.net>
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
-	* config/t-aix: Add complementary mode object file to libcaf_single.a.
+	* configure: Re-generate.
 
-2020-08-03  Tobias Burnus  <tobias@codesourcery.com>
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
 
-	* caf/single.c (_gfortran_caf_lock): Fix typo.
+	* ChangeLog-2020: Rotate ChangeLog.  New file.
 
-2020-07-26  Tobias Burnus  <tobias@codesourcery.com>
-
-	PR target/96306
-	* configure.ac: Add LIBGOMP_CHECKED_INT_KINDS and
-	LIBGOMP_CHECKED_REAL_KINDS and use it for to skip
-	integer kind=16 checks for amdgcn.
-	* Makefile.am (kinds.h, selected_int_kind.inc,
-	selected_real_kind.inc): Pass them on.
-	* mk-kinds-h.sh: Takes to-be-check kinds as argument.
-	* mk-sik-inc.sh: Likewise.
-	* mk-srk-inc.sh: Likewise.
-	* Makefile.in: Regenerate.
-	* configure: Regenerate.
-
-2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
-
-	PR fortran/93567
-	* io/write_float.def (determine_en_precision): Fix switch between
-	FMT_E and FMT_F.
-
-2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
-
-	PR fortran/93592
-	* io/write_float.def (build_float_string): Do not reset
-	  nbefore for FMT_F and FMT_EN.
-
-2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
-
-	* config/t-aix: Set BITS from compiler cpp macro.
-
-2020-06-22  David Edelsohn  <dje.gcc@gmail.com>
-
-	* Makefile.am: Use -include.
-	* Makefile.in: Regenerate.
-
-2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
-
-	* Makefile.am (tmake_file): Build and install AIX-style FAT libraries.
-	* Makefile.in: Regenerate.
-	* configure.ac (tmake_file): Substitute.
-	* configure: Regenerate.
-	* configure.host: Add system configury stanza. Define tmake_file.
-	* config/t-aix: New file.
-
-2020-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
-
-	PR libfortran/95313
-	* io/write.c (ztoa_big): Disable -Wstringop-overflow for one
-	line.
-
-2020-06-08  Harald Anlauf  <anlauf@gmx.de>
-
-	PR fortran/95091
-	* io/transfer.c (finalize_transfer): Fix type in error message.
-
-2020-06-01  Uroš Bizjak  <ubizjak@gmail.com>
-
-	PR libfortran/95418
-	* config/fpu-387.h (struct fenv): Add __attribute__ ((gcc_struct)).
-
-2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
-
-	PR bootstrap/95413
-	* configure: Regenerated.
-
-2020-05-29  Jakub Jelinek  <jakub@redhat.com>
-
-	PR libfortran/95390
-	* Makefile.am (i_findloc0_c): Add findloc0_i10.c.
-	(i_findloc1_c): Add findloc1_i10.c.
-	* gfortran.map (GFORTRAN_10.2): New symbol version, export
-	_gfortran_{,m,s}findloc{0,1}_c10 symbols.
-	* Makefile.in: Regenerated.
-	* generated/findloc0_c10.c: Generated.
-	* generated/findloc1_c10.c: Generated.
-
-2020-05-28  Harald Anlauf  <anlauf@gmx.de>
-
-	PR libfortran/95104
-	* io/unit.c (unlock_unit): Guard by check for NULL pointer.
-
-2020-05-26  Harald Anlauf  <anlauf@gmx.de>
-	    Steven G. Kargl   <kargl@gcc.gnu.org>
-
-	PR libfortran/95104
-	* io/transfer.c (st_wait_async): Do not dereference NULL pointer.
-
-2020-05-26  Harald Anlauf  <anlauf@gmx.de>
-
-	PR fortran/95195
-	* io/transfer.c (finalize_transfer): Generate runtime error for
-	namelist input/output to unformatted file.
-
-2020-05-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
-
-	PR libfortran/95191
-	* io/async.c (async_wait_id): Generate error if ID is higher
-	than the highest current ID.
-	* runtime/error.c (translate_error): Handle LIBERROR_BAD_WAIT_ID.
-
-2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* m4/matmul.m4: Don't include <config/i386/cpuinfo.h>.  Use
-	__builtin_cpu_is/__builtin_cpu_supports
-	* generated/matmul_c10.c: Regenerated.
-	* generated/matmul_c16.c: Likewise.
-	* generated/matmul_c4.c: Likewise.
-	* generated/matmul_c8.c: Likewise.
-	* generated/matmul_i1.c: Likewise.
-	* generated/matmul_i16.c: Likewise.
-	* generated/matmul_i2.c: Likewise.
-	* generated/matmul_i4.c: Likewise.
-	* generated/matmul_i8.c: Likewise.
-	* generated/matmul_r10.c: Likewise.
-	* generated/matmul_r16.c: Likewise.
-	* generated/matmul_r4.c: Likewise.
-	* generated/matmul_r8.c: Likewise.
-
-2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR bootstrap/95147
-	* configure: Regenerated.
-
-2020-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
-
-	PR libfortran/95119
-	* io/close.c (close_status): Add CLOSE_INVALID.
-	(st_close): Return early on invalid STATUS parameter.
-
-2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* configure: Regenerated.
-
-2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
-
-	* config/fpu-387.h (__math_force_eval): Remove.
-	(__math_force_eval_div): New define.
-	(local_feraiseexcept): Use __math_force_eval_div to use
-	generic division to generate INVALID, DIVZERO and INEXACT
-	exceptions.
-	(struct fenv): Define named struct instead of typedef.
-
-2020-05-01  Uroš Bizjak  <ubizjak@gmail.com>
-
-	* config/fpu-387.h (__math_force_eval): New define.
-	(local_feraiseexcept): Use __math_force_eval to evaluate
-	generic division to generate INVALID and DIVZERO exceptions.
-
-2020-04-22  Fritz Reese  <foreese@gcc.gnu.org>
-
-	* intrinsics/trigd.c, intrinsics/trigd_lib.inc, intrinsics/trigd.inc:
-	Guard against unavailable math functions.
-	Use suffixes from kinds.h based on the REAL kind.
-
-2020-04-22  Jakub Jelinek  <jakub@redhat.com>
-
-	PR libfortran/94694
-	PR libfortran/94586
-	* configure.ac: Add math func checks for fmaf, fma and fmal.  Add
-	HAVE_INLINE_BUILTIN_COPYSIGN check.
-	* c99_protos.h (copysign, fmaf, fma, fmal): Provide fallback
-	prototypes.
-	(HAVE_COPYSIGN, HAVE_FMAF, HAVE_FMA, HAVE_FMAL): Define if not
-	defined and fallback version is provided.
-	* intrinsics/c99_functions.c (copysign, fmaf, fma, fmal): Provide
-	fallback implementations if possible
-	* configure: Regenerated.
-	* config.h.in: Regenerated.
-
-2020-04-19  Uroš Bizjak  <ubizjak@gmail.com>
-
-	* config/fpu-387.h (local_feraiseexcept) [__SSE_MATH__]:
-	Remove unneeded assignments to volatile memory.
-
-2020-04-01  Fritz Reese  <foreese@gcc.gnu.org>
-	    Steven G. Kargl  <kargl@gcc.gnu.org>
-
-	PR fortran/93871
-	* Makefile.am, Makefile.in: New make rule for intrinsics/trigd.c.
-	* gfortran.map: New routines for {sind, cosd, tand}X{r4, r8, r10, r16}.
-	* intrinsics/trigd.c, intrinsics/trigd_lib.inc, intrinsics/trigd.inc:
-	New files. Defines native degree-valued trig functions.
-
-2020-02-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
-
-	PR fortran/93599
-	* io/async.c (destroy_adv_cond): Do not destroy lock.
-	(async_io): Make sure au->lock is locked for finishing of thread.
-	Do not lock/unlock around signalling emptysignal. Unlock au->lock
-	before return.
-	(init_adv_cond): Do not initialize lock.
-	(enqueue_transfer): Unlock after signal.
-	(enqueue_done_id): Likewise.
-	(enqueue_done): Likewise.
-	(enqueue_close): Likewise.
-	(enqueue_data_transfer): Likewise.
-	(async_wait_id): Do not lock/unlock around signalling au->work.
-	(async_wait): Unlock after signal.
-	* io/async.h (SIGNAL): Add comment about needed au->lock.
-	Remove locking/unlocking of advcond->lock.
-	(WAIT_SIGNAL_MUTEX): Add comment. Remove locking/unlocking of
-	advcond->lock.  Unlock mutex only at the end.  Loop on
-	__ghread_cond_wait returning zero.
-	(REVOKE_SIGNAL): Add comment. Remove locking/unlocking of
-	advcond->lock.
-	(struct adv_cond): Remove mutex from struct.
-
-2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
-
-	PR libstdc++/79193
-	PR libstdc++/88999
-
-	* configure: Regenerated.
-
-2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
-
-	* configure.ac: Handle `--with-toolexeclibdir='.
-	* Makefile.in: Regenerate.
-	* aclocal.m4: Regenerate.
-	* configure: Regenerate.
-
-2020-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-
-	PR libfortran/93234
-	* io/unit.c (set_internal_unit): Set round and sign flags
-	correctly.
-
-2020-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-
-	PR libfortran/90374
-	* io/format.c (parse_format_list): Zero width not allowed with
-	FMT_D.
-	* io/write_float.def (build_float_string): Include range of
-	higher exponent values that require wider width.
-
-2020-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-
-	PR libfortran/90374
-	* io/format.c (parse_format_list): Implement the E0 exponent
-	width to provide smallest possible width for exponent fields.
-	Refactor code for correct parsing and better readability of the
-	code.
-	* io/io.h (write_real_w0): Change interface to pass in pointer
-	to fnode.
-	* io/transfer.c: Update all calls to write_real_w0 to use the
-	new interface.
-	* io/write.c ((write_real_w0): Use the new interface with fnode
-	to access both the decimal precision and exponent widths used in
-	build_float_string.
-	* io/write_float.def (build_float_string): Use the passed in
-	exponent width to calculate the used width in the case of E0.
-
-2020-01-01  Jakub Jelinek  <jakub@redhat.com>
-
-	Update copyright years.
 
-Copyright (C) 2020 Free Software Foundation, Inc.
+Copyright (C) 2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

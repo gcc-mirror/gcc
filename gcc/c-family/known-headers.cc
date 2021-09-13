@@ -1,5 +1,5 @@
 /* Support for suggestions about missing #include directives.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -162,7 +162,14 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
     {"stdout", {"<stdio.h>", "<cstdio>"} },
 
     /* <stdlib.h> and <cstdlib>.  */
+    {"EXIT_FAILURE", {"<stdlib.h>", "<cstdlib>"} },
+    {"EXIT_SUCCESS", {"<stdlib.h>", "<cstdlib>"} },
+    {"abort", {"<stdlib.h>", "<cstdlib>"} },
+    {"atexit", {"<stdlib.h>", "<cstdlib>"} },
+    {"calloc", {"<stdlib.h>", "<cstdlib>"} },
+    {"exit", {"<stdlib.h>", "<cstdlib>"} },
     {"free", {"<stdlib.h>", "<cstdlib>"} },
+    {"getenv", {"<stdlib.h>", "<cstdlib>"} },
     {"malloc", {"<stdlib.h>", "<cstdlib>"} },
     {"realloc", {"<stdlib.h>", "<cstdlib>"} },
 

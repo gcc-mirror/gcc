@@ -43,12 +43,12 @@ void bar() pure @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail10968.d(66): Error: struct fail10968.SD is not copyable because it is annotated with @disable
-fail_compilation/fail10968.d(67): Error: struct fail10968.SD is not copyable because it is annotated with @disable
-fail_compilation/fail10968.d(68): Error: struct fail10968.SD is not copyable because it is annotated with @disable
-fail_compilation/fail10968.d(71): Error: struct fail10968.SD is not copyable because it is annotated with @disable
-fail_compilation/fail10968.d(72): Error: struct fail10968.SD is not copyable because it is annotated with @disable
-fail_compilation/fail10968.d(73): Error: struct fail10968.SD is not copyable because it is annotated with @disable
+fail_compilation/fail10968.d(66): Error: struct fail10968.SD is not copyable because it is annotated with `@disable`
+fail_compilation/fail10968.d(67): Error: struct fail10968.SD is not copyable because it is annotated with `@disable`
+fail_compilation/fail10968.d(68): Error: struct fail10968.SD is not copyable because it is annotated with `@disable`
+fail_compilation/fail10968.d(71): Error: struct fail10968.SD is not copyable because it is annotated with `@disable`
+fail_compilation/fail10968.d(72): Error: struct fail10968.SD is not copyable because it is annotated with `@disable`
+fail_compilation/fail10968.d(73): Error: struct fail10968.SD is not copyable because it is annotated with `@disable`
 ---
 */
 

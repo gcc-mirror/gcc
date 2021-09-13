@@ -214,10 +214,10 @@ int main ()
   extern vector long long l8; l8 = vec_mul (l3, l4);
   extern vector unsigned long long u6; u6 = vec_mul (u3, u4);
 
-  extern vector double dh; dh = vec_ctf (la, -2);
+  extern vector double dh; dh = vec_ctf (la, 2);
   extern vector double di; di = vec_ctf (ua, 2);
   extern vector int sz; sz = vec_cts (fa, 0x1F);
-  extern vector long long l9; l9 = vec_cts (dh, -2);
+  extern vector long long l9; l9 = vec_cts (dh, 2);
   extern vector unsigned long long u7; u7 = vec_ctu (di, 2);
   extern vector unsigned int usz; usz = vec_ctu (fa, 0x1F);
 

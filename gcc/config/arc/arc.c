@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+   Copyright (C) 1994-2021 Free Software Foundation, Inc.
 
    Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
    behalf of Synopsys Inc.
@@ -1440,9 +1440,6 @@ arc_override_options (void)
   if (flag_pic)
     target_flags |= MASK_NO_SDATA_SET;
 
-  if (flag_no_common == 255)
-    flag_no_common = !TARGET_NO_SDATA_SET;
-
   /* Check for small data option */
   if (!global_options_set.x_g_switch_value && !TARGET_NO_SDATA_SET)
     g_switch_value = TARGET_LL64 ? 8 : 4;
@@ -1451,8 +1448,10 @@ arc_override_options (void)
   if (TARGET_ARC700 && (arc_tune != ARC_TUNE_ARC7XX))
     flag_delayed_branch = 0;
 
-  /* Millicode thunks doesn't work with long calls.  */
-  if (TARGET_LONG_CALLS_SET)
+  /* Millicode thunks doesn't work for long calls.  */
+  if (TARGET_LONG_CALLS_SET
+      /* neither for RF16.  */
+      || TARGET_RF16)
     target_flags &= ~MASK_MILLICODE_THUNK_SET;
 
   /* Set unaligned to all HS cpus.  */
@@ -2488,8 +2487,8 @@ arc_address_cost (rtx addr, machine_mode, addr_space_t, bool speed)
 
     case PLUS :
       {
-	register rtx plus0 = XEXP (addr, 0);
-	register rtx plus1 = XEXP (addr, 1);
+	rtx plus0 = XEXP (addr, 0);
+	rtx plus1 = XEXP (addr, 1);
 
 	if (GET_CODE (plus0) != REG
 	    && (GET_CODE (plus0) != MULT
@@ -5032,7 +5031,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 void
 arc_print_operand_address (FILE *file , rtx addr)
 {
-  register rtx base, index = 0;
+  rtx base, index = 0;
 
   switch (GET_CODE (addr))
     {
@@ -5157,7 +5156,7 @@ static void
 arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 {
   /* BODY will hold the body of INSN.  */
-  register rtx body;
+  rtx body;
 
   /* This will be 1 if trying to repeat the trick (ie: do the `else' part of
      an if/then/else), and things need to be reversed.  */
@@ -6130,8 +6129,8 @@ arc_legitimate_pic_addr_p (rtx addr)
 static bool
 symbolic_reference_mentioned_p (rtx op)
 {
-  register const char *fmt;
-  register int i;
+  const char *fmt;
+  int i;
 
   if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
     return true;
@@ -6141,7 +6140,7 @@ symbolic_reference_mentioned_p (rtx op)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
 	    if (symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
@@ -6163,8 +6162,8 @@ symbolic_reference_mentioned_p (rtx op)
 bool
 arc_raw_symbolic_reference_mentioned_p (rtx op, bool skip_local)
 {
-  register const char *fmt;
-  register int i;
+  const char *fmt;
+  int i;
 
   if (GET_CODE(op) == UNSPEC)
     return false;
@@ -6184,7 +6183,7 @@ arc_raw_symbolic_reference_mentioned_p (rtx op, bool skip_local)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
 	    if (arc_raw_symbolic_reference_mentioned_p (XVECEXP (op, i, j),
@@ -8433,7 +8432,7 @@ arc_reorg (void)
 
       if (!INSN_ADDRESSES_SET_P())
 	  fatal_error (input_location,
-		       "insn addresses not set after shorten_branches");
+		       "insn addresses not set after shorten branches");
 
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
@@ -9868,29 +9867,6 @@ gen_acc2 (void)
   return gen_rtx_REG (SImode, TARGET_BIG_ENDIAN ? 57: 56);
 }
 
-/* FIXME: a parameter should be added, and code added to final.c,
-   to reproduce this functionality in shorten_branches.  */
-#if 0
-/* Return nonzero iff BRANCH should be unaligned if possible by upsizing
-   a previous instruction.  */
-int
-arc_unalign_branch_p (rtx branch)
-{
-  rtx note;
-
-  if (!TARGET_UNALIGN_BRANCH)
-    return 0;
-  /* Do not do this if we have a filled delay slot.  */
-  if (get_attr_delay_slot_filled (branch) == DELAY_SLOT_FILLED_YES
-      && !NEXT_INSN (branch)->deleted ())
-    return 0;
-  note = find_reg_note (branch, REG_BR_PROB, 0);
-  return (!note
-	  || (arc_unalign_prob_threshold && !br_prob_note_reliable_p (note))
-	  || INTVAL (XEXP (note, 0)) < arc_unalign_prob_threshold);
-}
-#endif
-
 /* When estimating sizes during arc_reorg, when optimizing for speed, there
    are three reasons why we need to consider branches to be length 6:
    - annull-false delay slot insns are implemented using conditional execution,
@@ -10129,6 +10105,31 @@ arc_process_double_reg_moves (rtx *operands)
   return true;
 }
 
+
+/* Check if we need to split a 64bit move.  We do not need to split it if we can
+   use vadd2 or ldd/std instructions.  */
+
+bool
+arc_split_move_p (rtx *operands)
+{
+  machine_mode mode = GET_MODE (operands[0]);
+
+  if (TARGET_LL64
+      && ((memory_operand (operands[0], mode)
+	   && (even_register_operand (operands[1], mode)
+	       || satisfies_constraint_Cm3 (operands[1])))
+	  || (memory_operand (operands[1], mode)
+	      && even_register_operand (operands[0], mode))))
+    return false;
+
+  if (TARGET_PLUS_QMACW
+      && even_register_operand (operands[0], mode)
+      && even_register_operand (operands[1], mode))
+    return false;
+
+  return true;
+}
+
 /* operands 0..1 are the operands of a 64 bit move instruction.
    split it into two moves with operands 2/3 and 4/5.  */
 
@@ -10145,25 +10146,6 @@ arc_split_move (rtx *operands)
     if (arc_process_double_reg_moves (operands))
       return;
   }
-
-  if (TARGET_LL64
-      && ((memory_operand (operands[0], mode)
-	   && (even_register_operand (operands[1], mode)
-	       || satisfies_constraint_Cm3 (operands[1])))
-	  || (memory_operand (operands[1], mode)
-	      && even_register_operand (operands[0], mode))))
-    {
-      emit_move_insn (operands[0], operands[1]);
-      return;
-    }
-
-  if (TARGET_PLUS_QMACW
-      && even_register_operand (operands[0], mode)
-      && even_register_operand (operands[1], mode))
-    {
-      emit_move_insn (operands[0], operands[1]);
-      return;
-    }
 
   if (TARGET_PLUS_QMACW
       && GET_CODE (operands[1]) == CONST_VECTOR)
@@ -10283,23 +10265,6 @@ arc_regno_use_in (unsigned int regno, rtx x)
     }
 
   return NULL_RTX;
-}
-
-/* Return the integer value of the "type" attribute for INSN, or -1 if
-   INSN can't have attributes.  */
-
-static int
-arc_attr_type (rtx_insn *insn)
-{
-  if (NONJUMP_INSN_P (insn)
-      ? (GET_CODE (PATTERN (insn)) == USE
-	 || GET_CODE (PATTERN (insn)) == CLOBBER)
-      : JUMP_P (insn)
-      ? (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	 || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-      : !CALL_P (insn))
-    return -1;
-  return get_attr_type (insn);
 }
 
 /* Code has a minimum p2 alignment of 1, which we must restore after

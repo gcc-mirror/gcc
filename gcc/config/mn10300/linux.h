@@ -1,6 +1,6 @@
 /* Definitions of taret machine for GNU compiler.
    Matsushita AM33/2.0
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
    This file is part of GCC.
@@ -43,8 +43,6 @@
 
 #undef  PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT PROCESSOR_AM33_2
-
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
 extern int mn10300_protect_label;
 

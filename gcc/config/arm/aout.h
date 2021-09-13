@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995-2020 Free Software Foundation, Inc.
+   Copyright (C) 1995-2021 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
    This file is part of GCC.
@@ -257,7 +257,7 @@
 #define ASM_OUTPUT_ALIGN(STREAM, POWER)			\
   do							\
     {							\
-      register int amount = 1 << (POWER);		\
+      int amount = 1 << (POWER);			\
 							\
       if (amount == 2)					\
 	fprintf (STREAM, "\t.even\n");			\

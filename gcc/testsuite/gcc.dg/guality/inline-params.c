@@ -3,7 +3,7 @@
    inlining inlines the functions too early to test the real IPA passes (such
    as IPA-CP).  */
 /* { dg-options "-g -fno-early-inlining -fno-ipa-sra" } */
-/* { dg-xfail-run-if "" { "*-*-*" } { "-O2" "-O3" "-Os" } } */
+/* { dg-xfail-run-if "" { ! aarch64*-*-* } { "-O2" "-O3" "-Os" } } */
 
 #define GUALITY_DONT_FORCE_LIVE_AFTER -1
 

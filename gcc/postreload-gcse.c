@@ -1,5 +1,5 @@
 /* Post reload partially redundant load elimination
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -549,7 +549,6 @@ oprs_unchanged_p (rtx x, rtx_insn *insn, bool after_insn)
 	return oprs_unchanged_p (XEXP (x, 0), insn, after_insn);
 
     case PC:
-    case CC0: /*FIXME*/
     case CONST:
     CASE_CONST_ANY:
     case SYMBOL_REF:
@@ -780,7 +779,9 @@ record_opr_changes (rtx_insn *insn)
       EXECUTE_IF_SET_IN_HARD_REG_SET (callee_clobbers, 0, regno, hrsi)
 	record_last_reg_set_info_regno (insn, regno);
 
-      if (! RTL_CONST_OR_PURE_CALL_P (insn))
+      if (! RTL_CONST_OR_PURE_CALL_P (insn)
+	  || RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)
+	  || can_throw_external (insn))
 	record_last_mem_set_info (insn);
     }
 }

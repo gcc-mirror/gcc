@@ -1,5 +1,5 @@
 /* Definitions for describing one tree-ssa optimization pass.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 
 This file is part of GCC.
@@ -208,6 +208,7 @@ protected:
 #define PROP_gimple_lcf		(1 << 1)	/* lowered control flow */
 #define PROP_gimple_leh		(1 << 2)	/* lowered eh */
 #define PROP_cfg		(1 << 3)
+#define PROP_objsz		(1 << 4)	/* object sizes computed */
 #define PROP_ssa		(1 << 5)
 #define PROP_no_crit_edges      (1 << 6)
 #define PROP_rtl		(1 << 7)
@@ -224,8 +225,10 @@ protected:
 						   been optimized.  */
 #define PROP_gimple_lomp_dev	(1 << 16)	/* done omp_device_lower */
 #define PROP_rtl_split_insns	(1 << 17)	/* RTL has insns split.  */
+#define PROP_loop_opts_done	(1 << 18)	/* SSA loop optimizations
+						   have completed.  */
 
-#define PROP_trees \
+#define PROP_gimple \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
 
 /* To-do flags.  */
@@ -423,9 +426,13 @@ extern gimple_opt_pass *make_pass_diagnose_omp_blocks (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_omp_target_link (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_oacc_loop_designation (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_omp_oacc_neuter_broadcast (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_oacc_device_lower (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_omp_device_lower (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_object_sizes (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_early_object_sizes (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_warn_access (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_warn_printf (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_strlen (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_fold_builtins (gcc::context *ctxt);

@@ -61,6 +61,11 @@ package Interfaces.C is
 
    type size_t is mod 2 ** System.Parameters.ptr_bits;
 
+   --  Boolean type
+
+   type C_bool is new Boolean;
+   pragma Convention (C, C_bool);
+
    --  Floating-Point
 
    type C_float     is new Float;

@@ -1,5 +1,5 @@
 /* Utility to pick a temporary filename prefix.
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -81,8 +81,6 @@ try_dir (const char *dir, const char *base)
 }
 
 static const char tmp[] = { DIR_SEPARATOR, 't', 'm', 'p', 0 };
-static const char usrtmp[] =
-{ DIR_SEPARATOR, 'u', 's', 'r', DIR_SEPARATOR, 't', 'm', 'p', 0 };
 static const char vartmp[] =
 { DIR_SEPARATOR, 'v', 'a', 'r', DIR_SEPARATOR, 't', 'm', 'p', 0 };
 
@@ -129,9 +127,8 @@ choose_tmpdir (void)
 	base = try_dir (P_tmpdir, base);
 #endif
 
-      /* Try /var/tmp, /usr/tmp, then /tmp.  */
+      /* Try /var/tmp, then /tmp.  */
       base = try_dir (vartmp, base);
-      base = try_dir (usrtmp, base);
       base = try_dir (tmp, base);
       
       /* If all else fails, use the current directory!  */

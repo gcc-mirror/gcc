@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@cygnus.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -224,6 +224,15 @@ htab_mod_m2 (hashval_t hash, htab_t htab)
   return 1 + htab_mod_1 (hash, p->prime - 2, p->inv_m2, p->shift);
 }
 
+static inline htab_t
+htab_clear (htab_t htab)
+{
+  htab->n_elements = 0;
+  htab->n_deleted = 0;
+  memset (htab->entries, 0, htab->size * sizeof (hash_entry_type));
+  return htab;
+}
+
 /* Create hash table of size SIZE.  */
 
 static htab_t
@@ -238,11 +247,8 @@ htab_create (size_t size)
   result = (htab_t) htab_alloc (sizeof (struct htab)
 				+ size * sizeof (hash_entry_type));
   result->size = size;
-  result->n_elements = 0;
-  result->n_deleted = 0;
   result->size_prime_index = size_prime_index;
-  memset (result->entries, 0, size * sizeof (hash_entry_type));
-  return result;
+  return htab_clear (result);
 }
 
 /* Similar to htab_find_slot, but without several unwanted side effects:

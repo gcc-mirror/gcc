@@ -1,5 +1,5 @@
 /* Common declarations for all of libgfortran.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -410,6 +410,7 @@ typedef GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, char) gfc_full_array_char
 #define GFC_DESCRIPTOR_SIZE(desc) ((desc)->dtype.elem_len)
 #define GFC_DESCRIPTOR_DATA(desc) ((desc)->base_addr)
 #define GFC_DESCRIPTOR_DTYPE(desc) ((desc)->dtype)
+#define GFC_DESCRIPTOR_SPAN(desc) ((desc)->span)
 
 #define GFC_DIMENSION_LBOUND(dim) ((dim).lower_bound)
 #define GFC_DIMENSION_UBOUND(dim) ((dim)._ubound)

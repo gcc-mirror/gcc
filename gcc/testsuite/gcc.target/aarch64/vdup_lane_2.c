@@ -333,7 +333,7 @@ main ()
 
 /* Asm check for vdups_lane_f32, vdups_lane_s32, vdups_lane_u32.  */
 /* Can't generate "dup s<n>, v<m>[0]" for vdups_lane_s32 and vdups_lane_u32.  */
-/* { dg-final { scan-assembler-times "dup\\ts\[0-9\]+, v\[0-9\]+\.s\\\[0\\\]" 1} } */
+/* { dg-final { scan-assembler-times {fmov\ts0, s1} 1 } } */
 /* { dg-final { scan-assembler-times "dup\\ts\[0-9\]+, v\[0-9\]+\.s\\\[1\\\]" 3 } } */
 
 /* Asm check for vdupd_lane_f64, vdupd_lane_s64, vdupd_lane_u64.  */

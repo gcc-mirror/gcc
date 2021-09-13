@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GCC
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -830,6 +830,9 @@ struct GTY(()) rtvec_def {
 #define CONST_DOUBLE_AS_FLOAT_P(X) \
   (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode)
 
+/* Predicate yielding nonzero iff X is an rtx for a constant vector.  */
+#define CONST_VECTOR_P(X) (GET_CODE (X) == CONST_VECTOR)
+
 /* Predicate yielding nonzero iff X is a label insn.  */
 #define LABEL_P(X) (GET_CODE (X) == CODE_LABEL)
 
@@ -838,6 +841,11 @@ struct GTY(()) rtvec_def {
 
 /* Predicate yielding nonzero iff X is a call insn.  */
 #define CALL_P(X) (GET_CODE (X) == CALL_INSN)
+
+/* 1 if RTX is a call_insn for a fake call.
+   CALL_INSN use "used" flag to indicate it's a fake call.  */
+#define FAKE_CALL_P(RTX)                                        \
+  (RTL_FLAG_CHECK1 ("FAKE_CALL_P", (RTX), CALL_INSN)->used)
 
 /* Predicate yielding nonzero iff X is an insn that cannot jump.  */
 #define NONJUMP_INSN_P(X) (GET_CODE (X) == INSN)
@@ -2411,9 +2419,9 @@ extern void get_full_rtx_cost (rtx, machine_mode, enum rtx_code, int,
 			       struct full_rtx_costs *);
 extern bool native_encode_rtx (machine_mode, rtx, vec<target_unit> &,
 			       unsigned int, unsigned int);
-extern rtx native_decode_rtx (machine_mode, vec<target_unit>,
+extern rtx native_decode_rtx (machine_mode, const vec<target_unit> &,
 			      unsigned int);
-extern rtx native_decode_vector_rtx (machine_mode, vec<target_unit>,
+extern rtx native_decode_vector_rtx (machine_mode, const vec<target_unit> &,
 				     unsigned int, unsigned int, unsigned int);
 extern poly_uint64 subreg_lsb (const_rtx);
 extern poly_uint64 subreg_size_lsb (poly_uint64, poly_uint64, poly_uint64);
@@ -2455,6 +2463,8 @@ extern bool subreg_offset_representable_p (unsigned int, machine_mode,
 extern unsigned int subreg_regno (const_rtx);
 extern int simplify_subreg_regno (unsigned int, machine_mode,
 				  poly_uint64, machine_mode);
+extern int lowpart_subreg_regno (unsigned int, machine_mode,
+				 machine_mode);
 extern unsigned int subreg_nregs (const_rtx);
 extern unsigned int subreg_nregs_with_regno (unsigned int, const_rtx);
 extern unsigned HOST_WIDE_INT nonzero_bits (const_rtx, machine_mode);
@@ -2976,7 +2986,7 @@ extern rtx rtx_alloc_stat_v (RTX_CODE MEM_STAT_DECL, int);
 	       (sizeof (struct hwivec_def)			\
 		+ ((NWORDS)-1) * sizeof (HOST_WIDE_INT)))	\
 
-extern rtvec rtvec_alloc (int);
+extern rtvec rtvec_alloc (size_t);
 extern rtvec shallow_copy_rtvec (rtvec);
 extern bool shared_const_p (const_rtx);
 extern rtx copy_rtx (rtx);
@@ -2991,6 +3001,7 @@ extern unsigned int rtx_size (const_rtx);
 extern rtx shallow_copy_rtx (const_rtx CXX_MEM_STAT_INFO);
 extern int rtx_equal_p (const_rtx, const_rtx);
 extern bool rtvec_all_equal_p (const_rtvec);
+extern bool rtvec_series_p (rtvec, int);
 
 /* Return true if X is a vector constant with a duplicated element value.  */
 
@@ -3085,6 +3096,23 @@ vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
       return true;
     }
   return const_vec_series_p (x, base_out, step_out);
+}
+
+/* Return true if CONST_VECTORs X and Y, which are known to have the same mode,
+   also have the same encoding.  This means that they are equal whenever their
+   operands are equal.  */
+
+inline bool
+same_vector_encodings_p (const_rtx x, const_rtx y)
+{
+  /* Don't be fussy about the encoding of constant-length vectors,
+     since XVECEXP (X, 0) and XVECEXP (Y, 0) list all the elements anyway.  */
+  if (poly_uint64 (CONST_VECTOR_NUNITS (x)).is_constant ())
+    return true;
+
+  return (CONST_VECTOR_NPATTERNS (x) == CONST_VECTOR_NPATTERNS (y)
+	  && (CONST_VECTOR_NELTS_PER_PATTERN (x)
+	      == CONST_VECTOR_NELTS_PER_PATTERN (y)));
 }
 
 /* Return the unpromoted (outer) mode of SUBREG_PROMOTED_VAR_P subreg X.  */
@@ -3335,8 +3363,6 @@ extern rtx_insn *next_real_nondebug_insn (rtx);
 extern rtx_insn *prev_active_insn (rtx_insn *);
 extern rtx_insn *next_active_insn (rtx_insn *);
 extern int active_insn_p (const rtx_insn *);
-extern rtx_insn *next_cc0_user (rtx_insn *);
-extern rtx_insn *prev_cc0_setter (rtx_insn *);
 
 /* In emit-rtl.c  */
 extern int insn_line (const rtx_insn *);
@@ -3773,7 +3799,6 @@ extern GTY(()) rtx const_tiny_rtx[4][(int) MAX_MACHINE_MODE];
 #define CONSTM1_RTX(MODE) (const_tiny_rtx[3][(int) (MODE)])
 
 extern GTY(()) rtx pc_rtx;
-extern GTY(()) rtx cc0_rtx;
 extern GTY(()) rtx ret_rtx;
 extern GTY(()) rtx simple_return_rtx;
 extern GTY(()) rtx_insn *invalid_insn_rtx;
@@ -4109,8 +4134,6 @@ extern int simplejump_p (const rtx_insn *);
 extern int returnjump_p (const rtx_insn *);
 extern int eh_returnjump_p (rtx_insn *);
 extern int onlyjump_p (const rtx_insn *);
-extern int only_sets_cc0_p (const_rtx);
-extern int sets_cc0_p (const_rtx);
 extern int invert_jump_1 (rtx_jump_insn *, rtx);
 extern int invert_jump (rtx_jump_insn *, rtx, int);
 extern int rtx_renumbered_equal_p (const_rtx, const_rtx);

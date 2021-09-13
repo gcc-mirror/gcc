@@ -1,5 +1,3 @@
-/* { dg-additional-options "-Wno-analyzer-too-complex" } */
-
 typedef void * (*alloc_func)(void * opaque, unsigned items, unsigned size);
 typedef void (*free_func)(void * opaque, void * address);
 

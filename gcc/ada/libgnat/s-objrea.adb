@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2009-2020, Free Software Foundation, Inc.          --
+--         Copyright (C) 2009-2021, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,7 @@ package body System.Object_Reader is
    function Trim_Trailing_Nuls (Str : String) return String;
    --  Return a copy of a string with any trailing NUL characters truncated
 
-   procedure Check_Read_Offset (S : in out Mapped_Stream; Size : uint32);
+   procedure Check_Read_Offset (S : Mapped_Stream; Size : uint32);
    --  Check that the SIZE bytes at the current offset are still in the stream
 
    -------------------------------------
@@ -78,6 +78,7 @@ package body System.Object_Reader is
       EM_SPARCV9     : constant := 43; --  SPARC v9 64-bit
       EM_IA_64       : constant := 50; --  Intel Merced
       EM_X86_64      : constant := 62; --  AMD x86-64 architecture
+      EM_AARCH64     : constant := 183; --  Aarch64
 
       EN_NIDENT  : constant := 16;
 
@@ -647,6 +648,9 @@ package body System.Object_Reader is
 
             when EM_ARM =>
                Res.Arch := ARM;
+
+            when EM_AARCH64 =>
+               Res.Arch := AARCH64;
 
             when others =>
                raise Format_Error with "unrecognized architecture";
@@ -1931,7 +1935,7 @@ package body System.Object_Reader is
       return To_String_Ptr_Len (Read (S));
    end Read;
 
-   procedure Check_Read_Offset (S : in out Mapped_Stream; Size : uint32) is
+   procedure Check_Read_Offset (S : Mapped_Stream; Size : uint32) is
    begin
       if S.Off + Offset (Size) > Offset (Last (S.Region)) then
          raise IO_Error with "could not read from object file";
@@ -2038,7 +2042,8 @@ package body System.Object_Reader is
             Address_32 := Read (S);
             return uint64 (Address_32);
 
-         when IA64
+         when AARCH64
+            | IA64
             | PPC64
             | SPARC64
             | x86_64

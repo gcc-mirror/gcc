@@ -1,6 +1,6 @@
 // std::rel_ops implementation -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,13 +52,8 @@
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{utility}
  *
- *  Inclusion of this file has been removed from
- *  all of the other STL headers for safety reasons, except std_utility.h.
- *  For more information, see the thread of about twenty messages starting
- *  with http://gcc.gnu.org/ml/libstdc++/2001-01/msg00223.html, or
- *  http://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.ambiguous_overloads
- *
- *  Short summary: the rel_ops operators should be avoided for the present.
+ *  This file is only included by `<utility>`, which is required by the
+ *  standard to define namespace `rel_ops` and its contents.
  */
 
 #ifndef _STL_RELOPS_H
@@ -72,6 +67,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     /** @namespace std::rel_ops
      *  @brief  The generated relational operators are sequestered here.
+     *
+     *  Libstdc++ headers must not use the contents of `rel_ops`.
+     *  User code should also avoid them, because unconstrained function
+     *  templates are too greedy and can easily cause ambiguities.
+     *
+     *  C++20 default comparisons are a better solution.
      */
 
     /**

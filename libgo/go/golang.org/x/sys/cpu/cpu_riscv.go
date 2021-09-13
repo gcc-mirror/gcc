@@ -5,3 +5,5 @@
 // +build riscv
 
 package cpu
+
+func initOptions() {}

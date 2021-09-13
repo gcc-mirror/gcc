@@ -1,5 +1,5 @@
 /* Decompose multiword subregs.
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 		  Ian Lance Taylor <iant@google.com>
 
@@ -1731,14 +1731,9 @@ decompose_multiword_subregs (bool decompose_copies)
 	}
     }
 
-  {
-    unsigned int i;
-    bitmap b;
-
-    FOR_EACH_VEC_ELT (reg_copy_graph, i, b)
-      if (b)
-	BITMAP_FREE (b);
-  }
+  for (bitmap b : reg_copy_graph)
+    if (b)
+      BITMAP_FREE (b);
 
   reg_copy_graph.release ();
 

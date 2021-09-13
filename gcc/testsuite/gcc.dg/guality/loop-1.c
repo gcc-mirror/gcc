@@ -17,6 +17,6 @@ foo (int n)
   /* The following works only with final value replacement or with the NOP
      but not without (which means -Og).  Vectorization breaks it, so disable
      that.  At -O3 it currently fails, PR89983.  */
-  __asm__ volatile (NOP : : "g" (i) : "memory"); /* { dg-final { gdb-test . "i" "1" } } */
+  __asm__ volatile (NOP : : "g" (i) : "memory"); /* { dg-final { gdb-test . "i" "1" { xfail { aarch64*-*-* && { any-opts "-ftracer" } } } } } */
 }
 int main() { foo(1); }

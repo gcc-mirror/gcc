@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -74,9 +74,6 @@ static_assert( same_as<std::ranges::range_difference_t<C>,
 		       std::ptrdiff_t> );
 static_assert( same_as<std::ranges::range_difference_t<O>,
 		       std::ptrdiff_t> );
-
-static_assert( same_as<std::ranges::range_value_t<O>,
-		       char> );
 
 static_assert( same_as<std::ranges::range_reference_t<I>,
 		       char&> );

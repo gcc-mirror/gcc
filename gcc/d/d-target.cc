@@ -1,5 +1,5 @@
 /* d-target.cc -- Target interface for the D front end.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,6 +43,26 @@ along with GCC; see the file COPYING3.  If not see
    Used for retrieving target-specific information.  */
 
 Target target;
+
+/* Internal key handlers for `__traits(getTargetInfo)'.  */
+static tree d_handle_target_cpp_std (void);
+static tree d_handle_target_cpp_runtime_library (void);
+static tree d_handle_target_object_format (void);
+
+/* In [traits/getTargetInfo], a reliable subset of getTargetInfo keys exists
+   which are always available.  */
+static const struct d_target_info_spec d_language_target_info[] =
+{
+  /* { name, handler } */
+  { "cppStd", d_handle_target_cpp_std },
+  { "cppRuntimeLibrary", d_handle_target_cpp_runtime_library },
+  { "floatAbi", NULL },
+  { "objectFormat", d_handle_target_object_format },
+  { NULL, NULL },
+};
+
+/* Table `__traits(getTargetInfo)' keys.  */
+static vec<d_target_info_spec> d_target_info_table;
 
 
 /* Initialize the floating-point constants for TYPE.  */
@@ -145,6 +165,15 @@ Target::_init (const Param &)
   this->c.longsize = int_size_in_bytes (long_integer_type_node);
   this->c.long_doublesize = int_size_in_bytes (long_double_type_node);
 
+  /* Define what type to use for wchar_t.  We don't want to support wide
+     characters less than "short" in D.  */
+  if (WCHAR_TYPE_SIZE == 32)
+    this->c.twchar_t = Type::basic[Tdchar];
+  else if (WCHAR_TYPE_SIZE == 16)
+    this->c.twchar_t = Type::basic[Twchar];
+  else
+    sorry ("D does not support wide characters on this target.");
+
   /* Set-up target C++ ABI.  */
   this->cpp.reverseOverloads = false;
   this->cpp.exceptions = true;
@@ -167,6 +196,12 @@ Target::_init (const Param &)
   real_convert (&CTFloat::one.rv (), mode, &dconst1);
   real_convert (&CTFloat::minusone.rv (), mode, &dconstm1);
   real_convert (&CTFloat::half.rv (), mode, &dconsthalf);
+
+  /* Initialize target info tables, the keys required by the language are added
+     last, so that the OS and CPU handlers can override.  */
+  targetdm.d_register_cpu_target_info ();
+  targetdm.d_register_os_target_info ();
+  d_add_target_info_handlers (d_language_target_info);
 }
 
 /* Return GCC memory alignment size for type TYPE.  */
@@ -394,11 +429,30 @@ TargetCPP::fundamentalType (const Type *, bool &)
   return false;
 }
 
-/* Return the default system linkage for the target.  */
+/* Get the starting offset position for fields of an `extern(C++)` class
+   that is derived from the given BASE_CLASS.  */
+
+unsigned
+TargetCPP::derivedClassOffset(ClassDeclaration *base_class)
+{
+  return base_class->structsize;
+}
+
+/* Return the default `extern (System)' linkage for the target.  */
 
 LINK
 Target::systemLinkage (void)
 {
+  unsigned link_system, link_windows;
+
+  if (targetdm.d_has_stdcall_convention (&link_system, &link_windows))
+    {
+      /* In [attribute/linkage], `System' is the same as `Windows' on Windows
+	 platforms, and `C' on other platforms.  */
+      if (link_system)
+	return LINKwindows;
+    }
+
   return LINKc;
 }
 
@@ -412,4 +466,121 @@ Target::toArgTypes (Type *)
 {
   /* Not implemented, however this is not currently used anywhere.  */
   return NULL;
+}
+
+/* Determine return style of function, whether in registers or through a
+   hidden pointer to the caller's stack.  */
+
+bool
+Target::isReturnOnStack (TypeFunction *tf, bool)
+{
+  /* Need the back-end type to determine this, but this is called from the
+     frontend before semantic processing is finished.  An accurate value
+     is not currently needed anyway.  */
+  if (tf->isref)
+    return false;
+
+  Type *tn = tf->next->toBasetype ();
+
+  return (tn->ty == Tstruct || tn->ty == Tsarray);
+}
+
+/* Add all target info in HANDLERS to D_TARGET_INFO_TABLE for use by
+   Target::getTargetInfo().  */
+
+void
+d_add_target_info_handlers (const d_target_info_spec *handlers)
+{
+  gcc_assert (handlers != NULL);
+
+  if (d_target_info_table.is_empty ())
+    d_target_info_table.create (8);
+
+  for (size_t i = 0; handlers[i].name != NULL; i++)
+    d_target_info_table.safe_push (handlers[i]);
+}
+
+/* Handle a call to `__traits(getTargetInfo, "cppStd")'.  */
+
+tree
+d_handle_target_cpp_std (void)
+{
+  return build_integer_cst (global.params.cplusplus);
+}
+
+/* Handle a call to `__traits(getTargetInfo, "cppRuntimeLibrary")'.  */
+
+tree
+d_handle_target_cpp_runtime_library (void)
+{
+  /* The driver only ever optionally links to libstdc++.  */
+  const char *libstdcxx = "libstdc++";
+  return build_string_literal (strlen (libstdcxx) + 1, libstdcxx);
+}
+
+/* Handle a call to `__traits(getTargetInfo, "objectFormat")'.  */
+
+tree
+d_handle_target_object_format (void)
+{
+  const char *objfmt;
+
+#ifdef OBJECT_FORMAT_ELF
+  objfmt = "elf";
+#else
+  if (TARGET_COFF || TARGET_PECOFF)
+    objfmt = "coff";
+  else
+    objfmt = "";
+#endif
+
+  return build_string_literal (strlen (objfmt) + 1, objfmt);
+}
+
+/* Look up the target info KEY in the available getTargetInfo tables, and return
+   the result as an Expression, or NULL if KEY is not found.  When the key must
+   always exist, but is not supported, an empty string expression is returned.
+   LOC is the location to use for the returned expression.  */
+
+Expression *
+Target::getTargetInfo (const char *key, const Loc &loc)
+{
+  unsigned ix;
+  d_target_info_spec *spec;
+
+  FOR_EACH_VEC_ELT (d_target_info_table, ix, spec)
+    {
+      tree result;
+
+      if (strcmp (key, spec->name) != 0)
+	continue;
+
+      /* Get the requested information, or empty string if unhandled.  */
+      if (spec->handler)
+	{
+	  result = (spec->handler) ();
+	  /* Handler didn't return a result, meaning it really does not support
+	     the key in the current target configuration.  Check whether there
+	     are any other handlers which may recognize the key.  */
+	  if (result == NULL_TREE)
+	    continue;
+	}
+      else
+	result = build_string_literal (1, "");
+
+      gcc_assert (result);
+      return d_eval_constant_expression (loc, result);
+    }
+
+  return NULL;
+}
+
+/**
+ * Returns true if the implementation for object monitors is always defined
+ * in the D runtime library (rt/monitor_.d).  */
+
+bool
+Target::libraryObjectMonitors (FuncDeclaration *, Statement *)
+{
+  return true;
 }

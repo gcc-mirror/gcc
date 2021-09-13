@@ -1,5 +1,5 @@
 ;; GCC machine description for AVX512F instructions
-;; Copyright (C) 2013-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -24,6 +24,7 @@
    V32HI V16HI V8HI
    V16SI V8SI  V4SI
    V8DI  V4DI  V2DI
+   V32HF V16HF V8HF
    V16SF V8SF  V4SF
    V8DF  V4DF  V2DF])
 
@@ -35,6 +36,7 @@
    V32HI V16HI V8HI
    V16SI V8SI  V4SI
    V8DI  V4DI  V2DI
+   V32HF V16HF V8HF
    V16SF V8SF  V4SF
    V8DF  V4DF  V2DF
    QI HI SI DI SF DF])
@@ -117,6 +119,25 @@
 	 (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))
 ])
 
+(define_subst_attr "maskz_scalar_name" "maskz_scalar" "" "_maskz_1")
+(define_subst_attr "maskz_scalar_op5" "maskz_scalar" "" "%{%6%}%N5")
+
+(define_subst "maskz_scalar"
+  [(set (match_operand:SUBST_V 0)
+	(vec_merge:SUBST_V
+	  (match_operand:SUBST_V 1)
+	  (match_operand:SUBST_V 2)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  [(set (match_dup 0)
+	(vec_merge:SUBST_V
+	  (vec_merge:SUBST_V
+	    (match_dup 1)
+	    (match_operand:SUBST_V 3 "const0_operand" "C")
+	    (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+	  (match_dup 2)
+	  (const_int 1)))])
+
 (define_subst_attr "round_name" "round" "" "_round")
 (define_subst_attr "round_mask_operand2" "mask" "%R2" "%R4")
 (define_subst_attr "round_mask_operand3" "mask" "%R3" "%R5")
@@ -142,7 +163,9 @@
 (define_subst_attr "round_mode512bit_condition" "round" "1" "(<MODE>mode == V16SFmode
 							      || <MODE>mode == V8DFmode
 							      || <MODE>mode == V8DImode
-							      || <MODE>mode == V16SImode)")
+							      || <MODE>mode == V16SImode
+							      || <MODE>mode == V32HFmode)")
+
 (define_subst_attr "round_modev8sf_condition" "round" "1" "(<MODE>mode == V8SFmode)")
 (define_subst_attr "round_modev4sf_condition" "round" "1" "(<MODE>mode == V4SFmode)")
 (define_subst_attr "round_codefor" "round" "*" "")
@@ -163,6 +186,7 @@
 (define_subst_attr "round_saeonly_mask_operand3" "mask" "%r3" "%r5")
 (define_subst_attr "round_saeonly_mask_operand4" "mask" "%r4" "%r6")
 (define_subst_attr "round_saeonly_mask_scalar_merge_operand4" "mask_scalar_merge" "%r4" "%r5")
+(define_subst_attr "round_saeonly_maskz_scalar_operand5" "maskz_scalar" "%r5" "%r7")
 (define_subst_attr "round_saeonly_sd_mask_operand5" "sd" "%r5" "%r7")
 (define_subst_attr "round_saeonly_op2" "round_saeonly" "" "%r2")
 (define_subst_attr "round_saeonly_op3" "round_saeonly" "" "%r3")
@@ -175,6 +199,7 @@
 (define_subst_attr "round_saeonly_mask_op4" "round_saeonly" "" "<round_saeonly_mask_operand4>")
 (define_subst_attr "round_saeonly_mask_scalar_merge_op4" "round_saeonly" "" "<round_saeonly_mask_scalar_merge_operand4>")
 (define_subst_attr "round_saeonly_sd_mask_op5" "round_saeonly" "" "<round_saeonly_sd_mask_operand5>")
+(define_subst_attr "round_saeonly_maskz_scalar_op5" "round_saeonly" "" "<round_saeonly_maskz_scalar_operand5>")
 (define_subst_attr "round_saeonly_mask_arg3" "round_saeonly" "" ", operands[<mask_expand_op3>]")
 (define_subst_attr "round_saeonly_constraint" "round_saeonly" "vm" "v")
 (define_subst_attr "round_saeonly_constraint2" "round_saeonly" "m" "v")
@@ -183,7 +208,9 @@
 (define_subst_attr "round_saeonly_mode512bit_condition" "round_saeonly" "1" "(<MODE>mode == V16SFmode
 									      || <MODE>mode == V8DFmode
 									      || <MODE>mode == V8DImode
-									      || <MODE>mode == V16SImode)")
+									      || <MODE>mode == V16SImode
+									      || <MODE>mode == V32HFmode)")
+
 (define_subst_attr "round_saeonly_modev8sf_condition" "round_saeonly" "1" "(<MODE>mode == V8SFmode)")
 
 (define_subst "round_saeonly"

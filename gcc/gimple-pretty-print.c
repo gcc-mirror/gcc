@@ -1,5 +1,5 @@
 /* Pretty formatting of GIMPLE statements and expressions.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Diego Novillo <dnovillo@google.com>
 
@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "cfgloop.h"
+#include "gimple-range.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
    that (intentionally) don't follow GCC diagnostic conventions.  */
@@ -458,6 +459,10 @@ dump_binary_rhs (pretty_printer *buffer, const gassign *gs, int spc,
     case VEC_PACK_FLOAT_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
+    case VEC_WIDEN_PLUS_HI_EXPR:
+    case VEC_WIDEN_PLUS_LO_EXPR:
+    case VEC_WIDEN_MINUS_HI_EXPR:
+    case VEC_WIDEN_MINUS_LO_EXPR:
     case VEC_SERIES_EXPR:
       for (p = get_tree_code_name (code); *p; p++)
 	pp_character (buffer, TOUPPER (*p));
@@ -1653,6 +1658,64 @@ dump_gimple_omp_taskgroup (pretty_printer *buffer, const gimple *gs,
     }
 }
 
+/* Dump a GIMPLE_OMP_MASKED tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_masked (pretty_printer *buffer, const gimple *gs,
+			int spc, dump_flags_t flags)
+{
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>%nCLAUSES <", gs,
+		       gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_masked_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp masked");
+      dump_omp_clauses (buffer, gimple_omp_masked_clauses (gs), spc, flags);
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_left_brace (buffer);
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_right_brace (buffer);
+	}
+    }
+}
+
+/* Dump a GIMPLE_OMP_SCOPE tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_scope (pretty_printer *buffer, const gimple *gs,
+		       int spc, dump_flags_t flags)
+{
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>%nCLAUSES <", gs,
+		       gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_scope_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp scope");
+      dump_omp_clauses (buffer, gimple_omp_scope_clauses (gs), spc, flags);
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_left_brace (buffer);
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_right_brace (buffer);
+	}
+    }
+}
+
 /* Dump a GIMPLE_OMP_TARGET tuple on the pretty_printer BUFFER.  */
 
 static void
@@ -1692,8 +1755,11 @@ dump_gimple_omp_target (pretty_printer *buffer, const gomp_target *gs,
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
       kind = " oacc_update";
       break;
-    case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
-      kind = " oacc_enter_exit_data";
+    case GF_OMP_TARGET_KIND_OACC_ENTER_DATA:
+      kind = " oacc_enter_data";
+      break;
+    case GF_OMP_TARGET_KIND_OACC_EXIT_DATA:
+      kind = " oacc_exit_data";
       break;
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
       kind = " oacc_declare";
@@ -2259,8 +2325,17 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
       && SSA_NAME_RANGE_INFO (node))
     {
       wide_int min, max, nonzero_bits;
-      value_range_kind range_type = get_range_info (node, &min, &max);
+      value_range r;
 
+      get_global_range_query ()->range_of_expr (r, node);
+      value_range_kind range_type = r.kind ();
+      if (!r.undefined_p ())
+	{
+	  min = wi::to_wide (r.min ());
+	  max = wi::to_wide (r.max ());
+	}
+
+      // FIXME: Use irange::dump() instead.
       if (range_type == VR_VARYING)
 	pp_printf (buffer, "# RANGE VR_VARYING");
       else if (range_type == VR_RANGE || range_type == VR_ANTI_RANGE)
@@ -2488,6 +2563,8 @@ dump_gimple_omp_atomic_load (pretty_printer *buffer, const gomp_atomic_load *gs,
 				    gimple_omp_atomic_memory_order (gs));
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, " [needed]");
+      if (gimple_omp_atomic_weak_p (gs))
+	pp_string (buffer, " [weak]");
       newline_and_indent (buffer, spc + 2);
       dump_generic_node (buffer, gimple_omp_atomic_load_lhs (gs),
 	  		 spc, flags, false);
@@ -2522,6 +2599,8 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer,
       pp_space (buffer);
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, "[needed] ");
+      if (gimple_omp_atomic_weak_p (gs))
+	pp_string (buffer, "[weak] ");
       pp_left_paren (buffer);
       dump_generic_node (buffer, gimple_omp_atomic_store_val (gs),
 	  		 spc, flags, false);
@@ -2705,6 +2784,14 @@ pp_gimple_stmt_1 (pretty_printer *buffer, const gimple *gs, int spc,
       dump_gimple_omp_taskgroup (buffer, gs, spc, flags);
       break;
 
+    case GIMPLE_OMP_MASKED:
+      dump_gimple_omp_masked (buffer, gs, spc, flags);
+      break;
+
+    case GIMPLE_OMP_SCOPE:
+      dump_gimple_omp_scope (buffer, gs, spc, flags);
+      break;
+
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_SECTION:
       dump_gimple_omp_block (buffer, gs, spc, flags);
@@ -2814,7 +2901,7 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
 	  if (bb->loop_father->header == bb)
 	    fprintf (outf, ",loop_header(%d)", bb->loop_father->num);
 	  if (bb->count.initialized_p ())
-	    fprintf (outf, ",%s(%d)",
+	    fprintf (outf, ",%s(%" PRIu64 ")",
 		     profile_quality_as_string (bb->count.quality ()),
 		     bb->count.value ());
 	  fprintf (outf, "):\n");
@@ -3040,23 +3127,6 @@ gimple_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
     }
   dump_implicit_edges (pp, bb, 0, dump_flags);
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
-}
-
-
-/* Handle the %G format for TEXT.  Same as %K in handle_K_format in
-   tree-pretty-print.c but with a Gimple statement as an argument.  */
-
-void
-percent_G_format (text_info *text)
-{
-  gimple *stmt = va_arg (*text->args_ptr, gimple*);
-
-  /* Fall back on the rich location if the statement doesn't have one.  */
-  location_t loc = gimple_location (stmt);
-  if (loc == UNKNOWN_LOCATION)
-    loc = text->m_richloc->get_loc ();
-  tree block = gimple_block (stmt);
-  percent_K_format (text, loc, block);
 }
 
 #if __GNUC__ >= 10

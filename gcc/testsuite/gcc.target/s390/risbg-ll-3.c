@@ -23,7 +23,7 @@ i64 f1 (i64 v_a, i64 v_b)
 extern i64 f2_foo();
 i64 f2 (i64 v_a, i64 v_b)
 {
-/* { dg-final { scan-assembler "f2:\n\trisbg\t%r2,%r3,60,62,0\n\tbner\t%r14\n\tjg\tf2_foo\n" { target { lp64 } } } } */
+/* { dg-final { scan-assembler "f2:\n\trisbg\t%r2,%r3,60,62,0\n\tbner\t%r14\n\tjg\tf2_foo.*\n" { target { lp64 } } } } */
 /* { dg-final { scan-assembler "f2:\n\trisbgn\t%r3,%r2,0,0\\\+32-1,64-0-32\n\trisbg\t%r3,%r5,60,62,0" { target { ! lp64 } } } } */
   i64 v_anda = v_a & -15;
   i64 v_andb = v_b & 14;
@@ -37,8 +37,8 @@ i64 f2 (i64 v_a, i64 v_b)
 void f2_bar ();
 void f2_cconly (i64 v_a, i64 v_b)
 {
-/* { dg-final { scan-assembler "f2_cconly:\n\trisbg\t%r3,%r2,63,59,0\n\tber\t%r14\n\tjg\tf2_bar\n" { target { lp64 } } } } */
-/* { dg-final { scan-assembler "f2_cconly:\n\trisbgn\t%r3,%r2,0,0\\\+32-1,64-0-32\n\trisbg\t%r3,%r5,60,62,0\n\tber\t%r14\n\tjg\tf2_bar\n" { target { ! lp64 } } } } */
+/* { dg-final { scan-assembler "f2_cconly:\n\trisbg\t%r2,%r3,60,62,0\n\tber\t%r14\n\tjg\tf2_bar(@PLT)?\n" { target { lp64 } } } } */
+/* { dg-final { scan-assembler "f2_cconly:\n\trisbgn\t%r3,%r2,0,0\\\+32-1,64-0-32\n\trisbg\t%r3,%r5,60,62,0\n\tber\t%r14\n\tjg\tf2_bar(@PLT)?\n" { target { ! lp64 } } } } */
   if ((v_a & -15) | (v_b & 14))
     f2_bar();
 }

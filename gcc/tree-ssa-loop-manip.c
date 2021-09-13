@@ -1,5 +1,5 @@
 /* High-level loop manipulation functions.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -362,11 +362,10 @@ add_exit_phis (bitmap names_to_rename, bitmap *use_blocks, bitmap *loop_exits)
 static void
 get_loops_exits (bitmap *loop_exits)
 {
-  class loop *loop;
   unsigned j;
   edge e;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       auto_vec<edge> exit_edges = get_loop_exit_edges (loop);
       loop_exits[loop->num] = BITMAP_ALLOC (&loop_renamer_obstack);
@@ -997,8 +996,10 @@ can_unroll_loop_p (class loop *loop, unsigned factor,
 /* Determines the conditions that control execution of LOOP unrolled FACTOR
    times.  DESC is number of iterations of LOOP.  ENTER_COND is set to
    condition that must be true if the main loop can be entered.
+   If the loop does not always iterate an exact multiple of FACTOR times,
    EXIT_BASE, EXIT_STEP, EXIT_CMP and EXIT_BOUND are set to values describing
-   how the exit from the unrolled loop should be controlled.  */
+   how the exit from the unrolled loop should be controlled.  Otherwise,
+   the trees are set to null and EXIT_CMP is set to ERROR_MARK.  */
 
 static void
 determine_exit_conditions (class loop *loop, class tree_niter_desc *desc,
@@ -1078,6 +1079,16 @@ determine_exit_conditions (class loop *loop, class tree_niter_desc *desc,
   bound = fold_build2 (MINUS_EXPR, type, bound, delta);
   assum = fold_build2 (cmp, boolean_type_node, base, bound);
   cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, assum, cond);
+
+  if (integer_nonzerop (cond)
+      && integer_zerop (desc->may_be_zero))
+    {
+      /* Convert the latch count to an iteration count.  */
+      tree niter = fold_build2 (PLUS_EXPR, type, desc->niter,
+				build_one_cst (type));
+      if (multiple_of_p (type, niter, bigstep))
+	return;
+    }
 
   cond = force_gimple_operand (unshare_expr (cond), &stmts, false, NULL_TREE);
   if (stmts)
@@ -1234,137 +1245,138 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 				transform_callback transform,
 				void *data)
 {
-  gcond *exit_if;
-  tree ctr_before, ctr_after;
-  tree enter_main_cond, exit_base, exit_step, exit_bound;
-  enum tree_code exit_cmp;
-  gphi *phi_old_loop, *phi_new_loop, *phi_rest;
-  gphi_iterator psi_old_loop, psi_new_loop;
-  tree init, next, new_init;
-  class loop *new_loop;
-  basic_block rest, exit_bb;
-  edge old_entry, new_entry, old_latch, precond_edge, new_exit;
-  edge new_nonexit, e;
-  gimple_stmt_iterator bsi;
-  use_operand_p op;
-  bool ok;
-  unsigned i;
-  profile_probability prob, prob_entry, scale_unrolled;
-  profile_count freq_e, freq_h;
   gcov_type new_est_niter = niter_for_unrolled_loop (loop, factor);
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
-  auto_vec<edge> to_remove;
 
+  enum tree_code exit_cmp;
+  tree enter_main_cond, exit_base, exit_step, exit_bound;
   determine_exit_conditions (loop, desc, factor,
 			     &enter_main_cond, &exit_base, &exit_step,
 			     &exit_cmp, &exit_bound);
+  bool single_loop_p = !exit_base;
 
   /* Let us assume that the unrolled loop is quite likely to be entered.  */
+  profile_probability prob_entry;
   if (integer_nonzerop (enter_main_cond))
     prob_entry = profile_probability::always ();
   else
     prob_entry = profile_probability::guessed_always ()
 			.apply_scale (PROB_UNROLLED_LOOP_ENTERED, 100);
 
-  /* The values for scales should keep profile consistent, and somewhat close
-     to correct.
-
-     TODO: The current value of SCALE_REST makes it appear that the loop that
-     is created by splitting the remaining iterations of the unrolled loop is
-     executed the same number of times as the original loop, and with the same
-     frequencies, which is obviously wrong.  This does not appear to cause
-     problems, so we do not bother with fixing it for now.  To make the profile
-     correct, we would need to change the probability of the exit edge of the
-     loop, and recompute the distribution of frequencies in its body because
-     of this change (scale the frequencies of blocks before and after the exit
-     by appropriate factors).  */
-  scale_unrolled = prob_entry;
-
-  new_loop = loop_version (loop, enter_main_cond, NULL, prob_entry,
-			   prob_entry.invert (), scale_unrolled,
-			   profile_probability::guessed_always (),
-			   true);
-  gcc_assert (new_loop != NULL);
-  update_ssa (TODO_update_ssa);
-
-  /* Prepare the cfg and update the phi nodes.  Move the loop exit to the
-     loop latch (and make its condition dummy, for the moment).  */
-  rest = loop_preheader_edge (new_loop)->src;
-  precond_edge = single_pred_edge (rest);
-  split_edge (loop_latch_edge (loop));
-  exit_bb = single_pred (loop->latch);
-
-  /* Since the exit edge will be removed, the frequency of all the blocks
-     in the loop that are dominated by it must be scaled by
-     1 / (1 - exit->probability).  */
-  if (exit->probability.initialized_p ())
-    scale_dominated_blocks_in_loop (loop, exit->src,
-				    /* We are scaling up here so probability
-				       does not fit.  */
-				    loop->header->count,
-				    loop->header->count
-				    - loop->header->count.apply_probability
-					 (exit->probability));
-
-  bsi = gsi_last_bb (exit_bb);
-  exit_if = gimple_build_cond (EQ_EXPR, integer_zero_node,
-			       integer_zero_node,
-			       NULL_TREE, NULL_TREE);
-
-  gsi_insert_after (&bsi, exit_if, GSI_NEW_STMT);
-  new_exit = make_edge (exit_bb, rest, EDGE_FALSE_VALUE | irr);
-  rescan_loop_exit (new_exit, true, false);
-
-  /* Set the probability of new exit to the same of the old one.  Fix
-     the frequency of the latch block, by scaling it back by
-     1 - exit->probability.  */
-  new_exit->probability = exit->probability;
-  new_nonexit = single_pred_edge (loop->latch);
-  new_nonexit->probability = exit->probability.invert ();
-  new_nonexit->flags = EDGE_TRUE_VALUE;
-  if (new_nonexit->probability.initialized_p ())
-    scale_bbs_frequencies (&loop->latch, 1, new_nonexit->probability);
-
-  old_entry = loop_preheader_edge (loop);
-  new_entry = loop_preheader_edge (new_loop);
-  old_latch = loop_latch_edge (loop);
-  for (psi_old_loop = gsi_start_phis (loop->header),
-       psi_new_loop = gsi_start_phis (new_loop->header);
-       !gsi_end_p (psi_old_loop);
-       gsi_next (&psi_old_loop), gsi_next (&psi_new_loop))
+  gcond *exit_if = nullptr;
+  class loop *new_loop = nullptr;
+  basic_block rest;
+  edge new_exit;
+  if (!single_loop_p)
     {
-      phi_old_loop = psi_old_loop.phi ();
-      phi_new_loop = psi_new_loop.phi ();
+      /* The values for scales should keep profile consistent, and somewhat
+	 close to correct.
 
-      init = PHI_ARG_DEF_FROM_EDGE (phi_old_loop, old_entry);
-      op = PHI_ARG_DEF_PTR_FROM_EDGE (phi_new_loop, new_entry);
-      gcc_assert (operand_equal_for_phi_arg_p (init, USE_FROM_PTR (op)));
-      next = PHI_ARG_DEF_FROM_EDGE (phi_old_loop, old_latch);
+	 TODO: The current value of SCALE_REST makes it appear that the loop
+	 that is created by splitting the remaining iterations of the unrolled
+	 loop is executed the same number of times as the original loop, and
+	 with the same frequencies, which is obviously wrong.  This does not
+	 appear to cause problems, so we do not bother with fixing it for now.
+	 To make the profile correct, we would need to change the probability
+	 of the exit edge of the loop, and recompute the distribution of
+	 frequencies in its body because of this change (scale the frequencies
+	 of blocks before and after the exit by appropriate factors).  */
+      profile_probability scale_unrolled = prob_entry;
+      new_loop = loop_version (loop, enter_main_cond, NULL, prob_entry,
+			       prob_entry.invert (), scale_unrolled,
+			       profile_probability::guessed_always (),
+			       true);
+      gcc_assert (new_loop != NULL);
+      update_ssa (TODO_update_ssa);
 
-      /* Prefer using original variable as a base for the new ssa name.
-	 This is necessary for virtual ops, and useful in order to avoid
-	 losing debug info for real ops.  */
-      if (TREE_CODE (next) == SSA_NAME
-	  && useless_type_conversion_p (TREE_TYPE (next),
-					TREE_TYPE (init)))
-	new_init = copy_ssa_name (next);
-      else if (TREE_CODE (init) == SSA_NAME
-	       && useless_type_conversion_p (TREE_TYPE (init),
-					     TREE_TYPE (next)))
-	new_init = copy_ssa_name (init);
-      else if (useless_type_conversion_p (TREE_TYPE (next), TREE_TYPE (init)))
-	new_init = make_temp_ssa_name (TREE_TYPE (next), NULL, "unrinittmp");
-      else
-	new_init = make_temp_ssa_name (TREE_TYPE (init), NULL, "unrinittmp");
+      /* Prepare the cfg and update the phi nodes.  Move the loop exit to the
+	 loop latch (and make its condition dummy, for the moment).  */
+      rest = loop_preheader_edge (new_loop)->src;
+      edge precond_edge = single_pred_edge (rest);
+      split_edge (loop_latch_edge (loop));
+      basic_block exit_bb = single_pred (loop->latch);
 
-      phi_rest = create_phi_node (new_init, rest);
+      /* Since the exit edge will be removed, the frequency of all the blocks
+	 in the loop that are dominated by it must be scaled by
+	 1 / (1 - exit->probability).  */
+      if (exit->probability.initialized_p ())
+	scale_dominated_blocks_in_loop (loop, exit->src,
+					/* We are scaling up here so
+					   probability does not fit.  */
+					loop->header->count,
+					loop->header->count
+					- loop->header->count.apply_probability
+					    (exit->probability));
 
-      add_phi_arg (phi_rest, init, precond_edge, UNKNOWN_LOCATION);
-      add_phi_arg (phi_rest, next, new_exit, UNKNOWN_LOCATION);
-      SET_USE (op, new_init);
+      gimple_stmt_iterator bsi = gsi_last_bb (exit_bb);
+      exit_if = gimple_build_cond (EQ_EXPR, integer_zero_node,
+				   integer_zero_node,
+				   NULL_TREE, NULL_TREE);
+
+      gsi_insert_after (&bsi, exit_if, GSI_NEW_STMT);
+      new_exit = make_edge (exit_bb, rest, EDGE_FALSE_VALUE | irr);
+      rescan_loop_exit (new_exit, true, false);
+
+      /* Set the probability of new exit to the same of the old one.  Fix
+	 the frequency of the latch block, by scaling it back by
+	 1 - exit->probability.  */
+      new_exit->probability = exit->probability;
+      edge new_nonexit = single_pred_edge (loop->latch);
+      new_nonexit->probability = exit->probability.invert ();
+      new_nonexit->flags = EDGE_TRUE_VALUE;
+      if (new_nonexit->probability.initialized_p ())
+	scale_bbs_frequencies (&loop->latch, 1, new_nonexit->probability);
+
+      edge old_entry = loop_preheader_edge (loop);
+      edge new_entry = loop_preheader_edge (new_loop);
+      edge old_latch = loop_latch_edge (loop);
+      for (gphi_iterator psi_old_loop = gsi_start_phis (loop->header),
+	     psi_new_loop = gsi_start_phis (new_loop->header);
+	   !gsi_end_p (psi_old_loop);
+	   gsi_next (&psi_old_loop), gsi_next (&psi_new_loop))
+	{
+	  gphi *phi_old_loop = psi_old_loop.phi ();
+	  gphi *phi_new_loop = psi_new_loop.phi ();
+
+	  tree init = PHI_ARG_DEF_FROM_EDGE (phi_old_loop, old_entry);
+	  use_operand_p op
+	    = PHI_ARG_DEF_PTR_FROM_EDGE (phi_new_loop, new_entry);
+	  gcc_assert (operand_equal_for_phi_arg_p (init, USE_FROM_PTR (op)));
+	  tree next = PHI_ARG_DEF_FROM_EDGE (phi_old_loop, old_latch);
+
+	  /* Prefer using original variable as a base for the new ssa name.
+	     This is necessary for virtual ops, and useful in order to avoid
+	     losing debug info for real ops.  */
+	  tree new_init;
+	  if (TREE_CODE (next) == SSA_NAME
+	      && useless_type_conversion_p (TREE_TYPE (next),
+					    TREE_TYPE (init)))
+	    new_init = copy_ssa_name (next);
+	  else if (TREE_CODE (init) == SSA_NAME
+		   && useless_type_conversion_p (TREE_TYPE (init),
+						 TREE_TYPE (next)))
+	    new_init = copy_ssa_name (init);
+	  else if (useless_type_conversion_p (TREE_TYPE (next),
+					      TREE_TYPE (init)))
+	    new_init = make_temp_ssa_name (TREE_TYPE (next), NULL,
+					   "unrinittmp");
+	  else
+	    new_init = make_temp_ssa_name (TREE_TYPE (init), NULL,
+					   "unrinittmp");
+
+	  gphi *phi_rest = create_phi_node (new_init, rest);
+	  add_phi_arg (phi_rest, init, precond_edge, UNKNOWN_LOCATION);
+	  add_phi_arg (phi_rest, next, new_exit, UNKNOWN_LOCATION);
+	  SET_USE (op, new_init);
+	}
+
+      remove_path (exit);
     }
-
-  remove_path (exit);
+  else
+    {
+      new_exit = exit;
+      rest = exit->dest;
+    }
 
   /* Transform the loop.  */
   if (transform)
@@ -1376,57 +1388,66 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
   bitmap_ones (wont_exit);
   bitmap_clear_bit (wont_exit, factor - 1);
 
-  ok = gimple_duplicate_loop_to_header_edge
+  auto_vec<edge> to_remove;
+  bool ok = gimple_duplicate_loop_to_header_edge
 	  (loop, loop_latch_edge (loop), factor - 1,
 	   wont_exit, new_exit, &to_remove, DLTHE_FLAG_UPDATE_FREQ);
   gcc_assert (ok);
 
-  FOR_EACH_VEC_ELT (to_remove, i, e)
+  for (edge e : to_remove)
     {
       ok = remove_path (e);
       gcc_assert (ok);
     }
   update_ssa (TODO_update_ssa);
 
-  /* Ensure that the frequencies in the loop match the new estimated
-     number of iterations, and change the probability of the new
-     exit edge.  */
-
-  freq_h = loop->header->count;
-  freq_e = (loop_preheader_edge (loop))->count ();
-  if (freq_h.nonzero_p ())
+  if (!single_loop_p)
     {
-      /* Avoid dropping loop body profile counter to 0 because of zero count
-	 in loop's preheader.  */
-      if (freq_h.nonzero_p () && !(freq_e == profile_count::zero ()))
-        freq_e = freq_e.force_nonzero ();
-      scale_loop_frequencies (loop, freq_e.probability_in (freq_h));
+      /* Ensure that the frequencies in the loop match the new estimated
+	 number of iterations, and change the probability of the new
+	 exit edge.  */
+
+      profile_count freq_h = loop->header->count;
+      profile_count freq_e = (loop_preheader_edge (loop))->count ();
+      if (freq_h.nonzero_p ())
+	{
+	  /* Avoid dropping loop body profile counter to 0 because of zero
+	     count in loop's preheader.  */
+	  if (freq_h.nonzero_p () && !(freq_e == profile_count::zero ()))
+	    freq_e = freq_e.force_nonzero ();
+	  scale_loop_frequencies (loop, freq_e.probability_in (freq_h));
+	}
     }
 
-  exit_bb = single_pred (loop->latch);
+  basic_block exit_bb = single_pred (loop->latch);
   new_exit = find_edge (exit_bb, rest);
   new_exit->probability = profile_probability::always ()
 				.apply_scale (1, new_est_niter + 1);
 
-  rest->count += new_exit->count ();
+  if (!single_loop_p)
+    rest->count += new_exit->count ();
 
-  new_nonexit = single_pred_edge (loop->latch);
-  prob = new_nonexit->probability;
+  edge new_nonexit = single_pred_edge (loop->latch);
+  profile_probability prob = new_nonexit->probability;
   new_nonexit->probability = new_exit->probability.invert ();
   prob = new_nonexit->probability / prob;
   if (prob.initialized_p ())
     scale_bbs_frequencies (&loop->latch, 1, prob);
 
-  /* Finally create the new counter for number of iterations and add the new
-     exit instruction.  */
-  bsi = gsi_last_nondebug_bb (exit_bb);
-  exit_if = as_a <gcond *> (gsi_stmt (bsi));
-  create_iv (exit_base, exit_step, NULL_TREE, loop,
-	     &bsi, false, &ctr_before, &ctr_after);
-  gimple_cond_set_code (exit_if, exit_cmp);
-  gimple_cond_set_lhs (exit_if, ctr_after);
-  gimple_cond_set_rhs (exit_if, exit_bound);
-  update_stmt (exit_if);
+  if (!single_loop_p)
+    {
+      /* Finally create the new counter for number of iterations and add
+	 the new exit instruction.  */
+      tree ctr_before, ctr_after;
+      gimple_stmt_iterator bsi = gsi_last_nondebug_bb (exit_bb);
+      exit_if = as_a <gcond *> (gsi_stmt (bsi));
+      create_iv (exit_base, exit_step, NULL_TREE, loop,
+		 &bsi, false, &ctr_before, &ctr_after);
+      gimple_cond_set_code (exit_if, exit_cmp);
+      gimple_cond_set_lhs (exit_if, ctr_after);
+      gimple_cond_set_rhs (exit_if, exit_bound);
+      update_stmt (exit_if);
+    }
 
   checking_verify_flow_info ();
   checking_verify_loop_structure ();

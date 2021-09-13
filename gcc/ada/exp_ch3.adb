@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,55 +23,60 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Exp_Aggr; use Exp_Aggr;
-with Exp_Atag; use Exp_Atag;
-with Exp_Ch4;  use Exp_Ch4;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch9;  use Exp_Ch9;
-with Exp_Dbug; use Exp_Dbug;
-with Exp_Disp; use Exp_Disp;
-with Exp_Dist; use Exp_Dist;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Expander;       use Expander;
+with Exp_Aggr;       use Exp_Aggr;
+with Exp_Atag;       use Exp_Atag;
+with Exp_Ch4;        use Exp_Ch4;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch9;        use Exp_Ch9;
+with Exp_Dbug;       use Exp_Dbug;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Dist;       use Exp_Dist;
 with Exp_Put_Image;
-with Exp_Smem; use Exp_Smem;
-with Exp_Strm; use Exp_Strm;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Attr; use Sem_Attr;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Disp; use Sem_Disp;
-with Sem_Eval; use Sem_Eval;
-with Sem_Mech; use Sem_Mech;
-with Sem_Res;  use Sem_Res;
-with Sem_SCIL; use Sem_SCIL;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Stand;    use Stand;
-with Snames;   use Snames;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Validsw;  use Validsw;
+with Exp_Smem;       use Exp_Smem;
+with Exp_Strm;       use Exp_Strm;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Attr;       use Sem_Attr;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Res;        use Sem_Res;
+with Sem_SCIL;       use Sem_SCIL;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Stand;          use Stand;
+with Snames;         use Snames;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Validsw;        use Validsw;
 
 package body Exp_Ch3 is
 
@@ -124,7 +129,7 @@ package body Exp_Ch3 is
    --  Build assignment procedure for one-dimensional arrays of controlled
    --  types. Other array and slice assignments are expanded in-line, but
    --  the code expansion for controlled components (when control actions
-   --  are active) can lead to very large blocks that GCC3 handles poorly.
+   --  are active) can lead to very large blocks that GCC handles poorly.
 
    procedure Build_Untagged_Equality (Typ : Entity_Id);
    --  AI05-0123: Equality on untagged records composes. This procedure
@@ -881,7 +886,7 @@ package body Exp_Ch3 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Body_Stmts)));
 
-         Set_Ekind          (Proc_Id, E_Procedure);
+         Mutate_Ekind       (Proc_Id, E_Procedure);
          Set_Is_Public      (Proc_Id, Is_Public (A_Type));
          Set_Is_Internal    (Proc_Id);
          Set_Has_Completion (Proc_Id);
@@ -1076,7 +1081,7 @@ package body Exp_Ch3 is
              Statements => New_List (
                Build_Case_Statement (Case_Id, Variant))));
 
-         Set_Ekind       (Func_Id, E_Function);
+         Mutate_Ekind    (Func_Id, E_Function);
          Set_Mechanism   (Func_Id, Default_Mechanism);
          Set_Is_Inlined  (Func_Id, True);
          Set_Is_Pure     (Func_Id, True);
@@ -1498,7 +1503,8 @@ package body Exp_Ch3 is
          Typ : constant Entity_Id := Etype (Discr);
 
          procedure Check_Missing_Others (V : Node_Id);
-         --  ???
+         --  Check that a given variant and its nested variants have an others
+         --  choice, and generate a constraint error raise when it does not.
 
          --------------------------
          -- Check_Missing_Others --
@@ -1692,8 +1698,7 @@ package body Exp_Ch3 is
 
       if Has_Task (Full_Type) then
          if Restriction_Active (No_Task_Hierarchy) then
-            Append_To (Args,
-              New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc));
+            Append_To (Args, Make_Integer_Literal (Loc, Library_Task_Level));
          else
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          end if;
@@ -1868,10 +1873,6 @@ package body Exp_Ch3 is
       --  Pass the extra accessibility level parameter associated with the
       --  level of the object being initialized when required.
 
-      --  When no entity is present for Id_Ref it may not have been fully
-      --  analyzed, so allow the default value of standard standard to be
-      --  passed ???
-
       if Is_Entity_Name (Id_Ref)
         and then Present (Init_Proc_Level_Formal (Proc))
       then
@@ -1925,6 +1926,7 @@ package body Exp_Ch3 is
       Proc_Id   : Entity_Id;
       Rec_Type  : Entity_Id;
       Set_Tag   : Entity_Id := Empty;
+      Has_Late_Init_Comp : Boolean := False; -- set in Build_Init_Statements
 
       function Build_Assignment
         (Id      : Entity_Id;
@@ -2020,35 +2022,27 @@ package body Exp_Ch3 is
              Selector_Name => New_Occurrence_Of (Id, Default_Loc));
          Set_Assignment_OK (Lhs);
 
-         --  Case of an access attribute applied to the current instance.
-         --  Replace the reference to the type by a reference to the actual
-         --  object. (Note that this handles the case of the top level of
-         --  the expression being given by such an attribute, but does not
-         --  cover uses nested within an initial value expression. Nested
-         --  uses are unlikely to occur in practice, but are theoretically
-         --  possible.) It is not clear how to handle them without fully
-         --  traversing the expression. ???
-
-         if Kind = N_Attribute_Reference
-           and then Attribute_Name (Default) in Name_Unchecked_Access
-                                              | Name_Unrestricted_Access
-           and then Is_Entity_Name (Prefix (Default))
-           and then Is_Type (Entity (Prefix (Default)))
-           and then Entity (Prefix (Default)) = Rec_Type
-         then
-            Exp :=
-              Make_Attribute_Reference (Default_Loc,
-                Prefix         =>
-                  Make_Identifier (Default_Loc, Name_uInit),
-                Attribute_Name => Name_Unrestricted_Access);
-         end if;
-
          --  Take a copy of Exp to ensure that later copies of this component
          --  declaration in derived types see the original tree, not a node
          --  rewritten during expansion of the init_proc. If the copy contains
          --  itypes, the scope of the new itypes is the init_proc being built.
 
-         Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id);
+         declare
+            Map : Elist_Id := No_Elist;
+         begin
+            if Has_Late_Init_Comp then
+               --  Map the type to the _Init parameter in order to
+               --  handle "current instance" references.
+
+               Map := New_Elmt_List
+                        (Elmt1 => Rec_Type,
+                         Elmt2 => Defining_Identifier (First
+                                   (Parameter_Specifications
+                                      (Parent (Proc_Id)))));
+            end if;
+
+            Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id, Map => Map);
+         end;
 
          Res := New_List (
            Make_Assignment_Statement (Loc,
@@ -2214,8 +2208,8 @@ package body Exp_Ch3 is
 
          if Has_Task (Rec_Type) then
             if Restriction_Active (No_Task_Hierarchy) then
-               Append_To (Args,
-                 New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc));
+               Append_To
+                 (Args, Make_Integer_Literal (Loc, Library_Task_Level));
             else
                Append_To (Args, Make_Identifier (Loc, Name_uMaster));
             end if;
@@ -2372,7 +2366,7 @@ package body Exp_Ch3 is
                                 New_Occurrence_Of (Iface_Comp, Loc)),
                           Attribute_Name => Name_Position))))));
 
-            Set_Ekind       (Func_Id, E_Function);
+            Mutate_Ekind    (Func_Id, E_Function);
             Set_Mechanism   (Func_Id, Default_Mechanism);
             Set_Is_Internal (Func_Id, True);
 
@@ -2487,7 +2481,7 @@ package body Exp_Ch3 is
            Make_Defining_Identifier (Loc,
              Chars => Make_TSS_Name (Rec_Type, TSS_CPP_Init_Proc));
 
-         Set_Ekind       (Proc_Id, E_Procedure);
+         Mutate_Ekind    (Proc_Id, E_Procedure);
          Set_Is_Internal (Proc_Id);
 
          Set_Defining_Unit_Name (Proc_Spec_Node, Proc_Id);
@@ -2541,7 +2535,7 @@ package body Exp_Ch3 is
       begin
          Body_Stmts := New_List;
          Body_Node := New_Node (N_Subprogram_Body, Loc);
-         Set_Ekind (Proc_Id, E_Procedure);
+         Mutate_Ekind (Proc_Id, E_Procedure);
 
          Proc_Spec_Node := New_Node (N_Procedure_Specification, Loc);
          Set_Defining_Unit_Name (Proc_Spec_Node, Proc_Id);
@@ -2980,7 +2974,6 @@ package body Exp_Ch3 is
          Counter_Id         : Entity_Id        := Empty;
          Comp_Loc           : Source_Ptr;
          Decl               : Node_Id;
-         Has_Late_Init_Comp : Boolean;
          Id                 : Entity_Id;
          Parent_Stmts       : List_Id;
          Stmts              : List_Id;
@@ -3096,10 +3089,9 @@ package body Exp_Ch3 is
             function Find_Current_Instance
               (N : Node_Id) return Traverse_Result is
             begin
-               if Nkind (N) = N_Attribute_Reference
-                 and then Is_Access_Type (Etype (N))
-                 and then Is_Entity_Name (Prefix (N))
-                 and then Is_Type (Entity (Prefix (N)))
+               if Is_Entity_Name (N)
+                 and then Present (Entity (N))
+                 and then Is_Current_Instance (N)
                then
                   References_Current_Instance := True;
                   return Abandon;
@@ -3253,8 +3245,6 @@ package body Exp_Ch3 is
          --  Loop through components, skipping pragmas, in 2 steps. The first
          --  step deals with regular components. The second step deals with
          --  components that require late initialization.
-
-         Has_Late_Init_Comp := False;
 
          --  First pass : regular components
 
@@ -4168,7 +4158,7 @@ package body Exp_Ch3 is
 
    --  Generates the following subprogram:
 
-   --    procedure Assign
+   --    procedure array_typeSA
    --     (Source,  Target    : Array_Type,
    --      Left_Lo, Left_Hi   : Index;
    --      Right_Lo, Right_Hi : Index;
@@ -4178,7 +4168,6 @@ package body Exp_Ch3 is
    --       Ri1 : Index;
 
    --    begin
-
    --       if Left_Hi < Left_Lo then
    --          return;
    --       end if;
@@ -4204,7 +4193,7 @@ package body Exp_Ch3 is
    --             Ri1 := Index'succ (Ri1);
    --          end if;
    --       end loop;
-   --    end Assign;
+   --    end array_typeSA;
 
    procedure Build_Slice_Assignment (Typ : Entity_Id) is
       Loc   : constant Source_Ptr := Sloc (Typ);
@@ -4386,7 +4375,7 @@ package body Exp_Ch3 is
 
       declare
          Spec    : Node_Id;
-         Formals : List_Id := New_List;
+         Formals : List_Id;
 
       begin
          Formals := New_List (
@@ -5478,9 +5467,7 @@ package body Exp_Ch3 is
               First_Component (Base_Type (Underlying_Type (Etype (Typ))));
             Comp := First_Component (Typ);
             while Present (Comp) loop
-               if Ekind (Comp) = E_Component
-                 and then Chars (Comp) = Chars (Old_Comp)
-               then
+               if Chars (Comp) = Chars (Old_Comp) then
                   Set_Discriminant_Checking_Func
                     (Comp, Discriminant_Checking_Func (Old_Comp));
                end if;
@@ -6013,7 +6000,7 @@ package body Exp_Ch3 is
       --  The parent type is private then we need to inherit any TSS operations
       --  from the full view.
 
-      if Ekind (Par_Id) in Private_Kind
+      if Is_Private_Type (Par_Id)
         and then Present (Full_View (Par_Id))
       then
          Par_Id := Base_Type (Full_View (Par_Id));
@@ -6049,7 +6036,7 @@ package body Exp_Ch3 is
             --  If the derived type itself is private with a full view, then
             --  associate the full view with the inherited TSS_Elist as well.
 
-            if Ekind (B_Id) in Private_Kind
+            if Is_Private_Type (B_Id)
               and then Present (Full_View (B_Id))
             then
                Ensure_Freeze_Node (Base_Type (Full_View (B_Id)));
@@ -6154,8 +6141,7 @@ package body Exp_Ch3 is
 
             Comp := First_Component (Full_Type);
             while Present (Comp) loop
-               if Ekind (Comp) = E_Component
-                 and then Present (Expression (Parent (Comp)))
+               if Present (Expression (Parent (Comp)))
                  and then
                    not Is_OK_Static_Expression (Expression (Parent (Comp)))
                then
@@ -6187,9 +6173,7 @@ package body Exp_Ch3 is
 
             Comp := First_Component (Full_Type);
             while Present (Comp) loop
-               if Ekind (Comp) = E_Component
-                 and then Present (Expression (Parent (Comp)))
-               then
+               if Present (Expression (Parent (Comp))) then
                   Append_To (Component_Associations (Aggr),
                     Make_Component_Association (Loc,
                       Choices    => New_List (New_Occurrence_Of (Comp, Loc)),
@@ -6561,7 +6545,7 @@ package body Exp_Ch3 is
          if Needs_Finalization (Typ) and then not No_Initialization (N) then
             Obj_Init :=
               Make_Init_Call
-                (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
+                (Obj_Ref => New_Object_Reference,
                  Typ     => Typ);
          end if;
 
@@ -6977,11 +6961,7 @@ package body Exp_Ch3 is
       else
          --  Obtain actual expression from qualified expression
 
-         if Nkind (Expr) = N_Qualified_Expression then
-            Expr_Q := Expression (Expr);
-         else
-            Expr_Q := Expr;
-         end if;
+         Expr_Q := Unqualify (Expr);
 
          --  When we have the appropriate type of aggregate in the expression
          --  (it has been determined during analysis of the aggregate by
@@ -6995,12 +6975,16 @@ package body Exp_Ch3 is
             --  happen when the aggregate is limited and the declared object
             --  has a following address clause; it happens also when generating
             --  C code for an aggregate that has an alignment or address clause
-            --  (see Analyze_Object_Declaration).
+            --  (see Analyze_Object_Declaration). Resolution is done without
+            --  expansion because it will take place when the declaration
+            --  itself is expanded.
 
             if (Is_Limited_Type (Typ) or else Modify_Tree_For_C)
               and then not Analyzed (Expr)
             then
+               Expander_Mode_Save_And_Set (False);
                Resolve (Expr, Typ);
+               Expander_Mode_Restore;
             end if;
 
             Convert_Aggr_In_Object_Decl (N);
@@ -7282,10 +7266,10 @@ package body Exp_Ch3 is
                      Link_Entities (New_Id, Next_Entity (Def_Id));
                      Link_Entities (Def_Id, Next_Temp);
 
-                     Set_Chars   (Defining_Identifier (N), Chars   (Def_Id));
+                     Set_Chars (Defining_Identifier (N), Chars (Def_Id));
                      Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
-                     Set_Ekind   (Defining_Identifier (N), Ekind   (Def_Id));
-                     Set_Sloc    (Defining_Identifier (N), Sloc    (Def_Id));
+                     Mutate_Ekind (Defining_Identifier (N), Ekind (Def_Id));
+                     Set_Sloc (Defining_Identifier (N), Sloc (Def_Id));
 
                      Set_Comes_From_Source (Def_Id, False);
 
@@ -7542,7 +7526,7 @@ package body Exp_Ch3 is
             Level_Expr : Node_Id;
 
          begin
-            Set_Ekind (Level, Ekind (Def_Id));
+            Mutate_Ekind (Level, Ekind (Def_Id));
             Set_Etype (Level, Standard_Natural);
             Set_Scope (Level, Scope (Def_Id));
 
@@ -7782,9 +7766,14 @@ package body Exp_Ch3 is
       --  Expand_Record_Extension is called directly from the semantics, so
       --  we must check to see whether expansion is active before proceeding,
       --  because this affects the visibility of selected components in bodies
-      --  of instances.
+      --  of instances. Within a generic we still need to set Parent_Subtype
+      --  link because the visibility of inherited components will have to be
+      --  verified in subsequent instances.
 
       if not Expander_Active then
+         if Inside_A_Generic and then Ekind (T) = E_Record_Type then
+            Set_Parent_Subtype (T, Etype (T));
+         end if;
          return;
       end if;
 
@@ -8597,35 +8586,28 @@ package body Exp_Ch3 is
       --------------------------------
 
       function Simple_Init_Defaulted_Type return Node_Id is
-         Subtyp : constant Entity_Id := First_Subtype (Typ);
+         Subtyp : Entity_Id := First_Subtype (Typ);
 
       begin
+         --  When the first subtype is private, retrieve the expression of the
+         --  Default_Value from the underlying type.
+
+         if Is_Private_Type (Subtyp) then
+            Subtyp := Full_View (Subtyp);
+         end if;
+
          --  Use the Sloc of the context node when constructing the initial
          --  value because the expression of Default_Value may come from a
          --  different unit. Updating the Sloc will result in accurate error
          --  diagnostics.
 
-         --  When the first subtype is private, retrieve the expression of the
-         --  Default_Value from the underlying type.
-
-         if Is_Private_Type (Subtyp) then
-            return
-              Unchecked_Convert_To
-                (Typ  => Typ,
-                 Expr =>
-                   New_Copy_Tree
-                     (Source   => Default_Aspect_Value (Full_View (Subtyp)),
-                      New_Sloc => Loc));
-
-         else
-            return
-              Convert_To
-                (Typ  => Typ,
-                 Expr =>
-                   New_Copy_Tree
-                     (Source   => Default_Aspect_Value (Subtyp),
-                      New_Sloc => Loc));
-         end if;
+         return
+           OK_Convert_To
+             (Typ  => Typ,
+              Expr =>
+                New_Copy_Tree
+                  (Source   => Default_Aspect_Value (Subtyp),
+                   New_Sloc => Loc));
       end Simple_Init_Defaulted_Type;
 
       -----------------------------------------
@@ -9008,11 +8990,10 @@ package body Exp_Ch3 is
                   begin
                      Comp := First_Component (E);
                      while Present (Comp) loop
-                        if Ekind (Comp) = E_Discriminant
-                          or else
-                            (Nkind (Parent (Comp)) = N_Component_Declaration
-                              and then Present (Expression (Parent (Comp))))
-                        then
+                        pragma Assert
+                          (Nkind (Parent (Comp)) = N_Component_Declaration);
+
+                        if Present (Expression (Parent (Comp))) then
                            Warning_Needed := True;
                            exit;
                         end if;
@@ -9080,7 +9061,7 @@ package body Exp_Ch3 is
              Defining_Identifier =>
                Make_Defining_Identifier (Loc, Name_uMaster),
              Parameter_Type      =>
-               New_Occurrence_Of (RTE (RE_Master_Id), Loc)));
+               New_Occurrence_Of (Standard_Integer, Loc)));
 
          Set_Has_Master_Entity (Proc_Id);
 
@@ -9715,11 +9696,11 @@ package body Exp_Ch3 is
             --  primitive operations list. We add the minimum decoration needed
             --  to override interface primitives.
 
-            Set_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
+            Mutate_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
+            Set_Is_Wrapper (Defining_Unit_Name (Func_Spec));
 
             Override_Dispatching_Operation
-              (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec),
-               Is_Wrapper => True);
+              (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec));
          end if;
 
       <<Next_Prim>>
@@ -10353,9 +10334,14 @@ package body Exp_Ch3 is
 
       --  Spec of Put_Image
 
-      if Enable_Put_Image (Tag_Typ)
-        and then No (TSS (Tag_Typ, TSS_Put_Image))
+      if (not No_Run_Time_Mode)
+         and then RTE_Available (RE_Root_Buffer_Type)
       then
+         --  No_Run_Time_Mode implies that the declaration of Tag_Typ
+         --  (like any tagged type) will be rejected. Given this, avoid
+         --  cascading errors associated with the Tag_Typ's TSS_Put_Image
+         --  procedure.
+
          Append_To (Res, Predef_Spec_Or_Body (Loc,
            Tag_Typ => Tag_Typ,
            Name    => Make_TSS_Name (Tag_Typ, TSS_Put_Image),
@@ -10957,8 +10943,9 @@ package body Exp_Ch3 is
 
       --  Body of Put_Image
 
-      if Enable_Put_Image (Tag_Typ)
-        and then No (TSS (Tag_Typ, TSS_Put_Image))
+      if No (TSS (Tag_Typ, TSS_Put_Image))
+         and then (not No_Run_Time_Mode)
+         and then RTE_Available (RE_Root_Buffer_Type)
       then
          Build_Record_Put_Image_Procedure (Loc, Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
@@ -11261,12 +11248,7 @@ package body Exp_Ch3 is
             or else not Is_Abstract_Type (Typ)
             or else not Is_Derived_Type (Typ))
         and then not Has_Unknown_Discriminants (Typ)
-        and then not
-          (Is_Interface (Typ)
-            and then
-              (Is_Task_Interface (Typ)
-                or else Is_Protected_Interface (Typ)
-                or else Is_Synchronized_Interface (Typ)))
+        and then not Is_Concurrent_Interface (Typ)
         and then not Restriction_Active (No_Streams)
         and then not Restriction_Active (No_Dispatch)
         and then No (No_Tagged_Streams_Pragma (Typ))

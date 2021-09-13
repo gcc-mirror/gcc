@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2020 Free Software Foundation, Inc.
+# Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -151,6 +151,7 @@ proc gfortran_init { args } {
     global gcc_warning_prefix
     global gcc_error_prefix
     global TEST_ALWAYS_FLAGS
+    global gfortran_init_set_GFORTRAN_UNDER_TEST
 
     # We set LC_ALL and LANG to C so that we get the same error messages as expected.
     setenv LC_ALL C
@@ -166,7 +167,11 @@ proc gfortran_init { args } {
       setenv LANG C.ASCII
     }
 
-    if ![info exists GFORTRAN_UNDER_TEST] then {
+    # GFORTRAN_UNDER_TEST as set below contains $specpath, which depends on
+    # the used multilib config. Thus, its value may need to be reset;
+    # that's tracked via gfortran_init_set_GFORTRAN_UNDER_TEST.
+    if { ![info exists GFORTRAN_UNDER_TEST]
+	 || [info exists gfortran_init_set_GFORTRAN_UNDER_TEST] } then {
 	if [info exists TOOL_EXECUTABLE] {
 	    set GFORTRAN_UNDER_TEST $TOOL_EXECUTABLE
 	} else {
@@ -178,6 +183,7 @@ proc gfortran_init { args } {
 		} else {
 		    set specpath [get_multilibs]
 		}
+		set gfortran_init_set_GFORTRAN_UNDER_TEST 1
 		set GFORTRAN_UNDER_TEST [findfile $base_dir/../../gfortran "$base_dir/../../gfortran -B$base_dir/../../ -B$specpath/libgfortran/" [findfile $base_dir/gfortran "$base_dir/gfortran -B$base_dir/" [transform gfortran]]]
 	    }
 	}

@@ -8,5 +8,3 @@ bar (float x, float *y, int)
 {
   return y[0] + y[1] * x;
 }
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target { { aarch64*-*-* } && lp64 } } .-4 }
-

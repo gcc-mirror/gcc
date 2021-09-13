@@ -1,6 +1,6 @@
 ; lang.opt -- Options for the gcc Go front end.
 
-; Copyright (C) 2009-2020 Free Software Foundation, Inc.
+; Copyright (C) 2009-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -56,6 +56,10 @@ Apply special rules for compiling runtime package.
 fgo-dump-
 Go Joined RejectNegative
 -fgo-dump-<type>	Dump Go frontend internal information.
+
+fgo-embedcfg=
+Go Joined RejectNegative
+-fgo-embedcfg=<file>	List embedded files via go:embed.
 
 fgo-optimize-
 Go Joined

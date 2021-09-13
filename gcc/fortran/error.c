@@ -1,5 +1,5 @@
 /* Handle errors.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Niels Kristian Bech Jensen
 
 This file is part of GCC.
@@ -136,7 +136,7 @@ error_string (const char *p)
 #define IBUF_LEN 60
 
 static void
-error_uinteger (unsigned long int i)
+error_uinteger (unsigned long long int i)
 {
   char *p, int_buf[IBUF_LEN];
 
@@ -156,13 +156,50 @@ error_uinteger (unsigned long int i)
 }
 
 static void
-error_integer (long int i)
+error_integer (long long int i)
 {
-  unsigned long int u;
+  unsigned long long int u;
 
   if (i < 0)
     {
-      u = (unsigned long int) -i;
+      u = (unsigned long long int) -i;
+      error_char ('-');
+    }
+  else
+    u = i;
+
+  error_uinteger (u);
+}
+
+
+static void
+error_hwuint (unsigned HOST_WIDE_INT i)
+{
+  char *p, int_buf[IBUF_LEN];
+
+  p = int_buf + IBUF_LEN - 1;
+  *p-- = '\0';
+
+  if (i == 0)
+    *p-- = '0';
+
+  while (i > 0)
+    {
+      *p-- = i % 10 + '0';
+      i = i / 10;
+    }
+
+  error_string (p + 1);
+}
+
+static void
+error_hwint (HOST_WIDE_INT i)
+{
+  unsigned HOST_WIDE_INT u;
+
+  if (i < 0)
+    {
+      u = (unsigned HOST_WIDE_INT) -i;
       error_char ('-');
     }
   else
@@ -482,8 +519,8 @@ static void ATTRIBUTE_GCC_GFC(2,0)
 error_print (const char *type, const char *format0, va_list argp)
 {
   enum { TYPE_CURRENTLOC, TYPE_LOCUS, TYPE_INTEGER, TYPE_UINTEGER,
-         TYPE_LONGINT, TYPE_ULONGINT, TYPE_CHAR, TYPE_STRING,
-	 NOTYPE };
+	 TYPE_LONGINT, TYPE_ULONGINT, TYPE_LLONGINT, TYPE_ULLONGINT,
+	 TYPE_HWINT, TYPE_HWUINT, TYPE_CHAR, TYPE_STRING, NOTYPE };
   struct
   {
     int type;
@@ -494,6 +531,10 @@ error_print (const char *type, const char *format0, va_list argp)
       unsigned int uintval;
       long int longintval;
       unsigned long int ulongintval;
+      long long int llongintval;
+      unsigned long long int ullongintval;
+      HOST_WIDE_INT hwintval;
+      unsigned HOST_WIDE_INT hwuintval;
       char charval;
       const char * stringval;
     } u;
@@ -577,10 +618,30 @@ error_print (const char *type, const char *format0, va_list argp)
 
 	  case 'l':
 	    c = *format++;
-	    if (c == 'u')
+	    if (c == 'l')
+	      {
+		c = *format++;
+		if (c == 'u')
+		  arg[pos].type = TYPE_ULLONGINT;
+		else if (c == 'i' || c == 'd')
+		  arg[pos].type = TYPE_LLONGINT;
+		else
+		  gcc_unreachable ();
+	      }
+	    else if (c == 'u')
 	      arg[pos].type = TYPE_ULONGINT;
 	    else if (c == 'i' || c == 'd')
 	      arg[pos].type = TYPE_LONGINT;
+	    else
+	      gcc_unreachable ();
+	    break;
+
+	  case 'w':
+	    c = *format++;
+	    if (c == 'u')
+	      arg[pos].type = TYPE_HWUINT;
+	    else if (c == 'i' || c == 'd')
+	      arg[pos].type = TYPE_HWINT;
 	    else
 	      gcc_unreachable ();
 	    break;
@@ -647,6 +708,22 @@ error_print (const char *type, const char *format0, va_list argp)
 
 	  case TYPE_ULONGINT:
 	    arg[pos].u.ulongintval = va_arg (argp, unsigned long int);
+	    break;
+
+	  case TYPE_LLONGINT:
+	    arg[pos].u.llongintval = va_arg (argp, long long int);
+	    break;
+
+	  case TYPE_ULLONGINT:
+	    arg[pos].u.ullongintval = va_arg (argp, unsigned long long int);
+	    break;
+
+	  case TYPE_HWINT:
+	    arg[pos].u.hwintval = va_arg (argp, HOST_WIDE_INT);
+	    break;
+
+	  case TYPE_HWUINT:
+	    arg[pos].u.hwuintval = va_arg (argp, unsigned HOST_WIDE_INT);
 	    break;
 
 	  case TYPE_CHAR:
@@ -725,12 +802,27 @@ error_print (const char *type, const char *format0, va_list argp)
 
 	case 'l':
 	  format++;
+	  if (*format == 'l')
+	    {
+	      format++;
+	      if (*format == 'u')
+		error_uinteger (spec[n++].u.ullongintval);
+	      else
+		error_integer (spec[n++].u.llongintval);
+	    }
 	  if (*format == 'u')
 	    error_uinteger (spec[n++].u.ulongintval);
 	  else
 	    error_integer (spec[n++].u.longintval);
 	  break;
 
+	case 'w':
+	  format++;
+	  if (*format == 'u')
+	    error_hwuint (spec[n++].u.hwintval);
+	  else
+	    error_hwint (spec[n++].u.hwuintval);
+	  break;
 	}
     }
 

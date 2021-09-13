@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,7 @@
 
 static_assert(std::ranges::view<std::span<int>>);
 static_assert(std::ranges::view<std::span<int, 0>>);
-static_assert(!std::ranges::view<std::span<int, 1>>);
+static_assert(std::ranges::view<std::span<int, 1>>); // Changed with P2325R3
 static_assert(std::ranges::view<std::string_view>);
 static_assert(std::ranges::view<std::experimental::string_view>);
 

@@ -1,4 +1,4 @@
-#  Copyright (C) 2016-2020 Free Software Foundation, Inc.
+#  Copyright (C) 2016-2021 Free Software Foundation, Inc.
 #
 #  This file is free software; you can redistribute it and/or modify it under
 #  the terms of the GNU General Public License as published by the Free
@@ -42,8 +42,8 @@ ALL_HOST_OBJS += gcn-run.o
 gcn-run$(exeext): gcn-run.o
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $< -ldl
 
-MULTILIB_OPTIONS = march=gfx900/march=gfx906
-MULTILIB_DIRNAMES = gfx900 gfx906
+MULTILIB_OPTIONS = march=gfx900/march=gfx906/march=gfx908
+MULTILIB_DIRNAMES = gfx900 gfx906 gfx908
 
 gcn-tree.o: $(srcdir)/config/gcn/gcn-tree.c
 	$(COMPILE) $<

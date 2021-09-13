@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,28 +23,32 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Exp_Dist; use Exp_Dist;
-with Exp_Tss;  use Exp_Tss;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Disp; use Sem_Disp;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Exp_Dist;       use Exp_Dist;
+with Exp_Tss;        use Exp_Tss;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Sem_Dist is
 
@@ -656,7 +660,7 @@ package body Sem_Dist is
       --  Corresponding_Remote_Type attribute, whose presence indicates that
       --  this is the record type used to implement a RAS.
 
-      Set_Ekind (Fat_Type, E_Record_Type);
+      Mutate_Ekind (Fat_Type, E_Record_Type);
       Set_Corresponding_Remote_Type (Fat_Type, User_Type);
 
       Insert_After_And_Analyze (Subpkg_Body, Fat_Type_Decl);

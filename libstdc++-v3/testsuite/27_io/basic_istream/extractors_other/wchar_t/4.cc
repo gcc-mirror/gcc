@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2016-2020 Free Software Foundation, Inc.
+// Copyright (C) 2016-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,9 +17,24 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.6.2.5.3 basic_ostream manipulator inserters
+// C++11 27.7.2.6 Rvalue stream extraction [istream.rvalue]
 
 #include <sstream>
+
+template<typename Istream, typename T, typename = void>
+  struct is_extractable : std::false_type
+  { };
+
+template<typename> using void_t = void;
+
+template<typename Istream, typename T>
+  using extract_result
+    = decltype(std::declval<Istream>() >> std::declval<const T&>());
+
+template<typename Istream, typename T>
+  struct is_extractable<Istream, T, void_t<extract_result<Istream, T>>>
+  : std::true_type
+  { };
 
 struct X {};
 std::wistream& operator>>(std::wistream&, X&) = delete;
@@ -30,20 +45,6 @@ std::wistream& operator>>(std::wistream& is, Y&&) {return is;}
 
 struct Z{};
 
-template <class T>
-auto f(T&&) -> decltype(void(std::declval<std::wistream&>()
-			     >> std::declval<T&&>()),
-			std::true_type());
-
-std::false_type f(...);
-
-template <class T>
-auto g(T&&) -> decltype(void(std::declval<std::wistream&&>()
-			     >> std::declval<T&&>()),
-			std::true_type());
-
-std::false_type g(...);
-
 void test01()
 {
   Y y;
@@ -52,42 +53,18 @@ void test01()
   is >> Y();
   std::wistringstream() >> y;
   std::wistringstream() >> Y();
-  static_assert(!std::__is_extractable<std::wistream&, X&>::value, "");
-  static_assert(!std::__is_extractable<std::wistream&&, X&>::value, "");
-  static_assert(!std::__is_extractable<std::wistream&, X&&>::value, "");
-  static_assert(!std::__is_extractable<std::wistream&&, X&&>::value, "");
-  static_assert(std::__is_extractable<std::wistream&, Y&>::value, "");
-  static_assert(std::__is_extractable<std::wistream&&, Y&>::value, "");
-  static_assert(std::__is_extractable<std::wistream&, Y&&>::value, "");
-  static_assert(std::__is_extractable<std::wistream&&, Y&&>::value, "");
-  static_assert(!std::__is_extractable<std::wistream&, Z&>::value, "");
-  static_assert(!std::__is_extractable<std::wistream&&, Z&>::value, "");
-  static_assert(!std::__is_extractable<std::wistream&, Z&&>::value, "");
-  static_assert(!std::__is_extractable<std::wistream&&, Z&&>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<X&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<X&&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Y&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Y&&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Z&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Z&&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<X&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<X&&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Y&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Y&&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Z&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Z&&>())),
-		std::false_type>::value, "");
+  static_assert(!is_extractable<std::wistream&, X&>::value, "");
+  static_assert(!is_extractable<std::wistream&&, X&>::value, "");
+  static_assert(!is_extractable<std::wistream&, X&&>::value, "");
+  static_assert(!is_extractable<std::wistream&&, X&&>::value, "");
+  static_assert(is_extractable<std::wistream&, Y&>::value, "");
+  static_assert(is_extractable<std::wistream&&, Y&>::value, "");
+  static_assert(is_extractable<std::wistream&, Y&&>::value, "");
+  static_assert(is_extractable<std::wistream&&, Y&&>::value, "");
+  static_assert(!is_extractable<std::wistream&, Z&>::value, "");
+  static_assert(!is_extractable<std::wistream&&, Z&>::value, "");
+  static_assert(!is_extractable<std::wistream&, Z&&>::value, "");
+  static_assert(!is_extractable<std::wistream&&, Z&&>::value, "");
 }
 
 int main()

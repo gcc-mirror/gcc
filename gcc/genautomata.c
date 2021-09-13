@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
 
@@ -6137,7 +6137,7 @@ evaluate_equiv_classes (automaton_t automaton, vec<state_t> *equiv_classes)
 
 /* The function merges equivalent states of AUTOMATON.  */
 static void
-merge_states (automaton_t automaton, vec<state_t> equiv_classes)
+merge_states (automaton_t automaton, const vec<state_t> &equiv_classes)
 {
   state_t curr_state;
   state_t new_state;
@@ -6787,7 +6787,7 @@ create_automata (void)
    finish_regexp_representation calls.  */
 
 /* This recursive function forms string representation of regexp
-   (without tailing '\0').  */
+   (without trailing '\0').  */
 static void
 form_regexp (regexp_t regexp)
 {

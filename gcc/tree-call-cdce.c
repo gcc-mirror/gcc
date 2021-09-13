@@ -1,5 +1,5 @@
 /* Conditional Dead Call Elimination pass for the GNU compiler.
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
 This file is part of GCC.
@@ -761,7 +761,7 @@ get_no_error_domain (enum built_in_function fnc)
    condition are separated by NULL tree in the vector.  */
 
 static void
-gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple *> conds,
+gen_shrink_wrap_conditions (gcall *bi_call, const vec<gimple *> &conds,
                             unsigned int *nconds)
 {
   gcall *call;
@@ -797,7 +797,8 @@ gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple *> conds,
    when it is non-null, it is called while all of the CONDS are true.  */
 
 static void
-shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
+shrink_wrap_one_built_in_call_with_conds (gcall *bi_call,
+					  const vec <gimple *> &conds,
 					  unsigned int nconds,
 					  gcall *bi_newcall = NULL)
 {
@@ -1132,7 +1133,7 @@ use_internal_fn (gcall *call)
    wrapping transformation.  */
 
 static void
-shrink_wrap_conditional_dead_built_in_calls (vec<gcall *> calls)
+shrink_wrap_conditional_dead_built_in_calls (const vec<gcall *> &calls)
 {
   unsigned i = 0;
 

@@ -1,5 +1,5 @@
 /* Next Runtime (ABI-0/1) private.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Iain Sandoe (split from objc-act.c)
 
 This file is part of GCC.
@@ -282,7 +282,7 @@ static void next_runtime_01_initialize (void)
 						TYPE_DECL,
 						objc_selector_name,
 						objc_selector_type));
-  TREE_NO_WARNING (type) = 1;
+  suppress_warning (type);
 
   build_v1_class_template ();
   build_super_template ();

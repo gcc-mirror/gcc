@@ -14,7 +14,7 @@ subroutine f(n, x, y)
    y = [real(x), aimag(x)]
    y = [real(x(1:n)), aimag(x(1:n))]
    y = [real(knd) :: 1] 
-   y = [real(kind=42) :: 1] { dg-error "Invalid type-spec" }
+   y = [real(kind=42) :: 1] ! { dg-error "Invalid type-spec" }
    y = [real(kind=knd) :: 1]
    y = [real(kind=knd, a=1.)]
    y = [real(a=1.)]

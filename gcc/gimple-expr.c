@@ -1,6 +1,6 @@
 /* Gimple decl, type, and expression support functions.
 
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -377,7 +377,6 @@ copy_var_decl (tree var, tree name, tree type)
   DECL_ARTIFICIAL (copy) = DECL_ARTIFICIAL (var);
   DECL_IGNORED_P (copy) = DECL_IGNORED_P (var);
   DECL_CONTEXT (copy) = DECL_CONTEXT (var);
-  TREE_NO_WARNING (copy) = TREE_NO_WARNING (var);
   TREE_USED (copy) = 1;
   DECL_SEEN_IN_BIND_EXPR_P (copy) = 1;
   DECL_ATTRIBUTES (copy) = DECL_ATTRIBUTES (var);
@@ -387,6 +386,7 @@ copy_var_decl (tree var, tree name, tree type)
       DECL_USER_ALIGN (copy) = 1;
     }
 
+  copy_warning (copy, var);
   return copy;
 }
 
@@ -900,6 +900,8 @@ flush_mark_addressable_queue ()
 void
 mark_addressable (tree x)
 {
+  if (TREE_CODE (x) == WITH_SIZE_EXPR)
+    x = TREE_OPERAND (x, 0);
   while (handled_component_p (x))
     x = TREE_OPERAND (x, 0);
   if (TREE_CODE (x) == MEM_REF

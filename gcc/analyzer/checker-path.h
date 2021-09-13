@@ -1,5 +1,5 @@
 /* Subclasses of diagnostic_path and diagnostic_event for analyzer diagnostics.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -37,6 +37,8 @@ enum event_kind
   EK_END_CFG_EDGE,
   EK_CALL_EDGE,
   EK_RETURN_EDGE,
+  EK_START_CONSOLIDATED_CFG_EDGES,
+  EK_END_CONSOLIDATED_CFG_EDGES,
   EK_SETJMP,
   EK_REWIND_FROM_LONGJMP,
   EK_REWIND_TO_SETJMP,
@@ -54,6 +56,7 @@ extern const char *event_kind_to_string (enum event_kind ek);
      checker_event
        debug_event (EK_DEBUG)
        custom_event (EK_CUSTOM)
+	 precanned_custom_event
        statement_event (EK_STMT)
        function_entry_event (EK_FUNCTION_ENTRY)
        state_change_event (EK_STATE_CHANGE)
@@ -63,6 +66,8 @@ extern const char *event_kind_to_string (enum event_kind ek);
 	   end_cfg_edge_event (EK_END_CFG_EDGE)
          call_event (EK_CALL_EDGE)
          return_edge (EK_RETURN_EDGE)
+       start_consolidated_cfg_edges_event (EK_START_CONSOLIDATED_CFG_EDGES)
+       end_consolidated_cfg_edges_event (EK_END_CONSOLIDATED_CFG_EDGES)
        setjmp_event (EK_SETJMP)
        rewind_event
          rewind_from_longjmp_event (EK_REWIND_FROM_LONGJMP)
@@ -140,19 +145,30 @@ private:
   char *m_desc;
 };
 
-/* A concrete event subclass for custom events.  These are not filtered,
+/* An abstract event subclass for custom events.  These are not filtered,
    as they are likely to be pertinent to the diagnostic.  */
 
 class custom_event : public checker_event
 {
+protected:
+  custom_event (location_t loc, tree fndecl, int depth)
+  : checker_event (EK_CUSTOM, loc, fndecl, depth)
+  {
+  }
+};
+
+/* A concrete custom_event subclass with a precanned message.  */
+
+class precanned_custom_event : public custom_event
+{
 public:
-  custom_event (location_t loc, tree fndecl, int depth,
-		const char *desc)
-  : checker_event (EK_CUSTOM, loc, fndecl, depth),
+  precanned_custom_event (location_t loc, tree fndecl, int depth,
+			  const char *desc)
+  : custom_event (loc, fndecl, depth),
     m_desc (xstrdup (desc))
   {
   }
-  ~custom_event ()
+  ~precanned_custom_event ()
   {
     free (m_desc);
   }
@@ -322,6 +338,9 @@ public:
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
 
   bool is_call_p () const FINAL OVERRIDE;
+
+  const supernode *m_src_snode;
+  const supernode *m_dest_snode;
 };
 
 /* A concrete event subclass for an interprocedural return.  */
@@ -335,6 +354,45 @@ public:
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
 
   bool is_return_p () const FINAL OVERRIDE;
+
+  const supernode *m_src_snode;
+  const supernode *m_dest_snode;
+};
+
+/* A concrete event subclass for the start of a consolidated run of CFG
+   edges all either TRUE or FALSE e.g. "following 'false' branch...'.  */
+
+class start_consolidated_cfg_edges_event : public checker_event
+{
+public:
+  start_consolidated_cfg_edges_event (location_t loc, tree fndecl, int depth,
+				      bool edge_sense)
+  : checker_event (EK_START_CONSOLIDATED_CFG_EDGES, loc, fndecl, depth),
+    m_edge_sense (edge_sense)
+  {
+  }
+
+  label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
+
+ private:
+  bool m_edge_sense;
+};
+
+/* A concrete event subclass for the end of a consolidated run of
+   CFG edges e.g. "...to here'.  */
+
+class end_consolidated_cfg_edges_event : public checker_event
+{
+public:
+  end_consolidated_cfg_edges_event (location_t loc, tree fndecl, int depth)
+  : checker_event (EK_END_CONSOLIDATED_CFG_EDGES, loc, fndecl, depth)
+  {
+  }
+
+  label_text get_desc (bool /*can_colorize*/) const FINAL OVERRIDE
+  {
+    return label_text::borrow ("...to here");
+  }
 };
 
 /* A concrete event subclass for a setjmp or sigsetjmp call.  */
@@ -490,6 +548,19 @@ public:
     delete event;
   }
 
+  void delete_events (unsigned start_idx, unsigned len)
+  {
+    for (unsigned i = start_idx; i < start_idx + len; i++)
+      delete m_events[i];
+    m_events.block_remove (start_idx, len);
+  }
+
+  void replace_event (unsigned idx, checker_event *new_event)
+  {
+    delete m_events[idx];
+    m_events[idx] = new_event;
+  }
+
   void add_final_event (const state_machine *sm,
 			const exploded_node *enode, const gimple *stmt,
 			tree var, state_machine::state_t state);
@@ -524,6 +595,8 @@ public:
       }
     return false;
   }
+
+  bool cfg_edge_pair_at_p (unsigned idx) const;
 
 private:
   DISABLE_COPY_AND_ASSIGN(checker_path);

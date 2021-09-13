@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -235,10 +235,6 @@ struct builtin_isa {
 };
 
 /* Bits for builtin_description.flag.  */
-
-/* Set when we don't support the comparison natively, and should
-   swap_comparison in order to support it.  */
-#define BUILTIN_DESC_SWAP_OPERANDS	1
 
 struct builtin_description
 {

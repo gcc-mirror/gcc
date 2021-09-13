@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,7 +69,7 @@ procedure Gnatlink is
      Table_Initial        => 20,
      Table_Increment      => 100,
      Table_Name           => "Gnatlink.Gcc_Linker_Options");
-   --  Comments needed ???
+   --  Options to be passed to the gcc linker
 
    package Libpath is new Table.Table (
      Table_Component_Type => Character,
@@ -78,7 +78,7 @@ procedure Gnatlink is
      Table_Initial        => 4096,
      Table_Increment      => 100,
      Table_Name           => "Gnatlink.Libpath");
-   --  Comments needed ???
+   --  Library search path
 
    package Linker_Options is new Table.Table (
      Table_Component_Type => String_Access,
@@ -87,7 +87,7 @@ procedure Gnatlink is
      Table_Initial        => 20,
      Table_Increment      => 100,
      Table_Name           => "Gnatlink.Linker_Options");
-   --  Comments needed ???
+   --  Options to be passed to gnatlink
 
    package Linker_Objects is new Table.Table (
      Table_Component_Type => String_Access,
@@ -204,12 +204,45 @@ procedure Gnatlink is
    --  Indicates wether libgcc should be statically linked (use 'T') or
    --  dynamically linked (use 'H') by default.
 
+   Link_Max : Integer;
+   pragma Import (C, Link_Max, "__gnat_link_max");
+   --  Maximum number of bytes on the command line supported by the OS
+   --  linker. Passed this limit the response file mechanism must be used
+   --  if supported.
+
+   Run_Path_Option_Ptr : Interfaces.C.Strings.chars_ptr;
+   pragma Import (C, Run_Path_Option_Ptr, "__gnat_run_path_option");
+   --  Pointer to string representing the native linker option which
+   --  specifies the path where the dynamic loader should find shared
+   --  libraries. Equal to null string if this system doesn't support it.
+
+   Libgcc_Subdir_Ptr : Interfaces.C.Strings.chars_ptr;
+   pragma Import (C, Libgcc_Subdir_Ptr, "__gnat_default_libgcc_subdir");
+   --  Pointer to string indicating the installation subdirectory where
+   --  a default shared libgcc might be found.
+
+   Object_Library_Ext_Ptr : Interfaces.C.Strings.chars_ptr;
+   pragma Import
+     (C, Object_Library_Ext_Ptr, "__gnat_object_library_extension");
+   --  Pointer to string specifying the default extension for
+   --  object libraries, e.g. Unix uses ".a".
+
+   Separate_Run_Path_Options : Boolean;
+   for Separate_Run_Path_Options'Size use Character'Size;
+   pragma Import
+     (C, Separate_Run_Path_Options, "__gnat_separate_run_path_options");
+   --  Whether separate rpath options should be emitted for each directory
+
+   function Get_Maximum_File_Name_Length return Integer;
+   pragma Import (C, Get_Maximum_File_Name_Length,
+                     "__gnat_get_maximum_file_name_length");
+
    function Base_Name (File_Name : String) return String;
    --  Return just the file name part without the extension (if present)
 
    procedure Check_Existing_Executable (File_Name : String);
    --  Delete any existing executable to avoid accidentally updating the target
-   --  of a symbolic link, but produce a Fatail_Error if File_Name matches any
+   --  of a symbolic link, but produce a Fatal_Error if File_Name matches any
    --  of the source file names. This avoids overwriting of extensionless
    --  source files by accident on systems where executables do not have
    --  extensions.
@@ -228,6 +261,19 @@ procedure Gnatlink is
 
    procedure Process_Binder_File (Name : String);
    --  Reads the binder file and extracts linker arguments
+
+   function Index (S, Pattern : String) return Natural;
+   --  Return the last occurrence of Pattern in S, or 0 if none
+
+   procedure Search_Library_Path
+     (Next_Line   : String;
+      Nfirst      : Integer;
+      Nlast       : Integer;
+      Last        : Integer;
+      GNAT_Static : Boolean;
+      GNAT_Shared : Boolean);
+   --  Given a Gnat standard library, search the library path to find the
+   --  library location. Parameters are documented in Process_Binder_File.
 
    procedure Usage;
    --  Display usage
@@ -307,7 +353,6 @@ procedure Gnatlink is
       pragma Unreferenced (Status);
    begin
       Status := unlink (Name'Address);
-      --  Is it really right to ignore an error here ???
    end Delete;
 
    ---------------
@@ -331,6 +376,23 @@ procedure Gnatlink is
       Error_Msg (Error);
       Exit_Program (E_Fatal);
    end Exit_With_Error;
+
+   -----------
+   -- Index --
+   -----------
+
+   function Index (S, Pattern : String) return Natural is
+      Len : constant Natural := Pattern'Length;
+
+   begin
+      for J in reverse S'First .. S'Last - Len + 1 loop
+         if Pattern = S (J .. J + Len - 1) then
+            return J;
+         end if;
+      end loop;
+
+      return 0;
+   end Index;
 
    ------------------
    -- Process_Args --
@@ -362,20 +424,18 @@ procedure Gnatlink is
             Arg : constant String := Argument (Next_Arg);
 
          begin
-            --  Case of argument which is a switch
-
-            --  We definitely need section by section comments here ???
+            --  This argument must not be parsed, just add it to the list of
+            --  linker's options.
 
             if Skip_Next then
-
-               --  This argument must not be parsed, just add it to the
-               --  list of linker's options.
 
                Skip_Next := False;
 
                Linker_Options.Increment_Last;
                Linker_Options.Table (Linker_Options.Last) :=
                  new String'(Arg);
+
+            --  Case of argument which is a switch
 
             elsif Arg'Length /= 0 and then Arg (1) = '-' then
                if Arg'Length > 4 and then Arg (2 .. 5) = "gnat" then
@@ -689,12 +749,6 @@ procedure Gnatlink is
       Link_Bytes : Integer := 0;
       --  Projected number of bytes for the linker command line
 
-      Link_Max : Integer;
-      pragma Import (C, Link_Max, "__gnat_link_max");
-      --  Maximum number of bytes on the command line supported by the OS
-      --  linker. Passed this limit the response file mechanism must be used
-      --  if supported.
-
       Next_Line : String (1 .. 1000);
       --  Current line value
 
@@ -752,35 +806,9 @@ procedure Gnatlink is
       RB_Nlast     : Integer;             -- Slice last index
       RB_Nfirst    : Integer;             -- Slice first index
 
-      Run_Path_Option_Ptr : Interfaces.C.Strings.chars_ptr;
-      pragma Import (C, Run_Path_Option_Ptr, "__gnat_run_path_option");
-      --  Pointer to string representing the native linker option which
-      --  specifies the path where the dynamic loader should find shared
-      --  libraries. Equal to null string if this system doesn't support it.
-
-      Libgcc_Subdir_Ptr : Interfaces.C.Strings.chars_ptr;
-      pragma Import (C, Libgcc_Subdir_Ptr, "__gnat_default_libgcc_subdir");
-      --  Pointer to string indicating the installation subdirectory where
-      --  a default shared libgcc might be found.
-
-      Object_Library_Ext_Ptr : Interfaces.C.Strings.chars_ptr;
-      pragma Import
-        (C, Object_Library_Ext_Ptr, "__gnat_object_library_extension");
-      --  Pointer to string specifying the default extension for
-      --  object libraries, e.g. Unix uses ".a".
-
-      Separate_Run_Path_Options : Boolean;
-      for Separate_Run_Path_Options'Size use Character'Size;
-      pragma Import
-        (C, Separate_Run_Path_Options, "__gnat_separate_run_path_options");
-      --  Whether separate rpath options should be emitted for each directory
-
       procedure Get_Next_Line;
       --  Read the next line from the binder file without the line
       --  terminator.
-
-      function Index (S, Pattern : String) return Natural;
-      --  Return the last occurrence of Pattern in S, or 0 if none
 
       procedure Store_File_Context;
       --  Store current file context, Fd position and current line data.
@@ -822,23 +850,6 @@ procedure Gnatlink is
 
          Nlast := Nlast - 1;
       end Get_Next_Line;
-
-      -----------
-      -- Index --
-      -----------
-
-      function Index (S, Pattern : String) return Natural is
-         Len : constant Natural := Pattern'Length;
-
-      begin
-         for J in reverse S'First .. S'Last - Len + 1 loop
-            if Pattern = S (J .. J + Len - 1) then
-               return J;
-            end if;
-         end loop;
-
-         return 0;
-      end Index;
 
       ---------------------------
       -- Rollback_File_Context --
@@ -1003,7 +1014,7 @@ procedure Gnatlink is
          Create_Temp_File (Tname_FD, Tname);
 
          --  ??? File descriptor should be checked to not be Invalid_FD.
-         --  ??? Status of Write and Close operations should be checked, and
+         --  Status of Write and Close operations should be checked, and
          --  failure should occur if a status is wrong.
 
          for J in Objs_Begin .. Objs_End loop
@@ -1115,242 +1126,14 @@ procedure Gnatlink is
                      Last := Nlast;
                   end if;
 
-                  --  Given a Gnat standard library, search the library path to
-                  --  find the library location.
+                  Search_Library_Path
+                    (Next_Line   => Next_Line,
+                     Nfirst      => Nfirst,
+                     Nlast       => Nlast,
+                     Last        => Last,
+                     GNAT_Static => GNAT_Static,
+                     GNAT_Shared => GNAT_Shared);
 
-                  --  Shouldn't we abstract a proc here, we are getting awfully
-                  --  heavily nested ???
-
-                  declare
-                     File_Path : String_Access;
-
-                     Object_Lib_Extension : constant String :=
-                       Value (Object_Library_Ext_Ptr);
-
-                     File_Name : constant String := "lib" &
-                       Next_Line (Nfirst + 2 .. Last) & Object_Lib_Extension;
-
-                     Run_Path_Opt : constant String :=
-                       Value (Run_Path_Option_Ptr);
-
-                     GCC_Index          : Natural;
-                     Run_Path_Opt_Index : Natural := 0;
-
-                  begin
-                     File_Path :=
-                       Locate_Regular_File (File_Name,
-                         String (Libpath.Table (1 .. Libpath.Last)));
-
-                     if File_Path /= null then
-                        if GNAT_Static then
-
-                           --  If static gnatlib found, explicitly specify to
-                           --  overcome possible linker default usage of shared
-                           --  version.
-
-                           Linker_Options.Increment_Last;
-
-                           Linker_Options.Table (Linker_Options.Last) :=
-                             new String'(File_Path.all);
-
-                        elsif GNAT_Shared then
-                           if Opt.Run_Path_Option then
-
-                              --  If shared gnatlib desired, add appropriate
-                              --  system specific switch so that it can be
-                              --  located at runtime.
-
-                              if Run_Path_Opt'Length /= 0 then
-
-                                 --  Output the system specific linker command
-                                 --  that allows the image activator to find
-                                 --  the shared library at runtime. Also add
-                                 --  path to find libgcc_s.so, if relevant.
-
-                                 declare
-                                    Path : String (1 .. File_Path'Length + 15);
-
-                                    Path_Last : constant Natural :=
-                                                  File_Path'Length;
-
-                                 begin
-                                    Path (1 .. File_Path'Length) :=
-                                      File_Path.all;
-
-                                 --  To find the location of the shared version
-                                 --  of libgcc, we look for "gcc-lib" in the
-                                 --  path of the library. However, this
-                                 --  subdirectory is no longer present in
-                                 --  recent versions of GCC. So, we look for
-                                 --  the last subdirectory "lib" in the path.
-
-                                    GCC_Index :=
-                                      Index (Path (1 .. Path_Last), "gcc-lib");
-
-                                    if GCC_Index /= 0 then
-
-                                       --  The shared version of libgcc is
-                                       --  located in the parent directory.
-
-                                       GCC_Index := GCC_Index - 1;
-
-                                    else
-                                       GCC_Index :=
-                                         Index
-                                           (Path (1 .. Path_Last),
-                                            "/lib/");
-
-                                       if GCC_Index = 0 then
-                                          GCC_Index :=
-                                            Index (Path (1 .. Path_Last),
-                                                   Directory_Separator & "lib"
-                                                   & Directory_Separator);
-                                       end if;
-
-                                       --  If we have found a "lib" subdir in
-                                       --  the path to libgnat, the possible
-                                       --  shared libgcc of interest by default
-                                       --  is in libgcc_subdir at the same
-                                       --  level.
-
-                                       if GCC_Index /= 0 then
-                                          declare
-                                             Subdir : constant String :=
-                                               Value (Libgcc_Subdir_Ptr);
-                                          begin
-                                             Path
-                                               (GCC_Index + 1 ..
-                                                GCC_Index + Subdir'Length) :=
-                                               Subdir;
-                                             GCC_Index :=
-                                               GCC_Index + Subdir'Length;
-                                          end;
-                                       end if;
-                                    end if;
-
-                                 --  Look for an eventual run_path_option in
-                                 --  the linker switches.
-
-                                    if Separate_Run_Path_Options then
-                                       Linker_Options.Increment_Last;
-                                       Linker_Options.Table
-                                         (Linker_Options.Last) :=
-                                           new String'
-                                             (Run_Path_Opt
-                                              & File_Path
-                                                (1 .. File_Path'Length
-                                                 - File_Name'Length));
-
-                                       if GCC_Index /= 0 then
-                                          Linker_Options.Increment_Last;
-                                          Linker_Options.Table
-                                            (Linker_Options.Last) :=
-                                            new String'
-                                              (Run_Path_Opt
-                                               & Path (1 .. GCC_Index));
-                                       end if;
-
-                                    else
-                                       for J in reverse
-                                         1 .. Linker_Options.Last
-                                       loop
-                                          if Linker_Options.Table (J) /= null
-                                            and then
-                                              Linker_Options.Table (J)'Length
-                                                        > Run_Path_Opt'Length
-                                            and then
-                                              Linker_Options.Table (J)
-                                                (1 .. Run_Path_Opt'Length) =
-                                                                 Run_Path_Opt
-                                          then
-                                             --  We have found an already
-                                             --  specified run_path_option:
-                                             --  we will add to this
-                                             --  switch, because only one
-                                             --  run_path_option should be
-                                             --  specified.
-
-                                             Run_Path_Opt_Index := J;
-                                             exit;
-                                          end if;
-                                       end loop;
-
-                                       --  If there is no run_path_option, we
-                                       --  need to add one.
-
-                                       if Run_Path_Opt_Index = 0 then
-                                          Linker_Options.Increment_Last;
-                                       end if;
-
-                                       if GCC_Index = 0 then
-                                          if Run_Path_Opt_Index = 0 then
-                                             Linker_Options.Table
-                                               (Linker_Options.Last) :=
-                                                 new String'
-                                                   (Run_Path_Opt
-                                                    & File_Path
-                                                      (1 .. File_Path'Length
-                                                       - File_Name'Length));
-
-                                          else
-                                             Linker_Options.Table
-                                               (Run_Path_Opt_Index) :=
-                                                 new String'
-                                                   (Linker_Options.Table
-                                                     (Run_Path_Opt_Index).all
-                                                    & Path_Separator
-                                                    & File_Path
-                                                      (1 .. File_Path'Length
-                                                       - File_Name'Length));
-                                          end if;
-
-                                       else
-                                          if Run_Path_Opt_Index = 0 then
-                                             Linker_Options.Table
-                                               (Linker_Options.Last) :=
-                                                 new String'
-                                                   (Run_Path_Opt
-                                                    & File_Path
-                                                      (1 .. File_Path'Length
-                                                       - File_Name'Length)
-                                                    & Path_Separator
-                                                    & Path (1 .. GCC_Index));
-
-                                          else
-                                             Linker_Options.Table
-                                               (Run_Path_Opt_Index) :=
-                                                 new String'
-                                                   (Linker_Options.Table
-                                                     (Run_Path_Opt_Index).all
-                                                    & Path_Separator
-                                                    & File_Path
-                                                      (1 .. File_Path'Length
-                                                       - File_Name'Length)
-                                                    & Path_Separator
-                                                    & Path (1 .. GCC_Index));
-                                          end if;
-                                       end if;
-                                    end if;
-                                 end;
-                              end if;
-                           end if;
-
-                           --  Then we add the appropriate -l switch
-
-                           Linker_Options.Increment_Last;
-                           Linker_Options.Table (Linker_Options.Last) :=
-                             new String'(Next_Line (Nfirst .. Nlast));
-                        end if;
-
-                     else
-                        --  If gnatlib library not found, then add it anyway in
-                        --  case some other mechanism may find it.
-
-                        Linker_Options.Increment_Last;
-                        Linker_Options.Table (Linker_Options.Last) :=
-                          new String'(Next_Line (Nfirst .. Nlast));
-                     end if;
-                  end;
                else
                   Linker_Options.Increment_Last;
                   Linker_Options.Table (Linker_Options.Last) :=
@@ -1377,6 +1160,228 @@ procedure Gnatlink is
 
       Status := fclose (Fd);
    end Process_Binder_File;
+
+   -------------------------
+   -- Search_Library_Path --
+   -------------------------
+
+   procedure Search_Library_Path
+     (Next_Line   : String;
+      Nfirst      : Integer;
+      Nlast       : Integer;
+      Last        : Integer;
+      GNAT_Static : Boolean;
+      GNAT_Shared : Boolean)
+   is
+      File_Path : String_Access;
+
+      Object_Lib_Extension : constant String :=
+        Value (Object_Library_Ext_Ptr);
+
+      File_Name : constant String := "lib" &
+        Next_Line (Nfirst + 2 .. Last) & Object_Lib_Extension;
+
+      Run_Path_Opt : constant String :=
+        Value (Run_Path_Option_Ptr);
+
+      GCC_Index          : Natural;
+      Run_Path_Opt_Index : Natural := 0;
+
+   begin
+      File_Path :=
+        Locate_Regular_File (File_Name,
+          String (Libpath.Table (1 .. Libpath.Last)));
+
+      if File_Path /= null then
+         if GNAT_Static then
+
+            --  If static gnatlib found, explicitly specify to overcome
+            --  possible linker default usage of shared version.
+
+            Linker_Options.Increment_Last;
+
+            Linker_Options.Table (Linker_Options.Last) :=
+              new String'(File_Path.all);
+
+         elsif GNAT_Shared then
+            if Opt.Run_Path_Option then
+
+               --  If shared gnatlib desired, add appropriate system specific
+               --  switch so that it can be located at runtime.
+
+               if Run_Path_Opt'Length /= 0 then
+
+                  --  Output the system specific linker command that allows the
+                  --  image activator to find the shared library at
+                  --  runtime. Also add path to find libgcc_s.so, if relevant.
+
+                  declare
+                     Path : String (1 .. File_Path'Length + 15);
+
+                     Path_Last : constant Natural := File_Path'Length;
+
+                  begin
+                     Path (1 .. File_Path'Length) := File_Path.all;
+
+                  --  To find the location of the shared version of libgcc, we
+                  --  look for "gcc-lib" in the path of the library. However,
+                  --  this subdirectory is no longer present in recent versions
+                  --  of GCC. So, we look for the last subdirectory "lib" in
+                  --  the path.
+
+                     GCC_Index := Index (Path (1 .. Path_Last), "gcc-lib");
+
+                     if GCC_Index /= 0 then
+
+                        --  The shared version of libgcc is located in the
+                        --  parent directory.
+
+                        GCC_Index := GCC_Index - 1;
+
+                     else
+                        GCC_Index := Index (Path (1 .. Path_Last), "/lib/");
+
+                        if GCC_Index = 0 then
+                           GCC_Index :=
+                             Index (Path (1 .. Path_Last),
+                                    Directory_Separator & "lib"
+                                    & Directory_Separator);
+                        end if;
+
+                        --  If we have found a "lib" subdir in the path to
+                        --  libgnat, the possible shared libgcc of interest by
+                        --  default is in libgcc_subdir at the same level.
+
+                        if GCC_Index /= 0 then
+                           declare
+                              Subdir : constant String :=
+                                Value (Libgcc_Subdir_Ptr);
+
+                           begin
+                              Path (GCC_Index + 1 .. GCC_Index + Subdir'Length)
+                                := Subdir;
+                              GCC_Index := GCC_Index + Subdir'Length;
+                           end;
+                        end if;
+                     end if;
+
+                  --  Look for an eventual run_path_option in
+                  --  the linker switches.
+
+                     if Separate_Run_Path_Options then
+                        Linker_Options.Increment_Last;
+                        Linker_Options.Table
+                          (Linker_Options.Last) :=
+                            new String'
+                              (Run_Path_Opt
+                               & File_Path
+                                 (1 .. File_Path'Length
+                                  - File_Name'Length));
+
+                        if GCC_Index /= 0 then
+                           Linker_Options.Increment_Last;
+                           Linker_Options.Table (Linker_Options.Last) :=
+                             new String'
+                               (Run_Path_Opt
+                                & Path (1 .. GCC_Index));
+                        end if;
+
+                     else
+                        for J in reverse 1 .. Linker_Options.Last loop
+                           if Linker_Options.Table (J) /= null
+                             and then
+                               Linker_Options.Table (J)'Length
+                                         > Run_Path_Opt'Length
+                             and then
+                               Linker_Options.Table (J)
+                                 (1 .. Run_Path_Opt'Length) =
+                                                  Run_Path_Opt
+                           then
+                              --  We have found an already specified
+                              --  run_path_option: we will add to this switch,
+                              --  because only one run_path_option should be
+                              --  specified.
+
+                              Run_Path_Opt_Index := J;
+                              exit;
+                           end if;
+                        end loop;
+
+                        --  If there is no run_path_option, we need to add one.
+
+                        if Run_Path_Opt_Index = 0 then
+                           Linker_Options.Increment_Last;
+                        end if;
+
+                        if GCC_Index = 0 then
+                           if Run_Path_Opt_Index = 0 then
+                              Linker_Options.Table
+                                (Linker_Options.Last) :=
+                                  new String'
+                                    (Run_Path_Opt
+                                     & File_Path
+                                       (1 .. File_Path'Length
+                                        - File_Name'Length));
+
+                           else
+                              Linker_Options.Table
+                                (Run_Path_Opt_Index) :=
+                                  new String'
+                                    (Linker_Options.Table
+                                      (Run_Path_Opt_Index).all
+                                     & Path_Separator
+                                     & File_Path
+                                       (1 .. File_Path'Length
+                                        - File_Name'Length));
+                           end if;
+
+                        else
+                           if Run_Path_Opt_Index = 0 then
+                              Linker_Options.Table
+                                (Linker_Options.Last) :=
+                                  new String'
+                                    (Run_Path_Opt
+                                     & File_Path
+                                       (1 .. File_Path'Length
+                                        - File_Name'Length)
+                                     & Path_Separator
+                                     & Path (1 .. GCC_Index));
+
+                           else
+                              Linker_Options.Table
+                                (Run_Path_Opt_Index) :=
+                                  new String'
+                                    (Linker_Options.Table
+                                      (Run_Path_Opt_Index).all
+                                     & Path_Separator
+                                     & File_Path
+                                       (1 .. File_Path'Length
+                                        - File_Name'Length)
+                                     & Path_Separator
+                                     & Path (1 .. GCC_Index));
+                           end if;
+                        end if;
+                     end if;
+                  end;
+               end if;
+            end if;
+
+            --  Then we add the appropriate -l switch
+
+            Linker_Options.Increment_Last;
+            Linker_Options.Table (Linker_Options.Last) :=
+              new String'(Next_Line (Nfirst .. Nlast));
+         end if;
+
+      else
+         --  If gnatlib library not found, then add it anyway in
+         --  case some other mechanism may find it.
+
+         Linker_Options.Increment_Last;
+         Linker_Options.Table (Linker_Options.Last) :=
+           new String'(Next_Line (Nfirst .. Nlast));
+      end if;
+   end Search_Library_Path;
 
    -----------
    -- Usage --
@@ -1747,10 +1752,6 @@ begin
    Make_Binder_File_Names : declare
       Fname     : constant String  := Base_Name (Ali_File_Name.all);
       Fname_Len : Integer := Fname'Length;
-
-      function Get_Maximum_File_Name_Length return Integer;
-      pragma Import (C, Get_Maximum_File_Name_Length,
-                        "__gnat_get_maximum_file_name_length");
 
       Maximum_File_Name_Length : constant Integer :=
                                    Get_Maximum_File_Name_Length;

@@ -1,6 +1,6 @@
 // Default predicates for internal use -*- C++ -*-
 
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,8 @@
 
 #ifndef _GLIBCXX_PREDEFINED_OPS_H
 #define _GLIBCXX_PREDEFINED_OPS_H	1
+
+#include <bits/move.h>
 
 namespace __gnu_cxx
 {

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -43,6 +43,9 @@ class TemplateInstance;
 class TemplateDeclaration;
 class ClassDeclaration;
 class BinExp;
+class UnaExp;
+class DotIdExp;
+class DotTemplateInstanceExp;
 class OverloadSet;
 class Initializer;
 class StringExp;
@@ -55,10 +58,20 @@ typedef union tree_node Symbol;
 struct Symbol;          // back end symbol
 #endif
 
+Expression *expressionSemantic(Expression *e, Scope *sc);
+Expression *semanticX(DotIdExp *exp, Scope *sc);
+Expression *semanticY(DotIdExp *exp, Scope *sc, int flag);
+Expression *semanticY(DotTemplateInstanceExp *exp, Scope *sc, int flag);
+Expression *trySemantic(Expression *e, Scope *sc);
+Expression *unaSemantic(UnaExp *e, Scope *sc);
+Expression *binSemantic(BinExp *e, Scope *sc);
+Expression *binSemanticProp(BinExp *e, Scope *sc);
+StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
+
 Expression *resolveProperties(Scope *sc, Expression *e);
 Expression *resolvePropertiesOnly(Scope *sc, Expression *e1);
 bool checkAccess(Loc loc, Scope *sc, Expression *e, Declaration *d);
-bool checkAccess(Loc loc, Scope *sc, Package *p);
+bool checkAccess(Scope *sc, Package *p);
 Expression *build_overload(Loc loc, Scope *sc, Expression *ethis, Expression *earg, Dsymbol *d);
 Dsymbol *search_function(ScopeDsymbol *ad, Identifier *funcid);
 void expandTuples(Expressions *exps);
@@ -181,7 +194,8 @@ public:
     bool checkNoBool();
     bool checkIntegral();
     bool checkArithmetic();
-    void checkDeprecated(Scope *sc, Dsymbol *s);
+    bool checkDeprecated(Scope *sc, Dsymbol *s);
+    bool checkDisabled(Scope *sc, Dsymbol *s);
     bool checkPurity(Scope *sc, FuncDeclaration *f);
     bool checkPurity(Scope *sc, VarDeclaration *v);
     bool checkSafety(Scope *sc, FuncDeclaration *f);
@@ -869,10 +883,14 @@ public:
 
 /****************************************************************/
 
-class CompileExp : public UnaExp
+class CompileExp : public Expression
 {
 public:
-    CompileExp(Loc loc, Expression *e);
+    Expressions *exps;
+
+    CompileExp(Loc loc, Expressions *exps);
+    Expression *syntaxCopy();
+    bool equals(RootObject *o);
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -912,6 +930,8 @@ public:
     TemplateDeclaration *td;
 
     DotTemplateExp(Loc loc, Expression *e, TemplateDeclaration *td);
+    bool checkType();
+    bool checkValue();
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -1110,7 +1130,6 @@ class ArrayLengthExp : public UnaExp
 public:
     ArrayLengthExp(Loc loc, Expression *e1);
 
-    static Expression *rewriteOpAssign(BinExp *exp);
     void accept(Visitor *v) { v->visit(this); }
 };
 

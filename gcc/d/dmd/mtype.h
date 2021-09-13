@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -40,6 +40,7 @@ typedef union tree_node type;
 typedef struct TYPE type;
 #endif
 
+Type *typeSemantic(Type *type, const Loc &loc, Scope *sc);
 void semanticTypeInfo(Scope *sc, Type *t);
 MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *parameters, Objects *dedtypes, unsigned *wm = NULL, size_t inferStart = 0);
 StorageClass ModToStc(unsigned mod);
@@ -95,6 +96,8 @@ enum ENUMTY
     Tint128,
     Tuns128,
     Ttraits,
+    Tmixin,
+    Tnoreturn,
     TMAX
 };
 typedef unsigned char TY;       // ENUMTY
@@ -200,6 +203,7 @@ public:
     static Type *tdstring;              // immutable(dchar)[]
     static Type *terror;                // for error recovery
     static Type *tnull;                 // for null type
+    static Type *tnoreturn;             // for bottom type typeof(*null)
 
     static Type *tsize_t;               // matches size_t alias
     static Type *tptrdiff_t;            // matches ptrdiff_t alias
@@ -245,7 +249,6 @@ public:
     d_uns64 size();
     virtual d_uns64 size(Loc loc);
     virtual unsigned alignsize();
-    virtual Type *semantic(Loc loc, Scope *sc);
     Type *trySemantic(Loc loc, Scope *sc);
     Type *merge();
     Type *merge2();
@@ -367,7 +370,9 @@ public:
     TypeTuple *isTypeTuple();
     TypeSlice *isTypeSlice();
     TypeNull *isTypeNull();
+    TypeMixin *isTypeMixin();
     TypeTraits *isTypeTraits();
+    TypeNoreturn *isTypeNoreturn();
 
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -448,7 +453,6 @@ public:
     static TypeVector *create(Type *basetype);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     d_uns64 size(Loc loc);
     unsigned alignsize();
     Expression *getProperty(Loc loc, Identifier *ident, int flag);
@@ -486,7 +490,6 @@ public:
     Type *syntaxCopy();
     d_uns64 size(Loc loc);
     unsigned alignsize();
-    Type *semantic(Loc loc, Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     bool isString();
@@ -512,7 +515,6 @@ public:
     Type *syntaxCopy();
     d_uns64 size(Loc loc) /*const*/;
     unsigned alignsize() /*const*/;
-    Type *semantic(Loc loc, Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     bool isString();
@@ -537,7 +539,6 @@ public:
     const char *kind();
     Type *syntaxCopy();
     d_uns64 size(Loc loc);
-    Type *semantic(Loc loc, Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     Expression *defaultInit(Loc loc);
@@ -557,7 +558,6 @@ public:
     static TypePointer *create(Type *t);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     d_uns64 size(Loc loc) /*const*/;
     MATCH implicitConvTo(Type *to);
     MATCH constConv(Type *to);
@@ -575,7 +575,6 @@ public:
     TypeReference(Type *t);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     d_uns64 size(Loc loc) /*const*/;
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     Expression *defaultInit(Loc loc);
@@ -623,9 +622,12 @@ public:
     Type *type;
     Identifier *ident;
     Expression *defaultArg;
+    UserAttributeDeclaration *userAttribDecl;   // user defined attributes
 
-    Parameter(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg);
-    static Parameter *create(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg);
+    Parameter(StorageClass storageClass, Type *type, Identifier *ident,
+              Expression *defaultArg, UserAttributeDeclaration *userAttribDecl);
+    static Parameter *create(StorageClass storageClass, Type *type, Identifier *ident,
+                             Expression *defaultArg, UserAttributeDeclaration *userAttribDecl);
     Parameter *syntaxCopy();
     Type *isLazyArray();
     // kludge for template.isType()
@@ -677,7 +679,6 @@ public:
     static TypeFunction *create(Parameters *parameters, Type *treturn, VarArg varargs, LINK linkage, StorageClass stc = 0);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     void purityLevel();
     bool hasLazyParameters();
     bool isDstyleVariadic() const;
@@ -690,7 +691,7 @@ public:
     int attributesApply(void *param, int (*fp)(void *, const char *), TRUSTformat trustFormat = TRUSTformatDefault);
 
     Type *substWildTo(unsigned mod);
-    MATCH callMatch(Type *tthis, Expressions *toargs, int flag = 0);
+    MATCH callMatch(Type *tthis, Expressions *toargs, int flag = 0, const char **pMessage = NULL);
     bool checkRetType(Loc loc);
 
     Expression *defaultInit(Loc loc) /*const*/;
@@ -706,7 +707,6 @@ public:
     static TypeDelegate *create(Type *t);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     Type *addStorageClass(StorageClass stc);
     d_uns64 size(Loc loc) /*const*/;
     unsigned alignsize() /*const*/;
@@ -731,9 +731,24 @@ public:
 
     TypeTraits(const Loc &loc, TraitsExp *exp);
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
+    Dsymbol *toDsymbol(Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     d_uns64 size(Loc loc);
+    void accept(Visitor *v) { v->visit(this); }
+};
+
+class TypeMixin : public Type
+{
+public:
+    Loc loc;
+    Expressions *exps;
+    RootObject *obj;
+
+    TypeMixin(const Loc &loc, Expressions *exps);
+    const char *kind();
+    Type *syntaxCopy();
+    Dsymbol *toDsymbol(Scope *sc);
+    void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -771,7 +786,6 @@ public:
     Type *syntaxCopy();
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     Dsymbol *toDsymbol(Scope *sc);
-    Type *semantic(Loc loc, Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -786,7 +800,6 @@ public:
     const char *kind();
     Type *syntaxCopy();
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
-    Type *semantic(Loc loc, Scope *sc);
     Dsymbol *toDsymbol(Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -802,7 +815,6 @@ public:
     Type *syntaxCopy();
     Dsymbol *toDsymbol(Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
-    Type *semantic(Loc loc, Scope *sc);
     d_uns64 size(Loc loc);
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -815,7 +827,6 @@ public:
     Type *syntaxCopy();
     Dsymbol *toDsymbol(Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
-    Type *semantic(Loc loc, Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -844,7 +855,6 @@ public:
     d_uns64 size(Loc loc);
     unsigned alignsize();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     Dsymbol *toDsymbol(Scope *sc);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     structalign_t alignment();
@@ -875,7 +885,6 @@ public:
     Type *syntaxCopy();
     d_uns64 size(Loc loc);
     unsigned alignsize();
-    Type *semantic(Loc loc, Scope *sc);
     Dsymbol *toDsymbol(Scope *sc);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     Expression *getProperty(Loc loc, Identifier *ident, int flag);
@@ -914,7 +923,6 @@ public:
     const char *kind();
     d_uns64 size(Loc loc) /*const*/;
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     Dsymbol *toDsymbol(Scope *sc);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     ClassDeclaration *isClassHandle();
@@ -945,7 +953,6 @@ public:
     TypeTuple(Type *t1, Type *t2);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     bool equals(RootObject *o);
     Expression *getProperty(Loc loc, Identifier *ident, int flag);
     Expression *defaultInit(Loc loc);
@@ -961,7 +968,6 @@ public:
     TypeSlice(Type *next, Expression *lwr, Expression *upr);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -978,6 +984,21 @@ public:
 
     d_uns64 size(Loc loc) /*const*/;
     Expression *defaultInit(Loc loc) /*const*/;
+    void accept(Visitor *v) { v->visit(this); }
+};
+
+class TypeNoreturn : public Type
+{
+public:
+    TypeNoreturn();
+    const char *kind();
+
+    Type *syntaxCopy();
+    MATCH implicitConvTo(Type *to);
+    bool isBoolean() /*const*/;
+
+    d_uns64 size(Loc loc) /*const*/;
+    unsigned alignsize();
     void accept(Visitor *v) { v->visit(this); }
 };
 

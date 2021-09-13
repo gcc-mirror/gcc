@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003-2020 Free Software Foundation, Inc.
+// Copyright (C) 2003-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,16 +34,12 @@
 
 #include <cassert>
 #include <cstdio>
-#include <cctype> // for std::isspace
+#include <cctype>	// for std::isspace.
+#include <cstring>	// for std::strstr.
 
-#include <algorithm> // for std::min
+#include <algorithm>	// for std::min.
 
-#include <cxxabi.h> // for __cxa_demangle
-
-// libstdc++/85768
-#if 0 // defined _GLIBCXX_HAVE_EXECINFO_H
-# include <execinfo.h> // for backtrace
-#endif
+#include <cxxabi.h>	// for __cxa_demangle.
 
 #include "mutex_pool.h"
 
@@ -424,10 +420,7 @@ namespace __gnu_debug
   bool
   _Safe_iterator_base::
   _M_can_compare(const _Safe_iterator_base& __x) const throw ()
-  {
-    return (!_M_singular()
-	    && !__x._M_singular() && _M_sequence == __x._M_sequence);
-  }
+  { return _M_sequence == __x._M_sequence; }
 
   __gnu_cxx::__mutex&
   _Safe_iterator_base::
@@ -577,15 +570,17 @@ namespace
   struct PrintContext
   {
     PrintContext()
-      : _M_max_length(78), _M_column(1), _M_first_line(true), _M_wordwrap(false)
+    : _M_max_length(78), _M_column(1), _M_first_line(true), _M_wordwrap(false)
     { get_max_length(_M_max_length); }
 
+    static constexpr int _S_indent = 4;
     std::size_t	_M_max_length;
-    enum { _M_indent = 4 } ;
     std::size_t	_M_column;
     bool	_M_first_line;
     bool	_M_wordwrap;
   };
+
+  using _Print_func_t = void (PrintContext&, const char*, ptrdiff_t);
 
   template<size_t Length>
     void
@@ -593,14 +588,22 @@ namespace
     { print_word(ctx, word, Length - 1); }
 
   void
-  print_word(PrintContext& ctx, const char* word,
-	     std::ptrdiff_t count = -1)
+  print_raw(PrintContext& ctx, const char* str, ptrdiff_t nbc = -1)
   {
-    size_t length = count >= 0 ? count : __builtin_strlen(word);
+    if (nbc >= 0)
+      ctx._M_column += fprintf(stderr, "%.*s", (int)nbc, str);
+    else
+      ctx._M_column += fprintf(stderr, "%s", str);
+  }
+
+  void
+  print_word(PrintContext& ctx, const char* word, ptrdiff_t nbc = -1)
+  {
+    size_t length = nbc >= 0 ? nbc : __builtin_strlen(word);
     if (length == 0)
       return;
 
-    // Consider first '\n' at begining cause it impacts column.
+    // First consider '\n' at the beginning because it impacts the column.
     if (word[0] == '\n')
       {
 	fprintf(stderr, "\n");
@@ -613,7 +616,7 @@ namespace
       }
 
     size_t visual_length
-      = isspace(word[length - 1]) ? length - 1 : length;
+      = isspace((unsigned char)word[length - 1]) ? length - 1 : length;
     if (visual_length == 0
 	|| !ctx._M_wordwrap
 	|| (ctx._M_column + visual_length < ctx._M_max_length)
@@ -622,15 +625,11 @@ namespace
 	// If this isn't the first line, indent
 	if (ctx._M_column == 1 && !ctx._M_first_line)
 	  {
-	    char spacing[ctx._M_indent + 1];
-	    for (int i = 0; i < ctx._M_indent; ++i)
-	      spacing[i] = ' ';
-	    spacing[ctx._M_indent] = '\0';
-	    fprintf(stderr, "%s", spacing);
-	    ctx._M_column += ctx._M_indent;
+	    const char spacing[PrintContext::_S_indent + 1] = "    ";
+	    print_raw(ctx, spacing, PrintContext::_S_indent);
 	  }
 
-	int written = fprintf(stderr, "%s", word);
+	int written = fprintf(stderr, "%.*s", (int)length, word);
 
 	if (word[length - 1] == '\n')
 	  {
@@ -643,15 +642,40 @@ namespace
     else
       {
 	print_literal(ctx, "\n");
-	print_word(ctx, word, count);
+	print_word(ctx, word, nbc);
+      }
+  }
+
+  void
+  pretty_print(PrintContext& ctx, const char* str, _Print_func_t print_func)
+  {
+    const char cxx1998[] = "cxx1998::";
+    for (;;)
+      {
+	if (auto pos = strstr(str, "__"))
+	  {
+	    if (pos != str)
+	      print_func(ctx, str, pos - str);
+
+	    pos += 2; // advance past "__"
+	    if (memcmp(pos, cxx1998, 9) == 0)
+	      pos += 9; // advance part "cxx1998::"
+
+	    str = pos;
+	  }
+	else
+	  {
+	    print_func(ctx, str, -1);
+	    break;
+	  }
       }
   }
 
   template<size_t Length>
     void
-    print_type(PrintContext& ctx,
-	       const type_info* info,
-	       const char(&unknown_name)[Length])
+    print_type_info(PrintContext& ctx,
+		    const type_info* info,
+		    const char(&unknown_name)[Length])
     {
       if (!info)
 	print_literal(ctx, unknown_name);
@@ -660,135 +684,179 @@ namespace
 	  int status;
 	  char* demangled_name =
 	    __cxxabiv1::__cxa_demangle(info->name(), NULL, NULL, &status);
-	  print_word(ctx, status == 0 ? demangled_name : info->name());
+	  if (status == 0)
+	    pretty_print(ctx, demangled_name, &print_word);
+	  else
+	    print_word(ctx, info->name());
 	  free(demangled_name);
 	}
     }
 
-  bool
-  print_field(PrintContext& ctx,
-	      const char* name, const _Parameter::_Type& type)
+  void
+  print_address(PrintContext& ctx, const char* fmt, const void* address)
   {
-    if (__builtin_strcmp(name, "name") == 0)
-      {
-	assert(type._M_name);
-	print_word(ctx, type._M_name);
-      }
-    else if (__builtin_strcmp(name, "type") == 0)
-      print_type(ctx, type._M_type, "<unknown type>");
-    else
-      return false;
-
-    return true;
-  }
-
-  bool
-  print_field(PrintContext& ctx,
-	      const char* name, const _Parameter::_Instance& inst)
-  {
-    const _Parameter::_Type& type = inst;
-    if (print_field(ctx, name, type))
-      { }
-    else if (__builtin_strcmp(name, "address") == 0)
-      {
-	char buf[64];
-	int ret = __builtin_sprintf(buf, "%p", inst._M_address);
-	print_word(ctx, buf, ret);
-      }
-    else
-      return false;
-
-    return true;
+    char buf[128];
+    int written = __builtin_sprintf(buf, fmt, address);
+    print_word(ctx, buf, written);
   }
 
   void
-  print_field(PrintContext& ctx, const _Parameter& param, const char* name)
+  print_address(PrintContext& ctx, const void* address)
+  { print_address(ctx, "%p", address); }
+
+  void
+  print_integer(PrintContext& ctx, long integer)
+  {
+    char buf[64];
+    int written = __builtin_sprintf(buf, "%ld", integer);
+    print_word(ctx, buf, written);
+  }
+
+  void
+  print_named_name(PrintContext& ctx, const _Parameter::_Named& named)
+  {
+    assert(named._M_name);
+    pretty_print(ctx, named._M_name, print_word);
+  }
+
+  template<typename _Iterator>
+    void
+    print_iterator_constness(PrintContext& ctx, const _Iterator& iterator)
+    {
+      static const char*
+	constness_names[_Error_formatter::__last_constness] =
+	{
+	 "<unknown constness>",
+	 "constant",
+	 "mutable"
+	};
+      print_word(ctx, constness_names[iterator._M_constness]);
+    }
+
+  template<typename _Iterator>
+    void
+    print_iterator_state(PrintContext& ctx, const _Iterator& iterator)
+    {
+      static const char*
+	state_names[_Error_formatter::__last_state] =
+	{
+	 "<unknown state>",
+	 "singular",
+	 "dereferenceable (start-of-sequence)",
+	 "dereferenceable",
+	 "past-the-end",
+	 "before-begin",
+	 "dereferenceable (start-of-reverse-sequence)",
+	 "dereferenceable (reverse)",
+	 "past-the-reverse-end"
+	};
+      print_word(ctx, state_names[iterator._M_state]);
+    }
+
+  template<typename _Iterator>
+    void
+    print_iterator_seq_type(PrintContext& ctx, const _Iterator& iterator)
+    { print_type_info(ctx, iterator._M_seq_type, "<unknown seq_type>"); }
+
+  bool
+  print_named_field(PrintContext& ctx,
+		    const char* fname, const _Parameter::_Named& named)
+  {
+    if (__builtin_strcmp(fname, "name") == 0)
+      print_named_name(ctx, named);
+    else
+      return false;
+
+    return true;
+  }
+
+  bool
+  print_type_field(PrintContext& ctx,
+		   const char* fname, const _Parameter::_Type& type)
+  {
+    if (print_named_field(ctx, fname, type))
+      { }
+    else if (__builtin_strcmp(fname, "type") == 0)
+      print_type_info(ctx, type._M_type, "<unknown type>");
+    else
+      return false;
+
+    return true;
+  }
+
+  bool
+  print_instance_field(PrintContext& ctx,
+		       const char* fname, const _Parameter::_Instance& inst)
+  {
+    if (print_type_field(ctx, fname, inst))
+      { }
+    else if (__builtin_strcmp(fname, "address") == 0)
+      print_address(ctx, inst._M_address);
+    else
+      return false;
+
+    return true;
+  }
+
+  template<typename _Iterator>
+    bool
+    print_iterator_field(PrintContext& ctx,
+			 const char* fname, const _Iterator& iterator)
+    {
+      if (print_instance_field(ctx, fname, iterator))
+	{ }
+      else if (__builtin_strcmp(fname, "constness") == 0)
+	print_iterator_constness(ctx, iterator);
+      else if (__builtin_strcmp(fname, "state") == 0)
+	print_iterator_state(ctx, iterator);
+      else if (__builtin_strcmp(fname, "sequence") == 0)
+	{
+	  assert(iterator._M_sequence);
+	  print_address(ctx, iterator._M_sequence);
+	}
+      else if (__builtin_strcmp(fname, "seq_type") == 0)
+	print_iterator_seq_type(ctx, iterator);
+      else
+	return false;
+
+      return true;
+    }
+
+  void
+  print_field(PrintContext& ctx, const _Parameter& param, const char* fname)
   {
     assert(param._M_kind != _Parameter::__unused_param);
-    const int bufsize = 64;
-    char buf[bufsize];
 
     const auto& variant = param._M_variant;
     switch (param._M_kind)
     {
     case _Parameter::__iterator:
-      {
-	const auto& iterator = variant._M_iterator;
-	if (print_field(ctx, name, iterator))
-	  { }
-	else if (__builtin_strcmp(name, "constness") == 0)
-	  {
-	    static const char*
-	      constness_names[_Error_formatter::__last_constness] =
-	      {
-		"<unknown constness>",
-		"constant",
-		"mutable"
-	      };
-	    print_word(ctx, constness_names[iterator._M_constness]);
-	  }
-	else if (__builtin_strcmp(name, "state") == 0)
-	  {
-	    static const char*
-	      state_names[_Error_formatter::__last_state] =
-	      {
-		"<unknown state>",
-		"singular",
-		"dereferenceable (start-of-sequence)",
-		"dereferenceable",
-		"past-the-end",
-		"before-begin",
-		"dereferenceable (start-of-reverse-sequence)",
-		"dereferenceable (reverse)",
-		"past-the-reverse-end"
-	      };
-	    print_word(ctx, state_names[iterator._M_state]);
-	  }
-	else if (__builtin_strcmp(name, "sequence") == 0)
-	  {
-	    assert(iterator._M_sequence);
-	    int written = __builtin_sprintf(buf, "%p", iterator._M_sequence);
-	    print_word(ctx, buf, written);
-	  }
-	else if (__builtin_strcmp(name, "seq_type") == 0)
-	  print_type(ctx, iterator._M_seq_type, "<unknown seq_type>");
-	else
-	  assert(false);
-      }
+      if (!print_iterator_field(ctx, fname, variant._M_iterator))
+	assert(false);
       break;
 
     case _Parameter::__sequence:
-      if (!print_field(ctx, name, variant._M_sequence))
+      if (!print_instance_field(ctx, fname, variant._M_sequence))
 	assert(false);
       break;
 
     case _Parameter::__integer:
-      if (__builtin_strcmp(name, "name") == 0)
-	{
-	  assert(variant._M_integer._M_name);
-	  print_word(ctx, variant._M_integer._M_name);
-	}
-      else
+      if (!print_named_field(ctx, fname, variant._M_integer))
 	assert(false);
       break;
 
     case _Parameter::__string:
-      if (__builtin_strcmp(name, "name") == 0)
-	{
-	  assert(variant._M_string._M_name);
-	  print_word(ctx, variant._M_string._M_name);
-	}
-      else
+      if (!print_named_field(ctx, fname, variant._M_string))
 	assert(false);
       break;
 
     case _Parameter::__instance:
-      if (!print_field(ctx, name, variant._M_instance))
+      if (!print_instance_field(ctx, fname, variant._M_instance))
 	assert(false);
       break;
 
     case _Parameter::__iterator_value_type:
-      if (!print_field(ctx, name, variant._M_iterator_value_type))
+      if (!print_type_field(ctx, fname, variant._M_iterator_value_type))
 	assert(false);
       break;
 
@@ -799,55 +867,53 @@ namespace
   }
 
   void
-  print_description(PrintContext& ctx, const _Parameter::_Type& type)
+  print_quoted_named_name(PrintContext& ctx, const _Parameter::_Named& named)
   {
-    if (type._M_name)
+    if (named._M_name)
       {
 	print_literal(ctx, "\"");
-	print_word(ctx, type._M_name);
-	print_literal(ctx, "\"");
-      }
-
-    print_literal(ctx, " {\n");
-
-    if (type._M_type)
-      {
-	print_literal(ctx, "  type = ");
-	print_type(ctx, type._M_type, "<unknown type>");
-	print_literal(ctx, ";\n");
+	print_named_name(ctx, named);
+	print_literal(ctx, "\" ");
       }
   }
 
   void
-  print_description(PrintContext& ctx, const _Parameter::_Instance& inst)
+  print_type_type(PrintContext& ctx, const _Parameter::_Type& type,
+		  bool close_desc = true)
   {
-    const int bufsize = 64;
-    char buf[bufsize];
-
-    if (inst._M_name)
-      {
-	print_literal(ctx, "\"");
-	print_word(ctx, inst._M_name);
-	print_literal(ctx, "\" ");
-      }
-
-    int written
-      = __builtin_sprintf(buf, "@ 0x%p {\n", inst._M_address);
-    print_word(ctx, buf, written);
-
-    if (inst._M_type)
+    if (type._M_type)
       {
 	print_literal(ctx, "  type = ");
-	print_type(ctx, inst._M_type, "<unknown type>");
+	print_type_info(ctx, type._M_type, "<unknown type>");
+	if (close_desc)
+	  print_literal(ctx, ";\n");
       }
+  }
+
+  void
+  print_type(PrintContext& ctx, const _Parameter::_Type& type)
+  {
+    print_quoted_named_name(ctx, type);
+    print_literal(ctx, " {\n");
+    print_type_type(ctx, type);
+    print_literal(ctx, "}\n");
+  }
+
+  void
+  print_instance(PrintContext& ctx, const _Parameter::_Instance& inst,
+		 bool close_desc = true)
+  {
+    print_quoted_named_name(ctx, inst);
+    print_address(ctx, "@ %p {\n", inst._M_address);
+    print_type_type(ctx, inst, close_desc);
+
+    if (close_desc)
+      print_literal(ctx, "}\n");
   }
 
   void
   print_description(PrintContext& ctx, const _Parameter& param)
   {
-    const int bufsize = 128;
-    char buf[bufsize];
-
     const auto& variant = param._M_variant;
     switch (param._M_kind)
       {
@@ -856,14 +922,14 @@ namespace
 	  const auto& ite = variant._M_iterator;
 
 	  print_literal(ctx, "iterator ");
-	  print_description(ctx, ite);
+	  print_instance(ctx, ite, false);
 
 	  if (ite._M_type)
 	    {
 	      if (ite._M_constness != _Error_formatter::__unknown_constness)
 		{
 		  print_literal(ctx, " (");
-		  print_field(ctx, param, "constness");
+		  print_iterator_constness(ctx, ite);
 		  print_literal(ctx, " iterator)");
 		}
 
@@ -873,7 +939,7 @@ namespace
 	  if (ite._M_state != _Error_formatter::__unknown_state)
 	    {
 	      print_literal(ctx, "  state = ");
-	      print_field(ctx, param, "state");
+	      print_iterator_state(ctx, ite);
 	      print_literal(ctx, ";\n");
 	    }
 
@@ -883,13 +949,11 @@ namespace
 	      if (ite._M_seq_type)
 		{
 		  print_literal(ctx, "with type '");
-		  print_field(ctx, param, "seq_type");
+		  print_iterator_seq_type(ctx, ite);
 		  print_literal(ctx, "' ");
 		}
 
-	      int written
-		= __builtin_sprintf(buf, "@ 0x%p\n", ite._M_sequence);
-	      print_word(ctx, buf, written);
+	      print_address(ctx, "@ %p\n", ite._M_sequence);
 	    }
 
 	  print_literal(ctx, "}\n");
@@ -898,28 +962,17 @@ namespace
 
       case _Parameter::__sequence:
 	print_literal(ctx, "sequence ");
-	print_description(ctx, variant._M_sequence);
-
-	if (variant._M_sequence._M_type)
-	  print_literal(ctx, ";\n");
-
-	print_literal(ctx, "}\n");
+	print_instance(ctx, variant._M_sequence);
 	break;
 
       case _Parameter::__instance:
 	print_literal(ctx, "instance ");
-	print_description(ctx, variant._M_instance);
-
-	if (variant._M_instance._M_type)
-	  print_literal(ctx, ";\n");
-
-	print_literal(ctx, "}\n");
+	print_instance(ctx, variant._M_instance);
 	break;
 
       case _Parameter::__iterator_value_type:
 	print_literal(ctx, "iterator::value_type ");
-	print_description(ctx, variant._M_iterator_value_type);
-	print_literal(ctx, "}\n");
+	print_type(ctx, variant._M_iterator_value_type);
 	break;
 
       default:
@@ -928,71 +981,67 @@ namespace
   }
 
   void
-  print_string(PrintContext& ctx, const char* string,
+  print_string(PrintContext& ctx, const char* str, ptrdiff_t nbc,
 	       const _Parameter* parameters, std::size_t num_parameters)
   {
-    const char* start = string;
-    const int bufsize = 128;
-    char buf[bufsize];
-    int bufindex = 0;
+    const char* start = str;
+    const char* end = nbc >= 0 ? start + nbc : nullptr;
 
-    while (*start)
+    while ((end && str != end) || (!end && *str))
       {
-	if (isspace(*start))
+	if (isspace((unsigned char)*str))
 	  {
-	    buf[bufindex++] = *start++;
-	    buf[bufindex] = '\0';
-	    print_word(ctx, buf, bufindex);
-	    bufindex = 0;
+	    ++str;
+	    print_word(ctx, start, str - start);
+	    start = str;
 	    continue;
 	  }
 
-	if (!num_parameters || *start != '%')
+	if (!parameters || *str != '%')
 	  {
 	    // Normal char or no parameter to look for.
-	    buf[bufindex++] = *start++;
+	    ++str;
 	    continue;
 	  }
 
-	if (*++start == '%')
+	if (*++str == '%')
 	  {
 	    // Escaped '%'
-	    buf[bufindex++] = *start++;
+	    print_word(ctx, start, str - start);
+	    ++str;
+	    start = str;
 	    continue;
 	  }
 
 	// We are on a parameter property reference, we need to flush buffer
 	// first.
-	if (bufindex != 0)
+	if (str != start)
 	  {
-	    buf[bufindex] = '\0';
-	    print_word(ctx, buf, bufindex);
-	    bufindex = 0;
+	    // Avoid printing the '%'.
+	    if (str - start > 1)
+	      print_word(ctx, start, str - start - 1);
+	    start = str;
 	  }
 
 	// Get the parameter number
-	assert(*start >= '1' && *start <= '9');
-	size_t param_index = *start - '0' - 1;
+	assert(*str >= '1' && *str <= '9');
+	size_t param_index = *str - '0' - 1;
 	assert(param_index < num_parameters);
 	const auto& param = parameters[param_index];
 
 	// '.' separates the parameter number from the field
 	// name, if there is one.
-	++start;
-	if (*start != '.')
+	++str;
+	if (*str != '.')
 	  {
-	    assert(*start == ';');
-	    ++start;
+	    assert(*str == ';');
+	    ++str;
 	    if (param._M_kind == _Parameter::__integer)
-	      {
-		int written
-		  = __builtin_sprintf(buf, "%ld",
-				      param._M_variant._M_integer._M_value);
-		print_word(ctx, buf, written);
-	      }
+	      print_integer(ctx, param._M_variant._M_integer._M_value);
 	    else if (param._M_kind == _Parameter::__string)
-	      print_string(ctx, param._M_variant._M_string._M_value,
+	      print_string(ctx, param._M_variant._M_string._M_value, -1,
 			   parameters, num_parameters);
+	    start = str;
 	    continue;
 	  }
 
@@ -1000,26 +1049,28 @@ namespace
 	const int max_field_len = 16;
 	char field[max_field_len];
 	int field_idx = 0;
-	++start;
-	while (*start != ';')
+	++str;
+	while (*str != ';')
 	  {
-	    assert(*start);
+	    assert(*str);
 	    assert(field_idx < max_field_len - 1);
-	    field[field_idx++] = *start++;
+	    field[field_idx++] = *str++;
 	  }
-	++start;
+	++str;
 	field[field_idx] = '\0';
 
 	print_field(ctx, param, field);
+	start = str;
       }
 
     // Might need to flush.
-    if (bufindex)
-      {
-	buf[bufindex] = '\0';
-	print_word(ctx, buf, bufindex);
-      }
+    if (str != start)
+      print_word(ctx, start, str - start);
   }
+
+  void
+  print_string(PrintContext& ctx, const char* str, ptrdiff_t nbc)
+  { print_string(ctx, str, nbc, nullptr, 0); }
 }
 
 namespace __gnu_debug
@@ -1039,16 +1090,15 @@ namespace __gnu_debug
     PrintContext ctx;
     if (_M_file)
       {
-	print_word(ctx, _M_file);
+	print_raw(ctx, _M_file);
 	print_literal(ctx, ":");
 	go_to_next_line = true;
       }
 
     if (_M_line > 0)
       {
-	char buf[64];
-	int written = __builtin_sprintf(buf, "%u:", _M_line);
-	print_word(ctx, buf, written);
+	ctx._M_column += fprintf(stderr, "%u", _M_line);
+	print_literal(ctx, ":");
 	go_to_next_line = true;
       }
 
@@ -1061,41 +1111,17 @@ namespace __gnu_debug
     if (_M_function)
       {
 	print_literal(ctx, "In function:\n");
-	print_string(ctx, _M_function, nullptr, 0);
+	pretty_print(ctx, _M_function, &print_string);
 	print_literal(ctx, "\n");
 	ctx._M_first_line = true;
 	print_literal(ctx, "\n");
       }
 
-// libstdc++/85768
-#if 0 //defined _GLIBCXX_HAVE_EXECINFO_H
-    {
-      void* stack[32];
-      int nb = backtrace(stack, 32);
-
-      // Note that we skip current method symbol.
-      if (nb > 1)
-	{
-	  print_literal(ctx, "Backtrace:\n");
-	  auto symbols = backtrace_symbols(stack, nb);
-	  for (int i = 1; i < nb; ++i)
-	    {
-	      print_word(ctx, symbols[i]);
-	      print_literal(ctx, "\n");
-	    }
-
-	  free(symbols);
-	  ctx._M_first_line = true;
-	  print_literal(ctx, "\n");
-	}
-    }
-#endif
-
     print_literal(ctx, "Error: ");
 
     // Print the error message
     assert(_M_text);
-    print_string(ctx, _M_text, _M_parameters, _M_num_parameters);
+    print_string(ctx, _M_text, -1, _M_parameters, _M_num_parameters);
     print_literal(ctx, ".\n");
 
     // Emit descriptions of the objects involved in the operation

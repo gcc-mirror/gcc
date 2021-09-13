@@ -1,6 +1,6 @@
 /* Subroutines needed for unwinding IA-64 standard format stack frame
    info for exception handling.
-   Copyright (C) 1997-2020 Free Software Foundation, Inc.
+   Copyright (C) 1997-2021 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@cygnus.com>
 	          Andrew Haley  <aph@cygnus.com>
 		  David Mosberger-Tang <davidm@hpl.hp.com>

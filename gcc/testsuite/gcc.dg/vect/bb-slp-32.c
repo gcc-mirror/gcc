@@ -8,6 +8,7 @@ int foo (int *p, int a, int b)
   int x[4];
   int tem0, tem1, tem2, tem3;
   int sum = 0;
+  p = __builtin_assume_aligned (p, __BIGGEST_ALIGNMENT__);
   tem0 = p[0] + 1 + a;
   sum += tem0;
   x[0] = tem0;

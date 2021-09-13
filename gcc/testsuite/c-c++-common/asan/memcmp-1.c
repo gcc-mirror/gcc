@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fno-builtin-memcmp" } */
+/* { dg-additional-options "-D_FORTIFY_SOURCE=0 -gdwarf-3" { target *-*-darwin* } } */
 /* { dg-shouldfail "asan" } */
 
 #include <string.h>
@@ -16,5 +17,8 @@ main ()
 }
 
 /* { dg-output "ERROR: AddressSanitizer: stack-buffer-overflow.*(\n|\r\n|\r)" } */
-/* { dg-output "    #\[1-9\] 0x\[0-9a-f\]+ +(in _*(interceptor_|wrap_|)memcmp|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "    #\[2-9\] 0x\[0-9a-f\]+ +(in _*main|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "    #\[1-9\] 0x\[0-9a-f\]+ +(in _*(interceptor_|wrap_|)memcmp|\[(\])\[^\n\r]*(\n|\r\n|\r)" { target { ! *-*-darwin* } } } */
+/* { dg-output "    #\[2-9\] 0x\[0-9a-f\]+ +(in _*main|\[(\])\[^\n\r]*(\n|\r\n|\r)" { target { ! *-*-darwin* } } } */
+
+/* { dg-output "    #\[0-9\] 0x\[0-9a-f\]+ +(in MemcmpInterceptorCommon|\[(\])\[^\n\r]*(\n|\r\n|\r)" { target *-*-darwin* } } */
+/* { dg-output "    #\[1-9\] 0x\[0-9a-f\]+ +(in wrap_(memcmp|bcmp)|\[(\])\[^\n\r]*(\n|\r\n|\r)" { target *-*-darwin* } } */

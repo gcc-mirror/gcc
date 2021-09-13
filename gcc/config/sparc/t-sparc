@@ -1,6 +1,6 @@
 # General rules that all sparc/ targets must have.
 #
-# Copyright (C) 2011-2020 Free Software Foundation, Inc.
+# Copyright (C) 2011-2021 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -27,3 +27,7 @@ sparc-c.o: $(srcdir)/config/sparc/sparc-c.c
 sparc-d.o: $(srcdir)/config/sparc/sparc-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+# Hack around PR bootstrap/92002.
+tree-ssanames.o-warn += -Wno-error=uninitialized -Wno-error=maybe-uninitialized
+wide-int.o-warn += -Wno-error=uninitialized -Wno-error=maybe-uninitialized

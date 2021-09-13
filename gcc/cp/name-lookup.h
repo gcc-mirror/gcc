@@ -1,5 +1,5 @@
 /* Declarations for -*- C++ -*- name lookup routines.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -177,18 +177,6 @@ struct GTY(()) tree_binding_vec {
 #define MODULE_BINDING_PARTITION_P(NODE)		\
   (OVERLOAD_CHECK (NODE)->base.volatile_flag)
 
-/* There are specializations of a template keyed to this binding.  */
-#define BINDING_VECTOR_PENDING_SPECIALIZATIONS_P(NODE) \
-  (BINDING_VECTOR_CHECK (NODE)->base.public_flag)
-/* The key is in a header unit (not a named module partition or
-   primary).  */
-#define BINDING_VECTOR_PENDING_IS_HEADER_P(NODE) \
-  (BINDING_VECTOR_CHECK (NODE)->base.protected_flag)
-/* The key is in a named module (primary or partition).  */
-#define BINDING_VECTOR_PENDING_IS_PARTITION_P(NODE) \
-  (BINDING_VECTOR_CHECK (NODE)->base.private_flag)
-
-extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
 extern void push_binding (tree, tree, cp_binding_level*);
 extern void pop_local_binding (tree, tree);
@@ -465,6 +453,7 @@ extern void cp_emit_debug_info_for_using (tree, tree);
 
 extern void finish_nonmember_using_decl (tree scope, tree name);
 extern void finish_using_directive (tree target, tree attribs);
+void push_local_extern_decl_alias (tree decl);
 extern tree pushdecl (tree, bool hiding = false);
 extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl_top_level (tree);
@@ -478,6 +467,7 @@ extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
 extern void maybe_save_operator_binding (tree);
 extern void push_operator_bindings (void);
+extern void push_using_decl_bindings (tree, tree);
 extern void discard_operator_bindings (tree);
 
 /* Lower level interface for modules. */
@@ -490,7 +480,7 @@ extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 extern bool set_module_binding (tree ctx, tree name, unsigned mod,
 				int mod_glob_flag,
 				tree value, tree type, tree visible);
-extern void add_module_decl (tree ctx, tree name, tree decl);
+extern void add_module_namespace_decl (tree ns, tree decl);
 
 enum WMB_Flags
 {
@@ -504,10 +494,9 @@ enum WMB_Flags
 extern unsigned walk_module_binding (tree binding, bitmap partitions,
 				     bool (*)(tree decl, WMB_Flags, void *data),
 				     void *data);
-extern tree add_imported_namespace (tree ctx, tree name, unsigned module,
-				    location_t, bool visible_p, bool inline_p);
-extern void note_pending_specializations (tree ns, tree name, bool is_header);
-extern void load_pending_specializations (tree ns, tree name);
+extern tree add_imported_namespace (tree ctx, tree name, location_t,
+				    unsigned module,
+				    bool inline_p, bool visible_p);
 extern const char *get_cxx_dialect_name (enum cxx_dialect dialect);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

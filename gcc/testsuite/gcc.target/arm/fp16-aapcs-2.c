@@ -1,6 +1,6 @@
 /* { dg-do compile }  */
 /* { dg-require-effective-target arm_fp16_ok } */
-/* { dg-options "-mfloat-abi=softfp -O2" }  */
+/* { dg-options "-mfloat-abi=softfp -O2 -mno-long-calls" }  */
 /* { dg-add-options arm_fp16_ieee } */
 /* { dg-skip-if "incompatible float-abi" { arm*-*-* } { "-mfloat-abi=hard" } } */
 

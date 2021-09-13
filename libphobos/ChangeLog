@@ -1,3 +1,297 @@
+2021-09-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* m4/druntime/os.m4: Update comment for DRUNTIME_OS_SOURCES.
+
+2021-09-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/Makefile.am: Don't add zlib when ENABLE_LIBDRUNTIME_ONLY.
+	* src/Makefile.in: Regenerate.
+
+2021-08-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* m4/autoconf.m4 (AC_LANG_PROGRAM): Declare module name 'object'.
+	* m4/gcc_support.m4 (WITH_LOCAL_DRUNTIME): Compile tests with
+	-fno-druntime.
+
+2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100999
+	* src/MERGE: Merge upstream phobos 55bb17543.
+
+2021-05-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* src/std/process.d (unittest): Remove tmpname on exit.
+	* src/MERGE: Merge upstream phobos 63f4caa90.
+
+2021-05-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 98c6ff0c.
+
+2021-05-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 32cfe9b61.
+
+2021-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/thread/osthread.d (callWithStackShell): Statically
+	generate PPC and PPC64 asm implementations, and conditionally remove
+	PPC register names on non-Darwin targets.
+
+2021-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98584
+	* libdruntime/gcc/deh.d (scanLSDA): Update calls to read_uleb128 and
+	read_encoded_value.
+	(actionTableLookup): Update calls to read_sleb128 and
+	read_encoded_value_with_base.
+	* libdruntime/gcc/unwind/pe.d (read_uleb128): Update signature.
+	(read_sleb128): Update signature.
+	(read_unaligned): New function.
+	(read_encoded_value_with_base): Update signature.  Call read_unaligned
+	instead of unsafe pointer dereferencing.
+	(read_encoded_value): Update signature.
+
+2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98494
+	* libdruntime/MERGE: Merge upstream druntime 89f870b7.
+	* src/MERGE: Merge upstream phobos e6907ff3e.
+
+2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98058
+	* configure: Regenerate.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_DARWIN): Add
+	core/sys/darwin/config.d
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/powerpc/switchcontext.S: Implement
+	fiber_switchContext for __MACH__.
+	* libdruntime/config/x86/switchcontext.S: Likewise.
+	* libdruntime/core/sys/darwin/config.d: New file.
+	* libdruntime/core/thread/fiber.d (Fiber.getThis): Mark noinline.
+	(UnsafeFiberMigration): Define for OSX/X86 and OSX/X86_64.
+	* libdruntime/core/thread/osthread.d (callWithStackShell): Add inline
+	assembler implementation for X86, X86_64, PPC, and PPC64.
+	* libdruntime/core/thread/threadbase.d (ThreadBase.getThis): Mark
+	noinline.
+	* libdruntime/gcc/deh.d (FuncTable): Remove definition.
+	* m4/druntime/os.m4 (DRUNTIME_OS_MINFO_BRACKETING): Check for right
+	bracket symbol on darwin* targets.
+	* testsuite/libphobos.thread/fiber_guard_page.d: Update test to
+	support ucontext-based Fibers.
+
+2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99794
+	* libdruntime/Makefile.am (DRUNTIME_SOURCES_CONFIGURED): Add
+	config/mingw/msvc.c on DRUNTIME_OS_MINGW.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/mingw/msvc.c: New file.
+	* libdruntime/config/mingw/switchcontext.S (fiber_switchContext): Fix
+	function definition.
+	* libdruntime/gcc/deh.d (__gdc_personality_seh0): Fix call to
+	_GCC_specific_handler.
+	* libdruntime/gcc/gthread.d (__gthread_once_t): Fix definition.
+	* libdruntime/gcc/unwind/generic.d (_GCC_specific_handler): Fix
+	declaration.
+	* libdruntime/rt/dmain2.d (rt_loadLibrary): Remove function.
+	(rt_loadLibraryW): Remove function.
+	(initLibrary): Remove function.
+	(rt_unloadLibrary): Remove function.
+
+2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99691
+	* configure: Regenerate.
+	* libdruntime/config/common/threadasm.S: Add __OpenBSD__.
+	* libdruntime/gcc/backtrace.d: Import core.sys.openbsd.dlfcn on
+	OpenBSD platforms.
+	* libdruntime/gcc/sections/elf.d (SharedElf): Define on OpenBSD.
+	(linkMapForHandle): Implement for OpenBSD.
+	(exeLinkMap): Remove.
+	(getDependencies): Adjust dlpi_addr on OpenBSD.
+	(handleForName): Implement for OpenBSD.
+	(IterateManually): Define on OpenBSD.
+	* libdruntime/gcc/sections/package.d (SectionsElf): Define on OpenBSD.
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_ATOMIC): Test for
+	enable_libatomic.
+	(DRUNTIME_LIBRARIES_BACKTRACE): Test for enable_libbacktrace.
+
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Call DRUNTIME_SECTION_FLAGS.
+	* libdruntime/Makefile.am: Add SECTION_FLAGS to AM_DFLAGS.
+	* libdruntime/Makefile.in: Regenerate.
+	* m4/druntime.m4 (DRUNTIME_SECTION_FLAGS): New macro.
+	* src/Makefile.am: Add SECTION_FLAGS to AM_DFLAGS.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Removed
+	gcc/sections/android.d, elf_shared.d, osx.d, win32.d, and win64.d.
+	Added gcc/sections/common.d, elf.d macho.d, and pecoff.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/core/thread/osthread.d: Update externDFunc FQDN names to
+	use platform independant section function names.
+	* libdruntime/gcc/sections/elf_shared.d: Renamed to...
+	* libdruntime/gcc/sections/elf.d: ...this.  Mangle functions for
+	core.thread interface as if they come from the gcc.sections module.
+	* libdruntime/gcc/sections/package.d: Update public imports, declare
+	functions for core.thread interface.
+	* libdruntime/gcc/sections/android.d: Removed.
+	* libdruntime/gcc/sections/osx.d: Removed.
+	* libdruntime/gcc/sections/win32.d: Removed.
+	* libdruntime/gcc/sections/win64.d: Removed.
+	* libdruntime/gcc/sections/common.d: New file.
+	* libdruntime/gcc/sections/macho.d: New file.
+	* libdruntime/gcc/sections/pecoff.d: New file.
+
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.druntime/druntime.exp: Compile all tests with
+	-static-libphobos.
+	* testsuite/libphobos.phobos/phobos.exp: Likewise.
+
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.druntime/druntime.exp: Remove
+	is-effective-target static.
+	* testsuite/libphobos.phobos/phobos.exp: Likewise.
+
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99812
+	* testsuite/libphobos.druntime_shared/druntime_shared.exp: Re-add
+	-fno-moduleinfo flag to dg-runtest.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Likewise.
+
+2021-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	  gcc/attributes.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcc/attribute.d: Deprecate module, publicly import
+	gcc.attributes.
+	* libdruntime/gcc/deh.d: Update imports.
+	* libdruntime/gcc/attributes.d: New file.
+
+2021-04-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 1134b710.
+
+2021-04-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 483bc129.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_DARWIN): Add
+	core/sys/darwin/fcntl.d.
+	(DRUNTIME_DSOURCES_OPENBSD): Add core/sys/openbsd/unistd.d.
+	(DRUNTIME_DSOURCES_WINDOWS): Add core/sys/windows/stdc/malloc.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos f89dc217a.
+	* src/Makefile.am (PHOBOS_DSOURCES): Add std/regex/internal/tests2.d.
+	* src/Makefile.in: Regenerate.
+	* testsuite/libphobos.exceptions/chain.d: Fix format arguments.
+	* testsuite/libphobos.exceptions/line_trace.d: Likewise.
+
+2021-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Substitute enable_shared, enable_static, and
+	phobos_lt_pic_flag.
+	* libdruntime/Makefile.am (AM_DFLAGS): Replace
+	  phobos_compiler_pic_flag with phobos_lt_pic_flags, and
+	  phobos_compiler_shared_flag.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am (AM_DFLAGS): Replace phobos_compiler_pic_flag
+	  with phobos_lt_pic_flag, and phobos_compiler_shared_flag.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/libphobos.druntime_shared/druntime_shared.exp: Remove
+	-fversion=Shared and -fno-moduleinfo from default extra test flags.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Likewise.
+	* testsuite/testsuite_flags.in: Add phobos_compiler_shared_flag to
+	--gdcflags.
+
+2021-02-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98910
+	* libdruntime/MERGE: Merge upstream druntime 0fd4364c.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add core/volatile.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* testsuite/libphobos.allocations/tls_gc_integration.d: Update test.
+
+2021-02-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98910
+	* libdruntime/MERGE: Merge upstream druntime 9d0c8364.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	  core/internal/attributes.d
+	(DRUNTIME_DSOURCES_BIONIC): Add core/sys/bionic/stdlib.d.
+	(DRUNTIME_DSOURCES_DARWIN): Add core/sys/darwin/stdlib.d, and
+	core/sys/darwin/sys/sysctl.d.
+	(DRUNTIME_DSOURCES_DRAGONFLYBSD): Add
+	core/sys/dragonflybsd/stdlib.d, and
+	core/sys/dragonflybsd/sys/sysctl.d.
+	(DRUNTIME_DSOURCES_FREEBSD): Add core/sys/freebsd/stdlib.d, and
+	core/sys/freebsd/sys/sysctl.d.
+	(DRUNTIME_DSOURCES_NETBSD): Add core/sys/netbsd/stdlib.d, and
+	core/sys/netbsd/sys/sysctl.d.
+	(DRUNTIME_DSOURCES_OPENBSD): Add core/sys/openbsd/stdlib.d, and
+	core/sys/openbsd/sys/sysctl.d.
+	(DRUNTIME_DSOURCES_SOLARIS): Add core/sys/solaris/stdlib.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 9d575282e.
+
+2021-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* libdruntime/MERGE: Merge upstream druntime e4aae28e.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Refresh module list.
+	(DRUNTIME_DSOURCES_BIONIC): Add core/sys/bionic/err.d.
+	(DRUNTIME_DSOURCES_DARWIN): Add core/sys/darwin/err.d,
+	core/sys/darwin/ifaddrs.d, core/sys/darwin/mach/nlist.d,
+	core/sys/darwin/mach/stab.d, and core/sys/darwin/sys/attr.d.
+	(DRUNTIME_DSOURCES_DRAGONFLYBSD): Add core/sys/dragonflybsd/err.d.
+	(DRUNTIME_DSOURCES_FREEBSD): Add core/sys/freebsd/err.d.
+	(DRUNTIME_DSOURCES_LINUX): Add core/sys/linux/err.d.
+	(DRUNTIME_DSOURCES_NETBSD): Add core/sys/netbsd/err.d.
+	(DRUNTIME_DSOURCES_OPENBSD): Add core/sys/openbsd/err.d.
+	(DRUNTIME_DSOURCES_POSIX): Add core/sys/posix/locale.d,
+	core/sys/posix/stdc/time.d, core/sys/posix/string.d, and
+	core/sys/posix/strings.d.
+	(DRUNTIME_DSOURCES_SOLARIS): Add core/sys/solaris/err.d.
+	(DRUNTIME_DSOURCES_WINDOWS): Add core/sys/windows/sdkddkver.d,
+	and core/sys/windows/stdc/time.d
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcc/sections/elf_shared.d (sizeofTLS): New function.
+	* testsuite/libphobos.thread/fiber_guard_page.d: Use
+	__traits(getMember) to get internal fields.
+
+2021-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 3dd5df686.
+	* testsuite/libphobos.phobos/phobos.exp: Add compiler flag
+	-fversion=Linux_Pre_2639 if target is linux_pre_2639.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Likewise.
+
+2021-01-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98806
+	* libdruntime/gcc/sections/elf_shared.d (MIPS_Any): Declare version
+	for MIPS32 and MIPS64.
+	(getDependencies): Adjust dlpi_addr on MIPS_Any.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865
@@ -906,7 +1200,7 @@
 	* testsuite/testsuite_flags.in: New file.
 
 
-Copyright (C) 2018-2020 Free Software Foundation, Inc.
+Copyright (C) 2018-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

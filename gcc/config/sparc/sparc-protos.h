@@ -1,5 +1,5 @@
 /* Prototypes of target machine for SPARC.
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -30,7 +30,8 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern unsigned long sparc_type_code (tree);
 #endif /* TREE_CODE */
 
-extern void order_regs_for_local_alloc (void);
+extern void sparc_order_regs_for_local_alloc (void);
+extern int sparc_leaf_reg_remap (int);
 extern int sparc_initial_elimination_offset (int);
 extern void sparc_expand_prologue (void);
 extern void sparc_flat_expand_prologue (void);
@@ -113,5 +114,6 @@ extern rtl_opt_pass *make_pass_work_around_errata (gcc::context *);
 
 /* Routines implemented in sparc-d.c  */
 extern void sparc_d_target_versions (void);
+extern void sparc_d_register_target_info (void);
 
 #endif /* __SPARC_PROTOS_H__ */

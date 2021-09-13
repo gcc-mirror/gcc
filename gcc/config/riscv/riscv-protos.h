@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -80,6 +80,7 @@ void riscv_cpu_cpp_builtins (cpp_reader *);
 
 /* Routines implemented in riscv-d.c  */
 extern void riscv_d_target_versions (void);
+extern void riscv_d_register_target_info (void);
 
 /* Routines implemented in riscv-builtins.c.  */
 extern void riscv_atomic_assign_expand_fenv (tree *, tree *, tree *);

@@ -1,6 +1,6 @@
 // Debugging unordered_map/unordered_multimap implementation -*- C++ -*-
 
-// Copyright (C) 2003-2020 Free Software Foundation, Inc.
+// Copyright (C) 2003-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -545,9 +545,27 @@ namespace __debug
       find(const key_type& __key)
       { return { _Base::find(__key), this }; }
 
+#if __cplusplus > 201703L
+      template<typename _Kt,
+	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
+	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
+	iterator
+	find(const _Kt& __k)
+	{ return { _Base::find(__k), this }; }
+#endif
+
       const_iterator
       find(const key_type& __key) const
       { return { _Base::find(__key), this }; }
+
+#if __cplusplus > 201703L
+      template<typename _Kt,
+	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
+	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
+	const_iterator
+	find(const _Kt& __k) const
+	{ return { _Base::find(__k), this }; }
+#endif
 
       std::pair<iterator, iterator>
       equal_range(const key_type& __key)
@@ -556,12 +574,36 @@ namespace __debug
 	return { { __res.first, this }, { __res.second, this } };
       }
 
+#if __cplusplus > 201703L
+      template<typename _Kt,
+	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
+	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
+	std::pair<iterator, iterator>
+	equal_range(const _Kt& __k)
+	{
+	  auto __res = _Base::equal_range(__k);
+	  return { { __res.first, this }, { __res.second, this } };
+	}
+#endif
+
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __key) const
       {
 	auto __res = _Base::equal_range(__key);
 	return { { __res.first, this }, { __res.second, this } };
       }
+
+#if __cplusplus > 201703L
+      template<typename _Kt,
+	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
+	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
+	std::pair<const_iterator, const_iterator>
+	equal_range(const _Kt& __k) const
+	{
+	  auto __res = _Base::equal_range(__k);
+	  return { { __res.first, this }, { __res.second, this } };
+	}
+#endif
 
       size_type
       erase(const key_type& __key)
@@ -1157,9 +1199,27 @@ namespace __debug
       find(const key_type& __key)
       { return { _Base::find(__key), this }; }
 
+#if __cplusplus > 201703L
+      template<typename _Kt,
+	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
+	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
+	iterator
+	find(const _Kt& __k)
+	{ return { _Base::find(__k), this }; }
+#endif
+
       const_iterator
       find(const key_type& __key) const
       { return { _Base::find(__key), this }; }
+
+#if __cplusplus > 201703L
+      template<typename _Kt,
+	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
+	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
+	const_iterator
+	find(const _Kt& __k) const
+	{ return { _Base::find(__k), this }; }
+#endif
 
       std::pair<iterator, iterator>
       equal_range(const key_type& __key)
@@ -1168,12 +1228,36 @@ namespace __debug
 	return { { __res.first, this }, { __res.second, this } };
       }
 
+#if __cplusplus > 201703L
+      template<typename _Kt,
+	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
+	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
+	std::pair<iterator, iterator>
+	equal_range(const _Kt& __k)
+	{
+	  auto __res = _Base::equal_range(__k);
+	  return { { __res.first, this }, { __res.second, this } };
+	}
+#endif
+
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __key) const
       {
 	auto __res = _Base::equal_range(__key);
 	return { { __res.first, this }, { __res.second, this } };
       }
+
+#if __cplusplus > 201703L
+      template<typename _Kt,
+	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
+	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
+	std::pair<const_iterator, const_iterator>
+	equal_range(const _Kt& __k) const
+	{
+	  auto __res = _Base::equal_range(__k);
+	  return { { __res.first, this }, { __res.second, this } };
+	}
+#endif
 
       size_type
       erase(const key_type& __key)

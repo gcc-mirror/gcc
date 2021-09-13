@@ -1,5 +1,5 @@
 /* Function summary pass.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "tree-into-ssa.h"
 #include "symtab-clones.h"
+#include "gimple-range.h"
 
 /* Summaries.  */
 fast_function_summary <ipa_fn_summary *, va_gc> *ipa_fn_summaries;
@@ -590,7 +591,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
   if (ipa_node_params_sum
       && !e->call_stmt_cannot_inline_p
       && (info->conds || compute_contexts)
-      && (args = IPA_EDGE_REF (e)) != NULL)
+      && (args = ipa_edge_args_sum->get (e)) != NULL)
     {
       struct cgraph_node *caller;
       class ipa_node_params *caller_parms_info, *callee_pi = NULL;
@@ -603,8 +604,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	    caller = e->caller->inlined_to;
 	  else
 	    caller = e->caller;
-	  caller_parms_info = IPA_NODE_REF (caller);
-          callee_pi = IPA_NODE_REF (callee);
+	  caller_parms_info = ipa_node_params_sum->get (caller);
+          callee_pi = ipa_node_params_sum->get (callee);
 
 	  /* Watch for thunks.  */
 	  if (callee_pi)
@@ -816,7 +817,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
   if (ipa_node_params_sum && cinfo && cinfo->tree_map)
     {
       /* Use SRC parm info since it may not be copied yet.  */
-      class ipa_node_params *parms_info = IPA_NODE_REF (src);
+      ipa_node_params *parms_info = ipa_node_params_sum->get (src);
       ipa_auto_call_arg_values avals;
       int count = ipa_get_param_count (parms_info);
       int i, j;
@@ -1197,7 +1198,8 @@ unmodified_parm_1 (ipa_func_body_info *fbi, gimple *stmt, tree op,
       return SSA_NAME_VAR (op);
     }
   /* Non-SSA parm reference?  */
-  if (TREE_CODE (op) == PARM_DECL)
+  if (TREE_CODE (op) == PARM_DECL
+      && fbi->aa_walk_budget > 0)
     {
       bool modified = false;
 
@@ -1205,12 +1207,13 @@ unmodified_parm_1 (ipa_func_body_info *fbi, gimple *stmt, tree op,
       ao_ref_init (&refd, op);
       int walked = walk_aliased_vdefs (&refd, gimple_vuse (stmt),
 				       mark_modified, &modified, NULL, NULL,
-				       fbi->aa_walk_budget + 1);
+				       fbi->aa_walk_budget);
       if (walked < 0)
 	{
 	  fbi->aa_walk_budget = 0;
 	  return NULL_TREE;
 	}
+      fbi->aa_walk_budget -= walked;
       if (!modified)
 	{
 	  if (size_p)
@@ -1685,8 +1688,14 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   int bound_limit = opt_for_fn (fbi->node->decl,
 				param_ipa_max_switch_predicate_bounds);
   int bound_count = 0;
-  wide_int vr_wmin, vr_wmax;
-  value_range_kind vr_type = get_range_info (op, &vr_wmin, &vr_wmax);
+  value_range vr;
+
+  get_range_query (cfun)->range_of_expr (vr, op);
+  if (vr.undefined_p ())
+    vr.set_varying (TREE_TYPE (op));
+  value_range_kind vr_type = vr.kind ();
+  wide_int vr_wmin = wi::to_wide (vr.min ());
+  wide_int vr_wmax = wi::to_wide (vr.max ());
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -2240,7 +2249,7 @@ param_change_prob (ipa_func_body_info *fbi, gimple *stmt, int i)
 
       if (init != error_mark_node)
 	return 0;
-      if (!bb->count.nonzero_p ())
+      if (!bb->count.nonzero_p () || fbi->aa_walk_budget == 0)
 	return REG_BR_PROB_BASE;
       if (dump_file)
 	{
@@ -2255,8 +2264,12 @@ param_change_prob (ipa_func_body_info *fbi, gimple *stmt, int i)
       int walked
 	= walk_aliased_vdefs (&refd, gimple_vuse (stmt), record_modified, &info,
 			      NULL, NULL, fbi->aa_walk_budget);
+      if (walked > 0)
+	fbi->aa_walk_budget -= walked;
       if (walked < 0 || bitmap_bit_p (info.bb_set, bb->index))
 	{
+	  if (walked < 0)
+	    fbi->aa_walk_budget = 0;
 	  if (dump_file)
 	    {
 	      if (walked < 0)
@@ -2578,7 +2591,8 @@ analyze_function_body (struct cgraph_node *node, bool early)
   struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
   sreal freq;
   class ipa_fn_summary *info = ipa_fn_summaries->get_create (node);
-  class ipa_node_params *params_summary = early ? NULL : IPA_NODE_REF (node);
+  ipa_node_params *params_summary
+    = early ? NULL : ipa_node_params_sum->get (node);
   predicate bb_predicate;
   struct ipa_func_body_info fbi;
   vec<predicate> nonconstant_names = vNULL;
@@ -2616,7 +2630,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
       if (ipa_node_params_sum)
 	{
 	  fbi.node = node;
-	  fbi.info = IPA_NODE_REF (node);
+	  fbi.info = ipa_node_params_sum->get (node);
 	  fbi.bb_infos = vNULL;
 	  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
 	  fbi.param_count = count_formal_params (node->decl);
@@ -2769,7 +2783,13 @@ analyze_function_body (struct cgraph_node *node, bool early)
 			     (gimple_call_arg (stmt, i));
 		    }
 		}
-
+	      /* We cannot setup VLA parameters during inlining.  */
+	      for (unsigned int i = 0; i < gimple_call_num_args (stmt); ++i)
+		if (TREE_CODE (gimple_call_arg (stmt, i)) == WITH_SIZE_EXPR)
+		  {
+		    edge->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
+		    break;
+		  }
 	      es->call_stmt_size = this_size;
 	      es->call_stmt_time = this_time;
 	      es->loop_depth = bb_loop_depth (bb);
@@ -2903,7 +2923,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loops_dump (dump_file, NULL, 0);
       scev_initialize ();
-      FOR_EACH_LOOP (loop, 0)
+      for (auto loop : loops_list (cfun, 0))
 	{
 	  predicate loop_iterations = true;
 	  sreal header_freq;
@@ -3131,11 +3151,18 @@ compute_fn_summary (struct cgraph_node *node, bool early)
   info->estimated_stack_size = size_info->estimated_self_stack_size;
 
   /* Code above should compute exactly the same result as
-     ipa_update_overall_fn_summary but because computation happens in
-     different order the roundoff errors result in slight changes.  */
+     ipa_update_overall_fn_summary except for case when speculative
+     edges are present since these are accounted to size but not
+     self_size. Do not compare time since different order the roundoff
+     errors result in slight changes.  */
   ipa_update_overall_fn_summary (node);
-  /* In LTO mode we may have speculative edges set.  */
-  gcc_assert (in_lto_p || size_info->size == size_info->self_size);
+  if (flag_checking)
+    {
+      for (e = node->indirect_calls; e; e = e->next_callee)
+       if (e->speculative)
+	 break;
+      gcc_assert (e || size_info->size == size_info->self_size);
+    }
 }
 
 
@@ -3349,7 +3376,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 	       || avals->m_known_contexts.length ()
 	       || avals->m_known_aggs.length ()))
     {
-      class ipa_node_params *params_summary = IPA_NODE_REF (node);
+      ipa_node_params *params_summary = ipa_node_params_sum->get (node);
       unsigned int nargs = params_summary
 			   ? ipa_get_param_count (params_summary) : 0;
 
@@ -3444,7 +3471,7 @@ ipa_cached_call_context::duplicate_from (const ipa_call_context &ctx)
   m_node = ctx.m_node;
   m_possible_truths = ctx.m_possible_truths;
   m_nonspec_possible_truths = ctx.m_nonspec_possible_truths;
-  class ipa_node_params *params_summary = IPA_NODE_REF (m_node);
+  ipa_node_params *params_summary = ipa_node_params_sum->get (m_node);
   unsigned int nargs = params_summary
 		       ? ipa_get_param_count (params_summary) : 0;
 
@@ -3534,7 +3561,7 @@ ipa_call_context::equal_to (const ipa_call_context &ctx)
       || m_nonspec_possible_truths != ctx.m_nonspec_possible_truths)
     return false;
 
-  class ipa_node_params *params_summary = IPA_NODE_REF (m_node);
+  ipa_node_params *params_summary = ipa_node_params_sum->get (m_node);
   unsigned int nargs = params_summary
 		       ? ipa_get_param_count (params_summary) : 0;
 
@@ -3883,7 +3910,7 @@ remap_edge_params (struct cgraph_edge *inlined_edge,
   if (ipa_node_params_sum)
     {
       int i;
-      class ipa_edge_args *args = IPA_EDGE_REF (edge);
+      ipa_edge_args *args = ipa_edge_args_sum->get (edge);
       if (!args)
 	return;
       class ipa_call_summary *es = ipa_call_summaries->get (edge);
@@ -3940,8 +3967,8 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 		      class ipa_fn_summary *info,
 		      class ipa_node_params *params_summary,
 		      class ipa_fn_summary *callee_info,
-		      vec<int> operand_map,
-		      vec<HOST_WIDE_INT> offset_map,
+		      const vec<int> &operand_map,
+		      const vec<HOST_WIDE_INT> &offset_map,
 		      clause_t possible_truths,
 		      predicate *toplev_predicate)
 {
@@ -4001,8 +4028,8 @@ remap_freqcounting_predicate (class ipa_fn_summary *info,
 			      class ipa_node_params *params_summary,
 			      class ipa_fn_summary *callee_info,
 			      vec<ipa_freqcounting_predicate, va_gc> *v,
-			      vec<int> operand_map,
-			      vec<HOST_WIDE_INT> offset_map,
+			      const vec<int> &operand_map,
+			      const vec<HOST_WIDE_INT> &offset_map,
 			      clause_t possible_truths,
 			      predicate *toplev_predicate)
 
@@ -4036,8 +4063,8 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   int i;
   predicate toplev_predicate;
   class ipa_call_summary *es = ipa_call_summaries->get (edge);
-  class ipa_node_params *params_summary = (ipa_node_params_sum
-		 			   ? IPA_NODE_REF (to) : NULL);
+  ipa_node_params *params_summary = (ipa_node_params_sum
+				     ? ipa_node_params_sum->get (to) : NULL);
 
   if (es->predicate)
     toplev_predicate = *es->predicate;
@@ -4053,7 +4080,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
     }
   if (ipa_node_params_sum && callee_info->conds)
     {
-      class ipa_edge_args *args = IPA_EDGE_REF (edge);
+      ipa_edge_args *args = ipa_edge_args_sum->get (edge);
       int count = args ? ipa_get_cs_argument_count (args) : 0;
       int i;
 
@@ -4365,7 +4392,8 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
 								index));
       info = node->prevailing_p () ? ipa_fn_summaries->get_create (node) : NULL;
-      params_summary = node->prevailing_p () ? IPA_NODE_REF (node) : NULL;
+      params_summary = node->prevailing_p ()
+	               ? ipa_node_params_sum->get (node) : NULL;
       size_info = node->prevailing_p ()
 		  ? ipa_size_summaries->get_create (node) : NULL;
 

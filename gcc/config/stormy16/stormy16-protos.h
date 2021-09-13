@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in xstormy16.c
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -54,7 +54,7 @@ extern void xstormy16_expand_andqi3 (rtx *);
 #if defined (HAVE_MACHINE_MODES) && defined (RTX_CODE)
 extern void xstormy16_split_cbranch (machine_mode, rtx, rtx, rtx);
 extern int  short_memory_operand (rtx, machine_mode);
-extern int  nonimmediate_nonstack_operand (rtx, machine_mode);
+extern bool  nonimmediate_nonstack_operand (rtx, machine_mode);
 extern enum reg_class xstormy16_secondary_reload_class 
  (enum reg_class, machine_mode, rtx);
 extern void xstormy16_split_move (machine_mode, rtx, rtx);
@@ -63,8 +63,8 @@ extern void xstormy16_expand_arith (machine_mode, enum rtx_code,
 				    rtx, rtx, rtx);
 extern const char * xstormy16_output_shift (machine_mode, enum rtx_code, 
 					    rtx, rtx, rtx);
-extern int  xstormy16_below100_symbol (rtx, machine_mode);
-extern int  xstormy16_splittable_below100_operand (rtx, machine_mode);
+extern bool  xstormy16_below100_symbol (rtx, machine_mode);
+extern bool  xstormy16_splittable_below100_operand (rtx, machine_mode);
 extern bool xstormy16_legitimate_address_p (machine_mode, rtx, bool);
 #endif
 

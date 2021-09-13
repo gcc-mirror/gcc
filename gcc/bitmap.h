@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997-2020 Free Software Foundation, Inc.
+   Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -437,6 +437,13 @@ extern bool bitmap_set_bit (bitmap, int);
 
 /* Return true if a bit is set in a bitmap.  */
 extern int bitmap_bit_p (const_bitmap, int);
+
+/* Set and get multiple bit values in a sparse bitmap.  This allows a bitmap to
+   function as a sparse array of bit patterns where the patterns are
+   multiples of power of 2. This is more efficient than performing this as
+   multiple individual operations.  */
+void bitmap_set_aligned_chunk (bitmap, unsigned int, unsigned int, BITMAP_WORD);
+BITMAP_WORD bitmap_get_aligned_chunk (const_bitmap, unsigned int, unsigned int);
 
 /* Debug functions to print a bitmap.  */
 extern void debug_bitmap (const_bitmap);
@@ -939,8 +946,10 @@ bmp_iter_and_compl (bitmap_iterator *bi, unsigned *bit_no)
 class auto_bitmap
 {
  public:
-  auto_bitmap () { bitmap_initialize (&m_bits, &bitmap_default_obstack); }
-  explicit auto_bitmap (bitmap_obstack *o) { bitmap_initialize (&m_bits, o); }
+  auto_bitmap (ALONE_CXX_MEM_STAT_INFO)
+    { bitmap_initialize (&m_bits, &bitmap_default_obstack PASS_MEM_STAT); }
+  explicit auto_bitmap (bitmap_obstack *o CXX_MEM_STAT_INFO)
+    { bitmap_initialize (&m_bits, o PASS_MEM_STAT); }
   ~auto_bitmap () { bitmap_clear (&m_bits); }
   // Allow calling bitmap functions on our bitmap.
   operator bitmap () { return &m_bits; }
@@ -949,10 +958,8 @@ class auto_bitmap
   // Prevent making a copy that references our bitmap.
   auto_bitmap (const auto_bitmap &);
   auto_bitmap &operator = (const auto_bitmap &);
-#if __cplusplus >= 201103L
   auto_bitmap (auto_bitmap &&);
   auto_bitmap &operator = (auto_bitmap &&);
-#endif
 
   bitmap_head m_bits;
 };

@@ -64,6 +64,10 @@ if test x$enable_linux_futex = xyes; then
 	config_path="linux/powerpc linux posix"
 	;;
 
+    riscv64*-*-linux*)
+	config_path="linux posix"
+	;;
+
     s390*-*-linux*)
 	config_path="linux/s390 linux posix"
 	;;
@@ -73,28 +77,23 @@ if test x$enable_linux_futex = xyes; then
 	;;
 
     # Note that bare i386 is not included here.  We need cmpxchg.
-    i[456]86-*-linux*)
+    i[456]86-*-linux* | x86_64-*-linux*)
 	config_path="linux/x86 linux posix"
-	case " ${CC} ${CFLAGS} " in
-	  *" -m64 "*|*" -mx32 "*)
-	    ;;
-	  *)
-	    if test -z "$with_arch"; then
-	      XCFLAGS="${XCFLAGS} -march=i486 -mtune=${target_cpu}"
-	    fi
-	esac
-	;;
-
-    # Similar jiggery-pokery for x86_64 multilibs, except here we
-    # can't rely on the --with-arch configure option, since that
-    # applies to the 64-bit side.
-    x86_64-*-linux*)
-	config_path="linux/x86 linux posix"
-	case " ${CC} ${CFLAGS} " in
-	  *" -m32 "*)
+	cat > conftestx.c <<EOF
+#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+#error need -march=i486
+#endif
+EOF
+	if ${CC} ${CFLAGS} -E conftestx.c > /dev/null 2>&1; then
+	  :
+	else
+	  if test "${target_cpu}" = x86_64; then
 	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=generic"
-	    ;;
-	esac
+	  else
+	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=${target_cpu}"
+	  fi
+	fi
+	rm -f conftestx.c
 	;;
 
     # Note that sparcv7 and sparcv8 is not included here.  We need cas.
@@ -174,6 +173,9 @@ case "${target}" in
 
   amdgcn*-*-*)
 	config_path="gcn accel"
+
+	#TODO PR101484
+	XCFLAGS="$XCFLAGS -Wno-error=array-bounds"
 	;;
 
   *)

@@ -108,7 +108,7 @@ struct coro1 {
 #endif
 #ifdef MISSING_FINAL_SUSPEND
 #else
-  auto final_suspend () {
+  auto final_suspend () noexcept {
     PRINT ("get final_suspend (always)");
     return suspend_always_prt{};
   }

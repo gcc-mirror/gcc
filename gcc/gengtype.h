@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -54,6 +54,11 @@ struct fileloc
 /* Table of all input files and its size.  */
 extern const input_file** gt_files;
 extern size_t num_gt_files;
+
+/* Table of headers to be included in gtype-desc.c that are generated
+   during the build.  These are identified as "./<filename>.h".  */
+extern const char **build_headers;
+extern size_t num_build_headers;
 
 /* A number of places use the name of this "gengtype.c" file for a
    location for things that we can't rely on the source to define.  We

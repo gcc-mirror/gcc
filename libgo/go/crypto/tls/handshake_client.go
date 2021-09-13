@@ -84,22 +84,24 @@ func (c *Conn) makeClientHello() (*clientHelloMsg, ecdheParameters, error) {
 		hello.secureRenegotiation = c.clientFinished[:]
 	}
 
-	possibleCipherSuites := config.cipherSuites()
-	hello.cipherSuites = make([]uint16, 0, len(possibleCipherSuites))
+	preferenceOrder := cipherSuitesPreferenceOrder
+	if !hasAESGCMHardwareSupport {
+		preferenceOrder = cipherSuitesPreferenceOrderNoAES
+	}
+	configCipherSuites := config.cipherSuites()
+	hello.cipherSuites = make([]uint16, 0, len(configCipherSuites))
 
-	for _, suiteId := range possibleCipherSuites {
-		for _, suite := range cipherSuites {
-			if suite.id != suiteId {
-				continue
-			}
-			// Don't advertise TLS 1.2-only cipher suites unless
-			// we're attempting TLS 1.2.
-			if hello.vers < VersionTLS12 && suite.flags&suiteTLS12 != 0 {
-				break
-			}
-			hello.cipherSuites = append(hello.cipherSuites, suiteId)
-			break
+	for _, suiteId := range preferenceOrder {
+		suite := mutualCipherSuite(configCipherSuites, suiteId)
+		if suite == nil {
+			continue
 		}
+		// Don't advertise TLS 1.2-only cipher suites unless
+		// we're attempting TLS 1.2.
+		if hello.vers < VersionTLS12 && suite.flags&suiteTLS12 != 0 {
+			continue
+		}
+		hello.cipherSuites = append(hello.cipherSuites, suiteId)
 	}
 
 	_, err := io.ReadFull(config.rand(), hello.random)
@@ -120,7 +122,11 @@ func (c *Conn) makeClientHello() (*clientHelloMsg, ecdheParameters, error) {
 
 	var params ecdheParameters
 	if hello.supportedVersions[0] == VersionTLS13 {
-		hello.cipherSuites = append(hello.cipherSuites, defaultCipherSuitesTLS13()...)
+		if hasAESGCMHardwareSupport {
+			hello.cipherSuites = append(hello.cipherSuites, defaultCipherSuitesTLS13...)
+		} else {
+			hello.cipherSuites = append(hello.cipherSuites, defaultCipherSuitesTLS13NoAES...)
+		}
 
 		curveID := config.curvePreferences()[0]
 		if _, ok := curveForCurveID(curveID); curveID != X25519 && !ok {
@@ -705,17 +711,11 @@ func (hs *clientHandshakeState) processServerHello() (bool, error) {
 		}
 	}
 
-	if hs.serverHello.alpnProtocol != "" {
-		if len(hs.hello.alpnProtocols) == 0 {
-			c.sendAlert(alertUnsupportedExtension)
-			return false, errors.New("tls: server advertised unrequested ALPN extension")
-		}
-		if mutualProtocol([]string{hs.serverHello.alpnProtocol}, hs.hello.alpnProtocols) == "" {
-			c.sendAlert(alertUnsupportedExtension)
-			return false, errors.New("tls: server selected unadvertised ALPN protocol")
-		}
-		c.clientProtocol = hs.serverHello.alpnProtocol
+	if err := checkALPN(hs.hello.alpnProtocols, hs.serverHello.alpnProtocol); err != nil {
+		c.sendAlert(alertUnsupportedExtension)
+		return false, err
 	}
+	c.clientProtocol = hs.serverHello.alpnProtocol
 
 	c.scts = hs.serverHello.scts
 
@@ -745,6 +745,23 @@ func (hs *clientHandshakeState) processServerHello() (bool, error) {
 	}
 
 	return true, nil
+}
+
+// checkALPN ensure that the server's choice of ALPN protocol is compatible with
+// the protocols that we advertised in the Client Hello.
+func checkALPN(clientProtos []string, serverProto string) error {
+	if serverProto == "" {
+		return nil
+	}
+	if len(clientProtos) == 0 {
+		return errors.New("tls: server advertised unrequested ALPN extension")
+	}
+	for _, proto := range clientProtos {
+		if proto == serverProto {
+			return nil
+		}
+	}
+	return errors.New("tls: server selected unadvertised ALPN protocol")
 }
 
 func (hs *clientHandshakeState) readFinished(out []byte) error {
@@ -971,19 +988,6 @@ func clientSessionCacheKey(serverAddr net.Addr, config *Config) string {
 		return config.ServerName
 	}
 	return serverAddr.String()
-}
-
-// mutualProtocol finds the mutual ALPN protocol given list of possible
-// protocols and a list of the preference order.
-func mutualProtocol(protos, preferenceProtos []string) string {
-	for _, s := range preferenceProtos {
-		for _, c := range protos {
-			if s == c {
-				return s
-			}
-		}
-	}
-	return ""
 }
 
 // hostnameInSNI converts name into an appropriate hostname for SNI.

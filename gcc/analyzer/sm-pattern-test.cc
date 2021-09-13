@@ -1,7 +1,7 @@
 /* A state machine for use in DejaGnu tests, to check that
    pattern-matching works as expected.
 
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -37,6 +37,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
+#include "tristate.h"
+#include "selftest.h"
+#include "analyzer/call-string.h"
+#include "analyzer/program-point.h"
+#include "analyzer/store.h"
+#include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
 
@@ -61,9 +67,9 @@ public:
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
-		     tree lhs,
+		     const svalue *lhs,
 		     enum tree_code op,
-		     tree rhs) const FINAL OVERRIDE;
+		     const svalue *rhs) const FINAL OVERRIDE;
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
 };
@@ -118,18 +124,22 @@ void
 pattern_test_state_machine::on_condition (sm_context *sm_ctxt,
 					  const supernode *node,
 					  const gimple *stmt,
-					  tree lhs,
+					  const svalue *lhs,
 					  enum tree_code op,
-					  tree rhs) const
+					  const svalue *rhs) const
 {
   if (stmt == NULL)
     return;
 
-  if (!CONSTANT_CLASS_P (rhs))
+  tree rhs_cst = rhs->maybe_get_constant ();
+  if (!rhs_cst)
     return;
 
-  pending_diagnostic *diag = new pattern_match (lhs, op, rhs);
-  sm_ctxt->warn (node, stmt, lhs, diag);
+  if (tree lhs_expr = sm_ctxt->get_diagnostic_tree (lhs))
+    {
+      pending_diagnostic *diag = new pattern_match (lhs_expr, op, rhs_cst);
+      sm_ctxt->warn (node, stmt, lhs_expr, diag);
+    }
 }
 
 bool

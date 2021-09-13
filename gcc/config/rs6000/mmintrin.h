@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -58,7 +58,8 @@
 #include <altivec.h>
 /* The Intel API is flexible enough that we must allow aliasing with other
    vector types, and their scalar components.  */
-typedef __attribute__ ((__aligned__ (8))) unsigned long long __m64;
+typedef __attribute__ ((__aligned__ (8),
+			__may_alias__)) unsigned long long __m64;
 
 typedef __attribute__ ((__aligned__ (8)))
 union

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 2015-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 2015-2021 by The D Language Foundation, All Rights Reserved
  * written by Michel Fortin
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.

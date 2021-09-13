@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -51,6 +51,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "explow.h"
 #include "rtl-iter.h"
+#include "gimple-range.h"
+
+/* For lang_hooks.types.type_for_mode.  */
+#include "langhooks.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -110,10 +114,8 @@ init_internal_fns ()
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
-#define vec_cond_mask_direct { 0, 0, false }
-#define vec_cond_direct { 0, 0, false }
-#define vec_condu_direct { 0, 0, false }
-#define vec_condeq_direct { 0, 0, false }
+#define vec_cond_mask_direct { 1, 0, false }
+#define vec_cond_direct { 2, 0, false }
 #define scatter_store_direct { 3, 1, false }
 #define len_store_direct { 3, 3, false }
 #define vec_set_direct { 3, 3, false }
@@ -245,6 +247,8 @@ expand_GOMP_SIMT_ENTER_ALLOC (internal_fn, gcall *stmt)
   create_input_operand (&ops[2], align, Pmode);
   gcc_assert (targetm.have_omp_simt_enter ());
   expand_insn (targetm.code_for_omp_simt_enter, 3, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* Deallocate per-lane storage and leave non-uniform execution region.  */
@@ -302,6 +306,8 @@ expand_GOMP_SIMT_LAST_LANE (internal_fn, gcall *stmt)
   create_input_operand (&ops[1], cond, mode);
   gcc_assert (targetm.have_omp_simt_last_lane ());
   expand_insn (targetm.code_for_omp_simt_last_lane, 2, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* Non-transparent predicate used in SIMT lowering of OpenMP "ordered".  */
@@ -321,6 +327,8 @@ expand_GOMP_SIMT_ORDERED_PRED (internal_fn, gcall *stmt)
   create_input_operand (&ops[1], ctr, mode);
   gcc_assert (targetm.have_omp_simt_ordered ());
   expand_insn (targetm.code_for_omp_simt_ordered, 2, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* "Or" boolean reduction across SIMT lanes: return non-zero in all lanes if
@@ -341,6 +349,8 @@ expand_GOMP_SIMT_VOTE_ANY (internal_fn, gcall *stmt)
   create_input_operand (&ops[1], cond, mode);
   gcc_assert (targetm.have_omp_simt_vote_any ());
   expand_insn (targetm.code_for_omp_simt_vote_any, 2, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* Exchange between SIMT lanes with a "butterfly" pattern: source lane index
@@ -363,6 +373,8 @@ expand_GOMP_SIMT_XCHG_BFLY (internal_fn, gcall *stmt)
   create_input_operand (&ops[2], idx, SImode);
   gcc_assert (targetm.have_omp_simt_xchg_bfly ());
   expand_insn (targetm.code_for_omp_simt_xchg_bfly, 3, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* Exchange between SIMT lanes according to given source lane index.  */
@@ -384,6 +396,8 @@ expand_GOMP_SIMT_XCHG_IDX (internal_fn, gcall *stmt)
   create_input_operand (&ops[2], idx, SImode);
   gcc_assert (targetm.have_omp_simt_xchg_idx ());
   expand_insn (targetm.code_for_omp_simt_xchg_idx, 3, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* This should get expanded in adjust_simduid_builtins.  */
@@ -670,8 +684,9 @@ get_min_precision (tree arg, signop sign)
     }
   if (TREE_CODE (arg) != SSA_NAME)
     return prec + (orig_sign != sign);
-  wide_int arg_min, arg_max;
-  while (get_range_info (arg, &arg_min, &arg_max) != VR_RANGE)
+  value_range r;
+  while (!get_global_range_query ()->range_of_expr (r, arg)
+	 || r.kind () != VR_RANGE)
     {
       gimple *g = SSA_NAME_DEF_STMT (arg);
       if (is_gimple_assign (g)
@@ -699,14 +714,14 @@ get_min_precision (tree arg, signop sign)
     }
   if (sign == TYPE_SIGN (TREE_TYPE (arg)))
     {
-      int p1 = wi::min_precision (arg_min, sign);
-      int p2 = wi::min_precision (arg_max, sign);
+      int p1 = wi::min_precision (r.lower_bound (), sign);
+      int p2 = wi::min_precision (r.upper_bound (), sign);
       p1 = MAX (p1, p2);
       prec = MIN (prec, p1);
     }
-  else if (sign == UNSIGNED && !wi::neg_p (arg_min, SIGNED))
+  else if (sign == UNSIGNED && !wi::neg_p (r.lower_bound (), SIGNED))
     {
-      int p = wi::min_precision (arg_max, UNSIGNED);
+      int p = wi::min_precision (r.upper_bound (), UNSIGNED);
       prec = MIN (prec, p);
     }
   return prec + (orig_sign != sign);
@@ -2766,7 +2781,7 @@ expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
    The expansion of STMT happens based on OPTAB table associated.  */
 
 static void
-expand_vect_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+expand_vec_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   class expand_operand ops[6];
   insn_code icode;
@@ -2802,15 +2817,11 @@ expand_vect_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
     emit_move_insn (target, ops[0].value);
 }
 
-#define expand_vec_cond_optab_fn expand_vect_cond_optab_fn
-#define expand_vec_condu_optab_fn expand_vect_cond_optab_fn
-#define expand_vec_condeq_optab_fn expand_vect_cond_optab_fn
-
 /* Expand VCOND_MASK optab internal function.
    The expansion of STMT happens based on OPTAB table associated.  */
 
 static void
-expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+expand_vec_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   class expand_operand ops[4];
 
@@ -2843,8 +2854,6 @@ expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   if (!rtx_equal_p (ops[0].value, target))
     emit_move_insn (target, ops[0].value);
 }
-
-#define expand_vec_cond_mask_optab_fn expand_vect_cond_mask_optab_fn
 
 /* Expand VEC_SET internal functions.  */
 
@@ -2969,6 +2978,94 @@ expand_UNIQUE (internal_fn, gcall *stmt)
 
   if (pattern)
     emit_insn (pattern);
+}
+
+/* Expand the IFN_DEFERRED_INIT function:
+   LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, IS_VLA);
+
+   if IS_VLA is false, the LHS is the DECL itself,
+   if IS_VLA is true, the LHS is a MEM_REF whose address is the pointer
+   to this DECL.
+
+   Initialize the LHS with zero/pattern according to its second argument
+   INIT_TYPE:
+   if INIT_TYPE is AUTO_INIT_ZERO, use zeroes to initialize;
+   if INIT_TYPE is AUTO_INIT_PATTERN, use 0xFE byte-repeatable pattern
+     to initialize;
+   The LHS variable is initialized including paddings.
+   The reasons to choose 0xFE for pattern initialization are:
+     1. It is a non-canonical virtual address on x86_64, and at the
+	high end of the i386 kernel address space.
+     2. It is a very large float value (-1.694739530317379e+38).
+     3. It is also an unusual number for integers.  */
+#define INIT_PATTERN_VALUE  0xFE
+static void
+expand_DEFERRED_INIT (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree var_size = gimple_call_arg (stmt, 0);
+  enum auto_init_type init_type
+    = (enum auto_init_type) TREE_INT_CST_LOW (gimple_call_arg (stmt, 1));
+  bool reg_lhs = true;
+
+  tree var_type = TREE_TYPE (lhs);
+  gcc_assert (init_type > AUTO_INIT_UNINITIALIZED);
+
+  if (TREE_CODE (lhs) == SSA_NAME)
+    reg_lhs = true;
+  else
+    {
+      rtx tem = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+      reg_lhs = !MEM_P (tem);
+    }
+
+  if (!reg_lhs)
+    {
+      /* If this is a VLA or the variable is not in register,
+	 expand to a memset to initialize it.  */
+      mark_addressable (lhs);
+      tree var_addr = build_fold_addr_expr (lhs);
+
+      tree value = (init_type == AUTO_INIT_PATTERN) ?
+		    build_int_cst (integer_type_node,
+				   INIT_PATTERN_VALUE) :
+		    integer_zero_node;
+      tree m_call = build_call_expr (builtin_decl_implicit (BUILT_IN_MEMSET),
+				     3, var_addr, value, var_size);
+      /* Expand this memset call.  */
+      expand_builtin_memset (m_call, NULL_RTX, TYPE_MODE (var_type));
+    }
+  else
+    {
+      /* If this variable is in a register, use expand_assignment might
+	 generate better code.  */
+      tree init = build_zero_cst (var_type);
+      unsigned HOST_WIDE_INT total_bytes
+	= tree_to_uhwi (TYPE_SIZE_UNIT (var_type));
+
+      if (init_type == AUTO_INIT_PATTERN)
+	{
+	  tree alt_type = NULL_TREE;
+	  if (!can_native_interpret_type_p (var_type))
+	    {
+	      alt_type
+		= lang_hooks.types.type_for_mode (TYPE_MODE (var_type),
+						  TYPE_UNSIGNED (var_type));
+	      gcc_assert (can_native_interpret_type_p (alt_type));
+	    }
+
+	  unsigned char *buf = (unsigned char *) xmalloc (total_bytes);
+	  memset (buf, INIT_PATTERN_VALUE, total_bytes);
+	  init = native_interpret_expr (alt_type ? alt_type : var_type,
+					buf, total_bytes);
+	  gcc_assert (init);
+
+	  if (alt_type)
+	    init = build1 (VIEW_CONVERT_EXPR, var_type, init);
+	}
+
+      expand_assignment (lhs, init, false);
+    }
 }
 
 /* The size of an OpenACC compute dimension.  */
@@ -3570,10 +3667,8 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_store_optab_supported_p convert_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_cond_mask_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_cond_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_condu_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_condeq_optab_supported_p multi_vector_optab_supported_p
+#define direct_vec_cond_mask_optab_supported_p convert_optab_supported_p
+#define direct_vec_cond_optab_supported_p convert_optab_supported_p
 #define direct_scatter_store_optab_supported_p convert_optab_supported_p
 #define direct_len_store_optab_supported_p direct_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
@@ -3699,6 +3794,7 @@ first_commutative_argument (internal_fn fn)
     case IFN_FNMS:
     case IFN_AVG_FLOOR:
     case IFN_AVG_CEIL:
+    case IFN_MULH:
     case IFN_MULHS:
     case IFN_MULHRS:
     case IFN_FMIN:
@@ -4105,16 +4201,38 @@ expand_internal_call (gcall *stmt)
 bool
 vectorized_internal_fn_supported_p (internal_fn ifn, tree type)
 {
+  if (VECTOR_MODE_P (TYPE_MODE (type)))
+    return direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED);
+
   scalar_mode smode;
-  if (!VECTOR_TYPE_P (type) && is_a <scalar_mode> (TYPE_MODE (type), &smode))
+  if (!is_a <scalar_mode> (TYPE_MODE (type), &smode))
+    return false;
+
+  machine_mode vmode = targetm.vectorize.preferred_simd_mode (smode);
+  if (VECTOR_MODE_P (vmode))
     {
-      machine_mode vmode = targetm.vectorize.preferred_simd_mode (smode);
-      if (VECTOR_MODE_P (vmode))
-	type = build_vector_type_for_mode (type, vmode);
+      tree vectype = build_vector_type_for_mode (type, vmode);
+      if (direct_internal_fn_supported_p (ifn, vectype, OPTIMIZE_FOR_SPEED))
+	return true;
     }
 
-  return (VECTOR_MODE_P (TYPE_MODE (type))
-	  && direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED));
+  auto_vector_modes vector_modes;
+  targetm.vectorize.autovectorize_vector_modes (&vector_modes, true);
+  for (machine_mode base_mode : vector_modes)
+    if (related_vector_mode (base_mode, smode).exists (&vmode))
+      {
+	tree vectype = build_vector_type_for_mode (type, vmode);
+	if (direct_internal_fn_supported_p (ifn, vectype, OPTIMIZE_FOR_SPEED))
+	  return true;
+      }
+
+  return false;
+}
+
+void
+expand_SHUFFLEVECTOR (internal_fn, gcall *)
+{
+  gcc_unreachable ();
 }
 
 void

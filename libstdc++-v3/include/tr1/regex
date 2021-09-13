@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2007-2020 Free Software Foundation, Inc.
+// Copyright (C) 2007-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,7 +53,7 @@ namespace tr1
  * @defgroup tr1_regex Regular Expressions
  * A facility for performing regular expression pattern matching.
  */
- //@{
+ ///@{
 
 /** @namespace std::regex_constants
  *  @brief ISO C++ 0x entities sub namespace for regex.
@@ -63,7 +63,7 @@ namespace regex_constants
   /**
    * @name 5.1 Regular Expression Syntax Options
    */
-  //@{
+  ///@{
   enum __syntax_option
     {
       _S_icase,
@@ -174,7 +174,7 @@ namespace regex_constants
    */
   static const syntax_option_type egrep      = 1 << _S_egrep;
 
-  //@}
+  ///@}
 
   /**
    * @name 5.2 Matching Rules
@@ -185,7 +185,7 @@ namespace regex_constants
    * below for any bitmask elements set.
    *
    */
-  //@{
+  ///@{
 
   enum __match_flag
     {
@@ -315,12 +315,12 @@ namespace regex_constants
    */
   static const match_flag_type format_first_only = 1 << _S_first_only;
 
-  //@}
+  ///@}
 
   /**
    * @name 5.3 Error Types
    */
-  //@{
+  ///@{
  
   enum error_type
     {
@@ -396,7 +396,7 @@ namespace regex_constants
    */
   static const error_type error_stack(_S_error_stack);
 
-  //@}
+  ///@}
 }
 
   // [7.8] Class regex_error
@@ -735,7 +735,7 @@ namespace regex_constants
        * @name Constants
        * tr1 [7.8.1] std [28.8.1]
        */
-      //@{
+      ///@{
       static const regex_constants::syntax_option_type icase
         = regex_constants::icase;
       static const regex_constants::syntax_option_type nosubs
@@ -756,7 +756,7 @@ namespace regex_constants
         = regex_constants::grep;
       static const regex_constants::syntax_option_type egrep
         = regex_constants::egrep;
-      //@}
+      ///@}
 
       // [7.8.2] construct/copy/destroy
       /**
@@ -1787,7 +1787,7 @@ namespace regex_constants
       /**
        * @name 10.? Public Types
        */
-      //@{
+      ///@{
       typedef sub_match<_Bi_iter>                             value_type;
       typedef typename _Base_type::const_reference            const_reference;
       typedef const_reference                                 reference;
@@ -1799,13 +1799,13 @@ namespace regex_constants
       typedef _Allocator                                      allocator_type;
       typedef typename iterator_traits<_Bi_iter>::value_type  char_type;
       typedef basic_string<char_type>                         string_type;
-      //@}
+      ///@}
   
     public:
       /**
        * @name 10.1 Construction, Copying, and Destruction
        */
-      //@{
+      ///@{
 
       /**
        * @brief Constructs a default %match_results container.
@@ -1841,12 +1841,12 @@ namespace regex_constants
       ~match_results()
       { }
       
-      //@}
+      ///@}
 
       /**
        * @name 10.2 Size
        */
-      //@{
+      ///@{
 
       /**
        * @brief Gets the number of matches and submatches.
@@ -1874,12 +1874,12 @@ namespace regex_constants
       empty() const
       { return size() == 0; }
       
-      //@}
+      ///@}
 
       /**
        * @name 10.3 Element Access
        */
-      //@{
+      ///@{
 
       /**
        * @brief Gets the length of the indicated submatch.
@@ -1988,7 +1988,7 @@ namespace regex_constants
       { return _Base_type::end(); }
 #endif
 
-      //@}
+      ///@}
 
       /**
        * @name 10.4 Formatting
@@ -1998,7 +1998,7 @@ namespace regex_constants
        * and escape sequences accepted by these functions are
        * determined by their @p flags parameter as documented above.
        */
-       //@{
+       ///@{
 
       /**
        * @todo Implement this function.
@@ -2017,12 +2017,12 @@ namespace regex_constants
 	     regex_constants::match_flag_type __flags
 	     = regex_constants::format_default) const;
 
-      //@} 
+      ///@}
 
       /**
        * @name 10.5 Allocator
        */
-      //@{ 
+      ///@{ 
 
       /**
        * @brief Gets a copy of the allocator.
@@ -2031,12 +2031,12 @@ namespace regex_constants
       //get_allocator() const;
       using _Base_type::get_allocator;
       
-      //@} 
+      ///@}
 
       /**
        * @name 10.6 Swap
        */
-       //@{ 
+       ///@{ 
 
       /**
        * @brief Swaps the contents of two match_results.
@@ -2049,7 +2049,7 @@ namespace regex_constants
 	std::swap(_M_prefix,  __that._M_prefix);
 	std::swap(_M_suffix,  __that._M_suffix);
       }
-      //@} 
+      ///@}
       
     private:
       bool       _M_matched;
@@ -2105,7 +2105,7 @@ namespace regex_constants
   /**
    * @name Matching, Searching, and Replacing
    */
-  //@{
+  ///@{
 
   /**
    * @brief Determines if there is a match between the regular expression @p e
@@ -2432,7 +2432,7 @@ namespace regex_constants
       return __result;
     }
 
-  //@}
+  ///@}
 
   // tr1 [7.12.1] std [28.12] Class template regex_iterator
   /**
@@ -2718,7 +2718,7 @@ namespace regex_constants
   typedef regex_token_iterator<wstring::const_iterator> wsregex_token_iterator;
 #endif
   
-  //@}
+  ///@}
 }
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -336,16 +336,6 @@ func hasPrefix(s, prefix string) bool {
 	return len(s) >= len(prefix) && s[0:len(prefix)] == prefix
 }
 
-// LastIndexByte from the strings package.
-func lastIndex(s string, sep byte) int {
-	for i := len(s) - 1; i >= 0; i-- {
-		if s[i] == sep {
-			return i
-		}
-	}
-	return -1
-}
-
 func rename(oldname, newname string) error {
 	dirname := oldname[:lastIndex(oldname, '/')+1]
 	if hasPrefix(newname, dirname) {
@@ -450,6 +440,8 @@ func Link(oldname, newname string) error {
 }
 
 // Symlink creates newname as a symbolic link to oldname.
+// On Windows, a symlink to a non-existent oldname creates a file symlink;
+// if oldname is later created as a directory the symlink will not work.
 // If there is an error, it will be of type *LinkError.
 func Symlink(oldname, newname string) error {
 	return &LinkError{"symlink", oldname, newname, syscall.EPLAN9}

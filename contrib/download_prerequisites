@@ -28,7 +28,7 @@ version='(unversioned)'
 # `contrib/prerequisites.md5` with the new checksums.
 
 gmp='gmp-6.1.0.tar.bz2'
-mpfr='mpfr-3.1.4.tar.bz2'
+mpfr='mpfr-3.1.6.tar.bz2'
 mpc='mpc-1.0.3.tar.gz'
 isl='isl-0.18.tar.bz2'
 
@@ -45,18 +45,6 @@ graphite=1
 verify=1
 force=0
 OS=$(uname)
-
-case $OS in
-  "Darwin"|"FreeBSD"|"DragonFly"|"AIX")
-    chksum='shasum -a 512 --check'
-  ;;
-  "OpenBSD")
-    chksum='sha512 -c'
-  ;;
-  *)
-    chksum='sha512sum -c'
-  ;;
-esac
 
 if type wget > /dev/null ; then
   fetch='wget'
@@ -113,7 +101,7 @@ do
 done
 unset arg
 
-# Emulate Linux's 'md5 --check' on macOS
+# Emulate Linux's 'md5sum --check' on macOS
 md5_check() {
   # Store the standard input: a line from contrib/prerequisites.md5:
   md5_checksum_line=$(cat -)
@@ -125,7 +113,7 @@ md5_check() {
   md5_checksum_output=$(md5 -r "${file_to_check}")
   # Grab the text before the first space
   md5_checksum_detected="${md5_checksum_output%% *}"
-  [ "${md5_checksum_expected}" == "${md5_checksum_detected}" ] \
+  [ "${md5_checksum_expected}" = "${md5_checksum_detected}" ] \
     || die "Cannot verify integrity of possibly corrupted file ${file_to_check}"
   echo "${file_to_check}: OK"
 }
@@ -162,26 +150,10 @@ do
                 verify=0
                 ;;
             --sha512)
-                case $OS in
-                  "Darwin")
-                    chksum='shasum -a 512 --check'
-                  ;;
-                  *)
-                    chksum='sha512sum --check'
-                  ;;
-                esac
                 chksum_extension='sha512'
                 verify=1
                 ;;
             --md5)
-                case $OS in
-                  "Darwin")
-                    chksum='md5_check'
-                  ;;
-                  *)
-                    chksum='md5 --check'
-                  ;;
-                esac
                 chksum_extension='md5'
                 verify=1
                 ;;
@@ -211,6 +183,35 @@ do
 done
 [ "x${argnext}" = x ] || die "Missing argument for option --${argnext}"
 unset arg argnext
+
+case $chksum_extension in
+  sha512)
+    case $OS in
+      "Darwin"|"FreeBSD"|"DragonFly"|"AIX")
+        chksum='shasum -a 512 --check'
+      ;;
+      "OpenBSD")
+        chksum='sha512 -c'
+      ;;
+      *)
+        chksum='sha512sum -c'
+      ;;
+    esac
+  ;;
+  md5)
+    case $OS in
+      "Darwin")
+        chksum='md5_check'
+      ;;
+      *)
+        chksum='md5sum -c'
+      ;;
+    esac
+    ;;
+  *)
+    die "Unkown checksum $chksum_extension"
+  ;;
+esac
 
 [ -e ./gcc/BASE-VER ]                                                         \
     || die "You must run this script in the top-level GCC source directory"

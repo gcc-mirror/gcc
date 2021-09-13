@@ -1,6 +1,4 @@
-/* Exercise acc_map_data with a NULL data mapping on nvidia targets.  */
-
-/* { dg-do run { target openacc_nvidia_accel_selected } } */
+/* Exercise acc_map_data with a NULL data mapping.  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +28,6 @@ main (int argc, char **argv)
 }
 
 /* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
-/* { dg-output "\\\[\[^\n\r]*,\\\+256\]->\[\[0-9a-fA-FxX\]+,\\\+256\\\] is a bad map" { target openacc_nvidia_accel_selected } } */
+/* { dg-output "\\\[\[^\n\r]*,\\\+256\]->\[\[0-9a-fA-FxX\]+,\\\+256\\\] is a bad map" { target { ! openacc_host_selected } } } */
 /* { dg-output "cannot map data on shared-memory system" { target openacc_host_selected } } */
 /* { dg-shouldfail "" } */

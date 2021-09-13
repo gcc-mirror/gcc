@@ -1,5 +1,5 @@
 /* Symbol table.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1959,6 +1959,8 @@ symtab_node::noninterposable_alias (void)
   /* If aliases aren't supported by the assembler, fail.  */
   if (!TARGET_SUPPORTS_ALIASES)
     return NULL;
+  else if (lookup_attribute ("target_clones", DECL_ATTRIBUTES (node->decl)))
+    return NULL;
 
   /* Otherwise create a new one.  */
   new_decl = copy_node (node->decl);
@@ -2526,10 +2528,7 @@ symtab_node::output_to_lto_symbol_table_p (void)
 	 in libraries so make sure to output references into the symbol table to
 	 make those libraries referenced.  Note this is incomplete handling for
 	 now and only covers math functions.  */
-      if (builtin_with_linkage_p (decl))
-	return true;
-      else
-	return false;
+      return builtin_with_linkage_p (decl);
     }
 
   /* We have real symbol that should be in symbol table.  However try to trim

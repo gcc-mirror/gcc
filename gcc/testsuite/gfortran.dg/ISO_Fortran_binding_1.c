@@ -1,6 +1,6 @@
 /* Test F2008 18.5: ISO_Fortran_binding.h functions.  */
 
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include <ISO_Fortran_binding.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,11 +142,12 @@ float section_c(int *std_case, CFI_cdesc_t * source, int *low, int *str)
 			  CFI_type_float, 0, 1, NULL);
       if (ind) return -1.0;
       ind = CFI_section((CFI_cdesc_t *)&section, source, lower, NULL, strides);
-      assert (section.dim[0].lower_bound == lower[0]);
       if (ind) return -2.0;
 
       /* Sum over the section  */
-      for (idx[0] = lower[0]; idx[0] < section.dim[0].extent + lower[0]; idx[0]++)
+      for (idx[0] = section.dim[0].lower_bound;
+	   idx[0] < section.dim[0].extent + section.dim[0].lower_bound;
+	   idx[0]++)
         ans += *(float*)CFI_address ((CFI_cdesc_t*)&section, idx);
       return ans;
     }
@@ -164,11 +165,12 @@ float section_c(int *std_case, CFI_cdesc_t * source, int *low, int *str)
       ind = CFI_section((CFI_cdesc_t *)&section, source,
 			lower, upper, strides);
       assert (section.rank == 1);
-      assert (section.dim[0].lower_bound == lower[0]);
       if (ind) return -2.0;
 
       /* Sum over the section  */
-      for (idx[0] = lower[0]; idx[0] < section.dim[0].extent + lower[0]; idx[0]++)
+      for (idx[0] = section.dim[0].lower_bound;
+	   idx[0] < section.dim[0].extent + section.dim[0].lower_bound;
+	   idx[0]++)
         ans += *(float*)CFI_address ((CFI_cdesc_t*)&section, idx);
       return ans;
     }

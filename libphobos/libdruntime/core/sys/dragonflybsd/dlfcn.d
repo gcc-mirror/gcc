@@ -50,7 +50,7 @@ struct Dl_info {
     void            *dli_fbase;     /* Base address of shared object. */
     const(char)     *dli_sname;     /* Name of nearest symbol. */
     void            *dli_saddr;     /* Address of nearest symbol. */
-};
+}
 
 
 /*
@@ -59,13 +59,13 @@ struct Dl_info {
 struct Dl_serpath {
     char *          dls_name;       /* single search path entry */
     uint            dls_flags;      /* path information */
-};
+}
 
 struct Dl_serinfo {
     size_t          dls_size;       /* total buffer size */
     uint            dls_cnt;        /* number of path entries */
     Dl_serpath[1]   dls_serpath;    /* there may be more than one */
-};
+}
 
 /*-
  * The actual type declared by this typedef is immaterial, provided that
@@ -78,20 +78,17 @@ struct Dl_serinfo {
  */
 struct __dlfunc_arg {
     int     __dlfunc_dummy;
-};
+}
 
 alias dlfunc_t = void function(__dlfunc_arg);
 
-private template __externC(RT, P...)
-{
-    alias __externC = extern(C) RT function(P) nothrow @nogc @system;
-}
-
 /* XSI functions first. */
-static assert(is(typeof(&dlclose) == __externC!(int, void*)));
-static assert(is(typeof(&dlerror) == __externC!(char*)));
-static assert(is(typeof(&dlopen)  == __externC!(void*, const char*, int)));
-static assert(is(typeof(&dlsym)   == __externC!(void*, void*, const char*)));
+extern(C) {
+    static assert(is(typeof(&dlclose) == int function(void*)));
+    static assert(is(typeof(&dlerror) == char* function()));
+    static assert(is(typeof(&dlopen)  == void* function(const scope char*, int)));
+    static assert(is(typeof(&dlsym)   == void* function(void*, const scope char*)));
+}
 
 void*    fdlopen(int, int);
 int      dladdr(const(void)*, Dl_info*);

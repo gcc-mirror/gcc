@@ -1,5 +1,5 @@
 /* Native CPU detection for aarch64.
-   Copyright (C) 2015-2020 Free Software Foundation, Inc.
+   Copyright (C) 2015-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -58,6 +58,8 @@ struct aarch64_core_data
 #define INVALID_IMP ((unsigned char) -1)
 #define INVALID_CORE ((unsigned)-1)
 #define ALL_VARIANTS ((unsigned)-1)
+/* Default architecture to use if -mcpu=native did not detect a known CPU.  */
+#define DEFAULT_ARCH "8A"
 
 #define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   { CORE_NAME, #ARCH, IMP, PART, VARIANT, FLAGS },
@@ -390,10 +392,18 @@ host_detect_local_cpu (int argc, const char **argv)
             && (aarch64_cpu_data[i].variant == ALL_VARIANTS
                 || variants[0] == aarch64_cpu_data[i].variant))
 	  break;
-      if (aarch64_cpu_data[i].name == NULL)
-        goto not_found;
 
-      if (arch)
+      if (aarch64_cpu_data[i].name == NULL)
+	{
+	  aarch64_arch_driver_info* arch_info
+	    = get_arch_from_id (DEFAULT_ARCH);
+
+	  gcc_assert (arch_info);
+
+	  res = concat ("-march=", arch_info->name, NULL);
+	  default_flags = arch_info->flags;
+	}
+      else if (arch)
 	{
 	  const char *arch_id = aarch64_cpu_data[i].arch;
 	  aarch64_arch_driver_info* arch_info = get_arch_from_id (arch_id);

@@ -1,6 +1,6 @@
 // ratio -*- C++ -*-
 
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -279,11 +279,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef ratio<num, den> type;
     };
 
+#if ! __cpp_inline_variables
   template<intmax_t _Num, intmax_t _Den>
     constexpr intmax_t ratio<_Num, _Den>::num;
 
   template<intmax_t _Num, intmax_t _Den>
     constexpr intmax_t ratio<_Num, _Den>::den;
+#endif
 
   /// @cond undocumented
 
@@ -307,11 +309,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr intmax_t den = type::den;
     };
 
+#if ! __cpp_inline_variables
   template<typename _R1, typename _R2>
     constexpr intmax_t __ratio_multiply<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
     constexpr intmax_t __ratio_multiply<_R1, _R2>::den;
+#endif
 
   /// @endcond
 
@@ -334,11 +338,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr intmax_t den = type::den;
     };
 
+#if ! __cpp_inline_variables
   template<typename _R1, typename _R2>
     constexpr intmax_t __ratio_divide<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
     constexpr intmax_t __ratio_divide<_R1, _R2>::den;
+#endif
 
   /// @endcond
 
@@ -512,11 +518,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr intmax_t den = type::den;
     };
 
+#if ! __cpp_inline_variables
   template<typename _R1, typename _R2>
     constexpr intmax_t __ratio_add<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
     constexpr intmax_t __ratio_add<_R1, _R2>::den;
+#endif
 
   /// @endcond
 
@@ -537,11 +545,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr intmax_t den = type::den;
     };
 
+#if ! __cpp_inline_variables
   template<typename _R1, typename _R2>
     constexpr intmax_t __ratio_subtract<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
     constexpr intmax_t __ratio_subtract<_R1, _R2>::den;
+#endif
 
   /// @endcond
 
@@ -567,7 +577,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   typedef ratio<         1000000000000000, 1> peta;
   typedef ratio<      1000000000000000000, 1> exa;
 
-  // @} group ratio
+  /// @} group ratio
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

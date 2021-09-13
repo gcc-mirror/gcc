@@ -1,5 +1,5 @@
 /* Optimize and expand sanitizer functions.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -492,7 +492,10 @@ maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
 				  &unsignedp, &reversep, &volatilep);
       if ((offset == NULL_TREE || TREE_CODE (offset) == INTEGER_CST)
 	  && DECL_P (base)
-	  && !DECL_REGISTER (base)
+	  && ((!VAR_P (base)
+	       && TREE_CODE (base) != PARM_DECL
+	       && TREE_CODE (base) != RESULT_DECL)
+	      || !DECL_REGISTER (base))
 	  && pbitpos.is_constant (&bitpos))
 	{
 	  offset_int expr_offset;
@@ -1246,9 +1249,7 @@ sanitize_rewrite_addressable_params (function *fun)
 
   /* Unset value expr for parameters for which we created debug bind
      expressions.  */
-  unsigned i;
-  tree arg;
-  FOR_EACH_VEC_ELT (clear_value_expr_list, i, arg)
+  for (tree arg : clear_value_expr_list)
     {
       DECL_HAS_VALUE_EXPR_P (arg) = 0;
       SET_DECL_VALUE_EXPR (arg, NULL_TREE);

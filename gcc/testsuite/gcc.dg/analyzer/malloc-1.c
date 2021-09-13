@@ -1,6 +1,5 @@
 /* { dg-require-effective-target alloca } */
 
-#include <alloca.h>
 #include <stdlib.h>
 
 extern int foo (void);
@@ -205,8 +204,7 @@ void test_16 (void)
   bar ();
 
  fail:
-  free (q); /* { dg-warning "free of uninitialized 'q'" "" { xfail *-*-* } } */ 
-  /* TODO(xfail): implement uninitialized detection.  */
+  free (q); /* { dg-warning "use of uninitialized value 'q'" } */
   free (p);
 }
 
@@ -273,7 +271,7 @@ int *test_23a (int n)
 
 int test_24 (void)
 {
-  void *ptr = alloca (sizeof (int)); /* { dg-message "memory is allocated on the stack here" } */
+  void *ptr = __builtin_alloca (sizeof (int)); /* { dg-message "memory is allocated on the stack here" } */
   free (ptr); /* { dg-warning "'free' of memory allocated on the stack by 'alloca' \\('ptr'\\) will corrupt the heap \\\[CWE-590\\\]" } */
 }
 
@@ -460,8 +458,8 @@ int *
 test_40 (int i)
 {
   int *p = (int*)malloc(sizeof(int*));
-  i = *p; /* { dg-warning "dereference of possibly-NULL 'p' \\\[CWE-690\\\]" } */
-  /* TODO: (it's also uninitialized) */
+  i = *p; /* { dg-warning "dereference of possibly-NULL 'p' \\\[CWE-690\\\]" "possibly-null" } */
+  /* { dg-warning "use of uninitialized value '\\*p'" "uninit" { target *-*-*} .-1 } */
   return p;
 }
 

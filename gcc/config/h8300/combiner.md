@@ -11,7 +11,7 @@
 	(match_operand:SI 2 "register_operand" "r"))]
   "INTVAL (operands[1]) < 16"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
 		   (match_dup 2))
 	      (clobber (reg:CC CC_REG))])])
@@ -34,7 +34,7 @@
 		     (match_operand:SI 3 "const_int_operand" "n")))]
   "INTVAL (operands[1]) < 16 && INTVAL (operands[3]) < 16"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
 		   (lshiftrt:SI (match_dup 2) (match_dup 3)))
 	      (clobber (reg:CC CC_REG))])])
@@ -58,7 +58,7 @@
 		     (const_int 16)))]
   "INTVAL (operands[1]) < 16"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
 		   (lshiftrt:SI (match_dup 2) (const_int 16)))
 	      (clobber (reg:CC CC_REG))])])
@@ -81,7 +81,7 @@
 	(match_operand:SI 1 "register_operand" "r"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 8) (const_int 8))
 		   (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
@@ -104,7 +104,7 @@
 		     (const_int 8)))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 8) (const_int 8))
 		   (lshiftrt:SI (match_dup 1) (const_int 8)))
 	      (clobber (reg:CC CC_REG))])])
@@ -129,7 +129,7 @@
 			 (const_int 8)))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (zero_extract:SI (match_dup 1) (const_int 8) (const_int 8)))
 	      (clobber (reg:CC CC_REG))])])
@@ -153,7 +153,7 @@
 			 (const_int 16)))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (zero_extract:SI (match_dup 1) (const_int 8) (const_int 16)))
 	      (clobber (reg:CC CC_REG))])])
@@ -176,7 +176,7 @@
    (clobber (match_scratch:SI 2 "=&r"))]
   "TARGET_H8300H"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (zero_extract:SI (match_dup 1) (const_int 16) (const_int 8)))
 	      (clobber (reg:CC CC_REG))])])
@@ -271,7 +271,7 @@
   "exact_log2 (INTVAL (operands[3])) < 16
    && INTVAL (operands[2]) + exact_log2 (INTVAL (operands[3])) == 31"
   "#"
-  ""
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (and:SI (lshiftrt:SI (match_dup 1) (match_dup 2))
 			   (match_dup 3)))
@@ -318,7 +318,7 @@
 		 (match_operand:SI 2 "register_operand" "0")))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (plus:SI (mult:SI (match_dup 1) (const_int 65536))
 			    (match_dup 2)))
@@ -341,7 +341,7 @@
 		 (zero_extend:SI (match_operand:HI 2 "register_operand" "0"))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (plus:SI (lshiftrt:SI (match_dup 1) (const_int 16))
 			    (zero_extend:SI (match_dup 2))))
@@ -416,7 +416,7 @@
 	  (match_operand:HI 3 "register_operand" "0")]))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (match_op_dup 1 [(zero_extend:HI (match_dup 2))
 				    (match_dup 3)]))
@@ -442,7 +442,7 @@
 	  (match_operand:SI 3 "register_operand" "0")]))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (match_op_dup 1 [(zero_extend:SI (match_dup 2))
 				    (match_dup 3)]))
@@ -465,7 +465,7 @@
 	  (match_operand:SI 3 "register_operand" "0")]))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (match_op_dup 1 [(zero_extend:SI (match_dup 2))
 				    (match_dup 3)]))
@@ -489,7 +489,7 @@
 	  (match_operand:SI 3 "register_operand" "0")]))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (match_op_dup 1 [(ashift:SI (match_dup 2) (const_int 16))
 				    (match_dup 3)]))
@@ -514,7 +514,7 @@
 	  (match_operand:SI 3 "register_operand" "0")]))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (match_op_dup 1 [(lshiftrt:SI (match_dup 2) (const_int 16))
 				    (match_dup 3)]))
@@ -540,7 +540,7 @@
 		(match_operand:HI 2 "register_operand" "0")))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:HI (ashift:HI (match_dup 1) (const_int 8))
 			   (match_dup 2)))
@@ -563,7 +563,7 @@
 		(match_operand:HI 2 "register_operand" "0")))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:HI (lshiftrt:HI (match_dup 1) (const_int 8))
 			   (match_dup 2)))
@@ -586,7 +586,7 @@
 			   (const_int 8))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:HI (zero_extend:HI (match_dup 1))
 			   (ashift:HI (match_dup 2) (const_int 8))))
@@ -609,7 +609,7 @@
 			   (const_int 8))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:HI (zero_extend:HI (match_dup 1))
 			   (ashift:HI (subreg:HI (match_dup 2) 0)
@@ -648,7 +648,7 @@
 			   (const_int 16))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (zero_extend:SI (match_dup 1))
 			   (ashift:SI (match_dup 2) (const_int 16))))
@@ -692,7 +692,7 @@
 			     (const_int 16))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (and:SI (match_dup 1) (const_int -65536))
 			   (lshiftrt:SI (match_dup 2) (const_int 16))))
@@ -735,7 +735,7 @@
 		(zero_extend:SI (match_operand:QI 2 "general_operand_src" "r,g>"))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (and:SI (match_dup 1) (const_int -256))
 			   (zero_extend:SI (match_dup 2))))
@@ -758,7 +758,7 @@
 		(match_operand:SI 2 "register_operand" "0")))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (ashift:SI (match_dup 1) (const_int 31))
 			   (match_dup 2)))
@@ -782,7 +782,7 @@
 		(match_operand:SI 4 "register_operand" "0")))]
   "(INTVAL (operands[3]) & ~0xffff) == 0"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (and:SI (ashift:SI (match_dup 1) (match_dup 2))
 				   (match_dup 3))
@@ -815,7 +815,7 @@
 		(match_operand:SI 4 "register_operand" "0")))]
   "((INTVAL (operands[3]) << INTVAL (operands[2])) & ~0xffff) == 0"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (and:SI (lshiftrt:SI (match_dup 1) (match_dup 2))
 				   (match_dup 3))
@@ -848,7 +848,7 @@
 		(match_operand:SI 3 "register_operand" "0")))]
   "INTVAL (operands[2]) < 16"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (zero_extract:SI (match_dup 1)
 					    (const_int 1)
@@ -875,7 +875,7 @@
 		(match_operand:SI 2 "register_operand" "0")))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (and:SI (lshiftrt:SI (match_dup 1) (const_int 30))
 				   (const_int 2))
@@ -902,7 +902,7 @@
    (clobber (match_scratch:HI 3 "=&r"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (and:SI (lshiftrt:SI (match_dup 1) (const_int 9))
 				   (const_int 4194304))
@@ -993,7 +993,7 @@
 			     (const_int 1))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (and:SI (match_dup 1) (const_int 1))
 			   (lshiftrt:SI (match_dup 1) (const_int 1))))
@@ -1147,7 +1147,7 @@
 				(const_int 8)) 1))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (subreg:QI (lshiftrt:HI (match_dup 1)
 							 (const_int 8)) 1))
 	      (clobber (reg:CC CC_REG))])])
@@ -1169,7 +1169,7 @@
 				(const_int 8)) 3))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (subreg:QI (lshiftrt:SI (match_dup 1) (const_int 8)) 3))
 	      (clobber (reg:CC CC_REG))])])
@@ -1190,7 +1190,7 @@
    (clobber (match_scratch:SI 2 "=&r"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (subreg:QI (lshiftrt:SI (match_dup 1) (const_int 16)) 3))
 	      (clobber (match_dup 2))
@@ -1213,7 +1213,7 @@
    (clobber (match_scratch:SI 2 "=&r"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (subreg:QI (lshiftrt:SI (match_dup 1) (const_int 24)) 3))
 	      (clobber (match_dup 2))

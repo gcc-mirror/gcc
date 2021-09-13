@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -17,7 +17,7 @@
 GCC stands for ``GNU Compiler Collection''.  GCC is an integrated
 distribution of compilers for several major programming languages.  These
 languages currently include C, C++, Objective-C, Objective-C++,
-Fortran, Ada, D, Go, and BRIG (HSAIL).
+Fortran, Ada, D, and Go.
 
 The abbreviation @dfn{GCC} has multiple meanings in common use.  The
 current official meaning is ``GNU Compiler Collection'', which refers

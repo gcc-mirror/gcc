@@ -1,5 +1,5 @@
 /* Warn on violations of the restrict qualifier.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
    This file is part of GCC.
@@ -20,10 +20,10 @@
 
 #ifndef GIMPLE_SSA_WARN_RESTRICT_H
 
-extern int check_bounds_or_overlap (gimple *, tree, tree, tree, tree,
-				    bool = false, bool = true);
-extern int check_bounds_or_overlap (class range_query *, gimple *,
-				    tree, tree, tree, tree,
-				    bool = false, bool = true);
+extern opt_code check_bounds_or_overlap (gimple *, tree, tree, tree, tree,
+					 bool = false, bool = true);
+extern opt_code check_bounds_or_overlap (class range_query *, gimple *,
+					 tree, tree, tree, tree,
+					 bool = false, bool = true);
 
 #endif /* GIMPLE_SSA_WARN_RESTRICT_H */

@@ -1,5 +1,5 @@
 /* RTL-based forward propagation pass for GNU compiler.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Paolo Bonzini and Steven Bosscher.
 
 This file is part of GCC.
@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "rtl-ssa.h"
 
-#include "sparseset.h"
 #include "predict.h"
 #include "cfgrtl.h"
 #include "cfgcleanup.h"
@@ -176,7 +175,7 @@ namespace
     static const uint16_t CONSTANT = FIRST_SPARE_RESULT << 1;
     static const uint16_t PROFITABLE = FIRST_SPARE_RESULT << 2;
 
-    fwprop_propagation (rtx_insn *, rtx, rtx);
+    fwprop_propagation (insn_info *, set_info *, rtx, rtx);
 
     bool changed_mem_p () const { return result_flags & CHANGED_MEM; }
     bool folded_to_constants_p () const;
@@ -185,13 +184,20 @@ namespace
     bool check_mem (int, rtx) final override;
     void note_simplification (int, uint16_t, rtx, rtx) final override;
     uint16_t classify_result (rtx, rtx);
+
+  private:
+    const bool single_use_p;
+    const bool single_ebb_p;
   };
 }
 
-/* Prepare to replace FROM with TO in INSN.  */
+/* Prepare to replace FROM with TO in USE_INSN.  */
 
-fwprop_propagation::fwprop_propagation (rtx_insn *insn, rtx from, rtx to)
-  : insn_propagation (insn, from, to)
+fwprop_propagation::fwprop_propagation (insn_info *use_insn,
+					set_info *def, rtx from, rtx to)
+  : insn_propagation (use_insn->rtl (), from, to),
+    single_use_p (def->single_nondebug_use ()),
+    single_ebb_p (use_insn->ebb () == def->ebb ())
 {
   should_check_mems = true;
   should_note_simplifications = true;
@@ -260,6 +266,22 @@ fwprop_propagation::classify_result (rtx old_rtx, rtx new_rtx)
       && (VECTOR_MODE_P (GET_MODE (from))
 	  || COMPLEX_MODE_P (GET_MODE (from)))
       && GET_MODE (new_rtx) == GET_MODE_INNER (GET_MODE (from)))
+    return PROFITABLE;
+
+  /* Allow (subreg (mem)) -> (mem) simplifications with the following
+     exceptions:
+     1) Propagating (mem)s into multiple uses is not profitable.
+     2) Propagating (mem)s across EBBs may not be profitable if the source EBB
+	runs less frequently.
+     3) Propagating (mem)s into paradoxical (subreg)s is not profitable.
+     4) Creating new (mem/v)s is not correct, since DCE will not remove the old
+	ones.  */
+  if (single_use_p
+      && single_ebb_p
+      && SUBREG_P (old_rtx)
+      && !paradoxical_subreg_p (old_rtx)
+      && MEM_P (new_rtx)
+      && !MEM_VOLATILE_P (new_rtx))
     return PROFITABLE;
 
   return 0;
@@ -346,24 +368,25 @@ contains_paradoxical_subreg_p (rtx x)
   return false;
 }
 
-/* Try to substitute (set DEST SRC) from DEF_INSN into note NOTE of USE_INSN.
-   Return the number of substitutions on success, otherwise return -1 and
-   leave USE_INSN unchanged.
+/* Try to substitute (set DEST SRC), which defines DEF, into note NOTE of
+   USE_INSN.  Return the number of substitutions on success, otherwise return
+   -1 and leave USE_INSN unchanged.
 
-   If REQUIRE_CONSTANT is true, require all substituted occurences of SRC
+   If REQUIRE_CONSTANT is true, require all substituted occurrences of SRC
    to fold to a constant, so that the note does not use any more registers
    than it did previously.  If REQUIRE_CONSTANT is false, also allow the
    substitution if it's something we'd normally allow for the main
    instruction pattern.  */
 
 static int
-try_fwprop_subst_note (insn_info *use_insn, insn_info *def_insn,
+try_fwprop_subst_note (insn_info *use_insn, set_info *def,
 		       rtx note, rtx dest, rtx src, bool require_constant)
 {
   rtx_insn *use_rtl = use_insn->rtl ();
+  insn_info *def_insn = def->insn ();
 
   insn_change_watermark watermark;
-  fwprop_propagation prop (use_rtl, dest, src);
+  fwprop_propagation prop (use_insn, def, dest, src);
   if (!prop.apply_to_rvalue (&XEXP (note, 0)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -414,19 +437,20 @@ try_fwprop_subst_note (insn_info *use_insn, insn_info *def_insn,
   return prop.num_replacements;
 }
 
-/* Try to substitute (set DEST SRC) from DEF_INSN into location LOC of
+/* Try to substitute (set DEST SRC), which defines DEF, into location LOC of
    USE_INSN's pattern.  Return true on success, otherwise leave USE_INSN
    unchanged.  */
 
 static bool
 try_fwprop_subst_pattern (obstack_watermark &attempt, insn_change &use_change,
-			  insn_info *def_insn, rtx *loc, rtx dest, rtx src)
+			  set_info *def, rtx *loc, rtx dest, rtx src)
 {
   insn_info *use_insn = use_change.insn ();
   rtx_insn *use_rtl = use_insn->rtl ();
+  insn_info *def_insn = def->insn ();
 
   insn_change_watermark watermark;
-  fwprop_propagation prop (use_rtl, dest, src);
+  fwprop_propagation prop (use_insn, def, dest, src);
   if (!prop.apply_to_pattern (loc))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -516,8 +540,7 @@ try_fwprop_subst_pattern (obstack_watermark &attempt, insn_change &use_change,
     {
       if ((REG_NOTE_KIND (note) == REG_EQUAL
 	   || REG_NOTE_KIND (note) == REG_EQUIV)
-	  && try_fwprop_subst_note (use_insn, def_insn, note,
-				    dest, src, false) < 0)
+	  && try_fwprop_subst_note (use_insn, def, note, dest, src, false) < 0)
 	{
 	  *note_ptr = XEXP (note, 1);
 	  free_EXPR_LIST_node (note);
@@ -532,20 +555,19 @@ try_fwprop_subst_pattern (obstack_watermark &attempt, insn_change &use_change,
   return true;
 }
 
-/* Try to substitute (set DEST SRC) from DEF_INSN into USE_INSN's notes,
+/* Try to substitute (set DEST SRC), which defines DEF, into USE_INSN's notes,
    given that it was not possible to do this for USE_INSN's main pattern.
    Return true on success, otherwise leave USE_INSN unchanged.  */
 
 static bool
-try_fwprop_subst_notes (insn_info *use_insn, insn_info *def_insn,
+try_fwprop_subst_notes (insn_info *use_insn, set_info *def,
 			rtx dest, rtx src)
 {
   rtx_insn *use_rtl = use_insn->rtl ();
   for (rtx note = REG_NOTES (use_rtl); note; note = XEXP (note, 1))
     if ((REG_NOTE_KIND (note) == REG_EQUAL
 	 || REG_NOTE_KIND (note) == REG_EQUIV)
-	&& try_fwprop_subst_note (use_insn, def_insn, note,
-				  dest, src, true) > 0)
+	&& try_fwprop_subst_note (use_insn, def, note, dest, src, true) > 0)
       {
 	confirm_change_group ();
 	return true;
@@ -554,7 +576,7 @@ try_fwprop_subst_notes (insn_info *use_insn, insn_info *def_insn,
   return false;
 }
 
-/* Check whether we could validly substitute (set DEST SRC) from DEF_INSN
+/* Check whether we could validly substitute (set DEST SRC), which defines DEF,
    into USE.  If so, first try performing the substitution in location LOC
    of USE->insn ()'s pattern.  If that fails, try instead to substitute
    into the notes.
@@ -562,10 +584,11 @@ try_fwprop_subst_notes (insn_info *use_insn, insn_info *def_insn,
    Return true on success, otherwise leave USE_INSN unchanged.  */
 
 static bool
-try_fwprop_subst (use_info *use, insn_info *def_insn,
+try_fwprop_subst (use_info *use, set_info *def,
 		  rtx *loc, rtx dest, rtx src)
 {
   insn_info *use_insn = use->insn ();
+  insn_info *def_insn = def->insn ();
 
   auto attempt = crtl->ssa->new_change_attempt ();
   use_array src_uses = remove_note_accesses (attempt, def_insn->uses ());
@@ -583,7 +606,8 @@ try_fwprop_subst (use_info *use, insn_info *def_insn,
   if (def_insn->bb () != use_insn->bb ())
     {
       src_uses = crtl->ssa->make_uses_available (attempt, src_uses,
-						 use_insn->bb ());
+						 use_insn->bb (),
+						 use_insn->is_debug_insn ());
       if (!src_uses.is_valid ())
 	return false;
     }
@@ -600,9 +624,8 @@ try_fwprop_subst (use_info *use, insn_info *def_insn,
   if (!restrict_movement (use_change))
     return false;
 
-  return (try_fwprop_subst_pattern (attempt, use_change, def_insn,
-				    loc, dest, src)
-	  || try_fwprop_subst_notes (use_insn, def_insn, dest, src));
+  return (try_fwprop_subst_pattern (attempt, use_change, def, loc, dest, src)
+	  || try_fwprop_subst_notes (use_insn, def, dest, src));
 }
 
 /* For the given single_set INSN, containing SRC known to be a
@@ -649,7 +672,7 @@ free_load_extend (rtx src, insn_info *insn)
    in REF.  The other parameters are the same.  */
 
 static bool
-forward_propagate_subreg (use_info *use, insn_info *def_insn,
+forward_propagate_subreg (use_info *use, set_info *def,
 			  rtx dest, rtx src, df_ref ref)
 {
   scalar_int_mode int_use_mode, src_mode;
@@ -675,8 +698,7 @@ forward_propagate_subreg (use_info *use, insn_info *def_insn,
 	  && REGNO (SUBREG_REG (src)) >= FIRST_PSEUDO_REGISTER
 	  && GET_MODE (SUBREG_REG (src)) == use_mode
 	  && subreg_lowpart_p (src))
-	return try_fwprop_subst (use, def_insn, loc,
-				 use_reg, SUBREG_REG (src));
+	return try_fwprop_subst (use, def, loc, use_reg, SUBREG_REG (src));
     }
 
   /* If this is a SUBREG of a ZERO_EXTEND or SIGN_EXTEND, and the SUBREG
@@ -703,22 +725,21 @@ forward_propagate_subreg (use_info *use, insn_info *def_insn,
 	  && REG_P (XEXP (src, 0))
 	  && REGNO (XEXP (src, 0)) >= FIRST_PSEUDO_REGISTER
 	  && GET_MODE (XEXP (src, 0)) == use_mode
-	  && !free_load_extend (src, def_insn)
+	  && !free_load_extend (src, def->insn ())
 	  && (targetm.mode_rep_extended (int_use_mode, src_mode)
 	      != (int) GET_CODE (src)))
-	return try_fwprop_subst (use, def_insn, loc, use_reg, XEXP (src, 0));
+	return try_fwprop_subst (use, def, loc, use_reg, XEXP (src, 0));
     }
 
   return false;
 }
 
-/* Try to substitute (set DEST SRC) from DEF_INSN into USE and simplify
+/* Try to substitute (set DEST SRC), which defines DEF, into USE and simplify
    the result, handling cases where DEST is used in a subreg and where
    applying that subreg to SRC results in a useful simplification.  */
 
 static bool
-forward_propagate_subreg (use_info *use, insn_info *def_insn,
-			  rtx dest, rtx src)
+forward_propagate_subreg (use_info *use, set_info *def, rtx dest, rtx src)
 {
   if (!use->includes_subregs () || !REG_P (dest))
     return false;
@@ -733,26 +754,27 @@ forward_propagate_subreg (use_info *use, insn_info *def_insn,
 
   FOR_EACH_INSN_USE (ref, use_rtl)
     if (DF_REF_REGNO (ref) == use->regno ()
-	&& forward_propagate_subreg (use, def_insn, dest, src, ref))
+	&& forward_propagate_subreg (use, def, dest, src, ref))
       return true;
 
   FOR_EACH_INSN_EQ_USE (ref, use_rtl)
     if (DF_REF_REGNO (ref) == use->regno ()
-	&& forward_propagate_subreg (use, def_insn, dest, src, ref))
+	&& forward_propagate_subreg (use, def, dest, src, ref))
       return true;
 
   return false;
 }
 
-/* Try to substitute (set DEST SRC) from DEF_INSN into USE and
+/* Try to substitute (set DEST SRC), which defines DEF, into USE and
    simplify the result.  */
 
 static bool
-forward_propagate_and_simplify (use_info *use, insn_info *def_insn,
+forward_propagate_and_simplify (use_info *use, set_info *def,
 				rtx dest, rtx src)
 {
   insn_info *use_insn = use->insn ();
   rtx_insn *use_rtl = use_insn->rtl ();
+  insn_info *def_insn = def->insn ();
 
   /* ??? This check seems unnecessary.  We should be able to propagate
      into any kind of instruction, regardless of whether it's a single set.
@@ -762,7 +784,7 @@ forward_propagate_and_simplify (use_info *use, insn_info *def_insn,
   if (need_single_set && !use_set)
     return false;
 
-  /* Do not propagate into PC, CC0, etc.
+  /* Do not propagate into PC etc.
 
      ??? This too seems unnecessary.  The current code should work correctly
      without it, including cases where jumps become unconditional.  */
@@ -798,7 +820,7 @@ forward_propagate_and_simplify (use_info *use, insn_info *def_insn,
   /* ??? Unconditionally propagating into PATTERN would work better
      for instructions that have match_dups.  */
   rtx *loc = need_single_set ? &use_set : &PATTERN (use_rtl);
-  return try_fwprop_subst (use, def_insn, loc, dest, src);
+  return try_fwprop_subst (use, def, loc, dest, src);
 }
 
 /* Given a use USE of an insn, if it has a single reaching
@@ -814,7 +836,7 @@ forward_propagate_into (use_info *use, bool reg_prop_only = false)
     return false;
 
   /* Disregard uninitialized uses.  */
-  def_info *def = use->def ();
+  set_info *def = use->def ();
   if (!def)
     return false;
 
@@ -858,8 +880,8 @@ forward_propagate_into (use_info *use, bool reg_prop_only = false)
       && find_reg_note (use_rtl, REG_NON_LOCAL_GOTO, NULL_RTX))
     return false;
 
-  if (forward_propagate_and_simplify (use, def_insn, dest, src)
-      || forward_propagate_subreg (use, def_insn, dest, src))
+  if (forward_propagate_and_simplify (use, def, dest, src)
+      || forward_propagate_subreg (use, def, dest, src))
     return true;
 
   return false;

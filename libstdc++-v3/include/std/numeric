@@ -1,6 +1,6 @@
 // <numeric> -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -278,9 +278,11 @@ namespace __detail
     reduce(_InputIterator __first, _InputIterator __last, _Tp __init,
 	   _BinaryOperation __binary_op)
     {
-      using value_type = typename iterator_traits<_InputIterator>::value_type;
+      using __ref = typename iterator_traits<_InputIterator>::reference;
+      static_assert(is_invocable_r_v<_Tp, _BinaryOperation&, _Tp&, __ref>);
+      static_assert(is_invocable_r_v<_Tp, _BinaryOperation&, __ref, _Tp&>);
       static_assert(is_invocable_r_v<_Tp, _BinaryOperation&, _Tp&, _Tp&>);
-      static_assert(is_convertible_v<value_type, _Tp>);
+      static_assert(is_invocable_r_v<_Tp, _BinaryOperation&, __ref, __ref>);
       if constexpr (__is_random_access_iter<_InputIterator>::value)
 	{
 	  while ((__last - __first) >= 4)
@@ -712,7 +714,7 @@ namespace __detail
       return __result;
     }
 
-  // @} group numeric_ops
+  /// @} group numeric_ops
 #endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION

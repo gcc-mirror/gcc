@@ -1,17 +1,12 @@
 /*
-REQUIRED_ARGS: -de
+REQUIRED_ARGS:
 TEST_OUTPUT:
 ---
-fail_compilation/dip22a.d(21): Deprecation: imports.dip22a.Klass.bar is not visible from module dip22a
-fail_compilation/dip22a.d(21): Error: class imports.dip22a.Klass member `bar` is not accessible
-fail_compilation/dip22a.d(22): Deprecation: imports.dip22a.Struct.bar is not visible from module dip22a
-fail_compilation/dip22a.d(22): Error: struct imports.dip22a.Struct member `bar` is not accessible
-fail_compilation/dip22a.d(23): Error: imports.dip22a.bar is not visible from module dip22a
-fail_compilation/dip22a.d(23): Error: function `imports.dip22a.bar` is not accessible from module `dip22a`
-fail_compilation/dip22a.d(24): Error: imports.dip22a.Template!int.bar is not visible from module dip22a
-fail_compilation/dip22a.d(24): Error: function `imports.dip22a.Template!int.bar` is not accessible from module `dip22a`
-fail_compilation/dip22a.d(25): Deprecation: imports.dip22a.bar is not visible from module dip22a
-fail_compilation/dip22a.d(25): Error: function `imports.dip22a.bar` is not accessible from module `dip22a`
+fail_compilation/dip22a.d(16): Error: no property `bar` for type `imports.dip22a.Klass`, did you mean `imports.dip22a.Klass.bar`?
+fail_compilation/dip22a.d(17): Error: no property `bar` for type `Struct`, did you mean `imports.dip22a.Struct.bar`?
+fail_compilation/dip22a.d(18): Error: undefined identifier `bar` in module `imports.dip22a`, did you mean function `bar`?
+fail_compilation/dip22a.d(19): Error: no property `bar` for type `void`
+fail_compilation/dip22a.d(20): Error: no property `bar` for type `int`
 ---
 */
 import imports.dip22a;

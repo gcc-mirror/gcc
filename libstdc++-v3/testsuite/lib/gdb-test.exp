@@ -1,4 +1,4 @@
-#   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -280,6 +280,8 @@ proc gdb_batch_check {command pattern} {
 # but not earlier versions.
 # Return 1 if the version is ok, 0 otherwise.
 proc gdb_version_check {} {
+    if { ![isnative] || [is_remote target] } { return 0 }
+
     return [gdb_batch_check "python print(gdb.lookup_global_symbol)" \
 	      "<built-in function lookup_global_symbol>"]
 }
@@ -288,6 +290,8 @@ proc gdb_version_check {} {
 # in a manner similar to the check for a version of gdb which supports the
 # pretty-printer tests below.
 proc gdb_version_check_xmethods {} {
+    if { ![isnative] || [is_remote target] } { return 0 }
+
     return [gdb_batch_check \
 	      "python import gdb.xmethod; print(gdb.xmethod.XMethod)" \
 	      "<class 'gdb\\.xmethod\\.XMethod'>"]

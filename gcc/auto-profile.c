@@ -1,5 +1,5 @@
 /* Read and annotate call graph profile from the auto profile data file.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Contributed by Dehao Chen (dehao@google.com)
 
 This file is part of GCC.
@@ -95,7 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #define DEFAULT_AUTO_PROFILE_FILE "fbdata.afdo"
-#define AUTO_PROFILE_VERSION 1
+#define AUTO_PROFILE_VERSION 2
 
 namespace autofdo
 {
@@ -939,7 +939,7 @@ read_profile (void)
   unsigned version = gcov_read_unsigned ();
   if (version != AUTO_PROFILE_VERSION)
     {
-      error ("AutoFDO profile version %u does match %u",
+      error ("AutoFDO profile version %u does not match %u",
 	     version, AUTO_PROFILE_VERSION);
       return;
     }
@@ -1009,13 +1009,18 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
 
   histogram_value hist = gimple_alloc_histogram_value (
       cfun, HIST_TYPE_INDIR_CALL, stmt, callee);
-  hist->n_counters = 3;
+  hist->n_counters = 4;
   hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
   gimple_add_histogram_value (cfun, stmt, hist);
 
-  hist->hvalue.counters[0] = direct_call->profile_id;
-  hist->hvalue.counters[1] = max_iter->second;
-  hist->hvalue.counters[2] = total;
+  // Total counter
+  hist->hvalue.counters[0] = total;
+  // Number of value/counter pairs
+  hist->hvalue.counters[1] = 1;
+  // Value
+  hist->hvalue.counters[2] = direct_call->profile_id;
+  // Counter
+  hist->hvalue.counters[3] = max_iter->second;
 
   if (!transform)
     return;
@@ -1155,15 +1160,10 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 
   FOR_ALL_BB_FN (bb, cfun)
   {
-    vec<basic_block> dom_bbs;
-    basic_block bb1;
-    int i;
-
     if (bb->aux != NULL)
       continue;
     bb->aux = bb;
-    dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
-    FOR_EACH_VEC_ELT (dom_bbs, i, bb1)
+    for (basic_block bb1 : get_dominated_by (CDI_DOMINATORS, bb))
       if (bb1->aux == NULL && dominated_by_p (CDI_POST_DOMINATORS, bb, bb1)
 	  && bb1->loop_father == bb->loop_father)
 	{
@@ -1174,8 +1174,8 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 	      set_bb_annotated (bb, annotated_bb);
 	    }
 	}
-    dom_bbs = get_dominated_by (CDI_POST_DOMINATORS, bb);
-    FOR_EACH_VEC_ELT (dom_bbs, i, bb1)
+
+    for (basic_block bb1 : get_dominated_by (CDI_POST_DOMINATORS, bb))
       if (bb1->aux == NULL && dominated_by_p (CDI_DOMINATORS, bb, bb1)
 	  && bb1->loop_father == bb->loop_father)
 	{

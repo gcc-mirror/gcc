@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -75,6 +75,7 @@ namespace __gnu_test
   using std::chrono::clock_cast;
 
   using std::chrono::last_spec;
+#endif
 
   using std::chrono::day;
   using std::chrono::month;
@@ -100,6 +101,8 @@ namespace __gnu_test
   using std::chrono::make12;
   using std::chrono::make24;
 
+  // FIXME
+#if 0
   using std::chrono::tzdb;
   using std::chrono::tzdb_list;
   using std::chrono::get_tzdb;
@@ -130,6 +133,7 @@ namespace __gnu_test
   using std::chrono::local_time_format;
 
   using std::chrono::parse;
+#endif
 
   using std::chrono::last;
   using std::chrono::Sunday;
@@ -155,7 +159,6 @@ namespace __gnu_test
 
   using std::chrono_literals::operator""d;
   using std::chrono_literals::operator""y;
-#endif
 
   template<typename>
     constexpr bool is_duration = false;

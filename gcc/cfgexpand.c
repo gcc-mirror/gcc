@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "output.h"
 #include "builtins.h"
+#include "opts.h"
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
@@ -1718,7 +1719,8 @@ defer_stack_allocation (tree var, bool toplevel)
 */
 
 static poly_uint64
-expand_one_var (tree var, bool toplevel, bool really_expand)
+expand_one_var (tree var, bool toplevel, bool really_expand,
+		bitmap forced_stack_var = NULL)
 {
   unsigned int align = BITS_PER_UNIT;
   tree origvar = var;
@@ -1796,7 +1798,9 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 	    expand_one_error_var (var);
 	}
     }
-  else if (use_register_for_decl (var))
+  else if (use_register_for_decl (var)
+	   && (!forced_stack_var
+	       || !bitmap_bit_p (forced_stack_var, DECL_UID (var))))
     {
       if (really_expand)
         expand_one_register_var (origvar);
@@ -1841,7 +1845,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
    TOPLEVEL is true if this is the outermost BLOCK.  */
 
 static void
-expand_used_vars_for_block (tree block, bool toplevel)
+expand_used_vars_for_block (tree block, bool toplevel, bitmap forced_stack_vars)
 {
   tree t;
 
@@ -1850,11 +1854,11 @@ expand_used_vars_for_block (tree block, bool toplevel)
     if (TREE_USED (t)
         && ((!VAR_P (t) && TREE_CODE (t) != RESULT_DECL)
 	    || !DECL_NONSHAREABLE (t)))
-      expand_one_var (t, toplevel, true);
+      expand_one_var (t, toplevel, true, forced_stack_vars);
 
   /* Expand all variables at containing levels.  */
   for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
-    expand_used_vars_for_block (t, false);
+    expand_used_vars_for_block (t, false, forced_stack_vars);
 }
 
 /* A subroutine of expand_used_vars.  Walk down through the BLOCK tree
@@ -2138,7 +2142,7 @@ stack_protect_return_slot_p ()
 /* Expand all variables used in the function.  */
 
 static rtx_insn *
-expand_used_vars (void)
+expand_used_vars (bitmap forced_stack_vars)
 {
   tree var, outer_block = DECL_INITIAL (current_function_decl);
   auto_vec<tree> maybe_local_decls;
@@ -2215,7 +2219,7 @@ expand_used_vars (void)
       TREE_USED (var) = 1;
 
       if (expand_now)
-	expand_one_var (var, true, true);
+	expand_one_var (var, true, true, forced_stack_vars);
 
     next:
       if (DECL_ARTIFICIAL (var) && !DECL_IGNORED_P (var))
@@ -2250,7 +2254,7 @@ expand_used_vars (void)
 
   /* At this point, all variables within the block tree with TREE_USED
      set are actually used by the optimized function.  Lay them out.  */
-  expand_used_vars_for_block (outer_block, true);
+  expand_used_vars_for_block (outer_block, true, forced_stack_vars);
 
   tree attribs = DECL_ATTRIBUTES (current_function_decl);
   if (stack_vars_num > 0)
@@ -2290,22 +2294,19 @@ expand_used_vars (void)
 	if (gen_stack_protect_signal
 	    || cfun->calls_alloca
 	    || has_protected_decls
-	    || lookup_attribute ("stack_protect",
-				 DECL_ATTRIBUTES (current_function_decl)))
+	    || lookup_attribute ("stack_protect", attribs))
 	  create_stack_guard ();
 	break;
 
       case SPCT_FLAG_DEFAULT:
 	if (cfun->calls_alloca
 	    || has_protected_decls
-	    || lookup_attribute ("stack_protect",
-				 DECL_ATTRIBUTES (current_function_decl)))
+	    || lookup_attribute ("stack_protect", attribs))
 	  create_stack_guard ();
 	break;
 
       case SPCT_FLAG_EXPLICIT:
-	if (lookup_attribute ("stack_protect",
-			      DECL_ATTRIBUTES (current_function_decl)))
+	if (lookup_attribute ("stack_protect", attribs))
 	  create_stack_guard ();
 	break;
 
@@ -2621,6 +2622,14 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
       && TREE_CODE (op1) == INTEGER_CST)
     code = maybe_optimize_mod_cmp (code, &op0, &op1);
 
+  /* Optimize (x - y) < 0 into x < y if x - y has undefined overflow.  */
+  if (!TYPE_UNSIGNED (TREE_TYPE (op0))
+      && (code == LT_EXPR || code == LE_EXPR
+	  || code == GT_EXPR || code == GE_EXPR)
+      && integer_zerop (op1)
+      && TREE_CODE (op0) == SSA_NAME)
+    maybe_optimize_sub_cmp_0 (code, &op0, &op1);
+
   last2 = last = get_last_insn ();
 
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
@@ -2786,14 +2795,14 @@ expand_call_stmt (gcall *stmt)
       CALL_EXPR_ARG (exp, i) = arg;
     }
 
-  if (gimple_has_side_effects (stmt))
+  if (gimple_has_side_effects (stmt)
+      /* ???  Downstream in expand_expr_real_1 we assume that expressions
+	 w/o side-effects do not throw so work around this here.  */
+      || stmt_could_throw_p (cfun, stmt))
     TREE_SIDE_EFFECTS (exp) = 1;
 
   if (gimple_call_nothrow_p (stmt))
     TREE_NOTHROW (exp) = 1;
-
-  if (gimple_no_warning_p (stmt))
-    TREE_NO_WARNING (exp) = 1;
 
   CALL_EXPR_TAILCALL (exp) = gimple_call_tail_p (stmt);
   CALL_EXPR_MUST_TAIL_CALL (exp) = gimple_call_must_tail_p (stmt);
@@ -2807,6 +2816,9 @@ expand_call_stmt (gcall *stmt)
   CALL_EXPR_VA_ARG_PACK (exp) = gimple_call_va_arg_pack_p (stmt);
   CALL_EXPR_BY_DESCRIPTOR (exp) = gimple_call_by_descriptor_p (stmt);
   SET_EXPR_LOCATION (exp, gimple_location (stmt));
+
+  /* Must come after copying location.  */
+  copy_warning (exp, stmt);
 
   /* Ensure RTL is created for debug args.  */
   if (decl && DECL_HAS_DEBUG_ARGS_P (decl))
@@ -2871,6 +2883,7 @@ expand_asm_loc (tree string, int vol, location_t locus)
       rtx asm_op, clob;
       unsigned i, nclobbers;
       auto_vec<rtx> input_rvec, output_rvec;
+      auto_vec<machine_mode> input_mode;
       auto_vec<const char *> constraints;
       auto_vec<rtx> clobber_rvec;
       HARD_REG_SET clobbered_regs;
@@ -2880,9 +2893,9 @@ expand_asm_loc (tree string, int vol, location_t locus)
       clobber_rvec.safe_push (clob);
 
       if (targetm.md_asm_adjust)
-	targetm.md_asm_adjust (output_rvec, input_rvec,
-			       constraints, clobber_rvec,
-			       clobbered_regs);
+	targetm.md_asm_adjust (output_rvec, input_rvec, input_mode,
+			       constraints, clobber_rvec, clobbered_regs,
+			       locus);
 
       asm_op = body;
       nclobbers = clobber_rvec.length ();
@@ -2939,7 +2952,8 @@ check_operand_nalternatives (const vec<const char *> &constraints)
    variable definition for error, NULL_TREE for ok.  */
 
 static bool
-tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
+tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs,
+				location_t loc)
 {
   /* Conflicts between asm-declared register variables and the clobber
      list are not allowed.  */
@@ -2947,9 +2961,8 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
 
   if (overlap)
     {
-      error ("%<asm%> specifier for variable %qE conflicts with "
-	     "%<asm%> clobber list",
-	     DECL_NAME (overlap));
+      error_at (loc, "%<asm%> specifier for variable %qE conflicts with "
+		"%<asm%> clobber list", DECL_NAME (overlap));
 
       /* Reset registerness to stop multiple errors emitted for a single
 	 variable.  */
@@ -3059,19 +3072,19 @@ expand_asm_stmt (gasm *stmt)
       return;
     }
 
-  /* There are some legacy diagnostics in here, and also avoids a
-     sixth parameger to targetm.md_asm_adjust.  */
+  /* There are some legacy diagnostics in here.  */
   save_input_location s_i_l(locus);
 
   unsigned noutputs = gimple_asm_noutputs (stmt);
   unsigned ninputs = gimple_asm_ninputs (stmt);
   unsigned nlabels = gimple_asm_nlabels (stmt);
   unsigned i;
+  bool error_seen = false;
 
   /* ??? Diagnose during gimplification?  */
   if (ninputs + noutputs + nlabels > MAX_RECOG_OPERANDS)
     {
-      error ("more than %d operands in %<asm%>", MAX_RECOG_OPERANDS);
+      error_at (locus, "more than %d operands in %<asm%>", MAX_RECOG_OPERANDS);
       return;
     }
 
@@ -3124,7 +3137,9 @@ expand_asm_stmt (gasm *stmt)
 	      if (j == -2)
 		{
 		  /* ??? Diagnose during gimplification?  */
-		  error ("unknown register name %qs in %<asm%>", regname);
+		  error_at (locus, "unknown register name %qs in %<asm%>",
+			    regname);
+		  error_seen = true;
 		}
 	      else if (j == -4)
 		{
@@ -3187,7 +3202,11 @@ expand_asm_stmt (gasm *stmt)
 		&& REG_P (DECL_RTL (output_tvec[j]))
 		&& HARD_REGISTER_P (DECL_RTL (output_tvec[j]))
 		&& output_hregno == REGNO (DECL_RTL (output_tvec[j])))
-	      error ("invalid hard register usage between output operands");
+	      {
+		error_at (locus, "invalid hard register usage between output "
+			  "operands");
+		error_seen = true;
+	      }
 
 	  /* Verify matching constraint operands use the same hard register
 	     and that the non-matching constraint operands do not use the same
@@ -3210,13 +3229,19 @@ expand_asm_stmt (gasm *stmt)
 		  }
 		if (i == match
 		    && output_hregno != input_hregno)
-		  error ("invalid hard register usage between output operand "
-			 "and matching constraint operand");
+		  {
+		    error_at (locus, "invalid hard register usage between "
+			      "output operand and matching constraint operand");
+		    error_seen = true;
+		  }
 		else if (early_clobber_p
 			 && i != match
 			 && output_hregno == input_hregno)
-		  error ("invalid hard register usage between earlyclobber "
-			 "operand and input operand");
+		  {
+		    error_at (locus, "invalid hard register usage between "
+			      "earlyclobber operand and input operand");
+		    error_seen = true;
+		  }
 	      }
 	}
 
@@ -3292,7 +3317,10 @@ expand_asm_stmt (gasm *stmt)
 	    op = validize_mem (op);
 
 	  if (! allows_reg && !MEM_P (op))
-	    error ("output number %d not directly addressable", i);
+	    {
+	      error_at (locus, "output number %d not directly addressable", i);
+	      error_seen = true;
+	    }
 	  if ((! allows_mem && MEM_P (op) && GET_MODE (op) != BLKmode)
 	      || GET_CODE (op) == CONCAT)
 	    {
@@ -3330,6 +3358,19 @@ expand_asm_stmt (gasm *stmt)
 
       if (is_inout)
 	inout_opnum.safe_push (i);
+    }
+
+  const char *str = gimple_asm_string (stmt);
+  if (error_seen)
+    {
+      ninputs = 0;
+      noutputs = 0;
+      inout_opnum.truncate (0);
+      output_rvec.truncate (0);
+      clobber_rvec.truncate (0);
+      constraints.truncate (0);
+      CLEAR_HARD_REG_SET (clobbered_regs);
+      str = "";
     }
 
   auto_vec<rtx, MAX_RECOG_OPERANDS> input_rvec;
@@ -3373,9 +3414,8 @@ expand_asm_stmt (gasm *stmt)
 	  if (allows_reg && TYPE_MODE (type) != BLKmode)
 	    op = force_reg (TYPE_MODE (type), op);
 	  else if (!allows_mem)
-	    warning (0, "%<asm%> operand %d probably does not match "
-		     "constraints",
-		     i + noutputs);
+	    warning_at (locus, 0, "%<asm%> operand %d probably does not match "
+			"constraints", i + noutputs);
 	  else if (MEM_P (op))
 	    {
 	      /* We won't recognize either volatile memory or memory
@@ -3390,7 +3430,7 @@ expand_asm_stmt (gasm *stmt)
     }
 
   /* For in-out operands, copy output rtx to input rtx.  */
-  unsigned ninout = inout_opnum.length();
+  unsigned ninout = inout_opnum.length ();
   for (i = 0; i < ninout; i++)
     {
       int j = inout_opnum[i];
@@ -3411,9 +3451,10 @@ expand_asm_stmt (gasm *stmt)
      the flags register.  */
   rtx_insn *after_md_seq = NULL;
   if (targetm.md_asm_adjust)
-    after_md_seq = targetm.md_asm_adjust (output_rvec, input_rvec,
-					  constraints, clobber_rvec,
-					  clobbered_regs);
+    after_md_seq
+	= targetm.md_asm_adjust (output_rvec, input_rvec, input_mode,
+				 constraints, clobber_rvec, clobbered_regs,
+				 locus);
 
   /* Do not allow the hook to change the output and input count,
      lest it mess up the operand numbering.  */
@@ -3429,10 +3470,10 @@ expand_asm_stmt (gasm *stmt)
 
   bool clobber_conflict_found = 0;
   for (i = 0; i < noutputs; ++i)
-    if (tree_conflicts_with_clobbers_p (output_tvec[i], &clobbered_regs))
+    if (tree_conflicts_with_clobbers_p (output_tvec[i], &clobbered_regs, locus))
 	clobber_conflict_found = 1;
   for (i = 0; i < ninputs - ninout; ++i)
-    if (tree_conflicts_with_clobbers_p (input_tvec[i], &clobbered_regs))
+    if (tree_conflicts_with_clobbers_p (input_tvec[i], &clobbered_regs, locus))
 	clobber_conflict_found = 1;
 
   /* Make vectors for the expression-rtx, constraint strings,
@@ -3444,7 +3485,7 @@ expand_asm_stmt (gasm *stmt)
 
   rtx body = gen_rtx_ASM_OPERANDS ((noutputs == 0 ? VOIDmode
 				    : GET_MODE (output_rvec[0])),
-				   ggc_strdup (gimple_asm_string (stmt)),
+				   ggc_strdup (str),
 				   "", 0, argvec, constraintvec,
 				   labelvec, locus);
   MEM_VOLATILE_P (body) = gimple_asm_volatile_p (stmt);
@@ -4500,7 +4541,12 @@ expand_debug_expr (tree exp)
       op0 = DECL_RTL_IF_SET (exp);
 
       if (op0)
-	return op0;
+	{
+	  if (GET_MODE (op0) != mode)
+	    gcc_assert (VECTOR_TYPE_P (TREE_TYPE (exp)));
+	  else
+	    return op0;
+	}
 
       op0 = gen_rtx_DEBUG_EXPR (mode);
       DEBUG_EXPR_TREE_DECL (op0) = exp;
@@ -6044,7 +6090,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   /* Expand implicit goto and convert goto_locus.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      if (e->goto_locus != UNKNOWN_LOCATION)
+      if (e->goto_locus != UNKNOWN_LOCATION || !stmt)
 	set_curr_insn_location (e->goto_locus);
       if ((e->flags & EDGE_FALLTHRU) && e->dest != bb->next_bb)
 	{
@@ -6224,9 +6270,10 @@ construct_exit_block (void)
 
 static tree
 discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
-				   void *data ATTRIBUTE_UNUSED)
+				   void *data)
 {
   tree t = *tp;
+  bitmap forced_stack_vars = (bitmap)((walk_stmt_info *)data)->info;
 
   if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
@@ -6250,25 +6297,29 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
 	{
 	  t = get_base_address (t);
 	  if (t && DECL_P (t)
-              && DECL_MODE (t) != BLKmode)
-	    TREE_ADDRESSABLE (t) = 1;
+	      && DECL_MODE (t) != BLKmode
+	      && !TREE_ADDRESSABLE (t))
+	    bitmap_set_bit (forced_stack_vars, DECL_UID (t));
 	}
 
       *walk_subtrees = 0;
     }
   /* References of size POLY_INT_CST to a fixed-size object must go
      through memory.  It's more efficient to force that here than
-     to create temporary slots on the fly.  */
-  else if ((TREE_CODE (t) == MEM_REF || TREE_CODE (t) == TARGET_MEM_REF)
-	   && TYPE_SIZE (TREE_TYPE (t))
-	   && POLY_INT_CST_P (TYPE_SIZE (TREE_TYPE (t))))
+     to create temporary slots on the fly.
+     RTL expansion expectes TARGET_MEM_REF to always address actual memory.  */
+  else if (TREE_CODE (t) == TARGET_MEM_REF
+	   || (TREE_CODE (t) == MEM_REF
+	       && TYPE_SIZE (TREE_TYPE (t))
+	       && POLY_INT_CST_P (TYPE_SIZE (TREE_TYPE (t)))))
     {
       tree base = get_base_address (t);
       if (base
 	  && DECL_P (base)
+	  && !TREE_ADDRESSABLE (base)
 	  && DECL_MODE (base) != BLKmode
 	  && GET_MODE_SIZE (DECL_MODE (base)).is_constant ())
-	TREE_ADDRESSABLE (base) = 1;
+	bitmap_set_bit (forced_stack_vars, DECL_UID (base));
       *walk_subtrees = 0;
     }
 
@@ -6281,7 +6332,7 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
    suitable for raw bits processing (like XFmode on i?86).  */
 
 static void
-avoid_type_punning_on_regs (tree t)
+avoid_type_punning_on_regs (tree t, bitmap forced_stack_vars)
 {
   machine_mode access_mode = TYPE_MODE (TREE_TYPE (t));
   if (access_mode != BLKmode
@@ -6295,7 +6346,7 @@ avoid_type_punning_on_regs (tree t)
 		   GET_MODE_BITSIZE (GET_MODE_INNER (DECL_MODE (base))))
       /* Double check in the expensive way we really would get a pseudo.  */
       && use_register_for_decl (base))
-    TREE_ADDRESSABLE (base) = 1;
+    bitmap_set_bit (forced_stack_vars, DECL_UID (base));
 }
 
 /* RTL expansion is not able to compile array references with variable
@@ -6304,38 +6355,49 @@ avoid_type_punning_on_regs (tree t)
    scenario.  */
 
 static void
-discover_nonconstant_array_refs (void)
+discover_nonconstant_array_refs (bitmap forced_stack_vars)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
 
+  walk_stmt_info wi = {};
+  wi.info = forced_stack_vars;
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple *stmt = gsi_stmt (gsi);
 	if (!is_gimple_debug (stmt))
 	  {
-	    walk_gimple_op (stmt, discover_nonconstant_array_refs_r, NULL);
+	    walk_gimple_op (stmt, discover_nonconstant_array_refs_r, &wi);
 	    gcall *call = dyn_cast <gcall *> (stmt);
 	    if (call && gimple_call_internal_p (call))
-	      switch (gimple_call_internal_fn (call))
-		{
-		case IFN_LOAD_LANES:
-		  /* The source must be a MEM.  */
-		  mark_addressable (gimple_call_arg (call, 0));
-		  break;
-		case IFN_STORE_LANES:
-		  /* The destination must be a MEM.  */
-		  mark_addressable (gimple_call_lhs (call));
-		  break;
-		default:
-		  break;
-		}
+	      {
+		tree cand = NULL_TREE;
+		switch (gimple_call_internal_fn (call))
+		  {
+		  case IFN_LOAD_LANES:
+		    /* The source must be a MEM.  */
+		    cand = gimple_call_arg (call, 0);
+		    break;
+		  case IFN_STORE_LANES:
+		    /* The destination must be a MEM.  */
+		    cand = gimple_call_lhs (call);
+		    break;
+		  default:
+		    break;
+		  }
+		if (cand)
+		  cand = get_base_address (cand);
+		if (cand
+		    && DECL_P (cand)
+		    && use_register_for_decl (cand))
+		  bitmap_set_bit (forced_stack_vars, DECL_UID (cand));
+	      }
 	    if (gimple_vdef (stmt))
 	      {
 		tree t = gimple_get_lhs (stmt);
 		if (t && REFERENCE_CLASS_P (t))
-		  avoid_type_punning_on_regs (t);
+		  avoid_type_punning_on_regs (t, forced_stack_vars);
 	      }
 	  }
       }
@@ -6495,7 +6557,7 @@ const pass_data pass_data_expand =
     | PROP_gimple_lvec
     | PROP_gimple_lva), /* properties_required */
   PROP_rtl, /* properties_provided */
-  ( PROP_ssa | PROP_trees ), /* properties_destroyed */
+  ( PROP_ssa | PROP_gimple ), /* properties_destroyed */
   0, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
@@ -6536,7 +6598,8 @@ pass_expand::execute (function *fun)
     }
 
   /* Mark arrays indexed with non-constant indices with TREE_ADDRESSABLE.  */
-  discover_nonconstant_array_refs ();
+  auto_bitmap forced_stack_vars;
+  discover_nonconstant_array_refs (forced_stack_vars);
 
   /* Make sure all values used by the optimization passes have sane
      defaults.  */
@@ -6584,7 +6647,7 @@ pass_expand::execute (function *fun)
   timevar_push (TV_VAR_EXPAND);
   start_sequence ();
 
-  var_ret_seq = expand_used_vars ();
+  var_ret_seq = expand_used_vars (forced_stack_vars);
 
   var_seq = get_insns ();
   end_sequence ();
@@ -6604,8 +6667,33 @@ pass_expand::execute (function *fun)
 		 (int) param_ssp_buffer_size);
     }
 
+  /* Temporarily mark PARM_DECLs and RESULT_DECLs we need to expand to
+     memory addressable so expand_function_start can emit the required
+     copies.  */
+  auto_vec<tree, 16> marked_parms;
+  for (tree parm = DECL_ARGUMENTS (current_function_decl); parm;
+       parm = DECL_CHAIN (parm))
+    if (!TREE_ADDRESSABLE (parm)
+	&& bitmap_bit_p (forced_stack_vars, DECL_UID (parm)))
+      {
+	TREE_ADDRESSABLE (parm) = 1;
+	marked_parms.safe_push (parm);
+      }
+  if (DECL_RESULT (current_function_decl)
+      && !TREE_ADDRESSABLE (DECL_RESULT (current_function_decl))
+      && bitmap_bit_p (forced_stack_vars,
+		       DECL_UID (DECL_RESULT (current_function_decl))))
+    {
+      TREE_ADDRESSABLE (DECL_RESULT (current_function_decl)) = 1;
+      marked_parms.safe_push (DECL_RESULT (current_function_decl));
+    }
+
   /* Set up parameters and prepare for return, for the function.  */
   expand_function_start (current_function_decl);
+
+  /* Clear TREE_ADDRESSABLE again.  */
+  while (!marked_parms.is_empty ())
+    TREE_ADDRESSABLE (marked_parms.pop ()) = 0;
 
   /* If we emitted any instructions for setting up the variables,
      emit them before the FUNCTION_START note.  */
@@ -6837,8 +6925,9 @@ pass_expand::execute (function *fun)
   if (crtl->tail_call_emit)
     fixup_tail_calls ();
 
-  unsigned HOST_WIDE_INT patch_area_size = function_entry_patch_area_size;
-  unsigned HOST_WIDE_INT patch_area_entry = function_entry_patch_area_start;
+  HOST_WIDE_INT patch_area_size, patch_area_entry;
+  parse_and_check_patch_area (flag_patchable_function_entry, false,
+			      &patch_area_size, &patch_area_entry);
 
   tree patchable_function_entry_attr
     = lookup_attribute ("patchable_function_entry",

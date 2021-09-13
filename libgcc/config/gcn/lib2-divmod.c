@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Altera and Mentor Graphics, Inc.
 
 This file is free software; you can redistribute it and/or modify it
@@ -102,15 +102,15 @@ __modsi3 (SItype a, SItype b)
 }
 
 
-SItype
-__udivsi3 (SItype a, SItype b)
+USItype
+__udivsi3 (USItype a, USItype b)
 {
   return udivmodsi4 (a, b, 0);
 }
 
 
-SItype
-__umodsi3 (SItype a, SItype b)
+USItype
+__umodsi3 (USItype a, USItype b)
 {
   return udivmodsi4 (a, b, 1);
 }

@@ -1,7 +1,7 @@
 ; -*- buffer-read-only: t -*-
 ; Generated automatically by csky_genopt.sh from csky_cores.def.
 
-; Copyright (C) 2018-2020 Free Software Foundation, Inc.
+; Copyright (C) 2018-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -194,6 +194,12 @@ Enum(csky_processor_type) String(ck810ft) Value( TARGET_CPU_ck810ff)
 EnumValue
 Enum(csky_processor_type) String(ck810ftv) Value( TARGET_CPU_ck810ftv)
 
+EnumValue
+Enum(csky_processor_type) String(ck860) Value( TARGET_CPU_ck860)
+
+EnumValue
+Enum(csky_processor_type) String(ck860f) Value( TARGET_CPU_ck860f)
+
 Enum
 Name(csky_arch) Type(int)
 Known CSKY architectures (for use with the -march= option):
@@ -213,6 +219,9 @@ Enum(csky_arch) String(ck807) Value(3)
 EnumValue
 Enum(csky_arch) String(ck810) Value(4)
 
+EnumValue
+Enum(csky_arch) String(ck860) Value(5)
+
 Enum
 Name(csky_fpu) Type(enum csky_fpu_type)
 Known CSKY FPUs (for use with the -mfpu= option):
@@ -225,6 +234,18 @@ Enum(csky_fpu) String(fpv2) Value(TARGET_FPU_fpv2)
 
 EnumValue
 Enum(csky_fpu) String(fpv2_divd) Value(TARGET_FPU_fpv2_divd)
+
+EnumValue
+Enum(csky_fpu) String(fpv3_hf) Value(TARGET_FPU_fpv3_hf)
+
+EnumValue
+Enum(csky_fpu) String(fpv3_hsf) Value(TARGET_FPU_fpv3_hsf)
+
+EnumValue
+Enum(csky_fpu) String(fpv3_sdf) Value(TARGET_FPU_fpv3_sdf)
+
+EnumValue
+Enum(csky_fpu) String(fpv3) Value(TARGET_FPU_fpv3)
 
 EnumValue
 Enum(csky_fpu) String(auto) Value(TARGET_FPU_auto)

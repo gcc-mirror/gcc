@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,7 +79,7 @@ package Switch is
    --  Returns True iff Switch_Chars represents an internal GCC switch to be
    --  followed by a single argument, such as -dumpbase, or --param.
    --  Even though passed by the "gcc" driver, these need not be stored in ALI
-   --  files and may safely be ignored by non GCC back-ends.
+   --  files and may safely be ignored by non-GCC back ends.
 
    function Switch_Last (Switch_Chars : String) return Natural;
    --  Index in Switch_Chars of the last relevant character for later string

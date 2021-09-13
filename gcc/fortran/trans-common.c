@@ -1,5 +1,5 @@
 /* Common block and equivalence list handling
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Canqun Yang <canqun@nudt.edu.cn>
 
 This file is part of GCC.
@@ -759,10 +759,11 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
       else
 	gfc_add_decl_to_function (var_decl);
 
-      SET_DECL_VALUE_EXPR (var_decl,
-			   fold_build3_loc (input_location, COMPONENT_REF,
-					    TREE_TYPE (s->field),
-					    decl, s->field, NULL_TREE));
+      tree comp = build3_loc (input_location, COMPONENT_REF,
+			      TREE_TYPE (s->field), decl, s->field, NULL_TREE);
+      if (TREE_THIS_VOLATILE (s->field))
+	TREE_THIS_VOLATILE (comp) = 1;
+      SET_DECL_VALUE_EXPR (var_decl, comp);
       DECL_HAS_VALUE_EXPR_P (var_decl) = 1;
       GFC_DECL_COMMON_OR_EQUIV (var_decl) = 1;
 

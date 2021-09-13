@@ -1,5 +1,5 @@
 /* Classes for purging state at function_points.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -159,6 +159,10 @@ public:
     const FINAL OVERRIDE;
 
 private:
+  void print_needed (graphviz_out *gv,
+		     const function_point &point,
+		     bool within_table) const;
+
   const state_purge_map *m_map;
 };
 

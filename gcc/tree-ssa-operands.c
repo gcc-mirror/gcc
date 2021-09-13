@@ -1,5 +1,5 @@
 /* SSA operands management for trees.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -626,15 +626,10 @@ mark_address_taken (tree ref)
      be referenced using pointer arithmetic.  See PR 21407 and the
      ensuing mailing list discussion.  */
   var = get_base_address (ref);
-  if (var)
-    {
-      if (DECL_P (var))
-	TREE_ADDRESSABLE (var) = 1;
-      else if (TREE_CODE (var) == MEM_REF
-	       && TREE_CODE (TREE_OPERAND (var, 0)) == ADDR_EXPR
-	       && DECL_P (TREE_OPERAND (TREE_OPERAND (var, 0), 0)))
-	TREE_ADDRESSABLE (TREE_OPERAND (TREE_OPERAND (var, 0), 0)) = 1;
-    }
+  if (VAR_P (var)
+      || TREE_CODE (var) == RESULT_DECL
+      || TREE_CODE (var) == PARM_DECL)
+    TREE_ADDRESSABLE (var) = 1;
 }
 
 
@@ -674,7 +669,9 @@ operands_scanner::get_tmr_operands(tree expr, int flags)
     gimple_set_has_volatile_ops (stmt, true);
 
   /* First record the real operands.  */
-  get_expr_operands (&TMR_BASE (expr), opf_use | (flags & opf_no_vops));
+  get_expr_operands (&TMR_BASE (expr),
+		     opf_non_addressable | opf_use
+		     | (flags & (opf_no_vops|opf_not_non_addressable)));
   get_expr_operands (&TMR_INDEX (expr), opf_use | (flags & opf_no_vops));
   get_expr_operands (&TMR_INDEX2 (expr), opf_use | (flags & opf_no_vops));
 
@@ -837,12 +834,7 @@ operands_scanner::get_expr_operands (tree *expr_p, int flags)
 	get_expr_operands (&TREE_OPERAND (expr, 0), flags);
 
 	if (code == COMPONENT_REF)
-	  {
-	    if (!(flags & opf_no_vops)
-		&& TREE_THIS_VOLATILE (TREE_OPERAND (expr, 1)))
-	      gimple_set_has_volatile_ops (stmt, true);
-	    get_expr_operands (&TREE_OPERAND (expr, 2), uflags);
-	  }
+	  get_expr_operands (&TREE_OPERAND (expr, 2), uflags);
 	else if (code == ARRAY_REF || code == ARRAY_RANGE_REF)
 	  {
 	    get_expr_operands (&TREE_OPERAND (expr, 1), uflags);

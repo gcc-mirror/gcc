@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2020 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -176,6 +176,40 @@ if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \
     global gcc_runtest_parallelize_dir
     global gcc_runtest_parallelize_last
 
+    # GCC testsuite is parallelised by starting N runtest processes -- each
+    # with its own test directory.  These N runtest processes ALL go through
+    # the relevant .exp and ALL attempt to run every test.  And they go
+    # through the tests the same order -- this is important, and if there is
+    # a bug that causes different runtest processes to enumerate the tests
+    # differently, then things will break and some tests will be skipped, while
+    # others will be ran several times.
+    # So, just before a runtest processes runs a specific test it asks
+    # "runtest_file_p" routine whether a particular test is part of
+    # the requested testsuite.  We override this function so that it
+    # returns "yes" to the first-arrived runtest process, and "no" to all
+    # subsequent runtest processes -- this is implemented by creating a marker
+    # file, which persist till the end of the test run.  We optimize this
+    # a bit by batching 10 tests and using a single marker file for the batch.
+    #
+    # Note that the runtest processes all race each other to get to the next
+    # test batch.  This means that batch allocation between testsuite runs
+    # is very likely to change.
+    #
+    # To confirm or deny suspicion that tests are skipped or executed
+    # multiple times due to runtest processes enumerating tests differently ...
+    # 1. Uncomment the three below "verbose -log gcc_parallel_test_run_p ..."
+    #    debug print-outs.
+    # 2. Run the testsuite with "-v" added to RUNTESTFLAGS
+    # 3. Extract debug print-outs with something like:
+    #    for i in $(find -name "*.log.sep"); do
+    #      grep gcc_parallel_test_run_p $i \
+    #        | sed -e "s/\([^ ]*\) \([^ ]*\) \([^ ]*\) \([^ ]*\)/\3 \2/" \
+    #        | sed -e "s#\(/testsuite/[a-z+]*\)[0-9]*/#\1N/#" > $i.order
+    #    done
+    # 4. Compare debug print-outs produced by individual runtest processes:
+    #    find -name "*.log.sep.order" | xargs md5sum | sort
+    # 5. Check that MD5 hashes of all .order files of the same testsuite match
+    #    and investigate if they don't.
     set gcc_runtest_parallelize_counter 0
     set gcc_runtest_parallelize_counter_minor 0
     set gcc_runtest_parallelize_enable 1
@@ -505,4 +539,66 @@ proc dg-check-dot { args } {
     }
 
     pass "$testcase dg-check-dot $dotfile"
+}
+
+# Used by aarch64-with-arch-dg-options to intercept dg-options and make
+# the changes required.  See there for details.
+proc aarch64-arch-dg-options { args } {
+    upvar dg-do-what do_what
+    global aarch64_default_testing_arch
+
+    set add_arch 1
+    set add_tune 1
+    set checks_output [string equal [lindex $do_what 0] "compile"]
+    set options [lindex $args 1]
+
+    foreach option [split $options] {
+	switch -glob -- $option {
+	    -march=* { set add_arch 0 }
+	    -mcpu=* { set add_arch 0; set add_tune 0 }
+	    -mtune=* { set add_tune 0 }
+	    -moverride=* { set add_tune 0 }
+	    -save-temps { set checks_output 1 }
+	    --save-temps { set checks_output 1 }
+	    -fdump* { set checks_output 1 }
+	}
+    }
+
+    if { $add_arch && ![string equal $aarch64_default_testing_arch ""] } {
+	# Force SVE if we're not testing it already.
+	append options " $aarch64_default_testing_arch"
+    }
+
+    if { $add_tune && $checks_output } {
+	# Turn off any default tuning and codegen tweaks.
+	append options " -mtune=generic -moverride=tune=none"
+    }
+
+    uplevel 1 aarch64-old-dg-options [lreplace $args 1 1 $options]
+}
+
+# Run Tcl code CODE with dg-options modified to work better for some
+# AArch64 tests.  In particular:
+#
+# - If the dg-options do not specify an -march or -mcpu option,
+#   use the architecture options in ARCH (which might be empty).
+#
+# - If the dg-options do not specify an -mcpu, -mtune or -moverride option,
+#   and if the test appears to be checking assembly or dump output,
+#   force the test to use generic tuning.
+#
+# The idea is to handle toolchains that are configured with a default
+# CPU or architecture that's different from the norm.
+proc aarch64-with-arch-dg-options { arch code } {
+    global aarch64_default_testing_arch
+
+    set aarch64_default_testing_arch $arch
+
+    rename dg-options aarch64-old-dg-options
+    rename aarch64-arch-dg-options dg-options
+
+    uplevel 1 $code
+
+    rename dg-options aarch64-arch-dg-options
+    rename aarch64-old-dg-options dg-options
 }

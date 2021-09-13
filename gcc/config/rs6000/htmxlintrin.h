@@ -1,5 +1,5 @@
 /* XL compiler Hardware Transactional Memory (HTM) execution intrinsics.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
    Contributed by Peter Bergner <bergner@vnet.ibm.com>.
 
    This file is free software; you can redistribute it and/or modify it under

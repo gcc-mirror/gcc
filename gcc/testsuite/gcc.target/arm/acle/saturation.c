@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_qbit_ok } */
-/* { dg-add-options arm_qbit } */
+/* { dg-require-effective-target arm_sat_ok } */
+/* { dg-add-options arm_sat } */
 
 #include <arm_acle.h>
 

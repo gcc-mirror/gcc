@@ -1,5 +1,5 @@
 /* IPA predicates.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -243,7 +243,7 @@ public:
   predicate remap_after_inlining (class ipa_fn_summary *,
 		  		  class ipa_node_params *params_summary,
 			          class ipa_fn_summary *,
-				  vec<int>, vec<HOST_WIDE_INT>,
+				  const vec<int> &, const vec<HOST_WIDE_INT> &,
 				  clause_t, const predicate &);
 
   void stream_in (class lto_input_block *);

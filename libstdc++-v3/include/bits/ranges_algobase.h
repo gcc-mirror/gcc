@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -244,7 +244,7 @@ namespace ranges
       else if constexpr (__is_normal_iterator<_Out>)
 	{
 	  auto [__in,__out]
-	    = ranges::__copy_or_move<_IsMove>(__first, __last, __result.base());
+	    = ranges::__copy_or_move<_IsMove>(std::move(__first), __last, __result.base());
 	  return {std::move(__in), decltype(__result){__out}};
 	}
       else if constexpr (sized_sentinel_for<_Sent, _Iter>)

@@ -3,7 +3,7 @@
 //
 // 2008-12-05  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,7 @@
 
 #include <random>
 #include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
 
 void
 test01()
@@ -38,9 +39,22 @@ test01()
   //VERIFY();
 }
 
+void
+test02()
+{
+  unsigned arr[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  __gnu_test::input_container<unsigned int> in(arr);
+  std::seed_seq seq(in.begin(), in.end());
+
+  std::vector<unsigned> foo(10000);
+  seq.generate(foo.begin(), foo.end());
+
+  VERIFY( seq.size() == 10 );
+}
+
 int
 main()
 {
   test01();
-  return 0;
+  test02();
 }

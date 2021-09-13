@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,4 +45,10 @@ void test02()
 {
   test_type l1, l2, l3;
   std::lock(l1, l2, l3);
+}
+
+void test03()
+{
+  test_type l1, l2, l3;
+  std::try_lock(l1, l2, l3);
 }

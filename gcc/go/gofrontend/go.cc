@@ -40,6 +40,8 @@ go_create_gogo(const struct go_create_gogo_args* args)
     ::gogo->set_compiling_runtime(args->compiling_runtime);
   if (args->c_header != NULL)
     ::gogo->set_c_header(args->c_header);
+  if (args->embedcfg != NULL)
+    ::gogo->read_embedcfg(args->embedcfg);
   ::gogo->set_debug_escape_level(args->debug_escape_level);
   if (args->debug_escape_hash != NULL)
     ::gogo->set_debug_escape_hash(args->debug_escape_hash);

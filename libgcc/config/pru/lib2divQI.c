@@ -1,5 +1,5 @@
 /* QI mode divide routines for libgcc for PRU
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Based on lib2divQI.c from MSP430 port.
 
    This file is part of GCC.

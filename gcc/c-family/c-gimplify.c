@@ -2,7 +2,7 @@
    by the C-based front ends.  The structure of gimplified, or
    language-independent, trees is dictated by the grammar described in this
    file.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Lowering of expressions contributed by Sebastian Pop <s.pop@laposte.net>
    Re-written to support lowering of whole function trees, documentation
    and miscellaneous cleanups by Diego Novillo <dnovillo@redhat.com>
@@ -497,6 +497,35 @@ c_genericize_control_stmt (tree *stmt_p, int *walk_subtrees, void *data,
       genericize_omp_for_stmt (stmt_p, walk_subtrees, data, func, lh);
       break;
 
+    case STATEMENT_LIST:
+      if (TREE_SIDE_EFFECTS (stmt))
+	{
+	  tree_stmt_iterator i;
+	  int nondebug_stmts = 0;
+	  bool clear_side_effects = true;
+	  /* Genericization can clear TREE_SIDE_EFFECTS, e.g. when
+	     transforming an IF_STMT into COND_EXPR.  If such stmt
+	     appears in a STATEMENT_LIST that contains only that
+	     stmt and some DEBUG_BEGIN_STMTs, without -g where the
+	     STATEMENT_LIST wouldn't be present at all the resulting
+	     expression wouldn't have TREE_SIDE_EFFECTS set, so make sure
+	     to clear it even on the STATEMENT_LIST in such cases.  */
+	  for (i = tsi_start (stmt); !tsi_end_p (i); tsi_next (&i))
+	    {
+	      tree t = tsi_stmt (i);
+	      if (TREE_CODE (t) != DEBUG_BEGIN_STMT && nondebug_stmts < 2)
+		nondebug_stmts++;
+	      walk_tree_1 (tsi_stmt_ptr (i), func, data, NULL, lh);
+	      if (TREE_CODE (t) != DEBUG_BEGIN_STMT
+		  && (nondebug_stmts > 1 || TREE_SIDE_EFFECTS (tsi_stmt (i))))
+		clear_side_effects = false;
+	    }
+	  if (clear_side_effects)
+	    TREE_SIDE_EFFECTS (stmt) = 0;
+	  *walk_subtrees = 0;
+	}
+      break;
+
     default:
       break;
     }
@@ -684,7 +713,7 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	  && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
 	  && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p)) == DECL_EXPR_DECL (*expr_p))
 	  && !warn_init_self)
-	TREE_NO_WARNING (DECL_EXPR_DECL (*expr_p)) = 1;
+	suppress_warning (DECL_EXPR_DECL (*expr_p), OPT_Winit_self);
       break;
 
     case PREINCREMENT_EXPR:

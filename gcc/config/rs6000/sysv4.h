@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995-2020 Free Software Foundation, Inc.
+   Copyright (C) 1995-2021 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -325,8 +325,7 @@ do {									\
 /* An expression for the alignment of a structure field FIELD if the
    alignment computed in the usual way is COMPUTED.  */
 #define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED)			      \
-	(rs6000_special_adjust_field_align_p ((TYPE), (COMPUTED))	      \
-	 ? 128 : COMPUTED)
+	(COMPUTED)
 
 #undef  BIGGEST_FIELD_ALIGNMENT
 

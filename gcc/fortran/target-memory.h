@@ -1,5 +1,5 @@
 /* Simulate storage of variables into target memory, header.
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Paul Thomas and Brooks Moses
 
 This file is part of GCC.

@@ -1,5 +1,5 @@
 /* Architecture and core descriptions for the C-SKY back end.
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by C-SKY Microsystems and Mentor Graphics.
 
    This file is part of GCC.
@@ -38,6 +38,8 @@ CSKY_ARCH ("ck807",  ck807,  CK807,
 	   CSKY_ISA_FEAT (CSKY_ISA_CK807) CSKY_ISA_FEAT (CSKY_ISA_DSP))
 CSKY_ARCH ("ck810",  ck810,  CK810,
 	   CSKY_ISA_FEAT (CSKY_ISA_CK810) CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_ARCH ("ck860",  ck860,  CK860,
+	   CSKY_ISA_FEAT (CSKY_ISA_CK860))
 #endif
 
 
@@ -181,6 +183,12 @@ CSKY_CORE ("ck810ft",  ck810ff,	 ck810ft,  CK810,
 	   CSKY_ISA_FEAT_NONE)
 CSKY_CORE ("ck810ftv", ck810ftv, ck810ftv, CK810,
 	   CSKY_ISA_FEAT_NONE)
+
+/* ck860 Architecture Processors */
+CSKY_CORE("ck860",    ck860,    ck860,    CK860,
+	  CSKY_ISA_FEAT_NONE)
+CSKY_CORE("ck860f",   ck860f,   ck860f,   CK860,
+	  CSKY_ISA_FEAT_NONE)
 #endif
 
 
@@ -196,4 +204,9 @@ CSKY_CORE ("ck810ftv", ck810ftv, ck810ftv, CK810,
 CSKY_FPU ("fpv2_sf",   fpv2_sf,	  CSKY_ISA_FEAT (CSKY_ISA_FPv2_SF))
 CSKY_FPU ("fpv2",      fpv2,	  CSKY_ISA_FEAT (CSKY_ISA_FPv2))
 CSKY_FPU ("fpv2_divd", fpv2_divd, CSKY_ISA_FEAT (CSKY_ISA_FPv2_DIVD))
+
+CSKY_FPU ("fpv3_hf",   fpv3_hf,   CSKY_ISA_FEAT (CSKY_ISA_FPv3_HF))
+CSKY_FPU ("fpv3_hsf",  fpv3_hsf,  CSKY_ISA_FEAT (CSKY_ISA_FPv3_HSF))
+CSKY_FPU ("fpv3_sdf",  fpv3_sdf,  CSKY_ISA_FEAT (CSKY_ISA_FPv3_SDF))
+CSKY_FPU ("fpv3",      fpv3,      CSKY_ISA_FEAT (CSKY_ISA_FPv3))
 #endif

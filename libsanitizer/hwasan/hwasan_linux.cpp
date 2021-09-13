@@ -69,10 +69,6 @@ static void ProtectGap(uptr addr, uptr size) {
 
 uptr kLowMemStart;
 uptr kLowMemEnd;
-uptr kLowShadowEnd;
-uptr kLowShadowStart;
-uptr kHighShadowStart;
-uptr kHighShadowEnd;
 uptr kHighMemStart;
 uptr kHighMemEnd;
 
@@ -114,37 +110,59 @@ static void InitializeShadowBaseAddress(uptr shadow_size_bytes) {
       FindDynamicShadowStart(shadow_size_bytes);
 }
 
-void InitPrctl() {
+void InitializeOsSupport() {
 #define PR_SET_TAGGED_ADDR_CTRL 55
 #define PR_GET_TAGGED_ADDR_CTRL 56
 #define PR_TAGGED_ADDR_ENABLE (1UL << 0)
   // Check we're running on a kernel that can use the tagged address ABI.
-  if (internal_prctl(PR_GET_TAGGED_ADDR_CTRL, 0, 0, 0, 0) == (uptr)-1 &&
-      errno == EINVAL) {
-#if SANITIZER_ANDROID
+  int local_errno = 0;
+  if (internal_iserror(internal_prctl(PR_GET_TAGGED_ADDR_CTRL, 0, 0, 0, 0),
+                       &local_errno) &&
+      local_errno == EINVAL) {
+#  if SANITIZER_ANDROID || defined(HWASAN_ALIASING_MODE)
     // Some older Android kernels have the tagged pointer ABI on
     // unconditionally, and hence don't have the tagged-addr prctl while still
     // allow the ABI.
     // If targeting Android and the prctl is not around we assume this is the
     // case.
     return;
-#else
-    Printf(
-        "FATAL: "
-        "HWAddressSanitizer requires a kernel with tagged address ABI.\n");
-    Die();
-#endif
+#  else
+    if (flags()->fail_without_syscall_abi) {
+      Printf(
+          "FATAL: "
+          "HWAddressSanitizer requires a kernel with tagged address ABI.\n");
+      Die();
+    }
+#  endif
   }
 
   // Turn on the tagged address ABI.
-  if (internal_prctl(PR_SET_TAGGED_ADDR_CTRL, PR_TAGGED_ADDR_ENABLE, 0, 0, 0) ==
-          (uptr)-1 ||
-      !internal_prctl(PR_GET_TAGGED_ADDR_CTRL, 0, 0, 0, 0)) {
-    Printf(
-        "FATAL: HWAddressSanitizer failed to enable tagged address syscall "
-        "ABI.\nSuggest check `sysctl abi.tagged_addr_disabled` "
-        "configuration.\n");
-    Die();
+  if ((internal_iserror(internal_prctl(PR_SET_TAGGED_ADDR_CTRL,
+                                       PR_TAGGED_ADDR_ENABLE, 0, 0, 0)) ||
+       !internal_prctl(PR_GET_TAGGED_ADDR_CTRL, 0, 0, 0, 0))) {
+#  if defined(__x86_64__) && !defined(HWASAN_ALIASING_MODE)
+    // Try the new prctl API for Intel LAM.  The API is based on a currently
+    // unsubmitted patch to the Linux kernel (as of May 2021) and is thus
+    // subject to change.  Patch is here:
+    // https://lore.kernel.org/linux-mm/20210205151631.43511-12-kirill.shutemov@linux.intel.com/
+    int tag_bits = kTagBits;
+    int tag_shift = kAddressTagShift;
+    if (!internal_iserror(
+            internal_prctl(PR_SET_TAGGED_ADDR_CTRL, PR_TAGGED_ADDR_ENABLE,
+                           reinterpret_cast<unsigned long>(&tag_bits),
+                           reinterpret_cast<unsigned long>(&tag_shift), 0))) {
+      CHECK_EQ(tag_bits, kTagBits);
+      CHECK_EQ(tag_shift, kAddressTagShift);
+      return;
+    }
+#  endif  // defined(__x86_64__) && !defined(HWASAN_ALIASING_MODE)
+    if (flags()->fail_without_syscall_abi) {
+      Printf(
+          "FATAL: HWAddressSanitizer failed to enable tagged address syscall "
+          "ABI.\nSuggest check `sysctl abi.tagged_addr_disabled` "
+          "configuration.\n");
+      Die();
+    }
   }
 #undef PR_SET_TAGGED_ADDR_CTRL
 #undef PR_GET_TAGGED_ADDR_CTRL
@@ -214,23 +232,16 @@ void InitThreads() {
   ProtectGap(thread_space_end,
              __hwasan_shadow_memory_dynamic_address - thread_space_end);
   InitThreadList(thread_space_start, thread_space_end - thread_space_start);
+  hwasanThreadList().CreateCurrentThread();
 }
 
 bool MemIsApp(uptr p) {
+// Memory outside the alias range has non-zero tags.
+#  if !defined(HWASAN_ALIASING_MODE)
   CHECK(GetTagFromPointer(p) == 0);
-  return p >= kHighMemStart || (p >= kLowMemStart && p <= kLowMemEnd);
-}
+#  endif
 
-static void HwasanAtExit(void) {
-  if (common_flags()->print_module_map)
-    DumpProcessMap();
-  if (flags()->print_stats && (flags()->atexit || hwasan_report_count > 0))
-    ReportStats();
-  if (hwasan_report_count > 0) {
-    // ReportAtExitStatistics();
-    if (common_flags()->exitcode)
-      internal__exit(common_flags()->exitcode);
-  }
+  return p >= kHighMemStart || (p >= kLowMemStart && p <= kLowMemEnd);
 }
 
 void InstallAtExitHandler() {
@@ -309,22 +320,6 @@ void AndroidTestTlsSlot() {
 void AndroidTestTlsSlot() {}
 #endif
 
-Thread *GetCurrentThread() {
-  uptr *ThreadLongPtr = GetCurrentThreadLongPtr();
-  if (UNLIKELY(*ThreadLongPtr == 0))
-    return nullptr;
-  auto *R = (StackAllocationsRingBuffer *)ThreadLongPtr;
-  return hwasanThreadList().GetThreadByBufferAddress((uptr)R->Next());
-}
-
-struct AccessInfo {
-  uptr addr;
-  uptr size;
-  bool is_store;
-  bool is_load;
-  bool recover;
-};
-
 static AccessInfo GetAccessInfo(siginfo_t *info, ucontext_t *uc) {
   // Access type is passed in a platform dependent way (see below) and encoded
   // as 0xXY, where X&1 is 1 for store, 0 for load, and X&2 is 1 if the error is
@@ -375,28 +370,6 @@ static AccessInfo GetAccessInfo(siginfo_t *info, ucontext_t *uc) {
   return AccessInfo{addr, size, is_store, !is_store, recover};
 }
 
-static void HandleTagMismatch(AccessInfo ai, uptr pc, uptr frame,
-                              ucontext_t *uc, uptr *registers_frame = nullptr) {
-  InternalMmapVector<BufferedStackTrace> stack_buffer(1);
-  BufferedStackTrace *stack = stack_buffer.data();
-  stack->Reset();
-  stack->Unwind(pc, frame, uc, common_flags()->fast_unwind_on_fatal);
-
-  // The second stack frame contains the failure __hwasan_check function, as
-  // we have a stack frame for the registers saved in __hwasan_tag_mismatch that
-  // we wish to ignore. This (currently) only occurs on AArch64, as x64
-  // implementations use SIGTRAP to implement the failure, and thus do not go
-  // through the stack saver.
-  if (registers_frame && stack->trace && stack->size > 0) {
-    stack->trace++;
-    stack->size--;
-  }
-
-  bool fatal = flags()->halt_on_error || !ai.recover;
-  ReportTagMismatch(stack, ai.addr, ai.size, ai.is_store, fatal,
-                    registers_frame);
-}
-
 static bool HwasanOnSIGTRAP(int signo, siginfo_t *info, ucontext_t *uc) {
   AccessInfo ai = GetAccessInfo(info, uc);
   if (!ai.is_store && !ai.is_load)
@@ -429,27 +402,39 @@ void HwasanOnDeadlySignal(int signo, void *info, void *context) {
   HandleDeadlySignal(info, context, GetTid(), &OnStackUnwind, nullptr);
 }
 
+void Thread::InitStackAndTls(const InitState *) {
+  uptr tls_size;
+  uptr stack_size;
+  GetThreadStackAndTls(IsMainThread(), &stack_bottom_, &stack_size, &tls_begin_,
+                       &tls_size);
+  stack_top_ = stack_bottom_ + stack_size;
+  tls_end_ = tls_begin_ + tls_size;
+}
+
+uptr TagMemoryAligned(uptr p, uptr size, tag_t tag) {
+  CHECK(IsAligned(p, kShadowAlignment));
+  CHECK(IsAligned(size, kShadowAlignment));
+  uptr shadow_start = MemToShadow(p);
+  uptr shadow_size = MemToShadowSize(size);
+
+  uptr page_size = GetPageSizeCached();
+  uptr page_start = RoundUpTo(shadow_start, page_size);
+  uptr page_end = RoundDownTo(shadow_start + shadow_size, page_size);
+  uptr threshold = common_flags()->clear_shadow_mmap_threshold;
+  if (SANITIZER_LINUX &&
+      UNLIKELY(page_end >= page_start + threshold && tag == 0)) {
+    internal_memset((void *)shadow_start, tag, page_start - shadow_start);
+    internal_memset((void *)page_end, tag,
+                    shadow_start + shadow_size - page_end);
+    // For an anonymous private mapping MADV_DONTNEED will return a zero page on
+    // Linux.
+    ReleaseMemoryPagesToOSAndZeroFill(page_start, page_end);
+  } else {
+    internal_memset((void *)shadow_start, tag, shadow_size);
+  }
+  return AddTagToPointer(p, tag);
+}
 
 } // namespace __hwasan
-
-// Entry point for interoperability between __hwasan_tag_mismatch (ASM) and the
-// rest of the mismatch handling code (C++).
-void __hwasan_tag_mismatch4(uptr addr, uptr access_info, uptr *registers_frame,
-                            size_t outsize) {
-  __hwasan::AccessInfo ai;
-  ai.is_store = access_info & 0x10;
-  ai.is_load = !ai.is_store;
-  ai.recover = access_info & 0x20;
-  ai.addr = addr;
-  if ((access_info & 0xf) == 0xf)
-    ai.size = outsize;
-  else
-    ai.size = 1 << (access_info & 0xf);
-
-  __hwasan::HandleTagMismatch(ai, (uptr)__builtin_return_address(0),
-                              (uptr)__builtin_frame_address(0), nullptr,
-                              registers_frame);
-  __builtin_unreachable();
-}
 
 #endif // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD

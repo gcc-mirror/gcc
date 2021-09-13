@@ -696,7 +696,7 @@ void test38()
        printf("Count: %d\n", count);
         assert(count == 1028);
     }
-    catch
+    catch(Throwable)
     {
        printf("Exception: %d\n", k);
         assert(0);

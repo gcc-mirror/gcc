@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -31,12 +31,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#undef vfprintf
-#undef fputs
-#undef fputc
 
+/* No 'FILE *stream's, just basic 'vprintf' etc.  */
+
+#undef vfprintf
 #define vfprintf(stream, fmt, list) vprintf (fmt, list)
+
+#undef fputs
 #define fputs(s, stream) printf ("%s", s)
+
+#undef fputc
 #define fputc(c, stream) printf ("%c", c)
+
+#undef fwrite
+#if 0
+# define fwrite(ptr, size, nmemb, stream) \
+  printf ("%.*s", (int) (size * nmemb), (int) (size * nmemb), ptr)
+/* ... prints literal '%.*s'.  */
+#else
+# define fwrite(ptr, size, nmemb, stream) \
+  do { \
+    /* Yuck!  */ \
+    for (size_t i = 0; i < size * nmemb; ++i) \
+      printf ("%c", ptr[i]); \
+  } while (0)
+#endif
+
+
+/* The 'exit (EXIT_FAILURE);' of an Fortran (only, huh?) OpenMP 'error'
+   directive with 'severity (fatal)' causes a hang, so 'abort' instead of
+   'exit'.  */
+#undef exit
+#define exit(status) abort ()
+
 
 #include "../../error.c"

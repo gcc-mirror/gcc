@@ -1,7 +1,7 @@
 /* An experimental state machine, for tracking "taint": unsanitized uses
    of data potentially under an attacker's control.
 
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -61,9 +61,9 @@ public:
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
-		     tree lhs,
+		     const svalue *lhs,
 		     enum tree_code op,
-		     tree rhs) const FINAL OVERRIDE;
+		     const svalue *rhs) const FINAL OVERRIDE;
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
 
@@ -227,7 +227,6 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
       if (op == ARRAY_REF)
 	{
 	  tree arg = TREE_OPERAND (rhs1, 1);
-	  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
 	  /* Unsigned types have an implicit lower bound.  */
 	  bool is_unsigned = false;
@@ -239,6 +238,7 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	  if (state == m_tainted)
 	    {
 	      /* Complain about missing bounds.  */
+	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      pending_diagnostic *d
 		= new tainted_array_index (*this, diag_arg,
 					   is_unsigned
@@ -249,6 +249,7 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	  else if (state == m_has_lb)
 	    {
 	      /* Complain about missing upper bound.  */
+	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
 			      new tainted_array_index (*this, diag_arg,
 						       BOUNDS_LOWER));
@@ -259,6 +260,7 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	      /* Complain about missing lower bound.  */
 	      if (!is_unsigned)
 		{
+		  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 		  sm_ctxt->warn  (node, stmt, arg,
 				  new tainted_array_index (*this, diag_arg,
 							   BOUNDS_UPPER));
@@ -279,9 +281,9 @@ void
 taint_state_machine::on_condition (sm_context *sm_ctxt,
 				   const supernode *node,
 				   const gimple *stmt,
-				   tree lhs,
+				   const svalue *lhs,
 				   enum tree_code op,
-				   tree rhs ATTRIBUTE_UNUSED) const
+				   const svalue *rhs ATTRIBUTE_UNUSED) const
 {
   if (stmt == NULL)
     return;

@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts.
-   Copyright (C) 1990-2020 Free Software Foundation, Inc.
+   Copyright (C) 1990-2021 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -897,8 +897,16 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
 	      node->tp_first_run = 0;
 	    }
 
-          if (dump_file)
-            fprintf (dump_file, "Read tp_first_run: %d\n", node->tp_first_run);
+	  /* Drop profile for -fprofile-reproducible=multithreaded.  */
+	  bool drop
+	    = (flag_profile_reproducible == PROFILE_REPRODUCIBILITY_MULTITHREADED);
+	  if (drop)
+	    node->tp_first_run = 0;
+
+	  if (dump_file)
+	    fprintf (dump_file, "Read tp_first_run: %d%s\n", node->tp_first_run,
+		     drop ? "; ignored because profile reproducibility is "
+		     "multi-threaded" : "");
         }
     }
 
@@ -1294,6 +1302,11 @@ branch_prob (bool thunk)
   if (dump_file)
     fprintf (dump_file, "%d instrumentation edges\n", num_instrumented);
 
+  /* Dump function body before it's instrumented.
+     It helps to debug gcov tool.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    dump_function_to_file (cfun->decl, dump_file, dump_flags);
+
   /* Compute two different checksums. Note that we want to compute
      the checksum in only once place, since it depends on the shape
      of the control flow which can change during 
@@ -1453,13 +1466,12 @@ branch_prob (bool thunk)
   if (flag_branch_probabilities
       && (profile_status_for_fn (cfun) == PROFILE_READ))
     {
-      class loop *loop;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	report_predictor_hitrates ();
 
       /* At this moment we have precise loop iteration count estimates.
 	 Record them to loop structure before the profile gets out of date. */
-      FOR_EACH_LOOP (loop, 0)
+      for (auto loop : loops_list (cfun, 0))
 	if (loop->header->count > 0 && loop->header->count.reliable_p ())
 	  {
 	    gcov_type nit = expected_loop_iterations_unbounded (loop);

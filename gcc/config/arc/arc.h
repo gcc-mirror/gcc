@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+   Copyright (C) 1994-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #define SYMBOL_FLAG_CMEM	(SYMBOL_FLAG_MACH_DEP << 3)
 
 #ifndef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT	PROCESSOR_arc700
+#define TARGET_CPU_DEFAULT	PROCESSOR_hs38_linux
 #endif
 
 /* Check if this symbol has a long_call attribute in its declaration */
@@ -100,7 +100,11 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
   "%:cpu_to_as(%{mcpu=*:%*}) %{mspfp*} %{mdpfp*} "                      \
   "%{mfpu=fpuda*:-mfpuda} %{mcode-density}"
 
+/* Support for a compile-time default CPU and FPU.  The rules are:
+   --with-cpu is ignored if -mcpu, mARC*, marc*, mA7, mA6 are specified.
+   --with-fpu is ignored if -mfpu is specified.  */
 #define OPTION_DEFAULT_SPECS						\
+  {"fpu", "%{!mfpu=*:-mfpu=%(VALUE)}"},					\
   {"cpu", "%{!mcpu=*:%{!mARC*:%{!marc*:%{!mA7:%{!mA6:-mcpu=%(VALUE)}}}}}" }
 
 #ifndef DRIVER_ENDIAN_SELF_SPECS
@@ -114,8 +118,6 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
   "%{mEA: -mea %<mEA}"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
-
-#define TARGET_MIXED_CODE (TARGET_MIXED_CODE_SET)
 
 #define TARGET_SPFP (TARGET_SPFP_FAST_SET || TARGET_SPFP_COMPACT_SET)
 #define TARGET_DPFP (TARGET_DPFP_FAST_SET || TARGET_DPFP_COMPACT_SET	\
@@ -571,7 +573,7 @@ extern enum reg_class arc_regno_reg_class[];
    a scale factor or added to another register (as well as added to a
    displacement).  */
 
-#define INDEX_REG_CLASS (TARGET_MIXED_CODE ? ARCOMPACT16_REGS : GENERAL_REGS)
+#define INDEX_REG_CLASS GENERAL_REGS
 
 /* The class value for valid base registers. A base register is one used in
    an address which is the register value plus a displacement.  */
@@ -1193,6 +1195,8 @@ extern char rname56[], rname57[], rname58[], rname59[];
 
 #define ADDITIONAL_REGISTER_NAMES		\
 {						\
+  {"r26",    26},				\
+  {"r27",    27},				\
   {"ilink",  29},				\
   {"r29",    29},				\
   {"r30",    30},				\
@@ -1442,6 +1446,12 @@ do { \
    low-order few bits.
 */
 #define SHIFT_COUNT_TRUNCATED 1
+
+/* Defines if the CLZ result is undefined or has a useful value.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 31, 2)
+
+/* Defines if the CTZ result is undefined or has a useful value.  */
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 31, 2)
 
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */

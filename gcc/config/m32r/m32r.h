@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Renesas M32R cpu.
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -769,29 +769,6 @@ L2:     .word STATIC
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.global\t"
 
-/* We do not use DBX_LINES_FUNCTION_RELATIVE or
-   dbxout_stab_value_internal_label_diff here because
-   we need to use .debugsym for the line label.  */
-
-#define DBX_OUTPUT_SOURCE_LINE(file, line, counter)			\
-  do									\
-    {									\
-      const char * begin_label =					\
-	XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);		\
-      char label[64];							\
-      ASM_GENERATE_INTERNAL_LABEL (label, "LM", counter);		\
-									\
-      dbxout_begin_stabn_sline (line);					\
-      assemble_name (file, label);					\
-      putc ('-', file);							\
-      assemble_name (file, begin_label);				\
-      fputs ("\n\t.debugsym ", file);					\
-      assemble_name (file, label);					\
-      putc ('\n', file);						\
-      counter += 1;							\
-     }									\
-  while (0)
-
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 #ifndef SUBTARGET_REGISTER_NAMES
@@ -930,16 +907,13 @@ L2:     .word STATIC
 
 /* Debugging information.  */
 
-/* Generate DBX and DWARF debugging information.  */
-#define DBX_DEBUGGING_INFO    1
+/* Generate DWARF debugging information.  */
 #define DWARF2_DEBUGGING_INFO 1
 
 /* Use DWARF2 debugging info by default.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* Turn off splitting of long stabs.  */
-#define DBX_CONTIN_LENGTH 0
 
 /* Miscellaneous.  */
 

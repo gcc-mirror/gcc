@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -424,7 +424,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					   is_move_assignable<_Tp>,
 					   is_copy_assignable<_Tp>>;
 	  // trivial types can have deleted assignment
-	  static_assert( __assignable::type::value, "type is not assignable" );
+	  static_assert( __assignable::type::value, "type must be assignable" );
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
@@ -735,7 +735,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 					   is_move_assignable<_Tp>,
 					   is_copy_assignable<_Tp>>;
 	  // trivial types can have deleted assignment
-	  static_assert( __assignable::type::value, "type is not assignable" );
+	  static_assert( __assignable::type::value, "type must be assignable" );
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
@@ -1014,27 +1014,27 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   __size_to_integer(unsigned long long __n) { return __n; }
 
 #if defined(__GLIBCXX_TYPE_INT_N_0)
-  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_0
+  __extension__ inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_0
   __size_to_integer(__GLIBCXX_TYPE_INT_N_0 __n) { return __n; }
-  inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_0
+  __extension__ inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_0
   __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_0 __n) { return __n; }
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_1)
-  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_1
+  __extension__ inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_1
   __size_to_integer(__GLIBCXX_TYPE_INT_N_1 __n) { return __n; }
-  inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_1
+  __extension__ inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_1
   __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_1 __n) { return __n; }
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_2)
-  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_2
+  __extension__ inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_2
   __size_to_integer(__GLIBCXX_TYPE_INT_N_2 __n) { return __n; }
-  inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_2
+  __extension__ inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_2
   __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_2 __n) { return __n; }
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_3)
-  inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_3
+  __extension__ inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_3
   __size_to_integer(__GLIBCXX_TYPE_INT_N_3 __n) { return __n; }
-  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_3
+  __extension__ inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_3
   __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_3 __n) { return __n; }
 #endif
 
@@ -1045,7 +1045,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   inline _GLIBCXX_CONSTEXPR long long
   __size_to_integer(long double __n) { return (long long)__n; }
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
-  inline _GLIBCXX_CONSTEXPR long long
+  __extension__ inline _GLIBCXX_CONSTEXPR long long
   __size_to_integer(__float128 __n) { return (long long)__n; }
 #endif
 

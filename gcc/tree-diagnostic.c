@@ -1,7 +1,7 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler
    Collection that are only for use in the compilers proper and not
    the driver or other programs.
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,9 +36,9 @@ void
 diagnostic_report_current_function (diagnostic_context *context,
 				    diagnostic_info *diagnostic)
 {
-  diagnostic_report_current_module (context, diagnostic_location (diagnostic));
-  lang_hooks.print_error_function (context, LOCATION_FILE (input_location),
-				   diagnostic);
+  location_t loc = diagnostic_location (diagnostic);
+  diagnostic_report_current_module (context, loc);
+  lang_hooks.print_error_function (context, LOCATION_FILE (loc), diagnostic);
 }
 
 static void
@@ -276,15 +276,6 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       t = va_arg (*text->args_ptr, tree);
       break;
 
-    case 'G':
-      percent_G_format (text);
-      return true;
-
-    case 'K':
-      t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
-      return true;
-
     default:
       return false;
     }
@@ -305,6 +296,73 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
   return true;
 }
 
+/* Set the locations of call sites along the inlining stack corresponding
+   to the DIAGNOSTIC location.  */
+
+static void
+set_inlining_locations (diagnostic_context *,
+			diagnostic_info *diagnostic)
+{
+  location_t loc = diagnostic_location (diagnostic);
+  tree block = LOCATION_BLOCK (loc);
+
+  /* Count the number of locations in system headers.  When all are,
+     warnings are suppressed by -Wno-system-headers.  Otherwise, they
+     involve some user code, possibly inlined into a function in a system
+     header, and are not treated as coming from system headers.  */
+  unsigned nsyslocs = 0;
+
+  /* Use a reference to the vector of locations for convenience.  */
+  auto &ilocs = diagnostic->m_iinfo.m_ilocs;
+
+  while (block && TREE_CODE (block) == BLOCK
+	 && BLOCK_ABSTRACT_ORIGIN (block))
+    {
+      tree ao = BLOCK_ABSTRACT_ORIGIN (block);
+      if (TREE_CODE (ao) == FUNCTION_DECL)
+	{
+	  if (!diagnostic->m_iinfo.m_ao)
+	    diagnostic->m_iinfo.m_ao = block;
+
+	  location_t bsloc = BLOCK_SOURCE_LOCATION (block);
+	  ilocs.safe_push (bsloc);
+	  if (in_system_header_at (bsloc))
+	    ++nsyslocs;
+	}
+      else if (TREE_CODE (ao) != BLOCK)
+	break;
+
+      block = BLOCK_SUPERCONTEXT (block);
+    }
+
+  if (ilocs.length ())
+    {
+      /* When there is an inlining context use the macro expansion
+	 location for the original location and bump up NSYSLOCS if
+	 it's in a system header since it's not counted above.  */
+      location_t sysloc = expansion_point_location_if_in_system_header (loc);
+      if (sysloc != loc)
+	{
+	  loc = sysloc;
+	  ++nsyslocs;
+	}
+    }
+  else
+    {
+      /* When there's no inlining context use the original location
+	 and set NSYSLOCS accordingly.  */
+      nsyslocs = in_system_header_at (loc) != 0;
+    }
+
+  ilocs.safe_push (loc);
+
+  /* Set if all locations are in a system header.  */
+  diagnostic->m_iinfo.m_allsyslocs = nsyslocs == ilocs.length ();
+
+  if (tree *ao = pp_ti_abstract_origin (&diagnostic->message))
+    *ao = (tree)diagnostic->m_iinfo.m_ao;
+}
+
 /* Sets CONTEXT to use language independent diagnostics.  */
 void
 tree_diagnostics_defaults (diagnostic_context *context)
@@ -314,4 +372,5 @@ tree_diagnostics_defaults (diagnostic_context *context)
   diagnostic_format_decoder (context) = default_tree_printer;
   context->print_path = default_tree_diagnostic_path_printer;
   context->make_json_for_path = default_tree_make_json_for_path;
+  context->set_locations_cb = set_inlining_locations;
 }

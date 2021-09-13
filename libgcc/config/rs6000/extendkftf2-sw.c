@@ -1,6 +1,6 @@
 /* Software IEEE 128-bit floating-point emulation for PowerPC.
 
-   Copyright (C) 2016-2020 Free Software Foundation, Inc.
+   Copyright (C) 2016-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
    Code is based on the main soft-fp library written by:

@@ -1,5 +1,5 @@
 /* Header file for PRU ABI versions of libgcc functions.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
    Based on c6x/c6x-abi.h
 

@@ -1,3 +1,26 @@
+2021-08-30  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	PR libffi/83636
+	* src/mips/n32.S: disable .set mips4
+	* src/mips/ffi.c: use different JR encoding for r6.
+
+2021-07-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR libffi/101336
+	* configure.host: Always check __x86_64__ for x86 hosts.
+
+2021-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/x86/ffi64.c (classify_argument): For FFI_TYPE_STRUCT set words
+	to number of words needed for type->size + byte_offset bytes rather
+	than just type->size bytes.  Compute pos before the loop and check
+	total size of the structure.
+	* testsuite/libffi.call/nested_struct12.c: New test.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865

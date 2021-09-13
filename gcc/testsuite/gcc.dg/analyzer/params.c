@@ -1,6 +1,6 @@
 #include "analyzer-decls.h"
 
-static int called_function(int j)
+static int __analyzer_called_function(int j)
 {
   int k;
 
@@ -23,7 +23,7 @@ void test(int i)
 
     __analyzer_eval (i > 4); /* { dg-warning "TRUE" } */
 
-    i = called_function(i);
+    i = __analyzer_called_function(i);
 
     __analyzer_eval (i > 3); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
     /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */

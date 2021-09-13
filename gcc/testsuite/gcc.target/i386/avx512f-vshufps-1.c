@@ -7,11 +7,12 @@
 #include <immintrin.h>
 
 __m512 x;
+__m512 y;
 
 void extern
 avx512f_test (void)
 {
-  x = _mm512_shuffle_ps (x, x, 56);
+  x = _mm512_shuffle_ps (x, y, 56);
   x = _mm512_mask_shuffle_ps (x, 2, x, x, 56);
   x = _mm512_maskz_shuffle_ps (2, x, x, 56);
 }

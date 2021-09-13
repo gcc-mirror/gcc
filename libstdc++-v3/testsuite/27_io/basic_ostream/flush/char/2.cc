@@ -1,6 +1,6 @@
 // 2003-09-22  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003-2020 Free Software Foundation, Inc.
+// Copyright (C) 2003-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,42 +22,70 @@
 // _GLIBCXX_RESOLVE_LIB_DEFECTS
 // DR 60. What is a formatted input function?
 // basic_ostream::flush() does not behave as an unformatted output function.
+// But wait  ...
+// 581. flush() not unformatted function
+// So now basic_ostream::flush() *is* an unformatted output function.
 
 #include <ostream>
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
 
+void
+test01()
+{
+  std::ostream os(0);
+  VERIFY( os.bad() );
+
+  // Nothing should happen if os.rdbuf() is null. No sentry is constructed.
+  os.flush();
+  VERIFY( os.rdstate() == std::ios_base::badbit ); // no failbit
+
+  os.exceptions(std::ios_base::failbit);
+  os.flush();
+}
+
 void test02()
 {
   __gnu_test::sync_streambuf buf;
   std::ostream os(&buf);
-  
+
   __gnu_test::sync_streambuf buf_tie;
   std::ostream os_tie(&buf_tie);
 
-  // No sentry should be constructed so os.tie()->flush() should not be
-  // called.
+  // A sentry should be constructed so os.tie()->flush() should be called.
   os.tie(&os_tie);
-  
+
   os.flush();
 
   VERIFY( os.good() );
   VERIFY( buf.sync_called() );
-  VERIFY( !buf_tie.sync_called() );
+  VERIFY( buf_tie.sync_called() );
+}
 
-  // os.rdbuf()->pubsync() should be called even if !os.good().
+void
+test03()
+{
+  __gnu_test::sync_streambuf buf;
+  std::ostream os(&buf);
+
+  __gnu_test::sync_streambuf buf_tie;
+  std::ostream os_tie(&buf_tie);
+
+  os.tie(&os_tie);
+
+  // os.rdbuf()->pubsync() should not be called if !os.good().
   os.setstate(std::ios_base::eofbit);
 
   os.flush();
 
-  VERIFY( os.rdstate() == std::ios_base::eofbit );
-  VERIFY( buf.sync_called() );
+  VERIFY( os.rdstate() & std::ios_base::eofbit );
+  VERIFY( !buf.sync_called() );
   VERIFY( !buf_tie.sync_called() );
 }
 
 int main()
 {
+  test01();
   test02();
-  return 0;
+  test03();
 }
-

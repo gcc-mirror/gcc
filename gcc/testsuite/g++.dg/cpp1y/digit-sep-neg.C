@@ -16,7 +16,7 @@ main()
   unsigned u = 0b0001'0000'0000'0000'0000'0000'U; // { dg-error "digit separator outside digit sequence" }
 
   double d = 0.0;
-  d = 1'.602'176'565e-19; // { dg-error "digit separator adjacent to decimal point" }
+  d = 1'.602'176'565e-19; // { dg-warning "multi-character" }
   d = 1.'602'176'565e-19; // { dg-error "digit separator adjacent to decimal point" }
   d = 1.602''176'565e-19; // { dg-error "adjacent digit separators" }
   d = 1.602'176'565'e-19; // { dg-error "digit separator adjacent to exponent" }
@@ -29,4 +29,5 @@ main()
 
 // { dg-error "exponent has no digits" "exponent has no digits" { target *-*-* } 23 }
 // { dg-error "expected ';' before" "expected ';' before" { target *-*-* } 15 }
+// { dg-error "expected ';' before" "expected ';' before" { target *-*-* } 19 }
 // { dg-error "expected ';' before" "expected ';' before" { target *-*-* } 26 }

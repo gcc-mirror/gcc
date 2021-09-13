@@ -1,6 +1,6 @@
 // Streambuf iterators
 
-// Copyright (C) 1997-2020 Free Software Foundation, Inc.
+// Copyright (C) 1997-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
 #if __cplusplus < 201103L
       typedef _CharT& reference; // Changed to _CharT by LWG 445
@@ -68,7 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _Traits::int_type		int_type;
       typedef basic_streambuf<_CharT, _Traits>		streambuf_type;
       typedef basic_istream<_CharT, _Traits>		istream_type;
-      //@}
+      ///@}
 
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
@@ -141,6 +141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ///  Return the current character pointed to by iterator.  This returns
       ///  streambuf.sgetc().  It cannot be assigned.  NB: The result of
       ///  operator*() on an end of stream is undefined.
+      _GLIBCXX_NODISCARD
       char_type
       operator*() const
       {
@@ -189,6 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 110 istreambuf_iterator::equal not const
       // NB: there is also number 111 (NAD) relevant to this function.
       /// Return true both iterators are end or both are not end.
+      _GLIBCXX_NODISCARD
       bool
       equal(const istreambuf_iterator& __b) const
       { return _M_at_eof() == __b._M_at_eof(); }
@@ -215,6 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 #if __cplusplus > 201703L && __cpp_lib_concepts
+      [[nodiscard]]
       friend bool
       operator==(const istreambuf_iterator& __i, default_sentinel_t __s)
       { return __i._M_at_eof(); }
@@ -222,16 +225,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _CharT, typename _Traits>
+    _GLIBCXX_NODISCARD
     inline bool
     operator==(const istreambuf_iterator<_CharT, _Traits>& __a,
 	       const istreambuf_iterator<_CharT, _Traits>& __b)
     { return __a.equal(__b); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _CharT, typename _Traits>
+    _GLIBCXX_NODISCARD
     inline bool
     operator!=(const istreambuf_iterator<_CharT, _Traits>& __a,
 	       const istreambuf_iterator<_CharT, _Traits>& __b)
     { return !__a.equal(__b); }
+#endif
 
   /// Provides output iterator semantics for streambufs.
   template<typename _CharT, typename _Traits>
@@ -240,7 +247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
 #if __cplusplus > 201703L
       using difference_type = ptrdiff_t;
@@ -249,7 +256,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Traits			       traits_type;
       typedef basic_streambuf<_CharT, _Traits> streambuf_type;
       typedef basic_ostream<_CharT, _Traits>   ostream_type;
-      //@}
+      ///@}
 
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
@@ -288,6 +295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /// Return *this.
+      _GLIBCXX_NODISCARD
       ostreambuf_iterator&
       operator*()
       { return *this; }
@@ -303,6 +311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return *this; }
 
       /// Return true if previous operator=() failed.
+      _GLIBCXX_NODISCARD
       bool
       failed() const _GLIBCXX_USE_NOEXCEPT
       { return _M_failed; }
@@ -498,7 +507,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __i._M_c = __eof;
     }
 
-// @} group iterators
+/// @} group iterators
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

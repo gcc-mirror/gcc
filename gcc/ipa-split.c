@@ -1,5 +1,5 @@
 /* Function splitting pass
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka  <jh@suse.cz>
 
 This file is part of GCC.
@@ -546,8 +546,9 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
 	    }
 	}
     }
-  if (!VOID_TYPE_P (TREE_TYPE (current_function_decl)))
-    call_overhead += estimate_move_cost (TREE_TYPE (current_function_decl),
+  if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
+    call_overhead += estimate_move_cost (TREE_TYPE (TREE_TYPE
+						 (current_function_decl)),
 					 false);
 
   if (current->split_size <= call_overhead)

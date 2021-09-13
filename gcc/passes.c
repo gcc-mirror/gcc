@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1793,7 +1793,7 @@ execute_function_dump (function *fn, void *data)
     {
       push_cfun (fn);
 
-      if (fn->curr_properties & PROP_trees)
+      if (fn->curr_properties & PROP_gimple)
         dump_function_to_file (fn->decl, dump_file, dump_flags);
       else
 	print_rtl_with_bb (dump_file, get_insns (), dump_flags);
@@ -2034,7 +2034,7 @@ execute_function_todo (function *fn, void *data)
 
       if (flags & TODO_verify_il)
 	{
-	  if (cfun->curr_properties & PROP_trees)
+	  if (cfun->curr_properties & PROP_gimple)
 	    {
 	      if (cfun->curr_properties & PROP_cfg)
 		/* IPA passes leave stmts to be fixed up, so make sure to
@@ -2272,7 +2272,7 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
 
   /* Note that the folders should only create gimple expressions.
      This is a hack until the new folder is ready.  */
-  in_gimple_form = (cfun && (cfun->curr_properties & PROP_trees)) != 0;
+  in_gimple_form = (cfun && (cfun->curr_properties & PROP_gimple)) != 0;
 
   pass_init_dump_file (pass);
 
@@ -2545,7 +2545,7 @@ execute_one_pass (opt_pass *pass)
 
   /* Note that the folders should only create gimple expressions.
      This is a hack until the new folder is ready.  */
-  in_gimple_form = (cfun && (cfun->curr_properties & PROP_trees)) != 0;
+  in_gimple_form = (cfun && (cfun->curr_properties & PROP_gimple)) != 0;
 
   pass_init_dump_file (pass);
 
@@ -2628,7 +2628,7 @@ execute_one_pass (opt_pass *pass)
   pass_fini_dump_file (pass);
 
   if (pass->type != SIMPLE_IPA_PASS && pass->type != IPA_PASS)
-    gcc_assert (!(cfun->curr_properties & PROP_trees)
+    gcc_assert (!(cfun->curr_properties & PROP_gimple)
 		|| pass->type != RTL_PASS);
 
   current_pass = NULL;

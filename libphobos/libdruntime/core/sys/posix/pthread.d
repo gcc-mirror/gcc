@@ -14,7 +14,7 @@
  */
 module core.sys.posix.pthread;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.sys.posix.sys.types;
 public import core.sys.posix.sched;
 public import core.sys.posix.time;
@@ -33,6 +33,7 @@ else version (WatchOS)
 version (Posix):
 extern (C)
 nothrow:
+@system:
 
 //
 // Required
@@ -55,23 +56,23 @@ PTHREAD_PROCESS_PRIVATE
 
 int pthread_atfork(void function(), void function(), void function());
 int pthread_attr_destroy(pthread_attr_t*);
-int pthread_attr_getdetachstate(in pthread_attr_t*, int*);
-int pthread_attr_getschedparam(in pthread_attr_t*, sched_param*);
+int pthread_attr_getdetachstate(const scope pthread_attr_t*, int*);
+int pthread_attr_getschedparam(const scope pthread_attr_t*, sched_param*);
 int pthread_attr_init(pthread_attr_t*);
 int pthread_attr_setdetachstate(pthread_attr_t*, int);
-int pthread_attr_setschedparam(in pthread_attr_t*, sched_param*);
+int pthread_attr_setschedparam(const scope pthread_attr_t*, sched_param*);
 int pthread_cancel(pthread_t);
 void pthread_cleanup_push(void function(void*), void*);
 void pthread_cleanup_pop(int);
 int pthread_cond_broadcast(pthread_cond_t*);
 int pthread_cond_destroy(pthread_cond_t*);
-int pthread_cond_init(in pthread_cond_t*, pthread_condattr_t*);
+int pthread_cond_init(const scope pthread_cond_t*, pthread_condattr_t*);
 int pthread_cond_signal(pthread_cond_t*);
-int pthread_cond_timedwait(pthread_cond_t*, pthread_mutex_t*, in timespec*);
+int pthread_cond_timedwait(pthread_cond_t*, pthread_mutex_t*, const scope timespec*);
 int pthread_cond_wait(pthread_cond_t*, pthread_mutex_t*);
 int pthread_condattr_destroy(pthread_condattr_t*);
 int pthread_condattr_init(pthread_condattr_t*);
-int pthread_create(pthread_t*, in pthread_attr_t*, void* function(void*), void*);
+int pthread_create(pthread_t*, const scope pthread_attr_t*, void* function(void*), void*);
 int pthread_detach(pthread_t);
 int pthread_equal(pthread_t, pthread_t);
 void pthread_exit(void*);
@@ -88,7 +89,7 @@ int pthread_mutexattr_destroy(pthread_mutexattr_t*);
 int pthread_mutexattr_init(pthread_mutexattr_t*);
 int pthread_once(pthread_once_t*, void function());
 int pthread_rwlock_destroy(pthread_rwlock_t*);
-int pthread_rwlock_init(pthread_rwlock_t*, in pthread_rwlockattr_t*);
+int pthread_rwlock_init(pthread_rwlock_t*, const scope pthread_rwlockattr_t*);
 int pthread_rwlock_rdlock(pthread_rwlock_t*);
 int pthread_rwlock_tryrdlock(pthread_rwlock_t*);
 int pthread_rwlock_trywrlock(pthread_rwlock_t*);
@@ -99,7 +100,7 @@ int pthread_rwlockattr_init(pthread_rwlockattr_t*);
 pthread_t pthread_self();
 int pthread_setcancelstate(int, int*);
 int pthread_setcanceltype(int, int*);
-int pthread_setspecific(pthread_key_t, in void*);
+int pthread_setspecific(pthread_key_t, const scope void*);
 void pthread_testcancel();
 */
 version (CRuntime_Glibc)
@@ -290,7 +291,7 @@ else version (OpenBSD)
     }
 
     enum PTHREAD_MUTEX_INITIALIZER              = null;
-    //enum PTHREAD_ONCE_INIT                      = { PTHREAD_NEEDS_INIT, PTHREAD_MUTEX_INITIALIZER };
+    enum PTHREAD_ONCE_INIT                      = pthread_once_t.init;
     enum PTHREAD_COND_INITIALIZER               = null;
     enum PTHREAD_RWLOCK_INITIALIZER             = null;
 }
@@ -329,8 +330,7 @@ else version (DragonFlyBSD)
     enum PTHREAD_DONE_INIT  = 1;
 
     enum PTHREAD_MUTEX_INITIALIZER              = null;
-    //enum PTHREAD_ONCE_INIT                      = { PTHREAD_NEEDS_INIT, NULL };
-    enum PTHREAD_ONCE_INIT                      = pthread_once_t.init;;
+    enum PTHREAD_ONCE_INIT                      = pthread_once_t.init;
     enum PTHREAD_COND_INITIALIZER               = null;
     enum PTHREAD_RWLOCK_INITIALIZER             = null;
 }
@@ -444,11 +444,11 @@ int pthread_atfork(void function(), void function(), void function());
 @nogc {
     int pthread_atfork(void function() @nogc, void function() @nogc, void function() @nogc);
     int pthread_attr_destroy(pthread_attr_t*);
-    int pthread_attr_getdetachstate(in pthread_attr_t*, int*);
-    int pthread_attr_getschedparam(in pthread_attr_t*, sched_param*);
+    int pthread_attr_getdetachstate(const scope pthread_attr_t*, int*);
+    int pthread_attr_getschedparam(const scope pthread_attr_t*, sched_param*);
     int pthread_attr_init(pthread_attr_t*);
     int pthread_attr_setdetachstate(pthread_attr_t*, int);
-    int pthread_attr_setschedparam(in pthread_attr_t*, sched_param*);
+    int pthread_attr_setschedparam(const scope pthread_attr_t*, sched_param*);
     int pthread_cancel(pthread_t);
 }
 
@@ -716,13 +716,13 @@ else
 
 int pthread_cond_broadcast(pthread_cond_t*);
 int pthread_cond_destroy(pthread_cond_t*);
-int pthread_cond_init(in pthread_cond_t*, pthread_condattr_t*) @trusted;
+int pthread_cond_init(const scope pthread_cond_t*, pthread_condattr_t*) @trusted;
 int pthread_cond_signal(pthread_cond_t*);
-int pthread_cond_timedwait(pthread_cond_t*, pthread_mutex_t*, in timespec*);
+int pthread_cond_timedwait(pthread_cond_t*, pthread_mutex_t*, const scope timespec*);
 int pthread_cond_wait(pthread_cond_t*, pthread_mutex_t*);
 int pthread_condattr_destroy(pthread_condattr_t*);
 int pthread_condattr_init(pthread_condattr_t*);
-int pthread_create(pthread_t*, in pthread_attr_t*, void* function(void*), void*);
+int pthread_create(pthread_t*, const scope pthread_attr_t*, void* function(void*), void*);
 int pthread_detach(pthread_t);
 int pthread_equal(pthread_t, pthread_t);
 void pthread_exit(void*);
@@ -742,7 +742,7 @@ int pthread_mutexattr_destroy(pthread_mutexattr_t*);
 int pthread_mutexattr_init(pthread_mutexattr_t*) @trusted;
 int pthread_once(pthread_once_t*, void function());
 int pthread_rwlock_destroy(pthread_rwlock_t*);
-int pthread_rwlock_init(pthread_rwlock_t*, in pthread_rwlockattr_t*);
+int pthread_rwlock_init(pthread_rwlock_t*, const scope pthread_rwlockattr_t*);
 int pthread_rwlock_rdlock(pthread_rwlock_t*);
 int pthread_rwlock_tryrdlock(pthread_rwlock_t*);
 int pthread_rwlock_trywrlock(pthread_rwlock_t*);
@@ -753,7 +753,7 @@ int pthread_rwlockattr_init(pthread_rwlockattr_t*);
 pthread_t pthread_self();
 int pthread_setcancelstate(int, int*);
 int pthread_setcanceltype(int, int*);
-int pthread_setspecific(pthread_key_t, in void*);
+int pthread_setspecific(pthread_key_t, const scope void*);
 void pthread_testcancel();
 
 //
@@ -763,10 +763,10 @@ void pthread_testcancel();
 PTHREAD_BARRIER_SERIAL_THREAD
 
 int pthread_barrier_destroy(pthread_barrier_t*);
-int pthread_barrier_init(pthread_barrier_t*, in pthread_barrierattr_t*, uint);
+int pthread_barrier_init(pthread_barrier_t*, const scope pthread_barrierattr_t*, uint);
 int pthread_barrier_wait(pthread_barrier_t*);
 int pthread_barrierattr_destroy(pthread_barrierattr_t*);
-int pthread_barrierattr_getpshared(in pthread_barrierattr_t*, int*); (BAR|TSH)
+int pthread_barrierattr_getpshared(const scope pthread_barrierattr_t*, int*); (BAR|TSH)
 int pthread_barrierattr_init(pthread_barrierattr_t*);
 int pthread_barrierattr_setpshared(pthread_barrierattr_t*, int); (BAR|TSH)
 */
@@ -776,10 +776,10 @@ version (CRuntime_Glibc)
     enum PTHREAD_BARRIER_SERIAL_THREAD = -1;
 
     int pthread_barrier_destroy(pthread_barrier_t*);
-    int pthread_barrier_init(pthread_barrier_t*, in pthread_barrierattr_t*, uint);
+    int pthread_barrier_init(pthread_barrier_t*, const scope pthread_barrierattr_t*, uint);
     int pthread_barrier_wait(pthread_barrier_t*);
     int pthread_barrierattr_destroy(pthread_barrierattr_t*);
-    int pthread_barrierattr_getpshared(in pthread_barrierattr_t*, int*);
+    int pthread_barrierattr_getpshared(const scope pthread_barrierattr_t*, int*);
     int pthread_barrierattr_init(pthread_barrierattr_t*);
     int pthread_barrierattr_setpshared(pthread_barrierattr_t*, int);
 }
@@ -788,10 +788,10 @@ else version (FreeBSD)
     enum PTHREAD_BARRIER_SERIAL_THREAD = -1;
 
     int pthread_barrier_destroy(pthread_barrier_t*);
-    int pthread_barrier_init(pthread_barrier_t*, in pthread_barrierattr_t*, uint);
+    int pthread_barrier_init(pthread_barrier_t*, const scope pthread_barrierattr_t*, uint);
     int pthread_barrier_wait(pthread_barrier_t*);
     int pthread_barrierattr_destroy(pthread_barrierattr_t*);
-    int pthread_barrierattr_getpshared(in pthread_barrierattr_t*, int*);
+    int pthread_barrierattr_getpshared(const scope pthread_barrierattr_t*, int*);
     int pthread_barrierattr_init(pthread_barrierattr_t*);
     int pthread_barrierattr_setpshared(pthread_barrierattr_t*, int);
 }
@@ -803,10 +803,10 @@ else version (DragonFlyBSD)
     enum PTHREAD_THREADS_MAX           = c_ulong.max;
 
     int pthread_barrier_destroy(pthread_barrier_t*);
-    int pthread_barrier_init(pthread_barrier_t*, in pthread_barrierattr_t*, uint);
+    int pthread_barrier_init(pthread_barrier_t*, const scope pthread_barrierattr_t*, uint);
     int pthread_barrier_wait(pthread_barrier_t*);
     int pthread_barrierattr_destroy(pthread_barrierattr_t*);
-    int pthread_barrierattr_getpshared(in pthread_barrierattr_t*, int*);
+    int pthread_barrierattr_getpshared(const scope pthread_barrierattr_t*, int*);
     int pthread_barrierattr_init(pthread_barrierattr_t*);
     int pthread_barrierattr_setpshared(pthread_barrierattr_t*, int);
 }
@@ -815,10 +815,10 @@ else version (NetBSD)
     enum PTHREAD_BARRIER_SERIAL_THREAD = 1234567;
 
     int pthread_barrier_destroy(pthread_barrier_t*);
-    int pthread_barrier_init(pthread_barrier_t*, in pthread_barrierattr_t*, uint);
+    int pthread_barrier_init(pthread_barrier_t*, const scope pthread_barrierattr_t*, uint);
     int pthread_barrier_wait(pthread_barrier_t*);
     int pthread_barrierattr_destroy(pthread_barrierattr_t*);
-    int pthread_barrierattr_getpshared(in pthread_barrierattr_t*, int*);
+    int pthread_barrierattr_getpshared(const scope pthread_barrierattr_t*, int*);
     int pthread_barrierattr_init(pthread_barrierattr_t*);
     int pthread_barrierattr_setpshared(pthread_barrierattr_t*, int);
 }
@@ -827,10 +827,10 @@ else version (OpenBSD)
     enum PTHREAD_BARRIER_SERIAL_THREAD = -1;
 
     int pthread_barrier_destroy(pthread_barrier_t*);
-    int pthread_barrier_init(pthread_barrier_t*, in pthread_barrierattr_t*, uint);
+    int pthread_barrier_init(pthread_barrier_t*, const scope pthread_barrierattr_t*, uint);
     int pthread_barrier_wait(pthread_barrier_t*);
     int pthread_barrierattr_destroy(pthread_barrierattr_t*);
-    int pthread_barrierattr_getpshared(in pthread_barrierattr_t*, int*);
+    int pthread_barrierattr_getpshared(const scope pthread_barrierattr_t*, int*);
     int pthread_barrierattr_init(pthread_barrierattr_t*);
     int pthread_barrierattr_setpshared(pthread_barrierattr_t*, int);
 }
@@ -842,10 +842,10 @@ else version (Solaris)
     enum PTHREAD_BARRIER_SERIAL_THREAD = -2;
 
     int pthread_barrier_destroy(pthread_barrier_t*);
-    int pthread_barrier_init(pthread_barrier_t*, in pthread_barrierattr_t*, uint);
+    int pthread_barrier_init(pthread_barrier_t*, const scope pthread_barrierattr_t*, uint);
     int pthread_barrier_wait(pthread_barrier_t*);
     int pthread_barrierattr_destroy(pthread_barrierattr_t*);
-    int pthread_barrierattr_getpshared(in pthread_barrierattr_t*, int*);
+    int pthread_barrierattr_getpshared(const scope pthread_barrierattr_t*, int*);
     int pthread_barrierattr_init(pthread_barrierattr_t*);
     int pthread_barrierattr_setpshared(pthread_barrierattr_t*, int);
 }
@@ -857,10 +857,10 @@ else version (CRuntime_Musl)
     enum PTHREAD_BARRIER_SERIAL_THREAD = -1;
 
     int pthread_barrier_destroy(pthread_barrier_t*);
-    int pthread_barrier_init(pthread_barrier_t*, in pthread_barrierattr_t*, uint);
+    int pthread_barrier_init(pthread_barrier_t*, const scope pthread_barrierattr_t*, uint);
     int pthread_barrier_wait(pthread_barrier_t*);
     int pthread_barrierattr_destroy(pthread_barrierattr_t*);
-    int pthread_barrierattr_getpshared(in pthread_barrierattr_t*, int*);
+    int pthread_barrierattr_getpshared(const scope pthread_barrierattr_t*, int*);
     int pthread_barrierattr_init(pthread_barrierattr_t*);
     int pthread_barrierattr_setpshared(pthread_barrierattr_t*, int);
 }
@@ -869,10 +869,10 @@ else version (CRuntime_UClibc)
     enum PTHREAD_BARRIER_SERIAL_THREAD = -1;
 
     int pthread_barrier_destroy(pthread_barrier_t*);
-    int pthread_barrier_init(pthread_barrier_t*, in pthread_barrierattr_t*, uint);
+    int pthread_barrier_init(pthread_barrier_t*, const scope pthread_barrierattr_t*, uint);
     int pthread_barrier_wait(pthread_barrier_t*);
     int pthread_barrierattr_destroy(pthread_barrierattr_t*);
-    int pthread_barrierattr_getpshared(in pthread_barrierattr_t*, int*);
+    int pthread_barrierattr_getpshared(const scope pthread_barrierattr_t*, int*);
     int pthread_barrierattr_init(pthread_barrierattr_t*);
     int pthread_barrierattr_setpshared(pthread_barrierattr_t*, int);
 }
@@ -885,22 +885,22 @@ else
 // Clock (CS)
 //
 /*
-int pthread_condattr_getclock(in pthread_condattr_t*, clockid_t*);
+int pthread_condattr_getclock(const scope pthread_condattr_t*, clockid_t*);
 int pthread_condattr_setclock(pthread_condattr_t*, clockid_t);
 */
 version (CRuntime_Glibc)
 {
-    int pthread_condattr_getclock(in pthread_condattr_t*, clockid_t*);
+    int pthread_condattr_getclock(const scope pthread_condattr_t*, clockid_t*);
     int pthread_condattr_setclock(pthread_condattr_t*, clockid_t);
 }
 else version (FreeBSD)
 {
-    int pthread_condattr_getclock(in pthread_condattr_t*, clockid_t*);
+    int pthread_condattr_getclock(const scope pthread_condattr_t*, clockid_t*);
     int pthread_condattr_setclock(pthread_condattr_t*, clockid_t);
 }
 else version (DragonFlyBSD)
 {
-    int pthread_condattr_getclock(in pthread_condattr_t*, clockid_t*);
+    int pthread_condattr_getclock(const scope pthread_condattr_t*, clockid_t*);
     int pthread_condattr_setclock(pthread_condattr_t*, clockid_t);
 }
 else version (NetBSD)
@@ -909,7 +909,7 @@ else version (NetBSD)
 }
 else version (OpenBSD)
 {
-    int pthread_condattr_getclock(in pthread_condattr_t*, clockid_t*);
+    int pthread_condattr_getclock(const scope pthread_condattr_t*, clockid_t*);
     int pthread_condattr_setclock(pthread_condattr_t*, clockid_t);
 }
 else version (Darwin)
@@ -917,7 +917,7 @@ else version (Darwin)
 }
 else version (Solaris)
 {
-    int pthread_condattr_getclock(in pthread_condattr_t*, clockid_t*);
+    int pthread_condattr_getclock(const scope pthread_condattr_t*, clockid_t*);
     int pthread_condattr_setclock(pthread_condattr_t*, clockid_t);
 }
 else version (CRuntime_Bionic)
@@ -925,12 +925,12 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
-    int pthread_condattr_getclock(in pthread_condattr_t*, clockid_t*);
+    int pthread_condattr_getclock(const scope pthread_condattr_t*, clockid_t*);
     int pthread_condattr_setclock(pthread_condattr_t*, clockid_t);
 }
 else version (CRuntime_UClibc)
 {
-    int pthread_condattr_getclock(in pthread_condattr_t*, clockid_t*);
+    int pthread_condattr_getclock(const scope pthread_condattr_t*, clockid_t*);
     int pthread_condattr_setclock(pthread_condattr_t*, clockid_t);
 }
 else
@@ -1033,10 +1033,10 @@ PTHREAD_MUTEX_ERRORCHECK
 PTHREAD_MUTEX_NORMAL
 PTHREAD_MUTEX_RECURSIVE
 
-int pthread_attr_getguardsize(in pthread_attr_t*, size_t*);
+int pthread_attr_getguardsize(const scope pthread_attr_t*, size_t*);
 int pthread_attr_setguardsize(pthread_attr_t*, size_t);
 int pthread_getconcurrency();
-int pthread_mutexattr_gettype(in pthread_mutexattr_t*, int*);
+int pthread_mutexattr_gettype(const scope pthread_mutexattr_t*, int*);
 int pthread_mutexattr_settype(pthread_mutexattr_t*, int);
 int pthread_setconcurrency(int);
 */
@@ -1048,10 +1048,10 @@ version (CRuntime_Glibc)
     enum PTHREAD_MUTEX_ERRORCHECK   = 2;
     enum PTHREAD_MUTEX_DEFAULT      = PTHREAD_MUTEX_NORMAL;
 
-    int pthread_attr_getguardsize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getguardsize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setguardsize(pthread_attr_t*, size_t);
     int pthread_getconcurrency();
-    int pthread_mutexattr_gettype(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_gettype(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_settype(pthread_mutexattr_t*, int) @trusted;
     int pthread_setconcurrency(int);
 }
@@ -1062,10 +1062,10 @@ else version (Darwin)
     enum PTHREAD_MUTEX_RECURSIVE    = 2;
     enum PTHREAD_MUTEX_DEFAULT      = PTHREAD_MUTEX_NORMAL;
 
-    int pthread_attr_getguardsize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getguardsize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setguardsize(pthread_attr_t*, size_t);
     int pthread_getconcurrency();
-    int pthread_mutexattr_gettype(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_gettype(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_settype(pthread_mutexattr_t*, int) @trusted;
     int pthread_setconcurrency(int);
 }
@@ -1081,7 +1081,7 @@ else version (FreeBSD)
     }
     enum PTHREAD_MUTEX_DEFAULT = PTHREAD_MUTEX_ERRORCHECK;
 
-    int pthread_attr_getguardsize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getguardsize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setguardsize(pthread_attr_t*, size_t);
     int pthread_getconcurrency();
     int pthread_mutexattr_gettype(pthread_mutexattr_t*, int*);
@@ -1099,7 +1099,7 @@ else version (NetBSD)
     }
     enum PTHREAD_MUTEX_DEFAULT = PTHREAD_MUTEX_ERRORCHECK;
 
-    int pthread_attr_getguardsize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getguardsize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setguardsize(pthread_attr_t*, size_t);
     int pthread_getconcurrency();
     int pthread_mutexattr_gettype(pthread_mutexattr_t*, int*);
@@ -1118,7 +1118,7 @@ else version (OpenBSD)
     }
     enum PTHREAD_MUTEX_DEFAULT = PTHREAD_MUTEX_ERRORCHECK;
 
-    int pthread_attr_getguardsize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getguardsize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setguardsize(pthread_attr_t*, size_t);
     int pthread_getconcurrency();
     int pthread_mutexattr_gettype(pthread_mutexattr_t*, int*);
@@ -1136,7 +1136,7 @@ else version (DragonFlyBSD)
     }
     enum PTHREAD_MUTEX_DEFAULT = PTHREAD_MUTEX_ERRORCHECK;
 
-    int pthread_attr_getguardsize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getguardsize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setguardsize(pthread_attr_t*, size_t);
     int pthread_getconcurrency();
     int pthread_mutexattr_gettype(pthread_mutexattr_t*, int*);
@@ -1154,7 +1154,7 @@ else version (Solaris)
 
     enum PTHREAD_MUTEX_DEFAULT = PTHREAD_MUTEX_NORMAL;
 
-    int pthread_attr_getguardsize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getguardsize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setguardsize(pthread_attr_t*, size_t);
     int pthread_getconcurrency();
     int pthread_mutexattr_gettype(pthread_mutexattr_t*, int*);
@@ -1168,9 +1168,9 @@ else version (CRuntime_Bionic)
     enum PTHREAD_MUTEX_ERRORCHECK = 2;
     enum PTHREAD_MUTEX_DEFAULT    = PTHREAD_MUTEX_NORMAL;
 
-    int pthread_attr_getguardsize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getguardsize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setguardsize(pthread_attr_t*, size_t);
-    int pthread_mutexattr_gettype(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_gettype(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_settype(pthread_mutexattr_t*, int) @trusted;
 }
 else version (CRuntime_Musl)
@@ -1198,10 +1198,10 @@ else version (CRuntime_UClibc)
       PTHREAD_MUTEX_FAST_NP = PTHREAD_MUTEX_TIMED_NP
     }
 
-    int pthread_attr_getguardsize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getguardsize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setguardsize(pthread_attr_t*, size_t);
     int pthread_getconcurrency();
-    int pthread_mutexattr_gettype(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_gettype(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_settype(pthread_mutexattr_t*, int) @trusted;
     int pthread_setconcurrency(int);
 }
@@ -1263,69 +1263,69 @@ else
 // Timeouts (TMO)
 //
 /*
-int pthread_mutex_timedlock(pthread_mutex_t*, in timespec*);
-int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+int pthread_mutex_timedlock(pthread_mutex_t*, const scope timespec*);
+int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 */
 
 version (CRuntime_Glibc)
 {
-    int pthread_mutex_timedlock(pthread_mutex_t*, in timespec*);
-    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+    int pthread_mutex_timedlock(pthread_mutex_t*, const scope timespec*);
+    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 }
 else version (Darwin)
 {
-    int pthread_mutex_timedlock(pthread_mutex_t*, in timespec*);
-    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+    int pthread_mutex_timedlock(pthread_mutex_t*, const scope timespec*);
+    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 }
 else version (FreeBSD)
 {
-    int pthread_mutex_timedlock(pthread_mutex_t*, in timespec*);
-    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+    int pthread_mutex_timedlock(pthread_mutex_t*, const scope timespec*);
+    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 }
 else version (NetBSD)
 {
-    int pthread_mutex_timedlock(pthread_mutex_t*, in timespec*);
-    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+    int pthread_mutex_timedlock(pthread_mutex_t*, const scope timespec*);
+    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 }
 else version (OpenBSD)
 {
-    int pthread_mutex_timedlock(pthread_mutex_t*, in timespec*);
-    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+    int pthread_mutex_timedlock(pthread_mutex_t*, const scope timespec*);
+    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 }
 else version (DragonFlyBSD)
 {
-    int pthread_mutex_timedlock(pthread_mutex_t*, in timespec*);
-    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+    int pthread_mutex_timedlock(pthread_mutex_t*, const scope timespec*);
+    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 }
 else version (Solaris)
 {
-    int pthread_mutex_timedlock(pthread_mutex_t*, in timespec*);
-    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+    int pthread_mutex_timedlock(pthread_mutex_t*, const scope timespec*);
+    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 }
 else version (CRuntime_Bionic)
 {
-    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 }
 else version (CRuntime_Musl)
 {
-    int pthread_mutex_timedlock(pthread_mutex_t*, in timespec*);
-    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+    int pthread_mutex_timedlock(pthread_mutex_t*, const scope timespec*);
+    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 }
 else version (CRuntime_UClibc)
 {
-    int pthread_mutex_timedlock(pthread_mutex_t*, in timespec*);
-    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, in timespec*);
-    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, in timespec*);
+    int pthread_mutex_timedlock(pthread_mutex_t*, const scope timespec*);
+    int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const scope timespec*);
+    int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const scope timespec*);
 }
 else
 {
@@ -1340,10 +1340,10 @@ PTHREAD_PRIO_INHERIT (TPI)
 PTHREAD_PRIO_NONE (TPP|TPI)
 PTHREAD_PRIO_PROTECT (TPI)
 
-int pthread_mutex_getprioceiling(in pthread_mutex_t*, int*); (TPP)
+int pthread_mutex_getprioceiling(const scope pthread_mutex_t*, int*); (TPP)
 int pthread_mutex_setprioceiling(pthread_mutex_t*, int, int*); (TPP)
 int pthread_mutexattr_getprioceiling(pthread_mutexattr_t*, int*); (TPP)
-int pthread_mutexattr_getprotocol(in pthread_mutexattr_t*, int*); (TPI|TPP)
+int pthread_mutexattr_getprotocol(const scope pthread_mutexattr_t*, int*); (TPI|TPP)
 int pthread_mutexattr_setprioceiling(pthread_mutexattr_t*, int); (TPP)
 int pthread_mutexattr_setprotocol(pthread_mutexattr_t*, int); (TPI|TPP)
 */
@@ -1356,10 +1356,10 @@ version (Darwin)
         PTHREAD_PRIO_PROTECT
     }
 
-    int pthread_mutex_getprioceiling(in pthread_mutex_t*, int*);
+    int pthread_mutex_getprioceiling(const scope pthread_mutex_t*, int*);
     int pthread_mutex_setprioceiling(pthread_mutex_t*, int, int*);
-    int pthread_mutexattr_getprioceiling(in pthread_mutexattr_t*, int*);
-    int pthread_mutexattr_getprotocol(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getprioceiling(const scope pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getprotocol(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_setprioceiling(pthread_mutexattr_t*, int);
     int pthread_mutexattr_setprotocol(pthread_mutexattr_t*, int);
 }
@@ -1372,10 +1372,10 @@ else version (Solaris)
         PTHREAD_PRIO_PROTECT = 0x20,
     }
 
-    int pthread_mutex_getprioceiling(in pthread_mutex_t*, int*);
+    int pthread_mutex_getprioceiling(const scope pthread_mutex_t*, int*);
     int pthread_mutex_setprioceiling(pthread_mutex_t*, int, int*);
-    int pthread_mutexattr_getprioceiling(in pthread_mutexattr_t*, int*);
-    int pthread_mutexattr_getprotocol(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getprioceiling(const scope pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getprotocol(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_setprioceiling(pthread_mutexattr_t*, int);
     int pthread_mutexattr_setprotocol(pthread_mutexattr_t*, int);
 }
@@ -1387,14 +1387,14 @@ else version (Solaris)
 PTHREAD_SCOPE_PROCESS
 PTHREAD_SCOPE_SYSTEM
 
-int pthread_attr_getinheritsched(in pthread_attr_t*, int*);
-int pthread_attr_getschedpolicy(in pthread_attr_t*, int*);
-int pthread_attr_getscope(in pthread_attr_t*, int*);
+int pthread_attr_getinheritsched(const scope pthread_attr_t*, int*);
+int pthread_attr_getschedpolicy(const scope pthread_attr_t*, int*);
+int pthread_attr_getscope(const scope pthread_attr_t*, int*);
 int pthread_attr_setinheritsched(pthread_attr_t*, int);
 int pthread_attr_setschedpolicy(pthread_attr_t*, int);
 int pthread_attr_setscope(pthread_attr_t*, int);
 int pthread_getschedparam(pthread_t, int*, sched_param*);
-int pthread_setschedparam(pthread_t, int, in sched_param*);
+int pthread_setschedparam(pthread_t, int, const scope sched_param*);
 int pthread_setschedprio(pthread_t, int);
 */
 
@@ -1406,14 +1406,14 @@ version (CRuntime_Glibc)
         PTHREAD_SCOPE_PROCESS
     }
 
-    int pthread_attr_getinheritsched(in pthread_attr_t*, int*);
-    int pthread_attr_getschedpolicy(in pthread_attr_t*, int*);
-    int pthread_attr_getscope(in pthread_attr_t*, int*);
+    int pthread_attr_getinheritsched(const scope pthread_attr_t*, int*);
+    int pthread_attr_getschedpolicy(const scope pthread_attr_t*, int*);
+    int pthread_attr_getscope(const scope pthread_attr_t*, int*);
     int pthread_attr_setinheritsched(pthread_attr_t*, int);
     int pthread_attr_setschedpolicy(pthread_attr_t*, int);
     int pthread_attr_setscope(pthread_attr_t*, int);
     int pthread_getschedparam(pthread_t, int*, sched_param*);
-    int pthread_setschedparam(pthread_t, int, in sched_param*);
+    int pthread_setschedparam(pthread_t, int, const scope sched_param*);
     int pthread_setschedprio(pthread_t, int);
 }
 else version (Darwin)
@@ -1424,14 +1424,14 @@ else version (Darwin)
         PTHREAD_SCOPE_PROCESS   = 2
     }
 
-    int pthread_attr_getinheritsched(in pthread_attr_t*, int*);
-    int pthread_attr_getschedpolicy(in pthread_attr_t*, int*);
-    int pthread_attr_getscope(in pthread_attr_t*, int*);
+    int pthread_attr_getinheritsched(const scope pthread_attr_t*, int*);
+    int pthread_attr_getschedpolicy(const scope pthread_attr_t*, int*);
+    int pthread_attr_getscope(const scope pthread_attr_t*, int*);
     int pthread_attr_setinheritsched(pthread_attr_t*, int);
     int pthread_attr_setschedpolicy(pthread_attr_t*, int);
     int pthread_attr_setscope(pthread_attr_t*, int);
     int pthread_getschedparam(pthread_t, int*, sched_param*);
-    int pthread_setschedparam(pthread_t, int, in sched_param*);
+    int pthread_setschedparam(pthread_t, int, const scope sched_param*);
     // int pthread_setschedprio(pthread_t, int); // not implemented
 }
 else version (FreeBSD)
@@ -1442,12 +1442,12 @@ else version (FreeBSD)
         PTHREAD_SCOPE_SYSTEM    = 0x2
     }
 
-    int pthread_attr_getinheritsched(in pthread_attr_t*, int*);
-    int pthread_attr_getschedpolicy(in pthread_attr_t*, int*);
-    int pthread_attr_getscope(in pthread_attr_t*, int*);
+    int pthread_attr_getinheritsched(const scope pthread_attr_t*, int*);
+    int pthread_attr_getschedpolicy(const scope pthread_attr_t*, int*);
+    int pthread_attr_getscope(const scope pthread_attr_t*, int*);
     int pthread_attr_setinheritsched(pthread_attr_t*, int);
     int pthread_attr_setschedpolicy(pthread_attr_t*, int);
-    int pthread_attr_setscope(in pthread_attr_t*, int);
+    int pthread_attr_setscope(const scope pthread_attr_t*, int);
     int pthread_getschedparam(pthread_t, int*, sched_param*);
     int pthread_setschedparam(pthread_t, int, sched_param*);
     // int pthread_setschedprio(pthread_t, int); // not implemented
@@ -1460,12 +1460,12 @@ else version (NetBSD)
         PTHREAD_SCOPE_SYSTEM    = 0x1
     }
 
-    int pthread_attr_getinheritsched(in pthread_attr_t*, int*);
-    int pthread_attr_getschedpolicy(in pthread_attr_t*, int*);
-    int pthread_attr_getscope(in pthread_attr_t*, int*);
+    int pthread_attr_getinheritsched(const scope pthread_attr_t*, int*);
+    int pthread_attr_getschedpolicy(const scope pthread_attr_t*, int*);
+    int pthread_attr_getscope(const scope pthread_attr_t*, int*);
     int pthread_attr_setinheritsched(pthread_attr_t*, int);
     int pthread_attr_setschedpolicy(pthread_attr_t*, int);
-    int pthread_attr_setscope(in pthread_attr_t*, int);
+    int pthread_attr_setscope(const scope pthread_attr_t*, int);
     int pthread_getschedparam(pthread_t, int*, sched_param*);
     int pthread_setschedparam(pthread_t, int, sched_param*);
     //int pthread_setschedprio(pthread_t, int);
@@ -1478,12 +1478,12 @@ else version (OpenBSD)
         PTHREAD_SCOPE_SYSTEM    = 0x2
     }
 
-    int pthread_attr_getinheritsched(in pthread_attr_t*, int*);
-    int pthread_attr_getschedpolicy(in pthread_attr_t*, int*);
-    int pthread_attr_getscope(in pthread_attr_t*, int*);
+    int pthread_attr_getinheritsched(const scope pthread_attr_t*, int*);
+    int pthread_attr_getschedpolicy(const scope pthread_attr_t*, int*);
+    int pthread_attr_getscope(const scope pthread_attr_t*, int*);
     int pthread_attr_setinheritsched(pthread_attr_t*, int);
     int pthread_attr_setschedpolicy(pthread_attr_t*, int);
-    int pthread_attr_setscope(in pthread_attr_t*, int);
+    int pthread_attr_setscope(const scope pthread_attr_t*, int);
     int pthread_getschedparam(pthread_t, int*, sched_param*);
     int pthread_setschedparam(pthread_t, int, sched_param*);
     // int pthread_setschedprio(pthread_t, int); // not implemented
@@ -1496,12 +1496,12 @@ else version (DragonFlyBSD)
         PTHREAD_SCOPE_SYSTEM    = 0x2
     }
 
-    int pthread_attr_getinheritsched(in pthread_attr_t*, int*);
-    int pthread_attr_getschedpolicy(in pthread_attr_t*, int*);
-    int pthread_attr_getscope(in pthread_attr_t*, int*);
+    int pthread_attr_getinheritsched(const scope pthread_attr_t*, int*);
+    int pthread_attr_getschedpolicy(const scope pthread_attr_t*, int*);
+    int pthread_attr_getscope(const scope pthread_attr_t*, int*);
     int pthread_attr_setinheritsched(pthread_attr_t*, int);
     int pthread_attr_setschedpolicy(pthread_attr_t*, int);
-    int pthread_attr_setscope(in pthread_attr_t*, int);
+    int pthread_attr_setscope(const scope pthread_attr_t*, int);
     int pthread_getschedparam(pthread_t, int*, sched_param*);
     int pthread_setschedparam(pthread_t, int, sched_param*);
 }
@@ -1513,12 +1513,12 @@ else version (Solaris)
         PTHREAD_SCOPE_SYSTEM = 1,
     }
 
-    int pthread_attr_getinheritsched(in pthread_attr_t*, int*);
-    int pthread_attr_getschedpolicy(in pthread_attr_t*, int*);
-    int pthread_attr_getscope(in pthread_attr_t*, int*);
+    int pthread_attr_getinheritsched(const scope pthread_attr_t*, int*);
+    int pthread_attr_getschedpolicy(const scope pthread_attr_t*, int*);
+    int pthread_attr_getscope(const scope pthread_attr_t*, int*);
     int pthread_attr_setinheritsched(pthread_attr_t*, int);
     int pthread_attr_setschedpolicy(pthread_attr_t*, int);
-    int pthread_attr_setscope(in pthread_attr_t*, int);
+    int pthread_attr_setscope(const scope pthread_attr_t*, int);
     int pthread_getschedparam(pthread_t, int*, sched_param*);
     int pthread_setschedparam(pthread_t, int, sched_param*);
     int pthread_setschedprio(pthread_t, int);
@@ -1531,12 +1531,12 @@ else version (CRuntime_Bionic)
         PTHREAD_SCOPE_PROCESS
     }
 
-    int pthread_attr_getschedpolicy(in pthread_attr_t*, int*);
-    int pthread_attr_getscope(in pthread_attr_t*);
+    int pthread_attr_getschedpolicy(const scope pthread_attr_t*, int*);
+    int pthread_attr_getscope(const scope pthread_attr_t*);
     int pthread_attr_setschedpolicy(pthread_attr_t*, int);
     int pthread_attr_setscope(pthread_attr_t*, int);
     int pthread_getschedparam(pthread_t, int*, sched_param*);
-    int pthread_setschedparam(pthread_t, int, in sched_param*);
+    int pthread_setschedparam(pthread_t, int, const scope sched_param*);
 }
 else version (CRuntime_Musl)
 {
@@ -1547,7 +1547,7 @@ else version (CRuntime_Musl)
     }
 
     int pthread_getschedparam(pthread_t, int*, sched_param*);
-    int pthread_setschedparam(pthread_t, int, in sched_param*);
+    int pthread_setschedparam(pthread_t, int, const scope sched_param*);
     int pthread_setschedprio(pthread_t, int);
 }
 else version (CRuntime_UClibc)
@@ -1558,14 +1558,14 @@ else version (CRuntime_UClibc)
         PTHREAD_SCOPE_PROCESS
     }
 
-    int pthread_attr_getinheritsched(in pthread_attr_t*, int*);
-    int pthread_attr_getschedpolicy(in pthread_attr_t*, int*);
-    int pthread_attr_getscope(in pthread_attr_t*, int*);
+    int pthread_attr_getinheritsched(const scope pthread_attr_t*, int*);
+    int pthread_attr_getschedpolicy(const scope pthread_attr_t*, int*);
+    int pthread_attr_getscope(const scope pthread_attr_t*, int*);
     int pthread_attr_setinheritsched(pthread_attr_t*, int);
     int pthread_attr_setschedpolicy(pthread_attr_t*, int);
     int pthread_attr_setscope(pthread_attr_t*, int);
     int pthread_getschedparam(pthread_t, int*, sched_param*);
-    int pthread_setschedparam(pthread_t, int, in sched_param*);
+    int pthread_setschedparam(pthread_t, int, const scope sched_param*);
     int pthread_setschedprio(pthread_t, int);
 }
 else
@@ -1577,9 +1577,9 @@ else
 // Stack (TSA|TSS)
 //
 /*
-int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*); (TSA|TSS)
-int pthread_attr_getstackaddr(in pthread_attr_t*, void**); (TSA)
-int pthread_attr_getstacksize(in pthread_attr_t*, size_t*); (TSS)
+int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*); (TSA|TSS)
+int pthread_attr_getstackaddr(const scope pthread_attr_t*, void**); (TSA)
+int pthread_attr_getstacksize(const scope pthread_attr_t*, size_t*); (TSS)
 int pthread_attr_setstack(pthread_attr_t*, void*, size_t); (TSA|TSS)
 int pthread_attr_setstackaddr(pthread_attr_t*, void*); (TSA)
 int pthread_attr_setstacksize(pthread_attr_t*, size_t); (TSS)
@@ -1587,86 +1587,86 @@ int pthread_attr_setstacksize(pthread_attr_t*, size_t); (TSS)
 
 version (CRuntime_Glibc)
 {
-    int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*);
-    int pthread_attr_getstackaddr(in pthread_attr_t*, void**);
-    int pthread_attr_getstacksize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*);
+    int pthread_attr_getstackaddr(const scope pthread_attr_t*, void**);
+    int pthread_attr_getstacksize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setstack(pthread_attr_t*, void*, size_t);
     int pthread_attr_setstackaddr(pthread_attr_t*, void*);
     int pthread_attr_setstacksize(pthread_attr_t*, size_t);
 }
 else version (Darwin)
 {
-    int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*);
-    int pthread_attr_getstackaddr(in pthread_attr_t*, void**);
-    int pthread_attr_getstacksize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*);
+    int pthread_attr_getstackaddr(const scope pthread_attr_t*, void**);
+    int pthread_attr_getstacksize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setstack(pthread_attr_t*, void*, size_t);
     int pthread_attr_setstackaddr(pthread_attr_t*, void*);
     int pthread_attr_setstacksize(pthread_attr_t*, size_t);
 }
 else version (FreeBSD)
 {
-    int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*);
-    int pthread_attr_getstackaddr(in pthread_attr_t*, void**);
-    int pthread_attr_getstacksize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*);
+    int pthread_attr_getstackaddr(const scope pthread_attr_t*, void**);
+    int pthread_attr_getstacksize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setstack(pthread_attr_t*, void*, size_t);
     int pthread_attr_setstackaddr(pthread_attr_t*, void*);
     int pthread_attr_setstacksize(pthread_attr_t*, size_t);
 }
 else version (NetBSD)
 {
-    int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*);
-    int pthread_attr_getstackaddr(in pthread_attr_t*, void**);
-    int pthread_attr_getstacksize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*);
+    int pthread_attr_getstackaddr(const scope pthread_attr_t*, void**);
+    int pthread_attr_getstacksize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setstack(pthread_attr_t*, void*, size_t);
     int pthread_attr_setstackaddr(pthread_attr_t*, void*);
     int pthread_attr_setstacksize(pthread_attr_t*, size_t);
 }
 else version (OpenBSD)
 {
-    int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*);
-    int pthread_attr_getstackaddr(in pthread_attr_t*, void**);
-    int pthread_attr_getstacksize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*);
+    int pthread_attr_getstackaddr(const scope pthread_attr_t*, void**);
+    int pthread_attr_getstacksize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setstack(pthread_attr_t*, void*, size_t);
     int pthread_attr_setstackaddr(pthread_attr_t*, void*);
     int pthread_attr_setstacksize(pthread_attr_t*, size_t);
 }
 else version (DragonFlyBSD)
 {
-    int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*);
-    int pthread_attr_getstackaddr(in pthread_attr_t*, void**);
-    int pthread_attr_getstacksize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*);
+    int pthread_attr_getstackaddr(const scope pthread_attr_t*, void**);
+    int pthread_attr_getstacksize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setstack(pthread_attr_t*, void*, size_t);
     int pthread_attr_setstackaddr(pthread_attr_t*, void*);
     int pthread_attr_setstacksize(pthread_attr_t*, size_t);
 }
 else version (Solaris)
 {
-    int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*);
-    int pthread_attr_getstackaddr(in pthread_attr_t*, void**);
-    int pthread_attr_getstacksize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*);
+    int pthread_attr_getstackaddr(const scope pthread_attr_t*, void**);
+    int pthread_attr_getstacksize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setstack(pthread_attr_t*, void*, size_t);
     int pthread_attr_setstackaddr(pthread_attr_t*, void*);
     int pthread_attr_setstacksize(pthread_attr_t*, size_t);
 }
 else version (CRuntime_Bionic)
 {
-    int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*);
-    int pthread_attr_getstackaddr(in pthread_attr_t*, void**);
-    int pthread_attr_getstacksize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*);
+    int pthread_attr_getstackaddr(const scope pthread_attr_t*, void**);
+    int pthread_attr_getstacksize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setstack(pthread_attr_t*, void*, size_t);
     int pthread_attr_setstackaddr(pthread_attr_t*, void*);
     int pthread_attr_setstacksize(pthread_attr_t*, size_t);
 }
 else version (CRuntime_Musl)
 {
-    int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*);
+    int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*);
     int pthread_attr_setstacksize(pthread_attr_t*, size_t);
 }
 else version (CRuntime_UClibc)
 {
-    int pthread_attr_getstack(in pthread_attr_t*, void**, size_t*);
-    int pthread_attr_getstackaddr(in pthread_attr_t*, void**);
-    int pthread_attr_getstacksize(in pthread_attr_t*, size_t*);
+    int pthread_attr_getstack(const scope pthread_attr_t*, void**, size_t*);
+    int pthread_attr_getstackaddr(const scope pthread_attr_t*, void**);
+    int pthread_attr_getstacksize(const scope pthread_attr_t*, size_t*);
     int pthread_attr_setstack(pthread_attr_t*, void*, size_t);
     int pthread_attr_setstackaddr(pthread_attr_t*, void*);
     int pthread_attr_setstacksize(pthread_attr_t*, size_t);
@@ -1680,39 +1680,39 @@ else
 // Shared Synchronization (TSH)
 //
 /*
-int pthread_condattr_getpshared(in pthread_condattr_t*, int*);
+int pthread_condattr_getpshared(const scope pthread_condattr_t*, int*);
 int pthread_condattr_setpshared(pthread_condattr_t*, int);
-int pthread_mutexattr_getpshared(in pthread_mutexattr_t*, int*);
+int pthread_mutexattr_getpshared(const scope pthread_mutexattr_t*, int*);
 int pthread_mutexattr_setpshared(pthread_mutexattr_t*, int);
-int pthread_rwlockattr_getpshared(in pthread_rwlockattr_t*, int*);
+int pthread_rwlockattr_getpshared(const scope pthread_rwlockattr_t*, int*);
 int pthread_rwlockattr_setpshared(pthread_rwlockattr_t*, int);
 */
 
 version (CRuntime_Glibc)
 {
-    int pthread_condattr_getpshared(in pthread_condattr_t*, int*);
+    int pthread_condattr_getpshared(const scope pthread_condattr_t*, int*);
     int pthread_condattr_setpshared(pthread_condattr_t*, int);
-    int pthread_mutexattr_getpshared(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getpshared(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_setpshared(pthread_mutexattr_t*, int);
-    int pthread_rwlockattr_getpshared(in pthread_rwlockattr_t*, int*);
+    int pthread_rwlockattr_getpshared(const scope pthread_rwlockattr_t*, int*);
     int pthread_rwlockattr_setpshared(pthread_rwlockattr_t*, int);
 }
 else version (FreeBSD)
 {
-    int pthread_condattr_getpshared(in pthread_condattr_t*, int*);
+    int pthread_condattr_getpshared(const scope pthread_condattr_t*, int*);
     int pthread_condattr_setpshared(pthread_condattr_t*, int);
-    int pthread_mutexattr_getpshared(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getpshared(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_setpshared(pthread_mutexattr_t*, int);
-    int pthread_rwlockattr_getpshared(in pthread_rwlockattr_t*, int*);
+    int pthread_rwlockattr_getpshared(const scope pthread_rwlockattr_t*, int*);
     int pthread_rwlockattr_setpshared(pthread_rwlockattr_t*, int);
 }
 else version (NetBSD)
 {
-    int pthread_condattr_getpshared(in pthread_condattr_t*, int*);
+    int pthread_condattr_getpshared(const scope pthread_condattr_t*, int*);
     int pthread_condattr_setpshared(pthread_condattr_t*, int);
-    int pthread_mutexattr_getpshared(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getpshared(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_setpshared(pthread_mutexattr_t*, int);
-    int pthread_rwlockattr_getpshared(in pthread_rwlockattr_t*, int*);
+    int pthread_rwlockattr_getpshared(const scope pthread_rwlockattr_t*, int*);
     int pthread_rwlockattr_setpshared(pthread_rwlockattr_t*, int);
 }
 else version (OpenBSD)
@@ -1720,29 +1720,29 @@ else version (OpenBSD)
 }
 else version (DragonFlyBSD)
 {
-    int pthread_condattr_getpshared(in pthread_condattr_t*, int*);
+    int pthread_condattr_getpshared(const scope pthread_condattr_t*, int*);
     int pthread_condattr_setpshared(pthread_condattr_t*, int);
-    int pthread_mutexattr_getpshared(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getpshared(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_setpshared(pthread_mutexattr_t*, int);
-    int pthread_rwlockattr_getpshared(in pthread_rwlockattr_t*, int*);
+    int pthread_rwlockattr_getpshared(const scope pthread_rwlockattr_t*, int*);
     int pthread_rwlockattr_setpshared(pthread_rwlockattr_t*, int);
 }
 else version (Darwin)
 {
-    int pthread_condattr_getpshared(in pthread_condattr_t*, int*);
+    int pthread_condattr_getpshared(const scope pthread_condattr_t*, int*);
     int pthread_condattr_setpshared(pthread_condattr_t*, int);
-    int pthread_mutexattr_getpshared(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getpshared(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_setpshared(pthread_mutexattr_t*, int);
-    int pthread_rwlockattr_getpshared(in pthread_rwlockattr_t*, int*);
+    int pthread_rwlockattr_getpshared(const scope pthread_rwlockattr_t*, int*);
     int pthread_rwlockattr_setpshared(pthread_rwlockattr_t*, int);
 }
 else version (Solaris)
 {
-    int pthread_condattr_getpshared(in pthread_condattr_t*, int*);
+    int pthread_condattr_getpshared(const scope pthread_condattr_t*, int*);
     int pthread_condattr_setpshared(pthread_condattr_t*, int);
-    int pthread_mutexattr_getpshared(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getpshared(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_setpshared(pthread_mutexattr_t*, int);
-    int pthread_rwlockattr_getpshared(in pthread_rwlockattr_t*, int*);
+    int pthread_rwlockattr_getpshared(const scope pthread_rwlockattr_t*, int*);
     int pthread_rwlockattr_setpshared(pthread_rwlockattr_t*, int);
 }
 else version (CRuntime_Bionic)
@@ -1765,11 +1765,11 @@ else version (CRuntime_Musl)
 }
 else version (CRuntime_UClibc)
 {
-    int pthread_condattr_getpshared(in pthread_condattr_t*, int*);
+    int pthread_condattr_getpshared(const scope pthread_condattr_t*, int*);
     int pthread_condattr_setpshared(pthread_condattr_t*, int);
-    int pthread_mutexattr_getpshared(in pthread_mutexattr_t*, int*);
+    int pthread_mutexattr_getpshared(const scope pthread_mutexattr_t*, int*);
     int pthread_mutexattr_setpshared(pthread_mutexattr_t*, int);
-    int pthread_rwlockattr_getpshared(in pthread_rwlockattr_t*, int*);
+    int pthread_rwlockattr_getpshared(const scope pthread_rwlockattr_t*, int*);
     int pthread_rwlockattr_setpshared(pthread_rwlockattr_t*, int);
 }
 else

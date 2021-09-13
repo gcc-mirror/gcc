@@ -1,6 +1,6 @@
 ; Options for the 64-bit flavor of AIX.
 ;
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -52,4 +52,10 @@ posix
 Driver
 
 pthread
+Driver
+
+m64
+Driver
+
+m32
 Driver

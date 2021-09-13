@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2010-2020 Free Software Foundation, Inc.
+// Copyright (C) 2010-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,6 @@ void
 test01()
 {
   std::map<int, double> m{{1, 1.0}, {2, 2.0}, {3, 3.0}};
-  std::begin(m);
-  std::end(m);
+  (void) std::begin(m);
+  (void) std::end(m);
 }

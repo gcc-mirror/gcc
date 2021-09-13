@@ -1,5 +1,5 @@
 ; Options for the NVPTX port
-; Copyright (C) 2014-2020 Free Software Foundation, Inc.
+; Copyright (C) 2014-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -65,3 +65,17 @@ Enum(ptx_isa) String(sm_35) Value(PTX_ISA_SM35)
 misa=
 Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_SM35)
 Specify the version of the ptx ISA to use.
+
+Enum
+Name(ptx_version) Type(int)
+Known PTX versions (for use with the -mptx= option):
+
+EnumValue
+Enum(ptx_version) String(3.1) Value(PTX_VERSION_3_1)
+
+EnumValue
+Enum(ptx_version) String(6.3) Value(PTX_VERSION_6_3)
+
+mptx=
+Target RejectNegative ToLower Joined Enum(ptx_version) Var(ptx_version_option) Init(PTX_VERSION_3_1)
+Specify the version of the ptx version to use.

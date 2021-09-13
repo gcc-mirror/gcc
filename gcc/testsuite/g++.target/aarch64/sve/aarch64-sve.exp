@@ -1,5 +1,5 @@
 #  Specific regression driver for AArch64.
-#  Copyright (C) 2009-2020 Free Software Foundation, Inc.
+#  Copyright (C) 2009-2021 Free Software Foundation, Inc.
 #  Contributed by ARM Ltd.
 #
 #  This file is part of GCC.
@@ -38,8 +38,10 @@ if { [check_effective_target_aarch64_sve] } {
     set sve_flags "-march=armv8.2-a+sve"
 }
 
-# Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] $sve_flags ""
+aarch64-with-arch-dg-options $sve_flags {
+    # Main loop.
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" $sve_flags
+}
 
 # All done.
 dg-finish

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,47 +28,50 @@
 --  handling of private and full declarations, and the construction of dispatch
 --  tables for tagged types.
 
-with Aspects;   use Aspects;
-with Atree;     use Atree;
-with Contracts; use Contracts;
-with Debug;     use Debug;
-with Einfo;     use Einfo;
-with Elists;    use Elists;
-with Errout;    use Errout;
-with Exp_Disp;  use Exp_Disp;
-with Exp_Dist;  use Exp_Dist;
-with Exp_Dbug;  use Exp_Dbug;
-with Freeze;    use Freeze;
-with Ghost;     use Ghost;
-with GNAT_CUDA; use GNAT_CUDA;
-with Lib;       use Lib;
-with Lib.Xref;  use Lib.Xref;
-with Namet;     use Namet;
-with Nmake;     use Nmake;
-with Nlists;    use Nlists;
-with Opt;       use Opt;
-with Output;    use Output;
-with Rtsfind;   use Rtsfind;
-with Sem;       use Sem;
-with Sem_Aux;   use Sem_Aux;
-with Sem_Cat;   use Sem_Cat;
-with Sem_Ch3;   use Sem_Ch3;
-with Sem_Ch6;   use Sem_Ch6;
-with Sem_Ch8;   use Sem_Ch8;
-with Sem_Ch10;  use Sem_Ch10;
-with Sem_Ch12;  use Sem_Ch12;
-with Sem_Ch13;  use Sem_Ch13;
-with Sem_Disp;  use Sem_Disp;
-with Sem_Eval;  use Sem_Eval;
-with Sem_Prag;  use Sem_Prag;
-with Sem_Util;  use Sem_Util;
-with Sem_Warn;  use Sem_Warn;
-with Snames;    use Snames;
-with Stand;     use Stand;
-with Sinfo;     use Sinfo;
-with Sinput;    use Sinput;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Contracts;      use Contracts;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Dist;       use Exp_Dist;
+with Exp_Dbug;       use Exp_Dbug;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Output;         use Output;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch10;       use Sem_Ch10;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
 with Style;
-with Uintp;     use Uintp;
+with Uintp;          use Uintp;
 
 with GNAT.HTable;
 
@@ -840,7 +843,7 @@ package body Sem_Ch7 is
          --  unannotated body will be used in all instantiations.
 
          Body_Id := Defining_Entity (N);
-         Set_Ekind (Body_Id, E_Package_Body);
+         Mutate_Ekind (Body_Id, E_Package_Body);
          Set_Scope (Body_Id, Scope (Spec_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Spec_Id));
          Set_Body_Entity (Spec_Id, Body_Id);
@@ -872,7 +875,7 @@ package body Sem_Ch7 is
       --  current node otherwise. Note that N was rewritten above, so we must
       --  be sure to get the latest Body_Id value.
 
-      Set_Ekind (Body_Id, E_Package_Body);
+      Mutate_Ekind (Body_Id, E_Package_Body);
       Set_Body_Entity (Spec_Id, Body_Id);
       Set_Spec_Entity (Body_Id, Spec_Id);
 
@@ -999,13 +1002,6 @@ package body Sem_Ch7 is
          Append_RACW_Bodies (Declarations (N), Spec_Id);
          Analyze_List (Declarations (N));
       end if;
-
-      --  If procedures marked with CUDA_Global have been defined within N, we
-      --  need to register them with the CUDA runtime at program startup. This
-      --  requires multiple declarations and function calls which need to be
-      --  appended to N's declarations.
-
-      Build_And_Insert_CUDA_Initialization (N);
 
       HSS := Handled_Statement_Sequence (N);
 
@@ -1165,7 +1161,7 @@ package body Sem_Ch7 is
 
       Generate_Definition (Id);
       Enter_Name (Id);
-      Set_Ekind  (Id, E_Package);
+      Mutate_Ekind  (Id, E_Package);
       Set_Etype  (Id, Standard_Void_Type);
 
       --  Set SPARK_Mode from context
@@ -2065,6 +2061,8 @@ package body Sem_Ch7 is
                            Replace_Elmt (Op_Elmt, New_Op);
                            Remove_Elmt  (Op_List, Op_Elmt_2);
                            Set_Overridden_Operation (New_Op, Parent_Subp);
+                           Set_Is_Ada_2022_Only     (New_Op,
+                             Is_Ada_2022_Only (Parent_Subp));
 
                            --  We don't need to inherit its dispatching slot.
                            --  Set_All_DT_Position has previously ensured that
@@ -2562,9 +2560,9 @@ package body Sem_Ch7 is
       end if;
 
       if Limited_Present (Def) then
-         Set_Ekind (Id, E_Limited_Private_Type);
+         Mutate_Ekind (Id, E_Limited_Private_Type);
       else
-         Set_Ekind (Id, E_Private_Type);
+         Mutate_Ekind (Id, E_Private_Type);
       end if;
 
       Set_Etype              (Id, Id);
@@ -2596,7 +2594,7 @@ package body Sem_Ch7 is
       Set_Private_Dependents (Id, New_Elmt_List);
 
       if Tagged_Present (Def) then
-         Set_Ekind                       (Id, E_Record_Type_With_Private);
+         Mutate_Ekind                    (Id, E_Record_Type_With_Private);
          Set_Direct_Primitive_Operations (Id, New_Elmt_List);
          Set_Is_Abstract_Type            (Id, Abstract_Present (Def));
          Set_Is_Limited_Record           (Id, Limited_Present (Def));
@@ -2614,6 +2612,15 @@ package body Sem_Ch7 is
 
       elsif Abstract_Present (Def) then
          Error_Msg_N ("only a tagged type can be abstract", N);
+
+      --  When extensions are enabled, we initialize the primitive operations
+      --  list of an untagged private type to an empty element list. (Note:
+      --  This could be done for all private types and shared with the tagged
+      --  case above, but for now we do it separately when the feature of
+      --  prefixed calls for untagged types is enabled.)
+
+      elsif Extensions_Allowed then
+         Set_Direct_Primitive_Operations (Id, New_Elmt_List);
       end if;
    end New_Private_Type;
 
@@ -2726,8 +2733,10 @@ package body Sem_Ch7 is
                                      (Priv, Size_Known_At_Compile_Time (Full));
          Set_Is_Volatile             (Priv, Is_Volatile                (Full));
          Set_Treat_As_Volatile       (Priv, Treat_As_Volatile          (Full));
+         Set_Is_Atomic               (Priv, Is_Atomic                  (Full));
          Set_Is_Ada_2005_Only        (Priv, Is_Ada_2005_Only           (Full));
          Set_Is_Ada_2012_Only        (Priv, Is_Ada_2012_Only           (Full));
+         Set_Is_Ada_2022_Only        (Priv, Is_Ada_2022_Only           (Full));
          Set_Has_Pragma_Unmodified   (Priv, Has_Pragma_Unmodified      (Full));
          Set_Has_Pragma_Unreferenced (Priv, Has_Pragma_Unreferenced    (Full));
          Set_Has_Pragma_Unreferenced_Objects
@@ -2737,7 +2746,6 @@ package body Sem_Ch7 is
          if Is_Unchecked_Union (Full) then
             Set_Is_Unchecked_Union (Base_Type (Priv));
          end if;
-         --  Why is atomic not copied here ???
 
          if Referenced (Full) then
             Set_Referenced (Priv);
@@ -2931,6 +2939,11 @@ package body Sem_Ch7 is
                else
                   Set_Is_Potentially_Use_Visible (Id);
                end if;
+
+            --  Avoid crash caused by previous errors
+
+            elsif No (Etype (Id)) and then Serious_Errors_Detected /= 0 then
+               null;
 
             --  We need to avoid incorrectly marking enumeration literals as
             --  non-visible when a visible use-all-type clause is in effect.

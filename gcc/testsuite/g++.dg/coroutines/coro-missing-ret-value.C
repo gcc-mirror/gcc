@@ -10,7 +10,7 @@ struct MissingRetValue {
   MissingRetValue (coro::coroutine_handle<> handle) : handle (handle) {}
   struct missing_retvoid {
     coro::suspend_never initial_suspend() { return {}; }
-    coro::suspend_never final_suspend() { return {}; }
+    coro::suspend_never final_suspend() noexcept { return {}; }
     MissingRetValue get_return_object() {
       return MissingRetValue (coro::coroutine_handle<missing_retvoid>::from_promise (*this));
     }

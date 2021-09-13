@@ -1,5 +1,5 @@
 /* C-family attributes handling.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -62,6 +62,8 @@ static tree handle_no_address_safety_analysis_attribute (tree *, tree, tree,
 							 int, bool *);
 static tree handle_no_sanitize_undefined_attribute (tree *, tree, tree, int,
 						    bool *);
+static tree handle_no_sanitize_coverage_attribute (tree *, tree, tree, int,
+						   bool *);
 static tree handle_asan_odr_indicator_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
@@ -81,6 +83,7 @@ static tree handle_artificial_attribute (tree *, tree, tree, int, bool *);
 static tree handle_flatten_attribute (tree *, tree, tree, int, bool *);
 static tree handle_error_attribute (tree *, tree, tree, int, bool *);
 static tree handle_used_attribute (tree *, tree, tree, int, bool *);
+static tree handle_uninitialized_attribute (tree *, tree, tree, int, bool *);
 static tree handle_externally_visible_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_no_reorder_attribute (tree *, tree, tree, int,
@@ -121,6 +124,8 @@ static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_tm_attribute (tree *, tree, tree, int, bool *);
 static tree handle_tm_wrap_attribute (tree *, tree, tree, int, bool *);
 static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
+static tree handle_unavailable_attribute (tree *, tree, tree, int,
+					  bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int,
 					  bool *) ATTRIBUTE_NONNULL(3);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
@@ -161,6 +166,9 @@ static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nsobject_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_root_class_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_nullability_attribute (tree *, tree, tree, int, bool *);
+static tree handle_signed_bool_precision_attribute (tree *, tree, tree, int,
+						    bool *);
+static tree handle_retain_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -274,6 +282,8 @@ const struct attribute_spec c_common_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
+  { "signed_bool_precision",  1, 1, false, true, false, true,
+			      handle_signed_bool_precision_attribute, NULL },
   { "packed",                 0, 0, false, false, false, false,
 			      handle_packed_attribute,
 	                      attr_aligned_exclusions },
@@ -324,6 +334,10 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_used_attribute, NULL },
   { "unused",                 0, 0, false, false, false, false,
 			      handle_unused_attribute, NULL },
+  { "uninitialized",	      0, 0, true, false, false, false,
+			      handle_uninitialized_attribute, NULL },
+  { "retain",                 0, 0, true,  false, false, false,
+			      handle_retain_attribute, NULL },
   { "externally_visible",     0, 0, true,  false, false, false,
 			      handle_externally_visible_attribute, NULL },
   { "no_reorder",	      0, 0, true, false, false, false,
@@ -397,6 +411,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_novops_attribute, NULL },
   { "deprecated",             0, 1, false, false, false, false,
 			      handle_deprecated_attribute, NULL },
+  { "unavailable",            0, 1, false, false, false, false,
+			      handle_unavailable_attribute, NULL },
   { "vector_size",	      1, 1, false, true, false, true,
 			      handle_vector_size_attribute, NULL },
   { "visibility",	      1, 1, false, false, false, false,
@@ -442,6 +458,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_no_sanitize_thread_attribute, NULL },
   { "no_sanitize_undefined",  0, 0, true, false, false, false,
 			      handle_no_sanitize_undefined_attribute, NULL },
+  { "no_sanitize_coverage",   0, 0, true, false, false, false,
+			      handle_no_sanitize_coverage_attribute, NULL },
   { "asan odr indicator",     0, 0, true, false, false, false,
 			      handle_asan_odr_indicator_attribute, NULL },
   { "warning",		      1, 1, true,  false, false, false,
@@ -687,6 +705,9 @@ positional_argument (const_tree fntype, const_tree atname, tree pos,
 
   if (tree argtype = type_argument_type (fntype, ipos))
     {
+      if (argtype == error_mark_node)
+	return NULL_TREE;
+
       if (flags & POSARG_ELLIPSIS)
 	{
 	  if (argno < 1)
@@ -893,6 +914,43 @@ validate_attr_arg (tree node[2], tree name, tree newarg)
 }
 
 /* Attribute handlers common to C front ends.  */
+
+/* Handle a "signed_bool_precision" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_signed_bool_precision_attribute (tree *node, tree name, tree args,
+					int, bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+  if (!flag_gimple)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      return NULL_TREE;
+    }
+
+  if (!TYPE_P (*node) || TREE_CODE (*node) != BOOLEAN_TYPE)
+    {
+      warning (OPT_Wattributes, "%qE attribute only supported on "
+	       "boolean types", name);
+      return NULL_TREE;
+    }
+
+  unsigned HOST_WIDE_INT prec = HOST_WIDE_INT_M1U;
+  if (tree_fits_uhwi_p (TREE_VALUE (args)))
+    prec = tree_to_uhwi (TREE_VALUE (args));
+  if (prec > MAX_FIXED_MODE_SIZE)
+    {
+      warning (OPT_Wattributes, "%qE attribute with unsupported boolean "
+	       "precision", name);
+      return NULL_TREE;
+    }
+
+  tree new_type = build_nonstandard_boolean_type (prec);
+  *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);
+
+  return NULL_TREE;
+}
 
 /* Handle a "packed" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -1163,6 +1221,22 @@ handle_no_sanitize_undefined_attribute (tree *node, tree name, tree, int,
   else
     add_no_sanitize_value (*node,
 			   SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT);
+
+  return NULL_TREE;
+}
+
+/* Handle a "no_sanitize_coverage" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_no_sanitize_coverage_attribute (tree *node, tree name, tree, int,
+				       bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
 
   return NULL_TREE;
 }
@@ -1501,6 +1575,7 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 	  || VAR_OR_FUNCTION_DECL_P (decl)
 	  || TREE_CODE (decl) == LABEL_DECL
 	  || TREE_CODE (decl) == CONST_DECL
+	  || TREE_CODE (decl) == FIELD_DECL
 	  || TREE_CODE (decl) == TYPE_DECL)
 	{
 	  TREE_USED (decl) = 1;
@@ -1518,6 +1593,52 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	*node = build_variant_type_copy (*node);
       TREE_USED (*node) = 1;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "retain" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_retain_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
+			 int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree node = *pnode;
+
+  if (SUPPORTS_SHF_GNU_RETAIN
+      && (TREE_CODE (node) == FUNCTION_DECL
+	  || (VAR_P (node) && TREE_STATIC (node))))
+    ;
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle an "uninitialized" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_uninitialized_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+				int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree decl = *node;
+  if (!VAR_P (decl))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored because %qD "
+	       "is not a variable", name, decl);
+      *no_add_attrs = true;
+    }
+  else if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored because %qD "
+	       "is not a local variable", name, decl);
+      *no_add_attrs = true;
     }
 
   return NULL_TREE;
@@ -2248,14 +2369,17 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
       *no_add_attrs = true;
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL
-	   && ((curalign = DECL_ALIGN (decl)) > bitalign
-	       || ((lastalign = DECL_ALIGN (last_decl)) > bitalign)))
+	   && (((curalign = DECL_ALIGN (decl)) > bitalign)
+	       | ((lastalign = DECL_ALIGN (last_decl)) > bitalign)))
     {
       /* Either a prior attribute on the same declaration or one
 	 on a prior declaration of the same function specifies
 	 stricter alignment than this attribute.  */
-      bool note = lastalign != 0;
-      if (lastalign)
+      bool note = (lastalign > curalign
+		   || (lastalign == curalign
+		       && (DECL_USER_ALIGN (last_decl)
+			   > DECL_USER_ALIGN (decl))));
+      if (note)
 	curalign = lastalign;
 
       curalign /= BITS_PER_UNIT;
@@ -2300,25 +2424,6 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
       This formally comes from the c++11 specification but we are
       doing it for the GNU attribute syntax as well.  */
     *no_add_attrs = true;
-  else if (!warn_if_not_aligned_p
-	   && TREE_CODE (decl) == FUNCTION_DECL
-	   && DECL_ALIGN (decl) > bitalign)
-    {
-      /* Don't warn for function alignment here if warn_if_not_aligned_p
-	 is true.  It will be warned about later.  */
-      if (DECL_USER_ALIGN (decl))
-	{
-	  /* Only reject attempts to relax/override an alignment
-	     explicitly specified previously and accept declarations
-	     that appear to relax the implicit function alignment for
-	     the target.  Both increasing and increasing the alignment
-	     set by -falign-functions setting is permitted.  */
-	  error ("alignment for %q+D was previously specified as %d "
-		 "and may not be decreased", decl,
-		 DECL_ALIGN (decl) / BITS_PER_UNIT);
-	  *no_add_attrs = true;
-	}
-    }
   else if (warn_if_not_aligned_p
 	   && TREE_CODE (decl) == FIELD_DECL
 	   && !DECL_C_BIT_FIELD (decl))
@@ -3277,7 +3382,7 @@ handle_malloc_attribute (tree *node, tree name, tree args, int flags,
 	  error ("%qE attribute argument 1 must take a pointer "
 		 "type as its first argument", name);
 	  inform (DECL_SOURCE_LOCATION (dealloc),
-		  "refernced symbol declared here" );
+		  "referenced symbol declared here");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -3290,7 +3395,7 @@ handle_malloc_attribute (tree *node, tree name, tree args, int flags,
 	  error ("%qE attribute argument 1 must take a pointer type "
 		 "as its first argument; have %qT", name, argtype);
 	  inform (DECL_SOURCE_LOCATION (dealloc),
-		  "referenced symbol declared here" );
+		  "referenced symbol declared here");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -3495,8 +3600,15 @@ handle_assume_aligned_attribute (tree *node, tree name, tree args, int,
       if (!tree_fits_shwi_p (val))
 	{
 	  warning (OPT_Wattributes,
-		   "%qE attribute %E is not an integer constant",
+		   "%qE attribute argument %E is not an integer constant",
 		   name, val);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+      else if (tree_int_cst_sgn (val) < 0)
+	{
+	  warning (OPT_Wattributes,
+		   "%qE attribute argument %E is not positive", name, val);
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -3515,7 +3627,7 @@ handle_assume_aligned_attribute (tree *node, tree name, tree args, int,
 
 	  align = val;
 	}
-      else if (tree_int_cst_sgn (val) < 0 || tree_int_cst_le (align, val))
+      else if (tree_int_cst_le (align, val))
 	{
 	  /* The misalignment specified by the second argument
 	     must be non-negative and less than the alignment.  */
@@ -4041,6 +4153,71 @@ handle_deprecated_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
+/* Handle a "unavailable" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_unavailable_attribute (tree *node, tree name,
+			     tree args, int flags,
+			     bool *no_add_attrs)
+{
+  tree type = NULL_TREE;
+  int warn = 0;
+  tree what = NULL_TREE;
+
+  if (!args)
+    *no_add_attrs = true;
+  else if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+    {
+      error ("the message attached to %<unavailable%> is not a string");
+      *no_add_attrs = true;
+    }
+
+  if (DECL_P (*node))
+    {
+      tree decl = *node;
+      type = TREE_TYPE (decl);
+
+      if (TREE_CODE (decl) == TYPE_DECL
+	  || TREE_CODE (decl) == PARM_DECL
+	  || VAR_OR_FUNCTION_DECL_P (decl)
+	  || TREE_CODE (decl) == FIELD_DECL
+	  || TREE_CODE (decl) == CONST_DECL
+	  || objc_method_decl (TREE_CODE (decl)))
+	TREE_UNAVAILABLE (decl) = 1;
+      else
+	warn = 1;
+    }
+  else if (TYPE_P (*node))
+    {
+      if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+	*node = build_variant_type_copy (*node);
+      TREE_UNAVAILABLE (*node) = 1;
+      type = *node;
+    }
+  else
+    warn = 1;
+
+  if (warn)
+    {
+      *no_add_attrs = true;
+      if (type && TYPE_NAME (type))
+	{
+	  if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
+	    what = TYPE_NAME (*node);
+	  else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+		   && DECL_NAME (TYPE_NAME (type)))
+	    what = DECL_NAME (TYPE_NAME (type));
+	}
+      if (what)
+	warning (OPT_Wattributes, "%qE attribute ignored for %qE", name, what);
+      else
+	warning (OPT_Wattributes, "%qE attribute ignored", name);
+    }
+
+  return NULL_TREE;
+}
+
 /* Return the "base" type from TYPE that is suitable to apply attribute
    vector_size to by stripping arrays, function types, etc.  */
 static tree
@@ -4172,10 +4349,22 @@ type_valid_for_vector_size (tree type, tree atname, tree args,
   if (nunits & (nunits - 1))
     {
       if (error_p)
-	error ("number of components of the vector not a power of two");
+	error ("number of vector components %wu not a power of two", nunits);
       else
 	warning (OPT_Wattributes,
-		 "number of components of the vector not a power of two");
+		 "number of vector components %wu not a power of two", nunits);
+      return NULL_TREE;
+    }
+
+  if (nunits >= (unsigned HOST_WIDE_INT)INT_MAX)
+    {
+      if (error_p)
+	error ("number of vector components %wu exceeds %d",
+	       nunits, INT_MAX - 1);
+      else
+	warning (OPT_Wattributes,
+		 "number of vector components %wu exceeds %d",
+		 nunits, INT_MAX - 1);
       return NULL_TREE;
     }
 
@@ -4958,16 +5147,25 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
       /* Create the attribute access string from the arg spec string,
 	 optionally followed by position of the VLA bound argument if
 	 it is one.  */
-      char specbuf[80];
-      int len = snprintf (specbuf, sizeof specbuf, "%c%u%s",
-			  attr_access::mode_chars[access_deferred],
-			  argpos, s);
-      gcc_assert ((size_t) len < sizeof specbuf);
+      {
+	size_t specend = spec.length ();
+	if (!specend)
+	  {
+	    spec = '+';
+	    specend = 1;
+	  }
 
-      if (!spec.length ())
-	spec += '+';
-
-      spec += specbuf;
+	/* Format the access string in place.  */
+	int len = snprintf (NULL, 0, "%c%u%s",
+			    attr_access::mode_chars[access_deferred],
+			    argpos, s);
+	spec.resize (specend + len + 1);
+	sprintf (&spec[specend], "%c%u%s",
+		 attr_access::mode_chars[access_deferred],
+		 argpos, s);
+	/* Trim the trailing NUL.  */
+	spec.resize (specend + len);
+      }
 
       /* The (optional) list of expressions denoting the VLA bounds
 	 N in ARGTYPE <arg>[Ni]...[Nj]...[Nk].  */
@@ -4992,8 +5190,13 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
 		{
 		  /* BOUND previously seen in the parameter list.  */
 		  TREE_PURPOSE (vb) = size_int (*psizpos);
-		  sprintf (specbuf, "$%u", *psizpos);
-		  spec += specbuf;
+		  /* Format the position string in place.  */
+		  int len = snprintf (NULL, 0, "$%u", *psizpos);
+		  size_t specend = spec.length ();
+		  spec.resize (specend + len + 1);
+		  sprintf (&spec[specend], "$%u", *psizpos);
+		  /* Trim the trailing NUL.  */
+		  spec.resize (specend + len);
 		}
 	      else
 		{
@@ -5215,7 +5418,12 @@ handle_target_clones_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* Ensure we have a function type.  */
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
-      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (*node)))
+      if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+	{
+	  error ("%qE attribute argument not a string constant", name);
+	  *no_add_attrs = true;
+	}
+      else if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (*node)))
 	{
 	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
 		   "with %qs attribute", name, "always_inline");
@@ -5259,11 +5467,17 @@ handle_optimize_attribute (tree *node, tree name, tree args,
 
       /* Save current options.  */
       cl_optimization_save (&cur_opts, &global_options, &global_options_set);
+      tree prev_target_node = build_target_option_node (&global_options,
+							&global_options_set);
 
       /* If we previously had some optimization options, use them as the
 	 default.  */
       gcc_options *saved_global_options = NULL;
-      if (flag_checking)
+
+      /* When #pragma GCC optimize pragma is used, it modifies global_options
+	 without calling targetm.override_options_after_change.  That can leave
+	 target flags inconsistent for comparison.  */
+      if (flag_checking && optimization_current_node == optimization_default_node)
 	{
 	  saved_global_options = XNEW (gcc_options);
 	  *saved_global_options = global_options;
@@ -5277,10 +5491,17 @@ handle_optimize_attribute (tree *node, tree name, tree args,
       parse_optimize_options (args, true);
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node)
 	= build_optimization_node (&global_options, &global_options_set);
+      tree target_node = build_target_option_node (&global_options,
+						   &global_options_set);
+      if (prev_target_node != target_node)
+	DECL_FUNCTION_SPECIFIC_TARGET (*node) = target_node;
 
       /* Restore current options.  */
       cl_optimization_restore (&global_options, &global_options_set,
 			       &cur_opts);
+      cl_target_option_restore (&global_options, &global_options_set,
+				TREE_TARGET_OPTION (prev_target_node));
+
       if (saved_global_options != NULL)
 	{
 	  cl_optimization_compare (saved_global_options, &global_options);

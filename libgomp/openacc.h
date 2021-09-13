@@ -1,6 +1,6 @@
 /* OpenACC Runtime Library User-facing Declarations
 
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 

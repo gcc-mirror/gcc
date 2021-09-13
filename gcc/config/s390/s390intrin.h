@@ -1,5 +1,5 @@
 /* S/390 System z specific intrinsics
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 This file is part of GCC.

@@ -1,5 +1,5 @@
 /* runtime.cc -- D runtime functions called by generated code.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@ enum d_libcall_type
   LCT_ARRAY_VOID,	    /* void[]		    */
   LCT_ARRAY_SIZE_T,	    /* size_t[]		    */
   LCT_ARRAY_BYTE,	    /* byte[]		    */
+  LCT_IMMUTABLE_CHARPTR,    /* immutable(char*)	    */
   LCT_ARRAY_STRING,	    /* string[]		    */
   LCT_ARRAY_WSTRING,	    /* wstring[]	    */
   LCT_ARRAY_DSTRING,	    /* dstring[]	    */
@@ -198,6 +199,10 @@ get_libcall_type (d_libcall_type type)
 
     case LCT_ARRAYPTR_BYTE:
       libcall_types[type] = Type::tint8->arrayOf ()->pointerTo ();
+      break;
+
+    case LCT_IMMUTABLE_CHARPTR:
+      libcall_types[type] = Type::tchar->pointerTo ()->immutableOf ();
       break;
 
     default:

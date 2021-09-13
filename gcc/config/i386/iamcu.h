@@ -1,5 +1,5 @@
 /* Definitions of target machine for Intel MCU psABI.
-   Copyright (C) 2015-2020 Free Software Foundation, Inc.
+   Copyright (C) 2015-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -65,16 +65,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    bytes if it is within MAX_SKIP bytes.  */
 
 #define SUBALIGN_LOG 3
-
-#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)			\
-  do {									\
-    if ((LOG) != 0) {							\
-      if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)		\
-	fprintf ((FILE), "\t.p2align %d\n", (LOG));			\
-      else								\
-	fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
-    }									\
-  } while (0)
 
 /* Handle special EH pointer encodings.  Absolute, pc-relative, and
    indirect are handled automatically.  */

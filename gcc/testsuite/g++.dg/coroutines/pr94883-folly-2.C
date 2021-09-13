@@ -16,15 +16,15 @@ int f;
 class h {
   class j {
   public:
-    bool await_ready();
-    void await_suspend(std::coroutine_handle<>);
-    void await_resume();
+    bool await_ready() noexcept;
+    void await_suspend(std::coroutine_handle<>) noexcept;
+    void await_resume() noexcept;
   };
 
 public:
   void get_return_object();
   std::b initial_suspend();
-  j final_suspend();
+  j final_suspend() noexcept;
   void unhandled_exception();
   template <typename g> 
     auto await_transform (g c) { return ab(f, c); }

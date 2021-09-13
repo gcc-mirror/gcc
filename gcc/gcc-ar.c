@@ -1,5 +1,5 @@
 /* Wrapper for ar/ranlib/nm to pass the LTO plugin.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Andi Kleen.
 
 This file is part of GCC.
@@ -140,7 +140,7 @@ main (int ac, char **av)
 
   /* Not using getopt for now.  */
   for (i = 0; i < ac; i++)
-      if (!strncmp (av[i], "-B", 2))
+      if (startswith (av[i], "-B"))
 	{
 	  const char *arg = av[i] + 2;
 	  const char *end;

@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This program is free software; you can redistribute it and/or modify
@@ -191,6 +191,9 @@ extern htab_eq htab_eq_pointer;
 
 /* A hash function for null-terminated strings.  */
 extern hashval_t htab_hash_string (const void *);
+
+/* An equality function for null-terminated strings.  */
+extern int htab_eq_string (const void *, const void *);
 
 /* An iterative hash function for arbitrary data.  */
 extern hashval_t iterative_hash (const void *, size_t, hashval_t);

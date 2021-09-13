@@ -8,6 +8,7 @@
  */
 module core.sys.windows.raserror;
 version (Windows):
+@system:
 
 enum {
     SUCCESS = 0,

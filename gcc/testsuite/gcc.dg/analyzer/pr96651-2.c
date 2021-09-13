@@ -26,7 +26,7 @@ void test (void)
 }
 
 static void __attribute__((noinline))
-called_from_main (void)
+__analyzer_called_from_main (void)
 {
   /* When accessed from main, the vars still have their initializer values.  */
   __analyzer_eval (a == 0); /* { dg-warning "TRUE" } */
@@ -53,7 +53,7 @@ int main (void)
      before "main").  */
   __analyzer_eval (stderr == 0); /* { dg-warning "UNKNOWN" } */
 
-  called_from_main ();
+  __analyzer_called_from_main ();
 
   unknown_fn (&a, &c);
 

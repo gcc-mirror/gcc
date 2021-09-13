@@ -8,8 +8,9 @@
  */
 module core.sys.windows.rpcnsip;
 version (Windows):
+@system:
 
-private import core.sys.windows.rpcdce, core.sys.windows.rpcdcep, core.sys.windows.rpcnsi;
+import core.sys.windows.rpcdce, core.sys.windows.rpcdcep, core.sys.windows.rpcnsi;
 
 struct RPC_IMPORT_CONTEXT_P {
     RPC_NS_HANDLE       LookupContext;

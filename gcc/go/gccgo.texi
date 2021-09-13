@@ -12,7 +12,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-go 2010-2020
+@set copyrights-go 2010-2021
 
 @copying
 @c man begin COPYRIGHT
@@ -262,6 +262,15 @@ Apply special rules for compiling the runtime package.  Implicit
 memory allocation is forbidden.  Some additional compiler directives
 are supported.
 
+@item -fgo-embedcfg=@var{file}
+@cindex @option{-fgo-embedcfg}
+Identify a JSON file used to map patterns used with special
+@code{//go:embed} comments to the files named by the patterns.  The
+JSON file should have two components: @code{Patterns} maps each
+pattern to a list of file names, and @code{Files} maps each file name
+to a full path to the file.  This option is intended for use by the
+@command{go} command to implement @code{//go:embed}.
+
 @item -g
 @cindex @option{-g for gccgo}
 This is the standard @command{gcc} option (@pxref{Debugging Options, ,
@@ -486,7 +495,7 @@ like (after importing the @code{os} package):
 
 @smallexample
 var name = [4]byte@{'f', 'o', 'o', 0@};
-i := c_open(&amp;name[0], os.O_RDONLY, 0);
+i := c_open(&name[0], os.O_RDONLY, 0);
 @end smallexample
 
 Note that this serves as an example only.  To open a file in Go please

@@ -1,5 +1,5 @@
 /* Assign reload pseudos.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1636,10 +1636,11 @@ lra_assign (bool &fails_p)
   bitmap_initialize (&all_spilled_pseudos, &reg_obstack);
   create_live_range_start_chains ();
   setup_live_pseudos_and_spill_after_risky_transforms (&all_spilled_pseudos);
-  if (! lra_asm_error_p && flag_checking)
-    /* Check correctness of allocation for call-crossed pseudos but
-       only when there are no asm errors as in the case of errors the
-       asm is removed and it can result in incorrect allocation.  */
+  if (! lra_hard_reg_split_p && ! lra_asm_error_p && flag_checking)
+    /* Check correctness of allocation but only when there are no hard reg
+       splits and asm errors as in the case of errors explicit insns involving
+       hard regs are added or the asm is removed and this can result in
+       incorrect allocation.  */
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
       if (lra_reg_info[i].nrefs != 0
 	  && reg_renumber[i] >= 0

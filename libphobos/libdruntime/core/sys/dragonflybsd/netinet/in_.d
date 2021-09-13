@@ -264,34 +264,34 @@ struct ip_mreq
 {
     in_addr imr_multiaddr;
     in_addr imr_interface;
-};
+}
 
 struct ip_mreqn
 {
     in_addr imr_multiaddr;
     in_addr imr_address;
     int     imr_ifindex;
-};
+}
 
 struct ip_mreq_source
 {
     in_addr imr_multiaddr;
     in_addr imr_sourceaddr;
     in_addr imr_interface;
-};
+}
 
 struct group_req
 {
     uint gr_interface;
     sockaddr_storage gr_group;
-};
+}
 
 struct group_source_req
 {
     uint gsr_interface;
     sockaddr_storage gsr_group;
     sockaddr_storage gsr_source;
-};
+}
 
 int setipv4sourcefilter(int, in_addr, in_addr, uint, uint, in_addr*);
 int getipv4sourcefilter(int, in_addr, in_addr, uint*, uint*, in_addr*);
@@ -450,13 +450,13 @@ struct in6_pktinfo
 {
     in6_addr ipi6_addr;
     uint     ipi6_ifindex;
-};
+}
 
 struct ip6_mtuinfo
 {
     sockaddr_in6 ip6m_addr;
     uint         ip6m_mtu;
-};
+}
 
 enum IPV6_PORTRANGE_DEFAULT = 0;
 enum IPV6_PORTRANGE_HIGH    = 1;

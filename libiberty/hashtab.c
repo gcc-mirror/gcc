@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This file is part of the libiberty library.
@@ -839,6 +839,13 @@ htab_hash_string (const PTR p)
     r = r * 67 + c - 113;
 
   return r;
+}
+
+/* An equality function for null-terminated strings.  */
+int
+htab_eq_string (const void *a, const void *b)
+{
+  return strcmp ((const char *) a, (const char *) b) == 0;
 }
 
 /* DERIVED FROM:

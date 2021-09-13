@@ -1,5 +1,5 @@
 /* Gimple Represented as Polyhedra.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@inria.fr>.
 
 This file is part of GCC.
@@ -377,8 +377,7 @@ canonicalize_loop_closed_ssa (loop_p loop, edge e)
 static void
 canonicalize_loop_form (void)
 {
-  loop_p loop;
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       edge e = single_exit (loop);
       if (!e || (e->flags & (EDGE_COMPLEX|EDGE_FAKE)))
@@ -494,10 +493,9 @@ graphite_transform_loops (void)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      loop_p loop;
       int num_no_dependency = 0;
 
-      FOR_EACH_LOOP (loop, 0)
+      for (auto loop : loops_list (cfun, 0))
 	if (loop->can_be_parallel)
 	  num_no_dependency++;
 

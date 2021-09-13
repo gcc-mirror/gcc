@@ -9,11 +9,12 @@
  */
 module core.sys.windows.winnetwk;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "mpr");
 
-private import core.sys.windows.winbase, core.sys.windows.winerror, core.sys.windows.winnt;
+import core.sys.windows.winbase, core.sys.windows.winerror, core.sys.windows.winnt;
 
 enum : DWORD {
     WNNC_NET_MSNET       = 0x00010000,

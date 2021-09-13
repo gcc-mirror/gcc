@@ -1,5 +1,5 @@
 ;; Constraint definitions for RISC-V target.
-;; Copyright (C) 2011-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2021 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -67,8 +67,7 @@
        (match_test "GET_CODE(XEXP(op,0)) == REG")))
 
 (define_constraint "S"
-  "@internal
-   A constant call address."
+  "A constraint that matches an absolute symbolic address."
   (match_operand 0 "absolute_symbolic_operand"))
 
 (define_constraint "U"

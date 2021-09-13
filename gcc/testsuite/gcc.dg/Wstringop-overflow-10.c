@@ -1,5 +1,7 @@
-/* { dg-do compile } */
-/* { dg-options "-O2 -Wstringop-overflow" } */
+/* PR tree-optimization/89500 - ICE: tree check: expected integer_cst,
+   have ssa_name in get_len
+   { dg-do compile }
+   { dg-options "-O2 -Wstringop-overflow -Wstringop-truncation" } */
 
 void
 foo (char *a)

@@ -1,7 +1,7 @@
 /* Decompose OpenACC 'kernels' constructs into parts, a sequence of compute
    constructs
 
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1527,7 +1527,7 @@ public:
   virtual bool gate (function *)
   {
     return (flag_openacc
-	    && flag_openacc_kernels == OPENACC_KERNELS_DECOMPOSE);
+	    && param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE);
   }
   virtual unsigned int execute (function *)
   {

@@ -1,4 +1,4 @@
-/* { dg-do assemble { target aarch64_asm_sve_ok } } */
+/* { dg-do assemble { target aarch64_variant_pcs } } */
 /* { dg-options "-O2 -msve-vector-bits=256 --save-temps" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

@@ -1,5 +1,5 @@
 /* Definitions for condition code handling in final.c and output routines.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,46 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_CONDITIONS_H
 #define GCC_CONDITIONS_H
-
-/* The variable cc_status says how to interpret the condition code.
-   It is set by output routines for an instruction that sets the cc's
-   and examined by output routines for jump instructions.
-
-   cc_status contains two components named `value1' and `value2'
-   that record two equivalent expressions for the values that the
-   condition codes were set from.  (Either or both may be null if
-   there is no useful expression to record.)  These fields are
-   used for eliminating redundant test and compare instructions
-   in the cases where the condition codes were already set by the
-   previous instruction.
-
-   cc_status.flags contains flags which say that the condition codes
-   were set in a nonstandard manner.  The output of jump instructions
-   uses these flags to compensate and produce the standard result
-   with the nonstandard condition codes.  Standard flags are defined here.
-   The tm.h file can also define other machine-dependent flags.
-
-   cc_status also contains a machine-dependent component `mdep'
-   whose type, `CC_STATUS_MDEP', may be defined as a macro in the
-   tm.h file.  */
-
-#ifndef CC_STATUS_MDEP
-#define CC_STATUS_MDEP int
-#endif
-
-#ifndef CC_STATUS_MDEP_INIT
-#define CC_STATUS_MDEP_INIT 0
-#endif
-
-struct CC_STATUS {int flags; rtx value1, value2; CC_STATUS_MDEP mdep;};
-
-/* While outputting an insn as assembler code,
-   this is the status BEFORE that insn.  */
-extern CC_STATUS cc_prev_status;
-
-/* While outputting an insn as assembler code,
-   this is being altered to the status AFTER that insn.  */
-extern CC_STATUS cc_status;
 
 /* These are the machine-independent flags:  */
 
@@ -106,13 +66,4 @@ extern CC_STATUS cc_status;
    This is only used by machine description files.  */
 #define CC_NOT_SIGNED 0200
 
-/* This is how to initialize the variable cc_status.
-   final does this at appropriate moments.  */
-
-/* FIXME: We want to get rid of these ifndefs.  */
-#ifndef CC_STATUS_INIT
-#define CC_STATUS_INIT  \
- (cc_status.flags = 0, cc_status.value1 = 0, cc_status.value2 = 0,  \
-  CC_STATUS_MDEP_INIT)
-#endif
 #endif /* GCC_CONDITIONS_H */

@@ -1,6 +1,6 @@
 /* Basic IPA utilities for type inheritance graph construction and
    devirtualization.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -4193,6 +4193,8 @@ ipa_odr_read_section (struct lto_file_decl_data *file_data, const char *data,
 	      if (do_warning != -1 || j >= this_enum.vals.length ())
 		continue;
 	      if (strcmp (id, this_enum.vals[j].name)
+		  || (val.get_precision() !=
+		      this_enum.vals[j].val.get_precision())
 		  || val != this_enum.vals[j].val)
 		{
 		  warn_name = xstrdup (id);
@@ -4260,14 +4262,20 @@ ipa_odr_read_section (struct lto_file_decl_data *file_data, const char *data,
 			    "name %qs differs from name %qs defined"
 			    " in another translation unit",
 			    this_enum.vals[j].name, warn_name);
+		  else if (this_enum.vals[j].val.get_precision() !=
+			   warn_value.get_precision())
+		    inform (this_enum.vals[j].locus,
+			    "name %qs is defined as %u-bit while another "
+			    "translation unit defines it as %u-bit",
+			    warn_name, this_enum.vals[j].val.get_precision(),
+			    warn_value.get_precision());
 		  /* FIXME: In case there is easy way to print wide_ints,
-		     perhaps we could do it here instead of overlfow checpl.  */
+		     perhaps we could do it here instead of overflow check.  */
 		  else if (wi::fits_shwi_p (this_enum.vals[j].val)
 			   && wi::fits_shwi_p (warn_value))
 		    inform (this_enum.vals[j].locus,
-			    "name %qs is defined to " HOST_WIDE_INT_PRINT_DEC
-			    " while another translation unit defines "
-			    "it as " HOST_WIDE_INT_PRINT_DEC,
+			    "name %qs is defined to %wd while another "
+			    "translation unit defines it as %wd",
 			    warn_name, this_enum.vals[j].val.to_shwi (),
 			    warn_value.to_shwi ());
 		  else

@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 Free Software Foundation, Inc.
+// Copyright (C) 2018-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,9 +24,17 @@ struct Incomplete;
 void f(void** p)
 {
   ::new (p[0]) std::unique_ptr<Incomplete>();
-  ::new (p[1]) std::unique_ptr<Incomplete[]>();
 
   // PR libstdc++/87704
-  ::new (p[2]) std::unique_ptr<Incomplete>(nullptr);
-  ::new (p[3]) std::unique_ptr<Incomplete[]>(nullptr);
+  ::new (p[1]) std::unique_ptr<Incomplete>(nullptr);
+}
+
+// The standard says "T shall be a complete type" for unique_ptr<T[], D>
+// so this is a GCC extension.
+void f_array(void** p)
+{
+  ::new (p[0]) std::unique_ptr<Incomplete[]>();
+
+  // PR libstdc++/87704
+  ::new (p[1]) std::unique_ptr<Incomplete[]>(nullptr);
 }

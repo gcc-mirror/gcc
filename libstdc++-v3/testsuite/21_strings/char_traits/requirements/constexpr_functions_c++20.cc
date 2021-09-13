@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
 
-// Copyright (C) 2017-2020 Free Software Foundation, Inc.
+// Copyright (C) 2017-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,13 @@ template<typename CT>
     return s1[0]==char_type{1} && s1[1]==char_type{1} && s1[2]==char_type{2};
   }
 
+#ifndef __cpp_lib_constexpr_string
+# error Feature-test macro for constexpr char_traits is missing
+#elif __cpp_lib_constexpr_string < 201811
+# error Feature-test macro for constexpr char_traits has the wrong value
+#endif
+
+// We also provide this non-standard macro for P0426R1 and P1032R1.
 #ifndef __cpp_lib_constexpr_char_traits
 # error Feature-test macro for constexpr char_traits is missing
 #elif __cpp_lib_constexpr_char_traits != 201811

@@ -1,3 +1,8 @@
+2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/99703
+	* configure: Regenerated.
+
 2020-07-30  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/96202
@@ -744,7 +749,7 @@
 	* decDPD.h: Likewise.
 	* decLibrary.c, decRound.c: Likewise.
 
-Copyright (C) 2005-2020 Free Software Foundation, Inc.
+Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

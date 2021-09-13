@@ -6,7 +6,7 @@
 --                     M U L T I P R O C E S S O R S                        --
 --                               B o d y                                    --
 --                                                                          --
---                       Copyright (C) 2010-2020, AdaCore                   --
+--                       Copyright (C) 2010-2021, AdaCore                   --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ package body System.Tasking.Protected_Objects.Multiprocessors is
    procedure Served (Entry_Call : Entry_Call_Link) is
       pragma Unreferenced (Entry_Call);
    begin
-      pragma Assert (False, "Invalid operation");
+      pragma Assert (Standard.False, "Invalid operation");
    end Served;
 
    -------------------------
@@ -47,7 +47,7 @@ package body System.Tasking.Protected_Objects.Multiprocessors is
 
    procedure Wakeup_Served_Entry is
    begin
-      pragma Assert (False, "Invalid operation");
+      pragma Assert (Standard.False, "Invalid operation");
    end Wakeup_Served_Entry;
 
 end System.Tasking.Protected_Objects.Multiprocessors;

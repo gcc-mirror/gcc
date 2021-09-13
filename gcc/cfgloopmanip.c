@@ -1,5 +1,5 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1414,13 +1414,12 @@ duplicate_loop_to_header_edge (class loop *loop, edge e,
   for (i = 0; i < n; i++)
     {
       basic_block dominated, dom_bb;
-      vec<basic_block> dom_bbs;
       unsigned j;
 
       bb = bbs[i];
       bb->aux = 0;
 
-      dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
+      auto_vec<basic_block> dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
       FOR_EACH_VEC_ELT (dom_bbs, j, dominated)
 	{
 	  if (flow_bb_inside_loop_p (loop, dominated))
@@ -1429,7 +1428,6 @@ duplicate_loop_to_header_edge (class loop *loop, edge e,
 			CDI_DOMINATORS, first_active[i], first_active_latch);
 	  set_immediate_dominator (CDI_DOMINATORS, dominated, dom_bb);
 	}
-      dom_bbs.release ();
     }
   free (first_active);
 
@@ -1574,12 +1572,10 @@ create_preheader (class loop *loop, int flags)
 void
 create_preheaders (int flags)
 {
-  class loop *loop;
-
   if (!current_loops)
     return;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     create_preheader (loop, flags);
   loops_state_set (LOOPS_HAVE_PREHEADERS);
 }
@@ -1589,10 +1585,9 @@ create_preheaders (int flags)
 void
 force_single_succ_latches (void)
 {
-  class loop *loop;
   edge e;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       if (loop->latch != loop->header && single_succ_p (loop->latch))
 	continue;
@@ -1733,6 +1728,7 @@ loop_version (class loop *loop,
 		   then_scale, else_scale);
 
   copy_loop_info (loop, nloop);
+  set_loop_copy (loop, nloop);
 
   /* loopify redirected latch_edge. Update its PENDING_STMTS.  */
   lv_flush_pending_stmts (latch_edge);

@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -666,6 +666,25 @@ done:
   if (kind == -1)
     goto cleanup;
 
+  if (kind == 4)
+    {
+      if (flag_real4_kind == 8)
+	kind = 8;
+      if (flag_real4_kind == 10)
+	kind = 10;
+      if (flag_real4_kind == 16)
+	kind = 16;
+    }
+  else if (kind == 8)
+    {
+      if (flag_real8_kind == 4)
+	kind = 4;
+      if (flag_real8_kind == 10)
+	kind = 10;
+      if (flag_real8_kind == 16)
+	kind = 16;
+    }
+
   switch (exp_char)
     {
     case 'd':
@@ -676,26 +695,6 @@ done:
 	  goto cleanup;
 	}
       kind = gfc_default_double_kind;
-
-      if (kind == 4)
-	{
-	  if (flag_real4_kind == 8)
-	    kind = 8;
-	  if (flag_real4_kind == 10)
-	    kind = 10;
-	  if (flag_real4_kind == 16)
-	    kind = 16;
-	}
-
-      if (kind == 8)
-	{
-	  if (flag_real8_kind == 4)
-	    kind = 4;
-	  if (flag_real8_kind == 10)
-	    kind = 10;
-	  if (flag_real8_kind == 16)
-	    kind = 16;
-	}
       break;
 
     case 'q':
@@ -725,26 +724,6 @@ done:
     default:
       if (kind == -2)
 	kind = gfc_default_real_kind;
-
-      if (kind == 4)
-	{
-	  if (flag_real4_kind == 8)
-	    kind = 8;
-	  if (flag_real4_kind == 10)
-	    kind = 10;
-	  if (flag_real4_kind == 16)
-	    kind = 16;
-	}
-
-      if (kind == 8)
-	{
-	  if (flag_real8_kind == 4)
-	    kind = 4;
-	  if (flag_real8_kind == 10)
-	    kind = 10;
-	  if (flag_real8_kind == 16)
-	    kind = 16;
-	}
 
       if (gfc_validate_kind (BT_REAL, kind, true) < 0)
 	{
@@ -1189,6 +1168,61 @@ got_delim:
 
   if (match_substring (NULL, 0, &e->ref, false) != MATCH_NO)
     e->expr_type = EXPR_SUBSTRING;
+
+  /* Substrings with constant starting and ending points are eligible as
+     designators (F2018, section 9.1).  Simplify substrings to make them usable
+     e.g. in data statements.  */
+  if (e->expr_type == EXPR_SUBSTRING
+      && e->ref && e->ref->type == REF_SUBSTRING
+      && e->ref->u.ss.start->expr_type == EXPR_CONSTANT
+      && (e->ref->u.ss.end == NULL
+	  || e->ref->u.ss.end->expr_type == EXPR_CONSTANT))
+    {
+      gfc_expr *res;
+      ptrdiff_t istart, iend;
+      size_t length;
+      bool equal_length = false;
+
+      /* Basic checks on substring starting and ending indices.  */
+      if (!gfc_resolve_substring (e->ref, &equal_length))
+	return MATCH_ERROR;
+
+      length = e->value.character.length;
+      istart = gfc_mpz_get_hwi (e->ref->u.ss.start->value.integer);
+      if (e->ref->u.ss.end == NULL)
+	iend = length;
+      else
+	iend = gfc_mpz_get_hwi (e->ref->u.ss.end->value.integer);
+
+      if (istart <= iend)
+	{
+	  if (istart < 1)
+	    {
+	      gfc_error ("Substring start index (%ld) at %L below 1",
+			 (long) istart, &e->ref->u.ss.start->where);
+	      return MATCH_ERROR;
+	    }
+	  if (iend > (ssize_t) length)
+	    {
+	      gfc_error ("Substring end index (%ld) at %L exceeds string "
+			 "length", (long) iend, &e->ref->u.ss.end->where);
+	      return MATCH_ERROR;
+	    }
+	  length = iend - istart + 1;
+	}
+      else
+	length = 0;
+
+      res = gfc_get_constant_expr (BT_CHARACTER, e->ts.kind, &e->where);
+      res->value.character.string = gfc_get_wide_string (length + 1);
+      res->value.character.length = length;
+      if (length > 0)
+	memcpy (res->value.character.string,
+		&e->value.character.string[istart - 1],
+		length * sizeof (gfc_char_t));
+      res->value.character.string[length] = '\0';
+      e = res;
+    }
 
   *result = e;
 
@@ -1752,21 +1786,21 @@ match_arg_list_function (gfc_actual_arglist *result)
       switch (name[0])
 	{
 	case 'l':
-	  if (gfc_str_startswith (name, "loc"))
+	  if (startswith (name, "loc"))
 	    {
 	      result->name = "%LOC";
 	      break;
 	    }
 	  /* FALLTHRU */
 	case 'r':
-	  if (gfc_str_startswith (name, "ref"))
+	  if (startswith (name, "ref"))
 	    {
 	      result->name = "%REF";
 	      break;
 	    }
 	  /* FALLTHRU */
 	case 'v':
-	  if (gfc_str_startswith (name, "val"))
+	  if (startswith (name, "val"))
 	    {
 	      result->name = "%VAL";
 	      break;
@@ -2352,11 +2386,15 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	component = NULL;
 
       if (intrinsic && !inquiry)
-       {
-	  gfc_error ("%qs at %C is not an inquiry reference to an intrinsic "
-		     "type component %qs", name, previous->name);
+	{
+	  if (previous)
+	    gfc_error ("%qs at %C is not an inquiry reference to an intrinsic "
+			"type component %qs", name, previous->name);
+	  else
+	    gfc_error ("%qs at %C is not an inquiry reference to an intrinsic "
+			"type component", name);
 	  return MATCH_ERROR;
-       }
+	}
       else if (component == NULL && !inquiry)
 	return MATCH_ERROR;
 
@@ -2741,7 +2779,7 @@ gfc_expr_attr (gfc_expr *e)
 	       && e->value.function.isym->transformational
 	       && e->ts.type == BT_CLASS)
 	attr = CLASS_DATA (e)->attr;
-      else
+      else if (e->symtree)
 	attr = gfc_variable_attr (e, NULL);
 
       /* TODO: NULL() returns pointers.  May have to take care of this

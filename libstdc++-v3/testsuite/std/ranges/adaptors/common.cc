@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,9 +60,21 @@ test02()
   VERIFY( std::count(v2.begin(), v2.end(), 1) == 2);
 }
 
+template<auto common = views::common>
+void
+test03()
+{
+  // Verify SFINAE behavior.
+  static_assert(!requires { common(); });
+  static_assert(!requires { common(0, 0); });
+  static_assert(!requires { common(0); });
+  static_assert(!requires { 0 | common; });
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

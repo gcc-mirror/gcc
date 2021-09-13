@@ -1,6 +1,6 @@
 ## Makefile for the C++17 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2020 Free Software Foundation, Inc.
+## Copyright (C) 1997-2021 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -66,6 +66,10 @@ if GLIBCXX_LDBL_ALT128_COMPAT
 floating_from_chars.lo: floating_from_chars.cc
 	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
 floating_from_chars.o: floating_from_chars.cc
+	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+floating_to_chars.lo: floating_to_chars.cc
+	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+floating_to_chars.o: floating_to_chars.cc
 	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
 endif
 

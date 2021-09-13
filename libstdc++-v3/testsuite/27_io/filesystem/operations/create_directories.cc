@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
@@ -146,10 +145,33 @@ test03()
   remove_all(p);
 }
 
+void
+test04()
+{
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // no symlinks
+#else
+  // PR libstdc++/101510
+  // create_directories reports an error if the path is a symlink to a dir
+  std::error_code ec = make_error_code(std::errc::invalid_argument);
+  const auto p = __gnu_test::nonexistent_path() / "";
+  fs::create_directories(p/"dir");
+  auto link = p/"link";
+  fs::create_directory_symlink("dir", link);
+  bool created = fs::create_directories(link, ec);
+  VERIFY( !created );
+  VERIFY( !ec );
+  created = fs::create_directories(link);
+  VERIFY( !created );
+  remove_all(p);
+#endif
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

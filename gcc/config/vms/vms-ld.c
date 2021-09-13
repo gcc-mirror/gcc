@@ -1,5 +1,5 @@
 /* VMS linker wrapper.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by AdaCore
 
 This file is part of GCC.
@@ -93,6 +93,14 @@ static int set_exe (const char *);
 static int translate_unix (char *, int);
 #endif
 
+
+/* Return 1 if STR string starts with PREFIX.  */
+
+static inline int
+startswith (const char *str, const char *prefix)
+{
+  return strncmp (str, prefix, strlen (prefix)) == 0;
+}
 
 /* Append STR to the command line to invoke the linker.
    Expand the line as necessary to accommodate.  */
@@ -319,7 +327,7 @@ process_args (int argc, char **argv)
 
   for (i = 1; i < argc; i++)
     {
-      if (strncmp (argv[i], "-L", 2) == 0)
+      if (startswith (argv[i], "-L"))
 	{
           search_dirs = XRESIZEVEC(const char *, search_dirs,
                                    search_dirs_len + 1);
@@ -341,7 +349,7 @@ process_args (int argc, char **argv)
 	}
       else if (strcmp (argv[i], "-g0") == 0)
 	addarg ("/notraceback");
-      else if (strncmp (argv[i], "-g", 2) == 0)
+      else if (startswith (argv[i], "-g"))
 	{
 	  addarg ("/debug");
 	  debug = 1;
@@ -654,7 +662,7 @@ main (int argc, char **argv)
           /* Already handled.  */
           i++;
         }
-      else if (arg_len > 2 && strncmp (argv[i], "-l", 2) == 0)
+      else if (arg_len > 2 && startswith (argv[i], "-l"))
 	{
 	  const char *libname;
 
@@ -676,17 +684,17 @@ main (int argc, char **argv)
 	    }
 	}
       else if (strcmp (argv[i], "-v" ) == 0
-	       || strncmp (argv[i], "-g", 2 ) == 0
+	       || startswith (argv[i], "-g")
 	       || strcmp (argv[i], "-static" ) == 0
 	       || strcmp (argv[i], "-map" ) == 0
 	       || strcmp (argv[i], "-save-temps") == 0
 	       || strcmp (argv[i], "--noinhibit-exec") == 0
-	       || (arg_len > 2 && strncmp (argv[i], "-L", 2) == 0)
-	       || (arg_len >= 6 && strncmp (argv[i], "-share", 6) == 0))
+	       || (arg_len > 2 && startswith (argv[i], "-L"))
+	       || (arg_len >= 6 && startswith (argv[i], "-share")))
         {
           /* Already handled.  */
         }
-      else if (strncmp (argv[i], "--opt=", 6) == 0)
+      else if (startswith (argv[i], "--opt="))
 	fprintf (optfile, "%s\n", argv[i] + 6);
       else if (arg_len > 1 && argv[i][0] == '@')
 	{

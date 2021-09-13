@@ -34,7 +34,6 @@ void test7()
     static import pkgDIP37.datetime;
     static assert(!__traits(compiles, def()));
     pkgDIP37.datetime.def();
-    pkgDIP37.datetime.common.def();
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=17629

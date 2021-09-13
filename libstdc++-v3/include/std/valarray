@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- valarray class.
 
-// Copyright (C) 1997-2020 Free Software Foundation, Inc.
+// Copyright (C) 1997-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -536,25 +536,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Apply a function to the array.
        *
        *  Returns a new valarray with elements assigned to the result of
-       *  applying func to the corresponding element of this array.  The new
+       *  applying __func to the corresponding element of this array.  The new
        *  array has the same size as this one.
        *
-       *  @param  func  Function of Tp returning Tp to apply.
+       *  @param  __func  Function of Tp returning Tp to apply.
        *  @return  New valarray with transformed elements.
        */
-      _Expr<_ValFunClos<_ValArray, _Tp>, _Tp> apply(_Tp func(_Tp)) const;
+      _Expr<_ValFunClos<_ValArray, _Tp>, _Tp> apply(_Tp __func(_Tp)) const;
 
       /**
        *  @brief  Apply a function to the array.
        *
        *  Returns a new valarray with elements assigned to the result of
-       *  applying func to the corresponding element of this array.  The new
+       *  applying __func to the corresponding element of this array.  The new
        *  array has the same size as this one.
        *
-       *  @param  func  Function of const Tp& returning Tp to apply.
+       *  @param  __func  Function of const Tp& returning Tp to apply.
        *  @return  New valarray with transformed elements.
        */
-      _Expr<_RefFunClos<_ValArray, _Tp>, _Tp> apply(_Tp func(const _Tp&)) const;
+      _Expr<_RefFunClos<_ValArray, _Tp>, _Tp> apply(_Tp __func(const _Tp&)) const;
 
       /**
        *  @brief  Resize array.
@@ -595,7 +595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _M_data[__i];
     }
 
-  // @} group numeric_arrays
+  /// @} group numeric_arrays
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
@@ -1062,18 +1062,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<class _Tp>
     inline _Expr<_ValFunClos<_ValArray, _Tp>, _Tp>
-    valarray<_Tp>::apply(_Tp func(_Tp)) const
+    valarray<_Tp>::apply(_Tp __func(_Tp)) const
     {
       typedef _ValFunClos<_ValArray, _Tp> _Closure;
-      return _Expr<_Closure, _Tp>(_Closure(*this, func));
+      return _Expr<_Closure, _Tp>(_Closure(*this, __func));
     }
 
   template<class _Tp>
     inline _Expr<_RefFunClos<_ValArray, _Tp>, _Tp>
-    valarray<_Tp>::apply(_Tp func(const _Tp &)) const
+    valarray<_Tp>::apply(_Tp __func(const _Tp &)) const
     {
       typedef _RefFunClos<_ValArray, _Tp> _Closure;
-      return _Expr<_Closure, _Tp>(_Closure(*this, func));
+      return _Expr<_Closure, _Tp>(_Closure(*this, __func));
     }
 
 #define _DEFINE_VALARRAY_UNARY_OPERATOR(_Op, _Name)                     \
@@ -1245,7 +1245,7 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
     { return std::__addressof(__va[0]) + __va.size(); }
 #endif // C++11
 
-  // @} group numeric_arrays
+  /// @} group numeric_arrays
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

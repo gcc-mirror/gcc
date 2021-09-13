@@ -8,10 +8,11 @@
  */
 module core.sys.windows.sqlucode;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 
-private import core.sys.windows.sqlext;
+import core.sys.windows.sqlext;
 
 enum SQL_WCHAR        = -8;
 enum SQL_WVARCHAR     = -9;

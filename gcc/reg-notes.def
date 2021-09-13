@@ -1,5 +1,5 @@
 /* Register note definitions.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -70,16 +70,6 @@ REG_NOTE (NONNEG)
 
 /* Identifies a register set in this insn and never used.  */
 REG_NOTE (UNUSED)
-
-/* REG_CC_SETTER and REG_CC_USER link a pair of insns that set and use
-   CC0, respectively.  Normally, these are required to be consecutive
-   insns, but we permit putting a cc0-setting insn in the delay slot
-   of a branch as long as only one copy of the insn exists.  In that
-   case, these notes point from one to the other to allow code
-   generation to determine what any require information and to
-   properly update CC_STATUS.  These notes are INSN_LISTs.  */
-REG_NOTE (CC_SETTER)
-REG_NOTE (CC_USER)
 
 /* Points to a CODE_LABEL.  Used by JUMP_INSNs to say that the CODE_LABEL
    contained in the REG_LABEL_TARGET note is a possible jump target of
@@ -232,6 +222,21 @@ REG_NOTE (STACK_CHECK)
    The decl might not be available in the call due to splitting of the call
    insn.  This note is a SYMBOL_REF.  */
 REG_NOTE (CALL_DECL)
+
+/* Indicates that the call is an untyped_call.  These calls are special
+   in that they set all of the target ABI's return value registers to a
+   defined value without explicitly saying so.  For example, a typical
+   untyped_call sequence has the form:
+
+       (call (mem (symbol_ref "foo")))
+       (set (reg pseudo1) (reg result1))
+       ...
+       (set (reg pseudon) (reg resultn))
+
+   The ABI specifies that result1..resultn are clobbered by the call,
+   but the RTL does not indicate that result1..resultn are the results
+   of the call.  */
+REG_NOTE (UNTYPED_CALL)
 
 /* Indicate that a call should not be verified for control-flow consistency.
    The target address of the call is assumed as a valid address and no check

@@ -14,7 +14,7 @@ fn2 (int x, int y)
   if (y)
     {
       fn1 (x);		/* { dg-final { gdb-test .+1 "x" "6" } } */
-      fn1 (x);		/* { dg-final { gdb-test . "y" "25" } } */
+      fn1 (x);		/* { dg-final { gdb-test . "y" "25" { xfail { aarch64*-*-* && { any-opts "-flto" } } } } } */
       fn1 (x);
       fn1 (x);
       y = -2 + x;

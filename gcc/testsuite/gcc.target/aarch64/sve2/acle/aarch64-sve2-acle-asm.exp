@@ -1,5 +1,5 @@
 #  Assembly-based regression-test driver for the SVE ACLE
-#  Copyright (C) 2009-2020 Free Software Foundation, Inc.
+#  Copyright (C) 2009-2021 Free Software Foundation, Inc.
 #
 #  This file is part of GCC.
 #
@@ -37,6 +37,10 @@ if { [check_effective_target_aarch64_sve2] } {
     set sve2_flags "-march=armv8.5-a+sve2"
 }
 
+# Turn off any codegen tweaks by default that may affect expected assembly.
+# Tests relying on those should turn them on explicitly.
+set sve_flags "$sve_flags -mtune=generic -moverride=tune=none"
+
 lappend extra_flags "-fno-ipa-icf"
 
 global gcc_runtest_parallelize_limit_minor
@@ -62,7 +66,7 @@ set-torture-options {
 # Main loop.
 set files [glob -nocomplain $srcdir/$subdir/asm/*.c]
 set save-dg-do-what-default ${dg-do-what-default}
-if { [check_effective_target_aarch64_asm_sve_ok]
+if { [check_effective_target_aarch64_asm_sve2_ok]
      && [check_effective_target_aarch64_variant_pcs] } {
     set dg-do-what-default assemble
 } else {

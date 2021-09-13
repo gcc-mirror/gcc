@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -26,7 +26,7 @@
 FuncDeclaration *isFuncAddress(Expression *e, bool *hasOverloads = NULL);
 bool isCommutative(TOK op);
 MOD MODmerge(MOD mod1, MOD mod2);
-Expression *semantic(Expression *e, Scope *sc);
+void toAutoQualChars(const char **result, Type *t1, Type *t2);
 
 /* ==================== implicitCast ====================== */
 
@@ -91,8 +91,10 @@ Expression *implicitCastTo(Expression *e, Scope *sc, Type *t)
                     //printf("type %p ty %d deco %p\n", type, type->ty, type->deco);
                     //type = type->semantic(loc, sc);
                     //printf("type %s t %s\n", type->deco, t->deco);
+                    const char *ts[2];
+                    toAutoQualChars(ts, e->type, t);
                     e->error("cannot implicitly convert expression (%s) of type %s to %s",
-                        e->toChars(), e->type->toChars(), t->toChars());
+                        e->toChars(), ts[0], ts[1]);
                 }
             }
             result = new ErrorExp();
@@ -1431,7 +1433,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                 TypeVector *tv = (TypeVector *)tob;
                 result = new CastExp(e->loc, e, tv->elementType());
                 result = new VectorExp(e->loc, result, tob);
-                result = ::semantic(result, sc);
+                result = expressionSemantic(result, sc);
                 return;
             }
             else if (tob->ty != Tvector && t1b->ty == Tvector)
@@ -1494,13 +1496,16 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                     // cast(U[])sa; // ==> cast(U[])sa[];
                     d_uns64 fsize = t1b->nextOf()->size();
                     d_uns64 tsize = tob->nextOf()->size();
-                    if ((((TypeSArray *)t1b)->dim->toInteger() * fsize) % tsize != 0)
+                    if (fsize != tsize)
                     {
-                        // copied from sarray_toDarray() in e2ir.c
-                        e->error("cannot cast expression %s of type %s to %s since sizes don't line up",
-                            e->toChars(), e->type->toChars(), t->toChars());
-                        result = new ErrorExp();
-                        return;
+                        dinteger_t dim = ((TypeSArray *)t1b)->dim->toInteger();
+                        if (tsize == 0 || (dim * fsize) % tsize != 0)
+                        {
+                            e->error("cannot cast expression `%s` of type `%s` to `%s` since sizes don't line up",
+                                     e->toChars(), e->type->toChars(), t->toChars());
+                            result = new ErrorExp();
+                            return;
+                        }
                     }
                     goto Lok;
                 }
@@ -1924,7 +1929,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                     {
                         f->tookAddressOf++;
                         SymOffExp *se = new SymOffExp(e->loc, f, 0, false);
-                        ::semantic(se, sc);
+                        expressionSemantic(se, sc);
                         // Let SymOffExp::castTo() do the heavy lifting
                         visit(se);
                         return;
@@ -2083,7 +2088,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                     (*ae->elements)[i] = ex;
                 }
                 Expression *ev = new VectorExp(e->loc, ae, tb);
-                ev = ::semantic(ev, sc);
+                ev = expressionSemantic(ev, sc);
                 result = ev;
                 return;
             }
@@ -2156,16 +2161,16 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                         if (f->needThis() && hasThis(sc))
                         {
                             result = new DelegateExp(e->loc, new ThisExp(e->loc), f, false);
-                            result = ::semantic(result, sc);
+                            result = expressionSemantic(result, sc);
                         }
                         else if (f->isNested())
                         {
                             result = new DelegateExp(e->loc, new IntegerExp(0), f, false);
-                            result = ::semantic(result, sc);
+                            result = expressionSemantic(result, sc);
                         }
                         else if (f->needThis())
                         {
-                            e->error("no 'this' to create delegate for %s", f->toChars());
+                            e->error("no `this` to create delegate for %s", f->toChars());
                             result = new ErrorExp();
                             return;
                         }
@@ -2746,7 +2751,7 @@ Lagain:
             else
                 tx = d->pointerTo();
 
-            tx = tx->semantic(e1->loc, sc);
+            tx = typeSemantic(tx, e1->loc, sc);
 
             if (t1->implicitConvTo(tx) && t2->implicitConvTo(tx))
             {

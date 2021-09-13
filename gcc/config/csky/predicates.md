@@ -1,5 +1,5 @@
 ;; Predicates for C-SKY.
-;; Copyright (C) 2018-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2021 Free Software Foundation, Inc.
 ;; Contributed by C-SKY Microsystems and Mentor Graphics.
 ;;
 ;; This file is part of GCC.
@@ -294,5 +294,4 @@
 })
 
 (define_special_predicate "csky_float_comparison_operator"
-  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,
-	       unordered,ordered"))
+  (match_code "eq,ne,le,lt,ge,gt,unordered,ordered"))

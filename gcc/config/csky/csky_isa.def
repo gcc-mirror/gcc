@@ -1,5 +1,5 @@
 /* ISA feature descriptions for the C-SKY back end.
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by C-SKY Microsystems and Mentor Graphics.
 
    This file is part of GCC.
@@ -32,6 +32,7 @@ CSKY_ISA (7E10,	 "Extended insns for arch ck810	 from ck807")
 
 /* Special insns */
 CSKY_ISA (div,	  "divide insns")
+CSKY_ISA (fcr,	  "Control the fcr register")
 
 /* Extended insns */
 CSKY_ISA (dsp,	 "Extended insns for DSP")
@@ -40,6 +41,11 @@ CSKY_ISA (java,	 "Extended insns for Java")
 CSKY_ISA (fpv2_sf,    "Single precision operations supported")
 CSKY_ISA (fpv2_df,    "Double precision operations supported")
 CSKY_ISA (fpv2_divd,  "Double precision div operations supported")
+
+CSKY_ISA (fpv3_hi,    "half word for fpu convert supported")
+CSKY_ISA (fpv3_hf,    "half precision operations supported")
+CSKY_ISA (fpv3_sf,    "Single precision operations supported")
+CSKY_ISA (fpv3_df,    "Double precision operations supported")
 
 /* Specific insns mode */
 #ifdef	CSKY_ISA_MACRO
@@ -50,10 +56,19 @@ CSKY_ISA (fpv2_divd,  "Double precision div operations supported")
 #define CSKY_ISA_CK803R1    CSKY_ISA_CK803, CSKY_ISA_FEATURE_GET (3E3r1)
 #define CSKY_ISA_CK807	    CSKY_ISA_CK803, CSKY_ISA_FEATURE_GET (3E7)
 #define CSKY_ISA_CK810	    CSKY_ISA_CK807, CSKY_ISA_FEATURE_GET (7E10)
+#define CSKY_ISA_CK860      CSKY_ISA_CK810, CSKY_ISA_FEATURE_GET(3E3r1)
 
 #define CSKY_ISA_DSP	    CSKY_ISA_FEATURE_GET (dsp)
 
 #define CSKY_ISA_FPv2_SF    CSKY_ISA_FEATURE_GET (fpv2_sf)
 #define CSKY_ISA_FPv2	    CSKY_ISA_FPv2_SF, CSKY_ISA_FEATURE_GET (fpv2_df)
 #define CSKY_ISA_FPv2_DIVD  CSKY_ISA_FPv2, CSKY_ISA_FEATURE_GET (fpv2_divd)
+
+#define CSKY_ISA_FPv3_HF    CSKY_ISA_FEATURE_GET (fpv3_hf), \
+                            CSKY_ISA_FEATURE_GET (fpv3_hi)
+#define CSKY_ISA_FPv3_HSF   CSKY_ISA_FPv3_HF, \
+                            CSKY_ISA_FEATURE_GET (fpv3_sf)
+#define CSKY_ISA_FPv3_SDF   CSKY_ISA_FEATURE_GET (fpv3_sf), \
+                            CSKY_ISA_FEATURE_GET (fpv3_df)
+#define CSKY_ISA_FPv3       CSKY_ISA_FPv3_HF, CSKY_ISA_FPv3_SDF
 #endif

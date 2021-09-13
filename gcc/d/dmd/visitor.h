@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 2013-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 2013-2021 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * http://www.boost.org/LICENSE_1_0.txt
@@ -81,7 +81,9 @@ class TypeClass;
 class TypeTuple;
 class TypeSlice;
 class TypeNull;
+class TypeNoreturn;
 class TypeTraits;
+class TypeMixin;
 
 class Dsymbol;
 
@@ -374,7 +376,9 @@ public:
     virtual void visit(TypeTuple *t) { visit((Type *)t); }
     virtual void visit(TypeSlice *t) { visit((TypeNext *)t); }
     virtual void visit(TypeNull *t) { visit((Type *)t); }
+    virtual void visit(TypeNoreturn *t) { visit((Type *)t); }
     virtual void visit(TypeTraits *t) { visit((Type *)t); }
+    virtual void visit(TypeMixin *t) { visit((Type *)t); }
 
     virtual void visit(Dsymbol *) { assert(0); }
 

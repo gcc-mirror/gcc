@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11355.d(28): Error: struct fail11355.A is not copyable because it is annotated with @disable
+fail_compilation/fail11355.d(28): Error: struct fail11355.A is not copyable because it is annotated with `@disable`
 ---
 */
 

@@ -1,6 +1,6 @@
 # Makefile.in
 
-# Copyright (C) 2005-2020 Free Software Foundation, Inc.
+# Copyright (C) 2005-2021 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -314,7 +314,7 @@ MULTIOSSUBDIR := $(shell if test $(MULTIOSDIR) != .; then echo /$(MULTIOSDIR); f
 inst_libdir = $(libsubdir)$(MULTISUBDIR)
 inst_slibdir = $(slibdir)$(MULTIOSSUBDIR)
 
-gcc_compile_bare = $(CC) $(INTERNAL_CFLAGS)
+gcc_compile_bare = $(CC) $(INTERNAL_CFLAGS) $(CFLAGS-$(<F))
 compile_deps = -MT $@ -MD -MP -MF $(basename $@).dep
 gcc_compile = $(gcc_compile_bare) -o $@ $(compile_deps)
 gcc_s_compile = $(gcc_compile) -DSHARED
@@ -908,7 +908,7 @@ LIBGCOV_INTERFACE = _gcov_dump _gcov_fork				\
 	_gcov_execl _gcov_execlp					\
 	_gcov_execle _gcov_execv _gcov_execvp _gcov_execve _gcov_reset  \
 	_gcov_lock_unlock
-LIBGCOV_DRIVER = _gcov
+LIBGCOV_DRIVER = _gcov _gcov_info_to_gcda
 
 libgcov-merge-objects = $(patsubst %,%$(objext),$(LIBGCOV_MERGE))
 libgcov-profiler-objects = $(patsubst %,%$(objext),$(LIBGCOV_PROFILER))

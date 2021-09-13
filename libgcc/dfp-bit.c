@@ -1,5 +1,5 @@
 /* This is a software decimal floating point library.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -606,6 +606,7 @@ INT_TO_DFP (INT_TYPE i)
 
 #if defined (L_sd_to_sf) || defined (L_dd_to_sf) || defined (L_td_to_sf) \
  || defined (L_sd_to_df) || defined (L_dd_to_df) || defined (L_td_to_df) \
+ || defined (L_sd_to_kf) || defined (L_dd_to_kf) || defined (L_td_to_kf) \
  || ((defined (L_sd_to_xf) || defined (L_dd_to_xf) || defined (L_td_to_xf)) \
      && LONG_DOUBLE_HAS_XF_MODE) \
  || ((defined (L_sd_to_tf) || defined (L_dd_to_tf) || defined (L_td_to_tf)) \
@@ -626,6 +627,7 @@ DFP_TO_BFP (DFP_C_TYPE f)
                                                                                 
 #if defined (L_sf_to_sd) || defined (L_sf_to_dd) || defined (L_sf_to_td) \
  || defined (L_df_to_sd) || defined (L_df_to_dd) || defined (L_df_to_td) \
+ || defined (L_kf_to_sd) || defined (L_kf_to_dd) || defined (L_kf_to_td) \
  || ((defined (L_xf_to_sd) || defined (L_xf_to_dd) || defined (L_xf_to_td)) \
      && LONG_DOUBLE_HAS_XF_MODE) \
  || ((defined (L_tf_to_sd) || defined (L_tf_to_dd) || defined (L_tf_to_td)) \
@@ -641,8 +643,15 @@ BFP_TO_DFP (BFP_TYPE x)
   decContextDefault (&context, CONTEXT_INIT);
   DFP_INIT_ROUNDMODE (context.round);
 
-  /* Use a C library function to write the floating point value to a string.  */
-  sprintf (buf, BFP_FMT, (BFP_VIA_TYPE) x);
+  /* Use the sprintf library function to write the floating point value to a
+     string.
+
+     If we are handling the IEEE 128-bit floating point on PowerPC, use the
+     special function __sprintfkf instead of sprintf.  This function allows us
+     to use __sprintfieee128 if we have a new enough GLIBC, and it can fall back
+     to using the traditional sprintf via conversion to IBM 128-bit if the glibc
+     is older.  */
+  BFP_SPRINTF (buf, BFP_FMT, (BFP_VIA_TYPE) x);
 
   /* Convert from the floating point string to a decimal* type.  */
   FROM_STRING (&s, buf, &context);

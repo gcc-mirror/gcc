@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2020 Free Software Foundation, Inc.
+# Copyright (C) 2002-2021 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -43,29 +43,16 @@ $(INSTALL_HEADERS_DIR): install-stdint.h
 LIMITS_H_TEST = true
 STMP_FIXINC = stmp-fixinc
 
-# VxWorks system environments have been GCC based for a long time and we need
-# to make sure that our files and the system ones use distinct macro names to
-# protect against recursive inclusions.  We achieve this by temporarily
-# substituting the headers used by stmp-int-headers with alternative versions
-# where we add some version indication in the inclusion-protection macro
+# VxWorks system environments have been GCC based for a long time and
+# we need to make sure that our files and the system ones use distinct
+# macro names to protect against recursive inclusions.  We achieve
+# this by modifying the GLIMITS_H fragment that goes into limits.h
+# with some version indication in the inclusion-protection macro
 # names.
 
-# Before the standard stmp-int-headers operations take place, arrange to
-# copy the current version of the relevant header files locally, generate
-# the alternate version and replace the original version with ours:
+T_GLIMITS_H = vxw-glimits.h
 
-stmp-int-hdrs: subst-glimits.h
-
-subst-%.h:
-	cp -p $(srcdir)/$*.h orig-$*.h
-	ID=$$(echo $(BASEVER_c) | sed -e 's/\./_/g'); \
-	sed -e "s/_LIMITS_H__/_LIMITS_H__$${ID}_/" < $(srcdir)/$*.h > $@
-	cp $@ $(srcdir)/$*.h
-
-# Then arrange to restore the original versions after the standard
-# operations have taken place:
-
-INSTALL_HEADERS += restore-glimits.h
-
-restore-glimits.h: stmp-int-hdrs
-	cp -p orig-glimits.h $(srcdir)/glimits.h
+vxw-glimits.h: $(srcdir)/glimits.h
+	ID=`echo $(BASEVER_c) | sed -e 's/\./_/g'` && \
+	sed -e "s/_LIMITS_H__/_LIMITS_H__$${ID}_/" < $(srcdir)/glimits.h > $@T
+	mv $@T $@

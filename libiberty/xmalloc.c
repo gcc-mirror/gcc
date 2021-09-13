@@ -1,5 +1,5 @@
 /* memory allocation routines with error checking.
-   Copyright (C) 1989-2020 Free Software Foundation, Inc.
+   Copyright (C) 1989-2021 Free Software Foundation, Inc.
    
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -87,7 +87,9 @@ extern "C" {
 void *malloc (size_t);
 void *realloc (void *, size_t);
 void *calloc (size_t, size_t);
+#ifdef HAVE_SBRK
 void *sbrk (ptrdiff_t);
+#endif
 #    ifdef __cplusplus
 }
 #    endif /* __cplusplus */

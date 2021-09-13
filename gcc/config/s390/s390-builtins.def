@@ -1,5 +1,5 @@
 /* Builtin definitions for IBM S/390 and zSeries
-   Copyright (C) 2015-2020 Free Software Foundation, Inc.
+   Copyright (C) 2015-2021 Free Software Foundation, Inc.
 
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
 
@@ -29,6 +29,8 @@
 #undef O_U16
 #undef O_U32
 
+#undef O_M12
+
 #undef O_S2
 #undef O_S3
 #undef O_S4
@@ -37,6 +39,7 @@
 #undef O_S12
 #undef O_S16
 #undef O_S32
+
 #undef O_ELEM
 #undef O_LIT
 
@@ -84,6 +87,11 @@
 #undef O2_U32
 #undef O3_U32
 #undef O4_U32
+
+#undef O1_M12
+#undef O2_M12
+#undef O3_M12
+#undef O4_M12
 
 #undef O1_S2
 #undef O2_S2
@@ -140,31 +148,33 @@
 #undef O_UIMM_P
 #undef O_SIMM_P
 
-#define O_U1   1 /* unsigned  1 bit literal */
-#define O_U2   2 /* unsigned  2 bit literal */
-#define O_U3   3 /* unsigned  3 bit literal */
-#define O_U4   4 /* unsigned  4 bit literal */
-#define O_U5   5 /* unsigned  5 bit literal */
-#define O_U8   6 /* unsigned  8 bit literal */
-#define O_U12  7 /* unsigned 16 bit literal */
-#define O_U16  8 /* unsigned 16 bit literal */
-#define O_U32  9 /* unsigned 32 bit literal */
+#define O_U1     1 /* unsigned  1 bit literal */
+#define O_U2     2 /* unsigned  2 bit literal */
+#define O_U3     3 /* unsigned  3 bit literal */
+#define O_U4     4 /* unsigned  4 bit literal */
+#define O_U5     5 /* unsigned  5 bit literal */
+#define O_U8     6 /* unsigned  8 bit literal */
+#define O_U12    7 /* unsigned 16 bit literal */
+#define O_U16    8 /* unsigned 16 bit literal */
+#define O_U32    9 /* unsigned 32 bit literal */
 
-#define O_S2  10 /* signed  2 bit literal */
-#define O_S3  11 /* signed  3 bit literal */
-#define O_S4  12 /* signed  4 bit literal */
-#define O_S5  13 /* signed  5 bit literal */
-#define O_S8  14 /* signed  8 bit literal */
-#define O_S12 15 /* signed 12 bit literal */
-#define O_S16 16 /* signed 16 bit literal */
-#define O_S32 17 /* signed 32 bit literal */
+#define O_M12   10 /* matches bitmask of 12 */
 
-#define O_ELEM  18 /* Element selector requiring modulo arithmetic. */
-#define O_LIT   19 /* Operand must be a literal fitting the target type.  */
+#define O_S2    11 /* signed  2 bit literal */
+#define O_S3    12 /* signed  3 bit literal */
+#define O_S4    13 /* signed  4 bit literal */
+#define O_S5    14 /* signed  5 bit literal */
+#define O_S8    15 /* signed  8 bit literal */
+#define O_S12   16 /* signed 12 bit literal */
+#define O_S16   17 /* signed 16 bit literal */
+#define O_S32   18 /* signed 32 bit literal */
+
+#define O_ELEM  19 /* Element selector requiring modulo arithmetic. */
+#define O_LIT   20 /* Operand must be a literal fitting the target type.  */
 
 #define O_SHIFT 5
 
-#define O_UIMM_P(X) ((X) >= O_U1 && (X) <= O_U32)
+#define O_UIMM_P(X) ((X) >= O_U1 && (X) <= O_M12)
 #define O_SIMM_P(X) ((X) >= O_S2 && (X) <= O_S32)
 #define O_IMM_P(X) ((X) == O_LIT || ((X) >= O_U1 && (X) <= O_S32))
 
@@ -212,6 +222,11 @@
 #define O2_U32 (O_U32 << O_SHIFT)
 #define O3_U32 (O_U32 << (2 * O_SHIFT))
 #define O4_U32 (O_U32 << (3 * O_SHIFT))
+
+#define O1_M12 O_M12
+#define O2_M12 (O_M12 << O_SHIFT)
+#define O3_M12 (O_M12 << (2 * O_SHIFT))
+#define O4_M12 (O_M12 << (3 * O_SHIFT))
 
 
 #define O1_S2 O_S2
@@ -273,6 +288,7 @@
 #undef B_VXE
 #undef B_VXE2
 #undef B_DEP
+#undef B_NNPA
 
 #undef BFLAGS_MASK_INIT
 #define BFLAGS_MASK_INIT (B_INT)
@@ -283,6 +299,7 @@
 #define B_VXE   (1 << 3)  /* Builtins requiring the z14 vector extensions.  */
 #define B_VXE2  (1 << 4)  /* Builtins requiring the z15 vector extensions.  */
 #define B_DEP   (1 << 5)  /* Builtin has been deprecated and a warning should be issued.  */
+#define B_NNPA  (1 << 6)  /* Builtins requiring the NNPA Facility.  */
 
 /* B_DEF defines a standard (not overloaded) builtin
    B_DEF (<builtin name>, <RTL expander name>, <function attributes>, <builtin flags>, <operand flags, see above>, <fntype>)
@@ -2285,8 +2302,8 @@ OB_DEF_VAR (s390_vec_test_mask_dbl,     s390_vtm,           0,                  
 
 B_DEF      (s390_vtm,                   vec_test_mask_intv16qi,0,               B_VX,               0,                  BT_FN_INT_UV16QI_UV16QI)
 
-B_DEF      (s390_vec_msum_u128,         vec_msumv2di,       0,                  B_VXE,              O4_U2,              BT_FN_UV16QI_UV2DI_UV2DI_UV16QI_INT)
-B_DEF      (s390_vmslg,                 vmslg,              0,                  B_VXE,              O4_U4,              BT_FN_INT128_UV2DI_UV2DI_INT128_INT)
+B_DEF      (s390_vec_msum_u128,         vec_msumv2di,       0,                  B_VXE,              O4_M12,             BT_FN_UV16QI_UV2DI_UV2DI_UV16QI_INT)
+B_DEF      (s390_vmslg,                 vmslg,              0,                  B_VXE,              O4_M12,             BT_FN_INT128_UV2DI_UV2DI_INT128_INT)
 
 OB_DEF     (s390_vec_eqv,               s390_vec_eqv_b8,    s390_vec_eqv_dbl_c, B_VXE,              BT_FN_OV4SI_OV4SI_OV4SI)
 OB_DEF_VAR (s390_vec_eqv_b8,            s390_vnx,           0,                  0,                  BT_OV_BV16QI_BV16QI_BV16QI)
@@ -3005,3 +3022,13 @@ OB_DEF_VAR (s390_vstrsz_u32,             s390_vstrszf,      0,                  
 B_DEF      (s390_vstrszb,                vstrszv16qi,       0,                  B_VXE2,             0,                  BT_FN_UV16QI_UV16QI_UV16QI_UV16QI_INTPTR)
 B_DEF      (s390_vstrszh,                vstrszv8hi,        0,                  B_VXE2,             0,                  BT_FN_UV8HI_UV8HI_UV8HI_UV8HI_INTPTR)
 B_DEF      (s390_vstrszf,                vstrszv4si,        0,                  B_VXE2,             0,                  BT_FN_UV4SI_UV4SI_UV4SI_UV8HI_INTPTR)
+
+/* arch 14 builtins */
+
+B_DEF      (s390_vclfnhs,                vclfnhs_v8hi,      0,                  B_NNPA,             O3_U4,              BT_FN_V4SF_V8HI_UINT)
+B_DEF      (s390_vclfnls,                vclfnls_v8hi,      0,                  B_NNPA,             O3_U4,              BT_FN_V4SF_V8HI_UINT)
+
+B_DEF      (s390_vcrnfs,                 vcrnfs_v8hi,       0,                  B_NNPA,             O4_U4,              BT_FN_V8HI_V4SF_V4SF_UINT)
+
+B_DEF      (s390_vcfn,                   vcfn_v8hi,         0,                  B_NNPA,             O3_U4,              BT_FN_V8HI_V8HI_UINT)
+B_DEF      (s390_vcnf,                   vcnf_v8hi,         0,                  B_NNPA,             O3_U4,              BT_FN_V8HI_V8HI_UINT)

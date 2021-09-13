@@ -14,6 +14,7 @@
  */
 module core.sys.windows.dll;
 version (Windows):
+@system:
 
 import core.sys.windows.winbase;
 import core.sys.windows.winnt;
@@ -30,17 +31,7 @@ public import core.sys.windows.threadaux;
 //  not access tls_array[tls_index] as needed for thread local _tlsstart and _tlsend
 extern (C)
 {
-        version (MinGW)
-        {
-            extern __gshared void* _tls_start;
-            extern __gshared void* _tls_end;
-            extern __gshared void* __xl_a;
-
-            alias _tls_start _tlsstart;
-            alias _tls_end   _tlsend;
-            alias __xl_a     _tls_callbacks_a;
-        }
-        else version (Win32)
+    version (Win32)
     {
         version (CRuntime_DigitalMars)
         {
@@ -68,11 +59,11 @@ extern (C) // rt.minfo
 }
 
 private:
-version (Win32)
-{
 struct dll_aux
 {
     // don't let symbols leak into other modules
+version (Win32)
+{
     struct LdrpTlsListEntry
     {
         LdrpTlsListEntry* next;
@@ -238,6 +229,7 @@ struct dll_aux
         // let the old array leak, in case a oncurrent thread is still relying on it
         return true;
     }
+} // Win32
 
     alias bool BOOLEAN;
 
@@ -254,7 +246,8 @@ struct dll_aux
         LIST_ENTRY* prev;
     }
 
-    // the following structures can be found here: http://undocumented.ntinternals.net/
+    // the following structures can be found here:
+    // https://www.geoffchappell.com/studies/windows/win32/ntdll/structs/ldr_data_table_entry.htm
     // perhaps this should be same as LDR_DATA_TABLE_ENTRY, which is introduced with PEB_LDR_DATA
     struct LDR_MODULE
     {
@@ -267,10 +260,22 @@ struct dll_aux
         UNICODE_STRING  FullDllName;
         UNICODE_STRING  BaseDllName;
         ULONG           Flags;
-        SHORT           LoadCount;
+        SHORT           LoadCount; // obsolete after Version 6.1
         SHORT           TlsIndex;
         LIST_ENTRY      HashTableEntry;
         ULONG           TimeDateStamp;
+        PVOID           EntryPointActivationContext;
+        PVOID           PatchInformation;
+        LDR_DDAG_NODE  *DdagNode; // starting with Version 6.2
+    }
+
+    struct LDR_DDAG_NODE
+    {
+        LIST_ENTRY Modules;
+        void* ServiceTagList;  // LDR_SERVICE_TAG_RECORD
+        ULONG LoadCount;
+        ULONG ReferenceCount;  // Version 10: ULONG LoadWhileUnloadingCount;
+        ULONG DependencyCount; // Version 10: ULONG LowestLink;
     }
 
     struct PEB_LDR_DATA
@@ -283,7 +288,7 @@ struct dll_aux
         LIST_ENTRY      InInitializationOrderModuleList;
     }
 
-    static LDR_MODULE* findLdrModule( HINSTANCE hInstance, void** peb ) nothrow
+    static LDR_MODULE* findLdrModule( HINSTANCE hInstance, void** peb ) nothrow @nogc
     {
         PEB_LDR_DATA* ldrData = cast(PEB_LDR_DATA*) peb[3];
         LIST_ENTRY* root = &ldrData.InLoadOrderModuleList;
@@ -306,7 +311,6 @@ struct dll_aux
         thisMod.LoadCount = -1; // never unload
         return true;
     }
-}
 }
 
 public:
@@ -374,6 +378,78 @@ bool dll_fixTLS( HINSTANCE hInstance, void* tlsstart, void* tlsend, void* tls_ca
     }
 }
 
+private extern (Windows) ULONGLONG VerSetConditionMask(ULONGLONG, DWORD, BYTE) nothrow @nogc;
+
+private bool isWindows8OrLater() nothrow @nogc
+{
+    OSVERSIONINFOEXW osvi;
+    osvi.dwOSVersionInfoSize = osvi.sizeof;
+    DWORDLONG dwlConditionMask = VerSetConditionMask(
+        VerSetConditionMask(
+        VerSetConditionMask(
+            0, VER_MAJORVERSION, VER_GREATER_EQUAL),
+               VER_MINORVERSION, VER_GREATER_EQUAL),
+               VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
+
+    osvi.dwMajorVersion = 6;
+    osvi.dwMinorVersion = 2;
+    osvi.wServicePackMajor = 0;
+
+    return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
+}
+
+/* *****************************************************
+ * Get the process reference count for the given DLL handle
+ * Params:
+ *   hInstance = DLL instance handle
+ * Returns:
+ *   the reference count for the DLL in the current process,
+ *   -1 if the DLL is implicitely loaded with the process
+ *   or -2 if the DLL handle is invalid
+ */
+int dll_getRefCount( HINSTANCE hInstance ) nothrow @nogc
+{
+    void** peb;
+    version (Win64)
+    {
+        version (GNU_InlineAsm)
+        {
+            asm pure nothrow @nogc { "movq %%gs:0x60, %0;" : "=r" (peb); }
+        }
+        else
+        {
+            asm pure nothrow @nogc
+            {
+                mov RAX, 0x60;
+                mov RAX,GS:[RAX];
+                mov peb, RAX;
+            }
+        }
+
+    }
+    else version (Win32)
+    {
+        version (GNU_InlineAsm)
+        {
+            asm pure nothrow @nogc { "movl %%fs:0x30, %0;" : "=r" (peb); }
+        }
+        else
+        {
+            asm pure nothrow @nogc
+            {
+                mov EAX,FS:[0x30];
+                mov peb, EAX;
+            }
+        }
+    }
+    dll_aux.LDR_MODULE *ldrMod = dll_aux.findLdrModule( hInstance, peb );
+    if ( !ldrMod )
+        return -2; // not in module list, bail out
+    if (isWindows8OrLater())
+        return ldrMod.DdagNode.LoadCount;
+    return ldrMod.LoadCount;
+}
+
 // fixup TLS storage, initialize runtime and attach to threads
 // to be called from DllMain with reason DLL_PROCESS_ATTACH
 bool dll_process_attach( HINSTANCE hInstance, bool attach_threads,
@@ -393,7 +469,7 @@ bool dll_process_attach( HINSTANCE hInstance, bool attach_threads,
     // attach to all other threads
     return enumProcessThreads(
         function (uint id, void* context) {
-            if ( !thread_findByAddr( id ) )
+            if ( !thread_findByAddr( id ) && !findLowLevelThread( id ) )
             {
                 // if the OS has not prepared TLS for us, don't attach to the thread
                 if ( GetTlsDataAddress( id ) )
@@ -424,14 +500,22 @@ bool dll_process_attach( HINSTANCE hInstance, bool attach_threads = true )
 // to be called from DllMain with reason DLL_PROCESS_DETACH
 void dll_process_detach( HINSTANCE hInstance, bool detach_threads = true )
 {
+    // notify core.thread.joinLowLevelThread that the DLL is about to be unloaded
+    thread_DLLProcessDetaching = true;
+
     // detach from all other threads
     if ( detach_threads )
         enumProcessThreads(
-            function (uint id, void* context) {
-                if ( id != GetCurrentThreadId() && thread_findByAddr( id ) )
+            function (uint id, void* context)
+            {
+                if ( id != GetCurrentThreadId() )
                 {
-                    thread_moduleTlsDtor( id );
-                    thread_detachByAddr( id );
+                    if ( auto t = thread_findByAddr( id ) )
+                    {
+                        thread_moduleTlsDtor( id );
+                        if ( !t.isMainThread() )
+                            thread_detachByAddr( id );
+                    }
                 }
                 return true;
             }, null );
@@ -450,9 +534,10 @@ bool dll_thread_attach( bool attach_thread = true, bool initTls = true )
 {
     // if the OS has not prepared TLS for us, don't attach to the thread
     //  (happened when running under x64 OS)
-    if ( !GetTlsDataAddress( GetCurrentThreadId() ) )
+    auto tid = GetCurrentThreadId();
+    if ( !GetTlsDataAddress( tid ) )
         return false;
-    if ( !thread_findByAddr( GetCurrentThreadId() ) )
+    if ( !thread_findByAddr( tid ) && !findLowLevelThread( tid ) )
     {
         // only attach to thread and initalize it if it is not in the thread list (so it's not created by "new Thread")
         if ( attach_thread )

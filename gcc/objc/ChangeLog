@@ -1,3 +1,88 @@
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/101718
+	* objc-next-runtime-abi-02.c (build_v2_build_objc_method_call):
+	Revise for cases where scalar objects use an sret parameter.
+	(next_runtime_abi_02_build_objc_method_call): Likwise.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_add_property_declaration): Register unavailable
+	attribute.
+	(maybe_make_artificial_property_decl): Set available.
+	(objc_maybe_build_component_ref): Generalise to the method prototype
+	to count availability.
+	(objc_build_class_component_ref): Likewise.
+	(build_private_template): Likewise.
+	(objc_decl_method_attributes): Handle unavailable attribute.
+	(lookup_method_in_hash_lists): Amend comments.
+	(objc_finish_message_expr): Handle unavailability in addition to
+	deprecation.
+	(start_class): Likewise.
+	(finish_class): Likewise.
+	(lookup_protocol): Likewise.
+	(objc_declare_protocol): Likewise.
+	(start_protocol): Register unavailable attribute.
+	(really_start_method): Likewise.
+	(objc_gimplify_property_ref): Emit error on encountering an
+	unavailable entity (and a warning for a deprecated one).
+
+2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c (objc_next_runtime_abi_02_init):
+	Default receiver nilchecks on.
+
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+	    Matt Jacobson   <mhjacobson@me.com>
+
+	PR objc/101666
+	* objc-act.c (objc_build_constructor): Handle empty constructor
+	lists.
+	* objc-next-runtime-abi-02.c (build_v2_objc_method_fixup_call):
+	Handle nil receivers.
+	(build_v2_build_objc_method_call): Likewise.
+
+2021-08-17  Matt Jacobson  <mhjacobson@me.com>
+
+	* objc-next-runtime-abi-02.c
+	(objc_next_runtime_abi_02_init): Warn about and reset
+	flag_objc_sjlj_exceptions regardless of flag_objc_exceptions.
+	(next_runtime_02_initialize): Use a checking assert that
+	flag_objc_sjlj_exceptions is off.
+
+2021-06-28  Martin Sebor  <msebor@redhat.com>
+
+	* objc-act.c (objc_maybe_build_modify_expr): Replace direct uses
+	of TREE_NO_WARNING with warning_suppressed_p, and suppress_warning.
+	(objc_build_incr_expr_for_property_ref): Same.
+	(objc_build_struct): Same.
+	(synth_module_prologue): Same.
+	* objc-gnu-runtime-abi-01.c (gnu_runtime_01_initialize): Same.
+	* objc-next-runtime-abi-01.c (next_runtime_01_initialize): Same.
+	* objc-next-runtime-abi-02.c (next_runtime_02_initialize): Same.
+
+2021-06-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* Make-lang.in (cc1-obj-checksum.c): Check previous
+	stage checksum exists.
+
+2021-06-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* Make-lang.in (cc1obj-checksum.c): For stage-final re-use
+	the checksum from the previous stage.
+
+2021-05-20  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* objc-act.c (synth_module_prologue): Use uint32_t instead of enum
+	debug_info_type.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* objc-act.c (objc_string_ref_type_p): Use startswith
+	function instead of strncmp.
+	* objc-encoding.c (encode_type): Likewise.
+	* objc-next-runtime-abi-02.c (has_load_impl): Likewise.
+
 2020-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/97911
@@ -4052,7 +4137,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2020 Free Software Foundation, Inc.
+Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

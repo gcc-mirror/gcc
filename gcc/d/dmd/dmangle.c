@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -82,6 +82,8 @@ void initTypeMangle()
     mangleChar[Treturn] = "@";
     mangleChar[Tvector] = "@";
     mangleChar[Ttraits] = "@";
+    mangleChar[Tmixin] = "@";
+    mangleChar[Tnoreturn] = "@";    // becomes 'Nn'
 
     mangleChar[Tnull] = "n";    // same as TypeNone
 
@@ -150,7 +152,7 @@ public:
     *  using upper case letters for all digits but the last digit which uses
     *  a lower case letter.
     * The decoder has to look up the referenced position to determine
-    *  whether the back reference is an identifer (starts with a digit)
+    *  whether the back reference is an identifier (starts with a digit)
     *  or a type (starts with a letter).
     *
     * Params:
@@ -279,7 +281,7 @@ public:
     {
         visit((Type *)t);
         if (t->dim)
-            buf->printf("%llu", t->dim->toInteger());
+            buf->print(t->dim->toInteger());
         if (t->next)
             visitWithMask(t->next, t->mod);
     }
@@ -377,7 +379,8 @@ public:
         visit((Type *)t);
         const char *name = t->ident->toChars();
         size_t len = strlen(name);
-        buf->printf("%u%s", (unsigned)len, name);
+        buf->print(len);
+        buf->writestring(name);
     }
 
     void visit(TypeEnum *t)
@@ -411,6 +414,11 @@ public:
     void visit(TypeNull *t)
     {
         visit((Type *)t);
+    }
+
+    void visit(TypeNoreturn *)
+    {
+        buf->writestring("Nn");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -493,7 +501,7 @@ public:
             s->error("excessive length %llu for symbol, possible recursive expansion?", buf->length() + len);
         else
         {
-            buf->printf("%llu", (ulonglong)len);
+            buf->print(len);
             buf->write(id, len);
         }
     }
@@ -822,9 +830,15 @@ public:
     void visit(IntegerExp *e)
     {
         if ((sinteger_t)e->value < 0)
-            buf->printf("N%lld", -e->value);
+        {
+            buf->writeByte('N');
+            buf->print(-e->value);
+        }
         else
-            buf->printf("i%lld",  e->value);
+        {
+            buf->writeByte('i');
+            buf->print(e->value);
+        }
     }
 
     void visit(RealExp *e)
@@ -946,7 +960,8 @@ public:
         }
         buf->reserve(1 + 11 + 2 * qlen);
         buf->writeByte(m);
-        buf->printf("%d_", (int)qlen); // nbytes <= 11
+        buf->print(qlen);
+        buf->writeByte('_');    // nbytes <= 11
 
         for (utf8_t *p = (utf8_t *)buf->slice().ptr + buf->length(), *pend = p + 2 * qlen;
              p < pend; p += 2, ++q)
@@ -962,7 +977,8 @@ public:
     void visit(ArrayLiteralExp *e)
     {
         size_t dim = e->elements ? e->elements->length : 0;
-        buf->printf("A%u", dim);
+        buf->writeByte('A');
+        buf->print(dim);
         for (size_t i = 0; i < dim; i++)
         {
             e->getElement(i)->accept(this);
@@ -972,7 +988,8 @@ public:
     void visit(AssocArrayLiteralExp *e)
     {
         size_t dim = e->keys->length;
-        buf->printf("A%u", dim);
+        buf->writeByte('A');
+        buf->print(dim);
         for (size_t i = 0; i < dim; i++)
         {
             (*e->keys)[i]->accept(this);
@@ -983,7 +1000,8 @@ public:
     void visit(StructLiteralExp *e)
     {
         size_t dim = e->elements ? e->elements->length : 0;
-        buf->printf("S%u", dim);
+        buf->writeByte('S');
+        buf->print(dim);
         for (size_t i = 0; i < dim; i++)
         {
             Expression *ex = (*e->elements)[i];
@@ -1073,4 +1091,32 @@ void mangleToBuffer(TemplateInstance *ti, OutBuffer *buf)
 {
     Mangler v(buf);
     v.mangleTemplateInstance(ti);
+}
+
+/**********************************************
+ * Convert a string representing a type (the deco) and
+ * return its equivalent Type.
+ * Params:
+ *      deco = string containing the deco
+ * Returns:
+ *      null for failed to convert
+ *      Type for succeeded
+ */
+
+Type *decoToType(const char *deco)
+{
+    if (!deco)
+        return NULL;
+
+    //printf("decoToType(): %s\n", deco)
+    if (StringValue *sv = Type::stringtable.lookup(deco, strlen(deco)))
+    {
+        if (sv->ptrvalue)
+        {
+            Type *t = (Type *)sv->ptrvalue;
+            assert(t->deco);
+            return t;
+        }
+    }
+    return NULL;
 }

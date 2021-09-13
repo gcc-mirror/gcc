@@ -12,7 +12,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-d 2006-2020
+@set copyrights-d 2006-2021
 
 @copying
 @c man begin COPYRIGHT
@@ -325,13 +325,13 @@ is compiled into the program.
 Turns on compilation of @code{version} code identified by @var{ident}.
 @end table
 
-@item -fno-weak
-@cindex @option{-fweak}
-@cindex @option{-fno-weak}
-Turns off emission of instantiated declarations that can be defined in multiple
-objects as weak or one-only symbols.  The default is to emit all public symbols
-as weak, unless the target lacks support for weak symbols.  Disabling this
-option means that common symbols are instead put in COMDAT or become private.
+@item -fno-weak-templates
+@cindex @option{-fweak-templates}
+@cindex @option{-fno-weak-templates}
+Turns off emission of declarations that can be defined in multiple objects as
+weak symbols.  The default is to emit all public symbols as weak, unless the
+target lacks support for weak symbols.  Disabling this option means that common
+symbols are instead put in COMDAT or become private.
 
 @end table
 
@@ -634,8 +634,6 @@ Report additional information about D language changes identified by
 @table @samp
 @item all
 List information on all language changes.
-@item checkimports
-Give deprecation messages about @option{-ftransition=import} anomalies.
 @item complex
 List all usages of complex or imaginary types.
 @item dip1000
@@ -644,14 +642,6 @@ Implements @uref{http://wiki.dlang.org/DIP1000} (experimental).
 Implements @uref{http://wiki.dlang.org/DIP25} (experimental).
 @item field
 List all non-mutable fields which occupy an object instance.
-@item import
-Tells the compiler to revert to using an old lookup behavior for resolving
-unqualified symbol names, where this was done in a single pass, ignoring
-any protection attributes.  The default name lookup strategy is to use two
-passes, the first ignoring imported declarations, and the second only
-looking at imports.  The protection (@code{private}, @code{package},
-@code{protected}) of symbols is also enforced to resolve any conflicts
-between private and public symbols.
 @item nogc
 List all hidden GC allocations.
 @item tls

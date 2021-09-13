@@ -1,5 +1,5 @@
 /* Calculate (post)dominators in slightly super-linear time.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Michael Matz (matz@ifh.de).
 
    This file is part of GCC.
@@ -883,17 +883,17 @@ set_immediate_dominator (enum cdi_direction dir, basic_block bb,
 
 /* Returns the list of basic blocks immediately dominated by BB, in the
    direction DIR.  */
-vec<basic_block> 
+auto_vec<basic_block> 
 get_dominated_by (enum cdi_direction dir, basic_block bb)
 {
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *node = bb->dom[dir_index], *son = node->son, *ason;
-  vec<basic_block> bbs = vNULL;
+  auto_vec<basic_block> bbs;
 
   gcc_checking_assert (dom_computed[dir_index]);
 
   if (!son)
-    return vNULL;
+    return bbs;
 
   bbs.safe_push ((basic_block) son->data);
   for (ason = son->right; ason != son; ason = ason->right)
@@ -906,13 +906,13 @@ get_dominated_by (enum cdi_direction dir, basic_block bb)
    direction DIR) by some block between N_REGION ones stored in REGION,
    except for blocks in the REGION itself.  */
 
-vec<basic_block> 
+auto_vec<basic_block> 
 get_dominated_by_region (enum cdi_direction dir, basic_block *region,
 			 unsigned n_region)
 {
   unsigned i;
   basic_block dom;
-  vec<basic_block> doms = vNULL;
+  auto_vec<basic_block> doms;
 
   for (i = 0; i < n_region; i++)
     region[i]->flags |= BB_DUPLICATED;
@@ -933,10 +933,10 @@ get_dominated_by_region (enum cdi_direction dir, basic_block *region,
    produce a vector containing all dominated blocks.  The vector will be sorted
    in preorder.  */
 
-vec<basic_block> 
+auto_vec<basic_block> 
 get_dominated_to_depth (enum cdi_direction dir, basic_block bb, int depth)
 {
-  vec<basic_block> bbs = vNULL;
+  auto_vec<basic_block> bbs;
   unsigned i;
   unsigned next_level_start;
 
@@ -965,7 +965,7 @@ get_dominated_to_depth (enum cdi_direction dir, basic_block bb, int depth)
 /* Returns the list of basic blocks including BB dominated by BB, in the
    direction DIR.  The vector will be sorted in preorder.  */
 
-vec<basic_block> 
+auto_vec<basic_block> 
 get_all_dominated_blocks (enum cdi_direction dir, basic_block bb)
 {
   return get_dominated_to_depth (dir, bb, 0);
@@ -1227,7 +1227,7 @@ recompute_dominator (enum cdi_direction dir, basic_block bb)
    from BBS.  */
 
 static void
-prune_bbs_to_update_dominators (vec<basic_block> bbs,
+prune_bbs_to_update_dominators (vec<basic_block> &bbs,
 				bool conservative)
 {
   unsigned i;
@@ -1379,7 +1379,7 @@ determine_dominators_for_sons (struct graph *g, vec<basic_block> bbs,
    a block of BBS in the current dominance tree dominate it.  */
 
 void
-iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> bbs,
+iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> &bbs,
 			bool conservative)
 {
   unsigned i;

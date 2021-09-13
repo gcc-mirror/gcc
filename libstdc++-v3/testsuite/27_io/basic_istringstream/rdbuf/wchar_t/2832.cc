@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2020 Free Software Foundation, Inc.
+// Copyright (C) 2004-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,8 +20,8 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-void 
-redirect_buffer(std::wios& stream, std::wstreambuf* new_buf) 
+void
+redirect_buffer(std::wios& stream, std::wstreambuf* new_buf)
 { stream.rdbuf(new_buf); }
 
 std::wstreambuf*
@@ -48,7 +48,7 @@ void test02()
   redirect_buffer(sstrm1, &sbuf);
   std::wstringbuf* const buf2 = sstrm1.rdbuf();
   std::wstreambuf* pbasebuf2 = active_buffer(sstrm1);
-  VERIFY( buf1 == buf2 ); 
+  VERIFY( buf1 == buf2 );
   VERIFY( pbasebuf1 != pbasebuf2 );
   VERIFY( pbasebuf2 == pbasebuf0 );
 
@@ -56,7 +56,11 @@ void test02()
   VERIFY( sstrm1.str() != str01 );
   VERIFY( sstrm1.str() == str00 );
   // however, casting the active streambuf to a stringbuf shows what's up:
+#if __cpp_rtti
   std::wstringbuf* psbuf = dynamic_cast<std::wstringbuf*>(pbasebuf2);
+#else
+  std::wstringbuf* psbuf = static_cast<std::wstringbuf*>(pbasebuf2);
+#endif
   str02 = psbuf->str();
   VERIFY( str02 == str01 );
 

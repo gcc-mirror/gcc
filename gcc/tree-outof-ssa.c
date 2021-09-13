@@ -1,5 +1,5 @@
 /* Convert a program in SSA form into Normal form.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
    Contributed by Andrew Macleod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -87,7 +87,7 @@ ssa_is_replaceable_p (gimple *stmt)
 
   /* Float expressions must go through memory if float-store is on.  */
   if (flag_float_store
-      && FLOAT_TYPE_P (gimple_expr_type (stmt)))
+      && FLOAT_TYPE_P (TREE_TYPE (def)))
     return false;
 
   /* An assignment with a register variable on the RHS is not

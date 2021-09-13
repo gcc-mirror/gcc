@@ -1,5 +1,5 @@
 /* IA32 VxWorks target definitions for GNU compiler.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Updated by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -37,13 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_SUBTARGET_DEFAULT \
 	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_VECT8_RETURNS)
 
-/* Provide our target specific DBX_REGISTER_NUMBER.  VxWorks relies on
-   the SVR4 numbering.  */
-
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n) \
-  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
-
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (TARGET_LP64 ? "long int" : "int")
 
@@ -60,6 +53,13 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #endif
+
+/* Provide our target specific DBX_REGISTER_NUMBER.  VxWorks relies on
+   the SVR4 numbering.  */
+
+#undef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(n) \
+  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
 
 /* CPU macro definitions, ordered to account for VxWorks 7 not
    supporting CPUs older than PENTIUM4 since SR0650.  */

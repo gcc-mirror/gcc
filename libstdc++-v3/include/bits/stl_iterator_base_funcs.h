@@ -1,6 +1,6 @@
 // Functions used by iterators -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -133,6 +133,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  and are constant time.  For other %iterator classes they are linear time.
   */
   template<typename _InputIterator>
+    _GLIBCXX_NODISCARD
     inline _GLIBCXX17_CONSTEXPR
     typename iterator_traits<_InputIterator>::difference_type
     distance(_InputIterator __first, _InputIterator __last)
@@ -209,6 +210,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
 
   template<typename _InputIterator>
+    _GLIBCXX_NODISCARD
     inline _GLIBCXX17_CONSTEXPR _InputIterator
     next(_InputIterator __x, typename
 	 iterator_traits<_InputIterator>::difference_type __n = 1)
@@ -220,6 +222,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     }
 
   template<typename _BidirectionalIterator>
+    _GLIBCXX_NODISCARD
     inline _GLIBCXX17_CONSTEXPR _BidirectionalIterator
     prev(_BidirectionalIterator __x, typename
 	 iterator_traits<_BidirectionalIterator>::difference_type __n = 1) 

@@ -1,5 +1,5 @@
 /* Tree switch conversion for GNU compiler.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -71,7 +71,7 @@ public:
   virtual void dump (FILE *f, bool details = false) = 0;
 
   /* Emit GIMPLE code to handle the cluster.  */
-  virtual void emit (tree, tree, tree, basic_block) = 0;
+  virtual void emit (tree, tree, tree, basic_block, location_t) = 0;
 
   /* Return true if a cluster handles only a single case value and the
      value is not a range.  */
@@ -170,7 +170,7 @@ public:
     fprintf (f, " ");
   }
 
-  void emit (tree, tree, tree, basic_block)
+  void emit (tree, tree, tree, basic_block, location_t)
   {
     gcc_unreachable ();
   }
@@ -178,6 +178,13 @@ public:
   bool is_single_value_p ()
   {
     return tree_int_cst_equal (get_low (), get_high ());
+  }
+
+  /* Return number of comparisons needed for the case.  */
+  unsigned
+  get_comparison_count ()
+  {
+    return m_range_p ? 2 : 1;
   }
 
   /* Low value of the case.  */
@@ -260,16 +267,19 @@ public:
   }
 
   void emit (tree index_expr, tree index_type,
-	     tree default_label_expr, basic_block default_bb);
+	     tree default_label_expr, basic_block default_bb, location_t loc);
 
   /* Find jump tables of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */
   static vec<cluster *> find_jump_tables (vec<cluster *> &clusters);
 
   /* Return true when cluster starting at START and ending at END (inclusive)
-     can build a jump-table.  */
+     can build a jump-table.  COMPARISON_COUNT is number of comparison
+     operations needed if the clusters are expanded as decision tree.
+     MAX_RATIO tells about the maximum code growth (in percent).  */
   static bool can_be_handled (const vec<cluster *> &clusters, unsigned start,
-			      unsigned end);
+			      unsigned end, unsigned HOST_WIDE_INT max_ratio,
+			      unsigned HOST_WIDE_INT comparison_count);
 
   /* Return true if cluster starting at START and ending at END (inclusive)
      is profitable transformation.  */
@@ -378,7 +388,7 @@ public:
     There *MUST* be max_case_bit_tests or less unique case
     node targets.  */
   void emit (tree index_expr, tree index_type,
-	     tree default_label_expr, basic_block default_bb);
+	     tree default_label_expr, basic_block default_bb, location_t loc);
 
   /* Find bit tests of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */
@@ -891,6 +901,16 @@ switch_decision_tree::reset_out_edges_aux (gswitch *swtch)
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, bb->succs)
     e->aux = (void *) 0;
+}
+
+/* Release CLUSTERS vector and destruct all dynamically allocated items.  */
+
+static inline void
+release_clusters (vec<cluster *> &clusters)
+{
+  for (unsigned i = 0; i < clusters.length (); i++)
+    delete clusters[i];
+  clusters.release ();
 }
 
 } // tree_switch_conversion namespace

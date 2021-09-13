@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2003-2020, AdaCore                     --
+--                     Copyright (C) 2003-2021, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,9 +46,9 @@ package GNAT.Memory_Dump is
    --  Dumps indicated number (Count) of bytes, starting at the address given
    --  by Addr. The coding of this routine in its current form assumes the case
    --  of a byte addressable machine (and is therefore inapplicable to machines
-   --  like the AAMP, where the storage unit is not 8 bits). The output is one
-   --  or more lines in the following format, which is for the case of 32-bit
-   --  addresses (64-bit addresses are handled appropriately):
+   --  where the storage unit is not 8 bits). The output is one or more lines
+   --  in the following format, which is for the case of 32-bit addresses
+   --  (64-bit addresses are handled appropriately):
    --
    --    0234_3368: 66 67 68 . . .  73 74 75 "fghijklmnopqstuv"
    --

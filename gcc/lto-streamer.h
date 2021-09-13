@@ -1,7 +1,7 @@
 /* Data structures and declarations used for reading and writing
    GIMPLE to a file stream.
 
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin-api.h"
 #include "gcov-io.h"
 #include "diagnostic.h"
+#include "version.h"
 
 /* The encoding for a function consists of the following sections:
 
@@ -120,7 +121,7 @@ along with GCC; see the file COPYING3.  If not see
      String are represented in the table as pairs, a length in ULEB128
      form followed by the data for the string.  */
 
-#define LTO_major_version 9
+#define LTO_major_version GCC_major_version
 #define LTO_minor_version 0
 
 typedef unsigned char	lto_decl_flags_t;
@@ -369,6 +370,7 @@ struct lto_section
   int16_t major_version;
   int16_t minor_version;
   unsigned char slim_object;
+  unsigned char _padding;
 
   /* Flags is a private field that is not defined publicly.  */
   uint16_t flags;

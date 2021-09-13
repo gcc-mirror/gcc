@@ -1,3 +1,10 @@
+/*
+TEST_OUTPUT:
+---
+fail_compilation/fail276.d(19): Error: `this` has no effect
+fail_compilation/fail276.d(15): Error: `this` is only defined in non-static member functions, not `__anonclass2`
+---
+*/
 
 class C
 {

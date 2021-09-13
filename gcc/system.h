@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -360,6 +360,10 @@ extern int errno;
 # endif
 #endif
 
+#ifdef HAVE_SYS_LOCKING_H
+# include <sys/locking.h>
+#endif
+
 #ifndef SEEK_SET
 # define SEEK_SET 0
 # define SEEK_CUR 1
@@ -533,6 +537,10 @@ extern void *realloc (void *, size_t);
 
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
+#endif
+
+#ifndef SIZE_MAX
+# define SIZE_MAX INTTYPE_MAXIMUM (size_t)
 #endif
 
 #ifdef __cplusplus
@@ -1061,7 +1069,8 @@ extern void fancy_abort (const char *, int, const char *)
 	LIBGCC2_LONG_DOUBLE_TYPE_SIZE STRUCT_VALUE			   \
 	EH_FRAME_IN_DATA_SECTION TARGET_FLT_EVAL_METHOD_NON_DEFAULT	   \
 	JCR_SECTION_NAME TARGET_USE_JCR_SECTION SDB_DEBUGGING_INFO	   \
-	SDB_DEBUG NO_IMPLICIT_EXTERN_C
+	SDB_DEBUG NO_IMPLICIT_EXTERN_C NOTICE_UPDATE_CC			   \
+	CC_STATUS_MDEP_INIT CC_STATUS_MDEP CC_STATUS
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\
@@ -1241,6 +1250,7 @@ void gcc_sort_r (void *, size_t, size_t, sort_r_cmp_fn *, void *);
 void gcc_qsort (void *, size_t, size_t, int (*)(const void *, const void *));
 void gcc_stablesort (void *, size_t, size_t,
 		     int (*)(const void *, const void *));
+void gcc_stablesort_r (void *, size_t, size_t, sort_r_cmp_fn *, void *data);
 /* Redirect four-argument qsort calls to gcc_qsort; one-argument invocations
    correspond to vec::qsort, and use C qsort internally.  */
 #define PP_5th(a1, a2, a3, a4, a5, ...) a5
@@ -1286,5 +1296,13 @@ void gcc_stablesort (void *, size_t, size_t,
 #undef NULL
 #define NULL nullptr
 #endif
+
+/* Return true if STR string starts with PREFIX.  */
+
+static inline bool
+startswith (const char *str, const char *prefix)
+{
+  return strncmp (str, prefix, strlen (prefix)) == 0;
+}
 
 #endif /* ! GCC_SYSTEM_H */

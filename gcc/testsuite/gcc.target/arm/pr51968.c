@@ -1,7 +1,8 @@
 /* PR target/51968 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv7-a -mfloat-abi=softfp -mfpu=neon" } */
+/* { dg-require-effective-target arm_softfp_ok } */
 /* { dg-require-effective-target arm_neon_ok } */
+/* { dg-options "-O2 -march=armv7-a -mfloat-abi=softfp -mfpu=neon" } */
 #include <arm_neon.h>
 
 struct T { int8x8x2_t val; };

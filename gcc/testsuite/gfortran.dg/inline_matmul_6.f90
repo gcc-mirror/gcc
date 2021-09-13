@@ -45,4 +45,4 @@ program main
   if (any(abs(c2 - (/39., -61., 75./)) > 1e-3)) STOP 2
 end program main
 
-! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_matmul" 1 "original" } }

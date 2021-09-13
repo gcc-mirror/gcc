@@ -8,6 +8,7 @@
  */
 module core.sys.windows.rpcdce;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "Rpcrt4");
@@ -16,7 +17,7 @@ pragma(lib, "Rpcrt4");
 // replaced aliases for version (Unicode)
 
 public import core.sys.windows.rpcdcep;
-private import core.sys.windows.basetyps, core.sys.windows.w32api, core.sys.windows.windef;
+import core.sys.windows.basetyps, core.sys.windows.w32api, core.sys.windows.windef;
 
 // FIXME: clean up Windows version support
 

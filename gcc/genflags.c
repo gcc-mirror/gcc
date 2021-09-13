@@ -1,7 +1,7 @@
 /* Generate from machine description:
    - some flags HAVE_... saying which simple standard instructions are
    available for this machine.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -152,7 +152,7 @@ gen_insn (md_rtx_info *info)
   lt = strchr (name, '<');
   if (lt && strchr (lt + 1, '>'))
     {
-      error_at (info->loc, "unresolved iterator");
+      error_at (info->loc, "unresolved iterator in %s", name);
       return;
     }
 
@@ -160,7 +160,7 @@ gen_insn (md_rtx_info *info)
   if (lt || gt)
     {
       error_at (info->loc, "unmatched angle brackets, likely "
-		"an error in iterator syntax");
+		"an error in iterator syntax in %s", name);
       return;
     }
 

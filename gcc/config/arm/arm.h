@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2020 Free Software Foundation, Inc.
+   Copyright (C) 1991-2021 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -47,8 +47,9 @@ extern char arm_arch_name[];
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() arm_cpu_cpp_builtins (pfile)
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS arm_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO arm_d_register_target_info
 
 #include "config/arm/arm-opts.h"
 
@@ -88,11 +89,7 @@ extern tree arm_bf16_ptr_type_node;
 
 
 #undef  CPP_SPEC
-#define CPP_SPEC "%(subtarget_cpp_spec)					\
-%{mfloat-abi=soft:%{mfloat-abi=hard:					\
-	%e-mfloat-abi=soft and -mfloat-abi=hard may not be used together}} \
-%{mbig-endian:%{mlittle-endian:						\
-	%e-mbig-endian and -mlittle-endian may not be used together}}"
+#define CPP_SPEC "%(subtarget_cpp_spec)"
 
 #ifndef CC1_SPEC
 #define CC1_SPEC ""
@@ -390,7 +387,10 @@ emission of floating point pcs attributes.  */
    --with-float is ignored if -mfloat-abi is specified.
    --with-fpu is ignored if -mfpu is specified.
    --with-abi is ignored if -mabi is specified.
-   --with-tls is ignored if -mtls-dialect is specified. */
+   --with-tls is ignored if -mtls-dialect is specified.
+   Note: --with-mode is not handled here, that has a special rule
+   TARGET_MODE_CHECK that also takes into account the selected CPU and
+   architecture.  */
 #define OPTION_DEFAULT_SPECS \
   {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" }, \
   {"cpu", "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
@@ -398,7 +398,6 @@ emission of floating point pcs attributes.  */
   {"float", "%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}" }, \
   {"fpu", "%{!mfpu=*:-mfpu=%(VALUE)}"}, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}"}, \
-  {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"}, \
   {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},
 
 extern const struct arm_fpu_desc
@@ -1150,6 +1149,46 @@ extern const int arm_arch_cde_coproc_bits[];
 
 #define ARM_HAVE_V8HF_ARITH (ARM_HAVE_NEON_V8HF_ARITH || TARGET_HAVE_MVE_FLOAT)
 #define ARM_HAVE_V4SF_ARITH (ARM_HAVE_NEON_V4SF_ARITH || TARGET_HAVE_MVE_FLOAT)
+
+/* The conditions under which vector modes are supported by load/store
+   instructions using Neon.  */
+
+#define ARM_HAVE_NEON_V8QI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V16QI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V4HI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V8HI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V2SI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V4SI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V4HF_LDST TARGET_NEON_FP16INST
+#define ARM_HAVE_NEON_V8HF_LDST TARGET_NEON_FP16INST
+#define ARM_HAVE_NEON_V4BF_LDST TARGET_BF16_SIMD
+#define ARM_HAVE_NEON_V8BF_LDST TARGET_BF16_SIMD
+#define ARM_HAVE_NEON_V2SF_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V4SF_LDST TARGET_NEON
+#define ARM_HAVE_NEON_DI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V2DI_LDST TARGET_NEON
+
+/* The conditions under which vector modes are supported by load/store
+   instructions by any vector extension.  */
+
+#define ARM_HAVE_V8QI_LDST (ARM_HAVE_NEON_V8QI_LDST || TARGET_REALLY_IWMMXT)
+#define ARM_HAVE_V4HI_LDST (ARM_HAVE_NEON_V4HI_LDST || TARGET_REALLY_IWMMXT)
+#define ARM_HAVE_V2SI_LDST (ARM_HAVE_NEON_V2SI_LDST || TARGET_REALLY_IWMMXT)
+
+#define ARM_HAVE_V16QI_LDST (ARM_HAVE_NEON_V16QI_LDST || TARGET_HAVE_MVE)
+#define ARM_HAVE_V8HI_LDST (ARM_HAVE_NEON_V8HI_LDST || TARGET_HAVE_MVE)
+#define ARM_HAVE_V4SI_LDST (ARM_HAVE_NEON_V4SI_LDST || TARGET_HAVE_MVE)
+#define ARM_HAVE_DI_LDST ARM_HAVE_NEON_DI_LDST
+#define ARM_HAVE_V2DI_LDST ARM_HAVE_NEON_V2DI_LDST
+
+#define ARM_HAVE_V4HF_LDST ARM_HAVE_NEON_V4HF_LDST
+#define ARM_HAVE_V2SF_LDST ARM_HAVE_NEON_V2SF_LDST
+
+#define ARM_HAVE_V4BF_LDST ARM_HAVE_NEON_V4BF_LDST
+#define ARM_HAVE_V8BF_LDST ARM_HAVE_NEON_V8BF_LDST
+
+#define ARM_HAVE_V8HF_LDST (ARM_HAVE_NEON_V8HF_LDST || TARGET_HAVE_MVE_FLOAT)
+#define ARM_HAVE_V4SF_LDST (ARM_HAVE_NEON_V4SF_LDST || TARGET_HAVE_MVE_FLOAT)
 
 /* The register numbers in sequence, for passing to arm_gen_load_multiple.  */
 extern int arm_regs_in_sequence[];
@@ -2384,9 +2423,9 @@ extern const char *arm_asm_auto_mfpu (int argc, const char **argv);
   "   mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})"			\
   " }"
 
-extern const char *arm_target_thumb_only (int argc, const char **argv);
+extern const char *arm_target_mode (int argc, const char **argv);
 #define TARGET_MODE_SPEC_FUNCTIONS			\
-  { "target_mode_check", arm_target_thumb_only },
+  { "target_mode_check", arm_target_mode },
 
 /* -mcpu=native handling only makes sense with compiler running on
    an ARM chip.  */
@@ -2405,9 +2444,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #endif
 
 const char *arm_canon_arch_option (int argc, const char **argv);
+const char *arm_canon_arch_multilib_option (int argc, const char **argv);
 
 #define CANON_ARCH_SPEC_FUNCTION		\
   { "canon_arch", arm_canon_arch_option },
+
+#define CANON_ARCH_MULTILIB_SPEC_FUNCTION		\
+  { "canon_arch_multilib", arm_canon_arch_multilib_option },
 
 const char *arm_be8_option (int argc, const char **argv);
 #define BE8_SPEC_FUNCTION			\
@@ -2417,6 +2460,7 @@ const char *arm_be8_option (int argc, const char **argv);
   MCPU_MTUNE_NATIVE_FUNCTIONS			\
   ASM_CPU_SPEC_FUNCTIONS			\
   CANON_ARCH_SPEC_FUNCTION			\
+  CANON_ARCH_MULTILIB_SPEC_FUNCTION		\
   TARGET_MODE_SPEC_FUNCTIONS			\
   BE8_SPEC_FUNCTION
 
@@ -2437,12 +2481,22 @@ const char *arm_be8_option (int argc, const char **argv);
   "                     %{mfloat-abi=*: abi %*}"	\
   "                     %<march=*) "
 
+/* Generate a canonical string to represent the architecture selected ignoring
+   the options not required for multilib linking.  */
+#define MULTILIB_ARCH_CANONICAL_SPECS				\
+  "-mlibarch=%:canon_arch_multilib(%{mcpu=*: cpu %*} "		\
+  "				   %{march=*: arch %*} "	\
+  "				   %{mfpu=*: fpu %*} "		\
+  "				   %{mfloat-abi=*: abi %*}"	\
+  "				   %<mlibarch=*) "
+
 /* Complete set of specs for the driver.  Commas separate the
    individual rules so that any option suppression (%<opt...)is
    completed before starting subsequent rules.  */
 #define DRIVER_SELF_SPECS			\
   MCPU_MTUNE_NATIVE_SPECS,			\
   TARGET_MODE_SPECS,				\
+  MULTILIB_ARCH_CANONICAL_SPECS,		\
   ARCH_CANONICAL_SPECS
 
 #define TARGET_SUPPORTS_WIDE_INT 1

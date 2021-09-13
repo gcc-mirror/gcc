@@ -1,5 +1,5 @@
 /* Parse and display command line options.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -267,6 +267,9 @@ gfc_post_options (const char **pfilename)
      support.  */
   if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
     sorry ("%<-fexcess-precision=standard%> for Fortran");
+  else if (flag_excess_precision == EXCESS_PRECISION_FLOAT16)
+    sorry ("%<-fexcess-precision=16%> for Fortran");
+
   flag_excess_precision = EXCESS_PRECISION_FAST;
 
   /* Fortran allows associative math - but we cannot reassociate if
@@ -620,7 +623,7 @@ gfc_handle_runtime_check_option (const char *arg)
 	      result = 1;
 	      break;
 	    }
-	  else if (optname[n] && pos > 3 && gfc_str_startswith (arg, "no-")
+	  else if (optname[n] && pos > 3 && startswith (arg, "no-")
 		   && strncmp (optname[n], arg+3, pos-3) == 0)
 	    {
 	      gfc_option.rtcheck &= ~optmask[n];

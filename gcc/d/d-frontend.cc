@@ -1,5 +1,5 @@
 /* d-frontend.cc -- D frontend interface to the gcc back-end.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -139,26 +139,6 @@ Loc::equals (const Loc &loc)
 
 /* Implements back-end specific interfaces used by the frontend.  */
 
-/* Determine return style of function - whether in registers or through a
-   hidden pointer to the caller's stack.  */
-
-RET
-retStyle (TypeFunction *tf)
-{
-  /* Need the backend type to determine this, but this is called from the
-     frontend before semantic processing is finished.  An accurate value
-     is not currently needed anyway.  */
-  if (tf->isref)
-    return RETregs;
-
-  Type *tn = tf->next->toBasetype ();
-
-  if (tn->ty == Tstruct || tn->ty == Tsarray)
-    return RETstack;
-
-  return RETregs;
-}
-
 /* Determine if function FD is a builtin one that we can evaluate in CTFE.  */
 
 BUILTIN
@@ -178,7 +158,7 @@ isBuiltin (FuncDeclaration *fd)
 Expression *
 eval_builtin (Loc loc, FuncDeclaration *fd, Expressions *arguments)
 {
-  if (fd->builtin != BUILTINyes)
+  if (fd->builtin == BUILTINunimp)
     return NULL;
 
   tree decl = get_symbol_decl (fd);
@@ -205,39 +185,8 @@ eval_builtin (Loc loc, FuncDeclaration *fd, Expressions *arguments)
 Type *
 getTypeInfoType (Loc loc, Type *type, Scope *sc)
 {
-  if (!global.params.useTypeInfo)
-    {
-      /* Even when compiling without RTTI we should still be able to evaluate
-	 TypeInfo at compile-time, just not at run-time.  */
-      if (!sc || !(sc->flags & SCOPEctfe))
-	{
-	  static int warned = 0;
-
-	  if (!warned)
-	    {
-	      error_at (make_location_t (loc),
-			"%<object.TypeInfo%> cannot be used with %<-fno-rtti%>");
-	      warned = 1;
-	    }
-	}
-    }
-
-  if (Type::dtypeinfo == NULL
-      || (Type::dtypeinfo->storage_class & STCtemp))
-    {
-      /* If TypeInfo has not been declared, warn about each location once.  */
-      static Loc warnloc;
-
-      if (!loc.equals (warnloc))
-	{
-	  error_at (make_location_t (loc),
-		    "%<object.TypeInfo%> could not be found, "
-		    "but is implicitly used");
-	  warnloc = loc;
-	}
-    }
-
   gcc_assert (type->ty != Terror);
+  check_typeinfo_type (loc, sc);
   create_typeinfo (type, sc ? sc->_module->importedFrom : NULL);
   return type->vtinfo->type;
 }

@@ -1,5 +1,7 @@
 // { dg-do compile }
-// Copyright (C) 2010-2020 Free Software Foundation, Inc.
+// { dg-options "-Wno-unused-result" }
+
+// Copyright (C) 2010-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +35,7 @@ void test01()
 				       greedy_ops::C> iterator_type;
 
   iterator_type it(0);
-  
+
   it == it;
   it != it;
   it < it;
@@ -45,8 +47,8 @@ void test01()
   1 + it;
 }
 
-int main() 
-{ 
+int main()
+{
   test01();
   return 0;
 }

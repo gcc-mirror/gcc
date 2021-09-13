@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -283,6 +283,9 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
 	!= sanitize_flags_p (codes[i], callee))
       return false;
 
+  if (sanitize_coverage_p (caller) != sanitize_coverage_p (callee))
+    return false;
+
   return true;
 }
 
@@ -393,6 +396,23 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_SANITIZE_ATTRIBUTE_MISMATCH;
       inlinable = false;
     }
+  else if (profile_arc_flag
+	   && (lookup_attribute ("no_profile_instrument_function",
+				 DECL_ATTRIBUTES (caller->decl)) == NULL_TREE)
+	   != (lookup_attribute ("no_profile_instrument_function",
+				 DECL_ATTRIBUTES (callee->decl)) == NULL_TREE))
+    {
+      cgraph_node *origin = caller;
+      while (origin->clone_of)
+	origin = origin->clone_of;
+
+      if (!DECL_STRUCT_FUNCTION (origin->decl)->always_inline_functions_inlined)
+	{
+	  e->inline_failed = CIF_UNSPECIFIED;
+	  inlinable = false;
+	}
+    }
+
   if (!inlinable && report)
     report_inline_failed_reason (e);
   return inlinable;
@@ -1771,7 +1791,7 @@ compute_max_insns (cgraph_node *node, int insns)
 /* Compute badness of all edges in NEW_EDGES and add them to the HEAP.  */
 
 static void
-add_new_edges_to_heap (edge_heap_t *heap, vec<cgraph_edge *> new_edges)
+add_new_edges_to_heap (edge_heap_t *heap, vec<cgraph_edge *> &new_edges)
 {
   while (new_edges.length () > 0)
     {

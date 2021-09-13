@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
-   Copyright (C) 1995-2020 Free Software Foundation, Inc.
+   Copyright (C) 1995-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,6 +26,15 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("__CYGWIN32__");			\
       builtin_define ("__unix__");				\
       builtin_define ("__unix");				\
+    }								\
+  while (0)
+
+#define EXTRA_TARGET_D_OS_VERSIONS()				\
+  do								\
+    {								\
+      builtin_version ("Cygwin");				\
+      builtin_version ("Posix");				\
+      builtin_version ("CRuntime_Newlib");			\
     }								\
   while (0)
 

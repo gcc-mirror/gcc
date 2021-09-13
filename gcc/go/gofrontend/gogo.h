@@ -393,6 +393,14 @@ class Gogo
   set_c_header(const std::string& s)
   { this->c_header_ = s; }
 
+  // Read an embedcfg file.
+  void
+  read_embedcfg(const char* filename);
+
+  // Build an initializer for a variable with a go:embed directive.
+  Expression*
+  initializer_for_embeds(Type*, const std::vector<std::string>*, Location);
+
   // Return whether to check for division by zero in binary operations.
   bool
   check_divide_by_zero() const
@@ -524,6 +532,10 @@ class Gogo
   Package*
   register_package(const std::string& pkgpath,
 		   const std::string& pkgpath_symbol, Location);
+
+  // Add the unsafe bindings to the unsafe package.
+  void
+  add_unsafe_bindings(Package*);
 
   // Look up a package by pkgpath, and return its pkgpath_symbol.
   std::string
@@ -696,6 +708,11 @@ class Gogo
   bool
   current_file_imported_unsafe() const
   { return this->current_file_imported_unsafe_; }
+
+  // Return whether the current file imported the embed package.
+  bool
+  current_file_imported_embed() const
+  { return this->current_file_imported_embed_; }
 
   // Clear out all names in file scope.  This is called when we start
   // parsing a new file.
@@ -1170,6 +1187,12 @@ class Gogo
   static bool
   is_digits(const std::string&);
 
+  // Type used to map go:embed patterns to a list of files.
+  typedef Unordered_map(std::string, std::vector<std::string>) Embed_patterns;
+
+  // Type used to map go:embed file names to their full path.
+  typedef Unordered_map(std::string, std::string) Embed_files;
+
   // Type used to map import names to packages.
   typedef std::map<std::string, Package*> Imports;
 
@@ -1233,6 +1256,8 @@ class Gogo
   bool imported_unsafe_;
   // Whether the magic unsafe package was imported by the current file.
   bool current_file_imported_unsafe_;
+  // Whether the embed package was imported by the current file.
+  bool current_file_imported_embed_;
   // Mapping from package names we have seen to packages.  This does
   // not include the package we are compiling.
   Packages packages_;
@@ -1265,6 +1290,10 @@ class Gogo
   std::string relative_import_path_;
   // The C header file to write, from the -fgo-c-header option.
   std::string c_header_;
+  // Patterns from an embedcfg file.
+  Embed_patterns embed_patterns_;
+  // Mapping from file to full path from an embedcfg file.
+  Embed_files embed_files_;
   // Whether or not to check for division by zero, from the
   // -fgo-check-divide-zero option.
   bool check_divide_by_zero_;
@@ -1699,6 +1728,10 @@ class Function
   set_is_referenced_by_inline()
   { this->is_referenced_by_inline_ = true; }
 
+  // Set the receiver type.  This is used to remove aliases.
+  void
+  set_receiver_type(Type* rtype);
+
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1964,6 +1997,10 @@ class Function_declaration
   void
   set_is_on_inlinable_list()
   { this->is_on_inlinable_list_ = true; }
+
+  // Set the receiver type.  This is used to remove aliases.
+  void
+  set_receiver_type(Type* rtype);
 
   // Import the function body, creating a function.
   void
@@ -2272,6 +2309,16 @@ class Variable
     this->is_referenced_by_inline_ = true;
   }
 
+  // Attach any go:embed comments for this variable.
+  void
+  set_embeds(std::vector<std::string>* embeds)
+  {
+    go_assert(this->is_global_
+	      && this->init_ == NULL
+	      && this->preinit_ == NULL);
+    this->embeds_ = embeds;
+  }
+
   // Return the top-level declaration for this variable.
   Statement*
   toplevel_decl()
@@ -2342,6 +2389,8 @@ class Variable
   Block* preinit_;
   // Location of variable definition.
   Location location_;
+  // Any associated go:embed comments.
+  std::vector<std::string>* embeds_;
   // Backend representation.
   Bvariable* backend_;
   // Whether this is a global variable.

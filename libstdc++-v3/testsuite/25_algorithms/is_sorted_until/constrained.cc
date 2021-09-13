@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,9 +50,9 @@ test02()
   test_range<int, forward_iterator_wrapper> rx(x);
   VERIFY( ranges::is_sorted_until(rx) == ranges::end(rx) );
   VERIFY( ranges::is_sorted_until(ranges::begin(rx),
-				  next(ranges::begin(rx), 2),
+				  ranges::next(ranges::begin(rx), 2),
 				  ranges::greater{})
-	  == next(ranges::begin(rx), 1) );
+	  == ranges::next(ranges::begin(rx), 1) );
 }
 
 constexpr bool

@@ -629,6 +629,7 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBGOMP_CHECKED_INT_KINDS = @LIBGOMP_CHECKED_INT_KINDS@
 LIBGOMP_CHECKED_REAL_KINDS = @LIBGOMP_CHECKED_REAL_KINDS@
+LIBM = @LIBM@
 LIBOBJS = @LIBOBJS@
 LIBQUADINCLUDE = @LIBQUADINCLUDE@
 LIBQUADLIB = @LIBQUADLIB@
@@ -720,7 +721,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -746,7 +746,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @LIBGFOR_USE_SYMVER_FALSE@version_dep = 
 @LIBGFOR_USE_SYMVER_GNU_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = $(srcdir)/gfortran.map
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = gfortran.map-sun
-gfor_c_HEADERS = $(srcdir)/ISO_Fortran_binding.h
+gfor_c_HEADERS = ISO_Fortran_binding.h
 gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
@@ -759,7 +759,8 @@ libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LTLDFLAGS) $(LIBQUADLIB) ../libbacktrace/libbacktrace.la \
 	$(HWCAP_LDFLAGS) \
-	-lm $(COARRAY_LIBS) $(extra_ldflags_libgfortran) \
+	$(LIBM) $(COARRAY_LIBS) $(extra_ldflags_libgfortran) \
+	-lm $(extra_ldflags_libgfortran) \
 	$(version_arg) -Wc,-shared-libgcc
 
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
@@ -1431,6 +1432,7 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_pow_c) $(i_pack_c) $(i_unpack_c) $(i_matmulavx128_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
     $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc \
+    include/ISO_Fortran_binding.h \
     $(i_cshift1a_c) $(i_maxloc0s_c) $(i_minloc0s_c) $(i_maxloc1s_c) \
     $(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
     $(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c) \
@@ -7302,6 +7304,14 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 	grep '^#define GFC_FPE_' < $(top_srcdir)/../gcc/fortran/libgfortran.h > $@ || true
 	grep '^#define GFC_FPE_' < $(srcdir)/libgfortran.h >> $@ || true
 
+# Place ISO_Fortran_binding.h under include/ in the build directory such
+# that it can be used for in-built-tree testsuite runs without interference of
+# other files in the build dir - like intrinsic .mod files or other .h files.
+include/ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding.h
+	-rm -f $@
+	$(MKDIR_P) include
+	cp $(srcdir)/ISO_Fortran_binding.h $@
+
 @MAINTAINER_MODE_TRUE@$(i_all_c): m4/all.m4 $(I_M4_DEPS2)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 all.m4 > $@
 
@@ -7460,6 +7470,9 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 
 @LIBGFOR_NATIVE_COARRAY_TRUE@@MAINTAINER_MODE_TRUE@$(i_cas_collsub_s_c): m4/cas_collsub-s.m4 $(I_M4_DEPS)
 @LIBGFOR_NATIVE_COARRAY_TRUE@@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 cas_collsub-s.m4 > $@
+
+clean-local:
+	-rm -rf include
 
 # target overrides
 -include $(tmake_file)

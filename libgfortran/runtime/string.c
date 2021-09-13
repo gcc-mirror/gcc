@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -196,7 +196,7 @@ gfc_itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
   if (n < 0)
     {
       negative = 1;
-      t = -n; /*must use unsigned to protect from overflow*/
+      t = -(GFC_UINTEGER_LARGEST) n;  /* Must use unsigned to protect from overflow. */
     }
 
   p = buffer + GFC_ITOA_BUF_SIZE - 1;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -233,24 +233,24 @@ extern "C" {
    structures and then generates code.  */
 extern void gigi (Node_Id gnat_root,
 	          int max_gnat_node,
-                  int number_name,
-		  struct Node *nodes_ptr,
-		  struct Flags *Flags_Ptr,
+		  int number_name,
+		  Field_Offset *node_offsets_ptr,
+		  any_slot *slots_ptr,
 		  Node_Id *next_node_ptr,
 		  Node_Id *prev_node_ptr,
 		  struct Elist_Header *elists_ptr,
-                  struct Elmt_Item *elmts_ptr,
-                  struct String_Entry *strings_ptr,
-                  Char_Code *strings_chars_ptr,
-                  struct List_Header *list_headers_ptr,
-                  Nat number_file,
-                  struct File_Info_Type *file_info_ptr,
-                  Entity_Id standard_boolean,
-                  Entity_Id standard_integer,
-                  Entity_Id standard_character,
-                  Entity_Id standard_long_long_float,
-                  Entity_Id standard_exception_type,
-                  Int gigi_operating_mode);
+		  struct Elmt_Item *elmts_ptr,
+		  struct String_Entry *strings_ptr,
+		  Char_Code *strings_chars_ptr,
+		  struct List_Header *list_headers_ptr,
+		  Nat number_file,
+		  struct File_Info_Type *file_info_ptr,
+		  Entity_Id standard_boolean,
+		  Entity_Id standard_integer,
+		  Entity_Id standard_character,
+		  Entity_Id standard_long_long_float,
+		  Entity_Id standard_exception_type,
+		  Int gigi_operating_mode);
 
 #ifdef __cplusplus
 }
@@ -396,8 +396,8 @@ enum standard_datatypes
   /* Identifier for the name of the _Parent field in tagged record types.  */
   ADT_parent_name_id,
 
-  /* Identifier for the name of the Exception_Data type.  */
-  ADT_exception_data_name_id,
+  /* Identifier for the name of the Not_Handled_By_Others field.  */
+  ADT_not_handled_by_others_name_id,
 
   /* Types and decls used by the SJLJ exception mechanism.  */
   ADT_jmpbuf_type,
@@ -467,7 +467,8 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define mulv64_decl gnat_std_decls[(int) ADT_mulv64_decl]
 #define mulv128_decl gnat_std_decls[(int) ADT_mulv128_decl]
 #define parent_name_id gnat_std_decls[(int) ADT_parent_name_id]
-#define exception_data_name_id gnat_std_decls[(int) ADT_exception_data_name_id]
+#define not_handled_by_others_name_id \
+	  gnat_std_decls[(int) ADT_not_handled_by_others_name_id]
 #define jmpbuf_type gnat_std_decls[(int) ADT_jmpbuf_type]
 #define jmpbuf_ptr_type gnat_std_decls[(int) ADT_jmpbuf_ptr_type]
 #define get_jmpbuf_decl gnat_std_decls[(int) ADT_get_jmpbuf_decl]

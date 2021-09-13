@@ -1,5 +1,5 @@
 /* Common hooks for Renesas H8/300.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

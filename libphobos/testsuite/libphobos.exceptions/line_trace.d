@@ -9,7 +9,7 @@ void main()
     {
         import core.stdc.stdio;
         auto str = e.toString();
-        printf("%.*s\n", str.length, str.ptr);
+        printf("%.*s\n", cast(int)str.length, str.ptr);
     }
 }
 

@@ -32,7 +32,7 @@ case $1 in
 esac
 
 if test $# != 2; then
-  echo 'usage: compare-lto file1.o file2.o' >&2
+  echo 'usage: compare-lto file1 file2' >&2
   exit 1
 fi
 
@@ -101,6 +101,25 @@ else
     else
       status=1
     fi
+
+  # PE-COFF executables are timestamped so skip leading bytes for them.
+  else
+    case "$1" in
+      *.exe)
+        if cmp -i 256 "$1" "$2"; then
+          status=0
+        else
+          status=1
+        fi
+        ;;
+      *)
+        if test -f "$1.exe" && cmp -i 256 "$1.exe" "$2.exe"; then
+          status=0
+        else
+          status=1
+        fi
+        ;;
+    esac
   fi
 fi
 

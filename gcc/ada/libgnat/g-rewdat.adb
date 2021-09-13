@@ -5,7 +5,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2014-2020, Free Software Foundation, Inc.       --
+--            Copyright (C) 2014-2021, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@ package body GNAT.Rewrite_Data is
    subtype SEO is Stream_Element_Offset;
 
    procedure Do_Output
-     (B      : in out Buffer;
+     (B      : Buffer;
       Data   : Stream_Element_Array;
       Output : not null access procedure (Data : Stream_Element_Array));
    --  Do the actual output. This ensures that we properly send the data
@@ -81,7 +81,7 @@ package body GNAT.Rewrite_Data is
    ---------------
 
    procedure Do_Output
-     (B      : in out Buffer;
+     (B      : Buffer;
       Data   : Stream_Element_Array;
       Output : not null access procedure (Data : Stream_Element_Array))
    is

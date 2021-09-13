@@ -1,10 +1,10 @@
-@c Copyright (C) 1996-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1996-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 1996-2020 Free Software Foundation, Inc.
+Copyright @copyright{} 1996-2021 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -191,11 +191,11 @@ Structure of the JSON is following:
 
 @smallexample
 @{
-  "current_working_directory": @var{current_working_directory},
-  "data_file": @var{data_file},
-  "format_version": @var{format_version},
-  "gcc_version": @var{gcc_version}
-  "files": [@var{file}]
+  "current_working_directory": "foo/bar",
+  "data_file": "a.out",
+  "format_version": "1",
+  "gcc_version": "11.1.1 20210510"
+  "files": ["$file"]
 @}
 @end smallexample
 
@@ -220,9 +220,9 @@ Each @var{file} has the following form:
 
 @smallexample
 @{
-  "file": @var{file_name},
-  "functions": [@var{function}],
-  "lines": [@var{line}]
+  "file": "a.c",
+  "functions": ["$function"],
+  "lines": ["$line"]
 @}
 @end smallexample
 
@@ -237,15 +237,15 @@ Each @var{function} has the following form:
 
 @smallexample
 @{
-  "blocks": @var{blocks},
-  "blocks_executed": @var{blocks_executed},
-  "demangled_name": "@var{demangled_name},
-  "end_column": @var{end_column},
-  "end_line": @var{end_line},
-  "execution_count": @var{execution_count},
-  "name": @var{name},
-  "start_column": @var{start_column}
-  "start_line": @var{start_line}
+  "blocks": 2,
+  "blocks_executed": 2,
+  "demangled_name": "foo",
+  "end_column": 1,
+  "end_line": 4,
+  "execution_count": 1,
+  "name": "foo",
+  "start_column": 5,
+  "start_line": 1
 @}
 @end smallexample
 
@@ -289,11 +289,11 @@ Each @var{line} has the following form:
 
 @smallexample
 @{
-  "branches": [@var{branch}],
-  "count": @var{count},
-  "line_number": @var{line_number},
-  "unexecuted_block": @var{unexecuted_block}
-  "function_name": @var{function_name},
+  "branches": ["$branch"],
+  "count": 2,
+  "line_number": 15,
+  "unexecuted_block": false,
+  "function_name": "foo",
 @}
 @end smallexample
 
@@ -320,9 +320,9 @@ Each @var{branch} has the following form:
 
 @smallexample
 @{
-  "count": @var{count},
-  "fallthrough": @var{fallthrough},
-  "throw": @var{throw}
+  "count": 11,
+  "fallthrough": true,
+  "throw": false
 @}
 @end smallexample
 
@@ -885,13 +885,14 @@ same source lines, the line counts themselves might seem inconsistent.
 
 Long-running applications can use the @code{__gcov_reset} and @code{__gcov_dump}
 facilities to restrict profile collection to the program region of
-interest. Calling @code{__gcov_reset(void)} will clear all profile counters
-to zero, and calling @code{__gcov_dump(void)} will cause the profile information
-collected at that point to be dumped to @file{.gcda} output files.
+interest. Calling @code{__gcov_reset(void)} will clear all run-time profile
+counters to zero, and calling @code{__gcov_dump(void)} will cause the profile
+information collected at that point to be dumped to @file{.gcda} output files.
 Instrumented applications use a static destructor with priority 99
 to invoke the @code{__gcov_dump} function. Thus @code{__gcov_dump}
 is executed after all user defined static destructors,
 as well as handlers registered with @code{atexit}.
+
 If an executable loads a dynamic shared object via dlopen functionality,
 @option{-Wl,--dynamic-list-data} is needed to dump all profile data.
 

@@ -16,11 +16,11 @@ fn2 (int x, int y, int z)
     {
       fn1 (x);
       fn1 (x);		/* { dg-final { gdb-test .+2 "x" "36" } } */
-      if (x == 36)	/* { dg-final { gdb-test .+1 "y" "25" } } */
-	fn1 (x);	/* { dg-final { gdb-test . "z" "6" } } */
+      if (x == 36)	/* { dg-final { gdb-test .+1 "y" "25" { xfail { aarch64*-*-* && { any-opts "-flto" } } } } } */
+	fn1 (x);	/* { dg-final { gdb-test . "z" "6" { xfail { aarch64*-*-* && { any-opts "-flto" } } } } } */
       fn1 (x);		/* { dg-final { gdb-test .+2 "x" "98" } } */
-      if (x == 98)	/* { dg-final { gdb-test .+1 "y" "117" } } */
-	fn1 (x);	/* { dg-final { gdb-test . "z" "8" } } */
+      if (x == 98)	/* { dg-final { gdb-test .+1 "y" "117" { xfail { aarch64*-*-* && { any-opts "-flto" } } } } } */
+	fn1 (x);	/* { dg-final { gdb-test . "z" "8" { xfail { aarch64*-*-* && { any-opts "-flto" } } } } } */
       fn1 (x);
       fn1 (x + a);
     }

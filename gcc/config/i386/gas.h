@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 using GAS.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,22 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \
   if ((LOG)!=0) fprintf ((FILE), "\t.balign %d\n", 1 << (LOG))
-#endif
-
-/* A C statement to output to the stdio stream FILE an assembler
-   command to advance the location counter to a multiple of 1<<LOG
-   bytes if it is within MAX_SKIP bytes.
-
-   This is used to align code labels according to Intel recommendations.  */
-
-#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
-#  define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP) \
-    if ((LOG) != 0) { \
-      if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)		\
-	fprintf ((FILE), "\t.p2align %d\n", (LOG));			\
-      else								\
-	fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
-    }
 #endif
 
 /* A C statement or statements which output an assembler instruction

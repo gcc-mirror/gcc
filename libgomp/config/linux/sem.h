@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -33,10 +33,8 @@
 #ifndef GOMP_SEM_H
 #define GOMP_SEM_H 1
 
-#include <limits.h> /* For INT_MIN */
-
 typedef int gomp_sem_t;
-#define SEM_WAIT INT_MIN
+#define SEM_WAIT (-__INT_MAX__ - 1)
 #define SEM_INC 1
 
 extern void gomp_sem_wait_slow (gomp_sem_t *, int);
@@ -84,5 +82,14 @@ gomp_sem_post (gomp_sem_t *sem)
 
   if (__builtin_expect (count & SEM_WAIT, 0))
     gomp_sem_post_slow (sem);
+}
+
+static inline int
+gomp_sem_getcount (gomp_sem_t *sem)
+{
+  int count = __atomic_load_n (sem, MEMMODEL_RELAXED);
+  if ((count & SEM_WAIT) != 0)
+    return -1;
+  return count / SEM_INC;
 }
 #endif /* GOMP_SEM_H */

@@ -8,6 +8,7 @@
  */
 module core.sys.windows.winperf;
 version (Windows):
+@system:
 
 import core.sys.windows.windef;
 import core.sys.windows.winbase; // for SYSTEMTIME

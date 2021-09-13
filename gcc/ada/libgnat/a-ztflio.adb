@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,9 @@
 ------------------------------------------------------------------------------
 
 with Ada.Wide_Wide_Text_IO.Float_Aux;
+with System.Img_Flt;  use System.Img_Flt;
+with System.Img_LFlt; use System.Img_LFlt;
+with System.Img_LLF;  use System.Img_LLF;
 with System.Val_Flt;  use System.Val_Flt;
 with System.Val_LFlt; use System.Val_LFlt;
 with System.Val_LLF;  use System.Val_LLF;
@@ -39,13 +42,15 @@ with System.WCh_WtS;  use System.WCh_WtS;
 package body Ada.Wide_Wide_Text_IO.Float_IO is
 
    package Aux_Float is new
-      Ada.Wide_Wide_Text_IO.Float_Aux (Float, Scan_Float);
+     Ada.Wide_Wide_Text_IO.Float_Aux (Float, Scan_Float, Set_Image_Float);
 
    package Aux_Long_Float is new
-      Ada.Wide_Wide_Text_IO.Float_Aux (Long_Float, Scan_Long_Float);
+     Ada.Wide_Wide_Text_IO.Float_Aux
+       (Long_Float, Scan_Long_Float, Set_Image_Long_Float);
 
    package Aux_Long_Long_Float is new
-      Ada.Wide_Wide_Text_IO.Float_Aux (Long_Long_Float, Scan_Long_Long_Float);
+     Ada.Wide_Wide_Text_IO.Float_Aux
+       (Long_Long_Float, Scan_Long_Long_Float, Set_Image_Long_Long_Float);
 
    --  Throughout this generic body, we distinguish between the case where type
    --  Float is OK, where type Long_Float is OK and where type Long_Long_Float

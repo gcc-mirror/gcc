@@ -44,7 +44,7 @@ void test_narrow (void)
   T (p1[-1]);
   T (p1[ 0]);
   T (p1[ 1]);
-  T (p1[ 2]);                 /* { dg-warning "array subscript \\\[3, 4] is outside array bounds of .char\\\[3]." } */
+  T (p1[ 2]);                 /* { dg-warning "array subscript 3 is outside array bounds of .char\\\[3]." } */
   T (p1[ 3]);                 /* { dg-warning "array subscript \\\[4, 5] is outside array bounds of .char\\\[3]." } */
 
   T (&p1[-3]);                /* { dg-warning "array subscript \\\[-2, -1] is outside array bounds of .char\\\[3]." "bug" { xfail *-*-* } } */
@@ -55,7 +55,7 @@ void test_narrow (void)
   T (&p1[ 2]);
   T (&p1[ 3]);                /* { dg-warning "array subscript \\\[4, 6] is outside array bounds of .char\\\[3]." "bug" { xfail *-*-* } } */
 
-  T (p2[-4]);                 /* { dg-warning "intermediate array offset 4 is outside array bounds of .char\\\[3]." } */
+  T (p2[-4]);                 /* { dg-warning "subscript \\\[-2, -1\\\] is outside array bounds of .char\\\[3]." } */
   T (p2[-3]);
   T (p2[-2]);
   T (p2[-1]);
@@ -64,19 +64,19 @@ void test_narrow (void)
   /* Even though the lower bound of p3's offsets is in bounds, in order
      to subtract 4 from p3 and get a dereferenceable pointer its value
      would have to be out-of-bounds.  */
-  T (p3[-4]);                 /* { dg-warning "intermediate array offset 4 is outside array bounds of .char\\\[3]." } */
+  T (p3[-4]);                 /* { dg-warning "array subscript -1 is outside array bounds of .char\\\[3]." } */
   T (p3[-3]);
   T (p3[-2]);
   T (p3[-1]);
-  T (p3[ 0]);                 /* { dg-warning "array subscript \\\[3, 6] is outside array bounds of .char\\\[3]." } */
+  T (p3[ 0]);                 /* { dg-warning "array subscript 3 is outside array bounds of .char\\\[3]." } */
 
   T (p4[-4]);                 /* { dg-warning "intermediate array offset 4 is outside array bounds of .char\\\[3]." } */
   T (p4[-3]);                 /* { dg-warning "intermediate array offset 4 is outside array bounds of .char\\\[3]." } */
   T (p4[-2]);                 /* { dg-warning "intermediate array offset 4 is outside array bounds of .char\\\[3]." } */
 
   /* The final subscripts below are invalid.  */
-  T (p4[-1]);                 /* { dg-warning "array subscript \\\[3, 7] is outside array bounds of .char\\\[3]." } */
-  T (p4[ 0]);                 /* { dg-warning "array subscript \\\[4, 8] is outside array bounds of .char\\\[3]." } */
+  T (p4[-1]);                 /* { dg-warning "array subscript 3 is outside array bounds of .char\\\[3]." } */
+  T (p4[ 0]);                 /* { dg-warning "array subscript \\\[4, 5] is outside array bounds of .char\\\[3]." } */
 }
 
 
@@ -114,7 +114,7 @@ void test_wide (void)
   T (p1[ 0]);
   T (p1[ 1]);
   T (p1[ 2]);
-  T (p1[ 3]);                  /* { dg-warning "array subscript \\\[4, 5] is outside array bounds of .\[a-z \]+\\\[4]." } */
+  T (p1[ 3]);                  /* { dg-warning "array subscript 4 is outside array bounds of .\[a-z \]+\\\[4]." } */
 
   T (&p1[-1]);
   T (&p1[ 0]);
@@ -133,18 +133,18 @@ void test_wide (void)
   /* Even though the lower bound of p3's offsets is in bounds, in order
      to subtract 5 from p3 and get a dereferenceable pointer its value
      would have to be out-of-bounds.  */
-  T (p3[-5]);                 /* { dg-warning "intermediate array offset 5 is outside array bounds of .\[a-z \]+\\\[4]." } */
+  T (p3[-5]);                 /* { dg-warning "array subscript \\\[-2, -1\\\] is outside array bounds of .\[a-z \]+\\\[4]." } */
   T (p3[-4]);
   T (p3[-3]);
   T (p3[-2]);
   T (p3[-1]);
   T (p3[ 0]);
-  T (p3[ 1]);                 /* { dg-warning "array subscript \\\[4, 7] is outside array bounds of .\[a-z \]+\\\[4]." } */
+  T (p3[ 1]);                 /* { dg-warning "array subscript 4 is outside array bounds of .\[a-z \]+\\\[4]." } */
 
-  T (p4[-5]);                 /* { dg-warning "intermediate array offset 5 is outside array bounds of .\[a-z \]+\\\[4]." } */
+  T (p4[-5]);                 /* { dg-warning "array subscript -1 is outside array bounds of .\[a-z \]+\\\[4]." } */
   T (p4[-4]);
   T (p4[-3]);
   T (p4[-2]);
   T (p4[-1]);
-  T (p4[ 0]);                 /* { dg-warning "array subscript \\\[4, 8] is outside array bounds of .\[a-z \]+\\\[4]." } */
+  T (p4[ 0]);                 /* { dg-warning "array subscript 4 is outside array bounds of .\[a-z \]+\\\[4]." } */
 }

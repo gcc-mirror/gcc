@@ -13,7 +13,8 @@
 /* { dg-final { scan-assembler-times {\mxxpermdi\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mli\M} 1 } } */
 /* -m32 target has an 'add' in place of one of the 'addi'. */
-/* { dg-final { scan-assembler-times {\maddi\M|\madd\M} 2 } } */
+/* { dg-final { scan-assembler-times {\maddi\M|\madd\M} 2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\maddi\M|\madd\M} 3 { target ilp32 } } } */
 /* -m32 target has a rlwinm in place of a rldic .  */
 /* { dg-final { scan-assembler-times {\mrldic\M|\mrlwinm\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mstxvd2x\M} 1 } } */

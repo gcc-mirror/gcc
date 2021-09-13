@@ -2,13 +2,13 @@
 // Origin: Giovanni Bajo <giovannibajo at gcc dot gnu dot org>
 // DR142: Injection-related errors in access example 
 
-class B {                 // { dg-message "declared" }
+class B {                 
 public:
-  int mi;                 // { dg-message "declared" }
-  static int si;          // { dg-message "declared" }
+  int mi;                 
+  static int si;          
 };
 
-class D: private B {
+class D: private B { // { dg-message "declared" }
 };
 
 class DD: public D {

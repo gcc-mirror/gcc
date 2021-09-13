@@ -1,5 +1,5 @@
 /* Deal with I/O statements & related stuff.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1762,6 +1762,13 @@ resolve_tag_format (gfc_expr *e)
      It may be assigned an Hollerith constant.  */
   if (e->ts.type != BT_CHARACTER)
     {
+      if (e->ts.type == BT_DERIVED || e->ts.type == BT_CLASS
+	  || e->ts.type == BT_VOID || e->ts.type == BT_UNKNOWN)
+	{
+	  gfc_error ("Non-character non-Hollerith in FORMAT tag at %L",
+		     &e->where);
+	  return false;
+	}
       if (!gfc_notify_std (GFC_STD_LEGACY, "Non-character in FORMAT tag "
 			   "at %L", &e->where))
 	return false;

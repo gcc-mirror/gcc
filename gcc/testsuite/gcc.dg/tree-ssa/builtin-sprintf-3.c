@@ -15,7 +15,7 @@ extern void string_lt_0_fail ();
 extern void string_eq_0_fail ();
 extern void string_gt_0_fail ();
 
-void test_string (char *d, const char *s)
+void test_string_eq_min (char *d, const char *s)
 {
   int n = __builtin_sprintf (d, "%-s", s);
 
@@ -23,13 +23,36 @@ void test_string (char *d, const char *s)
      or INT_MAX.  (This is a white box test based on knowing that
      the optimization computes its own values of the two constants.)  */
   if (n == INT_MIN) string_eq_min_fail ();
+}
+
+void test_string_eq_max (char *d, const char *s)
+{
+  int n = __builtin_sprintf (d, "%-s", s);
+
   if (n == INT_MAX) string_eq_max_fail ();
+}
+
+void test_string_lt_0 (char *d, const char *s)
+{
+  int n = __builtin_sprintf (d, "%-s", s);
 
   /* The return value could be negative when strlen(s) is in excess
      of 4095 (the maximum number of bytes a single directive is required
      to handle).  */
   if (n < 0) string_lt_0_fail ();
+}
+
+void test_string_eq_0 (char *d, const char *s)
+{
+  int n = __builtin_sprintf (d, "%-s", s);
+
   if (n == 0) string_eq_0_fail ();
+}
+
+void test_string_gt_0 (char *d, const char *s)
+{
+  int n = __builtin_sprintf (d, "%-s", s);
+
   if (n > 0) string_gt_0_fail ();
 }
 

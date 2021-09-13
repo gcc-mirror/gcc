@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -524,13 +524,16 @@ namespace __gnu_pbds
 
 	resize_base::notify_find_search_end();
 
-#ifdef _GLIBCXX_DEBUG
 	if (p_e == 0)
-	  PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
+	  {
+	    PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
+	    return 0;
+	  }
 	else
-	  PB_DS_CHECK_KEY_EXISTS(r_key)
-#endif
-	return &p_e->m_value;
+	  {
+	    PB_DS_CHECK_KEY_EXISTS(r_key)
+	    return &p_e->m_value;
+	  }
       }
 
       inline pointer
@@ -550,13 +553,16 @@ namespace __gnu_pbds
 
 	resize_base::notify_find_search_end();
 
-#ifdef _GLIBCXX_DEBUG
 	if (p_e == 0)
-	  PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
+	  {
+	    PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
+	    return 0;
+	  }
 	else
-	  PB_DS_CHECK_KEY_EXISTS(r_key)
-#endif
-	return &p_e->m_value;
+	  {
+	    PB_DS_CHECK_KEY_EXISTS(r_key)
+	    return &p_e->m_value;
+	  }
       }
 
       inline bool

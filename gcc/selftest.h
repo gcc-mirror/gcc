@@ -1,5 +1,5 @@
 /* A self-testing framework, for use by -fself-test.
-   Copyright (C) 2015-2020 Free Software Foundation, Inc.
+   Copyright (C) 2015-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -190,11 +190,6 @@ for_each_line_table_case (void (*testcase) (const line_table_case &));
 
 extern char *read_file (const location &loc, const char *path);
 
-/* A helper function for writing tests that interact with the
-   garbage collector.  */
-
-extern void forcibly_ggc_collect ();
-
 /* Convert a path relative to SRCDIR/gcc/testsuite/selftests
    to a real path (either absolute, or relative to pwd).
    The result should be freed by the caller.  */
@@ -249,6 +244,7 @@ extern void predict_c_tests ();
 extern void pretty_print_c_tests ();
 extern void range_tests ();
 extern void range_op_tests ();
+extern void gimple_range_tests ();
 extern void read_rtl_function_c_tests ();
 extern void rtl_tests_c_tests ();
 extern void sbitmap_c_tests ();

@@ -959,8 +959,8 @@ if (isInputRange!R &&
     import std.ascii : isDigit;
     import std.uni : isWhite;
 
-    assert(countUntil!(std.uni.isWhite)("hello world") == 5);
-    assert(countUntil!(std.ascii.isDigit)("hello world") == -1);
+    assert(countUntil!(isWhite)("hello world") == 5);
+    assert(countUntil!(isDigit)("hello world") == -1);
     assert(countUntil!"a > 20"([0, 7, 12, 22, 9]) == 3);
 }
 

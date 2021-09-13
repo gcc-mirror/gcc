@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
 
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,7 @@ int main()
   VERIFY( !(e1 < e1) );
   VERIFY( !(e2 < e2) );
 
+  // e1.category() == e2.category(), so comparison depends on values:
   VERIFY( (e1 < e2) == (e1.value() < e2.value()) );
 
   const __gnu_test::test_category cat;

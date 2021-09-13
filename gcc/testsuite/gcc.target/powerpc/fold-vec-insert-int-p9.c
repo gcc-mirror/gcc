@@ -49,16 +49,17 @@ testui2_cst(unsigned int x, vector unsigned int v)
 }
 
 
-/* load immediate, add, store, stb, load variable test.  */
-/* { dg-final { scan-assembler-times {\mstxv\M|\mstvx\M} 4 } } */
-/* { dg-final { scan-assembler-times {\mstwx\M} 4 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mlxv\M|\mlvx\M} 4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mstxv\M|\mstvx\M} 0 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mstwx\M} 0 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mlxv\M|\mlvx\M} 0 { target lp64 } } } */
 
 /* an insert and a move per constant test. */
-/* { dg-final { scan-assembler-times {\mmtvsrwz\M} 4 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mxxinsertw\M} 4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mmtvsrwz\M} 8 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mxxinsertw\M} 8 { target lp64 } } } */
 
-/* { dg-final { scan-assembler-times {\mstw\M} 8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstxv\M|\mstvx\M} 0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstw\M} 4 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlxv\M} 8 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlvewx\M} 4 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mvperm\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mxxperm\M} 8 { target ilp32 } } } */

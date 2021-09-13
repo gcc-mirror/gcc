@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ppc64 ppc64le
+//go:build ppc || ppc64 || ppc64le
+// +build ppc ppc64 ppc64le
 
 package cpu
 
@@ -17,5 +18,5 @@ func osinit() {
 	PPC64.IsPOWER9 = isSet(impl, _IMPL_POWER9)
 }
 
-// getsystemcfg is defined in runtime/os2_aix.go
+//extern getsystemcfg
 func getsystemcfg(label uint) uint

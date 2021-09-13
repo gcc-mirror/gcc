@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * http://www.boost.org/LICENSE_1_0.txt
@@ -61,6 +61,7 @@ public:
     void fill0(size_t nbytes);
     void vprintf(const char *format, va_list args);
     void printf(const char *format, ...);
+    void print(unsigned long long u);
     void bracket(char left, char right);
     size_t bracket(size_t i, const char *left, size_t j, const char *right);
     void spread(size_t offset, size_t nbytes);

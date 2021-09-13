@@ -1,5 +1,5 @@
 /* Common declarations for all of GNU Fortran libcaf implementations.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran Coarray Runtime Library (libcaf).
@@ -260,5 +260,7 @@ void _gfortran_caf_stopped_images (gfc_descriptor_t *,
 				   int *);
 
 int _gfortran_caf_is_present (caf_token_t, int, caf_reference_t *);
+
+void _gfortran_caf_random_init (bool, bool);
 
 #endif  /* LIBCAF_H  */

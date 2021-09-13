@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2020 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,12 @@ if ![info exists DEFAULT_CFLAGS] then {
 dg-init
 
 set saved-dg-do-what-default ${dg-do-what-default}
-set dg-do-what-default "assemble"
+
+if {[is-effective-target arm_cmse_hw]} then {
+    set dg-do-what-default run
+} else {
+    set dg-do-what-default assemble
+}
 
 set saved-lto_torture_options ${LTO_TORTURE_OPTIONS}
 set LTO_TORTURE_OPTIONS ""

@@ -5,7 +5,6 @@
 package runtime
 
 import (
-	"internal/cpu"
 	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
@@ -412,7 +411,18 @@ type g struct {
 	syscallsp uintptr // if status==Gsyscall, syscallsp = sched.sp to use during gc
 	syscallpc uintptr // if status==Gsyscall, syscallpc = sched.pc to use during gc
 	// Not for gccgo: stktopsp       uintptr        // expected sp at top of stack, to check in traceback
-	param        unsafe.Pointer // passed parameter on wakeup
+	// param is a generic pointer parameter field used to pass
+	// values in particular contexts where other storage for the
+	// parameter would be difficult to find. It is currently used
+	// in three ways:
+	// 1. When a channel operation wakes up a blocked goroutine, it sets param to
+	//    point to the sudog of the completed blocking operation.
+	// 2. By gcAssistAlloc1 to signal back to its caller that the goroutine completed
+	//    the GC cycle. It is unsafe to do so in any other way, because the goroutine's
+	//    stack may have moved in the meantime.
+	// 3. By debugCallWrap to pass parameters to a new goroutine because allocating a
+	//    closure in the runtime is forbidden.
+	param        unsafe.Pointer
 	atomicstatus uint32
 	// Not for gccgo: stackLock      uint32 // sigprof/scang lock; TODO: fold in to atomicstatus
 	goid        int64
@@ -446,6 +456,10 @@ type g struct {
 
 	raceignore     int8     // ignore race detection events
 	sysblocktraced bool     // StartTrace has emitted EvGoInSyscall about this goroutine
+	tracking       bool     // whether we're tracking this G for sched latency statistics
+	trackingSeq    uint8    // used to decide whether to track this G
+	runnableStamp  int64    // timestamp of when the G last became runnable, only used when tracking
+	runnableTime   int64    // the amount of time spent runnable, cleared when running, only used when tracking
 	sysexitticks   int64    // cputicks when syscall has returned (for tracing)
 	traceseq       uint64   // trace event sequencer
 	tracelastp     puintptr // last P emitted an event for this goroutine
@@ -529,6 +543,17 @@ type g struct {
 	stackcontext [10]uintptr  // split-stack context
 }
 
+// gTrackingPeriod is the number of transitions out of _Grunning between
+// latency tracking runs.
+const gTrackingPeriod = 8
+
+const (
+	// tlsSlots is the number of pointer-sized slots reserved for TLS on some platforms,
+	// like Windows.
+	tlsSlots = 6
+	tlsSize  = tlsSlots * sys.PtrSize
+)
+
 type m struct {
 	g0 *g // goroutine with scheduling stack
 	// Not for gccgo: morebuf gobuf  // gobuf arg to morestack
@@ -539,7 +564,7 @@ type m struct {
 	gsignal *g     // signal-handling g
 	// Not for gccgo: goSigStack    gsignalStack // Go-allocated signal handling stack
 	sigmask sigset // storage for saved signal mask
-	// Not for gccgo: tls           [6]uintptr   // thread-local storage (for x86 extern register)
+	// Not for gccgo: tls           [tlsSlots]uintptr   // thread-local storage (for x86 extern register)
 	mstartfn    func()
 	curg        *g       // current running goroutine
 	caughtsig   guintptr // goroutine running during fatal signal
@@ -584,10 +609,13 @@ type m struct {
 	syscalltick   uint32
 	freelink      *m // on sched.freem
 
-	// mFixup is used to synchronize OS related m state (credentials etc)
-	// use mutex to access.
+	// mFixup is used to synchronize OS related m state
+	// (credentials etc) use mutex to access. To avoid deadlocks
+	// an atomic.Load() of used being zero in mDoFixupFn()
+	// guarantees fn is nil.
 	mFixup struct {
 		lock mutex
+		used uint32
 		fn   func(bool) bool
 	}
 
@@ -660,6 +688,9 @@ type p struct {
 	// unit and eliminates the (potentially large) scheduling
 	// latency that otherwise arises from adding the ready'd
 	// goroutines to the end of the run queue.
+	//
+	// Note that while other P's may atomically CAS this to zero,
+	// only the owner P can CAS it to a valid G.
 	runnext guintptr
 
 	// Available G's (status == Gdead)
@@ -705,7 +736,7 @@ type p struct {
 	// timerModifiedEarlier status. Because the timer may have been
 	// modified again, there need not be any timer with this value.
 	// This is updated using atomic functions.
-	// This is 0 if the value is unknown.
+	// This is 0 if there are no timerModifiedEarlier timers.
 	timerModifiedEarliest uint64
 
 	// Per-P GC state
@@ -751,12 +782,6 @@ type p struct {
 	// Modified using atomic instructions.
 	numTimers uint32
 
-	// Number of timerModifiedEarlier timers on P's heap.
-	// This should only be modified while holding timersLock,
-	// or while the timer status is in a transient state
-	// such as timerModifying.
-	adjustTimers uint32
-
 	// Number of timerDeleted timers in P's heap.
 	// Modified using atomic instructions.
 	deletedTimers uint32
@@ -768,7 +793,8 @@ type p struct {
 	// scheduler ASAP (regardless of what G is running on it).
 	preempt bool
 
-	pad cpu.CacheLinePad
+	// Padding is no longer needed. False sharing is now not a worry because p is large enough
+	// that its size class is an integer multiple of the cache line size (for any of our architectures).
 }
 
 type schedt struct {
@@ -857,6 +883,13 @@ type schedt struct {
 	// Acquire and hold this mutex to block sysmon from interacting
 	// with the rest of the runtime.
 	sysmonlock mutex
+
+	// timeToRun is a distribution of scheduling latencies, defined
+	// as the sum of time a G spends in the _Grunnable state before
+	// it transitions to _Grunning.
+	//
+	// timeToRun is protected by sched.lock.
+	timeToRun timeHistogram
 }
 
 // Values for the flags field of a sigTabT.
@@ -884,6 +917,10 @@ type forcegcstate struct {
 	g    *g
 	idle uint32
 }
+
+// startupRandomData holds random bytes initialized at startup. These come from
+// the ELF AT_RANDOM auxiliary vector.
+var startupRandomData []byte
 
 // extendRandom extends the random numbers in r[:n] to the whole slice r.
 // Treats n<0 as n==0.
@@ -1066,7 +1103,6 @@ func (w waitReason) String() string {
 }
 
 var (
-	allglen    uintptr
 	allm       *m
 	gomaxprocs int32
 	ncpu       int32

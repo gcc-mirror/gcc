@@ -303,7 +303,7 @@ TEST_UNIFORM_ZD (mulx_s4_f32_x_tied1, svfloat32_t, float,
 		 z0 = svmulx_x (p0, z0, d4))
 
 /*
-** mulx_s4_f32_x_untied: { xfail *-*-* }
+** mulx_s4_f32_x_untied:
 **	mov	z0\.s, s4
 **	fmulx	z0\.s, p0/m, z0\.s, z1\.s
 **	ret

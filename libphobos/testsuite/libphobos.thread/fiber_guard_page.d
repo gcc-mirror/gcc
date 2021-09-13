@@ -1,13 +1,15 @@
 // { dg-options "-O0" }
 // { dg-shouldfail "segv or bus error" }
 import core.thread;
+import core.sys.posix.signal;
 import core.sys.posix.sys.mman;
 
 // this should be true for most architectures
 // (taken from core.thread)
-version = StackGrowsDown;
+version (GNU_StackGrowsDown)
+    version = StackGrowsDown;
 
-enum stackSize = 4096;
+enum stackSize = MINSIGSTKSZ;
 
 // Simple method that causes a stack overflow
 void stackMethod()
@@ -23,18 +25,15 @@ void main()
     // allocate a page below (above) the fiber's stack to make stack overflows possible (w/o segfaulting)
     version (StackGrowsDown)
     {
-        static assert(__traits(identifier, test_fiber.tupleof[8]) == "m_pmem");
-        auto stackBottom = test_fiber.tupleof[8];
+        auto stackBottom = __traits(getMember, test_fiber, "m_pmem");
         auto p = mmap(stackBottom - 8 * stackSize, 8 * stackSize,
                       PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
         assert(p !is null, "failed to allocate page");
     }
     else
     {
-        auto m_sz = test_fiber.tupleof[7];
-        auto m_pmem = test_fiber.tupleof[8];
-        static assert(__traits(identifier, test_fiber.tupleof[7]) == "m_size");
-        static assert(__traits(identifier, test_fiber.tupleof[8]) == "m_pmem");
+        auto m_sz = __traits(getMember, test_fiber, "m_sz");
+        auto m_pmem = __traits(getMember, test_fiber, "m_pmem");
 
         auto stackTop = m_pmem + m_sz;
         auto p = mmap(stackTop, 8 * stackSize,

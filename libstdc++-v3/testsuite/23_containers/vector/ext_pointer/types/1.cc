@@ -1,6 +1,6 @@
 // Test for Container using non-standard pointer types.
 
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,10 +46,10 @@ int main()
   std::vector<N::X, __gnu_cxx::_ExtPtr_allocator<N::X> > v(5);
   const std::vector<N::X, __gnu_cxx::_ExtPtr_allocator<N::X> > w(1);
 
-  v[0];
-  w[0];
-  v.size();
-  v.capacity();
+  (void) v[0];
+  (void) w[0];
+  (void) v.size();
+  (void) v.capacity();
   v.resize(1);
   v.insert(v.begin(), N::X());
   v.insert(v.begin(), 1, N::X());

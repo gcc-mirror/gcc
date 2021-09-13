@@ -1,4 +1,4 @@
-@c Copyright (C) 2010-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2010-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 @c Contributed by Jan Hubicka <jh@suse.cz> and
@@ -36,11 +36,18 @@ bytecode representation of GIMPLE that is emitted in special sections
 of @code{.o} files.  Currently, LTO support is enabled in most
 ELF-based systems, as well as darwin, cygwin and mingw systems.
 
-Since GIMPLE bytecode is saved alongside final object code, object
-files generated with LTO support are larger than regular object files.
-This ``fat'' object format makes it easy to integrate LTO into
-existing build systems, as one can, for instance, produce archives of
-the files.  Additionally, one might be able to ship one set of fat
+By default, object files generated with LTO support contain only GIMPLE
+bytecode.  Such objects are called ``slim'', and they require that
+tools like @code{ar} and @code{nm} understand symbol tables of LTO
+sections.  For most targets these tools have been extended to use the
+plugin infrastructure, so GCC can support ``slim'' objects consisting
+of the intermediate code alone.
+
+GIMPLE bytecode could also be saved alongside final object code if
+the @option{-ffat-lto-objects} option is passed, or if no plugin support
+is detected for @code{ar} and @code{nm} when GCC is configured.  It makes
+the object files generated with LTO support larger than regular object
+files.  This ``fat'' object format allows to ship one set of fat
 objects which could be used both for development and the production of
 optimized builds.  A, perhaps surprising, side effect of this feature
 is that any mistake in the toolchain leads to LTO information not
@@ -48,14 +55,6 @@ being used (e.g.@: an older @code{libtool} calling @code{ld} directly).
 This is both an advantage, as the system is more robust, and a
 disadvantage, as the user is not informed that the optimization has
 been disabled.
-
-The current implementation only produces ``fat'' objects, effectively
-doubling compilation time and increasing file sizes up to 5x the
-original size.  This hides the problem that some tools, such as
-@code{ar} and @code{nm}, need to understand symbol tables of LTO
-sections.  These tools were extended to use the plugin infrastructure,
-and with these problems solved, GCC will also support ``slim'' objects
-consisting of the intermediate code alone.
 
 At the highest level, LTO splits the compiler in two.  The first half
 (the ``writer'') produces a streaming representation of all the

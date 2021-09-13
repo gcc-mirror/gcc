@@ -1,4 +1,4 @@
-# Copyright (C) 1988-2020 Free Software Foundation, Inc.
+# Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,6 +38,18 @@ if { [isnative] && ![is_remote host] } then {
 
 	# Need to ensure ABI for native compiler matches gcc
 	set native_cflags ""
+	if  [istarget "mips*-linux*"] {
+	    set file_string [exec file "linkage-x.o"]
+	    if [ string match "*64*" $file_string ] {
+		set native_cflags "-mabi=64"
+	    }
+	    if [ string match "*ELF 32*" $file_string ] {
+		set native_cflags "-mabi=32"
+	    }
+	    if [ string match "*N32*" $file_string ] {
+		set native_cflags "-mabi=n32"
+	    }
+	}
 	if  [istarget "sparc*-sun-solaris2*"] {
 	    set file_string [exec file "linkage-x.o"]
 	    if [ string match "*64*" $file_string ] {

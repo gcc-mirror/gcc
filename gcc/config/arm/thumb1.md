@@ -1,5 +1,5 @@
 ;; ARM Thumb-1 Machine Description
-;; Copyright (C) 2007-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -1204,6 +1204,21 @@
 		(const_int 6)
 		(const_int 8))))
    (set_attr "type" "multiple")]
+)
+
+;; An expander which makes use of the cbranchsi4_scratch insn, but can
+;; be used safely after RA.
+(define_expand "cbranchsi4_neg_late"
+  [(parallel [
+     (set (pc) (if_then_else
+		(match_operator 4 "arm_comparison_operator"
+		 [(match_operand:SI 1 "s_register_operand")
+		  (match_operand:SI 2 "thumb1_cmpneg_operand")])
+		(label_ref (match_operand 3 "" ""))
+		(pc)))
+     (clobber (match_operand:SI 0 "s_register_operand"))
+  ])]
+  "TARGET_THUMB1"
 )
 
 ;; Changes to the constraints of this pattern must be propagated to those of

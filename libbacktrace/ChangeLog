@@ -1,3 +1,60 @@
+2021-08-13  Sergei Trofimovich  <siarheit@google.com>
+
+	* install-debuginfo-for-buildid.sh.in: Force non-localized readelf
+	output with LANG=C.
+
+2021-06-28  Clément Chigot  <clement.chigot@atos.net>
+
+	* xcoff.c (SSUBTYP_DWRNGES): New define.
+	(xcoff_add): Use correct XCOFF DWARF section subtype
+	for DEBUG_RANGES. Remove lineoff workaround.
+	Adjust base_address.
+	(xcoff_initialize_syminfo): Adapt to new base_address.
+	(xcoff_lookup_pc): Likewise.
+	(xcoff_initialize_fileline): Likewise.
+
+2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/99703
+	* configure: Regenerated.
+
+2021-03-03  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (read_line_program): Don't special case file 0.
+	(read_function_entry): Likewise.
+
+2021-03-02  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/98818
+	* dwarf.c (dwarf_buf_error): Add errnum parameter.  Change all
+	callers.
+	* backtrace.h: Update backtrace_error_callback comment.
+
+2021-02-12  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Check for objcopy --add-gnu-debuglink by using
+	objcopy --help.
+	* configure: Regenerate
+
+2021-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (%_dwz): If dwz fails, use uncompressed debug info.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2021-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	PR debug/98716
+	* dwarf.c (read_v2_paths): Allocate zero entry for dirs and
+	filenames.
+	(read_line_program): Remove parameter u, change caller.  Don't
+	subtract one from dirs and filenames index.
+	(read_function_entry): Don't subtract one from filenames index.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865
@@ -1710,7 +1767,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2020 Free Software Foundation, Inc.
+Copyright (C) 2012-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

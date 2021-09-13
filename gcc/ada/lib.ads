@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -741,13 +741,13 @@ package Lib is
    --  This procedure is called to register a pragma N for which a notes
    --  entry is required.
 
-   procedure Synchronize_Serial_Number;
+   procedure Synchronize_Serial_Number (SN : Nat);
    --  This function increments the Serial_Number field for the current unit
-   --  but does not return the incremented value. This is used when there
-   --  is a situation where one path of control increments a serial number
-   --  (using Increment_Serial_Number), and the other path does not and it is
-   --  important to keep the serial numbers synchronized in the two cases (e.g.
-   --  when the references in a package and a client must be kept consistent).
+   --  up to SN if it is initially lower and does nothing otherwise. This is
+   --  used in situations where one path of control increments serial numbers
+   --  and the other path does not and it is important to keep serial numbers
+   --  synchronized in the two cases (e.g. when the references in a package
+   --  and a client must be kept consistent).
 
    procedure Unlock;
    --  Unlock internal tables, in cases where the back end needs to modify them
@@ -926,7 +926,9 @@ private
    --  The following table records a mapping between a name and the entry in
    --  the units table whose Unit_Name is this name. It is used to speed up
    --  the Is_Loaded function, whose original implementation (linear search)
-   --  could account for 2% of the time spent in the front end. Note that, in
+   --  could account for 2% of the time spent in the front end. When the unit
+   --  is an instance of a generic, the unit might get duplicated in the unit
+   --  table - see Make_Instance_Unit for more information. Note that, in
    --  the case of source files containing multiple units, the units table may
    --  temporarily contain two entries with the same Unit_Name during parsing,
    --  which means that the mapping must be to the first entry in the table.

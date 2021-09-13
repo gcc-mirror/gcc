@@ -1,5 +1,5 @@
 /* "Bag-of-pages" garbage collector for the GNU compiler.
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1518,6 +1518,12 @@ gt_ggc_mx (const char *& x)
 }
 
 void
+gt_ggc_mx (char *& x)
+{
+  gt_ggc_m_S (x);
+}
+
+void
 gt_ggc_mx (unsigned char *& x)
 {
   gt_ggc_m_S (x);
@@ -2178,7 +2184,7 @@ validate_free_objects (void)
 /* Top level mark-and-sweep routine.  */
 
 void
-ggc_collect (void)
+ggc_collect (enum ggc_collect mode)
 {
   /* Avoid frequent unnecessary work by skipping collection if the
      total allocations haven't expanded much since the last
@@ -2190,7 +2196,8 @@ ggc_collect (void)
   memory_block_pool::trim ();
 
   float min_expand = allocated_last_gc * param_ggc_min_expand / 100;
-  if (G.allocated < allocated_last_gc + min_expand && !ggc_force_collect)
+  if (mode == GGC_COLLECT_HEURISTIC
+      && G.allocated < allocated_last_gc + min_expand)
     return;
 
   timevar_push (TV_GC);

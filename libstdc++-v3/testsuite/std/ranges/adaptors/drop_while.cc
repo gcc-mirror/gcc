@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -89,6 +89,23 @@ test03()
   VERIFY( ranges::equal(v, (int[]){3,4,5}) );
 }
 
+template<auto drop_while = views::drop_while>
+void
+test04()
+{
+  // Verify SFINAE behavior.
+  extern int x[5];
+  auto p = [] (int*) { return true; };
+  static_assert(!requires { drop_while(); });
+  static_assert(!requires { drop_while(x, p, p); });
+  static_assert(!requires { drop_while(x, p); });
+  static_assert(!requires { drop_while(p)(x); });
+  static_assert(!requires { x | (drop_while(p) | views::all); });
+  static_assert(!requires { (drop_while(p) | views::all)(x); });
+  static_assert(!requires { drop_while | views::all; });
+  static_assert(!requires { views::all | drop_while; });
+}
+
 int
 main()
 {
@@ -96,4 +113,5 @@ main()
   test02();
   test03<forward_iterator_wrapper>();
   test03<random_access_iterator_wrapper>();
+  test04();
 }

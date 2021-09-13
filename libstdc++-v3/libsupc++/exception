@@ -1,6 +1,6 @@
 // Exception Handling support header for -*- C++ -*-
 
-// Copyright (C) 1995-2020 Free Software Foundation, Inc.
+// Copyright (C) 1995-2021 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -46,7 +46,10 @@ namespace std
    */
 
   /** If an %exception is thrown which is not listed in a function's
-   *  %exception specification, one of these may be thrown.  */
+   *  %exception specification, one of these may be thrown.
+   *
+   *  @ingroup exceptions
+   */
   class bad_exception : public exception
   {
   public:
@@ -93,13 +96,13 @@ namespace std
 
   /** [18.6.4]/1:  'Returns true after completing evaluation of a
    *  throw-expression until either completing initialization of the
-   *  exception-declaration in the matching handler or entering @c unexpected()
-   *  due to the throw; or after entering @c terminate() for any reason
-   *  other than an explicit call to @c terminate().  [Note: This includes
+   *  exception-declaration in the matching handler or entering `unexpected()`
+   *  due to the throw; or after entering `terminate()` for any reason
+   *  other than an explicit call to `terminate()`.  [Note: This includes
    *  stack unwinding [15.2].  end note]'
    *
-   *  2: 'When @c uncaught_exception() is true, throwing an
-   *  %exception can result in a call of @c terminate()
+   *  2: 'When `uncaught_exception()` is true, throwing an
+   *  %exception can result in a call of 1terminate()`
    *  (15.5.1).'
    */
   _GLIBCXX17_DEPRECATED
@@ -107,11 +110,14 @@ namespace std
 
 #if __cplusplus >= 201703L || !defined(__STRICT_ANSI__) // c++17 or gnu++98
 #define __cpp_lib_uncaught_exceptions 201411L
-  /// The number of uncaught exceptions.
+  /** The number of uncaught exceptions.
+   *  @since C++17, or any non-strict mode, e.g. `-std=gnu++98`
+   *  @see uncaught_exception()
+   */
   int uncaught_exceptions() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 #endif
 
-  // @} group exceptions
+  /// @} group exceptions
 } // namespace std
 
 namespace __gnu_cxx

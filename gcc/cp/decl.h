@@ -1,5 +1,5 @@
 /* Variables and structures for declaration processing.
-   Copyright (C) 1993-2020 Free Software Foundation, Inc.
+   Copyright (C) 1993-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,7 +44,8 @@ extern void name_unnamed_type (tree, tree);
 
 enum deprecated_states {
   DEPRECATED_NORMAL,
-  DEPRECATED_SUPPRESS
+  DEPRECATED_SUPPRESS,
+  UNAVAILABLE_DEPRECATED_SUPPRESS
 };
 
 extern enum deprecated_states deprecated_state;

@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -789,9 +789,22 @@ cgraph_edge::set_call_stmt (cgraph_edge *e, gcall *new_stmt,
 {
   tree decl;
 
+  cgraph_node *new_direct_callee = NULL;
+  if ((e->indirect_unknown_callee || e->speculative)
+      && (decl = gimple_call_fndecl (new_stmt)))
+    {
+      /* Constant propagation and especially inlining can turn an indirect call
+	 into a direct one.  */
+      new_direct_callee = cgraph_node::get (decl);
+      gcc_checking_assert (new_direct_callee);
+    }
+
   /* Speculative edges has three component, update all of them
      when asked to.  */
-  if (update_speculative && e->speculative)
+  if (update_speculative && e->speculative
+      /* If we are about to resolve the speculation by calling make_direct
+	 below, do not bother going over all the speculative edges now.  */
+      && !new_direct_callee)
     {
       cgraph_edge *direct, *indirect, *next;
       ipa_ref *ref;
@@ -821,6 +834,9 @@ cgraph_edge::set_call_stmt (cgraph_edge *e, gcall *new_stmt,
       return e_indirect ? indirect : direct;
     }
 
+  if (new_direct_callee)
+    e = make_direct (e, new_direct_callee);
+
   /* Only direct speculative edges go to call_site_hash.  */
   if (e->caller->call_site_hash
       && (!e->speculative || !e->indirect_unknown_callee)
@@ -831,16 +847,6 @@ cgraph_edge::set_call_stmt (cgraph_edge *e, gcall *new_stmt,
       (e->call_stmt, cgraph_edge_hasher::hash (e->call_stmt));
 
   e->call_stmt = new_stmt;
-  if (e->indirect_unknown_callee
-      && (decl = gimple_call_fndecl (new_stmt)))
-    {
-      /* Constant propagation (and possibly also inlining?) can turn an
-	 indirect call into a direct one.  */
-      cgraph_node *new_callee = cgraph_node::get (decl);
-
-      gcc_checking_assert (new_callee);
-      e = make_direct (e, new_callee);
-    }
 
   function *fun = DECL_STRUCT_FUNCTION (e->caller->decl);
   e->can_throw_external = stmt_can_throw_external (fun, new_stmt);
@@ -1279,14 +1285,15 @@ cgraph_edge::speculative_call_for_target (cgraph_node *target)
   return NULL;
 }
 
-/* Make an indirect edge with an unknown callee an ordinary edge leading to
-   CALLEE.  Speculations can be resolved in the process and EDGE can be removed
-   and deallocated.  Return the edge that now represents the call.  */
+/* Make an indirect or speculative EDGE with an unknown callee an ordinary edge
+   leading to CALLEE.  Speculations can be resolved in the process and EDGE can
+   be removed and deallocated.  Return the edge that now represents the
+   call.  */
 
 cgraph_edge *
 cgraph_edge::make_direct (cgraph_edge *edge, cgraph_node *callee)
 {
-  gcc_assert (edge->indirect_unknown_callee);
+  gcc_assert (edge->indirect_unknown_callee || edge->speculative);
 
   /* If we are redirecting speculative call, make it non-speculative.  */
   if (edge->speculative)
@@ -1499,8 +1506,6 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
     }
 
   clone_info *callee_info = clone_info::get (e->callee);
-  clone_info *caller_info = clone_info::get (e->caller);
-
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "updating call of %s -> %s: ",
@@ -1508,18 +1513,6 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
       print_gimple_stmt (symtab->dump_file, e->call_stmt, 0, dump_flags);
       if (callee_info && callee_info->param_adjustments)
 	callee_info->param_adjustments->dump (symtab->dump_file);
-      unsigned performed_len
-	= caller_info ? vec_safe_length (caller_info->performed_splits) : 0;
-      if (performed_len > 0)
-	fprintf (symtab->dump_file, "Performed splits records:\n");
-      for (unsigned i = 0; i < performed_len; i++)
-	{
-	  ipa_param_performed_split *sm
-	    = &(*caller_info->performed_splits)[i];
-	  print_node_brief (symtab->dump_file, "  dummy_decl: ", sm->dummy_decl,
-			    TDF_UID);
-	  fprintf (symtab->dump_file, ", unit_offset: %u\n", sm->unit_offset);
-	}
     }
 
   if (ipa_param_adjustments *padjs
@@ -1534,10 +1527,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 	remove_stmt_from_eh_lp (e->call_stmt);
 
       tree old_fntype = gimple_call_fntype (e->call_stmt);
-      new_stmt = padjs->modify_call (e->call_stmt,
-				     caller_info
-				     ? caller_info->performed_splits : NULL,
-				     e->callee->decl, false);
+      new_stmt = padjs->modify_call (e, false);
       cgraph_node *origin = e->callee;
       while (origin->clone_of)
 	origin = origin->clone_of;
@@ -1557,6 +1547,9 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
     }
   else
     {
+      if (flag_checking
+	  && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
+	ipa_verify_edge_has_no_modifications (e);
       new_stmt = e->call_stmt;
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
       update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
@@ -1853,6 +1846,17 @@ cgraph_node::release_body (bool keep_arguments)
       lto_free_function_in_decl_state_for_node (this);
       lto_file_data = NULL;
     }
+  if (flag_checking && clones)
+    {
+      /* It is invalid to release body before materializing clones except
+	 for thunks that don't really need a body.  Verify also that we do
+	 not leak pointers to the call statements.  */
+      for (cgraph_node *node = clones; node;
+	   node = node->next_sibling_clone)
+	gcc_assert (node->thunk && !node->callees->call_stmt);
+    }
+  remove_callees ();
+  remove_all_references ();
 }
 
 /* Remove function from symbol table.  */
@@ -3056,10 +3060,10 @@ collect_callers_of_node_1 (cgraph_node *node, void *data)
 /* Collect all callers of cgraph_node and its aliases that are known to lead to
    cgraph_node (i.e. are not overwritable).  */
 
-vec<cgraph_edge *>
+auto_vec<cgraph_edge *>
 cgraph_node::collect_callers (void)
 {
-  vec<cgraph_edge *> redirect_callers = vNULL;
+  auto_vec<cgraph_edge *> redirect_callers;
   call_for_symbol_thunks_and_aliases (collect_callers_of_node_1,
 				    &redirect_callers, false);
   return redirect_callers;
@@ -3081,7 +3085,9 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
 
   if (!node->thunk && !node->former_thunk_p ())
     {
-      while (node2 && node->decl != node2->decl)
+      while (node2
+	     && node->decl != node2->decl
+	     && node->decl != node2->former_clone_of)
 	node2 = node2->clone_of;
       return node2 != NULL;
     }

@@ -8,6 +8,7 @@
  */
 module core.sys.windows.lmaccess;
 version (Windows):
+@system:
 pragma(lib, "netapi32");
 
 /**
@@ -16,7 +17,7 @@ pragma(lib, "netapi32");
     the Platform SDK docs, so they have been dropped from this file.
 */
 
-private import core.sys.windows.lmcons, core.sys.windows.windef;
+import core.sys.windows.lmcons, core.sys.windows.windef;
 
 const wchar[]
     GROUP_SPECIALGRP_USERS  = "USERS",

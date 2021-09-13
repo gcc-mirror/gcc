@@ -83,10 +83,10 @@ typedef union
 #define PRINTF(...)	
 #endif
 
-#define CHECK_EXP(UINON_TYPE, VALUE_TYPE, FMT)		\
+#define CHECK_EXP(UNION_TYPE, VALUE_TYPE, FMT)		\
 static int						\
 __attribute__((noinline, unused))			\
-check_##UINON_TYPE (UINON_TYPE u, const VALUE_TYPE *v)	\
+check_##UNION_TYPE (UNION_TYPE u, const VALUE_TYPE *v)	\
 {							\
   int i;						\
   int err = 0;						\
@@ -197,10 +197,10 @@ union ieee754_double
 };
 #endif
 
-#define CHECK_FP_EXP(UINON_TYPE, VALUE_TYPE, ESP, FMT)		\
+#define CHECK_FP_EXP(UNION_TYPE, VALUE_TYPE, ESP, FMT)		\
 static int							\
 __attribute__((noinline, unused))				\
-check_fp_##UINON_TYPE (UINON_TYPE u, const VALUE_TYPE *v)	\
+check_fp_##UNION_TYPE (UNION_TYPE u, const VALUE_TYPE *v)	\
 {								\
   int i;							\
   int err = 0;							\

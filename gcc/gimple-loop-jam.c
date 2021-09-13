@@ -1,5 +1,5 @@
 /* Loop unroll-and-jam.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-vectorizer.h"
+#include "tree-ssa-sccvn.h"
 
 /* Unroll and Jam transformation
    
@@ -365,11 +366,9 @@ static bool
 any_access_function_variant_p (const struct data_reference *a,
 			       const class loop *loop_nest)
 {
-  unsigned int i;
   vec<tree> fns = DR_ACCESS_FNS (a);
-  tree t;
 
-  FOR_EACH_VEC_ELT (fns, i, t)
+  for (tree t : fns)
     if (!evolution_function_is_invariant_p (t, loop_nest->num))
       return true;
 
@@ -488,13 +487,12 @@ adjust_unroll_factor (class loop *inner, struct data_dependence_relation *ddr,
 static unsigned int
 tree_loop_unroll_and_jam (void)
 {
-  class loop *loop;
-  bool changed = false;
+  unsigned int todo = 0;
 
   gcc_assert (scev_initialized_p ());
 
   /* Go through all innermost loops.  */
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     {
       class loop *outer = loop_outer (loop);
 
@@ -505,15 +503,13 @@ tree_loop_unroll_and_jam (void)
       if (!unroll_jam_possible_p (outer, loop))
 	continue;
 
-      vec<data_reference_p> datarefs;
-      vec<ddr_p> dependences;
+      vec<data_reference_p> datarefs = vNULL;
+      vec<ddr_p> dependences = vNULL;
       unsigned unroll_factor, profit_unroll, removed;
       class tree_niter_desc desc;
       bool unroll = false;
 
       auto_vec<loop_p, 3> loop_nest;
-      dependences.create (10);
-      datarefs.create (10);
       if (!compute_data_dependences_for_loop (outer, true, &loop_nest,
 					      &datarefs, &dependences))
 	{
@@ -595,7 +591,11 @@ tree_loop_unroll_and_jam (void)
 			    &desc);
 	  free_original_copy_tables ();
 	  fuse_loops (outer->inner);
-	  changed = true;
+	  todo |= TODO_cleanup_cfg;
+
+	  auto_bitmap exit_bbs;
+	  bitmap_set_bit (exit_bbs, single_dom_exit (outer)->dest->index);
+	  todo |= do_rpo_vn (cfun, loop_preheader_edge (outer), exit_bbs);
 	}
 
       loop_nest.release ();
@@ -603,13 +603,12 @@ tree_loop_unroll_and_jam (void)
       free_data_refs (datarefs);
     }
 
-  if (changed)
+  if (todo)
     {
       scev_reset ();
       free_dominance_info (CDI_DOMINATORS);
-      return TODO_cleanup_cfg;
     }
-  return 0;
+  return todo;
 }
 
 /* Pass boilerplate */

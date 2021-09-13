@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -105,7 +105,7 @@ along with GCC; see the file COPYING3.  If not see
      int
      foo ()
      {
-       char a[23] = {0};
+       char a[24] = {0};
        int b[2] = {0};
 
        a[5] = 1;
@@ -1634,7 +1634,7 @@ asan_redzone_buffer::flush_if_full (void)
      int
      foo ()
      {
-       char a[23] = {0};
+       char a[24] = {0};
        int b[2] = {0};
 
        a[5] = 1;

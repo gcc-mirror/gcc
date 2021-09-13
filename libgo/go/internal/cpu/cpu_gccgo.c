@@ -200,3 +200,29 @@ struct queryResult kdsaQuery() {
 }
 
 #endif /* defined(__s390x__)  */
+
+#ifdef __aarch64__
+
+uint64_t getisar0(void)
+  __asm__(GOSYM_PREFIX "internal_1cpu.getisar0")
+  __attribute__((no_split_stack));
+
+uint64_t getisar0() {
+       uint64_t isar0;
+
+       __asm__("mrs %0,id_aa64isar0_el1" : "=r"(isar0));
+       return isar0;
+}
+
+uint64_t getMIDR(void)
+  __asm__(GOSYM_PREFIX "internal_1cpu.getMIDR")
+  __attribute__((no_split_stack));
+
+uint64_t getMIDR() {
+       uint64_t MIDR;
+
+       __asm__("mrs %0,midr_el1" : "=r"(MIDR));
+       return MIDR;
+}
+
+#endif /* defined(__aarch64__) */

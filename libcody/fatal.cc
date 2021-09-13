@@ -30,8 +30,6 @@ void (HCF) (char const *msg
 #endif
 	  ) noexcept
 { // HCF - you goofed!
-  // A useful place for a breakpoint to land.
-  //__asm__ volatile ("nop");  // HCF - you goofed!
 
 #if !NMS_CHECKING
   constexpr Location loc (nullptr, 0);
@@ -54,26 +52,6 @@ void (HCF) (char const *msg
   fprintf (stderr, "\n");
   raise (SIGABRT);
   exit (2);
-}
-
-void BuildNote (FILE *stream) noexcept
-{
-  fprintf (stream, "Version %s.\n", PACKAGE_NAME " " PACKAGE_VERSION);
-  fprintf (stream, "Report bugs to %s.\n", BUGURL[0] ? BUGURL : "you");
-  if (PACKAGE_URL[0])
-    fprintf (stream, "See %s for more information.\n", PACKAGE_URL);
-  if (REVISION[0])
-    fprintf (stream, "Source %s.\n", REVISION);
-
-  fprintf (stream, "Build is %s & %s.\n",
-#if !NMS_CHECKING
-	   "un"
-#endif
-	   "checked",
-#if !__OPTIMIZE__
-	   "un"
-#endif
-	   "optimized");
 }
 
 }

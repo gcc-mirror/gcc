@@ -1,5 +1,5 @@
 /* Make ucnid.h from various sources.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -17,7 +17,7 @@ along with this program; see the file COPYING3.  If not see
 
 /* Run this program as
    ./makeucnid ucnid.tab UnicodeData.txt DerivedNormalizationProps.txt \
-       > ucnid.h
+      DerivedCoreProperties.txt > ucnid.h
 */
 
 #include <stdio.h>
@@ -32,10 +32,12 @@ enum {
   N99 = 4,
   C11 = 8,
   N11 = 16,
-  all_languages = C99 | CXX | C11,
-  not_NFC = 32,
-  not_NFKC = 64,
-  maybe_not_NFC = 128
+  CXX23 = 32,
+  NXX23 = 64,
+  all_languages = C99 | CXX | C11 | CXX23 | NXX23,
+  not_NFC = 128,
+  not_NFKC = 256,
+  maybe_not_NFC = 512
 };
 
 #define NUM_CODE_POINTS 0x110000
@@ -241,6 +243,74 @@ read_derived (const char *fname)
   fclose (f);
 }
 
+/* Read DerivedCoreProperties.txt and fill in languages version in
+   flags from the XID_Start and XID_Continue properties.  */
+
+static void
+read_derivedcore (char *fname)
+{
+  FILE * f = fopen (fname, "r");
+  
+  if (!f)
+    fail ("opening DerivedCoreProperties.txt");
+  for (;;)
+    {
+      char line[256];
+      unsigned long codepoint_start, codepoint_end;
+      char *l;
+      int i, j;
+
+      if (!fgets (line, sizeof (line), f))
+	break;
+      if (line[0] == '#' || line[0] == '\n' || line[0] == '\r')
+	continue;
+      codepoint_start = strtoul (line, &l, 16);
+      if (l == line)
+	fail ("parsing DerivedCoreProperties.txt, reading code point");
+      if (codepoint_start > MAX_CODE_POINT)
+	fail ("parsing DerivedCoreProperties.txt, code point too large");
+      
+      if (*l == '.' && l[1] == '.')
+	{
+	  char *l2 = l + 2;
+	  codepoint_end = strtoul (l + 2, &l, 16);
+	  if (l == l2 || codepoint_end < codepoint_start)
+	    fail ("parsing DerivedCoreProperties.txt, reading code point");
+	  if (codepoint_end > MAX_CODE_POINT)
+	    fail ("parsing DerivedCoreProperties.txt, code point too large");
+	}
+      else
+	codepoint_end = codepoint_start;
+
+      while (*l == ' ')
+	l++;
+      if (*l++ != ';')
+	fail ("parsing DerivedCoreProperties.txt, reading code point");
+
+      while (*l == ' ')
+	l++;
+
+      if (codepoint_end < 0x80)
+        continue;
+
+      if (strncmp (l, "XID_Start ", 10) == 0)
+	{
+	  for (; codepoint_start <= codepoint_end; codepoint_start++)
+	    flags[codepoint_start]
+	      = (flags[codepoint_start] | CXX23) & ~NXX23;
+	}
+      else if (strncmp (l, "XID_Continue ", 13) == 0)
+	{
+	  for (; codepoint_start <= codepoint_end; codepoint_start++)
+	    if ((flags[codepoint_start] & CXX23) == 0)
+	      flags[codepoint_start] |= CXX23 | NXX23;
+	}
+    }
+  if (ferror (f))
+    fail ("reading DerivedCoreProperties.txt");
+  fclose (f);
+}
+
 /* Write out the table.
    The table consists of two words per entry.  The first word is the flags
    for the unicode code points up to and including the second word.  */
@@ -261,12 +331,14 @@ write_table (void)
 	|| really_safe != (decomp[i][0] == 0)
 	|| combining_value[i] != last_combine)
       {
-	printf ("{ %s|%s|%s|%s|%s|%s|%s|%s|%s, %3d, %#06x },\n",
+	printf ("{ %s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s, %3d, %#06x },\n",
 		last_flag & C99 ? "C99" : "  0",
 		last_flag & N99 ? "N99" : "  0",
 		last_flag & CXX ? "CXX" : "  0",
 		last_flag & C11 ? "C11" : "  0",
 		last_flag & N11 ? "N11" : "  0",
+		last_flag & CXX23 ? "CXX23" : "    0",
+		last_flag & NXX23 ? "NXX23" : "    0",
 		really_safe ? "CID" : "  0",
 		last_flag & not_NFC ? "  0" : "NFC",
 		last_flag & not_NFKC ? "  0" : "NKC",
@@ -274,7 +346,7 @@ write_table (void)
 		combining_value[i - 1],
 		i - 1);
 	last_flag = flags[i];
-	last_combine = combining_value[0];
+	last_combine = combining_value[i];
 	really_safe = decomp[i][0] == 0;
       }
 
@@ -378,7 +450,7 @@ write_copyright (void)
 {
   static const char copyright[] = "\
 /* Unicode characters and various properties.\n\
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.\n\
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.\n\
 \n\
    This program is free software; you can redistribute it and/or modify it\n\
    under the terms of the GNU General Public License as published by the\n\
@@ -439,11 +511,12 @@ write_copyright (void)
 int
 main(int argc, char ** argv)
 {
-  if (argc != 4)
+  if (argc != 5)
     fail ("too few arguments to makeucn");
   read_ucnid (argv[1]);
   read_table (argv[2]);
   read_derived (argv[3]);
+  read_derivedcore (argv[4]);
 
   write_copyright ();
   write_table ();

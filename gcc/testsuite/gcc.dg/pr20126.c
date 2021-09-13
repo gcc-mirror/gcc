@@ -1,5 +1,5 @@
-/* dg-do run */
-/* dg-options "-O2" */
+/* { dg-do run } */
+/* { dg-options "-O2" } */
 
 /* PR target/20126 was not really target-specific, but rather a loop's
    failure to take into account the possibility that a DEST_ADDR giv
@@ -34,6 +34,10 @@ foo (S *x, S *y)
   while (e <= g)
     {
       const char *t = e + 1;
+      /* The pointer E below increases but the bound H stays constant,
+	 letting the latter exceed the size remaining in the argument
+	 pointed to by the formed, which might be detected by
+	 -Wstringop-overread.  */
       if (__builtin_memcmp (e, f, h) == 0)
         return 1;
       e = t;
@@ -48,3 +52,5 @@ main (void)
     abort ();
   return 0;
 }
+
+/* { dg-prune-output "-Wstringop-overread" } */

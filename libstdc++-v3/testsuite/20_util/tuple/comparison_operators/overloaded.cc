@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,4 +48,3 @@ TwistedLogic operator<(const Compares&, const Compares&) { return {false}; }
 
 auto a = std::make_tuple(nullptr, Compares{}, 2, 'U');
 auto b = a == a;
-auto c = a < a;

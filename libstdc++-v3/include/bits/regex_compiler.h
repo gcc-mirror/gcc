@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2020 Free Software Foundation, Inc.
+// Copyright (C) 2010-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -538,10 +538,10 @@ namespace __detail
       { }
 
     private:
-      std::vector<_CharT>                       _M_char_set;
-      std::vector<_StringT>                     _M_equiv_set;
-      std::vector<pair<_StrTransT, _StrTransT>> _M_range_set;
-      std::vector<_CharClassT>                  _M_neg_class_set;
+      _GLIBCXX_STD_C::vector<_CharT>            _M_char_set;
+      _GLIBCXX_STD_C::vector<_StringT>          _M_equiv_set;
+      _GLIBCXX_STD_C::vector<pair<_StrTransT, _StrTransT>> _M_range_set;
+      _GLIBCXX_STD_C::vector<_CharClassT>       _M_neg_class_set;
       _CharClassT                               _M_class_set;
       _TransT                                   _M_translator;
       const _TraitsT&                           _M_traits;
@@ -552,7 +552,7 @@ namespace __detail
 #endif
     };
 
- //@} regex-detail
+ ///@} regex-detail
 } // namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

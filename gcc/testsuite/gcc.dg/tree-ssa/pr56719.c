@@ -1,12 +1,12 @@
 /* PR tree-optimization/56719 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-final { scan-tree-dump-times " > 1023;" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times " > 2047;" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times " > 8191;" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times " <= 1023;" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times " <= 4095;" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times " <= 8191;" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " > 1023" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " > 2047" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " > 8191" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " <= 1023" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " <= 4095" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " <= 8191" 1 "optimized" } } */
 
 int
 f1 (int x, int y)

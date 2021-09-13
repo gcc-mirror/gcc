@@ -1,6 +1,6 @@
 /* PR tree-optimization/83075 - Invalid strncpy optimization */
 /* { dg-do run } */
-/* { dg-options "-O2 -Wstringop-overflow" } */
+/* { dg-options "-O2 -Wstringop-truncation" } */
 
 typedef __SIZE_TYPE__ size_t;
 
@@ -8,7 +8,7 @@ __attribute__((noipa)) size_t
 foo (char *p, char *q, size_t *r)
 {
   size_t n0 = __builtin_strlen (p);
-  __builtin_strncpy (q, p, n0);		/* { dg-warning "specified bound depends on the length" } */
+  __builtin_strncpy (q, p, n0);		/* { dg-warning "\\\[-Wstringop-truncation" } */
   size_t n1 = __builtin_strlen (p);
   *r = n0;
   return n1;

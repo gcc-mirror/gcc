@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -113,6 +113,8 @@ enum priority_queue_type
   PQ_IGNORED = 999
 };
 
+typedef bool (*priority_queue_predicate) (struct gomp_task *);
+
 /* Priority queue implementation prototypes.  */
 
 extern bool priority_queue_task_in_queue_p (enum priority_queue_type,
@@ -122,6 +124,9 @@ extern void priority_queue_dump (enum priority_queue_type,
 				 struct priority_queue *);
 extern void priority_queue_verify (enum priority_queue_type,
 				   struct priority_queue *, bool);
+extern struct gomp_task *priority_queue_find (enum priority_queue_type,
+					      struct priority_queue *,
+					      priority_queue_predicate);
 extern void priority_tree_remove (enum priority_queue_type,
 				  struct priority_queue *,
 				  struct priority_node *);

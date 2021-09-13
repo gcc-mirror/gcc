@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -162,7 +162,7 @@ const char *CTFEExp::toChars()
     switch (op)
     {
         case TOKcantexp:    return "<cant>";
-        case TOKvoidexp:    return "<void>";
+        case TOKvoidexp:    return "cast(void)0";
         case TOKbreak:      return "<break>";
         case TOKcontinue:   return "<continue>";
         case TOKgoto:       return "<goto>";

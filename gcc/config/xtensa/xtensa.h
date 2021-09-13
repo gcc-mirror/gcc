@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -279,7 +279,7 @@ extern const char xtensa_leaf_regs[FIRST_PSEUDO_REGISTER];
 
 /* For Xtensa, no remapping is necessary, but this macro must be
    defined if LEAF_REGISTERS is defined.  */
-#define LEAF_REG_REMAP(REGNO) (REGNO)
+#define LEAF_REG_REMAP(REGNO) ((int) (REGNO))
 
 /* This must be declared if LEAF_REGISTERS is set.  */
 extern int leaf_function;
@@ -775,8 +775,9 @@ typedef struct xtensa_args
 #define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, 0)
 #define DWARF_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (0)
 #define DWARF_ALT_FRAME_RETURN_COLUMN 16
-#define DWARF_FRAME_REGISTERS (DWARF_ALT_FRAME_RETURN_COLUMN		\
-			       + (TARGET_WINDOWED_ABI ? 0 : 1))
+#define DWARF_FRAME_REGISTERS (TARGET_WINDOWED_ABI \
+			       ? DWARF_ALT_FRAME_RETURN_COLUMN		\
+			       : DWARF_ALT_FRAME_RETURN_COLUMN + 1)
 #define EH_RETURN_DATA_REGNO(N) ((N) < 2 ? (N) + 2 : INVALID_REGNUM)
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)			\
   (flag_pic								\

@@ -1,5 +1,5 @@
 # initialize config for -mfp-mode=int
-# Copyright (C) 2011-2020 Free Software Foundation, Inc.
+# Copyright (C) 2011-2021 Free Software Foundation, Inc.
 # Contributed by Embecosm on behalf of Adapteva, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it

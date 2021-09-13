@@ -1,6 +1,6 @@
 /* Garbage collection for the GNU compiler.
 
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -263,7 +263,11 @@ extern const char *ggc_alloc_string (const char *contents, int length
 
 /* Invoke the collector.  Garbage collection occurs only when this
    function is called, not during allocations.  */
-extern void ggc_collect	(void);
+enum ggc_collect {
+  GGC_COLLECT_HEURISTIC,
+  GGC_COLLECT_FORCE
+};
+extern void ggc_collect (enum ggc_collect mode = GGC_COLLECT_HEURISTIC);
 
 /* Return unused memory pages to the system.  */
 extern void ggc_trim (void);
@@ -332,19 +336,30 @@ gt_pch_nx (const char *)
 {
 }
 
-inline void
-gt_ggc_mx (int)
-{
-}
+inline void gt_pch_nx (bool) { }
+inline void gt_pch_nx (char) { }
+inline void gt_pch_nx (signed char) { }
+inline void gt_pch_nx (unsigned char) { }
+inline void gt_pch_nx (short) { }
+inline void gt_pch_nx (unsigned short) { }
+inline void gt_pch_nx (int) { }
+inline void gt_pch_nx (unsigned int) { }
+inline void gt_pch_nx (long int) { }
+inline void gt_pch_nx (unsigned long int) { }
+inline void gt_pch_nx (long long int) { }
+inline void gt_pch_nx (unsigned long long int) { }
 
-inline void
-gt_pch_nx (int)
-{
-}
-
-inline void
-gt_pch_nx (unsigned int)
-{
-}
+inline void gt_ggc_mx (bool) { }
+inline void gt_ggc_mx (char) { }
+inline void gt_ggc_mx (signed char) { }
+inline void gt_ggc_mx (unsigned char) { }
+inline void gt_ggc_mx (short) { }
+inline void gt_ggc_mx (unsigned short) { }
+inline void gt_ggc_mx (int) { }
+inline void gt_ggc_mx (unsigned int) { }
+inline void gt_ggc_mx (long int) { }
+inline void gt_ggc_mx (unsigned long int) { }
+inline void gt_ggc_mx (long long int) { }
+inline void gt_ggc_mx (unsigned long long int) { }
 
 #endif

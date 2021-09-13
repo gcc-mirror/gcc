@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail9346.d(26): Error: struct fail9346.S is not copyable because it is annotated with @disable
-fail_compilation/fail9346.d(27): Error: struct fail9346.S is not copyable because it is annotated with @disable
+fail_compilation/fail9346.d(26): Error: struct fail9346.S is not copyable because it is annotated with `@disable`
+fail_compilation/fail9346.d(27): Error: struct fail9346.S is not copyable because it is annotated with `@disable`
 ---
 */
 

@@ -1,5 +1,5 @@
 /* A state machine for detecting misuses of <stdio.h>'s FILE * API.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -77,9 +77,9 @@ public:
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
-		     tree lhs,
+		     const svalue *lhs,
 		     enum tree_code op,
-		     tree rhs) const FINAL OVERRIDE;
+		     const svalue *rhs) const FINAL OVERRIDE;
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
   pending_diagnostic *on_leak (tree var) const FINAL OVERRIDE;
@@ -125,11 +125,21 @@ public:
       return label_text::borrow ("opened here");
     if (change.m_old_state == m_sm.m_unchecked
 	&& change.m_new_state == m_sm.m_nonnull)
-      return change.formatted_print ("assuming %qE is non-NULL",
-				     change.m_expr);
+      {
+	if (change.m_expr)
+	  return change.formatted_print ("assuming %qE is non-NULL",
+					 change.m_expr);
+	else
+	  return change.formatted_print ("assuming FILE * is non-NULL");
+      }
     if (change.m_new_state == m_sm.m_null)
-      return change.formatted_print ("assuming %qE is NULL",
-				     change.m_expr);
+      {
+	if (change.m_expr)
+	  return change.formatted_print ("assuming %qE is NULL",
+					 change.m_expr);
+	else
+	  return change.formatted_print ("assuming FILE * is NULL");
+      }
     return label_text ();
   }
 
@@ -193,9 +203,13 @@ public:
     /* CWE-775: "Missing Release of File Descriptor or Handle after
        Effective Lifetime". */
     m.add_cwe (775);
-    return warning_meta (rich_loc, m, OPT_Wanalyzer_file_leak,
-			 "leak of FILE %qE",
-			 m_arg);
+    if (m_arg)
+      return warning_meta (rich_loc, m, OPT_Wanalyzer_file_leak,
+			   "leak of FILE %qE",
+			   m_arg);
+    else
+      return warning_meta (rich_loc, m, OPT_Wanalyzer_file_leak,
+			   "leak of FILE");
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -212,10 +226,21 @@ public:
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
     if (m_fopen_event.known_p ())
-      return ev.formatted_print ("%qE leaks here; was opened at %@",
-				 ev.m_expr, &m_fopen_event);
+      {
+	if (ev.m_expr)
+	  return ev.formatted_print ("%qE leaks here; was opened at %@",
+				     ev.m_expr, &m_fopen_event);
+	else
+	  return ev.formatted_print ("leaks here; was opened at %@",
+				     &m_fopen_event);
+      }
     else
-      return ev.formatted_print ("%qE leaks here", ev.m_expr);
+      {
+	if (ev.m_expr)
+	  return ev.formatted_print ("%qE leaks here", ev.m_expr);
+	else
+	  return ev.formatted_print ("leaks here");
+      }
   }
 
 private:
@@ -246,7 +271,7 @@ get_file_using_fns ()
     "__fbufsize",
     "__flbf",
     "__fpending",
-    "__fpurge"
+    "__fpurge",
     "__freadable",
     "__freading",
     "__fsetlocking",
@@ -307,7 +332,15 @@ static bool
 is_file_using_fn_p (tree fndecl)
 {
   function_set fs = get_file_using_fns ();
-  return fs.contains_decl_p (fndecl);
+  if (fs.contains_decl_p (fndecl))
+    return true;
+
+  /* Also support variants of these names prefixed with "_IO_".  */
+  const char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+  if (startswith (name, "_IO_") && fs.contains_name_p (name + 4))
+    return true;
+
+  return false;
 }
 
 /* Implementation of state_machine::on_stmt vfunc for fileptr_state_machine.  */
@@ -335,7 +368,6 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 	if (is_named_call_p (callee_fndecl, "fclose", call, 1))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
-	    tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
 	    sm_ctxt->on_transition (node, stmt, arg, m_start, m_closed);
 
@@ -347,6 +379,7 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 
 	    if (sm_ctxt->get_state (stmt, arg) == m_closed)
 	      {
+		tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 		sm_ctxt->warn (node, stmt, arg,
 			       new double_fclose (*this, diag_arg));
 		sm_ctxt->set_next_state (stmt, arg, m_stop);
@@ -373,19 +406,18 @@ void
 fileptr_state_machine::on_condition (sm_context *sm_ctxt,
 				     const supernode *node,
 				     const gimple *stmt,
-				     tree lhs,
+				     const svalue *lhs,
 				     enum tree_code op,
-				     tree rhs) const
+				     const svalue *rhs) const
 {
-  if (!zerop (rhs))
+  if (!rhs->all_zeroes_p ())
     return;
 
   // TODO: has to be a FILE *, specifically
-  if (TREE_CODE (TREE_TYPE (lhs)) != POINTER_TYPE)
+  if (!any_pointer_p (lhs))
     return;
-
   // TODO: has to be a FILE *, specifically
-  if (TREE_CODE (TREE_TYPE (rhs)) != POINTER_TYPE)
+  if (!any_pointer_p (rhs))
     return;
 
   if (op == NE_EXPR)

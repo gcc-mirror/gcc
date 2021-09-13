@@ -1,5 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -242,6 +242,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__alderlake");
       def_or_undef (parse_in, "__alderlake__");
       break;
+    case PROCESSOR_ROCKETLAKE:
+      def_or_undef (parse_in, "__rocketlake");
+      def_or_undef (parse_in, "__rocketlake__");
+      break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
       break;
@@ -405,6 +409,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_ALDERLAKE:
       def_or_undef (parse_in, "__tune_alderlake__");
       break;
+    case PROCESSOR_ROCKETLAKE:
+      def_or_undef (parse_in, "__tune_rocketlake__");
+      break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
       break;
@@ -525,6 +532,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__LZCNT__");
   if (isa_flag & OPTION_MASK_ISA_TBM)
     def_or_undef (parse_in, "__TBM__");
+  if (isa_flag & OPTION_MASK_ISA_CRC32)
+    def_or_undef (parse_in, "__CRC32__");
   if (isa_flag & OPTION_MASK_ISA_POPCNT)
     def_or_undef (parse_in, "__POPCNT__");
   if (isa_flag & OPTION_MASK_ISA_FSGSBASE)
@@ -589,6 +598,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__PTWRITE__");
   if (isa_flag2 & OPTION_MASK_ISA2_AVX512BF16)
     def_or_undef (parse_in, "__AVX512BF16__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AVX512FP16)
+    def_or_undef (parse_in, "__AVX512FP16__");
   if (TARGET_MMX_WITH_SSE)
     def_or_undef (parse_in, "__MMX_WITH_SSE__");
   if (isa_flag2 & OPTION_MASK_ISA2_ENQCMD)
@@ -757,10 +768,8 @@ ix86_target_macros (void)
   if (TARGET_LONG_DOUBLE_128)
     cpp_define (parse_in, "__LONG_DOUBLE_128__");
 
-  if (TARGET_128BIT_LONG_DOUBLE)
-    cpp_define (parse_in, "__SIZEOF_FLOAT80__=16");
-  else
-    cpp_define (parse_in, "__SIZEOF_FLOAT80__=12");
+  cpp_define_formatted (parse_in, "__SIZEOF_FLOAT80__=%d",
+			GET_MODE_SIZE (XFmode));
 
   cpp_define (parse_in, "__SIZEOF_FLOAT128__=16");
 
@@ -780,8 +789,7 @@ ix86_target_macros (void)
   cpp_define (parse_in, "__SEG_GS");
 
   if (flag_cf_protection != CF_NONE)
-    cpp_define_formatted (parse_in, "__CET__=%d",
-			  flag_cf_protection & ~CF_SET);
+    cpp_define_formatted (parse_in, "__CET__=%d", flag_cf_protection & ~CF_SET);
 }
 
 

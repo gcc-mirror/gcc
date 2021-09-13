@@ -1,5 +1,5 @@
 // { dg-module-do run }
-// { dg-additional-options {-fmodules-ts -fdump-lang-module-graph-blocks-alias} }
+// { dg-additional-options {-fmodules-ts -fdump-lang-module-graph} }
 
 export module foo;
 // { dg-module-cmi foo }
@@ -16,5 +16,5 @@ export inline int user (int i)
   return x.m;
 }
 
-// { dg-final { scan-lang-dump {Specialization '::TPL<int>' entity:. keyed to foo\[.\] '::template TPL'} module } }
-// { dg-final { scan-lang-dump {Specialization '::TPL<int>::TPL<int>' entity:. keyed to foo\[.\] '::template TPL<T>::template TPL'} module } }
+// { dg-final { scan-lang-dump {Pending specialization '::TPL<int>' entity:. section:. keyed to '::TPL'} module } }
+// { dg-final { scan-lang-dump {Pending specialization '::TPL<int>::TPL<int>' entity:. section:. also keyed to '::TPL'} module } }

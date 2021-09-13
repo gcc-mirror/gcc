@@ -1,5 +1,5 @@
 # Tests of 16-bit floating point (__fp16), for both ARM and AArch64.
-# Copyright (C) 2015-2020 Free Software Foundation, Inc.
+# Copyright (C) 2015-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

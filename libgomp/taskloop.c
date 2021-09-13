@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -51,20 +51,32 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 
   /* If parallel or taskgroup has been cancelled, don't start new tasks.  */
   if (team && gomp_team_barrier_cancelled (&team->barrier))
-    return;
+    {
+    early_return:
+      if ((flags & (GOMP_TASK_FLAG_NOGROUP | GOMP_TASK_FLAG_REDUCTION))
+	  == GOMP_TASK_FLAG_REDUCTION)
+	{
+	  struct gomp_data_head { TYPE t1, t2; uintptr_t *ptr; };
+	  uintptr_t *ptr = ((struct gomp_data_head *) data)->ptr;
+	  /* Tell callers GOMP_taskgroup_reduction_register has not been
+	     called.  */
+	  ptr[2] = 0;
+	}
+      return;
+    }
 
 #ifdef TYPE_is_long
   TYPE s = step;
   if (step > 0)
     {
       if (start >= end)
-	return;
+	goto early_return;
       s--;
     }
   else
     {
       if (start <= end)
-	return;
+	goto early_return;
       s++;
     }
   UTYPE n = (end - start + s) / step;
@@ -73,18 +85,19 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
   if (flags & GOMP_TASK_FLAG_UP)
     {
       if (start >= end)
-	return;
+	goto early_return;
       n = (end - start + step - 1) / step;
     }
   else
     {
       if (start <= end)
-	return;
+	goto early_return;
       n = (start - end - step - 1) / -step;
     }
 #endif
 
   TYPE task_step = step;
+  TYPE nfirst_task_step = step;
   unsigned long nfirst = n;
   if (flags & GOMP_TASK_FLAG_GRAINSIZE)
     {
@@ -97,7 +110,22 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
       if (num_tasks != ndiv)
 	num_tasks = ~0UL;
 #endif
-      if (num_tasks <= 1)
+      if ((flags & GOMP_TASK_FLAG_STRICT)
+	  && num_tasks != ~0ULL)
+	{
+	  UTYPE mod = n % grainsize;
+	  task_step = (TYPE) grainsize * step;
+	  if (mod)
+	    {
+	      num_tasks++;
+	      nfirst_task_step = (TYPE) mod * step;
+	      if (num_tasks == 1)
+		task_step = nfirst_task_step;
+	      else
+		nfirst = num_tasks - 2;
+	    }
+	}
+      else if (num_tasks <= 1)
 	{
 	  num_tasks = 1;
 	  task_step = end - start;
@@ -112,6 +140,7 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	  task_step = (TYPE) grainsize * step;
 	  if (mul != n)
 	    {
+	      nfirst_task_step = task_step;
 	      task_step += step;
 	      nfirst = n - mul - 1;
 	    }
@@ -123,6 +152,7 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	  task_step = (TYPE) div * step;
 	  if (mod)
 	    {
+	      nfirst_task_step = task_step;
 	      task_step += step;
 	      nfirst = mod - 1;
 	    }
@@ -141,6 +171,7 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	  task_step = (TYPE) div * step;
 	  if (mod)
 	    {
+	      nfirst_task_step = task_step;
 	      task_step += step;
 	      nfirst = mod - 1;
 	    }
@@ -213,7 +244,7 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	      start += task_step;
 	      ((TYPE *)arg)[1] = start;
 	      if (i == nfirst)
-		task_step -= step;
+		task_step = nfirst_task_step;
 	      fn (arg);
 	      arg += arg_size;
 	      if (!priority_queue_empty_p (&task[i].children_queue,
@@ -246,7 +277,7 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	    start += task_step;
 	    ((TYPE *)data)[1] = start;
 	    if (i == nfirst)
-	      task_step -= step;
+	      task_step = nfirst_task_step;
 	    fn (data);
 	    if (!priority_queue_empty_p (&task.children_queue,
 					 MEMMODEL_RELAXED))
@@ -291,7 +322,7 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	  start += task_step;
 	  ((TYPE *)arg)[1] = start;
 	  if (i == nfirst)
-	    task_step -= step;
+	    task_step = nfirst_task_step;
 	  thr->task = parent;
 	  task->kind = GOMP_TASK_WAITING;
 	  task->fn = fn;

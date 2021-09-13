@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,10 +21,6 @@
 
 namespace net = std::experimental::net;
 using namespace std;
-
-namespace test
-{
-}
 
 void
 test01(net::io_context& io)
@@ -113,8 +109,10 @@ test01(net::io_context& io)
   s.bind(e);
   s.bind(e, ec);
 
+#ifdef SHUT_RDWR
   s.shutdown(net::socket_base::shutdown_both);
   s.shutdown(net::socket_base::shutdown_both, ec);
+#endif
 
   e = s.local_endpoint();
   e = s.local_endpoint(ec);

@@ -23,8 +23,7 @@ module std.experimental.typecons;
 import std.meta; // : AliasSeq, allSatisfy;
 import std.traits;
 
-import std.typecons : Tuple, tuple, Bind, DerivedFunctionType,
-       isImplicitlyConvertible, mixinAll, staticIota,
+import std.typecons : Tuple, tuple, Bind, DerivedFunctionType, mixinAll, staticIota,
        GetOverloadedMethods;
 
 private
@@ -113,7 +112,8 @@ if (Targets.length >= 1 && allSatisfy!(isMutable, Targets))
             else
             {
                 enum foundFunc = findCovariantFunction!(TargetMembers[i], Source, SourceMembers);
-                debug
+                version (unittest) {}
+                else debug
                 {
                     static if (foundFunc == -1)
                         pragma(msg, "Could not locate matching function for: ",

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram body ordering check. Subprograms are in order
 --  by RM section rather than alphabetical
 
-with Sinfo.CN; use Sinfo.CN;
+with Sinfo.CN;       use Sinfo.CN;
 
 separate (Par)
 package body Ch6 is
@@ -201,6 +201,28 @@ package body Ch6 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Subprogram (Pf_Flags : Pf_Rec) return Node_Id is
+
+      function Contains_Import_Aspect (Aspects : List_Id) return Boolean;
+      --  Return True if Aspects contains an Import aspect.
+
+      ----------------------------
+      -- Contains_Import_Aspect --
+      ----------------------------
+
+      function Contains_Import_Aspect (Aspects : List_Id) return Boolean is
+         Aspect : Node_Id := First (Aspects);
+      begin
+         while Present (Aspect) loop
+            if Chars (Identifier (Aspect)) = Name_Import then
+               return True;
+            end if;
+
+            Next (Aspect);
+         end loop;
+
+         return False;
+      end Contains_Import_Aspect;
+
       Specification_Node : Node_Id;
       Name_Node          : Node_Id;
       Aspects            : List_Id;
@@ -982,10 +1004,12 @@ package body Ch6 is
          if Pf_Flags.Pbod
 
            --  Disconnect this processing if we have scanned a null procedure
-           --  because in this case the spec is complete anyway with no body.
+           --  or an Import aspect because in this case the spec is complete
+           --  anyway with no body.
 
            and then (Nkind (Specification_Node) /= N_Procedure_Specification
                       or else not Null_Present (Specification_Node))
+           and then not Contains_Import_Aspect (Aspects)
          then
             SIS_Labl := Scopes (Scope.Last).Labl;
             SIS_Sloc := Scopes (Scope.Last).Sloc;
@@ -1620,7 +1644,7 @@ package body Ch6 is
          --  the time being.
 
          elsif Token = Tok_With then
-            Error_Msg_Ada_2020_Feature
+            Error_Msg_Ada_2022_Feature
               ("aspect on formal parameter", Token_Ptr);
 
             P_Aspect_Specifications (Specification_Node, False);
@@ -1874,33 +1898,34 @@ package body Ch6 is
    function P_Return_Statement return Node_Id is
       --  The caller has checked that the initial token is RETURN
 
-      function Is_Simple return Boolean;
+      function Is_Extended return Boolean;
       --  Scan state is just after RETURN (and is left that way). Determine
       --  whether this is a simple or extended return statement by looking
       --  ahead for "identifier :", which implies extended.
 
-      ---------------
-      -- Is_Simple --
-      ---------------
+      -----------------
+      -- Is_Extended --
+      -----------------
 
-      function Is_Simple return Boolean is
-         Scan_State : Saved_Scan_State;
-         Result     : Boolean := True;
+      function Is_Extended return Boolean is
+         Scan_State  : Saved_Scan_State;
+         Is_Extended : Boolean := False;
 
       begin
+
          if Token = Tok_Identifier then
             Save_Scan_State (Scan_State); -- at identifier
             Scan; -- past identifier
 
             if Token = Tok_Colon then
-               Result := False; -- It's an extended_return_statement.
+               Is_Extended := True;
             end if;
 
             Restore_Scan_State (Scan_State); -- to identifier
          end if;
 
-         return Result;
-      end Is_Simple;
+         return Is_Extended;
+      end Is_Extended;
 
       Ret_Sloc : constant Source_Ptr := Token_Ptr;
       Ret_Strt : constant Column_Number := Start_Column;
@@ -1922,22 +1947,9 @@ package body Ch6 is
       --  Nontrivial case
 
       else
-         --  Simple_return_statement with expression
-
-         --  We avoid trying to scan an expression if we are at an
-         --  expression terminator since in that case the best error
-         --  message is probably that we have a missing semicolon.
-
-         if Is_Simple then
-            Ret_Node := New_Node (N_Simple_Return_Statement, Ret_Sloc);
-
-            if Token not in Token_Class_Eterm then
-               Set_Expression (Ret_Node, P_Expression_No_Right_Paren);
-            end if;
-
          --  Extended_return_statement (Ada 2005 only -- AI-318):
 
-         else
+         if Is_Extended then
             Error_Msg_Ada_2005_Extension ("extended return statement");
 
             Ret_Node := New_Node (N_Extended_Return_Statement, Ret_Sloc);
@@ -1954,13 +1966,47 @@ package body Ch6 is
                Scopes (Scope.Last).Etyp := E_Return;
                Scopes (Scope.Last).Labl := Error;
                Scopes (Scope.Last).Sloc := Ret_Sloc;
-
                Scan; -- past DO
                Set_Handled_Statement_Sequence
                  (Ret_Node, P_Handled_Sequence_Of_Statements);
                End_Statements;
 
                --  Do we need to handle Error_Resync here???
+            end if;
+
+         --  Simple_return_statement or Return_when_Statement
+         --  with expression.
+
+         --  We avoid trying to scan an expression if we are at an
+         --  expression terminator since in that case the best error
+         --  message is probably that we have a missing semicolon.
+
+         else
+            Ret_Node := New_Node (N_Simple_Return_Statement, Ret_Sloc);
+
+            if Token not in Token_Class_Eterm then
+               Set_Expression (Ret_Node, P_Expression_No_Right_Paren);
+            end if;
+
+            --  When the next token is WHEN or IF we know that we are looking
+            --  at a Return_when_statement
+
+            if Token = Tok_When and then not Missing_Semicolon_On_When then
+               Error_Msg_GNAT_Extension ("return when statement");
+               Mutate_Nkind (Ret_Node, N_Return_When_Statement);
+
+               Scan; -- past WHEN
+               Set_Condition (Ret_Node, P_Condition);
+
+            --  Allow IF instead of WHEN, giving error message
+
+            elsif Token = Tok_If then
+               Error_Msg_GNAT_Extension ("return when statement");
+               Mutate_Nkind (Ret_Node, N_Return_When_Statement);
+
+               T_When;
+               Scan; -- past IF used in place of WHEN
+               Set_Condition (Ret_Node, P_Condition);
             end if;
          end if;
 

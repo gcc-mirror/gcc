@@ -8,6 +8,7 @@
  */
 module core.sys.windows.sqltypes;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 
@@ -15,8 +16,8 @@ version (ANSI) {} else version = Unicode;
   It's assumed that ODBC >= 0x0300.
 */
 
-private import core.sys.windows.windef;
-private import core.sys.windows.basetyps; // for GUID
+import core.sys.windows.windef;
+import core.sys.windows.basetyps; // for GUID
 
 alias byte SCHAR, SQLSCHAR;
 alias int SDWORD, SLONG, SQLINTEGER;

@@ -1,5 +1,5 @@
 /* Subclasses of diagnostic_path and diagnostic_event for analyzer diagnostics.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -93,6 +93,10 @@ event_kind_to_string (enum event_kind ek)
       return "EK_CALL_EDGE";
     case EK_RETURN_EDGE:
       return "EK_RETURN_EDGE";
+    case EK_START_CONSOLIDATED_CFG_EDGES:
+      return "EK_START_CONSOLIDATED_CFG_EDGES";
+    case EK_END_CONSOLIDATED_CFG_EDGES:
+      return "EK_END_CONSOLIDATED_CFG_EDGES";
     case EK_SETJMP:
       return "EK_SETJMP";
     case EK_REWIND_FROM_LONGJMP:
@@ -158,14 +162,14 @@ debug_event::get_desc (bool) const
   return label_text::borrow (m_desc);
 }
 
-/* class custom_event : public checker_event.  */
+/* class precanned_custom_event : public custom_event.  */
 
 /* Implementation of diagnostic_event::get_desc vfunc for
-   custom_event.
+   precanned_custom_event.
    Use the saved string as the event's description.  */
 
 label_text
-custom_event::get_desc (bool) const
+precanned_custom_event::get_desc (bool) const
 {
   return label_text::borrow (m_desc);
 }
@@ -610,7 +614,11 @@ call_event::call_event (const exploded_edge &eedge,
 			location_t loc, tree fndecl, int depth)
 : superedge_event (EK_CALL_EDGE, eedge, loc, fndecl, depth)
 {
-  gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CALL);
+  if (eedge.m_sedge)
+    gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CALL);
+
+   m_src_snode = eedge.m_src->get_supernode ();
+   m_dest_snode = eedge.m_dest->get_supernode ();
 }
 
 /* Implementation of diagnostic_event::get_desc vfunc for
@@ -630,12 +638,13 @@ call_event::get_desc (bool can_colorize) const
   if (m_critical_state && m_pending_diagnostic)
     {
       gcc_assert (m_var);
+      tree var = fixup_tree_for_diagnostic (m_var);
       label_text custom_desc
 	= m_pending_diagnostic->describe_call_with_state
 	    (evdesc::call_with_state (can_colorize,
-				      m_sedge->m_src->m_fun->decl,
-				      m_sedge->m_dest->m_fun->decl,
-				      m_var,
+				      m_src_snode->m_fun->decl,
+				      m_dest_snode->m_fun->decl,
+				      var,
 				      m_critical_state));
       if (custom_desc.m_buffer)
 	return custom_desc;
@@ -643,8 +652,8 @@ call_event::get_desc (bool can_colorize) const
 
   return make_label_text (can_colorize,
 			  "calling %qE from %qE",
-			  m_sedge->m_dest->m_fun->decl,
-			  m_sedge->m_src->m_fun->decl);
+			  m_dest_snode->m_fun->decl,
+			  m_src_snode->m_fun->decl);
 }
 
 /* Override of checker_event::is_call_p for calls.  */
@@ -663,7 +672,11 @@ return_event::return_event (const exploded_edge &eedge,
 			    location_t loc, tree fndecl, int depth)
 : superedge_event (EK_RETURN_EDGE, eedge, loc, fndecl, depth)
 {
-  gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_RETURN);
+  if (eedge.m_sedge)
+    gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_RETURN);
+
+  m_src_snode = eedge.m_src->get_supernode ();
+  m_dest_snode = eedge.m_dest->get_supernode ();
 }
 
 /* Implementation of diagnostic_event::get_desc vfunc for
@@ -689,16 +702,16 @@ return_event::get_desc (bool can_colorize) const
       label_text custom_desc
 	= m_pending_diagnostic->describe_return_of_state
 	    (evdesc::return_of_state (can_colorize,
-				      m_sedge->m_dest->m_fun->decl,
-				      m_sedge->m_src->m_fun->decl,
+				      m_dest_snode->m_fun->decl,
+				      m_src_snode->m_fun->decl,
 				      m_critical_state));
       if (custom_desc.m_buffer)
 	return custom_desc;
     }
   return make_label_text (can_colorize,
 			  "returning to %qE from %qE",
-			  m_sedge->m_dest->m_fun->decl,
-			  m_sedge->m_src->m_fun->decl);
+			  m_dest_snode->m_fun->decl,
+			  m_src_snode->m_fun->decl);
 }
 
 /* Override of checker_event::is_return_p for returns.  */
@@ -707,6 +720,16 @@ bool
 return_event::is_return_p () const
 {
   return true;
+}
+
+/* class start_consolidated_cfg_edges_event : public checker_event.  */
+
+label_text
+start_consolidated_cfg_edges_event::get_desc (bool can_colorize) const
+{
+  return make_label_text (can_colorize,
+			  "following %qs branch...",
+			  m_edge_sense ? "true" : "false");
 }
 
 /* class setjmp_event : public checker_event.  */
@@ -866,19 +889,20 @@ warning_event::get_desc (bool can_colorize) const
 {
   if (m_pending_diagnostic)
     {
+      tree var = fixup_tree_for_diagnostic (m_var);
       label_text ev_desc
 	= m_pending_diagnostic->describe_final_event
-	    (evdesc::final_event (can_colorize, m_var, m_state));
+	    (evdesc::final_event (can_colorize, var, m_state));
       if (ev_desc.m_buffer)
 	{
 	  if (m_sm && flag_analyzer_verbose_state_changes)
 	    {
 	      label_text result;
-	      if (m_var)
+	      if (var)
 		result = make_label_text (can_colorize,
 					  "%s (%qE is in state %qs)",
 					  ev_desc.m_buffer,
-					  m_var, m_state->get_name ());
+					  var, m_state->get_name ());
 	      else
 		result = make_label_text (can_colorize,
 					  "%s (in global state %qs)",
@@ -985,10 +1009,20 @@ checker_path::add_final_event (const state_machine *sm,
 void
 checker_path::fixup_locations (pending_diagnostic *pd)
 {
-  checker_event *e;
-  int i;
-  FOR_EACH_VEC_ELT (m_events, i, e)
+  for (checker_event *e : m_events)
     e->set_location (pd->fixup_location (e->get_location ()));
+}
+
+/* Return true if there is a (start_cfg_edge_event, end_cfg_edge_event) pair
+   at (IDX, IDX + 1).  */
+
+bool
+checker_path::cfg_edge_pair_at_p (unsigned idx) const
+{
+  if (m_events.length () < idx + 1)
+    return false;
+  return (m_events[idx]->m_kind == EK_START_CFG_EDGE
+	  && m_events[idx + 1]->m_kind == EK_END_CFG_EDGE);
 }
 
 } // namespace ana

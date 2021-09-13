@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -27,9 +27,6 @@ static Dsymbol *inferApplyArgTypesX(Expression *ethis, FuncDeclaration *fstart, 
 static int inferApplyArgTypesY(TypeFunction *tf, Parameters *parameters, int flags = 0);
 Expression *compare_overload(BinExp *e, Scope *sc, Identifier *id);
 bool MODimplicitConv(MOD modfrom, MOD modto);
-Expression *trySemantic(Expression *e, Scope *sc);
-Expression *binSemanticProp(BinExp *e, Scope *sc);
-Expression *semantic(Expression *e, Scope *sc);
 
 /******************************** Expression **************************/
 
@@ -195,7 +192,7 @@ Objects *opToArg(Scope *sc, TOK op)
         default:                     break;
     }
     Expression *e = new StringExp(Loc(), const_cast<char *>(Token::toChars(op)));
-    e = semantic(e, sc);
+    e = expressionSemantic(e, sc);
     Objects *tiargs = new Objects();
     tiargs->push(e);
     return tiargs;
@@ -234,7 +231,7 @@ Expression *op_overload(Expression *e, Scope *sc)
             if (e->e1->op == TOKarray)
             {
                 ArrayExp *ae = (ArrayExp *)e->e1;
-                ae->e1 = semantic(ae->e1, sc);
+                ae->e1 = expressionSemantic(ae->e1, sc);
                 ae->e1 = resolveProperties(sc, ae->e1);
                 Expression *ae1old = ae->e1;
 
@@ -282,7 +279,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                         if (maybeSlice) // op(a[]) might be: a.opSliceUnary!(op)()
                             result = trySemantic(result, sc);
                         else
-                            result = semantic(result, sc);
+                            result = expressionSemantic(result, sc);
                         if (result)
                         {
                             result = Expression::combine(e0, result);
@@ -309,7 +306,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                         Objects *tiargs = opToArg(sc, e->op);
                         result = new DotTemplateInstanceExp(e->loc, ae->e1, Id::opSliceUnary, tiargs);
                         result = new CallExp(e->loc, result, a);
-                        result = semantic(result, sc);
+                        result = expressionSemantic(result, sc);
                         result = Expression::combine(e0, result);
                         return;
                     }
@@ -333,7 +330,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                 ae->lengthVar = NULL;
             }
 
-            e->e1 = semantic(e->e1, sc);
+            e->e1 = expressionSemantic(e->e1, sc);
             e->e1 = resolveProperties(sc, e->e1);
             if (e->e1->op == TOKerror)
             {
@@ -367,7 +364,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                     Objects *tiargs = opToArg(sc, e->op);
                     result = new DotTemplateInstanceExp(e->loc, e->e1, fd->ident, tiargs);
                     result = new CallExp(e->loc, result);
-                    result = semantic(result, sc);
+                    result = expressionSemantic(result, sc);
                     return;
                 }
 
@@ -392,7 +389,7 @@ Expression *op_overload(Expression *e, Scope *sc)
         void visit(ArrayExp *ae)
         {
             //printf("ArrayExp::op_overload() (%s)\n", ae->toChars());
-            ae->e1 = semantic(ae->e1, sc);
+            ae->e1 = expressionSemantic(ae->e1, sc);
             ae->e1 = resolveProperties(sc, ae->e1);
             Expression *ae1old = ae->e1;
 
@@ -435,14 +432,14 @@ Expression *op_overload(Expression *e, Scope *sc)
                         if (maybeSlice)
                         {
                             result = new SliceExp(ae->loc, ae->e1, ie);
-                            result = semantic(result, sc);
+                            result = expressionSemantic(result, sc);
                             return;
                         }
                         // Convert to IndexExp
                         if (ae->arguments->length == 1)
                         {
                             result = new IndexExp(ae->loc, ae->e1, (*ae->arguments)[0]);
-                            result = semantic(result, sc);
+                            result = expressionSemantic(result, sc);
                             return;
                         }
                     }
@@ -466,7 +463,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                     if (maybeSlice) // a[] might be: a.opSlice()
                         result = trySemantic(result, sc);
                     else
-                        result = semantic(result, sc);
+                        result = expressionSemantic(result, sc);
                     if (result)
                     {
                         result = Expression::combine(e0, result);
@@ -477,7 +474,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                 if (maybeSlice && ae->e1->op == TOKtype)
                 {
                     result = new SliceExp(ae->loc, ae->e1, ie);
-                    result = semantic(result, sc);
+                    result = expressionSemantic(result, sc);
                     result = Expression::combine(e0, result);
                     return;
                 }
@@ -499,7 +496,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                     }
                     result = new DotIdExp(ae->loc, ae->e1, Id::slice);
                     result = new CallExp(ae->loc, result, a);
-                    result = semantic(result, sc);
+                    result = expressionSemantic(result, sc);
                     result = Expression::combine(e0, result);
                     return;
                 }
@@ -553,7 +550,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                     tiargs->push(e->to);
                     result = new DotTemplateInstanceExp(e->loc, e->e1, fd->ident, tiargs);
                     result = new CallExp(e->loc, result);
-                    result = semantic(result, sc);
+                    result = expressionSemantic(result, sc);
                     return;
                 }
 
@@ -942,7 +939,7 @@ Expression *op_overload(Expression *e, Scope *sc)
             if ((t1->ty == Tclass && e->e2->op == TOKnull) ||
                 (t2->ty == Tclass && e->e1->op == TOKnull))
             {
-                e->error("use '%s' instead of '%s' when comparing with null",
+                e->error("use `%s` instead of `%s` when comparing with null",
                     Token::toChars(e->op == TOKequal ? TOKidentity : TOKnotidentity),
                     Token::toChars(e->op));
                 result = new ErrorExp();
@@ -985,7 +982,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                     result = new CallExp(e->loc, result, e1x, e2x);
                     if (e->op == TOKnotequal)
                         result = new NotExp(e->loc, result);
-                    result = semantic(result, sc);
+                    result = expressionSemantic(result, sc);
                     return;
                 }
             }
@@ -996,7 +993,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                 if (result->op == TOKcall && e->op == TOKnotequal)
                 {
                     result = new NotExp(result->loc, result);
-                    result = semantic(result, sc);
+                    result = expressionSemantic(result, sc);
                 }
                 return;
             }
@@ -1015,7 +1012,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                  */
                 TOK op2 = e->op == TOKequal ? TOKidentity : TOKnotidentity;
                 result = new IdentityExp(op2, e->loc, e->e1, e->e2);
-                result = semantic(result, sc);
+                result = expressionSemantic(result, sc);
                 return;
             }
 
@@ -1032,7 +1029,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                     // Use bitwise equality.
                     TOK op2 = e->op == TOKequal ? TOKidentity : TOKnotidentity;
                     result = new IdentityExp(op2, e->loc, e->e1, e->e2);
-                    result = semantic(result, sc);
+                    result = expressionSemantic(result, sc);
                     return;
                 }
 
@@ -1058,7 +1055,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                     e->att2 = t2;
                 e->e1 = new DotIdExp(e->loc, e->e1, Id::_tupleof);
                 e->e2 = new DotIdExp(e->loc, e->e2, Id::_tupleof);
-                result = semantic(e, sc);
+                result = expressionSemantic(e, sc);
 
                 /* Bugzilla 15292, if the rewrite result is same with the original,
                  * the equality is unresolvable because it has recursive definition.
@@ -1113,7 +1110,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                     assert(result);
                 }
                 result = Expression::combine(Expression::combine(tup1->e0, tup2->e0), result);
-                result = semantic(result, sc);
+                result = expressionSemantic(result, sc);
                 return;
             }
         }
@@ -1135,7 +1132,7 @@ Expression *op_overload(Expression *e, Scope *sc)
             if (e->e1->op == TOKarray)
             {
                 ArrayExp *ae = (ArrayExp *)e->e1;
-                ae->e1 = semantic(ae->e1, sc);
+                ae->e1 = expressionSemantic(ae->e1, sc);
                 ae->e1 = resolveProperties(sc, ae->e1);
                 Expression *ae1old = ae->e1;
 
@@ -1173,7 +1170,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                         if (result->op == TOKerror)
                             return;
 
-                        result = semantic(e->e2, sc);
+                        result = expressionSemantic(e->e2, sc);
                         if (result->op == TOKerror)
                             return;
                         e->e2 = result;
@@ -1189,7 +1186,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                         if (maybeSlice) // (a[] op= e2) might be: a.opSliceOpAssign!(op)(e2)
                             result = trySemantic(result, sc);
                         else
-                            result = semantic(result, sc);
+                            result = expressionSemantic(result, sc);
                         if (result)
                         {
                             result = Expression::combine(e0, result);
@@ -1204,7 +1201,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                         if (result->op == TOKerror)
                             return;
 
-                        result = semantic(e->e2, sc);
+                        result = expressionSemantic(e->e2, sc);
                         if (result->op == TOKerror)
                             return;
                         e->e2 = result;
@@ -1222,7 +1219,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                         Objects *tiargs = opToArg(sc, e->op);
                         result = new DotTemplateInstanceExp(e->loc, ae->e1, Id::opSliceOpAssign, tiargs);
                         result = new CallExp(e->loc, result, a);
-                        result = semantic(result, sc);
+                        result = expressionSemantic(result, sc);
                         result = Expression::combine(e0, result);
                         return;
                     }
@@ -1570,7 +1567,7 @@ Expression *build_overload(Loc loc, Scope *sc, Expression *ethis, Expression *ea
         e = new DotIdExp(loc, ethis, d->ident);
     e = new CallExp(loc, e, earg);
 
-    e = semantic(e, sc);
+    e = expressionSemantic(e, sc);
     return e;
 }
 
@@ -1611,7 +1608,7 @@ bool inferAggregate(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
 
     while (1)
     {
-        aggr = semantic(aggr, sc);
+        aggr = expressionSemantic(aggr, sc);
         aggr = resolveProperties(sc, aggr);
         aggr = aggr->optimize(WANTvalue);
         if (!aggr->type || aggr->op == TOKerror)
@@ -1714,7 +1711,7 @@ bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
             Parameter *p = (*fes->parameters)[u];
             if (p->type)
             {
-                p->type = p->type->semantic(fes->loc, sc);
+                p->type = typeSemantic(p->type, fes->loc, sc);
                 p->type = p->type->addStorageClass(p->storageClass);
             }
         }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2013-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2013-2021, Free Software Foundation, Inc.         --
 --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
@@ -38,6 +38,8 @@
 
 with Interfaces.C;
 
+with System.Parameters;
+
 package System.Linux is
    pragma Preelaborate;
 
@@ -46,12 +48,15 @@ package System.Linux is
    ----------
 
    subtype suseconds_t is Long_Long_Integer;
-   subtype time_t      is Long_Long_Integer;
+   --  Note that suseconds_t is 64 bits.
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
    subtype clockid_t   is Interfaces.C.int;
 
    type timespec is record
       tv_sec  : time_t;
       tv_nsec : Long_Long_Integer;
+      --  Note that tv_nsec is 64 bits.
    end record;
    pragma Convention (C, timespec);
 

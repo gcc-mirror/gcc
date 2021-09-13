@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -81,7 +81,7 @@ cp_ubsan_instrument_vptr (location_t loc, tree op, tree type, bool is_addr,
 			      build_zero_cst (TREE_TYPE (op)));
       /* This is a compiler generated comparison, don't emit
 	 e.g. -Wnonnull-compare warning for it.  */
-      TREE_NO_WARNING (cond) = 1;
+      suppress_warning (cond, OPT_Wnonnull_compare);
       vptr = build3_loc (loc, COND_EXPR, uint64_type_node, cond,
 			 vptr, build_int_cst (uint64_type_node, 0));
     }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -267,7 +267,7 @@ package System.Interrupts is
    --  the new static handlers.
 
    procedure Install_Restricted_Handlers
-     (Prio     : Any_Priority;
+     (Prio     : Interrupt_Priority;
       Handlers : New_Handler_Array);
    --  Install the static Handlers for the given interrupts and do not
    --  store previously installed handlers. This procedure is used when

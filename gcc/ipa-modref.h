@@ -1,5 +1,5 @@
 /* Search for references that a functions loads or stores.
-   Copyright (C) 2019 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define IPA_MODREF_H
 
 typedef modref_tree <alias_set_type> modref_records;
+typedef unsigned char eaf_flags_t;
 
 /* Single function summary.  */
 
@@ -29,7 +30,7 @@ struct GTY(()) modref_summary
   /* Load and stores in function (transitively closed to all callees)  */
   modref_records *loads;
   modref_records *stores;
-  auto_vec<unsigned char> GTY((skip)) arg_flags;
+  auto_vec<eaf_flags_t> GTY((skip)) arg_flags;
   bool writes_errno;
 
   modref_summary ();

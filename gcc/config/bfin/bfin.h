@@ -1,5 +1,5 @@
 /* Definitions for the Blackfin port.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -785,8 +785,6 @@ typedef struct {
 (GET_CODE (X) == SYMBOL_REF						\
  || GET_CODE (X) == LABEL_REF						\
  || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
-
-#define NOTICE_UPDATE_CC(EXPR, INSN) 0
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */

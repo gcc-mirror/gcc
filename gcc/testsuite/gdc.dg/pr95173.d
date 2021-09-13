@@ -2,7 +2,7 @@
 // { dg-do compile }
 // { dg-options "-Wattributes" }
 
-import gcc.attribute;
+import gcc.attributes;
 
 @attribute("foo") // { dg-warning "unknown attribute .foo." }
 void f95173() 

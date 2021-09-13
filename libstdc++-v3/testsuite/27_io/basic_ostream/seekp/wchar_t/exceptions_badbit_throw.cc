@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,6 @@ void test01()
 
   __gnu_test::fail_wstreambuf bib;
   wostream stream(&bib);
-  stream.exceptions(ios_base::badbit);
 
   wostream::pos_type pos = wostream::pos_type();
 
@@ -37,14 +36,11 @@ void test01()
       stream.seekp(pos);
       VERIFY( false );
     }
-  catch (const __gnu_test::positioning_error&) 
+  catch (const __gnu_test::positioning_error&)
     {
-      // stream should set badbit and rethrow facet_error.
-      VERIFY( stream.bad() );
-      VERIFY( (stream.rdstate() & ios_base::failbit) == 0 );
-      VERIFY( !stream.eof() );
+      VERIFY( stream.good() );
     }
-  catch (...) 
+  catch (...)
     {
       VERIFY( false );
     }
@@ -53,10 +49,9 @@ void test01()
 void test02()
 {
   using namespace std;
- 
+
   __gnu_test::fail_wstreambuf bib;
   wostream stream(&bib);
-  stream.exceptions(ios_base::badbit);
 
   wostream::off_type off(5);
 
@@ -65,14 +60,11 @@ void test02()
       stream.seekp(off, ios_base::cur);
       VERIFY( false );
     }
-  catch (const __gnu_test::positioning_error&) 
+  catch (const __gnu_test::positioning_error&)
     {
-      // stream should set badbit and rethrow facet_error.
-      VERIFY( stream.bad() );
-      VERIFY( (stream.rdstate() & ios_base::failbit) == 0 );
-      VERIFY( !stream.eof() );
+      VERIFY( stream.good() );
     }
-  catch (...) 
+  catch (...)
     {
       VERIFY( false );
     }

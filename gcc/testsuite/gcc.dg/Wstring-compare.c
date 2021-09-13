@@ -21,7 +21,7 @@ extern char b4[4];
 void strcmp_array_lit (void)
 {
   if (strcmp (a4, "1234"))  // { dg-warning "'strcmp' of a string of length 4 and an array of size 4 evaluates to nonzero" }
-                            // { dg-bogus "in this expreession" "unwanted note" { target *-*-* } .-1 }
+                            // { dg-bogus "in this expression" "unwanted note" { target *-*-* } .-1 }
     sink (0, a4);
 
   int cmp;
@@ -44,7 +44,7 @@ void strcmp_array_pstr (void)
 
   {
     if (strcmp (a4, s4))    // { dg-warning "'strcmp' of a string of length 4 and an array of size 4 evaluates to nonzero" }
-                            // { dg-bogus "in this expreession" "unwanted note" { target *-*-* } .-1 }
+                            // { dg-bogus "in this expression" "unwanted note" { target *-*-* } .-1 }
       sink (1, a4);
     else
       sink (0, a4);
@@ -86,7 +86,7 @@ void strcmp_array_copy (void)
   {
     strcpy (s, "1234");
     if (strcmp (a4, s))     // { dg-warning "'strcmp' of a string of length 4 and an array of size 4 evaluates to nonzero" }
-                            // { dg-bogus "in this expreession" "unwanted note" { target *-*-* } .-1 }
+                            // { dg-bogus "in this expression" "unwanted note" { target *-*-* } .-1 }
       sink (1, a4);
     else
       sink (0, a4);
@@ -131,7 +131,7 @@ void strcmp_member_array_lit (const struct S *p)
 void strncmp_array_lit (void)
 {
   if (strncmp (a4, "12345", 5))   // { dg-warning "'strncmp' of a string of length 5, an array of size 4 and bound of 5 evaluates to nonzero" }
-                                  // { dg-bogus "in this expreession" "unwanted note" { target *-*-* } .-1 }
+                                  // { dg-bogus "in this expression" "unwanted note" { target *-*-* } .-1 }
     sink (0, a4);
 
   int cmp;
@@ -161,7 +161,7 @@ void strncmp_strarray_copy (void)
     char b[6];
     strcpy (b, "12345");
     if (strncmp (a, b, 5))  // { dg-warning "'strncmp' of strings of length 4 and 5 and bound of 5 evaluates to nonzero" }
-                            // { dg-bogus "in this expreession" "unwanted note" { target *-*-* } .-1 }
+                            // { dg-bogus "in this expression" "unwanted note" { target *-*-* } .-1 }
       sink (0, a, b);
   }
 

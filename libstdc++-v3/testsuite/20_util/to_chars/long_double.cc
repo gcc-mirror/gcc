@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,20 +17,48 @@
 
 // <charconv> is supported in C++14 as a GNU extension, but this test uses C++17
 // hexadecimal floating-point literals.
-// { dg-do run { target c++17 } }
-// { dg-xfail-run-if "Ryu needs __int128" { large_long_double && { ! int128 } } }
+
+// When long double is larger than double, the long double to_chars overloads
+// are partially implemented in terms of printf, so this test in turn uses
+// printf to verify correctness these overloads.
+// When long double == double, the long double to_chars overloads are simple
+// wrappers around the corresponding double overloads.  Since they don't go
+// through printf, we can't portably verify their output by comparing it with
+// that of printf, so it's simplest to just not run this test on such targets;
+// correctness of these overloads is already implied by that of the double
+// overloads.
+// { dg-do run { target { c++17 && large_long_double } } }
+// { dg-do compile { target { c++17 && { ! large_long_double } } } }
+
+// The system printf on these targets appear to be buggy.  FIXME: Make this test
+// more portable and robust to differences in system printf behavior.
+// { dg-xfail-run-if "Non-conforming printf (see PR98384)" { *-*-solaris* *-*-darwin* } }
+
 // { dg-require-effective-target ieee-floats }
+// { dg-require-effective-target size32plus }
 
 #include <charconv>
 
 #include <cmath>
 #include <cstring>
 #include <iterator>
+#include <optional>
 #include <limits>
 
 #include <testsuite_hooks.h>
 
 using namespace std;
+
+namespace detail
+{
+  long double
+  nextupl(long double x)
+  { return nexttowardl(x, numeric_limits<long double>::infinity()); }
+
+  long double
+  nextdownl(long double x)
+  { return nexttowardl(x, -numeric_limits<long double>::infinity()); }
+}
 
 // The long double overloads of std::to_chars currently just go through printf
 // (except for the hexadecimal formatting).
@@ -39,9 +67,41 @@ using namespace std;
 void
 test01()
 {
+  // Verifies correctness of the hexadecimal form [BEGIN,END) for VALUE by
+  // round-tripping it through from_chars (if available).
+  auto verify_via_from_chars = [] (char *begin, char *end, long double value) {
+#if __cpp_lib_to_chars >= 201611L
+    long double roundtrip;
+    auto result = from_chars(begin, end, roundtrip, chars_format::hex);
+    VERIFY( result.ec == errc{} );
+    VERIFY( result.ptr == end );
+    VERIFY( roundtrip == value );
+#endif
+  };
+
+  // Verifies correctness of the null-terminated hexadecimal form at BEGIN
+  // for VALUE and PRECISION by comparing it with the output of printf's %La
+  // conversion specifier.
+  auto verify_via_printf = [] (char *begin, long double value,
+			       optional<int> precision = nullopt) {
+    char printf_buffer[1024] = {};
+    if (precision.has_value())
+      sprintf(printf_buffer, "%.*La", precision.value(), value);
+    else
+      sprintf(printf_buffer, "%La", value);
+
+    // Only compare with the output of printf if the leading hex digits agree.
+    // If the leading hex digit of our form doesn't agree with that of printf,
+    // then the two forms may still be equivalent (e.g. 1.1p+0 vs 8.8p-3).  But
+    // if the leading hex digits do agree, then we do expect the two forms to be
+    // the same.
+    if (printf_buffer[strlen("0x")] == begin[0])
+      VERIFY( !strcmp(begin, printf_buffer+strlen("0x")) );
+  };
+
   const long double hex_testcases[]
-    = { nextdownl(numeric_limits<long double>::max()),
-	nextupl(numeric_limits<long double>::min()),
+    = { detail::nextdownl(numeric_limits<long double>::max()),
+	detail::nextupl(numeric_limits<long double>::min()),
 	42.0L,
 	0x1.2p+0L,
 	0x1.23p+0L,
@@ -81,38 +141,27 @@ test01()
 	if (testcase == 0.0L || isinf(testcase))
 	  continue;
 
-	char to_chars_buffer[1024], printf_buffer[1024];
-	memset(to_chars_buffer, '\0', sizeof(to_chars_buffer));
-	memset(printf_buffer, '\0', sizeof(printf_buffer));
-
+	char to_chars_buffer[1024] = {};
 	auto result = to_chars(begin(to_chars_buffer), end(to_chars_buffer),
 			       testcase, chars_format::hex);
 	VERIFY( result.ec == errc{} );
 	*result.ptr = '\0';
-	sprintf(printf_buffer, "%La", testcase);
-	VERIFY( !strcmp(to_chars_buffer, printf_buffer+strlen("0x")) );
+	verify_via_from_chars(begin(to_chars_buffer), result.ptr, testcase);
+	verify_via_printf(to_chars_buffer, testcase);
 
+	// Verify the nearby values, and also check they have a different
+	// shortest form.
+	for (long double nearby
+	     : { detail::nextdownl(testcase), detail::nextupl(testcase) })
 	  {
-	    // Verify that the nearby values have a different shortest form.
-	    testcase = nextdownl(testcase);
-	    result = to_chars(begin(to_chars_buffer), end(to_chars_buffer),
-			      testcase, chars_format::hex);
+	    char nearby_buffer[1024] = {};
+	    result = to_chars(begin(nearby_buffer), end(nearby_buffer),
+			      nearby, chars_format::hex);
 	    VERIFY( result.ec == errc{} );
 	    *result.ptr = '\0';
-	    VERIFY( strcmp(to_chars_buffer, printf_buffer+strlen("0x")) != 0);
-	    sprintf(printf_buffer, "%La", testcase);
-	    VERIFY( !strcmp(to_chars_buffer, printf_buffer+strlen("0x")) );
-
-	    testcase = nextupl(nextupl(testcase));
-	    result = to_chars(begin(to_chars_buffer), end(to_chars_buffer),
-			      testcase, chars_format::hex);
-	    VERIFY( result.ec == errc{} );
-	    *result.ptr = '\0';
-	    VERIFY( strcmp(to_chars_buffer, printf_buffer+strlen("0x")) != 0);
-	    sprintf(printf_buffer, "%La", testcase);
-	    VERIFY( !strcmp(to_chars_buffer, printf_buffer+strlen("0x")) );
-
-	    testcase = nextdownl(testcase);
+	    VERIFY( strcmp(nearby_buffer, to_chars_buffer) != 0);
+	    verify_via_from_chars(begin(nearby_buffer), result.ptr, nearby);
+	    verify_via_printf(nearby_buffer, nearby);
 	  }
 
 	for (int precision = -1; precision < 50; precision++)
@@ -121,8 +170,7 @@ test01()
 			      testcase, chars_format::hex, precision);
 	    VERIFY( result.ec == errc{} );
 	    *result.ptr = '\0';
-	    sprintf(printf_buffer, "%.*La", precision, testcase);
-	    VERIFY( !strcmp(to_chars_buffer, printf_buffer+strlen("0x")) );
+	    verify_via_printf(to_chars_buffer, testcase, precision);
 	  }
       }
 }
@@ -173,7 +221,7 @@ test02()
 	  *result.ptr = '\0';
 	  char nearby_buffer[50000];
 	    {
-	      const long double smaller = nextdownl(value);
+	      const long double smaller = detail::nextdownl(value);
 	      result = to_chars(begin(nearby_buffer), end(nearby_buffer),
 				smaller, fmt);
 	      VERIFY( result.ec == errc{} );
@@ -182,7 +230,7 @@ test02()
 	    }
 
 	    {
-	      long double larger = nextupl(value);
+	      long double larger = detail::nextupl(value);
 	      result = to_chars(begin(nearby_buffer), end(nearby_buffer),
 				larger, fmt);
 	      VERIFY( result.ec == errc{} );

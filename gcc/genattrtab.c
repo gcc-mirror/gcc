@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991-2020 Free Software Foundation, Inc.
+   Copyright (C) 1991-2021 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -3011,7 +3011,6 @@ clear_struct_flag (rtx x)
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case EQ_ATTR:
     case ATTR_FLAG:
       return;
@@ -4344,7 +4343,7 @@ write_attr_case (FILE *outf, class attr_desc *attr, struct attr_value *av,
     write_attr_set (outf, attr, indent + 2, av->value, prefix, suffix,
 		    known_true, -2, 0, 0);
 
-  if (strncmp (prefix, "return", 6))
+  if (!startswith (prefix, "return"))
     {
       write_indent (outf, indent + 2);
       fprintf (outf, "break;\n");
@@ -5377,14 +5376,12 @@ main (int argc, const char **argv)
       {
         FILE *outf;
 
-#define IS_ATTR_GROUP(X) (!strncmp (attr->name, X, strlen (X)))
-	if (IS_ATTR_GROUP ("*internal_dfa_insn_code"))
+	if (startswith(attr->name, "*internal_dfa_insn_code"))
 	  outf = dfa_file;
-	else if (IS_ATTR_GROUP ("*insn_default_latency"))
+	else if (startswith (attr->name, "*insn_default_latency"))
 	  outf = latency_file;  
 	else
 	  outf = attr_file;
-#undef IS_ATTR_GROUP
 
 	if (! attr->is_special && ! attr->is_const)
 	  write_attr_get (outf, attr);

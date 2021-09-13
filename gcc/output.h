@@ -1,6 +1,6 @@
 /* Declarations for insn-output.c and other code to write to asm_out_file.
    These functions are defined in final.c, and varasm.c.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -348,6 +348,9 @@ extern bool decl_readonly_section (const_tree, int);
 /* This can be used to compute RELOC for the function above, when
    given a constant expression.  */
 extern int compute_reloc_for_constant (tree);
+
+/* This can be used to compute RELOC for get_variable_section.  */
+extern int compute_reloc_for_var (tree);
 
 /* User label prefix in effect for this compilation.  */
 extern const char *user_label_prefix;

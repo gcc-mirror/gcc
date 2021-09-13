@@ -1,5 +1,5 @@
 ;; GCC machine description for i386 synchronization instructions.
-;; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -219,78 +219,6 @@
   DONE;
 })
 
-(define_peephole2
-  [(set (match_operand:DF 0 "fp_register_operand")
-	(unspec:DF [(match_operand:DI 1 "memory_operand")]
-		   UNSPEC_FILD_ATOMIC))
-   (set (match_operand:DI 2 "memory_operand")
-	(unspec:DI [(match_dup 0)]
-		   UNSPEC_FIST_ATOMIC))
-   (set (match_operand:DF 3 "any_fp_register_operand")
-	(match_operand:DF 4 "memory_operand"))]
-  "!TARGET_64BIT
-   && peep2_reg_dead_p (2, operands[0])
-   && rtx_equal_p (XEXP (operands[4], 0), XEXP (operands[2], 0))"
-  [(set (match_dup 3) (match_dup 5))]
-  "operands[5] = gen_lowpart (DFmode, operands[1]);")
-
-(define_peephole2
-  [(set (match_operand:DF 0 "fp_register_operand")
-	(unspec:DF [(match_operand:DI 1 "memory_operand")]
-		   UNSPEC_FILD_ATOMIC))
-   (set (match_operand:DI 2 "memory_operand")
-	(unspec:DI [(match_dup 0)]
-		   UNSPEC_FIST_ATOMIC))
-   (set (mem:BLK (scratch:SI))
-	(unspec:BLK [(mem:BLK (scratch:SI))] UNSPEC_MEMORY_BLOCKAGE))
-   (set (match_operand:DF 3 "any_fp_register_operand")
-	(match_operand:DF 4 "memory_operand"))]
-  "!TARGET_64BIT
-   && peep2_reg_dead_p (2, operands[0])
-   && rtx_equal_p (XEXP (operands[4], 0), XEXP (operands[2], 0))"
-  [(const_int 0)]
-{
-  emit_move_insn (operands[3], gen_lowpart (DFmode, operands[1]));
-  emit_insn (gen_memory_blockage ());
-  DONE;
-})
-
-(define_peephole2
-  [(set (match_operand:DF 0 "sse_reg_operand")
-	(unspec:DF [(match_operand:DI 1 "memory_operand")]
-		   UNSPEC_LDX_ATOMIC))
-   (set (match_operand:DI 2 "memory_operand")
-	(unspec:DI [(match_dup 0)]
-		   UNSPEC_STX_ATOMIC))
-   (set (match_operand:DF 3 "any_fp_register_operand")
-	(match_operand:DF 4 "memory_operand"))]
-  "!TARGET_64BIT
-   && peep2_reg_dead_p (2, operands[0])
-   && rtx_equal_p (XEXP (operands[4], 0), XEXP (operands[2], 0))"
-  [(set (match_dup 3) (match_dup 5))]
-  "operands[5] = gen_lowpart (DFmode, operands[1]);")
-
-(define_peephole2
-  [(set (match_operand:DF 0 "sse_reg_operand")
-	(unspec:DF [(match_operand:DI 1 "memory_operand")]
-		   UNSPEC_LDX_ATOMIC))
-   (set (match_operand:DI 2 "memory_operand")
-	(unspec:DI [(match_dup 0)]
-		   UNSPEC_STX_ATOMIC))
-   (set (mem:BLK (scratch:SI))
-	(unspec:BLK [(mem:BLK (scratch:SI))] UNSPEC_MEMORY_BLOCKAGE))
-   (set (match_operand:DF 3 "any_fp_register_operand")
-	(match_operand:DF 4 "memory_operand"))]
-  "!TARGET_64BIT
-   && peep2_reg_dead_p (2, operands[0])
-   && rtx_equal_p (XEXP (operands[4], 0), XEXP (operands[2], 0))"
-  [(const_int 0)]
-{
-  emit_move_insn (operands[3], gen_lowpart (DFmode, operands[1]));
-  emit_insn (gen_memory_blockage ());
-  DONE;
-})
-
 (define_expand "atomic_store<mode>"
   [(set (match_operand:ATOMIC 0 "memory_operand")
 	(unspec:ATOMIC [(match_operand:ATOMIC 1 "nonimmediate_operand")
@@ -377,78 +305,6 @@
 	  emit_insn (gen_storedi_via_sse (dst, tmp));
 	}
     }
-  DONE;
-})
-
-(define_peephole2
-  [(set (match_operand:DF 0 "memory_operand")
-	(match_operand:DF 1 "any_fp_register_operand"))
-   (set (match_operand:DF 2 "fp_register_operand")
-	(unspec:DF [(match_operand:DI 3 "memory_operand")]
-		   UNSPEC_FILD_ATOMIC))
-   (set (match_operand:DI 4 "memory_operand")
-	(unspec:DI [(match_dup 2)]
-		   UNSPEC_FIST_ATOMIC))]
-  "!TARGET_64BIT
-   && peep2_reg_dead_p (3, operands[2])
-   && rtx_equal_p (XEXP (operands[0], 0), XEXP (operands[3], 0))"
-  [(set (match_dup 5) (match_dup 1))]
-  "operands[5] = gen_lowpart (DFmode, operands[4]);")
-
-(define_peephole2
-  [(set (match_operand:DF 0 "memory_operand")
-	(match_operand:DF 1 "any_fp_register_operand"))
-   (set (mem:BLK (scratch:SI))
-	(unspec:BLK [(mem:BLK (scratch:SI))] UNSPEC_MEMORY_BLOCKAGE))
-   (set (match_operand:DF 2 "fp_register_operand")
-	(unspec:DF [(match_operand:DI 3 "memory_operand")]
-		   UNSPEC_FILD_ATOMIC))
-   (set (match_operand:DI 4 "memory_operand")
-	(unspec:DI [(match_dup 2)]
-		   UNSPEC_FIST_ATOMIC))]
-  "!TARGET_64BIT
-   && peep2_reg_dead_p (4, operands[2])
-   && rtx_equal_p (XEXP (operands[0], 0), XEXP (operands[3], 0))"
-  [(const_int 0)]
-{
-  emit_insn (gen_memory_blockage ());
-  emit_move_insn (gen_lowpart (DFmode, operands[4]), operands[1]);
-  DONE;
-})
-
-(define_peephole2
-  [(set (match_operand:DF 0 "memory_operand")
-	(match_operand:DF 1 "any_fp_register_operand"))
-   (set (match_operand:DF 2 "sse_reg_operand")
-	(unspec:DF [(match_operand:DI 3 "memory_operand")]
-		   UNSPEC_LDX_ATOMIC))
-   (set (match_operand:DI 4 "memory_operand")
-	(unspec:DI [(match_dup 2)]
-		   UNSPEC_STX_ATOMIC))]
-  "!TARGET_64BIT
-   && peep2_reg_dead_p (3, operands[2])
-   && rtx_equal_p (XEXP (operands[0], 0), XEXP (operands[3], 0))"
-  [(set (match_dup 5) (match_dup 1))]
-  "operands[5] = gen_lowpart (DFmode, operands[4]);")
-
-(define_peephole2
-  [(set (match_operand:DF 0 "memory_operand")
-	(match_operand:DF 1 "any_fp_register_operand"))
-   (set (mem:BLK (scratch:SI))
-	(unspec:BLK [(mem:BLK (scratch:SI))] UNSPEC_MEMORY_BLOCKAGE))
-   (set (match_operand:DF 2 "sse_reg_operand")
-	(unspec:DF [(match_operand:DI 3 "memory_operand")]
-		   UNSPEC_LDX_ATOMIC))
-   (set (match_operand:DI 4 "memory_operand")
-	(unspec:DI [(match_dup 2)]
-		   UNSPEC_STX_ATOMIC))]
-  "!TARGET_64BIT
-   && peep2_reg_dead_p (4, operands[2])
-   && rtx_equal_p (XEXP (operands[0], 0), XEXP (operands[3], 0))"
-  [(const_int 0)]
-{
-  emit_insn (gen_memory_blockage ());
-  emit_move_insn (gen_lowpart (DFmode, operands[4]), operands[1]);
   DONE;
 })
 

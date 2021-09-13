@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++14 } }
+// { dg-require-effective-target net_ts_ip }
 // { dg-add-options net_ts }
 
 #include <experimental/internet>
@@ -27,8 +28,6 @@ using net::ip::address_v4;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   auto a0 = make_address_v4( address_v4::bytes_type{} );
   VERIFY( a0.to_uint() == 0 );
   VERIFY( a0.to_bytes() == address_v4::bytes_type{} );
@@ -42,8 +41,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   auto a0 = net::ip::make_address_v4(0u);
   VERIFY( a0.to_uint() == 0 );
   VERIFY( a0.to_bytes() == address_v4::bytes_type{} );
@@ -57,8 +54,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = false;
-
   auto a1 = net::ip::make_address_v4("127.0.0.1");
   VERIFY( a1.is_loopback() );
   auto a2 = net::ip::make_address_v4(std::string{"127.0.0.2"});

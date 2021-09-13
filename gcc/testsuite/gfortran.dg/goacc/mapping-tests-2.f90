@@ -24,9 +24,9 @@ subroutine foo
   ! Bad - we cannot do a strided access of 'x'
   ! No C/C++ equivalent
 !$acc enter data copyin(y(:)%i)
-! { dg-error "Array is not contiguous" "" { target "*-*-*" } 26 }
+! { dg-error "not a proper array section" "" { target "*-*-*" } 26 }
 
   ! Bad - again, a strided access
 !$acc enter data copyin(z(1)%cc(:)%i)
-! { dg-error "Array is not contiguous" "" { target "*-*-*" } 30 }
+! { dg-error "not a proper array section" "" { target "*-*-*" } 30 }
 end

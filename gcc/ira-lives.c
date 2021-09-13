@@ -1,5 +1,5 @@
 /* IRA processing allocno lives to build allocno live ranges.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -855,53 +855,62 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 
   cl = NO_REGS;
   alternative_mask preferred = preferred_alternatives;
-  for (; (c = *constraints); constraints += CONSTRAINT_LEN (c, constraints))
-    if (c == '#')
-      preferred &= ~ALTERNATIVE_BIT (0);
-    else if (c == ',')
-      preferred >>= 1;
-    else if (preferred & 1)
-      switch (c)
-	{
-	case 'g':
-	  return NO_REGS;
-
-	default:
-	  /* ??? Is this the best way to handle memory constraints?  */
-	  cn = lookup_constraint (constraints);
-	  if (insn_extra_memory_constraint (cn)
-	      || insn_extra_special_memory_constraint (cn)
-	      || insn_extra_address_constraint (cn))
+  while ((c = *constraints))
+    {
+      if (c == '#')
+	preferred &= ~ALTERNATIVE_BIT (0);
+      else if (c == ',')
+	preferred >>= 1;
+      else if (preferred & 1)
+	switch (c)
+	  {
+	  case 'g':
 	    return NO_REGS;
-	  if (constraint_satisfied_p (op, cn)
-	      || (equiv_const != NULL_RTX
-		  && CONSTANT_P (equiv_const)
-		  && constraint_satisfied_p (equiv_const, cn)))
-	    return NO_REGS;
-	  next_cl = reg_class_for_constraint (cn);
-	  if (next_cl == NO_REGS)
+	    
+	  default:
+	    /* ??? Is this the best way to handle memory constraints?  */
+	    cn = lookup_constraint (constraints);
+	    if (insn_extra_memory_constraint (cn)
+		|| insn_extra_special_memory_constraint (cn)
+		|| insn_extra_relaxed_memory_constraint (cn)
+		|| insn_extra_address_constraint (cn))
+	      return NO_REGS;
+	    if (constraint_satisfied_p (op, cn)
+		|| (equiv_const != NULL_RTX
+		    && CONSTANT_P (equiv_const)
+		    && constraint_satisfied_p (equiv_const, cn)))
+	      return NO_REGS;
+	    next_cl = reg_class_for_constraint (cn);
+	    if (next_cl == NO_REGS)
+	      break;
+	    if (cl == NO_REGS
+		? ira_class_singleton[next_cl][GET_MODE (op)] < 0
+		: (ira_class_singleton[cl][GET_MODE (op)]
+		   != ira_class_singleton[next_cl][GET_MODE (op)]))
+	      return NO_REGS;
+	    cl = next_cl;
 	    break;
-	  if (cl == NO_REGS
-	      ? ira_class_singleton[next_cl][GET_MODE (op)] < 0
-	      : (ira_class_singleton[cl][GET_MODE (op)]
-		 != ira_class_singleton[next_cl][GET_MODE (op)]))
-	    return NO_REGS;
-	  cl = next_cl;
-	  break;
-
-	case '0': case '1': case '2': case '3': case '4':
-	case '5': case '6': case '7': case '8': case '9':
-	  next_cl
-	    = single_reg_class (recog_data.constraints[c - '0'],
-				recog_data.operand[c - '0'], NULL_RTX);
-	  if (cl == NO_REGS
-	      ? ira_class_singleton[next_cl][GET_MODE (op)] < 0
-	      : (ira_class_singleton[cl][GET_MODE (op)]
-		 != ira_class_singleton[next_cl][GET_MODE (op)]))
-	    return NO_REGS;
-	  cl = next_cl;
-	  break;
-	}
+	    
+	  case '0': case '1': case '2': case '3': case '4':
+	  case '5': case '6': case '7': case '8': case '9':
+	    {
+	      char *end;
+	      unsigned long dup = strtoul (constraints, &end, 10);
+	      constraints = end;
+	      next_cl
+		= single_reg_class (recog_data.constraints[dup],
+				    recog_data.operand[dup], NULL_RTX);
+	      if (cl == NO_REGS
+		  ? ira_class_singleton[next_cl][GET_MODE (op)] < 0
+		  : (ira_class_singleton[cl][GET_MODE (op)]
+		     != ira_class_singleton[next_cl][GET_MODE (op)]))
+		return NO_REGS;
+	      cl = next_cl;
+	      continue;
+	    }
+	  }
+      constraints += CONSTRAINT_LEN (c, constraints);
+   }
   return cl;
 }
 

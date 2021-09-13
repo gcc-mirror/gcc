@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1829,7 +1829,10 @@ ira_setup_alts (rtx_insn *insn)
 		  case '0':  case '1':  case '2':  case '3':  case '4':
 		  case '5':  case '6':  case '7':  case '8':  case '9':
 		    {
-		      rtx other = recog_data.operand[c - '0'];
+		      char *end;
+		      unsigned long dup = strtoul (p, &end, 10);
+		      rtx other = recog_data.operand[dup];
+		      len = end - p;
 		      if (MEM_P (other)
 			  ? rtx_equal_p (other, op)
 			  : REG_P (op) || SUBREG_P (op))
@@ -1868,6 +1871,7 @@ ira_setup_alts (rtx_insn *insn)
 			  goto op_success;
 
 			case CT_MEMORY:
+			case CT_RELAXED_MEMORY:
 			  mem = op;
 			  /* Fall through.  */
 			case CT_SPECIAL_MEMORY:
@@ -1918,11 +1922,27 @@ ira_setup_alts (rtx_insn *insn)
 /* Return the number of the output non-early clobber operand which
    should be the same in any case as operand with number OP_NUM (or
    negative value if there is no such operand).  ALTS is the mask
-   of alternatives that we should consider.  */
+   of alternatives that we should consider.  SINGLE_INPUT_OP_HAS_CSTR_P
+   should be set in this function, it indicates whether there is only
+   a single input operand which has the matching constraint on the
+   output operand at the position specified in return value.  If the
+   pattern allows any one of several input operands holds the matching
+   constraint, it's set as false, one typical case is destructive FMA
+   instruction on target rs6000.  Note that for a non-NO_REG preferred
+   register class with no free register move copy, if the parameter
+   PARAM_IRA_CONSIDER_DUP_IN_ALL_ALTS is set to one, this function
+   will check all available alternatives for matching constraints,
+   even if it has found or will find one alternative with non-NO_REG
+   regclass, it can respect more cases with matching constraints.  If
+   PARAM_IRA_CONSIDER_DUP_IN_ALL_ALTS is set to zero,
+   SINGLE_INPUT_OP_HAS_CSTR_P is always true, it will stop to find
+   matching constraint relationship once it hits some alternative with
+   some non-NO_REG regclass.  */
 int
-ira_get_dup_out_num (int op_num, alternative_mask alts)
+ira_get_dup_out_num (int op_num, alternative_mask alts,
+		     bool &single_input_op_has_cstr_p)
 {
-  int curr_alt, c, original, dup;
+  int curr_alt, c, original;
   bool ignore_p, use_commut_op_p;
   const char *str;
 
@@ -1933,10 +1953,42 @@ ira_get_dup_out_num (int op_num, alternative_mask alts)
     return -1;
   str = recog_data.constraints[op_num];
   use_commut_op_p = false;
+  single_input_op_has_cstr_p = true;
+
+  rtx op = recog_data.operand[op_num];
+  int op_regno = reg_or_subregno (op);
+  enum reg_class op_pref_cl = reg_preferred_class (op_regno);
+  machine_mode op_mode = GET_MODE (op);
+
+  ira_init_register_move_cost_if_necessary (op_mode);
+  /* If the preferred regclass isn't NO_REG, continue to find the matching
+     constraint in all available alternatives with preferred regclass, even
+     if we have found or will find one alternative whose constraint stands
+     for a REG (non-NO_REG) regclass.  Note that it would be fine not to
+     respect matching constraint if the register copy is free, so exclude
+     it.  */
+  bool respect_dup_despite_reg_cstr
+    = param_ira_consider_dup_in_all_alts
+      && op_pref_cl != NO_REGS
+      && ira_register_move_cost[op_mode][op_pref_cl][op_pref_cl] > 0;
+
+  /* Record the alternative whose constraint uses the same regclass as the
+     preferred regclass, later if we find one matching constraint for this
+     operand with preferred reclass, we will visit these recorded
+     alternatives to check whether if there is one alternative in which no
+     any INPUT operands have one matching constraint same as our candidate.
+     If yes, it means there is one alternative which is perfectly fine
+     without satisfying this matching constraint.  If no, it means in any
+     alternatives there is one other INPUT operand holding this matching
+     constraint, it's fine to respect this matching constraint and further
+     create this constraint copy since it would become harmless once some
+     other takes preference and it's interfered.  */
+  alternative_mask pref_cl_alts;
+
   for (;;)
     {
-      rtx op = recog_data.operand[op_num];
-      
+      pref_cl_alts = 0;
+
       for (curr_alt = 0, ignore_p = !TEST_BIT (alts, curr_alt),
 	   original = -1;;)
 	{
@@ -1959,9 +2011,25 @@ ira_get_dup_out_num (int op_num, alternative_mask alts)
 		{
 		  enum constraint_num cn = lookup_constraint (str);
 		  enum reg_class cl = reg_class_for_constraint (cn);
-		  if (cl != NO_REGS
-		      && !targetm.class_likely_spilled_p (cl))
-		    goto fail;
+		  if (cl != NO_REGS && !targetm.class_likely_spilled_p (cl))
+		    {
+		      if (respect_dup_despite_reg_cstr)
+			{
+			  /* If it's free to move from one preferred class to
+			     the one without matching constraint, it doesn't
+			     have to respect this constraint with costs.  */
+			  if (cl != op_pref_cl
+			      && (ira_reg_class_intersect[cl][op_pref_cl]
+				  != NO_REGS)
+			      && (ira_may_move_in_cost[op_mode][op_pref_cl][cl]
+				  == 0))
+			    goto fail;
+			  else if (cl == op_pref_cl)
+			    pref_cl_alts |= ALTERNATIVE_BIT (curr_alt);
+			}
+		      else
+			goto fail;
+		    }
 		  if (constraint_satisfied_p (op, cn))
 		    goto fail;
 		  break;
@@ -1969,18 +2037,68 @@ ira_get_dup_out_num (int op_num, alternative_mask alts)
 		
 	      case '0': case '1': case '2': case '3': case '4':
 	      case '5': case '6': case '7': case '8': case '9':
-		if (original != -1 && original != c)
-		  goto fail;
-		original = c;
-		break;
+		{
+		  char *end;
+		  int n = (int) strtoul (str, &end, 10);
+		  str = end;
+		  if (original != -1 && original != n)
+		    goto fail;
+		  gcc_assert (n < recog_data.n_operands);
+		  if (respect_dup_despite_reg_cstr)
+		    {
+		      const operand_alternative *op_alt
+			= &recog_op_alt[curr_alt * recog_data.n_operands];
+		      /* Only respect the one with preferred rclass, without
+			 respect_dup_despite_reg_cstr it's possible to get
+			 one whose regclass isn't preferred first before,
+			 but it would fail since there should be other
+			 alternatives with preferred regclass.  */
+		      if (op_alt[n].cl == op_pref_cl)
+			original = n;
+		    }
+		  else
+		    original = n;
+		  continue;
+		}
 	      }
 	  str += CONSTRAINT_LEN (c, str);
 	}
       if (original == -1)
 	goto fail;
-      dup = original - '0';
-      if (recog_data.operand_type[dup] == OP_OUT)
-	return dup;
+      if (recog_data.operand_type[original] == OP_OUT)
+	{
+	  if (pref_cl_alts == 0)
+	    return original;
+	  /* Visit these recorded alternatives to check whether
+	     there is one alternative in which no any INPUT operands
+	     have one matching constraint same as our candidate.
+	     Give up this candidate if so.  */
+	  int nop, nalt;
+	  for (nalt = 0; nalt < recog_data.n_alternatives; nalt++)
+	    {
+	      if (!TEST_BIT (pref_cl_alts, nalt))
+		continue;
+	      const operand_alternative *op_alt
+		= &recog_op_alt[nalt * recog_data.n_operands];
+	      bool dup_in_other = false;
+	      for (nop = 0; nop < recog_data.n_operands; nop++)
+		{
+		  if (recog_data.operand_type[nop] != OP_IN)
+		    continue;
+		  if (nop == op_num)
+		    continue;
+		  if (op_alt[nop].matches == original)
+		    {
+		      dup_in_other = true;
+		      break;
+		    }
+		}
+	      if (!dup_in_other)
+		return -1;
+	    }
+	  single_input_op_has_cstr_p = false;
+	  return original;
+	}
     fail:
       if (use_commut_op_p)
 	break;
@@ -3077,7 +3195,6 @@ equiv_init_movable_p (rtx x, int regno)
     case SET:
       return equiv_init_movable_p (SET_SRC (x), regno);
 
-    case CC0:
     case CLOBBER:
       return 0;
 
@@ -3162,7 +3279,6 @@ memref_referenced_p (rtx memref, rtx x, bool read_p)
     case SYMBOL_REF:
     CASE_CONST_ANY:
     case PC:
-    case CC0:
     case HIGH:
     case LO_SUM:
       return false;
@@ -4440,9 +4556,6 @@ rtx_moveable_p (rtx *loc, enum op_type type)
     case PC:
       return type == OP_IN;
 
-    case CC0:
-      return false;
-
     case REG:
       if (x == frame_pointer_rtx)
 	return true;
@@ -4733,13 +4846,6 @@ find_moveable_pseudos (void)
 			   ? " (no unique first use)" : "");
 		continue;
 	      }
-	    if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (closest_use)))
-	      {
-		if (dump_file)
-		  fprintf (dump_file, "Reg %d: closest user uses cc0\n",
-			   regno);
-		continue;
-	      }
 
 	    bitmap_set_bit (interesting, regno);
 	    /* If we get here, we know closest_use is a non-NULL insn
@@ -4814,8 +4920,7 @@ find_moveable_pseudos (void)
 	  if (!bitmap_bit_p (def_bb_transp, regno))
 	    {
 	      if (bitmap_bit_p (def_bb_moveable, regno)
-		  && !control_flow_insn_p (use_insn)
-		  && (!HAVE_cc0 || !sets_cc0_p (use_insn)))
+		  && !control_flow_insn_p (use_insn))
 		{
 		  if (modified_between_p (DF_REF_REG (use), def_insn, use_insn))
 		    {
@@ -5111,6 +5216,15 @@ move_unallocated_pseudos (void)
       {
 	int idx = i - first_moveable_pseudo;
 	rtx other_reg = pseudo_replaced_reg[idx];
+	/* The iterating range [first_moveable_pseudo, last_moveable_pseudo)
+	   covers every new pseudo created in find_moveable_pseudos,
+	   regardless of the validation with it is successful or not.
+	   So we need to skip the pseudos which were used in those failed
+	   validations to avoid unexpected DF info and consequent ICE.
+	   We only set pseudo_replaced_reg[] when the validation is successful
+	   in find_moveable_pseudos, it's enough to check it here.  */
+	if (!other_reg)
+	  continue;
 	rtx_insn *def_insn = DF_REF_INSN (DF_REG_DEF_CHAIN (i));
 	/* The use must follow all definitions of OTHER_REG, so we can
 	   insert the new definition immediately after any of them.  */
@@ -5424,12 +5538,22 @@ ira (FILE *f)
 	  for (int i = 0; i < recog_data.n_operands; i++)
 	    if (recog_data.operand_type[i] != OP_IN)
 	      {
+		bool skip_p = false;
+		FOR_EACH_EDGE (e, ei, bb->succs)
+		  if (EDGE_CRITICAL_P (e)
+		      && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+		      && (e->flags & EDGE_ABNORMAL))
+		    {
+		      skip_p = true;
+		      break;
+		    }
+		if (skip_p)
+		  break;
 		output_jump_reload_p = true;
 		FOR_EACH_EDGE (e, ei, bb->succs)
 		  if (EDGE_CRITICAL_P (e)
 		      && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 		    {
-		      ira_assert (!(e->flags & EDGE_ABNORMAL));
 		      start_sequence ();
 		      /* We need to put some no-op insn here.  We can
 			 not put a note as commit_edges insertion will
@@ -5547,6 +5671,15 @@ ira (FILE *f)
   if (warn_clobbered)
     generate_setjmp_warnings ();
 
+  /* update_equiv_regs can use reg classes of pseudos and they are set up in
+     register pressure sensitive scheduling and loop invariant motion and in
+     live range shrinking.  This info can become obsolete if we add new pseudos
+     since the last set up.  Recalculate it again if the new pseudos were
+     added.  */
+  if (resize_reg_info () && (flag_sched_pressure || flag_live_range_shrinkage
+			     || flag_ira_loop_pressure))
+    ira_set_pseudo_classes (true, ira_dump_file);
+
   init_alias_analysis ();
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   reg_equiv = XCNEWVEC (struct equivalence, max_reg_num ());
@@ -5590,9 +5723,6 @@ ira (FILE *f)
       gcc_assert (max_regno_before_rm != max_reg_num ());
       regstat_recompute_for_max_regno ();
     }
-
-  if (resize_reg_info () && flag_ira_loop_pressure)
-    ira_set_pseudo_classes (true, ira_dump_file);
 
   setup_reg_equiv ();
   grow_reg_equivs ();

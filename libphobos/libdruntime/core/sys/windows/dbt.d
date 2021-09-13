@@ -9,6 +9,7 @@
  */
 module core.sys.windows.dbt;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 

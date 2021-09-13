@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -961,7 +961,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
       // 23.3.5.2 bitset operations:
-      //@{
+      ///@{
       /**
        *  Operations on bitsets.
        *  @param  __rhs  A same-sized bitset.
@@ -988,9 +988,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	this->_M_do_xor(__rhs);
 	return *this;
       }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  Operations on bitsets.
        *  @param  __position  The number of places to shift.
@@ -1022,9 +1022,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  this->_M_do_reset();
 	return *this;
       }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  These versions of single-bit set, reset, flip, and test are
        *  extensions from the SGI version.  They do no range checking.
@@ -1065,7 +1065,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _Unchecked_test(size_t __pos) const _GLIBCXX_NOEXCEPT
       { return ((this->_M_getword(__pos) & _Base::_S_maskbit(__pos))
 		!= static_cast<_WordT>(0)); }
-      //@}
+      ///@}
 
       // Set, reset, and flip.
       /**
@@ -1144,7 +1144,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator~() const _GLIBCXX_NOEXCEPT
       { return bitset<_Nb>(*this).flip(); }
 
-      //@{
+      ///@{
       /**
        *  @brief  Array-indexing support.
        *  @param  __position  Index into the %bitset.
@@ -1166,7 +1166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_CONSTEXPR bool
       operator[](size_t __position) const
       { return _Unchecked_test(__position); }
-      //@}
+      ///@}
 
       /**
        *  @brief Returns a numerical interpretation of the %bitset.
@@ -1300,7 +1300,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       size() const _GLIBCXX_NOEXCEPT
       { return _Nb; }
 
-      //@{
+      ///@{
       /// These comparisons for equality/inequality are, well, @e bitwise.
       bool
       operator==(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
@@ -1311,7 +1311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator!=(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
       { return !this->_M_is_equal(__rhs); }
 #endif
-      //@}
+      ///@}
 
       /**
        *  @brief Tests the value of a bit.
@@ -1352,7 +1352,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       none() const _GLIBCXX_NOEXCEPT
       { return !this->_M_is_any(); }
 
-      //@{
+      ///@{
       /// Self-explanatory.
       bitset<_Nb>
       operator<<(size_t __position) const _GLIBCXX_NOEXCEPT
@@ -1361,7 +1361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       bitset<_Nb>
       operator>>(size_t __position) const _GLIBCXX_NOEXCEPT
       { return bitset<_Nb>(*this) >>= __position; }
-      //@}
+      ///@}
 
       /**
        *  @brief  Finds the index of the first "on" bit.
@@ -1421,7 +1421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
   // 23.3.5.3 bitset operations:
-  //@{
+  ///@{
   /**
    *  @brief  Global bitwise operations on bitsets.
    *  @param  __x  A bitset.
@@ -1456,9 +1456,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       __result ^= __y;
       return __result;
     }
-  //@}
+  ///@}
 
-  //@{
+  ///@{
   /**
    *  @brief Global I/O operators for bitsets.
    *
@@ -1548,7 +1548,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       __x._M_copy_to_string(__tmp, __ct.widen('0'), __ct.widen('1'));
       return __os << __tmp;
     }
-  //@}
+  ///@}
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
 } // namespace std

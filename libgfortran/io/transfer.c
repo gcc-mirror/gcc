@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist transfer functions contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
@@ -491,7 +491,7 @@ read_sf (st_parameter_dt *dtp, size_t *length)
 
    If the read is short, then it is because the current record does not
    have enough data to satisfy the read request and the file was
-   opened with PAD=YES.  The caller must assume tailing spaces for
+   opened with PAD=YES.  The caller must assume trailing spaces for
    short reads.  */
 
 void *
@@ -4020,6 +4020,8 @@ next_record_w (st_parameter_dt *dtp, int done)
 		}
 	    }
 	}
+      else if (dtp->u.p.seen_dollar == 1)
+	break;
       /* Handle legacy CARRIAGECONTROL line endings.  */
       else if (dtp->u.p.current_unit->flags.cc == CC_FORTRAN)
 	next_record_cc (dtp);
@@ -4335,8 +4337,9 @@ extern void st_read_done (st_parameter_dt *);
 export_proto(st_read_done);
 
 void
-st_read_done_worker (st_parameter_dt *dtp)
+st_read_done_worker (st_parameter_dt *dtp, bool unlock)
 {
+  bool free_newunit = false;
   finalize_transfer (dtp);
 
   free_ionml (dtp);
@@ -4356,7 +4359,7 @@ st_read_done_worker (st_parameter_dt *dtp)
 		free (dtp->u.p.current_unit->ls);
 	      dtp->u.p.current_unit->ls = NULL;
 	    }
-	  newunit_free (dtp->common.unit);
+	  free_newunit = true;
 	}
       if (dtp->u.p.unit_is_internal || dtp->u.p.format_not_saved)
 	{
@@ -4364,6 +4367,15 @@ st_read_done_worker (st_parameter_dt *dtp)
 	  free_format (dtp);
 	}
     }
+   if (unlock)
+     unlock_unit (dtp->u.p.current_unit);
+   if (free_newunit)
+     {
+       /* Avoid inverse lock issues by placing after unlock_unit.  */
+       LOCK (&unit_lock);
+       newunit_free (dtp->common.unit);
+       UNLOCK (&unit_lock);
+     }
 }
 
 void
@@ -4380,11 +4392,10 @@ st_read_done (st_parameter_dt *dtp)
 	      if (dtp->u.p.async)
 		enqueue_done (dtp->u.p.current_unit->au, AIO_READ_DONE);
 	    }
+	  unlock_unit (dtp->u.p.current_unit);
 	}
       else
-	st_read_done_worker (dtp);
-
-      unlock_unit (dtp->u.p.current_unit);
+	st_read_done_worker (dtp, true);  /* Calls unlock_unit.  */
     }
 
   library_end ();
@@ -4402,8 +4413,9 @@ st_write (st_parameter_dt *dtp)
 
 
 void
-st_write_done_worker (st_parameter_dt *dtp)
+st_write_done_worker (st_parameter_dt *dtp, bool unlock)
 {
+  bool free_newunit = false;
   finalize_transfer (dtp);
 
   if (dtp->u.p.current_unit != NULL
@@ -4444,7 +4456,7 @@ st_write_done_worker (st_parameter_dt *dtp)
 		free (dtp->u.p.current_unit->ls);
 	      dtp->u.p.current_unit->ls = NULL;
 	    }
-	  newunit_free (dtp->common.unit);
+	  free_newunit = true;
 	}
       if (dtp->u.p.unit_is_internal || dtp->u.p.format_not_saved)
 	{
@@ -4452,6 +4464,15 @@ st_write_done_worker (st_parameter_dt *dtp)
 	  free_format (dtp);
 	}
     }
+   if (unlock)
+     unlock_unit (dtp->u.p.current_unit);
+   if (free_newunit)
+     {
+       /* Avoid inverse lock issues by placing after unlock_unit.  */
+       LOCK (&unit_lock);
+       newunit_free (dtp->common.unit);
+       UNLOCK (&unit_lock);
+     }
 }
 
 extern void st_write_done (st_parameter_dt *);
@@ -4474,11 +4495,10 @@ st_write_done (st_parameter_dt *dtp)
 	      if (dtp->u.p.async)
 		enqueue_done (dtp->u.p.current_unit->au, AIO_WRITE_DONE);
 	    }
+	  unlock_unit (dtp->u.p.current_unit);
 	}
       else
-	st_write_done_worker (dtp);
-
-      unlock_unit (dtp->u.p.current_unit);
+	st_write_done_worker (dtp, true);  /* Calls unlock_unit.  */
     }
 
   library_end ();

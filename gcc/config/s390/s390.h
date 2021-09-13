@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
 		  Ulrich Weigand (uweigand@de.ibm.com).
 		  Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
@@ -41,7 +41,9 @@ enum processor_flags
   PF_Z14 = 2048,
   PF_VXE = 4096,
   PF_VXE2 = 8192,
-  PF_Z15 = 16384
+  PF_Z15 = 16384,
+  PF_NNPA = 32768,
+  PF_ARCH14 = 65536
 };
 
 /* This is necessary to avoid a warning about comparing different enum
@@ -108,6 +110,14 @@ enum processor_flags
 	(s390_arch_flags & PF_VXE2)
 #define TARGET_CPU_VXE2_P(opts) \
 	(opts->x_s390_arch_flags & PF_VXE2)
+#define TARGET_CPU_ARCH14 \
+	(s390_arch_flags & PF_ARCH14)
+#define TARGET_CPU_ARCH14_P(opts) \
+	(opts->x_s390_arch_flags & PF_ARCH14)
+#define TARGET_CPU_NNPA \
+	(s390_arch_flags & PF_NNPA)
+#define TARGET_CPU_NNPA_P(opts) \
+	(opts->x_s390_arch_flags & PF_NNPA)
 
 #define TARGET_HARD_FLOAT_P(opts) (!TARGET_SOFT_FLOAT_P(opts))
 
@@ -167,6 +177,14 @@ enum processor_flags
 	(TARGET_VX && TARGET_CPU_VXE2)
 #define TARGET_VXE2_P(opts)						\
 	(TARGET_VX_P (opts) && TARGET_CPU_VXE2_P (opts))
+#define TARGET_ARCH14 (TARGET_ZARCH && TARGET_CPU_ARCH14)
+#define TARGET_ARCH14_P(opts)						\
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_ARCH14_P (opts))
+#define TARGET_NNPA					\
+	(TARGET_ZARCH && TARGET_CPU_NNPA)
+#define TARGET_NNPA_P(opts)						\
+	(TARGET_ZARCH_P (opts) && TARGET_CPU_NNPA_P (opts))
+
 #if defined(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13)
 #define TARGET_VECTOR_LOADSTORE_ALIGNMENT_HINTS TARGET_Z13
 #elif defined(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS)
@@ -229,8 +247,9 @@ enum processor_flags
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() s390_cpu_cpp_builtins (pfile)
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS s390_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO s390_d_register_target_info
 
 #ifdef DEFAULT_TARGET_64BIT
 #define TARGET_DEFAULT     (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP	\
@@ -767,6 +786,8 @@ CUMULATIVE_ARGS;
   s390_function_profiler ((FILE), ((LABELNO)))
 
 #define PROFILE_BEFORE_PROLOGUE 1
+
+#define NO_PROFILE_COUNTERS 1
 
 
 /* Trampolines for nested functions.  */

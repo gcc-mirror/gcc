@@ -1,5 +1,5 @@
 /* Configuration common to all targets running RTEMS. 
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -36,11 +36,11 @@
  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!qrtems:crt0%O%s} " \
-"%{qrtems:%{!nostdlib:%{!nostartfiles:" RTEMS_STARTFILE_SPEC "}}}"
+"%{qrtems:" RTEMS_STARTFILE_SPEC "}"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-"%{qrtems:%{!nostdlib:%{!nostartfiles:" RTEMS_ENDFILE_SPEC "}}}"
+"%{qrtems:" RTEMS_ENDFILE_SPEC " %{!qnolinkcmds:-T linkcmds%s}}"
 
 /*
  * Some targets do not set up LIB_SPECS, override it, here.
@@ -49,9 +49,7 @@
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{!qrtems:" STD_LIB_SPEC "} " \
-"%{qrtems:%{!nostdlib:%{!nodefaultlibs:" \
-"--start-group -lrtemsbsp -lrtemscpu -latomic -lc -lgcc --end-group} " \
-"%{!qnolinkcmds:-T linkcmds%s}}}"
+"%{qrtems:--start-group -lrtemsbsp -lrtemscpu -latomic -lc -lgcc --end-group}"
 
 #define TARGET_POSIX_IO
 

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -32,14 +32,16 @@
 #include "attrib.h"
 #include "parse.h"
 #include "root/speller.h"
+#include "target.h"
 
 typedef int (*ForeachDg)(void *ctx, size_t idx, Dsymbol *s);
 int ScopeDsymbol_foreach(Scope *sc, Dsymbols *members, ForeachDg dg, void *ctx, size_t *pn = NULL);
 void freeFieldinit(Scope *sc);
 Expression *resolve(Loc loc, Scope *sc, Dsymbol *s, bool hasOverloads);
-Expression *trySemantic(Expression *e, Scope *sc);
-Expression *semantic(Expression *e, Scope *sc);
+Package *resolveIsPackage(Dsymbol *sym);
 Expression *typeToExpression(Type *t);
+Type *decoToType(const char *deco);
+bool expressionsToString(OutBuffer &buf, Scope *sc, Expressions *exps);
 
 
 /************************************************
@@ -49,32 +51,69 @@ Expression *typeToExpression(Type *t);
 
 struct Ptrait
 {
+    Dsymbol *sym;
     Expression *e1;
     Expressions *exps;          // collected results
     Identifier *ident;          // which trait we're looking for
+    bool includeTemplates;
+    AA **funcTypeHash;
 };
+
+/* Compute the function signature and insert it in the
+ * hashtable, if not present. This is needed so that
+ * traits(getOverlods, F3, "visit") does not count `int visit(int)`
+ * twice in the following example:
+ *
+ * =============================================
+ * interface F1 { int visit(int);}
+ * interface F2 { int visit(int); void visit(); }
+ * interface F3 : F2, F1 {}
+ *==============================================
+ */
+static void insertInterfaceInheritedFunction(Ptrait *p, FuncDeclaration *fd, Expression *e)
+{
+    Identifier *signature = Identifier::idPool(fd->type->toChars());
+    //printf("%s - %s\n", fd->toChars, signature);
+    if (!dmd_aaGetRvalue(*p->funcTypeHash, (void *)signature))
+    {
+        bool* value = (bool*) dmd_aaGet(p->funcTypeHash, (void *)signature);
+        *value = true;
+        p->exps->push(e);
+    }
+}
 
 static int fptraits(void *param, Dsymbol *s)
 {
-    FuncDeclaration *f = s->isFuncDeclaration();
-    if (!f)
-        return 0;
-
     Ptrait *p = (Ptrait *)param;
-    if (p->ident == Id::getVirtualFunctions && !f->isVirtual())
+    if (p->includeTemplates)
+    {
+        p->exps->push(new DsymbolExp(Loc(),s, false));
+        return 0;
+    }
+    FuncDeclaration *fd = s->isFuncDeclaration();
+    if (!fd)
         return 0;
 
-    if (p->ident == Id::getVirtualMethods && !f->isVirtualMethod())
+    if (p->ident == Id::getVirtualFunctions && !fd->isVirtual())
+        return 0;
+
+    if (p->ident == Id::getVirtualMethods && !fd->isVirtualMethod())
         return 0;
 
     Expression *e;
-    FuncAliasDeclaration* ad = new FuncAliasDeclaration(f->ident, f, false);
-    ad->protection = f->protection;
+    FuncAliasDeclaration* ad = new FuncAliasDeclaration(fd->ident, fd, false);
+    ad->protection = fd->protection;
     if (p->e1)
         e = new DotVarExp(Loc(), p->e1, ad, false);
     else
         e = new DsymbolExp(Loc(), ad, false);
-    p->exps->push(e);
+     // if the parent is an interface declaration
+     // we must check for functions with the same signature
+     // in different inherited interfaces
+     if (p->sym && p->sym->isInterfaceDeclaration())
+         insertInterfaceInheritedFunction(p, fd, e);
+     else
+         p->exps->push(e);
     return 0;
 }
 
@@ -126,22 +165,111 @@ static void collectUnitTests(Dsymbols *symbols, AA *uniqueUnitTests, Expressions
     }
 }
 
+/***************************************************
+ * Determine if type t is copyable.
+ * Params:
+ *      t = type to check
+ * Returns:
+ *      true if we can copy it
+ */
+static bool isCopyable(Type *t)
+{
+    //printf("isCopyable() %s\n", t->toChars());
+    if (TypeStruct *ts = t->isTypeStruct())
+    {
+        if (ts->sym->postblit &&
+            (ts->sym->postblit->storage_class & STCdisable))
+            return false;
+    }
+    return true;
+}
+
 /************************ TraitsExp ************************************/
 
 static Expression *True(TraitsExp *e)  { return new IntegerExp(e->loc, true, Type::tbool); }
 static Expression *False(TraitsExp *e) { return new IntegerExp(e->loc, false, Type::tbool); }
 
-bool isTypeArithmetic(Type *t)       { return t->isintegral() || t->isfloating(); }
-bool isTypeFloating(Type *t)         { return t->isfloating(); }
-bool isTypeIntegral(Type *t)         { return t->isintegral(); }
-bool isTypeScalar(Type *t)           { return t->isscalar(); }
-bool isTypeUnsigned(Type *t)         { return t->isunsigned(); }
-bool isTypeAssociativeArray(Type *t) { return t->toBasetype()->ty == Taarray; }
-bool isTypeStaticArray(Type *t)      { return t->toBasetype()->ty == Tsarray; }
-bool isTypeAbstractClass(Type *t)    { return t->toBasetype()->ty == Tclass && ((TypeClass *)t->toBasetype())->sym->isAbstract(); }
-bool isTypeFinalClass(Type *t)       { return t->toBasetype()->ty == Tclass && (((TypeClass *)t->toBasetype())->sym->storage_class & STCfinal) != 0; }
+/**************************************
+ * Convert `Expression` or `Type` to corresponding `Dsymbol`,
+ * additionally strip off expression contexts.
+ *
+ * Some symbol related `__traits` ignore arguments expression contexts.
+ * For example:
+ *  struct S { void f() {} }
+ *  S s;
+ *  pragma(msg, __traits(isNested, s.f));
+ *  // s.f is DotVarExp, but __traits(isNested) needs a FuncDeclaration.
+ *
+ * This is used for that common `__traits` behavior.
+ */
+static Dsymbol *getDsymbolWithoutExpCtx(RootObject *oarg)
+{
+    if (Expression *e = isExpression(oarg))
+    {
+        if (e->op == TOKdotvar)
+            return ((DotVarExp *)e)->var;
+        if (e->op == TOKdottd)
+            return ((DotTemplateExp *)e)->td;
+    }
+    return getDsymbol(oarg);
+}
 
-Expression *isTypeX(TraitsExp *e, bool (*fp)(Type *t))
+/**
+   Gets the function type from a given AST node
+   if the node is a function of some sort.
+
+ Params:
+    o = an AST node to check for a `TypeFunction`
+    fdp = optional pointer to a function declararion, to be set
+      if `o` is a function declarartion.
+
+ Returns:
+    a type node if `o` is a declaration of
+        a delegate, function, function-pointer
+      or a variable of the former.  Otherwise, `null`.
+*/
+static TypeFunction *toTypeFunction(RootObject *o, FuncDeclaration **fdp = NULL)
+{
+    Dsymbol *s = getDsymbolWithoutExpCtx(o);
+    Type *t = isType(o);
+    TypeFunction *tf = NULL;
+
+    if (s)
+    {
+        FuncDeclaration *fd = s->isFuncDeclaration();
+        if (fd)
+        {
+            t = fd->type;
+            if (fdp)
+                *fdp = fd;
+        }
+        else if (VarDeclaration *vd = s->isVarDeclaration())
+            t = vd->type;
+    }
+    if (t)
+    {
+        if (t->ty == Tfunction)
+            tf = (TypeFunction *)t;
+        else if (t->ty == Tdelegate)
+            tf = (TypeFunction *)t->nextOf();
+        else if (t->ty == Tpointer && t->nextOf()->ty == Tfunction)
+            tf = (TypeFunction *)t->nextOf();
+    }
+
+    return tf;
+}
+
+static bool isTypeArithmetic(Type *t)       { return t->isintegral() || t->isfloating(); }
+static bool isTypeFloating(Type *t)         { return t->isfloating(); }
+static bool isTypeIntegral(Type *t)         { return t->isintegral(); }
+static bool isTypeScalar(Type *t)           { return t->isscalar(); }
+static bool isTypeUnsigned(Type *t)         { return t->isunsigned(); }
+static bool isTypeAssociativeArray(Type *t) { return t->toBasetype()->ty == Taarray; }
+static bool isTypeStaticArray(Type *t)      { return t->toBasetype()->ty == Tsarray; }
+static bool isTypeAbstractClass(Type *t)    { return t->toBasetype()->ty == Tclass && ((TypeClass *)t->toBasetype())->sym->isAbstract(); }
+static bool isTypeFinalClass(Type *t)       { return t->toBasetype()->ty == Tclass && (((TypeClass *)t->toBasetype())->sym->storage_class & STCfinal) != 0; }
+
+static Expression *isTypeX(TraitsExp *e, bool (*fp)(Type *t))
 {
     if (!e->args || !e->args->length)
         return False(e);
@@ -154,20 +282,51 @@ Expression *isTypeX(TraitsExp *e, bool (*fp)(Type *t))
     return True(e);
 }
 
-bool isFuncAbstractFunction(FuncDeclaration *f) { return f->isAbstract(); }
-bool isFuncVirtualFunction(FuncDeclaration *f) { return f->isVirtual(); }
-bool isFuncVirtualMethod(FuncDeclaration *f) { return f->isVirtualMethod(); }
-bool isFuncFinalFunction(FuncDeclaration *f) { return f->isFinalFunc(); }
-bool isFuncStaticFunction(FuncDeclaration *f) { return !f->needThis() && !f->isNested(); }
-bool isFuncOverrideFunction(FuncDeclaration *f) { return f->isOverride(); }
+static bool isDsymDeprecated(Dsymbol *s) { return s->isDeprecated(); }
 
-Expression *isFuncX(TraitsExp *e, bool (*fp)(FuncDeclaration *f))
+static int fpisTemplate(void *, Dsymbol *s)
+{
+    if (s->isTemplateDeclaration())
+        return 1;
+
+    return 0;
+}
+
+bool isTemplate(Dsymbol *s)
+{
+    if (!s->toAlias()->isOverloadable())
+        return false;
+
+    return overloadApply(s, NULL, &fpisTemplate) != 0;
+}
+
+static Expression *isDsymX(TraitsExp *e, bool (*fp)(Dsymbol *s))
 {
     if (!e->args || !e->args->length)
         return False(e);
     for (size_t i = 0; i < e->args->length; i++)
     {
-        Dsymbol *s = getDsymbol((*e->args)[i]);
+        Dsymbol *s = getDsymbolWithoutExpCtx((*e->args)[i]);
+        if (!s || !fp(s))
+            return False(e);
+    }
+    return True(e);
+}
+
+static bool isFuncAbstractFunction(FuncDeclaration *f) { return f->isAbstract(); }
+static bool isFuncVirtualFunction(FuncDeclaration *f) { return f->isVirtual(); }
+static bool isFuncVirtualMethod(FuncDeclaration *f) { return f->isVirtualMethod(); }
+static bool isFuncFinalFunction(FuncDeclaration *f) { return f->isFinalFunc(); }
+static bool isFuncStaticFunction(FuncDeclaration *f) { return !f->needThis() && !f->isNested(); }
+static bool isFuncOverrideFunction(FuncDeclaration *f) { return f->isOverride(); }
+
+static Expression *isFuncX(TraitsExp *e, bool (*fp)(FuncDeclaration *f))
+{
+    if (!e->args || !e->args->length)
+        return False(e);
+    for (size_t i = 0; i < e->args->length; i++)
+    {
+        Dsymbol *s = getDsymbolWithoutExpCtx((*e->args)[i]);
         if (!s)
             return False(e);
         FuncDeclaration *f = s->isFuncDeclaration();
@@ -177,21 +336,42 @@ Expression *isFuncX(TraitsExp *e, bool (*fp)(FuncDeclaration *f))
     return True(e);
 }
 
-bool isDeclRef(Declaration *d) { return d->isRef(); }
-bool isDeclOut(Declaration *d) { return d->isOut(); }
-bool isDeclLazy(Declaration *d) { return (d->storage_class & STClazy) != 0; }
+static bool isDeclDisabled(Declaration *d) { return d->isDisabled(); }
+static bool isDeclFuture(Declaration *d) { return d->isFuture(); }
+static bool isDeclRef(Declaration *d) { return d->isRef(); }
+static bool isDeclOut(Declaration *d) { return d->isOut(); }
+static bool isDeclLazy(Declaration *d) { return (d->storage_class & STClazy) != 0; }
 
-Expression *isDeclX(TraitsExp *e, bool (*fp)(Declaration *d))
+static Expression *isDeclX(TraitsExp *e, bool (*fp)(Declaration *d))
 {
     if (!e->args || !e->args->length)
         return False(e);
     for (size_t i = 0; i < e->args->length; i++)
     {
-        Dsymbol *s = getDsymbol((*e->args)[i]);
+        Dsymbol *s = getDsymbolWithoutExpCtx((*e->args)[i]);
         if (!s)
             return False(e);
         Declaration *d = s->isDeclaration();
         if (!d || !fp(d))
+            return False(e);
+    }
+    return True(e);
+}
+
+static bool isPkgModule(Package *p) { return p->isModule() || p->isPackageMod(); }
+static bool isPkgPackage(Package *p) { return p->isModule() == NULL; }
+
+static Expression *isPkgX(TraitsExp *e, bool (*fp)(Package *p))
+{
+    if (!e->args || !e->args->length)
+        return False(e);
+    for (size_t i = 0; i < e->args->length; i++)
+    {
+        Dsymbol *s = getDsymbolWithoutExpCtx((*e->args)[i]);
+        if (!s)
+            return False(e);
+        Package *p = resolveIsPackage(s);
+        if (!p || !fp(p))
             return False(e);
     }
     return True(e);
@@ -225,6 +405,9 @@ TraitsInitializer::TraitsInitializer()
         "isAbstractClass",
         "isArithmetic",
         "isAssociativeArray",
+        "isDisabled",
+        "isDeprecated",
+        "isFuture",
         "isFinalClass",
         "isPOD",
         "isNested",
@@ -239,13 +422,18 @@ TraitsInitializer::TraitsInitializer()
         "isFinalFunction",
         "isOverrideFunction",
         "isStaticFunction",
+        "isModule",
+        "isPackage",
         "isRef",
         "isOut",
         "isLazy",
+        "isReturnOnStack",
         "hasMember",
         "identifier",
         "getProtection",
+        "getVisibility",
         "parent",
+        "child",
         "getLinkage",
         "getMember",
         "getOverloads",
@@ -256,7 +444,6 @@ TraitsInitializer::TraitsInitializer()
         "derivedMembers",
         "isSame",
         "compiles",
-        "parameters",
         "getAliasThis",
         "getAttributes",
         "getFunctionAttributes",
@@ -265,10 +452,15 @@ TraitsInitializer::TraitsInitializer()
         "getUnitTests",
         "getVirtualIndex",
         "getPointerBitmap",
+        "isZeroInit",
+        "getTargetInfo",
+        "getLocation",
+        "hasPostblit",
+        "isCopyable",
         NULL
     };
 
-    traitsStringTable._init(40);
+    traitsStringTable._init(56);
 
     for (size_t idx = 0;; idx++)
     {
@@ -289,35 +481,6 @@ void *trait_search_fp(void *, const char *seed, int* cost)
     *cost = 0;
     StringValue *sv = traitsStringTable.lookup(seed, len);
     return sv ? (void*)sv->ptrvalue : NULL;
-}
-
-static int fpisTemplate(void *, Dsymbol *s)
-{
-    if (s->isTemplateDeclaration())
-        return 1;
-
-    return 0;
-}
-
-bool isTemplate(Dsymbol *s)
-{
-    if (!s->toAlias()->isOverloadable())
-        return false;
-
-    return overloadApply(s, NULL, &fpisTemplate) != 0;
-}
-
-Expression *isSymbolX(TraitsExp *e, bool (*fp)(Dsymbol *s))
-{
-    if (!e->args || !e->args->length)
-        return False(e);
-    for (size_t i = 0; i < e->args->length; i++)
-    {
-        Dsymbol *s = getDsymbol((*e->args)[i]);
-        if (!s || !fp(s))
-            return False(e);
-    }
-    return True(e);
 }
 
 /**
@@ -491,11 +654,23 @@ static Expression *dimError(TraitsExp *e, int expected, int dim)
 
 Expression *semanticTraits(TraitsExp *e, Scope *sc)
 {
-    if (e->ident != Id::compiles && e->ident != Id::isSame &&
-        e->ident != Id::identifier && e->ident != Id::getProtection)
+    if (e->ident != Id::compiles &&
+        e->ident != Id::isSame &&
+        e->ident != Id::identifier &&
+        e->ident != Id::getProtection && e->ident != Id::getVisibility &&
+        e->ident != Id::getAttributes)
     {
+        // Pretend we're in a deprecated scope so that deprecation messages
+        // aren't triggered when checking if a symbol is deprecated
+        const StorageClass save = sc->stc;
+        if (e->ident == Id::isDeprecated)
+            sc->stc |= STCdeprecated;
         if (!TemplateInstance::semanticTiargs(e->loc, sc, e->args, 1))
+        {
+            sc->stc = save;
             return new ErrorExp();
+        }
+        sc->stc = save;
     }
     size_t dim = e->args ? e->args->length : 0;
 
@@ -523,6 +698,14 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
     {
         return isTypeX(e, &isTypeAssociativeArray);
     }
+    else if (e->ident == Id::isDeprecated)
+    {
+        return isDsymX(e, &isDsymDeprecated);
+    }
+    else if (e->ident == Id::isFuture)
+    {
+        return isDeclX(e, &isDeclFuture);
+    }
     else if (e->ident == Id::isStaticArray)
     {
         return isTypeX(e, &isTypeStaticArray);
@@ -537,7 +720,10 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
     }
     else if (e->ident == Id::isTemplate)
     {
-        return isSymbolX(e, &isTemplate);
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        return isDsymX(e, &isTemplate);
     }
     else if (e->ident == Id::isPOD)
     {
@@ -560,13 +746,50 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         }
         return True(e);
     }
+    else if (e->ident == Id::hasPostblit)
+    {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        RootObject *o = (*e->args)[0];
+        Type *t = isType(o);
+        if (!t)
+        {
+            e->error("type expected as second argument of __traits %s instead of %s",
+                e->ident->toChars(), o->toChars());
+            return new ErrorExp();
+        }
+
+        Type *tb = t->baseElemOf();
+        if (StructDeclaration *sd = (tb->ty == Tstruct) ? ((TypeStruct *)tb)->sym : NULL)
+        {
+            return sd->postblit ? True(e) : False(e);
+        }
+        return False(e);
+    }
+    else if (e->ident == Id::isCopyable)
+    {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        RootObject *o = (*e->args)[0];
+        Type *t = isType(o);
+        if (!t)
+        {
+            e->error("type expected as second argument of __traits %s instead of %s",
+                e->ident->toChars(), o->toChars());
+            return new ErrorExp();
+        }
+
+        return isCopyable(t) ? True(e) : False(e);
+    }
     else if (e->ident == Id::isNested)
     {
         if (dim != 1)
             return dimError(e, 1, dim);
 
         RootObject *o = (*e->args)[0];
-        Dsymbol *s = getDsymbol(o);
+        Dsymbol *s = getDsymbolWithoutExpCtx(o);
         if (!s)
         {
         }
@@ -579,43 +802,91 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return f->isNested() ? True(e) : False(e);
         }
 
-        e->error("aggregate or function expected instead of '%s'", o->toChars());
+        e->error("aggregate or function expected instead of `%s`", o->toChars());
         return new ErrorExp();
+    }
+    else if (e->ident == Id::isDisabled)
+    {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        return isDeclX(e, &isDeclDisabled);
     }
     else if (e->ident == Id::isAbstractFunction)
     {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
         return isFuncX(e, &isFuncAbstractFunction);
     }
     else if (e->ident == Id::isVirtualFunction)
     {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
         return isFuncX(e, &isFuncVirtualFunction);
     }
     else if (e->ident == Id::isVirtualMethod)
     {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
         return isFuncX(e, &isFuncVirtualMethod);
     }
     else if (e->ident == Id::isFinalFunction)
     {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
         return isFuncX(e, &isFuncFinalFunction);
     }
     else if (e->ident == Id::isOverrideFunction)
     {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
         return isFuncX(e, &isFuncOverrideFunction);
     }
     else if (e->ident == Id::isStaticFunction)
     {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
         return isFuncX(e, &isFuncStaticFunction);
+    }
+    else if (e->ident == Id::isModule)
+    {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        return isPkgX(e, &isPkgModule);
+    }
+    else if (e->ident == Id::isPackage)
+    {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        return isPkgX(e, &isPkgPackage);
     }
     else if (e->ident == Id::isRef)
     {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
         return isDeclX(e, &isDeclRef);
     }
     else if (e->ident == Id::isOut)
     {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
         return isDeclX(e, &isDeclOut);
     }
     else if (e->ident == Id::isLazy)
     {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
         return isDeclX(e, &isDeclLazy);
     }
     else if (e->ident == Id::identifier)
@@ -634,12 +905,16 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         Identifier *id = NULL;
         if (Parameter *po = isParameter(o))
         {
+            if (!po->ident)
+            {
+                e->error("argument `%s` has no identifier", po->type->toChars());
+                return new ErrorExp();
+            }
             id = po->ident;
-            assert(id);
         }
         else
         {
-            Dsymbol *s = getDsymbol(o);
+            Dsymbol *s = getDsymbolWithoutExpCtx(o);
             if (!s || !s->ident)
             {
                 e->error("argument %s has no identifier", o->toChars());
@@ -649,22 +924,22 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         }
 
         StringExp *se = new StringExp(e->loc, const_cast<char *>(id->toChars()));
-        return semantic(se, sc);
+        return expressionSemantic(se, sc);
     }
-    else if (e->ident == Id::getProtection)
+    else if (e->ident == Id::getProtection || e->ident == Id::getVisibility)
     {
         if (dim != 1)
             return dimError(e, 1, dim);
 
         Scope *sc2 = sc->push();
-        sc2->flags = sc->flags | SCOPEnoaccesscheck;
+        sc2->flags = sc->flags | SCOPEnoaccesscheck | SCOPEignoresymbolvisibility;
         bool ok = TemplateInstance::semanticTiargs(e->loc, sc2, e->args, 1);
         sc2->pop();
         if (!ok)
             return new ErrorExp();
 
         RootObject *o = (*e->args)[0];
-        Dsymbol *s = getDsymbol(o);
+        Dsymbol *s = getDsymbolWithoutExpCtx(o);
         if (!s)
         {
             if (!isError(o))
@@ -672,12 +947,12 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return new ErrorExp();
         }
         if (s->semanticRun == PASSinit)
-            s->semantic(NULL);
+            dsymbolSemantic(s, NULL);
 
         const char *protName = protectionToChars(s->prot().kind);   // TODO: How about package(names)
         assert(protName);
         StringExp *se = new StringExp(e->loc, const_cast<char *>(protName));
-        return semantic(se, sc);
+        return expressionSemantic(se, sc);
     }
     else if (e->ident == Id::parent)
     {
@@ -685,7 +960,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return dimError(e, 1, dim);
 
         RootObject *o = (*e->args)[0];
-        Dsymbol *s = getDsymbol(o);
+        Dsymbol *s = getDsymbolWithoutExpCtx(o);
         if (s)
         {
             if (FuncDeclaration *fd = s->isFuncDeclaration())   // Bugzilla 8943
@@ -706,7 +981,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
                 if (td->overroot)       // if not start of overloaded list of TemplateDeclaration's
                     td = td->overroot;  // then get the start
                 Expression *ex = new TemplateExp(e->loc, td, f);
-                ex = semantic(ex, sc);
+                ex = expressionSemantic(ex, sc);
                 return ex;
             }
 
@@ -714,11 +989,77 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             {
                 // Directly translate to VarExp instead of FuncExp
                 Expression *ex = new VarExp(e->loc, fld, true);
-                return semantic(ex, sc);
+                return expressionSemantic(ex, sc);
             }
         }
 
         return resolve(e->loc, sc, s, false);
+    }
+    else if (e->ident == Id::child)
+    {
+        if (dim != 2)
+            return dimError(e, 2, dim);
+
+        Expression *ex;
+        RootObject *op = (*e->args)[0];
+        if (Dsymbol *symp = getDsymbol(op))
+            ex = new DsymbolExp(e->loc, symp);
+        else if (Expression *exp = isExpression(op))
+            ex = exp;
+        else
+        {
+            e->error("symbol or expression expected as first argument of __traits `child` instead of `%s`", op->toChars());
+            return new ErrorExp();
+        }
+
+        ex = expressionSemantic(ex, sc);
+        RootObject *oc = (*e->args)[1];
+        Dsymbol *symc = getDsymbol(oc);
+        if (!symc)
+        {
+            e->error("symbol expected as second argument of __traits `child` instead of `%s`", oc->toChars());
+            return new ErrorExp();
+        }
+
+        if (Declaration *d = symc->isDeclaration())
+            ex = new DotVarExp(e->loc, ex, d);
+        else if (TemplateDeclaration *td = symc->isTemplateDeclaration())
+            ex = new DotExp(e->loc, ex, new TemplateExp(e->loc, td));
+        else if (ScopeDsymbol *ti = symc->isScopeDsymbol())
+            ex = new DotExp(e->loc, ex, new ScopeExp(e->loc, ti));
+        else
+            assert(0);
+
+        ex = expressionSemantic(ex, sc);
+        return ex;
+    }
+    else if (e->ident == Id::toType)
+    {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        Expression *ex = isExpression((*e->args)[0]);
+        if (!ex)
+        {
+            e->error("expression expected as second argument of __traits `%s`", e->ident->toChars());
+            return new ErrorExp();
+        }
+        ex = ex->ctfeInterpret();
+
+        StringExp *se = semanticString(sc, ex, "__traits(toType, string)");
+        if (!se)
+        {
+            return new ErrorExp();
+        }
+        Type *t = decoToType(se->toUTF8(sc)->toPtr());
+        if (!t)
+        {
+            e->error("cannot determine `%s`", e->toChars());
+            return new ErrorExp();
+        }
+        ex = new TypeExp(e->loc, t);
+        ex = expressionSemantic(ex, sc);
+        return ex;
     }
     else if (e->ident == Id::hasMember ||
              e->ident == Id::getMember ||
@@ -726,7 +1067,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
              e->ident == Id::getVirtualMethods ||
              e->ident == Id::getVirtualFunctions)
     {
-        if (dim != 2)
+        if (dim != 2 && !(dim == 3 && e->ident == Id::getOverloads))
             return dimError(e, 2, dim);
 
         RootObject *o = (*e->args)[0];
@@ -737,6 +1078,19 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return new ErrorExp();
         }
         ex = ex->ctfeInterpret();
+
+        bool includeTemplates = false;
+        if (dim == 3 && e->ident == Id::getOverloads)
+        {
+            Expression *b = isExpression((*e->args)[2]);
+            b = b->ctfeInterpret();
+            if (!b->type->equals(Type::tbool))
+            {
+                e->error("`bool` expected as third argument of `__traits(getOverloads)`, not `%s` of type `%s`", b->toChars(), b->type->toChars());
+                return new ErrorExp();
+            }
+            includeTemplates = b->isBool(true);
+        }
 
         StringExp *se = ex->toStringExp();
         if (!se || se->len == 0)
@@ -758,6 +1112,11 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         Dsymbol *sym = getDsymbol(o);
         if (sym)
         {
+            if (e->ident == Id::hasMember)
+            {
+                if (sym->search(e->loc, id) != NULL)
+                    return True(e);
+            }
             ex = new DsymbolExp(e->loc, sym);
             ex = new DotIdExp(e->loc, ex, id);
         }
@@ -771,18 +1130,14 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return new ErrorExp();
         }
 
+        // ignore symbol visibility and disable access checks for these traits
+        Scope *scx = sc->push();
+        scx->flags |= SCOPEignoresymbolvisibility | SCOPEnoaccesscheck;
+
         if (e->ident == Id::hasMember)
         {
-            if (sym)
-            {
-                if (sym->search(e->loc, id))
-                    return True(e);
-            }
-
             /* Take any errors as meaning it wasn't found
              */
-            Scope *scx = sc->push();
-            scx->flags |= SCOPEignoresymbolvisibility;
             ex = trySemantic(ex, scx);
             scx->pop();
             return ex ? True(e) : False(e);
@@ -792,9 +1147,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             if (ex->op == TOKdotid)
                 // Prevent semantic() from replacing Symbol with its initializer
                 ((DotIdExp *)ex)->wantsym = true;
-            Scope *scx = sc->push();
-            scx->flags |= SCOPEignoresymbolvisibility;
-            ex = semantic(ex, scx);
+            ex = expressionSemantic(ex, scx);
             scx->pop();
             return ex;
         }
@@ -804,9 +1157,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         {
             unsigned errors = global.errors;
             Expression *eorig = ex;
-            Scope *scx = sc->push();
-            scx->flags |= SCOPEignoresymbolvisibility;
-            ex = semantic(ex, scx);
+            ex = expressionSemantic(ex, scx);
             if (errors < global.errors)
                 e->error("%s cannot be resolved", eorig->toChars());
             //ex->print();
@@ -814,7 +1165,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             /* Create tuple of functions of ex
              */
             Expressions *exps = new Expressions();
-            FuncDeclaration *f;
+            Dsymbol *f;
             if (ex->op == TOKvar)
             {
                 VarExp *ve = (VarExp *)ex;
@@ -830,16 +1181,46 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
                 else
                     ex = dve->e1;
             }
+            else if (ex->op == TOKtemplate)
+            {
+                TemplateExp *te = (TemplateExp *)ex;
+                TemplateDeclaration *td = te->td;
+                f = td;
+                if (td && td->funcroot)
+                    f = td->funcroot;
+                ex = NULL;
+            }
             else
                 f = NULL;
             Ptrait p;
+            p.sym = sym;
             p.exps = exps;
             p.e1 = ex;
             p.ident = e->ident;
-            overloadApply(f, &p, &fptraits);
+            p.includeTemplates = includeTemplates;
+            AA *funcTypeHash = NULL;
+            p.funcTypeHash = &funcTypeHash;
+
+            InterfaceDeclaration *ifd = NULL;
+            if (sym)
+                ifd = sym->isInterfaceDeclaration();
+            // If the symbol passed as a parameter is an
+            // interface that inherits other interfaces
+            if (ifd && ifd->interfaces.length)
+            {
+                // check the overloads of each inherited interface individually
+                for (size_t i = 0; i < ifd->interfaces.length; i++)
+                {
+                    BaseClass *bc = ifd->interfaces.ptr[i];
+                    if (Dsymbol *fd = bc->sym->search(e->loc, f->ident))
+                        overloadApply(fd, &p, &fptraits);
+                }
+            }
+            else
+                overloadApply(f, &p, &fptraits);
 
             ex = new TupleExp(e->loc, exps);
-            ex = semantic(ex, scx);
+            ex = expressionSemantic(ex, scx);
             scx->pop();
             return ex;
         }
@@ -889,58 +1270,58 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         if (ad->aliasthis)
             exps->push(new StringExp(e->loc, const_cast<char *>(ad->aliasthis->ident->toChars())));
         Expression *ex = new TupleExp(e->loc, exps);
-        ex = semantic(ex, sc);
+        ex = expressionSemantic(ex, sc);
         return ex;
     }
     else if (e->ident == Id::getAttributes)
     {
+        /* Specify 0 for bit 0 of the flags argument to semanticTiargs() so that
+         * a symbol should not be folded to a constant.
+         * Bit 1 means don't convert Parameter to Type if Parameter has an identifier
+         */
+        if (!TemplateInstance::semanticTiargs(e->loc, sc, e->args, 3))
+            return new ErrorExp();
+
         if (dim != 1)
             return dimError(e, 1, dim);
 
         RootObject *o = (*e->args)[0];
-        Dsymbol *s = getDsymbol(o);
-        if (!s)
+        Parameter *po = isParameter(o);
+        Dsymbol *s = getDsymbolWithoutExpCtx(o);
+        UserAttributeDeclaration *udad = NULL;
+        if (po)
+        {
+            udad = po->userAttribDecl;
+        }
+        else if (s)
+        {
+            if (Import *imp = s->isImport())
+            {
+                s = imp->mod;
+            }
+            //printf("getAttributes %s, attrs = %p, scope = %p\n", s->toChars(), s->userAttribDecl, s->_scope);
+            udad = s->userAttribDecl;
+        }
+        else
         {
             e->error("first argument is not a symbol");
             return new ErrorExp();
         }
-        if (Import *imp = s->isImport())
-        {
-            s = imp->mod;
-        }
 
-        //printf("getAttributes %s, attrs = %p, scope = %p\n", s->toChars(), s->userAttribDecl, s->_scope);
-        UserAttributeDeclaration *udad = s->userAttribDecl;
         Expressions *exps = udad ? udad->getAttributes() : new Expressions();
         TupleExp *tup = new TupleExp(e->loc, exps);
-        return semantic(tup, sc);
+        return expressionSemantic(tup, sc);
     }
     else if (e->ident == Id::getFunctionAttributes)
     {
-        /// extract all function attributes as a tuple (const/shared/inout/pure/nothrow/etc) except UDAs.
+        /* extract all function attributes as a tuple (const/shared/inout/pure/nothrow/etc) except UDAs.
+         * https://dlang.org/spec/traits.html#getFunctionAttributes
+         */
         if (dim != 1)
             return dimError(e, 1, dim);
 
-        RootObject *o = (*e->args)[0];
-        Dsymbol *s = getDsymbol(o);
-        Type *t = isType(o);
-        TypeFunction *tf = NULL;
-        if (s)
-        {
-            if (FuncDeclaration *f = s->isFuncDeclaration())
-                t = f->type;
-            else if (VarDeclaration *v = s->isVarDeclaration())
-                t = v->type;
-        }
-        if (t)
-        {
-            if (t->ty == Tfunction)
-                tf = (TypeFunction *)t;
-            else if (t->ty == Tdelegate)
-                tf = (TypeFunction *)t->nextOf();
-            else if (t->ty == Tpointer && t->nextOf()->ty == Tfunction)
-                tf = (TypeFunction *)t->nextOf();
-        }
+        TypeFunction *tf = toTypeFunction((*e->args)[0]);
+
         if (!tf)
         {
             e->error("first argument is not a function");
@@ -954,7 +1335,28 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         tf->attributesApply(&pa, &PushAttributes::fp, TRUSTformatSystem);
 
         TupleExp *tup = new TupleExp(e->loc, mods);
-        return semantic(tup, sc);
+        return expressionSemantic(tup, sc);
+    }
+    else if (e->ident == Id::isReturnOnStack)
+    {
+        /* Extract as a boolean if function return value is on the stack
+         * https://dlang.org/spec/traits.html#isReturnOnStack
+         */
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        RootObject *o = (*e->args)[0];
+        FuncDeclaration *fd = NULL;
+        TypeFunction *tf = toTypeFunction(o, &fd);
+
+        if (!tf)
+        {
+            e->error("argument to `__traits(isReturnOnStack, %s)` is not a function", o->toChars());
+            return new ErrorExp();
+        }
+
+        bool value = target.isReturnOnStack(tf, fd && fd->needThis());
+        return new IntegerExp(e->loc, value, Type::tbool);
     }
     else if (e->ident == Id::getFunctionVariadicStyle)
     {
@@ -971,17 +1373,9 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         LINK link;
         VarArg varargs;
         RootObject *o = (*e->args)[0];
-        Type *t = isType(o);
-        TypeFunction *tf = NULL;
-        if (t)
-        {
-            if (t->ty == Tfunction)
-                tf = (TypeFunction *)t;
-            else if (t->ty == Tdelegate)
-                tf = (TypeFunction *)t->nextOf();
-            else if (t->ty == Tpointer && t->nextOf()->ty == Tfunction)
-                tf = (TypeFunction *)t->nextOf();
-        }
+        FuncDeclaration *fd = NULL;
+        TypeFunction *tf = toTypeFunction(o, &fd);
+
         if (tf)
         {
             link = tf->linkage;
@@ -989,9 +1383,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         }
         else
         {
-            Dsymbol *s = getDsymbol(o);
-            FuncDeclaration *fd = NULL;
-            if (!s || (fd = s->isFuncDeclaration()) == NULL)
+            if (!fd)
             {
                 e->error("argument to `__traits(getFunctionVariadicStyle, %s)` is not a function", o->toChars());
                 return new ErrorExp();
@@ -1010,7 +1402,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
                 assert(0);
         }
         StringExp *se = new StringExp(e->loc, const_cast<char*>(style));
-        return semantic(se, sc);
+        return expressionSemantic(se, sc);
     }
     else if (e->ident == Id::getParameterStorageClasses)
     {
@@ -1021,19 +1413,12 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         if (dim != 2)
             return dimError(e, 2, dim);
 
-        RootObject *o1 = (*e->args)[1];
         RootObject *o = (*e->args)[0];
-        Type *t = isType(o);
-        TypeFunction *tf = NULL;
-        if (t)
-        {
-            if (t->ty == Tfunction)
-                tf = (TypeFunction *)t;
-            else if (t->ty == Tdelegate)
-                tf = (TypeFunction *)t->nextOf();
-            else if (t->ty == Tpointer && t->nextOf()->ty == Tfunction)
-                tf = (TypeFunction *)t->nextOf();
-        }
+        RootObject *o1 = (*e->args)[1];
+
+        FuncDeclaration *fd = NULL;
+        TypeFunction *tf = toTypeFunction(o, &fd);
+
         ParameterList fparams;
         if (tf)
         {
@@ -1041,9 +1426,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         }
         else
         {
-            Dsymbol *s = getDsymbol(o);
-            FuncDeclaration *fd = NULL;
-            if (!s || (fd = s->isFuncDeclaration()) == NULL)
+            if (!fd)
             {
                 e->error("first argument to `__traits(getParameterStorageClasses, %s, %s)` is not a function",
                     o->toChars(), o1->toChars());
@@ -1108,7 +1491,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             exps->push(new StringExp(e->loc, const_cast<char *>("scope")));
 
         TupleExp *tup = new TupleExp(e->loc, exps);
-        return semantic(tup, sc);
+        return expressionSemantic(tup, sc);
     }
     else if (e->ident == Id::getLinkage)
     {
@@ -1118,17 +1501,9 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
 
         LINK link;
         RootObject *o = (*e->args)[0];
-        Type *t = isType(o);
-        TypeFunction *tf = NULL;
-        if (t)
-        {
-            if (t->ty == Tfunction)
-                tf = (TypeFunction *)t;
-            else if (t->ty == Tdelegate)
-                tf = (TypeFunction *)t->nextOf();
-            else if (t->ty == Tpointer && t->nextOf()->ty == Tfunction)
-                tf = (TypeFunction *)t->nextOf();
-        }
+
+        TypeFunction *tf = toTypeFunction(o);
+
         if (tf)
             link = tf->linkage;
         else
@@ -1164,7 +1539,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         }
         const char *linkage = linkageToChars(link);
         StringExp *se = new StringExp(e->loc, const_cast<char *>(linkage));
-        return semantic(se, sc);
+        return expressionSemantic(se, sc);
     }
     else if (e->ident == Id::allMembers ||
              e->ident == Id::derivedMembers)
@@ -1183,6 +1558,13 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         {
             // Bugzilla 9692
             s = imp->mod;
+        }
+
+        // https://issues.dlang.org/show_bug.cgi?id=16044
+        if (Package *p = s->isPackage())
+        {
+            if (Module *pm = p->isPackageMod())
+                s = pm;
         }
 
         ScopeDsymbol *sds = s->isScopeDsymbol();
@@ -1211,6 +1593,11 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
                         return 0;
                     }
                 }
+
+                // https://issues.dlang.org/show_bug.cgi?id=20915
+                // skip version and debug identifiers
+                if (sm->isVersionSymbol() || sm->isDebugSymbol())
+                    return 0;
 
                 //printf("\t[%i] %s %s\n", i, sm->kind(), sm->toChars());
                 if (sm->ident)
@@ -1272,7 +1659,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         if (cd && e->ident == Id::allMembers)
         {
             if (cd->semanticRun < PASSsemanticdone)
-                cd->semantic(NULL);    // Bugzilla 13668: Try to resolve forward reference
+                dsymbolSemantic(cd, NULL);    // Bugzilla 13668: Try to resolve forward reference
 
             struct PushBaseMembers
             {
@@ -1306,7 +1693,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
          *   [ __traits(allMembers, ...) ]
          */
         Expression *ex = new TupleExp(e->loc, exps);
-        ex = semantic(ex, sc);
+        ex = expressionSemantic(ex, sc);
         return ex;
     }
     else if (e->ident == Id::compiles)
@@ -1328,33 +1715,67 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
 
             RootObject *o = (*e->args)[i];
             Type *t = isType(o);
-            Expression *ex = t ? typeToExpression(t) : isExpression(o);
-            if (!ex && t)
+            while (t)
             {
-                Dsymbol *s;
-                t->resolve(e->loc, sc2, &ex, &t, &s);
-                if (t)
+                if (TypeMixin *tm = t->isTypeMixin())
                 {
-                    t->semantic(e->loc, sc2);
-                    if (t->ty == Terror)
+                    /* The mixin string could be a type or an expression.
+                     * Have to try compiling it to see.
+                     */
+                    OutBuffer buf;
+                    if (expressionsToString(buf, sc, tm->exps))
+                    {
+                        err = true;
+                        break;
+                    }
+                    const size_t len = buf.length();
+                    const char *str = buf.extractChars();
+                    Parser p(e->loc, sc->_module, (const utf8_t *)str, len, false);
+                    p.nextToken();
+                    //printf("p.loc.linnum = %d\n", p.loc.linnum);
+
+                    o = p.parseTypeOrAssignExp(TOKeof);
+                    if (p.errors || p.token.value != TOKeof)
+                    {
+                        err = true;
+                        break;
+                    }
+                    t = isType(o);
+                }
+                else
+                    break;
+            }
+
+            if (!err)
+            {
+                Expression *ex = t ? typeToExpression(t) : isExpression(o);
+                if (!ex && t)
+                {
+                    Dsymbol *s;
+                    t->resolve(e->loc, sc2, &ex, &t, &s);
+                    if (t)
+                    {
+                        typeSemantic(t, e->loc, sc2);
+                        if (t->ty == Terror)
+                            err = true;
+                    }
+                    else if (s && s->errors)
                         err = true;
                 }
-                else if (s && s->errors)
-                    err = true;
-            }
-            if (ex)
-            {
-                ex = semantic(ex, sc2);
-                ex = resolvePropertiesOnly(sc2, ex);
-                ex = ex->optimize(WANTvalue);
-                if (sc2->func && sc2->func->type->ty == Tfunction)
+                if (ex)
                 {
-                    TypeFunction *tf = (TypeFunction *)sc2->func->type;
-                    canThrow(ex, sc2->func, tf->isnothrow);
+                    ex = expressionSemantic(ex, sc2);
+                    ex = resolvePropertiesOnly(sc2, ex);
+                    ex = ex->optimize(WANTvalue);
+                    if (sc2->func && sc2->func->type->ty == Tfunction)
+                    {
+                        TypeFunction *tf = (TypeFunction *)sc2->func->type;
+                        canThrow(ex, sc2->func, tf->isnothrow);
+                    }
+                    ex = checkGC(sc2, ex);
+                    if (ex->op == TOKerror)
+                        err = true;
                 }
-                ex = checkGC(sc2, ex);
-                if (ex->op == TOKerror)
-                    err = true;
             }
 
             // Carefully detach the scope from the parent and throw it away as
@@ -1421,7 +1842,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return dimError(e, 1, dim);
 
         RootObject *o = (*e->args)[0];
-        Dsymbol *s = getDsymbol(o);
+        Dsymbol *s = getDsymbolWithoutExpCtx(o);
         if (!s)
         {
             e->error("argument %s to __traits(getUnitTests) must be a module or aggregate",
@@ -1447,7 +1868,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             collectUnitTests(sds->members, uniqueUnitTests, exps);
         }
         TupleExp *te= new TupleExp(e->loc, exps);
-        return semantic(te, sc);
+        return expressionSemantic(te, sc);
     }
     else if (e->ident == Id::getVirtualIndex)
     {
@@ -1455,7 +1876,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return dimError(e, 1, dim);
 
         RootObject *o = (*e->args)[0];
-        Dsymbol *s = getDsymbol(o);
+        Dsymbol *s = getDsymbolWithoutExpCtx(o);
 
         FuncDeclaration *fd = s ? s->isFuncDeclaration() : NULL;
         if (!fd)
@@ -1471,11 +1892,80 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
     {
         return pointerBitmap(e);
     }
+    else if (e->ident == Id::isZeroInit)
+    {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        RootObject *o = (*e->args)[0];
+        Type *t = isType(o);
+        if (!t)
+        {
+            e->error("type expected as second argument of __traits `%s` instead of `%s`",
+                e->ident->toChars(), o->toChars());
+            return new ErrorExp();
+        }
+
+        Type *tb = t->baseElemOf();
+        return tb->isZeroInit(e->loc) ? True(e) : False(e);
+    }
+    else if (e->ident == Id::getTargetInfo)
+    {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        Expression *ex = isExpression((*e->args)[0]);
+        StringExp *se = ex ? ex->ctfeInterpret()->toStringExp() : NULL;
+        if (!ex || !se || se->len == 0)
+        {
+            e->error("string expected as argument of __traits `%s` instead of `%s`", e->ident->toChars(), ex->toChars());
+            return new ErrorExp();
+        }
+        se = se->toUTF8(sc);
+
+        Expression *r = target.getTargetInfo(se->toPtr(), e->loc);
+        if (!r)
+        {
+            e->error("`getTargetInfo` key `\"%s\"` not supported by this implementation", se->toPtr());
+            return new ErrorExp();
+        }
+        return expressionSemantic(r, sc);
+    }
+    else if (e->ident == Id::getLocation)
+    {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+        RootObject *arg0 = (*e->args)[0];
+        Dsymbol *s = getDsymbolWithoutExpCtx(arg0);
+        if (!s || !s->loc.filename)
+        {
+            e->error("can only get the location of a symbol, not `%s`", arg0->toChars());
+            return new ErrorExp();
+        }
+
+        const FuncDeclaration *fd = s->isFuncDeclaration();
+        if (fd && fd->overnext)
+        {
+            e->error("cannot get location of an overload set, "
+                     "use `__traits(getOverloads, ..., \"%s\"%s)[N]` "
+                     "to get the Nth overload",
+                     arg0->toChars(), "");
+            return new ErrorExp();
+        }
+
+        Expressions *exps = new Expressions();
+        exps->setDim(3);
+        (*exps)[0] = new StringExp(e->loc, const_cast<char *>(s->loc.filename), strlen(s->loc.filename));
+        (*exps)[1] = new IntegerExp(e->loc, s->loc.linnum, Type::tint32);
+        (*exps)[2] = new IntegerExp(e->loc, s->loc.charnum, Type::tint32);
+        TupleExp *tup = new TupleExp(e->loc, exps);
+        return expressionSemantic(tup, sc);
+    }
 
     if (const char *sub = (const char *)speller(e->ident->toChars(), &trait_search_fp, NULL, idchars))
-        e->error("unrecognized trait '%s', did you mean '%s'?", e->ident->toChars(), sub);
+        e->error("unrecognized trait `%s`, did you mean `%s`?", e->ident->toChars(), sub);
     else
-        e->error("unrecognized trait '%s'", e->ident->toChars());
+        e->error("unrecognized trait `%s`", e->ident->toChars());
     return new ErrorExp();
 
     e->error("wrong number of arguments %d", (int)dim);

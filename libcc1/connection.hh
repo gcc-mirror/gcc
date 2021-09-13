@@ -1,5 +1,5 @@
 /* Plugin connection declarations
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,7 +46,10 @@ namespace cc1_plugin
     {
     }
 
-    virtual ~connection ();
+    virtual ~connection () = default;
+
+    connection (const connection &) = delete;
+    connection &operator= (const connection &) = delete;
 
     // Send a single character.  This is used to introduce various
     // higher-level protocol elements.
@@ -89,13 +92,11 @@ namespace cc1_plugin
       m_callbacks.add_callback (name, func);
     }
 
-    virtual void print (const char *);
+    virtual void print (const char *)
+    {
+    }
 
   private:
-
-    // Declared but not defined, to prevent use.
-    connection (const connection &);
-    connection &operator= (const connection &);
 
     // Helper function for the wait_* methods.
     status do_wait (bool);

@@ -1,6 +1,6 @@
 /* Plugin for AMD GCN execution.
 
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded
 
@@ -29,6 +29,7 @@
 /* {{{ Includes and defines  */
 
 #include "config.h"
+#include "symcat.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -292,7 +293,6 @@ struct copy_data
   void *dst;
   const void *src;
   size_t len;
-  bool free_src;
   struct goacc_asyncqueue *aq;
 };
 
@@ -403,6 +403,7 @@ typedef enum {
   EF_AMDGPU_MACH_AMDGCN_GFX803 = 0x02a,
   EF_AMDGPU_MACH_AMDGCN_GFX900 = 0x02c,
   EF_AMDGPU_MACH_AMDGCN_GFX906 = 0x02f,
+  EF_AMDGPU_MACH_AMDGCN_GFX908 = 0x030
 } EF_AMDGPU_MACH;
 
 const static int EF_AMDGPU_MACH_MASK = 0x000000ff;
@@ -1071,7 +1072,7 @@ init_environment_variables (void)
 
   hsa_runtime_lib = secure_getenv ("HSA_RUNTIME_LIB");
   if (hsa_runtime_lib == NULL)
-    hsa_runtime_lib = HSA_RUNTIME_LIB "libhsa-runtime64.so.1";
+    hsa_runtime_lib = "libhsa-runtime64.so.1";
 
   support_cpu_devices = secure_getenv ("GCN_SUPPORT_CPU_DEVICES");
 
@@ -1596,6 +1597,7 @@ elf_gcn_isa_field (Elf64_Ehdr *image)
 const static char *gcn_gfx803_s = "gfx803";
 const static char *gcn_gfx900_s = "gfx900";
 const static char *gcn_gfx906_s = "gfx906";
+const static char *gcn_gfx908_s = "gfx908";
 const static int gcn_isa_name_len = 6;
 
 /* Returns the name that the HSA runtime uses for the ISA or NULL if we do not
@@ -1611,6 +1613,8 @@ isa_hsa_name (int isa) {
       return gcn_gfx900_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX906:
       return gcn_gfx906_s;
+    case EF_AMDGPU_MACH_AMDGCN_GFX908:
+      return gcn_gfx908_s;
     }
   return NULL;
 }
@@ -1643,6 +1647,9 @@ isa_code(const char *isa) {
 
   if (!strncmp (isa, gcn_gfx906_s, gcn_isa_name_len))
     return EF_AMDGPU_MACH_AMDGCN_GFX906;
+
+  if (!strncmp (isa, gcn_gfx908_s, gcn_isa_name_len))
+    return EF_AMDGPU_MACH_AMDGCN_GFX908;
 
   return -1;
 }
@@ -2907,8 +2914,6 @@ copy_data (void *data_)
 	     data->aq->agent->device_id, data->aq->id, data->len, data->src,
 	     data->dst);
   hsa_memory_copy_wrapper (data->dst, data->src, data->len);
-  if (data->free_src)
-    free ((void *) data->src);
   free (data);
 }
 
@@ -2922,12 +2927,11 @@ gomp_offload_free (void *ptr)
 }
 
 /* Request an asynchronous data copy, to or from a device, on a given queue.
-   The event will be registered as a callback.  If FREE_SRC is true
-   then the source data will be freed following the copy.  */
+   The event will be registered as a callback.  */
 
 static void
 queue_push_copy (struct goacc_asyncqueue *aq, void *dst, const void *src,
-		 size_t len, bool free_src)
+		 size_t len)
 {
   if (DEBUG_QUEUES)
     GCN_DEBUG ("queue_push_copy %d:%d: %zu bytes from (%p) to (%p)\n",
@@ -2937,7 +2941,6 @@ queue_push_copy (struct goacc_asyncqueue *aq, void *dst, const void *src,
   data->dst = dst;
   data->src = src;
   data->len = len;
-  data->free_src = free_src;
   data->aq = aq;
   queue_push_callback (aq, copy_data, data);
 }
@@ -3034,10 +3037,8 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
      problem size, so let's do a reasonable number of single-worker gangs.
      64 gangs matches a typical Fiji device.  */
 
-  /* NOTE: Until support for middle-end worker partitioning is merged, use 1
-     for the default number of workers.  */
   if (dims[0] == 0) dims[0] = get_cu_count (kernel->agent); /* Gangs.  */
-  if (dims[1] == 0) dims[1] = 1;  /* Workers.  */
+  if (dims[1] == 0) dims[1] = 16; /* Workers.  */
 
   /* The incoming dimensions are expressed in terms of gangs, workers, and
      vectors.  The HSA dimensions are expressed in terms of "work-items",
@@ -3304,6 +3305,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   struct kernel_info *kernel;
   int kernel_count = image_desc->kernel_count;
   unsigned var_count = image_desc->global_variable_count;
+  int other_count = 1;
 
   agent = get_agent_info (ord);
   if (!agent)
@@ -3320,7 +3322,8 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 
   GCN_DEBUG ("Encountered %d kernels in an image\n", kernel_count);
   GCN_DEBUG ("Encountered %u global variables in an image\n", var_count);
-  pair = GOMP_PLUGIN_malloc ((kernel_count + var_count - 2)
+  GCN_DEBUG ("Expect %d other variables in an image\n", other_count);
+  pair = GOMP_PLUGIN_malloc ((kernel_count + var_count + other_count - 2)
 			     * sizeof (struct addr_pair));
   *target_table = pair;
   module = (struct module_info *)
@@ -3395,6 +3398,37 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
       pair++;
     }
 
+  GCN_DEBUG ("Looking for variable %s\n", STRINGX (GOMP_DEVICE_NUM_VAR));
+
+  hsa_status_t status;
+  hsa_executable_symbol_t var_symbol;
+  status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
+						 STRINGX (GOMP_DEVICE_NUM_VAR),
+						 agent->id, 0, &var_symbol);
+  if (status == HSA_STATUS_SUCCESS)
+    {
+      uint64_t device_num_varptr;
+      uint32_t device_num_varsize;
+
+      status = hsa_fns.hsa_executable_symbol_get_info_fn
+	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS,
+	 &device_num_varptr);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not extract a variable from its symbol", status);
+      status = hsa_fns.hsa_executable_symbol_get_info_fn
+	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_SIZE,
+	 &device_num_varsize);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not extract a variable size from its symbol", status);
+
+      pair->start = device_num_varptr;
+      pair->end = device_num_varptr + device_num_varsize;
+    }
+  else
+    /* The 'GOMP_DEVICE_NUM_VAR' variable was not in this image.  */
+    pair->start = pair->end = 0;
+  pair++;
+
   /* Ensure that constructors are run first.  */
   struct GOMP_kernel_launch_attributes kla =
     { 3,
@@ -3417,7 +3451,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   if (module->fini_array_func)
     kernel_count--;
 
-  return kernel_count + var_count;
+  return kernel_count + var_count + other_count;
 }
 
 /* Unload GCN object-code module described by struct gcn_image_desc in
@@ -3640,7 +3674,7 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst, const void *src, size_t n)
     {
       struct agent_info *agent = get_agent_info (device);
       maybe_init_omp_async (agent);
-      queue_push_copy (agent->omp_async_queue, dst, src, n, false);
+      queue_push_copy (agent->omp_async_queue, dst, src, n);
       return true;
     }
 
@@ -3910,15 +3944,7 @@ GOMP_OFFLOAD_openacc_async_host2dev (int device, void *dst, const void *src,
 {
   struct agent_info *agent = get_agent_info (device);
   assert (agent == aq->agent);
-  /* The source data does not necessarily remain live until the deferred
-     copy happens.  Taking a snapshot of the data here avoids reading
-     uninitialised data later, but means that (a) data is copied twice and
-     (b) modifications to the copied data between the "spawning" point of
-     the asynchronous kernel and when it is executed will not be seen.
-     But, that is probably correct.  */
-  void *src_copy = GOMP_PLUGIN_malloc (n);
-  memcpy (src_copy, src, n);
-  queue_push_copy (aq, dst, src_copy, n, true);
+  queue_push_copy (aq, dst, src, n);
   return true;
 }
 
@@ -3930,7 +3956,7 @@ GOMP_OFFLOAD_openacc_async_dev2host (int device, void *dst, const void *src,
 {
   struct agent_info *agent = get_agent_info (device);
   assert (agent == aq->agent);
-  queue_push_copy (aq, dst, src, n, false);
+  queue_push_copy (aq, dst, src, n);
   return true;
 }
 

@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -766,6 +766,7 @@ decode_cmdline_option (const char *const *argv, unsigned int lang_mask,
       werror_arg[0] = 'W';
 
       size_t warning_index = find_opt (werror_arg, lang_mask);
+      free (werror_arg);
       if (warning_index != OPT_SPECIAL_unknown)
 	{
 	  const struct cl_option *warning_option
@@ -1804,7 +1805,7 @@ parse_options_from_collect_gcc_options (const char *collect_gcc_options,
 	      if (argv_storage[j] == '\0')
 		fatal_error (input_location,
 			     "malformed %<COLLECT_GCC_OPTIONS%>");
-	      else if (strncmp (&argv_storage[j], "'\\''", 4) == 0)
+	      else if (startswith (&argv_storage[j], "'\\''"))
 		{
 		  argv_storage[k++] = '\'';
 		  j += 4;

@@ -3148,8 +3148,6 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     {
         version (CRuntime_Microsoft)
             ld1 = 0x1.FFFFFFFFFFFFFFFEp-16382L; // strtold currently mapped to strtod
-        else version (CRuntime_Bionic)
-            ld1 = 0x1.FFFFFFFFFFFFFFFEp-16382L; // strtold currently mapped to strtod
         else
             ld1 = strtold(s.ptr, null);
     }
@@ -3969,7 +3967,7 @@ if (isOctalLiteral(num))
 
 /// Ditto
 template octal(alias decimalInteger)
-if (isIntegral!(typeof(decimalInteger)))
+if (is(typeof(decimalInteger)) && isIntegral!(typeof(decimalInteger)))
 {
     enum octal = octal!(typeof(decimalInteger))(to!string(decimalInteger));
 }

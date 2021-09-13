@@ -1,5 +1,5 @@
 /* QI mode divide routines for libgcc for MSP430
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.

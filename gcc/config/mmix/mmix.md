@@ -1,5 +1,5 @@
 ;; GCC machine description for MMIX
-;; Copyright (C) 2000-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2000-2021 Free Software Foundation, Inc.
 ;; Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 ;; This file is part of GCC.
@@ -974,11 +974,9 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
   "%+B%D1 %2,%0")
 
 (define_expand "call"
-  [(parallel [(call (match_operand:QI 0 "memory_operand" "")
-		    (match_operand 1 "general_operand" ""))
-	      (use (match_operand 2 "general_operand" ""))
-	      (clobber (match_dup 4))])
-   (set (match_dup 4) (match_dup 3))]
+  [(parallel [(call (match_operand:QI 0 "memory_operand" "") (const_int 0))
+	      (clobber (match_dup 1))])
+   (set (match_dup 1) (match_dup 2))]
   ""
   "
 {
@@ -992,30 +990,24 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
       = replace_equiv_address (operands[0],
 			       force_reg (Pmode, XEXP (operands[0], 0)));
 
+  /* Note that we overwrite the generic operands[1] and operands[2]; we
+     don't use those values.  */
+  operands[1] = gen_rtx_REG (DImode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
+
   /* Since the epilogue 'uses' the return address, and it is clobbered
      in the call, and we set it back after every call (all but one setting
      will be optimized away), integrity is maintained.  */
-  operands[3]
+  operands[2]
     = mmix_get_hard_reg_initial_val (Pmode,
 				     MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
-
-  /* FIXME: There's a bug in gcc which causes NULL to be passed as
-     operand[2] when we get out of registers, which later confuses gcc.
-     Work around it by replacing it with const_int 0.  Possibly documentation
-     error too.  */
-  if (operands[2] == NULL_RTX)
-    operands[2] = const0_rtx;
-
-  operands[4] = gen_rtx_REG (DImode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
 }")
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "" "")
 		   (call (match_operand:QI 1 "memory_operand" "")
-			 (match_operand 2 "general_operand" "")))
-	      (use (match_operand 3 "general_operand" ""))
-	      (clobber (match_dup 5))])
-   (set (match_dup 5) (match_dup 4))]
+			 (const_int 0)))
+	      (clobber (match_dup 2))])
+   (set (match_dup 2) (match_dup 3))]
   ""
   "
 {
@@ -1029,22 +1021,16 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
       = replace_equiv_address (operands[1],
 			       force_reg (Pmode, XEXP (operands[1], 0)));
 
+  /* Note that we overwrite the generic operands[2] and operands[3]; we
+     don't use those values.  */
+  operands[2] = gen_rtx_REG (DImode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
+
   /* Since the epilogue 'uses' the return address, and it is clobbered
      in the call, and we set it back after every call (all but one setting
      will be optimized away), integrity is maintained.  */
-  operands[4]
+  operands[3]
     = mmix_get_hard_reg_initial_val (Pmode,
 				     MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
-
-  /* FIXME: See 'call'.  */
-  if (operands[3] == NULL_RTX)
-    operands[3] = const0_rtx;
-
-  /* FIXME: Documentation bug: operands[3] (operands[2] for 'call') is the
-     *next* argument register, not the number of arguments in registers.
-     (There used to be code here where that mattered.)  */
-
-  operands[5] = gen_rtx_REG (DImode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
 }")
 
 ;; Don't use 'p' here.  A 'p' must stand first in constraints, or reload
@@ -1065,25 +1051,23 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 (define_insn "*call_real"
   [(call (mem:QI
 	  (match_operand:DI 0 "mmix_symbolic_or_address_operand" "s,rU"))
-	 (match_operand 1 "" ""))
-   (use (match_operand 2 "" ""))
+	 (const_int 0))
    (clobber (reg:DI MMIX_rJ_REGNUM))]
   ""
   "@
-   PUSHJ $%p2,%0
-   PUSHGO $%p2,%a0")
+   PUSHJ $%!,%0
+   PUSHGO $%!,%a0")
 
 (define_insn "*call_value_real"
   [(set (match_operand 0 "register_operand" "=r,r")
 	(call (mem:QI
 	       (match_operand:DI 1 "mmix_symbolic_or_address_operand" "s,rU"))
-	      (match_operand 2 "" "")))
-  (use (match_operand 3 "" ""))
-  (clobber (reg:DI MMIX_rJ_REGNUM))]
+	      (const_int 0)))
+   (clobber (reg:DI MMIX_rJ_REGNUM))]
   ""
   "@
-   PUSHJ $%p3,%1
-   PUSHGO $%p3,%a1")
+   PUSHJ $%!,%1
+   PUSHGO $%!,%a1")
 
 ;; I hope untyped_call and untyped_return are not needed for MMIX.
 ;; Users of Objective-C will notice.

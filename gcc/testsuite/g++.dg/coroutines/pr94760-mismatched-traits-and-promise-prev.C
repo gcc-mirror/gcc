@@ -14,7 +14,7 @@ struct std::coroutine_traits<R, CallOp, T...> {
         promise_type (CallOp op, T ...args) {}
         Fake get_return_object() { return {}; }
         std::suspend_always initial_suspend() { return {}; }
-        std::suspend_never final_suspend() { return {}; }
+        std::suspend_never final_suspend() noexcept { return {}; }
         void return_void() {}
         void unhandled_exception() {}
     };

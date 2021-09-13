@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -518,6 +518,14 @@ hook_void_rtx_insn_int (rtx_insn *, int)
 void
 hook_void_gcc_optionsp (struct gcc_options *)
 {
+}
+
+/* Generic hook that takes an unsigned int and returns true.  */
+
+bool
+hook_bool_uint_true (unsigned int)
+{
+  return true;
 }
 
 /* Generic hook that takes an unsigned int, an unsigned int pointer and

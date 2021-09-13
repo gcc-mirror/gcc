@@ -8,13 +8,14 @@
  */
 module core.sys.windows.imm;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "imm32");
 
 import core.sys.windows.windef, core.sys.windows.wingdi;
 import core.sys.windows.winuser; // for the MFS_xxx enums.
-private import core.sys.windows.w32api;
+import core.sys.windows.w32api;
 
 enum WM_CONVERTREQUESTEX     = 0x108;
 enum WM_IME_STARTCOMPOSITION = 0x10D;

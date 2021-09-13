@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,8 +42,7 @@ constexpr bool
 test01()
 {
   container c;
-  std::front_insert_iterator<container> iter;
-  iter = std::front_inserter(c);
+  std::front_insert_iterator<container> iter = std::front_inserter(c);
   *iter++ = 1;
   int i = 2;
   *iter = i;

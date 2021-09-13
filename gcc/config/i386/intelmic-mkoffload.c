@@ -1,6 +1,6 @@
 /* Offload image generation tool for Intel MIC devices.
 
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
    Contributed by Ilya Verbin <ilya.verbin@intel.com>.
 
@@ -614,7 +614,7 @@ main (int argc, char **argv)
   for (int i = 1; i < argc; i++)
     {
 #define STR "-foffload-abi="
-      if (strncmp (argv[i], STR, strlen (STR)) == 0)
+      if (startswith (argv[i], STR))
 	{
 	  if (strcmp (argv[i] + strlen (STR), "lp64") == 0)
 	    offload_abi = OFFLOAD_ABI_LP64;

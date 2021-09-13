@@ -1,4 +1,4 @@
-/* { dg-additional-options "-O1 -Wno-builtin-declaration-mismatch" } */
+/* { dg-additional-options "-Wno-analyzer-too-complex -O1 -Wno-builtin-declaration-mismatch" } */
 
 int
 l8 (void);
@@ -10,14 +10,12 @@ void
 th (int *);
 
 void
-bv (__SIZE_TYPE__ ny)
+bv (__SIZE_TYPE__ ny, int ***mf)
 {
-  int ***mf;
-
   while (l8 ())
     {
       *mf = 0;
       (*mf)[ny] = (int *) malloc (sizeof (int));
-      th ((*mf)[ny]); /* { dg-warning "leak" } */
+      th ((*mf)[ny]);
     }
 }

@@ -43,7 +43,17 @@ void test_memcpy_bounds_memarray_range (void)
 
   TM (ma.a5, ma.a5 + j, ma.a5, 1);
   TM (ma.a5, ma.a5 + j, ma.a5, 3);
-  TM (ma.a5, ma.a5 + j, ma.a5, 5);
+
+  /* The copy below is invalid for two reasons: 1) it overlaps and 2) it
+     writes past the end of ma.a5.  The warning is a little cryptic here
+     because the GIMPLE is:
+       _4 = &ma.a5 + prephitmp_14;
+       MEM <unsigned char[5]> [(char * {ref-all})_4]
+         = MEM <unsigned char[5]> [(char * {ref-all})&ma];
+     and could be improved.  Just verify that one is issued but not its
+     full text.  */
+  TM (ma.a5, ma.a5 + j, ma.a5, 5);        /* { dg-warning "\\\[-Warray-bounds" "pr101374" { xfail *-*-* } } */
+
   TM (ma.a5, ma.a5 + j, ma.a5, 7);        /* { dg-warning "offset \\\[5, 7] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 0" } */
   TM (ma.a5, ma.a5 + j, ma.a5, 9);        /* { dg-warning "offset \\\[5, 9] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 0" } */
 }

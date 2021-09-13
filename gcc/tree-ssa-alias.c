@@ -1,5 +1,5 @@
 /* Alias analysis for trees.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -722,6 +722,8 @@ ao_ref_base_alias_set (ao_ref *ref)
   if (!ref->ref)
     return 0;
   base_ref = ref->ref;
+  if (TREE_CODE (base_ref) == WITH_SIZE_EXPR)
+    base_ref = TREE_OPERAND (base_ref, 0);
   while (handled_component_p (base_ref))
     base_ref = TREE_OPERAND (base_ref, 0);
   ref->base_alias_set = get_alias_set (base_ref);
@@ -752,6 +754,8 @@ ao_ref_base_alias_ptr_type (ao_ref *ref)
   if (!ref->ref)
     return NULL_TREE;
   base_ref = ref->ref;
+  if (TREE_CODE (base_ref) == WITH_SIZE_EXPR)
+    base_ref = TREE_OPERAND (base_ref, 0);
   while (handled_component_p (base_ref))
     base_ref = TREE_OPERAND (base_ref, 0);
   tree ret = reference_alias_ptr_type (base_ref);
@@ -1111,7 +1115,7 @@ aliasing_component_refs_walk (tree ref1, tree type1, tree base1,
    REF1_ALIAS_SET is the alias set of REF1.
 
    BASE_TYPE2 is type of base2.  END_STRUCT_REF2 is non-NULL if there is
-   a traling array access in the TBAA part of access path2.
+   a trailing array access in the TBAA part of access path2.
    BASE2_ALIAS_SET is the alias set of base2.  */
 
 bool
@@ -1183,8 +1187,8 @@ aliasing_component_refs_p (tree ref1,
      trailing array.
 
      We generally discard the segment after end_of_tbaa_ref however
-     we need to be careful in case it contains zero sized or traling array.
-     These may happen after refernce to union and in this case we need to
+     we need to be careful in case it contains zero sized or trailing array.
+     These may happen after reference to union and in this case we need to
      not disambiguate type puning scenarios.
 
      We set:
@@ -1195,7 +1199,7 @@ aliasing_component_refs_p (tree ref1,
 	end_struct_ref1 to point the trailing reference (if it exists
  	in range base....end_of_tbaa_ref
 
-	end_struct_past_end1 is true if this traling refernece occurs in
+	end_struct_past_end1 is true if this trailing reference occurs in
 	end_of_tbaa_ref...actual_ref.  */
   base1 = ref1;
   while (handled_component_p (base1))
@@ -1674,7 +1678,7 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 		  seen_unmatched_ref_p = true;
 		  /* We can not maintain the invariant that bases are either
 		     same or completely disjoint.  However we can still recover
-		     from type based alias analysis if we reach referneces to
+		     from type based alias analysis if we reach references to
 		     same sizes.  We do not attempt to match array sizes, so
 		     just finish array walking and look for component refs.  */
 		  if (ntbaa1 < 0 || ntbaa2 < 0)
@@ -2034,6 +2038,17 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (TREE_CODE (base1) != TARGET_MEM_REF
       && !ranges_maybe_overlap_p (offset1 + moff, -1, offset2, max_size2))
     return false;
+
+  /* If the pointer based access is bigger than the variable they cannot
+     alias.  This is similar to the check below where we use TBAA to
+     increase the size of the pointer based access based on the dynamic
+     type of a containing object we can infer from it.  */
+  poly_int64 dsize2;
+  if (known_size_p (size1)
+      && poly_int_tree_p (DECL_SIZE (base2), &dsize2)
+      && known_lt (dsize2, size1))
+    return false;
+
   /* They also cannot alias if the pointer may not point to the decl.  */
   if (!ptr_deref_may_alias_decl_p (ptr1, base2))
     return false;
@@ -2303,14 +2318,16 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 			|| TREE_CODE (ref1->ref) == STRING_CST
 			|| handled_component_p (ref1->ref)
 			|| TREE_CODE (ref1->ref) == MEM_REF
-			|| TREE_CODE (ref1->ref) == TARGET_MEM_REF)
+			|| TREE_CODE (ref1->ref) == TARGET_MEM_REF
+			|| TREE_CODE (ref1->ref) == WITH_SIZE_EXPR)
 		       && (!ref2->ref
 			   || TREE_CODE (ref2->ref) == SSA_NAME
 			   || DECL_P (ref2->ref)
 			   || TREE_CODE (ref2->ref) == STRING_CST
 			   || handled_component_p (ref2->ref)
 			   || TREE_CODE (ref2->ref) == MEM_REF
-			   || TREE_CODE (ref2->ref) == TARGET_MEM_REF));
+			   || TREE_CODE (ref2->ref) == TARGET_MEM_REF
+			   || TREE_CODE (ref2->ref) == WITH_SIZE_EXPR));
 
   /* Decompose the references into their base objects and the access.  */
   base1 = ao_ref_base (ref1);
@@ -2349,6 +2366,15 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
       && ref2->volatile_p)
     return true;
 
+  /* refN->ref may convey size information, do not confuse our workers
+     with that but strip it - ao_ref_base took it into account already.  */
+  tree ref1ref = ref1->ref;
+  if (ref1ref && TREE_CODE (ref1ref) == WITH_SIZE_EXPR)
+    ref1ref = TREE_OPERAND (ref1ref, 0);
+  tree ref2ref = ref2->ref;
+  if (ref2ref && TREE_CODE (ref2ref) == WITH_SIZE_EXPR)
+    ref2ref = TREE_OPERAND (ref2ref, 0);
+
   /* Defer to simple offset based disambiguation if we have
      references based on two decls.  Do this before defering to
      TBAA to handle must-alias cases in conformance with the
@@ -2356,9 +2382,9 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   var1_p = DECL_P (base1);
   var2_p = DECL_P (base2);
   if (var1_p && var2_p)
-    return decl_refs_may_alias_p (ref1->ref, base1, offset1, max_size1,
+    return decl_refs_may_alias_p (ref1ref, base1, offset1, max_size1,
 				  ref1->size,
-				  ref2->ref, base2, offset2, max_size2,
+				  ref2ref, base2, offset2, max_size2,
 				  ref2->size);
 
   /* Handle restrict based accesses.
@@ -2368,14 +2394,14 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   tree rbase2 = base2;
   if (var1_p)
     {
-      rbase1 = ref1->ref;
+      rbase1 = ref1ref;
       if (rbase1)
 	while (handled_component_p (rbase1))
 	  rbase1 = TREE_OPERAND (rbase1, 0);
     }
   if (var2_p)
     {
-      rbase2 = ref2->ref;
+      rbase2 = ref2ref;
       if (rbase2)
 	while (handled_component_p (rbase2))
 	  rbase2 = TREE_OPERAND (rbase2, 0);
@@ -2401,6 +2427,7 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
       std::swap (max_size1, max_size2);
       std::swap (base1, base2);
       std::swap (ref1, ref2);
+      std::swap (ref1ref, ref2ref);
       var1_p = true;
       ind1_p = false;
       var2_p = false;
@@ -2426,21 +2453,21 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 
   /* Dispatch to the pointer-vs-decl or pointer-vs-pointer disambiguators.  */
   if (var1_p && ind2_p)
-    return indirect_ref_may_alias_decl_p (ref2->ref, base2,
+    return indirect_ref_may_alias_decl_p (ref2ref, base2,
 					  offset2, max_size2, ref2->size,
 					  ao_ref_alias_set (ref2),
 					  ao_ref_base_alias_set (ref2),
-					  ref1->ref, base1,
+					  ref1ref, base1,
 					  offset1, max_size1, ref1->size,
 					  ao_ref_alias_set (ref1),
 					  ao_ref_base_alias_set (ref1),
 					  tbaa_p);
   else if (ind1_p && ind2_p)
-    return indirect_refs_may_alias_p (ref1->ref, base1,
+    return indirect_refs_may_alias_p (ref1ref, base1,
 				      offset1, max_size1, ref1->size,
 				      ao_ref_alias_set (ref1),
 				      ao_ref_base_alias_set (ref1),
-				      ref2->ref, base2,
+				      ref2ref, base2,
 				      offset2, max_size2, ref2->size,
 				      ao_ref_alias_set (ref2),
 				      ao_ref_base_alias_set (ref2),
@@ -2843,7 +2870,7 @@ process_args:
       tree op = gimple_call_arg (call, i);
       int flags = gimple_call_arg_flags (call, i);
 
-      if (flags & EAF_UNUSED)
+      if (flags & (EAF_UNUSED | EAF_NOREAD))
 	continue;
 
       if (TREE_CODE (op) == WITH_SIZE_EXPR)
@@ -3718,7 +3745,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
 }
 
 
-/* Based on the memory reference REF call WALKER for each vdef which
+/* Based on the memory reference REF call WALKER for each vdef whose
    defining statement may clobber REF, starting with VDEF.  If REF
    is NULL_TREE, each defining statement is visited.
 
@@ -3728,8 +3755,8 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
    If function entry is reached, FUNCTION_ENTRY_REACHED is set to true.
    The pointer may be NULL and then we do not track this information.
 
-   At PHI nodes walk_aliased_vdefs forks into one walk for reach
-   PHI argument (but only one walk continues on merge points), the
+   At PHI nodes walk_aliased_vdefs forks into one walk for each
+   PHI argument (but only one walk continues at merge points), the
    return value is true if any of the walks was successful.
 
    The function returns the number of statements walked or -1 if
@@ -3868,7 +3895,7 @@ attr_fnspec::verify ()
 		    && str[idx] != 'w' && str[idx] != 'W'
 		    && str[idx] != 'o' && str[idx] != 'O')
 		  err = true;
-		if (str[idx] != 't'
+		if (str[idx + 1] != 't'
 		    /* Size specified is scalar, so it should be described
 		       by ". " if specified at all.  */
 		    && (arg_specified_p (str[idx + 1] - '1')

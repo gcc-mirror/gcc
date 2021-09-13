@@ -1,6 +1,6 @@
 // Safe iterator implementation  -*- C++ -*-
 
-// Copyright (C) 2003-2020 Free Software Foundation, Inc.
+// Copyright (C) 2003-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,9 @@
 #endif
 
 #define _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs, _BadMsgId, _DiffMsgId) \
-  _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular(),	\
+  _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular()	\
+			|| (_Lhs.base() == _Iterator()			\
+			    && _Rhs.base() == _Iterator()),		\
 			_M_message(_BadMsgId)				\
 			._M_iterator(_Lhs, #_Lhs)			\
 			._M_iterator(_Rhs, #_Rhs));			\
@@ -295,6 +297,7 @@ namespace __gnu_debug
        *  @brief Iterator dereference.
        *  @pre iterator is dereferenceable
        */
+      _GLIBCXX_NODISCARD
       reference
       operator*() const _GLIBCXX_NOEXCEPT
       {
@@ -308,6 +311,7 @@ namespace __gnu_debug
        *  @brief Iterator dereference.
        *  @pre iterator is dereferenceable
        */
+      _GLIBCXX_NODISCARD
       pointer
       operator->() const _GLIBCXX_NOEXCEPT
       {
@@ -405,6 +409,12 @@ namespace __gnu_debug
       bool
       _M_can_advance(difference_type __n, bool __strict = false) const;
 
+      // Can we advance the iterator using @p __dist in @p __way direction.
+      template<typename _Diff>
+	bool
+	_M_can_advance(const std::pair<_Diff, _Distance_precision>& __dist,
+		       int __way) const;
+
       // Is the iterator range [*this, __rhs) valid?
       bool
       _M_valid_range(const _Safe_iterator& __rhs,
@@ -455,6 +465,7 @@ namespace __gnu_debug
 
       typedef _Safe_iterator<_Iterator, _Sequence, iterator_category> _Self;
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator==(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -463,6 +474,7 @@ namespace __gnu_debug
       }
 
       template<typename _IteR>
+	_GLIBCXX_NODISCARD
 	friend bool
 	operator==(const _Self& __lhs,
 	  const _Safe_iterator<_IteR, _Sequence, iterator_category>& __rhs)
@@ -473,6 +485,7 @@ namespace __gnu_debug
 	}
 
 #if ! __cpp_lib_three_way_comparison
+      _GLIBCXX_NODISCARD
       friend bool
       operator!=(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -481,6 +494,7 @@ namespace __gnu_debug
       }
 
       template<typename _IteR>
+	_GLIBCXX_NODISCARD
 	friend bool
 	operator!=(const _Self& __lhs,
 	  const _Safe_iterator<_IteR, _Sequence, iterator_category>& __rhs)
@@ -778,6 +792,7 @@ namespace __gnu_debug
       }
 
       // ------ Random access iterator requirements ------
+      _GLIBCXX_NODISCARD
       reference
       operator[](difference_type __n) const _GLIBCXX_NOEXCEPT
       {
@@ -811,6 +826,7 @@ namespace __gnu_debug
       }
 
 #if __cpp_lib_three_way_comparison
+      [[nodiscard]]
       friend auto
       operator<=>(const _Self& __lhs, const _Self& __rhs) noexcept
       {
@@ -818,6 +834,7 @@ namespace __gnu_debug
 	return __lhs.base() <=> __rhs.base();
       }
 
+      [[nodiscard]]
       friend auto
       operator<=>(const _Self& __lhs, const _OtherSelf& __rhs) noexcept
       {
@@ -825,6 +842,7 @@ namespace __gnu_debug
 	return __lhs.base() <=> __rhs.base();
       }
 #else
+      _GLIBCXX_NODISCARD
       friend bool
       operator<(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -832,6 +850,7 @@ namespace __gnu_debug
 	return __lhs.base() < __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator<(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -839,6 +858,7 @@ namespace __gnu_debug
 	return __lhs.base() < __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator<=(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -846,6 +866,7 @@ namespace __gnu_debug
 	return __lhs.base() <= __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator<=(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -853,6 +874,7 @@ namespace __gnu_debug
 	return __lhs.base() <= __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator>(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -860,6 +882,7 @@ namespace __gnu_debug
 	return __lhs.base() > __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator>(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -867,6 +890,7 @@ namespace __gnu_debug
 	return __lhs.base() > __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator>=(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -874,6 +898,7 @@ namespace __gnu_debug
 	return __lhs.base() >= __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator>=(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -886,6 +911,7 @@ namespace __gnu_debug
       // According to the resolution of DR179 not only the various comparison
       // operators but also operator- must accept mixed iterator/const_iterator
       // parameters.
+      _GLIBCXX_NODISCARD
       friend difference_type
       operator-(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -893,6 +919,7 @@ namespace __gnu_debug
 	return __lhs.base() - __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend difference_type
       operator-(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -900,6 +927,7 @@ namespace __gnu_debug
 	return __lhs.base() - __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend _Self
       operator+(const _Self& __x, difference_type __n) _GLIBCXX_NOEXCEPT
       {
@@ -909,6 +937,7 @@ namespace __gnu_debug
 	return _Safe_iterator(__x.base() + __n, __x._M_sequence);
       }
 
+      _GLIBCXX_NODISCARD
       friend _Self
       operator+(difference_type __n, const _Self& __x) _GLIBCXX_NOEXCEPT
       {
@@ -918,6 +947,7 @@ namespace __gnu_debug
 	return _Safe_iterator(__n + __x.base(), __x._M_sequence);
       }
 
+      _GLIBCXX_NODISCARD
       friend _Self
       operator-(const _Self& __x, difference_type __n) _GLIBCXX_NOEXCEPT
       {
@@ -955,6 +985,14 @@ namespace __gnu_debug
     __can_advance(const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
 		  _Size __n)
     { return __it._M_can_advance(__n); }
+
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _Diff>
+    inline bool
+    __can_advance(const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
+		  const std::pair<_Diff, _Distance_precision>& __dist,
+		  int __way)
+    { return __it._M_can_advance(__dist, __way); }
 
   template<typename _Iterator, typename _Sequence>
     _Iterator

@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2021 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -65,3 +65,68 @@ omp_pause_resource_all (omp_pause_resource_t kind)
 
 ialias (omp_pause_resource)
 ialias (omp_pause_resource_all)
+
+void
+GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
+		 void **hostaddrs, size_t *sizes, unsigned short *kinds,
+		 unsigned int flags, void **depend, void **args)
+{
+  (void) device;
+  (void) fn;
+  (void) mapnum;
+  (void) hostaddrs;
+  (void) sizes;
+  (void) kinds;
+  (void) flags;
+  (void) depend;
+  (void) args;
+  __builtin_unreachable ();
+}
+
+void
+GOMP_target_data_ext (int device, size_t mapnum, void **hostaddrs,
+		      size_t *sizes, unsigned short *kinds)
+{
+  (void) device;
+  (void) mapnum;
+  (void) hostaddrs;
+  (void) sizes;
+  (void) kinds;
+  __builtin_unreachable ();
+}
+
+void
+GOMP_target_end_data (void)
+{
+  __builtin_unreachable ();
+}
+
+void
+GOMP_target_update_ext (int device, size_t mapnum, void **hostaddrs,
+			size_t *sizes, unsigned short *kinds,
+			unsigned int flags, void **depend)
+{
+  (void) device;
+  (void) mapnum;
+  (void) hostaddrs;
+  (void) sizes;
+  (void) kinds;
+  (void) flags;
+  (void) depend;
+  __builtin_unreachable ();
+}
+
+void
+GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
+			     size_t *sizes, unsigned short *kinds,
+			     unsigned int flags, void **depend)
+{
+  (void) device;
+  (void) mapnum;
+  (void) hostaddrs;
+  (void) sizes;
+  (void) kinds;
+  (void) flags;
+  (void) depend;
+  __builtin_unreachable ();
+}

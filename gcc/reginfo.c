@@ -1,5 +1,5 @@
 /* Compute different info about registers.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1003,7 +1003,6 @@ reg_scan_mark_refs (rtx x, rtx_insn *insn)
     {
     case CONST:
     CASE_CONST_ANY:
-    case CC0:
     case PC:
     case SYMBOL_REF:
     case LABEL_REF:

@@ -210,7 +210,7 @@ int main (void)
 
    Not all vect_perm targets support that, and it's a bit too specific to have
    its own effective-target selector, so we just test targets directly.  */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 4 "vect" { target { aarch64*-*-* arm*-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target { vect_strided4 && { ! { aarch64*-*-* arm*-*-* } } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 4 "vect" { target { powerpc64*-*-* s390*-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target { vect_strided4 && { ! { powerpc64*-*-* s390*-*-* } } } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect"  { target { ! { vect_strided4 } } } } } */
   

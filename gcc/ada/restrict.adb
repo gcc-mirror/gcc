@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,20 +23,24 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Debug;    use Debug;
-with Fname;    use Fname;
-with Fname.UF; use Fname.UF;
-with Lib;      use Lib;
-with Opt;      use Opt;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Stand;    use Stand;
-with Targparm; use Targparm;
-with Uname;    use Uname;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Debug;          use Debug;
+with Fname;          use Fname;
+with Fname.UF;       use Fname.UF;
+with Lib;            use Lib;
+with Opt;            use Opt;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Stand;          use Stand;
+with Targparm;       use Targparm;
+with Uname;          use Uname;
 
 package body Restrict is
 
@@ -62,7 +66,7 @@ package body Restrict is
 
    No_Specification_Of_Aspects : array (Aspect_Id) of Source_Ptr :=
                                    (others => No_Location);
-   --  Entries in this array are set to point to a previously occuring pragma
+   --  Entries in this array are set to point to a previously occurring pragma
    --  that activates a No_Specification_Of_Aspect check.
 
    No_Specification_Of_Aspect_Warning : array (Aspect_Id) of Boolean :=
@@ -392,10 +396,9 @@ package body Restrict is
       N : Node_Id;
       V : Uint := Uint_Minus_1)
    is
-      Msg_Issued : Boolean;
-      pragma Unreferenced (Msg_Issued);
+      Ignore_Msg_Issued : Boolean;
    begin
-      Check_Restriction (Msg_Issued, R, N, V);
+      Check_Restriction (Ignore_Msg_Issued, R, N, V);
    end Check_Restriction;
 
    procedure Check_Restriction
@@ -919,6 +922,21 @@ package body Restrict is
       return Global_Restriction_No_Tasking
         or else Targparm.Restrictions_On_Target.Set (No_Tasking);
    end Global_No_Tasking;
+
+   ---------------------------------------------
+   -- No_Dynamic_Accessibility_Checks_Enabled --
+   ---------------------------------------------
+
+   function No_Dynamic_Accessibility_Checks_Enabled
+     (N : Node_Id) return Boolean
+   is
+      pragma Unreferenced (N);
+      --  N is currently unreferenced but present for debugging purposes and
+      --  potential future use.
+
+   begin
+      return Restrictions.Set (No_Dynamic_Accessibility_Checks);
+   end No_Dynamic_Accessibility_Checks_Enabled;
 
    -------------------------------
    -- No_Exception_Handlers_Set --

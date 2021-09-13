@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,6 +52,13 @@ namespace __gnu_debug
     __can_advance(const std::reverse_iterator<_Iterator>& __it, _Size __n)
     { return __can_advance(__it.base(), -__n); }
 
+  template<typename _Iterator, typename _Diff>
+    inline bool
+    __can_advance(const std::reverse_iterator<_Iterator>& __it,
+		  const std::pair<_Diff, _Distance_precision>& __dist,
+		  int __way)
+    { return __can_advance(__it.base(), __dist, -__way); }
+
   template<typename _Iterator, typename _Sequence>
     inline std::reverse_iterator<_Iterator>
     __base(const std::reverse_iterator<_Safe_iterator<
@@ -100,6 +107,13 @@ namespace __gnu_debug
     inline bool
     __can_advance(const std::move_iterator<_Iterator>& __it, _Size __n)
     { return __can_advance(__it.base(), __n); }
+
+  template<typename _Iterator, typename _Diff>
+    inline bool
+    __can_advance(const std::move_iterator<_Iterator>& __it,
+		  const std::pair<_Diff, _Distance_precision>& __dist,
+		  int __way)
+    { return __can_advance(__it.base(), __dist, __way); }
 
   template<typename _Iterator>
     inline auto

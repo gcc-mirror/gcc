@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -262,6 +262,11 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
   bool sbool = false;
 
   oprnd0 = ops->op0;
+  if (nops >= 2)
+    oprnd1 = ops->op1;
+  if (nops >= 3)
+    oprnd2 = ops->op2;
+
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
   if (ops->code == VEC_UNPACK_FIX_TRUNC_HI_EXPR
       || ops->code == VEC_UNPACK_FIX_TRUNC_LO_EXPR)
@@ -285,6 +290,27 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
 	   ? vec_unpacks_sbool_hi_optab : vec_unpacks_sbool_lo_optab);
       sbool = true;
     }
+  else if (ops->code == DOT_PROD_EXPR)
+    {
+      enum optab_subtype subtype = optab_default;
+      signop sign1 = TYPE_SIGN (TREE_TYPE (oprnd0));
+      signop sign2 = TYPE_SIGN (TREE_TYPE (oprnd1));
+      if (sign1 == sign2)
+	;
+      else if (sign1 == SIGNED && sign2 == UNSIGNED)
+	{
+	  subtype = optab_vector_mixed_sign;
+	  /* Same as optab_vector_mixed_sign but flip the operands.  */
+	  std::swap (op0, op1);
+	}
+      else if (sign1 == UNSIGNED && sign2 == SIGNED)
+	subtype = optab_vector_mixed_sign;
+      else
+	gcc_unreachable ();
+
+      widen_pattern_optab
+	= optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), subtype);
+    }
   else
     widen_pattern_optab
       = optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
@@ -298,10 +324,7 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
   gcc_assert (icode != CODE_FOR_nothing);
 
   if (nops >= 2)
-    {
-      oprnd1 = ops->op1;
-      tmode1 = TYPE_MODE (TREE_TYPE (oprnd1));
-    }
+    tmode1 = TYPE_MODE (TREE_TYPE (oprnd1));
   else if (sbool)
     {
       nops = 2;
@@ -316,7 +339,6 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
     {
       gcc_assert (tmode1 == tmode0);
       gcc_assert (op1);
-      oprnd2 = ops->op2;
       wmode = TYPE_MODE (TREE_TYPE (oprnd2));
     }
 
@@ -2578,6 +2600,82 @@ widen_leading (scalar_int_mode mode, rtx op0, rtx target, optab unoptab)
   return 0;
 }
 
+/* Attempt to emit (clrsb:mode op0) as
+   (plus:mode (clz:mode (xor:mode op0 (ashr:mode op0 (const_int prec-1))))
+	      (const_int -1))
+   if CLZ_DEFINED_VALUE_AT_ZERO (mode, val) is 2 and val is prec,
+   or as
+   (clz:mode (ior:mode (xor:mode (ashl:mode op0 (const_int 1))
+				 (ashr:mode op0 (const_int prec-1)))
+		       (const_int 1)))
+   otherwise.  */
+
+static rtx
+expand_clrsb_using_clz (scalar_int_mode mode, rtx op0, rtx target)
+{
+  if (optimize_insn_for_size_p ()
+      || optab_handler (clz_optab, mode) == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  start_sequence ();
+  HOST_WIDE_INT val = 0;
+  if (CLZ_DEFINED_VALUE_AT_ZERO (mode, val) != 2
+      || val != GET_MODE_PRECISION (mode))
+    val = 0;
+  else
+    val = 1;
+
+  rtx temp2 = op0;
+  if (!val)
+    {
+      temp2 = expand_binop (mode, ashl_optab, op0, const1_rtx,
+			    NULL_RTX, 0, OPTAB_DIRECT);
+      if (!temp2)
+	{
+	fail:
+	  end_sequence ();
+	  return NULL_RTX;
+	}
+    }
+
+  rtx temp = expand_binop (mode, ashr_optab, op0,
+			   GEN_INT (GET_MODE_PRECISION (mode) - 1),
+			   NULL_RTX, 0, OPTAB_DIRECT);
+  if (!temp)
+    goto fail;
+
+  temp = expand_binop (mode, xor_optab, temp2, temp, NULL_RTX, 0,
+		       OPTAB_DIRECT);
+  if (!temp)
+    goto fail;
+
+  if (!val)
+    {
+      temp = expand_binop (mode, ior_optab, temp, const1_rtx,
+			   NULL_RTX, 0, OPTAB_DIRECT);
+      if (!temp)
+	goto fail;
+    }
+  temp = expand_unop_direct (mode, clz_optab, temp, val ? NULL_RTX : target,
+			     true);
+  if (!temp)
+    goto fail;
+  if (val)
+    {
+      temp = expand_binop (mode, add_optab, temp, constm1_rtx,
+			   target, 0, OPTAB_DIRECT);
+      if (!temp)
+	goto fail;
+    }
+
+  rtx_insn *seq = get_insns ();
+  end_sequence ();
+
+  add_equal_note (seq, temp, CLRSB, op0, NULL_RTX, mode);
+  emit_insn (seq);
+  return temp;
+}
+
 /* Try calculating clz of a double-word quantity as two clz's of word-sized
    quantities, choosing which based on whether the high word is nonzero.  */
 static rtx
@@ -3147,6 +3245,9 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       if (is_a <scalar_int_mode> (mode, &int_mode))
 	{
 	  temp = widen_leading (int_mode, op0, target, unoptab);
+	  if (temp)
+	    return temp;
+	  temp = expand_clrsb_using_clz (int_mode, op0, target);
 	  if (temp)
 	    return temp;
 	}
@@ -4294,13 +4395,6 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
           > COSTS_N_INSNS (1)))
     y = force_reg (mode, y);
 
-#if HAVE_cc0
-  /* Make sure if we have a canonical comparison.  The RTL
-     documentation states that canonical comparisons are required only
-     for targets which have cc0.  */
-  gcc_assert (!CONSTANT_P (x) || CONSTANT_P (y));
-#endif
-
   /* Don't let both operands fail to indicate the mode.  */
   if (GET_MODE (x) == VOIDmode && GET_MODE (y) == VOIDmode)
     x = force_reg (mode, x);
@@ -5394,20 +5488,21 @@ expand_fix (rtx to, rtx from, int unsignedp)
 	if (icode != CODE_FOR_nothing)
 	  {
 	    rtx_insn *last = get_last_insn ();
+	    rtx from1 = from;
 	    if (fmode != GET_MODE (from))
-	      from = convert_to_mode (fmode, from, 0);
+	      from1 = convert_to_mode (fmode, from, 0);
 
 	    if (must_trunc)
 	      {
-		rtx temp = gen_reg_rtx (GET_MODE (from));
-		from = expand_unop (GET_MODE (from), ftrunc_optab, from,
-				    temp, 0);
+		rtx temp = gen_reg_rtx (GET_MODE (from1));
+		from1 = expand_unop (GET_MODE (from1), ftrunc_optab, from1,
+				     temp, 0);
 	      }
 
 	    if (imode != GET_MODE (to))
 	      target = gen_reg_rtx (imode);
 
-	    if (maybe_emit_unop_insn (icode, target, from,
+	    if (maybe_emit_unop_insn (icode, target, from1,
 				      doing_unsigned ? UNSIGNED_FIX : FIX))
 	      {
 		if (target != to)
@@ -6070,11 +6165,8 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
 
   if (targetm.vectorize.vec_perm_const != NULL)
     {
-      v0 = force_reg (mode, v0);
       if (single_arg_p)
 	v1 = v0;
-      else
-	v1 = force_reg (mode, v1);
 
       if (targetm.vectorize.vec_perm_const (mode, target, v0, v1, indices))
 	return target;
@@ -6094,6 +6186,11 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
 					       v1_qi, qimode_indices))
 	return gen_lowpart (mode, target_qi);
     }
+
+  v0 = force_reg (mode, v0);
+  if (single_arg_p)
+    v1 = v0;
+  v1 = force_reg (mode, v1);
 
   /* Otherwise expand as a fully variable permuation.  */
 

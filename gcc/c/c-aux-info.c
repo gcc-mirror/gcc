@@ -1,7 +1,7 @@
 /* Generate information regarding function declarations and definitions based
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
-   Copyright (C) 1989-2020 Free Software Foundation, Inc.
+   Copyright (C) 1989-2021 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GCC.
@@ -67,12 +67,12 @@ affix_data_type (const char *param)
 
   for (;;)
     {
-      if (!strncmp (p, "volatile ", 9))
+      if (startswith (p, "volatile "))
 	{
 	  p += 9;
 	  continue;
 	}
-      if (!strncmp (p, "const ", 6))
+      if (startswith (p, "const "))
 	{
 	  p += 6;
 	  continue;

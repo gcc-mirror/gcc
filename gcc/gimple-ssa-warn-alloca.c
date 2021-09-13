@@ -1,5 +1,5 @@
 /* Warn on problematic uses of alloca and variable length arrays.
-   Copyright (C) 2016-2020 Free Software Foundation, Inc.
+   Copyright (C) 2016-2021 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -56,31 +56,30 @@ class pass_walloca : public gimple_opt_pass
 {
 public:
   pass_walloca (gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_walloca, ctxt), first_time_p (false)
+    : gimple_opt_pass(pass_data_walloca, ctxt), xlimit_certain_p (false)
   {}
   opt_pass *clone () { return new pass_walloca (m_ctxt); }
   void set_pass_param (unsigned int n, bool param)
     {
       gcc_assert (n == 0);
-      first_time_p = param;
+      // Set to true to enable only warnings for alloca calls that
+      // are certainly in excess of the limit.  This includes calls
+      // with constant arguments but excludes those in ranges (that
+      // can only be determined by range analysis) as well as
+      // the "may be too large" kind.
+      xlimit_certain_p = param;
     }
   virtual bool gate (function *);
   virtual unsigned int execute (function *);
 
  private:
   // Set to TRUE the first time we run this pass on a function.
-  bool first_time_p;
+  bool xlimit_certain_p;
 };
 
 bool
 pass_walloca::gate (function *fun ATTRIBUTE_UNUSED)
 {
-  // The first time this pass is called, it is called before
-  // optimizations have been run and range information is unavailable,
-  // so we can only perform strict alloca checking.
-  if (first_time_p)
-    return warn_alloca != 0;
-
   // Warning is disabled when its size limit is greater than PTRDIFF_MAX
   // for the target maximum, which makes the limit negative since when
   // represented in signed HOST_WIDE_INT.
@@ -124,9 +123,8 @@ public:
   alloca_type_and_limit (enum alloca_type type,
 			 wide_int i) : type(type), limit(i) { }
   alloca_type_and_limit (enum alloca_type type) : type(type)
-  { if (type == ALLOCA_BOUND_MAYBE_LARGE
-	|| type == ALLOCA_BOUND_DEFINITELY_LARGE)
-      limit = wi::to_wide (integer_zero_node);
+  {
+    limit = wi::to_wide (integer_zero_node);
   }
 };
 
@@ -167,7 +165,7 @@ adjusted_warn_limit (bool idx)
 // call was created by the gimplifier for a VLA.
 
 static class alloca_type_and_limit
-alloca_call_type (range_query &query, gimple *stmt, bool is_vla)
+alloca_call_type (gimple *stmt, bool is_vla)
 {
   gcc_assert (gimple_alloca_call_p (stmt));
   tree len = gimple_call_arg (stmt, 0);
@@ -219,7 +217,7 @@ alloca_call_type (range_query &query, gimple *stmt, bool is_vla)
   int_range_max r;
   if (warn_limit_specified_p (is_vla)
       && TREE_CODE (len) == SSA_NAME
-      && query.range_of_expr (r, len, stmt)
+      && get_range_query (cfun)->range_of_expr (r, len, stmt)
       && !r.varying_p ())
     {
       // The invalid bits are anything outside of [0, MAX_SIZE].
@@ -258,7 +256,7 @@ in_loop_p (gimple *stmt)
 unsigned int
 pass_walloca::execute (function *fun)
 {
-  gimple_ranger ranger;
+  gimple_ranger *ranger = enable_ranger (fun);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -285,14 +283,14 @@ pass_walloca::execute (function *fun)
 	    }
 	  else if (warn_alloca)
 	    {
-	      warning_at (loc, OPT_Walloca, "%Guse of %<alloca%>", stmt);
+	      warning_at (loc, OPT_Walloca, "use of %<alloca%>");
 	      continue;
 	    }
 	  else if (warn_alloca_limit < 0)
 	    continue;
 
 	  class alloca_type_and_limit t
-	    = alloca_call_type (ranger, stmt, is_vla);
+	    = alloca_call_type (stmt, is_vla);
 
 	  unsigned HOST_WIDE_INT adjusted_alloca_limit
 	    = adjusted_warn_limit (false);
@@ -318,14 +316,16 @@ pass_walloca::execute (function *fun)
 	      break;
 	    case ALLOCA_BOUND_MAYBE_LARGE:
 	      {
+		if (xlimit_certain_p)
+		  break;
+
 		auto_diagnostic_group d;
 		if (warning_at (loc, wcode,
 				(is_vla
-				 ? G_("%Gargument to variable-length "
+				 ? G_("argument to variable-length "
 				      "array may be too large")
-				 : G_("%Gargument to %<alloca%> may be too "
-				      "large")),
-				stmt)
+				 : G_("argument to %<alloca%> may be too "
+				      "large")))
 		    && t.limit != 0)
 		  {
 		    print_decu (t.limit, buff);
@@ -341,10 +341,9 @@ pass_walloca::execute (function *fun)
 		auto_diagnostic_group d;
 		if (warning_at (loc, wcode,
 				(is_vla
-				 ? G_("%Gargument to variable-length"
+				 ? G_("argument to variable-length"
 				      " array is too large")
-				 : G_("%Gargument to %<alloca%> is too large")),
-				stmt)
+				 : G_("argument to %<alloca%> is too large")))
 		    && t.limit != 0)
 		  {
 		    print_decu (t.limit, buff);
@@ -355,30 +354,33 @@ pass_walloca::execute (function *fun)
 	      }
 	      break;
 	    case ALLOCA_UNBOUNDED:
+	      if (xlimit_certain_p)
+		break;
+
 	      warning_at (loc, wcode,
 			  (is_vla
-			   ? G_("%Gunbounded use of variable-length array")
-			   : G_("%Gunbounded use of %<alloca%>")),
-			  stmt);
+			   ? G_("unbounded use of variable-length array")
+			   : G_("unbounded use of %<alloca%>")));
 	      break;
 	    case ALLOCA_IN_LOOP:
 	      gcc_assert (!is_vla);
 	      warning_at (loc, wcode,
-			  "%Guse of %<alloca%> within a loop", stmt);
+			  "use of %<alloca%> within a loop");
 	      break;
 	    case ALLOCA_ARG_IS_ZERO:
 	      warning_at (loc, wcode,
 			  (is_vla
-			   ? G_("%Gargument to variable-length array "
+			   ? G_("argument to variable-length array "
 				"is zero")
-			   : G_("%Gargument to %<alloca%> is zero")),
-			  stmt);
+			   : G_("argument to %<alloca%> is zero")));
 	      break;
 	    default:
 	      gcc_unreachable ();
 	    }
 	}
     }
+  ranger->export_global_ranges ();
+  disable_ranger (fun);
   return 0;
 }
 

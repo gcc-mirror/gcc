@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * http://www.boost.org/LICENSE_1_0.txt
@@ -24,6 +24,7 @@ struct FileName
     int compare(RootObject *obj);
     static int compare(const char *name1, const char *name2);
     static bool absolute(const char *name);
+    static const char *toAbsolute(const char *name, const char *base = NULL);
     static const char *ext(const char *);
     const char *ext();
     static const char *removeExt(const char *str);

@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -474,6 +474,10 @@ extern bool parse_and_check_align_values (const char *flag,
 					  auto_vec<unsigned> &result_values,
 					  bool report_error,
 					  location_t loc);
+
+extern void parse_and_check_patch_area (const char *arg, bool report_error,
+					HOST_WIDE_INT *patch_area_size,
+					HOST_WIDE_INT *patch_area_start);
 
 extern void parse_options_from_collect_gcc_options (const char *, obstack *,
 						    int *);

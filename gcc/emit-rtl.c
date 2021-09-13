@@ -1,5 +1,5 @@
 /* Emit RTL for the GCC expander.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -123,7 +123,6 @@ rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 rtx pc_rtx;
 rtx ret_rtx;
 rtx simple_return_rtx;
-rtx cc0_rtx;
 
 /* Marker used for denoting an INSN, which should never be accessed (i.e.,
    this pointer should normally never be dereferenced), but is required to be
@@ -1626,18 +1625,21 @@ gen_highpart (machine_mode mode, rtx x)
   gcc_assert (known_le (msize, (unsigned int) UNITS_PER_WORD)
 	      || known_eq (msize, GET_MODE_UNIT_SIZE (GET_MODE (x))));
 
+  /* gen_lowpart_common handles a lot of special cases due to needing to handle
+     paradoxical subregs; it only calls simplify_gen_subreg when certain that
+     it will produce something meaningful.  The only case we need to handle
+     specially here is MEM.  */
+  if (MEM_P (x))
+    {
+      poly_int64 offset = subreg_highpart_offset (mode, GET_MODE (x));
+      return adjust_address (x, mode, offset);
+    }
+
   result = simplify_gen_subreg (mode, x, GET_MODE (x),
 				subreg_highpart_offset (mode, GET_MODE (x)));
-  gcc_assert (result);
-
-  /* simplify_gen_subreg is not guaranteed to return a valid operand for
-     the target if we have a MEM.  gen_highpart must return a valid operand,
-     emitting code if necessary to do so.  */
-  if (MEM_P (result))
-    {
-      result = validize_mem (result);
-      gcc_assert (result);
-    }
+  /* Since we handle MEM directly above, we should never get a MEM back
+     from simplify_gen_subreg.  */
+  gcc_assert (result && !MEM_P (result));
 
   return result;
 }
@@ -2847,14 +2849,13 @@ verify_rtx_sharing (rtx orig, rtx insn)
     case LABEL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case RETURN:
     case SIMPLE_RETURN:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
       return;
     case CLOBBER:
-      /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
+      /* Share clobbers of hard registers, but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
       if (REG_P (XEXP (x, 0))
@@ -3100,14 +3101,13 @@ repeat:
     case LABEL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case RETURN:
     case SIMPLE_RETURN:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
       return;
     case CLOBBER:
-      /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
+      /* Share clobbers of hard registers, but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
       if (REG_P (XEXP (x, 0))
@@ -3223,7 +3223,6 @@ repeat:
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case RETURN:
     case SIMPLE_RETURN:
       return;
@@ -3717,50 +3716,6 @@ prev_active_insn (rtx_insn *insn)
   return insn;
 }
 
-/* Return the next insn that uses CC0 after INSN, which is assumed to
-   set it.  This is the inverse of prev_cc0_setter (i.e., prev_cc0_setter
-   applied to the result of this function should yield INSN).
-
-   Normally, this is simply the next insn.  However, if a REG_CC_USER note
-   is present, it contains the insn that uses CC0.
-
-   Return 0 if we can't find the insn.  */
-
-rtx_insn *
-next_cc0_user (rtx_insn *insn)
-{
-  rtx note = find_reg_note (insn, REG_CC_USER, NULL_RTX);
-
-  if (note)
-    return safe_as_a <rtx_insn *> (XEXP (note, 0));
-
-  insn = next_nonnote_insn (insn);
-  if (insn && NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    insn = as_a <rtx_sequence *> (PATTERN (insn))->insn (0);
-
-  if (insn && INSN_P (insn) && reg_mentioned_p (cc0_rtx, PATTERN (insn)))
-    return insn;
-
-  return 0;
-}
-
-/* Find the insn that set CC0 for INSN.  Unless INSN has a REG_CC_SETTER
-   note, it is the previous insn.  */
-
-rtx_insn *
-prev_cc0_setter (rtx_insn *insn)
-{
-  rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
-
-  if (note)
-    return safe_as_a <rtx_insn *> (XEXP (note, 0));
-
-  insn = prev_nonnote_insn (insn);
-  gcc_assert (sets_cc0_p (PATTERN (insn)));
-
-  return insn;
-}
-
 /* Find a RTX_AUTOINC class rtx which matches DATA.  */
 
 static int
@@ -3964,6 +3919,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	  break;
 
 	case REG_CALL_DECL:
+	case REG_UNTYPED_CALL:
 	  gcc_assert (call_insn != NULL_RTX);
 	  add_reg_note (call_insn, REG_NOTE_KIND (note), XEXP (note, 0));
 	  break;
@@ -5686,12 +5642,11 @@ copy_insn_1 (rtx orig)
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case RETURN:
     case SIMPLE_RETURN:
       return orig;
     case CLOBBER:
-      /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
+      /* Share clobbers of hard registers, but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
       if (REG_P (XEXP (orig, 0))
@@ -5949,6 +5904,7 @@ bool
 valid_for_const_vector_p (machine_mode, rtx x)
 {
   return (CONST_SCALAR_INT_P (x)
+	  || CONST_POLY_INT_P (x)
 	  || CONST_DOUBLE_AS_FLOAT_P (x)
 	  || CONST_FIXED_P (x));
 }
@@ -6411,7 +6367,6 @@ init_emit_once (void)
   pc_rtx = gen_rtx_fmt_ (PC, VOIDmode);
   ret_rtx = gen_rtx_fmt_ (RETURN, VOIDmode);
   simple_return_rtx = gen_rtx_fmt_ (SIMPLE_RETURN, VOIDmode);
-  cc0_rtx = gen_rtx_fmt_ (CC0, VOIDmode);
   invalid_insn_rtx = gen_rtx_INSN (VOIDmode,
 				   /*prev_insn=*/NULL,
 				   /*next_insn=*/NULL,

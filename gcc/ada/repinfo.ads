@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,10 +51,10 @@ package Repinfo is
    --       for example in the case where representation clauses or
    --       pragmas specify the values.
 
-   --    2. Otherwise the backend is responsible for layout of all types and
-   --       objects not laid out by the front end. This includes all dynamic
-   --       values, and also static values (e.g. record sizes) when not set by
-   --       the front end.
+   --    2. The backend is responsible for layout of all types and objects
+   --       not laid out by the front end. This includes all dynamic values,
+   --       and also static values (e.g. record sizes) when not set by the
+   --       front end.
 
    -----------------------------
    -- Back Annotation by Gigi --
@@ -189,7 +189,7 @@ package Repinfo is
    --    "name"                 :  string
    --    "location"             :  string
    --    "record"               :  array of components
-   --    "variant"              :  array of variants
+   --    "[parent_]*variant"    :  array of variants
    --    "formal"               :  array of formal parameters
    --    "mechanism"            :  string
    --    "Size"                 :  numerical expression
@@ -209,8 +209,9 @@ package Repinfo is
    --    fully qualified Ada name. The value of "location" is the expanded
    --    chain of instantiation locations that contains the entity.
    --    "record" is present for every record type and its value is the list of
-   --    components. "variant" is present only if the record type has a variant
-   --    part and its value is the list of variants.
+   --    components. "[parent_]*variant" is present only if the record type, or
+   --    one of its ancestors (parent, grand-parent, etc) if it's an extension,
+   --    has a variant part and its value is the list of variants.
    --    "formal" is present for every subprogram and entry, and its value is
    --    the list of formal parameters. "mechanism" is present for functions
    --    only and its value is the return mechanim.
@@ -290,6 +291,56 @@ package Repinfo is
 
    function Create_Discrim_Ref (Discr : Entity_Id) return Node_Ref;
    --  Creates a reference to the discriminant whose entity is Discr
+
+   --------------------------------------------------------
+   -- Front-End Interface for Dynamic Size/Offset Values --
+   --------------------------------------------------------
+
+   --  This interface is used by GNAT LLVM to deal with all dynamic size and
+   --  offset fields.
+
+   --  The interface here allows these created entities to be referenced
+   --  using negative Unit values, so that they can be stored in the
+   --  appropriate size and offset fields in the tree.
+
+   --  In the case of components, if the location of the component is static,
+   --  then all four fields (Component_Bit_Offset, Normalized_Position, Esize,
+   --  and Normalized_First_Bit) are set to appropriate values. In the case of
+   --  a non-static component location, Component_Bit_Offset is not used and
+   --  is left set to Unknown. Normalized_Position and Normalized_First_Bit
+   --  are set appropriately.
+
+   subtype SO_Ref is Uint;
+   --  Type used to represent a Uint value that represents a static or
+   --  dynamic size/offset value (non-negative if static, negative if
+   --  the size value is dynamic).
+
+   subtype Dynamic_SO_Ref is Uint;
+   --  Type used to represent a negative Uint value used to store
+   --  a dynamic size/offset value.
+
+   function Is_Dynamic_SO_Ref (U : SO_Ref) return Boolean;
+   pragma Inline (Is_Dynamic_SO_Ref);
+   --  Given a SO_Ref (Uint) value, returns True iff the SO_Ref value
+   --  represents a dynamic Size/Offset value (i.e. it is negative).
+
+   function Is_Static_SO_Ref (U : SO_Ref) return Boolean;
+   pragma Inline (Is_Static_SO_Ref);
+   --  Given a SO_Ref (Uint) value, returns True iff the SO_Ref value
+   --  represents a static Size/Offset value (i.e. it is non-negative).
+
+   function Create_Dynamic_SO_Ref (E : Entity_Id) return Dynamic_SO_Ref;
+   --  Given the Entity_Id for a constant (case 1), the Node_Id for an
+   --  expression (case 2), or the Entity_Id for a function (case 3),
+   --  this function returns a (negative) Uint value that can be used
+   --  to retrieve the entity or expression for later use.
+
+   function Get_Dynamic_SO_Entity (U : Dynamic_SO_Ref) return Entity_Id;
+   --  Retrieve the Node_Id or Entity_Id stored by a previous call to
+   --  Create_Dynamic_SO_Ref. The approach is that the front end makes
+   --  the necessary Create_Dynamic_SO_Ref calls to associate the node
+   --  and entity id values and the back end makes Get_Dynamic_SO_Ref
+   --  calls to retrieve them.
 
    ------------------------------
    -- External tools Interface --

@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a lm32 using ELF.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

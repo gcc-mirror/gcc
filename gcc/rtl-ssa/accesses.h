@@ -1,5 +1,5 @@
 // Access-related classes for RTL SSA                               -*- C++ -*-
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -705,6 +705,19 @@ public:
   // Return true if at least one phi node uses the set's result.
   bool has_phi_uses () const;
 
+  // If there is exactly one nondebug use of the set's result, return that use,
+  // otherwise return null.  The use might be in an instruction or in a phi
+  // node.
+  use_info *single_nondebug_use () const;
+
+  // If exactly one nondebug instruction uses the set's result, return the use
+  // by that instruction, otherwise return null.
+  use_info *single_nondebug_insn_use () const;
+
+  // If exactly one phi node uses the set's result, return the use by that phi
+  // node, otherwise return null.
+  use_info *single_phi_use () const;
+
   // Return true if the set and its uses are contained within a single
   // extended basic block, with the set coming first.  This implies
   // that all uses are by instructions rather than phi nodes.
@@ -965,13 +978,13 @@ public:
 //   clobber_group that spans P.  MUX then contains this definition
 //   or clobber_group.
 //
-// - Otherwise, COMPARISON is less than 0 if we found the definition
+// - Otherwise, COMPARISON is greater than 0 if we found the definition
 //   that precedes P or the group of clobbers that precedes P.  MUX then
 //   contains this definition or clobber_group.
 //
-// - Otherwise, COMPARISON is greater than zero and we found the
-//   definition that follows P, or the group of clobbers that follows P.
-//   MUX then contains this definition or clobber_group.
+// - Otherwise, COMPARISON is less than zero and we found the definition
+//   that follows P, or the group of clobbers that follows P.  MUX then
+//   contains this definition or clobber_group.
 class def_lookup
 {
 public:

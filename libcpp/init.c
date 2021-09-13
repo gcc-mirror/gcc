@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986-2020 Free Software Foundation, Inc.
+   Copyright (C) 1986-2021 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -82,6 +82,7 @@ struct lang_flags
   char extended_numbers;
   char extended_identifiers;
   char c11_identifiers;
+  char cxx23_identifiers;
   char std;
   char digraphs;
   char uliterals;
@@ -94,32 +95,36 @@ struct lang_flags
   char va_opt;
   char scope;
   char dfp_constants;
+  char size_t_literals;
+  char elifdef;
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum xid c11 std digr ulit rlit udlit bincst digsep trig u8chlit vaopt scope dfp */
-  /* GNUC89   */  { 0,  0,  1,  0,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0 },
-  /* GNUC99   */  { 1,  0,  1,  1,  0,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0 },
-  /* GNUC11   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0 },
-  /* GNUC17   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0 },
-  /* GNUC2X   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    1,     0,     0,   1,      1,   1,     1 },
-  /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
-  /* STDC94   */  { 0,  0,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
-  /* STDC99   */  { 1,  0,  1,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
-  /* STDC11   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
-  /* STDC17   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
-  /* STDC2X   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    1,     0,     1,   1,      0,   1,     1 },
-  /* GNUCXX   */  { 0,  1,  1,  1,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0 },
-  /* CXX98    */  { 0,  1,  0,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   1,     0 },
-  /* GNUCXX11 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    0,     0,     0,   0,      1,   1,     0 },
-  /* CXX11    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    0,     0,     1,   0,      0,   1,     0 },
-  /* GNUCXX14 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   0,      1,   1,     0 },
-  /* CXX14    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    1,     1,     1,   0,      0,   1,     0 },
-  /* GNUCXX17 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
-  /* CXX17    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      0,   1,     0 },
-  /* GNUCXX20 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
-  /* CXX20    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
-  /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0,   0,      0,   0,     0 }
+{ /*              c99 c++ xnum xid c11 c++23 std digr ulit rlit udlit bincst digsep trig u8chlit vaopt scope dfp szlit elifdef */
+  /* GNUC89   */  { 0,  0,  1,  0,  0,  0,    0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
+  /* GNUC99   */  { 1,  0,  1,  1,  0,  0,    0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
+  /* GNUC11   */  { 1,  0,  1,  1,  1,  0,    0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
+  /* GNUC17   */  { 1,  0,  1,  1,  1,  0,    0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
+  /* GNUC2X   */  { 1,  0,  1,  1,  1,  0,    0,  1,   1,   1,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1 },
+  /* STDC89   */  { 0,  0,  0,  0,  0,  0,    1,  0,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0 },
+  /* STDC94   */  { 0,  0,  0,  0,  0,  0,    1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0 },
+  /* STDC99   */  { 1,  0,  1,  1,  0,  0,    1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0 },
+  /* STDC11   */  { 1,  0,  1,  1,  1,  0,    1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0 },
+  /* STDC17   */  { 1,  0,  1,  1,  1,  0,    1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0 },
+  /* STDC2X   */  { 1,  0,  1,  1,  1,  0,    1,  1,   1,   0,   0,    1,     1,     1,   1,      0,   1,     1,   0,   1 },
+  /* GNUCXX   */  { 0,  1,  1,  1,  0,  0,    0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
+  /* CXX98    */  { 0,  1,  0,  1,  0,  0,    1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   1,     0,   0,   0 },
+  /* GNUCXX11 */  { 1,  1,  1,  1,  1,  0,    0,  1,   1,   1,   1,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
+  /* CXX11    */  { 1,  1,  0,  1,  1,  0,    1,  1,   1,   1,   1,    0,     0,     1,   0,      0,   1,     0,   0,   0 },
+  /* GNUCXX14 */  { 1,  1,  1,  1,  1,  0,    0,  1,   1,   1,   1,    1,     1,     0,   0,      1,   1,     0,   0,   0 },
+  /* CXX14    */  { 1,  1,  0,  1,  1,  0,    1,  1,   1,   1,   1,    1,     1,     1,   0,      0,   1,     0,   0,   0 },
+  /* GNUCXX17 */  { 1,  1,  1,  1,  1,  0,    0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0 },
+  /* CXX17    */  { 1,  1,  1,  1,  1,  0,    1,  1,   1,   1,   1,    1,     1,     0,   1,      0,   1,     0,   0,   0 },
+  /* GNUCXX20 */  { 1,  1,  1,  1,  1,  0,    0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0 },
+  /* CXX20    */  { 1,  1,  1,  1,  1,  0,    1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0 },
+  /* GNUCXX23 */  { 1,  1,  1,  1,  1,  1,    0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   0 },
+  /* CXX23    */  { 1,  1,  1,  1,  1,  1,    1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   0 },
+  /* ASM      */  { 0,  0,  1,  0,  0,  0,    0,  0,   0,   0,   0,    0,     0,     0,   0,      0,   0,     0,   0,   0 }
 };
 
 /* Sets internal flags correctly for a given language.  */
@@ -135,6 +140,7 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, extended_numbers)		 = l->extended_numbers;
   CPP_OPTION (pfile, extended_identifiers)	 = l->extended_identifiers;
   CPP_OPTION (pfile, c11_identifiers)		 = l->c11_identifiers;
+  CPP_OPTION (pfile, cxx23_identifiers)		 = l->cxx23_identifiers;
   CPP_OPTION (pfile, std)			 = l->std;
   CPP_OPTION (pfile, digraphs)			 = l->digraphs;
   CPP_OPTION (pfile, uliterals)			 = l->uliterals;
@@ -147,6 +153,8 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, va_opt)			 = l->va_opt;
   CPP_OPTION (pfile, scope)			 = l->scope;
   CPP_OPTION (pfile, dfp_constants)		 = l->dfp_constants;
+  CPP_OPTION (pfile, size_t_literals)		 = l->size_t_literals;
+  CPP_OPTION (pfile, elifdef)			 = l->elifdef;
 }
 
 /* Initialize library global state.  */
@@ -399,6 +407,7 @@ static const struct builtin_macro builtin_array[] =
   B("__TIME__",		 BT_TIME,          false),
   B("__DATE__",		 BT_DATE,          false),
   B("__FILE__",		 BT_FILE,          false),
+  B("__FILE_NAME__",	 BT_FILE_NAME,     false),
   B("__BASE_FILE__",	 BT_BASE_FILE,     false),
   B("__LINE__",		 BT_SPECLINE,      true),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL, true),
@@ -540,7 +549,12 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, cplusplus))
     {
-      if (CPP_OPTION (pfile, lang) == CLK_CXX20
+      /* C++23 is not yet a standard.  For now, use an invalid
+       * year/month, 202100L, which is larger than 202002L.  */
+      if (CPP_OPTION (pfile, lang) == CLK_CXX23
+	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX23)
+	_cpp_define_builtin (pfile, "__cplusplus 202100L");
+      else if (CPP_OPTION (pfile, lang) == CLK_CXX20
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX20)
 	_cpp_define_builtin (pfile, "__cplusplus 202002L");
       else if (CPP_OPTION (pfile, lang) == CLK_CXX17
@@ -743,6 +757,23 @@ read_original_filename (cpp_reader *pfile)
       if (_cpp_handle_directive (pfile, token->flags & PREV_WHITE))
 	{
 	  read_original_directory (pfile);
+
+	  auto *penult = &linemap_check_ordinary
+	    (LINEMAPS_LAST_MAP (pfile->line_table, false))[-1];
+	  if (penult[1].reason == LC_RENAME_VERBATIM)
+	    {
+	      /* Expunge any evidence of the original linemap.  */
+	      pfile->line_table->highest_location
+		= pfile->line_table->highest_line
+		= penult[0].start_location;
+
+	      penult[1].start_location = penult[0].start_location;
+	      penult[1].reason = penult[0].reason;
+	      penult[0] = penult[1];
+	      pfile->line_table->info_ordinary.used--;
+	      pfile->line_table->info_ordinary.cache = 0;
+	    }
+
 	  return true;
 	}
     }

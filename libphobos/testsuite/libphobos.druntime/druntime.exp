@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020 Free Software Foundation, Inc.
+# Copyright (C) 2019-2021 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # <http://www.gnu.org/licenses/>.
 
 # Immediately exit if we can't run target executables.
-if { ![isnative] || ![is-effective-target static] } {
+if { ![isnative] } {
     return
 }
 
@@ -34,7 +34,8 @@ dg-init
 # Main loop.
 foreach test $tests {
     set libphobos_test_name "$subdir/[dg-trim-dirname $srcdir/../libdruntime $test]"
-    dg-runtest $test "" "-fmain -fbuilding-libphobos-tests $version_flags"
+    dg-runtest $test "-static-libphobos" \
+	"-fmain -fbuilding-libphobos-tests $version_flags"
     set libphobos_test_name ""
 }
 

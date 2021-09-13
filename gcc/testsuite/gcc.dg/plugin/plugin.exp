@@ -1,4 +1,4 @@
-#   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,6 +79,8 @@ set plugin_test_list [list \
 	  diagnostic-test-show-locus-bw-line-numbers-2.c \
 	  diagnostic-test-show-locus-color-line-numbers.c \
 	  diagnostic-test-show-locus-parseable-fixits.c \
+	  diagnostic-test-show-locus-GCC_EXTRA_DIAGNOSTIC_OUTPUT-fixits-v1.c \
+	  diagnostic-test-show-locus-GCC_EXTRA_DIAGNOSTIC_OUTPUT-fixits-v2.c \
 	  diagnostic-test-show-locus-generate-patch.c }\
     { diagnostic_plugin_test_tree_expression_range.c \
 	  diagnostic-test-expressions-1.c } \

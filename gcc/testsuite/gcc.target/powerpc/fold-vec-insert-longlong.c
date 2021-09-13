@@ -60,13 +60,11 @@ testul2_cst(unsigned long long x, vector unsigned long long v)
 
 /* { dg-final { scan-assembler-times {\mrldic\M|\mrlwinm\M} 4 } } */
 
-/* The number of addi instructions decreases on newer systems.  Measured as 8 on
- power7 and power8 targets, and drops to 4 on power9 targets that use the
- newer stxv,lxv instructions.  For this test ensure we get at least one.  */
-/* { dg-final { scan-assembler {\maddi\M} } } */
-/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstvx\M|\mstxv\M} 4 } } */
-/* { dg-final { scan-assembler-times {\mstdx\M} 4 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mstw\M} 8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstvx\M|\mstxv\M} 0 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mstdx\M} 0 { target lp64 } } } */
 
-/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 0 { target lp64 } } } */
 
+/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstvx\M|\mstxv\M} 0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 0 { target ilp32 } } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile }  */
-/* { dg-options "-O2" }  */
+/* { dg-options "-O2 -mno-long-calls" }  */
 /* { dg-final { scan-assembler-times "120\n" 1 } } */
 
 extern void foo1 (int);

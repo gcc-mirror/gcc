@@ -1,6 +1,6 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X) for a 32b host
    with a 64b miultilib.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

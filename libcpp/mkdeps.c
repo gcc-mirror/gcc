@@ -1,5 +1,5 @@
 /* Dependency generator for Makefile fragments.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Zack Weinberg, Mar 2000
 
 This program is free software; you can redistribute it and/or modify it
@@ -162,7 +162,6 @@ munge (const char *str, const char *trail = nullptr)
 	      /* FALLTHROUGH  */
 
 	    case '#':
-	    case ':':
 	      buf[dst++] = '\\';
 	      /* FALLTHROUGH  */
 

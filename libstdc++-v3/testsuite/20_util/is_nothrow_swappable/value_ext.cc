@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 // { dg-skip-if "skip if __STRICT_ANSI__ defined" { *-*-* } { "-std=c++??" } }
 
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

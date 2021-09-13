@@ -6,7 +6,7 @@
  *                                                                          *
  *              Auxiliary C functions for Interfaces.C.Streams              *
  *                                                                          *
- *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -36,6 +36,11 @@
 #endif
 #define _FILE_OFFSET_BITS 64
 /* the define above will make off_t a 64bit type on GNU/Linux */
+
+/* Tell Cygwin's <stdio.h> to expose fileno_unlocked() */
+#if defined(__CYGWIN__) && !defined(__CYGWIN32__) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
 
 #include <stdio.h>
 #include <sys/types.h>

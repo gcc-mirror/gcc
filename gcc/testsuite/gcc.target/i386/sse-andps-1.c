@@ -30,6 +30,7 @@ TEST (void)
     float f[4];
     int   i[4];
   }source1, source2, e;
+  float f[4];
 
   s1.x = _mm_set_ps (34, 545, 955, 67);
   s2.x = _mm_set_ps (67, 4, 57, 897);
@@ -43,7 +44,8 @@ TEST (void)
   e.i[1] = source1.i[1] & source2.i[1];
   e.i[2] = source1.i[2] & source2.i[2];
   e.i[3] = source1.i[3] & source2.i[3];
+  __builtin_memcpy (f, e.f, sizeof (f));
 
-  if (check_union128 (u, e.f))
+  if (check_union128 (u, f))
     abort ();
 }

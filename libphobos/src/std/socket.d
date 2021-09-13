@@ -85,10 +85,10 @@ else version (Posix)
         }
     }
 
+    public import core.sys.posix.netinet.in_;
     import core.sys.posix.arpa.inet;
     import core.sys.posix.fcntl;
     import core.sys.posix.netdb;
-    import core.sys.posix.netinet.in_;
     import core.sys.posix.netinet.tcp;
     import core.sys.posix.sys.select;
     import core.sys.posix.sys.socket;
@@ -146,6 +146,8 @@ class SocketException: Exception
     mixin basicExceptionCtors;
 }
 
+version (CRuntime_Glibc) version = GNU_STRERROR;
+version (CRuntime_UClibc) version = GNU_STRERROR;
 
 /*
  * Needs to be public so that SocketOSException can be thrown outside of
@@ -159,7 +161,7 @@ string formatSocketError(int err) @trusted
     {
         char[80] buf;
         const(char)* cs;
-        version (CRuntime_Glibc)
+        version (GNU_STRERROR)
         {
             cs = strerror_r(err, buf.ptr, buf.length);
         }

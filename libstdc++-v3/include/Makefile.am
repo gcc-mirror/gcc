@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001-2020 Free Software Foundation, Inc.
+## Copyright (C) 2001-2021 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -30,6 +30,7 @@ std_headers = \
 	${std_srcdir}/any \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
+	${std_srcdir}/barrier \
 	${std_srcdir}/bit \
 	${std_srcdir}/bitset \
 	${std_srcdir}/charconv \
@@ -118,6 +119,7 @@ bits_headers = \
 	${bits_srcdir}/charconv.h \
 	${bits_srcdir}/codecvt.h \
 	${bits_srcdir}/concept_check.h \
+	${bits_srcdir}/cow_string.h \
 	${bits_srcdir}/cpp_type_traits.h \
 	${bits_srcdir}/deque.tcc \
 	${bits_srcdir}/enable_special_members.h \
@@ -224,6 +226,7 @@ bits_headers = \
 	${bits_srcdir}/streambuf.tcc \
 	${bits_srcdir}/stringfwd.h \
 	${bits_srcdir}/string_view.tcc \
+	${bits_srcdir}/this_thread_sleep.h \
 	${bits_srcdir}/uniform_int_dist.h \
 	${bits_srcdir}/unique_lock.h \
 	${bits_srcdir}/unique_ptr.h \
@@ -231,6 +234,7 @@ bits_headers = \
 	${bits_srcdir}/unordered_set.h \
 	${bits_srcdir}/uses_allocator.h \
 	${bits_srcdir}/uses_allocator_args.h \
+	${bits_srcdir}/utility.h \
 	${bits_srcdir}/valarray_array.h \
 	${bits_srcdir}/valarray_array.tcc \
 	${bits_srcdir}/valarray_before.h \
@@ -746,6 +750,7 @@ experimental_headers = \
 	${experimental_srcdir}/ratio \
 	${experimental_srcdir}/regex \
 	${experimental_srcdir}/set \
+	${experimental_srcdir}/simd \
 	${experimental_srcdir}/socket \
 	${experimental_srcdir}/source_location \
 	${experimental_srcdir}/string \
@@ -765,7 +770,19 @@ experimental_bits_builddir = ./experimental/bits
 experimental_bits_headers = \
 	${experimental_bits_srcdir}/lfts_config.h \
 	${experimental_bits_srcdir}/net.h \
+	${experimental_bits_srcdir}/numeric_traits.h \
 	${experimental_bits_srcdir}/shared_ptr.h \
+	${experimental_bits_srcdir}/simd.h \
+	${experimental_bits_srcdir}/simd_builtin.h \
+	${experimental_bits_srcdir}/simd_converter.h \
+	${experimental_bits_srcdir}/simd_detail.h \
+	${experimental_bits_srcdir}/simd_fixed_size.h \
+	${experimental_bits_srcdir}/simd_math.h \
+	${experimental_bits_srcdir}/simd_neon.h \
+	${experimental_bits_srcdir}/simd_ppc.h \
+	${experimental_bits_srcdir}/simd_scalar.h \
+	${experimental_bits_srcdir}/simd_x86.h \
+	${experimental_bits_srcdir}/simd_x86_conversions.h \
 	${experimental_bits_srcdir}/string_view.tcc \
 	${experimental_bits_filesystem_headers}
 

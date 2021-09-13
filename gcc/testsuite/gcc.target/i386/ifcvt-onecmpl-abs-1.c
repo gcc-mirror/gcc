@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-rtl-ce1" } */
+/* { dg-options "-O2" } */
 
 /* Check code generation for one's complement version of abs */
 
@@ -10,4 +10,4 @@ int onecmplabs(int x)
   return x;
 }
 
-/* { dg-final { scan-rtl-dump "succeeded through noce_try_abs" "ce1" } } */
+/* { dg-final { scan-assembler "\txor" } } */

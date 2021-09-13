@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# check_simd <srcdir> <builddir> <CXXFLAGS>
+# Read config from $CHECK_SIMD_CONFIG file or $target_list
+
+scriptdir="$(cd "${0%/*}" && pwd)"
+srcdir="$1"
+builddir="$2"
+shift 2
+testdir="$builddir/testsuite"
+
+CXX="$("$builddir/scripts/testsuite_flags" --build-cxx)"
+CXXFLAGS="$("$builddir/scripts/testsuite_flags" --cxxflags) $1 -Wno-psabi"
+shift
+INCLUDES="$("$builddir/scripts/testsuite_flags" --build-includes)"
+
+target_triplet=$($CXX -dumpmachine)
+
+define_target() {
+  name="$1"
+  flags="$2"
+  sim="$3"
+  eval "$name=\"flags=\\\"$flags\\\"
+sim=\\\"$sim\\\"\""
+}
+
+if [ -f "$CHECK_SIMD_CONFIG" ]; then
+  . "$CHECK_SIMD_CONFIG"
+elif [ -z "$CHECK_SIMD_CONFIG" ]; then
+  if [ -z "$target_list" ]; then
+    target_list="unix"
+    case "$target_triplet" in
+      x86_64-*)      target_list="unix/-march=native" ;;
+      i?86-*)        target_list="unix/-march=native" ;;
+      powerpc64le-*) target_list="unix/-mcpu=power8" ;;
+      aarch64-*)     target_list="unix/-mcpu=cortex-a53" ;;
+      arm-*)         target_list="unix/-mcpu=cortex-a7" ;;
+    esac
+  fi
+else
+  echo "Error: File not found: \$CHECK_SIMD_CONFIG='$CHECK_SIMD_CONFIG'" 1>&2
+  exit 1
+fi
+
+# define unix with no flags and no simulator:
+define_target unix
+
+list="$target_list"
+
+# expand a{b,c} to a/b a/c
+while [ "${list#*\{}" != "${list}" ]; do
+  list="$(echo "$list" | \
+    sed -e 's#\([^ ]\+\){\([^{},]*\),\([^{}]*\)}\(/[^ ]*\)\?#\1/\2\4 \1{\3}\4#g' \
+        -e 's#{\([^{},]*\)}#/\1#g' \
+        -e 's#/ # #g' -e 's#/$##')"
+done
+
+# per a/b/c block extract flags and simulator, then make check-simd
+while [ ${#list} -gt 0 ]; do
+  a="${list%% *}"
+  if [ "$a" = "$list" ]; then
+    list=""
+  else
+    list="${list#${a} }"
+  fi
+  b="${a%%/*}"
+  eval "eval \"\$$b\""
+  flags="${flags}$(echo "${a#${b}}"|sed 's#/# #g')"
+  subdir="simd/$(echo "$flags" | sed 's#[= /-]##g')"
+  rm -f "${subdir}/Makefile"
+  $srcdir/testsuite/experimental/simd/generate_makefile.sh \
+    --destination="$testdir/$subdir" --sim="$sim" --testflags="$flags" \
+    $CXX $INCLUDES $CXXFLAGS -static-libgcc -static-libstdc++
+  echo "$subdir"
+done

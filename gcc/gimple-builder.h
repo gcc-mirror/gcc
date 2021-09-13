@@ -1,5 +1,5 @@
 /* Header file for high level statement building routines.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_GIMPLE_BUILDER_H
 #define GCC_GIMPLE_BUILDER_H
+
+/* ???  This API is legacy and should not be used in new code.  */
 
 gassign *build_assign (enum tree_code, tree, int, tree lhs = NULL_TREE);
 gassign *build_assign (enum tree_code, gimple *, int, tree lhs = NULL_TREE);

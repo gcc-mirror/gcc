@@ -3,7 +3,7 @@
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,7 @@
 #include <random>
 #include <stdexcept>
 #include <testsuite_hooks.h>
+#include <testsuite_random.h>
 
 void
 test01()
@@ -50,19 +51,14 @@ test03()
 {
   // At least one of these tokens should be valid.
   const std::string tokens[] = {
-    "rdseed", "rdrand", "rand_s", "/dev/urandom", "/dev/random", "mt19937"
+    "rdseed", "rdrand", "rand_s", "/dev/urandom", "/dev/random", "mt19937",
+    "prng"
   };
   int count = 0;
   for (const std::string& token : tokens)
   {
-    try
-    {
-      std::random_device x(token);
+    if (__gnu_test::random_device_available(token))
       ++count;
-    }
-    catch (const std::runtime_error&)
-    {
-    }
   }
   VERIFY( count != 0 );
 }
@@ -70,21 +66,12 @@ test03()
 void
 test04()
 {
-  bool can_use_mt19937 = true;
-  std::random_device::result_type xval;
-  try
+  if (__gnu_test::random_device_available("mt19937"))
   {
     std::random_device x("mt19937");
-    xval = x();
-  }
-  catch (const std::runtime_error&)
-  {
-    can_use_mt19937 = false;
-  }
+    std::random_device::result_type xval = x();
 
-  // If "mt19937" is a valid token then numeric seeds should be too.
-  if (can_use_mt19937)
-  {
+    // If "mt19937" is a valid token then numeric seeds should be too.
     std::random_device x1("0");
     std::random_device x2("1234");
     std::random_device x3("0xc0fefe");

@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -105,8 +105,8 @@ TargetSave
 unsigned char arch_specified
 
 ;; -mcmodel= model
-TargetSave
-enum cmodel x_ix86_cmodel
+TargetVariable
+enum cmodel ix86_cmodel = CM_32
 
 ;; -mabi=
 TargetSave
@@ -133,24 +133,24 @@ TargetSave
 int x_ix86_force_drap
 
 ;; -mincoming-stack-boundary=
-TargetSave
-int x_ix86_incoming_stack_boundary_arg
+TargetVariable
+int ix86_incoming_stack_boundary_arg
 
 ;; -maddress-mode=
-TargetSave
-enum pmode x_ix86_pmode
+TargetVariable
+enum pmode ix86_pmode = PMODE_SI
 
 ;; -mpreferred-stack-boundary=
-TargetSave
-int x_ix86_preferred_stack_boundary_arg
+TargetVariable
+int ix86_preferred_stack_boundary_arg
 
 ;; -mrecip=
 TargetSave
 const char *x_ix86_recip_name
 
 ;; -mregparm=
-TargetSave
-int x_ix86_regparm
+TargetVariable
+int ix86_regparm
 
 ;; -mlarge-data-threshold=
 TargetSave
@@ -189,8 +189,8 @@ TargetSave
 int x_ix86_tune_no_default
 
 ;; -mveclibabi=
-TargetSave
-enum ix86_veclibabi x_ix86_veclibabi_type
+TargetVariable
+enum ix86_veclibabi ix86_veclibabi_type = ix86_veclibabi_type_none
 
 ;; x86 options
 m128bit-long-double
@@ -934,7 +934,7 @@ Target Mask(ISA_PREFETCHWT1) Var(ix86_isa_flags) Save
 Support PREFETCHWT1 built-in functions and code generation.
 
 mfentry
-Target Var(flag_fentry)
+Target Save Var(flag_fentry)
 Emit profiling counter call at function entry before prologue.
 
 mrecord-mcount
@@ -1005,21 +1005,21 @@ EnumValue
 Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
 
 mstack-protector-guard-reg=
-Target RejectNegative Joined Var(ix86_stack_protector_guard_reg_str)
+Target Save RejectNegative Joined Var(ix86_stack_protector_guard_reg_str)
 Use the given base register for addressing the stack-protector guard.
 
 TargetVariable
 addr_space_t ix86_stack_protector_guard_reg = ADDR_SPACE_GENERIC
 
 mstack-protector-guard-offset=
-Target RejectNegative Joined Integer Var(ix86_stack_protector_guard_offset_str)
+Target Save RejectNegative Joined Integer Var(ix86_stack_protector_guard_offset_str)
 Use the given offset for addressing the stack-protector guard.
 
 TargetVariable
 HOST_WIDE_INT ix86_stack_protector_guard_offset = 0
 
 mstack-protector-guard-symbol=
-Target RejectNegative Joined Integer Var(ix86_stack_protector_guard_symbol_str)
+Target Save RejectNegative Joined Integer Var(ix86_stack_protector_guard_symbol_str)
 Use the given symbol for addressing the stack-protector guard.
 
 mmitigate-rop
@@ -1162,3 +1162,11 @@ AVXVNNI built-in functions and code generation.
 mneeded
 Target Var(ix86_needed) Save
 Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property.
+
+mmwait
+Target Mask(ISA2_MWAIT) Var(ix86_isa_flags2) Save
+Support MWAIT and MONITOR built-in functions and code generation.
+
+mavx512fp16
+Target Mask(ISA2_AVX512FP16) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512FP16 built-in functions and code generation.

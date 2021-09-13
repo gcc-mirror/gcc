@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -78,7 +78,6 @@ gomp_thread_start (void *xdata)
 #else
   struct gomp_thread local_thr;
   thr = &local_thr;
-  pthread_setspecific (gomp_tls_key, thr);
 #endif
   gomp_sem_init (&thr->release, 0);
 
@@ -91,6 +90,9 @@ gomp_thread_start (void *xdata)
   thr->place = data->place;
 #ifdef GOMP_NEEDS_THREAD_HANDLE
   thr->handle = data->handle;
+#endif
+#if !(defined HAVE_TLS || defined USE_EMUTLS)
+  pthread_setspecific (gomp_tls_key, thr);
 #endif
 
   thr->ts.team->ordered_release[thr->ts.team_id] = &thr->release;
@@ -205,6 +207,8 @@ gomp_new_team (unsigned nthreads)
   team->task_running_count = 0;
   team->work_share_cancelled = 0;
   team->team_cancelled = 0;
+
+  team->task_detach_count = 0;
 
   return team;
 }

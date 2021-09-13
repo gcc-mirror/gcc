@@ -1,6 +1,6 @@
 /* Lower GIMPLE_SWITCH expressions to something more efficient than
    a jump table.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -50,6 +50,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "tree-into-ssa.h"
 #include "omp-general.h"
+#include "gimple-range.h"
 
 /* ??? For lang_hooks.types.type_for_mode, but is there a word_mode
    type in the GIMPLE type system that is language-independent?  */
@@ -1090,7 +1091,7 @@ group_cluster::dump (FILE *f, bool details)
   for (unsigned i = 0; i < m_cases.length (); i++)
     {
       simple_cluster *sc = static_cast<simple_cluster *> (m_cases[i]);
-      comparison_count += sc->m_range_p ? 2 : 1;
+      comparison_count += sc->get_comparison_count ();
     }
 
   unsigned HOST_WIDE_INT range = get_range (get_low (), get_high ());
@@ -1112,7 +1113,8 @@ group_cluster::dump (FILE *f, bool details)
 
 void
 jump_table_cluster::emit (tree index_expr, tree,
-			  tree default_label_expr, basic_block default_bb)
+			  tree default_label_expr, basic_block default_bb,
+			  location_t loc)
 {
   unsigned HOST_WIDE_INT range = get_range (get_low (), get_high ());
   unsigned HOST_WIDE_INT nondefault_range = 0;
@@ -1131,6 +1133,7 @@ jump_table_cluster::emit (tree index_expr, tree,
 
   gswitch *s = gimple_build_switch (index_expr,
 				    unshare_expr (default_label_expr), labels);
+  gimple_set_location (s, loc);
   gimple_stmt_iterator gsi = gsi_start_bb (m_case_bb);
   gsi_insert_after (&gsi, s, GSI_NEW_STMT);
 
@@ -1183,10 +1186,23 @@ jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
 
   min.quick_push (min_cluster_item (0, 0, 0));
 
+  unsigned HOST_WIDE_INT max_ratio
+    = (optimize_insn_for_size_p ()
+       ? param_jump_table_max_growth_ratio_for_size
+       : param_jump_table_max_growth_ratio_for_speed);
+
   for (unsigned i = 1; i <= l; i++)
     {
       /* Set minimal # of clusters with i-th item to infinite.  */
       min.quick_push (min_cluster_item (INT_MAX, INT_MAX, INT_MAX));
+
+      /* Pre-calculate number of comparisons for the clusters.  */
+      HOST_WIDE_INT comparison_count = 0;
+      for (unsigned k = 0; k <= i - 1; k++)
+	{
+	  simple_cluster *sc = static_cast<simple_cluster *> (clusters[k]);
+	  comparison_count += sc->get_comparison_count ();
+	}
 
       for (unsigned j = 0; j < i; j++)
 	{
@@ -1198,10 +1214,15 @@ jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
 	  if ((min[j].m_count + 1 < min[i].m_count
 	       || (min[j].m_count + 1 == min[i].m_count
 		   && s < min[i].m_non_jt_cases))
-	      && can_be_handled (clusters, j, i - 1))
+	      && can_be_handled (clusters, j, i - 1, max_ratio,
+				 comparison_count))
 	    min[i] = min_cluster_item (min[j].m_count + 1, j, s);
+
+	  simple_cluster *sc = static_cast<simple_cluster *> (clusters[j]);
+	  comparison_count -= sc->get_comparison_count ();
 	}
 
+      gcc_checking_assert (comparison_count == 0);
       gcc_checking_assert (min[i].m_count != INT_MAX);
     }
 
@@ -1239,7 +1260,9 @@ jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
 
 bool
 jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
-				    unsigned start, unsigned end)
+				    unsigned start, unsigned end,
+				    unsigned HOST_WIDE_INT max_ratio,
+				    unsigned HOST_WIDE_INT comparison_count)
 {
   /* If the switch is relatively small such that the cost of one
      indirect jump on the target are higher than the cost of a
@@ -1258,10 +1281,6 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
   if (start == end)
     return true;
 
-  unsigned HOST_WIDE_INT max_ratio
-    = (optimize_insn_for_size_p ()
-       ? param_jump_table_max_growth_ratio_for_size
-       : param_jump_table_max_growth_ratio_for_speed);
   unsigned HOST_WIDE_INT range = get_range (clusters[start]->get_low (),
 					    clusters[end]->get_high ());
   /* Check overflow.  */
@@ -1274,18 +1293,6 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
   unsigned HOST_WIDE_INT lhs = 100 * range;
   if (lhs < range)
     return false;
-
-  /* First make quick guess as each cluster
-     can add at maximum 2 to the comparison_count.  */
-  if (lhs > 2 * max_ratio * (end - start + 1))
-    return false;
-
-  unsigned HOST_WIDE_INT comparison_count = 0;
-  for (unsigned i = start; i <= end; i++)
-    {
-      simple_cluster *sc = static_cast<simple_cluster *> (clusters[i]);
-      comparison_count += sc->m_range_p ? 2 : 1;
-    }
 
   return lhs <= max_ratio * comparison_count;
 }
@@ -1491,7 +1498,7 @@ case_bit_test::cmp (const void *p1, const void *p2)
 
 void
 bit_test_cluster::emit (tree index_expr, tree index_type,
-			tree, basic_block default_bb)
+			tree, basic_block default_bb, location_t)
 {
   case_bit_test test[m_max_case_bit_tests] = { {} };
   unsigned int i, j, k;
@@ -1551,12 +1558,15 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 
   /* If every possible relative value of the index expression is a valid shift
      amount, then we can merge the entry test in the bit test.  */
-  wide_int min, max;
   bool entry_test_needed;
+  value_range r;
   if (TREE_CODE (index_expr) == SSA_NAME
-      && get_range_info (index_expr, &min, &max) == VR_RANGE
-      && wi::leu_p (max - min, prec - 1))
+      && get_range_query (cfun)->range_of_expr (r, index_expr)
+      && r.kind () == VR_RANGE
+      && wi::leu_p (r.upper_bound () - r.lower_bound (), prec - 1))
     {
+      wide_int min = r.lower_bound ();
+      wide_int max = r.upper_bound ();
       tree index_type = TREE_TYPE (index_expr);
       minval = fold_convert (index_type, minval);
       wide_int iminval = wi::to_wide (minval);
@@ -1822,12 +1832,7 @@ switch_decision_tree::analyze_switch_statement ()
   output.release ();
 
   bool expanded = try_switch_expansion (output2);
-
-  for (unsigned i = 0; i < output2.length (); i++)
-    delete output2[i];
-
-  output2.release ();
-
+  release_clusters (output2);
   return expanded;
 }
 
@@ -1892,7 +1897,8 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
     {
       cluster *c = clusters[0];
       c->emit (index_expr, index_type,
-	       gimple_switch_default_label (m_switch), m_default_bb);
+	       gimple_switch_default_label (m_switch), m_default_bb,
+	       gimple_location (m_switch));
       redirect_edge_succ (single_succ_edge (bb), c->m_case_bb);
     }
   else
@@ -1904,7 +1910,7 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
 	if (clusters[i]->get_type () != SIMPLE_CASE)
 	  clusters[i]->emit (index_expr, index_type,
 			     gimple_switch_default_label (m_switch),
-			     m_default_bb);
+			     m_default_bb, gimple_location (m_switch));
     }
 
   fix_phi_operands_for_edges ();
@@ -2594,5 +2600,3 @@ make_pass_lower_switch (gcc::context *ctxt)
 {
   return new pass_lower_switch<false> (ctxt);
 }
-
-

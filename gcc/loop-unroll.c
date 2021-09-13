@@ -1,5 +1,5 @@
 /* Loop unrolling.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -214,10 +214,8 @@ report_unroll (class loop *loop, dump_location_t locus)
 static void
 decide_unrolling (int flags)
 {
-  class loop *loop;
-
   /* Scan the loops, inner ones first.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       loop->lpt_decision.decision = LPT_NONE;
       dump_user_location_t locus = get_loop_location (loop);
@@ -278,14 +276,13 @@ decide_unrolling (int flags)
 void
 unroll_loops (int flags)
 {
-  class loop *loop;
   bool changed = false;
 
   /* Now decide rest of unrolling.  */
   decide_unrolling (flags);
 
   /* Scan the loops, inner ones first.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       /* And perform the appropriate transformations.  */
       switch (loop->lpt_decision.decision)
@@ -884,7 +881,7 @@ unroll_loop_runtime_iterations (class loop *loop)
 {
   rtx old_niter, niter, tmp;
   rtx_insn *init_code, *branch_code;
-  unsigned i, j;
+  unsigned i;
   profile_probability p;
   basic_block preheader, *body, swtch, ezc_swtch = NULL;
   int may_exit_copy;
@@ -908,15 +905,9 @@ unroll_loop_runtime_iterations (class loop *loop)
   body = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
     {
-      vec<basic_block> ldom;
-      basic_block bb;
-
-      ldom = get_dominated_by (CDI_DOMINATORS, body[i]);
-      FOR_EACH_VEC_ELT (ldom, j, bb)
+      for (basic_block bb : get_dominated_by (CDI_DOMINATORS, body[i]))
 	if (!flow_bb_inside_loop_p (loop, bb))
 	  dom_bbs.safe_push (bb);
-
-      ldom.release ();
     }
   free (body);
 
@@ -1013,7 +1004,7 @@ unroll_loop_runtime_iterations (class loop *loop)
       gcc_assert (ok);
 
       /* Create item for switch.  */
-      j = n_peel - i - (extra_zero_check ? 0 : 1);
+      unsigned j = n_peel - i - (extra_zero_check ? 0 : 1);
       p = profile_probability::always ().apply_scale (1, i + 2);
 
       preheader = split_edge (loop_preheader_edge (loop));

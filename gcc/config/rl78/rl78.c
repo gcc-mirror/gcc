@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RL78 processors.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -3854,7 +3854,6 @@ rl78_note_reg_uses (char *dead, rtx s, rtx insn)
       /* These codes have no constituent expressions
 	 and are unique.  */
     case SCRATCH:
-    case CC0:
     case PC:
       return;
 

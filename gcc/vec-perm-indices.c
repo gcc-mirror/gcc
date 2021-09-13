@@ -1,5 +1,5 @@
 /* A representation of vector permutation indices.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -99,6 +99,65 @@ vec_perm_indices::new_expanded_vector (const vec_perm_indices &orig,
 	m_encoding.quick_push (base + j);
     }
   m_encoding.finalize ();
+}
+
+/* Check whether we can switch to a new permutation vector that
+   selects the same input elements as ORIG, but with each element
+   built up from FACTOR pieces.  Return true if yes, otherwise
+   return false.  Every FACTOR permutation indexes should be
+   continuous separately and the first one of each batch should
+   be able to exactly modulo FACTOR.  For example, if ORIG is
+   { 2, 3, 4, 5, 0, 1, 6, 7 } and FACTOR is 2, the new permutation
+   is { 1, 2, 0, 3 }.  */
+
+bool
+vec_perm_indices::new_shrunk_vector (const vec_perm_indices &orig,
+				     unsigned int factor)
+{
+  gcc_assert (factor > 0);
+
+  if (maybe_lt (orig.m_nelts_per_input, factor))
+    return false;
+
+  poly_uint64 nelts;
+  /* Invalid if vector units number isn't multiple of factor.  */
+  if (!multiple_p (orig.m_nelts_per_input, factor, &nelts))
+    return false;
+
+  /* Only handle the case that npatterns is multiple of factor.
+     FIXME: Try to see whether we can reshape it by factor npatterns.  */
+  if (orig.m_encoding.npatterns () % factor != 0)
+    return false;
+
+  unsigned int encoded_nelts = orig.m_encoding.encoded_nelts ();
+  auto_vec<element_type, 32> encoding (encoded_nelts);
+  /* Separate all encoded elements into batches by size factor,
+     then ensure the first element of each batch is multiple of
+     factor and all elements in each batch is consecutive from
+     the first one.  */
+  for (unsigned int i = 0; i < encoded_nelts; i += factor)
+    {
+      element_type first = orig.m_encoding[i];
+      element_type new_index;
+      if (!multiple_p (first, factor, &new_index))
+	return false;
+      for (unsigned int j = 1; j < factor; ++j)
+	if (maybe_ne (first + j, orig.m_encoding[i + j]))
+	  return false;
+      encoding.quick_push (new_index);
+    }
+
+  m_ninputs = orig.m_ninputs;
+  m_nelts_per_input = nelts;
+  poly_uint64 full_nelts = exact_div (orig.m_encoding.full_nelts (), factor);
+  unsigned int npatterns = orig.m_encoding.npatterns () / factor;
+
+  m_encoding.new_vector (full_nelts, npatterns,
+			 orig.m_encoding.nelts_per_pattern ());
+  m_encoding.splice (encoding);
+  m_encoding.finalize ();
+
+  return true;
 }
 
 /* Rotate the inputs of the permutation right by DELTA inputs.  This changes

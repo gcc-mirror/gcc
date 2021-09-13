@@ -8,7 +8,7 @@ template<typename> struct A
 
 template<typename T>
 template<typename U>
-A<T>::A<U> () // { dg-error "partial specialization" }
+A<T>::A<U> () // { dg-error "" }
 {
 }
 
@@ -19,7 +19,7 @@ template<typename> struct B
 
 template<typename T>
 template<typename U>
-B<T>::foo<int>(int) // { dg-error "partial specialization|declaration" }
+B<T>::foo<int>(int) // { dg-error "" }
 {
   return 1;
 }

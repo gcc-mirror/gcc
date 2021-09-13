@@ -1,6 +1,6 @@
 // Specific definitions for GNU/Linux  -*- C++ -*-
 
-// Copyright (C) 2000-2020 Free Software Foundation, Inc.
+// Copyright (C) 2000-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,7 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
-// This keeps isanum, et al from being propagated as macros.
+// This keeps isalnum, et al from being propagated as macros.
 #define __NO_CTYPE 1
 
 #include <features.h>

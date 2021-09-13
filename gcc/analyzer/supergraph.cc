@@ -1,5 +1,5 @@
 /* "Supergraph" classes that combine CFGs and callgraph into one digraph.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "cfg.h"
 #include "digraph.h"
+#include "tree-cfg.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-logging.h"
 
@@ -87,6 +88,50 @@ supergraph_call_edge (function *fun, gimple *stmt)
   return edge;
 }
 
+/* class saved_uids.
+
+   In order to ensure consistent results without relying on the ordering
+   of pointer values we assign a uid to each gimple stmt, globally unique
+   across all functions.
+
+   Normally, the stmt uids are a scratch space that each pass can freely
+   assign its own values to.  However, in the case of LTO, the uids are
+   used to associate call stmts with callgraph edges between the WPA phase
+   (where the analyzer runs in LTO mode) and the LTRANS phase; if the
+   analyzer changes them in the WPA phase, it leads to errors when
+   streaming the code back in at LTRANS.
+   lto_prepare_function_for_streaming has code to renumber the stmt UIDs
+   when the code is streamed back out, but for some reason this isn't
+   called for clones.
+
+   Hence, as a workaround, this class has responsibility for tracking
+   the original uids and restoring them once the pass is complete
+   (in the supergraph dtor).  */
+
+/* Give STMT a globally unique uid, storing its original uid so it can
+   later be restored.  */
+
+void
+saved_uids::make_uid_unique (gimple *stmt)
+{
+  unsigned next_uid = m_old_stmt_uids.length ();
+  unsigned old_stmt_uid = stmt->uid;
+  stmt->uid = next_uid;
+  m_old_stmt_uids.safe_push
+    (std::pair<gimple *, unsigned> (stmt, old_stmt_uid));
+}
+
+/* Restore the saved uids of all stmts.  */
+
+void
+saved_uids::restore_uids () const
+{
+  unsigned i;
+  std::pair<gimple *, unsigned> *pair;
+  FOR_EACH_VEC_ELT (m_old_stmt_uids, i, pair)
+    pair->first->uid = pair->second;
+}
+
 /* supergraph's ctor.  Walk the callgraph, building supernodes for each
    CFG basic block, splitting the basic blocks at callsites.  Join
    together the supernodes with interprocedural and intraprocedural
@@ -101,8 +146,6 @@ supergraph::supergraph (logger *logger)
 
   /* First pass: make supernodes (and assign UIDs to the gimple stmts).  */
   {
-    unsigned next_uid = 0;
-
     /* Sort the cgraph_nodes?  */
     cgraph_node *node;
     FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
@@ -127,7 +170,7 @@ supergraph::supergraph (logger *logger)
 	    {
 	      gimple *stmt = gsi_stmt (gpi);
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
-	      stmt->uid = next_uid++;
+	      m_stmt_uids.make_uid_unique (stmt);
 	    }
 
 	  /* Append statements from BB to the current supernode, splitting
@@ -139,13 +182,35 @@ supergraph::supergraph (logger *logger)
 	      gimple *stmt = gsi_stmt (gsi);
 	      node_for_stmts->m_stmts.safe_push (stmt);
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
-	      stmt->uid = next_uid++;
+	      m_stmt_uids.make_uid_unique (stmt);
 	      if (cgraph_edge *edge = supergraph_call_edge (fun, stmt))
-		{
-		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);
-		  node_for_stmts = add_node (fun, bb, as_a <gcall *> (stmt), NULL);
-		  m_cgraph_edge_to_caller_next_node.put (edge, node_for_stmts);
-		}
+    		{
+    		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);
+    		  node_for_stmts = add_node (fun, bb, as_a <gcall *> (stmt),
+    		   			     NULL);
+    		  m_cgraph_edge_to_caller_next_node.put (edge, node_for_stmts);
+    		}
+	       else
+	        {
+	          // maybe call is via a function pointer
+	          if (gcall *call = dyn_cast<gcall *> (stmt))
+	          {
+	            cgraph_edge *edge 
+		      = cgraph_node::get (fun->decl)->get_edge (stmt);
+	            if (!edge || !edge->callee)
+	            {
+	              supernode *old_node_for_stmts = node_for_stmts;
+	              node_for_stmts = add_node (fun, bb, call, NULL);
+
+	              superedge *sedge 
+	                = new callgraph_superedge (old_node_for_stmts,
+	                  			   node_for_stmts,
+	                  			   SUPEREDGE_INTRAPROCEDURAL_CALL,
+	                  			   NULL);
+	              add_edge (sedge);
+	            }
+	          }
+	        }
 	    }
 
 	  m_bb_to_final_node.put (bb, node_for_stmts);
@@ -182,7 +247,7 @@ supergraph::supergraph (logger *logger)
 	      supernode *dest_supernode
 		= *m_bb_to_initial_node.get (dest_cfg_block);
 	      cfg_superedge *cfg_sedge
-		= add_cfg_edge (src_supernode, dest_supernode, cfg_edge, idx);
+		= add_cfg_edge (src_supernode, dest_supernode, cfg_edge);
 	      m_cfg_edge_to_cfg_superedge.put (cfg_edge, cfg_sedge);
 	    }
       }
@@ -255,6 +320,13 @@ supergraph::supergraph (logger *logger)
 
     }
   }
+}
+
+/* supergraph's dtor.  Reset stmt uids.  */
+
+supergraph::~supergraph ()
+{
+  m_stmt_uids.restore_uids ();
 }
 
 /* Dump this graph in .dot format to PP, using DUMP_ARGS.
@@ -434,17 +506,16 @@ supergraph::add_node (function *fun, basic_block bb, gcall *returning_call,
    adding it to this supergraph.
 
    If the edge is for a switch statement, create a switch_cfg_superedge
-   subclass using IDX (the index of E within the out-edges from SRC's
-   underlying basic block).  */
+   subclass.  */
 
 cfg_superedge *
-supergraph::add_cfg_edge (supernode *src, supernode *dest, ::edge e, int idx)
+supergraph::add_cfg_edge (supernode *src, supernode *dest, ::edge e)
 {
   /* Special-case switch edges.  */
   gimple *stmt = src->get_last_stmt ();
   cfg_superedge *new_edge;
   if (stmt && stmt->code == GIMPLE_SWITCH)
-    new_edge = new switch_cfg_superedge (src, dest, e, idx);
+    new_edge = new switch_cfg_superedge (src, dest, e);
   else
     new_edge = new cfg_superedge (src, dest, e);
   add_edge (new_edge);
@@ -634,8 +705,9 @@ supernode::dump_dot_id (pretty_printer *pp) const
 
 /* Return a new json::object of the form
    {"idx": int,
+    "fun": optional str
     "bb_idx": int,
-    "m_returning_call": optional str,
+    "returning_call": optional str,
     "phis": [str],
     "stmts" : [str]}.  */
 
@@ -646,6 +718,8 @@ supernode::to_json () const
 
   snode_obj->set ("idx", new json::integer_number (m_index));
   snode_obj->set ("bb_idx", new json::integer_number (m_bb->index));
+  if (function *fun = get_function ())
+    snode_obj->set ("fun", new json::string (function_name (fun)));
 
   if (m_returning_call)
     {
@@ -753,6 +827,26 @@ supernode::get_stmt_index (const gimple *stmt) const
   gcc_unreachable ();
 }
 
+/* Get a string for PK.  */
+
+static const char *
+edge_kind_to_string (enum edge_kind kind)
+{
+  switch (kind)
+    {
+    default:
+      gcc_unreachable ();
+    case SUPEREDGE_CFG_EDGE:
+      return "SUPEREDGE_CFG_EDGE";
+    case SUPEREDGE_CALL:
+      return "SUPEREDGE_CALL";
+    case SUPEREDGE_RETURN:
+      return "SUPEREDGE_RETURN";
+    case SUPEREDGE_INTRAPROCEDURAL_CALL:
+      return "SUPEREDGE_INTRAPROCEDURAL_CALL";
+    }
+};
+
 /* Dump this superedge to PP.  */
 
 void
@@ -855,7 +949,8 @@ superedge::dump_dot (graphviz_out *gv, const dump_args_t &) const
 }
 
 /* Return a new json::object of the form
-   {"src_idx": int, the index of the source supernode,
+   {"kind"   : str,
+    "src_idx": int, the index of the source supernode,
     "dst_idx": int, the index of the destination supernode,
     "desc"   : str.  */
 
@@ -863,6 +958,7 @@ json::object *
 superedge::to_json () const
 {
   json::object *sedge_obj = new json::object ();
+  sedge_obj->set ("kind", new json::string (edge_kind_to_string (m_kind)));
   sedge_obj->set ("src_idx", new json::integer_number (m_src->m_index));
   sedge_obj->set ("dst_idx", new json::integer_number (m_dest->m_index));
 
@@ -958,13 +1054,39 @@ cfg_superedge::dump_label_to_pp (pretty_printer *pp,
   /* Otherwise, no label.  */
 }
 
+/* Get the index number for this edge for use in phi stmts
+   in its destination.  */
+
+size_t
+cfg_superedge::get_phi_arg_idx () const
+{
+  return m_cfg_edge->dest_idx;
+}
+
 /* Get the phi argument for PHI for this CFG edge.  */
 
 tree
 cfg_superedge::get_phi_arg (const gphi *phi) const
 {
-  size_t index = m_cfg_edge->dest_idx;
+  size_t index = get_phi_arg_idx ();
   return gimple_phi_arg_def (phi, index);
+}
+
+switch_cfg_superedge::switch_cfg_superedge (supernode *src,
+					    supernode *dst,
+					    ::edge e)
+: cfg_superedge (src, dst, e)
+{
+  /* Populate m_case_labels with all cases which go to DST.  */
+  const gswitch *gswitch = get_switch_stmt ();
+  for (unsigned i = 0; i < gimple_switch_num_labels (gswitch); i++)
+    {
+      tree case_ = gimple_switch_label (gswitch, i);
+      basic_block bb = label_to_block (src->get_function (),
+				       CASE_LABEL (case_));
+      if (bb == dst->m_bb)
+	m_case_labels.safe_push (case_);
+    }
 }
 
 /* Implementation of superedge::dump_label_to_pp for CFG superedges for
@@ -976,31 +1098,63 @@ void
 switch_cfg_superedge::dump_label_to_pp (pretty_printer *pp,
 					bool user_facing ATTRIBUTE_UNUSED) const
 {
-  tree case_label = get_case_label ();
-  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
-  tree lower_bound = CASE_LOW (case_label);
-  tree upper_bound = CASE_HIGH (case_label);
-  if (lower_bound)
+  if (user_facing)
     {
-      pp_printf (pp, "case ");
-      dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0, false);
-      if (upper_bound)
+      for (unsigned i = 0; i < m_case_labels.length (); ++i)
 	{
-	  pp_printf (pp, " ... ");
-	  dump_generic_node (pp, upper_bound, 0, (dump_flags_t)0, false);
+	  if (i > 0)
+	    pp_string (pp, ", ");
+	  tree case_label = m_case_labels[i];
+	  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
+	  tree lower_bound = CASE_LOW (case_label);
+	  tree upper_bound = CASE_HIGH (case_label);
+	  if (lower_bound)
+	    {
+	      pp_printf (pp, "case ");
+	      dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0, false);
+	      if (upper_bound)
+		{
+		  pp_printf (pp, " ... ");
+		  dump_generic_node (pp, upper_bound, 0, (dump_flags_t)0,
+				     false);
+		}
+	      pp_printf (pp, ":");
+	    }
+	  else
+	    pp_printf (pp, "default:");
 	}
-      pp_printf (pp, ":");
     }
   else
-    pp_printf (pp, "default:");
-}
-
-/* Get the case label for this "switch" superedge.  */
-
-tree
-switch_cfg_superedge::get_case_label () const
-{
-  return gimple_switch_label (get_switch_stmt (), m_idx);
+    {
+      pp_character (pp, '{');
+      for (unsigned i = 0; i < m_case_labels.length (); ++i)
+	{
+	  if (i > 0)
+	    pp_string (pp, ", ");
+	  tree case_label = m_case_labels[i];
+	  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
+	  tree lower_bound = CASE_LOW (case_label);
+	  tree upper_bound = CASE_HIGH (case_label);
+	  if (lower_bound)
+	    {
+	      if (upper_bound)
+		{
+		  pp_character (pp, '[');
+		  dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0,
+				     false);
+		  pp_string (pp, ", ");
+		  dump_generic_node (pp, upper_bound, 0, (dump_flags_t)0,
+				     false);
+		  pp_character (pp, ']');
+		}
+	      else
+		dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0, false);
+	    }
+	  else
+	    pp_printf (pp, "default");
+	}
+      pp_character (pp, '}');
+    }
 }
 
 /* Implementation of superedge::dump_label_to_pp for interprocedural
@@ -1054,6 +1208,17 @@ tree
 callgraph_superedge::get_callee_decl () const
 {
   return get_callee_function ()->decl;
+}
+
+/* Get the gcall * of this interprocedural call/return edge.  */
+
+gcall *
+callgraph_superedge::get_call_stmt () const
+{
+  if (m_cedge)
+    return m_cedge->call_stmt;
+  
+  return m_src->get_final_call ();
 }
 
 /* Get the calling fndecl at this interprocedural call/return edge.  */

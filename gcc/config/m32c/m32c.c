@@ -1,5 +1,5 @@
 /* Target Code for R8C/M16C/M32C
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -1295,6 +1295,9 @@ m32c_push_rounding (poly_int64 n)
     return n;
   return (n + 1) & ~1;
 }
+
+#undef TARGET_PUSH_ARGUMENT
+#define TARGET_PUSH_ARGUMENT hook_bool_uint_true
 
 /* Passing Arguments in Registers */
 

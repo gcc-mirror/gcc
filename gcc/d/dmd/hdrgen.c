@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Dave Fladebo
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -122,7 +122,7 @@ public:
     void visit(CompileStatement *s)
     {
         buf->writestring("mixin(");
-        s->exp->accept(this);
+        argsToBuffer(s->exps);
         buf->writestring(");");
         if (!hgs->forStmtInit)
             buf->writenl();
@@ -1104,6 +1104,18 @@ public:
         buf->writestring("typeof(null)");
     }
 
+    void visit(TypeMixin *t)
+    {
+        buf->writestring("mixin(");
+        argsToBuffer(t->exps);
+        buf->writeByte(')');
+    }
+
+    void visit(TypeNoreturn *)
+    {
+        buf->writestring("noreturn");
+    }
+
     ////////////////////////////////////////////////////////////////////////////
 
     void visit(Dsymbol *s)
@@ -1418,7 +1430,7 @@ public:
     void visit(CompileDeclaration *d)
     {
         buf->writestring("mixin(");
-        d->exp->accept(this);
+        argsToBuffer(d->exps);
         buf->writestring(");");
         buf->writenl();
     }
@@ -1702,6 +1714,10 @@ public:
                 objectToBuffer(arg);
             }
         }
+        else if (Parameter *p = isParameter(oarg))
+        {
+            p->accept(this);
+        }
         else if (!oarg)
         {
             buf->writestring("NULL");
@@ -1950,32 +1966,70 @@ public:
         int saveauto = hgs->autoMember;
         hgs->tpltMember = 0;
         hgs->autoMember = 0;
-
         buf->writenl();
-
+        bool requireDo = false;
         // in{}
-        if (f->frequire)
+        if (f->frequires)
         {
-            buf->writestring("in");
-            buf->writenl();
-            f->frequire->accept(this);
+            for (size_t i = 0; i < f->frequires->length; i++)
+            {
+                Statement *frequire = (*f->frequires)[i];
+                buf->writestring("in");
+                if (ExpStatement *es = frequire->isExpStatement())
+                {
+                    assert(es->exp && es->exp->op == TOKassert);
+                    buf->writestring(" (");
+                    ((AssertExp *)es->exp)->e1->accept(this);
+                    buf->writeByte(')');
+                    buf->writenl();
+                    requireDo = false;
+                }
+                else
+                {
+                    buf->writenl();
+                    frequire->accept(this);
+                    requireDo = true;
+                }
+            }
         }
 
         // out{}
-        if (f->fensure)
+        if (f->fensures)
         {
-            buf->writestring("out");
-            if (f->outId)
+            for (size_t i = 0; i < f->fensures->length; i++)
             {
-                buf->writeByte('(');
-                buf->writestring(f->outId->toChars());
-                buf->writeByte(')');
+                Ensure fensure = (*f->fensures)[i];
+                buf->writestring("out");
+                if (ExpStatement *es = fensure.ensure->isExpStatement())
+                {
+                    assert(es->exp && es->exp->op == TOKassert);
+                    buf->writestring(" (");
+                    if (fensure.id)
+                    {
+                        buf->writestring(fensure.id->toChars());
+                    }
+                    buf->writestring("; ");
+                    ((AssertExp *)es->exp)->e1->accept(this);
+                    buf->writeByte(')');
+                    buf->writenl();
+                    requireDo = false;
+                }
+                else
+                {
+                    if (fensure.id)
+                    {
+                        buf->writeByte('(');
+                        buf->writestring(fensure.id->toChars());
+                        buf->writeByte(')');
+                    }
+                    buf->writenl();
+                    fensure.ensure->accept(this);
+                    requireDo = true;
+                }
             }
-            buf->writenl();
-            f->fensure->accept(this);
         }
 
-        if (f->frequire || f->fensure)
+        if (requireDo)
         {
             buf->writestring("body");
             buf->writenl();
@@ -2093,7 +2147,18 @@ public:
         if (stcToBuffer(buf, d->storage_class))
             buf->writeByte(' ');
         buf->writestring("invariant");
-        bodyToBuffer(d);
+        if (ExpStatement *es = d->fbody->isExpStatement())
+        {
+            assert(es->exp && es->exp->op == TOKassert);
+            buf->writestring(" (");
+            ((AssertExp *)es->exp)->e1->accept(this);
+            buf->writestring(");");
+            buf->writenl();
+        }
+        else
+        {
+            bodyToBuffer(d);
+        }
     }
 
     void visit(UnitTestDeclaration *d)
@@ -2359,8 +2424,15 @@ public:
                     buf->writeByte(')');
                     if (target.ptrsize == 8)
                         goto L4;
-                    else
+                    else if (target.ptrsize == 4 ||
+                             target.ptrsize == 2)
                         goto L3;
+                    else
+                        assert(0);
+
+                case Tvoid:
+                    buf->writestring("cast(void)0");
+                    break;
 
                 default:
                     /* This can happen if errors, such as
@@ -2773,7 +2845,7 @@ public:
     void visit(CompileExp *e)
     {
         buf->writestring("mixin(");
-        expToBuffer(e->e1, PREC_assign);
+        argsToBuffer(e->exps);
         buf->writeByte(')');
     }
 
@@ -3097,6 +3169,18 @@ public:
 
     void visit(Parameter *p)
     {
+        if (p->userAttribDecl)
+        {
+            buf->writestring("@");
+            bool isAnonymous = p->userAttribDecl->atts->length > 0
+                && (*p->userAttribDecl->atts)[0]->op != TOKcall;
+            if (isAnonymous)
+                buf->writestring("(");
+            argsToBuffer(p->userAttribDecl->atts);
+            if (isAnonymous)
+                buf->writestring(")");
+            buf->writestring(" ");
+        }
         if (p->storageClass & STCauto)
             buf->writestring("auto ");
 
@@ -3467,11 +3551,41 @@ void arrayObjectsToBuffer(OutBuffer *buf, Objects *objects)
     }
 }
 
+/*************************************************************
+ * Pretty print function parameters.
+ * Params:
+ *  parameters = parameters to print, such as TypeFunction.parameters.
+ *  varargs = kind of varargs, see TypeFunction.varargs.
+ * Returns: Null-terminated string representing parameters.
+ */
 const char *parametersTypeToChars(ParameterList pl)
 {
     OutBuffer buf;
     HdrGenState hgs;
     PrettyPrintVisitor v(&buf, &hgs);
     v.parametersToBuffer(pl.parameters, pl.varargs);
+    return buf.extractChars();
+}
+
+/*************************************************************
+ * Pretty print function parameter.
+ * Params:
+ *  parameter = parameter to print.
+ *  tf = TypeFunction which holds parameter.
+ *  fullQual = whether to fully qualify types.
+ * Returns: Null-terminated string representing parameters.
+ */
+const char *parameterToChars(Parameter *parameter, TypeFunction *tf, bool fullQual)
+{
+    OutBuffer buf;
+    HdrGenState hgs;
+    hgs.fullQual = fullQual;
+    PrettyPrintVisitor v(&buf, &hgs);
+
+    parameter->accept(&v);
+    if (tf->parameterList.varargs == 2 && parameter == tf->parameterList[tf->parameterList.parameters->length - 1])
+    {
+        buf.writestring("...");
+    }
     return buf.extractChars();
 }

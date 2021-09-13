@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -80,6 +80,16 @@ test04()
 // Verify we optimize away the 'bound' data member of an unbounded iota_view.
 static_assert(sizeof(std::ranges::iota_view<char>) == 1);
 
+void
+test05()
+{
+  // PR libstdc++/100690
+  int x[] = {42, 42, 42};
+  auto r = std::views::iota(std::ranges::begin(x), std::ranges::cbegin(x) + 3);
+  VERIFY( r.end() - r.begin() == 3 );
+  VERIFY( r.begin() - r.end() == -3 );
+}
+
 int
 main()
 {
@@ -87,4 +97,5 @@ main()
   test02();
   test03();
   test04();
+  test05();
 }

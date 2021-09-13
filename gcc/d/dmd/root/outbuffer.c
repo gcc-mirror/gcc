@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -317,6 +317,37 @@ void OutBuffer::printf(const char *format, ...)
     va_start(ap, format);
     vprintf(format,ap);
     va_end(ap);
+}
+
+/**************************************
+ * Convert `u` to a string and append it to the buffer.
+ * Params:
+ *  u = integral value to append
+ */
+void OutBuffer::print(unsigned long long u)
+{
+    unsigned long long value = u;
+    char buf[20];
+    const unsigned radix = 10;
+
+    size_t i = sizeof(buf);
+    do
+    {
+        if (value < radix)
+        {
+            unsigned char x = (unsigned char)value;
+            buf[--i] = (char)(x + '0');
+            break;
+        }
+        else
+        {
+            unsigned char x = (unsigned char)(value % radix);
+            value = value / radix;
+            buf[--i] = (char)(x + '0');
+        }
+    } while (value);
+
+    write(buf + i, sizeof(buf) - i);
 }
 
 void OutBuffer::bracket(char left, char right)

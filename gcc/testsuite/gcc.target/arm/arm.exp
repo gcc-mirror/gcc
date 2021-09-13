@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2020 Free Software Foundation, Inc.
+# Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ if ![info exists DEFAULT_CFLAGS] then {
 # This variable should only apply to tests called in this exp file.
 global dg_runtest_extra_prunes
 set dg_runtest_extra_prunes ""
-lappend dg_runtest_extra_prunes "warning: switch '-m(cpu|arch)=.*' conflicts with '-m(cpu|arch)=.*' switch"
+lappend dg_runtest_extra_prunes "warning: switch '-m(cpu|arch)=.*' conflicts with switch '-m(cpu|arch)=.*'"
 
 # Initialize `dg'.
 dg-init

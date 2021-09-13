@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Free Software Foundation, Inc.
+/* Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -23,6 +23,12 @@
 
 #ifndef _X86GPRINTRIN_H_INCLUDED
 #define _X86GPRINTRIN_H_INCLUDED
+
+#if defined __MMX__ || defined __SSE__
+#pragma GCC push_options
+#pragma GCC target("general-regs-only")
+#define __DISABLE_GENERAL_REGS_ONLY__
+#endif
 
 #include <ia32intrin.h>
 
@@ -55,6 +61,8 @@
 #include <lwpintrin.h>
 
 #include <movdirintrin.h>
+
+#include <mwaitintrin.h>
 
 #include <mwaitxintrin.h>
 
@@ -252,5 +260,10 @@ _ptwrite32 (unsigned __B)
 #endif /* __DISABLE_PTWRITE__ */
 
 #endif /* __iamcu__ */
+
+#ifdef __DISABLE_GENERAL_REGS_ONLY__
+#undef __DISABLE_GENERAL_REGS_ONLY__
+#pragma GCC pop_options
+#endif /* __DISABLE_GENERAL_REGS_ONLY__ */
 
 #endif /* _X86GPRINTRIN_H_INCLUDED.  */

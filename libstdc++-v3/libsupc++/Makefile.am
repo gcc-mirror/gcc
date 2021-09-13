@@ -1,6 +1,6 @@
 ## Makefile for the GNU C++ Support library.
 ##
-## Copyright (C) 2000-2020 Free Software Foundation, Inc.
+## Copyright (C) 2000-2021 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -48,6 +48,7 @@ sources = \
 	array_type_info.cc \
 	atexit_arm.cc \
 	atexit_thread.cc \
+	atomicity.cc \
 	bad_alloc.cc \
 	bad_array_length.cc \
 	bad_array_new.cc \
@@ -127,6 +128,9 @@ cp-demangle.lo: cp-demangle.c
 cp-demangle.o: cp-demangle.c
 	$(C_COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
 
+atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
+atomicity.cc: ${atomicity_file}
+	$(LN_S) ${atomicity_file} ./atomicity.cc || true
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

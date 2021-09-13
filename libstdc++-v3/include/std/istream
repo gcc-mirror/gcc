@@ -1,6 +1,6 @@
 // Input streams -*- C++ -*-
 
-// Copyright (C) 1997-2020 Free Software Foundation, Inc.
+// Copyright (C) 1997-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -107,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       class sentry;
       friend class sentry;
 
-      //@{
+      ///@{
       /**
        *  @brief  Interface for manipulators.
        *
@@ -133,9 +133,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__pf(*this);
 	return *this;
       }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @name Extractors
        *
@@ -155,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  be rethrown if badbit is set in the exceptions mask.
       */
 
-      //@{
+      ///@{
       /**
        *  @brief  Integer arithmetic extractors
        *  @param  __n A variable of builtin integral type.
@@ -199,9 +199,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator>>(unsigned long long& __n)
       { return _M_extract(__n); }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief  Floating point arithmetic extractors
        *  @param  __f A variable of builtin floating point type.
@@ -221,7 +221,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __istream_type&
       operator>>(long double& __f)
       { return _M_extract(__f); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Basic arithmetic extractors
@@ -257,7 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       __istream_type&
       operator>>(__streambuf_type* __sb);
-      //@}
+      ///@}
 
       // [27.6.1.3] unformatted input
       /**
@@ -269,7 +269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       gcount() const
       { return _M_gcount; }
 
-      //@{
+      ///@{
       /**
        *  @name Unformatted Input Functions
        *
@@ -600,7 +600,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       __istream_type&
       seekg(off_type, ios_base::seekdir);
-      //@}
+      ///@}
 
     protected:
       basic_istream()
@@ -735,7 +735,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_ok; }
     };
 
-  //@{
+  ///@{
   /**
    *  @brief  Character extractors
    *  @param  __in  An input stream.
@@ -760,7 +760,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_istream<char, _Traits>&
     operator>>(basic_istream<char, _Traits>& __in, signed char& __c)
     { return (__in >> reinterpret_cast<char&>(__c)); }
-  //@}
+  ///@}
 
 
   template<typename _CharT, typename _Traits>
@@ -769,7 +769,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   void __istream_extract(istream&, char*, streamsize);
 
-  //@{
+  ///@{
   /**
    *  @brief  Character string extractors
    *  @param  __in  An input stream.
@@ -852,7 +852,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>>(basic_istream<char, _Traits>& __in, signed char (&__s)[_Num])
     { return __in >> reinterpret_cast<char(&)[_Num]>(__s); }
 #endif
-  //@}
+  ///@}
 
   /**
    *  @brief  Template class basic_iostream
@@ -953,80 +953,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ws(basic_istream<_CharT, _Traits>& __is);
 
 #if __cplusplus >= 201103L
-  template<typename _Ch, typename _Up>
-    basic_istream<_Ch, _Up>&
-    __is_convertible_to_basic_istream_test(basic_istream<_Ch, _Up>*);
-
-  template<typename _Tp, typename = void>
-    struct __is_convertible_to_basic_istream_impl
-    {
-      using __istream_type = void;
-    };
-
-  template<typename _Tp>
-    using __do_is_convertible_to_basic_istream_impl =
-    decltype(__is_convertible_to_basic_istream_test
-	     (declval<typename remove_reference<_Tp>::type*>()));
-
-  template<typename _Tp>
-    struct __is_convertible_to_basic_istream_impl
-    <_Tp,
-     __void_t<__do_is_convertible_to_basic_istream_impl<_Tp>>>
-    {
-      using __istream_type =
-	__do_is_convertible_to_basic_istream_impl<_Tp>;
-    };
-
-  template<typename _Tp>
-    struct __is_convertible_to_basic_istream
-    : __is_convertible_to_basic_istream_impl<_Tp>
-    {
-    public:
-      using type = __not_<is_void<
-        typename __is_convertible_to_basic_istream_impl<_Tp>::__istream_type>>;
-      constexpr static bool value = type::value;
-    };
-
-  template<typename _Istream, typename _Tp, typename = void>
-    struct __is_extractable : false_type {};
-
-  template<typename _Istream, typename _Tp>
-    struct __is_extractable<_Istream, _Tp,
-			    __void_t<decltype(declval<_Istream&>()
-					      >> declval<_Tp>())>>
-    : true_type {};
-
-  template<typename _Istream>
-    using __rvalue_istream_type =
-      typename __is_convertible_to_basic_istream<
-	_Istream>::__istream_type;
-
-  // [27.7.1.6] Rvalue stream extraction
+  // C++11 27.7.2.6 Rvalue stream extraction [istream.rvalue]
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2328. Rvalue stream extraction should use perfect forwarding
+  // 1203. More useful rvalue stream insertion
+
+#if __cpp_lib_concepts
+  template<typename _Is, typename _Tp>
+    requires __derived_from_ios_base<_Is>
+      && requires (_Is& __is, _Tp&& __t) { __is >> std::forward<_Tp>(__t); }
+    using __rvalue_stream_extraction_t = _Is&&;
+#else
+  template<typename _Is, typename _Tp,
+	   typename = _Require_derived_from_ios_base<_Is>,
+	   typename = decltype(std::declval<_Is&>() >> std::declval<_Tp>())>
+    using __rvalue_stream_extraction_t = _Is&&;
+#endif
+
   /**
    *  @brief  Generic extractor for rvalue stream
    *  @param  __is  An input stream.
    *  @param  __x  A reference to the extraction target.
-   *  @return  is
+   *  @return  __is
    *
    *  This is just a forwarding function to allow extraction from
    *  rvalue streams since they won't bind to the extractor functions
    *  that take an lvalue reference.
   */
   template<typename _Istream, typename _Tp>
-    inline
-    typename enable_if<__and_<__not_<is_lvalue_reference<_Istream>>,
-			      __is_convertible_to_basic_istream<_Istream>,
-			      __is_extractable<
-				__rvalue_istream_type<_Istream>,
-				_Tp&&>>::value,
-		       __rvalue_istream_type<_Istream>>::type
+    inline __rvalue_stream_extraction_t<_Istream, _Tp>
     operator>>(_Istream&& __is, _Tp&& __x)
     {
-      __rvalue_istream_type<_Istream> __ret_is = __is;
-      __ret_is >> std::forward<_Tp>(__x);
-      return __ret_is;
+      __is >> std::forward<_Tp>(__x);
+      return std::move(__is);
     }
 #endif // C++11
 

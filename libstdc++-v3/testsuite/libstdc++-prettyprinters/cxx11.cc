@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-options "-g -O0" }
 
-// Copyright (C) 2011-2020 Free Software Foundation, Inc.
+// Copyright (C) 2011-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -155,6 +155,25 @@ main()
 // { dg-final { note-test tpl {std::tuple containing = {[1] = 6, [2] = 7}} } }
   ExTuple &rtpl = tpl;
 // { dg-final { note-test rtpl {std::tuple containing = {[1] = 6, [2] = 7}} } }
+
+  std::error_code e0;
+  // { dg-final { note-test e0 {std::error_code = { }} } }
+  std::error_condition ec0;
+  // { dg-final { note-test ec0 {std::error_condition = { }} } }
+  std::error_code einval = std::make_error_code(std::errc::invalid_argument);
+  // { dg-final { note-test einval {std::error_code = {"generic": EINVAL}} } }
+  std::error_condition ecinval = std::make_error_condition(std::errc::invalid_argument);
+  // { dg-final { note-test ecinval {std::error_condition = {"generic": EINVAL}} } }
+
+  struct custom_cat : std::error_category {
+    const char* name() const noexcept { return "miaow"; }
+    std::string message(int) const { return ""; }
+  } cat;
+  std::error_code emiaow(42, cat);
+  // { dg-final { note-test emiaow {std::error_code = {"miaow": 42}} } }
+  std::error_condition ecmiaow(42, cat);
+  // { dg-final { note-test ecmiaow {std::error_condition = {"miaow": 42}} } }
+
   placeholder(""); // Mark SPOT
   use(efl);
   use(fl);

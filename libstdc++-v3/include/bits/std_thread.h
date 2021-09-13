@@ -1,6 +1,6 @@
 // std::thread declarations -*- C++ -*-
 
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -270,7 +270,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifndef _GLIBCXX_HAS_GTHREADS
   inline void thread::join() { std::__throw_system_error(EINVAL); }
   inline void thread::detach() { std::__throw_system_error(EINVAL); }
-  inline unsigned int thread::hardware_concurrency() { return 0; }
+  inline unsigned int thread::hardware_concurrency() noexcept { return 0; }
 #endif
 
   inline void

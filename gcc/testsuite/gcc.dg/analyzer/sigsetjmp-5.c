@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include "analyzer-decls.h"
 
-static jmp_buf env;
+static sigjmp_buf env;
 
 static void inner (void)
 {

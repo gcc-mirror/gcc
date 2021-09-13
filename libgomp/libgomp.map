@@ -195,7 +195,22 @@ OMP_5.0.1 {
 	omp_free;
 	omp_get_supported_active_levels;
 	omp_get_supported_active_levels_;
+	omp_fulfill_event;
+	omp_fulfill_event_;
 } OMP_5.0;
+
+OMP_5.0.2 {
+  global:
+	omp_get_device_num;
+	omp_get_device_num_;
+} OMP_5.0.1;
+
+OMP_5.1 {
+  global:
+	omp_display_env;
+	omp_display_env_;
+	omp_display_env_8_;
+} OMP_5.0.2;
 
 GOMP_1.0 {
   global:
@@ -364,6 +379,13 @@ GOMP_5.0.1 {
 	GOMP_alloc;
 	GOMP_free;
 } GOMP_5.0;
+
+GOMP_5.1 {
+  global:
+	GOMP_error;
+	GOMP_scope_start;
+	GOMP_warning;
+} GOMP_5.0.1;
 
 OACC_2.0 {
   global:
@@ -538,6 +560,12 @@ GOACC_2.0.1 {
 	GOACC_declare;
 	GOACC_parallel_keyed;
 } GOACC_2.0;
+
+GOACC_2.0.2 {
+  global:
+	GOACC_enter_data;
+	GOACC_exit_data;
+} GOACC_2.0.1;
 
 GOMP_PLUGIN_1.0 {
   global:

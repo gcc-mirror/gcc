@@ -1,5 +1,5 @@
 @c -*-texinfo-*-
-@c Copyright (C) 2001-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -225,7 +225,7 @@ point to the previous edge in the sequence.
 This function returns the @code{edge} currently pointed to by an
 @code{edge_iterator}.
 
-@item ei_safe_safe
+@item ei_safe_edge
 This function returns the @code{edge} currently pointed to by an
 @code{edge_iterator}, but returns @code{NULL} if the iterator is
 pointing at the end of the sequence.  This function has been provided

@@ -1,5 +1,5 @@
 /* toplev.h - Various declarations for functions found in toplev.c
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -93,11 +93,6 @@ extern bool set_src_pwd		       (const char *);
 
 extern HOST_WIDE_INT get_random_seed (bool);
 extern void set_random_seed (const char *);
-
-extern unsigned int min_align_loops_log;
-extern unsigned int min_align_jumps_log;
-extern unsigned int min_align_labels_log;
-extern unsigned int min_align_functions_log;
 
 extern void parse_alignment_opts (void);
 

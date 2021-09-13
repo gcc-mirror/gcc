@@ -1,5 +1,5 @@
 ;; Matrix-Multiply Assist (MMA) patterns.
-;; Copyright (C) 2020 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
 ;; Contributed by Peter Bergner <bergner@linux.ibm.com> and
 ;;		  Michael Meissner <meissner@linux.ibm.com>
 ;;
@@ -288,6 +288,7 @@
   DONE;
 }
   [(set_attr "type" "vecload,vecstore,veclogical")
+   (set_attr "size" "256")
    (set_attr "length" "*,*,8")])
 
 
@@ -321,7 +322,7 @@
    (set_attr "length" "*,*,16")
    (set_attr "max_prefixed_insns" "2,2,*")])
 
-(define_expand "mma_assemble_pair"
+(define_expand "vsx_assemble_pair"
   [(match_operand:OO 0 "vsx_register_operand")
    (match_operand:V16QI 1 "mma_assemble_input_operand")
    (match_operand:V16QI 2 "mma_assemble_input_operand")]
@@ -334,7 +335,7 @@
   DONE;
 })
 
-(define_insn_and_split "*mma_assemble_pair"
+(define_insn_and_split "*vsx_assemble_pair"
   [(set (match_operand:OO 0 "vsx_register_operand" "=wa")
 	(unspec:OO [(match_operand:V16QI 1 "mma_assemble_input_operand" "mwa")
 		    (match_operand:V16QI 2 "mma_assemble_input_operand" "mwa")]
@@ -351,7 +352,7 @@
   DONE;
 })
 
-(define_expand "mma_disassemble_pair"
+(define_expand "vsx_disassemble_pair"
   [(match_operand:V16QI 0 "mma_disassemble_output_operand")
    (match_operand:OO 1 "vsx_register_operand")
    (match_operand 2 "const_0_to_1_operand")]
@@ -366,7 +367,7 @@
   DONE;
 })
 
-(define_insn_and_split "*mma_disassemble_pair"
+(define_insn_and_split "*vsx_disassemble_pair"
   [(set (match_operand:V16QI 0 "mma_disassemble_output_operand" "=mwa")
        (unspec:V16QI [(match_operand:OO 1 "vsx_register_operand" "wa")
 		      (match_operand 2 "const_0_to_1_operand")]
@@ -539,7 +540,8 @@
 		    MMA_VVI4I4I8))]
   "TARGET_MMA"
   "<vvi4i4i8> %A0,%x1,%x2,%3,%4,%5"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4i8>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -552,7 +554,8 @@
 		    MMA_AVVI4I4I8))]
   "TARGET_MMA"
   "<avvi4i4i8> %A0,%x2,%x3,%4,%5,%6"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<vvi4i4i2>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -564,7 +567,8 @@
 		    MMA_VVI4I4I2))]
   "TARGET_MMA"
   "<vvi4i4i2> %A0,%x1,%x2,%3,%4,%5"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4i2>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -577,7 +581,8 @@
 		    MMA_AVVI4I4I2))]
   "TARGET_MMA"
   "<avvi4i4i2> %A0,%x2,%x3,%4,%5,%6"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<vvi4i4>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -588,7 +593,8 @@
 		    MMA_VVI4I4))]
   "TARGET_MMA"
   "<vvi4i4> %A0,%x1,%x2,%3,%4"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -600,7 +606,8 @@
 		    MMA_AVVI4I4))]
   "TARGET_MMA"
   "<avvi4i4> %A0,%x2,%x3,%4,%5"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<pvi4i2>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -611,7 +618,8 @@
 		    MMA_PVI4I2))]
   "TARGET_MMA"
   "<pvi4i2> %A0,%x1,%x2,%3,%4"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<apvi4i2>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -623,7 +631,8 @@
 		    MMA_APVI4I2))]
   "TARGET_MMA"
   "<apvi4i2> %A0,%x2,%x3,%4,%5"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<vvi4i4i4>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -635,7 +644,8 @@
 		    MMA_VVI4I4I4))]
   "TARGET_MMA"
   "<vvi4i4i4> %A0,%x1,%x2,%3,%4,%5"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4i4>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -648,4 +658,5 @@
 		    MMA_AVVI4I4I4))]
   "TARGET_MMA"
   "<avvi4i4i4> %A0,%x2,%x3,%4,%5,%6"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])

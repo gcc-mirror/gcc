@@ -77,4 +77,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 13 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 13 "vect" { target vect_hw_misalign } } } */

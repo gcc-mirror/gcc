@@ -1,5 +1,5 @@
 /* d-builtins.cc -- GCC builtins support for D.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -80,7 +80,8 @@ build_frontend_type (tree type)
     mod |= MODshared;
 
   /* If we've seen the type before, re-use the converted decl.  */
-  for (size_t i = 0; i < builtin_converted_decls.length (); ++i)
+  unsigned saved_builtin_decls_length = builtin_converted_decls.length ();
+  for (size_t i = 0; i < saved_builtin_decls_length; ++i)
     {
       tree t = builtin_converted_decls[i].ctype;
       if (TYPE_MAIN_VARIANT (t) == TYPE_MAIN_VARIANT (type))
@@ -240,8 +241,8 @@ build_frontend_type (tree type)
       sdecl->type->merge2 ();
 
       /* Add both named and anonymous fields as members of the struct.
-	 Anonymous fields still need a name in D, so call them "__pad%d".  */
-      int anonfield_id = 0;
+	 Anonymous fields still need a name in D, so call them "__pad%u".  */
+      unsigned anonfield_id = 0;
       sdecl->members = new Dsymbols;
 
       for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -249,13 +250,20 @@ build_frontend_type (tree type)
 	  Type *ftype = build_frontend_type (TREE_TYPE (field));
 	  if (!ftype)
 	    {
+	      /* Drop any field types that got cached before the conversion
+		 of this record type failed.  */
+	      builtin_converted_decls.truncate (saved_builtin_decls_length);
 	      delete sdecl->members;
 	      return NULL;
 	    }
 
 	  Identifier *fident;
 	  if (DECL_NAME (field) == NULL_TREE)
-	    fident = Identifier::generateId ("__pad", anonfield_id++);
+	    {
+	      char name[16];
+	      snprintf (name, sizeof (name), "__pad%u", anonfield_id++);
+	      fident = Identifier::idPool (name);
+	    }
 	  else
 	    {
 	      const char *name = IDENTIFIER_POINTER (DECL_NAME (field));
@@ -307,11 +315,14 @@ build_frontend_type (tree type)
 	      Type *targ = build_frontend_type (argtype);
 	      if (!targ)
 		{
+		  /* Drop any parameter types that got cached before the
+		     conversion of this function type failed.  */
+		  builtin_converted_decls.truncate (saved_builtin_decls_length);
 		  delete args;
 		  return NULL;
 		}
 
-	      args->push (Parameter::create (sc, targ, NULL, NULL));
+	      args->push (Parameter::create (sc, targ, NULL, NULL, NULL));
 	    }
 
 	  /* GCC generic and placeholder built-ins are marked as variadic, yet
@@ -369,7 +380,7 @@ d_eval_constant_expression (const Loc &loc, tree cst)
       else if (code == STRING_CST)
 	{
 	  const void *string = TREE_STRING_POINTER (cst);
-	  size_t len = TREE_STRING_LENGTH (cst);
+	  size_t len = TREE_STRING_LENGTH (cst) - 1;
 	  return StringExp::create (loc, CONST_CAST (void *, string), len);
 	}
       else if (code == VECTOR_CST)
@@ -393,6 +404,20 @@ d_eval_constant_expression (const Loc &loc, tree cst)
 
 	  return VectorExp::create (loc, e, type);
 	}
+      else if (code == ADDR_EXPR)
+	{
+	  /* Special handling for trees constructed by build_string_literal.
+	     What we receive is an `&"string"[0]' expression, strip off the
+	     outer ADDR_EXPR and ARRAY_REF to get to the underlying CST.  */
+	  tree pointee = TREE_OPERAND (cst, 0);
+
+	  if (TREE_CODE (pointee) != ARRAY_REF
+	      || TREE_OPERAND (pointee, 1) != integer_zero_node
+	      || TREE_CODE (TREE_OPERAND (pointee, 0)) != STRING_CST)
+	    return NULL;
+
+	  return d_eval_constant_expression (loc, TREE_OPERAND (pointee, 0));
+	}
     }
 
   return NULL;
@@ -404,25 +429,6 @@ d_eval_constant_expression (const Loc &loc, tree cst)
 void
 d_add_builtin_version (const char* ident)
 {
-  /* For now, we need to tell the D frontend what platform is being targeted.
-     This should be removed once the frontend has been fixed.  */
-  if (strcmp (ident, "linux") == 0)
-    global.params.isLinux = true;
-  else if (strcmp (ident, "OSX") == 0)
-    global.params.isOSX = true;
-  else if (strcmp (ident, "Windows") == 0)
-    global.params.isWindows = true;
-  else if (strcmp (ident, "FreeBSD") == 0)
-    global.params.isFreeBSD = true;
-  else if (strcmp (ident, "OpenBSD") == 0)
-    global.params.isOpenBSD = true;
-  else if (strcmp (ident, "Solaris") == 0)
-    global.params.isSolaris = true;
-  /* The is64bit field only refers to x86_64 target.  */
-  else if (strcmp (ident, "X86_64") == 0)
-    global.params.is64bit = true;
-  /* No other fields are required to be set for the frontend.  */
-
   VersionCondition::addPredefinedGlobalIdent (ident);
 }
 
@@ -456,7 +462,7 @@ d_init_versions (void)
   VersionCondition::addPredefinedGlobalIdent ("GNU_InlineAsm");
 
   /* LP64 only means 64bit pointers in D.  */
-  if (global.params.isLP64)
+  if (POINTER_SIZE == 64)
     VersionCondition::addPredefinedGlobalIdent ("D_LP64");
 
   /* Setting `global.params.cov' forces module info generation which is
@@ -466,6 +472,8 @@ d_init_versions (void)
     VersionCondition::addPredefinedGlobalIdent ("D_Coverage");
   if (flag_pic)
     VersionCondition::addPredefinedGlobalIdent ("D_PIC");
+  if (flag_pie)
+    VersionCondition::addPredefinedGlobalIdent ("D_PIE");
 
   if (global.params.doDocComments)
     VersionCondition::addPredefinedGlobalIdent ("D_Ddoc");
@@ -552,7 +560,7 @@ d_build_builtins_module (Module *m)
 				   STCextern, tf);
       DECL_LANG_SPECIFIC (decl) = build_lang_decl (func);
       func->csym = decl;
-      func->builtin = BUILTINyes;
+      func->builtin = BUILTINgcc;
 
       members->push (func);
     }
@@ -692,7 +700,7 @@ maybe_set_builtin_1 (Dsymbol *d)
 	  /* Found a match, tell the frontend this is a builtin.  */
 	  DECL_LANG_SPECIFIC (t) = build_lang_decl (fd);
 	  fd->csym = t;
-	  fd->builtin = BUILTINyes;
+	  fd->builtin = BUILTINgcc;
 	  return;
 	}
     }
@@ -742,8 +750,7 @@ do_build_builtin_fn (built_in_function fncode,
     return;
 
   gcc_assert ((!both_p && !fallback_p)
-	      || !strncmp (name, "__builtin_",
-			   strlen ("__builtin_")));
+	      || startswith (name, "__builtin_"));
 
   libname = name + strlen ("__builtin_");
 
@@ -1208,5 +1215,20 @@ d_builtin_function (tree decl)
   return decl;
 }
 
+/* Same as d_builtin_function, but used to delay putting in back-end builtin
+   functions until the ISA that defines the builtin has been declared.
+   However in D, there is no global namespace.  All builtins get pushed into the
+   `gcc.builtins' module, which is constructed during the semantic analysis
+   pass, which has already finished by the time target attributes are evaluated.
+   So builtins are not pushed because they would be ultimately ignored.
+   The purpose of having this function then is to improve compile-time
+   reflection support to allow user-code to determine whether a given back end
+   function is enabled by the ISA.  */
+
+tree
+d_builtin_function_ext_scope (tree decl)
+{
+  return decl;
+}
 
 #include "gt-d-d-builtins.h"

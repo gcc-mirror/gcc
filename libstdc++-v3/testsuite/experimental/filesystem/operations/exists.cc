@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -74,10 +74,8 @@ test03()
 void
 test04()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // filesystem permissions not supported
-  return;
-#endif
+  if (!__gnu_test::permissions_are_testable())
+    return;
 
   using perms = std::experimental::filesystem::perms;
   path p = __gnu_test::nonexistent_path();

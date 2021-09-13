@@ -1,5 +1,5 @@
 /* Platform-independent deterministic sort function.
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by Alexander Monakov.
 
 This file is part of GCC.
@@ -277,8 +277,12 @@ gcc_sort_r (void *vbase, size_t n, size_t size, sort_r_cmp_fn *cmp, void *data)
 {
   if (n < 2)
     return;
+  size_t nlim = 5;
+  bool stable = (ssize_t) size < 0;
+  if (stable)
+    nlim = 3, size = ~size;
   char *base = (char *)vbase;
-  sort_r_ctx c = {data, cmp, base, n, size, 5};
+  sort_r_ctx c = {data, cmp, base, n, size, nlim};
   long long scratch[32];
   size_t bufsz = (n / 2) * size;
   void *buf = bufsz <= sizeof scratch ? scratch : xmalloc (bufsz);
@@ -295,4 +299,12 @@ void
 gcc_stablesort (void *vbase, size_t n, size_t size, cmp_fn *cmp)
 {
   gcc_qsort (vbase, n, ~size, cmp);
+}
+
+/* Stable sort, signature-compatible to Glibc qsort_r.  */
+void
+gcc_stablesort_r (void *vbase, size_t n, size_t size, sort_r_cmp_fn *cmp,
+		  void *data)
+{
+  gcc_sort_r (vbase, n, ~size, cmp, data);
 }

@@ -8,6 +8,7 @@
  */
 module core.sys.windows.windows;
 version (Windows):
+@system:
 
 /*
     windows.h - main header file for the Win32 API

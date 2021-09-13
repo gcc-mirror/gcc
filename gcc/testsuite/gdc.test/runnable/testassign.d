@@ -1,3 +1,23 @@
+/*
+TEST_OUTPUT:
+---
+\	S1	S2a	S2b	S3a	S3b	S4a	S4b
+-	true	true	true	true	true	true	true
+Xa	true	true	true	true	true	true	true
+Xb	true	true	true	true	true	true	true
+Xc	true	true	true	true	true	true	true
+Xd	true	true	true	true	true	true	true
+Xe	true	true	true	true	true	true	true
+Xf	true	true	true	true	true	true	true
+Xg	true	true	true	true	true	true	true
+---
+
+RUN_OUTPUT:
+---
+Success
+---
+*/
+
 import core.stdc.stdio;
 
 template TypeTuple(T...){ alias T TypeTuple; }

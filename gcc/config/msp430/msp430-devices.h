@@ -1,5 +1,5 @@
 /* Definitions of subroutines used for reading MCU data on TI MSP430 processors.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by Jozef Lawrynowicz  <jozef.l@mittosystems.com>.
 
    This file is part of GCC.

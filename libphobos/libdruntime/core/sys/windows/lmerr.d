@@ -8,6 +8,7 @@
  */
 module core.sys.windows.lmerr;
 version (Windows):
+@system:
 
 import core.sys.windows.winerror;
 

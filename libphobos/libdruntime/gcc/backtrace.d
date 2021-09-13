@@ -1,5 +1,5 @@
 // GNU D Compiler routines for stack backtrace support.
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 // GCC is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -424,8 +424,10 @@ private:
         import core.sys.freebsd.dlfcn;
     else version (NetBSD)
         import core.sys.netbsd.dlfcn;
+    else version (OpenBSD)
+        import core.sys.openbsd.dlfcn;
     else version (Solaris)
-        import core.sys.netbsd.dlfcn;
+        import core.sys.solaris.dlfcn;
     else version (Posix)
         import core.sys.posix.dlfcn;
 

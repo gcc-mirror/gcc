@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,16 +58,7 @@ struct X { };
 std::ostream& operator<<(std::ostream& os, const X&) { return os; }
 std::istream& operator>>(std::istream& is, X&&) { return is; }
 
-struct O : std::ostream { };
-
-void operator<<(O&, X) = delete;
-
-struct I : std::istream { };
-
-void operator>>(I&, X) = delete;
-
 // PR libstdc++/65543
-// PR libstdc++/80675
 // PR libstdc++/80940
 int main()
 {
@@ -82,6 +73,4 @@ int main()
   MyStream2 stream2{};
   stream2 << "aaa";
   stream2 >> msi;
-  O{} << X{};
-  I{} >> X{};
 }

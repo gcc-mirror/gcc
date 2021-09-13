@@ -1,6 +1,6 @@
 /* Insert USEs in instructions that require mode switching.
    This should probably be merged into mode-switching.c .
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.

@@ -1,5 +1,5 @@
 /* String pool for GCC.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -201,6 +201,12 @@ gt_pch_n_S (const void *x)
 
 void
 gt_pch_nx (const char *& x)
+{
+  gt_pch_n_S (x);
+}
+
+void
+gt_pch_nx (char *& x)
 {
   gt_pch_n_S (x);
 }

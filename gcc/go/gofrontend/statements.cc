@@ -588,7 +588,7 @@ Temporary_statement::do_flatten(Gogo*, Named_object*, Block*,
 			      Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 			      NULL)
       && this->init_->type()->interface_type() != NULL
-      && !this->init_->is_variable())
+      && !this->init_->is_multi_eval_safe())
     {
       Temporary_statement *temp =
 	Statement::make_temporary(NULL, this->init_, this->location());
@@ -643,11 +643,13 @@ Temporary_statement::do_get_backend(Translate_context* context)
     binit = context->backend()->convert_expression(btype, binit,
                                                    this->location());
 
+  unsigned int flags = 0;
+  if (this->is_address_taken_)
+    flags |= Backend::variable_address_is_taken;
   Bstatement* statement;
   this->bvariable_ =
     context->backend()->temporary_variable(bfunction, context->bblock(),
-					   btype, binit,
-					   this->is_address_taken_,
+					   btype, binit, flags,
 					   this->location(), &statement);
   return statement;
 }
@@ -1125,7 +1127,7 @@ Assignment_statement::do_flatten(Gogo*, Named_object*, Block*,
 			      Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 			      NULL)
       && this->rhs_->type()->interface_type() != NULL
-      && !this->rhs_->is_variable())
+      && !this->rhs_->is_multi_eval_safe())
     {
       Temporary_statement* temp =
 	Statement::make_temporary(NULL, this->rhs_, this->location());
@@ -2524,6 +2526,8 @@ Thunk_statement::is_constant_function() const
     return fn->func_expression()->closure() == NULL;
   if (fn->interface_field_reference_expression() != NULL)
     return true;
+  if (fn->bound_method_expression() != NULL)
+    return true;
   return false;
 }
 
@@ -2566,6 +2570,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   Expression* fn = ce->fn();
   Interface_field_reference_expression* interface_method =
     fn->interface_field_reference_expression();
+  Bound_method_expression* bme = fn->bound_method_expression();
 
   Location location = this->location();
 
@@ -2594,6 +2599,8 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
 
   if (interface_method != NULL)
     vals->push_back(interface_method->expr());
+  if (bme != NULL)
+    vals->push_back(bme->first_argument());
 
   if (ce->args() != NULL)
     {
@@ -2711,6 +2718,16 @@ Thunk_statement::build_struct(Function_type* fntype)
     {
       Typed_identifier tid("object", interface_method->expr()->type(),
 			   location);
+      fields->push_back(Struct_field(tid));
+    }
+
+  // If this thunk statement calls a bound method expression, as in
+  // "go s.m()", we pass the bound method argument to the thunk,
+  // to ensure that we make a copy of it if needed.
+  Bound_method_expression* bme = fn->bound_method_expression();
+  if (bme != NULL)
+    {
+      Typed_identifier tid("object", bme->first_argument()->type(), location);
       fields->push_back(Struct_field(tid));
     }
 
@@ -2843,6 +2860,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 
   Interface_field_reference_expression* interface_method =
     ce->fn()->interface_field_reference_expression();
+  Bound_method_expression* bme = ce->fn()->bound_method_expression();
 
   Expression* func_to_call;
   unsigned int next_index;
@@ -2867,6 +2885,17 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
       const std::string& name(interface_method->name());
       func_to_call = Expression::make_interface_field_reference(r, name,
 								location);
+      next_index = 1;
+    }
+
+  if (bme != NULL)
+    {
+      // This is a call to a method.
+      go_assert(next_index == 0);
+      Expression* r = Expression::make_field_reference(thunk_parameter, 0,
+						       location);
+      func_to_call = Expression::make_bound_method(r, bme->method(),
+						   bme->function(), location);
       next_index = 1;
     }
 
@@ -5116,7 +5145,7 @@ Send_statement::do_flatten(Gogo*, Named_object*, Block*,
 			   Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 			   NULL)
       && this->val_->type()->interface_type() != NULL
-      && !this->val_->is_variable())
+      && !this->val_->is_multi_eval_safe())
     {
       Temporary_statement* temp =
 	Statement::make_temporary(NULL, this->val_, this->location());
@@ -6022,7 +6051,7 @@ Select_statement::lower_two_case(Block* b)
   Expression* chanref = Expression::make_temporary_reference(chantmp, loc);
 
   Block* bchan;
-  Expression* call;
+  Expression* cond;
   if (chancase.is_send())
     {
       // if selectnbsend(chan, &val) { body } else { default body }
@@ -6036,7 +6065,7 @@ Select_statement::lower_two_case(Block* b)
 
       Expression* ref = Expression::make_temporary_reference(ts, loc);
       Expression* addr = Expression::make_unary(OPERATOR_AND, ref, loc);
-      call = Runtime::make_call(Runtime::SELECTNBSEND, loc, 2, chanref, addr);
+      cond = Runtime::make_call(Runtime::SELECTNBSEND, loc, 2, chanref, addr);
       bchan = chancase.statements();
     }
   else
@@ -6046,34 +6075,31 @@ Select_statement::lower_two_case(Block* b)
 
       Expression* ref = Expression::make_temporary_reference(ts, loc);
       Expression* addr = Expression::make_unary(OPERATOR_AND, ref, loc);
-      Expression* okref = NULL;
-      if (chancase.closed() == NULL && chancase.closedvar() == NULL)
-        {
-          // Simple receive.
-          // if selectnbrecv(&lhs, chan) { body } else { default body }
-          call = Runtime::make_call(Runtime::SELECTNBRECV, loc, 2, addr, chanref);
-        }
-      else
-        {
-          // Tuple receive.
-          // if selectnbrecv2(&lhs, &ok, chan) { body } else { default body }
 
-          Type* booltype = Type::make_boolean_type();
-          Temporary_statement* okts = Statement::make_temporary(booltype, NULL,
-                                                                loc);
-          b->add_statement(okts);
+      // selected, ok = selectnbrecv(&lhs, chan)
+      Call_expression* call = Runtime::make_call(Runtime::SELECTNBRECV, loc, 2,
+						 addr, chanref);
 
-          okref = Expression::make_temporary_reference(okts, loc);
-          Expression* okaddr = Expression::make_unary(OPERATOR_AND, okref, loc);
-          call = Runtime::make_call(Runtime::SELECTNBRECV2, loc, 3, addr, okaddr,
-                                    chanref);
-        }
+      Temporary_statement* selected_temp =
+	Statement::make_temporary(Type::make_boolean_type(),
+				  Expression::make_call_result(call, 0),
+				  loc);
+      b->add_statement(selected_temp);
+
+      Temporary_statement* ok_temp =
+	Statement::make_temporary(Type::make_boolean_type(),
+				  Expression::make_call_result(call, 1),
+				  loc);
+      b->add_statement(ok_temp);
+
+      cond = Expression::make_temporary_reference(selected_temp, loc);
 
       Location cloc = chancase.location();
       bchan = new Block(b, loc);
       if (chancase.val() != NULL && !chancase.val()->is_sink_expression())
         {
-          Statement* as = Statement::make_assignment(chancase.val(), ref->copy(),
+          Statement* as = Statement::make_assignment(chancase.val(),
+						     ref->copy(),
                                                      cloc);
           bchan->add_statement(as);
         }
@@ -6085,12 +6111,18 @@ Select_statement::lower_two_case(Block* b)
 
       if (chancase.closed() != NULL && !chancase.closed()->is_sink_expression())
         {
+	  Expression* okref = Expression::make_temporary_reference(ok_temp,
+								   cloc);
           Statement* as = Statement::make_assignment(chancase.closed(),
-                                                     okref->copy(), cloc);
+                                                     okref, cloc);
           bchan->add_statement(as);
         }
       else if (chancase.closedvar() != NULL)
-        chancase.closedvar()->var_value()->set_init(okref->copy());
+	{
+	  Expression* okref = Expression::make_temporary_reference(ok_temp,
+								   cloc);
+	  chancase.closedvar()->var_value()->set_init(okref);
+	}
 
       Statement* bs = Statement::make_block_statement(chancase.statements(),
                                                       cloc);
@@ -6098,7 +6130,7 @@ Select_statement::lower_two_case(Block* b)
     }
 
   Statement* ifs =
-    Statement::make_if_statement(call, bchan, defcase.statements(), loc);
+    Statement::make_if_statement(cond, bchan, defcase.statements(), loc);
   b->add_statement(ifs);
 
   Statement* label =

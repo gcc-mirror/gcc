@@ -1,5 +1,5 @@
 /* Part of CPP library.  File handling.
-   Copyright (C) 1986-2020 Free Software Foundation, Inc.
+   Copyright (C) 1986-2021 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -173,7 +173,7 @@ static bool pch_open_file (cpp_reader *pfile, _cpp_file *file,
 static bool find_file_in_dir (cpp_reader *pfile, _cpp_file *file,
 			      bool *invalid_pch, location_t loc);
 static bool read_file_guts (cpp_reader *pfile, _cpp_file *file,
-			    location_t loc);
+			    location_t loc, const char *input_charset);
 static bool read_file (cpp_reader *pfile, _cpp_file *file,
 		       location_t loc);
 static struct cpp_dir *search_path_head (cpp_reader *, const char *fname,
@@ -671,9 +671,12 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 
    Use LOC for any diagnostics.
 
+   PFILE may be NULL.  In this case, no diagnostics are issued.
+
    FIXME: Flush file cache and try again if we run out of memory.  */
 static bool
-read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc)
+read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc,
+		const char *input_charset)
 {
   ssize_t size, total, count;
   uchar *buf;
@@ -681,8 +684,9 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc)
 
   if (S_ISBLK (file->st.st_mode))
     {
-      cpp_error_at (pfile, CPP_DL_ERROR, loc,
-		    "%s is a block device", file->path);
+      if (pfile)
+	cpp_error_at (pfile, CPP_DL_ERROR, loc,
+		      "%s is a block device", file->path);
       return false;
     }
 
@@ -699,8 +703,9 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc)
 	 does not bite us.  */
       if (file->st.st_size > INTTYPE_MAXIMUM (ssize_t))
 	{
-	  cpp_error_at (pfile, CPP_DL_ERROR, loc,
-			"%s is too large", file->path);
+	  if (pfile)
+	    cpp_error_at (pfile, CPP_DL_ERROR, loc,
+			  "%s is too large", file->path);
 	  return false;
 	}
 
@@ -733,29 +738,29 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc)
 
   if (count < 0)
     {
-      cpp_errno_filename (pfile, CPP_DL_ERROR, file->path, loc);
+      if (pfile)
+	cpp_errno_filename (pfile, CPP_DL_ERROR, file->path, loc);
       free (buf);
       return false;
     }
 
-  if (regular && total != size && STAT_SIZE_RELIABLE (file->st))
+  if (pfile && regular && total != size && STAT_SIZE_RELIABLE (file->st))
     cpp_error_at (pfile, CPP_DL_WARNING, loc,
 	       "%s is shorter than expected", file->path);
 
   file->buffer = _cpp_convert_input (pfile,
-				     CPP_OPTION (pfile, input_charset),
+				     input_charset,
 				     buf, size + 16, total,
 				     &file->buffer_start,
 				     &file->st.st_size);
-  file->buffer_valid = true;
-
-  return true;
+  file->buffer_valid = file->buffer;
+  return file->buffer_valid;
 }
 
 /* Convenience wrapper around read_file_guts that opens the file if
    necessary and closes the file descriptor after reading.  FILE must
    have been passed through find_file() at some stage.  Use LOC for
-   any diagnostics.  */
+   any diagnostics.  Unlike read_file_guts(), PFILE may not be NULL.  */
 static bool
 read_file (cpp_reader *pfile, _cpp_file *file, location_t loc)
 {
@@ -773,7 +778,8 @@ read_file (cpp_reader *pfile, _cpp_file *file, location_t loc)
       return false;
     }
 
-  file->dont_read = !read_file_guts (pfile, file, loc);
+  file->dont_read = !read_file_guts (pfile, file, loc,
+				     CPP_OPTION (pfile, input_charset));
   close (file->fd);
   file->fd = -1;
 
@@ -918,13 +924,17 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 	 because we don't usually need that location (we're popping an
 	 include file).  However in this case we do want to do the
 	 increment.  So push a writable buffer of two newlines to acheive
-	 that.  */
-      static uchar newlines[] = "\n\n";
+	 that.  (We also need an extra newline, so this looks like a regular
+	 file, which we do that to to make sure we don't fall off the end in the
+	 middle of a line.  */
+      static uchar newlines[] = "\n\n\n";
       cpp_push_buffer (pfile, newlines, 2, true);
 
+      size_t len = strlen (buf);
+      buf[len] = '\n'; /* See above  */
       cpp_buffer *buffer
 	= cpp_push_buffer (pfile, reinterpret_cast<unsigned char *> (buf),
-			   strlen (buf), true);
+			   len, true);
       buffer->to_free = buffer->buf;
 
       file->header_unit = +1;
@@ -1104,31 +1114,54 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   return _cpp_stack_file (pfile, file, type, loc);
 }
 
-/* NAME is a header file name, find the path we'll use to open it.  */
+/* NAME is a header file name, find the _cpp_file, if any.  */
+
+static _cpp_file *
+test_header_unit (cpp_reader *pfile, const char *name, bool angle,
+		  location_t loc)
+{
+  if (cpp_dir *dir = search_path_head (pfile, name, angle, IT_INCLUDE))
+    return _cpp_find_file (pfile, name, dir, angle, _cpp_FFK_NORMAL, loc);
+
+  return nullptr;
+}
+
+/* NAME is a header file name, find the path we'll use to open it and infer that
+   it is a header-unit.  */
 
 const char *
-cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
-		      location_t loc)
+_cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
+		       location_t loc)
 {
-  cpp_dir *dir = search_path_head (pfile, name, angle, IT_INCLUDE);
-  if (!dir)
-    return NULL;
-
-  _cpp_file *file = _cpp_find_file (pfile, name, dir, angle,
-				    _cpp_FFK_NORMAL, loc);
-  if (!file)
-    return NULL;
-
-  if (file->fd > 0)
+  if (_cpp_file *file = test_header_unit (pfile, name, angle, loc))
     {
-      /* Don't leave it open.  */
-      close (file->fd);
-      file->fd = 0;
+      if (file->fd > 0)
+	{
+	  /* Don't leave it open.  */
+	  close (file->fd);
+	  file->fd = 0;
+	}
+
+      file->header_unit = +1;
+      _cpp_mark_file_once_only (pfile, file);
+
+      return file->path;
     }
 
-  file->header_unit = +1;
-  _cpp_mark_file_once_only (pfile, file);
-  return file->path;
+  return nullptr;
+}
+
+/* NAME is a header file name, find the path we'll use to open it.  But do not
+   infer it is a header unit.  */
+
+const char *
+cpp_probe_header_unit (cpp_reader *pfile, const char *name, bool angle,
+		       location_t loc)
+{
+  if (_cpp_file *file = test_header_unit (pfile, name, angle, loc))
+    return file->path;
+
+  return nullptr;
 }
 
 /* Retrofit the just-entered main file asif it was an include.  This
@@ -2118,3 +2151,25 @@ _cpp_has_header (cpp_reader *pfile, const char *fname, int angle_brackets,
   return file->err_no != ENOENT;
 }
 
+/* Read a file and convert to input charset, the same as if it were being read
+   by a cpp_reader.  */
+
+cpp_converted_source
+cpp_get_converted_source (const char *fname, const char *input_charset)
+{
+  cpp_converted_source res = {};
+  _cpp_file file = {};
+  file.fd = -1;
+  file.name = lbasename (fname);
+  file.path = fname;
+  if (!open_file (&file))
+    return res;
+  const bool ok = read_file_guts (NULL, &file, 0, input_charset);
+  close (file.fd);
+  if (!ok)
+    return res;
+  res.to_free = (char *) file.buffer_start;
+  res.data = (char *) file.buffer;
+  res.len = file.st.st_size;
+  return res;
+}

@@ -8,11 +8,12 @@
  */
 module core.sys.windows.wincon;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "kernel32");
 
-private import core.sys.windows.w32api, core.sys.windows.windef;
+import core.sys.windows.w32api, core.sys.windows.windef;
 
 // FIXME: clean up Windows version support
 

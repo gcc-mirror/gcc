@@ -1,5 +1,5 @@
 /* Marshalling and unmarshalling of C++-specific types.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,48 +22,41 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "marshall.hh"
 #include "gcc-cp-interface.h"
+#include "deleter.hh"
 
 namespace cc1_plugin
 {
-  status
-  unmarshall (connection *conn, enum gcc_cp_symbol_kind *result)
+  template<>
+  struct deleter<gcc_vbase_array>
   {
-    protocol_int p;
-    if (!unmarshall_intlike (conn, &p))
-      return FAIL;
-    *result = (enum gcc_cp_symbol_kind) p;
-    return OK;
-  }
+    void operator() (gcc_vbase_array *p)
+    {
+      delete[] p->flags;
+      delete[] p->elements;
+      delete p;
+    }
+  };
 
-  status
-  unmarshall (connection *conn, enum gcc_cp_oracle_request *result)
+  template<>
+  struct deleter<gcc_cp_template_args>
   {
-    protocol_int p;
-    if (!unmarshall_intlike (conn, &p))
-      return FAIL;
-    *result = (enum gcc_cp_oracle_request) p;
-    return OK;
-  }
+    void operator() (gcc_cp_template_args *p)
+    {
+      delete[] p->elements;
+      delete[] p->kinds;
+      delete p;
+    }
+  };
 
-  status
-  unmarshall (connection *conn, enum gcc_cp_qualifiers *result)
+  template<>
+  struct deleter<gcc_cp_function_args>
   {
-    protocol_int p;
-    if (!unmarshall_intlike (conn, &p))
-      return FAIL;
-    *result = (enum gcc_cp_qualifiers) p;
-    return OK;
-  }
-
-  status
-  unmarshall (connection *conn, enum gcc_cp_ref_qualifiers *result)
-  {
-    protocol_int p;
-    if (!unmarshall_intlike (conn, &p))
-      return FAIL;
-    *result = (enum gcc_cp_ref_qualifiers) p;
-    return OK;
-  }
+    void operator() (gcc_cp_function_args *p)
+    {
+      delete[] p->elements;
+      delete p;
+    }
+  };
 
   // Send a gcc_vbase_array marker followed by the array.
   status
@@ -107,7 +100,7 @@ namespace cc1_plugin
 	return OK;
       }
 
-    struct gcc_vbase_array *gva = new gcc_vbase_array;
+    cc1_plugin::unique_ptr<gcc_vbase_array> gva (new gcc_vbase_array {});
 
     gva->n_elements = len;
     gva->elements = new gcc_type[len];
@@ -115,25 +108,16 @@ namespace cc1_plugin
     if (!unmarshall_array_elmts (conn,
 				 len * sizeof (gva->elements[0]),
 				 gva->elements))
-      {
-	delete[] gva->elements;
-	delete gva;
-	return FAIL;
-      }
+      return FAIL;
 
     gva->flags = new enum gcc_cp_symbol_kind[len];
 
     if (!unmarshall_array_elmts (conn,
 				 len * sizeof (gva->flags[0]),
 				 gva->flags))
-      {
-	delete[] gva->flags;
-	delete[] gva->elements;
-	delete gva;
-	return FAIL;
-      }
+      return FAIL;
 
-    *result = gva;
+    *result = gva.release ();
     return OK;
   }
 
@@ -179,7 +163,8 @@ namespace cc1_plugin
 	return OK;
       }
 
-    struct gcc_cp_template_args *gva = new gcc_cp_template_args;
+    cc1_plugin::unique_ptr<gcc_cp_template_args> gva
+      (new gcc_cp_template_args {});
 
     gva->n_elements = len;
     gva->kinds = new char[len];
@@ -187,25 +172,16 @@ namespace cc1_plugin
     if (!unmarshall_array_elmts (conn,
 				 len * sizeof (gva->kinds[0]),
 				 gva->kinds))
-      {
-	delete[] gva->kinds;
-	delete gva;
-	return FAIL;
-      }
+      return FAIL;
 
     gva->elements = new gcc_cp_template_arg[len];
 
     if (!unmarshall_array_elmts (conn,
 				 len * sizeof (gva->elements[0]),
 				 gva->elements))
-      {
-	delete[] gva->elements;
-	delete[] gva->kinds;
-	delete gva;
-	return FAIL;
-      }
+      return FAIL;
 
-    *result = gva;
+    *result = gva.release ();
     return OK;
   }
 
@@ -248,7 +224,8 @@ namespace cc1_plugin
 	return OK;
       }
 
-    struct gcc_cp_function_args *gva = new gcc_cp_function_args;
+    cc1_plugin::unique_ptr<gcc_cp_function_args> gva
+      (new gcc_cp_function_args {});
 
     gva->n_elements = len;
     gva->elements = new gcc_expr[len];
@@ -256,13 +233,9 @@ namespace cc1_plugin
     if (!unmarshall_array_elmts (conn,
 				 len * sizeof (gva->elements[0]),
 				 gva->elements))
-      {
-	delete[] gva->elements;
-	delete gva;
-	return FAIL;
-      }
+      return FAIL;
 
-    *result = gva;
+    *result = gva.release ();
 
     return OK;
   }

@@ -1,6 +1,6 @@
 // <experimental/socket> -*- C++ -*-
 
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -138,41 +138,59 @@ inline namespace v1
   {
   public:
 #ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
-    struct broadcast : __sockopt_crtp<broadcast, bool>
+    class broadcast : public __sockopt_crtp<broadcast, bool>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
+    private:
+      friend __sockopt_crtp<broadcast, bool>;
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_BROADCAST;
     };
 
-    struct debug : __sockopt_crtp<debug, bool>
+    class debug : public __sockopt_crtp<debug, bool>
     {
+    public:
+      friend __sockopt_crtp<debug, bool>;
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
+    private:
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_DEBUG;
     };
 
-    struct do_not_route : __sockopt_crtp<do_not_route, bool>
+    class do_not_route : public __sockopt_crtp<do_not_route, bool>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
+    private:
+      friend __sockopt_crtp<do_not_route, bool>;
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_DONTROUTE;
     };
 
-    struct keep_alive : __sockopt_crtp<keep_alive, bool>
+    class keep_alive : public __sockopt_crtp<keep_alive, bool>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
+    private:
+      friend __sockopt_crtp<keep_alive, bool>;
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_KEEPALIVE;
     };
 
-    struct linger : __sockopt_crtp<linger, ::linger>
+    class linger : public __sockopt_crtp<linger, ::linger>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
       linger() noexcept = default;
 
@@ -198,98 +216,151 @@ inline namespace v1
       timeout(chrono::seconds __t) noexcept
       { _M_value.l_linger = __t.count(); }
 
+    private:
+      friend __sockopt_crtp<linger, ::linger>;
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_LINGER;
     };
 
-    struct out_of_band_inline : __sockopt_crtp<out_of_band_inline, bool>
+    class out_of_band_inline : public __sockopt_crtp<out_of_band_inline, bool>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
+    private:
+      friend __sockopt_crtp<out_of_band_inline, bool>;
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_OOBINLINE;
     };
 
-    struct receive_buffer_size : __sockopt_crtp<receive_buffer_size>
+    class receive_buffer_size : public __sockopt_crtp<receive_buffer_size>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
+    private:
+      friend __sockopt_crtp<receive_buffer_size>;
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_RCVBUF;
     };
 
-    struct receive_low_watermark : __sockopt_crtp<receive_low_watermark>
+    class receive_low_watermark : public __sockopt_crtp<receive_low_watermark>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
+    private:
+      friend __sockopt_crtp<receive_low_watermark>;
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_RCVLOWAT;
     };
 
-    struct reuse_address : __sockopt_crtp<reuse_address, bool>
+    class reuse_address : public __sockopt_crtp<reuse_address, bool>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
+    private:
+      friend __sockopt_crtp<reuse_address, bool>;
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_REUSEADDR;
     };
 
-    struct send_buffer_size : __sockopt_crtp<send_buffer_size>
+    class send_buffer_size : public __sockopt_crtp<send_buffer_size>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
+    private:
+      friend __sockopt_crtp<send_buffer_size>;
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_SNDBUF;
     };
 
-    struct send_low_watermark : __sockopt_crtp<send_low_watermark>
+    class send_low_watermark : public __sockopt_crtp<send_low_watermark>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
+    private:
+      friend __sockopt_crtp<send_low_watermark>;
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_SNDLOWAT;
     };
+#endif // HAVE_SYS_SOCKET_H
 
-    enum shutdown_type : int
-    {
-      __shutdown_receive	= SHUT_RD,
-      __shutdown_send		= SHUT_WR,
-      __shutdown_both		= SHUT_RDWR
-    };
-    static constexpr shutdown_type shutdown_receive	= __shutdown_receive;
-    static constexpr shutdown_type shutdown_send	= __shutdown_send;
-    static constexpr shutdown_type shutdown_both	= __shutdown_both;
+    enum shutdown_type : int { };
+#if defined SHUT_RD && defined SHUT_WR && defined SHUT_RDWR
+    static constexpr shutdown_type shutdown_receive = (shutdown_type)SHUT_RD;
+    static constexpr shutdown_type shutdown_send    = (shutdown_type)SHUT_WR;
+    static constexpr shutdown_type shutdown_both    = (shutdown_type)SHUT_RDWR;
+#endif
 
+    enum wait_type : int { };
 #ifdef _GLIBCXX_HAVE_POLL_H
-    enum wait_type : int
-    {
-      __wait_read		= POLLIN,
-      __wait_write		= POLLOUT,
-      __wait_error		= POLLERR
-    };
-    static constexpr wait_type wait_read		= __wait_read;
-    static constexpr wait_type wait_write		= __wait_write;
-    static constexpr wait_type wait_error		= __wait_error;
+    static constexpr wait_type wait_read  = (wait_type)POLLIN;
+    static constexpr wait_type wait_write = (wait_type)POLLOUT;
+    static constexpr wait_type wait_error = (wait_type)POLLERR;
+#else
+    static constexpr wait_type wait_read  = (wait_type)1;
+    static constexpr wait_type wait_write = (wait_type)2;
+    static constexpr wait_type wait_error = (wait_type)4;
 #endif
 
-    enum message_flags : int
-    {
-      __message_peek		= MSG_PEEK,
-      __message_oob		= MSG_OOB,
-      __message_dontroute	= MSG_DONTROUTE
-    };
-    static constexpr message_flags message_peek		= __message_peek;
-    static constexpr message_flags message_out_of_band	= __message_oob;
-    static constexpr message_flags message_do_not_route	= __message_dontroute;
-
-    static const int max_listen_connections = SOMAXCONN;
+    enum message_flags : int { };
+#if defined MSG_PEEK && defined MSG_OOB && defined MSG_DONTROUTE
+    static constexpr message_flags message_peek
+      = (message_flags)MSG_PEEK;
+    static constexpr message_flags message_out_of_band
+      = (message_flags)MSG_OOB;
+    static constexpr message_flags message_do_not_route
+      = (message_flags)MSG_DONTROUTE;
 #endif
 
-  protected:
-    socket_base() = default;
-    ~socket_base() = default;
+#ifdef SOMAXCONN
+    static constexpr int max_listen_connections = SOMAXCONN;
+#else
+    static constexpr int max_listen_connections = 4;
+#endif
+
+    // message_flags bitmask operations are defined as hidden friends.
+
+    friend constexpr message_flags
+    operator&(message_flags __f1, message_flags __f2) noexcept
+    { return message_flags( int(__f1) & int(__f2) ); }
+
+    friend constexpr message_flags
+    operator|(message_flags __f1, message_flags __f2) noexcept
+    { return message_flags( int(__f1) | int(__f2) ); }
+
+    friend constexpr message_flags
+    operator^(message_flags __f1, message_flags __f2) noexcept
+    { return message_flags( int(__f1) ^ int(__f2) ); }
+
+    friend constexpr message_flags
+    operator~(message_flags __f) noexcept
+    { return message_flags( ~int(__f) ); }
+
+    friend constexpr message_flags&
+    operator&=(message_flags& __f1, message_flags __f2) noexcept
+    { return __f1 = (__f1 & __f2); }
+
+    friend constexpr message_flags&
+    operator|=(message_flags& __f1, message_flags __f2) noexcept
+    { return __f1 = (__f1 | __f2); }
+
+    friend constexpr message_flags&
+    operator^=(message_flags& __f1, message_flags __f2) noexcept
+    { return __f1 = (__f1 ^ __f2); }
 
 #ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
+  protected:
     struct __msg_hdr : ::msghdr
     {
 #ifdef IOV_MAX
@@ -346,35 +417,13 @@ inline namespace v1
 	}
     };
 #endif
+
+  protected:
+    socket_base() = default;
+    ~socket_base() = default;
   };
 
-  constexpr socket_base::message_flags
-  operator&(socket_base::message_flags __f1, socket_base::message_flags __f2)
-  { return socket_base::message_flags( int(__f1) & int(__f2) ); }
-
-  constexpr socket_base::message_flags
-  operator|(socket_base::message_flags __f1, socket_base::message_flags __f2)
-  { return socket_base::message_flags( int(__f1) | int(__f2) ); }
-
-  constexpr socket_base::message_flags
-  operator^(socket_base::message_flags __f1, socket_base::message_flags __f2)
-  { return socket_base::message_flags( int(__f1) ^ int(__f2) ); }
-
-  constexpr socket_base::message_flags
-  operator~(socket_base::message_flags __f)
-  { return socket_base::message_flags( ~int(__f) ); }
-
-  inline socket_base::message_flags&
-  operator&=(socket_base::message_flags& __f1, socket_base::message_flags __f2)
-  { return __f1 = (__f1 & __f2); }
-
-  inline socket_base::message_flags&
-  operator|=(socket_base::message_flags& __f1, socket_base::message_flags __f2)
-  { return __f1 = (__f1 | __f2); }
-
-  inline socket_base::message_flags&
-  operator^=(socket_base::message_flags& __f1, socket_base::message_flags __f2)
-  { return __f1 = (__f1 ^ __f2); }
+  // TODO define socket_base static constants in .so for C++14 mode
 
 #if _GLIBCXX_HAVE_UNISTD_H
 
@@ -390,16 +439,16 @@ inline namespace v1
 
     __socket_impl(__socket_impl&& __rhs)
     : _M_ctx(__rhs._M_ctx),
-      _M_sockfd(std::exchange(__rhs._M_sockfd, -1)),
-      _M_bits(std::exchange(__rhs._M_bits, {}))
+      _M_sockfd(std::__exchange(__rhs._M_sockfd, -1)),
+      _M_bits(std::__exchange(__rhs._M_bits, {}))
     { }
 
     __socket_impl&
     operator=(__socket_impl&& __rhs)
     {
       _M_ctx = __rhs._M_ctx;
-      _M_sockfd = std::exchange(__rhs._M_sockfd, -1);
-      _M_bits = std::exchange(__rhs._M_bits, {});
+      _M_sockfd = std::__exchange(__rhs._M_sockfd, -1);
+      _M_bits = std::__exchange(__rhs._M_bits, {});
       return *this;
     }
 
@@ -444,7 +493,7 @@ inline namespace v1
     void
     native_non_blocking(bool __mode, error_code& __ec)
     {
-#ifdef _GLIBCXX_HAVE_FCNTL_H
+#if defined _GLIBCXX_HAVE_FCNTL_H && defined _GLIBCXX_HAVE_DECL_O_NONBLOCK
       int __flags = ::fcntl(_M_sockfd, F_GETFL, 0);
       if (__flags >= 0)
 	{
@@ -469,7 +518,7 @@ inline namespace v1
     bool
     native_non_blocking() const
     {
-#ifdef _GLIBCXX_HAVE_FCNTL_H
+#if defined _GLIBCXX_HAVE_FCNTL_H && defined _GLIBCXX_HAVE_DECL_O_NONBLOCK
       if (_M_bits.native_non_blocking == -1)
 	{
 	  const int __flags = ::fcntl(_M_sockfd, F_GETFL, 0);
@@ -576,13 +625,14 @@ inline namespace v1
       {
 	__glibcxx_assert(is_open());
 	cancel(__ec);
-	return std::exchange(_M_sockfd, -1);
+	return std::__exchange(_M_sockfd, -1);
       }
 
       template<typename _SettableSocketOption>
 	void
 	set_option(const _SettableSocketOption& __option, error_code& __ec)
 	{
+# ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	  int __result = ::setsockopt(_M_sockfd, __option.level(_M_protocol),
 				      __option.name(_M_protocol),
 				      __option.data(_M_protocol),
@@ -591,12 +641,16 @@ inline namespace v1
 	    __ec.assign(errno, generic_category());
 	  else
 	    __ec.clear();
+#else
+	  __ec = std::make_error_code(std::errc::not_supported);
+#endif
 	}
 
       template<typename _GettableSocketOption>
 	void
 	get_option(_GettableSocketOption& __option, error_code& __ec) const
 	{
+# ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	  int __result = ::getsockopt(_M_sockfd, __option.level(_M_protocol),
 				      __option.name(_M_protocol),
 				      __option.data(_M_protocol),
@@ -605,6 +659,9 @@ inline namespace v1
 	    __ec.assign(errno, generic_category());
 	  else
 	    __ec.clear();
+#else
+	  __ec = std::make_error_code(std::errc::not_supported);
+#endif
 	}
 
       template<typename _IoControlCommand>
@@ -667,7 +724,9 @@ inline namespace v1
 	  {
 	    error_code __ec;
 	    cancel(__ec);
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	    set_option(socket_base::linger{false, chrono::seconds{}}, __ec);
+#endif
 	    ::close(_M_sockfd);
 	  }
       }
@@ -955,7 +1014,7 @@ inline namespace v1
 	    }
 
 	  get_executor().context().async_wait( native_handle(),
-	      socket_base::wait_read,
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
                __ep = std::move(__endpoint),
                __fd = native_handle()]
@@ -1166,7 +1225,7 @@ inline namespace v1
             __init{__token};
 
 	  this->get_executor().context().async_wait(this->native_handle(),
-	      socket_base::wait_read,
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __fd = this->native_handle()]
@@ -1272,7 +1331,7 @@ inline namespace v1
             __init{__token};
 
 	  this->get_executor().context().async_wait( this->native_handle(),
-	      socket_base::wait_read,
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __sender = std::move(__sender),
@@ -1367,7 +1426,7 @@ inline namespace v1
             __init{__token};
 
 	  this->get_executor().context().async_wait( this->native_handle(),
-	      socket_base::wait_write,
+	      (int) socket_base::wait_write,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __fd = this->native_handle()]
@@ -1470,7 +1529,7 @@ inline namespace v1
             __init{__token};
 
 	  this->get_executor().context().async_wait( this->native_handle(),
-	      socket_base::wait_write,
+	      (int) socket_base::wait_write,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __recipient = std::move(__recipient),
@@ -1635,7 +1694,7 @@ inline namespace v1
 	    }
 
           this->get_executor().context().async_wait(this->native_handle(),
-	      socket_base::wait_read,
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __fd = this->native_handle()]
@@ -1742,7 +1801,7 @@ inline namespace v1
 	    }
 
           this->get_executor().context().async_wait(this->native_handle(),
-	      socket_base::wait_write,
+	      (int) socket_base::wait_write,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __fd = this->native_handle()]
@@ -1845,11 +1904,13 @@ inline namespace v1
       { open(__protocol); }
 
       basic_socket_acceptor(io_context& __ctx, const endpoint_type& __endpoint,
-			    bool __reuse_addr = true)
+			    [[__maybe_unused__]] bool __reuse_addr = true)
       : basic_socket_acceptor(__ctx, __endpoint.protocol())
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (__reuse_addr)
 	  set_option(reuse_address(true));
+#endif
 	bind(__endpoint);
 	listen();
       }
@@ -2099,8 +2160,8 @@ inline namespace v1
           async_completion<_CompletionToken, void(error_code, socket_type)>
             __init{__token};
 
-	  __ctx.get_executor().context().async_wait(native_handle(),
-	      socket_base::wait_read,
+	  __ctx.async_wait(native_handle(),
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
                __connabort = enable_connection_aborted(),
                __fd = native_handle(),
@@ -2190,8 +2251,8 @@ inline namespace v1
           async_completion<_CompletionToken, void(error_code, socket_type)>
             __init{__token};
 
-	  __ctx.get_executor().context().async_wait(native_handle(),
-	      socket_base::wait_read,
+	  __ctx.async_wait(native_handle(),
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
               __ep = std::move(__endpoint),
                __connabort = enable_connection_aborted(),
@@ -2265,7 +2326,7 @@ inline namespace v1
       protocol_type _M_protocol;
     };
 
-  // @}
+  /// @}
 
   /** @brief Socket streams
    * @{
@@ -2436,7 +2497,7 @@ inline namespace v1
       __streambuf_type _M_sb;
     };
 
-  // @}
+  /// @}
 
   /** @brief synchronous connect operations
    * @{
@@ -2557,7 +2618,7 @@ inline namespace v1
 			  __ec);
     }
 
-  // @}
+  /// @}
 
   /** @brief asynchronous connect operations
    * @{
@@ -2607,11 +2668,11 @@ inline namespace v1
 				forward<_CompletionToken>(__token));
     }
 
-  // @}
+  /// @}
 
 #endif  // _GLIBCXX_HAVE_UNISTD_H
 
-  // @}
+  /// @}
 
 } // namespace v1
 } // namespace net

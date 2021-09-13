@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations
    based on target macros.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,7 +59,7 @@ extern int atexit (void (*)(void));
 #endif
 
 #ifndef abort
-extern void abort (void) __attribute__ ((__noreturn__));
+#define abort() __builtin_trap ()
 #endif
 
 #ifndef strlen

@@ -1,6 +1,6 @@
 // SGI's rope class -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -203,6 +203,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::copy(__x._M_buffer, __x._M_buffer + __x._M_buf_count, _M_buffer);
       }
       
+      // Non-const "copy" modifies the parameter - yuck
       sequence_buffer(sequence_buffer& __x)
       {
 	__x.flush();
@@ -213,6 +214,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       sequence_buffer(_Sequence& __s)
       : _M_prefix(&__s), _M_buf_count(0) { }
       
+      // Non-const "copy" modifies the parameter - yuck
       sequence_buffer&
       operator=(sequence_buffer& __x)
       {
@@ -230,7 +232,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::copy(__x._M_buffer, __x._M_buffer + __x._M_buf_count, _M_buffer);
 	return *this;
       }
-      
+
+#if __cplusplus >= 201103L
+      sequence_buffer(sequence_buffer&& __x) : sequence_buffer(__x) { }
+      sequence_buffer& operator=(sequence_buffer&& __x) { return *this = __x; }
+#endif
+
       void
       push_back(value_type __x)
       {
@@ -2393,11 +2400,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_unref(this->_M_tree_ptr);
 	this->_M_tree_ptr = __result;
       }
-
-      // Erase, single character
-      void
-      erase(size_type __p)
-      { erase(__p, __p + 1); }
 
       // Insert, iterator variants.
       iterator

@@ -554,13 +554,16 @@ fix = {
   mach      = "*-*-aix*";
   files     = "sys/socket.h";
   select    = "#ifndef _KERNEL\n"
-	      "#ifdef __cplusplus";
+	      "#ifdef __cplusplus\n"
+	      "extern \"C\" int naccept\\(int, struct sockaddr \\*, socklen_t \\*\\);";
   c_fix     = format;
   c_fix_arg = "#ifndef _KERNEL\n"
 	      "#ifdef __cplusplus\n"
-              "extern \"C++\" {";
+	      "extern \"C++\" {\n"
+	      "extern \"C\" int naccept(int, struct sockaddr *, socklen_t *);";
   test_text = "#ifndef _KERNEL\n"
-	      "#ifdef __cplusplus";
+	      "#ifdef __cplusplus\n"
+	      "extern \"C\" int naccept(int, struct sockaddr *, socklen_t *);";
 };
 
 fix = {
@@ -2666,6 +2669,34 @@ fix = {
 };
 
 /*
+ * Fix missing PRIdPTR defines in inttypes.h
+ */
+fix = {
+    hackname  = hpux_c99_inttypes5;
+    mach      = "hppa*-hp-hpux11.[01]*";
+    files     = inttypes.h;
+    select    = "#ifndef[ \t]_KERNEL[ \t]*\n";
+    c_fix     = format;
+    c_fix_arg = "#ifndef __LP64__\n"
+		"#define PRIdPTR\t\tPRId32\n"
+		"#define PRIiPTR\t\tPRIi32\n"
+		"#define PRIoPTR\t\tPRIo32\n"
+		"#define PRIuPTR\t\tPRIu32\n"
+		"#define PRIxPTR\t\tPRIx32\n"
+		"#define PRIXPTR\t\tPRIX32\n"
+		"#else\n"
+		"#define PRIdPTR\t\tPRId64\n"
+		"#define PRIiPTR\t\tPRIi64\n"
+		"#define PRIoPTR\t\tPRIo64\n"
+		"#define PRIuPTR\t\tPRIu64\n"
+		"#define PRIxPTR\t\tPRIx64\n"
+		"#define PRIXPTR\t\tPRIX64\n"
+		"#endif\n\n"
+		"#ifndef _KERNEL\n";
+    test_text = "#ifndef _KERNEL\n";
+};
+
+/*
  *  Fix hpux broken ctype macros
  */
 fix = {
@@ -3151,7 +3182,8 @@ fix = {
     c_fix     = machine_name;
 
     test_text = "/* MACH_DIFF: */\n"
-    "#if defined( i386 ) || defined( sparc ) || defined( vax )"
+    "#if defined( i386 ) || defined( sparc ) || defined( vax ) || "
+    "defined( linux ) || __has_include ( <linux.h> )"
     "\n/* no uniform test, so be careful  :-) */";
 };
 

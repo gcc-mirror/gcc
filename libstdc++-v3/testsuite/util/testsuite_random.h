@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2011-2020 Free Software Foundation, Inc.
+// Copyright (C) 2011-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -196,6 +196,18 @@ namespace __gnu_test
       return lbincoef(K, k) + lbincoef(N - K, n - k) - lbincoef(N, n);
   }
 #endif
+
+  // Check whether TOKEN can construct a std::random_device successfully.
+  inline bool
+  random_device_available(const std::string& token) noexcept
+  {
+    try {
+      std::random_device dev(token);
+      return true;
+    } catch (...) {
+      return false;
+    }
+  }
 
 } // namespace __gnu_test
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
    Contributed by Hartmut Penner (hpenner@de.ibm.com)
 
@@ -122,6 +122,8 @@ extern void s390_expand_vec_compare_cc (rtx, enum rtx_code, rtx, rtx, bool);
 extern enum rtx_code s390_reverse_condition (machine_mode, enum rtx_code);
 extern void s390_expand_vcond (rtx, rtx, rtx, enum rtx_code, rtx, rtx);
 extern void s390_expand_vec_init (rtx, rtx);
+extern rtx s390_expand_merge_perm_const (machine_mode, bool);
+extern void s390_expand_merge (rtx, rtx, rtx, bool);
 extern rtx s390_build_signbit_mask (machine_mode);
 extern rtx s390_return_addr_rtx (int, rtx);
 extern rtx s390_back_chain_rtx (void);
@@ -173,6 +175,7 @@ extern bool s390_const_operand_ok (tree, int, int, tree);
 
 /* s390-d.c routines */
 extern void s390_d_target_versions (void);
+extern void s390_d_register_target_info (void);
 
 /* Pass management.  */
 namespace gcc { class context; }

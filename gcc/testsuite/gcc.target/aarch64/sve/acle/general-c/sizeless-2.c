@@ -106,8 +106,8 @@ statements (int n)
 
   /* Pointer assignment.  */
 
-  gnu_sc_ptr = sve_sc_ptr;
-  sve_sc_ptr = gnu_sc_ptr;
+  gnu_sc_ptr = sve_sc_ptr; /* { dg-warning {incompatible pointer type} } */
+  sve_sc_ptr = gnu_sc_ptr; /* { dg-warning {incompatible pointer type} } */
 
   /* Pointer arithmetic.  */
 
@@ -120,8 +120,8 @@ statements (int n)
   sve_sc_ptr -= 0; /* { dg-error {arithmetic on pointer to SVE type 'svint8_t'} } */
   sve_sc_ptr -= 1; /* { dg-error {arithmetic on pointer to SVE type 'svint8_t'} } */
   sve_sc_ptr - sve_sc_ptr; /* { dg-error {arithmetic on pointer to SVE type 'svint8_t'} } */
-  gnu_sc_ptr - sve_sc_ptr; /* { dg-error {arithmetic on pointer to SVE type 'svint8_t'} } */
-  sve_sc_ptr - gnu_sc_ptr; /* { dg-error {arithmetic on pointer to SVE type 'svint8_t'} } */
+  gnu_sc_ptr - sve_sc_ptr; /* { dg-error {invalid operands to binary -} } */
+  sve_sc_ptr - gnu_sc_ptr; /* { dg-error {invalid operands to binary -} } */
   sve_sc1 = sve_sc_ptr[0]; /* { dg-error {arithmetic on pointer to SVE type 'svint8_t'} } */
   sve_sc1 = sve_sc_ptr[1]; /* { dg-error {arithmetic on pointer to SVE type 'svint8_t'} } */
 
@@ -133,18 +133,18 @@ statements (int n)
   sve_sc_ptr <= &sve_sc1;
   sve_sc_ptr > &sve_sc1;
   sve_sc_ptr >= &sve_sc1;
-  gnu_sc_ptr == sve_sc_ptr;
-  gnu_sc_ptr != sve_sc_ptr;
-  gnu_sc_ptr < sve_sc_ptr;
-  gnu_sc_ptr <= sve_sc_ptr;
-  gnu_sc_ptr > sve_sc_ptr;
-  gnu_sc_ptr >= sve_sc_ptr;
-  sve_sc_ptr == gnu_sc_ptr;
-  sve_sc_ptr != gnu_sc_ptr;
-  sve_sc_ptr < gnu_sc_ptr;
-  sve_sc_ptr <= gnu_sc_ptr;
-  sve_sc_ptr > gnu_sc_ptr;
-  sve_sc_ptr >= gnu_sc_ptr;
+  gnu_sc_ptr == sve_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  gnu_sc_ptr != sve_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  gnu_sc_ptr < sve_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  gnu_sc_ptr <= sve_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  gnu_sc_ptr > sve_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  gnu_sc_ptr >= sve_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  sve_sc_ptr == gnu_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  sve_sc_ptr != gnu_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  sve_sc_ptr < gnu_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  sve_sc_ptr <= gnu_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  sve_sc_ptr > gnu_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
+  sve_sc_ptr >= gnu_sc_ptr; /* { dg-warning {comparison of distinct pointer types} } */
 
   /* Conditional expressions.  */
 
@@ -154,8 +154,8 @@ statements (int n)
   0 ? 0 : sve_sc1; /* { dg-error {type mismatch in conditional expression} } */
   0 ?: sve_sc1; /* { dg-error {type mismatch in conditional expression} } */
   0 ? sve_sc_ptr : sve_sc_ptr;
-  0 ? sve_sc_ptr : gnu_sc_ptr;
-  0 ? gnu_sc_ptr : sve_sc_ptr;
+  0 ? sve_sc_ptr : gnu_sc_ptr; /* { dg-warning {pointer type mismatch} } */
+  0 ? gnu_sc_ptr : sve_sc_ptr; /* { dg-warning {pointer type mismatch} } */
 
   /* Generic associations.  */
 

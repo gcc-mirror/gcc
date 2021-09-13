@@ -8,8 +8,9 @@
  */
 module core.sys.windows.servprov;
 version (Windows):
+@system:
 
-private import core.sys.windows.basetyps, core.sys.windows.unknwn, core.sys.windows.windef, core.sys.windows.wtypes;
+import core.sys.windows.basetyps, core.sys.windows.unknwn, core.sys.windows.windef, core.sys.windows.wtypes;
 
 interface IServiceProvider : IUnknown {
     HRESULT QueryService(REFGUID, REFIID, void**);

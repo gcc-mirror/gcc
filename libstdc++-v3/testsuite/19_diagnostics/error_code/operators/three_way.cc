@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,7 @@ test01()
 
   VERIFY( std::is_neq(e1 <=> e2) );
   VERIFY( std::is_lt(e1 <=> e2) || std::is_gt(e1 <=> e2) );
-  VERIFY( (e1 <=> e2) == (e1.value() <=> e2.value()) );
+  VERIFY( (e1 <=> e2) == (e1.category() <=> e2.category()) );
 
   VERIFY( e1 == e1 );
   VERIFY( !(e1 == e2) );
@@ -52,6 +52,12 @@ test01()
 
   VERIFY( !(e3 < e3) );
   VERIFY( (e2 < e3) == (e2.category() < e3.category()) );
+
+  std::error_code e4(std::make_error_code(std::errc::invalid_argument));
+
+  VERIFY( std::is_neq(e4 <=> e2) );
+  VERIFY( std::is_lt(e4 <=> e2) || std::is_gt(e4 <=> e2) );
+  VERIFY( (e4 <=> e2) == (e4.value() <=> e2.value()) );
 }
 
 int main()

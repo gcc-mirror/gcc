@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,14 +16,21 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
-// { dg-require-effective-target random_device }
 
 #include <random>
 #include <testsuite_hooks.h>
+#include <testsuite_random.h>
 
 void
 test01()
 {
+  if (__gnu_test::random_device_available("mt19937"))
+  {
+    // std::random_device uses a Mersenne Twister with default seed,
+    // and the test below will fail.  No point trying to test it.
+    return;
+  }
+
   unsigned v1[3], v2[3];
   std::random_device d1, d2;
   for (auto& v : v1)

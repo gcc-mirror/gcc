@@ -1,6 +1,6 @@
 ## Makefile for the python subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2009-2020 Free Software Foundation, Inc.
+## Copyright (C) 2009-2021 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -29,6 +29,12 @@ else
 pythondir = $(datadir)/gcc-$(gcc_version)/python
 endif
 
+if GLIBCXX_BUILD_DEBUG
+debug_gdb_py = YES
+else
+debug_gdb_py =
+endif
+
 all-local: gdb.py
 
 nobase_python_DATA = \
@@ -44,21 +50,17 @@ gdb.py: hook.in Makefile
 install-data-local: gdb.py
 	@$(mkdir_p) $(DESTDIR)$(toolexeclibdir)
 ## We want to install gdb.py as SOMETHING-gdb.py.  SOMETHING is the
-## full name of the final library.  We want to ignore symlinks, the
-## .la file, and any previous -gdb.py file.  This is inherently
-## fragile, but there does not seem to be a better option, because
-## libtool hides the real names from us.
-	@here=`pwd`; cd $(DESTDIR)$(toolexeclibdir); \
-	  for file in libstdc++.*; do \
-	    case $$file in \
-	      *-gdb.py) ;; \
-	      *.la) ;; \
-	      *) if test -h $$file; then \
-	           continue; \
-	         fi; \
-	         libname=$$file;; \
-	    esac; \
-	  done; \
-	cd $$here; \
+## full name of the final library.  We use the libtool .la file to get
+## the correct name.
+	@libname=`sed -ne "/^library_names=/{s/.*='//;s/'$$//;s/ .*//;p;}" \
+	          $(DESTDIR)$(toolexeclibdir)/libstdc++.la`; \
+	if [ -z "$$libname" ]; then \
+	  libname=`sed -ne "/^old_library=/{s/.*='//;s/'$$//;s/ .*//;p;}" \
+		  $(DESTDIR)$(toolexeclibdir)/libstdc++.la`; \
+	fi; \
 	echo " $(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py"; \
-	$(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py
+	$(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py ; \
+	if [ -n "$(debug_gdb_py)" ]; then \
+	  sed "/^libdir = /s;'$$;/debug';" gdb.py > debug-gdb.py ; \
+	  $(INSTALL_DATA) debug-gdb.py $(DESTDIR)$(toolexeclibdir)/debug/$$libname-gdb.py ; \
+	fi

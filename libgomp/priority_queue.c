@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -167,6 +167,63 @@ priority_queue_verify (enum priority_queue_type type,
     priority_list_verify (type, &head->l, check_deps);
 }
 #endif /* _LIBGOMP_CHECKING_ */
+
+/* Tree version of priority_queue_find.  */
+
+static struct gomp_task *
+priority_tree_find (enum priority_queue_type type,
+		    prio_splay_tree_node node,
+		    priority_queue_predicate pred)
+{
+ again:
+  if (!node)
+    return NULL;
+  struct gomp_task *task = priority_tree_find (type, node->right, pred);
+  if (task)
+    return task;
+  task = priority_node_to_task (type, node->key.l.tasks);
+  if (pred (task))
+    return task;
+  node = node->left;
+  goto again;
+}
+
+/* List version of priority_queue_find.  */
+
+static struct gomp_task *
+priority_list_find (enum priority_queue_type type,
+		     struct priority_list *list,
+		     priority_queue_predicate pred)
+{
+  struct priority_node *node = list->tasks;
+  if (!node)
+    return NULL;
+
+  do
+    {
+      struct gomp_task *task = priority_node_to_task (type, node);
+      if (pred (task))
+	return task;
+      node = node->next;
+    }
+  while (node != list->tasks);
+
+  return NULL;
+}
+
+/* Return the highest priority task in the priority queue HEAD that
+   satisfies the predicate PRED.  HEAD contains tasks of type TYPE.  */
+
+struct gomp_task *
+priority_queue_find (enum priority_queue_type type,
+		     struct priority_queue *head,
+		     priority_queue_predicate pred)
+{
+  if (priority_queue_multi_p (head))
+    return priority_tree_find (type, head->t.root, pred);
+  else
+    return priority_list_find (type, &head->l, pred);
+}
 
 /* Remove NODE from priority queue HEAD, wherever it may be inside the
    tree.  HEAD contains tasks of type TYPE.  */

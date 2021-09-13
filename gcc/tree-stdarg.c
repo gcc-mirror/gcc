@@ -1,5 +1,5 @@
 /* Pass computing data for optimizing stdarg functions.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -1114,7 +1114,7 @@ const pass_data pass_data_stdarg =
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   PROP_gimple_lva, /* properties_provided */
   0, /* properties_destroyed */
-  0, /* todo_flags_start */
+  TODO_remove_unused_locals, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
 

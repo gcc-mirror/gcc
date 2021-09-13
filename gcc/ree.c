@@ -1,5 +1,5 @@
 /* Redundant Extension Elimination pass for the GNU compiler.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Contributed by Ilya Enkovich (ilya.enkovich@intel.com)
 
    Based on the Redundant Zero-extension elimination pass contributed by
@@ -658,10 +658,11 @@ make_defs_and_copies_lists (rtx_insn *extend_insn, const_rtx set_pat,
   return ret;
 }
 
-/* If DEF_INSN has single SET expression, possibly buried inside
-   a PARALLEL, return the address of the SET expression, else
-   return NULL.  This is similar to single_set, except that
-   single_set allows multiple SETs when all but one is dead.  */
+/* If DEF_INSN has single SET expression with a register
+   destination, possibly buried inside a PARALLEL, return
+   the address of the SET expression, else return NULL.
+   This is similar to single_set, except that single_set
+   allows multiple SETs when all but one is dead.  */
 static rtx *
 get_sub_rtx (rtx_insn *def_insn)
 {
@@ -675,6 +676,8 @@ get_sub_rtx (rtx_insn *def_insn)
           rtx s_expr = XVECEXP (PATTERN (def_insn), 0, i);
           if (GET_CODE (s_expr) != SET)
             continue;
+	  if (!REG_P (SET_DEST (s_expr)))
+	    continue;
 
           if (sub_rtx == NULL)
             sub_rtx = &XVECEXP (PATTERN (def_insn), 0, i);
@@ -686,14 +689,12 @@ get_sub_rtx (rtx_insn *def_insn)
         }
     }
   else if (code == SET)
-    sub_rtx = &PATTERN (def_insn);
-  else
     {
-      /* It is not a PARALLEL or a SET, what could it be ? */
-      return NULL;
+	rtx s_expr = PATTERN (def_insn);
+	if (REG_P (SET_DEST (s_expr)))
+	  sub_rtx = &PATTERN (def_insn);
     }
 
-  gcc_assert (sub_rtx != NULL);
   return sub_rtx;
 }
 
@@ -712,13 +713,12 @@ merge_def_and_ext (ext_cand *cand, rtx_insn *def_insn, ext_state *state)
   if (sub_rtx == NULL)
     return false;
 
-  if (REG_P (SET_DEST (*sub_rtx))
-      && (GET_MODE (SET_DEST (*sub_rtx)) == ext_src_mode
+  if (GET_MODE (SET_DEST (*sub_rtx)) == ext_src_mode
 	  || ((state->modified[INSN_UID (def_insn)].kind
 	       == (cand->code == ZERO_EXTEND
 		   ? EXT_MODIFIED_ZEXT : EXT_MODIFIED_SEXT))
 	      && state->modified[INSN_UID (def_insn)].mode
-		 == ext_src_mode)))
+		 == ext_src_mode))
     {
       if (GET_MODE_UNIT_SIZE (GET_MODE (SET_DEST (*sub_rtx)))
 	  >= GET_MODE_UNIT_SIZE (cand->mode))
@@ -853,8 +853,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	 CAND->insn, then this transformation is not safe.  Note we have
 	 to test in the widened mode.  */
       rtx *dest_sub_rtx = get_sub_rtx (def_insn);
-      if (dest_sub_rtx == NULL
-	  || !REG_P (SET_DEST (*dest_sub_rtx)))
+      if (dest_sub_rtx == NULL)
 	return false;
 
       rtx tmp_reg = gen_rtx_REG (GET_MODE (SET_DEST (set)),
@@ -947,8 +946,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	    break;
 
 	  rtx *dest_sub_rtx2 = get_sub_rtx (def_insn2);
-	  if (dest_sub_rtx2 == NULL
-	      || !REG_P (SET_DEST (*dest_sub_rtx2)))
+	  if (dest_sub_rtx2 == NULL)
 	    break;
 
 	  /* On RISC machines we must make sure that changing the mode of

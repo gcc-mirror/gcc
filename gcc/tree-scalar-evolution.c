@@ -1,5 +1,5 @@
 /* Scalar evolution detector.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -2977,16 +2977,12 @@ gather_stats_on_scev_database (void)
 void
 scev_initialize (void)
 {
-  class loop *loop;
-
   gcc_assert (! scev_initialized_p ());
 
   scalar_evolution_info = hash_table<scev_info_hasher>::create_ggc (100);
 
-  FOR_EACH_LOOP (loop, 0)
-    {
-      loop->nb_iterations = NULL_TREE;
-    }
+  for (auto loop : loops_list (cfun, 0))
+    loop->nb_iterations = NULL_TREE;
 }
 
 /* Return true if SCEV is initialized.  */
@@ -3015,14 +3011,10 @@ scev_reset_htab (void)
 void
 scev_reset (void)
 {
-  class loop *loop;
-
   scev_reset_htab ();
 
-  FOR_EACH_LOOP (loop, 0)
-    {
-      loop->nb_iterations = NULL_TREE;
-    }
+  for (auto loop : loops_list (cfun, 0))
+    loop->nb_iterations = NULL_TREE;
 }
 
 /* Return true if the IV calculation in TYPE can overflow based on the knowledge
@@ -3039,17 +3031,26 @@ iv_can_overflow_p (class loop *loop, tree type, tree base, tree step)
   widest_int nit;
   wide_int base_min, base_max, step_min, step_max, type_min, type_max;
   signop sgn = TYPE_SIGN (type);
+  value_range r;
 
   if (integer_zerop (step))
     return false;
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (base))
-      || get_range_info (base, &base_min, &base_max) != VR_RANGE)
+      || !get_range_query (cfun)->range_of_expr (r, base)
+      || r.kind () != VR_RANGE)
     return true;
 
+  base_min = r.lower_bound ();
+  base_max = r.upper_bound ();
+
   if (!INTEGRAL_TYPE_P (TREE_TYPE (step))
-      || get_range_info (step, &step_min, &step_max) != VR_RANGE)
+      || !get_range_query (cfun)->range_of_expr (r, step)
+      || r.kind () != VR_RANGE)
     return true;
+
+  step_min = r.lower_bound ();
+  step_max = r.upper_bound ();
 
   if (!get_max_loop_iterations (loop, &nit))
     return true;

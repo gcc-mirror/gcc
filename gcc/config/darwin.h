@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 1989-2020 Free Software Foundation, Inc.
+   Copyright (C) 1989-2021 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -132,6 +132,7 @@ extern GTY(()) int darwin_ms_struct;
 "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} \
    %<gsplit-dwarf",							\
 "%{gused:-g -feliminate-unused-debug-symbols} %<gused",			\
+"%{rpath*: -Xlinker -rpath -Xlinker %*}",					\
 "%{shared:-Zdynamiclib} %<shared",					\
 "%{static:%{Zdynamic:%e conflicting code gen style switches are used}}",\
 "%{y*:%nthe y option is obsolete and ignored} %<y*",			\
@@ -230,6 +231,7 @@ extern GTY(()) int darwin_ms_struct;
       %{%:sanitize(address): -lasan } \
       %{%:sanitize(undefined): -lubsan } \
       %(link_ssp) \
+      %:version-compare(>< 10.6 10.7 mmacosx-version-min= -ld10-uwfef.o) \
       %(link_gcc_c_sequence) \
     }}}\
     %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*} %{F*} "\
@@ -237,26 +239,34 @@ extern GTY(()) int darwin_ms_struct;
     DARWIN_NOPIE_SPEC \
     DARWIN_RDYNAMIC \
     DARWIN_NOCOMPACT_UNWIND \
-    "}}}}}}} %<pie %<no-pie %<rdynamic %<X "
+    "}}}}}}} %<pie %<no-pie %<rdynamic %<X %<rpath "
 
-#define DSYMUTIL "\ndsymutil"
+/* Spec that controls whether the debug linker is run automatically for
+   a link step.  This needs to be done if there is a source file on the
+   command line which will result in a temporary object (and debug is
+   enabled).  */
 
 #define DSYMUTIL_SPEC \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{v} \
-    %{gdwarf-2:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}\
-    %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm: \
-    %{gdwarf-2:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}"
+    %{g*:%{!gctf:%{!gbtf:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}}}\
+    %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s|.f|.f90|\
+      .f95|.f03|.f77|.for|.F|.F90|.F95|.F03: \
+    %{g*:%{!gctf:%{!gbtf:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}}}"
 
 #define LINK_COMMAND_SPEC LINK_COMMAND_SPEC_A DSYMUTIL_SPEC
 
 /* Tell collect2 to run dsymutil for us as necessary.  */
 #define COLLECT_RUN_DSYMUTIL 1
 
-/* We only want one instance of %G, since libSystem (Darwin's -lc) does not depend
-   on libgcc.  */
+/* Fix PR47558 by linking against libSystem ahead of libgcc. See also
+   PR 80556 and the fallout from this.  */
+
 #undef  LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC "%G %{!nolibc:%L}"
+#define LINK_GCC_C_SEQUENCE_SPEC \
+"%{!static:%{!static-libgcc: \
+    %:version-compare(>= 10.6 mmacosx-version-min= -lSystem) } } \
+  %G %{!nolibc:%L}"
 
 /* ld64 supports a sysroot, it just has a different name and there's no easy
    way to check for it at config time.  */
@@ -472,21 +482,29 @@ extern GTY(()) int darwin_ms_struct;
   %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
   %{static}" ASM_MMACOSX_VERSION_MIN_SPEC
 
-/* Default ASM_DEBUG_SPEC.  Darwin's as cannot currently produce dwarf
-   debugging data.  */
-
+#ifdef HAVE_AS_STABS_DIRECTIVE
+/* We only pass a debug option to the assembler if that supports stabs, since
+   dwarf is not uniformly supported in the assemblers.  */
 #define ASM_DEBUG_SPEC  "%{g*:%{%:debug-level-gt(0):%{!gdwarf*:--gstabs}}}"
-#define ASM_DEBUG_OPTION_SPEC ""
+#else
+#define ASM_DEBUG_SPEC  ""
+#endif
+
+#undef  ASM_DEBUG_OPTION_SPEC
+#define ASM_DEBUG_OPTION_SPEC	""
+
 #define ASM_FINAL_SPEC \
   "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} %<gsplit-dwarf"
 
-/* We still allow output of STABS if the assembler supports it.  */
-#ifdef HAVE_AS_STABS_DIRECTIVE
-#define DBX_DEBUGGING_INFO 1
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-#endif
+/* We now require C++11 to bootstrap and newer tools than those based on
+   stabs, so require DWARF-2, even if stabs is supported by the assembler.  */
 
 #define DWARF2_DEBUGGING_INFO 1
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
+#ifdef HAVE_AS_STABS_DIRECTIVE
+#define DBX_DEBUGGING_INFO 1
+#endif
 
 #define DEBUG_FRAME_SECTION	  "__DWARF,__debug_frame,regular,debug"
 #define DEBUG_INFO_SECTION	  "__DWARF,__debug_info,regular,debug"
@@ -593,6 +611,11 @@ extern GTY(()) int darwin_ms_struct;
 
 /* Make an EH (personality or LDSA) symbol indirect as needed.  */
 #define TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT darwin_make_eh_symbol_indirect
+
+/* Some of Darwin's unwinders need current frame address state to be reset
+   after a DW_CFA_restore_state recovers the register values.  */
+#undef TARGET_ASM_SHOULD_RESTORE_CFA_STATE
+#define TARGET_ASM_SHOULD_RESTORE_CFA_STATE darwin_should_restore_cfa_state
 
 /* Our profiling scheme doesn't LP labels and counter words.  */
 
@@ -1060,6 +1083,9 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0
 
+#undef STACK_CHECK_STATIC_BUILTIN
+#define STACK_CHECK_STATIC_BUILTIN 1
+
 /* When building cross-compilers (and native crosses) we shall default to 
    providing an osx-version-min of this unless overridden by the User.
    10.5 is the only version that fully supports all our archs so that's the
@@ -1071,16 +1097,29 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 /* Later versions of ld64 support coalescing weak code/data without requiring
    that they be placed in specially identified sections.  This is the earliest
    _tested_ version known to support this so far.  */
-#define MIN_LD64_NO_COAL_SECTS "236.4"
+#define MIN_LD64_NO_COAL_SECTS "236.3"
 
 /* From at least version 62.1, ld64 can build symbol indirection stubs as
    needed, and there is no need for the compiler to emit them.  */
 #define MIN_LD64_OMIT_STUBS "62.1"
 
+/* Emit start labels for init and term sections from this version.  */
+#define MIN_LD64_INIT_TERM_START_LABELS "136.0"
+
+/* If we have no definition for the linker version, pick the minimum version
+   that will bootstrap the compiler.  */
 #ifndef LD64_VERSION
-#define LD64_VERSION "62.1"
-#else
-#define DEF_LD64 LD64_VERSION
+# ifndef  DEF_LD64
+#  define LD64_VERSION "85.2.1"
+# else
+#  define LD64_VERSION DEF_LD64
+# endif
 #endif
+
+/* CTF and BTF support.  */
+#undef CTF_INFO_SECTION_NAME
+#define CTF_INFO_SECTION_NAME "__CTF_BTF,__ctf,regular,debug"
+#undef BTF_INFO_SECTION_NAME
+#define BTF_INFO_SECTION_NAME "__CTF_BTF,__btf,regular,debug"
 
 #endif /* CONFIG_DARWIN_H */

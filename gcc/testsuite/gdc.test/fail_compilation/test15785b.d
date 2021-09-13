@@ -1,11 +1,11 @@
-// REQUIRED_ARGS: -de
+// REQUIRED_ARGS:
 // PERMUTE_ARGS:
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test15785b.d(15): Deprecation: imports.test15785.Base.T is not visible from module test15785b
-fail_compilation/test15785b.d(16): Deprecation: imports.test15785.Base.T is not visible from module test15785b
-fail_compilation/test15785b.d(17): Deprecation: imports.test15785.IBase2.T is not visible from module test15785b
+fail_compilation/test15785b.d(15): Error: `imports.test15785.Base.T` is not visible from module `test15785b`
+fail_compilation/test15785b.d(16): Error: `imports.test15785.Base.T` is not visible from module `test15785b`
+fail_compilation/test15785b.d(17): Error: `imports.test15785.IBase2.T` is not visible from module `test15785b`
 ---
 */
 import imports.test15785;

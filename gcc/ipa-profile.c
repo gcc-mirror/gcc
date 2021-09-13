@@ -1,5 +1,5 @@
 /* Basic IPA optimizations based on profile.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -740,10 +740,10 @@ check_argument_count (struct cgraph_node *n, struct cgraph_edge *e)
 {
   if (!ipa_node_params_sum || !ipa_edge_args_sum)
     return true;
-  class ipa_node_params *info = IPA_NODE_REF (n->function_symbol ());
+  ipa_node_params *info = ipa_node_params_sum->get (n->function_symbol ());
   if (!info)
     return true;
-  ipa_edge_args *e_info = IPA_EDGE_REF (e);
+  ipa_edge_args *e_info = ipa_edge_args_sum->get (e);
   if (!e_info)
     return true;
   if (ipa_get_param_count (info) != ipa_get_cs_argument_count (e_info)

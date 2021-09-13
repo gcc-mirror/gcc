@@ -1,6 +1,6 @@
 // Mathematical Special Functions for -*- C++ -*-
 
-// Copyright (C) 2006-2020 Free Software Foundation, Inc.
+// Copyright (C) 2006-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1196,7 +1196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __detail::__sph_neumann<__type>(__n, __x);
     }
 
-  // @} group mathsf
+  /// @} group mathsf
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
@@ -1380,7 +1380,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__detail::__hyperg<__type>(__a, __b, __c, __x);
     }
 
-  // @}
+  /// @}
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx
 #endif // __STRICT_ANSI__

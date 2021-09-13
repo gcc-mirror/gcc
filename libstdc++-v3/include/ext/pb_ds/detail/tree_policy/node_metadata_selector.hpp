@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -96,7 +96,7 @@ namespace __gnu_pbds
     public:
       typedef typename tree_metadata_helper<__node_u, null_update>::type type;
     };
-    //@}
+    ///@}
   } // namespace detail
 } // namespace __gnu_pbds
 

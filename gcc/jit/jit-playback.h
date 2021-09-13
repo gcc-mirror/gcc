@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -271,7 +271,12 @@ private:
   source_file *
   get_source_file (const char *filename);
 
+  tree
+  get_tree_node_for_type (enum gcc_jit_types type_);
+
   void handle_locations ();
+
+  void init_types ();
 
   const char * get_path_c_file () const;
   const char * get_path_s_file () const;

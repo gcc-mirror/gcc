@@ -1,5 +1,5 @@
 /* Callgraph summary data structure.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Contributed by Martin Liska
 
 This file is part of GCC.
@@ -191,7 +191,7 @@ public:
   template<typename Arg, bool (*f)(const T &, Arg)>
   void traverse (Arg a) const
   {
-    m_map.traverse <f> (a);
+    m_map.template traverse <f> (a);
   }
 
   /* Getter for summary callgraph node pointer.  If a summary for a node
@@ -690,7 +690,7 @@ public:
   template<typename Arg, bool (*f)(const T &, Arg)>
   void traverse (Arg a) const
   {
-    m_map.traverse <f> (a);
+    m_map.template traverse <f> (a);
   }
 
   /* Getter for summary callgraph edge pointer.

@@ -1,7 +1,7 @@
 /* An experimental state machine, for tracking bad calls from within
    signal handlers.
 
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -80,13 +80,6 @@ public:
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
 		const gimple *stmt) const FINAL OVERRIDE;
-
-  void on_condition (sm_context *sm_ctxt,
-		     const supernode *node,
-		     const gimple *stmt,
-		     tree lhs,
-		     enum tree_code op,
-		     tree rhs) const FINAL OVERRIDE;
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
 
@@ -213,10 +206,10 @@ update_model_for_signal_handler (region_model *model,
 
 /* Custom exploded_edge info: entry into a signal-handler.  */
 
-class signal_delivery_edge_info_t : public exploded_edge::custom_info_t
+class signal_delivery_edge_info_t : public custom_edge_info
 {
 public:
-  void print (pretty_printer *pp) FINAL OVERRIDE
+  void print (pretty_printer *pp) const FINAL OVERRIDE
   {
     pp_string (pp, "signal delivered");
   }
@@ -227,20 +220,24 @@ public:
     return custom_obj;
   }
 
-  void update_model (region_model *model,
-		     const exploded_edge &eedge) FINAL OVERRIDE
+  bool update_model (region_model *model,
+		     const exploded_edge *eedge,
+		     region_model_context *) const FINAL OVERRIDE
   {
-    update_model_for_signal_handler (model, eedge.m_dest->get_function ());
+    gcc_assert (eedge);
+    update_model_for_signal_handler (model, eedge->m_dest->get_function ());
+    return true;
   }
 
   void add_events_to_path (checker_path *emission_path,
 			   const exploded_edge &eedge ATTRIBUTE_UNUSED)
-    FINAL OVERRIDE
+    const FINAL OVERRIDE
   {
     emission_path->add_event
-      (new custom_event (UNKNOWN_LOCATION, NULL_TREE, 0,
-			 "later on,"
-			 " when the signal is delivered to the process"));
+      (new precanned_custom_event
+       (UNKNOWN_LOCATION, NULL_TREE, 0,
+	"later on,"
+	" when the signal is delivered to the process"));
   }
 };
 
@@ -360,20 +357,6 @@ signal_state_machine::on_stmt (sm_context *sm_ctxt,
     }
 
   return false;
-}
-
-/* Implementation of state_machine::on_condition vfunc for
-   signal_state_machine.  */
-
-void
-signal_state_machine::on_condition (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
-				    const supernode *node ATTRIBUTE_UNUSED,
-				    const gimple *stmt ATTRIBUTE_UNUSED,
-				    tree lhs ATTRIBUTE_UNUSED,
-				    enum tree_code op ATTRIBUTE_UNUSED,
-				    tree rhs ATTRIBUTE_UNUSED) const
-{
-  // Empty
 }
 
 bool

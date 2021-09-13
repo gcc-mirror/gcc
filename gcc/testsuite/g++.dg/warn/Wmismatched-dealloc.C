@@ -12,9 +12,9 @@ void* A (mydealloc, 2) myalloc (void*);
 
 
 void* A (operator delete, 1)
-  bad_new (size_t);                     // { dg-error "attribute argument 1 is ambiguous" }
+  bad_new (size_t);                     // { dg-error "attribute argument 1 is ambiguous" "" { target c++14 } }
 void* A (operator delete[], 1)
-  bad_array_new (size_t);               // { dg-error "attribute argument 1 is ambiguous" }
+  bad_array_new (size_t);               // { dg-error "attribute argument 1 is ambiguous" "" { target c++14 } }
 
 void my_delete (const char*, void*);
 void my_array_delete (const char*, void*);

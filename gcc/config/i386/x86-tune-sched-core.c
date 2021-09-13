@@ -1,5 +1,5 @@
 /* Scheduler hooks for IA-32 which implement bdver1-4 specific logic.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

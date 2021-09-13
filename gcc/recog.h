@@ -1,5 +1,5 @@
 /* Declarations for interface to insn recognizer and insn-output.c.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -200,11 +200,11 @@ extern void temporarily_undo_changes (int);
 extern void redo_changes (int);
 extern int constrain_operands (int, alternative_mask);
 extern int constrain_operands_cached (rtx_insn *, int);
-extern int memory_address_addr_space_p (machine_mode, rtx, addr_space_t);
+extern bool memory_address_addr_space_p (machine_mode, rtx, addr_space_t);
 #define memory_address_p(mode,addr) \
 	memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
-extern int strict_memory_address_addr_space_p (machine_mode, rtx,
-					       addr_space_t);
+extern bool strict_memory_address_addr_space_p (machine_mode, rtx,
+						addr_space_t);
 #define strict_memory_address_p(mode,addr) \
 	strict_memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
 extern int validate_replace_rtx_subexp (rtx, rtx, rtx_insn *, rtx *);
@@ -218,9 +218,9 @@ extern int num_changes_pending (void);
 extern bool reg_fits_class_p (const_rtx, reg_class_t, int, machine_mode);
 extern bool valid_insn_p (rtx_insn *);
 
-extern int offsettable_memref_p (rtx);
-extern int offsettable_nonstrict_memref_p (rtx);
-extern int offsettable_address_addr_space_p (int, machine_mode, rtx,
+extern bool offsettable_memref_p (rtx);
+extern bool offsettable_nonstrict_memref_p (rtx);
+extern bool offsettable_address_addr_space_p (int, machine_mode, rtx,
 					     addr_space_t);
 #define offsettable_address_p(strict,mode,addr) \
 	offsettable_address_addr_space_p ((strict), (mode), (addr), \
@@ -393,7 +393,7 @@ which_op_alt ()
 /* A table defined in insn-output.c that give information about
    each insn-code value.  */
 
-typedef int (*insn_operand_predicate_fn) (rtx, machine_mode);
+typedef bool (*insn_operand_predicate_fn) (rtx, machine_mode);
 typedef const char * (*insn_output_fn) (rtx *, rtx_insn *);
 
 struct insn_gen_fn
@@ -547,12 +547,18 @@ class insn_change_watermark
 {
 public:
   insn_change_watermark () : m_old_num_changes (num_validated_changes ()) {}
-  ~insn_change_watermark () { cancel_changes (m_old_num_changes); }
+  ~insn_change_watermark ();
   void keep () { m_old_num_changes = num_validated_changes (); }
 
 private:
   int m_old_num_changes;
 };
+
+inline insn_change_watermark::~insn_change_watermark ()
+{
+  if (m_old_num_changes < num_validated_changes ())
+    cancel_changes (m_old_num_changes);
+}
 
 #endif
 

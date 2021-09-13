@@ -271,7 +271,7 @@ TypeInfo_Struct fakeEntryTI(const TypeInfo keyti, const TypeInfo valti)
     // we don't expect the Entry objects to be used outside of this module, so we have control
     // over the non-usage of the callback methods and other entries and can keep these null
     // xtoHash, xopEquals, xopCmp, xtoString and xpostblit
-    ti.m_RTInfo = null;
+    ti.m_RTInfo = rtinfoNoPointers;
     immutable entrySize = talign(kti.tsize, vti.talign) + vti.tsize;
     ti.m_init = (cast(ubyte*) null)[0 .. entrySize]; // init length, but not ptr
 

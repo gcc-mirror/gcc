@@ -9,6 +9,7 @@ version (linux):
 extern (C):
 nothrow:
 @nogc:
+@system:
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
@@ -236,14 +237,14 @@ static if (__USE_GNU)
     enum LM_ID_NEWLM = -1;
 }
 
-// void* dlopen(in char* __file, int __mode); // POSIX
+// void* dlopen(const scope char* __file, int __mode); // POSIX
 // int dlclose(void* __handle); // POSIX
-// void* dlsym(void* __handle, in char* __name); // POSIX
+// void* dlsym(void* __handle, const scope char* __name); // POSIX
 
 static if (__USE_GNU)
 {
-    void* dlmopen(Lmid_t __nsid, in char* __file, int __mode);
-    void* dlvsym(void* __handle, in char* __name, in char* __version);
+    void* dlmopen(Lmid_t __nsid, const scope char* __file, int __mode);
+    void* dlvsym(void* __handle, const scope char* __name, const scope char* __version);
 }
 
 // char* dlerror(); // POSIX
@@ -258,7 +259,7 @@ static if (__USE_GNU)
         void* dli_saddr;
     }
 
-    int dladdr(in void* __address, Dl_info* __info);
+    int dladdr(const scope void* __address, Dl_info* __info);
     int dladdr1(void* __address, Dl_info* __info, void** __extra_info, int __flags);
 
     enum

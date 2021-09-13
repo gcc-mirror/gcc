@@ -1,5 +1,5 @@
 /* __builtin_object_size (ptr, object_size_type) computation
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -1304,45 +1304,6 @@ fini_object_sizes (void)
     }
 }
 
-
-/* Simple pass to optimize all __builtin_object_size () builtins.  */
-
-namespace {
-
-const pass_data pass_data_object_sizes =
-{
-  GIMPLE_PASS, /* type */
-  "objsz", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_object_sizes : public gimple_opt_pass
-{
-public:
-  pass_object_sizes (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_object_sizes, ctxt), insert_min_max_p (false)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_object_sizes (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
-    {
-      gcc_assert (n == 0);
-      insert_min_max_p = param;
-    }
-  virtual unsigned int execute (function *);
-
- private:
-  /* Determines whether the pass instance creates MIN/MAX_EXPRs.  */
-  bool insert_min_max_p;
-}; // class pass_object_sizes
-
 /* Dummy valueize function.  */
 
 static tree
@@ -1351,8 +1312,8 @@ do_valueize (tree t)
   return t;
 }
 
-unsigned int
-pass_object_sizes::execute (function *fun)
+static unsigned int
+object_sizes_execute (function *fun, bool insert_min_max_p)
 {
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
@@ -1453,10 +1414,81 @@ pass_object_sizes::execute (function *fun)
   return 0;
 }
 
+/* Simple pass to optimize all __builtin_object_size () builtins.  */
+
+namespace {
+
+const pass_data pass_data_object_sizes =
+{
+  GIMPLE_PASS, /* type */
+  "objsz", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  PROP_objsz, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_object_sizes : public gimple_opt_pass
+{
+public:
+  pass_object_sizes (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_object_sizes, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_object_sizes (m_ctxt); }
+  virtual unsigned int execute (function *fun)
+  {
+    return object_sizes_execute (fun, false);
+  }
+}; // class pass_object_sizes
+
 } // anon namespace
 
 gimple_opt_pass *
 make_pass_object_sizes (gcc::context *ctxt)
 {
   return new pass_object_sizes (ctxt);
+}
+
+/* Early version of pass to optimize all __builtin_object_size () builtins.  */
+
+namespace {
+
+const pass_data pass_data_early_object_sizes =
+{
+  GIMPLE_PASS, /* type */
+  "early_objsz", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_early_object_sizes : public gimple_opt_pass
+{
+public:
+  pass_early_object_sizes (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_early_object_sizes, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *fun)
+  {
+    return object_sizes_execute (fun, true);
+  }
+}; // class pass_object_sizes
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_early_object_sizes (gcc::context *ctxt)
+{
+  return new pass_early_object_sizes (ctxt);
 }

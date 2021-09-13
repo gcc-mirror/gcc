@@ -1,15 +1,16 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/disable.d(50): Error: function disable.DisabledOpAssign.opAssign is not callable because it is annotated with @disable
-fail_compilation/disable.d(53): Error: function disable.DisabledPostblit.opAssign is not callable because it is annotated with @disable
-fail_compilation/disable.d(56): Error: function disable.HasDtor.opAssign is not callable because it is annotated with @disable
-fail_compilation/disable.d(60): Error: generated function disable.Nested!(DisabledOpAssign).Nested.opAssign is not callable because it is annotated with @disable
-fail_compilation/disable.d(63): Error: generated function disable.Nested!(DisabledPostblit).Nested.opAssign is not callable because it is annotated with @disable
-fail_compilation/disable.d(66): Error: generated function disable.Nested!(HasDtor).Nested.opAssign is not callable because it is annotated with @disable
-fail_compilation/disable.d(70): Error: generated function disable.NestedDtor!(DisabledOpAssign).NestedDtor.opAssign is not callable because it is annotated with @disable
-fail_compilation/disable.d(73): Error: generated function disable.NestedDtor!(DisabledPostblit).NestedDtor.opAssign is not callable because it is annotated with @disable
-fail_compilation/disable.d(76): Error: generated function disable.NestedDtor!(HasDtor).NestedDtor.opAssign is not callable because it is annotated with @disable
+fail_compilation/disable.d(56): Error: function `disable.DisabledOpAssign.opAssign` cannot be used because it is annotated with `@disable`
+fail_compilation/disable.d(59): Error: function `disable.DisabledPostblit.opAssign` cannot be used because it is annotated with `@disable`
+fail_compilation/disable.d(62): Error: function `disable.HasDtor.opAssign` cannot be used because it is annotated with `@disable`
+fail_compilation/disable.d(66): Error: generated function `disable.Nested!(DisabledOpAssign).Nested.opAssign` cannot be used because it is annotated with `@disable`
+fail_compilation/disable.d(69): Error: generated function `disable.Nested!(DisabledPostblit).Nested.opAssign` cannot be used because it is annotated with `@disable`
+fail_compilation/disable.d(72): Error: generated function `disable.Nested!(HasDtor).Nested.opAssign` cannot be used because it is annotated with `@disable`
+fail_compilation/disable.d(76): Error: generated function `disable.NestedDtor!(DisabledOpAssign).NestedDtor.opAssign` cannot be used because it is annotated with `@disable`
+fail_compilation/disable.d(79): Error: generated function `disable.NestedDtor!(DisabledPostblit).NestedDtor.opAssign` cannot be used because it is annotated with `@disable`
+fail_compilation/disable.d(82): Error: generated function `disable.NestedDtor!(HasDtor).NestedDtor.opAssign` cannot be used because it is annotated with `@disable`
+fail_compilation/disable.d(84): Error: enum member `disable.Enum1.value` cannot be used because it is annotated with `@disable`
 ---
  */
 struct DisabledOpAssign {
@@ -44,6 +45,11 @@ struct NestedDtor (T)
     ~this() {}
 }
 
+enum Enum1
+{
+    @disable value
+}
+
 void main ()
 {
     DisabledOpAssign o;
@@ -74,4 +80,6 @@ void main ()
 
     NestedDtor!(HasDtor) ndd;
     ndd = NestedDtor!(HasDtor)();
+
+    auto v1 = Enum1.value;
 }

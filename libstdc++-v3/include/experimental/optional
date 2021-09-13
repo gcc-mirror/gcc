@@ -1,6 +1,6 @@
 // <optional> -*- C++ -*-
 
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,6 @@
 
 #if __cplusplus >= 201402L
 
-#include <utility>
 #include <type_traits>
 #include <stdexcept>
 #include <new>
@@ -40,6 +39,7 @@
 #include <bits/functexcept.h>
 #include <bits/functional_hash.h>
 #include <bits/enable_special_members.h>
+#include <bits/move.h>
 #include <experimental/bits/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -114,12 +114,8 @@ inline namespace fundamentals_v1
 
   /// @cond undocumented
 
-  void
-  __throw_bad_optional_access(const char*)
-  __attribute__((__noreturn__));
-
   // XXX Does not belong here.
-  inline void
+  [[noreturn]] inline void
   __throw_bad_optional_access(const char* __s)
   { _GLIBCXX_THROW_OR_ABORT(bad_optional_access(__s)); }
 
@@ -674,41 +670,37 @@ inline namespace fundamentals_v1
       constexpr const _Tp&
       value() const&
       {
-	return this->_M_is_engaged()
-	  ?  this->_M_get()
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
-	     this->_M_get());
+	if (this->_M_is_engaged())
+	  return this->_M_get();
+	__throw_bad_optional_access("Attempt to access value of a "
+				    "disengaged optional object");
       }
 
       constexpr _Tp&
       value()&
       {
-	return this->_M_is_engaged()
-	  ?  this->_M_get()
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
-	     this->_M_get());
+	if (this->_M_is_engaged())
+	  return this->_M_get();
+	__throw_bad_optional_access("Attempt to access value of a "
+				    "disengaged optional object");
       }
 
       constexpr _Tp&&
       value()&&
       {
-	return this->_M_is_engaged()
-	  ?  std::move(this->_M_get())
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
-	     std::move(this->_M_get()));
+	if (this->_M_is_engaged())
+	  return std::move(this->_M_get());
+	__throw_bad_optional_access("Attempt to access value of a "
+				    "disengaged optional object");
       }
 
       constexpr const _Tp&&
       value() const&&
       {
-	return this->_M_is_engaged()
-	  ?  std::move(this->_M_get())
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
-	     std::move(this->_M_get()));
+	if (this->_M_is_engaged())
+	  return std::move(this->_M_get());
+	__throw_bad_optional_access("Attempt to access value of a "
+				    "disengaged optional object");
       }
 
       template<typename _Up>
@@ -719,9 +711,10 @@ inline namespace fundamentals_v1
 			       is_convertible<_Up&&, _Tp>>(),
 			"Cannot return value");
 
-	  return this->_M_is_engaged()
-	    ? this->_M_get()
-	    : static_cast<_Tp>(std::forward<_Up>(__u));
+	  if (this->_M_is_engaged())
+	    return this->_M_get();
+	  else
+	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
       template<typename _Up>
@@ -732,9 +725,10 @@ inline namespace fundamentals_v1
 			       is_convertible<_Up&&, _Tp>>(),
 			"Cannot return value" );
 
-	  return this->_M_is_engaged()
-	    ? std::move(this->_M_get())
-	    : static_cast<_Tp>(std::forward<_Up>(__u));
+	  if (this->_M_is_engaged())
+	    return std::move(this->_M_get());
+	  else
+	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
     };
 
@@ -910,8 +904,8 @@ inline namespace fundamentals_v1
     make_optional(_Tp&& __t)
     { return optional<decay_t<_Tp>> { std::forward<_Tp>(__t) }; }
 
-  // @} relates experimental::optional
-  // @} group optional
+  /// @} relates experimental::optional
+  /// @} group optional
 } // namespace fundamentals_v1
 } // namespace experimental
 

@@ -1,6 +1,6 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001-2020 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -410,8 +410,7 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
     set select_compile "v3_target_compile"
     set options ""
     if { $extra_tool_flags != "" } {
-	verbose -log "extra_tool_flags are:"
-	verbose -log -- $extra_tool_flags
+	verbose -log "extra_tool_flags are: $extra_tool_flags"
 	if { [string first "-x c" $extra_tool_flags ] != -1 } {
 	    verbose -log "compiling and executing as C, not C++"
 	    set edit_tool_flags $extra_tool_flags
@@ -1328,6 +1327,14 @@ proc check_effective_target_ieee-floats { } {
     return [check_v3_target_prop_cached et_ieee_floats {
 	set cond "_GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64"
 	return [v3_check_preprocessor_condition ieee_floats $cond]
+    }]
+}
+
+# Return 1 if Networking TS net::ip features are available.
+proc check_effective_target_net_ts_ip { } {
+    return [check_v3_target_prop_cached et_net_ts_ip {
+	set cond "__has_include(<netinet/in.h>)"
+	return [v3_check_preprocessor_condition net_ts_ip $cond]
     }]
 }
 

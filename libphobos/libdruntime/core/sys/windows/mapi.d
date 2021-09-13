@@ -9,8 +9,9 @@
  */
 module core.sys.windows.mapi;
 version (Windows):
+@system:
 
-private import core.sys.windows.windef;
+import core.sys.windows.windef;
 
 // FIXME: check types and grouping of constants
 

@@ -12,14 +12,11 @@
  * Standards: ISO/IEC 9899:1999 (E)
  */
 
-/* NOTE: This file has been patched from the original DMD distribution to
- * work with the GDC compiler.
- */
 module core.stdc.wchar_;
 
-private import core.stdc.config;
-private import core.stdc.stdarg; // for va_list
-private import core.stdc.stdio;  // for FILE, not exposed per spec
+import core.stdc.config;
+import core.stdc.stdarg; // for va_list
+import core.stdc.stdio;  // for FILE, not exposed per spec
 public import core.stdc.stddef;  // for wchar_t
 public import core.stdc.time;    // for tm
 public import core.stdc.stdint;  // for WCHAR_MIN, WCHAR_MAX
@@ -131,44 +128,29 @@ alias wchar_t wint_t;
 enum wchar_t WEOF = 0xFFFF;
 
 ///
-int fwprintf(FILE* stream, in wchar_t* format, ...);
+int fwprintf(FILE* stream, const scope wchar_t* format, scope const ...);
 ///
-int fwscanf(FILE* stream, in wchar_t* format, ...);
-int swscanf(in wchar_t* s, in wchar_t* format, ...);
+int fwscanf(FILE* stream, const scope wchar_t* format, scope ...);
 ///
-int vfwprintf(FILE* stream, in wchar_t* format, va_list arg);
+int swprintf(wchar_t* s, size_t n, const scope wchar_t* format, scope const ...);
 ///
-int vfwscanf(FILE* stream, in wchar_t* format, va_list arg);
-int vswscanf(in wchar_t* s, in wchar_t* format, va_list arg);
+int swscanf(const scope wchar_t* s, const scope wchar_t* format, scope ...);
 ///
-int vwprintf(in wchar_t* format, va_list arg);
+int vfwprintf(FILE* stream, const scope wchar_t* format, va_list arg);
 ///
-int vwscanf(in wchar_t* format, va_list arg);
+int vfwscanf(FILE* stream, const scope wchar_t* format, va_list arg);
 ///
-int wprintf(in wchar_t* format, ...);
+int vswprintf(wchar_t* s, size_t n, const scope wchar_t* format, va_list arg);
 ///
-int wscanf(in wchar_t* format, ...);
-
-/*
- * Windows has 2 versions of swprintf and vswprintf.  MinGW defaults to the
- * Microsoft signature.  Alias to match DMD/ANSI signature.
- */
-version (MinGW)
-{
-    ///
-    int _snwprintf(wchar_t* s, size_t n, in wchar_t* format, ...);
-    alias _snwprintf swprintf;
-    ///
-    int _vsnwprintf(wchar_t* s, size_t n, in wchar_t* format, va_list arg);
-    alias _vsnwprintf vswprintf;	
-}
-else
-{
-    ///
-    int swprintf(wchar_t* s, size_t n, in wchar_t* format, ...);
-    ///
-    int vswprintf(wchar_t* s, size_t n, in wchar_t* format, va_list arg);
-}
+int vswscanf(const scope wchar_t* s, const scope wchar_t* format, va_list arg);
+///
+int vwprintf(const scope wchar_t* format, va_list arg);
+///
+int vwscanf(const scope wchar_t* format, va_list arg);
+///
+int wprintf(const scope wchar_t* format, scope const ...);
+///
+int wscanf(const scope wchar_t* format, scope ...);
 
 // No unsafe pointer manipulation.
 @trusted
@@ -182,7 +164,7 @@ else
 ///
 wchar_t* fgetws(wchar_t* s, int n, FILE* stream);
 ///
-int      fputws(in wchar_t* s, FILE* stream);
+int      fputws(const scope wchar_t* s, FILE* stream);
 
 // No unsafe pointer manipulation.
 extern (D) @trusted
@@ -191,11 +173,12 @@ extern (D) @trusted
     wint_t getwchar()                     { return fgetwc(stdin);     }
     ///
     wint_t putwchar(wchar_t c)            { return fputwc(c,stdout);  }
-    ///
-    wint_t getwc(FILE* stream)            { return fgetwc(stream);    }
-    ///
-    wint_t putwc(wchar_t c, FILE* stream) { return fputwc(c, stream); }
 }
+
+///
+alias getwc = fgetwc;
+///
+alias putwc = fputwc;
 
 // No unsafe pointer manipulation.
 @trusted
@@ -215,19 +198,19 @@ extern (D) @trusted
 }
 
 ///
-double  wcstod(in wchar_t* nptr, wchar_t** endptr);
+double  wcstod(const scope wchar_t* nptr, wchar_t** endptr);
 ///
-float   wcstof(in wchar_t* nptr, wchar_t** endptr);
+float   wcstof(const scope wchar_t* nptr, wchar_t** endptr);
 ///
-real    wcstold(in wchar_t* nptr, wchar_t** endptr);
+real    wcstold(const scope wchar_t* nptr, wchar_t** endptr);
 ///
-c_long  wcstol(in wchar_t* nptr, wchar_t** endptr, int base);
+c_long  wcstol(const scope wchar_t* nptr, wchar_t** endptr, int base);
 ///
-long    wcstoll(in wchar_t* nptr, wchar_t** endptr, int base);
+long    wcstoll(const scope wchar_t* nptr, wchar_t** endptr, int base);
 ///
-c_ulong wcstoul(in wchar_t* nptr, wchar_t** endptr, int base);
+c_ulong wcstoul(const scope wchar_t* nptr, wchar_t** endptr, int base);
 ///
-ulong   wcstoull(in wchar_t* nptr, wchar_t** endptr, int base);
+ulong   wcstoull(const scope wchar_t* nptr, wchar_t** endptr, int base);
 
 ///
 pure wchar_t* wcscpy(return wchar_t* s1, scope const wchar_t* s2);
@@ -263,7 +246,7 @@ wchar_t* wcstok(return wchar_t* s1, scope const wchar_t* s2, wchar_t** ptr);
 pure size_t wcslen(scope const wchar_t* s);
 
 ///
-pure wchar_t* wmemchr(return const wchar_t* s, wchar_t c, size_t n);
+pure inout(wchar_t)* wmemchr(return inout wchar_t* s, wchar_t c, size_t n);
 ///
 pure int      wmemcmp(scope const wchar_t* s1, scope const wchar_t* s2, size_t n);
 ///
@@ -274,7 +257,7 @@ pure wchar_t* wmemmove(return wchar_t* s1, scope const wchar_t* s2, size_t n);
 pure wchar_t* wmemset(return wchar_t* s, wchar_t c, size_t n);
 
 ///
-size_t wcsftime(wchar_t* s, size_t maxsize, in wchar_t* format, in tm* timeptr);
+size_t wcsftime(wchar_t* s, size_t maxsize, const scope wchar_t* format, const scope tm* timeptr);
 
 version (Windows)
 {
@@ -298,14 +281,14 @@ version (Windows)
 }
 
 ///
-int    mbsinit(in mbstate_t* ps);
+int    mbsinit(const scope mbstate_t* ps);
 ///
-size_t mbrlen(in char* s, size_t n, mbstate_t* ps);
+size_t mbrlen(const scope char* s, size_t n, mbstate_t* ps);
 ///
-size_t mbrtowc(wchar_t* pwc, in char* s, size_t n, mbstate_t* ps);
+size_t mbrtowc(wchar_t* pwc, const scope char* s, size_t n, mbstate_t* ps);
 ///
 size_t wcrtomb(char* s, wchar_t wc, mbstate_t* ps);
 ///
-size_t mbsrtowcs(wchar_t* dst, in char** src, size_t len, mbstate_t* ps);
+size_t mbsrtowcs(wchar_t* dst, const scope char** src, size_t len, mbstate_t* ps);
 ///
-size_t wcsrtombs(char* dst, in wchar_t** src, size_t len, mbstate_t* ps);
+size_t wcsrtombs(char* dst, const scope wchar_t** src, size_t len, mbstate_t* ps);

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation for RISC-V.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -300,6 +300,19 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   true,						/* slow_unaligned_access */
 };
 
+/* Costs to use when optimizing for T-HEAD c906.  */
+static const struct riscv_tune_param thead_c906_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)}, /* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)}, /* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)}, /* fp_div */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)}, /* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)}, /* int_div */
+  1,            /* issue_rate */
+  3,            /* branch_cost */
+  5,            /* memory_cost */
+  false,            /* slow_unaligned_access */
+};
+
 /* Costs to use when optimizing for size.  */
 static const struct riscv_tune_param optimize_size_tune_info = {
   {COSTS_N_INSNS (1), COSTS_N_INSNS (1)},	/* fp_add */
@@ -348,8 +361,17 @@ static const struct riscv_tune_info riscv_tune_info_table[] = {
   { "sifive-3-series", generic, &rocket_tune_info },
   { "sifive-5-series", generic, &rocket_tune_info },
   { "sifive-7-series", sifive_7, &sifive_7_tune_info },
+  { "thead-c906", generic, &thead_c906_tune_info },
   { "size", generic, &optimize_size_tune_info },
 };
+
+/* Implement TARGET_MIN_ARITHMETIC_PRECISION.  */
+
+static unsigned int
+riscv_min_arithmetic_precision (void)
+{
+  return 32;
+}
 
 /* Return the riscv_tune_info entry for the given name string.  */
 
@@ -891,17 +913,13 @@ riscv_compressed_lw_address_p (rtx x)
   bool result = riscv_classify_address (&addr, x, GET_MODE (x),
 					reload_completed);
 
-  /* Before reload, assuming all load/stores of valid addresses get compressed
-     gives better code size than checking if the address is reg + small_offset
-     early on.  */
-  if (result && !reload_completed)
-    return true;
-
   /* Return false if address is not compressed_reg + small_offset.  */
   if (!result
       || addr.type != ADDRESS_REG
-      || (!riscv_compressed_reg_p (REGNO (addr.reg))
-	    && addr.reg != stack_pointer_rtx)
+      /* Before reload, assume all registers are OK.  */
+      || (reload_completed
+	  && !riscv_compressed_reg_p (REGNO (addr.reg))
+	  && addr.reg != stack_pointer_rtx)
       || !riscv_compressed_lw_offset_p (addr.offset))
     return false;
 
@@ -1075,6 +1093,15 @@ static rtx
 riscv_force_binary (machine_mode mode, enum rtx_code code, rtx x, rtx y)
 {
   return riscv_emit_binary (code, gen_reg_rtx (mode), x, y);
+}
+
+static rtx
+riscv_swap_instruction (rtx inst)
+{
+  gcc_assert (GET_MODE (inst) == SImode);
+  if (BYTES_BIG_ENDIAN)
+    inst = expand_unop (SImode, bswap_optab, inst, gen_reg_rtx (SImode), 1);
+  return inst;
 }
 
 /* Copy VALUE to a register and return that register.  If new pseudos
@@ -1528,6 +1555,28 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
 bool
 riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 {
+  /* Expand 
+       (set (reg:QI target) (mem:QI (address))) 
+     to
+       (set (reg:DI temp) (zero_extend:DI (mem:QI (address))))
+       (set (reg:QI target) (subreg:QI (reg:DI temp) 0))
+     with auto-sign/zero extend.  */
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && GET_MODE_SIZE (mode) < UNITS_PER_WORD
+      && can_create_pseudo_p ()
+      && MEM_P (src))
+    {
+      rtx temp_reg;
+      int zero_extend_p;
+
+      temp_reg = gen_reg_rtx (word_mode);
+      zero_extend_p = (LOAD_EXTEND_OP (mode) == ZERO_EXTEND);
+      emit_insn (gen_extend_insn (temp_reg, src, word_mode, mode, 
+				  zero_extend_p));
+      riscv_emit_move (dest, gen_lowpart (mode, temp_reg));
+      return true;
+    }
+
   if (!register_operand (dest, mode) && !reg_or_0_operand (src, mode))
     {
       rtx reg;
@@ -1708,6 +1757,13 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	 instructions it needs.  */
       if ((cost = riscv_address_insns (XEXP (x, 0), mode, true)) > 0)
 	{
+	  /* When optimizing for size, make uncompressible 32-bit addresses
+	     more expensive so that compressible 32-bit addresses are
+	     preferred.  */
+	  if (TARGET_RVC && !speed && riscv_mshorten_memrefs && mode == SImode
+	      && !riscv_compressed_lw_address_p (XEXP (x, 0)))
+	    cost++;
+
 	  *total = COSTS_N_INSNS (cost + tune_param->memory_cost);
 	  return true;
 	}
@@ -1932,7 +1988,7 @@ riscv_address_cost (rtx addr, machine_mode mode,
 rtx
 riscv_subword (rtx op, bool high_p)
 {
-  unsigned int byte = high_p ? UNITS_PER_WORD : 0;
+  unsigned int byte = (high_p != BYTES_BIG_ENDIAN) ? UNITS_PER_WORD : 0;
   machine_mode mode = GET_MODE (op);
 
   if (mode == VOIDmode)
@@ -3121,9 +3177,9 @@ riscv_legitimize_call_address (rtx addr)
    Assume that the areas do not overlap.  */
 
 static void
-riscv_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
+riscv_block_move_straight (rtx dest, rtx src, unsigned HOST_WIDE_INT length)
 {
-  HOST_WIDE_INT offset, delta;
+  unsigned HOST_WIDE_INT offset, delta;
   unsigned HOST_WIDE_INT bits;
   int i;
   enum machine_mode mode;
@@ -3169,8 +3225,8 @@ riscv_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
    register.  Store them in *LOOP_REG and *LOOP_MEM respectively.  */
 
 static void
-riscv_adjust_block_mem (rtx mem, HOST_WIDE_INT length,
-		       rtx *loop_reg, rtx *loop_mem)
+riscv_adjust_block_mem (rtx mem, unsigned HOST_WIDE_INT length,
+			rtx *loop_reg, rtx *loop_mem)
 {
   *loop_reg = copy_addr_to_reg (XEXP (mem, 0));
 
@@ -3185,11 +3241,11 @@ riscv_adjust_block_mem (rtx mem, HOST_WIDE_INT length,
    the memory regions do not overlap.  */
 
 static void
-riscv_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
-		      HOST_WIDE_INT bytes_per_iter)
+riscv_block_move_loop (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
+		       unsigned HOST_WIDE_INT bytes_per_iter)
 {
   rtx label, src_reg, dest_reg, final_src, test;
-  HOST_WIDE_INT leftover;
+  unsigned HOST_WIDE_INT leftover;
 
   leftover = length % bytes_per_iter;
   length -= leftover;
@@ -3216,10 +3272,7 @@ riscv_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 
   /* Emit the loop condition.  */
   test = gen_rtx_NE (VOIDmode, src_reg, final_src);
-  if (Pmode == DImode)
-    emit_jump_insn (gen_cbranchdi4 (test, src_reg, final_src, label));
-  else
-    emit_jump_insn (gen_cbranchsi4 (test, src_reg, final_src, label));
+  emit_jump_insn (gen_cbranch4 (Pmode, test, src_reg, final_src, label));
 
   /* Mop up any left-over bytes.  */
   if (leftover)
@@ -3236,16 +3289,17 @@ riscv_expand_block_move (rtx dest, rtx src, rtx length)
 {
   if (CONST_INT_P (length))
     {
-      HOST_WIDE_INT factor, align;
+      unsigned HOST_WIDE_INT hwi_length = UINTVAL (length);
+      unsigned HOST_WIDE_INT factor, align;
 
       align = MIN (MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), BITS_PER_WORD);
       factor = BITS_PER_WORD / align;
 
       if (optimize_function_for_size_p (cfun)
-	  && INTVAL (length) * factor * UNITS_PER_WORD > MOVE_RATIO (false))
+	  && hwi_length * factor * UNITS_PER_WORD > MOVE_RATIO (false))
 	return false;
 
-      if (INTVAL (length) <= RISCV_MAX_MOVE_BYTES_STRAIGHT / factor)
+      if (hwi_length <= (RISCV_MAX_MOVE_BYTES_STRAIGHT / factor))
 	{
 	  riscv_block_move_straight (dest, src, INTVAL (length));
 	  return true;
@@ -3255,7 +3309,8 @@ riscv_expand_block_move (rtx dest, rtx src, rtx length)
 	  unsigned min_iter_words
 	    = RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER / UNITS_PER_WORD;
 	  unsigned iter_words = min_iter_words;
-	  HOST_WIDE_INT bytes = INTVAL (length), words = bytes / UNITS_PER_WORD;
+	  unsigned HOST_WIDE_INT bytes = hwi_length;
+	  unsigned HOST_WIDE_INT words = bytes / UNITS_PER_WORD;
 
 	  /* Lengthen the loop body if it shortens the tail.  */
 	  for (unsigned i = min_iter_words; i < min_iter_words * 2 - 1; i++)
@@ -3552,7 +3607,7 @@ riscv_elf_select_rtx_section (machine_mode mode, rtx x,
 
   if (riscv_size_ok_for_small_data_p (GET_MODE_SIZE (mode)))
     {
-      if (strncmp (s->named.name, ".rodata.cst", strlen (".rodata.cst")) == 0)
+      if (startswith (s->named.name, ".rodata.cst"))
 	{
 	  /* Rename .rodata.cst* to .srodata.cst*. */
 	  char *name = (char *) alloca (strlen (s->named.name) + 2);
@@ -4928,7 +4983,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 					     gen_int_mode (lui_hi_chain_code, SImode));
 
       mem = adjust_address (m_tramp, SImode, 0);
-      riscv_emit_move (mem, lui_hi_chain);
+      riscv_emit_move (mem, riscv_swap_instruction (lui_hi_chain));
 
       /* Gen lui t0, hi(func).  */
       rtx hi_func = riscv_force_binary (SImode, PLUS, target_function,
@@ -4940,7 +4995,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 					    gen_int_mode (lui_hi_func_code, SImode));
 
       mem = adjust_address (m_tramp, SImode, 1 * GET_MODE_SIZE (SImode));
-      riscv_emit_move (mem, lui_hi_func);
+      riscv_emit_move (mem, riscv_swap_instruction (lui_hi_func));
 
       /* Gen addi t2, t2, lo(chain).  */
       rtx lo_chain = riscv_force_binary (SImode, AND, chain_value,
@@ -4955,7 +5010,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 					      force_reg (SImode, GEN_INT (lo_chain_code)));
 
       mem = adjust_address (m_tramp, SImode, 2 * GET_MODE_SIZE (SImode));
-      riscv_emit_move (mem, addi_lo_chain);
+      riscv_emit_move (mem, riscv_swap_instruction (addi_lo_chain));
 
       /* Gen jr t0, lo(func).  */
       rtx lo_func = riscv_force_binary (SImode, AND, target_function,
@@ -4968,7 +5023,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 					   force_reg (SImode, GEN_INT (lo_func_code)));
 
       mem = adjust_address (m_tramp, SImode, 3 * GET_MODE_SIZE (SImode));
-      riscv_emit_move (mem, jr_lo_func);
+      riscv_emit_move (mem, riscv_swap_instruction (jr_lo_func));
     }
   else
     {
@@ -4994,6 +5049,8 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       /* Copy the trampoline code.  */
       for (i = 0; i < ARRAY_SIZE (trampoline); i++)
 	{
+	  if (BYTES_BIG_ENDIAN)
+	    trampoline[i] = __builtin_bswap32(trampoline[i]);
 	  mem = adjust_address (m_tramp, SImode, i * GET_MODE_SIZE (SImode));
 	  riscv_emit_move (mem, gen_int_mode (trampoline[i], SImode));
 	}
@@ -5498,6 +5555,11 @@ riscv_asan_shadow_offset (void)
 
 #undef TARGET_ASAN_SHADOW_OFFSET
 #define TARGET_ASAN_SHADOW_OFFSET riscv_asan_shadow_offset
+
+#ifdef TARGET_BIG_ENDIAN_DEFAULT
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (MASK_BIG_ENDIAN)
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

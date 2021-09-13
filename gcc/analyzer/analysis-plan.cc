@@ -1,5 +1,5 @@
 /* A class to encapsulate decisions about how the analysis should happen.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -107,6 +107,10 @@ analysis_plan::use_summary_p (const cgraph_edge *edge) const
 {
   /* Don't use call summaries if -fno-analyzer-call-summaries.  */
   if (!flag_analyzer_call_summaries)
+    return false;
+
+  /* Don't use call summaries if there is no callgraph edge */
+  if (!edge || !edge->callee)
     return false;
 
   /* TODO: don't count callsites each time.  */

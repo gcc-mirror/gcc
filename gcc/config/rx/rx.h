@@ -1,5 +1,5 @@
 /* GCC backend definitions for the Renesas RX processor.
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -620,14 +620,11 @@ typedef unsigned int CUMULATIVE_ARGS;
 /* Like REG_P except that this macro is true for SET expressions.  */
 #define SET_P(rtl)    (GET_CODE (rtl) == SET)
 
-/* The AS100 assembler does not support .leb128 and .uleb128, but
-   the compiler-build-time configure tests will have enabled their
-   use because GAS supports them.  So default to generating STABS
-   debug information instead of DWARF2 when generating AS100
-   compatible output.  */
 #undef  PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE (TARGET_AS100_SYNTAX \
-				  ? DBX_DEBUG : DWARF2_DEBUG)
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
+#define DBX_DEBUGGING_INFO 1
+#define DWARF2_DEBUGGING_INFO 1
 
 #define INCOMING_FRAME_SP_OFFSET		4
 #define ARG_POINTER_CFA_OFFSET(FNDECL)		4

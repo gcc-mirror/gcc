@@ -1,4 +1,4 @@
-/* { dg-options "-mno-abicalls -mcompact-branches=never isa_rev>=6" } */
+/* { dg-options "-mno-abicalls -fno-PIC -mcompact-branches=never isa_rev>=6" } */
 void bar (int);
 
 void

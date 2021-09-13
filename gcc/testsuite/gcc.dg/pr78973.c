@@ -9,7 +9,7 @@
 static void f (void *p, int n)
 {
   if (n <= 4)
-    __builtin_memset (p, 0, n);   /* { dg-warning "exceeds maximum object size" "pr79073" { xfail { ilp32 || { int16 && { ! msp430_large } } } } } */
+    __builtin_memset (p, 0, n);   /* { dg-warning "exceeds maximum object size" "pr79073" { xfail { int16 && { ! msp430_large } } } } */
 }
 
 void g (void *d, unsigned n)

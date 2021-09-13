@@ -11,13 +11,14 @@
 
 module core.sys.windows.dbghelp;
 version (Windows):
+@system:
 
 import core.sys.windows.winbase /+: FreeLibrary, GetProcAddress, LoadLibraryA+/;
 import core.sys.windows.windef;
 
 public import core.sys.windows.dbghelp_types;
 
-extern(System)
+extern(Windows)
 {
     alias BOOL         function(HANDLE hProcess, DWORD64 lpBaseAddress, PVOID lpBuffer, DWORD nSize, LPDWORD lpNumberOfBytesRead) ReadProcessMemoryProc64;
     alias PVOID        function(HANDLE hProcess, DWORD64 AddrBase) FunctionTableAccessProc64;
@@ -36,7 +37,7 @@ extern(System)
     alias DWORD64      function(HANDLE hProcess, DWORD64 dwAddr) SymGetModuleBase64Func;
     alias BOOL         function(HANDLE hProcess, DWORD64 dwAddr, IMAGEHLP_MODULEA64 *ModuleInfo) SymGetModuleInfo64Func;
     alias BOOL         function(HANDLE hProcess, DWORD64 Address, DWORD64 *Displacement, IMAGEHLP_SYMBOLA64 *Symbol) SymGetSymFromAddr64Func;
-    alias DWORD        function(PCTSTR DecoratedName, PTSTR UnDecoratedName, DWORD UndecoratedLength, DWORD Flags) UnDecorateSymbolNameFunc;
+    alias DWORD        function(PCSTR DecoratedName, PSTR UnDecoratedName, DWORD UndecoratedLength, DWORD Flags) UnDecorateSymbolNameFunc;
     alias DWORD64      function(HANDLE hProcess, HANDLE hFile, PCSTR ImageName, PCSTR ModuleName, DWORD64 BaseOfDll, DWORD SizeOfDll) SymLoadModule64Func;
     alias BOOL         function(HANDLE HProcess, PTSTR SearchPath, DWORD SearchPathLength) SymGetSearchPathFunc;
     alias BOOL         function(HANDLE hProcess, DWORD64 Address) SymUnloadModule64Func;
@@ -80,6 +81,7 @@ struct DbgHelp
             sm_inst.SymGetModuleBase64       = cast(SymGetModuleBase64Func) GetProcAddress(sm_hndl,"SymGetModuleBase64");
             sm_inst.SymGetModuleInfo64       = cast(SymGetModuleInfo64Func) GetProcAddress(sm_hndl,"SymGetModuleInfo64");
             sm_inst.SymGetSymFromAddr64      = cast(SymGetSymFromAddr64Func) GetProcAddress(sm_hndl,"SymGetSymFromAddr64");
+            sm_inst.UnDecorateSymbolName     = cast(UnDecorateSymbolNameFunc) GetProcAddress(sm_hndl,"UnDecorateSymbolName");
             sm_inst.SymLoadModule64          = cast(SymLoadModule64Func) GetProcAddress(sm_hndl,"SymLoadModule64");
             sm_inst.SymGetSearchPath         = cast(SymGetSearchPathFunc) GetProcAddress(sm_hndl,"SymGetSearchPath");
             sm_inst.SymUnloadModule64        = cast(SymUnloadModule64Func) GetProcAddress(sm_hndl,"SymUnloadModule64");
@@ -88,8 +90,8 @@ struct DbgHelp
             assert( sm_inst.SymInitialize && sm_inst.SymCleanup && sm_inst.StackWalk64 && sm_inst.SymGetOptions &&
                     sm_inst.SymSetOptions && sm_inst.SymFunctionTableAccess64 && sm_inst.SymGetLineFromAddr64 &&
                     sm_inst.SymGetModuleBase64 && sm_inst.SymGetModuleInfo64 && sm_inst.SymGetSymFromAddr64 &&
-                    sm_inst.SymLoadModule64 && sm_inst.SymGetSearchPath && sm_inst.SymUnloadModule64 &&
-                    sm_inst.SymRegisterCallback64 && sm_inst.ImagehlpApiVersion);
+                    sm_inst.UnDecorateSymbolName && sm_inst.SymLoadModule64 && sm_inst.SymGetSearchPath &&
+                    sm_inst.SymUnloadModule64 && sm_inst.SymRegisterCallback64 && sm_inst.ImagehlpApiVersion);
 
             return &sm_inst;
         }

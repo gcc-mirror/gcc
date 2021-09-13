@@ -1,5 +1,5 @@
 /* Finding reachable regions and values.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -88,20 +88,40 @@ reachable_regions::init_cluster (const region *base_reg)
   if (m_store->escaped_p (base_reg))
     add (base_reg, true);
 
-  /* If BASE_REG is *INIT_VAL(REG) for some other REG, see if REG is
-     unbound and untouched.  If so, then add BASE_REG as a root.  */
   if (const symbolic_region *sym_reg = base_reg->dyn_cast_symbolic_region ())
     {
       const svalue *ptr = sym_reg->get_pointer ();
-      if (const initial_svalue *init_sval = ptr->dyn_cast_initial_svalue ())
+      if (ptr->implicitly_live_p (NULL, m_model))
+	add (base_reg, true);
+      switch (ptr->get_kind ())
 	{
-	  const region *init_sval_reg = init_sval->get_region ();
-	  const region *other_base_reg = init_sval_reg->get_base_region ();
-	  const binding_cluster *other_cluster
-	    = m_store->get_cluster (other_base_reg);
-	  if (other_cluster == NULL
-	      || !other_cluster->touched_p ())
+	default:
+	  break;
+	case SK_INITIAL:
+	  {
+	    /* If BASE_REG is *INIT_VAL(REG) for some other REG, see if REG is
+	       unbound and untouched.  If so, then add BASE_REG as a root.  */
+	    const initial_svalue *init_sval
+	      = as_a <const initial_svalue *> (ptr);
+	    const region *init_sval_reg = init_sval->get_region ();
+	    const region *other_base_reg = init_sval_reg->get_base_region ();
+	    const binding_cluster *other_cluster
+	      = m_store->get_cluster (other_base_reg);
+	    if (other_cluster == NULL
+		|| !other_cluster->touched_p ())
+	      add (base_reg, true);
+	  }
+	  break;
+
+	case SK_UNKNOWN:
+	case SK_CONJURED:
+	  {
+	    /* If this cluster is due to dereferencing an unknown/conjured
+	       pointer, any values written through the pointer could still
+	       be live.  */
 	    add (base_reg, true);
+	  }
+	  break;
 	}
     }
 }
@@ -134,7 +154,7 @@ reachable_regions::add (const region *reg, bool is_mutable)
   if (binding_cluster *bind_cluster = m_store->get_cluster (base_reg))
     bind_cluster->for_each_value (handle_sval_cb, this);
   else
-    handle_sval (m_model->get_store_value (reg));
+    handle_sval (m_model->get_store_value (reg, NULL));
 }
 
 void
@@ -150,6 +170,7 @@ void
 reachable_regions::handle_sval (const svalue *sval)
 {
   m_reachable_svals.add (sval);
+  m_mutable_svals.add (sval);
   if (const region_svalue *ptr = sval->dyn_cast_region_svalue ())
     {
       const region *pointee = ptr->get_pointee ();
@@ -246,7 +267,6 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
 void
 reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
 {
-  gcc_assert (ctxt);
   auto_vec<const function_region *> escaped_fn_regs
     (m_mutable_base_regs.elements ());
   for (hash_set<const region *>::iterator iter = m_mutable_base_regs.begin ();
@@ -260,12 +280,15 @@ reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
       if (const function_region *fn_reg = base_reg->dyn_cast_function_region ())
 	escaped_fn_regs.quick_push (fn_reg);
     }
-  /* Sort to ensure deterministic results.  */
-  escaped_fn_regs.qsort (region::cmp_ptr_ptr);
-  unsigned i;
-  const function_region *fn_reg;
-  FOR_EACH_VEC_ELT (escaped_fn_regs, i, fn_reg)
-    ctxt->on_escaped_function (fn_reg->get_fndecl ());
+  if (ctxt)
+    {
+      /* Sort to ensure deterministic results.  */
+      escaped_fn_regs.qsort (region::cmp_ptr_ptr);
+      unsigned i;
+      const function_region *fn_reg;
+      FOR_EACH_VEC_ELT (escaped_fn_regs, i, fn_reg)
+	ctxt->on_escaped_function (fn_reg->get_fndecl ());
+    }
 }
 
 /* Dump SET to PP, sorting it to avoid churn when comparing dumps.  */

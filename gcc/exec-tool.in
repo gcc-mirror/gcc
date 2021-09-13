@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright (C) 2007-2020 Free Software Foundation, Inc.
+# Copyright (C) 2007-2021 Free Software Foundation, Inc.
 # This file is part of GCC.
 
 # GCC is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@ ORIGINAL_LD_BFD_FOR_TARGET="@ORIGINAL_LD_BFD_FOR_TARGET@"
 ORIGINAL_LD_GOLD_FOR_TARGET="@ORIGINAL_LD_GOLD_FOR_TARGET@"
 ORIGINAL_PLUGIN_LD_FOR_TARGET="@ORIGINAL_PLUGIN_LD_FOR_TARGET@"
 ORIGINAL_NM_FOR_TARGET="@ORIGINAL_NM_FOR_TARGET@"
+ORIGINAL_DSYMUTIL_FOR_TARGET="@ORIGINAL_DSYMUTIL_FOR_TARGET@"
 exeext=@host_exeext@
 fast_install=@enable_fast_install@
 objdir=@objdir@
@@ -70,6 +71,13 @@ case "$invoked" in
     original=$ORIGINAL_NM_FOR_TARGET
     prog=nm-new$exeext
     dir=binutils
+    ;;
+  dsymutil)
+    original=$ORIGINAL_DSYMUTIL_FOR_TARGET
+    # We do not build this in tree - but still want to be able to execute
+    # a configured version from the build dir.
+    prog=
+    dir=
     ;;
 esac
 

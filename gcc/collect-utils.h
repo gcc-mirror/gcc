@@ -1,5 +1,5 @@
 /* Utility functions used by tools like collect2 and lto-wrapper.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 extern void notice (const char *, ...)
   __attribute__ ((format (printf, 1, 2)));
 extern void fatal_signal (int);
+extern void setup_signals (void);
 
 extern struct pex_obj *collect_execute (const char *, char **,
 					const char *, const char *,

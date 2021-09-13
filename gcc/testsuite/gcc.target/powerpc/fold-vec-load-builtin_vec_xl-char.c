@@ -36,4 +36,4 @@ BUILD_VAR_TEST( test10, vector unsigned char, signed long long, vector unsigned 
 BUILD_VAR_TEST( test11, vector unsigned char, signed int, vector unsigned char);
 BUILD_CST_TEST( test12, vector unsigned char, 8, vector unsigned char);
 
-/* { dg-final { scan-assembler-times {\mlxvw4x\M|\mlxvd2x\M|\mlxvx\M|\mlvx\M} 12 } } */
+/* { dg-final { scan-assembler-times {\mlxvw4x\M|\mlxvd2x\M|\mlxvx\M|\mp?lxv\M|\mlvx\M} 12 } } */

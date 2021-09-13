@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for CR16.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
 
    This file is part of GCC.
@@ -195,9 +195,6 @@ while (0)
   (targetm.hard_regno_nregs (REGNO,                                          \
 			     GET_MODE_WIDER_MODE (word_mode).require ()) == 1)
 
-#define NOTICE_UPDATE_CC(EXP, INSN) \
-   notice_update_cc ((EXP))
-
 /* Interrupt functions can only use registers that have already been 
    saved by the prologue, even if they would normally be call-clobbered 
    Check if sizes are same and then check if it is possible to rename.  */
@@ -378,8 +375,6 @@ enum reg_class
 /* Passing function arguments.  */
 
 #define ACCUMULATE_OUTGOING_ARGS 0
-
-#define PUSH_ARGS 1
 
 #define PUSH_ROUNDING(BYTES) cr16_push_rounding (BYTES)
 

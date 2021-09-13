@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,5 +38,5 @@ test01(T* result)
   T t[1];
   std::copy(t, t+1, result); // { dg-error "here|deleted" }
 }
-// { dg-prune-output "not assignable" }
+// { dg-prune-output "type must be assignable" }
 // { dg-prune-output "use of deleted" }

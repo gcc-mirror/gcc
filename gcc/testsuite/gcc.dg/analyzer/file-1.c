@@ -47,3 +47,10 @@ test_4 (const char *path)
 
   return; /* { dg-warning "leak of FILE 'f'" } */ 
 }
+
+void
+test_5 (const char *path)
+{
+  FILE *f = fopen (path, "r"); /* { dg-message "opened here" } */
+  return; /* { dg-warning "leak of FILE 'f'" } */ 
+}

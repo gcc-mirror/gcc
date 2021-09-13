@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- indirect_array class.
 
-// Copyright (C) 1997-2020 Free Software Foundation, Inc.
+// Copyright (C) 1997-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -204,7 +204,7 @@ _DEFINE_VALARRAY_OPERATOR(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_OPERATOR
 
-  // @} group numeric_arrays
+  /// @} group numeric_arrays
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

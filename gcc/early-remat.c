@@ -1,5 +1,5 @@
 /* Early (pre-RA) rematerialization
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1059,7 +1059,7 @@ early_remat::sort_candidates (void)
 
   m_candidates.qsort (compare_candidates);
 
-  delete postorder_index;
+  delete[] postorder_index;
 }
 
 /* Commit to the current candidate indices and initialize cross-references.  */

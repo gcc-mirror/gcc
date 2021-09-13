@@ -1,6 +1,6 @@
 // functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007-2020 Free Software Foundation, Inc.
+// Copyright (C) 2007-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,7 @@
 
 #pragma GCC system_header
 
+#include <type_traits>
 #include <bits/hash_bytes.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -171,19 +172,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Cxx_hashtable_define_trivial_hash(unsigned long long)
 
 #ifdef __GLIBCXX_TYPE_INT_N_0
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_0)
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_0 unsigned)
 #endif
 #ifdef __GLIBCXX_TYPE_INT_N_1
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_1)
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_1 unsigned)
 #endif
 #ifdef __GLIBCXX_TYPE_INT_N_2
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_2)
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_2 unsigned)
 #endif
 #ifdef __GLIBCXX_TYPE_INT_N_3
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3)
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3 unsigned)
 #endif
 
@@ -269,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #endif
 
-  // @} group hashes
+  /// @} group hashes
 
   // Hint about performance of hash functor. If not fast the hash-based
   // containers will cache the hash code.

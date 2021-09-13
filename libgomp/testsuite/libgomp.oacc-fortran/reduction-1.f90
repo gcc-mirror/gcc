@@ -1,5 +1,7 @@
 ! { dg-do run }
-! { dg-additional-options "-w" }
+
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
 
 ! Integer reductions
 
@@ -280,6 +282,7 @@ program reduction_1
   !$acc end parallel
 
   !$acc parallel vector_length(vl) copy(rv)
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-1 }
   !$acc loop reduction(ior:rv) gang
   do i = 1, n
      rv = ior (rv, array(i))

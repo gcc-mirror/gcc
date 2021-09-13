@@ -8,12 +8,13 @@
  */
 module core.sys.windows.ole2;
 version (Windows):
+@system:
 pragma(lib, "ole32");
 
 public import core.sys.windows.basetyps, core.sys.windows.objbase, core.sys.windows.oleauto, core.sys.windows.olectlid,
   core.sys.windows.oleidl, core.sys.windows.unknwn, core.sys.windows.winerror, core.sys.windows.uuid;
-private import core.sys.windows.objfwd, core.sys.windows.objidl, core.sys.windows.windef, core.sys.windows.wtypes;
-private import core.sys.windows.winuser; // for LPMSG
+import core.sys.windows.objfwd, core.sys.windows.objidl, core.sys.windows.windef, core.sys.windows.wtypes;
+import core.sys.windows.winuser; // for LPMSG
 
 enum E_DRAW = VIEW_E_DRAW;
 

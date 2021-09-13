@@ -1,7 +1,7 @@
 ;; Machine Description for MIPS MSA ASE
 ;; Based on the MIPS MSA spec Revision 1.11 8/4/2014
 ;;
-;; Copyright (C) 2015-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -435,6 +435,28 @@
   DONE;
 })
 
+(define_expand "vec_cmp<MSA:mode><mode_i>"
+  [(match_operand:<VIMODE> 0 "register_operand")
+   (match_operator 1 ""
+     [(match_operand:MSA 2 "register_operand")
+      (match_operand:MSA 3 "register_operand")])]
+  "ISA_HAS_MSA"
+{
+  mips_expand_vec_cmp_expr (operands);
+  DONE;
+})
+
+(define_expand "vec_cmpu<IMSA:mode><mode_i>"
+  [(match_operand:<VIMODE> 0 "register_operand")
+   (match_operator 1 ""
+     [(match_operand:IMSA 2 "register_operand")
+      (match_operand:IMSA 3 "register_operand")])]
+  "ISA_HAS_MSA"
+{
+  mips_expand_vec_cmp_expr (operands);
+  DONE;
+})
+
 (define_insn "msa_insert_<msafmt_f>"
   [(set (match_operand:MSA 0 "register_operand" "=f,f")
 	(vec_merge:MSA
@@ -848,9 +870,12 @@
 	  (match_operand:IMSA 1 "register_operand" "f,f")
 	  (match_operand:IMSA 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
   "ISA_HAS_MSA"
-  "@
-   srl.<msafmt>\t%w0,%w1,%w2
-   srli.<msafmt>\t%w0,%w1,%E2"
+{
+  if (which_alternative == 0)
+    return "srl.<msafmt>\t%w0,%w1,%w2";
+
+  return mips_msa_output_shift_immediate("srli.<msafmt>\t%w0,%w1,%E2", operands);
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -860,9 +885,12 @@
 	  (match_operand:IMSA 1 "register_operand" "f,f")
 	  (match_operand:IMSA 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
   "ISA_HAS_MSA"
-  "@
-   sra.<msafmt>\t%w0,%w1,%w2
-   srai.<msafmt>\t%w0,%w1,%E2"
+{
+  if (which_alternative == 0)
+    return "sra.<msafmt>\t%w0,%w1,%w2";
+
+  return mips_msa_output_shift_immediate("srai.<msafmt>\t%w0,%w1,%E2", operands);
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -872,9 +900,12 @@
 	  (match_operand:IMSA 1 "register_operand" "f,f")
 	  (match_operand:IMSA 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
   "ISA_HAS_MSA"
-  "@
-   sll.<msafmt>\t%w0,%w1,%w2
-   slli.<msafmt>\t%w0,%w1,%E2"
+{
+  if (which_alternative == 0)
+    return "sll.<msafmt>\t%w0,%w1,%w2";
+
+  return mips_msa_output_shift_immediate("slli.<msafmt>\t%w0,%w1,%E2", operands);
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 

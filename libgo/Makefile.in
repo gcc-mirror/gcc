@@ -169,6 +169,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgodebugdir)" \
 	"$(DESTDIR)$(toolexeclibgoencodingdir)" \
 	"$(DESTDIR)$(toolexeclibgogodir)" \
+	"$(DESTDIR)$(toolexeclibgogobuilddir)" \
 	"$(DESTDIR)$(toolexeclibgohashdir)" \
 	"$(DESTDIR)$(toolexeclibgohtmldir)" \
 	"$(DESTDIR)$(toolexeclibgoimagedir)" \
@@ -243,8 +244,9 @@ am__objects_4 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-caller.lo runtime/go-callers.lo runtime/go-cgo.lo \
 	runtime/go-construct-map.lo runtime/go-ffi.lo \
 	runtime/go-fieldtrack.lo runtime/go-matherr.lo \
-	runtime/go-memclr.lo runtime/go-memequal.lo \
-	runtime/go-nanotime.lo runtime/go-now.lo runtime/go-nosys.lo \
+	runtime/go-memclr.lo runtime/go-memmove.lo \
+	runtime/go-memequal.lo runtime/go-nanotime.lo \
+	runtime/go-now.lo runtime/go-nosys.lo \
 	runtime/go-reflect-call.lo runtime/go-setenv.lo \
 	runtime/go-signal.lo runtime/go-unsafe-pointer.lo \
 	runtime/go-unsetenv.lo runtime/go-unwind.lo \
@@ -335,16 +337,16 @@ DATA = $(noinst_DATA) $(toolexeclibgo_DATA) \
 	$(toolexeclibgocryptox509_DATA) $(toolexeclibgodatabase_DATA) \
 	$(toolexeclibgodatabasesql_DATA) $(toolexeclibgodebug_DATA) \
 	$(toolexeclibgoencoding_DATA) $(toolexeclibgogo_DATA) \
-	$(toolexeclibgohash_DATA) $(toolexeclibgohtml_DATA) \
-	$(toolexeclibgoimage_DATA) $(toolexeclibgoimagecolor_DATA) \
-	$(toolexeclibgoindex_DATA) $(toolexeclibgointernal_DATA) \
-	$(toolexeclibgoio_DATA) $(toolexeclibgolog_DATA) \
-	$(toolexeclibgomath_DATA) $(toolexeclibgomime_DATA) \
-	$(toolexeclibgonet_DATA) $(toolexeclibgonethttp_DATA) \
-	$(toolexeclibgonetrpc_DATA) $(toolexeclibgoos_DATA) \
-	$(toolexeclibgopath_DATA) $(toolexeclibgoregexp_DATA) \
-	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
-	$(toolexeclibgotesting_DATA) \
+	$(toolexeclibgogobuild_DATA) $(toolexeclibgohash_DATA) \
+	$(toolexeclibgohtml_DATA) $(toolexeclibgoimage_DATA) \
+	$(toolexeclibgoimagecolor_DATA) $(toolexeclibgoindex_DATA) \
+	$(toolexeclibgointernal_DATA) $(toolexeclibgoio_DATA) \
+	$(toolexeclibgolog_DATA) $(toolexeclibgomath_DATA) \
+	$(toolexeclibgomime_DATA) $(toolexeclibgonet_DATA) \
+	$(toolexeclibgonethttp_DATA) $(toolexeclibgonetrpc_DATA) \
+	$(toolexeclibgoos_DATA) $(toolexeclibgopath_DATA) \
+	$(toolexeclibgoregexp_DATA) $(toolexeclibgoruntime_DATA) \
+	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
 	$(toolexeclibgotestinginternal_DATA) $(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgotime_DATA) \
 	$(toolexeclibgounicode_DATA)
@@ -628,6 +630,7 @@ toolexeclibgo_DATA = \
 	bytes.gox \
 	context.gox \
 	crypto.gox \
+	embed.gox \
 	encoding.gox \
 	errors.gox \
 	expvar.gox \
@@ -744,6 +747,10 @@ toolexeclibgogo_DATA = \
 	go/token.gox \
 	go/types.gox
 
+toolexeclibgogobuilddir = $(toolexeclibgogodir)/build
+toolexeclibgogobuild_DATA = \
+	go/build/constraint.gox
+
 toolexeclibgohashdir = $(toolexeclibgodir)/hash
 toolexeclibgohash_DATA = \
 	hash/adler32.gox \
@@ -774,6 +781,7 @@ toolexeclibgoindex_DATA = \
 
 toolexeclibgoiodir = $(toolexeclibgodir)/io
 toolexeclibgoio_DATA = \
+	io/fs.gox \
 	io/ioutil.gox
 
 toolexeclibgologdir = $(toolexeclibgodir)/log
@@ -831,7 +839,9 @@ toolexeclibgoregexp_DATA = \
 
 toolexeclibgoruntimedir = $(toolexeclibgodir)/runtime
 toolexeclibgoruntime_DATA = \
+	runtime/cgo.gox \
 	runtime/debug.gox \
+	runtime/metrics.gox \
 	runtime/pprof.gox \
 	runtime/trace.gox
 
@@ -841,6 +851,7 @@ toolexeclibgosync_DATA = \
 
 toolexeclibgotestingdir = $(toolexeclibgodir)/testing
 toolexeclibgotesting_DATA = \
+	testing/fstest.gox \
 	testing/iotest.gox \
 	testing/quick.gox
 
@@ -882,6 +893,7 @@ noinst_DATA = golang.org/x/net/nettest.gox internal/cfg.gox \
 	internal/obscuretestdata.gox internal/profile.gox \
 	internal/testenv.gox internal/trace.gox \
 	net/internal/socktest.gox os/signal/internal/pty.gox \
+	reflect/internal/example1.gox reflect/internal/example2.gox \
 	zdefaultcc.go
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
@@ -897,6 +909,7 @@ runtime_files = \
 	runtime/go-fieldtrack.c \
 	runtime/go-matherr.c \
 	runtime/go-memclr.c \
+	runtime/go-memmove.c \
 	runtime/go-memequal.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
@@ -1029,7 +1042,7 @@ GOBENCH =
 CHECK = \
 	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
-	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
+	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
 	export GOLIBS; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \
@@ -1124,6 +1137,7 @@ runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 extra_go_files_runtime_internal_sys = version.go
 extra_go_files_internal_cpu = cpugen.go
 extra_go_files_golang_org_x_sys_cpu = gcpugen.go
+extra_go_files_internal_buildcfg = buildcfg.go
 extra_go_files_internal_goroot = zstdpkglist.go
 extra_go_files_go_types = gccgosizes.go
 extra_go_files_cmd_internal_objabi = objabi.go
@@ -1358,6 +1372,8 @@ runtime/go-matherr.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-memclr.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
+runtime/go-memmove.lo: runtime/$(am__dirstamp) \
+	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-memequal.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-nanotime.lo: runtime/$(am__dirstamp) \
@@ -1426,6 +1442,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-matherr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memclr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memequal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memmove.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nanotime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nosys.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-now.Plo@am__quote@
@@ -1777,6 +1794,27 @@ uninstall-toolexeclibgogoDATA:
 	@list='$(toolexeclibgogo_DATA)'; test -n "$(toolexeclibgogodir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(toolexeclibgogodir)'; $(am__uninstall_files_from_dir)
+install-toolexeclibgogobuildDATA: $(toolexeclibgogobuild_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(toolexeclibgogobuild_DATA)'; test -n "$(toolexeclibgogobuilddir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibgogobuilddir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibgogobuilddir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgogobuilddir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgogobuilddir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgogobuildDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgogobuild_DATA)'; test -n "$(toolexeclibgogobuilddir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibgogobuilddir)'; $(am__uninstall_files_from_dir)
 install-toolexeclibgohashDATA: $(toolexeclibgohash_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclibgohash_DATA)'; test -n "$(toolexeclibgohashdir)" || list=; \
@@ -2393,7 +2431,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(DATA) config.h \
 		all-local
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgointernaldir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgotimedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgogobuilddir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgointernaldir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgotimedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -2472,8 +2510,8 @@ install-exec-am: install-exec-local install-toolexeclibLIBRARIES \
 	install-toolexeclibgodatabasesqlDATA \
 	install-toolexeclibgodebugDATA \
 	install-toolexeclibgoencodingDATA install-toolexeclibgogoDATA \
-	install-toolexeclibgohashDATA install-toolexeclibgohtmlDATA \
-	install-toolexeclibgoimageDATA \
+	install-toolexeclibgogobuildDATA install-toolexeclibgohashDATA \
+	install-toolexeclibgohtmlDATA install-toolexeclibgoimageDATA \
 	install-toolexeclibgoimagecolorDATA \
 	install-toolexeclibgoindexDATA \
 	install-toolexeclibgointernalDATA install-toolexeclibgoioDATA \
@@ -2541,7 +2579,9 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgodatabasesqlDATA \
 	uninstall-toolexeclibgodebugDATA \
 	uninstall-toolexeclibgoencodingDATA \
-	uninstall-toolexeclibgogoDATA uninstall-toolexeclibgohashDATA \
+	uninstall-toolexeclibgogoDATA \
+	uninstall-toolexeclibgogobuildDATA \
+	uninstall-toolexeclibgohashDATA \
 	uninstall-toolexeclibgohtmlDATA \
 	uninstall-toolexeclibgoimageDATA \
 	uninstall-toolexeclibgoimagecolorDATA \
@@ -2587,8 +2627,8 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	install-toolexeclibgodatabasesqlDATA \
 	install-toolexeclibgodebugDATA \
 	install-toolexeclibgoencodingDATA install-toolexeclibgogoDATA \
-	install-toolexeclibgohashDATA install-toolexeclibgohtmlDATA \
-	install-toolexeclibgoimageDATA \
+	install-toolexeclibgogobuildDATA install-toolexeclibgohashDATA \
+	install-toolexeclibgohtmlDATA install-toolexeclibgoimageDATA \
 	install-toolexeclibgoimagecolorDATA \
 	install-toolexeclibgoindexDATA \
 	install-toolexeclibgointernalDATA install-toolexeclibgoioDATA \
@@ -2619,7 +2659,9 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgodatabasesqlDATA \
 	uninstall-toolexeclibgodebugDATA \
 	uninstall-toolexeclibgoencodingDATA \
-	uninstall-toolexeclibgogoDATA uninstall-toolexeclibgohashDATA \
+	uninstall-toolexeclibgogoDATA \
+	uninstall-toolexeclibgogobuildDATA \
+	uninstall-toolexeclibgohashDATA \
 	uninstall-toolexeclibgohtmlDATA \
 	uninstall-toolexeclibgoimageDATA \
 	uninstall-toolexeclibgoimagecolorDATA \
@@ -2648,14 +2690,10 @@ version.go: s-version; @true
 s-version: Makefile
 	rm -f version.go.tmp
 	echo "package sys" > version.go.tmp
-	echo 'func init() { DefaultGoroot = "$(prefix)" }' >> version.go.tmp
-	echo 'const TheVersion = "'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'"' >> version.go.tmp
-	echo 'const Goexperiment = ``' >> version.go.tmp
 	echo 'const GOARCH = "'$(GOARCH)'"' >> version.go.tmp
 	echo 'const GOOS = "'$(GOOS)'"' >> version.go.tmp
 	echo 'const GccgoToolDir = "$(libexecsubdir)"' >> version.go.tmp
-	echo >> version.go.tmp
-	echo "type ArchFamilyType int" >> version.go.tmp
+	echo 'const StackGuardMultiplierDefault = 1' >> version.go.tmp
 	echo >> version.go.tmp
 	echo "const (" >> version.go.tmp
 	echo "	UNKNOWN ArchFamilyType = iota" >> version.go.tmp
@@ -2675,13 +2713,13 @@ s-version: Makefile
 	done
 	echo >> version.go.tmp
 	echo "const (" >> version.go.tmp
-	echo "  ArchFamily = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) family`" >> version.go.tmp
-	echo "  BigEndian = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) bigendian`" >> version.go.tmp
-	echo "  CacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> version.go.tmp
-	echo "  DefaultPhysPageSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) defaultphyspagesize`" >> version.go.tmp
-	echo "  Int64Align = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) int64align`" >> version.go.tmp
-	echo "  MinFrameSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) minframesize`" >> version.go.tmp
-	echo "  PCQuantum = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) pcquantum`" >> version.go.tmp
+	echo "  _ArchFamily = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) family`" >> version.go.tmp
+	echo "  _BigEndian = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) bigendian`" >> version.go.tmp
+	echo "  _DefaultPhysPageSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) defaultphyspagesize`" >> version.go.tmp
+	echo "  _Int64Align = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) int64align`" >> version.go.tmp
+	echo "  _MinFrameSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) minframesize`" >> version.go.tmp
+	echo "  _PCQuantum = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) pcquantum`" >> version.go.tmp
+	echo "  _StackAlign = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) stackalign`" >> version.go.tmp
 	echo ")" >> version.go.tmp
 	echo >> version.go.tmp
 	for a in $(ALLGOOS); do \
@@ -2694,7 +2732,6 @@ s-version: Makefile
 	  fi; \
 	done
 	echo >> version.go.tmp
-	echo "type Uintreg uintptr" >> version.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh version.go.tmp version.go
 	$(STAMP) $@
 
@@ -2715,24 +2752,31 @@ s-gcpu: Makefile
 	$(SHELL) $(srcdir)/mvifdiff.sh gcpugen.go.tmp gcpugen.go
 	$(STAMP) $@
 
+buildcfg.go: s-buildcfg; @true
+s-buildcfg: Makefile
+	rm -f buildcfg.go.tmp
+	echo "package buildcfg" > buildcfg.go.tmp
+	echo "import \"runtime\"" >> buildcfg.go.tmp
+	echo 'func defaultGOROOTValue() string { return `$(prefix)` }' >> buildcfg.go.tmp
+	echo 'const defaultGO386 = `sse2`' >> buildcfg.go.tmp
+	echo 'const defaultGOARM = `5`' >> buildcfg.go.tmp
+	echo 'const defaultGOMIPS = `hardfloat`' >> buildcfg.go.tmp
+	echo 'const defaultGOMIPS64 = `hardfloat`' >> buildcfg.go.tmp
+	echo 'const defaultGOPPC64 = `power8`' >> buildcfg.go.tmp
+	echo 'const defaultGOEXPERIMENT = `fieldtrack`' >> buildcfg.go.tmp
+	echo 'const defaultGO_EXTLINK_ENABLED = ``' >> buildcfg.go.tmp
+	echo 'const defaultGO_LDSO = ``' >> buildcfg.go.tmp
+	echo 'const version = `'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'`' >> buildcfg.go.tmp
+	echo 'const defaultGOOS = runtime.GOOS' >> buildcfg.go.tmp
+	echo 'const defaultGOARCH = runtime.GOARCH' >> buildcfg.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh buildcfg.go.tmp buildcfg.go
+	$(STAMP) $@
+
 objabi.go: s-objabi; @true
 s-objabi: Makefile
 	rm -f objabi.go.tmp
 	echo "package objabi" > objabi.go.tmp
-	echo "import \"runtime\"" >> objabi.go.tmp
-	echo 'func defaultGOROOTValue() string { return `$(prefix)` }' >> objabi.go.tmp
-	echo 'const defaultGO386 = `sse2`' >> objabi.go.tmp
-	echo 'const defaultGOARM = `5`' >> objabi.go.tmp
-	echo 'const defaultGOMIPS = `hardfloat`' >> objabi.go.tmp
-	echo 'const defaultGOMIPS64 = `hardfloat`' >> objabi.go.tmp
-	echo 'const defaultGOPPC64 = `power8`' >> objabi.go.tmp
-	echo 'const defaultGOOS = runtime.GOOS' >> objabi.go.tmp
-	echo 'const defaultGOARCH = runtime.GOARCH' >> objabi.go.tmp
-	echo 'const defaultGO_EXTLINK_ENABLED = ``' >> objabi.go.tmp
-	echo 'const defaultGO_LDSO = ``' >> objabi.go.tmp
-	echo 'const version = `'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'`' >> objabi.go.tmp
 	echo 'const stackGuardMultiplierDefault = 1' >> objabi.go.tmp
-	echo 'const goexperiment = ``' >> objabi.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh objabi.go.tmp objabi.go
 	$(STAMP) $@
 
@@ -2828,12 +2872,12 @@ s-runtime-inc: runtime.lo mkruntimeinc.sh Makefile
 
 # Generate the list of go std packages that were included in libgo
 zstdpkglist.go: s-zstdpkglist; @true
-s-zstdpkglist: Makefile
+s-zstdpkglist: Makefile libgo-packages.txt
 	rm -f zstdpkglist.go.tmp
 	echo 'package goroot' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
 	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
-	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's|[a-z0-9_./]*_c\.lo||g' | sed 's|golang\.org/[a-z0-9_./]*\.lo||g' | sed 's|\([a-z0-9_./]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
+	echo $(libgo_go_objs) 'unsafe.lo' | sed 's|[a-z0-9_./]*_c\.lo||g' | sed 's|golang\.org/[a-z0-9_./]*\.lo||g' | sed 's|\([a-z0-9_./]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
 	echo '}' >> zstdpkglist.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh zstdpkglist.go.tmp zstdpkglist.go
 	$(STAMP) $@
@@ -2966,6 +3010,7 @@ syscall.lo.dep: $(extra_go_files_syscall)
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
 internal/cpu.lo.dep: $(extra_go_files_internal_cpu)
 golang.org/x/sys/cpu.lo.dep: $(extra_go_files_golang_org_x_sys_cpu)
+cmd/internal/buildcfg.lo.dep: $(extra_go_files_internal_buildcfg)
 internal/goroot.lo.dep: $(extra_go_files_internal_goroot)
 go/types.lo.dep: $(extra_go_files_go_types)
 cmd/internal/objabi.lo.dep: $(extra_go_files_cmd_internal_objabi)

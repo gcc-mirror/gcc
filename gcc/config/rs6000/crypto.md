@@ -1,5 +1,5 @@
 ;; Cryptographic instructions added in ISA 2.07
-;; Copyright (C) 2012-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2021 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 
 ;; This file is part of GCC.

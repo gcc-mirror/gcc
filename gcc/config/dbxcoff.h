@@ -1,5 +1,5 @@
 /* Definitions needed when using stabs embedded in COFF sections.
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,12 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Output DBX (stabs) debugging information if doing -gstabs.  */
 
 #define DBX_DEBUGGING_INFO 1
-
-/* Generate DBX debugging information by default.  */
-
-#ifndef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-#endif
 
 /* Be function-relative for block and source line stab directives.  */
 

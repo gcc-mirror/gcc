@@ -1,5 +1,5 @@
 /* Finding reachable regions and values.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -88,6 +88,14 @@ public:
   svalue_set::iterator end_mutable_svals ()
   {
     return m_mutable_svals.end ();
+  }
+  hash_set<const region *>::iterator begin_mutable_base_regs ()
+  {
+    return m_mutable_base_regs.begin ();
+  }
+  hash_set<const region *>::iterator end_mutable_base_regs ()
+  {
+    return m_mutable_base_regs.end ();
   }
 
   void dump_to_pp (pretty_printer *pp) const;

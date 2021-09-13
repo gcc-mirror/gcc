@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,10 +58,25 @@ test02()
   VERIFY( D::count == 0 ); // LWG 2415
 }
 
+void
+test03()
+{
+  struct D
+  {
+    D() = default;
+    D(const D&) = delete; // not copyable or movable
+    void operator()(int* p) const { delete p; }
+  };
+
+  using namespace std;
+  static_assert( ! is_constructible<shared_ptr<int>, unique_ptr<int, D>>(),
+		 "Constraints: is_move_constructible_v<D> is true" );
+}
+
 int
 main()
 {
   test01();
   test02();
-  return 0;
+  test03();
 }

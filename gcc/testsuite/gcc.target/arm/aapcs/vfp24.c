@@ -3,6 +3,7 @@
 /* { dg-do run { target arm_eabi } }  */
 /* { dg-require-effective-target arm_hard_vfp_ok }  */
 /* { dg-require-effective-target arm_fp16_hw }  */
+/* { dg-require-effective-target arm_fp16_alternative_ok } */
 /* { dg-add-options arm_fp16_alternative }  */
 
 #ifndef IN_FRAMEWORK

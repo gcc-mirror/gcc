@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
 This file is part of GCC.
@@ -126,6 +126,8 @@ static const struct attribute_spec gfc_attribute_table[] =
 #undef LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_DTOR
 #undef LANG_HOOKS_OMP_FINISH_CLAUSE
+#undef LANG_HOOKS_OMP_ALLOCATABLE_P
+#undef LANG_HOOKS_OMP_SCALAR_TARGET_P
 #undef LANG_HOOKS_OMP_SCALAR_P
 #undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR
 #undef LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE
@@ -162,7 +164,9 @@ static const struct attribute_spec gfc_attribute_table[] =
 #define LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR	gfc_omp_clause_linear_ctor
 #define LANG_HOOKS_OMP_CLAUSE_DTOR		gfc_omp_clause_dtor
 #define LANG_HOOKS_OMP_FINISH_CLAUSE		gfc_omp_finish_clause
+#define LANG_HOOKS_OMP_ALLOCATABLE_P		gfc_omp_allocatable_p
 #define LANG_HOOKS_OMP_SCALAR_P			gfc_omp_scalar_p
+#define LANG_HOOKS_OMP_SCALAR_TARGET_P		gfc_omp_scalar_target_p
 #define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR	gfc_omp_disregard_value_expr
 #define LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE	gfc_omp_private_debug_clause
 #define LANG_HOOKS_OMP_PRIVATE_OUTER_REF	gfc_omp_private_outer_ref
@@ -531,7 +535,7 @@ gfc_builtin_function (tree decl)
   return decl;
 }
 
-/* So far we need just these 8 attribute types.  */
+/* So far we need just these 10 attribute types.  */
 #define ATTR_NULL			0
 #define ATTR_LEAF_LIST			(ECF_LEAF)
 #define ATTR_NOTHROW_LEAF_LIST		(ECF_NOTHROW | ECF_LEAF)
@@ -542,6 +546,9 @@ gfc_builtin_function (tree decl)
 #define ATTR_CONST_NOTHROW_LIST		(ECF_NOTHROW | ECF_CONST)
 #define ATTR_ALLOC_WARN_UNUSED_RESULT_SIZE_2_NOTHROW_LIST \
 					(ECF_NOTHROW)
+#define ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST \
+					(ECF_COLD | ECF_NORETURN | \
+					 ECF_NOTHROW | ECF_LEAF)
 
 static void
 gfc_define_builtin (const char *name, tree type, enum built_in_function code,

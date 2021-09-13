@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,29 +23,33 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Csets;    use Csets;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Output;   use Output;
-with Rtsfind;  use Rtsfind;
-with Sem_Eval; use Sem_Eval;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Sinput.D; use Sinput.D;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Uintp;    use Uintp;
-with Uname;    use Uname;
-with Urealp;   use Urealp;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Csets;          use Csets;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Output;         use Output;
+with Rtsfind;        use Rtsfind;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Sinput.D;       use Sinput.D;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Uintp;          use Uintp;
+with Uname;          use Uname;
+with Urealp;         use Urealp;
 
 package body Sprint is
    Current_Source_File : Source_File_Index;
@@ -1061,16 +1065,12 @@ package body Sprint is
                if Present (Expressions (Node)) then
                   Sprint_Comma_List (Expressions (Node));
 
-                  if Present (Component_Associations (Node))
-                    and then not Is_Empty_List (Component_Associations (Node))
-                  then
+                  if not Is_Empty_List (Component_Associations (Node)) then
                      Write_Str (", ");
                   end if;
                end if;
 
-               if Present (Component_Associations (Node))
-                 and then not Is_Empty_List (Component_Associations (Node))
-               then
+               if not Is_Empty_List (Component_Associations (Node)) then
                   Indent_Begin;
 
                   declare
@@ -2114,6 +2114,13 @@ package body Sprint is
                Write_Indent;
             end if;
 
+         when N_Goto_When_Statement =>
+            Write_Indent_Str_Sloc ("goto ");
+            Sprint_Node (Name (Node));
+            Write_Str (" when ");
+            Sprint_Node (Condition (Node));
+            Write_Char (';');
+
          when N_Handled_Sequence_Of_Statements =>
             Set_Debug_Sloc;
             Sprint_Indented_List (Statements (Node));
@@ -2489,7 +2496,7 @@ package body Sprint is
 
             --  AI12-0275: Object_Renaming_Declaration without explicit subtype
 
-            elsif Ada_Version >= Ada_2020 then
+            elsif Ada_Version >= Ada_2022 then
                null;
 
             else
@@ -3065,10 +3072,29 @@ package body Sprint is
 
             Write_Char (';');
 
+         when N_Raise_When_Statement =>
+            Write_Indent_Str_Sloc ("raise ");
+            Sprint_Node (Name (Node));
+            Write_Str (" when ");
+            Sprint_Node (Condition (Node));
+
+            if Present (Expression (Node)) then
+               Write_Str_With_Col_Check_Sloc (" with ");
+               Sprint_Node (Expression (Node));
+            end if;
+
+            Write_Char (';');
+
          when N_Range =>
             Sprint_Node (Low_Bound (Node));
             Write_Str_Sloc (" .. ");
-            Sprint_Node (High_Bound (Node));
+            if Present (Etype (Node))
+              and then Is_Fixed_Lower_Bound_Index_Subtype (Etype (Node))
+            then
+               Write_Str ("<>");
+            else
+               Sprint_Node (High_Bound (Node));
+            end if;
             Update_Itype (Node);
 
          when N_Range_Constraint =>
@@ -3132,10 +3158,12 @@ package body Sprint is
 
             Write_Char (';');
 
-         --  Don't we want to print more detail???
-
-         --  Doc of this extended syntax belongs in sinfo.ads and/or
-         --  sprint.ads ???
+         when N_Return_When_Statement =>
+            Write_Indent_Str_Sloc ("return ");
+            Sprint_Node (Expression (Node));
+            Write_Str (" when ");
+            Sprint_Node (Condition (Node));
+            Write_Char (';');
 
          when N_SCIL_Dispatch_Table_Tag_Init =>
             Write_Indent_Str ("[N_SCIL_Dispatch_Table_Tag_Init]");
@@ -4578,7 +4606,8 @@ package body Sprint is
                         Write_Str (");");
                      end;
 
-                  --  For all other Itypes, print ??? (fill in later)
+                  --  For all other Itypes, print a triple ? (fill in later
+                  --  if needed).
 
                   when others =>
                      Write_Header (True);
@@ -4841,7 +4870,10 @@ package body Sprint is
          Write_Int (Int (L));
          Write_Str (": ");
 
-         while Src (Loc) not in Line_Terminator loop
+         --  We need to check for EOF here, in case the last line of the source
+         --  file does not have a Line_Terminator.
+
+         while Src (Loc) not in Line_Terminator | EOF loop
             Write_Char (Src (Loc));
             Loc := Loc + 1;
          end loop;

@@ -55,7 +55,7 @@ struct dl_phdr_info
     char*           dlpi_name;
     ElfW!"Phdr"*    dlpi_phdr;
     ElfW!"Half"     dlpi_phnum;
-};
+}
 
 
 private alias int function(dl_phdr_info*, size_t, void *) dl_iterate_phdr_cb;
@@ -63,3 +63,8 @@ private alias int function(dl_phdr_info*, size_t, void *) @nogc dl_iterate_phdr_
 
 int dl_iterate_phdr(dl_iterate_phdr_cb __callback, void*__data);
 int dl_iterate_phdr(dl_iterate_phdr_cb_ngc __callback, void*__data) @nogc;
+
+int _rtld_addr_phdr(const void*, dl_phdr_info*) @nogc
+{
+    return 0;
+}

@@ -1,7 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc for
    LynxOS.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2004-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

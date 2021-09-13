@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime accessors functions
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Contributed by Nicola Pero
 
 This file is part of GCC.

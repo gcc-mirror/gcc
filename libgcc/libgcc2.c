@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1834,7 +1834,7 @@ __fixunssfSI (SFtype a)
 TYPE
 NAME (TYPE x, int m)
 {
-  unsigned int n = m < 0 ? -m : m;
+  unsigned int n = m < 0 ? -(unsigned int) m : (unsigned int) m;
   TYPE y = n % 2 ? x : 1;
   while (n >>= 1)
     {
@@ -1860,33 +1860,55 @@ NAME (TYPE x, int m)
 #if defined(L_mulhc3) || defined(L_divhc3)
 # define MTYPE	HFtype
 # define CTYPE	HCtype
+# define AMTYPE SFtype
 # define MODE	hc
 # define CEXT	__LIBGCC_HF_FUNC_EXT__
 # define NOTRUNC (!__LIBGCC_HF_EXCESS_PRECISION__)
 #elif defined(L_mulsc3) || defined(L_divsc3)
 # define MTYPE	SFtype
 # define CTYPE	SCtype
+# define AMTYPE DFtype
 # define MODE	sc
 # define CEXT	__LIBGCC_SF_FUNC_EXT__
 # define NOTRUNC (!__LIBGCC_SF_EXCESS_PRECISION__)
+# define RBIG	(__LIBGCC_SF_MAX__ / 2)
+# define RMIN	(__LIBGCC_SF_MIN__)
+# define RMIN2	(__LIBGCC_SF_EPSILON__)
+# define RMINSCAL (1 / __LIBGCC_SF_EPSILON__)
+# define RMAX2	(RBIG * RMIN2)
 #elif defined(L_muldc3) || defined(L_divdc3)
 # define MTYPE	DFtype
 # define CTYPE	DCtype
 # define MODE	dc
 # define CEXT	__LIBGCC_DF_FUNC_EXT__
 # define NOTRUNC (!__LIBGCC_DF_EXCESS_PRECISION__)
+# define RBIG	(__LIBGCC_DF_MAX__ / 2)
+# define RMIN	(__LIBGCC_DF_MIN__)
+# define RMIN2	(__LIBGCC_DF_EPSILON__)
+# define RMINSCAL (1 / __LIBGCC_DF_EPSILON__)
+# define RMAX2  (RBIG * RMIN2)
 #elif defined(L_mulxc3) || defined(L_divxc3)
 # define MTYPE	XFtype
 # define CTYPE	XCtype
 # define MODE	xc
 # define CEXT	__LIBGCC_XF_FUNC_EXT__
 # define NOTRUNC (!__LIBGCC_XF_EXCESS_PRECISION__)
+# define RBIG	(__LIBGCC_XF_MAX__ / 2)
+# define RMIN	(__LIBGCC_XF_MIN__)
+# define RMIN2	(__LIBGCC_XF_EPSILON__)
+# define RMINSCAL (1 / __LIBGCC_XF_EPSILON__)
+# define RMAX2	(RBIG * RMIN2)
 #elif defined(L_multc3) || defined(L_divtc3)
 # define MTYPE	TFtype
 # define CTYPE	TCtype
 # define MODE	tc
 # define CEXT	__LIBGCC_TF_FUNC_EXT__
 # define NOTRUNC (!__LIBGCC_TF_EXCESS_PRECISION__)
+# define RBIG	(__LIBGCC_TF_MAX__ / 2)
+# define RMIN	(__LIBGCC_TF_MIN__)
+# define RMIN2	(__LIBGCC_TF_EPSILON__)
+# define RMINSCAL (1 / __LIBGCC_TF_EPSILON__)
+# define RMAX2	(RBIG * RMIN2)
 #else
 # error
 #endif
@@ -1994,30 +2016,136 @@ CONCAT3(__mul,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
 CTYPE
 CONCAT3(__div,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
 {
+#if defined(L_divhc3)						\
+  || (defined(L_divsc3) && defined(__LIBGCC_HAVE_HWDBL__) )
+
+  /* Half precision is handled with float precision.
+     float is handled with double precision when double precision
+     hardware is available.
+     Due to the additional precision, the simple complex divide
+     method (without Smith's method) is sufficient to get accurate
+     answers and runs slightly faster than Smith's method.  */
+
+  AMTYPE aa, bb, cc, dd;
+  AMTYPE denom;
+  MTYPE x, y;
+  CTYPE res;
+  aa = a;
+  bb = b;
+  cc = c;
+  dd = d;
+
+  denom = (cc * cc) + (dd * dd);
+  x = ((aa * cc) + (bb * dd)) / denom;
+  y = ((bb * cc) - (aa * dd)) / denom;
+
+#else
   MTYPE denom, ratio, x, y;
   CTYPE res;
 
-  /* ??? We can get better behavior from logarithmic scaling instead of
-     the division.  But that would mean starting to link libgcc against
-     libm.  We could implement something akin to ldexp/frexp as gcc builtins
-     fairly easily...  */
+  /* double, extended, long double have significant potential
+     underflow/overflow errors that can be greatly reduced with
+     a limited number of tests and adjustments.  float is handled
+     the same way when no HW double is available.
+  */
+
+  /* Scale by max(c,d) to reduce chances of denominator overflowing.  */
   if (FABS (c) < FABS (d))
     {
+      /* Prevent underflow when denominator is near max representable.  */
+      if (FABS (d) >= RBIG)
+	{
+	  a = a / 2;
+	  b = b / 2;
+	  c = c / 2;
+	  d = d / 2;
+	}
+      /* Avoid overflow/underflow issues when c and d are small.
+	 Scaling up helps avoid some underflows.
+	 No new overflow possible since c&d < RMIN2.  */
+      if (FABS (d) < RMIN2)
+	{
+	  a = a * RMINSCAL;
+	  b = b * RMINSCAL;
+	  c = c * RMINSCAL;
+	  d = d * RMINSCAL;
+	}
+      else
+	{
+	  if (((FABS (a) < RMIN) && (FABS (b) < RMAX2) && (FABS (d) < RMAX2))
+	      || ((FABS (b) < RMIN) && (FABS (a) < RMAX2)
+		  && (FABS (d) < RMAX2)))
+	    {
+	      a = a * RMINSCAL;
+	      b = b * RMINSCAL;
+	      c = c * RMINSCAL;
+	      d = d * RMINSCAL;
+	    }
+	}
       ratio = c / d;
       denom = (c * ratio) + d;
-      x = ((a * ratio) + b) / denom;
-      y = ((b * ratio) - a) / denom;
+      /* Choose alternate order of computation if ratio is subnormal.  */
+      if (FABS (ratio) > RMIN)
+	{
+	  x = ((a * ratio) + b) / denom;
+	  y = ((b * ratio) - a) / denom;
+	}
+      else
+	{
+	  x = ((c * (a / d)) + b) / denom;
+	  y = ((c * (b / d)) - a) / denom;
+	}
     }
   else
     {
+      /* Prevent underflow when denominator is near max representable.  */
+      if (FABS (c) >= RBIG)
+	{
+	  a = a / 2;
+	  b = b / 2;
+	  c = c / 2;
+	  d = d / 2;
+	}
+      /* Avoid overflow/underflow issues when both c and d are small.
+	 Scaling up helps avoid some underflows.
+	 No new overflow possible since both c&d are less than RMIN2.  */
+      if (FABS (c) < RMIN2)
+	{
+	  a = a * RMINSCAL;
+	  b = b * RMINSCAL;
+	  c = c * RMINSCAL;
+	  d = d * RMINSCAL;
+	}
+      else
+	{
+	  if (((FABS (a) < RMIN) && (FABS (b) < RMAX2) && (FABS (c) < RMAX2))
+	      || ((FABS (b) < RMIN) && (FABS (a) < RMAX2)
+		  && (FABS (c) < RMAX2)))
+	    {
+	      a = a * RMINSCAL;
+	      b = b * RMINSCAL;
+	      c = c * RMINSCAL;
+	      d = d * RMINSCAL;
+	    }
+	}
       ratio = d / c;
       denom = (d * ratio) + c;
-      x = ((b * ratio) + a) / denom;
-      y = (b - (a * ratio)) / denom;
+      /* Choose alternate order of computation if ratio is subnormal.  */
+      if (FABS (ratio) > RMIN)
+	{
+	  x = ((b * ratio) + a) / denom;
+	  y = (b - (a * ratio)) / denom;
+	}
+      else
+	{
+	  x = (a + (d * (b / c))) / denom;
+	  y = (b - (d * (a / c))) / denom;
+	}
     }
+#endif
 
-  /* Recover infinities and zeros that computed as NaN+iNaN; the only cases
-     are nonzero/zero, infinite/finite, and finite/infinite.  */
+  /* Recover infinities and zeros that computed as NaN+iNaN; the only
+     cases are nonzero/zero, infinite/finite, and finite/infinite.  */
   if (isnan (x) && isnan (y))
     {
       if (c == 0.0 && d == 0.0 && (!isnan (a) || !isnan (b)))

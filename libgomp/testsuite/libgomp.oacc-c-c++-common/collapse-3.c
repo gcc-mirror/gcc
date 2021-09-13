@@ -7,7 +7,7 @@
 int
 main (void)
 {
-  int i2, l = 0, r = 0;
+  int i2, l = 0, r = 0, l2 = 0;
   int a[3][3][3];
 
   memset (a, '\0', sizeof (a));
@@ -27,13 +27,24 @@ main (void)
 		l += 1;
     }
 
+  /*  Test loop with >= condition.  */
+#pragma acc parallel
+    {
+      #pragma acc loop collapse(2) reduction(|:l2)
+	for (i2 = 0; i2 < 2; i2++)
+	  for (int j = 1; j >= 0; j--)
+	    for (int k = 0; k < 2; k++)
+	      if (a[i2][j][k] != i2 + j * 4 + k * 16)
+		l2 += 1;
+    }
+
     for (i2 = 0; i2 < 2; i2++)
       for (int j = 0; j < 2; j++)
 	for (int k = 0; k < 2; k++)
 	  if (a[i2][j][k] != i2 + j * 4 + k * 16)
 	    r += 1;
 
-  if (l != r)
+  if (l != r || l2 != r)
     abort ();
   return 0;
 }

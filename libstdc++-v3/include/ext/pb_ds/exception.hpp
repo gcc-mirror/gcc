@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -87,7 +87,7 @@ namespace __gnu_pbds
   inline void
   __throw_resize_error()
   { _GLIBCXX_THROW_OR_ABORT(resize_error()); }
-  //@}
+  ///@}
 } // namespace __gnu_pbds
 
 #endif

@@ -1,5 +1,5 @@
 /* go-c.h -- Header file for go frontend gcc C interface.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,6 +41,7 @@ struct go_create_gogo_args
   const char* prefix;
   const char* relative_import_path;
   const char* c_header;
+  const char* embedcfg;
   Backend* backend;
   Linemap* linemap;
   bool check_divide_by_zero;

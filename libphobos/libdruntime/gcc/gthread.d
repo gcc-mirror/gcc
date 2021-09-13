@@ -1,5 +1,5 @@
 // GNU D Compiler thread support for emulated TLS routines.
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 
 // GCC is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -86,10 +86,12 @@ else static if (GNU_Thread_Model == ThreadModel.Single)
 }
 else static if (GNU_Thread_Model == ThreadModel.Win32)
 {
+    import core.stdc.config;
+
     struct __gthread_once_t
     {
-        INT done;
-        LONG started;
+        int done;
+        c_long started;
     }
 
     int __gthr_win32_key_create(__gthread_key_t* keyp, GthreadDestroyFn dtor);

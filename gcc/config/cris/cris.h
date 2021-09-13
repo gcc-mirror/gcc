@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -352,13 +352,6 @@ extern int cris_cpu_version;
    with other GNU/Linux ports (i.e. elfos.h users).  */
 #undef PCC_BITFIELD_TYPE_MATTERS
 
-/* This is only used for non-scalars.  Strange stuff happens to structs
-   (FIXME: What?) if we use anything larger than largest actually used
-   datum size, so lets make it 32.  The type "long long" will still work
-   as usual.  We can still have DImode insns, but they will only be used
-   for scalar data (i.e. long long).  */
-#define MAX_FIXED_MODE_SIZE 32
-
 
 /* Node: Type Layout */
 
@@ -380,8 +373,8 @@ extern int cris_cpu_version;
 /* Node: Register Basics */
 
 /*  We count all 16 non-special registers, SRP, a faked argument
-    pointer register, MOF and CCR/DCCR.  */
-#define FIRST_PSEUDO_REGISTER (16 + 1 + 1 + 1 + 1)
+    pointer register, MOF, CCR/DCCR, and the faked frame-pointer.  */
+#define FIRST_PSEUDO_REGISTER (16 + 1 + 1 + 1 + 1 + 1)
 
 /* For CRIS, these are r15 (pc) and r14 (sp). Register r8 is used as a
    frame-pointer, but is not fixed.  SRP is not included in general
@@ -389,12 +382,12 @@ extern int cris_cpu_version;
    registers are fixed at the moment.  The faked argument pointer register
    is fixed too.  */
 #define FIXED_REGISTERS \
- {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1}
+ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1}
 
 /* Register r9 is used for structure-address, r10-r13 for parameters,
    r10- for return values.  */
 #define CALL_USED_REGISTERS \
- {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1}
+ {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1}
 
 /* Node: Allocation Order */
 
@@ -417,7 +410,8 @@ extern int cris_cpu_version;
     Use struct-return address first, since very few functions use
    structure return values so it is likely to be available.  */
 #define REG_ALLOC_ORDER \
- {9, 13, 12, 11, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 17, 16, 18, 19}
+ {9, 13, 12, 11, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 17, 16, 18, 19,	\
+  20}
 
 
 /* Node: Leaf Functions */
@@ -458,6 +452,9 @@ enum reg_class
 #define CRIS_SPECIAL_REGS_CONTENTS					\
  ((1 << CRIS_SRP_REGNUM) | (1 << CRIS_MOF_REGNUM) | (1 << CRIS_CC0_REGNUM))
 
+#define CRIS_FAKED_REGS_CONTENTS \
+ ((1 << CRIS_AP_REGNUM) | (1 << CRIS_FP_REGNUM))
+
 /* Count in the faked argument register in GENERAL_REGS.  Keep out SRP.  */
 #define REG_CLASS_CONTENTS			\
   {						\
@@ -471,13 +468,13 @@ enum reg_class
    {CRIS_SPECIAL_REGS_CONTENTS},		\
    {CRIS_SPECIAL_REGS_CONTENTS			\
     | (1 << CRIS_ACR_REGNUM)},			\
-   {(0xffff | (1 << CRIS_AP_REGNUM))		\
+   {(0xffff | CRIS_FAKED_REGS_CONTENTS)		\
     & ~(1 << CRIS_ACR_REGNUM)},			\
-   {(0xffff | (1 << CRIS_AP_REGNUM)		\
+   {(0xffff | CRIS_FAKED_REGS_CONTENTS		\
     | CRIS_SPECIAL_REGS_CONTENTS)		\
     & ~(1 << CRIS_ACR_REGNUM)},			\
-   {0xffff | (1 << CRIS_AP_REGNUM)},		\
-   {0xffff | (1 << CRIS_AP_REGNUM)		\
+   {0xffff | CRIS_FAKED_REGS_CONTENTS},		\
+   {0xffff | CRIS_FAKED_REGS_CONTENTS		\
     | CRIS_SPECIAL_REGS_CONTENTS}		\
   }
 
@@ -500,8 +497,10 @@ enum reg_class
    allocation.  */
 #define REGNO_OK_FOR_BASE_P(REGNO)					\
  ((REGNO) <= CRIS_LAST_GENERAL_REGISTER					\
+  || (REGNO) == FRAME_POINTER_REGNUM					\
   || (REGNO) == ARG_POINTER_REGNUM					\
   || (unsigned) reg_renumber[REGNO] <= CRIS_LAST_GENERAL_REGISTER	\
+  || (unsigned) reg_renumber[REGNO] == FRAME_POINTER_REGNUM		\
   || (unsigned) reg_renumber[REGNO] == ARG_POINTER_REGNUM)
 
 /* See REGNO_OK_FOR_BASE_P.  */
@@ -587,6 +586,9 @@ enum reg_class
 
 /* Register used for frame pointer.  This is also the last of the saved
    registers, when a frame pointer is not used.  */
+#define HARD_FRAME_POINTER_REGNUM CRIS_REAL_FP_REGNUM
+
+/* Faked register, is always eliminated to at least CRIS_REAL_FP_REGNUM.  */
 #define FRAME_POINTER_REGNUM CRIS_FP_REGNUM
 
 /* Faked register, is always eliminated.  We need it to eliminate
@@ -595,13 +597,17 @@ enum reg_class
 
 #define STATIC_CHAIN_REGNUM CRIS_STATIC_CHAIN_REGNUM
 
+/* No unwind context is needed for faked registers nor DCCR.  Currently not MOF
+   too, but let's keep that open.  */
+#define DWARF_FRAME_REGISTERS (CRIS_MOF_REGNUM + 1)
 
 /* Node: Elimination */
 
 #define ELIMINABLE_REGS				\
  {{ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
-  {ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},	\
-  {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+  {ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
+  {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
+  {FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
  (OFFSET) = cris_initial_elimination_offset (FROM, TO)
@@ -822,7 +828,8 @@ struct cum_args {int regs;};
 
 #define REGISTER_NAMES					\
  {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8",	\
-  "r9", "r10", "r11", "r12", "r13", "sp", "pc", "srp", "mof", "faked_ap", "dccr"}
+  "r9", "r10", "r11", "r12", "r13", "sp", "pc", "srp",	\
+  "mof", "faked_ap", "dccr", "faked_fp"}
 
 #define ADDITIONAL_REGISTER_NAMES \
  {{"r14", 14}, {"r15", 15}}
@@ -892,24 +899,6 @@ struct cum_args {int regs;};
  (REGNO))
 
 /* FIXME: Investigate DEBUGGER_AUTO_OFFSET, DEBUGGER_ARG_OFFSET.  */
-
-
-/* Node: DBX Options */
-
-/* Is this correct? Check later.  */
-#define DBX_NO_XREFS
-
-#define DBX_CONTIN_LENGTH 0
-
-/* FIXME: Is this needed when we have 0 DBX_CONTIN_LENGTH?  */
-#define DBX_CONTIN_CHAR '?'
-
-
-/* Node: DBX Hooks */
-/* (no definitions) */
-
-/* Node: File names and DBX */
-/* (no definitions) */
 
 
 /* Node: DWARF */

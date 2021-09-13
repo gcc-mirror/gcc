@@ -1,5 +1,5 @@
 /* Target machine subroutines for Altera Nios II.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -1179,44 +1179,17 @@ nios2_custom_check_insns (void)
 	for (j = 0; j < ARRAY_SIZE (nios2_fpu_insn); j++)
 	  if (N2FPU_DOUBLE_REQUIRED_P (j) && ! N2FPU_ENABLED_P (j))
 	    {
-	      error ("switch %<-mcustom-%s%> is required for double "
-		     "precision floating point", N2FPU_NAME (j));
+	      error ("switch %<-mcustom-%s%> is required for "
+		     "double-precision floating-point", N2FPU_NAME (j));
 	      errors = true;
 	    }
 	break;
       }
 
-  /* Warn if the user has certain exotic operations that won't get used
-     without -funsafe-math-optimizations.  See expand_builtin () in
-     builtins.c.  */
-  if (!flag_unsafe_math_optimizations)
-    for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
-      if (N2FPU_ENABLED_P (i) && N2FPU_UNSAFE_P (i))
-	warning (0, "switch %<-mcustom-%s%> has no effect unless "
-		 "%<-funsafe-math-optimizations%> is specified",
-		 N2FPU_NAME (i));
-
-  /* Warn if the user is trying to use -mcustom-fmins et. al, that won't
-     get used without -ffinite-math-only.  See fold_builtin_fmin_fmax ()
-     in builtins.c.  */
-  if (!flag_finite_math_only)
-    for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
-      if (N2FPU_ENABLED_P (i) && N2FPU_FINITE_P (i))
-	warning (0, "switch %<-mcustom-%s%> has no effect unless "
-		 "%<-ffinite-math-only%> is specified", N2FPU_NAME (i));
-
-  /* Warn if the user is trying to use a custom rounding instruction
-     that won't get used without -fno-math-errno.  See
-     expand_builtin_int_roundingfn_2 () in builtins.c.  */
-  if (flag_errno_math)
-    for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
-      if (N2FPU_ENABLED_P (i) && N2FPU_NO_ERRNO_P (i))
-	warning (0, "switch %<-mcustom-%s%> has no effect unless "
-		 "%<-fno-math-errno%> is specified", N2FPU_NAME (i));
-
   if (errors || custom_code_conflict)
     fatal_error (input_location,
-		 "conflicting use of %<-mcustom%> switches, target attributes, "
+		 "conflicting use of %<-mcustom%> switches, "
+		 "target attributes, "
 		 "and/or %<__builtin_custom_%> functions");
 }
 
@@ -1236,7 +1209,7 @@ struct nios2_fpu_config
   int code[n2fpu_code_num];
 };
 
-#define NIOS2_FPU_CONFIG_NUM 3
+#define NIOS2_FPU_CONFIG_NUM 4
 static struct nios2_fpu_config custom_fpu_config[NIOS2_FPU_CONFIG_NUM];
 
 static void
@@ -1275,6 +1248,27 @@ nios2_init_fpu_configs (void)
   cfg->code[n2fpu_fcmples] = 249;
   cfg->code[n2fpu_fcmpeqs] = 250;
   cfg->code[n2fpu_fcmpnes] = 251;
+  cfg->code[n2fpu_fmuls]   = 252;
+  cfg->code[n2fpu_fadds]   = 253;
+  cfg->code[n2fpu_fsubs]   = 254;
+  cfg->code[n2fpu_fdivs]   = 255;
+
+  NEXT_FPU_CONFIG;
+  cfg->name = "fph2";
+  cfg->code[n2fpu_fabss]   = 224;
+  cfg->code[n2fpu_fnegs]   = 225;
+  cfg->code[n2fpu_fcmpnes] = 226;
+  cfg->code[n2fpu_fcmpeqs] = 227;
+  cfg->code[n2fpu_fcmpges] = 228;
+  cfg->code[n2fpu_fcmpgts] = 229;
+  cfg->code[n2fpu_fcmples] = 230;
+  cfg->code[n2fpu_fcmplts] = 231;
+  cfg->code[n2fpu_fmaxs]   = 232;
+  cfg->code[n2fpu_fmins]   = 233;
+  cfg->code[n2fpu_round]   = 248;
+  cfg->code[n2fpu_fixsi]   = 249;
+  cfg->code[n2fpu_floatis] = 250;
+  cfg->code[n2fpu_fsqrts]  = 251;
   cfg->code[n2fpu_fmuls]   = 252;
   cfg->code[n2fpu_fadds]   = 253;
   cfg->code[n2fpu_fsubs]   = 254;
@@ -1385,11 +1379,11 @@ nios2_option_override (void)
   if (flag_pic)
     {
       if (nios2_gpopt_option != gpopt_none)
-	error ("%<-mgpopt%> not supported with PIC.");
+	error ("%<-mgpopt%> not supported with PIC");
       if (nios2_gprel_sec)
-	error ("%<-mgprel-sec=%> not supported with PIC.");
+	error ("%<-mgprel-sec=%> not supported with PIC");
       if (nios2_r0rel_sec)
-	error ("%<-mr0rel-sec=%> not supported with PIC.");
+	error ("%<-mr0rel-sec=%> not supported with PIC");
     }
 
   /* Process -mgprel-sec= and -m0rel-sec=.  */
@@ -1397,13 +1391,13 @@ nios2_option_override (void)
     {
       if (regcomp (&nios2_gprel_sec_regex, nios2_gprel_sec, 
 		   REG_EXTENDED | REG_NOSUB))
-	error ("%<-mgprel-sec=%> argument is not a valid regular expression.");
+	error ("%<-mgprel-sec=%> argument is not a valid regular expression");
     }
   if (nios2_r0rel_sec)
     {
       if (regcomp (&nios2_r0rel_sec_regex, nios2_r0rel_sec, 
 		   REG_EXTENDED | REG_NOSUB))
-	error ("%<-mr0rel-sec=%> argument is not a valid regular expression.");
+	error ("%<-mr0rel-sec=%> argument is not a valid regular expression");
     }
 
   /* If we don't have mul, we don't have mulx either!  */
@@ -2342,9 +2336,9 @@ static bool
 nios2_small_section_name_p (const char *section)
 {
   return (strcmp (section, ".sbss") == 0
-	  || strncmp (section, ".sbss.", 6) == 0
+	  || startswith (section, ".sbss.")
 	  || strcmp (section, ".sdata") == 0
-	  || strncmp (section, ".sdata.", 7) == 0
+	  || startswith (section, ".sdata.")
 	  || (nios2_gprel_sec 
 	      && regexec (&nios2_gprel_sec_regex, section, 0, NULL, 0) == 0));
 }
@@ -3581,8 +3575,9 @@ nios2_expand_fpu_builtin (tree exp, unsigned int code, rtx target)
 
   if (N2FPU_N (code) < 0)
     fatal_error (input_location,
-		 "Cannot call %<__builtin_custom_%s%> without specifying switch"
-		 " %<-mcustom-%s%>", N2FPU_NAME (code), N2FPU_NAME (code));
+		 "cannot call %<__builtin_custom_%s%> without specifying "
+		 "switch %<-mcustom-%s%>",
+		 N2FPU_NAME (code), N2FPU_NAME (code));
   if (has_target_p)
     create_output_operand (&ops[opno++], target, dst_mode);
   else
@@ -3648,10 +3643,10 @@ nios2_init_custom_builtins (int start_code)
 	    = build_function_type_list (ret_type, integer_type_node,
 					op[rhs1].type, op[rhs2].type,
 					NULL_TREE);
-	  snprintf (builtin_name + n, 32 - n, "%sn%s%s",
-		    op[lhs].c, op[rhs1].c, op[rhs2].c);
 	  /* Save copy of parameter string into custom_builtin_name[].  */
-	  strncpy (custom_builtin_name[builtin_code], builtin_name + n, 5);
+	  snprintf (custom_builtin_name[builtin_code], 5, "%sn%s%s",
+		    op[lhs].c, op[rhs1].c, op[rhs2].c);
+	  strncpy (builtin_name + n, custom_builtin_name[builtin_code], 5);
 	  fndecl =
 	    add_builtin_function (builtin_name, builtin_ftype,
 				  start_code + builtin_code,
@@ -3689,7 +3684,7 @@ nios2_expand_custom_builtin (tree exp, unsigned int index, rtx target)
       if (argno == 0)
 	{
 	  if (!custom_insn_opcode (value, VOIDmode))
-	    error ("custom instruction opcode must be compile time "
+	    error ("custom instruction opcode must be a compile-time "
 		   "constant in the range 0-255 for %<__builtin_custom_%s%>",
 		   custom_builtin_name[index]);
 	}
@@ -3894,7 +3889,7 @@ nios2_expand_rdwrctl_builtin (tree exp, rtx target,
   struct expand_operand ops[MAX_RECOG_OPERANDS];
   if (!rdwrctl_operand (ctlcode, VOIDmode))
     {
-      error ("Control register number must be in range 0-31 for %s",
+      error ("control register number must be in range 0-31 for %s",
 	     d->name);
       return has_target_p ? gen_reg_rtx (SImode) : const0_rtx;
     }
@@ -3922,14 +3917,14 @@ nios2_expand_rdprs_builtin (tree exp, rtx target,
 
   if (!rdwrctl_operand (reg, VOIDmode))
     {
-      error ("Register number must be in range 0-31 for %s",
+      error ("register number must be in range 0-31 for %s",
 	     d->name);
       return gen_reg_rtx (SImode);
     }
 
   if (!rdprs_dcache_operand (imm, VOIDmode))
     {
-      error ("The immediate value must fit into a %d-bit integer for %s",
+      error ("immediate value must fit into a %d-bit integer for %s",
 	     (TARGET_ARCH_R2) ? 12 : 16, d->name);
       return gen_reg_rtx (SImode);
     }
@@ -3979,7 +3974,7 @@ nios2_expand_eni_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
   if (INTVAL (imm) != 0 && INTVAL (imm) != 1)
     {
-      error ("The ENI instruction operand must be either 0 or 1");
+      error ("the ENI instruction operand must be either 0 or 1");
       return const0_rtx;      
     }
   create_integer_operand (&ops[0], INTVAL (imm));
@@ -4007,7 +4002,7 @@ nios2_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
       if (d->arch > nios2_arch_option)
 	{
-	  error ("Builtin function %s requires Nios II R%d",
+	  error ("built-in function %s requires Nios II R%d",
 		 d->name, (int) d->arch);
 	  /* Given it is invalid, just generate a normal call.  */
 	  return expand_call (exp, target, ignore);
@@ -4087,14 +4082,16 @@ nios2_register_custom_code (unsigned int N, enum nios2_ccs_code status,
       if (custom_code_status[N] == CCS_FPU && index != custom_code_index[N])
 	{
 	  custom_code_conflict = true;
-	  error ("switch %<-mcustom-%s%> conflicts with switch %<-mcustom-%s%>",
+	  error ("switch %<-mcustom-%s%> conflicts with "
+		 "switch %<-mcustom-%s%>",
 		 N2FPU_NAME (custom_code_index[N]), N2FPU_NAME (index));
 	}
       else if (custom_code_status[N] == CCS_BUILTIN_CALL)
 	{
 	  custom_code_conflict = true;
-	  error ("call to %<__builtin_custom_%s%> conflicts with switch "
-		 "%<-mcustom-%s%>", custom_builtin_name[custom_code_index[N]],
+	  error ("call to %<__builtin_custom_%s%> conflicts with "
+		 "switch %<-mcustom-%s%>",
+		 custom_builtin_name[custom_code_index[N]],
 		 N2FPU_NAME (index));
 	}
     }
@@ -4103,8 +4100,9 @@ nios2_register_custom_code (unsigned int N, enum nios2_ccs_code status,
       if (custom_code_status[N] == CCS_FPU)
 	{
 	  custom_code_conflict = true;
-	  error ("call to %<__builtin_custom_%s%> conflicts with switch "
-		 "%<-mcustom-%s%>", custom_builtin_name[index],
+	  error ("call to %<__builtin_custom_%s%> conflicts with "
+		 "switch %<-mcustom-%s%>",
+		 custom_builtin_name[index],
 		 N2FPU_NAME (custom_code_index[N]));
 	}
       else
@@ -4201,23 +4199,23 @@ nios2_valid_target_attribute_rec (tree args)
 	    *p = '\0';
 	  if (eq) *eq = '\0';
 
-	  if (!strncmp (argstr, "no-", 3))
+	  if (startswith (argstr, "no-"))
 	    {
 	      no_opt = true;
 	      argstr += 3;
 	    }
-	  if (!strncmp (argstr, "custom-fpu-cfg", 14))
+	  if (startswith (argstr, "custom-fpu-cfg"))
 	    {
 	      char *end_eq = p;
 	      if (no_opt)
 		{
-		  error ("custom-fpu-cfg option does not support %<no-%>");
+		  error ("%<custom-fpu-cfg%> option does not support %<no-%>");
 		  return false;
 		}
 	      if (!eq)
 		{
-		  error ("custom-fpu-cfg option requires configuration"
-			 " argument");
+		  error ("%<custom-fpu-cfg%> option requires configuration "
+			 "argument");
 		  return false;
 		}
 	      /* Increment and skip whitespace.  */
@@ -4227,13 +4225,12 @@ nios2_valid_target_attribute_rec (tree args)
 
 	      nios2_handle_custom_fpu_cfg (eq, end_eq + 1, true);
 	    }
-	  else if (!strncmp (argstr, "custom-", 7))
+	  else if (startswith (argstr, "custom-"))
 	    {
 	      int code = -1;
 	      unsigned int i;
 	      for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
-		if (!strncmp (argstr + 7, N2FPU_NAME (i),
-			      strlen (N2FPU_NAME (i))))
+		if (startswith (argstr + 7, N2FPU_NAME (i)))
 		  {
 		    /* Found insn.  */
 		    code = i;
@@ -4289,7 +4286,7 @@ nios2_valid_target_attribute_rec (tree args)
 	    }
 	  else
 	    {
-	      error ("%<%s%> is unknown", argstr);
+	      error ("invalid custom instruction option %qs", argstr);
 	      return false;
 	    }
 
@@ -4714,7 +4711,7 @@ nios2_add_insn_asm (rtx_insn *insn, rtx *operands)
 bool
 nios2_cdx_narrow_form_p (rtx_insn *insn)
 {
-  rtx pat, lhs, rhs1, rhs2;
+  rtx pat, lhs, rhs1 = NULL_RTX, rhs2 = NULL_RTX;
   enum attr_type type;
   if (!TARGET_HAS_CDX)
     return false;

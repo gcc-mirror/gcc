@@ -1,6 +1,6 @@
 ;;   This file contains instructions that support fixed-point operations
 ;;   for Atmel AVR micro controllers.
-;;   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+;;   Copyright (C) 2012-2021 Free Software Foundation, Inc.
 ;;
 ;;   Contributed by Sean D'Epagnier  (sean@depagnier.com)
 ;;                  Georg-Johann Lay (avr@gjlay.de)
@@ -56,27 +56,53 @@
    TA UTA
    QI HI SI DI])
 
-(define_insn "fract<FIXED_B:mode><FIXED_A:mode>2"
+(define_insn_and_split "fract<FIXED_B:mode><FIXED_A:mode>2"
   [(set (match_operand:FIXED_A 0 "register_operand" "=r")
         (fract_convert:FIXED_A
          (match_operand:FIXED_B 1 "register_operand" "r")))]
   "<FIXED_B:MODE>mode != <FIXED_A:MODE>mode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (fract_convert:FIXED_A
+                    (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*fract<FIXED_B:mode><FIXED_A:mode>2"
+  [(set (match_operand:FIXED_A 0 "register_operand" "=r")
+        (fract_convert:FIXED_A
+         (match_operand:FIXED_B 1 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "<FIXED_B:MODE>mode != <FIXED_A:MODE>mode
+   && reload_completed"
   {
     return avr_out_fract (insn, operands, true, NULL);
   }
-  [(set_attr "cc" "clobber")
-   (set_attr "adjust_len" "sfract")])
+  [(set_attr "adjust_len" "sfract")])
 
-(define_insn "fractuns<FIXED_B:mode><FIXED_A:mode>2"
+(define_insn_and_split "fractuns<FIXED_B:mode><FIXED_A:mode>2"
   [(set (match_operand:FIXED_A 0 "register_operand" "=r")
         (unsigned_fract_convert:FIXED_A
          (match_operand:FIXED_B 1 "register_operand" "r")))]
   "<FIXED_B:MODE>mode != <FIXED_A:MODE>mode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (unsigned_fract_convert:FIXED_A
+                    (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*fractuns<FIXED_B:mode><FIXED_A:mode>2"
+  [(set (match_operand:FIXED_A 0 "register_operand" "=r")
+        (unsigned_fract_convert:FIXED_A
+         (match_operand:FIXED_B 1 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "<FIXED_B:MODE>mode != <FIXED_A:MODE>mode
+   && reload_completed"
   {
     return avr_out_fract (insn, operands, false, NULL);
   }
-  [(set_attr "cc" "clobber")
-   (set_attr "adjust_len" "ufract")])
+  [(set_attr "adjust_len" "ufract")])
 
 ;******************************************************************************
 ;** Saturated Addition and Subtraction
@@ -92,29 +118,53 @@
 
 ;; "ssaddqq3"  "ssaddhq3"  "ssaddha3"  "ssaddsq3"  "ssaddsa3"
 ;; "sssubqq3"  "sssubhq3"  "sssubha3"  "sssubsq3"  "sssubsa3"
-(define_insn "<code_stdname><mode>3"
+(define_insn_and_split "<code_stdname><mode>3"
   [(set (match_operand:ALL124S 0 "register_operand"                          "=??d,d")
         (ss_addsub:ALL124S (match_operand:ALL124S 1 "register_operand" "<abelian>0,0")
                            (match_operand:ALL124S 2 "nonmemory_operand"         "r,Ynn")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ss_addsub:ALL124S (match_dup 1)
+                                      (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>3"
+  [(set (match_operand:ALL124S 0 "register_operand"                          "=??d,d")
+        (ss_addsub:ALL124S (match_operand:ALL124S 1 "register_operand" "<abelian>0,0")
+                           (match_operand:ALL124S 2 "nonmemory_operand"         "r,Ynn")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "cc" "clobber")
-   (set_attr "adjust_len" "plus")])
+  [(set_attr "adjust_len" "plus")])
 
 ;; "usadduqq3"  "usadduhq3"  "usadduha3" "usaddusq3"  "usaddusa3"
 ;; "ussubuqq3"  "ussubuhq3"  "ussubuha3" "ussubusq3"  "ussubusa3"
-(define_insn "<code_stdname><mode>3"
+(define_insn_and_split "<code_stdname><mode>3"
   [(set (match_operand:ALL124U 0 "register_operand"                          "=??r,d")
         (us_addsub:ALL124U (match_operand:ALL124U 1 "register_operand" "<abelian>0,0")
                            (match_operand:ALL124U 2 "nonmemory_operand"         "r,Ynn")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (us_addsub:ALL124U (match_dup 1)
+                                      (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>3"
+  [(set (match_operand:ALL124U 0 "register_operand"                          "=??r,d")
+        (us_addsub:ALL124U (match_operand:ALL124U 1 "register_operand" "<abelian>0,0")
+                           (match_operand:ALL124U 2 "nonmemory_operand"         "r,Ynn")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "cc" "clobber")
-   (set_attr "adjust_len" "plus")])
+  [(set_attr "adjust_len" "plus")])
 
 ;******************************************************************************
 ;** Saturated Negation and Absolute Value
@@ -134,21 +184,41 @@
     DONE;
   })
 
-(define_insn "ssnegqq2"
+(define_insn_and_split "ssnegqq2"
   [(set (match_operand:QQ 0 "register_operand"            "=r")
         (ss_neg:QQ (match_operand:QQ 1 "register_operand"  "0")))]
   ""
-  "neg %0\;brvc 0f\;dec %0\;0:"
-  [(set_attr "cc" "clobber")
-   (set_attr "length" "3")])
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ss_neg:QQ (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
 
-(define_insn "ssabsqq2"
+(define_insn "*ssnegqq2"
+  [(set (match_operand:QQ 0 "register_operand"            "=r")
+        (ss_neg:QQ (match_operand:QQ 1 "register_operand"  "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
+  "neg %0\;brvc 0f\;dec %0\;0:"
+  [(set_attr "length" "3")])
+
+(define_insn_and_split "ssabsqq2"
   [(set (match_operand:QQ 0 "register_operand"            "=r")
         (ss_abs:QQ (match_operand:QQ 1 "register_operand"  "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ss_abs:QQ (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ssabsqq2"
+  [(set (match_operand:QQ 0 "register_operand"            "=r")
+        (ss_abs:QQ (match_operand:QQ 1 "register_operand"  "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "sbrc %0,7\;neg %0\;sbrc %0,7\;dec %0"
-  [(set_attr "cc" "clobber")
-   (set_attr "length" "4")])
+  [(set_attr "length" "4")])
 
 ;; "ssneghq2"  "ssnegha2"  "ssnegsq2"  "ssnegsa2"
 ;; "ssabshq2"  "ssabsha2"  "ssabssq2"  "ssabssa2"
@@ -166,23 +236,43 @@
 
 ;; "*ssneghq2"  "*ssnegha2"
 ;; "*ssabshq2"  "*ssabsha2"
-(define_insn "*<code_stdname><mode>2"
+(define_insn_and_split "*<code_stdname><mode>2_split"
   [(set (reg:ALL2S 24)
         (ss_abs_neg:ALL2S (reg:ALL2S 24)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL2S 24)
+                   (ss_abs_neg:ALL2S (reg:ALL2S 24)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>2"
+  [(set (reg:ALL2S 24)
+        (ss_abs_neg:ALL2S (reg:ALL2S 24)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __<code_stdname>_2"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; "*ssnegsq2"  "*ssnegsa2"
 ;; "*ssabssq2"  "*ssabssa2"
-(define_insn "*<code_stdname><mode>2"
+(define_insn_and_split "*<code_stdname><mode>2_split"
   [(set (reg:ALL4S 22)
         (ss_abs_neg:ALL4S (reg:ALL4S 22)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL4S 22)
+                   (ss_abs_neg:ALL4S (reg:ALL4S 22)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>2"
+  [(set (reg:ALL4S 22)
+        (ss_abs_neg:ALL4S (reg:ALL4S 22)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __<code_stdname>_4"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;******************************************************************************
 ; mul
@@ -200,23 +290,47 @@
     DONE;
   })
 
-(define_insn "mulqq3_enh"
+(define_insn_and_split "mulqq3_enh"
   [(set (match_operand:QQ 0 "register_operand"         "=r")
         (mult:QQ (match_operand:QQ 1 "register_operand" "a")
                  (match_operand:QQ 2 "register_operand" "a")))]
   "AVR_HAVE_MUL"
-  "fmuls %1,%2\;dec r1\;brvs 0f\;inc r1\;0:\;mov %0,r1\;clr __zero_reg__"
-  [(set_attr "length" "6")
-   (set_attr "cc" "clobber")])
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (mult:QQ (match_dup 1)
+                            (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
 
-(define_insn "muluqq3_enh"
+(define_insn "*mulqq3_enh"
+  [(set (match_operand:QQ 0 "register_operand"         "=r")
+        (mult:QQ (match_operand:QQ 1 "register_operand" "a")
+                 (match_operand:QQ 2 "register_operand" "a")))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
+  "fmuls %1,%2\;dec r1\;brvs 0f\;inc r1\;0:\;mov %0,r1\;clr __zero_reg__"
+  [(set_attr "length" "6")])
+
+(define_insn_and_split "muluqq3_enh"
   [(set (match_operand:UQQ 0 "register_operand"          "=r")
         (mult:UQQ (match_operand:UQQ 1 "register_operand" "r")
                   (match_operand:UQQ 2 "register_operand" "r")))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (mult:UQQ (match_dup 1)
+                             (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*muluqq3_enh"
+  [(set (match_operand:UQQ 0 "register_operand"          "=r")
+        (mult:UQQ (match_operand:UQQ 1 "register_operand" "r")
+                  (match_operand:UQQ 2 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "mul %1,%2\;mov %0,r1\;clr __zero_reg__"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 (define_expand "mulqq3_nomul"
   [(set (reg:QQ 24)
@@ -255,16 +369,32 @@
     avr_fix_inputs (operands, 1 << 2, regmask (UQQmode, 22));
   })
 
-(define_insn "*mulqq3.call"
+(define_insn_and_split "*mulqq3.call_split"
   [(set (reg:QQ 23)
         (mult:QQ (reg:QQ 24)
                  (reg:QQ 25)))
    (clobber (reg:QI 22))
    (clobber (reg:HI 24))]
   "!AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:QQ 23)
+                   (mult:QQ (reg:QQ 24)
+                            (reg:QQ 25)))
+              (clobber (reg:QI 22))
+              (clobber (reg:HI 24))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulqq3.call"
+  [(set (reg:QQ 23)
+        (mult:QQ (reg:QQ 24)
+                 (reg:QQ 25)))
+   (clobber (reg:QI 22))
+   (clobber (reg:HI 24))
+   (clobber (reg:CC REG_CC))]
+  "!AVR_HAVE_MUL && reload_completed"
   "%~call __mulqq3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;; "mulhq3" "muluhq3"
@@ -288,15 +418,29 @@
 
 ;; "*mulhq3.call"  "*muluhq3.call"
 ;; "*mulha3.call"  "*muluha3.call"
-(define_insn "*mul<mode>3.call"
+(define_insn_and_split "*mul<mode>3.call_split"
   [(set (reg:ALL2QA 24)
         (mult:ALL2QA (reg:ALL2QA 18)
                      (reg:ALL2QA 26)))
    (clobber (reg:HI 22))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL2QA 24)
+                   (mult:ALL2QA (reg:ALL2QA 18)
+                                (reg:ALL2QA 26)))
+              (clobber (reg:HI 22))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mul<mode>3.call"
+  [(set (reg:ALL2QA 24)
+        (mult:ALL2QA (reg:ALL2QA 18)
+                     (reg:ALL2QA 26)))
+   (clobber (reg:HI 22))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __mul<mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;; On the enhanced core, don't clobber either input and use a separate output
@@ -318,14 +462,26 @@
   })
 
 ;; "*mulsa3.call" "*mulusa3.call"
-(define_insn "*mul<mode>3.call"
+(define_insn_and_split "*mul<mode>3.call_split"
   [(set (reg:ALL4A 24)
         (mult:ALL4A (reg:ALL4A 16)
                     (reg:ALL4A 20)))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL4A 24)
+                   (mult:ALL4A (reg:ALL4A 16)
+                               (reg:ALL4A 20)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mul<mode>3.call"
+  [(set (reg:ALL4A 24)
+        (mult:ALL4A (reg:ALL4A 16)
+                    (reg:ALL4A 20)))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __mul<mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ; / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ; div
@@ -351,15 +507,29 @@
 
 
 ;; "*divqq3.call" "*udivuqq3.call"
-(define_insn "*<code><mode>3.call"
+(define_insn_and_split "*<code><mode>3.call_split"
   [(set (reg:ALL1Q 24)
         (usdiv:ALL1Q (reg:ALL1Q 25)
                      (reg:ALL1Q 22)))
    (clobber (reg:QI 25))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL1Q 24)
+                   (usdiv:ALL1Q (reg:ALL1Q 25)
+                                (reg:ALL1Q 22)))
+              (clobber (reg:QI 25))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code><mode>3.call"
+  [(set (reg:ALL1Q 24)
+        (usdiv:ALL1Q (reg:ALL1Q 25)
+                     (reg:ALL1Q 22)))
+   (clobber (reg:QI 25))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __<code><mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; "divhq3" "udivuhq3"
 ;; "divha3" "udivuha3"
@@ -382,16 +552,32 @@
 
 ;; "*divhq3.call" "*udivuhq3.call"
 ;; "*divha3.call" "*udivuha3.call"
-(define_insn "*<code><mode>3.call"
+(define_insn_and_split "*<code><mode>3.call_split"
   [(set (reg:ALL2QA 24)
         (usdiv:ALL2QA (reg:ALL2QA 26)
                       (reg:ALL2QA 22)))
    (clobber (reg:HI 26))
    (clobber (reg:QI 21))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL2QA 24)
+                   (usdiv:ALL2QA (reg:ALL2QA 26)
+                                 (reg:ALL2QA 22)))
+              (clobber (reg:HI 26))
+              (clobber (reg:QI 21))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code><mode>3.call"
+  [(set (reg:ALL2QA 24)
+        (usdiv:ALL2QA (reg:ALL2QA 26)
+                      (reg:ALL2QA 22)))
+   (clobber (reg:HI 26))
+   (clobber (reg:QI 21))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __<code><mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; Note the first parameter gets passed in already offset by 2 bytes
 
@@ -414,16 +600,32 @@
   })
 
 ;; "*divsa3.call" "*udivusa3.call"
-(define_insn "*<code><mode>3.call"
+(define_insn_and_split "*<code><mode>3.call_split"
   [(set (reg:ALL4A 22)
         (usdiv:ALL4A (reg:ALL4A 24)
                      (reg:ALL4A 18)))
    (clobber (reg:HI 26))
    (clobber (reg:HI 30))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL4A 22)
+                   (usdiv:ALL4A (reg:ALL4A 24)
+                                (reg:ALL4A 18)))
+              (clobber (reg:HI 26))
+              (clobber (reg:HI 30))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code><mode>3.call"
+  [(set (reg:ALL4A 22)
+        (usdiv:ALL4A (reg:ALL4A 24)
+                     (reg:ALL4A 18)))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __<code><mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;******************************************************************************
@@ -474,51 +676,109 @@
 ;; "roundqq3_const"  "rounduqq3_const"
 ;; "roundhq3_const"  "rounduhq3_const"  "roundha3_const"  "rounduha3_const"
 ;; "roundsq3_const"  "roundusq3_const"  "roundsa3_const"  "roundusa3_const"
-(define_insn "round<mode>3_const"
+(define_insn_and_split "round<mode>3_const"
   [(set (match_operand:ALL124QA 0 "register_operand"                  "=d")
         (unspec:ALL124QA [(match_operand:ALL124QA 1 "register_operand" "0")
                           (match_operand:HI 2 "const_int_operand"      "n")
                           (const_int 0)]
                          UNSPEC_ROUND))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (unspec:ALL124QA [(match_dup 1)
+                                     (match_dup 2)
+                                     (const_int 0)]
+                                    UNSPEC_ROUND))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*round<mode>3_const"
+  [(set (match_operand:ALL124QA 0 "register_operand"                  "=d")
+        (unspec:ALL124QA [(match_operand:ALL124QA 1 "register_operand" "0")
+                          (match_operand:HI 2 "const_int_operand"      "n")
+                          (const_int 0)]
+                         UNSPEC_ROUND))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_round (insn, operands);
   }
-  [(set_attr "cc" "clobber")
-   (set_attr "adjust_len" "round")])
+  [(set_attr "adjust_len" "round")])
 
 
 ;; "*roundqq3.libgcc"  "*rounduqq3.libgcc"
-(define_insn "*round<mode>3.libgcc"
+(define_insn_and_split "*round<mode>3.libgcc_split"
   [(set (reg:ALL1Q 24)
         (unspec:ALL1Q [(reg:ALL1Q 22)
                        (reg:QI 24)] UNSPEC_ROUND))
    (clobber (reg:ALL1Q 22))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL1Q 24)
+                   (unspec:ALL1Q [(reg:ALL1Q 22)
+                                  (reg:QI 24)] UNSPEC_ROUND))
+              (clobber (reg:ALL1Q 22))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*round<mode>3.libgcc"
+  [(set (reg:ALL1Q 24)
+        (unspec:ALL1Q [(reg:ALL1Q 22)
+                       (reg:QI 24)] UNSPEC_ROUND))
+   (clobber (reg:ALL1Q 22))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __round<mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; "*roundhq3.libgcc"  "*rounduhq3.libgcc"
 ;; "*roundha3.libgcc"  "*rounduha3.libgcc"
-(define_insn "*round<mode>3.libgcc"
+(define_insn_and_split "*round<mode>3.libgcc_split"
   [(set (reg:ALL2QA 24)
         (unspec:ALL2QA [(reg:ALL2QA 22)
                         (reg:QI 24)] UNSPEC_ROUND))
    (clobber (reg:ALL2QA 22))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL2QA 24)
+                   (unspec:ALL2QA [(reg:ALL2QA 22)
+                                   (reg:QI 24)] UNSPEC_ROUND))
+              (clobber (reg:ALL2QA 22))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*round<mode>3.libgcc"
+  [(set (reg:ALL2QA 24)
+        (unspec:ALL2QA [(reg:ALL2QA 22)
+                        (reg:QI 24)] UNSPEC_ROUND))
+   (clobber (reg:ALL2QA 22))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __round<mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; "*roundsq3.libgcc"  "*roundusq3.libgcc"
 ;; "*roundsa3.libgcc"  "*roundusa3.libgcc"
-(define_insn "*round<mode>3.libgcc"
+(define_insn_and_split "*round<mode>3.libgcc_split"
   [(set (reg:ALL4QA 22)
         (unspec:ALL4QA [(reg:ALL4QA 18)
                         (reg:QI 24)] UNSPEC_ROUND))
    (clobber (reg:ALL4QA 18))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL4QA 22)
+                   (unspec:ALL4QA [(reg:ALL4QA 18)
+                                   (reg:QI 24)] UNSPEC_ROUND))
+              (clobber (reg:ALL4QA 18))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*round<mode>3.libgcc"
+  [(set (reg:ALL4QA 22)
+        (unspec:ALL4QA [(reg:ALL4QA 18)
+                        (reg:QI 24)] UNSPEC_ROUND))
+   (clobber (reg:ALL4QA 18))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __round<mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])

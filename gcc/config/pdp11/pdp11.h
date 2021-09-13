@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+   Copyright (C) 1994-2021 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -618,10 +618,12 @@ extern int current_first_parm_offset;
     fprintf (FILE, "\t.even\n")
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  if (TARGET_DEC_ASM) \
-    fprintf (FILE, "\t.blkb\t%o\n", (SIZE) & 0xffff);	\
-  else							\
-    fprintf (FILE, "\t.=.+ %#o\n", (SIZE) & 0xffff);
+  do {								\
+    if (TARGET_DEC_ASM)						\
+      fprintf (FILE, "\t.blkb\t%o\n", (int) ((SIZE) & 0xffff));	\
+    else							\
+      fprintf (FILE, "\t.=.+ %#o\n", (int) ((SIZE) & 0xffff));	\
+  } while (0)
 
 /* This says how to output an assembler line
    to define a global common symbol.  */

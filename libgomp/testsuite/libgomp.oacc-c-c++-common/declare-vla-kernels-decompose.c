@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fopenacc-kernels=decompose" } */
+/* { dg-additional-options "--param=openacc-kernels=decompose" } */
 
 /* See also 'declare-vla-kernels-decompose-ice-1.c'.  */
 

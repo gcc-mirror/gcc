@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for Xtensa.
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

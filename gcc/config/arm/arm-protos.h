@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.c and pe.c
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -101,7 +101,7 @@ extern char *neon_output_shift_immediate (const char *, char, rtx *,
 					  machine_mode, int, bool);
 extern void neon_pairwise_reduce (rtx, rtx, machine_mode,
 				  rtx (*) (rtx, rtx, rtx));
-extern rtx neon_make_constant (rtx);
+extern rtx neon_make_constant (rtx, bool generate = true);
 extern tree arm_builtin_vectorized_function (unsigned int, tree, tree);
 extern void neon_expand_vector_init (rtx, rtx);
 extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
@@ -243,8 +243,7 @@ extern bool arm_change_mode_p (tree);
 extern tree arm_valid_target_attribute_tree (tree, struct gcc_options *,
 					     struct gcc_options *);
 extern void arm_configure_build_target (struct arm_build_target *,
-					struct cl_target_option *,
-					struct gcc_options *, bool);
+					struct cl_target_option *, bool);
 extern void arm_option_reconfigure_globals (void);
 extern void arm_options_perform_arch_sanity_checks (void);
 extern void arm_pr_long_calls (struct cpp_reader *);
@@ -373,7 +372,7 @@ extern void arm_emit_coreregs_64bit_shift (enum rtx_code, rtx, rtx, rtx, rtx,
 extern bool arm_fusion_enabled_p (tune_params::fuse_ops);
 extern bool arm_valid_symbolic_address_p (rtx);
 extern bool arm_validize_comparison (rtx *, rtx *, rtx *);
-extern bool arm_expand_vector_compare (rtx, rtx_code, rtx, rtx, bool);
+extern bool arm_expand_vector_compare (rtx, rtx_code, rtx, rtx, bool, bool);
 #endif /* RTX_CODE */
 
 extern bool arm_gen_setmem (rtx *);
@@ -397,6 +396,7 @@ extern void arm_cpu_cpp_builtins (struct cpp_reader *);
 
 /* Defined in arm-d.c  */
 extern void arm_d_target_versions (void);
+extern void arm_d_register_target_info (void);
 
 extern bool arm_is_constant_pool_ref (rtx);
 

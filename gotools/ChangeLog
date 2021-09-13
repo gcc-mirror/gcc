@@ -1,3 +1,11 @@
+2021-02-02  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-embed): New target.
+	(check): Depend on check-embed.  Examine embed-testlog.
+	(mostlyclean-local): Add check-embed-dir.
+	(.PHONY): Add check-embed.
+	* Makefile.in: Regenerate.
+
 2020-12-30  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (check-runtime): Don't create check-runtime-dir.

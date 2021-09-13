@@ -1,5 +1,5 @@
 /* Tree inlining hooks and declarations.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -150,9 +150,9 @@ struct copy_body_data
   vec<gdebug *> debug_stmts;
 
   /* A map from local declarations in the inlined function to
-     equivalents in the function into which it is being inlined, where
-     the originals have been mapped to a value rather than to a
-     variable.  */
+     equivalents in the function into which it is being inlined,
+     where the originals have been mapped to a value rather than
+     to a variable.  */
   hash_map<tree, tree> *debug_map;
 
   /* A map from the inlined functions dependence info cliques to

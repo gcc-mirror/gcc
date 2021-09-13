@@ -10,6 +10,6 @@ void test (void)
 	got = 1;
       else
 	if (got)
-	  __analyzer_dump_path (); /* { dg-message "path" "" { xfail *-*-* } } */
+	  __analyzer_dump_path (); /* { dg-message "path" } */
     }
 }

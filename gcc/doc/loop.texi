@@ -1,4 +1,4 @@
-@c Copyright (C) 2006-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2006-2021 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -79,14 +79,15 @@ and its subloops in the numbering.  The index of a loop never changes.
 
 The entries of the @code{larray} field should not be accessed directly.
 The function @code{get_loop} returns the loop description for a loop with
-the given index.  @code{number_of_loops} function returns number of
-loops in the function.  To traverse all loops, use @code{FOR_EACH_LOOP}
-macro.  The @code{flags} argument of the macro is used to determine
-the direction of traversal and the set of loops visited.  Each loop is
+the given index.  @code{number_of_loops} function returns number of loops
+in the function.  To traverse all loops, use a range-based for loop with
+class @code{loops_list} instance. The @code{flags} argument passed to the
+constructor function of class @code{loops_list} is used to determine the
+direction of traversal and the set of loops visited.  Each loop is
 guaranteed to be visited exactly once, regardless of the changes to the
 loop tree, and the loops may be removed during the traversal.  The newly
-created loops are never traversed, if they need to be visited, this
-must be done separately after their creation.
+created loops are never traversed, if they need to be visited, this must
+be done separately after their creation.
 
 Each basic block contains the reference to the innermost loop it belongs
 to (@code{loop_father}).  For this reason, it is only possible to have

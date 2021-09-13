@@ -1,4 +1,4 @@
-#   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+#   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 #   Written By Timothy Wall
 #
 # This file is free software; you can redistribute it and/or modify it

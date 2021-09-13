@@ -19,7 +19,9 @@ crypto/dsa
 crypto/ecdsa
 crypto/ed25519
 crypto/ed25519/internal/edwards25519
+crypto/ed25519/internal/edwards25519/field
 crypto/elliptic
+crypto/elliptic/internal/fiat
 crypto/hmac
 crypto/internal/randutil
 crypto/internal/subtle
@@ -61,6 +63,7 @@ flag
 fmt
 go/ast
 go/build
+go/build/constraint
 go/constant
 go/doc
 go/format
@@ -68,6 +71,7 @@ go/importer
 go/internal/gccgoimporter
 go/internal/gcimporter
 go/internal/srcimporter
+go/internal/typeparams
 go/parser
 go/printer
 go/scanner
@@ -109,12 +113,16 @@ image/internal/imageutil
 image/jpeg
 image/png
 index/suffixarray
+internal/buildcfg
 internal/bytealg
 internal/cfg
 internal/cpu
+internal/execabs
 internal/fmtsort
+internal/goexperiment
 internal/goroot
 internal/goversion
+internal/itoa
 internal/lazyregexp
 internal/lazytemplate
 internal/nettrace
@@ -155,6 +163,8 @@ net/http/httptest
 net/http/httptrace
 net/http/httputil
 net/http/internal
+net/http/internal/ascii
+net/http/internal/testcert
 net/http/pprof
 net/internal/socktest
 net/mail
@@ -171,9 +181,12 @@ os/user
 path
 path/filepath
 reflect
+reflect/internal/example1
+reflect/internal/example2
 regexp
 regexp/syntax
 runtime
+runtime/cgo
 runtime/debug
 runtime/internal/atomic
 runtime/internal/math

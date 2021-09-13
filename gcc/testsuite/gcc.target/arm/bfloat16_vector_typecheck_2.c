@@ -2,6 +2,8 @@
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } } */
 /* { dg-require-effective-target arm_v8_2a_fp16_neon_ok } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
+/* { dg-add-options arm_v8_2a_fp16_neon } */
+/* { dg-add-options arm_v8_2a_bf16_neon } */
 /* { dg-additional-options "-march=armv8.6-a+bf16+fp16 -Wno-pedantic -O3 --save-temps" }  */
 
 #include <arm_neon.h>
@@ -25,8 +27,8 @@ float is_a_float16;
 double is_a_double;
 
 bfloat16x8_t foo3 (void) { return (bfloat16x8_t) 0x12345678123456781234567812345678; }
- /* { dg-error {integer constant is too large for its type} "" {target *-*-*} 27 } */
- /* { dg-error {cannot convert a value of type 'long long int' to vector type '__simd128_bfloat16_t' which has different size} "" {target *-*-*} 27 } */
+ /* { dg-error {integer constant is too large for its type} "" {target *-*-*} .-1 } */
+ /* { dg-error {cannot convert a value of type 'long long int' to vector type '__simd128_bfloat16_t' which has different size} "" {target *-*-*} .-2 } */
 
 bfloat16x8_t footest (bfloat16x8_t vector0)
 {

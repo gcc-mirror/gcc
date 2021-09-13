@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Free Software Foundation, Inc.
+/* Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -34,7 +34,7 @@
 #define __DISABLE_AMX_TILE__
 #endif /* __AMX_TILE__ */
 
-#if defined(__x86_64__) && defined(__AMX_TILE__)
+#if defined(__x86_64__)
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _tile_loadconfig (const void *__config)

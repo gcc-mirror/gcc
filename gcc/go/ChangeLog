@@ -1,3 +1,46 @@
+2021-06-29  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::static_chain_variable): Set
+	DECL_NAMELESS on the new decl.
+	(Gcc_backend::temporary_variable): Likewise.
+	(Gcc_backend::function): Set DECL_NAMELESS on the result decl.
+
+2021-05-27  Ian Lance Taylor  <iant@golang.org>
+
+	* gccgo.texi (Function Names): Don't HTML quote ampersand.
+
+2021-05-24  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/100537
+	* go-gcc.cc (class Gcc_backend): Update methods that create
+	variables to take a flags parameter.
+
+2021-01-28  Ian Lance Taylor  <iant@golang.org>
+
+	* gospec.c (lang_specific_driver): Add -g if no debugging options
+	were passed.
+
+2021-01-15  Ian Lance Taylor  <iant@golang.org>
+
+	* Make-lang.in (GO_OBJS): Add go/embed.o.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt (fgo-embedcfg=): Add full stop at the end of description.
+
+2021-01-05  Ian Lance Taylor  <iant@golang.org>
+
+	* lang.opt (fgo-embedcfg): New option.
+	* go-c.h (struct go_create_gogo_args): Add embedcfg field.
+	* go-lang.c (go_embedcfg): New static variable.
+	(go_langhook_init): Set go_create_gogo_args embedcfg field.
+	(go_langhook_handle_option): Handle OPT_fgo_embedcfg_.
+	* gccgo.texi (Invoking gccgo): Document -fgo-embedcfg.
+
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
 2020-12-22  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/98402
@@ -1744,7 +1787,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2020 Free Software Foundation, Inc.
+Copyright (C) 2010-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

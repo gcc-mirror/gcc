@@ -1,5 +1,5 @@
 # config-lang.in -- Top level configure fragment for gcc D frontend.
-# Copyright (C) 2006-2020 Free Software Foundation, Inc.
+# Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ case "${noconfigdirs}" in
     ;;
 esac
 
-gtfiles="\$(srcdir)/d/d-tree.h \$(srcdir)/d/d-builtins.cc \$(srcdir)/d/d-lang.cc \$(srcdir)/d/modules.cc \$(srcdir)/d/typeinfo.cc"
+gtfiles="\$(srcdir)/d/d-tree.h \$(srcdir)/d/d-builtins.cc \$(srcdir)/d/d-lang.cc \$(srcdir)/d/typeinfo.cc"
 
 # Do not build by default.
 build_by_default="no"

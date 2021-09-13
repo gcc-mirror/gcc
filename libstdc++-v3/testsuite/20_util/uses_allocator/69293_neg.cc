@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2020 Free Software Foundation, Inc.
+// Copyright (C) 2016-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,5 +45,5 @@ test01()
   alloc_type a;
   std::tuple<X> t(std::allocator_arg, a); // this is required to be ill-formed
   // { dg-error "failed: .* uses_allocator is true" "" { target *-*-* } 0 }
-  // { dg-error "no matching function for call" "" { target c++2a } 0 }
+  // { dg-error "too many initializers for 'X'" "" { target c++2a } 0 }
 }

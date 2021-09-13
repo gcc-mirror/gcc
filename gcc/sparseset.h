@@ -1,5 +1,5 @@
 /* SparseSet implementation.
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Peter Bergner <bergner@vnet.ibm.com>
 
 This file is part of GCC.
@@ -76,15 +76,14 @@ along with GCC; see the file COPYING3.  If not see
    Sparse sets storage requirements are relatively large: O(U) with a
    larger constant than sbitmaps (if the storage requirement for an
    sbitmap with universe U is S, then the storage required for a sparse
-   set for the same universe are 2*HOST_BITS_PER_WIDEST_FAST_INT * S).
+   set for the same universe are 2 * sizeof (SPARSESET_ELT_TYPE) * 8 * S).
    Accessing the sparse vector is not very cache-friendly, but iterating
    over the members in the set is cache-friendly because only the dense
    vector is used.  */
 
 /* Data Structure used for the SparseSet representation.  */
 
-#define SPARSESET_ELT_BITS ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
-#define SPARSESET_ELT_TYPE unsigned HOST_WIDEST_FAST_INT
+#define SPARSESET_ELT_TYPE unsigned int
 
 typedef struct sparseset_def
 {

@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -323,45 +323,47 @@
   (and (match_code "mem")
        (match_test "aarch64_simd_mem_operand_p (op)")))
 
-(define_memory_constraint "Utq"
+(define_relaxed_memory_constraint "Utq"
   "@internal
    An address valid for loading or storing a 128-bit AdvSIMD register"
   (and (match_code "mem")
+       (match_test "aarch64_legitimate_address_p (GET_MODE (op),
+						  XEXP (op, 0), 1)")
        (match_test "aarch64_legitimate_address_p (V2DImode,
 						  XEXP (op, 0), 1)")))
 
-(define_memory_constraint "UtQ"
+(define_relaxed_memory_constraint "UtQ"
   "@internal
    An address valid for SVE LD1RQs."
   (and (match_code "mem")
        (match_test "aarch64_sve_ld1rq_operand_p (op)")))
 
-(define_memory_constraint "UOb"
+(define_relaxed_memory_constraint "UOb"
   "@internal
    An address valid for SVE LD1ROH."
   (and (match_code "mem")
        (match_test "aarch64_sve_ld1ro_operand_p (op, QImode)")))
 
-(define_memory_constraint "UOh"
+(define_relaxed_memory_constraint "UOh"
   "@internal
    An address valid for SVE LD1ROH."
   (and (match_code "mem")
        (match_test "aarch64_sve_ld1ro_operand_p (op, HImode)")))
 
 
-(define_memory_constraint "UOw"
+(define_relaxed_memory_constraint "UOw"
   "@internal
    An address valid for SVE LD1ROW."
   (and (match_code "mem")
        (match_test "aarch64_sve_ld1ro_operand_p (op, SImode)")))
 
-(define_memory_constraint "UOd"
+(define_relaxed_memory_constraint "UOd"
   "@internal
    An address valid for SVE LD1ROD."
   (and (match_code "mem")
        (match_test "aarch64_sve_ld1ro_operand_p (op, DImode)")))
 
-(define_memory_constraint "Uty"
+(define_relaxed_memory_constraint "Uty"
   "@internal
    An address valid for SVE LD1Rs."
   (and (match_code "mem")

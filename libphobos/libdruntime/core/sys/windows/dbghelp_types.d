@@ -11,6 +11,7 @@
 
 module core.sys.windows.dbghelp_types;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 

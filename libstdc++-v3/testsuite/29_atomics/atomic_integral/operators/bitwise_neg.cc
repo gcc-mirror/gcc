@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 // -*- C++ -*-
 
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -26,8 +26,8 @@ int main()
   return 0;
 }
 
-// { dg-error "operator" "" { target *-*-* } 495 }
-// { dg-error "operator" "" { target *-*-* } 496 }
-// { dg-error "operator" "" { target *-*-* } 497 }
+// { dg-error "operator" "" { target *-*-* } 499 }
+// { dg-error "operator" "" { target *-*-* } 500 }
+// { dg-error "operator" "" { target *-*-* } 501 }
 
 // { dg-prune-output "declared here" }

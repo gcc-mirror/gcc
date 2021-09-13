@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -122,7 +122,7 @@ namespace __detail
 	  _M_has_sol = false;
 	  if (_M_states._M_match_queue.empty())
 	    break;
-	  std::fill_n(_M_states._M_visited_states.get(), _M_nfa.size(), false);
+	  std::fill_n(_M_states._M_visited_states, _M_nfa.size(), false);
 	  auto __old_queue = std::move(_M_states._M_match_queue);
 	  for (auto& __task : __old_queue)
 	    {

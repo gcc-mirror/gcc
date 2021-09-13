@@ -3,5 +3,5 @@
 
 template<typename T> struct A
 {
-  T a, __attribute((unused)) b; // { dg-warning "attribute ignored" }
+  T a, __attribute((unused)) b;
 };

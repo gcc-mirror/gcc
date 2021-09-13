@@ -1,5 +1,5 @@
 /* Declarations for the C-SKY back end.
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by C-SKY Microsystems and Mentor Graphics.
 
    This file is part of GCC.
@@ -28,8 +28,17 @@
 #define CSKY_GENERAL_REGNO_P(N)			\
   ((N) < CSKY_NGPR_REGS && (int)(N) >= 0)
 
-#define CSKY_VREG_P(N)		     \
-  ((N) >= CSKY_FIRST_VFP_REGNUM && (N) <= CSKY_LAST_VFP_REGNUM)
+#define CSKY_VREG_LO_P(N) \
+  ((N) >= CSKY_FIRST_VFP_REGNUM \
+   && (N) <= CSKY_LAST_VFP_REGNUM)
+
+ #define CSKY_VREG_HI_P(N) \
+   ((N) >= CSKY_FIRST_VFP3_REGNUM \
+    && (N) <= CSKY_LAST_VFP3_REGNUM)
+
+ #define CSKY_VREG_P(N)    \
+   (CSKY_VREG_LO_P(N)     \
+    || CSKY_VREG_HI_P(N))
 
 #define CSKY_HILO_REG_P(N)   \
   ((N) == CSKY_HI_REGNUM || (N) == CSKY_LO_REGNUM)
@@ -124,7 +133,7 @@
   (optimize_size && TARGET_CONSTANT_POOL \
    && (CSKY_TARGET_ARCH (CK801) || CSKY_TARGET_ARCH (CK802)))
 #define TARGET_TLS \
-  (CSKY_TARGET_ARCH (CK807) || CSKY_TARGET_ARCH (CK810))
+  (CSKY_TARGET_ARCH (CK807) || CSKY_TARGET_ARCH (CK810) || CSKY_TARGET_ARCH (CK860))
 
 /* Run-time Target Specification.  */
 #define TARGET_SOFT_FLOAT       (csky_float_abi == CSKY_FLOAT_ABI_SOFT)
@@ -133,7 +142,9 @@
 /* Use hardware floating point calling convention.  */
 #define TARGET_HARD_FLOAT_ABI   (csky_float_abi == CSKY_FLOAT_ABI_HARD)
 
-#define TARGET_SINGLE_FPU     (csky_fpu_index == TARGET_FPU_fpv2_sf)
+#define TARGET_SINGLE_FPU     (csky_fpu_index == TARGET_FPU_fpv2_sf \
+			       || csky_fpu_index == TARGET_FPU_fpv3_hsf \
+			       || csky_fpu_index == TARGET_FPU_fpv3_hf)
 #define TARGET_DOUBLE_FPU     (TARGET_HARD_FLOAT && !TARGET_SINGLE_FPU)
 
 #define FUNCTION_VARG_REGNO_P(REGNO)      \
@@ -142,12 +153,17 @@
 		CSKY_FIRST_VFP_REGNUM + CSKY_NPARM_FREGS - 1))
 
 #define CSKY_VREG_MODE_P(mode) \
-  ((mode) == SFmode || (mode) == DFmode)
+  ((mode) == SFmode || (mode) == DFmode \
+   || (CSKY_ISA_FEATURE(fpv3_hf) && (mode) == HFmode))
 
 #define FUNCTION_VARG_MODE_P(mode)  \
   (TARGET_HARD_FLOAT_ABI            \
    && CSKY_VREG_MODE_P(mode)        \
    && !(mode == DFmode && TARGET_SINGLE_FPU))
+
+#define TARGET_SUPPORT_FPV3 (CSKY_ISA_FEATURE (fpv3_hf)    \
+			     || CSKY_ISA_FEATURE (fpv3_sf) \
+			     || CSKY_ISA_FEATURE (fpv3_df))
 
 /* Number of loads/stores handled by ldm/stm.  */
 #define CSKY_MIN_MULTIPLE_STLD	3
@@ -326,7 +342,8 @@ extern int csky_arch_isa_features[];
 #define STACK_POINTER_REGNUM  CSKY_SP_REGNUM
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM  8
+#define FRAME_POINTER_REGNUM  36
+#define HARD_FRAME_POINTER_REGNUM  8
 
 /* Base register for access to arguments of the function.  This is a fake
    register that is always eliminated.  */
@@ -354,7 +371,9 @@ extern int csky_arch_isa_features[];
 #define ELIMINABLE_REGS		  \
 {{ ARG_POINTER_REGNUM,	      STACK_POINTER_REGNUM	      },\
  { ARG_POINTER_REGNUM,	      FRAME_POINTER_REGNUM	      },\
- { FRAME_POINTER_REGNUM,      STACK_POINTER_REGNUM	      }}
+ { ARG_POINTER_REGNUM,	      HARD_FRAME_POINTER_REGNUM       },\
+ { FRAME_POINTER_REGNUM,      STACK_POINTER_REGNUM	      },\
+ { FRAME_POINTER_REGNUM,      HARD_FRAME_POINTER_REGNUM	      }}
 
 /* Define the offset between two registers, one to be eliminated, and the
    other its replacement, at the start of a routine.  */
@@ -427,7 +446,7 @@ typedef struct
  ******************************************************************/
 
 
-#define FIRST_PSEUDO_REGISTER 71
+#define FIRST_PSEUDO_REGISTER 202
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -456,7 +475,31 @@ typedef struct
  /*  reserved */							\
      1,	   1,								\
  /*  epc */								\
-     1									\
+     1,									\
+ /* vr16  vr17  vr18  vr19  vr20  vr21  vr22  vr23 */			\
+     0,    0,    0,    0,    0,    0,    0,    0,			\
+ /* vr24  vr25  vr26  vr27  vr28  vr29  vr30  vr31 */			\
+     0,    0,    0,    0,    0,    0,    0,    0 ,			\
+ /* reserved */								\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+ /* reserved */								\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+									\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+									\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+									\
+     1,    1,    1							\
 }
 
 /* Like `CALL_USED_REGISTERS' but used to overcome a historical
@@ -487,7 +530,31 @@ typedef struct
  /*  reserved */							\
      1,	   1,								\
  /*  epc */								\
-     1									\
+     1,									\
+ /*  vr16  vr17  vr18  vr19  vr20  vr21  vr22  vr23*/			\
+     1,	   1,	 1,    1,    1,	   1,	 1,    1,			\
+ /*  vr24  vr25 vr26  vr27  vr28  vr29	 vr30  vr31 */			\
+     1,	   1,	 1,    1,    1,	   1,	 1,    1,			\
+ /*  reserved */							\
+     1,	   1,	 1,    1,    1,	   1,	 1,    1,			\
+     1,	   1,	 1,    1,    1,	   1,	 1,    1,			\
+ /* reserved */								\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+									\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+									\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+     1,    1,    1,    1,    1,    1,    1,    1,			\
+									\
+     1,    1,    1							\
 }
 
 #define REGISTER_NAMES							\
@@ -510,7 +577,37 @@ typedef struct
   "vr0", "vr1", "vr2",	"vr3",	"vr4",	"vr5",	"vr6",	"vr7",		\
   "vr8", "vr9", "vr10", "vr11", "vr12", "vr13", "vr14", "vr15",		\
   "reserved", "reserved",						\
-  "epc"									\
+  "epc",								\
+  /* V registers: 71~86 */						\
+  "vr16", "vr17", "vr18", "vr19", "vr20", "vr21", "vr22", "vr23",	\
+  "vr24", "vr25", "vr26", "vr27", "vr28", "vr29", "vr30", "vr31",	\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved",								\
+  /* reserved: 87~201*/							\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved",						\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved",						\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved", "reserved", "reserved", "reserved",		\
+  "reserved", "reserved",						\
+  "reserved", "reserved", "reserved"					\
 }
 
 /* Table of additional register names to use in user input.  */
@@ -569,9 +666,16 @@ typedef struct
      52,   53,	 54,   55,   56,   57,	 58,   59,		\
 /*  vr8	  vr9	vr10  vr11  vr12  vr13	vr14  vr15 */		\
      60,   61,	 62,   63,   64,   65,	 66,   67,		\
+/*  vr16  vr17  vr18  vr18  vr20  vr21	vr22  vr23 */		\
+     71,   72,	 73,   74,   75,   76,	 77,   78,		\
+/*  vr24  vr25	vr26  vr27  vr28  vr28	vr30  vr31 */		\
+     79,   80,	 81,   82,   83,   84,	 85,   86,		\
 /*  reserved  */						\
      36,   37,	 38,   39,   40,   41,	 42,   43,		\
      44,   45,	 46,   47,   48,   49,	 50,   51,		\
+/*  reserved  */						\
+     87,   88,	 89,   90,   91,   92,	 93,   94,		\
+     95,   96,	 97,   98,   99,   100,  101,  102,		\
 /*  sp	  tls	reserved     c	   reserved	    epc */	\
      14,   31,	 32,	     33,   68,	 69,	     70	 }
 
@@ -584,8 +688,6 @@ enum reg_class
   LOW_REGS,
   GENERAL_REGS,
   C_REGS,
-  HI_REGS,
-  LO_REGS,
   HILO_REGS,
   V_REGS,
   OTHER_REGS,
@@ -605,8 +707,6 @@ enum reg_class
   "LOW_REGS",		\
   "GENERAL_REGS",	\
   "C_REGS",		\
-  "HI_REGS",		\
-  "LO_REGS",		\
   "HILO_REGS",		\
   "V_REGS",		\
   "OTHER_REGS",		\
@@ -616,21 +716,30 @@ enum reg_class
 
 /* Define which registers fit in which classes.  This is an initializer
    for a vector of HARD_REG_SET of length N_REG_CLASSES.  */
-#define REG_CLASS_CONTENTS					     \
-{								     \
-  {0x00000000, 0x00000000, 0x00000000 },  /* NO_REGS	       */    \
-  {0x000000FF, 0x00000000, 0x00000000 },  /* MINI_REGS	       */    \
-  {0x00004000, 0x00000000, 0x00000000 },  /* SP_REGS	       */    \
-  {0x0000FFFF, 0x00000000, 0x00000000 },  /* LOW_REGS	       */    \
-  {0xFFFFFFFF, 0x00000000, 0x00000000 },  /* GENERAL_REGS      */    \
-  {0x00000000, 0x00000002, 0x00000000 },  /* C_REGS	       */    \
-  {0x00000000, 0x00000004, 0x00000000 },  /* HI_REG	       */    \
-  {0x00000000, 0x00000008, 0x00000000 },  /* LO_REG	       */    \
-  {0x00000000, 0x0000000c, 0x00000000 },  /* HILO_REGS	       */    \
-  {0x00000000, 0xFFF00000, 0x0000000F },  /* V_REGS	       */    \
-  {0x00000000, 0x00000000, 0x00000040 },  /* OTHER_REGS	       */    \
-  {0x00000000, 0x0FF00001, 0x00000030 },  /* RESERVE_REGS      */    \
-  {0xFFFFFFFF, 0xFFFFFFFF, 0x0000007F },  /* ALL_REGS	       */    \
+#define REG_CLASS_CONTENTS						      \
+{									      \
+  {0x00000000, 0x00000000, 0x00000000, 0x00000000,			      \
+   0x00000000, 0x00000000, 0x00000000},			/* NO_REGS	 */   \
+  {0x000000FF, 0x00000000, 0x00000000, 0x00000000,			      \
+   0x00000000, 0x00000000, 0x00000000},			/* MINI_REGS     */   \
+  {0x00004000, 0x00000000, 0x00000000, 0x00000000,			      \
+   0x00000000, 0x00000000, 0x00000000},			/* SP_REGS	 */   \
+  {0x0000FFFF, 0x00000000, 0x00000000, 0x00000000,			      \
+   0x00000000, 0x00000000, 0x00000000},			/* LOW_REGS      */   \
+  {0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000,			      \
+   0x00000000, 0x00000000, 0x00000000},			/* GENERAL_REGS  */   \
+  {0x00000000, 0x00000002, 0x00000000, 0x00000000,			      \
+   0x00000000, 0x00000000, 0x00000000},			/* C_REGS	 */   \
+  {0x00000000, 0x0000000c, 0x00000000, 0x00000000,			      \
+   0x00000000, 0x00000000, 0x00000000},			/* HILO_REGS     */   \
+  {0x00000000, 0xFFF00000, 0x007FFF8F, 0x00000000,			      \
+   0x00000000, 0x00000000, 0x00000000},			/* V_REGS	 */   \
+  {0x00000000, 0x00000000, 0x00000040, 0x00000000,			      \
+   0x00000000, 0x00000000, 0x00000000},			/* OTHER_REGS    */   \
+  {0x00000000, 0x000FFFF1, 0xFF800030, 0xFFFFFFFF,			      \
+   0xFFFFFFFF, 0xFFFFFFFF, 0x000003FF},			/* RESERVE_REGS  */   \
+  {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,			      \
+   0xFFFFFFFF, 0xFFFFFFFF, 0x000003FF},			/* ALL_REGS      */   \
 }
 
 /* Return register class from regno.  */

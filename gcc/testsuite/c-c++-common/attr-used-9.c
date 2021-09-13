@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "non-ELF target" { *-*-darwin* } } */
 /* { dg-options "-Wall -O2" } */
 
 struct dtv_slotinfo_list
@@ -24,5 +25,5 @@ static void free_mem (void)
 }
 
 /* { dg-final { scan-assembler-not "__libc_freeres_fn\n" } } */
-/* { dg-final { scan-assembler-not "__libc_freeres_fn,\"ax\"" { target R_flag_in_section } } } */
-/* { dg-final { scan-assembler "__libc_freeres_fn,\"axR\"" { target R_flag_in_section } } } */
+/* { dg-final { scan-assembler "__libc_freeres_fn,\"ax\"" { target R_flag_in_section } } } */
+/* { dg-final { scan-assembler-not "__libc_freeres_fn,\"axR\"" { target R_flag_in_section } } } */

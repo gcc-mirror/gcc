@@ -1,5 +1,5 @@
 /* backtrace.h -- Public header file for stack backtrace library.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -71,13 +71,14 @@ struct backtrace_state;
    invalid after this function returns.
 
    As a special case, the ERRNUM argument will be passed as -1 if no
-   debug info can be found for the executable, but the function
-   requires debug info (e.g., backtrace_full, backtrace_pcinfo).  The
-   MSG in this case will be something along the lines of "no debug
-   info".  Similarly, ERRNUM will be passed as -1 if there is no
-   symbol table, but the function requires a symbol table (e.g.,
-   backtrace_syminfo).  This may be used as a signal that some other
-   approach should be tried.  */
+   debug info can be found for the executable, or if the debug info
+   exists but has an unsupported version, but the function requires
+   debug info (e.g., backtrace_full, backtrace_pcinfo).  The MSG in
+   this case will be something along the lines of "no debug info".
+   Similarly, ERRNUM will be passed as -1 if there is no symbol table,
+   but the function requires a symbol table (e.g., backtrace_syminfo).
+   This may be used as a signal that some other approach should be
+   tried.  */
 
 typedef void (*backtrace_error_callback) (void *data, const char *msg,
 					  int errnum);

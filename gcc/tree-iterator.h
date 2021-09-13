@@ -1,5 +1,5 @@
-/* Iterator routines for manipulating GENERIC tree statement list.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+/* Iterator routines for manipulating GENERIC tree statement list. -*- C++ -*-
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -32,6 +32,21 @@ along with GCC; see the file COPYING3.  If not see
 struct tree_stmt_iterator {
   struct tree_statement_list_node *ptr;
   tree container;
+
+  /* No need for user-defined constructors, the implicit definitions (or
+     aggregate initialization) are fine.  */
+
+  bool operator== (tree_stmt_iterator b) const
+    { return b.ptr == ptr && b.container == container; }
+  bool operator!= (tree_stmt_iterator b) const { return !(*this == b); }
+  tree_stmt_iterator &operator++ () { ptr = ptr->next; return *this; }
+  tree_stmt_iterator &operator-- () { ptr = ptr->prev; return *this; }
+  tree_stmt_iterator operator++ (int)
+    { tree_stmt_iterator x = *this; ++*this; return x; }
+  tree_stmt_iterator operator-- (int)
+    { tree_stmt_iterator x = *this; --*this; return x; }
+  tree &operator* () { return ptr->stmt; }
+  tree operator* () const { return ptr->stmt; }
 };
 
 static inline tree_stmt_iterator
@@ -71,26 +86,37 @@ tsi_one_before_end_p (tree_stmt_iterator i)
 static inline void
 tsi_next (tree_stmt_iterator *i)
 {
-  i->ptr = i->ptr->next;
+  ++(*i);
 }
 
 static inline void
 tsi_prev (tree_stmt_iterator *i)
 {
-  i->ptr = i->ptr->prev;
+  --(*i);
 }
 
 static inline tree *
 tsi_stmt_ptr (tree_stmt_iterator i)
 {
-  return &i.ptr->stmt;
+  return &(*i);
 }
 
 static inline tree
 tsi_stmt (tree_stmt_iterator i)
 {
-  return i.ptr->stmt;
+  return *i;
 }
+
+/* Make tree_stmt_iterator work as a C++ range, e.g.
+   for (tree stmt : tsi_range (stmt_list)) { ... }  */
+class tsi_range
+{
+  tree t;
+ public:
+  tsi_range (tree t): t(t) { }
+  tree_stmt_iterator begin() const { return tsi_start (t); }
+  tree_stmt_iterator end() const { return { nullptr, t }; }
+};
 
 enum tsi_iterator_update
 {

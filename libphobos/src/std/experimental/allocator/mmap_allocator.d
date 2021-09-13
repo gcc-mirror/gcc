@@ -46,6 +46,21 @@ struct MmapAllocator
             if (b.ptr) munmap(b.ptr, b.length) == 0 || assert(0);
             return true;
         }
+
+        // Anonymous mmap might be zero-filled on all Posix systems but
+        // not all commit to this in the documentation.
+        version (linux)
+            // http://man7.org/linux/man-pages/man2/mmap.2.html
+            package alias allocateZeroed = allocate;
+        else version (NetBSD)
+            // http://netbsd.gw.com/cgi-bin/man-cgi?mmap+2+NetBSD-current
+            package alias allocateZeroed = allocate;
+        else version (Solaris)
+            // https://docs.oracle.com/cd/E88353_01/html/E37841/mmap-2.html
+            package alias allocateZeroed = allocate;
+        else version (AIX)
+            // https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/com.ibm.aix.basetrf1/mmap.htm
+            package alias allocateZeroed = allocate;
     }
     else version (Windows)
     {
@@ -67,6 +82,8 @@ struct MmapAllocator
         {
             return b.ptr is null || VirtualFree(b.ptr, 0, MEM_RELEASE) != 0;
         }
+
+        package alias allocateZeroed = allocate;
     }
 }
 

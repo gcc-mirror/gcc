@@ -1,10 +1,4 @@
 // PERMUTE_ARGS: -w -wi -debug
-/*
-TEST_OUTPUT:
----
----
-*/
-
 @safe pure nothrow void strictVoidReturn(T)(T x) {}
 @safe pure nothrow void nonstrictVoidReturn(T)(ref T x) {}
 

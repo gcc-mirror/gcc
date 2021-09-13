@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,6 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
 #include "gimple-range.h"
+#include "fold-const.h"
+#include "value-pointer-equiv.h"
 
 // This is the classic EVRP folder which uses a dominator walk and pushes
 // ranges into the next block if it is a single predecessor block.
@@ -60,7 +62,7 @@ public:
     if (dump_file)
       {
 	fprintf (dump_file, "\nValue ranges after Early VRP:\n\n");
-	m_range_analyzer.dump_all_value_ranges (dump_file);
+	m_range_analyzer.dump (dump_file);
 	fprintf (dump_file, "\n");
       }
   }
@@ -117,34 +119,56 @@ class rvrp_folder : public substitute_and_fold_engine
 public:
 
   rvrp_folder () : substitute_and_fold_engine (), m_simplifier ()
-  { 
-    if (param_evrp_mode & EVRP_MODE_TRACE)
-      m_ranger = new trace_ranger ();
-    else
-      m_ranger = new gimple_ranger ();
+  {
+    m_ranger = enable_ranger (cfun);
     m_simplifier.set_range_query (m_ranger);
+    m_pta = new pointer_equiv_analyzer (m_ranger);
   }
       
   ~rvrp_folder ()
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
       m_ranger->dump (dump_file);
-    delete m_ranger;
+
+    m_ranger->export_global_ranges ();
+    disable_ranger (cfun);
+    delete m_pta;
   }
 
   tree value_of_expr (tree name, gimple *s = NULL) OVERRIDE
   {
-    return m_ranger->value_of_expr (name, s);
+    tree ret = m_ranger->value_of_expr (name, s);
+    if (!ret && supported_pointer_equiv_p (name))
+      ret = m_pta->get_equiv (name);
+    return ret;
   }
 
   tree value_on_edge (edge e, tree name) OVERRIDE
   {
-    return m_ranger->value_on_edge (e, name);
+    tree ret = m_ranger->value_on_edge (e, name);
+    if (!ret && supported_pointer_equiv_p (name))
+      ret = m_pta->get_equiv (name);
+    return ret;
   }
 
   tree value_of_stmt (gimple *s, tree name = NULL) OVERRIDE
   {
     return m_ranger->value_of_stmt (s, name);
+  }
+
+  void pre_fold_bb (basic_block bb) OVERRIDE
+  {
+    m_pta->enter (bb);
+  }
+
+  void post_fold_bb (basic_block bb) OVERRIDE
+  {
+    m_pta->leave (bb);
+  }
+
+  void pre_fold_stmt (gimple *stmt) OVERRIDE
+  {
+    m_pta->visit_stmt (stmt);
   }
 
   bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
@@ -156,6 +180,7 @@ private:
   DISABLE_COPY_AND_ASSIGN (rvrp_folder);
   gimple_ranger *m_ranger;
   simplify_using_ranges m_simplifier;
+  pointer_equiv_analyzer *m_pta;
 };
 
 // In a hybrid folder, start with an EVRP folder, and add the required
@@ -175,10 +200,7 @@ class hybrid_folder : public evrp_folder
 public:
   hybrid_folder (bool evrp_first)
   {
-    if (param_evrp_mode & EVRP_MODE_TRACE)
-      m_ranger = new trace_ranger ();
-    else
-      m_ranger = new gimple_ranger ();
+    m_ranger = enable_ranger (cfun);
 
     if (evrp_first)
       {
@@ -190,13 +212,17 @@ public:
 	first = m_ranger;
 	second = &m_range_analyzer;
       }
+    m_pta = new pointer_equiv_analyzer (m_ranger);
   }
 
   ~hybrid_folder ()
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
       m_ranger->dump (dump_file);
-    delete m_ranger;
+
+    m_ranger->export_global_ranges ();
+    disable_ranger (cfun);
+    delete m_pta;
   }
 
   bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
@@ -215,6 +241,24 @@ public:
       return false;
     }
 
+  void pre_fold_stmt (gimple *stmt) OVERRIDE
+  {
+    evrp_folder::pre_fold_stmt (stmt);
+    m_pta->visit_stmt (stmt);
+  }
+
+  void pre_fold_bb (basic_block bb) OVERRIDE
+  {
+    evrp_folder::pre_fold_bb (bb);
+    m_pta->enter (bb);
+  }
+
+  void post_fold_bb (basic_block bb) OVERRIDE
+  {
+    evrp_folder::post_fold_bb (bb);
+    m_pta->leave (bb);
+  }
+
   tree value_of_expr (tree name, gimple *) OVERRIDE;
   tree value_on_edge (edge, tree name) OVERRIDE;
   tree value_of_stmt (gimple *, tree name) OVERRIDE;
@@ -224,6 +268,7 @@ private:
   gimple_ranger *m_ranger;
   range_query *first;
   range_query *second;
+  pointer_equiv_analyzer *m_pta;
   tree choose_value (tree evrp_val, tree ranger_val);
 };
 
@@ -233,6 +278,8 @@ hybrid_folder::value_of_expr (tree op, gimple *stmt)
 {
   tree evrp_ret = evrp_folder::value_of_expr (op, stmt);
   tree ranger_ret = m_ranger->value_of_expr (op, stmt);
+  if (!ranger_ret && supported_pointer_equiv_p (op))
+    ranger_ret = m_pta->get_equiv (op);
   return choose_value (evrp_ret, ranger_ret);
 }
 
@@ -243,6 +290,8 @@ hybrid_folder::value_on_edge (edge e, tree op)
   // via hybrid_folder::value_of_expr, but without an edge.
   tree evrp_ret = evrp_folder::value_of_expr (op, NULL);
   tree ranger_ret = m_ranger->value_on_edge (e, op);
+  if (!ranger_ret && supported_pointer_equiv_p (op))
+    ranger_ret = m_pta->get_equiv (op);
   return choose_value (evrp_ret, ranger_ret);
 }
 

@@ -1,7 +1,6 @@
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,10 +25,10 @@ void
 test01()
 {
   std::string_view s("Hello, World!");
-  std::begin(s);
-  std::end(s);
-  std::rbegin(s);
-  std::rend(s);
+  (void) std::begin(s);
+  (void) std::end(s);
+  (void) std::rbegin(s);
+  (void) std::rend(s);
 }
 
 void

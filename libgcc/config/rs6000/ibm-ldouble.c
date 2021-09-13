@@ -1,5 +1,5 @@
 /* 128-bit long double support routines for Darwin.
-   Copyright (C) 1993-2020 Free Software Foundation, Inc.
+   Copyright (C) 1993-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -118,8 +118,8 @@ pack_ldouble (double dh, double dl)
 }
 
 /* Add two 'IBM128_TYPE' values and return the result.	*/
-IBM128_TYPE
-__gcc_qadd (double a, double aa, double c, double cc)
+static inline IBM128_TYPE
+ldouble_qadd_internal (double a, double aa, double c, double cc)
 {
   double xh, xl, z, q, zz;
 
@@ -158,9 +158,15 @@ __gcc_qadd (double a, double aa, double c, double cc)
 }
 
 IBM128_TYPE
-__gcc_qsub (double a, double b, double c, double d)
+__gcc_qadd (double a, double aa, double c, double cc)
 {
-  return __gcc_qadd (a, b, -c, -d);
+  return ldouble_qadd_internal (a, aa, c, cc);
+}
+
+IBM128_TYPE
+__gcc_qsub (double a, double aa, double c, double cc)
+{
+  return ldouble_qadd_internal (a, aa, -c, -cc);
 }
 
 #ifdef __NO_FPRS__

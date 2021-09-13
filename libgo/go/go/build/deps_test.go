@@ -10,6 +10,7 @@ package build
 import (
 	"bytes"
 	"fmt"
+	"go/token"
 	"internal/testenv"
 	"io/fs"
 	"os"
@@ -70,14 +71,19 @@ var depsRules = `
 	# No dependencies allowed for any of these packages.
 	NONE
 	< container/list, container/ring,
-	  internal/cfg, internal/cpu,
+	  internal/cfg, internal/cpu, internal/goexperiment,
 	  internal/goversion, internal/nettrace,
 	  unicode/utf8, unicode/utf16, unicode,
 	  unsafe;
 
+	# These packages depend only on unsafe.
+	unsafe
+	< internal/abi;
+
 	# RUNTIME is the core runtime group of packages, all of them very light-weight.
-	internal/cpu, unsafe
+	internal/abi, internal/cpu, internal/goexperiment, unsafe
 	< internal/bytealg
+	< internal/itoa
 	< internal/unsafeheader
 	< runtime/internal/sys
 	< runtime/internal/atomic
@@ -162,6 +168,9 @@ var depsRules = `
 	< os
 	< os/signal;
 
+	io/fs
+	< embed;
+
 	unicode, fmt !< os, os/signal;
 
 	os/signal, STR
@@ -174,7 +183,7 @@ var depsRules = `
 	reflect !< OS;
 
 	OS
-	< golang.org/x/sys/cpu, internal/goroot;
+	< golang.org/x/sys/cpu;
 
 	# FMT is OS (which includes string routines) plus reflect and fmt.
 	# It does not include package log, which should be avoided in core packages.
@@ -189,6 +198,12 @@ var depsRules = `
 	< FMT;
 
 	log !< FMT;
+
+	OS, FMT
+	< internal/execabs;
+
+	OS, internal/execabs
+	< internal/goroot;
 
 	# Misc packages needing only FMT.
 	FMT
@@ -263,9 +278,13 @@ var depsRules = `
 	< go/token
 	< go/scanner
 	< go/ast
+	< go/internal/typeparams
 	< go/parser;
 
-	go/parser, text/tabwriter
+	FMT
+	< go/build/constraint;
+
+	go/build/constraint, go/parser, text/tabwriter
 	< go/printer
 	< go/format;
 
@@ -275,10 +294,13 @@ var depsRules = `
 	math/big, go/token
 	< go/constant;
 
-	container/heap, go/constant, go/parser
+	container/heap, go/constant, go/parser, regexp
 	< go/types;
 
-	go/doc, go/parser, internal/goroot, internal/goversion
+	FMT, internal/goexperiment
+	< internal/buildcfg;
+
+	go/build/constraint, go/doc, go/parser, internal/buildcfg, internal/goroot, internal/goversion
 	< go/build;
 
 	DEBUG, go/build, go/types, text/scanner
@@ -370,6 +392,9 @@ var depsRules = `
 	< crypto
 	< crypto/subtle
 	< crypto/internal/subtle
+	< crypto/elliptic/internal/fiat
+	< crypto/ed25519/internal/edwards25519/field
+	< crypto/ed25519/internal/edwards25519
 	< crypto/cipher
 	< crypto/aes, crypto/des, crypto/hmac, crypto/md5, crypto/rc4,
 	  crypto/sha1, crypto/sha256, crypto/sha512
@@ -381,7 +406,6 @@ var depsRules = `
 	CRYPTO, FMT, math/big
 	< crypto/rand
 	< crypto/internal/randutil
-	< crypto/ed25519/internal/edwards25519
 	< crypto/ed25519
 	< encoding/asn1
 	< golang.org/x/crypto/cryptobyte/asn1
@@ -416,7 +440,8 @@ var depsRules = `
 	# HTTP, King of Dependencies.
 
 	FMT
-	< golang.org/x/net/http2/hpack, net/http/internal;
+	< golang.org/x/net/http2/hpack
+	< net/http/internal, net/http/internal/ascii, net/http/internal/testcert;
 
 	FMT, NET, container/list, encoding/binary, log
 	< golang.org/x/text/transform
@@ -434,6 +459,8 @@ var depsRules = `
 	golang.org/x/net/http/httpproxy,
 	golang.org/x/net/http2/hpack,
 	net/http/internal,
+	net/http/internal/ascii,
+	net/http/internal/testcert,
 	net/http/httptrace,
 	mime/multipart,
 	log
@@ -444,7 +471,7 @@ var depsRules = `
 	encoding/json, net/http
 	< expvar;
 
-	net/http
+	net/http, net/http/internal/ascii
 	< net/http/cookiejar, net/http/httputil;
 
 	net/http, flag
@@ -481,7 +508,7 @@ var depsRules = `
 	FMT, flag, math/rand
 	< testing/quick;
 
-	FMT, flag, runtime/debug, runtime/trace, internal/sysinfo
+	FMT, flag, runtime/debug, runtime/trace, internal/sysinfo, math/rand
 	< testing;
 
 	internal/testlog, runtime/pprof, regexp
@@ -602,6 +629,7 @@ func findImports(pkg string) ([]string, error) {
 	}
 	var imports []string
 	var haveImport = map[string]bool{}
+	fset := token.NewFileSet()
 	for _, file := range files {
 		name := file.Name()
 		if name == "slice_go14.go" || name == "slice_go18.go" {
@@ -611,8 +639,10 @@ func findImports(pkg string) ([]string, error) {
 		if !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
 			continue
 		}
-		var info fileInfo
-		info.name = filepath.Join(dir, name)
+		info := fileInfo{
+			name: filepath.Join(dir, name),
+			fset: fset,
+		}
 		f, err := os.Open(info.name)
 		if err != nil {
 			return nil, err
@@ -838,5 +868,30 @@ func TestStdlibLowercase(t *testing.T) {
 		if strings.ToLower(pkgname) != pkgname {
 			t.Errorf("package %q should not use upper-case path", pkgname)
 		}
+	}
+}
+
+// TestFindImports tests that findImports works.  See #43249.
+func TestFindImports(t *testing.T) {
+	if !testenv.HasSrc() {
+		// Tests run in a limited file system and we do not
+		// provide access to every source file.
+		t.Skipf("skipping on %s/%s, missing full GOROOT", runtime.GOOS, runtime.GOARCH)
+	}
+
+	imports, err := findImports("go/build")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("go/build imports %q", imports)
+	want := []string{"bytes", "os", "path/filepath", "strings"}
+wantLoop:
+	for _, w := range want {
+		for _, imp := range imports {
+			if imp == w {
+				continue wantLoop
+			}
+		}
+		t.Errorf("expected to find %q in import list", w)
 	}
 }

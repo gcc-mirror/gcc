@@ -9,8 +9,9 @@
  */
 module core.sys.windows.reason;
 version (Windows):
+@system:
 
-private import core.sys.windows.w32api, core.sys.windows.windef;
+import core.sys.windows.w32api, core.sys.windows.windef;
 
 static assert (_WIN32_WINNT >= 0x501,
   "core.sys.windows.reason is only available on WindowsXP and later");

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -516,7 +516,7 @@ namespace __gnu_pbds
     swap(gp_hash_table& other)
     { base_type::swap(other); }
   };
-  //@} hash-based
+  ///@} hash-based
 #undef PB_DS_GP_HASH_BASE
 
 
@@ -780,7 +780,7 @@ namespace __gnu_pbds
     swap(trie& other)
     { base_type::swap(other); }
   };
-  //@} branch-based
+  ///@} branch-based
 #undef PB_DS_TRIE_BASE
 #undef PB_DS_TRIE_NODE_AND_IT_TRAITS
 
@@ -852,10 +852,10 @@ namespace __gnu_pbds
     swap(list_update& other)
     { base_type::swap(other); }
   };
-  //@} list-based
+  ///@} list-based
 #undef PB_DS_LU_BASE
 
-  // @} group containers-pbds
+  /// @} group containers-pbds
 } // namespace __gnu_pbds
 
 #endif

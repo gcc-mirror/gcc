@@ -1,5 +1,5 @@
 /* Prototypes.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -70,6 +70,7 @@ extern void darwin_non_lazy_pcrel (FILE *, rtx);
 extern void darwin_emit_unwind_label (FILE *, tree, int, int);
 extern void darwin_emit_except_table_label (FILE *);
 extern rtx darwin_make_eh_symbol_indirect (rtx, bool);
+extern bool darwin_should_restore_cfa_state (void);
 
 extern void darwin_pragma_ignore (struct cpp_reader *);
 extern void darwin_pragma_options (struct cpp_reader *);

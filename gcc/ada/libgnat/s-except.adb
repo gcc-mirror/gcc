@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2006-2020, Free Software Foundation, Inc.          --
+--         Copyright (C) 2006-2021, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,17 +29,4 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package does not require a body, since it is a package renaming. We
---  provide a dummy file containing a No_Body pragma so that previous versions
---  of the body (which did exist) will not interfere.
-
---  pragma No_Body;
-
---  The above pragma is commented out, since for now we can't use No_Body in
---  a unit marked as a Compiler_Unit, since this requires GNAT 6.1, and we
---  do not yet require this for bootstrapping. So instead we use a dummy Taft
---  amendment type to require the body:
-
-package body System.Exceptions is
-   type Require_Body is new Integer;
-end System.Exceptions;
+pragma No_Body;

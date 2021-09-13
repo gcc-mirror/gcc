@@ -1,4 +1,4 @@
-/* Copyright (C) 2001-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by David Mosberger <davidm@hpl.hp.com>.
 
    This file is part of GCC.

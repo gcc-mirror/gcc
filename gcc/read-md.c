@@ -1,5 +1,5 @@
 /* MD reader for GCC.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -902,7 +902,8 @@ void
 md_reader::handle_enum (file_location loc, bool md_p)
 {
   char *enum_name, *value_name;
-  struct md_name name;
+  unsigned int cur_value;
+  struct md_name name, value;
   struct enum_type *def;
   struct enum_value *ev;
   void **slot;
@@ -928,6 +929,7 @@ md_reader::handle_enum (file_location loc, bool md_p)
       *slot = def;
     }
 
+  cur_value = def->num_values;
   require_char_ws ('[');
 
   while ((c = read_skip_spaces ()) != ']')
@@ -937,8 +939,18 @@ md_reader::handle_enum (file_location loc, bool md_p)
 	  error_at (loc, "unterminated construct");
 	  exit (1);
 	}
-      unread_char (c);
-      read_name (&name);
+      if (c == '(')
+	{
+	  read_name (&name);
+	  read_name (&value);
+	  require_char_ws (')');
+	  cur_value = atoi (value.string);
+	}
+      else
+	{
+	  unread_char (c);
+	  read_name (&name);
+	}
 
       ev = XNEW (struct enum_value);
       ev->next = 0;
@@ -954,11 +966,12 @@ md_reader::handle_enum (file_location loc, bool md_p)
 	  ev->name = value_name;
 	}
       ev->def = add_constant (get_md_constants (), value_name,
-			      md_decimal_string (def->num_values), def);
+			      md_decimal_string (cur_value), def);
 
       *def->tail_ptr = ev;
       def->tail_ptr = &ev->next;
       def->num_values++;
+      cur_value++;
     }
 }
 

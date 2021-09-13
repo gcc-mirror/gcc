@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #define INCLUDE_STRING
 #define INCLUDE_VECTOR
+#define INCLUDE_MAP
 #include "system.h"
 
 #include "line-map.h"
@@ -249,7 +250,7 @@ module_client::open_module_client (location_t loc, const char *o,
 		    if (port && endp != cptr + 1 && !*endp)
 		      {
 			name[colon] = 0;
-			int fd = 01;
+			int fd = -1;
 #if CODY_NETWORKING
 			fd = Cody::OpenInet6 (&errmsg, name.c_str (), port);
 #endif

@@ -1,5 +1,5 @@
 /* Common code for the plugin and lto1.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Rafael Avila de Espindola (espindola@google.com).
 
 This program is free software; you can redistribute it and/or modify

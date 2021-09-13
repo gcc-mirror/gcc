@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -370,9 +370,9 @@ detect_caches_intel (bool xeon_mp, unsigned max_level,
 }
 
 /* This will be called by the spec parser in gcc.c when it sees
-   a %:local_cpu_detect(args) construct.  Currently it will be called
-   with either "arch" or "tune" as argument depending on if -march=native
-   or -mtune=native is to be substituted.
+   a %:local_cpu_detect(args) construct.  Currently it will be
+   called with either "arch [32|64]" or "tune [32|64]" as argument
+   depending on if -march=native or -mtune=native is to be substituted.
 
    It returns a string containing new command line parameters to be
    put at the place of the above two options, depending on what CPU
@@ -401,12 +401,21 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   unsigned int l2sizekb = 0;
 
-  if (argc < 1)
+  if (argc < 2)
     return NULL;
 
   arch = !strcmp (argv[0], "arch");
 
   if (!arch && strcmp (argv[0], "tune"))
+    return NULL;
+
+  bool codegen_x86_64;
+
+  if (!strcmp (argv[1], "32"))
+    codegen_x86_64 = false;
+  else if (!strcmp (argv[1], "64"))
+    codegen_x86_64 = true;
+  else
     return NULL;
 
   struct __processor_model cpu_model = { };
@@ -804,8 +813,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	if (isa_names_table[i].option)
 	  {
 	    if (has_feature (isa_names_table[i].feature))
-	      options = concat (options, " ",
-				isa_names_table[i].option, NULL);
+	      {
+		if (codegen_x86_64
+		    || isa_names_table[i].feature != FEATURE_UINTR)
+		  options = concat (options, " ",
+				    isa_names_table[i].option, NULL);
+	      }
 	    else
 	      options = concat (options, neg_option,
 				isa_names_table[i].option + 2, NULL);

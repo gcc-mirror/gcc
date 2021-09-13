@@ -1,5 +1,5 @@
 /* Stub for defining degree-valued trigonometric functions in libgfortran.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargl@gcc.gnu.org>
    and Fritz Reese <foreese@gcc.gnu.org>
 

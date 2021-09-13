@@ -1,6 +1,6 @@
 /* Manipulation of formal and actual parameters of functions and function
    calls.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,7 +54,7 @@ or only a vector of ipa_adjusted_params.
 When these classes are used in the context of call graph clone materialization
 and subsequent call statement redirection - which is the point at which we
 modify arguments in call statements - they need to cooperate with each other in
-order to handle what we refer to as transitive (IPA-SRA) splits.  These are
+order to handle what we refer to as pass-through (IPA-SRA) splits.  These are
 situations when a formal parameter of one function is split into several
 smaller ones and some of them are then passed on in a call to another function
 because the formal parameter of this callee has also been split.
@@ -83,7 +83,7 @@ baz ()
 Both bar and foo would have their parameter split.  Foo would receive one
 replacement representing s.b.  Function bar would see its parameter split into
 one replacement representing z.s.a and another representing z.s.b which would
-be passed on to foo.  It would be a so called transitive split IPA-SRA
+be passed on to foo.  It would be a so called pass-through split IPA-SRA
 replacement, one which is passed in a call as an actual argument to another
 IPA-SRA replacement in another function.
 
@@ -95,30 +95,25 @@ all of the above.
 
 Call redirection has to be able to find the right decl or SSA_NAME that
 corresponds to the transitive split in the caller.  The SSA names are assigned
-right after clone materialization/ modification and cannot be "added"
-afterwards.  Moreover, if the caller has been inlined the SSA_NAMEs in question
-no longer belong to PARM_DECLs but to VAR_DECLs, indistinguishable from any
-others.
+right after clone materialization/ modification and cannot be "added" to call
+arguments at any later point.  Moreover, if the caller has been inlined the
+SSA_NAMEs in question no longer belong to PARM_DECLs but to VAR_DECLs,
+indistinguishable from any others.
 
 Therefore, when clone materialization finds a call statement which it knows is
-a part of a transitive split, it will modify it into:
+a part of a transitive split, it will simply add as arguments all new "split"
+replacements (that have grater or equal offset than the original call
+argument):
 
-  foo (DUMMY_Z_VAR.s, repl_for_a, repl_for_b, <rest of original arguments>);
+  foo (repl_for_a, repl_for_b, <rest of original arguments>);
 
-It will also store {DUMMY_S_VAR, 32} and {DUMMY_S_VAR, 64} representing offsets
-of z.s.a and z.s.b (assuming a 32-bit int) into foo's cgraph node
-clone->performed_splits vector (which is storing structures of type
-ipa_param_performed_split also defined in this header file).
-
-Call redirection will identify that expression DUMMY_Z_VAR.s is based on a
-variable stored in performed_splits vector and learn that the following
-arguments, already in SSA form, represent offsets 32 and 64 in a split original
-parameter.  It subtracts offset of DUMMY_Z_VAR.s from 32 and 64 and arrives at
-offsets 0 and 32 within callee's original parameter.  At this point it also
-knows from the call graph that only the bit with offset 32 is needed and so
-changes the call statement into final:
-
-bar (repl_for_b, <rest of original arguments>);  */
+It will also store into ipa_edge_modification_info (which is internal to
+ipa-param-modification.c) information about which replacement is which and
+where original arguments are.  Call redirection will then invoke
+ipa_param_adjustments::modify_call which will access this information and
+eliminate all replacements which the callee does not expect (repl_for_a in our
+example above).  In between these two steps, however, a call statement might
+have extraneous arguments.  */
 
 #ifndef IPA_PARAM_MANIPULATION_H
 #define IPA_PARAM_MANIPULATION_H
@@ -207,21 +202,6 @@ struct GTY(()) ipa_adjusted_param
 void ipa_dump_adjusted_parameters (FILE *f,
 				   vec<ipa_adjusted_param, va_gc> *adj_params);
 
-/* Structure to remember the split performed on a node so that edge redirection
-   (i.e. splitting arguments of call statements) know how split formal
-   parameters of the caller are represented.  */
-
-struct GTY(()) ipa_param_performed_split
-{
-  /* The dummy VAR_DECL that was created instead of the split parameter that
-     sits in the call in the meantime between clone materialization and call
-     redirection.  All entries in a vector of performed splits that correspond
-     to the same dumy decl must be grouped together.  */
-  tree dummy_decl;
-  /* Offset into the original parameter.  */
-  unsigned unit_offset;
-};
-
 /* Class used to record planned modifications to parameters of a function and
    also to perform necessary modifications at the caller side at the gimple
    level.  Used to describe all cgraph node clones that have their parameters
@@ -244,9 +224,7 @@ public:
 
   /* Modify a call statement arguments (and possibly remove the return value)
      as described in the data fields of this class.  */
-  gcall *modify_call (gcall *stmt,
-		      vec<ipa_param_performed_split, va_gc> *performed_splits,
-		      tree callee_decl, bool update_references);
+  gcall *modify_call (cgraph_edge *cs, bool update_references);
   /* Return if the first parameter is left intact.  */
   bool first_param_intact_p ();
   /* Build a function type corresponding to the modified call.  */
@@ -293,15 +271,9 @@ struct ipa_param_body_replacement
   tree base;
   /* The new decl it should be replaced with.  */
   tree repl;
-  /* When modifying clones during IPA clone materialization, this is a dummy
-     decl used to mark calls in which we need to apply transitive splitting,
-     these dummy delcls are inserted as arguments to such calls and then
-     followed by all the replacements with offset info stored in
-     ipa_param_performed_split.
-
-     Users of ipa_param_body_adjustments that modify standalone functions
-     outside of IPA clone materialization can use this field for their internal
-     purposes.  */
+  /* Users of ipa_param_body_adjustments that modify standalone functions
+     outside of IPA clone materialization can use the following field for their
+     internal purposes.  */
   tree dummy;
   /* The offset within BASE that REPL represents.  */
   unsigned unit_offset;
@@ -342,8 +314,7 @@ public:
   /* Change the PARM_DECLs.  */
   void modify_formal_parameters ();
   /* Register a replacement decl for the transformation done in APM.  */
-  void register_replacement (ipa_adjusted_param *apm, tree replacement,
-			     tree dummy = NULL_TREE);
+  void register_replacement (ipa_adjusted_param *apm, tree replacement);
   /* Lookup a replacement for a given offset within a given parameter.  */
   tree lookup_replacement (tree base, unsigned unit_offset);
   /* Lookup a replacement for an expression, if there is one.  */
@@ -353,7 +324,8 @@ public:
      parameter. */
   tree get_replacement_ssa_base (tree old_decl);
   /* Modify a statement.  */
-  bool modify_gimple_stmt (gimple **stmt, gimple_seq *extra_stmts);
+  bool modify_gimple_stmt (gimple **stmt, gimple_seq *extra_stmts,
+			   gimple *orig_stmt);
   /* Return the new chain of parameters.  */
   tree get_new_param_chain ();
 
@@ -370,6 +342,12 @@ public:
   /* Set to true if there are any IPA_PARAM_OP_SPLIT adjustments among stored
      adjustments.  */
   bool m_split_modifications_p;
+
+  /* Sets of statements and SSA_NAMEs that only manipulate data from parameters
+     removed because they are not necessary.  */
+  hash_set<gimple *> m_dead_stmts;
+  hash_set<tree> m_dead_ssas;
+
 private:
   void common_initialization (tree old_fndecl, tree *vars,
 			      vec<ipa_replace_map *, va_gc> *tree_map);
@@ -380,9 +358,10 @@ private:
   tree replace_removed_params_ssa_names (tree old_name, gimple *stmt);
   bool modify_expression (tree *expr_p, bool convert);
   bool modify_assignment (gimple *stmt, gimple_seq *extra_stmts);
-  bool modify_call_stmt (gcall **stmt_p);
+  bool modify_call_stmt (gcall **stmt_p, gimple *orig_stmt);
   bool modify_cfun_body ();
   void reset_debug_stmts ();
+  void mark_dead_statements (tree dead_param);
 
   /* Declaration of the function that is being transformed.  */
 
@@ -431,5 +410,8 @@ private:
 
 void push_function_arg_decls (vec<tree> *args, tree fndecl);
 void push_function_arg_types (vec<tree> *types, tree fntype);
+void ipa_verify_edge_has_no_modifications (cgraph_edge *cs);
+void ipa_edge_modifications_finalize ();
+
 
 #endif	/* IPA_PARAM_MANIPULATION_H */

@@ -18,9 +18,9 @@ void fBx1 ()
   static BAx bax1 = { 1, /* Ax = */ { 2, /* a[] = */ { 3 } } }; // { dg-error "initialization of flexible array member in a nested context" }
 
   // The first three bytes of the flexible array member live in the padding.
-  new (bax1.ax.a) char;
-  new (bax1.ax.a) char[2];
-  new (bax1.ax.a) Int16;
+  new (bax1.ax.a) char;     // { dg-warning "placement" "" { target default_packed } }
+  new (bax1.ax.a) char[2];  // { dg-warning "placement" "" { target default_packed } }
+  new (bax1.ax.a) Int16;    // { dg-warning "placement" "" { target default_packed } }
   new (bax1.ax.a) Int32;    // { dg-warning "placement" }
 }
 
@@ -29,10 +29,10 @@ void fBx2 ()
   static BAx bax2 = { 1, /* Ax = */ { 2, /* a[] = */ { 3, 4 } } }; // { dg-error "initialization of flexible array member in a nested context" }
 
   // The first three bytes of the flexible array member live in the padding.
-  new (bax2.ax.a) char;
-  new (bax2.ax.a) char[2];
-  new (bax2.ax.a) char[3];
-  new (bax2.ax.a) Int16;
+  new (bax2.ax.a) char;       // { dg-warning "placement" "" { target default_packed } }
+  new (bax2.ax.a) char[2];    // { dg-warning "placement" "" { target default_packed } }
+  new (bax2.ax.a) char[3];    // { dg-warning "placement" "" { target default_packed } }
+  new (bax2.ax.a) Int16;      // { dg-warning "placement" "" { target default_packed } }
   new (bax2.ax.a) char[4];    // { dg-warning "placement" }
   new (bax2.ax.a) Int32;      // { dg-warning "placement" }
 }
@@ -42,10 +42,10 @@ void fBx3 ()
   static BAx bax2 = { 1, /* Ax = */ { 3, /* a[] = */ { 4, 5, 6 } } }; // { dg-error "initialization of flexible array member in a nested context" }
 
   // The first three bytes of the flexible array member live in the padding.
-  new (bax2.ax.a) char;
-  new (bax2.ax.a) char[2];
-  new (bax2.ax.a) Int16;
-  new (bax2.ax.a) char[3];
+  new (bax2.ax.a) char;       // { dg-warning "placement" "" { target default_packed } }
+  new (bax2.ax.a) char[2];    // { dg-warning "placement" "" { target default_packed } }
+  new (bax2.ax.a) Int16;      // { dg-warning "placement" "" { target default_packed } }
+  new (bax2.ax.a) char[3];    // { dg-warning "placement" "" { target default_packed } }
   new (bax2.ax.a) char[4];    // { dg-warning "placement" }
   new (bax2.ax.a) Int32;      // { dg-warning "placement" }
 }

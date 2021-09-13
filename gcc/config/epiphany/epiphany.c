@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the EPIPHANY cpu.
-   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+   Copyright (C) 1994-2021 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -1394,7 +1394,7 @@ epiphany_print_operand (FILE *file, rtx x, int code)
 static void
 epiphany_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
 {
-  register rtx base, index = 0;
+  rtx base, index = 0;
   int offset = 0;
 
   switch (GET_CODE (addr))

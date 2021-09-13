@@ -1,5 +1,5 @@
 /* Array prefetching.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1980,7 +1980,6 @@ fail:
 unsigned int
 tree_ssa_prefetch_arrays (void)
 {
-  class loop *loop;
   bool unrolled = false;
   int todo_flags = 0;
 
@@ -2025,7 +2024,7 @@ tree_ssa_prefetch_arrays (void)
       set_builtin_decl (BUILT_IN_PREFETCH, decl, false);
     }
 
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Processing loop %d:\n", loop->num);

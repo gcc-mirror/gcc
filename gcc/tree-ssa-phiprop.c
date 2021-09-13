@@ -1,5 +1,5 @@
 /* Backward propagation of indirect loads through PHIs.
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -119,7 +119,7 @@ phivn_valid_p (struct phiprop_d *phivn, tree name, basic_block bb)
 	  && !dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt), bb))
 	{
 	  ok = false;
-	  BREAK_FROM_IMM_USE_STMT (ui2);
+	  break;
 	}
     }
 
@@ -484,7 +484,6 @@ public:
 unsigned int
 pass_phiprop::execute (function *fun)
 {
-  vec<basic_block> bbs;
   struct phiprop_d *phivn;
   bool did_something = false;
   basic_block bb;
@@ -499,8 +498,9 @@ pass_phiprop::execute (function *fun)
   phivn = XCNEWVEC (struct phiprop_d, n);
 
   /* Walk the dominator tree in preorder.  */
-  bbs = get_all_dominated_blocks (CDI_DOMINATORS,
-				  single_succ (ENTRY_BLOCK_PTR_FOR_FN (fun)));
+  auto_vec<basic_block> bbs
+  = get_all_dominated_blocks (CDI_DOMINATORS,
+			      single_succ (ENTRY_BLOCK_PTR_FOR_FN (fun)));
   FOR_EACH_VEC_ELT (bbs, i, bb)
     {
       /* Since we're going to move dereferences across predecessor
@@ -514,7 +514,6 @@ pass_phiprop::execute (function *fun)
   if (did_something)
     gsi_commit_edge_inserts ();
 
-  bbs.release ();
   free (phivn);
 
   free_dominance_info (CDI_POST_DOMINATORS);

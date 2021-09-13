@@ -20,6 +20,6 @@ int main()
      Instead test j + 1 which will make the test UNSUPPORTED if i
      is optimized out.  Since the test previously had wrong debug
      with j == 0 this is acceptable.  */
-  optimize_me_not(); /* { dg-final { gdb-test . "j + 1" "9" } } */
+  optimize_me_not(); /* { dg-final { gdb-test . "j + 1" "9" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" } } } } } */
   return 0;
 }

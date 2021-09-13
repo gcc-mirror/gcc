@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -456,7 +456,6 @@ set_internal_unit (st_parameter_dt *dtp, gfc_unit *iunit, int kind)
 {
   gfc_offset start_record = 0;
 
-  iunit->unit_number = dtp->common.unit;
   iunit->recl = dtp->internal_unit_len;
   iunit->internal_unit = dtp->internal_unit;
   iunit->internal_unit_len = dtp->internal_unit_len;

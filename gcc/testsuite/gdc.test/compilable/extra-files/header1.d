@@ -10,6 +10,30 @@ static assert(true, "message");
 
 alias double mydbl;
 
+alias fl1 = function ()
+    in {}
+    in (true)
+    out (; true)
+    out (r; true)
+    out
+    {
+    }
+    out (r)
+    {
+    }
+    do
+    {
+        return 2;
+    };
+
+alias fl2 = function ()
+    in (true)
+    out(; true)
+    out(r; true)
+    {
+        return 2;
+    };
+
 int testmain()
 in
 {
@@ -133,11 +157,11 @@ template Foo(T, int V)
     }
 
     try
-	    bar(1, 2);
+	bar(1, 2);
     catch(Object o)
-	    x++;
+	x++;
     finally
-	    x--;
+	x--;
 
     Object o;
     synchronized (o)
@@ -244,6 +268,7 @@ class Test
 
     pure nothrow @safe @nogc unittest {}
     pure nothrow @safe @nogc invariant {}
+    pure nothrow @safe @nogc invariant (true);
 
     pure nothrow @safe @nogc new (size_t sz) { return null; }
     pure nothrow @safe @nogc delete (void* p) { }
@@ -519,3 +544,21 @@ struct Foo3A(T)
     @disable this(this);
     @disable this();
 }
+
+void test13x(@(10) int a, @(20) int, @(30) @(40) int[] arr...) {}
+
+enum Test14UDA1;
+struct Test14UDA2
+{
+    string str;
+}
+
+Test14UDA2 test14uda3(string name)
+{
+    return Test14UDA2(name);
+}
+struct Test14UDA4(string v){}
+
+void test14x(@Test14UDA1 int, @Test14UDA2("1") int, @test14uda3("2") int, @Test14UDA4!"3" int) {}
+
+void test15x(@(20) void delegate(int) @safe dg){}

@@ -1,5 +1,5 @@
 /* IRA hard register and memory cost calculation for allocnos or pseudos.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -773,6 +773,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		      break;
 
 		    case CT_MEMORY:
+		    case CT_RELAXED_MEMORY:
 		      /* Every MEM can be reloaded to fit.  */
 		      insn_allows_mem[i] = allows_mem[i] = 1;
 		      if (MEM_P (op))
@@ -1104,7 +1105,6 @@ record_address_regs (machine_mode mode, addr_space_t as, rtx x,
     {
     case CONST_INT:
     case CONST:
-    case CC0:
     case PC:
     case SYMBOL_REF:
     case LABEL_REF:

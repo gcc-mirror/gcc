@@ -1,6 +1,6 @@
 /* GIMPLE lowering pass.  Converts High GIMPLE into Low GIMPLE.
 
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -329,11 +329,13 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     case GIMPLE_LABEL:
     case GIMPLE_EH_MUST_NOT_THROW:
     case GIMPLE_OMP_FOR:
+    case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SECTIONS_SWITCH:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SCAN:

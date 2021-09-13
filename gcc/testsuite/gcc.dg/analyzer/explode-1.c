@@ -12,7 +12,7 @@ void test (void)
 {
   void *p0, *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8;
   void **pp;
-  while (get ())
+  while (get ()) /* { dg-warning "leak" } */
     {
       switch (get ())
 	{
@@ -47,7 +47,7 @@ void test (void)
 	{
 	default:
 	case 0:
-	  *pp = malloc (16); /* { dg-warning "leak" } */
+	  *pp = malloc (16);
 	  break;
 	case 1:
 	  free (*pp);

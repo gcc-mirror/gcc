@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
 
-// Copyright (C) 2018-2020 Free Software Foundation, Inc.
+// Copyright (C) 2018-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,3 +48,10 @@ void test01()
   static_assert(is_same<typename remove_cvref<const int(&)()>::type,
 			const int()>::value, "");
 }
+
+// Declare using nested name of class template
+template<typename T> T func(typename std::remove_cvref<T>::type);
+// Define using alias
+template<typename T> T func(std::remove_cvref_t<T> t) { return t; }
+// Call must not be ambiguous
+int i = func<int>(1);

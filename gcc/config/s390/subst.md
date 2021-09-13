@@ -1,6 +1,6 @@
 ;;- Machine description for GNU compiler -- S/390 / zSeries version.
 ;;  Subst patterns.
-;;  Copyright (C) 2016-2020 Free Software Foundation, Inc.
+;;  Copyright (C) 2016-2021 Free Software Foundation, Inc.
 ;;  Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 ;; This file is part of GCC.
@@ -45,7 +45,7 @@
   "s390_match_ccmode(insn, CCSmode)"
   [(set (reg CC_REGNUM)
 	(compare (match_dup 1) (const_int 0)))
-   (clobber (match_scratch:DSI 0 "=d,d"))])
+   (clobber (match_scratch:DSI 0 "=d"))])
 
 (define_subst_attr "cconly" "cconly_subst" "" "_cconly")
 

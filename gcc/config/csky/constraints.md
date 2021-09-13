@@ -1,5 +1,5 @@
 ;; Constraints for C-SKY.
-;; Copyright (C) 2018-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2021 Free Software Foundation, Inc.
 ;; Contributed by C-SKY Microsystems and Mentor Graphics.
 ;;
 ;; This file is part of GCC.
@@ -24,8 +24,6 @@
 (define_register_constraint "b" "LOW_REGS"  "r0 - r15")
 (define_register_constraint "c" "C_REGS" "C register")
 (define_register_constraint "y" "HILO_REGS" "HI and LO registers")
-(define_register_constraint "l" "LO_REGS" "LO register")
-(define_register_constraint "h" "HI_REGS" "HI register")
 (define_register_constraint "v" "V_REGS" "vector registers")
 (define_register_constraint "z" "SP_REGS" "SP register")
 
@@ -34,7 +32,15 @@
 
 (define_memory_constraint "Q"
   "Memory operands with base register, index register and short displacement for FPUV2"
-  (match_test "csky_valid_fpuv2_mem_operand (op)"))
+  (match_test "csky_valid_mem_constraint_operand (op, \"Q\")"))
+
+(define_memory_constraint "W"
+  "Memory operands with base register, index register"
+  (match_test "csky_valid_mem_constraint_operand (op, \"W\")"))
+
+(define_memory_constraint "Y"
+  "Memory operands without index register"
+  (not (match_test "csky_valid_mem_constraint_operand (op, \"W\")")))
 
 (define_constraint "R"
   "Memory operands whose address is a label_ref"
@@ -172,3 +178,10 @@
   "Constant in range [-8, -1]"
   (and (match_code "const_int")
        (match_test "CSKY_CONST_OK_FOR_US (ival)")))
+
+(define_constraint "Dv"
+ "@VFPv3
+  A const_double which can be used with a VFP fmovi
+  instruction."
+  (and (match_code "const_double")
+       (match_test "fpuv3_const_double_rtx (op)")))

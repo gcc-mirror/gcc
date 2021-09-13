@@ -1,4 +1,4 @@
-/* { dg-do compile { target { lp64 } } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target popcountll } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
@@ -16,4 +16,5 @@ int popcount64c(unsigned long long x)
     return (x * h01) >> shift;
 }
 
-/* { dg-final { scan-tree-dump-times "\.POPCOUNT" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\.POPCOUNT" 1 "optimized" { target { lp64 } } } } */
+/* { dg-final { scan-tree-dump-times "\.POPCOUNT" 2 "optimized" { target { ! lp64 } } } } */

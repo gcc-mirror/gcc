@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -2442,7 +2442,7 @@ add_branch_dependences (rtx_insn *head, rtx_insn *tail)
 {
   rtx_insn *insn, *last;
 
-  /* For all branches, calls, uses, clobbers, cc0 setters, and instructions
+  /* For all branches, calls, uses, clobbers, and instructions
      that can throw exceptions, force them to remain in order at the end of
      the block by adding dependencies and giving the last a high priority.
      There may be notes present, and prev_head may also be a note.
@@ -2450,9 +2450,6 @@ add_branch_dependences (rtx_insn *head, rtx_insn *tail)
      Branches must obviously remain at the end.  Calls should remain at the
      end since moving them results in worse register allocation.  Uses remain
      at the end to ensure proper register allocation.
-
-     cc0 setters remain at the end because they can't be moved away from
-     their cc0 user.
 
      Predecessors of SCHED_GROUP_P instructions at the end remain at the end.
 
@@ -2473,7 +2470,6 @@ add_branch_dependences (rtx_insn *head, rtx_insn *tail)
 	     && (GET_CODE (PATTERN (insn)) == USE
 		 || GET_CODE (PATTERN (insn)) == CLOBBER
 		 || can_throw_internal (insn)
-		 || (HAVE_cc0 && sets_cc0_p (PATTERN (insn)))
 		 || (!reload_completed
 		     && sets_likely_spilled (PATTERN (insn)))))
 	 || NOTE_P (insn)

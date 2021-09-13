@@ -1,6 +1,6 @@
 /* Generate from machine description:
    - some #define configuration flags.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 static int max_recog_operands;  /* Largest operand number seen.  */
 static int max_dup_operands;    /* Largest number of match_dup in any insn.  */
 static int max_clobbers_per_insn;
-static int have_cc0_flag;
 static int have_cmove_flag;
 static int have_cond_exec_flag;
 static int have_lo_sum_flag;
@@ -103,11 +102,6 @@ walk_insn_part (rtx part, int recog_p, int non_pc_set_src)
       ++dup_operands_seen_this_insn;
       if (XINT (part, 0) > max_recog_operands)
 	max_recog_operands = XINT (part, 0);
-      return;
-
-    case CC0:
-      if (recog_p)
-	have_cc0_flag = 1;
       return;
 
     case LO_SUM:
@@ -328,19 +322,6 @@ main (int argc, const char **argv)
   printf ("#ifndef MAX_INSNS_PER_SPLIT\n");
   printf ("#define MAX_INSNS_PER_SPLIT %d\n", max_insns_per_split);
   printf ("#endif\n");
-
-  if (have_cc0_flag)
-    {
-      printf ("#define HAVE_cc0 1\n");
-      printf ("#define CC0_P(X) ((X) == cc0_rtx)\n");
-    }
-  else
-    {
-      /* We output CC0_P this way to make sure that X is declared
-	 somewhere.  */
-      printf ("#define HAVE_cc0 0\n");
-      printf ("#define CC0_P(X) ((X) ? 0 : 0)\n");
-    }
 
   if (have_cmove_flag)
     printf ("#define HAVE_conditional_move 1\n");

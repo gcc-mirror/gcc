@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Renesas M32R cpu.
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -532,7 +532,7 @@ m32r_init_expanders (void)
      to make it easy to experiment.  */
 }
 
-int
+bool
 call_operand (rtx op, machine_mode mode)
 {
   if (!MEM_P (op))
@@ -543,7 +543,7 @@ call_operand (rtx op, machine_mode mode)
 
 /* Return 1 if OP is a reference to an object in .sdata/.sbss.  */
 
-int
+bool
 small_data_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (! TARGET_SDATA_USE)
@@ -674,7 +674,7 @@ easy_df_const (rtx op)
 /* Return 1 if OP is (mem (reg ...)).
    This is used in insn length calcs.  */
 
-int
+bool
 memreg_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 {
   return MEM_P (op) && REG_P (XEXP (op, 0));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -64,6 +64,11 @@ generic
 package Ada.Containers.Formal_Hashed_Maps with
   SPARK_Mode
 is
+   --  Contracts in this unit are meant for analysis only, not for run-time
+   --  checking.
+
+   pragma Assertion_Policy (Pre => Ignore);
+   pragma Assertion_Policy (Post => Ignore);
    pragma Annotate (CodePeer, Skip_Analysis);
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is private with
@@ -388,6 +393,95 @@ is
                (Model (Container),
                 Model (Container)'Old,
                 Key (Container, Position));
+
+   function At_End
+     (E : not null access constant Map) return not null access constant Map
+   is (E)
+   with Ghost,
+     Annotate => (GNATprove, At_End_Borrow);
+
+   function At_End
+     (E : access constant Element_Type) return access constant Element_Type
+   is (E)
+   with Ghost,
+     Annotate => (GNATprove, At_End_Borrow);
+
+   function Constant_Reference
+     (Container : aliased Map;
+      Position  : Cursor) return not null access constant Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Position),
+     Post   =>
+       Constant_Reference'Result.all =
+           Element (Model (Container), Key (Container, Position));
+
+   function Reference
+     (Container : not null access Map;
+      Position  : Cursor) return not null access Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container.all, Position),
+     Post   =>
+
+       --  Order of keys and cursors is preserved
+
+       Keys (At_End (Container).all) = Keys (Container.all)
+         and Positions (At_End (Container).all) = Positions (Container.all)
+
+         --  The value designated by the result of Reference is now associated
+         --  with the key at position Position in Container.
+
+         and Element (At_End (Container).all, Position) =
+               At_End (Reference'Result).all
+
+         --  Elements associated with other keys are preserved
+
+         and M.Same_Keys
+               (Model (At_End (Container).all),
+                Model (Container.all))
+         and M.Elements_Equal_Except
+               (Model (At_End (Container).all),
+                Model (Container.all),
+                Key (At_End (Container).all, Position));
+
+   function Constant_Reference
+     (Container : aliased Map;
+      Key       : Key_Type) return not null access constant Element_Type
+   with
+     Global => null,
+     Pre    => Contains (Container, Key),
+     Post   =>
+       Constant_Reference'Result.all = Element (Model (Container), Key);
+
+   function Reference
+     (Container : not null access Map;
+      Key       : Key_Type) return not null access Element_Type
+   with
+     Global => null,
+     Pre    => Contains (Container.all, Key),
+     Post   =>
+
+       --  Order of keys and cursors is preserved
+
+       Keys (At_End (Container).all) = Keys (Container.all)
+         and Positions (At_End (Container).all) = Positions (Container.all)
+
+         --  The value designated by the result of Reference is now associated
+         --  with Key in Container.
+
+         and Element (Model (At_End (Container).all), Key) =
+               At_End (Reference'Result).all
+
+         --  Elements associated with other keys are preserved
+
+         and M.Same_Keys
+               (Model (At_End (Container).all),
+                Model (Container.all))
+         and M.Elements_Equal_Except
+               (Model (At_End (Container).all),
+                Model (Container.all),
+                Key);
 
    procedure Move (Target : in out Map; Source : in out Map) with
      Global => null,
@@ -799,7 +893,7 @@ private
 
    type Node_Type is record
       Key         : Key_Type;
-      Element     : Element_Type;
+      Element     : aliased Element_Type;
       Next        : Count_Type;
       Has_Element : Boolean := False;
    end record;
@@ -807,8 +901,9 @@ private
    package HT_Types is new
      Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
 
-   type Map (Capacity : Count_Type; Modulus : Hash_Type) is
-     new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
+   type Map (Capacity : Count_Type; Modulus : Hash_Type) is record
+     Content : HT_Types.Hash_Table_Type (Capacity, Modulus);
+   end record;
 
    Empty_Map : constant Map := (Capacity => 0, Modulus => 0, others => <>);
 

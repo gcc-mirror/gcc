@@ -1,5 +1,5 @@
 /* Single-image implementation of GNU Fortran Coarray Library
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran Coarray Runtime Library (libcaf).
@@ -3134,4 +3134,14 @@ _gfortran_caf_is_present (caf_token_t token,
       riter = riter->next;
     }
   return memptr != NULL;
+}
+
+/* Reference the libraries implementation.  */
+extern void _gfortran_random_init (int32_t, int32_t, int32_t);
+
+void _gfortran_caf_random_init (bool repeatable, bool image_distinct)
+{
+  /* In a single image implementation always forward to the gfortran
+     routine.  */
+  _gfortran_random_init (repeatable, image_distinct, 1);
 }

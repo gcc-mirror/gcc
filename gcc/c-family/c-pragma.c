@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -918,6 +918,12 @@ handle_pragma_target(cpp_reader *ARG_UNUSED(dummy))
 
       if (targetm.target_option.pragma_parse (args, NULL_TREE))
 	current_target_pragma = chainon (current_target_pragma, args);
+
+      /* A target pragma can also influence optimization options. */
+      tree current_optimize
+	= build_optimization_node (&global_options, &global_options_set);
+      if (current_optimize != optimization_current_node)
+	optimization_current_node = current_optimize;
     }
 }
 
@@ -1078,12 +1084,16 @@ handle_pragma_pop_options (cpp_reader *ARG_UNUSED(dummy))
       target_option_current_node = p->target_binary;
     }
 
+  /* Always restore optimization options as optimization_current_node is
+   * overwritten by invoke_set_current_function_hook.  */
+  cl_optimization_restore (&global_options, &global_options_set,
+			   TREE_OPTIMIZATION (p->optimize_binary));
+  cl_target_option_restore (&global_options, &global_options_set,
+			    TREE_TARGET_OPTION (p->target_binary));
+
   if (p->optimize_binary != optimization_current_node)
     {
-      tree old_optimize = optimization_current_node;
-      cl_optimization_restore (&global_options, &global_options_set,
-			       TREE_OPTIMIZATION (p->optimize_binary));
-      c_cpp_builtins_optimize_pragma (parse_in, old_optimize,
+      c_cpp_builtins_optimize_pragma (parse_in, optimization_current_node,
 				      p->optimize_binary);
       optimization_current_node = p->optimize_binary;
     }
@@ -1316,9 +1326,12 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "cancellation", PRAGMA_OMP_CANCELLATION_POINT },
   { "critical", PRAGMA_OMP_CRITICAL },
   { "depobj", PRAGMA_OMP_DEPOBJ },
+  { "error", PRAGMA_OMP_ERROR },
   { "end", PRAGMA_OMP_END_DECLARE_TARGET },
   { "flush", PRAGMA_OMP_FLUSH },
+  { "nothing", PRAGMA_OMP_NOTHING },
   { "requires", PRAGMA_OMP_REQUIRES },
+  { "scope", PRAGMA_OMP_SCOPE },
   { "section", PRAGMA_OMP_SECTION },
   { "sections", PRAGMA_OMP_SECTIONS },
   { "single", PRAGMA_OMP_SINGLE },
@@ -1333,6 +1346,7 @@ static const struct omp_pragma_def omp_pragmas_simd[] = {
   { "distribute", PRAGMA_OMP_DISTRIBUTE },
   { "for", PRAGMA_OMP_FOR },
   { "loop", PRAGMA_OMP_LOOP },
+  { "masked", PRAGMA_OMP_MASKED },
   { "master", PRAGMA_OMP_MASTER },
   { "ordered", PRAGMA_OMP_ORDERED },
   { "parallel", PRAGMA_OMP_PARALLEL },

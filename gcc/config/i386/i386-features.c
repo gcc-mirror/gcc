@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -544,71 +544,111 @@ general_scalar_chain::compute_convert_gain ()
 	  += m * ix86_cost->int_store[2] - ix86_cost->sse_store[sse_cost_idx];
       else if (MEM_P (src) && REG_P (dst))
 	igain += m * ix86_cost->int_load[2] - ix86_cost->sse_load[sse_cost_idx];
-      else if (GET_CODE (src) == ASHIFT
-	       || GET_CODE (src) == ASHIFTRT
-	       || GET_CODE (src) == LSHIFTRT)
-	{
-	  if (m == 2)
-	    {
-	      if (INTVAL (XEXP (src, 1)) >= 32)
-		igain += ix86_cost->add;
-	      else
-		igain += ix86_cost->shift_const;
-	    }
-
-	  igain += ix86_cost->shift_const - ix86_cost->sse_op;
-
-	  if (CONST_INT_P (XEXP (src, 0)))
-	    igain -= vector_const_cost (XEXP (src, 0));
-	}
-      else if (GET_CODE (src) == PLUS
-	       || GET_CODE (src) == MINUS
-	       || GET_CODE (src) == IOR
-	       || GET_CODE (src) == XOR
-	       || GET_CODE (src) == AND)
-	{
-	  igain += m * ix86_cost->add - ix86_cost->sse_op;
-	  /* Additional gain for andnot for targets without BMI.  */
-	  if (GET_CODE (XEXP (src, 0)) == NOT
-	      && !TARGET_BMI)
-	    igain += m * ix86_cost->add;
-
-	  if (CONST_INT_P (XEXP (src, 0)))
-	    igain -= vector_const_cost (XEXP (src, 0));
-	  if (CONST_INT_P (XEXP (src, 1)))
-	    igain -= vector_const_cost (XEXP (src, 1));
-	}
-      else if (GET_CODE (src) == NEG
-	       || GET_CODE (src) == NOT)
-	igain += m * ix86_cost->add - ix86_cost->sse_op - COSTS_N_INSNS (1);
-      else if (GET_CODE (src) == ABS
-	       || GET_CODE (src) == SMAX
-	       || GET_CODE (src) == SMIN
-	       || GET_CODE (src) == UMAX
-	       || GET_CODE (src) == UMIN)
-	{
-	  /* We do not have any conditional move cost, estimate it as a
-	     reg-reg move.  Comparisons are costed as adds.  */
-	  igain += m * (COSTS_N_INSNS (2) + ix86_cost->add);
-	  /* Integer SSE ops are all costed the same.  */
-	  igain -= ix86_cost->sse_op;
-	}
-      else if (GET_CODE (src) == COMPARE)
-	{
-	  /* Assume comparison cost is the same.  */
-	}
-      else if (CONST_INT_P (src))
-	{
-	  if (REG_P (dst))
-	    /* DImode can be immediate for TARGET_64BIT and SImode always.  */
-	    igain += m * COSTS_N_INSNS (1);
-	  else if (MEM_P (dst))
-	    igain += (m * ix86_cost->int_store[2]
-		     - ix86_cost->sse_store[sse_cost_idx]);
-	  igain -= vector_const_cost (src);
-	}
       else
-	gcc_unreachable ();
+	switch (GET_CODE (src))
+	  {
+	  case ASHIFT:
+	  case ASHIFTRT:
+	  case LSHIFTRT:
+	    if (m == 2)
+	      {
+		if (INTVAL (XEXP (src, 1)) >= 32)
+		  igain += ix86_cost->add;
+		else
+		  igain += ix86_cost->shift_const;
+	      }
+
+	    igain += ix86_cost->shift_const - ix86_cost->sse_op;
+
+	    if (CONST_INT_P (XEXP (src, 0)))
+	      igain -= vector_const_cost (XEXP (src, 0));
+	    break;
+
+	  case AND:
+	  case IOR:
+	  case XOR:
+	  case PLUS:
+	  case MINUS:
+	    igain += m * ix86_cost->add - ix86_cost->sse_op;
+	    /* Additional gain for andnot for targets without BMI.  */
+	    if (GET_CODE (XEXP (src, 0)) == NOT
+		&& !TARGET_BMI)
+	      igain += m * ix86_cost->add;
+
+	    if (CONST_INT_P (XEXP (src, 0)))
+	      igain -= vector_const_cost (XEXP (src, 0));
+	    if (CONST_INT_P (XEXP (src, 1)))
+	      igain -= vector_const_cost (XEXP (src, 1));
+	    break;
+
+	  case NEG:
+	  case NOT:
+	    igain -= ix86_cost->sse_op + COSTS_N_INSNS (1);
+
+	    if (GET_CODE (XEXP (src, 0)) != ABS)
+	      {
+		igain += m * ix86_cost->add;
+		break;
+	      }
+	    /* FALLTHRU */
+
+	  case ABS:
+	  case SMAX:
+	  case SMIN:
+	  case UMAX:
+	  case UMIN:
+	    /* We do not have any conditional move cost, estimate it as a
+	       reg-reg move.  Comparisons are costed as adds.  */
+	    igain += m * (COSTS_N_INSNS (2) + ix86_cost->add);
+	    /* Integer SSE ops are all costed the same.  */
+	    igain -= ix86_cost->sse_op;
+	    break;
+
+	  case COMPARE:
+	    /* Assume comparison cost is the same.  */
+	    break;
+
+	  case CONST_INT:
+	    if (REG_P (dst))
+	      {
+		if (optimize_insn_for_size_p ())
+		  {
+		    /* xor (2 bytes) vs. xorps (3 bytes).  */
+		    if (src == const0_rtx)
+		      igain -= COSTS_N_BYTES (1);
+		    /* movdi_internal vs. movv2di_internal.  */
+		    /* => mov (5 bytes) vs. movaps (7 bytes).  */
+		    else if (x86_64_immediate_operand (src, SImode))
+		      igain -= COSTS_N_BYTES (2);
+		    else
+		      /* ??? Larger immediate constants are placed in the
+			 constant pool, where the size benefit/impact of
+			 STV conversion is affected by whether and how
+			 often each constant pool entry is shared/reused.
+			 The value below is empirically derived from the
+			 CSiBE benchmark (and the optimal value may drift
+			 over time).  */
+		      igain += COSTS_N_BYTES (0);
+		  }
+		else
+		  {
+		    /* DImode can be immediate for TARGET_64BIT
+		       and SImode always.  */
+		    igain += m * COSTS_N_INSNS (1);
+		    igain -= vector_const_cost (src);
+		  }
+	      }
+	    else if (MEM_P (dst))
+	      {
+		igain += (m * ix86_cost->int_store[2]
+			  - ix86_cost->sse_store[sse_cost_idx]);
+		igain -= vector_const_cost (src);
+	      }
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	  }
 
       if (igain != 0 && dump_file)
 	{
@@ -1009,7 +1049,19 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
 
     case NEG:
       src = XEXP (src, 0);
-      convert_op (&src, insn);
+
+      if (GET_CODE (src) == ABS)
+	{
+	  src = XEXP (src, 0);
+	  convert_op (&src, insn);
+	  subreg = gen_reg_rtx (vmode);
+	  emit_insn_before (gen_rtx_SET (subreg,
+					 gen_rtx_ABS (vmode, src)), insn);
+	  src = subreg;
+	}
+      else
+	convert_op (&src, insn);
+
       subreg = gen_reg_rtx (vmode);
       emit_insn_before (gen_move_insn (subreg, CONST0_RTX (vmode)), insn);
       src = gen_rtx_MINUS (vmode, subreg, src);
@@ -1042,9 +1094,10 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
 
       gcc_assert (REG_P (src) && GET_MODE (src) == DImode);
       subreg = gen_rtx_SUBREG (V2DImode, src, 0);
-      emit_insn_before (gen_vec_interleave_lowv2di (copy_rtx_if_shared (subreg),
-						    copy_rtx_if_shared (subreg),
-						    copy_rtx_if_shared (subreg)),
+      emit_insn_before (gen_vec_interleave_lowv2di
+			(copy_rtx_if_shared (subreg),
+			 copy_rtx_if_shared (subreg),
+			 copy_rtx_if_shared (subreg)),
 			insn);
       dst = gen_rtx_REG (CCmode, FLAGS_REG);
       src = gen_rtx_UNSPEC (CCmode, gen_rtvec (2, copy_rtx_if_shared (subreg),
@@ -1400,11 +1453,11 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
 	return false;
       /* Fallthru.  */
 
-    case PLUS:
-    case MINUS:
+    case AND:
     case IOR:
     case XOR:
-    case AND:
+    case PLUS:
+    case MINUS:
       if (!REG_P (XEXP (src, 1))
 	  && !MEM_P (XEXP (src, 1))
 	  && !CONST_INT_P (XEXP (src, 1)))
@@ -1413,16 +1466,30 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
       if (GET_MODE (XEXP (src, 1)) != mode
 	  && !CONST_INT_P (XEXP (src, 1)))
 	return false;
+
+      /* Check for andnot case.  */
+      if (GET_CODE (src) != AND
+	  || GET_CODE (XEXP (src, 0)) != NOT)
+	break;
+
+      src = XEXP (src, 0);
+      /* FALLTHRU */
+
+    case NOT:
       break;
+
+    case NEG:
+      /* Check for nabs case.  */
+      if (GET_CODE (XEXP (src, 0)) != ABS)
+	break;
+
+      src = XEXP (src, 0);
+      /* FALLTHRU */
 
     case ABS:
       if ((mode == DImode && !TARGET_AVX512VL)
 	  || (mode == SImode && !TARGET_SSSE3))
 	return false;
-      break;
-
-    case NEG:
-    case NOT:
       break;
 
     case REG:
@@ -1438,12 +1505,8 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
 
   if (!REG_P (XEXP (src, 0))
       && !MEM_P (XEXP (src, 0))
-      && !CONST_INT_P (XEXP (src, 0))
-      /* Check for andnot case.  */
-      && (GET_CODE (src) != AND
-	  || GET_CODE (XEXP (src, 0)) != NOT
-	  || !REG_P (XEXP (XEXP (src, 0), 0))))
-      return false;
+      && !CONST_INT_P (XEXP (src, 0)))
+    return false;
 
   if (GET_MODE (XEXP (src, 0)) != mode
       && !CONST_INT_P (XEXP (src, 0)))
@@ -1627,7 +1690,7 @@ convert_scalars_to_vector (bool timode_p)
     bitmap_initialize (&candidates[i], &bitmap_default_obstack);
 
   calculate_dominance_info (CDI_DOMINATORS);
-  df_set_flags (DF_DEFER_INSN_RESCAN);
+  df_set_flags (DF_DEFER_INSN_RESCAN | DF_RD_PRUNE_DEAD_DEFS);
   df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
   df_analyze ();
 
@@ -1768,89 +1831,22 @@ convert_scalars_to_vector (bool timode_p)
   return 0;
 }
 
-/* Modify the vzeroupper pattern in INSN so that it describes the effect
-   that the instruction has on the SSE registers.  LIVE_REGS are the set
-   of registers that are live across the instruction.
-
-   For a live register R we use:
-
-     (set (reg:V2DF R) (reg:V2DF R))
-
-   which preserves the low 128 bits but clobbers the upper bits.  */
-
-static void
-ix86_add_reg_usage_to_vzeroupper (rtx_insn *insn, bitmap live_regs)
-{
-  rtx pattern = PATTERN (insn);
-  unsigned int nregs = TARGET_64BIT ? 16 : 8;
-  unsigned int npats = nregs;
-  for (unsigned int i = 0; i < nregs; ++i)
-    {
-      unsigned int regno = GET_SSE_REGNO (i);
-      if (!bitmap_bit_p (live_regs, regno))
-	npats--;
-    }
-  if (npats == 0)
-    return;
-  rtvec vec = rtvec_alloc (npats + 1);
-  RTVEC_ELT (vec, 0) = XVECEXP (pattern, 0, 0);
-  for (unsigned int i = 0, j = 0; i < nregs; ++i)
-    {
-      unsigned int regno = GET_SSE_REGNO (i);
-      if (!bitmap_bit_p (live_regs, regno))
-	continue;
-      rtx reg = gen_rtx_REG (V2DImode, regno);
-      ++j;
-      RTVEC_ELT (vec, j) = gen_rtx_SET (reg, reg);
-    }
-  XVEC (pattern, 0) = vec;
-  INSN_CODE (insn) = -1;
-  df_insn_rescan (insn);
-}
-
-/* Walk the vzeroupper instructions in the function and annotate them
-   with the effect that they have on the SSE registers.  */
-
-static void
-ix86_add_reg_usage_to_vzerouppers (void)
-{
-  basic_block bb;
-  rtx_insn *insn;
-  auto_bitmap live_regs;
-
-  df_analyze ();
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      bitmap_copy (live_regs, df_get_live_out (bb));
-      df_simulate_initialize_backwards (bb, live_regs);
-      FOR_BB_INSNS_REVERSE (bb, insn)
-	{
-	  if (!NONDEBUG_INSN_P (insn))
-	    continue;
-	  if (vzeroupper_pattern (PATTERN (insn), VOIDmode))
-	    ix86_add_reg_usage_to_vzeroupper (insn, live_regs);
-	  df_simulate_one_insn_backwards (bb, insn, live_regs);
-	}
-    }
-}
-
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)
 {
-  int i;
-
   /* vzeroupper instructions are inserted immediately after reload to
      account for possible spills from 256bit or 512bit registers.  The pass
      reuses mode switching infrastructure by re-running mode insertion
      pass, so disable entities that have already been processed.  */
-  for (i = 0; i < MAX_386_ENTITIES; i++)
+  for (int i = 0; i < MAX_386_ENTITIES; i++)
     ix86_optimize_mode_switching[i] = 0;
 
   ix86_optimize_mode_switching[AVX_U128] = 1;
 
   /* Call optimize_mode_switching.  */
   g->get_passes ()->execute_pass_mode_switching ();
-  ix86_add_reg_usage_to_vzerouppers ();
+
+  df_analyze ();
   return 0;
 }
 
@@ -1879,9 +1875,8 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return TARGET_AVX
-	     && TARGET_VZEROUPPER && flag_expensive_optimizations
-	     && !optimize_size;
+      return TARGET_AVX && TARGET_VZEROUPPER
+	&& flag_expensive_optimizations && !optimize_size;
     }
 
   virtual unsigned int execute (function *)
@@ -2169,81 +2164,6 @@ make_pass_insert_endbr_and_patchable_area (gcc::context *ctxt)
   return new pass_insert_endbr_and_patchable_area (ctxt);
 }
 
-/* Replace all one-value const vector that are referenced by SYMBOL_REFs in x
-   with embedded broadcast. i.e.transform
-
-     vpaddq .LC0(%rip), %zmm0, %zmm0
-     ret
-  .LC0:
-    .quad 3
-    .quad 3
-    .quad 3
-    .quad 3
-    .quad 3
-    .quad 3
-    .quad 3
-    .quad 3
-
-    to
-
-     vpaddq .LC0(%rip){1to8}, %zmm0, %zmm0
-     ret
-  .LC0:
-    .quad 3  */
-static void
-replace_constant_pool_with_broadcast (rtx_insn *insn)
-{
-  subrtx_ptr_iterator::array_type array;
-  FOR_EACH_SUBRTX_PTR (iter, array, &PATTERN (insn), ALL)
-    {
-      rtx *loc = *iter;
-      rtx x = *loc;
-      rtx broadcast_mem, vec_dup, constant, first;
-      machine_mode mode;
-
-      /* Constant pool.  */
-      if (!MEM_P (x)
-	  || !SYMBOL_REF_P (XEXP (x, 0))
-	  || !CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
-	continue;
-
-      /* Const vector.  */
-      mode = GET_MODE (x);
-      if (!VECTOR_MODE_P (mode))
-	return;
-      constant = get_pool_constant (XEXP (x, 0));
-      if (GET_CODE (constant) != CONST_VECTOR)
-	return;
-
-      /* There could be some rtx like
-	 (mem/u/c:V16QI (symbol_ref/u:DI ("*.LC1")))
-	 but with "*.LC1" refer to V2DI constant vector.  */
-      if (GET_MODE (constant) != mode)
-	{
-	  constant = simplify_subreg (mode, constant, GET_MODE (constant), 0);
-	  if (constant == NULL_RTX || GET_CODE (constant) != CONST_VECTOR)
-	    return;
-	}
-      first = XVECEXP (constant, 0, 0);
-
-      for (int i = 1; i < GET_MODE_NUNITS (mode); ++i)
-	{
-	  rtx tmp = XVECEXP (constant, 0, i);
-	  /* Vector duplicate value.  */
-	  if (!rtx_equal_p (tmp, first))
-	    return;
-	}
-
-      /* Replace with embedded broadcast.  */
-      broadcast_mem = force_const_mem (GET_MODE_INNER (mode), first);
-      vec_dup = gen_rtx_VEC_DUPLICATE (mode, broadcast_mem);
-      validate_change (insn, loc, vec_dup, 0);
-
-      /* At most 1 memory_operand in an insn.  */
-      return;
-    }
-}
-
 /* At entry of the nearest common dominator for basic blocks with
    conversions, generate a single
 	vxorps %xmmN, %xmmN, %xmmN
@@ -2272,16 +2192,15 @@ remove_partial_avx_dependency (void)
 
   auto_vec<rtx_insn *> control_flow_insns;
 
+  /* We create invalid RTL initially so defer rescans.  */
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
   FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS (bb, insn)
 	{
 	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
-
-	  /* Handle AVX512 embedded broadcast here to save compile time.  */
-	  if (TARGET_AVX512F)
-	    replace_constant_pool_with_broadcast (insn);
 
 	  set = single_set (insn);
 	  if (!set)
@@ -2292,14 +2211,7 @@ remove_partial_avx_dependency (void)
 	    continue;
 
 	  if (!v4sf_const0)
-	    {
-	      calculate_dominance_info (CDI_DOMINATORS);
-	      df_set_flags (DF_DEFER_INSN_RESCAN);
-	      df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
-	      df_md_add_problem ();
-	      df_analyze ();
-	      v4sf_const0 = gen_reg_rtx (V4SFmode);
-	    }
+	    v4sf_const0 = gen_reg_rtx (V4SFmode);
 
 	  /* Convert PARTIAL_XMM_UPDATE_TRUE insns, DF -> SF, SF -> DF,
 	     SI -> SF, SI -> DF, DI -> SF, DI -> DF, to vec_dup and
@@ -2360,6 +2272,7 @@ remove_partial_avx_dependency (void)
     {
       /* (Re-)discover loops so that bb->loop_father can be used in the
 	 analysis below.  */
+      calculate_dominance_info (CDI_DOMINATORS);
       loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
       /* Generate a vxorps at entry of the nearest dominator for basic
@@ -2391,7 +2304,6 @@ remove_partial_avx_dependency (void)
 	set_insn = emit_insn_after (set,
 				    insn ? PREV_INSN (insn) : BB_END (bb));
       df_insn_rescan (set_insn);
-      df_process_deferred_rescans ();
       loop_optimizer_finalize ();
 
       if (!control_flow_insns.is_empty ())
@@ -2412,21 +2324,13 @@ remove_partial_avx_dependency (void)
 	}
     }
 
+  df_process_deferred_rescans ();
+  df_clear_flags (DF_DEFER_INSN_RESCAN);
   bitmap_obstack_release (NULL);
   BITMAP_FREE (convert_bbs);
 
   timevar_pop (TV_MACH_DEP);
   return 0;
-}
-
-static bool
-remove_partial_avx_dependency_gate ()
-{
-  return (TARGET_AVX
-	  && TARGET_SSE_PARTIAL_REG_DEPENDENCY
-	  && TARGET_SSE_MATH
-	  && optimize
-	  && optimize_function_for_speed_p (cfun));
 }
 
 namespace {
@@ -2441,7 +2345,7 @@ const pass_data pass_data_remove_partial_avx_dependency =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_df_finish, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_remove_partial_avx_dependency : public rtl_opt_pass
@@ -2454,7 +2358,11 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return remove_partial_avx_dependency_gate ();
+      return (TARGET_AVX
+	      && TARGET_SSE_PARTIAL_REG_DEPENDENCY
+	      && TARGET_SSE_MATH
+	      && optimize
+	      && optimize_function_for_speed_p (cfun));
     }
 
   virtual unsigned int execute (function *)
@@ -2469,68 +2377,6 @@ rtl_opt_pass *
 make_pass_remove_partial_avx_dependency (gcc::context *ctxt)
 {
   return new pass_remove_partial_avx_dependency (ctxt);
-}
-
-/* For const vector having one duplicated value, there's no need to put
-   whole vector in the constant pool when target supports embedded broadcast. */
-static unsigned int
-constant_pool_broadcast (void)
-{
-  timevar_push (TV_MACH_DEP);
-  rtx_insn *insn;
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      if (INSN_P (insn))
-	replace_constant_pool_with_broadcast (insn);
-    }
-  timevar_pop (TV_MACH_DEP);
-  return 0;
-}
-
-namespace {
-
-const pass_data pass_data_constant_pool_broadcast =
-{
-  RTL_PASS, /* type */
-  "cpb", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_MACH_DEP, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_df_finish, /* todo_flags_finish */
-};
-
-class pass_constant_pool_broadcast : public rtl_opt_pass
-{
-public:
-  pass_constant_pool_broadcast (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_constant_pool_broadcast, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *)
-    {
-      /* Return false if rpad pass gate is true.
-	 replace_constant_pool_with_broadcast is called
-	 from both this pass and rpad pass.  */
-      return (TARGET_AVX512F && !remove_partial_avx_dependency_gate ());
-    }
-
-  virtual unsigned int execute (function *)
-    {
-      return constant_pool_broadcast ();
-    }
-}; // class pass_cpb
-
-} // anon namespace
-
-rtl_opt_pass *
-make_pass_constant_pool_broadcast (gcc::context *ctxt)
-{
-  return new pass_constant_pool_broadcast (ctxt);
 }
 
 /* This compares the priority of target features in function DECL1

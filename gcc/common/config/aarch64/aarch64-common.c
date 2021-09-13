@@ -1,5 +1,5 @@
 /* Common hooks for AArch64.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -219,7 +219,7 @@ aarch64_parse_extension (const char *str, uint64_t *isa_flags,
       else
 	len = strlen (str);
 
-      if (len >= 2 && strncmp (str, "no", 2) == 0)
+      if (len >= 2 && startswith (str, "no"))
 	{
 	  adding_ext = 0;
 	  len -= 2;

@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 
 #include <memory>
@@ -42,10 +41,15 @@ test02()
     int operator>(void*) { return value != 0; }
   };
 
-  int i[3];
+  int i[5] = { 1, 2, 3, 4, 5 };
   Size n = {4};
   auto j = std::__uninitialized_default_n(i, n);
   VERIFY( j == (i + 4) );
+  VERIFY( i[0] == 0 );
+  VERIFY( i[1] == 0 );
+  VERIFY( i[2] == 0 );
+  VERIFY( i[3] == 0 );
+  VERIFY( i[4] == 5 );
 }
 
 int

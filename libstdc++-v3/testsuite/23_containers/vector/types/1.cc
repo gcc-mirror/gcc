@@ -1,6 +1,6 @@
 // 2005-12-01  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
+// { dg-options "-Wno-unused-result" }
 
 #include <vector>
 #include <testsuite_greedy_ops.h>

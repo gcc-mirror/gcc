@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -113,7 +113,7 @@ namespace __gnu_pbds
    */
   struct range_invalidation_guarantee : public point_invalidation_guarantee
   { };
-  //@}
+  ///@}
 
 
   /**
@@ -184,8 +184,8 @@ namespace __gnu_pbds
 
   /// Thin heap.
   struct thin_heap_tag : public priority_queue_tag { };
-  //@}
-  //@}
+  ///@}
+  ///@}
 
 
   /**
@@ -438,7 +438,7 @@ namespace __gnu_pbds
 	reverse_iteration = base_type::reverse_iteration
       };
   };
-  //@}
+  ///@}
 
 
   namespace detail
@@ -448,7 +448,7 @@ namespace __gnu_pbds
 	     typename Policy_Tl = null_type>
       struct container_base_dispatch;
   } // namespace detail
-  //@}
+  ///@}
 } // namespace __gnu_pbds
 
 #endif

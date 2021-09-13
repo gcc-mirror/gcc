@@ -3,7 +3,7 @@
 //
 // 2009-02-13  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2009-2020 Free Software Foundation, Inc.
+// Copyright (C) 2009-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +34,13 @@ test01()
   seq.generate(foo.begin(), foo.end());
 
   VERIFY( seq.size() == 10 );
+}
+
+void
+lwg3422()
+{
+  int i[32] = { };
+  std::seed_seq ss{i, i+32}; // LWG 3422
 }
 
 int main()

@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2020 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2021 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -195,10 +195,14 @@ for (i = 0; i < n_extra_vars; i++) {
 }
 for (i = 0; i < n_opts; i++) {
 	name = var_name(flags[i]);
-	if (name == "")
-		continue;
-
 	init = opt_args("Init", flags[i])
+
+	if (name == "") {
+		if (init != "")
+		    print "#error " opts[i] " must specify Var to use Init"
+		continue;
+	}
+
 	if (init != "") {
 		if (name in var_init && var_init[name] != init)
 			print "#error multiple initializers for " name

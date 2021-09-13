@@ -1,7 +1,7 @@
 /* { dg-do run { target { power10_hw } } } */
 /* { dg-do link { target { ! power10_hw } } } */
 /* { dg-require-effective-target power10_ok } */
-/* { dg-options "-mdejagnu-cpu=power10 -save-temps" } */
+/* { dg-options "-mdejagnu-cpu=power10 -save-temps -O2" } */
 #include <altivec.h>
 
 #define DEBUG 0
@@ -11,6 +11,8 @@
 #endif
 
 extern void abort (void);
+
+volatile vector double vresult_d_undefined;
 
 int
 main (int argc, char *argv [])
@@ -85,25 +87,12 @@ main (int argc, char *argv [])
 #endif
   }
 
-  /* This test will generate a "note" to the user that the argument
-     is subnormal.  It is not an error, but results are not defined.  */
-  vresult_d = (vector double) { 2.0, 3.0 };
-  expected_vresult_d = (vector double) { 6.6E-42f, 6.6E-42f };
-
-  vresult_d = vec_splatid (6.6E-42f);
-
-  /* Although the instruction says the results are not defined, it does seem
-     to work, at least on Mambo.  But no guarentees!  */
-  if (!vec_all_eq (vresult_d,  expected_vresult_d)) {
-#if DEBUG
-    printf("ERROR, vec_splati (6.6E-42f)\n");
-    for(i = 0; i < 2; i++)
-      printf(" vresult_d[%i] = %e, expected_vresult_d[%i] = %e\n",
-	     i, vresult_d[i], i, expected_vresult_d[i]);
-#else
-    ;
-#endif
-  }
+  /* This test will generate a "note" to the user that the argument is
+     subnormal.  It is not an error, but results are not defined.  Because this
+     is undefined, we cannot check that any value is correct.  Just store it in
+     a volatile variable so the XXSPLTIDP instruction gets generated and the
+     warning message printed. */
+  vresult_d_undefined = vec_splatid (6.6E-42f);
 
   /* Vector splat immediate */
   vsrc_a_int = (vector int) { 2, 3, 4, 5 };

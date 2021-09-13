@@ -1,5 +1,5 @@
 /* Map (unsigned int) keys to (source file, line, column) triples.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -621,27 +621,32 @@ linemap_module_reparent (line_maps *set, location_t loc, location_t adoptor)
 }
 
 /* A linemap at LWM-1 was interrupted to insert module locations & imports.
-   Append a new map, continuing the interrupted one.  */
+   Append a new map, continuing the interrupted one.  Return the start location
+   of the new map, or 0 if failed (because we ran out of locations.  */
 
-void
+unsigned
 linemap_module_restore (line_maps *set, unsigned lwm)
 {
-  if (lwm && lwm != LINEMAPS_USED (set, false))
+  linemap_assert (lwm);
+
+  const line_map_ordinary *pre_map
+    = linemap_check_ordinary (LINEMAPS_MAP_AT (set, false, lwm - 1));
+  unsigned src_line = SOURCE_LINE (pre_map, LAST_SOURCE_LINE_LOCATION (pre_map));
+  location_t inc_at = pre_map->included_from;
+  if (const line_map_ordinary *post_map
+      = (linemap_check_ordinary
+	 (linemap_add (set, LC_RENAME_VERBATIM,
+		       ORDINARY_MAP_IN_SYSTEM_HEADER_P (pre_map),
+		       ORDINARY_MAP_FILE_NAME (pre_map), src_line))))
     {
-      const line_map_ordinary *pre_map
-	= linemap_check_ordinary (LINEMAPS_MAP_AT (set, false, lwm - 1));
-      unsigned src_line = SOURCE_LINE (pre_map,
-				       LAST_SOURCE_LINE_LOCATION (pre_map));
-      location_t inc_at = pre_map->included_from;
-      if (const line_map_ordinary *post_map
-	  = (linemap_check_ordinary
-	     (linemap_add (set, LC_RENAME_VERBATIM,
-			   ORDINARY_MAP_IN_SYSTEM_HEADER_P (pre_map),
-			   ORDINARY_MAP_FILE_NAME (pre_map), src_line))))
-	/* linemap_add will think we were included from the same as
-	   the preceeding map.  */
-	const_cast <line_map_ordinary *> (post_map)->included_from = inc_at;
+      /* linemap_add will think we were included from the same as the preceeding
+	 map.  */
+      const_cast <line_map_ordinary *> (post_map)->included_from = inc_at;
+
+      return post_map->start_location;
     }
+
+  return 0;
 }
 
 /* Returns TRUE if the line table set tracks token locations across
@@ -976,16 +981,15 @@ linemap_position_for_loc_and_offset (line_maps *set,
      (loc + offset) should be less than the first location encoded by
      the next line map of the set.  Otherwise, we try to encode the
      location in the next map.  */
-  while (map != LINEMAPS_LAST_ORDINARY_MAP (set)
+  for (; map != LINEMAPS_LAST_ORDINARY_MAP (set)
 	 && (loc + (column_offset << map->m_range_bits)
-	     >= MAP_START_LOCATION (&map[1])))
-    {
-      map = &map[1];
-      /* If the next map starts in a higher line, we cannot encode the
-	 location there.  */
-      if (line < ORDINARY_MAP_STARTING_LINE_NUMBER (map))
-	return loc;
-    }
+	     >= MAP_START_LOCATION (map + 1)); map++)
+    /* If the next map is a different file, or starts in a higher line, we
+       cannot encode the location there.  */
+    if ((map + 1)->reason != LC_RENAME
+	|| line < ORDINARY_MAP_STARTING_LINE_NUMBER (map + 1)
+	|| 0 != strcmp (LINEMAP_FILE (map + 1), LINEMAP_FILE (map)))
+      return loc;
 
   column += column_offset;
 
@@ -1316,7 +1320,7 @@ linemap_location_from_macro_expansion_p (const class line_maps *set,
   if (IS_ADHOC_LOC (location))
     location = get_location_from_adhoc_loc (set, location);
 
-  return IS_MACRO_LOC (location);
+  return location >= LINEMAPS_MACRO_LOWEST_LOCATION (set);
 }
 
 /* Given two virtual locations *LOC0 and *LOC1, return the first
@@ -1422,17 +1426,20 @@ linemap_compare_locations (line_maps *set,
       /* So pre and post represent two tokens that are present in a
 	 same macro expansion.  Let's see if the token for pre was
 	 before the token for post in that expansion.  */
-      unsigned i0, i1;
       const struct line_map *map =
 	first_map_in_common (set, pre, post, &l0, &l1);
 
       if (map == NULL)
-	/* This should not be possible.  */
-	abort ();
-
-      i0 = l0 - MAP_START_LOCATION (map);
-      i1 = l1 - MAP_START_LOCATION (map);
-      return i1 - i0;
+	/* This should not be possible while we have column information, but if
+	   we don't, the tokens could be from separate macro expansions on the
+	   same line.  */
+	gcc_assert (l0 > LINE_MAP_MAX_LOCATION_WITH_COLS);
+      else
+	{
+	  unsigned i0 = l0 - MAP_START_LOCATION (map);
+	  unsigned i1 = l1 - MAP_START_LOCATION (map);
+	  return i1 - i0;
+	}
     }
 
   if (IS_ADHOC_LOC (l0))
@@ -2421,6 +2428,14 @@ rich_location::maybe_add_fixit (location_t start,
      endpoints straddle the boundary for which the linemap can represent
      columns (PR c/82050).  */
   if (exploc_start.column > exploc_next_loc.column)
+    {
+      stop_supporting_fixits ();
+      return;
+    }
+  /* If we have very long lines, tokens will eventually fall back to
+     having column == 0.
+     We can't handle fix-it hints that use such locations.  */
+  if (exploc_start.column == 0 || exploc_next_loc.column == 0)
     {
       stop_supporting_fixits ();
       return;

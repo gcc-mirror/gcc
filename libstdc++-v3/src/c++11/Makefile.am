@@ -1,6 +1,6 @@
 ## Makefile for the C++11 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2020 Free Software Foundation, Inc.
+## Copyright (C) 1997-2021 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -141,12 +141,12 @@ if ENABLE_DUAL_ABI
 rewrite_ios_failure_typeinfo = sed -e '/^_*_ZTISt13__ios_failure:/,/_ZTVN10__cxxabiv120__si_class_type_infoE/s/_ZTVN10__cxxabiv120__si_class_type_infoE/_ZTVSt19__iosfail_type_info/'
 
 cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
-	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s
+	$(LTCXXCOMPILE) -gno-as-loc-support -S $< -o tmp-cxx11-ios_failure-lt.s
 	-test -f tmp-cxx11-ios_failure-lt.o && mv -f tmp-cxx11-ios_failure-lt.o tmp-cxx11-ios_failure-lt.s
 	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
 	-rm -f tmp-$@
 cxx11-ios_failure.s: cxx11-ios_failure.cc
-	$(CXXCOMPILE) -S $< -o tmp-$@
+	$(CXXCOMPILE) -gno-as-loc-support -S $< -o tmp-$@
 	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
 	-rm -f tmp-$@
 

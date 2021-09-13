@@ -1,5 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -387,30 +387,20 @@ build_round_expr (tree arg, tree restype)
   argprec = TYPE_PRECISION (argtype);
   resprec = TYPE_PRECISION (restype);
 
-  /* Depending on the type of the result, choose the int intrinsic
-     (iround, available only as a builtin, therefore cannot use it for
-     __float128), long int intrinsic (lround family) or long long
-     intrinsic (llround).  We might also need to convert the result
-     afterwards.  */
+  /* Depending on the type of the result, choose the int intrinsic (iround,
+     available only as a builtin, therefore cannot use it for __float128), long
+     int intrinsic (lround family) or long long intrinsic (llround).  If we
+     don't have an appropriate function that converts directly to the integer
+     type (such as kind == 16), just use ROUND, and then convert the result to
+     an integer.  We might also need to convert the result afterwards.  */
   if (resprec <= INT_TYPE_SIZE && argprec <= LONG_DOUBLE_TYPE_SIZE)
     fn = builtin_decl_for_precision (BUILT_IN_IROUND, argprec);
   else if (resprec <= LONG_TYPE_SIZE)
     fn = builtin_decl_for_precision (BUILT_IN_LROUND, argprec);
   else if (resprec <= LONG_LONG_TYPE_SIZE)
     fn = builtin_decl_for_precision (BUILT_IN_LLROUND, argprec);
-  else if (resprec >= argprec && resprec == 128)
-    {
-      /* Search for a real kind suitable as temporary for conversion.  */
-      int kind = -1;
-      for (int i = 0; kind < 0 && gfc_real_kinds[i].kind != 0; i++)
-	if (gfc_real_kinds[i].mode_precision >= resprec)
-	  kind = gfc_real_kinds[i].kind;
-      if (kind < 0)
-	gfc_internal_error ("Could not find real kind with at least %d bits",
-			    resprec);
-      arg = fold_convert (gfc_float128_type_node, arg);
-      fn = gfc_builtin_decl_for_float_kind (BUILT_IN_ROUND, kind);
-    }
+  else if (resprec >= argprec)
+    fn = builtin_decl_for_precision (BUILT_IN_ROUND, argprec);
   else
     gcc_unreachable ();
 
@@ -3857,38 +3847,43 @@ conv_intrinsic_random_init (gfc_code *code)
 {
   stmtblock_t block;
   gfc_se se;
-  tree arg1, arg2, arg3, tmp;
-  tree logical4_type_node = gfc_get_logical_type (4);
+  tree arg1, arg2, tmp;
+  /* On none coarray == lib compiles use LOGICAL(4) else regular LOGICAL.  */
+  tree used_bool_type_node = flag_coarray == GFC_FCOARRAY_LIB
+			     ? logical_type_node
+			     : gfc_get_logical_type (4);
 
   /* Make the function call.  */
   gfc_init_block (&block);
   gfc_init_se (&se, NULL);
 
-  /* Convert REPEATABLE to a LOGICAL(4) entity.  */
+  /* Convert REPEATABLE to the desired LOGICAL entity.  */
   gfc_conv_expr (&se, code->ext.actual->expr);
   gfc_add_block_to_block (&block, &se.pre);
-  arg1 = fold_convert (logical4_type_node, gfc_evaluate_now (se.expr, &block));
+  arg1 = fold_convert (used_bool_type_node, gfc_evaluate_now (se.expr, &block));
   gfc_add_block_to_block (&block, &se.post);
 
-  /* Convert IMAGE_DISTINCT to a LOGICAL(4) entity.  */
+  /* Convert IMAGE_DISTINCT to the desired LOGICAL entity.  */
   gfc_conv_expr (&se, code->ext.actual->next->expr);
   gfc_add_block_to_block (&block, &se.pre);
-  arg2 = fold_convert (logical4_type_node, gfc_evaluate_now (se.expr, &block));
+  arg2 = fold_convert (used_bool_type_node, gfc_evaluate_now (se.expr, &block));
   gfc_add_block_to_block (&block, &se.post);
 
-  /* Create the hidden argument.  For non-coarray codes and -fcoarray=single,
-     simply set this to 0.  For -fcoarray=lib, generate a call to
-     THIS_IMAGE() without arguments.  */
-  arg3 = build_int_cst (gfc_get_int_type (4), 0);
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
-      arg3 = build_call_expr_loc (input_location, gfor_fndecl_caf_this_image,
-				  1, arg3);
-      se.expr = fold_convert (gfc_get_int_type (4), arg3);
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_random_init,
+				 2, arg1, arg2);
+    }
+  else
+    {
+      /* The ABI for libgfortran needs to be maintained, so a hidden
+	 argument must be include if code is compiled with -fcoarray=single
+	 or without the option.  Set to 0.  */
+      tree arg3 = build_int_cst (gfc_get_int_type (4), 0);
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_random_init,
+				 3, arg1, arg2, arg3);
     }
 
-  tmp = build_call_expr_loc (input_location, gfor_fndecl_random_init, 3,
-			     arg1, arg2, arg3);
   gfc_add_expr_to_block (&block, tmp);
 
   return gfc_finish_block (&block);
@@ -4172,10 +4167,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
 			build_empty_stmt (input_location));
       gfc_add_expr_to_block (&se->pre, tmp);
     }
-  if (TREE_CODE (type) == INTEGER_TYPE)
-    se->expr = fold_build1_loc (input_location, FIX_TRUNC_EXPR, type, mvar);
-  else
-    se->expr = convert (type, mvar);
+  se->expr = convert (type, mvar);
 }
 
 
@@ -8026,8 +8018,17 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
     {
       symbol_attribute attr;
       char *msg;
+      tree temp;
+      tree cond;
 
-      attr = gfc_expr_attr (e);
+      if (e->symtree->n.sym && IS_CLASS_ARRAY (e->symtree->n.sym))
+	{
+	  attr = CLASS_DATA (e->symtree->n.sym)->attr;
+	  attr.pointer = attr.class_pointer;
+	}
+      else
+	attr = gfc_expr_attr (e);
+
       if (attr.allocatable)
 	msg = xasprintf ("Allocatable argument '%s' is not allocated",
 			 e->symtree->n.sym->name);
@@ -8037,14 +8038,24 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
       else
 	goto end_arg_check;
 
-      argse.descriptor_only = 1;
-      gfc_conv_expr_descriptor (&argse, actual->expr);
-      tree temp = gfc_conv_descriptor_data_get (argse.expr);
-      tree cond = fold_build2_loc (input_location, EQ_EXPR,
-				   logical_type_node, temp,
-				   fold_convert (TREE_TYPE (temp),
-						 null_pointer_node));
+      if (sym)
+	{
+	  temp = gfc_class_data_get (sym->backend_decl);
+	  temp = gfc_conv_descriptor_data_get (temp);
+	}
+      else
+	{
+	  argse.descriptor_only = 1;
+	  gfc_conv_expr_descriptor (&argse, actual->expr);
+	  temp = gfc_conv_descriptor_data_get (argse.expr);
+	}
+
+      cond = fold_build2_loc (input_location, EQ_EXPR,
+			      logical_type_node, temp,
+			      fold_convert (TREE_TYPE (temp),
+					    null_pointer_node));
       gfc_trans_runtime_check (true, false, cond, &argse.pre, &e->where, msg);
+
       free (msg);
     }
  end_arg_check:
@@ -9023,7 +9034,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   else
     {
       /* An optional target.  */
-      if (arg2->expr->ts.type == BT_CLASS)
+      if (arg2->expr->ts.type == BT_CLASS
+	  && arg2->expr->expr_type != EXPR_FUNCTION)
 	gfc_add_data_component (arg2->expr);
 
       if (scalar)
@@ -9044,6 +9056,11 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	      && arg2->expr->symtree->n.sym->attr.dummy)
 	    arg2se.expr = build_fold_indirect_ref_loc (input_location,
 						       arg2se.expr);
+	  if (arg2->expr->ts.type == BT_CLASS)
+	    {
+	      arg2se.expr = gfc_evaluate_now (arg2se.expr, &arg2se.pre);
+	      arg2se.expr = gfc_class_data_get (arg2se.expr);
+	    }
 	  gfc_add_block_to_block (&se->pre, &arg1se.pre);
 	  gfc_add_block_to_block (&se->post, &arg1se.post);
 	  gfc_add_block_to_block (&se->pre, &arg2se.pre);
@@ -9081,6 +9098,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	  gfc_add_block_to_block (&se->post, &arg1se.post);
 
 	  arg2se.want_pointer = 1;
+	  arg2se.force_no_tmp = 1;
 	  gfc_conv_expr_descriptor (&arg2se, arg2->expr);
 	  gfc_add_block_to_block (&se->pre, &arg2se.pre);
 	  gfc_add_block_to_block (&se->post, &arg2se.post);
@@ -10075,27 +10093,27 @@ gfc_conv_ieee_arithmetic_function (gfc_se * se, gfc_expr * expr)
 {
   const char *name = expr->value.function.name;
 
-  if (gfc_str_startswith (name, "_gfortran_ieee_is_nan"))
+  if (startswith (name, "_gfortran_ieee_is_nan"))
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISNAN, 1);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_is_finite"))
+  else if (startswith (name, "_gfortran_ieee_is_finite"))
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISFINITE, 1);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_unordered"))
+  else if (startswith (name, "_gfortran_ieee_unordered"))
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISUNORDERED, 2);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_is_normal"))
+  else if (startswith (name, "_gfortran_ieee_is_normal"))
     conv_intrinsic_ieee_is_normal (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_is_negative"))
+  else if (startswith (name, "_gfortran_ieee_is_negative"))
     conv_intrinsic_ieee_is_negative (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_copy_sign"))
+  else if (startswith (name, "_gfortran_ieee_copy_sign"))
     conv_intrinsic_ieee_copy_sign (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_scalb"))
+  else if (startswith (name, "_gfortran_ieee_scalb"))
     conv_intrinsic_ieee_scalb (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_next_after"))
+  else if (startswith (name, "_gfortran_ieee_next_after"))
     conv_intrinsic_ieee_next_after (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_rem"))
+  else if (startswith (name, "_gfortran_ieee_rem"))
     conv_intrinsic_ieee_rem (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_logb"))
+  else if (startswith (name, "_gfortran_ieee_logb"))
     conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_LOGB);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_rint"))
+  else if (startswith (name, "_gfortran_ieee_rint"))
     conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_RINT);
   else
     /* It is not among the functions we translate directly.  We return
@@ -11404,8 +11422,28 @@ conv_co_collective (gfc_code *code)
   if (flag_coarray == GFC_FCOARRAY_SINGLE)
     {
       if (stat != NULL_TREE)
-	gfc_add_modify (&block, stat,
-			fold_convert (TREE_TYPE (stat), integer_zero_node));
+	{
+	  /* For optional stats, check the pointer is valid before zero'ing.  */
+	  if (gfc_expr_attr (stat_expr).optional)
+	    {
+	      tree tmp;
+	      stmtblock_t ass_block;
+	      gfc_start_block (&ass_block);
+	      gfc_add_modify (&ass_block, stat,
+			      fold_convert (TREE_TYPE (stat),
+					    integer_zero_node));
+	      tmp = fold_build2 (NE_EXPR, logical_type_node,
+				 gfc_build_addr_expr (NULL_TREE, stat),
+				 null_pointer_node);
+	      tmp = fold_build3 (COND_EXPR, void_type_node, tmp,
+				 gfc_finish_block (&ass_block),
+				 build_empty_stmt (input_location));
+	      gfc_add_expr_to_block (&block, tmp);
+	    }
+	  else
+	    gfc_add_modify (&block, stat,
+			    fold_convert (TREE_TYPE (stat), integer_zero_node));
+	}
       return gfc_finish_block (&block);
     }
 

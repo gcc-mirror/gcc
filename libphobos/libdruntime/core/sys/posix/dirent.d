@@ -15,7 +15,7 @@
  */
 module core.sys.posix.dirent;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.sys.posix.sys.types; // for ino_t
 
 version (OSX)
@@ -31,6 +31,7 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
+@system:
 
 //
 // Required
@@ -44,7 +45,7 @@ struct dirent
 }
 
 int     closedir(DIR*);
-DIR*    opendir(in char*);
+DIR*    opendir(const scope char*);
 dirent* readdir(DIR*);
 void    rewinddir(DIR*);
 */
@@ -129,7 +130,12 @@ else version (Darwin)
     // Other Darwin variants (iOS, TVOS, WatchOS) only support 64-bit inodes,
     // no suffix needed
     version (OSX)
-        pragma(mangle, "readdir$INODE64") dirent* readdir(DIR*);
+    {
+        version (AArch64)
+            dirent* readdir(DIR*);
+        else
+            pragma(mangle, "readdir$INODE64") dirent* readdir(DIR*);
+    }
     else
         dirent* readdir(DIR*);
 }
@@ -180,7 +186,17 @@ else version (FreeBSD)
 
     alias void* DIR;
 
-    dirent* readdir(DIR*);
+    version (GNU)
+    {
+        dirent* readdir(DIR*);
+    }
+    else
+    {
+        static if (__FreeBSD_version >= 1200000)
+            pragma(mangle, "readdir@FBSD_1.5") dirent* readdir(DIR*);
+        else
+            pragma(mangle, "readdir@FBSD_1.0") dirent* readdir(DIR*);
+    }
 }
 else version (NetBSD)
 {
@@ -434,10 +450,16 @@ else
 // in else below.
 version (OSX)
 {
-    version (D_LP64)
+    version (AArch64)
+    {
+        int     closedir(DIR*);
+        DIR*    opendir(const scope char*);
+        void    rewinddir(DIR*);
+    }
+    else version (D_LP64)
     {
         int closedir(DIR*);
-        pragma(mangle, "opendir$INODE64")   DIR* opendir(in char*);
+        pragma(mangle, "opendir$INODE64")   DIR* opendir(const scope char*);
         pragma(mangle, "rewinddir$INODE64") void rewinddir(DIR*);
     }
     else
@@ -445,21 +467,21 @@ version (OSX)
         // 32-bit mangles __DARWIN_UNIX03 specific functions with $UNIX2003 to
         // maintain backward compatibility with binaries build pre 10.5
         pragma(mangle, "closedir$UNIX2003")          int closedir(DIR*);
-        pragma(mangle, "opendir$INODE64$UNIX2003")   DIR* opendir(in char*);
+        pragma(mangle, "opendir$INODE64$UNIX2003")   DIR* opendir(const scope char*);
         pragma(mangle, "rewinddir$INODE64$UNIX2003") void rewinddir(DIR*);
     }
 }
 else version (NetBSD)
 {
     int     closedir(DIR*);
-    DIR*    __opendir30(in char*);
+    DIR*    __opendir30(const scope char*);
     alias __opendir30 opendir;
     void    rewinddir(DIR*);
 }
 else
 {
     int     closedir(DIR*);
-    DIR*    opendir(in char*);
+    DIR*    opendir(const scope char*);
     //dirent* readdir(DIR*);
     void    rewinddir(DIR*);
 }
@@ -492,7 +514,17 @@ else version (Darwin)
 }
 else version (FreeBSD)
 {
-    int readdir_r(DIR*, dirent*, dirent**);
+    version (GNU)
+    {
+        int readdir_r(DIR*, dirent*, dirent**);
+    }
+    else
+    {
+        static if (__FreeBSD_version >= 1200000)
+            pragma(mangle, "readdir_r@FBSD_1.5") int readdir_r(DIR*, dirent*, dirent**);
+        else
+            pragma(mangle, "readdir_r@FBSD_1.0") int readdir_r(DIR*, dirent*, dirent**);
+    }
 }
 else version (DragonFlyBSD)
 {
@@ -559,8 +591,16 @@ version (CRuntime_Glibc)
 }
 else version (FreeBSD)
 {
-    void   seekdir(DIR*, c_long);
-    c_long telldir(DIR*);
+    version (GNU)
+    {
+        void seekdir(DIR*, c_long);
+        c_long telldir(DIR*);
+    }
+    else
+    {
+        pragma(mangle, "seekdir@@FBSD_1.0") void seekdir(DIR*, c_long);
+        pragma(mangle, "telldir@@FBSD_1.0") c_long telldir(DIR*);
+    }
 }
 else version (NetBSD)
 {

@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2016-2020 Free Software Foundation, Inc.
+// Copyright (C) 2016-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,9 +17,25 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.6.2.5.3 basic_ostream manipulator inserters
+// C++11 27.7.3.9 Rvalue stream insertion [ostream.rvalue]
 
 #include <sstream>
+
+template<typename Ostream, typename T, typename = void>
+  struct is_insertable
+  : std::false_type
+  { };
+
+template<typename> using void_t = void;
+
+template<typename Ostream, typename T>
+  using insert_result
+    = decltype(std::declval<Ostream>() << std::declval<const T&>());
+
+template<typename Ostream, typename T>
+  struct is_insertable<Ostream, T, void_t<insert_result<Ostream, T>>>
+  : std::true_type
+  { };
 
 struct X {};
 std::ostream& operator<<(std::ostream&, const X&) = delete;
@@ -30,20 +46,6 @@ std::ostream& operator<<(std::ostream&& os, const Y&) {return os;}
 
 struct Z{};
 
-template <class T>
-auto f(T&&) -> decltype(void(std::declval<std::ostream&>()
-			     << std::declval<T&&>()),
-			std::true_type());
-
-std::false_type f(...);
-
-template <class T>
-auto g(T&&) -> decltype(void(std::declval<std::ostream&&>()
-			     << std::declval<T&&>()),
-			std::true_type());
-
-std::false_type g(...);
-
 void test01()
 {
   Y y;
@@ -52,42 +54,18 @@ void test01()
   os << Y();
   std::ostringstream() << y;
   std::ostringstream() << Y();
-  static_assert(!std::__is_insertable<std::ostream&, X&>::value, "");
-  static_assert(!std::__is_insertable<std::ostream&&, X&>::value, "");
-  static_assert(!std::__is_insertable<std::ostream&, X&&>::value, "");
-  static_assert(!std::__is_insertable<std::ostream&&, X&&>::value, "");
-  static_assert(std::__is_insertable<std::ostream&, Y&>::value, "");
-  static_assert(std::__is_insertable<std::ostream&&, Y&&>::value, "");
-  static_assert(std::__is_insertable<std::ostream&, Y&>::value, "");
-  static_assert(std::__is_insertable<std::ostream&&, Y&&>::value, "");
-  static_assert(!std::__is_insertable<std::ostream&, Z&>::value, "");
-  static_assert(!std::__is_insertable<std::ostream&&, Z&>::value, "");
-  static_assert(!std::__is_insertable<std::ostream&, Z&&>::value, "");
-  static_assert(!std::__is_insertable<std::ostream&&, Z&&>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<X&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<X&&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Y&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Y&&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Z&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Z&&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<X&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<X&&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Y&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Y&&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Z&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Z&&>())),
-		std::false_type>::value, "");
+  static_assert(!is_insertable<std::ostream&, X&>::value, "");
+  static_assert(!is_insertable<std::ostream&&, X&>::value, "");
+  static_assert(!is_insertable<std::ostream&, X&&>::value, "");
+  static_assert(!is_insertable<std::ostream&&, X&&>::value, "");
+  static_assert(is_insertable<std::ostream&, Y&>::value, "");
+  static_assert(is_insertable<std::ostream&&, Y&&>::value, "");
+  static_assert(is_insertable<std::ostream&, Y&>::value, "");
+  static_assert(is_insertable<std::ostream&&, Y&&>::value, "");
+  static_assert(!is_insertable<std::ostream&, Z&>::value, "");
+  static_assert(!is_insertable<std::ostream&&, Z&>::value, "");
+  static_assert(!is_insertable<std::ostream&, Z&&>::value, "");
+  static_assert(!is_insertable<std::ostream&&, Z&&>::value, "");
 }
 
 int main()

@@ -1,5 +1,5 @@
 /* Miscellaneous transactional memory support definitions.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 

@@ -9,8 +9,9 @@
  */
 module core.sys.windows.mcx;
 version (Windows):
+@system:
 
-private import core.sys.windows.windef;
+import core.sys.windows.windef;
 
 enum DWORD
     DIALOPTION_BILLING  =  64,

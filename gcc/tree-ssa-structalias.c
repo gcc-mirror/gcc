@@ -1,5 +1,5 @@
 /* Tree based points-to analysis
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -43,6 +43,7 @@
 #include "attribs.h"
 #include "tree-ssa.h"
 #include "tree-cfg.h"
+#include "gimple-range.h"
 
 /* The idea behind this analyzer is to generate set constraints from the
    program, then solve the resulting constraints in order to generate the
@@ -280,6 +281,9 @@ struct variable_info
   /* True if this represents a IPA function info.  */
   unsigned int is_fn_info : 1;
 
+  /* True if this appears as RHS in a ADDRESSOF constraint.  */
+  unsigned int address_taken : 1;
+
   /* ???  Store somewhere better.  */
   unsigned short ruid;
 
@@ -393,6 +397,7 @@ new_var_info (tree t, const char *name, bool add_id)
   ret->is_global_var = (t == NULL_TREE);
   ret->is_ipa_escape_point = false;
   ret->is_fn_info = false;
+  ret->address_taken = false;
   if (t && DECL_P (t))
     ret->is_global_var = (is_global_var (t)
 			  /* We have to treat even local register variables
@@ -674,7 +679,10 @@ dump_constraint (FILE *file, constraint_t c)
     fprintf (file, "&");
   else if (c->lhs.type == DEREF)
     fprintf (file, "*");
-  fprintf (file, "%s", get_varinfo (c->lhs.var)->name);
+  if (dump_file)
+    fprintf (file, "%s", get_varinfo (c->lhs.var)->name);
+  else
+    fprintf (file, "V%d", c->lhs.var);
   if (c->lhs.offset == UNKNOWN_OFFSET)
     fprintf (file, " + UNKNOWN");
   else if (c->lhs.offset != 0)
@@ -684,7 +692,10 @@ dump_constraint (FILE *file, constraint_t c)
     fprintf (file, "&");
   else if (c->rhs.type == DEREF)
     fprintf (file, "*");
-  fprintf (file, "%s", get_varinfo (c->rhs.var)->name);
+  if (dump_file)
+    fprintf (file, "%s", get_varinfo (c->rhs.var)->name);
+  else
+    fprintf (file, "V%d", c->rhs.var);
   if (c->rhs.offset == UNKNOWN_OFFSET)
     fprintf (file, " + UNKNOWN");
   else if (c->rhs.offset != 0)
@@ -1185,6 +1196,22 @@ add_graph_edge (constraint_graph_t graph, unsigned int to,
 
       if (!graph->succs[from])
 	graph->succs[from] = BITMAP_ALLOC (&pta_obstack);
+
+      /* The graph solving process does not avoid "triangles", thus
+	 there can be multiple paths from a node to another involving
+	 intermediate other nodes.  That causes extra copying which is
+	 most difficult to avoid when the intermediate node is ESCAPED
+	 because there are no edges added from ESCAPED.  Avoid
+	 adding the direct edge FROM -> TO when we have FROM -> ESCAPED
+	 and TO contains ESCAPED.
+	 ???  Note this is only a heuristic, it does not prevent the
+	 situation from occuring.  The heuristic helps PR38474 and
+	 PR99912 significantly.  */
+      if (to < FIRST_REF_NODE
+	  && bitmap_bit_p (graph->succs[from], find (escaped_id))
+	  && bitmap_bit_p (get_varinfo (find (to))->solution, escaped_id))
+	return false;
+
       if (bitmap_set_bit (graph->succs[from], to))
 	{
 	  r = true;
@@ -3101,6 +3128,8 @@ process_constraint (constraint_t t)
   else
     {
       gcc_assert (rhs.type != ADDRESSOF || rhs.offset == 0);
+      if (rhs.type == ADDRESSOF)
+	get_varinfo (get_varinfo (rhs.var)->head)->address_taken = true;
       constraints.safe_push (t);
     }
 }
@@ -3684,8 +3713,8 @@ get_constraint_for_rhs (tree t, vec<ce_s> *results)
    entries in *LHSC.  */
 
 static void
-process_all_all_constraints (vec<ce_s> lhsc,
-			     vec<ce_s> rhsc)
+process_all_all_constraints (const vec<ce_s> &lhsc,
+			     const vec<ce_s> &rhsc)
 {
   struct constraint_expr *lhsp, *rhsp;
   unsigned i, j;
@@ -3785,7 +3814,7 @@ do_structure_copy (tree lhsop, tree rhsop)
 /* Create constraints ID = { rhsc }.  */
 
 static void
-make_constraints_to (unsigned id, vec<ce_s> rhsc)
+make_constraints_to (unsigned id, const vec<ce_s> &rhsc)
 {
   struct constraint_expr *c;
   struct constraint_expr includes;
@@ -4034,8 +4063,14 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
       tree arg = gimple_call_arg (stmt, i);
       int flags = gimple_call_arg_flags (stmt, i);
 
-      /* If the argument is not used we can ignore it.  */
-      if (flags & EAF_UNUSED)
+      /* If the argument is not used we can ignore it.
+	 Similarly argument is invisile for us if it not clobbered, does not
+	 escape, is not read and can not be returned.  */
+      if ((flags & EAF_UNUSED)
+	  || ((flags & (EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NOREAD
+			| EAF_NOT_RETURNED))
+	      == (EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NOREAD
+		  | EAF_NOT_RETURNED)))
 	continue;
 
       /* As we compute ESCAPED context-insensitive we do not gain
@@ -4053,9 +4088,12 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	  if (!(flags & EAF_DIRECT))
 	    make_transitive_closure_constraints (tem);
 	  make_copy_constraint (uses, tem->id);
+	  /* TODO: This is overly conservative when some parameters are
+	     returned while others are not.  */
+	  if (!(flags & EAF_NOT_RETURNED))
+	    returns_uses = true;
 	  if (!(flags & (EAF_NOESCAPE | EAF_DIRECT)))
 	    make_indirect_escape_constraint (tem);
-	  returns_uses = true;
 	}
       else if (flags & (EAF_NOESCAPE | EAF_NODIRECTESCAPE))
 	{
@@ -4069,6 +4107,8 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	  if (!(flags & EAF_DIRECT))
 	    make_transitive_closure_constraints (tem);
 	  make_copy_constraint (uses, tem->id);
+	  if (!(flags & EAF_NOT_RETURNED))
+	    returns_uses = true;
 	  make_copy_constraint (clobbers, tem->id);
 	  /* Add *tem = nonlocal, do not add *tem = callused as
 	     EAF_NOESCAPE parameters do not escape to other parameters
@@ -4082,7 +4122,6 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	  process_constraint (new_constraint (lhs, rhs));
 	  if (!(flags & (EAF_NOESCAPE | EAF_DIRECT)))
 	    make_indirect_escape_constraint (tem);
-	  returns_uses = true;
 	}
       else
 	make_escape_constraint (arg);
@@ -4129,7 +4168,7 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
    the LHS point to global and escaped variables.  */
 
 static void
-handle_lhs_call (gcall *stmt, tree lhs, int flags, vec<ce_s> rhsc,
+handle_lhs_call (gcall *stmt, tree lhs, int flags, vec<ce_s> &rhsc,
 		 tree fndecl)
 {
   auto_vec<ce_s> lhsc;
@@ -4232,13 +4271,18 @@ handle_const_call (gcall *stmt, vec<ce_s> *results)
 
   /* May return offsetted arguments.  */
   varinfo_t tem = NULL;
-  if (gimple_call_num_args (stmt) != 0)
-    {
-      tem = new_var_info (NULL_TREE, "callarg", true);
-      tem->is_reg_var = true;
-    }
   for (k = 0; k < gimple_call_num_args (stmt); ++k)
     {
+      int flags = gimple_call_arg_flags (stmt, k);
+
+      /* If the argument is not used or not returned we can ignore it.  */
+      if (flags & (EAF_UNUSED | EAF_NOT_RETURNED))
+	continue;
+      if (!tem)
+	{
+	  tem = new_var_info (NULL_TREE, "callarg", true);
+	  tem->is_reg_var = true;
+	}
       tree arg = gimple_call_arg (stmt, k);
       auto_vec<ce_s> argc;
       get_constraint_for_rhs (arg, &argc);
@@ -4269,6 +4313,7 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
   struct constraint_expr rhsc;
   unsigned i;
   varinfo_t uses = NULL;
+  bool record_uses = false;
 
   /* Memory reached from pointer arguments is call-used.  */
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
@@ -4277,7 +4322,9 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
       int flags = gimple_call_arg_flags (stmt, i);
 
       /* If the argument is not used we can ignore it.  */
-      if (flags & EAF_UNUSED)
+      if ((flags & EAF_UNUSED)
+	  || (flags & (EAF_NOT_RETURNED | EAF_NOREAD))
+	     == (EAF_NOT_RETURNED | EAF_NOREAD))
 	continue;
       if (!uses)
 	{
@@ -4286,6 +4333,8 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
 	  make_transitive_closure_constraints (uses);
 	}
       make_constraint_to (uses->id, arg);
+      if (!(flags & EAF_NOT_RETURNED))
+	record_uses = true;
     }
 
   /* The static chain is used as well.  */
@@ -4298,6 +4347,7 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
 	  make_transitive_closure_constraints (uses);
 	}
       make_constraint_to (uses->id, gimple_call_chain (stmt));
+      record_uses = true;
     }
 
   /* And if we applied NRV the address of the return slot.  */
@@ -4314,10 +4364,11 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
       auto_vec<ce_s> tmpc;
       get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
       make_constraints_to (uses->id, tmpc);
+      record_uses = true;
     }
 
   /* Pure functions may return call-used and nonlocal memory.  */
-  if (uses)
+  if (record_uses)
     {
       rhsc.var = uses->id;
       rhsc.offset = 0;
@@ -4580,9 +4631,10 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
       case BUILT_IN_REALLOC:
 	if (gimple_call_lhs (t))
 	  {
+	    auto_vec<ce_s> rhsc;
 	    handle_lhs_call (t, gimple_call_lhs (t),
 			     gimple_call_return_flags (t) | ERF_NOALIAS,
-			     vNULL, fndecl);
+			     rhsc, fndecl);
 	    get_constraint_for_ptr_offset (gimple_call_lhs (t),
 					   NULL_TREE, &lhsc);
 	    get_constraint_for_ptr_offset (gimple_call_arg (t, 0),
@@ -4862,6 +4914,9 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
   if (fndecl != NULL_TREE
       && fndecl_built_in_p (fndecl)
       && find_func_aliases_for_builtin_call (fn, t))
+    return;
+
+  if (gimple_call_internal_p (t, IFN_DEFERRED_INIT))
     return;
 
   fi = get_fi_for_callee (t);
@@ -5653,7 +5708,7 @@ fieldoff_compare (const void *pa, const void *pb)
 
 /* Sort a fieldstack according to the field offset and sizes.  */
 static void
-sort_fieldstack (vec<fieldoff_s> fieldstack)
+sort_fieldstack (vec<fieldoff_s> &fieldstack)
 {
   fieldstack.qsort (fieldoff_compare);
 }
@@ -6063,7 +6118,7 @@ create_function_info_for (tree decl, const char *name, bool add_id,
    FIELDSTACK is assumed to be sorted by offset.  */
 
 static bool
-check_for_overlaps (vec<fieldoff_s> fieldstack)
+check_for_overlaps (const vec<fieldoff_s> &fieldstack)
 {
   fieldoff_s *fo = NULL;
   unsigned int i;
@@ -6712,7 +6767,9 @@ find_what_p_points_to (tree fndecl, tree p)
   struct ptr_info_def *pi;
   tree lookup_p = p;
   varinfo_t vi;
-  bool nonnull = get_ptr_nonnull (p);
+  value_range vr;
+  get_range_query (DECL_STRUCT_FUNCTION (fndecl))->range_of_expr (vr, p);
+  bool nonnull = vr.nonzero_p ();
 
   /* For parameters, get at the points-to set for the actual parm
      decl.  */
@@ -6730,8 +6787,7 @@ find_what_p_points_to (tree fndecl, tree p)
   pi->pt = find_what_var_points_to (fndecl, vi);
   /* Conservatively set to NULL from PTA (to true). */
   pi->pt.null = 1;
-  /* Preserve pointer nonnull computed by VRP.  See get_ptr_nonnull
-     in gcc/tree-ssaname.c for more information.  */
+  /* Preserve pointer nonnull globally computed.  */
   if (nonnull)
     set_ptr_nonnull (p);
 }
@@ -7288,15 +7344,14 @@ solve_constraints (void)
   unsigned int *map = XNEWVEC (unsigned int, varmap.length ());
   for (unsigned i = 0; i < integer_id + 1; ++i)
     map[i] = i;
-  /* Start with non-register vars (as possibly address-taken), followed
-     by register vars as conservative set of vars never appearing in
-     the points-to solution bitmaps.  */
+  /* Start with address-taken vars, followed by not address-taken vars
+     to move vars never appearing in the points-to solution bitmaps last.  */
   unsigned j = integer_id + 1;
   for (unsigned i = integer_id + 1; i < varmap.length (); ++i)
-    if (! varmap[i]->is_reg_var)
+    if (varmap[varmap[i]->head]->address_taken)
       map[i] = j++;
   for (unsigned i = integer_id + 1; i < varmap.length (); ++i)
-    if (varmap[i]->is_reg_var)
+    if (! varmap[varmap[i]->head]->address_taken)
       map[i] = j++;
   /* Shuffle varmap according to map.  */
   for (unsigned i = integer_id + 1; i < varmap.length (); ++i)
@@ -8168,10 +8223,12 @@ ipa_pta_execute (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     {
       varinfo_t vi;
-      /* Nodes without a body are not interesting.  Especially do not
-         visit clones at this point for now - we get duplicate decls
-	 there for inline clones at least.  */
-      if (!node->has_gimple_body_p () || node->inlined_to)
+      /* Nodes without a body in this partition are not interesting.
+	 Especially do not visit clones at this point for now - we
+	 get duplicate decls there for inline clones at least.  */
+      if (!node->has_gimple_body_p ()
+	  || node->in_other_partition
+	  || node->inlined_to)
 	continue;
       node->get_body ();
 
@@ -8249,8 +8306,10 @@ ipa_pta_execute (void)
       struct function *func;
       basic_block bb;
 
-      /* Nodes without a body are not interesting.  */
-      if (!node->has_gimple_body_p () || node->clone_of)
+      /* Nodes without a body in this partition are not interesting.  */
+      if (!node->has_gimple_body_p ()
+	  || node->in_other_partition
+	  || node->clone_of)
 	continue;
 
       if (dump_file)
@@ -8379,8 +8438,10 @@ ipa_pta_execute (void)
       unsigned i;
       basic_block bb;
 
-      /* Nodes without a body are not interesting.  */
-      if (!node->has_gimple_body_p () || node->clone_of)
+      /* Nodes without a body in this partition are not interesting.  */
+      if (!node->has_gimple_body_p ()
+	  || node->in_other_partition
+	  || node->clone_of)
 	continue;
 
       fn = DECL_STRUCT_FUNCTION (node->decl);

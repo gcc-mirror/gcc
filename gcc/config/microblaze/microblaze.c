@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Xilinx MicroBlaze.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -991,7 +991,7 @@ static rtx
 microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 			       machine_mode mode ATTRIBUTE_UNUSED)
 {
-  register rtx xinsn = x, result;
+  rtx xinsn = x, result;
 
   if (GET_CODE (xinsn) == CONST
       && flag_pic && pic_address_needs_scratch (xinsn))
@@ -1011,10 +1011,10 @@ microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
   if (GET_CODE (xinsn) == PLUS)
     {
-      register rtx xplus0 = XEXP (xinsn, 0);
-      register rtx xplus1 = XEXP (xinsn, 1);
-      register enum rtx_code code0 = GET_CODE (xplus0);
-      register enum rtx_code code1 = GET_CODE (xplus1);
+      rtx xplus0 = XEXP (xinsn, 0);
+      rtx xplus1 = XEXP (xinsn, 1);
+      enum rtx_code code0 = GET_CODE (xplus0);
+      enum rtx_code code1 = GET_CODE (xplus1);
 
       if (code0 != REG && code1 == REG)
 	{
@@ -1736,9 +1736,9 @@ microblaze_version_to_int (const char *version)
 static void
 microblaze_option_override (void)
 {
-  register int i, start;
-  register int regno;
-  register machine_mode mode;
+  int i, start;
+  int regno;
+  machine_mode mode;
   int ver;
 
   microblaze_section_threshold = (global_options_set.x_g_switch_value
@@ -1891,11 +1891,11 @@ microblaze_option_override (void)
   for (mode = VOIDmode;
        mode != MAX_MACHINE_MODE; mode = (machine_mode) ((int) mode + 1))
     {
-      register int size = GET_MODE_SIZE (mode);
+      int size = GET_MODE_SIZE (mode);
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	{
-	  register int ok;
+	  int ok;
 
 	  if (mode == CCmode)
 	    {
@@ -2267,7 +2267,7 @@ microblaze_initial_elimination_offset (int from, int to)
 void
 print_operand (FILE * file, rtx op, int letter)
 {
-  register enum rtx_code code;
+  enum rtx_code code;
 
   if (PRINT_OPERAND_PUNCT_VALID_P (letter))
     {
@@ -2406,7 +2406,7 @@ print_operand (FILE * file, rtx op, int letter)
 
   else if (code == REG || code == SUBREG)
     {
-      register int regnum;
+      int regnum;
 
       if (code == REG)
 	regnum = REGNO (op);
@@ -2431,7 +2431,7 @@ print_operand (FILE * file, rtx op, int letter)
         rtx mem_reg = XEXP (op, 0);
         if (GET_CODE (mem_reg) == REG)
         {
-            register int regnum = REGNO (mem_reg);
+            int regnum = REGNO (mem_reg);
             fprintf (file, "%s", reg_names[regnum]);
         }
       }

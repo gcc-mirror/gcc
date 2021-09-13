@@ -1,5 +1,5 @@
 /* Define control flow data structures for the CFG.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

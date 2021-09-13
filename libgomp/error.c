@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -88,4 +88,35 @@ gomp_fatal (const char *fmt, ...)
   va_start (list, fmt);
   gomp_vfatal (fmt, list);
   va_end (list);
+}
+
+void
+GOMP_warning (const char *msg, size_t msglen)
+{
+  if (msg && msglen == (size_t) -1)
+    gomp_error ("error directive encountered: %s", msg);
+  else if (msg)
+    {
+      fputs ("\nlibgomp: error directive encountered: ", stderr);
+      fwrite (msg, 1, msglen, stderr);
+      fputc ('\n', stderr);
+    }
+  else
+    gomp_error ("error directive encountered");
+}
+
+void
+GOMP_error (const char *msg, size_t msglen)
+{
+  if (msg && msglen == (size_t) -1)
+    gomp_fatal ("fatal error: error directive encountered: %s", msg);
+  else if (msg)
+    {
+      fputs ("\nlibgomp: fatal error: error directive encountered: ", stderr);
+      fwrite (msg, 1, msglen, stderr);
+      fputc ('\n', stderr);
+      exit (EXIT_FAILURE);
+    }
+  else
+    gomp_fatal ("fatal error: error directive encountered");
 }

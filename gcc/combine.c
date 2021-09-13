@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,12 +33,6 @@ along with GCC; see the file COPYING3.  If not see
    small number of quadruplets of insns A, B, C and D for which
    there's high likelihood of success.
 
-   LOG_LINKS does not have links for use of the CC0.  They don't
-   need to, because the insn that sets the CC0 is always immediately
-   before the insn that tests it.  So we always regard a branch
-   insn as having a logical link to the preceding insn.  The same is true
-   for an insn explicitly using CC0.
-
    We check (with modified_between_p) to avoid combining in such a way
    as to move a computation to a place where its value would be different.
 
@@ -64,16 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 
    To simplify substitution, we combine only when the earlier insn(s)
    consist of only a single assignment.  To simplify updating afterward,
-   we never combine when a subroutine call appears in the middle.
-
-   Since we do not represent assignments to CC0 explicitly except when that
-   is all an insn does, there is no LOG_LINKS entry in an insn that uses
-   the condition code for the insn that set the condition code.
-   Fortunately, these two insns must be consecutive.
-   Therefore, every JUMP_INSN is taken to have an implicit logical link
-   to the preceding insn.  This is not quite right, since non-jumps can
-   also use the condition code; but in practice such insns would not
-   combine anyway.  */
+   we never combine when a subroutine call appears in the middle.  */
 
 #include "config.h"
 #include "system.h"
@@ -105,6 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "print-rtl.h"
 #include "function-abi.h"
+#include "rtlanal.h"
 
 /* Number of attempts to combine instructions in this function.  */
 
@@ -549,8 +535,8 @@ combine_split_insns (rtx pattern, rtx_insn *insn)
 }
 
 /* This is used by find_single_use to locate an rtx in LOC that
-   contains exactly one use of DEST, which is typically either a REG
-   or CC0.  It returns a pointer to the innermost rtx expression
+   contains exactly one use of DEST, which is typically a REG.
+   It returns a pointer to the innermost rtx expression
    containing DEST.  Appearances of DEST that are being used to
    totally replace it are not counted.  */
 
@@ -574,12 +560,11 @@ find_single_use_1 (rtx dest, rtx *loc)
       return 0;
 
     case SET:
-      /* If the destination is anything other than CC0, PC, a REG or a SUBREG
+      /* If the destination is anything other than PC, a REG or a SUBREG
 	 of a REG that occupies all of the REG, the insn uses DEST if
 	 it is mentioned in the destination or the source.  Otherwise, we
 	 need just check the source.  */
-      if (GET_CODE (SET_DEST (x)) != CC0
-	  && GET_CODE (SET_DEST (x)) != PC
+      if (GET_CODE (SET_DEST (x)) != PC
 	  && !REG_P (SET_DEST (x))
 	  && ! (GET_CODE (SET_DEST (x)) == SUBREG
 		&& REG_P (SUBREG_REG (SET_DEST (x)))
@@ -649,9 +634,6 @@ find_single_use_1 (rtx dest, rtx *loc)
 
    If PLOC is nonzero, *PLOC is set to the insn containing the single use.
 
-   If DEST is cc0_rtx, we look only at the next insn.  In that case, we don't
-   care about REG_DEAD notes or LOG_LINKS.
-
    Otherwise, we find the single use by finding an insn that has a
    LOG_LINKS pointing at INSN and has a REG_DEAD note for DEST.  If DEST is
    only referenced once in that insn, we know that it must be the first
@@ -664,19 +646,6 @@ find_single_use (rtx dest, rtx_insn *insn, rtx_insn **ploc)
   rtx_insn *next;
   rtx *result;
   struct insn_link *link;
-
-  if (dest == cc0_rtx)
-    {
-      next = NEXT_INSN (insn);
-      if (next == 0
-	  || (!NONJUMP_INSN_P (next) && !JUMP_P (next)))
-	return 0;
-
-      result = find_single_use_1 (dest, &PATTERN (next));
-      if (result && ploc)
-	*ploc = next;
-      return result;
-    }
 
   if (!REG_P (dest))
     return 0;
@@ -1128,9 +1097,7 @@ create_log_links (void)
 /* Walk the LOG_LINKS of insn B to see if we find a reference to A.  Return
    true if we found a LOG_LINK that proves that A feeds B.  This only works
    if there are no instructions between A and B which could have a link
-   depending on A, since in that case we would not record a link for B.
-   We also check the implicit dependency created by a cc0 setter/user
-   pair.  */
+   depending on A, since in that case we would not record a link for B.  */
 
 static bool
 insn_a_feeds_b (rtx_insn *a, rtx_insn *b)
@@ -1139,8 +1106,6 @@ insn_a_feeds_b (rtx_insn *a, rtx_insn *b)
   FOR_EACH_LOG_LINK (links, b)
     if (links->insn == a)
       return true;
-  if (HAVE_cc0 && sets_cc0_p (a))
-    return true;
   return false;
 }
 
@@ -1153,7 +1118,6 @@ static int
 combine_instructions (rtx_insn *f, unsigned int nregs)
 {
   rtx_insn *insn, *next;
-  rtx_insn *prev;
   struct insn_link *links, *nextlinks;
   rtx_insn *first;
   basic_block last_bb;
@@ -1329,69 +1293,6 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 		      goto retry;
 		    }
 	      }
-
-	  /* Try to combine a jump insn that uses CC0
-	     with a preceding insn that sets CC0, and maybe with its
-	     logical predecessor as well.
-	     This is how we make decrement-and-branch insns.
-	     We need this special code because data flow connections
-	     via CC0 do not get entered in LOG_LINKS.  */
-
-	  if (HAVE_cc0
-	      && JUMP_P (insn)
-	      && (prev = prev_nonnote_insn (insn)) != 0
-	      && NONJUMP_INSN_P (prev)
-	      && sets_cc0_p (PATTERN (prev)))
-	    {
-	      if ((next = try_combine (insn, prev, NULL, NULL,
-				       &new_direct_jump_p,
-				       last_combined_insn)) != 0)
-		goto retry;
-
-	      FOR_EACH_LOG_LINK (nextlinks, prev)
-		  if ((next = try_combine (insn, prev, nextlinks->insn,
-					   NULL, &new_direct_jump_p,
-					   last_combined_insn)) != 0)
-		    goto retry;
-	    }
-
-	  /* Do the same for an insn that explicitly references CC0.  */
-	  if (HAVE_cc0 && NONJUMP_INSN_P (insn)
-	      && (prev = prev_nonnote_insn (insn)) != 0
-	      && NONJUMP_INSN_P (prev)
-	      && sets_cc0_p (PATTERN (prev))
-	      && GET_CODE (PATTERN (insn)) == SET
-	      && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (insn))))
-	    {
-	      if ((next = try_combine (insn, prev, NULL, NULL,
-				       &new_direct_jump_p,
-				       last_combined_insn)) != 0)
-		goto retry;
-
-	      FOR_EACH_LOG_LINK (nextlinks, prev)
-		  if ((next = try_combine (insn, prev, nextlinks->insn,
-					   NULL, &new_direct_jump_p,
-					   last_combined_insn)) != 0)
-		    goto retry;
-	    }
-
-	  /* Finally, see if any of the insns that this insn links to
-	     explicitly references CC0.  If so, try this insn, that insn,
-	     and its predecessor if it sets CC0.  */
-	  if (HAVE_cc0)
-	    {
-	      FOR_EACH_LOG_LINK (links, insn)
-		if (NONJUMP_INSN_P (links->insn)
-		    && GET_CODE (PATTERN (links->insn)) == SET
-		    && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (links->insn)))
-		    && (prev = prev_nonnote_insn (links->insn)) != 0
-		    && NONJUMP_INSN_P (prev)
-		    && sets_cc0_p (PATTERN (prev))
-		    && (next = try_combine (insn, links->insn,
-					    prev, NULL, &new_direct_jump_p,
-					    last_combined_insn)) != 0)
-		  goto retry;
-	    }
 
 	  /* Try combining an insn with two different insns whose results it
 	     uses.  */
@@ -1853,7 +1754,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
   else if (next_active_insn (insn) != i3)
     all_adjacent = false;
     
-  /* Can combine only if previous insn is a SET of a REG, a SUBREG or CC0.
+  /* Can combine only if previous insn is a SET of a REG or a SUBREG,
      or a PARALLEL consisting of such a SET and CLOBBERs.
 
      If INSN has CLOBBER parallel parts, ignore them for our processing.
@@ -2032,7 +1933,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
       || (DF_INSN_LUID (insn) < last_call_luid && ! CONSTANT_P (src)))
     return 0;
 
-  /* DEST must either be a REG or CC0.  */
+  /* DEST must be a REG.  */
   if (REG_P (dest))
     {
       /* If register alignment is being enforced for multi-word items in all
@@ -2059,7 +1960,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
 						  GET_MODE (src)))))
 	return 0;
     }
-  else if (GET_CODE (dest) != CC0)
+  else
     return 0;
 
 
@@ -2138,23 +2039,6 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
 		  && reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (succ2)))
 	      || reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (i3))))
 	return 0;
-
-  /* Don't combine an insn that follows a CC0-setting insn.
-     An insn that uses CC0 must not be separated from the one that sets it.
-     We do, however, allow I2 to follow a CC0-setting insn if that insn
-     is passed as I1; in that case it will be deleted also.
-     We also allow combining in this case if all the insns are adjacent
-     because that would leave the two CC0 insns adjacent as well.
-     It would be more logical to test whether CC0 occurs inside I1 or I2,
-     but that would be much slower, and this ought to be equivalent.  */
-
-  if (HAVE_cc0)
-    {
-      p = prev_nonnote_insn (insn);
-      if (p && p != pred && NONJUMP_INSN_P (p) && sets_cc0_p (PATTERN (p))
-	  && ! all_adjacent)
-	return 0;
-    }
 
   /* If we get here, we have passed all the tests and the combination is
      to be allowed.  */
@@ -2988,7 +2872,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      This undoes a previous combination and allows us to match a branch-and-
      decrement insn.  */
 
-  if (!HAVE_cc0 && i1 == 0
+  if (i1 == 0
       && is_parallel_of_n_reg_sets (PATTERN (i2), 2)
       && (GET_MODE_CLASS (GET_MODE (SET_DEST (XVECEXP (PATTERN (i2), 0, 0))))
 	  == MODE_CC)
@@ -3020,7 +2904,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   /* If I2 is a PARALLEL of two SETs of REGs (and perhaps some CLOBBERs),
      make those two SETs separate I1 and I2 insns, and make an I0 that is
      the original I1.  */
-  if (!HAVE_cc0 && i0 == 0
+  if (i0 == 0
       && is_parallel_of_n_reg_sets (PATTERN (i2), 2)
       && can_split_parallel_of_n_reg_sets (i2, 2)
       && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 0)), i2, i3)
@@ -3228,7 +3112,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
   subst_insn = i3;
 
-  /* Many machines that don't use CC0 have insns that can both perform an
+  /* Many machines have insns that can both perform an
      arithmetic operation and set the condition code.  These operations will
      be represented as a PARALLEL with the first element of the vector
      being a COMPARE of an arithmetic operation with the constant zero.
@@ -3239,7 +3123,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      needed, and make the PARALLEL by just replacing I2DEST in I3SRC with
      I2SRC.  Later we will make the PARALLEL that contains I2.  */
 
-  if (!HAVE_cc0 && i1 == 0 && added_sets_2 && GET_CODE (PATTERN (i3)) == SET
+  if (i1 == 0 && added_sets_2 && GET_CODE (PATTERN (i3)) == SET
       && GET_CODE (SET_SRC (PATTERN (i3))) == COMPARE
       && CONST_INT_P (XEXP (SET_SRC (PATTERN (i3)), 1))
       && rtx_equal_p (XEXP (SET_SRC (PATTERN (i3)), 0), i2dest))
@@ -3779,7 +3663,6 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	 are set between I2 and I3.  */
       if (insn_code_number < 0
           && (split = find_split_point (&newpat, i3, false)) != 0
-	  && (!HAVE_cc0 || REG_P (i2dest))
 	  /* We need I2DEST in the proper mode.  If it is a hard register
 	     or the only use of a pseudo, we can change its mode.
 	     Make sure we don't change a hard register to have a mode that
@@ -3966,7 +3849,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      eliminate the copy.
 
      We cannot do this if the destination of the first assignment is a
-     condition code register or cc0.  We eliminate this case by making sure
+     condition code register.  We eliminate this case by making sure
      the SET_DEST and SET_SRC have the same mode.
 
      We cannot do this if the destination of the second assignment is
@@ -4060,8 +3943,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       rtx set0 = XVECEXP (newpat, 0, 0);
       rtx set1 = XVECEXP (newpat, 0, 1);
 
-      /* Normally, it doesn't matter which of the two is done first,
-	 but the one that references cc0 can't be the second, and
+      /* Normally, it doesn't matter which of the two is done first, but
 	 one which uses any regs/memory set in between i2 and i3 can't
 	 be first.  The PARALLEL might also have been pre-existing in i3,
 	 so we need to make sure that we won't wrongly hoist a SET to i2
@@ -4074,7 +3956,6 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	       && find_reg_note (i2, REG_DEAD,
 				 SUBREG_REG (SET_DEST (set1))))
 	  && !modified_between_p (SET_DEST (set1), i2, i3)
-	  && (!HAVE_cc0 || !reg_referenced_p (cc0_rtx, set0))
 	  /* If I3 is a jump, ensure that set0 is a jump so that
 	     we do not create invalid RTL.  */
 	  && (!JUMP_P (i3) || SET_DEST (set0) == pc_rtx)
@@ -4090,7 +3971,6 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		    && find_reg_note (i2, REG_DEAD,
 				      SUBREG_REG (SET_DEST (set0))))
 	       && !modified_between_p (SET_DEST (set0), i2, i3)
-	       && (!HAVE_cc0 || !reg_referenced_p (cc0_rtx, set1))
 	       /* If I3 is a jump, ensure that set1 is a jump so that
 		  we do not create invalid RTL.  */
 	       && (!JUMP_P (i3) || SET_DEST (set1) == pc_rtx)
@@ -4152,19 +4032,6 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 					     &new_other_notes);
 
       if (other_code_number < 0 && ! check_asm_operands (other_pat))
-	{
-	  undo_all ();
-	  return 0;
-	}
-    }
-
-  /* If I2 is the CC0 setter and I3 is the CC0 user then check whether
-     they are adjacent to each other or not.  */
-  if (HAVE_cc0)
-    {
-      rtx_insn *p = prev_nonnote_insn (i3);
-      if (p && p != i2 && NONJUMP_INSN_P (p) && newi2pat
-	  && sets_cc0_p (newi2pat))
 	{
 	  undo_all ();
 	  return 0;
@@ -5061,19 +4928,6 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
       break;
 
     case SET:
-      /* If SET_DEST is CC0 and SET_SRC is not an operand, a COMPARE, or a
-	 ZERO_EXTRACT, the most likely reason why this doesn't match is that
-	 we need to put the operand into a register.  So split at that
-	 point.  */
-
-      if (SET_DEST (x) == cc0_rtx
-	  && GET_CODE (SET_SRC (x)) != COMPARE
-	  && GET_CODE (SET_SRC (x)) != ZERO_EXTRACT
-	  && !OBJECT_P (SET_SRC (x))
-	  && ! (GET_CODE (SET_SRC (x)) == SUBREG
-		&& OBJECT_P (SUBREG_REG (SET_SRC (x)))))
-	return &SET_SRC (x);
-
       /* See if we can split SET_SRC as it stands.  */
       split = find_split_point (&SET_SRC (x), insn, true);
       if (split && split != &SET_SRC (x))
@@ -5485,9 +5339,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 	{
 	  rtx dest = SET_DEST (XVECEXP (x, 0, i));
 
-	  if (!REG_P (dest)
-	      && GET_CODE (dest) != CC0
-	      && GET_CODE (dest) != PC)
+	  if (!REG_P (dest) && GET_CODE (dest) != PC)
 	    {
 	      new_rtx = subst (dest, from, to, 0, 0, unique_copy);
 
@@ -5505,13 +5357,12 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
       len = GET_RTX_LENGTH (code);
       fmt = GET_RTX_FORMAT (code);
 
-      /* We don't need to process a SET_DEST that is a register, CC0,
-	 or PC, so set up to skip this common case.  All other cases
-	 where we want to suppress replacing something inside a
-	 SET_SRC are handled via the IN_DEST operand.  */
+      /* We don't need to process a SET_DEST that is a register or PC, so
+	 set up to skip this common case.  All other cases where we want
+	 to suppress replacing something inside a SET_SRC are handled via
+	 the IN_DEST operand.  */
       if (code == SET
 	  && (REG_P (SET_DEST (x))
-	      || GET_CODE (SET_DEST (x)) == CC0
 	      || GET_CODE (SET_DEST (x)) == PC))
 	fmt = "ie";
 
@@ -5581,22 +5432,17 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 		     from in the outside mode, and that may be invalid
 		     if it is an fp reg copied in integer mode.
 
-		     We allow two exceptions to this: It is valid if
+		     We allow an exception to this: It is valid if
 		     it is inside another SUBREG and the mode of that
 		     SUBREG and the mode of the inside of TO is
-		     tieable and it is valid if X is a SET that copies
-		     FROM to CC0.  */
+		     tieable.  */
 
 		  if (GET_CODE (to) == SUBREG
 		      && !targetm.modes_tieable_p (GET_MODE (to),
 						   GET_MODE (SUBREG_REG (to)))
 		      && ! (code == SUBREG
 			    && (targetm.modes_tieable_p
-				(GET_MODE (x), GET_MODE (SUBREG_REG (to)))))
-		      && (!HAVE_cc0
-			  || (! (code == SET
-				 && i == 1
-				 && XEXP (x, 0) == cc0_rtx))))
+				(GET_MODE (x), GET_MODE (SUBREG_REG (to))))))
 		    return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
 
 		  if (code == SUBREG
@@ -6057,7 +5903,8 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
       if (HWI_COMPUTABLE_MODE_P (mode)
 	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0
 	  && (temp = get_last_value (XEXP (x, 0)))
-	  && COMPARISON_P (temp))
+	  && COMPARISON_P (temp)
+	  && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (XEXP (x, 0))))
 	return gen_lowpart (mode, XEXP (x, 0));
       break;
 
@@ -6219,8 +6066,7 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
       /* If the first operand is a condition code, we can't do anything
 	 with it.  */
       if (GET_CODE (XEXP (x, 0)) == COMPARE
-	  || (GET_MODE_CLASS (GET_MODE (XEXP (x, 0))) != MODE_CC
-	      && ! CC0_P (XEXP (x, 0))))
+	  || GET_MODE_CLASS (GET_MODE (XEXP (x, 0))) != MODE_CC)
 	{
 	  rtx op0 = XEXP (x, 0);
 	  rtx op1 = XEXP (x, 1);
@@ -6432,6 +6278,19 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 			      - 1,
 			      0));
       break;
+    case VEC_SELECT:
+      {
+	rtx trueop0 = XEXP (x, 0);
+	mode = GET_MODE (trueop0);
+	rtx trueop1 = XEXP (x, 1);
+	/* If we select a low-part subreg, return that.  */
+	if (vec_series_lowpart_p (GET_MODE (x), mode, trueop1))
+	  {
+	    rtx new_rtx = lowpart_subreg (GET_MODE (x), trueop0, mode);
+	    if (new_rtx != NULL_RTX)
+	      return new_rtx;
+	  }
+      }
 
     default:
       break;
@@ -6833,12 +6692,9 @@ simplify_set (rtx x)
       SUBST (SET_SRC (x), src);
     }
 
-  /* If we are setting CC0 or if the source is a COMPARE, look for the use of
-     the comparison result and try to simplify it unless we already have used
-     undobuf.other_insn.  */
-  if ((GET_MODE_CLASS (mode) == MODE_CC
-       || GET_CODE (src) == COMPARE
-       || CC0_P (dest))
+  /* If the source is a COMPARE, look for the use of the comparison result
+     and try to simplify it unless we already have used undobuf.other_insn.  */
+  if ((GET_MODE_CLASS (mode) == MODE_CC || GET_CODE (src) == COMPARE)
       && (cc_use = find_single_use (dest, subst_insn, &other_insn)) != 0
       && (undobuf.other_insn == 0 || other_insn == undobuf.other_insn)
       && COMPARISON_P (*cc_use)
@@ -6915,7 +6771,7 @@ simplify_set (rtx x)
 	 a hard register, just build new versions with the proper mode.  If it
 	 is a pseudo, we lose unless it is only time we set the pseudo, in
 	 which case we can safely change its mode.  */
-      if (!HAVE_cc0 && compare_mode != GET_MODE (dest))
+      if (compare_mode != GET_MODE (dest))
 	{
 	  if (can_change_dest_mode (dest, 0, compare_mode))
 	    {
@@ -7037,24 +6893,6 @@ simplify_set (rtx x)
       SUBST (SET_SRC (x), SUBREG_REG (src));
 
       src = SET_SRC (x), dest = SET_DEST (x);
-    }
-
-  /* If we have (set (cc0) (subreg ...)), we try to remove the subreg
-     in SRC.  */
-  if (dest == cc0_rtx
-      && partial_subreg_p (src)
-      && subreg_lowpart_p (src))
-    {
-      rtx inner = SUBREG_REG (src);
-      machine_mode inner_mode = GET_MODE (inner);
-
-      /* Here we make sure that we don't have a sign bit on.  */
-      if (val_signbit_known_clear_p (GET_MODE (src),
-				     nonzero_bits (inner, inner_mode)))
-	{
-	  SUBST (SET_SRC (x), inner);
-	  src = SET_SRC (x);
-	}
     }
 
   /* If we have (set FOO (subreg:M (mem:N BAR) 0)) with M wider than N, this
@@ -7409,11 +7247,15 @@ expand_compound_operation (rtx x)
 				  mode, tem, modewidth - len);
     }
   else if (unsignedp && len < HOST_BITS_PER_WIDE_INT)
-    tem = simplify_and_const_int (NULL_RTX, mode,
-				  simplify_shift_const (NULL_RTX, LSHIFTRT,
-							mode, XEXP (x, 0),
-							pos),
-				  (HOST_WIDE_INT_1U << len) - 1);
+    {
+      tem = simplify_shift_const (NULL_RTX, LSHIFTRT, inner_mode,
+				  XEXP (x, 0), pos);
+      tem = gen_lowpart (mode, tem);
+      if (!tem || GET_CODE (tem) == CLOBBER)
+	return x;
+      tem = simplify_and_const_int (NULL_RTX, mode, tem,
+				    (HOST_WIDE_INT_1U << len) - 1);
+    }
   else
     /* Any other cases we can't handle.  */
     return x;
@@ -10153,7 +9995,7 @@ simplify_and_const_int_1 (scalar_int_mode mode, rtx varop,
   constop &= nonzero;
 
   /* If we don't have any bits left, return zero.  */
-  if (constop == 0)
+  if (constop == 0 && !side_effects_p (varop))
     return const0_rtx;
 
   /* If VAROP is a NEG of something known to be zero or 1 and CONSTOP is
@@ -12246,7 +12088,6 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  /* We can't do anything if OP0 is a condition code value, rather
 	     than an actual data value.  */
 	  if (const_op != 0
-	      || CC0_P (XEXP (op0, 0))
 	      || GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
 	    break;
 
@@ -13931,9 +13772,6 @@ mark_used_regs_combine (rtx x)
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
     case ASM_INPUT:
-    /* CC0 must die in the insn after it is set, so we don't need to take
-       special note of it here.  */
-    case CC0:
       return;
 
     case CLOBBER:
@@ -14333,6 +14171,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	case REG_SETJMP:
 	case REG_TM:
 	case REG_CALL_DECL:
+	case REG_UNTYPED_CALL:
 	case REG_CALL_NOCF_CHECK:
 	  /* These notes must remain with the call.  It should not be
 	     possible for both I2 and I3 to be a call.  */
@@ -14360,6 +14199,11 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	     i2 or i1 for register which were both used and clobbered, so
 	     we keep notes from i2 or i1 if they will turn into REG_DEAD
 	     notes.  */
+
+	  /* If this register is set or clobbered between FROM_INSN and I3,
+	     we should not create a note for it.  */
+	  if (reg_set_between_p (XEXP (note, 0), from_insn, i3))
+	    break;
 
 	  /* If this register is set or clobbered in I3, put the note there
 	     unless there is one already.  */
@@ -14605,7 +14449,6 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		    {
 		      rtx set = single_set (tem_insn);
 		      rtx inner_dest = 0;
-		      rtx_insn *cc0_setter = NULL;
 
 		      if (set != 0)
 			for (inner_dest = SET_DEST (set);
@@ -14618,17 +14461,12 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		      /* Verify that it was the set, and not a clobber that
 			 modified the register.
 
-			 CC0 targets must be careful to maintain setter/user
-			 pairs.  If we cannot delete the setter due to side
+			 If we cannot delete the setter due to side
 			 effects, mark the user with an UNUSED note instead
 			 of deleting it.  */
 
 		      if (set != 0 && ! side_effects_p (SET_SRC (set))
-			  && rtx_equal_p (XEXP (note, 0), inner_dest)
-			  && (!HAVE_cc0
-			      || (! reg_mentioned_p (cc0_rtx, SET_SRC (set))
-				  || ((cc0_setter = prev_cc0_setter (tem_insn)) != NULL
-				      && sets_cc0_p (PATTERN (cc0_setter)) > 0))))
+			  && rtx_equal_p (XEXP (note, 0), inner_dest))
 			{
 			  /* Move the notes and links of TEM_INSN elsewhere.
 			     This might delete other dead insns recursively.
@@ -14651,23 +14489,6 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 			  SET_INSN_DELETED (tem_insn);
 			  if (tem_insn == i2)
 			    i2 = NULL;
-
-			  /* Delete the setter too.  */
-			  if (cc0_setter)
-			    {
-			      PATTERN (cc0_setter) = pc_rtx;
-			      old_notes = REG_NOTES (cc0_setter);
-			      REG_NOTES (cc0_setter) = NULL;
-
-			      distribute_notes (old_notes, cc0_setter,
-						cc0_setter, NULL,
-						NULL_RTX, NULL_RTX, NULL_RTX);
-			      distribute_links (LOG_LINKS (cc0_setter));
-
-			      SET_INSN_DELETED (cc0_setter);
-			      if (cc0_setter == i2)
-				i2 = NULL;
-			    }
 			}
 		      else
 			{

@@ -141,8 +141,7 @@ host_modules= { module= lto-plugin; bootstrap=true;
 		extra_make_flags='@extra_linker_plugin_flags@'; };
 host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 host_modules= { module= gotools; };
-host_modules= { module= libctf; no_install=true; no_check=true;
-		bootstrap=true; };
+host_modules= { module= libctf; bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -167,7 +166,6 @@ target_modules = { module= libquadmath; };
 target_modules = { module= libgfortran; };
 target_modules = { module= libobjc; };
 target_modules = { module= libgo; };
-target_modules = { module= libhsail-rt; };
 target_modules = { module= libphobos;
 		   lib_path=src/.libs; };
 target_modules = { module= libtermcap; no_check=true;
@@ -293,6 +291,7 @@ flags_to_pass = { flag= CFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= CPPFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= CXXFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= DLLTOOL_FOR_TARGET ; };
+flags_to_pass = { flag= DSYMUTIL_FOR_TARGET ; };
 flags_to_pass = { flag= FLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= GFORTRAN_FOR_TARGET ; };
 flags_to_pass = { flag= GOC_FOR_TARGET ; };
@@ -424,6 +423,7 @@ dependencies = { module=all-gdb; on=all-sim; };
 dependencies = { module=all-gdb; on=all-libdecnumber; };
 dependencies = { module=all-gdb; on=all-libtermcap; };
 dependencies = { module=all-gdb; on=all-libctf; };
+dependencies = { module=all-gdb; on=all-libbacktrace; };
 
 // Host modules specific to gdbserver.
 dependencies = { module=configure-gdbserver; on=all-gnulib; };
@@ -463,6 +463,7 @@ dependencies = { module=all-binutils; on=all-build-bison; };
 dependencies = { module=all-binutils; on=all-intl; };
 dependencies = { module=all-binutils; on=all-gas; };
 dependencies = { module=all-binutils; on=all-libctf; };
+dependencies = { module=all-ld; on=all-libctf; };
 
 // We put install-opcodes before install-binutils because the installed
 // binutils might be on PATH, and they might need the shared opcodes
@@ -541,13 +542,13 @@ dependencies = { module=install-strip-sid; on=install-strip-tcl; };
 dependencies = { module=install-sid; on=install-tk; };
 dependencies = { module=install-strip-sid; on=install-strip-tk; };
 
+dependencies = { module=configure-sim; on=all-gnulib; };
 dependencies = { module=configure-sim; on=configure-intl; };
 dependencies = { module=all-sim; on=all-intl; };
 dependencies = { module=all-sim; on=all-libiberty; };
 dependencies = { module=all-sim; on=all-bfd; };
 dependencies = { module=all-sim; on=all-opcodes; };
 dependencies = { module=all-sim; on=all-readline; };
-dependencies = { module=all-sim; on=configure-gdb; };
 
 // Other host modules.
 dependencies = { module=all-fastjar; on=all-zlib; };
@@ -561,6 +562,7 @@ dependencies = { module=configure-libctf; on=all-bfd; };
 dependencies = { module=configure-libctf; on=all-intl; };
 dependencies = { module=configure-libctf; on=all-zlib; };
 dependencies = { module=configure-libctf; on=all-libiconv; };
+dependencies = { module=check-libctf; on=all-ld; };
 
 // Warning, these are not well tested.
 dependencies = { module=all-bison; on=all-intl; };
@@ -651,8 +653,6 @@ languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
 languages = { language=go;	gcc-check-target=check-go;
 				lib-check-target=check-target-libgo;
 				lib-check-target=check-gotools; };
-languages = { language=brig;	gcc-check-target=check-brig;
-				lib-check-target=check-target-libhsail-rt; };
 languages = { language=d;	gcc-check-target=check-d;
 				lib-check-target=check-target-libphobos; };
 

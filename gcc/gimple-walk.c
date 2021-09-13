@@ -1,6 +1,6 @@
 /* Gimple walk support.
 
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -517,6 +517,30 @@ walk_gimple_op (gimple *stmt, walk_tree_fn callback_op,
     case GIMPLE_PREDICT:
       break;
 
+    case GIMPLE_PHI:
+      /* PHIs are not GSS_WITH_OPS so we need to handle them explicitely.  */
+      {
+	gphi *phi = as_a <gphi *> (stmt);
+	if (wi)
+	  {
+	    wi->val_only = true;
+	    wi->is_lhs = true;
+	  }
+	ret = walk_tree (gimple_phi_result_ptr (phi), callback_op, wi, pset);
+	if (wi)
+	  wi->is_lhs = false;
+	if (ret)
+	  return ret;
+	for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	  {
+	    ret = walk_tree (gimple_phi_arg_def_ptr (phi, i),
+			     callback_op, wi, pset);
+	    if (ret)
+	      return ret;
+	  }
+	break;
+      }
+
     default:
       {
 	enum gimple_statement_structure_enum gss;
@@ -658,12 +682,14 @@ walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
       /* FALL THROUGH.  */
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
+    case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_TARGET:
@@ -748,10 +774,6 @@ walk_stmt_load_store_addr_ops (gimple *stmt, void *data,
 	{
 	  if (TREE_CODE (rhs) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (rhs, 0), arg, data);
-	  else if (TREE_CODE (rhs) == TARGET_MEM_REF
-		   && TREE_CODE (TMR_BASE (rhs)) == ADDR_EXPR)
-	    ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (rhs), 0), arg,
-			       data);
 	  else if (TREE_CODE (rhs) == OBJ_TYPE_REF
 		   && TREE_CODE (OBJ_TYPE_REF_OBJECT (rhs)) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (OBJ_TYPE_REF_OBJECT (rhs),
@@ -770,10 +792,6 @@ walk_stmt_load_store_addr_ops (gimple *stmt, void *data,
 				     TREE_OPERAND (OBJ_TYPE_REF_OBJECT (val),
 						   0), arg, data);
 	    }
-          lhs = gimple_assign_lhs (stmt);
-	  if (TREE_CODE (lhs) == TARGET_MEM_REF
-              && TREE_CODE (TMR_BASE (lhs)) == ADDR_EXPR)
-	    ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (lhs), 0), lhs, data);
 	}
       if (visit_load)
 	{

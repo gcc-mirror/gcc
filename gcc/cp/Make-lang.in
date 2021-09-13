@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU C++.
-#   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2021 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -121,20 +121,21 @@ cp-warn = $(STRICT_WARN)
 # re-use the checksum from the prev-final stage so it passes
 # the bootstrap comparison and allows comparing of the cc1 binary
 cc1plus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
-	$(CXX_OBJS) $(BACKEND) $(LIBDEPS) 
+	$(CXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS) 
 	if [ -f ../stage_final ] \
 	   && cmp -s ../stage_current ../stage_final; then \
 	   cp ../prev-gcc/cc1plus-checksum.c cc1plus-checksum.c; \
 	else \
-	  build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(LIBDEPS) \
+	  build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS) \
                      checksum-options > cc1plus-checksum.c.tmp &&	   \
 	  $(srcdir)/../move-if-change cc1plus-checksum.c.tmp cc1plus-checksum.c; \
 	fi
 
-cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS) $(c++.prev)
+cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(LIBDEPS) $(c++.prev)
 	@$(call LINK_PROGRESS,$(INDEX.c++),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(NETLIBS) \
+		$(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.c++),end)
 
 ifeq ($(ENABLE_MAINTAINER_RULES), true)
@@ -223,7 +224,7 @@ check-c++-all:
 
 # Run the testsuite with garbage collection at every opportunity.
 check-g++-strict-gc:
-	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --extra_opts,--param,ggc-min-heapsize=0,--param,ggc-min-expand=0" \
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --extra_opts,--param,ggc-min-heapsize=0,--param,ggc-min-expand=0,--param,hash-table-verification-limit=10000" \
 	  TESTSUITEDIR="$(TESTSUITEDIR).gc" check-g++
 check-c++-subtargets : check-g++-subtargets
 # List of targets that can use the generic check- rule and its // variant.

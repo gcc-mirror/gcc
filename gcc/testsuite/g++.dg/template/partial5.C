@@ -14,11 +14,11 @@ template<typename T, typename T::foo V>
 struct Y { };
 
 template<typename T, typename U, U v>
-struct Y<T, v> { }; // { dg-error "" "" { target { ! c++17 } } }
+struct Y<T, v> { }; // { dg-error "" }
 
 
 template<typename T, T V>
 struct Z { };
 
 template<typename T>
-struct Z<T, (T)0> { }; // { dg-error "13:template argument" }
+struct Z<T, (T)0> { }; // { dg-error "depends on a template parameter" }

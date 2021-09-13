@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime initialization 
-   Copyright (C) 1993-2020 Free Software Foundation, Inc.
+   Copyright (C) 1993-2021 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
    +load support contributed by Ovidiu Predescu <ovidiu@net-community.com>
 

@@ -19,6 +19,7 @@ public import core.stdc.config;
 
 version (Posix):
 extern (C) nothrow @nogc:
+@system:
 
 enum _XOPEN_SOURCE     = 600;
 enum _POSIX_SOURCE     = true;
@@ -116,6 +117,7 @@ else version (CRuntime_UClibc)
 else version (CRuntime_Bionic)
 {
     enum _GNU_SOURCE         = false;
+    enum __USE_FILE_OFFSET64 = false; // see https://android.googlesource.com/platform/bionic/+/master/docs/32-bit-abi.md
     enum __USE_GNU           = _GNU_SOURCE;
 
     version (D_LP64)

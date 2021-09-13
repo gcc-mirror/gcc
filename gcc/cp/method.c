@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1029,6 +1029,8 @@ is_cat (tree type, comp_cat_tag tag)
 static comp_cat_tag
 cat_tag_for (tree type)
 {
+  if (!CLASS_TYPE_P (type) || !decl_in_std_namespace_p (TYPE_MAIN_DECL (type)))
+    return cc_last;
   for (int i = 0; i < cc_last; ++i)
     {
       comp_cat_tag tag = (comp_cat_tag)i;
@@ -1087,7 +1089,8 @@ genericize_spaceship (location_t loc, tree type, tree op0, tree op1)
   gcc_checking_assert (tag < cc_last);
 
   tree r;
-  if (SCALAR_TYPE_P (TREE_TYPE (op0)))
+  bool scalar = SCALAR_TYPE_P (TREE_TYPE (op0));
+  if (scalar)
     {
       op0 = save_expr (op0);
       op1 = save_expr (op1);
@@ -1097,26 +1100,53 @@ genericize_spaceship (location_t loc, tree type, tree op0, tree op1)
 
   int flags = LOOKUP_NORMAL;
   tsubst_flags_t complain = tf_none;
+  tree comp;
 
   if (tag == cc_partial_ordering)
     {
       /* op0 == op1 ? equivalent : op0 < op1 ? less :
 	 op1 < op0 ? greater : unordered */
       tree uo = lookup_comparison_result (tag, type, 3);
-      tree comp = build_new_op (loc, LT_EXPR, flags, op1, op0, complain);
-      r = build_conditional_expr (loc, comp, gt, uo, complain);
+      if (scalar)
+	{
+	  /* For scalars use the low level operations; using build_new_op causes
+	     trouble with constexpr eval in the middle of genericize (100367).  */
+	  comp = fold_build2 (LT_EXPR, boolean_type_node, op1, op0);
+	  r = fold_build3 (COND_EXPR, type, comp, gt, uo);
+	}
+      else
+	{
+	  comp = build_new_op (loc, LT_EXPR, flags, op1, op0, complain);
+	  r = build_conditional_expr (loc, comp, gt, uo, complain);
+	}
     }
   else
     /* op0 == op1 ? equal : op0 < op1 ? less : greater */
     r = gt;
 
   tree lt = lookup_comparison_result (tag, type, 2);
-  tree comp = build_new_op (loc, LT_EXPR, flags, op0, op1, complain);
-  r = build_conditional_expr (loc, comp, lt, r, complain);
+  if (scalar)
+    {
+      comp = fold_build2 (LT_EXPR, boolean_type_node, op0, op1);
+      r = fold_build3 (COND_EXPR, type, comp, lt, r);
+    }
+  else
+    {
+      comp = build_new_op (loc, LT_EXPR, flags, op0, op1, complain);
+      r = build_conditional_expr (loc, comp, lt, r, complain);
+    }
 
   tree eq = lookup_comparison_result (tag, type, 0);
-  comp = build_new_op (loc, EQ_EXPR, flags, op0, op1, complain);
-  r = build_conditional_expr (loc, comp, eq, r, complain);
+  if (scalar)
+    {
+      comp = fold_build2 (EQ_EXPR, boolean_type_node, op0, op1);
+      r = fold_build3 (COND_EXPR, type, comp, eq, r);
+    }
+  else
+    {
+      comp = build_new_op (loc, EQ_EXPR, flags, op0, op1, complain);
+      r = build_conditional_expr (loc, comp, eq, r, complain);
+    }
 
   return r;
 }
@@ -1793,7 +1823,7 @@ build_stub_type (tree type, int quals, bool rvalue)
 /* Build a dummy glvalue from dereferencing a dummy reference of type
    REFTYPE.  */
 
-static tree
+tree
 build_stub_object (tree reftype)
 {
   if (!TYPE_REF_P (reftype))
@@ -2789,9 +2819,9 @@ explain_implicit_non_constexpr (tree decl)
 
 /* DECL is an instantiation of an inheriting constructor template.  Deduce
    the correct exception-specification and deletedness for this particular
-   specialization.  */
+   specialization.  Return true if the deduction succeeds; false otherwise.  */
 
-void
+bool
 deduce_inheriting_ctor (tree decl)
 {
   decl = DECL_ORIGIN (decl);
@@ -2804,6 +2834,8 @@ deduce_inheriting_ctor (tree decl)
 			   /*diag*/false,
 			   &inh,
 			   FUNCTION_FIRST_USER_PARMTYPE (decl));
+  if (spec == error_mark_node)
+    return false;
   if (TREE_CODE (inherited_ctor_binfo (decl)) != TREE_BINFO)
     /* Inherited the same constructor from different base subobjects.  */
     deleted = true;
@@ -2818,6 +2850,8 @@ deduce_inheriting_ctor (tree decl)
       TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
       SET_DECL_INHERITED_CTOR (clone, inh);
     }
+
+  return true;
 }
 
 /* Implicitly declare the special function indicated by KIND, as a
@@ -2993,9 +3027,17 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       if (raises != error_mark_node)
 	fn_type = build_exception_variant (fn_type, raises);
       else
-	/* Can happen, eg, in C++98 mode for an ill-formed non-static data
-	   member initializer (c++/89914).  */
-	gcc_assert (seen_error ());
+	{
+	  /* Can happen, e.g., in C++98 mode for an ill-formed non-static data
+	     member initializer (c++/89914).  Also, in C++98, we might have
+	     failed to deduce RAISES, so try again but complain this time.  */
+	  if (cxx_dialect < cxx11)
+	    synthesized_method_walk (type, kind, const_p, &raises, nullptr,
+				     nullptr, nullptr, /*diag=*/true,
+				     &inherited_ctor, inherited_parms);
+	  /* We should have seen an error at this point.  */
+	  gcc_assert (seen_error ());
+	}
     }
   fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
   if (kind != sfk_inheriting_constructor)
@@ -3119,7 +3161,12 @@ defaulted_late_check (tree fn)
       /* If the function was declared constexpr, check that the definition
 	 qualifies.  Otherwise we can define the function lazily.  */
       if (DECL_DECLARED_CONSTEXPR_P (fn) && !DECL_INITIAL (fn))
-	synthesize_method (fn);
+	{
+	  /* Prevent GC.  */
+	  function_depth++;
+	  synthesize_method (fn);
+	  function_depth--;
+	}
       return;
     }
 
@@ -3239,7 +3286,7 @@ defaultable_fn_check (tree fn)
       /* Avoid do_warn_unused_parameter warnings.  */
       for (tree p = FUNCTION_FIRST_USER_PARM (fn); p; p = DECL_CHAIN (p))
 	if (DECL_NAME (p))
-	  TREE_NO_WARNING (p) = 1;
+	  suppress_warning (p, OPT_Wunused_parameter);
 
       if (current_class_type && TYPE_BEING_DEFINED (current_class_type))
 	/* Defer checking.  */;

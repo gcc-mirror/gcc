@@ -1,6 +1,6 @@
 /* A simple stack-based virtual machine to demonstrate
    JIT-compilation.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <stdlib.h>
 #include <string.h>
 
-#include <dejagnu.h>
+#include "jit-dejagnu.h"
 
 #include <libgccjit++.h>
 

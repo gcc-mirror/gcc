@@ -1,4 +1,5 @@
 /*
+TEST_OUTPUT:
 ---
 Error: cannot mix core.std.stdlib.alloca() and exception handling in _Dmain()
 ---

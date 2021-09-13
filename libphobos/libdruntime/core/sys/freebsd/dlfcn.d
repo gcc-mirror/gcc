@@ -54,7 +54,7 @@ static if (__BSD_VISIBLE)
         void            *dli_fbase;     /* Base address of shared object. */
         const(char)     *dli_sname;     /* Name of nearest symbol. */
         void            *dli_saddr;     /* Address of nearest symbol. */
-    };
+    }
 
     /*-
      * The actual type declared by this typedef is immaterial, provided that
@@ -67,7 +67,7 @@ static if (__BSD_VISIBLE)
      */
     struct __dlfunc_arg {
         int     __dlfunc_dummy;
-    };
+    }
 
     alias dlfunc_t = void function(__dlfunc_arg);
 
@@ -77,21 +77,21 @@ static if (__BSD_VISIBLE)
     struct Dl_serpath {
         char *          dls_name;       /* single search path entry */
         uint            dls_flags;      /* path information */
-    };
+    }
 
     struct Dl_serinfo {
         size_t          dls_size;       /* total buffer size */
         uint            dls_cnt;        /* number of path entries */
         Dl_serpath[1]   dls_serpath;    /* there may be more than one */
-    };
+    }
 }
 
 /* XSI functions first. */
 extern(C) {
     static assert(is(typeof(&dlclose) == int function(void*)));
     static assert(is(typeof(&dlerror) == char* function()));
-    static assert(is(typeof(&dlopen)  == void* function(in char*, int)));
-    static assert(is(typeof(&dlsym)   == void* function(void*, in char*)));
+    static assert(is(typeof(&dlopen)  == void* function(const scope char*, int)));
+    static assert(is(typeof(&dlsym)   == void* function(void*, const scope char*)));
 }
 
 static if (__BSD_VISIBLE)

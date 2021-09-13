@@ -1,7 +1,8 @@
 /* PR tree-optimization/87034 - missing -Wformat-overflow on a sprintf
-   %s with a wide string
-   { dg-do compile }
-   { dg-options "-O2 -Wall -Wformat-overflow -ftrack-macro-expansion=0" } */
+   %s with a wide string.  */
+/* { dg-do compile } */
+/* { dg-require-effective-target 4byte_wchar_t } */
+/* { dg-options "-O2 -Wall -Wformat-overflow -ftrack-macro-expansion=0" } */
 
 typedef __WCHAR_TYPE__ wchar_t;
 

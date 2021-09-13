@@ -1,6 +1,6 @@
 // Nested Exception support header (nested_exception class) for -*- C++ -*-
 
-// Copyright (C) 2009-2020 Free Software Foundation, Inc.
+// Copyright (C) 2009-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -159,7 +159,7 @@ namespace std
     rethrow_if_nested(const _Ex& __ex)
     { std::__rethrow_if_nested_impl(std::__addressof(__ex)); }
 
-  // @} group exceptions
+  /// @} group exceptions
 } // namespace std
 
 } // extern "C++"

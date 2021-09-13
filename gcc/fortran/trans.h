@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -53,6 +53,9 @@ typedef struct gfc_se
      here.  */
   tree class_vptr;
 
+  /* Whether expr is a reference to an unlimited polymorphic object.  */
+  unsigned unlimited_polymorphic:1;
+  
   /* If set gfc_conv_variable will return an expression for the array
      descriptor. When set, want_pointer should also be set.
      If not set scalarizing variables will be substituted.  */
@@ -428,7 +431,8 @@ tree gfc_class_vptr_get (tree);
 tree gfc_class_len_get (tree);
 tree gfc_class_len_or_zero_get (tree);
 tree gfc_resize_class_size_with_len (stmtblock_t *, tree, tree);
-gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *, bool is_mold = false);
+gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *, bool is_mold = false,
+					       gfc_typespec **ts = NULL);
 /* Get an accessor to the class' vtab's * field, when a class handle is
    available.  */
 tree gfc_class_vtab_hash_get (tree);
@@ -456,7 +460,7 @@ bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *);
 bool gfc_add_comp_finalizer_call (stmtblock_t *, tree, gfc_component *, bool);
 
 void gfc_conv_derived_to_class (gfc_se *, gfc_expr *, gfc_typespec, tree, bool,
-				bool);
+				bool, tree *derived_array = NULL);
 void gfc_conv_class_to_class (gfc_se *, gfc_expr *, gfc_typespec, bool, bool,
 			      bool, bool);
 
@@ -513,6 +517,8 @@ tree gfc_trans_memory_barrier (void);
 tree gfc_trans_memory_barrier_fence (void);
 
 /* trans-expr.c */
+tree gfc_get_character_len (tree);
+tree gfc_get_character_len_in_bytes (tree);
 tree gfc_conv_scalar_to_descriptor (gfc_se *, tree, symbol_attribute);
 tree gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *, gfc_expr *);
 void gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr);
@@ -629,6 +635,9 @@ tree gfc_build_addr_expr (tree, tree);
 
 /* Build an ARRAY_REF.  */
 tree gfc_build_array_ref (tree, tree, tree, tree vptr = NULL_TREE);
+
+/* Build an array ref using pointer arithmetic.  */
+tree gfc_build_spanned_array_ref (tree base, tree offset, tree span);
 
 /* Creates a label.  Decl is artificial if label_id == NULL_TREE.  */
 tree gfc_build_label_decl (tree);
@@ -822,7 +831,9 @@ tree gfc_omp_clause_assign_op (tree, tree, tree);
 tree gfc_omp_clause_linear_ctor (tree, tree, tree, tree);
 tree gfc_omp_clause_dtor (tree, tree);
 void gfc_omp_finish_clause (tree, gimple_seq *, bool);
-bool gfc_omp_scalar_p (tree);
+bool gfc_omp_allocatable_p (tree);
+bool gfc_omp_scalar_p (tree, bool);
+bool gfc_omp_scalar_target_p (tree);
 bool gfc_omp_disregard_value_expr (tree, bool);
 bool gfc_omp_private_debug_clause (tree, bool);
 bool gfc_omp_private_outer_ref (tree);
@@ -989,6 +1000,7 @@ extern GTY(()) tree gfor_fndecl_ieee_procedure_exit;
 
 /* RANDOM_INIT.  */
 extern GTY(()) tree gfor_fndecl_random_init;
+extern GTY(()) tree gfor_fndecl_caf_random_init;
 
 /* True if node is an integer constant.  */
 #define INTEGER_CST_P(node) (TREE_CODE(node) == INTEGER_CST)
@@ -1044,6 +1056,7 @@ struct GTY(()) lang_decl {
   tree token, caf_offset;
   unsigned int scalar_allocatable : 1;
   unsigned int scalar_pointer : 1;
+  unsigned int scalar_target : 1;
   unsigned int optional_arg : 1;
 };
 
@@ -1058,12 +1071,16 @@ struct GTY(()) lang_decl {
   (DECL_LANG_SPECIFIC (node)->scalar_allocatable)
 #define GFC_DECL_SCALAR_POINTER(node) \
   (DECL_LANG_SPECIFIC (node)->scalar_pointer)
+#define GFC_DECL_SCALAR_TARGET(node) \
+  (DECL_LANG_SPECIFIC (node)->scalar_target)
 #define GFC_DECL_OPTIONAL_ARGUMENT(node) \
   (DECL_LANG_SPECIFIC (node)->optional_arg)
 #define GFC_DECL_GET_SCALAR_ALLOCATABLE(node) \
   (DECL_LANG_SPECIFIC (node) ? GFC_DECL_SCALAR_ALLOCATABLE (node) : 0)
 #define GFC_DECL_GET_SCALAR_POINTER(node) \
   (DECL_LANG_SPECIFIC (node) ? GFC_DECL_SCALAR_POINTER (node) : 0)
+#define GFC_DECL_GET_SCALAR_TARGET(node) \
+  (DECL_LANG_SPECIFIC (node) ? GFC_DECL_SCALAR_TARGET (node) : 0)
 #define GFC_DECL_PACKED_ARRAY(node) DECL_LANG_FLAG_0(node)
 #define GFC_DECL_PARTIAL_PACKED_ARRAY(node) DECL_LANG_FLAG_1(node)
 #define GFC_DECL_ASSIGN(node) DECL_LANG_FLAG_2(node)

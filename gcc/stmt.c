@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -419,7 +419,8 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	    || insn_extra_address_constraint (cn))
 	  *allows_reg = true;
 	else if (insn_extra_memory_constraint (cn)
-		 || insn_extra_special_memory_constraint (cn))
+		 || insn_extra_special_memory_constraint (cn)
+		 || insn_extra_relaxed_memory_constraint (cn))
 	  *allows_mem = true;
 	else
 	  insn_extra_constraint_allows_reg_mem (cn, allows_reg, allows_mem);
@@ -611,7 +612,7 @@ static char *
 resolve_operand_name_1 (char *p, tree outputs, tree inputs, tree labels)
 {
   char *q;
-  int op;
+  int op, op_inout;
   tree t;
 
   /* Collect the operand name.  */
@@ -624,11 +625,14 @@ resolve_operand_name_1 (char *p, tree outputs, tree inputs, tree labels)
   *q = '\0';
 
   /* Resolve the name to a number.  */
-  for (op = 0, t = outputs; t ; t = TREE_CHAIN (t), op++)
+  for (op_inout = op = 0, t = outputs; t ; t = TREE_CHAIN (t), op++)
     {
       tree name = TREE_PURPOSE (TREE_PURPOSE (t));
       if (name && strcmp (TREE_STRING_POINTER (name), p) == 0)
 	goto found;
+      tree constraint = TREE_VALUE (TREE_PURPOSE (t));
+      if (constraint && strchr (TREE_STRING_POINTER (constraint), '+') != NULL)
+        op_inout++;
     }
   for (t = inputs; t ; t = TREE_CHAIN (t), op++)
     {
@@ -636,6 +640,7 @@ resolve_operand_name_1 (char *p, tree outputs, tree inputs, tree labels)
       if (name && strcmp (TREE_STRING_POINTER (name), p) == 0)
 	goto found;
     }
+  op += op_inout;
   for (t = labels; t ; t = TREE_CHAIN (t), op++)
     {
       tree name = TREE_PURPOSE (t);

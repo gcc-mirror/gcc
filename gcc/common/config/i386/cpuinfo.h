@@ -1,5 +1,5 @@
 /* Get CPU type and Features for x86 processors.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Sriraman Tallam (tmsriram@google.com)
 
 This file is part of GCC.
@@ -404,13 +404,19 @@ get_intel_cpu (struct __processor_model *cpu_model,
     case 0xa5:
     case 0xa6:
       /* Comet Lake.  */
-    case 0xa7:
-      /* Rocket Lake.  */
       cpu = "skylake";
       CHECK___builtin_cpu_is ("corei7");
       CHECK___builtin_cpu_is ("skylake");
       cpu_model->__cpu_type = INTEL_COREI7;
       cpu_model->__cpu_subtype = INTEL_COREI7_SKYLAKE;
+      break;
+    case 0xa7:
+      /* Rocket Lake.  */
+      cpu = "rocketlake";
+      CHECK___builtin_cpu_is ("corei7");
+      CHECK___builtin_cpu_is ("rocketlake");
+      cpu_model->__cpu_type = INTEL_COREI7;
+      cpu_model->__cpu_subtype = INTEL_COREI7_ROCKETLAKE;
       break;
     case 0x55:
       CHECK___builtin_cpu_is ("corei7");
@@ -476,6 +482,7 @@ get_intel_cpu (struct __processor_model *cpu_model,
       cpu_model->__cpu_subtype = INTEL_COREI7_TIGERLAKE;
       break;
     case 0x97:
+    case 0x9a:
       /* Alder Lake.  */
       cpu = "alderlake";
       CHECK___builtin_cpu_is ("corei7");
@@ -724,6 +731,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX5124FMAPS);
 	  if (edx & bit_AVX512VP2INTERSECT)
 	    set_feature (FEATURE_AVX512VP2INTERSECT);
+	  if (edx & bit_AVX512FP16)
+	    set_feature (FEATURE_AVX512FP16);
 	}
 
       __cpuid_count (7, 1, eax, ebx, ecx, edx);

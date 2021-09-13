@@ -1,5 +1,5 @@
 /* Functions related to building -*- C++ -*- classes and their related objects.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -136,7 +136,6 @@ static bool check_field_decl (tree, tree, int *, int *);
 static void check_field_decls (tree, tree *, int *, int *);
 static void build_base_fields (record_layout_info, splay_tree, tree *);
 static void check_methods (tree);
-static void remove_zero_width_bit_fields (tree);
 static bool accessible_nvdtor_p (tree);
 
 /* Used by find_flexarrays and related functions.  */
@@ -206,6 +205,19 @@ static tree get_vcall_index (tree, tree);
 static bool type_maybe_constexpr_default_constructor (tree);
 static bool type_maybe_constexpr_destructor (tree);
 static bool field_poverlapping_p (tree);
+
+/* Set CURRENT_ACCESS_SPECIFIER based on the protection of DECL.  */
+
+void
+set_current_access_from_decl (tree decl)
+{
+  if (TREE_PRIVATE (decl))
+    current_access_specifier = access_private_node;
+  else if (TREE_PROTECTED (decl))
+    current_access_specifier = access_protected_node;
+  else
+    current_access_specifier = access_public_node;
+}
 
 /* Return a COND_EXPR that executes TRUE_STMT if this execution of the
    'structor is in charge of 'structing virtual bases, or FALSE_STMT
@@ -330,6 +342,15 @@ build_base_path (enum tree_code code,
       return error_mark_node;
     }
 
+  bool uneval = (cp_unevaluated_operand != 0
+		 || processing_template_decl
+		 || in_template_function ());
+
+  /* For a non-pointer simple base reference, express it as a COMPONENT_REF
+     without taking its address (and so causing lambda capture, 91933).  */
+  if (code == PLUS_EXPR && !v_binfo && !want_pointer && !has_empty && !uneval)
+    return build_simple_base_path (expr, binfo);
+
   if (!want_pointer)
     {
       rvalue = !lvalue_p (expr);
@@ -357,9 +378,7 @@ build_base_path (enum tree_code code,
      template (even in instantiate_non_dependent_expr), we don't have vtables
      set up properly yet, and the value doesn't matter there either; we're
      just interested in the result of overload resolution.  */
-  if (cp_unevaluated_operand != 0
-      || processing_template_decl
-      || in_template_function ())
+  if (uneval)
     {
       expr = build_nop (ptr_target_type, expr);
       goto indout;
@@ -402,16 +421,9 @@ build_base_path (enum tree_code code,
   if (TREE_SIDE_EFFECTS (expr) && (null_test || virtual_access))
     expr = save_expr (expr);
 
-  /* Now that we've saved expr, build the real null test.  */
+  /* Store EXPR and build the real null test just before returning.  */
   if (null_test)
-    {
-      tree zero = cp_convert (TREE_TYPE (expr), nullptr_node, complain);
-      null_test = build2_loc (input_location, NE_EXPR, boolean_type_node,
-			      expr, zero);
-      /* This is a compiler generated comparison, don't emit
-	 e.g. -Wnonnull-compare warning for it.  */
-      TREE_NO_WARNING (null_test) = 1;
-    }
+    null_test = expr;
 
   /* If this is a simple base reference, express it as a COMPONENT_REF.  */
   if (code == PLUS_EXPR && !virtual_access
@@ -516,14 +528,8 @@ build_base_path (enum tree_code code,
 
  out:
   if (null_test)
-    {
-      expr = fold_build3_loc (input_location, COND_EXPR, target_type, null_test,
-			      expr, build_zero_cst (target_type));
-      /* Avoid warning for the whole conditional expression (in addition
-	 to NULL_TEST itself -- see above) in case the result is used in
-	 a nonnull context that the front end -Wnonnull checks.  */
-      TREE_NO_WARNING (expr) = 1;
-    }
+    /* Wrap EXPR in a null test.  */
+    expr = build_if_nonnull (null_test, expr, complain);
 
   return expr;
 }
@@ -1353,10 +1359,10 @@ handle_using_decl (tree using_decl, tree t)
 
   /* Make type T see field decl FDECL with access ACCESS.  */
   if (flist)
-    for (ovl_iterator iter (flist); iter; ++iter)
+    for (tree f : ovl_range (flist))
       {
-	add_method (t, *iter, true);
-	alter_access (t, *iter, access);
+	add_method (t, f, true);
+	alter_access (t, f, access);
       }
   else if (USING_DECL_UNRELATED_P (using_decl))
     {
@@ -1365,6 +1371,8 @@ handle_using_decl (tree using_decl, tree t)
 	 CONST_DECL_USING_P is true.  */
       gcc_assert (TREE_CODE (decl) == CONST_DECL);
 
+      auto cas = make_temp_override (current_access_specifier);
+      set_current_access_from_decl (using_decl);
       tree copy = copy_decl (decl);
       DECL_CONTEXT (copy) = t;
       DECL_ARTIFICIAL (copy) = true;
@@ -1507,6 +1515,10 @@ mark_or_check_tags (tree t, tree *tp, abi_tag_data *p, bool val)
 static tree
 find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 {
+  if (TYPE_P (*tp) && *walk_subtrees == 1 && flag_abi_version != 14)
+    /* Tell cp_walk_subtrees to look though typedefs. [PR98481] */
+    *walk_subtrees = 2;
+
   if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
 
@@ -1527,6 +1539,10 @@ find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 static tree
 mark_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 {
+  if (TYPE_P (*tp) && *walk_subtrees == 1 && flag_abi_version != 14)
+    /* Tell cp_walk_subtrees to look though typedefs.  */
+    *walk_subtrees = 2;
+
   if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
 
@@ -1827,15 +1843,13 @@ check_bases (tree t,
 	  else if (CLASSTYPE_REPEATED_BASE_P (t))
 	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
 	  else
-	    /* ...either has no non-static data members in the most-derived
-	       class and at most one base class with non-static data
-	       members, or has no base classes with non-static data
-	       members.  FIXME This was reworded in DR 1813.  */
+	    /* ...has all non-static data members and bit-fields in the class
+	       and its base classes first declared in the same class.  */
 	    for (basefield = TYPE_FIELDS (basetype); basefield;
 		 basefield = DECL_CHAIN (basefield))
 	      if (TREE_CODE (basefield) == FIELD_DECL
 		  && !(DECL_FIELD_IS_BASE (basefield)
-		       && integer_zerop (DECL_SIZE (basefield))))
+		       && is_empty_field (basefield)))
 		{
 		  if (field)
 		    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
@@ -1999,35 +2013,45 @@ determine_primary_bases (tree t)
 /* Update the variant types of T.  */
 
 void
-fixup_type_variants (tree t)
+fixup_type_variants (tree type)
 {
-  tree variants;
-
-  if (!t)
+  if (!type)
     return;
 
-  for (variants = TYPE_NEXT_VARIANT (t);
-       variants;
-       variants = TYPE_NEXT_VARIANT (variants))
+  for (tree variant = TYPE_NEXT_VARIANT (type);
+       variant;
+       variant = TYPE_NEXT_VARIANT (variant))
     {
       /* These fields are in the _TYPE part of the node, not in
 	 the TYPE_LANG_SPECIFIC component, so they are not shared.  */
-      TYPE_HAS_USER_CONSTRUCTOR (variants) = TYPE_HAS_USER_CONSTRUCTOR (t);
-      TYPE_NEEDS_CONSTRUCTING (variants) = TYPE_NEEDS_CONSTRUCTING (t);
-      TYPE_HAS_NONTRIVIAL_DESTRUCTOR (variants)
-	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t);
+      TYPE_HAS_USER_CONSTRUCTOR (variant) = TYPE_HAS_USER_CONSTRUCTOR (type);
+      TYPE_NEEDS_CONSTRUCTING (variant) = TYPE_NEEDS_CONSTRUCTING (type);
+      TYPE_HAS_NONTRIVIAL_DESTRUCTOR (variant)
+	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type);
 
-      TYPE_POLYMORPHIC_P (variants) = TYPE_POLYMORPHIC_P (t);
-      CLASSTYPE_FINAL (variants) = CLASSTYPE_FINAL (t);
+      TYPE_POLYMORPHIC_P (variant) = TYPE_POLYMORPHIC_P (type);
+      CLASSTYPE_FINAL (variant) = CLASSTYPE_FINAL (type);
 
-      TYPE_BINFO (variants) = TYPE_BINFO (t);
+      TYPE_BINFO (variant) = TYPE_BINFO (type);
 
       /* Copy whatever these are holding today.  */
-      TYPE_VFIELD (variants) = TYPE_VFIELD (t);
-      TYPE_FIELDS (variants) = TYPE_FIELDS (t);
+      TYPE_VFIELD (variant) = TYPE_VFIELD (type);
+      TYPE_FIELDS (variant) = TYPE_FIELDS (type);
 
-      TYPE_SIZE (variants) = TYPE_SIZE (t);
-      TYPE_SIZE_UNIT (variants) = TYPE_SIZE_UNIT (t);
+      TYPE_SIZE (variant) = TYPE_SIZE (type);
+      TYPE_SIZE_UNIT (variant) = TYPE_SIZE_UNIT (type);
+
+      if (!TYPE_USER_ALIGN (variant)
+	  || TYPE_NAME (variant) == TYPE_NAME (type)
+	  || TYPE_ALIGN_RAW (variant) < TYPE_ALIGN_RAW (type))
+	{
+	  TYPE_ALIGN_RAW (variant) =  TYPE_ALIGN_RAW (type);
+	  TYPE_USER_ALIGN (variant) = TYPE_USER_ALIGN (type);
+	}
+
+      TYPE_PRECISION (variant) = TYPE_PRECISION (type);
+      TYPE_MODE_RAW (variant) = TYPE_MODE_RAW (type);
+      TYPE_EMPTY_P (variant) = TYPE_EMPTY_P (type);
     }
 }
 
@@ -2249,18 +2273,20 @@ maybe_warn_about_overly_private_class (tree t)
       if (!TYPE_HAS_COPY_CTOR (t))
 	nonprivate_ctor = true;
       else
-	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t));
-	     !nonprivate_ctor && iter; ++iter)
-	  if (TREE_PRIVATE (*iter))
+	for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (t)))
+	  if (TREE_PRIVATE (fn))
 	    continue;
-	  else if (copy_fn_p (*iter) || move_fn_p (*iter))
+	  else if (copy_fn_p (fn) || move_fn_p (fn))
 	    /* Ideally, we wouldn't count any constructor that takes
 	       an argument of the class type as a parameter, because
 	       such things cannot be used to construct an instance of
 	       the class unless you already have one.  */
-	    copy_or_move = *iter;
+	    copy_or_move = fn;
 	  else
-	    nonprivate_ctor = true;
+	    {
+	      nonprivate_ctor = true;
+	      break;
+	    }
 
       if (!nonprivate_ctor)
 	{
@@ -2364,7 +2390,7 @@ struct find_final_overrider_data {
   /* The candidate overriders.  */
   tree candidates;
   /* Path to most derived.  */
-  vec<tree> path;
+  auto_vec<tree> path;
 };
 
 /* Add the overrider along the current path to FFOD->CANDIDATES.
@@ -2476,8 +2502,6 @@ find_final_overrider (tree derived, tree binfo, tree fn)
 
   dfs_walk_all (derived, dfs_find_final_overrider_pre,
 		dfs_find_final_overrider_post, &ffod);
-
-  ffod.path.release ();
 
   /* If there was no winner, issue an error message.  */
   if (!ffod.candidates || TREE_CHAIN (ffod.candidates))
@@ -2866,10 +2890,8 @@ get_basefndecls (tree name, tree t, vec<tree> *base_fndecls)
   bool found_decls = false;
 
   /* Find virtual functions in T with the indicated NAME.  */
-  for (ovl_iterator iter (get_class_binding (t, name)); iter; ++iter)
+  for (tree method : ovl_range (get_class_binding (t, name)))
     {
-      tree method = *iter;
-
       if (TREE_CODE (method) == FUNCTION_DECL && DECL_VINDEX (method))
 	{
 	  base_fndecls->safe_push (method);
@@ -2978,9 +3000,8 @@ warn_hidden (tree t)
 	  continue;
 
 	/* Remove any overridden functions.  */
-	for (ovl_iterator iter (fns); iter; ++iter)
+	for (tree fndecl : ovl_range (fns))
 	  {
-	    tree fndecl = *iter;
 	    if (TREE_CODE (fndecl) == FUNCTION_DECL
 		&& DECL_VINDEX (fndecl))
 	      {
@@ -3013,7 +3034,7 @@ warn_hidden (tree t)
 /* Recursive helper for finish_struct_anon.  */
 
 static void
-finish_struct_anon_r (tree field, bool complain)
+finish_struct_anon_r (tree field)
 {
   for (tree elt = TYPE_FIELDS (TREE_TYPE (field)); elt; elt = DECL_CHAIN (elt))
     {
@@ -3028,34 +3049,6 @@ finish_struct_anon_r (tree field, bool complain)
 	  && (!DECL_IMPLICIT_TYPEDEF_P (elt)
 	      || TYPE_UNNAMED_P (TREE_TYPE (elt))))
 	continue;
-
-      if (complain
-	  && (TREE_CODE (elt) != FIELD_DECL
-	      || (TREE_PRIVATE (elt) || TREE_PROTECTED (elt))))
-	{
-	  /* We already complained about static data members in
-	     finish_static_data_member_decl.  */
-	  if (!VAR_P (elt))
-	    {
-	      auto_diagnostic_group d;
-	      if (permerror (DECL_SOURCE_LOCATION (elt),
-			     TREE_CODE (TREE_TYPE (field)) == UNION_TYPE
-			     ? "%q#D invalid; an anonymous union may "
-			     "only have public non-static data members"
-			     : "%q#D invalid; an anonymous struct may "
-			     "only have public non-static data members", elt))
-		{
-		  static bool hint;
-		  if (flag_permissive && !hint)
-		    {
-		      hint = true;
-		      inform (DECL_SOURCE_LOCATION (elt),
-			      "this flexibility is deprecated and will be "
-			      "removed");
-		    }
-		}
-	    }
-	}
 
       TREE_PRIVATE (elt) = TREE_PRIVATE (field);
       TREE_PROTECTED (elt) = TREE_PROTECTED (field);
@@ -3074,12 +3067,11 @@ finish_struct_anon_r (tree field, bool complain)
 	 int j=A().i;  */
       if (DECL_NAME (elt) == NULL_TREE
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (elt)))
-	finish_struct_anon_r (elt, /*complain=*/false);
+	finish_struct_anon_r (elt);
     }
 }
 
-/* Check for things that are invalid.  There are probably plenty of other
-   things we should check for also.  */
+/* Fix up any anonymous union/struct members of T.  */
 
 static void
 finish_struct_anon (tree t)
@@ -3093,7 +3085,7 @@ finish_struct_anon (tree t)
 
       if (DECL_NAME (field) == NULL_TREE
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-	finish_struct_anon_r (field, /*complain=*/true);
+	finish_struct_anon_r (field);
     }
 }
 
@@ -3332,7 +3324,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	bool is_friend = DECL_CONTEXT (space) != t;
 	if (is_friend)
 	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
-		     NULL_TREE, NO_SPECIAL, true);
+		     NO_SPECIAL, true);
 	else
 	  {
 	    add_method (t, eq, false);
@@ -3352,8 +3344,8 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	  tree ctor_list = decl;
 	  location_t loc = input_location;
 	  input_location = DECL_SOURCE_LOCATION (using_decl);
-	  for (ovl_iterator iter (ctor_list); iter; ++iter)
-	    one_inherited_ctor (*iter, t, using_decl);
+	  for (tree fn : ovl_range (ctor_list))
+	    one_inherited_ctor (fn, t, using_decl);
 	  *access_decls = TREE_CHAIN (*access_decls);
 	  input_location = loc;
 	}
@@ -4218,6 +4210,25 @@ field_poverlapping_p (tree decl)
 			   DECL_ATTRIBUTES (decl));
 }
 
+/* Return true iff DECL is an empty field, either for an empty base or a
+   [[no_unique_address]] data member.  */
+
+bool
+is_empty_field (tree decl)
+{
+  if (!decl || TREE_CODE (decl) != FIELD_DECL)
+    return false;
+
+  bool r = (is_empty_class (TREE_TYPE (decl))
+	    && (DECL_FIELD_IS_BASE (decl)
+		|| field_poverlapping_p (decl)));
+
+  /* Empty fields should have size zero.  */
+  gcc_checking_assert (!r || integer_zerop (DECL_SIZE (decl)));
+
+  return r;
+}
+
 /* Record all of the empty subobjects of DECL_OR_BINFO.  */
 
 static void
@@ -4623,7 +4634,7 @@ build_base_field (record_layout_info rli, tree binfo, tree access,
 	  DECL_FIELD_OFFSET (decl) = BINFO_OFFSET (binfo);
 	  DECL_FIELD_BIT_OFFSET (decl) = bitsize_zero_node;
 	  SET_DECL_OFFSET_ALIGN (decl, BITS_PER_UNIT);
-	  DECL_FIELD_ABI_IGNORED (decl) = 1;
+	  SET_DECL_FIELD_ABI_IGNORED (decl, 1);
 	}
 
       /* An empty virtual base causes a class to be non-empty
@@ -4750,9 +4761,8 @@ check_methods (tree t)
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = true;
     }
 
-  for (ovl_iterator i (CLASSTYPE_CONSTRUCTORS (t)); i; ++i)
+  for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (t)))
     {
-      tree fn = *i;
       if (!user_provided_p (fn))
 	/* Might be trivial.  */;
       else if (copy_fn_p (fn))
@@ -4761,10 +4771,8 @@ check_methods (tree t)
 	TYPE_HAS_COMPLEX_MOVE_CTOR (t) = true;
     }
 
-  for (ovl_iterator i (get_class_binding_direct (t, assign_op_identifier));
-       i; ++i)
+  for (tree fn : ovl_range (get_class_binding_direct (t, assign_op_identifier)))
     {
-      tree fn = *i;
       if (!user_provided_p (fn))
 	/* Might be trivial.  */;
       else if (copy_fn_p (fn))
@@ -5106,8 +5114,8 @@ clone_constructors_and_destructors (tree t)
 {
   /* We do not need to propagate the usingness to the clone, at this
      point that is not needed.  */
-  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
-    clone_cdtor (*iter, /*update_methods=*/true);
+  for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (t)))
+    clone_cdtor (fn, /*update_methods=*/true);
 
   if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
     clone_cdtor (dtor, /*update_methods=*/true);
@@ -5282,9 +5290,8 @@ type_has_user_nondefault_constructor (tree t)
   if (!TYPE_HAS_USER_CONSTRUCTOR (t))
     return false;
 
-  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+  for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (t)))
     {
-      tree fn = *iter;
       if (user_provided_p (fn)
 	  && (TREE_CODE (fn) == TEMPLATE_DECL
 	      || (skip_artificial_parms_for (fn, DECL_ARGUMENTS (fn))
@@ -5608,19 +5615,6 @@ classtype_has_non_deleted_move_ctor (tree t)
   return false;
 }
 
-/* True iff T has a copy constructor that is not deleted.  */
-
-bool
-classtype_has_non_deleted_copy_ctor (tree t)
-{
-  if (CLASSTYPE_LAZY_COPY_CTOR (t))
-    lazily_declare_fn (sfk_copy_constructor, t);
-  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
-    if (copy_fn_p (*iter) && !DECL_DELETED_FN (*iter))
-      return true;
-  return false;
-}
-
 /* If T, a class, has a user-provided copy constructor, copy assignment
    operator, or destructor, returns that function.  Otherwise, null.  */
 
@@ -5641,7 +5635,8 @@ classtype_has_depr_implicit_copy (tree t)
 	 iter; ++iter)
       {
 	tree fn = *iter;
-	if (user_provided_p (fn) && copy_fn_p (fn))
+	if (DECL_CONTEXT (fn) == t
+	    && user_provided_p (fn) && copy_fn_p (fn))
 	  return fn;
       }
 
@@ -5724,6 +5719,7 @@ type_build_ctor_call (tree t)
       tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
 	  || TREE_DEPRECATED (fn)
+	  || TREE_UNAVAILABLE (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
     }
@@ -5752,35 +5748,11 @@ type_build_dtor_call (tree t)
       tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
 	  || TREE_DEPRECATED (fn)
+	  || TREE_UNAVAILABLE (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
     }
   return false;
-}
-
-/* Remove all zero-width bit-fields from T.  */
-
-static void
-remove_zero_width_bit_fields (tree t)
-{
-  tree *fieldsp;
-
-  fieldsp = &TYPE_FIELDS (t);
-  while (*fieldsp)
-    {
-      if (TREE_CODE (*fieldsp) == FIELD_DECL
-	  && DECL_C_BIT_FIELD (*fieldsp)
-	  /* We should not be confused by the fact that grokbitfield
-	     temporarily sets the width of the bit field into
-	     DECL_BIT_FIELD_REPRESENTATIVE (*fieldsp).
-	     check_bitfield_decl eventually sets DECL_SIZE (*fieldsp)
-	     to that width.  */
-	  && (DECL_SIZE (*fieldsp) == NULL_TREE
-	      || integer_zerop (DECL_SIZE (*fieldsp))))
-	*fieldsp = DECL_CHAIN (*fieldsp);
-      else
-	fieldsp = &DECL_CHAIN (*fieldsp);
-    }
 }
 
 /* Returns TRUE iff we need a cookie when dynamically allocating an
@@ -6604,7 +6576,9 @@ layout_class_type (tree t, tree *virtuals_p)
 	  /* end_of_class doesn't always give dsize, but it does in the case of
 	     a class with virtual bases, which is when dsize > nvsize.  */
 	  tree dsize = end_of_class (type, /*vbases*/true);
-	  if (tree_int_cst_le (dsize, nvsize))
+	  if (CLASSTYPE_EMPTY_P (type))
+	    DECL_SIZE (field) = DECL_SIZE_UNIT (field) = size_zero_node;
+	  else if (tree_int_cst_le (dsize, nvsize))
 	    {
 	      DECL_SIZE_UNIT (field) = nvsize;
 	      DECL_SIZE (field) = CLASSTYPE_SIZE (type);
@@ -6684,7 +6658,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	}
       else if (might_overlap && is_empty_class (type))
 	{
-	  DECL_FIELD_ABI_IGNORED (field) = 1;
+	  SET_DECL_FIELD_ABI_IGNORED (field, 1);
 	  layout_empty_base_or_field (rli, field, empty_base_offsets);
 	}
       else
@@ -6703,7 +6677,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	     laying out an Objective-C class.  The ObjC ABI differs
 	     from the C++ ABI, and so we do not want a warning
 	     here.  */
-	  && !TREE_NO_WARNING (field)
+	  && !warning_suppressed_p (field, OPT_Wabi)
 	  && !last_field_was_bitfield
 	  && !integer_zerop (size_binop (TRUNC_MOD_EXPR,
 					 DECL_FIELD_BIT_OFFSET (field),
@@ -6772,9 +6746,22 @@ layout_class_type (tree t, tree *virtuals_p)
       normalize_rli (rli);
     }
 
-  /* Delete all zero-width bit-fields from the list of fields.  Now
-     that the type is laid out they are no longer important.  */
-  remove_zero_width_bit_fields (t);
+  /* We used to remove zero width bitfields at this point since PR42217,
+     while the C FE never did that.  That caused ABI differences on various
+     targets.  Set the DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD flag on them
+     instead, so that the backends can emit -Wpsabi warnings in the cases
+     where the ABI changed.  */
+  for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
+    if (TREE_CODE (field) == FIELD_DECL
+	&& DECL_C_BIT_FIELD (field)
+	/* We should not be confused by the fact that grokbitfield
+	   temporarily sets the width of the bit field into
+	   DECL_BIT_FIELD_REPRESENTATIVE (field).
+	   check_bitfield_decl eventually sets DECL_SIZE (field)
+	   to that width.  */
+	&& (DECL_SIZE (field) == NULL_TREE
+	    || integer_zerop (DECL_SIZE (field))))
+      SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field, 1);
 
   if (CLASSTYPE_NON_LAYOUT_POD_P (t) || CLASSTYPE_EMPTY_P (t))
     {

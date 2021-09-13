@@ -1,5 +1,5 @@
 /* Conversion of SESE regions to Polyhedra.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com>.
 
 This file is part of GCC.
@@ -418,13 +418,18 @@ static void
 add_param_constraints (scop_p scop, graphite_dim_t p, tree parameter)
 {
   tree type = TREE_TYPE (parameter);
+  value_range r;
   wide_int min, max;
 
   gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
 
   if (INTEGRAL_TYPE_P (type)
-      && get_range_info (parameter, &min, &max) == VR_RANGE)
-    ;
+      && get_range_query (cfun)->range_of_expr (r, parameter)
+      && !r.undefined_p ())
+    {
+      min = r.lower_bound ();
+      max = r.upper_bound ();
+    }
   else
     {
       min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));

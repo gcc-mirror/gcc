@@ -1,5 +1,5 @@
 /* An abstract string datatype.
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -277,7 +277,7 @@ dyn_string_insert_cstr (dyn_string_t dest, int pos, const char *src)
   for (i = dest->length; i >= pos; --i)
     dest->s[i + length] = dest->s[i];
   /* Splice in the new stuff.  */
-  strncpy (dest->s + pos, src, length);
+  memcpy (dest->s + pos, src, length);
   /* Compute the new length.  */
   dest->length += length;
   return 1;

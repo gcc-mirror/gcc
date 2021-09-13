@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@ long long
 read(const char* first, const char* last, int base)
 {
   long long val = 0;
-  long long place = 1;
+  unsigned long long place = 1;
   while (last > first)
   {
     val += (*--last - '0') * place;

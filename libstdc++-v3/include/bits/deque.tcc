@@ -1,6 +1,6 @@
 // Deque implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -95,7 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     deque<_Tp, _Alloc>::
     operator=(const deque& __x)
     {
-      if (&__x != this)
+      if (std::__addressof(__x) != this)
 	{
 #if __cplusplus >= 201103L
 	  if (_Alloc_traits::_S_propagate_on_copy_assign())

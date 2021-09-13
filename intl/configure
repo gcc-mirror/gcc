@@ -622,6 +622,7 @@ ac_unique_file="gettext.c"
 ac_header_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+PICFLAG
 BISON3_NO
 BISON3_YES
 INCINTL
@@ -726,6 +727,7 @@ with_included_gettext
 with_libintl_prefix
 with_libintl_type
 enable_maintainer_mode
+enable_host_shared
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1350,6 +1352,7 @@ Optional Features:
   --disable-nls           do not use Native Language Support
   --disable-rpath         do not hardcode runtime library paths
   --enable-maintainer-mode enable rules only needed by maintainers
+  --enable-host-shared    build host code as shared libraries
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -5980,13 +5983,19 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <libintl.h>
+#ifndef __GNU_GETTEXT_SUPPORTED_REVISION
 extern int _nl_msg_cat_cntr;
 extern int *_nl_domain_bindings;
+#define __GNU_GETTEXT_SYMBOL_EXPRESSION (_nl_msg_cat_cntr + *_nl_domain_bindings)
+#else
+#define __GNU_GETTEXT_SYMBOL_EXPRESSION 0
+#endif
+
 int
 main ()
 {
 bindtextdomain ("", "");
-return (int) gettext ("") + (int) ngettext ("", "", 0) + _nl_msg_cat_cntr + *_nl_domain_bindings
+return (int) gettext ("") + (int) ngettext ("", "", 0) + __GNU_GETTEXT_SYMBOL_EXPRESSION
   ;
   return 0;
 }
@@ -6409,17 +6418,23 @@ else
                         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <libintl.h>
+#ifndef __GNU_GETTEXT_SUPPORTED_REVISION
 extern int _nl_msg_cat_cntr;
 extern
 #ifdef __cplusplus
 "C"
 #endif
 const char *_nl_expand_alias ();
+#define __GNU_GETTEXT_SYMBOL_EXPRESSION (_nl_msg_cat_cntr + *_nl_expand_alias (0))
+#else
+#define __GNU_GETTEXT_SYMBOL_EXPRESSION 0
+#endif
+
 int
 main ()
 {
 bindtextdomain ("", "");
-return (int) gettext ("") + (int) ngettext ("", "", 0) + _nl_msg_cat_cntr + *_nl_expand_alias (0)
+return (int) gettext ("") + (int) ngettext ("", "", 0) + __GNU_GETTEXT_SYMBOL_EXPRESSION
   ;
   return 0;
 }
@@ -6436,17 +6451,23 @@ rm -f core conftest.err conftest.$ac_objext \
               cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <libintl.h>
+#ifndef __GNU_GETTEXT_SUPPORTED_REVISION
 extern int _nl_msg_cat_cntr;
 extern
 #ifdef __cplusplus
 "C"
 #endif
 const char *_nl_expand_alias ();
+#define __GNU_GETTEXT_SYMBOL_EXPRESSION (_nl_msg_cat_cntr + *_nl_expand_alias (0))
+#else
+#define __GNU_GETTEXT_SYMBOL_EXPRESSION 0
+#endif
+
 int
 main ()
 {
 bindtextdomain ("", "");
-return (int) gettext ("") + (int) ngettext ("", "", 0) + _nl_msg_cat_cntr + *_nl_expand_alias (0)
+return (int) gettext ("") + (int) ngettext ("", "", 0) + __GNU_GETTEXT_SYMBOL_EXPRESSION
   ;
   return 0;
 }
@@ -6811,6 +6832,15 @@ $as_echo "$ac_prog_version" >&6; }
     BISON3_YES=
     BISON3_NO='#'
   fi
+fi
+
+
+
+# Check whether --enable-host-shared was given.
+if test "${enable_host_shared+set}" = set; then :
+  enableval=$enable_host_shared; PICFLAG=-fPIC
+else
+  PICFLAG=
 fi
 
 

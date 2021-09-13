@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -161,242 +161,75 @@ void Import::load(Scope *sc)
     if (mod && !mod->importedFrom)
         mod->importedFrom = sc ? sc->_module->importedFrom : Module::rootModule;
     if (!pkg)
-        pkg = mod;
+    {
+        if (mod && mod->isPackageFile)
+        {
+            // one level depth package.d file (import pkg; ./pkg/package.d)
+            // it's necessary to use the wrapping Package already created
+            pkg = mod->pkg;
+        }
+        else
+            pkg = mod;
+    }
 
     //printf("-Import::load('%s'), pkg = %p\n", toChars(), pkg);
 }
 
 void Import::importAll(Scope *sc)
 {
-    if (!mod)
+    if (mod) return; // Already done
+    load(sc);
+    if (!mod) return; // Failed
+
+    if (sc->stc & STCstatic)
+        isstatic = true;
+    mod->importAll(NULL);
+    if (mod->md && mod->md->isdeprecated)
     {
-        load(sc);
-        if (mod)                // if successfully loaded module
-        {
-            mod->importAll(NULL);
-
-            if (mod->md && mod->md->isdeprecated)
-            {
-                Expression *msg = mod->md->msg;
-                if (StringExp *se = msg ? msg->toStringExp() : NULL)
-                    mod->deprecation(loc, "is deprecated - %s", se->string);
-                else
-                    mod->deprecation(loc, "is deprecated");
-            }
-
-            if (sc->explicitProtection)
-                protection = sc->protection;
-            if (!isstatic && !aliasId && !names.length)
-            {
-                sc->scopesym->importScope(mod, protection);
-            }
-        }
-    }
-}
-
-void Import::semantic(Scope *sc)
-{
-    //printf("Import::semantic('%s') %s\n", toPrettyChars(), id->toChars());
-    if (semanticRun > PASSinit)
-        return;
-
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-    if (!sc)
-        return;
-
-    semanticRun = PASSsemantic;
-
-    // Load if not already done so
-    if (!mod)
-    {
-        load(sc);
-        if (mod)
-            mod->importAll(NULL);
-    }
-
-    if (mod)
-    {
-        // Modules need a list of each imported module
-        //printf("%s imports %s\n", sc->_module->toChars(), mod->toChars());
-        sc->_module->aimports.push(mod);
-
-        if (sc->explicitProtection)
-            protection = sc->protection;
-
-        if (!aliasId && !names.length) // neither a selective nor a renamed import
-        {
-            ScopeDsymbol *scopesym = NULL;
-            if (sc->explicitProtection)
-                protection = sc->protection.kind;
-            for (Scope *scd = sc; scd; scd = scd->enclosing)
-            {
-                if (!scd->scopesym)
-                    continue;
-                scopesym = scd->scopesym;
-                break;
-            }
-
-            if (!isstatic)
-            {
-                scopesym->importScope(mod, protection);
-            }
-
-            // Mark the imported packages as accessible from the current
-            // scope. This access check is necessary when using FQN b/c
-            // we're using a single global package tree. See Bugzilla 313.
-            if (packages)
-            {
-                // import a.b.c.d;
-                Package *p = pkg; // a
-                scopesym->addAccessiblePackage(p, protection);
-                for (size_t i = 1; i < packages->length; i++) // [b, c]
-                {
-                    Identifier *id = (*packages)[i];
-                    p = (Package *) p->symtab->lookup(id);
-                    scopesym->addAccessiblePackage(p, protection);
-                }
-            }
-            scopesym->addAccessiblePackage(mod, protection); // d
-        }
-
-        mod->semantic(NULL);
-
-        if (mod->needmoduleinfo)
-        {
-            //printf("module4 %s because of %s\n", sc->_module->toChars(), mod->toChars());
-            sc->_module->needmoduleinfo = 1;
-        }
-
-        sc = sc->push(mod);
-        sc->protection = protection;
-        for (size_t i = 0; i < aliasdecls.length; i++)
-        {
-            AliasDeclaration *ad = aliasdecls[i];
-            //printf("\tImport %s alias %s = %s, scope = %p\n", toPrettyChars(), aliases[i]->toChars(), names[i]->toChars(), ad->_scope);
-            if (mod->search(loc, names[i]))
-            {
-                ad->semantic(sc);
-                // If the import declaration is in non-root module,
-                // analysis of the aliased symbol is deferred.
-                // Therefore, don't see the ad->aliassym or ad->type here.
-            }
-            else
-            {
-                Dsymbol *s = mod->search_correct(names[i]);
-                if (s)
-                    mod->error(loc, "import '%s' not found, did you mean %s '%s'?", names[i]->toChars(), s->kind(), s->toChars());
-                else
-                    mod->error(loc, "import '%s' not found", names[i]->toChars());
-                ad->type = Type::terror;
-            }
-        }
-        sc = sc->pop();
-    }
-
-    semanticRun = PASSsemanticdone;
-
-    // object self-imports itself, so skip that (Bugzilla 7547)
-    // don't list pseudo modules __entrypoint.d, __main.d (Bugzilla 11117, 11164)
-    if (global.params.moduleDeps != NULL &&
-        !(id == Id::object && sc->_module->ident == Id::object) &&
-        sc->_module->ident != Id::entrypoint &&
-        strcmp(sc->_module->ident->toChars(), "__main") != 0)
-    {
-        /* The grammar of the file is:
-         *      ImportDeclaration
-         *          ::= BasicImportDeclaration [ " : " ImportBindList ] [ " -> "
-         *      ModuleAliasIdentifier ] "\n"
-         *
-         *      BasicImportDeclaration
-         *          ::= ModuleFullyQualifiedName " (" FilePath ") : " Protection|"string"
-         *              " [ " static" ] : " ModuleFullyQualifiedName " (" FilePath ")"
-         *
-         *      FilePath
-         *          - any string with '(', ')' and '\' escaped with the '\' character
-         */
-
-        OutBuffer *ob = global.params.moduleDeps;
-        Module* imod = sc->instantiatingModule();
-        if (!global.params.moduleDepsFile.length)
-            ob->writestring("depsImport ");
-        ob->writestring(imod->toPrettyChars());
-        ob->writestring(" (");
-        escapePath(ob,  imod->srcfile->toChars());
-        ob->writestring(") : ");
-
-        // use protection instead of sc->protection because it couldn't be
-        // resolved yet, see the comment above
-        protectionToBuffer(ob, protection);
-        ob->writeByte(' ');
-        if (isstatic)
-        {
-            stcToBuffer(ob, STCstatic);
-            ob->writeByte(' ');
-        }
-        ob->writestring(": ");
-
-        if (packages)
-        {
-            for (size_t i = 0; i < packages->length; i++)
-            {
-                Identifier *pid = (*packages)[i];
-                ob->printf("%s.", pid->toChars());
-            }
-        }
-
-        ob->writestring(id->toChars());
-        ob->writestring(" (");
-        if (mod)
-            escapePath(ob, mod->srcfile->toChars());
+        Expression *msg = mod->md->msg;
+        if (StringExp *se = msg ? msg->toStringExp() : NULL)
+            mod->deprecation(loc, "is deprecated - %s", se->string);
         else
-            ob->writestring("???");
-        ob->writeByte(')');
-
-        for (size_t i = 0; i < names.length; i++)
-        {
-            if (i == 0)
-                ob->writeByte(':');
-            else
-                ob->writeByte(',');
-
-            Identifier *name = names[i];
-            Identifier *alias = aliases[i];
-
-            if (!alias)
-            {
-                ob->printf("%s", name->toChars());
-                alias = name;
-            }
-            else
-                ob->printf("%s=%s", alias->toChars(), name->toChars());
-        }
-
-        if (aliasId)
-                ob->printf(" -> %s", aliasId->toChars());
-
-        ob->writenl();
+            mod->deprecation(loc, "is deprecated");
     }
-
-    //printf("-Import::semantic('%s'), pkg = %p\n", toChars(), pkg);
+    if (sc->explicitProtection)
+        protection = sc->protection;
+    if (!isstatic && !aliasId && !names.length)
+        sc->scopesym->importScope(mod, protection);
+    // Enable access to pkgs/mod as soon as posible, because compiler
+    // can traverse them before the import gets semantic (Issue: 21501)
+    if (!aliasId && !names.length)
+        addPackageAccess(sc->scopesym);
 }
 
-void Import::semantic2(Scope *sc)
+/*******************************
+ * Mark the imported packages as accessible from the current
+ * scope. This access check is necessary when using FQN b/c
+ * we're using a single global package tree.
+ * https://issues.dlang.org/show_bug.cgi?id=313
+ */
+void Import::addPackageAccess(ScopeDsymbol *scopesym)
 {
-    //printf("Import::semantic2('%s')\n", toChars());
-    if (mod)
+    //printf("Import::addPackageAccess('%s') %p\n", toPrettyChars(), this);
+    if (packages)
     {
-        mod->semantic2(NULL);
-        if (mod->needmoduleinfo)
+        // import a.b.c.d;
+        Package *p = pkg; // a
+        scopesym->addAccessiblePackage(p, protection);
+        for (size_t i = 1; i < packages->length; i++) // [b, c]
         {
-            //printf("module5 %s because of %s\n", sc->_module->toChars(), mod->toChars());
-            if (sc)
-                sc->_module->needmoduleinfo = 1;
+            Identifier *id = (*packages)[i];
+            p = (Package *) p->symtab->lookup(id);
+            // https://issues.dlang.org/show_bug.cgi?id=17991
+            // An import of truly empty file/package can happen
+            // https://issues.dlang.org/show_bug.cgi?id=20151
+            // Package in the path conflicts with a module name
+            if (p == NULL)
+                return;
+            scopesym->addAccessiblePackage(p, protection);
         }
     }
+    scopesym->addAccessiblePackage(mod, protection); // d
 }
 
 Dsymbol *Import::toAlias()
@@ -466,7 +299,7 @@ Dsymbol *Import::search(const Loc &loc, Identifier *ident, int flags)
     {
         load(NULL);
         mod->importAll(NULL);
-        mod->semantic(NULL);
+        dsymbolSemantic(mod, NULL);
     }
 
     // Forward it to the package/module

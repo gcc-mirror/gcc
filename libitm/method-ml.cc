@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Torvald Riegel <triegel@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).

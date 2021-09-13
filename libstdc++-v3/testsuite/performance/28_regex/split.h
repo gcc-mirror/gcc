@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,7 @@ void split(string s)
 }
 
 string source = "\
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.\n\
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.\n\
 //\n\
 // This file is part of the GNU ISO C++ Library.  This library is free\n\
 // software; you can redistribute it and/or modify it under the\n\

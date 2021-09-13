@@ -1,6 +1,6 @@
 // -*- C++ -*- C library enhancements header.
 
-// Copyright (C) 2016-2020 Free Software Foundation, Inc.
+// Copyright (C) 2016-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -81,24 +81,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if defined(__GLIBCXX_TYPE_INT_N_0)
-  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_0
+  __extension__ inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_0
   abs(__GLIBCXX_TYPE_INT_N_0 __x) { return __x >= 0 ? __x : -__x; }
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_1)
-  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_1
+  __extension__ inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_1
   abs(__GLIBCXX_TYPE_INT_N_1 __x) { return __x >= 0 ? __x : -__x; }
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_2)
-  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_2
+  __extension__ inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_2
   abs(__GLIBCXX_TYPE_INT_N_2 __x) { return __x >= 0 ? __x : -__x; }
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_3)
-  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_3
+  __extension__ inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_3
   abs(__GLIBCXX_TYPE_INT_N_3 __x) { return __x >= 0 ? __x : -__x; }
 #endif
 
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
-  inline _GLIBCXX_CONSTEXPR
+  __extension__ inline _GLIBCXX_CONSTEXPR
   __float128
   abs(__float128 __x)
   { return __x < 0 ? -__x : __x; }

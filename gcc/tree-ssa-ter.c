@@ -1,5 +1,5 @@
 /* Routines for performing Temporary Expression Replacement (TER) in SSA trees.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -658,11 +658,15 @@ find_replaceable_in_bb (temp_expr_table *tab, basic_block bb)
 		 substitution list, or the def and use span a call such that
 		 we'll expand lifetimes across a call.  We also don't want to
 		 replace across these expressions that may call libcalls that
-		 clobber the register involved.  See PR 70184.  */
+		 clobber the register involved.  See PR 70184.  Neither
+		 do we want to move possibly trapping expressions across
+		 a call.  See PRs 102129 and 33593.  */
 	      if (gimple_has_volatile_ops (stmt) || same_root_var
 		  || (tab->call_cnt[ver] != cur_call_cnt
-		      && SINGLE_SSA_USE_OPERAND (SSA_NAME_DEF_STMT (use), SSA_OP_USE)
-			 == NULL_USE_OPERAND_P)
+		      && (SINGLE_SSA_USE_OPERAND (SSA_NAME_DEF_STMT (use),
+						  SSA_OP_USE)
+			    == NULL_USE_OPERAND_P
+			  || gimple_could_trap_p (SSA_NAME_DEF_STMT (use))))
 		  || tab->reg_vars_cnt[ver] != cur_reg_vars_cnt)
 		finished_with_expr (tab, ver, true);
 	      else

@@ -1,7 +1,7 @@
 
 
 /* Stub for defining degree-valued trigonemetric functions using MPFR.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Fritz Reese <foreese@gcc.gnu.org>
    and Steven G. Kargl <kargl@gcc.gnu.org>
 

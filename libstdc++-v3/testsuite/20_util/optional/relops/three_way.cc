@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-options "-std=gnu++20" }
+// { dg-do compile { target c++20 } }
 
 #include <optional>
 
@@ -73,4 +73,22 @@ test02()
   static_assert( nullopt < O{1} );
   static_assert( nullopt <= O{} );
   static_assert( nullopt <= O{1} );
+}
+
+template<typename T>
+  concept has_spaceship = requires (const T& t) { t <=> t; };
+
+void
+test03()
+{
+  struct E
+  {
+    auto operator<=>(const E&) const { return std::strong_ordering::equal; }
+  };
+  static_assert( !std::three_way_comparable<E> ); // not equality comparable
+  using O = std::optional<E>;
+  static_assert( !std::three_way_comparable<O> );
+  static_assert( ! has_spaceship<O> ); // PR libstdc++/98842
+  struct U : O { };
+  static_assert( ! has_spaceship<U> );
 }

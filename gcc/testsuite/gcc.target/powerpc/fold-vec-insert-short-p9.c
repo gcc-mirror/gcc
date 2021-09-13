@@ -48,14 +48,17 @@ testus2_cst(unsigned short x, vector unsigned short v)
    return vec_insert(x, v, 12);
 }
 
-/* { dg-final { scan-assembler-times {\mmtvsrwz\M} 4 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mvinserth\M} 4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mmtvsrwz\M} 8 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mvinserth\M} 8 { target lp64 } } } */
 
-/* { dg-final { scan-assembler-times {\mstxv\M|\mstvx\M} 4 } } */
-/* { dg-final { scan-assembler-times {\mlxv\M|\mlvx\M} 4 { target lp64 }} } */
+/* { dg-final { scan-assembler-times {\mstxv\M|\mstvx\M} 0 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mlxv\M|\mlvx\M} 0 { target lp64 }} } */
 
 /* -m32 uses sth/lvehx as part of the sequence. */
-/* { dg-final { scan-assembler-times {\msth\M} 8 { target ilp32 }} } */
-/* { dg-final { scan-assembler-times {\mlvehx\M} 4 { target ilp32 }} } */
-/* { dg-final { scan-assembler-times {\mlxv\M|\mlvx\M} 8 { target ilp32 }} } */
+/* { dg-final { scan-assembler-times {\mstxv\M|\mstvx\M} 0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\msth\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlvehx\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mxxperm\M} 8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlxv\M|\mlvx\M} 8 { target ilp32 } } } */
 

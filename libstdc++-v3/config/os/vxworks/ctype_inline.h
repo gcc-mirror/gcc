@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2000-2020 Free Software Foundation, Inc.
+// Copyright (C) 2000-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,10 +36,13 @@
 // ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
 // functions go in ctype.cc
 
+#include <_vxworks-versions.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if _VXWORKS_MAJOR_LT(7) && !defined(__RTP__)
   bool
   ctype<char>::
   is(mask __m, char __c) const
@@ -73,6 +76,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ++__low;
     return __low;
   }
+
+#else
+  bool
+  ctype<char>::
+  is(mask __m, char __c) const
+  { return _Getpctype()[static_cast<int>(__c)] & __m; }
+
+  const char*
+  ctype<char>::
+  is(const char* __low, const char* __high, mask* __vec) const
+  {
+    while (__low < __high)
+      *__vec++ = _Getpctype()[static_cast<int>(*__low++)];
+    return __high;
+  }
+
+  const char*
+  ctype<char>::
+  scan_is(mask __m, const char* __low, const char* __high) const
+  {
+    while (__low < __high
+	   && !(_Getpctype()[static_cast<int>(*__low)] & __m))
+      ++__low;
+    return __low;
+  }
+
+  const char*
+  ctype<char>::
+  scan_not(mask __m, const char* __low, const char* __high) const
+  {
+    while (__low < __high
+	   && (_Getpctype()[static_cast<int>(*__low)] & __m))
+      ++__low;
+    return __low;
+  }
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

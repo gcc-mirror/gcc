@@ -287,6 +287,6 @@ else
 }
 
 ///
-@system char*  setlocale(int category, in char* locale);
+@system char*  setlocale(int category, const scope char* locale);
 ///
 lconv* localeconv();

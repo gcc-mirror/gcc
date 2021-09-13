@@ -1,6 +1,6 @@
 // unique_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,6 @@
 #include <bits/c++config.h>
 #include <debug/assertions.h>
 #include <type_traits>
-#include <utility>
 #include <tuple>
 #include <bits/stl_function.h>
 #include <bits/functional_hash.h>
@@ -59,6 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   /// Primary template of default_delete, used by unique_ptr for single objects
+  /// @since C++11
   template<typename _Tp>
     struct default_delete
     {
@@ -237,7 +237,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
   /// @endcond
 
-  /// 20.7.1.2 unique_ptr for single objects.
+  // 20.7.1.2 unique_ptr for single objects.
+
+  /// A move-only smart pointer that manages unique ownership of a resource.
+  /// @headerfile memory
+  /// @since C++11
   template <typename _Tp, typename _Dp = default_delete<_Tp>>
     class unique_ptr
     {
@@ -402,7 +406,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// Dereference the stored pointer.
       typename add_lvalue_reference<element_type>::type
-      operator*() const
+      operator*() const noexcept(noexcept(*std::declval<pointer>()))
       {
 	__glibcxx_assert(get() != pointer());
 	return *get();
@@ -469,10 +473,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       unique_ptr& operator=(const unique_ptr&) = delete;
   };
 
-  /// 20.7.1.3 unique_ptr for array objects with a runtime length
+  // 20.7.1.3 unique_ptr for array objects with a runtime length
   // [unique.ptr.runtime]
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length
+
+  /// A move-only smart pointer that manages unique ownership of an array.
+  /// @headerfile memory
+  /// @since C++11
   template<typename _Tp, typename _Dp>
     class unique_ptr<_Tp[], _Dp>
     {
@@ -724,7 +732,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       unique_ptr& operator=(const unique_ptr&) = delete;
     };
 
-  /// @relates unique_ptr @{
+  /// @{
+  /// @relates unique_ptr
 
   /// Swap overload for unique_ptr
   template<typename _Tp, typename _Dp>
@@ -906,7 +915,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return compare_three_way()(__x.get(), static_cast<pointer>(nullptr));
     }
 #endif
-  // @} relates unique_ptr
+  /// @} relates unique_ptr
 
   /// @cond undocumented
   template<typename _Up, typename _Ptr = typename _Up::pointer,
@@ -936,11 +945,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 #if __cplusplus >= 201402L
-  /// @relates unique_ptr @{
 #define __cpp_lib_make_unique 201304
 
   /// @cond undocumented
-
+namespace __detail
+{
   template<typename _Tp>
     struct _MakeUniq
     { typedef unique_ptr<_Tp> __single_object; };
@@ -953,51 +962,92 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _MakeUniq<_Tp[_Bound]>
     { struct __invalid_type { }; };
 
+  template<typename _Tp>
+    using __unique_ptr_t = typename _MakeUniq<_Tp>::__single_object;
+  template<typename _Tp>
+    using __unique_ptr_array_t = typename _MakeUniq<_Tp>::__array;
+  template<typename _Tp>
+    using __invalid_make_unique_t = typename _MakeUniq<_Tp>::__invalid_type;
+}
   /// @endcond
 
-  /// std::make_unique for single objects
+  /** Create an object owned by a `unique_ptr`.
+   *  @tparam _Tp A non-array object type.
+   *  @param __args Constructor arguments for the new object.
+   *  @returns A `unique_ptr<_Tp>` that owns the new object.
+   *  @since C++14
+   *  @relates unique_ptr
+   */
   template<typename _Tp, typename... _Args>
-    inline typename _MakeUniq<_Tp>::__single_object
+    inline __detail::__unique_ptr_t<_Tp>
     make_unique(_Args&&... __args)
     { return unique_ptr<_Tp>(new _Tp(std::forward<_Args>(__args)...)); }
 
-  /// std::make_unique for arrays of unknown bound
+  /** Create an array owned by a `unique_ptr`.
+   *  @tparam _Tp An array type of unknown bound, such as `U[]`.
+   *  @param __num The number of elements of type `U` in the new array.
+   *  @returns A `unique_ptr<U[]>` that owns the new array.
+   *  @since C++14
+   *  @relates unique_ptr
+   *
+   *  The array elements are value-initialized.
+   */
   template<typename _Tp>
-    inline typename _MakeUniq<_Tp>::__array
+    inline __detail::__unique_ptr_array_t<_Tp>
     make_unique(size_t __num)
     { return unique_ptr<_Tp>(new remove_extent_t<_Tp>[__num]()); }
 
-  /// Disable std::make_unique for arrays of known bound
+  /** Disable std::make_unique for arrays of known bound.
+   *  @tparam _Tp An array type of known bound, such as `U[N]`.
+   *  @since C++14
+   *  @relates unique_ptr
+   */
   template<typename _Tp, typename... _Args>
-    typename _MakeUniq<_Tp>::__invalid_type
+    __detail::__invalid_make_unique_t<_Tp>
     make_unique(_Args&&...) = delete;
 
 #if __cplusplus > 201703L
-  /// std::make_unique_for_overwrite for single objects
+  /** Create a default-initialied object owned by a `unique_ptr`.
+   *  @tparam _Tp A non-array object type.
+   *  @returns A `unique_ptr<_Tp>` that owns the new object.
+   *  @since C++20
+   *  @relates unique_ptr
+   */
   template<typename _Tp>
-    inline typename _MakeUniq<_Tp>::__single_object
+    inline __detail::__unique_ptr_t<_Tp>
     make_unique_for_overwrite()
     { return unique_ptr<_Tp>(new _Tp); }
 
-  /// std::make_unique_for_overwrite for arrays of unknown bound
+  /** Create a default-initialized array owned by a `unique_ptr`.
+   *  @tparam _Tp An array type of unknown bound, such as `U[]`.
+   *  @param __num The number of elements of type `U` in the new array.
+   *  @returns A `unique_ptr<U[]>` that owns the new array.
+   *  @since C++20
+   *  @relates unique_ptr
+   */
   template<typename _Tp>
-    inline typename _MakeUniq<_Tp>::__array
-    make_unique_for_overwrite(size_t __n)
-    { return unique_ptr<_Tp>(new remove_extent_t<_Tp>[__n]); }
+    inline __detail::__unique_ptr_array_t<_Tp>
+    make_unique_for_overwrite(size_t __num)
+    { return unique_ptr<_Tp>(new remove_extent_t<_Tp>[__num]); }
 
-  /// Disable std::make_unique_for_overwrite for arrays of known bound
+  /** Disable std::make_unique_for_overwrite for arrays of known bound.
+   *  @tparam _Tp An array type of known bound, such as `U[N]`.
+   *  @since C++20
+   *  @relates unique_ptr
+   */
   template<typename _Tp, typename... _Args>
-    typename _MakeUniq<_Tp>::__invalid_type
+    __detail::__invalid_make_unique_t<_Tp>
     make_unique_for_overwrite(_Args&&...) = delete;
 #endif // C++20
 
-  // @} relates unique_ptr
 #endif // C++14
 
 #if __cplusplus > 201703L && __cpp_concepts
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2948. unique_ptr does not define operator<< for stream output
   /// Stream output operator for unique_ptr
+  /// @relates unique_ptr
+  /// @since C++20
   template<typename _CharT, typename _Traits, typename _Tp, typename _Dp>
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os,
@@ -1009,7 +1059,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif // C++20
 
-  // @} group pointer_abstractions
+  /// @} group pointer_abstractions
 
 #if __cplusplus >= 201703L
   namespace __detail::__variant

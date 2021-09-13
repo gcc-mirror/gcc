@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +21,8 @@
 #include <ranges>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
+
+static_assert(__gnu_test::is_customization_point_object(std::ranges::ssize));
 
 using std::ptrdiff_t;
 
@@ -76,10 +78,27 @@ void
 test06()
 {
   auto i = std::views::iota(1ull, 5u);
-  auto s = std::ranges::ssize(i);
-  using R = std::ranges::range_difference_t<decltype(i)>;
-  static_assert( std::same_as<decltype(s), R> );
+  auto s = std::ranges::size(i);
+  auto ss = std::ranges::ssize(i);
+  // std::ranges::range_difference_t<decltype(i)> is larger than long long,
+  // but LWG 3403 says ranges::ssize(i) returns the signed version of the
+  // type that ranges::size(i) returns, not the range's difference_type.
+  static_assert( std::same_as<decltype(ss), std::make_signed_t<decltype(s)>> );
   VERIFY( s == 4 );
+}
+
+void
+test07()
+{
+#ifdef __SIZEOF_INT128__
+  struct R
+  {
+    unsigned __int128 size() const { return 4; }
+  };
+  R r;
+  static_assert( std::same_as<decltype(std::ranges::ssize(r)), __int128> );
+  VERIFY( std::ranges::ssize(r) == 4 );
+#endif
 }
 
 int
@@ -90,4 +109,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }

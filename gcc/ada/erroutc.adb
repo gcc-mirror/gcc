@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,11 +50,6 @@ package body Erroutc is
    -----------------------
    -- Local Subprograms --
    -----------------------
-
-   function Matches (S : String; P : String) return Boolean;
-   --  Returns true if the String S matches the pattern P, which can contain
-   --  wildcard chars (*). The entire pattern must match the entire string.
-   --  Case is ignored in the comparison (so X matches x).
 
    function Sloc_In_Range (Loc, Start, Stop : Source_Ptr) return Boolean;
    --  Return whether Loc is in the range Start .. Stop, taking instantiation
@@ -321,7 +316,7 @@ package body Erroutc is
 
       Write_Str
         ("  Sptr     = ");
-      Write_Location (E.Sptr);
+      Write_Location (E.Sptr.Ptr);  --  ??? Do not write the full span for now
       Write_Eol;
 
       Write_Str
@@ -350,7 +345,7 @@ package body Erroutc is
 
    function Get_Location (E : Error_Msg_Id) return Source_Ptr is
    begin
-      return Errors.Table (E).Sptr;
+      return Errors.Table (E).Sptr.Ptr;
    end Get_Location;
 
    ----------------
@@ -477,7 +472,7 @@ package body Erroutc is
         and then Errors.Table (T).Line = Errors.Table (E).Line
         and then Errors.Table (T).Sfile = Errors.Table (E).Sfile
       loop
-         if Errors.Table (T).Sptr > Errors.Table (E).Sptr then
+         if Errors.Table (T).Sptr.Ptr > Errors.Table (E).Sptr.Ptr then
             Mult_Flags := True;
          end if;
 
@@ -490,7 +485,7 @@ package body Erroutc is
 
       if not Debug_Flag_2 then
          Write_Str ("        ");
-         P := Line_Start (Errors.Table (E).Sptr);
+         P := Line_Start (Errors.Table (E).Sptr.Ptr);
          Flag_Num := 1;
 
          --  Loop through error messages for this line to place flags
@@ -507,7 +502,7 @@ package body Erroutc is
             begin
                --  Loop to output blanks till current flag position
 
-               while P < Errors.Table (T).Sptr loop
+               while P < Errors.Table (T).Sptr.Ptr loop
 
                   --  Horizontal tab case, just echo the tab
 
@@ -536,7 +531,7 @@ package body Erroutc is
                --  Output flag (unless already output, this happens if more
                --  than one error message occurs at the same flag position).
 
-               if P = Errors.Table (T).Sptr then
+               if P = Errors.Table (T).Sptr.Ptr then
                   if (Flag_Num = 1 and then not Mult_Flags)
                     or else Flag_Num > 9
                   then
@@ -699,7 +694,7 @@ package body Erroutc is
       --  For info messages, prefix message with "info: "
 
       elsif E_Msg.Info then
-         Txt := new String'("info: " & Txt.all);
+         Txt := new String'(SGR_Note & "info: " & SGR_Reset & Txt.all);
 
       --  Warning treated as error
 
@@ -709,27 +704,58 @@ package body Erroutc is
       --  [warning-as-error] at the end.
 
          Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
-         Txt := new String'("error: " & Txt.all & " [warning-as-error]");
+         Txt := new String'(SGR_Error & "error: " & SGR_Reset
+                            & Txt.all & " [warning-as-error]");
 
       --  Normal warning, prefix with "warning: "
 
       elsif E_Msg.Warn then
-         Txt := new String'("warning: " & Txt.all);
+         Txt := new String'(SGR_Warning & "warning: " & SGR_Reset & Txt.all);
 
-      --  No prefix needed for style message, "(style)" is there already
+      --  No prefix needed for style message, "(style)" is there already,
+      --  although not necessarily in first position if -gnatdJ is used.
 
       elsif E_Msg.Style then
-         null;
+         if Txt (Txt'First .. Txt'First + 6) = "(style)" then
+            Txt := new String'(SGR_Warning & "(style)" & SGR_Reset
+                               & Txt (Txt'First + 7 .. Txt'Last));
+         end if;
 
       --  No prefix needed for check message, severity is there already
 
       elsif E_Msg.Check then
-         null;
+
+         --  The message format is "severity: ..."
+         --
+         --  Enclose the severity with an SGR control string if requested
+
+         if Use_SGR_Control then
+            declare
+               Msg   : String renames Text.all;
+               Colon : Natural := 0;
+            begin
+               --  Find first colon
+
+               for J in Msg'Range loop
+                  if Msg (J) = ':' then
+                     Colon := J;
+                     exit;
+                  end if;
+               end loop;
+
+               pragma Assert (Colon > 0);
+
+               Txt := new String'(SGR_Error
+                                  & Msg (Msg'First .. Colon)
+                                  & SGR_Reset
+                                  & Msg (Colon + 1 .. Msg'Last));
+            end;
+         end if;
 
       --  All other cases, add "error: " if unique error tag set
 
       elsif Opt.Unique_Error_Tag then
-         Txt := new String'("error: " & Txt.all);
+         Txt := new String'(SGR_Error & "error: " & SGR_Reset & Txt.all);
       end if;
 
       --  Set error message line length and length of message
@@ -955,8 +981,8 @@ package body Erroutc is
       function To_Be_Purged (E : Error_Msg_Id) return Boolean is
       begin
          if E /= No_Error_Msg
-           and then Errors.Table (E).Sptr > From
-           and then Errors.Table (E).Sptr < To
+           and then Errors.Table (E).Sptr.Ptr > From
+           and then Errors.Table (E).Sptr.Ptr < To
          then
             if Errors.Table (E).Warn or else Errors.Table (E).Style then
                Warnings_Detected := Warnings_Detected - 1;

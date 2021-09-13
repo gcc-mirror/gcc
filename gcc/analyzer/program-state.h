@@ -1,5 +1,5 @@
 /* Classes for representing the state of interest at a given path of analysis.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -57,6 +57,8 @@ public:
 
   engine *get_engine () const { return m_engine; }
   region_model_manager *get_model_manager () const;
+
+  bool get_sm_idx_by_name (const char *name, unsigned *out) const;
 
 private:
   /* The state machines.  */
@@ -157,6 +159,9 @@ public:
 			  bool is_mutable,
 			  const extrinsic_state &ext_state);
 
+  void purge_state_involving (const svalue *sval,
+			      const extrinsic_state &ext_state);
+
   iterator_t begin () const { return m_map.begin (); }
   iterator_t end () const { return m_map.end (); }
   size_t elements () const { return m_map.elements (); }
@@ -189,11 +194,7 @@ public:
   program_state (const extrinsic_state &ext_state);
   program_state (const program_state &other);
   program_state& operator= (const program_state &other);
-
-#if __cplusplus >= 201103
   program_state (program_state &&other);
-#endif
-
   ~program_state ();
 
   hashval_t hash () const;
@@ -217,13 +218,26 @@ public:
   void push_frame (const extrinsic_state &ext_state, function *fun);
   function * get_current_function () const;
 
+  void push_call (exploded_graph &eg,
+		  exploded_node *enode,
+		  const gcall *call_stmt,
+		  uncertainty_t *uncertainty);
+
+  void returning_call (exploded_graph &eg,
+		       exploded_node *enode,
+		       const gcall *call_stmt,
+		       uncertainty_t *uncertainty);
+
+
   bool on_edge (exploded_graph &eg,
-		const exploded_node &enode,
-		const superedge *succ);
+		exploded_node *enode,
+		const superedge *succ,
+		uncertainty_t *uncertainty);
 
   program_state prune_for_point (exploded_graph &eg,
 				 const program_point &point,
-				 const exploded_node *enode_for_diag) const;
+				 exploded_node *enode_for_diag,
+				 uncertainty_t *uncertainty) const;
 
   tree get_representative_tree (const svalue *sval) const;
 
@@ -254,6 +268,10 @@ public:
 			    const svalue *extra_sval,
 			    const extrinsic_state &ext_state,
 			    region_model_context *ctxt);
+
+  void impl_call_analyzer_dump_state (const gcall *call,
+				      const extrinsic_state &ext_state,
+				      region_model_context *ctxt);
 
   /* TODO: lose the pointer here (const-correctness issues?).  */
   region_model *m_region_model;

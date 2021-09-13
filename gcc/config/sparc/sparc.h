@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -27,8 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_CPU_CPP_BUILTINS() sparc_target_macros ()
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS sparc_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO sparc_d_register_target_info
 
 /* Specify this in a cover file to provide bi-architecture (32/64) support.  */
 /* #define SPARC_BI_ARCH */
@@ -964,13 +965,12 @@ extern enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
   96, 97, 98, 99,			/* %fcc0-3 */	\
   100, 0, 14, 30, 31, 101, 102 }	/* %icc, %g0, %o6, %i6, %i7, %sfp, %gsr */
 
-#define ADJUST_REG_ALLOC_ORDER order_regs_for_local_alloc ()
+#define ADJUST_REG_ALLOC_ORDER sparc_order_regs_for_local_alloc ()
 
 extern char sparc_leaf_regs[];
 #define LEAF_REGISTERS sparc_leaf_regs
 
-extern char leaf_reg_remap[];
-#define LEAF_REG_REMAP(REGNO) (leaf_reg_remap[REGNO])
+#define LEAF_REG_REMAP(REGNO) sparc_leaf_reg_remap (REGNO)
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS GENERAL_REGS

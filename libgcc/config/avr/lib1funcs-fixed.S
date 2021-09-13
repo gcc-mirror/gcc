@@ -1,5 +1,5 @@
 /*  -*- Mode: Asm -*-  */
-;;    Copyright (C) 2012-2020 Free Software Foundation, Inc.
+;;    Copyright (C) 2012-2021 Free Software Foundation, Inc.
 ;;    Contributed by Sean D'Epagnier  (sean@depagnier.com)
 ;;                   Georg-Johann Lay (avr@gjlay.de)
 

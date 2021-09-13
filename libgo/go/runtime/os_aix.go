@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build aix
 // +build aix
 
 package runtime
@@ -12,9 +13,6 @@ import (
 
 //extern sysconf
 func sysconf(int32) _C_long
-
-//extern getsystemcfg
-func getsystemcfg(int32) uint64
 
 type mOS struct {
 	waitsema uintptr // semaphore for parking on locks

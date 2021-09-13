@@ -475,63 +475,6 @@ AC_DEFUN([GLIBCXX_CHECK_WRITEV], [
 
 
 dnl
-dnl Check whether int64_t is available in <stdint.h>, and define HAVE_INT64_T.
-dnl Also check whether int64_t is actually a typedef to long or long long.
-dnl
-AC_DEFUN([GLIBCXX_CHECK_INT64_T], [
-
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-
-  AC_MSG_CHECKING([for int64_t])
-  AC_CACHE_VAL(glibcxx_cv_INT64_T, [
-    AC_TRY_COMPILE(
-      [#include <stdint.h>],
-      [int64_t var;],
-      [glibcxx_cv_INT64_T=yes],
-      [glibcxx_cv_INT64_T=no])
-  ])
-
-  if test $glibcxx_cv_INT64_T = yes; then
-    AC_DEFINE(HAVE_INT64_T, 1, [Define if int64_t is available in <stdint.h>.])
-    AC_MSG_RESULT($glibcxx_cv_INT64_T)
-
-    AC_MSG_CHECKING([for int64_t as long])
-    AC_CACHE_VAL(glibcxx_cv_int64_t_long, [
-      AC_TRY_COMPILE(
-	[#include <stdint.h>
-	template<typename, typename> struct same { enum { value = -1 }; };
-	template<typename Tp> struct same<Tp, Tp> { enum { value = 1 }; };
-	int array[same<int64_t, long>::value];], [],
-	[glibcxx_cv_int64_t_long=yes], [glibcxx_cv_int64_t_long=no])
-    ])
-
-    if test $glibcxx_cv_int64_t_long = yes; then
-      AC_DEFINE(HAVE_INT64_T_LONG, 1, [Define if int64_t is a long.])
-      AC_MSG_RESULT($glibcxx_cv_int64_t_long)
-    fi
-
-    AC_MSG_CHECKING([for int64_t as long long])
-    AC_CACHE_VAL(glibcxx_cv_int64_t_long_long, [
-      AC_TRY_COMPILE(
-	[#include <stdint.h>
-	template<typename, typename> struct same { enum { value = -1 }; };
-	template<typename Tp> struct same<Tp, Tp> { enum { value = 1 }; };
-	int array[same<int64_t, long long>::value];], [],
-	[glibcxx_cv_int64_t_long_long=yes], [glibcxx_cv_int64_t_long_long=no])
-    ])
-
-    if test $glibcxx_cv_int64_t_long_long = yes; then
-      AC_DEFINE(HAVE_INT64_T_LONG_LONG, 1, [Define if int64_t is a long long.])
-      AC_MSG_RESULT($glibcxx_cv_int64_t_long_long)
-    fi
-  fi
-
-  AC_LANG_RESTORE
-])
-
-
-dnl
 dnl Check whether LFS support is available.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_LFS], [
@@ -2448,6 +2391,9 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
       darwin*)
 	enable_clocale_flag=darwin
 	;;
+      vxworks*)
+	enable_clocale_flag=vxworks
+	;;
       dragonfly* | freebsd*)
 	enable_clocale_flag=dragonfly
 	;;
@@ -2542,7 +2488,22 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
       CTIME_CC=config/locale/generic/time_members.cc
       CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
       ;;
+    vxworks)
+      AC_MSG_RESULT(vxworks)
 
+      CLOCALE_H=config/locale/generic/c_locale.h
+      CLOCALE_CC=config/locale/generic/c_locale.cc
+      CCODECVT_CC=config/locale/generic/codecvt_members.cc
+      CCOLLATE_CC=config/locale/generic/collate_members.cc
+      CCTYPE_CC=config/locale/vxworks/ctype_members.cc
+      CMESSAGES_H=config/locale/generic/messages_members.h
+      CMESSAGES_CC=config/locale/generic/messages_members.cc
+      CMONEY_CC=config/locale/generic/monetary_members.cc
+      CNUMERIC_CC=config/locale/generic/numeric_members.cc
+      CTIME_H=config/locale/generic/time_members.h
+      CTIME_CC=config/locale/generic/time_members.cc
+      CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
+      ;;
     dragonfly)
       AC_MSG_RESULT(dragonfly or freebsd)
 
@@ -3106,15 +3067,14 @@ EOF
 ])
 
 dnl
-dnl Check for GNU 128-bit integer and floating point types.
+dnl Check for GNU 128-bit floating point type.
 dnl
-dnl Note: also checks that the types aren't standard types.
+dnl Note: also checks that the type isn't a standard types.
 dnl
 dnl Defines:
-dnl  _GLIBCXX_USE_INT128
 dnl  ENABLE_FLOAT128
 dnl
-AC_DEFUN([GLIBCXX_ENABLE_INT128_FLOAT128], [
+AC_DEFUN([GLIBCXX_ENABLE_FLOAT128], [
 
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
@@ -3122,34 +3082,7 @@ AC_DEFUN([GLIBCXX_ENABLE_INT128_FLOAT128], [
   # Fake what AC_TRY_COMPILE does, without linking as this is
   # unnecessary for this test.
 
-    cat > conftest.$ac_ext << EOF
-[#]line __oline__ "configure"
-template<typename T1, typename T2>
-  struct same
-  { typedef T2 type; };
-
-template<typename T>
-  struct same<T, T>;
-
-int main()
-{
-  typename same<long, __int128>::type                i1;
-  typename same<long long, __int128>::type           i2;
-}
-EOF
-
-    AC_MSG_CHECKING([for __int128])
-    if AC_TRY_EVAL(ac_compile); then
-      AC_DEFINE(_GLIBCXX_USE_INT128, 1,
-      [Define if __int128 is supported on this host.])
-      enable_int128=yes
-    else
-      enable_int128=no
-    fi
-    AC_MSG_RESULT($enable_int128)
-    rm -f conftest*
-
-    cat > conftest.$ac_ext << EOF
+  cat > conftest.$ac_ext << EOF
 [#]line __oline__ "configure"
 template<typename T1, typename T2>
   struct same
@@ -4097,7 +4030,7 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
       [ac_have_posix_semaphore=no])
 
   if test $ac_have_posix_semaphore = yes ; then
-    AC_DEFINE(_GLIBCXX_HAVE_POSIX_SEMAPHORE,
+    AC_DEFINE(HAVE_POSIX_SEMAPHORE,
 	      1,
 	      [Define to 1 if POSIX Semaphores with sem_timedwait are available in <semaphore.h>.])
   fi

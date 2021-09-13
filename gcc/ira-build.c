@@ -1,5 +1,5 @@
 /* Building internal representation for IRA.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1672,7 +1672,7 @@ finish_cost_vectors (void)
 
 static vec<ira_loop_tree_node_t>
 ira_loop_tree_body_rev_postorder (ira_loop_tree_node_t loop_node ATTRIBUTE_UNUSED,
-				  vec<ira_loop_tree_node_t> loop_preorder)
+				  const vec<ira_loop_tree_node_t> &loop_preorder)
 {
   vec<ira_loop_tree_node_t> topsort_nodes = vNULL;
   unsigned int n_loop_preorder;

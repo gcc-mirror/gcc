@@ -19,14 +19,6 @@ VECT_VAR_DECL(expected,int,16,8) [] = { 0x10, 0xf, 0xe, 0xd,
 					0xc, 0xb, 0xa, 0x9 };
 VECT_VAR_DECL(expected,int,32,4) [] = { 0x10, 0xf, 0xe, 0xd };
 
-/* Expected values of cumulative_saturation flag.  */
-int VECT_VAR(expected_cumulative_sat,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat,int,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat,int,32,4) = 0;
-
 /* Expected results when input is the min negative value of the type.  */
 VECT_VAR_DECL(expected_min_neg,int,8,8) [] = { 0x7f, 0x7f, 0x7f, 0x7f,
 					       0x7f, 0x7f, 0x7f, 0x7f };
@@ -43,15 +35,6 @@ VECT_VAR_DECL(expected_min_neg,int,16,8) [] = { 0x7fff, 0x7fff,
 						0x7fff, 0x7fff };
 VECT_VAR_DECL(expected_min_neg,int,32,4) [] = { 0x7fffffff, 0x7fffffff,
 						0x7fffffff, 0x7fffffff };
-
-/* Expected values of cumulative_saturation flag when input is the min
-   negative value of the type.  */
-int VECT_VAR(expected_cumulative_sat_min_neg,int,8,8) = 1;
-int VECT_VAR(expected_cumulative_sat_min_neg,int,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat_min_neg,int,32,2) = 1;
-int VECT_VAR(expected_cumulative_sat_min_neg,int,8,16) = 1;
-int VECT_VAR(expected_cumulative_sat_min_neg,int,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat_min_neg,int,32,4) = 1;
 
 void vqabs_extra()
 {
@@ -82,12 +65,12 @@ void vqabs_extra()
   VDUP(vector, q, int, s, 32, 4, 0x80000000);
 
 #define MSG "min negative input"
-  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 8, 8, expected_cumulative_sat_min_neg, MSG);
-  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 16, 4, expected_cumulative_sat_min_neg, MSG);
-  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 32, 2, expected_cumulative_sat_min_neg, MSG);
-  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 8, 16, expected_cumulative_sat_min_neg, MSG);
-  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 16, 8, expected_cumulative_sat_min_neg, MSG);
-  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 32, 4, expected_cumulative_sat_min_neg, MSG);
+  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 8, 8, MSG);
+  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 16, 4, MSG);
+  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 32, 2, MSG);
+  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 8, 16, MSG);
+  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 16, 8, MSG);
+  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 32, 4, MSG);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_min_neg, MSG);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_min_neg, MSG);

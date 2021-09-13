@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2020 Free Software Foundation, Inc.
+# Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ proc pch-init { args } {
 
     set result [check_compile pchtest object "int i;" "-g -x c-header"]
     set pch_unsupported_debug \
-	[regexp "debug format cannot be used with pre-compiled headers" \
+	[regexp "debug info cannot be used with pre-compiled headers" \
 		[lindex $result 0]]
     remote_file build delete [lindex $result 1]
 
@@ -38,7 +38,7 @@ proc pch-init { args } {
 
 	set result [check_compile pchtest object "int i;" "-x c-header"]
 	set pch_unsupported \
-	    [regexp "debug format cannot be used with pre-compiled headers" \
+	    [regexp "debug info cannot be used with pre-compiled headers" \
 		 [lindex $result 0]]
 	remote_file build delete [lindex $result 1]
     }

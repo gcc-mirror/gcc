@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2020, AdaCore                     --
+--                     Copyright (C) 1995-2021, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,42 +132,6 @@ package body System.OS_Lib is
       Path_Len  : Integer) return String_Access;
    --  Converts a C String to an Ada String. We could do this making use of
    --  Interfaces.C.Strings but we prefer not to import that entire package
-
-   ---------
-   -- "<" --
-   ---------
-
-   function "<"  (X, Y : OS_Time) return Boolean is
-   begin
-      return Long_Integer (X) < Long_Integer (Y);
-   end "<";
-
-   ----------
-   -- "<=" --
-   ----------
-
-   function "<="  (X, Y : OS_Time) return Boolean is
-   begin
-      return Long_Integer (X) <= Long_Integer (Y);
-   end "<=";
-
-   ---------
-   -- ">" --
-   ---------
-
-   function ">"  (X, Y : OS_Time) return Boolean is
-   begin
-      return Long_Integer (X) > Long_Integer (Y);
-   end ">";
-
-   ----------
-   -- ">=" --
-   ----------
-
-   function ">="  (X, Y : OS_Time) return Boolean is
-   begin
-      return Long_Integer (X) >= Long_Integer (Y);
-   end ">=";
 
    -----------------
    -- Args_Length --
@@ -1347,13 +1311,13 @@ package body System.OS_Lib is
       Second : out Second_Type)
    is
       procedure To_GM_Time
-        (P_Time_T : Address;
-         P_Year   : Address;
-         P_Month  : Address;
-         P_Day    : Address;
-         P_Hours  : Address;
-         P_Mins   : Address;
-         P_Secs   : Address);
+        (P_OS_Time : Address;
+         P_Year    : Address;
+         P_Month   : Address;
+         P_Day     : Address;
+         P_Hours   : Address;
+         P_Mins    : Address;
+         P_Secs    : Address);
       pragma Import (C, To_GM_Time, "__gnat_to_gm_time");
 
       T  : OS_Time := Date;
@@ -1385,13 +1349,13 @@ package body System.OS_Lib is
       Locked_Processing : begin
          SSL.Lock_Task.all;
          To_GM_Time
-           (P_Time_T => T'Address,
-            P_Year   => Y'Address,
-            P_Month  => Mo'Address,
-            P_Day    => D'Address,
-            P_Hours  => H'Address,
-            P_Mins   => Mn'Address,
-            P_Secs   => S'Address);
+           (P_OS_Time => T'Address,
+            P_Year    => Y'Address,
+            P_Month   => Mo'Address,
+            P_Day     => D'Address,
+            P_Hours   => H'Address,
+            P_Mins    => Mn'Address,
+            P_Secs    => S'Address);
          SSL.Unlock_Task.all;
 
       exception
@@ -1429,26 +1393,26 @@ package body System.OS_Lib is
       Second : Second_Type) return OS_Time
    is
       procedure To_OS_Time
-        (P_Time_T : Address;
-         P_Year   : Integer;
-         P_Month  : Integer;
-         P_Day    : Integer;
-         P_Hours  : Integer;
-         P_Mins   : Integer;
-         P_Secs   : Integer);
+        (P_OS_Time : Address;
+         P_Year    : Integer;
+         P_Month   : Integer;
+         P_Day     : Integer;
+         P_Hours   : Integer;
+         P_Mins    : Integer;
+         P_Secs    : Integer);
       pragma Import (C, To_OS_Time, "__gnat_to_os_time");
 
       Result : OS_Time;
 
    begin
       To_OS_Time
-        (P_Time_T => Result'Address,
-         P_Year   => Year - 1900,
-         P_Month  => Month - 1,
-         P_Day    => Day,
-         P_Hours  => Hour,
-         P_Mins   => Minute,
-         P_Secs   => Second);
+        (P_OS_Time => Result'Address,
+         P_Year    => Year - 1900,
+         P_Month   => Month - 1,
+         P_Day     => Day,
+         P_Hours   => Hour,
+         P_Mins    => Minute,
+         P_Secs    => Second);
       return Result;
    end GM_Time_Of;
 
@@ -2158,8 +2122,10 @@ package body System.OS_Lib is
          return On_Windows
            and then not Is_With_Drive (Name)
            and then (Name'Length < 2 -- not \\name case
-                     or else Name (Name'First .. Name'First + 1)
-                             /= Directory_Separator & Directory_Separator);
+                     or else Name (Name'First)
+                             /= Directory_Separator
+                     or else Name (Name'First + 1)
+                             /= Directory_Separator);
       end Missed_Drive_Letter;
 
       -----------------

@@ -1,6 +1,6 @@
 /* Declarations for variables relating to reading the source file.
    Used by parsers, lexical analyzers, and error message routines.
-   Copyright (C) 1993-2020 Free Software Foundation, Inc.
+   Copyright (C) 1993-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -88,6 +88,49 @@ class char_span
 extern char_span location_get_source_line (const char *file_path, int line);
 
 extern bool location_missing_trailing_newline (const char *file_path);
+
+/* Forward decl of slot within file_cache, so that the definition doesn't
+   need to be in this header.  */
+class file_cache_slot;
+
+/* A cache of source files for use when emitting diagnostics
+   (and in a few places in the C/C++ frontends).
+
+   Results are only valid until the next call to the cache, as
+   slots can be evicted.
+
+   Filenames are stored by pointer, and so must outlive the cache
+   instance.  */
+
+class file_cache
+{
+ public:
+  file_cache ();
+  ~file_cache ();
+
+  file_cache_slot *lookup_or_add_file (const char *file_path);
+  void forcibly_evict_file (const char *file_path);
+
+  /* See comments in diagnostic.h about the input conversion context.  */
+  struct input_context
+  {
+    diagnostic_input_charset_callback ccb;
+    bool should_skip_bom;
+  };
+  void initialize_input_context (diagnostic_input_charset_callback ccb,
+				 bool should_skip_bom);
+
+ private:
+  file_cache_slot *evicted_cache_tab_entry (unsigned *highest_use_count);
+  file_cache_slot *add_file (const char *file_path);
+  file_cache_slot *lookup_file (const char *file_path);
+
+ private:
+  static const size_t num_file_slots = 16;
+  file_cache_slot *m_file_slots;
+  input_context in_context;
+};
+
 extern expanded_location
 expand_location_to_spelling_point (location_t,
 				   enum location_aspect aspect

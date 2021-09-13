@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2020 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -245,6 +245,68 @@ proc verify-calls { testname testcase file } {
     }
     close $fd
     return $failed
+}
+
+proc gcov-pytest-format-line { args } {
+    global subdir
+
+    set testcase [lindex $args 0]
+    set pytest_script [lindex $args 1]
+    set output_line [lindex $args 2]
+
+    set index [string first "::" $output_line]
+    set test_output [string range $output_line [expr $index + 2] [string length $output_line]]
+
+    return "$subdir/$testcase ${pytest_script}::${test_output}"
+}
+
+# Call by dg-final to run gcov --json-format which produces a JSON file
+# that is later analysed by a pytest Python script.
+# We pass filename of a test via GCOV_PATH environment variable.
+
+proc run-gcov-pytest { args } {
+    global GCOV
+    global srcdir subdir
+    # Extract the test file name from the arguments.
+    set testcase [lindex $args 0]
+
+    verbose "Running $GCOV $testcase in $srcdir/$subdir" 2
+    set testcase [remote_download host $testcase]
+    set result [remote_exec host $GCOV "$testcase -i"]
+
+    set pytest_cmd "python3 -m pytest --color=no -rap -s --tb=no"
+    set result [remote_exec host "$pytest_cmd --version"]
+    set status [lindex $result 0]
+    if { $status != 0 } then {
+      unsupported "$subdir/$testcase run-gcov-pytest python3 pytest missing"
+      return
+    }
+
+    set pytest_script [lindex $args 1]
+    setenv GCOV_PATH $testcase
+    verbose "pytest_script: $srcdir $subdir $pytest_script" 2
+    spawn -noecho python3 -m pytest --color=no -rap -s --tb=no $srcdir/$subdir/$pytest_script
+
+    set prefix "\[^\r\n\]*"
+    expect {
+      -re "FAILED($prefix)\[^\r\n\]+\r\n" {
+       set output [gcov-pytest-format-line $testcase $pytest_script $expect_out(1,string)]
+       fail $output
+       exp_continue
+      }
+      -re "ERROR($prefix)\[^\r\n\]+\r\n" {
+       set output [gcov-pytest-format-line $testcase $pytest_script $expect_out(1,string)]
+       fail $output
+       exp_continue
+      }
+      -re "PASSED($prefix)\[^\r\n\]+\r\n" {
+       set output [gcov-pytest-format-line $testcase $pytest_script $expect_out(1,string)]
+       pass $output
+       exp_continue
+      }
+    }
+
+    clean-gcov $testcase
 }
 
 # Called by dg-final to run gcov and analyze the results.

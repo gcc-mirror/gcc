@@ -12,7 +12,7 @@
 
 /* Verify SImode operations properly trap.  PR middle-end/68046 */
 
-int i = 0x7fffffff;
+volatile int i = 0x7fffffff;
 
 int main(void)
 {
@@ -20,7 +20,7 @@ int main(void)
   int status = 0;
   if (child == 0)
     {
-      volatile int x = i + 1 < i;
+      i = i + 1;
       exit (0);
     }
   else if (child == -1)

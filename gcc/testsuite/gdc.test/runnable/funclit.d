@@ -1,3 +1,19 @@
+/*
+TEST_OUTPUT:
+---
+int delegate() pure nothrow @nogc @safe delegate() pure nothrow @nogc @safe delegate() pure nothrow @safe
+int delegate() pure nothrow @nogc @safe delegate() pure nothrow @nogc @safe delegate() pure nothrow @safe
+int
+int
+int[]
+int delegate() pure nothrow @nogc @safe function() pure nothrow @safe
+---
+
+RUN_OUTPUT:
+---
+Success
+---
+*/
 import core.vararg;
 
 extern (C) int printf(const char*, ...);
@@ -1226,6 +1242,66 @@ void test15794()
 }
 
 /***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=16271
+
+ref auto funa16271(alias dg, T)(ref T a)
+{
+    return dg(a);
+}
+
+ref auto func16271(alias dg)()
+{
+    return dg();
+}
+
+void assign16271(T)(ref T a, T b)
+{
+    alias fun = ref (ref a) => a;
+    fun(a) = b;
+}
+
+void test16271()
+{
+    int x;
+    (ref () => x )() = 1;           assert(x == 1);
+    func16271!(ref () => x) = 2;    assert(x == 2);
+    assign16271(x, 3);              assert(x == 3);
+
+    alias alx = func16271!(ref () => x);
+    alx = 4;    assert(x == 4);
+
+    alias alf = ref (ref a) => a;
+    auto  auf = ref (ref int a) => a;
+    alf(x) = 5;    assert(x == 5);
+    auf(x) = 6;    assert(x == 6);
+
+    assert((funa16271!(         ref    (ref a) => a)(x) += 1) == 7 );
+    assert((funa16271!(function ref    (ref a) => a)(x) += 1) == 8 );
+    assert((funa16271!(function ref int(ref a) => a)(x) += 1) == 9 );
+    assert((funa16271!(delegate ref    (ref a) => a)(x) += 1) == 10);
+    assert((funa16271!(delegate ref int(ref a) => a)(x) += 1) == 11);
+    assert(x == 11);
+
+    alias aldc  = ref () @trusted @nogc { return x; };
+    auto  audc  = ref () @safe nothrow  { return x; };
+    alias alfuc = function ref (ref x) @trusted { return x; };
+    alias aldec = delegate ref () @trusted { return x; };
+    aldc()   = 12;    assert(x == 12);
+    audc()   = 13;    assert(x == 13);
+    alfuc(x) = 14;    assert(x == 14);
+    aldec()  = 15;    assert(x == 15);
+
+    template T()
+    {
+        int x;
+        alias alf = ref () => x;
+        auto auf = ref () => x;
+    }
+    T!().alf() = 1;  assert(T!().x == 1);
+    T!().auf() = 2;  assert(T!().x == 2);
+}
+
+/***************************************************/
 
 int main()
 {
@@ -1283,6 +1359,7 @@ int main()
     test13879();
     test14745();
     test15794();
+    test16271();
 
     printf("Success\n");
     return 0;

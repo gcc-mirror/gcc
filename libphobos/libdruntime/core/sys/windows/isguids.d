@@ -10,7 +10,7 @@
 module core.sys.windows.isguids;
 version (Windows):
 
-private import core.sys.windows.basetyps;
+import core.sys.windows.basetyps;
 
 extern (C) extern const GUID
     CLSID_InternetShortcut,

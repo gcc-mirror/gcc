@@ -20,9 +20,9 @@ private:
 
 void foo()
 {
-  C c;					/* count(2) */
+  C c;					/* count(1) */
   c.seti (1);				/* count(1) */
-}
+}					/* count(1) */
 
 int main()
 {

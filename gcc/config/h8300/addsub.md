@@ -15,7 +15,7 @@
 		 (match_operand:QI 2 "h8300_src_operand" "rQi")))]
   "h8300_operands_match_p (operands)"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (plus:QI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -34,7 +34,7 @@
 		 (match_operand:HI 2 "h8300_src_operand" "L,N,J,n,r")))]
   "!TARGET_H8300SX"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (plus:HI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -81,7 +81,7 @@
 		 (match_operand:HI 2 "h8300_src_operand" "P3>X,P3<X,J,rQi")))]
   "TARGET_H8300SX && h8300_operands_match_p (operands)"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (plus:HI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -117,7 +117,7 @@
 		 (match_operand:SI 2 "h8300_src_operand" "i,rQ")))]
   "h8300_operands_match_p (operands)"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -150,7 +150,7 @@
 		  (match_operand:QI 2 "h8300_dst_operand" "rQ")))]
   "h8300_operands_match_p (operands)"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (minus:QI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -169,7 +169,7 @@
 		   (match_operand:HSI 2 "h8300_src_operand" "rQ,i")))]
   "h8300_operands_match_p (operands)"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (minus:HSI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -203,7 +203,7 @@
 	(neg:QHSI (match_operand:QHSI 1 "h8300_dst_operand" "0")))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (neg:QHSI (match_dup 1)))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -228,7 +228,7 @@
 	(neg:SF (match_operand:SF 1 "register_operand" "0")))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (neg:SF (match_dup 1)))
 	      (clobber (reg:CC CC_REG))])])
   

@@ -1,5 +1,5 @@
 /* Analyze RTL for GNU compiler.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -330,5 +330,12 @@ inline vec_rtx_properties_base::~vec_rtx_properties_base ()
    that the vector needs to be resized, we can pay the cost of
    collecting the references a second time.  */
 using vec_rtx_properties = growing_rtx_properties<vec_rtx_properties_base>;
+
+bool
+vec_series_highpart_p (machine_mode result_mode, machine_mode op_mode,
+		       rtx sel);
+
+bool
+vec_series_lowpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel);
 
 #endif

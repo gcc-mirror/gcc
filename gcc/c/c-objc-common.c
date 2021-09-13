@@ -1,5 +1,5 @@
 /* Some code common to C and ObjC front ends.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -185,6 +185,12 @@ get_aka_type (tree type)
 static void
 print_type (c_pretty_printer *cpp, tree t, bool *quoted)
 {
+  if (t == error_mark_node)
+    {
+      pp_string (cpp, _("{erroneous}"));
+      return;
+    }
+
   gcc_assert (TYPE_P (t));
   struct obstack *ob = pp_buffer (cpp)->obstack;
   char *p = (char *) obstack_base (ob);
@@ -241,8 +247,6 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted)
    %D: a general decl,
    %E: an identifier or expression,
    %F: a function declaration,
-   %G: a Gimple statement,
-   %K: a CALL_EXPR,
    %T: a type.
    %V: a list of type qualifiers from a tree.
    %v: an explicit list of type qualifiers
@@ -262,19 +266,6 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 
   if (precision != 0 || wide)
     return false;
-
-  if (*spec == 'G')
-    {
-      percent_G_format (text);
-      return true;
-    }
-
-  if (*spec == 'K')
-    {
-      t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
-      return true;
-    }
 
   if (*spec != 'v')
     {

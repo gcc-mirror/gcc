@@ -1,6 +1,6 @@
 // istream classes -*- C++ -*-
 
-// Copyright (C) 1997-2020 Free Software Foundation, Inc.
+// Copyright (C) 1997-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1057,17 +1057,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __istream_type::int_type		__int_type;
       typedef ctype<_CharT>				__ctype_type;
 
-      const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
-      const __int_type __eof = _Traits::eof();
-      __streambuf_type* __sb = __in.rdbuf();
-      __int_type __c = __sb->sgetc();
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 451. behavior of std::ws
+      typename __istream_type::sentry __cerb(__in, true);
+      if (__cerb)
+	{
+	  ios_base::iostate __err = ios_base::goodbit;
+	  __try
+	    {
+	      const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
+	      const __int_type __eof = _Traits::eof();
+	      __streambuf_type* __sb = __in.rdbuf();
+	      __int_type __c = __sb->sgetc();
 
-      while (!_Traits::eq_int_type(__c, __eof)
-	     && __ct.is(ctype_base::space, _Traits::to_char_type(__c)))
-	__c = __sb->snextc();
-
-       if (_Traits::eq_int_type(__c, __eof))
-	 __in.setstate(ios_base::eofbit);
+	      while (true)
+		{
+		  if (_Traits::eq_int_type(__c, __eof))
+		    {
+		      __err = ios_base::eofbit;
+		      break;
+		    }
+		  if (!__ct.is(ctype_base::space, _Traits::to_char_type(__c)))
+		    break;
+		  __c = __sb->snextc();
+		}
+	    }
+	  __catch (const __cxxabiv1::__forced_unwind&)
+	    {
+	      __in._M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
+	  __catch (...)
+	    {
+	      __in._M_setstate(ios_base::badbit);
+	    }
+	  if (__err)
+	    __in.setstate(__err);
+	}
       return __in;
     }
 

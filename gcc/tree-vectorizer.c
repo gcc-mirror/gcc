@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -469,10 +469,7 @@ vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in,
 
 vec_info::~vec_info ()
 {
-  slp_instance instance;
-  unsigned int i;
-
-  FOR_EACH_VEC_ELT (slp_instances, i, instance)
+  for (slp_instance &instance : slp_instances)
     vect_free_slp_instance (instance);
 
   destroy_cost_data (target_cost_data);
@@ -695,7 +692,10 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_REDUC_FN (res) = IFN_LAST;
   STMT_VINFO_REDUC_IDX (res) = -1;
   STMT_VINFO_SLP_VECT_ONLY (res) = false;
+  STMT_VINFO_SLP_VECT_ONLY_PATTERN (res) = false;
   STMT_VINFO_VEC_STMTS (res) = vNULL;
+  res->reduc_initial_values = vNULL;
+  res->reduc_scalar_results = vNULL;
 
   if (is_a <loop_vec_info> (this)
       && gimple_code (stmt) == GIMPLE_PHI
@@ -738,9 +738,7 @@ vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info, bool check_ro)
 void
 vec_info::free_stmt_vec_infos (void)
 {
-  unsigned int i;
-  stmt_vec_info info;
-  FOR_EACH_VEC_ELT (stmt_vec_infos, i, info)
+  for (stmt_vec_info &info : stmt_vec_infos)
     if (info != NULL)
       free_stmt_vec_info (info);
   stmt_vec_infos.release ();
@@ -759,6 +757,8 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
 	release_ssa_name (lhs);
     }
 
+  stmt_info->reduc_initial_values.release ();
+  stmt_info->reduc_scalar_results.release ();
   STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
   STMT_VINFO_VEC_STMTS (stmt_info).release ();
   free (stmt_info);
@@ -1059,12 +1059,17 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	      gimple_set_uid (stmt, -1);
 	      gimple_set_visited (stmt, false);
 	    }
-	  if (!require_loop_vectorize && vect_slp_bb (bb))
+	  if (!require_loop_vectorize)
 	    {
-	      fold_loop_internal_call (loop_vectorized_call,
-				       boolean_true_node);
-	      loop_vectorized_call = NULL;
-	      ret |= TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;
+	      tree arg = gimple_call_arg (loop_vectorized_call, 1);
+	      class loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
+	      if (vect_slp_if_converted_bb (bb, scalar_loop))
+		{
+		  fold_loop_internal_call (loop_vectorized_call,
+					   boolean_true_node);
+		  loop_vectorized_call = NULL;
+		  ret |= TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;
+		}
 	    }
 	}
       /* If outer loop vectorization fails for LOOP_VECTORIZED guarded
@@ -1194,7 +1199,7 @@ vectorize_loops (void)
   /* If some loop was duplicated, it gets bigger number
      than all previously defined loops.  This fact allows us to run
      only over initial loops skipping newly generated ones.  */
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     if (loop->dont_vectorize)
       {
 	any_ifcvt_loops = true;
@@ -1213,7 +1218,7 @@ vectorize_loops (void)
 		  loop4 (copy of loop2)
 		else
 		  loop5 (copy of loop4)
-	   If FOR_EACH_LOOP gives us loop3 first (which has
+	   If loops' iteration gives us loop3 first (which has
 	   dont_vectorize set), make sure to process loop1 before loop4;
 	   so that we can prevent vectorization of loop4 if loop1
 	   is successfully vectorized.  */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@ package Sem_Ch11 is
    procedure Analyze_Handled_Statements                 (N : Node_Id);
    procedure Analyze_Raise_Expression                   (N : Node_Id);
    procedure Analyze_Raise_Statement                    (N : Node_Id);
+   procedure Analyze_Raise_When_Statement               (N : Node_Id);
    procedure Analyze_Raise_xxx_Error                    (N : Node_Id);
 
    procedure Analyze_Exception_Handlers (L : List_Id);

@@ -1,3 +1,7 @@
+nvptx-c.o: $(srcdir)/config/nvptx/nvptx-c.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 CFLAGS-mkoffload.o += $(DRIVER_DEFINES) \
 	-DGCC_INSTALL_NAME=\"$(GCC_INSTALL_NAME)\"
 mkoffload.o: $(srcdir)/config/nvptx/mkoffload.c

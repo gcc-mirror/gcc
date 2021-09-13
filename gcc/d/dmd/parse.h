@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -83,6 +83,7 @@ public:
     TemplateParameters *parseTemplateParameterList(int flag = 0);
     Dsymbol *parseMixin();
     Objects *parseTemplateArguments();
+    RootObject *parseTypeOrAssignExp(TOK endtoken = TOKreserved);
     Objects *parseTemplateArgumentList();
     Objects *parseTemplateSingleArgument();
     StaticAssert *parseStaticAssert();

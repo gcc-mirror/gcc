@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2020 Free Software Foundation, Inc.
+# Copyright (C) 2003-2021 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -38,6 +38,10 @@ winnt-stubs.o: $(srcdir)/config/i386/winnt-stubs.c $(CONFIG_H) $(SYSTEM_H) coret
   $(TM_P_H) $(HASHTAB_H) $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/i386/winnt-stubs.c
+
+winnt-d.o: $(srcdir)/config/i386/winnt-d.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
 
 msformat-c.o: $(srcdir)/config/i386/msformat-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \

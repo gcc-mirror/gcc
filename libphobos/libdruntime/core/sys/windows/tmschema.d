@@ -8,6 +8,7 @@
  */
 module core.sys.windows.tmschema;
 version (Windows):
+@system:
 
 /* BUTTON parts */
 enum {

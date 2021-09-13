@@ -1,5 +1,5 @@
 /* Output Go language descriptions of types.
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -56,6 +56,8 @@ static FILE *go_dump_file;
 
 static GTY(()) vec<tree, va_gc> *queue;
 
+struct godump_str_hash : string_hash, ggc_remove <const char *> {};
+
 /* A hash table of macros we have seen.  */
 
 static htab_t macro_hash;
@@ -107,14 +109,6 @@ macro_hash_del (void *v)
   XDELETEVEC (mhv->name);
   XDELETEVEC (mhv->value);
   XDELETE (mhv);
-}
-
-/* For the string hash tables.  */
-
-static int
-string_hash_eq (const void *y1, const void *y2)
-{
-  return strcmp ((const char *) y1, (const char *) y2) == 0;
 }
 
 /* A macro definition.  */
@@ -543,7 +537,7 @@ public:
 
   /* Types which may potentially have to be defined as dummy
      types.  */
-  hash_set<const char *> pot_dummy_types;
+  hash_set<const char *, false, godump_str_hash> pot_dummy_types;
 
   /* Go keywords.  */
   htab_t keyword_hash;
@@ -1374,11 +1368,11 @@ go_finish (const char *filename)
   real_debug_hooks->finish (filename);
 
   container.type_hash = htab_create (100, htab_hash_string,
-                                     string_hash_eq, NULL);
+				     htab_eq_string, NULL);
   container.invalid_hash = htab_create (10, htab_hash_string,
-					string_hash_eq, NULL);
+					htab_eq_string, NULL);
   container.keyword_hash = htab_create (50, htab_hash_string,
-                                        string_hash_eq, NULL);
+					htab_eq_string, NULL);
   obstack_init (&container.type_obstack);
 
   keyword_hash_init (&container);

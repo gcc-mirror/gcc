@@ -1,5 +1,5 @@
 /* Definitions of target machine for TI PRU.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 
    This file is part of GCC.
@@ -339,7 +339,6 @@ typedef struct pru_args
   ((REGNO) >= FIRST_ARG_REGNUM && (REGNO) <= LAST_ARG_REGNUM)
 
 /* Passing function arguments on stack.  */
-#define PUSH_ARGS 0
 #define ACCUMULATE_OUTGOING_ARGS 1
 
 /* We define TARGET_RETURN_IN_MEMORY, so set to zero.  */

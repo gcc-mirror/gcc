@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -98,6 +98,9 @@ int goacc_device_num;
 int goacc_default_dims[GOMP_DIM_MAX];
 
 #ifndef LIBGOMP_OFFLOADED_ONLY
+
+static int wait_policy;
+static unsigned long stacksize = GOMP_DEFAULT_STACKSIZE;
 
 /* Parse the OMP_SCHEDULE environment variable.  */
 
@@ -434,6 +437,7 @@ parse_bind_var (const char *name, char *p1stvalue,
     { "false", 5, omp_proc_bind_false },
     { "true", 4, omp_proc_bind_true },
     { "master", 6, omp_proc_bind_master },
+    { "primary", 7, omp_proc_bind_primary },
     { "close", 5, omp_proc_bind_close },
     { "spread", 6, omp_proc_bind_spread }
   };
@@ -447,14 +451,14 @@ parse_bind_var (const char *name, char *p1stvalue,
   if (*env == '\0')
     goto invalid;
 
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < 6; i++)
     if (strncasecmp (env, kinds[i].name, kinds[i].len) == 0)
       {
 	value = kinds[i].kind;
 	env += kinds[i].len;
 	break;
       }
-  if (i == 5)
+  if (i == 6)
     goto invalid;
 
   while (isspace ((unsigned char) *env))
@@ -494,14 +498,14 @@ parse_bind_var (const char *name, char *p1stvalue,
 	      if (*env == '\0')
 		goto invalid;
 
-	      for (i = 2; i < 5; i++)
+	      for (i = 2; i < 6; i++)
 		if (strncasecmp (env, kinds[i].name, kinds[i].len) == 0)
 		  {
 		    value = kinds[i].kind;
 		    env += kinds[i].len;
 		    break;
 		  }
-	      if (i == 5)
+	      if (i == 6)
 		goto invalid;
 
 	      values[nvalues++] = value;
@@ -1210,45 +1214,10 @@ parse_gomp_openacc_dim (void)
     }
 }
 
-static void
-handle_omp_display_env (unsigned long stacksize, int wait_policy)
+void
+omp_display_env (int verbose)
 {
-  const char *env;
-  bool display = false;
-  bool verbose = false;
   int i;
-
-  env = getenv ("OMP_DISPLAY_ENV");
-  if (env == NULL)
-    return;
-
-  while (isspace ((unsigned char) *env))
-    ++env;
-  if (strncasecmp (env, "true", 4) == 0)
-    {
-      display = true;
-      env += 4;
-    }
-  else if (strncasecmp (env, "false", 5) == 0)
-    {
-      display = false;
-      env += 5;
-    }
-  else if (strncasecmp (env, "verbose", 7) == 0)
-    {
-      display = true;
-      verbose = true;
-      env += 7;
-    }
-  else
-    env = "X";
-  while (isspace ((unsigned char) *env))
-    ++env;
-  if (*env != '\0')
-    gomp_error ("Invalid value for environment variable OMP_DISPLAY_ENV");
-
-  if (!display)
-    return;
 
   fputs ("\nOPENMP DISPLAY ENVIRONMENT BEGIN\n", stderr);
 
@@ -1309,7 +1278,7 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
       fputs ("TRUE", stderr);
       break;
     case omp_proc_bind_master:
-      fputs ("MASTER", stderr);
+      fputs ("MASTER", stderr); /* TODO: Change to PRIMARY for OpenMP 5.1.  */
       break;
     case omp_proc_bind_close:
       fputs ("CLOSE", stderr);
@@ -1322,7 +1291,7 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
     switch (gomp_bind_var_list[i])
       {
       case omp_proc_bind_master:
-	fputs (",MASTER", stderr);
+	fputs (",MASTER", stderr); /* TODO: Change to PRIMARY for OpenMP 5.1. */
 	break;
       case omp_proc_bind_close:
 	fputs (",CLOSE", stderr);
@@ -1408,14 +1377,54 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
 
   fputs ("OPENMP DISPLAY ENVIRONMENT END\n", stderr);
 }
+ialias (omp_display_env)
+
+static void
+handle_omp_display_env (void)
+{
+  const char *env;
+  bool display = false;
+  bool verbose = false;
+
+  env = getenv ("OMP_DISPLAY_ENV");
+  if (env == NULL)
+    return;
+
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (strncasecmp (env, "true", 4) == 0)
+    {
+      display = true;
+      env += 4;
+    }
+  else if (strncasecmp (env, "false", 5) == 0)
+    {
+      display = false;
+      env += 5;
+    }
+  else if (strncasecmp (env, "verbose", 7) == 0)
+    {
+      display = true;
+      verbose = true;
+      env += 7;
+    }
+  else
+    env = "X";
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env != '\0')
+    gomp_error ("Invalid value for environment variable OMP_DISPLAY_ENV");
+
+  if (display)
+    omp_display_env (verbose);
+}
 
 
 static void __attribute__((constructor))
 initialize_env (void)
 {
-  unsigned long thread_limit_var, stacksize = GOMP_DEFAULT_STACKSIZE;
+  unsigned long thread_limit_var;
   unsigned long max_active_levels_var;
-  int wait_policy;
 
   /* Do a compile time check that mkomp_h.pl did good job.  */
   omp_check_defines ();
@@ -1546,7 +1555,7 @@ initialize_env (void)
 	gomp_error ("Stack size change failed: %s", strerror (err));
     }
 
-  handle_omp_display_env (stacksize, wait_policy);
+  handle_omp_display_env ();
 
   /* OpenACC.  */
 

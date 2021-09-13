@@ -8,8 +8,8 @@
  */
 module core.sys.posix.aio;
 
-private import core.sys.posix.signal;
-private import core.sys.posix.sys.types;
+import core.sys.posix.signal;
+import core.sys.posix.sys.types;
 
 version (OSX)
     version = Darwin;

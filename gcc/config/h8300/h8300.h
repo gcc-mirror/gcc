@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 (generic)
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -568,13 +568,6 @@ struct cum_arg
 
 /* Here we define machine-dependent flags and fields in cc_status
    (see `conditions.h').  No extra ones are needed for the h8300.  */
-
-/* Store in cc_status the expressions
-   that the condition codes will describe
-   after execution of an instruction whose pattern is EXP.
-   Do not alter them if the instruction would not alter the cc's.  */
-
-#define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc (EXP, INSN)
 
 /* The add insns don't set overflow in a usable way.  */
 #define CC_OVERFLOW_UNUSABLE 01000

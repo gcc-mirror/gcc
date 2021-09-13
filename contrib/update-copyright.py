@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Copyright (C) 2013-2020 Free Software Foundation, Inc.
 #
@@ -64,7 +64,10 @@ class GenericFilter:
     def __init__ (self):
         self.skip_files = set()
         self.skip_dirs = set()
-        self.skip_extensions = set()
+        self.skip_extensions = set([
+                '.png',
+                '.pyc',
+                ])
         self.fossilised_files = set()
         self.own_files = set()
 
@@ -307,7 +310,7 @@ class Copyright:
             # If it looks like the copyright is incomplete, add the next line.
             while not self.is_complete (match):
                 try:
-                    next_line = file.next()
+                    next_line = file.readline()
                 except StopIteration:
                     break
 
@@ -381,6 +384,15 @@ class Copyright:
 
         return (line != orig_line, line, next_line)
 
+    def guess_encoding (self, pathname):
+        for encoding in ('utf8', 'iso8859'):
+            try:
+                open(pathname, 'r', encoding=encoding).read()
+                return encoding
+            except UnicodeDecodeError:
+                pass
+        return None
+
     def process_file (self, dir, filename, filter):
         pathname = os.path.join (dir, filename)
         if filename.endswith ('.tmp'):
@@ -395,7 +407,8 @@ class Copyright:
         changed = False
         line_filter = filter.get_line_filter (dir, filename)
         mode = None
-        with open (pathname, 'r') as file:
+        encoding = self.guess_encoding(pathname)
+        with open (pathname, 'r', encoding=encoding) as file:
             prev = None
             mode = os.fstat (file.fileno()).st_mode
             for line in file:
@@ -421,7 +434,7 @@ class Copyright:
         # If something changed, write the new file out.
         if changed and self.errors.ok():
             tmp_pathname = pathname + '.tmp'
-            with open (tmp_pathname, 'w') as file:
+            with open (tmp_pathname, 'w', encoding=encoding) as file:
                 for line in lines:
                     file.write (line)
                 os.fchmod (file.fileno(), mode)
@@ -432,7 +445,7 @@ class Copyright:
     def process_tree (self, tree, filter):
         for (dir, subdirs, filenames) in os.walk (tree):
             # Don't recurse through directories that should be skipped.
-            for i in xrange (len (subdirs) - 1, -1, -1):
+            for i in range (len (subdirs) - 1, -1, -1):
                 if filter.skip_dir (dir, subdirs[i]):
                     del subdirs[i]
 
@@ -594,7 +607,7 @@ class TestsuiteFilter (GenericFilter):
         if filename == 'README' and os.path.basename (dir) == 'params':
             return True
         if filename == 'pdt_5.f03' and os.path.basename (dir) == 'gfortran.dg':
-	    return True
+            return True
         return GenericFilter.skip_file (self, dir, filename)
 
 class LibCppFilter (GenericFilter):
@@ -683,6 +696,7 @@ class GCCCopyright (Copyright):
 
         self.add_external_author ('ARM')
         self.add_external_author ('AdaCore')
+        self.add_external_author ('Advanced Micro Devices Inc.')
         self.add_external_author ('Ami Tavory and Vladimir Dreizin, IBM-HRL.')
         self.add_external_author ('Cavium Networks.')
         self.add_external_author ('Faraday Technology Corp.')
@@ -710,6 +724,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('The Go Authors. All rights reserved.')
         self.add_external_author ('The Go Authors.')
         self.add_external_author ('The Regents of the University of California.')
+        self.add_external_author ('Ulf Adams')
         self.add_external_author ('Unicode, Inc.')
         self.add_external_author ('University of Toronto.')
         self.add_external_author ('Yoshinori Sato')
@@ -720,6 +735,7 @@ class GCCCmdLine (CmdLine):
 
         self.add_dir ('.', TopLevelFilter())
         # boehm-gc is imported from upstream.
+        self.add_dir ('c++tools')
         self.add_dir ('config', ConfigFilter())
         # contrib isn't really part of GCC.
         self.add_dir ('fixincludes')
@@ -740,7 +756,6 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libgfortran')
         # libgo is imported from upstream.
         self.add_dir ('libgomp')
-        self.add_dir ('libhsail-rt')
         self.add_dir ('libiberty')
         self.add_dir ('libitm')
         self.add_dir ('libobjc')
@@ -756,6 +771,7 @@ class GCCCmdLine (CmdLine):
         # zlib is imported from upstream.
 
         self.default_dirs = [
+            'c++tools',
             'gcc',
             'include',
             'libada',
@@ -767,7 +783,6 @@ class GCCCmdLine (CmdLine):
             'libgcc',
             'libgfortran',
             'libgomp',
-            'libhsail-rt',
             'libiberty',
             'libitm',
             'libobjc',

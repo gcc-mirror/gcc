@@ -1,5 +1,5 @@
 /* Standard problems for dataflow support routines.
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -842,14 +842,54 @@ df_lr_bb_local_compute (unsigned int bb_index)
 
       df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
       FOR_EACH_INSN_INFO_DEF (def, insn_info)
-	/* If the def is to only part of the reg, it does
-	   not kill the other defs that reach here.  */
-	if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-	  {
-	    unsigned int dregno = DF_REF_REGNO (def);
-	    bitmap_set_bit (&bb_info->def, dregno);
+	{
+	  /* If the definition is to only part of the register, it will
+	     usually have a corresponding use.  For example, stores to one
+	     word of a multiword register R have both a use and a partial
+	     definition of R.
+
+	     In those cases, the LR confluence function:
+
+	       IN = (OUT & ~DEF) | USE
+
+	     is unaffected by whether we count the partial definition or not.
+	     However, it's more convenient for consumers if DEF contains
+	     *all* the registers defined in a block.
+
+	     The only current case in which we record a partial definition
+	     without a corresponding use is if the destination is the
+	     multi-register subreg of a hard register.  An artificial
+	     example of this is:
+
+		(set (subreg:TI (reg:V8HI x0) 0) (const_int -1))
+
+	     on AArch64.  This is described as a DF_REF_PARTIAL
+	     definition of x0 and x1 with no corresponding uses.
+	     In previous versions of GCC, the instruction had no
+	     effect on LR (that is, LR acted as though the instruction
+	     didn't exist).
+
+	     It seems suspect that this case is treated differently.
+	     Either the instruction should be a full definition of x0 and x1,
+	     or the definition should be treated in the same way as other
+	     partial definitions, such as strict_lowparts or subregs that
+	     satisfy read_modify_subreg_p.
+
+	     Fortunately, multi-register subregs of hard registers should
+	     be rare.  They should be folded into a plain REG if the target
+	     allows that (as AArch64 does for example above).
+
+	     Here we treat the cases alike by forcing a use even in the rare
+	     case that no DF_REF_REG_USE is recorded.  That is, we model all
+	     partial definitions as both a use and a definition of the
+	     register.  */
+	  unsigned int dregno = DF_REF_REGNO (def);
+	  bitmap_set_bit (&bb_info->def, dregno);
+	  if (DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL))
+	    bitmap_set_bit (&bb_info->use, dregno);
+	  else
 	    bitmap_clear_bit (&bb_info->use, dregno);
-	  }
+	}
 
       FOR_EACH_INSN_INFO_USE (use, insn_info)
 	/* Add use to set of uses in this BB.  */
@@ -1917,8 +1957,7 @@ df_mir_alloc (bitmap all_blocks)
 	  bitmap_initialize (&bb_info->gen, &problem_data->mir_bitmaps);
 	  bitmap_initialize (&bb_info->in, &problem_data->mir_bitmaps);
 	  bitmap_initialize (&bb_info->out, &problem_data->mir_bitmaps);
-	  bitmap_set_range (&bb_info->in, 0, DF_REG_SIZE (df));
-	  bitmap_set_range (&bb_info->out, 0, DF_REG_SIZE (df));
+	  bb_info->con_visited = false;
 	}
     }
 
@@ -1941,9 +1980,8 @@ df_mir_reset (bitmap all_blocks)
       gcc_assert (bb_info);
 
       bitmap_clear (&bb_info->in);
-      bitmap_set_range (&bb_info->in, 0, DF_REG_SIZE (df));
       bitmap_clear (&bb_info->out);
-      bitmap_set_range (&bb_info->out, 0, DF_REG_SIZE (df));
+      bb_info->con_visited = false;
     }
 }
 
@@ -2021,6 +2059,7 @@ df_mir_confluence_0 (basic_block bb)
   class df_mir_bb_info *bb_info = df_mir_get_bb_info (bb->index);
 
   bitmap_clear (&bb_info->in);
+  bb_info->con_visited = true;
 }
 
 
@@ -2029,11 +2068,26 @@ df_mir_confluence_0 (basic_block bb)
 static bool
 df_mir_confluence_n (edge e)
 {
-  bitmap op1 = &df_mir_get_bb_info (e->dest->index)->in;
-  bitmap op2 = &df_mir_get_bb_info (e->src->index)->out;
-
   if (e->flags & EDGE_FAKE)
     return false;
+
+  df_mir_bb_info *src_info = df_mir_get_bb_info (e->src->index);
+  /* If SRC was not visited yet then we'll and with all-ones which
+     means no changes.  Do not consider DST con_visited by this
+     operation alone either.  */
+  if (!src_info->con_visited)
+    return false;
+
+  df_mir_bb_info *dst_info = df_mir_get_bb_info (e->dest->index);
+  bitmap op1 = &dst_info->in;
+  bitmap op2 = &src_info->out;
+  /* If DEST was not visited yet just copy the SRC bitmap.  */
+  if (!dst_info->con_visited)
+    {
+      dst_info->con_visited = true;
+      bitmap_copy (op1, op2);
+      return true;
+    }
 
   /* A register is must-initialized at the entry of a basic block iff it is
      must-initialized at the exit of all the predecessors.  */
@@ -4201,8 +4255,7 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
 	  if (bitmap_intersect_p (merge_set, test_use)
 	      || bitmap_intersect_p (merge_use, test_set))
 	    break;
-	  if (!HAVE_cc0 || !sets_cc0_p (insn))
-	    max_to = insn;
+	  max_to = insn;
 	}
       next = NEXT_INSN (insn);
       if (insn == to)
@@ -4239,8 +4292,7 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
     {
       if (NONDEBUG_INSN_P (insn))
 	{
-	  if (!bitmap_intersect_p (test_set, local_merge_live)
-	      && (!HAVE_cc0 || !sets_cc0_p (insn)))
+	  if (!bitmap_intersect_p (test_set, local_merge_live))
 	    {
 	      max_to = insn;
 	      break;

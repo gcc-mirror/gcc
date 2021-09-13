@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,7 +43,13 @@ template<> struct std::iterator_traits<move_only_iterator>
 static_assert(std::input_iterator<move_only_iterator>);
 
 template<typename T>
-  concept has_member_base = requires (T t) { std::forward<T>(t).base(); };
+  concept has_member_base = requires (T t) {
+    // LWG 3391 made the const& overload of move_iterator::base()
+    // unconstrained and return a const reference.  So rather than checking
+    // whether base() is valid (which is now trivially true in an unevaluated
+    // context), the below now checks whether decay-copying base() is valid.
+    [](auto){}(std::forward<T>(t).base());
+  };
 
 using move_only_move_iterator = std::move_iterator<move_only_iterator>;
 

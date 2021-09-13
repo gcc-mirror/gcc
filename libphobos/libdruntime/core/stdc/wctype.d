@@ -54,7 +54,7 @@ pure int iswxdigit(wint_t wc);
 ///
 int       iswctype(wint_t wc, wctype_t desc);
 ///
-@system wctype_t  wctype(in char* property);
+@system wctype_t  wctype(const scope char* property);
 ///
 pure wint_t    towlower(wint_t wc);
 ///
@@ -62,4 +62,4 @@ pure wint_t    towupper(wint_t wc);
 ///
 wint_t    towctrans(wint_t wc, wctrans_t desc);
 ///
-@system wctrans_t wctrans(in char* property);
+@system wctrans_t wctrans(const scope char* property);

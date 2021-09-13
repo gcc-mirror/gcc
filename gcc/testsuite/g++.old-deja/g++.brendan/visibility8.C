@@ -5,9 +5,9 @@
 class foo
 {
 public:
-  static int y; // { dg-message "" } private
+  static int y; 
 };
-class foo1 : private foo
+class foo1 : private foo // { dg-message "" } private
 { };
 class foo2 : public foo1
 { public:

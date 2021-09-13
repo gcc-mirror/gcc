@@ -852,12 +852,12 @@ limits.o: limits.cc
 	$(CXXCOMPILE) -fchar8_t -c $<
 
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
-@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s
+@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -gno-as-loc-support -S $< -o tmp-cxx11-ios_failure-lt.s
 @ENABLE_DUAL_ABI_TRUE@	-test -f tmp-cxx11-ios_failure-lt.o && mv -f tmp-cxx11-ios_failure-lt.o tmp-cxx11-ios_failure-lt.s
 @ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
 @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.s: cxx11-ios_failure.cc
-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -S $< -o tmp-$@
+@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -gno-as-loc-support -S $< -o tmp-$@
 @ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
 @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
 

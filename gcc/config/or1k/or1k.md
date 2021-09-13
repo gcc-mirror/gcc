@@ -1,5 +1,5 @@
 ;; Machine description for OpenRISC
-;; Copyright (C) 2018-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2021 Free Software Foundation, Inc.
 ;; Contributed by Stafford Horne
 
 ;; This file is part of GCC.
@@ -351,7 +351,7 @@
   "register_operand (operands[0], DImode)
    || reg_or_0_operand (operands[1], DImode)"
   "#"
-  ""
+  "&& 1"
   [(const_int 0)]
 {
   rtx l0 = operand_subword (operands[0], 0, 0, DImode);

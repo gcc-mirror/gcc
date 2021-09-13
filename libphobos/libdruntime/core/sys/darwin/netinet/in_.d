@@ -225,7 +225,7 @@ static if (_DARWIN_C_SOURCE)
     {
         in_addr  ip_dst;
         char[40] ip_opts = 0;
-    };
+    }
 
     enum IP_OPTIONS         = 1;
     enum IP_HDRINCL         = 2;
@@ -307,14 +307,14 @@ static if (_DARWIN_C_SOURCE)
     {
         in_addr imr_multiaddr;
         in_addr imr_interface;
-    };
+    }
 
     struct ip_mreqn
     {
         in_addr imr_multiaddr;
         in_addr imr_address;
         int     imr_ifindex;
-    };
+    }
 
     struct ip_mreq_source
     {
@@ -322,14 +322,14 @@ static if (_DARWIN_C_SOURCE)
         in_addr imr_multiaddr;
         in_addr imr_sourceaddr;
         in_addr imr_interface;
-    };
+    }
 
     struct group_req
     {
         align(4):
         uint             gr_interface;
         sockaddr_storage gr_group;
-    };
+    }
 
     struct group_source_req
     {
@@ -337,7 +337,7 @@ static if (_DARWIN_C_SOURCE)
         uint             gsr_interface;
         sockaddr_storage gsr_group;
         sockaddr_storage gsr_source;
-    };
+    }
 
     int setipv4sourcefilter(int, in_addr, in_addr, uint, uint, in_addr*);
     int getipv4sourcefilter(int, in_addr, in_addr, uint*, uint*, in_addr*);
@@ -357,7 +357,7 @@ static if (_DARWIN_C_SOURCE)
         uint     ipi_ifindex;
         in_addr  ipi_spec_dst;
         in_addr  ipi_addr;
-    };
+    }
 
     enum IPPROTO_MAXID = IPPROTO_AH + 1;
 
@@ -524,13 +524,13 @@ static if (_DARWIN_C_SOURCE)
     {
         in6_addr ipi6_addr;
         uint     ipi6_ifindex;
-    };
+    }
 
     struct ip6_mtuinfo
     {
         sockaddr_in6 ip6m_addr;
         uint         ip6m_mtu;
-    };
+    }
 
     enum IPV6_PORTRANGE_DEFAULT = 0;
     enum IPV6_PORTRANGE_HIGH    = 1;

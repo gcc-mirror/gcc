@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -20,6 +20,17 @@ class LabelDsymbol;
 class Initializer;
 class Module;
 class ForeachStatement;
+struct Ensure
+{
+    Identifier *id;
+    Statement *ensure;
+
+    Ensure();
+    Ensure(Identifier *id, Statement *ensure);
+    Ensure syntaxCopy();
+    static Ensures *arraySyntaxCopy(Ensures *a);
+};
+class AliasDeclaration;
 class FuncDeclaration;
 class ExpInitializer;
 class StructDeclaration;
@@ -107,8 +118,9 @@ struct Match
     FuncDeclaration *anyf;      // pick a func, any func, to use for error recovery
 };
 
-void functionResolve(Match *m, Dsymbol *fd, Loc loc, Scope *sc, Objects *tiargs, Type *tthis, Expressions *fargs);
+void functionResolve(Match *m, Dsymbol *fd, Loc loc, Scope *sc, Objects *tiargs, Type *tthis, Expressions *fargs, const char **pMessage = NULL);
 int overloadApply(Dsymbol *fstart, void *param, int (*fp)(void *, Dsymbol *));
+void aliasSemantic(AliasDeclaration *ds, Scope *sc);
 
 void ObjectNotFound(Identifier *id);
 
@@ -126,9 +138,9 @@ public:
     DString mangleOverride;     // overridden symbol with pragma(mangle, "...")
 
     Declaration(Identifier *id);
-    void semantic(Scope *sc);
     const char *kind() const;
     d_uns64 size(Loc loc);
+    bool checkDisabled(Loc loc, Scope *sc, bool isAliasedDeclaration = false);
     int checkModify(Loc loc, Scope *sc, Type *t, Expression *e1, int flag);
 
     Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
@@ -149,6 +161,7 @@ public:
     bool isSynchronized() { return (storage_class & STCsynchronized) != 0; }
     bool isParameter()    { return (storage_class & STCparameter) != 0; }
     bool isDeprecated()   { return (storage_class & STCdeprecated) != 0; }
+    bool isDisabled()     { return (storage_class & STCdisable) != 0; }
     bool isOverride()     { return (storage_class & STCoverride) != 0; }
     bool isResult()       { return (storage_class & STCresult) != 0; }
     bool isField()        { return (storage_class & STCfield) != 0; }
@@ -199,8 +212,6 @@ public:
     AliasDeclaration(Loc loc, Identifier *ident, Dsymbol *s);
     static AliasDeclaration *create(Loc loc, Identifier *id, Type *type);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
-    void aliasSemantic(Scope *sc);
     bool overloadInsert(Dsymbol *s);
     const char *kind() const;
     Type *getType();
@@ -223,7 +234,6 @@ public:
 
     OverDeclaration(Identifier *ident, Dsymbol *s, bool hasOverloads = true);
     const char *kind() const;
-    void semantic(Scope *sc);
     bool equals(RootObject *o);
     bool overloadInsert(Dsymbol *s);
 
@@ -267,9 +277,7 @@ public:
     VarDeclaration(Loc loc, Type *t, Identifier *id, Initializer *init);
     static VarDeclaration *create(Loc loc, Type *t, Identifier *id, Initializer *init);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     void setFieldOffset(AggregateDeclaration *ad, unsigned *poffset, bool isunion);
-    void semantic2(Scope *sc);
     const char *kind() const;
     AggregateDeclaration *isThis();
     bool needThis();
@@ -318,7 +326,6 @@ public:
     TypeInfoDeclaration(Type *tinfo);
     static TypeInfoDeclaration *create(Type *tinfo);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     const char *toChars();
 
     TypeInfoDeclaration *isTypeInfoDeclaration() { return this; }
@@ -491,9 +498,43 @@ enum ILS
 
 enum BUILTIN
 {
-    BUILTINunknown = -1,        // not known if this is a builtin
-    BUILTINno,                  // this is not a builtin
-    BUILTINyes                  // this is a builtin
+    BUILTINunknown = 255,   /// not known if this is a builtin
+    BUILTINunimp = 0,       /// this is not a builtin
+    BUILTINgcc,             /// this is a GCC builtin
+    BUILTINllvm,            /// this is an LLVM builtin
+    BUILTINsin,
+    BUILTINcos,
+    BUILTINtan,
+    BUILTINsqrt,
+    BUILTINfabs,
+    BUILTINldexp,
+    BUILTINlog,
+    BUILTINlog2,
+    BUILTINlog10,
+    BUILTINexp,
+    BUILTINexpm1,
+    BUILTINexp2,
+    BUILTINround,
+    BUILTINfloor,
+    BUILTINceil,
+    BUILTINtrunc,
+    BUILTINcopysign,
+    BUILTINpow,
+    BUILTINfmin,
+    BUILTINfmax,
+    BUILTINfma,
+    BUILTINisnan,
+    BUILTINisinfinity,
+    BUILTINisfinite,
+    BUILTINbsf,
+    BUILTINbsr,
+    BUILTINbswap,
+    BUILTINpopcnt,
+    BUILTINyl2x,
+    BUILTINyl2xp1,
+    BUILTINtoPrecFloat,
+    BUILTINtoPrecDouble,
+    BUILTINtoPrecReal
 };
 
 Expression *eval_builtin(Loc loc, FuncDeclaration *fd, Expressions *arguments);
@@ -510,13 +551,17 @@ void builtin_init();
 #define FUNCFLAGreturnInprocess 0x10    // working on inferring 'return' for parameters
 #define FUNCFLAGinlineScanned   0x20    // function has been scanned for inline possibilities
 #define FUNCFLAGinferScope      0x40    // infer 'scope' for parameters
+#define FUNCFLAGprintf          0x200   // is a printf-like function
+#define FUNCFLAGscanf           0x400   // is a scanf-like function
 
 class FuncDeclaration : public Declaration
 {
 public:
     Types *fthrows;                     // Array of Type's of exceptions (not used)
-    Statement *frequire;
-    Statement *fensure;
+    Statements *frequires;              // in contracts
+    Ensures *fensures;                  // out contracts
+    Statement *frequire;                // lowered in contract
+    Statement *fensure;                 // lowered out contract
     Statement *fbody;
 
     FuncDeclarations foverrides;        // functions this function overrides
@@ -525,8 +570,7 @@ public:
 
     const char *mangleString;           // mangled symbol created from mangleExact()
 
-    Identifier *outId;                  // identifier for out statement
-    VarDeclaration *vresult;            // variable corresponding to outId
+    VarDeclaration *vresult;            // result variable for out contracts
     LabelDsymbol *returnLabel;          // where the return goes
 
     // used to prevent symbols in different
@@ -601,9 +645,6 @@ public:
     FuncDeclaration(Loc loc, Loc endloc, Identifier *id, StorageClass storage_class, Type *type);
     static FuncDeclaration *create(Loc loc, Loc endloc, Identifier *id, StorageClass storage_class, Type *type);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
-    void semantic2(Scope *sc);
-    void semantic3(Scope *sc);
     bool functionSemantic();
     bool functionSemantic3();
     bool checkForwardRef(Loc loc);
@@ -663,13 +704,15 @@ public:
     bool hasNestedFrameRefs();
     void buildResultVar(Scope *sc, Type *tret);
     Statement *mergeFrequire(Statement *);
+    static bool needsFensure(FuncDeclaration *fd);
+    void buildEnsureRequire();
     Statement *mergeFensure(Statement *, Identifier *oid);
     ParameterList getParameterList();
 
     static FuncDeclaration *genCfunc(Parameters *args, Type *treturn, const char *name, StorageClass stc=0);
     static FuncDeclaration *genCfunc(Parameters *args, Type *treturn, Identifier *id, StorageClass stc=0);
     void checkDmain();
-    bool checkNrvo();
+    bool checkNRVO();
 
     FuncDeclaration *isFuncDeclaration() { return this; }
 
@@ -729,7 +772,6 @@ class CtorDeclaration : public FuncDeclaration
 public:
     CtorDeclaration(Loc loc, Loc endloc, StorageClass stc, Type *type);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     const char *kind() const;
     const char *toChars();
     bool isVirtual();
@@ -745,7 +787,6 @@ class PostBlitDeclaration : public FuncDeclaration
 public:
     PostBlitDeclaration(Loc loc, Loc endloc, StorageClass stc, Identifier *id);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     bool isVirtual();
     bool addPreInvariant();
     bool addPostInvariant();
@@ -761,7 +802,6 @@ public:
     DtorDeclaration(Loc loc, Loc endloc);
     DtorDeclaration(Loc loc, Loc endloc, StorageClass stc, Identifier *id);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     const char *kind() const;
     const char *toChars();
     bool isVirtual();
@@ -779,7 +819,6 @@ public:
     StaticCtorDeclaration(Loc loc, Loc endloc, StorageClass stc);
     StaticCtorDeclaration(Loc loc, Loc endloc, const char *name, StorageClass stc);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     AggregateDeclaration *isThis();
     bool isVirtual();
     bool addPreInvariant();
@@ -808,7 +847,6 @@ public:
     StaticDtorDeclaration(Loc loc, Loc endloc, StorageClass stc);
     StaticDtorDeclaration(Loc loc, Loc endloc, const char *name, StorageClass stc);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     AggregateDeclaration *isThis();
     bool isVirtual();
     bool hasStaticCtorOrDtor();
@@ -834,7 +872,6 @@ class InvariantDeclaration : public FuncDeclaration
 public:
     InvariantDeclaration(Loc loc, Loc endloc, StorageClass stc, Identifier *id = NULL);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     bool isVirtual();
     bool addPreInvariant();
     bool addPostInvariant();
@@ -853,7 +890,6 @@ public:
 
     UnitTestDeclaration(Loc loc, Loc endloc, StorageClass stc, char *codedoc);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     AggregateDeclaration *isThis();
     bool isVirtual();
     bool addPreInvariant();
@@ -871,7 +907,6 @@ public:
 
     NewDeclaration(Loc loc, Loc endloc, StorageClass stc, Parameters *arguments, VarArg varargs);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     const char *kind() const;
     bool isVirtual();
     bool addPreInvariant();
@@ -889,7 +924,6 @@ public:
 
     DeleteDeclaration(Loc loc, Loc endloc, StorageClass stc, Parameters *arguments);
     Dsymbol *syntaxCopy(Dsymbol *);
-    void semantic(Scope *sc);
     const char *kind() const;
     bool isDelete();
     bool isVirtual();

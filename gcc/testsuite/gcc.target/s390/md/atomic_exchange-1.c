@@ -1,7 +1,7 @@
 /* Machine description pattern tests.  */
 
 /* { dg-do compile } */
-/* { dg-options "-lpthread -latomic" } */
+/* { dg-options "-lpthread" } */
 /* { dg-do run { target { s390_useable_hw } } } */
 
 /**/

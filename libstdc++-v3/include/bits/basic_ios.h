@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-2020 Free Software Foundation, Inc.
+// Copyright (C) 1997-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class basic_ios : public ios_base
     {
     public:
-      //@{
+      ///@{
       /**
        *  These are standard types.  They permit a standardized way of
        *  referring to names of (or names dependent on) the template
@@ -78,9 +78,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _Traits::pos_type             pos_type;
       typedef typename _Traits::off_type             off_type;
       typedef _Traits                                traits_type;
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  These are non-standard types.
       */
@@ -89,7 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						     __num_put_type;
       typedef num_get<_CharT, istreambuf_iterator<_CharT, _Traits> >
 						     __num_get_type;
-      //@}
+      ///@}
 
       // Data members:
     protected:
@@ -106,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const __num_get_type*                          _M_num_get;
 
     public:
-      //@{
+      ///@{
       /**
        *  @brief  The quick-and-easy status check.
        *
@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       operator!() const
       { return this->fail(); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Returns the error state of the stream buffer.

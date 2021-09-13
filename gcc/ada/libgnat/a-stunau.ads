@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,22 +56,24 @@ package Ada.Strings.Unbounded.Aux is
       S : out Big_String_Access;
       L : out Natural);
    pragma Inline (Get_String);
-   --  This procedure returns the internal string pointer used in the
-   --  representation of an unbounded string as well as the actual current
-   --  length (which may be less than S.all'Length because in general there
-   --  can be extra space assigned). The characters of this string may be
-   --  not be modified via the returned pointer,  and are valid only as
-   --  long as the original unbounded string is not accessed or modified.
+   --  Return the internal string pointer used in the representation of an
+   --  unbounded string as well as the actual current length (which may be less
+   --  than S.all'Length because in general there can be extra space assigned).
+   --  The characters of this string may be not be modified via the returned
+   --  pointer, and are valid only as long as the original unbounded string is
+   --  not accessed or modified.
    --
    --  This procedure is much more efficient than the use of To_String
    --  since it avoids the need to copy the string. The lower bound of the
    --  referenced string returned by this call is always one, so the actual
    --  string data is always accessible as S (1 .. L).
 
-   procedure Set_String (UP : in out Unbounded_String; S : String_Access);
+   procedure Set_String
+     (U      : out Unbounded_String;
+      Length : Positive;
+      Set    : not null access procedure (S : out String));
    pragma Inline (Set_String);
-   --  This version of Set_Unbounded_String takes a string access value, rather
-   --  than a string. The lower bound of the string value is required to be
-   --  one, and this requirement is not checked.
+   --  Create an unbounded string U with the given Length, using Set to fill
+   --  the contents of U.
 
 end Ada.Strings.Unbounded.Aux;

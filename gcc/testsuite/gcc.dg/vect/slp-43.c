@@ -78,4 +78,6 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 13 "vect" { target vect_hw_misalign } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target { ! vect_hw_misalign } } } } */
+/* For ! vect_hw_misalign it depends on vector size and actual alignment
+   requirements of the target which functions can be vectorized.  Avoid
+   that bean-counting and per-target listing here.  */

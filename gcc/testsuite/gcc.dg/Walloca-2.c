@@ -9,11 +9,7 @@ g1 (int n)
 {
   void *p;
   if (n > 0 && n < 2000)
-    // FIXME: This is a bogus warning, and is currently happening on
-    // 32-bit targets because VRP is not giving us any range info for
-    // the argument to __builtin_alloca.  This should be fixed by the
-    // upcoming range work.
-    p = __builtin_alloca (n); // { dg-bogus "unbounded use of 'alloca'" "" { xfail { ! lp64 } } }
+    p = __builtin_alloca (n); // { dg-bogus "unbounded use of 'alloca'" "" }
   else
     p = __builtin_malloc (n);
   f (p);

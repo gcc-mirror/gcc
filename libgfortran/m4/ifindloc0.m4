@@ -1,5 +1,5 @@
 `/* Implementation of the FINDLOC intrinsic
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by Thomas König <tk@tkoenig.net>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).

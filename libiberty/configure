@@ -2458,9 +2458,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-
-
-
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
 # keeping the changes in LD private, export them just because LD is
@@ -5399,6 +5396,34 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+int
+main ()
+{
+  asm ("endbr32");
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  have_multi_byte_nop=yes
+else
+  have_multi_byte_nop=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+    have_cet=no
+    if test x$have_multi_byte_nop = xyes; then
+      if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "cannot run test program while cross compiling
+See \`config.log' for more details" "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
 static void
 foo (void)
 {
@@ -5435,6 +5460,7 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
+    fi
     if test x$enable_cet = xno -a x$have_cet = xyes; then
       as_fn_error $? "Intel CET must be enabled on Intel CET enabled host" "$LINENO" 5
     fi
@@ -5991,8 +6017,15 @@ vars="sys_errlist sys_nerr sys_siglist"
 
 checkfuncs="__fsetlocking canonicalize_file_name dup3 getrlimit getrusage \
  getsysinfo gettimeofday on_exit pipe2 psignal pstat_getdynamic pstat_getstatic \
- realpath setrlimit sbrk spawnve spawnvpe strerror strsignal sysconf sysctl \
+ realpath setrlimit spawnve spawnvpe strerror strsignal sysconf sysctl \
  sysmp table times wait3 wait4"
+
+# Darwin has sbrk, but it is deprecated and that produces build-time warnings
+# so do not check for it.
+case "${host}" in
+  *-*-darwin*) ;;
+  *) checkfuncs="$checkfuncs sbrk"
+esac
 
 # These are neither executed nor required, but they help keep
 # autoheader happy without adding a bunch of text to acconfig.h.
@@ -6562,6 +6595,22 @@ if test -z "${setobjs}"; then
     ac_cv_func_getpagesize=yes
     ;;
 
+  hppa*-*-hpux*)
+    # Replace system snprintf and vsnprintf with libiberty implementations.
+    case " $LIBOBJS " in
+  *" snprintf.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS snprintf.$ac_objext"
+ ;;
+esac
+
+    case " $LIBOBJS " in
+  *" vsnprintf.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS vsnprintf.$ac_objext"
+ ;;
+esac
+
+    ;;
+
   *-*-mingw32*)
     # Under mingw32, sys_nerr and sys_errlist exist, but they are
     # macros, so the test below won't find them.
@@ -7023,11 +7072,11 @@ else
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-int *p;
+extern int $v [];
 int
 main ()
 {
-extern int $v []; p = $v;
+if ($v [0]) return 1;
   ;
   return 0;
 }
@@ -7206,7 +7255,10 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_REALLOC $ac_have_decl
 _ACEOF
-ac_fn_c_check_decl "$LINENO" "sbrk" "ac_cv_have_decl_sbrk" "$ac_includes_default"
+
+  case "${host}" in
+      *-*-darwin*) ;; # Darwin's sbrk implementation is deprecated.
+      *) ac_fn_c_check_decl "$LINENO" "sbrk" "ac_cv_have_decl_sbrk" "$ac_includes_default"
 if test "x$ac_cv_have_decl_sbrk" = xyes; then :
   ac_have_decl=1
 else
@@ -7216,7 +7268,8 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_SBRK $ac_have_decl
 _ACEOF
-
+;;
+  esac
   ac_fn_c_check_decl "$LINENO" "strtol" "ac_cv_have_decl_strtol" "$ac_includes_default"
 if test "x$ac_cv_have_decl_strtol" = xyes; then :
   ac_have_decl=1

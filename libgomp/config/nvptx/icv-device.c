@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -58,8 +58,19 @@ omp_is_initial_device (void)
   return 0;
 }
 
+/* This is set to the device number of current GPU during device initialization,
+   when the offload image containing this libgomp portion is loaded.  */
+static volatile int GOMP_DEVICE_NUM_VAR;
+
+int
+omp_get_device_num (void)
+{
+  return GOMP_DEVICE_NUM_VAR;
+}
+
 ialias (omp_set_default_device)
 ialias (omp_get_default_device)
 ialias (omp_get_initial_device)
 ialias (omp_get_num_devices)
 ialias (omp_is_initial_device)
+ialias (omp_get_device_num)

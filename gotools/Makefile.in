@@ -703,8 +703,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@NATIVE_FALSE@install-exec-local:
 @NATIVE_FALSE@uninstall-local:
+@NATIVE_FALSE@install-exec-local:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-noinstPROGRAMS \
@@ -815,7 +815,7 @@ s-zdefaultcc: Makefile
 mostlyclean-local:
 	if test -d check-go-dir; then chmod -R u+w check-go-dir; fi
 	rm -rf check-go-dir cgo-test-dir carchive-test-dir \
-	check-vet-dir gocache-test
+	check-vet-dir check-embed-dir gocache-test
 
 @NATIVE_TRUE@go$(EXEEXT): $(go_cmd_go_files) $(LIBGOTOOL) $(LIBGODEP)
 @NATIVE_TRUE@	$(GOLINK) $(go_cmd_go_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
@@ -978,11 +978,28 @@ mostlyclean-local:
 @NATIVE_TRUE@	(cd check-vet-dir/src/cmd/vet && $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> cmd_vet-testlog 2>&1 || echo "--- $${fl}: go test cmd/vet (0.00s)" >> cmd_vet-testlog
 @NATIVE_TRUE@	grep '^--- ' cmd_vet-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
+# check-embed runs `go test embed/internal/embedtest` in our environment.
+@NATIVE_TRUE@check-embed: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
+@NATIVE_TRUE@	rm -rf check-embed-dir embed-testlog
+@NATIVE_TRUE@	$(MKDIR_P) check-embed-dir/src/embed/internal
+@NATIVE_TRUE@	cp $(libgosrcdir)/go.mod check-embed-dir/src/
+@NATIVE_TRUE@	$(MKDIR_P) check-embed-dir/src/vendor
+@NATIVE_TRUE@	cp $(libgosrcdir)/vendor/modules.txt check-embed-dir/src/vendor/
+@NATIVE_TRUE@	cp -r $(libgosrcdir)/embed/internal/embedtest check-embed-dir/src/embed/internal
+@NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
+@NATIVE_TRUE@	abs_checkdir=`cd check-embed-dir && $(PWD_COMMAND)`; \
+@NATIVE_TRUE@	echo "cd check-embed-dir/src/embed/internal/embedtest && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > embed-testlog
+@NATIVE_TRUE@	$(CHECK_ENV) \
+@NATIVE_TRUE@	GOPATH=`cd check-embed-dir && $(PWD_COMMAND)`; \
+@NATIVE_TRUE@	export GOPATH; \
+@NATIVE_TRUE@	(cd check-embed-dir/src/embed/internal/embedtest && $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> embed-testlog 2>&1 || echo "--- $${fl}: go test embed/internal/embedtest (0.00s)" >> embed-testlog
+@NATIVE_TRUE@	grep '^--- ' embed-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
+
 # The check targets runs the tests and assembles the output files.
-@NATIVE_TRUE@check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet
+@NATIVE_TRUE@check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet check-embed
 @NATIVE_TRUE@	@mv gotools.head gotools.sum
 @NATIVE_TRUE@	@cp gotools.sum gotools.log
-@NATIVE_TRUE@	@for file in cmd_go-testlog runtime-testlog cgo-testlog carchive-testlog cmd_vet-testlog; do \
+@NATIVE_TRUE@	@for file in cmd_go-testlog runtime-testlog cgo-testlog carchive-testlog cmd_vet-testlog embed-testlog; do \
 @NATIVE_TRUE@	  testname=`echo $${file} | sed -e 's/-testlog//' -e 's|_|/|'`; \
 @NATIVE_TRUE@	  echo "Running $${testname}" >> gotools.sum; \
 @NATIVE_TRUE@	  echo "Running $${testname}" >> gotools.log; \
@@ -1008,7 +1025,8 @@ mostlyclean-local:
 @NATIVE_TRUE@	@echo "runtest completed at `date`" >> gotools.log
 @NATIVE_TRUE@	@if grep '^FAIL' gotools.sum >/dev/null 2>&1; then exit 1; fi
 
-@NATIVE_TRUE@.PHONY: check check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet
+@NATIVE_TRUE@.PHONY: check check-head check-go-tool check-runtime check-cgo-test
+@NATIVE_TRUE@.PHONY: check-carchive-test check-vet check-embed
 
 # For a non-native build we have to build the programs using a
 # previously built host (or build -> host) Go compiler.  We should

@@ -1,5 +1,5 @@
 /* Target Definitions for OpenRISC.
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by Stafford Horne.
 
    This file is part of GCC.
@@ -21,6 +21,8 @@
 #ifndef GCC_OR1K_H
 #define GCC_OR1K_H
 
+#include "config/or1k/or1k-opts.h"
+
 /* Names to predefine in the preprocessor for this target machine.  */
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
@@ -30,10 +32,17 @@
       builtin_define ("__or1k__");		\
       if (TARGET_CMOV)				\
 	builtin_define ("__or1k_cmov__");	\
+      if (TARGET_HARD_FLOAT)			\
+	builtin_define ("__or1k_hard_float__");	\
       builtin_assert ("cpu=or1k");		\
       builtin_assert ("machine=or1k");		\
     }						\
   while (0)
+
+#define TARGET_CMODEL_SMALL \
+  (or1k_code_model == CMODEL_SMALL)
+#define TARGET_CMODEL_LARGE \
+  (or1k_code_model == CMODEL_LARGE)
 
 /* Storage layout.  */
 
@@ -379,8 +388,19 @@ do {                                                    \
 /* Always pass the SYMBOL_REF for direct calls to the expanders.  */
 #define NO_FUNCTION_CSE 1
 
-/* Profiling */
-#define FUNCTION_PROFILER(FILE,LABELNO) (abort (), 0)
+#define NO_PROFILE_COUNTERS 1
+
+/* Emit rtl for profiling.  Output assembler code to call "_mcount" for
+   profiling a function entry.  */
+#define PROFILE_HOOK(LABEL)						\
+  {									\
+    rtx fun;								\
+    fun = gen_rtx_SYMBOL_REF (Pmode, "_mcount");			\
+    emit_library_call (fun, LCT_NORMAL, VOIDmode);			\
+  }
+
+/* All the work is done in PROFILE_HOOK, but this is still required.  */
+#define FUNCTION_PROFILER(STREAM, LABELNO) do { } while (0)
 
 /* Dwarf 2 Support */
 #define DWARF2_DEBUGGING_INFO 1
@@ -394,5 +414,9 @@ do {                                                    \
 #define EH_RETURN_DATA_REGNO(N)	\
     ((N) < 4 ? HW_TO_GCC_REGNO (25) + (N) : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX gen_rtx_REG (Pmode, EH_RETURN_REGNUM)
+
+/* Select a format to encode pointers in exception handling data.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
+  (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4)
 
 #endif /* GCC_OR1K_H */

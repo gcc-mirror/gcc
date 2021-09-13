@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,8 +73,10 @@ template<typename D>
 
 static_assert( streamable<std::ostream, Unique_ptr<deleter<char>>> );
 static_assert( ! streamable<std::ostream, Unique_ptr<deleter<wchar_t>>> );
+#ifdef _GLIBCXX_USE_WCHAR_T
 static_assert( ! streamable<std::wostream, Unique_ptr<deleter<char>>> );
 static_assert( streamable<std::wostream, Unique_ptr<deleter<wchar_t>>> );
+#endif
 
 void
 test02()

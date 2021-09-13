@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,6 +19,8 @@
 // { dg-do run { target c++2a } }
 
 #include <algorithm>
+#include <string>
+#include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
@@ -89,10 +91,50 @@ test03()
 	  == res_t(1,4) );
 }
 
+void
+test04()
+{
+  // Verify we perform at most 3*N/2 applications of the comparison predicate.
+  static int counter;
+  struct counted_less
+  { bool operator()(int a, int b) { ++counter; return a < b; } };
+
+  ranges::minmax({1,2}, counted_less{});
+  VERIFY( counter == 1 );
+
+  counter = 0;
+  ranges::minmax({1,2,3}, counted_less{});
+  VERIFY( counter == 3 );
+
+  counter = 0;
+  ranges::minmax({1,2,3,4,5,6,7,8,9,10}, counted_less{});
+  VERIFY( counter <= 15 );
+
+  counter = 0;
+  ranges::minmax({10,9,8,7,6,5,4,3,2,1}, counted_less{});
+  VERIFY( counter <= 15 );
+}
+
+void
+test05()
+{
+  // PR libstdc++/100387
+  using namespace std::literals::string_literals;
+  auto comp = [](const auto& a, const auto& b) {
+    return a.size() == b.size() ? a.front() < b.front() : a.size() > b.size();
+  };
+  auto result = ranges::minmax({"b"s, "a"s}, comp);
+  VERIFY( result.min == "a"s && result.max == "b"s );
+  result = ranges::minmax({"c"s, "b"s, "a"s}, comp);
+  VERIFY( result.min == "a"s && result.max == "c"s );
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
+  test05();
 }

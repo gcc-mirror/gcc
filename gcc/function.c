@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -82,6 +82,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "options.h"
 #include "function-abi.h"
+#include "value-range.h"
+#include "gimple-range.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -1785,12 +1787,16 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	{
 	  error_for_asm (insn, "impossible constraint in %<asm%>");
 	  /* For asm goto, instead of fixing up all the edges
-	     just clear the template and clear input operands
-	     (asm goto doesn't have any output operands).  */
+	     just clear the template and clear input and output operands
+	     and strip away clobbers.  */
 	  if (JUMP_P (insn))
 	    {
 	      rtx asm_op = extract_asm_operands (PATTERN (insn));
+	      PATTERN (insn) = asm_op;
+	      PUT_MODE (asm_op, VOIDmode);
 	      ASM_OPERANDS_TEMPLATE (asm_op) = ggc_strdup ("");
+	      ASM_OPERANDS_OUTPUT_CONSTRAINT (asm_op) = "";
+	      ASM_OPERANDS_OUTPUT_IDX (asm_op) = 0;
 	      ASM_OPERANDS_INPUT_VEC (asm_op) = rtvec_alloc (0);
 	      ASM_OPERANDS_INPUT_CONSTRAINT_VEC (asm_op) = rtvec_alloc (0);
 	    }
@@ -3030,7 +3036,15 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 		  reg = gen_rtx_REG (word_mode, REGNO (entry_parm));
 		  reg = convert_to_mode (mode, copy_to_reg (reg), 1);
 		}
-	      emit_move_insn (change_address (mem, mode, 0), reg);
+
+	      /* We use adjust_address to get a new MEM with the mode
+		 changed.  adjust_address is better than change_address
+		 for this purpose because adjust_address does not lose
+		 the MEM_EXPR associated with the MEM.
+
+		 If the MEM_EXPR is lost, then optimizations like DSE
+		 assume the MEM escapes and thus is not subject to DSE.  */
+	      emit_move_insn (adjust_address (mem, mode, 0), reg);
 	    }
 
 #ifdef BLOCK_REG_PADDING
@@ -3821,9 +3835,16 @@ assign_parms (tree fndecl)
 	{
 	  rtx real_decl_rtl;
 
-	  real_decl_rtl = targetm.calls.function_value (TREE_TYPE (decl_result),
-							fndecl, true);
-	  REG_FUNCTION_VALUE_P (real_decl_rtl) = 1;
+	  /* Unless the psABI says not to.  */
+	  if (TYPE_EMPTY_P (TREE_TYPE (decl_result)))
+	    real_decl_rtl = NULL_RTX;
+	  else
+	    {
+	      real_decl_rtl
+		= targetm.calls.function_value (TREE_TYPE (decl_result),
+						fndecl, true);
+	      REG_FUNCTION_VALUE_P (real_decl_rtl) = 1;
+	    }
 	  /* The delay slot scheduler assumes that crtl->return_rtx
 	     holds the hard register containing the return value, not a
 	     temporary pseudo.  */
@@ -4852,6 +4873,8 @@ allocate_struct_function (tree fndecl, bool abstract_p)
      binding annotations among them.  */
   cfun->debug_nonbind_markers = lang_hooks.emits_begin_stmt
     && MAY_HAVE_DEBUG_MARKER_STMTS;
+
+  cfun->x_range_query = &global_ranges;
 }
 
 /* This is like allocate_struct_function, but pushes a new cfun for FNDECL
@@ -4926,6 +4949,9 @@ push_dummy_function (bool with_decl)
       fn_result_decl = build_decl (UNKNOWN_LOCATION, RESULT_DECL,
 					 NULL_TREE, void_type_node);
       DECL_RESULT (fn_decl) = fn_result_decl;
+      DECL_ARTIFICIAL (fn_decl) = 1;
+      tree fn_name = get_identifier (" ");
+      SET_DECL_ASSEMBLER_NAME (fn_decl, fn_name);
     }
   else
     fn_decl = NULL_TREE;
@@ -5399,9 +5425,11 @@ expand_function_end (void)
       tree decl_result = DECL_RESULT (current_function_decl);
       rtx decl_rtl = DECL_RTL (decl_result);
 
-      if (REG_P (decl_rtl)
-	  ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
-	  : DECL_REGISTER (decl_result))
+      if ((REG_P (decl_rtl)
+	   ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
+	   : DECL_REGISTER (decl_result))
+	  /* Unless the psABI says not to.  */
+	  && !TYPE_EMPTY_P (TREE_TYPE (decl_result)))
 	{
 	  rtx real_decl_rtl = crtl->return_rtx;
 	  complex_mode cmode;

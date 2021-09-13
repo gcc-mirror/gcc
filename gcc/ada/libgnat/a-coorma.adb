@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1220,7 +1220,7 @@ is
    ---------------
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map)
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Map)
    is
       First_Time : Boolean := True;
       use System.Put_Images;

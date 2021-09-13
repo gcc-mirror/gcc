@@ -9,10 +9,10 @@ main ()
   int x = INT_MIN;
   int y = 0;
   int z;
-  asm ("" : "+g" (y));
-  asm ("" : "+g" (x));
+  __asm__ volatile ("" : "+g" (y));
+  __asm__ volatile ("" : "+g" (x));
   z = y - (-x);
-  asm ("" : "+g" (z));
+  __asm__ volatile ("" : "+g" (z));
 }
 
 /* { dg-output "negation of -2147483648 cannot be represented in type 'int'\[^\n\r]*; cast to an unsigned type to negate this value to itself\[^\n\r]*(\n|\r\n|\r)" } */

@@ -1,5 +1,5 @@
 /* Simple bitmaps.
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -301,10 +301,8 @@ private:
   /* Prevent making a copy that refers to our sbitmap.  */
   auto_sbitmap (const auto_sbitmap &);
   auto_sbitmap &operator = (const auto_sbitmap &);
-#if __cplusplus >= 201103L
   auto_sbitmap (auto_sbitmap &&);
   auto_sbitmap &operator = (auto_sbitmap &&);
-#endif
 
   /* The bitmap we are managing.  */
   sbitmap m_bitmap;

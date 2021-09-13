@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,9 +21,9 @@
 #include <numeric>
 
 #ifndef __cpp_lib_interpolate
-# error "Feature-test macro for midpoint and lerp missing"
+# error "Feature-test macro for midpoint and lerp missing in <numeric>"
 #elif __cpp_lib_interpolate != 201902L
-# error "Feature-test macro for midpoint and lerp has wrong value"
+# error "Feature-test macro for midpoint and lerp has wrong value in <numeric>"
 #endif
 
 #include <climits>

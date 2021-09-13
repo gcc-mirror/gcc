@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2020 Free Software Foundation, Inc.
+# Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -159,8 +159,15 @@ proc lto_prune_warns { text } {
     regsub -all "(^|\n)\[ \t\]*\[\(\]file \[^\n\]* value=\[^\n\]*; file \[^\n\]* value=\[^\n\]*\[)\];" $text "" text
     regsub -all "(^|\n)\[ \t\]*\[^\n\]* definition taken" $text "" text
 
-    # Ignore informational notes.
-    regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text
+    # Ignore missing jobserver for tests that do more than 1 LTRANS unit
+    regsub -all "(^|\n)\[^\n\]*: warning: using serial compilation of \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: note: see the \[^\n\]*'-flto' option documentation\[^\n\]* for more information" $text "" text
+
+    global prune_notes
+    if { $prune_notes } {
+	# Ignore informational notes.
+	regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text
+    }
 
     verbose "lto_prune_warns: exit: $text" 2
 
@@ -387,8 +394,8 @@ proc lto-can-handle-directive { op } {
     # A list of directives to recognize, and a list of directives
     # to remap them to.
     # For example, "dg-lto-warning" is implemented by calling "dg-warning".
-    set directives { dg-lto-warning dg-lto-message }
-    set remapped_directives { dg-warning dg-message }
+    set directives { dg-lto-warning dg-lto-message dg-lto-note }
+    set remapped_directives { dg-warning dg-message dg-note }
 
     set idx [lsearch -exact $directives $cmd]
     if { $idx != -1 } {
@@ -594,7 +601,7 @@ proc lto-get-options { src } {
 #
 # SRC1 is the full pathname of the main file of the testcase.
 # SID identifies a test suite in the names of temporary files.
-proc lto-execute { src1 sid } {
+proc lto-execute-1 { src1 sid } {
     global srcdir tmpdir
     global lto_option_list
     global tool
@@ -806,6 +813,14 @@ proc lto-execute { src1 sid } {
 	    cleanup-modules ""
 	}
     }
+}
+
+proc lto-execute { src1 sid } {
+    lto-execute-1 $src1 $sid
+
+    # LTO testing doesn't use 'dg-runtest'/'dg-test', and thus doesn't call
+    # 'cleanup-after-saved-dg-test', so we have to clean up manually.
+    initialize_prune_notes
 }
 
 # Call pass if object readelf is ok, otherwise fail.

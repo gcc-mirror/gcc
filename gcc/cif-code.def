@@ -1,7 +1,7 @@
 /* This file contains the definitions of the cgraph_inline_failed_t
    enums used in GCC.
 
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -125,7 +125,7 @@ DEFCIFCODE(OPTIMIZATION_MISMATCH, CIF_FINAL_ERROR,
 	   N_("optimization level attribute mismatch"))
 
 /* We can't inline because the callee refers to comdat-local symbols.  */
-DEFCIFCODE(USES_COMDAT_LOCAL, CIF_FINAL_ERROR,
+DEFCIFCODE(USES_COMDAT_LOCAL, CIF_FINAL_NORMAL,
 	   N_("callee refers to comdat-local symbols"))
 
 /* We can't inline because of mismatched caller/callee

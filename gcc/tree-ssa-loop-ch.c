@@ -1,5 +1,5 @@
 /* Loop header copying on trees.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "cfgloop.h"
 #include "tree-inline.h"
-#include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
 #include "tree-ssa-sccvn.h"
 #include "tree-phinodes.h"
@@ -348,7 +347,6 @@ protected:
 unsigned int
 ch_base::copy_headers (function *fun)
 {
-  class loop *loop;
   basic_block header;
   edge exit, entry;
   basic_block *bbs, *copied_bbs;
@@ -365,7 +363,7 @@ ch_base::copy_headers (function *fun)
 
   auto_vec<std::pair<edge, loop_p> > copied;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       int initial_limit = param_max_loop_header_insns;
       int remaining_limit = initial_limit;
@@ -458,7 +456,7 @@ ch_base::copy_headers (function *fun)
 			  && gimple_cond_code (stmt) != NE_EXPR
 			  && INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 			  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs)))
-			gimple_set_no_warning (stmt, true);
+			suppress_warning (stmt, OPT_Wstrict_overflow_);
 		    }
 		  else if (is_gimple_assign (stmt))
 		    {
@@ -469,7 +467,7 @@ ch_base::copy_headers (function *fun)
 			  && rhs_code != NE_EXPR
 			  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 			  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (rhs1)))
-			gimple_set_no_warning (stmt, true);
+			suppress_warning (stmt, OPT_Wstrict_overflow_);
 		    }
 		}
 	    }

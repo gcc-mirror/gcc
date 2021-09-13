@@ -1,6 +1,6 @@
 /* nodiscard attribute tests  */
 /* { dg-do compile { target c++20 } } */
-/* { dg-options "-O -ftrack-macro-expansion=0" } */
+/* { dg-options "-O" } */
 
 [[nodiscard, nodiscard]] int check1 (void); // { dg-warning "specified multiple times" }
 

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -4197,8 +4197,10 @@ nds32_option_override (void)
 static rtx_insn *
 nds32_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
 		     vec<rtx> &inputs ATTRIBUTE_UNUSED,
+		     vec<machine_mode> &input_modes ATTRIBUTE_UNUSED,
 		     vec<const char *> &constraints ATTRIBUTE_UNUSED,
-		     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+		     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs,
+		     location_t /*loc*/)
 {
   if (!flag_inline_asm_r15)
     {

@@ -1,5 +1,5 @@
 /* Support for fully folding sub-trees of an expression for C compiler.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -154,7 +154,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
   tree orig_op0, orig_op1, orig_op2;
   bool op0_const = true, op1_const = true, op2_const = true;
   bool op0_const_self = true, op1_const_self = true, op2_const_self = true;
-  bool nowarning = TREE_NO_WARNING (expr);
+  bool nowarning = warning_suppressed_p (expr, OPT_Woverflow);
   bool unused_p;
   bool op0_lval = false;
   source_range old_range;
@@ -670,13 +670,13 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
  out:
   /* Some folding may introduce NON_LVALUE_EXPRs; all lvalue checks
      have been done by this point, so remove them again.  */
-  nowarning |= TREE_NO_WARNING (ret);
+  nowarning |= warning_suppressed_p (ret, OPT_Woverflow);
   STRIP_TYPE_NOPS (ret);
-  if (nowarning && !TREE_NO_WARNING (ret))
+  if (nowarning && !warning_suppressed_p (ret, OPT_Woverflow))
     {
       if (!CAN_HAVE_LOCATION_P (ret))
 	ret = build1 (NOP_EXPR, TREE_TYPE (ret), ret);
-      TREE_NO_WARNING (ret) = 1;
+      suppress_warning (ret, OPT_Woverflow);
     }
   if (ret != expr)
     {

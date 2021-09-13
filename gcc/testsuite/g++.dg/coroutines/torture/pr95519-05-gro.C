@@ -5,7 +5,7 @@
 struct pt_b
 {
   std::suspend_always initial_suspend() const noexcept { return {}; }
-  std::suspend_never final_suspend() const noexcept { return {}; }
+  std::suspend_always final_suspend() const noexcept { return {}; }
   constexpr void return_void () noexcept {};
   constexpr void unhandled_exception() const noexcept {}
 };

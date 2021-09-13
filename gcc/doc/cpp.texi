@@ -10,7 +10,7 @@
 
 @copying
 @c man begin COPYRIGHT
-Copyright @copyright{} 1987-2020 Free Software Foundation, Inc.
+Copyright @copyright{} 1987-2021 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -1907,9 +1907,10 @@ selected, the value of the macro is
 @code{201103L} for the 2011 C++ standard,
 @code{201402L} for the 2014 C++ standard,
 @code{201703L} for the 2017 C++ standard,
-or an unspecified value strictly larger than @code{201703L} for the
-experimental languages enabled by @option{-std=c++2a} and
-@option{-std=gnu++2a}.
+@code{202002L} for the 2020 C++ standard,
+or an unspecified value strictly larger than @code{202002L} for the
+experimental languages enabled by @option{-std=c++23} and
+@option{-std=gnu++23}.
 
 @item __OBJC__
 This macro is defined, with value 1, when the Objective-C compiler is in
@@ -2003,6 +2004,13 @@ definitions found in standard C.
 This macro expands to the name of the main input file, in the form
 of a C string constant.  This is the source file that was specified
 on the command line of the preprocessor or C compiler.
+
+@item __FILE_NAME__
+This macro expands to the basename of the current input file, in the
+form of a C string constant.  This is the last path component by which
+the preprocessor opened the file.  For example, processing
+@code{"/usr/local/include/myheader.h"} would set this
+macro to @code{"myheader.h"}.
 
 @item __INCLUDE_LEVEL__
 This macro expands to a decimal integer constant that represents the
@@ -2311,11 +2319,13 @@ mechanism based on @code{setjmp} and @code{longjmp} for exception
 handling.
 
 @item __GXX_EXPERIMENTAL_CXX0X__
-This macro is defined when compiling a C++ source file with the option
-@option{-std=c++0x} or @option{-std=gnu++0x}. It indicates that some
-features likely to be included in C++0x are available. Note that these
-features are experimental, and may change or be removed in future
-versions of GCC.
+This macro is defined when compiling a C++ source file with C++11 features
+enabled, i.e., for all C++ language dialects except @option{-std=c++98}
+and @option{-std=gnu++98}. This macro is obsolete, but can be used to
+detect experimental C++0x features in very old versions of GCC. Since
+GCC 4.7.0 the @code{__cplusplus} macro is defined correctly, so most
+code should test @code{__cplusplus >= 201103L} instead of using this
+macro.
 
 @item __GXX_WEAK__
 This macro is defined when compiling a C++ source file.  It has the

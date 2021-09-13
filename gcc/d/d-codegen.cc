@@ -1,5 +1,5 @@
 /* d-codegen.cc --  Code generation and routines for manipulation of GCC trees.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/ctfe.h"
 #include "dmd/declaration.h"
 #include "dmd/identifier.h"
+#include "dmd/module.h"
 #include "dmd/target.h"
 #include "dmd/template.h"
 
@@ -1153,6 +1154,14 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
   if (vec_safe_is_empty (init))
     return build_constructor (type, NULL);
 
+  /* Struct literals can be seen for special enums representing `_Complex',
+     make sure to reinterpret the literal as the correct type.  */
+  if (COMPLEX_FLOAT_TYPE_P (type))
+    {
+      gcc_assert (vec_safe_length (init) == 2);
+      return build_complex (type, (*init)[0].value, (*init)[1].value);
+    }
+
   vec <constructor_elt, va_gc> *ve = NULL;
   HOST_WIDE_INT offset = 0;
   bool constant_p = true;
@@ -1322,6 +1331,7 @@ component_ref (tree object, tree field)
 tree
 build_assign (tree_code code, tree lhs, tree rhs)
 {
+  tree result;
   tree init = stabilize_expr (&lhs);
   init = compound_expr (init, stabilize_expr (&rhs));
 
@@ -1335,27 +1345,39 @@ build_assign (tree_code code, tree lhs, tree rhs)
       d_mark_addressable (lhs);
       CALL_EXPR_RETURN_SLOT_OPT (rhs) = true;
     }
+  /* If modifying an LHS whose type is marked TREE_ADDRESSABLE.  */
+  else if (code == MODIFY_EXPR && TREE_ADDRESSABLE (TREE_TYPE (lhs))
+	   && TREE_SIDE_EFFECTS (rhs) && TREE_CODE (rhs) != TARGET_EXPR)
+    {
+      /* LHS may be referenced by the RHS expression, so force a temporary.  */
+      rhs = force_target_expr (rhs);
+    }
 
   /* The LHS assignment replaces the temporary in TARGET_EXPR_SLOT.  */
   if (TREE_CODE (rhs) == TARGET_EXPR)
     {
       /* If CODE is not INIT_EXPR, can't initialize LHS directly,
-	 since that would cause the LHS to be constructed twice.
-	 So we force the TARGET_EXPR to be expanded without a target.  */
+	 since that would cause the LHS to be constructed twice.  */
       if (code != INIT_EXPR)
 	{
 	  init = compound_expr (init, rhs);
-	  rhs = TARGET_EXPR_SLOT (rhs);
+	  result = build_assign (code, lhs, TARGET_EXPR_SLOT (rhs));
 	}
       else
 	{
 	  d_mark_addressable (lhs);
-	  rhs = TARGET_EXPR_INITIAL (rhs);
+	  TARGET_EXPR_INITIAL (rhs) = build_assign (code, lhs,
+						    TARGET_EXPR_INITIAL (rhs));
+	  result = rhs;
 	}
     }
+  else
+    {
+      /* Simple assignment.  */
+      result = fold_build2_loc (input_location, code,
+				TREE_TYPE (lhs), lhs, rhs);
+    }
 
-  tree result = fold_build2_loc (input_location, code,
-				 TREE_TYPE (lhs), lhs, rhs);
   return compound_expr (init, result);
 }
 
@@ -1477,6 +1499,11 @@ compound_expr (tree arg0, tree arg1)
   if (arg0 == NULL_TREE || !TREE_SIDE_EFFECTS (arg0))
     return arg1;
 
+  /* Remove intermediate expressions that have no side-effects.  */
+  while (TREE_CODE (arg0) == COMPOUND_EXPR
+	 && !TREE_SIDE_EFFECTS (TREE_OPERAND (arg0, 1)))
+    arg0 = TREE_OPERAND (arg0, 0);
+
   if (TREE_CODE (arg1) == TARGET_EXPR)
     {
       /* If the rhs is a TARGET_EXPR, then build the compound expression
@@ -1497,6 +1524,19 @@ compound_expr (tree arg0, tree arg1)
 tree
 return_expr (tree ret)
 {
+  /* Same as build_assign, the DECL_RESULT assignment replaces the temporary
+     in TARGET_EXPR_SLOT.  */
+  if (ret != NULL_TREE && TREE_CODE (ret) == TARGET_EXPR)
+    {
+      tree exp = TARGET_EXPR_INITIAL (ret);
+      tree init = stabilize_expr (&exp);
+
+      exp = fold_build1_loc (input_location, RETURN_EXPR, void_type_node, exp);
+      TARGET_EXPR_INITIAL (ret) = compound_expr (init, exp);
+
+      return ret;
+    }
+
   return fold_build1_loc (input_location, RETURN_EXPR,
 			  void_type_node, ret);
 }
@@ -1600,21 +1640,9 @@ build_array_index (tree ptr, tree index)
   /* Array element size.  */
   tree size_exp = size_in_bytes (target_type);
 
-  if (integer_zerop (size_exp))
+  if (integer_zerop (size_exp) || integer_onep (size_exp))
     {
-      /* Test for array of void.  */
-      if (TYPE_MODE (target_type) == TYPE_MODE (void_type_node))
-	index = fold_convert (type, index);
-      else
-	{
-	  /* Should catch this earlier.  */
-	  error ("invalid use of incomplete type %qD", TYPE_NAME (target_type));
-	  ptr_type = error_mark_node;
-	}
-    }
-  else if (integer_onep (size_exp))
-    {
-      /* Array of bytes -- No need to multiply.  */
+      /* Array of void or bytes -- No need to multiply.  */
       index = fold_convert (type, index);
     }
   else
@@ -1804,48 +1832,147 @@ void_okay_p (tree t)
   return t;
 }
 
+/* Builds a STRING_CST representing the filename of location LOC.  When the
+   location is not valid, the name of the source module is used instead.  */
+
+static tree
+build_filename_from_loc (const Loc &loc)
+{
+  const char *filename = loc.filename
+    ? loc.filename : d_function_chain->module->srcfile->toChars ();
+
+  unsigned length = strlen (filename);
+  tree str = build_string (length, filename);
+  TREE_TYPE (str) = make_array_type (Type::tchar, length + 1);
+
+  return build_address (str);
+}
+
+/* Builds a CALL_EXPR at location LOC in the source file to call LIBCALL when
+   an assert check fails.  When calling the msg variant functions, MSG is the
+   error message supplied by the user.  */
+
+tree
+build_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
+{
+  tree file;
+  tree line = size_int (loc.linnum);
+
+  switch (libcall)
+    {
+    case LIBCALL_ASSERT_MSG:
+    case LIBCALL_UNITTEST_MSG:
+    case LIBCALL_SWITCH_ERROR:
+      /* File location is passed as a D string.  */
+      if (loc.filename)
+	{
+	  unsigned len = strlen (loc.filename);
+	  tree str = build_string (len, loc.filename);
+	  TREE_TYPE (str) = make_array_type (Type::tchar, len);
+
+	  file = d_array_value (build_ctype (Type::tchar->arrayOf ()),
+				size_int (len), build_address (str));
+	}
+      else
+	file = null_array_node;
+      break;
+
+    case LIBCALL_ASSERTP:
+    case LIBCALL_UNITTESTP:
+      file = build_filename_from_loc (loc);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+
+  if (msg != NULL_TREE)
+    return build_libcall (libcall, Type::tvoid, 3, msg, file, line);
+  else
+    return build_libcall (libcall, Type::tvoid, 2, file, line);
+}
+
 /* Builds a CALL_EXPR at location LOC in the source file to execute when an
    array bounds check fails.  */
 
 tree
 build_array_bounds_call (const Loc &loc)
 {
-  switch (global.params.checkAction)
+  /* Terminate the program with a trap if no D runtime present.  */
+  if (checkaction_trap_p ())
+    return build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  else
     {
-    case CHECKACTION_D:
-      return d_assert_call (loc, LIBCALL_ARRAY_BOUNDS);
-
-    case CHECKACTION_C:
-    case CHECKACTION_halt:
-      return build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
-
-    default:
-      gcc_unreachable ();
+      return build_libcall (LIBCALL_ARRAYBOUNDSP, Type::tvoid, 2,
+			    build_filename_from_loc (loc),
+			    size_int (loc.linnum));
     }
 }
 
-/* Builds a bounds condition checking that INDEX is between 0 and LEN.
-   The condition returns the INDEX if true, or throws a RangeError.
-   If INCLUSIVE, we allow INDEX == LEN to return true also.  */
+/* Builds a bounds condition checking that INDEX is between 0 and LENGTH
+   in the index expression IE.  The condition returns the INDEX if true, or
+   throws a `RangeError`.  */
 
 tree
-build_bounds_condition (const Loc &loc, tree index, tree len, bool inclusive)
+build_bounds_index_condition (IndexExp *ie, tree index, tree length)
 {
-  if (!array_bounds_check ())
+  if (ie->indexIsInBounds || !array_bounds_check ())
     return index;
 
   /* Prevent multiple evaluations of the index.  */
   index = d_save_expr (index);
 
-  /* Generate INDEX >= LEN && throw RangeError.
+  /* Generate INDEX >= LENGTH && throw RangeError.
      No need to check whether INDEX >= 0 as the front-end should
      have already taken care of implicit casts to unsigned.  */
-  tree condition = fold_build2 (inclusive ? GT_EXPR : GE_EXPR,
-				d_bool_type, index, len);
-  /* Terminate the program with a trap if no D runtime present.  */
-  tree boundserr = build_array_bounds_call (loc);
+  tree condition = fold_build2 (GE_EXPR, d_bool_type, index, length);
+  tree boundserr = build_array_bounds_call (ie->e2->loc);
 
   return build_condition (TREE_TYPE (index), condition, boundserr, index);
+}
+
+/* Builds a bounds condition checking that the range LOWER..UPPER do not overlap
+   the slice expression SE of the source array length LENGTH.  The condition
+   returns the new array length if true, or throws an `ArraySliceError`.  */
+
+tree
+build_bounds_slice_condition (SliceExp *se, tree lower, tree upper, tree length)
+{
+  if (array_bounds_check ())
+    {
+      tree condition = NULL_TREE;
+
+      /* Enforces that `upper <= length`.  */
+      if (!se->upperIsInBounds && length != NULL_TREE)
+	condition = fold_build2 (GT_EXPR, d_bool_type, upper, length);
+      else
+	length = integer_zero_node;
+
+      /* Enforces that `lower <= upper`.  No need to check `lower <= length` as
+	 we've already ensured that `upper <= length`.  */
+      if (!se->lowerIsLessThanUpper)
+	{
+	  tree lwr_cond = fold_build2 (GT_EXPR, d_bool_type, lower, upper);
+
+	  if (condition != NULL_TREE)
+	    condition = build_boolop (TRUTH_ORIF_EXPR, condition, lwr_cond);
+	  else
+	    condition = lwr_cond;
+	}
+
+      if (condition != NULL_TREE)
+	{
+	  tree boundserr = build_array_bounds_call (se->loc);
+	  upper = build_condition (TREE_TYPE (upper), condition,
+				   boundserr, upper);
+	}
+    }
+
+  /* Need to ensure lower always gets evaluated first, as it may be a function
+     call.  Generates (lower, upper) - lower.  */
+  return fold_build2 (MINUS_EXPR, TREE_TYPE (upper),
+		      compound_expr (lower, upper), lower);
 }
 
 /* Returns TRUE if array bounds checking code generation is turned on.  */
@@ -1872,6 +1999,26 @@ array_bounds_check (void)
 	    return true;
 	}
       return false;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Returns TRUE if we terminate the program with a trap if an array bounds or
+   contract check fails.  */
+
+bool
+checkaction_trap_p (void)
+{
+  switch (global.params.checkAction)
+    {
+    case CHECKACTION_D:
+      return false;
+
+    case CHECKACTION_C:
+    case CHECKACTION_halt:
+      return true;
 
     default:
       gcc_unreachable ();
@@ -2064,33 +2211,6 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
     }
 
   return compound_expr (saved_args, result);
-}
-
-/* Builds a call to AssertError or AssertErrorMsg.  */
-
-tree
-d_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
-{
-  tree file;
-  tree line = size_int (loc.linnum);
-
-  /* File location is passed as a D string.  */
-  if (loc.filename)
-    {
-      unsigned len = strlen (loc.filename);
-      tree str = build_string (len, loc.filename);
-      TREE_TYPE (str) = make_array_type (Type::tchar, len);
-
-      file = d_array_value (build_ctype (Type::tchar->arrayOf ()),
-			    size_int (len), build_address (str));
-    }
-  else
-    file = null_array_node;
-
-  if (msg != NULL)
-    return build_libcall (libcall, Type::tvoid, 3, msg, file, line);
-  else
-    return build_libcall (libcall, Type::tvoid, 2, file, line);
 }
 
 /* Build and return the correct call to fmod depending on TYPE.
@@ -2327,40 +2447,23 @@ get_frame_for_symbol (Dsymbol *sym)
   return null_pointer_node;
 }
 
-/* Return the parent function of a nested class CD.  */
+/* Return the parent function of a nested class or struct AD.  */
 
 static FuncDeclaration *
-d_nested_class (ClassDeclaration *cd)
+get_outer_function (AggregateDeclaration *ad)
 {
   FuncDeclaration *fd = NULL;
-  while (cd && cd->isNested ())
+  while (ad && ad->isNested ())
     {
-      Dsymbol *dsym = cd->toParent2 ();
+      Dsymbol *dsym = ad->toParent2 ();
       if ((fd = dsym->isFuncDeclaration ()))
 	return fd;
       else
-	cd = dsym->isClassDeclaration ();
+	ad = dsym->isAggregateDeclaration ();
     }
+
   return NULL;
 }
-
-/* Return the parent function of a nested struct SD.  */
-
-static FuncDeclaration *
-d_nested_struct (StructDeclaration *sd)
-{
-  FuncDeclaration *fd = NULL;
-  while (sd && sd->isNested ())
-    {
-      Dsymbol *dsym = sd->toParent2 ();
-      if ((fd = dsym->isFuncDeclaration ()))
-	return fd;
-      else
-	sd = dsym->isStructDeclaration ();
-    }
-  return NULL;
-}
-
 
 /* Starting from the current function FD, try to find a suitable value of
    `this' in nested function instances.  A suitable `this' value is an
@@ -2384,18 +2487,17 @@ find_this_tree (ClassDeclaration *ocd)
 	    return convert_expr (get_decl_tree (fd->vthis),
 				 cd->type, ocd->type);
 
-	  fd = d_nested_class (cd);
+	  fd = get_outer_function (cd);
+	  continue;
 	}
-      else
-	{
-	  if (fd->isNested ())
-	    {
-	      fd = fd->toParent2 ()->isFuncDeclaration ();
-	      continue;
-	    }
 
-	  fd = NULL;
+      if (fd->isNested ())
+	{
+	  fd = fd->toParent2 ()->isFuncDeclaration ();
+	  continue;
 	}
+
+      fd = NULL;
     }
 
   return NULL_TREE;
@@ -2499,15 +2601,11 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 	    {
 	      VarDeclaration *v = (*fd->parameters)[i];
 	      /* Remove if already in closureVars so can push to front.  */
-	      for (size_t j = i; j < fd->closureVars.length; j++)
-		{
-		  Dsymbol *s = fd->closureVars[j];
-		  if (s == v)
-		    {
-		      fd->closureVars.remove (j);
-		      break;
-		    }
-		}
+	      size_t j = fd->closureVars.find (v);
+
+	      if (j < fd->closureVars.length)
+		fd->closureVars.remove (j);
+
 	      fd->closureVars.insert (i, v);
 	    }
 	}
@@ -2515,15 +2613,11 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
       /* Also add hidden `this' to outer context.  */
       if (fd->vthis)
 	{
-	  for (size_t i = 0; i < fd->closureVars.length; i++)
-	    {
-	      Dsymbol *s = fd->closureVars[i];
-	      if (s == fd->vthis)
-		{
-		  fd->closureVars.remove (i);
-		  break;
-		}
-	    }
+	  size_t i = fd->closureVars.find (fd->vthis);
+
+	  if (i < fd->closureVars.length)
+	    fd->closureVars.remove (i);
+
 	  fd->closureVars.insert (0, fd->vthis);
 	}
     }
@@ -2562,6 +2656,7 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 
   TYPE_FIELDS (frame_rec_type) = fields;
   TYPE_READONLY (frame_rec_type) = 1;
+  TYPE_CXX_ODR_P (frame_rec_type) = 1;
   layout_type (frame_rec_type);
   d_keep (frame_rec_type);
 
@@ -2741,10 +2836,6 @@ get_framedecl (FuncDeclaration *inner, FuncDeclaration *outer)
 
   while (fd && fd != outer)
     {
-      AggregateDeclaration *ad;
-      ClassDeclaration *cd;
-      StructDeclaration *sd;
-
       /* Parent frame link is the first field.  */
       if (FRAMEINFO_CREATES_FRAME (get_frameinfo (fd)))
 	result = indirect_ref (ptr_type_node, result);
@@ -2754,12 +2845,8 @@ get_framedecl (FuncDeclaration *inner, FuncDeclaration *outer)
       /* The frame/closure record always points to the outer function's
 	 frame, even if there are intervening nested classes or structs.
 	 So, we can just skip over these.  */
-      else if ((ad = fd->isThis ()) && (cd = ad->isClassDeclaration ()))
-	fd = d_nested_class (cd);
-      else if ((ad = fd->isThis ()) && (sd = ad->isStructDeclaration ()))
-	fd = d_nested_struct (sd);
       else
-	break;
+	fd = get_outer_function (fd->isThis ());
     }
 
   if (fd != outer)

@@ -1,9 +1,5 @@
-// REQUIRED_ARGS: -transition=checkimports -de
-/*
-TEST_OUTPUT:
----
----
-*/
+// REQUIRED_ARGS:
+// EXTRA_FILES: imports/test15857a.d imports/test15857b.d imports/test15857c.d
 
 // https://issues.dlang.org/show_bug.cgi?id=15825
 

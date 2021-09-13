@@ -1,5 +1,5 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for the D frontend.
-# Copyright (C) 2006-2020 Free Software Foundation, Inc.
+# Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,7 +52,6 @@ d-warn = $(filter-out -pedantic -Woverloaded-virtual, $(STRICT_WARN))
 # Also filter out warnings for missing format attributes in the D Frontend.
 DMD_WARN_CXXFLAGS = $(filter-out -Wmissing-format-attribute, $(WARN_CXXFLAGS))
 DMD_COMPILE = $(subst $(WARN_CXXFLAGS), $(DMD_WARN_CXXFLAGS), $(COMPILE))
-DMDGEN_COMPILE = $(subst $(COMPILER), $(COMPILER_FOR_BUILD), $(DMD_COMPILE))
 
 # D Frontend object files.
 D_FRONTEND_OBJS = \
@@ -65,6 +64,7 @@ D_FRONTEND_OBJS = \
 	d/blockexit.o \
 	d/canthrow.o \
 	d/checkedint.o \
+	d/chkformat.o \
 	d/clone.o \
 	d/cond.o \
 	d/constfold.o \
@@ -84,6 +84,7 @@ D_FRONTEND_OBJS = \
 	d/dscope.o \
 	d/dstruct.o \
 	d/dsymbol.o \
+	d/dsymbolsem.o \
 	d/dtemplate.o \
 	d/dversion.o \
 	d/entity.o \
@@ -115,6 +116,8 @@ D_FRONTEND_OBJS = \
 	d/rootobject.o \
 	d/safe.o \
 	d/sapply.o \
+	d/semantic2.o \
+	d/semantic3.o \
 	d/sideeffect.o \
 	d/speller.o \
 	d/statement.o \
@@ -122,6 +125,7 @@ D_FRONTEND_OBJS = \
 	d/staticassert.o \
 	d/staticcond.o \
 	d/stringtable.o \
+	d/templateparamsem.o \
 	d/tokens.o \
 	d/traits.o \
 	d/typesem.o \
@@ -356,6 +360,15 @@ d/id.h: d/id.c
 d/impcnvtab.c: d/impcnvgen$(build_exeext)
 	cd d && ./impcnvgen$(build_exeext)
 
+# Compile the generator programs.
 d/%.dmdgen.o: $(srcdir)/d/dmd/%.c
-	$(DMDGEN_COMPILE) $(D_INCLUDES) $<
-	$(POSTCOMPILE)
+	$(COMPILER_FOR_BUILD) -c $(BUILD_COMPILERFLAGS) $(D_INCLUDES) \
+		$(BUILD_CPPFLAGS) -o $@ $<
+
+# Header dependencies for the generator programs.
+D_SYSTEM_H = d/dmd/root/dsystem.h d/d-system.h
+
+d/idgen.dmdgen.o: d/dmd/idgen.c $(D_SYSTEM_H) $(BCONFIG_H) $(SYSTEM_H)
+
+d/impcnvgen.dmdgen.o: d/dmd/impcnvgen.c d/dmd/mtype.h $(D_SYSTEM_H) \
+	$(BCONFIG_H) $(SYSTEM_H)

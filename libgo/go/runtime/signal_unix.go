@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build aix || darwin || dragonfly || freebsd || hurd || linux || netbsd || openbsd || solaris
 // +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 package runtime
@@ -288,6 +289,8 @@ func setProcessCPUProfiler(hz int32) {
 		it.it_value = it.it_interval
 		setitimer(_ITIMER_PROF, &it, nil)
 	} else {
+		setitimer(_ITIMER_PROF, &_itimerval{}, nil)
+
 		// If the Go signal handler should be disabled by default,
 		// switch back to the signal handler that was installed
 		// when we enabled profiling. We don't try to handle the case
@@ -311,8 +314,6 @@ func setProcessCPUProfiler(hz int32) {
 				setsig(_SIGPROF, h)
 			}
 		}
-
-		setitimer(_ITIMER_PROF, &_itimerval{}, nil)
 	}
 }
 
@@ -988,15 +989,16 @@ func msigrestore(sigmask sigset) {
 	sigprocmask(_SIG_SETMASK, &sigmask, nil)
 }
 
-// sigblock blocks all signals in the current thread's signal mask.
+// sigblock blocks signals in the current thread's signal mask.
 // This is used to block signals while setting up and tearing down g
-// when a non-Go thread calls a Go function.
-// The OS-specific code is expected to define sigset_all.
+// when a non-Go thread calls a Go function. When a thread is exiting
+// we use the sigsetAllExiting value, otherwise the OS specific
+// definition of sigset_all is used.
 // This is nosplit and nowritebarrierrec because it is called by needm
 // which may be called on a non-Go thread with no g available.
 //go:nosplit
 //go:nowritebarrierrec
-func sigblock() {
+func sigblock(exiting bool) {
 	var set sigset
 	sigfillset(&set)
 	sigprocmask(_SIG_SETMASK, &set, nil)

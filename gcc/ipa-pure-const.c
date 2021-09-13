@@ -1,5 +1,5 @@
 /* Callgraph based analysis of static variables.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -842,20 +842,20 @@ check_retval_uses (tree retval, gimple *stmt)
       {
 	tree op2 = gimple_cond_rhs (cond);
 	if (!integer_zerop (op2))
-	  RETURN_FROM_IMM_USE_STMT (use_iter, false);
+	  return false;
       }
     else if (gassign *ga = dyn_cast<gassign *> (use_stmt))
       {
 	enum tree_code code = gimple_assign_rhs_code (ga);
 	if (TREE_CODE_CLASS (code) != tcc_comparison)
-	  RETURN_FROM_IMM_USE_STMT (use_iter, false);
+	  return false;
 	if (!integer_zerop (gimple_assign_rhs2 (ga)))
-	  RETURN_FROM_IMM_USE_STMT (use_iter, false);
+	  return false;
       }
     else if (is_gimple_debug (use_stmt))
       ;
     else if (use_stmt != stmt)
-      RETURN_FROM_IMM_USE_STMT (use_iter, false);
+      return false;
 
   return true;
 }
@@ -1087,9 +1087,8 @@ end:
 	    }
 	  else
 	    {
-	      class loop *loop;
 	      scev_initialize ();
-	      FOR_EACH_LOOP (loop, 0)
+	      for (auto loop : loops_list (cfun, 0))
 		if (!finite_loop_p (loop))
 		  {
 		    if (dump_file)
@@ -1937,7 +1936,7 @@ propagate_malloc (void)
 	  if (l->malloc_state == STATE_MALLOC_BOTTOM)
 	    continue;
 
-	  vec<cgraph_node *> callees = vNULL;
+	  auto_vec<cgraph_node *, 16> callees;
 	  for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
 	    {
 	      ipa_call_summary *es = ipa_call_summaries->get_create (cs);

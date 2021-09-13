@@ -2,7 +2,7 @@
 
    Contributed by Evgeny Stupachenko <evstupac@gmail.com>
 
-   Copyright (C) 2015-2020 Free Software Foundation, Inc.
+   Copyright (C) 2015-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -166,21 +166,23 @@ create_dispatcher_calls (struct cgraph_node *node)
 	}
     }
 
-  symtab->change_decl_assembler_name (node->decl,
-				      clone_function_name_numbered (
-					  node->decl, "default"));
+  tree fname = clone_function_name (node->decl, "default");
+  symtab->change_decl_assembler_name (node->decl, fname);
 
-  /* FIXME: copy of cgraph_node::make_local that should be cleaned up
-	    in next stage1.  */
-  node->make_decl_local ();
-  node->set_section (NULL);
-  node->set_comdat_group (NULL);
-  node->externally_visible = false;
-  node->forced_by_abi = false;
-  node->set_section (NULL);
+  if (node->definition)
+    {
+      /* FIXME: copy of cgraph_node::make_local that should be cleaned up
+		in next stage1.  */
+      node->make_decl_local ();
+      node->set_section (NULL);
+      node->set_comdat_group (NULL);
+      node->externally_visible = false;
+      node->forced_by_abi = false;
+      node->set_section (NULL);
 
-  DECL_ARTIFICIAL (node->decl) = 1;
-  node->force_output = true;
+      DECL_ARTIFICIAL (node->decl) = 1;
+      node->force_output = true;
+    }
 }
 
 /* Return length of attribute names string,
@@ -306,9 +308,9 @@ create_target_clone (cgraph_node *node, bool definition, char *name,
 
   if (definition)
     {
-      new_node = node->create_version_clone_with_body (vNULL, NULL,
-    						       NULL, NULL,
-						       NULL, name, attributes);
+      new_node
+	= node->create_version_clone_with_body (vNULL, NULL, NULL, NULL, NULL,
+						name, attributes, false);
       if (new_node == NULL)
 	return NULL;
       new_node->force_output = true;
@@ -319,9 +321,8 @@ create_target_clone (cgraph_node *node, bool definition, char *name,
       new_node = cgraph_node::get_create (new_decl);
       DECL_ATTRIBUTES (new_decl) = attributes;
       /* Generate a new name for the new version.  */
-      symtab->change_decl_assembler_name (new_node->decl,
-					  clone_function_name_numbered (
-					      node->decl, name));
+      tree fname = clone_function_name (node->decl, name);
+      symtab->change_decl_assembler_name (new_node->decl, fname);
     }
   return new_node;
 }

@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler. IA64-VMS version.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Douglas B Rupp (rupp@gnat.com).
 
 This file is part of GCC.

@@ -8,8 +8,9 @@
  */
 module core.sys.windows.docobj;
 version (Windows):
+@system:
 
-private import core.sys.windows.basetyps, core.sys.windows.oaidl, core.sys.windows.objidl, core.sys.windows.oleidl,
+import core.sys.windows.basetyps, core.sys.windows.oaidl, core.sys.windows.objidl, core.sys.windows.oleidl,
   core.sys.windows.unknwn, core.sys.windows.windef, core.sys.windows.wtypes;
 
 // FIXME: remove inherited methods from interface definitions

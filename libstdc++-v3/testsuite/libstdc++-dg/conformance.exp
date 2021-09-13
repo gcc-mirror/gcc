@@ -1,6 +1,6 @@
 # Functional and regression tests in C++ for libstdc++.
 
-# Copyright (C) 2001-2020 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -89,12 +89,14 @@ if {[info exists tests_file] && [file exists $tests_file]} {
 	    # 3. wchar_t tests, if not supported.
 	    # 4. thread tests, if not supported. 
 	    # 5. *_filebuf, if file I/O is not supported.
+	    # 6. simd tests.
 	    if { [string first _xin $t] == -1
 		 && [string first performance $t] == -1
 		 && (${v3-wchar_t} || [string first wchar_t $t] == -1) 
 		 && (${v3-threads} || [string first thread $t] == -1)  
 		 && ([string first "_filebuf" $t] == -1
-		     || [check_v3_target_fileio]) } {
+		     || [check_v3_target_fileio])
+		 && [string first "/experimental/simd/" $t] == -1 } {
 		lappend tests $t
 	    }
 	}
@@ -106,6 +108,20 @@ set tests [lsort $tests]
 global DEFAULT_CXXFLAGS
 global PCH_CXXFLAGS
 dg-runtest $tests "" "$DEFAULT_CXXFLAGS $PCH_CXXFLAGS"
+
+# Finally run simd tests with extra SIMD-relevant flags
+global DEFAULT_VECTCFLAGS
+global EFFECTIVE_TARGETS
+set DEFAULT_VECTCFLAGS ""
+set EFFECTIVE_TARGETS ""
+
+if [check_vect_support_and_set_flags] {
+  lappend DEFAULT_VECTCFLAGS "-O2"
+  lappend DEFAULT_VECTCFLAGS "-Wno-psabi"
+  et-dg-runtest dg-runtest [lsort \
+    [glob -nocomplain $srcdir/experimental/simd/*.cc]] \
+    "$DEFAULT_VECTCFLAGS" "$DEFAULT_CXXFLAGS $PCH_CXXFLAGS"
+}
 
 # All done.
 dg-finish

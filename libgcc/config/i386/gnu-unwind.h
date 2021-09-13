@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for GNU Hurd: x86.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
    Contributed by Samuel Thibault <samuel.thibault@gnu.org>
 
 This file is part of GCC.
@@ -38,10 +38,21 @@ x86_gnu_fallback_frame_state
 {
   struct handler_args {
     int signo;
-    int sigcode;
-    struct sigcontext *scp;
+    union
+      {
+	struct
+	  {
+	    long int sigcode;
+	    struct sigcontext *scp;
+	  } legacy;
+	struct
+	  {
+	    siginfo_t *siginfop;
+	    ucontext_t *uctxp;
+	  } posix;
+      };
   } *handler_args;
-  struct sigcontext *scp;
+  long int sigcode;
   unsigned long usp;
 
 /*
@@ -75,29 +86,52 @@ x86_gnu_fallback_frame_state
     return _URC_END_OF_STACK;
 
   handler_args = context->cfa;
-  scp = handler_args->scp;
-  usp = scp->sc_uesp;
+  sigcode = handler_args->legacy.sigcode;
+  if (sigcode >= -16 && sigcode < 4096)
+    {
+      /* This cannot be a SIGINFO pointer, assume legacy.  */
+      struct sigcontext *scp = handler_args->legacy.scp;
+      usp = scp->sc_uesp;
+
+      fs->regs.reg[0].loc.offset = (unsigned long)&scp->sc_eax - usp;
+      fs->regs.reg[1].loc.offset = (unsigned long)&scp->sc_ecx - usp;
+      fs->regs.reg[2].loc.offset = (unsigned long)&scp->sc_edx - usp;
+      fs->regs.reg[3].loc.offset = (unsigned long)&scp->sc_ebx - usp;
+      fs->regs.reg[5].loc.offset = (unsigned long)&scp->sc_ebp - usp;
+      fs->regs.reg[6].loc.offset = (unsigned long)&scp->sc_esi - usp;
+      fs->regs.reg[7].loc.offset = (unsigned long)&scp->sc_edi - usp;
+      fs->regs.reg[8].loc.offset = (unsigned long)&scp->sc_eip - usp;
+    }
+  else
+    {
+      /* This is not a valid sigcode, assume SIGINFO.  */
+      ucontext_t *uctxp = handler_args->posix.uctxp;
+      gregset_t *gregset = &uctxp->uc_mcontext.gregs;
+      usp = (*gregset)[REG_UESP];
+
+      fs->regs.reg[0].loc.offset = (unsigned long)&(*gregset)[REG_EAX] - usp;
+      fs->regs.reg[1].loc.offset = (unsigned long)&(*gregset)[REG_ECX] - usp;
+      fs->regs.reg[2].loc.offset = (unsigned long)&(*gregset)[REG_EDX] - usp;
+      fs->regs.reg[3].loc.offset = (unsigned long)&(*gregset)[REG_EBX] - usp;
+      fs->regs.reg[5].loc.offset = (unsigned long)&(*gregset)[REG_EBP] - usp;
+      fs->regs.reg[6].loc.offset = (unsigned long)&(*gregset)[REG_ESI] - usp;
+      fs->regs.reg[7].loc.offset = (unsigned long)&(*gregset)[REG_EDI] - usp;
+      fs->regs.reg[8].loc.offset = (unsigned long)&(*gregset)[REG_EIP] - usp;
+    }
 
   fs->regs.cfa_how = CFA_REG_OFFSET;
   fs->regs.cfa_reg = 4;
   fs->regs.cfa_offset = usp - (unsigned long) context->cfa;
 
   fs->regs.reg[0].how = REG_SAVED_OFFSET;
-  fs->regs.reg[0].loc.offset = (unsigned long)&scp->sc_eax - usp;
   fs->regs.reg[1].how = REG_SAVED_OFFSET;
-  fs->regs.reg[1].loc.offset = (unsigned long)&scp->sc_ecx - usp;
   fs->regs.reg[2].how = REG_SAVED_OFFSET;
-  fs->regs.reg[2].loc.offset = (unsigned long)&scp->sc_edx - usp;
   fs->regs.reg[3].how = REG_SAVED_OFFSET;
-  fs->regs.reg[3].loc.offset = (unsigned long)&scp->sc_ebx - usp;
   fs->regs.reg[5].how = REG_SAVED_OFFSET;
-  fs->regs.reg[5].loc.offset = (unsigned long)&scp->sc_ebp - usp;
   fs->regs.reg[6].how = REG_SAVED_OFFSET;
-  fs->regs.reg[6].loc.offset = (unsigned long)&scp->sc_esi - usp;
   fs->regs.reg[7].how = REG_SAVED_OFFSET;
-  fs->regs.reg[7].loc.offset = (unsigned long)&scp->sc_edi - usp;
   fs->regs.reg[8].how = REG_SAVED_OFFSET;
-  fs->regs.reg[8].loc.offset = (unsigned long)&scp->sc_eip - usp;
+
   fs->retaddr_column = 8;
   fs->signal_frame = 1;
 

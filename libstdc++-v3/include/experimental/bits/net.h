@@ -1,6 +1,6 @@
 // Networking implementation details -*- C++ -*-
 
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -95,15 +95,20 @@ inline namespace v1
 
   /// @endcond
 
-  // Base class for types meeting IntegerSocketOption requirements.
-  template<typename _Tp>
+  // Base class for types meeting both GettableSocketOption and
+  // SettableSocketOption requirements.
+  // The bool parameter allows __sockopt_base<bool> to have a
+  // __sockopt_base<int, B> base class (so that its _M_value is an int)
+  // but to have that be a distinct type from __sockopt_base<int>.
+  template<typename _Tp, bool = true>
     struct __sockopt_base
     {
       __sockopt_base() = default;
 
-      explicit __sockopt_base(int __val) : _M_value(__val) { }
-
-      int value() const noexcept { return _M_value; }
+      explicit
+      __sockopt_base(_Tp __val) noexcept(noexcept(_Tp(std::declval<_Tp&>())))
+      : _M_value(__val)
+      { }
 
       template<typename _Protocol>
 	void*
@@ -134,15 +139,27 @@ inline namespace v1
 
   // Base class for types meeting BooleanSocketOption requirements.
   template<>
-    struct __sockopt_base<bool> : __sockopt_base<int>
+    struct __sockopt_base<bool> : __sockopt_base<int, false>
     {
       __sockopt_base() = default;
 
-      explicit __sockopt_base(bool __val) : __sockopt_base<int>(__val) { }
+      explicit
+      __sockopt_base(bool __val) noexcept
+      : __sockopt_base<int, false>(__val)
+      { }
 
-      bool value() const noexcept { return __sockopt_base<int>::_M_value; }
+      bool value() const noexcept { return this->_M_value; }
       explicit operator bool() const noexcept { return value(); }
       bool operator!() const noexcept { return !value(); }
+    };
+
+  // Base class for types meeting IntegerSocketOption requirements.
+  template<>
+    struct __sockopt_base<int> : __sockopt_base<int, false>
+    {
+      using __sockopt_base<int, false>::__sockopt_base;
+
+      int value() const noexcept { return this->_M_value; }
     };
 
   template<typename _Derived, typename _Tp = int>
@@ -151,7 +168,7 @@ inline namespace v1
       using __sockopt_base<_Tp>::__sockopt_base;
 
       _Derived&
-      operator=(_Tp __value)
+      operator=(_Tp __value) noexcept(noexcept(__value = __value))
       {
 	__sockopt_base<_Tp>::_M_value = __value;
 	return static_cast<_Derived&>(*this);

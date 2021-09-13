@@ -2,7 +2,7 @@
    by .dot.  */
 
 /* { dg-require-dot "" } */
-/* { dg-additional-options "-fdump-analyzer-callgraph -fdump-analyzer-exploded-graph -fdump-analyzer-state-purge -fdump-analyzer-supergraph" } */
+/* { dg-additional-options "-fdump-analyzer-callgraph -fdump-analyzer-exploded-graph -fdump-analyzer-state-purge -fdump-analyzer-supergraph -fdump-analyzer-feasibility" } */
 
 #include <stdlib.h>
 

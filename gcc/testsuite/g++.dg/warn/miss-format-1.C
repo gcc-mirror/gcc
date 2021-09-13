@@ -21,9 +21,7 @@ bar (const char *fmt, ...)
 {
   va_list ap;
   va_start (ap, fmt);
-  vscanf (fmt, ap); /* { dg-warning "candidate" "scanf attribute warning" { xfail *-*-vxworks* } } */
-  /* VxWorks does not provide vscanf, either in kernel or RTP mode.  */
-  /* { dg-error "not declared" "" { target *-*-vxworks* } .-2 } */
+  vscanf (fmt, ap); /* { dg-warning "candidate" "scanf attribute warning" } */
   va_end (ap);
 }
 

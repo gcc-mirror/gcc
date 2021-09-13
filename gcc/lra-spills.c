@@ -1,5 +1,5 @@
 /* Change pseudos by memory.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -431,7 +431,7 @@ remove_pseudos (rtx *loc, rtx_insn *insn)
 	  alter_subreg (loc, false);
 	  if (GET_CODE (*loc) == MEM)
 	    {
-	      lra_get_insn_recog_data (insn)->used_insn_alternative = -1;
+	      lra_update_insn_recog_data (insn);
 	      if (lra_dump_file != NULL)
 		fprintf (lra_dump_file,
 			 "Memory subreg was simplified in insn #%u\n",

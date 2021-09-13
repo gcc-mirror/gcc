@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,21 +28,23 @@ void test01()
 {
   __gnu_test::fail_wstreambuf bib;
   wostream stream(&bib);
+
+  stream.flush(); // should catch exception and set badbit
+  VERIFY( stream.rdstate() == ios_base::badbit );
+
+  stream.clear();
   stream.exceptions(ios_base::badbit);
 
   try
     {
-      stream.flush();
+      stream.flush(); // should catch exception and set badbit and rethrow
       VERIFY( false );
     }
-  catch (const __gnu_test::positioning_error&) 
+  catch (const __gnu_test::positioning_error&)
     {
-      // stream should set badbit and rethrow facet_error.
-      VERIFY( stream.bad() );
-      VERIFY( (stream.rdstate() & ios_base::failbit) == 0 );
-      VERIFY( !stream.eof() );
+      VERIFY( stream.rdstate() == ios_base::badbit );
     }
-  catch (...) 
+  catch (...)
     {
       VERIFY( false );
     }

@@ -1,6 +1,6 @@
 // <system_error> -*- C++ -*-
 
-// Copyright (C) 2007-2020 Free Software Foundation, Inc.
+// Copyright (C) 2007-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** @addtogroup diagnostics
-   *  @{
+   * @{
    */
 
   class error_code;
@@ -75,7 +75,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr bool is_error_condition_enum_v =
       is_error_condition_enum<_Tp>::value;
 #endif // C++17
+  /// @}
+
   inline namespace _V2 {
+
+  /** @addtogroup diagnostics
+   * @{
+   */
 
   /** Abstract base class for types defining a category of error codes.
    *
@@ -85,6 +91,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * associated with the "generic" category and other OS-specific error
    * numbers are associated with the "system" category, but a user-defined
    * category might give different meanings to the same numerical values.
+   *
+   * @since C++11
    */
   class error_category
   {
@@ -159,7 +167,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Error category for other error codes defined by the OS.
   _GLIBCXX_CONST const error_category& system_category() noexcept;
 
+  /// @}
   } // end inline namespace
+
+  /** @addtogroup diagnostics
+   * @{
+   */
 
   error_code make_error_code(errc) noexcept;
 
@@ -176,6 +189,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * an `errno` value and the "generic" category, but errors from an HTTP
    * library might be represented by an HTTP response status code (e.g. 404)
    * and a custom category defined by the library.
+   *
+   * @since C++11
+   * @ingroup diagnostics
    */
   class error_code
   {
@@ -263,7 +279,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<<(basic_ostream<_CharT, _Traits>& __os, const error_code& __e)
     { return (__os << __e.category().name() << ':' << __e.value()); }
 
-  // @}
+  /// @}
 
   error_condition make_error_condition(errc) noexcept;
 
@@ -275,6 +291,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    * An `error_condition` represents something that the program can test for,
    * and subsequently take appropriate action.
+   *
+   * @since C++11
    */
   class error_condition
   {
@@ -346,7 +364,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    && __lhs.value() == __rhs.value()); }
 
   /// @relates error_code
-  /// @relates error_condition
   inline bool
   operator==(const error_code& __lhs, const error_condition& __rhs) noexcept
   {
@@ -386,7 +403,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		&& __lhs.value() < __rhs.value()));
   }
 
-  /// @relates error_code
   /// @relates error_condition
   inline bool
   operator==(const error_condition& __lhs, const error_code& __rhs) noexcept
@@ -401,12 +417,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return !(__lhs == __rhs); }
 
   /// @relates error_code
-  /// @relates error_condition
   inline bool
   operator!=(const error_code& __lhs, const error_condition& __rhs) noexcept
   { return !(__lhs == __rhs); }
 
-  /// @relates error_code
   /// @relates error_condition
   inline bool
   operator!=(const error_condition& __lhs, const error_code& __rhs) noexcept
@@ -418,6 +432,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     const error_condition& __rhs) noexcept
   { return !(__lhs == __rhs); }
 #endif // three_way_comparison
+  /// @}
 
   /**
    * @brief An exception type that includes an `error_code` value.
@@ -425,6 +440,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Typically used to report errors from the operating system and other
    * low-level APIs.
    *
+   * @since C++11
    * @ingroup exceptions
    */
   class system_error : public std::runtime_error

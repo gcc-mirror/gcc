@@ -1,5 +1,5 @@
 /* Base configuration file for all DragonFly targets.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Contributed by John Marino <gnugcc@marino.st>
 
 This file is part of GCC.

@@ -1,5 +1,5 @@
 /* jit.c -- Dummy "frontend" for use during JIT-compilation.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

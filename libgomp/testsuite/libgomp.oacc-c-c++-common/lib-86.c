@@ -7,9 +7,6 @@
 int
 main (int argc, char **argv)
 {
-  if (acc_get_num_devices (acc_device_nvidia) == 0)
-    return 0;
-
   if (acc_get_current_cuda_device () != 0)
     abort ();
 
@@ -20,18 +17,28 @@ main (int argc, char **argv)
 
   acc_shutdown (acc_device_host);
 
-  if (acc_get_num_devices (acc_device_nvidia) == 0)
-    return 0;
-
   if (acc_get_current_cuda_device () != 0)
     abort ();
 
-  acc_init (acc_device_nvidia);
+  if (acc_get_num_devices (acc_device_nvidia))
+    {
+      acc_init (acc_device_nvidia);
 
-  if (acc_get_current_cuda_device () == 0)
-    abort ();
+      if (acc_get_current_cuda_device () == 0)
+	abort ();
 
-  acc_shutdown (acc_device_nvidia);
+      acc_shutdown (acc_device_nvidia);
+    }
+
+  if (acc_get_num_devices (acc_device_radeon))
+    {
+      acc_init (acc_device_radeon);
+
+      if (acc_get_current_cuda_device () != 0)
+	abort ();
+
+      acc_shutdown (acc_device_radeon);
+    }
 
   if (acc_get_current_cuda_device () != 0)
     abort ();

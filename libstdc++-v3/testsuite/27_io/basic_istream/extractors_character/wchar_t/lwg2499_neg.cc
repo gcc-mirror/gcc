@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,7 @@
 void
 test01(std::wistream& in, wchar_t* wc)
 {
-  in >> wc; // { dg-error "here" }
+  in >> wc; // { dg-error "no match" }
 }
 
 struct WT : std::char_traits<wchar_t> { };
@@ -34,7 +34,7 @@ struct WT : std::char_traits<wchar_t> { };
 void
 test02(std::basic_istream<wchar_t, WT>& in, wchar_t* wc)
 {
-  in >> wc; // { dg-error "here" }
+  in >> wc; // { dg-error "no match" }
 }
 
 // { dg-excess-errors "" }

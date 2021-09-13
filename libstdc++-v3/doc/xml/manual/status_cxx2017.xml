@@ -17,6 +17,9 @@ features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
 <constant>__cplusplus</constant> is used to check for the
 presence of the required flag.
+GCC 9.1 was the first release with non-experimental C++17 support,
+so the API and ABI of features added in C++17 is only stable
+since that release.
 </para>
 
 <para>
@@ -457,7 +460,7 @@ Feature-testing recommendations for C++</link>.
 	P0185R1
 	</link>
       </entry>
-      <entry align="center"> 7 (<code>__is_swappable</code> available since 6.1)</entry>
+      <entry align="center"> 7.1 (<code>__is_swappable</code> available since 6.1)</entry>
       <entry><code> __cpp_lib_is_swappable >= 201603 </code></entry>
     </row>
 
@@ -641,7 +644,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 9.1 </entry>
-      <entry><code> __has_include(&lt;execution&gt;) </code>,
+      <entry><code> __has_include(&lt;execution&gt;)</code>,
 	     <code> __cpp_lib_execution >= 201603 </code>,
 	     <code> __cpp_lib_parallel_algorithm >= 201603 </code>
              (requires linking with <code>-ltbb</code>, see Note 3)
@@ -702,7 +705,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 8.1 </entry>
-      <entry><code> __has_include(&lt;filesystem&gt;) </code>,
+      <entry><code> __has_include(&lt;filesystem&gt;)</code>,
 	     <code> __cpp_lib_filesystem >= 201603 </code>
 	     (GCC 8.x requires linking with <code>-lstdc++fs</code>)
       </entry>
@@ -787,15 +790,14 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry> Elementary string conversions </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0067r5.html">
 	P0067R5
 	</link>
       </entry>
-      <entry align="center"> 8.1 (only integral types supported) </entry>
-      <entry><code> __has_include(&lt;charconv&gt;) </code>
+      <entry align="center"> 11.1 (integral types supported since 8.1) </entry>
+      <entry><code> __has_include(&lt;charconv&gt;)</code>,
              <code> __cpp_lib_to_chars >= 201611 </code></entry>
     </row>
 
@@ -1182,18 +1184,16 @@ since C++14 and the implementation is complete.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.2.8</entry>
       <entry>Primitive numeric output conversion</entry>
       <entry>Partial</entry>
-      <entry>Only integer types supported, not floating-point types</entry>
+      <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.2.9</entry>
       <entry>Primitive numeric input conversion</entry>
       <entry>Partial</entry>
-      <entry>Only integer types supported, not floating-point types</entry>
+      <entry/>
     </row>
     <row>
       <entry>23.3</entry>
@@ -1882,7 +1882,7 @@ since C++14 and the implementation is complete.
       <entry>28.4</entry>
       <entry>Parallel algorithms</entry>
       <entry/>
-      <entry>Using <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://github.com/llvm/llvm-project/tree/master/pstl">PSTL</link></entry>
+      <entry>Using <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://github.com/llvm/llvm-project/tree/main/pstl">PSTL</link></entry>
     </row>
     <row>
       <entry>28.5</entry>
@@ -2227,7 +2227,6 @@ since C++14 and the implementation is complete.
       <entry>Class template <code>regex_traits</code></entry>
       <entry>Partial</entry>
       <entry><code>transform_primary</code> is not correctly implemented</entry>
-      <entry/>
     </row>
     <row>
       <entry>31.8</entry>
@@ -2508,10 +2507,11 @@ since C++14 and the implementation is complete.
       <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>33.4.6.2</entry>
       <entry>Function <code>call_once</code></entry>
-      <entry>Broken</entry>
-      <entry>See <link xmlns:xlink="http://www.w3.org/1999/xlink"
+      <entry>Y</entry>
+      <entry>Exception support is broken on non-Linux targets.
+	See <link xmlns:xlink="http://www.w3.org/1999/xlink"
 	xlink:href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66146">PR
-	66146</link>
+	66146</link>.
       </entry>
     </row>
     <row>
@@ -2869,6 +2869,17 @@ since C++14 and the implementation is complete.
       <entry>Library Fundamentals 2 TS</entry>
     </row>
 
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0214r9.pdf">
+	  P0214R9
+	</link>
+      </entry>
+      <entry>Data-Parallel Types</entry>
+      <entry>Y</entry>
+      <entry>Parallelism 2 TS</entry>
+    </row>
+
   </tbody>
 </tgroup>
 </table>
@@ -2981,7 +2992,8 @@ since C++14 and the implementation is complete.
       <emphasis>30.10.2.1 [fs.conform.9945]</emphasis>
       The behavior of the filesystem library implementation will depend on
       the target operating system. Some features will not be supported
-      on some targets.
+      on some targets. Symbolic links and file permissions
+      are not supported on Windows.
    </para>
 
    <para>
@@ -3014,6 +3026,223 @@ since C++14 and the implementation is complete.
       If <code>!is_regular_file(p)</code>, an error is reported.
    </para>
 
+    <para>
+      <emphasis>30.10.15.32 [fs.op.rename]</emphasis>
+      On Windows, <code>filesystem::rename</code>
+      is implemented by calling <code>MoveFileExW</code> and so
+      does not meet the requirements of POSIX <code>rename</code>
+      when one or both of the paths resolves to an existing directory.
+      Specifically, it is not possible to rename a directory to replace another
+      directory (POSIX requires that to work if the directory being
+      replaced is empty).
+    </para>
+
+
+   <section xml:id="iso.2017.par2ts" xreflabel="Implementation Specific Behavior of the Parallelism 2 TS"><info><title>Parallelism 2 TS</title></info>
+
+     <para>
+        <emphasis>9.3 [parallel.simd.abi]</emphasis>
+        <code>max_fixed_size&lt;T&gt;</code> is 32, except when targetting
+        AVX512BW and <code>sizeof(T)</code> is 1.
+     </para>
+
+     <para>
+        When targeting 32-bit x86,
+        <classname>simd_abi::compatible&lt;T&gt;</classname> is an alias for
+        <classname>simd_abi::scalar</classname>.
+        When targeting 64-bit x86 (including x32) or Aarch64,
+        <classname>simd_abi::compatible&lt;T&gt;</classname> is an alias for
+        <classname>simd_abi::_VecBuiltin&lt;16&gt;</classname>,
+        unless <code>T</code> is <code>long double</code>, in which case it is
+        an alias for <classname>simd_abi::scalar</classname>.
+        When targeting ARM (but not Aarch64) with NEON support,
+        <classname>simd_abi::compatible&lt;T&gt;</classname> is an alias for
+        <classname>simd_abi::_VecBuiltin&lt;16&gt;</classname>,
+        unless <code>sizeof(T) &gt; 4</code>, in which case it is
+        an alias for <classname>simd_abi::scalar</classname>. Additionally,
+        <classname>simd_abi::compatible&lt;float&gt;</classname> is an alias for
+        <classname>simd_abi::scalar</classname> unless compiling with
+        -ffast-math.
+     </para>
+
+     <para>
+        When targeting x86 (both 32-bit and 64-bit),
+        <classname>simd_abi::native&lt;T&gt;</classname> is an alias for one of
+        <classname>simd_abi::scalar</classname>,
+        <classname>simd_abi::_VecBuiltin&lt;16&gt;</classname>,
+        <classname>simd_abi::_VecBuiltin&lt;32&gt;</classname>, or
+        <classname>simd_abi::_VecBltnBtmsk&lt;64&gt;</classname>, depending on
+        <code>T</code> and the machine options the compiler was invoked with.
+     </para>
+
+     <para>
+        When targeting ARM/Aarch64 or POWER,
+        <classname>simd_abi::native&lt;T&gt;</classname> is an alias for
+        <classname>simd_abi::scalar</classname> or
+        <classname>simd_abi::_VecBuiltin&lt;16&gt;</classname>, depending on
+        <code>T</code> and the machine options the compiler was invoked with.
+     </para>
+
+     <para>
+        For any other targeted machine
+        <classname>simd_abi::compatible&lt;T&gt;</classname> and
+        <classname>simd_abi::native&lt;T&gt;</classname> are aliases for
+        <classname>simd_abi::scalar</classname>. (subject to change)
+     </para>
+
+     <para>
+        The extended ABI tag types defined in the
+        <code>std::experimental::parallelism_v2::simd_abi</code> namespace are:
+        <classname>simd_abi::_VecBuiltin&lt;Bytes&gt;</classname>, and
+        <classname>simd_abi::_VecBltnBtmsk&lt;Bytes&gt;</classname>.
+     </para>
+
+     <para>
+        <classname>simd_abi::deduce&lt;T, N, Abis...&gt;::type</classname>,
+        with <code>N &gt; 1</code> is an alias for an extended ABI tag, if a
+        supported extended ABI tag exists. Otherwise it is an alias for
+        <classname>simd_abi::fixed_size&lt;N&gt;</classname>. The <classname>
+        simd_abi::_VecBltnBtmsk</classname> ABI tag is preferred over
+        <classname>simd_abi::_VecBuiltin</classname>.
+     </para>
+
+     <para>
+        <emphasis>9.4 [parallel.simd.traits]</emphasis>
+        <classname>memory_alignment&lt;T, U&gt;::value</classname> is
+        <code>sizeof(U) * T::size()</code> rounded up to the next power-of-two
+        value.
+     </para>
+
+     <para>
+        <emphasis>9.6.1 [parallel.simd.overview]</emphasis>
+        On ARM, <classname>simd&lt;T, _VecBuiltin&lt;Bytes&gt;&gt;</classname>
+        is supported if <code>__ARM_NEON</code> is defined and
+        <code>sizeof(T) &lt;= 4</code>. Additionally,
+        <code>sizeof(T) == 8</code> with integral <code>T</code> is supported if
+        <code>__ARM_ARCH &gt;= 8</code>, and <code>double</code> is supported if
+        <code>__aarch64__</code> is defined.
+
+        On POWER, <classname>simd&lt;T, _VecBuiltin&lt;Bytes&gt;&gt;</classname>
+        is supported if <code>__ALTIVEC__</code> is defined and <code>sizeof(T)
+        &lt; 8</code>. Additionally, <code>double</code> is supported if
+        <code>__VSX__</code> is defined, and any <code>T</code> with <code>
+        sizeof(T) &lt;= 8</code> is supported if <code>__POWER8_VECTOR__</code>
+        is defined.
+
+        On x86, given an extended ABI tag <code>Abi</code>,
+        <classname>simd&lt;T, Abi&gt;</classname> is supported according to the
+        following table:
+        <table frame="all" xml:id="table.par2ts_simd_support">
+          <title>Support for Extended ABI Tags</title>
+
+          <tgroup cols="4" align="left" colsep="0" rowsep="1">
+          <colspec colname="c1"/>
+          <colspec colname="c2"/>
+          <colspec colname="c3"/>
+          <colspec colname="c4"/>
+            <thead>
+              <row>
+                <entry>ABI tag <code>Abi</code></entry>
+                <entry>value type <code>T</code></entry>
+                <entry>values for <code>Bytes</code></entry>
+                <entry>required machine option</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry morerows="5">
+                  <classname>_VecBuiltin&lt;Bytes&gt;</classname>
+                </entry>
+                <entry morerows="1"><code>float</code></entry>
+                <entry>8, 12, 16</entry>
+                <entry>"-msse"</entry>
+              </row>
+
+              <row>
+                <entry>20, 24, 28, 32</entry>
+                <entry>"-mavx"</entry>
+              </row>
+
+              <row>
+                <entry morerows="1"><code>double</code></entry>
+                <entry>16</entry>
+                <entry>"-msse2"</entry>
+              </row>
+
+              <row>
+                <entry>24, 32</entry>
+                <entry>"-mavx"</entry>
+              </row>
+
+              <row>
+                <entry morerows="1">
+                  integral types other than <code>bool</code>
+                </entry>
+                <entry>
+                  <code>Bytes</code> ≤ 16 and <code>Bytes</code> divisible by
+                  <code>sizeof(T)</code>
+                </entry>
+                <entry>"-msse2"</entry>
+              </row>
+
+              <row>
+                <entry>
+                  16 &lt; <code>Bytes</code> ≤ 32 and <code>Bytes</code>
+                  divisible by <code>sizeof(T)</code>
+                </entry>
+                <entry>"-mavx2"</entry>
+              </row>
+
+              <row>
+                <entry morerows="1">
+                  <classname>_VecBuiltin&lt;Bytes&gt;</classname> and
+                  <classname>_VecBltnBtmsk&lt;Bytes&gt;</classname>
+                </entry>
+                <entry>
+                  vectorizable types with <code>sizeof(T)</code> ≥ 4
+                </entry>
+                <entry morerows="1">
+                  32 &lt; <code>Bytes</code> ≤ 64 and <code>Bytes</code>
+                  divisible by <code>sizeof(T)</code>
+                </entry>
+                <entry>"-mavx512f"</entry>
+              </row>
+
+              <row>
+                <entry>
+                  vectorizable types with <code>sizeof(T)</code> &lt; 4
+                </entry>
+                <entry>"-mavx512bw"</entry>
+              </row>
+
+              <row>
+                <entry morerows="1">
+                  <classname>_VecBltnBtmsk&lt;Bytes&gt;</classname>
+                </entry>
+                <entry>
+                  vectorizable types with <code>sizeof(T)</code> ≥ 4
+                </entry>
+                <entry morerows="1">
+                  <code>Bytes</code> ≤ 32 and <code>Bytes</code> divisible by
+                  <code>sizeof(T)</code>
+                </entry>
+                <entry>"-mavx512vl"</entry>
+              </row>
+
+              <row>
+                <entry>
+                  vectorizable types with <code>sizeof(T)</code> &lt; 4
+                </entry>
+                <entry>"-mavx512bw" and "-mavx512vl"</entry>
+              </row>
+
+            </tbody>
+          </tgroup>
+        </table>
+     </para>
+
+   </section>
 
 </section>
 

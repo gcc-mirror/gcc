@@ -1,5 +1,5 @@
 /* Perform simple optimizations to clean up the result of reload.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1013,10 +1013,6 @@ reload_combine_recognize_const_pattern (rtx_insn *insn)
 	      && reg_state[clobbered_regno].real_store_ruid >= use_ruid)
 	    break;
 
-	  /* Do not separate cc0 setter and cc0 user on HAVE_cc0 targets.  */
-	  if (HAVE_cc0 && must_move_add && sets_cc0_p (PATTERN (use_insn)))
-	    break;
-
 	  gcc_assert (reg_state[regno].store_ruid <= use_ruid);
 	  /* Avoid moving a use of ADDREG past a point where it is stored.  */
 	  if (reg_state[REGNO (addreg)].store_ruid > use_ruid)
@@ -1725,7 +1721,8 @@ move2add_valid_value_p (int regno, scalar_int_mode mode)
     {
       scalar_int_mode old_mode;
       if (!is_a <scalar_int_mode> (reg_mode[regno], &old_mode)
-	  || !MODES_OK_FOR_MOVE2ADD (mode, old_mode))
+	  || !MODES_OK_FOR_MOVE2ADD (mode, old_mode)
+	  || !REG_CAN_CHANGE_MODE_P (regno, old_mode, mode))
 	return false;
       /* The value loaded into regno in reg_mode[regno] is also valid in
 	 mode after truncation only if (REG:mode regno) is the lowpart of

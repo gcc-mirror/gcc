@@ -1,5 +1,5 @@
 /* Generate code to allocate RTL structures.
-   Copyright (C) 1997-2020 Free Software Foundation, Inc.
+   Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -143,7 +143,6 @@ special_rtx (int idx)
 	  || strcmp (defs[idx].enumname, "SUBREG") == 0
 	  || strcmp (defs[idx].enumname, "MEM") == 0
 	  || strcmp (defs[idx].enumname, "PC") == 0
-	  || strcmp (defs[idx].enumname, "CC0") == 0
 	  || strcmp (defs[idx].enumname, "RETURN") == 0
 	  || strcmp (defs[idx].enumname, "SIMPLE_RETURN") == 0
 	  || strcmp (defs[idx].enumname, "CONST_VECTOR") == 0);

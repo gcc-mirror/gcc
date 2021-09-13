@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
    Contributed by Sebastian Huber <sebastian.huber@embedded-brains.de>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -45,6 +45,11 @@ static inline void gomp_sem_wait (gomp_sem_t *sem)
 static inline void gomp_sem_post (gomp_sem_t *sem)
 {
   _Semaphore_Post (sem);
+}
+
+static inline int gomp_sem_getcount (gomp_sem_t *sem)
+{
+  return (int) __atomic_load_n (&sem->_count, MEMMODEL_RELAXED);
 }
 
 static inline void gomp_sem_destroy (gomp_sem_t *sem)

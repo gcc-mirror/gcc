@@ -1,7 +1,7 @@
 /* Garbage collection for the GNU compiler.  Internal definitions
    for ggc-*.c and stringpool.c.
 
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -87,9 +87,6 @@ extern void ggc_pch_read (FILE *, void *);
 
 
 /* Allocation and collection.  */
-
-/* When set, ggc_collect will do collection.  */
-extern bool ggc_force_collect;
 
 extern void ggc_record_overhead (size_t, size_t, void * FINAL_MEM_STAT_DECL);
 

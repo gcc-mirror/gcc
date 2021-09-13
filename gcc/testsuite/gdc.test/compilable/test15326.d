@@ -5,19 +5,19 @@ private struct _NestedSym_
 {
     static if ((void*).sizeof == 8)
     {
-        pragma(msg, "64");
+        int pointersize = 64;
     }
     else
     {
-        pragma(msg, "32");
+        int pointersize = 32;
     }
 
     version (X86_64)
     {
-        pragma(msg, "X86_64");
+        string arch = "X86_64";
     }
     else
     {
-        pragma(msg, "Not 64");
+        string arch = "Not 64";
     }
 }

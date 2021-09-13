@@ -1,4 +1,10 @@
-// PERMUTE_ARGS:
+/*
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+Success
+---
+*/
 
 extern(C) int printf(const char*, ...);
 
@@ -189,7 +195,6 @@ void test2407()
         b = ES.b,
         c = ES.c,
     }
-    static assert(EES.init == ES.init);
     static assert(EES.init == S(1));
     static assert(!__traits(compiles, EES.min));
     static assert(!__traits(compiles, EES.max));

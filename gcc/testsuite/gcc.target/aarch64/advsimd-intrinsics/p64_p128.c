@@ -16,6 +16,11 @@ VECT_VAR_DECL(vbsl_expected,poly,64,2) [] = { 0xfffffff1,
 
 /* Expected results: vceq.  */
 VECT_VAR_DECL(vceq_expected,uint,64,1) [] = { 0x0 };
+VECT_VAR_DECL(vceq_expected,uint,64,2) [] = { 0x0, 0xffffffffffffffff };
+
+/* Expected results: vceqz.  */
+VECT_VAR_DECL(vceqz_expected,uint,64,1) [] = { 0x0 };
+VECT_VAR_DECL(vceqz_expected,uint,64,2) [] = { 0x0, 0xffffffffffffffff };
 
 /* Expected results: vcombine.  */
 VECT_VAR_DECL(vcombine_expected,poly,64,2) [] = { 0xfffffffffffffff0, 0x88 };
@@ -213,7 +218,7 @@ int main (void)
 
   /* vceq_p64 tests. */
 #undef TEST_MSG
-#define TEST_MSG "VCEQ"
+#define TEST_MSG "VCEQ/VCEQQ"
 
 #define TEST_VCOMP1(INSN, Q, T1, T2, T3, W, N)				\
   VECT_VAR(vceq_vector_res, T3, W, N) =					\
@@ -227,16 +232,55 @@ int main (void)
   DECL_VARIABLE(vceq_vector, poly, 64, 1);
   DECL_VARIABLE(vceq_vector2, poly, 64, 1);
   DECL_VARIABLE(vceq_vector_res, uint, 64, 1);
+  DECL_VARIABLE(vceq_vector, poly, 64, 2);
+  DECL_VARIABLE(vceq_vector2, poly, 64, 2);
+  DECL_VARIABLE(vceq_vector_res, uint, 64, 2);
 
   CLEAN(result, uint, 64, 1);
+  CLEAN(result, uint, 64, 2);
 
   VLOAD(vceq_vector, buffer, , poly, p, 64, 1);
+  VLOAD(vceq_vector, buffer, q, poly, p, 64, 2);
 
   VDUP(vceq_vector2, , poly, p, 64, 1, 0x88);
+  VSET_LANE(vceq_vector2, q, poly, p, 64, 2, 0, 0x88);
+  VSET_LANE(vceq_vector2, q, poly, p, 64, 2, 1, 0xFFFFFFFFFFFFFFF1);
 
   TEST_VCOMP(vceq, , poly, p, uint, 64, 1);
+  TEST_VCOMP(vceq, q, poly, p, uint, 64, 2);
 
   CHECK(TEST_MSG, uint, 64, 1, PRIx64, vceq_expected, "");
+  CHECK(TEST_MSG, uint, 64, 2, PRIx64, vceq_expected, "");
+
+  /* vceqz_p64 tests. */
+#undef TEST_MSG
+#define TEST_MSG "VCEQZ/VCEQZQ"
+
+#define TEST_VCOMPZ1(INSN, Q, T1, T2, T3, W, N)				\
+  VECT_VAR(vceqz_vector_res, T3, W, N) =				\
+    INSN##Q##_##T2##W(VECT_VAR(vceqz_vector, T1, W, N));		\
+  vst1##Q##_u##W(VECT_VAR(result, T3, W, N), VECT_VAR(vceqz_vector_res, T3, W, N))
+
+#define TEST_VCOMPZ(INSN, Q, T1, T2, T3, W, N)				\
+  TEST_VCOMPZ1(INSN, Q, T1, T2, T3, W, N)
+
+  DECL_VARIABLE(vceqz_vector, poly, 64, 1);
+  DECL_VARIABLE(vceqz_vector_res, uint, 64, 1);
+  DECL_VARIABLE(vceqz_vector, poly, 64, 2);
+  DECL_VARIABLE(vceqz_vector_res, uint, 64, 2);
+
+  CLEAN(result, uint, 64, 1);
+  CLEAN(result, uint, 64, 2);
+
+  VLOAD(vceqz_vector, buffer, , poly, p, 64, 1);
+  VLOAD(vceqz_vector, buffer, q, poly, p, 64, 2);
+  VSET_LANE(vceqz_vector, q, poly, p, 64, 2, 1, 0);
+
+  TEST_VCOMPZ(vceqz, , poly, p, uint, 64, 1);
+  TEST_VCOMPZ(vceqz, q, poly, p, uint, 64, 2);
+
+  CHECK(TEST_MSG, uint, 64, 1, PRIx64, vceqz_expected, "");
+  CHECK(TEST_MSG, uint, 64, 2, PRIx64, vceqz_expected, "");
 
   /* vcombine_p64 tests.  */
 #undef TEST_MSG

@@ -40,6 +40,15 @@ License:    $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0)
 */
 module std.parallelism;
 
+version (OSX)
+    version = Darwin;
+else version (iOS)
+    version = Darwin;
+else version (TVOS)
+    version = Darwin;
+else version (WatchOS)
+    version = Darwin;
+
 ///
 @system unittest
 {
@@ -86,107 +95,82 @@ import std.meta;
 import std.range.primitives;
 import std.traits;
 
-version (OSX)
-{
-    version = useSysctlbyname;
-}
-else version (FreeBSD)
-{
-    version = useSysctlbyname;
-}
-else version (DragonFlyBSD)
-{
-    version = useSysctlbyname;
-}
-else version (NetBSD)
-{
-    version = useSysctlbyname;
-}
+/*
+(For now public undocumented with reserved name.)
 
+A lazily initialized global constant. The underlying value is a shared global
+statically initialized to `outOfBandValue` which must not be a legit value of
+the constant. Upon the first call the situation is detected and the global is
+initialized by calling `initializer`. The initializer is assumed to be pure
+(even if not marked as such), i.e. return the same value upon repeated calls.
+For that reason, no special precautions are taken so `initializer` may be called
+more than one time leading to benign races on the cached value.
 
-version (Windows)
+In the quiescent state the cost of the function is an atomic load from a global.
+
+Params:
+    T = The type of the pseudo-constant (may be qualified)
+    outOfBandValue = A value that cannot be valid, it is used for initialization
+    initializer = The function performing initialization; must be `nothrow`
+
+Returns:
+    The lazily initialized value
+*/
+@property pure
+T __lazilyInitializedConstant(T, alias outOfBandValue, alias initializer)()
+if (is(Unqual!T : T)
+    && is(typeof(initializer()) : T)
+    && is(typeof(outOfBandValue) : T))
 {
-    // BUGS:  Only works on Windows 2000 and above.
-    shared static this()
+    static T impl() nothrow
     {
-        import core.sys.windows.windows : SYSTEM_INFO, GetSystemInfo;
-        import std.algorithm.comparison : max;
-
-        SYSTEM_INFO si;
-        GetSystemInfo(&si);
-        totalCPUs = max(1, cast(uint) si.dwNumberOfProcessors);
+        // Thread-local cache
+        static Unqual!T tls = outOfBandValue;
+        auto local = tls;
+        // Shortest path, no atomic operations
+        if (local != outOfBandValue) return local;
+        // Process-level cache
+        static shared Unqual!T result = outOfBandValue;
+        // Initialize both process-level cache and tls
+        local = atomicLoad(result);
+        if (local == outOfBandValue)
+        {
+            local = initializer();
+            atomicStore(result, local);
+        }
+        tls = local;
+        return local;
     }
 
-}
-else version (linux)
-{
-    shared static this()
-    {
-        import core.sys.posix.unistd : _SC_NPROCESSORS_ONLN, sysconf;
-        totalCPUs = cast(uint) sysconf(_SC_NPROCESSORS_ONLN);
-    }
-}
-else version (Solaris)
-{
-    shared static this()
-    {
-        import core.sys.posix.unistd : _SC_NPROCESSORS_ONLN, sysconf;
-        totalCPUs = cast(uint) sysconf(_SC_NPROCESSORS_ONLN);
-    }
-}
-else version (useSysctlbyname)
-{
-    extern(C) int sysctlbyname(
-        const char *, void *, size_t *, void *, size_t
-    );
-
-    shared static this()
-    {
-        version (OSX)
-        {
-            auto nameStr = "machdep.cpu.core_count\0".ptr;
-        }
-        else version (FreeBSD)
-        {
-            auto nameStr = "hw.ncpu\0".ptr;
-        }
-        else version (DragonFlyBSD)
-        {
-            auto nameStr = "hw.ncpu\0".ptr;
-        }
-        else version (NetBSD)
-        {
-            auto nameStr = "hw.ncpu\0".ptr;
-        }
-
-        uint ans;
-        size_t len = uint.sizeof;
-        sysctlbyname(nameStr, &ans, &len, null, 0);
-        totalCPUs = ans;
-    }
-
-}
-else
-{
-    static assert(0, "Don't know how to get N CPUs on this OS.");
+    import std.traits : SetFunctionAttributes;
+    alias Fun = SetFunctionAttributes!(typeof(&impl), "D",
+        functionAttributes!(typeof(&impl)) | FunctionAttribute.pure_);
+    auto purified = (() @trusted => cast(Fun) &impl)();
+    return purified();
 }
 
-immutable size_t cacheLineSize;
-shared static this()
+// Returns the size of a cache line.
+alias cacheLineSize =
+    __lazilyInitializedConstant!(immutable(size_t), size_t.max, cacheLineSizeImpl);
+
+private size_t cacheLineSizeImpl() @nogc nothrow @trusted
 {
+    size_t result = 0;
     import core.cpuid : datacache;
-    size_t lineSize = 0;
-    foreach (cachelevel; datacache)
+    foreach (ref const cachelevel; datacache)
     {
-        if (cachelevel.lineSize > lineSize && cachelevel.lineSize < uint.max)
+        if (cachelevel.lineSize > result && cachelevel.lineSize < uint.max)
         {
-            lineSize = cachelevel.lineSize;
+            result = cachelevel.lineSize;
         }
     }
-
-    cacheLineSize = lineSize;
+    return result;
 }
 
+@nogc @safe nothrow unittest
+{
+    assert(cacheLineSize == cacheLineSizeImpl);
+}
 
 /* Atomics code.  These forward to core.atomic, but are written like this
    for two reasons:
@@ -957,7 +941,81 @@ if (is(typeof(fun(args))) && isSafeTask!F)
 The total number of CPU cores available on the current machine, as reported by
 the operating system.
 */
-immutable uint totalCPUs;
+alias totalCPUs =
+    __lazilyInitializedConstant!(immutable(uint), uint.max, totalCPUsImpl);
+
+uint totalCPUsImpl() @nogc nothrow @trusted
+{
+    version (Windows)
+    {
+        // BUGS:  Only works on Windows 2000 and above.
+        import core.sys.windows.winbase : SYSTEM_INFO, GetSystemInfo;
+        import std.algorithm.comparison : max;
+        SYSTEM_INFO si;
+        GetSystemInfo(&si);
+        return max(1, cast(uint) si.dwNumberOfProcessors);
+    }
+    else version (linux)
+    {
+        import core.sys.linux.sched : CPU_COUNT, cpu_set_t, sched_getaffinity;
+        import core.sys.posix.unistd : _SC_NPROCESSORS_ONLN, sysconf;
+
+        cpu_set_t set = void;
+        if (sched_getaffinity(0, cpu_set_t.sizeof, &set) == 0)
+        {
+            int count = CPU_COUNT(&set);
+            if (count > 0)
+                return cast(uint) count;
+        }
+        return cast(uint) sysconf(_SC_NPROCESSORS_ONLN);
+    }
+    else version (Darwin)
+    {
+        import core.sys.darwin.sys.sysctl : sysctlbyname;
+        uint result;
+        size_t len = result.sizeof;
+        sysctlbyname("hw.physicalcpu", &result, &len, null, 0);
+        return result;
+    }
+    else version (DragonFlyBSD)
+    {
+        import core.sys.dragonflybsd.sys.sysctl : sysctlbyname;
+        uint result;
+        size_t len = result.sizeof;
+        sysctlbyname("hw.ncpu", &result, &len, null, 0);
+        return result;
+    }
+    else version (FreeBSD)
+    {
+        import core.sys.freebsd.sys.sysctl : sysctlbyname;
+        uint result;
+        size_t len = result.sizeof;
+        sysctlbyname("hw.ncpu", &result, &len, null, 0);
+        return result;
+    }
+    else version (NetBSD)
+    {
+        import core.sys.netbsd.sys.sysctl : sysctlbyname;
+        uint result;
+        size_t len = result.sizeof;
+        sysctlbyname("hw.ncpu", &result, &len, null, 0);
+        return result;
+    }
+    else version (Solaris)
+    {
+        import core.sys.posix.unistd : _SC_NPROCESSORS_ONLN, sysconf;
+        return cast(uint) sysconf(_SC_NPROCESSORS_ONLN);
+    }
+    else version (OpenBSD)
+    {
+        import core.sys.posix.unistd : _SC_NPROCESSORS_ONLN, sysconf;
+        return cast(uint) sysconf(_SC_NPROCESSORS_ONLN);
+    }
+    else
+    {
+        static assert(0, "Don't know how to get N CPUs on this OS.");
+    }
+}
 
 /*
 This class serves two purposes:
@@ -3302,11 +3360,7 @@ terminating the main thread.
     }());
 }
 
-private shared uint _defaultPoolThreads;
-shared static this()
-{
-    atomicStore(_defaultPoolThreads, totalCPUs - 1);
-}
+private shared uint _defaultPoolThreads = uint.max;
 
 /**
 These properties get and set the number of worker threads in the $(D TaskPool)
@@ -3316,7 +3370,8 @@ number of worker threads in the instance returned by $(D taskPool).
 */
 @property uint defaultPoolThreads() @trusted
 {
-    return atomicLoad(_defaultPoolThreads);
+    const local = atomicLoad(_defaultPoolThreads);
+    return local < uint.max ? local : totalCPUs - 1;
 }
 
 /// Ditto
@@ -3945,7 +4000,7 @@ version (unittest)
     import std.array : split;
     import std.conv : text;
     import std.exception : assertThrown;
-    import std.math : approxEqual, sqrt, log;
+    import std.math : approxEqual, sqrt, log, abs;
     import std.range : indexed, iota, join;
     import std.typecons : Tuple, tuple;
 
@@ -4274,7 +4329,7 @@ version (unittest)
 
     assert(equal(iota(1_000_000), bufTrickTest));
 
-    auto myTask = task!(std.math.abs)(-1);
+    auto myTask = task!(abs)(-1);
     taskPool.put(myTask);
     assert(myTask.spinForce == 1);
 

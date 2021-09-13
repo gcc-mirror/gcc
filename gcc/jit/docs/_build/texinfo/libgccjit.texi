@@ -21,11 +21,11 @@
 
 @copying
 @quotation
-libgccjit 11.0.0 (experimental 20201112), Nov 12, 2020
+libgccjit 11.0.0 (experimental 20210114), Jan 14, 2021
 
 David Malcolm
 
-Copyright @copyright{} 2014-2020 Free Software Foundation, Inc.
+Copyright @copyright{} 2014-2021 Free Software Foundation, Inc.
 @end quotation
 
 @end copying
@@ -48,7 +48,7 @@ Copyright @copyright{} 2014-2020 Free Software Foundation, Inc.
 
 @c %**start of body
 @anchor{index doc}@anchor{0}
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -68,10 +68,6 @@ Copyright @copyright{} 2014-2020 Free Software Foundation, Inc.
 This document describes libgccjit@footnote{http://gcc.gnu.org/wiki/JIT}, an API
 for embedding GCC inside programs and libraries.
 
-Note that libgccjit is currently of “Alpha” quality;
-the APIs are not yet set in stone, and they shouldn’t be used in
-production yet.
-
 There are actually two APIs for the library:
 
 
@@ -87,7 +83,7 @@ wrapper classes around the C API, to save typing.
 
 Contents:
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -407,7 +403,7 @@ Running the test suite
 @chapter Tutorial
 
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -451,7 +447,7 @@ the details in later parts of this tutorial.
 
 @example
 /* Smoketest example for libgccjit.so
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -595,7 +591,7 @@ $ ./tut01-hello-world
 hello world
 @end example
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -989,7 +985,7 @@ Here’s what the above looks like as a complete program:
 
 @example
 /* Usage example for libgccjit.so
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1117,7 +1113,7 @@ $ ./tut02-square
 result: 25
 @end example
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -1548,7 +1544,7 @@ install it with @cite{yum install python-xdot}):
 
 @example
 /* Usage example for libgccjit.so
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1735,7 +1731,7 @@ $ ./tut03-sum-of-squares
 loop_test returned: 285
 @end example
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -3594,7 +3590,7 @@ instr9:
 @}
 @end example
 
-@c Copyright (C) 2015-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2015-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -4398,7 +4394,7 @@ to an executable.  It’s also possible to compile it to an object file,
 and to a dynamic library.  See the documentation of
 @ref{4a,,gcc_jit_context_compile_to_file()} for more information.
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -4420,7 +4416,7 @@ and to a dynamic library.  See the documentation of
 @chapter Topic Reference
 
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -5126,7 +5122,7 @@ its presence using
 @end example
 @end deffn
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -5236,7 +5232,7 @@ object’s context is released.
 @end cartouche
 @end deffn
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -5872,7 +5868,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 Function pointer types can be created using
 @ref{95,,gcc_jit_context_new_function_ptr_type()}.
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -6913,7 +6909,7 @@ PTR[INDEX]
 in C (or, indeed, to @code{PTR + INDEX}).
 @end deffn
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -7538,7 +7534,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 See also @ref{f1,,gcc_jit_extended_asm} for entrypoints for adding inline
 assembler statements to a function.
 
-@c Copyright (C) 2017-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2017-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -7619,7 +7615,7 @@ given return type and parameters.
 Each of @cite{param_types} must be non-@cite{void}; @cite{return_type} may be @cite{void}.
 @end deffn
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -7703,7 +7699,7 @@ argument is true, this will also set up @cite{gcc_jit_location} information
 throughout the context, pointing at the dump file as if it were a source
 file, giving you @emph{something} you can step through in the debugger.
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -7974,7 +7970,7 @@ There is currently no support for specifying libraries to link
 against.
 @end deffn
 
-@c Copyright (C) 2015-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2015-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -8339,7 +8335,7 @@ embedding assembler instructions:
 @end itemize
 @end quotation
 
-@c Copyright (C) 2015-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2015-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -8622,7 +8618,7 @@ for its presence using
 @end example
 @end deffn
 
-@c Copyright (C) 2020 Free Software Foundation, Inc.
+@c Copyright (C) 2020-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -9019,7 +9015,7 @@ the following API calls could be used:
 @end example
 @end deffn
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -9051,13 +9047,9 @@ This is a collection of “thin” wrapper classes around the C API.
 Everything is an inline function, implemented in terms of the C API,
 so there is nothing extra to link against.
 
-Note that libgccjit is currently of “Alpha” quality;
-the APIs are not yet set in stone, and they shouldn’t be used in
-production yet.
-
 Contents:
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -9085,7 +9077,7 @@ Contents:
 @section Tutorial
 
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -9128,7 +9120,7 @@ the details in later parts of this tutorial.
 
 @example
 /* Smoketest example for libgccjit.so C++ API
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -9256,7 +9248,7 @@ $ ./tut01-hello-world
 hello world
 @end example
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -9598,7 +9590,7 @@ Here’s what the above looks like as a complete program:
 
 @example
 /* Usage example for libgccjit.so's C++ API
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -9708,7 +9700,7 @@ $ ./tut02-square
 result: 25
 @end example
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -10156,7 +10148,7 @@ install it with @cite{yum install python-xdot}):
 
 @example
 /* Usage example for libgccjit.so's C++ API
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -10308,7 +10300,7 @@ $ ./tut03-sum-of-squares
 loop_test returned: 285
 @end example
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -12112,7 +12104,7 @@ instr9:
 @}
 @end example
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -12134,7 +12126,7 @@ instr9:
 @section Topic Reference
 
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -12461,7 +12453,7 @@ its presence using
 @end example
 @end deffn
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -12553,7 +12545,7 @@ obj: 4.0 * (float)i
 @end example
 @end deffn
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -12821,7 +12813,7 @@ size of the struct is not known), or later specified using
 @ref{91,,gcc_jit_struct_set_fields()}.
 @end deffn
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -13631,7 +13623,7 @@ gccjit::lvalue element = array[0];
 @end example
 @end quotation
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -14054,7 +14046,7 @@ create_code (gcc_jit_context *c_ctxt, void *user_data)
 @end quotation
 @end deffn
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -14131,7 +14123,7 @@ argument is true, this will also set up @cite{gccjit::location} information
 throughout the context, pointing at the dump file as if it were a source
 file, giving you @emph{something} you can step through in the debugger.
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -14203,7 +14195,7 @@ This is a thin wrapper around the
 @ref{4a,,gcc_jit_context_compile_to_file()} API entrypoint.
 @end deffn
 
-@c Copyright (C) 2020 Free Software Foundation, Inc.
+@c Copyright (C) 2020-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -14596,7 +14588,7 @@ the following API calls could be used:
 @end example
 @end deffn
 
-@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it

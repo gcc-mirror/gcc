@@ -11,4 +11,4 @@ static void function_declaration_after(void) __attribute__((__used__));
 
 /* { dg-final { scan-assembler "function_declaration_before" } } */
 /* { dg-final { scan-assembler "function_declaration_after" } } */
-/* { dg-final { scan-assembler "\.text.*,\"axR\"" { target R_flag_in_section } } } */
+/* { dg-final { scan-assembler-not "\.text.*,\"axR\"" { target R_flag_in_section } } } */

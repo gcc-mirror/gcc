@@ -35,21 +35,21 @@ struct S
 
 void warn_nullptr_this ()
 {
-  ((S*)nullptr)->f0 ("");        // { dg-warning "3:'this' pointer null" "pr86568" { xfail *-*-* } }
-                                 // { dg-warning "this' pointer null" "pr86568 second variant" { target *-*-* } .-1 }
+  ((S*)nullptr)->f0 ("");        // { dg-warning "3:'this' pointer is null" "pr86568" { xfail *-*-* } }
+                                 // { dg-warning "this' pointer is null" "pr86568 second variant" { target *-*-* } .-1 }
 }
 
 void warn_null_this_cst ()
 {
   S* const null = 0;
-  null->f1 ("");                  // { dg-warning "3:'this' pointer null" }
+  null->f1 ("");                  // { dg-warning "3:'this' pointer is null" }
 }
 
 void warn_null_this_var ()
 {
   S* null = 0;
-  null->f2 (&null);               // { dg-warning "3:'this' pointer null" "pr86568" { xfail *-*-* } }
-                                  // { dg-warning "'this' pointer null" "pr86568 second variant" { target *-*-* } .-1 }
+  null->f2 (&null);               // { dg-warning "3:'this' pointer is null" "pr86568" { xfail *-*-* } }
+                                  // { dg-warning "'this' pointer is null" "pr86568 second variant" { target *-*-* } .-1 }
 }
 
 void warn_nullptr (S s)

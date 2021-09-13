@@ -302,7 +302,6 @@ static assert(is(typeof( (){ C4 g = 7; C4 h = g;})));
 alias uint DWORD;
 MY_API_FUNCTION lpStartAddress;
 extern (Windows) alias DWORD function(void*) MY_API_FUNCTION;
-pragma(msg, MY_API_FUNCTION.stringof);
 static assert(MY_API_FUNCTION.stringof == "extern (Windows) uint function(void*)");
 
 /************************************/
@@ -565,7 +564,8 @@ void test13977()
     Object.init && check();
     assert(x == 0);
 
-    (check(2), false) && check();
+    check(2);
+    false && check();
     assert(x == 2); x = 0;
 }
 
@@ -594,7 +594,8 @@ void test13978()
     Object.init || check();
     assert(x == 1); x = 0;
 
-    (check(2), true) || check();
+    check(2);
+    true || check();
     assert(x == 2); x = 0;
 }
 

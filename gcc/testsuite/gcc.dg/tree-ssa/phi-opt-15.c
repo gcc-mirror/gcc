@@ -9,4 +9,6 @@ foo (int i)
   return i;
 }
 
-/* { dg-final { scan-tree-dump-not "ABS" "optimized" } } */
+/* We should not have ABS_EXPR but ABSU_EXPR instead. */
+/* { dg-final { scan-tree-dump-not "ABS_EXPR" "optimized" } } */
+/* { dg-final { scan-tree-dump "ABSU" "optimized" } } */

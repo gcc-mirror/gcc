@@ -7,6 +7,7 @@
 module core.sys.linux.sys.sysinfo;
 
 version (linux) extern(C) @nogc nothrow:
+@system:
 
 import core.sys.linux.config;
 

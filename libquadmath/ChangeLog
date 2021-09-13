@@ -1,3 +1,15 @@
+2021-06-08  Martin Liska  <mliska@suse.cz>
+
+	* libquadmath.texi: Fix typo.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* libquadmath.texi: Bump @copying's copyright year.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865

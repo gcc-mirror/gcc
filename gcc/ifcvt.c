@@ -1,5 +1,5 @@
 /* If-conversion support.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -885,6 +885,60 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, int reversep,
 			   || code == GEU || code == GTU), normalize);
 }
 
+/* Return true if X can be safely forced into a register by copy_to_mode_reg
+   / force_operand.  */
+
+static bool
+noce_can_force_operand (rtx x)
+{
+  if (general_operand (x, VOIDmode))
+    return true;
+  if (SUBREG_P (x))
+    {
+      if (!noce_can_force_operand (SUBREG_REG (x)))
+	return false;
+      return true;
+    }
+  if (ARITHMETIC_P (x))
+    {
+      if (!noce_can_force_operand (XEXP (x, 0))
+	  || !noce_can_force_operand (XEXP (x, 1)))
+	return false;
+      switch (GET_CODE (x))
+	{
+	case MULT:
+	case DIV:
+	case MOD:
+	case UDIV:
+	case UMOD:
+	  return true;
+	default:
+	  return code_to_optab (GET_CODE (x));
+	}
+    }
+  if (UNARY_P (x))
+    {
+      if (!noce_can_force_operand (XEXP (x, 0)))
+	return false;
+      switch (GET_CODE (x))
+	{
+	case ZERO_EXTEND:
+	case SIGN_EXTEND:
+	case TRUNCATE:
+	case FLOAT_EXTEND:
+	case FLOAT_TRUNCATE:
+	case FIX:
+	case UNSIGNED_FIX:
+	case FLOAT:
+	case UNSIGNED_FLOAT:
+	  return true;
+	default:
+	  return code_to_optab (GET_CODE (x));
+	}
+    }
+  return false;
+}
+
 /* Emit instruction to move an rtx, possibly into STRICT_LOW_PART.
    X is the destination/target and Y is the value to copy.  */
 
@@ -943,7 +997,7 @@ noce_emit_move_insn (rtx x, rtx y)
 	    {
 	    case RTX_UNARY:
 	      ot = code_to_optab (GET_CODE (y));
-	      if (ot)
+	      if (ot && noce_can_force_operand (XEXP (y, 0)))
 		{
 		  start_sequence ();
 		  target = expand_unop (GET_MODE (y), ot, XEXP (y, 0), x, 0);
@@ -960,7 +1014,9 @@ noce_emit_move_insn (rtx x, rtx y)
 	    case RTX_BIN_ARITH:
 	    case RTX_COMM_ARITH:
 	      ot = code_to_optab (GET_CODE (y));
-	      if (ot)
+	      if (ot
+		  && noce_can_force_operand (XEXP (y, 0))
+		  && noce_can_force_operand (XEXP (y, 1)))
 		{
 		  start_sequence ();
 		  target = expand_binop (GET_MODE (y), ot,
@@ -2342,7 +2398,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
       rtx_insn *prev_insn;
 
       /* First, look to see if we put a constant in a register.  */
-      prev_insn = prev_nonnote_insn (if_info->cond_earliest);
+      prev_insn = prev_nonnote_nondebug_insn (if_info->cond_earliest);
       if (prev_insn
 	  && BLOCK_FOR_INSN (prev_insn)
 	     == BLOCK_FOR_INSN (if_info->cond_earliest)
@@ -2613,7 +2669,7 @@ noce_try_abs (struct noce_if_info *if_info)
   if (REG_P (c))
     {
       rtx set;
-      rtx_insn *insn = prev_nonnote_insn (earliest);
+      rtx_insn *insn = prev_nonnote_nondebug_insn (earliest);
       if (insn
 	  && BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (earliest)
 	  && (set = single_set (insn))
@@ -2763,13 +2819,16 @@ noce_try_sign_mask (struct noce_if_info *if_info)
      INSN_B which can happen for e.g. conditional stores to memory.  For the
      cost computation use the block TEST_BB where the evaluation will end up
      after the transformation.  */
-  t_unconditional =
-    (t == if_info->b
-     && (if_info->insn_b == NULL_RTX
-	 || BLOCK_FOR_INSN (if_info->insn_b) == if_info->test_bb));
+  t_unconditional
+    = (t == if_info->b
+       && (if_info->insn_b == NULL_RTX
+	   || BLOCK_FOR_INSN (if_info->insn_b) == if_info->test_bb));
   if (!(t_unconditional
 	|| (set_src_cost (t, mode, if_info->speed_p)
 	    < COSTS_N_INSNS (2))))
+    return FALSE;
+
+  if (!noce_can_force_operand (t))
     return FALSE;
 
   start_sequence ();
@@ -3399,7 +3458,6 @@ noce_process_if_block (struct noce_if_info *if_info)
   /* First look for multiple SETS.  */
   if (!else_bb
       && HAVE_conditional_move
-      && !HAVE_cc0
       && bb_ok_for_noce_convert_multiple_sets (then_bb))
     {
       if (noce_convert_multiple_sets (if_info))
@@ -3831,11 +3889,9 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   rtx_insn *jump = if_info->jump;
   rtx cond = if_info->cond;
   rtx_insn *seq, *loc_insn;
-  rtx reg;
   int c;
   vec<rtx> then_regs = vNULL;
   vec<rtx> else_regs = vNULL;
-  unsigned int i;
   int success_p = FALSE;
   int limit = param_max_rtl_if_conversion_insns;
 
@@ -3857,7 +3913,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
      source register does not change after the assignment.  Also count
      the number of registers set in only one of the blocks.  */
   c = 0;
-  FOR_EACH_VEC_ELT (then_regs, i, reg)
+  for (rtx reg : then_regs)
     {
       rtx *then_slot = then_vals.get (reg);
       rtx *else_slot = else_vals.get (reg);
@@ -3876,7 +3932,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
     }
 
   /* Finish off c for MAX_CONDITIONAL_EXECUTE.  */
-  FOR_EACH_VEC_ELT (else_regs, i, reg)
+  for (rtx reg : else_regs)
     {
       gcc_checking_assert (else_vals.get (reg));
       if (!then_vals.get (reg))
@@ -5134,7 +5190,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
       cond = cond_exec_get_condition (jump);
       if (! cond)
-	return FALSE;
+	goto nce;
 
       rtx note = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
       profile_probability prob_val

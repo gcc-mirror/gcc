@@ -8,7 +8,7 @@ struct MissingUEH {
   MissingUEH (coro::coroutine_handle<> handle) : handle (handle) {}
   struct missing_ueh {
     coro::suspend_never initial_suspend() { return {}; }
-    coro::suspend_never final_suspend() { return {}; }
+    coro::suspend_never final_suspend() noexcept { return {}; }
     MissingUEH get_return_object() {
       return MissingUEH (coro::coroutine_handle<missing_ueh>::from_promise (*this));
     }

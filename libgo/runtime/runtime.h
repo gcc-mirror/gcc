@@ -221,7 +221,8 @@ bool	runtime_canpanic(G*);
 void	runtime_printf(const char*, ...);
 int32	runtime_snprintf(byte*, int32, const char*, ...);
 #define runtime_mcmp(a, b, s) __builtin_memcmp((a), (b), (s))
-#define runtime_memmove(a, b, s) __builtin_memmove((a), (b), (s))
+void runtime_memmove(void*, void*, uint64)
+  __asm__ (GOSYM_PREFIX "runtime.memmove");
 String	runtime_gostringnocopy(const byte*)
   __asm__ (GOSYM_PREFIX "runtime.gostringnocopy");
 void	runtime_ginit(void)

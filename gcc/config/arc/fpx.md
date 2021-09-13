@@ -1,6 +1,6 @@
 ;; Machine description of the Synopsys DesignWare ARC cpu Floating Point
 ;; extensions for GNU C compiler
-;; Copyright (C) 2007-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 

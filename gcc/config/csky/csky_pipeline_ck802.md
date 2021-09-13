@@ -1,5 +1,5 @@
 ;; Instruction scheduling information for C-SKY CK802 processors.
-;; Copyright (C) 2018-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2021 Free Software Foundation, Inc.
 ;; Contributed by C-SKY Microsystems and Mentor Graphics.
 ;;
 ;; This file is part of GCC.
@@ -70,8 +70,12 @@
 (define_bypass 3 "ck802_load,ck802_store" "ck802_pool")
 (define_bypass 3 "ck802_pool" "ck802_load,ck802_store")
 
-(define_bypass 1 "*" "ck802_alu")
+(define_bypass 1 "ck802_alu,ck802_branch,ck802_cmp,ck802_cbranch,ck802_call,\
+		  ck802_load,ck802_pool,ck802_store"
+		 "ck802_alu")
 
-(define_bypass 1 "*" "ck802_branch")
+(define_bypass 1 "ck802_alu,ck802_branch,ck802_cmp,ck802_cbranch,ck802_call,\
+		  ck802_load,ck802_pool,ck802_store"
+		 "ck802_branch")
 
 (define_bypass 2 "ck802_cmp" "ck802_cbranch")

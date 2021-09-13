@@ -1,5 +1,5 @@
 /* Tree SCC value numbering
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -212,6 +212,8 @@ struct vn_avail
   int location;
   /* The LEADER for the value we are chained on.  */
   int leader;
+  /* The previous value we pushed a avail record to.  */
+  struct vn_ssa_aux *next_undo;
 };
 
 typedef struct vn_ssa_aux
@@ -252,7 +254,7 @@ tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
 vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
 				       tree, tree *, tree, unsigned int);
 bool ao_ref_init_from_vn_reference (ao_ref *, alias_set_type, alias_set_type,
-				    tree, vec<vn_reference_op_s> );
+				    tree, const vec<vn_reference_op_s> &);
 vec<vn_reference_op_s> vn_reference_operands_for_lookup (tree);
 tree vn_reference_lookup_pieces (tree, alias_set_type, alias_set_type, tree,
 				 vec<vn_reference_op_s> ,
@@ -263,6 +265,7 @@ void vn_reference_lookup_call (gcall *, vn_reference_t *, vn_reference_t);
 vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, alias_set_type,
 					   tree, vec<vn_reference_op_s>,
 					   tree, unsigned int);
+void print_vn_reference_ops (FILE *, const vec<vn_reference_op_s>);
 
 bool vn_nary_op_eq (const_vn_nary_op_t const vno1,
 		    const_vn_nary_op_t const vno2);

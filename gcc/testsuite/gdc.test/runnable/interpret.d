@@ -1,4 +1,22 @@
-// RUNNABLE_PHOBOS_TEST
+/* RUNNABLE_PHOBOS_TEST
+TEST_OUTPUT:
+---
+true
+g
+&Test109S(&Test109S(<recursion>))
+runnable/interpret.d(3197): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/interpret.d(3199): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/interpret.d(3202): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/interpret.d(3205): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/interpret.d(3206): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/interpret.d(3212): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/interpret.d(3213): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/interpret.d(3216): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+tfoo
+tfoo
+Crash!
+---
+*/
 import std.stdio;
 
 template Tuple(A...)

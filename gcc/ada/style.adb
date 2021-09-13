@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,18 +23,22 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Csets;    use Csets;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Stand;    use Stand;
-with Stylesw;  use Stylesw;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Csets;          use Csets;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Stand;          use Stand;
+with Stylesw;        use Stylesw;
 
 package body Style is
 
@@ -132,48 +136,42 @@ package body Style is
             Tref := Source_Text (Get_Source_File_Index (Sref));
             Tdef := Source_Text (Get_Source_File_Index (Sdef));
 
-            --  Ignore operator name case completely. This also catches the
-            --  case of where one is an operator and the other is not. This
-            --  is a phenomenon from rewriting of operators as functions,
-            --  and is to be ignored.
+            --  Ignore case of operator names. This also catches the case
+            --  where one is an operator and the other is not. This is a
+            --  phenomenon from rewriting of operators as functions, and is
+            --  to be ignored.
 
             if Tref (Sref) = '"' or else Tdef (Sdef) = '"' then
                return;
 
             else
-               while Tref (Sref) = Tdef (Sdef) loop
+               loop
+                  --  If end of identifiers, all done. Note that they are the
+                  --  same length.
 
-                  --  If end of identifier, all done
+                  pragma Assert
+                    (Identifier_Char (Tref (Sref)) =
+                     Identifier_Char (Tdef (Sdef)));
 
                   if not Identifier_Char (Tref (Sref)) then
                      return;
-
-                  --  Otherwise loop continues
-
-                  else
-                     Sref := Sref + 1;
-                     Sdef := Sdef + 1;
                   end if;
+
+                  --  Case mismatch
+
+                  if Tref (Sref) /= Tdef (Sdef) then
+                     Error_Msg_Node_1 := Def;
+                     Error_Msg_Sloc := Sloc (Def);
+                     Error_Msg -- CODEFIX
+                       ("(style) bad casing of & declared#", Sref, Ref);
+                     return;
+                  end if;
+
+                  Sref := Sref + 1;
+                  Sdef := Sdef + 1;
                end loop;
 
-               --  Fall through loop when mismatch between identifiers
-               --  If either identifier is not terminated, error.
-
-               if Identifier_Char (Tref (Sref))
-                    or else
-                  Identifier_Char (Tdef (Sdef))
-               then
-                  Error_Msg_Node_1 := Def;
-                  Error_Msg_Sloc := Sloc (Def);
-                  Error_Msg -- CODEFIX
-                    ("(style) bad casing of & declared#", Sref, Ref);
-                  return;
-
-               --  Else end of identifiers, and they match
-
-               else
-                  return;
-               end if;
+               pragma Assert (False);
             end if;
          end if;
 
@@ -267,11 +265,15 @@ package body Style is
       --  indicators were introduced in Ada 2005. We apply Comes_From_Source
       --  to Original_Node to catch the case of a procedure body declared with
       --  "is null" that has been rewritten as a normal empty body.
+      --  We do not emit a warning on an inherited operation that comes from
+      --  a type derivation.
 
       if Style_Check_Missing_Overriding
         and then (Comes_From_Source (Original_Node (N))
                    or else Is_Generic_Instance (E))
         and then Ada_Version_Explicit >= Ada_2005
+        and then Present (Parent (E))
+        and then Nkind (Parent (E)) /= N_Full_Type_Declaration
       then
          --  If the subprogram is an instantiation,  its declaration appears
          --  within a wrapper package that precedes the instance node. Place

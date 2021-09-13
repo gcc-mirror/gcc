@@ -1,5 +1,5 @@
 /*
-test_output:
+TEST_OUTPUT:
 ---
 fail_compilation/fail324.d(16): Error: template instance doStuff!((i){ return i; }) cannot use local '__lambda1' as parameter to non-global template doStuff(alias fun)()
 ---

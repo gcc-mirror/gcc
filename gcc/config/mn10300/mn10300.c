@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -2847,9 +2847,10 @@ mn10300_conditional_register_usage (void)
    with the old cc0-based compiler.  */
 
 static rtx_insn *
-mn10300_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
-		       vec<const char *> &/*constraints*/,
-		       vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+mn10300_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
+		       vec<machine_mode> & /*input_modes*/,
+		       vec<const char *> & /*constraints*/, vec<rtx> &clobbers,
+		       HARD_REG_SET &clobbered_regs, location_t /*loc*/)
 {
   clobbers.safe_push (gen_rtx_REG (CCmode, CC_REG));
   SET_HARD_REG_BIT (clobbered_regs, CC_REG);
@@ -3233,8 +3234,6 @@ mn10300_loop_contains_call_insn (loop_p loop)
 static void
 mn10300_scan_for_setlb_lcc (void)
 {
-  loop_p loop;
-
   DUMP ("Looking for loops that can use the SETLB insn", NULL_RTX);
 
   df_analyze ();
@@ -3247,7 +3246,7 @@ mn10300_scan_for_setlb_lcc (void)
      if an inner loop is not suitable for use with the SETLB/Lcc insns, it may
      be the case that its parent loop is suitable.  Thus we should check all
      loops, but work from the innermost outwards.  */
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     {
       const char * reason = NULL;
 

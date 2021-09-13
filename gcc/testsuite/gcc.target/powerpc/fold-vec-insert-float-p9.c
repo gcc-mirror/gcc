@@ -20,15 +20,16 @@ testf_cst (float f, vector float vf)
 }
 
 /* var test has a load and store. */
-/* { dg-final { scan-assembler-times {\mlxv\M|\mlvx\M} 1 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mstfsx\M} 1 { target lp64} } } */
+/* { dg-final { scan-assembler-times {\mlxv\M|\mlvx\M} 0 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mstfsx\M} 0 { target lp64} } } */
 
 /* cst test have a xscvdpspn,xxextractuw,xxinsertw combo */
-/* { dg-final { scan-assembler-times {\mxscvdpspn\M} 1 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mxxextractuw\M} 1 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mxxinsertw\M} 1 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mxscvdpspn\M} 2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mxxextractuw\M} 2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mxxinsertw\M} 2 { target lp64 } } } */
 
 /* { dg-final { scan-assembler-times {\mstfs\M} 2 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlxv\M} 2 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlvewx\M} 1 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mvperm\M} 1 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 2 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mxxperm\M} 1 { target ilp32 } } } */

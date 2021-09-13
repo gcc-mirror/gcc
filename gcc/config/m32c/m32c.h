@@ -1,5 +1,5 @@
 /* Target Definitions for R8C/M16C/M32C
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -472,7 +472,6 @@ enum reg_class
 
 /* Passing Function Arguments on the Stack */
 
-#define PUSH_ARGS 1
 #define PUSH_ROUNDING(N) m32c_push_rounding (N)
 #define CALL_POPS_ARGS(C) 0
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -1302,8 +1302,9 @@ do {									     \
 
 #define NEED_INDICATE_EXEC_STACK 0
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS pa_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO pa_d_register_target_info
 
 /* Output default function prologue for hpux.  */
 #define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue

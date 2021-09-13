@@ -1,4 +1,4 @@
-/* Copyright (C) 1999-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2021 Free Software Foundation, Inc.
 
    NOTE: This source is derived from an old version taken from the GNU C
    Library (glibc).

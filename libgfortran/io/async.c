@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by Nicolas Koenig
 
    This file is part of the GNU Fortran runtime library (libgfortran).
@@ -117,13 +117,13 @@ async_io (void *arg)
 		{
 		case AIO_WRITE_DONE:
 		  NOTE ("Finalizing write");
-		  st_write_done_worker (au->pdt);
+		  st_write_done_worker (au->pdt, false);
 		  UNLOCK (&au->io_lock);
 		  break;
 
 		case AIO_READ_DONE:
 		  NOTE ("Finalizing read");
-		  st_read_done_worker (au->pdt);
+		  st_read_done_worker (au->pdt, false);
 		  UNLOCK (&au->io_lock);
 		  break;
 

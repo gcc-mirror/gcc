@@ -1,5 +1,5 @@
 /* Definitions for Dwarf2 EH unwind support for Windows32 targets
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Pascal Obry  <obry@adacore.com>
 
 This file is part of GCC.

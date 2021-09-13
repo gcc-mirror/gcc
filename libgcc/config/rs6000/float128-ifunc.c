@@ -1,7 +1,7 @@
 /* Automatic switching between software and hardware IEEE 128-bit
    floating-point emulation for PowerPC.
 
-   Copyright (C) 2016-2020 Free Software Foundation, Inc.
+   Copyright (C) 2016-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
    Code is based on the main soft-fp library written by:
@@ -46,14 +46,11 @@
 #endif
 
 #define SW_OR_HW(SW, HW) (__builtin_cpu_supports ("ieee128") ? HW : SW)
+#ifdef FLOAT128_HW_INSNS_ISA3_1
+#define SW_OR_HW_ISA3_1(SW, HW) (__builtin_cpu_supports ("arch_3_1") ? HW : SW)
+#endif
 
 /* Resolvers.  */
-
-/* We do not provide ifunc resolvers for __fixkfti, __fixunskfti, __floattikf,
-   and __floatuntikf.  There is no ISA 3.0 instruction that converts between
-   128-bit integer types and 128-bit IEEE floating point, or vice versa.  So
-   use the emulator functions for these conversions.  */
-
 static __typeof__ (__addkf3_sw) *
 __addkf3_resolve (void)
 {
@@ -102,6 +99,20 @@ __floatdikf_resolve (void)
   return SW_OR_HW (__floatdikf_sw, __floatdikf_hw);
 }
 
+#ifdef FLOAT128_HW_INSNS_ISA3_1
+static __typeof__ (__floattikf_sw) *
+__floattikf_resolve (void)
+{
+  return SW_OR_HW_ISA3_1 (__floattikf_sw, __floattikf_hw);
+}
+
+static __typeof__ (__floatuntikf_sw) *
+__floatuntikf_resolve (void)
+{
+  return SW_OR_HW_ISA3_1 (__floatuntikf_sw, __floatuntikf_hw);
+}
+#endif
+
 static __typeof__ (__floatunsikf_sw) *
 __floatunsikf_resolve (void)
 {
@@ -113,6 +124,20 @@ __floatundikf_resolve (void)
 {
   return SW_OR_HW (__floatundikf_sw, __floatundikf_hw);
 }
+
+#ifdef FLOAT128_HW_INSNS_ISA3_1
+static __typeof__ (__fixkfti_sw) *
+__fixkfti_resolve (void)
+{
+  return SW_OR_HW_ISA3_1 (__fixkfti_sw, __fixkfti_hw);
+}
+
+static __typeof__ (__fixunskfti_sw) *
+__fixunskfti_resolve (void)
+{
+  return SW_OR_HW_ISA3_1 (__fixunskfti_sw, __fixunskfti_hw);
+}
+#endif
 
 static __typeof__ (__fixkfsi_sw) *
 __fixkfsi_resolve (void)
@@ -302,6 +327,20 @@ TFtype __floatsikf (SItype_ppc)
 
 TFtype __floatdikf (DItype_ppc)
   __attribute__ ((__ifunc__ ("__floatdikf_resolve")));
+
+#ifdef FLOAT128_HW_INSNS_ISA3_1
+TFtype __floattikf (TItype_ppc)
+  __attribute__ ((__ifunc__ ("__floattikf_resolve")));
+
+TFtype __floatuntikf (UTItype_ppc)
+  __attribute__ ((__ifunc__ ("__floatuntikf_resolve")));
+
+TItype_ppc __fixkfti (TFtype)
+  __attribute__ ((__ifunc__ ("__fixkfti_resolve")));
+
+UTItype_ppc __fixunskfti (TFtype)
+  __attribute__ ((__ifunc__ ("__fixunskfti_resolve")));
+#endif
 
 TFtype __floatunsikf (USItype_ppc)
   __attribute__ ((__ifunc__ ("__floatunsikf_resolve")));

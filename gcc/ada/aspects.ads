@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,6 +100,7 @@ package Aspects is
       Aspect_External_Tag,
       Aspect_Ghost,                         -- GNAT
       Aspect_Global,                        -- GNAT
+      Aspect_GNAT_Annotate,                 -- GNAT
       Aspect_Implicit_Dereference,
       Aspect_Initial_Condition,             -- GNAT
       Aspect_Initializes,                   -- GNAT
@@ -116,6 +117,8 @@ package Aspects is
       Aspect_Max_Entry_Queue_Length,
       Aspect_Max_Queue_Length,              -- GNAT
       Aspect_No_Caching,                    -- GNAT
+      Aspect_No_Controlled_Parts,
+      Aspect_No_Task_Parts,                 -- GNAT
       Aspect_Object_Size,                   -- GNAT
       Aspect_Obsolescent,                   -- GNAT
       Aspect_Output,
@@ -171,7 +174,6 @@ package Aspects is
       Aspect_Remote_Call_Interface,
       Aspect_Remote_Types,
       Aspect_Shared_Passive,
-      Aspect_Universal_Data,                -- GNAT
 
       --  Remaining aspects have a static boolean value that turns the aspect
       --  on or off. They all correspond to pragmas, but are only converted to
@@ -268,6 +270,7 @@ package Aspects is
       Aspect_Favor_Top_Level            => True,
       Aspect_Ghost                      => True,
       Aspect_Global                     => True,
+      Aspect_GNAT_Annotate              => True,
       Aspect_Inline_Always              => True,
       Aspect_Invariant                  => True,
       Aspect_Lock_Free                  => True,
@@ -290,7 +293,6 @@ package Aspects is
       Aspect_Thread_Local_Storage       => True,
       Aspect_Test_Case                  => True,
       Aspect_Universal_Aliasing         => True,
-      Aspect_Universal_Data             => True,
       Aspect_Unmodified                 => True,
       Aspect_Unreferenced               => True,
       Aspect_Unreferenced_Objects       => True,
@@ -318,9 +320,10 @@ package Aspects is
    --  the same aspect attached to the same declaration are allowed.
 
    No_Duplicates_Allowed : constant array (Aspect_Id) of Boolean :=
-     (Aspect_Annotate  => False,
-      Aspect_Test_Case => False,
-      others           => True);
+     (Aspect_Annotate      => False,
+      Aspect_GNAT_Annotate => False,
+      Aspect_Test_Case     => False,
+      others               => True);
 
    --  The following subtype defines aspects corresponding to library unit
    --  pragmas, these can only validly appear as aspects for library units,
@@ -328,7 +331,7 @@ package Aspects is
    --  the occurrence of the aspect.
 
    subtype Library_Unit_Aspects is
-     Aspect_Id range Aspect_All_Calls_Remote .. Aspect_Universal_Data;
+     Aspect_Id range Aspect_All_Calls_Remote .. Aspect_Shared_Passive;
 
    --  The following subtype defines aspects accepting an optional static
    --  boolean parameter indicating if the aspect should be active or
@@ -387,6 +390,7 @@ package Aspects is
       Aspect_External_Tag               => Expression,
       Aspect_Ghost                      => Optional_Expression,
       Aspect_Global                     => Expression,
+      Aspect_GNAT_Annotate              => Expression,
       Aspect_Implicit_Dereference       => Name,
       Aspect_Initial_Condition          => Expression,
       Aspect_Initializes                => Expression,
@@ -403,6 +407,8 @@ package Aspects is
       Aspect_Max_Entry_Queue_Length     => Expression,
       Aspect_Max_Queue_Length           => Expression,
       Aspect_No_Caching                 => Optional_Expression,
+      Aspect_No_Controlled_Parts        => Optional_Expression,
+      Aspect_No_Task_Parts              => Optional_Expression,
       Aspect_Object_Size                => Expression,
       Aspect_Obsolescent                => Optional_Expression,
       Aspect_Output                     => Name,
@@ -489,6 +495,7 @@ package Aspects is
       Aspect_External_Tag                 => False,
       Aspect_Ghost                        => False,
       Aspect_Global                       => False,
+      Aspect_GNAT_Annotate               => False,
       Aspect_Implicit_Dereference         => False,
       Aspect_Initial_Condition            => False,
       Aspect_Initializes                  => False,
@@ -505,6 +512,8 @@ package Aspects is
       Aspect_Max_Entry_Queue_Length       => False,
       Aspect_Max_Queue_Length             => False,
       Aspect_No_Caching                   => False,
+      Aspect_No_Controlled_Parts          => False,
+      Aspect_No_Task_Parts                => False,
       Aspect_Object_Size                  => True,
       Aspect_Obsolescent                  => False,
       Aspect_Output                       => False,
@@ -643,6 +652,7 @@ package Aspects is
       Aspect_Full_Access_Only             => Name_Full_Access_Only,
       Aspect_Ghost                        => Name_Ghost,
       Aspect_Global                       => Name_Global,
+      Aspect_GNAT_Annotate                => Name_GNAT_Annotate,
       Aspect_Implicit_Dereference         => Name_Implicit_Dereference,
       Aspect_Import                       => Name_Import,
       Aspect_Independent                  => Name_Independent,
@@ -666,6 +676,8 @@ package Aspects is
       Aspect_Max_Entry_Queue_Length       => Name_Max_Entry_Queue_Length,
       Aspect_Max_Queue_Length             => Name_Max_Queue_Length,
       Aspect_No_Caching                   => Name_No_Caching,
+      Aspect_No_Controlled_Parts          => Name_No_Controlled_Parts,
+      Aspect_No_Task_Parts                => Name_No_Task_Parts,
       Aspect_No_Elaboration_Code_All      => Name_No_Elaboration_Code_All,
       Aspect_No_Inline                    => Name_No_Inline,
       Aspect_No_Return                    => Name_No_Return,
@@ -726,7 +738,6 @@ package Aspects is
       Aspect_Unchecked_Union              => Name_Unchecked_Union,
       Aspect_Unimplemented                => Name_Unimplemented,
       Aspect_Universal_Aliasing           => Name_Universal_Aliasing,
-      Aspect_Universal_Data               => Name_Universal_Data,
       Aspect_Unmodified                   => Name_Unmodified,
       Aspect_Unreferenced                 => Name_Unreferenced,
       Aspect_Unreferenced_Objects         => Name_Unreferenced_Objects,
@@ -927,7 +938,6 @@ package Aspects is
       Aspect_Type_Invariant               => Always_Delay,
       Aspect_Unchecked_Union              => Always_Delay,
       Aspect_Universal_Aliasing           => Always_Delay,
-      Aspect_Universal_Data               => Always_Delay,
       Aspect_Unmodified                   => Always_Delay,
       Aspect_Unreferenced                 => Always_Delay,
       Aspect_Unreferenced_Objects         => Always_Delay,
@@ -953,6 +963,7 @@ package Aspects is
       Aspect_Extensions_Visible           => Never_Delay,
       Aspect_Ghost                        => Never_Delay,
       Aspect_Global                       => Never_Delay,
+      Aspect_GNAT_Annotate                => Never_Delay,
       Aspect_Import                       => Never_Delay,
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
@@ -960,6 +971,8 @@ package Aspects is
       Aspect_Max_Entry_Queue_Length       => Never_Delay,
       Aspect_Max_Queue_Length             => Never_Delay,
       Aspect_No_Caching                   => Never_Delay,
+      Aspect_No_Controlled_Parts          => Never_Delay,
+      Aspect_No_Task_Parts                => Never_Delay,
       Aspect_No_Elaboration_Code_All      => Never_Delay,
       Aspect_No_Tagged_Streams            => Never_Delay,
       Aspect_Obsolescent                  => Never_Delay,

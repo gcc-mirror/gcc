@@ -1,5 +1,5 @@
 /* A type-safe hash map.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -107,27 +107,31 @@ class GTY((user)) hash_map
 	  gt_pch_nx (&x, op, cookie);
 	}
 
-    static void
-      pch_nx_helper (int, gt_pointer_operator, void *)
-	{
-	}
-
-    static void
-      pch_nx_helper (unsigned int, gt_pointer_operator, void *)
-	{
-	}
-
-    static void
-      pch_nx_helper (bool, gt_pointer_operator, void *)
-	{
-	}
-
     template<typename T>
       static void
       pch_nx_helper (T *&x, gt_pointer_operator op, void *cookie)
 	{
 	  op (&x, cookie);
 	}
+
+    /* The overloads below should match those in ggc.h.  */
+#define DEFINE_PCH_HELPER(T)			\
+    static void pch_nx_helper (T, gt_pointer_operator, void *) { }
+
+    DEFINE_PCH_HELPER (bool);
+    DEFINE_PCH_HELPER (char);
+    DEFINE_PCH_HELPER (signed char);
+    DEFINE_PCH_HELPER (unsigned char);
+    DEFINE_PCH_HELPER (short);
+    DEFINE_PCH_HELPER (unsigned short);
+    DEFINE_PCH_HELPER (int);
+    DEFINE_PCH_HELPER (unsigned int);
+    DEFINE_PCH_HELPER (long);
+    DEFINE_PCH_HELPER (unsigned long);
+    DEFINE_PCH_HELPER (long long);
+    DEFINE_PCH_HELPER (unsigned long long);
+
+#undef DEFINE_PCH_HELPER
   };
 
 public:
@@ -273,8 +277,12 @@ public:
       return reference_pair (e.m_key, e.m_value);
     }
 
-    bool
-    operator != (const iterator &other) const
+    bool operator== (const iterator &other) const
+    {
+      return m_iter == other.m_iter;
+    }
+
+    bool operator != (const iterator &other) const
     {
       return m_iter != other.m_iter;
     }

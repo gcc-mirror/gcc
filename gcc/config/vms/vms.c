@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler. 32bit VMS version.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Douglas B Rupp (rupp@gnat.com).
 
 This file is part of GCC.
@@ -302,7 +302,7 @@ vms_start_function (const char *fnname)
 #if VMS_DEBUGGING_INFO
   if (vms_debug_main
       && debug_info_level > DINFO_LEVEL_NONE
-      && strncmp (vms_debug_main, fnname, strlen (vms_debug_main)) == 0)
+      && startswith (vms_debug_main, fnname))
     {
       targetm.asm_out.globalize_label (asm_out_file, VMS_DEBUG_MAIN_POINTER);
       ASM_OUTPUT_DEF (asm_out_file, VMS_DEBUG_MAIN_POINTER, fnname);

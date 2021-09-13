@@ -1,5 +1,5 @@
 /* Language-dependent hooks for LTO.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -896,7 +896,7 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
       lang_hooks.lto.end_section = lhd_end_section;
       if (flag_ltrans)
 	error ("%<-flinker-output=rel%> and %<-fltrans%> are mutually "
-	       "exclussive");
+	       "exclusive");
       break;
 
     case LTO_LINKER_OUTPUT_NOLTOREL: /* .o: incremental link producing asm  */
@@ -991,6 +991,9 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
   if (mode == TYPE_MODE (intTI_type_node))
     return unsigned_p ? unsigned_intTI_type_node : intTI_type_node;
 #endif
+
+  if (float16_type_node && mode == TYPE_MODE (float16_type_node))
+    return float16_type_node;
 
   if (mode == TYPE_MODE (float_type_node))
     return float_type_node;

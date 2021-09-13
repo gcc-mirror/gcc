@@ -1,6 +1,6 @@
 // <extptr_allocator.h> -*- C++ -*-
 
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -175,6 +175,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Pointer_adapter<_Relative_pointer_impl<void> >       pointer;
       typedef _Pointer_adapter<_Relative_pointer_impl<const void> >
                                                               const_pointer;
+
+      _ExtPtr_allocator() { }
+
+      template<typename _Up>
+	_ExtPtr_allocator(const _ExtPtr_allocator<_Up>&) { }
 
       template<typename _Up>
         struct rebind

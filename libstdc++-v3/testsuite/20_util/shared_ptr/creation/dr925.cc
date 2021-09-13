@@ -1,7 +1,8 @@
 // { dg-options "-Wno-deprecated" }
+// { dg-add-options using-deprecated }
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2010-2020 Free Software Foundation, Inc.
+// Copyright (C) 2010-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,19 +28,19 @@ struct A
 {
 };
 
-std::unique_ptr<A> 
+std::unique_ptr<A>
 create_unique_ptr()
 {
   return std::unique_ptr<A>(new A());
 }
 
-std::auto_ptr<A> 
+std::auto_ptr<A>
 create_auto_ptr()
 {
   return std::auto_ptr<A>(new A());
 }
 
-void 
+void
 process(std::shared_ptr<A> a)
 {
   VERIFY( a.get() != 0 );

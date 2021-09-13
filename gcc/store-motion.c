@@ -1,5 +1,5 @@
 /* Store motion via Lazy Code Motion on the reverse CFG.
-   Copyright (C) 1997-2020 Free Software Foundation, Inc.
+   Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -251,9 +251,7 @@ print_store_motion_mems (FILE * file)
 static bool
 store_ops_ok (const vec<rtx> &x, int *regs_set)
 {
-  unsigned int i;
-  rtx temp;
-  FOR_EACH_VEC_ELT (x, i, temp)
+  for (rtx temp : x)
     if (regs_set[REGNO (temp)])
       return false;
 
@@ -386,9 +384,7 @@ store_killed_in_insn (const_rtx x, const vec<rtx> &x_regs,
 
       /* But even a const call reads its parameters.  Check whether the
 	 base of some of registers used in mem is stack pointer.  */
-      rtx temp;
-      unsigned int i;
-      FOR_EACH_VEC_ELT (x_regs, i, temp)
+      for (rtx temp : x_regs)
 	if (may_be_sp_based_p (temp))
 	  return true;
 
@@ -1152,7 +1148,6 @@ one_store_motion_pass (void)
 
   /* Now compute kill & transp vectors.  */
   build_store_vectors ();
-  add_noreturn_fake_exit_edges ();
   connect_infinite_loops_to_exit ();
 
   edge_list = pre_edge_rev_lcm (num_stores, st_transp, st_avloc,

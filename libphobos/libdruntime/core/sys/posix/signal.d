@@ -11,7 +11,7 @@
 
 module core.sys.posix.signal;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.stdc.signal;
 public import core.sys.posix.sys.types; // for pid_t
 //public import core.sys.posix.time;      // for timespec, now defined here
@@ -43,7 +43,8 @@ version (X86_64)  version = X86_Any;
 
 version (Posix):
 extern (C):
-//nothrow:  // this causes Issue 12738
+//nothrow:  // this causes http://issues.dlang.org/show_bug.cgi?id=12738 (which has been fixed)
+//@system:
 
 //
 // Required
@@ -150,30 +151,6 @@ version (Solaris)
         return sig;
     }
 }
-else version (CRuntime_Glibc)
-{
-    private extern (C) nothrow @nogc
-    {
-        int __libc_current_sigrtmin();
-        int __libc_current_sigrtmax();
-    }
-
-    @property int SIGRTMIN() nothrow @nogc {
-        __gshared static int sig = -1;
-        if (sig == -1) {
-            sig = __libc_current_sigrtmin();
-        }
-        return sig;
-    }
-
-    @property int SIGRTMAX() nothrow @nogc {
-        __gshared static int sig = -1;
-        if (sig == -1) {
-            sig = __libc_current_sigrtmax();
-        }
-        return sig;
-    }
-}
 else version (FreeBSD) {
     // Note: it appears that FreeBSD (prior to 7) and OSX do not support realtime signals
     // https://github.com/freebsd/freebsd/blob/e79c62ff68fc74d88cb6f479859f6fae9baa5101/sys/sys/signal.h#L117
@@ -189,9 +166,11 @@ else version (NetBSD)
     enum SIGRTMIN = 33;
     enum SIGRTMAX = 63;
 }
-else version (CRuntime_Bionic)
+else version (linux)
 {
-    // Switched to calling these functions since Lollipop
+    // Note: CRuntime_Bionic switched to calling these functions
+    // since Lollipop, and Glibc, UClib and Musl all implement them
+    // the same way since it's part of LSB.
     private extern (C) nothrow @nogc
     {
         int __libc_current_sigrtmin();
@@ -212,24 +191,6 @@ else version (CRuntime_Bionic)
             sig = __libc_current_sigrtmax();
         }
         return sig;
-    }
-}
-else version (CRuntime_UClibc)
-{
-    private extern (C) nothrow @nogc
-    {
-        int __libc_current_sigrtmin();
-        int __libc_current_sigrtmax();
-    }
-
-    @property int SIGRTMIN() nothrow @nogc
-    {
-        return __libc_current_sigrtmin();
-    }
-
-    @property int SIGRTMAX() nothrow @nogc
-    {
-        return __libc_current_sigrtmax();
     }
 }
 
@@ -874,16 +835,16 @@ SI_ASYNCIO
 SI_MESGQ
 
 int kill(pid_t, int);
-int sigaction(int, in sigaction_t*, sigaction_t*);
+int sigaction(int, const scope sigaction_t*, sigaction_t*);
 int sigaddset(sigset_t*, int);
 int sigdelset(sigset_t*, int);
 int sigemptyset(sigset_t*);
 int sigfillset(sigset_t*);
-int sigismember(in sigset_t*, int);
+int sigismember(const scope sigset_t*, int);
 int sigpending(sigset_t*);
-int sigprocmask(int, in sigset_t*, sigset_t*);
-int sigsuspend(in sigset_t*);
-int sigwait(in sigset_t*, int*);
+int sigprocmask(int, const scope sigset_t*, sigset_t*);
+int sigsuspend(const scope sigset_t*);
+int sigwait(const scope sigset_t*, int*);
 */
 
 nothrow @nogc
@@ -1007,16 +968,16 @@ version (CRuntime_Glibc)
     }
 
     int kill(pid_t, int);
-    int sigaction(int, in sigaction_t*, sigaction_t*);
+    int sigaction(int, const scope sigaction_t*, sigaction_t*);
     int sigaddset(sigset_t*, int);
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t*);
     int sigfillset(sigset_t*);
-    int sigismember(in sigset_t*, int);
+    int sigismember(const scope sigset_t*, int);
     int sigpending(sigset_t*);
-    int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t*);
-    int sigwait(in sigset_t*, int*);
+    int sigprocmask(int, const scope sigset_t*, sigset_t*);
+    int sigsuspend(const scope sigset_t*);
+    int sigwait(const scope sigset_t*, int*);
 }
 else version (Darwin)
 {
@@ -1059,16 +1020,16 @@ else version (Darwin)
     enum SI_MESGQ   = 0x10005;
 
     int kill(pid_t, int);
-    int sigaction(int, in sigaction_t*, sigaction_t*);
+    int sigaction(int, const scope sigaction_t*, sigaction_t*);
     int sigaddset(sigset_t*, int);
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t*);
     int sigfillset(sigset_t*);
-    int sigismember(in sigset_t*, int);
+    int sigismember(const scope sigset_t*, int);
     int sigpending(sigset_t*);
-    int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t*);
-    int sigwait(in sigset_t*, int*);
+    int sigprocmask(int, const scope sigset_t*, sigset_t*);
+    int sigsuspend(const scope sigset_t*);
+    int sigwait(const scope sigset_t*, int*);
 }
 else version (FreeBSD)
 {
@@ -1137,16 +1098,16 @@ else version (FreeBSD)
     enum SI_MESGQ   = 0x10005;
 
     int kill(pid_t, int);
-    int sigaction(int, in sigaction_t*, sigaction_t*);
+    int sigaction(int, const scope sigaction_t*, sigaction_t*);
     int sigaddset(sigset_t*, int);
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t *);
     int sigfillset(sigset_t *);
-    int sigismember(in sigset_t*, int);
+    int sigismember(const scope sigset_t*, int);
     int sigpending(sigset_t *);
-    int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t*);
-    int sigwait(in sigset_t*, int*);
+    int sigprocmask(int, const scope sigset_t*, sigset_t*);
+    int sigsuspend(const scope sigset_t*);
+    int sigwait(const scope sigset_t*, int*);
 }
 else version (NetBSD)
 {
@@ -1223,16 +1184,16 @@ else version (NetBSD)
     enum SI_MESGQ   = -4;
 
     int kill(pid_t, int);
-    int __sigaction14(int, in sigaction_t*, sigaction_t*);
+    int __sigaction14(int, const scope sigaction_t*, sigaction_t*);
     int __sigaddset14(sigset_t*, int);
     int __sigdelset14(sigset_t*, int);
     int __sigemptyset14(sigset_t *);
     int __sigfillset14(sigset_t *);
-    int __sigismember14(in sigset_t*, int);
+    int __sigismember14(const scope sigset_t*, int);
     int __sigpending14(sigset_t *);
-    int __sigprocmask14(int, in sigset_t*, sigset_t*);
-    int __sigsuspend14(in sigset_t*);
-    int sigwait(in sigset_t*, int*);
+    int __sigprocmask14(int, const scope sigset_t*, sigset_t*);
+    int __sigsuspend14(const scope sigset_t*);
+    int sigwait(const scope sigset_t*, int*);
 
     alias __sigaction14 sigaction;
     alias __sigaddset14 sigaddset;
@@ -1309,16 +1270,16 @@ else version (OpenBSD)
     enum SI_TIMER  = -3;
 
     int kill(pid_t, int);
-    int sigaction(int, in sigaction_t*, sigaction_t*);
+    int sigaction(int, const scope sigaction_t*, sigaction_t*);
     int sigaddset(sigset_t*, int);
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t *);
     int sigfillset(sigset_t *);
-    int sigismember(in sigset_t*, int);
+    int sigismember(const scope sigset_t*, int);
     int sigpending(sigset_t *);
-    int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t*);
-    int sigwait(in sigset_t*, int*);
+    int sigprocmask(int, const scope sigset_t*, sigset_t*);
+    int sigsuspend(const scope sigset_t*);
+    int sigwait(const scope sigset_t*, int*);
 }
 else version (DragonFlyBSD)
 {
@@ -1358,16 +1319,16 @@ else version (DragonFlyBSD)
     enum SI_MESGQ     = -4;
 
     int kill(pid_t, int);
-    int sigaction(int, in sigaction_t*, sigaction_t*);
+    int sigaction(int, const scope sigaction_t*, sigaction_t*);
     int sigaddset(sigset_t*, int);
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t *);
     int sigfillset(sigset_t *);
-    int sigismember(in sigset_t*, int);
+    int sigismember(const scope sigset_t*, int);
     int sigpending(sigset_t *);
-    int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t*);
-    int sigwait(in sigset_t*, int*);
+    int sigprocmask(int, const scope sigset_t*, sigset_t*);
+    int sigsuspend(const scope sigset_t*);
+    int sigwait(const scope sigset_t*, int*);
 }
 else version (Solaris)
 {
@@ -1467,21 +1428,21 @@ else version (Solaris)
     }
 
     int kill(pid_t, int);
-    int sigaction(int, in sigaction_t*, sigaction_t*);
+    int sigaction(int, const scope sigaction_t*, sigaction_t*);
     int sigaddset(sigset_t*, int);
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t*);
     int sigfillset(sigset_t*);
-    int sigismember(in sigset_t*, int);
+    int sigismember(const scope sigset_t*, int);
     int sigpending(sigset_t*);
-    int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t*);
-    int sigwait(in sigset_t*, int*);
+    int sigprocmask(int, const scope sigset_t*, sigset_t*);
+    int sigsuspend(const scope sigset_t*);
+    int sigwait(const scope sigset_t*, int*);
 }
 else version (CRuntime_Bionic)
 {
     public import core.sys.posix.time: timer_t;
-    private import core.stdc.string : memset;
+    import core.stdc.string : memset;
 
     version (X86)
     {
@@ -1581,7 +1542,7 @@ else version (CRuntime_Bionic)
     }
 
     int kill(pid_t, int);
-    int sigaction(int, in sigaction_t*, sigaction_t*);
+    int sigaction(int, const scope sigaction_t*, sigaction_t*);
 
     // These functions are defined inline in bionic.
     int sigaddset(sigset_t* set, int signum)
@@ -1612,9 +1573,9 @@ else version (CRuntime_Bionic)
     }
 
     int sigpending(sigset_t*);
-    int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t*);
-    int sigwait(in sigset_t*, int*);
+    int sigprocmask(int, const scope sigset_t*, sigset_t*);
+    int sigsuspend(const scope sigset_t*);
+    int sigwait(const scope sigset_t*, int*);
 }
 else version (CRuntime_Musl)
 {
@@ -1724,16 +1685,16 @@ else version (CRuntime_Musl)
     }
 
     int kill(pid_t, int);
-    int sigaction(int, in sigaction_t*, sigaction_t*);
+    int sigaction(int, const scope sigaction_t*, sigaction_t*);
     int sigaddset(sigset_t*, int);
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t*);
     int sigfillset(sigset_t*);
-    int sigismember(in sigset_t*, int);
+    int sigismember(const scope sigset_t*, int);
     int sigpending(sigset_t*);
-    int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t*);
-    int sigwait(in sigset_t*, int*);
+    int sigprocmask(int, const scope sigset_t*, sigset_t*);
+    int sigsuspend(const scope sigset_t*);
+    int sigwait(const scope sigset_t*, int*);
 }
 else version (CRuntime_UClibc)
 {
@@ -1967,16 +1928,16 @@ else version (CRuntime_UClibc)
     }
 
     int kill(pid_t, int);
-    int sigaction(int, in sigaction_t*, sigaction_t*);
+    int sigaction(int, const scope sigaction_t*, sigaction_t*);
     int sigaddset(sigset_t*, int);
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t*);
     int sigfillset(sigset_t*);
-    int sigismember(in sigset_t*, int);
+    int sigismember(const scope sigset_t*, int);
     int sigpending(sigset_t*);
-    int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t*);
-    int sigwait(in sigset_t*, int*);
+    int sigprocmask(int, const scope sigset_t*, sigset_t*);
+    int sigsuspend(const scope sigset_t*);
+    int sigwait(const scope sigset_t*, int*);
 }
 else
 {
@@ -2069,7 +2030,7 @@ sigfn_t bsd_signal(int sig, sigfn_t func);
 sigfn_t sigset(int sig, sigfn_t func);
 
 int killpg(pid_t, int);
-int sigaltstack(in stack_t*, stack_t*);
+int sigaltstack(const scope stack_t*, stack_t*);
 int sighold(int);
 int sigignore(int);
 int siginterrupt(int, int);
@@ -2261,7 +2222,7 @@ version (CRuntime_Glibc)
     sigfn_t2 sigset(int sig, sigfn_t2 func);
 
     int killpg(pid_t, int);
-    int sigaltstack(in stack_t*, stack_t*);
+    int sigaltstack(const scope stack_t*, stack_t*);
     int sighold(int);
     int sigignore(int);
     int siginterrupt(int, int);
@@ -2371,7 +2332,7 @@ else version (Darwin)
     sigfn_t2 sigset(int sig, sigfn_t2 func);
 
     int killpg(pid_t, int);
-    int sigaltstack(in stack_t*, stack_t*);
+    int sigaltstack(const scope stack_t*, stack_t*);
     int sighold(int);
     int sigignore(int);
     int siginterrupt(int, int);
@@ -2406,7 +2367,7 @@ else version (FreeBSD)
 
     enum MINSIGSTKSZ = 512 * 4;
     enum SIGSTKSZ    = (MINSIGSTKSZ + 32768);
-;
+
     //ucontext_t (defined in core.sys.posix.ucontext)
     //mcontext_t (defined in core.sys.posix.ucontext)
 
@@ -2495,7 +2456,7 @@ else version (FreeBSD)
     sigfn_t2 sigset(int sig, sigfn_t2 func);
 
     int killpg(pid_t, int);
-    int sigaltstack(in stack_t*, stack_t*);
+    int sigaltstack(const scope stack_t*, stack_t*);
     int sighold(int);
     int sigignore(int);
     int siginterrupt(int, int);
@@ -2530,7 +2491,7 @@ else version (NetBSD)
 
     enum MINSIGSTKSZ = 8192;
     enum SIGSTKSZ    = (MINSIGSTKSZ + 32768);
-;
+
     //ucontext_t (defined in core.sys.posix.ucontext)
     //mcontext_t (defined in core.sys.posix.ucontext)
 
@@ -2619,7 +2580,7 @@ else version (NetBSD)
     sigfn_t2 sigset(int sig, sigfn_t2 func);
 
     int killpg(pid_t, int);
-    int sigaltstack(in stack_t*, stack_t*);
+    int sigaltstack(const scope stack_t*, stack_t*);
     int sighold(int);
     int sigignore(int);
     int siginterrupt(int, int);
@@ -2738,7 +2699,7 @@ else version (OpenBSD)
   nothrow:
   @nogc:
     int killpg(pid_t, int);
-    int sigaltstack(in stack_t*, stack_t*);
+    int sigaltstack(const scope stack_t*, stack_t*);
     int siginterrupt(int, int);
     int sigpause(int);
 }
@@ -2770,7 +2731,7 @@ else version (DragonFlyBSD)
 
     enum MINSIGSTKSZ = 8192;
     enum SIGSTKSZ    = (MINSIGSTKSZ + 32768);
-;
+
     //ucontext_t (defined in core.sys.posix.ucontext)
     //mcontext_t (defined in core.sys.posix.ucontext)
 
@@ -2859,7 +2820,7 @@ else version (DragonFlyBSD)
     sigfn_t2 sigset(int sig, sigfn_t2 func);
 
     int killpg(pid_t, int);
-    int sigaltstack(in stack_t*, stack_t*);
+    int sigaltstack(const scope stack_t*, stack_t*);
     int sighold(int);
     int sigignore(int);
     int siginterrupt(int, int);
@@ -2983,7 +2944,7 @@ else version (Solaris)
     sigfn_t2 sigset(int sig, sigfn_t2 func);
 
     int killpg(pid_t, int);
-    int sigaltstack(in stack_t*, stack_t*);
+    int sigaltstack(const scope stack_t*, stack_t*);
     int sighold(int);
     int sigignore(int);
     int siginterrupt(int, int);
@@ -3088,7 +3049,7 @@ else version (CRuntime_Bionic)
     sigfn_t2 bsd_signal(int, sigfn_t2);
 
     int killpg(int, int);
-    int sigaltstack(in stack_t*, stack_t*);
+    int sigaltstack(const scope stack_t*, stack_t*);
     int siginterrupt(int, int);
 }
 else version (CRuntime_Musl)
@@ -3258,7 +3219,7 @@ else version (CRuntime_Musl)
     sigfn_t2 sigset(int sig, sigfn_t2 func);
 
     int killpg(pid_t, int);
-    int sigaltstack(in stack_t*, stack_t*);
+    int sigaltstack(const scope stack_t*, stack_t*);
     int sighold(int);
     int sigignore(int);
     int siginterrupt(int, int);
@@ -3440,7 +3401,7 @@ else version (CRuntime_UClibc)
     sigfn_t2 sigset(int sig, sigfn_t2 func);
 
     int killpg(pid_t, int);
-    int sigaltstack(in stack_t*, stack_t*);
+    int sigaltstack(const scope stack_t*, stack_t*);
     int sighold(int);
     int sigignore(int);
     int siginterrupt(int, int);
@@ -3542,9 +3503,9 @@ struct sigevent
     pthread_attr_t* sigev_notify_attributes;
 }
 
-int sigqueue(pid_t, int, in sigval);
-int sigtimedwait(in sigset_t*, siginfo_t*, in timespec*);
-int sigwaitinfo(in sigset_t*, siginfo_t*);
+int sigqueue(pid_t, int, const sigval);
+int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
+int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 */
 
 nothrow:
@@ -3582,9 +3543,9 @@ version (CRuntime_Glibc)
         } _sigev_un_t _sigev_un;
     }
 
-    int sigqueue(pid_t, int, in sigval);
-    int sigtimedwait(in sigset_t*, siginfo_t*, in timespec*);
-    int sigwaitinfo(in sigset_t*, siginfo_t*);
+    int sigqueue(pid_t, int, const sigval);
+    int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
+    int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
 else version (FreeBSD)
 {
@@ -3605,9 +3566,9 @@ else version (FreeBSD)
         }
     }
 
-    int sigqueue(pid_t, int, in sigval);
-    int sigtimedwait(in sigset_t*, siginfo_t*, in timespec*);
-    int sigwaitinfo(in sigset_t*, siginfo_t*);
+    int sigqueue(pid_t, int, const sigval);
+    int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
+    int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
 else version (NetBSD)
 {
@@ -3620,9 +3581,9 @@ else version (NetBSD)
         void /* pthread_attr_t */*sigev_notify_attributes;
     }
 
-    int sigqueue(pid_t, int, in sigval);
-    int sigtimedwait(in sigset_t*, siginfo_t*, in timespec*);
-    int sigwaitinfo(in sigset_t*, siginfo_t*);
+    int sigqueue(pid_t, int, const sigval);
+    int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
+    int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
 else version (OpenBSD)
 {
@@ -3636,14 +3597,14 @@ else version (DragonFlyBSD)
         int                       sigev_signo;
         int                       sigev_notify_kqueue;
         void /*pthread_attr_t*/ * sigev_notify_attributes;
-    };
+    }
     union _sigval_t
     {
         int                       sival_int;
         void                    * sival_ptr;
         int                       sigval_int;
         void                    * sigval_ptr;
-    };
+    }
     struct sigevent
     {
         int                       sigev_notify;
@@ -3652,9 +3613,9 @@ else version (DragonFlyBSD)
         void function(_sigval_t)  sigev_notify_function;
     }
 
-    int sigqueue(pid_t, int, in sigval);
-    int sigtimedwait(in sigset_t*, siginfo_t*, in timespec*);
-    int sigwaitinfo(in sigset_t*, siginfo_t*);
+    int sigqueue(pid_t, int, const sigval);
+    int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
+    int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
 else version (Darwin)
 {
@@ -3679,9 +3640,9 @@ else version (Solaris)
         int __sigev_pad2;
     }
 
-    int sigqueue(pid_t, int, in sigval);
-    int sigtimedwait(in sigset_t*, siginfo_t*, in timespec*);
-    int sigwaitinfo(in sigset_t*, siginfo_t*);
+    int sigqueue(pid_t, int, const sigval);
+    int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
+    int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
 else version (CRuntime_Bionic)
 {
@@ -3756,9 +3717,9 @@ else version (CRuntime_UClibc)
     @property void function(sigval) sigev_notify_function(ref sigevent _sigevent) { return _sigevent._sigev_un._sigev_thread._function; }
     @property void* sigev_notify_attributes(ref sigevent _sigevent) { return  _sigevent._sigev_un._sigev_thread._attribute; }
 
-    int sigqueue(pid_t, int, in sigval);
-    int sigtimedwait(in sigset_t*, siginfo_t*, in timespec*);
-    int sigwaitinfo(in sigset_t*, siginfo_t*);
+    int sigqueue(pid_t, int, const sigval);
+    int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
+    int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
 else
 {
@@ -3770,58 +3731,58 @@ else
 //
 /*
 int pthread_kill(pthread_t, int);
-int pthread_sigmask(int, in sigset_t*, sigset_t*);
+int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
 */
 
 version (CRuntime_Glibc)
 {
     int pthread_kill(pthread_t, int);
-    int pthread_sigmask(int, in sigset_t*, sigset_t*);
+    int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
 }
 else version (Darwin)
 {
     int pthread_kill(pthread_t, int);
-    int pthread_sigmask(int, in sigset_t*, sigset_t*);
+    int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
 }
 else version (FreeBSD)
 {
     int pthread_kill(pthread_t, int);
-    int pthread_sigmask(int, in sigset_t*, sigset_t*);
+    int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
 }
 else version (NetBSD)
 {
     int pthread_kill(pthread_t, int);
-    int pthread_sigmask(int, in sigset_t*, sigset_t*);
+    int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
 }
 else version (OpenBSD)
 {
     int pthread_kill(pthread_t, int);
-    int pthread_sigmask(int, in sigset_t*, sigset_t*);
+    int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
 }
 else version (DragonFlyBSD)
 {
     int pthread_kill(pthread_t, int);
-    int pthread_sigmask(int, in sigset_t*, sigset_t*);
+    int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
 }
 else version (Solaris)
 {
     int pthread_kill(pthread_t, int);
-    int pthread_sigmask(int, in sigset_t*, sigset_t*);
+    int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
 }
 else version (CRuntime_Bionic)
 {
     int pthread_kill(pthread_t, int);
-    int pthread_sigmask(int, in sigset_t*, sigset_t*);
+    int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
 }
 else version (CRuntime_Musl)
 {
     int pthread_kill(pthread_t, int);
-    int pthread_sigmask(int, in sigset_t*, sigset_t*);
+    int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
 }
 else version (CRuntime_UClibc)
 {
     int pthread_kill(pthread_t, int);
-    int pthread_sigmask(int, in sigset_t*, sigset_t*);
+    int pthread_sigmask(int, const scope sigset_t*, sigset_t*);
     int pthread_sigqueue(pthread_t, int, sigval);
 }
 else

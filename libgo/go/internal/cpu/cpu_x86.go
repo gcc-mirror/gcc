@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build 386 amd64
+//go:build 386 || amd64 || amd64p32
+// +build 386 amd64 amd64p32
 
 package cpu
+
+// const CacheLinePadSize = 64
 
 // cpuid is implemented in cpu_x86.s.
 func cpuid(eaxArg, ecxArg uint32) (eax, ebx, ecx, edx uint32)
@@ -56,7 +59,7 @@ func doinit() {
 		{Name: "ssse3", Feature: &X86.HasSSSE3},
 
 		// These capabilities should always be enabled on amd64:
-		{Name: "sse2", Feature: &X86.HasSSE2, Required: GOARCH == "amd64"},
+		{Name: "sse2", Feature: &X86.HasSSE2, Required: GOARCH == "amd64" || GOARCH == "amd64p32"},
 	}
 
 	maxID, _, _, _ := cpuid(0, 0)

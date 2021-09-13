@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -28,6 +28,8 @@
 // representation about the suitability of this software for any
 // purpose. It is provided "as is" without express or implied
 // warranty.
+
+// { dg-add-options using-deprecated }
 
 /**
  * @file priority_queue_split_join_example.cpp

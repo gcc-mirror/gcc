@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2020 Free Software Foundation, Inc.
+// Copyright (C) 2017-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,6 @@
 
 // { dg-do run { target c++11 } }
 // { dg-options "-O0" }
-// { dg-xfail-run-if "PR c++/65816" { *-*-* } }
 
 #include <list>
 #include <testsuite_hooks.h>

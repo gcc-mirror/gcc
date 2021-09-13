@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -103,6 +103,12 @@ static_assert(std::is_empty_v<decltype(views::common
 				       | views::common
 				       | views::keys
 				       | views::reverse)>);
+#if 0
+// Adding empty range adaptor closure objects to a pipeline used to not
+// increase the size of the pipeline, but now that our range adaptor closure
+// objects derive from a common empty base class, [[no_unique_address]] can no
+// longer make two empty adjacent range adaptor closure objects occupy the same
+// data member address.
 static_assert(sizeof(decltype(views::take(5) | views::drop(5)))
 	      == sizeof(decltype(views::take(5)
 				 | views::join
@@ -111,6 +117,47 @@ static_assert(sizeof(decltype(views::take(5) | views::drop(5)))
 				 | views::keys
 				 | views::drop(5)
 				 | views::reverse)));
+#endif
+
+template<auto all = views::all>
+void
+test05()
+{
+  // Verify SFINAE behavior.
+  static_assert(!requires { all(); });
+  static_assert(!requires { all(0, 0); });
+  static_assert(!requires { all(0); });
+  static_assert(!requires { 0 | all; });
+}
+
+template<bool B1, bool B2>
+struct BorrowedRange
+{
+  int* ptr = nullptr;
+
+  BorrowedRange(int (&arr)[3]) noexcept : ptr(arr) { }
+
+  int* begin() const noexcept(B1) { return ptr; }
+  int* end() const noexcept(B2) { return ptr + 3; }
+};
+
+template<bool B1, bool B2>
+const bool std::ranges::enable_borrowed_range<BorrowedRange<B1, B2>> = true;
+
+void
+test06()
+{
+  int x[] { 1, 2, 3 };
+
+  // Using ref_view:
+  static_assert(noexcept(views::all(x)));
+
+  // Using subrange:
+  static_assert(noexcept(views::all(BorrowedRange<true, true>(x))));
+  static_assert(!noexcept(views::all(BorrowedRange<true, false>(x))));
+  static_assert(!noexcept(views::all(BorrowedRange<false, true>(x))));
+  static_assert(!noexcept(views::all(BorrowedRange<false, false>(x))));
+}
 
 int
 main()
@@ -119,4 +166,6 @@ main()
   test02();
   static_assert(test03());
   static_assert(test04());
+  test05();
+  test06();
 }

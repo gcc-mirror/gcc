@@ -1,5 +1,5 @@
 /* Target Code for OpenRISC
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by Stafford Horne based on other ports.
 
    This file is part of GCC.
@@ -750,7 +750,14 @@ or1k_legitimize_address_1 (rtx x, rtx scratch)
 	    {
 	      base = gen_sym_unspec (base, UNSPEC_GOT);
 	      crtl->uses_pic_offset_table = 1;
-	      t2 = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, base);
+	      if (TARGET_CMODEL_LARGE)
+		{
+	          emit_insn (gen_rtx_SET (t1, gen_rtx_HIGH (Pmode, base)));
+	          emit_insn (gen_add3_insn (t1, t1, pic_offset_table_rtx));
+	          t2 = gen_rtx_LO_SUM (Pmode, t1, base);
+		}
+	      else
+	        t2 = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, base);
 	      t2 = gen_const_mem (Pmode, t2);
 	      emit_insn (gen_rtx_SET (t1, t2));
 	      base = t1;
@@ -1089,7 +1096,7 @@ print_reloc (FILE *stream, rtx x, HOST_WIDE_INT add, reloc_kind kind)
      no special markup.  */
   static const char * const relocs[RKIND_MAX][RTYPE_MAX] = {
     { "lo", "got", "gotofflo", "tpofflo", "gottpofflo", "tlsgdlo" },
-    { "ha", NULL,  "gotoffha", "tpoffha", "gottpoffha", "tlsgdhi" },
+    { "ha", "gotha", "gotoffha", "tpoffha", "gottpoffha", "tlsgdhi" },
   };
   reloc_type type = RTYPE_DIRECT;
 

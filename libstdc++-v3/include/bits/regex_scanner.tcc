@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -98,7 +98,7 @@ namespace __detail
     {
       auto __c = *_M_current++;
 
-      if (std::strchr(_M_spec_char, _M_ctype.narrow(__c, ' ')) == nullptr)
+      if (__builtin_strchr(_M_spec_char, _M_ctype.narrow(__c, ' ')) == nullptr)
 	{
 	  _M_token = _S_token_ord_char;
 	  _M_value.assign(1, __c);
@@ -394,7 +394,7 @@ namespace __detail
 			    "Unexpected end of regex when escaping.");
 
       auto __c = *_M_current;
-      auto __pos = std::strchr(_M_spec_char, _M_ctype.narrow(__c, '\0'));
+      auto __pos = __builtin_strchr(_M_spec_char, _M_ctype.narrow(__c, '\0'));
 
       if (__pos != nullptr && *__pos != '\0')
 	{

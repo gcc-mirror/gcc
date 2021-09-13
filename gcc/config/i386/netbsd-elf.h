@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC,
    for i386/ELF NetBSD systems.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by matthew green <mrg@eterna.com.au>
 
 This file is part of GCC.
@@ -94,22 +94,6 @@ along with GCC; see the file COPYING3.  If not see
        fputs(" = ", FILE);		 \
        assemble_name(FILE, NAME2);	 \
        fputc('\n', FILE); } while (0)
-
-/* A C statement to output to the stdio stream FILE an assembler
-   command to advance the location counter to a multiple of 1<<LOG
-   bytes if it is within MAX_SKIP bytes.
-
-   This is used to align code labels according to Intel recommendations.  */
-
-#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
-#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE, LOG, MAX_SKIP)			\
-  if ((LOG) != 0) {							\
-    if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)		\
-      fprintf ((FILE), "\t.p2align %d\n", (LOG));			\
-    else								\
-      fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
-  }
-#endif
 
 /* We always use gas here, so we don't worry about ECOFF assembler
    problems.  */

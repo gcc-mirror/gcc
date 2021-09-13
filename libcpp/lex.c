@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -391,10 +391,10 @@ search_line_sse2 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
       mask = -1;
 
     start:
-      t  = __builtin_ia32_pcmpeqb128(data, repl_nl);
-      t |= __builtin_ia32_pcmpeqb128(data, repl_cr);
-      t |= __builtin_ia32_pcmpeqb128(data, repl_bs);
-      t |= __builtin_ia32_pcmpeqb128(data, repl_qm);
+      t  = data == repl_nl;
+      t |= data == repl_cr;
+      t |= data == repl_bs;
+      t |= data == repl_qm;
       found = __builtin_ia32_pmovmskb128 (t);
       found &= mask;
     }
@@ -1306,6 +1306,9 @@ warn_about_normalization (cpp_reader *pfile,
       if (NORMALIZE_STATE_RESULT (s) == normalized_C)
 	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
 			       "`%.*s' is not in NFKC", (int) sz, buf);
+      else if (CPP_OPTION (pfile, cxx23_identifiers))
+	cpp_pedwarning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
+				  "`%.*s' is not in NFC", (int) sz, buf);
       else
 	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
 			       "`%.*s' is not in NFC", (int) sz, buf);
@@ -1548,18 +1551,28 @@ lex_number (cpp_reader *pfile, cpp_string *number,
   base = pfile->buffer->cur - 1;
   do
     {
+      const uchar *adj_digit_sep = NULL;
       cur = pfile->buffer->cur;
 
       /* N.B. ISIDNUM does not include $.  */
-      while (ISIDNUM (*cur) || *cur == '.' || DIGIT_SEP (*cur)
-	     || VALID_SIGN (*cur, cur[-1]))
+      while (ISIDNUM (*cur)
+	     || (*cur == '.' && !DIGIT_SEP (cur[-1]))
+	     || DIGIT_SEP (*cur)
+	     || (VALID_SIGN (*cur, cur[-1]) && !DIGIT_SEP (cur[-2])))
 	{
 	  NORMALIZE_STATE_UPDATE_IDNUM (nst, *cur);
+	  /* Adjacent digit separators do not form part of the pp-number syntax.
+	     However, they can safely be diagnosed here as an error, since '' is
+	     not a valid preprocessing token.  */
+	  if (DIGIT_SEP (*cur) && DIGIT_SEP (cur[-1]) && !adj_digit_sep)
+	    adj_digit_sep = cur;
 	  cur++;
 	}
       /* A number can't end with a digit separator.  */
       while (cur > pfile->buffer->cur && DIGIT_SEP (cur[-1]))
 	--cur;
+      if (adj_digit_sep && adj_digit_sep < cur)
+	cpp_error (pfile, CPP_DL_ERROR, "adjacent digit separators");
 
       pfile->buffer->cur = cur;
     }
@@ -3709,11 +3722,13 @@ cpp_avoid_paste (cpp_reader *pfile, const cpp_token *token1,
     case CPP_DEREF:	return c == '*';
     case CPP_DOT:	return c == '.' || c == '%' || b == CPP_NUMBER;
     case CPP_HASH:	return c == '#' || c == '%'; /* Digraph form.  */
+    case CPP_PRAGMA:
     case CPP_NAME:	return ((b == CPP_NUMBER
 				 && name_p (pfile, &token2->val.str))
 				|| b == CPP_NAME
 				|| b == CPP_CHAR || b == CPP_STRING); /* L */
     case CPP_NUMBER:	return (b == CPP_NUMBER || b == CPP_NAME
+				|| b == CPP_CHAR
 				|| c == '.' || c == '+' || c == '-');
 				      /* UCNs */
     case CPP_OTHER:	return ((token1->val.str.text[0] == '\\'
@@ -4318,9 +4333,9 @@ cpp_directive_only_process (cpp_reader *pfile,
       buffer->cur_note = buffer->notes_used = 0;
       buffer->cur = buffer->line_base = buffer->next_line;
       buffer->need_line = false;
-      /* Files always end in a newline.  We rely on this for
+      /* Files always end in a newline or carriage return.  We rely on this for
 	 character peeking safety.  */
-      gcc_assert (buffer->rlimit[-1] == '\n');
+      gcc_assert (buffer->rlimit[0] == '\n' || buffer->rlimit[0] == '\r');
 
       const unsigned char *base = buffer->cur;
       unsigned line_count = 0;
@@ -4468,8 +4483,9 @@ cpp_directive_only_process (cpp_reader *pfile,
 			break;
 		      }
 		  }
-		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
-				     "unterminated comment");
+		if (pos < limit || is_block)
+		  cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
+				       "unterminated comment");
 	      done_comment:
 		lwm = pos;
 		break;
@@ -4756,7 +4772,18 @@ cpp_directive_only_process (cpp_reader *pfile,
 	}
 
       if (buffer->rlimit > base && !pfile->state.skipping)
-	cb (pfile, CPP_DO_print, data, line_count, base, buffer->rlimit - base);
+	{
+	  const unsigned char *limit = buffer->rlimit;
+	  /* If the file was not newline terminated, add rlimit, which is
+	     guaranteed to point to a newline, to the end of our range.  */
+	  if (limit[-1] != '\n')
+	    {
+	      limit++;
+	      CPP_INCREMENT_LINE (pfile, 0);
+	      line_count++;
+	    }
+	  cb (pfile, CPP_DO_print, data, line_count, base, limit - base);
+	}
 
       _cpp_pop_buffer (pfile);
     }

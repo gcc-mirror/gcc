@@ -1,5 +1,5 @@
 /* Common hooks for ARM.
-   Copyright (C) 1991-2020 Free Software Foundation, Inc.
+   Copyright (C) 1991-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -32,6 +32,8 @@
 #include "flags.h"
 #include "sbitmap.h"
 #include "diagnostic.h"
+
+#include "configargs.h"
 
 /* Set default optimization options.  */
 static const struct default_options arm_option_optimization_table[] =
@@ -240,16 +242,34 @@ check_isa_bits_for (const enum isa_feature* bits, enum isa_feature bit)
   return false;
 }
 
+/* Look up NAME in the configuration defaults for this build of the
+   the compiler.  Return the value associated with that name, or NULL
+   if no value is found.  */
+static const char *
+arm_config_default (const char *name)
+{
+  unsigned i;
+
+  if (configure_default_options[0].name == NULL)
+    return NULL;
+
+  for (i = 0; i < ARRAY_SIZE (configure_default_options); i++)
+    if (strcmp (configure_default_options[i].name, name) == 0)
+      return configure_default_options[i].value;
+
+  return NULL;
+}
+
 /* Called by the driver to check whether the target denoted by current
-   command line options is a Thumb-only target.  ARGV is an array of
-   tupples (normally only one) where the first element of the tupple
-   is 'cpu' or 'arch' and the second is the option passed to the
-   compiler for that.  An architecture tupple is always taken in
-   preference to a cpu tupple and the last of each type always
+   command line options is a Thumb-only, or ARM-only, target.  ARGV is
+   an array of tupples (normally only one) where the first element of
+   the tupple is 'cpu' or 'arch' and the second is the option passed
+   to the compiler for that.  An architecture tupple is always taken
+   in preference to a cpu tupple and the last of each type always
    overrides any earlier setting.  */
 
 const char *
-arm_target_thumb_only (int argc, const char **argv)
+arm_target_mode (int argc, const char **argv)
 {
   const char *arch = NULL;
   const char *cpu = NULL;
@@ -285,6 +305,9 @@ arm_target_thumb_only (int argc, const char **argv)
       if (arch_opt && !check_isa_bits_for (arch_opt->common.isa_bits,
 					   isa_bit_notm))
 	return "-mthumb";
+      if (arch_opt && !check_isa_bits_for (arch_opt->common.isa_bits,
+					   isa_bit_thumb))
+	return "-marm";
     }
   else if (cpu)
     {
@@ -294,6 +317,20 @@ arm_target_thumb_only (int argc, const char **argv)
       if (cpu_opt && !check_isa_bits_for (cpu_opt->common.isa_bits,
 					  isa_bit_notm))
 	return "-mthumb";
+      if (cpu_opt && !check_isa_bits_for (cpu_opt->common.isa_bits,
+					   isa_bit_thumb))
+	return "-marm";
+    }
+
+  const char *default_mode = arm_config_default ("mode");
+  if (default_mode)
+    {
+      if (strcmp (default_mode, "thumb") == 0)
+	return "-mthumb";
+      else if (strcmp (default_mode, "arm") == 0)
+	return "-marm";
+      else
+	gcc_unreachable ();
     }
 
   /* Compiler hasn't been configured with a default, and the CPU
@@ -590,9 +627,15 @@ public:
    The options array consists of couplets of information where the
    first item in each couplet is the string describing which option
    name was selected (arch, cpu, fpu) and the second is the value
-   passed for that option.  */
-const char *
-arm_canon_arch_option (int argc, const char **argv)
+   passed for that option.
+
+   arch_for_multilib is boolean variable taking value true or false.
+   arch_for_multilib is false when the canonical representation is for -march
+   option and it is true when canonical representation is for -mlibarch option.
+   On passing arch_for_multilib true the canonical string generated will be
+   without the compiler options which are not required for multilib linking.  */
+static const char *
+arm_canon_arch_option_1 (int argc, const char **argv, bool arch_for_multilib)
 {
   const char *arch = NULL;
   const char *cpu = NULL;
@@ -657,8 +700,8 @@ arm_canon_arch_option (int argc, const char **argv)
   /* First build up a bitmap describing the target architecture.  */
   if (arch)
     {
-      selected_arch = arm_parse_arch_option_name (all_architectures,
-						  "-march", arch);
+      selected_arch = arm_parse_arch_option_name (all_architectures, "-march",
+						  arch, !arch_for_multilib);
 
       if (selected_arch == NULL)
 	return "";
@@ -666,6 +709,15 @@ arm_canon_arch_option (int argc, const char **argv)
       arm_initialize_isa (target_isa, selected_arch->common.isa_bits);
       arm_parse_option_features (target_isa, &selected_arch->common,
 				 strchr (arch, '+'));
+      if (arch_for_multilib)
+	{
+	  const enum isa_feature removable_bits[] = {ISA_IGNORE_FOR_MULTILIB,
+						     isa_nobit};
+	  sbitmap isa_bits = sbitmap_alloc (isa_num_bits);
+	  arm_initialize_isa (isa_bits, removable_bits);
+	  bitmap_and_compl (target_isa, target_isa, isa_bits);
+	}
+
       if (fpu && strcmp (fpu, "auto") != 0)
 	{
 	  /* We assume that architectures do not have any FPU bits
@@ -682,7 +734,8 @@ arm_canon_arch_option (int argc, const char **argv)
   else if (cpu)
     {
       const cpu_option *selected_cpu
-	= arm_parse_cpu_option_name (all_cores, "-mcpu", cpu);
+	= arm_parse_cpu_option_name (all_cores, "-mcpu", cpu,
+				     !arch_for_multilib);
 
       if (selected_cpu == NULL)
 	return "";
@@ -1032,3 +1085,22 @@ arm_asm_auto_mfpu (int argc, const char **argv)
 #define TARGET_EXCEPT_UNWIND_INFO  arm_except_unwind_info
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;
+
+/* Returns a canonical representation of the -march option from the current
+   -march string (if given) and other options on the command line that might
+   affect the architecture.  */
+const char *
+arm_canon_arch_option (int argc, const char **argv)
+{
+  return arm_canon_arch_option_1 (argc, argv, false);
+}
+
+/* Returns a canonical representation of the -mlibarch option from the current
+   -march string (if given) and other options on the command line that might
+   affect the architecture after removing the compiler extension options which
+   are not required for multilib linking.  */
+const char *
+arm_canon_arch_multilib_option (int argc, const char **argv)
+{
+  return arm_canon_arch_option_1 (argc, argv, true);
+}

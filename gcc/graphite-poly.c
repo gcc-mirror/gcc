@@ -1,5 +1,5 @@
 /* Graphite polyhedral representation.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Tobias Grosser <grosser@fim.uni-passau.de>.
 
@@ -63,10 +63,7 @@ print_iteration_domain (FILE *file, poly_bb_p pbb)
 void
 print_iteration_domains (FILE *file, scop_p scop)
 {
-  int i;
-  poly_bb_p pbb;
-
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+  for (poly_bb_p pbb : scop->pbbs)
     print_iteration_domain (file, pbb);
 }
 
@@ -150,16 +147,13 @@ new_poly_bb (scop_p scop, gimple_poly_bb_p black_box)
 static void
 free_poly_bb (poly_bb_p pbb)
 {
-  int i;
-  poly_dr_p pdr;
-
   isl_set_free (pbb->domain);
   pbb->domain = NULL;
   isl_set_free (pbb->iterators);
   pbb->iterators = NULL;
 
   if (PBB_DRS (pbb).exists ())
-    FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
+    for (poly_dr_p pdr : PBB_DRS (pbb))
       free_poly_dr (pdr);
 
   PBB_DRS (pbb).release ();
@@ -243,10 +237,7 @@ free_gimple_poly_bb (gimple_poly_bb_p gbb)
 static void
 remove_gbbs_in_scop (scop_p scop)
 {
-  int i;
-  poly_bb_p pbb;
-
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+  for (poly_bb_p pbb : scop->pbbs)
     free_gimple_poly_bb (PBB_BLACK_BOX (pbb));
 }
 
@@ -273,13 +264,10 @@ new_scop (edge entry, edge exit)
 void
 free_scop (scop_p scop)
 {
-  int i;
-  poly_bb_p pbb;
-
   remove_gbbs_in_scop (scop);
   free_sese_info (scop->scop_info);
 
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+  for (poly_bb_p pbb : scop->pbbs)
     free_poly_bb (pbb);
 
   scop->pbbs.release ();
@@ -309,8 +297,6 @@ print_pbb_domain (FILE *file, poly_bb_p pbb)
 static void
 dump_gbb_cases (FILE *file, gimple_poly_bb_p gbb)
 {
-  int i;
-  gimple *stmt;
   vec<gimple *> cases;
 
   if (!gbb)
@@ -322,7 +308,7 @@ dump_gbb_cases (FILE *file, gimple_poly_bb_p gbb)
 
   fprintf (file, "cases bb_%d (\n", GBB_BB (gbb)->index);
 
-  FOR_EACH_VEC_ELT (cases, i, stmt)
+  for (gimple *stmt : cases)
     print_gimple_stmt (file, stmt, 0);
 
   fprintf (file, ")\n");
@@ -333,8 +319,6 @@ dump_gbb_cases (FILE *file, gimple_poly_bb_p gbb)
 static void
 dump_gbb_conditions (FILE *file, gimple_poly_bb_p gbb)
 {
-  int i;
-  gimple *stmt;
   vec<gimple *> conditions;
 
   if (!gbb)
@@ -346,7 +330,7 @@ dump_gbb_conditions (FILE *file, gimple_poly_bb_p gbb)
 
   fprintf (file, "conditions bb_%d (\n", GBB_BB (gbb)->index);
 
-  FOR_EACH_VEC_ELT (conditions, i, stmt)
+  for (gimple *stmt : conditions)
     print_gimple_stmt (file, stmt, 0);
 
   fprintf (file, ")\n");
@@ -357,8 +341,6 @@ dump_gbb_conditions (FILE *file, gimple_poly_bb_p gbb)
 void
 print_pdrs (FILE *file, poly_bb_p pbb)
 {
-  int i;
-  poly_dr_p pdr;
   int nb_reads = 0;
   int nb_writes = 0;
 
@@ -367,7 +349,7 @@ print_pdrs (FILE *file, poly_bb_p pbb)
 
   fprintf (file, "Data references (\n");
 
-  FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
+  for (poly_dr_p pdr : PBB_DRS (pbb))
     if (PDR_TYPE (pdr) == PDR_READ)
       nb_reads++;
     else
@@ -375,13 +357,13 @@ print_pdrs (FILE *file, poly_bb_p pbb)
 
   fprintf (file, "Read data references (\n");
 
-  FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
+  for (poly_dr_p pdr : PBB_DRS (pbb))
     if (PDR_TYPE (pdr) == PDR_READ)
       print_pdr (file, pdr);
 
   fprintf (file, ")\n");
   fprintf (file, "Write data references (\n");
-  FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
+  for (poly_dr_p pdr : PBB_DRS (pbb))
     if (PDR_TYPE (pdr) != PDR_READ)
       print_pdr (file, pdr);
   fprintf (file, ")\n");
@@ -459,9 +441,6 @@ print_scop_context (FILE *file, scop_p scop)
 void
 print_scop (FILE *file, scop_p scop)
 {
-  int i;
-  poly_bb_p pbb;
-
   fprintf (file, "SCoP (\n");
   print_scop_context (file, scop);
   print_scop_params (file, scop);
@@ -469,7 +448,7 @@ print_scop (FILE *file, scop_p scop)
   fprintf (file, "Number of statements: ");
   fprintf (file, "%d\n", scop->pbbs.length ());
 
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+  for (poly_bb_p pbb : scop->pbbs)
     print_pbb (file, pbb);
 
   fprintf (file, ")\n");

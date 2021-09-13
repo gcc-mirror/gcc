@@ -3,8 +3,6 @@
    Adapted from intl/localealias.c, with all #includes removed.  */
 
 /* { dg-do "compile" } */
-/* { dg-additional-options "-fno-analyzer-feasibility" } */
-/* TODO: remove the need for this option.  */
 
 /* Handle aliases for locale names.
    Copyright (C) 1995-1999, 2000-2001, 2003 Free Software Foundation, Inc.
@@ -32,6 +30,7 @@ typedef __SIZE_TYPE__ size_t;
 typedef struct _IO_FILE FILE;
 extern FILE *fopen (const char *__restrict __filename,
 		    const char *__restrict __modes);
+extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 extern int fclose (FILE *__stream);
 
 extern int isspace (int) __attribute__((__nothrow__, __leaf__));
@@ -51,6 +50,12 @@ read_alias_file (const char *fname, int fname_len)
   fp = fopen (fname, "r"); /* { dg-message "opened here" } */
   if (fp == NULL)
     return 0;
+
+  if (fread (buf, sizeof buf, 1, fp) != 1)
+    {
+      fclose (fp);
+      return 0;
+    }
 
   cp = buf;
 

@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -109,7 +109,7 @@ evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range_equiv *vr)
   /* Set the SSA with the value range.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
     {
-      if (vr->constant_p ())
+      if (!vr->varying_p () && vr->constant_p ())
 	set_range_info (lhs, vr->kind (),
 			wi::to_wide (vr->min ()),
 			wi::to_wide (vr->max ()));

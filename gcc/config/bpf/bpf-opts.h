@@ -1,5 +1,5 @@
 /* Definitions for option handling for eBPF.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -51,6 +51,13 @@ enum bpf_kernel_version
   LINUX_V5_2,
   LINUX_LATEST = LINUX_V5_2,
   LINUX_NATIVE,
+};
+
+enum bpf_isa_version
+{
+  ISA_V1,
+  ISA_V2,
+  ISA_V3,
 };
 
 #endif /* ! BPF_OPTS_H */

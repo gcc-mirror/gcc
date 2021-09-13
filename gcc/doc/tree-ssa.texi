@@ -1,4 +1,4 @@
-@c Copyright (C) 2004-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -385,20 +385,8 @@ optimization can manipulate the stmt when all the uses have been
 processed.  This is a little slower than the FAST version since it adds a
 placeholder element and must sort through the list a bit for each statement.
 This placeholder element must be also be removed if the loop is
-terminated early.  The macro @code{BREAK_FROM_IMM_USE_STMT} is provided
-to do this :
-
-@smallexample
-  FOR_EACH_IMM_USE_STMT (stmt, iterator, ssa_var)
-    @{
-      if (stmt == last_stmt)
-        BREAK_FROM_IMM_USE_STMT (iterator);
-
-      FOR_EACH_IMM_USE_ON_STMT (imm_use_p, iterator)
-        SET_USE (imm_use_p, ssa_var_2);
-      fold_stmt (stmt);
-    @}
-@end smallexample
+terminated early; a destructor takes care of that when leaving the
+@code{FOR_EACH_IMM_USE_STMT} scope.
 
 There are checks in @code{verify_ssa} which verify that the immediate use list
 is up to date, as well as checking that an optimization didn't break from the

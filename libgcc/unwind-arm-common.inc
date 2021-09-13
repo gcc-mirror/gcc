@@ -1,5 +1,5 @@
 /* Common unwinding code for ARM EABI and C6X.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it
@@ -49,10 +49,6 @@
 #define ARM_UCONTEXT_SIGCONTEXT		0x14
 #define ARM_SIGCONTEXT_R0		0xc
 #endif
-
-/* We add a prototype for abort here to avoid creating a dependency on
-   target headers.  */
-extern void abort (void);
 
 /* Definitions for C++ runtime support routines.  We make these weak
    declarations to avoid pulling in libsupc++ unnecessarily.  */

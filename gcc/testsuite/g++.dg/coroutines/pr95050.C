@@ -21,7 +21,7 @@ struct task
   {
     auto get_return_object () -> task  { return {}; }
     auto initial_suspend () -> suspend_always { return {}; }
-    auto final_suspend () -> suspend_always { return {}; }
+    auto final_suspend () noexcept -> suspend_always { return {}; }
     void return_void () {} 
     void unhandled_exception () { }
     void thing (ret_type x) {} 

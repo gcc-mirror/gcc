@@ -1,5 +1,15 @@
 // PERMUTE_ARGS:
 // EXTRA_SOURCES: imports/mangle10077.d
+// EXTRA_FILES: imports/testmangle.d
+/*
+TEST_OUTPUT:
+---
+_D7imports10testmangle12detectMangleFPSQBlQBg6DetectZQq
+_D7imports10testmangle__T10DetectTmplTiZQpFNaNbNiNfZv
+true
+false
+---
+*/
 
 import imports.testmangle;
 
@@ -589,6 +599,12 @@ void fooB(void delegate (void delegate()) scope dg)
 //pragma(msg, fooB.mangleof);
 static assert(typeof(fooA).mangleof != typeof(fooB).mangleof);
 
+/***************************************************/
+
+alias noreturn = typeof(*null);
+alias fpd = noreturn function();
+int funcd(fpd);
+static assert(funcd.mangleof == "_D6mangle5funcdFPFZNnZi");
 
 /***************************************************/
 

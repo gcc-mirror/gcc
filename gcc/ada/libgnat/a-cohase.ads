@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -37,7 +37,7 @@ private with Ada.Containers.Hash_Tables;
 with Ada.Containers.Helpers;
 private with Ada.Finalization;
 private with Ada.Streams;
-private with Ada.Strings.Text_Output;
+private with Ada.Strings.Text_Buffers;
 
 generic
    type Element_Type is private;
@@ -68,6 +68,15 @@ is
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
+
+   function "=" (Left, Right : Cursor) return Boolean;
+   --  The representation of cursors includes a component used to optimize
+   --  iteration over sets. This component may become unreliable after
+   --  multiple set insertions, and must be excluded from cursor equality,
+   --  so we need to provide an explicit definition for it, instead of
+   --  using predefined equality (as implied by a questionable comment
+   --  in the RM). This is also the case for hashed maps, and affects the
+   --  use of Insert primitives in hashed structures.
 
    Empty_Set : constant Set;
    --  Set objects declared without an initialization expression are
@@ -510,7 +519,7 @@ private
    end record with Put_Image => Put_Image;
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Set);
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Set);
 
    overriding procedure Adjust (Container : in out Set);
 
@@ -537,8 +546,22 @@ private
 
    type Cursor is record
       Container : Set_Access;
+      --  Access to this cursor's container
+
       Node      : Node_Access;
+      --  Access to the node pointed to by this cursor
+
       Position  : Hash_Type := Hash_Type'Last;
+      --  Position of the node in the buckets of the container. If this is
+      --  equal to Hash_Type'Last, then it will not be used. Position is
+      --  not requried by the implementation, but improves the efficiency
+      --  of various operations.
+      --
+      --  However, this value must be maintained so that the predefined
+      --  equality operation acts as required by RM A.18.7-17/2, which
+      --  states: "The predefined "=" operator for type Cursor returns True
+      --  if both cursors are No_Element, or designate the same element
+      --  in the same container."
    end record;
 
    procedure Write

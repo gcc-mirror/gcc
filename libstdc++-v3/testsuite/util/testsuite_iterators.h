@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Iterator Wrappers for the C++ library testsuite.
 //
-// Copyright (C) 2004-2020 Free Software Foundation, Inc.
+// Copyright (C) 2004-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -122,7 +122,7 @@ namespace __gnu_test
    */
   template<class T>
   struct output_iterator_wrapper
-  : public std::iterator<std::output_iterator_tag, T, std::ptrdiff_t, T*, T&>
+  : public std::iterator<std::output_iterator_tag, void, std::ptrdiff_t, void, void>
   {
   protected:
     output_iterator_wrapper() : ptr(0), SharedInfo(0)
@@ -175,10 +175,14 @@ namespace __gnu_test
 #if __cplusplus >= 201103L
     template<typename U>
       void operator,(const U&) const = delete;
+
+    void operator&() const = delete;
 #else
   private:
     template<typename U>
       void operator,(const U&) const;
+
+    void operator&() const;
 #endif
   };
 
@@ -288,10 +292,14 @@ namespace __gnu_test
 #if __cplusplus >= 201103L
     template<typename U>
       void operator,(const U&) const = delete;
+
+    void operator&() const = delete;
 #else
   private:
     template<typename U>
       void operator,(const U&) const;
+
+    void operator&() const;
 #endif
   };
 
@@ -894,6 +902,22 @@ namespace __gnu_test
 // This is also true for test_container, although only when it has forward
 // iterators (because output_iterator_wrapper and input_iterator_wrapper are
 // not default constructible so do not model std::input_or_output_iterator).
+
+
+  // Test for basic properties of C++20 16.3.3.6 [customization.point.object].
+  template<typename T>
+    constexpr bool
+    is_customization_point_object(T& obj) noexcept
+    {
+      // A [CPO] is a function object with a literal class type.
+      static_assert( std::is_class_v<T> || std::is_union_v<T> );
+      static_assert( __is_literal_type(T) );
+      // The type of a [CPO], ignoring cv-qualifiers, shall model semiregular.
+      static_assert( std::semiregular<std::remove_cv_t<T>> );
+
+      return true;
+    }
+
 #endif // C++20
 } // namespace __gnu_test
 #endif // _TESTSUITE_ITERATORS

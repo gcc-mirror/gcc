@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Matsushita MN10300 series
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -648,9 +648,6 @@ do {									     \
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
-
-/* We don't have to worry about dbx compatibility for the mn10300.  */
-#define DEFAULT_GDB_EXTENSIONS 1
 
 /* Use dwarf2 debugging info by default.  */
 #undef  PREFERRED_DEBUGGING_TYPE

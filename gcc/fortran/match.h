@@ -1,5 +1,5 @@
 /* All matcher functions.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -160,22 +160,39 @@ match gfc_match_omp_critical (void);
 match gfc_match_omp_declare_reduction (void);
 match gfc_match_omp_declare_simd (void);
 match gfc_match_omp_declare_target (void);
+match gfc_match_omp_depobj (void);
 match gfc_match_omp_distribute (void);
 match gfc_match_omp_distribute_parallel_do (void);
 match gfc_match_omp_distribute_parallel_do_simd (void);
 match gfc_match_omp_distribute_simd (void);
 match gfc_match_omp_do (void);
 match gfc_match_omp_do_simd (void);
+match gfc_match_omp_loop (void);
+match gfc_match_omp_error (void);
 match gfc_match_omp_flush (void);
+match gfc_match_omp_masked (void);
+match gfc_match_omp_masked_taskloop (void);
+match gfc_match_omp_masked_taskloop_simd (void);
 match gfc_match_omp_master (void);
+match gfc_match_omp_master_taskloop (void);
+match gfc_match_omp_master_taskloop_simd (void);
+match gfc_match_omp_nothing (void);
 match gfc_match_omp_ordered (void);
 match gfc_match_omp_ordered_depend (void);
 match gfc_match_omp_parallel (void);
 match gfc_match_omp_parallel_do (void);
 match gfc_match_omp_parallel_do_simd (void);
+match gfc_match_omp_parallel_loop (void);
+match gfc_match_omp_parallel_masked (void);
+match gfc_match_omp_parallel_masked_taskloop (void);
+match gfc_match_omp_parallel_masked_taskloop_simd (void);
+match gfc_match_omp_parallel_master (void);
+match gfc_match_omp_parallel_master_taskloop (void);
+match gfc_match_omp_parallel_master_taskloop_simd (void);
 match gfc_match_omp_parallel_sections (void);
 match gfc_match_omp_parallel_workshare (void);
 match gfc_match_omp_requires (void);
+match gfc_match_omp_scope (void);
 match gfc_match_omp_scan (void);
 match gfc_match_omp_sections (void);
 match gfc_match_omp_simd (void);
@@ -187,12 +204,14 @@ match gfc_match_omp_target_exit_data (void);
 match gfc_match_omp_target_parallel (void);
 match gfc_match_omp_target_parallel_do (void);
 match gfc_match_omp_target_parallel_do_simd (void);
+match gfc_match_omp_target_parallel_loop (void);
 match gfc_match_omp_target_simd (void);
 match gfc_match_omp_target_teams (void);
 match gfc_match_omp_target_teams_distribute (void);
 match gfc_match_omp_target_teams_distribute_parallel_do (void);
 match gfc_match_omp_target_teams_distribute_parallel_do_simd (void);
 match gfc_match_omp_target_teams_distribute_simd (void);
+match gfc_match_omp_target_teams_loop (void);
 match gfc_match_omp_target_update (void);
 match gfc_match_omp_task (void);
 match gfc_match_omp_taskgroup (void);
@@ -205,6 +224,7 @@ match gfc_match_omp_teams_distribute (void);
 match gfc_match_omp_teams_distribute_parallel_do (void);
 match gfc_match_omp_teams_distribute_parallel_do_simd (void);
 match gfc_match_omp_teams_distribute_simd (void);
+match gfc_match_omp_teams_loop (void);
 match gfc_match_omp_threadprivate (void);
 match gfc_match_omp_workshare (void);
 match gfc_match_omp_end_critical (void);

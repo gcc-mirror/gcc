@@ -1,3 +1,123 @@
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Do not search for sbrk on Darwin.
+	* xmalloc.c: Do not declare sbrk unless it has been found
+	by configure.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_identifier): Skip over fake parent manglings.
+	* testsuite/d-demangle-expected: Add tests.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_arrayliteral): Add 'info' parameter.
+	(dlang_parse_assocarray): Likewise.
+	(dlang_parse_structlit): Likewise.
+	(dlang_value): Likewise.  Handle function literal symbols.
+	(dlang_template_args): Pass 'info' to dlang_value.
+	* testsuite/d-demangle-expected: Add new test.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_attributes): Handle typeof(*null).
+	(dlang_type): Likewise.  Demangle 'n' as typeof(null).
+	* testsuite/d-demangle-expected: Update tests.
+
+2021-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* simple-object-mach-o.c (simple_object_mach_o_write_segment):
+	Cast the first argument to set_32 as needed.
+
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* simple-object-mach-o.c (simple_object_mach_o_write_segment):
+	Arrange to swap the LTO index tables where needed.
+
+2021-06-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* make-temp-file.c (usrtmp): Remove.
+	(choose_tmpdir): Remove use of usrtmp.
+
+2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* simple-object.c (handle_lto_debug_sections): Copy over .BTF section.
+
+2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
+	    David Faust  <david.faust@oracle.com>
+	    Jose E. Marchesi  <jose.marchesi@oracle.com>
+	    Weimin Pan  <weimin.pan@oracle.com>
+
+	* simple-object.c (handle_lto_debug_sections): Copy over .ctf
+	sections.
+
+2021-06-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/100734
+	* configure.ac: Use libiberty snprintf and vsnprintf on
+	hppa*-*-hpux*.
+	* configure: Regenerate.
+
+2021-05-06  Tom Tromey  <tom@tromey.com>
+
+	* hashtab.c (htab_eq_string): New function.
+
+2021-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Make test for variables more robust.
+	* configure: Regenerate.
+
+2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/99703
+	* configure: Regenerated.
+
+2021-04-21  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR demangler/100177
+	* rust-demangle.c (demangle_const_char): Properly print the
+	character value.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* cp-demangle.c (d_dump, d_make_comp, d_expression_1)
+	(d_count_templates_scopes): Handle DEMANGLE_COMPONENT_VENDOR_EXPR.
+	(d_print_comp_inner): Likewise.
+	<case DEMANGLE_COMPONENT_EXTENDED_OPERATOR>: Revert r11-4926
+	change.
+	<case DEMANGLE_COMPONENT_UNARY>: Likewise.
+	* testsuite/demangle-expected: Adjust __alignof__ tests.
+
+2021-03-16  Nick Clifton  <nickc@redhat.com>
+
+	* sha1.c (sha1_process_bytes): Use memmove in place of memcpy.
+
+2021-02-20  Mike Frysinger  <vapier@gentoo.org>
+
+	* Makefile.in (ACLOCAL, ACLOCAL_AMFLAGS, $(srcdir)/aclocal.m4): Define.
+	(configure_deps): Rename to ...
+	(aclocal_deps): ... this.  Replace aclocal.m4 with acinclude.m4.
+	($(srcdir)/configure): Replace $(configure_deps) with
+	$(srcdir)/aclocal.m4.
+	* aclocal.m4: Move libiberty macros to acinclude.m4, then regenerate.
+	* acinclude.m4: New file.
+	* configure: Regenerate.
+
+2021-02-19  Ayush Mittal  <ayush.m@samsung.com>
+
+	* argv.c (expandargv): free allocated buffer if read fails.
+
+2021-02-01  Martin Sebor  <msebor@redhat.com>
+
+	* dyn-string.c (dyn_string_insert_cstr): Use memcpy instead of strncpy
+	to avoid -Wstringop-truncation.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* strverscmp.c: Convert to utf8 from iso8859.
+
 2020-12-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67343

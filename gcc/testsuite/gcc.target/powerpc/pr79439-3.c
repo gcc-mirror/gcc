@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc-*-linux* && ilp32 } } } */
 /* { dg-options "-O2 -fpic -fno-reorder-blocks" } */
+/* { dg-require-effective-target fpic } */
 
 /* Analog of pr79439-1.c for 32-bit Linux.  */
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2020 Free Software Foundation, Inc.
+// Copyright (C) 2016-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,11 +46,43 @@ test01()
   VERIFY( exists(p) );
 
   // Test existing path (libstdc++/71036).
+  ec = make_error_code(std::errc::invalid_argument);
   b = create_directory(p, ec);
   VERIFY( !ec );
   VERIFY( !b );
   b = create_directory(p);
   VERIFY( !b );
+
+  auto f = p/"file";
+  std::ofstream{f} << "create file";
+  b = create_directory(f, ec);
+  VERIFY( ec == std::errc::file_exists );
+  VERIFY( !b );
+  try
+  {
+    create_directory(f);
+    VERIFY( false );
+  }
+  catch (const fs::filesystem_error& e)
+  {
+    VERIFY( e.code() == std::errc::file_exists );
+    VERIFY( e.path1() == f );
+  }
+
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // no symlinks
+#else
+  // PR libstdc++/101510 create_directory on an existing symlink to a directory
+  fs::create_directory(p/"dir");
+  auto link = p/"link";
+  fs::create_directory_symlink("dir", link);
+  ec = make_error_code(std::errc::invalid_argument);
+  b = fs::create_directory(link, ec);
+  VERIFY( !b );
+  VERIFY( !ec );
+  b = fs::create_directory(link);
+  VERIFY( !b );
+#endif
 
   remove_all(p, ec);
 }

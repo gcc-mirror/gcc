@@ -1,5 +1,5 @@
 ;; Machine description for PowerPC synchronization instructions.
-;; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;; Contributed by Geoffrey Keating.
 
 ;; This file is part of GCC.
@@ -131,6 +131,7 @@
    && !reg_mentioned_p (operands[0], operands[1])"
   "lq %0,%1"
   [(set_attr "type" "load")
+   (set_attr "size" "128")
    (set (attr "prefixed") (if_then_else (match_test "TARGET_PREFIXED")
 					(const_string "yes")
 					(const_string "no")))])
@@ -205,6 +206,7 @@
   "TARGET_SYNC_TI"
   "stq %1,%0"
   [(set_attr "type" "store")
+   (set_attr "size" "128")
    (set (attr "prefixed") (if_then_else (match_test "TARGET_PREFIXED")
 					(const_string "yes")
 					(const_string "no")))])
@@ -333,7 +335,8 @@
    && !reg_mentioned_p (operands[0], operands[1])
    && quad_int_reg_operand (operands[0], PTImode)"
   "lqarx %0,%y1"
-  [(set_attr "type" "load_l")])
+  [(set_attr "type" "load_l")
+   (set_attr "size" "128")])
 
 (define_insn "store_conditional<mode>"
   [(set (match_operand:CC 0 "cc_reg_operand" "=x")
@@ -394,7 +397,8 @@
 	(match_operand:PTI 2 "quad_int_reg_operand" "r"))]
   "TARGET_SYNC_TI && quad_int_reg_operand (operands[2], PTImode)"
   "stqcx. %2,%y1"
-  [(set_attr "type" "store_c")])
+  [(set_attr "type" "store_c")
+   (set_attr "size" "128")])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "int_reg_operand")		;; bool out

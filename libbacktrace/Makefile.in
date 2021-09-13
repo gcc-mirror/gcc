@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Makefile.am -- Backtrace Makefile.
-# Copyright (C) 2012-2020 Free Software Foundation, Inc.
+# Copyright (C) 2012-2021 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -2433,9 +2433,13 @@ uninstall-am:
 @HAVE_DWZ_TRUE@@NATIVE_TRUE@	rm -f $@ $@_common.debug
 @HAVE_DWZ_TRUE@@NATIVE_TRUE@	cp $< $@_1
 @HAVE_DWZ_TRUE@@NATIVE_TRUE@	cp $< $@_2
-@HAVE_DWZ_TRUE@@NATIVE_TRUE@	$(DWZ) -m $@_common.debug $@_1 $@_2
-@HAVE_DWZ_TRUE@@NATIVE_TRUE@	rm -f $@_2
-@HAVE_DWZ_TRUE@@NATIVE_TRUE@	mv $@_1 $@
+@HAVE_DWZ_TRUE@@NATIVE_TRUE@	if $(DWZ) -m $@_common.debug $@_1 $@_2; then \
+@HAVE_DWZ_TRUE@@NATIVE_TRUE@	  rm -f $@_2; \
+@HAVE_DWZ_TRUE@@NATIVE_TRUE@	  mv $@_1 $@; \
+@HAVE_DWZ_TRUE@@NATIVE_TRUE@	else \
+@HAVE_DWZ_TRUE@@NATIVE_TRUE@	  echo "Ignoring dwz errors, assuming that test passes"; \
+@HAVE_DWZ_TRUE@@NATIVE_TRUE@	  cp $< $@; \
+@HAVE_DWZ_TRUE@@NATIVE_TRUE@	fi
 
 @NATIVE_TRUE@edtest2_build.c: gen_edtest2_build; @true
 @NATIVE_TRUE@gen_edtest2_build: $(srcdir)/edtest2.c

@@ -14,11 +14,12 @@
  */
 module core.sys.posix.setjmp;
 
-private import core.sys.posix.config;
-private import core.sys.posix.signal; // for sigset_t
+import core.sys.posix.config;
+import core.sys.posix.signal; // for sigset_t
 
 version (Posix):
 extern (C) nothrow @nogc:
+@system:
 
 version (RISCV32) version = RISCV_Any;
 version (RISCV64) version = RISCV_Any;
@@ -151,7 +152,8 @@ version (CRuntime_Glibc)
             c_long __pc;
             c_long[12] __regs;
             c_long __sp;
-            double[12] __fpregs;
+            static if (__traits(getTargetInfo, "floatAbi") == "double")
+                double[12] __fpregs;
         }
         alias __jmp_buf = __riscv_jmp_buf[1];
     }
@@ -210,7 +212,7 @@ else version (FreeBSD)
     {
         enum _JBLEN = 31;
         // __int128_t
-        struct _jmp_buf { long[2][_JBLEN + 1] _jb; };
+        struct _jmp_buf { long[2][_JBLEN + 1] _jb; }
     }
     else version (PPC_Any)
     {
@@ -362,7 +364,7 @@ else version (CRuntime_UClibc)
                 double[8] __fpregs;
             else
                 double[6] __fpregs;
-        };
+        }
     }
     else
         static assert(0, "unimplemented");
@@ -422,7 +424,7 @@ else version (FreeBSD)
     else version (AArch64)
     {
         // __int128_t
-        struct _sigjmp_buf { long[2][_JBLEN + 1] _jb; };
+        struct _sigjmp_buf { long[2][_JBLEN + 1] _jb; }
     }
     else version (PPC_Any)
     {

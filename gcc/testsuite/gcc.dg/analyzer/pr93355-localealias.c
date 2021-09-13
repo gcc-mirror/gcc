@@ -3,8 +3,8 @@
    Adapted from intl/localealias.c, with all #includes removed.  */
 
 /* { dg-do "compile" } */
-/* { dg-additional-options "-Wno-analyzer-too-complex -fno-analyzer-feasibility" } */
-/* TODO: remove the need for these options.  */
+/* { dg-additional-options "-Wno-analyzer-too-complex" } */
+/* TODO: remove the need for this option.  */
 /* { dg-require-effective-target alloca } */
 
 /* Handle aliases for locale names.

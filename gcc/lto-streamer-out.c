@@ -1,6 +1,6 @@
 /* Write the GIMPLE representation to a file stream.
 
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -1271,7 +1271,10 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	  hstate.add_flag (DECL_PACKED (t));
 	  hstate.add_flag (DECL_NONADDRESSABLE_P (t));
 	  hstate.add_flag (DECL_PADDING_P (t));
-	  hstate.add_flag (DECL_FIELD_ABI_IGNORED (t));
+	  if (DECL_BIT_FIELD (t))
+	    hstate.add_flag (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (t));
+	  else
+	    hstate.add_flag (DECL_FIELD_ABI_IGNORED (t));
 	  hstate.add_int (DECL_OFFSET_ALIGN (t));
 	}
       else if (code == VAR_DECL)
@@ -2670,7 +2673,7 @@ produce_lto_section ()
 
   bool slim_object = flag_generate_lto && !flag_fat_lto_objects;
   lto_section s
-    = { LTO_major_version, LTO_minor_version, slim_object, 0 };
+    = { LTO_major_version, LTO_minor_version, slim_object, 0, 0 };
   s.set_compression (compression);
   lto_write_data (&s, sizeof s);
   lto_end_section ();

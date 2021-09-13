@@ -1,6 +1,6 @@
 /* Arm Custom Datapath Extension (CDE) intrinsics include file.
 
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
    Contributed by Arm Ltd.
 
    This file is part of GCC.

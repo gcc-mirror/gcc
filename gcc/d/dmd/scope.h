@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -65,6 +65,10 @@ enum PINLINE;
 #define SCOPEfree           0x8000  // is on free list
 #define SCOPEfullinst       0x10000 // fully instantiate templates
 #define SCOPEalias          0x20000 // inside alias declaration
+
+// The following are mutually exclusive
+#define SCOPEprintf         0x40000 // printf-style function
+#define SCOPEscanf          0x80000 // scanf-style function
 
 struct Scope
 {
@@ -144,7 +148,6 @@ struct Scope
     Module *instantiatingModule();
 
     Dsymbol *search(Loc loc, Identifier *ident, Dsymbol **pscopesym, int flags = IgnoreNone);
-    static void deprecation10378(Loc loc, Dsymbol *sold, Dsymbol *snew);
     Dsymbol *search_correct(Identifier *ident);
     static const char *search_correct_C(Identifier *ident);
     Dsymbol *insert(Dsymbol *s);

@@ -1,5 +1,5 @@
 /* Passes for transactional memory support.
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -4413,12 +4413,8 @@ ipa_tm_scan_irr_block (basic_block bb)
 	     is to wrap it in a __tm_waiver block.  This is not
 	     yet implemented, so we can't check for it.  */
 	  if (is_tm_safe (current_function_decl))
-	    {
-	      tree t = build1 (NOP_EXPR, void_type_node, size_zero_node);
-	      SET_EXPR_LOCATION (t, gimple_location (stmt));
-	      error ("%K%<asm%> not allowed in %<transaction_safe%> function",
-		     t);
-	    }
+	    error_at (gimple_location (stmt),
+		      "%<asm%> not allowed in %<transaction_safe%> function");
 	  return true;
 
 	default:

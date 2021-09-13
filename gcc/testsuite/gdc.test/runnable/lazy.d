@@ -75,7 +75,7 @@ void test1()
     );
 
     whiler( x < 100,
-        (printf("%d\n", x), x *= 2)
+        (){ printf("%d\n", x); x *= 2; }()
     );
 }
 

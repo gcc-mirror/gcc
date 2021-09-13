@@ -1,5 +1,5 @@
 /* Marshalling and unmarshalling.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,6 +19,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef CC1_PLUGIN_MARSHALL_HH
 #define CC1_PLUGIN_MARSHALL_HH
+
+#include <type_traits>
 
 #include "status.hh"
 #include "gcc-interface.h"
@@ -50,6 +52,14 @@ namespace cc1_plugin
   status unmarshall_array_start (connection *, char, size_t *);
   status unmarshall_array_elmts (connection *, size_t, void *);
 
+  // An "empty" marshall call -- used to handle the base case for some
+  // variadic templates.
+  static inline
+  status marshall (connection *)
+  {
+    return OK;
+  }
+
   // A template function that can handle marshalling various integer
   // objects to the connection.
   template<typename T>
@@ -59,17 +69,31 @@ namespace cc1_plugin
   }
 
   // A template function that can handle unmarshalling various integer
-  // objects from the connection.  Note that this can't be
-  // instantiated for enum types.  Note also that there's no way at
-  // the protocol level to distinguish different int types.
+  // objects from the connection.  Note that there's no way at the
+  // protocol level to distinguish different int types.
   template<typename T>
-  status unmarshall (connection *conn, T *scalar)
+  status unmarshall (connection *conn, T *scalar,
+		     typename std::enable_if<std::is_integral<T>::value, T>::type * = 0)
   {
     protocol_int result;
 
     if (!unmarshall_intlike (conn, &result))
       return FAIL;
-    *scalar = result;
+    *scalar = (T) result;
+    return OK;
+  }
+
+  // A template function that can handle unmarshalling various enum
+  // objects from the connection.
+  template<typename T>
+  status unmarshall (connection *conn, T *e_val,
+		     typename std::enable_if<std::is_enum<T>::value, T>::type * = 0)
+  {
+    protocol_int result;
+
+    if (!unmarshall_intlike (conn, &result))
+      return FAIL;
+    *e_val = (T) result;
     return OK;
   }
 
@@ -87,6 +111,14 @@ namespace cc1_plugin
   // resulting array must be freed by the caller, using 'delete[]' on
   // the elements, and 'delete' on the array object itself.
   status unmarshall (connection *, struct gcc_type_array **);
+
+  template<typename T1, typename T2, typename... Arg>
+  status marshall (connection *c, T1 arg1, T2 arg2, Arg... rest)
+  {
+    if (!marshall (c, arg1))
+      return FAIL;
+    return marshall (c, arg2, rest...);
+  }
 };
 
 #endif // CC1_PLUGIN_MARSHALL_HH

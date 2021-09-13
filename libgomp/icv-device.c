@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -61,8 +61,17 @@ omp_is_initial_device (void)
   return 1;
 }
 
+int
+omp_get_device_num (void)
+{
+  /* By specification, this is equivalent to omp_get_initial_device
+     on the host.  */
+  return omp_get_initial_device ();
+}
+
 ialias (omp_set_default_device)
 ialias (omp_get_default_device)
 ialias (omp_get_initial_device)
 ialias (omp_get_num_devices)
 ialias (omp_is_initial_device)
+ialias (omp_get_device_num)

@@ -2,7 +2,16 @@
    are filled. */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler-not "\tnop" } } */
+/* { dg-final { scan-assembler-times "\tnop|addq 8,|subq 8," 2 } } */
+
+/* The reason for the weird variant of scan-assembler-not "\tnop" is that we
+   used to have an unused DWunion temp on stack in xlshrdi3 and delay-slots for
+   the conditional jumps filled by the addq 8/subq setting up that, but with a
+   MAX_FIXED_MODE_SIZE no longer 32, but the default 64, that stack-frame is
+   eliminated, but we no longer have eligible insns to fill the delay-slots.
+   Not wanting to tweak the code in the test-case, this is second best: allowing
+   two nops -or- an addq 8 + subq 8 assuming code generation is otherwise
+   reasonably sane.  */
 
 void *f(void **p)
 {

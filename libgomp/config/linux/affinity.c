@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #ifdef HAVE_PTHREAD_AFFINITY_NP
 

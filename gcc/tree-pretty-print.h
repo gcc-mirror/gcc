@@ -1,7 +1,7 @@
 /* Various declarations for language-independent pretty-print
    subroutines that are only for use in the compilers proper and not
    the driver or other programs.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,7 +39,8 @@ extern void print_generic_stmt (FILE *, tree, dump_flags_t = TDF_NONE);
 extern void print_generic_stmt_indented (FILE *, tree, dump_flags_t, int);
 extern void print_generic_expr (FILE *, tree, dump_flags_t = TDF_NONE);
 extern char *print_generic_expr_to_str (tree);
-extern void dump_omp_clauses (pretty_printer *, tree, int, dump_flags_t);
+extern void dump_omp_clauses (pretty_printer *, tree, int, dump_flags_t,
+			      bool = true);
 extern void dump_omp_atomic_memory_order (pretty_printer *,
 					  enum omp_memory_order);
 extern void dump_omp_loop_non_rect_expr (pretty_printer *, tree, int,
@@ -51,7 +52,6 @@ extern int op_prio (const_tree);
 extern const char *op_symbol_code (enum tree_code);
 extern void pretty_print_string (pretty_printer *, const char *, size_t);
 extern void print_call_name (pretty_printer *, tree, dump_flags_t);
-extern void percent_K_format (text_info *, location_t, tree);
 extern void pp_tree_identifier (pretty_printer *, tree);
 extern void dump_function_header (FILE *, tree, dump_flags_t);
 extern void pp_double_int (pretty_printer *pp, double_int d, bool uns);

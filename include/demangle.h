@@ -1,5 +1,5 @@
 /* Defs for interface to demanglers.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public License
@@ -408,6 +408,9 @@ enum demangle_component_type
      number which involves neither modifying the mangled string nor
      allocating a new copy of the literal in memory.  */
   DEMANGLE_COMPONENT_LITERAL_NEG,
+  /* A vendor's builtin expression.  The left subtree holds the
+     expression's name, and the right subtree is a argument list.  */
+  DEMANGLE_COMPONENT_VENDOR_EXPR,
   /* A libgcj compiled resource.  The left subtree is the name of the
      resource.  */
   DEMANGLE_COMPONENT_JAVA_RESOURCE,

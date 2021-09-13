@@ -1,5 +1,5 @@
 /* Operations with affine combinations of trees.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "dumpfile.h"
 #include "cfgexpand.h"
+#include "value-query.h"
 
 /* Extends CST as appropriate for the affine combinations COMB.  */
 
@@ -345,11 +346,15 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 	       for below case:
 		 (T1)(X *+- CST) -> (T1)X *+- (T1)CST
 	       if X *+- CST doesn't overflow by range information.  */
+	    value_range vr;
 	    if (TYPE_UNSIGNED (itype)
 		&& TYPE_OVERFLOW_WRAPS (itype)
 		&& TREE_CODE (op1) == INTEGER_CST
-		&& determine_value_range (op0, &minv, &maxv) == VR_RANGE)
+		&& get_range_query (cfun)->range_of_expr (vr, op0)
+		&& vr.kind () == VR_RANGE)
 	      {
+		wide_int minv = vr.lower_bound ();
+		wide_int maxv = vr.upper_bound ();
 		wi::overflow_type overflow = wi::OVF_NONE;
 		signop sign = UNSIGNED;
 		if (icode == PLUS_EXPR)

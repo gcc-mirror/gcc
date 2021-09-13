@@ -1,3 +1,41 @@
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	* lto-plugin.c (ltrans_objects): New global.
+	(all_symbols_read_handler): If -ltrans-objects was specified,
+	add the output files from the specified file directly.
+	(process_option): Handle -ltrans-objects.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (LTO_SEGMENT_NAME): Remove.
+	(LTO_SYMTAB_PREFIX): Likewise.
+	(LTO_SYMTAB_PREFIX_LEN): Likewise.
+	(LTO_SYMTAB_EXT_PREFIX): Likewise.
+	(LTO_SYMTAB_EXT_PREFIX_LEN): Likewise.
+	(LTO_LTO_PREFIX): Likewise.
+	(LTO_LTO_PREFIX_LEN): Likewise.
+	(OFFLOAD_SECTION): Likewise.
+	(OFFLOAD_SECTION_LEN): Likewise.
+	(startswith): New function.
+	(all_symbols_read_handler): Use it.
+	(process_symtab): Likewise.
+	(process_symtab_extension): Likewise.
+	(process_offload_section): Likewise.
+	(process_option): Likewise.
+
+2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/99703
+	* configure: Regenerated.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (exec_lto_wrapper): Make a temp variable.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
 2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	* configure: Regenerate.

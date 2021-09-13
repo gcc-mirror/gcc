@@ -1,9 +1,9 @@
 // https://bugzilla.gdcproject.org/show_bug.cgi?id=108
 // { dg-do compile }
 
-import gcc.attribute;
+import gcc.attributes;
 
-@attribute("forceinline")
+@attribute("always_inline")
 void forceinline108()
 {
 }

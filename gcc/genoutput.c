@@ -1,5 +1,5 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -757,6 +757,7 @@ validate_insn_alternatives (class data *d)
 	int which_alternative = 0;
 	int alternative_count_unsure = 0;
 	bool seen_write = false;
+	bool alt_mismatch = false;
 
 	for (p = d->operand[start].constraint; (c = *p); p += len)
 	  {
@@ -813,8 +814,19 @@ validate_insn_alternatives (class data *d)
 	    if (n == 0)
 	      n = d->operand[start].n_alternatives;
 	    else if (n != d->operand[start].n_alternatives)
-	      error_at (d->loc, "wrong number of alternatives in operand %d",
-			start);
+	      {
+		if (!alt_mismatch)
+		  {
+		    alt_mismatch = true;
+		    error_at (d->loc,
+			      "alternative number mismatch: "
+			      "operand %d has %d, operand %d has %d",
+			      0, n, start, d->operand[start].n_alternatives);
+		  }
+		else
+		  error_at (d->loc, "operand %d has %d alternatives",
+		    start, d->operand[start].n_alternatives);
+	      }
 	  }
       }
 
@@ -841,7 +853,7 @@ validate_optab_operands (class data *d)
     return;
 
   /* Miscellaneous tests.  */
-  if (strncmp (d->name, "cstore", 6) == 0
+  if (startswith (d->name, "cstore")
       && d->name[strlen (d->name) - 1] == '4'
       && d->operand[0].mode == VOIDmode)
     {
@@ -1024,6 +1036,7 @@ main (int argc, const char **argv)
       case DEFINE_ADDRESS_CONSTRAINT:
       case DEFINE_MEMORY_CONSTRAINT:
       case DEFINE_SPECIAL_MEMORY_CONSTRAINT:
+      case DEFINE_RELAXED_MEMORY_CONSTRAINT:
 	note_constraint (&info);
 	break;
 

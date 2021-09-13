@@ -1,5 +1,5 @@
 /* Statement translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -1252,7 +1252,8 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 
   if (code->expr2)
     {
-      gcc_assert (code->expr2->expr_type == EXPR_VARIABLE);
+      gcc_assert (code->expr2->expr_type == EXPR_VARIABLE
+		  || code->expr2->expr_type == EXPR_FUNCTION);
       gfc_init_se (&argse, NULL);
       gfc_conv_expr_val (&argse, code->expr2);
       stat = argse.expr;
@@ -1262,7 +1263,8 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 
   if (code->expr3 && (flag_coarray == GFC_FCOARRAY_LIB || flag_coarray == GFC_FCOARRAY_SHARED))
     {
-      gcc_assert (code->expr3->expr_type == EXPR_VARIABLE);
+      gcc_assert (code->expr3->expr_type == EXPR_VARIABLE
+		  || code->expr3->expr_type == EXPR_FUNCTION);
       gfc_init_se (&argse, NULL);
       argse.want_pointer = 1;
       gfc_conv_expr (&argse, code->expr3);
@@ -7059,7 +7061,7 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_expr *init_expr = gfc_expr_to_initialize (expr);
 	  gfc_expr *rhs = e3rhs ? e3rhs : gfc_copy_expr (code->expr3);
 	  flag_realloc_lhs = 0;
-	  tmp = gfc_trans_assignment (init_expr, rhs, false, false, true,
+	  tmp = gfc_trans_assignment (init_expr, rhs, true, false, true,
 				      false);
 	  flag_realloc_lhs = realloc_lhs;
 	  /* Free the expression allocated for init_expr.  */

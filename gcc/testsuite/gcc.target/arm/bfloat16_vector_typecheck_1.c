@@ -2,6 +2,8 @@
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } } */
 /* { dg-require-effective-target arm_v8_2a_fp16_neon_ok } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
+/* { dg-add-options arm_v8_2a_fp16_neon } */
+/* { dg-add-options arm_v8_2a_bf16_neon } */
 /* { dg-additional-options "-march=armv8.6-a+bf16+fp16 -Wno-pedantic -O3 --save-temps" }  */
 
 #include <arm_neon.h>

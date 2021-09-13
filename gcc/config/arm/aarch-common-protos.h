@@ -1,6 +1,6 @@
 /* Functions and structures shared between arm and aarch64.
 
-   Copyright (C) 1991-2020 Free Software Foundation, Inc.
+   Copyright (C) 1991-2021 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -132,6 +132,7 @@ struct fp_cost_table
 struct vector_cost_table
 {
   const int alu;
+  const int mult;
 };
 
 struct cpu_cost_table
@@ -143,9 +144,10 @@ struct cpu_cost_table
   const struct vector_cost_table vect;
 };
 
-rtx_insn *
-arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
-		    vec<const char *> &constraints,
-		    vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs);
+rtx_insn *arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
+			     vec<machine_mode> & /*input_modes*/,
+			     vec<const char *> &constraints,
+			     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs,
+			     location_t loc);
 
 #endif /* GCC_AARCH_COMMON_PROTOS_H */

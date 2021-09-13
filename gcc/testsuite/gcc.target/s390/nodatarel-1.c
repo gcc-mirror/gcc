@@ -15,12 +15,6 @@ foo ()
   return a;
 }
 
-static int __attribute__((noinline,noclone))
-foostatic (void)
-{
-  return a;
-}
-
 /* Just to make a potentially modified.  */
 
 void
@@ -29,7 +23,7 @@ bar (int b)
   a = b;
 }
 
-/* { dg-final { scan-assembler-times "\\.LANCHOR\\d+@GOTENT" 3 } } */
+/* { dg-final { scan-assembler-times "\\.LANCHOR\\d+@GOTENT" 2 } } */
 
 /* The exrl target is a label_ref which should not be affected at
    all.  */
@@ -63,21 +57,3 @@ fooptr ()
 }
 
 /* { dg-final { scan-assembler-times "foo@GOTENT" 1 } } */
-
-
-/* A static function can be addressed relatively.  */
-
-int
-callfoostatic ()
-{
-  return foostatic ();
-}
-
-void *
-foostaticptr ()
-{
-  return &foostatic;
-}
-
-
-/* { dg-final { scan-assembler-not "foostatic@" } } */

@@ -9,8 +9,9 @@
  */
 module core.sys.windows.ntdll;
 version (Windows):
+@system:
 
-private import core.sys.windows.w32api;
+import core.sys.windows.w32api;
 
 
 enum SHUTDOWN_ACTION {

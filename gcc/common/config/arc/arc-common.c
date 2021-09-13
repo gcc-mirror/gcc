@@ -1,5 +1,5 @@
 /* Common hooks for Synopsys DesignWare ARC
-   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+   Copyright (C) 1994-2021 Free Software Foundation, Inc.
    Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 		on behalf of Synopsys Inc.
 		Claudiu Zissulescu <Claudiu.Zissulescu@synopsys.com>
@@ -30,10 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 
 static void
-arc_option_init_struct (struct gcc_options *opts)
+arc_option_init_struct (struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
-  opts->x_flag_no_common = 255; /* Mark as not user-initialized.  */
-
   /* Which cpu we're compiling for (ARC600, ARC601, ARC700, ARCv2).  */
   arc_cpu = PROCESSOR_NONE;
 }
@@ -62,7 +60,6 @@ static const struct default_options arc_option_optimization_table[] =
     { OPT_LEVELS_SIZE, OPT_fif_conversion, NULL, 0 },
     { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     { OPT_LEVELS_3_PLUS_SPEED_ONLY, OPT_msize_level_, NULL, 0 },
-    { OPT_LEVELS_3_PLUS_SPEED_ONLY, OPT_malign_call, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 
@@ -84,7 +81,7 @@ arc_handle_option (struct gcc_options *opts,
 	 our caller, so comparing arc_cpu with PROCESSOR_NONE is pointless.  */
 
       if (mcpu_seen != PROCESSOR_NONE && mcpu_seen != value)
-	warning_at (loc, 0, "multiple %<-mcpu=%> options specified.");
+	warning_at (loc, 0, "multiple %<-mcpu=%> options specified");
       mcpu_seen = value;
       break;
 

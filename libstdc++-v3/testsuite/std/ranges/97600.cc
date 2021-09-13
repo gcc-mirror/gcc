@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,9 +24,8 @@
 #include <ranges>
 
 void
-test01()
+test01(std::ranges::basic_istream_view<int, char, std::char_traits<char>> v)
 {
-  std::ranges::basic_istream_view<int, char, std::char_traits<char>> v;
   v.begin();
   static_assert(std::ranges::range<decltype(v)>);
 }

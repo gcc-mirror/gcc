@@ -3,7 +3,7 @@
 //
 // 2008-12-05  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,9 @@
 #include <random>
 #include <testsuite_hooks.h>
 
+static_assert( std::is_nothrow_default_constructible<std::seed_seq>::value,
+	       "LWG 3422" );
+
 void
 test01()
 {
@@ -34,7 +37,6 @@ test01()
   seq.generate(foo.begin(), foo.end());
 
   VERIFY( seq.size() == 0 );
-  //VERIFY();
 }
 
 int

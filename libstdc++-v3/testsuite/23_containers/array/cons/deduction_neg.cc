@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2020 Free Software Foundation, Inc.
+// Copyright (C) 2017-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
 #include <array>
@@ -26,6 +25,6 @@ test01()
   std::array a1{}; // { dg-error "class template argument deduction failed" }
   std::array a2{1, 2u, 3}; // { dg-error "class template argument deduction failed" }
 }
+// { dg-error "no matching function for call" "" { target *-*-* } 25 }
 // { dg-error "no matching function for call" "" { target *-*-* } 26 }
-// { dg-error "no matching function for call" "" { target *-*-* } 27 }
 // { dg-error "no type named .*enable_if" "" { target *-*-* } 0 }

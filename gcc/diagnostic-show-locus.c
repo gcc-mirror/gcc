@@ -1,5 +1,5 @@
 /* Diagnostic subroutines for printing source-code
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -905,6 +905,15 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
       /* Are both within the same macro expansion?  */
       if (linemap_macro_expansion_map_p (map_a))
 	{
+	  /* If so, then they're only compatible if either both are
+	     from the macro definition, or both from the macro arguments.  */
+	  bool loc_a_from_defn
+	    = linemap_location_from_macro_definition_p (line_table, loc_a);
+	  bool loc_b_from_defn
+	    = linemap_location_from_macro_definition_p (line_table, loc_b);
+	  if (loc_a_from_defn != loc_b_from_defn)
+	    return false;
+
 	  /* Expand each location towards the spelling location, and
 	     recurse.  */
 	  const line_map_macro *macro_map = linemap_check_macro (map_a);
@@ -2591,9 +2600,11 @@ diagnostic_show_locus (diagnostic_context * context,
     return;
 
   /* Don't print the same source location twice in a row, unless we have
-     fix-it hints.  */
+     fix-it hints, or multiple locations, or a label.  */
   if (loc == context->last_location
-      && richloc->get_num_fixit_hints () == 0)
+      && richloc->get_num_fixit_hints () == 0
+      && richloc->get_num_locations () == 1
+      && richloc->get_range (0)->m_label == NULL)
     return;
 
   context->last_location = loc;
@@ -3279,14 +3290,14 @@ test_one_liner_many_fixits_2 ()
   rich_location richloc (line_table, equals);
   for (int i = 0; i < 19; i++)
     {
-      location_t loc = linemap_position_for_column (line_table, i * 2);
+      location_t loc = linemap_position_for_column (line_table, (i * 2) + 1);
       richloc.add_fixit_insert_before (loc, "a");
     }
   ASSERT_EQ (19, richloc.get_num_fixit_hints ());
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^\n"
-		"a a a a a a a a a a a a a a a a a a a\n",
+		" a a a a a a a a a a a a a a a a a a a\n",
 		pp_formatted_text (dc.printer));
 }
 

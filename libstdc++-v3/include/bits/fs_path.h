@@ -1,6 +1,6 @@
 // Class filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,6 @@
 
 #if __cplusplus >= 201703L
 
-#include <utility>
 #include <type_traits>
 #include <locale>
 #include <iosfwd>
@@ -41,6 +40,7 @@
 #include <string_view>
 #include <system_error>
 #include <bits/stl_algobase.h>
+#include <bits/stl_pair.h>
 #include <bits/locale_conv.h>
 #include <ext/concurrence.h>
 #include <bits/shared_ptr.h>
@@ -63,15 +63,13 @@ namespace filesystem
 {
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
-  /** @addtogroup filesystem
-   *  @{
-   */
-
   class path;
 
   /// @cond undocumented
 namespace __detail
 {
+  /// @addtogroup filesystem
+  /// @{
   template<typename _CharT>
     inline constexpr bool __is_encoded_char = false;
   template<>
@@ -238,28 +236,15 @@ namespace __detail
 	return basic_string<_EcharT>(__first, __last);
     }
 
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  template<typename _Tp>
-    inline std::wstring
-    __wstr_from_utf8(const _Tp& __str)
-    {
-      static_assert(std::is_same_v<typename _Tp::value_type, char>);
-      std::wstring __wstr;
-      // XXX This assumes native wide encoding is UTF-16.
-      std::codecvt_utf8_utf16<wchar_t> __wcvt;
-      const auto __p = __str.data();
-      if (!__str_codecvt_in_all(__p, __p + __str.size(), __wstr, __wcvt))
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	      "Cannot convert character sequence",
-	      std::make_error_code(errc::illegal_byte_sequence)));
-      return __wstr;
-    }
-#endif
-
+  /// @} group filesystem
 } // namespace __detail
   /// @endcond
 
-  /// A filesystem path.
+  /// @addtogroup filesystem
+  /// @{
+
+  /// A filesystem path
+  /// @ingroup filesystem
   class path
   {
   public:
@@ -531,13 +516,13 @@ namespace __detail
 
     /// Compare paths
     friend bool operator==(const path& __lhs, const path& __rhs) noexcept
-    { return __lhs.compare(__rhs) == 0; }
+    { return path::_S_compare(__lhs, __rhs) == 0; }
 
 #if __cpp_lib_three_way_comparison
     /// Compare paths
     friend strong_ordering
     operator<=>(const path& __lhs, const path& __rhs) noexcept
-    { return __lhs.compare(__rhs) <=> 0; }
+    { return path::_S_compare(__lhs, __rhs) <=> 0; }
 #else
     /// Compare paths
     friend bool operator!=(const path& __lhs, const path& __rhs) noexcept
@@ -645,6 +630,11 @@ namespace __detail
       static basic_string<_CharT, _Traits, _Allocator>
       _S_str_convert(basic_string_view<value_type>, const _Allocator&);
 
+    // Returns lhs.compare(rhs), but defined after path::iterator is complete.
+    __attribute__((__always_inline__))
+    static int
+    _S_compare(const path& __lhs, const path& __rhs) noexcept;
+
     void _M_split_cmpts();
 
     _Type _M_type() const noexcept { return _M_cmpts.type(); }
@@ -706,7 +696,8 @@ namespace __detail
     struct _Parser;
   };
 
-  /// @relates std::filesystem::path @{
+  /// @{
+  /// @relates std::filesystem::path
 
   inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
 
@@ -742,6 +733,37 @@ namespace __detail
     struct _Impl;
     std::__shared_ptr<const _Impl> _M_impl;
   };
+
+  /// @cond undocumented
+namespace __detail
+{
+  [[noreturn]] inline void
+  __throw_conversion_error()
+  {
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error(
+	 "Cannot convert character sequence",
+	 std::make_error_code(errc::illegal_byte_sequence)));
+  }
+
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  template<typename _Tp>
+    inline std::wstring
+    __wstr_from_utf8(const _Tp& __str)
+    {
+      static_assert(std::is_same_v<typename _Tp::value_type, char>);
+      std::wstring __wstr;
+      // XXX This assumes native wide encoding is UTF-16.
+      std::codecvt_utf8_utf16<wchar_t> __wcvt;
+      const auto __p = __str.data();
+      if (!__str_codecvt_in_all(__p, __p + __str.size(), __wstr, __wcvt))
+	__detail::__throw_conversion_error();
+      return __wstr;
+    }
+#endif
+
+} // namespace __detail
+  /// @endcond
+
 
   /** Create a path from a UTF-8-encoded sequence of char
    *
@@ -846,9 +868,7 @@ namespace __detail
 	  if (__str_codecvt_out_all(__f, __l, __str, __cvt))
 	    return __str;
 #endif
-	  _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-		"Cannot convert character sequence",
-		std::make_error_code(errc::illegal_byte_sequence)));
+	  __detail::__throw_conversion_error();
 	}
     }
 
@@ -1058,9 +1078,7 @@ namespace __detail
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
       } }
 #endif
-      _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	    "Cannot convert character sequence",
-	    std::make_error_code(errc::illegal_byte_sequence)));
+      __detail::__throw_conversion_error();
     }
   /// @endcond
 
@@ -1097,9 +1115,7 @@ namespace __detail
     const value_type* __last = __first + _M_pathname.size();
     if (__str_codecvt_out_all(__first, __last, __str, __cvt))
       return __str;
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	  "Cannot convert character sequence",
-	  std::make_error_code(errc::illegal_byte_sequence)));
+    __detail::__throw_conversion_error();
 #else
     return _M_pathname;
 #endif
@@ -1323,9 +1339,19 @@ namespace __detail
     return _M_at_end == __rhs._M_at_end;
   }
 
-  // @} group filesystem
+  // Define this now that path and path::iterator are complete.
+  // It needs to consider the string_view(Range&&) constructor during
+  // overload resolution, which depends on whether range<path> is satisfied,
+  // which depends on whether path::iterator is complete.
+  inline int
+  path::_S_compare(const path& __lhs, const path& __rhs) noexcept
+  { return __lhs.compare(__rhs); }
+
+  /// @} group filesystem
 _GLIBCXX_END_NAMESPACE_CXX11
 } // namespace filesystem
+
+/// @cond undocumented
 
 inline ptrdiff_t
 distance(filesystem::path::iterator __first, filesystem::path::iterator __last)
@@ -1337,6 +1363,8 @@ template<typename _InputIterator, typename _Distance>
   { __path_iter_advance(__i, static_cast<ptrdiff_t>(__n)); }
 
 extern template class __shared_ptr<const filesystem::filesystem_error::_Impl>;
+
+/// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

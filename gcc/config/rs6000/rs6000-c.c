@@ -1,5 +1,5 @@
 /* Subroutines for the C front end on the PowerPC architecture.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
    Contributed by Zack Weinberg <zack@codesourcery.com>
    and Paolo Bonzini <bonzini@gnu.org>
@@ -483,6 +483,8 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	  /* Define this when supporting context-sensitive keywords.  */
       if (!flag_iso)
 	rs6000_define_or_undefine_macro (define_p, "__APPLE_ALTIVEC__");
+      if (rs6000_aix_extabi)
+	rs6000_define_or_undefine_macro (define_p, "__EXTABI__");
     }
   /* Note that the OPTION_MASK_VSX flag is automatically turned on in
      the following conditions:
@@ -600,6 +602,9 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
   /* Whether pc-relative code is being generated.  */
   if ((flags & OPTION_MASK_PCREL) != 0)
     rs6000_define_or_undefine_macro (define_p, "__PCREL__");
+  /* Tell the user -mrop-protect is in play.  */
+  if (rs6000_rop_protect)
+    rs6000_define_or_undefine_macro (define_p, "__ROP_PROTECT__");
 }
 
 void
@@ -1512,9 +1517,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       tree arg1;
       tree arg2;
       tree arg1_type;
-      tree arg1_inner_type;
       tree decl, stmt;
-      tree innerptrtype;
       machine_mode mode;
 
       /* No second or third arguments. */
@@ -1566,8 +1569,13 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  return build_call_expr (call, 3, arg1, arg0, arg2);
 	}
 
-      /* Build *(((arg1_inner_type*)&(vector type){arg1})+arg2) = arg0. */
-      arg1_inner_type = TREE_TYPE (arg1_type);
+      /* Build *(((arg1_inner_type*)&(vector type){arg1})+arg2) = arg0 with
+	 VIEW_CONVERT_EXPR.  i.e.:
+	 D.3192 = v1;
+	 _1 = n & 3;
+	 VIEW_CONVERT_EXPR<int[4]>(D.3192)[_1] = i;
+	 v1 = D.3192;
+	 D.3194 = v1;  */
       if (TYPE_VECTOR_SUBPARTS (arg1_type) == 1)
 	arg2 = build_int_cst (TREE_TYPE (arg2), 0);
       else
@@ -1582,6 +1590,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       TREE_USED (decl) = 1;
       TREE_TYPE (decl) = arg1_type;
       TREE_READONLY (decl) = TYPE_READONLY (arg1_type);
+      TREE_ADDRESSABLE (decl) = 1;
       if (c_dialect_cxx ())
 	{
 	  stmt = build4 (TARGET_EXPR, arg1_type, decl, arg1,
@@ -1592,20 +1601,32 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	{
 	  DECL_INITIAL (decl) = arg1;
 	  stmt = build1 (DECL_EXPR, arg1_type, decl);
-	  TREE_ADDRESSABLE (decl) = 1;
 	  SET_EXPR_LOCATION (stmt, loc);
 	  stmt = build1 (COMPOUND_LITERAL_EXPR, arg1_type, stmt);
 	}
 
-      innerptrtype = build_pointer_type (arg1_inner_type);
+      if (TARGET_VSX)
+	{
+	  stmt = build_array_ref (loc, stmt, arg2);
+	  stmt = fold_build2 (MODIFY_EXPR, TREE_TYPE (arg0), stmt,
+			      convert (TREE_TYPE (stmt), arg0));
+	  stmt = build2 (COMPOUND_EXPR, arg1_type, stmt, decl);
+	}
+      else
+	{
+	  tree arg1_inner_type;
+	  tree innerptrtype;
+	  arg1_inner_type = TREE_TYPE (arg1_type);
+	  innerptrtype = build_pointer_type (arg1_inner_type);
 
-      stmt = build_unary_op (loc, ADDR_EXPR, stmt, 0);
-      stmt = convert (innerptrtype, stmt);
-      stmt = build_binary_op (loc, PLUS_EXPR, stmt, arg2, 1);
-      stmt = build_indirect_ref (loc, stmt, RO_NULL);
-      stmt = build2 (MODIFY_EXPR, TREE_TYPE (stmt), stmt,
-		     convert (TREE_TYPE (stmt), arg0));
-      stmt = build2 (COMPOUND_EXPR, arg1_type, stmt, decl);
+	  stmt = build_unary_op (loc, ADDR_EXPR, stmt, 0);
+	  stmt = convert (innerptrtype, stmt);
+	  stmt = build_binary_op (loc, PLUS_EXPR, stmt, arg2, 1);
+	  stmt = build_indirect_ref (loc, stmt, RO_NULL);
+	  stmt = build2 (MODIFY_EXPR, TREE_TYPE (stmt), stmt,
+			 convert (TREE_TYPE (stmt), arg0));
+	  stmt = build2 (COMPOUND_EXPR, arg1_type, stmt, decl);
+	}
       return stmt;
     }
 

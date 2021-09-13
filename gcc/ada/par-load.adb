@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -129,8 +129,8 @@ begin
    Save_Style_Check_Options (Save_Style_Checks);
    Save_Style_Check := Opt.Style_Check;
 
-   --  If main unit, set Main_Unit_Entity (this will get overwritten if
-   --  the main unit has a separate spec, that happens later on in Load)
+   --  If main unit, set Main_Unit_Entity (this will get overwritten if the
+   --  main unit has a separate spec, that happens later on in Load).
 
    if Cur_Unum = Main_Unit then
       Main_Unit_Entity := Cunit_Entity (Main_Unit);
@@ -182,14 +182,8 @@ begin
       --  Check for predefined file case
 
       if Name_Len > 1
+        and then Name_Buffer (1) in 'a' | 's' | 'i' | 'g'
         and then Name_Buffer (2) = '-'
-        and then (Name_Buffer (1) = 'a'
-                    or else
-                  Name_Buffer (1) = 's'
-                    or else
-                  Name_Buffer (1) = 'i'
-                    or else
-                  Name_Buffer (1) = 'g')
       then
          declare
             Expect_Name : constant Unit_Name_Type := Expected_Unit (Cur_Unum);
@@ -240,17 +234,15 @@ begin
          Error_Msg ("\\found unit $!", Loc);
       end if;
 
-      --  In both cases, remove the unit if it is the last unit (which it
-      --  normally (always?) will be) so that it is out of the way later.
+      --  In both cases, flag the fatal error and give up
 
-      Remove_Unit (Cur_Unum);
+      Set_Fatal_Error (Cur_Unum, Error_Detected);
+      return;
    end if;
 
    --  If current unit is a body, load its corresponding spec
 
-   if Nkind (Unit (Curunit)) = N_Package_Body
-     or else Nkind (Unit (Curunit)) = N_Subprogram_Body
-   then
+   if Nkind (Unit (Curunit)) in N_Package_Body | N_Subprogram_Body then
       Spec_Name := Get_Spec_Name (Unit_Name (Cur_Unum));
       Unum :=
         Load_Unit
@@ -274,6 +266,12 @@ begin
          --  and this is also where we generate the SCO's for this spec.
 
          if Cur_Unum = Main_Unit then
+
+            --  We generate code for the main unit body, so we need to generate
+            --  code for its spec too.
+
+            Set_Generate_Code (Unum, True);
+
             Main_Unit_Entity := Cunit_Entity (Unum);
 
             if Generate_SCO then
@@ -304,11 +302,11 @@ begin
    --  If current unit is a child unit spec, load its parent. If the child unit
    --  is loaded through a limited with, the parent must be as well.
 
-   elsif     Nkind (Unit (Curunit)) =  N_Package_Declaration
-     or else Nkind (Unit (Curunit)) =  N_Subprogram_Declaration
-     or else Nkind (Unit (Curunit)) in N_Generic_Declaration
-     or else Nkind (Unit (Curunit)) in N_Generic_Instantiation
-     or else Nkind (Unit (Curunit)) in N_Renaming_Declaration
+   elsif Nkind (Unit (Curunit)) in N_Package_Declaration
+                                 | N_Subprogram_Declaration
+                                 | N_Generic_Declaration
+                                 | N_Generic_Instantiation
+                                 | N_Renaming_Declaration
    then
       --  Turn style checks off for parent unit
 

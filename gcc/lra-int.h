@@ -1,5 +1,5 @@
 /* Local Register Allocator (LRA) intercommunication header file.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -273,6 +273,7 @@ typedef class lra_insn_recog_data *lra_insn_recog_data_t;
 
 extern FILE *lra_dump_file;
 
+extern bool lra_hard_reg_split_p;
 extern bool lra_asm_error_p;
 extern bool lra_reg_spill_p;
 
@@ -323,6 +324,7 @@ extern lra_copy_t lra_get_copy (int);
 extern int lra_new_regno_start;
 extern int lra_constraint_new_regno_start;
 extern int lra_bad_spill_regno_start;
+extern rtx lra_pmode_pseudo;
 extern bitmap_head lra_inheritance_pseudos;
 extern bitmap_head lra_split_regs;
 extern bitmap_head lra_subreg_reload_pseudos;

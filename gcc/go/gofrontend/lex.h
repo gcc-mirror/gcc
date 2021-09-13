@@ -405,6 +405,21 @@ class Lex
     return ret;
   }
 
+  // Return whether there are any current go:embed patterns.
+  bool
+  has_embeds() const
+  { return !this->embeds_.empty(); }
+
+  // If there are any go:embed patterns seen so far, store them in
+  // *EMBEDS and clear the saved set.  *EMBEDS must be an empty
+  // vector.
+  void
+  get_and_clear_embeds(std::vector<std::string>* embeds)
+  {
+    go_assert(embeds->empty());
+    std::swap(*embeds, this->embeds_);
+  }
+
   // Return whether the identifier NAME should be exported.  NAME is a
   // mangled name which includes only ASCII characters.
   static bool
@@ -536,6 +551,9 @@ class Lex
   void
   skip_cpp_comment();
 
+  void
+  gather_embed(const char*, const char*);
+
   // The input file name.
   const char* input_file_name_;
   // The input file.
@@ -561,6 +579,8 @@ class Lex
   std::string extern_;
   // The list of //go:linkname comments, if any.
   Linknames* linknames_;
+  // The list of //go:embed patterns, if any.
+  std::vector<std::string> embeds_;
 };
 
 #endif // !defined(GO_LEX_H)

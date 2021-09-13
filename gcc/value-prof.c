@@ -1,5 +1,5 @@
 /* Transformations based on profile information for values.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -747,8 +747,8 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, profile_probability prob,
 
    abs (counters[0]) is the number of executions
    for i in 0 ... TOPN-1
-     counters[2 * i + 1] is target
-     abs (counters[2 * i + 2]) is corresponding hitrate counter.
+     counters[2 * i + 2] is target
+     counters[2 * i + 3] is corresponding hitrate counter.
 
    Value of counters[0] negative when counter became
    full during merging and some values are lost.  */
@@ -766,15 +766,29 @@ get_nth_most_common_value (gimple *stmt, const char *counter_type,
   *value = 0;
 
   gcov_type read_all = abs_hwi (hist->hvalue.counters[0]);
+  gcov_type covered = 0;
+  for (unsigned i = 0; i < counters; ++i)
+    covered += hist->hvalue.counters[2 * i + 3];
 
   gcov_type v = hist->hvalue.counters[2 * n + 2];
   gcov_type c = hist->hvalue.counters[2 * n + 3];
 
   if (hist->hvalue.counters[0] < 0
-      && (flag_profile_reproducible == PROFILE_REPRODUCIBILITY_PARALLEL_RUNS
-	  || (flag_profile_reproducible
-	      == PROFILE_REPRODUCIBILITY_MULTITHREADED)))
-    return false;
+      && flag_profile_reproducible == PROFILE_REPRODUCIBILITY_PARALLEL_RUNS)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Histogram value dropped in '%s' mode\n",
+		 "-fprofile-reproducible=parallel-runs");
+      return false;
+    }
+  else if (covered != read_all
+	   && flag_profile_reproducible == PROFILE_REPRODUCIBILITY_MULTITHREADED)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Histogram value dropped in '%s' mode\n",
+		 "-fprofile-reproducible=multithreaded");
+      return false;
+    }
 
   /* Indirect calls can't be verified.  */
   if (stmt

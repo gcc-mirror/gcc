@@ -17,17 +17,16 @@ void FNNAME (INSN_NAME) (void)
 {
   /* vector_res = OP(vector1,vector2), then store the result.  */
 
-#define TEST_BINARY_SAT_OP1(INSN, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT) \
+#define TEST_BINARY_SAT_OP1(INSN, Q, T1, T2, W, N, CMT) \
   Set_Neon_Cumulative_Sat(0, VECT_VAR(vector_res, T1, W, N));		\
   VECT_VAR(vector_res, T1, W, N) =					\
     INSN##Q##_##T2##W(VECT_VAR(vector1, T1, W, N),			\
 		      VECT_VAR(vector2, T1, W, N));			\
     vst1##Q##_##T2##W(VECT_VAR(result, T1, W, N),			\
-		      VECT_VAR(vector_res, T1, W, N));			\
-      CHECK_CUMULATIVE_SAT(TEST_MSG, T1, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+		      VECT_VAR(vector_res, T1, W, N))
 
-#define TEST_BINARY_SAT_OP(INSN, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT) \
-  TEST_BINARY_SAT_OP1(INSN, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_BINARY_SAT_OP(INSN, Q, T1, T2, W, N, CMT) \
+  TEST_BINARY_SAT_OP1(INSN, Q, T1, T2, W, N, CMT)
 
   DECL_VARIABLE_ALL_VARIANTS(vector1);
   DECL_VARIABLE_ALL_VARIANTS(vector2);
@@ -58,23 +57,23 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector2, q, uint, u, 64, 2, 0x88);
 
   /* Apply a saturating binary operator named INSN_NAME.  */
-  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 8, 8, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 16, 4, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 32, 2, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 64, 1, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 8, 8, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 16, 4, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 32, 2, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 64, 1, expected_cumulative_sat, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 8, 8, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 16, 4, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 32, 2, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 64, 1, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 8, 8, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 16, 4, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 32, 2, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 64, 1, "");
 
-  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 8, 16, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 16, 8, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 32, 4, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 64, 2, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 8, 16, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 16, 8, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 32, 4, expected_cumulative_sat, "");
-  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 64, 2, expected_cumulative_sat, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 8, 16, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 16, 8, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 32, 4, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 64, 2, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 8, 16, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 16, 8, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 32, 4, "");
+  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 64, 2, "");
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");

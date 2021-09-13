@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2020 Free Software Foundation, Inc.
+; Copyright (C) 2003-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -431,6 +431,26 @@ Wc++20-compat
 C++ ObjC++ Var(warn_cxx20_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2017 and ISO C++ 2020.
 
+Wc++11-extensions
+C++ ObjC++ Var(warn_cxx11_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+Warn about C++11 constructs in code compiled with an older standard.
+
+Wc++14-extensions
+C++ ObjC++ Var(warn_cxx14_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+Warn about C++14 constructs in code compiled with an older standard.
+
+Wc++17-extensions
+C++ ObjC++ Var(warn_cxx17_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+Warn about C++17 constructs in code compiled with an older standard.
+
+Wc++20-extensions
+C++ ObjC++ Var(warn_cxx20_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+Warn about C++20 constructs in code compiled with an older standard.
+
+Wc++23-extensions
+C++ ObjC++ Var(warn_cxx23_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+Warn about C++23 constructs in code compiled with an older standard.
+
 Wcast-function-type
 C ObjC C++ ObjC++ Var(warn_cast_function_type) Warning EnabledBy(Wextra)
 Warn about casts between incompatible function types.
@@ -592,7 +612,7 @@ C ObjC RejectNegative Warning Alias(Werror=, implicit-function-declaration)
 This switch is deprecated; use -Werror=implicit-function-declaration instead.
 
 Wexceptions
-C++ ObjC++ Var(warn_exceptions) Init(1)
+C++ ObjC++ Var(warn_exceptions) Init(1) Warning
 Warn when an exception handler is shadowed by another handler.
 
 Wextra
@@ -800,7 +820,7 @@ functions.
 
 Wmismatched-new-delete
 C++ ObjC++ Var(warn_mismatched_new_delete) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn for mismatches between calls to operator new or delete and the corrsponding
+Warn for mismatches between calls to operator new or delete and the corresponding
 call to the allocation or deallocation function.
 
 Wmismatched-tags
@@ -818,6 +838,10 @@ Warn about global functions without previous declarations.
 Wmissing-field-initializers
 C ObjC C++ ObjC++ Var(warn_missing_field_initializers) Warning EnabledBy(Wextra)
 Warn about missing fields in struct initializers.
+
+Wmissing-requires
+C++ ObjC++ Var(warn_missing_requires) Init(1) Warning
+Warn about likely missing requires keyword.
 
 Wmultistatement-macros
 C ObjC C++ ObjC++ Var(warn_multistatement_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -1036,6 +1060,10 @@ Warn for obsolescent usage in a declaration.
 Wold-style-definition
 C ObjC Var(warn_old_style_definition) Init(-1) Warning
 Warn if an old-style parameter definition is used.
+
+Wopenacc-parallelism
+C C++ Var(warn_openacc_parallelism) Warning
+Warn about potentially suboptimal choices related to OpenACC parallelism.
 
 Wopenmp-simd
 C C++ Var(warn_openmp_simd) Warning LangEnabledBy(C C++,Wall)
@@ -1737,7 +1765,7 @@ C++ ObjC Var(flag_module_version_ignore) Integer
 ; undocumented, Very dangerous, but occasionally useful
 
 Winvalid-imported-macros
-C++ ObjC++ Var(warn_imported_macros)
+C++ ObjC++ Var(warn_imported_macros) Warning
 Warn about macros that have conflicting header units definitions.
 
 flang-info-include-translate
@@ -1751,6 +1779,14 @@ Note #include directives not translated to import declarations, and not known to
 flang-info-include-translate=
 C++ Joined RejectNegative MissingArgError(missing header name)
 Note a #include translation of a specific header.
+
+flang-info-module-cmi
+C++ Var(note_module_cmi_yes)
+Note Compiled Module Interface pathnames.
+
+flang-info-module-cmi=
+C++ Joined RejectNegative MissingArgError(missing module name)
+Note Compiled Module Interface pathname of a specific module or header-unit.
 
 fmax-include-depth=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger
@@ -1864,19 +1900,6 @@ Enable OpenACC.
 fopenacc-dim=
 C ObjC C++ ObjC++ LTO Joined Var(flag_openacc_dims)
 Specify default OpenACC compute dimensions.
-
-fopenacc-kernels=
-C ObjC C++ ObjC++ RejectNegative Joined Enum(openacc_kernels) Var(flag_openacc_kernels) Init(OPENACC_KERNELS_PARLOOPS)
--fopenacc-kernels=[decompose|parloops]	Specify mode of OpenACC 'kernels' constructs handling.
-
-Enum
-Name(openacc_kernels) Type(enum openacc_kernels)
-
-EnumValue
-Enum(openacc_kernels) String(decompose) Value(OPENACC_KERNELS_DECOMPOSE)
-
-EnumValue
-Enum(openacc_kernels) String(parloops) Value(OPENACC_KERNELS_PARLOOPS)
 
 fopenmp
 C ObjC C++ ObjC++ LTO Var(flag_openmp)
@@ -2208,11 +2231,19 @@ Conform to the ISO 2017 C++ standard.
 
 std=c++2a
 C++ ObjC++ Alias(std=c++20) Undocumented
-Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard (experimental and incomplete support).
 
 std=c++20
 C++ ObjC++
-Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard (experimental and incomplete support).
+
+std=c++2b
+C++ ObjC++ Alias(std=c++23)
+Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
+
+std=c++23
+C++ ObjC++ Undocumented
+Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
 
 std=c11
 C ObjC
@@ -2285,12 +2316,20 @@ C++ ObjC++
 Conform to the ISO 2017 C++ standard with GNU extensions.
 
 std=gnu++2a
-C++ ObjC++ Alias(std=gnu++20)
-Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
+C++ ObjC++ Alias(std=gnu++20) Undocumented
+Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support).
 
 std=gnu++20
 C++ ObjC++
-Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++2b
+C++ ObjC++ Alias(std=gnu++23)
+Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++23
+C++ ObjC++ Undocumented
+Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu11
 C ObjC

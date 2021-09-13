@@ -18,10 +18,7 @@ namespace __tsan {
 
 void DDMutexInit(ThreadState *thr, uptr pc, SyncVar *s);
 
-SyncVar::SyncVar()
-    : mtx(MutexTypeSyncVar, StatMtxSyncVar) {
-  Reset(0);
-}
+SyncVar::SyncVar() : mtx(MutexTypeSyncVar) { Reset(0); }
 
 void SyncVar::Init(ThreadState *thr, uptr pc, uptr addr, u64 uid) {
   this->addr = addr;
@@ -53,8 +50,8 @@ void SyncVar::Reset(Processor *proc) {
 }
 
 MetaMap::MetaMap()
-    : block_alloc_("heap block allocator")
-    , sync_alloc_("sync allocator") {
+    : block_alloc_(LINKER_INITIALIZED, "heap block allocator"),
+      sync_alloc_(LINKER_INITIALIZED, "sync allocator") {
   atomic_store(&uid_gen_, 0, memory_order_relaxed);
 }
 

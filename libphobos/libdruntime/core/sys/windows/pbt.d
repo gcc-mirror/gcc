@@ -9,8 +9,9 @@
  */
 module core.sys.windows.pbt;
 version (Windows):
+@system:
 
-private import core.sys.windows.windef;
+import core.sys.windows.windef;
 
 enum : WPARAM {
     PBT_APMQUERYSUSPEND,

@@ -16,16 +16,15 @@
 void FNNAME (INSN_NAME) (void)
 {
   /* y=OP(x), then store the result.  */
-#define TEST_UNARY_SAT_OP1(INSN, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT) \
+#define TEST_UNARY_SAT_OP1(INSN, Q, T1, T2, W, N, CMT) \
   Set_Neon_Cumulative_Sat(0, VECT_VAR(vector_res, T1, W, N));		\
   VECT_VAR(vector_res, T1, W, N) =					\
     INSN##Q##_##T2##W(VECT_VAR(vector, T1, W, N));			\
     vst1##Q##_##T2##W(VECT_VAR(result, T1, W, N),			\
-		      VECT_VAR(vector_res, T1, W, N));			\
-      CHECK_CUMULATIVE_SAT(TEST_MSG, T1, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+		      VECT_VAR(vector_res, T1, W, N))
 
-#define TEST_UNARY_SAT_OP(INSN, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT) \
-  TEST_UNARY_SAT_OP1(INSN, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_UNARY_SAT_OP(INSN, Q, T1, T2, W, N, CMT) \
+  TEST_UNARY_SAT_OP1(INSN, Q, T1, T2, W, N, CMT)
 
   /* No need for 64 bits variants.  */
   DECL_VARIABLE(vector, int, 8, 8);
@@ -53,12 +52,12 @@ void FNNAME (INSN_NAME) (void)
   VLOAD(vector, buffer, q, int, s, 32, 4);
 
   /* Apply a saturating unary operator named INSN_NAME.  */
-  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 8, 8, expected_cumulative_sat, "");
-  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 16, 4, expected_cumulative_sat, "");
-  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 32, 2, expected_cumulative_sat, "");
-  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 8, 16, expected_cumulative_sat, "");
-  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 16, 8, expected_cumulative_sat, "");
-  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 32, 4, expected_cumulative_sat, "");
+  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 8, 8, "");
+  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 16, 4, "");
+  TEST_UNARY_SAT_OP(INSN_NAME, , int, s, 32, 2, "");
+  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 8, 16, "");
+  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 16, 8, "");
+  TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 32, 4, "");
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");

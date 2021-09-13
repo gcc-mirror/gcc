@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -891,7 +891,7 @@ static void move_block_after_check (rtx_insn *);
 static void move_succs (vec<edge, va_gc> **, basic_block);
 static void sched_remove_insn (rtx_insn *);
 static void clear_priorities (rtx_insn *, rtx_vec_t *);
-static void calc_priorities (rtx_vec_t);
+static void calc_priorities (const rtx_vec_t &);
 static void add_jump_dependencies (rtx_insn *, rtx_insn *);
 
 #endif /* INSN_SCHEDULING */
@@ -2538,7 +2538,7 @@ model_set_excess_costs (rtx_insn **insns, int count)
 enum rfs_decision {
   RFS_LIVE_RANGE_SHRINK1, RFS_LIVE_RANGE_SHRINK2,
   RFS_SCHED_GROUP, RFS_PRESSURE_DELAY, RFS_PRESSURE_TICK,
-  RFS_FEEDS_BACKTRACK_INSN, RFS_PRIORITY, RFS_SPECULATION,
+  RFS_FEEDS_BACKTRACK_INSN, RFS_PRIORITY, RFS_AUTOPREF, RFS_SPECULATION,
   RFS_SCHED_RANK, RFS_LAST_INSN, RFS_PRESSURE_INDEX,
   RFS_DEP_COUNT, RFS_TIE, RFS_FUSION, RFS_COST, RFS_N };
 
@@ -2546,7 +2546,7 @@ enum rfs_decision {
 static const char *rfs_str[RFS_N] = {
   "RFS_LIVE_RANGE_SHRINK1", "RFS_LIVE_RANGE_SHRINK2",
   "RFS_SCHED_GROUP", "RFS_PRESSURE_DELAY", "RFS_PRESSURE_TICK",
-  "RFS_FEEDS_BACKTRACK_INSN", "RFS_PRIORITY", "RFS_SPECULATION",
+  "RFS_FEEDS_BACKTRACK_INSN", "RFS_PRIORITY", "RFS_AUTOPREF", "RFS_SPECULATION",
   "RFS_SCHED_RANK", "RFS_LAST_INSN", "RFS_PRESSURE_INDEX",
   "RFS_DEP_COUNT", "RFS_TIE", "RFS_FUSION", "RFS_COST" };
 
@@ -2715,7 +2715,7 @@ rank_for_schedule (const void *x, const void *y)
     {
       int autopref = autopref_rank_for_schedule (tmp, tmp2);
       if (autopref != 0)
-	return autopref;
+	return rfs_result (RFS_AUTOPREF, autopref, tmp, tmp2);
     }
 
   /* Prefer speculative insn with greater dependencies weakness.  */
@@ -3155,9 +3155,11 @@ advance_state (state_t state)
 HAIFA_INLINE static void
 advance_one_cycle (void)
 {
+  int i;
+
   advance_state (curr_state);
-  if (sched_verbose >= 4)
-    fprintf (sched_dump, ";;\tAdvance the current state.\n");
+  for (i = 4; i <= sched_verbose; ++i)
+    fprintf (sched_dump, ";;\tAdvance the current state: %d.\n", clock_var);
 }
 
 /* Update register pressure after scheduling INSN.  */
@@ -5683,9 +5685,16 @@ autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
       int irrel2 = data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT;
 
       if (!irrel1 && !irrel2)
+	/* Sort memory references from lowest offset to the largest.  */
 	r = data1->offset - data2->offset;
-      else
+      else if (write)
+	/* Schedule "irrelevant" insns before memory stores to resolve
+	   as many producer dependencies of stores as possible.  */
 	r = irrel2 - irrel1;
+      else
+	/* Schedule "irrelevant" insns after memory reads to avoid breaking
+	   memory read sequences.  */
+	r = irrel1 - irrel2;
     }
 
   return r;
@@ -7255,10 +7264,6 @@ free_global_sched_pressure_data (void)
 void
 sched_init (void)
 {
-  /* Disable speculative loads in their presence if cc0 defined.  */
-  if (HAVE_cc0)
-  flag_schedule_speculative_load = 0;
-
   if (targetm.sched.dispatch (NULL, IS_DISPATCH_ON))
     targetm.sched.dispatch_do (NULL, DISPATCH_INIT);
 
@@ -8927,7 +8932,7 @@ clear_priorities (rtx_insn *insn, rtx_vec_t *roots_ptr)
    changed.  ROOTS is a vector of instructions whose priority computation will
    trigger initialization of all cleared priorities.  */
 static void
-calc_priorities (rtx_vec_t roots)
+calc_priorities (const rtx_vec_t &roots)
 {
   int i;
   rtx_insn *insn;
@@ -8992,7 +8997,7 @@ sched_init_insn_luid (rtx_insn *insn)
    The hook common_sched_info->luid_for_non_insn () is used to determine
    if notes, labels, etc. need luids.  */
 void
-sched_init_luids (bb_vec_t bbs)
+sched_init_luids (const bb_vec_t &bbs)
 {
   int i;
   basic_block bb;
@@ -9066,7 +9071,7 @@ init_h_i_d (rtx_insn *insn)
 
 /* Initialize haifa_insn_data for BBS.  */
 void
-haifa_init_h_i_d (bb_vec_t bbs)
+haifa_init_h_i_d (const bb_vec_t &bbs)
 {
   int i;
   basic_block bb;

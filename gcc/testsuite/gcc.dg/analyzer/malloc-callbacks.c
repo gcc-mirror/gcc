@@ -69,7 +69,7 @@ int *test_5 (void)
 static void __attribute__((noinline))
 called_by_test_6a (void *ptr)
 {
-  free (ptr); /* { dg-warning "double-'free'" "" { xfail *-*-* } } */
+  free (ptr); /* { dg-warning "double-'free'" } */
 }
 
 static deallocator_t __attribute__((noinline))

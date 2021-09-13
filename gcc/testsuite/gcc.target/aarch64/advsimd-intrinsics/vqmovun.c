@@ -2,21 +2,11 @@
 #include "arm-neon-ref.h"
 #include "compute-ref-data.h"
 
-/* Expected values of cumulative_saturation flag.  */
-int VECT_VAR(expected_cumulative_sat,uint,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,32,2) = 0;
-
 /* Expected results.  */
 VECT_VAR_DECL(expected,uint,8,8) [] = { 0x34, 0x34, 0x34, 0x34,
 					0x34, 0x34, 0x34, 0x34 };
 VECT_VAR_DECL(expected,uint,16,4) [] = { 0x5678, 0x5678, 0x5678, 0x5678 };
 VECT_VAR_DECL(expected,uint,32,2) [] = { 0x12345678, 0x12345678 };
-
-/* Expected values of cumulative_saturation flag with negative input.  */
-int VECT_VAR(expected_cumulative_sat_neg,uint,8,8) = 1;
-int VECT_VAR(expected_cumulative_sat_neg,uint,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat_neg,uint,32,2) = 1;
 
 /* Expected results with negative input.  */
 VECT_VAR_DECL(expected_neg,uint,8,8) [] = { 0x0, 0x0, 0x0, 0x0,
@@ -33,16 +23,15 @@ VECT_VAR_DECL(expected_neg,uint,32,2) [] = { 0x0, 0x0 };
 FNNAME (INSN_NAME)
 {
   /* Basic test: y=OP(x), then store the result.  */
-#define TEST_UNARY_OP1(INSN, T1, T2, W, W2, N, EXPECTED_CUMULATIVE_SAT, CMT) \
+#define TEST_UNARY_OP1(INSN, T1, T2, W, W2, N, CMT) \
   Set_Neon_Cumulative_Sat(0, VECT_VAR(vector_res, T1, W, N));		\
   VECT_VAR(vector_res, T1, W, N) =					\
     INSN##_s##W2(VECT_VAR(vector, int, W2, N));				\
   vst1##_##T2##W(VECT_VAR(result, T1, W, N),				\
-		 VECT_VAR(vector_res, T1, W, N));			\
-  CHECK_CUMULATIVE_SAT(TEST_MSG, T1, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+		 VECT_VAR(vector_res, T1, W, N))
 
-#define TEST_UNARY_OP(INSN, T1, T2, W, W2, N, EXPECTED_CUMULATIVE_SAT, CMT) \
-  TEST_UNARY_OP1(INSN, T1, T2, W, W2, N, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_UNARY_OP(INSN, T1, T2, W, W2, N, CMT) \
+  TEST_UNARY_OP1(INSN, T1, T2, W, W2, N, CMT)
 
   DECL_VARIABLE(vector, int, 16, 8);
   DECL_VARIABLE(vector, int, 32, 4);
@@ -61,9 +50,9 @@ FNNAME (INSN_NAME)
 
   /* Apply a unary operator named INSN_NAME.  */
 #define CMT ""
-  TEST_UNARY_OP(INSN_NAME, uint, u, 8, 16, 8, expected_cumulative_sat, CMT);
-  TEST_UNARY_OP(INSN_NAME, uint, u, 16, 32, 4, expected_cumulative_sat, CMT);
-  TEST_UNARY_OP(INSN_NAME, uint, u, 32, 64, 2, expected_cumulative_sat, CMT);
+  TEST_UNARY_OP(INSN_NAME, uint, u, 8, 16, 8, CMT);
+  TEST_UNARY_OP(INSN_NAME, uint, u, 16, 32, 4, CMT);
+  TEST_UNARY_OP(INSN_NAME, uint, u, 32, 64, 2, CMT);
 
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, CMT);
@@ -77,9 +66,9 @@ FNNAME (INSN_NAME)
   /* Apply a unary operator named INSN_NAME.  */
 #undef CMT
 #define CMT " (negative input)"
-  TEST_UNARY_OP(INSN_NAME, uint, u, 8, 16, 8, expected_cumulative_sat_neg, CMT);
-  TEST_UNARY_OP(INSN_NAME, uint, u, 16, 32, 4, expected_cumulative_sat_neg, CMT);
-  TEST_UNARY_OP(INSN_NAME, uint, u, 32, 64, 2, expected_cumulative_sat_neg, CMT);
+  TEST_UNARY_OP(INSN_NAME, uint, u, 8, 16, 8, CMT);
+  TEST_UNARY_OP(INSN_NAME, uint, u, 16, 32, 4, CMT);
+  TEST_UNARY_OP(INSN_NAME, uint, u, 32, 64, 2, CMT);
 
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_neg, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_neg, CMT);

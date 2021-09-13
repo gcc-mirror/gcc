@@ -1,5 +1,5 @@
 /* Definitions for option handling for IA-32.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,16 +28,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Algorithm to expand string function with.  */
 enum stringop_alg
 {
-#undef DEF_ENUM
-#define DEF_ENUM
-
 #undef DEF_ALG
 #define DEF_ALG(alg, name) alg, 
 
 #include "stringop.def"
 last_alg
 
-#undef DEF_ENUM
 #undef DEF_ALG
 };
 

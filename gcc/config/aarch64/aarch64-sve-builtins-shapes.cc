@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE (function shapes)
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -191,12 +191,12 @@ parse_type (const function_instance &instance, const char *&format)
 
   if (ch == 'e')
     {
-      if (strncmp (format, "pattern", 7) == 0)
+      if (startswith (format, "pattern"))
 	{
 	  format += 7;
 	  return acle_svpattern;
 	}
-      if (strncmp (format, "prfop", 5) == 0)
+      if (startswith (format, "prfop"))
 	{
 	  format += 5;
 	  return acle_svprfop;

@@ -7,5 +7,5 @@
 int
 foo (int x, int y)
 {
-  return x - y < 0; /* { dg-warning "assuming signed overflow does not occur" "correct warning" { xfail *-*-* } } */
+  return x - y < 0; /* { dg-warning "assuming signed overflow does not occur" "correct warning" } */
 }

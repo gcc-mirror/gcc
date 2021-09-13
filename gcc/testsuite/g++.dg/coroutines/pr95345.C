@@ -9,12 +9,12 @@ using namespace std::experimental;
 struct dummy_coro
 {
   using promise_type = dummy_coro;
-  bool await_ready() { return false; }
-  void await_suspend(std::coroutine_handle<>) { }
-  void await_resume() { }
+  bool await_ready() noexcept { return false; }
+  void await_suspend(std::coroutine_handle<>) noexcept { }
+  void await_resume() noexcept { }
   dummy_coro get_return_object() { return {}; }
   dummy_coro initial_suspend() { return {}; }
-  dummy_coro final_suspend() { return {}; }
+  dummy_coro final_suspend() noexcept { return {}; }
   void return_void() { }
   void unhandled_exception() { }
 };

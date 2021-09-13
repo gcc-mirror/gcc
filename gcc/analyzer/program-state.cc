@@ -1,5 +1,5 @@
 /* Classes for representing the state of interest at a given path of analysis.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -129,6 +129,27 @@ extrinsic_state::get_model_manager () const
     return m_engine->get_model_manager ();
   else
     return NULL; /* for selftests.  */
+}
+
+/* Try to find a state machine named NAME.
+   If found, return true and write its index to *OUT.
+   Otherwise return false.  */
+
+bool
+extrinsic_state::get_sm_idx_by_name (const char *name, unsigned *out) const
+{
+  unsigned i;
+  state_machine *sm;
+  FOR_EACH_VEC_ELT (m_checkers, i, sm)
+    if (0 == strcmp (name, sm->get_name ()))
+      {
+	/* Found NAME.  */
+	*out = i;
+	return true;
+      }
+
+  /* NAME not found.  */
+  return false;
 }
 
 /* struct sm_state_map::entry_t.  */
@@ -372,21 +393,31 @@ sm_state_map::get_state (const svalue *sval,
      INIT_VAL(foo).  */
   if (m_sm.inherited_state_p ())
     if (region_model_manager *mgr = ext_state.get_model_manager ())
-      if (const initial_svalue *init_sval = sval->dyn_cast_initial_svalue ())
-	{
-	  const region *reg = init_sval->get_region ();
-	  /* Try recursing upwards (up to the base region for the cluster).  */
-	  if (!reg->base_region_p ())
-	    if (const region *parent_reg = reg->get_parent_region ())
-	      {
-		const svalue *parent_init_sval
-		  = mgr->get_or_create_initial_value (parent_reg);
-		state_machine::state_t parent_state
-		  = get_state (parent_init_sval, ext_state);
-		if (parent_state)
-		  return parent_state;
-	      }
-	}
+      {
+	if (const initial_svalue *init_sval = sval->dyn_cast_initial_svalue ())
+	  {
+	    const region *reg = init_sval->get_region ();
+	    /* Try recursing upwards (up to the base region for the
+	       cluster).  */
+	    if (!reg->base_region_p ())
+	      if (const region *parent_reg = reg->get_parent_region ())
+		{
+		  const svalue *parent_init_sval
+		    = mgr->get_or_create_initial_value (parent_reg);
+		  state_machine::state_t parent_state
+		    = get_state (parent_init_sval, ext_state);
+		  if (parent_state)
+		    return parent_state;
+		}
+	  }
+	else if (const sub_svalue *sub_sval = sval->dyn_cast_sub_svalue ())
+	  {
+	    const svalue *parent_sval = sub_sval->get_parent ();
+	    if (state_machine::state_t parent_state
+		  = get_state (parent_sval, ext_state))
+	      return parent_state;
+	  }
+      }
 
   return m_sm.get_default_state (sval);
 }
@@ -422,8 +453,8 @@ sm_state_map::set_state (region_model *model,
   if (model == NULL)
     return;
 
-  /* Reject attempts to set state on UNKNOWN.  */
-  if (sval->get_kind () == SK_UNKNOWN)
+  /* Reject attempts to set state on UNKNOWN/POISONED.  */
+  if (!sval->can_have_associated_state_p ())
     return;
 
   equiv_class &ec = model->get_constraints ()->get_equiv_class (sval);
@@ -441,10 +472,8 @@ sm_state_map::set_state (const equiv_class &ec,
 			 const svalue *origin,
 			 const extrinsic_state &ext_state)
 {
-  int i;
-  const svalue *sval;
   bool any_changed = false;
-  FOR_EACH_VEC_ELT (ec.m_vars, i, sval)
+  for (const svalue *sval : ec.m_vars)
     any_changed |= impl_set_state (sval, state, origin, ext_state);
   return any_changed;
 }
@@ -462,6 +491,8 @@ sm_state_map::impl_set_state (const svalue *sval,
 
   if (get_state (sval, ext_state) == state)
     return false;
+
+  gcc_assert (sval->can_have_associated_state_p ());
 
   /* Special-case state 0 as the default value.  */
   if (state == 0)
@@ -516,6 +547,7 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
 				  impl_region_model_context *ctxt)
 {
   svalue_set svals_to_unset;
+  uncertainty_t *uncertainty = ctxt->get_uncertainty ();
 
   auto_vec<const svalue *> leaked_svals (m_map.elements ());
   for (map_t::iterator iter = m_map.begin ();
@@ -523,13 +555,16 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
        ++iter)
     {
       const svalue *iter_sval = (*iter).first;
-      if (!iter_sval->live_p (live_svalues, model))
+      if (!iter_sval->live_p (&live_svalues, model))
 	{
 	  svals_to_unset.add (iter_sval);
 	  entry_t e = (*iter).second;
 	  if (!m_sm.can_purge_p (e.m_state))
 	    leaked_svals.quick_push (iter_sval);
 	}
+      if (uncertainty)
+	if (uncertainty->unknown_sm_state_p (iter_sval))
+	  svals_to_unset.add (iter_sval);
     }
 
   leaked_svals.qsort (svalue::cmp_ptr_ptr);
@@ -579,6 +614,37 @@ sm_state_map::on_unknown_change (const svalue *sval,
 	    if (changed_key->get_base_region () == changed_reg)
 	      svals_to_unset.add (key);
 	  }
+    }
+
+  for (svalue_set::iterator iter = svals_to_unset.begin ();
+       iter != svals_to_unset.end (); ++iter)
+    impl_set_state (*iter, (state_machine::state_t)0, NULL, ext_state);
+}
+
+/* Purge state for things involving SVAL.
+   For use when SVAL changes meaning, at the def_stmt on an SSA_NAME.   */
+
+void
+sm_state_map::purge_state_involving (const svalue *sval,
+				     const extrinsic_state &ext_state)
+{
+  /* Currently svalue::involves_p requires this.  */
+  if (!(sval->get_kind () == SK_INITIAL
+	|| sval->get_kind () == SK_CONJURED))
+    return;
+
+  svalue_set svals_to_unset;
+
+  for (map_t::iterator iter = m_map.begin ();
+       iter != m_map.end ();
+       ++iter)
+    {
+      const svalue *key = (*iter).first;
+      entry_t e = (*iter).second;
+      if (!m_sm.can_purge_p (e.m_state))
+	continue;
+      if (key->involves_p (sval))
+	svals_to_unset.add (key);
     }
 
   for (svalue_set::iterator iter = svals_to_unset.begin ();
@@ -697,7 +763,6 @@ program_state::operator= (const program_state &other)
   return *this;
 }
 
-#if __cplusplus >= 201103
 /* Move constructor for program_state (when building with C++11).  */
 program_state::program_state (program_state &&other)
 : m_region_model (other.m_region_model),
@@ -713,7 +778,6 @@ program_state::program_state (program_state &&other)
 
   m_valid = other.m_valid;
 }
-#endif
 
 /* program_state's dtor.  */
 
@@ -929,11 +993,12 @@ program_state::get_current_function () const
 
 bool
 program_state::on_edge (exploded_graph &eg,
-			const exploded_node &enode,
-			const superedge *succ)
+			exploded_node *enode,
+			const superedge *succ,
+			uncertainty_t *uncertainty)
 {
   /* Update state.  */
-  const program_point &point = enode.get_point ();
+  const program_point &point = enode->get_point ();
   const gimple *last_stmt = point.get_supernode ()->get_last_stmt ();
 
   /* For conditionals and switch statements, add the
@@ -945,9 +1010,10 @@ program_state::on_edge (exploded_graph &eg,
      sm-state transitions (e.g. transitions due to ptrs becoming known
      to be NULL or non-NULL) */
 
-  impl_region_model_context ctxt (eg, &enode,
-				  &enode.get_state (),
+  impl_region_model_context ctxt (eg, enode,
+				  &enode->get_state (),
 				  this,
+				  uncertainty, NULL,
 				  last_stmt);
   if (!m_region_model->maybe_update_for_edge (*succ,
 					      last_stmt,
@@ -961,11 +1027,57 @@ program_state::on_edge (exploded_graph &eg,
       return false;
     }
 
-  program_state::detect_leaks (enode.get_state (), *this,
-				NULL, eg.get_ext_state (),
-				&ctxt);
+  program_state::detect_leaks (enode->get_state (), *this,
+			       NULL, eg.get_ext_state (),
+			       &ctxt);
 
   return true;
+}
+
+/* Update this program_state to reflect a call to function
+   represented by CALL_STMT.
+   currently used only when the call doesn't have a superedge representing 
+   the call ( like call via a function pointer )  */
+void
+program_state::push_call (exploded_graph &eg,
+                          exploded_node *enode,
+                          const gcall *call_stmt,
+                          uncertainty_t *uncertainty)
+{
+  /* Update state.  */
+  const program_point &point = enode->get_point ();
+  const gimple *last_stmt = point.get_supernode ()->get_last_stmt ();
+
+  impl_region_model_context ctxt (eg, enode,
+                                  &enode->get_state (),
+                                  this,
+                                  uncertainty,
+				  NULL,
+                                  last_stmt);
+  m_region_model->update_for_gcall (call_stmt, &ctxt);
+}
+
+/* Update this program_state to reflect a return from function
+   call to which is represented by CALL_STMT.
+   currently used only when the call doesn't have a superedge representing 
+   the return */
+void
+program_state::returning_call (exploded_graph &eg,
+                               exploded_node *enode,
+                               const gcall *call_stmt,
+                               uncertainty_t *uncertainty)
+{
+  /* Update state.  */
+  const program_point &point = enode->get_point ();
+  const gimple *last_stmt = point.get_supernode ()->get_last_stmt ();
+
+  impl_region_model_context ctxt (eg, enode,
+                                  &enode->get_state (),
+                                  this,
+                                  uncertainty,
+				  NULL,
+                                  last_stmt);
+  m_region_model->update_for_return_gcall (call_stmt, &ctxt);
 }
 
 /* Generate a simpler version of THIS, discarding state that's no longer
@@ -977,7 +1089,8 @@ program_state::on_edge (exploded_graph &eg,
 program_state
 program_state::prune_for_point (exploded_graph &eg,
 				const program_point &point,
-				const exploded_node *enode_for_diag) const
+				exploded_node *enode_for_diag,
+				uncertainty_t *uncertainty) const
 {
   logger * const logger = eg.get_logger ();
   LOG_SCOPE (logger);
@@ -1017,7 +1130,7 @@ program_state::prune_for_point (exploded_graph &eg,
 		 temporaries keep the value reachable until the frame is
 		 popped.  */
 	      const svalue *sval
-		= new_state.m_region_model->get_store_value (reg);
+		= new_state.m_region_model->get_store_value (reg, NULL);
 	      if (!new_state.can_purge_p (eg.get_ext_state (), sval)
 		  && SSA_NAME_VAR (ssa_name))
 		{
@@ -1041,6 +1154,7 @@ program_state::prune_for_point (exploded_graph &eg,
 	  impl_region_model_context ctxt (eg, enode_for_diag,
 					  this,
 					  &new_state,
+					  uncertainty, NULL,
 					  point.get_stmt ());
 	  detect_leaks (*this, new_state, NULL, eg.get_ext_state (), &ctxt);
 	}
@@ -1108,6 +1222,7 @@ program_state::validate (const extrinsic_state &ext_state) const
 #endif
 
   gcc_assert (m_checker_states.length () == ext_state.get_num_checkers ());
+  m_region_model->validate ();
 }
 
 static void
@@ -1159,6 +1274,7 @@ program_state::detect_leaks (const program_state &src_state,
 {
   logger *logger = ext_state.get_logger ();
   LOG_SCOPE (logger);
+  const uncertainty_t *uncertainty = ctxt->get_uncertainty ();
   if (logger)
     {
       pretty_printer *pp = logger->get_printer ();
@@ -1177,31 +1293,46 @@ program_state::detect_leaks (const program_state &src_state,
 	  extra_sval->dump_to_pp (pp, true);
 	  logger->end_log_line ();
 	}
+      if (uncertainty)
+	{
+	  logger->start_log_line ();
+	  pp_string (pp, "uncertainty: ");
+	  uncertainty->dump_to_pp (pp, true);
+	  logger->end_log_line ();
+	}
     }
 
-  /* Get svalues reachable from each of src_state and dst_state.  */
-  svalue_set src_svalues;
-  svalue_set dest_svalues;
-  src_state.m_region_model->get_reachable_svalues (&src_svalues, NULL);
-  dest_state.m_region_model->get_reachable_svalues (&dest_svalues, extra_sval);
+  /* Get svalues reachable from each of src_state and dest_state.
+     Get svalues *known* to be reachable in src_state.
+     Pass in uncertainty for dest_state so that we additionally get svalues that
+     *might* still be reachable in dst_state.  */
+  svalue_set known_src_svalues;
+  src_state.m_region_model->get_reachable_svalues (&known_src_svalues,
+						   NULL, NULL);
+  svalue_set maybe_dest_svalues;
+  dest_state.m_region_model->get_reachable_svalues (&maybe_dest_svalues,
+						    extra_sval, uncertainty);
 
   if (logger)
     {
-      log_set_of_svalues (logger, "src_state reachable svalues:", src_svalues);
-      log_set_of_svalues (logger, "dest_state reachable svalues:",
-			  dest_svalues);
+      log_set_of_svalues (logger, "src_state known reachable svalues:",
+			  known_src_svalues);
+      log_set_of_svalues (logger, "dest_state maybe reachable svalues:",
+			  maybe_dest_svalues);
     }
 
-  auto_vec <const svalue *> dead_svals (src_svalues.elements ());
-  for (svalue_set::iterator iter = src_svalues.begin ();
-       iter != src_svalues.end (); ++iter)
+  auto_vec <const svalue *> dead_svals (known_src_svalues.elements ());
+  for (svalue_set::iterator iter = known_src_svalues.begin ();
+       iter != known_src_svalues.end (); ++iter)
     {
       const svalue *sval = (*iter);
       /* For each sval reachable from SRC_STATE, determine if it is
-	 live in DEST_STATE: either explicitly reachable, or implicitly
-	 live based on the set of explicitly reachable svalues.
-	 Record those that have ceased to be live.  */
-      if (!sval->live_p (dest_svalues, dest_state.m_region_model))
+	 live in DEST_STATE: either explicitly reachable, implicitly
+	 live based on the set of explicitly reachable svalues,
+	 or possibly reachable as recorded in uncertainty.
+	 Record those that have ceased to be live i.e. were known
+	 to be live, and are now not known to be even possibly-live.  */
+      if (!sval->live_p (&maybe_dest_svalues, dest_state.m_region_model))
 	dead_svals.quick_push (sval);
     }
 
@@ -1214,11 +1345,46 @@ program_state::detect_leaks (const program_state &src_state,
     ctxt->on_svalue_leak (sval);
 
   /* Purge dead svals from sm-state.  */
-  ctxt->on_liveness_change (dest_svalues, dest_state.m_region_model);
+  ctxt->on_liveness_change (maybe_dest_svalues,
+			    dest_state.m_region_model);
 
   /* Purge dead svals from constraints.  */
   dest_state.m_region_model->get_constraints ()->on_liveness_change
-    (dest_svalues, dest_state.m_region_model);
+    (maybe_dest_svalues, dest_state.m_region_model);
+
+  /* Purge dead heap-allocated regions from dynamic extents.  */
+  for (const svalue *sval : dead_svals)
+    if (const region *reg = sval->maybe_get_region ())
+      if (reg->get_kind () == RK_HEAP_ALLOCATED)
+	dest_state.m_region_model->unset_dynamic_extents (reg);
+}
+
+/* Handle calls to "__analyzer_dump_state".  */
+
+void
+program_state::impl_call_analyzer_dump_state (const gcall *call,
+					      const extrinsic_state &ext_state,
+					      region_model_context *ctxt)
+{
+  call_details cd (call, m_region_model, ctxt);
+  const char *sm_name = cd.get_arg_string_literal (0);
+  if (!sm_name)
+    {
+      error_at (call->location, "cannot determine state machine");
+      return;
+    }
+  unsigned sm_idx;
+  if (!ext_state.get_sm_idx_by_name (sm_name, &sm_idx))
+    {
+      error_at (call->location, "unrecognized state machine %qs", sm_name);
+      return;
+    }
+  const sm_state_map *smap = m_checker_states[sm_idx];
+
+  const svalue *sval = cd.get_arg_svalue (1);
+
+  state_machine::state_t state = smap->get_state (sval, ext_state);
+  warning_at (call->location, 0, "state: %qs", state->get_name ());
 }
 
 #if CHECKING_P
@@ -1375,7 +1541,7 @@ test_program_state_1 ()
   program_state s (ext_state);
   region_model *model = s.m_region_model;
   const svalue *size_in_bytes
-    = mgr->get_or_create_unknown_svalue (integer_type_node);
+    = mgr->get_or_create_unknown_svalue (size_type_node);
   const region *new_reg = model->create_region_for_heap_alloc (size_in_bytes);
   const svalue *ptr_sval = mgr->get_ptr_svalue (ptr_type_node, new_reg);
   model->set_value (model->get_lvalue (p, NULL),
@@ -1426,11 +1592,12 @@ test_program_state_merging ()
   region_model_manager *mgr = eng.get_model_manager ();
 
   program_state s0 (ext_state);
-  impl_region_model_context ctxt (&s0, ext_state);
+  uncertainty_t uncertainty;
+  impl_region_model_context ctxt (&s0, ext_state, &uncertainty);
 
   region_model *model0 = s0.m_region_model;
   const svalue *size_in_bytes
-    = mgr->get_or_create_unknown_svalue (integer_type_node);
+    = mgr->get_or_create_unknown_svalue (size_type_node);
   const region *new_reg = model0->create_region_for_heap_alloc (size_in_bytes);
   const svalue *ptr_sval = mgr->get_ptr_svalue (ptr_type_node, new_reg);
   model0->set_value (model0->get_lvalue (p, &ctxt),

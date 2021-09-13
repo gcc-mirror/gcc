@@ -50,3 +50,21 @@ const char * test_3 (void)
   /* { dg-error "did you mean '__FILE__'" "" { target c } misspelled__FILE_ } */
   /* { dg-error "'__FILE_' was not declared in this scope; did you mean '__FILE__'\\?"  "" { target c++ } misspelled__FILE_ } */
 }
+
+/* Verify that we can correct "__FILE_NAME_" to "__FILE_NAME__".  */
+
+const char * test_4 (void)
+{
+  return __FILE_NAME_; /* { dg-line misspelled__FILE_NAME_ } */
+  /* { dg-error "did you mean '__FILE_NAME__'" "" { target c } misspelled__FILE_NAME_ } */
+  /* { dg-error "'__FILE_NAME_' was not declared in this scope; did you mean '__FILE_NAME__'\\?"  "" { target c++ } misspelled__FILE_NAME_ } */
+}
+
+/* Verify that we can correct "__FILENAME__" to "__FILE_NAME__".  */
+
+const char * test_5 (void)
+{
+  return __FILENAME__; /* { dg-line misspelled__FILENAME__ } */
+  /* { dg-error "did you mean '__FILE_NAME__'" "" { target c } misspelled__FILENAME__ } */
+  /* { dg-error "'__FILENAME__' was not declared in this scope; did you mean '__FILE_NAME__'\\?"  "" { target c++ } misspelled__FILENAME__ } */
+}

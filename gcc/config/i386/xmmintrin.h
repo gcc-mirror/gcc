@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1022,7 +1022,7 @@ _mm_move_ss (__m128 __A, __m128 __B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_extract_pi16 (__m64 const __A, int const __N)
 {
-  return __builtin_ia32_vec_ext_v4hi ((__v4hi)__A, __N);
+  return (unsigned short) __builtin_ia32_vec_ext_v4hi ((__v4hi)__A, __N);
 }
 
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1032,7 +1032,7 @@ _m_pextrw (__m64 const __A, int const __N)
 }
 #else
 #define _mm_extract_pi16(A, N)	\
-  ((int) __builtin_ia32_vec_ext_v4hi ((__v4hi)(__m64)(A), (int)(N)))
+  ((int) (unsigned short) __builtin_ia32_vec_ext_v4hi ((__v4hi)(__m64)(A), (int)(N)))
 
 #define _m_pextrw(A, N) _mm_extract_pi16(A, N)
 #endif

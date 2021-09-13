@@ -14,8 +14,8 @@
  */
 module core.sys.posix.unistd;
 
-private import core.sys.posix.config;
-private import core.stdc.stddef;
+import core.sys.posix.config;
+import core.stdc.stddef;
 public import core.sys.posix.inttypes;  // for intptr_t
 public import core.sys.posix.sys.types; // for ssize_t, uid_t, gid_t, off_t, pid_t, useconds_t
 
@@ -32,6 +32,7 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
+@system:
 
 enum STDIN_FILENO  = 0;
 enum STDOUT_FILENO = 1;
@@ -42,20 +43,20 @@ extern __gshared int     optind;
 extern __gshared int     opterr;
 extern __gshared int     optopt;
 
-int     access(in char*, int);
+int     access(const scope char*, int);
 uint    alarm(uint) @trusted;
-int     chdir(in char*);
-int     chown(in char*, uid_t, gid_t);
+int     chdir(const scope char*);
+int     chown(const scope char*, uid_t, gid_t);
 int     close(int) @trusted;
 size_t  confstr(int, char*, size_t);
 int     dup(int) @trusted;
 int     dup2(int, int) @trusted;
-int     execl(in char*, in char*, ...);
-int     execle(in char*, in char*, ...);
-int     execlp(in char*, in char*, ...);
-int     execv(in char*, in char**);
-int     execve(in char*, in char**, in char**);
-int     execvp(in char*, in char**);
+int     execl(const scope char*, const scope char*, ...);
+int     execle(const scope char*, const scope char*, ...);
+int     execlp(const scope char*, const scope char*, ...);
+int     execv(const scope char*, const scope char**);
+int     execve(const scope char*, const scope char**, const scope char**);
+int     execvp(const scope char*, const scope char**);
 void    _exit(int) @trusted;
 int     fchown(int, uid_t, gid_t) @trusted;
 pid_t   fork() @trusted;
@@ -69,36 +70,36 @@ int     getgroups(int, gid_t *);
 int     gethostname(char*, size_t);
 char*   getlogin() @trusted;
 int     getlogin_r(char*, size_t);
-int     getopt(int, in char**, in char*);
+int     getopt(int, const scope char**, const scope char*);
 pid_t   getpgrp() @trusted;
 pid_t   getpid() @trusted;
 pid_t   getppid() @trusted;
 uid_t   getuid() @trusted;
 int     isatty(int) @trusted;
-int     link(in char*, in char*);
+int     link(const scope char*, const scope char*);
 //off_t   lseek(int, off_t, int);
-c_long  pathconf(in char*, int);
+c_long  pathconf(const scope char*, int);
 int     pause() @trusted;
 int     pipe(ref int[2]) @trusted;
 ssize_t read(int, void*, size_t);
-ssize_t readlink(in char*, char*, size_t);
-int     rmdir(in char*);
+ssize_t readlink(const scope char*, char*, size_t);
+int     rmdir(const scope char*);
 int     setegid(gid_t) @trusted;
 int     seteuid(uid_t) @trusted;
 int     setgid(gid_t) @trusted;
-int     setgroups(size_t, in gid_t*) @trusted;
+int     setgroups(size_t, const scope gid_t*) @trusted;
 int     setpgid(pid_t, pid_t) @trusted;
 pid_t   setsid() @trusted;
 int     setuid(uid_t) @trusted;
 uint    sleep(uint) @trusted;
-int     symlink(in char*, in char*);
+int     symlink(const scope char*, const scope char*);
 c_long  sysconf(int) @trusted;
 pid_t   tcgetpgrp(int) @trusted;
 int     tcsetpgrp(int, pid_t) @trusted;
 char*   ttyname(int) @trusted;
 int     ttyname_r(int, char*, size_t);
-int     unlink(in char*);
-ssize_t write(int, in void*, size_t);
+int     unlink(const scope char*);
+ssize_t write(int, const scope void*, size_t);
 
 version (CRuntime_Glibc)
 {
@@ -2400,7 +2401,7 @@ else version (CRuntime_UClibc)
 // XOpen (XSI)
 //
 /*
-char*      crypt(in char*, in char*);
+char*      crypt(const scope char*, const scope char*);
 char*      ctermid(char*);
 void       encrypt(ref char[64], int);
 int        fchdir(int);
@@ -2408,17 +2409,17 @@ c_long     gethostid();
 pid_t      getpgid(pid_t);
 pid_t      getsid(pid_t);
 char*      getwd(char*); // LEGACY
-int        lchown(in char*, uid_t, gid_t);
+int        lchown(const scope char*, uid_t, gid_t);
 int        lockf(int, int, off_t);
 int        nice(int);
 ssize_t    pread(int, void*, size_t, off_t);
-ssize_t    pwrite(int, in void*, size_t, off_t);
+ssize_t    pwrite(int, const scope void*, size_t, off_t);
 pid_t      setpgrp();
 int        setregid(gid_t, gid_t);
 int        setreuid(uid_t, uid_t);
-void       swab(in void*, void*, ssize_t);
+void       swab(const scope void*, void*, ssize_t);
 void       sync();
-int        truncate(in char*, off_t);
+int        truncate(const scope char*, off_t);
 useconds_t ualarm(useconds_t, useconds_t);
 int        usleep(useconds_t);
 pid_t      vfork();
@@ -2426,7 +2427,7 @@ pid_t      vfork();
 
 version (CRuntime_Glibc)
 {
-    char*      crypt(in char*, in char*);
+    char*      crypt(const scope char*, const scope char*);
     char*      ctermid(char*);
     void       encrypt(ref char[64], int) @trusted;
     int        fchdir(int) @trusted;
@@ -2434,17 +2435,17 @@ version (CRuntime_Glibc)
     pid_t      getpgid(pid_t) @trusted;
     pid_t      getsid(pid_t) @trusted;
     char*      getwd(char*); // LEGACY
-    int        lchown(in char*, uid_t, gid_t);
+    int        lchown(const scope char*, uid_t, gid_t);
     //int        lockf(int, int, off_t);
     int        nice(int) @trusted;
     //ssize_t    pread(int, void*, size_t, off_t);
-    //ssize_t    pwrite(int, in void*, size_t, off_t);
+    //ssize_t    pwrite(int, const scope void*, size_t, off_t);
     pid_t      setpgrp() @trusted;
     int        setregid(gid_t, gid_t) @trusted;
     int        setreuid(uid_t, uid_t) @trusted;
-    void       swab(in void*, void*, ssize_t);
+    void       swab(const scope void*, void*, ssize_t);
     void       sync() @trusted;
-    //int        truncate(in char*, off_t);
+    //int        truncate(const scope char*, off_t);
     useconds_t ualarm(useconds_t, useconds_t) @trusted;
     int        usleep(useconds_t) @trusted;
     pid_t      vfork();
@@ -2457,18 +2458,18 @@ version (CRuntime_Glibc)
     ssize_t    pread64(int, void*, size_t, off_t);
     alias      pread64 pread;
 
-    ssize_t    pwrite64(int, in void*, size_t, off_t);
+    ssize_t    pwrite64(int, const scope void*, size_t, off_t);
     alias      pwrite64 pwrite;
 
-    int        truncate64(in char*, off_t);
+    int        truncate64(const scope char*, off_t);
     alias      truncate64 truncate;
   }
   else
   {
     int        lockf(int, int, off_t) @trusted;
     ssize_t    pread(int, void*, size_t, off_t);
-    ssize_t    pwrite(int, in void*, size_t, off_t);
-    int        truncate(in char*, off_t);
+    ssize_t    pwrite(int, const scope void*, size_t, off_t);
+    int        truncate(const scope char*, off_t);
   }
 }
 else version (CRuntime_Musl)
@@ -2479,7 +2480,7 @@ else version (CRuntime_Musl)
 }
 else version (Darwin)
 {
-    char*      crypt(in char*, in char*);
+    char*      crypt(const scope char*, const scope char*);
     char*      ctermid(char*);
     void       encrypt(ref char[64], int) @trusted;
     int        fchdir(int) @trusted;
@@ -2487,24 +2488,24 @@ else version (Darwin)
     pid_t      getpgid(pid_t) @trusted;
     pid_t      getsid(pid_t) @trusted;
     char*      getwd(char*); // LEGACY
-    int        lchown(in char*, uid_t, gid_t);
+    int        lchown(const scope char*, uid_t, gid_t);
     int        lockf(int, int, off_t) @trusted;
     int        nice(int) @trusted;
     ssize_t    pread(int, void*, size_t, off_t);
-    ssize_t    pwrite(int, in void*, size_t, off_t);
+    ssize_t    pwrite(int, const scope void*, size_t, off_t);
     pid_t      setpgrp() @trusted;
     int        setregid(gid_t, gid_t) @trusted;
     int        setreuid(uid_t, uid_t) @trusted;
-    void       swab(in void*, void*, ssize_t);
+    void       swab(const scope void*, void*, ssize_t);
     void       sync() @trusted;
-    int        truncate(in char*, off_t);
+    int        truncate(const scope char*, off_t);
     useconds_t ualarm(useconds_t, useconds_t) @trusted;
     int        usleep(useconds_t) @trusted;
     pid_t      vfork();
 }
 else version (FreeBSD)
 {
-    char*      crypt(in char*, in char*);
+    char*      crypt(const scope char*, const scope char*);
     //char*      ctermid(char*);
     void       encrypt(ref char[64], int) @trusted;
     int        fchdir(int) @trusted;
@@ -2512,24 +2513,24 @@ else version (FreeBSD)
     int        getpgid(pid_t) @trusted;
     int        getsid(pid_t) @trusted;
     char*      getwd(char*); // LEGACY
-    int        lchown(in char*, uid_t, gid_t);
+    int        lchown(const scope char*, uid_t, gid_t);
     int        lockf(int, int, off_t) @trusted;
     int        nice(int) @trusted;
     ssize_t    pread(int, void*, size_t, off_t);
-    ssize_t    pwrite(int, in void*, size_t, off_t);
+    ssize_t    pwrite(int, const scope void*, size_t, off_t);
     int        setpgrp(pid_t, pid_t) @trusted;
     int        setregid(gid_t, gid_t) @trusted;
     int        setreuid(uid_t, uid_t) @trusted;
-    void       swab(in void*, void*, ssize_t);
+    void       swab(const scope void*, void*, ssize_t);
     void       sync() @trusted;
-    int        truncate(in char*, off_t);
+    int        truncate(const scope char*, off_t);
     useconds_t ualarm(useconds_t, useconds_t) @trusted;
     int        usleep(useconds_t) @trusted;
     pid_t      vfork();
 }
 else version (NetBSD)
 {
-    char*      crypt(in char*, in char*);
+    char*      crypt(const scope char*, const scope char*);
     //char*      ctermid(char*);
     void       encrypt(ref char[64], int) @trusted;
     int        fchdir(int) @trusted;
@@ -2537,24 +2538,24 @@ else version (NetBSD)
     int        getpgid(pid_t) @trusted;
     int        getsid(pid_t) @trusted;
     char*      getwd(char*); // LEGACY
-    int        lchown(in char*, uid_t, gid_t);
+    int        lchown(const scope char*, uid_t, gid_t);
     int        lockf(int, int, off_t) @trusted;
     int        nice(int) @trusted;
     ssize_t    pread(int, void*, size_t, off_t);
-    ssize_t    pwrite(int, in void*, size_t, off_t);
+    ssize_t    pwrite(int, const scope void*, size_t, off_t);
     int        setpgrp(pid_t, pid_t) @trusted;
     int        setregid(gid_t, gid_t) @trusted;
     int        setreuid(uid_t, uid_t) @trusted;
-    void       swab(in void*, void*, ssize_t);
+    void       swab(const scope void*, void*, ssize_t);
     void       sync() @trusted;
-    int        truncate(in char*, off_t);
+    int        truncate(const scope char*, off_t);
     useconds_t ualarm(useconds_t, useconds_t) @trusted;
     int        usleep(useconds_t) @trusted;
     pid_t      vfork();
 }
 else version (OpenBSD)
 {
-    char*      crypt(in char*, in char*);
+    char*      crypt(const scope char*, const scope char*);
     //char*      ctermid(char*);
     //void       encrypt(ref char[64], int) @trusted;
     int        fchdir(int) @trusted;
@@ -2562,24 +2563,24 @@ else version (OpenBSD)
     pid_t      getpgid(pid_t) @trusted;
     pid_t      getsid(pid_t) @trusted;
     char*      getwd(char*);
-    int        lchown(in char*, uid_t, gid_t);
+    int        lchown(const scope char*, uid_t, gid_t);
     int        lockf(int, int, off_t) @trusted;
     int        nice(int) @trusted;
     ssize_t    pread(int, void*, size_t, off_t);
-    ssize_t    pwrite(int, in void*, size_t, off_t);
+    ssize_t    pwrite(int, const scope void*, size_t, off_t);
     int        setpgrp(pid_t, pid_t) @trusted;
     int        setregid(gid_t, gid_t) @trusted;
     int        setreuid(uid_t, uid_t) @trusted;
-    void       swab(in void*, void*, ssize_t);
+    void       swab(const scope void*, void*, ssize_t);
     void       sync() @trusted;
-    int        truncate(in char*, off_t);
+    int        truncate(const scope char*, off_t);
     useconds_t ualarm(useconds_t, useconds_t) @trusted;
     int        usleep(useconds_t) @trusted;
     pid_t      vfork();
 }
 else version (DragonFlyBSD)
 {
-    char*      crypt(in char*, in char*);
+    char*      crypt(const scope char*, const scope char*);
     //char*      ctermid(char*);
     void       encrypt(ref char[64], int) @trusted;
     int        fchdir(int) @trusted;
@@ -2587,17 +2588,17 @@ else version (DragonFlyBSD)
     int        getpgid(pid_t) @trusted;
     int        getsid(pid_t) @trusted;
     char*      getwd(char*); // LEGACY
-    int        lchown(in char*, uid_t, gid_t);
+    int        lchown(const scope char*, uid_t, gid_t);
     int        lockf(int, int, off_t) @trusted;
     int        nice(int) @trusted;
     ssize_t    pread(int, void*, size_t, off_t);
-    ssize_t    pwrite(int, in void*, size_t, off_t);
+    ssize_t    pwrite(int, const scope void*, size_t, off_t);
     int        setpgrp(pid_t, pid_t) @trusted;
     int        setregid(gid_t, gid_t) @trusted;
     int        setreuid(uid_t, uid_t) @trusted;
-    void       swab(in void*, void*, ssize_t);
+    void       swab(const scope void*, void*, ssize_t);
     void       sync() @trusted;
-    int        truncate(in char*, off_t);
+    int        truncate(const scope char*, off_t);
     useconds_t ualarm(useconds_t, useconds_t) @trusted;
     int        usleep(useconds_t) @trusted;
     pid_t      vfork();
@@ -2606,21 +2607,21 @@ else version (CRuntime_Bionic)
 {
     int        fchdir(int) @trusted;
     pid_t      getpgid(pid_t) @trusted;
-    int        lchown(in char*, uid_t, gid_t);
+    int        lchown(const scope char*, uid_t, gid_t);
     int        nice(int) @trusted;
     ssize_t    pread(int, void*, size_t, off_t);
-    ssize_t    pwrite(int, in void*, size_t, off_t);
+    ssize_t    pwrite(int, const scope void*, size_t, off_t);
     int        setpgrp() @trusted;
     int        setregid(gid_t, gid_t) @trusted;
     int        setreuid(uid_t, uid_t) @trusted;
     int        sync() @trusted;
-    int        truncate(in char*, off_t);
+    int        truncate(const scope char*, off_t);
     int        usleep(c_ulong) @trusted;
     pid_t      vfork();
 }
 else version (Solaris)
 {
-    char*      crypt(in char*, in char*);
+    char*      crypt(const scope char*, const scope char*);
     char*      ctermid(char*);
     void       encrypt(ref char[64], int);
     int        fchdir(int);
@@ -2628,12 +2629,12 @@ else version (Solaris)
     pid_t      getpgid(pid_t);
     pid_t      getsid(pid_t);
     char*      getwd(char*); // LEGACY
-    int        lchown(in char*, uid_t, gid_t);
+    int        lchown(const scope char*, uid_t, gid_t);
     int        nice(int);
     pid_t      setpgrp();
     int        setregid(gid_t, gid_t);
     int        setreuid(uid_t, uid_t);
-    void       swab(in void*, void*, ssize_t);
+    void       swab(const scope void*, void*, ssize_t);
     void       sync();
     useconds_t ualarm(useconds_t, useconds_t);
     int        usleep(useconds_t);
@@ -2647,10 +2648,10 @@ else version (Solaris)
         ssize_t     pread(int, void*, size_t, off_t);
         alias       pread pread64;
 
-        ssize_t     pwrite(int, in void*, size_t, off_t);
+        ssize_t     pwrite(int, const scope void*, size_t, off_t);
         alias       pwrite pwrite64;
 
-        int         truncate(in char*, off_t);
+        int         truncate(const scope char*, off_t);
         alias       truncate truncate64;
     }
     else
@@ -2663,24 +2664,24 @@ else version (Solaris)
             ssize_t    pread64(int, void*, size_t, off64_t);
             alias      pread64 pread;
 
-            ssize_t    pwrite64(int, in void*, size_t, off_t);
+            ssize_t    pwrite64(int, const scope void*, size_t, off_t);
             alias      pwrite64 pwrite;
 
-            int        truncate64(in char*, off_t);
+            int        truncate64(const scope char*, off_t);
             alias      truncate64 truncate;
         }
         else
         {
             int        lockf(int, int, off_t);
             ssize_t    pread(int, void*, size_t, off_t);
-            ssize_t    pwrite(int, in void*, size_t, off_t);
-            int        truncate(in char*, off_t);
+            ssize_t    pwrite(int, const scope void*, size_t, off_t);
+            int        truncate(const scope char*, off_t);
         }
     }
 }
 else version (CRuntime_UClibc)
 {
-    char*      crypt(in char*, in char*);
+    char*      crypt(const scope char*, const scope char*);
     char*      ctermid(char*);
     void       encrypt(ref char[64], int) @trusted;
     int        fchdir(int) @trusted;
@@ -2688,12 +2689,12 @@ else version (CRuntime_UClibc)
     pid_t      getpgid(pid_t) @trusted;
     pid_t      getsid(pid_t) @trusted;
     char*      getwd(char*); // LEGACY
-    int        lchown(in char*, uid_t, gid_t);
+    int        lchown(const scope char*, uid_t, gid_t);
     int        nice(int) @trusted;
     pid_t      setpgrp() @trusted;
     int        setregid(gid_t, gid_t) @trusted;
     int        setreuid(uid_t, uid_t) @trusted;
-    void       swab(in void*, void*, ssize_t);
+    void       swab(const scope void*, void*, ssize_t);
     void       sync() @trusted;
     useconds_t ualarm(useconds_t, useconds_t) @trusted;
     int        usleep(useconds_t) @trusted;
@@ -2707,17 +2708,65 @@ else version (CRuntime_UClibc)
     ssize_t    pread64(int, void*, size_t, off_t);
     alias      pread64 pread;
 
-    ssize_t    pwrite64(int, in void*, size_t, off_t);
+    ssize_t    pwrite64(int, const scope void*, size_t, off_t);
     alias      pwrite64 pwrite;
 
-    int        truncate64(in char*, off_t);
+    int        truncate64(const scope char*, off_t);
     alias      truncate64 truncate;
   }
   else
   {
     int        lockf(int, int, off_t) @trusted;
     ssize_t    pread(int, void*, size_t, off_t);
-    ssize_t    pwrite(int, in void*, size_t, off_t);
-    int        truncate(in char*, off_t);
+    ssize_t    pwrite(int, const scope void*, size_t, off_t);
+    int        truncate(const scope char*, off_t);
   }
+}
+
+// Non-standard definition to access user process environment
+version (CRuntime_Glibc)
+{
+    extern __gshared const char** environ;
+}
+else version (Darwin)
+{
+    extern (D) @property const(char**) environ()()
+    {
+        pragma (inline, true);
+        import core.sys.darwin.crt_externs : _NSGetEnviron;
+        return *_NSGetEnviron();
+    }
+}
+else version (FreeBSD)
+{
+    extern __gshared const char** environ;
+}
+else version (NetBSD)
+{
+    extern __gshared const char** environ;
+}
+else version (OpenBSD)
+{
+    extern __gshared const char** environ;
+}
+else version (DragonFlyBSD)
+{
+    extern __gshared const char** environ;
+}
+else version (CRuntime_Bionic)
+{
+    extern __gshared const char** environ;
+}
+else version (CRuntime_Musl)
+{
+    extern __gshared const char** environ;
+}
+else version (Solaris)
+{
+    extern __gshared const char** environ;
+}
+else version (CRuntime_UClibc)
+{
+    extern __gshared const char** __environ;
+    alias environ = __environ;
 }

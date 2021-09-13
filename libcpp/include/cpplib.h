@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995-2020 Free Software Foundation, Inc.
+   Copyright (C) 1995-2021 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -173,7 +173,8 @@ enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
 	     CLK_STDC2X,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
-	     CLK_GNUCXX20, CLK_CXX20, CLK_ASM};
+	     CLK_GNUCXX20, CLK_CXX20, CLK_GNUCXX23, CLK_CXX23,
+	     CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -481,6 +482,10 @@ struct cpp_options
      in C11 and C++11.  */
   unsigned char c11_identifiers;
 
+  /* Nonzero means extended identifiers allow the characters specified
+     in C++23.  */
+  unsigned char cxx23_identifiers;
+
   /* Nonzero for C++ 2014 Standard binary constants.  */
   unsigned char binary_constants;
 
@@ -496,8 +501,14 @@ struct cpp_options
   /* Nonzero for the '::' token.  */
   unsigned char scope;
 
+  /* Nonzero for the '#elifdef' and '#elifndef' directives.  */
+  unsigned char elifdef;
+
   /* Nonzero means tokenize C++20 module directives.  */
   unsigned char module_directives;
+
+  /* Nonzero for C++23 size_t literals.  */
+  unsigned char size_t_literals;
 
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
@@ -625,6 +636,7 @@ enum cpp_warning_reason {
   CPP_W_INVALID_PCH,
   CPP_W_WARNING_DIRECTIVE,
   CPP_W_LITERAL_SUFFIX,
+  CPP_W_SIZE_T_LITERALS,
   CPP_W_DATE_TIME,
   CPP_W_PEDANTIC,
   CPP_W_C90_C99_COMPAT,
@@ -878,6 +890,7 @@ enum cpp_builtin_type
   BT_SPECLINE = 0,		/* `__LINE__' */
   BT_DATE,			/* `__DATE__' */
   BT_FILE,			/* `__FILE__' */
+  BT_FILE_NAME,			/* `__FILE_NAME__' */
   BT_BASE_FILE,			/* `__BASE_FILE__' */
   BT_INCLUDE_LEVEL,		/* `__INCLUDE_LEVEL__' */
   BT_TIME,			/* `__TIME__' */
@@ -1007,8 +1020,8 @@ extern cpp_callbacks *cpp_get_callbacks (cpp_reader *) ATTRIBUTE_PURE;
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
 
-extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
-					 bool angle_p,  location_t);
+extern const char *cpp_probe_header_unit (cpp_reader *, const char *file,
+					  bool angle_p,  location_t);
 
 /* Call these to get name data about the various compile-time
    charsets.  */
@@ -1210,7 +1223,9 @@ struct cpp_num
 #define CPP_N_FLOATN	0x400000 /* _FloatN types.  */
 #define CPP_N_FLOATNX	0x800000 /* _FloatNx types.  */
 
-#define CPP_N_USERDEF	0x1000000 /* C++0x user-defined literal.  */
+#define CPP_N_USERDEF	0x1000000 /* C++11 user-defined literal.  */
+
+#define CPP_N_SIZE_T	0x2000000 /* C++23 size_t literal.  */
 
 #define CPP_N_WIDTH_FLOATN_NX	0xF0000000 /* _FloatN / _FloatNx value
 					      of N, divided by 16.  */
@@ -1368,6 +1383,20 @@ extern struct _cpp_file *cpp_get_file (cpp_buffer *);
 extern cpp_buffer *cpp_get_prev (cpp_buffer *);
 extern void cpp_clear_file_cache (cpp_reader *);
 
+/* cpp_get_converted_source returns the contents of the given file, as it exists
+   after cpplib has read it and converted it from the input charset to the
+   source charset.  Return struct will be zero-filled if the data could not be
+   read for any reason.  The data starts at the DATA pointer, but the TO_FREE
+   pointer is what should be passed to free(), as there may be an offset.  */
+struct cpp_converted_source
+{
+  char *to_free;
+  char *data;
+  size_t len;
+};
+cpp_converted_source cpp_get_converted_source (const char *fname,
+					       const char *input_charset);
+
 /* In pch.c */
 struct save_macro_data;
 extern int cpp_save_state (cpp_reader *, FILE *);
@@ -1438,6 +1467,7 @@ class cpp_display_width_computation {
 /* Convenience functions that are simple use cases for class
    cpp_display_width_computation.  Tab characters will be expanded to spaces
    as determined by TABSTOP.  */
+
 int cpp_byte_column_to_display_column (const char *data, int data_length,
 				       int column, int tabstop);
 inline int cpp_display_width (const char *data, int data_length,
@@ -1449,5 +1479,8 @@ inline int cpp_display_width (const char *data, int data_length,
 int cpp_display_column_to_byte_column (const char *data, int data_length,
 				       int display_col, int tabstop);
 int cpp_wcwidth (cppchar_t c);
+
+bool cpp_input_conversion_is_trivial (const char *input_charset);
+int cpp_check_utf8_bom (const char *data, size_t data_length);
 
 #endif /* ! LIBCPP_CPPLIB_H */

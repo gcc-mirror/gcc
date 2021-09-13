@@ -11,14 +11,14 @@ lt_notsi (int_t x)
   if (x < 0)
     return x;
   else
-    return x + 2;
+    return 2 - x;
 }
 
 /* Expect assembly like:
 
 	mcoml 4(%ap),%r0		# 28	[c=16]  *one_cmplsi2_ccn
 	jlss .L1			# 30	[c=26]  *branch_ccn
-	addl2 $2,%r0			# 27	[c=32]  *addsi3
+	subl3 %r0,$2,%r0		# 27	[c=32]  *subsi3/1
 .L1:
 
  */

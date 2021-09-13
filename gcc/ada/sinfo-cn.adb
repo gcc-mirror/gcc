@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,27 +30,23 @@
 --  general manner, but in some specific cases, the fields of related nodes
 --  have been deliberately layed out in a manner that permits such alteration.
 
-with Atree;    use Atree;
-with Snames;   use Snames;
+with Atree;          use Atree;
+with Snames;         use Snames;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
 
 package body Sinfo.CN is
-
-   use Atree.Unchecked_Access;
-   --  This package is one of the few packages which is allowed to make direct
-   --  references to tree nodes (since it is in the business of providing a
-   --  higher level of tree access which other clients are expected to use and
-   --  which implements checks).
 
    ------------------------------------------------------------
    -- Change_Character_Literal_To_Defining_Character_Literal --
    ------------------------------------------------------------
 
    procedure Change_Character_Literal_To_Defining_Character_Literal
-     (N : in out Node_Id)
+     (N : Node_Id)
    is
    begin
-      Set_Nkind (N, N_Defining_Character_Literal);
-      N := Extend_Node (N);
+      Reinit_Field_To_Zero (N, F_Char_Literal_Value);
+      Extend_Node (N);
    end Change_Character_Literal_To_Defining_Character_Literal;
 
    ------------------------------------
@@ -60,19 +56,17 @@ package body Sinfo.CN is
    procedure Change_Conversion_To_Unchecked (N : Node_Id) is
    begin
       Set_Do_Overflow_Check (N, False);
-      Set_Do_Tag_Check (N, False);
       Set_Do_Length_Check (N, False);
-      Set_Nkind (N, N_Unchecked_Type_Conversion);
+      Mutate_Nkind (N, N_Unchecked_Type_Conversion);
    end Change_Conversion_To_Unchecked;
 
    ----------------------------------------------
    -- Change_Identifier_To_Defining_Identifier --
    ----------------------------------------------
 
-   procedure Change_Identifier_To_Defining_Identifier (N : in out Node_Id) is
+   procedure Change_Identifier_To_Defining_Identifier (N : Node_Id) is
    begin
-      Set_Nkind (N, N_Defining_Identifier);
-      N := Extend_Node (N);
+      Extend_Node (N);
    end Change_Identifier_To_Defining_Identifier;
 
    ---------------------------------------------
@@ -132,12 +126,11 @@ package body Sinfo.CN is
    --------------------------------------------------------
 
    procedure Change_Operator_Symbol_To_Defining_Operator_Symbol
-     (N : in out Node_Id)
+     (N : Node_Id)
    is
    begin
-      Set_Nkind (N, N_Defining_Operator_Symbol);
-      Set_Node2 (N, Empty); -- Clear unused Str2 field
-      N := Extend_Node (N);
+      Reinit_Field_To_Zero (N, F_Strval);
+      Extend_Node (N);
    end Change_Operator_Symbol_To_Defining_Operator_Symbol;
 
    ----------------------------------------------
@@ -146,8 +139,9 @@ package body Sinfo.CN is
 
    procedure Change_Operator_Symbol_To_String_Literal (N : Node_Id) is
    begin
-      Set_Nkind (N, N_String_Literal);
-      Set_Node1 (N, Empty); -- clear Name1 field
+      Reinit_Field_To_Zero (N, F_Chars);
+      Set_Entity (N, Empty);
+      Mutate_Nkind (N, N_String_Literal);
    end Change_Operator_Symbol_To_String_Literal;
 
    ------------------------------------------------
@@ -156,7 +150,7 @@ package body Sinfo.CN is
 
    procedure Change_Selected_Component_To_Expanded_Name (N : Node_Id) is
    begin
-      Set_Nkind (N, N_Expanded_Name);
+      Mutate_Nkind (N, N_Expanded_Name);
       Set_Chars (N, Chars (Selector_Name (N)));
    end Change_Selected_Component_To_Expanded_Name;
 

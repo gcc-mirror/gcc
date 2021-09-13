@@ -132,9 +132,7 @@ int main ()
   /* AMD GCN uses the autovectorizer for the vector dimension: the use
      of a function call in vector-partitioned code in this test is not
      currently supported.  */
-  /* AMD GCN does not currently support multiple workers.  This should be
-     set to 16 when that changes.  */
-  return test_1 (16, 1, 1);
+  return test_1 (16, 16, 1);
 #else
   return test_1 (16, 16, 32);
 #endif

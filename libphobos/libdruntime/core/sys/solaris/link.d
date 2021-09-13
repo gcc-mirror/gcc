@@ -18,21 +18,21 @@ import core.sys.solaris.sys.link;
 uint ld_version(uint);
 void ld_input_done(uint*);
 
-void ld_start(in char*, in Elf32_Half, in char*);
+void ld_start(const scope char*, const Elf32_Half, const scope char*);
 void ld_atexit(int);
-void ld_open(in char**, in char**, int*, int, Elf**, Elf*, size_t, in Elf_Kind);
-void ld_file(in char*, in Elf_Kind, int, Elf*);
-void ld_input_section(in char*, Elf32_Shdr**, Elf32_Word, Elf_Data*, Elf*, uint*);
-void ld_section(in char*, Elf32_Shdr*, Elf32_Word, Elf_Data*, Elf*);
+void ld_open(const scope char**, const scope char**, int*, int, Elf**, Elf*, size_t, const Elf_Kind);
+void ld_file(const scope char*, const Elf_Kind, int, Elf*);
+void ld_input_section(const scope char*, Elf32_Shdr**, Elf32_Word, Elf_Data*, Elf*, uint*);
+void ld_section(const scope char*, Elf32_Shdr*, Elf32_Word, Elf_Data*, Elf*);
 
 version (D_LP64)
 {
-    void ld_start64(in char*, in Elf64_Half, in char*);
+    void ld_start64(const scope char*, const Elf64_Half, const scope char*);
     void ld_atexit64(int);
-    void ld_open64(in char**, in char**, int*, int, Elf**, Elf*, size_t, in Elf_Kind);
-    void ld_file64(in char*, in Elf_Kind, int, Elf*);
-    void ld_input_section64(in char*, Elf64_Shdr**, Elf64_Word, Elf_Data*, Elf*, uint*);
-    void ld_section64(in char*, Elf64_Shdr*, Elf64_Word, Elf_Data*, Elf*);
+    void ld_open64(const scope char**, const scope char**, int*, int, Elf**, Elf*, size_t, const Elf_Kind);
+    void ld_file64(const scope char*, const Elf_Kind, int, Elf*);
+    void ld_input_section64(const scope char*, Elf64_Shdr**, Elf64_Word, Elf_Data*, Elf*, uint*);
+    void ld_section64(const scope char*, Elf64_Shdr*, Elf64_Word, Elf_Data*, Elf*);
 }
 
 enum LD_SUP_VNONE    = 0;
@@ -130,19 +130,19 @@ else
 uint la_version(uint);
 void la_activity(uintptr_t*, uint);
 void la_preinit(uintptr_t*);
-char* la_objsearch(in char*, uintptr_t*, uint);
+char* la_objsearch(const scope char*, uintptr_t*, uint);
 uint la_objopen(Link_map*, Lmid_t, uintptr_t*);
 uint la_objclose(uintptr_t*);
-int la_objfilter(uintptr_t*, in char*, uintptr_t*, uint);
+int la_objfilter(uintptr_t*, const scope char*, uintptr_t*, uint);
 
 version (D_LP64)
 {
     uintptr_t la_amd64_pltenter(Elf64_Sym*, uint, uintptr_t*, uintptr_t*,
-                                La_amd64_regs*, uint*, in char*);
-    uintptr_t la_symbind64(Elf64_Sym*, uint, uintptr_t*, uintptr_t*, uint*, in char*);
+                                La_amd64_regs*, uint*, const scope char*);
+    uintptr_t la_symbind64(Elf64_Sym*, uint, uintptr_t*, uintptr_t*, uint*, const scope char*);
     uintptr_t la_sparcv9_pltenter(Elf64_Sym*, uint, uintptr_t*, uintptr_t*,
-                                  La_sparcv9_regs*, uint*, in char*);
-    uintptr_t la_pltexit64(Elf64_Sym*, uint, uintptr_t*, uintptr_t*, uintptr_t, in char*);
+                                  La_sparcv9_regs*, uint*, const scope char*);
+    uintptr_t la_pltexit64(Elf64_Sym*, uint, uintptr_t*, uintptr_t*, uintptr_t, const scope char*);
 }
 else
 {
@@ -172,7 +172,7 @@ struct dl_phdr_info
     uint64_t           dlpi_subs;
     size_t             dlpi_tls_modid;  // since Solaris 11.5
     void*              dlpi_tls_data;   // since Solaris 11.5
-};
+}
 
 private alias extern(C) int function(dl_phdr_info*, size_t, void *) dl_iterate_phdr_cb;
 private alias extern(C) int function(dl_phdr_info*, size_t, void *) @nogc dl_iterate_phdr_cb_ngc;

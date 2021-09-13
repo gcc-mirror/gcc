@@ -216,7 +216,6 @@ func typehash(t *_type, p unsafe.Pointer, h uintptr) uintptr {
 	case kindStruct:
 		s := (*structtype)(unsafe.Pointer(t))
 		for _, f := range s.fields {
-			// TODO: maybe we could hash several contiguous fields all at once.
 			if f.name != nil && *f.name == "_" {
 				continue
 			}

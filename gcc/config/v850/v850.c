@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -2181,7 +2181,7 @@ construct_restore_jr (rtx op)
   unsigned long int first;
   unsigned long int last;
   int i;
-  static char buff [100]; /* XXX */
+  static char buff [256]; /* XXX */
   
   if (count <= 2)
     {
@@ -2286,7 +2286,7 @@ construct_save_jarl (rtx op)
   unsigned long int first;
   unsigned long int last;
   int i;
-  static char buff [100]; /* XXX */
+  static char buff [255]; /* XXX */
   
   if (count <= (TARGET_LONG_CALLS ? 3 : 2)) 
     {
@@ -2583,7 +2583,7 @@ construct_dispose_instruction (rtx op)
   int                stack_bytes;
   unsigned long int  mask;
   int		     i;
-  static char        buff[ 100 ]; /* XXX */
+  static char        buff[ 120 ]; /* XXX */
   int                use_callt = 0;
   
   if (count <= 2)
@@ -2704,7 +2704,7 @@ construct_prepare_instruction (rtx op)
   int                stack_bytes;
   unsigned long int  mask;
   int		     i;
-  static char        buff[ 100 ]; /* XXX */
+  static char        buff[ 120 ]; /* XXX */
   int		     use_callt = 0;
   
   if (XVECLEN (op, 0) <= 1)
@@ -3140,6 +3140,11 @@ v850_option_override (void)
   /* The RH850 ABI does not (currently) support the use of the CALLT instruction.  */
   if (! TARGET_GCC_ABI)
     target_flags |= MASK_DISABLE_CALLT;
+
+  /* Save the initial options in case the user does function specific
+     options.  */
+  target_option_default_node = target_option_current_node
+    = build_target_option_node (&global_options, &global_options_set);
 }
 
 const char *
@@ -3192,6 +3197,29 @@ v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
   return (mode1 == mode2
 	  || (GET_MODE_SIZE (mode1) <= 4 && GET_MODE_SIZE (mode2) <= 4));
 }
+
+static bool
+v850_can_inline_p (tree caller, tree callee)
+{
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
+  tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+
+  const unsigned HOST_WIDE_INT safe_flags = MASK_PROLOG_FUNCTION;
+
+  if (!callee_tree)
+    callee_tree = target_option_default_node;
+  if (!caller_tree)
+    caller_tree = target_option_default_node;
+  if (callee_tree == caller_tree)
+    return true;
+
+  cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
+  cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+
+  return ((caller_opts->x_target_flags & ~safe_flags)
+	  == (callee_opts->x_target_flags & ~safe_flags));
+}
+
 
 /* Initialize the GCC target structure.  */
 
@@ -3305,6 +3333,10 @@ v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P v850_can_inline_p
+
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

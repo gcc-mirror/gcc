@@ -14,7 +14,7 @@
  */
 module core.sys.posix.termios;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.sys.posix.sys.types; // for pid_t
 
 version (OSX)
@@ -31,6 +31,7 @@ extern (C):
 
 nothrow:
 @nogc:
+@system:
 
 //
 // Required
@@ -129,8 +130,8 @@ TCION
 TCOOFF
 TCOON
 
-speed_t cfgetispeed(in termios*);
-speed_t cfgetospeed(in termios*);
+speed_t cfgetispeed(const scope termios*);
+speed_t cfgetospeed(const scope termios*);
 int     cfsetispeed(termios*, speed_t);
 int     cfsetospeed(termios*, speed_t);
 int     tcdrain(int);
@@ -138,7 +139,7 @@ int     tcflow(int, int);
 int     tcflush(int, int);
 int     tcgetattr(int, termios*);
 int     tcsendbreak(int, int);
-int     tcsetattr(int, int, in termios*);
+int     tcsetattr(int, int, const scope termios*);
 */
 
 version (CRuntime_Glibc)
@@ -239,8 +240,8 @@ version (CRuntime_Glibc)
     enum TCOOFF     = 0;
     enum TCOON      = 1;
 
-    speed_t cfgetispeed(in termios*);
-    speed_t cfgetospeed(in termios*);
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
     int     cfsetispeed(termios*, speed_t);
     int     cfsetospeed(termios*, speed_t);
     int     tcdrain(int);
@@ -248,7 +249,7 @@ version (CRuntime_Glibc)
     int     tcflush(int, int);
     int     tcgetattr(int, termios*);
     int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, in termios*);
+    int     tcsetattr(int, int, const scope termios*);
 }
 else version (Darwin)
 {
@@ -347,8 +348,8 @@ else version (Darwin)
     enum TCOOFF     = 1;
     enum TCOON      = 2;
 
-    speed_t cfgetispeed(in termios*);
-    speed_t cfgetospeed(in termios*);
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
     int     cfsetispeed(termios*, speed_t);
     int     cfsetospeed(termios*, speed_t);
     int     tcdrain(int);
@@ -356,7 +357,7 @@ else version (Darwin)
     int     tcflush(int, int);
     int     tcgetattr(int, termios*);
     int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, in termios*);
+    int     tcsetattr(int, int, const scope termios*);
 
 }
 else version (FreeBSD)
@@ -456,8 +457,8 @@ else version (FreeBSD)
     enum TCOOFF     = 1;
     enum TCOON      = 2;
 
-    speed_t cfgetispeed(in termios*);
-    speed_t cfgetospeed(in termios*);
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
     int     cfsetispeed(termios*, speed_t);
     int     cfsetospeed(termios*, speed_t);
     int     tcdrain(int);
@@ -465,7 +466,7 @@ else version (FreeBSD)
     int     tcflush(int, int);
     int     tcgetattr(int, termios*);
     int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, in termios*);
+    int     tcsetattr(int, int, const scope termios*);
 }
 else version (DragonFlyBSD)
 {
@@ -564,8 +565,8 @@ else version (DragonFlyBSD)
     enum TCOOFF     = 1;
     enum TCOON      = 2;
 
-    speed_t cfgetispeed(in termios*);
-    speed_t cfgetospeed(in termios*);
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
     int     cfsetispeed(termios*, speed_t);
     int     cfsetospeed(termios*, speed_t);
     int     tcdrain(int);
@@ -573,7 +574,7 @@ else version (DragonFlyBSD)
     int     tcflush(int, int);
     int     tcgetattr(int, termios*);
     int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, in termios*);
+    int     tcsetattr(int, int, const scope termios*);
 }
 else version (NetBSD)
 {
@@ -672,8 +673,8 @@ else version (NetBSD)
     enum TCOOFF     = 1;
     enum TCOON      = 2;
 
-    speed_t cfgetispeed(in termios*);
-    speed_t cfgetospeed(in termios*);
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
     int     cfsetispeed(termios*, speed_t);
     int     cfsetospeed(termios*, speed_t);
     int     tcdrain(int);
@@ -681,7 +682,7 @@ else version (NetBSD)
     int     tcflush(int, int);
     int     tcgetattr(int, termios*);
     int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, in termios*);
+    int     tcsetattr(int, int, const scope termios*);
 }
 else version (OpenBSD)
 {
@@ -780,8 +781,8 @@ else version (OpenBSD)
     enum TCOOFF     = 1;
     enum TCOON      = 2;
 
-    speed_t cfgetispeed(in termios*);
-    speed_t cfgetospeed(in termios*);
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
     int     cfsetispeed(termios*, speed_t);
     int     cfsetospeed(termios*, speed_t);
     int     tcdrain(int);
@@ -789,7 +790,7 @@ else version (OpenBSD)
     int     tcflush(int, int);
     int     tcgetattr(int, termios*);
     int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, in termios*);
+    int     tcsetattr(int, int, const scope termios*);
 }
 else version (Solaris)
 {
@@ -913,12 +914,12 @@ else version (Solaris)
      * POSIX termios functions
      * These functions get mapped into ioctls.
      */
-    speed_t cfgetospeed(in termios*);
+    speed_t cfgetospeed(const scope termios*);
     int     cfsetospeed(termios*, speed_t);
-    speed_t cfgetispeed(in termios*);
+    speed_t cfgetispeed(const scope termios*);
     int     cfsetispeed(termios*, speed_t);
     int     tcgetattr(int, termios*);
-    int     tcsetattr(int, int, in termios*);
+    int     tcsetattr(int, int, const scope termios*);
     int     tcsendbreak(int, int);
     int     tcdrain(int);
     int     tcflush(int, int);
@@ -1028,8 +1029,8 @@ else version (CRuntime_UClibc)
     enum TCOOFF     = 0;
     enum TCOON      = 1;
 
-    speed_t cfgetispeed(in termios*);
-    speed_t cfgetospeed(in termios*);
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
     int     cfsetispeed(termios*, speed_t);
     int     cfsetospeed(termios*, speed_t);
     int     tcdrain(int);
@@ -1037,7 +1038,7 @@ else version (CRuntime_UClibc)
     int     tcflush(int, int);
     int     tcgetattr(int, termios*);
     int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, in termios*);
+    int     tcsetattr(int, int, const scope termios*);
 }
 
 //

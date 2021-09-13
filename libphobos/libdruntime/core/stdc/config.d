@@ -34,6 +34,7 @@ version (StdDdoc)
             alias ddoc_long = int;
             alias ddoc_ulong = uint;
         }
+        struct ddoc_complex(T) { T re; T im; };
     }
 
     /***
@@ -89,6 +90,24 @@ version (StdDdoc)
      * C++ compiler's `ptrdiff_t` type.
      */
     alias cpp_ptrdiff_t = ptrdiff_t;
+
+    /***
+     * Used for a complex floating point type that corresponds in size and ABI to the associated
+     * C compiler's `_Complex float` type.
+     */
+    alias c_complex_float = ddoc_complex!float;
+
+    /***
+     * Used for a complex floating point type that corresponds in size and ABI to the associated
+     * C compiler's `_Complex double` type.
+     */
+    alias c_complex_double = ddoc_complex!double;
+
+    /***
+     * Used for a complex floating point type that corresponds in size and ABI to the associated
+     * C compiler's `_Complex long double` type.
+     */
+    alias c_complex_real = ddoc_complex!real;
 }
 else
 {
@@ -167,7 +186,18 @@ else version (Posix)
   }
 }
 
-version (CRuntime_Microsoft)
+version (GNU)
+    alias c_long_double = real;
+else version (LDC)
+    alias c_long_double = real; // 64-bit real for MSVC targets
+else version (SDC)
+{
+    version (X86)
+        alias c_long_double = real;
+    else version (X86_64)
+        alias c_long_double = real;
+}
+else version (CRuntime_Microsoft)
 {
     /* long double is 64 bits, not 80 bits, but is mangled differently
      * than double. To distinguish double from long double, create a wrapper to represent
@@ -203,17 +233,6 @@ else version (DigitalMars)
             alias real c_long_double;
     }
 }
-else version (GNU)
-    alias real c_long_double;
-else version (LDC)
-    alias real c_long_double;
-else version (SDC)
-{
-    version (X86)
-        alias real c_long_double;
-    else version (X86_64)
-        alias real c_long_double;
-}
 
 static assert(is(c_long_double), "c_long_double needs to be declared for this platform/architecture.");
 
@@ -230,4 +249,19 @@ else
     alias cpp_size_t = size_t;
     alias cpp_ptrdiff_t = ptrdiff_t;
 }
+
+// ABI layout of native complex types.
+private struct _Complex(T)
+{
+    T re;
+    T im;
+}
+
+enum __c_complex_float  : _Complex!float;
+enum __c_complex_double : _Complex!double;
+enum __c_complex_real   : _Complex!c_long_double;
+
+alias c_complex_float = __c_complex_float;
+alias c_complex_double = __c_complex_double;
+alias c_complex_real = __c_complex_real;
 }

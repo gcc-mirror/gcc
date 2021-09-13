@@ -108,9 +108,15 @@ type Type interface {
 	AssignableTo(u Type) bool
 
 	// ConvertibleTo reports whether a value of the type is convertible to type u.
+	// Even if ConvertibleTo returns true, the conversion may still panic.
+	// For example, a slice of type []T is convertible to *[N]T,
+	// but the conversion will panic if its length is less than N.
 	ConvertibleTo(u Type) bool
 
 	// Comparable reports whether values of this type are comparable.
+	// Even if Comparable returns true, the comparison may still panic.
+	// For example, values of interface type are comparable,
+	// but the comparison will panic if their dynamic type is not comparable.
 	Comparable() bool
 
 	// Methods applicable only to some types, depending on Kind.
@@ -224,7 +230,7 @@ type Type interface {
 // See https://golang.org/issue/4876 for more details.
 
 /*
- * These data structures are known to the compiler (../../cmd/internal/gc/reflect.go).
+ * These data structures are known to the compiler (../../cmd/internal/reflectdata/reflect.go).
  * A few are known to ../runtime/type.go to convey to debuggers.
  * They are also known to ../runtime/type.go.
  */
@@ -419,17 +425,23 @@ type structType struct {
 // Method represents a single method.
 type Method struct {
 	// Name is the method name.
+	Name string
+
 	// PkgPath is the package path that qualifies a lower case (unexported)
 	// method name. It is empty for upper case (exported) method names.
 	// The combination of PkgPath and Name uniquely identifies a method
 	// in a method set.
 	// See https://golang.org/ref/spec#Uniqueness_of_identifiers
-	Name    string
 	PkgPath string
 
 	Type  Type  // method type
 	Func  Value // func with receiver as first argument
 	Index int   // index for Type.Method
+}
+
+// IsExported reports whether the method is exported.
+func (m Method) IsExported() bool {
+	return m.PkgPath == ""
 }
 
 const (
@@ -828,6 +840,7 @@ func (t *interfaceType) MethodByName(name string) (m Method, ok bool) {
 type StructField struct {
 	// Name is the field name.
 	Name string
+
 	// PkgPath is the package path that qualifies a lower case (unexported)
 	// field name. It is empty for upper case (exported) field names.
 	// See https://golang.org/ref/spec#Uniqueness_of_identifiers
@@ -840,18 +853,19 @@ type StructField struct {
 	Anonymous bool      // is an embedded field
 }
 
+// IsExported reports whether the field is exported.
+func (f StructField) IsExported() bool {
+	return f.PkgPath == ""
+}
+
 // A StructTag is the tag string in a struct field.
 //
-// By convention, tag strings are a mapping of keys to values.
-// The format is key:"value". Each key is a non-empty string consisting
-// of non-control characters other than space (U+0020 ' '),
-// quote (U+0022 '"'), and colon (U+003A ':'). Each value is quoted
-// using U+0022 '"' characters and Go string literal syntax.
-// Multiple key-value mappings are separated by zero or more spaces, as in
-//   key1:"value1" key2:"value2"
-// Multiple keys may map to a single shared value by separating the keys
-// with spaces, as in
-//   key1 key2:"value"
+// By convention, tag strings are a concatenation of
+// optionally space-separated key:"value" pairs.
+// Each key is a non-empty string consisting of non-control
+// characters other than space (U+0020 ' '), quote (U+0022 '"'),
+// and colon (U+003A ':').  Each value is quoted using U+0022 '"'
+// characters and Go string literal syntax.
 type StructTag string
 
 // Get returns the value associated with key in the tag string.
@@ -874,9 +888,6 @@ func (tag StructTag) Lookup(key string) (value string, ok bool) {
 	// When modifying this code, also update the validateStructTag code
 	// in cmd/vet/structtag.go.
 
-	// keyFound indicates that such key on the left side has already been found.
-	var keyFound bool
-
 	for tag != "" {
 		// Skip leading space.
 		i := 0
@@ -896,29 +907,11 @@ func (tag StructTag) Lookup(key string) (value string, ok bool) {
 		for i < len(tag) && tag[i] > ' ' && tag[i] != ':' && tag[i] != '"' && tag[i] != 0x7f {
 			i++
 		}
-		if i == 0 || i+1 >= len(tag) || tag[i] < ' ' || tag[i] == 0x7f {
+		if i == 0 || i+1 >= len(tag) || tag[i] != ':' || tag[i+1] != '"' {
 			break
 		}
 		name := string(tag[:i])
-		tag = tag[i:]
-
-		// If we found a space char here - assume that we have a tag with
-		// multiple keys.
-		if tag[0] == ' ' {
-			if name == key {
-				keyFound = true
-			}
-			continue
-		}
-
-		// Spaces were filtered above so we assume that here we have
-		// only valid tag value started with `:"`.
-		if tag[0] != ':' || tag[1] != '"' {
-			break
-		}
-
-		// Remove the colon leaving tag at the start of the quoted string.
-		tag = tag[1:]
+		tag = tag[i+1:]
 
 		// Scan quoted string to find value.
 		i = 1
@@ -934,7 +927,7 @@ func (tag StructTag) Lookup(key string) (value string, ok bool) {
 		qvalue := string(tag[:i+1])
 		tag = tag[i+1:]
 
-		if key == name || keyFound {
+		if key == name {
 			value, err := strconv.Unquote(qvalue)
 			if err != nil {
 				break
@@ -1325,7 +1318,7 @@ func haveIdenticalType(T, V Type, cmpTags bool) bool {
 		return T == V
 	}
 
-	if T.Name() != V.Name() || T.Kind() != V.Kind() {
+	if T.Name() != V.Name() || T.Kind() != V.Kind() || T.PkgPath() != V.PkgPath() {
 		return false
 	}
 
@@ -1554,7 +1547,7 @@ func MapOf(key, elem Type) Type {
 
 	// Make a map type.
 	// Note: flag values must match those used in the TMAP case
-	// in ../cmd/compile/internal/gc/reflect.go:dtypesym.
+	// in ../cmd/compile/internal/reflectdata/reflect.go:writeType.
 	var imap interface{} = (map[unsafe.Pointer]unsafe.Pointer)(nil)
 	mt := **(**mapType)(unsafe.Pointer(&imap))
 	mt.string = &s
@@ -2282,8 +2275,7 @@ func runtimeStructField(field StructField) (structField, string) {
 		panic("reflect.StructOf: field \"" + field.Name + "\" is anonymous but has PkgPath set")
 	}
 
-	exported := field.PkgPath == ""
-	if exported {
+	if field.IsExported() {
 		// Best-effort check for misuse.
 		// Since this field will be treated as exported, not much harm done if Unicode lowercase slips through.
 		c := field.Name[0]
@@ -2323,7 +2315,7 @@ func runtimeStructField(field StructField) (structField, string) {
 
 // typeptrdata returns the length in bytes of the prefix of t
 // containing pointer data. Anything after this offset is scalar data.
-// keep in sync with ../cmd/compile/internal/gc/reflect.go
+// keep in sync with ../cmd/compile/internal/reflectdata/reflect.go
 func typeptrdata(t *rtype) uintptr {
 	switch t.Kind() {
 	case Struct:
@@ -2347,25 +2339,29 @@ func typeptrdata(t *rtype) uintptr {
 	}
 }
 
-// See cmd/compile/internal/gc/reflect.go for derivation of constant.
+// See cmd/compile/internal/reflectdata/reflect.go for derivation of constant.
 const maxPtrmaskBytes = 2048
 
-// ArrayOf returns the array type with the given count and element type.
+// ArrayOf returns the array type with the given length and element type.
 // For example, if t represents int, ArrayOf(5, t) represents [5]int.
 //
 // If the resulting type would be larger than the available address space,
 // ArrayOf panics.
-func ArrayOf(count int, elem Type) Type {
+func ArrayOf(length int, elem Type) Type {
+	if length < 0 {
+		panic("reflect: negative length passed to ArrayOf")
+	}
+
 	typ := elem.(*rtype)
 
 	// Look in cache.
-	ckey := cacheKey{Array, typ, nil, uintptr(count)}
+	ckey := cacheKey{Array, typ, nil, uintptr(length)}
 	if array, ok := lookupCache.Load(ckey); ok {
 		return array.(Type)
 	}
 
 	// Look in known types.
-	s := "[" + strconv.Itoa(count) + "]" + *typ.string
+	s := "[" + strconv.Itoa(length) + "]" + *typ.string
 	if tt := lookupType(s); tt != nil {
 		array := (*arrayType)(unsafe.Pointer(toType(tt).(*rtype)))
 		if array.elem == typ {
@@ -2383,28 +2379,27 @@ func ArrayOf(count int, elem Type) Type {
 
 	// gccgo uses a different hash.
 	// array.hash = fnv1(typ.hash, '[')
-	// for n := uint32(count); n > 0; n >>= 8 {
+	// for n := uint32(length); n > 0; n >>= 8 {
 	// 	array.hash = fnv1(array.hash, byte(n))
 	// }
 	// array.hash = fnv1(array.hash, ']')
 	array.hash = typ.hash + 1 + 13
-
 	array.elem = typ
 	array.ptrToThis = nil
 	if typ.size > 0 {
 		max := ^uintptr(0) / typ.size
-		if uintptr(count) > max {
+		if uintptr(length) > max {
 			panic("reflect.ArrayOf: array size would exceed virtual address space")
 		}
 	}
-	array.size = typ.size * uintptr(count)
-	if count > 0 && typ.ptrdata != 0 {
-		array.ptrdata = typ.size*uintptr(count-1) + typ.ptrdata
+	array.size = typ.size * uintptr(length)
+	if length > 0 && typ.ptrdata != 0 {
+		array.ptrdata = typ.size*uintptr(length-1) + typ.ptrdata
 	}
 	array.align = typ.align
 	array.fieldAlign = typ.fieldAlign
 	array.uncommonType = nil
-	array.len = uintptr(count)
+	array.len = uintptr(length)
 	array.slice = SliceOf(elem).(*rtype)
 
 	switch {
@@ -2413,7 +2408,7 @@ func ArrayOf(count int, elem Type) Type {
 		array.gcdata = nil
 		array.ptrdata = 0
 
-	case count == 1:
+	case length == 1:
 		// In memory, 1-element array looks just like the element.
 		array.kind |= typ.kind & kindGCProg
 		array.gcdata = typ.gcdata
@@ -2422,7 +2417,7 @@ func ArrayOf(count int, elem Type) Type {
 	case typ.kind&kindGCProg == 0 && array.size <= maxPtrmaskBytes*8*ptrSize:
 		// Element is small with pointer mask; array is still small.
 		// Create direct pointer mask by turning each 1 bit in elem
-		// into count 1 bits in larger mask.
+		// into length 1 bits in larger mask.
 		mask := make([]byte, (array.ptrdata/ptrSize+7)/8)
 		emitGCMask(mask, 0, typ, array.len)
 		array.gcdata = &mask[0]
@@ -2443,14 +2438,14 @@ func ArrayOf(count int, elem Type) Type {
 				prog = appendVarint(prog, elemWords-elemPtrs-1)
 			}
 		}
-		// Repeat count-1 times.
+		// Repeat length-1 times.
 		if elemWords < 0x80 {
 			prog = append(prog, byte(elemWords|0x80))
 		} else {
 			prog = append(prog, 0x80)
 			prog = appendVarint(prog, elemWords)
 		}
-		prog = appendVarint(prog, uintptr(count)-1)
+		prog = appendVarint(prog, uintptr(length)-1)
 		prog = append(prog, 0)
 		*(*uint32)(unsafe.Pointer(&prog[0])) = uint32(len(prog) - 4)
 		array.kind |= kindGCProg
@@ -2464,9 +2459,9 @@ func ArrayOf(count int, elem Type) Type {
 	array.equal = nil
 	if eequal := etyp.equal; eequal != nil {
 		array.equal = func(p, q unsafe.Pointer) bool {
-			for i := 0; i < count; i++ {
-				pi := arrayAt(p, i, esize, "i < count")
-				qi := arrayAt(q, i, esize, "i < count")
+			for i := 0; i < length; i++ {
+				pi := arrayAt(p, i, esize, "i < length")
+				qi := arrayAt(q, i, esize, "i < length")
 				if !eequal(pi, qi) {
 					return false
 				}
@@ -2476,7 +2471,7 @@ func ArrayOf(count int, elem Type) Type {
 	}
 
 	switch {
-	case count == 1 && !ifaceIndir(typ):
+	case length == 1 && !ifaceIndir(typ):
 		// array of 1 direct iface type can be direct
 		array.kind |= kindDirectIface
 	default:

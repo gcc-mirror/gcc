@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2020 Free Software Foundation, Inc.
+// Copyright (C) 2003-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,8 +45,8 @@
 
 #define _GLIBCXX_DEBUG_VERIFY_AT_F(_Cond,_ErrMsg,_File,_Line,_Func)	\
   do {									\
-    __glibcxx_assert_1(_Cond)						\
-    { _GLIBCXX_DEBUG_VERIFY_COND_AT(_Cond,_ErrMsg,_File,_Line,_Func); } \
+    __glibcxx_constexpr_assert(_Cond);					\
+    _GLIBCXX_DEBUG_VERIFY_COND_AT(_Cond,_ErrMsg,_File,_Line,_Func);	\
   } while (false)
 
 #define _GLIBCXX_DEBUG_VERIFY_AT(_Cond,_ErrMsg,_File,_Line)		\
@@ -94,6 +94,12 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__can_advance(_First, _Size),	\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_integer(_Size, #_Size))
 
+#define __glibcxx_check_can_increment_dist(_First,_Dist,_Way)		\
+  _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__can_advance(_First, _Dist, _Way), \
+		      _M_message(__gnu_debug::__msg_iter_subscript_oob)	\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_integer(_Way * _Dist.first, #_Dist))
+
 #define __glibcxx_check_can_increment_range(_First1,_Last1,_First2)	\
   do									\
   {									\
@@ -105,7 +111,7 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__can_advance(_First, _Size),	\
 			._M_iterator(_Last1, #_Last1),			\
 			__FILE__,__LINE__,__PRETTY_FUNCTION__);		\
     _GLIBCXX_DEBUG_VERIFY_AT_F(						\
-			__gnu_debug::__can_advance(_First2, __dist.first),\
+			__gnu_debug::__can_advance(_First2, __dist, 1), \
 			_M_message(__gnu_debug::__msg_iter_subscript_oob)\
 			._M_iterator(_First2, #_First2)			\
 			._M_integer(__dist.first),			\
@@ -123,7 +129,7 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__can_advance(_First, _Size),	\
 			._M_iterator(_Last1, #_Last1),			\
 			__FILE__,__LINE__,__PRETTY_FUNCTION__);		\
     _GLIBCXX_DEBUG_VERIFY_AT_F(						\
-			__gnu_debug::__can_advance(_First2, -__dist.first),\
+			__gnu_debug::__can_advance(_First2, __dist, -1), \
 			_M_message(__gnu_debug::__msg_iter_subscript_oob)\
 			._M_iterator(_First2, #_First2)			\
 			._M_integer(-__dist.first),			\
@@ -244,6 +250,11 @@ _GLIBCXX_DEBUG_VERIFY(_First._M_attached_to(this),			\
  *  valid iterator range within this sequence.
 */
 #define __glibcxx_check_erase_range_after(_First,_Last)			\
+_GLIBCXX_DEBUG_VERIFY(!_First._M_singular() && !_Last._M_singular(),	\
+		      _M_message(__gnu_debug::__msg_erase_different)	\
+		      ._M_sequence(*this, "this")			\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_Last, #_Last));			\
 _GLIBCXX_DEBUG_VERIFY(_First._M_can_compare(_Last),			\
 		      _M_message(__gnu_debug::__msg_erase_different)	\
 		      ._M_sequence(*this, "this")			\

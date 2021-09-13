@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989-2020 Free Software Foundation, Inc.
+   Copyright (C) 1989-2021 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -42,6 +42,23 @@ extern int target_flags_explicit;
 #define ABI_EABI 3
 #define ABI_O64  4
 
+enum mips_isa {
+  MIPS_ISA_MIPS1 = 1,
+  MIPS_ISA_MIPS2 = 2,
+  MIPS_ISA_MIPS3 = 3,
+  MIPS_ISA_MIPS4 = 4,
+  MIPS_ISA_MIPS32 = 32,
+  MIPS_ISA_MIPS32R2 = 33,
+  MIPS_ISA_MIPS32R3 = 34,
+  MIPS_ISA_MIPS32R5 = 36,
+  MIPS_ISA_MIPS32R6 = 37,
+  MIPS_ISA_MIPS64 = 64,
+  MIPS_ISA_MIPS64R2 = 65,
+  MIPS_ISA_MIPS64R3 = 66,
+  MIPS_ISA_MIPS64R5 = 68,
+  MIPS_ISA_MIPS64R6 = 69
+};
+
 /* Masks that affect tuning.
 
    PTF_AVOID_BRANCHLIKELY_SPEED
@@ -81,7 +98,7 @@ struct mips_cpu_info {
   enum processor cpu;
 
   /* The ISA level that the processor implements.  */
-  int isa;
+  enum mips_isa isa;
 
   /* A mask of PTF_* values.  */
   unsigned int tune_flags;
@@ -232,7 +249,7 @@ struct mips_cpu_info {
 /* Generate mips16 code */
 #define TARGET_MIPS16		((target_flags & MASK_MIPS16) != 0)
 /* Generate mips16e code. Default 16bit ASE for mips32* and mips64* */
-#define GENERATE_MIPS16E	(TARGET_MIPS16 && mips_isa >= 32)
+#define GENERATE_MIPS16E	(TARGET_MIPS16 && mips_isa >= MIPS_ISA_MIPS32)
 /* Generate mips16e register save/restore sequences.  */
 #define GENERATE_MIPS16E_SAVE_RESTORE (GENERATE_MIPS16E && mips_abi == ABI_32)
 
@@ -247,20 +264,20 @@ struct mips_cpu_info {
   (TARGET_MIPS16 && mips_code_readable >= CODE_READABLE_PCREL)
 
 /* Generic ISA defines.  */
-#define ISA_MIPS1		    (mips_isa == 1)
-#define ISA_MIPS2		    (mips_isa == 2)
-#define ISA_MIPS3                   (mips_isa == 3)
-#define ISA_MIPS4		    (mips_isa == 4)
-#define ISA_MIPS32		    (mips_isa == 32)
-#define ISA_MIPS32R2		    (mips_isa == 33)
-#define ISA_MIPS32R3		    (mips_isa == 34)
-#define ISA_MIPS32R5		    (mips_isa == 36)
-#define ISA_MIPS32R6		    (mips_isa == 37)
-#define ISA_MIPS64                  (mips_isa == 64)
-#define ISA_MIPS64R2		    (mips_isa == 65)
-#define ISA_MIPS64R3		    (mips_isa == 66)
-#define ISA_MIPS64R5		    (mips_isa == 68)
-#define ISA_MIPS64R6		    (mips_isa == 69)
+#define ISA_MIPS1		    (mips_isa == MIPS_ISA_MIPS1)
+#define ISA_MIPS2		    (mips_isa == MIPS_ISA_MIPS2)
+#define ISA_MIPS3                   (mips_isa == MIPS_ISA_MIPS3)
+#define ISA_MIPS4		    (mips_isa == MIPS_ISA_MIPS4)
+#define ISA_MIPS32		    (mips_isa == MIPS_ISA_MIPS32)
+#define ISA_MIPS32R2		    (mips_isa == MIPS_ISA_MIPS32R2)
+#define ISA_MIPS32R3		    (mips_isa == MIPS_ISA_MIPS32R3)
+#define ISA_MIPS32R5		    (mips_isa == MIPS_ISA_MIPS32R5)
+#define ISA_MIPS32R6		    (mips_isa == MIPS_ISA_MIPS32R6)
+#define ISA_MIPS64                  (mips_isa == MIPS_ISA_MIPS64)
+#define ISA_MIPS64R2		    (mips_isa == MIPS_ISA_MIPS64R2)
+#define ISA_MIPS64R3		    (mips_isa == MIPS_ISA_MIPS64R3)
+#define ISA_MIPS64R5		    (mips_isa == MIPS_ISA_MIPS64R5)
+#define ISA_MIPS64R6		    (mips_isa == MIPS_ISA_MIPS64R6)
 
 /* Architecture target defines.  */
 #define TARGET_LOONGSON_2E          (mips_arch == PROCESSOR_LOONGSON_2E)
@@ -511,12 +528,13 @@ struct mips_cpu_info {
 	  builtin_define ("__mips=4");					\
 	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS4");			\
 	}								\
-      else if (mips_isa >= 32 && mips_isa < 64)				\
+      else if (mips_isa >= MIPS_ISA_MIPS32				\
+	       && mips_isa < MIPS_ISA_MIPS64)				\
 	{								\
 	  builtin_define ("__mips=32");					\
 	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS32");		\
 	}								\
-      else if (mips_isa >= 64)						\
+      else if (mips_isa >= MIPS_ISA_MIPS64)				\
 	{								\
 	  builtin_define ("__mips=64");					\
 	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS64");		\
@@ -658,8 +676,9 @@ struct mips_cpu_info {
     }									\
   while (0)
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS mips_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO mips_d_register_target_info
 
 /* Default target_flags if no switches are specified  */
 
@@ -707,25 +726,25 @@ struct mips_cpu_info {
 #endif
 
 #ifndef MULTILIB_ISA_DEFAULT
-#if MIPS_ISA_DEFAULT == 1
+#if MIPS_ISA_DEFAULT == MIPS_ISA_MIPS1
 #define MULTILIB_ISA_DEFAULT "mips1"
-#elif MIPS_ISA_DEFAULT == 2
+#elif MIPS_ISA_DEFAULT == MIPS_ISA_MIPS2
 #define MULTILIB_ISA_DEFAULT "mips2"
-#elif MIPS_ISA_DEFAULT == 3
+#elif MIPS_ISA_DEFAULT == MIPS_ISA_MIPS3
 #define MULTILIB_ISA_DEFAULT "mips3"
-#elif MIPS_ISA_DEFAULT == 4
+#elif MIPS_ISA_DEFAULT == MIPS_ISA_MIPS4
 #define MULTILIB_ISA_DEFAULT "mips4"
-#elif MIPS_ISA_DEFAULT == 32
+#elif MIPS_ISA_DEFAULT == MIPS_ISA_MIPS32
 #define MULTILIB_ISA_DEFAULT "mips32"
-#elif MIPS_ISA_DEFAULT == 33
+#elif MIPS_ISA_DEFAULT == MIPS_ISA_MIPS32R2
 #define MULTILIB_ISA_DEFAULT "mips32r2"
-#elif MIPS_ISA_DEFAULT == 37
+#elif MIPS_ISA_DEFAULT == MIPS_ISA_MIPS32R6
 #define MULTILIB_ISA_DEFAULT "mips32r6"
-#elif MIPS_ISA_DEFAULT == 64
+#elif MIPS_ISA_DEFAULT == MIPS_ISA_MIPS64
 #define MULTILIB_ISA_DEFAULT "mips64"
-#elif MIPS_ISA_DEFAULT == 65
+#elif MIPS_ISA_DEFAULT == MIPS_ISA_MIPS64R2
 #define MULTILIB_ISA_DEFAULT "mips64r2"
-#elif MIPS_ISA_DEFAULT == 69
+#elif MIPS_ISA_DEFAULT == MIPS_ISA_MIPS64R6
 #define MULTILIB_ISA_DEFAULT "mips64r6"
 #else
 #define MULTILIB_ISA_DEFAULT "mips1"
@@ -1274,12 +1293,12 @@ struct mips_cpu_info {
 				 && !TARGET_MICROMIPS)
 
 /* Likewise mtc1 and mfc1.  */
-#define ISA_HAS_XFER_DELAY	(mips_isa <= 3			\
+#define ISA_HAS_XFER_DELAY	(mips_isa <= MIPS_ISA_MIPS3	\
 				 && !TARGET_MIPS5900		\
 				 && !TARGET_LOONGSON_2EF)
 
 /* Likewise floating-point comparisons.  */
-#define ISA_HAS_FCMP_DELAY	(mips_isa <= 3			\
+#define ISA_HAS_FCMP_DELAY	(mips_isa <= MIPS_ISA_MIPS3	\
 				 && !TARGET_MIPS5900		\
 				 && !TARGET_LOONGSON_2EF)
 
@@ -1304,7 +1323,7 @@ struct mips_cpu_info {
 #define ISA_HAS_SYNCI (mips_isa_rev >= 2 && !TARGET_MIPS16)
 
 /* ISA includes sync.  */
-#define ISA_HAS_SYNC ((mips_isa >= 2 || TARGET_MIPS3900) && !TARGET_MIPS16)
+#define ISA_HAS_SYNC ((mips_isa >= MIPS_ISA_MIPS2 || TARGET_MIPS3900) && !TARGET_MIPS16)
 #define GENERATE_SYNC			\
   (target_flags_explicit & MASK_LLSC	\
    ? TARGET_LLSC && !TARGET_MIPS16	\
@@ -1313,7 +1332,7 @@ struct mips_cpu_info {
 /* ISA includes ll and sc.  Note that this implies ISA_HAS_SYNC
    because the expanders use both ISA_HAS_SYNC and ISA_HAS_LL_SC
    instructions.  */
-#define ISA_HAS_LL_SC (mips_isa >= 2 && !TARGET_MIPS5900 && !TARGET_MIPS16)
+#define ISA_HAS_LL_SC (mips_isa >= MIPS_ISA_MIPS2 && !TARGET_MIPS5900 && !TARGET_MIPS16)
 #define GENERATE_LL_SC			\
   (target_flags_explicit & MASK_LLSC	\
    ? TARGET_LLSC && !TARGET_MIPS16	\
@@ -1341,7 +1360,7 @@ struct mips_cpu_info {
 #define ISA_HAS_POP		(TARGET_OCTEON && !TARGET_MIPS16)
 
 /* The CACHE instruction is available in non-MIPS16 code.  */
-#define TARGET_CACHE_BUILTIN (mips_isa >= 3)
+#define TARGET_CACHE_BUILTIN (mips_isa >= MIPS_ISA_MIPS3)
 
 /* The CACHE instruction is available.  */
 #define ISA_HAS_CACHE (TARGET_CACHE_BUILTIN && !TARGET_MIPS16)

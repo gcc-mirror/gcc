@@ -1,5 +1,5 @@
 /* Declarations and definitions dealing with attribute handling.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -64,6 +64,9 @@ extern bool attribute_value_equal (const_tree, const_tree);
    are compatible, and 2 if they are nearly compatible (which causes a
    warning to be generated).  */
 extern int comp_type_attributes (const_tree, const_tree);
+
+extern tree affects_type_identity_attributes (tree, bool = true);
+extern tree restrict_type_identity_attributes_to (tree, tree);
 
 /* Default versions of target-overridable functions.  */
 extern tree merge_decl_attributes (tree, tree);
@@ -273,6 +276,9 @@ struct attr_access
 
   /* Return the access mode corresponding to the character code.  */
   static access_mode from_mode_char (char);
+
+  /* Reset front end-specific attribute access data from attributes.  */
+  static void free_lang_data (tree);
 
   /* The character codes corresponding to all the access modes.  */
   static constexpr char mode_chars[5] = { '-', 'r', 'w', 'x', '^' };

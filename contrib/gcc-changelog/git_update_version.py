@@ -26,6 +26,12 @@ from git_repository import parse_git_revisions
 
 current_timestamp = datetime.datetime.now().strftime('%Y%m%d\n')
 
+# Skip the following commits, they cannot be correctly processed
+IGNORED_COMMITS = (
+        'c2be82058fb40f3ae891c68d185ff53e07f14f45',
+        '04a040d907a83af54e0a98bdba5bfabc0ef4f700',
+        '2e96b5f14e4025691b57d2301d71aa6092ed44bc')
+
 
 def read_timestamp(path):
     with open(path) as f:
@@ -54,7 +60,8 @@ def prepend_to_changelog_files(repo, folder, git_commit, add_to_git):
             repo.git.add(full_path)
 
 
-active_refs = ['master', 'releases/gcc-8', 'releases/gcc-9', 'releases/gcc-10']
+active_refs = ['master', 'releases/gcc-9', 'releases/gcc-10',
+               'releases/gcc-11']
 
 parser = argparse.ArgumentParser(description='Update DATESTAMP and generate '
                                  'ChangeLog entries')
@@ -74,7 +81,7 @@ repo = Repo(args.git_path)
 origin = repo.remotes['origin']
 
 
-def update_current_branch():
+def update_current_branch(ref_name):
     commit = repo.head.commit
     commit_count = 1
     while commit:
@@ -97,7 +104,8 @@ def update_current_branch():
         if len(head.parents) == 2:
             head = head.parents[1]
         commits = parse_git_revisions(args.git_path, '%s..%s'
-                                      % (commit.hexsha, head.hexsha))
+                                      % (commit.hexsha, head.hexsha), ref_name)
+        commits = [c for c in commits if c.info.hexsha not in IGNORED_COMMITS]
         for git_commit in reversed(commits):
             prepend_to_changelog_files(repo, args.git_path, git_commit,
                                        not args.dry_mode)
@@ -140,6 +148,6 @@ else:
             branch.checkout()
             origin.pull(rebase=True)
             print('branch pulled and checked out')
-            update_current_branch()
+            update_current_branch(name)
             assert not repo.index.diff(None)
             print('branch is done\n', flush=True)

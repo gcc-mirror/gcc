@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,7 @@ package System.Finalization_Masters is
    for Finalization_Master_Ptr'Storage_Size use 0;
 
    procedure Attach (N : not null FM_Node_Ptr; L : not null FM_Node_Ptr);
-   --  Compiler interface, do not call from withing the run-time. Prepend a
+   --  Compiler interface, do not call from within the run-time. Prepend a
    --  node to a specific finalization master.
 
    procedure Attach_Unprotected

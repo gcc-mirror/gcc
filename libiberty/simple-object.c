@@ -1,5 +1,5 @@
 /* simple-object.c -- simple routines to read and write object files.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 This program is free software; you can redistribute it and/or modify it
@@ -303,6 +303,12 @@ handle_lto_debug_sections (const char *name, int rename)
     return strcpy (newname, name);
   /* Copy over .GCC.command.line section under the same name if present.  */
   else if (strcmp (name, ".GCC.command.line") == 0)
+    return strcpy (newname, name);
+  /* Copy over .ctf section under the same name if present.  */
+  else if (strcmp (name, ".ctf") == 0)
+    return strcpy (newname, name);
+  /* Copy over .BTF section under the same name if present.  */
+  else if (strcmp (name, ".BTF") == 0)
     return strcpy (newname, name);
   free (newname);
   return NULL;

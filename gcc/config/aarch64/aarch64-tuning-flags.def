@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -45,5 +45,11 @@ AARCH64_EXTRA_TUNING_OPTION ("cheap_shift_extend", CHEAP_SHIFT_EXTEND)
 AARCH64_EXTRA_TUNING_OPTION ("no_ldp_stp_qregs", NO_LDP_STP_QREGS)
 
 AARCH64_EXTRA_TUNING_OPTION ("rename_load_regs", RENAME_LOAD_REGS)
+
+AARCH64_EXTRA_TUNING_OPTION ("cse_sve_vl_constants", CSE_SVE_VL_CONSTANTS)
+
+AARCH64_EXTRA_TUNING_OPTION ("use_new_vector_costs", USE_NEW_VECTOR_COSTS)
+
+AARCH64_EXTRA_TUNING_OPTION ("matched_vector_throughput", MATCHED_VECTOR_THROUGHPUT)
 
 #undef AARCH64_EXTRA_TUNING_OPTION

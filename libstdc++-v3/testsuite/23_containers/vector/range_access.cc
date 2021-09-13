@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2010-2020 Free Software Foundation, Inc.
+// Copyright (C) 2010-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,10 +25,10 @@ void
 test01()
 {
   std::vector<double> v{1.0, 2.0, 3.0};
-  std::begin(v);
-  std::end(v);
+  (void) std::begin(v);
+  (void) std::end(v);
 
   std::vector<bool> vb{true, false, true};
-  std::begin(vb);
-  std::end(vb);
+  (void) std::begin(vb);
+  (void) std::end(vb);
 }

@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -121,12 +121,12 @@
 
 (define_predicate "aarch64_sub_immediate"
   (and (match_code "const_int")
-       (match_test "aarch64_uimm12_shift (-INTVAL (op))")))
+       (match_test "aarch64_uimm12_shift (-UINTVAL (op))")))
 
 (define_predicate "aarch64_plus_immediate"
   (and (match_code "const_int")
        (ior (match_test "aarch64_uimm12_shift (INTVAL (op))")
-	    (match_test "aarch64_uimm12_shift (-INTVAL (op))"))))
+	    (match_test "aarch64_uimm12_shift (-UINTVAL (op))"))))
 
 (define_predicate "aarch64_plus_operand"
   (ior (match_operand 0 "register_operand")
@@ -544,6 +544,22 @@
 (define_predicate "aarch64_simd_shift_imm_offset_di"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 1, 64)")))
+
+(define_predicate "aarch64_simd_shift_imm_vec_qi"
+  (and (match_code "const_vector")
+       (match_test "aarch64_const_vec_all_same_in_range_p (op, 1, 8)")))
+
+(define_predicate "aarch64_simd_shift_imm_vec_hi"
+  (and (match_code "const_vector")
+       (match_test "aarch64_const_vec_all_same_in_range_p (op, 1, 16)")))
+
+(define_predicate "aarch64_simd_shift_imm_vec_si"
+  (and (match_code "const_vector")
+       (match_test "aarch64_const_vec_all_same_in_range_p (op, 1, 32)")))
+
+(define_predicate "aarch64_simd_shift_imm_vec_di"
+  (and (match_code "const_vector")
+       (match_test "aarch64_const_vec_all_same_in_range_p (op, 1, 64)")))
 
 (define_predicate "aarch64_simd_shift_imm_bitsize_qi"
   (and (match_code "const_int")

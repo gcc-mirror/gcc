@@ -1,6 +1,6 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -322,7 +322,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       _Base_ptr _M_node;
-  };
+    };
 
   template<typename _Tp>
     struct _Rb_tree_const_iterator
@@ -414,21 +414,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Rb_tree_node_base*
   _Rb_tree_rebalance_for_erase(_Rb_tree_node_base* const __z,
 			       _Rb_tree_node_base& __header) throw ();
-
-#if __cplusplus >= 201402L
-  template<typename _Cmp, typename _SfinaeType, typename = __void_t<>>
-    struct __has_is_transparent
-    { };
-
-  template<typename _Cmp, typename _SfinaeType>
-    struct __has_is_transparent<_Cmp, _SfinaeType,
-				__void_t<typename _Cmp::is_transparent>>
-    { typedef void type; };
-
-  template<typename _Cmp, typename _SfinaeType>
-    using __has_is_transparent_t
-      = typename __has_is_transparent<_Cmp, _SfinaeType>::type;
-#endif
 
 #if __cplusplus > 201402L
   template<typename _Tree1, typename _Cmp2>
@@ -1744,7 +1729,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     operator=(const _Rb_tree& __x)
     {
-      if (this != &__x)
+      if (this != std::__addressof(__x))
 	{
 	  // Note that _Key may be a constant type.
 #if __cplusplus >= 201103L

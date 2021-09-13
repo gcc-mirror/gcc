@@ -1,5 +1,5 @@
 `/* Special implementation of the SPREAD intrinsic
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Contributed by Thomas Koenig <tkoenig@gcc.gnu.org>, based on
    spread_generic.c written by Paul Brook <paul@nowt.org>
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -230,16 +230,16 @@ package body Scng is
 
       --  Initialize scan control variables
 
-      Current_Source_File       := Index;
-      Source                    := Source_Text (Current_Source_File);
-      Scan_Ptr                  := Source_First (Current_Source_File);
-      Token                     := No_Token;
-      Token_Ptr                 := Scan_Ptr;
-      Current_Line_Start        := Scan_Ptr;
-      Token_Node                := Empty;
-      Token_Name                := No_Name;
-      Start_Column              := Set_Start_Column;
-      First_Non_Blank_Location  := Scan_Ptr;
+      Current_Source_File      := Index;
+      Source                   := Source_Text (Current_Source_File);
+      Scan_Ptr                 := Source_First (Current_Source_File);
+      Token                    := No_Token;
+      Token_Ptr                := Scan_Ptr;
+      Current_Line_Start       := Scan_Ptr;
+      Token_Node               := Empty;
+      Token_Name               := No_Name;
+      Start_Column             := Set_Start_Column;
+      First_Non_Blank_Location := Scan_Ptr;
 
       Initialize_Checksum;
       Wide_Char_Byte_Count := 0;
@@ -1303,7 +1303,7 @@ package body Scng is
          --  AI12-0125-03 : @ is target_name
 
          when '@' =>
-            Error_Msg_Ada_2020_Feature ("target name", Token_Ptr);
+            Error_Msg_Ada_2022_Feature ("target name", Token_Ptr);
 
             Accumulate_Checksum ('@');
             Scan_Ptr := Scan_Ptr + 1;
@@ -1707,7 +1707,7 @@ package body Scng is
             --  "abs"'Address. Other literals are included to give better error
             --  behavior for illegal cases like 123'Img.
             --
-            --  In Ada 2020, a target name (i.e. @) is a valid prefix of an
+            --  In Ada 2022, a target name (i.e. @) is a valid prefix of an
             --  attribute, and functions like a name.
 
             if Prev_Token = Tok_All
@@ -1827,10 +1827,10 @@ package body Scng is
             return;
 
          --  Right bracket or right brace, treated as right paren but proper
-         --  aggregate delimiter in Ada 2020.
+         --  aggregate delimiter in Ada 2022.
 
          when ']' | '}' =>
-            if Ada_Version >= Ada_2020 then
+            if Ada_Version >= Ada_2022 then
                Token := Tok_Right_Bracket;
 
             else

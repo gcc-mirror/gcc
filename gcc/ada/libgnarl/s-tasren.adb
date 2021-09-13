@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2020, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2021, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -165,7 +165,7 @@ package body System.Tasking.Rendezvous is
 
          --  Should never get here ???
 
-         pragma Assert (False);
+         pragma Assert (Standard.False);
          raise Standard'Abort_Signal;
       end if;
 
@@ -236,7 +236,7 @@ package body System.Tasking.Rendezvous is
 
          --  Should never get here ???
 
-         pragma Assert (False);
+         pragma Assert (Standard.False);
          raise Standard'Abort_Signal;
       end if;
 
@@ -646,7 +646,7 @@ package body System.Tasking.Rendezvous is
 
          --  Should never get here ???
 
-         pragma Assert (False);
+         pragma Assert (Standard.False);
          raise Standard'Abort_Signal;
       end if;
 
@@ -1251,7 +1251,7 @@ package body System.Tasking.Rendezvous is
 
          --  Should never get here ???
 
-         pragma Assert (False);
+         pragma Assert (Standard.False);
          raise Standard'Abort_Signal;
       end if;
 
@@ -1400,7 +1400,7 @@ package body System.Tasking.Rendezvous is
 
             --  Should never get here
 
-            pragma Assert (False);
+            pragma Assert (Standard.False);
             null;
       end case;
 

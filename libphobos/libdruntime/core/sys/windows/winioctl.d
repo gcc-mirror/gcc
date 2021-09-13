@@ -9,10 +9,11 @@
  */
 module core.sys.windows.winioctl;
 version (Windows):
+@system:
 
 // FIXME: check types of some constants
 
-private import core.sys.windows.basetyps, core.sys.windows.windef;
+import core.sys.windows.basetyps, core.sys.windows.windef;
 
 enum size_t
     HIST_NO_OF_BUCKETS = 24,

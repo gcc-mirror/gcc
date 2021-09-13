@@ -1,6 +1,6 @@
 /* Infrastructure for tracking user variable locations and values
    throughout compilation.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>.
 
 This file is part of GCC.
@@ -68,12 +68,11 @@ cleanup_auto_inc_dec (rtx src, machine_mode mem_mode ATTRIBUTE_UNUSED)
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
       return x;
     case CLOBBER:
-      /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
+      /* Share clobbers of hard registers, but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
       if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER

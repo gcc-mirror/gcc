@@ -1,6 +1,6 @@
 // 2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
-// Copyright (C) 2017-2020 Free Software Foundation, Inc.
+// Copyright (C) 2017-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

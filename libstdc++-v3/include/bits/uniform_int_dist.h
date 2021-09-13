@@ -1,6 +1,6 @@
 // Class template uniform_int_distribution -*- C++ -*-
 
-// Copyright (C) 2009-2020 Free Software Foundation, Inc.
+// Copyright (C) 2009-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,6 +36,7 @@
 #if __cplusplus > 201703L
 # include <concepts>
 #endif
+#include <bits/concept_check.h> // __glibcxx_function_requires
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -303,7 +304,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		// __urng produces values that use exactly 64-bits,
 		// so use 128-bit integers to downscale to desired range.
 		__UINT64_TYPE__ __u64erange = __uerange;
-		__ret = _S_nd<unsigned __int128>(__urng, __u64erange);
+		__ret = __extension__ _S_nd<unsigned __int128>(__urng,
+							       __u64erange);
 	      }
 	    else
 #endif

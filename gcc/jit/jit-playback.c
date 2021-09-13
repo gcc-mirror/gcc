@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -62,22 +62,32 @@ along with GCC; see the file COPYING3.  If not see
 
 /* gcc::jit::playback::context::build_cast uses the convert.h API,
    which in turn requires the frontend to provide a "convert"
-   function, apparently as a fallback.
-
-   Hence we provide this dummy one, with the requirement that any casts
-   are handled before reaching this.  */
+   function, apparently as a fallback for casts that can be simplified
+   (truncation, extension). */
 extern tree convert (tree type, tree expr);
 
 tree
 convert (tree dst_type, tree expr)
 {
-  gcc_assert (gcc::jit::active_playback_ctxt);
-  gcc::jit::active_playback_ctxt->add_error (NULL, "unhandled conversion");
-  fprintf (stderr, "input expression:\n");
-  debug_tree (expr);
-  fprintf (stderr, "requested type:\n");
-  debug_tree (dst_type);
-  return error_mark_node;
+  tree t_ret = NULL;
+  t_ret = targetm.convert_to_type (dst_type, expr);
+  if (t_ret)
+      return t_ret;
+  switch (TREE_CODE (dst_type))
+    {
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+      return fold (convert_to_integer (dst_type, expr));
+
+    default:
+      gcc_assert (gcc::jit::active_playback_ctxt);
+      gcc::jit::active_playback_ctxt->add_error (NULL, "unhandled conversion");
+      fprintf (stderr, "input expression:\n");
+      debug_tree (expr);
+      fprintf (stderr, "requested type:\n");
+      debug_tree (dst_type);
+      return error_mark_node;
+    }
 }
 
 namespace gcc {
@@ -155,7 +165,8 @@ gt_ggc_mx ()
 
 /* Given an enum gcc_jit_types value, get a "tree" type.  */
 
-static tree
+tree
+playback::context::
 get_tree_node_for_type (enum gcc_jit_types type_)
 {
   switch (type_)
@@ -182,11 +193,7 @@ get_tree_node_for_type (enum gcc_jit_types type_)
       return short_unsigned_type_node;
 
     case GCC_JIT_TYPE_CONST_CHAR_PTR:
-      {
-	tree const_char = build_qualified_type (char_type_node,
-						TYPE_QUAL_CONST);
-	return build_pointer_type (const_char);
-      }
+      return m_const_char_ptr;
 
     case GCC_JIT_TYPE_INT:
       return integer_type_node;
@@ -569,10 +576,6 @@ playback::lvalue *
 playback::context::
 global_finalize_lvalue (tree inner)
 {
-  varpool_node::get_create (inner);
-
-  varpool_node::finalize_decl (inner);
-
   m_globals.safe_push (inner);
 
   return new lvalue (this, inner);
@@ -2942,12 +2945,15 @@ replay ()
 {
   JIT_LOG_SCOPE (get_logger ());
 
-  m_const_char_ptr
-    = build_pointer_type (build_qualified_type (char_type_node,
-						TYPE_QUAL_CONST));
+  init_types ();
 
   /* Replay the recorded events:  */
   timevar_push (TV_JIT_REPLAY);
+
+  /* Ensure that builtins that could be needed during optimization
+     get created ahead of time.  */
+  builtins_manager *bm = m_recording_ctxt->get_builtins_manager ();
+  bm->ensure_optimization_builtins_exist ();
 
   m_recording_ctxt->replay_into (this);
 
@@ -2957,13 +2963,11 @@ replay ()
      refs.  Hence we must stop using them before the GC can run.  */
   m_recording_ctxt->disassociate_from_playback ();
 
-  /* The builtins_manager, if any, is associated with the recording::context
+  /* The builtins_manager is associated with the recording::context
      and might be reused for future compiles on other playback::contexts,
      but its m_attributes array is not GTY-labeled and hence will become
      nonsense if the GC runs.  Purge this state.  */
-  builtins_manager *bm = get_builtins_manager ();
-  if (bm)
-    bm->finish_playback ();
+  bm->finish_playback ();
 
   timevar_pop (TV_JIT_REPLAY);
 
@@ -2971,9 +2975,16 @@ replay ()
     {
       int i;
       function *func;
-
+      tree global;
       /* No GC can happen yet; process the cached source locations.  */
       handle_locations ();
+
+      /* Finalize globals. See how FORTRAN 95 does it in gfc_be_parse_file()
+         for a simple reference. */
+      FOR_EACH_VEC_ELT (m_globals, i, global)
+        rest_of_decl_compilation (global, true, true);
+
+      wrapup_global_declarations (m_globals.address(), m_globals.length());
 
       /* We've now created tree nodes for the stmts in the various blocks
 	 in each function, but we haven't built each function's single stmt
@@ -3066,6 +3077,50 @@ location_comparator (const void *lhs, const void *rhs)
   const playback::location *loc_rhs = \
     *static_cast<const playback::location * const *> (rhs);
   return loc_lhs->get_column_num () - loc_rhs->get_column_num ();
+}
+
+/* Initialize the NAME_TYPE of the primitive types as well as some
+   others. */
+void
+playback::context::
+init_types ()
+{
+  /* See lto_init() in lto-lang.c or void visit (TypeBasic *t) in D's types.cc 
+     for reference. If TYPE_NAME is not set, debug info will not contain types */
+#define NAME_TYPE(t,n) \
+if (t) \
+  TYPE_NAME (t) = build_decl (UNKNOWN_LOCATION, TYPE_DECL, \
+                              get_identifier (n), t)
+
+  NAME_TYPE (integer_type_node, "int");
+  NAME_TYPE (char_type_node, "char");
+  NAME_TYPE (long_integer_type_node, "long int");
+  NAME_TYPE (unsigned_type_node, "unsigned int");
+  NAME_TYPE (long_unsigned_type_node, "long unsigned int");
+  NAME_TYPE (long_long_integer_type_node, "long long int");
+  NAME_TYPE (long_long_unsigned_type_node, "long long unsigned int");
+  NAME_TYPE (short_integer_type_node, "short int");
+  NAME_TYPE (short_unsigned_type_node, "short unsigned int");
+  if (signed_char_type_node != char_type_node)
+    NAME_TYPE (signed_char_type_node, "signed char");
+  if (unsigned_char_type_node != char_type_node)
+    NAME_TYPE (unsigned_char_type_node, "unsigned char");
+  NAME_TYPE (float_type_node, "float");
+  NAME_TYPE (double_type_node, "double");
+  NAME_TYPE (long_double_type_node, "long double");
+  NAME_TYPE (void_type_node, "void");
+  NAME_TYPE (boolean_type_node, "bool");
+  NAME_TYPE (complex_float_type_node, "complex float");
+  NAME_TYPE (complex_double_type_node, "complex double");
+  NAME_TYPE (complex_long_double_type_node, "complex long double");
+  
+  m_const_char_ptr = build_pointer_type(
+    build_qualified_type (char_type_node, TYPE_QUAL_CONST));
+
+  NAME_TYPE (m_const_char_ptr, "char");
+  NAME_TYPE (size_type_node, "size_t");
+  NAME_TYPE (fileptr_type_node, "FILE");
+#undef NAME_TYPE
 }
 
 /* Our API allows locations to be created in arbitrary orders, but the

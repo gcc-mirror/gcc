@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!	-*- c++ -*-
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -226,9 +226,7 @@ module_resolver::cmi_response (Cody::Server *s, std::string &module)
   auto iter = map.find (module);
   if (iter == map.end ())
     {
-      std::string file;
-      if (default_map)
-	file = std::move (GetCMIName (module));
+      std::string file = default_map ? GetCMIName (module) : std::string ();
       auto res = map.emplace (module, file);
       iter = res.first;
     }

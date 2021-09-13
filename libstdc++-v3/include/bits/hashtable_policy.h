@@ -1,6 +1,6 @@
 // Internal policy header for unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2010-2020 Free Software Foundation, Inc.
+// Copyright (C) 2010-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -94,6 +94,45 @@ namespace __detail
       { return std::get<0>(std::forward<_Tp>(__x)); }
   };
 
+  struct _Select2nd
+  {
+    template<typename _Tp>
+      auto
+      operator()(_Tp&& __x) const noexcept
+      -> decltype(std::get<1>(std::forward<_Tp>(__x)))
+      { return std::get<1>(std::forward<_Tp>(__x)); }
+  };
+
+  template<typename _ExKey>
+    struct _NodeBuilder;
+
+  template<>
+    struct _NodeBuilder<_Select1st>
+    {
+      template<typename _Kt, typename _Arg, typename _NodeGenerator>
+	static auto
+	_S_build(_Kt&& __k, _Arg&& __arg, const _NodeGenerator& __node_gen)
+	-> decltype(__node_gen(std::piecewise_construct,
+			       std::forward_as_tuple(std::forward<_Kt>(__k)),
+			       std::forward_as_tuple(_Select2nd{}(
+						std::forward<_Arg>(__arg)))))
+	{
+	  return __node_gen(std::piecewise_construct,
+	    std::forward_as_tuple(std::forward<_Kt>(__k)),
+	    std::forward_as_tuple(_Select2nd{}(std::forward<_Arg>(__arg))));
+	}
+    };
+
+  template<>
+    struct _NodeBuilder<_Identity>
+    {
+      template<typename _Kt, typename _Arg, typename _NodeGenerator>
+	static auto
+	_S_build(_Kt&& __k, _Arg&&, const _NodeGenerator& __node_gen)
+	-> decltype(__node_gen(std::forward<_Kt>(__k)))
+	{ return __node_gen(std::forward<_Kt>(__k)); }
+    };
+
   template<typename _NodeAlloc>
     struct _Hashtable_alloc;
 
@@ -117,9 +156,9 @@ namespace __detail
       ~_ReuseOrAllocNode()
       { _M_h._M_deallocate_nodes(_M_nodes); }
 
-      template<typename _Arg>
+      template<typename... _Args>
 	__node_type*
-	operator()(_Arg&& __arg) const
+	operator()(_Args&&... __args) const
 	{
 	  if (_M_nodes)
 	    {
@@ -131,7 +170,7 @@ namespace __detail
 	      __try
 		{
 		  __node_alloc_traits::construct(__a, __node->_M_valptr(),
-						 std::forward<_Arg>(__arg));
+						 std::forward<_Args>(__args)...);
 		}
 	      __catch(...)
 		{
@@ -140,7 +179,7 @@ namespace __detail
 		}
 	      return __node;
 	    }
-	  return _M_h._M_allocate_node(std::forward<_Arg>(__arg));
+	  return _M_h._M_allocate_node(std::forward<_Args>(__args)...);
 	}
 
     private:
@@ -161,10 +200,10 @@ namespace __detail
       _AllocNode(__hashtable_alloc& __h)
       : _M_h(__h) { }
 
-      template<typename _Arg>
+      template<typename... _Args>
 	__node_type*
-	operator()(_Arg&& __arg) const
-	{ return _M_h._M_allocate_node(std::forward<_Arg>(__arg)); }
+	operator()(_Args&&... __args) const
+	{ return _M_h._M_allocate_node(std::forward<_Args>(__args)...); }
 
     private:
       __hashtable_alloc& _M_h;
@@ -290,7 +329,7 @@ namespace __detail
 
       __node_type* _M_cur;
 
-      _Node_iterator_base() = default;
+      _Node_iterator_base() : _M_cur(nullptr) { }
       _Node_iterator_base(__node_type* __p) noexcept
       : _M_cur(__p) { }
 
@@ -331,8 +370,7 @@ namespace __detail
       using reference = typename std::conditional<__constant_iterators,
 				  const value_type&, value_type&>::type;
 
-      _Node_iterator() noexcept
-      : __base_type(nullptr) { }
+      _Node_iterator() = default;
 
       explicit
       _Node_iterator(__node_type* __p) noexcept
@@ -379,8 +417,7 @@ namespace __detail
       typedef const value_type*				pointer;
       typedef const value_type&				reference;
 
-      _Node_const_iterator() noexcept
-      : __base_type(nullptr) { }
+      _Node_const_iterator() = default;
 
       explicit
       _Node_const_iterator(__node_type* __p) noexcept
@@ -1125,7 +1162,7 @@ namespace __detail
     struct _Hashtable_ebo_helper<_Nm, _Tp, true>
     : private _Tp
     {
-      _Hashtable_ebo_helper() = default;
+      _Hashtable_ebo_helper() noexcept(noexcept(_Tp())) : _Tp() { }
 
       template<typename _OtherTp>
 	_Hashtable_ebo_helper(_OtherTp&& __tp)
@@ -1151,7 +1188,7 @@ namespace __detail
       _Tp& _M_get() { return _M_tp; }
 
     private:
-      _Tp _M_tp;
+      _Tp _M_tp{};
     };
 
   /**
@@ -1209,6 +1246,7 @@ namespace __detail
       // We need the default constructor for the local iterators and _Hashtable
       // default constructor.
       _Hash_code_base() = default;
+
       _Hash_code_base(const _Hash& __hash) : __ebo_hash(__hash) { }
 
       __hash_code
@@ -1218,6 +1256,15 @@ namespace __detail
 	    "hash function must be invocable with an argument of key type");
 	return _M_hash()(__k);
       }
+
+      template<typename _Kt>
+	__hash_code
+	_M_hash_code_tr(const _Kt& __k) const
+	{
+	  static_assert(__is_invocable<const _Hash&, const _Kt&>{},
+	    "hash function must be invocable with an argument of key type");
+	  return _M_hash()(__k);
+	}
 
       std::size_t
       _M_bucket_index(__hash_code __c, std::size_t __bkt_count) const
@@ -1593,6 +1640,7 @@ namespace __detail
 
     protected:
       _Hashtable_base() = default;
+
       _Hashtable_base(const _Hash& __hash, const _Equal& __eq)
       : __hash_code_base(__hash), _EqualEBO(__eq)
       { }
@@ -1606,6 +1654,19 @@ namespace __detail
 	  "key type");
 	return _S_equals(__c, __n) && _M_eq()(__k, _ExtractKey{}(__n._M_v()));
       }
+
+      template<typename _Kt>
+	bool
+	_M_equals_tr(const _Kt& __k, __hash_code __c,
+		     const _Hash_node_value<_Value,
+					    __hash_cached::value>& __n) const
+	{
+	  static_assert(
+	    __is_invocable<const _Equal&, const _Kt&, const _Key&>{},
+	    "key equality predicate must be invocable with two arguments of "
+	    "key type");
+	  return _S_equals(__c, __n) && _M_eq()(__k, _ExtractKey{}(__n._M_v()));
+	}
 
       bool
       _M_node_equals(
@@ -1919,7 +1980,7 @@ namespace __detail
       __buckets_alloc_traits::deallocate(__alloc, __ptr, __bkt_count);
     }
 
- //@} hashtable-detail
+ ///@} hashtable-detail
 } // namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

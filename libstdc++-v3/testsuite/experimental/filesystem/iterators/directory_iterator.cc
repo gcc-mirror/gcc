@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,22 +53,24 @@ test01()
   ++iter;
   VERIFY( iter == end(iter) );
 
-#if !(defined(__MINGW32__) || defined(__MINGW64__))
-  // Test inaccessible directory.
-  permissions(p, fs::perms::none, ec);
-  VERIFY( !ec );
-  iter = fs::directory_iterator(p, ec);
-  VERIFY( ec );
-  VERIFY( iter == end(iter) );
+  if (__gnu_test::permissions_are_testable())
+  {
+    // Test inaccessible directory.
+    permissions(p, fs::perms::none, ec);
+    VERIFY( !ec );
+    iter = fs::directory_iterator(p, ec);
+    VERIFY( ec );
+    VERIFY( iter == end(iter) );
 
-  // Test inaccessible directory, skipping permission denied.
-  const auto opts = fs::directory_options::skip_permission_denied;
-  iter = fs::directory_iterator(p, opts, ec);
-  VERIFY( !ec );
-  VERIFY( iter == end(iter) );
-#endif
+    // Test inaccessible directory, skipping permission denied.
+    const auto opts = fs::directory_options::skip_permission_denied;
+    iter = fs::directory_iterator(p, opts, ec);
+    VERIFY( !ec );
+    VERIFY( iter == end(iter) );
 
-  permissions(p, fs::perms::owner_all, ec);
+    permissions(p, fs::perms::owner_all, ec);
+  }
+
   remove_all(p, ec);
 }
 

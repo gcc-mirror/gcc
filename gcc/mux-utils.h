@@ -1,5 +1,5 @@
 // Multiplexer utilities
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -139,10 +139,10 @@ public:
 private:
   pointer_mux (char *ptr) : m_ptr (ptr) {}
 
-  // The pointer value for A pointers, or the pointer value + 1 for B pointers.
-  // Using a pointer rather than a uintptr_t tells the compiler that second ()
-  // can never return null, and that second_or_null () is only null if
-  // is_first ().
+  // Points to the first byte of an object for A pointers or the second
+  // byte of an object for B pointers.  Using a pointer rather than a
+  // uintptr_t tells the compiler that second () can never return null,
+  // and that second_or_null () is only null if is_first ().
   char *m_ptr;
 };
 

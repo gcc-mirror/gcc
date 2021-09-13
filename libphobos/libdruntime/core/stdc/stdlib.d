@@ -14,7 +14,7 @@
 
 module core.stdc.stdlib;
 
-private import core.stdc.config;
+import core.stdc.config;
 public import core.stdc.stddef; // for wchar_t
 
 version (OSX)
@@ -121,19 +121,22 @@ ulong   strtoull(scope inout(char)* nptr, scope inout(char)** endptr, int base);
 
 version (CRuntime_Microsoft)
 {
-    // strtold exists starting from VS2013, so we give it D linkage to avoid link errors
-    ///
-    extern (D) real strtold(scope inout(char)* nptr, inout(char)** endptr)
-    {   // Fake it 'till we make it
-        return strtod(nptr, endptr);
+    version (MinGW)
+    {
+        ///
+        real __mingw_strtold(scope inout(char)* nptr, scope inout(char)** endptr);
+        ///
+        alias __mingw_strtold strtold;
     }
-}
-else version (MinGW)
-{
-    ///
-    real __mingw_strtold(scope inout(char)* nptr, scope inout(char)** endptr);
-    ///
-    alias __mingw_strtold strtold;
+    else
+    {
+        // strtold exists starting from VS2013, so we give it D linkage to avoid link errors
+        ///
+        extern (D) real strtold(scope inout(char)* nptr, inout(char)** endptr)
+        {   // Fake it 'till we make it
+            return strtod(nptr, endptr);
+        }
+    }
 }
 else
 {
@@ -164,13 +167,13 @@ void*   realloc(void* ptr, size_t size);
 void    free(void* ptr);
 
 ///
-void    abort() @safe;
+noreturn abort() @safe;
 ///
-void    exit(int status);
+noreturn exit(int status);
 ///
 int     atexit(void function() func);
 ///
-void    _Exit(int status);
+noreturn _Exit(int status);
 
 ///
 char*   getenv(scope const char* name);

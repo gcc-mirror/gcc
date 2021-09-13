@@ -36,17 +36,17 @@ private string CreateAccessors(
             static assert(len == 1);
             // getter
             result ~= "bool " ~ name ~ "(){ return "
-                "("~store~" & "~toStringSfx(maskAllElse)~") != 0;}";
+                ~ "("~store~" & "~toStringSfx(maskAllElse)~") != 0;}";
             // setter
             result ~= "void " ~ name ~ "(bool v){"
-                "if (v) "~store~" |= "~toStringSfx(maskAllElse)~";"
-                "else "~store~" &= "~toStringSfx(maskMyself)~";}";
+                ~ "if (v) "~store~" |= "~toStringSfx(maskAllElse)~";"
+                ~ "else "~store~" &= "~toStringSfx(maskMyself)~";}";
         }
         else
         {
             // getter
             result ~= T.stringof ~ " " ~ name ~ "(){ auto result = "
-                "("~store~" & "
+                ~ "("~store~" & "
                 ~ toStringSfx(maskAllElse) ~ ") >>"
                 ~ toStringSfx(offset) ~ ";";
             static if (T.min < 0)

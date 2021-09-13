@@ -1,3 +1,9 @@
+/*
+TEST_OUTPUT:
+---
+fail_compilation/fail11503c.d(19): Error: cannot implicitly convert expression `d.filename()` of type `const(char)[]` to `string`
+---
+*/
 struct Data
 {
     char[256] buffer;

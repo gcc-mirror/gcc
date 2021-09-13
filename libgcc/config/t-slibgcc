@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2020 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -32,7 +32,7 @@ SHLIB_INSTALL_SOLINK = $(LN_S) $(SHLIB_SONAME) \
 	$(DESTDIR)$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)
 
 SHLIB_LINK = $(CC) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
-	$(SHLIB_LDFLAGS) \
+	$(SHLIB_LDFLAGS) $(LDFLAGS) \
 	-o $(SHLIB_DIR)/$(SHLIB_SONAME).tmp @multilib_flags@ \
 	$(SHLIB_OBJS) $(SHLIB_LC) && \
 	rm -f $(SHLIB_DIR)/$(SHLIB_SOLINK) && \

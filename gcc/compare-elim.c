@@ -1,5 +1,5 @@
 /* Post-reload compare elimination.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,9 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    cannot make use of the comparison elimination offered by the combine pass.
 
    This is a small pass intended to provide comparison elimination similar to
-   what is available via NOTICE_UPDATE_CC for cc0 targets.  This should help
-   encourage cc0 targets to convert to an explicit post-reload representation
-   of the flags.
+   what was available via NOTICE_UPDATE_CC for cc0 targets.
 
    This pass assumes:
 
@@ -908,6 +906,7 @@ try_eliminate_compare (struct comparison *cmp)
 static unsigned int
 execute_compare_elim_after_reload (void)
 {
+  df_set_flags (DF_LR_RUN_DCE);
   df_analyze ();
 
   gcc_checking_assert (!all_compares.exists ());

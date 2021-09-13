@@ -23,8 +23,9 @@ CONTAINS
     G3=1
   END FUNCTION
 END module M1
- 
+
 program P1
+implicit none
 CONTAINS
 ! This has the additional wrinkle of a reference to the object.
   INTEGER FUNCTION F1()

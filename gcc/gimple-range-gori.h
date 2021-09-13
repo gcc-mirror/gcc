@@ -1,5 +1,5 @@
 /* Header file for gimple range GORI structures.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -21,6 +21,90 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_GIMPLE_RANGE_GORI_H
 #define GCC_GIMPLE_RANGE_GORI_H
+
+// RANGE_DEF_CHAIN is used to determine which SSA names in a block can
+// have range information calculated for them, and what the
+// dependencies on each other are.
+
+class range_def_chain
+{
+public:
+  range_def_chain ();
+  ~range_def_chain ();
+  tree depend1 (tree name) const;
+  tree depend2 (tree name) const;
+  bool in_chain_p (tree name, tree def);
+  bool chain_import_p (tree name, tree import);
+  void register_dependency (tree name, tree ssa1, basic_block bb = NULL);
+  void dump (FILE *f, basic_block bb, const char *prefix = NULL);
+protected:
+  bool has_def_chain (tree name);
+  bool def_chain_in_bitmap_p (tree name, bitmap b);
+  void add_def_chain_to_bitmap (bitmap b, tree name);
+  bitmap get_def_chain (tree name);
+  bitmap get_imports (tree name);
+  bitmap_obstack m_bitmaps;
+private:
+  struct rdc {
+   tree ssa1;		// First direct dependency
+   tree ssa2;		// Second direct dependency
+   bitmap bm;		// All dependencies
+   bitmap m_import;
+  };
+  vec<rdc> m_def_chain;	// SSA_NAME : def chain components.
+  void set_import (struct rdc &data, tree imp, bitmap b);
+  int m_logical_depth;
+};
+
+// Return the first direct dependency for NAME, if there is one.
+// Direct dependencies are those which occur on the defintion statement.
+// Only the first 2 such names are cached.
+
+inline tree
+range_def_chain::depend1 (tree name) const
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_def_chain.length ())
+    return NULL_TREE;
+  return m_def_chain[v].ssa1;
+}
+
+// Return the second direct dependency for NAME, if there is one.
+
+inline tree
+range_def_chain::depend2 (tree name) const
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_def_chain.length ())
+    return NULL_TREE;
+  return m_def_chain[v].ssa2;
+}
+
+// GORI_MAP is used to accumulate what SSA names in a block can
+// generate range information, and provides tools for the block ranger
+// to enable it to efficiently calculate these ranges.
+
+class gori_map : public range_def_chain
+{
+public:
+  gori_map ();
+  ~gori_map ();
+
+  bool is_export_p (tree name, basic_block bb = NULL);
+  bool is_import_p (tree name, basic_block bb);
+  bitmap exports (basic_block bb);
+  bitmap imports (basic_block bb);
+  void set_range_invariant (tree name);
+
+  void dump (FILE *f);
+  void dump (FILE *f, basic_block bb, bool verbose = true);
+private:
+  vec<bitmap> m_outgoing;	// BB: Outgoing ranges calculatable on edges
+  vec<bitmap> m_incoming;	// BB: Incoming ranges which can affect exports.
+  bitmap m_maybe_variant;	// Names which might have outgoing ranges.
+  void maybe_add_gori (tree name, basic_block bb);
+  void calculate_gori (basic_block bb);
+};
 
 
 // This class is used to determine which SSA_NAMES can have ranges
@@ -65,77 +149,72 @@ along with GCC; see the file COPYING3.  If not see
 //
 // The remaining routines are internal use only.
 
-class gori_compute 
+class gori_compute : public gori_map
 {
 public:
   gori_compute ();
-  ~gori_compute ();
-  bool outgoing_edge_range_p (irange &r, edge e, tree name);
+  bool outgoing_edge_range_p (irange &r, edge e, tree name, range_query &q);
   bool has_edge_range_p (tree name, edge e = NULL);
   void dump (FILE *f);
-protected:
-  virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);
-  virtual bool compute_operand_range (irange &r, gimple *stmt,
-				      const irange &lhs, tree name);
-
-  void expr_range_in_bb (irange &r, tree expr, basic_block bb);
-  bool compute_logical_operands (irange &r, gimple *stmt,
-				 const irange &lhs,
-				 tree name);
-  void compute_logical_operands_in_chain (class tf_range &range,
-					  gimple *stmt, const irange &lhs,
-					  tree name, tree op,
-					  bool op_in_chain);
-  bool optimize_logical_operands (tf_range &range, gimple *stmt,
-				  const irange &lhs, tree name, tree op);
-  bool logical_combine (irange &r, enum tree_code code, const irange &lhs,
-			const class tf_range &op1_range,
-			const class tf_range &op2_range);
-  int_range<2> m_bool_zero;           // Boolean false cached.
-  int_range<2> m_bool_one;            // Boolean true cached.
-
 private:
-  bool compute_operand_range_switch (irange &r, gswitch *stmt,
-				     const irange &lhs, tree name);
-  bool compute_name_range_op (irange &r, gimple *stmt, const irange &lhs,
-			      tree name);
+  bool may_recompute_p (tree name, edge e = NULL);
+  bool compute_operand_range (irange &r, gimple *stmt, const irange &lhs,
+			      tree name, class fur_source &src);
+  bool compute_operand_range_switch (irange &r, gswitch *s, const irange &lhs,
+				     tree name, fur_source &src);
   bool compute_operand1_range (irange &r, gimple *stmt, const irange &lhs,
-			       tree name);
+			       tree name, fur_source &src);
   bool compute_operand2_range (irange &r, gimple *stmt, const irange &lhs,
-			       tree name);
+			       tree name, fur_source &src);
   bool compute_operand1_and_operand2_range (irange &r, gimple *stmt,
-					    const irange &lhs, tree name);
+					    const irange &lhs, tree name,
+					    fur_source &src);
+  void compute_logical_operands (irange &true_range, irange &false_range,
+				 gimple *stmt, const irange &lhs,
+				 tree name, fur_source &src, tree op,
+				 bool op_in_chain);
+  bool logical_combine (irange &r, enum tree_code code, const irange &lhs,
+			const irange &op1_true, const irange &op1_false,
+			const irange &op2_true, const irange &op2_false);
+  int_range<2> m_bool_zero;	// Boolean false cached.
+  int_range<2> m_bool_one;	// Boolean true cached.
 
-  class gori_map *m_gori_map;
-  outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
+  gimple_outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
+  range_tracer tracer;
 };
 
+// These routines provide a GIMPLE interface to the range-ops code.
+extern bool gimple_range_calc_op1 (irange &r, const gimple *s,
+				   const irange &lhs_range);
+extern bool gimple_range_calc_op1 (irange &r, const gimple *s,
+				   const irange &lhs_range,
+				   const irange &op2_range);
+extern bool gimple_range_calc_op2 (irange &r, const gimple *s,
+				   const irange &lhs_range,
+				   const irange &op1_range);
 
-// This class adds a cache to gori_computes for logical expressions.
-//       bool result = x && y
-// requires calcuation of both X and Y for both true and false results.
-// There are 4 combinations [0,0][0,0] [0,0][1,1] [1,1][0,0] and [1,1][1,1].
-// Note that each pair of possible results for X and Y are used twice, and
-// the calcuation of those results are the same each time.
-//
-// The cache simply checks if a stmt is cachable, and if so, saves both the
-// true and false results for the next time the query is made.
-//
-// This is used to speed up long chains of logical operations which
-// quickly become exponential.
+// For each name that is an import into BB's exports..
+#define FOR_EACH_GORI_IMPORT_NAME(gori, bb, name)			\
+  for (gori_export_iterator iter ((gori).imports ((bb)));	\
+       ((name) = iter.get_name ());				\
+       iter.next ())
 
-class gori_compute_cache : public gori_compute
-{
+// For each name possibly exported from block BB.
+#define FOR_EACH_GORI_EXPORT_NAME(gori, bb, name)		\
+  for (gori_export_iterator iter ((gori).exports ((bb)));	\
+       ((name) = iter.get_name ());				\
+       iter.next ())
+
+// Used to assist with iterating over the GORI export list in various ways
+class gori_export_iterator {
 public:
-  gori_compute_cache ();
-  ~gori_compute_cache ();
+  gori_export_iterator (bitmap b);
+  void next ();
+  tree get_name ();
 protected:
-  virtual bool compute_operand_range (irange &r, gimple *stmt,
-				      const irange &lhs, tree name);
-private:
-  void cache_stmt (gimple *);
-  typedef gori_compute super;
-  class logical_stmt_cache *m_cache;
+  bitmap bm;
+  bitmap_iterator bi;
+  unsigned y;
 };
 
 #endif // GCC_GIMPLE_RANGE_GORI_H

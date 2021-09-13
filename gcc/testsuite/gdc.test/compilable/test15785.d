@@ -1,10 +1,5 @@
 // REQUIRED_ARGS: -de
 // PERMUTE_ARGS:
-/*
-TEST_OUTPUT:
----
----
-*/
 import imports.test15785;
 
 class Derived : Base, IBase2

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +21,8 @@
 #include <ranges>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
+
+static_assert(__gnu_test::is_customization_point_object(std::ranges::begin));
 
 using std::same_as;
 

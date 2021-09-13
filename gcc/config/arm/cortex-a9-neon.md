@@ -1,5 +1,5 @@
 ;; ARM Cortex-A9 pipeline description
-;; Copyright (C) 2010-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2021 Free Software Foundation, Inc.
 ;;
 ;; Neon pipeline description contributed by ARM Ltd.
 ;;

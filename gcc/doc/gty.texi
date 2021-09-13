@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -628,10 +628,9 @@ header file that should be included in the source file you just changed.
 The file will be called @file{gt-@var{path}.h} where @var{path} is the
 pathname relative to the @file{gcc} directory with slashes replaced by
 @verb{|-|}, so for example the header file to be included in
-@file{cp/parser.c} is called @file{gt-cp-parser.c}.  The
+@file{cp/parser.c} is called @file{gt-cp-parser.h}.  The
 generated header file should be included after everything else in the
-source file.  Don't forget to mention this file as a dependency in the
-@file{Makefile}!
+source file.
 
 @end enumerate
 
@@ -655,7 +654,10 @@ The GCC garbage collector GGC is only invoked explicitly. In contrast
 with many other garbage collectors, it is not implicitly invoked by
 allocation routines when a lot of memory has been consumed. So the
 only way to have GGC reclaim storage is to call the @code{ggc_collect}
-function explicitly.  This call is an expensive operation, as it may
+function explicitly.
+With @var{mode} @code{GGC_COLLECT_FORCE} or otherwise (default
+@code{GGC_COLLECT_HEURISTIC}) when the internal heuristic decides to
+collect, this call is potentially an expensive operation, as it may
 have to scan the entire heap.  Beware that local variables (on the GCC
 call stack) are not followed by such an invocation (as many other
 garbage collectors do): you should reference all your data from static

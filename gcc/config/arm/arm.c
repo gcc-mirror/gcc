@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991-2020 Free Software Foundation, Inc.
+   Copyright (C) 1991-2021 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -32,6 +32,7 @@
 #include "tree.h"
 #include "memmodel.h"
 #include "cfghooks.h"
+#include "cfgloop.h"
 #include "df.h"
 #include "tm_p.h"
 #include "stringpool.h"
@@ -69,6 +70,7 @@
 #include "gimplify.h"
 #include "gimple.h"
 #include "selftest.h"
+#include "tree-vectorizer.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -76,10 +78,6 @@
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
 typedef struct minipool_fixup   Mfix;
-
-/* The last .arch and .fpu assembly strings that we printed.  */
-static std::string arm_last_printed_arch_string;
-static std::string arm_last_printed_fpu_string;
 
 void (*arm_lang_output_object_attributes_hook)(void);
 
@@ -328,9 +326,11 @@ static unsigned int arm_hard_regno_nregs (unsigned int, machine_mode);
 static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool arm_modes_tieable_p (machine_mode, machine_mode);
 static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
-static rtx_insn * thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
-					vec<const char *> &, vec<rtx> &,
-					HARD_REG_SET &);
+static rtx_insn *thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
+				       vec<machine_mode> &,
+				       vec<const char *> &, vec<rtx> &,
+				       HARD_REG_SET &, location_t);
+static const char *arm_identify_fpu_from_isa (sbitmap);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -1050,9 +1050,13 @@ const char *fp_sysreg_names[NB_FP_SYSREGS] = {
 #define ARM_LSL_NAME "lsl"
 #define streq(string1, string2) (strcmp (string1, string2) == 0)
 
-#define THUMB2_WORK_REGS (0xff & ~(  (1 << THUMB_HARD_FRAME_POINTER_REGNUM) \
-				   | (1 << SP_REGNUM) | (1 << PC_REGNUM) \
-				   | (1 << PIC_OFFSET_TABLE_REGNUM)))
+#define THUMB2_WORK_REGS					\
+  (0xff & ~((1 << THUMB_HARD_FRAME_POINTER_REGNUM)		\
+	    | (1 << SP_REGNUM)					\
+	    | (1 << PC_REGNUM)					\
+	    | (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM	\
+	       ? (1 << PIC_OFFSET_TABLE_REGNUM)			\
+	       : 0)))
 
 /* Initialization code.  */
 
@@ -1192,7 +1196,8 @@ const struct cpu_cost_table cortexa9_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)	/* alu.  */
+    COSTS_N_INSNS (1),	/* alu.  */
+    COSTS_N_INSNS (4)	/* mult.  */
   }
 };
 
@@ -1295,7 +1300,8 @@ const struct cpu_cost_table cortexa8_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)	/* alu.  */
+    COSTS_N_INSNS (1),	/* alu.  */
+    COSTS_N_INSNS (4)	/* mult.  */
   }
 };
 
@@ -1399,7 +1405,8 @@ const struct cpu_cost_table cortexa5_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)	/* alu.  */
+    COSTS_N_INSNS (1),	/* alu.  */
+    COSTS_N_INSNS (4)	/* mult.  */
   }
 };
 
@@ -1504,7 +1511,8 @@ const struct cpu_cost_table cortexa7_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)	/* alu.  */
+    COSTS_N_INSNS (1),	/* alu.  */
+    COSTS_N_INSNS (4)	/* mult.  */
   }
 };
 
@@ -1607,7 +1615,8 @@ const struct cpu_cost_table cortexa12_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)	/* alu.  */
+    COSTS_N_INSNS (1),	/* alu.  */
+    COSTS_N_INSNS (4)	/* mult.  */
   }
 };
 
@@ -1710,7 +1719,8 @@ const struct cpu_cost_table cortexa15_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)	/* alu.  */
+    COSTS_N_INSNS (1),	/* alu.  */
+    COSTS_N_INSNS (4)	/* mult.  */
   }
 };
 
@@ -1813,7 +1823,8 @@ const struct cpu_cost_table v7m_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)	/* alu.  */
+    COSTS_N_INSNS (1),	/* alu.  */
+    COSTS_N_INSNS (4)	/* mult.  */
   }
 };
 
@@ -3040,9 +3051,11 @@ arm_override_options_after_change (void)
 /* Implement TARGET_OPTION_RESTORE.  */
 static void
 arm_option_restore (struct gcc_options */* opts */,
-		    struct gcc_options *opts_set, struct cl_target_option *ptr)
+		    struct gcc_options */* opts_set */,
+		    struct cl_target_option *ptr)
 {
-  arm_configure_build_target (&arm_active_target, ptr, opts_set, false);
+  arm_configure_build_target (&arm_active_target, ptr, false);
+  arm_option_reconfigure_globals ();
 }
 
 /* Reset options between modes that the user has specified.  */
@@ -3165,7 +3178,6 @@ static sbitmap isa_quirkbits;
 void
 arm_configure_build_target (struct arm_build_target *target,
 			    struct cl_target_option *opts,
-			    struct gcc_options *opts_set,
 			    bool warn_compatible)
 {
   const cpu_option *arm_selected_tune = NULL;
@@ -3180,7 +3192,7 @@ arm_configure_build_target (struct arm_build_target *target,
   target->core_name = NULL;
   target->arch_name = NULL;
 
-  if (opts_set->x_arm_arch_string)
+  if (opts->x_arm_arch_string)
     {
       arm_selected_arch = arm_parse_arch_option_name (all_architectures,
 						      "-march",
@@ -3188,7 +3200,7 @@ arm_configure_build_target (struct arm_build_target *target,
       arch_opts = strchr (opts->x_arm_arch_string, '+');
     }
 
-  if (opts_set->x_arm_cpu_string)
+  if (opts->x_arm_cpu_string)
     {
       arm_selected_cpu = arm_parse_cpu_option_name (all_cores, "-mcpu",
 						    opts->x_arm_cpu_string);
@@ -3198,7 +3210,7 @@ arm_configure_build_target (struct arm_build_target *target,
 	 options for tuning.  */
     }
 
-  if (opts_set->x_arm_tune_string)
+  if (opts->x_arm_tune_string)
     {
       arm_selected_tune = arm_parse_cpu_option_name (all_cores, "-mtune",
 						     opts->x_arm_tune_string);
@@ -3222,21 +3234,22 @@ arm_configure_build_target (struct arm_build_target *target,
 	  bitmap_xor (isa_delta, cpu_isa, target->isa);
 	  /* Ignore any bits that are quirk bits.  */
 	  bitmap_and_compl (isa_delta, isa_delta, isa_quirkbits);
-	  /* Ignore (for now) any bits that might be set by -mfpu.  */
-	  bitmap_and_compl (isa_delta, isa_delta, isa_all_fpubits_internal);
-
-	  /* And if the target ISA lacks floating point, ignore any
-	     extensions that depend on that.  */
-	  if (!bitmap_bit_p (target->isa, isa_bit_vfpv2))
+	  /* If the user (or the default configuration) has specified a
+	     specific FPU, then ignore any bits that depend on the FPU
+	     configuration.  Do similarly if using the soft-float
+	     ABI.  */
+	  if (opts->x_arm_fpu_index != TARGET_FPU_auto
+	      || arm_float_abi == ARM_FLOAT_ABI_SOFT)
 	    bitmap_and_compl (isa_delta, isa_delta, isa_all_fpbits);
 
 	  if (!bitmap_empty_p (isa_delta))
 	    {
 	      if (warn_compatible)
 		warning (0, "switch %<-mcpu=%s%> conflicts "
-			 "with %<-march=%s%> switch",
-			 arm_selected_cpu->common.name,
-			 arm_selected_arch->common.name);
+			 "with switch %<-march=%s%>",
+			 opts->x_arm_cpu_string,
+			 opts->x_arm_arch_string);
+
 	      /* -march wins for code generation.
 		 -mcpu wins for default tuning.  */
 	      if (!arm_selected_tune)
@@ -3387,9 +3400,18 @@ arm_configure_build_target (struct arm_build_target *target,
       auto_sbitmap fpu_bits (isa_num_bits);
 
       arm_initialize_isa (fpu_bits, arm_selected_fpu->isa_bits);
+      /* This should clear out ALL bits relating to the FPU/simd
+	 extensions, to avoid potentially invalid combinations later on
+	 that we can't match.  At present we only clear out those bits
+	 that can be set by -mfpu.  This should be fixed in GCC-12.  */
       bitmap_and_compl (target->isa, target->isa, isa_all_fpubits_internal);
       bitmap_ior (target->isa, target->isa, fpu_bits);
     }
+
+  /* If we have the soft-float ABI, clear any feature bits relating to use of
+     floating-point operations.  They'll just confuse things later on.  */
+  if (arm_float_abi == ARM_FLOAT_ABI_SOFT)
+    bitmap_and_compl (target->isa, target->isa, isa_all_fpbits);
 
   /* There may be implied bits which we still need to enable. These are
      non-named features which are needed to complete other sets of features,
@@ -3413,6 +3435,8 @@ arm_configure_build_target (struct arm_build_target *target,
   const cpu_tune *tune_data = &all_tunes[arm_selected_tune - all_cores];
 
   /* Finish initializing the target structure.  */
+  if (!target->arch_name)
+    target->arch_name = arm_selected_arch->common.name;
   target->arch_pp_name = arm_selected_arch->arch;
   target->base_arch = arm_selected_arch->base_arch;
   target->profile = arm_selected_arch->profile;
@@ -3420,7 +3444,6 @@ arm_configure_build_target (struct arm_build_target *target,
   target->tune_flags = tune_data->tune_flags;
   target->tune = tune_data->tune;
   target->tune_core = tune_data->scheduler;
-  arm_option_reconfigure_globals ();
 }
 
 /* Fix up any incompatible options that the user has specified.  */
@@ -3457,8 +3480,7 @@ arm_option_override (void)
     }
 
   cl_target_option_save (&opts, &global_options, &global_options_set);
-  arm_configure_build_target (&arm_active_target, &opts, &global_options_set,
-			      true);
+  arm_configure_build_target (&arm_active_target, &opts, true);
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -3592,6 +3614,15 @@ arm_option_override (void)
 	fix_cm3_ldrd = 1;
       else
 	fix_cm3_ldrd = 0;
+    }
+
+  /* Enable fix_vlldm by default if required.  */
+  if (fix_vlldm == 2)
+    {
+      if (bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_vlldm))
+	fix_vlldm = 1;
+      else
+	fix_vlldm = 0;
     }
 
   /* Hot/Cold partitioning is not currently supported, since we can't
@@ -3848,7 +3879,7 @@ arm_options_perform_arch_sanity_checks (void)
 	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
 	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2)
 	      && !bitmap_bit_p (arm_active_target.isa, isa_bit_mve))
-	    error ("%<-mfloat-abi=hard%>: selected processor lacks an FPU");
+	    error ("%<-mfloat-abi=hard%>: selected architecture lacks an FPU");
 	}
       else
 	arm_pcs_default = ARM_PCS_AAPCS;
@@ -5546,9 +5577,20 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 			return;
 		      *op1 = GEN_INT (i + 1);
 		      *code = *code == GT ? GE : LT;
-		      return;
 		    }
-		  break;
+		  else
+		    {
+		      /* GT maxval is always false, LE maxval is always true.
+			 We can't fold that away here as we must make a
+			 comparison, but we can fold them to comparisons
+			 with the same result that can be handled:
+			   op0 GT maxval -> op0 LT minval
+			   op0 LE maxval -> op0 GE minval
+			 where minval = (-maxval - 1).  */
+		      *op1 = GEN_INT (-maxval - 1);
+		      *code = *code == GT ? LT : GE;
+		    }
+		  return;
 
 		case GTU:
 		case LEU:
@@ -5561,9 +5603,19 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 			return;
 		      *op1 = GEN_INT (i + 1);
 		      *code = *code == GTU ? GEU : LTU;
-		      return;
 		    }
-		  break;
+		  else
+		    {
+		      /* GTU ~0 is always false, LEU ~0 is always true.
+			 We can't fold that away here as we must make a
+			 comparison, but we can fold them to comparisons
+			 with the same result that can be handled:
+			   op0 GTU ~0 -> op0 LTU 0
+			   op0 LEU ~0 -> op0 GEU 0.  */
+		      *op1 = const0_rtx;
+		      *code = *code == GTU ? LTU : GEU;
+		    }
+		  return;
 
 		default:
 		  gcc_unreachable ();
@@ -5765,6 +5817,10 @@ arm_libcall_uses_aapcs_base (const_rtx libcall)
 		   convert_optab_libfunc (sfix_optab, DImode, SFmode));
       add_libcall (libcall_htab,
 		   convert_optab_libfunc (ufix_optab, DImode, SFmode));
+      add_libcall (libcall_htab,
+		   convert_optab_libfunc (sfix_optab, SImode, SFmode));
+      add_libcall (libcall_htab,
+		   convert_optab_libfunc (ufix_optab, SImode, SFmode));
 
       /* Values from double-precision helper functions are returned in core
 	 registers if the selected core only supports single-precision
@@ -9453,6 +9509,9 @@ arm_tls_referenced_p (rtx x)
 static bool
 arm_legitimate_constant_p_1 (machine_mode, rtx x)
 {
+  if (GET_CODE (x) == CONST_VECTOR && !neon_make_constant (x, false))
+    return false;
+
   return flag_pic || !label_mentioned_p (x);
 }
 
@@ -11211,11 +11270,23 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
       return true;
 
     case EQ:
-    case NE:
-    case LT:
-    case LE:
-    case GT:
     case GE:
+    case GT:
+    case LE:
+    case LT:
+      /* Neon has special instructions when comparing with 0 (vceq, vcge, vcgt,
+	 vcle and vclt). */
+      if (TARGET_NEON
+	  && TARGET_HARD_FLOAT
+	  && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode))
+	  && (XEXP (x, 1) == CONST0_RTX (mode)))
+	{
+	  *cost = 0;
+	  return true;
+	}
+
+      /* Fall through.  */
+    case NE:
     case LTU:
     case LEU:
     case GEU:
@@ -12169,7 +12240,11 @@ arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
 	 arbitrary and could potentially be improved with analysis.  */
       if (where == vect_body && stmt_info
 	  && stmt_in_inner_loop_p (vinfo, stmt_info))
-	count *= 50;  /* FIXME.  */
+	{
+	  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
+	  gcc_assert (loop_vinfo);
+	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /* FIXME.  */
+	}
 
       retval = (unsigned) (count * stmt_cost);
       cost[where] += retval;
@@ -13005,12 +13080,14 @@ neon_pairwise_reduce (rtx op0, rtx op1, machine_mode mode,
     }
 }
 
-/* If VALS is a vector constant that can be loaded into a register
-   using VDUP, generate instructions to do so and return an RTX to
-   assign to the register.  Otherwise return NULL_RTX.  */
+/* Return a non-NULL RTX iff VALS is a vector constant that can be
+   loaded into a register using VDUP.
+
+   If this is the case, and GENERATE is set, we also generate
+   instructions to do this and return an RTX to assign to the register.  */
 
 static rtx
-neon_vdup_constant (rtx vals)
+neon_vdup_constant (rtx vals, bool generate)
 {
   machine_mode mode = GET_MODE (vals);
   machine_mode inner_mode = GET_MODE_INNER (mode);
@@ -13026,6 +13103,9 @@ neon_vdup_constant (rtx vals)
        vdup.i16).  */
     return NULL_RTX;
 
+  if (!generate)
+    return x;
+
   /* We can load this constant by using VDUP and a constant in a
      single ARM register.  This will be cheaper than a vector
      load.  */
@@ -13034,13 +13114,15 @@ neon_vdup_constant (rtx vals)
   return gen_vec_duplicate (mode, x);
 }
 
-/* Generate code to load VALS, which is a PARALLEL containing only
-   constants (for vec_init) or CONST_VECTOR, efficiently into a
-   register.  Returns an RTX to copy into the register, or NULL_RTX
-   for a PARALLEL that cannot be converted into a CONST_VECTOR.  */
+/* Return a non-NULL RTX iff VALS, which is a PARALLEL containing only
+   constants (for vec_init) or CONST_VECTOR, can be effeciently loaded
+   into a register.
+
+   If this is the case, and GENERATE is set, we also generate code to do
+   this and return an RTX to copy into the register.  */
 
 rtx
-neon_make_constant (rtx vals)
+neon_make_constant (rtx vals, bool generate)
 {
   machine_mode mode = GET_MODE (vals);
   rtx target;
@@ -13072,7 +13154,7 @@ neon_make_constant (rtx vals)
       && simd_immediate_valid_for_move (const_vec, mode, NULL, NULL))
     /* Load using VMOV.  On Cortex-A8 this takes one cycle.  */
     return const_vec;
-  else if ((target = neon_vdup_constant (vals)) != NULL_RTX)
+  else if ((target = neon_vdup_constant (vals, generate)) != NULL_RTX)
     /* Loaded using VDUP.  On Cortex-A8 the VDUP takes one NEON
        pipeline cycle; creating the constant takes one or two ARM
        pipeline cycles.  */
@@ -13082,7 +13164,7 @@ neon_make_constant (rtx vals)
        (for either double or quad vectors).  We cannot take advantage
        of single-cycle VLD1 because we need a PC-relative addressing
        mode.  */
-    return const_vec;
+    return arm_disable_literal_pool ? NULL_RTX : const_vec;
   else
     /* A PARALLEL containing something not valid inside CONST_VECTOR.
        We cannot construct an initializer.  */
@@ -13175,8 +13257,8 @@ bounds_check (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
   if (lane < low || lane >= high)
     {
       if (exp)
-	error ("%K%s %wd out of range %wd - %wd",
-	       exp, desc, lane, low, high - 1);
+	error_at (EXPR_LOCATION (exp),
+		  "%s %wd out of range %wd - %wd", desc, lane, low, high - 1);
       else
 	error ("%s %wd out of range %wd - %wd", desc, lane, low, high - 1);
     }
@@ -18731,10 +18813,14 @@ cmse_nonsecure_call_inline_register_clear (void)
 		  imm = gen_int_mode (- lazy_store_stack_frame_size, SImode);
 		  add_insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
 						    stack_pointer_rtx, imm));
-		  arm_add_cfa_adjust_cfa_note (add_insn,
-					       - lazy_store_stack_frame_size,
-					       stack_pointer_rtx,
-					       stack_pointer_rtx);
+		  /* If we have the frame pointer, then it will be the
+		     CFA reg.  Otherwise, the stack pointer is the CFA
+		     reg, so we need to emit a CFA adjust.  */
+		  if (!frame_pointer_needed)
+		    arm_add_cfa_adjust_cfa_note (add_insn,
+						 - lazy_store_stack_frame_size,
+						 stack_pointer_rtx,
+						 stack_pointer_rtx);
 		  emit_insn (gen_lazy_store_multiple_insn (stack_pointer_rtx));
 		}
 	      /* Save VFP callee-saved registers.  */
@@ -18772,10 +18858,11 @@ cmse_nonsecure_call_inline_register_clear (void)
 		  rtx_insn *add_insn =
 		    emit_insn (gen_addsi3 (stack_pointer_rtx,
 					   stack_pointer_rtx, imm));
-		  arm_add_cfa_adjust_cfa_note (add_insn,
-					       lazy_store_stack_frame_size,
-					       stack_pointer_rtx,
-					       stack_pointer_rtx);
+		  if (!frame_pointer_needed)
+		    arm_add_cfa_adjust_cfa_note (add_insn,
+						 lazy_store_stack_frame_size,
+						 stack_pointer_rtx,
+						 stack_pointer_rtx);
 		}
 	      /* Restore VFP callee-saved registers.  */
 	      else
@@ -25226,7 +25313,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return false;
 
   if (IS_VPR_REGNUM (regno))
-    return true;
+    return mode == HImode;
 
   if (TARGET_THUMB1)
     /* For the Thumb we only allow values bigger than SImode in
@@ -25525,6 +25612,7 @@ arm_excess_precision (enum excess_precision_type type)
 		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
 		: FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
       case EXCESS_PRECISION_TYPE_IMPLICIT:
+      case EXCESS_PRECISION_TYPE_FLOAT16:
 	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
       default:
 	gcc_unreachable ();
@@ -28020,20 +28108,65 @@ arm_print_tune_info (void)
 	       (int) current_tune->sched_autopref);
 }
 
+/* The last set of target options used to emit .arch directives, etc.  This
+   could be a function-local static if it were not required to expose it as a
+   root to the garbage collector.  */
+static GTY(()) cl_target_option *last_asm_targ_options = NULL;
+
 /* Print .arch and .arch_extension directives corresponding to the
    current architecture configuration.  */
 static void
-arm_print_asm_arch_directives ()
+arm_print_asm_arch_directives (FILE *stream, cl_target_option *targ_options)
 {
+  arm_build_target build_target;
+  /* If the target options haven't changed since the last time we were called
+     there is nothing to do.  This should be sufficient to suppress the
+     majority of redundant work.  */
+  if (last_asm_targ_options == targ_options)
+    return;
+
+  last_asm_targ_options = targ_options;
+
+  build_target.isa = sbitmap_alloc (isa_num_bits);
+  arm_configure_build_target (&build_target, targ_options, false);
+
+  if (build_target.core_name
+      && !bitmap_bit_p (build_target.isa, isa_bit_quirk_no_asmcpu))
+    {
+      const char* truncated_name
+	= arm_rewrite_selected_cpu (build_target.core_name);
+      asm_fprintf (stream, "\t.cpu %s\n", truncated_name);
+    }
+
   const arch_option *arch
     = arm_parse_arch_option_name (all_architectures, "-march",
-				  arm_active_target.arch_name);
+				  build_target.arch_name);
   auto_sbitmap opt_bits (isa_num_bits);
 
   gcc_assert (arch);
 
-  asm_fprintf (asm_out_file, "\t.arch %s\n", arm_active_target.arch_name);
-  arm_last_printed_arch_string = arm_active_target.arch_name;
+  if (strcmp (build_target.arch_name, "armv7ve") == 0)
+    {
+      /* Keep backward compatability for assemblers which don't support
+	 armv7ve.  Fortunately, none of the following extensions are reset
+	 by a .fpu directive.  */
+      asm_fprintf (stream, "\t.arch armv7-a\n");
+      asm_fprintf (stream, "\t.arch_extension virt\n");
+      asm_fprintf (stream, "\t.arch_extension idiv\n");
+      asm_fprintf (stream, "\t.arch_extension sec\n");
+      asm_fprintf (stream, "\t.arch_extension mp\n");
+    }
+  else
+    asm_fprintf (stream, "\t.arch %s\n", build_target.arch_name);
+
+  /* The .fpu directive will reset any architecture extensions from the
+     assembler that relate to the fp/vector extensions.  So put this out before
+     any .arch_extension directives.  */
+  const char *fpu_name = (TARGET_SOFT_FLOAT
+			  ? "softvfp"
+			  : arm_identify_fpu_from_isa (build_target.isa));
+  asm_fprintf (stream, "\t.fpu %s\n", fpu_name);
+
   if (!arch->common.extensions)
     return;
 
@@ -28059,13 +28192,12 @@ arm_print_asm_arch_directives ()
 		  && !TARGET_HAVE_MVE_FLOAT))
 	    continue;
 
-	  /* If every feature bit of this option is set in the target
-	     ISA specification, print out the option name.  However,
-	     don't print anything if all the bits are part of the
-	     FPU specification.  */
-	  if (bitmap_subset_p (opt_bits, arm_active_target.isa)
+	  /* If every feature bit of this option is set in the target ISA
+	     specification, print out the option name.  However, don't print
+	     anything if all the bits are part of the FPU specification.  */
+	  if (bitmap_subset_p (opt_bits, build_target.isa)
 	      && !bitmap_subset_p (opt_bits, isa_all_fpubits_internal))
-	    asm_fprintf (asm_out_file, "\t.arch_extension %s\n", opt->name);
+	    asm_fprintf (stream, "\t.arch_extension %s\n", opt->name);
 	}
     }
 }
@@ -28075,59 +28207,33 @@ arm_file_start (void)
 {
   int val;
 
+  arm_print_asm_arch_directives
+    (asm_out_file, TREE_TARGET_OPTION (target_option_default_node));
+
   if (TARGET_BPABI)
     {
-      /* We don't have a specified CPU.  Use the architecture to
-	 generate the tags.
-
-	 Note: it might be better to do this unconditionally, then the
-	 assembler would not need to know about all new CPU names as
-	 they are added.  */
-      if (!arm_active_target.core_name)
-	{
-	  /* armv7ve doesn't support any extensions.  */
-	  if (strcmp (arm_active_target.arch_name, "armv7ve") == 0)
-	    {
-	      /* Keep backward compatability for assemblers
-		 which don't support armv7ve.  */
-	      asm_fprintf (asm_out_file, "\t.arch armv7-a\n");
-	      asm_fprintf (asm_out_file, "\t.arch_extension virt\n");
-	      asm_fprintf (asm_out_file, "\t.arch_extension idiv\n");
-	      asm_fprintf (asm_out_file, "\t.arch_extension sec\n");
-	      asm_fprintf (asm_out_file, "\t.arch_extension mp\n");
-	      arm_last_printed_arch_string = "armv7ve";
-	    }
-	  else
-	    arm_print_asm_arch_directives ();
-	}
-      else if (strncmp (arm_active_target.core_name, "generic", 7) == 0)
-	{
-	  asm_fprintf (asm_out_file, "\t.arch %s\n",
-		       arm_active_target.core_name + 8);
-	  arm_last_printed_arch_string = arm_active_target.core_name + 8;
-	}
-      else
+      /* If we have a named cpu, but we the assembler does not support that
+	 name via .cpu, put out a cpu name attribute; but don't do this if the
+	 name starts with the fictitious prefix, 'generic'.  */
+      if (arm_active_target.core_name
+	  && bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_no_asmcpu)
+	  && !startswith (arm_active_target.core_name, "generic"))
 	{
 	  const char* truncated_name
 	    = arm_rewrite_selected_cpu (arm_active_target.core_name);
 	  if (bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_no_asmcpu))
 	    asm_fprintf (asm_out_file, "\t.eabi_attribute 5, \"%s\"\n",
 			 truncated_name);
-	  else
-	    asm_fprintf (asm_out_file, "\t.cpu %s\n", truncated_name);
 	}
 
       if (print_tune_info)
 	arm_print_tune_info ();
 
-      if (! TARGET_SOFT_FLOAT)
-	{
-	  if (TARGET_HARD_FLOAT && TARGET_VFP_SINGLE)
-	    arm_emit_eabi_attribute ("Tag_ABI_HardFP_use", 27, 1);
+      if (TARGET_HARD_FLOAT && TARGET_VFP_SINGLE)
+	arm_emit_eabi_attribute ("Tag_ABI_HardFP_use", 27, 1);
 
-	  if (TARGET_HARD_FLOAT_ABI)
-	    arm_emit_eabi_attribute ("Tag_ABI_VFP_args", 28, 1);
-	}
+      if (TARGET_HARD_FLOAT_ABI)
+	arm_emit_eabi_attribute ("Tag_ABI_VFP_args", 28, 1);
 
       /* Some of these attributes only apply when the corresponding features
 	 are used.  However we don't have any easy way of figuring this out.
@@ -28181,6 +28287,13 @@ static void
 arm_file_end (void)
 {
   int regno;
+
+  /* Just in case the last function output in the assembler had non-default
+     architecture directives, we force the assembler state back to the default
+     set, so that any 'calculated' build attributes are based on the default
+     options rather than the special options for that function.  */
+  arm_print_asm_arch_directives
+    (asm_out_file, TREE_TARGET_OPTION (target_option_default_node));
 
   if (NEED_INDICATE_EXEC_STACK)
     /* Add .note.GNU-stack.  */
@@ -30703,13 +30816,31 @@ arm_split_compare_and_swap (rtx operands[])
     }
   else
     {
-      emit_move_insn (neg_bval, const1_rtx);
       cond = gen_rtx_NE (VOIDmode, rval, oldval);
       if (thumb1_cmpneg_operand (oldval, SImode))
-	emit_unlikely_jump (gen_cbranchsi4_scratch (neg_bval, rval, oldval,
-						    label2, cond));
+	{
+	  rtx src = rval;
+	  if (!satisfies_constraint_L (oldval))
+	    {
+	      gcc_assert (satisfies_constraint_J (oldval));
+
+	      /* For such immediates, ADDS needs the source and destination regs
+		 to be the same.
+
+		 Normally this would be handled by RA, but this is all happening
+		 after RA.  */
+	      emit_move_insn (neg_bval, rval);
+	      src = neg_bval;
+	    }
+
+	  emit_unlikely_jump (gen_cbranchsi4_neg_late (neg_bval, src, oldval,
+						       label2, cond));
+	}
       else
-	emit_unlikely_jump (gen_cbranchsi4_insn (cond, rval, oldval, label2));
+	{
+	  emit_move_insn (neg_bval, const1_rtx);
+	  emit_unlikely_jump (gen_cbranchsi4_insn (cond, rval, oldval, label2));
+	}
     }
 
   arm_emit_store_exclusive (mode, neg_bval, mem, newval, use_release);
@@ -30875,66 +31006,113 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
    and return true if TARGET contains the inverse.  If !CAN_INVERT,
    always store the result in TARGET, never its inverse.
 
+   If VCOND_MVE, do not emit the vpsel instruction here, let arm_expand_vcond do
+   it with the right destination type to avoid emiting two vpsel, one here and
+   one in arm_expand_vcond.
+
    Note that the handling of floating-point comparisons is not
    IEEE compliant.  */
 
 bool
 arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
-			   bool can_invert)
+			   bool can_invert, bool vcond_mve)
 {
   machine_mode cmp_result_mode = GET_MODE (target);
   machine_mode cmp_mode = GET_MODE (op0);
 
   bool inverted;
-  switch (code)
-    {
-    /* For these we need to compute the inverse of the requested
-       comparison.  */
-    case UNORDERED:
-    case UNLT:
-    case UNLE:
-    case UNGT:
-    case UNGE:
-    case UNEQ:
-    case NE:
-      code = reverse_condition_maybe_unordered (code);
-      if (!can_invert)
-	{
-	  /* Recursively emit the inverted comparison into a temporary
-	     and then store its inverse in TARGET.  This avoids reusing
-	     TARGET (which for integer NE could be one of the inputs).  */
-	  rtx tmp = gen_reg_rtx (cmp_result_mode);
-	  if (arm_expand_vector_compare (tmp, code, op0, op1, true))
-	    gcc_unreachable ();
-	  emit_insn (gen_rtx_SET (target, gen_rtx_NOT (cmp_result_mode, tmp)));
-	  return false;
-	}
-      inverted = true;
-      break;
 
-    default:
+  /* MVE supports more comparisons than Neon.  */
+  if (TARGET_HAVE_MVE)
       inverted = false;
-      break;
-    }
+  else
+    switch (code)
+      {
+	/* For these we need to compute the inverse of the requested
+	   comparison.  */
+      case UNORDERED:
+      case UNLT:
+      case UNLE:
+      case UNGT:
+      case UNGE:
+      case UNEQ:
+      case NE:
+	code = reverse_condition_maybe_unordered (code);
+	if (!can_invert)
+	  {
+	    /* Recursively emit the inverted comparison into a temporary
+	       and then store its inverse in TARGET.  This avoids reusing
+	       TARGET (which for integer NE could be one of the inputs).  */
+	    rtx tmp = gen_reg_rtx (cmp_result_mode);
+	    if (arm_expand_vector_compare (tmp, code, op0, op1, true, vcond_mve))
+	      gcc_unreachable ();
+	    emit_insn (gen_rtx_SET (target, gen_rtx_NOT (cmp_result_mode, tmp)));
+	    return false;
+	  }
+	inverted = true;
+	break;
+
+      default:
+	inverted = false;
+	break;
+      }
 
   switch (code)
     {
-    /* These are natively supported for zero comparisons, but otherwise
-       require the operands to be swapped.  */
+    /* These are natively supported by Neon for zero comparisons, but otherwise
+       require the operands to be swapped. For MVE, we can only compare
+       registers.  */
     case LE:
     case LT:
-      if (op1 != CONST0_RTX (cmp_mode))
-	{
-	  code = swap_condition (code);
-	  std::swap (op0, op1);
-	}
+      if (!TARGET_HAVE_MVE)
+	if (op1 != CONST0_RTX (cmp_mode))
+	  {
+	    code = swap_condition (code);
+	    std::swap (op0, op1);
+	  }
       /* Fall through.  */
 
-    /* These are natively supported for both register and zero operands.  */
+    /* These are natively supported by Neon for both register and zero
+       operands. MVE supports registers only.  */
     case EQ:
     case GE:
     case GT:
-      emit_insn (gen_neon_vc (code, cmp_mode, target, op0, op1));
+    case NE:
+      if (TARGET_HAVE_MVE)
+	{
+	  rtx vpr_p0;
+	  if (vcond_mve)
+	    vpr_p0 = target;
+	  else
+	    vpr_p0 = gen_reg_rtx (HImode);
+
+	  switch (GET_MODE_CLASS (cmp_mode))
+	    {
+	    case MODE_VECTOR_INT:
+	      emit_insn (gen_mve_vcmpq (code, cmp_mode, vpr_p0, op0, force_reg (cmp_mode, op1)));
+	      break;
+	    case MODE_VECTOR_FLOAT:
+	      if (TARGET_HAVE_MVE_FLOAT)
+		emit_insn (gen_mve_vcmpq_f (code, cmp_mode, vpr_p0, op0, force_reg (cmp_mode, op1)));
+	      else
+		gcc_unreachable ();
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  /* If we are not expanding a vcond, build the result here.  */
+	  if (!vcond_mve)
+	    {
+	      rtx zero = gen_reg_rtx (cmp_result_mode);
+	      rtx one = gen_reg_rtx (cmp_result_mode);
+	      emit_move_insn (zero, CONST0_RTX (cmp_result_mode));
+	      emit_move_insn (one, CONST1_RTX (cmp_result_mode));
+	      emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, target, one, zero, vpr_p0));
+	    }
+	}
+      else
+	emit_insn (gen_neon_vc (code, cmp_mode, target, op0, op1));
       return inverted;
 
     /* These are natively supported for register operands only.
@@ -30942,16 +31120,54 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
        or canonicalized by target-independent code.  */
     case GEU:
     case GTU:
-      emit_insn (gen_neon_vc (code, cmp_mode, target,
-			      op0, force_reg (cmp_mode, op1)));
+      if (TARGET_HAVE_MVE)
+	{
+	  rtx vpr_p0;
+	  if (vcond_mve)
+	    vpr_p0 = target;
+	  else
+	    vpr_p0 = gen_reg_rtx (HImode);
+
+	  emit_insn (gen_mve_vcmpq (code, cmp_mode, vpr_p0, op0, force_reg (cmp_mode, op1)));
+	  if (!vcond_mve)
+	    {
+	      rtx zero = gen_reg_rtx (cmp_result_mode);
+	      rtx one = gen_reg_rtx (cmp_result_mode);
+	      emit_move_insn (zero, CONST0_RTX (cmp_result_mode));
+	      emit_move_insn (one, CONST1_RTX (cmp_result_mode));
+	      emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, target, one, zero, vpr_p0));
+	    }
+	}
+      else
+	emit_insn (gen_neon_vc (code, cmp_mode, target,
+				op0, force_reg (cmp_mode, op1)));
       return inverted;
 
     /* These require the operands to be swapped and likewise do not
        support comparisons with zero.  */
     case LEU:
     case LTU:
-      emit_insn (gen_neon_vc (swap_condition (code), cmp_mode,
-			      target, force_reg (cmp_mode, op1), op0));
+      if (TARGET_HAVE_MVE)
+	{
+	  rtx vpr_p0;
+	  if (vcond_mve)
+	    vpr_p0 = target;
+	  else
+	    vpr_p0 = gen_reg_rtx (HImode);
+
+	  emit_insn (gen_mve_vcmpq (swap_condition (code), cmp_mode, vpr_p0, force_reg (cmp_mode, op1), op0));
+	  if (!vcond_mve)
+	    {
+	      rtx zero = gen_reg_rtx (cmp_result_mode);
+	      rtx one = gen_reg_rtx (cmp_result_mode);
+	      emit_move_insn (zero, CONST0_RTX (cmp_result_mode));
+	      emit_move_insn (one, CONST1_RTX (cmp_result_mode));
+	      emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, target, one, zero, vpr_p0));
+	    }
+	}
+      else
+	emit_insn (gen_neon_vc (swap_condition (code), cmp_mode,
+				target, force_reg (cmp_mode, op1), op0));
       return inverted;
 
     /* These need a combination of two comparisons.  */
@@ -30963,8 +31179,8 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
 	rtx gt_res = gen_reg_rtx (cmp_result_mode);
 	rtx alt_res = gen_reg_rtx (cmp_result_mode);
 	rtx_code alt_code = (code == LTGT ? LT : LE);
-	if (arm_expand_vector_compare (gt_res, GT, op0, op1, true)
-	    || arm_expand_vector_compare (alt_res, alt_code, op0, op1, true))
+	if (arm_expand_vector_compare (gt_res, GT, op0, op1, true, vcond_mve)
+	    || arm_expand_vector_compare (alt_res, alt_code, op0, op1, true, vcond_mve))
 	  gcc_unreachable ();
 	emit_insn (gen_rtx_SET (target, gen_rtx_IOR (cmp_result_mode,
 						     gt_res, alt_res)));
@@ -30982,13 +31198,47 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
 void
 arm_expand_vcond (rtx *operands, machine_mode cmp_result_mode)
 {
-  rtx mask = gen_reg_rtx (cmp_result_mode);
+  /* When expanding for MVE, we do not want to emit a (useless) vpsel in
+     arm_expand_vector_compare, and another one here.  */
+  bool vcond_mve=false;
+  rtx mask;
+
+  if (TARGET_HAVE_MVE)
+    {
+      vcond_mve=true;
+      mask = gen_reg_rtx (HImode);
+    }
+  else
+    mask = gen_reg_rtx (cmp_result_mode);
+
   bool inverted = arm_expand_vector_compare (mask, GET_CODE (operands[3]),
-					     operands[4], operands[5], true);
+					     operands[4], operands[5], true, vcond_mve);
   if (inverted)
     std::swap (operands[1], operands[2]);
+  if (TARGET_NEON)
   emit_insn (gen_neon_vbsl (GET_MODE (operands[0]), operands[0],
 			    mask, operands[1], operands[2]));
+  else
+    {
+      machine_mode cmp_mode = GET_MODE (operands[4]);
+      rtx vpr_p0 = mask;
+      rtx zero = gen_reg_rtx (cmp_mode);
+      rtx one = gen_reg_rtx (cmp_mode);
+      emit_move_insn (zero, CONST0_RTX (cmp_mode));
+      emit_move_insn (one, CONST1_RTX (cmp_mode));
+      switch (GET_MODE_CLASS (cmp_mode))
+	{
+	case MODE_VECTOR_INT:
+	  emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, operands[0], one, zero, vpr_p0));
+	  break;
+	case MODE_VECTOR_FLOAT:
+	  if (TARGET_HAVE_MVE_FLOAT)
+	    emit_insn (gen_mve_vpselq_f (cmp_mode, operands[0], one, zero, vpr_p0));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
 }
 
 #define MAX_VECT_LEN 16
@@ -31482,6 +31732,15 @@ arm_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
     return false;
 
   d.target = target;
+  if (op0)
+    {
+      rtx nop0 = force_reg (vmode, op0);
+      if (op0 == op1)
+        op1 = nop0;
+      op0 = nop0;
+    }
+  if (op1)
+    op1 = force_reg (vmode, op1);
   d.op0 = op0;
   d.op1 = op1;
 
@@ -32764,10 +33023,8 @@ arm_can_inline_p (tree caller, tree callee)
   caller_target.isa = sbitmap_alloc (isa_num_bits);
   callee_target.isa = sbitmap_alloc (isa_num_bits);
 
-  arm_configure_build_target (&caller_target, caller_opts, &global_options_set,
-			      false);
-  arm_configure_build_target (&callee_target, callee_opts, &global_options_set,
-			      false);
+  arm_configure_build_target (&caller_target, caller_opts, false);
+  arm_configure_build_target (&callee_target, callee_opts, false);
   if (!bitmap_subset_p (callee_target.isa, caller_target.isa))
     can_inline = false;
 
@@ -32842,7 +33099,7 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
       else if (!strcmp (q, "general-regs-only"))
 	opts->x_target_flags |= MASK_GENERAL_REGS_ONLY;
 
-      else if (!strncmp (q, "fpu=", 4))
+      else if (startswith (q, "fpu="))
 	{
 	  int fpu_index;
 	  if (! opt_enum_arg_to_value (OPT_mfpu_, q + 4,
@@ -32861,7 +33118,7 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 	    }
 	  opts->x_arm_fpu_index = (enum fpu_type) fpu_index;
 	}
-      else if (!strncmp (q, "arch=", 5))
+      else if (startswith (q, "arch="))
 	{
 	  char *arch = q + 5;
 	  const arch_option *arm_selected_arch
@@ -32903,7 +33160,7 @@ arm_valid_target_attribute_tree (tree args, struct gcc_options *opts,
     return NULL_TREE;
 
   cl_target_option_save (&cl_opts, opts, opts_set);
-  arm_configure_build_target (&arm_active_target, &cl_opts, opts_set, false);
+  arm_configure_build_target (&arm_active_target, &cl_opts, false);
   arm_option_check_internal (opts);
   /* Do any overrides, such as global options arch=xxx.
      We do this since arm_active_target was overridden.  */
@@ -33048,58 +33305,7 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
     targ_options = TREE_TARGET_OPTION (target_option_current_node);
   gcc_assert (targ_options);
 
-  /* Only update the assembler .arch string if it is distinct from the last
-     such string we printed. arch_to_print is set conditionally in case
-     targ_options->x_arm_arch_string is NULL which can be the case
-     when cc1 is invoked directly without passing -march option.  */
-  std::string arch_to_print;
-  if (targ_options->x_arm_arch_string)
-    arch_to_print = targ_options->x_arm_arch_string;
-
-  if (arch_to_print != arm_last_printed_arch_string)
-    {
-      std::string arch_name
-	= arch_to_print.substr (0, arch_to_print.find ("+"));
-      asm_fprintf (asm_out_file, "\t.arch %s\n", arch_name.c_str ());
-      const arch_option *arch
-	= arm_parse_arch_option_name (all_architectures, "-march",
-				      targ_options->x_arm_arch_string);
-      auto_sbitmap opt_bits (isa_num_bits);
-
-      gcc_assert (arch);
-      if (arch->common.extensions)
-	{
-	  for (const struct cpu_arch_extension *opt = arch->common.extensions;
-	       opt->name != NULL;
-	       opt++)
-	    {
-	      if (!opt->remove)
-		{
-		  arm_initialize_isa (opt_bits, opt->isa_bits);
-		  /* For the cases "-march=armv8.1-m.main+mve -mfloat-abi=soft"
-		     and "-march=armv8.1-m.main+mve.fp -mfloat-abi=soft" MVE and
-		     MVE with floating point instructions is disabled.  So the
-		     following check restricts the printing of ".arch_extension
-		     mve" and ".arch_extension fp" (for mve.fp) in the assembly
-		     file.    MVE needs this special behaviour because the
-		     feature bit "mve" and "mve_float" are not part of
-		     "fpu bits", so they are not cleared when -mfloat-abi=soft
-		     (i.e nofp) but the marco TARGET_HAVE_MVE and
-		     TARGET_HAVE_MVE_FLOAT are disabled.  */
-		  if ((bitmap_bit_p (opt_bits, isa_bit_mve) && !TARGET_HAVE_MVE)
-		      || (bitmap_bit_p (opt_bits, isa_bit_mve_float)
-			  && !TARGET_HAVE_MVE_FLOAT))
-		    continue;
-		  if (bitmap_subset_p (opt_bits, arm_active_target.isa)
-		      && !bitmap_subset_p (opt_bits, isa_all_fpubits_internal))
-		    asm_fprintf (asm_out_file, "\t.arch_extension %s\n",
-				 opt->name);
-		}
-	     }
-	}
-
-      arm_last_printed_arch_string = arch_to_print;
-    }
+  arm_print_asm_arch_directives (stream, targ_options);
 
   fprintf (stream, "\t.syntax unified\n");
 
@@ -33116,17 +33322,6 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
     }
   else
     fprintf (stream, "\t.arm\n");
-
-  std::string fpu_to_print
-    = TARGET_SOFT_FLOAT
-	? "softvfp" : arm_identify_fpu_from_isa (arm_active_target.isa);
-
-  if (!(!strcmp (fpu_to_print.c_str (), "softvfp") && TARGET_VFP_BASE)
-      && (fpu_to_print != arm_last_printed_arch_string))
-    {
-      asm_fprintf (asm_out_file, "\t.fpu %s\n", fpu_to_print.c_str ());
-      arm_last_printed_fpu_string = fpu_to_print;
-    }
 
   if (TARGET_POKE_FUNCTION_NAME)
     arm_poke_function_name (stream, (const char *) name);
@@ -33887,12 +34082,13 @@ arm_run_selftests (void)
    Unlike the arm version, we do NOT implement asm flag outputs.  */
 
 rtx_insn *
-thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
-		      vec<const char *> &constraints,
-		      vec<rtx> &/*clobbers*/, HARD_REG_SET &/*clobbered_regs*/)
+thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
+		      vec<machine_mode> & /*input_modes*/,
+		      vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
+		      HARD_REG_SET & /*clobbered_regs*/, location_t /*loc*/)
 {
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)
-    if (strncmp (constraints[i], "=@cc", 4) == 0)
+    if (startswith (constraints[i], "=@cc"))
       {
 	sorry ("asm flags not supported in thumb1 mode");
 	break;

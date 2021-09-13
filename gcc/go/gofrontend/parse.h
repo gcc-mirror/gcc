@@ -181,16 +181,17 @@ class Parse
   void method_spec(Typed_identifier_list*);
   void declaration();
   bool declaration_may_start_here();
-  void decl(void (Parse::*)(void*, unsigned int), void*, unsigned int pragmas);
-  void list(void (Parse::*)(void*, unsigned int), void*, bool);
+  void decl(void (Parse::*)(unsigned int, std::vector<std::string>*),
+	    unsigned int pragmas, std::vector<std::string>* embeds);
+  void list(void (Parse::*)(unsigned int, std::vector<std::string>*), bool);
   void const_decl();
   void const_spec(int, Type**, Expression_list**);
   void type_decl(unsigned int pragmas);
-  void type_spec(void*, unsigned int pragmas);
-  void var_decl();
-  void var_spec(void*, unsigned int pragmas);
+  void type_spec(unsigned int pragmas, std::vector<std::string>*);
+  void var_decl(std::vector<std::string>* embeds);
+  void var_spec(unsigned int pragmas, std::vector<std::string>*);
   void init_vars(const Typed_identifier_list*, Type*, Expression_list*,
-		 bool is_coloneq, Location);
+		 bool is_coloneq, std::vector<std::string>*, Location);
   bool init_vars_from_call(const Typed_identifier_list*, Type*, Expression*,
 			   bool is_coloneq, Location);
   bool init_vars_from_map(const Typed_identifier_list*, Type*, Expression*,
@@ -277,7 +278,7 @@ class Parse
   void goto_stat();
   void package_clause();
   void import_decl();
-  void import_spec(void*, unsigned int pragmas);
+  void import_spec(unsigned int pragmas, std::vector<std::string>*);
 
   // Skip past an error looking for a semicolon or OP.  Return true if
   // all is well, false if we found EOF.

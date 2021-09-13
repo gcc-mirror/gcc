@@ -1,5 +1,11 @@
 // REQUIRED_ARGS: -w
-// 4375: Dangling else
+// https://issues.dlang.org/show_bug.cgi?id=4375: Dangling else
+/*
+TEST_OUTPUT:
+---
+fail_compilation/fail4375f.d(14): Warning: else is dangling, add { } after condition at fail_compilation/fail4375f.d(11)
+---
+*/
 
 void main() {
     version (A)

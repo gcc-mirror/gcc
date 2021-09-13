@@ -1,5 +1,5 @@
 /* Translation of isl AST to Gimple.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Contributed by Roman Gareev <gareevroman@gmail.com>.
 
 This file is part of GCC.
@@ -1535,9 +1535,8 @@ graphite_regenerate_ast_isl (scop_p scop)
       if_region->false_region->region.entry->flags |= EDGE_FALLTHRU;
       /* remove_edge_and_dominated_blocks marks loops for removal but
 	 doesn't actually remove them (fix that...).  */
-      loop_p loop;
-      FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
-	if (! loop->header)
+      for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
+	if (!loop->header)
 	  delete_loop (loop);
     }
 

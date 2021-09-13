@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* Origin: Martin Uecker <uecker@eecs.berkeley.edu> */
-/* { dg-options "-Wdiscarded-array-qualifiers" } */
+/* { dg-options "" } */
 void tvoid(void* x);
 void transpose0(double* out, const double* in) { }
 void transpose1(double out[2][2], const double in[2][2]) { }

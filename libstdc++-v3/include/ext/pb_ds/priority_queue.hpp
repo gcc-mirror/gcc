@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -51,6 +51,7 @@ namespace __gnu_pbds
   /**
    *  @defgroup heap-based Heap-Based
    *  @ingroup containers-pbds
+   *
    *  @{
    */
 
@@ -151,6 +152,6 @@ namespace __gnu_pbds
     swap(priority_queue& other)
     { base_type::swap(other); }
   };
+ ///@} heap-based
 } // namespace __gnu_pbds
- //@} heap-based
 #endif

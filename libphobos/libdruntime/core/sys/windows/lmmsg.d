@@ -8,9 +8,10 @@
  */
 module core.sys.windows.lmmsg;
 version (Windows):
+@system:
 pragma(lib, "netapi32");
 
-private import core.sys.windows.lmcons, core.sys.windows.windef, core.sys.windows.w32api;
+import core.sys.windows.lmcons, core.sys.windows.windef, core.sys.windows.w32api;
 
 static assert (_WIN32_WINNT >= 0x501,
     "core.sys.windows.lmmsg is available only if version WindowsXP, Windows2003 "

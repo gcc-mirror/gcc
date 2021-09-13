@@ -5,7 +5,7 @@ template<int I>
 struct index
 {};
 
-constexpr int recursive_impl(index<0u>)
+constexpr int recursive_impl(const index<0u>&)
 {
   return 0;
 }

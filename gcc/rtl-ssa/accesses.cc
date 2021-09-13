@@ -1,5 +1,5 @@
 // Implementation of access-related functions for RTL SSA           -*- C++ -*-
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -26,6 +26,7 @@
 #include "rtl.h"
 #include "df.h"
 #include "rtl-ssa.h"
+#include "rtl-ssa/internals.h"
 #include "rtl-ssa/internals.inl"
 
 using namespace rtl_ssa;
@@ -1241,7 +1242,10 @@ function_info::insert_temp_clobber (obstack_watermark &watermark,
 }
 
 // A subroutine of make_uses_available.  Try to make USE's definition
-// available at the head of BB.  On success:
+// available at the head of BB.  WILL_BE_DEBUG_USE is true if the
+// definition will be used only in debug instructions.
+//
+// On success:
 //
 // - If the use would have the same def () as USE, return USE.
 //
@@ -1253,7 +1257,8 @@ function_info::insert_temp_clobber (obstack_watermark &watermark,
 //
 // Return null on failure.
 use_info *
-function_info::make_use_available (use_info *use, bb_info *bb)
+function_info::make_use_available (use_info *use, bb_info *bb,
+				   bool will_be_debug_use)
 {
   set_info *def = use->def ();
   if (!def)
@@ -1269,7 +1274,7 @@ function_info::make_use_available (use_info *use, bb_info *bb)
       && single_pred (cfg_bb) == use_bb->cfg_bb ()
       && remains_available_on_exit (def, use_bb))
     {
-      if (def->ebb () == bb->ebb ())
+      if (def->ebb () == bb->ebb () || will_be_debug_use)
 	return use;
 
       resource_info resource = use->resource ();
@@ -1290,7 +1295,7 @@ function_info::make_use_available (use_info *use, bb_info *bb)
 	  // Create a temporary placeholder phi.  This will become
 	  // permanent if the change is later committed.
 	  phi = allocate_temp<phi_info> (phi_insn, resource, 0);
-	  auto *input = allocate<use_info> (phi, resource, ultimate_def);
+	  auto *input = allocate_temp<use_info> (phi, resource, ultimate_def);
 	  input->m_is_temp = true;
 	  phi->m_is_temp = true;
 	  phi->make_degenerate (input);
@@ -1313,7 +1318,8 @@ function_info::make_use_available (use_info *use, bb_info *bb)
 // See the comment above the declaration.
 use_array
 function_info::make_uses_available (obstack_watermark &watermark,
-				    use_array uses, bb_info *bb)
+				    use_array uses, bb_info *bb,
+				    bool will_be_debug_uses)
 {
   unsigned int num_uses = uses.size ();
   if (num_uses == 0)
@@ -1322,7 +1328,7 @@ function_info::make_uses_available (obstack_watermark &watermark,
   auto **new_uses = XOBNEWVEC (watermark, access_info *, num_uses);
   for (unsigned int i = 0; i < num_uses; ++i)
     {
-      use_info *use = make_use_available (uses[i], bb);
+      use_info *use = make_use_available (uses[i], bb, will_be_debug_uses);
       if (!use)
 	return use_array (access_array::invalid ());
       new_uses[i] = use;

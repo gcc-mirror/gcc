@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
-/* { dg-options "-O2 -mtune=lakemont" } */
+/* { dg-options "-O2 -mtune=lakemont -mno-avx" } */
 
 extern char *strcpy (char *, const char *);
 

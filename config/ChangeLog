@@ -1,3 +1,44 @@
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* mh-darwin: Require a non-shared host configuration to
+	enable  mdynamic-no-pic where that is supported.
+
+2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* mh-darwin: Make this specific to handling the
+	mdynamic-no-pic case.
+
+2021-06-14  Michael Forney  <mforney@mforney.org>
+
+	* gettext.m4 (AM_GNU_GETTEXT): Skip checks for the internal
+	symbols _nl_msg_cat_cntr, _nl_domain_bindings, and
+	_nl_expand_alias, if __GNU_GETTEXT_SUPPORTED_REVISION is defined.
+	Backport of gettext serial 68 patch.
+
+2021-05-18  Mike Frysinger  <vapier@gentoo.org>
+
+	* acinclude.m4 (CYG_AC_PATH_SIM, CYG_AC_PATH_DEVO): Delete.
+
+2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/99703
+	* cet.m4 (GCC_CET_HOST_FLAGS): Check if host supports multi-byte
+	NOPs.
+
+2021-04-13  Martin Storsjö  <martin@martin.st>
+
+	* mh-mingw: Set __USE_MINGW_ACCESS in missed C++ flags
+	variables
+
+2021-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/98316
+	* ax_lib_socket_nsl.m4: Import from autoconf-archive.
+
+2021-01-03  Mike Frysinger  <vapier@gentoo.org>
+
+	* pkg.m4: New file from pkg-config-0.29.2.
+
 2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* bootstrap-hwasan.mk: Disable random frame tags for stack-tagging

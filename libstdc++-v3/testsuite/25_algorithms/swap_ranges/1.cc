@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,7 @@
 using __gnu_test::test_container;
 using __gnu_test::forward_iterator_wrapper;
 
-typedef test_container<int, forward_iterator_wrapper> Container; 
+typedef test_container<int, forward_iterator_wrapper> Container;
 
 
 void
@@ -46,10 +46,10 @@ test2()
   int array2[] = {1};
   Container con1(array1, array1);
   Container con2(array2, array2);
-  VERIFY(swap_ranges(con1.begin(), con1.end(), con2.begin()).ptr == array2);
+  VERIFY(std::swap_ranges(con1.begin(), con1.end(), con2.begin()).ptr == array2);
 }
 
-int 
+int
 main()
 {
   test1();
