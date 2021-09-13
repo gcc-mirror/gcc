@@ -32,6 +32,7 @@ extern "C" {
 
 #include <stddef.h>  /* Standard ptrdiff_t tand size_t. */
 #include <stdint.h>  /* Integer types. */
+#include <float.h>  /* Macros for floating-point type characteristics.  */
 
 /* Constants, defined as macros. */
 #define CFI_VERSION 1
@@ -198,3 +199,79 @@ extern int CFI_setpointer (CFI_cdesc_t *, CFI_cdesc_t *, const CFI_index_t []);
 #define CFI_type_double (CFI_type_Real + (sizeof (double) << CFI_type_kind_shift))
 #define CFI_type_float_Complex (CFI_type_Complex + (sizeof (float) << CFI_type_kind_shift))
 #define CFI_type_double_Complex (CFI_type_Complex + (sizeof (double) << CFI_type_kind_shift))
+
+/* If GCC supports int128_t on this target, it predefines
+   __SIZEOF_INT128__ to 16.  */
+#if defined(__SIZEOF_INT128__)
+#if (__SIZEOF_INT128__ == 16)
+#define CFI_type_int128_t (CFI_type_Integer + (16 << CFI_type_kind_shift))
+#define CFI_type_int_least128_t (CFI_type_Integer + (16 << CFI_type_kind_shift))
+#define CFI_type_int_fast128_t (CFI_type_Integer + (16 << CFI_type_kind_shift))
+#else
+#error "Can't determine kind of int128_t"
+#endif
+#else
+#define CFI_type_int128_t -2
+#define CFI_type_int_least128_t -2
+#define CFI_type_int_fast128_t -2
+#endif
+
+/* The situation with long double support is more complicated; we need to
+   examine the type in more detail to figure out its kind.  */
+
+/* Long double is the same kind as double.  */
+#if (LDBL_MANT_DIG == DBL_MANT_DIG \
+     && LDBL_MIN_EXP == DBL_MIN_EXP \
+     && LDBL_MAX_EXP == DBL_MAX_EXP)
+#define CFI_type_long_double CFI_type_double
+#define CFI_type_long_double_Complex CFI_type_double_Complex
+
+/* This is the 80-bit encoding on x86; Fortran assigns it kind 10.  */
+#elif (LDBL_MANT_DIG == 64 \
+       && LDBL_MIN_EXP == -16381 \
+       && LDBL_MAX_EXP == 16384)
+#define CFI_type_long_double (CFI_type_Real + (10 << CFI_type_kind_shift))
+#define CFI_type_long_double_Complex (CFI_type_Complex + (10 << CFI_type_kind_shift))
+
+/* This is the IEEE 128-bit encoding, same as float128.  */
+#elif (LDBL_MANT_DIG == 113 \
+       && LDBL_MIN_EXP == -16381 \
+       && LDBL_MAX_EXP == 16384)
+#define CFI_type_long_double (CFI_type_Real + (16 << CFI_type_kind_shift))
+#define CFI_type_long_double_Complex (CFI_type_Complex + (16 << CFI_type_kind_shift))
+
+/* This is the IBM128 encoding used on PowerPC; also assigned kind 16.  */
+#elif (LDBL_MANT_DIG == 106 \
+       && LDBL_MIN_EXP == -968 \
+       && LDBL_MAX_EXP == 1024)
+#define CFI_type_long_double (CFI_type_Real + (16 << CFI_type_kind_shift))
+#define CFI_type_long_double_Complex (CFI_type_Complex + (16 << CFI_type_kind_shift))
+#define CFI_no_float128 1
+
+/* It's a bug if we get here.  If you've got a target that has some other
+   long double encoding, you need add something here for Fortran to
+   recognize it.  */
+#else
+#error "Can't determine kind of long double"
+#endif
+
+/* Similarly for __float128.  This always refers to the IEEE encoding
+   and not some other 128-bit representation, so if we already used
+   kind 16 for a non-IEEE representation, this one must be unsupported
+   in Fortran even if it's available in C.  */
+#if (!defined (CFI_no_float128) \
+     && defined(__FLT128_MANT_DIG__) && __FLT128_MANT_DIG__ == 113  \
+     && defined(__FLT128_MIN_EXP__) && __FLT128_MIN_EXP__ == -16381 \
+     && defined(__FLT128_MAX_EXP__) && __FLT128_MAX_EXP__ == 16384)
+#define CFI_type_float128 (CFI_type_Real + (16 << CFI_type_kind_shift))
+#define CFI_type_float128_Complex (CFI_type_Complex + (16 << CFI_type_kind_shift))
+#else
+#define CFI_type_float128 -2
+#define CFI_type_float128_Complex -2
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ISO_FORTRAN_BINDING_H */
