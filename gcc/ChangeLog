@@ -1,3 +1,9 @@
+2021-09-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expr.c (convert_move): Preserve SUBREG_PROMOTED_VAR_P when
+	creating a (wider) partial subreg from a SUBREG_PROMOTED_VAR_P
+	subreg.
+
 2021-09-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-ssa-threadbackward.c (class back_threader_registry): Use

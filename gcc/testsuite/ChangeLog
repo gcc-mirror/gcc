@@ -1,3 +1,8 @@
+2021-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102185
+	* gdc.dg/pr102185.d: New test.
+
 2021-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/auto-init-1.c: Enable test only on ilp32 or lp64
