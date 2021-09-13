@@ -2081,6 +2081,24 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  sym->as->type = AS_EXPLICIT;
 	}
 
+      /* Ensure that explicit bounds are simplified.  */
+      if (sym->attr.flavor == FL_PARAMETER && sym->attr.dimension
+	  && sym->as->type == AS_EXPLICIT)
+	{
+	  for (int dim = 0; dim < sym->as->rank; ++dim)
+	    {
+	      gfc_expr *e;
+
+	      e = sym->as->lower[dim];
+	      if (e->expr_type != EXPR_CONSTANT)
+		gfc_reduce_init_expr (e);
+
+	      e = sym->as->upper[dim];
+	      if (e->expr_type != EXPR_CONSTANT)
+		gfc_reduce_init_expr (e);
+	    }
+	}
+
       /* Need to check if the expression we initialized this
 	 to was one of the iso_c_binding named constants.  If so,
 	 and we're a parameter (constant), let it be iso_c.
