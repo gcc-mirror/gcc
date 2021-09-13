@@ -9770,7 +9770,6 @@ aarch64_classify_address (struct aarch64_address_info *info,
 			    || mode == TImode
 			    || mode == TFmode
 			    || (BYTES_BIG_ENDIAN && advsimd_struct_p));
-
   /* If we are dealing with ADDR_QUERY_LDP_STP_N that means the incoming mode
      corresponds to the actual size of the memory being loaded/stored and the
      mode of the corresponding addressing mode is half of that.  */
@@ -9779,12 +9778,14 @@ aarch64_classify_address (struct aarch64_address_info *info,
     mode = DFmode;
 
   bool allow_reg_index_p = (!load_store_pair_p
-			    && (known_lt (GET_MODE_SIZE (mode), 16)
+			    && ((vec_flags == 0
+				 && known_lt (GET_MODE_SIZE (mode), 16))
 				|| vec_flags == VEC_ADVSIMD
 				|| vec_flags & VEC_SVE_DATA));
 
-  /* For SVE, only accept [Rn], [Rn, Rm, LSL #shift] and
-     [Rn, #offset, MUL VL].  */
+  /* For SVE, only accept [Rn], [Rn, #offset, MUL VL] and [Rn, Rm, LSL #shift].
+     The latter is not valid for SVE predicates, and that's rejected through
+     allow_reg_index_p above.  */
   if ((vec_flags & (VEC_SVE_DATA | VEC_SVE_PRED)) != 0
       && (code != REG && code != PLUS))
     return false;
