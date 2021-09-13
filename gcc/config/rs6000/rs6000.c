@@ -5262,7 +5262,7 @@ rs6000_preferred_simd_mode (scalar_mode mode)
   return word_mode;
 }
 
-typedef struct _rs6000_cost_data
+struct rs6000_cost_data
 {
   struct loop *loop_info;
   unsigned cost[3];
@@ -5271,7 +5271,7 @@ typedef struct _rs6000_cost_data
   bool vect_nonmem;
   /* Indicates this is costing for the scalar version of a loop or block.  */
   bool costing_for_scalar;
-} rs6000_cost_data;
+};
 
 /* Test for likely overcommitment of vector hardware resources.  If a
    loop iteration is relatively large, and too large a percentage of
@@ -5337,7 +5337,7 @@ rs6000_density_test (rs6000_cost_data *data)
 static void *
 rs6000_init_cost (struct loop *loop_info, bool costing_for_scalar)
 {
-  rs6000_cost_data *data = XNEW (struct _rs6000_cost_data);
+  rs6000_cost_data *data = XNEW (rs6000_cost_data);
   data->loop_info = loop_info;
   data->cost[vect_prologue] = 0;
   data->cost[vect_body]     = 0;
