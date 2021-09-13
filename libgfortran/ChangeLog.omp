@@ -1,6 +1,17 @@
 2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* Makefile.am (gfor_built_src): Depend on
+	include/ISO_Fortran_binding.h not on ISO_Fortran_binding.h.
+	(ISO_Fortran_binding.h): Rename make target to ...
+	(include/ISO_Fortran_binding.h): ... this.
+	* Makefile.in: Regenerate.
+
+2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-09-06  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* ISO_Fortran_binding-1-tmpl.h: Deleted.
