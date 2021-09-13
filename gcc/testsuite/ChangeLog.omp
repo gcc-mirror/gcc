@@ -1,4 +1,4 @@
-2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
 	2021-09-01  Sandra Loosemore  <sandra@codesourcery.com>
@@ -14,7 +14,7 @@
 	* gfortran.dg/PR100915.c: New file.
 	* gfortran.dg/PR100915.f90: New file.
 
-2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
 	2021-09-10  Jakub Jelinek  <jakub@redhat.com>
@@ -37,10 +37,10 @@
 	* g++.dg/gomp/atomic-18.C:Expect 4 omp atomic release and
 	1 omp atomic_acq_rel instead of 5 omp atomic release directives.
 
-2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
-	2021-08-03  Tobias Burnus  <tobias@codesourcery.com>
+	2021-09-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/bind_c_char_6.f90: Update dg-error.
 	* gfortran.dg/bind_c_char_7.f90: Likewise.

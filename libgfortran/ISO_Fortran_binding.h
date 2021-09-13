@@ -233,6 +233,13 @@ extern int CFI_setpointer (CFI_cdesc_t *, CFI_cdesc_t *, const CFI_index_t []);
 #define CFI_type_long_double (CFI_type_Real + (10 << CFI_type_kind_shift))
 #define CFI_type_long_double_Complex (CFI_type_Complex + (10 << CFI_type_kind_shift))
 
+/* This is the 96-bit encoding on m68k; Fortran assigns it kind 10.  */
+#elif (LDBL_MANT_DIG == 64 \
+       && LDBL_MIN_EXP == -16382 \
+       && LDBL_MAX_EXP == 16384)
+#define CFI_type_long_double (CFI_type_Real + (10 << CFI_type_kind_shift))
+#define CFI_type_long_double_Complex (CFI_type_Complex + (10 << CFI_type_kind_shift))
+
 /* This is the IEEE 128-bit encoding, same as float128.  */
 #elif (LDBL_MANT_DIG == 113 \
        && LDBL_MIN_EXP == -16381 \

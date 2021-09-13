@@ -1,7 +1,16 @@
-2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
-	2021-08-07  Tobias Burnus  <tobias@codesourcery.com>
+	2021-09-13  Andreas Schwab   <schwab@linux-m68k.org>
+
+	* ISO_Fortran_binding.h (CFI_type_long_double)
+	(CFI_type_long_double_Complex) [LDBL_MANT_DIG == 64 &&
+	LDBL_MIN_EXP == -16382 && LDBL_MAX_EXP == 16384]: Define.
+
+2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	* Makefile.am (gfor_built_src): Depend on
 	include/ISO_Fortran_binding.h not on ISO_Fortran_binding.h.
@@ -9,7 +18,7 @@
 	(include/ISO_Fortran_binding.h): ... this.
 	* Makefile.in: Regenerate.
 
-2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
 	2021-09-06  Sandra Loosemore  <sandra@codesourcery.com>
@@ -24,7 +33,7 @@
 	* mk-kinds-h.sh: Revert pieces no longer needed for
 	ISO_Fortran_binding.h.
 
-2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
 	2021-09-01  Sandra Loosemore  <sandra@codesourcery.com>
