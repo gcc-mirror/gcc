@@ -1,6 +1,22 @@
 2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-09-01  Sandra Loosemore  <sandra@codesourcery.com>
+		    José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100911
+	PR fortran/100915
+	PR fortran/100916
+	* gfortran.dg/PR100911.c: New file.
+	* gfortran.dg/PR100911.f90: New file.
+	* gfortran.dg/PR100914.c: New file.
+	* gfortran.dg/PR100914.f90: New file.
+	* gfortran.dg/PR100915.c: New file.
+	* gfortran.dg/PR100915.f90: New file.
+
+2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/atomic-17.c (foo): Add tests for atomic read,
