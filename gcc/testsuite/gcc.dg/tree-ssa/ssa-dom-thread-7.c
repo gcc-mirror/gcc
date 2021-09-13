@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -fdump-tree-thread1-stats -fdump-tree-thread2-stats -fdump-tree-dom2-stats -fdump-tree-thread3-stats -fdump-tree-dom3-stats -fdump-tree-vrp2-stats -fno-guess-branch-probability" } */
 
 /* { dg-final { scan-tree-dump "Jumps threaded: 18"  "thread1" } } */
-/* { dg-final { scan-tree-dump "Jumps threaded: 8" "thread3" } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 8" "thread3" { target { ! aarch64*-*-* } } } } */
 /* { dg-final { scan-tree-dump-not "Jumps threaded"  "dom2" } } */
 
 /* aarch64 has the highest CASE_VALUES_THRESHOLD in GCC.  It's high enough
