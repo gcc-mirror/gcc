@@ -1,3 +1,12 @@
+2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Enabling OpenMP): Refer to OMP spec in general
+	not to 4.5; link to new section.
+	(OpenMP Implementation Status): New.
+
 2021-09-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
