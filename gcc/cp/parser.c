@@ -18405,6 +18405,7 @@ cp_parser_template_name (cp_parser* parser,
 	    {
 	      /* We're optimizing away the call to cp_parser_lookup_name, but
 		 we still need to do this.  */
+	      parser->object_scope = parser->context->object_type;
 	      parser->context->object_type = NULL_TREE;
 	      return identifier;
 	    }
@@ -33575,7 +33576,8 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
   /* Set the scope from the stored value.  */
   parser->scope = saved_checks_value (check_value);
   parser->qualifying_scope = check_value->qualifying_scope;
-  parser->object_scope = NULL_TREE;
+  parser->object_scope = parser->context->object_type;
+  parser->context->object_type = NULL_TREE;
 }
 
 /* Consume tokens up through a non-nested END token.  Returns TRUE if we
