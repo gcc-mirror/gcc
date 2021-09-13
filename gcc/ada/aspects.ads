@@ -89,6 +89,7 @@ package Aspects is
       Aspect_Default_Storage_Pool,
       Aspect_Default_Value,
       Aspect_Depends,                       -- GNAT
+      Aspect_Designated_Storage_Model,      -- GNAT
       Aspect_Dimension,                     -- GNAT
       Aspect_Dimension_System,              -- GNAT
       Aspect_Dispatching_Domain,
@@ -147,6 +148,7 @@ package Aspects is
       Aspect_SPARK_Mode,                    -- GNAT
       Aspect_Stable_Properties,
       Aspect_Static_Predicate,
+      Aspect_Storage_Model_Type,            -- GNAT
       Aspect_Storage_Pool,
       Aspect_Storage_Size,
       Aspect_Stream_Size,
@@ -380,6 +382,7 @@ package Aspects is
       Aspect_Default_Storage_Pool       => Expression,
       Aspect_Default_Value              => Expression,
       Aspect_Depends                    => Expression,
+      Aspect_Designated_Storage_Model   => Name,
       Aspect_Dimension                  => Expression,
       Aspect_Dimension_System           => Expression,
       Aspect_Dispatching_Domain         => Expression,
@@ -438,6 +441,7 @@ package Aspects is
       Aspect_SPARK_Mode                 => Optional_Name,
       Aspect_Stable_Properties          => Expression,
       Aspect_Static_Predicate           => Expression,
+      Aspect_Storage_Model_Type         => Expression,
       Aspect_Storage_Pool               => Name,
       Aspect_Storage_Size               => Expression,
       Aspect_Stream_Size                => Expression,
@@ -485,6 +489,7 @@ package Aspects is
       Aspect_Default_Storage_Pool         => True,
       Aspect_Default_Value                => True,
       Aspect_Depends                      => False,
+      Aspect_Designated_Storage_Model     => True,
       Aspect_Dimension                    => False,
       Aspect_Dimension_System             => False,
       Aspect_Dispatching_Domain           => False,
@@ -544,6 +549,7 @@ package Aspects is
       Aspect_SPARK_Mode                   => False,
       Aspect_Stable_Properties            => False,
       Aspect_Static_Predicate             => False,
+      Aspect_Storage_Model_Type           => False,
       Aspect_Storage_Pool                 => True,
       Aspect_Storage_Size                 => True,
       Aspect_Stream_Size                  => True,
@@ -637,6 +643,7 @@ package Aspects is
       Aspect_Default_Storage_Pool         => Name_Default_Storage_Pool,
       Aspect_Default_Value                => Name_Default_Value,
       Aspect_Depends                      => Name_Depends,
+      Aspect_Designated_Storage_Model     => Name_Designated_Storage_Model,
       Aspect_Dimension                    => Name_Dimension,
       Aspect_Dimension_System             => Name_Dimension_System,
       Aspect_Disable_Controlled           => Name_Disable_Controlled,
@@ -726,6 +733,7 @@ package Aspects is
       Aspect_Stable_Properties            => Name_Stable_Properties,
       Aspect_Static                       => Name_Static,
       Aspect_Static_Predicate             => Name_Static_Predicate,
+      Aspect_Storage_Model_Type           => Name_Storage_Model_Type,
       Aspect_Storage_Pool                 => Name_Storage_Pool,
       Aspect_Storage_Size                 => Name_Storage_Size,
       Aspect_Stream_Size                  => Name_Stream_Size,
@@ -881,6 +889,7 @@ package Aspects is
       Aspect_Default_Storage_Pool         => Always_Delay,
       Aspect_Default_Value                => Always_Delay,
       Aspect_Default_Component_Value      => Always_Delay,
+      Aspect_Designated_Storage_Model     => Always_Delay,
       Aspect_Discard_Names                => Always_Delay,
       Aspect_Dispatching_Domain           => Always_Delay,
       Aspect_Dynamic_Predicate            => Always_Delay,
@@ -932,6 +941,7 @@ package Aspects is
       Aspect_Simple_Storage_Pool          => Always_Delay,
       Aspect_Simple_Storage_Pool_Type     => Always_Delay,
       Aspect_Static_Predicate             => Always_Delay,
+      Aspect_Storage_Model_Type           => Always_Delay,
       Aspect_Storage_Pool                 => Always_Delay,
       Aspect_Stream_Size                  => Always_Delay,
       Aspect_String_Literal               => Always_Delay,

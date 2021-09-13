@@ -262,6 +262,19 @@ package body Sem_Ch13 is
    --  Check legality of functions given in the Ada 2022 Stable_Properties
    --  (or Stable_Properties'Class) aspect.
 
+   procedure Validate_Storage_Model_Type_Aspect
+     (Typ : Entity_Id; ASN : Node_Id);
+   --  Check legality and completeness of the aggregate associations given in
+   --  the Storage_Model_Type aspect associated with Typ.
+
+   procedure Resolve_Storage_Model_Type_Argument
+     (N         : Node_Id;
+      Typ       : Entity_Id;
+      Addr_Type : in out Entity_Id;
+      Nam       : Name_Id);
+   --  Resolve argument N to be of the proper kind (when a type or constant)
+   --  or to have the proper profile (when a subprogram).
+
    procedure Resolve_Aspect_Stable_Properties
     (Typ_Or_Subp   : Entity_Id;
      Expr          : Node_Id;
@@ -1516,6 +1529,32 @@ package body Sem_Ch13 is
 
                   when Aspect_Iterable =>
                      Validate_Iterable_Aspect (E, ASN);
+
+                  when Aspect_Designated_Storage_Model =>
+                     Analyze_And_Resolve (Expression (ASN));
+
+                     if not Is_Entity_Name (Expression (ASN))
+                       or else not Is_Object (Entity (Expression (ASN)))
+                       or else
+                         not Present (Find_Aspect (Etype (Expression (ASN)),
+                                                   Aspect_Storage_Model_Type))
+                     then
+                        Error_Msg_N
+                          ("must specify name of stand-alone object of type "
+                            & "with aspect Storage_Model_Type",
+                           Expression (ASN));
+
+                     --  Set access type's Associated_Storage_Pool to denote
+                     --  the Storage_Model_Type object given for the aspect
+                     --  (even though that isn't actually an Ada storage pool).
+
+                     else
+                        Set_Associated_Storage_Pool
+                          (E, Entity (Expression (ASN)));
+                     end if;
+
+                  when Aspect_Storage_Model_Type =>
+                     Validate_Storage_Model_Type_Aspect (E, ASN);
 
                   when Aspect_Aggregate =>
                      null;
@@ -3065,10 +3104,11 @@ package body Sem_Ch13 is
 
             if Delay_Required
 
-               and then A_Id = Aspect_Stable_Properties
+               and then (A_Id = Aspect_Stable_Properties
+                          or else A_Id = Aspect_Designated_Storage_Model
+                          or else A_Id = Aspect_Storage_Model_Type)
                --  ??? It seems like we should do this for all aspects, not
-               --  just Stable_Properties, but that causes as-yet-undiagnosed
-               --  regressions.
+               --  just these, but that causes as-yet-undiagnosed regressions.
 
             then
                Set_Has_Delayed_Aspects (E);
@@ -4365,6 +4405,44 @@ package body Sem_Ch13 is
                when Aspect_Stable_Properties =>
                   Validate_Aspect_Stable_Properties
                     (E, Expr, Class_Present => Class_Present (Aspect));
+                  Record_Rep_Item (E, Aspect);
+                  goto Continue;
+
+               when Aspect_Designated_Storage_Model =>
+                  if not Extensions_Allowed then
+                     Error_Msg_N
+                       ("aspect only allowed if extensions enabled",
+                        Aspect);
+                     Error_Msg_N
+                       ("\unit must be compiled with -gnatX switch", Aspect);
+
+                  elsif not Is_Type (E)
+                    or else Ekind (E) /= E_Access_Type
+                  then
+                     Error_Msg_N
+                       ("can only be specified for pool-specific access type",
+                        Aspect);
+                  end if;
+
+                  Record_Rep_Item (E, Aspect);
+                  goto Continue;
+
+               when Aspect_Storage_Model_Type =>
+                  if not Extensions_Allowed then
+                     Error_Msg_N
+                       ("aspect only allowed if extensions enabled",
+                        Aspect);
+                     Error_Msg_N
+                       ("\unit must be compiled with -gnatX switch", Aspect);
+
+                  elsif not Is_Type (E)
+                    or else not Is_Immutably_Limited_Type (E)
+                  then
+                     Error_Msg_N
+                       ("can only be specified for immutably limited type",
+                        Aspect);
+                  end if;
+
                   Record_Rep_Item (E, Aspect);
                   goto Continue;
 
@@ -11229,6 +11307,34 @@ package body Sem_Ch13 is
 
          --  Here is the list of aspects that don't require delay analysis
 
+         when Aspect_Designated_Storage_Model =>
+            return;
+
+         when Aspect_Storage_Model_Type =>
+            T := Entity (ASN);
+
+            declare
+               Assoc     : Node_Id;
+               Expr      : Node_Id;
+               Addr_Type : Entity_Id := Empty;
+
+            begin
+               Assoc := First (Component_Associations (Expression (ASN)));
+               while Present (Assoc) loop
+                  Expr := Expression (Assoc);
+                  Analyze (Expr);
+
+                  if not Error_Posted (Expr) then
+                     Resolve_Storage_Model_Type_Argument
+                       (Expr, T, Addr_Type, Chars (First (Choices (Assoc))));
+                  end if;
+
+                  Next (Assoc);
+               end loop;
+            end;
+
+            return;
+
          when Aspect_Abstract_State
             | Aspect_Annotate
             | Aspect_Async_Readers
@@ -16199,6 +16305,334 @@ package body Sem_Ch13 is
       Set_Analyzed (Expr);
    end Resolve_Aspect_Stable_Properties;
 
+   -----------------------------------------
+   -- Resolve_Storage_Model_Type_Argument --
+   -----------------------------------------
+
+   procedure Resolve_Storage_Model_Type_Argument
+     (N         : Node_Id;
+      Typ       : Entity_Id;
+      Addr_Type : in out Entity_Id;
+      Nam       : Name_Id)
+   is
+
+      type Formal_Profile is record
+         Subt : Entity_Id;
+         Mode : Formal_Kind;
+      end record;
+
+      type Formal_Profiles is array (Positive range <>) of Formal_Profile;
+
+      function Aspect_Argument_Profile_Matches
+        (Subp            : Entity_Id;
+         Profiles        : Formal_Profiles;
+         Result_Subt     : Entity_Id;
+         Err_On_Mismatch : Boolean) return Boolean;
+      --  Checks that the formal parameters of subprogram Subp conform to the
+      --  subtypes and modes specified by Profiles, as well as to the result
+      --  subtype Result_Subt when that is nonempty.
+
+      function Aspect_Argument_Profile_Matches
+        (Subp            : Entity_Id;
+         Profiles        : Formal_Profiles;
+         Result_Subt     : Entity_Id;
+         Err_On_Mismatch : Boolean) return Boolean
+      is
+
+         procedure Report_Argument_Error
+           (Msg    : String;
+            Formal : Entity_Id := Empty;
+            Subt   : Entity_Id := Empty);
+         --  If Err_On_Mismatch is True, reports an argument error given by Msg
+         --  associated with Formal and/or Subt.
+
+         procedure Report_Argument_Error
+           (Msg    : String;
+            Formal : Entity_Id := Empty;
+            Subt   : Entity_Id := Empty)
+         is
+         begin
+            if Err_On_Mismatch then
+               if Present (Formal) then
+                  if Present (Subt) then
+                     Error_Msg_Node_2 := Subt;
+                  end if;
+                  Error_Msg_NE (Msg, N, Formal);
+
+               elsif Present (Subt) then
+                  Error_Msg_NE (Msg, N, Subt);
+
+               else
+                  Error_Msg_N (Msg, N);
+               end if;
+            end if;
+         end Report_Argument_Error;
+
+         --  Local variables
+
+         Formal    : Entity_Id := First_Formal (Subp);
+         Is_Error  : Boolean   := False;
+
+      --  Start of processing for Aspect_Argument_Profile_Matches
+
+      begin
+         for FP of Profiles loop
+            if not Present (Formal) then
+               Is_Error := True;
+               Report_Argument_Error ("missing formal of }", Subt => FP.Subt);
+               exit;
+
+            elsif not Subtypes_Statically_Match
+                        (Etype (Formal), FP.Subt)
+            then
+               Is_Error := True;
+               Report_Argument_Error
+                 ("formal& must be of subtype&",
+                  Formal => Formal, Subt => FP.Subt);
+               exit;
+
+            elsif Ekind (Formal) /= FP.Mode then
+               Is_Error := True;
+               Report_Argument_Error
+                 ("formal& has wrong mode", Formal => Formal);
+               exit;
+            end if;
+
+            Formal := Next_Formal (Formal);
+         end loop;
+
+         if not Is_Error
+           and then Present (Formal)
+         then
+            Is_Error := True;
+            Report_Argument_Error
+              ("too many formals for subprogram in aspect");
+         end if;
+
+         if not Is_Error
+           and then Present (Result_Subt)
+           and then not Subtypes_Statically_Match (Etype (Subp), Result_Subt)
+         then
+            Is_Error := True;
+            Report_Argument_Error
+              ("subprogram must have result}", Subt => Result_Subt);
+         end if;
+
+         return not Is_Error;
+      end Aspect_Argument_Profile_Matches;
+
+      --  Local variables
+
+      Ent : Entity_Id;
+
+      Storage_Count_Type  : constant Entity_Id := RTE (RE_Storage_Count);
+      System_Address_Type : constant Entity_Id := RTE (RE_Address);
+
+   --  Start of processing for Resolve_Storage_Model_Type_Argument
+
+   begin
+      if Nam = Name_Address_Type then
+         if not Is_Entity_Name (N)
+           or else not Is_Type (Entity (N))
+           or else (Root_Type (Entity (N)) /= System_Address_Type
+                     and then not Is_Integer_Type (Entity (N)))
+         then
+            Error_Msg_N ("named entity must be a descendant of System.Address "
+                         & "or an integer type", N);
+         end if;
+
+         Addr_Type := Entity (N);
+
+         return;
+
+      elsif not Present (Addr_Type) then
+         Error_Msg_N ("argument association for Address_Type missing; "
+                         & "must be specified as first aspect argument", N);
+         return;
+
+      elsif Nam = Name_Null_Address then
+         if not Is_Entity_Name (N)
+           or else not Is_Constant_Object (Entity (N))
+           or else
+             not Subtypes_Statically_Match (Etype (Entity (N)), Addr_Type)
+         then
+            Error_Msg_NE
+              ("named entity must be constant of subtype}", N, Addr_Type);
+         end if;
+
+         return;
+
+      elsif not Is_Overloaded (N) then
+         if not Is_Entity_Name (N)
+           or else Ekind (Entity (N)) not in E_Function | E_Procedure
+           or else Scope (Entity (N)) /= Scope (Typ)
+         then
+            Error_Msg_N ("argument must be local subprogram name", N);
+            return;
+         end if;
+
+         Ent := Entity (N);
+
+         if Nam = Name_Allocate then
+            if not Aspect_Argument_Profile_Matches
+                     (Ent,
+                      Profiles        =>
+                        ((Typ,                E_In_Out_Parameter),
+                         (Addr_Type,          E_Out_Parameter),
+                         (Storage_Count_Type, E_In_Parameter),
+                         (Storage_Count_Type, E_In_Parameter)),
+                      Result_Subt     => Empty,
+                      Err_On_Mismatch => True)
+            then
+               Error_Msg_N ("no match for Allocate operation", N);
+            end if;
+
+         elsif Nam = Name_Deallocate then
+            if not Aspect_Argument_Profile_Matches
+                     (Ent,
+                      Profiles        =>
+                        ((Typ,                E_In_Out_Parameter),
+                         (Addr_Type,          E_In_Parameter),
+                         (Storage_Count_Type, E_In_Parameter),
+                         (Storage_Count_Type, E_In_Parameter)),
+                      Result_Subt     => Empty,
+                      Err_On_Mismatch => True)
+            then
+               Error_Msg_N ("no match for Deallocate operation", N);
+            end if;
+
+         elsif Nam = Name_Copy_From then
+            if not Aspect_Argument_Profile_Matches
+                     (Ent,
+                      Profiles        =>
+                        ((Typ,                 E_In_Out_Parameter),
+                         (System_Address_Type, E_In_Parameter),
+                         (Addr_Type,           E_In_Parameter),
+                         (Storage_Count_Type,  E_In_Parameter)),
+                      Result_Subt     => Empty,
+                      Err_On_Mismatch => True)
+            then
+               Error_Msg_N ("no match for Copy_From operation", N);
+            end if;
+
+         elsif Nam = Name_Copy_To then
+            if not Aspect_Argument_Profile_Matches
+                     (Ent,
+                      Profiles        =>
+                        ((Typ,                 E_In_Out_Parameter),
+                         (Addr_Type,           E_In_Parameter),
+                         (System_Address_Type, E_In_Parameter),
+                         (Storage_Count_Type,  E_In_Parameter)),
+                      Result_Subt     => Empty,
+                      Err_On_Mismatch => True)
+            then
+               Error_Msg_N ("no match for Copy_To operation", N);
+            end if;
+
+         elsif Nam = Name_Storage_Size then
+            if not Aspect_Argument_Profile_Matches
+                     (Ent,
+                      Profiles        => (1 => (Typ, E_In_Parameter)),
+                      Result_Subt     => Storage_Count_Type,
+                      Err_On_Mismatch => True)
+            then
+               Error_Msg_N ("no match for Storage_Size operation", N);
+            end if;
+
+         else
+            null; -- Error will be caught in Validate_Storage_Model_Type_Aspect
+         end if;
+
+      else
+         --  Overloaded case: find subprogram with proper signature
+
+         declare
+            I  : Interp_Index;
+            It : Interp;
+            Found_Match : Boolean := False;
+
+         begin
+            Get_First_Interp (N, I, It);
+            while Present (It.Typ) loop
+               if Ekind (It.Nam) in E_Function | E_Procedure
+                  and then Scope (It.Nam) = Scope (Typ)
+               then
+                  if Nam = Name_Allocate then
+                     Found_Match :=
+                       Aspect_Argument_Profile_Matches
+                         (It.Nam,
+                          Profiles        =>
+                            ((Typ,                E_In_Out_Parameter),
+                             (Addr_Type,          E_Out_Parameter),
+                             (Storage_Count_Type, E_In_Parameter),
+                             (Storage_Count_Type, E_In_Parameter)),
+                          Result_Subt     => Empty,
+                          Err_On_Mismatch => False);
+
+                  elsif Nam = Name_Deallocate then
+                     Found_Match :=
+                       Aspect_Argument_Profile_Matches
+                         (It.Nam,
+                          Profiles        =>
+                            ((Typ,                E_In_Out_Parameter),
+                             (Addr_Type,          E_In_Parameter),
+                             (Storage_Count_Type, E_In_Parameter),
+                             (Storage_Count_Type, E_In_Parameter)),
+                          Result_Subt     => Empty,
+                          Err_On_Mismatch => False);
+
+                  elsif Nam = Name_Copy_From then
+                     Found_Match :=
+                       Aspect_Argument_Profile_Matches
+                         (It.Nam,
+                          Profiles        =>
+                            ((Typ,                 E_In_Out_Parameter),
+                             (System_Address_Type, E_In_Parameter),
+                             (Addr_Type,           E_In_Parameter),
+                             (Storage_Count_Type,  E_In_Parameter),
+                             (Storage_Count_Type,  E_In_Parameter)),
+                          Result_Subt     => Empty,
+                          Err_On_Mismatch => False);
+
+                  elsif Nam = Name_Copy_To then
+                     Found_Match :=
+                       Aspect_Argument_Profile_Matches
+                         (It.Nam,
+                          Profiles        =>
+                            ((Typ,                 E_In_Out_Parameter),
+                             (Addr_Type,           E_In_Parameter),
+                             (Storage_Count_Type,  E_In_Parameter),
+                             (System_Address_Type, E_In_Parameter),
+                             (Storage_Count_Type,  E_In_Parameter)),
+                          Result_Subt     => Empty,
+                          Err_On_Mismatch => False);
+
+                  elsif Nam = Name_Storage_Size then
+                     Found_Match :=
+                       Aspect_Argument_Profile_Matches
+                         (It.Nam,
+                          Profiles        => (1 => (Typ, E_In_Parameter)),
+                          Result_Subt     => Storage_Count_Type,
+                          Err_On_Mismatch => False);
+                  end if;
+
+                  if Found_Match then
+                     Set_Entity (N, It.Nam);
+                     exit;
+                  end if;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+
+            if not Found_Match then
+               Error_Msg_N
+                 ("no match found for Storage_Model_Type operation", N);
+            end if;
+         end;
+      end if;
+   end Resolve_Storage_Model_Type_Argument;
+
    ----------------
    -- Set_Biased --
    ----------------
@@ -16780,6 +17214,116 @@ package body Sem_Ch13 is
          Set_Related_Expression (Match.Nam, Match2);
       end if;
    end Validate_Literal_Aspect;
+
+   ----------------------------------------
+   -- Validate_Storage_Model_Type_Aspect --
+   ----------------------------------------
+
+   procedure Validate_Storage_Model_Type_Aspect
+     (Typ : Entity_Id; ASN : Node_Id)
+   is
+      Assoc  : Node_Id;
+      Choice : Entity_Id;
+      Expr   : Node_Id;
+
+      Address_Type_Id : Entity_Id := Empty;
+      Null_Address_Id : Entity_Id := Empty;
+      Allocate_Id     : Entity_Id := Empty;
+      Deallocate_Id   : Entity_Id := Empty;
+      Copy_From_Id    : Entity_Id := Empty;
+      Copy_To_Id      : Entity_Id := Empty;
+      Storage_Size_Id : Entity_Id := Empty;
+
+   begin
+      --  Each expression must resolve to an entity of the right kind or proper
+      --  profile.
+
+      Assoc := First (Component_Associations (Expression (ASN)));
+      while Present (Assoc) loop
+         Expr := Expression (Assoc);
+         Analyze (Expr);
+
+         Choice := First (Choices (Assoc));
+
+         if Nkind (Choice) /= N_Identifier or else Present (Next (Choice)) then
+            Error_Msg_N ("illegal name in association", Choice);
+
+         elsif Chars (Choice) = Name_Address_Type then
+            if Assoc /= First (Component_Associations (Expression (ASN))) then
+               Error_Msg_N ("Address_Type must be first association", Choice);
+            end if;
+
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Address_Type);
+            Address_Type_Id := Entity (Expr);
+
+         --  Shouldn't we check for duplicates of the same subaspect name,
+         --  and issue an error in such cases???
+
+         elsif not Present (Address_Type_Id) then
+            Error_Msg_N
+              ("Address_Type missing, must be first association", Choice);
+
+         elsif Chars (Choice) = Name_Null_Address then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Null_Address);
+            Null_Address_Id := Entity (Expr);
+
+         elsif Chars (Choice) = Name_Allocate then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Allocate);
+            Allocate_Id := Entity (Expr);
+
+         elsif Chars (Choice) = Name_Deallocate then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Deallocate);
+            Deallocate_Id := Entity (Expr);
+
+         elsif Chars (Choice) = Name_Copy_From then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Copy_From);
+            Copy_From_Id := Entity (Expr);
+
+         elsif Chars (Choice) = Name_Copy_To then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Copy_To);
+            Copy_To_Id := Entity (Expr);
+
+         elsif Chars (Choice) = Name_Storage_Size then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Storage_Size);
+            Storage_Size_Id := Entity (Expr);
+
+         else
+            Error_Msg_N
+              ("invalid name for Storage_Model_Type argument", Choice);
+         end if;
+
+         Next (Assoc);
+      end loop;
+
+      if No (Address_Type_Id) then
+         Error_Msg_N ("match for Address_Type not found", ASN);
+
+      elsif No (Null_Address_Id) then
+         Error_Msg_N ("match for Null_Address primitive not found", ASN);
+
+      elsif No (Allocate_Id) then
+         Error_Msg_N ("match for Allocate primitive not found", ASN);
+
+      elsif No (Deallocate_Id) then
+         Error_Msg_N ("match for Deallocate primitive not found", ASN);
+
+      elsif No (Copy_From_Id) then
+         Error_Msg_N ("match for Copy_From primitive not found", ASN);
+
+      elsif No (Copy_To_Id) then
+         Error_Msg_N ("match for Copy_To primitive not found", ASN);
+
+      elsif No (Storage_Size_Id) then
+         Error_Msg_N ("match for Storage_Size primitive not found", ASN);
+      end if;
+   end Validate_Storage_Model_Type_Aspect;
 
    -----------------------------------
    -- Validate_Unchecked_Conversion --

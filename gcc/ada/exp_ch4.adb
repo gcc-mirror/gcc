@@ -4704,7 +4704,7 @@ package body Exp_Ch4 is
 
             else
                Set_Procedure_To_Call (N,
-                 Find_Prim_Op (Etype (Pool), Name_Allocate));
+                 Find_Storage_Op (Etype (Pool), Name_Allocate));
             end if;
          end if;
       end if;

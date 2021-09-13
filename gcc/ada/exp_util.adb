@@ -6256,6 +6256,32 @@ package body Exp_Util is
       raise Program_Error;
    end Find_Protection_Type;
 
+   function Find_Storage_Op
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Entity_Id
+   is
+      use Sem_Util.Storage_Model_Support;
+
+   begin
+      if Has_Storage_Model_Type_Aspect (Typ) then
+         declare
+            SMT_Op : constant Entity_Id :=
+                       Get_Storage_Model_Type_Entity (Typ, Nam);
+         begin
+            if not Present (SMT_Op) then
+               raise Program_Error;
+            else
+               return SMT_Op;
+            end if;
+         end;
+
+      --  Otherwise we assume that Typ is a descendant of Root_Storage_Pool
+
+      else
+         return Find_Prim_Op (Typ, Nam);
+      end if;
+   end Find_Storage_Op;
+
    -----------------------
    -- Find_Hook_Context --
    -----------------------
