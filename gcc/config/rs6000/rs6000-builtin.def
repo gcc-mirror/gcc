@@ -484,6 +484,25 @@
 		     | RS6000_BTC_SENARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+#define BU_MMA_PAIR_LD(ENUM, NAME, ATTR)				\
+  RS6000_BUILTIN_M (VSX_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_MMA,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY				\
+		     | RS6000_BTC_GIMPLE),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_MMA_PAIR_ST(ENUM, NAME, ATTR)				\
+  RS6000_BUILTIN_M (VSX_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_MMA,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY				\
+		     | RS6000_BTC_VOID					\
+		     | RS6000_BTC_GIMPLE),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
 /* ISA 2.05 (power6) convenience macros. */
 /* For functions that depend on the CMPB instruction */
 #define BU_P6_2(ENUM, NAME, ATTR, ICODE)				\
@@ -1267,6 +1286,15 @@
 		    RS6000_BTM_P10,			/* MASK */	\
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* See the comment on BU_ALTIVEC_P.  */
+#define BU_P10V_AV_P(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_P (P10V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P10,	 		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_PREDICATE),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
 #define BU_P10V_AV_X(ENUM, NAME, ATTR)					\
@@ -2868,6 +2896,8 @@ BU_P9V_OVERLOAD_1 (VPRTYBD,	"vprtybd")
 BU_P9V_OVERLOAD_1 (VPRTYBQ,	"vprtybq")
 BU_P9V_OVERLOAD_1 (VPRTYBW,	"vprtybw")
 BU_P9V_OVERLOAD_1 (VPARITY_LSBB,	"vparity_lsbb")
+BU_P9V_OVERLOAD_1 (VSIGNEXTI,	"vsignexti")
+BU_P9V_OVERLOAD_1 (VSIGNEXTLL,	"vsignextll")
 
 /* 2 argument functions added in ISA 3.0 (power9).  */
 BU_P9_2 (CMPRB,	"byte_in_range",	CONST,	cmprb)
@@ -2879,7 +2909,18 @@ BU_P9_OVERLOAD_2 (CMPRB,	"byte_in_range")
 BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
 BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
+
+BU_P9V_AV_1 (VSIGNEXTSB2W,	"vsignextsb2w",		CONST,  vsignextend_qi_v4si)
+BU_P9V_AV_1 (VSIGNEXTSH2W,	"vsignextsh2w",		CONST,  vsignextend_hi_v4si)
+BU_P9V_AV_1 (VSIGNEXTSB2D,	"vsignextsb2d",		CONST,  vsignextend_qi_v2di)
+BU_P9V_AV_1 (VSIGNEXTSH2D,	"vsignextsh2d",		CONST,  vsignextend_hi_v2di)
+BU_P9V_AV_1 (VSIGNEXTSW2D,	"vsignextsw2d",		CONST,  vsignextend_si_v2di)
+
 /* Builtins for scalar instructions added in ISA 3.1 (power10).  */
+BU_P10V_AV_P (VCMPEQUT_P,	"vcmpequt_p",	CONST,	vector_eq_v1ti_p)
+BU_P10V_AV_P (VCMPGTST_P,	"vcmpgtst_p",	CONST,	vector_gt_v1ti_p)
+BU_P10V_AV_P (VCMPGTUT_P,	"vcmpgtut_p",	CONST,	vector_gtu_v1ti_p)
+
 BU_P10_POWERPC64_MISC_2 (CFUGED, "cfuged", CONST, cfuged)
 BU_P10_POWERPC64_MISC_2 (CNTLZDM, "cntlzdm", CONST, cntlzdm)
 BU_P10_POWERPC64_MISC_2 (CNTTZDM, "cnttzdm", CONST, cnttzdm)
@@ -2900,7 +2941,38 @@ BU_P10V_VSX_2 (XXGENPCVM_V16QI, "xxgenpcvm_v16qi", CONST, xxgenpcvm_v16qi)
 BU_P10V_VSX_2 (XXGENPCVM_V8HI, "xxgenpcvm_v8hi", CONST, xxgenpcvm_v8hi)
 BU_P10V_VSX_2 (XXGENPCVM_V4SI, "xxgenpcvm_v4si", CONST, xxgenpcvm_v4si)
 BU_P10V_VSX_2 (XXGENPCVM_V2DI, "xxgenpcvm_v2di", CONST, xxgenpcvm_v2di)
+BU_P10V_AV_2 (VCMPGTUT,		"vcmpgtut",	CONST,	vector_gtuv1ti)
+BU_P10V_AV_2 (VCMPGTST,		"vcmpgtst",	CONST,	vector_gtv1ti)
+BU_P10V_AV_2 (VCMPEQUT,		"vcmpequt",	CONST,	vector_eqv1ti)
+BU_P10V_AV_2 (CMPNET,		"vcmpnet",	CONST,	vcmpnet)
+BU_P10V_AV_2 (CMPGE_1TI,	"cmpge_1ti",    CONST,  vector_nltv1ti)
+BU_P10V_AV_2 (CMPGE_U1TI,	"cmpge_u1ti",   CONST,  vector_nltuv1ti)
+BU_P10V_AV_2 (CMPLE_1TI,	"cmple_1ti",    CONST,  vector_ngtv1ti)
+BU_P10V_AV_2 (CMPLE_U1TI,	"cmple_u1ti",   CONST,  vector_ngtuv1ti)
+BU_P10V_AV_2 (VNOR_V1TI_UNS,	"vnor_v1ti_uns",CONST,	norv1ti3)
+BU_P10V_AV_2 (VNOR_V1TI,	"vnor_v1ti",	CONST,	norv1ti3)
+BU_P10V_AV_2 (VCMPNET_P,	"vcmpnet_p",	CONST,	vector_ne_v1ti_p)
+BU_P10V_AV_2 (VCMPAET_P,	"vcmpaet_p",	CONST,	vector_ae_v1ti_p)
 
+BU_P10V_AV_1 (VSIGNEXTSD2Q,	"vsignext",     CONST,  vsignextend_v2di_v1ti)
+
+BU_P10V_AV_2 (VMULEUD,	"vmuleud",	CONST,	vec_widen_umult_even_v2di)
+BU_P10V_AV_2 (VMULESD,	"vmulesd",	CONST,	vec_widen_smult_even_v2di)
+BU_P10V_AV_2 (VMULOUD,	"vmuloud",	CONST,	vec_widen_umult_odd_v2di)
+BU_P10V_AV_2 (VMULOSD,	"vmulosd",	CONST,	vec_widen_smult_odd_v2di)
+BU_P10V_AV_2 (VRLQ,		"vrlq",		CONST,	vrotlv1ti3)
+BU_P10V_AV_2 (VSLQ,		"vslq",		CONST,	vashlv1ti3)
+BU_P10V_AV_2 (VSRQ,		"vsrq",		CONST,	vlshrv1ti3)
+BU_P10V_AV_2 (VSRAQ,		"vsraq",	CONST,	vashrv1ti3)
+BU_P10V_AV_2 (VRLQNM,	"vrlqnm",	CONST,	altivec_vrlqnm)
+BU_P10V_AV_2 (DIV_V1TI,	"div_1ti",      CONST,  vsx_div_v1ti)
+BU_P10V_AV_2 (UDIV_V1TI,	"udiv_1ti",     CONST,  vsx_udiv_v1ti)
+BU_P10V_AV_2 (DIVES_V1TI,	"dives",	CONST,	vsx_dives_v1ti)
+BU_P10V_AV_2 (DIVEU_V1TI,	"diveu",	CONST,	vsx_diveu_v1ti)
+BU_P10V_AV_2 (MODS_V1TI,	"mods",		CONST,	vsx_mods_v1ti)
+BU_P10V_AV_2 (MODU_V1TI,	"modu",		CONST,	vsx_modu_v1ti)
+
+BU_P10V_AV_3 (VRLQMI,	"vrlqmi",	CONST,	altivec_vrlqmi)
 BU_P10V_AV_3 (VEXTRACTBL, "vextdubvlx", CONST, vextractlv16qi)
 BU_P10V_AV_3 (VEXTRACTHL, "vextduhvlx", CONST, vextractlv8hi)
 BU_P10V_AV_3 (VEXTRACTWL, "vextduwvlx", CONST, vextractlv4si)
@@ -2959,14 +3031,14 @@ BU_P10V_AV_2 (DIVS_V4SI, "vdivsw", CONST, divv4si3)
 BU_P10V_AV_2 (DIVS_V2DI, "vdivsd", CONST, divv2di3)
 BU_P10V_AV_2 (DIVU_V4SI, "vdivuw", CONST, udivv4si3)
 BU_P10V_AV_2 (DIVU_V2DI, "vdivud", CONST, udivv2di3)
-BU_P10V_AV_2 (MODS_V2DI, "vmodsd", CONST, mods_v2di)
-BU_P10V_AV_2 (MODS_V4SI, "vmodsw", CONST, mods_v4si)
-BU_P10V_AV_2 (MODU_V2DI, "vmodud", CONST, modu_v2di)
-BU_P10V_AV_2 (MODU_V4SI, "vmoduw", CONST, modu_v4si)
-BU_P10V_AV_2 (MULHS_V2DI, "vmulhsd", CONST, mulhs_v2di)
-BU_P10V_AV_2 (MULHS_V4SI, "vmulhsw", CONST, mulhs_v4si)
-BU_P10V_AV_2 (MULHU_V2DI, "vmulhud", CONST, mulhu_v2di)
-BU_P10V_AV_2 (MULHU_V4SI, "vmulhuw", CONST, mulhu_v4si)
+BU_P10V_AV_2 (MODS_V2DI, "vmodsd", CONST, modv2di3)
+BU_P10V_AV_2 (MODS_V4SI, "vmodsw", CONST, modv4si3)
+BU_P10V_AV_2 (MODU_V2DI, "vmodud", CONST, umodv2di3)
+BU_P10V_AV_2 (MODU_V4SI, "vmoduw", CONST, umodv4si3)
+BU_P10V_AV_2 (MULHS_V2DI, "vmulhsd", CONST, smulv2di3_highpart)
+BU_P10V_AV_2 (MULHS_V4SI, "vmulhsw", CONST, smulv4si3_highpart)
+BU_P10V_AV_2 (MULHU_V2DI, "vmulhud", CONST, umulv2di3_highpart)
+BU_P10V_AV_2 (MULHU_V4SI, "vmulhuw", CONST, umulv4si3_highpart)
 BU_P10V_AV_2 (MULLD_V2DI, "vmulld", CONST, mulv2di3)
 
 BU_P10V_VSX_1 (VXXSPLTIW_V4SI, "vxxspltiw_v4si", CONST, xxspltiw_v4si)
@@ -3099,6 +3171,7 @@ BU_CRYPTO_OVERLOAD_2A (VPMSUM,	 "vpmsum")
 BU_CRYPTO_OVERLOAD_3A (VPERMXOR,	 "vpermxor")
 BU_CRYPTO_OVERLOAD_3 (VSHASIGMA, "vshasigma")
 
+BU_P10_OVERLOAD_1 (SIGNEXT, "vsignextq")
 
 /* HTM functions.  */
 BU_HTM_1  (TABORT,	"tabort",	CR,	tabort)
@@ -3199,6 +3272,9 @@ BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,
 BU_P10V_VSX_1 (XVCVBF16SPN,	 "xvcvbf16spn",	MISC, vsx_xvcvbf16spn)
 BU_P10V_VSX_1 (XVCVSPBF16,	    "xvcvspbf16",	MISC, vsx_xvcvspbf16)
 
+BU_MMA_PAIR_LD (LXVP,	    "lxvp",		MISC)
+BU_MMA_PAIR_ST (STXVP,	    "stxvp",		PAIR)
+
 BU_MMA_1 (XXMFACC,	    "xxmfacc",		QUAD, mma_xxmfacc)
 BU_MMA_1 (XXMTACC,	    "xxmtacc",		QUAD, mma_xxmtacc)
 BU_MMA_1 (XXSETACCZ,	    "xxsetaccz",	MISC, mma_xxsetaccz)
@@ -3207,6 +3283,7 @@ BU_MMA_2 (DISASSEMBLE_ACC, "disassemble_acc",	QUAD, mma_disassemble_acc)
 BU_MMA_V2 (DISASSEMBLE_PAIR, "disassemble_pair", PAIR, vsx_disassemble_pair)
 BU_COMPAT (VSX_BUILTIN_DISASSEMBLE_PAIR, "mma_disassemble_pair")
 
+BU_MMA_V3 (BUILD_PAIR,	    "build_pair",	MISC, vsx_assemble_pair)
 BU_MMA_V3 (ASSEMBLE_PAIR,   "assemble_pair",	MISC, vsx_assemble_pair)
 BU_COMPAT (VSX_BUILTIN_ASSEMBLE_PAIR, "mma_assemble_pair")
 BU_MMA_3 (XVBF16GER2,	    "xvbf16ger2",	MISC, mma_xvbf16ger2)
@@ -3239,6 +3316,7 @@ BU_MMA_3 (XVI8GER4SPP,	    "xvi8ger4spp",      QUAD, mma_xvi8ger4spp)
 BU_MMA_3 (XVI16GER2PP,	    "xvi16ger2pp",      QUAD, mma_xvi16ger2pp)
 BU_MMA_3 (XVI16GER2SPP,	    "xvi16ger2spp",     QUAD, mma_xvi16ger2spp)
 
+BU_MMA_5 (BUILD_ACC,	    "build_acc",	MISC, mma_assemble_acc)
 BU_MMA_5 (ASSEMBLE_ACC,     "assemble_acc",	MISC, mma_assemble_acc)
 BU_MMA_5 (PMXVF32GER,	    "pmxvf32ger",       MISC, mma_pmxvf32ger)
 BU_MMA_5 (PMXVF64GER,	    "pmxvf64ger",       PAIR, mma_pmxvf64ger)

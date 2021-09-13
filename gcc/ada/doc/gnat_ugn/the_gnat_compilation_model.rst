@@ -1672,8 +1672,7 @@ additional source files as follows:
   not require that the code generation be optimized. Like :switch:`-gnatn`,
   the use of this switch generates additional dependencies.
 
-  When using a gcc-based back end (in practice this means using any version
-  of GNAT other than for the JVM, .NET or GNAAMP platforms), then the use of
+  When using a gcc-based back end, then the use of
   :switch:`-gnatN` is deprecated, and the use of :switch:`-gnatn` is preferred.
   Historically front end inlining was more extensive than the gcc back end
   inlining, but that is no longer the case.

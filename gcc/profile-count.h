@@ -804,7 +804,7 @@ public:
     }
 
   /* Get the value of the count.  */
-  uint32_t value () const { return m_val; }
+  uint64_t value () const { return m_val; }
 
   /* Get the quality of the count.  */
   enum profile_quality quality () const { return m_quality; }

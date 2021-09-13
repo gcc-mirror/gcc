@@ -2088,6 +2088,7 @@ enum ab_attribute
   AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING,
   AB_OACC_ROUTINE_LOP_GANG, AB_OACC_ROUTINE_LOP_WORKER,
   AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ,
+  AB_OACC_ROUTINE_NOHOST,
   AB_OMP_REQ_REVERSE_OFFLOAD, AB_OMP_REQ_UNIFIED_ADDRESS,
   AB_OMP_REQ_UNIFIED_SHARED_MEMORY, AB_OMP_REQ_DYNAMIC_ALLOCATORS,
   AB_OMP_REQ_MEM_ORDER_SEQ_CST, AB_OMP_REQ_MEM_ORDER_ACQ_REL,
@@ -2166,6 +2167,7 @@ static const mstring attr_bits[] =
     minit ("OACC_ROUTINE_LOP_WORKER", AB_OACC_ROUTINE_LOP_WORKER),
     minit ("OACC_ROUTINE_LOP_VECTOR", AB_OACC_ROUTINE_LOP_VECTOR),
     minit ("OACC_ROUTINE_LOP_SEQ", AB_OACC_ROUTINE_LOP_SEQ),
+    minit ("OACC_ROUTINE_NOHOST", AB_OACC_ROUTINE_NOHOST),
     minit ("OMP_REQ_REVERSE_OFFLOAD", AB_OMP_REQ_REVERSE_OFFLOAD),
     minit ("OMP_REQ_UNIFIED_ADDRESS", AB_OMP_REQ_UNIFIED_ADDRESS),
     minit ("OMP_REQ_UNIFIED_SHARED_MEMORY", AB_OMP_REQ_UNIFIED_SHARED_MEMORY),
@@ -2420,6 +2422,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	default:
 	  gcc_unreachable ();
 	}
+      if (attr->oacc_routine_nohost)
+	MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_NOHOST, attr_bits);
 
       if (attr->flavor == FL_MODULE && gfc_current_ns->omp_requires)
 	{
@@ -2681,6 +2685,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    case AB_OACC_ROUTINE_LOP_SEQ:
 	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
 	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_SEQ;
+	      break;
+	    case AB_OACC_ROUTINE_NOHOST:
+	      attr->oacc_routine_nohost = 1;
 	      break;
 	    case AB_OMP_REQ_REVERSE_OFFLOAD:
 	      gfc_omp_requires_add_clause (OMP_REQ_REVERSE_OFFLOAD,
@@ -5029,7 +5036,7 @@ load_omp_udrs (void)
       mio_pool_string (&name);
       gfc_clear_ts (&ts);
       mio_typespec (&ts);
-      if (gfc_str_startswith (name, "operator "))
+      if (startswith (name, "operator "))
 	{
 	  const char *p = name + sizeof ("operator ") - 1;
 	  if (strcmp (p, "+") == 0)
@@ -5477,8 +5484,8 @@ read_module (void)
 
 	  /* Exception: Always import vtabs & vtypes.  */
 	  if (p == NULL && name[0] == '_'
-	      && (gfc_str_startswith (name, "__vtab_")
-		  || gfc_str_startswith (name, "__vtype_")))
+	      && (startswith (name, "__vtab_")
+		  || startswith (name, "__vtype_")))
 	    p = name;
 
 	  /* Skip symtree nodes not in an ONLY clause, unless there
@@ -5563,8 +5570,8 @@ read_module (void)
 		sym->attr.use_rename = 1;
 
 	      if (name[0] != '_'
-		  || (!gfc_str_startswith (name, "__vtab_")
-		      && !gfc_str_startswith (name, "__vtype_")))
+		  || (!startswith (name, "__vtab_")
+		      && !startswith (name, "__vtype_")))
 		sym->attr.use_only = only_flag;
 
 	      /* Store the symtree pointing to this symbol.  */
@@ -6216,6 +6223,17 @@ write_symtree (gfc_symtree *st)
     return;
 
   if (check_unique_name (st->name))
+    return;
+
+  /* From F2003 onwards, intrinsic procedures are no longer subject to
+     the restriction, "that an elemental intrinsic function here be of
+     type integer or character and each argument must be an initialization
+     expr of type integer or character" is lifted so that intrinsic
+     procedures can be over-ridden. This requires that the intrinsic
+     symbol not appear in the module file, thereby preventing ambiguity
+     when USEd.  */
+  if (strcmp (sym->module, "(intrinsic)") == 0
+      && (gfc_option.allow_std & GFC_STD_F2003))
     return;
 
   p = find_pointer (sym);

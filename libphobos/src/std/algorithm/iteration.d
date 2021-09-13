@@ -769,9 +769,9 @@ private struct MapResult(alias fun, Range)
     string  s1 = "hello world!";
     dstring s2 = "日本語";
     dstring s3 = "hello world!"d;
-    auto ms1 = map!(std.ascii.toUpper)(s1);
-    auto ms2 = map!(std.ascii.toUpper)(s2);
-    auto ms3 = map!(std.ascii.toUpper)(s3);
+    auto ms1 = map!(toUpper)(s1);
+    auto ms2 = map!(toUpper)(s2);
+    auto ms3 = map!(toUpper)(s3);
     static assert(!is(ms1[0])); //narrow strings can't be indexed
     assert(ms2[0] == '日');
     assert(ms3[0] == 'H');
@@ -4450,7 +4450,7 @@ private struct SplitterResult(alias isTerminator, Range)
         ["là", "dove", "terminava", "quella", "valle"]
     ));
     assert(equal(
-        splitter!(std.uni.isWhite)("là dove terminava quella valle"),
+        splitter!(isWhite)("là dove terminava quella valle"),
         ["là", "dove", "terminava", "quella", "valle"]
     ));
     assert(equal(splitter!"a=='本'"("日本語"), ["日", "語"]));

@@ -3854,7 +3854,6 @@ rl78_note_reg_uses (char *dead, rtx s, rtx insn)
       /* These codes have no constituent expressions
 	 and are unique.  */
     case SCRATCH:
-    case CC0:
     case PC:
       return;
 

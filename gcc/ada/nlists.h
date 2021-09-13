@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *            Copyright (C) 1992-2020, Free Software Foundation, Inc.       *
+ *            Copyright (C) 1992-2021, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -105,32 +105,11 @@ Prev (Node_Id Node)
 extern Node_Id Prev_Non_Pragma		(Node_Id);
 
 static Boolean Is_Empty_List		(List_Id);
-static Boolean Is_Non_Empty_List	(List_Id);
-static Boolean Is_List_Member		(Node_Id);
-static List_Id List_Containing		(Node_Id);
 
 INLINE Boolean
 Is_Empty_List (List_Id Id)
 {
   return (First (Id) == Empty);
-}
-
-INLINE Boolean
-Is_Non_Empty_List (List_Id Id)
-{
-  return (Present (Id) && First (Id) != Empty);
-}
-
-INLINE Boolean
-Is_List_Member (Node_Id Node)
-{
-  return Nodes_Ptr[Node - First_Node_Id].U.K.in_list;
-}
-
-INLINE List_Id
-List_Containing (Node_Id Node)
-{
-  return Nodes_Ptr[Node - First_Node_Id].V.NX.link;
 }
 
 #ifdef __cplusplus

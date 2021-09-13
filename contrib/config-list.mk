@@ -40,7 +40,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   arm-symbianelf avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
   bpf-unknown-none \
-  c6x-elf c6x-uclinux cr16-elf cris-elf \
+  c6x-elf c6x-uclinux cr16-elfOPT-enable-obsolete cris-elf \
   csky-elf csky-linux-gnu \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
   fr30-elf frv-elf frv-linux ft32-elf h8300-elf hppa-linux-gnu \
@@ -57,7 +57,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elf \
   ia64-freebsd6 ia64-linux ia64-hpux ia64-hp-vms iq2000-elf lm32-elf \
   lm32-rtems lm32-uclinux m32c-rtems m32c-elf m32r-elf m32rle-elf \
-  m32r-linux m32rle-linux m68k-elf m68k-netbsdelf \
+  m68k-elf m68k-netbsdelf \
   m68k-openbsd m68k-uclinux m68k-linux m68k-rtems \
   mcore-elf microblaze-linux microblaze-elf \
   mips-netbsd \
@@ -84,7 +84,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   powerpcle-eabisim powerpcle-eabi \
   pru-elf \
   riscv32-unknown-linux-gnu riscv64-unknown-linux-gnu \
-  rs6000-ibm-aix6.1 rs6000-ibm-aix7.1 \
+  powerpc-ibm-aix7.1 powerpc-ibm-aix7.2 \
   rl78-elf rx-elf s390-linux-gnu s390x-linux-gnu s390x-ibm-tpf sh-elf \
   shle-linux sh-netbsdelf sh-superh-elf \
   sh-rtems sh-wrs-vxworks sparc-elf \

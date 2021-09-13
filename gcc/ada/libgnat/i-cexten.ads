@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,8 +56,7 @@ package Interfaces.C.Extensions is
 
    --  C bool
 
-   type bool is new Boolean;
-   pragma Convention (C, bool);
+   subtype bool is Interfaces.C.C_bool;
 
    --  64-bit integer types
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,7 +89,7 @@ package Err_Vars is
    --  Source_Reference line, then this is initialized to No_Source_File,
    --  to force an initial reference to the real source file name.
 
-   Warning_Doc_Switch : Boolean := False;
+   Warning_Doc_Switch : Boolean := True;
    --  If this is set True, then the ??/?x?/?x? sequences in error messages
    --  are active (see errout.ads for details). If this switch is False, then
    --  these sequences are ignored (i.e. simply equivalent to a single ?). The

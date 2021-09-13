@@ -242,6 +242,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__alderlake");
       def_or_undef (parse_in, "__alderlake__");
       break;
+    case PROCESSOR_ROCKETLAKE:
+      def_or_undef (parse_in, "__rocketlake");
+      def_or_undef (parse_in, "__rocketlake__");
+      break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
       break;
@@ -405,6 +409,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_ALDERLAKE:
       def_or_undef (parse_in, "__tune_alderlake__");
       break;
+    case PROCESSOR_ROCKETLAKE:
+      def_or_undef (parse_in, "__tune_rocketlake__");
+      break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
       break;
@@ -525,6 +532,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__LZCNT__");
   if (isa_flag & OPTION_MASK_ISA_TBM)
     def_or_undef (parse_in, "__TBM__");
+  if (isa_flag & OPTION_MASK_ISA_CRC32)
+    def_or_undef (parse_in, "__CRC32__");
   if (isa_flag & OPTION_MASK_ISA_POPCNT)
     def_or_undef (parse_in, "__POPCNT__");
   if (isa_flag & OPTION_MASK_ISA_FSGSBASE)
@@ -589,6 +598,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__PTWRITE__");
   if (isa_flag2 & OPTION_MASK_ISA2_AVX512BF16)
     def_or_undef (parse_in, "__AVX512BF16__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AVX512FP16)
+    def_or_undef (parse_in, "__AVX512FP16__");
   if (TARGET_MMX_WITH_SSE)
     def_or_undef (parse_in, "__MMX_WITH_SSE__");
   if (isa_flag2 & OPTION_MASK_ISA2_ENQCMD)

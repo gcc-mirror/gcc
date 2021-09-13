@@ -247,8 +247,9 @@ enum processor_flags
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() s390_cpu_cpp_builtins (pfile)
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS s390_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO s390_d_register_target_info
 
 #ifdef DEFAULT_TARGET_64BIT
 #define TARGET_DEFAULT     (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP	\
@@ -785,6 +786,8 @@ CUMULATIVE_ARGS;
   s390_function_profiler ((FILE), ((LABELNO)))
 
 #define PROFILE_BEFORE_PROLOGUE 1
+
+#define NO_PROFILE_COUNTERS 1
 
 
 /* Trampolines for nested functions.  */

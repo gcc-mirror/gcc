@@ -19,6 +19,10 @@ foo (void)
       #pragma omp barrier		/* { dg-error "region may not be closely nested inside of" } */
       #pragma omp master		/* { dg-error "region may not be closely nested inside of" } */
       ;
+      #pragma omp masked		/* { dg-error "region may not be closely nested inside of" } */
+      ;
+      #pragma omp scope			/* { dg-error "region may not be closely nested inside of" } */
+      ;
       #pragma omp ordered		/* { dg-error "region may not be closely nested inside of" } */
       ;
       #pragma omp ordered threads	/* { dg-error "region may not be closely nested inside of" } */
@@ -55,6 +59,10 @@ foo (void)
       #pragma omp barrier
       #pragma omp master
       ;
+      #pragma omp masked
+      ;
+      #pragma omp scope
+      ;
       #pragma omp ordered		/* { dg-error ".ordered. region must be closely nested inside a loop region with an .ordered. clause" } */
       ;
       #pragma omp ordered threads	/* { dg-error ".ordered. region must be closely nested inside a loop region with an .ordered. clause" } */
@@ -88,6 +96,10 @@ foo (void)
       }
       #pragma omp barrier
       #pragma omp master
+      ;
+      #pragma omp masked
+      ;
+      #pragma omp scope
       ;
       #pragma omp ordered		/* { dg-error ".ordered. region must be closely nested inside a loop region with an .ordered. clause" } */
       ;

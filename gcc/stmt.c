@@ -419,7 +419,8 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	    || insn_extra_address_constraint (cn))
 	  *allows_reg = true;
 	else if (insn_extra_memory_constraint (cn)
-		 || insn_extra_special_memory_constraint (cn))
+		 || insn_extra_special_memory_constraint (cn)
+		 || insn_extra_relaxed_memory_constraint (cn))
 	  *allows_mem = true;
 	else
 	  insn_extra_constraint_allows_reg_mem (cn, allows_reg, allows_mem);

@@ -403,7 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       return ++__result;
     }
 
-  // @} group numeric_ops
+  /// @} group numeric_ops
 
 #undef _GLIBCXX_MOVE_IF_20
 

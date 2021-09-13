@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "flags.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1513,14 +1514,14 @@ mips_handle_interrupt_attr (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 	  *no_add_attrs = true;
 	}
       else if (strcmp (TREE_STRING_POINTER (cst), "eic") != 0
-	       && strncmp (TREE_STRING_POINTER (cst), "vector=", 7) != 0)
+	       && !startswith (TREE_STRING_POINTER (cst), "vector="))
 	{
 	  warning (OPT_Wattributes,
 		   "argument to %qE attribute is neither eic, nor "
 		   "vector=<line>", name);
 	  *no_add_attrs = true;
 	}
-      else if (strncmp (TREE_STRING_POINTER (cst), "vector=", 7) == 0)
+      else if (startswith (TREE_STRING_POINTER (cst), "vector="))
 	{
 	  const char *arg = TREE_STRING_POINTER (cst) + 7;
 
@@ -1849,7 +1850,7 @@ static bool
 mips16_stub_function_p (const_rtx x)
 {
   return (GET_CODE (x) == SYMBOL_REF
-	  && strncmp (XSTR (x, 0), "__mips16_", 9) == 0);
+	  && startswith (XSTR (x, 0), "__mips16_"));
 }
 
 /* Return true if function X is a locally-defined and locally-binding
@@ -2878,7 +2879,7 @@ mips_const_insns (rtx x)
       return mips_build_integer (codes, INTVAL (x));
 
     case CONST_VECTOR:
-      if (ISA_HAS_MSA
+      if (MSA_SUPPORTED_MODE_P (GET_MODE (x))
 	  && mips_const_vector_same_int_p (x, GET_MODE (x), -512, 511))
 	return 1;
       /* Fall through.  */
@@ -9305,42 +9306,6 @@ mips_select_rtx_section (machine_mode mode, rtx x,
   return default_elf_select_rtx_section (mode, x, align);
 }
 
-/* Implement TARGET_ASM_FUNCTION_RODATA_SECTION.
-
-   The complication here is that, with the combination TARGET_ABICALLS
-   && !TARGET_ABSOLUTE_ABICALLS && !TARGET_GPWORD, jump tables will use
-   absolute addresses, and should therefore not be included in the
-   read-only part of a DSO.  Handle such cases by selecting a normal
-   data section instead of a read-only one.  The logic apes that in
-   default_function_rodata_section.  */
-
-static section *
-mips_function_rodata_section (tree decl, bool)
-{
-  if (!TARGET_ABICALLS || TARGET_ABSOLUTE_ABICALLS || TARGET_GPWORD)
-    return default_function_rodata_section (decl, false);
-
-  if (decl && DECL_SECTION_NAME (decl))
-    {
-      const char *name = DECL_SECTION_NAME (decl);
-      if (DECL_COMDAT_GROUP (decl) && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
-	{
-	  char *rname = ASTRDUP (name);
-	  rname[14] = 'd';
-	  return get_section (rname, SECTION_LINKONCE | SECTION_WRITE, decl);
-	}
-      else if (flag_function_sections
-	       && flag_data_sections
-	       && strncmp (name, ".text.", 6) == 0)
-	{
-	  char *rname = ASTRDUP (name);
-	  memcpy (rname + 1, "data", 4);
-	  return get_section (rname, SECTION_WRITE, decl);
-	}
-    }
-  return data_section;
-}
-
 /* Implement TARGET_IN_SMALL_DATA_P.  */
 
 static bool
@@ -9489,7 +9454,7 @@ mips_output_filename (FILE *stream, const char *name)
 {
   /* If we are emitting DWARF-2, let dwarf2out handle the ".file"
      directives.  */
-  if (write_symbols == DWARF2_DEBUG)
+  if (dwarf_debuginfo_p ())
     return;
   else if (mips_output_filename_first_time)
     {
@@ -9930,6 +9895,43 @@ mips_file_start (void)
     fputs ("\t.module\toddspreg\n", asm_out_file);
   else
     fputs ("\t.module\tnooddspreg\n", asm_out_file);
+
+  fprintf (asm_out_file, "\t.module\tarch=%s\n", mips_arch_info->name);
+  /* FIXME: DSPR3 is not supported by GCC? gas does support it */
+  if (TARGET_DSPR2)
+    fputs ("\t.module\tdspr2\n", asm_out_file);
+  else if (TARGET_DSP)
+    fputs ("\t.module\tdsp\n", asm_out_file);
+  if (TARGET_EVA)
+    fputs ("\t.module\teva\n", asm_out_file);
+  if (TARGET_MCU)
+    fputs ("\t.module\tmcu\n", asm_out_file);
+  if (TARGET_MDMX)
+    fputs ("\t.module\tmdmx\n", asm_out_file);
+  if (TARGET_MIPS3D)
+    fputs ("\t.module\tmips3d\n", asm_out_file);
+  if (TARGET_MT)
+    fputs ("\t.module\tmt\n", asm_out_file);
+  if (TARGET_SMARTMIPS)
+    fputs ("\t.module\tsmartmips\n", asm_out_file);
+  if (TARGET_VIRT)
+    fputs ("\t.module\tvirt\n", asm_out_file);
+  if (TARGET_MSA)
+    fputs ("\t.module\tmsa\n", asm_out_file);
+  if (TARGET_XPA)
+    fputs ("\t.module\txpa\n", asm_out_file);
+  /* FIXME: MIPS16E2 is not supported by GCC? gas does support it */
+  if (TARGET_CRC)
+    fputs ("\t.module\tcrc\n", asm_out_file);
+  if (TARGET_GINV)
+    fputs ("\t.module\tginv\n", asm_out_file);
+  if (TARGET_LOONGSON_MMI)
+    fputs ("\t.module\tloongson-mmi\n", asm_out_file);
+  /* FIXME: LOONGSON-CAM is not supported by GCC? gas does support it */
+  if (TARGET_LOONGSON_EXT2)
+    fputs ("\t.module\tloongson-ext2\n", asm_out_file);
+  else if (TARGET_LOONGSON_EXT)
+    fputs ("\t.module\tloongson-ext\n", asm_out_file);
 
 #else
 #ifdef HAVE_AS_GNU_ATTRIBUTE
@@ -14493,6 +14495,27 @@ mips_msa_output_division (const char *division, rtx *operands)
       s = "break\t7%)\n1:";
     }
   return s;
+}
+
+/* Return the assembly code for MSA immediate shift instructions,
+   which has the operands given by OPERANDS.  Truncate the shift amount
+   to make GAS happy.  */
+
+const char *
+mips_msa_output_shift_immediate (const char *shift, rtx *operands)
+{
+  rtx amount = operands[2];
+  machine_mode mode = amount->mode;
+
+  unsigned val = UINTVAL (CONST_VECTOR_ELT (amount, 0));
+  val &= GET_MODE_UNIT_BITSIZE (mode) - 1;
+  if (!val)
+    return "";
+
+  rtx c = gen_int_mode (val, GET_MODE_INNER (mode));
+  operands[2] = gen_const_vec_duplicate (mode, c);
+
+  return shift;
 }
 
 /* Return true if destination of IN_INSN is used as add source in
@@ -19831,9 +19854,12 @@ mips_set_architecture (const struct mips_cpu_info *info)
       mips_arch_info = info;
       mips_arch = info->cpu;
       mips_isa = info->isa;
-      if (mips_isa < 32)
+      if (mips_isa < MIPS_ISA_MIPS32)
 	mips_isa_rev = 0;
       else
+	/* we can do this is due to the
+	 * enum of MIPS32rN is from 32 to 37
+	 * enum of MIPS64rN is from 64 to 69 */
 	mips_isa_rev = (mips_isa & 31) + 1;
     }
 }
@@ -21731,7 +21757,7 @@ mips_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
   rtx (*cmpFunc) (rtx, rtx, rtx);
   rtx tmp, dest, zero;
 
-  if (ISA_HAS_MSA)
+  if (MSA_SUPPORTED_MODE_P (imode))
     {
       switch (imode)
 	{
@@ -21993,7 +22019,7 @@ mips_expand_vector_init (rtx target, rtx vals)
 	all_same = false;
     }
 
-  if (ISA_HAS_MSA)
+  if (MSA_SUPPORTED_MODE_P (vmode))
     {
       if (all_same)
 	{
@@ -22320,6 +22346,17 @@ mips_expand_msa_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
     }
 }
 
+void
+mips_expand_vec_cmp_expr (rtx *operands)
+{
+  rtx cond = operands[1];
+  rtx op0 = operands[2];
+  rtx op1 = operands[3];
+  rtx res = operands[0];
+
+  mips_expand_msa_cmp (res, GET_CODE (cond), op0, op1);
+}
+
 /* Expand VEC_COND_EXPR, where:
    MODE is mode of the result
    VIMODE equivalent integer mode
@@ -22427,12 +22464,12 @@ mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   tree get_fcsr = mips_builtin_decls[MIPS_GET_FCSR];
   tree set_fcsr = mips_builtin_decls[MIPS_SET_FCSR];
   tree get_fcsr_hold_call = build_call_expr (get_fcsr, 0);
-  tree hold_assign_orig = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
-				  fcsr_orig_var, get_fcsr_hold_call);
+  tree hold_assign_orig = build4 (TARGET_EXPR, MIPS_ATYPE_USI,
+				  fcsr_orig_var, get_fcsr_hold_call, NULL, NULL);
   tree hold_mod_val = build2 (BIT_AND_EXPR, MIPS_ATYPE_USI, fcsr_orig_var,
 			      build_int_cst (MIPS_ATYPE_USI, 0xfffff003));
-  tree hold_assign_mod = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
-				 fcsr_mod_var, hold_mod_val);
+  tree hold_assign_mod = build4 (TARGET_EXPR, MIPS_ATYPE_USI,
+				 fcsr_mod_var, hold_mod_val, NULL, NULL);
   tree set_fcsr_hold_call = build_call_expr (set_fcsr, 1, fcsr_mod_var);
   tree hold_all = build2 (COMPOUND_EXPR, MIPS_ATYPE_USI,
 			  hold_assign_orig, hold_assign_mod);
@@ -22442,8 +22479,8 @@ mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   *clear = build_call_expr (set_fcsr, 1, fcsr_mod_var);
 
   tree get_fcsr_update_call = build_call_expr (get_fcsr, 0);
-  *update = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
-		    exceptions_var, get_fcsr_update_call);
+  *update = build4 (TARGET_EXPR, MIPS_ATYPE_USI,
+		    exceptions_var, get_fcsr_update_call, NULL, NULL);
   tree set_fcsr_update_call = build_call_expr (set_fcsr, 1, fcsr_orig_var);
   *update = build2 (COMPOUND_EXPR, void_type_node, *update,
 		    set_fcsr_update_call);
@@ -22594,8 +22631,6 @@ mips_asm_file_end (void)
 #define TARGET_ASM_FUNCTION_EPILOGUE mips_output_function_epilogue
 #undef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION mips_select_rtx_section
-#undef TARGET_ASM_FUNCTION_RODATA_SECTION
-#define TARGET_ASM_FUNCTION_RODATA_SECTION mips_function_rodata_section
 
 #undef TARGET_SCHED_INIT
 #define TARGET_SCHED_INIT mips_sched_init

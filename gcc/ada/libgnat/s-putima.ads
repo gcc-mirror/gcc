@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020, Free Software Foundation, Inc.            --
+--            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Strings.Text_Output;
+with Ada.Strings.Text_Buffers;
 with System.Unsigned_Types;
 
 package System.Put_Images with Pure is
@@ -50,7 +50,7 @@ package System.Put_Images with Pure is
 
    pragma Preelaborate;
 
-   subtype Sink is Ada.Strings.Text_Output.Sink;
+   subtype Sink is Ada.Strings.Text_Buffers.Root_Buffer_Type;
 
    procedure Put_Image_Integer (S : in out Sink'Class; X : Integer);
    procedure Put_Image_Long_Long_Integer

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -357,7 +357,7 @@ package Checks is
    --  if so inserts the appropriate run-time check.
 
    procedure Install_Primitive_Elaboration_Check (Subp_Body : Node_Id);
-   --  Insert a check which ensures that subprogram body Subp_Body has been
+   --  Insert a check to ensure that subprogram body Subp_Body has been
    --  properly elaborated. The check is installed only when Subp_Body is the
    --  body of a nonabstract library-level primitive of a tagged type. Further
    --  restrictions may apply, see the body for details.
@@ -851,7 +851,7 @@ package Checks is
    --    are not following the flow graph (more properly the flow of actual
    --    processing only corresponds to the flow graph for local assignments).
    --    For non-local variables, we preserve the current setting, i.e. a
-   --    validity check is performed when assigning to a knonwn valid global.
+   --    validity check is performed when assigning to a known valid global.
 
    --  Note: no validity checking is required if range checks are suppressed
    --  regardless of the setting of the validity checking mode.

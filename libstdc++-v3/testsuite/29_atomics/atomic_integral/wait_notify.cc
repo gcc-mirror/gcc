@@ -21,46 +21,57 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "atomic/wait_notify_util.h"
 
-void
-test01()
-{
-  struct S{ int i; };
-  std::atomic<S> s;
+#include <atomic>
+#include <thread>
 
-  s.wait(S{42});
-}
+#include <testsuite_hooks.h>
+
+template<typename Tp>
+  void
+  check()
+  {
+    std::atomic<Tp> a{ Tp(1) };
+    VERIFY( a.load() == Tp(1) );
+    a.wait( Tp(0) );
+    std::thread t([&]
+      {
+        a.store(Tp(0));
+        a.notify_one();
+      });
+    a.wait(Tp(1));
+    t.join();
+  }
 
 int
 main ()
 {
   // check<bool> bb;
-  check<char> ch;
-  check<signed char> sch;
-  check<unsigned char> uch;
-  check<short> s;
-  check<unsigned short> us;
-  check<int> i;
-  check<unsigned int> ui;
-  check<long> l;
-  check<unsigned long> ul;
-  check<long long> ll;
-  check<unsigned long long> ull;
+  check<char>();
+  check<signed char>();
+  check<unsigned char>();
+  check<short>();
+  check<unsigned short>();
+  check<int>();
+  check<unsigned int>();
+  check<long>();
+  check<unsigned long>();
+  check<long long>();
+  check<unsigned long long>();
 
-  check<wchar_t> wch;
-  check<char8_t> ch8;
-  check<char16_t> ch16;
-  check<char32_t> ch32;
+  check<wchar_t>();
+  check<char8_t>();
+  check<char16_t>();
+  check<char32_t>();
 
-  check<int8_t> i8;
-  check<int16_t> i16;
-  check<int32_t> i32;
-  check<int64_t> i64;
+  check<int8_t>();
+  check<int16_t>();
+  check<int32_t>();
+  check<int64_t>();
 
-  check<uint8_t> u8;
-  check<uint16_t> u16;
-  check<uint32_t> u32;
-  check<uint64_t> u64;
+  check<uint8_t>();
+  check<uint16_t>();
+  check<uint32_t>();
+  check<uint64_t>();
   return 0;
 }

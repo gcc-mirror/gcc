@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,6 +89,11 @@ package Uintp is
    Uint_Minus_80  : constant Uint;
    Uint_Minus_127 : constant Uint;
    Uint_Minus_128 : constant Uint;
+
+   subtype Valid_Uint is Uint with Predicate => Valid_Uint /= No_Uint;
+   subtype Unat is Valid_Uint with Predicate => Unat >= Uint_0;
+   subtype Upos is Valid_Uint with Predicate => Upos >= Uint_0;
+   subtype Nonzero_Uint is Valid_Uint with Predicate => Nonzero_Uint /= Uint_0;
 
    type UI_Vector is array (Pos range <>) of Int;
    --  Vector containing the integer values of a Uint value
@@ -251,6 +256,11 @@ package Uintp is
    function UI_To_Int (Input : Uint) return Int;
    --  Converts universal integer value to Int. Constraint_Error if value is
    --  not in appropriate range.
+
+   type Unsigned_64 is mod 2**64;
+   function UI_To_Unsigned_64 (Input : Uint) return Unsigned_64;
+   --  Converts universal integer value to Unsigned_64. Constraint_Error if
+   --  value is not in appropriate range.
 
    function UI_To_CC (Input : Uint) return Char_Code;
    --  Converts universal integer value to Char_Code. Constraint_Error if value
@@ -531,10 +541,10 @@ private
    --  used for converting from one to the other are defined.
 
    type Uint_Entry is record
-      Length : Pos;
+      Length : aliased Pos;
       --  Length of entry in Udigits table in digits (i.e. in words)
 
-      Loc : Int;
+      Loc : aliased Int;
       --  Starting location in Udigits table of this Uint value
    end record;
 

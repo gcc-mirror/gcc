@@ -477,6 +477,39 @@ FIX_PROC_HEAD( char_macro_def_fix )
   fputs (text, stdout);
 }
 
+/* Check if the pattern at pos is actually in a "__has_include(...)"
+   directive.  Return the pointer to the ')' of this
+   "__has_include(...)" if it is, NULL otherwise.  */
+static const char *
+check_has_inc (const char *begin, const char *pos, const char *end)
+{
+  static const char has_inc[] = "__has_include";
+  const size_t has_inc_len = sizeof (has_inc) - 1;
+  const char *p;
+
+  for (p = memmem (begin, pos - begin, has_inc, has_inc_len);
+       p != NULL;
+       p = memmem (p, pos - p, has_inc, has_inc_len))
+    {
+      p += has_inc_len;
+      while (p < end && ISSPACE (*p))
+        p++;
+
+      /* "__has_include" may appear as "defined(__has_include)",
+         search for the next appearance then.  */
+      if (*p != '(')
+        continue;
+
+      /* To avoid too much complexity, just hope there is never a
+         ')' in a header name.  */
+      p = memchr (p, ')', end - p);
+      if (p == NULL || p > pos)
+        return p;
+    }
+
+  return NULL;
+}
+
 /* Fix for machine name #ifdefs that are not in the namespace reserved
    by the C standard.  They won't be defined if compiling with -ansi,
    and the headers will break.  We go to some trouble to only change
@@ -524,7 +557,7 @@ FIX_PROC_HEAD( machine_name_fix )
       /* If the 'name_pat' matches in between base and limit, we have
          a bogon.  It is not worth the hassle of excluding comments
          because comments on #if/#ifdef lines are rare, and strings on
-         such lines are illegal.
+         such lines are only legal in a "__has_include" directive.
 
          REG_NOTBOL means 'base' is not at the beginning of a line, which
          shouldn't matter since the name_re has no ^ anchor, but let's
@@ -544,8 +577,16 @@ FIX_PROC_HEAD( machine_name_fix )
             break;
 
           p = base + match[0].rm_so;
-          base += match[0].rm_eo;
 
+          /* Check if the match is in __has_include(...) (PR 91085). */
+          q = check_has_inc (base, p, limit);
+          if (q) 
+            {
+              base = q + 1;
+              goto again;
+            }
+
+          base += match[0].rm_eo;
           /* One more test: if on the same line we have the same string
              with the appropriate underscores, then leave it alone.
              We want exactly two leading and trailing underscores.  */

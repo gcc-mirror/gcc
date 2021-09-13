@@ -3406,14 +3406,6 @@ init_alias_analysis (void)
   rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
 
-  /* The prologue/epilogue insns are not threaded onto the
-     insn chain until after reload has completed.  Thus,
-     there is no sense wasting time checking if INSN is in
-     the prologue/epilogue until after reload has completed.  */
-  bool could_be_prologue_epilogue = ((targetm.have_prologue ()
-				      || targetm.have_epilogue ())
-				     && reload_completed);
-
   pass = 0;
   do
     {
@@ -3458,10 +3450,6 @@ init_alias_analysis (void)
 	      if (NONDEBUG_INSN_P (insn))
 		{
 		  rtx note, set;
-
-		  if (could_be_prologue_epilogue
-		      && prologue_epilogue_contains (insn))
-		    continue;
 
 		  /* If this insn has a noalias note, process it,  Otherwise,
 		     scan for sets.  A simple set will have no side effects

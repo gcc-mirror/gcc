@@ -4,7 +4,7 @@
 /* { dg-final { scan-assembler-times "vpslld\[ \t]\+\\\$7, %xmm\[0-9]\+, %xmm\[0-9]\+" 1 } } */
 /* { dg-final { scan-assembler-times "vpsllq\[ \t]\+\\\$7, %xmm\[0-9]\+, %xmm\[0-9]\+" 1 } } */
 /* { dg-final { scan-assembler-times "vpsllw\[ \t]\+\\\$7, %xmm\[0-9]\+, %xmm\[0-9]\+" 1 } } */
-/* { dg-final { scan-assembler-times "vpsrad\[ \t]\+\\\$3, %xmm\[0-9]\+, %xmm\[0-9]\+" 1 } } */
+/* { dg-final { scan-assembler-times "vpsrad\[ \t]\+\\\$3, %xmm\[0-9]\+, %xmm\[0-9]\+" 2 } } */
 /* { dg-final { scan-assembler-times "vpsraq\[ \t]\+\\\$3, %xmm\[0-9]\+, %xmm\[0-9]\+" 0 } } */
 /* { dg-final { scan-assembler-times "vpsraw\[ \t]\+\\\$3, %xmm\[0-9]\+, %xmm\[0-9]\+" 1 } } */
 /* { dg-final { scan-assembler-times "vpsrld\[ \t]\+\\\$5, %xmm\[0-9]\+, %xmm\[0-9]\+" 1 } } */
@@ -13,7 +13,7 @@
 /* { dg-final { scan-assembler-times "vpslld\[ \t]\+\\\$7, %ymm\[0-9]\+, %ymm\[0-9]\+" 1 } } */
 /* { dg-final { scan-assembler-times "vpsllq\[ \t]\+\\\$7, %ymm\[0-9]\+, %ymm\[0-9]\+" 1 } } */
 /* { dg-final { scan-assembler-times "vpsllw\[ \t]\+\\\$7, %ymm\[0-9]\+, %ymm\[0-9]\+" 3 } } */
-/* { dg-final { scan-assembler-times "vpsrad\[ \t]\+\\\$3, %ymm\[0-9]\+, %ymm\[0-9]\+" 1 } } */
+/* { dg-final { scan-assembler-times "vpsrad\[ \t]\+\\\$3, %ymm\[0-9]\+, %ymm\[0-9]\+" 2 } } */
 /* { dg-final { scan-assembler-times "vpsraq\[ \t]\+\\\$3, %ymm\[0-9]\+, %ymm\[0-9]\+" 0 } } */
 /* { dg-final { scan-assembler-times "vpsraw\[ \t]\+\\\$3, %ymm\[0-9]\+, %ymm\[0-9]\+" 3 } } */
 /* { dg-final { scan-assembler-times "vpsrld\[ \t]\+\\\$5, %ymm\[0-9]\+, %ymm\[0-9]\+" 1 } } */

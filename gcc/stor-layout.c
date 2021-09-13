@@ -2072,16 +2072,24 @@ finish_bitfield_representative (tree repr, tree field)
   bitsize = (bitsize + BITS_PER_UNIT - 1) & ~(BITS_PER_UNIT - 1);
 
   /* Now nothing tells us how to pad out bitsize ...  */
-  nextf = DECL_CHAIN (field);
-  while (nextf && TREE_CODE (nextf) != FIELD_DECL)
-    nextf = DECL_CHAIN (nextf);
+  if (TREE_CODE (DECL_CONTEXT (field)) == RECORD_TYPE)
+    {
+      nextf = DECL_CHAIN (field);
+      while (nextf && TREE_CODE (nextf) != FIELD_DECL)
+	nextf = DECL_CHAIN (nextf);
+    }
+  else
+    nextf = NULL_TREE;
   if (nextf)
     {
       tree maxsize;
       /* If there was an error, the field may be not laid out
          correctly.  Don't bother to do anything.  */
       if (TREE_TYPE (nextf) == error_mark_node)
-	return;
+	{
+	  TREE_TYPE (repr) = error_mark_node;
+	  return;
+	}
       maxsize = size_diffop (DECL_FIELD_OFFSET (nextf),
 			     DECL_FIELD_OFFSET (repr));
       if (tree_fits_uhwi_p (maxsize))
@@ -2167,11 +2175,7 @@ finish_bitfield_layout (tree t)
   tree field, prev;
   tree repr = NULL_TREE;
 
-  /* Unions would be special, for the ease of type-punning optimizations
-     we could use the underlying type as hint for the representative
-     if the bitfield would fit and the representative would not exceed
-     the union in size.  */
-  if (TREE_CODE (t) != RECORD_TYPE)
+  if (TREE_CODE (t) == QUAL_UNION_TYPE)
     return;
 
   for (prev = NULL_TREE, field = TYPE_FIELDS (t);
@@ -2233,7 +2237,13 @@ finish_bitfield_layout (tree t)
       if (repr)
 	DECL_BIT_FIELD_REPRESENTATIVE (field) = repr;
 
-      prev = field;
+      if (TREE_CODE (t) == RECORD_TYPE)
+	prev = field;
+      else if (repr)
+	{
+	  finish_bitfield_representative (repr, field);
+	  repr = NULL_TREE;
+	}
     }
 
   if (repr)
@@ -2837,6 +2847,8 @@ set_min_and_max_values_for_integral_type (tree type,
      to those types, they don't have any valid value.  */
   if (precision < 1)
     return;
+
+  gcc_assert (precision <= WIDE_INT_MAX_PRECISION);
 
   TYPE_MIN_VALUE (type)
     = wide_int_to_tree (type, wi::min_value (precision, sgn));

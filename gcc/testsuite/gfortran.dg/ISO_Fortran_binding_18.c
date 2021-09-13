@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include <ISO_Fortran_binding.h>
 
 
 extern int do_loop(CFI_cdesc_t* array);

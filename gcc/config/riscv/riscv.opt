@@ -21,6 +21,14 @@
 HeaderInclude
 config/riscv/riscv-opts.h
 
+mbig-endian
+Target RejectNegative Mask(BIG_ENDIAN)
+Assume target CPU is configured as big endian.
+
+mlittle-endian
+Target RejectNegative InverseMask(BIG_ENDIAN)
+Assume target CPU is configured as little endian.
+
 mbranch-cost=
 Target RejectNegative Joined UInteger Var(riscv_branch_cost)
 -mbranch-cost=N	Set the cost of branches to roughly N instructions.
@@ -30,7 +38,7 @@ Target Var(TARGET_PLT) Init(1)
 When generating -fpic code, allow the use of PLTs. Ignored for fno-pic.
 
 mabi=
-Target RejectNegative Joined Enum(abi_type) Var(riscv_abi) Init(ABI_ILP32)
+Target RejectNegative Joined Enum(abi_type) Var(riscv_abi) Init(ABI_ILP32) Negative(mabi=)
 Specify integer and floating-point calling convention.
 
 mpreferred-stack-boundary=
@@ -71,7 +79,7 @@ Target Mask(DIV)
 Use hardware instructions for integer division.
 
 march=
-Target RejectNegative Joined
+Target RejectNegative Joined Negative(march=)
 -march=	Generate code for given RISC-V ISA (e.g. RV64IM).  ISA strings must be
 lower-case.
 

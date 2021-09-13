@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "gcc_tmpnam.h"
 
 void __attribute__ ((format (printf, 1, 2), noipa))
 user_print (const char *fmt, ...)
@@ -23,7 +24,7 @@ user_print (const char *fmt, ...)
 
 int main (void)
 {
-  char *tmpfname = tmpnam (0);
+  char *tmpfname = gcc_tmpnam (0);
   FILE *f = freopen (tmpfname, "w", stdout);
   if (!f)
     {

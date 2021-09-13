@@ -123,6 +123,23 @@ test05()
   VERIFY( ranges::equal(v, (int[]){2,4}) );
 }
 
+template<auto filter = views::filter>
+void
+test06()
+{
+  // Verify SFINAE behavior.
+  extern int x[5];
+  auto p = [] (int*) { return true; };
+  static_assert(!requires { filter(); });
+  static_assert(!requires { filter(x, p, p); });
+  static_assert(!requires { filter(x, p); });
+  static_assert(!requires { filter(p)(x); });
+  static_assert(!requires { x | (filter(p) | views::all); });
+  static_assert(!requires { (filter(p) | views::all)(x); });
+  static_assert(!requires { filter | views::all; });
+  static_assert(!requires { views::all | filter; });
+}
+
 int
 main()
 {
@@ -132,4 +149,5 @@ main()
   test04();
   test05<forward_iterator_wrapper>();
   test05<random_access_iterator_wrapper>();
+  test06();
 }

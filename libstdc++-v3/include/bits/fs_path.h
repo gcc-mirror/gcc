@@ -32,7 +32,6 @@
 
 #if __cplusplus >= 201703L
 
-#include <utility>
 #include <type_traits>
 #include <locale>
 #include <iosfwd>
@@ -41,6 +40,7 @@
 #include <string_view>
 #include <system_error>
 #include <bits/stl_algobase.h>
+#include <bits/stl_pair.h>
 #include <bits/locale_conv.h>
 #include <ext/concurrence.h>
 #include <bits/shared_ptr.h>
@@ -63,15 +63,13 @@ namespace filesystem
 {
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
-  /** @addtogroup filesystem
-   *  @{
-   */
-
   class path;
 
   /// @cond undocumented
 namespace __detail
 {
+  /// @addtogroup filesystem
+  /// @{
   template<typename _CharT>
     inline constexpr bool __is_encoded_char = false;
   template<>
@@ -238,10 +236,15 @@ namespace __detail
 	return basic_string<_EcharT>(__first, __last);
     }
 
+  /// @} group filesystem
 } // namespace __detail
   /// @endcond
 
-  /// A filesystem path.
+  /// @addtogroup filesystem
+  /// @{
+
+  /// A filesystem path
+  /// @ingroup filesystem
   class path
   {
   public:
@@ -513,13 +516,13 @@ namespace __detail
 
     /// Compare paths
     friend bool operator==(const path& __lhs, const path& __rhs) noexcept
-    { return __lhs.compare(__rhs) == 0; }
+    { return path::_S_compare(__lhs, __rhs) == 0; }
 
 #if __cpp_lib_three_way_comparison
     /// Compare paths
     friend strong_ordering
     operator<=>(const path& __lhs, const path& __rhs) noexcept
-    { return __lhs.compare(__rhs) <=> 0; }
+    { return path::_S_compare(__lhs, __rhs) <=> 0; }
 #else
     /// Compare paths
     friend bool operator!=(const path& __lhs, const path& __rhs) noexcept
@@ -627,6 +630,11 @@ namespace __detail
       static basic_string<_CharT, _Traits, _Allocator>
       _S_str_convert(basic_string_view<value_type>, const _Allocator&);
 
+    // Returns lhs.compare(rhs), but defined after path::iterator is complete.
+    __attribute__((__always_inline__))
+    static int
+    _S_compare(const path& __lhs, const path& __rhs) noexcept;
+
     void _M_split_cmpts();
 
     _Type _M_type() const noexcept { return _M_cmpts.type(); }
@@ -688,7 +696,8 @@ namespace __detail
     struct _Parser;
   };
 
-  /// @relates std::filesystem::path @{
+  /// @{
+  /// @relates std::filesystem::path
 
   inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
 
@@ -1330,9 +1339,19 @@ namespace __detail
     return _M_at_end == __rhs._M_at_end;
   }
 
-  // @} group filesystem
+  // Define this now that path and path::iterator are complete.
+  // It needs to consider the string_view(Range&&) constructor during
+  // overload resolution, which depends on whether range<path> is satisfied,
+  // which depends on whether path::iterator is complete.
+  inline int
+  path::_S_compare(const path& __lhs, const path& __rhs) noexcept
+  { return __lhs.compare(__rhs); }
+
+  /// @} group filesystem
 _GLIBCXX_END_NAMESPACE_CXX11
 } // namespace filesystem
+
+/// @cond undocumented
 
 inline ptrdiff_t
 distance(filesystem::path::iterator __first, filesystem::path::iterator __last)
@@ -1344,6 +1363,8 @@ template<typename _InputIterator, typename _Distance>
   { __path_iter_advance(__i, static_cast<ptrdiff_t>(__n)); }
 
 extern template class __shared_ptr<const filesystem::filesystem_error::_Impl>;
+
+/// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

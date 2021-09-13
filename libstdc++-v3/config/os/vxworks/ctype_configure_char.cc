@@ -28,6 +28,8 @@
 // ISO C++ 14882: 22.1  Locales
 //
 
+#include <_vxworks-versions.h>
+
 #include <locale>
 #include <cstdlib>
 #include <cstring>
@@ -38,9 +40,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 // Information as gleaned from target/h/ctype.h
 
+#if _VXWORKS_MAJOR_LT(7) && !defined(__RTP__)
   const ctype_base::mask*
   ctype<char>::classic_table() throw()
   { return __ctype; }
+#else
+  const ctype_base::mask*
+  ctype<char>::classic_table() throw()
+  { return _Getpctype(); }
+# define __toupper _CToupper
+# define __tolower _CTolower
+#endif
 
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del,
 		     size_t __refs)

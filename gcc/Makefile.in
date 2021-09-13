@@ -560,6 +560,7 @@ out_file=$(srcdir)/config/@out_file@
 out_object_file=@out_object_file@
 common_out_file=$(srcdir)/common/config/@common_out_file@
 common_out_object_file=@common_out_object_file@
+EXTRA_GTYPE_DEPS=
 md_file=$(srcdir)/common.md $(srcdir)/config/@md_file@
 tm_file_list=@tm_file_list@
 tm_include_list=@tm_include_list@
@@ -960,7 +961,7 @@ BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
 GIMPLE_H = gimple.h gimple.def gsstruct.def $(VEC_H) \
 	$(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
 	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H) is-a.h
-GCOV_IO_H = gcov-io.h gcov-iov.h auto-host.h gcov-counter.def
+GCOV_IO_H = gcov-io.h version.h auto-host.h gcov-counter.def
 RECOG_H = recog.h
 EMIT_RTL_H = emit-rtl.h
 FLAGS_H = flags.h flag-types.h $(OPTIONS_H)
@@ -1248,6 +1249,7 @@ ANALYZER_OBJS = \
 	analyzer/analyzer-pass.o \
 	analyzer/analyzer-selftests.o \
 	analyzer/bar-chart.o \
+	analyzer/call-info.o \
 	analyzer/call-string.o \
 	analyzer/checker-path.o \
 	analyzer/complexity.o \
@@ -1261,6 +1263,7 @@ ANALYZER_OBJS = \
 	analyzer/program-state.o \
 	analyzer/region.o \
 	analyzer/region-model.o \
+	analyzer/region-model-asm.o \
 	analyzer/region-model-impl-calls.o \
 	analyzer/region-model-manager.o \
 	analyzer/region-model-reachability.o \
@@ -1319,6 +1322,9 @@ OBJS = \
 	cfgloopanal.o \
 	cfgloopmanip.o \
 	cfgrtl.o \
+	ctfc.o \
+	ctfout.o \
+	btfout.o \
 	symtab.o \
 	symtab-thunks.o \
 	symtab-clones.o \
@@ -1359,6 +1365,7 @@ OBJS = \
 	dumpfile.o \
 	dwarf2asm.o \
 	dwarf2cfi.o \
+	dwarf2ctf.o \
 	dwarf2out.o \
 	early-remat.o \
 	emit-rtl.o \
@@ -1398,7 +1405,9 @@ OBJS = \
 	gimple-range.o \
 	gimple-range-cache.o \
 	gimple-range-edge.o \
+	gimple-range-fold.o \
 	gimple-range-gori.o \
+	gimple-range-trace.o \
 	gimple-ssa-backprop.o \
 	gimple-ssa-evrp.o \
 	gimple-ssa-evrp-analyze.o \
@@ -1408,6 +1417,7 @@ OBJS = \
 	gimple-ssa-store-merging.o \
 	gimple-ssa-strength-reduction.o \
 	gimple-ssa-sprintf.o \
+	gimple-ssa-warn-access.o \
 	gimple-ssa-warn-alloca.o \
 	gimple-ssa-warn-restrict.o \
 	gimple-streamer-in.o \
@@ -1446,6 +1456,7 @@ OBJS = \
 	ipa-split.o \
 	ipa-inline.o \
 	ipa-comdats.o \
+	ipa-free-lang-data.o \
 	ipa-visibility.o \
 	ipa-inline-analysis.o \
 	ipa-inline-transform.o \
@@ -1504,6 +1515,7 @@ OBJS = \
 	omp-general.o \
 	omp-low.o \
 	omp-oacc-kernels-decompose.o \
+	omp-oacc-neuter-broadcast.o \
 	omp-simd-clone.o \
 	opt-problem.o \
 	optabs.o \
@@ -1517,6 +1529,7 @@ OBJS = \
 	ordered-hash-map-tests.o \
 	passes.o \
 	plugin.o \
+	pointer-query.o \
 	postreload-gcse.o \
 	postreload.o \
 	predict.o \
@@ -1643,6 +1656,7 @@ OBJS = \
 	tree-ssa-loop.o \
 	tree-ssa-math-opts.o \
 	tree-ssa-operands.o \
+	gimple-range-path.o \
 	tree-ssa-phiopt.o \
 	tree-ssa-phiprop.o \
 	tree-ssa-pre.o \
@@ -1684,9 +1698,11 @@ OBJS = \
 	typed-splay-tree.o \
 	unique-ptr-tests.o \
 	valtrack.o \
+	value-pointer-equiv.o \
 	value-query.o \
 	value-range.o \
 	value-range-equiv.o \
+	value-relation.o \
 	value-prof.o \
 	var-tracking.o \
 	varasm.o \
@@ -1695,6 +1711,7 @@ OBJS = \
 	vmsdbgout.o \
 	vr-values.o \
 	vtable-verify.o \
+	warning-control.o \
 	web.o \
 	wide-int.o \
 	wide-int-print.o \
@@ -1706,12 +1723,12 @@ OBJS = \
 
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
-OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
-	diagnostic-format-json.o json.o \
+OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
+	diagnostic-show-locus.o diagnostic-format-json.o json.o \
 	edit-context.o \
 	pretty-print.o intl.o \
 	sbitmap.o \
-	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o \
+	vec.o input.o hash-table.o ggc-none.o memory-block.o \
 	selftest.o selftest-diagnostic.o sort.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
@@ -1763,7 +1780,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) gcc-ar$(exeext) gcc-nm$(exeext) \
  gcc-ranlib$(exeext) \
- gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
+ genversion$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
  gcov-tool$(exeect) \
  gengtype$(exeext) *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a \
  libcommon-target.a libcommon.a libgcc.mk perf.data
@@ -2144,7 +2161,7 @@ checksum-options:
 # Build libgcc.a.
 
 libgcc-support: libgcc.mvars stmp-int-hdrs $(TCONFIG_H) \
-	$(MACHMODE_H) gcov-iov.h
+	$(MACHMODE_H) version.h
 
 libgcc.mvars: config.status Makefile specs xgcc$(exeext)
 	: > tmp-libgcc.mvars
@@ -2332,12 +2349,6 @@ s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
 	$(STAMP) $@
 
 dumpvers: dumpvers.c
-
-CFLAGS-version.o += -DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
-	-DREVISION=$(REVISION_s) \
-	-DDEVPHASE=$(DEVPHASE_s) -DPKGVERSION=$(PKGVERSION_s) \
-	-DBUGURL=$(BUGURL_s)
-version.o: $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 
 # lto-compress.o needs $(ZLIBINC) added to the include flags.
 CFLAGS-lto-compress.o += $(ZLIBINC) $(ZSTD_INC)
@@ -2653,10 +2664,15 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ipa-modref.h $(srcdir)/ipa-modref.c \
   $(srcdir)/ipa-modref-tree.h \
   $(srcdir)/signop.h \
+  $(srcdir)/diagnostic-spec.h $(srcdir)/diagnostic-spec.c \
   $(srcdir)/dwarf2out.h \
   $(srcdir)/dwarf2asm.c \
   $(srcdir)/dwarf2cfi.c \
+  $(srcdir)/dwarf2ctf.c \
   $(srcdir)/dwarf2out.c \
+  $(srcdir)/ctfc.h \
+  $(srcdir)/ctfout.c \
+  $(srcdir)/btfout.c \
   $(srcdir)/tree-vect-generic.c \
   $(srcdir)/gimple-isel.cc \
   $(srcdir)/dojump.c $(srcdir)/emit-rtl.h \
@@ -2681,7 +2697,6 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssa-operands.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
   $(srcdir)/omp-offload.h \
-  $(srcdir)/omp-offload.c \
   $(srcdir)/omp-general.c \
   $(srcdir)/omp-low.c \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c \
@@ -2739,8 +2754,8 @@ s-gtyp-input: Makefile
 	$(SHELL) $(srcdir)/../move-if-change tmp-gi.list gtyp-input.list
 	$(STAMP) s-gtyp-input
 
-s-gtype: build/gengtype$(build_exeext) $(filter-out [%], $(GTFILES)) \
-	 gtyp-input.list
+s-gtype: $(EXTRA_GTYPE_DEPS) build/gengtype$(build_exeext) \
+	$(filter-out [%], $(GTFILES)) gtyp-input.list
 # First, parse all files and save a state file.
 	$(RUN_GEN) build/gengtype$(build_exeext) $(GENGTYPE_FLAGS) \
                     -S $(srcdir) -I gtyp-input.list -w tmp-gtype.state
@@ -2755,9 +2770,10 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
        $(simple_generated_h) specs.h \
        tree-check.h genrtl.h insn-modes.h insn-modes-inline.h \
        tm-preds.h tm-constrs.h \
-       $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h \
+       $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h version.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
+       gimple-match.c generic-match.c \
        c-family/c-target-hooks-def.h d/d-target-hooks-def.h \
        case-cfn-macros.h \
        cfn-operators.pd omp-device-properties.h
@@ -2768,16 +2784,6 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
 build/%.o :  # dependencies provided by explicit rule later
 	$(COMPILER_FOR_BUILD) -c $(BUILD_COMPILERFLAGS) $(BUILD_CPPFLAGS) \
 		-o $@ $<
-
-## build/version.o is compiled by the $(COMPILER_FOR_BUILD) but needs
-## several C macro definitions, just like version.o
-build/version.o:  version.c version.h \
-                  $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
-	$(COMPILER_FOR_BUILD) -c $(BUILD_COMPILERFLAGS) $(BUILD_CPPFLAGS) \
-	-DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
-	-DREVISION=$(REVISION_s) \
-	-DDEVPHASE=$(DEVPHASE_s) -DPKGVERSION=$(PKGVERSION_s) \
-	-DBUGURL=$(BUGURL_s) -o $@ $<
 
 # Header dependencies for the programs that generate source code.
 # These are library modules...
@@ -2957,10 +2963,10 @@ build/genmatch$(build_exeext) : $(BUILD_CPPLIB) \
 
 # These programs are not linked with the MD reader.
 build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o \
-              build/gengtype-state.o build/version.o build/errors.o
+              build/gengtype-state.o build/errors.o
 
 gengtype$(exeext) : gengtype.o gengtype-lex.o gengtype-parse.o \
-              gengtype-state.o version.o errors.o $(LIBDEPS)
+              gengtype-state.o errors.o $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	    $(filter-out ($LIBDEPS), $^) $(LIBS)
 
@@ -3039,20 +3045,23 @@ CFLAGS-cppdefault.o += $(PREPROCESSOR_DEFINES)
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
 
-# gcov-iov.c is run on the build machine to generate gcov-iov.h from version.c
-build/gcov-iov.o: gcov-iov.c $(BCONFIG_H) $(CORETYPES_H) $(GTM_H) \
-  $(SYSTEM_H) $(CORETYPES_H) $(TM_H)
+# genversion.c is run on the build machine to generate version.h
+CFLAGS-build/genversion.o += -DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
+	-DREVISION=$(REVISION_s) \
+	-DDEVPHASE=$(DEVPHASE_s) -DPKGVERSION=$(PKGVERSION_s) \
+	-DBUGURL=$(BUGURL_s)
 
-build/gcov-iov$(build_exeext): build/gcov-iov.o
+build/genversion.o: genversion.c $(BCONFIG_H) $(SYSTEM_H) $(srcdir)/DATESTAMP
+
+build/genversion$(build_exeext): build/genversion.o
 	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) \
-		build/gcov-iov.o -o $@
+		build/genversion.o -o $@
 
-gcov-iov.h: s-iov; @true
-s-iov: build/gcov-iov$(build_exeext) $(BASEVER) $(DEVPHASE)
-	build/gcov-iov$(build_exeext) '$(BASEVER_c)' '$(DEVPHASE_c)' \
-	    > tmp-gcov-iov.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-gcov-iov.h gcov-iov.h
-	$(STAMP) s-iov
+version.h: s-version; @true
+s-version: build/genversion$(build_exeext)
+	build/genversion$(build_exeext) > tmp-version.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-version.h version.h
+	$(STAMP) s-version
 
 # gcov.o needs $(ZLIBINC) added to the include flags.
 CFLAGS-gcov.o += $(ZLIBINC)
@@ -3326,7 +3335,7 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 loop.texi generic.texi gimple.texi plugins.texi optinfo.texi   \
 	 match-and-simplify.texi analyzer.texi ux.texi poly-int.texi
 
-TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi		\
+TEXI_GCCINSTALL_FILES = install.texi fdl.texi		\
 	 gcc-common.texi gcc-vers.texi
 
 TEXI_CPPINT_FILES = cppinternals.texi gcc-common.texi gcc-vers.texi

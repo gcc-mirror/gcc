@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,29 +29,19 @@
  *                                                                          *
  ****************************************************************************/
 
-/*  This unit provides default implementation for __gnat_initialize ()
-    which is called before the elaboration of the partition. It is provided
-    in a separate file/object so that users can replace it easily.
-    The default implementation should be null on most targets.  */
-
-/* The following include is here to meet the published VxWorks requirement
-   that the __vxworks header appear before any other include.  */
-#ifdef __vxworks
-#include "vxWorks.h"
-#endif
+/*  This unit provides the default implementation of __gnat_initialize, which
+    is called before the elaboration of the partition.  It is provided in a
+    separate file so that users can replace it easily.  But the implementation
+    should be empty on most targets.  */
 
 #ifdef IN_RTS
 #include "runtime.h"
-/* We don't have libiberty, so use malloc.  */
-#define xmalloc(S) malloc (S)
-#define xrealloc(V,S) realloc (V,S)
 #else
 #include "config.h"
 #include "system.h"
 #endif
 
 #include "raise.h"
-#include <fcntl.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,64 +53,15 @@ extern "C" {
 
 #if defined (__MINGW32__)
 
-extern void __gnat_install_SEH_handler (void *);
-
-void
-__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
-{
-   /* Note that we do not activate this for the compiler itself to avoid a
-      bootstrap path problem.  Older version of gnatbind will generate a call
-      to __gnat_initialize() without argument. Therefore we cannot use eh in
-      this case.  It will be possible to remove the following #ifdef at some
-      point.  */
-#ifdef IN_RTS
-   /* Install the Structured Exception handler.  */
-   if (eh)
-     __gnat_install_SEH_handler (eh);
-#endif
-}
-
-/******************************************/
-/* __gnat_initialize (init_float version) */
-/******************************************/
-
-#elif defined (__Lynx__) || defined (__FreeBSD__) || defined(__NetBSD__) \
-  || defined (__OpenBSD__) || defined (__DragonFly__)
-
-void
-__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
-{
-}
-
-/***************************************/
-/* __gnat_initialize (VxWorks Version) */
-/***************************************/
-
-#elif defined(__vxworks)
-
 void
 __gnat_initialize (void *eh)
 {
-}
-
-#elif defined(_T_HPUX10) || (!defined(IN_RTS) && defined(_X_HPUX10))
-
-/************************************************/
-/* __gnat_initialize (PA-RISC HP-UX 10 Version) */
-/************************************************/
-
-extern void __main (void);
-
-void
-__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
-{
-  __main ();
+   /* Install the Structured Exception handler.  */
+   if (eh)
+     __gnat_install_SEH_handler (eh);
 }
 
 #else
-
-/* For all other versions of GNAT, the initialize routine and handler
-   installation do nothing */
 
 /***************************************/
 /* __gnat_initialize (Default Version) */
@@ -130,6 +71,7 @@ void
 __gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
 }
+
 #endif
 
 #ifdef __cplusplus

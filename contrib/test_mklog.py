@@ -240,6 +240,9 @@ index 4ad78c1f77b..6687b368038 100644
 '''
 
 EXPECTED4 = '''\
+
+	PR 50209
+
 gcc/ChangeLog:
 
 	* ipa-icf.c:
@@ -317,9 +320,10 @@ index 00000000000..dcc8999c446
 EXPECTED5 = '''\
 PR target/95046 - Vectorize V2SFmode operations
 
+	PR target/95046
+
 gcc/testsuite/ChangeLog:
 
-	PR target/95046
 	* gcc.target/i386/pr95046-6.c: New test.
 
 '''
@@ -377,9 +381,11 @@ index 00000000000..f3d6d11e61e
 '''
 
 EXPECTED7 = '''\
-gcc/testsuite/ChangeLog:
 
 	DR 2237
+
+gcc/testsuite/ChangeLog:
+
 	* g++.dg/DRs/dr2237.C: New test.
 
 '''
@@ -437,6 +443,27 @@ gcc/ChangeLog:
 
 '''
 
+PATCH10 = '''\
+diff --git a/libgomp/doc/the-libgomp-abi/implementing-firstprivate-lastprivate-copyin-and-copyprivate-clauses.rst b/libgomp/doc/the-libgomp-abi/implementing-firstprivate-lastprivate-copyin-and-copyprivate-clauses.rst
+new file mode 100644
+index 00000000000..ad3c6d856fc
+--- /dev/null
++++ b/libgomp/doc/the-libgomp-abi/implementing-firstprivate-lastprivate-copyin-and-copyprivate-clauses.rst
+@@ -0,0 +1,3 @@
++
++
++
+
+'''
+
+EXPECTED10 = '''\
+libgomp/ChangeLog:
+
+	* doc/the-libgomp-abi/implementing-firstprivate-lastprivate-copyin-and-copyprivate-clauses.rst:
+	New file.
+
+'''
+
 class TestMklog(unittest.TestCase):
     def test_macro_definition(self):
         changelog = generate_changelog(PATCH1)
@@ -479,3 +506,7 @@ class TestMklog(unittest.TestCase):
     def test_define_macro_parsing(self):
         changelog = generate_changelog(PATCH9)
         assert changelog == EXPECTED9
+
+    def test_long_filenames(self):
+        changelog = generate_changelog(PATCH10)
+        assert changelog == EXPECTED10

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 
 package Alloc is
 
-   --  The comment shows the unit in which the table is defined
+   --  The comment shows the unit in which the tables are defined
 
    All_Interp_Initial               : constant := 1_000;      -- Sem_Type
    All_Interp_Increment             : constant := 100;
@@ -94,9 +94,11 @@ package Alloc is
    Names_Initial                    : constant := 6_000;      -- Namet
    Names_Increment                  : constant := 100;
 
-   Nodes_Initial                    : constant := 50_000;     -- Atree
-   Nodes_Increment                  : constant := 100;
-   Nodes_Release_Threshold          : constant := 100_000;
+   Node_Offsets_Initial             : constant := 500_000;    -- Atree, Nlists
+   Node_Offsets_Increment           : constant := 100;
+
+   Slots_Initial                    : constant := 2_000_000;  -- Atree
+   Slots_Increment                  : constant := 100;
 
    Notes_Initial                    : constant := 100;        -- Lib
    Notes_Increment                  : constant := 200;

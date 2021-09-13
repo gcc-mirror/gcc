@@ -703,6 +703,8 @@
 ;; - The address space and glc (volatile) fields are there to replace the
 ;;   fields normally found in a MEM.
 ;; - Multiple forms of address expression are supported, below.
+;;
+;; TODO: implement combined gather and zero_extend, but only for -msram-ecc=on
 
 (define_expand "gather_load<mode><vnsi>"
   [(match_operand:V_ALL 0 "register_operand")

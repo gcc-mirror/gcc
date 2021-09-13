@@ -1141,16 +1141,6 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
       </title>
     </biblioentry>
 
-
-  <biblioentry>
-       <title>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="https://software.intel.com/content/www/us/en/develop/articles/intel-compilers-for-linux-compatibility-with-gnu-compilers.html">
-	Intel Compilers for Linux: Compatibility with GNU Compilers
-	</link>
-      </title>
-  </biblioentry>
-
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"

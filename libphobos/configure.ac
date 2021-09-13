@@ -91,8 +91,14 @@ AC_SUBST(CFLAGS_FOR_BUILD)
 LT_INIT(dlopen)
 AM_PROG_LIBTOOL
 WITH_LOCAL_DRUNTIME([LT_LANG([D])], [])
+AC_SUBST(enable_shared)
+AC_SUBST(enable_static)
 
 # libtool variables for Phobos shared and position-independent compiles.
+#
+# Use phobos_lt_pic_flag to designate the automake variable
+# used to encapsulate the default libtool approach to creating objects
+# with position-independent code. Default: -prefer-pic.
 #
 # Use phobos_compiler_shared_flag to designate the compile-time flags for
 # creating shared objects. Default: -fversion=Shared.
@@ -105,26 +111,23 @@ WITH_LOCAL_DRUNTIME([LT_LANG([D])], [])
 # libtool, and so we make it here.  How it is handled is that in shared
 # compilations the `lt_prog_compiler_pic_D' variable is used to instead
 # ensure that conditional compilation of shared runtime code is compiled in.
-# The original PIC flags are then used in the compilation of every object.
-#
-# Why are objects destined for libgphobos.a compiled with -fPIC?
-# Because -fPIC is not harmful to use for objects destined for static
-# libraries. In addition, using -fPIC will allow the use of static
-# libgphobos.a in the creation of other D shared libraries.
 if test "$enable_shared" = yes; then
+  phobos_lt_pic_flag="-prefer-pic"
   phobos_compiler_pic_flag="$lt_prog_compiler_pic_D"
   phobos_compiler_shared_flag="-fversion=Shared"
 else
+  phobos_lt_pic_flag=
   phobos_compiler_pic_flag=
   phobos_compiler_shared_flag=
 fi
+AC_SUBST(phobos_lt_pic_flag)
 AC_SUBST(phobos_compiler_pic_flag)
 AC_SUBST(phobos_compiler_shared_flag)
 
 # Override the libtool's pic_flag and pic_mode.
 # Do this step after AM_PROG_LIBTOOL, but before AC_OUTPUT.
 # NB: this impacts --with-pic and --without-pic.
-lt_prog_compiler_pic_D="$phobos_compiler_shared_flag"
+lt_prog_compiler_pic_D="$phobos_compiler_pic_flag $phobos_compiler_shared_flag"
 pic_mode='default'
 
 # Determine what GCC version number to use in filesystem paths.
@@ -134,6 +137,7 @@ GCC_BASE_VER
 DRUNTIME_CONFIGURE
 DRUNTIME_MULTILIB
 DRUNTIME_WERROR
+DRUNTIME_SECTION_FLAGS
 DRUNTIME_CPU_SOURCES
 DRUNTIME_OS_SOURCES
 DRUNTIME_OS_THREAD_MODEL

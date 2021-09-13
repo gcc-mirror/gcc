@@ -325,13 +325,13 @@ is compiled into the program.
 Turns on compilation of @code{version} code identified by @var{ident}.
 @end table
 
-@item -fno-weak
-@cindex @option{-fweak}
-@cindex @option{-fno-weak}
-Turns off emission of instantiated declarations that can be defined in multiple
-objects as weak or one-only symbols.  The default is to emit all public symbols
-as weak, unless the target lacks support for weak symbols.  Disabling this
-option means that common symbols are instead put in COMDAT or become private.
+@item -fno-weak-templates
+@cindex @option{-fweak-templates}
+@cindex @option{-fno-weak-templates}
+Turns off emission of declarations that can be defined in multiple objects as
+weak symbols.  The default is to emit all public symbols as weak, unless the
+target lacks support for weak symbols.  Disabling this option means that common
+symbols are instead put in COMDAT or become private.
 
 @end table
 

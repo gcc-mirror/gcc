@@ -25,6 +25,6 @@ void
 test01()
 {
   std::array<int, 3> a{{1, 2, 3}};
-  std::begin(a);
-  std::end(a);
+  (void) std::begin(a);
+  (void) std::end(a);
 }

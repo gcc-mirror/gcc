@@ -358,34 +358,26 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
   else if (sn > hard_regno_nregs (sr, vd->e[sr].mode))
     return;
 
-  /* It is not safe to link DEST into the chain if SRC was defined in some
-     narrower mode M and if M is also narrower than the mode of the first
-     register in the chain.  For example:
-     (set (reg:DI r1) (reg:DI r0))
-     (set (reg:HI r2) (reg:HI r1))
-     (set (reg:SI r3) (reg:SI r2)) //Should be a new chain start at r3
-     (set (reg:SI r4) (reg:SI r1))
-     (set (reg:SI r5) (reg:SI r4))
-
-     the upper part of r3 is undefined.  If we added it to the chain,
-     it may be used to replace r5, which has defined upper bits.
-     See PR98694 for details.
-
-     [A] partial_subreg_p (vd->e[sr].mode, GET_MODE (src))
-     [B] partial_subreg_p (vd->e[sr].mode, vd->e[vd->e[sr].oldest_regno].mode)
-     Condition B is added to to catch optimization opportunities of
-
-     (set (reg:HI R1) (reg:HI R0))
-     (set (reg:SI R2) (reg:SI R1)) // [A]
-     (set (reg:DI R3) (reg:DI R2)) // [A]
-     (set (reg:SI R4) (reg:SI R[0-3]))
-     (set (reg:HI R5) (reg:HI R[0-4]))
-
-     in which all registers have only 16 defined bits.  */
-  else if (partial_subreg_p (vd->e[sr].mode, GET_MODE (src))
-	   && partial_subreg_p (vd->e[sr].mode,
-				vd->e[vd->e[sr].oldest_regno].mode))
-    return;
+  /* If a narrower value is copied using wider mode, the upper bits
+     are undefined (could be e.g. a former paradoxical subreg).  Signal
+     in that case we've only copied value using the narrower mode.
+     Consider:
+     (set (reg:DI r14) (mem:DI ...))
+     (set (reg:QI si) (reg:QI r14))
+     (set (reg:DI bp) (reg:DI r14))
+     (set (reg:DI r14) (const_int ...))
+     (set (reg:DI dx) (reg:DI si))
+     (set (reg:DI si) (const_int ...))
+     (set (reg:DI dx) (reg:DI bp))
+     The last set is not redundant, while the low 8 bits of dx are already
+     equal to low 8 bits of bp, the other bits are undefined.  */
+  else if (partial_subreg_p (vd->e[sr].mode, GET_MODE (src)))
+    {
+      if (!REG_CAN_CHANGE_MODE_P (sr, GET_MODE (src), vd->e[sr].mode)
+	  || !REG_CAN_CHANGE_MODE_P (dr, vd->e[sr].mode, GET_MODE (dest)))
+	return;
+      set_value_regno (dr, vd->e[sr].mode, vd);
+    }
 
   /* Link DR at the end of the value chain used by SR.  */
 
@@ -474,7 +466,8 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
 	(set (...) (reg:DI r9))
      Replacing r9 with r11 is invalid.  */
   if (mode != vd->e[regno].mode
-      && REG_NREGS (reg) > hard_regno_nregs (regno, vd->e[regno].mode))
+      && (REG_NREGS (reg) > hard_regno_nregs (regno, vd->e[regno].mode)
+	  || !REG_CAN_CHANGE_MODE_P (regno, mode, vd->e[regno].mode)))
     return NULL_RTX;
 
   for (i = vd->e[regno].oldest_regno; i != regno; i = vd->e[i].next_regno)
@@ -815,6 +808,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       /* Detect obviously dead sets (via REG_UNUSED notes) and remove them.  */
       if (set
 	  && !RTX_FRAME_RELATED_P (insn)
+	  && NONJUMP_INSN_P (insn)
 	  && !may_trap_p (set)
 	  && find_reg_note (insn, REG_UNUSED, SET_DEST (set))
 	  && !side_effects_p (SET_SRC (set))
@@ -1410,12 +1404,9 @@ pass_cprop_hardreg::execute (function *fun)
      changed anything though.  */
   if (!worklist.is_empty ())
     {
-      unsigned int i;
-      int index;
-
       any_debug_changes = false;
       bitmap_clear (visited);
-      FOR_EACH_VEC_ELT (worklist, i, index)
+      for (int index : worklist)
 	{
 	  bb = BASIC_BLOCK_FOR_FN (fun, index);
 	  cprop_hardreg_bb (bb, all_vd, visited);

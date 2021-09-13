@@ -442,7 +442,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   } // end inline namespace
 
-  // @} group condition_variables
+  /// @} group condition_variables
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

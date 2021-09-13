@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "c-pragma.h"
 #include "debug.h"
+#include "flags.h"
 #include "file-prefix-map.h" /* remap_macro_filename()  */
 #include "langhooks.h"
 #include "attribs.h"
@@ -87,8 +88,7 @@ init_c_lex (void)
 
   /* Set the debug callbacks if we can use them.  */
   if ((debug_info_level == DINFO_LEVEL_VERBOSE
-       && (write_symbols == DWARF2_DEBUG
-	   || write_symbols == VMS_AND_DWARF2_DEBUG))
+       && dwarf_debuginfo_p ())
       || flag_dump_go_spec != NULL)
     {
       cb->define = cb_define;
@@ -338,7 +338,20 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 	      tree attr_id
 		= get_identifier ((const char *)
 				  cpp_token_as_text (pfile, nxt_token));
-	      attr_name = build_tree_list (attr_ns, attr_id);
+	      attr_id = canonicalize_attr_name (attr_id);
+	      if (c_dialect_cxx ())
+		{
+		  /* OpenMP attributes need special handling.  */
+		  if ((flag_openmp || flag_openmp_simd)
+		      && is_attribute_p ("omp", attr_ns)
+		      && (is_attribute_p ("directive", attr_id)
+			  || is_attribute_p ("sequence", attr_id)))
+		    result = 1;
+		}
+	      if (result)
+		attr_name = NULL_TREE;
+	      else
+		attr_name = build_tree_list (attr_ns, attr_id);
 	    }
 	  else
 	    {
@@ -1001,7 +1014,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
     }
 
   copy = (char *) alloca (copylen + 1);
-  if (cxx_dialect > cxx11)
+  if (c_dialect_cxx () ? cxx_dialect > cxx11 : flag_isoc2x)
     {
       size_t maxlen = 0;
       for (size_t i = 0; i < copylen; ++i)

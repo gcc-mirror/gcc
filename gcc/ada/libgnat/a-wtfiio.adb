@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,9 +34,10 @@ with Ada.Wide_Text_IO.Fixed_Aux;
 with Ada.Wide_Text_IO.Float_Aux;
 with System.Img_Fixed_32; use System.Img_Fixed_32;
 with System.Img_Fixed_64; use System.Img_Fixed_64;
+with System.Img_LFlt;     use System.Img_LFlt;
 with System.Val_Fixed_32; use System.Val_Fixed_32;
 with System.Val_Fixed_64; use System.Val_Fixed_64;
-with System.Val_LLF;       use System.Val_LLF;
+with System.Val_LFlt;     use System.Val_LFlt;
 with System.WCh_Con;      use System.WCh_Con;
 with System.WCh_WtS;      use System.WCh_WtS;
 
@@ -45,7 +46,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
    --  Note: we still use the floating-point I/O routines for types whose small
    --  is not the ratio of two sufficiently small integers. This will result in
    --  inaccuracies for fixed point types that require more precision than is
-   --  available in Long_Long_Float.
+   --  available in Long_Float.
 
    subtype Int32 is Interfaces.Integer_32; use type Int32;
    subtype Int64 is Interfaces.Integer_64; use type Int64;
@@ -56,8 +57,9 @@ package body Ada.Wide_Text_IO.Fixed_IO is
    package Aux64 is new
      Ada.Wide_Text_IO.Fixed_Aux (Int64, Scan_Fixed64, Set_Image_Fixed64);
 
-   package Aux_Long_Long_Float is new
-     Ada.Wide_Text_IO.Float_Aux (Long_Long_Float, Scan_Long_Long_Float);
+   package Aux_Long_Float is new
+     Ada.Wide_Text_IO.Float_Aux
+       (Long_Float, Scan_Long_Float, Set_Image_Long_Float);
 
    --  Throughout this generic body, we distinguish between the case where type
    --  Int32 is OK and where type Int64 is OK. These boolean constants are used
@@ -161,7 +163,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
                                -Num'Small_Numerator,
                                -Num'Small_Denominator));
       else
-         Aux_Long_Long_Float.Get (File, Long_Long_Float (Item), Width);
+         Aux_Long_Float.Get (File, Long_Float (Item), Width);
       end if;
 
    exception
@@ -201,7 +203,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
                                 -Num'Small_Numerator,
                                 -Num'Small_Denominator));
       else
-         Aux_Long_Long_Float.Gets (S, Long_Long_Float (Item), Last);
+         Aux_Long_Float.Gets (S, Long_Float (Item), Last);
       end if;
 
    exception
@@ -229,8 +231,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
                     -Num'Small_Numerator, -Num'Small_Denominator,
                     For0, Num'Aft);
       else
-         Aux_Long_Long_Float.Put
-           (File, Long_Long_Float (Item), Fore, Aft, Exp);
+         Aux_Long_Float.Put (File, Long_Float (Item), Fore, Aft, Exp);
       end if;
    end Put;
 
@@ -262,7 +263,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
                      -Num'Small_Numerator, -Num'Small_Denominator,
                      For0, Num'Aft);
       else
-         Aux_Long_Long_Float.Puts (S, Long_Long_Float (Item), Aft, Exp);
+         Aux_Long_Float.Puts (S, Long_Float (Item), Aft, Exp);
       end if;
 
       for J in S'Range loop

@@ -170,6 +170,7 @@ tree gfor_fndecl_co_min;
 tree gfor_fndecl_co_reduce;
 tree gfor_fndecl_co_sum;
 tree gfor_fndecl_caf_is_present;
+tree gfor_fndecl_caf_random_init;
 
 
 /* Math functions.  Many other math functions are handled in
@@ -233,7 +234,7 @@ tree gfor_fndecl_cgemm;
 tree gfor_fndecl_zgemm;
 
 /* RANDOM_INIT function.  */
-tree gfor_fndecl_random_init;
+tree gfor_fndecl_random_init;      /* libgfortran, 1 image only.  */
 
 static void
 gfc_add_decl_to_parent_function (tree decl)
@@ -604,6 +605,11 @@ gfc_finish_decl_attrs (tree decl, symbol_attribute *attr)
 	  gfc_allocate_lang_decl (decl);
 	  GFC_DECL_SCALAR_POINTER (decl) = 1;
 	}
+      if (attr->target)
+	{
+	  gfc_allocate_lang_decl (decl);
+	  GFC_DECL_SCALAR_TARGET (decl) = 1;
+	}
     }
 }
 
@@ -737,7 +743,10 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 
   /* Keep variables larger than max-stack-var-size off stack.  */
   if (!(sym->ns->proc_name && sym->ns->proc_name->attr.recursive)
+      && !(sym->ns->proc_name && sym->ns->proc_name->attr.is_main_program)
       && !sym->attr.automatic
+      && sym->attr.save != SAVE_EXPLICIT
+      && sym->attr.save != SAVE_IMPLICIT
       && INTEGER_CST_P (DECL_SIZE_UNIT (decl))
       && !gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
 	 /* Put variable length auto array pointers always into stack.  */
@@ -750,13 +759,17 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
     {
       if (flag_max_stack_var_size > 0)
 	gfc_warning (OPT_Wsurprising,
-		     "Array %qs at %L is larger than limit set by"
-		     " %<-fmax-stack-var-size=%>, moved from stack to static"
-		     " storage. This makes the procedure unsafe when called"
-		     " recursively, or concurrently from multiple threads."
-		     " Consider using %<-frecursive%>, or increase the"
-		     " %<-fmax-stack-var-size=%> limit, or change the code to"
-		     " use an ALLOCATABLE array.",
+		     "Array %qs at %L is larger than limit set by "
+		     "%<-fmax-stack-var-size=%>, moved from stack to static "
+		     "storage. This makes the procedure unsafe when called "
+		     "recursively, or concurrently from multiple threads. "
+		     "Consider increasing the %<-fmax-stack-var-size=%> "
+		     "limit (or use %<-frecursive%>, which implies "
+		     "unlimited %<-fmax-stack-var-size%>) - or change the "
+		     "code to use an ALLOCATABLE array. If the variable is "
+		     "never accessed concurrently, this warning can be "
+		     "ignored, and the variable could also be declared with "
+		     "the SAVE attribute.",
 		     sym->name, &sym->declared_at);
 
       TREE_STATIC (decl) = 1;
@@ -1038,7 +1051,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
       if (GFC_TYPE_ARRAY_LBOUND (type, dim) == NULL_TREE)
 	{
 	  GFC_TYPE_ARRAY_LBOUND (type, dim) = create_index_var ("lbound", nest);
-	  TREE_NO_WARNING (GFC_TYPE_ARRAY_LBOUND (type, dim)) = 1;
+	  suppress_warning (GFC_TYPE_ARRAY_LBOUND (type, dim));
 	}
       /* Don't try to use the unknown bound for assumed shape arrays.  */
       if (GFC_TYPE_ARRAY_UBOUND (type, dim) == NULL_TREE
@@ -1046,13 +1059,13 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	      || dim < GFC_TYPE_ARRAY_RANK (type) - 1))
 	{
 	  GFC_TYPE_ARRAY_UBOUND (type, dim) = create_index_var ("ubound", nest);
-	  TREE_NO_WARNING (GFC_TYPE_ARRAY_UBOUND (type, dim)) = 1;
+	  suppress_warning (GFC_TYPE_ARRAY_UBOUND (type, dim));
 	}
 
       if (GFC_TYPE_ARRAY_STRIDE (type, dim) == NULL_TREE)
 	{
 	  GFC_TYPE_ARRAY_STRIDE (type, dim) = create_index_var ("stride", nest);
-	  TREE_NO_WARNING (GFC_TYPE_ARRAY_STRIDE (type, dim)) = 1;
+	  suppress_warning (GFC_TYPE_ARRAY_STRIDE (type, dim));
 	}
     }
   for (dim = GFC_TYPE_ARRAY_RANK (type);
@@ -1061,21 +1074,21 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
       if (GFC_TYPE_ARRAY_LBOUND (type, dim) == NULL_TREE)
 	{
 	  GFC_TYPE_ARRAY_LBOUND (type, dim) = create_index_var ("lbound", nest);
-	  TREE_NO_WARNING (GFC_TYPE_ARRAY_LBOUND (type, dim)) = 1;
+	  suppress_warning (GFC_TYPE_ARRAY_LBOUND (type, dim));
 	}
       /* Don't try to use the unknown ubound for the last coarray dimension.  */
       if (GFC_TYPE_ARRAY_UBOUND (type, dim) == NULL_TREE
           && dim < GFC_TYPE_ARRAY_RANK (type) + GFC_TYPE_ARRAY_CORANK (type) - 1)
 	{
 	  GFC_TYPE_ARRAY_UBOUND (type, dim) = create_index_var ("ubound", nest);
-	  TREE_NO_WARNING (GFC_TYPE_ARRAY_UBOUND (type, dim)) = 1;
+	  suppress_warning (GFC_TYPE_ARRAY_UBOUND (type, dim));
 	}
     }
   if (GFC_TYPE_ARRAY_OFFSET (type) == NULL_TREE)
     {
       GFC_TYPE_ARRAY_OFFSET (type) = gfc_create_var_np (gfc_array_index_type,
 							"offset");
-      TREE_NO_WARNING (GFC_TYPE_ARRAY_OFFSET (type)) = 1;
+      suppress_warning (GFC_TYPE_ARRAY_OFFSET (type));
 
       if (nest)
 	gfc_add_decl_to_parent_function (GFC_TYPE_ARRAY_OFFSET (type));
@@ -1087,7 +1100,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
       && as->type != AS_ASSUMED_SIZE)
     {
       GFC_TYPE_ARRAY_SIZE (type) = create_index_var ("size", nest);
-      TREE_NO_WARNING (GFC_TYPE_ARRAY_SIZE (type)) = 1;
+      suppress_warning (GFC_TYPE_ARRAY_SIZE (type));
     }
 
   if (POINTER_TYPE_P (type))
@@ -1292,7 +1305,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
 
   /* Avoid uninitialized warnings for optional dummy arguments.  */
   if (sym->attr.optional)
-    TREE_NO_WARNING (decl) = 1;
+    suppress_warning (decl);
 
   /* We should never get deferred shape arrays here.  We used to because of
      frontend bugs.  */
@@ -1466,6 +1479,14 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
       tree dims = oacc_build_routine_dims (clauses);
       list = oacc_replace_fn_attrib_attr (list, dims);
     }
+
+  if (sym_attr.oacc_routine_nohost)
+    {
+      tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_NOHOST);
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      clauses = c;
+    }
+
   if (sym_attr.omp_device_type != OMP_DEVICE_TYPE_UNSET)
     {
       tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_DEVICE_TYPE);
@@ -1548,7 +1569,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
      declaration of the entity and memory allocated/deallocated.  */
   if ((sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
       && sym->param_list != NULL
-      && !(sym->attr.host_assoc || sym->attr.use_assoc || sym->attr.dummy))
+      && gfc_current_ns == sym->ns
+      && !(sym->attr.use_assoc || sym->attr.dummy))
     gfc_defer_symbol_init (sym);
 
   /* Dummy PDT 'len' parameters should be checked when they are explicit.  */
@@ -1940,7 +1962,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
      Marking this as artificial means that OpenMP will treat this as
      predetermined shared.  */
 
-  bool def_init = gfc_str_startswith (sym->name, "__def_init");
+  bool def_init = startswith (sym->name, "__def_init");
 
   if (sym->attr.vtab || def_init)
     {
@@ -2488,7 +2510,9 @@ build_function_decl (gfc_symbol * sym, bool global)
 }
 
 
-/* Create the DECL_ARGUMENTS for a procedure.  */
+/* Create the DECL_ARGUMENTS for a procedure.
+   NOTE: The arguments added here must match the argument type created by
+   gfc_get_function_type ().  */
 
 static void
 create_function_arglist (gfc_symbol * sym)
@@ -2807,6 +2831,7 @@ create_function_arglist (gfc_symbol * sym)
 	  DECL_ARG_TYPE (token) = TREE_VALUE (typelist);
 	  TREE_READONLY (token) = 1;
 	  hidden_arglist = chainon (hidden_arglist, token);
+	  hidden_typelist = TREE_CHAIN (hidden_typelist);
 	  gfc_finish_decl (token);
 
 	  offset = build_decl (input_location, PARM_DECL,
@@ -2832,6 +2857,7 @@ create_function_arglist (gfc_symbol * sym)
 	  DECL_ARG_TYPE (offset) = TREE_VALUE (typelist);
 	  TREE_READONLY (offset) = 1;
 	  hidden_arglist = chainon (hidden_arglist, offset);
+	  hidden_typelist = TREE_CHAIN (hidden_typelist);
 	  gfc_finish_decl (offset);
 	}
 
@@ -3510,6 +3536,8 @@ gfc_build_intrinsic_function_decls (void)
 	void_type_node, 3, gfc_logical4_type_node, gfc_logical4_type_node,
 	gfc_int4_type_node);
 
+ // gfor_fndecl_caf_rand_init is defined in the lib-coarray section below.
+
   gfor_fndecl_sc_kind = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("selected_char_kind")), ". . R ",
 	gfc_int4_type_node, 2, gfc_charlen_type_node, pchar_type_node);
@@ -4075,6 +4103,10 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("caf_is_present")), ". r . r ",
 	integer_type_node, 3, pvoid_type_node, integer_type_node,
 	pvoid_type_node);
+
+      gfor_fndecl_caf_random_init = gfc_build_library_function_decl (
+	    get_identifier (PREFIX("caf_random_init")),
+	    void_type_node, 2, logical_type_node, logical_type_node);
     }
 
   gfc_build_intrinsic_function_decls ();
@@ -4513,22 +4545,28 @@ convert_CFI_desc (gfc_wrapped_block * block, gfc_symbol *sym)
       gfc_add_expr_to_block (&outer_block, incoming);
       incoming = gfc_finish_block (&outer_block);
 
-
       /* Convert the gfc descriptor back to the CFI type before going
 	 out of scope, if the CFI type was present at entry.  */
-      gfc_init_block (&outer_block);
-      gfc_init_block (&tmpblock);
+      outgoing = NULL_TREE;
+      if ((sym->attr.pointer || sym->attr.allocatable)
+	  && !sym->attr.value
+	  && sym->attr.intent != INTENT_IN)
+	{
+	  gfc_init_block (&outer_block);
+	  gfc_init_block (&tmpblock);
 
-      tmp = gfc_build_addr_expr (ppvoid_type_node, CFI_desc_ptr);
-      outgoing = build_call_expr_loc (input_location,
-			gfor_fndecl_gfc_to_cfi, 2, tmp, gfc_desc_ptr);
-      gfc_add_expr_to_block (&tmpblock, outgoing);
+	  tmp = gfc_build_addr_expr (ppvoid_type_node, CFI_desc_ptr);
+	  outgoing = build_call_expr_loc (input_location,
+					  gfor_fndecl_gfc_to_cfi, 2,
+					  tmp, gfc_desc_ptr);
+	  gfc_add_expr_to_block (&tmpblock, outgoing);
 
-      outgoing = build3_v (COND_EXPR, present,
-			   gfc_finish_block (&tmpblock),
-			   build_empty_stmt (input_location));
-      gfc_add_expr_to_block (&outer_block, outgoing);
-      outgoing = gfc_finish_block (&outer_block);
+	  outgoing = build3_v (COND_EXPR, present,
+			       gfc_finish_block (&tmpblock),
+			       build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&outer_block, outgoing);
+	  outgoing = gfc_finish_block (&outer_block);
+	}
 
       /* Add the lot to the procedure init and finally blocks.  */
       gfc_add_init_cleanup (block, incoming, outgoing);
@@ -5968,7 +6006,7 @@ generate_local_decl (gfc_symbol * sym)
 			     "does not have a default initializer",
 			     sym->name, &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
-		TREE_NO_WARNING(sym->backend_decl) = 1;
+		suppress_warning (sym->backend_decl);
 	    }
 	  else if (warn_unused_dummy_argument)
 	    {
@@ -5978,7 +6016,7 @@ generate_local_decl (gfc_symbol * sym)
 			     &sym->declared_at);
 
 	      if (sym->backend_decl != NULL_TREE)
-		TREE_NO_WARNING(sym->backend_decl) = 1;
+		suppress_warning (sym->backend_decl);
 	    }
 	}
 
@@ -5994,7 +6032,7 @@ generate_local_decl (gfc_symbol * sym)
 			   "explicitly imported at %L", sym->name,
 			   &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
-		TREE_NO_WARNING(sym->backend_decl) = 1;
+		suppress_warning (sym->backend_decl);
 	    }
 	  else if (!sym->attr.use_assoc)
 	    {
@@ -6012,7 +6050,7 @@ generate_local_decl (gfc_symbol * sym)
 			     "Unused variable %qs declared at %L",
 			     sym->name, &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
-		TREE_NO_WARNING(sym->backend_decl) = 1;
+		suppress_warning (sym->backend_decl);
 	    }
 	}
 
@@ -6127,7 +6165,7 @@ generate_local_decl (gfc_symbol * sym)
 	  /* Silence bogus "unused parameter" warnings from the
 	     middle end.  */
 	  if (sym->backend_decl != NULL_TREE)
-		TREE_NO_WARNING (sym->backend_decl) = 1;
+		suppress_warning (sym->backend_decl);
 	}
     }
 
@@ -6958,7 +6996,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 			 "Return value of function %qs at %L not set",
 			 sym->name, &sym->declared_at);
 	  if (warn_return_type > 0)
-	    TREE_NO_WARNING(sym->backend_decl) = 1;
+	    suppress_warning (sym->backend_decl);
 	}
       if (result != NULL_TREE)
 	gfc_add_expr_to_block (&body, gfc_generate_return ());

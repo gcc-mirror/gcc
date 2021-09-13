@@ -7,26 +7,26 @@
 /* { dg-additional-options "-fno-pie" { target pie } } */
 /* The MMIX port always switches to the .data section at the end of a file.  */
 /* { dg-final { scan-assembler-not "\\.data(?!\\.rel\\.ro)" { xfail powerpc*-*-aix* mmix-*-* x86_64-*-mingw* } } } */
-/* { dg-final { scan-assembler-symbol-section {^_?a$} {^\.(const|rodata|srodata)|\[RO\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?a$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 static const int a[2] = { 1, 2 };
 /* { dg-final { scan-assembler-symbol-section {^_?a1$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 const int a1[2] = { 1, 2 };
 typedef const int ci;
-/* { dg-final { scan-assembler-symbol-section {^_?b$} {^\.(const|rodata|srodata)|\[RO\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?b$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 static ci b[2] = { 3, 4 };
 /* { dg-final { scan-assembler-symbol-section {^_?b1$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 ci b1[2] = { 3, 4 };
 typedef int ia[2];
-/* { dg-final { scan-assembler-symbol-section {^_?c$} {^\.(const|rodata|srodata)|\[RO\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?c$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 static const ia c = { 5, 6 };
 /* { dg-final { scan-assembler-symbol-section {^_?c1$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 const ia c1 = { 5, 6 };
 typedef const int cia[2];
-/* { dg-final { scan-assembler-symbol-section {^_?d$} {^\.(const|rodata|srodata)|\[RO\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?d$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 static cia d = { 7, 8 };
 /* { dg-final { scan-assembler-symbol-section {^_?d1$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 cia d1 = { 7, 8 };
-/* { dg-final { scan-assembler-symbol-section {^_?e$} {^\.(const|rodata|srodata)|\[RO\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?e$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 static cia e[2] = { { 1, 2 }, { 3, 4 } };
 /* { dg-final { scan-assembler-symbol-section {^_?e1$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 cia e1[2] = { { 1, 2 }, { 3, 4 } };

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -189,7 +189,7 @@ package Repinfo is
    --    "name"                 :  string
    --    "location"             :  string
    --    "record"               :  array of components
-   --    "variant"              :  array of variants
+   --    "[parent_]*variant"    :  array of variants
    --    "formal"               :  array of formal parameters
    --    "mechanism"            :  string
    --    "Size"                 :  numerical expression
@@ -209,8 +209,9 @@ package Repinfo is
    --    fully qualified Ada name. The value of "location" is the expanded
    --    chain of instantiation locations that contains the entity.
    --    "record" is present for every record type and its value is the list of
-   --    components. "variant" is present only if the record type has a variant
-   --    part and its value is the list of variants.
+   --    components. "[parent_]*variant" is present only if the record type, or
+   --    one of its ancestors (parent, grand-parent, etc) if it's an extension,
+   --    has a variant part and its value is the list of variants.
    --    "formal" is present for every subprogram and entry, and its value is
    --    the list of formal parameters. "mechanism" is present for functions
    --    only and its value is the return mechanim.

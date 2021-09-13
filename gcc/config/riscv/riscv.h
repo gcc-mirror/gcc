@@ -27,8 +27,15 @@ along with GCC; see the file COPYING3.  If not see
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() riscv_cpu_cpp_builtins (pfile)
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS riscv_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO riscv_d_register_target_info
+
+#ifdef TARGET_BIG_ENDIAN_DEFAULT
+#define DEFAULT_ENDIAN_SPEC    "b"
+#else
+#define DEFAULT_ENDIAN_SPEC    "l"
+#endif
 
 /* Default target_flags if no switches are specified  */
 
@@ -91,6 +98,9 @@ extern const char *riscv_default_mtune (int argc, const char **argv);
 %{" FPIE_OR_FPIC_SPEC ":-fpic} \
 %{march=*} \
 %{mabi=*} \
+%{mno-relax} \
+%{mbig-endian} \
+%{mlittle-endian} \
 %(subtarget_asm_spec)" \
 ASM_MISA_SPEC
 
@@ -126,8 +136,8 @@ ASM_MISA_SPEC
 /* Target machine storage layout */
 
 #define BITS_BIG_ENDIAN 0
-#define BYTES_BIG_ENDIAN 0
-#define WORDS_BIG_ENDIAN 0
+#define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
+#define WORDS_BIG_ENDIAN (BYTES_BIG_ENDIAN)
 
 #define MAX_BITS_PER_WORD 64
 
@@ -136,6 +146,10 @@ ASM_MISA_SPEC
 #ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD 4
 #endif
+
+/* Allows SImode op in builtin overflow pattern, see internal-fn.c.  */
+#undef TARGET_MIN_ARITHMETIC_PRECISION
+#define TARGET_MIN_ARITHMETIC_PRECISION riscv_min_arithmetic_precision
 
 /* The `Q' extension is not yet supported.  */
 #define UNITS_PER_FP_REG (TARGET_DOUBLE_FLOAT ? 8 : 4)

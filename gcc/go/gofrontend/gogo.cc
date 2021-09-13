@@ -918,9 +918,8 @@ Gogo::build_type_descriptor_list()
 
   // Create the variable
   std::string name = this->type_descriptor_list_symbol(this->pkgpath_symbol());
-  Bvariable* bv = this->backend()->implicit_variable(name, name, bt,
-                                                     false, true, false,
-                                                     0);
+  unsigned int flags = Backend::variable_is_constant;
+  Bvariable* bv = this->backend()->implicit_variable(name, name, bt, flags, 0);
 
   // Build the initializer
   std::vector<unsigned long> indexes;
@@ -946,8 +945,7 @@ Gogo::build_type_descriptor_list()
   Bexpression* binit =
     this->backend()->constructor_expression(bt, fields, builtin_loc);
 
-  this->backend()->implicit_variable_set_init(bv, name, bt, false,
-                                              true, false, binit);
+  this->backend()->implicit_variable_set_init(bv, name, bt, flags, binit);
 }
 
 // Register the type descriptors with the runtime.  This is to help
@@ -1002,11 +1000,11 @@ Gogo::register_type_descriptors(std::vector<Bstatement*>& init_stmts,
 
   // Create a variable holding the list.
   std::string name = this->typelists_symbol();
-  Bvariable* bv = this->backend()->implicit_variable(name, name, bat,
-                                                     true, true, false,
+  unsigned int flags = (Backend::variable_is_hidden
+			| Backend::variable_is_constant);
+  Bvariable* bv = this->backend()->implicit_variable(name, name, bat, flags,
                                                      0);
-  this->backend()->implicit_variable_set_init(bv, name, bat, true, true,
-                                              false, barray);
+  this->backend()->implicit_variable_set_init(bv, name, bat, flags, barray);
 
   // Build the call in main package's init function.
   Translate_context context(this, NULL, NULL, NULL);
@@ -5765,6 +5763,26 @@ Function::check_labels() const
     }
 }
 
+// Set the receiver type.  This is used to remove aliases.
+
+void
+Function::set_receiver_type(Type* rtype)
+{
+  Function_type* oft = this->type_;
+  Typed_identifier* rec = new Typed_identifier(oft->receiver()->name(),
+					       rtype,
+					       oft->receiver()->location());
+  Typed_identifier_list* parameters = NULL;
+  if (oft->parameters() != NULL)
+    parameters = oft->parameters()->copy();
+  Typed_identifier_list* results = NULL;
+  if (oft->results() != NULL)
+    results = oft->results()->copy();
+  Function_type* nft = Type::make_function_type(rec, parameters, results,
+						oft->location());
+  this->type_ = nft;
+}
+
 // Swap one function with another.  This is used when building the
 // thunk we use to call a function which calls recover.  It may not
 // work for any other case.
@@ -7287,6 +7305,26 @@ Function_declaration::set_nointerface()
   this->pragmas_ |= GOPRAGMA_NOINTERFACE;
 }
 
+// Set the receiver type.  This is used to remove aliases.
+
+void
+Function_declaration::set_receiver_type(Type* rtype)
+{
+  Function_type* oft = this->fntype_;
+  Typed_identifier* rec = new Typed_identifier(oft->receiver()->name(),
+					       rtype,
+					       oft->receiver()->location());
+  Typed_identifier_list* parameters = NULL;
+  if (oft->parameters() != NULL)
+    parameters = oft->parameters()->copy();
+  Typed_identifier_list* results = NULL;
+  if (oft->results() != NULL)
+    results = oft->results()->copy();
+  Function_type* nft = Type::make_function_type(rec, parameters, results,
+						oft->location());
+  this->fntype_ = nft;
+}
+
 // Import an inlinable function.  This is used for an inlinable
 // function whose body is recorded in the export data.  Parse the
 // export data into a Block and create a regular function using that
@@ -8062,16 +8100,24 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	      if (package != NULL)
 		is_hidden = false;
 
+	      unsigned int flags = 0;
+	      if (this->is_address_taken_
+		  || this->is_non_escaping_address_taken_)
+		flags |= Backend::variable_address_is_taken;
+	      if (package != NULL)
+		flags |= Backend::variable_is_external;
+	      if (is_hidden)
+		flags |= Backend::variable_is_hidden;
+	      if (this->in_unique_section_)
+		flags |= Backend::variable_in_unique_section;
+
 	      // For some reason asm_name can't be the empty string
 	      // for global_variable, so we call asm_name rather than
 	      // optional_asm_name here.  FIXME.
 
 	      bvar = backend->global_variable(bname.name(),
 					      bname.asm_name(),
-					      btype,
-					      package != NULL,
-					      is_hidden,
-					      this->in_unique_section_,
+					      btype, flags,
 					      this->location_);
 	    }
 	  else if (function == NULL)
@@ -8083,15 +8129,16 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	    {
 	      const std::string n = Gogo::unpack_hidden_name(name);
 	      Bfunction* bfunction = function->func_value()->get_decl();
-	      bool is_address_taken = (this->is_non_escaping_address_taken_
-				       && !this->is_in_heap());
+	      unsigned int flags = 0;
+	      if (this->is_non_escaping_address_taken_
+		  && !this->is_in_heap())
+		flags |= Backend::variable_address_is_taken;
 	      if (this->is_closure())
 		bvar = backend->static_chain_variable(bfunction, n, btype,
-						      this->location_);
+						      flags, this->location_);
 	      else if (is_parameter)
 		bvar = backend->parameter_variable(bfunction, n, btype,
-						   is_address_taken,
-						   this->location_);
+						   flags, this->location_);
 	      else
                 {
                   Bvariable* bvar_decl = NULL;
@@ -8102,8 +8149,7 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
                         ->get_backend_variable(&context);
                     }
                   bvar = backend->local_variable(bfunction, n, btype,
-                                                 bvar_decl,
-                                                 is_address_taken,
+                                                 bvar_decl, flags,
                                                  this->location_);
                 }
 	    }
@@ -8134,10 +8180,12 @@ Result_variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	  Btype* btype = type->get_backend(gogo);
 	  Bfunction* bfunction = function->func_value()->get_decl();
 	  std::string n = Gogo::unpack_hidden_name(name);
-	  bool is_address_taken = (this->is_non_escaping_address_taken_
-				   && !this->is_in_heap());
+	  unsigned int flags = 0;
+	  if (this->is_non_escaping_address_taken_
+	      && !this->is_in_heap())
+	    flags |= Backend::variable_address_is_taken;
 	  this->backend_ = backend->local_variable(bfunction, n, btype,
-						   NULL, is_address_taken,
+						   NULL, flags,
 						   this->location_);
 	}
     }

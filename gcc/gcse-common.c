@@ -186,7 +186,6 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap,
       goto repeat;
 
     case PC:
-    case CC0: /*FIXME*/
     case CONST:
     CASE_CONST_ANY:
     case SYMBOL_REF:

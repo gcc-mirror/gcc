@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include <ISO_Fortran_binding.h>
 
 extern void fsub(CFI_cdesc_t *);
 

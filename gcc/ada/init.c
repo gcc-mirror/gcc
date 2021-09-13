@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -78,7 +78,7 @@
 extern "C" {
 #endif
 
-extern void __gnat_raise_program_error (const char *, int);
+extern void __gnat_raise_program_error (const void *, int);
 
 /* Addresses of exception data blocks for predefined exceptions.  Tasking_Error
    is not used in this unit, and the abort signal is only used on IRIX.
@@ -89,16 +89,15 @@ extern struct Exception_Data program_error;
 extern struct Exception_Data storage_error;
 
 /* For the Cert run time we use the regular raise exception routine because
-   Raise_From_Signal_Handler is not available.  */
+   __gnat_raise_from_signal_handler is not available.  */
 #ifdef CERT
-#define Raise_From_Signal_Handler \
-                      __gnat_raise_exception
-extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
+#define Raise_From_Signal_Handler __gnat_raise_exception
 #else
-#define Raise_From_Signal_Handler \
-                      ada__exceptions__raise_from_signal_handler
-extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
+#define Raise_From_Signal_Handler __gnat_raise_from_signal_handler
 #endif
+
+extern void Raise_From_Signal_Handler (struct Exception_Data *, const void *)
+  ATTRIBUTE_NORETURN;
 
 /* Global values computed by the binder.  Note that these variables are
    declared here, not in the binder file, to avoid having unresolved
@@ -1990,7 +1989,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
      anything else.
      This mechanism is only need in kernel mode. */
 #if !(defined (__RTP__) || defined (VTHREADS)) && ((CPU == PPCE500V2) || (CPU == PPC85XX))
-  register unsigned msr;
+  unsigned msr;
   /* Read the MSR value */
   asm volatile ("mfmsr %0" : "=r" (msr));
   /* Force the SPE bit if not set.  */
@@ -2749,11 +2748,7 @@ __gnat_install_handler (void)
 /* __gnat_init_float */
 /*********************/
 
-/* This routine is called as each process thread is created, for possible
-   initialization of the FP processor.  This version is used under INTERIX
-   and WIN32.  */
-
-#if defined (_WIN32) || defined (__INTERIX) \
+#if defined (_WIN32) || defined (__INTERIX) || defined (__linux__) \
   || defined (__Lynx__) || defined(__NetBSD__) || defined(__FreeBSD__) \
   || defined (__OpenBSD__) || defined (__DragonFly__) || defined(__QNX__)
 
@@ -2763,13 +2758,10 @@ void
 __gnat_init_float (void)
 {
 #if defined (__i386__) || defined (__x86_64__)
-
-  /* This is used to properly initialize the FPU on an x86 for each
-     process thread.  */
-
+  /* This is used to properly initialize the FPU to 64-bit precision on an x86
+     for each process thread and also for floating-point I/O.  */
   asm ("finit");
-
-#endif  /* Defined __i386__ */
+#endif
 }
 #endif
 

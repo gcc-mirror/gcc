@@ -36,5 +36,10 @@ main (int argc, char **argv)
   toplev toplev (NULL, /* external_timer */
 		 true /* init_signals */);
 
-  return toplev.main (argc, argv);
+  int r = toplev.main (argc, argv);
+#if CHECKING_P
+  toplev.finalize ();
+#endif
+
+  return r;
 }

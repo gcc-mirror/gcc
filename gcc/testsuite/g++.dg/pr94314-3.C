@@ -38,7 +38,7 @@ volatile int c = 1;
 int
 main ()
 {
-  for (int i; i < c; i++)
+  for (int i = 0; i < c; i++)
     {
       idx = 0;
       delete new B;

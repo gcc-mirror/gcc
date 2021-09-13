@@ -114,6 +114,12 @@ struct die_struct;
    referenced by it can escape.  */
 #define EAF_NODIRECTESCAPE	(1 << 4)
 
+/* Nonzero if the argument does not escape to return value.  */
+#define EAF_NOT_RETURNED	(1 << 5)
+
+/* Nonzero if the argument is not read.  */
+#define EAF_NOREAD		(1 << 6)
+
 /* Call return flags.  */
 /* Mask for the argument number that is returned.  Lower two bits of
    the return flags, encodes argument slots zero to three.  */
@@ -276,6 +282,9 @@ enum omp_clause_code {
 
   /* OpenMP clause: linear (variable-list[:linear-step]).  */
   OMP_CLAUSE_LINEAR,
+
+  /* OpenMP clause: affinity([depend-modifier :] variable-list).  */
+  OMP_CLAUSE_AFFINITY,
 
   /* OpenMP clause: aligned (variable-list[:alignment]).  */
   OMP_CLAUSE_ALIGNED,
@@ -470,6 +479,9 @@ enum omp_clause_code {
   /* OpenMP clause: bind (binding).  */
   OMP_CLAUSE_BIND,
 
+  /* OpenMP clause: filter (integer-expression).  */
+  OMP_CLAUSE_FILTER,
+
   /* Internally used only clause, holding SIMD uid.  */
   OMP_CLAUSE__SIMDUID_,
 
@@ -502,7 +514,10 @@ enum omp_clause_code {
   OMP_CLAUSE_IF_PRESENT,
 
   /* OpenACC clause: finalize.  */
-  OMP_CLAUSE_FINALIZE
+  OMP_CLAUSE_FINALIZE,
+
+  /* OpenACC clause: nohost.  */
+  OMP_CLAUSE_NOHOST,
 };
 
 #undef DEFTREESTRUCT
@@ -568,8 +583,17 @@ enum omp_memory_order {
   OMP_MEMORY_ORDER_ACQUIRE,
   OMP_MEMORY_ORDER_RELEASE,
   OMP_MEMORY_ORDER_ACQ_REL,
-  OMP_MEMORY_ORDER_SEQ_CST
+  OMP_MEMORY_ORDER_SEQ_CST,
+  OMP_MEMORY_ORDER_MASK = 7,
+  OMP_FAIL_MEMORY_ORDER_UNSPECIFIED = OMP_MEMORY_ORDER_UNSPECIFIED * 8,
+  OMP_FAIL_MEMORY_ORDER_RELAXED = OMP_MEMORY_ORDER_RELAXED * 8,
+  OMP_FAIL_MEMORY_ORDER_ACQUIRE = OMP_MEMORY_ORDER_ACQUIRE * 8,
+  OMP_FAIL_MEMORY_ORDER_RELEASE = OMP_MEMORY_ORDER_RELEASE * 8,
+  OMP_FAIL_MEMORY_ORDER_ACQ_REL = OMP_MEMORY_ORDER_ACQ_REL * 8,
+  OMP_FAIL_MEMORY_ORDER_SEQ_CST = OMP_MEMORY_ORDER_SEQ_CST * 8,
+  OMP_FAIL_MEMORY_ORDER_MASK = OMP_MEMORY_ORDER_MASK * 8
 };
+#define OMP_FAIL_MEMORY_ORDER_SHIFT 3
 
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
    combined by bitwise-or to form the complete set of qualifiers for a
@@ -885,6 +909,7 @@ enum size_type_kind {
   stk_type_kind_last
 };
 
+/* Flags controlling operand_equal_p() behavior.  */
 enum operand_equal_flag {
   OEP_ONLY_CONST = 1,
   OEP_PURE_SAME = 2,
@@ -896,7 +921,14 @@ enum operand_equal_flag {
   OEP_HASH_CHECK = 32,
   /* Makes operand_equal_p handle more expressions:  */
   OEP_LEXICOGRAPHIC = 64,
-  OEP_BITWISE = 128
+  OEP_BITWISE = 128,
+  /* For OEP_ADDRESS_OF of COMPONENT_REFs, only consider same fields as
+     equivalent rather than also different fields with the same offset.  */
+  OEP_ADDRESS_OF_SAME_FIELD = 256,
+  /* In conjunction with OEP_LEXICOGRAPHIC considers names of declarations
+     of the same kind.  Used to compare VLA bounds involving parameters
+     across redeclarations of the same function.  */
+  OEP_DECL_NAME = 512
 };
 
 /* Enum and arrays used for tree allocation stats.
@@ -1015,7 +1047,8 @@ struct GTY(()) tree_base {
       unsigned user_align : 1;
       unsigned nameless_flag : 1;
       unsigned atomic_flag : 1;
-      unsigned spare0 : 3;
+      unsigned unavailable_flag : 1;
+      unsigned spare0 : 2;
 
       unsigned spare1 : 8;
 
@@ -1337,6 +1370,12 @@ struct GTY(()) tree_base {
        SSA_NAME_POINTS_TO_READONLY_MEMORY in
 	   SSA_NAME
 
+   unavailable_flag:
+
+       TREE_UNAVAILABLE in
+	   all decls
+	   all types
+
    visited:
 
        TREE_VISITED in
@@ -1384,6 +1423,7 @@ struct GTY(()) tree_base {
 
        CALL_EXPR_BY_DESCRIPTOR in
            CALL_EXPR
+
 */
 
 struct GTY(()) tree_typed {
@@ -1481,6 +1521,7 @@ enum omp_clause_proc_bind_kind
   /* Numbers should match omp_proc_bind_t enum in omp.h.  */
   OMP_CLAUSE_PROC_BIND_FALSE = 0,
   OMP_CLAUSE_PROC_BIND_TRUE = 1,
+  OMP_CLAUSE_PROC_BIND_PRIMARY = 2,
   OMP_CLAUSE_PROC_BIND_MASTER = 2,
   OMP_CLAUSE_PROC_BIND_CLOSE = 3,
   OMP_CLAUSE_PROC_BIND_SPREAD = 4,

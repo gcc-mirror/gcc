@@ -1,3 +1,306 @@
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/t-softfp: Compile __{mul,div}hc3 into
+	libgcc_s.so.1.
+
+2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/libgcc-glibc.ver: Add %inherit GCC_12.0.0 GCC_7.0.0
+	and export *hf* and *hc* functions at GCC_12.0.0.
+
+2021-09-06  liuhongt  <hongtao.liu@intel.com>
+
+	* Makefile.in: Adjust to support specific CFLAGS for each
+	libgcc source file.
+	* config/i386/64/t-softfp: Explicitly add -msse2 for HF
+	related libgcc source files.
+	* config/i386/t-softfp: Ditto.
+	* config/i386/_divhc3.c: New file.
+	* config/i386/_mulhc3.c: New file.
+
+2021-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/sfp-machine.h (alias_HFtype, alias_SFtype
+	alias_DFtype, alias_TFtype): New.
+	(ALIAS_SELECTOR): New.
+	(strong_alias): Use __typeof and a _Generic selector to
+	provide the type to the synthesized function.
+
+2021-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/32/sfp-machine.h (_FP_NANFRAC_H): New macro.
+	* config/i386/64/sfp-machine.h (_FP_NANFRAC_H): Ditto.
+	* config/i386/sfp-machine.h (_FP_NANSIGN_H): Ditto.
+	* config/i386/t-softfp: Add hf soft-fp.
+	* config.host: Add i386/64/t-softfp.
+	* config/i386/64/t-softfp: New file.
+
+2021-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	* soft-fp/eqhf2.c: New file.
+	* soft-fp/extendhfdf2.c: New file.
+	* soft-fp/extendhfsf2.c: New file.
+	* soft-fp/half.h (FP_CMP_EQ_H): New marco.
+	* soft-fp/truncdfhf2.c: New file
+	* soft-fp/truncsfhf2.c: New file
+
+2021-09-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* unwind-arm-common.inc (abort): Remove.
+
+2021-08-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/value-unwind.h: Add missing runtime exception
+	paragraph.
+	* config/frv/frv-abi.h: Likewise.
+	* config/i386/value-unwind.h: Likewise.
+	* config/pa/pa64-hpux-lib.h: Likewise.
+
+2021-08-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/ibm-ldouble.c (ldouble_qadd_internal): Rename from
+	__gcc_qadd.
+	(__gcc_qadd): Call ldouble_qadd_internal.
+	(__gcc_qsub): Call ldouble_qadd_internal with second long double
+	argument negated.
+
+2021-08-26  Jonathan Yong  <10walls@gmail.com>
+
+	* config/i386/cygming-crtend.c: Fix register_frame_ctor
+	and register_frame_dtor warnings.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* config/arm/cmse_nonsecure_call.S (__gnu_cmse_nonsecure_call):
+	Add vlldm erratum work-around.
+
+2021-08-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config.host: Remove extra_parts from hppa[12]*-*-hpux11* case.
+
+2021-08-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov.h (gcov_type): Define using __LIBGCC_GCOV_TYPE_SIZE.
+	(gcov_type_unsigned): Likewise.
+
+2021-08-14  Stafford Horne  <shorne@gmail.com>
+
+	PR target/99783
+	* config.host (or1k-*, tmake_file): Add or1k/t-crtstuff.
+	* config/or1k/t-crtstuff: New file.
+
+2021-08-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-driver.c (#include <stdint.h>): Remove.
+	(write_topn_counters): Use __INTPTR_TYPE__ instead of intptr_t.
+
+2021-08-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* Makefile.in (LIBGCOV_DRIVER): Add _gcov_info_to_gcda.
+	* gcov.h (gcov_info): Declare.
+	(__gcov_info_to_gdca): Likewise.
+	* libgcov.h (gcov_write_counter): Remove.
+	(gcov_write_tag_length): Likewise.
+	* libgcov-driver.c (#include <stdint.h>): New.
+	(#include <string.h>): Remove.
+	(NEED_L_GCOV): Conditionally define.
+	(NEED_L_GCOV_INFO_TO_GCDA): Likewise.
+	(are_all_counters_zero): New.
+	(gcov_dump_handler): Likewise.
+	(gcov_allocate_handler): Likewise.
+	(dump_unsigned): Likewise.
+	(dump_counter): Likewise.
+	(write_topn_counters): Add dump_fn, allocate_fn, and arg parameters.
+	Use dump_unsigned() and dump_counter().
+	(write_one_data): Add dump_fn, allocate_fn, and arg parameters.  Use
+	dump_unsigned(), dump_counter(), and are_all_counters_zero().
+	(__gcov_info_to_gcda): New.
+
+2021-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/t-slibgcc (SHLIB_LINK): Add $(LDFLAGS).
+	* config/t-slibgcc-darwin (SHLIB_LINK): Likewise.
+	* config/t-slibgcc-vms (SHLIB_LINK): Likewise.
+	* config/t-slibgcc-fuchsia (SHLIB_LDFLAGS): Remove $(LDFLAGS).
+
+2021-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/t-slibgcc-fuchsia: Undo doubly applied patch.
+
+2021-07-15  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/morestack.S (R2_SAVE): Define.
+	(__morestack): Save and restore r2.  Set up r2 for called
+	functions.
+
+2021-07-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	* soft-fp/extendhfxf2.c: New file.
+	* soft-fp/truncxfhf2.c: Likewise.
+
+2021-06-29  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/lib2-bswapti2.c: New file.
+	* config/gcn/lib2-divmod-di.c: New file.
+	* config/gcn/lib2-gcn.h (DItype, UDItype, TItype, UTItype): Add
+	typedefs.
+	(__divdi3, __moddi3, __udivdi3, __umoddi3): Add prototypes.
+	* config/gcn/t-amdgcn (LIB2ADD): Add lib2-divmod-di.c and
+	lib2-bswapti2.c.
+
+2021-06-29  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/lib2-divmod.c (__udivsi3, __umodsi3): Change argument and
+	return types to USItype.
+	* config/gcn/lib2-gcn.h (__udivsi3, __umodsi3): Update prototypes.
+
+2021-06-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	* configure: Regenerate.
+	* configure.ac (test for libgcc_cv_powerpc_3_1_float128_hw): Fix
+	typos among the name, CFLAGS and the test.
+	* config/rs6000/t-float128-hw (fp128_3_1_hw_funcs, fp128_3_1_hw_src,
+	fp128_3_1_hw_static_obj, fp128_3_1_hw_shared_obj, fp128_3_1_hw_obj):
+	Remove.
+	* config/rs6000/t-float128-p10-hw (FLOAT128_HW_INSNS): Append
+	macro FLOAT128_HW_INSNS_ISA3_1.
+	(FP128_3_1_CFLAGS_HW): Fix option typo.
+	* config/rs6000/float128-ifunc.c (SW_OR_HW_ISA3_1): Guard this with
+	FLOAT128_HW_INSNS_ISA3_1.
+	(__floattikf_resolve): Likewise.
+	(__floatuntikf_resolve): Likewise.
+	(__fixkfti_resolve): Likewise.
+	(__fixunskfti_resolve): Likewise.
+	(__floattikf): Likewise.
+	(__floatuntikf): Likewise.
+	(__fixkfti): Likewise.
+	(__fixunskfti): Likewise.
+
+2021-06-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/99939
+	* config/arm/cmse_nonsecure_call.S: Add	__ARM_FEATURE_MVE
+	macro.
+	* config/arm/t-arm: To link cmse.o and cmse_nonsecure_call.o
+	on passing -mcmse option.
+
+2021-06-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/quad-float128.h: Guard all uses of [U]TItype_ppc by
+	_ARCH_PPC64 .
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* config.host: Add if test and set for
+	libgcc_cv_powerpc_3_1_float128_hw.
+	* config/rs6000/fixkfti.c: Renamed to fixkfti-sw.c.
+	Change calls of __fixkfti to __fixkfti_sw.
+	* config/rs6000/fixunskfti.c: Renamed to fixunskfti-sw.c.
+	Change calls of __fixunskfti to __fixunskfti_sw.
+	* config/rs6000/float128-p10.c (__floattikf_hw,
+	__floatuntikf_hw, __fixkfti_hw, __fixunskfti_hw): New file.
+	* config/rs6000/float128-ifunc.c (SW_OR_HW_ISA3_1): New macro.
+	(__floattikf_resolve, __floatuntikf_resolve, __fixkfti_resolve,
+	__fixunskfti_resolve): Add resolve functions.
+	(__floattikf, __floatuntikf, __fixkfti, __fixunskfti): New functions.
+	* config/rs6000/float128-sed (floattitf, __floatuntitf,
+	__fixtfti, __fixunstfti): Add editor commands to change names.
+	* config/rs6000/float128-sed-hw (__floattitf,
+	__floatuntitf, __fixtfti, __fixunstfti): Add editor commands to
+	change names.
+	* config/rs6000/floattikf.c: Renamed to floattikf-sw.c.
+	* config/rs6000/floatuntikf.c: Renamed to floatuntikf-sw.c.
+	* config/rs6000/quad-float128.h (__floattikf_sw,
+	__floatuntikf_sw, __fixkfti_sw, __fixunskfti_sw, __floattikf_hw,
+	__floatuntikf_hw, __fixkfti_hw, __fixunskfti_hw, __floattikf,
+	__floatuntikf, __fixkfti, __fixunskfti): New extern declarations.
+	* config/rs6000/t-float128 (floattikf, floatuntikf,
+	fixkfti, fixunskfti): Remove file names from fp128_ppc_funcs.
+	(floattikf-sw, floatuntikf-sw, fixkfti-sw, fixunskfti-sw): Add
+	file names to fp128_ppc_funcs.
+	* config/rs6000/t-float128-hw(fp128_3_1_hw_funcs,
+	fp128_3_1_hw_src, fp128_3_1_hw_static_obj, fp128_3_1_hw_shared_obj,
+	fp128_3_1_hw_obj): Add variables for ISA 3.1 support.
+	* config/rs6000/t-float128-p10-hw: New file.
+	* configure: Update script for isa 3.1 128-bit float support.
+	* configure.ac: Add check for 128-bit float hardware support.
+	* config/rs6000/fixkfti-sw.c: New file.
+	* config/rs6000/fixunskfti-sw.c: New file.
+	* config/rs6000/floattikf-sw.c: New file.
+	* config/rs6000/floatuntikf-sw.c: New file.
+
+2021-05-13  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/mpyll.S (__pruabi_mpyll): Place into own section.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Fix GNU coding style.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (gcov_version): Use different name that does
+	not clash with newly introduced macro.
+
+2021-04-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgcov.h: For the target, define GCOV_LOCKED_WITH_LOCKING
+	if __MSVCRT__ and, for the host, define it if HOST_HAS_LK_LOCK.
+	* libgcov-driver.c: Add directives if GCOV_LOCKED_WITH_LOCKING.
+
+2021-04-28  Patrick McGehearty  <patrick.mcgehearty@oracle.com>
+
+	* libgcc2.c (XMTYPE, XCTYPE, RBIG, RMIN, RMIN2, RMINSCAL, RMAX2):
+	Define.
+	(__divsc3, __divdc3, __divxc3, __divtc3): Improve complex divide.
+	* config/rs6000/_divkc3.c (RBIG, RMIN, RMIN2, RMINSCAL, RMAX2):
+	Define.
+	(__divkc3): Improve complex divide.
+
+2021-04-23  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/98952
+	* config/rs6000/tramp.S (__trampoline_setup, elfv1 #ifdef): Fix
+	trampoline size comparison in 32-bit by reversing test and
+	combining load immediate with compare.
+	(__trampoline_setup, elfv2 #ifdef): Fix trampoline size comparison
+	in 32-bit by reversing test and combining load immediate with
+	compare.
+
+2021-04-05  Florian Weimer  <fweimer@redhat.com>
+	    Michael Meissner   <meissner@linux.ibm.com>
+
+	* config/rs6000/t-float128 (fp128_ppc_funcs): Add decimal floating
+	point functions for $(decimal_float) only.
+
+2021-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97653
+	* config/rs6000/t-linux (IBM128_STATIC_OBJS): Fix spelling, use
+	$(objext) instead of $(object).  Use _floatunditf instead of
+	_floatunsditf.  Add tf <-> ti conversion objects.
+	(IBM128_SHARED_OBJS): Use proper substitution reference syntax.
+
+2021-03-29  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/t-float128 (fp128_decstr_funcs): Delete.
+	(fp128_ppc_funcs): Do not add $(fp128_decstr_funcs).
+	(fp128_decstr_objs): Delete.
+	* dfp-bit.h: Call __sprintfieee128 to do conversions from
+	_Float128 to a Decimal type.  Call __strtoieee128 to do
+	conversions from a Decimal type to _Float128.
+	* config/rs6000/_sprintfkf.c: Delete file.
+	* config/rs6000/_sprintfkf.h: Delete file.
+	* config/rs6000/_strtokf.c: Delete file.
+	* config/rs6000/_strtokf.h: Delete file.
+
+2021-03-23  Marcus Comstedt  <marcus@mc.pp.se>
+
+	* config/riscv/sfp-machine.h (__BYTE_ORDER): Set according
+	to __BYTE_ORDER__.
+
 2021-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/99406

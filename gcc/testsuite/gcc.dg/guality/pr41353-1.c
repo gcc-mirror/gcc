@@ -22,7 +22,7 @@ f2 (int i, int j)
 {
   j += i;
   /* { dg-final { gdb-test .+4 "i" "37" } } */
-  /* { dg-final { gdb-test .+3 "j" "28 + 37" { xfail *-*-* } } } */
+  /* { dg-final { gdb-test .+3 "j" "28 + 37" { xfail { no-opts "-O0" } } } } */
   int i1 = 2 * i; /* { dg-final { gdb-test .+2 "i1" "2 * 37" } } */
   int i2 = 3 * i; /* { dg-final { gdb-test .+1 "i2" "3 * 37" } } */
   return j;

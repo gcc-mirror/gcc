@@ -1,7 +1,7 @@
 /* Test OpenACC 'kernels' construct decomposition.  */
 
 /* { dg-additional-options "-fopt-info-omp-all" } */
-/* { dg-additional-options "-fopenacc-kernels=decompose" } */
+/* { dg-additional-options "-fchecking --param=openacc-kernels=decompose" } */
 /* { dg-ice "TODO" }
    { dg-prune-output "during GIMPLE pass: omplower" } */
 

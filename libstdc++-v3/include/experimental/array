@@ -104,7 +104,7 @@ template <typename _Tp, size_t _Nm>
     return experimental::__to_array(__a, make_index_sequence<_Nm>{});
   }
 
-  // @} group make_array
+  /// @} group make_array
 } // namespace fundamentals_v2
 } // namespace experimental
 

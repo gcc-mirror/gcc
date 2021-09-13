@@ -30,7 +30,7 @@ extern void csky_cpu_cpp_builtins (cpp_reader *);
 extern bool csky_inlinable_constant (HOST_WIDE_INT value);
 extern bool csky_shifted_imm8_constant (unsigned HOST_WIDE_INT,
 					unsigned int *, unsigned int *);
-extern bool csky_valid_fpuv2_mem_operand (rtx);
+extern bool csky_valid_mem_constraint_operand (rtx, const char*);
 
 extern bool csky_minipool_load_p (rtx_insn *);
 extern const char *csky_output_move (rtx insn, rtx *, machine_mode);
@@ -70,4 +70,9 @@ extern int csky_default_branch_cost (bool, bool);
 extern bool csky_default_logical_op_non_short_circuit (void);
 
 extern void csky_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
+extern int csky_get_movedouble_length(rtx operands[]);
+
+/* The functions was used for fpuv3.  */
+extern const char *fpuv3_output_move (rtx *operands);
+extern int fpuv3_const_double_rtx (rtx);
 #endif /* GCC_CSKY_PROTOS_H */

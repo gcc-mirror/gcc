@@ -96,7 +96,7 @@ namespace __gnu_pbds
     public:
       typedef typename trie_metadata_helper<__node_u, null_update>::type type;
     };
-    //@}
+    ///@}
   } // namespace detail
 } // namespace __gnu_pbds
 

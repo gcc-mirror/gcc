@@ -50,6 +50,11 @@ bool hwasan_init_is_running;
 
 int hwasan_report_count = 0;
 
+uptr kLowShadowStart;
+uptr kLowShadowEnd;
+uptr kHighShadowStart;
+uptr kHighShadowEnd;
+
 void Flags::SetDefaults() {
 #define HWASAN_FLAG(Type, Name, DefaultValue, Description) Name = DefaultValue;
 #include "hwasan_flags.inc"
@@ -128,15 +133,10 @@ static void InitializeFlags() {
   if (common_flags()->help) parser.PrintFlagDescriptions();
 }
 
-static void HWAsanCheckFailed(const char *file, int line, const char *cond,
-                              u64 v1, u64 v2) {
-  Report("HWAddressSanitizer CHECK failed: %s:%d \"%s\" (0x%zx, 0x%zx)\n", file,
-         line, cond, (uptr)v1, (uptr)v2);
-  PRINT_CURRENT_STACK_CHECK();
-  Die();
+static void CheckUnwind() {
+  GET_FATAL_STACK_TRACE_PC_BP(StackTrace::GetCurrentPc(), GET_CURRENT_FRAME());
+  stack.Print();
 }
-
-static constexpr uptr kMemoryUsageBufferSize = 4096;
 
 static void HwasanFormatMemoryUsage(InternalScopedString &s) {
   HwasanThreadList &thread_list = hwasanThreadList();
@@ -155,6 +155,8 @@ static void HwasanFormatMemoryUsage(InternalScopedString &s) {
 }
 
 #if SANITIZER_ANDROID
+static constexpr uptr kMemoryUsageBufferSize = 4096;
+
 static char *memory_usage_buffer = nullptr;
 
 static void InitMemoryUsage() {
@@ -171,7 +173,7 @@ void UpdateMemoryUsage() {
     return;
   if (!memory_usage_buffer)
     InitMemoryUsage();
-  InternalScopedString s(kMemoryUsageBufferSize);
+  InternalScopedString s;
   HwasanFormatMemoryUsage(s);
   internal_strncpy(memory_usage_buffer, s.data(), kMemoryUsageBufferSize - 1);
   memory_usage_buffer[kMemoryUsageBufferSize - 1] = '\0';
@@ -179,6 +181,65 @@ void UpdateMemoryUsage() {
 #else
 void UpdateMemoryUsage() {}
 #endif
+
+void HwasanAtExit() {
+  if (common_flags()->print_module_map)
+    DumpProcessMap();
+  if (flags()->print_stats && (flags()->atexit || hwasan_report_count > 0))
+    ReportStats();
+  if (hwasan_report_count > 0) {
+    // ReportAtExitStatistics();
+    if (common_flags()->exitcode)
+      internal__exit(common_flags()->exitcode);
+  }
+}
+
+void HandleTagMismatch(AccessInfo ai, uptr pc, uptr frame, void *uc,
+                       uptr *registers_frame) {
+  InternalMmapVector<BufferedStackTrace> stack_buffer(1);
+  BufferedStackTrace *stack = stack_buffer.data();
+  stack->Reset();
+  stack->Unwind(pc, frame, uc, common_flags()->fast_unwind_on_fatal);
+
+  // The second stack frame contains the failure __hwasan_check function, as
+  // we have a stack frame for the registers saved in __hwasan_tag_mismatch that
+  // we wish to ignore. This (currently) only occurs on AArch64, as x64
+  // implementations use SIGTRAP to implement the failure, and thus do not go
+  // through the stack saver.
+  if (registers_frame && stack->trace && stack->size > 0) {
+    stack->trace++;
+    stack->size--;
+  }
+
+  bool fatal = flags()->halt_on_error || !ai.recover;
+  ReportTagMismatch(stack, ai.addr, ai.size, ai.is_store, fatal,
+                    registers_frame);
+}
+
+void HwasanTagMismatch(uptr addr, uptr access_info, uptr *registers_frame,
+                       size_t outsize) {
+  __hwasan::AccessInfo ai;
+  ai.is_store = access_info & 0x10;
+  ai.is_load = !ai.is_store;
+  ai.recover = access_info & 0x20;
+  ai.addr = addr;
+  if ((access_info & 0xf) == 0xf)
+    ai.size = outsize;
+  else
+    ai.size = 1 << (access_info & 0xf);
+
+  HandleTagMismatch(ai, (uptr)__builtin_return_address(0),
+                    (uptr)__builtin_frame_address(0), nullptr, registers_frame);
+  __builtin_unreachable();
+}
+
+Thread *GetCurrentThread() {
+  uptr *ThreadLongPtr = GetCurrentThreadLongPtr();
+  if (UNLIKELY(*ThreadLongPtr == 0))
+    return nullptr;
+  auto *R = (StackAllocationsRingBuffer *)ThreadLongPtr;
+  return hwasanThreadList().GetThreadByBufferAddress((uptr)R->Next());
+}
 
 } // namespace __hwasan
 
@@ -219,7 +280,7 @@ static void InitLoadedGlobals() {
 static void InitInstrumentation() {
   if (hwasan_instrumentation_inited) return;
 
-  InitPrctl();
+  InitializeOsSupport();
 
   if (!InitShadow()) {
     Printf("FATAL: HWAddressSanitizer cannot mmap the shadow memory.\n");
@@ -228,7 +289,6 @@ static void InitInstrumentation() {
   }
 
   InitThreads();
-  hwasanThreadList().CreateCurrentThread();
 
   hwasan_instrumentation_inited = 1;
 }
@@ -271,7 +331,7 @@ void __hwasan_init() {
   InitializeFlags();
 
   // Install tool-specific callbacks in sanitizer_common.
-  SetCheckFailedCallback(HWAsanCheckFailed);
+  SetCheckUnwindCallback(CheckUnwind);
 
   __sanitizer_set_report_path(common_flags()->log_path);
 
@@ -493,12 +553,12 @@ extern "C" void *__hwasan_extra_spill_area() {
 }
 
 void __hwasan_print_memory_usage() {
-  InternalScopedString s(kMemoryUsageBufferSize);
+  InternalScopedString s;
   HwasanFormatMemoryUsage(s);
   Printf("%s\n", s.data());
 }
 
-static const u8 kFallbackTag = 0xBB;
+static const u8 kFallbackTag = 0xBB & kTagMask;
 
 u8 __hwasan_generate_tag() {
   Thread *t = GetCurrentThread();
@@ -519,4 +579,12 @@ void __sanitizer_print_stack_trace() {
   GET_FATAL_STACK_TRACE_PC_BP(StackTrace::GetCurrentPc(), GET_CURRENT_FRAME());
   stack.Print();
 }
+
+// Entry point for interoperability between __hwasan_tag_mismatch (ASM) and the
+// rest of the mismatch handling code (C++).
+void __hwasan_tag_mismatch4(uptr addr, uptr access_info, uptr *registers_frame,
+                            size_t outsize) {
+  __hwasan::HwasanTagMismatch(addr, access_info, registers_frame, outsize);
+}
+
 } // extern "C"

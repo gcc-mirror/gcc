@@ -28,17 +28,12 @@ import gcc.unwind;
 import gcc.unwind.pe;
 import gcc.builtins;
 import gcc.config;
-import gcc.attribute;
+import gcc.attributes;
 
 extern(C)
 {
     int _d_isbaseof(ClassInfo, ClassInfo);
     void _d_createTrace(Object, void*);
-
-    // Not used in GDC but declaration required by rt/sections.d
-    struct FuncTable
-    {
-    }
 }
 
 /**
@@ -552,7 +547,7 @@ _Unwind_Reason_Code scanLSDA(const(ubyte)* lsda, _Unwind_Exception_Class excepti
     _Unwind_Ptr LPStart = 0;
 
     if (LPStartEncoding != DW_EH_PE_omit)
-        LPStart = read_encoded_value(context, LPStartEncoding, &p);
+        LPStart = read_encoded_value(context, LPStartEncoding, p);
     else
         LPStart = Start;
 
@@ -568,14 +563,14 @@ _Unwind_Reason_Code scanLSDA(const(ubyte)* lsda, _Unwind_Exception_Class excepti
             // hardcoded OS-specific format.
             TTypeEncoding = _TTYPE_ENCODING;
         }
-        auto TTbase = read_uleb128(&p);
+        auto TTbase = read_uleb128(p);
         TType = p + TTbase;
     }
 
     // The encoding and length of the call-site table; the action table
     // immediately follows.
     ubyte CSEncoding = *p++;
-    auto CSTableSize = read_uleb128(&p);
+    auto CSTableSize = read_uleb128(p);
     const(ubyte)* actionTable = p + CSTableSize;
 
     auto TTypeBase = base_of_encoded_value(TTypeEncoding, context);
@@ -613,8 +608,8 @@ _Unwind_Reason_Code scanLSDA(const(ubyte)* lsda, _Unwind_Exception_Class excepti
             _uleb128_t CSLandingPad, CSAction;
             do
             {
-                CSLandingPad = read_uleb128(&p);
-                CSAction = read_uleb128(&p);
+                CSLandingPad = read_uleb128(p);
+                CSAction = read_uleb128(p);
             }
             while (--ip);
 
@@ -631,10 +626,10 @@ _Unwind_Reason_Code scanLSDA(const(ubyte)* lsda, _Unwind_Exception_Class excepti
         while (p < actionTable)
         {
             // Note that all call-site encodings are "absolute" displacements.
-            auto CSStart = read_encoded_value(null, CSEncoding, &p);
-            auto CSLen = read_encoded_value(null, CSEncoding, &p);
-            auto CSLandingPad = read_encoded_value(null, CSEncoding, &p);
-            auto CSAction = read_uleb128(&p);
+            auto CSStart = read_encoded_value(null, CSEncoding, p);
+            auto CSLen = read_encoded_value(null, CSEncoding, p);
+            auto CSLandingPad = read_encoded_value(null, CSEncoding, p);
+            auto CSAction = read_uleb128(p);
 
             // The table is sorted, so if we've passed the ip, stop.
             if (ip < Start + CSStart)
@@ -708,9 +703,9 @@ int actionTableLookup(_Unwind_Action actions, _Unwind_Exception* unwindHeader,
     while (1)
     {
         auto ap = actionRecord;
-        auto ARFilter = read_sleb128(&ap);
+        auto ARFilter = read_sleb128(ap);
         auto apn = ap;
-        auto ARDisp = read_sleb128(&ap);
+        auto ARDisp = read_sleb128(ap);
 
         if (ARFilter == 0)
         {
@@ -730,7 +725,7 @@ int actionTableLookup(_Unwind_Action actions, _Unwind_Exception* unwindHeader,
             // the ClassInfo is stored.
             const(ubyte)* tp = TType - ARFilter * encodedSize;
 
-            auto entry = read_encoded_value_with_base(TTypeEncoding, TTypeBase, &tp);
+            auto entry = read_encoded_value_with_base(TTypeEncoding, TTypeBase, tp);
             ClassInfo ci = cast(ClassInfo)cast(void*)(entry);
 
             // D does not have catch-all handlers, and so the following
@@ -805,7 +800,7 @@ version (GNU_SEH_Exceptions)
                                                            void* ms_orig_context, void* ms_disp)
     {
         return _GCC_specific_handler(ms_exc, this_frame, ms_orig_context,
-                                     ms_disp, &__gdc_personality_imp);
+                                     ms_disp, &gdc_personality);
     }
 }
 else version (GNU_SjLj_Exceptions)

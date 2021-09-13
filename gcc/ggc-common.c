@@ -31,9 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "options.h"
 
-/* When set, ggc_collect will do collection.  */
-bool ggc_force_collect;
-
 /* When true, protect the contents of the identifier hash table.  */
 bool ggc_protect_identifiers = true;
 
@@ -965,12 +962,9 @@ dump_ggc_loc_statistics ()
   if (! GATHER_STATISTICS)
     return;
 
-  ggc_force_collect = true;
-  ggc_collect ();
+  ggc_collect (GGC_COLLECT_FORCE);
 
   ggc_mem_desc.dump (GGC_ORIGIN);
-
-  ggc_force_collect = false;
 }
 
 /* Record ALLOCATED and OVERHEAD bytes to descriptor NAME:LINE (FUNCTION).  */

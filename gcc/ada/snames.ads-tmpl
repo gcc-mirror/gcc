@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,6 +145,8 @@ package Snames is
    Name_Exclusive_Functions            : constant Name_Id := N + $;
    Name_Full_Access_Only               : constant Name_Id := N + $;
    Name_Integer_Literal                : constant Name_Id := N + $;
+   Name_No_Controlled_Parts            : constant Name_Id := N + $;
+   Name_No_Task_Parts                  : constant Name_Id := N + $;
    Name_Real_Literal                   : constant Name_Id := N + $;
    Name_Relaxed_Initialization         : constant Name_Id := N + $;
    Name_Stable_Properties              : constant Name_Id := N + $;
@@ -385,10 +387,6 @@ package Snames is
    --  Ada 83, Ada 95, and Ada 2005 mode as well, where they are technically
    --  considered to be implementation dependent pragmas.
 
-   --  The entries marked AAMP are AAMP specific pragmas that are recognized
-   --  only in GNAT for the AAMP. They are ignored in other versions with
-   --  appropriate warnings.
-
    First_Pragma_Name                   : constant Name_Id := N + $;
 
    --  Configuration pragmas are grouped at start. Note that there is a list
@@ -401,7 +399,7 @@ package Snames is
    Name_Ada_2005                       : constant Name_Id := N + $; -- GNAT
    Name_Ada_12                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_2012                       : constant Name_Id := N + $; -- GNAT
-   Name_Ada_2020                       : constant Name_Id := N + $; -- GNAT
+   Name_Ada_2022                       : constant Name_Id := N + $; -- GNAT
    Name_Aggregate_Individually_Assign  : constant Name_Id := N + $; -- GNAT
    Name_Allow_Integer_Address          : constant Name_Id := N + $; -- GNAT
    Name_Annotate                       : constant Name_Id := N + $; -- GNAT
@@ -441,6 +439,7 @@ package Snames is
    --  correctly recognize and process Fast_Math.
 
    Name_Favor_Top_Level                : constant Name_Id := N + $; -- GNAT
+   Name_GNAT_Annotate                  : constant Name_Id := N + $; -- GNAT
    Name_Ignore_Pragma                  : constant Name_Id := N + $; -- GNAT
    Name_Implicit_Packing               : constant Name_Id := N + $; -- GNAT
    Name_Initialize_Scalars             : constant Name_Id := N + $; -- GNAT
@@ -480,7 +479,6 @@ package Snames is
    Name_Suppress_Exception_Locations   : constant Name_Id := N + $; -- GNAT
    Name_Task_Dispatching_Policy        : constant Name_Id := N + $;
    Name_Unevaluated_Use_Of_Old         : constant Name_Id := N + $; -- GNAT
-   Name_Universal_Data                 : constant Name_Id := N + $; -- AAMP
    Name_Unsuppress                     : constant Name_Id := N + $; -- Ada 05
    Name_Use_VADS_Size                  : constant Name_Id := N + $; -- GNAT
    Name_Validity_Checks                : constant Name_Id := N + $; -- GNAT
@@ -545,7 +543,6 @@ package Snames is
    Name_Export_Function                : constant Name_Id := N + $; -- GNAT
    Name_Export_Object                  : constant Name_Id := N + $; -- GNAT
    Name_Export_Procedure               : constant Name_Id := N + $; -- GNAT
-   Name_Export_Value                   : constant Name_Id := N + $; -- GNAT
    Name_Export_Valued_Procedure        : constant Name_Id := N + $; -- GNAT
    Name_Extensions_Visible             : constant Name_Id := N + $; -- GNAT
    Name_External                       : constant Name_Id := N + $; -- GNAT
@@ -800,7 +797,6 @@ package Snames is
    Name_Gcc                            : constant Name_Id := N + $;
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
-   Name_Gnat_Annotate                  : constant Name_Id := N + $;
    Name_Gnat_Extended_Ravenscar        : constant Name_Id := N + $;
    Name_Gnat_Ravenscar_EDF             : constant Name_Id := N + $;
    Name_Gnatprove                      : constant Name_Id := N + $;
@@ -831,6 +827,7 @@ package Snames is
    Name_No_Access_Parameter_Allocators : constant Name_Id := N + $;
    Name_No_Coextensions                : constant Name_Id := N + $;
    Name_No_Dependence                  : constant Name_Id := N + $;
+   Name_No_Dynamic_Accessibility_Checks : constant Name_Id := N + $;
    Name_No_Dynamic_Attachment          : constant Name_Id := N + $;
    Name_No_Dynamic_Interrupts          : constant Name_Id := N + $;
    Name_No_Elaboration_Code            : constant Name_Id := N + $;
@@ -1085,6 +1082,7 @@ package Snames is
    Name_To_Any                         : constant Name_Id := N + $; -- GNAT
    Name_Truncation                     : constant Name_Id := N + $;
    Name_TypeCode                       : constant Name_Id := N + $; -- GNAT
+   Name_Valid_Value                    : constant Name_Id := N + $; -- GNAT
    Name_Value                          : constant Name_Id := N + $;
    Name_Wide_Image                     : constant Name_Id := N + $;
    Name_Wide_Wide_Image                : constant Name_Id := N + $;
@@ -1333,7 +1331,6 @@ package Snames is
    Name_Import_Address                   : constant Name_Id := N + $;
    Name_Import_Largest_Value             : constant Name_Id := N + $;
    Name_Import_Value                     : constant Name_Id := N + $;
-   Name_Is_Negative                      : constant Name_Id := N + $;
    Name_Line                             : constant Name_Id := N + $;
    Name_Rotate_Left                      : constant Name_Id := N + $;
    Name_Rotate_Right                     : constant Name_Id := N + $;
@@ -1611,6 +1608,7 @@ package Snames is
       Attribute_To_Any,
       Attribute_Truncation,
       Attribute_TypeCode,
+      Attribute_Valid_Value,
       Attribute_Value,
       Attribute_Wide_Image,
       Attribute_Wide_Wide_Image,
@@ -1705,7 +1703,6 @@ package Snames is
       --  in Sem_Prag.
 
    for Convention_Id'Size use 8;
-   --  Plenty of space for expansion
 
    subtype Convention_C_Family is Convention_Id
      range Convention_C .. Convention_CPP;
@@ -1741,8 +1738,8 @@ package Snames is
       Pragma_Ada_2005,
       Pragma_Ada_12,
       Pragma_Ada_2012,
-      Pragma_Ada_2020,
-      --  Note that there is no Pragma_Ada_20. Pragma_Ada_05/12 are for
+      Pragma_Ada_2022,
+      --  Note that there is no Pragma_Ada_22. Pragma_Ada_05/12 are for
       --  compatibility reasons only; the full year names are preferred.
       Pragma_Aggregate_Individually_Assign,
       Pragma_Allow_Integer_Address,
@@ -1771,6 +1768,7 @@ package Snames is
       Pragma_Extensions_Allowed,
       Pragma_External_Name_Casing,
       Pragma_Favor_Top_Level,
+      Pragma_GNAT_Annotate,
       Pragma_Ignore_Pragma,
       Pragma_Implicit_Packing,
       Pragma_Initialize_Scalars,
@@ -1810,7 +1808,6 @@ package Snames is
       Pragma_Suppress_Exception_Locations,
       Pragma_Task_Dispatching_Policy,
       Pragma_Unevaluated_Use_Of_Old,
-      Pragma_Universal_Data,
       Pragma_Unsuppress,
       Pragma_Use_VADS_Size,
       Pragma_Validity_Checks,
@@ -1861,7 +1858,6 @@ package Snames is
       Pragma_Export_Function,
       Pragma_Export_Object,
       Pragma_Export_Procedure,
-      Pragma_Export_Value,
       Pragma_Export_Valued_Procedure,
       Pragma_Extensions_Visible,
       Pragma_External,

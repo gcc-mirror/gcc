@@ -615,6 +615,32 @@ reg_early_clobber_p (const struct lra_insn_reg *reg, int n_alt)
 	     && TEST_BIT (reg->early_clobber_alts, n_alt)));
 }
 
+/* Clear pseudo REGNO in SET or all hard registers of REGNO in MODE in SET.  */
+static void
+clear_sparseset_regnos (sparseset set, int regno, enum machine_mode mode)
+{
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    {
+      sparseset_clear_bit (dead_set, regno);
+      return;
+    }
+  for (int last = end_hard_regno (mode, regno); regno < last; regno++)
+    sparseset_clear_bit (set, regno);
+}
+
+/* Return true if pseudo REGNO is in SET or all hard registers of REGNO in MODE
+   are in SET.  */
+static bool
+regnos_in_sparseset_p (sparseset set, int regno, enum machine_mode mode)
+{
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    return sparseset_bit_p (dead_set, regno);
+  for (int last = end_hard_regno (mode, regno); regno < last; regno++)
+    if (!sparseset_bit_p (set, regno))
+      return false;
+  return true;
+}
+
 /* Process insns of the basic block BB to update pseudo live ranges,
    pseudo hard register conflicts, and insn notes.  We do it on
    backward scan of BB insns.  CURR_POINT is the program point where
@@ -739,24 +765,13 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       /* Update max ref width and hard reg usage.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
 	{
-	  int i, regno = reg->regno;
+	  int regno = reg->regno;
 
 	  if (partial_subreg_p (lra_reg_info[regno].biggest_mode,
 				reg->biggest_mode))
 	    lra_reg_info[regno].biggest_mode = reg->biggest_mode;
 	  if (HARD_REGISTER_NUM_P (regno))
-	    {
-	      lra_hard_reg_usage[regno] += freq;
-	      /* A hard register explicitly can be used in small mode,
-		 but implicitly it can be used in natural mode as a
-		 part of multi-register group.  Process this case
-		 here.  */
-	      for (i = 1; i < hard_regno_nregs (regno, reg->biggest_mode); i++)
-		if (partial_subreg_p (lra_reg_info[regno + i].biggest_mode,
-				      GET_MODE (regno_reg_rtx[regno + i])))
-		  lra_reg_info[regno + i].biggest_mode
-		    = GET_MODE (regno_reg_rtx[regno + i]);
-	    }
+	    lra_hard_reg_usage[regno] += freq;
 	}
 
       call_p = CALL_P (curr_insn);
@@ -991,19 +1006,25 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	    ;
 	  else if (REG_P (XEXP (link, 0)))
 	    {
-	      regno = REGNO (XEXP (link, 0));
+	      rtx note_reg = XEXP (link, 0);
+	      int note_regno = REGNO (note_reg);
+
 	      if ((REG_NOTE_KIND (link) == REG_DEAD
-		   && ! sparseset_bit_p (dead_set, regno))
+		   && ! regnos_in_sparseset_p (dead_set, note_regno,
+					       GET_MODE (note_reg)))
 		  || (REG_NOTE_KIND (link) == REG_UNUSED
-		      && ! sparseset_bit_p (unused_set, regno)))
+		      && ! regnos_in_sparseset_p (unused_set, note_regno,
+						  GET_MODE (note_reg))))
 		{
 		  *link_loc = XEXP (link, 1);
 		  continue;
 		}
 	      if (REG_NOTE_KIND (link) == REG_DEAD)
-		sparseset_clear_bit (dead_set, regno);
+		clear_sparseset_regnos (dead_set, note_regno,
+					GET_MODE (note_reg));
 	      else if (REG_NOTE_KIND (link) == REG_UNUSED)
-		sparseset_clear_bit (unused_set, regno);
+		clear_sparseset_regnos (unused_set, note_regno,
+					GET_MODE (note_reg));
 	    }
 	  link_loc = &XEXP (link, 1);
 	}

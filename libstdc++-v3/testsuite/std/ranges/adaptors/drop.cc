@@ -258,6 +258,23 @@ test08()
   VERIFY( ra_test_wrapper<long>::increment_count == 0 );
 }
 
+template<auto drop = views::drop>
+void
+test09()
+{
+  // Verify SFINAE behavior.
+  extern int x[5];
+  int* n = 0;
+  static_assert(!requires { drop(); });
+  static_assert(!requires { drop(x, n, n); });
+  static_assert(!requires { drop(x, n); });
+  static_assert(!requires { drop(n)(x); });
+  static_assert(!requires { x | (drop(n) | views::all); });
+  static_assert(!requires { (drop(n) | views::all)(x); });
+  static_assert(!requires { drop | views::all; });
+  static_assert(!requires { views::all | drop; });
+}
+
 int
 main()
 {
@@ -269,4 +286,5 @@ main()
   test06();
   test07();
   test08();
+  test09();
 }

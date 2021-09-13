@@ -95,7 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     deque<_Tp, _Alloc>::
     operator=(const deque& __x)
     {
-      if (&__x != this)
+      if (std::__addressof(__x) != this)
 	{
 #if __cplusplus >= 201103L
 	  if (_Alloc_traits::_S_propagate_on_copy_assign())

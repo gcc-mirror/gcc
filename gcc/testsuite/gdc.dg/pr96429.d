@@ -3,7 +3,7 @@
 // { dg-options "-fdump-tree-original" }
 ptrdiff_t subbyte(byte* bp1, byte* bp2)
 {
-    // { dg-final { scan-tree-dump "bp1 - bp2;" "original" } }
+    // { dg-final { scan-tree-dump "\\\(bp1 - bp2\\\) /\\\[ex\\\] 1;" "original" } }
     return bp1 - bp2;
 }
 

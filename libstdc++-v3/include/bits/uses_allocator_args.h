@@ -220,7 +220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }, std::uses_allocator_construction_args<_Tp>(__a,
 	std::forward<_Args>(__args)...));
     }
-// @}
+/// @}
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++20

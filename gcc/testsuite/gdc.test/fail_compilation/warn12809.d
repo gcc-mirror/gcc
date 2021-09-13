@@ -32,3 +32,44 @@ void test_unrachable3()
 
     int x = 1;      // unreachable
 }
+
+/********************************************/
+
+/*
+TEST_OUTPUT:
+---
+fail_compilation/warn12809.d(108): Warning: statement is not reachable
+fail_compilation/warn12809.d(115): Warning: statement is not reachable
+fail_compilation/warn12809.d(122): Warning: statement is not reachable
+Error: warnings are treated as errors
+       Use -wi if you wish to treat warnings only as informational.
+---
+*/
+
+#line 100
+
+alias noreturn = typeof(*null);
+
+noreturn foo();
+
+void test1(ref int i)
+{
+    foo();
+    i = 3;
+}
+
+void test2()
+{
+    try foo();
+    finally { }
+    int x = 1;
+}
+
+void test3()
+{
+    try { }
+    finally foo();
+    int x = 1;
+}
+
+

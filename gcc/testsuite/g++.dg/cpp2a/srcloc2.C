@@ -84,7 +84,7 @@ const source_location *p1 = &s1;
 const source_location *p2 = &s2;
 
 static_assert (source_location::current ().line () == __LINE__);
-static_assert (source_location::current ().column () == 42);
+static_assert (source_location::current ().column () == 41);
 
 constexpr bool
 quux ()
@@ -110,7 +110,7 @@ quux ()
     return false;
   if (line1 != line2)
     return false;
-  if (column != 33)
+  if (column != 32)
     return false;
   return true;
 }

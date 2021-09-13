@@ -1213,10 +1213,20 @@ DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 3)
    Operand 1: OMP_SINGLE_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_SINGLE, "omp_single", tcc_statement, 2)
 
+/* OpenMP - #pragma omp scope
+   Operand 0: OMP_SCOPE_BODY: Masked section body.
+   Operand 1: OMP_SCOPE_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_SCOPE, "omp_scope", tcc_statement, 2)
+
 /* OpenMP - #pragma omp taskgroup
    Operand 0: OMP_TASKGROUP_BODY: Taskgroup body.
    Operand 1: OMP_SINGLE_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_TASKGROUP, "omp_taskgroup", tcc_statement, 2)
+
+/* OpenMP - #pragma omp masked
+   Operand 0: OMP_MASKED_BODY: Masked section body.
+   Operand 1: OMP_MASKED_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_MASKED, "omp_masked", tcc_statement, 2)
 
 /* OpenMP - #pragma omp scan
    Operand 0: OMP_SCAN_BODY: Scan body.

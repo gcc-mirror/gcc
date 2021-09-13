@@ -57,7 +57,7 @@ requires_stack_frame_p (rtx_insn *insn, HARD_REG_SET prologue_used,
   HARD_REG_SET hardregs;
   unsigned regno;
 
-  if (CALL_P (insn))
+  if (CALL_P (insn) && !FAKE_CALL_P (insn))
     return !SIBLING_CALL_P (insn);
 
   /* We need a frame to get the unique CFA expected by the unwinder.  */
@@ -1772,9 +1772,6 @@ insert_prologue_epilogue_for_components (sbitmap components)
 void
 try_shrink_wrapping_separate (basic_block first_bb)
 {
-  if (HAVE_cc0)
-    return;
-
   if (!(SHRINK_WRAPPING_ENABLED
 	&& flag_shrink_wrap_separate
 	&& optimize_function_for_speed_p (cfun)

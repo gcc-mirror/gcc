@@ -2501,7 +2501,8 @@ class Struct_type : public Type
   Struct_type(Struct_field_list* fields, Location location)
     : Type(TYPE_STRUCT),
       fields_(fields), location_(location), all_methods_(NULL),
-      is_struct_incomparable_(false), has_padding_(false)
+      is_struct_incomparable_(false), has_padding_(false),
+      is_results_struct_(false)
   { }
 
   // Return the field NAME.  This only looks at local fields, not at
@@ -2632,6 +2633,17 @@ class Struct_type : public Type
   set_has_padding()
   { this->has_padding_ = true; }
 
+  // Return whether this is a results struct created to hold the
+  // results of a function that returns multiple results.
+  bool
+  is_results_struct() const
+  { return this->is_results_struct_; }
+
+  // Record that this is a results struct.
+  void
+  set_is_results_struct()
+  { this->is_results_struct_ = true; }
+
   // Write the hash function for this type.
   void
   write_hash_function(Gogo*, Function_type*);
@@ -2742,6 +2754,9 @@ class Struct_type : public Type
   // True if this struct's backend type has padding, due to trailing
   // zero-sized field.
   bool has_padding_;
+  // True if this is a results struct created to hold the results of a
+  // function that returns multiple results.
+  bool is_results_struct_;
 };
 
 // The type of an array.
@@ -3605,8 +3620,7 @@ class Named_type : public Type
   do_needs_key_update();
 
   bool
-  do_in_heap() const
-  { return this->in_heap_ && this->type_->in_heap(); }
+  do_in_heap() const;
 
   unsigned int
   do_hash_for_method(Gogo*, int) const;

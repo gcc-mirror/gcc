@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,35 +23,39 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Csets;    use Csets;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Csets;          use Csets;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
 with Exp_Dist;
-with Fname;    use Fname;
-with Fname.UF; use Fname.UF;
-with Ghost;    use Ghost;
-with Lib;      use Lib;
-with Lib.Load; use Lib.Load;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Output;   use Output;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Dist; use Sem_Dist;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Stand;    use Stand;
-with Snames;   use Snames;
-with Tbuild;   use Tbuild;
-with Uname;    use Uname;
+with Fname;          use Fname;
+with Fname.UF;       use Fname.UF;
+with Ghost;          use Ghost;
+with Lib;            use Lib;
+with Lib.Load;       use Lib.Load;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Output;         use Output;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch7;        use Sem_Ch7;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Stand;          use Stand;
+with Snames;         use Snames;
+with Tbuild;         use Tbuild;
+with Uname;          use Uname;
 
 package body Rtsfind is
 
@@ -570,10 +574,11 @@ package body Rtsfind is
      range Ada_Streams_Stream_IO .. Ada_Streams_Stream_IO;
 
    subtype Ada_Strings_Descendant is Ada_Descendant
-     range Ada_Strings_Superbounded .. Ada_Strings_Text_Output_Buffers;
+     range Ada_Strings_Superbounded .. Ada_Strings_Text_Buffers_Unbounded;
 
-   subtype Ada_Strings_Text_Output_Descendant is Ada_Strings_Descendant
-     range Ada_Strings_Text_Output_Utils .. Ada_Strings_Text_Output_Buffers;
+   subtype Ada_Strings_Text_Buffers_Descendant is Ada_Strings_Descendant
+     range Ada_Strings_Text_Buffers_Unbounded ..
+           Ada_Strings_Text_Buffers_Unbounded;
 
    subtype Ada_Text_IO_Descendant is Ada_Descendant
      range Ada_Text_IO_Decimal_IO .. Ada_Text_IO_Modular_IO;
@@ -596,6 +601,10 @@ package body Rtsfind is
 
    subtype System_Descendant is RTU_Id
      range System_Address_Image .. System_Tasking_Stages;
+
+   subtype System_Atomic_Operations_Descendant is System_Descendant
+     range System_Atomic_Operations_Test_And_Set ..
+           System_Atomic_Operations_Test_And_Set;
 
    subtype System_Dim_Descendant is System_Descendant
      range System_Dim_Float_IO .. System_Dim_Integer_IO;
@@ -657,8 +666,8 @@ package body Rtsfind is
          elsif U_Id in Ada_Strings_Descendant then
             Name_Buffer (12) := '.';
 
-            if U_Id in Ada_Strings_Text_Output_Descendant then
-               Name_Buffer (24) := '.';
+            if U_Id in Ada_Strings_Text_Buffers_Descendant then
+               Name_Buffer (25) := '.';
             end if;
 
          elsif U_Id in Ada_Text_IO_Descendant then
@@ -683,6 +692,10 @@ package body Rtsfind is
 
       elsif U_Id in System_Descendant then
          Name_Buffer (7) := '.';
+
+         if U_Id in System_Atomic_Operations_Descendant then
+            Name_Buffer (25) := '.';
+         end if;
 
          if U_Id in System_Dim_Descendant then
             Name_Buffer (11) := '.';
@@ -1795,14 +1808,12 @@ package body Rtsfind is
    -------------------------
 
    procedure SPARK_Implicit_Load (E : RE_Id) is
-      Unused : Entity_Id;
-
    begin
       pragma Assert (GNATprove_Mode);
 
       --  Force loading of a predefined unit
 
-      Unused := RTE (E);
+      Discard_Node (RTE (E));
    end SPARK_Implicit_Load;
 
 end Rtsfind;

@@ -507,25 +507,6 @@ static const struct processor_costs *sparc_costs = &cypress_costs;
   ((TARGET_ARCH64 && !TARGET_CM_MEDLOW) || flag_pic)
 #endif
 
-/* Vector to say how input registers are mapped to output registers.
-   HARD_FRAME_POINTER_REGNUM cannot be remapped by this function to
-   eliminate it.  You must use -fomit-frame-pointer to get that.  */
-char leaf_reg_remap[] =
-{ 0, 1, 2, 3, 4, 5, 6, 7,
-  -1, -1, -1, -1, -1, -1, 14, -1,
-  -1, -1, -1, -1, -1, -1, -1, -1,
-  8, 9, 10, 11, 12, 13, -1, 15,
-
-  32, 33, 34, 35, 36, 37, 38, 39,
-  40, 41, 42, 43, 44, 45, 46, 47,
-  48, 49, 50, 51, 52, 53, 54, 55,
-  56, 57, 58, 59, 60, 61, 62, 63,
-  64, 65, 66, 67, 68, 69, 70, 71,
-  72, 73, 74, 75, 76, 77, 78, 79,
-  80, 81, 82, 83, 84, 85, 86, 87,
-  88, 89, 90, 91, 92, 93, 94, 95,
-  96, 97, 98, 99, 100, 101, 102};
-
 /* Vector, indexed by hard register number, which contains 1
    for a register that is allowable in a candidate for leaf
    function treatment.  */
@@ -962,6 +943,17 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_ZERO_CALL_USED_REGS
 #define TARGET_ZERO_CALL_USED_REGS sparc_zero_call_used_regs
+
+#ifdef SPARC_GCOV_TYPE_SIZE
+static HOST_WIDE_INT
+sparc_gcov_type_size (void)
+{
+  return SPARC_GCOV_TYPE_SIZE;
+}
+
+#undef TARGET_GCOV_TYPE_SIZE
+#define TARGET_GCOV_TYPE_SIZE sparc_gcov_type_size
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4213,26 +4205,7 @@ sparc_got (void)
   return got_symbol_rtx;
 }
 
-/* Wrapper around the load_pcrel_sym{si,di} patterns.  */
-
-static rtx
-gen_load_pcrel_sym (rtx op0, rtx op1, rtx op2)
-{
-  int orig_flag_pic = flag_pic;
-  rtx insn;
-
-  /* The load_pcrel_sym{si,di} patterns require absolute addressing.  */
-  flag_pic = 0;
-  if (TARGET_ARCH64)
-    insn = gen_load_pcrel_symdi (op0, op1, op2, GEN_INT (REGNO (op0)));
-  else
-    insn = gen_load_pcrel_symsi (op0, op1, op2, GEN_INT (REGNO (op0)));
-  flag_pic = orig_flag_pic;
-
-  return insn;
-}
-
-/* Output the load_pcrel_sym{si,di} patterns.  */
+/* Output the load_pcrel_sym pattern.  */
 
 const char *
 output_load_pcrel_sym (rtx *operands)
@@ -4299,8 +4272,15 @@ load_got_register (void)
 	  got_helper_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
 	}
 
-      insn
-	= gen_load_pcrel_sym (got_register_rtx, sparc_got (), got_helper_rtx);
+      /* The load_pcrel_sym{si,di} patterns require absolute addressing.  */
+      const int orig_flag_pic = flag_pic;
+      flag_pic = 0;
+      insn = gen_load_pcrel_sym (Pmode,
+				 got_register_rtx,
+				 sparc_got (),
+				 got_helper_rtx,
+				 GEN_INT (GLOBAL_OFFSET_TABLE_REGNUM));
+      flag_pic = orig_flag_pic;
     }
 
   emit_insn (insn);
@@ -4680,22 +4660,11 @@ sparc_legitimize_tls_address (rtx addr)
 	ret = gen_reg_rtx (Pmode);
 	o0 = gen_rtx_REG (Pmode, 8);
 	got = sparc_tls_got ();
-	if (TARGET_ARCH32)
-	  {
-	    emit_insn (gen_tgd_hi22si (temp1, addr));
-	    emit_insn (gen_tgd_lo10si (temp2, temp1, addr));
-	    emit_insn (gen_tgd_addsi (o0, got, temp2, addr));
-	    insn = emit_call_insn (gen_tgd_callsi (o0, sparc_tls_get_addr (),
-						   addr, const1_rtx));
-	  }
-	else
-	  {
-	    emit_insn (gen_tgd_hi22di (temp1, addr));
-	    emit_insn (gen_tgd_lo10di (temp2, temp1, addr));
-	    emit_insn (gen_tgd_adddi (o0, got, temp2, addr));
-	    insn = emit_call_insn (gen_tgd_calldi (o0, sparc_tls_get_addr (),
-						   addr, const1_rtx));
-	  }
+	emit_insn (gen_tgd_hi22 (Pmode, temp1, addr));
+	emit_insn (gen_tgd_lo10 (Pmode, temp2, temp1, addr));
+	emit_insn (gen_tgd_add (Pmode, o0, got, temp2, addr));
+	insn = emit_call_insn (gen_tgd_call (Pmode, o0, sparc_tls_get_addr (),
+					     addr, const1_rtx));
 	use_reg (&CALL_INSN_FUNCTION_USAGE (insn), o0);
 	RTL_CONST_CALL_P (insn) = 1;
 	insn = get_insns ();
@@ -4711,22 +4680,11 @@ sparc_legitimize_tls_address (rtx addr)
 	ret = gen_reg_rtx (Pmode);
 	o0 = gen_rtx_REG (Pmode, 8);
 	got = sparc_tls_got ();
-	if (TARGET_ARCH32)
-	  {
-	    emit_insn (gen_tldm_hi22si (temp1));
-	    emit_insn (gen_tldm_lo10si (temp2, temp1));
-	    emit_insn (gen_tldm_addsi (o0, got, temp2));
-	    insn = emit_call_insn (gen_tldm_callsi (o0, sparc_tls_get_addr (),
-						    const1_rtx));
-	  }
-	else
-	  {
-	    emit_insn (gen_tldm_hi22di (temp1));
-	    emit_insn (gen_tldm_lo10di (temp2, temp1));
-	    emit_insn (gen_tldm_adddi (o0, got, temp2));
-	    insn = emit_call_insn (gen_tldm_calldi (o0, sparc_tls_get_addr (),
-						    const1_rtx));
-	  }
+	emit_insn (gen_tldm_hi22 (Pmode, temp1));
+	emit_insn (gen_tldm_lo10 (Pmode, temp2, temp1));
+	emit_insn (gen_tldm_add (Pmode, o0, got, temp2));
+	insn = emit_call_insn (gen_tldm_call (Pmode, o0, sparc_tls_get_addr (),
+					      const1_rtx));
 	use_reg (&CALL_INSN_FUNCTION_USAGE (insn), o0);
 	RTL_CONST_CALL_P (insn) = 1;
 	insn = get_insns ();
@@ -4738,18 +4696,9 @@ sparc_legitimize_tls_address (rtx addr)
 					    UNSPEC_TLSLD_BASE));
 	temp1 = gen_reg_rtx (Pmode);
 	temp2 = gen_reg_rtx (Pmode);
-	if (TARGET_ARCH32)
-	  {
-	    emit_insn (gen_tldo_hix22si (temp1, addr));
-	    emit_insn (gen_tldo_lox10si (temp2, temp1, addr));
-	    emit_insn (gen_tldo_addsi (ret, temp3, temp2, addr));
-	  }
-	else
-	  {
-	    emit_insn (gen_tldo_hix22di (temp1, addr));
-	    emit_insn (gen_tldo_lox10di (temp2, temp1, addr));
-	    emit_insn (gen_tldo_adddi (ret, temp3, temp2, addr));
-	  }
+	emit_insn (gen_tldo_hix22 (Pmode, temp1, addr));
+	emit_insn (gen_tldo_lox10 (Pmode, temp2, temp1, addr));
+	emit_insn (gen_tldo_add (Pmode, ret, temp3, temp2, addr));
 	break;
 
       case TLS_MODEL_INITIAL_EXEC:
@@ -4757,27 +4706,17 @@ sparc_legitimize_tls_address (rtx addr)
 	temp2 = gen_reg_rtx (Pmode);
 	temp3 = gen_reg_rtx (Pmode);
 	got = sparc_tls_got ();
+	emit_insn (gen_tie_hi22 (Pmode, temp1, addr));
+	emit_insn (gen_tie_lo10 (Pmode, temp2, temp1, addr));
 	if (TARGET_ARCH32)
-	  {
-	    emit_insn (gen_tie_hi22si (temp1, addr));
-	    emit_insn (gen_tie_lo10si (temp2, temp1, addr));
-	    emit_insn (gen_tie_ld32 (temp3, got, temp2, addr));
-	  }
+	  emit_insn (gen_tie_ld32 (temp3, got, temp2, addr));
 	else
-	  {
-	    emit_insn (gen_tie_hi22di (temp1, addr));
-	    emit_insn (gen_tie_lo10di (temp2, temp1, addr));
-	    emit_insn (gen_tie_ld64 (temp3, got, temp2, addr));
-	  }
+	  emit_insn (gen_tie_ld64 (temp3, got, temp2, addr));
         if (TARGET_SUN_TLS)
 	  {
 	    ret = gen_reg_rtx (Pmode);
-	    if (TARGET_ARCH32)
-	      emit_insn (gen_tie_addsi (ret, gen_rtx_REG (Pmode, 7),
-					temp3, addr));
-	    else
-	      emit_insn (gen_tie_adddi (ret, gen_rtx_REG (Pmode, 7),
-					temp3, addr));
+	    emit_insn (gen_tie_add (Pmode, ret, gen_rtx_REG (Pmode, 7),
+				    temp3, addr));
 	  }
 	else
 	  ret = gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, 7), temp3);
@@ -4786,16 +4725,8 @@ sparc_legitimize_tls_address (rtx addr)
       case TLS_MODEL_LOCAL_EXEC:
 	temp1 = gen_reg_rtx (Pmode);
 	temp2 = gen_reg_rtx (Pmode);
-	if (TARGET_ARCH32)
-	  {
-	    emit_insn (gen_tle_hix22si (temp1, addr));
-	    emit_insn (gen_tle_lox10si (temp2, temp1, addr));
-	  }
-	else
-	  {
-	    emit_insn (gen_tle_hix22di (temp1, addr));
-	    emit_insn (gen_tle_lox10di (temp2, temp1, addr));
-	  }
+	emit_insn (gen_tle_hix22 (Pmode, temp1, addr));
+	emit_insn (gen_tle_lox10 (Pmode, temp2, temp1, addr));
 	ret = gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, 7), temp2);
 	break;
 
@@ -5696,10 +5627,7 @@ sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 	 probes at FIRST + N * PROBE_INTERVAL for values of N from 1
 	 until it is equal to ROUNDED_SIZE.  */
 
-      if (TARGET_ARCH64)
-	emit_insn (gen_probe_stack_rangedi (g1, g1, g4));
-      else
-	emit_insn (gen_probe_stack_rangesi (g1, g1, g4));
+      emit_insn (gen_probe_stack_range (Pmode, g1, g1, g4));
 
 
       /* Step 4: probe at FIRST + SIZE if we cannot assert at compile-time
@@ -8873,7 +8801,6 @@ epilogue_renumber (rtx *where, int test)
 	*where = gen_rtx_REG (GET_MODE (*where), OUTGOING_REGNO (REGNO(*where)));
       /* fallthrough */
     case SCRATCH:
-    case CC0:
     case PC:
     case CONST_INT:
     case CONST_WIDE_INT:
@@ -8928,18 +8855,18 @@ epilogue_renumber (rtx *where, int test)
 
 /* Leaf functions and non-leaf functions have different needs.  */
 
-static const int
-reg_leaf_alloc_order[] = REG_LEAF_ALLOC_ORDER;
+static const int reg_leaf_alloc_order[] = REG_LEAF_ALLOC_ORDER;
 
-static const int
-reg_nonleaf_alloc_order[] = REG_ALLOC_ORDER;
+static const int reg_nonleaf_alloc_order[] = REG_ALLOC_ORDER;
 
-static const int *const reg_alloc_orders[] = {
+static const int *const reg_alloc_orders[] =
+{
   reg_leaf_alloc_order,
-  reg_nonleaf_alloc_order};
+  reg_nonleaf_alloc_order
+};
 
 void
-order_regs_for_local_alloc (void)
+sparc_order_regs_for_local_alloc (void)
 {
   static int last_order_nonleaf = 1;
 
@@ -8951,7 +8878,28 @@ order_regs_for_local_alloc (void)
 	      FIRST_PSEUDO_REGISTER * sizeof (int));
     }
 }
-
+
+int
+sparc_leaf_reg_remap (int regno)
+{
+  gcc_checking_assert (regno >= 0);
+
+  /* Do not remap in flat mode.  */
+  if (TARGET_FLAT)
+    return regno;
+
+  /* Do not remap global, stack pointer or floating-point registers.  */
+  if (regno < 8 || regno == STACK_POINTER_REGNUM || regno > SPARC_LAST_INT_REG)
+    return regno;
+
+  /* Neither out nor local nor frame pointer registers must appear.  */
+  if ((regno >= 8 && regno <= 23) || regno == HARD_FRAME_POINTER_REGNUM)
+    return -1;
+
+  /* Remap in to out registers.  */
+  return regno - 16;
+}
+
 /* Return 1 if REG and MEM are legitimate enough to allow the various
    MEM<-->REG splits to be run.  */
 
@@ -9940,9 +9888,11 @@ sparc32_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
 		   GEN_INT (trunc_int_for_mode (0x8410a000, SImode)),
 		   NULL_RTX, 1, OPTAB_DIRECT));
 
+  emit_insn
+    (gen_flush (SImode, validize_mem (adjust_address (m_tramp, SImode, 0))));
+
   /* On UltraSPARC a flush flushes an entire cache line.  The trampoline is
      aligned on a 16 byte boundary so one flush clears it all.  */
-  emit_insn (gen_flushsi (validize_mem (adjust_address (m_tramp, SImode, 0))));
   if (sparc_cpu != PROCESSOR_ULTRASPARC
       && sparc_cpu != PROCESSOR_ULTRASPARC3
       && sparc_cpu != PROCESSOR_NIAGARA
@@ -9951,7 +9901,8 @@ sparc32_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
       && sparc_cpu != PROCESSOR_NIAGARA4
       && sparc_cpu != PROCESSOR_NIAGARA7
       && sparc_cpu != PROCESSOR_M8)
-    emit_insn (gen_flushsi (validize_mem (adjust_address (m_tramp, SImode, 8))));
+    emit_insn
+      (gen_flush (SImode, validize_mem (adjust_address (m_tramp, SImode, 8))));
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
      the stack address is accessible.  */
@@ -9988,8 +9939,11 @@ sparc64_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
 		  GEN_INT (trunc_int_for_mode (0xca586010, SImode)));
   emit_move_insn (adjust_address (m_tramp, DImode, 16), cxt);
   emit_move_insn (adjust_address (m_tramp, DImode, 24), fnaddr);
-  emit_insn (gen_flushdi (validize_mem (adjust_address (m_tramp, DImode, 0))));
+  emit_insn
+    (gen_flush (DImode, validize_mem (adjust_address (m_tramp, DImode, 0))));
 
+  /* On UltraSPARC a flush flushes an entire cache line.  The trampoline is
+     aligned on a 16 byte boundary so one flush clears it all.  */
   if (sparc_cpu != PROCESSOR_ULTRASPARC
       && sparc_cpu != PROCESSOR_ULTRASPARC3
       && sparc_cpu != PROCESSOR_NIAGARA
@@ -9998,7 +9952,8 @@ sparc64_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
       && sparc_cpu != PROCESSOR_NIAGARA4
       && sparc_cpu != PROCESSOR_NIAGARA7
       && sparc_cpu != PROCESSOR_M8)
-    emit_insn (gen_flushdi (validize_mem (adjust_address (m_tramp, DImode, 8))));
+    emit_insn
+      (gen_flush (DImode, validize_mem (adjust_address (m_tramp, DImode, 8))));
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
      the stack address is accessible.  */
@@ -13041,14 +12996,11 @@ sparc_conditional_register_usage (void)
     fixed_regs[4] = 1;
   else if (fixed_regs[4] == 2)
     fixed_regs[4] = 0;
+
+  /* Disable leaf function optimization in flat mode.  */
   if (TARGET_FLAT)
-    {
-      int regno;
-      /* Disable leaf functions.  */
-      memset (sparc_leaf_regs, 0, FIRST_PSEUDO_REGISTER);
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	leaf_reg_remap [regno] = regno;
-    }
+    memset (sparc_leaf_regs, 0, FIRST_PSEUDO_REGISTER);
+
   if (TARGET_VIS)
     global_regs[SPARC_GSR_REG] = 1;
 }

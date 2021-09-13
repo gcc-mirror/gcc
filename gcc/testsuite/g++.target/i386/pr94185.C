@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fPIE -fstack-protector-strong" } */
+/* { dg-require-effective-target pie } */
 
 struct a {
   int b;

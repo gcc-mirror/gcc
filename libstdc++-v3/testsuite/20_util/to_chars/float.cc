@@ -33,6 +33,7 @@
 
 // { dg-do run { target c++17 } }
 // { dg-require-effective-target ieee-floats }
+// { dg-require-effective-target size32plus }
 
 #include <charconv>
 

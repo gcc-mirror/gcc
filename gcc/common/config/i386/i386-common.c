@@ -82,6 +82,8 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AVX5124VNNIW_SET OPTION_MASK_ISA2_AVX5124VNNIW
 #define OPTION_MASK_ISA_AVX512VBMI2_SET \
   (OPTION_MASK_ISA_AVX512VBMI2 | OPTION_MASK_ISA_AVX512F_SET)
+#define OPTION_MASK_ISA_AVX512FP16_SET OPTION_MASK_ISA_AVX512BW_SET
+#define OPTION_MASK_ISA2_AVX512FP16_SET OPTION_MASK_ISA2_AVX512FP16
 #define OPTION_MASK_ISA_AVX512VNNI_SET \
   (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512F_SET)
 #define OPTION_MASK_ISA2_AVXVNNI_SET OPTION_MASK_ISA2_AVXVNNI
@@ -150,6 +152,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_F16C_SET \
   (OPTION_MASK_ISA_F16C | OPTION_MASK_ISA_AVX_SET)
 #define OPTION_MASK_ISA2_MWAITX_SET OPTION_MASK_ISA2_MWAITX
+#define OPTION_MASK_ISA2_MWAIT_SET OPTION_MASK_ISA2_MWAIT
 #define OPTION_MASK_ISA2_CLZERO_SET OPTION_MASK_ISA2_CLZERO
 #define OPTION_MASK_ISA_PKU_SET OPTION_MASK_ISA_PKU
 #define OPTION_MASK_ISA2_RDPID_SET OPTION_MASK_ISA2_RDPID
@@ -230,6 +233,8 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AVX5124FMAPS_UNSET OPTION_MASK_ISA2_AVX5124FMAPS
 #define OPTION_MASK_ISA2_AVX5124VNNIW_UNSET OPTION_MASK_ISA2_AVX5124VNNIW
 #define OPTION_MASK_ISA_AVX512VBMI2_UNSET OPTION_MASK_ISA_AVX512VBMI2
+#define OPTION_MASK_ISA_AVX512FP16_UNSET OPTION_MASK_ISA_AVX512BW_UNSET
+#define OPTION_MASK_ISA2_AVX512FP16_UNSET OPTION_MASK_ISA2_AVX512FP16
 #define OPTION_MASK_ISA_AVX512VNNI_UNSET OPTION_MASK_ISA_AVX512VNNI
 #define OPTION_MASK_ISA2_AVXVNNI_UNSET OPTION_MASK_ISA2_AVXVNNI
 #define OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET OPTION_MASK_ISA_AVX512VPOPCNTDQ
@@ -245,6 +250,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_XSAVES_UNSET OPTION_MASK_ISA_XSAVES
 #define OPTION_MASK_ISA_CLWB_UNSET OPTION_MASK_ISA_CLWB
 #define OPTION_MASK_ISA2_MWAITX_UNSET OPTION_MASK_ISA2_MWAITX
+#define OPTION_MASK_ISA2_MWAIT_UNSET OPTION_MASK_ISA2_MWAIT
 #define OPTION_MASK_ISA2_CLZERO_UNSET OPTION_MASK_ISA2_CLZERO
 #define OPTION_MASK_ISA_PKU_UNSET OPTION_MASK_ISA_PKU
 #define OPTION_MASK_ISA2_RDPID_UNSET OPTION_MASK_ISA2_RDPID
@@ -311,7 +317,8 @@ along with GCC; see the file COPYING3.  If not see
   (OPTION_MASK_ISA2_AVX512BF16_UNSET \
    | OPTION_MASK_ISA2_AVX5124FMAPS_UNSET \
    | OPTION_MASK_ISA2_AVX5124VNNIW_UNSET \
-   | OPTION_MASK_ISA2_AVX512VP2INTERSECT_UNSET)
+   | OPTION_MASK_ISA2_AVX512VP2INTERSECT_UNSET \
+   | OPTION_MASK_ISA2_AVX512FP16_UNSET)
 #define OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET \
   (OPTION_MASK_ISA2_AVX512F_UNSET)
 #define OPTION_MASK_ISA2_AVX_UNSET OPTION_MASK_ISA2_AVX2_UNSET
@@ -324,7 +331,9 @@ along with GCC; see the file COPYING3.  If not see
   (OPTION_MASK_ISA2_SSE3_UNSET | OPTION_MASK_ISA2_KL_UNSET)
 #define OPTION_MASK_ISA2_SSE_UNSET OPTION_MASK_ISA2_SSE2_UNSET
 
-#define OPTION_MASK_ISA2_AVX512BW_UNSET OPTION_MASK_ISA2_AVX512BF16_UNSET
+#define OPTION_MASK_ISA2_AVX512BW_UNSET \
+  (OPTION_MASK_ISA2_AVX512BF16_UNSET \
+    | OPTION_MASK_ISA2_AVX512FP16_UNSET)
 
 /* Set 1 << value as value of -malign-FLAG option.  */
 
@@ -352,16 +361,39 @@ ix86_handle_option (struct gcc_options *opts,
     case OPT_mgeneral_regs_only:
       if (value)
 	{
+	  HOST_WIDE_INT general_regs_only_flags = 0;
+	  HOST_WIDE_INT general_regs_only_flags2 = 0;
+
+	  /* NB: Enable the GPR only instructions which are enabled
+	     implicitly by SSE ISAs unless they have been disabled
+	     explicitly.  */
+	  if (TARGET_SSE4_2_P (opts->x_ix86_isa_flags))
+	    {
+	      if (!TARGET_EXPLICIT_CRC32_P (opts))
+		general_regs_only_flags |= OPTION_MASK_ISA_CRC32;
+	      if (!TARGET_EXPLICIT_POPCNT_P (opts))
+		general_regs_only_flags |= OPTION_MASK_ISA_POPCNT;
+	    }
+	  if (TARGET_SSE3_P (opts->x_ix86_isa_flags))
+	    {
+	      if (!TARGET_EXPLICIT_MWAIT_P (opts))
+		general_regs_only_flags2 |= OPTION_MASK_ISA2_MWAIT;
+	    }
+
 	  /* Disable MMX, SSE and x87 instructions if only
 	     general registers are allowed.  */
 	  opts->x_ix86_isa_flags
 	    &= ~OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
 	  opts->x_ix86_isa_flags2
 	    &= ~OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET;
+	  opts->x_ix86_isa_flags |= general_regs_only_flags;
+	  opts->x_ix86_isa_flags2 |= general_regs_only_flags2;
 	  opts->x_ix86_isa_flags_explicit
-	    |= OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
+	    |= (OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET
+		| general_regs_only_flags);
 	  opts->x_ix86_isa_flags2_explicit
-	    |= OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET;
+	    |= (OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET
+		| general_regs_only_flags2);
 
 	  opts->x_target_flags &= ~MASK_80387;
 	}
@@ -825,6 +857,21 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_AVX512VBMI2_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX512VBMI2_UNSET;
+	}
+      return true;
+
+    case OPT_mavx512fp16:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX512FP16_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512FP16_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512FP16_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX512FP16_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512FP16_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512FP16_UNSET;
 	}
       return true;
 
@@ -1546,6 +1593,19 @@ ix86_handle_option (struct gcc_options *opts,
 	}
       return true;
 
+    case OPT_mmwait:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MWAIT_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_MWAIT_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_MWAIT_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_MWAIT_UNSET;
+	}
+      return true;
+
     case OPT_mclzero:
       if (value)
 	{
@@ -1749,6 +1809,7 @@ const char *const processor_names[] =
   "cooperlake",
   "sapphirerapids",
   "alderlake",
+  "rocketlake",
   "intel",
   "geode",
   "k6",
@@ -1845,6 +1906,9 @@ const pta processor_alias_table[] =
   {"icelake-client", PROCESSOR_ICELAKE_CLIENT, CPU_HASWELL,
     PTA_ICELAKE_CLIENT,
     M_CPU_SUBTYPE (INTEL_COREI7_ICELAKE_CLIENT), P_PROC_AVX512F},
+  {"rocketlake", PROCESSOR_ROCKETLAKE, CPU_HASWELL,
+    PTA_ROCKETLAKE,
+    M_CPU_SUBTYPE (INTEL_COREI7_ROCKETLAKE), P_PROC_AVX512F},
   {"icelake-server", PROCESSOR_ICELAKE_SERVER, CPU_HASWELL,
     PTA_ICELAKE_SERVER,
     M_CPU_SUBTYPE (INTEL_COREI7_ICELAKE_SERVER), P_PROC_AVX512F},
@@ -2051,7 +2115,7 @@ const pta processor_alias_table[] =
 };
 
 /* NB: processor_alias_table stops at the "generic" entry.  */
-unsigned int const pta_size = ARRAY_SIZE (processor_alias_table) - 6;
+unsigned int const pta_size = ARRAY_SIZE (processor_alias_table) - 7;
 unsigned int const num_arch_names = ARRAY_SIZE (processor_alias_table);
 
 /* Provide valid option values for -march and -mtune options.  */

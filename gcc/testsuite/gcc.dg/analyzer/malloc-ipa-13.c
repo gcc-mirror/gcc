@@ -23,8 +23,7 @@ void test (struct foo f)
 
   do_stuff ();
 
-  calls_free (f.m_p); /* { dg-message "passing freed pointer '<unknown>' in call to 'calls_free' from 'test'" } */
-  // TODO: something better than '<unknown>'
+  calls_free (f.m_p); /* { dg-message "passing freed pointer 'f\\.m_p' in call to 'calls_free' from 'test'" } */
 
   do_stuff ();
 }

@@ -792,7 +792,7 @@ default_function_rodata_section (tree decl, bool relocatable)
       /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo or
 	 .gnu.linkonce.d.rel.ro.local.foo if the jump table is relocatable.  */
       else if (DECL_COMDAT_GROUP (decl)
-	       && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
+	       && startswith (name, ".gnu.linkonce.t."))
 	{
 	  size_t len;
 	  char *rname;
@@ -817,7 +817,7 @@ default_function_rodata_section (tree decl, bool relocatable)
 	}
       /* For .text.foo we want to use .rodata.foo.  */
       else if (flag_function_sections && flag_data_sections
-	       && strncmp (name, ".text.", 6) == 0)
+	       && startswith (name, ".text."))
 	{
 	  size_t len = strlen (name) + 1;
 	  char *rname = (char *) alloca (len + strlen (sname) - 5);
@@ -1202,6 +1202,25 @@ get_variable_align (tree decl)
   return align;
 }
 
+/* Compute reloc for get_variable_section.  The return value
+   is a mask for which bit 1 indicates a global relocation, and bit 0
+   indicates a local relocation.  */
+
+int
+compute_reloc_for_var (tree decl)
+{
+  int reloc;
+
+  if (DECL_INITIAL (decl) == error_mark_node)
+    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
+  else if (DECL_INITIAL (decl))
+    reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
+  else
+    reloc = 0;
+
+  return reloc;
+}
+
 /* Return the section into which the given VAR_DECL or CONST_DECL
    should be placed.  PREFER_NOSWITCH_P is true if a noswitch
    section should be used wherever possible.  */
@@ -1239,12 +1258,7 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 	return comm_section;
     }
 
-  if (DECL_INITIAL (decl) == error_mark_node)
-    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
-  else if (DECL_INITIAL (decl))
-    reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
-  else
-    reloc = 0;
+  reloc = compute_reloc_for_var (decl);
 
   resolve_unique_section (decl, reloc, flag_data_sections);
   if (IN_NAMED_SECTION (decl))
@@ -1314,6 +1328,10 @@ get_block_for_decl (tree decl)
   if (SECTION_STYLE (sect) == SECTION_NOSWITCH)
     return NULL;
 
+  if (bool (lookup_attribute ("retain", DECL_ATTRIBUTES (decl)))
+      != bool (sect->common.flags & SECTION_RETAIN))
+    return NULL;
+
   return get_block_for_section (sect);
 }
 
@@ -1335,6 +1353,12 @@ static bool
 use_blocks_for_decl_p (tree decl)
 {
   struct symtab_node *snode;
+
+  /* Don't create object blocks if each DECL is placed into a separate
+     section because that will uselessly create a section anchor for
+     each DECL.  */
+  if (flag_data_sections)
+    return false;
 
   /* Only data DECLs can be placed into object blocks.  */
   if (!VAR_P (decl) && TREE_CODE (decl) != CONST_DECL)
@@ -2485,7 +2509,7 @@ incorporeal_function_p (tree decl)
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
       /* Atomic or sync builtins which have survived this far will be
 	 resolved externally and therefore are not incorporeal.  */
-      if (strncmp (name, "__builtin_", 10) == 0)
+      if (startswith (name, "__builtin_"))
 	return true;
     }
   return false;
@@ -4290,13 +4314,13 @@ output_constant_pool_contents (struct rtx_constant_pool *pool)
     if (desc->mark < 0)
       {
 #ifdef ASM_OUTPUT_DEF
-	const char *name = targetm.strip_name_encoding (XSTR (desc->sym, 0));
+	const char *name = XSTR (desc->sym, 0);
 	char label[256];
 	char buffer[256 + 32];
 	const char *p;
 
 	ASM_GENERATE_INTERNAL_LABEL (label, "LC", ~desc->mark);
-	p = targetm.strip_name_encoding (label);
+	p = label;
 	if (desc->offset)
 	  {
 	    sprintf (buffer, "%s+%ld", p, (long) (desc->offset));
@@ -6713,22 +6737,22 @@ default_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_TLS | SECTION_WRITE;
 
   if (strcmp (name, ".bss") == 0
-      || strncmp (name, ".bss.", 5) == 0
-      || strncmp (name, ".gnu.linkonce.b.", 16) == 0
+      || startswith (name, ".bss.")
+      || startswith (name, ".gnu.linkonce.b.")
       || strcmp (name, ".persistent.bss") == 0
       || strcmp (name, ".sbss") == 0
-      || strncmp (name, ".sbss.", 6) == 0
-      || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
+      || startswith (name, ".sbss.")
+      || startswith (name, ".gnu.linkonce.sb."))
     flags |= SECTION_BSS;
 
   if (strcmp (name, ".tdata") == 0
-      || strncmp (name, ".tdata.", 7) == 0
-      || strncmp (name, ".gnu.linkonce.td.", 17) == 0)
+      || startswith (name, ".tdata.")
+      || startswith (name, ".gnu.linkonce.td."))
     flags |= SECTION_TLS;
 
   if (strcmp (name, ".tbss") == 0
-      || strncmp (name, ".tbss.", 6) == 0
-      || strncmp (name, ".gnu.linkonce.tb.", 17) == 0)
+      || startswith (name, ".tbss.")
+      || startswith (name, ".gnu.linkonce.tb."))
     flags |= SECTION_TLS | SECTION_BSS;
 
   if (strcmp (name, ".noinit") == 0)
@@ -7242,7 +7266,8 @@ compute_reloc_for_rtx_1 (const_rtx x)
 
 /* Like compute_reloc_for_constant, except for an RTX.  The return value
    is a mask for which bit 1 indicates a global relocation, and bit 0
-   indicates a local relocation.  */
+   indicates a local relocation.  Used by default_select_rtx_section
+   and default_elf_select_rtx_section.  */
 
 static int
 compute_reloc_for_rtx (const_rtx x)
@@ -7758,33 +7783,33 @@ output_section_asm_op (const void *directive)
 void
 switch_to_section (section *new_section, tree decl)
 {
-  if (in_section == new_section)
+  bool retain_p;
+  if ((new_section->common.flags & SECTION_NAMED)
+      && decl != nullptr
+      && DECL_P (decl)
+      && ((retain_p = !!lookup_attribute ("retain",
+					  DECL_ATTRIBUTES (decl)))
+	  != !!(new_section->common.flags & SECTION_RETAIN)))
     {
-      bool retain_p;
-      if ((new_section->common.flags & SECTION_NAMED)
-	  && decl != nullptr
-	  && DECL_P (decl)
-	  && ((retain_p = !!lookup_attribute ("retain",
-					      DECL_ATTRIBUTES (decl)))
-	      != !!(new_section->common.flags & SECTION_RETAIN)))
-	{
-	  /* If the SECTION_RETAIN bit doesn't match, switch to a new
-	     section.  */
-	  tree used_decl, no_used_decl;
+      /* If the SECTION_RETAIN bit doesn't match, switch to a new
+	 section.  */
+      tree used_decl, no_used_decl;
 
-	  if (retain_p)
-	    {
-	      new_section->common.flags |= SECTION_RETAIN;
-	      used_decl = decl;
-	      no_used_decl = new_section->named.decl;
-	    }
-	  else
-	    {
-	      new_section->common.flags &= ~(SECTION_RETAIN
-					     | SECTION_DECLARED);
-	      used_decl = new_section->named.decl;
-	      no_used_decl = decl;
-	    }
+      if (retain_p)
+	{
+	  new_section->common.flags |= SECTION_RETAIN;
+	  used_decl = decl;
+	  no_used_decl = new_section->named.decl;
+	}
+      else
+	{
+	  new_section->common.flags &= ~(SECTION_RETAIN
+					 | SECTION_DECLARED);
+	  used_decl = new_section->named.decl;
+	  no_used_decl = decl;
+	}
+      if (no_used_decl != used_decl)
+	{
 	  warning (OPT_Wattributes,
 		   "%+qD without %<retain%> attribute and %qD with "
 		   "%<retain%> attribute are placed in a section with "
@@ -7792,9 +7817,9 @@ switch_to_section (section *new_section, tree decl)
 	  inform (DECL_SOURCE_LOCATION (used_decl),
 		  "%qD was declared here", used_decl);
 	}
-      else
-	return;
     }
+  else if (in_section == new_section)
+    return;
 
   if (new_section->common.flags & SECTION_FORGET)
     in_section = NULL;
@@ -8007,7 +8032,7 @@ output_object_block (struct object_block *block)
       && (strcmp (block->sect->named.name, ".vtable_map_vars") == 0))
     handle_vtv_comdat_section (block->sect, block->sect->named.decl);
   else
-    switch_to_section (block->sect);
+    switch_to_section (block->sect, SYMBOL_REF_DECL ((*block->objects)[0]));
 
   gcc_checking_assert (!(block->sect->common.flags & SECTION_MERGE));
   assemble_align (block->alignment);

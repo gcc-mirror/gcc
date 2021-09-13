@@ -277,3 +277,6 @@ The number of Newton iterations for calculating the reciprocal for double type. 
 
 -param=aarch64-autovec-preference=
 Target Joined UInteger Var(aarch64_autovec_preference) Init(0) IntegerRange(0, 4) Param
+
+-param=aarch64-loop-vect-issue-rate-niters=
+Target Joined UInteger Var(aarch64_loop_vect_issue_rate_niters) Init(6) IntegerRange(0, 65536) Param

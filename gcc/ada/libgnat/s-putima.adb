@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020, Free Software Foundation, Inc.            --
+--            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Strings.Text_Buffers.Utils;
+use Ada.Strings.Text_Buffers;
+use Ada.Strings.Text_Buffers.Utils;
 with Unchecked_Conversion;
-with Ada.Strings.Text_Output.Utils;
-use Ada.Strings.Text_Output;
-use Ada.Strings.Text_Output.Utils;
 
 package body System.Put_Images is
 
@@ -215,7 +215,7 @@ package body System.Put_Images is
    begin
       New_Line (S);
       Put_7bit (S, '[');
-      Indent (S, 1);
+      Increase_Indent (S, 1);
    end Array_Before;
 
    procedure Array_Between (S : in out Sink'Class) is
@@ -226,7 +226,7 @@ package body System.Put_Images is
 
    procedure Array_After (S : in out Sink'Class) is
    begin
-      Outdent (S, 1);
+      Decrease_Indent (S, 1);
       Put_7bit (S, ']');
    end Array_After;
 
@@ -244,7 +244,7 @@ package body System.Put_Images is
    begin
       New_Line (S);
       Put_7bit (S, '(');
-      Indent (S, 1);
+      Increase_Indent (S, 1);
    end Record_Before;
 
    procedure Record_Between (S : in out Sink'Class) is
@@ -255,7 +255,7 @@ package body System.Put_Images is
 
    procedure Record_After (S : in out Sink'Class) is
    begin
-      Outdent (S, 1);
+      Decrease_Indent (S, 1);
       Put_7bit (S, ')');
    end Record_After;
 
@@ -267,7 +267,7 @@ package body System.Put_Images is
    procedure Put_Image_Unknown (S : in out Sink'Class; Type_Name : String) is
    begin
       Put_UTF_8 (S, "{");
-      Put_String (S, Type_Name);
+      Put (S, Type_Name);
       Put_UTF_8 (S, " object}");
    end Put_Image_Unknown;
 

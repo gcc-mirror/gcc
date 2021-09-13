@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -287,6 +287,10 @@ package Urealp is
    --  of some expression such as integer/integer, or integer*integer**integer.
    --  In the case where an expression is output, if Brackets is set to True,
    --  the expression is surrounded by square brackets.
+
+   procedure UR_Write_To_JSON (Real : Ureal);
+   --  Writes value of Real to standard output in the JSON data interchange
+   --  format specified by the ECMA-404 standard, for the -gnatRj output.
 
    procedure pr (Real : Ureal);
    pragma Export (Ada, pr);

@@ -23,73 +23,40 @@
 
 #include <atomic>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <chrono>
-#include <type_traits>
 
 #include <testsuite_hooks.h>
 
-template<typename Tp>
-Tp check_wait_notify(Tp val1, Tp val2)
-{
-  using namespace std::literals::chrono_literals;
-
-  std::mutex m;
-  std::condition_variable cv;
-  std::unique_lock<std::mutex> l(m);
-
-  Tp aa = val1;
-  std::atomic_ref<Tp> a(aa);
-  std::thread t([&]
-		{
-		  {
-		    // This ensures we block until cv.wait(l) starts.
-		    std::lock_guard<std::mutex> ll(m);
-		  }
-		  cv.notify_one();
-		  a.wait(val1);
-		  if (a.load() != val2)
-		    a = val1;
-		});
-  cv.wait(l);
-  std::this_thread::sleep_for(100ms);
-  a.store(val2);
-  a.notify_one();
-  t.join();
-  return a.load();
-}
-
-template<typename Tp,
-	 bool = std::is_integral_v<Tp>
-	 || std::is_floating_point_v<Tp>>
-struct check;
-
-template<typename Tp>
-struct check<Tp, true>
-{
-  check()
+template<typename S>
+  void
+  test (S va, S vb)
   {
-    Tp a = 0;
-    Tp b = 42;
-    VERIFY(check_wait_notify(a, b) == b);
+    if constexpr (std::atomic_ref<S>::is_always_lock_free)
+    {
+      S aa{ va };
+      S bb{ vb };
+      std::atomic_ref<S> a{ aa };
+      a.wait(bb);
+      std::thread t([&]
+        {
+	  a.store(bb);
+	  a.notify_one();
+        });
+      a.wait(aa);
+      t.join();
+    }
   }
-};
-
-template<typename Tp>
-struct check<Tp, false>
-{
-  check(Tp b)
-  {
-    Tp a;
-    VERIFY(check_wait_notify(a, b) == b);
-  }
-};
 
 int
 main ()
 {
-  check<long>();
-  check<double>();
+  test<int>(0, 42);
+  test<long>(0, 42);
+  test<unsigned>(0u, 42u);
+  test<float>(0.0f, 42.0f);
+  test<double>(0.0, 42.0);
+  test<void*>(nullptr, reinterpret_cast<void*>(42));
+
+  struct S{ int i; };
+  test<S>(S{ 0 }, S{ 42 });
   return 0;
 }

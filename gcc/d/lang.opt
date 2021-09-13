@@ -321,9 +321,9 @@ fversion=
 D Joined RejectNegative
 -fversion=<level|ident>	Compile in version code >= <level> or identified by <ident>.
 
-fweak
-D Var(flag_weak) Init(1)
-Emit common-like symbols as weak symbols.
+fweak-templates
+D Var(flag_weak_templates) Init(1)
+Emit template instantiations as weak symbols.
 
 imultilib
 D Joined Separate

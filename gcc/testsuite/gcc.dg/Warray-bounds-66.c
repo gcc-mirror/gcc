@@ -117,14 +117,14 @@ void test_alloca_int16_range (unsigned n)
   }
 
   {
-    p = alloca (UR (0, 1));   // { dg-message "object of size between 0 and 1 allocated by '__builtin_alloca'" }
+    p = alloca (UR (0, 1));   // { dg-message "at offset \\d+ into object of size \\\[0, 1] allocated by '__builtin_alloca'" "note" }
     sink (p);
     T (p[0]);                 // { dg-warning "subscript 'int16_t {aka short int}\\\[0\\\]' is partly outside array bounds of 'unsigned char\\\[1]'" }
     T (p[1]);                 // { dg-warning "subscript 1 is outside array bounds of 'int16_t\\\[0]'" }
   }
 
   {
-    p = alloca (UR (0, 2));   // { dg-message "object of size between 0 and 2 allocated by '__builtin_alloca'" }
+    p = alloca (UR (0, 2));   // { dg-message "at offset \\d+ into object of size \\\[0, 2] allocated by '__builtin_alloca'" "note" }
     sink (p);
     sink (p[0]);
     sink (p[1]);              // { dg-warning "subscript 1 is outside array bounds of 'int16_t\\\[1]'" }
@@ -132,7 +132,7 @@ void test_alloca_int16_range (unsigned n)
   }
 
   {
-    p = alloca (UR (0, 3));   // { dg-message "object of size between 0 and 3 allocated by '__builtin_alloca'" }
+    p = alloca (UR (0, 3));   // { dg-message "at offset \\d+ into object of size \\\[0, 3] allocated by '__builtin_alloca'" "note" }
     sink (p);
     T (p[0]);
     T (p[1]);                 // { dg-warning "subscript 'int16_t {aka short int}\\\[1\\\]' is partly outside array bounds of 'unsigned char\\\[3]'" }
@@ -141,7 +141,7 @@ void test_alloca_int16_range (unsigned n)
   }
 
   {
-    p = alloca (UR (1, 3));    // { dg-message "object of size between 1 and 3 allocated by '__builtin_alloca'" }
+    p = alloca (UR (1, 3));    // { dg-message "at offset 1|2|3 into object of size \\\[1, 3] allocated by '__builtin_alloca'" "note" }
     sink (p);
     T (p[0]);
     T (p[1]);                 // { dg-warning "subscript 'int16_t {aka short int}\\\[1\\\]' is partly outside array bounds of 'unsigned char\\\[3]'" }
@@ -150,7 +150,7 @@ void test_alloca_int16_range (unsigned n)
   }
 
   {
-    p = alloca (UR (2, 3));    // { dg-message "object of size between 2 and 3 allocated by '__builtin_alloca'" }
+    p = alloca (UR (2, 3));    // { dg-message "at offset 2|4 into object of size \\\[2, 3] allocated by '__builtin_alloca'" "note" }
     sink (p);
     T (p[0]);
     T (p[1]);                 // { dg-warning "subscript 'int16_t {aka short int}\\\[1\\\]' is partly outside array bounds of 'unsigned char\\\[3]'" }
@@ -159,7 +159,7 @@ void test_alloca_int16_range (unsigned n)
   }
 
   {
-    p = alloca (UR (3, 4));    // { dg-message "object of size between 3 and 4 allocated by '__builtin_alloca'" }
+    p = alloca (UR (3, 4));    // { dg-message "at offset 4|6 into object of size \\\[3, 4] allocated by '__builtin_alloca'" "note" }
     sink (p);
     T (p[0]);
     T (p[1]);

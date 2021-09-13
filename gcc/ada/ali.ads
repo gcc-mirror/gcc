@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1391,8 +1391,6 @@ package ALI is
       T                : Text_Buffer_Ptr;
       Ignore_ED        : Boolean;
       Err              : Boolean;
-      Read_Xref        : Boolean := False;
-      Read_Lines       : String  := "";
       Ignore_Lines     : String  := "X";
       Ignore_Errors    : Boolean := False;
       Directly_Scanned : Boolean := False) return ALI_Id;
@@ -1416,24 +1414,6 @@ package ALI is
    --    Xref lines to be ignored. The corresponding data in the ALI
    --    tables will not be filled in this case. It is not possible
    --    to ignore U (unit) lines, they are always read.
-   --
-   --    Read_Lines requests that Scan_ALI process only lines that start
-   --    with one of the given characters. The corresponding data in the
-   --    ALI file for any characters not given in the list will not be
-   --    set. The default value of the null string indicates that all
-   --    lines should be read (unless Ignore_Lines is specified). U
-   --    (unit) lines are always read regardless of the value of this
-   --    parameter.
-   --
-   --    Note: either Ignore_Lines or Read_Lines should be non-null, but not
-   --    both. If both are provided then only the Read_Lines value is used,
-   --    and the Ignore_Lines parameter is ignored.
-   --
-   --    Read_Xref is set True to read and acquire the cross-reference
-   --    information. If Read_XREF is set to True, then the effect is to ignore
-   --    all lines other than U, W, D and X lines and the Ignore_Lines and
-   --    Read_Lines parameters are ignored (i.e. the use of True for Read_XREF
-   --    is equivalent to specifying an argument of "UWDX" for Read_Lines.
    --
    --    Ignore_Errors is normally False. If it is set True, then Scan_ALI
    --    will do its best to scan through a file and extract all information

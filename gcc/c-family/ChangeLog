@@ -1,3 +1,466 @@
+2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_atomic): Add r and weak arguments.
+	* c-omp.c: Include gimple-fold.h.
+	(c_finish_omp_atomic): Add r and weak arguments.  Add support for
+	OpenMP 5.1 atomics.
+
+2021-09-09  qing zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.c (handle_uninitialized_attribute): New function.
+	(c_common_attribute_table): Add "uninitialized" attribute.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* c-common.c (excess_precision_mode_join): Update below comments.
+	(c_ts18661_flt_eval_method): Set excess_precision_type to
+	EXCESS_PRECISION_TYPE_FLOAT16 when -fexcess-precision=16.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Update below comments.
+	(c_cpp_flt_eval_method_iec_559): Set excess_precision_type to
+	EXCESS_PRECISION_TYPE_FLOAT16 when -fexcess-precision=16.
+
+2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-omp.c (c_finish_omp_flush): Handle MEMMODEL_SEQ_CST.
+
+2021-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ads): Generate pragmas to disable style checks
+	and -gnatwu warning for the package specification.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-attribs.c (handle_unavailable_attribute): New.
+
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Wmissing-requires.
+
+2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/93067
+	* c-opts.c (c_common_input_charset_cb): New function.
+	(c_common_post_options): Call new function
+	diagnostic_initialize_input_context().
+
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-format.c (gcc_gfc_length_specs): Add 'll' and 'w'.
+	(gcc_gfc_char_table): Add T9L_LL and T9L_ULL to
+	"di" and "u", respecitively; fill with BADLEN to match
+	size of 'types'.
+	(get_init_dynamic_hwi): Split off from ...
+	(init_dynamic_diag_info): ... here. Call it.
+	(init_dynamic_gfc_info): Call it.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_ERROR.
+	* c-pragma.c (omp_pragmas): Add error directive.
+	* c-omp.c (omp_directives): Uncomment error directive entry.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_NOTHING.
+	* c-pragma.c (omp_pragmas): Add nothing directive.
+	* c-omp.c (omp_directives): Uncomment nothing directive entry.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101539
+	* c-common.h (enum rid): Add RID_IS_LAYOUT_COMPATIBLE.
+	* c-common.c (c_common_reswords): Add __is_layout_compatible.
+
+2021-08-17  Matt Jacobson  <mhjacobson@me.com>
+
+	* c-opts.c (c_common_post_options): Default to
+	flag_objc_sjlj_exceptions = 1 only when flag_objc_abi < 2.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_SCOPE.
+	* c-pragma.c (omp_pragmas): Add scope construct.
+	* c-omp.c (omp_directives): Uncomment scope directive entry.
+
+2021-08-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define
+	__LIBGCC_GCOV_TYPE_SIZE if flag_building_libgcc is true.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_MASKED.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_FILTER.
+	* c-pragma.c (omp_pragmas_simd): Add masked construct.
+	* c-common.h (enum c_omp_clause_split): Add C_OMP_CLAUSE_SPLIT_MASKED
+	enumerator.
+	(c_finish_omp_masked): Declare.
+	* c-omp.c (c_finish_omp_masked): New function.
+	(c_omp_split_clauses): Handle combined masked constructs.
+
+2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101539
+	* c-common.h (enum rid): Add RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF.
+	* c-common.c (c_common_reswords): Add
+	__is_pointer_interconvertible_base_of.
+
+2021-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR c/101512
+	* c-common.c (c_common_mark_addressable_vec): Look through
+	C_MAYBE_CONST_EXPR even if not at the toplevel.
+
+2021-07-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101585
+	* c-warn.c (warn_parm_ptrarray_mismatch): Use OEP_DECL_NAME.
+
+2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Call canonicalize_attr_name also
+	on attr_id.  Return 1 for omp::directive or omp::sequence in C++11
+	and later.
+
+2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP__START_ and
+	PRAGMA_OMP__LAST_ enumerators.
+
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add 'PRAGMA_OACC_CLAUSE_NOHOST'.
+
+2021-07-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-common.c (c_build_shufflevector): Adjust by-value argument to
+	by-const-reference.
+	* c-common.h (c_build_shufflevector): Same.
+
+2021-07-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/101453
+	* c-common.c (parse_optimize_options): Use the correct
+	size for buffer.
+
+2021-07-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101289
+	PR c/97548
+	* c-warn.c (warn_parm_array_mismatch): Use OEP_DECL_NAME.
+
+2021-07-14  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (c_common_post_options): Set -fdelete-dead-exceptions.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* c-format.c (gcc_tdiag_char_table): Remove support for %G and %K.
+	 (gcc_cdiag_char_table): Same.
+	 (gcc_cxxdiag_char_table): Same.
+
+2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum c_omp_directive_kind): New enum.
+	(struct c_omp_directive): New type.
+	(c_omp_categorize_directive): Declare.
+	* c-omp.c (omp_directives): New variable.
+	(c_omp_categorize_directive): New function.
+
+2021-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (packed_layout): New global variable.
+	(dump_ada_declaration): Set it upon seeing a packed record type.
+	Do not put the "aliased" keyword if it is set.
+	(dump_ada_structure): Add Pack aspect if it is set and clear it.
+
+2021-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (check_name): Rename into...
+	(check_type_name_conflict): ...this.  Minor tweak.
+	(dump_ada_function_declaration): Adjust to above renaming.
+	(dump_ada_array_domains): Fix oversight.
+	(dump_ada_declaration): Call check_type_name_conflict for variables.
+
+2021-06-25  Martin Sebor  <msebor@redhat.com>
+
+	* c-common.c (c_wrap_maybe_const): Remove TREE_NO_WARNING.
+	(c_common_truthvalue_conversion): Replace direct uses of
+	TREE_NO_WARNING with warning_suppressed_p, suppress_warning, and
+	copy_no_warning.
+	(check_function_arguments_recurse): Same.
+	* c-gimplify.c (c_gimplify_expr): Same.
+	* c-warn.c (overflow_warning): Same.
+	(warn_logical_operator): Same.
+	(warn_if_unused_value): Same.
+	(do_warn_unused_parameter): Same.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum c_omp_region_type): Add C_ORT_TARGET and
+	C_ORT_OMP_TARGET.
+	* c-omp.c (c_omp_split_clauses): For OMP_CLAUSE_IN_REDUCTION on
+	combined target constructs also add map (always, tofrom:) clause.
+
+2021-06-15  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* c-attribs.c (common_handle_aligned_attribute): Remove short
+	circuit and dead code.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/101052
+	* known-headers.cc (get_stdlib_header_for_name): Add known
+	headers for EXIT_FAILURE, EXIT_SUCCESS, abort, atexit, calloc,
+	exit, and getenv.
+
+2021-06-12  Jason Merrill  <jason@redhat.com>
+
+	* c-attribs.c (handle_unused_attribute): Handle FIELD_DECL.
+
+2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100974
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine __cpp_if_consteval for
+	-std=c++2b for P1938R3 consteval if support.
+
+2021-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100879
+	* c-warn.c (warn_for_sign_compare): Remove C++ enum mismatch
+	warning.
+
+2021-06-07  Martin Liska  <mliska@suse.cz>
+
+	* c-target.def: Split long lines and replace them
+	with '\n\'.
+
+2021-06-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100783
+	* c-attribs.c (positional_argument): Bail on erroneous types.
+
+2021-06-04  Martin Sebor  <msebor@redhat.com>
+
+	* c-warn.c (warn_parm_array_mismatch): Check TREE_PURPOSE to test
+	for element presence.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_macros): Minor tweaks.
+	(dump_ada_decl_name): Likewise.
+	(dump_anonymous_type_name): Remove parent parameter and adjust.
+	(dump_sloc): Minor tweak.
+	(dump_ada_array_type): Remove type parameter and adjust.
+	(dump_ada_enum_type): Remove parent parameter and adjust.
+	(dump_ada_node): Adjust calls to above functions.
+	(dumped_anonymous_types): New global variable.
+	(dump_nested_types_1): Rename into...
+	(dump_nested_types): ...this.
+	(dump_nested_type): Remove parent and dumped_types parameters.
+	<ARRAY_TYPE>: Replace dumped_types with dumped_anonymous_types.
+	Adjust calls to dump_anonymous_type_name and dump_ada_array_type.
+	(dump_ada_specs): Initialize and free dumped_anonymous_types.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (pp_ada_tree_identifier): Tidy up.
+	(dump_ada_node) <POINTER_TYPE>: Deal specially with external subtypes.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_enum_type): Dump a prefix for constants.
+	(htable_t): New typedef.
+	(overloaded_names): Use it.
+	(add_name): New function.
+	(init_overloaded_names): Use add_name to populate the table and add
+	special cases for sigaction and stat.
+	(overloaded_name_p): Rename into...
+	(overloading_index): ...this.  Do not initialize overloaded_names table
+	here.  Return the index or zero.
+	(dump_ada_declaration): Minor tweaks.  Do not skip overloaded functions
+	but add an overloading suffix instead.
+	(dump_ada_specs): Initialize overloaded_names tables here.
+
+2021-06-01  Martin Liska  <mliska@suse.cz>
+
+	PR other/100759
+	* c-attribs.c (handle_optimize_attribute): Limit sanity check
+	to a situation where we are not in processing of an optimize
+	pragma.
+	* c-pragma.c (handle_pragma_pop_options): Restore target
+	options.
+
+2021-05-31  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR testsuite/100749
+	* c-pch.c (c_common_valid_pch): Use xstrdup for debug format set names.
+
+2021-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR c++/88601
+	* c-common.c: Include tree-vector-builder.h and
+	vec-perm-indices.h.
+	(c_common_reswords): Add __builtin_shufflevector.
+	(c_build_shufflevector): New funtion.
+	* c-common.h (enum rid): Add RID_BUILTIN_SHUFFLEVECTOR.
+	(c_build_shufflevector): Declare.
+
+2021-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-omp.c (c_omp_split_clauses): For reduction clause if combined with
+	target add a map tofrom clause with OMP_CLAUSE_MAP_IMPLICIT.
+
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_AFFINITY.
+
+2021-05-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
+	PR target/99592
+	* c-attribs.c (handle_optimize_attribute): Save target node
+	before calling parse_optimize_options and save it in case
+	it changes.
+	* c-pragma.c (handle_pragma_target): Similarly for pragma.
+	(handle_pragma_pop_options): Likewise here.
+
+2021-05-25  Martin Liska  <mliska@suse.cz>
+
+	* c-attribs.c (handle_no_sanitize_coverage_attribute): New.
+
+2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-omp.c (c_omp_split_clauses): Copy reduction to teams when teams is
+	combined with simd and not with taskloop or for.
+
+2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-omp.c (c_omp_split_clauses): Set OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT
+	on firstprivate clause copy going to target construct, and for
+	target simd set also OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET bit.
+
+2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c.opt (Wc++11-extensions, Wc++14-extensions)
+	(Wc++17-extensions, Wc++20-extensions, Wc++23-extensions): New
+	options.
+
+2021-05-20  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* c-lex.c (init_c_lex): Use dwarf_debuginfo_p.
+
+2021-05-20  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* c-opts.c (c_common_post_options): Adjust access to debug_type_names.
+	* c-pch.c (struct c_pch_validity): Use type uint32_t.
+	(pch_init): Renamed member.
+	(c_common_valid_pch): Adjust access to debug_type_names.
+
+2021-05-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100619
+	* c-attribs.c (build_attr_access_from_parms): Handle arbitrarily many
+	bounds.
+
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/100547
+	* c-attribs.c (type_valid_for_vector_size): Reject too large nunits.
+	Reword existing nunit diagnostic.
+
+2021-05-17  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* c-common.c (braced_list_to_string): Return CTOR unchanged
+	if host and target character sizes don't match.
+
+2021-05-14  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Add Warning keyword for 2 options.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/100504
+	* c-attribs.c (handle_target_clones_attribute): Expect a string
+	argument to target_clone argument.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.c (interpret_float): Handle digit separators for C2X.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.c (print_destructor): Use startswith
+	function instead of strncmp.
+	(dump_ada_declaration): Likewise.
+	* c-common.c (disable_builtin_function): Likewise.
+	(def_builtin_1): Likewise.
+	* c-format.c (check_tokens): Likewise.
+	(check_plain): Likewise.
+	(convert_format_name_to_system_name): Likewise.
+
+2021-04-28  Patrick McGehearty  <patrick.mcgehearty@oracle.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Add supporting macros for new
+	complex divide
+
+2021-04-26  Thomas Schwinge  <thomas@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Tom de Vries  <vries@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c.opt (Wopenacc-parallelism): New.
+
+2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (fopenacc-kernels=): Remove.
+
+2021-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-warn.c (do_warn_double_promotion): Fix comment typo,
+	occured -> occurred.
+	(check_alignment_of_packed_member): Fix a comment typo,
+	memeber -> member.
+	(warn_parm_ptrarray_mismatch): Fix comment typos, os -> of
+	and onless -> unless.
+	(warn_parm_array_mismatch): Fix comment typos, declaratation
+	-> declaration and woud -> would.  Fix up comment indentation.
+
+2021-04-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99883
+	* c.opt (Wmismatched-new-delete): Correct spelling.
+
+2021-04-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (is_simple_enum): Minor tweaks.
+	(dump_ada_enum_type): Add TYPE and PARENT parameters.  For non-simple
+	enumeral types use again the type name for the enumeration constants.
+	(dump_ada_node): Adjust call to dump_ada_enum_type.
+	(dump_nested_type): Likewise.
+
+2021-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98481
+	* c-opts.c (c_common_post_options): Bump latest_abi_version.
+
+2021-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99565
+	* c-warn.c (do_warn_duplicated_branches): Pass also
+	OEP_ADDRESS_OF_SAME_FIELD to operand_equal_p.
+
+2021-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99230
+	* c-gimplify.c (c_genericize_control_stmt): Handle STATEMENT_LIST.
+
 2021-03-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_ada_declaration) <TYPE_DECL>: Dump nested types

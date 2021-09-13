@@ -28,16 +28,9 @@ if {![istarget aarch64*-*-*] } then {
 # Load support procs.
 load_lib gcc-dg.exp
 
-# If a testcase doesn't have special options, use these.
-global DEFAULT_CFLAGS
-if ![info exists DEFAULT_CFLAGS] then {
-    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
-}
-
 # Initialize `dg'.
 dg-init
 
-# Force SVE if we're not testing it already.
 if { [check_effective_target_aarch64_sve] } {
     set sve_flags ""
 } else {
@@ -52,9 +45,11 @@ if { [check_effective_target_ilp32] } {
     set pattern "*"
 }
 
-# Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/$pattern.\[cCS\]]] \
-    $sve_flags $DEFAULT_CFLAGS
+aarch64-with-arch-dg-options $sve_flags {
+    # Main loop.
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/$pattern.\[cCS\]]] \
+	"" $sve_flags
+}
 
 # All done.
 dg-finish

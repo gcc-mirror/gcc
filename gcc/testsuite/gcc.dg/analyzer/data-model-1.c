@@ -137,7 +137,7 @@ void test_11 (void)
 
 /* alloca.  */
 
-void test_12 (void)
+int test_12 (void)
 {
   void *p = __builtin_alloca (256);
   void *q = __builtin_alloca (256);
@@ -145,14 +145,14 @@ void test_12 (void)
   /* alloca results should be unique.  */
   __analyzer_eval (p == q); /* { dg-warning "FALSE" } */
 
-  // FIXME: complain about uses of poisoned values
+  return *(int *)p; /* { dg-warning "use of uninitialized value '\\*\\(int \\*\\)p" } */
 }
 
 /* Use of uninit value.  */
 int test_12a (void)
 {
   int i;
-  return i; // FIXME: do we see the return stmt?
+  return i; /* { dg-warning "use of uninitialized value 'i'" } */
 }
 
 void test_12b (void *p, void *q)
@@ -165,9 +165,11 @@ int test_12c (void)
   int i;
   int j;
 
-  j = i; // FIXME: should complain about this
+  j = i; /* { dg-warning "use of uninitialized value 'i'" } */
 
-  return j;
+  /* We should not emit followup warnings after the first warning about
+     an uninitialized value.  */
+  return j; /* { dg-bogus "use of uninitialized value" } */
 }
 
 struct coord
@@ -348,7 +350,9 @@ void test_19 (void)
 {
   int i, j;
   /* Compare two uninitialized locals.  */
-    __analyzer_eval (i == j); /* { dg-warning "UNKNOWN" } */
+    __analyzer_eval (i == j); /* { dg-warning "UNKNOWN" "unknown " } */
+    /* { dg-warning "use of uninitialized value 'i'" "uninit i" { target *-*-* } .-1 } */
+    /* { dg-warning "use of uninitialized value 'j'" "uninit j" { target *-*-* } .-2 } */
 }
 
 void test_20 (int i, int j)
@@ -503,9 +507,7 @@ void test_26 (struct coord *p, struct coord *q)
      the dest value.  */
   *p = *q;
   __analyzer_eval (p->x); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (p->y == 17); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail): should have been overwritten with q->y
+  __analyzer_eval (p->y == 17); /* { dg-warning "TRUE" } */
 
   __analyzer_eval (q->x); /* { dg-warning "UNKNOWN" } */
   __analyzer_eval (q->y == 17); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
@@ -522,19 +524,11 @@ void test_27 (struct coord *p)
 void test_28 (struct coord *p)
 {
   memset (p, 0, sizeof (struct coord) * 10);
-  __analyzer_eval (p[0].x == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail):
-  __analyzer_eval (p[0].y == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail):
+  __analyzer_eval (p[0].x == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (p[0].y == 0); /* { dg-warning "TRUE" } */
 
-  __analyzer_eval (p[9].x == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail):
-  __analyzer_eval (p[9].y == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail):
+  __analyzer_eval (p[9].x == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (p[9].y == 0); /* { dg-warning "TRUE" } */
 
   __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" } */
   __analyzer_eval (p[10].y == 0); /* { dg-warning "UNKNOWN" } */
@@ -659,8 +653,10 @@ void test_29b (void)
   __analyzer_eval (p[9].x == 109024); /* { dg-warning "TRUE" } */
   __analyzer_eval (p[9].y == 109025); /* { dg-warning "TRUE" } */
 
-  __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (p[10].y == 0); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" "unknown" } */
+  /* { dg-warning "use of uninitialized value 'p\\\[10\\\].x'" "uninit" { target *-*-* } .-1 } */
+  __analyzer_eval (p[10].y == 0); /* { dg-warning "UNKNOWN" "unknown" } */
+  /* { dg-warning "use of uninitialized value 'p\\\[10\\\].y'" "uninit" { target *-*-* } .-1 } */
 
   q = &p[7];
 
@@ -708,8 +704,10 @@ void test_29c (int len)
   __analyzer_eval (p[9].x == 109024); /* { dg-warning "TRUE" } */
   __analyzer_eval (p[9].y == 109025); /* { dg-warning "TRUE" } */
 
-  __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (p[10].y == 0); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" "unknown" } */
+  /* { dg-warning "use of uninitialized value '\\*p\\\[10\\\].x'" "uninit" { target *-*-* } .-1 } */
+  __analyzer_eval (p[10].y == 0); /* { dg-warning "UNKNOWN" "unknown" } */
+  /* { dg-warning "use of uninitialized value '\\*p\\\[10\\\].y'" "uninit" { target *-*-* } .-1 } */
 
   q = &p[7];
 
@@ -821,7 +819,7 @@ void test_36 (int i)
 int test_37 (void)
 {
   int *ptr;
-  return *ptr; /* { dg-warning "use of uninitialized value 'ptr'" "uninit-warning-removed" { xfail *-*-* } } */
+  return *ptr; /* { dg-warning "use of uninitialized value 'ptr'" } */
 }
 
 /* Write through uninitialized pointer.  */
@@ -829,7 +827,7 @@ int test_37 (void)
 void test_37a (int i)
 {
   int *ptr;
-  *ptr = i; /* { dg-warning "use of uninitialized value 'ptr'" "uninit-warning-removed" { xfail *-*-* } } */
+  *ptr = i; /* { dg-warning "use of uninitialized value 'ptr'" } */
 }
 
 // TODO: the various other ptr deref poisonings
@@ -934,24 +932,20 @@ void test_43 (void)
 
 struct sbits
 {
-  int b0 : 1;
-  int b123 : 3;
-  int b456 : 3;
-  int b7 : 1;
+  signed int b0 : 1;
+  signed int b123 : 3;
+  signed int b456 : 3;
+  signed int b7 : 1;
 };
 
 void test_44 (void)
 {
   struct sbits bits;
-  bits.b0 = 1;
-  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "FALSE" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail): ^^^^
+  bits.b0 = -1;
+  __analyzer_eval (bits.b0 == -1); /* { dg-warning "TRUE" } */
 
-  bits.b456 = 5;
-  __analyzer_eval (bits.b456 == 5); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "FALSE" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail): ^^^^
+  bits.b456 = -4;
+  __analyzer_eval (bits.b456 == -4); /* { dg-warning "TRUE" } */
 };
 
 struct ubits
@@ -962,20 +956,14 @@ struct ubits
   unsigned int b7 : 1;
 };
 
-/* FIXME: this requires BIT_FIELD_REF to work.  */
-
 void test_45 (void)
 {
   struct ubits bits;
   bits.b0 = 1;
-  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail): ^^^^
+  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" } */
 
   bits.b456 = 5;
-  __analyzer_eval (bits.b456 == 5); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail): ^^^^
+  __analyzer_eval (bits.b456 == 5); /* { dg-warning "TRUE" } */
 };
 
 extern const char *char_ptr;
@@ -1045,8 +1033,8 @@ void test_52 (struct big b)
 {
   struct big d;
   memcpy (&d, &b, sizeof (struct big));
-  __analyzer_eval (b.ia[0] == d.ia[0]); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
+  __analyzer_eval (b.ia[0] == d.ia[0]); /* { dg-warning "TRUE" } */
+  __analyzer_eval (b.ia[1023] == d.ia[1023]); /* { dg-warning "TRUE" } */
 }
 
 void test_53 (const char *msg)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@
 
 with System.CRTL;
 with System.OS_Constants;
+with System.Parameters;
 package body System.OS_Primitives is
 
    subtype int is System.CRTL.int;
@@ -41,7 +42,8 @@ package body System.OS_Primitives is
    --  we don't want to depend on any package. Consider removing these
    --  declarations in System.OS_Interface and move these ones to the spec.
 
-   type time_t is new System.CRTL.int64;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
 
    type timespec is record
       tv_sec  : time_t;

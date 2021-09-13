@@ -104,8 +104,20 @@ TEST_CMP (greaterthanqual, >=, int16x8_t, float16x8_t)
 /* { dg-final { scan-assembler-times {vmul\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 1 } }  */
 
 /* { dg-final { scan-assembler-times {vdiv\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 13 } }  */
-/* { dg-final { scan-assembler-times {vcmp\.f32\ts[0-9]+, s[0-9]+} 26 } }  */
-/* { dg-final { scan-assembler-times {vcmpe\.f32\ts[0-9]+, s[0-9]+} 52 } }  */
+
+/* For float16_t.  */
+/* { dg-final { scan-assembler-times {vcmp\.f32\ts[0-9]+, s[0-9]+} 2 } }  */
+/* { dg-final { scan-assembler-times {vcmpe\.f32\ts[0-9]+, s[0-9]+} 4 } }  */
+
+/* For float16x4_t.  */
+/* { dg-final { scan-assembler-times {vceq\.f16\td[0-9]+, d[0-9]+} 2 } }  */
+/* { dg-final { scan-assembler-times {vcge\.f16\td[0-9]+, d[0-9]+} 2 } }  */
+/* { dg-final { scan-assembler-times {vcgt\.f16\td[0-9]+, d[0-9]+} 2 } }  */
+
+/* For float16x8_t.  */
+/* { dg-final { scan-assembler-times {vceq\.f16\tq[0-9]+, q[0-9]+} 2 } }  */
+/* { dg-final { scan-assembler-times {vcge\.f16\tq[0-9]+, q[0-9]+} 2 } }  */
+/* { dg-final { scan-assembler-times {vcgt\.f16\tq[0-9]+, q[0-9]+} 2 } }  */
 
 /* { dg-final { scan-assembler-not {vadd\.f32} } }  */
 /* { dg-final { scan-assembler-not {vsub\.f32} } }  */

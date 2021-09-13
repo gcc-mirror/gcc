@@ -735,6 +735,7 @@ class GCCCmdLine (CmdLine):
 
         self.add_dir ('.', TopLevelFilter())
         # boehm-gc is imported from upstream.
+        self.add_dir ('c++tools')
         self.add_dir ('config', ConfigFilter())
         # contrib isn't really part of GCC.
         self.add_dir ('fixincludes')
@@ -755,7 +756,6 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libgfortran')
         # libgo is imported from upstream.
         self.add_dir ('libgomp')
-        self.add_dir ('libhsail-rt')
         self.add_dir ('libiberty')
         self.add_dir ('libitm')
         self.add_dir ('libobjc')
@@ -771,6 +771,7 @@ class GCCCmdLine (CmdLine):
         # zlib is imported from upstream.
 
         self.default_dirs = [
+            'c++tools',
             'gcc',
             'include',
             'libada',
@@ -782,7 +783,6 @@ class GCCCmdLine (CmdLine):
             'libgcc',
             'libgfortran',
             'libgomp',
-            'libhsail-rt',
             'libiberty',
             'libitm',
             'libobjc',

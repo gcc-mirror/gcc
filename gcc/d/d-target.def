@@ -46,6 +46,26 @@ relating to the target operating system.",
  void, (void),
  hook_void_void)
 
+/* getTargetInfo keys relating to the target CPU.  */
+DEFHOOK
+(d_register_cpu_target_info,
+ "Register all target information keys relating to the target CPU using the\n\
+function @code{d_add_target_info_handlers}, which takes a\n\
+@samp{struct d_target_info_spec} (defined in @file{d/d-target.h}).  The keys\n\
+added by this hook are made available at compile time by the\n\
+@code{__traits(getTargetInfo)} extension, the result is an expression\n\
+describing the requested target information.",
+ void, (void),
+ hook_void_void)
+
+/* getTargetInfo keys relating to the target OS.  */
+DEFHOOK
+(d_register_os_target_info,
+ "Same as @code{TARGET_D_CPU_TARGET_INFO}, but is used for keys relating to\n\
+the target operating system.",
+ void, (void),
+ hook_void_void)
+
 /* ModuleInfo section name and brackets.  */
 DEFHOOKPOD
 (d_minfo_section,
@@ -70,6 +90,27 @@ DEFHOOKPOD
 as the name of the symbol indicating the end address of the module info\n\
 section",
  const char *, NULL)
+
+/* The "stdcall" convention is really supported on 32-bit x86/Windows only.
+   The following hook is a helper to determine whether to apply the attribute
+   on declarations with `extern(System)' and `extern(Windows)' linkage.  */
+DEFHOOK
+(d_has_stdcall_convention,
+ "Returns @code{true} if the target supports the stdcall calling convention.\n\
+The hook should also set @var{link_system} to @code{1} if the @code{stdcall}\n\
+attribute should be applied to functions with @code{extern(System)} linkage,\n\
+and @var{link_windows} to @code{1} to apply @code{stdcall} to functions with\n\
+@code{extern(Windows)} linkage.",
+ bool, (unsigned int *link_system, unsigned int *link_windows),
+ hook_bool_uintp_uintp_false)
+
+/* True if instantiations are always COMDAT if they have external linkage.  */
+DEFHOOKPOD
+(d_templates_always_comdat,
+ "This flag is true if instantiated functions and variables are always COMDAT\n\
+if they have external linkage.  If this flag is false, then instantiated\n\
+decls will be emitted as weak symbols.  The default is @code{false}.",
+ bool, false)
 
 /* Close the 'struct gcc_targetdm' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)

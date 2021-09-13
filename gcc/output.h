@@ -349,6 +349,9 @@ extern bool decl_readonly_section (const_tree, int);
    given a constant expression.  */
 extern int compute_reloc_for_constant (tree);
 
+/* This can be used to compute RELOC for get_variable_section.  */
+extern int compute_reloc_for_var (tree);
+
 /* User label prefix in effect for this compilation.  */
 extern const char *user_label_prefix;
 

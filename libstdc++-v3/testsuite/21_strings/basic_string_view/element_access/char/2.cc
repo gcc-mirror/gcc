@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++17 -O0" }
+// { dg-options "-O0" }
 // { dg-do run { target c++17 } }
 // { dg-require-debug-mode "" }
 // { dg-xfail-run-if "expect debug mode assertion to fail" { *-*-* } }

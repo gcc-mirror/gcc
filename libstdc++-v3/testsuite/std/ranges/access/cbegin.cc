@@ -19,7 +19,12 @@
 // { dg-do run { target c++2a } }
 
 #include <ranges>
+#include <utility> // as_const
 #include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
+
+static_assert(__gnu_test::is_customization_point_object(std::ranges::cbegin));
+
 using std::same_as;
 
 void

@@ -126,6 +126,7 @@
 #define bit_AVX5124VNNIW (1 << 2)
 #define bit_AVX5124FMAPS (1 << 3)
 #define bit_AVX512VP2INTERSECT	(1 << 8)
+#define bit_AVX512FP16   (1 << 23)
 #define bit_IBT	(1 << 20)
 #define bit_UINTR (1 << 5)
 #define bit_PCONFIG	(1 << 18)
@@ -212,28 +213,28 @@
 /* At least one cpu (Winchip 2) does not set %ebx and %ecx
    for cpuid leaf 1. Forcibly zero the two registers before
    calling cpuid as a precaution.  */
-#define __cpuid(level, a, b, c, d)			\
-  do {							\
-    if (__builtin_constant_p (level) && (level) != 1)	\
-      __asm__ ("cpuid\n\t"				\
-	      : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
-	      : "0" (level));				\
-    else						\
-      __asm__ ("cpuid\n\t"				\
-	      : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
-	      : "0" (level), "1" (0), "2" (0));		\
+#define __cpuid(level, a, b, c, d)					\
+  do {									\
+    if (__builtin_constant_p (level) && (level) != 1)			\
+      __asm__ __volatile__ ("cpuid\n\t"					\
+			    : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
+			    : "0" (level));				\
+    else								\
+      __asm__ __volatile__ ("cpuid\n\t"					\
+			    : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
+			    : "0" (level), "1" (0), "2" (0));		\
   } while (0)
 #else
-#define __cpuid(level, a, b, c, d)			\
-  __asm__ ("cpuid\n\t"					\
-	   : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
-	   : "0" (level))
+#define __cpuid(level, a, b, c, d)					\
+  __asm__ __volatile__ ("cpuid\n\t"					\
+			: "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
+			: "0" (level))
 #endif
 
-#define __cpuid_count(level, count, a, b, c, d)		\
-  __asm__ ("cpuid\n\t"					\
-	   : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
-	   : "0" (level), "2" (count))
+#define __cpuid_count(level, count, a, b, c, d)				\
+  __asm__ __volatile__ ("cpuid\n\t"					\
+			: "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
+			: "0" (level), "2" (count))
 
 
 /* Return highest supported input value for cpuid instruction.  ext can

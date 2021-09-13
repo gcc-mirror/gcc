@@ -1,6 +1,6 @@
 /* PR middle-end/95673 - missing -Wstring-compare for an impossible strncmp test
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wstring-compare -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wall -Wstring-compare -Wno-stringop-overread -ftrack-macro-expansion=0" } */
 
 typedef __SIZE_TYPE__ size_t;
 

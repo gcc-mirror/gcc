@@ -15,4 +15,4 @@ void f()
 	for (i = 0; i < 100; i++) q[i] = 1;
 }
 
-/* { dg-final { scan-assembler "andl\[\\t \]*\\$-16,\[\\t \]*%esp" } } */
+/* { dg-final { scan-assembler-not "andl\[\\t \]*\\$-16,\[\\t \]*%esp" } } */

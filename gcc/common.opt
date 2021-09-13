@@ -109,7 +109,7 @@ bool exit_after_options
 ; flag-types.h for the definitions of the different possible types of
 ; debugging information.
 Variable
-enum debug_info_type write_symbols = NO_DEBUG
+uint32_t write_symbols = NO_DEBUG
 
 ; Level of debugging information we are producing.  See flag-types.h
 ; for the definitions of the different possible levels.
@@ -121,6 +121,11 @@ enum debug_info_levels debug_info_level = DINFO_LEVEL_NONE
 ; write_symbols is set to DBX_DEBUG or XCOFF_DEBUG.
 Variable
 bool use_gnu_debug_info_extensions
+
+; Level of CTF debugging information we are producing.  See flag-types.h
+; for the definitions of the different possible levels.
+Variable
+enum ctf_debug_info_levels ctf_debug_info_level = CTFINFO_LEVEL_NONE
 
 ; Original value of maximum field alignment in bytes, specified via
 ; -fpack-struct=<value>.
@@ -826,6 +831,10 @@ Wcoverage-mismatch
 Common Var(warn_coverage_mismatch) Init(1) Warning
 Warn in case profiles in -fprofile-use do not match.
 
+Wcoverage-invalid-line-number
+Common Var(warn_coverage_invalid_linenum) Init(1) Warning
+Warn in case a function ends earlier than it begins due to an invalid linenum macros.
+
 Wmissing-profile
 Common Var(warn_missing_profile) Init(1) Warning
 Warn in case profiles in -fprofile-use do not exist.
@@ -960,7 +969,11 @@ Driver Undocumented
 ; 14: Corrects the mangling of nullptr expression.
 ;     Default in G++ 10.
 ;
-; 15: Changes the mangling of __alignof__ to be distinct from that of alignof.
+; 15: Corrects G++ 10 ABI tag regression [PR98481].
+;     Available, but not default, in G++ 10.3.
+;
+; 16: Changes the mangling of __alignof__ to be distinct from that of alignof.
+;     Adds missing 'on' in mangling of operator names in some cases.
 ;     Default in G++ 11.
 ;
 ; Additional positive integers will be assigned as new versions of
@@ -1033,8 +1046,17 @@ Common Driver Joined
 Select what to sanitize.
 
 fsanitize-coverage=
-Common Joined
+Common Joined RejectNegative Enum(sanitize_coverage)
 Select type of coverage sanitization.
+
+Enum
+Name(sanitize_coverage) Type(int)
+
+EnumValue
+Enum(sanitize_coverage) String(trace-pc) Value(SANITIZE_COV_TRACE_PC)
+
+EnumValue
+Enum(sanitize_coverage) String(trace-cmp) Value(SANITIZE_COV_TRACE_CMP)
 
 fasan-shadow-offset=
 Common Joined RejectNegative Var(common_deferred_options) Defer
@@ -1487,7 +1509,7 @@ Common Var(flag_emit_class_debug_always) Init(0)
 Do not suppress C++ class debug information.
 
 fexceptions
-Common Var(flag_exceptions) Optimization
+Common Var(flag_exceptions) Optimization EnabledBy(fnon-call-exceptions)
 Enable exception handling.
 
 fexpensive-optimizations
@@ -1496,7 +1518,7 @@ Perform a number of minor, expensive optimizations.
 
 fexcess-precision=
 Common Joined RejectNegative Enum(excess_precision) Var(flag_excess_precision) Init(EXCESS_PRECISION_DEFAULT) Optimization SetByCombined
--fexcess-precision=[fast|standard]	Specify handling of excess floating-point precision.
+-fexcess-precision=[fast|standard|16]	Specify handling of excess floating-point precision.
 
 Enum
 Name(excess_precision) Type(enum excess_precision) UnknownError(unknown excess precision style %qs)
@@ -1506,6 +1528,9 @@ Enum(excess_precision) String(fast) Value(EXCESS_PRECISION_FAST)
 
 EnumValue
 Enum(excess_precision) String(standard) Value(EXCESS_PRECISION_STANDARD)
+
+EnumValue
+Enum(excess_precision) String(16) Value(EXCESS_PRECISION_FLOAT16)
 
 ; Whether we permit the extended set of values for FLT_EVAL_METHOD
 ; introduced in ISO/IEC TS 18661-3, or limit ourselves to those in C99/C11.
@@ -2062,6 +2087,10 @@ fmove-loop-invariants
 Common Var(flag_move_loop_invariants) Optimization
 Move loop invariant computations out of loops.
 
+fmove-loop-stores
+Common Var(flag_move_loop_stores) Optimization
+Move stores out of loops.
+
 fdce
 Common Var(flag_dce) Init(1) Optimization
 Use the RTL dead code elimination pass.
@@ -2079,11 +2108,14 @@ Common Var(flag_non_call_exceptions) Optimization
 Support synchronous non-call exceptions.
 
 foffload=
-Common Driver Joined MissingArgError(options or targets missing after %qs)
--foffload=<targets>=<options>	Specify offloading targets and options for them.
+Driver Joined MissingArgError(targets missing after %qs)
+
+foffload-options=
+Common Driver Joined MissingArgError(options or targets=options missing after %qs)
+-foffload-options=<targets>=<options>	Specify options for the offloading targets.
 
 foffload-abi=
-Common Joined RejectNegative Enum(offload_abi) Var(flag_offload_abi) Init(OFFLOAD_ABI_UNSET)
+Common Joined RejectNegative Enum(offload_abi)
 -foffload-abi=[lp64|ilp32]	Set the ABI to use in an offload compiler.
 
 Enum
@@ -3049,6 +3081,22 @@ ftree-scev-cprop
 Common Var(flag_tree_scev_cprop) Init(1) Optimization
 Enable copy propagation of scalar-evolution information.
 
+ftrivial-auto-var-init=
+Common Joined RejectNegative Enum(auto_init_type) Var(flag_auto_var_init) Init(AUTO_INIT_UNINITIALIZED) Optimization
+-ftrivial-auto-var-init=[uninitialized|pattern|zero]	Add initializations to automatic variables.
+
+Enum
+Name(auto_init_type) Type(enum auto_init_type) UnknownError(unrecognized automatic variable initialization type %qs)
+
+EnumValue
+Enum(auto_init_type) String(uninitialized) Value(AUTO_INIT_UNINITIALIZED)
+
+EnumValue
+Enum(auto_init_type) String(pattern) Value(AUTO_INIT_PATTERN)
+
+EnumValue
+Enum(auto_init_type) String(zero) Value(AUTO_INIT_ZERO)
+
 ; -fverbose-asm causes extra commentary information to be produced in
 ; the generated assembly code (to make it more readable).  This option
 ; is generally only of use to those who actually need to read the
@@ -3165,6 +3213,16 @@ Does nothing.  Preserved for backward compatibility.
 gcolumn-info
 Common Driver Var(debug_column_info,1) Init(1)
 Record DW_AT_decl_column and DW_AT_call_column in DWARF.
+
+; The CTF generation process feeds off DWARF dies.  This option implicitly
+; updates the debug_info_level to DINFO_LEVEL_NORMAL.
+gctf
+Common Driver RejectNegative JoinedOrMissing
+Generate CTF debug information at default level.
+
+gbtf
+Common Driver RejectNegative JoinedOrMissing
+Generate BTF debug information at default level.
 
 gdwarf
 Common Driver JoinedOrMissing Negative(gdwarf-)

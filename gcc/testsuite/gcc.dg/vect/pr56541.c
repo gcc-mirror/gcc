@@ -24,4 +24,4 @@ void foo()
     }
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail { ! vect_cond_mixed } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_floatint_cvt } xfail { ! vect_cond_mixed } } } } */

@@ -42,3 +42,25 @@
 #define SCNuMAX 	 SCNu32
 
 #endif  /* HPUX_C99_INTTYPES4_CHECK */
+
+
+#if defined( HPUX_C99_INTTYPES5_CHECK )
+#ifndef __LP64__
+#define PRIdPTR		PRId32
+#define PRIiPTR		PRIi32
+#define PRIoPTR		PRIo32
+#define PRIuPTR		PRIu32
+#define PRIxPTR		PRIx32
+#define PRIXPTR		PRIX32
+#else
+#define PRIdPTR		PRId64
+#define PRIiPTR		PRIi64
+#define PRIoPTR		PRIo64
+#define PRIuPTR		PRIu64
+#define PRIxPTR		PRIx64
+#define PRIXPTR		PRIX64
+#endif
+
+#ifndef _KERNEL
+
+#endif  /* HPUX_C99_INTTYPES5_CHECK */

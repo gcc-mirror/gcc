@@ -287,7 +287,7 @@ DEF_RTL_EXPR(PREFETCH, "prefetch", "eee", RTX_EXTRA)
    ---------------------------------------------------------------------- */
 
 /* Assignment.
-   Operand 1 is the location (REG, MEM, PC, CC0 or whatever) assigned to.
+   Operand 1 is the location (REG, MEM, PC or whatever) assigned to.
    Operand 2 is the value stored there.
    ALL assignment must use SET.
    Instructions that do multiple assignments must use multiple SET,
@@ -435,13 +435,6 @@ DEF_RTL_EXPR(LABEL_REF, "label_ref", "u", RTX_CONST_OBJ)
    Operand 1: tree from which this symbol is derived, or null.
    This is either a DECL node, or some kind of constant.  */
 DEF_RTL_EXPR(SYMBOL_REF, "symbol_ref", "s0", RTX_CONST_OBJ)
-
-/* The condition code register is represented, in our imagination,
-   as a register holding a value that can be compared to zero.
-   In fact, the machine has already compared them and recorded the
-   results; but instructions that look at the condition code
-   pretend to be looking at the entire value and comparing it.  */
-DEF_RTL_EXPR(CC0, "cc0", "", RTX_OBJ)
 
 /* ----------------------------------------------------------------------
    Expressions for operators in an rtl pattern
@@ -1055,6 +1048,7 @@ DEF_RTL_EXPR(DEFINE_REGISTER_CONSTRAINT, "define_register_constraint", "sss", RT
 DEF_RTL_EXPR(DEFINE_CONSTRAINT, "define_constraint", "sse", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_MEMORY_CONSTRAINT, "define_memory_constraint", "sse", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_SPECIAL_MEMORY_CONSTRAINT, "define_special_memory_constraint", "sse", RTX_EXTRA)
+DEF_RTL_EXPR(DEFINE_RELAXED_MEMORY_CONSTRAINT, "define_relaxed_memory_constraint", "sse", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_ADDRESS_CONSTRAINT, "define_address_constraint", "sse", RTX_EXTRA)
 
 

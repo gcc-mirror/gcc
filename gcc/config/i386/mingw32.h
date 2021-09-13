@@ -53,6 +53,18 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#define EXTRA_TARGET_D_OS_VERSIONS()				\
+  do								\
+    {								\
+      builtin_version ("MinGW");				\
+      if (TARGET_64BIT && ix86_abi == MS_ABI)			\
+	builtin_version ("Win64");				\
+      else if (!TARGET_64BIT)					\
+	builtin_version ("Win32");				\
+      builtin_version ("CRuntime_Microsoft");			\
+    }								\
+  while (0)
+
 #ifndef TARGET_USE_PTHREAD_BY_DEFAULT
 #define SPEC_PTHREAD1 "pthread"
 #define SPEC_PTHREAD2 "!no-pthread"
@@ -136,6 +148,13 @@ along with GCC; see the file COPYING3.  If not see
   "%{!shared:%{!mdll:%{!m64:--large-address-aware}}}"
 #endif
 
+#if HAVE_LD_PE_DISABLE_DYNAMICBASE
+# define LINK_SPEC_DISABLE_DYNAMICBASE \
+  "%{!shared:%{!mdll:%{no-pie:--disable-dynamicbase}}}"
+#else
+# define LINK_SPEC_DISABLE_DYNAMICBASE ""
+#endif
+
 #define LINK_SPEC "%{mwindows:--subsystem windows} \
   %{mconsole:--subsystem console} \
   %{shared: %{mdll: %eshared and mdll are not compatible}} \
@@ -143,6 +162,7 @@ along with GCC; see the file COPYING3.  If not see
   %{static:-Bstatic} %{!static:-Bdynamic} \
   %{shared|mdll: " SUB_LINK_ENTRY " --enable-auto-image-base} \
   " LINK_SPEC_LARGE_ADDR_AWARE "\
+  " LINK_SPEC_DISABLE_DYNAMICBASE "\
   %(shared_libgcc_undefs)"
 
 /* Include in the mingw32 libraries with libgcc */

@@ -337,7 +337,8 @@ private:
   tree get_attributes (const function_instance &);
 
   registered_function &add_function (const function_instance &,
-				     const char *, tree, tree, uint64_t, bool);
+				     const char *, tree, tree,
+				     uint64_t, bool, bool);
 
   /* The function type to use for functions that are resolved by
      function_resolver.  */

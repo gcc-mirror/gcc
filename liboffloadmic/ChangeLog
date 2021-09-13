@@ -1,3 +1,9 @@
+2021-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR libgomp/100747
+	* configure: Make executable.
+	* plugin/configure: Likewise.
+
 2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* configure: Re-generate.

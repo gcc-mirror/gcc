@@ -108,8 +108,10 @@ BDESC_VERIFYS (IX86_BUILTIN__BDESC_PCMPISTR_FIRST,
 	       IX86_BUILTIN__BDESC_PCMPESTR_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_PCMPISTR_LAST, 1);
-BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS_FIRST,
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_PURE_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_SPECIAL_ARGS_LAST, 1);
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS_FIRST,
+	       IX86_BUILTIN__BDESC_PURE_ARGS_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_ROUND_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_ARGS_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
@@ -123,6 +125,7 @@ BDESC_VERIFYS (IX86_BUILTIN_MAX,
 /* Table for the ix86 builtin non-function types.  */
 static GTY(()) tree ix86_builtin_type_tab[(int) IX86_BT_LAST_CPTR + 1];
 
+tree ix86_float16_type_node = NULL_TREE;
 /* Retrieve an element from the above table, building some of
    the types lazily.  */
 
@@ -527,7 +530,23 @@ ix86_init_mmx_sse_builtins (void)
 		 IX86_BUILTIN__BDESC_SPECIAL_ARGS_FIRST,
 		 ARRAY_SIZE (bdesc_special_args) - 1);
 
-  /* Add all builtins with variable number of operands.  */
+  /* Add all pure builtins with variable number of operands.  */
+  for (i = 0, d = bdesc_pure_args;
+       i < ARRAY_SIZE (bdesc_pure_args);
+       i++, d++)
+    {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_PURE_ARGS_FIRST, i);
+      if (d->name == 0)
+	continue;
+
+      ftype = (enum ix86_builtin_func_type) d->flag;
+      def_builtin_pure (d->mask, d->mask2, d->name, ftype, d->code);
+    }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_PURE_ARGS_LAST,
+		 IX86_BUILTIN__BDESC_PURE_ARGS_FIRST,
+		 ARRAY_SIZE (bdesc_pure_args) - 1);
+
+  /* Add all const builtins with variable number of operands.  */
   for (i = 0, d = bdesc_args;
        i < ARRAY_SIZE (bdesc_args);
        i++, d++)
@@ -628,9 +647,9 @@ ix86_init_mmx_sse_builtins (void)
 			    VOID_FTYPE_VOID, IX86_BUILTIN_MFENCE);
 
   /* SSE3.  */
-  def_builtin (OPTION_MASK_ISA_SSE3, 0, "__builtin_ia32_monitor",
+  def_builtin (0, OPTION_MASK_ISA2_MWAIT, "__builtin_ia32_monitor",
 	       VOID_FTYPE_PCVOID_UNSIGNED_UNSIGNED, IX86_BUILTIN_MONITOR);
-  def_builtin (OPTION_MASK_ISA_SSE3, 0, "__builtin_ia32_mwait",
+  def_builtin (0, OPTION_MASK_ISA2_MWAIT, "__builtin_ia32_mwait",
 	       VOID_FTYPE_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAIT);
 
   /* AES */
@@ -1326,6 +1345,26 @@ ix86_init_builtins_va_builtins_abi (void)
 }
 
 static void
+ix86_register_float16_builtin_type (void)
+{
+  /* Provide the _Float16 type and float16_type_node if needed so that
+     it can be used in AVX512FP16 intrinsics and builtins.  */
+  if (!float16_type_node)
+    {
+      ix86_float16_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (ix86_float16_type_node) = 16;
+      SET_TYPE_MODE (ix86_float16_type_node, HFmode);
+      layout_type (ix86_float16_type_node);
+    }
+  else
+    ix86_float16_type_node = float16_type_node;
+
+  if (!maybe_get_identifier ("_Float16") && TARGET_SSE2)
+    lang_hooks.types.register_builtin_type (ix86_float16_type_node,
+					    "_Float16");
+}
+
+static void
 ix86_init_builtin_types (void)
 {
   tree float80_type_node, const_string_type_node;
@@ -1352,6 +1391,8 @@ ix86_init_builtin_types (void)
      _Float128, so we only need to register the __float128 name for
      it.  */
   lang_hooks.types.register_builtin_type (float128_type_node, "__float128");
+
+  ix86_register_float16_builtin_type ();
 
   const_string_type_node
     = build_pointer_type (build_qualified_type
@@ -1886,8 +1927,24 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	return 0;
       new_target = TREE_TARGET_OPTION (target_node);
       gcc_assert (new_target);
-      
-      if (new_target->arch_specified && new_target->arch > 0)
+      enum ix86_builtins builtin_fn = IX86_BUILTIN_CPU_IS;
+
+      /* Special case x86-64 micro-level architectures.  */
+      const char *arch_name = attrs_str + strlen ("arch=");
+      if (startswith (arch_name, "x86-64"))
+	{
+	  arg_str = arch_name;
+	  builtin_fn = IX86_BUILTIN_CPU_SUPPORTS;
+	  if (strcmp (arch_name, "x86-64") == 0)
+	    priority = P_X86_64_BASELINE;
+	  else if (strcmp (arch_name, "x86-64-v2") == 0)
+	    priority = P_X86_64_V2;
+	  else if (strcmp (arch_name, "x86-64-v3") == 0)
+	    priority = P_X86_64_V3;
+	  else if (strcmp (arch_name, "x86-64-v4") == 0)
+	    priority = P_X86_64_V4;
+	}
+      else if (new_target->arch_specified && new_target->arch > 0)
 	for (i = 0; i < pta_size; i++)
 	  if (processor_alias_table[i].processor == new_target->arch)
 	    {
@@ -1957,7 +2014,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
     
       if (predicate_list)
 	{
-          predicate_decl = ix86_builtins [(int) IX86_BUILTIN_CPU_IS];
+	  predicate_decl = ix86_builtins [(int) builtin_fn];
           /* For a C string literal the length includes the trailing NULL.  */
           predicate_arg = build_string_literal (strlen (arg_str) + 1, arg_str);
           predicate_chain = tree_cons (predicate_decl, predicate_arg,
@@ -1974,7 +2031,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
   while (token != NULL)
     {
       /* Do not process "arch="  */
-      if (strncmp (token, "arch=", 5) == 0)
+      if (startswith (token, "arch="))
 	{
 	  token = strtok (NULL, ",");
 	  continue;
@@ -2085,6 +2142,11 @@ make_var_decl (tree type, const char *name)
   return new_decl;
 }
 
+static GTY(()) tree ix86_cpu_model_type_node;
+static GTY(()) tree ix86_cpu_model_var;
+static GTY(()) tree ix86_cpu_features2_type_node;
+static GTY(()) tree ix86_cpu_features2_var;
+
 /* FNDECL is a __builtin_cpu_is or a __builtin_cpu_supports call that is folded
    into an integer defined in libgcc/config/i386/cpuinfo.c */
 
@@ -2096,12 +2158,16 @@ fold_builtin_cpu (tree fndecl, tree *args)
     = (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree param_string_cst = NULL;
 
-  tree __processor_model_type = build_processor_model_struct ();
-  tree __cpu_model_var = make_var_decl (__processor_model_type,
-					"__cpu_model");
-
-
-  varpool_node::add (__cpu_model_var);
+  if (ix86_cpu_model_var == nullptr)
+    {
+      /* Build a single __cpu_model variable for all references to
+	 __cpu_model so that GIMPLE level optimizers can CSE the loads
+	 of __cpu_model and optimize bit-operations properly.  */
+      ix86_cpu_model_type_node = build_processor_model_struct ();
+      ix86_cpu_model_var = make_var_decl (ix86_cpu_model_type_node,
+					  "__cpu_model");
+      varpool_node::add (ix86_cpu_model_var);
+    }
 
   gcc_assert ((args != NULL) && (*args != NULL));
 
@@ -2142,7 +2208,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	  return integer_zero_node;
 	}
 
-      field = TYPE_FIELDS (__processor_model_type);
+      field = TYPE_FIELDS (ix86_cpu_model_type_node);
       field_val = processor_alias_table[i].model;
 
       /* CPU types are stored in the next field.  */
@@ -2161,7 +2227,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	}
 
       /* Get the appropriate field in __cpu_model.  */
-      ref = build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
+      ref = build3 (COMPONENT_REF, TREE_TYPE (field), ix86_cpu_model_var,
 		    field, NULL_TREE);
 
       /* Check the value.  */
@@ -2194,13 +2260,22 @@ fold_builtin_cpu (tree fndecl, tree *args)
 
       if (isa_names_table[i].feature >= 32)
 	{
-	  tree index_type
-	    = build_index_type (size_int (SIZE_OF_CPU_FEATURES));
-	  tree type = build_array_type (unsigned_type_node, index_type);
-	  tree __cpu_features2_var = make_var_decl (type,
-						    "__cpu_features2");
+	  if (ix86_cpu_features2_var == nullptr)
+	    {
+	      /* Build a single __cpu_features2 variable for all
+		 references to __cpu_features2 so that GIMPLE level
+		 optimizers can CSE the loads of __cpu_features2 and
+		 optimize bit-operations properly.  */
+	      tree index_type
+		= build_index_type (size_int (SIZE_OF_CPU_FEATURES));
+	      ix86_cpu_features2_type_node
+		= build_array_type (unsigned_type_node, index_type);
+	      ix86_cpu_features2_var
+		= make_var_decl (ix86_cpu_features2_type_node,
+				 "__cpu_features2");
+	      varpool_node::add (ix86_cpu_features2_var);
+	    }
 
-	  varpool_node::add (__cpu_features2_var);
 	  for (unsigned int j = 0; j < SIZE_OF_CPU_FEATURES; j++)
 	    if (isa_names_table[i].feature < (32 + 32 + j * 32))
 	      {
@@ -2208,7 +2283,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 				    - (32 + j * 32)));
 		tree index = size_int (j);
 		array_elt = build4 (ARRAY_REF, unsigned_type_node,
-				    __cpu_features2_var,
+				    ix86_cpu_features2_var,
 				    index, NULL_TREE, NULL_TREE);
 		/* Return __cpu_features2[index] & field_val  */
 		final = build2 (BIT_AND_EXPR, unsigned_type_node,
@@ -2219,13 +2294,13 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	      }
 	}
 
-      field = TYPE_FIELDS (__processor_model_type);
+      field = TYPE_FIELDS (ix86_cpu_model_type_node);
       /* Get the last field, which is __cpu_features.  */
       while (DECL_CHAIN (field))
         field = DECL_CHAIN (field);
 
       /* Get the appropriate field: __cpu_model.__cpu_features  */
-      ref = build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
+      ref = build3 (COMPONENT_REF, TREE_TYPE (field), ix86_cpu_model_var,
 		    field, NULL_TREE);
 
       /* Access the 0th element of __cpu_features array.  */

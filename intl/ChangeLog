@@ -1,3 +1,14 @@
+2021-06-14  Michael Forney  <mforney@mforney.org>
+
+	* configure: Regenerated.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR jit/100096
+	* configure.ac: Add --enable-host-shared support.
+	* Makefile.in: Update copyright.  Add @PICFLAG@ to CFLAGS.
+	* configure: Regenerated.
+
 2020-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/92008

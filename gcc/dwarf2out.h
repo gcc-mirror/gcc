@@ -108,6 +108,14 @@ struct GTY(()) dw_fde_node {
   /* True iff dw_fde_second_begin label is in text_section or
      cold_text_section.  */
   unsigned second_in_std_section : 1;
+  /* True if Rule 18 described in dwarf2cfi.c is in action, i.e. for dynamic
+     stack realignment in between pushing of hard frame pointer to stack
+     and setting hard frame pointer to stack pointer.  The register save for
+     hard frame pointer register should be emitted only on the latter
+     instruction.  */
+  unsigned rule18 : 1;
+  /* True if this function is to be ignored by debugger.  */
+  unsigned ignored_debug : 1;
 };
 
 
@@ -378,5 +386,51 @@ struct fixed_point_type_info
 };
 
 void dwarf2out_c_finalize (void);
+
+/* Some DWARF internals are exposed for the needs of DWARF-based debug
+   formats.  */
+
+/* Each DIE attribute has a field specifying the attribute kind,
+   a link to the next attribute in the chain, and an attribute value.
+   Attributes are typically linked below the DIE they modify.  */
+
+typedef struct GTY(()) dw_attr_struct {
+  enum dwarf_attribute dw_attr;
+  dw_val_node dw_attr_val;
+}
+dw_attr_node;
+
+extern dw_attr_node *get_AT (dw_die_ref, enum dwarf_attribute);
+extern HOST_WIDE_INT AT_int (dw_attr_node *);
+extern unsigned HOST_WIDE_INT AT_unsigned (dw_attr_node *a);
+extern dw_loc_descr_ref AT_loc (dw_attr_node *);
+extern dw_die_ref get_AT_ref (dw_die_ref, enum dwarf_attribute);
+extern const char *get_AT_string (dw_die_ref, enum dwarf_attribute);
+extern enum dw_val_class AT_class (dw_attr_node *);
+extern unsigned HOST_WIDE_INT AT_unsigned (dw_attr_node *);
+extern unsigned get_AT_unsigned (dw_die_ref, enum dwarf_attribute);
+extern int get_AT_flag (dw_die_ref, enum dwarf_attribute);
+
+extern void add_name_attribute (dw_die_ref, const char *);
+
+extern dw_die_ref new_die_raw (enum dwarf_tag);
+extern dw_die_ref base_type_die (tree, bool);
+
+extern dw_die_ref lookup_decl_die (tree);
+extern dw_die_ref lookup_type_die (tree);
+
+extern dw_die_ref dw_get_die_child (dw_die_ref);
+extern dw_die_ref dw_get_die_sib (dw_die_ref);
+extern enum dwarf_tag dw_get_die_tag (dw_die_ref);
+
+/* Data about a single source file.  */
+struct GTY((for_user)) dwarf_file_data {
+  const char * key;
+  const char * filename;
+  int emitted_number;
+};
+
+extern struct dwarf_file_data *get_AT_file (dw_die_ref,
+					    enum dwarf_attribute);
 
 #endif /* GCC_DWARF2OUT_H */

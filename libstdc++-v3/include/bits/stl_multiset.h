@@ -720,7 +720,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // multiset operations:
 
-      //@{
+      ///@{
       /**
        *  @brief Finds the number of elements with given key.
        *  @param  __x  Key of elements to be located.
@@ -736,10 +736,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	count(const _Kt& __x) const -> decltype(_M_t._M_count_tr(__x))
 	{ return _M_t._M_count_tr(__x); }
 #endif
-      //@}
+      ///@}
 
 #if __cplusplus > 201703L
-      //@{
+      ///@{
       /**
        *  @brief  Finds whether an element with the given key exists.
        *  @param  __x  Key of elements to be located.
@@ -754,12 +754,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	contains(const _Kt& __x) const
 	-> decltype(_M_t._M_find_tr(__x), void(), true)
 	{ return _M_t._M_find_tr(__x) != _M_t.end(); }
-      //@}
+      ///@}
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 214.  set::find() missing const overload
-      //@{
+      ///@{
       /**
        *  @brief Tries to locate an element in a %set.
        *  @param  __x  Element to be located.
@@ -792,9 +792,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	-> decltype(const_iterator{_M_t._M_find_tr(__x)})
 	{ return const_iterator{_M_t._M_find_tr(__x)}; }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
        *  @param  __x  Key to be located.
@@ -827,9 +827,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	-> decltype(iterator(_M_t._M_lower_bound_tr(__x)))
 	{ return iterator(_M_t._M_lower_bound_tr(__x)); }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief Finds the end of a subsequence matching given key.
        *  @param  __x  Key to be located.
@@ -857,9 +857,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	-> decltype(iterator(_M_t._M_upper_bound_tr(__x)))
 	{ return iterator(_M_t._M_upper_bound_tr(__x)); }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief Finds a subsequence matching given key.
        *  @param  __x  Key to be located.
@@ -896,7 +896,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	-> decltype(pair<iterator, iterator>(_M_t._M_equal_range_tr(__x)))
 	{ return pair<iterator, iterator>(_M_t._M_equal_range_tr(__x)); }
 #endif
-      //@}
+      ///@}
 
       template<typename _K1, typename _C1, typename _A1>
 	friend bool

@@ -57,8 +57,8 @@
    64-bit at any time.  */
 #define STACK_BOUNDARY 64
 
-/* Function entry points are aligned to 128 bits.  */
-#define FUNCTION_BOUNDARY 128
+/* Function entry points are aligned to 64 bits.  */
+#define FUNCTION_BOUNDARY 64
 
 /* Maximum alignment required by data of any type.  */
 #define BIGGEST_ALIGNMENT 64
@@ -235,17 +235,9 @@ enum reg_class
 
 /**** Debugging Info ****/
 
-/* We cannot support DWARF2 because of the limitations of eBPF.  */
+/* In eBPF it is not possible to unwind frames. Disable CFA.  */
 
-/* elfos.h insists in using DWARF.  Undo that here.  */
-#ifdef DWARF2_DEBUGGING_INFO
-# undef DWARF2_DEBUGGING_INFO
-#endif
-#ifdef PREFERRED_DEBUGGING_TYPE
-# undef PREFERRED_DEBUGGING_TYPE
-#endif
-
-#define DBX_DEBUGGING_INFO
+#define DWARF2_FRAME_INFO 0
 
 /**** Stack Layout and Calling Conventions.  */
 
@@ -287,9 +279,6 @@ enum reg_class
    in the first five registers.  Code in bpf.c assures the stack is
    never used when passing arguments.  However, we still have to
    define the constants below.  */
-
-/* If nonzero, push insns will be used to pass outgoing arguments.  */
-#define PUSH_ARGS 0
 
 /* If nonzero, function arguments will be evaluated from last to
    first, rather than from first to last.  */
@@ -422,9 +411,15 @@ enum reg_class
    Try to use asm_output_aligned_bss to implement this macro.  */
 
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
-  do {								\
-    ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);		\
-  } while (0)
+  do									\
+    {									\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");			\
+      fprintf ((FILE), "%s", "\t.lcomm\t");				\
+      assemble_name ((FILE), (NAME));					\
+      fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n",	\
+	       (SIZE), (ALIGN) / BITS_PER_UNIT);			\
+    }									\
+  while (0)
 
 /*** Output and Generation of Labels.  */
 

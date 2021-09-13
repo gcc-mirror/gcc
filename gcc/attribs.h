@@ -65,6 +65,9 @@ extern bool attribute_value_equal (const_tree, const_tree);
    warning to be generated).  */
 extern int comp_type_attributes (const_tree, const_tree);
 
+extern tree affects_type_identity_attributes (tree, bool = true);
+extern tree restrict_type_identity_attributes_to (tree, tree);
+
 /* Default versions of target-overridable functions.  */
 extern tree merge_decl_attributes (tree, tree);
 extern tree merge_type_attributes (tree, tree);
@@ -312,7 +315,5 @@ typedef hash_map<rdwr_access_hash, attr_access> rdwr_map;
 extern void init_attr_rdwr_indices (rdwr_map *, tree);
 extern attr_access *get_parm_access (rdwr_map &, tree,
 				     tree = current_function_decl);
-
-extern unsigned fndecl_dealloc_argno (tree fndecl);
 
 #endif // GCC_ATTRIBS_H

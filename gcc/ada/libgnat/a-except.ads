@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -184,26 +184,7 @@ private
    --  Raise_Exception_Always if it can determine this is the case. The Export
    --  allows this routine to be accessed from Pure units.
 
-   procedure Raise_From_Signal_Handler
-     (E : Exception_Id;
-      M : System.Address);
-   pragma Export
-     (Ada, Raise_From_Signal_Handler,
-           "ada__exceptions__raise_from_signal_handler");
-   pragma No_Return (Raise_From_Signal_Handler);
-   --  This routine is used to raise an exception from a signal handler. The
-   --  signal handler has already stored the machine state (i.e. the state that
-   --  corresponds to the location at which the signal was raised). E is the
-   --  Exception_Id specifying what exception is being raised, and M is a
-   --  pointer to a null-terminated string which is the message to be raised.
-   --  Note that this routine never returns, so it is permissible to simply
-   --  jump to this routine, rather than call it. This may be appropriate for
-   --  systems where the right way to get out of signal handler is to alter the
-   --  PC value in the machine state or in some other way ask the operating
-   --  system to return here rather than to the original location.
-
-   procedure Raise_From_Controlled_Operation
-     (X : Ada.Exceptions.Exception_Occurrence);
+   procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
    pragma No_Return (Raise_From_Controlled_Operation);
    pragma Export
      (Ada, Raise_From_Controlled_Operation,

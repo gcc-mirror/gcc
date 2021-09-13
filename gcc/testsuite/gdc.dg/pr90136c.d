@@ -2,8 +2,8 @@
 // { dg-do compile }
 // { dg-options "-Wattributes" }
 
-import gcc.attribute;
+import gcc.attributes;
 
-@attribute("forceinline") int sum_array(int[] input);
+@attribute("always_inline") int sum_array(int[] input);
 @attribute("noinline") int sum_array(int[] input);
-// { dg-warning "ignoring attribute .noinline. because it conflicts with attribute .forceinline." "" { target *-*-* } .-1 }
+// { dg-warning "ignoring attribute .noinline. because it conflicts with attribute .always_inline." "" { target *-*-* } .-1 }

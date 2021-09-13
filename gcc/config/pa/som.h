@@ -47,32 +47,29 @@ along with GCC; see the file COPYING3.  If not see
 do {								\
   static int in_shlib_list = 0;					\
   while (*PTR == ' ') PTR++;					\
-  if (strncmp (PTR, "shared library list:",			\
-	       sizeof ("shared library list:") - 1) == 0)	\
+  if (startswith (PTR, "shared library list:"))			\
     {								\
       PTR = 0;							\
       in_shlib_list = 1;					\
     }								\
-  else if (strncmp (PTR, "shared library binding:",		\
-		    sizeof ("shared library binding:") - 1) == 0)\
+  else if (startswith (PTR, "shared library binding:"))		\
     {								\
       PTR = 0;							\
       in_shlib_list = 0;					\
     }								\
-  else if (strncmp (PTR, "static branch prediction disabled",	\
-		    sizeof ("static branch prediction disabled") - 1) == 0)\
+  else if (startswith (PTR, "static branch prediction disabled")) \
     {								\
       PTR = 0;							\
       in_shlib_list = 0;					\
     }								\
   else if (in_shlib_list					\
-	   &&  strncmp (PTR, "dynamic", sizeof ("dynamic") - 1) == 0) \
+	   && startswith (PTR, "dynamic"))			\
     {								\
       PTR += sizeof ("dynamic") - 1;				\
       while (*p == ' ') PTR++;					\
     }								\
   else if (in_shlib_list					\
-	   && strncmp (PTR, "static", sizeof ("static") - 1) == 0) \
+	   && startswith (PTR, "static"))			\
     {								\
       PTR += sizeof ("static") - 1;				\
       while (*p == ' ') PTR++;					\

@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include <ISO_Fortran_binding.h>
 
 void arr_set_c(CFI_cdesc_t*);
 

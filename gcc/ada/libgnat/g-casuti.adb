@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2020, AdaCore                     --
+--                     Copyright (C) 1995-2021, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a dummy body, required because if we remove the body we have
---  bootstrap path problems (this unit used to have a body, and if we do not
---  supply a dummy body, the old incorrect body is picked up during the
---  bootstrap process.
+--  This package does not require a body, since it is a package renaming. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not interfere.
 
-package body GNAT.Case_Util is
-end GNAT.Case_Util;
+pragma No_Body;

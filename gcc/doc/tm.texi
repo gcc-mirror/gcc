@@ -400,7 +400,10 @@ the effect you need.  Overriding this macro may be avoidable by overriding
 @end defmac
 
 @deftypevr {Common Target Hook} bool TARGET_ALWAYS_STRIP_DOTDOT
-True if @file{..} components should always be removed from directory names computed relative to GCC's internal directories, false (default) if such components should be preserved and directory names containing them passed to other tools such as the linker.
+True if @file{..} components should always be removed from directory names
+computed relative to GCC's internal directories, false (default) if such
+components should be preserved and directory names containing them passed
+to other tools such as the linker.
 @end deftypevr
 
 @defmac MULTILIB_DEFAULTS
@@ -703,23 +706,40 @@ should use @code{TARGET_HANDLE_C_OPTION} instead.
 @end deftypefn
 
 @deftypefn {C Target Hook} tree TARGET_OBJC_CONSTRUCT_STRING_OBJECT (tree @var{string})
-Targets may provide a string object type that can be used within and between C, C++ and their respective Objective-C dialects. A string object might, for example, embed encoding and length information. These objects are considered opaque to the compiler and handled as references. An ideal implementation makes the composition of the string object match that of the Objective-C @code{NSString} (@code{NXString} for GNUStep), allowing efficient interworking between C-only and Objective-C code. If a target implements string objects then this hook should return a reference to such an object constructed from the normal `C' string representation provided in @var{string}. At present, the hook is used by Objective-C only, to obtain a common-format string object when the target provides one.
+Targets may provide a string object type that can be used within
+and between C, C++ and their respective Objective-C dialects.
+A string object might, for example, embed encoding and length information.
+These objects are considered opaque to the compiler and handled as references.
+An ideal implementation makes the composition of the string object
+match that of the Objective-C @code{NSString} (@code{NXString} for GNUStep),
+allowing efficient interworking between C-only and Objective-C code.
+If a target implements string objects then this hook should return a
+reference to such an object constructed from the normal `C' string
+representation provided in @var{string}.
+At present, the hook is used by Objective-C only, to obtain a
+ common-format string object when the target provides one.
 @end deftypefn
 
 @deftypefn {C Target Hook} void TARGET_OBJC_DECLARE_UNRESOLVED_CLASS_REFERENCE (const char *@var{classname})
-Declare that Objective C class @var{classname} is referenced  by the current TU.
+Declare that Objective C class @var{classname} is referenced
+by the current TU.
 @end deftypefn
 
 @deftypefn {C Target Hook} void TARGET_OBJC_DECLARE_CLASS_DEFINITION (const char *@var{classname})
-Declare that Objective C class @var{classname} is defined  by the current TU.
+Declare that Objective C class @var{classname} is defined
+by the current TU.
 @end deftypefn
 
 @deftypefn {C Target Hook} bool TARGET_STRING_OBJECT_REF_TYPE_P (const_tree @var{stringref})
-If a target implements string objects then this hook should return @code{true} if @var{stringref} is a valid reference to such an object.
+If a target implements string objects then this hook should return
+@code{true} if @var{stringref} is a valid reference to such an object.
 @end deftypefn
 
 @deftypefn {C Target Hook} void TARGET_CHECK_STRING_OBJECT_FORMAT_ARG (tree @var{format_arg}, tree @var{args_list})
-If a target implements string objects then this hook should should  provide a facility to check the function arguments in @var{args_list}  against the format specifiers in @var{format_arg} where the type of  @var{format_arg} is one recognized as a valid string reference type.
+If a target implements string objects then this hook should should
+provide a facility to check the function arguments in @var{args_list}
+against the format specifiers in @var{format_arg} where the type of
+@var{format_arg} is one recognized as a valid string reference type.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE (void)
@@ -778,7 +798,13 @@ is 0.
 @end defmac
 
 @deftypefn {Target Hook} bool TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P (void)
-Returns true if the target supports IEEE 754 floating-point exceptions and rounding modes, false otherwise.  This is intended to relate to the @code{float} and @code{double} types, but not necessarily @code{long double}. By default, returns true if the @code{adddf3} instruction pattern is available and false otherwise, on the assumption that hardware floating point supports exceptions and rounding modes but software floating point does not.
+Returns true if the target supports IEEE 754 floating-point exceptions
+and rounding modes, false otherwise.  This is intended to relate to the
+@code{float} and @code{double} types, but not necessarily @code{long double}.
+By default, returns true if the @code{adddf3} instruction pattern is
+available and false otherwise, on the assumption that hardware floating
+point supports exceptions and rounding modes but software floating point
+does not.
 @end deftypefn
 
 @node Per-Function Data
@@ -953,8 +979,29 @@ Do not define this macro if it would never modify @var{m}.
 @end defmac
 
 @deftypefn {Target Hook} {enum flt_eval_method} TARGET_C_EXCESS_PRECISION (enum excess_precision_type @var{type})
-Return a value, with the same meaning as the C99 macro @code{FLT_EVAL_METHOD} that describes which excess precision should be applied.  @var{type} is either @code{EXCESS_PRECISION_TYPE_IMPLICIT}, @code{EXCESS_PRECISION_TYPE_FAST}, or @code{EXCESS_PRECISION_TYPE_STANDARD}.  For @code{EXCESS_PRECISION_TYPE_IMPLICIT}, the target should return which precision and range operations will be implictly evaluated in regardless of the excess precision explicitly added.  For @code{EXCESS_PRECISION_TYPE_STANDARD} and @code{EXCESS_PRECISION_TYPE_FAST}, the target should return the explicit excess precision that should be added depending on the value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{]}}. Note that unpredictable explicit excess precision does not make sense, so a target should never return @code{FLT_EVAL_METHOD_UNPREDICTABLE} when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD} or @code{EXCESS_PRECISION_TYPE_FAST}.
+Return a value, with the same meaning as the C99 macro
+@code{FLT_EVAL_METHOD} that describes which excess precision should be
+applied.  @var{type} is either @code{EXCESS_PRECISION_TYPE_IMPLICIT},
+@code{EXCESS_PRECISION_TYPE_FAST},
+@code{EXCESS_PRECISION_TYPE_STANDARD}, or
+@code{EXCESS_PRECISION_TYPE_FLOAT16}.  For
+@code{EXCESS_PRECISION_TYPE_IMPLICIT}, the target should return which
+precision and range operations will be implictly evaluated in regardless
+of the excess precision explicitly added.  For
+@code{EXCESS_PRECISION_TYPE_STANDARD}, 
+@code{EXCESS_PRECISION_TYPE_FLOAT16}, and
+@code{EXCESS_PRECISION_TYPE_FAST}, the target should return the
+explicit excess precision that should be added depending on the
+value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{]}}.
+Note that unpredictable explicit excess precision does not make sense,
+so a target should never return @code{FLT_EVAL_METHOD_UNPREDICTABLE}
+when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD},
+@code{EXCESS_PRECISION_TYPE_FLOAT16} or
+@code{EXCESS_PRECISION_TYPE_FAST}.
 @end deftypefn
+Return a value, with the same meaning as the C99 macro
+@code{FLT_EVAL_METHOD} that describes which excess precision should be
+applied.
 
 @deftypefn {Target Hook} machine_mode TARGET_PROMOTE_FUNCTION_MODE (const_tree @var{type}, machine_mode @var{mode}, int *@var{punsignedp}, const_tree @var{funtype}, int @var{for_return})
 Like @code{PROMOTE_MODE}, but it is applied to outgoing function arguments or
@@ -2538,7 +2585,16 @@ only if neither labeling works.
 @end defmac
 
 @deftypefn {Target Hook} reg_class_t TARGET_PREFERRED_RENAME_CLASS (reg_class_t @var{rclass})
-A target hook that places additional preference on the register class to use when it is necessary to rename a register in class @var{rclass} to another class, or perhaps @var{NO_REGS}, if no preferred register class is found or hook @code{preferred_rename_class} is not implemented. Sometimes returning a more restrictive class makes better code.  For example, on ARM, thumb-2 instructions using @code{LO_REGS} may be smaller than instructions using @code{GENERIC_REGS}.  By returning @code{LO_REGS} from @code{preferred_rename_class}, code size can be reduced.
+A target hook that places additional preference on the register
+class to use when it is necessary to rename a register in class
+@var{rclass} to another class, or perhaps @var{NO_REGS}, if no
+preferred register class is found or hook @code{preferred_rename_class}
+is not implemented.
+Sometimes returning a more restrictive class makes better code.  For
+example, on ARM, thumb-2 instructions using @code{LO_REGS} may be
+smaller than instructions using @code{GENERIC_REGS}.  By returning
+@code{LO_REGS} from @code{preferred_rename_class}, code size can
+be reduced.
 @end deftypefn
 
 @deftypefn {Target Hook} reg_class_t TARGET_PREFERRED_RELOAD_CLASS (rtx @var{x}, reg_class_t @var{rclass})
@@ -2922,19 +2978,44 @@ A target hook which can change allocno class for given pseudo from
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_LRA_P (void)
-A target hook which returns true if we use LRA instead of reload pass.    The default version of this target hook returns true.  New ports  should use LRA, and existing ports are encouraged to convert.
+A target hook which returns true if we use LRA instead of reload pass.
+
+The default version of this target hook returns true.  New ports
+should use LRA, and existing ports are encouraged to convert.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_REGISTER_PRIORITY (int)
-A target hook which returns the register priority number to which the  register @var{hard_regno} belongs to.  The bigger the number, the  more preferable the hard register usage (when all other conditions are  the same).  This hook can be used to prefer some hard register over  others in LRA.  For example, some x86-64 register usage needs  additional prefix which makes instructions longer.  The hook can  return lower priority number for such registers make them less favorable  and as result making the generated code smaller.    The default version of this target hook returns always zero.
+A target hook which returns the register priority number to which the
+register @var{hard_regno} belongs to.  The bigger the number, the
+more preferable the hard register usage (when all other conditions are
+the same).  This hook can be used to prefer some hard register over
+others in LRA.  For example, some x86-64 register usage needs
+additional prefix which makes instructions longer.  The hook can
+return lower priority number for such registers make them less favorable
+and as result making the generated code smaller.
+
+The default version of this target hook returns always zero.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_REGISTER_USAGE_LEVELING_P (void)
-A target hook which returns true if we need register usage leveling.  That means if a few hard registers are equally good for the  assignment, we choose the least used hard register.  The register  usage leveling may be profitable for some targets.  Don't use the  usage leveling for targets with conditional execution or targets  with big register files as it hurts if-conversion and cross-jumping  optimizations.    The default version of this target hook returns always false.
+A target hook which returns true if we need register usage leveling.
+That means if a few hard registers are equally good for the
+assignment, we choose the least used hard register.  The register
+usage leveling may be profitable for some targets.  Don't use the
+usage leveling for targets with conditional execution or targets
+with big register files as it hurts if-conversion and cross-jumping
+optimizations.
+
+The default version of this target hook returns always false.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_DIFFERENT_ADDR_DISPLACEMENT_P (void)
-A target hook which returns true if an address with the same structure  can have different maximal legitimate displacement.  For example, the  displacement can depend on memory mode or on operand combinations in  the insn.    The default version of this target hook returns always false.
+A target hook which returns true if an address with the same structure
+can have different maximal legitimate displacement.  For example, the
+displacement can depend on memory mode or on operand combinations in
+the insn.
+
+The default version of this target hook returns always false.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P (rtx @var{subst})
@@ -2960,19 +3041,34 @@ from the anchor in @var{offset2}.  The default implementation returns false.
 @end deftypefn
 
 @deftypefn {Target Hook} reg_class_t TARGET_SPILL_CLASS (reg_class_t, @var{machine_mode})
-This hook defines a class of registers which could be used for spilling  pseudos of the given mode and class, or @code{NO_REGS} if only memory  should be used.  Not defining this hook is equivalent to returning  @code{NO_REGS} for all inputs.
+This hook defines a class of registers which could be used for spilling
+pseudos of the given mode and class, or @code{NO_REGS} if only memory
+should be used.  Not defining this hook is equivalent to returning
+@code{NO_REGS} for all inputs.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_ADDITIONAL_ALLOCNO_CLASS_P (reg_class_t)
-This hook should return @code{true} if given class of registers should  be an allocno class in any way.  Usually RA uses only one register  class from all classes containing the same register set.  In some  complicated cases, you need to have two or more such classes as  allocno ones for RA correct work.  Not defining this hook is  equivalent to returning @code{false} for all inputs.
+This hook should return @code{true} if given class of registers should
+be an allocno class in any way.  Usually RA uses only one register
+class from all classes containing the same register set.  In some
+complicated cases, you need to have two or more such classes as
+allocno ones for RA correct work.  Not defining this hook is
+equivalent to returning @code{false} for all inputs.
 @end deftypefn
 
 @deftypefn {Target Hook} scalar_int_mode TARGET_CSTORE_MODE (enum insn_code @var{icode})
-This hook defines the machine mode to use for the boolean result of  conditional store patterns.  The ICODE argument is the instruction code  for the cstore being performed.  Not definiting this hook is the same  as accepting the mode encoded into operand 0 of the cstore expander  patterns.
+This hook defines the machine mode to use for the boolean result of
+conditional store patterns.  The ICODE argument is the instruction code
+for the cstore being performed.  Not definiting this hook is the same
+as accepting the mode encoded into operand 0 of the cstore expander
+patterns.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_COMPUTE_PRESSURE_CLASSES (enum reg_class *@var{pressure_classes})
-A target hook which lets a backend compute the set of pressure classes to  be used by those optimization passes which take register pressure into  account, as opposed to letting IRA compute them.  It returns the number of  register classes stored in the array @var{pressure_classes}.
+A target hook which lets a backend compute the set of pressure classes to
+be used by those optimization passes which take register pressure into
+account, as opposed to letting IRA compute them.  It returns the number of
+register classes stored in the array @var{pressure_classes}.
 @end deftypefn
 
 @node Stack and Calling
@@ -3505,9 +3601,12 @@ normally not need to override that default.
 
 @deftypefn {Target Hook} HOST_WIDE_INT TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE (void)
 Some targets have an ABI defined interval for which no probing needs to be done.
-When a probe does need to be done this same interval is used as the probe distance up when doing stack clash protection for alloca.
+When a probe does need to be done this same interval is used as the probe distance
+up when doing stack clash protection for alloca.
 On such targets this value can be set to override the default probing up interval.
-Define this variable to return nonzero if such a probe range is required or zero otherwise.  Defining this hook also requires your functions which make use of alloca to have at least 8 byesof outgoing arguments.  If this is not the case the stack will be corrupted.
+Define this variable to return nonzero if such a probe range is required or zero otherwise.
+Defining this hook also requires your functions which make use of alloca to have at least 8 byes
+of outgoing arguments.  If this is not the case the stack will be corrupted.
 You need not define this macro if it would always have the value zero.
 @end deftypefn
 
@@ -3807,14 +3906,17 @@ cases of mismatch, it also makes for better code on certain machines.
 The default is to not promote prototypes.
 @end deftypefn
 
-@defmac PUSH_ARGS
-A C expression.  If nonzero, push insns will be used to pass
-outgoing arguments.
-If the target machine does not have a push instruction, set it to zero.
-That directs GCC to use an alternate strategy: to
-allocate the entire argument block and then store the arguments into
-it.  When @code{PUSH_ARGS} is nonzero, @code{PUSH_ROUNDING} must be defined too.
-@end defmac
+@deftypefn {Target Hook} bool TARGET_PUSH_ARGUMENT (unsigned int @var{npush})
+This target hook returns @code{true} if push instructions will be
+used to pass outgoing arguments.  When the push instruction usage is
+optional, @var{npush} is nonzero to indicate the number of bytes to
+push.  Otherwise, @var{npush} is zero.  If the target machine does not
+have a push instruction or push instruction should be avoided,
+@code{false} should be returned.  That directs GCC to use an alternate
+strategy: to allocate the entire argument block and then store the
+arguments into it.  If this target hook may return @code{true},
+@code{PUSH_ROUNDING} must be defined.
+@end deftypefn
 
 @defmac PUSH_ARGS_REVERSED
 A C expression.  If nonzero, function arguments will be evaluated from
@@ -4300,7 +4402,11 @@ hook returns true for both @code{ptr_mode} and @code{Pmode}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_REF_MAY_ALIAS_ERRNO (ao_ref *@var{ref})
-Define this to return nonzero if the memory reference @var{ref}  may alias with the system C library errno location.  The default  version of this hook assumes the system C library errno location  is either a declaration of type int or accessed by dereferencing  a pointer to int.
+Define this to return nonzero if the memory reference @var{ref}
+may alias with the system C library errno location.  The default
+version of this hook assumes the system C library errno location
+is either a declaration of type int or accessed by dereferencing
+a pointer to int.
 @end deftypefn
 
 @deftypefn {Target Hook} machine_mode TARGET_TRANSLATE_MODE_ATTRIBUTE (machine_mode @var{mode})
@@ -4686,11 +4792,15 @@ nothing when you use @option{-freg-struct-return} mode.
 @end defmac
 
 @deftypefn {Target Hook} fixed_size_mode TARGET_GET_RAW_RESULT_MODE (int @var{regno})
-This target hook returns the mode to be used when accessing raw return registers in @code{__builtin_return}.  Define this macro if the value in @var{reg_raw_mode} is not correct.
+This target hook returns the mode to be used when accessing raw return
+registers in @code{__builtin_return}.  Define this macro if the value
+in @var{reg_raw_mode} is not correct.
 @end deftypefn
 
 @deftypefn {Target Hook} fixed_size_mode TARGET_GET_RAW_ARG_MODE (int @var{regno})
-This target hook returns the mode to be used when accessing raw argument registers in @code{__builtin_apply_args}.  Define this macro if the value in @var{reg_raw_mode} is not correct.
+This target hook returns the mode to be used when accessing raw argument
+registers in @code{__builtin_apply_args}.  Define this macro if the value
+in @var{reg_raw_mode} is not correct.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_EMPTY_RECORD_P (const_tree @var{type})
@@ -4994,7 +5104,11 @@ the function prologue.  Normally, the profiling code comes after.
 @end defmac
 
 @deftypefn {Target Hook} bool TARGET_KEEP_LEAF_WHEN_PROFILED (void)
-This target hook returns true if the target wants the leaf flag for the current function to stay true even if it calls mcount.  This might make sense for targets using the leaf flag only to determine whether a stack frame needs to be generated or not and for which the call to mcount is generated before the function prologue.
+This target hook returns true if the target wants the leaf flag for
+the current function to stay true even if it calls mcount.  This might
+make sense for targets using the leaf flag only to determine whether a
+stack frame needs to be generated or not and for which the call to
+mcount is generated before the function prologue.
 @end deftypefn
 
 @node Tail Calls
@@ -5024,11 +5138,14 @@ FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM, and the PIC_OFFSET_TABLE_REGNUM.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SET_UP_BY_PROLOGUE (struct hard_reg_set_container *@var{})
-This hook should add additional registers that are computed by the prologue to the hard regset for shrink-wrapping optimization purposes.
+This hook should add additional registers that are computed by the prologue
+to the hard regset for shrink-wrapping optimization purposes.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_WARN_FUNC_RETURN (tree)
-True if a function's return statements should be checked for matching the function's return type.  This includes checking for falling off the end of a non-void function.  Return false if no such check should be made.
+True if a function's return statements should be checked for matching
+the function's return type.  This includes checking for falling off the end
+of a non-void function.  Return false if no such check should be made.
 @end deftypefn
 
 @node Shrink-wrapping separate components
@@ -5119,15 +5236,26 @@ normally defined in @file{libgcc2.c}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_STACK_PROTECT_RUNTIME_ENABLED_P (void)
-Returns true if the target wants GCC's default stack protect runtime support, otherwise return false.  The default implementation always returns true.
+Returns true if the target wants GCC's default stack protect runtime support,
+otherwise return false.  The default implementation always returns true.
 @end deftypefn
 
 @deftypefn {Common Target Hook} bool TARGET_SUPPORTS_SPLIT_STACK (bool @var{report}, struct gcc_options *@var{opts})
-Whether this target supports splitting the stack when the options described in @var{opts} have been passed.  This is called after options have been parsed, so the target may reject splitting the stack in some configurations.  The default version of this hook returns false.  If @var{report} is true, this function may issue a warning or error; if @var{report} is false, it must simply return a value
+Whether this target supports splitting the stack when the options
+described in @var{opts} have been passed.  This is called
+after options have been parsed, so the target may reject splitting
+the stack in some configurations.  The default version of this hook
+returns false.  If @var{report} is true, this function may issue a warning
+or error; if @var{report} is false, it must simply return a value
 @end deftypefn
 
 @deftypefn {Common Target Hook} {vec<const char *>} TARGET_GET_VALID_OPTION_VALUES (int @var{option_code}, const char *@var{prefix})
-The hook is used for options that have a non-trivial list of possible option values.  OPTION_CODE is option code of opt_code enum type.  PREFIX is used for bash completion and allows an implementation to return more specific completion based on the prefix.  All string values should be allocated from heap memory and consumers should release them.  The result will be pruned to cases with PREFIX if not NULL.
+The hook is used for options that have a non-trivial list of
+possible option values.  OPTION_CODE is option code of opt_code
+enum type.  PREFIX is used for bash completion and allows an implementation
+to return more specific completion based on the prefix.  All string values
+should be allocated from heap memory and consumers should release them.
+The result will be pruned to cases with PREFIX if not NULL.
 @end deftypefn
 
 @node Miscellaneous Register Hooks
@@ -5369,6 +5497,11 @@ addresses.  Since GCC's generic function descriptors are
 not ABI-compliant, this option is typically used only on a
 per-language basis (notably by Ada) or when it can otherwise be
 applied to the whole program.
+
+For languages other than Ada, the @code{-ftrampolines} and
+@code{-fno-trampolines} options currently have no effect, and
+trampolines are always generated on platforms that need them
+for nested functions.
 
 Define the following hook if your backend either implements ABI-specified
 descriptor support, or can use GCC's generic descriptor implementation
@@ -5880,6 +6013,15 @@ This hook returns true if @var{x} is a legitimate constant for a
 The default definition returns true.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_PRECOMPUTE_TLS_P (machine_mode @var{mode}, rtx @var{x})
+This hook returns true if @var{x} is a TLS operand on the target
+machine that should be pre-computed when used as the argument in a call.
+You can assume that @var{x} satisfies @code{CONSTANT_P}, so you need not 
+check this.
+
+The default definition returns false.
+@end deftypefn
+
 @deftypefn {Target Hook} rtx TARGET_DELEGITIMIZE_ADDRESS (rtx @var{x})
 This hook is used to undo the possibly obfuscating effects of the
 @code{LEGITIMIZE_ADDRESS} and @code{LEGITIMIZE_RELOAD_ADDRESS} target
@@ -5978,7 +6120,9 @@ correct for most targets.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE (const_tree @var{type}, bool @var{is_packed})
-Return true if vector alignment is reachable (by peeling N iterations) for the given scalar type @var{type}.  @var{is_packed} is false if the scalar access using @var{type} is known to be naturally aligned.
+Return true if vector alignment is reachable (by peeling N iterations)
+for the given scalar type @var{type}.  @var{is_packed} is false if the scalar
+access using @var{type} is known to be naturally aligned.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST (machine_mode @var{mode}, rtx @var{output}, rtx @var{in0}, rtx @var{in1}, const vec_perm_indices @var{&sel})
@@ -5987,7 +6131,7 @@ vectors of mode @var{mode} using the permutation vector @code{sel}, and
 also to emit such a permutation.  In the former case @var{in0}, @var{in1}
 and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are
 the source vectors and @var{out} is the destination vector; all three are
-registers of mode @var{mode}.  @var{in1} is the same as @var{in0} if
+operands of mode @var{mode}.  @var{in1} is the same as @var{in0} if
 @var{sel} describes a permutation on one vector instead of two.
 
 Return true if the operation is possible, emitting instructions for it
@@ -6111,20 +6255,38 @@ type @code{internal_fn}) should be considered expensive when the mask is
 all zeros.  GCC can then try to branch around the instruction instead.
 @end deftypefn
 
-@deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (class loop *@var{loop_info})
-This hook should initialize target-specific data structures in preparation for modeling the costs of vectorizing a loop or basic block.  The default allocates three unsigned integers for accumulating costs for the prologue, body, and epilogue of the loop or basic block.  If @var{loop_info} is non-NULL, it identifies the loop being vectorized; otherwise a single block is being vectorized.
+@deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (class loop *@var{loop_info}, bool @var{costing_for_scalar})
+This hook should initialize target-specific data structures in preparation
+for modeling the costs of vectorizing a loop or basic block.  The default
+allocates three unsigned integers for accumulating costs for the prologue,
+body, and epilogue of the loop or basic block.  If @var{loop_info} is
+non-NULL, it identifies the loop being vectorized; otherwise a single block
+is being vectorized.  If @var{costing_for_scalar} is true, it indicates the
+current cost model is for the scalar version of a loop or block; otherwise
+it is for the vector version.
 @end deftypefn
 
 @deftypefn {Target Hook} unsigned TARGET_VECTORIZE_ADD_STMT_COST (class vec_info *@var{}, void *@var{data}, int @var{count}, enum vect_cost_for_stmt @var{kind}, class _stmt_vec_info *@var{stmt_info}, tree @var{vectype}, int @var{misalign}, enum vect_cost_model_location @var{where})
-This hook should update the target-specific @var{data} in response to adding @var{count} copies of the given @var{kind} of statement to a loop or basic block.  The default adds the builtin vectorizer cost for the copies of the statement to the accumulator specified by @var{where}, (the prologue, body, or epilogue) and returns the amount added.  The return value should be viewed as a tentative cost that may later be revised.
+This hook should update the target-specific @var{data} in response to
+adding @var{count} copies of the given @var{kind} of statement to a
+loop or basic block.  The default adds the builtin vectorizer cost for
+the copies of the statement to the accumulator specified by @var{where},
+(the prologue, body, or epilogue) and returns the amount added.  The
+return value should be viewed as a tentative cost that may later be
+revised.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_VECTORIZE_FINISH_COST (void *@var{data}, unsigned *@var{prologue_cost}, unsigned *@var{body_cost}, unsigned *@var{epilogue_cost})
-This hook should complete calculations of the cost of vectorizing a loop or basic block based on @var{data}, and return the prologue, body, and epilogue costs as unsigned integers.  The default returns the value of the three accumulators.
+This hook should complete calculations of the cost of vectorizing a loop
+or basic block based on @var{data}, and return the prologue, body, and
+epilogue costs as unsigned integers.  The default returns the value of
+the three accumulators.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_VECTORIZE_DESTROY_COST_DATA (void *@var{data})
-This hook should release @var{data} and any related data structures allocated by TARGET_VECTORIZE_INIT_COST.  The default releases the accumulator.
+This hook should release @var{data} and any related data structures
+allocated by TARGET_VECTORIZE_INIT_COST.  The default releases the
+accumulator.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_GATHER (const_tree @var{mem_vectype}, const_tree @var{index_type}, int @var{scale})
@@ -6227,6 +6389,41 @@ like @code{cond_add@var{m}}.  The default implementation returns a zero
 constant of type @var{type}.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_GOACC_ADJUST_PRIVATE_DECL (location_t @var{loc}, tree @var{var}, int @var{level})
+This hook, if defined, is used by accelerator target back-ends to adjust
+OpenACC variable declarations that should be made private to the given
+parallelism level (i.e. @code{GOMP_DIM_GANG}, @code{GOMP_DIM_WORKER} or
+@code{GOMP_DIM_VECTOR}).  A typical use for this hook is to force variable
+declarations at the @code{gang} level to reside in GPU shared memory.
+@var{loc} may be used for diagnostic purposes.
+
+You may also use the @code{TARGET_GOACC_EXPAND_VAR_DECL} hook if the
+adjusted variable declaration needs to be expanded to RTL in a non-standard
+way.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_GOACC_EXPAND_VAR_DECL (tree @var{var})
+This hook, if defined, is used by accelerator target back-ends to expand
+specially handled kinds of @code{VAR_DECL} expressions.  A particular use is
+to place variables with specific attributes inside special accelarator
+memories.  A return value of @code{NULL} indicates that the target does not
+handle this @code{VAR_DECL}, and normal RTL expanding is resumed.
+
+Only define this hook if your accelerator target needs to expand certain
+@code{VAR_DECL} nodes in a way that differs from the default.  You can also adjust
+private variables at OpenACC device-lowering time using the
+@code{TARGET_GOACC_ADJUST_PRIVATE_DECL} target hook.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD (tree @var{rec}, bool @var{sender}, const char *@var{name})
+Create a record used to propagate local-variable state from an active
+worker to other workers.  A possible implementation might adjust the type
+of REC to place the new variable in shared GPU memory.
+
+Presence of this target hook indicates that middle end neutering/broadcasting
+be used.
+@end deftypefn
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses
@@ -6301,21 +6498,16 @@ or target-specific sections.
 @section Condition Code Status
 @cindex condition code status
 
-The macros in this section can be split in two families, according to the
-two ways of representing condition codes in GCC.
-
-The first representation is the so called @code{(cc0)} representation
-(@pxref{Jump Patterns}), where all instructions can have an implicit
-clobber of the condition codes.  The second is the condition code
-register representation, which provides better schedulability for
+Condition codes in GCC are represented as registers,
+which provides better schedulability for
 architectures that do have a condition code register, but on which
 most instructions do not affect it.  The latter category includes
 most RISC machines.
 
-The implicit clobbering poses a strong restriction on the placement of
+Implicit clobbering would pose a strong restriction on the placement of
 the definition and use of the condition code.  In the past the definition
 and use were always adjacent.  However, recent changes to support trapping
-arithmatic may result in the definition and user being in different blocks.
+arithmetic may result in the definition and user being in different blocks.
 Thus, there may be a @code{NOTE_INSN_BASIC_BLOCK} between them.  Additionally,
 the definition may be the source of exception handling edges.
 
@@ -6326,8 +6518,7 @@ three instructions earlier than the conditional branch.  The instruction
 scheduler cannot perform this optimization if it is not permitted to
 separate the definition and use of the condition code register.
 
-For this reason, it is possible and suggested to use a register to
-represent the condition code for new ports.  If there is a specific
+If there is a specific
 condition code register in the machine, use a hard register.  If the
 condition code or comparison result can be placed in any general register,
 or if there are multiple condition registers, use a pseudo register.
@@ -6339,77 +6530,8 @@ specified already in the compare instruction.  In this case, you are not
 interested in most macros in this section.
 
 @menu
-* CC0 Condition Codes::      Old style representation of condition codes.
 * MODE_CC Condition Codes::  Modern representation of condition codes.
 @end menu
-
-@node CC0 Condition Codes
-@subsection Representation of condition codes using @code{(cc0)}
-@findex cc0
-
-@findex cc_status
-The file @file{conditions.h} defines a variable @code{cc_status} to
-describe how the condition code was computed (in case the interpretation of
-the condition code depends on the instruction that it was set by).  This
-variable contains the RTL expressions on which the condition code is
-currently based, and several standard flags.
-
-Sometimes additional machine-specific flags must be defined in the machine
-description header file.  It can also add additional machine-specific
-information by defining @code{CC_STATUS_MDEP}.
-
-@defmac CC_STATUS_MDEP
-C code for a data type which is used for declaring the @code{mdep}
-component of @code{cc_status}.  It defaults to @code{int}.
-
-This macro is not used on machines that do not use @code{cc0}.
-@end defmac
-
-@defmac CC_STATUS_MDEP_INIT
-A C expression to initialize the @code{mdep} field to ``empty''.
-The default definition does nothing, since most machines don't use
-the field anyway.  If you want to use the field, you should probably
-define this macro to initialize it.
-
-This macro is not used on machines that do not use @code{cc0}.
-@end defmac
-
-@defmac NOTICE_UPDATE_CC (@var{exp}, @var{insn})
-A C compound statement to set the components of @code{cc_status}
-appropriately for an insn @var{insn} whose body is @var{exp}.  It is
-this macro's responsibility to recognize insns that set the condition
-code as a byproduct of other activity as well as those that explicitly
-set @code{(cc0)}.
-
-This macro is not used on machines that do not use @code{cc0}.
-
-If there are insns that do not set the condition code but do alter
-other machine registers, this macro must check to see whether they
-invalidate the expressions that the condition code is recorded as
-reflecting.  For example, on the 68000, insns that store in address
-registers do not set the condition code, which means that usually
-@code{NOTICE_UPDATE_CC} can leave @code{cc_status} unaltered for such
-insns.  But suppose that the previous insn set the condition code
-based on location @samp{a4@@(102)} and the current insn stores a new
-value in @samp{a4}.  Although the condition code is not changed by
-this, it will no longer be true that it reflects the contents of
-@samp{a4@@(102)}.  Therefore, @code{NOTICE_UPDATE_CC} must alter
-@code{cc_status} in this case to say that nothing is known about the
-condition code value.
-
-The definition of @code{NOTICE_UPDATE_CC} must be prepared to deal
-with the results of peephole optimization: insns whose patterns are
-@code{parallel} RTXs containing various @code{reg}, @code{mem} or
-constants which are just the operands.  The RTL structure of these
-insns is not sufficient to indicate what the insns actually do.  What
-@code{NOTICE_UPDATE_CC} should do when it sees one is just to run
-@code{CC_STATUS_INIT}.
-
-A possible definition of @code{NOTICE_UPDATE_CC} is to call a function
-that looks at an attribute (@pxref{Insn Attributes}) named, for example,
-@samp{cc}.  This avoids having detailed information about patterns in
-two places, the @file{md} file and in @code{NOTICE_UPDATE_CC}.
-@end defmac
 
 @node MODE_CC Condition Codes
 @subsection Representation of condition codes using registers
@@ -6525,7 +6647,7 @@ like:
 @end defmac
 
 @deftypefn {Target Hook} bool TARGET_FIXED_CONDITION_CODE_REGS (unsigned int *@var{p1}, unsigned int *@var{p2})
-On targets which do not use @code{(cc0)}, and which use a hard
+On targets which use a hard
 register rather than a pseudo-register to hold condition codes, the
 regular CSE passes are often not able to identify cases in which the
 hard register is set to a common value.  Use this hook to enable a
@@ -6756,6 +6878,13 @@ the body of the memory operation.
 Returning true for higher values of @code{size} may also cause an increase
 in code size, for example where the number of insns emitted to perform a
 move would be greater than that of a library call.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_OVERLAP_OP_BY_PIECES_P (void)
+This target hook should return true if when the @code{by_pieces}
+infrastructure is used, an offset adjusted unaligned memory operation
+in the smallest integer mode for the last piece operation of a memory
+region can be generated to avoid doing more than one smaller operations.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_COMPARE_BY_PIECES_BRANCH_RATIO (machine_mode @var{mode})
@@ -7744,7 +7873,8 @@ the string if a different section name should be used.
 @end deftypevr
 
 @deftypefn {Target Hook} {section *} TARGET_ASM_TM_CLONE_TABLE_SECTION (void)
-Return the section that should be used for transactional memory clone  tables.
+Return the section that should be used for transactional memory clone
+tables.
 @end deftypefn
 
 @deftypefn {Target Hook} {section *} TARGET_ASM_SELECT_RTX_SECTION (machine_mode @var{mode}, rtx @var{x}, unsigned HOST_WIDE_INT @var{align})
@@ -8018,13 +8148,18 @@ for the file format in use is appropriate.
 @end defmac
 
 @deftypefn {Target Hook} void TARGET_ASM_OUTPUT_SOURCE_FILENAME (FILE *@var{file}, const char *@var{name})
-Output DWARF debugging information which indicates that filename @var{name} is the current source file to the stdio stream @var{file}.
- 
- This target hook need not be defined if the standard form of output for the file format in use is appropriate.
+Output DWARF debugging information which indicates that filename
+@var{name} is the current source file to the stdio stream @var{file}.
+
+This target hook need not be defined if the standard form of output
+for the file format in use is appropriate.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_ASM_OUTPUT_IDENT (const char *@var{name})
-Output a string based on @var{name}, suitable for the @samp{#ident}  directive, or the equivalent directive or pragma in non-C-family languages.  If this hook is not defined, nothing is output for the @samp{#ident}  directive.
+Output a string based on @var{name}, suitable for the @samp{#ident}
+directive, or the equivalent directive or pragma in non-C-family languages.
+If this hook is not defined, nothing is output for the @samp{#ident}
+directive.
 @end deftypefn
 
 @defmac OUTPUT_QUOTED_STRING (@var{stream}, @var{string})
@@ -8066,7 +8201,11 @@ Return NULL if function should go to default text section.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS (FILE *@var{file}, tree @var{decl}, bool @var{new_is_cold})
-Used by the target to emit any assembler directives or additional  labels needed when a function is partitioned between different  sections.  Output should be written to @var{file}.  The function  decl is available as @var{decl} and the new section is `cold' if  @var{new_is_cold} is @code{true}.
+Used by the target to emit any assembler directives or additional
+labels needed when a function is partitioned between different
+sections.  Output should be written to @var{file}.  The function
+decl is available as @var{decl} and the new section is `cold' if
+@var{new_is_cold} is @code{true}.
 @end deftypefn
 
 @deftypevr {Common Target Hook} bool TARGET_HAVE_NAMED_SECTIONS
@@ -8768,7 +8907,11 @@ systems.  This macro is used in @code{assemble_name}.
 @end defmac
 
 @deftypefn {Target Hook} tree TARGET_MANGLE_ASSEMBLER_NAME (const char *@var{name})
-Given a symbol @var{name}, perform same mangling as @code{varasm.c}'s @code{assemble_name}, but in memory rather than to a file stream, returning result as an @code{IDENTIFIER_NODE}.  Required for correct LTO symtabs.  The default implementation calls the @code{TARGET_STRIP_NAME_ENCODING} hook and then prepends the @code{USER_LABEL_PREFIX}, if any.
+Given a symbol @var{name}, perform same mangling as @code{varasm.c}'s
+@code{assemble_name}, but in memory rather than to a file stream, returning
+result as an @code{IDENTIFIER_NODE}.  Required for correct LTO symtabs.  The
+default implementation calls the @code{TARGET_STRIP_NAME_ENCODING} hook and
+then prepends the @code{USER_LABEL_PREFIX}, if any.
 @end deftypefn
 
 @defmac ASM_OUTPUT_SYMBOL_REF (@var{stream}, @var{sym})
@@ -9534,7 +9677,9 @@ The default is that no label is emitted.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_ASM_EMIT_EXCEPT_PERSONALITY (rtx @var{personality})
-If the target implements @code{TARGET_ASM_UNWIND_EMIT}, this hook may be used to emit a directive to install a personality hook into the unwind info.  This hook should not be used if dwarf2 unwind info is used.
+If the target implements @code{TARGET_ASM_UNWIND_EMIT}, this hook may be
+used to emit a directive to install a personality hook into the unwind
+info.  This hook should not be used if dwarf2 unwind info is used.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_ASM_UNWIND_EMIT (FILE *@var{stream}, rtx_insn *@var{insn})
@@ -9544,15 +9689,25 @@ returns @code{UI_TARGET}.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT (rtx @var{origsymbol}, bool @var{pubvis})
-If necessary, modify personality and LSDA references to handle indirection.  The original symbol is in @code{origsymbol} and if @code{pubvis} is true  the symbol is visible outside the TU.
+If necessary, modify personality and LSDA references to handle indirection.
+The original symbol is in @code{origsymbol} and if @code{pubvis} is true
+the symbol is visible outside the TU.
 @end deftypefn
 
 @deftypevr {Target Hook} bool TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
-True if the @code{TARGET_ASM_UNWIND_EMIT} hook should be called before the assembly for @var{insn} has been emitted, false if the hook should be called afterward.
+True if the @code{TARGET_ASM_UNWIND_EMIT} hook should be called before
+the assembly for @var{insn} has been emitted, false if the hook should
+be called afterward.
 @end deftypevr
 
 @deftypefn {Target Hook} bool TARGET_ASM_SHOULD_RESTORE_CFA_STATE (void)
-For DWARF-based unwind frames, two CFI instructions provide for save and restore of register state.  GCC maintains the current frame address (CFA) separately from the register bank but the unwinder in libgcc preserves this state along with the registers (and this is expected by the code that writes the unwind frames).  This hook allows the target to specify that the CFA data is not saved/restored along with the registers by the target unwinder so that suitable additional instructions should be emitted to restore it.
+For DWARF-based unwind frames, two CFI instructions provide for save and
+restore of register state.  GCC maintains the current frame address (CFA)
+separately from the register bank but the unwinder in libgcc preserves this
+state along with the registers (and this is expected by the code that writes
+the unwind frames).  This hook allows the target to specify that the CFA data
+is not saved/restored along with the registers by the target unwinder so that
+suitable additional instructions should be emitted to restore it.
 @end deftypefn
 
 @node Exception Region Output
@@ -9807,6 +9962,8 @@ This describes how to specify debugging information.
 * File Names and DBX:: Macros controlling output of file names in DBX format.
 * DWARF::              Macros for DWARF format.
 * VMS Debug::          Macros for VMS debug format.
+* CTF Debug::          Macros for CTF debug format.
+* BTF Debug::          Macros for BTF debug format.
 @end menu
 
 @node All Debuggers
@@ -10157,7 +10314,9 @@ If insn length is to be regarded as reliable, set the hook to
 @end deftypefn
 
 @deftypevr {Target Hook} bool TARGET_WANT_DEBUG_PUB_SECTIONS
-True if the @code{.debug_pubtypes} and @code{.debug_pubnames} sections should be emitted.  These sections are not used on most platforms, and in particular GDB does not use them.
+True if the @code{.debug_pubtypes} and @code{.debug_pubnames} sections
+should be emitted.  These sections are not used on most platforms, and
+in particular GDB does not use them.
 @end deftypevr
 
 @deftypevr {Target Hook} bool TARGET_DELAY_SCHED2
@@ -10230,6 +10389,30 @@ is to generate minimal debug info for a traceback in the absence of
 @option{-g} unless explicitly overridden with @option{-g0}.  This
 behavior is controlled by @code{TARGET_OPTION_OPTIMIZATION} and
 @code{TARGET_OPTION_OVERRIDE}.
+@end defmac
+
+@need 2000
+@node CTF Debug
+@subsection Macros for CTF Debug Format
+
+@c prevent bad page break with this line
+Here are macros for CTF debug format.
+
+@defmac CTF_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output in CTF debug
+format in response to the @option{-gctf} option.
+@end defmac
+
+@need 2000
+@node BTF Debug
+@subsection Macros for BTF Debug Format
+
+@c prevent bad page break with this line
+Here are macros for BTF debug format.
+
+@defmac BTF_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output in BTF debug
+format in response to the @option{-gbtf} option.
 @end defmac
 
 @node Floating Point
@@ -10340,27 +10523,52 @@ switch is needed / supplied.
 @end defmac
 
 @deftypefn {Target Hook} void TARGET_MODE_EMIT (int @var{entity}, int @var{mode}, int @var{prev_mode}, HARD_REG_SET @var{regs_live})
-Generate one or more insns to set @var{entity} to @var{mode}. @var{hard_reg_live} is the set of hard registers live at the point where the insn(s) are to be inserted. @var{prev_moxde} indicates the mode to switch from. Sets of a lower numbered entity will be emitted before sets of a higher numbered entity to a mode of the same or lower priority.
+Generate one or more insns to set @var{entity} to @var{mode}.
+@var{hard_reg_live} is the set of hard registers live at the point where
+the insn(s) are to be inserted. @var{prev_moxde} indicates the mode
+to switch from. Sets of a lower numbered entity will be emitted before
+sets of a higher numbered entity to a mode of the same or lower priority.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_NEEDED (int @var{entity}, rtx_insn *@var{insn})
-@var{entity} is an integer specifying a mode-switched entity.  If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to return an integer value not larger than the corresponding element in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity} must be switched into prior to the execution of @var{insn}.
+@var{entity} is an integer specifying a mode-switched entity.
+If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro
+to return an integer value not larger than the corresponding element
+in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity}
+must be switched into prior to the execution of @var{insn}.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_AFTER (int @var{entity}, int @var{mode}, rtx_insn *@var{insn})
-@var{entity} is an integer specifying a mode-switched entity.  If this macro is defined, it is evaluated for every @var{insn} during mode switching.  It determines the mode that an insn results in (if different from the incoming mode).
+@var{entity} is an integer specifying a mode-switched entity.
+If this macro is defined, it is evaluated for every @var{insn} during mode
+switching.  It determines the mode that an insn results
+in (if different from the incoming mode).
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_ENTRY (int @var{entity})
-If this macro is defined, it is evaluated for every @var{entity} that needs mode switching.  It should evaluate to an integer, which is a mode that @var{entity} is assumed to be switched to at function entry.  If @code{TARGET_MODE_ENTRY} is defined then @code{TARGET_MODE_EXIT} must be defined.
+If this macro is defined, it is evaluated for every @var{entity} that
+needs mode switching.  It should evaluate to an integer, which is a mode
+that @var{entity} is assumed to be switched to at function entry.
+If @code{TARGET_MODE_ENTRY} is defined then @code{TARGET_MODE_EXIT}
+must be defined.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_EXIT (int @var{entity})
-If this macro is defined, it is evaluated for every @var{entity} that needs mode switching.  It should evaluate to an integer, which is a mode that @var{entity} is assumed to be switched to at function exit.  If @code{TARGET_MODE_EXIT} is defined then @code{TARGET_MODE_ENTRY} must be defined.
+If this macro is defined, it is evaluated for every @var{entity} that
+needs mode switching.  It should evaluate to an integer, which is a mode
+that @var{entity} is assumed to be switched to at function exit.
+If @code{TARGET_MODE_EXIT} is defined then @code{TARGET_MODE_ENTRY}
+must be defined.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_PRIORITY (int @var{entity}, int @var{n})
-This macro specifies the order in which modes for @var{entity} are processed. 0 is the highest priority, @code{NUM_MODES_FOR_MODE_SWITCHING[@var{entity}] - 1} the lowest.  The value of the macro should be an integer designating a mode for @var{entity}.  For any fixed @var{entity}, @code{mode_priority} (@var{entity}, @var{n}) shall be a bijection in 0 @dots{} @code{num_modes_for_mode_switching[@var{entity}] - 1}.
+This macro specifies the order in which modes for @var{entity}
+are processed. 0 is the highest priority,
+@code{NUM_MODES_FOR_MODE_SWITCHING[@var{entity}] - 1} the lowest.
+The value of the macro should be an integer designating a mode
+for @var{entity}.  For any fixed @var{entity}, @code{mode_priority}
+(@var{entity}, @var{n}) shall be a bijection in 0 @dots{}
+@code{num_modes_for_mode_switching[@var{entity}] - 1}.
 @end deftypefn
 
 @node Target Attributes
@@ -10434,7 +10642,9 @@ to perform initial processing of the @samp{dllimport} and
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VALID_DLLIMPORT_ATTRIBUTE_P (const_tree @var{decl})
-@var{decl} is a variable or function with @code{__attribute__((dllimport))} specified.  Use this hook if the target needs to add extra validation checks to @code{handle_dll_attribute}.
+@var{decl} is a variable or function with @code{__attribute__((dllimport))}
+specified.  Use this hook if the target needs to add extra validation
+checks to @code{handle_dll_attribute}.
 @end deftypefn
 
 @defmac TARGET_DECLSPEC
@@ -10549,7 +10759,9 @@ specific target options and the caller does not use the same options.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_RELAYOUT_FUNCTION (tree @var{fndecl})
-This target hook fixes function @var{fndecl} after attributes are processed. Default does nothing. On ARM, the default function's alignment is updated with the attribute target.
+This target hook fixes function @var{fndecl} after attributes are processed.
+Default does nothing. On ARM, the default function's alignment is updated
+with the attribute target.
 @end deftypefn
 
 @node Emulated TLS
@@ -10753,7 +10965,12 @@ method.  The default is to return @code{true}.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY (tree @var{decl})
-@var{decl} is a virtual table, virtual table table, typeinfo object, or other similar implicit class data object that will be emitted with external linkage in this translation unit.  No ELF visibility has been explicitly specified.  If the target needs to specify a visibility other than that of the containing class, use this hook to set @code{DECL_VISIBILITY} and @code{DECL_VISIBILITY_SPECIFIED}.
+@var{decl} is a virtual table, virtual table table, typeinfo object,
+or other similar implicit class data object that will be emitted with
+external linkage in this translation unit.  No ELF visibility has been
+explicitly specified.  If the target needs to specify a visibility
+other than that of the containing class, use this hook to set
+@code{DECL_VISIBILITY} and @code{DECL_VISIBILITY_SPECIFIED}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT (void)
@@ -10785,7 +11002,9 @@ unloaded. The default is to return false.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_CXX_ADJUST_CLASS_AT_DEFINITION (tree @var{type})
-@var{type} is a C++ class (i.e., RECORD_TYPE or UNION_TYPE) that has just been defined.  Use this hook to make adjustments to the class (eg, tweak visibility or perform any other required target modifications).
+@var{type} is a C++ class (i.e., RECORD_TYPE or UNION_TYPE) that has just
+been defined.  Use this hook to make adjustments to the class (eg, tweak
+visibility or perform any other required target modifications).
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_CXX_DECL_MANGLING_CONTEXT (const_tree @var{decl})
@@ -10808,6 +11027,20 @@ Similarly to @code{TARGET_D_CPU_VERSIONS}, but is used for versions
 relating to the target operating system.
 @end deftypefn
 
+@deftypefn {D Target Hook} void TARGET_D_REGISTER_CPU_TARGET_INFO (void)
+Register all target information keys relating to the target CPU using the
+function @code{d_add_target_info_handlers}, which takes a
+@samp{struct d_target_info_spec} (defined in @file{d/d-target.h}).  The keys
+added by this hook are made available at compile time by the
+@code{__traits(getTargetInfo)} extension, the result is an expression
+describing the requested target information.
+@end deftypefn
+
+@deftypefn {D Target Hook} void TARGET_D_REGISTER_OS_TARGET_INFO (void)
+Same as @code{TARGET_D_CPU_TARGET_INFO}, but is used for keys relating to
+the target operating system.
+@end deftypefn
+
 @deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION
 Contains the name of the section in which module info references should be
 placed.  This section is expected to be bracketed by two symbols to indicate
@@ -10826,6 +11059,20 @@ section
 If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
 as the name of the symbol indicating the end address of the module info
 section
+@end deftypevr
+
+@deftypefn {D Target Hook} bool TARGET_D_HAS_STDCALL_CONVENTION (unsigned int *@var{link_system}, unsigned int *@var{link_windows})
+Returns @code{true} if the target supports the stdcall calling convention.
+The hook should also set @var{link_system} to @code{1} if the @code{stdcall}
+attribute should be applied to functions with @code{extern(System)} linkage,
+and @var{link_windows} to @code{1} to apply @code{stdcall} to functions with
+@code{extern(Windows)} linkage.
+@end deftypefn
+
+@deftypevr {D Target Hook} bool TARGET_D_TEMPLATES_ALWAYS_COMDAT
+This flag is true if instantiated functions and variables are always COMDAT
+if they have external linkage.  If this flag is false, then instantiated
+decls will be emitted as weak symbols.  The default is @code{false}.
 @end deftypevr
 
 @node Named Address Spaces
@@ -11364,13 +11611,24 @@ files @code{__STDC__} will always expand to 1.
 @end defmac
 
 @deftypefn {C Target Hook} {const char *} TARGET_C_PREINCLUDE (void)
-Define this hook to return the name of a header file to be included at the start of all compilations, as if it had been included with @code{#include <@var{file}>}.  If this hook returns @code{NULL}, or is not defined, or the header is not found, or if the user specifies @option{-ffreestanding} or @option{-nostdinc}, no header is included.
+Define this hook to return the name of a header file to be included at
+the start of all compilations, as if it had been included with
+@code{#include <@var{file}>}.  If this hook returns @code{NULL}, or is
+not defined, or the header is not found, or if the user specifies
+@option{-ffreestanding} or @option{-nostdinc}, no header is included.
 
- This hook can be used together with a header provided by the system C library to implement ISO C requirements for certain macros to be predefined that describe properties of the whole implementation rather than just the compiler.
+This hook can be used together with a header provided by the system C
+library to implement ISO C requirements for certain macros to be
+predefined that describe properties of the whole implementation rather
+than just the compiler.
 @end deftypefn
 
 @deftypefn {C Target Hook} bool TARGET_CXX_IMPLICIT_EXTERN_C (const char*@var{})
-Define this hook to add target-specific C++ implicit extern C functions. If this function returns true for the name of a file-scope function, that function implicitly gets extern "C" linkage rather than whatever language linkage the declaration would normally have.  An example of such function is WinMain on Win32 targets.
+Define this hook to add target-specific C++ implicit extern C functions.
+If this function returns true for the name of a file-scope function, that
+function implicitly gets extern "C" linkage rather than whatever language
+linkage the declaration would normally have.  An example of such function
+is WinMain on Win32 targets.
 @end deftypefn
 
 @defmac SYSTEM_IMPLICIT_EXTERN_C
@@ -11491,11 +11749,12 @@ from shared libraries (DLLs).
 You need not define this macro if it would always evaluate to zero.
 @end defmac
 
-@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<machine_mode>& @var{input_modes}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs})
+@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<machine_mode>& @var{input_modes}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs}, location_t @var{loc})
 This target hook may add @dfn{clobbers} to @var{clobbers} and
 @var{clobbered_regs} for any hard regs the port wishes to automatically
 clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected
-to avoid clobbering a register that is already used by the asm.
+to avoid clobbering a register that is already used by the asm.  @var{loc}
+is the source location of the asm.
 
 It may modify the @var{outputs}, @var{inputs}, @var{input_modes}, and
 @var{constraints} as necessary for other pre-processing.  In this case the
@@ -11534,8 +11793,7 @@ for cross-profiling.
 
 A C expression for the maximum number of instructions to execute via
 conditional execution instructions instead of a branch.  A value of
-@code{BRANCH_COST}+1 is the default if the machine does not use cc0, and
-1 if it does use cc0.
+@code{BRANCH_COST}+1 is the default.
 @end defmac
 
 @defmac IFCVT_MODIFY_TESTS (@var{ce_info}, @var{true_expr}, @var{false_expr})
@@ -11768,12 +12026,27 @@ By default, the RTL loop optimizer does not use a present doloop pattern for
 loops containing function calls or branch on table instructions.
 @end deftypefn
 
+@deftypefn {Target Hook} machine_mode TARGET_PREFERRED_DOLOOP_MODE (machine_mode @var{mode})
+This hook takes a @var{mode} for a doloop IV, where @code{mode} is the
+original mode for the operation.  If the target prefers an alternate
+@code{mode} for the operation, then this hook should return that mode;
+otherwise the original @code{mode} should be returned.  For example, on a
+64-bit target, @code{DImode} might be preferred over @code{SImode}.  Both the
+original and the returned modes should be @code{MODE_INT}.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_LEGITIMATE_COMBINED_INSN (rtx_insn *@var{insn})
-Take an instruction in @var{insn} and return @code{false} if the instruction is not appropriate as a combination of two or more instructions.  The default is to accept all instructions.
+Take an instruction in @var{insn} and return @code{false} if the instruction
+is not appropriate as a combination of two or more instructions.  The
+default is to accept all instructions.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_CAN_FOLLOW_JUMP (const rtx_insn *@var{follower}, const rtx_insn *@var{followee})
-FOLLOWER and FOLLOWEE are JUMP_INSN instructions;  return true if FOLLOWER may be modified to follow FOLLOWEE;  false, if it can't.  For example, on some targets, certain kinds of branches can't be made to  follow through a hot/cold partitioning.
+FOLLOWER and FOLLOWEE are JUMP_INSN instructions;
+return true if FOLLOWER may be modified to follow FOLLOWEE;
+false, if it can't.
+For example, on some targets, certain kinds of branches can't be made to
+follow through a hot/cold partitioning.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_COMMUTATIVE_P (const_rtx @var{x}, int @var{outer_code})
@@ -11898,6 +12171,13 @@ This function prepares to emit a conditional comparison within a sequence
  be appropriate for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_GEN_MEMSET_SCRATCH_RTX (machine_mode @var{mode})
+This hook should return an rtx for a scratch register in @var{mode} to
+be used when expanding memset calls.  The backend can use a hard scratch
+register to avoid stack realignment when expanding memset.  The default
+is @code{gen_reg_rtx}.
 @end deftypefn
 
 @deftypefn {Target Hook} unsigned TARGET_LOOP_UNROLL_ADJUST (unsigned @var{nunroll}, class loop *@var{loop})
@@ -12113,7 +12393,9 @@ memory model bits are allowed.
 @end deftypefn
 
 @deftypevr {Target Hook} {unsigned char} TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
-This value should be set if the result written by @code{atomic_test_and_set} is not exactly 1, i.e.@: the @code{bool} @code{true}.
+This value should be set if the result written by
+@code{atomic_test_and_set} is not exactly 1, i.e.@: the
+@code{bool} @code{true}.
 @end deftypevr
 
 @deftypefn {Target Hook} bool TARGET_HAS_IFUNC_P (void)
@@ -12123,11 +12405,27 @@ The default value of this hook is based on target's libc.
 @end deftypefn
 
 @deftypefn {Target Hook} {unsigned int} TARGET_ATOMIC_ALIGN_FOR_MODE (machine_mode @var{mode})
-If defined, this function returns an appropriate alignment in bits for an atomic object of machine_mode @var{mode}.  If 0 is returned then the default alignment for the specified mode is used. 
+If defined, this function returns an appropriate alignment in bits for an
+atomic object of machine_mode @var{mode}.  If 0 is returned then the
+default alignment for the specified mode is used.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_ATOMIC_ASSIGN_EXPAND_FENV (tree *@var{hold}, tree *@var{clear}, tree *@var{update})
-ISO C11 requires atomic compound assignments that may raise floating-point exceptions to raise exceptions corresponding to the arithmetic operation whose result was successfully stored in a compare-and-exchange sequence.  This requires code equivalent to calls to @code{feholdexcept}, @code{feclearexcept} and @code{feupdateenv} to be generated at appropriate points in the compare-and-exchange sequence.  This hook should set @code{*@var{hold}} to an expression equivalent to the call to @code{feholdexcept}, @code{*@var{clear}} to an expression equivalent to the call to @code{feclearexcept} and @code{*@var{update}} to an expression equivalent to the call to @code{feupdateenv}.  The three expressions are @code{NULL_TREE} on entry to the hook and may be left as @code{NULL_TREE} if no code is required in a particular place.  The default implementation leaves all three expressions as @code{NULL_TREE}.  The @code{__atomic_feraiseexcept} function from @code{libatomic} may be of use as part of the code generated in @code{*@var{update}}.
+ISO C11 requires atomic compound assignments that may raise floating-point
+exceptions to raise exceptions corresponding to the arithmetic operation
+whose result was successfully stored in a compare-and-exchange sequence.
+This requires code equivalent to calls to @code{feholdexcept},
+@code{feclearexcept} and @code{feupdateenv} to be generated at
+appropriate points in the compare-and-exchange sequence.  This hook should
+set @code{*@var{hold}} to an expression equivalent to the call to
+@code{feholdexcept}, @code{*@var{clear}} to an expression equivalent to
+the call to @code{feclearexcept} and @code{*@var{update}} to an expression
+equivalent to the call to @code{feupdateenv}.  The three expressions are
+@code{NULL_TREE} on entry to the hook and may be left as @code{NULL_TREE}
+if no code is required in a particular place.  The default implementation
+leaves all three expressions as @code{NULL_TREE}.  The
+@code{__atomic_feraiseexcept} function from @code{libatomic} may be of use
+as part of the code generated in @code{*@var{update}}.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_RECORD_OFFLOAD_SYMBOL (tree)
@@ -12295,4 +12593,15 @@ The default represents the top byte of the original pointer.
 Return an RTX representing @var{tagged_pointer} with its tag set to zero.
 Store the result in @var{target} if convenient.
 The default clears the top byte of the original pointer.
+@end deftypefn
+
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_GCOV_TYPE_SIZE (void)
+Returns the gcov type size in bits.  This type is used for example for
+counters incremented by profiling and code-coverage events.  The default
+value is 64, if the type size of long long is greater than 32, otherwise the
+default value is 32.  A 64-bit type is recommended to avoid overflows of the
+counters.  If the @option{-fprofile-update=atomic} is used, then the
+counters are incremented using atomic operations.  Targets not supporting
+64-bit atomic operations may override the default value and request a 32-bit
+type.
 @end deftypefn

@@ -19,6 +19,7 @@
 // { dg-do run { target c++2a } }
 
 #include <algorithm>
+#include <array>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -92,7 +93,7 @@ test05()
 {
   using namespace std::literals;
   std::vector<std::string> x = {"the", " ", "quick", " ", "brown", " ", "fox"};
-  auto v = x | views::join | views::split(' ');
+  auto v = x | views::join | views::lazy_split(' ');
   auto i = v.begin();
   VERIFY( ranges::equal(*i++, "the"sv) );
   VERIFY( ranges::equal(*i++, "quick"sv) );
@@ -149,6 +150,49 @@ test08()
   VERIFY( i->a == 5 );
 }
 
+template<auto join = views::join>
+void
+test09()
+{
+  // Verify SFINAE behavior.
+  static_assert(!requires { join(); });
+  static_assert(!requires { join(0, 0); });
+  static_assert(!requires { join(0); });
+  static_assert(!requires { 0 | join; });
+}
+
+void
+test10()
+{
+  // PR libstdc++/100290
+  auto v = views::single(0)
+    | views::transform([](const auto& s) { return views::single(s); })
+    | views::join;
+  VERIFY( ranges::next(v.begin()) == v.end() );
+}
+
+void
+test11()
+{
+  // Verify P2328 changes.
+  int r[] = {1, 2, 3};
+  auto v = r
+    | views::transform([] (int n) { return std::vector{{n, -n}}; })
+    | views::join;
+  VERIFY( ranges::equal(v, (int[]){1, -1, 2, -2, 3, -3}) );
+
+  struct S {
+    S() = default;
+    S(const S&) = delete;
+    S(S&&) = delete;
+  };
+  auto w = r
+    | views::transform([] (int) { return std::array<S, 2>{}; })
+    | views::join;
+  for (auto& i : w)
+    ;
+}
+
 int
 main()
 {
@@ -160,4 +204,7 @@ main()
   test06();
   test07();
   test08();
+  test09();
+  test10();
+  test11();
 }

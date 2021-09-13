@@ -214,7 +214,7 @@ VEC_safe_set_locstr (md_rtx_info *info, vec<locstr> *vp,
 /* Another helper subroutine of walk_rtx: given a vec<char>, convert it
    to a NUL-terminated string in malloc memory.  */
 static char *
-VEC_char_to_string (vec<char> v)
+VEC_char_to_string (const vec<char> &v)
 {
   size_t n = v.length ();
   char *s = XNEWVEC (char, n + 1);
@@ -237,7 +237,6 @@ walk_rtx (md_rtx_info *info, rtx x, class accum_extract *acc)
   switch (code)
     {
     case PC:
-    case CC0:
     case CONST_INT:
     case SYMBOL_REF:
       return;

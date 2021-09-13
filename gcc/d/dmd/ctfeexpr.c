@@ -162,7 +162,7 @@ const char *CTFEExp::toChars()
     switch (op)
     {
         case TOKcantexp:    return "<cant>";
-        case TOKvoidexp:    return "<void>";
+        case TOKvoidexp:    return "cast(void)0";
         case TOKbreak:      return "<break>";
         case TOKcontinue:   return "<continue>";
         case TOKgoto:       return "<goto>";

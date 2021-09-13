@@ -302,7 +302,7 @@ namespace filesystem
   path weakly_canonical(const path& __p);
   path weakly_canonical(const path& __p, error_code& __ec);
 
-  // @} group filesystem
+  /// @} group filesystem
 } // namespace filesystem
 
 _GLIBCXX_END_NAMESPACE_VERSION

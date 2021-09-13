@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-thread1-stats -fdump-tree-dom2-stats -fdisable-tree-ethread" } */
+/* { dg-options "-O2 -fdump-tree-thread3-stats -fdump-tree-dom2-stats -fdisable-tree-ethread" } */
 
 void foo();
 void bla();
@@ -26,4 +26,4 @@ void thread_latch_through_header (void)
    case.  And we want to thread through the header as well.  These
    are both caught by threading in DOM.  */
 /* { dg-final { scan-tree-dump-not "Jumps threaded" "dom2"} } */
-/* { dg-final { scan-tree-dump-times "Jumps threaded: 1" 1 "thread1"} } */
+/* { dg-final { scan-tree-dump-times "Jumps threaded: 1" 1 "thread3"} } */

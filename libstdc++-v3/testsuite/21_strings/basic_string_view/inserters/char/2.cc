@@ -22,7 +22,6 @@
 // working, not to mention other major details like char_traits, and
 // all of the string_view class.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 // { dg-require-fileio "" }
 

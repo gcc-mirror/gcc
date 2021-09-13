@@ -73,6 +73,7 @@ int unreliable_lock::lock_on = -1;
 void test01()
 {
   unreliable_lock l1, l2, l3;
+  std::mutex m1, m2, m3;
 
   try
     {
@@ -82,6 +83,60 @@ void test01()
       l1.unlock();
       l2.unlock();
       l3.unlock();
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
+
+  // Repeat with non-heterogeneous arguments
+
+  try
+    {
+      unreliable_lock::count = 0;
+      std::lock(l1, l2, l3, m1);
+      VERIFY( unreliable_lock::count == 3 );
+      l1.unlock();
+      l2.unlock();
+      l3.unlock();
+      VERIFY( !m1.try_lock() ); // already locked
+      m1.unlock();
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
+
+  try
+    {
+      unreliable_lock::count = 0;
+      std::lock(m1, l1, l2, l3);
+      VERIFY( unreliable_lock::count == 3 );
+      VERIFY( !m1.try_lock() ); // already locked
+      m1.unlock();
+      l1.unlock();
+      l2.unlock();
+      l3.unlock();
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
+
+  try
+    {
+      unreliable_lock::count = 0;
+      std::lock(l1, m1, l2, m2, l3, m3);
+      VERIFY( unreliable_lock::count == 3 );
+      l1.unlock();
+      l2.unlock();
+      l3.unlock();
+      VERIFY( !m1.try_lock() ); // already locked
+      VERIFY( !m2.try_lock() ); // already locked
+      VERIFY( !m3.try_lock() ); // already locked
+      m1.unlock();
+      m2.unlock();
+      m3.unlock();
     }
   catch (...)
     {
@@ -111,6 +166,31 @@ void test02()
     {
       VERIFY( false );
     }
+
+  // Repeat with non-heterogeneous arguments
+
+  try
+    {
+      unreliable_lock::lock_on = 1;
+      while (unreliable_lock::lock_on < 3)
+      {
+        unreliable_lock::count = 0;
+        unreliable_lock l1, l2, l3;
+	std::mutex m1;
+        std::lock(l1, l2, l3, m1);
+        VERIFY( unreliable_lock::count > 3 );
+        l1.unlock();
+        l2.unlock();
+        l3.unlock();
+	VERIFY( !m1.try_lock() ); // already locked
+        m1.unlock();
+        ++unreliable_lock::lock_on;
+      }
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
 }
 
 void test03()
@@ -131,6 +211,50 @@ void test03()
         test = true;
       }
     VERIFY( test );
+    ++unreliable_lock::throw_on;
+  }
+
+  // Repeat with non-heterogeneous arguments
+
+  unreliable_lock::throw_on = 0;
+  while (unreliable_lock::throw_on < 3)
+  {
+    unreliable_lock::count = 0;
+    unreliable_lock l1, l2, l3;
+    std::mutex m1;
+    bool test = false;
+    try
+      {
+        std::lock(l1, l2, l3, m1);
+      }
+    catch (...)
+      {
+        test = true;
+      }
+    VERIFY( test );
+    VERIFY( m1.try_lock() ); // m1 was not left locked by failed std::lock
+    m1.unlock();
+    ++unreliable_lock::throw_on;
+  }
+
+  unreliable_lock::throw_on = 0;
+  while (unreliable_lock::throw_on < 3)
+  {
+    unreliable_lock::count = 0;
+    unreliable_lock l1, l2, l3;
+    std::mutex m1;
+    bool test = false;
+    try
+      {
+        std::lock(m1, l1, l2, l3);
+      }
+    catch (...)
+      {
+        test = true;
+      }
+    VERIFY( test );
+    VERIFY( m1.try_lock() ); // m1 was not left locked by failed std::lock
+    m1.unlock();
     ++unreliable_lock::throw_on;
   }
 }

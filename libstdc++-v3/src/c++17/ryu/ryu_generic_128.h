@@ -18,9 +18,9 @@
 #define RYU_GENERIC_128_H
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// NOTE: These symbols are declared extern "C" upstream, but we don't want that
+// because it'd override the internal linkage of the anonymous namespace into
+// which this header is included.
 
 // This is a generic 128-bit implementation of float to shortest conversion
 // using the Ryu algorithm. It can handle any IEEE-compatible floating-point
@@ -42,18 +42,6 @@ struct floating_decimal_128 {
   bool sign;
 };
 
-struct floating_decimal_128 float_to_fd128(float f);
-struct floating_decimal_128 double_to_fd128(double d);
-
-// According to wikipedia (https://en.wikipedia.org/wiki/Long_double), this likely only works on
-// x86 with specific compilers (clang?). May need an ifdef.
-struct floating_decimal_128 long_double_to_fd128(long double d);
-
-// Converts the given binary floating point number to the shortest decimal floating point number
-// that still accurately represents it.
-struct floating_decimal_128 generic_binary_to_decimal(
-    const uint128_t bits, const uint32_t mantissaBits, const uint32_t exponentBits, const bool explicitLeadingBit);
-
 // Converts the given decimal floating point number to a string, writing to result, and returning
 // the number characters written. Does not terminate the buffer with a 0. In the worst case, this
 // function can write up to 53 characters.
@@ -63,8 +51,5 @@ struct floating_decimal_128 generic_binary_to_decimal(
 // = 1 + 39 + 1 + 1 + 1 + 10 = 53
 int generic_to_chars(const struct floating_decimal_128 v, char* const result);
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // RYU_GENERIC_128_H

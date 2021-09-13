@@ -1,29 +1,46 @@
 # The -mdynamic-no-pic ensures that the compiler executable is built without
-# position-independent-code -- the usual default on Darwin. This fix speeds
-# compiles by 3-5%.  Don't add it if the compiler doesn't also support
-# -mno-dynamic-no-pic to undo it.
-DARWIN_MDYNAMIC_NO_PIC := \
-`case ${host} in i?86-*-darwin* | powerpc-*-darwin*) \
-   $(CC) -S -xc /dev/null -o /dev/null -mno-dynamic-no-pic 2>/dev/null \
-   && echo -mdynamic-no-pic ;; esac`
-DARWIN_GCC_MDYNAMIC_NO_PIC := \
-`case ${host} in i?86-*-darwin* | powerpc-*-darwin*) \
-   $(CC) -S -xc /dev/null -o /dev/null -mno-dynamic-no-pic 2>/dev/null \
-   || echo -mdynamic-no-pic ;; esac`
+# position-independent-code -- the usual default on Darwin. This speeds compiles
+# by 8-20% (measurements made against GCC-11).
+# However, we cannot add it unless the bootstrap compiler supports
+# -mno-dynamic-no-pic to undo it, since libiberty, at least, needs this.
 
-# ld on Darwin versions >= 10.7 defaults to PIE executables. Disable this for
-# gcc components, since it is incompatible with our pch implementation.
-DARWIN_NO_PIE := `case ${host} in *-*-darwin[1][1-9]*) echo -Wl,-no_pie ;; esac;`
+# We use Werror, since some versions of clang report unknown command line flags
+# as a warning only.
 
-BOOT_CFLAGS += $(DARWIN_MDYNAMIC_NO_PIC)
-BOOT_LDFLAGS += $(DARWIN_NO_PIE)
+# We only need to determine this for the host tool used to build stage1 (or a
+# non-bootstrapped compiler), later stages will be built by GCC which supports
+# the required flags.
 
-# Similarly, for cross-compilation.
-STAGE1_CFLAGS += $(DARWIN_MDYNAMIC_NO_PIC)
-STAGE1_LDFLAGS += $(DARWIN_NO_PIE)
+# We cannot use mdynamic-no-pic when building shared host resources.
 
-# Without -mno-dynamic-no-pic support, add -mdynamic-no-pic just to later
-# stages when we know it is built with gcc.
-STAGE2_CFLAGS += $(DARWIN_GCC_MDYNAMIC_NO_PIC)
-STAGE3_CFLAGS += $(DARWIN_GCC_MDYNAMIC_NO_PIC)
-STAGE4_CFLAGS += $(DARWIN_GCC_MDYNAMIC_NO_PIC)
+ifeq (${host_shared},no)
+BOOTSTRAP_TOOL_CAN_USE_MDYNAMIC_NO_PIC := $(shell \
+  $(CC) -S -xc /dev/null -o /dev/null -Werror -mno-dynamic-no-pic 2>/dev/null \
+  && echo true)
+else
+BOOTSTRAP_TOOL_CAN_USE_MDYNAMIC_NO_PIC := false
+endif
+
+@if gcc-bootstrap
+ifeq (${BOOTSTRAP_TOOL_CAN_USE_MDYNAMIC_NO_PIC},true)
+STAGE1_CFLAGS += -mdynamic-no-pic
+else
+STAGE1_CFLAGS += -fPIC
+endif
+ifeq (${host_shared},no)
+# Add -mdynamic-no-pic to later stages when we know it is built with GCC.
+BOOT_CFLAGS += -mdynamic-no-pic
+endif
+@endif gcc-bootstrap
+
+@unless gcc-bootstrap
+ifeq (${BOOTSTRAP_TOOL_CAN_USE_MDYNAMIC_NO_PIC},true)
+# FIXME: we should also enable this for cross and non-bootstrap builds but
+# that needs amendment to libcc1.
+# CFLAGS += -mdynamic-no-pic
+# CXXFLAGS += -mdynamic-no-pic
+else
+CFLAGS += -fPIC
+CXXFLAGS += -fPIC
+endif
+@endunless gcc-bootstrap

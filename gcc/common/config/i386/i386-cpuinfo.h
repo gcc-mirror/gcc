@@ -88,6 +88,7 @@ enum processor_subtypes
   INTEL_COREI7_SAPPHIRERAPIDS,
   INTEL_COREI7_ALDERLAKE,
   AMDFAM19H_ZNVER3,
+  INTEL_COREI7_ROCKETLAKE,
   CPU_SUBTYPE_MAX
 };
 
@@ -101,6 +102,7 @@ enum feature_priority
   P_MMX,
   P_SSE,
   P_SSE2,
+  P_X86_64_BASELINE,
   P_SSE3,
   P_SSSE3,
   P_PROC_SSSE3,
@@ -110,6 +112,7 @@ enum feature_priority
   P_SSE4_2,
   P_PROC_SSE4_2,
   P_POPCNT,
+  P_X86_64_V2,
   P_AES,
   P_PCLMUL,
   P_AVX,
@@ -124,8 +127,10 @@ enum feature_priority
   P_BMI2,
   P_AVX2,
   P_PROC_AVX2,
+  P_X86_64_V3,
   P_AVX512F,
   P_PROC_AVX512F,
+  P_X86_64_V4,
   P_PROC_DYNAMIC
 };
 
@@ -227,6 +232,11 @@ enum processor_features
   FEATURE_AESKLE,
   FEATURE_WIDEKL,
   FEATURE_AVXVNNI,
+  FEATURE_AVX512FP16,
+  FEATURE_X86_64_BASELINE,
+  FEATURE_X86_64_V2,
+  FEATURE_X86_64_V3,
+  FEATURE_X86_64_V4,
   CPU_FEATURE_MAX
 };
 

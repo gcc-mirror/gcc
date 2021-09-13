@@ -484,7 +484,7 @@ namespace decimal
 
 #define _GLIBCXX_USE_DECIMAL_ 1
 } // namespace decimal
-  // @} group decimal
+  /// @} group decimal
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

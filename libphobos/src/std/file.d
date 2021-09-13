@@ -2301,7 +2301,7 @@ if (isConvertibleToString!R)
 
 @safe unittest
 {
-    import std.path : mkdir;
+    import std.file : mkdir;
     static assert(__traits(compiles, mkdir(TestAliasedString(null))));
 }
 
@@ -4112,7 +4112,8 @@ auto dirEntries(string path, SpanMode mode, bool followSymlink = true)
     import std.algorithm.searching : startsWith;
     import std.array : array;
     import std.conv : to;
-    import std.path : dirEntries, buildPath, absolutePath;
+    import std.path : buildPath, absolutePath;
+    import std.file : dirEntries;
     import std.process : thisProcessID;
     import std.range.primitives : walkLength;
 

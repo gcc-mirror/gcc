@@ -36,9 +36,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  /*
-   * (Further) implementation-space details.
-   */
+  /// @cond undocumented
+  // (Further) implementation-space details.
   namespace __detail
   {
     // General case for x = (ax + c) mod m -- use Schrage's algorithm
@@ -90,7 +89,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
   } // namespace __detail
+  /// @endcond
 
+#if ! __cpp_inline_variables
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     constexpr _UIntType
     linear_congruential_engine<_UIntType, __a, __c, __m>::multiplier;
@@ -106,6 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     constexpr _UIntType
     linear_congruential_engine<_UIntType, __a, __c, __m>::default_seed;
+#endif
 
   /**
    * Seeds the LCR with integral value @p __s, adjusted so that the
@@ -186,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
-
+#if ! __cpp_inline_variables
   template<typename _UIntType,
 	   size_t __w, size_t __n, size_t __m, size_t __r,
 	   _UIntType __a, size_t __u, _UIntType __d, size_t __s,
@@ -313,6 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _UIntType
     mersenne_twister_engine<_UIntType, __w, __n, __m, __r, __a, __u, __d,
 			    __s, __b, __t, __c, __l, __f>::default_seed;
+#endif
 
   template<typename _UIntType,
 	   size_t __w, size_t __n, size_t __m, size_t __r,
@@ -515,7 +518,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
-
+#if ! __cpp_inline_variables
   template<typename _UIntType, size_t __w, size_t __s, size_t __r>
     constexpr size_t
     subtract_with_carry_engine<_UIntType, __w, __s, __r>::word_size;
@@ -531,6 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _UIntType, size_t __w, size_t __s, size_t __r>
     constexpr _UIntType
     subtract_with_carry_engine<_UIntType, __w, __s, __r>::default_seed;
+#endif
 
   template<typename _UIntType, size_t __w, size_t __s, size_t __r>
     void
@@ -666,7 +670,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
-
+#if ! __cpp_inline_variables
   template<typename _RandomNumberEngine, size_t __p, size_t __r>
     constexpr size_t
     discard_block_engine<_RandomNumberEngine, __p, __r>::block_size;
@@ -674,6 +678,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _RandomNumberEngine, size_t __p, size_t __r>
     constexpr size_t
     discard_block_engine<_RandomNumberEngine, __p, __r>::used_block;
+#endif
 
   template<typename _RandomNumberEngine, size_t __p, size_t __r>
     typename discard_block_engine<_RandomNumberEngine,
@@ -799,10 +804,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __sum;
     }
 
-
+#if ! __cpp_inline_variables
   template<typename _RandomNumberEngine, size_t __k>
     constexpr size_t
     shuffle_order_engine<_RandomNumberEngine, __k>::table_size;
+#endif
 
   namespace __detail
   {
@@ -811,8 +817,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr bool
       __representable_as_double(_Tp __x) noexcept
       {
-	static_assert(numeric_limits<_Tp>::is_integer);
-	static_assert(!numeric_limits<_Tp>::is_signed);
+	static_assert(numeric_limits<_Tp>::is_integer, "");
+	static_assert(!numeric_limits<_Tp>::is_signed, "");
 	// All integers <= 2^53 are representable.
 	return (__x <= (1ull << __DBL_MANT_DIG__))
 	  // Between 2^53 and 2^54 only even numbers are representable.
@@ -824,8 +830,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr bool
       __p1_representable_as_double(_Tp __x) noexcept
       {
-	static_assert(numeric_limits<_Tp>::is_integer);
-	static_assert(!numeric_limits<_Tp>::is_signed);
+	static_assert(numeric_limits<_Tp>::is_integer, "");
+	static_assert(!numeric_limits<_Tp>::is_signed, "");
 	return numeric_limits<_Tp>::digits < __DBL_MANT_DIG__
 	  || (bool(__x + 1u) // return false if x+1 wraps around to zero
 	      && __detail::__representable_as_double(__x + 1u));
@@ -3231,9 +3237,10 @@ namespace __detail
     }
 
 
-  template<typename _IntType>
+  template<typename _IntType, typename>
     seed_seq::seed_seq(std::initializer_list<_IntType> __il)
     {
+      _M_v.reserve(__il.size());
       for (auto __iter = __il.begin(); __iter != __il.end(); ++__iter)
 	_M_v.push_back(__detail::__mod<result_type,
 		       __detail::_Shift<result_type, 32>::__value>(*__iter));
@@ -3242,6 +3249,9 @@ namespace __detail
   template<typename _InputIterator>
     seed_seq::seed_seq(_InputIterator __begin, _InputIterator __end)
     {
+      if _GLIBCXX17_CONSTEXPR (__is_random_access_iter<_InputIterator>::value)
+	_M_v.reserve(std::distance(__begin, __end));
+
       for (_InputIterator __iter = __begin; __iter != __end; ++__iter)
 	_M_v.push_back(__detail::__mod<result_type,
 		       __detail::_Shift<result_type, 32>::__value>(*__iter));

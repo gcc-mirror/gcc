@@ -6,7 +6,7 @@
  *                                                                          *
  *                         Asm Implementation File                          *
  *                                                                          *
- *         Copyright (C) 2011-2020, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2011-2021, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -180,7 +180,7 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 }
 
 /* Include the target specific bits.  */
-#include "sigtramp-vxworks-target.inc"
+#include "sigtramp-vxworks-target.h"
 
 /* sigtramp stub for common registers.  */
 

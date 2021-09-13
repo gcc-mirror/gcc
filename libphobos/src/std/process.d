@@ -887,7 +887,7 @@ version (Windows) @system unittest
 // Searches the PATH variable for the given executable file,
 // (checking that it is in fact executable).
 version (Posix)
-private string searchPathFor(in char[] executable)
+package(std) string searchPathFor(in char[] executable)
     @trusted //TODO: @safe nothrow
 {
     import std.algorithm.iteration : splitter;
@@ -1358,7 +1358,8 @@ version (Windows)
 
 
 /**
-Flags that control the behaviour of $(LREF spawnProcess) and
+Flags that control the behaviour of process creation functions in this
+module. Most flags only apply to $(LREF spawnProcess) and
 $(LREF spawnShell).
 
 Use bitwise OR to combine flags.
@@ -1433,6 +1434,21 @@ enum Config
     Calling $(LREF wait) or $(LREF kill) with the resulting $(D Pid) is invalid.
     */
     detached = 64,
+
+    /**
+    By default, the $(LREF execute) and $(LREF executeShell) functions
+    will capture child processes' both stdout and stderr. This can be
+    undesirable if the standard output is to be processed or otherwise
+    used by the invoking program, as `execute`'s result would then
+    contain a mix of output and warning/error messages.
+
+    Specify this flag when calling `execute` or `executeShell` to
+    cause invoked processes' stderr stream to be sent to $(REF stderr,
+    std,stdio), and only capture and return standard output.
+
+    This flag has no effect on $(LREF spawnProcess) or $(LREF spawnShell).
+    */
+    stderrPassThrough = 128,
 }
 
 
@@ -2487,7 +2503,11 @@ private auto executeImpl(alias pipeFunc, Cmd, ExtraPipeFuncArgs...)(
     import std.array : appender;
     import std.typecons : Tuple;
 
-    auto p = pipeFunc(commandLine, Redirect.stdout | Redirect.stderrToStdout,
+    auto redirect = (config & Config.stderrPassThrough)
+        ? Redirect.stdout
+        : Redirect.stdout | Redirect.stderrToStdout;
+
+    auto p = pipeFunc(commandLine, redirect,
                       env, config, workDir, extraArgs);
 
     auto a = appender!(ubyte[])();
@@ -2549,6 +2569,31 @@ private auto executeImpl(alias pipeFunc, Cmd, ExtraPipeFuncArgs...)(
     auto r3 = executeShell("exit 123");
     assert(r3.status == 123);
     assert(r3.output.empty);
+}
+
+@system unittest
+{
+    // Temporarily disable output to stderr so as to not spam the build log.
+    import std.stdio : stderr;
+    import std.typecons : Tuple;
+    import std.file : readText;
+    import std.traits : ReturnType;
+
+    ReturnType!executeShell r;
+    auto tmpname = uniqueTempPath;
+    scope(exit) if (exists(tmpname)) remove(tmpname);
+    auto t = stderr;
+    // Open a new scope to minimize code ran with stderr redirected.
+    {
+        stderr.open(tmpname, "w");
+        scope(exit) stderr = t;
+        r = executeShell("echo D rox>&2", null, Config.stderrPassThrough);
+    }
+    assert(r.status == 0);
+    assert(r.output.empty);
+    auto witness = readText(tmpname);
+    import std.ascii : newline;
+    assert(witness == "D rox" ~ newline, "'" ~ witness ~ "'");
 }
 
 @safe unittest
@@ -2750,8 +2795,7 @@ private struct TestScript
     string path;
 }
 
-version (unittest)
-private string uniqueTempPath() @safe
+package(std) string uniqueTempPath() @safe
 {
     import std.file : tempDir;
     import std.path : buildPath;

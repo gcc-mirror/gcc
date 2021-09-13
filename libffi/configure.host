@@ -95,20 +95,13 @@ case "${host}" in
   i?86-*-* | x86_64-*-* | amd64-*)
 	TARGETDIR=x86
 	if test $ac_cv_sizeof_size_t = 4; then
-	  case "$host" in
-	    *-gnux32)
-	      TARGET=X86_64
-	      ;;
-	    *)
-	      echo 'int foo (void) { return __x86_64__; }' > conftest.c
-	      if $CC $CFLAGS -Werror -S conftest.c -o conftest.s > /dev/null 2>&1; then
-		TARGET=X86_64;
-	      else
-		TARGET=X86;
-	      fi
-	      rm -f conftest.*
-	      ;;
-          esac
+	  echo 'int foo (void) { return __x86_64__; }' > conftest.c
+	  if $CC $CFLAGS -Werror -S conftest.c -o conftest.s > /dev/null 2>&1; then
+	    TARGET=X86_64;
+	  else
+	    TARGET=X86;
+	   fi
+	   rm -f conftest.*
 	else
 	  TARGET=X86_64;
 	fi

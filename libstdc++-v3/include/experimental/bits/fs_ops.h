@@ -288,7 +288,7 @@ inline namespace v1
   path temp_directory_path();
   path temp_directory_path(error_code& __ec);
 
-  // @} group filesystem-ts
+  /// @} group filesystem-ts
 } // namespace v1
 } // namespace filesystem
 } // namespace experimental

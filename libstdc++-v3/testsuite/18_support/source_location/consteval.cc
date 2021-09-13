@@ -75,43 +75,43 @@ int main ()
   using namespace std::string_view_literals;
 
   static_assert (std::source_location::current ().line () == __LINE__);
-  static_assert (std::source_location::current ().column () == 49);
+  static_assert (std::source_location::current ().column () == 48);
 
 
   constexpr std::string_view main_sl_fn_name(main_sl.function_name());
   constexpr std::string_view main_sl_fi_name(main_sl.file_name());
   static_assert(main_sl.line() == main_sl_line);
-  // closing paren of call
-  static_assert(main_sl.column() == 74);
+  // opening paren of call
+  static_assert(main_sl.column() == 73);
   static_assert(main_sl_fn_name.ends_with("main()"sv));
   static_assert(main_sl_fi_name.ends_with("consteval.cc"sv));
 
   constexpr std::string_view f_arg_sl_fn_name(f_arg_sl.function_name());
   constexpr std::string_view f_arg_sl_fi_name(f_arg_sl.file_name());
   static_assert(f_arg_sl.line() == f_arg_sl_line);
-  // closing paren of call
-  static_assert(f_arg_sl.column() == 74);
+  // opening paren of call
+  static_assert(f_arg_sl.column() == 73);
   static_assert(f_arg_sl_fn_name.ends_with("main()"sv));
   static_assert(f_arg_sl_fi_name.ends_with("consteval.cc"sv));
 
   constexpr std::string_view g_sl_fn_name(g_sl.function_name());
   constexpr std::string_view g_sl_fi_name(g_sl.file_name());
   static_assert(g_sl.line() == g_sl_line);
-  static_assert(g_sl.column() == 58); // closing paren of call
+  static_assert(g_sl.column() == 57); // opening paren of call
   static_assert(g_sl_fn_name.ends_with("g()"sv));
   static_assert(g_sl_fi_name.ends_with("consteval.cc"sv));
 
   constexpr std::string_view h_sl_fn_name(h_sl.function_name());
   constexpr std::string_view h_sl_fi_name(h_sl.file_name());
   static_assert(h_sl.line() == 23);
-  static_assert(h_sl.column() == 58); // closing paren of call
+  static_assert(h_sl.column() == 57); // opening paren of call
   static_assert(h_sl_fn_name.ends_with("h()"sv));
   static_assert(h_sl_fi_name.ends_with("srcloc.h"sv));
 
   constexpr std::string_view member_main_sl_fn_name(member_main_sl.member.function_name());
   constexpr std::string_view member_main_sl_fi_name(member_main_sl.member.file_name());
   static_assert(member_main_sl.member.line() == main_sl_line);
-  static_assert(member_main_sl.member.column() == 74);
+  static_assert(member_main_sl.member.column() == 73);
   static_assert(member_main_sl_fn_name.ends_with("main()"sv));
   static_assert(member_main_sl_fi_name.ends_with("consteval.cc"sv));
 
@@ -138,8 +138,8 @@ int main ()
   constexpr std::string_view f_sl_fi_name(f_sl.file_name());
   constexpr std::string_view f_sl_fn_name(f_sl.function_name());
   static_assert(f_sl.line() == f_sl_line);
-  // closing paren of call
-  static_assert(f_sl.column() == 43);
+  // opening paren of call
+  static_assert(f_sl.column() == 42);
   static_assert(f_sl_fn_name.ends_with("main()"sv));
   static_assert(f_sl_fi_name.ends_with("consteval.cc"sv));
 

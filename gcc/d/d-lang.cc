@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "print-tree.h"
 #include "debug.h"
+#include "input.h"
 
 #include "d-tree.h"
 #include "id.h"
@@ -108,7 +109,7 @@ deps_add_target (const char *target, bool quoted)
 
   if (!quoted)
     {
-      obstack_grow (&buffer, target, strlen (target));
+      obstack_grow0 (&buffer, target, strlen (target));
       d_option.deps_target.safe_push ((const char *) obstack_finish (&buffer));
       return;
     }
@@ -149,6 +150,7 @@ deps_add_target (const char *target, bool quoted)
       obstack_1grow (&buffer, *p);
     }
 
+  obstack_1grow (&buffer, '\0');
   d_option.deps_target.safe_push ((const char *) obstack_finish (&buffer));
 }
 
@@ -278,6 +280,8 @@ deps_write (Module *module, obstack *buffer)
       obstack_grow (buffer, str, strlen (str));
       obstack_grow (buffer, ":\n", 2);
     }
+
+  obstack_1grow (buffer, '\0');
 }
 
 /* Implements the lang_hooks.init_options routine for language D.
@@ -359,6 +363,19 @@ d_option_lang_mask (void)
   return CL_D;
 }
 
+/* Implements input charset and BOM skipping configuration for
+   diagnostics.  */
+static const char *d_input_charset_callback (const char * /*filename*/)
+{
+  /* TODO: The input charset is automatically determined by code in
+     dmd/dmodule.c based on the contents of the file.  If this detection
+     logic were factored out and could be reused here, then we would be able
+     to return UTF-16 or UTF-32 as needed here.  For now, we return always
+     NULL, which means no conversion is necessary, i.e. the input is assumed
+     to be UTF-8 when diagnostics read this file.  */
+  return nullptr;
+}
+
 /* Implements the lang_hooks.init routine for language D.  */
 
 static bool
@@ -369,6 +386,11 @@ d_init (void)
   Module::_init ();
   Expression::_init ();
   Objc::_init ();
+
+  /* Diagnostics input init, to enable BOM skipping and
+     input charset conversion.  */
+  diagnostic_initialize_input_context (global_dc,
+				       d_input_charset_callback, true);
 
   /* Back-end init.  */
   global_binding_level = ggc_cleared_alloc <binding_level> ();
@@ -386,7 +408,7 @@ d_init (void)
     using_eh_for_cleanups ();
 
   if (!supports_one_only ())
-    flag_weak = 0;
+    flag_weak_templates = 0;
 
   /* This is the C main, not the D main.  */
   main_identifier_node = get_identifier ("main");
@@ -884,6 +906,7 @@ d_parse_file (void)
 	      obstack_grow (&buffer, str, strlen (str));
 	    }
 
+	  obstack_1grow (&buffer, '\0');
 	  message ("%s", (char *) obstack_finish (&buffer));
 	}
     }
@@ -1000,6 +1023,10 @@ d_parse_file (void)
 	}
     }
 
+  /* If an error occurs later during compilation, remember that we generated
+     the headers, so that they can be removed before exit.  */
+  bool dump_headers = false;
+
   if (global.errors)
     goto had_errors;
 
@@ -1019,6 +1046,8 @@ d_parse_file (void)
 
 	  genhdrfile (m);
 	}
+
+      dump_headers = true;
     }
 
   if (global.errors)
@@ -1242,6 +1271,19 @@ d_parse_file (void)
   /* Add the D frontend error count to the GCC error count to correctly
      exit with an error status.  */
   errorcount += (global.errors + global.warnings);
+
+  /* Remove generated .di files on error.  */
+  if (errorcount && dump_headers)
+    {
+      for (size_t i = 0; i < modules.length; i++)
+	{
+	  Module *m = modules[i];
+	  if (d_option.fonly && m != Module::rootModule)
+	    continue;
+
+	  remove (m->hdrfile->toChars ());
+	}
+    }
 
   /* Write out globals.  */
   d_finish_compilation (vec_safe_address (global_declarations),
@@ -1719,6 +1761,16 @@ d_build_eh_runtime_type (tree type)
   return convert (ptr_type_node, build_address (decl));
 }
 
+/* Implements the lang_hooks.enum_underlying_base_type routine for language D.
+   Returns the underlying type of the given enumeration TYPE.  */
+
+static tree
+d_enum_underlying_base_type (const_tree type)
+{
+  gcc_assert (TREE_CODE (type) == ENUMERAL_TYPE);
+  return TREE_TYPE (type);
+}
+
 /* Definitions for our language-specific hooks.  */
 
 #undef LANG_HOOKS_NAME
@@ -1735,6 +1787,7 @@ d_build_eh_runtime_type (tree type)
 #undef LANG_HOOKS_GET_ALIAS_SET
 #undef LANG_HOOKS_TYPES_COMPATIBLE_P
 #undef LANG_HOOKS_BUILTIN_FUNCTION
+#undef LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE
 #undef LANG_HOOKS_REGISTER_BUILTIN_TYPE
 #undef LANG_HOOKS_FINISH_INCOMPLETE_DECL
 #undef LANG_HOOKS_GIMPLIFY_EXPR
@@ -1744,6 +1797,7 @@ d_build_eh_runtime_type (tree type)
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #undef LANG_HOOKS_EH_PERSONALITY
 #undef LANG_HOOKS_EH_RUNTIME_TYPE
+#undef LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
 #undef LANG_HOOKS_PUSHDECL
 #undef LANG_HOOKS_GETDECLS
 #undef LANG_HOOKS_GLOBAL_BINDINGS_P
@@ -1765,6 +1819,7 @@ d_build_eh_runtime_type (tree type)
 #define LANG_HOOKS_GET_ALIAS_SET	    d_get_alias_set
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	    d_types_compatible_p
 #define LANG_HOOKS_BUILTIN_FUNCTION	    d_builtin_function
+#define LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE d_builtin_function_ext_scope
 #define LANG_HOOKS_REGISTER_BUILTIN_TYPE    d_register_builtin_type
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL   d_finish_incomplete_decl
 #define LANG_HOOKS_GIMPLIFY_EXPR	    d_gimplify_expr
@@ -1774,6 +1829,7 @@ d_build_eh_runtime_type (tree type)
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL   d_dup_lang_specific_decl
 #define LANG_HOOKS_EH_PERSONALITY	    d_eh_personality
 #define LANG_HOOKS_EH_RUNTIME_TYPE	    d_build_eh_runtime_type
+#define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE d_enum_underlying_base_type
 #define LANG_HOOKS_PUSHDECL		    d_pushdecl
 #define LANG_HOOKS_GETDECLS		    d_getdecls
 #define LANG_HOOKS_GLOBAL_BINDINGS_P	    d_global_bindings_p

@@ -1,3 +1,20 @@
+2021-06-29  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::static_chain_variable): Set
+	DECL_NAMELESS on the new decl.
+	(Gcc_backend::temporary_variable): Likewise.
+	(Gcc_backend::function): Set DECL_NAMELESS on the result decl.
+
+2021-05-27  Ian Lance Taylor  <iant@golang.org>
+
+	* gccgo.texi (Function Names): Don't HTML quote ampersand.
+
+2021-05-24  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/100537
+	* go-gcc.cc (class Gcc_backend): Update methods that create
+	variables to take a flags parameter.
+
 2021-01-28  Ian Lance Taylor  <iant@golang.org>
 
 	* gospec.c (lang_specific_driver): Add -g if no debugging options

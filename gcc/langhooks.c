@@ -485,7 +485,7 @@ lhd_make_node (enum tree_code code)
    might be reusable elsewhere.  */
 tree
 lhd_simulate_enum_decl (location_t loc, const char *name,
-			vec<string_int_pair> values)
+			vec<string_int_pair> *values_ptr)
 {
   tree enumtype = lang_hooks.types.make_type (ENUMERAL_TYPE);
   tree enumdecl = build_decl (loc, TYPE_DECL, get_identifier (name), enumtype);
@@ -493,6 +493,7 @@ lhd_simulate_enum_decl (location_t loc, const char *name,
 
   tree value_chain = NULL_TREE;
   string_int_pair *value;
+  vec<string_int_pair> values = *values_ptr;
   unsigned int i;
   FOR_EACH_VEC_ELT (values, i, value)
     {
@@ -615,10 +616,11 @@ lhd_omp_finish_clause (tree, gimple_seq *, bool)
 }
 
 /* Return true if DECL is a scalar variable (for the purpose of
-   implicit firstprivatization).  */
+   implicit firstprivatization & mapping). Only if alloc_ptr_ok
+   are allocatables and pointers accepted. */
 
 bool
-lhd_omp_scalar_p (tree decl)
+lhd_omp_scalar_p (tree decl, bool ptr_ok)
 {
   tree type = TREE_TYPE (decl);
   if (TREE_CODE (type) == REFERENCE_TYPE)
@@ -627,7 +629,7 @@ lhd_omp_scalar_p (tree decl)
     type = TREE_TYPE (type);
   if (INTEGRAL_TYPE_P (type)
       || SCALAR_FLOAT_TYPE_P (type)
-      || TREE_CODE (type) == POINTER_TYPE)
+      || (ptr_ok && TREE_CODE (type) == POINTER_TYPE))
     return true;
   return false;
 }
@@ -901,7 +903,7 @@ lhd_finalize_early_debug (void)
 bool
 lang_GNU_C (void)
 {
-  return (strncmp (lang_hooks.name, "GNU C", 5) == 0
+  return (startswith (lang_hooks.name, "GNU C")
 	  && (lang_hooks.name[5] == '\0' || ISDIGIT (lang_hooks.name[5])));
 }
 
@@ -910,7 +912,7 @@ lang_GNU_C (void)
 bool
 lang_GNU_CXX (void)
 {
-  return strncmp (lang_hooks.name, "GNU C++", 7) == 0;
+  return startswith (lang_hooks.name, "GNU C++");
 }
 
 /* Returns true if the current lang_hooks represents the GNU Fortran frontend.  */
@@ -918,7 +920,7 @@ lang_GNU_CXX (void)
 bool
 lang_GNU_Fortran (void)
 {
-  return strncmp (lang_hooks.name, "GNU Fortran", 11) == 0;
+  return startswith (lang_hooks.name, "GNU Fortran");
 }
 
 /* Returns true if the current lang_hooks represents the GNU Objective-C
@@ -927,5 +929,5 @@ lang_GNU_Fortran (void)
 bool
 lang_GNU_OBJC (void)
 {
-  return strncmp (lang_hooks.name, "GNU Objective-C", 15) == 0;
+  return startswith (lang_hooks.name, "GNU Objective-C");
 }

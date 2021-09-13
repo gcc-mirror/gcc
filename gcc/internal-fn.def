@@ -169,6 +169,8 @@ DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_FLOOR, ECF_CONST | ECF_NOTHROW, first,
 DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_CEIL, ECF_CONST | ECF_NOTHROW, first,
 			      savg_ceil, uavg_ceil, binary)
 
+DEF_INTERNAL_SIGNED_OPTAB_FN (MULH, ECF_CONST | ECF_NOTHROW, first,
+			      smul_highpart, umul_highpart, binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (MULHS, ECF_CONST | ECF_NOTHROW, first,
 			      smulhs, umulhs, binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (MULHRS, ECF_CONST | ECF_NOTHROW, first,
@@ -281,7 +283,9 @@ DEF_INTERNAL_OPTAB_FN (COMPLEX_ADD_ROT90, ECF_CONST, cadd90, binary)
 DEF_INTERNAL_OPTAB_FN (COMPLEX_ADD_ROT270, ECF_CONST, cadd270, binary)
 DEF_INTERNAL_OPTAB_FN (COMPLEX_MUL, ECF_CONST, cmul, binary)
 DEF_INTERNAL_OPTAB_FN (COMPLEX_MUL_CONJ, ECF_CONST, cmul_conj, binary)
-
+DEF_INTERNAL_OPTAB_FN (VEC_ADDSUB, ECF_CONST, vec_addsub, binary)
+DEF_INTERNAL_OPTAB_FN (VEC_FMADDSUB, ECF_CONST, vec_fmaddsub, ternary)
+DEF_INTERNAL_OPTAB_FN (VEC_FMSUBADD, ECF_CONST, vec_fmsubadd, ternary)
 
 /* FP scales.  */
 DEF_INTERNAL_FLT_FN (LDEXP, ECF_CONST, ldexp, binary)
@@ -356,6 +360,10 @@ DEF_INTERNAL_FN (VEC_CONVERT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (UNIQUE, ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (PHI, 0, NULL)
 
+/* A function to represent an artifical initialization to an uninitialized
+   automatic variable.  */
+DEF_INTERNAL_FN (DEFERRED_INIT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+
 /* DIM_SIZE and DIM_POS return the size of a particular compute
    dimension and the executing thread's position within that
    dimension.  DIM_POS is pure (and not const) so that it isn't
@@ -404,6 +412,9 @@ DEF_INTERNAL_FN (CO_FRAME, ECF_PURE | ECF_NOTHROW | ECF_LEAF, NULL)
 
 /* A NOP function with arbitrary arguments and return value.  */
 DEF_INTERNAL_FN (NOP, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+
+/* Temporary vehicle for __builtin_shufflevector.  */
+DEF_INTERNAL_FN (SHUFFLEVECTOR, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 
 #undef DEF_INTERNAL_INT_FN
 #undef DEF_INTERNAL_FLT_FN

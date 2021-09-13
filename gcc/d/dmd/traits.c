@@ -40,6 +40,8 @@ void freeFieldinit(Scope *sc);
 Expression *resolve(Loc loc, Scope *sc, Dsymbol *s, bool hasOverloads);
 Package *resolveIsPackage(Dsymbol *sym);
 Expression *typeToExpression(Type *t);
+Type *decoToType(const char *deco);
+bool expressionsToString(OutBuffer &buf, Scope *sc, Expressions *exps);
 
 
 /************************************************
@@ -442,7 +444,6 @@ TraitsInitializer::TraitsInitializer()
         "derivedMembers",
         "isSame",
         "compiles",
-        "parameters",
         "getAliasThis",
         "getAttributes",
         "getFunctionAttributes",
@@ -1032,6 +1033,34 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         ex = expressionSemantic(ex, sc);
         return ex;
     }
+    else if (e->ident == Id::toType)
+    {
+        if (dim != 1)
+            return dimError(e, 1, dim);
+
+        Expression *ex = isExpression((*e->args)[0]);
+        if (!ex)
+        {
+            e->error("expression expected as second argument of __traits `%s`", e->ident->toChars());
+            return new ErrorExp();
+        }
+        ex = ex->ctfeInterpret();
+
+        StringExp *se = semanticString(sc, ex, "__traits(toType, string)");
+        if (!se)
+        {
+            return new ErrorExp();
+        }
+        Type *t = decoToType(se->toUTF8(sc)->toPtr());
+        if (!t)
+        {
+            e->error("cannot determine `%s`", e->toChars());
+            return new ErrorExp();
+        }
+        ex = new TypeExp(e->loc, t);
+        ex = expressionSemantic(ex, sc);
+        return ex;
+    }
     else if (e->ident == Id::hasMember ||
              e->ident == Id::getMember ||
              e->ident == Id::getOverloads ||
@@ -1531,6 +1560,13 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             s = imp->mod;
         }
 
+        // https://issues.dlang.org/show_bug.cgi?id=16044
+        if (Package *p = s->isPackage())
+        {
+            if (Module *pm = p->isPackageMod())
+                s = pm;
+        }
+
         ScopeDsymbol *sds = s->isScopeDsymbol();
         if (!sds || sds->isTemplateDeclaration())
         {
@@ -1557,6 +1593,11 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
                         return 0;
                     }
                 }
+
+                // https://issues.dlang.org/show_bug.cgi?id=20915
+                // skip version and debug identifiers
+                if (sm->isVersionSymbol() || sm->isDebugSymbol())
+                    return 0;
 
                 //printf("\t[%i] %s %s\n", i, sm->kind(), sm->toChars());
                 if (sm->ident)
@@ -1674,33 +1715,67 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
 
             RootObject *o = (*e->args)[i];
             Type *t = isType(o);
-            Expression *ex = t ? typeToExpression(t) : isExpression(o);
-            if (!ex && t)
+            while (t)
             {
-                Dsymbol *s;
-                t->resolve(e->loc, sc2, &ex, &t, &s);
-                if (t)
+                if (TypeMixin *tm = t->isTypeMixin())
                 {
-                    typeSemantic(t, e->loc, sc2);
-                    if (t->ty == Terror)
+                    /* The mixin string could be a type or an expression.
+                     * Have to try compiling it to see.
+                     */
+                    OutBuffer buf;
+                    if (expressionsToString(buf, sc, tm->exps))
+                    {
+                        err = true;
+                        break;
+                    }
+                    const size_t len = buf.length();
+                    const char *str = buf.extractChars();
+                    Parser p(e->loc, sc->_module, (const utf8_t *)str, len, false);
+                    p.nextToken();
+                    //printf("p.loc.linnum = %d\n", p.loc.linnum);
+
+                    o = p.parseTypeOrAssignExp(TOKeof);
+                    if (p.errors || p.token.value != TOKeof)
+                    {
+                        err = true;
+                        break;
+                    }
+                    t = isType(o);
+                }
+                else
+                    break;
+            }
+
+            if (!err)
+            {
+                Expression *ex = t ? typeToExpression(t) : isExpression(o);
+                if (!ex && t)
+                {
+                    Dsymbol *s;
+                    t->resolve(e->loc, sc2, &ex, &t, &s);
+                    if (t)
+                    {
+                        typeSemantic(t, e->loc, sc2);
+                        if (t->ty == Terror)
+                            err = true;
+                    }
+                    else if (s && s->errors)
                         err = true;
                 }
-                else if (s && s->errors)
-                    err = true;
-            }
-            if (ex)
-            {
-                ex = expressionSemantic(ex, sc2);
-                ex = resolvePropertiesOnly(sc2, ex);
-                ex = ex->optimize(WANTvalue);
-                if (sc2->func && sc2->func->type->ty == Tfunction)
+                if (ex)
                 {
-                    TypeFunction *tf = (TypeFunction *)sc2->func->type;
-                    canThrow(ex, sc2->func, tf->isnothrow);
+                    ex = expressionSemantic(ex, sc2);
+                    ex = resolvePropertiesOnly(sc2, ex);
+                    ex = ex->optimize(WANTvalue);
+                    if (sc2->func && sc2->func->type->ty == Tfunction)
+                    {
+                        TypeFunction *tf = (TypeFunction *)sc2->func->type;
+                        canThrow(ex, sc2->func, tf->isnothrow);
+                    }
+                    ex = checkGC(sc2, ex);
+                    if (ex->op == TOKerror)
+                        err = true;
                 }
-                ex = checkGC(sc2, ex);
-                if (ex->op == TOKerror)
-                    err = true;
             }
 
             // Carefully detach the scope from the parent and throw it away as

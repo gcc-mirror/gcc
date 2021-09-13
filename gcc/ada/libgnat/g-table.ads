@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2020, AdaCore                     --
+--                     Copyright (C) 1998-2021, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,8 @@
 --     GNAT.Dynamic_Tables
 --     GNAT.Table
 --     Table (the compiler unit)
+
+pragma Compiler_Unit_Warning;
 
 with GNAT.Dynamic_Tables;
 

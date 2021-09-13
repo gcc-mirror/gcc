@@ -191,7 +191,7 @@ namespace __gnu_pbds
 	store_extra			       	m_store_extra_indicator;
 	no_throw_indicator 		 	m_no_throw_copies_indicator;
     };
-    //@}
+    ///@}
   } // namespace detail
 } // namespace __gnu_pbds
 

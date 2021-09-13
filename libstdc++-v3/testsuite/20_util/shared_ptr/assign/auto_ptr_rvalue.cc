@@ -1,4 +1,5 @@
 // { dg-options "-Wno-deprecated" }
+// { dg-add-options using-deprecated }
 // { dg-do compile { target c++11 } }
 
 // Copyright (C) 2008-2021 Free Software Foundation, Inc.
@@ -43,7 +44,7 @@ test02()
   a = std::move(au);
 }
 
-int 
+int
 main()
 {
   test01();

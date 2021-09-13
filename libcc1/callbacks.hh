@@ -42,6 +42,9 @@ namespace cc1_plugin
     callbacks ();
     ~callbacks ();
 
+    callbacks (const callbacks &) = delete;
+    callbacks &operator= (const callbacks &) = delete;
+
     // Add a callback named NAME.  FUNC is the function to call when
     // this method is invoked.
     void add_callback (const char *name, callback_ftype *func);
@@ -51,10 +54,6 @@ namespace cc1_plugin
     callback_ftype *find_callback (const char *name);
 
   private:
-
-    // Declared but not defined to avoid use.
-    callbacks (const callbacks &);
-    callbacks &operator= (const callbacks &);
 
     // The mapping.
     htab_t m_registry;

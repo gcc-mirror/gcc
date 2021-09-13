@@ -29,6 +29,8 @@
 
 #include "pru-asm.h"
 
+	.section .text.__pruabi_mpyll, "ax"
+
 	.global	SYM(__pruabi_mpyll)
 	FUNC(__pruabi_mpyll)
 SYM(__pruabi_mpyll):

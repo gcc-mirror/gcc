@@ -122,7 +122,7 @@ public:
     void visit(CompileStatement *s)
     {
         buf->writestring("mixin(");
-        s->exp->accept(this);
+        argsToBuffer(s->exps);
         buf->writestring(");");
         if (!hgs->forStmtInit)
             buf->writenl();
@@ -1104,6 +1104,18 @@ public:
         buf->writestring("typeof(null)");
     }
 
+    void visit(TypeMixin *t)
+    {
+        buf->writestring("mixin(");
+        argsToBuffer(t->exps);
+        buf->writeByte(')');
+    }
+
+    void visit(TypeNoreturn *)
+    {
+        buf->writestring("noreturn");
+    }
+
     ////////////////////////////////////////////////////////////////////////////
 
     void visit(Dsymbol *s)
@@ -1418,7 +1430,7 @@ public:
     void visit(CompileDeclaration *d)
     {
         buf->writestring("mixin(");
-        d->exp->accept(this);
+        argsToBuffer(d->exps);
         buf->writestring(");");
         buf->writenl();
     }
@@ -1701,6 +1713,10 @@ public:
                     buf->writestring(", ");
                 objectToBuffer(arg);
             }
+        }
+        else if (Parameter *p = isParameter(oarg))
+        {
+            p->accept(this);
         }
         else if (!oarg)
         {
@@ -2408,8 +2424,15 @@ public:
                     buf->writeByte(')');
                     if (target.ptrsize == 8)
                         goto L4;
-                    else
+                    else if (target.ptrsize == 4 ||
+                             target.ptrsize == 2)
                         goto L3;
+                    else
+                        assert(0);
+
+                case Tvoid:
+                    buf->writestring("cast(void)0");
+                    break;
 
                 default:
                     /* This can happen if errors, such as
@@ -2822,7 +2845,7 @@ public:
     void visit(CompileExp *e)
     {
         buf->writestring("mixin(");
-        expToBuffer(e->e1, PREC_assign);
+        argsToBuffer(e->exps);
         buf->writeByte(')');
     }
 
@@ -3528,11 +3551,41 @@ void arrayObjectsToBuffer(OutBuffer *buf, Objects *objects)
     }
 }
 
+/*************************************************************
+ * Pretty print function parameters.
+ * Params:
+ *  parameters = parameters to print, such as TypeFunction.parameters.
+ *  varargs = kind of varargs, see TypeFunction.varargs.
+ * Returns: Null-terminated string representing parameters.
+ */
 const char *parametersTypeToChars(ParameterList pl)
 {
     OutBuffer buf;
     HdrGenState hgs;
     PrettyPrintVisitor v(&buf, &hgs);
     v.parametersToBuffer(pl.parameters, pl.varargs);
+    return buf.extractChars();
+}
+
+/*************************************************************
+ * Pretty print function parameter.
+ * Params:
+ *  parameter = parameter to print.
+ *  tf = TypeFunction which holds parameter.
+ *  fullQual = whether to fully qualify types.
+ * Returns: Null-terminated string representing parameters.
+ */
+const char *parameterToChars(Parameter *parameter, TypeFunction *tf, bool fullQual)
+{
+    OutBuffer buf;
+    HdrGenState hgs;
+    hgs.fullQual = fullQual;
+    PrettyPrintVisitor v(&buf, &hgs);
+
+    parameter->accept(&v);
+    if (tf->parameterList.varargs == 2 && parameter == tf->parameterList[tf->parameterList.parameters->length - 1])
+    {
+        buf.writestring("...");
+    }
     return buf.extractChars();
 }

@@ -377,6 +377,34 @@ proc dg-jit-set-exe-params { args } {
     }
 }
 
+# For test-debuginfo.c. Starts gdb, does cmds and checks the output against match
+proc jit-check-debug-info { obj_file cmds match } {
+    verbose "Checking debug info for $obj_file with match: $match"
+
+    if { [catch {exec gdb -v} fid] } {
+        verbose "No gdb seems to be in path. Can't check debug info. Reporting 'unsupported'."
+        unsupported "No gdb seems to be in path. Can't check debug info"
+        return
+    }
+
+    spawn gdb $obj_file
+
+    verbose "Disable color styling in GDB newer then 8.3 (errors on older)"
+    send "set style enabled off\n"
+
+    foreach cmd $cmds {
+        send $cmd
+    }
+    expect {
+        -re $match { pass OK }
+        default { fail FAIL }
+    }
+
+    # Quit gdb
+    send "set confirm off\n"
+    send "q\n"
+}
+
 proc jit-dg-test { prog do_what extra_tool_flags } {
     verbose "within jit-dg-test..."
     verbose "  prog: $prog"
@@ -914,9 +942,14 @@ proc jit-verify-executable { args } {
     jit-run-executable $output_filename ${dg-output-text}
 }
 
+set DEFAULT_CFLAGS "-I$srcdir/../jit -lgccjit -g -Wall -Werror"
+
 # We need to link with --export-dynamic for test-calling-external-function.c
 # so that the JIT-built code can call into functions from the main program.
-set DEFAULT_CFLAGS "-I$srcdir/../jit -lgccjit -g -Wall -Werror -Wl,--export-dynamic"
+
+if { [check_effective_target_rdynamic] } {
+  set DEFAULT_CFLAGS "$DEFAULT_CFLAGS -rdynamic"
+}
 
 # Main loop.  This will invoke jig-dg-test on each test-*.c file.
 dg-runtest $tests "" $DEFAULT_CFLAGS

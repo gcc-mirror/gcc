@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-skip-if "not implemented" { powerpc*-*-* } } */
+/* { dg-skip-if "not implemented" { ! { i?86*-*-* x86_64*-*-* sparc*-*-* aarch64*-*-* nvptx*-*-* s390*-*-* } } } */
 /* { dg-options "-O2" } */
 
 #include <assert.h>

@@ -206,6 +206,12 @@ gt_pch_nx (const char *& x)
 }
 
 void
+gt_pch_nx (char *& x)
+{
+  gt_pch_n_S (x);
+}
+
+void
 gt_pch_nx (unsigned char *& x)
 {
   gt_pch_n_S (x);

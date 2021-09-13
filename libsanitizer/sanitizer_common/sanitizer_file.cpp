@@ -58,6 +58,9 @@ void ReportFile::ReopenIfNecessary() {
   } else {
     internal_snprintf(full_path, kMaxPathLength, "%s.%zu", path_prefix, pid);
   }
+  if (common_flags()->log_suffix) {
+    internal_strlcat(full_path, common_flags()->log_suffix, kMaxPathLength);
+  }
   error_t err;
   fd = OpenFile(full_path, WrOnly, &err);
   if (fd == kInvalidFd) {
@@ -93,6 +96,12 @@ void ReportFile::SetReportPath(const char *path) {
   } else {
     internal_snprintf(path_prefix, kMaxPathLength, "%s", path);
   }
+}
+
+const char *ReportFile::GetReportPath() {
+  SpinMutexLock l(mu);
+  ReopenIfNecessary();
+  return full_path;
 }
 
 bool ReadFileToBuffer(const char *file_name, char **buff, uptr *buff_size,
@@ -212,6 +221,10 @@ void __sanitizer_set_report_path(const char *path) {
 void __sanitizer_set_report_fd(void *fd) {
   report_file.fd = (fd_t)reinterpret_cast<uptr>(fd);
   report_file.fd_pid = internal_getpid();
+}
+
+const char *__sanitizer_get_report_path() {
+  return report_file.GetReportPath();
 }
 } // extern "C"
 

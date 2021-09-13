@@ -43,7 +43,7 @@ do
   [ $dir == 'libstdc++-v3' ] || disabled_libs="$disabled_libs --disable-$dir"
 done
 set -x
-${SRCDIR}/configure --enable-languages=c,c++ --disable-gcc $disabled_libs --docdir=/docs
+${SRCDIR}/configure --enable-languages=c,c++ --disable-gcc --disable-multilib $disabled_libs --docdir=/docs
 eval `grep '^target=' config.log`
 make configure-target
 # If the following step fails with an error like

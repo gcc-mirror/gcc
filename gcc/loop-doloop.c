@@ -789,18 +789,14 @@ doloop_optimize (class loop *loop)
 void
 doloop_optimize_loops (void)
 {
-  class loop *loop;
-
   if (optimize == 1)
     {
       df_live_add_problem ();
       df_live_set_all_dirty ();
     }
 
-  FOR_EACH_LOOP (loop, 0)
-    {
-      doloop_optimize (loop);
-    }
+  for (auto loop : loops_list (cfun, 0))
+    doloop_optimize (loop);
 
   if (optimize == 1)
     df_remove_problem (df_live);

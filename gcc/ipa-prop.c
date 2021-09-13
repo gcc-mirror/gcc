@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "symtab-clones.h"
 #include "attr-fnspec.h"
+#include "gimple-range.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -276,7 +277,7 @@ ipa_dump_param (FILE *file, class ipa_node_params *info, int i)
 static bool
 ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 {
-  class ipa_node_params *info = IPA_NODE_REF_GET_CREATE (node);
+  ipa_node_params *info = ipa_node_params_sum->get_create (node);
 
   if (!info->descriptors && param_count)
     {
@@ -294,7 +295,7 @@ ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 void
 ipa_initialize_node_params (struct cgraph_node *node)
 {
-  class ipa_node_params *info = IPA_NODE_REF_GET_CREATE (node);
+  ipa_node_params *info = ipa_node_params_sum->get_create (node);
 
   if (!info->descriptors
       && ipa_alloc_node_params (node, count_formal_params (node->decl)))
@@ -306,15 +307,15 @@ ipa_initialize_node_params (struct cgraph_node *node)
 static void
 ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 {
-  int i, count;
+  ipa_edge_args *args = ipa_edge_args_sum->get (cs);
+  int count = ipa_get_cs_argument_count (args);
 
-  count = ipa_get_cs_argument_count (IPA_EDGE_REF (cs));
-  for (i = 0; i < count; i++)
+  for (int i = 0; i < count; i++)
     {
       struct ipa_jump_func *jump_func;
       enum jump_func_type type;
 
-      jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
+      jump_func = ipa_get_ith_jump_func (args, i);
       type = jump_func->type;
 
       fprintf (f, "       param %d: ", i);
@@ -410,7 +411,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	}
 
       class ipa_polymorphic_call_context *ctx
-	= ipa_get_ith_polymorhic_call_context (IPA_EDGE_REF (cs), i);
+	= ipa_get_ith_polymorhic_call_context (args, i);
       if (ctx && !ctx->useless_p ())
 	{
 	  fprintf (f, "         Context: ");
@@ -543,7 +544,9 @@ ipa_set_jf_constant (struct ipa_jump_func *jfunc, tree constant,
   jfunc->value.constant.value = unshare_expr_without_location (constant);
 
   if (TREE_CODE (constant) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (constant, 0)) == FUNCTION_DECL)
+      && (TREE_CODE (TREE_OPERAND (constant, 0)) == FUNCTION_DECL
+	  || (TREE_CODE (TREE_OPERAND (constant, 0)) == VAR_DECL
+	      && TREE_STATIC (TREE_OPERAND (constant, 0)))))
     {
       struct ipa_cst_ref_desc *rdesc;
 
@@ -2232,11 +2235,12 @@ static void
 ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 				     struct cgraph_edge *cs)
 {
-  class ipa_node_params *info = IPA_NODE_REF (cs->caller);
-  class ipa_edge_args *args = IPA_EDGE_REF_GET_CREATE (cs);
+  ipa_node_params *info = ipa_node_params_sum->get (cs->caller);
+  ipa_edge_args *args = ipa_edge_args_sum->get_create (cs);
   gcall *call = cs->call_stmt;
   int n, arg_num = gimple_call_num_args (call);
   bool useful_context = false;
+  value_range vr;
 
   if (arg_num == 0 || args->jump_functions)
     return;
@@ -2274,7 +2278,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
-	      && get_ptr_nonnull (arg))
+	      && get_range_query (cfun)->range_of_expr (vr, arg)
+	      && vr.nonzero_p ())
 	    addr_nonzero = true;
 	  else if (tree_single_nonzero_warnv_p (arg, &strict_overflow))
 	    addr_nonzero = true;
@@ -2289,19 +2294,14 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	}
       else
 	{
-	  wide_int min, max;
-	  value_range_kind kind;
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
-	      && (kind = get_range_info (arg, &min, &max))
-	      && (kind == VR_RANGE || kind == VR_ANTI_RANGE))
+	      && get_range_query (cfun)->range_of_expr (vr, arg)
+	      && !vr.undefined_p ())
 	    {
 	      value_range resvr;
-	      value_range tmpvr (wide_int_to_tree (TREE_TYPE (arg), min),
-				 wide_int_to_tree (TREE_TYPE (arg), max),
-				 kind);
 	      range_fold_unary_expr (&resvr, NOP_EXPR, param_type,
-				     &tmpvr, TREE_TYPE (arg));
+				     &vr, TREE_TYPE (arg));
 	      if (!resvr.undefined_p () && !resvr.varying_p ())
 		ipa_set_jfunc_vr (jfunc, &resvr);
 	      else
@@ -2509,11 +2509,10 @@ ipa_note_param_call (struct cgraph_node *node, int param_index,
   cs->indirect_info->agg_contents = 0;
   cs->indirect_info->member_ptr = 0;
   cs->indirect_info->guaranteed_unmodified = 0;
-  ipa_set_param_used_by_indirect_call (IPA_NODE_REF (node),
-					  param_index, true);
+  ipa_node_params *info = ipa_node_params_sum->get (node);
+  ipa_set_param_used_by_indirect_call (info, param_index, true);
   if (cs->indirect_info->polymorphic || polymorphic)
-    ipa_set_param_used_by_polymorphic_call
-	    (IPA_NODE_REF (node), param_index, true);
+    ipa_set_param_used_by_polymorphic_call (info, param_index, true);
   return cs;
 }
 
@@ -2879,17 +2878,28 @@ ipa_analyze_params_uses_in_bb (struct ipa_func_body_info *fbi, basic_block bb)
 				   visit_ref_for_mod_analysis);
 }
 
+/* Return true EXPR is a load from a dereference of SSA_NAME NAME.  */
+
+static bool
+load_from_dereferenced_name (tree expr, tree name)
+{
+  tree base = get_base_address (expr);
+  return (TREE_CODE (base) == MEM_REF
+	  && TREE_OPERAND (base, 0) == name);
+}
+
 /* Calculate controlled uses of parameters of NODE.  */
 
 static void
 ipa_analyze_controlled_uses (struct cgraph_node *node)
 {
-  class ipa_node_params *info = IPA_NODE_REF (node);
+  ipa_node_params *info = ipa_node_params_sum->get (node);
 
   for (int i = 0; i < ipa_get_param_count (info); i++)
     {
       tree parm = ipa_get_param (info, i);
-      int controlled_uses = 0;
+      int call_uses = 0;
+      bool load_dereferenced = false;
 
       /* For SSA regs see if parameter is used.  For non-SSA we compute
 	 the flag during modification analysis.  */
@@ -2900,27 +2910,77 @@ ipa_analyze_controlled_uses (struct cgraph_node *node)
 	  if (ddef && !has_zero_uses (ddef))
 	    {
 	      imm_use_iterator imm_iter;
-	      use_operand_p use_p;
+	      gimple *stmt;
 
 	      ipa_set_param_used (info, i, true);
-	      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, ddef)
-		if (!is_gimple_call (USE_STMT (use_p)))
-		  {
-		    if (!is_gimple_debug (USE_STMT (use_p)))
-		      {
-			controlled_uses = IPA_UNDESCRIBED_USE;
-			break;
-		      }
-		  }
-		else
-		  controlled_uses++;
+	      FOR_EACH_IMM_USE_STMT (stmt, imm_iter, ddef)
+		{
+		  if (is_gimple_debug (stmt))
+		    continue;
+
+		  int all_stmt_uses = 0;
+		  use_operand_p use_p;
+		  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+		    all_stmt_uses++;
+
+		  if (is_gimple_call (stmt))
+		    {
+		      if (gimple_call_internal_p (stmt))
+			{
+			  call_uses = IPA_UNDESCRIBED_USE;
+			  break;
+			}
+		      int recognized_stmt_uses;
+		      if (gimple_call_fn (stmt) == ddef)
+			recognized_stmt_uses = 1;
+		      else
+			recognized_stmt_uses = 0;
+		      unsigned arg_count = gimple_call_num_args (stmt);
+		      for (unsigned i = 0; i < arg_count; i++)
+			{
+			  tree arg = gimple_call_arg (stmt, i);
+			  if (arg == ddef)
+			    recognized_stmt_uses++;
+			  else if (load_from_dereferenced_name (arg, ddef))
+			    {
+			      load_dereferenced = true;
+			      recognized_stmt_uses++;
+			    }
+			}
+
+		      if (recognized_stmt_uses != all_stmt_uses)
+			{
+			  call_uses = IPA_UNDESCRIBED_USE;
+			  break;
+			}
+		      if (call_uses >= 0)
+			call_uses += all_stmt_uses;
+		    }
+		  else if (gimple_assign_single_p (stmt))
+		    {
+		      tree rhs = gimple_assign_rhs1 (stmt);
+		      if (all_stmt_uses != 1
+			  || !load_from_dereferenced_name (rhs, ddef))
+			{
+			  call_uses = IPA_UNDESCRIBED_USE;
+			  break;
+			}
+		      load_dereferenced = true;
+		    }
+		  else
+		    {
+		      call_uses = IPA_UNDESCRIBED_USE;
+		      break;
+		    }
+		}
 	    }
 	  else
-	    controlled_uses = 0;
+	    call_uses = 0;
 	}
       else
-	controlled_uses = IPA_UNDESCRIBED_USE;
-      ipa_set_controlled_uses (info, i, controlled_uses);
+	call_uses = IPA_UNDESCRIBED_USE;
+      ipa_set_controlled_uses (info, i, call_uses);
+      ipa_set_param_load_dereferenced (info, i, load_dereferenced);
     }
 }
 
@@ -2980,7 +3040,7 @@ ipa_analyze_node (struct cgraph_node *node)
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
-  info = IPA_NODE_REF_GET_CREATE (node);
+  info = ipa_node_params_sum->get_create (node);
 
   if (info->analysis_done)
     return;
@@ -3003,7 +3063,7 @@ ipa_analyze_node (struct cgraph_node *node)
   ipa_analyze_controlled_uses (node);
 
   fbi.node = node;
-  fbi.info = IPA_NODE_REF (node);
+  fbi.info = info;
   fbi.bb_infos = vNULL;
   fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
   fbi.param_count = ipa_get_param_count (info);
@@ -3036,8 +3096,8 @@ static void
 update_jump_functions_after_inlining (struct cgraph_edge *cs,
 				      struct cgraph_edge *e)
 {
-  class ipa_edge_args *top = IPA_EDGE_REF (cs);
-  class ipa_edge_args *args = IPA_EDGE_REF (e);
+  ipa_edge_args *top = ipa_edge_args_sum->get (cs);
+  ipa_edge_args *args = ipa_edge_args_sum->get (e);
   if (!args)
     return;
   int count = ipa_get_cs_argument_count (args);
@@ -3565,7 +3625,7 @@ ipa_find_agg_cst_from_init (tree scalar, HOST_WIDE_INT offset, bool by_ref)
    initializer of a constant.  */
 
 tree
-ipa_find_agg_cst_for_param (struct ipa_agg_value_set *agg, tree scalar,
+ipa_find_agg_cst_for_param (const ipa_agg_value_set *agg, tree scalar,
 			    HOST_WIDE_INT offset, bool by_ref,
 			    bool *from_global_constant)
 {
@@ -3643,16 +3703,17 @@ jfunc_rdesc_usable (struct ipa_jump_func *jfunc)
    declaration, return the associated call graph node.  Otherwise return
    NULL.  */
 
-static cgraph_node *
-cgraph_node_for_jfunc (struct ipa_jump_func *jfunc)
+static symtab_node *
+symtab_node_for_jfunc (struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (jfunc->type == IPA_JF_CONST);
   tree cst = ipa_get_jf_constant (jfunc);
   if (TREE_CODE (cst) != ADDR_EXPR
-      || TREE_CODE (TREE_OPERAND (cst, 0)) != FUNCTION_DECL)
+      || (TREE_CODE (TREE_OPERAND (cst, 0)) != FUNCTION_DECL
+	  && TREE_CODE (TREE_OPERAND (cst, 0)) != VAR_DECL))
     return NULL;
 
-  return cgraph_node::get (TREE_OPERAND (cst, 0));
+  return symtab_node::get (TREE_OPERAND (cst, 0));
 }
 
 
@@ -3669,7 +3730,7 @@ try_decrement_rdesc_refcount (struct ipa_jump_func *jfunc)
       && (rdesc = jfunc_rdesc_usable (jfunc))
       && --rdesc->refcount == 0)
     {
-      symtab_node *symbol = cgraph_node_for_jfunc (jfunc);
+      symtab_node *symbol = symtab_node_for_jfunc (jfunc);
       if (!symbol)
 	return false;
 
@@ -3724,8 +3785,8 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
       gcc_checking_assert (cs->callee
 			   && (cs != ie
 			       || jfunc->type != IPA_JF_CONST
-			       || !cgraph_node_for_jfunc (jfunc)
-			       || cs->callee == cgraph_node_for_jfunc (jfunc)));
+			       || !symtab_node_for_jfunc (jfunc)
+			       || cs->callee == symtab_node_for_jfunc (jfunc)));
       ok = try_decrement_rdesc_refcount (jfunc);
       gcc_checking_assert (ok);
     }
@@ -3889,11 +3950,11 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
   bool res = false;
 
   ipa_check_create_edge_args ();
-  top = IPA_EDGE_REF (cs);
+  top = ipa_edge_args_sum->get (cs);
   new_root = cs->caller->inlined_to
 		? cs->caller->inlined_to : cs->caller;
-  new_root_info = IPA_NODE_REF (new_root);
-  inlined_node_info = IPA_NODE_REF (cs->callee->function_symbol ());
+  new_root_info = ipa_node_params_sum->get (new_root);
+  inlined_node_info = ipa_node_params_sum->get (cs->callee->function_symbol ());
 
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
@@ -3947,7 +4008,6 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	  && spec_targets.contains (new_direct_edge->callee))
 	{
 	  new_direct_edge->indirect_inlining_edge = 1;
-	  top = IPA_EDGE_REF (cs);
 	  res = true;
 	  if (!new_direct_edge->speculative)
 	    continue;
@@ -3960,7 +4020,6 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	      new_edges->safe_push (new_direct_edge);
 	      res = true;
 	    }
-	  top = IPA_EDGE_REF (cs);
 	  /* If speculative edge was introduced we still need to update
 	     call info of the indirect edge.  */
 	  if (!new_direct_edge->speculative)
@@ -4060,13 +4119,13 @@ combine_controlled_uses_counters (int c, int d)
 static void
 propagate_controlled_uses (struct cgraph_edge *cs)
 {
-  class ipa_edge_args *args = IPA_EDGE_REF (cs);
+  ipa_edge_args *args = ipa_edge_args_sum->get (cs);
   if (!args)
     return;
   struct cgraph_node *new_root = cs->caller->inlined_to
     ? cs->caller->inlined_to : cs->caller;
-  class ipa_node_params *new_root_info = IPA_NODE_REF (new_root);
-  class ipa_node_params *old_root_info = IPA_NODE_REF (cs->callee);
+  ipa_node_params *new_root_info = ipa_node_params_sum->get (new_root);
+  ipa_node_params *old_root_info = ipa_node_params_sum->get (cs->callee);
   int count, i;
 
   if (!old_root_info)
@@ -4090,7 +4149,15 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 			       == NOP_EXPR || c == IPA_UNDESCRIBED_USE);
 	  c = combine_controlled_uses_counters (c, d);
 	  ipa_set_controlled_uses (new_root_info, src_idx, c);
-	  if (c == 0 && new_root_info->ipcp_orig_node)
+	  bool lderef = true;
+	  if (c != IPA_UNDESCRIBED_USE)
+	    {
+	      lderef = (ipa_get_param_load_dereferenced (new_root_info, src_idx)
+			|| ipa_get_param_load_dereferenced (old_root_info, i));
+	      ipa_set_param_load_dereferenced (new_root_info, src_idx, lderef);
+	    }
+
+	  if (c == 0 && !lderef && new_root_info->ipcp_orig_node)
 	    {
 	      struct cgraph_node *n;
 	      struct ipa_ref *ref;
@@ -4119,17 +4186,27 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	  if (rdesc->refcount == 0)
 	    {
 	      tree cst = ipa_get_jf_constant (jf);
-	      struct cgraph_node *n;
 	      gcc_checking_assert (TREE_CODE (cst) == ADDR_EXPR
-				   && TREE_CODE (TREE_OPERAND (cst, 0))
-				   == FUNCTION_DECL);
-	      n = cgraph_node::get (TREE_OPERAND (cst, 0));
+				   && ((TREE_CODE (TREE_OPERAND (cst, 0))
+					== FUNCTION_DECL)
+				       || (TREE_CODE (TREE_OPERAND (cst, 0))
+					   == VAR_DECL)));
+
+	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
 	      if (n)
 		{
 		  struct cgraph_node *clone;
-		  bool ok;
-		  ok = remove_described_reference (n, rdesc);
-		  gcc_checking_assert (ok);
+		  bool removed = remove_described_reference (n, rdesc);
+		  /* The reference might have been removed by IPA-CP.  */
+		  if (removed
+		      && ipa_get_param_load_dereferenced (old_root_info, i))
+		    {
+		      new_root->create_reference (n, IPA_REF_LOAD, NULL);
+		      if (dump_file)
+			fprintf (dump_file, "ipa-prop: ...replaced it with "
+				 "LOAD one from %s to %s.\n",
+				 new_root->dump_name (), n->dump_name ());
+		    }
 
 		  clone = cs->caller;
 		  while (clone->inlined_to
@@ -4195,7 +4272,7 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
   changed = propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
   ipa_node_params_sum->remove (cs->callee);
 
-  class ipa_edge_args *args = IPA_EDGE_REF (cs);
+  ipa_edge_args *args = ipa_edge_args_sum->get (cs);
   if (args)
     {
       bool ok = true;
@@ -4352,7 +4429,7 @@ ipa_edge_args_sum_t::duplicate (cgraph_edge *src, cgraph_edge *dst,
 	  else if (src->caller == dst->caller)
 	    {
 	      struct ipa_ref *ref;
-	      symtab_node *n = cgraph_node_for_jfunc (src_jf);
+	      symtab_node *n = symtab_node_for_jfunc (src_jf);
 	      gcc_checking_assert (n);
 	      ref = src->caller->find_reference (n, src->call_stmt,
 						 src->lto_stmt_uid);
@@ -4403,7 +4480,7 @@ ipa_edge_args_sum_t::duplicate (cgraph_edge *src, cgraph_edge *dst,
 	{
 	  struct cgraph_node *inline_root = dst->caller->inlined_to
 	    ? dst->caller->inlined_to : dst->caller;
-	  class ipa_node_params *root_info = IPA_NODE_REF (inline_root);
+	  ipa_node_params *root_info = ipa_node_params_sum->get (inline_root);
 	  int idx = ipa_get_jf_pass_through_formal_id (dst_jf);
 
 	  int c = ipa_get_controlled_uses (root_info, idx);
@@ -4553,7 +4630,7 @@ ipa_print_node_params (FILE *f, struct cgraph_node *node)
 
   if (!node->definition)
     return;
-  info = IPA_NODE_REF (node);
+  info = ipa_node_params_sum->get (node);
   fprintf (f, "  function  %s parameter descriptors:\n", node->dump_name ());
   if (!info)
     {
@@ -4579,7 +4656,9 @@ ipa_print_node_params (FILE *f, struct cgraph_node *node)
       if (c == IPA_UNDESCRIBED_USE)
 	fprintf (f, " undescribed_use");
       else
-	fprintf (f, "  controlled_uses=%i", c);
+	fprintf (f, "  controlled_uses=%i %s", c,
+		 ipa_get_param_load_dereferenced (info, i)
+		 ? "(load_dereferenced)" : "");
       fprintf (f, "\n");
     }
 }
@@ -4956,7 +5035,7 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
 {
   int node_ref;
   lto_symtab_encoder_t encoder;
-  class ipa_node_params *info = IPA_NODE_REF (node);
+  ipa_node_params *info = ipa_node_params_sum->get (node);
   int j;
   struct cgraph_edge *e;
   struct bitpack_d bp;
@@ -4974,7 +5053,13 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   gcc_assert (!info->node_enqueued);
   gcc_assert (!info->ipcp_orig_node);
   for (j = 0; j < ipa_get_param_count (info); j++)
-    bp_pack_value (&bp, ipa_is_param_used (info, j), 1);
+    {
+      /* TODO: We could just not stream the bit in the undescribed case. */
+      bool d = (ipa_get_controlled_uses (info, j) != IPA_UNDESCRIBED_USE)
+	? ipa_get_param_load_dereferenced (info, j) : true;
+      bp_pack_value (&bp, d, 1);
+      bp_pack_value (&bp, ipa_is_param_used (info, j), 1);
+    }
   streamer_write_bitpack (&bp);
   for (j = 0; j < ipa_get_param_count (info); j++)
     {
@@ -4983,7 +5068,7 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
     }
   for (e = node->callees; e; e = e->next_callee)
     {
-      class ipa_edge_args *args = IPA_EDGE_REF (e);
+      ipa_edge_args *args = ipa_edge_args_sum->get (e);
 
       if (!args)
 	{
@@ -5003,7 +5088,7 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
     {
-      class ipa_edge_args *args = IPA_EDGE_REF (e);
+      ipa_edge_args *args = ipa_edge_args_sum->get (e);
       if (!args)
 	streamer_write_uhwi (ob, 0);
       else
@@ -5041,7 +5126,7 @@ ipa_read_edge_info (class lto_input_block *ib,
 	     will get fnspecs.  */
 	  || fndecl_built_in_p (e->callee->decl, BUILT_IN_NORMAL)))
     {
-      class ipa_edge_args *args = IPA_EDGE_REF_GET_CREATE (e);
+      ipa_edge_args *args = ipa_edge_args_sum->get_create (e);
       vec_safe_grow_cleared (args->jump_functions, count, true);
       if (contexts_computed)
 	vec_safe_grow_cleared (args->polymorphic_call_contexts, count, true);
@@ -5080,8 +5165,8 @@ ipa_read_node_info (class lto_input_block *ib, struct cgraph_node *node,
   struct cgraph_edge *e;
   struct bitpack_d bp;
   bool prevails = node->prevailing_p ();
-  class ipa_node_params *info = prevails
-				? IPA_NODE_REF_GET_CREATE (node) : NULL;
+  ipa_node_params *info
+    = prevails ? ipa_node_params_sum->get_create (node) : NULL;
 
   int param_count = streamer_read_uhwi (ib);
   if (prevails)
@@ -5100,10 +5185,14 @@ ipa_read_node_info (class lto_input_block *ib, struct cgraph_node *node,
   bp = streamer_read_bitpack (ib);
   for (k = 0; k < param_count; k++)
     {
+      bool load_dereferenced = bp_unpack_value (&bp, 1);
       bool used = bp_unpack_value (&bp, 1);
 
       if (prevails)
-        ipa_set_param_used (info, k, used);
+	{
+	  ipa_set_param_load_dereferenced (info, k, load_dereferenced);
+	  ipa_set_param_used (info, k, used);
+	}
     }
   for (k = 0; k < param_count; k++)
     {
@@ -5130,7 +5219,6 @@ ipa_read_node_info (class lto_input_block *ib, struct cgraph_node *node,
 void
 ipa_prop_write_jump_functions (void)
 {
-  struct cgraph_node *node;
   struct output_block *ob;
   unsigned int count = 0;
   lto_symtab_encoder_iterator lsei;
@@ -5145,9 +5233,9 @@ ipa_prop_write_jump_functions (void)
   for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
        lsei_next_function_in_partition (&lsei))
     {
-      node = lsei_cgraph_node (lsei);
+      cgraph_node *node = lsei_cgraph_node (lsei);
       if (node->has_gimple_body_p ()
-	  && IPA_NODE_REF (node) != NULL)
+	  && ipa_node_params_sum->get (node) != NULL)
 	count++;
     }
 
@@ -5157,9 +5245,9 @@ ipa_prop_write_jump_functions (void)
   for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
        lsei_next_function_in_partition (&lsei))
     {
-      node = lsei_cgraph_node (lsei);
+      cgraph_node *node = lsei_cgraph_node (lsei);
       if (node->has_gimple_body_p ()
-	  && IPA_NODE_REF (node) != NULL)
+	  && ipa_node_params_sum->get (node) != NULL)
         ipa_write_node_info (ob, node);
     }
   streamer_write_char_stream (ob->main_stream, 0);
@@ -5514,17 +5602,20 @@ public:
   ipcp_modif_dom_walker (struct ipa_func_body_info *fbi,
 			 vec<ipa_param_descriptor, va_gc> *descs,
 			 struct ipa_agg_replacement_value *av,
-			 bool *sc, bool *cc)
+			 bool *sc)
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi), m_descriptors (descs),
-      m_aggval (av), m_something_changed (sc), m_cfg_changed (cc) {}
+      m_aggval (av), m_something_changed (sc) {}
 
   virtual edge before_dom_children (basic_block);
+  bool cleanup_eh ()
+    { return gimple_purge_all_dead_eh_edges (m_need_eh_cleanup); }
 
 private:
   struct ipa_func_body_info *m_fbi;
   vec<ipa_param_descriptor, va_gc> *m_descriptors;
   struct ipa_agg_replacement_value *m_aggval;
-  bool *m_something_changed, *m_cfg_changed;
+  bool *m_something_changed;
+  auto_bitmap m_need_eh_cleanup;
 };
 
 edge
@@ -5616,9 +5707,8 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 	}
 
       *m_something_changed = true;
-      if (maybe_clean_eh_stmt (stmt)
-	  && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
-	*m_cfg_changed = true;
+      if (maybe_clean_eh_stmt (stmt))
+	bitmap_set_bit (m_need_eh_cleanup, bb->index);
     }
   return NULL;
 }
@@ -5876,7 +5966,7 @@ ipcp_transform_function (struct cgraph_node *node)
   struct ipa_func_body_info fbi;
   struct ipa_agg_replacement_value *aggval;
   int param_count;
-  bool cfg_changed = false, something_changed = false;
+  bool something_changed = false;
 
   gcc_checking_assert (cfun);
   gcc_checking_assert (current_function_decl);
@@ -5907,15 +5997,16 @@ ipcp_transform_function (struct cgraph_node *node)
   vec_safe_grow_cleared (descriptors, param_count, true);
   ipa_populate_param_decls (node, *descriptors);
   calculate_dominance_info (CDI_DOMINATORS);
-  ipcp_modif_dom_walker (&fbi, descriptors, aggval, &something_changed,
-			 &cfg_changed).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  ipcp_modif_dom_walker walker (&fbi, descriptors, aggval, &something_changed);
+  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  free_dominance_info (CDI_DOMINATORS);
+  bool cfg_changed = walker.cleanup_eh ();
 
   int i;
   struct ipa_bb_info *bi;
   FOR_EACH_VEC_ELT (fbi.bb_infos, i, bi)
     free_ipa_bb_info (bi);
   fbi.bb_infos.release ();
-  free_dominance_info (CDI_DOMINATORS);
 
   ipcp_transformation *s = ipcp_transformation_sum->get (node);
   s->agg_values = NULL;

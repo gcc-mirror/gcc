@@ -141,10 +141,6 @@ libgomp/testsuite/Makefile.in: libgomp/testsuite/Makefile.am libgomp/aclocal.m4
 libgomp/configure.ac: libgomp/plugin/configfrag.ac
 libgomp/configure: libgomp/configure.ac libgomp/aclocal.m4
 libgomp/config.h.in: libgomp/configure.ac libgomp/aclocal.m4
-libhsail-rt/aclocal.m4: libhsail-rt/configure.ac
-libhsail-rt/Makefile.in: libhsail-rt/Makefile.am libhsail-rt/aclocal.m4
-libhsail-rt/configure: libhsail-rt/configure.ac libhsail-rt/aclocal.m4
-libhsail-rt/target-config.h.in: libhsail-rt/configure.ac libhsail-rt/aclocal.m4
 libitm/aclocal.m4: libitm/configure.ac libitm/acinclude.m4
 libitm/Makefile.in: libitm/Makefile.am libitm/aclocal.m4
 libitm/testsuite/Makefile.in: libitm/testsuite/Makefile.am libitm/aclocal.m4
@@ -243,7 +239,7 @@ apply_patch () {
 }
 
 # Check whether this indeed looks like a local tree.
-if [ ! -f gcc/version.c ]; then
+if [ ! -f gcc/reload.c ]; then
     echo "This does not seem to be a GCC tree!"
     exit
 fi
@@ -336,7 +332,22 @@ case $vcs_type in
             exit 1
 	fi
 
-	revision=`$GCC_GIT log -n1 --pretty=tformat:%p:%t:%H`
+	# Open-coded version of "git gcc-descr" from contrib/gcc-git-customization.sh
+	revision=`$GCC_GIT log -n1 --pretty=tformat:%h`
+	r=`$GCC_GIT describe --all --match 'basepoints/gcc-[0-9]*' HEAD \
+	   | sed -n 's,^\(tags/\)\?basepoints/gcc-\([0-9]\+\)-\([0-9]\+\)-g[0-9a-f]*$,r\2-\3,p;s,^\(tags/\)\?basepoints/gcc-\([0-9]\+\)$,r\2-0,p'`;
+	if test -n $r; then
+		o=`$GCC_GIT config --get gcc-config.upstream`;
+		rr=`echo $r | sed -n 's,^r\([0-9]\+\)-[0-9]\+\(-g[0-9a-f]\+\)\?$,\1,p'`;
+		if $GCC_GIT rev-parse --verify --quiet ${o:-origin}/releases/gcc-$rr >/dev/null; then
+			m=releases/gcc-$rr;
+		else
+			m=master;
+		fi;
+		if $GCC_GIT merge-base --is-ancestor HEAD ${o:-origin}/$m; then
+			revision=${r}-g${revision};
+		fi
+	fi
 	branch=`$GCC_GIT name-rev --name-only HEAD || :`
 	;;    
 
@@ -418,6 +429,6 @@ rm -f LAST_UPDATED gcc/REVISION
     date
     echo "`TZ=UTC date` (revision $revision)"
 } > LAST_UPDATED
-echo "[$branch revision $revision]" > gcc/REVISION
+echo "[$branch $revision]" > gcc/REVISION
 
 touch_files_reexec

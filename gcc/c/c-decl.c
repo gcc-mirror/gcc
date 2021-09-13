@@ -73,13 +73,16 @@ enum decl_context
   TYPENAME};			/* Typename (inside cast or sizeof)  */
 
 /* States indicating how grokdeclarator() should handle declspecs marked
-   with __attribute__((deprecated)).  An object declared as
-   __attribute__((deprecated)) suppresses warnings of uses of other
-   deprecated items.  */
+   with __attribute__((deprecated)) or __attribute__((unavailable)).
+   An object declared as __attribute__((unavailable)) should suppress
+   any reports of being declared  with unavailable or deprecated items.
+   An object declared as __attribute__((deprecated)) should suppress
+   warnings of uses of other deprecated items.  */
 
 enum deprecated_states {
   DEPRECATED_NORMAL,
-  DEPRECATED_SUPPRESS
+  DEPRECATED_SUPPRESS,
+  UNAVAILABLE_DEPRECATED_SUPPRESS
 };
 
 
@@ -1295,7 +1298,7 @@ pop_scope (void)
 	case VAR_DECL:
 	  /* Warnings for unused variables.  */
 	  if ((!TREE_USED (p) || !DECL_READ_P (p))
-	      && !TREE_NO_WARNING (p)
+	      && !warning_suppressed_p (p, OPT_Wunused_but_set_variable)
 	      && !DECL_IN_SYSTEM_HEADER (p)
 	      && DECL_NAME (p)
 	      && !DECL_ARTIFICIAL (p)
@@ -2159,8 +2162,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
       if (DECL_IN_SYSTEM_HEADER (newdecl)
 	  || DECL_IN_SYSTEM_HEADER (olddecl)
-	  || TREE_NO_WARNING (newdecl)
-	  || TREE_NO_WARNING (olddecl))
+	  || warning_suppressed_p (newdecl, OPT_Wpedantic)
+	  || warning_suppressed_p (olddecl, OPT_Wpedantic))
 	return true;  /* Allow OLDDECL to continue in use.  */
 
       if (variably_modified_type_p (newtype, NULL))
@@ -2620,6 +2623,9 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  SET_DECL_ALIGN (newdecl, DECL_ALIGN (olddecl));
 	  DECL_USER_ALIGN (newdecl) |= DECL_USER_ALIGN (olddecl);
 	}
+      else if (DECL_ALIGN (olddecl) == DECL_ALIGN (newdecl)
+	       && DECL_USER_ALIGN (olddecl) != DECL_USER_ALIGN (newdecl))
+	DECL_USER_ALIGN (newdecl) = 1;
       if (DECL_WARN_IF_NOT_ALIGN (olddecl)
 	  > DECL_WARN_IF_NOT_ALIGN (newdecl))
 	SET_DECL_WARN_IF_NOT_ALIGN (newdecl,
@@ -2640,6 +2646,10 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
   /* Merge deprecatedness.  */
   if (TREE_DEPRECATED (newdecl))
     TREE_DEPRECATED (olddecl) = 1;
+
+  /* Merge unavailability.  */
+  if (TREE_UNAVAILABLE (newdecl))
+    TREE_UNAVAILABLE (olddecl) = 1;
 
   /* If a decl is in a system header and the other isn't, keep the one on the
      system header. Otherwise, keep source location of definition rather than
@@ -2953,7 +2963,18 @@ duplicate_decls (tree newdecl, tree olddecl)
   if (!diagnose_mismatched_decls (newdecl, olddecl, &newtype, &oldtype))
     {
       /* Avoid `unused variable' and other warnings for OLDDECL.  */
-      TREE_NO_WARNING (olddecl) = 1;
+      suppress_warning (olddecl, OPT_Wunused);
+      /* If the types are completely different, poison them both with
+ 	 error_mark_node.  */
+      if (TREE_CODE (TREE_TYPE (newdecl)) != TREE_CODE (TREE_TYPE (olddecl))
+	  && olddecl != error_mark_node
+	  && seen_error ())
+	{
+	  if (TREE_CODE (olddecl) != FUNCTION_DECL)
+	    TREE_TYPE (olddecl) = error_mark_node;
+	  if (TREE_CODE (newdecl) != FUNCTION_DECL)
+	    TREE_TYPE (newdecl) = error_mark_node;
+	}
       return false;
     }
 
@@ -3263,11 +3284,10 @@ pushdecl (tree x)
 	  else
 	    thistype = type;
 	  b->u.type = TREE_TYPE (b->decl);
-	  if (TREE_CODE (b->decl) == FUNCTION_DECL
-	      && fndecl_built_in_p (b->decl))
-	    thistype
-	      = build_type_attribute_variant (thistype,
-					      TYPE_ATTRIBUTES (b->u.type));
+	  /* Propagate the type attributes to the decl.  */
+	  thistype
+	    = build_type_attribute_variant (thistype,
+					    TYPE_ATTRIBUTES (b->u.type));
 	  TREE_TYPE (b->decl) = thistype;
 	  bind (name, b->decl, scope, /*invisible=*/false, /*nested=*/true,
 		locus);
@@ -4879,6 +4899,7 @@ quals_from_declspecs (const struct c_declspecs *specs)
 	      && !specs->typedef_p
 	      && !specs->explicit_signed_p
 	      && !specs->deprecated_p
+	      && !specs->unavailable_p
 	      && !specs->long_p
 	      && !specs->long_long_p
 	      && !specs->short_p
@@ -5081,9 +5102,14 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
   tree expr = NULL_TREE;
   enum deprecated_states deprecated_state = DEPRECATED_NORMAL;
 
-  /* An object declared as __attribute__((deprecated)) suppresses
+  /* An object declared as __attribute__((unavailable)) suppresses
+     warnings and errors from __attribute__((deprecated/unavailable))
+     components.
+     An object declared as __attribute__((deprecated)) suppresses
      warnings of uses of other deprecated items.  */
-  if (lookup_attribute ("deprecated", attributes))
+  if (lookup_attribute ("unavailable", attributes))
+    deprecated_state = UNAVAILABLE_DEPRECATED_SUPPRESS;
+  else if (lookup_attribute ("deprecated", attributes))
     deprecated_state = DEPRECATED_SUPPRESS;
 
   decl = grokdeclarator (declarator, declspecs,
@@ -5402,7 +5428,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	  gcc_unreachable ();
 	}
 
-      if (DECL_INITIAL (decl))
+      if (DECL_INITIAL (decl) && DECL_INITIAL (decl) != error_mark_node)
 	TREE_TYPE (DECL_INITIAL (decl)) = type;
 
       relayout_decl (decl);
@@ -5857,9 +5883,13 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	  spec += buf;
 	  break;
 	}
+      else if (!INTEGRAL_TYPE_P (TREE_TYPE (nelts)))
+	/* Avoid invalid NELTS.  */
+	return attrs;
 
       /* Each variable VLA bound is represented by a dollar sign.  */
       spec += "$";
+      STRIP_NOPS (nelts);
       vbchain = tree_cons (NULL_TREE, nelts, vbchain);
     }
 
@@ -6216,7 +6246,7 @@ smallest_type_quals_location (const location_t *locations,
      set to indicate whether operands in *EXPR can be used in constant
      expressions.
    DEPRECATED_STATE is a deprecated_states value indicating whether
-   deprecation warnings should be suppressed.
+   deprecation/unavailability warnings should be suppressed.
 
    In the TYPENAME case, DECLARATOR is really an absolute declarator.
    It may also be so in the PARM case, for a prototype where the
@@ -6346,8 +6376,14 @@ grokdeclarator (const struct c_declarator *declarator,
   if (decl_context == NORMAL && !funcdef_flag && current_scope->parm_flag)
     decl_context = PARM;
 
-  if (declspecs->deprecated_p && deprecated_state != DEPRECATED_SUPPRESS)
-    warn_deprecated_use (declspecs->type, declspecs->decl_attr);
+  if (deprecated_state != UNAVAILABLE_DEPRECATED_SUPPRESS)
+    {
+      if (declspecs->unavailable_p)
+	error_unavailable_use (declspecs->type, declspecs->decl_attr);
+      else if (declspecs->deprecated_p
+		&& deprecated_state != DEPRECATED_SUPPRESS)
+	warn_deprecated_use (declspecs->type, declspecs->decl_attr);
+    }
 
   if ((decl_context == NORMAL || decl_context == FIELD)
       && current_scope == file_scope
@@ -7538,10 +7574,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			   FIELD_DECL, declarator->u.id.id, type);
 	DECL_NONADDRESSABLE_P (decl) = bitfield;
 	if (bitfield && !declarator->u.id.id)
-	  {
-	    TREE_NO_WARNING (decl) = 1;
-	    DECL_PADDING_P (decl) = 1;
-	  }
+	  DECL_PADDING_P (decl) = 1;
 
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
@@ -8851,6 +8884,22 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 		= c_build_qualified_type (fmain_type, TYPE_QUALS (ftype));
 	    }
 	}
+
+      /* Warn on problematic type punning for storage order purposes.  */
+      if (TREE_CODE (t) == UNION_TYPE
+	  && TREE_CODE (field) == FIELD_DECL
+	  && AGGREGATE_TYPE_P (TREE_TYPE (field)))
+	{
+	  tree ftype = TREE_TYPE (field);
+	  if (TREE_CODE (ftype) == ARRAY_TYPE)
+	    ftype = strip_array_types (ftype);
+	  if (RECORD_OR_UNION_TYPE_P (ftype)
+	      && TYPE_REVERSE_STORAGE_ORDER (ftype)
+		 != TYPE_REVERSE_STORAGE_ORDER (t))
+	    warning_at (DECL_SOURCE_LOCATION (field),
+			OPT_Wscalar_storage_order,
+			"type punning toggles scalar storage order");
+	}
     }
 
   /* Now we have the truly final field list.
@@ -9360,7 +9409,7 @@ build_enumerator (location_t decl_loc, location_t loc,
 
 tree
 c_simulate_enum_decl (location_t loc, const char *name,
-		      vec<string_int_pair> values)
+		      vec<string_int_pair> *values_ptr)
 {
   location_t saved_loc = input_location;
   input_location = loc;
@@ -9370,6 +9419,7 @@ c_simulate_enum_decl (location_t loc, const char *name,
 
   tree value_chain = NULL_TREE;
   string_int_pair *value;
+  vec<string_int_pair> values = *values_ptr;
   unsigned int i;
   FOR_EACH_VEC_ELT (values, i, value)
     {
@@ -10223,7 +10273,7 @@ finish_function (location_t end_loc)
       && targetm.warn_func_return (fndecl)
       && warning (OPT_Wreturn_type,
 		  "no return statement in function returning non-void"))
-    TREE_NO_WARNING (fndecl) = 1;
+    suppress_warning (fndecl, OPT_Wreturn_type);
 
   /* Complain about parameters that are only set, but never otherwise used.  */
   if (warn_unused_but_set_parameter)
@@ -10238,7 +10288,7 @@ finish_function (location_t end_loc)
 	    && !DECL_READ_P (decl)
 	    && DECL_NAME (decl)
 	    && !DECL_ARTIFICIAL (decl)
-	    && !TREE_NO_WARNING (decl))
+	    && !warning_suppressed_p (decl, OPT_Wunused_but_set_parameter))
 	  warning_at (DECL_SOURCE_LOCATION (decl),
 		      OPT_Wunused_but_set_parameter,
 		      "parameter %qD set but not used", decl);
@@ -10538,6 +10588,7 @@ names_builtin_p (const char *name)
     case RID_BUILTIN_CONVERTVECTOR:
     case RID_BUILTIN_HAS_ATTRIBUTE:
     case RID_BUILTIN_SHUFFLE:
+    case RID_BUILTIN_SHUFFLEVECTOR:
     case RID_CHOOSE_EXPR:
     case RID_OFFSETOF:
     case RID_TYPES_COMPATIBLE_P:
@@ -10782,6 +10833,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
   specs->typespec_kind = spec.kind;
   if (TREE_DEPRECATED (type))
     specs->deprecated_p = true;
+  if (TREE_UNAVAILABLE (type))
+    specs->unavailable_p = true;
 
   /* Handle type specifier keywords.  */
   if (TREE_CODE (type) == IDENTIFIER_NODE
@@ -12104,19 +12157,20 @@ c_write_global_declarations_1 (tree globals)
 	{
 	  if (C_DECL_USED (decl))
 	    {
+	      /* TODO: Add OPT_Wundefined-inline.  */
 	      if (pedwarn (input_location, 0, "%q+F used but never defined",
 			   decl))
-		TREE_NO_WARNING (decl) = 1;
+		suppress_warning (decl /* OPT_Wundefined-inline.  */);
 	    }
 	  /* For -Wunused-function warn about unused static prototypes.  */
 	  else if (warn_unused_function
 		   && ! DECL_ARTIFICIAL (decl)
-		   && ! TREE_NO_WARNING (decl))
+		   && ! warning_suppressed_p (decl, OPT_Wunused_function))
 	    {
 	      if (warning (OPT_Wunused_function,
 			   "%q+F declared %<static%> but never defined",
 			   decl))
-		TREE_NO_WARNING (decl) = 1;
+		suppress_warning (decl, OPT_Wunused_function);
 	    }
 	}
 
@@ -12187,7 +12241,7 @@ free_attr_access_data ()
 	  attr_access::free_lang_data (attrs);
 
       tree fntype = TREE_TYPE (n->decl);
-      if (!fntype)
+      if (!fntype || fntype == error_mark_node)
 	continue;
       tree attrs = TYPE_ATTRIBUTES (fntype);
       if (!attrs)

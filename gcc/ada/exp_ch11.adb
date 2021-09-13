@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,33 +23,37 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Intr; use Exp_Intr;
-with Exp_Util; use Exp_Util;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Intr;       use Exp_Intr;
+with Exp_Util;       use Exp_Util;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Exp_Ch11 is
 
@@ -1084,10 +1088,19 @@ package body Exp_Ch11 is
 
    --  (protecting test only needed if not at library level)
 
-   --     exceptF : Boolean := True --  static data
+   --     exceptF : aliased System.Atomic_Operations.Test_And_Set.
+   --                         .Test_And_Set_Flag := 0; --  static data
+   --     if not Atomic_Test_And_Set (exceptF) then
+   --        Register_Exception (except'Unrestricted_Access);
+   --     end if;
+
+   --  If a No_Tasking restriction is in effect, or if Test_And_Set_Flag
+   --  is unavailable, then use Boolean instead. In that case, we generate:
+   --
+   --     exceptF : Boolean := True; --  static data
    --     if exceptF then
-   --        exceptF := False;
-   --        Register_Exception (except'Unchecked_Access);
+   --        ExceptF := False;
+   --        Register_Exception (except'Unrestricted_Access);
    --     end if;
 
    procedure Expand_N_Exception_Declaration (N : Node_Id) is
@@ -1242,16 +1255,13 @@ package body Exp_Ch11 is
           Prefix         => New_Occurrence_Of (Ex_Id, Loc),
           Attribute_Name => Name_Length));
 
-      --  Full_Name component: Standard.A_Char!(Nam'Address)
-
-      --  The unchecked conversion causes capacity issues for CodePeer in some
-      --  cases and is never useful, so we set the Full_Name component to null
-      --  instead for CodePeer.
+      --  Full_Name component: Standard_Address?(Nam'Address)
+      --  or 0 if CodePeer_Mode
 
       if CodePeer_Mode then
-         Append_To (L, Make_Null (Loc));
+         Append_To (L, Make_Integer_Literal (Loc, Uint_0));
       else
-         Append_To (L, Unchecked_Convert_To (Standard_A_Char,
+         Append_To (L, OK_Convert_To (Standard_Address,
            Make_Attribute_Reference (Loc,
              Prefix         => New_Occurrence_Of (Ex_Id, Loc),
              Attribute_Name => Name_Address)));
@@ -1261,9 +1271,9 @@ package body Exp_Ch11 is
 
       Append_To (L, Make_Null (Loc));
 
-      --  Foreign_Data component: null
+      --  Foreign_Data component: null address
 
-      Append_To (L, Make_Null (Loc));
+      Append_To (L, Make_Integer_Literal (Loc, Uint_0));
 
       --  Raise_Hook component: null
 
@@ -1274,7 +1284,7 @@ package body Exp_Ch11 is
 
       Force_Static_Allocation_Of_Referenced_Objects (Expression (N));
 
-      --  Register_Exception (except'Unchecked_Access);
+      --  Register_Exception (except'Unrestricted_Access);
 
       if not No_Exception_Handlers_Set
         and then not Restriction_Active (No_Exception_Registration)
@@ -1295,27 +1305,59 @@ package body Exp_Ch11 is
             Flag_Id :=
               Make_Defining_Identifier (Loc,
                 Chars => New_External_Name (Chars (Id), 'F'));
-
-            Insert_Action (N,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Flag_Id,
-                Object_Definition   =>
-                  New_Occurrence_Of (Standard_Boolean, Loc),
-                Expression          =>
-                  New_Occurrence_Of (Standard_True, Loc)));
-
             Set_Is_Statically_Allocated (Flag_Id);
 
-            Append_To (L,
-              Make_Assignment_Statement (Loc,
-                Name       => New_Occurrence_Of (Flag_Id, Loc),
-                Expression => New_Occurrence_Of (Standard_False, Loc)));
+            declare
+               Use_Test_And_Set_Flag : constant Boolean :=
+                 (not Global_No_Tasking)
+                 and then RTE_Available (RE_Test_And_Set_Flag);
 
-            Insert_After_And_Analyze (N,
-              Make_Implicit_If_Statement (N,
-                Condition       => New_Occurrence_Of (Flag_Id, Loc),
-                Then_Statements => L));
+               Flag_Decl : Node_Id;
+               Condition : Node_Id;
+            begin
+               if Use_Test_And_Set_Flag then
+                  Flag_Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Flag_Id,
+                      Aliased_Present     => True,
+                      Object_Definition   =>
+                        New_Occurrence_Of (RTE (RE_Test_And_Set_Flag), Loc),
+                      Expression          =>
+                        Make_Integer_Literal (Loc, 0));
+               else
+                  Flag_Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Flag_Id,
+                      Object_Definition   =>
+                        New_Occurrence_Of (Standard_Boolean, Loc),
+                      Expression          =>
+                        New_Occurrence_Of (Standard_True, Loc));
+               end if;
 
+               Insert_Action (N, Flag_Decl);
+
+               if Use_Test_And_Set_Flag then
+                  Condition :=
+                    Make_Op_Not (Loc,
+                      Make_Function_Call (Loc,
+                        Name => New_Occurrence_Of
+                                  (RTE (RE_Atomic_Test_And_Set), Loc),
+                        Parameter_Associations =>
+                          New_List (New_Occurrence_Of (Flag_Id, Loc))));
+               else
+                  Condition := New_Occurrence_Of (Flag_Id, Loc);
+
+                  Append_To (L,
+                    Make_Assignment_Statement (Loc,
+                    Name       => New_Occurrence_Of (Flag_Id, Loc),
+                    Expression => New_Occurrence_Of (Standard_False, Loc)));
+               end if;
+
+               Insert_After_And_Analyze (N,
+                 Make_Implicit_If_Statement (N,
+                   Condition       => Condition,
+                   Then_Statements => L));
+            end;
          else
             Insert_List_After_And_Analyze (N, L);
          end if;
@@ -1700,7 +1742,7 @@ package body Exp_Ch11 is
          if No (Choice_Parameter (Ehand)) then
             E := Make_Temporary (Loc, 'E');
             Set_Choice_Parameter (Ehand, E);
-            Set_Ekind (E, E_Variable);
+            Mutate_Ekind (E, E_Variable);
             Set_Etype (E, RTE (RE_Exception_Occurrence));
             Set_Scope (E, Current_Scope);
          end if;
@@ -1734,6 +1776,24 @@ package body Exp_Ch11 is
 
       Analyze (N);
    end Expand_N_Raise_Statement;
+
+   -----------------------------------
+   -- Expand_N_Raise_When_Statement --
+   -----------------------------------
+
+   procedure Expand_N_Raise_When_Statement (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+   begin
+      Rewrite (N,
+        Make_If_Statement (Loc,
+          Condition       => Condition (N),
+          Then_Statements => New_List (
+            Make_Raise_Statement (Loc,
+              Name       => Name (N),
+              Expression => Expression (N)))));
+
+      Analyze (N);
+   end Expand_N_Raise_When_Statement;
 
    ----------------------------------
    -- Expand_N_Raise_Storage_Error --

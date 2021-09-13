@@ -34,7 +34,7 @@ dg-init
 # Main loop.
 foreach test $tests {
     set libphobos_test_name "$subdir/[dg-trim-dirname $srcdir/../libdruntime $test]"
-    dg-runtest $test "-fversion=Shared -shared-libphobos" \
+    dg-runtest $test "-shared-libphobos" \
 	"-fmain -fbuilding-libphobos-tests -fno-moduleinfo $version_flags"
     set libphobos_test_name ""
 }

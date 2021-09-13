@@ -15,6 +15,9 @@ extern void __analyzer_describe (int verbosity, ...);
 /* Dump copious information about the analyzer’s state when reached.  */
 extern void __analyzer_dump (void);
 
+/* Emit a warning describing the size of the base region of (*ptr).  */
+extern void __analyzer_dump_capacity (const void *ptr);
+
 /* Dump information after analysis on all of the exploded nodes at this
    program point.
 
@@ -31,6 +34,11 @@ extern void __analyzer_dump_path (void);
 
 /* Dump the region_model's state to stderr.  */
 extern void __analyzer_dump_region_model (void);
+
+/* Emit a warning describing the state of the 2nd argument
+   (which can be of any type) with respect to NAME.
+   This is for use when debugging, and may be of use in DejaGnu tests.  */
+extern void __analyzer_dump_state (const char *name, ...);
 
 /* Emit a warning with text "TRUE", FALSE" or "UNKNOWN" based on the
    truthfulness of the argument.  */

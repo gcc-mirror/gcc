@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 
 with Ada.Wide_Wide_Text_IO.Generic_Aux; use Ada.Wide_Wide_Text_IO.Generic_Aux;
 
-with System.Img_Real; use System.Img_Real;
+with System.Img_Util; use System.Img_Util;
 
 package body Ada.Wide_Wide_Text_IO.Float_Aux is
 
@@ -96,7 +96,7 @@ package body Ada.Wide_Wide_Text_IO.Float_Aux is
       Ptr : Natural := 0;
 
    begin
-      Set_Image_Real (Long_Long_Float (Item), Buf, Ptr, Fore, Aft, Exp);
+      Set_Image (Item, Buf, Ptr, Fore, Aft, Exp);
       Put_Item (File, Buf (1 .. Ptr));
    end Put;
 
@@ -114,8 +114,7 @@ package body Ada.Wide_Wide_Text_IO.Float_Aux is
       Ptr : Natural := 0;
 
    begin
-      Set_Image_Real
-        (Long_Long_Float (Item), Buf, Ptr, Fore => 1, Aft => Aft, Exp => Exp);
+      Set_Image (Item, Buf, Ptr, Fore => 1, Aft => Aft, Exp => Exp);
 
       if Ptr > To'Length then
          raise Layout_Error;

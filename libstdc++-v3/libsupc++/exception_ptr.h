@@ -263,7 +263,7 @@ namespace std
 
 #undef _GLIBCXX_EH_PTR_USED
 
-  // @} group exceptions
+  /// @} group exceptions
 } // namespace std
 
 } // extern "C++"

@@ -1,4 +1,4 @@
-/* { dg-do run { target mmap } } */
+/* { dg-do run { target { sysconf && mmap } } } */
 /* { dg-options "-O2 -fno-strict-aliasing -msse2" } */
 /* { dg-additional-options "-mno-mmx" { target { ! ia32 } } } */
 

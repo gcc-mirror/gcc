@@ -269,6 +269,6 @@ version (GNU_SEH_Exceptions)
         ExceptionCollidedUnwind
     }
 
-    extern(C) EXCEPTION_DISPOSITION _GCC_specific_handler(void*, void*, void*,
+    extern(C) EXCEPTION_DISPOSITION _GCC_specific_handler(void*, void*, void*, void*,
                                                           _Unwind_Personality_Fn);
 }

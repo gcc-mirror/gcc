@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---          Copyright (C) 1995-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,8 @@
 with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
+
+with System.Parameters;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -630,7 +632,8 @@ private
    type pid_t is new int;
    Self_PID : constant pid_t := 0;
 
-   type time_t is new long;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
 
    type timespec is record
       ts_sec  : time_t;

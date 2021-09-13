@@ -17,7 +17,6 @@
 
 // { dg-options "-fno-show-column" }
 // { dg-do compile { target c++14 } }
-// { dg-prune-output "tuple index is in range" }
 
 #include <tuple>
 
@@ -26,12 +25,12 @@ test01()
 {
   using test_type = std::tuple<>;
   test_type t;
-  std::get<0>(t);				// { dg-error "no match" }
-  std::get<0>(const_cast<const test_type&>(t));	// { dg-error "no match" }
-  std::get<0>(static_cast<test_type&&>(t));	// { dg-error "no match" }
-  std::get<5>(t);				// { dg-error "no match" }
-  std::get<5>(const_cast<const test_type&>(t));	// { dg-error "no match" }
-  std::get<5>(static_cast<test_type&&>(t));	// { dg-error "no match" }
+  std::get<0>(t);				// { dg-error "deleted" }
+  std::get<0>(const_cast<const test_type&>(t));	// { dg-error "deleted" }
+  std::get<0>(static_cast<test_type&&>(t));	// { dg-error "deleted" }
+  std::get<5>(t);				// { dg-error "deleted" }
+  std::get<5>(const_cast<const test_type&>(t));	// { dg-error "deleted" }
+  std::get<5>(static_cast<test_type&&>(t));	// { dg-error "deleted" }
 }
 
 void
@@ -39,12 +38,12 @@ test02()
 {
   using test_type = std::tuple<int>;
   test_type t;
-  std::get<1>(t);				// { dg-error "no match" }
-  std::get<1>(const_cast<const test_type&>(t));	// { dg-error "no match" }
-  std::get<1>(static_cast<test_type&&>(t));	// { dg-error "no match" }
-  std::get<5>(t);				// { dg-error "no match" }
-  std::get<5>(const_cast<const test_type&>(t));	// { dg-error "no match" }
-  std::get<5>(static_cast<test_type&&>(t));	// { dg-error "no match" }
+  std::get<1>(t);				// { dg-error "deleted" }
+  std::get<1>(const_cast<const test_type&>(t));	// { dg-error "deleted" }
+  std::get<1>(static_cast<test_type&&>(t));	// { dg-error "deleted" }
+  std::get<5>(t);				// { dg-error "deleted" }
+  std::get<5>(const_cast<const test_type&>(t));	// { dg-error "deleted" }
+  std::get<5>(static_cast<test_type&&>(t));	// { dg-error "deleted" }
 }
 
 void
@@ -52,13 +51,12 @@ test03()
 {
   using test_type = std::tuple<int, int, int, int>;
   test_type t;
-  std::get<5>(t);				// { dg-error "no match" }
-  std::get<5>(const_cast<const test_type&>(t));	// { dg-error "no match" }
-  std::get<5>(static_cast<test_type&&>(t));	// { dg-error "no match" }
-  std::get<6>(t);				// { dg-error "no match" }
-  std::get<6>(const_cast<const test_type&>(t));	// { dg-error "no match" }
-  std::get<6>(static_cast<test_type&&>(t));	// { dg-error "no match" }
+  std::get<5>(t);				// { dg-error "deleted" }
+  std::get<5>(const_cast<const test_type&>(t));	// { dg-error "deleted" }
+  std::get<5>(static_cast<test_type&&>(t));	// { dg-error "deleted" }
+  std::get<6>(t);				// { dg-error "deleted" }
+  std::get<6>(const_cast<const test_type&>(t));	// { dg-error "deleted" }
+  std::get<6>(static_cast<test_type&&>(t));	// { dg-error "deleted" }
 }
 
-// { dg-prune-output "no type named .type" }
-// { dg-prune-output "type/value mismatch" }
+// { dg-error "tuple index must be in range" "" { target *-*-* } 0 }

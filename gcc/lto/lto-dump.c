@@ -122,7 +122,7 @@ public:
     cgraph_node *cnode = dyn_cast<cgraph_node *> (node);
     gcc_assert (cnode);
 
-    return (cnode->definition && !cnode->alias)
+    return (cnode->definition && !cnode->thunk && !cnode->alias)
      ? n_basic_blocks_for_fn (DECL_STRUCT_FUNCTION (cnode->decl))
      : 0;
   }

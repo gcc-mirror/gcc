@@ -153,13 +153,13 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bitsdir)" \
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libsupc___la_LIBADD =
 am__objects_1 = array_type_info.lo atexit_arm.lo atexit_thread.lo \
-	bad_alloc.lo bad_array_length.lo bad_array_new.lo bad_cast.lo \
-	bad_typeid.lo class_type_info.lo del_op.lo del_ops.lo \
-	del_opnt.lo del_opv.lo del_opvs.lo del_opvnt.lo dyncast.lo \
-	eh_alloc.lo eh_arm.lo eh_aux_runtime.lo eh_call.lo eh_catch.lo \
-	eh_exception.lo eh_globals.lo eh_personality.lo eh_ptr.lo \
-	eh_term_handler.lo eh_terminate.lo eh_tm.lo eh_throw.lo \
-	eh_type.lo eh_unex_handler.lo enum_type_info.lo \
+	atomicity.lo bad_alloc.lo bad_array_length.lo bad_array_new.lo \
+	bad_cast.lo bad_typeid.lo class_type_info.lo del_op.lo \
+	del_ops.lo del_opnt.lo del_opv.lo del_opvs.lo del_opvnt.lo \
+	dyncast.lo eh_alloc.lo eh_arm.lo eh_aux_runtime.lo eh_call.lo \
+	eh_catch.lo eh_exception.lo eh_globals.lo eh_personality.lo \
+	eh_ptr.lo eh_term_handler.lo eh_terminate.lo eh_tm.lo \
+	eh_throw.lo eh_type.lo eh_unex_handler.lo enum_type_info.lo \
 	function_type_info.lo fundamental_type_info.lo guard.lo \
 	guard_error.lo hash_bytes.lo nested_exception.lo \
 	new_handler.lo new_op.lo new_opnt.lo new_opv.lo new_opvnt.lo \
@@ -503,6 +503,7 @@ sources = \
 	array_type_info.cc \
 	atexit_arm.cc \
 	atexit_thread.cc \
+	atomicity.cc \
 	bad_alloc.cc \
 	bad_array_length.cc \
 	bad_array_new.cc \
@@ -569,6 +570,7 @@ sources = \
 
 libsupc___la_SOURCES = $(sources) $(c_sources) $(vtv_sources)
 libsupc__convenience_la_SOURCES = $(sources) $(c_sources) $(vtv_sources)
+atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -960,6 +962,8 @@ cp-demangle.lo: cp-demangle.c
 	$(LTCOMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
 cp-demangle.o: cp-demangle.c
 	$(C_COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+atomicity.cc: ${atomicity_file}
+	$(LN_S) ${atomicity_file} ./atomicity.cc || true
 
 install-stdHEADERS: $(std_HEADERS)
 	@$(NORMAL_INSTALL)

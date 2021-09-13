@@ -2258,6 +2258,14 @@ Vector registers.
 
 @item z
 Stack pointer register (SP).
+
+@item Q
+A memory address which uses a base register with a short offset
+or with a index register with its scale.
+
+@item W
+A memory address which uses a base register with a index register
+with its scale.
 @end table
 
 @ifset INTERNALS
@@ -3528,6 +3536,9 @@ A 5-bit unsigned immediate for CSR access instructions.
 @item A
 An address that is held in a general-purpose register.
 
+@item S
+A constraint that matches an absolute symbolic address.
+
 @end table
 
 @item RX---@file{config/rx/constraints.md}
@@ -4564,7 +4575,33 @@ specifically aligned memory is necessary or desirable for some insn
 operand.
 
 The syntax and semantics are otherwise identical to
-@code{define_constraint}.
+@code{define_memory_constraint}.
+@end deffn
+
+@deffn {MD Expression} define_relaxed_memory_constraint name docstring exp
+The test expression in a @code{define_memory_constraint} can assume
+that @code{TARGET_LEGITIMATE_ADDRESS_P} holds for the address inside
+a @code{mem} rtx and so it does not need to test this condition itself.
+In other words, a @code{define_memory_constraint} test of the form:
+
+@smallexample
+(match_test "mem")
+@end smallexample
+
+is enough to test whether an rtx is a @code{mem} @emph{and} whether
+its address satisfies @code{TARGET_MEM_CONSTRAINT} (which is usually
+@samp{'m'}).  Thus the conditions imposed by a @code{define_memory_constraint}
+always apply on top of the conditions imposed by @code{TARGET_MEM_CONSTRAINT}.
+
+However, it is sometimes useful to define memory constraints that allow
+addresses beyond those accepted by @code{TARGET_LEGITIMATE_ADDRESS_P}.
+@code{define_relaxed_memory_constraint} exists for this case.
+The test expression in a @code{define_relaxed_memory_constraint} is
+applied with no preconditions, so that the expression can determine
+``from scratch'' exactly which addresses are valid and which are not.
+
+The syntax and semantics are otherwise identical to
+@code{define_memory_constraint}.
 @end deffn
 
 @deffn {MD Expression} define_address_constraint name docstring exp
@@ -5412,13 +5449,53 @@ Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
 
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
+
+Compute the sum of the products of two signed elements.
+Operand 1 and operand 2 are of the same mode. Their
+product, which is of a wider mode, is computed and added to operand 3.
+Operand 3 is of a mode equal or wider than the mode of the product. The
+result is placed in operand 0, which is of the same mode as operand 3.
+
+Semantically the expressions perform the multiplication in the following signs
+
+@smallexample
+sdot<signed op0, signed op1, signed op2, signed op3> ==
+   op0 = sign-ext (op1) * sign-ext (op2) + op3
+@dots{}
+@end smallexample
+
 @cindex @code{udot_prod@var{m}} instruction pattern
-@itemx @samp{udot_prod@var{m}}
-Compute the sum of the products of two signed/unsigned elements.
-Operand 1 and operand 2 are of the same mode. Their product, which is of a
-wider mode, is computed and added to operand 3. Operand 3 is of a mode equal or
-wider than the mode of the product. The result is placed in operand 0, which
-is of the same mode as operand 3.
+@item @samp{udot_prod@var{m}}
+
+Compute the sum of the products of two unsigned elements.
+Operand 1 and operand 2 are of the same mode. Their
+product, which is of a wider mode, is computed and added to operand 3.
+Operand 3 is of a mode equal or wider than the mode of the product. The
+result is placed in operand 0, which is of the same mode as operand 3.
+
+Semantically the expressions perform the multiplication in the following signs
+
+@smallexample
+udot<unsigned op0, unsigned op1, unsigned op2, unsigned op3> ==
+   op0 = zero-ext (op1) * zero-ext (op2) + op3
+@dots{}
+@end smallexample
+
+@cindex @code{usdot_prod@var{m}} instruction pattern
+@item @samp{usdot_prod@var{m}}
+Compute the sum of the products of elements of different signs.
+Operand 1 must be unsigned and operand 2 signed. Their
+product, which is of a wider mode, is computed and added to operand 3.
+Operand 3 is of a mode equal or wider than the mode of the product. The
+result is placed in operand 0, which is of the same mode as operand 3.
+
+Semantically the expressions perform the multiplication in the following signs
+
+@smallexample
+usdot<signed op0, unsigned op1, signed op2, signed op3> ==
+   op0 = ((signed-conv) zero-ext (op1)) * sign-ext (op2) + op3
+@dots{}
+@end smallexample
 
 @cindex @code{ssad@var{m}} instruction pattern
 @item @samp{ssad@var{m}}
@@ -5647,6 +5724,28 @@ Signed/Unsigned widening subtract long.  Operands 1 and 2 are vectors with N
 signed/unsigned elements of size S@.  Subtract the high/low elements of 2 from
 1 and widen the resulting elements. Put the N/2 results of size 2*S in the
 output vector (operand 0).
+
+@cindex @code{vec_addsub@var{m}3} instruction pattern
+@item @samp{vec_addsub@var{m}3}
+Alternating subtract, add with even lanes doing subtract and odd
+lanes doing addition.  Operands 1 and 2 and the outout operand are vectors
+with mode @var{m}.
+
+@cindex @code{vec_fmaddsub@var{m}4} instruction pattern
+@item @samp{vec_fmaddsub@var{m}4}
+Alternating multiply subtract, add with even lanes doing subtract and odd
+lanes doing addition of the third operand to the multiplication result
+of the first two operands.  Operands 1, 2 and 3 and the outout operand are vectors
+with mode @var{m}.
+
+@cindex @code{vec_fmsubadd@var{m}4} instruction pattern
+@item @samp{vec_fmsubadd@var{m}4}
+Alternating multiply add, subtract with even lanes doing addition and odd
+lanes doing subtraction of the third operand to the multiplication result
+of the first two operands.  Operands 1, 2 and 3 and the outout operand are vectors
+with mode @var{m}.
+
+These instructions are not allowed to @code{FAIL}.
 
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}
@@ -6822,6 +6921,9 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @cindex @code{cond_smax@var{mode}} instruction pattern
 @cindex @code{cond_umin@var{mode}} instruction pattern
 @cindex @code{cond_umax@var{mode}} instruction pattern
+@cindex @code{cond_ashl@var{mode}} instruction pattern
+@cindex @code{cond_ashr@var{mode}} instruction pattern
+@cindex @code{cond_lshr@var{mode}} instruction pattern
 @item @samp{cond_add@var{mode}}
 @itemx @samp{cond_sub@var{mode}}
 @itemx @samp{cond_mul@var{mode}}
@@ -6836,6 +6938,9 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @itemx @samp{cond_smax@var{mode}}
 @itemx @samp{cond_umin@var{mode}}
 @itemx @samp{cond_umax@var{mode}}
+@itemx @samp{cond_ashl@var{mode}}
+@itemx @samp{cond_ashr@var{mode}}
+@itemx @samp{cond_lshr@var{mode}}
 When operand 1 is true, perform an operation on operands 2 and 3 and
 store the result in operand 0, otherwise store operand 4 in operand 0.
 The operation works elementwise if the operands are vectors.
@@ -6862,6 +6967,11 @@ be in a normal C @samp{?:} condition.
 Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
 integer if @var{m} is scalar, otherwise it has the mode returned by
 @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
+@samp{cond_@var{op}@var{mode}} generally corresponds to a conditional
+form of @samp{@var{op}@var{mode}3}.  As an exception, the vector forms
+of shifts correspond to patterns like @code{vashl@var{mode}3} rather
+than patterns like @code{ashl@var{mode}3}.
 
 @cindex @code{cond_fma@var{mode}} instruction pattern
 @cindex @code{cond_fms@var{mode}} instruction pattern
@@ -6949,8 +7059,12 @@ machines.
 @item @samp{call}
 Subroutine call instruction returning no value.  Operand 0 is the
 function to call; operand 1 is the number of bytes of arguments pushed
-as a @code{const_int}; operand 2 is the number of registers used as
-operands.
+as a @code{const_int}.  Operand 2 is the result of calling the target
+hook @code{TARGET_FUNCTION_ARG} with the second argument @code{arg}
+yielding true for @code{arg.end_marker_p ()}, in a call after all
+parameters have been passed to that hook.  By default this is the first
+register beyond those used for arguments in the call, or @code{NULL} if
+all the argument-registers are used in the call.
 
 On most machines, operand 2 is not actually stored into the RTL
 pattern.  It is supplied for the sake of some RISC machines which need
@@ -7045,7 +7159,7 @@ such as
   [(set (pc)
         (if_then_else (match_operator
                          0 "comparison_operator"
-                         [(cc0) (const_int 0)])
+                         [(reg:CC CC_REG) (const_int 0)])
                       (return)
                       (pc)))]
   "@var{condition}"
@@ -7963,15 +8077,8 @@ works better when different sets of comparison operators are supported
 by different kinds of conditional branches (e.g.@: integer vs.@:
 floating-point), or by conditional branches with respect to conditional stores.
 
-Two separate insns are always used if the machine description represents
-a condition code register using the legacy RTL expression @code{(cc0)},
-and on most machines that use a separate condition code register
-(@pxref{Condition Code}).  For machines that use @code{(cc0)}, in
-fact, the set and use of the condition code must be separate and
-adjacent@footnote{@code{note} insns can separate them, though.}, thus
-allowing flags in @code{cc_status} to be used (@pxref{Condition Code}) and
-so that the comparison and branch insns could be located from each other
-by using the functions @code{prev_cc0_setter} and @code{next_cc0_user}.
+Two separate insns are always used on most machines that use a separate
+condition code register (@pxref{Condition Code}).
 
 Even in this case having a single entry point for conditional branches
 is advantageous, because it handles equally well the case where a single
@@ -8165,7 +8272,7 @@ the operations as far as possible.  For instance,
 @cindex @code{compare}, canonicalization of
 @item
 For the @code{compare} operator, a constant is always the second operand
-if the first argument is a condition code register or @code{(cc0)}.
+if the first argument is a condition code register.
 
 @item
 For instructions that inherently set a condition code register, the
@@ -8406,8 +8513,6 @@ list of operands, such as this example:
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:SI 1 "register_operand" "")
    (match_operand:SI 2 "register_operand" "")]
-@end group
-@group
   ""
   "
 @{
@@ -8424,17 +8529,10 @@ Here is an example, the definition of left-shift for the SPUR chip:
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
         (ashift:SI
-@end group
-@group
           (match_operand:SI 1 "register_operand" "")
           (match_operand:SI 2 "nonmemory_operand" "")))]
   ""
   "
-@end group
-@end smallexample
-
-@smallexample
-@group
 @{
   if (GET_CODE (operands[2]) != CONST_INT
       || (unsigned) INTVAL (operands[2]) > 3)
@@ -9304,8 +9402,7 @@ In addition to describing the instruction supported by the target machine,
 the @file{md} file also defines a group of @dfn{attributes} and a set of
 values for each.  Every generated insn is assigned a value for each attribute.
 One possible attribute would be the effect that the insn has on the machine's
-condition code.  This attribute can then be used by @code{NOTICE_UPDATE_CC}
-to track the condition codes.
+condition code.
 
 @menu
 * Defining Attributes:: Specifying attributes and their values.
@@ -9889,7 +9986,7 @@ Lengths are measured in addressable storage units (bytes).
 Note that it is possible to call functions via the @code{symbol_ref}
 mechanism to compute the length of an insn.  However, if you use this
 mechanism you must provide dummy clauses to express the maximum length
-without using the function call.  You can an example of this in the
+without using the function call.  You can see an example of this in the
 @code{pa} machine description for the @code{call_symref} pattern.
 
 The following macros can be used to refine the length computation:
@@ -10977,6 +11074,8 @@ The syntax is as follows:
 (define_c_enum "@var{name}" [
   @var{value0}
   @var{value1}
+  (@var{value32} 32)
+  @var{value33}
   @dots{}
   @var{valuen}
 ])
@@ -10989,6 +11088,8 @@ in @file{insn-constants.h}:
 enum @var{name} @{
   @var{value0} = 0,
   @var{value1} = 1,
+  @var{value32} = 32,
+  @var{value33} = 33,
   @dots{}
   @var{valuen} = @var{n}
 @};

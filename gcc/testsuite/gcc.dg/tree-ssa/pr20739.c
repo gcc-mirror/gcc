@@ -1,7 +1,7 @@
 /* PR middle-end/20739 */
 
-/* dg-do compile */
-/* dg-options "-O" */
+/* { dg-do compile } */
+/* { dg-options "-O" } */
 
 /* We used to fail to compile this because gimplification dropped the
    conversion that added the const qualifier to the sub-expression

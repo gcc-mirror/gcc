@@ -493,6 +493,12 @@ gfc_cpp_post_options (void)
 
   cpp_post_options (cpp_in);
 
+
+  /* Let diagnostics infrastructure know how to convert input files the same
+     way libcpp will do it, namely, with no charset conversion but with
+     skipping of a UTF-8 BOM if present.  */
+  diagnostic_initialize_input_context (global_dc, nullptr, true);
+
   gfc_cpp_register_include_paths ();
 }
 

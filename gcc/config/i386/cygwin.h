@@ -29,6 +29,15 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#define EXTRA_TARGET_D_OS_VERSIONS()				\
+  do								\
+    {								\
+      builtin_version ("Cygwin");				\
+      builtin_version ("Posix");				\
+      builtin_version ("CRuntime_Newlib");			\
+    }								\
+  while (0)
+
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   %{!ansi:-Dunix} \

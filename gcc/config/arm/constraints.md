@@ -32,7 +32,7 @@
 
 ;; The following multi-letter normal constraints have been used:
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, DN, Dm, Dl, DL, Do, Dv, Dy, Di,
-;;			 Dt, Dp, Dz, Tu, Te
+;;			 Ds, Dt, Dp, Dz, Tu, Te
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
 ;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Rd, Rf, Rb, Ra,
 ;;		     Rg, Ri
@@ -412,6 +412,14 @@
   (and (match_code "const_double")
        (match_test "TARGET_32BIT && vfp3_const_double_for_fract_bits (op)")))
 
+(define_constraint "Ds"
+ "@internal
+  In ARM/Thumb-2 state a const_vector which can be used as immediate
+  in vshl instruction."
+ (and (match_code "const_vector")
+      (match_test "TARGET_32BIT
+		   && imm_for_neon_lshift_operand (op, GET_MODE (op))")))
+
 (define_constraint "Dp"
  "@internal
   In ARM/ Thumb2 a const_double which can be used with a vcvt.s32.f32 with bits operation"
@@ -497,6 +505,13 @@
       (match_test "(TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT)
 		   && mve_vector_mem_operand (GET_MODE (op),
 					      XEXP (op, 0), true)")))
+
+(define_constraint "Ui"
+  "@internal
+   Match a constant (as per the 'i' constraint) provided that we have the
+   literal pool available.  This is useful for load insns that would need
+   to move such constants to the literal pool after RA."
+ (match_test "!arm_disable_literal_pool && satisfies_constraint_i (op)"))
 
 (define_memory_constraint "Uq"
  "@internal

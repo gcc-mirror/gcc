@@ -95,6 +95,7 @@ changed to GNU Offloading and Multi Processing Runtime Library.
 @comment
 @menu
 * Enabling OpenMP::            How to enable OpenMP for your applications.
+* OpenMP Implementation Status:: List of implemented features by OpenMP version
 * OpenMP Runtime Library Routines: Runtime Library Routines.
                                The OpenMP runtime application programming
                                interface.
@@ -141,9 +142,203 @@ flag @command{-fopenmp} must be specified.  This enables the OpenMP directive
 arranges for automatic linking of the OpenMP runtime library 
 (@ref{Runtime Library Routines}).
 
-A complete description of all OpenMP directives accepted may be found in 
-the @uref{https://www.openmp.org, OpenMP Application Program Interface} manual,
-version 4.5.
+A complete description of all OpenMP directives may be found in the
+@uref{https://www.openmp.org, OpenMP Application Program Interface} manuals.
+See also @ref{OpenMP Implementation Status}.
+
+
+@c ---------------------------------------------------------------------
+@c OpenMP Implementation Status
+@c ---------------------------------------------------------------------
+
+@node OpenMP Implementation Status
+@chapter OpenMP Implementation Status
+
+@menu
+* OpenMP 4.5:: Feature completion status to 4.5 specification
+* OpenMP 5.0:: Feature completion status to 5.0 specification
+* OpenMP 5.1:: Feature completion status to 5.1 specification
+@end menu
+
+The @code{_OPENMP} preprocessor macro and Fortran's @code{openmp_version}
+parameter, provided by @code{omp_lib.h} and the @code{omp_lib} module, have
+the value @code{201511} (i.e. OpenMP 4.5).
+
+@node OpenMP 4.5
+@section OpenMP 4.5
+
+The OpenMP 4.5 specification is fully supported.
+
+@node OpenMP 5.0
+@section OpenMP 5.0
+
+@unnumberedsubsec New features listed in Appendix B of the OpenMP specification
+@c This list is sorted as in OpenMP 5.1's B.3 not as in OpenMP 5.0's B.2
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item Array shaping @tab N @tab
+@item Array sections with non-unit strides in C and C++ @tab N @tab
+@item Iterators @tab Y @tab
+@item @code{metadirective} directive @tab N @tab
+@item @code{declare variant} directive
+      @tab P @tab Only C and C++, simd traits not handled correctly
+@item @emph{target-offload-var} ICV and @code{OMP_TARGET_OFFLOAD}
+      env variable @tab Y @tab
+@item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
+@item @code{requires} directive @tab P
+      @tab Only fulfillable requirement is @code{atomic_default_mem_order}
+@item @code{teams} construct outside an enclosing target region @tab Y @tab
+@item Non-rectangular loop nests @tab Y @tab
+@item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
+@item @code{nonmonotonic} as default loop schedule modifier for worksharing-loop
+      constructs @tab Y @tab
+@item Collapse of associated loops that are imperfectly nested loops @tab N @tab
+@item Clauses @code{if}, @code{nontemporal} and @code{order(concurrent)} in
+      @code{simd} construct @tab Y @tab
+@item @code{atomic} constructs in @code{simd} @tab Y @tab
+@item @code{loop} construct @tab Y @tab
+@item @code{order(concurrent)} clause @tab Y @tab
+@item @code{scan} directive and @code{in_scan} modifier for the
+      @code{reduction} clause @tab Y @tab
+@item @code{in_reduction} clause on @code{task} constructs @tab Y @tab
+@item @code{in_reduction} clause on @code{target} constructs @tab P
+      @tab Only C/C++, @code{nowait} only stub
+@item @code{task_reduction} clause with @code{taskgroup} @tab Y @tab
+@item @code{task} modifier to @code{reduction} clause @tab Y @tab
+@item @code{affinity} clause to @code{task} construct @tab Y @tab Stub only
+@item @code{detach} clause to @code{task} construct @tab Y @tab
+@item @code{omp_fulfill_event} runtime routine @tab Y @tab
+@item @code{reduction} and @code{in_reduction} clauses on @code{taskloop}
+      and @code{taskloop simd} constructs @tab Y @tab
+@item @code{taskloop} construct cancelable by @code{cancel} construct
+      @tab Y @tab
+@item @code{mutexinouset} @emph{dependence-type} for @code{depend} clause
+      @tab Y @tab
+@item Predefined memory spaces, memory allocators, allocator traits
+      @tab Y @tab Some are only stubs
+@item Memory management routines @tab Y @tab
+@item @code{allocate} directive @tab N @tab
+@item @code{allocate} clause @tab P @tab initial support in C/C++ only
+@item @code{use_device_addr} clause on @code{target data} @tab Y @tab
+@item @code{ancestor} modifier on @code{device} clause
+      @tab P @tab Reverse offload unsupported
+@item Implicit declare target directive @tab Y @tab
+@item Discontiguous array section with @code{target update} construct
+      @tab N @tab
+@item C/C++'s lvalue expressions in @code{to}, @code{from}
+      and @code{map} clauses @tab N @tab
+@item C/C++'s lvalue expressions in @code{depend} clauses @tab Y @tab
+@item Nested @code{declare target} directive @tab Y @tab
+@item Combined @code{master} constructs @tab Y @tab
+@item @code{depend} clause on @code{taskwait} @tab Y @tab
+@item Weak memory ordering clauses on @code{atomic} and @code{flush} construct
+      @tab Y @tab
+@item @code{hint} clause on the @code{atomic} construct @tab Y @tab Stub only
+@item @code{depobj} construct and depend objects  @tab Y @tab
+@item Lock hints were renamed to synchronization hints @tab Y @tab
+@item @code{conditional} modifier to @code{lastprivate} clause @tab Y @tab
+@item Map-order clarifications @tab P @tab
+@item @code{close} @emph{map-type-modifier} @tab Y @tab
+@item Mapping C/C++ pointer variables and to assign the address of
+      device memory mapped by an array section @tab P @tab
+@item Mapping of Fortran pointer and allocatable variables, including pointer
+      and allocatable components of variables
+      @tab P @tab Mapping of vars with allocatable components unspported
+@item @code{defaultmap} extensions @tab Y @tab
+@item @code{declare mapper} directive @tab N @tab
+@item @code{omp_get_supported_active_levels} routine @tab Y @tab
+@item Runtime routines and environment variables to display runtime thread
+      affinity information @tab Y @tab
+@item @code{omp_pause_resource} and @code{omp_pause_resource_all} runtime
+      routines @tab Y @tab
+@item @code{omp_get_device_num} runtime routine @tab Y @tab
+@item OMPT interface @tab N @tab
+@item OMPD interface @tab N @tab
+@end multitable
+
+@unnumberedsubsec Other new OpenMP 5.0 features
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item Supporting C++'s range-based for loop @tab Y @tab
+@end multitable
+
+
+@node OpenMP 5.1
+@section OpenMP 5.1
+
+@unnumberedsubsec New features listed in Appendix B of the OpenMP specification
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item OpenMP directive as C++ attribute specifiers @tab Y @tab
+@item @code{omp_all_memory} reserved locator @tab N @tab
+@item @emph{target_device trait} in OpenMP Context @tab N @tab
+@item @code{target_device} selector set in context selectors @tab N @tab
+@item C/C++'s @code{declare variante} directive: elision support of
+      preprocessed code @tab N @tab
+@item @code{declare variante}: new clauses @code{adjust_args} and
+      @code{append_args} @tab N @tab
+@item @code{dispatch} construct @tab N @tab
+@item device-specific ICV settings the environment variables @tab N @tab
+@item assume directive @tab N @tab
+@item @code{nothing} directive @tab Y @tab
+@item @code{error} directive @tab Y @tab
+@item @code{masked} construct @tab Y @tab
+@item @code{scope} directive @tab Y @tab
+@item Loop transformation constructs @tab N @tab
+@item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
+      clauses of the taskloop construct @tab Y @tab
+@item @code{align} clause/modifier in @code{allocate} directive/clause
+      and @code{allocator} directive @tab N @tab
+@item @code{thread_limit} clause to @code{target} construct @tab N @tab
+@item @code{has_device_addr} clause to @code{target} construct @tab N @tab
+@item iterators in @code{target update} motion clauses and @code{map}
+      clauses @tab N @tab
+@item indirect calls to the device version of a procedure or function in
+      @code{target} regions @tab N @tab
+@item @code{interop} directive @tab N @tab
+@item @code{omp_interop_t} object support in runtime routines @tab N @tab
+@item @code{nowait} clause in @code{taskwait} directive @tab N @tab
+@item Extensions to the @code{atomic} directive @tab N @tab
+@item @code{seq_cst} clause on a @code{flush} construct @tab Y @tab
+@item @code{inoutset} argument to the @code{depend} clause @tab N @tab
+@item @code{private} and @code{firstprivate} argument to @code{default}
+      clause in C and C++ @tab N @tab
+@item @code{present} argument to @code{defaultmap} clause @tab N @tab
+@item @code{omp_set_num_teams}, @code{omp_set_teams_thread_limit},
+      @code{omp_get_max_teams}, @code{omp_get_teams_thread_limit} runtime
+      routines @tab N @tab
+@item @code{omp_target_is_accessible} runtime routine @tab N @tab
+@item @code{omp_target_memcpy_async} and @code{omp_target_memcpy_rect_async}
+      runtime routines @tab N @tab
+@item @code{omp_get_mapped_ptr} runtime routine @tab N @tab
+@item @code{omp_calloc}, @code{omp_realloc}, @code{omp_aligned_alloc} and
+      @code{omp_aligned_calloc} runtime routines @tab N @tab
+@item @code{omp_alloctrait_key_t} enum: @code{omp_atv_serialized} added,
+      @code{omp_atv_default} changed @tab Y @tab
+@item @code{omp_display_env} runtime routine @tab P
+      @tab Not inside @code{target} regions
+@item @code{ompt_scope_endpoint_t} enum: @code{ompt_scope_beginend} @tab N @tab
+@item @code{ompt_sync_region_t} enum additions @tab N @tab
+@item @code{ompt_state_t} enum: @code{ompt_state_wait_barrier_implementation}
+      and @code{ompt_state_wait_barrier_teams} @tab N @tab
+@item @code{ompt_callback_target_data_op_emi_t},
+      @code{ompt_callback_target_emi_t}, @code{ompt_callback_target_map_emi_t}
+      and @code{ompt_callback_target_submit_emi_t} @tab N @tab
+@item @code{ompt_callback_error_t} type @tab N @tab
+@item @code{OMP_PLACES} syntax was extension @tab N @tab
+@item @code{OMP_NUM_TEAMS} and @code{OMP_TEAMS_THREAD_LIMIT} environment
+      variables @tab N @tab
+@end multitable
+
+@unnumberedsubsec Other new OpenMP 5.1 features
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item Suppport of strictly structured blocks in Fortran @tab N @tab
+@end multitable
 
 
 @c ---------------------------------------------------------------------
@@ -165,6 +360,7 @@ linkage, and do not throw exceptions.
 * omp_get_ancestor_thread_num:: Ancestor thread ID
 * omp_get_cancellation::        Whether cancellation support is enabled
 * omp_get_default_device::      Get the default device for target regions
+* omp_get_device_num::          Get device that current thread is running on
 * omp_get_dynamic::             Dynamic teams setting
 * omp_get_initial_device::      Device number of host device
 * omp_get_level::               Number of parallel regions
@@ -381,6 +577,34 @@ For OpenMP 5.1, this must be equal to the value returned by the
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.35.
+@end table
+
+
+
+@node omp_get_device_num
+@section @code{omp_get_device_num} -- Return device number of current device
+@table @asis
+@item @emph{Description}:
+This function returns a device number that represents the device that the
+current thread is executing on. For OpenMP 5.0, this must be equal to the
+value returned by the @code{omp_get_initial_device} function when called
+from the host.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_device_num(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_device_num()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_initial_device}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.37.
 @end table
 
 
@@ -631,8 +855,9 @@ one thread per CPU online is used.
 @item @emph{Description}:
 This functions returns the currently active thread affinity policy, which is
 set via @env{OMP_PROC_BIND}.  Possible values are @code{omp_proc_bind_false},
-@code{omp_proc_bind_true}, @code{omp_proc_bind_master},
-@code{omp_proc_bind_close} and @code{omp_proc_bind_spread}.
+@code{omp_proc_bind_true}, @code{omp_proc_bind_primary},
+@code{omp_proc_bind_master}, @code{omp_proc_bind_close} and @code{omp_proc_bind_spread},
+where @code{omp_proc_bind_master} is an alias for @code{omp_proc_bind_primary}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -793,7 +1018,7 @@ Returns a unique thread identification number within the current team.
 In a sequential parts of the program, @code{omp_get_thread_num}
 always returns 0.  In parallel regions the return value varies
 from 0 to @code{omp_get_num_threads}-1 inclusive.  The return
-value of the master thread of a team is always 0.
+value of the primary thread of a team is always 0.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -1641,11 +1866,12 @@ nesting by default.  If undefined one thread per CPU is used.
 Specifies whether threads may be moved between processors.  If set to
 @code{TRUE}, OpenMP theads should not be moved; if set to @code{FALSE}
 they may be moved.  Alternatively, a comma separated list with the
-values @code{MASTER}, @code{CLOSE} and @code{SPREAD} can be used to specify
-the thread affinity policy for the corresponding nesting level.  With
-@code{MASTER} the worker threads are in the same place partition as the
-master thread.  With @code{CLOSE} those are kept close to the master thread
-in contiguous place partitions.  And with @code{SPREAD} a sparse distribution
+values @code{PRIMARY}, @code{MASTER}, @code{CLOSE} and @code{SPREAD} can
+be used to specify the thread affinity policy for the corresponding nesting
+level.  With @code{PRIMARY} and @code{MASTER} the worker threads are in the
+same place partition as the primary thread.  With @code{CLOSE} those are
+kept close to the primary thread in contiguous place partitions.  And
+with @code{SPREAD} a sparse distribution
 across the place partitions is used.  Specifying more than one item in the
 list will automatically enable nesting by default.
 
@@ -1922,23 +2148,23 @@ instance.
 @item @code{$<priority>} is an optional priority for the worker threads of a
 thread pool according to @code{pthread_setschedparam}.  In case a priority
 value is omitted, then a worker thread will inherit the priority of the OpenMP
-master thread that created it.  The priority of the worker thread is not
-changed after creation, even if a new OpenMP master thread using the worker has
+primary thread that created it.  The priority of the worker thread is not
+changed after creation, even if a new OpenMP primary thread using the worker has
 a different priority.
 @item @code{@@<scheduler-name>} is the scheduler instance name according to the
 RTEMS application configuration.
 @end itemize
 In case no thread pool configuration is specified for a scheduler instance,
-then each OpenMP master thread of this scheduler instance will use its own
+then each OpenMP primary thread of this scheduler instance will use its own
 dynamically allocated thread pool.  To limit the worker thread count of the
-thread pools, each OpenMP master thread must call @code{omp_set_num_threads}.
+thread pools, each OpenMP primary thread must call @code{omp_set_num_threads}.
 @item @emph{Example}:
 Lets suppose we have three scheduler instances @code{IO}, @code{WRK0}, and
 @code{WRK1} with @env{GOMP_RTEMS_THREAD_POOLS} set to
 @code{"1@@WRK0:3$4@@WRK1"}.  Then there are no thread pool restrictions for
 scheduler instance @code{IO}.  In the scheduler instance @code{WRK0} there is
 one thread pool available.  Since no priority is specified for this scheduler
-instance, the worker thread inherits the priority of the OpenMP master thread
+instance, the worker thread inherits the priority of the OpenMP primary thread
 that created it.  In the scheduler instance @code{WRK1} there are three thread
 pools available and their worker threads run at priority four.
 @end table
@@ -3717,7 +3943,7 @@ Remarks about certain event types:
 @c See 'DEVICE_INIT_INSIDE_COMPUTE_CONSTRUCT' in
 @c 'libgomp.oacc-c-c++-common/acc_prof-kernels-1.c',
 @c 'libgomp.oacc-c-c++-common/acc_prof-parallel-1.c'.
-Whan a compute construct triggers implicit
+When a compute construct triggers implicit
 @code{acc_ev_device_init_start} and @code{acc_ev_device_init_end}
 events, they currently aren't @emph{nested within} the corresponding
 @code{acc_ev_compute_construct_start} and
@@ -3852,7 +4078,7 @@ if (omp_get_thread_num () == 0)
 @end smallexample
 
 Alternately, we generate two copies of the parallel subfunction
-and only include this in the version run by the master thread.
+and only include this in the version run by the primary thread.
 Surely this is not worthwhile though...
 
 
@@ -3989,7 +4215,7 @@ broadcast would have to happen via SINGLE machinery instead.
 The private struct mentioned in the previous section should have 
 a pointer to an array of the type of the variable, indexed by the 
 thread's @var{team_id}.  The thread stores its final value into the 
-array, and after the barrier, the master thread iterates over the
+array, and after the barrier, the primary thread iterates over the
 array to collect the values.
 
 

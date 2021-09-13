@@ -1,3 +1,38 @@
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gomp-constants.h (GOMP_TASK_FLAG_STRICT): Define.
+
+2021-07-24  Marek Polacek  <polacek@redhat.com>
+
+	* ansidecl.h: Check if __cplusplus is defined before checking
+	the value of __cpp_constexpr and __cplusplus.  Don't check
+	__STDC_VERSION__ in C++.
+
+2021-07-02  David Faust  <david.faust@oracle.com>
+
+	* btf.h (struct btf_type): Update bit usage comment.
+	(BTF_INFO_KIND): Update bit mask.
+	(BTF_KIND_FLOAT): New define.
+	(BTF_KIND_MAX): Update.
+
+2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
+	    David Faust  <david.faust@oracle.com>
+	    Jose E. Marchesi  <jose.marchesi@oracle.com>
+	    Weimin Pan  <weimin.pan@oracle.com>
+
+	* ctf.h: New file.
+	* btf.h: Likewise.
+
+2021-05-06  Tom Tromey  <tom@tromey.com>
+
+	* hashtab.h (htab_eq_string): Declare.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_VENDOR_EXPR.
+
 2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gomp-constants.h (GOMP_TASK_FLAG_DETACH): New.

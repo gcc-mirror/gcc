@@ -475,7 +475,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 
 tree
 do_friend (tree ctype, tree declarator, tree decl,
-	   tree attrlist, enum overload_flags flags,
+	   enum overload_flags flags,
 	   bool funcdef_flag)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
@@ -487,13 +487,6 @@ do_friend (tree ctype, tree declarator, tree decl,
   if (DECL_OVERRIDE_P (decl) || DECL_FINAL_P (decl))
     error ("friend declaration %qD may not have virt-specifiers",
 	   decl);
-
-  /* Unfortunately, we have to handle attributes here.  Normally we would
-     handle them in start_decl_1, but since this is a friend decl start_decl_1
-     never gets to see it.  */
-
-  /* Set attributes here so if duplicate decl, will have proper attributes.  */
-  cplus_decl_attributes (&decl, attrlist, 0);
 
   if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
     {

@@ -76,6 +76,9 @@ struct X
 void
 test03()
 {
+  using ranges::next;
+  using ranges::begin;
+
   // LWG 3483
   std::pair<int, X> x[3];
   __gnu_test::test_forward_range<std::pair<int, X>> r(x);
@@ -89,10 +92,70 @@ test03()
   VERIFY( (next(b_const, 2) - b_const) == 2 );
 }
 
+template<auto elements = views::elements<0>>
+void
+test04()
+{
+  // Verify SFINAE behavior.
+  static_assert(!requires { elements(); });
+  static_assert(!requires { elements(0, 0); });
+  static_assert(!requires { elements(0); });
+  static_assert(!requires { 0 | elements; });
+}
+
+void
+test05()
+{
+  // LWG 3502
+  std::vector<int> vec = {42};
+  auto r1 = vec
+    | views::transform([](auto c) { return std::make_tuple(c, c); })
+    | views::keys;
+  VERIFY( ranges::equal(r1, (int[]){42}) );
+
+  std::tuple<int, int> a[] = {{1,2},{3,4}};
+  auto r2 = a | views::keys;
+  VERIFY( r2[0] == 1 && r2[1] == 3 );
+}
+
+void
+test06()
+{
+  // PR libstdc++/100631
+  auto r = views::iota(0)
+    | views::filter([](int){ return true; })
+    | views::take(42)
+    | views::reverse
+    | views::transform([](int) { return std::make_pair(42, "hello"); })
+    | views::take(42)
+    | views::keys;
+  auto b = r.begin();
+  auto e = r.end();
+  VERIFY( e - b == 42 );
+  VERIFY( b - e == -42 );
+}
+
+void
+test07()
+{
+  // PR libstdc++/100631 comment #2
+  auto r = views::iota(0)
+    | views::transform([](int) { return std::make_pair(42, "hello"); })
+    | views::keys;
+  auto b = ranges::cbegin(r);
+  auto e = ranges::end(r);
+  b.base() == e.base();
+  b == e;
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
+  test05();
+  test06();
+  test07();
 }

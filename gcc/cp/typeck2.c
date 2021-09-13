@@ -818,6 +818,12 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
   /* Handle aggregate NSDMI in non-constant initializers, too.  */
   value = replace_placeholders (value, decl);
 
+  /* A COMPOUND_LITERAL_P CONSTRUCTOR is the syntactic form; by the time we get
+     here it should have been digested into an actual value for the type.  */
+  gcc_checking_assert (TREE_CODE (value) != CONSTRUCTOR
+		       || processing_template_decl
+		       || !TREE_HAS_CONSTRUCTOR (value));
+
   /* If the initializer is not a constant, fill in DECL_INITIAL with
      the bits that are constant, and then return an expression that
      will perform the dynamic initialization.  */
@@ -980,6 +986,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
 	{
 	  int savederrorcount = errorcount;
 	  global_dc->pedantic_errors = 1;
+	  auto s = make_temp_override (global_dc->dc_warn_system_headers, true);
 	  pedwarn (loc, OPT_Wnarrowing,
 		   "narrowing conversion of %qE from %qH to %qI",
 		   init, ftype, type);
@@ -1177,6 +1184,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
      the object is initialized from that element."  */
   if (cxx_dialect >= cxx11
       && BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
+      && !CONSTRUCTOR_IS_DESIGNATED_INIT (stripped_init)
       && CONSTRUCTOR_NELTS (stripped_init) == 1
       && ((CLASS_TYPE_P (type) && !CLASSTYPE_NON_AGGREGATE (type))
 	  || VECTOR_TYPE_P (type)))
@@ -1320,9 +1328,6 @@ massage_init_elt (tree type, tree init, int nested, int flags,
   if (flags & LOOKUP_AGGREGATE_PAREN_INIT)
     new_flags |= LOOKUP_AGGREGATE_PAREN_INIT;
   init = digest_init_r (type, init, nested ? 2 : 1, new_flags, complain);
-  /* Strip a simple TARGET_EXPR when we know this is an initializer.  */
-  if (SIMPLE_TARGET_EXPR_P (init))
-    init = TARGET_EXPR_INITIAL (init);
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */
   tree t = fold_non_dependent_init (init, complain);
@@ -1514,19 +1519,6 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 			  || identifier_p (ce->index));
 	      if (ce->index == field || ce->index == DECL_NAME (field))
 		next = ce->value;
-	      else if (ANON_AGGR_TYPE_P (fldtype)
-		       && search_anon_aggr (fldtype,
-					    TREE_CODE (ce->index) == FIELD_DECL
-					    ? DECL_NAME (ce->index)
-					    : ce->index))
-		/* If the element is an anonymous union object and the
-		   initializer list is a designated-initializer-list, the
-		   anonymous union object is initialized by the
-		   designated-initializer-list { D }, where D is the
-		   designated-initializer-clause naming a member of the
-		   anonymous union object.  */
-		next = build_constructor_single (init_list_type_node,
-						 ce->index, ce->value);
 	      else
 		{
 		  ce = NULL;
@@ -1672,19 +1664,6 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 
 		  if (ce->index == field || ce->index == DECL_NAME (field))
 		    break;
-		  if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-		    {
-		      tree t
-			= search_anon_aggr (TREE_TYPE (field),
-					    TREE_CODE (ce->index) == FIELD_DECL
-					    ? DECL_NAME (ce->index)
-					    : ce->index);
-		      if (t)
-			{
-			  field = t;
-			  break;
-			}
-		    }
 		}
 	    }
 	  if (field)
@@ -1934,11 +1913,17 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 
   if (processing_template_decl)
     {
-      if (type && TYPE_PTR_P (type)
-	  && !dependent_scope_p (TREE_TYPE (type)))
+      tree ttype = NULL_TREE;
+      if (type && TYPE_PTR_P (type))
+	ttype = TREE_TYPE (type);
+      if (ttype && !dependent_scope_p (ttype))
 	/* Pointer to current instantiation, don't treat as dependent.  */;
       else if (type_dependent_expression_p (expr))
-	return build_min_nt_loc (loc, ARROW_EXPR, expr);
+	{
+	  expr = build_min_nt_loc (loc, ARROW_EXPR, expr);
+	  TREE_TYPE (expr) = ttype;
+	  return expr;
+	}
       expr = build_non_dependent_expr (expr);
     }
 
@@ -2178,7 +2163,7 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
       type = TREE_TYPE (exp);
 
       if (DECL_ARTIFICIAL (exp))
-	cp_warn_deprecated_use (type);
+	cp_handle_deprecated_or_unavailable (type);
     }
   else
     type = exp;
@@ -2200,24 +2185,13 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
 	    error_at (loc, "invalid use of %qT", anode);
 	  return error_mark_node;
 	}
-      else if (!parms)
+      else
 	{
-	  /* Even if there are no parameters, we might be able to deduce from
-	     default template arguments.  Pass TF_NONE so that we don't
-	     generate redundant diagnostics.  */
-	  type = do_auto_deduction (type, parms, anode, tf_none,
+	  type = do_auto_deduction (type, parms, anode, complain,
 				    adc_variable_type);
 	  if (type == error_mark_node)
-	    {
-	      if (complain & tf_error)
-		error_at (loc, "cannot deduce template arguments "
-			  "for %qT from %<()%>", anode);
-	      return error_mark_node;
-	    }
+	    return error_mark_node;
 	}
-      else
-	type = do_auto_deduction (type, parms, anode, complain,
-				  adc_variable_type);
     }
 
   if (processing_template_decl)

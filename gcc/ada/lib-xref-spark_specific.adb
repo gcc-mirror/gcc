@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,9 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Einfo;       use Einfo;
-with Nmake;       use Nmake;
-with SPARK_Xrefs; use SPARK_Xrefs;
+with Einfo.Entities; use Einfo.Entities;
+with Nmake;          use Nmake;
+with SPARK_Xrefs;    use SPARK_Xrefs;
 
 separate (Lib.Xref)
 package body SPARK_Specific is
@@ -187,6 +187,10 @@ package body SPARK_Specific is
                             | Generic_Subprogram_Kind
                             | Subprogram_Kind
       then
+         if No (Unit_Declaration_Node (N)) then
+            return Empty;
+         end if;
+
          Context := Parent (Unit_Declaration_Node (N));
 
          --  If this was a library-level subprogram then replace Context with
@@ -296,7 +300,7 @@ package body SPARK_Specific is
              (Standard_Location,
               Name_Enter (Name_Of_Heap_Variable));
 
-         Set_Ekind       (Heap, E_Variable);
+         Mutate_Ekind    (Heap, E_Variable);
          Set_Is_Internal (Heap, True);
          Set_Etype       (Heap, Standard_Void_Type);
          Set_Scope       (Heap, Standard_Standard);

@@ -1044,7 +1044,10 @@ tree_loop_interchange::valid_data_dependences (unsigned i_idx, unsigned o_idx,
 
 	  /* Be conservative, skip case if either direction at i_idx/o_idx
 	     levels is not '=' or '<'.  */
-	  if (dist_vect[i_idx] < 0 || dist_vect[o_idx] < 0)
+	  if ((!DDR_REVERSED_P (ddr) && dist_vect[i_idx] < 0)
+	      || (DDR_REVERSED_P (ddr) && dist_vect[i_idx] > 0)
+	      || (!DDR_REVERSED_P (ddr) && dist_vect[o_idx] < 0)
+	      || (DDR_REVERSED_P (ddr) && dist_vect[o_idx] > 0))
 	    return false;
 	}
     }
@@ -1280,12 +1283,15 @@ tree_loop_interchange::move_code_to_inner_loop (class loop *outer,
 	   arr[i][j - 1][k] = 0;  */
 
 static void
-compute_access_stride (class loop *loop_nest, class loop *loop,
+compute_access_stride (class loop *&loop_nest, class loop *loop,
 		       data_reference_p dr)
 {
   vec<tree> *strides = new vec<tree> ();
-  basic_block bb = gimple_bb (DR_STMT (dr));
+  dr->aux = strides;
 
+  basic_block bb = gimple_bb (DR_STMT (dr));
+  if (!flow_bb_inside_loop_p (loop_nest, bb))
+    return;
   while (!flow_bb_inside_loop_p (loop, bb))
     {
       strides->safe_push (build_int_cst (sizetype, 0));
@@ -1313,39 +1319,47 @@ compute_access_stride (class loop *loop_nest, class loop *loop,
 	}
       /* Otherwise punt.  */
       else
-	{
-	  dr->aux = strides;
-	  return;
-	}
+	return;
     }
   tree scev_base = build_fold_addr_expr (ref);
   tree scev = analyze_scalar_evolution (loop, scev_base);
-  scev = instantiate_scev (loop_preheader_edge (loop_nest), loop, scev);
-  if (! chrec_contains_undetermined (scev))
+  if (chrec_contains_undetermined (scev))
+    return;
+
+  tree orig_scev = scev;
+  do
     {
-      tree sl = scev;
-      class loop *expected = loop;
-      while (TREE_CODE (sl) == POLYNOMIAL_CHREC)
+      scev = instantiate_scev (loop_preheader_edge (loop_nest),
+			       loop, orig_scev);
+      if (! chrec_contains_undetermined (scev))
+	break;
+
+      /* If we couldn't instantiate for the desired nest, shrink it.  */
+      if (loop_nest == loop)
+	return;
+      loop_nest = loop_nest->inner;
+    } while (1);
+
+  tree sl = scev;
+  class loop *expected = loop;
+  while (TREE_CODE (sl) == POLYNOMIAL_CHREC)
+    {
+      class loop *sl_loop = get_chrec_loop (sl);
+      while (sl_loop != expected)
 	{
-	  class loop *sl_loop = get_chrec_loop (sl);
-	  while (sl_loop != expected)
-	    {
-	      strides->safe_push (size_int (0));
-	      expected = loop_outer (expected);
-	    }
-	  strides->safe_push (CHREC_RIGHT (sl));
-	  sl = CHREC_LEFT (sl);
+	  strides->safe_push (size_int (0));
 	  expected = loop_outer (expected);
 	}
-      if (! tree_contains_chrecs (sl, NULL))
-	while (expected != loop_outer (loop_nest))
-	  {
-	    strides->safe_push (size_int (0));
-	    expected = loop_outer (expected);
-	  }
+      strides->safe_push (CHREC_RIGHT (sl));
+      sl = CHREC_LEFT (sl);
+      expected = loop_outer (expected);
     }
-
-  dr->aux = strides;
+  if (! tree_contains_chrecs (sl, NULL))
+    while (expected != loop_outer (loop_nest))
+      {
+	strides->safe_push (size_int (0));
+	expected = loop_outer (expected);
+      }
 }
 
 /* Given loop nest LOOP_NEST with innermost LOOP, the function computes
@@ -1363,9 +1377,10 @@ compute_access_strides (class loop *loop_nest, class loop *loop,
   data_reference_p dr;
   vec<tree> *stride;
 
+  class loop *interesting_loop_nest = loop_nest;
   for (i = 0; datarefs.iterate (i, &dr); ++i)
     {
-      compute_access_stride (loop_nest, loop, dr);
+      compute_access_stride (interesting_loop_nest, loop, dr);
       stride = DR_ACCESS_STRIDE (dr);
       if (stride->length () < num_loops)
 	{
@@ -2074,8 +2089,7 @@ pass_linterchange::execute (function *fun)
     return 0;
 
   bool changed_p = false;
-  class loop *loop;
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     {
       vec<loop_p> loop_nest = vNULL;
       vec<data_reference_p> datarefs = vNULL;

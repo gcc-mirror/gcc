@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -49,8 +49,7 @@
 
    For efficiency, this method is used only for integer values larger than the
    constant Uint_Bias.  If a Uint is less than this constant, then it contains
-   the integer value itself.  The origin of the Uints_Ptr table is adjusted so
-   that a Uint value of Uint_Bias indexes the first element.
+   the integer value itself.
 
    First define a utility function that is build_int_cst for integral types and
    does a conversion for floating-point types.  */
@@ -85,9 +84,9 @@ UI_To_gnu (Uint Input, tree type)
     gnu_ret = build_cst_from_int (comp_type, Input - Uint_Direct_Bias);
   else
     {
-      Int Idx = Uints_Ptr[Input].Loc;
-      Pos Length = Uints_Ptr[Input].Length;
-      Int First = Udigits_Ptr[Idx];
+      Int Idx = (*Uints_Ptr)[Input - Uint_Table_Start].Loc;
+      Pos Length = (*Uints_Ptr)[Input - Uint_Table_Start].Length;
+      Int First = (*Udigits_Ptr)[Idx];
       tree gnu_base;
 
       gcc_assert (Length > 0);
@@ -109,14 +108,14 @@ UI_To_gnu (Uint Input, tree type)
 				 fold_build2 (MULT_EXPR, comp_type,
 					      gnu_ret, gnu_base),
 				 build_cst_from_int (comp_type,
-						     Udigits_Ptr[Idx]));
+						     (*Udigits_Ptr)[Idx]));
       else
 	for (Idx++, Length--; Length; Idx++, Length--)
 	  gnu_ret = fold_build2 (PLUS_EXPR, comp_type,
 				 fold_build2 (MULT_EXPR, comp_type,
 					      gnu_ret, gnu_base),
 				 build_cst_from_int (comp_type,
-						     Udigits_Ptr[Idx]));
+						     (*Udigits_Ptr)[Idx]));
     }
 
   gnu_ret = convert (type, gnu_ret);

@@ -47,8 +47,9 @@ extern char arm_arch_name[];
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() arm_cpu_cpp_builtins (pfile)
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS arm_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO arm_d_register_target_info
 
 #include "config/arm/arm-opts.h"
 
@@ -88,11 +89,7 @@ extern tree arm_bf16_ptr_type_node;
 
 
 #undef  CPP_SPEC
-#define CPP_SPEC "%(subtarget_cpp_spec)					\
-%{mfloat-abi=soft:%{mfloat-abi=hard:					\
-	%e-mfloat-abi=soft and -mfloat-abi=hard may not be used together}} \
-%{mbig-endian:%{mlittle-endian:						\
-	%e-mbig-endian and -mlittle-endian may not be used together}}"
+#define CPP_SPEC "%(subtarget_cpp_spec)"
 
 #ifndef CC1_SPEC
 #define CC1_SPEC ""
@@ -2447,9 +2444,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #endif
 
 const char *arm_canon_arch_option (int argc, const char **argv);
+const char *arm_canon_arch_multilib_option (int argc, const char **argv);
 
 #define CANON_ARCH_SPEC_FUNCTION		\
   { "canon_arch", arm_canon_arch_option },
+
+#define CANON_ARCH_MULTILIB_SPEC_FUNCTION		\
+  { "canon_arch_multilib", arm_canon_arch_multilib_option },
 
 const char *arm_be8_option (int argc, const char **argv);
 #define BE8_SPEC_FUNCTION			\
@@ -2459,6 +2460,7 @@ const char *arm_be8_option (int argc, const char **argv);
   MCPU_MTUNE_NATIVE_FUNCTIONS			\
   ASM_CPU_SPEC_FUNCTIONS			\
   CANON_ARCH_SPEC_FUNCTION			\
+  CANON_ARCH_MULTILIB_SPEC_FUNCTION		\
   TARGET_MODE_SPEC_FUNCTIONS			\
   BE8_SPEC_FUNCTION
 
@@ -2479,12 +2481,22 @@ const char *arm_be8_option (int argc, const char **argv);
   "                     %{mfloat-abi=*: abi %*}"	\
   "                     %<march=*) "
 
+/* Generate a canonical string to represent the architecture selected ignoring
+   the options not required for multilib linking.  */
+#define MULTILIB_ARCH_CANONICAL_SPECS				\
+  "-mlibarch=%:canon_arch_multilib(%{mcpu=*: cpu %*} "		\
+  "				   %{march=*: arch %*} "	\
+  "				   %{mfpu=*: fpu %*} "		\
+  "				   %{mfloat-abi=*: abi %*}"	\
+  "				   %<mlibarch=*) "
+
 /* Complete set of specs for the driver.  Commas separate the
    individual rules so that any option suppression (%<opt...)is
    completed before starting subsequent rules.  */
 #define DRIVER_SELF_SPECS			\
   MCPU_MTUNE_NATIVE_SPECS,			\
   TARGET_MODE_SPECS,				\
+  MULTILIB_ARCH_CANONICAL_SPECS,		\
   ARCH_CANONICAL_SPECS
 
 #define TARGET_SUPPORTS_WIDE_INT 1

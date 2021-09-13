@@ -439,302 +439,6 @@ ssa_prop_fini (void)
 }
 
 
-/* Return true if EXPR is an acceptable right-hand-side for a
-   GIMPLE assignment.  We validate the entire tree, not just
-   the root node, thus catching expressions that embed complex
-   operands that are not permitted in GIMPLE.  This function
-   is needed because the folding routines in fold-const.c
-   may return such expressions in some cases, e.g., an array
-   access with an embedded index addition.  It may make more
-   sense to have folding routines that are sensitive to the
-   constraints on GIMPLE operands, rather than abandoning any
-   any attempt to fold if the usual folding turns out to be too
-   aggressive.  */
-
-bool
-valid_gimple_rhs_p (tree expr)
-{
-  enum tree_code code = TREE_CODE (expr);
-
-  switch (TREE_CODE_CLASS (code))
-    {
-    case tcc_declaration:
-      if (!is_gimple_variable (expr))
-	return false;
-      break;
-
-    case tcc_constant:
-      /* All constants are ok.  */
-      break;
-
-    case tcc_comparison:
-      /* GENERIC allows comparisons with non-boolean types, reject
-         those for GIMPLE.  Let vector-typed comparisons pass - rules
-	 for GENERIC and GIMPLE are the same here.  */
-      if (!(INTEGRAL_TYPE_P (TREE_TYPE (expr))
-	    && (TREE_CODE (TREE_TYPE (expr)) == BOOLEAN_TYPE
-		|| TYPE_PRECISION (TREE_TYPE (expr)) == 1))
-	  && ! VECTOR_TYPE_P (TREE_TYPE (expr)))
-	return false;
-
-      /* Fallthru.  */
-    case tcc_binary:
-      if (!is_gimple_val (TREE_OPERAND (expr, 0))
-	  || !is_gimple_val (TREE_OPERAND (expr, 1)))
-	return false;
-      break;
-
-    case tcc_unary:
-      if (!is_gimple_val (TREE_OPERAND (expr, 0)))
-	return false;
-      break;
-
-    case tcc_expression:
-      switch (code)
-        {
-        case ADDR_EXPR:
-          {
-	    tree t;
-	    if (is_gimple_min_invariant (expr))
-	      return true;
-            t = TREE_OPERAND (expr, 0);
-            while (handled_component_p (t))
-              {
-                /* ??? More checks needed, see the GIMPLE verifier.  */
-                if ((TREE_CODE (t) == ARRAY_REF
-                     || TREE_CODE (t) == ARRAY_RANGE_REF)
-                    && !is_gimple_val (TREE_OPERAND (t, 1)))
-                  return false;
-                t = TREE_OPERAND (t, 0);
-              }
-            if (!is_gimple_id (t))
-              return false;
-          }
-          break;
-
-	default:
-	  if (get_gimple_rhs_class (code) == GIMPLE_TERNARY_RHS)
-	    {
-	      if (((code == VEC_COND_EXPR || code == COND_EXPR)
-		   ? !is_gimple_condexpr (TREE_OPERAND (expr, 0))
-		   : !is_gimple_val (TREE_OPERAND (expr, 0)))
-		  || !is_gimple_val (TREE_OPERAND (expr, 1))
-		  || !is_gimple_val (TREE_OPERAND (expr, 2)))
-		return false;
-	      break;
-	    }
-	  return false;
-	}
-      break;
-
-    case tcc_vl_exp:
-      return false;
-
-    case tcc_exceptional:
-      if (code == CONSTRUCTOR)
-	{
-	  unsigned i;
-	  tree elt;
-	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), i, elt)
-	    if (!is_gimple_val (elt))
-	      return false;
-	  return true;
-	}
-      if (code != SSA_NAME)
-        return false;
-      break;
-
-    case tcc_reference:
-      if (code == BIT_FIELD_REF)
-	return is_gimple_val (TREE_OPERAND (expr, 0));
-      return false;
-
-    default:
-      return false;
-    }
-
-  return true;
-}
-
-
-/* Return true if EXPR is a CALL_EXPR suitable for representation
-   as a single GIMPLE_CALL statement.  If the arguments require
-   further gimplification, return false.  */
-
-static bool
-valid_gimple_call_p (tree expr)
-{
-  unsigned i, nargs;
-
-  if (TREE_CODE (expr) != CALL_EXPR)
-    return false;
-
-  nargs = call_expr_nargs (expr);
-  for (i = 0; i < nargs; i++)
-    {
-      tree arg = CALL_EXPR_ARG (expr, i);
-      if (is_gimple_reg_type (TREE_TYPE (arg)))
-	{
-	  if (!is_gimple_val (arg))
-	    return false;
-	}
-      else
-	if (!is_gimple_lvalue (arg))
-	  return false;
-    }
-
-  return true;
-}
-
-
-/* Make SSA names defined by OLD_STMT point to NEW_STMT
-   as their defining statement.  */
-
-void
-move_ssa_defining_stmt_for_defs (gimple *new_stmt, gimple *old_stmt)
-{
-  tree var;
-  ssa_op_iter iter;
-
-  if (gimple_in_ssa_p (cfun))
-    {
-      /* Make defined SSA_NAMEs point to the new
-         statement as their definition.  */
-      FOR_EACH_SSA_TREE_OPERAND (var, old_stmt, iter, SSA_OP_ALL_DEFS)
-        {
-          if (TREE_CODE (var) == SSA_NAME)
-            SSA_NAME_DEF_STMT (var) = new_stmt;
-        }
-    }
-}
-
-/* Helper function for update_gimple_call and update_call_from_tree.
-   A GIMPLE_CALL STMT is being replaced with GIMPLE_CALL NEW_STMT.  */
-
-static void
-finish_update_gimple_call (gimple_stmt_iterator *si_p, gimple *new_stmt,
-			   gimple *stmt)
-{
-  gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
-  move_ssa_defining_stmt_for_defs (new_stmt, stmt);
-  gimple_move_vops (new_stmt, stmt);
-  gimple_set_location (new_stmt, gimple_location (stmt));
-  if (gimple_block (new_stmt) == NULL_TREE)
-    gimple_set_block (new_stmt, gimple_block (stmt));
-  gsi_replace (si_p, new_stmt, false);
-}
-
-/* Update a GIMPLE_CALL statement at iterator *SI_P to call to FN
-   with number of arguments NARGS, where the arguments in GIMPLE form
-   follow NARGS argument.  */
-
-bool
-update_gimple_call (gimple_stmt_iterator *si_p, tree fn, int nargs, ...)
-{
-  va_list ap;
-  gcall *new_stmt, *stmt = as_a <gcall *> (gsi_stmt (*si_p));
-
-  gcc_assert (is_gimple_call (stmt));
-  va_start (ap, nargs);
-  new_stmt = gimple_build_call_valist (fn, nargs, ap);
-  finish_update_gimple_call (si_p, new_stmt, stmt);
-  va_end (ap);
-  return true;
-}
-
-/* Update a GIMPLE_CALL statement at iterator *SI_P to reflect the
-   value of EXPR, which is expected to be the result of folding the
-   call.  This can only be done if EXPR is a CALL_EXPR with valid
-   GIMPLE operands as arguments, or if it is a suitable RHS expression
-   for a GIMPLE_ASSIGN.  More complex expressions will require
-   gimplification, which will introduce additional statements.  In this
-   event, no update is performed, and the function returns false.
-   Note that we cannot mutate a GIMPLE_CALL in-place, so we always
-   replace the statement at *SI_P with an entirely new statement.
-   The new statement need not be a call, e.g., if the original call
-   folded to a constant.  */
-
-bool
-update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
-{
-  gimple *stmt = gsi_stmt (*si_p);
-
-  if (valid_gimple_call_p (expr))
-    {
-      /* The call has simplified to another call.  */
-      tree fn = CALL_EXPR_FN (expr);
-      unsigned i;
-      unsigned nargs = call_expr_nargs (expr);
-      vec<tree> args = vNULL;
-      gcall *new_stmt;
-
-      if (nargs > 0)
-        {
-          args.create (nargs);
-	  args.safe_grow_cleared (nargs, true);
-
-          for (i = 0; i < nargs; i++)
-            args[i] = CALL_EXPR_ARG (expr, i);
-        }
-
-      new_stmt = gimple_build_call_vec (fn, args);
-      finish_update_gimple_call (si_p, new_stmt, stmt);
-      args.release ();
-
-      return true;
-    }
-  else if (valid_gimple_rhs_p (expr))
-    {
-      tree lhs = gimple_call_lhs (stmt);
-      gimple *new_stmt;
-
-      /* The call has simplified to an expression
-         that cannot be represented as a GIMPLE_CALL. */
-      if (lhs)
-        {
-          /* A value is expected.
-             Introduce a new GIMPLE_ASSIGN statement.  */
-          STRIP_USELESS_TYPE_CONVERSION (expr);
-          new_stmt = gimple_build_assign (lhs, expr);
-          move_ssa_defining_stmt_for_defs (new_stmt, stmt);
-	  gimple_move_vops (new_stmt, stmt);
-        }
-      else if (!TREE_SIDE_EFFECTS (expr))
-        {
-          /* No value is expected, and EXPR has no effect.
-             Replace it with an empty statement.  */
-          new_stmt = gimple_build_nop ();
-	  if (gimple_in_ssa_p (cfun))
-	    {
-	      unlink_stmt_vdef (stmt);
-	      release_defs (stmt);
-	    }
-        }
-      else
-        {
-          /* No value is expected, but EXPR has an effect,
-             e.g., it could be a reference to a volatile
-             variable.  Create an assignment statement
-             with a dummy (unused) lhs variable.  */
-          STRIP_USELESS_TYPE_CONVERSION (expr);
-	  if (gimple_in_ssa_p (cfun))
-	    lhs = make_ssa_name (TREE_TYPE (expr));
-	  else
-	    lhs = create_tmp_var (TREE_TYPE (expr));
-          new_stmt = gimple_build_assign (lhs, expr);
-	  gimple_move_vops (new_stmt, stmt);
-          move_ssa_defining_stmt_for_defs (new_stmt, stmt);
-        }
-      gimple_set_location (new_stmt, gimple_location (stmt));
-      gsi_replace (si_p, new_stmt, false);
-      return true;
-    }
-  else
-    /* The call simplified to an expression that is
-       not a valid GIMPLE RHS.  */
-    return false;
-}
-
 /* Entry point to the propagation engine.
 
    The VISIT_STMT virtual function is called for every statement
@@ -1539,10 +1243,8 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
            && gimple_call_lhs (stmt) != NULL_TREE)
     {
       tree expr = NULL_TREE;
-      bool res;
       propagate_tree_value (&expr, val);
-      res = update_call_from_tree (gsi, expr);
-      gcc_assert (res);
+      replace_call_with_value (gsi, expr);
     }
   else if (gswitch *swtch_stmt = dyn_cast <gswitch *> (stmt))
     propagate_tree_value (gimple_switch_index_ptr (swtch_stmt), val);
@@ -1556,13 +1258,10 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
 unsigned
 clean_up_loop_closed_phi (function *fun)
 {
-  unsigned i;
-  edge e;
   gphi *phi;
   tree rhs;
   tree lhs;
   gphi_iterator gsi;
-  struct loop *loop;
 
   /* Avoid possibly quadratic work when scanning for loop exits across
    all loops of a nest.  */
@@ -1574,11 +1273,11 @@ clean_up_loop_closed_phi (function *fun)
   calculate_dominance_info  (CDI_DOMINATORS);
 
   /* Walk over loop in function.  */
-  FOR_EACH_LOOP_FN (fun, loop, 0)
+  for (auto loop : loops_list (fun, 0))
     {
       /* Check each exit edege of loop.  */
       auto_vec<edge> exits = get_loop_exit_edges (loop);
-      FOR_EACH_VEC_ELT (exits, i, e)
+      for (edge e : exits)
 	if (single_pred_p (e->dest))
 	  /* Walk over loop-closed PHIs.  */
 	  for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi);)

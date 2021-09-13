@@ -1,7 +1,7 @@
 /* { dg-do assemble { target { arm*-*-* } } } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
 /* { dg-add-options arm_v8_2a_bf16_neon }  */
-/* { dg-additional-options "-save-temps -march=armv8.2-a+fp16+bf16 -mfloat-abi=hard -mfpu=crypto-neon-fp-armv8" } */
+/* { dg-additional-options "-save-temps -march=armv8.2-a+fp16+bf16 -mfpu=crypto-neon-fp-armv8" } */
 
 #include <arm_neon.h>
 

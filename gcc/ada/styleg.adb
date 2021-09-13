@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,16 +27,18 @@
 --  checking rules. For documentation of these rules, see comments on the
 --  individual procedures.
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Csets;    use Csets;
-with Einfo;    use Einfo;
-with Err_Vars; use Err_Vars;
-with Opt;      use Opt;
-with Scans;    use Scans;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Stylesw;  use Stylesw;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Csets;          use Csets;
+with Einfo;          use Einfo;
+with Einfo.Utils;    use Einfo.Utils;
+with Err_Vars;       use Err_Vars;
+with Opt;            use Opt;
+with Scans;          use Scans;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinput;         use Sinput;
+with Stylesw;        use Stylesw;
 
 package body Styleg is
 
@@ -82,7 +84,6 @@ package body Styleg is
    function Is_White_Space (C : Character) return Boolean;
    pragma Inline (Is_White_Space);
    --  Returns True for space or HT, False otherwise
-   --  What about VT and FF, should they return True ???
 
    procedure Require_Following_Space;
    pragma Inline (Require_Following_Space);
@@ -98,12 +99,13 @@ package body Styleg is
    -- Check_Abs_Or_Not --
    ----------------------
 
-   --  In check token mode (-gnatyt), ABS/NOT must be followed by a space
+   --  In check token mode (-gnatyt), ABS/NOT must be followed by a space or
+   --  a line feed.
 
    procedure Check_Abs_Not is
    begin
       if Style_Check_Tokens then
-         if Source (Scan_Ptr) > ' ' then -- ???
+         if Source (Scan_Ptr) not in ' ' | ASCII.CR | ASCII.LF then
             Error_Space_Required (Scan_Ptr);
          end if;
       end if;
@@ -113,7 +115,7 @@ package body Styleg is
    -- Check_Apostrophe --
    ----------------------
 
-   --  Do not allow space before or after apostrophe -- OR AFTER???
+   --  Do not allow space after apostrophe
 
    procedure Check_Apostrophe is
    begin

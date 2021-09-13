@@ -1882,7 +1882,7 @@ since C++14 and the implementation is complete.
       <entry>28.4</entry>
       <entry>Parallel algorithms</entry>
       <entry/>
-      <entry>Using <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://github.com/llvm/llvm-project/tree/master/pstl">PSTL</link></entry>
+      <entry>Using <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://github.com/llvm/llvm-project/tree/main/pstl">PSTL</link></entry>
     </row>
     <row>
       <entry>28.5</entry>

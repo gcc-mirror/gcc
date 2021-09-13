@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 
 // Copyright (C) 2014-2021 Free Software Foundation, Inc.
@@ -37,7 +36,7 @@ void test01()
   any x(5);                                   // x holds int
   VERIFY(any_cast<int>(x) == 5);              // cast to value
   any_cast<int&>(x) = 10;                     // cast to reference
-  VERIFY(any_cast<int>(x) == 10); 
+  VERIFY(any_cast<int>(x) == 10);
 
   x = "Meow";                                 // x holds const char*
   VERIFY(strcmp(any_cast<const char*>(x), "Meow") == 0);
@@ -46,7 +45,7 @@ void test01()
 
   x = string("Meow");                         // x holds string
   string s, s2("Jane");
-  s = move(any_cast<string&>(x));             // move from any 
+  s = move(any_cast<string&>(x));             // move from any
   VERIFY(s == "Meow");
   any_cast<string&>(x) = move(s2);            // move to any
   VERIFY(any_cast<const string&>(x) == "Jane");

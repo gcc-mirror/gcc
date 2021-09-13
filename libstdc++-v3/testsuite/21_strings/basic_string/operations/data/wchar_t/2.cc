@@ -15,7 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 
 // C++17 21.3.1.7 [string.ops] string operations

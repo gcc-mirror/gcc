@@ -166,8 +166,6 @@ init_operators (void)
 
       if (op_ptr->name)
 	{
-	  /* Make sure it fits in lang_decl_fn::operator_code. */
-	  gcc_checking_assert (op_ptr->ovl_op_code < (1 << 6));
 	  tree ident = set_operator_ident (op_ptr);
 	  if (unsigned index = IDENTIFIER_CP_INDEX (ident))
 	    {

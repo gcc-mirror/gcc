@@ -595,19 +595,21 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		+---------------------------------------+
 		| Parameter save area (+padding*) (P)	|  32
 		+---------------------------------------+
-		| Alloca space (A)			|  32+P
+		| Optional ROP hash slot (R)		|  32+P
 		+---------------------------------------+
-		| Local variable space (L)		|  32+P+A
+		| Alloca space (A)			|  32+P+R
 		+---------------------------------------+
-		| Save area for AltiVec registers (W)	|  32+P+A+L
+		| Local variable space (L)		|  32+P+R+A
 		+---------------------------------------+
-		| AltiVec alignment padding (Y)		|  32+P+A+L+W
+		| Save area for AltiVec registers (W)	|  32+P+R+A+L
 		+---------------------------------------+
-		| Save area for GP registers (G)	|  32+P+A+L+W+Y
+		| AltiVec alignment padding (Y)		|  32+P+R+A+L+W
 		+---------------------------------------+
-		| Save area for FP registers (F)	|  32+P+A+L+W+Y+G
+		| Save area for GP registers (G)	|  32+P+R+A+L+W+Y
 		+---------------------------------------+
-	old SP->| back chain to caller's caller		|  32+P+A+L+W+Y+G+F
+		| Save area for FP registers (F)	|  32+P+R+A+L+W+Y+G
+		+---------------------------------------+
+	old SP->| back chain to caller's caller		|  32+P+R+A+L+W+Y+G+F
 		+---------------------------------------+
 
      * If the alloca area is present, the parameter save area is
@@ -716,6 +718,19 @@ rs6000_stack_info (void)
 
   /* Does this function call anything (apart from sibling calls)?  */
   info->calls_p = (!crtl->is_leaf || cfun->machine->ra_needs_full_frame);
+  info->rop_hash_size = 0;
+
+  if (TARGET_POWER10
+      && info->calls_p
+      && DEFAULT_ABI == ABI_ELFv2
+      && rs6000_rop_protect)
+    info->rop_hash_size = 8;
+  else if (rs6000_rop_protect && DEFAULT_ABI != ABI_ELFv2)
+    {
+      /* We can't check this in rs6000_option_override_internal since
+	 DEFAULT_ABI isn't established yet.  */
+      error ("%qs requires the ELFv2 ABI", "-mrop-protect");
+    }
 
   /* Determine if we need to save the condition code registers.  */
   if (save_reg_p (CR2_REGNO)
@@ -808,6 +823,11 @@ rs6000_stack_info (void)
 
 	  /* Adjust for AltiVec case.  */
 	  info->ehrd_offset = info->altivec_save_offset - ehrd_size;
+
+	  /* Adjust for ROP protection.  */
+	  info->rop_hash_save_offset
+	    = info->altivec_save_offset - info->rop_hash_size;
+	  info->ehrd_offset -= info->rop_hash_size;
 	}
       else
 	info->ehrd_offset = info->gp_save_offset - ehrd_size;
@@ -849,6 +869,7 @@ rs6000_stack_info (void)
 				  + info->gp_size
 				  + info->altivec_size
 				  + info->altivec_padding_size
+				  + info->rop_hash_size
 				  + ehrd_size
 				  + ehcr_size
 				  + info->cr_size
@@ -987,6 +1008,10 @@ debug_stack_info (rs6000_stack_t *info)
     fprintf (stderr, "\tvrsave_save_offset  = %5d\n",
 	     info->vrsave_save_offset);
 
+  if (info->rop_hash_size)
+    fprintf (stderr, "\trop_hash_save_offset = %5d\n",
+	     info->rop_hash_save_offset);
+
   if (info->lr_save_p)
     fprintf (stderr, "\tlr_save_offset      = %5d\n", info->lr_save_offset);
 
@@ -1025,6 +1050,9 @@ debug_stack_info (rs6000_stack_t *info)
   if (info->altivec_padding_size)
     fprintf (stderr, "\taltivec_padding_size= %5d\n",
 	     info->altivec_padding_size);
+
+  if (info->rop_hash_size)
+    fprintf (stderr, "\trop_hash_size       = %5d\n", info->rop_hash_size);
 
   if (info->cr_size)
     fprintf (stderr, "\tcr_size             = %5d\n", info->cr_size);
@@ -3229,7 +3257,7 @@ rs6000_emit_prologue (void)
   if (!WORLD_SAVE_P (info) && info->lr_save_p
       && !cfun->machine->lr_is_wrapped_separately)
     {
-      rtx addr, reg, mem;
+      rtx reg;
 
       reg = gen_rtx_REG (Pmode, 0);
       START_USE (0);
@@ -3239,25 +3267,39 @@ rs6000_emit_prologue (void)
       if (!(strategy & (SAVE_NOINLINE_GPRS_SAVES_LR
 			| SAVE_NOINLINE_FPRS_SAVES_LR)))
 	{
-	  addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			       GEN_INT (info->lr_save_offset + frame_off));
-	  mem = gen_rtx_MEM (Pmode, addr);
-	  /* This should not be of rs6000_sr_alias_set, because of
-	     __builtin_return_address.  */
-
-	  insn = emit_move_insn (mem, reg);
+	  insn = emit_insn (gen_frame_store (reg, frame_reg_rtx,
+					     info->lr_save_offset + frame_off));
 	  rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 				NULL_RTX, NULL_RTX);
 	  END_USE (0);
 	}
     }
 
+  /* The ROP hash store must occur before a stack frame is created,
+     since the hash operates on r1.  */
+  /* NOTE: The hashst isn't needed if we're going to do a sibcall,
+     but there's no way to know that here.  Harmless except for
+     performance, of course.  */
+  if (TARGET_POWER10 && rs6000_rop_protect && info->rop_hash_size != 0)
+    {
+      gcc_assert (DEFAULT_ABI == ABI_ELFv2);
+      rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+      rtx addr = gen_rtx_PLUS (Pmode, stack_ptr,
+			       GEN_INT (info->rop_hash_save_offset));
+      rtx mem = gen_rtx_MEM (Pmode, addr);
+      rtx reg0 = gen_rtx_REG (Pmode, 0);
+      emit_insn (gen_hashst (mem, reg0));
+    }
+
   /* If we need to save CR, put it into r12 or r11.  Choose r12 except when
      r12 will be needed by out-of-line gpr save.  */
-  cr_save_regno = ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
-		   && !(strategy & (SAVE_INLINE_GPRS
-				    | SAVE_NOINLINE_GPRS_SAVES_LR))
-		   ? 11 : 12);
+  if (DEFAULT_ABI == ABI_AIX
+      && !(strategy & (SAVE_INLINE_GPRS | SAVE_NOINLINE_GPRS_SAVES_LR)))
+    cr_save_regno = 11;
+  else if (DEFAULT_ABI == ABI_ELFv2)
+    cr_save_regno = 11;
+  else
+    cr_save_regno = 12;
   if (!WORLD_SAVE_P (info)
       && info->cr_save_p
       && REGNO (frame_reg_rtx) != cr_save_regno
@@ -4773,6 +4815,10 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
       else if (REGNO (frame_reg_rtx) == 12)
 	cr_save_regno = 11;
 
+      /* For ELFv2 r12 is already in use as the GEP.  */
+      if (DEFAULT_ABI == ABI_ELFv2)
+	cr_save_regno = 11;
+
       cr_save_reg = load_cr_save (cr_save_regno, frame_reg_rtx,
 				  info->cr_save_offset + frame_off,
 				  exit_func);
@@ -4978,6 +5024,22 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
     {
       rtx sa = EH_RETURN_STACKADJ_RTX;
       emit_insn (gen_add3_insn (sp_reg_rtx, sp_reg_rtx, sa));
+    }
+
+  /* The ROP hash check must occur after the stack pointer is restored
+     (since the hash involves r1), and is not performed for a sibcall.  */
+  if (TARGET_POWER10
+      && rs6000_rop_protect
+      && info->rop_hash_size != 0
+      && epilogue_type != EPILOGUE_TYPE_SIBCALL)
+    {
+      gcc_assert (DEFAULT_ABI == ABI_ELFv2);
+      rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+      rtx addr = gen_rtx_PLUS (Pmode, stack_ptr,
+			       GEN_INT (info->rop_hash_save_offset));
+      rtx mem = gen_rtx_MEM (Pmode, addr);
+      rtx reg0 = gen_rtx_REG (Pmode, 0);
+      emit_insn (gen_hashchk (reg0, mem));
     }
 
   if (epilogue_type != EPILOGUE_TYPE_SIBCALL && restoring_FPRs_inline)

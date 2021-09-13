@@ -5950,7 +5950,7 @@ import_milli (enum millicodes code)
     {
       imported[(int) code] = 1;
       strcpy (str, import_string);
-      strncpy (str + MILLI_START, milli_names[(int) code], 4);
+      memcpy (str + MILLI_START, milli_names[(int) code], 4);
       output_asm_insn (str, 0);
     }
 }
@@ -9080,9 +9080,7 @@ pa_asm_output_aligned_common (FILE *stream,
   max_common_align = TARGET_64BIT ? 128 : (size >= 4096 ? 256 : 64);
   if (align > max_common_align)
     {
-      warning (0, "alignment (%u) for %s exceeds maximum alignment "
-	       "for global common data.  Using %u",
-	       align / BITS_PER_UNIT, name, max_common_align / BITS_PER_UNIT);
+      /* Alignment exceeds maximum alignment for global common data.  */
       align = max_common_align;
     }
 

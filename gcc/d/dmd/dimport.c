@@ -161,37 +161,75 @@ void Import::load(Scope *sc)
     if (mod && !mod->importedFrom)
         mod->importedFrom = sc ? sc->_module->importedFrom : Module::rootModule;
     if (!pkg)
-        pkg = mod;
+    {
+        if (mod && mod->isPackageFile)
+        {
+            // one level depth package.d file (import pkg; ./pkg/package.d)
+            // it's necessary to use the wrapping Package already created
+            pkg = mod->pkg;
+        }
+        else
+            pkg = mod;
+    }
 
     //printf("-Import::load('%s'), pkg = %p\n", toChars(), pkg);
 }
 
 void Import::importAll(Scope *sc)
 {
-    if (!mod)
+    if (mod) return; // Already done
+    load(sc);
+    if (!mod) return; // Failed
+
+    if (sc->stc & STCstatic)
+        isstatic = true;
+    mod->importAll(NULL);
+    if (mod->md && mod->md->isdeprecated)
     {
-        load(sc);
-        if (mod)                // if successfully loaded module
+        Expression *msg = mod->md->msg;
+        if (StringExp *se = msg ? msg->toStringExp() : NULL)
+            mod->deprecation(loc, "is deprecated - %s", se->string);
+        else
+            mod->deprecation(loc, "is deprecated");
+    }
+    if (sc->explicitProtection)
+        protection = sc->protection;
+    if (!isstatic && !aliasId && !names.length)
+        sc->scopesym->importScope(mod, protection);
+    // Enable access to pkgs/mod as soon as posible, because compiler
+    // can traverse them before the import gets semantic (Issue: 21501)
+    if (!aliasId && !names.length)
+        addPackageAccess(sc->scopesym);
+}
+
+/*******************************
+ * Mark the imported packages as accessible from the current
+ * scope. This access check is necessary when using FQN b/c
+ * we're using a single global package tree.
+ * https://issues.dlang.org/show_bug.cgi?id=313
+ */
+void Import::addPackageAccess(ScopeDsymbol *scopesym)
+{
+    //printf("Import::addPackageAccess('%s') %p\n", toPrettyChars(), this);
+    if (packages)
+    {
+        // import a.b.c.d;
+        Package *p = pkg; // a
+        scopesym->addAccessiblePackage(p, protection);
+        for (size_t i = 1; i < packages->length; i++) // [b, c]
         {
-            mod->importAll(NULL);
-
-            if (mod->md && mod->md->isdeprecated)
-            {
-                Expression *msg = mod->md->msg;
-                if (StringExp *se = msg ? msg->toStringExp() : NULL)
-                    mod->deprecation(loc, "is deprecated - %s", se->string);
-                else
-                    mod->deprecation(loc, "is deprecated");
-            }
-
-            if (sc->explicitProtection)
-                protection = sc->protection;
-            if (!isstatic && !aliasId && !names.length)
-            {
-                sc->scopesym->importScope(mod, protection);
-            }
+            Identifier *id = (*packages)[i];
+            p = (Package *) p->symtab->lookup(id);
+            // https://issues.dlang.org/show_bug.cgi?id=17991
+            // An import of truly empty file/package can happen
+            // https://issues.dlang.org/show_bug.cgi?id=20151
+            // Package in the path conflicts with a module name
+            if (p == NULL)
+                return;
+            scopesym->addAccessiblePackage(p, protection);
         }
     }
+    scopesym->addAccessiblePackage(mod, protection); // d
 }
 
 Dsymbol *Import::toAlias()

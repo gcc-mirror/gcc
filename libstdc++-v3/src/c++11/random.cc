@@ -66,12 +66,21 @@
 # include <stdlib.h>
 #endif
 
-#if defined USE_RDRAND || defined USE_RDSEED \
-  || defined _GLIBCXX_USE_CRT_RAND_S || defined _GLIBCXX_USE_DEV_RANDOM
+#if defined _GLIBCXX_USE_CRT_RAND_S || defined _GLIBCXX_USE_DEV_RANDOM
+// The OS provides a source of randomness we can use.
 # pragma GCC poison _M_mt
+#elif defined USE_RDRAND || defined USE_RDSEED
+// Hardware instructions might be available, but use cpuid checks at runtime.
+# pragma GCC poison _M_mt
+// If the runtime cpuid checks fail we'll use a linear congruential engine.
+# define USE_LCG 1
 #else
 // Use the mt19937 member of the union, as in previous GCC releases.
 # define USE_MT19937 1
+#endif
+
+#ifdef USE_LCG
+# include <chrono>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -136,6 +145,53 @@ namespace std _GLIBCXX_VISIBILITY(default)
       return val;
     }
 #endif
+
+#ifdef USE_LCG
+    // TODO: use this to seed std::mt19937 engine too.
+    unsigned
+    bad_seed(void* p) noexcept
+    {
+      // Poor quality seed based on hash of the current time and the address
+      // of the object being seeded. Better than using the same default seed
+      // for every object though.
+      const uint64_t bits[] = {
+	(uint64_t) chrono::system_clock::now().time_since_epoch().count(),
+	(uint64_t) reinterpret_cast<uintptr_t>(p)
+      };
+      auto bytes = reinterpret_cast<const unsigned char*>(bits);
+      // 32-bit FNV-1a hash
+      uint32_t h = 2166136261u;
+      for (unsigned i = 0; i < sizeof(bits); ++i)
+	{
+	  h ^= *bytes++;
+	  h *= 16777619u;
+	}
+      return h;
+    }
+
+    // Same as std::minstd_rand0 but using unsigned not uint_fast32_t.
+    using lcg_type
+      = linear_congruential_engine<unsigned, 16807UL, 0UL, 2147483647UL>;
+
+    inline lcg_type*
+    construct_lcg_at(void* addr) noexcept
+    {
+      return ::new(addr) lcg_type(bad_seed(addr));
+    }
+
+    inline void
+    destroy_lcg_at(void* addr) noexcept
+    {
+      static_cast<lcg_type*>(addr)->~lcg_type();
+    }
+
+    unsigned int
+    __lcg(void* ptr) noexcept
+    {
+      auto& lcg = *static_cast<lcg_type*>(ptr);
+      return lcg();
+    }
+#endif
   }
 
   void
@@ -152,25 +208,16 @@ namespace std _GLIBCXX_VISIBILITY(default)
     _M_fd = -1;
 
     const char* fname [[gnu::unused]] = nullptr;
-    bool default_token [[gnu::unused]] = false;
 
-    enum { rand_s, rdseed, rdrand, device_file } which;
+    enum {
+	rand_s = 1, rdseed = 2, rdrand = 4, device_file = 8, prng = 16,
+	any = 0xffff
+    } which;
 
     if (token == "default")
       {
-	default_token = true;
+	which = any;
 	fname = "/dev/urandom";
-#if defined _GLIBCXX_USE_CRT_RAND_S
-	which = rand_s;
-#elif defined USE_RDSEED
-	which = rdseed;
-#elif defined USE_RDRAND
-	which = rdrand;
-#elif defined _GLIBCXX_USE_DEV_RANDOM
-	which = device_file;
-#else
-# error "either define USE_MT19937 above or set the default device here"
-#endif
       }
 #ifdef USE_RDSEED
     else if (token == "rdseed")
@@ -191,99 +238,104 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	which = device_file;
       }
 #endif // _GLIBCXX_USE_DEV_RANDOM
+#ifdef USE_LCG
+    else if (token == "prng")
+      which = prng;
+#endif
     else
       std::__throw_runtime_error(
 	  __N("random_device::random_device(const std::string&):"
 	      " unsupported token"));
 
-    switch (which)
-    {
 #ifdef _GLIBCXX_USE_CRT_RAND_S
-      case rand_s:
-      {
-	_M_func = &__winxp_rand_s;
-	return;
-      }
-#endif // _GLIBCXX_USE_CRT_RAND_S
-#ifdef USE_RDSEED
-      case rdseed:
-      {
-	unsigned int eax, ebx, ecx, edx;
-	// Check availability of cpuid and, for now at least, also the
-	// CPU signature for Intel and AMD.
-	if (__get_cpuid_max(0, &ebx) > 0
-	    && (ebx == signature_INTEL_ebx || ebx == signature_AMD_ebx))
-	  {
-	    // CPUID.(EAX=07H, ECX=0H):EBX.RDSEED[bit 18]
-	    __cpuid_count(7, 0, eax, ebx, ecx, edx);
-	    if (ebx & bit_RDSEED)
-	      {
-#ifdef USE_RDRAND
-		// CPUID.01H:ECX.RDRAND[bit 30]
-		__cpuid(1, eax, ebx, ecx, edx);
-		if (ecx & bit_RDRND)
-		  {
-		    _M_func = &__x86_rdseed_rdrand;
-		    return;
-		  }
-#endif
-		_M_func = &__x86_rdseed;
-		return;
-	      }
-	  }
-	// If rdseed was explicitly requested then we're done here.
-	if (!default_token)
-	  break;
-	// Otherwise fall through to try the next available option.
-	[[gnu::fallthrough]];
-      }
-#endif // USE_RDSEED
-#ifdef USE_RDRAND
-      case rdrand:
-      {
-	unsigned int eax, ebx, ecx, edx;
-	// Check availability of cpuid and, for now at least, also the
-	// CPU signature for Intel and AMD.
-	if (__get_cpuid_max(0, &ebx) > 0
-	    && (ebx == signature_INTEL_ebx || ebx == signature_AMD_ebx))
-	  {
-	    // CPUID.01H:ECX.RDRAND[bit 30]
-	    __cpuid(1, eax, ebx, ecx, edx);
-	    if (ecx & bit_RDRND)
-	      {
-		_M_func = &__x86_rdrand;
-		return;
-	      }
-	  }
-	// If rdrand was explicitly requested then we're done here.
-	if (!default_token)
-	  break;
-	// Otherwise fall through to try the next available option.
-	[[gnu::fallthrough]];
-      }
-#endif // USE_RDRAND
-#ifdef _GLIBCXX_USE_DEV_RANDOM
-      case device_file:
-      {
-#ifdef USE_POSIX_FILE_IO
-	_M_fd = ::open(fname, O_RDONLY);
-	if (_M_fd != -1)
-	  {
-	    // Set _M_file to non-null so that _M_fini() will do clean up.
-	    _M_file = &_M_fd;
-	    return;
-	  }
-#else // USE_POSIX_FILE_IO
-	_M_file = static_cast<void*>(std::fopen(fname, "rb"));
-	if (_M_file)
-	  return;
-#endif // USE_POSIX_FILE_IO
-	[[gnu::fallthrough]];
-      }
-#endif // _GLIBCXX_USE_DEV_RANDOM
-      default:
-      { }
+    if (which & rand_s)
+    {
+      _M_func = &__winxp_rand_s;
+      return;
     }
+#endif // _GLIBCXX_USE_CRT_RAND_S
+
+#ifdef USE_RDSEED
+    if (which & rdseed)
+    {
+      unsigned int eax, ebx, ecx, edx;
+      // Check availability of cpuid and, for now at least, also the
+      // CPU signature for Intel and AMD.
+      if (__get_cpuid_max(0, &ebx) > 0
+	  && (ebx == signature_INTEL_ebx || ebx == signature_AMD_ebx))
+	{
+	  // CPUID.(EAX=07H, ECX=0H):EBX.RDSEED[bit 18]
+	  __cpuid_count(7, 0, eax, ebx, ecx, edx);
+	  if (ebx & bit_RDSEED)
+	    {
+#ifdef USE_RDRAND
+	      // CPUID.01H:ECX.RDRAND[bit 30]
+	      __cpuid(1, eax, ebx, ecx, edx);
+	      if (ecx & bit_RDRND)
+		{
+		  _M_func = &__x86_rdseed_rdrand;
+		  return;
+		}
+#endif
+	      _M_func = &__x86_rdseed;
+	      return;
+	    }
+	}
+    }
+#endif // USE_RDSEED
+
+#ifdef USE_RDRAND
+    if (which & rdrand)
+    {
+      unsigned int eax, ebx, ecx, edx;
+      // Check availability of cpuid and, for now at least, also the
+      // CPU signature for Intel and AMD.
+      if (__get_cpuid_max(0, &ebx) > 0
+	  && (ebx == signature_INTEL_ebx || ebx == signature_AMD_ebx))
+	{
+	  // CPUID.01H:ECX.RDRAND[bit 30]
+	  __cpuid(1, eax, ebx, ecx, edx);
+	  if (ecx & bit_RDRND)
+	    {
+	      _M_func = &__x86_rdrand;
+	      return;
+	    }
+	}
+    }
+#endif // USE_RDRAND
+
+#ifdef _GLIBCXX_USE_DEV_RANDOM
+    if (which & device_file)
+    {
+#ifdef USE_POSIX_FILE_IO
+      _M_fd = ::open(fname, O_RDONLY);
+      if (_M_fd != -1)
+	{
+	  // Set _M_file to non-null so that _M_fini() will do clean up.
+	  _M_file = &_M_fd;
+	  return;
+	}
+#else // USE_POSIX_FILE_IO
+      _M_file = static_cast<void*>(std::fopen(fname, "rb"));
+      if (_M_file)
+	return;
+#endif // USE_POSIX_FILE_IO
+    }
+#endif // _GLIBCXX_USE_DEV_RANDOM
+
+#ifdef USE_LCG
+    // Either "prng" was requested explicitly, or "default" was requested
+    // but nothing above worked, use a PRNG.
+    if (which & prng)
+    {
+      static_assert(sizeof(lcg_type) <= sizeof(_M_fd), "");
+      static_assert(alignof(lcg_type) <= alignof(_M_fd), "");
+      _M_file = construct_lcg_at(&_M_fd);
+      _M_func = &__lcg;
+      return;
+    }
+#endif
+
     std::__throw_runtime_error(
 	__N("random_device::random_device(const std::string&):"
 	    " device not available"));
@@ -297,7 +349,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   {
 #ifdef USE_MT19937
     unsigned long seed = 5489UL;
-    if (token != "default" && token != "mt19937")
+    if (token != "default" && token != "mt19937" && token != "prng")
       {
 	const char* nptr = token.c_str();
 	char* endptr;
@@ -335,6 +387,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
     if (!_M_file)
       return;
 
+#if USE_LCG
+    if (_M_func == &__lcg)
+      {
+	destroy_lcg_at(_M_file);
+	return;
+      }
+#endif
+
 #ifdef USE_POSIX_FILE_IO
     ::close(_M_fd);
     _M_fd = -1;
@@ -351,10 +411,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
     return _M_mt();
 #else
 
-#if defined USE_RDRAND || defined USE_RDSEED || defined _GLIBCXX_USE_CRT_RAND_S
     if (_M_func)
-      return _M_func(nullptr);
-#endif
+      return _M_func(_M_file);
 
     result_type ret;
     void* p = &ret;
@@ -430,5 +488,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
     0x9d2c5680UL, 15,
     0xefc60000UL, 18, 1812433253UL>;
 #endif // USE_MT19937
+
+#ifdef USE_LCG
+  template class
+    linear_congruential_engine<unsigned, 16807UL, 0UL, 2147483647UL>;
+  template struct __detail::_Mod<unsigned, 2147483647UL, 16807UL, 0UL>;
+#endif
 }
 #endif // _GLIBCXX_USE_C99_STDINT_TR1

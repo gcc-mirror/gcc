@@ -17,6 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-Wno-unused-result" }
+
 // 24.4.1.2 Reverse iterators
 
 #include <iterator>
@@ -27,7 +29,7 @@ void test02()
   iterator_type it01;
   iterator_type it02;
 
-  // Sanity check non-member operators and functions can be instantiated. 
+  // Sanity check non-member operators and functions can be instantiated.
   it01 == it02;
   it01 != it02;
   it01 < it02;
@@ -35,11 +37,11 @@ void test02()
   it01 > it02;
   it01 >= it02;
   it01 - it02;
-  5 + it02;
+  0 + it02;
 }
 
-int main() 
-{ 
+int main()
+{
   test02();
   return 0;
 }

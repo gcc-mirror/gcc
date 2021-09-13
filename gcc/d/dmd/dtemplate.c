@@ -156,17 +156,14 @@ Dsymbol *getDsymbol(RootObject *oarg)
     if (ea)
     {
         // Try to convert Expression to symbol
-        if (ea->op == TOKvar)
-            sa = ((VarExp *)ea)->var;
-        else if (ea->op == TOKfunction)
-        {
-            if (((FuncExp *)ea)->td)
-                sa = ((FuncExp *)ea)->td;
-            else
-                sa = ((FuncExp *)ea)->fd;
-        }
-        else if (ea->op == TOKtemplate)
-            sa = ((TemplateExp *)ea)->td;
+        if (VarExp *ve = ea->isVarExp())
+            sa = ve->var;
+        else if (FuncExp *fe = ea->isFuncExp())
+            sa = fe->td ? (Dsymbol *)fe->td : (Dsymbol *)fe->fd;
+        else if (TemplateExp *te = ea->isTemplateExp())
+            sa = te->td;
+        else if (ScopeExp *se = ea->isScopeExp())
+            sa = se->sds;
         else
             sa = NULL;
     }
@@ -225,7 +222,8 @@ bool definitelyValueParameter(Expression *e)
         e->op == TOKtype || e->op == TOKdottype ||
         e->op == TOKtemplate ||  e->op == TOKdottd ||
         e->op == TOKfunction || e->op == TOKerror ||
-        e->op == TOKthis || e->op == TOKsuper)
+        e->op == TOKthis || e->op == TOKsuper ||
+        e->op == TOKdot)
         return false;
 
     if (e->op != TOKdotvar)
@@ -534,19 +532,55 @@ TemplateDeclaration::TemplateDeclaration(Loc loc, Identifier *id,
     this->literal = literal;
     this->ismixin = ismixin;
     this->isstatic = true;
+    this->isTrivialAliasSeq = false;
+    this->isTrivialAlias = false;
     this->previous = NULL;
     this->protection = Prot(Prot::undefined);
+    this->inuse = 0;
     this->instances = NULL;
 
     // Compute in advance for Ddoc's use
     // Bugzilla 11153: ident could be NULL if parsing fails.
-    if (members && ident)
+    if (!members || !ident)
+        return;
+
+    Dsymbol *s;
+    if (!Dsymbol::oneMembers(members, &s, ident) || !s)
+        return;
+
+    onemember = s;
+    s->parent = this;
+
+    /* Set isTrivialAliasSeq if this fits the pattern:
+     *   template AliasSeq(T...) { alias AliasSeq = T; }
+     * or set isTrivialAlias if this fits the pattern:
+     *   template Alias(T) { alias Alias = qualifiers(T); }
+     */
+    if (!(parameters && parameters->length == 1))
+        return;
+
+    AliasDeclaration *ad = s->isAliasDeclaration();
+    if (!ad || !ad->type)
+        return;
+
+    TypeIdentifier *ti = ad->type->isTypeIdentifier();
+    if (!ti || ti->idents.length != 0)
+        return;
+
+    if (TemplateTupleParameter *ttp = (*parameters)[0]->isTemplateTupleParameter())
     {
-        Dsymbol *s;
-        if (Dsymbol::oneMembers(members, &s, ident) && s)
+        if (ti->ident == ttp->ident && ti->mod == 0)
         {
-            onemember = s;
-            s->parent = this;
+            //printf("found isAliasSeq %s %s\n", s->toChars(), ad->type->toChars());
+            isTrivialAliasSeq = true;
+        }
+    }
+    else if (TemplateTypeParameter *ttp = (*parameters)[0]->isTemplateTypeParameter())
+    {
+        if (ti->ident == ttp->ident)
+        {
+            //printf("found isAlias %s %s\n", s->toChars(), ad->type->toChars());
+            isTrivialAlias = true;
         }
     }
 }
@@ -770,7 +804,9 @@ MATCH TemplateDeclaration::matchWithInstance(Scope *sc, TemplateInstance *ti,
         Declaration *sparam;
 
         //printf("\targument [%d]\n", i);
+        inuse++;
         m2 = tp->matchArg(ti->loc, paramscope, ti->tiargs, i, parameters, dedtypes, &sparam);
+        inuse--;
         //printf("\tm2 = %d\n", m2);
 
         if (m2 == MATCHnomatch)
@@ -1397,7 +1433,9 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                         }
                         else
                         {
+                            inuse++;
                             oded = tparam->defaultArg(instLoc, paramscope);
+                            inuse--;
                             if (oded)
                                 (*dedargs)[i] = declareParameter(paramscope, tparam, oded);
                         }
@@ -1771,7 +1809,9 @@ Lmatch:
             }
             else
             {
+                inuse++;
                 oded = tparam->defaultArg(instLoc, paramscope);
+                inuse--;
                 if (!oded)
                 {
                     // if tuple parameter and
@@ -1997,18 +2037,19 @@ bool TemplateDeclaration::isOverloadable()
 /*************************************************
  * Given function arguments, figure out which template function
  * to expand, and return matching result.
- * Input:
- *      m               matching result
- *      dstart          the root of overloaded function templates
- *      loc             instantiation location
- *      sc              instantiation scope
- *      tiargs          initial list of template arguments
- *      tthis           if !NULL, the 'this' pointer argument
- *      fargs           arguments to function
+ * Params:
+ *      m           = matching result
+ *      dstart      = the root of overloaded function templates
+ *      loc         = instantiation location
+ *      sc          = instantiation scope
+ *      tiargs      = initial list of template arguments
+ *      tthis       = if !NULL, the 'this' pointer argument
+ *      fargs       = arguments to function
+ *      pMessage    = address to store error message, or null
  */
 
 void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
-        Objects *tiargs, Type *tthis, Expressions *fargs)
+    Objects *tiargs, Type *tthis, Expressions *fargs, const char **pMessage)
 {
     struct ParamDeduce
     {
@@ -2018,6 +2059,7 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
         Type *tthis;
         Objects *tiargs;
         Expressions *fargs;
+        const char **pMessage;
         // result
         Match *m;
         int property;   // 0: unintialized
@@ -2093,7 +2135,7 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
                 else
                     return 0;   // MATCHnomatch
             }
-            MATCH mfa = tf->callMatch(tthis_fd, fargs);
+            MATCH mfa = tf->callMatch(tthis_fd, fargs, 0, pMessage);
             //printf("test1: mfa = %d\n", mfa);
             if (mfa > MATCHnomatch)
             {
@@ -2180,8 +2222,12 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
         int applyTemplate(TemplateDeclaration *td)
         {
             //printf("applyTemplate()\n");
-            // skip duplicates
-            if (td == td_best)
+            if (td->inuse)
+            {
+                td->error(loc, "recursive template expansion");
+                return 1;
+            }
+            if (td == td_best)  // skip duplicates
                 return 0;
 
             if (!sc)
@@ -2431,6 +2477,7 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
     p.tthis  = tthis;
     p.tiargs = tiargs;
     p.fargs  = fargs;
+    p.pMessage = pMessage;
 
     // result
     p.m          = m;
@@ -5165,6 +5212,16 @@ MATCH TemplateAliasParameter::matchArg(Scope *sc, RootObject *oarg,
              *  template X(T) {}        // T => sa
              */
         }
+        else if (ta && ta->ty != Tident)
+        {
+            /* Match any type that's not a TypeIdentifier to alias parameters,
+             * but prefer type parameter.
+             * template X(alias a) { }  // a == ta
+             *
+             * TypeIdentifiers are excluded because they might be not yet resolved aliases.
+             */
+            m = MATCHconvert;
+        }
         else
             goto Lnomatch;
     }
@@ -5485,12 +5542,15 @@ RootObject *TemplateValueParameter::defaultArg(Loc instLoc, Scope *sc)
     if (e)
     {
         e = e->syntaxCopy();
+        unsigned olderrs = global.errors;
         if ((e = expressionSemantic(e, sc)) == NULL)
             return NULL;
         if ((e = resolveProperties(sc, e)) == NULL)
             return NULL;
         e = e->resolveLoc(instLoc, sc);     // use the instantiated loc
         e = e->optimize(WANTvalue);
+        if (global.errors != olderrs)
+            e = new ErrorExp();
     }
     return e;
 }
@@ -6049,6 +6109,7 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
         if (ta)
         {
             //printf("type %s\n", ta->toChars());
+
             // It might really be an Expression or an Alias
             ta->resolve(loc, sc, &ea, &ta, &sa, (flags & 1) != 0);
             if (ea) goto Lexpr;
@@ -6198,6 +6259,14 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
                 sa = ((DotTemplateExp *)ea)->td;
                 goto Ldsym;
             }
+            if (ea->op == TOKdot)
+            {
+                if (ScopeExp *se = ((DotExp *)ea)->e2->isScopeExp())
+                {
+                    sa = se->sds;
+                    goto Ldsym;
+                }
+            }
         }
         else if (sa)
         {
@@ -6270,6 +6339,7 @@ bool TemplateInstance::findBestMatch(Scope *sc, Expressions *fargs)
     }
 
     unsigned errs = global.errors;
+    TemplateDeclaration *td_last = NULL;
 
   struct ParamBest
   {
@@ -6291,7 +6361,11 @@ bool TemplateInstance::findBestMatch(Scope *sc, Expressions *fargs)
         TemplateDeclaration *td = s->isTemplateDeclaration();
         if (!td)
             return 0;
-
+        if (td->inuse)
+        {
+            td->error(ti->loc, "recursive template expansion");
+            return 1;
+        }
         if (td == td_best)          // skip duplicates
             return 0;
 
@@ -6349,8 +6423,6 @@ bool TemplateInstance::findBestMatch(Scope *sc, Expressions *fargs)
     /* Since there can be multiple TemplateDeclaration's with the same
      * name, look for the best match.
      */
-    TemplateDeclaration *td_last = NULL;
-
     OverloadSet *tovers = tempdecl->isOverloadSet();
     size_t overs_dim = tovers ? tovers->a.length : 1;
     for (size_t oi = 0; oi < overs_dim; oi++)
@@ -6359,7 +6431,9 @@ bool TemplateInstance::findBestMatch(Scope *sc, Expressions *fargs)
         p.td_best  = NULL;
         p.td_ambig = NULL;
         p.m_best   = MATCHnomatch;
-        overloadApply(tovers ? tovers->a[oi] : tempdecl, &p, &ParamBest::fp);
+
+        Dsymbol *dstart = tovers ? tovers->a[oi] : tempdecl;
+        overloadApply(dstart, &p, &ParamBest::fp);
 
         if (p.td_ambig)
         {
@@ -6481,8 +6555,11 @@ bool TemplateInstance::needsTypeInference(Scope *sc, int flag)
     {
         TemplateDeclaration *td = s->isTemplateDeclaration();
         if (!td)
-        {
             return 0;
+        if (td->inuse)
+        {
+            td->error(ti->loc, "recursive template expansion");
+            return 1;
         }
 
         /* If any of the overloaded template declarations need inference,
@@ -6737,8 +6814,7 @@ Dsymbols *TemplateInstance::appendToModuleMember()
 {
     Module *mi = minst;     // instantiated -> inserted module
 
-    if (global.params.useUnitTests ||
-        global.params.debuglevel)
+    if (global.params.useUnitTests)
     {
         // Turn all non-root instances to speculative
         if (mi && !mi->isRoot())
@@ -7128,6 +7204,68 @@ void unSpeculative(Scope *sc, RootObject *o)
         unSpeculative(sc, ti);
 }
 
+/**
+    Returns: true if the instances' innards are discardable.
+
+    The idea of this function is to see if the template instantiation
+    can be 100% replaced with its eponymous member. All other members
+    can be discarded, even in the compiler to free memory (for example,
+    the template could be expanded in a region allocator, deemed trivial,
+    the end result copied back out independently and the entire region freed),
+    and can be elided entirely from the binary.
+
+    The current implementation affects code that generally looks like:
+
+    ---
+    template foo(args...) {
+        some_basic_type_or_string helper() { .... }
+        enum foo = helper();
+    }
+    ---
+
+    since it was the easiest starting point of implementation but it can and
+    should be expanded more later.
+*/
+static bool isDiscardable(TemplateInstance *ti)
+{
+    if (ti->aliasdecl == NULL)
+        return false;
+
+    VarDeclaration *v = ti->aliasdecl->isVarDeclaration();
+    if (v == NULL)
+        return false;
+
+    if (!(v->storage_class & STCmanifest))
+        return false;
+
+    // Currently only doing basic types here because it is the easiest proof-of-concept
+    // implementation with minimal risk of side effects, but it could likely be
+    // expanded to any type that already exists outside this particular instance.
+    if (!(v->type->equals(Type::tstring) || (v->type->isTypeBasic() != NULL)))
+        return false;
+
+    // Static ctors and dtors, even in an eponymous enum template, are still run,
+    // so if any of them are in here, we'd better not assume it is trivial lest
+    // we break useful code
+    for (size_t i = 0; i < ti->members->length; i++)
+    {
+        Dsymbol *member = (*ti->members)[i];
+        if (member->hasStaticCtorOrDtor())
+            return false;
+        if (member->isStaticDtorDeclaration())
+            return false;
+        if (member->isStaticCtorDeclaration())
+            return false;
+    }
+
+    // but if it passes through this gauntlet... it should be fine. D code will
+    // see only the eponymous member, outside stuff can never access it, even through
+    // reflection; the outside world ought to be none the wiser. Even dmd should be
+    // able to simply free the memory of everything except the final result.
+
+    return true;
+}
+
 /***********************************************
  * Returns true if this is not instantiated in non-root module, and
  * is a part of non-speculative instantiatiation.
@@ -7137,38 +7275,6 @@ void unSpeculative(Scope *sc, RootObject *o)
  */
 bool TemplateInstance::needsCodegen()
 {
-    // Now -allInst is just for the backward compatibility.
-    if (global.params.allInst)
-    {
-        //printf("%s minst = %s, enclosing (%s)->isNonRoot = %d\n",
-        //    toPrettyChars(), minst ? minst->toChars() : NULL,
-        //    enclosing ? enclosing->toPrettyChars() : NULL, enclosing && enclosing->inNonRoot());
-        if (enclosing)
-        {
-            // Bugzilla 14588: If the captured context is not a function
-            // (e.g. class), the instance layout determination is guaranteed,
-            // because the semantic/semantic2 pass will be executed
-            // even for non-root instances.
-            if (!enclosing->isFuncDeclaration())
-                return true;
-
-            // Bugzilla 14834: If the captured context is a function,
-            // this excessive instantiation may cause ODR violation, because
-            // -allInst and others doesn't guarantee the semantic3 execution
-            // for that function.
-
-            // If the enclosing is also an instantiated function,
-            // we have to rely on the ancestor's needsCodegen() result.
-            if (TemplateInstance *ti = enclosing->isInstantiated())
-                return ti->needsCodegen();
-
-            // Bugzilla 13415: If and only if the enclosing scope needs codegen,
-            // this nested templates would also need code generation.
-            return !enclosing->inNonRoot();
-        }
-        return true;
-    }
-
     if (!minst)
     {
         // If this is a speculative instantiation,
@@ -7185,6 +7291,10 @@ bool TemplateInstance::needsCodegen()
         if (tinst && tinst->needsCodegen())
         {
             minst = tinst->minst;   // cache result
+            if (global.params.allInst && minst)
+            {
+                return true;
+            }
             assert(minst);
             assert(minst->isRoot() || minst->rootImports());
             return true;
@@ -7192,11 +7302,25 @@ bool TemplateInstance::needsCodegen()
         if (tnext && (tnext->needsCodegen() || tnext->minst))
         {
             minst = tnext->minst;   // cache result
+            if (global.params.allInst && minst)
+            {
+                return true;
+            }
             assert(minst);
             return minst->isRoot() || minst->rootImports();
         }
 
         // Elide codegen because this is really speculative.
+        return false;
+    }
+
+    if (global.params.allInst)
+    {
+        return true;
+    }
+
+    if (isDiscardable(this))
+    {
         return false;
     }
 
@@ -7221,14 +7345,7 @@ bool TemplateInstance::needsCodegen()
         return false;
     }
 
-    /* The issue is that if the importee is compiled with a different -debug
-     * setting than the importer, the importer may believe it exists
-     * in the compiled importee when it does not, when the instantiation
-     * is behind a conditional debug declaration.
-     */
-    // workaround for Bugzilla 11239
-    if (global.params.useUnitTests ||
-        global.params.debuglevel)
+    if (global.params.useUnitTests)
     {
         // Prefer instantiations from root modules, to maximize link-ability.
         if (minst->isRoot())

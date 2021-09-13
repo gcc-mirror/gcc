@@ -56,7 +56,7 @@ testus2_cst(unsigned short x, vector unsigned short v)
 /* { dg-final { scan-assembler-times {\mlvehx\M} 4 } } */
 /* { dg-final { scan-assembler-times {\mvperm\M} 12 { target lp64 } } } */
 
-/* { dg-final { scan-assembler-times {\mlhz\M|\mlvx\M|\mlxv\M|\mlxvw4x\M} 8 { target { be && ilp32 } } } } */
-/* { dg-final { scan-assembler-times {\msthx\M|\mstvx\M|\msth\M|\mstxvw4x\M} 12 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mvperm\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlhz\M|\mlvx\M|\mlxv\M|\mlxvw4x\M} 4 { target { be && ilp32 } } } } */
+/* { dg-final { scan-assembler-times {\msthx\M|\mstvx\M|\msth\M|\mstxvw4x\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 12 { target ilp32 } } } */
 

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <string.h>
 #include "marshall.hh"
 #include "connection.hh"
+#include "rpc.hh"
 
 cc1_plugin::status
 cc1_plugin::unmarshall_check (connection *conn, unsigned long long check)
@@ -175,7 +176,7 @@ cc1_plugin::unmarshall (connection *conn, gcc_type_array **result)
       return OK;
     }
 
-  gcc_type_array *gta = new gcc_type_array;
+  cc1_plugin::unique_ptr<gcc_type_array> gta (new gcc_type_array {});
 
   gta->n_elements = len;
   gta->elements = new gcc_type[len];
@@ -183,13 +184,9 @@ cc1_plugin::unmarshall (connection *conn, gcc_type_array **result)
   if (!unmarshall_array_elmts (conn,
 			       len * sizeof (gta->elements[0]),
 			       gta->elements))
-    {
-      delete[] gta->elements;
-      delete *result;
-      return FAIL;
-    }
+    return FAIL;
 
-  *result = gta;
+  *result = gta.release ();
 
   return OK;
 }

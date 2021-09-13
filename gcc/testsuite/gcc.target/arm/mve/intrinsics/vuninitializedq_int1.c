@@ -28,6 +28,5 @@ foo ()
 
 /* { dg-final { scan-assembler-times "vstrb.8" 2 } } */
 /* { dg-final { scan-assembler-times "vstrh.16" 2 } } */
-/* { dg-final { scan-assembler-times "vstrw.32" 2 } } */
-/* { dg-final { scan-assembler-times "vstr.64" 2 } } */
+/* { dg-final { scan-assembler-times "vstrw.32" 4 } } */
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */

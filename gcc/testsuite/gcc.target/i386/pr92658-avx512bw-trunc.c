@@ -13,7 +13,7 @@ typedef unsigned short v32hi __attribute__((vector_size (64)));
 void
 truncwb_512 (v32qi * dst, v32hi * __restrict src)
 {
-  unsigned char tem[8];
+  unsigned char tem[32];
   tem[0] = (*src)[0];
   tem[1] = (*src)[1];
   tem[2] = (*src)[2];
@@ -52,7 +52,7 @@ truncwb_512 (v32qi * dst, v32hi * __restrict src)
 void
 truncwb_256 (v16qi * dst, v16hi * __restrict src)
 {
-  unsigned char tem[8];
+  unsigned char tem[16];
   tem[0] = (*src)[0];
   tem[1] = (*src)[1];
   tem[2] = (*src)[2];

@@ -2,8 +2,11 @@
 
 ! { dg-additional-options "-fopt-info-omp-all" }
 ! { dg-additional-options "-fdump-tree-gimple" }
-! { dg-additional-options "-fopenacc-kernels=decompose" }
+! { dg-additional-options "--param=openacc-kernels=decompose" }
 ! { dg-additional-options "-fdump-tree-omp_oacc_kernels_decompose" }
+
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
 
 ! See also '../../c-c++-common/goacc/kernels-decompose-1.c'.
 

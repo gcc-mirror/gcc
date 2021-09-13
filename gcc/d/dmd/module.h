@@ -75,6 +75,7 @@ public:
     unsigned numlines;  // number of lines in source file
     int isDocFile;      // if it is a documentation input file, not D source
     bool isPackageFile; // if it is a package.d
+    Package *pkg;       // if isPackageFile is true, the Package that contains this package.d
     Strings contentImportedFiles;  // array of files whose content was imported
     int needmoduleinfo;
 

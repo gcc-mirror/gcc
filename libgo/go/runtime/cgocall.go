@@ -15,6 +15,8 @@ import (
 //go:linkname cgoCheckPointer
 //go:linkname cgoCheckResult
 
+var ncgocall uint64 // number of cgo calls in total for dead m
+
 // Pointer checking for cgo code.
 
 // We want to detect all cases where a program that does not use

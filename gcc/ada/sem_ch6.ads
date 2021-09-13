@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,7 @@ package Sem_Ch6 is
    procedure Analyze_Operator_Symbol                 (N : Node_Id);
    procedure Analyze_Parameter_Association           (N : Node_Id);
    procedure Analyze_Procedure_Call                  (N : Node_Id);
+   procedure Analyze_Return_When_Statement           (N : Node_Id);
    procedure Analyze_Simple_Return_Statement         (N : Node_Id);
    procedure Analyze_Subprogram_Declaration          (N : Node_Id);
    procedure Analyze_Subprogram_Body                 (N : Node_Id);
@@ -49,6 +50,9 @@ package Sem_Ch6 is
    --  Analyze subprogram specification in both subprogram declarations
    --  and body declarations. Returns the defining entity for the
    --  specification N.
+
+   function Can_Override_Operator (Subp : Entity_Id) return Boolean;
+   --  Returns true if Subp can override a predefined operator
 
    procedure Check_Conventions (Typ : Entity_Id);
    --  Ada 2005 (AI-430): Check that the conventions of all inherited and

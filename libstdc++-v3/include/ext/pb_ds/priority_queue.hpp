@@ -51,6 +51,7 @@ namespace __gnu_pbds
   /**
    *  @defgroup heap-based Heap-Based
    *  @ingroup containers-pbds
+   *
    *  @{
    */
 
@@ -151,6 +152,6 @@ namespace __gnu_pbds
     swap(priority_queue& other)
     { base_type::swap(other); }
   };
+ ///@} heap-based
 } // namespace __gnu_pbds
- //@} heap-based
 #endif

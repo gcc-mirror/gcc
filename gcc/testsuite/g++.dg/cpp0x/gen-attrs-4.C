@@ -13,7 +13,8 @@ int one_third [[noreturn]] [[gnu::unused]] (void);
 int [[gnu::unused]] one_half(); // { dg-warning "ignored" }
 
 static
-[[noreturn]] // { dg-warning "ignored" }
+[[noreturn]] // { dg-error "standard attributes in middle of decl-specifiers" }
+// { dg-warning "attribute ignored" "" { target *-*-* } .-1 }
 void two [[gnu::unused]] (void) {}
 
 

@@ -181,7 +181,6 @@ exact_dependency_1 (rtx addr, rtx insn)
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case EXPR_LIST:
       return false;
     default:
@@ -386,7 +385,7 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 	  if (unit == UNIT_INTEGER || unit == UNIT_UNKNOWN)
 	    loadcost = 3;
 	  else
-	    loadcost = TARGET_ATHLON ? 2 : 0;
+	    loadcost = TARGET_CPU_P (ATHLON) ? 2 : 0;
 
 	  if (cost >= loadcost)
 	    cost -= loadcost;

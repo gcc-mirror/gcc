@@ -2,7 +2,7 @@
 
 // Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
-// This file is part of the GNU ISO C++ Library.	This library is free
+// This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 3, or (at your option)
@@ -10,7 +10,7 @@
 
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
 // Under Section 7 of GPL version 3, you are granted additional
@@ -19,7 +19,7 @@
 
 // You should have received a copy of the GNU General Public License and
 // a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.	 If not, see
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
 /** @file include/latch
@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     static constexpr ptrdiff_t
     max() noexcept
-    { return __gnu_cxx::__int_traits<ptrdiff_t>::__max; }
+    { return __gnu_cxx::__int_traits<__detail::__platform_wait_t>::__max; }
 
     constexpr explicit latch(ptrdiff_t __expected) noexcept
       : _M_a(__expected) { }
@@ -73,8 +73,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_ALWAYS_INLINE void
     wait() const noexcept
     {
-      auto const __old = __atomic_impl::load(&_M_a, memory_order::acquire);
-      std::__atomic_wait(&_M_a, __old, [this] { return this->try_wait(); });
+      auto const __pred = [this] { return this->try_wait(); };
+      std::__atomic_wait_address(&_M_a, __pred);
     }
 
     _GLIBCXX_ALWAYS_INLINE void
@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   private:
-    alignas(__alignof__(ptrdiff_t)) ptrdiff_t _M_a;
+    alignas(__alignof__(__detail::__platform_wait_t)) __detail::__platform_wait_t _M_a;
   };
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -126,8 +126,11 @@ public:
   // If the operation fails, return an invalid use_array.
   //
   // WATERMARK is a watermark returned by new_change_attempt ().
+  // WILL_BE_DEBUG_USES is true if the returned use_array will be
+  // used only for debug instructions.
   use_array make_uses_available (obstack_watermark &watermark,
-				 use_array uses, bb_info *bb);
+				 use_array uses, bb_info *bb,
+				 bool will_be_debug_uses);
 
   // If CHANGE doesn't already clobber REGNO, try to add such a clobber,
   // limiting the movement range in order to make the clobber valid.
@@ -196,7 +199,7 @@ private:
   def_node *need_def_node (def_info *);
   def_splay_tree need_def_splay_tree (def_info *);
 
-  use_info *make_use_available (use_info *, bb_info *);
+  use_info *make_use_available (use_info *, bb_info *, bool);
   def_array insert_temp_clobber (obstack_watermark &, insn_info *,
 				 unsigned int, def_array);
 

@@ -30,7 +30,7 @@ version_arg =
 version_dep =
 endif
 
-gfor_c_HEADERS = $(srcdir)/ISO_Fortran_binding.h
+gfor_c_HEADERS = ISO_Fortran_binding.h
 gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
@@ -42,7 +42,7 @@ libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LTLDFLAGS) $(LIBQUADLIB) ../libbacktrace/libbacktrace.la \
 	$(HWCAP_LDFLAGS) \
-	-lm $(extra_ldflags_libgfortran) \
+	$(LIBM) $(extra_ldflags_libgfortran) \
 	$(version_arg) -Wc,-shared-libgcc
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
 
@@ -817,6 +817,7 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_pow_c) $(i_pack_c) $(i_unpack_c) $(i_matmulavx128_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
     $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc \
+    include/ISO_Fortran_binding.h \
     $(i_cshift1a_c) $(i_maxloc0s_c) $(i_minloc0s_c) $(i_maxloc1s_c) \
     $(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
     $(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c) \
@@ -1075,6 +1076,14 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 	grep '^#define GFC_FPE_' < $(top_srcdir)/../gcc/fortran/libgfortran.h > $@ || true
 	grep '^#define GFC_FPE_' < $(srcdir)/libgfortran.h >> $@ || true
 
+# Place ISO_Fortran_binding.h under include/ in the build directory such
+# that it can be used for in-built-tree testsuite runs without interference of
+# other files in the build dir - like intrinsic .mod files or other .h files.
+include/ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding.h
+	-rm -f $@
+	$(MKDIR_P) include
+	cp $(srcdir)/ISO_Fortran_binding.h $@
+
 ## A 'normal' build shouldn't need to regenerate these
 ## so we only include them in maintainer mode
 
@@ -1233,6 +1242,9 @@ $(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $@
 ## end of maintainer mode only rules
 endif
+
+clean-local:
+	-rm -rf include
 
 EXTRA_DIST = $(m4_files)
 

@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
+// Use -O0 just do disable PCH, otherwise std::byte is declared.
+// { dg-options "-O0" }
 // { dg-do compile { target c++17 } }
 
 #include <stddef.h>

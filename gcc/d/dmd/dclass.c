@@ -277,15 +277,10 @@ Scope *ClassDeclaration::newScope(Scope *sc)
     Scope *sc2 = AggregateDeclaration::newScope(sc);
     if (isCOMclass())
     {
-        if (global.params.isWindows)
-            sc2->linkage = LINKwindows;
-        else
-        {
-            /* This enables us to use COM objects under Linux and
-             * work with things like XPCOM
-             */
-            sc2->linkage = LINKc;
-        }
+        /* This enables us to use COM objects under Linux and
+         * work with things like XPCOM
+         */
+        sc2->linkage = target.systemLinkage();
     }
     return sc2;
 }
@@ -491,9 +486,10 @@ void ClassDeclaration::finalizeSize()
         assert(baseClass->sizeok == SIZEOKdone);
 
         alignsize = baseClass->alignsize;
-        structsize = baseClass->structsize;
-        if (isCPPclass() && global.params.isWindows)
-            structsize = (structsize + alignsize - 1) & ~(alignsize - 1);
+        if (classKind == ClassKind::cpp)
+            structsize = target.cpp.derivedClassOffset(baseClass);
+        else
+            structsize = baseClass->structsize;
     }
     else if (isInterfaceDeclaration())
     {

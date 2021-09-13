@@ -773,6 +773,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		      break;
 
 		    case CT_MEMORY:
+		    case CT_RELAXED_MEMORY:
 		      /* Every MEM can be reloaded to fit.  */
 		      insn_allows_mem[i] = allows_mem[i] = 1;
 		      if (MEM_P (op))
@@ -1104,7 +1105,6 @@ record_address_regs (machine_mode mode, addr_space_t as, rtx x,
     {
     case CONST_INT:
     case CONST:
-    case CC0:
     case PC:
     case SYMBOL_REF:
     case LABEL_REF:

@@ -152,7 +152,7 @@ gen_insn (md_rtx_info *info)
   lt = strchr (name, '<');
   if (lt && strchr (lt + 1, '>'))
     {
-      error_at (info->loc, "unresolved iterator");
+      error_at (info->loc, "unresolved iterator in %s", name);
       return;
     }
 
@@ -160,7 +160,7 @@ gen_insn (md_rtx_info *info)
   if (lt || gt)
     {
       error_at (info->loc, "unmatched angle brackets, likely "
-		"an error in iterator syntax");
+		"an error in iterator syntax in %s", name);
       return;
     }
 

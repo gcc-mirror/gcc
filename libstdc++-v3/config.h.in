@@ -153,15 +153,6 @@
 /* Define to 1 if you have the <ieeefp.h> header file. */
 #undef HAVE_IEEEFP_H
 
-/* Define if int64_t is available in <stdint.h>. */
-#undef HAVE_INT64_T
-
-/* Define if int64_t is a long. */
-#undef HAVE_INT64_T_LONG
-
-/* Define if int64_t is a long long. */
-#undef HAVE_INT64_T_LONG_LONG
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -291,6 +282,10 @@
 /* Define to 1 if you have the `posix_memalign' function. */
 #undef HAVE_POSIX_MEMALIGN
 
+/* Define to 1 if POSIX Semaphores with sem_timedwait are available in
+   <semaphore.h>. */
+#undef HAVE_POSIX_SEMAPHORE
+
 /* Define to 1 if you have the `powf' function. */
 #undef HAVE_POWF
 
@@ -305,6 +300,9 @@
 
 /* Define if readlink is available in <unistd.h>. */
 #undef HAVE_READLINK
+
+/* Define to 1 if you have the `secure_getenv' function. */
+#undef HAVE_SECURE_GETENV
 
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
@@ -818,10 +816,6 @@
 /* Define if gthreads library is available. */
 #undef _GLIBCXX_HAS_GTHREADS
 
-/* Define to 1 if POSIX Semaphores with sem_timedwait are available in
-   <semaphore.h>. */
-#undef _GLIBCXX_HAVE_POSIX_SEMAPHORE
-
 /* Define to 1 if a full hosted library is built, or 0 if freestanding. */
 #undef _GLIBCXX_HOSTED
 
@@ -937,9 +931,6 @@
 
 /* Define if get_nprocs is available in <sys/sysinfo.h>. */
 #undef _GLIBCXX_USE_GET_NPROCS
-
-/* Define if __int128 is supported on this host. */
-#undef _GLIBCXX_USE_INT128
 
 /* Define if LFS support is available. */
 #undef _GLIBCXX_USE_LFS

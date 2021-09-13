@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,6 +70,7 @@ package Back_End is
    --    Opt.Suppress_Control_Float_Optimizations
    --    Opt.Generate_SCO
    --    Opt.Generate_SCO_Instance_Table
+   --    Opt.JSON_Output
    --    Opt.Stack_Checking_Enabled
    --    Opt.No_Stdinc
    --    Opt.No_Stdlib

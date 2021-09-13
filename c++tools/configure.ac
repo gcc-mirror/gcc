@@ -1,5 +1,5 @@
 # Configure script for c++tools
-#   Copyright (C) 2020 Free Software Foundation, Inc.
+#   Copyright (C) 2020-2021 Free Software Foundation, Inc.
 #   Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 #
 # This file is free software; you can redistribute it and/or modify it
@@ -41,6 +41,8 @@ MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
 AC_CHECK_PROGS([AUTOCONF], [autoconf], [$MISSING autoconf])
 AC_CHECK_PROGS([AUTOHEADER], [autoheader], [$MISSING autoheader])
 
+AC_LANG(C++)
+
 dnl Enabled by default
 AC_MSG_CHECKING([whether to build C++ tools])
   AC_ARG_ENABLE(c++-tools, 
@@ -58,14 +60,43 @@ AS_HELP_STRING([--enable-maintainer-mode],
 [enable maintainer mode.  Add rules to rebuild configurey bits]),,
 [enable_maintainer_mode=no])
 case "$enable_maintainer_mode" in
-  ("yes") maintainer_mode=yes ;;
-  ("no") maintainer=no ;;
-  (*) AC_MSG_ERROR([unknown maintainer mode $enable_maintainer_mode]) ;;
+  yes) maintainer_mode=yes ;;
+  no) maintainer_mode=no ;;
+  *) AC_MSG_ERROR([unknown maintainer mode $enable_maintainer_mode]) ;;
 esac
 AC_MSG_CHECKING([maintainer-mode])
 AC_MSG_RESULT([$maintainer_mode])
 test "$maintainer_mode" = yes && MAINTAINER=yes
 AC_SUBST(MAINTAINER)
+
+# Handle configuration of checking; for the tools in this directory we
+# default to release checking and stricter checks do not change this.
+
+AC_ARG_ENABLE(checking,
+[AS_HELP_STRING([[--enable-checking[=LIST]]],
+		[enable expensive run-time checks.  With LIST,
+		 enable only specific categories of checks.
+		 Categories are: yes,no,all,none,release.])],
+[ac_checking_flags="${enableval}"],[
+# Default to checking.
+ac_checking_flags=yes
+])
+IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
+for check in release $ac_checking_flags
+do
+	case $check in
+	# these set all the flags to specific states
+	yes|all|release|assert) ac_assert_checking=1 ; ;;
+	no|none) ac_assert_checking= ; ;;
+	*) ;;
+	esac
+done
+IFS="$ac_save_IFS"
+
+if test x$ac_assert_checking != x ; then
+  AC_DEFINE(ENABLE_ASSERT_CHECKING, 1,
+[Define if you want assertions enabled.  This is a cheap check.])
+fi
 
 # Check whether --enable-default-pie was given.
 AC_ARG_ENABLE(default-pie,

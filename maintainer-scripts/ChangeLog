@@ -1,3 +1,48 @@
+2021-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Stop doing gcc-8 snapshots.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Snapshots from trunk are now GCC 12 related.
+	Add GCC 11 snapshots from the respective branch.
+
+2021-04-09  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: Generate URL only when emitting
+	to terminal.
+
+2021-04-09  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: Mention closing candidates and emit
+	console links to bugzilla.
+
+2021-04-09  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: Document more how the script behaves.
+
+2021-04-09  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: Fix usage of Version class.
+
+2021-04-09  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: Use new version scheme in --help output.
+
+2021-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* generate_libstdcxx_web_docs: Add --disable-multilib to
+	configure command.
+
+2021-04-08  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: Fix wrongly converted assert.
+
+2021-04-08  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: Modernize and fix flake8 issues.
+	* setup.cfg: New file.
+
 2020-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* update_version_git: Put BASEDIR into /sourceware/snapshot-tmp/gcc

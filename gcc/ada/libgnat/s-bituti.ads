@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---               Copyright (C) 2019-2020, Free Software Foundation, Inc.    --
+--               Copyright (C) 2019-2021, Free Software Foundation, Inc.    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,7 @@ package System.Bitfield_Utils is
    --  generic formal, or on a type derived from a generic formal, so they have
    --  to be passed in.
    --
-   --  Endian indicates whether we're on little-endian or big-endian machine.
+   --  Endian indicates whether we're on a little- or big-endian machine.
 
    pragma Elaborate_Body;
 
@@ -98,9 +98,9 @@ package System.Bitfield_Utils is
       pragma Assert (Val_Array'Component_Size = Val'Size);
 
       subtype Bit_Size is Natural; -- Size in bits of a bit field
-      subtype Small_Size is Bit_Size range 0 .. Val'Size;
+      subtype Small_Size is Bit_Size range 1 .. Val'Size;
       --  Size of a small one
-      subtype Bit_Offset is Small_Size range 0 .. Val'Size - 1;
+      subtype Bit_Offset is Small_Size'Base range 0 .. Val'Size - 1;
       --  Starting offset
       subtype Bit_Offset_In_Byte is Bit_Offset range 0 .. Storage_Unit - 1;
 
@@ -126,6 +126,20 @@ package System.Bitfield_Utils is
       --       (S (S_First)'Address, S (S_First)'Bit,
       --        D (D_First)'Address, D (D_First)'Bit,
       --        Size);
+
+      function Fast_Copy_Bitfield
+        (Src         : Val_2;
+         Src_Offset  : Bit_Offset;
+         Dest        : Val_2;
+         Dest_Offset : Bit_Offset;
+         Size        : Small_Size)
+        return Val_2 with Inline;
+      --  Faster version of Copy_Bitfield, with a different calling convention.
+      --  In particular, we pass by copy rather than passing Addresses. The bit
+      --  field must fit in Val_Bits. Src and Dest must be properly aligned.
+      --  The result is supposed to be assigned back into Dest, as in:
+      --
+      --     Dest := Fast_Copy_Bitfield (Src, ..., Dest, ..., ...);
 
    end G;
 

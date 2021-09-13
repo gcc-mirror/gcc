@@ -1,7 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail55.d(22): Error: function object.Object.opCmp (Object o) is not callable using argument types (int)
+fail_compilation/fail55.d(23): Error: function `object.Object.opCmp(Object o)` is not callable using argument types `(int)`
+fail_compilation/fail55.d(23):        cannot pass argument `0` of type `int` to parameter `Object o`
 ---
 */
 

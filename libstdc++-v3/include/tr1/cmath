@@ -1057,7 +1057,7 @@ namespace tr1
 
 #endif // __cplusplus < 201103L
 
-  // @}
+  /// @}
 
 #endif /* _GLIBCXX_USE_C99_MATH_TR1 */
 
@@ -1618,7 +1618,7 @@ namespace tr1
       return __detail::__sph_neumann<__type>(__n, __x);
     }
 
-  // @} tr1_math_spec_func
+  /// @} tr1_math_spec_func
 
 } // namespace tr1
 
@@ -1698,7 +1698,7 @@ namespace tr1
       return __detail::__hyperg<__type>(__a, __b, __c, __x);
     }
 
-  // @} tr1_math_spec_func
+  /// @} tr1_math_spec_func
 
 } // namespace tr1
 

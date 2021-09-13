@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11445.d(11): Error: incompatible types for ((a) + (b)): 'double[string]' and 'double[string]'
+fail_compilation/fail11445.d(11): Error: incompatible types for ((a) + (b)): both operands are of type 'double[string]'
 ---
 */
 

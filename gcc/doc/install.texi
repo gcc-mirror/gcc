@@ -36,9 +36,6 @@
 @ifset binarieshtml
 @settitle Installing GCC: Binaries
 @end ifset
-@ifset oldhtml
-@settitle Installing GCC: Old documentation
-@end ifset
 @ifset gfdlhtml
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
@@ -62,7 +59,6 @@
 @set testhtml
 @set finalinstallhtml
 @set binarieshtml
-@set oldhtml
 @set gfdlhtml
 @end ifnothtml
 
@@ -119,8 +115,6 @@ Free Documentation License}''.
 
 * Specific::        Host/target specific installation notes for GCC.
 * Binaries::        Where to get pre-compiled binaries.
-
-* Old::             Old installation documentation.
 
 * GNU Free Documentation License:: How you can copy and share this manual.
 * Concept Index::   This index has two entries.
@@ -703,23 +697,67 @@ The default value is @uref{https://gcc.gnu.org/,,https://gcc.gnu.org/}.
 
 @end table
 
-@heading Target specification
-@itemize @bullet
-@item
-GCC has code to correctly determine the correct value for @var{target}
-for nearly all native systems.  Therefore, we highly recommend you do
-not provide a configure target when configuring a native compiler.
+@heading Host, Build and Target specification
 
-@item
-@var{target} must be specified as @option{--target=@var{target}}
-when configuring a cross compiler; examples of valid targets would be
-m68k-elf, sh-elf, etc.
+Specify the host, build and target machine configurations.  You do this
+when you run the @file{configure} script.
 
-@item
-Specifying just @var{target} instead of @option{--target=@var{target}}
-implies that the host defaults to @var{target}.
-@end itemize
+The @dfn{build} machine is the system which you are using, the
+@dfn{host} machine is the system where you want to run the resulting
+compiler (normally the build machine), and the @dfn{target} machine is
+the system for which you want the compiler to generate code.
 
+If you are building a compiler to produce code for the machine it runs
+on (a native compiler), you normally do not need to specify any operands
+to @file{configure}; it will try to guess the type of machine you are on
+and use that as the build, host and target machines.  So you don't need
+to specify a configuration when building a native compiler unless
+@file{configure} cannot figure out what your configuration is or guesses
+wrong.
+
+In those cases, specify the build machine's @dfn{configuration name}
+with the @option{--host} option; the host and target will default to be
+the same as the host machine.
+
+Here is an example:
+
+@smallexample
+./configure --host=x86_64-pc-linux-gnu
+@end smallexample
+
+A configuration name may be canonical or it may be more or less
+abbreviated (@file{config.sub} script produces canonical versions).
+
+A canonical configuration name has three parts, separated by dashes.
+It looks like this: @samp{@var{cpu}-@var{company}-@var{system}}.
+
+Here are the possible CPU types:
+
+@quotation
+aarch64, aarch64_be, alpha, alpha64, amdgcn, arc, arceb, arm, armeb, avr, bfin,
+bpf, cr16, cris, csky, epiphany, fido, fr30, frv, ft32, h8300, hppa, hppa2.0,
+hppa64, i486, i686, ia64, iq2000, lm32, m32c, m32r, m32rle, m68k, mcore,
+microblaze, microblazeel, mips, mips64, mips64el, mips64octeon, mips64orion,
+mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
+mipsisa64r2el, mipsisa64sb1, mipsisa64sr71k, mipstx39, mmix, mn10300, moxie,
+msp430, nds32be, nds32le, nios2, nvptx, or1k, pdp11, powerpc, powerpc64,
+powerpc64le, powerpcle, pru, riscv32, riscv32be, riscv64, riscv64be, rl78, rx,
+s390, s390x, sh, shle, sparc, sparc64, tic6x, tilegx, tilegxbe, tilepro, v850,
+v850e, v850e1, vax, visium, x86_64, xstormy16, xtensa
+@end quotation
+
+Here is a list of system types:
+
+@quotation
+aix@var{version}, amdhsa, aout, cygwin, darwin@var{version},
+eabi, eabialtivec, eabisim, eabisimaltivec, elf, elf32,
+elfbare, elfoabi, freebsd@var{version}, gnu, hpux, hpux@var{version},
+kfreebsd-gnu, kopensolaris-gnu, linux-androideabi, linux-gnu,
+linux-gnu_altivec, linux-musl, linux-uclibc, lynxos, mingw32, mingw32crt,
+mmixware, msdosdjgpp, netbsd, netbsdelf@var{version}, nto-qnx, openbsd,
+rtems, solaris@var{version}, symbianelf, tpf, uclinux, uclinux_eabi, vms,
+vxworks, vxworksae, vxworksmils
+@end quotation
 
 @heading Options specification
 
@@ -1046,10 +1084,9 @@ but for the linker.
 Same as @uref{#with-as,,@option{--with-as}}
 but for the linker.
 
-@item --with-stabs
-Specify that stabs debugging
-information should be used instead of whatever format the host normally
-uses.  Normally GCC uses the same debug format as the host system.
+@item --with-dsymutil=@var{pathname}
+Same as @uref{#with-as,,@option{--with-as}}
+but for the debug linker (only used on Darwin platforms so far).
 
 @item --with-tls=@var{dialect}
 Specify the default TLS dialect, for systems were there is a choice.
@@ -1284,6 +1321,23 @@ Example 4: Add multi-lib suppport for rv64ima with lp64; rv64imaf with lp64,
 rv64imac with lp64 and rv64imafc with lp64 will reuse this multi-lib set.
 @smallexample
 rv64ima-lp64--f,c,fc
+@end smallexample
+
+@option{--with-multilib-generator} have an optional configuration argument
+@option{--cmodel=val} for code model, this option will expand with other
+config options, @var{val} is a comma separated list of possible code model,
+currently we support medlow and medany.
+
+Example 5: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+medlow code model
+@smallexample
+rv64ima-lp64--;--cmodel=medlow
+@end smallexample
+
+Example 6: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+medlow code model; rv64ima with lp64 and medany code model
+@smallexample
+rv64ima-lp64--;--cmodel=medlow,medany
 @end smallexample
 
 @item --with-endian=@var{endians}
@@ -2239,6 +2293,14 @@ specifying paths @var{path1}, @dots{}, @var{pathN}.
     --enable-offload-targets=x86_64-intelmicemul-linux-gnu=/path/to/x86_64/compiler,nvptx-none
 @end smallexample
 
+@item --enable-offload-defaulted
+
+Tell GCC that configured but not installed offload compilers and libgomp
+plugins are silently ignored.  Useful for distribution compilers where
+those are in separate optional packages and where the presence or absence
+of those optional packages should determine the actual supported offloading
+target set rather than the GCC configure-time selection.
+
 @item --with-hsa-runtime=@var{pathname}
 @itemx --with-hsa-runtime-include=@var{pathname}
 @itemx --with-hsa-runtime-lib=@var{pathname}
@@ -2987,10 +3049,8 @@ separately.
 
 Second, you must have the testing tools installed.  This includes
 @uref{http://www.gnu.org/software/dejagnu/,,DejaGnu}, Tcl, and Expect;
-the DejaGnu site has links to these. For running the BRIG frontend
-tests, a tool to assemble the binary BRIGs from HSAIL text,
-@uref{https://github.com/HSAFoundation/HSAIL-Tools/,,HSAILasm} must
-be installed.  Some optional tests also require Python3 and pytest module.
+the DejaGnu site has links to these.
+Some optional tests also require Python3 and pytest module.
 
 If the directories where @command{runtest} and @command{expect} were
 installed are not in the @env{PATH}, you may need to set the following
@@ -3440,7 +3500,7 @@ links to GNU Fortran binaries for several platforms.
 @c ***Specific****************************************************************
 @ifnothtml
 @comment node-name,     next,          previous, up
-@node    Specific, Old, Binaries, Top
+@node    Specific, GNU Free Documentation License, Binaries, Top
 @end ifnothtml
 @ifset specifichtml
 @ifnothtml
@@ -4082,6 +4142,9 @@ supported, so @option{--enable-threads=dce} does not work.
 @end html
 @anchor{x-x-linux-gnu}
 @heading *-*-linux-gnu
+The @code{.init_array} and @code{.fini_array} sections are enabled
+unconditionally which requires at least glibc 2.1 and binutils 2.12.
+
 Versions of libstdc++-v3 starting with 3.2.1 require bug fixes present
 in glibc 2.2.5 and later.  More information is available in the
 libstdc++-v3 documentation.
@@ -5068,6 +5131,10 @@ GCC will build with and support only MinGW runtime 3.12 and later.
 Earlier versions of headers are incompatible with the new default semantics
 of @code{extern inline} in @code{-std=c99} and @code{-std=gnu99} modes.
 
+To support emitting DWARF debugging info you need to use GNU binutils
+version 2.16 or above containing support for the @code{.secrel32}
+assembler pseudo-op.
+
 @html
 <hr />
 @end html
@@ -5125,18 +5192,6 @@ inlines, vtables and template instantiations will be discarded
 automatically.
 
 
-@html
-<hr />
-<p>
-@end html
-@ifhtml
-@uref{./index.html,,Return to the GCC Installation page}
-@end ifhtml
-@end ifset
-
-@c ***Old documentation******************************************************
-@ifset oldhtml
-@include install-old.texi
 @html
 <hr />
 <p>

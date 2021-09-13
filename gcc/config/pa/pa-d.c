@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -36,4 +38,49 @@ pa_d_target_versions (void)
     d_add_builtin_version ("D_SoftFloat");
   else
     d_add_builtin_version ("D_HardFloat");
+}
+
+/* Handle a call to `__traits(getTargetInfo, "floatAbi")'.  */
+
+static tree
+pa_d_handle_target_float_abi (void)
+{
+  const char *abi;
+
+  if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+    abi = "soft";
+  else
+    abi = "hard";
+
+  return build_string_literal (strlen (abi) + 1, abi);
+}
+
+/* Handle a call to `__traits(getTargetInfo, "objectFormat")'.  */
+
+static tree
+pa_d_handle_target_object_format (void)
+{
+  const char *objfmt = NULL;
+
+  if (TARGET_SOM)
+    objfmt = "som";
+
+  if (objfmt == NULL)
+    return NULL_TREE;
+
+  return build_string_literal (strlen (objfmt) + 1, objfmt);
+}
+
+/* Implement TARGET_D_REGISTER_CPU_TARGET_INFO.  */
+
+void
+pa_d_register_target_info (void)
+{
+  const struct d_target_info_spec handlers[] = {
+    { "floatAbi", pa_d_handle_target_float_abi },
+    { "objectFormat", pa_d_handle_target_object_format },
+    { NULL, NULL },
+  };
+
+  d_add_target_info_handlers (handlers);
 }

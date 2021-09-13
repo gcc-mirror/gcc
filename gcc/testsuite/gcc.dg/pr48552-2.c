@@ -15,7 +15,7 @@ f2 (void *x)
 {
   __asm ("" : "=r" (*x));	/* { dg-warning "dereferencing" "deref" } */
 }				/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } .-1 } */
-				/* { dg-error "invalid lvalue in 'asm' output 0" "invalid lvalue" { target *-*-* } .-2 } */
+
 void
 f3 (void *x)
 {
@@ -39,7 +39,7 @@ f6 (void *x)
 {
   __asm ("" : "=g" (*x));	/* { dg-warning "dereferencing" "deref" } */
 }				/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } .-1 } */
-				/* { dg-error "invalid lvalue in 'asm' output 0" "invalid lvalue" { target *-*-* } .-2 } */
+
 void
 f7 (struct S *x)
 {

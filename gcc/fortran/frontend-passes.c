@@ -373,7 +373,7 @@ optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
-/* Auxiliary function to handle the arguments to reduction intrnisics.  If the
+/* Auxiliary function to handle the arguments to reduction intrinsics.  If the
    function is a scalar, just copy it; otherwise returns the new element, the
    old one can be freed.  */
 
@@ -1299,8 +1299,8 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 		std::swap (start->value.op.op1, start->value.op.op2);
 	      gcc_fallthrough ();
 	    case INTRINSIC_MINUS:
-	      if ((start->value.op.op1->expr_type!= EXPR_VARIABLE
-		   && start->value.op.op2->expr_type != EXPR_CONSTANT)
+	      if (start->value.op.op1->expr_type!= EXPR_VARIABLE
+		  || start->value.op.op2->expr_type != EXPR_CONSTANT
 		  || start->value.op.op1->ref)
 		return false;
 	      if (!stack_top || !stack_top->iter
@@ -3307,7 +3307,7 @@ get_operand (gfc_intrinsic_op op, gfc_expr *e1, gfc_expr *e2)
    removed by DCE. Only called for rank-two matrices A and B.  */
 
 static gfc_code *
-inline_limit_check (gfc_expr *a, gfc_expr *b, int limit)
+inline_limit_check (gfc_expr *a, gfc_expr *b, int limit, int rank_a)
 {
   gfc_expr *inline_limit;
   gfc_code *if_1, *if_2, *else_2;
@@ -3315,16 +3315,28 @@ inline_limit_check (gfc_expr *a, gfc_expr *b, int limit)
   gfc_typespec ts;
   gfc_expr *cond;
 
+  gcc_assert (rank_a == 1 || rank_a == 2);
+
   /* Calculation is done in real to avoid integer overflow.  */
 
   inline_limit = gfc_get_constant_expr (BT_REAL, gfc_default_real_kind,
 					&a->where);
   mpfr_set_si (inline_limit->value.real, limit, GFC_RND_MODE);
-  mpfr_pow_ui (inline_limit->value.real, inline_limit->value.real, 3,
+
+  /* Set the limit according to the rank.  */
+  mpfr_pow_ui (inline_limit->value.real, inline_limit->value.real, rank_a + 1,
 	       GFC_RND_MODE);
 
   a1 = get_array_inq_function (GFC_ISYM_SIZE, a, 1);
-  a2 = get_array_inq_function (GFC_ISYM_SIZE, a, 2);
+
+  /* For a_rank = 1, must use one as the size of a along the second
+     dimension as to avoid too much code duplication.  */
+
+  if (rank_a == 2)
+    a2 = get_array_inq_function (GFC_ISYM_SIZE, a, 2);
+  else
+    a2 = gfc_get_int_expr (gfc_index_integer_kind, &a->where, 1);
+
   b2 = get_array_inq_function (GFC_ISYM_SIZE, b, 2);
 
   gfc_clear_ts (&ts);
@@ -4181,6 +4193,19 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   if (m_case == none)
     return 0;
 
+  /* We only handle assignment to numeric or logical variables.  */
+  switch(expr1->ts.type)
+    {
+    case BT_INTEGER:
+    case BT_LOGICAL:
+    case BT_REAL:
+    case BT_COMPLEX:
+      break;
+
+    default:
+      return 0;
+    }
+
   ns = insert_block ();
 
   /* Assign the type of the zero expression for initializing the resulting
@@ -4243,11 +4268,13 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   /* Take care of the inline flag.  If the limit check evaluates to a
      constant, dead code elimination will eliminate the unneeded branch.  */
 
-  if (flag_inline_matmul_limit > 0 && matrix_a->rank == 2
+  if (flag_inline_matmul_limit > 0
+      && (matrix_a->rank == 1 || matrix_a->rank == 2)
       && matrix_b->rank == 2)
     {
       if_limit = inline_limit_check (matrix_a, matrix_b,
-				     flag_inline_matmul_limit);
+				     flag_inline_matmul_limit,
+				     matrix_a->rank);
 
       /* Insert the original statement into the else branch.  */
       if_limit->block->block->next = co;
@@ -4757,7 +4784,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   /* Generate the if statement and hang it into the tree.  */
-  if_limit = inline_limit_check (matrix_a, matrix_b, flag_blas_matmul_limit);
+  if_limit = inline_limit_check (matrix_a, matrix_b, flag_blas_matmul_limit, 2);
   co_next = co->next;
   (*current_code) = if_limit;
   co->next = NULL;
@@ -5528,6 +5555,13 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_PARALLEL_LOOP:
+	    case EXEC_OMP_PARALLEL_MASKED:
+	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+	    case EXEC_OMP_PARALLEL_MASTER:
+	    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+	    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
 
 	      in_omp_workshare = false;
@@ -5550,6 +5584,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_OMP_DISTRIBUTE_SIMD:
 	    case EXEC_OMP_DO:
 	    case EXEC_OMP_DO_SIMD:
+	    case EXEC_OMP_LOOP:
 	    case EXEC_OMP_ORDERED:
 	    case EXEC_OMP_SECTIONS:
 	    case EXEC_OMP_SINGLE:
@@ -5564,12 +5599,14 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_OMP_TARGET_PARALLEL:
 	    case EXEC_OMP_TARGET_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
 	    case EXEC_OMP_TARGET_SIMD:
 	    case EXEC_OMP_TARGET_TEAMS:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_LOOP:
 	    case EXEC_OMP_TARGET_UPDATE:
 	    case EXEC_OMP_TASK:
 	    case EXEC_OMP_TEAMS:
@@ -5577,6 +5614,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TEAMS_LOOP:
 
 	      /* Come to this label only from the
 		 EXEC_OMP_PARALLEL_* cases above.  */

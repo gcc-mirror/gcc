@@ -219,7 +219,10 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, DECL_PACKED (expr), 1);
       bp_pack_value (bp, DECL_NONADDRESSABLE_P (expr), 1);
       bp_pack_value (bp, DECL_PADDING_P (expr), 1);
-      bp_pack_value (bp, DECL_FIELD_ABI_IGNORED (expr), 1);
+      if (DECL_BIT_FIELD (expr))
+	bp_pack_value (bp, DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (expr), 1);
+      else
+	bp_pack_value (bp, DECL_FIELD_ABI_IGNORED (expr), 1);
       bp_pack_value (bp, expr->decl_common.off_align, 8);
     }
 
@@ -298,7 +301,7 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, DECL_IS_NOVOPS (expr), 1);
   bp_pack_value (bp, DECL_IS_RETURNS_TWICE (expr), 1);
   bp_pack_value (bp, DECL_IS_MALLOC (expr), 1);
-  bp_pack_value (bp, DECL_IS_OPERATOR_NEW_P (expr), 1);
+  bp_pack_value (bp, FUNCTION_DECL_DECL_TYPE (expr), 2);
   bp_pack_value (bp, DECL_IS_OPERATOR_DELETE_P (expr), 1);
   bp_pack_value (bp, DECL_DECLARED_INLINE_P (expr), 1);
   bp_pack_value (bp, DECL_STATIC_CHAIN (expr), 1);

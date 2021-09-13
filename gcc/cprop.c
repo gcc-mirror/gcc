@@ -963,10 +963,6 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
 	remove_note (jump, note);
      }
 
-  /* Delete the cc0 setter.  */
-  if (HAVE_cc0 && setcc != NULL && CC0_P (SET_DEST (single_set (setcc))))
-    delete_insn (setcc);
-
   global_const_prop_count++;
   if (dump_file != NULL)
     {
@@ -1007,16 +1003,18 @@ static int
 constprop_register (rtx from, rtx src, rtx_insn *insn)
 {
   rtx sset;
+  rtx_insn *next_insn;
 
-  /* Check for reg or cc0 setting instructions followed by
-     conditional branch instructions first.  */
+  /* Check for reg setting instructions followed by conditional branch
+     instructions first.  */
   if ((sset = single_set (insn)) != NULL
-      && NEXT_INSN (insn)
-      && any_condjump_p (NEXT_INSN (insn)) && onlyjump_p (NEXT_INSN (insn)))
+      && (next_insn = next_nondebug_insn (insn)) != NULL
+      && any_condjump_p (next_insn)
+      && onlyjump_p (next_insn))
     {
       rtx dest = SET_DEST (sset);
-      if ((REG_P (dest) || CC0_P (dest))
-	  && cprop_jump (BLOCK_FOR_INSN (insn), insn, NEXT_INSN (insn),
+      if (REG_P (dest)
+	  && cprop_jump (BLOCK_FOR_INSN (insn), insn, next_insn,
 			 from, src))
 	return 1;
     }
@@ -1634,8 +1632,7 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	  /* Avoid unification of the edge with other edges from original
 	     branch.  We would end up emitting the instruction on "both"
 	     edges.  */
-	  if (dest && setcc && !CC0_P (SET_DEST (PATTERN (setcc)))
-	      && find_edge (e->src, dest))
+	  if (dest && setcc && find_edge (e->src, dest))
 	    dest = NULL;
 
 	  old_dest = e->dest;
@@ -1645,13 +1642,11 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
             {
 	      redirect_edge_and_branch_force (e, dest);
 
-	      /* Copy the register setter to the redirected edge.
-		 Don't copy CC0 setters, as CC0 is dead after jump.  */
+	      /* Copy the register setter to the redirected edge.  */
 	      if (setcc)
 		{
 		  rtx pat = PATTERN (setcc);
-		  if (!CC0_P (SET_DEST (pat)))
-		    insert_insn_on_edge (copy_insn (pat), e);
+		  insert_insn_on_edge (copy_insn (pat), e);
 		}
 
 	      if (dump_file != NULL)
@@ -1717,7 +1712,7 @@ bypass_conditional_jumps (void)
 		  break;
 
 		dest = SET_DEST (PATTERN (insn));
-		if (REG_P (dest) || CC0_P (dest))
+		if (REG_P (dest))
 		  setcc = insn;
 		else
 		  break;

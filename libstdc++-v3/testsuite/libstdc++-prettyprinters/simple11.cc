@@ -137,19 +137,19 @@ main()
   std::vector<bool>::iterator vbIt0;
 // { dg-final { note-test vbIt0 {non-dereferenceable iterator for std::vector<bool>} } }
 
-  std::_Bit_reference br = *vb.begin();
+  std::vector<bool>::reference br = *vb.begin();
 // { dg-final { note-test br {true} } }
-  std::_Bit_reference br2 = *vbIt2;
+  std::vector<bool>::reference br2 = *vbIt2;
 // { dg-final { note-test br2 {true} } }
-  std::_Bit_reference br3 = *vbIt3;
+  std::vector<bool>::reference br3 = *vbIt3;
 // { dg-final { note-test br3 {false} } }
-  std::_Bit_reference br4 = *vbIt4;
+  std::vector<bool>::reference br4 = *vbIt4;
 // { dg-final { note-test br4 {false} } }
-  std::_Bit_reference br5 = *vbIt5;
+  std::vector<bool>::reference br5 = *vbIt5;
 // { dg-final { note-test br5 {true} } }
 
- std::_Bit_reference br0;
-// { dg-final { note-test br0 {invalid std::_Bit_reference} } }
+ std::vector<bool>::reference br0;
+// { dg-final { note-test br0 {invalid std::vector<bool>::reference} } }
 
   __gnu_cxx::slist<int> sll;
   sll.push_front(23);

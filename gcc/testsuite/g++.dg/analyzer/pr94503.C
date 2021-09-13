@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-analyzer-use-of-uninitialized-value" }
+
 template <typename> class allocator {
 public:
   allocator(const allocator &);

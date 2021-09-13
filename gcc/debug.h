@@ -21,6 +21,10 @@
 /* This structure contains hooks for the debug information output
    functions, accessed through the global instance debug_hooks set in
    toplev.c according to command line options.  */
+/* WARNING: Do not add new debug hook targets - DWARF will be the only
+   way to speak debug to the middle-end once we are able to get rid of
+   the remaining targets.  If you need alternate output formats instead
+   generate them off the DWARF representation.  */
 struct gcc_debug_hooks
 {
   /* Initialize debug output.  MAIN_FILENAME is the name of the main
@@ -68,6 +72,10 @@ struct gcc_debug_hooks
   /* Record a source file location at (FILE, LINE, COLUMN, DISCRIMINATOR).  */
   void (* source_line) (unsigned int line, unsigned int column,
 			const char *file, int discriminator, bool is_stmt);
+
+  /* Record a source file location for a DECL_IGNORED_P function.  */
+  void (* set_ignored_loc) (unsigned int line, unsigned int column,
+			    const char *file);
 
   /* Called at start of prologue code.  LINE is the first line in the
      function.  */

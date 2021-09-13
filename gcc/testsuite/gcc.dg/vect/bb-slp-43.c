@@ -14,4 +14,4 @@ f (int *restrict x, short *restrict y)
 }
 
 /* { dg-final { scan-tree-dump-not "mixed mask and nonmask" "slp2" } } */
-/* { dg-final { scan-tree-dump-not "vector operands from scalars" "slp2" { target { { vect_int && vect_bool_cmp } && { vect_unpack && vect_hw_misalign } } } } } */
+/* { dg-final { scan-tree-dump-not "vector operands from scalars" "slp2" { target { { vect_int && vect_bool_cmp } && { vect_unpack && vect_hw_misalign } } xfail vect_variable_length } } } */

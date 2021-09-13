@@ -269,6 +269,12 @@ DEF_TUNE (X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE, "avoid_mem_opnd_for_cmove",
    as MOVS and STOS (without a REP prefix) to move/set sequences of bytes.  */
 DEF_TUNE (X86_TUNE_SINGLE_STRINGOP, "single_stringop", m_386 | m_P4_NOCONA)
 
+/* X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB: Enable use of REP MOVSB/STOSB to
+   move/set sequences of bytes with known size.  */
+DEF_TUNE (X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB,
+	  "prefer_known_rep_movsb_stosb",
+	  m_SKYLAKE | m_ALDERLAKE | m_CORE_AVX512)
+
 /* X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES: Enable generation of
    compact prologues and epilogues by issuing a misaligned moves.  This
    requires target to handle misaligned moves and partial memory stalls
@@ -436,7 +442,7 @@ DEF_TUNE (X86_TUNE_AVOID_4BYTE_PREFIXES, "avoid_4byte_prefixes",
 
 /* X86_TUNE_USE_GATHER: Use gather instructions.  */
 DEF_TUNE (X86_TUNE_USE_GATHER, "use_gather",
-	  ~(m_ZNVER | m_GENERIC))
+	  ~(m_ZNVER1 | m_ZNVER2 | m_GENERIC))
 
 /* X86_TUNE_AVOID_128FMA_CHAINS: Avoid creating loops with tight 128bit or
    smaller FMA chain.  */
@@ -445,6 +451,11 @@ DEF_TUNE (X86_TUNE_AVOID_128FMA_CHAINS, "avoid_fma_chains", m_ZNVER)
 /* X86_TUNE_AVOID_256FMA_CHAINS: Avoid creating loops with tight 256bit or
    smaller FMA chain.  */
 DEF_TUNE (X86_TUNE_AVOID_256FMA_CHAINS, "avoid_fma256_chains", m_ZNVER2 | m_ZNVER3)
+
+/* X86_TUNE_V2DF_REDUCTION_PREFER_PHADDPD: Prefer haddpd
+   for v2df vector reduction.  */
+DEF_TUNE (X86_TUNE_V2DF_REDUCTION_PREFER_HADDPD,
+	  "v2df_reduction_prefer_haddpd", m_NONE)
 
 /*****************************************************************************/
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */
@@ -473,6 +484,17 @@ DEF_TUNE (X86_TUNE_AVX128_OPTIMAL, "avx128_optimal", m_BDVER | m_BTVER2
    instructions in the auto-vectorizer.  */
 DEF_TUNE (X86_TUNE_AVX256_OPTIMAL, "avx256_optimal", m_CORE_AVX512)
 
+/* X86_TUNE_AVX256_MOVE_BY_PIECES: Optimize move_by_pieces with 256-bit
+   AVX instructions.  */
+DEF_TUNE (X86_TUNE_AVX256_MOVE_BY_PIECES, "avx256_move_by_pieces",
+	  m_ALDERLAKE | m_CORE_AVX512)
+
+/* X86_TUNE_AVX256_STORE_BY_PIECES: Optimize store_by_pieces with 256-bit
+   AVX instructions.  */
+DEF_TUNE (X86_TUNE_AVX256_STORE_BY_PIECES, "avx256_store_by_pieces",
+	  m_ALDERLAKE | m_CORE_AVX512)
+
+/*****************************************************************************/
 /*****************************************************************************/
 /* Historical relics: tuning flags that helps a specific old CPU designs     */
 /*****************************************************************************/

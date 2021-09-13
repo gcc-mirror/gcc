@@ -95,6 +95,8 @@ public:
 				 feasibility_problem **out_problem);
 
 private:
+  DISABLE_COPY_AND_ASSIGN(epath_finder);
+
   exploded_path *explore_feasible_paths (const exploded_node *target_enode,
 					 const char *desc, unsigned diag_idx);
   bool process_worklist_item (feasible_worklist *worklist,
@@ -290,6 +292,34 @@ private:
   const shortest_paths<eg_traits, exploded_path> &m_sep;
 };
 
+/* When we're building the exploded graph we want to simplify
+   overly-complicated symbolic values down to "UNKNOWN" to try to avoid
+   state explosions and unbounded chains of exploration.
+
+   However, when we're building the feasibility graph for a diagnostic
+   (actually a tree), we don't want UNKNOWN values, as conditions on them
+   are also unknown: we don't want to have a contradiction such as a path
+   where (VAL != 0) and then (VAL == 0) along the same path.
+
+   Hence this is an RAII class for temporarily disabling complexity-checking
+   in the region_model_manager, for use within
+   epath_finder::explore_feasible_paths.  */
+
+class auto_disable_complexity_checks
+{
+public:
+  auto_disable_complexity_checks (region_model_manager *mgr) : m_mgr (mgr)
+  {
+    m_mgr->disable_complexity_check ();
+  }
+  ~auto_disable_complexity_checks ()
+  {
+    m_mgr->enable_complexity_check ();
+  }
+private:
+  region_model_manager *m_mgr;
+};
+
 /* Attempt to find the shortest feasible path from the origin to
    TARGET_ENODE by iteratively building a feasible_graph, in which
    every path to a feasible_node is feasible by construction.
@@ -342,6 +372,8 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
   logger *logger = get_logger ();
   LOG_SCOPE (logger);
 
+  region_model_manager *mgr = m_eg.get_engine ()->get_model_manager ();
+
   /* Determine the shortest path to TARGET_ENODE from each node in
      the exploded graph.  */
   shortest_paths<eg_traits, exploded_path> sep
@@ -361,8 +393,7 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
 
   /* Populate the worklist with the origin node.  */
   {
-    feasibility_state init_state (m_eg.get_engine ()->get_model_manager (),
-				  m_eg.get_supergraph ());
+    feasibility_state init_state (mgr, m_eg.get_supergraph ());
     feasible_node *origin = fg.add_node (m_eg.get_origin (), init_state, 0);
     worklist.add_node (origin);
   }
@@ -374,11 +405,15 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
   /* Set this if we find a feasible path to TARGET_ENODE.  */
   exploded_path *best_path = NULL;
 
-  while (process_worklist_item (&worklist, tg, &fg, target_enode, diag_idx,
-				&best_path))
-    {
-      /* Empty; the work is done within process_worklist_item.  */
-    }
+  {
+    auto_disable_complexity_checks sentinel (mgr);
+
+    while (process_worklist_item (&worklist, tg, &fg, target_enode, diag_idx,
+				  &best_path))
+      {
+	/* Empty; the work is done within process_worklist_item.  */
+      }
+  }
 
   if (logger)
     {
@@ -485,8 +520,7 @@ epath_finder::process_worklist_item (feasible_worklist *worklist,
 	  gcc_assert (rc);
 	  fg->add_feasibility_problem (fnode,
 				       succ_eedge,
-				       *rc);
-	  delete rc;
+				       rc);
 
 	  /* Give up if there have been too many infeasible edges.  */
 	  if (fg->get_num_infeasible ()
@@ -720,6 +754,18 @@ saved_diagnostic::add_duplicate (saved_diagnostic *other)
   m_duplicates.safe_push (other);
 }
 
+/* Return true if this diagnostic supercedes OTHER, and that OTHER should
+   therefore not be emitted.  */
+
+bool
+saved_diagnostic::supercedes_p (const saved_diagnostic &other) const
+{
+  /* They should be at the same stmt.  */
+  if (m_stmt != other.m_stmt)
+    return false;
+  return m_d->supercedes_p (*other.m_d);
+}
+
 /* State for building a checker_path from a particular exploded_path.
    In particular, this precomputes reachability information: the set of
    source enodes for which a path be found to the diagnostic enode.  */
@@ -789,7 +835,7 @@ diagnostic_manager::diagnostic_manager (logger *logger, engine *eng,
 
 void
 diagnostic_manager::add_diagnostic (const state_machine *sm,
-				    const exploded_node *enode,
+				    exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
 				    stmt_finder *finder,
 				    tree var,
@@ -807,16 +853,17 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
     = new saved_diagnostic (sm, enode, snode, stmt, finder, var, sval,
 			    state, d, m_saved_diagnostics.length ());
   m_saved_diagnostics.safe_push (sd);
+  enode->add_diagnostic (sd);
   if (get_logger ())
-    log ("adding saved diagnostic %i at SN %i: %qs",
+    log ("adding saved diagnostic %i at SN %i to EN %i: %qs",
 	 sd->get_index (),
-	 snode->m_index, d->get_kind ());
+	 snode->m_index, enode->m_index, d->get_kind ());
 }
 
 /* Queue pending_diagnostic D at ENODE for later emission.  */
 
 void
-diagnostic_manager::add_diagnostic (const exploded_node *enode,
+diagnostic_manager::add_diagnostic (exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
 				    stmt_finder *finder,
 				    pending_diagnostic *d)
@@ -1018,6 +1065,38 @@ public:
       }
   }
 
+  /* Handle interactions between the dedupe winners, so that some
+     diagnostics can supercede others (of different kinds).
+
+     We want use-after-free to supercede use-of-unitialized-value,
+     so that if we have these at the same stmt, we don't emit
+     a use-of-uninitialized, just the use-after-free.  */
+
+  void handle_interactions (diagnostic_manager *dm)
+  {
+    LOG_SCOPE (dm->get_logger ());
+    auto_vec<const dedupe_key *> superceded;
+    for (auto outer : m_map)
+      {
+	const saved_diagnostic *outer_sd = outer.second;
+	for (auto inner : m_map)
+	  {
+	    const saved_diagnostic *inner_sd = inner.second;
+	    if (inner_sd->supercedes_p (*outer_sd))
+	      {
+		superceded.safe_push (outer.first);
+		if (dm->get_logger ())
+		  dm->log ("sd[%i] \"%s\" superceded by sd[%i] \"%s\"",
+			   outer_sd->get_index (), outer_sd->m_d->get_kind (),
+			   inner_sd->get_index (), inner_sd->m_d->get_kind ());
+		break;
+	      }
+	  }
+      }
+    for (auto iter : superceded)
+      m_map.remove (iter);
+  }
+
  /* Emit the simplest diagnostic within each set.  */
 
   void emit_best (diagnostic_manager *dm,
@@ -1092,6 +1171,8 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
     best_candidates.add (get_logger (), &pf, sd);
 
+  best_candidates.handle_interactions (this);
+
   /* For each dedupe-key, call emit_saved_diagnostic on the "best"
      saved_diagnostic.  */
   best_candidates.emit_best (this, eg);
@@ -1161,6 +1242,17 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 	inform_n (loc, num_dupes,
 		  "%i duplicate", "%i duplicates",
 		  num_dupes);
+      if (flag_dump_analyzer_exploded_paths)
+	{
+	  auto_timevar tv (TV_ANALYZER_DUMP);
+	  pretty_printer pp;
+	  pp_printf (&pp, "%s.%i.%s.epath.txt",
+		     dump_base_name, sd.get_index (), sd.m_d->get_kind ());
+	  char *filename = xstrdup (pp_formatted_text (&pp));
+	  epath->dump_to_file (filename, eg.get_ext_state ());
+	  inform (loc, "exploded path written to %qs", filename);
+	  free (filename);
+	}
     }
   delete pp;
 }
@@ -1374,6 +1466,14 @@ struct null_assignment_sm_context : public sm_context
     return current;
   }
 
+  state_machine::state_t get_state (const gimple *stmt ATTRIBUTE_UNUSED,
+				    const svalue *sval) FINAL OVERRIDE
+  {
+    const sm_state_map *old_smap = m_old_state->m_checker_states[m_sm_idx];
+    state_machine::state_t current = old_smap->get_state (sval, m_ext_state);
+    return current;
+  }
+
   void set_next_state (const gimple *stmt,
 		       tree var,
 		       state_machine::state_t to,
@@ -1398,6 +1498,28 @@ struct null_assignment_sm_context : public sm_context
 							*m_new_state));
   }
 
+  void set_next_state (const gimple *stmt,
+		       const svalue *sval,
+		       state_machine::state_t to,
+		       tree origin ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  {
+    state_machine::state_t from = get_state (stmt, sval);
+    if (from != m_sm.get_start_state ())
+      return;
+
+    const supernode *supernode = m_point->get_supernode ();
+    int stack_depth = m_point->get_stack_depth ();
+
+    m_emission_path->add_event (new state_change_event (supernode,
+							m_stmt,
+							stack_depth,
+							m_sm,
+							sval,
+							from, to,
+							NULL,
+							*m_new_state));
+  }
+
   void warn (const supernode *, const gimple *,
 	     tree, pending_diagnostic *d) FINAL OVERRIDE
   {
@@ -1407,6 +1529,11 @@ struct null_assignment_sm_context : public sm_context
   tree get_diagnostic_tree (tree expr) FINAL OVERRIDE
   {
     return expr;
+  }
+
+  tree get_diagnostic_tree (const svalue *sval) FINAL OVERRIDE
+  {
+    return m_new_state->m_region_model->get_representative_tree (sval);
   }
 
   state_machine::state_t get_global_state () const FINAL OVERRIDE
@@ -1584,7 +1711,7 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		 "this path would have been rejected as infeasible"
 		 " at this edge: ");
       pb.get_feasibility_problem ()->dump_to_pp (&pp);
-      emission_path->add_event (new custom_event
+      emission_path->add_event (new precanned_custom_event
 				(dst_point.get_location (),
 				 dst_point.get_fndecl (),
 				 dst_stack_depth,
@@ -1965,18 +2092,28 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	case EK_CALL_EDGE:
 	  {
 	    call_event *event = (call_event *)base_event;
-	    const callgraph_superedge& cg_superedge
-	      = event->get_callgraph_superedge ();
 	    const region_model *callee_model
 	      = event->m_eedge.m_dest->get_state ().m_region_model;
+	    const region_model *caller_model
+	      = event->m_eedge.m_src->get_state ().m_region_model;
 	    tree callee_var = callee_model->get_representative_tree (sval);
-	    /* We could just use caller_model->get_representative_tree (sval);
-	       to get the caller_var, but for now use
-	       map_expr_from_callee_to_caller so as to only record critical
-	       state for parms and the like.  */
 	    callsite_expr expr;
-	    tree caller_var
-	      = cg_superedge.map_expr_from_callee_to_caller (callee_var, &expr);
+
+	    tree caller_var;
+            if(event->m_sedge)
+              {
+                const callgraph_superedge& cg_superedge
+                  = event->get_callgraph_superedge ();
+                if (cg_superedge.m_cedge)
+	          caller_var
+	            = cg_superedge.map_expr_from_callee_to_caller (callee_var,
+                                                                   &expr);
+                else
+                  caller_var = caller_model->get_representative_tree (sval);
+              }
+            else
+	      caller_var = caller_model->get_representative_tree (sval);
+
 	    if (caller_var)
 	      {
 		if (get_logger ())
@@ -1998,15 +2135,28 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	    if (sval)
 	      {
 		return_event *event = (return_event *)base_event;
-		const callgraph_superedge& cg_superedge
-		  = event->get_callgraph_superedge ();
-		const region_model *caller_model
-		  = event->m_eedge.m_dest->get_state ().m_region_model;
-		tree caller_var = caller_model->get_representative_tree (sval);
+                const region_model *caller_model
+                  = event->m_eedge.m_dest->get_state ().m_region_model;
+                tree caller_var = caller_model->get_representative_tree (sval);
+                const region_model *callee_model
+                  = event->m_eedge.m_src->get_state ().m_region_model;
 		callsite_expr expr;
-		tree callee_var
-		  = cg_superedge.map_expr_from_caller_to_callee (caller_var,
-								 &expr);
+
+                tree callee_var;
+                if (event->m_sedge)
+                  {
+                    const callgraph_superedge& cg_superedge
+                      = event->get_callgraph_superedge ();
+                    if (cg_superedge.m_cedge)
+                      callee_var
+                        = cg_superedge.map_expr_from_caller_to_callee (caller_var,
+                                                                       &expr);
+                    else
+                      callee_var = callee_model->get_representative_tree (sval);
+                  }
+                else
+                  callee_var = callee_model->get_representative_tree (sval);
+
 		if (callee_var)
 		  {
 		    if (get_logger ())
@@ -2078,7 +2228,7 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
   do
     {
       changed = false;
-      int idx = path->num_events () - 1;
+      int idx = (signed)path->num_events () - 1;
       while (idx >= 0)
 	{
 	  /* Prune [..., call, function-entry, return, ...] triples.  */
@@ -2197,7 +2347,9 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
   if (flag_analyzer_verbose_edges)
     return;
 
-  for (unsigned start_idx = 0; start_idx < path->num_events () - 1; start_idx++)
+  for (int start_idx = 0;
+       start_idx < (signed)path->num_events () - 1;
+       start_idx++)
     {
       if (path->cfg_edge_pair_at_p (start_idx))
 	{
@@ -2228,7 +2380,7 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 	       [start_idx, next_idx)
 	     where all apart from the final event are on the same line,
 	     and all are either TRUE or FALSE edges, matching the initial.  */
-	  unsigned next_idx = start_idx + 2;
+	  int next_idx = start_idx + 2;
 	  while (path->cfg_edge_pair_at_p (next_idx)
 		 && same_line_as_p (start_exp_loc, path, next_idx))
 	    {

@@ -142,7 +142,6 @@ VAR2 (UNOP, vcgez, v4hf, v8hf)
 VAR2 (UNOP, vcgtz, v4hf, v8hf)
 VAR2 (UNOP, vclez, v4hf, v8hf)
 VAR2 (UNOP, vcltz, v4hf, v8hf)
-VAR6 (BINOP, vtst, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR6 (BINOP, vabds, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR6 (BINOP, vabdu, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR2 (BINOP, vabdf, v2sf, v4sf)
@@ -212,9 +211,6 @@ VAR10 (GETLANE, vget_lane,
 VAR6 (GETLANE, vget_laneu, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR10 (SETLANE, vset_lane,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
-VAR10 (UNOP, vdup_n,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
-VAR4 (UNOP, vdup_n, v8hf, v4hf, v8bf, v4bf)
 VAR10 (GETLANE, vdup_lane,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
 VAR4 (GETLANE, vdup_lane, v8hf, v4hf, v8bf, v4bf)
@@ -303,8 +299,8 @@ VAR1 (TERNOP, vtbx1, v8qi)
 VAR1 (TERNOP, vtbx2, v8qi)
 VAR1 (TERNOP, vtbx3, v8qi)
 VAR1 (TERNOP, vtbx4, v8qi)
-VAR14 (LOAD1, vld1,
-        v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di,
+VAR13 (LOAD1, vld1,
+        v8qi, v4hi, v4hf, v2si, v2sf, v16qi, v8hi, v8hf, v4si, v4sf, v2di,
         v4bf, v8bf)
 VAR12 (LOAD1LANE, vld1_lane,
 	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di, v4bf, v8bf)

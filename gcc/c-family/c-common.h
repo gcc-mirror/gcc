@@ -107,7 +107,7 @@ enum rid
   RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
-  RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
+  RID_BUILTIN_SHUFFLEVECTOR,   RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
   RID_BUILTIN_HAS_ATTRIBUTE,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
@@ -173,7 +173,9 @@ enum rid
   RID_IS_ABSTRACT,             RID_IS_AGGREGATE,
   RID_IS_BASE_OF,              RID_IS_CLASS,
   RID_IS_EMPTY,                RID_IS_ENUM,
-  RID_IS_FINAL,                RID_IS_LITERAL_TYPE,
+  RID_IS_FINAL,                RID_IS_LAYOUT_COMPATIBLE,
+  RID_IS_LITERAL_TYPE,
+  RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF,
   RID_IS_POD,                  RID_IS_POLYMORPHIC,
   RID_IS_SAME_AS,
   RID_IS_STD_LAYOUT,           RID_IS_TRIVIAL,
@@ -1048,6 +1050,8 @@ extern bool lvalue_p (const_tree);
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
 extern tree c_build_vec_perm_expr (location_t, tree, tree, tree, bool = true);
+extern tree c_build_shufflevector (location_t, tree, tree,
+				   const vec<tree> &, bool = true);
 extern tree c_build_vec_convert (location_t, tree, location_t, tree, bool = true);
 
 extern void init_c_lex (void);
@@ -1198,7 +1202,8 @@ enum c_omp_clause_split
   C_OMP_CLAUSE_SPLIT_COUNT,
   C_OMP_CLAUSE_SPLIT_SECTIONS = C_OMP_CLAUSE_SPLIT_FOR,
   C_OMP_CLAUSE_SPLIT_TASKLOOP = C_OMP_CLAUSE_SPLIT_FOR,
-  C_OMP_CLAUSE_SPLIT_LOOP = C_OMP_CLAUSE_SPLIT_FOR
+  C_OMP_CLAUSE_SPLIT_LOOP = C_OMP_CLAUSE_SPLIT_FOR,
+  C_OMP_CLAUSE_SPLIT_MASKED = C_OMP_CLAUSE_SPLIT_DISTRIBUTE
 };
 
 enum c_omp_region_type
@@ -1206,17 +1211,20 @@ enum c_omp_region_type
   C_ORT_OMP			= 1 << 0,
   C_ORT_ACC			= 1 << 1,
   C_ORT_DECLARE_SIMD		= 1 << 2,
-  C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD
+  C_ORT_TARGET			= 1 << 3,
+  C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD,
+  C_ORT_OMP_TARGET		= C_ORT_OMP | C_ORT_TARGET
 };
 
 extern tree c_finish_omp_master (location_t, tree);
+extern tree c_finish_omp_masked (location_t, tree, tree);
 extern tree c_finish_omp_taskgroup (location_t, tree, tree);
 extern tree c_finish_omp_critical (location_t, tree, tree, tree);
 extern tree c_finish_omp_ordered (location_t, tree, tree);
 extern void c_finish_omp_barrier (location_t);
 extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
-				 tree, tree, tree, tree, tree, bool,
-				 enum omp_memory_order, bool = false);
+				 tree, tree, tree, tree, tree, tree, bool,
+				 enum omp_memory_order, bool, bool = false);
 extern bool c_omp_depend_t_p (tree);
 extern void c_finish_omp_depobj (location_t, tree, enum omp_clause_depend_kind,
 				 tree);
@@ -1241,6 +1249,25 @@ extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern const char *c_omp_map_clause_name (tree, bool);
 extern void c_omp_adjust_map_clauses (tree, bool);
+
+enum c_omp_directive_kind {
+  C_OMP_DIR_STANDALONE,
+  C_OMP_DIR_CONSTRUCT,
+  C_OMP_DIR_DECLARATIVE,
+  C_OMP_DIR_UTILITY,
+  C_OMP_DIR_INFORMATIONAL
+};
+
+struct c_omp_directive {
+  const char *first, *second, *third;
+  unsigned int id;
+  enum c_omp_directive_kind kind;
+  bool simd;
+};
+
+extern const struct c_omp_directive *c_omp_categorize_directive (const char *,
+								 const char *,
+								 const char *);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */
 static inline tree

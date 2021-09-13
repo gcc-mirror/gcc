@@ -375,7 +375,7 @@ void test_cdiag_identifier (tree t, gimple *gc)
   cdiag ("ident z_ with trailing underscore");   /* { dg-warning "unquoted identifier or keyword 'z_'" } */
   cdiag ("v_ variable");        /* { dg-warning "unquoted identifier or keyword 'v_'" } */
   cdiag ("call foo_bar");       /* { dg-warning "unquoted identifier or keyword 'foo_bar'" } */
-  cdiag ("unqoted x_y ident");  /* { dg-warning "unquoted identifier or keyword 'x_y'" } */
+  cdiag ("unquoted x_y ident");  /* { dg-warning "unquoted identifier or keyword 'x_y'" } */
 
   cdiag ("size_t type");        /* { dg-warning "unquoted identifier or keyword 'size_t'" } */
   cdiag ("bigger than INT_MAX");/* { dg-warning "unquoted identifier or keyword 'INT_MAX'" } */

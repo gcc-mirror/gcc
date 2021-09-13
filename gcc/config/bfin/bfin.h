@@ -786,8 +786,6 @@ typedef struct {
  || GET_CODE (X) == LABEL_REF						\
  || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
 
-#define NOTICE_UPDATE_CC(EXPR, INSN) 0
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX UNITS_PER_WORD

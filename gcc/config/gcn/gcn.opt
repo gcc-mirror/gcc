@@ -62,11 +62,6 @@ bool flag_bypass_init_error = false
 mbypass-init-error
 Target RejectNegative Var(flag_bypass_init_error)
 
-bool flag_worker_partitioning = false
-
-macc-experimental-workers
-Target Var(flag_worker_partitioning) Init(0)
-
 int stack_size_opt = -1
 
 mstack-size=
@@ -76,3 +71,24 @@ Target RejectNegative Joined UInteger Var(stack_size_opt) Init(-1)
 Wopenacc-dims
 Target Var(warn_openacc_dims) Warning
 Warn about invalid OpenACC dimensions.
+
+mxnack
+Target Var(flag_xnack) Init(0)
+Compile for devices requiring XNACK enabled. Default off.
+
+Enum
+Name(sram_ecc_type) Type(enum sram_ecc_type)
+SRAM-ECC modes:
+
+EnumValue
+Enum(sram_ecc_type) String(off) Value(SRAM_ECC_OFF)
+
+EnumValue
+Enum(sram_ecc_type) String(on) Value(SRAM_ECC_ON)
+
+EnumValue
+Enum(sram_ecc_type) String(any) Value(SRAM_ECC_ANY)
+
+msram-ecc=
+Target RejectNegative Joined ToLower Enum(sram_ecc_type) Var(flag_sram_ecc) Init(SRAM_ECC_ANY)
+Compile for devices with the SRAM ECC feature enabled, or not. Default \"any\".

@@ -570,7 +570,15 @@ if { [info procs saved-dg-process-target] == [list] } {
 
     # Evaluate a selector expression.
     proc selector_expression { exp } {
-	if { [llength $exp] == 2 } {
+	if { [llength $exp] >= 2
+	     && [string match "any-opts" [lindex $exp 0]] } {
+	    set args [list "" { *-*-* } [lrange $exp 1 end] ""]
+	    set answer [check_conditional_xfail $args]
+	} elseif { [llength $exp] >= 2
+		   && [string match "no-opts" [lindex $exp 0]] } {
+	    set args [list "" { *-*-* } "*" [lrange $exp 1 end]]
+	    set answer [check_conditional_xfail $args]
+	} elseif { [llength $exp] == 2 } {
 	    if [string match "!" [lindex $exp 0]] {
 		set op1 [lindex $exp 1]
 		set answer [expr { ! [selector_opd $op1] }]

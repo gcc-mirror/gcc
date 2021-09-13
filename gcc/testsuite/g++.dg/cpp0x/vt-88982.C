@@ -1,5 +1,6 @@
 // PR c++/88982
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-fchecking" }
 // { dg-ice "tsubst_pack_expansion" }
 
 template<typename...Ts> struct A {

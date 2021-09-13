@@ -159,7 +159,7 @@ namespace std
     rethrow_if_nested(const _Ex& __ex)
     { std::__rethrow_if_nested_impl(std::__addressof(__ex)); }
 
-  // @} group exceptions
+  /// @} group exceptions
 } // namespace std
 
 } // extern "C++"

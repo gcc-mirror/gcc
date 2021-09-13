@@ -2,7 +2,13 @@
    with the OpenACC 'routine' directive.  The Fortran counterpart is
    '../../gfortran.dg/goacc/routine-level-of-parallelism-1.f90'.  */
 
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 #pragma acc routine gang
+/* { dg-warning "region is gang partitioned but does not contain gang partitioned code" "" { target *-*-* } .+3 }
+   { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .+2 }
+   { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .+1 } */
 void g_1 (void)
 {
 }

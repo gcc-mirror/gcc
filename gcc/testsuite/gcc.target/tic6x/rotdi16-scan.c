@@ -7,10 +7,14 @@
 
 unsigned long long z = 0x012389ab4567cdefull;
 
+unsigned long long __attribute__ ((noinline,noclone,noipa)) bar ()
+{
+  return (z << 48) | (z >> 16);
+}
+
 int main ()
 {
-  unsigned long long z2 = (z << 48) | (z >> 16);
-  if (z2 != 0xcdef012389ab4567ull)
+  if (bar() != 0xcdef012389ab4567ull)
     abort ();
   exit (0);
 }

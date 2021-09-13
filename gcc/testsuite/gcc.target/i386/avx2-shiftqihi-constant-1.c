@@ -1,6 +1,6 @@
 /* PR target/95524 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx2" } */
+/* { dg-options "-O2 -mavx2 -mno-avx512f" } */
 /* { dg-final { scan-assembler-times "vpand\[^\n\]*%ymm" 3 } }  */
 typedef char v32qi  __attribute__ ((vector_size (32)));
 typedef unsigned char v32uqi  __attribute__ ((vector_size (32)));

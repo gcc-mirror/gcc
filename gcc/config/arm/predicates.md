@@ -200,6 +200,10 @@
   (and (match_code "const_int,const_double,const_vector")
        (match_test "op == CONST0_RTX (mode)")))
 
+(define_predicate "minus_one_operand"
+  (and (match_code "const_int,const_double,const_vector")
+       (match_test "op == CONSTM1_RTX (mode)")))
+
 ;; Match a register, or zero in the appropriate mode.
 (define_predicate "reg_or_zero_operand"
   (ior (match_operand 0 "s_register_operand")

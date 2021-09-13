@@ -130,21 +130,8 @@ extern bool apply_pass_by_reference_rules (CUMULATIVE_ARGS *,
 					   function_arg_info &);
 extern bool reference_callee_copied (CUMULATIVE_ARGS *,
 				     const function_arg_info &);
-extern void maybe_warn_alloc_args_overflow (tree, tree, tree[2], int[2]);
-extern tree get_attr_nonstring_decl (tree, tree * = NULL);
-extern bool maybe_warn_nonstring_arg (tree, tree);
 extern void maybe_complain_about_tail_call (tree, const char *);
-enum size_range_flags
-  {
-   /* Set to consider zero a valid range.  */
-   SR_ALLOW_ZERO = 1,
-   /* Set to use the largest subrange of a set of ranges as opposed
-      to the smallest.  */
-   SR_USE_LARGEST = 2
-  };
-extern bool get_size_range (tree, tree[2], int = 0);
-extern bool get_size_range (class range_query *, tree, gimple *,
-			    tree[2], int = 0);
+
 extern rtx rtx_for_static_chain (const_tree, bool);
 extern bool cxx17_empty_base_field_p (const_tree);
 

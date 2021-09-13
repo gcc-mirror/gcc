@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -532,8 +532,10 @@ begin
                                                   "but not read");
    Write_Line ("        M*   turn off warnings for variable assigned " &
                                                   "but not read");
-   Write_Line ("        .m*+ turn on warnings for suspicious modulus value");
-   Write_Line ("        .M   turn off warnings for suspicious modulus value");
+   Write_Line ("        .m*+ turn on warnings for suspicious usage " &
+                                                      "of modular type");
+   Write_Line ("        .M   turn off warnings for suspicious usage " &
+                                                      "of modular type");
    Write_Line ("        n*   normal warning mode (cancels -gnatws/-gnatwe)");
    Write_Line ("        .n   turn on info messages for atomic " &
                                                   "synchronization");
@@ -696,22 +698,12 @@ begin
       --  Line for -gnat95 switch
 
       Write_Switch_Char ("95");
-
-      if Ada_Version_Default = Ada_95 then
-         Write_Line ("Ada 95 mode (default)");
-      else
-         Write_Line ("Ada 95 mode");
-      end if;
+      Write_Line ("Ada 95 mode");
 
       --  Line for -gnat2005 switch
 
       Write_Switch_Char ("2005");
-
-      if Ada_Version_Default = Ada_2005 then
-         Write_Line ("Ada 2005 mode (default)");
-      else
-         Write_Line ("Ada 2005 mode");
-      end if;
+      Write_Line ("Ada 2005 mode");
    end if;
 
    --  Line for -gnat2012 switch
@@ -722,6 +714,16 @@ begin
       Write_Line ("Ada 2012 mode (default)");
    else
       Write_Line ("Ada 2012 mode");
+   end if;
+
+   --  Line for -gnat2022 switch
+
+   Write_Switch_Char ("2022");
+
+   if Ada_Version_Default = Ada_2022 then
+      Write_Line ("Ada 2022 mode (default)");
+   else
+      Write_Line ("Ada 2022 mode");
    end if;
 
    --  Line for -gnat-p switch

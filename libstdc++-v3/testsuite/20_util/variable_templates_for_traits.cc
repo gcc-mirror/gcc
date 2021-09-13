@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++17" }
 // { dg-additional-options "-Wno-deprecated" { target c++2a } }
 // { dg-do compile { target c++17 } }
 

@@ -101,8 +101,8 @@ genericize_eh_spec_block (tree *stmt_p)
   tree failure = build_call_n (call_unexpected_fn, 1, build_exc_ptr ());
 
   *stmt_p = build_gimple_eh_filter_tree (body, allowed, failure);
-  TREE_NO_WARNING (*stmt_p) = true;
-  TREE_NO_WARNING (TREE_OPERAND (*stmt_p, 1)) = true;
+  suppress_warning (*stmt_p);
+  suppress_warning (TREE_OPERAND (*stmt_p, 1));
 }
 
 /* Return the first non-compound statement in STMT.  */
@@ -161,7 +161,13 @@ genericize_if_stmt (tree *stmt_p)
   if (!else_)
     else_ = build_empty_stmt (locus);
 
-  if (integer_nonzerop (cond) && !TREE_SIDE_EFFECTS (else_))
+  /* consteval if has been verified not to have the then_/else_ blocks
+     entered by gotos/case labels from elsewhere, and as then_ block
+     can contain unfolded immediate function calls, we have to discard
+     the then_ block regardless of whether else_ has side-effects or not.  */
+  if (IF_STMT_CONSTEVAL_P (stmt))
+    stmt = else_;
+  else if (integer_nonzerop (cond) && !TREE_SIDE_EFFECTS (else_))
     stmt = then_;
   else if (integer_zerop (cond) && !TREE_SIDE_EFFECTS (then_))
     stmt = else_;
@@ -214,7 +220,7 @@ gimplify_expr_stmt (tree *stmt_p)
 	{
 	  if (!IS_EMPTY_STMT (stmt)
 	      && !VOID_TYPE_P (TREE_TYPE (stmt))
-	      && !TREE_NO_WARNING (stmt))
+	      && !warning_suppressed_p (stmt, OPT_Wunused_value))
 	    warning (OPT_Wunused_value, "statement with no effect");
 	}
       else
@@ -642,14 +648,31 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (ret != GS_ERROR)
 	{
 	  tree decl = cp_get_callee_fndecl_nofold (*expr_p);
-	  if (decl
-	      && fndecl_built_in_p (decl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-				    BUILT_IN_FRONTEND))
-	    *expr_p = boolean_false_node;
-	  else if (decl
-		   && fndecl_built_in_p (decl, CP_BUILT_IN_SOURCE_LOCATION,
-					 BUILT_IN_FRONTEND))
-	    *expr_p = fold_builtin_source_location (EXPR_LOCATION (*expr_p));
+	  if (decl && fndecl_built_in_p (decl, BUILT_IN_FRONTEND))
+	    switch (DECL_FE_FUNCTION_CODE (decl))
+	      {
+	      case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
+		*expr_p = boolean_false_node;
+		break;
+	      case CP_BUILT_IN_SOURCE_LOCATION:
+		*expr_p
+		  = fold_builtin_source_location (EXPR_LOCATION (*expr_p));
+		break;
+	      case CP_BUILT_IN_IS_CORRESPONDING_MEMBER:
+		*expr_p
+		  = fold_builtin_is_corresponding_member
+			(EXPR_LOCATION (*expr_p), call_expr_nargs (*expr_p),
+			 &CALL_EXPR_ARG (*expr_p, 0));
+		break;
+	      case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
+		*expr_p
+		  = fold_builtin_is_pointer_inverconvertible_with_class
+			(EXPR_LOCATION (*expr_p), call_expr_nargs (*expr_p),
+			 &CALL_EXPR_ARG (*expr_p, 0));
+		break;
+	      default:
+		break;
+	      }
 	}
       break;
 
@@ -658,6 +681,14 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 elided by cp_gimplify_init_expr.  */
       gcc_checking_assert (!TARGET_EXPR_DIRECT_INIT_P (*expr_p));
       ret = GS_UNHANDLED;
+      break;
+
+    case PTRMEM_CST:
+      *expr_p = cplus_expand_constant (*expr_p);
+      if (TREE_CODE (*expr_p) == PTRMEM_CST)
+	ret = GS_ERROR;
+      else
+	ret = GS_OK;
       break;
 
     case RETURN_EXPR:
@@ -793,7 +824,7 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
 struct cp_genericize_data
 {
   hash_set<tree> *p_set;
-  vec<tree> bind_expr_stack;
+  auto_vec<tree> bind_expr_stack;
   struct cp_genericize_omp_taskreg *omp_ctx;
   tree try_block;
   bool no_sanitize_p;
@@ -1314,7 +1345,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case THROW_EXPR:
       {
 	location_t loc = location_of (stmt);
-	if (TREE_NO_WARNING (stmt))
+	if (warning_suppressed_p (stmt /* What warning? */))
 	  /* Never mind.  */;
 	else if (wtd->try_block)
 	  {
@@ -1451,46 +1482,11 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	TARGET_EXPR_NO_ELIDE (stmt) = 1;
       break;
 
-    case REQUIRES_EXPR:
-      /* Emit the value of the requires-expression.  */
-      *stmt_p = evaluate_requires_expr (stmt);
-      *walk_subtrees = 0;
-      break;
-
     case TEMPLATE_ID_EXPR:
       gcc_assert (concept_check_p (stmt));
       /* Emit the value of the concept check.  */
       *stmt_p = evaluate_concept_check (stmt);
       walk_subtrees = 0;
-      break;
-
-    case STATEMENT_LIST:
-      if (TREE_SIDE_EFFECTS (stmt))
-	{
-	  tree_stmt_iterator i;
-	  int nondebug_stmts = 0;
-	  bool clear_side_effects = true;
-	  /* Genericization can clear TREE_SIDE_EFFECTS, e.g. when
-	     transforming an IF_STMT into COND_EXPR.  If such stmt
-	     appears in a STATEMENT_LIST that contains only that
-	     stmt and some DEBUG_BEGIN_STMTs, without -g where the
-	     STATEMENT_LIST wouldn't be present at all the resulting
-	     expression wouldn't have TREE_SIDE_EFFECTS set, so make sure
-	     to clear it even on the STATEMENT_LIST in such cases.  */
-	  for (i = tsi_start (stmt); !tsi_end_p (i); tsi_next (&i))
-	    {
-	      tree t = tsi_stmt (i);
-	      if (TREE_CODE (t) != DEBUG_BEGIN_STMT && nondebug_stmts < 2)
-		nondebug_stmts++;
-	      cp_walk_tree (tsi_stmt_ptr (i), cp_genericize_r, data, NULL);
-	      if (TREE_CODE (t) != DEBUG_BEGIN_STMT
-		  && (nondebug_stmts > 1 || TREE_SIDE_EFFECTS (tsi_stmt (i))))
-		clear_side_effects = false;
-	    }
-	  if (clear_side_effects)
-	    TREE_SIDE_EFFECTS (stmt) = 0;
-	  *walk_subtrees = 0;
-	}
       break;
 
     case OMP_DISTRIBUTE:
@@ -1566,6 +1562,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case OMP_SIMD:
     case OMP_LOOP:
     case OACC_LOOP:
+    case STATEMENT_LIST:
       /* These cases are handled by shared code.  */
       c_genericize_control_stmt (stmt_p, walk_subtrees, data,
 				 cp_genericize_r, cp_walk_subtrees);
@@ -1602,7 +1599,6 @@ cp_genericize_tree (tree* t_p, bool handle_invisiref_parm_p)
   wtd.handle_invisiref_parm_p = handle_invisiref_parm_p;
   cp_walk_tree (t_p, cp_genericize_r, &wtd, NULL);
   delete wtd.p_set;
-  wtd.bind_expr_stack.release ();
   if (sanitize_flags_p (SANITIZE_VPTR))
     cp_ubsan_instrument_member_accesses (t_p);
 }
@@ -2444,6 +2440,28 @@ cp_fold (tree x)
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
       op1 = cp_fold_rvalue (TREE_OPERAND (x, 1));
 
+      /* decltype(nullptr) has only one value, so optimize away all comparisons
+	 with that type right away, keeping them in the IL causes troubles for
+	 various optimizations.  */
+      if (COMPARISON_CLASS_P (org_x)
+	  && TREE_CODE (TREE_TYPE (op0)) == NULLPTR_TYPE
+	  && TREE_CODE (TREE_TYPE (op1)) == NULLPTR_TYPE)
+	{
+	  switch (code)
+	    {
+	    case EQ_EXPR:
+	      x = constant_boolean_node (true, TREE_TYPE (x));
+	      break;
+	    case NE_EXPR:
+	      x = constant_boolean_node (false, TREE_TYPE (x));
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  return omit_two_operands_loc (loc, TREE_TYPE (x), x,
+					op0, op1);
+	}
+
       if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
 	{
 	  if (op0 == error_mark_node || op1 == error_mark_node)
@@ -2463,8 +2481,9 @@ cp_fold (tree x)
 	    ;
 	  else if (COMPARISON_CLASS_P (x))
 	    {
-	      if (TREE_NO_WARNING (org_x) && warn_nonnull_compare)
-		TREE_NO_WARNING (x) = 1;
+	      if (warn_nonnull_compare
+		  && warning_suppressed_p (org_x, OPT_Wnonnull_compare))
+		suppress_warning (x, OPT_Wnonnull_compare);
 	    }
 	  /* Otherwise give up on optimizing these, let GIMPLE folders
 	     optimize those later on.  */
@@ -2472,8 +2491,9 @@ cp_fold (tree x)
 		   || op1 != TREE_OPERAND (org_x, 1))
 	    {
 	      x = build2_loc (loc, code, TREE_TYPE (org_x), op0, op1);
-	      if (TREE_NO_WARNING (org_x) && warn_nonnull_compare)
-		TREE_NO_WARNING (x) = 1;
+	      if (warn_nonnull_compare
+		  && warning_suppressed_p (org_x, OPT_Wnonnull_compare))
+		suppress_warning (x, OPT_Wnonnull_compare);
 	    }
 	  else
 	    x = org_x;
@@ -2557,11 +2577,31 @@ cp_fold (tree x)
 	    && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
 	  nw = 1;
 
-	/* Defer folding __builtin_is_constant_evaluated.  */
-	if (callee
-	    && fndecl_built_in_p (callee, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-				  BUILT_IN_FRONTEND))
-	  break;
+	if (callee && fndecl_built_in_p (callee, BUILT_IN_FRONTEND))
+	  {
+	    switch (DECL_FE_FUNCTION_CODE (callee))
+	      {
+		/* Defer folding __builtin_is_constant_evaluated.  */
+	      case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
+		break;
+	      case CP_BUILT_IN_SOURCE_LOCATION:
+		x = fold_builtin_source_location (EXPR_LOCATION (x));
+		break;
+	      case CP_BUILT_IN_IS_CORRESPONDING_MEMBER:
+	        x = fold_builtin_is_corresponding_member
+			(EXPR_LOCATION (x), call_expr_nargs (x),
+			 &CALL_EXPR_ARG (x, 0));
+		break;
+	      case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
+                x = fold_builtin_is_pointer_inverconvertible_with_class
+			(EXPR_LOCATION (x), call_expr_nargs (x),
+			 &CALL_EXPR_ARG (x, 0));
+		break;
+	      default:
+		break;
+	      }
+	    break;
+	  }
 
 	if (callee
 	    && fndecl_built_in_p (callee, CP_BUILT_IN_SOURCE_LOCATION,
@@ -2722,6 +2762,10 @@ cp_fold (tree x)
 	x = r;
       break;
 
+    case REQUIRES_EXPR:
+      x = evaluate_requires_expr (x);
+      break;
+
     default:
       return org_x;
     }
@@ -2729,7 +2773,7 @@ cp_fold (tree x)
   if (EXPR_P (x) && TREE_CODE (x) == code)
     {
       TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
-      TREE_NO_WARNING (x) = TREE_NO_WARNING (org_x);
+      copy_warning (x, org_x);
     }
 
   if (!c.evaluation_restricted_p ())

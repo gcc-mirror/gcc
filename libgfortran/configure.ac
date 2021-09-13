@@ -222,10 +222,6 @@ AM_CONDITIONAL(LIBGFOR_MINIMAL, [test "x${target_cpu}" = xnvptx])
 LIBGOMP_CHECKED_INT_KINDS="1 2 4 8 16"
 LIBGOMP_CHECKED_REAL_KINDS="4 8 10 16"
 
-if test "x${target_cpu}" = xamdgcn; then
-  # amdgcn only has limited support for __int128.
-  LIBGOMP_CHECKED_INT_KINDS="1 2 4 8"
-fi
 AC_SUBST(LIBGOMP_CHECKED_INT_KINDS)
 AC_SUBST(LIBGOMP_CHECKED_REAL_KINDS)
 
@@ -264,6 +260,7 @@ AC_PROG_INSTALL
 #AC_MSG_NOTICE([====== Starting libtool configuration])
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
+LT_LIB_M
 ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)

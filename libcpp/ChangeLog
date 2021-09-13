@@ -1,3 +1,192 @@
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* include/cpplib.h (struct cpp_options): Add cxx23_identifiers.
+	* charset.c (CXX23, NXX23): New enumerators.
+	(CID, NFC, NKC, CTX): Renumber.
+	(ucn_valid_in_identifier): Implement P1949R7 - use CXX23 and
+	NXX23 flags for cxx23_identifiers.  For start character in
+	non-pedantic mode, allow characters that are allowed as start
+	characters in any of the supported language modes, rather than
+	disallowing characters allowed only as non-start characters in
+	current mode but for characters from other language modes allowing
+	them even if they are never allowed at start.
+	* init.c (struct lang_flags): Add cxx23_identifiers.
+	(lang_defaults): Add cxx23_identifiers column.
+	(cpp_set_lang): Initialize CPP_OPTION (pfile, cxx23_identifiers).
+	* lex.c (warn_about_normalization): If cxx23_identifiers, use
+	cpp_pedwarning_with_line instead of cpp_warning_with_line for
+	"is not in NFC" diagnostics.
+	* makeucnid.c: Adjust usage comment.
+	(CXX23, NXX23): New enumerators.
+	(all_languages): Add CXX23.
+	(not_NFC, not_NFKC, maybe_not_NFC): Renumber.
+	(read_derivedcore): New function.
+	(write_table): Print also CXX23 and NXX23 columns.
+	(main): Require 5 arguments instead of 4, call read_derivedcore.
+	* ucnid.h: Regenerated using Unicode 13.0.0 files.
+
+2021-09-01  Jason Merrill  <jason@redhat.com>
+
+	* macro.c (replace_args): When __VA_OPT__ is on the LHS of ##,
+	remove trailing avoid_paste tokens.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/101488
+	* macro.c (replace_args): Fix up handling of CPP_PADDING tokens at the
+	start or end of __VA_OPT__ arguments when preceeded or followed by ##.
+
+2021-08-31  Martin Sebor  <msebor@redhat.com>
+
+	* include/line-map.h (class rich_location): Disable copying and
+	assignment.
+
+2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/93067
+	* charset.c (init_iconv_desc): Adapt to permit PFILE argument to
+	be NULL.
+	(_cpp_convert_input): Likewise. Also move UTF-8 BOM logic to...
+	(cpp_check_utf8_bom): ...here.  New function.
+	(cpp_input_conversion_is_trivial): New function.
+	* files.c (read_file_guts): Allow PFILE argument to be NULL.  Add
+	INPUT_CHARSET argument as an alternate source of this information.
+	(read_file): Pass the new argument to read_file_guts.
+	(cpp_get_converted_source): New function.
+	* include/cpplib.h (struct cpp_converted_source): Declare.
+	(cpp_get_converted_source): Declare.
+	(cpp_input_conversion_is_trivial): Declare.
+	(cpp_check_utf8_bom): Declare.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* macro.c (vaopt_state): Add m_stringify member.
+	(vaopt_state::vaopt_state): Initialize it.
+	(vaopt_state::update): Overwrite it.
+	(vaopt_state::stringify): New method.
+	(stringify_arg): Replace arg argument with first, count arguments
+	and add va_opt argument.  Use first instead of arg->first and
+	count instead of arg->count, for va_opt add paste_tokens handling.
+	(paste_tokens): Fix up len calculation.  Don't spell rhs twice,
+	instead use %.*s to supply lhs and rhs spelling lengths.  Don't call
+	_cpp_backup_tokens here.
+	(paste_all_tokens): Call it here instead.
+	(replace_args): Adjust stringify_arg caller.  For vaopt_state::END
+	if stringify is true handle __VA_OPT__ stringification.
+	(create_iso_definition): Handle # __VA_OPT__ similarly to # macro_arg.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/101638
+	* macro.c (cpp_sys_macro_p): Return true instead of
+	crashing on builtin macros.
+
+2021-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* ucnid.h: Regenerated using Unicode 13.0.0 files.
+
+2021-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* makeucnid.c (write_table): Fix computation of last_combine.
+	* ucnid.h: Regenerated using Unicode 6.3.0 files.
+
+2021-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100796
+	PR preprocessor/96391
+	* line-map.c (linemap_compare_locations): Only use comparison with
+	LINE_MAP_MAX_LOCATION_WITH_COLS to avoid abort.
+
+2021-05-20  Christophe Lyon  <christophe.lyon@linaro.org>
+	    Torbjörn Svensson  <torbjorn.svensson@st.com>
+
+	PR c/42579
+	* include/cpplib.h (cpp_builtin_type): Add BT_FILE_NAME entry.
+	* init.c (builtin_array): Likewise.
+	* macro.c (_cpp_builtin_macro_text): Add support for BT_FILE_NAME.
+
+2021-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/100646
+	* lex.c (cpp_directive_only_process): Treat end of file as termination
+	for !is_block comments.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/100392
+	* lex.c (cpp_directive_only_process): If buffer doesn't end with '\n',
+	add buffer->rlimit[0] character to the printed range and
+	CPP_INCREMENT_LINE and increment line_count.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add elifdef.
+	* init.c (struct lang_flags): Add elifdef.
+	(lang_defaults): Update to include elifdef initializers.
+	(cpp_set_lang): Set elifdef for pfile based on language.
+	* directives.c (STDC2X, ELIFDEF): New macros.
+	(EXTENSION): Increase value to 3.
+	(DIRECTIVE_TABLE): Add #elifdef and #elifndef.
+	(_cpp_handle_directive): Do not treat ELIFDEF directives as
+	directives for language versions without the #elifdef feature.
+	(do_elif): Handle #elifdef and #elifndef.
+	(do_elifdef, do_elifndef): New functions.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* lex.c (cpp_avoid_paste): Do not allow pasting CPP_NUMBER with
+	CPP_CHAR.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* init.c (lang_defaults): Enable digit separators for GNUC2X and
+	STDC2X.
+
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/100450
+	* lex.c (cpp_avoid_paste): Handle token1 CPP_PRAGMA like CPP_NAME.
+
+2021-05-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c++/83873
+	PR preprocessor/97604
+	* lex.c (lex_number): Reject adjacent digit separators here.  Do
+	not allow digit separators before '.' or an exponent with sign.
+	* expr.c (cpp_classify_number): Do not check for adjacent digit
+	separators here.
+
+2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/99703
+	* configure: Regenerated.
+
+2021-04-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/82359
+	* directives.c (strtolinenum): Handle digit separators.
+
+2021-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR preprocessor/100142
+	* line-map.c (linemap_position_for_loc_and_offset): Revert
+	unintended s/column_offset/column/ change.
+
+2021-04-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/99446
+	* line-map.c (line-map.c): Do not advance to linemaps for
+	different files.
+
+2021-04-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* include/line-map.h (IS_MACRO_LOC): Delete.
+	* line-map.c (linemap_location_from_macro_expansion_p): Test
+	LINEMAPS_MACRO_LOWEST_LOCATION of the linemap.
+
 2021-03-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/99323

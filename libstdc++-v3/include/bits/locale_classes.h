@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Cache>
       friend struct __use_cache;
 
-    //@{
+    ///@{
     /**
      *  @brief  Category values.
      *
@@ -104,7 +104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const category messages	= 1L << 5;
     static const category all		= (ctype | numeric | collate |
 					   time  | monetary | messages);
-    //@}
+    ///@}
 
     // Construct/copy/destroy:
 
@@ -649,11 +649,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT			char_type;
       typedef basic_string<_CharT>	string_type;
-      //@}
+      ///@}
 
     protected:
       // Underlying "C" library locale information saved from
@@ -822,11 +822,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class _GLIBCXX_NAMESPACE_CXX11 collate_byname : public collate<_CharT>
     {
     public:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT               char_type;
       typedef basic_string<_CharT> string_type;
-      //@}
+      ///@}
 
       explicit
       collate_byname(const char* __s, size_t __refs = 0)

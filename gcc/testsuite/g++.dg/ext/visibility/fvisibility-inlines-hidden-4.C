@@ -6,7 +6,7 @@
 /* { dg-final { scan-not-hidden "_ZZ3barvE1n" } } */
 /* { dg-final { scan-not-hidden "_Z3fooIiEvv" } } */
 /* { dg-final { scan-hidden "_Z3fooIvEvv" } } */
-/* { dg-final { scan-hidden "_ZZN1A5innerEvE1n" } } */
+/* { dg-final { scan-hidden "_ZZN1A5innerEvE1n(\\\[BS\\\])?" } } */
 
 inline int * bar()
 {

@@ -18,6 +18,7 @@
 #include "hdrgen.h"
 #include "id.h"
 #include "init.h"
+#include "parse.h"
 #include "scope.h"
 #include "target.h"
 #include "template.h"
@@ -25,6 +26,7 @@
 
 Expression *typeToExpression(Type *t);
 Expression *typeToExpressionHelper(TypeQualified *t, Expression *e, size_t i = 0);
+bool expressionsToString(OutBuffer &buf, Scope *sc, Expressions *exps);
 char *MODtoChars(MOD mod);
 
 class TypeToExpressionVisitor : public Visitor
@@ -76,6 +78,11 @@ public:
     {
         result = typeToExpressionHelper(t, new ScopeExp(t->loc, t->tempinst));
     }
+
+    void visit(TypeMixin *t)
+    {
+        result = new TypeExp(t->loc, t);
+    }
 };
 
 /* We've mistakenly parsed this as a type.
@@ -84,6 +91,8 @@ public:
  */
 Expression *typeToExpression(Type *t)
 {
+    if (t->mod)
+        return NULL;
     TypeToExpressionVisitor v = TypeToExpressionVisitor(t);
     t->accept(&v);
     return v.result;
@@ -175,6 +184,48 @@ static Expression *semanticLength(Scope *sc, TupleDeclaration *s, Expression *ex
 
     sc->pop();
     return exp;
+}
+
+/******************************************
+ * Compile the MixinType, returning the type or expression AST.
+ *
+ * Doesn't run semantic() on the returned object.
+ * Params:
+ *      tm = mixin to compile as a type or expression
+ *      loc = location for error messages
+ *      sc = context
+ * Return:
+ *      null if error, else RootObject AST as parsed
+ */
+RootObject *compileTypeMixin(TypeMixin *tm, Loc loc, Scope *sc)
+{
+    OutBuffer buf;
+    if (expressionsToString(buf, sc, tm->exps))
+        return NULL;
+
+    const unsigned errors = global.errors;
+    const size_t len = buf.length();
+    const char *str = buf.extractChars();
+    Parser p(loc, sc->_module, (const utf8_t *)str, len, false);
+    p.nextToken();
+    //printf("p.loc.linnum = %d\n", p.loc.linnum);
+
+    RootObject *o = p.parseTypeOrAssignExp(TOKeof);
+    if (errors != global.errors)
+    {
+        assert(global.errors != errors); // should have caught all these cases
+        return NULL;
+    }
+    if (p.token.value != TOKeof)
+    {
+        ::error(loc, "incomplete mixin type `%s`", str);
+        return NULL;
+    }
+
+    Type *t = isType(o);
+    Expression *e = t ? typeToExpression(t) : isExpression(o);
+
+    return (!e && t) ? (RootObject *)t : (RootObject *)e;
 }
 
 /******************************************
@@ -440,7 +491,7 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
             // Deal with the case where we thought the index was a type, but
             // in reality it was an expression.
             if (mtype->index->ty == Tident || mtype->index->ty == Tinstance || mtype->index->ty == Tsarray ||
-                mtype->index->ty == Ttypeof || mtype->index->ty == Treturn)
+                mtype->index->ty == Ttypeof || mtype->index->ty == Treturn || mtype->index->ty == Tmixin)
             {
                 Expression *e;
                 Type *t;
@@ -746,7 +797,7 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
 
                 if (tf->isreturn && !tf->isref && !tf->next->hasPointers())
                 {
-                    ::error(loc, "function type `%s` has `return` but does not return any indirections", tf->toChars());
+                    tf->isreturn = false;
                 }
             }
 
@@ -821,7 +872,7 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
                             if (0 && !tf->isref)
                             {
                                 StorageClass stc = fparam->storageClass & (STCref | STCout);
-                                ::error(loc, "parameter %s is `return %s` but function does not return by ref",
+                                ::error(loc, "parameter `%s` is `return %s` but function does not return by `ref`",
                                     fparam->ident ? fparam->ident->toChars() : "",
                                     stcToChars(stc));
                                 errors = true;
@@ -835,9 +886,7 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
                             }
                             else if (!tf->isref && tf->next && !tf->next->hasPointers())
                             {
-                                ::error(loc, "parameter %s is `return` but function does not return any indirections",
-                                    fparam->ident ? fparam->ident->toChars() : "");
-                                errors = true;
+                                fparam->storageClass &= STCreturn;   // https://issues.dlang.org/show_bug.cgi?id=18963
                             }
                         }
                     }
@@ -1072,6 +1121,7 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
                 mtype->exp->ident != Id::getMember &&
                 mtype->exp->ident != Id::parent &&
                 mtype->exp->ident != Id::child &&
+                mtype->exp->ident != Id::toType &&
                 mtype->exp->ident != Id::getOverloads &&
                 mtype->exp->ident != Id::getVirtualFunctions &&
                 mtype->exp->ident != Id::getVirtualMethods &&
@@ -1275,7 +1325,7 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
 
         void visit(TypeStruct *mtype)
         {
-            //printf("TypeStruct::semantic('%s')\n", mtype->sym->toChars());
+            //printf("TypeStruct::semantic('%s')\n", mtype->toChars());
             if (mtype->deco)
             {
                 if (sc && sc->cppmangle != CPPMANGLEdefault)
@@ -1304,7 +1354,7 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
 
         void visit(TypeClass *mtype)
         {
-            //printf("TypeClass::semantic(%s)\n", mtype->sym->toChars());
+            //printf("TypeClass::semantic(%s)\n", mtype->toChars());
             if (mtype->deco)
             {
                 if (sc && sc->cppmangle != CPPMANGLEdefault)
@@ -1385,6 +1435,25 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
             }
             Type *t = new TypeTuple(args);
             result = typeSemantic(t, loc, sc);
+        }
+
+        void visit(TypeMixin *mtype)
+        {
+            //printf("TypeMixin::semantic() %s\n", mtype->toChars());
+
+            Expression *e = NULL;
+            Type *t = NULL;
+            Dsymbol *s = NULL;
+            mtype->resolve(loc, sc, &e, &t, &s);
+
+            if (t && t->ty != Terror)
+            {
+                result = t;
+                return;
+            }
+
+            ::error(mtype->loc, "`mixin(%s)` does not give a valid type", mtype->obj->toChars());
+            return error();
         }
     };
     TypeSemanticVisitor v(loc, sc);

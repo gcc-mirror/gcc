@@ -47,6 +47,7 @@ Target target;
 /* Internal key handlers for `__traits(getTargetInfo)'.  */
 static tree d_handle_target_cpp_std (void);
 static tree d_handle_target_cpp_runtime_library (void);
+static tree d_handle_target_object_format (void);
 
 /* In [traits/getTargetInfo], a reliable subset of getTargetInfo keys exists
    which are always available.  */
@@ -56,7 +57,7 @@ static const struct d_target_info_spec d_language_target_info[] =
   { "cppStd", d_handle_target_cpp_std },
   { "cppRuntimeLibrary", d_handle_target_cpp_runtime_library },
   { "floatAbi", NULL },
-  { "objectFormat", NULL },
+  { "objectFormat", d_handle_target_object_format },
   { NULL, NULL },
 };
 
@@ -164,6 +165,15 @@ Target::_init (const Param &)
   this->c.longsize = int_size_in_bytes (long_integer_type_node);
   this->c.long_doublesize = int_size_in_bytes (long_double_type_node);
 
+  /* Define what type to use for wchar_t.  We don't want to support wide
+     characters less than "short" in D.  */
+  if (WCHAR_TYPE_SIZE == 32)
+    this->c.twchar_t = Type::basic[Tdchar];
+  else if (WCHAR_TYPE_SIZE == 16)
+    this->c.twchar_t = Type::basic[Twchar];
+  else
+    sorry ("D does not support wide characters on this target.");
+
   /* Set-up target C++ ABI.  */
   this->cpp.reverseOverloads = false;
   this->cpp.exceptions = true;
@@ -189,6 +199,8 @@ Target::_init (const Param &)
 
   /* Initialize target info tables, the keys required by the language are added
      last, so that the OS and CPU handlers can override.  */
+  targetdm.d_register_cpu_target_info ();
+  targetdm.d_register_os_target_info ();
   d_add_target_info_handlers (d_language_target_info);
 }
 
@@ -417,11 +429,30 @@ TargetCPP::fundamentalType (const Type *, bool &)
   return false;
 }
 
-/* Return the default system linkage for the target.  */
+/* Get the starting offset position for fields of an `extern(C++)` class
+   that is derived from the given BASE_CLASS.  */
+
+unsigned
+TargetCPP::derivedClassOffset(ClassDeclaration *base_class)
+{
+  return base_class->structsize;
+}
+
+/* Return the default `extern (System)' linkage for the target.  */
 
 LINK
 Target::systemLinkage (void)
 {
+  unsigned link_system, link_windows;
+
+  if (targetdm.d_has_stdcall_convention (&link_system, &link_windows))
+    {
+      /* In [attribute/linkage], `System' is the same as `Windows' on Windows
+	 platforms, and `C' on other platforms.  */
+      if (link_system)
+	return LINKwindows;
+    }
+
   return LINKc;
 }
 
@@ -487,6 +518,25 @@ d_handle_target_cpp_runtime_library (void)
   return build_string_literal (strlen (libstdcxx) + 1, libstdcxx);
 }
 
+/* Handle a call to `__traits(getTargetInfo, "objectFormat")'.  */
+
+tree
+d_handle_target_object_format (void)
+{
+  const char *objfmt;
+
+#ifdef OBJECT_FORMAT_ELF
+  objfmt = "elf";
+#else
+  if (TARGET_COFF || TARGET_PECOFF)
+    objfmt = "coff";
+  else
+    objfmt = "";
+#endif
+
+  return build_string_literal (strlen (objfmt) + 1, objfmt);
+}
+
 /* Look up the target info KEY in the available getTargetInfo tables, and return
    the result as an Expression, or NULL if KEY is not found.  When the key must
    always exist, but is not supported, an empty string expression is returned.
@@ -503,17 +553,34 @@ Target::getTargetInfo (const char *key, const Loc &loc)
       tree result;
 
       if (strcmp (key, spec->name) != 0)
-       continue;
+	continue;
 
       /* Get the requested information, or empty string if unhandled.  */
       if (spec->handler)
-       result = (spec->handler) ();
+	{
+	  result = (spec->handler) ();
+	  /* Handler didn't return a result, meaning it really does not support
+	     the key in the current target configuration.  Check whether there
+	     are any other handlers which may recognize the key.  */
+	  if (result == NULL_TREE)
+	    continue;
+	}
       else
-       result = build_string_literal (1, "");
+	result = build_string_literal (1, "");
 
       gcc_assert (result);
       return d_eval_constant_expression (loc, result);
     }
 
   return NULL;
+}
+
+/**
+ * Returns true if the implementation for object monitors is always defined
+ * in the D runtime library (rt/monitor_.d).  */
+
+bool
+Target::libraryObjectMonitors (FuncDeclaration *, Statement *)
+{
+  return true;
 }

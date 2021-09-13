@@ -32,11 +32,15 @@ along with GCC; see the file COPYING3.  If not see
    or leaving partitioned execution.
       DEP_VAR = UNIQUE ({HEAD,TAIL}_MARK, REMAINING_MARKS, ...PRIMARY_FLAGS)
 
-   The PRIMARY_FLAGS only occur on the first HEAD_MARK of a sequence.  */
+   The PRIMARY_FLAGS only occur on the first HEAD_MARK of a sequence.
+
+   PRIVATE captures variables to be made private at the surrounding parallelism
+   level.  */
 #define IFN_UNIQUE_CODES				  \
   DEF(UNSPEC),	\
     DEF(OACC_FORK), DEF(OACC_JOIN),		\
-    DEF(OACC_HEAD_MARK), DEF(OACC_TAIL_MARK)
+    DEF(OACC_HEAD_MARK), DEF(OACC_TAIL_MARK),	\
+    DEF(OACC_PRIVATE)
 
 enum ifn_unique_kind {
 #define DEF(X) IFN_UNIQUE_##X
@@ -229,6 +233,7 @@ extern void expand_addsub_overflow (location_t, tree_code, tree, tree, tree,
 extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);
 extern void expand_PHI (internal_fn, gcall *);
+extern void expand_SHUFFLEVECTOR (internal_fn, gcall *);
 
 extern bool vectorized_internal_fn_supported_p (internal_fn, tree);
 

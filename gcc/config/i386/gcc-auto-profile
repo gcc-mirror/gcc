@@ -1,7 +1,7 @@
 #!/bin/sh
-# profile workload for gcc profile feedback (autofdo) using Linux perf
-# auto generated. to regenerate for new CPUs run
-# contrib/gen_autofdo_event.py --shell --all in gcc source
+# Profile workload for gcc profile feedback (autofdo) using Linux perf.
+# Auto generated. To regenerate for new CPUs run
+# contrib/gen_autofdo_event.py --script --all in gcc source
 
 # usages:
 # gcc-auto-profile program             (profile program and children)
@@ -10,7 +10,7 @@
 # gcc-auto-profile --kernel -a sleep X (profile kernel)
 # gcc-auto-profile --all -a sleep X    (profile kernel and user space)
 
-# identify branches taken event for CPU
+# Identify branches taken event for CPU.
 #
 
 FLAGS=u
@@ -37,7 +37,12 @@ case `egrep -q "^cpu family\s*: 6" /proc/cpuinfo &&
   egrep "^model\s*:" /proc/cpuinfo | head -n1` in
 model*:\ 55|\
 model*:\ 77|\
-model*:\ 76) E="cpu/event=0xC4,umask=0xFE/p$FLAGS" ;;
+model*:\ 76|\
+model*:\ 92|\
+model*:\ 95|\
+model*:\ 87|\
+model*:\ 133|\
+model*:\ 122) E="cpu/event=0xC4,umask=0xFE/p$FLAGS" ;;
 model*:\ 42|\
 model*:\ 45|\
 model*:\ 58|\
@@ -48,9 +53,16 @@ model*:\ 70|\
 model*:\ 63|\
 model*:\ 61|\
 model*:\ 71|\
+model*:\ 79|\
 model*:\ 86|\
 model*:\ 78|\
-model*:\ 94) E="cpu/event=0xC4,umask=0x20/p$FLAGS" ;;
+model*:\ 94|\
+model*:\ 142|\
+model*:\ 158|\
+model*:\ 165|\
+model*:\ 166|\
+model*:\ 85|\
+model*:\ 85) E="cpu/event=0xC4,umask=0x20/p$FLAGS" ;;
 model*:\ 46|\
 model*:\ 30|\
 model*:\ 31|\
@@ -63,8 +75,23 @@ model*:\ 38|\
 model*:\ 39|\
 model*:\ 54|\
 model*:\ 53) E="cpu/event=0x88,umask=0x41/p$FLAGS" ;;
+model*:\ 126|\
+model*:\ 140|\
+model*:\ 141|\
+model*:\ 106|\
+model*:\ 108) E="cpu/event=0xc4,umask=0x20/p$FLAGS" ;;
 *)
 echo >&2 "Unknown CPU. Run contrib/gen_autofdo_event.py --all --script to update script."
 	exit 1 ;;
 esac
-exec perf record -e $E -b "$@"
+set -x
+if ! perf record -e $E -b "$@" ; then
+  # PEBS may not actually be working even if the processor supports it
+  # (e.g., in a virtual machine). Trying to run without /p.
+  set +x
+  echo >&2 "Retrying without /p."
+  E="$(echo "${E}" | sed -e 's/\/p/\//')"
+  set -x
+  exec perf record -e $E -b "$@"
+ set +x
+fi

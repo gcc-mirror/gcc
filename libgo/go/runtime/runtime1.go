@@ -321,7 +321,6 @@ var debug struct {
 	gctrace            int32
 	invalidptr         int32
 	madvdontneed       int32 // for Linux; issue 28466
-	scavenge           int32
 	scavtrace          int32
 	scheddetail        int32
 	schedtrace         int32
@@ -350,7 +349,6 @@ var dbgvars = []dbgVar{
 	{"invalidptr", &debug.invalidptr},
 	{"madvdontneed", &debug.madvdontneed},
 	{"sbrk", &debug.sbrk},
-	{"scavenge", &debug.scavenge},
 	{"scavtrace", &debug.scavtrace},
 	{"scheddetail", &debug.scheddetail},
 	{"schedtrace", &debug.schedtrace},

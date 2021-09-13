@@ -119,8 +119,15 @@ function_point::print (pretty_printer *pp, const format &f) const
     case PK_BEFORE_SUPERNODE:
       {
 	if (m_from_edge)
-	  pp_printf (pp, "before SN: %i (from SN: %i)",
-		     m_supernode->m_index, m_from_edge->m_src->m_index);
+	  {
+	    if (basic_block bb = m_from_edge->m_src->m_bb)
+	      pp_printf (pp, "before SN: %i (from SN: %i (bb: %i))",
+			 m_supernode->m_index, m_from_edge->m_src->m_index,
+			 bb->index);
+	    else
+	      pp_printf (pp, "before SN: %i (from SN: %i)",
+			 m_supernode->m_index, m_from_edge->m_src->m_index);
+	  }
 	else
 	  pp_printf (pp, "before SN: %i (NULL from-edge)",
 		     m_supernode->m_index);
@@ -323,6 +330,24 @@ program_point::to_json () const
   return point_obj;
 }
 
+/* Update the callstack to represent a call from caller to callee.
+
+   Generally used to push a custom call to a perticular program point 
+   where we don't have a superedge representing the call.  */
+void
+program_point::push_to_call_stack (const supernode *caller,
+				   const supernode *callee)
+{
+  m_call_string.push_call (callee, caller);
+}
+
+/* Pop the topmost call from the current callstack.  */
+void
+program_point::pop_from_call_stack ()
+{
+  m_call_string.pop ();
+}
+
 /* Generate a hash value for this program_point.  */
 
 hashval_t
@@ -343,7 +368,7 @@ program_point::get_function_at_depth (unsigned depth) const
   if (depth == m_call_string.length ())
     return m_function_point.get_function ();
   else
-    return m_call_string[depth]->get_caller_function ();
+    return m_call_string[depth].get_caller_function ();
 }
 
 /* Assert that this object is sane.  */
@@ -360,7 +385,7 @@ program_point::validate () const
   /* The "callee" of the final entry in the callstring should be the
      function of the m_function_point.  */
   if (m_call_string.length () > 0)
-    gcc_assert (m_call_string[m_call_string.length () - 1]->get_callee_function ()
+    gcc_assert (m_call_string[m_call_string.length () - 1].get_callee_function ()
 		== get_function ());
 }
 
@@ -431,8 +456,10 @@ program_point::on_edge (exploded_graph &eg,
 	      logger->log ("rejecting return edge: empty call string");
 	    return false;
 	  }
-	const return_superedge *top_of_stack = m_call_string.pop ();
-	if (top_of_stack != succ)
+	const call_string::element_t top_of_stack = m_call_string.pop ();
+	call_string::element_t current_call_string_element (succ->m_dest,
+							    succ->m_src);
+	if (top_of_stack != current_call_string_element)
 	  {
 	    if (logger)
 	      logger->log ("rejecting return edge: return to wrong callsite");

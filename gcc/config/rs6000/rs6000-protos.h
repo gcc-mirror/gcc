@@ -30,7 +30,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int,
 				  tree, machine_mode);
 #endif /* TREE_CODE */
 
-extern bool easy_altivec_constant (rtx, machine_mode);
+extern int easy_altivec_constant (rtx, machine_mode);
 extern bool xxspltib_constant_p (rtx, machine_mode, int *, int *);
 extern int vspltis_shifted (rtx);
 extern HOST_WIDE_INT const_vector_elt_as_int (rtx, unsigned int);
@@ -226,7 +226,7 @@ address_is_prefixed (rtx addr,
 
 #ifdef TREE_CODE
 extern unsigned int rs6000_data_alignment (tree, unsigned int, enum data_align);
-extern bool rs6000_special_adjust_field_align_p (tree, unsigned int);
+extern unsigned int rs6000_special_adjust_field_align (tree, unsigned int);
 extern unsigned int rs6000_special_round_type_align (tree, unsigned int,
 						     unsigned int);
 extern unsigned int darwin_rs6000_special_round_type_align (tree, unsigned int,
@@ -242,7 +242,7 @@ extern void rs6000_xcoff_declare_object_name (FILE *, const char *, tree);
 extern void rs6000_xcoff_asm_output_aligned_decl_common (FILE *, tree,
 							 const char *,
 							 unsigned HOST_WIDE_INT,
-							 unsigned HOST_WIDE_INT);
+							 unsigned int);
 extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
 extern bool rs6000_elf_in_small_data_p (const_tree);
 
@@ -281,7 +281,7 @@ extern void rs6000_asm_output_dwarf_pcrel (FILE *file, int size,
 					   const char *label);
 extern void rs6000_asm_output_dwarf_datarel (FILE *file, int size,
 					     const char *label);
-extern long long rs6000_const_f32_to_i32 (rtx operand);
+extern long rs6000_const_f32_to_i32 (rtx operand);
 
 /* Declare functions in rs6000-c.c */
 
@@ -297,6 +297,7 @@ extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
 
 /* Declare functions in rs6000-d.c  */
 extern void rs6000_d_target_versions (void);
+extern void rs6000_d_register_target_info (void);
 
 #ifdef NO_DOLLAR_IN_LABEL
 const char * rs6000_xcoff_strip_dollar (const char *);

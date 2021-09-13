@@ -25,6 +25,9 @@
 #include <random>
 #include <testsuite_hooks.h>
 
+static_assert( std::is_nothrow_default_constructible<std::seed_seq>::value,
+	       "LWG 3422" );
+
 void
 test01()
 {
@@ -34,7 +37,6 @@ test01()
   seq.generate(foo.begin(), foo.end());
 
   VERIFY( seq.size() == 0 );
-  //VERIFY();
 }
 
 int

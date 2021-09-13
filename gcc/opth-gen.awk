@@ -439,10 +439,17 @@ for (i = 0; i < n_opts; i++) {
 			mask = "MASK_"
 			extra_mask_macros[name] = 1
 		}
+		original_name = name
+		gsub("ISA_", "", name)
+		gsub("ISA2_", "", name)
+		print "/* " original_name " mask */"
 		print "#define TARGET_" name \
-		      " ((" vname " & " mask name ") != 0)"
+		      " ((" vname " & " mask original_name ") != 0)"
 		print "#define TARGET_" name "_P(" vname ")" \
-		      " (((" vname ") & " mask name ") != 0)"
+		      " (((" vname ") & " mask original_name ") != 0)"
+		print "#define TARGET_EXPLICIT_" name "_P(opts)" \
+		      " ((opts->x_" vname "_explicit & " mask original_name ") != 0)"
+		print "#define SET_TARGET_" name "(opts) opts->x_" vname " |= " mask original_name
 	}
 }
 for (i = 0; i < n_extra_masks; i++) {

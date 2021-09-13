@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 FRACTIONAL_FLOAT_MODE (XF, 80, 12, ieee_extended_intel_96_format);
 FLOAT_MODE (TF, 16, ieee_quad_format);
+FLOAT_MODE (HF, 2, ieee_half_format);
 
 /* In ILP32 mode, XFmode has size 12 and alignment 4.
    In LP64 mode, XFmode has size and alignment 16.  */
@@ -83,12 +84,12 @@ VECTOR_MODES (INT, 16);       /*   V16QI V8HI V4SI V2DI */
 VECTOR_MODES (INT, 32);       /*  V32QI V16HI V8SI V4DI */
 VECTOR_MODES (INT, 64);       /* V64QI V32HI V16SI V8DI */
 VECTOR_MODES (INT, 128);      /* V128QI V64HI V32SI V16DI */
-VECTOR_MODES (FLOAT, 8);      /*                   V2SF */
-VECTOR_MODES (FLOAT, 16);     /*              V4SF V2DF */
-VECTOR_MODES (FLOAT, 32);     /*         V8SF V4DF V2TF */
-VECTOR_MODES (FLOAT, 64);     /*        V16SF V8DF V4TF */
-VECTOR_MODES (FLOAT, 128);    /*       V32SF V16DF V8TF */
-VECTOR_MODES (FLOAT, 256);    /*      V64SF V32DF V16TF */
+VECTOR_MODES (FLOAT, 8);      /*              V4HF V2SF */
+VECTOR_MODES (FLOAT, 16);     /*         V8HF V4SF V2DF */
+VECTOR_MODES (FLOAT, 32);     /*   V16HF V8SF V4DF V2TF */
+VECTOR_MODES (FLOAT, 64);     /*  V32HF V16SF V8DF V4TF */
+VECTOR_MODES (FLOAT, 128);    /* V64HF V32SF V16DF V8TF */
+VECTOR_MODES (FLOAT, 256);    /* V128HF V64SF V32DF V16TF */
 VECTOR_MODE (INT, TI, 1);     /*                   V1TI */
 VECTOR_MODE (INT, DI, 1);     /*                   V1DI */
 VECTOR_MODE (INT, SI, 1);     /*                   V1SI */
@@ -107,19 +108,10 @@ INT_MODE (XI, 64);
 PARTIAL_INT_MODE (HI, 16, P2QI);
 PARTIAL_INT_MODE (SI, 32, P2HI);
 
-/* Mode used for signed overflow checking of TImode.  As
-   MAX_BITSIZE_MODE_ANY_INT is only 160, wide-int.h reserves only that
-   rounded up to multiple of HOST_BITS_PER_WIDE_INT bits in wide_int etc.,
-   so OImode is too large.  For the overflow checking we actually need
-   just 1 or 2 bits beyond TImode precision.  Use 160 bits to have
-   a multiple of 32.  */
+/* Mode used for signed overflow checking of TImode.  For the overflow
+   checking we actually need just 1 or 2 bits beyond TImode precision.
+   Use 160 bits to have a multiple of 32.  */
 PARTIAL_INT_MODE (OI, 160, POI);
-
-/* Keep the OI and XI modes from confusing the compiler into thinking
-   that these modes could actually be used for computation.  They are
-   only holders for vectors during data movement.  Include POImode precision
-   though.  */
-#define MAX_BITSIZE_MODE_ANY_INT (160)
 
 /* The symbol Pmode stands for one of the above machine modes (usually SImode).
    The tm.h file specifies which one.  It is not a distinct mode.  */

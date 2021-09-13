@@ -412,8 +412,12 @@ wchar_t f13289_d_wchar(wchar_t ch);
 unsigned int f13289_d_dchar(unsigned int ch);
 #endif
 
+wchar_t f13289_d_wchar_t(wchar_t ch);
+
 bool f13289_cpp_test()
 {
+    if (!(f13289_d_wchar_t(L'e') == L'E')) return false;
+    if (!(f13289_d_wchar_t(L'F') == L'F')) return false;
 #if __linux__ || __APPLE__ || __FreeBSD__ || __OpenBSD__ || __sun || __NetBSD__
     if (!(f13289_d_wchar((unsigned short)'c') == (unsigned short)'C')) return false;
     if (!(f13289_d_wchar((unsigned short)'D') == (unsigned short)'D')) return false;

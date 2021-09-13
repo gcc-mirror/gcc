@@ -250,6 +250,34 @@ set_info::has_phi_uses () const
   return m_first_use && m_first_use->last_use ()->is_in_phi ();
 }
 
+inline use_info *
+set_info::single_nondebug_use () const
+{
+  if (!has_phi_uses ())
+    return single_nondebug_insn_use ();
+  if (!has_nondebug_insn_uses ())
+    return single_phi_use ();
+  return nullptr;
+}
+
+inline use_info *
+set_info::single_nondebug_insn_use () const
+{
+  use_info *first = first_nondebug_insn_use ();
+  if (first && !first->next_nondebug_insn_use ())
+    return first;
+  return nullptr;
+}
+
+inline use_info *
+set_info::single_phi_use () const
+{
+  use_info *last = last_phi_use ();
+  if (last && !last->prev_phi_use ())
+    return last;
+  return nullptr;
+}
+
 inline bool
 set_info::is_local_to_ebb () const
 {

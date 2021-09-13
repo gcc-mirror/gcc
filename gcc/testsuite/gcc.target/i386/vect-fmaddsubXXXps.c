@@ -1,0 +1,34 @@
+/* { dg-do run } */
+/* { dg-require-effective-target fma } */
+/* { dg-options "-O3 -mfma -save-temps" } */
+
+#include "fma-check.h"
+
+void __attribute__((noipa))
+check_fmaddsub (float * __restrict a, float *b, float *c, int n)
+{
+  for (int i = 0; i < n; ++i)
+    {
+      a[2*i + 0] = b[2*i + 0] * c[2*i + 0] - a[2*i + 0];
+      a[2*i + 1] = b[2*i + 1] * c[2*i + 1] + a[2*i + 1];
+    }
+}
+
+static void
+fma_test (void)
+{
+  float a[4], b[4], c[4];
+  for (int i = 0; i < 4; ++i)
+    {
+      a[i] = i;
+      b[i] = 3*i;
+      c[i] = 7*i;
+    }
+  check_fmaddsub (a, b, c, 2);
+  const float d[4] = { 0., 22., 82., 192. };
+  for (int i = 0; i < 4; ++i)
+    if (a[i] != d[i])
+      __builtin_abort ();
+}
+
+/* { dg-final { scan-assembler "fmaddsub...ps" } } */

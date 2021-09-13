@@ -174,7 +174,7 @@ void narrow_ptr_deref_range (ptrdiff_t i, size_t j)
   T (*p);
 
   p = S1 + SR (2, 3);
-  T (*p);                     /* { dg-warning "array subscript \\\[2, 3] is outside array bounds of .char\\\[2]." } */
+  T (*p);                     /* { dg-warning "array subscript 2 is outside array bounds of .char\\\[2]." } */
 
   p = S1 + SR (9, 99);
   T (*p);                     /* { dg-warning "array subscript \\\[9, 99] is outside array bounds of .char\\\[2]." } */
@@ -198,7 +198,7 @@ void narrow_ptr_deref_range (ptrdiff_t i, size_t j)
   T (*p);
 
   p = S8 + SR (9, 123);
-  T (*p);                     /* { dg-warning "array subscript \\\[9, 123] is outside array bounds of .char\\\[9]." } */
+  T (*p);                     /* { dg-warning "array subscript 9 is outside array bounds of .char\\\[9]." } */
 
   {
     const char *p1 = S3 + i;
@@ -226,7 +226,7 @@ void narrow_ptr_deref_range (ptrdiff_t i, size_t j)
     T (*p1);
     T (*p2);
     T (*p3);
-    T (*p4);                  /* { dg-warning "array subscript \\\[4, \[0-9\]+] is outside array bounds of .char\\\[4]." } */
+    T (*p4);                  /* { dg-warning "array subscript 4 is outside array bounds of .char\\\[4]." } */
     T (*p5);                  /* { dg-warning "array subscript \\\[5, \[0-9\]+] is outside array bounds of .char\\\[4]." } */
   }
 }
@@ -241,7 +241,7 @@ void narrow_ptr_index_range (void)
   T (p[SR (-8, 0)]);
   T (p[SR (0, MAX)]);
   T (p[SR (1, 9)]);
-  T (p[SR (8, 9)]);           /* { dg-warning "array subscript \\\[8, 9] is outside array bounds of .char\\\[8]." } */
+  T (p[SR (8, 9)]);           /* { dg-warning "array subscript 8 is outside array bounds of .char\\\[8]." } */
 
   p = S7 + SR (4, 6);
   T (p[5]);                   /* { dg-warning "array subscript \\\[9, 11] is outside array bounds of .char\\\[8]." } */

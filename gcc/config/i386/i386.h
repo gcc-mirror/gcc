@@ -39,192 +39,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Redefines for option macros.  */
 
-#define TARGET_64BIT	TARGET_ISA_64BIT
-#define TARGET_64BIT_P(x)	TARGET_ISA_64BIT_P(x)
-#define TARGET_MMX	TARGET_ISA_MMX
-#define TARGET_MMX_P(x)	TARGET_ISA_MMX_P(x)
-#define TARGET_3DNOW	TARGET_ISA_3DNOW
-#define TARGET_3DNOW_P(x)	TARGET_ISA_3DNOW_P(x)
-#define TARGET_3DNOW_A	TARGET_ISA_3DNOW_A
-#define TARGET_3DNOW_A_P(x)	TARGET_ISA_3DNOW_A_P(x)
-#define TARGET_SSE	TARGET_ISA_SSE
-#define TARGET_SSE_P(x)	TARGET_ISA_SSE_P(x)
-#define TARGET_SSE2	TARGET_ISA_SSE2
-#define TARGET_SSE2_P(x)	TARGET_ISA_SSE2_P(x)
-#define TARGET_SSE3	TARGET_ISA_SSE3
-#define TARGET_SSE3_P(x)	TARGET_ISA_SSE3_P(x)
-#define TARGET_SSSE3	TARGET_ISA_SSSE3
-#define TARGET_SSSE3_P(x)	TARGET_ISA_SSSE3_P(x)
-#define TARGET_SSE4_1	TARGET_ISA_SSE4_1
-#define TARGET_SSE4_1_P(x)	TARGET_ISA_SSE4_1_P(x)
-#define TARGET_SSE4_2	TARGET_ISA_SSE4_2
-#define TARGET_SSE4_2_P(x)	TARGET_ISA_SSE4_2_P(x)
-#define TARGET_AVX	TARGET_ISA_AVX
-#define TARGET_AVX_P(x)	TARGET_ISA_AVX_P(x)
-#define TARGET_AVX2	TARGET_ISA_AVX2
-#define TARGET_AVX2_P(x)	TARGET_ISA_AVX2_P(x)
-#define TARGET_AVX512F	TARGET_ISA_AVX512F
-#define TARGET_AVX512F_P(x)	TARGET_ISA_AVX512F_P(x)
-#define TARGET_AVX512PF	TARGET_ISA_AVX512PF
-#define TARGET_AVX512PF_P(x)	TARGET_ISA_AVX512PF_P(x)
-#define TARGET_AVX512ER	TARGET_ISA_AVX512ER
-#define TARGET_AVX512ER_P(x)	TARGET_ISA_AVX512ER_P(x)
-#define TARGET_AVX512CD	TARGET_ISA_AVX512CD
-#define TARGET_AVX512CD_P(x)	TARGET_ISA_AVX512CD_P(x)
-#define TARGET_AVX512DQ	TARGET_ISA_AVX512DQ
-#define TARGET_AVX512DQ_P(x)	TARGET_ISA_AVX512DQ_P(x)
-#define TARGET_AVX512BW	TARGET_ISA_AVX512BW
-#define TARGET_AVX512BW_P(x)	TARGET_ISA_AVX512BW_P(x)
-#define TARGET_AVX512VL	TARGET_ISA_AVX512VL
-#define TARGET_AVX512VL_P(x)	TARGET_ISA_AVX512VL_P(x)
-#define TARGET_AVX512VBMI	TARGET_ISA_AVX512VBMI
-#define TARGET_AVX512VBMI_P(x)	TARGET_ISA_AVX512VBMI_P(x)
-#define TARGET_AVX512IFMA	TARGET_ISA_AVX512IFMA
-#define TARGET_AVX512IFMA_P(x)	TARGET_ISA_AVX512IFMA_P(x)
-#define TARGET_AVX5124FMAPS	TARGET_ISA2_AVX5124FMAPS
-#define TARGET_AVX5124FMAPS_P(x) TARGET_ISA2_AVX5124FMAPS_P(x)
-#define TARGET_AVX5124VNNIW	TARGET_ISA2_AVX5124VNNIW
-#define TARGET_AVX5124VNNIW_P(x) TARGET_ISA2_AVX5124VNNIW_P(x)
-#define TARGET_AVX512VBMI2	TARGET_ISA_AVX512VBMI2
-#define TARGET_AVX512VBMI2_P(x) TARGET_ISA_AVX512VBMI2_P(x)
-#define TARGET_AVX512VPOPCNTDQ	TARGET_ISA_AVX512VPOPCNTDQ
-#define TARGET_AVX512VPOPCNTDQ_P(x) TARGET_ISA_AVX512VPOPCNTDQ_P(x)
-#define TARGET_AVX512VNNI	TARGET_ISA_AVX512VNNI
-#define TARGET_AVX512VNNI_P(x) TARGET_ISA_AVX512VNNI_P(x)
-#define TARGET_AVX512BITALG	TARGET_ISA_AVX512BITALG
-#define TARGET_AVX512BITALG_P(x) TARGET_ISA_AVX512BITALG_P(x)
-#define TARGET_AVX512VP2INTERSECT	TARGET_ISA2_AVX512VP2INTERSECT
-#define TARGET_AVX512VP2INTERSECT_P(x) TARGET_ISA2_AVX512VP2INTERSECT_P(x)
-#define TARGET_FMA	TARGET_ISA_FMA
-#define TARGET_FMA_P(x)	TARGET_ISA_FMA_P(x)
-#define TARGET_SSE4A	TARGET_ISA_SSE4A
-#define TARGET_SSE4A_P(x)	TARGET_ISA_SSE4A_P(x)
-#define TARGET_FMA4	TARGET_ISA_FMA4
-#define TARGET_FMA4_P(x)	TARGET_ISA_FMA4_P(x)
-#define TARGET_XOP	TARGET_ISA_XOP
-#define TARGET_XOP_P(x)	TARGET_ISA_XOP_P(x)
-#define TARGET_LWP	TARGET_ISA_LWP
-#define TARGET_LWP_P(x)	TARGET_ISA_LWP_P(x)
-#define TARGET_ABM	TARGET_ISA_ABM
-#define TARGET_ABM_P(x)	TARGET_ISA_ABM_P(x)
-#define TARGET_PCONFIG	TARGET_ISA2_PCONFIG
-#define TARGET_PCONFIG_P(x)	TARGET_ISA2_PCONFIG_P(x)
-#define TARGET_WBNOINVD	TARGET_ISA2_WBNOINVD
-#define TARGET_WBNOINVD_P(x)	TARGET_ISA2_WBNOINVD_P(x)
-#define TARGET_SGX	TARGET_ISA2_SGX
-#define TARGET_SGX_P(x)	TARGET_ISA2_SGX_P(x)
-#define TARGET_RDPID	TARGET_ISA2_RDPID
-#define TARGET_RDPID_P(x)	TARGET_ISA2_RDPID_P(x)
-#define TARGET_GFNI	TARGET_ISA_GFNI
-#define TARGET_GFNI_P(x)	TARGET_ISA_GFNI_P(x)
-#define TARGET_VAES	TARGET_ISA2_VAES
-#define TARGET_VAES_P(x)	TARGET_ISA2_VAES_P(x)
-#define TARGET_VPCLMULQDQ	TARGET_ISA_VPCLMULQDQ
-#define TARGET_VPCLMULQDQ_P(x)	TARGET_ISA_VPCLMULQDQ_P(x)
-#define TARGET_BMI	TARGET_ISA_BMI
-#define TARGET_BMI_P(x)	TARGET_ISA_BMI_P(x)
-#define TARGET_BMI2	TARGET_ISA_BMI2
-#define TARGET_BMI2_P(x)	TARGET_ISA_BMI2_P(x)
-#define TARGET_LZCNT	TARGET_ISA_LZCNT
-#define TARGET_LZCNT_P(x)	TARGET_ISA_LZCNT_P(x)
-#define TARGET_TBM	TARGET_ISA_TBM
-#define TARGET_TBM_P(x)	TARGET_ISA_TBM_P(x)
-#define TARGET_POPCNT	TARGET_ISA_POPCNT
-#define TARGET_POPCNT_P(x)	TARGET_ISA_POPCNT_P(x)
-#define TARGET_SAHF	TARGET_ISA_SAHF
-#define TARGET_SAHF_P(x)	TARGET_ISA_SAHF_P(x)
-#define TARGET_MOVBE	TARGET_ISA2_MOVBE
-#define TARGET_MOVBE_P(x)	TARGET_ISA2_MOVBE_P(x)
-#define TARGET_CRC32	TARGET_ISA_CRC32
-#define TARGET_CRC32_P(x)	TARGET_ISA_CRC32_P(x)
-#define TARGET_AES	TARGET_ISA_AES
-#define TARGET_AES_P(x)	TARGET_ISA_AES_P(x)
-#define TARGET_SHA	TARGET_ISA_SHA
-#define TARGET_SHA_P(x)	TARGET_ISA_SHA_P(x)
-#define TARGET_CLFLUSHOPT	TARGET_ISA_CLFLUSHOPT
-#define TARGET_CLFLUSHOPT_P(x)	TARGET_ISA_CLFLUSHOPT_P(x)
-#define TARGET_CLZERO	TARGET_ISA2_CLZERO
-#define TARGET_CLZERO_P(x)	TARGET_ISA2_CLZERO_P(x)
-#define TARGET_XSAVEC	TARGET_ISA_XSAVEC
-#define TARGET_XSAVEC_P(x)	TARGET_ISA_XSAVEC_P(x)
-#define TARGET_XSAVES	TARGET_ISA_XSAVES
-#define TARGET_XSAVES_P(x)	TARGET_ISA_XSAVES_P(x)
-#define TARGET_PCLMUL	TARGET_ISA_PCLMUL
-#define TARGET_PCLMUL_P(x)	TARGET_ISA_PCLMUL_P(x)
-#define TARGET_CMPXCHG16B	TARGET_ISA2_CX16
-#define TARGET_CMPXCHG16B_P(x)	TARGET_ISA2_CX16_P(x)
-#define TARGET_FSGSBASE	TARGET_ISA_FSGSBASE
-#define TARGET_FSGSBASE_P(x)	TARGET_ISA_FSGSBASE_P(x)
-#define TARGET_RDRND	TARGET_ISA_RDRND
-#define TARGET_RDRND_P(x)	TARGET_ISA_RDRND_P(x)
-#define TARGET_F16C	TARGET_ISA_F16C
-#define TARGET_F16C_P(x)	TARGET_ISA_F16C_P(x)
-#define TARGET_RTM	TARGET_ISA_RTM
-#define TARGET_RTM_P(x)	TARGET_ISA_RTM_P(x)
-#define TARGET_HLE	TARGET_ISA2_HLE
-#define TARGET_HLE_P(x)	TARGET_ISA2_HLE_P(x)
-#define TARGET_RDSEED	TARGET_ISA_RDSEED
-#define TARGET_RDSEED_P(x)	TARGET_ISA_RDSEED_P(x)
-#define TARGET_PRFCHW	TARGET_ISA_PRFCHW
-#define TARGET_PRFCHW_P(x)	TARGET_ISA_PRFCHW_P(x)
-#define TARGET_ADX	TARGET_ISA_ADX
-#define TARGET_ADX_P(x)	TARGET_ISA_ADX_P(x)
-#define TARGET_FXSR	TARGET_ISA_FXSR
-#define TARGET_FXSR_P(x)	TARGET_ISA_FXSR_P(x)
-#define TARGET_XSAVE	TARGET_ISA_XSAVE
-#define TARGET_XSAVE_P(x)	TARGET_ISA_XSAVE_P(x)
-#define TARGET_XSAVEOPT	TARGET_ISA_XSAVEOPT
-#define TARGET_XSAVEOPT_P(x)	TARGET_ISA_XSAVEOPT_P(x)
-#define TARGET_PREFETCHWT1	TARGET_ISA_PREFETCHWT1
-#define TARGET_PREFETCHWT1_P(x)	TARGET_ISA_PREFETCHWT1_P(x)
-#define TARGET_CLWB	TARGET_ISA_CLWB
-#define TARGET_CLWB_P(x)	TARGET_ISA_CLWB_P(x)
-#define TARGET_MWAITX	TARGET_ISA2_MWAITX
-#define TARGET_MWAITX_P(x)	TARGET_ISA2_MWAITX_P(x)
-#define TARGET_PKU	TARGET_ISA_PKU
-#define TARGET_PKU_P(x)	TARGET_ISA_PKU_P(x)
-#define TARGET_SHSTK	TARGET_ISA_SHSTK
-#define TARGET_SHSTK_P(x)	TARGET_ISA_SHSTK_P(x)
-#define TARGET_MOVDIRI	TARGET_ISA_MOVDIRI
-#define TARGET_MOVDIRI_P(x) TARGET_ISA_MOVDIRI_P(x)
-#define TARGET_MOVDIR64B	TARGET_ISA2_MOVDIR64B
-#define TARGET_MOVDIR64B_P(x) TARGET_ISA2_MOVDIR64B_P(x)
-#define TARGET_WAITPKG	TARGET_ISA2_WAITPKG
-#define TARGET_WAITPKG_P(x)	TARGET_ISA2_WAITPKG_P(x)
-#define TARGET_CLDEMOTE	TARGET_ISA2_CLDEMOTE
-#define TARGET_CLDEMOTE_P(x) TARGET_ISA2_CLDEMOTE_P(x)
-#define TARGET_PTWRITE	TARGET_ISA2_PTWRITE
-#define TARGET_PTWRITE_P(x)	TARGET_ISA2_PTWRITE_P(x)
-#define TARGET_AVX512BF16	TARGET_ISA2_AVX512BF16
-#define TARGET_AVX512BF16_P(x)	TARGET_ISA2_AVX512BF16_P(x)
-#define TARGET_ENQCMD	TARGET_ISA2_ENQCMD
-#define TARGET_ENQCMD_P(x) TARGET_ISA2_ENQCMD_P(x)
-#define TARGET_SERIALIZE	TARGET_ISA2_SERIALIZE
-#define TARGET_SERIALIZE_P(x) TARGET_ISA2_SERIALIZE_P(x)
-#define TARGET_TSXLDTRK	TARGET_ISA2_TSXLDTRK
-#define TARGET_TSXLDTRK_P(x) TARGET_ISA2_TSXLDTRK_P(x)
-#define TARGET_AMX_TILE TARGET_ISA2_AMX_TILE
-#define TARGET_AMX_TILE_P(x) TARGET_ISA2_AMX_TILE(x)
-#define TARGET_AMX_INT8 TARGET_ISA2_AMX_INT8
-#define TARGET_AMX_INT8_P(x) TARGET_ISA2_AMX_INT8(x)
-#define TARGET_AMX_BF16 TARGET_ISA2_AMX_BF16
-#define TARGET_AMX_BF16_P(x) TARGET_ISA2_AMX_BF16(x)
-#define TARGET_UINTR	TARGET_ISA2_UINTR
-#define TARGET_UINTR_P(x) TARGET_ISA2_UINTR_P(x)
-#define TARGET_HRESET	    TARGET_ISA2_HRESET
-#define TARGET_HRESET_P(x)  TARGET_ISA2_HRESET_P(x)
-#define TARGET_KL	TARGET_ISA2_KL
-#define TARGET_KL_P(x) TARGET_ISA2_KL_P(x)
-#define TARGET_WIDEKL	TARGET_ISA2_WIDEKL
-#define TARGET_WIDEKL_P(x) TARGET_ISA2_WIDEKL_P(x)
-#define TARGET_AVXVNNI	TARGET_ISA2_AVXVNNI
-#define TARGET_AVXVNNI_P(x)	TARGET_ISA2_AVXVNNI_P(x)
+#define TARGET_CMPXCHG16B	TARGET_CX16
+#define TARGET_CMPXCHG16B_P(x)	TARGET_CX16_P(x)
 
-#define TARGET_LP64	TARGET_ABI_64
+#define TARGET_LP64		TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
-#define TARGET_X32	TARGET_ABI_X32
-#define TARGET_X32_P(x)	TARGET_ABI_X32_P(x)
-#define TARGET_16BIT	TARGET_CODE16
+#define TARGET_X32		TARGET_ABI_X32
+#define TARGET_X32_P(x)		TARGET_ABI_X32_P(x)
+#define TARGET_16BIT		TARGET_CODE16
 #define TARGET_16BIT_P(x)	TARGET_CODE16_P(x)
 
 #define TARGET_MMX_WITH_SSE	(TARGET_64BIT && TARGET_SSE2)
@@ -251,11 +73,25 @@ struct stringop_algs
 {
   const enum stringop_alg unknown_size;
   const struct stringop_strategy {
+    /* Several older compilers delete the default constructor because of the
+       const entries (see PR100246).  Manually specifying a CTOR works around
+       this issue.  Since this header is used by code compiled with the C
+       compiler we must guard the addition.  */
+#ifdef __cplusplus
+    stringop_strategy(int _max = -1, enum stringop_alg _alg = libcall,
+		      int _noalign = false)
+      : max (_max), alg (_alg), noalign (_noalign) {}
+#endif
     const int max;
     const enum stringop_alg alg;
     int noalign;
   } size [MAX_STRINGOP_ALGS];
 };
+
+/* Analog of COSTS_N_INSNS when optimizing for size.  */
+#ifndef COSTS_N_BYTES
+#define COSTS_N_BYTES(N) ((N) * 2)
+#endif
 
 /* Define the specific costs for a given cpu.  NB: hard_register is used
    by TARGET_REGISTER_MOVE_COST and TARGET_MEMORY_MOVE_COST to compute
@@ -441,50 +277,7 @@ extern const struct processor_costs ix86_size_cost;
 #define HAS_LONG_COND_BRANCH 1
 #define HAS_LONG_UNCOND_BRANCH 1
 
-#define TARGET_386 (ix86_tune == PROCESSOR_I386)
-#define TARGET_486 (ix86_tune == PROCESSOR_I486)
-#define TARGET_PENTIUM (ix86_tune == PROCESSOR_PENTIUM)
-#define TARGET_PENTIUMPRO (ix86_tune == PROCESSOR_PENTIUMPRO)
-#define TARGET_GEODE (ix86_tune == PROCESSOR_GEODE)
-#define TARGET_K6 (ix86_tune == PROCESSOR_K6)
-#define TARGET_ATHLON (ix86_tune == PROCESSOR_ATHLON)
-#define TARGET_PENTIUM4 (ix86_tune == PROCESSOR_PENTIUM4)
-#define TARGET_K8 (ix86_tune == PROCESSOR_K8)
-#define TARGET_ATHLON_K8 (TARGET_K8 || TARGET_ATHLON)
-#define TARGET_NOCONA (ix86_tune == PROCESSOR_NOCONA)
-#define TARGET_CORE2 (ix86_tune == PROCESSOR_CORE2)
-#define TARGET_NEHALEM (ix86_tune == PROCESSOR_NEHALEM)
-#define TARGET_SANDYBRIDGE (ix86_tune == PROCESSOR_SANDYBRIDGE)
-#define TARGET_HASWELL (ix86_tune == PROCESSOR_HASWELL)
-#define TARGET_BONNELL (ix86_tune == PROCESSOR_BONNELL)
-#define TARGET_SILVERMONT (ix86_tune == PROCESSOR_SILVERMONT)
-#define TARGET_GOLDMONT (ix86_tune == PROCESSOR_GOLDMONT)
-#define TARGET_GOLDMONT_PLUS (ix86_tune == PROCESSOR_GOLDMONT_PLUS)
-#define TARGET_TREMONT (ix86_tune == PROCESSOR_TREMONT)
-#define TARGET_KNL (ix86_tune == PROCESSOR_KNL)
-#define TARGET_KNM (ix86_tune == PROCESSOR_KNM)
-#define TARGET_SKYLAKE (ix86_tune == PROCESSOR_SKYLAKE)
-#define TARGET_SKYLAKE_AVX512 (ix86_tune == PROCESSOR_SKYLAKE_AVX512)
-#define TARGET_CANNONLAKE (ix86_tune == PROCESSOR_CANNONLAKE)
-#define TARGET_ICELAKE_CLIENT (ix86_tune == PROCESSOR_ICELAKE_CLIENT)
-#define TARGET_ICELAKE_SERVER (ix86_tune == PROCESSOR_ICELAKE_SERVER)
-#define TARGET_CASCADELAKE (ix86_tune == PROCESSOR_CASCADELAKE)
-#define TARGET_TIGERLAKE (ix86_tune == PROCESSOR_TIGERLAKE)
-#define TARGET_COOPERLAKE (ix86_tune == PROCESSOR_COOPERLAKE)
-#define TARGET_SAPPHIRERAPIDS (ix86_tune == PROCESSOR_SAPPHIRERAPIDS)
-#define TARGET_ALDERLAKE (ix86_tune == PROCESSOR_ALDERLAKE)
-#define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
-#define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
-#define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
-#define TARGET_BDVER1 (ix86_tune == PROCESSOR_BDVER1)
-#define TARGET_BDVER2 (ix86_tune == PROCESSOR_BDVER2)
-#define TARGET_BDVER3 (ix86_tune == PROCESSOR_BDVER3)
-#define TARGET_BDVER4 (ix86_tune == PROCESSOR_BDVER4)
-#define TARGET_BTVER1 (ix86_tune == PROCESSOR_BTVER1)
-#define TARGET_BTVER2 (ix86_tune == PROCESSOR_BTVER2)
-#define TARGET_ZNVER1 (ix86_tune == PROCESSOR_ZNVER1)
-#define TARGET_ZNVER2 (ix86_tune == PROCESSOR_ZNVER2)
-#define TARGET_ZNVER3 (ix86_tune == PROCESSOR_ZNVER3)
+#define TARGET_CPU_P(CPU) (ix86_tune == PROCESSOR_ ## CPU)
 
 /* Feature tests against the various tunings.  */
 enum ix86_tune_indices {
@@ -523,6 +316,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 #define TARGET_PROMOTE_QImode	ix86_tune_features[X86_TUNE_PROMOTE_QIMODE]
 #define TARGET_FAST_PREFIX	ix86_tune_features[X86_TUNE_FAST_PREFIX]
 #define TARGET_SINGLE_STRINGOP	ix86_tune_features[X86_TUNE_SINGLE_STRINGOP]
+#define TARGET_PREFER_KNOWN_REP_MOVSB_STOSB \
+  ix86_tune_features[X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB]
 #define TARGET_MISALIGNED_MOVE_STRING_PRO_EPILOGUES \
 	ix86_tune_features[X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES]
 #define TARGET_QIMODE_MATH	ix86_tune_features[X86_TUNE_QIMODE_MATH]
@@ -608,6 +403,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_AVOID_LEA_FOR_ADDR]
 #define TARGET_SOFTWARE_PREFETCHING_BENEFICIAL \
 	ix86_tune_features[X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL]
+#define TARGET_AVX256_MOVE_BY_PIECES \
+	ix86_tune_features[X86_TUNE_AVX256_MOVE_BY_PIECES]
+#define TARGET_AVX256_STORE_BY_PIECES \
+	ix86_tune_features[X86_TUNE_AVX256_STORE_BY_PIECES]
 #define TARGET_AVX256_SPLIT_REGS \
 	ix86_tune_features[X86_TUNE_AVX256_SPLIT_REGS]
 #define TARGET_GENERAL_REGS_SSE_SPILL \
@@ -627,6 +426,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_EMIT_VZEROUPPER]
 #define TARGET_EXPAND_ABS \
 	ix86_tune_features[X86_TUNE_EXPAND_ABS]
+#define TARGET_V2DF_REDUCTION_PREFER_HADDPD \
+	ix86_tune_features[X86_TUNE_V2DF_REDUCTION_PREFER_HADDPD]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
@@ -786,10 +587,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #ifndef HAVE_LOCAL_CPU_DETECT
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1
 #else
+#define ARCH_ARG "%{" OPT_ARCH64 ":64;:32}"
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1 \
-"%{march=native:%>march=native %:local_cpu_detect(arch) \
-  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune)}} \
-%{mtune=native:%>mtune=native %:local_cpu_detect(tune)}"
+"%{march=native:%>march=native %:local_cpu_detect(arch " ARCH_ARG ") \
+  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune " ARCH_ARG ")}} \
+%{mtune=native:%>mtune=native %:local_cpu_detect(tune " ARCH_ARG ")}"
 #endif
 #endif
 
@@ -799,8 +601,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Target Pragmas.  */
 #define REGISTER_TARGET_PRAGMAS() ix86_register_pragmas ()
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS ix86_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO ix86_d_register_target_info
+#define TARGET_D_HAS_STDCALL_CONVENTION ix86_d_has_stdcall_convention
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
@@ -1202,12 +1006,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V4DImode || (MODE) == V2TImode || (MODE) == V8SFmode	\
    || (MODE) == V4DFmode)
 
-#define VALID_AVX256_REG_OR_OI_MODE(MODE)		\
-  (VALID_AVX256_REG_MODE (MODE) || (MODE) == OImode)
+#define VALID_AVX256_REG_OR_OI_VHF_MODE(MODE)		\
+  (VALID_AVX256_REG_MODE (MODE) || (MODE) == OImode || (MODE) == V16HFmode)
 
 #define VALID_AVX512F_SCALAR_MODE(MODE)					\
   ((MODE) == DImode || (MODE) == DFmode || (MODE) == SImode		\
-   || (MODE) == SFmode)
+   || (MODE) == SFmode							\
+   || (TARGET_AVX512FP16 && ((MODE) == HImode || (MODE) == HFmode)))
 
 #define VALID_AVX512F_REG_MODE(MODE)					\
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
@@ -1220,16 +1025,24 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_AVX512VL_128_REG_MODE(MODE)				\
   ((MODE) == V2DImode || (MODE) == V2DFmode || (MODE) == V16QImode	\
    || (MODE) == V4SImode || (MODE) == V4SFmode || (MODE) == V8HImode	\
-   || (MODE) == TFmode || (MODE) == V1TImode)
+   || (MODE) == TFmode || (MODE) == V1TImode || (MODE) == V8HFmode	\
+   || (MODE) == TImode)
+
+#define VALID_AVX512FP16_REG_MODE(MODE)					\
+  ((MODE) == V8HFmode || (MODE) == V16HFmode || (MODE) == V32HFmode)
 
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
-   || (MODE) == V2DImode || (MODE) == DFmode)
+   || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
+   || (MODE) == V2DImode || (MODE) == DFmode || (MODE) == HFmode)
+
+#define VALID_SSE2_REG_VHF_MODE(MODE)			\
+  (VALID_SSE2_REG_MODE (MODE) || (MODE) == V8HFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
   ((MODE) == V1TImode || (MODE) == TImode				\
    || (MODE) == V4SFmode || (MODE) == V4SImode				\
-   || (MODE) == SFmode || (MODE) == TFmode)
+   || (MODE) == SFmode || (MODE) == TFmode || (MODE) == TDmode)
 
 #define VALID_MMX_REG_MODE_3DNOW(MODE) \
   ((MODE) == V2SFmode || (MODE) == SFmode)
@@ -1243,20 +1056,23 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
-#define VALID_DFP_MODE_P(MODE) \
-  ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
-
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
-   || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)		\
+   || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)
 
 #define VALID_INT_MODE_P(MODE)						\
-  ((MODE) == QImode || (MODE) == HImode || (MODE) == SImode		\
-   || (MODE) == DImode							\
-   || (MODE) == CQImode || (MODE) == CHImode || (MODE) == CSImode	\
-   || (MODE) == CDImode							\
-   || (TARGET_64BIT && ((MODE) == TImode || (MODE) == CTImode		\
-			|| (MODE) == TFmode || (MODE) == TCmode)))
+  ((MODE) == QImode || (MODE) == HImode					\
+   || (MODE) == SImode || (MODE) == DImode				\
+   || (MODE) == CQImode || (MODE) == CHImode				\
+   || (MODE) == CSImode || (MODE) == CDImode				\
+   || (MODE) == SDmode || (MODE) == DDmode				\
+   || (MODE) == HFmode || (MODE) == HCmode				\
+   || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
+   || (TARGET_64BIT							\
+       && ((MODE) == TImode || (MODE) == CTImode			\
+	   || (MODE) == TFmode || (MODE) == TCmode			\
+	   || (MODE) == V8QImode || (MODE) == V4HImode			\
+	   || (MODE) == V2SImode || (MODE) == TDmode)))
 
 /* Return true for modes passed in SSE registers.  */
 #define SSE_REG_MODE_P(MODE)						\
@@ -1267,13 +1083,17 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V4DImode || (MODE) == V8SFmode || (MODE) == V4DFmode	\
    || (MODE) == V2TImode || (MODE) == V8DImode || (MODE) == V64QImode	\
    || (MODE) == V16SImode || (MODE) == V32HImode || (MODE) == V8DFmode	\
-   || (MODE) == V16SFmode)
+   || (MODE) == V16SFmode || VALID_AVX512FP16_REG_MODE (MODE))
 
 #define X87_FLOAT_MODE_P(MODE)	\
   (TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode))
 
 #define SSE_FLOAT_MODE_P(MODE) \
   ((TARGET_SSE && (MODE) == SFmode) || (TARGET_SSE2 && (MODE) == DFmode))
+
+#define SSE_FLOAT_MODE_SSEMATH_OR_HF_P(MODE)				\
+  ((SSE_FLOAT_MODE_P (MODE) && TARGET_SSE_MATH)				\
+   || (TARGET_AVX512FP16 && (MODE) == HFmode))
 
 #define FMA4_VEC_FLOAT_MODE_P(MODE) \
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
@@ -1674,13 +1494,8 @@ enum reg_class
    || TARGET_64BIT_MS_ABI \
    || (TARGET_MACHO && crtl->profile))
 
-/* If defined, a C expression whose value is nonzero when we want to use PUSH
-   instructions to pass outgoing arguments.  */
-
-#define PUSH_ARGS (TARGET_PUSH_ARGS && !ACCUMULATE_OUTGOING_ARGS)
-
 /* We want the stack and args grow in opposite directions, even if
-   PUSH_ARGS is 0.  */
+   targetm.calls.push_argument returns false.  */
 #define PUSH_ARGS_REVERSED 1
 
 /* Offset of first parameter from the argument pointer register value.  */
@@ -1918,6 +1733,8 @@ typedef struct ix86_args {
 
 #define LEGITIMATE_PIC_OPERAND_P(X) legitimate_pic_operand_p (X)
 
+#define STRIP_UNARY(X) (UNARY_P (X) ? XEXP (X, 0) : X)
+
 #define SYMBOLIC_CONST(X)	\
   (GET_CODE (X) == SYMBOL_REF						\
    || GET_CODE (X) == LABEL_REF						\
@@ -1965,24 +1782,45 @@ typedef struct ix86_args {
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
 
-/* Max number of bytes we can move from memory to memory
-   in one reasonably fast instruction.  */
-#define MOVE_MAX 16
+/* The constant maximum number of bytes that a single instruction can
+   move quickly between memory and registers or between two memory
+   locations.  */
+#define MAX_MOVE_MAX 64
 
-/* MOVE_MAX_PIECES is the number of bytes at a time which we can
-   move efficiently, as opposed to  MOVE_MAX which is the maximum
-   number of bytes we can move with a single instruction.
+/* Max number of bytes we can move from memory to memory in one
+   reasonably fast instruction, as opposed to MOVE_MAX_PIECES which
+   is the number of bytes at a time which we can move efficiently.
+   MOVE_MAX_PIECES defaults to MOVE_MAX.  */
 
-   ??? We should use TImode in 32-bit mode and use OImode or XImode
-   if they are available.  But since by_pieces_ninsns determines the
-   widest mode with MAX_FIXED_MODE_SIZE, we can only use TImode in
-   64-bit mode.  */
-#define MOVE_MAX_PIECES \
-  ((TARGET_64BIT \
-    && TARGET_SSE2 \
-    && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
-    && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
-   ? GET_MODE_SIZE (TImode) : UNITS_PER_WORD)
+#define MOVE_MAX \
+  ((TARGET_AVX512F && !TARGET_PREFER_AVX256) \
+   ? 64 \
+   : ((TARGET_AVX \
+       && !TARGET_PREFER_AVX128 \
+       && (TARGET_AVX256_MOVE_BY_PIECES \
+	   || TARGET_AVX256_STORE_BY_PIECES)) \
+      ? 32 \
+      : ((TARGET_SSE2 \
+	  && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
+	  && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+	 ? 16 : UNITS_PER_WORD)))
+
+/* STORE_MAX_PIECES is the number of bytes at a time that we can store
+   efficiently.  Allow 16/32/64 bytes only if inter-unit move is enabled
+   since vec_duplicate enabled by inter-unit move is used to implement
+   store_by_pieces of 16/32/64 bytes.  */
+#define STORE_MAX_PIECES \
+  (TARGET_INTER_UNIT_MOVES_TO_VEC \
+   ? ((TARGET_AVX512F && !TARGET_PREFER_AVX256) \
+      ? 64 \
+      : ((TARGET_AVX \
+	  && !TARGET_PREFER_AVX128 \
+	  && TARGET_AVX256_STORE_BY_PIECES) \
+	  ? 32 \
+	  : ((TARGET_SSE2 \
+	      && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+	      ? 16 : UNITS_PER_WORD))) \
+   : UNITS_PER_WORD)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a cpymem or libcall instead.
@@ -2285,15 +2123,15 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
    bytes if it is within MAX_SKIP bytes.  */
 
 #ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
-#undef  ASM_OUTPUT_MAX_SKIP_PAD
-#define ASM_OUTPUT_MAX_SKIP_PAD(FILE, LOG, MAX_SKIP)			\
-  if ((LOG) != 0)							\
-    {									\
+# define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)			\
+  do {									\
+    if ((LOG) != 0) {							\
       if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)		\
-        fprintf ((FILE), "\t.p2align %d\n", (LOG));			\
+	fprintf ((FILE), "\t.p2align %d\n", (LOG));			\
       else								\
-        fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
-    }
+	fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
+    }									\
+  } while (0)
 #endif
 
 /* Write the extra assembler code needed to declare a function
@@ -2384,6 +2222,7 @@ enum processor_type
   PROCESSOR_COOPERLAKE,
   PROCESSOR_SAPPHIRERAPIDS,
   PROCESSOR_ALDERLAKE,
+  PROCESSOR_ROCKETLAKE,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,
   PROCESSOR_K6,
@@ -2407,97 +2246,24 @@ extern const char *const processor_names[];
 
 #include "wide-int-bitmask.h"
 
-constexpr wide_int_bitmask PTA_3DNOW (HOST_WIDE_INT_1U << 0);
-constexpr wide_int_bitmask PTA_3DNOW_A (HOST_WIDE_INT_1U << 1);
-constexpr wide_int_bitmask PTA_64BIT (HOST_WIDE_INT_1U << 2);
-constexpr wide_int_bitmask PTA_ABM (HOST_WIDE_INT_1U << 3);
-constexpr wide_int_bitmask PTA_AES (HOST_WIDE_INT_1U << 4);
-constexpr wide_int_bitmask PTA_AVX (HOST_WIDE_INT_1U << 5);
-constexpr wide_int_bitmask PTA_BMI (HOST_WIDE_INT_1U << 6);
-constexpr wide_int_bitmask PTA_CX16 (HOST_WIDE_INT_1U << 7);
-constexpr wide_int_bitmask PTA_F16C (HOST_WIDE_INT_1U << 8);
-constexpr wide_int_bitmask PTA_FMA (HOST_WIDE_INT_1U << 9);
-constexpr wide_int_bitmask PTA_FMA4 (HOST_WIDE_INT_1U << 10);
-constexpr wide_int_bitmask PTA_FSGSBASE (HOST_WIDE_INT_1U << 11);
-constexpr wide_int_bitmask PTA_LWP (HOST_WIDE_INT_1U << 12);
-constexpr wide_int_bitmask PTA_LZCNT (HOST_WIDE_INT_1U << 13);
-constexpr wide_int_bitmask PTA_MMX (HOST_WIDE_INT_1U << 14);
-constexpr wide_int_bitmask PTA_MOVBE (HOST_WIDE_INT_1U << 15);
-constexpr wide_int_bitmask PTA_NO_SAHF (HOST_WIDE_INT_1U << 16);
-constexpr wide_int_bitmask PTA_PCLMUL (HOST_WIDE_INT_1U << 17);
-constexpr wide_int_bitmask PTA_POPCNT (HOST_WIDE_INT_1U << 18);
-constexpr wide_int_bitmask PTA_PREFETCH_SSE (HOST_WIDE_INT_1U << 19);
-constexpr wide_int_bitmask PTA_RDRND (HOST_WIDE_INT_1U << 20);
-constexpr wide_int_bitmask PTA_SSE (HOST_WIDE_INT_1U << 21);
-constexpr wide_int_bitmask PTA_SSE2 (HOST_WIDE_INT_1U << 22);
-constexpr wide_int_bitmask PTA_SSE3 (HOST_WIDE_INT_1U << 23);
-constexpr wide_int_bitmask PTA_SSE4_1 (HOST_WIDE_INT_1U << 24);
-constexpr wide_int_bitmask PTA_SSE4_2 (HOST_WIDE_INT_1U << 25);
-constexpr wide_int_bitmask PTA_SSE4A (HOST_WIDE_INT_1U << 26);
-constexpr wide_int_bitmask PTA_SSSE3 (HOST_WIDE_INT_1U << 27);
-constexpr wide_int_bitmask PTA_TBM (HOST_WIDE_INT_1U << 28);
-constexpr wide_int_bitmask PTA_XOP (HOST_WIDE_INT_1U << 29);
-constexpr wide_int_bitmask PTA_AVX2 (HOST_WIDE_INT_1U << 30);
-constexpr wide_int_bitmask PTA_BMI2 (HOST_WIDE_INT_1U << 31);
-constexpr wide_int_bitmask PTA_RTM (HOST_WIDE_INT_1U << 32);
-constexpr wide_int_bitmask PTA_HLE (HOST_WIDE_INT_1U << 33);
-constexpr wide_int_bitmask PTA_PRFCHW (HOST_WIDE_INT_1U << 34);
-constexpr wide_int_bitmask PTA_RDSEED (HOST_WIDE_INT_1U << 35);
-constexpr wide_int_bitmask PTA_ADX (HOST_WIDE_INT_1U << 36);
-constexpr wide_int_bitmask PTA_FXSR (HOST_WIDE_INT_1U << 37);
-constexpr wide_int_bitmask PTA_XSAVE (HOST_WIDE_INT_1U << 38);
-constexpr wide_int_bitmask PTA_XSAVEOPT (HOST_WIDE_INT_1U << 39);
-constexpr wide_int_bitmask PTA_AVX512F (HOST_WIDE_INT_1U << 40);
-constexpr wide_int_bitmask PTA_AVX512ER (HOST_WIDE_INT_1U << 41);
-constexpr wide_int_bitmask PTA_AVX512PF (HOST_WIDE_INT_1U << 42);
-constexpr wide_int_bitmask PTA_AVX512CD (HOST_WIDE_INT_1U << 43);
-constexpr wide_int_bitmask PTA_NO_TUNE (HOST_WIDE_INT_1U << 44);
-constexpr wide_int_bitmask PTA_SHA (HOST_WIDE_INT_1U << 45);
-constexpr wide_int_bitmask PTA_PREFETCHWT1 (HOST_WIDE_INT_1U << 46);
-constexpr wide_int_bitmask PTA_CLFLUSHOPT (HOST_WIDE_INT_1U << 47);
-constexpr wide_int_bitmask PTA_XSAVEC (HOST_WIDE_INT_1U << 48);
-constexpr wide_int_bitmask PTA_XSAVES (HOST_WIDE_INT_1U << 49);
-constexpr wide_int_bitmask PTA_AVX512DQ (HOST_WIDE_INT_1U << 50);
-constexpr wide_int_bitmask PTA_AVX512BW (HOST_WIDE_INT_1U << 51);
-constexpr wide_int_bitmask PTA_AVX512VL (HOST_WIDE_INT_1U << 52);
-constexpr wide_int_bitmask PTA_AVX512IFMA (HOST_WIDE_INT_1U << 53);
-constexpr wide_int_bitmask PTA_AVX512VBMI (HOST_WIDE_INT_1U << 54);
-constexpr wide_int_bitmask PTA_CLWB (HOST_WIDE_INT_1U << 55);
-constexpr wide_int_bitmask PTA_MWAITX (HOST_WIDE_INT_1U << 56);
-constexpr wide_int_bitmask PTA_CLZERO (HOST_WIDE_INT_1U << 57);
-constexpr wide_int_bitmask PTA_NO_80387 (HOST_WIDE_INT_1U << 58);
-constexpr wide_int_bitmask PTA_PKU (HOST_WIDE_INT_1U << 59);
-constexpr wide_int_bitmask PTA_AVX5124VNNIW (HOST_WIDE_INT_1U << 60);
-constexpr wide_int_bitmask PTA_AVX5124FMAPS (HOST_WIDE_INT_1U << 61);
-constexpr wide_int_bitmask PTA_AVX512VPOPCNTDQ (HOST_WIDE_INT_1U << 62);
-constexpr wide_int_bitmask PTA_SGX (HOST_WIDE_INT_1U << 63);
-constexpr wide_int_bitmask PTA_AVX512VNNI (0, HOST_WIDE_INT_1U);
-constexpr wide_int_bitmask PTA_GFNI (0, HOST_WIDE_INT_1U << 1);
-constexpr wide_int_bitmask PTA_VAES (0, HOST_WIDE_INT_1U << 2);
-constexpr wide_int_bitmask PTA_AVX512VBMI2 (0, HOST_WIDE_INT_1U << 3);
-constexpr wide_int_bitmask PTA_VPCLMULQDQ (0, HOST_WIDE_INT_1U << 4);
-constexpr wide_int_bitmask PTA_AVX512BITALG (0, HOST_WIDE_INT_1U << 5);
-constexpr wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
-constexpr wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
-constexpr wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
-constexpr wide_int_bitmask PTA_AVX512VP2INTERSECT (0, HOST_WIDE_INT_1U << 9);
-constexpr wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
-constexpr wide_int_bitmask PTA_AVX512BF16 (0, HOST_WIDE_INT_1U << 11);
-constexpr wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 12);
-constexpr wide_int_bitmask PTA_MOVDIRI (0, HOST_WIDE_INT_1U << 13);
-constexpr wide_int_bitmask PTA_MOVDIR64B (0, HOST_WIDE_INT_1U << 14);
-constexpr wide_int_bitmask PTA_ENQCMD (0, HOST_WIDE_INT_1U << 15);
-constexpr wide_int_bitmask PTA_CLDEMOTE (0, HOST_WIDE_INT_1U << 16);
-constexpr wide_int_bitmask PTA_SERIALIZE (0, HOST_WIDE_INT_1U << 17);
-constexpr wide_int_bitmask PTA_TSXLDTRK (0, HOST_WIDE_INT_1U << 18);
-constexpr wide_int_bitmask PTA_AMX_TILE (0, HOST_WIDE_INT_1U << 19);
-constexpr wide_int_bitmask PTA_AMX_INT8 (0, HOST_WIDE_INT_1U << 20);
-constexpr wide_int_bitmask PTA_AMX_BF16 (0, HOST_WIDE_INT_1U << 21);
-constexpr wide_int_bitmask PTA_UINTR (0, HOST_WIDE_INT_1U << 22);
-constexpr wide_int_bitmask PTA_HRESET (0, HOST_WIDE_INT_1U << 23);
-constexpr wide_int_bitmask PTA_KL (0, HOST_WIDE_INT_1U << 24);
-constexpr wide_int_bitmask PTA_WIDEKL (0, HOST_WIDE_INT_1U << 25);
-constexpr wide_int_bitmask PTA_AVXVNNI (0, HOST_WIDE_INT_1U << 26);
+enum pta_flag
+{
+#define DEF_PTA(NAME) _ ## NAME,
+#include "i386-isa.def"
+#undef DEF_PTA
+  END_PTA
+};
+
+/* wide_int_bitmask can handle only 128 flags.  */
+STATIC_ASSERT (END_PTA <= 128);
+
+#define WIDE_INT_BITMASK_FROM_NTH(N) (N < 64 ? wide_int_bitmask (0, 1ULL << N) \
+				      : wide_int_bitmask (1ULL << (N - 64), 0))
+
+#define DEF_PTA(NAME) constexpr wide_int_bitmask PTA_ ## NAME \
+  = WIDE_INT_BITMASK_FROM_NTH ((pta_flag) _ ## NAME);
+#include "i386-isa.def"
+#undef DEF_PTA
 
 constexpr wide_int_bitmask PTA_X86_64_BASELINE = PTA_64BIT | PTA_MMX | PTA_SSE
   | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR;
@@ -2537,6 +2303,7 @@ constexpr wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE | PTA_AVX512F
 constexpr wide_int_bitmask PTA_ICELAKE_CLIENT = PTA_CANNONLAKE | PTA_AVX512VNNI
   | PTA_GFNI | PTA_VAES | PTA_AVX512VBMI2 | PTA_VPCLMULQDQ | PTA_AVX512BITALG
   | PTA_RDPID | PTA_AVX512VPOPCNTDQ;
+constexpr wide_int_bitmask PTA_ROCKETLAKE = PTA_ICELAKE_CLIENT & ~PTA_SGX;
 constexpr wide_int_bitmask PTA_ICELAKE_SERVER = PTA_ICELAKE_CLIENT
   | PTA_PCONFIG | PTA_WBNOINVD | PTA_CLWB;
 constexpr wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
@@ -2544,10 +2311,7 @@ constexpr wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
 constexpr wide_int_bitmask PTA_SAPPHIRERAPIDS = PTA_COOPERLAKE | PTA_MOVDIRI
   | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT | PTA_ENQCMD | PTA_CLDEMOTE
   | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK | PTA_AMX_TILE
-  | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR | PTA_AVXVNNI;
-constexpr wide_int_bitmask PTA_ALDERLAKE = PTA_SKYLAKE | PTA_CLDEMOTE
-  | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_HRESET | PTA_KL
-  | PTA_WIDEKL | PTA_AVXVNNI;
+  | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR | PTA_AVXVNNI | PTA_AVX512FP16;
 constexpr wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF
   | PTA_AVX512ER | PTA_AVX512F | PTA_AVX512CD | PTA_PREFETCHWT1;
 constexpr wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;
@@ -2560,6 +2324,10 @@ constexpr wide_int_bitmask PTA_GOLDMONT_PLUS = PTA_GOLDMONT | PTA_RDPID
   | PTA_SGX | PTA_PTWRITE;
 constexpr wide_int_bitmask PTA_TREMONT = PTA_GOLDMONT_PLUS | PTA_CLWB
   | PTA_GFNI | PTA_MOVDIRI | PTA_MOVDIR64B | PTA_CLDEMOTE | PTA_WAITPKG;
+constexpr wide_int_bitmask PTA_ALDERLAKE = PTA_TREMONT | PTA_ADX | PTA_AVX
+  | PTA_AVX2 | PTA_BMI | PTA_BMI2 | PTA_F16C | PTA_FMA | PTA_LZCNT
+  | PTA_PCONFIG | PTA_PKU | PTA_VAES | PTA_VPCLMULQDQ | PTA_SERIALIZE
+  | PTA_HRESET | PTA_KL | PTA_WIDEKL | PTA_AVXVNNI;
 constexpr wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
   | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ;
 
@@ -2941,9 +2709,12 @@ struct GTY(()) machine_function {
   /* True if the function needs a stack frame.  */
   BOOL_BITFIELD stack_frame_required : 1;
 
-  /* True if __builtin_ia32_vzeroupper () has been expanded in current
-     function.  */
-  BOOL_BITFIELD has_explicit_vzeroupper : 1;
+  /* True if we should act silently, rather than raise an error for
+     invalid calls.  */
+  BOOL_BITFIELD silent_p : 1;
+
+  /* True if red zone is used.  */
+  BOOL_BITFIELD red_zone_used : 1;
 
   /* The largest alignment, in bytes, of stack slot actually used.  */
   unsigned int max_used_stack_alignment;
@@ -2975,7 +2746,7 @@ extern GTY(()) tree ms_va_list_type_node;
 #define ix86_current_function_calls_tls_descriptor \
   (ix86_tls_descriptor_calls_expanded_in_cfun && df_regs_ever_live_p (SP_REG))
 #define ix86_static_chain_on_stack (cfun->machine->static_chain_on_stack)
-#define ix86_red_zone_size (cfun->machine->frame.red_zone_size)
+#define ix86_red_zone_used (cfun->machine->red_zone_used)
 
 /* Control behavior of x86_file_start.  */
 #define X86_FILE_START_VERSION_DIRECTIVE false

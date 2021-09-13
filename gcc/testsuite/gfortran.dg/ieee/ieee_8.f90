@@ -1,5 +1,5 @@
-! { dg-do run { xfail aarch64*-*-gnu* arm*-*-gnueabi arm*-*-gnueabihf } }
-! XFAIL because of PR libfortran/78449.
+! { dg-do run }
+! { dg-skip-if "PR libfortran/78314" { aarch64*-*-gnu* arm*-*-gnueabi arm*-*-gnueabihf } }
 
 module foo
   use :: ieee_exceptions

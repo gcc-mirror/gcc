@@ -582,9 +582,9 @@ add_noreturn_fake_exit_edges (void)
       make_single_succ_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
 }
 
-/* This function adds a fake edge between any infinite loops to the
-   exit block.  Some optimizations require a path from each node to
-   the exit node.
+/* This function adds a fake edge between any noreturn block and
+   infinite loops to the exit block.  Some optimizations require a path
+   from each node to the exit node.
 
    See also Morgan, Figure 3.10, pp. 82-83.
 
@@ -596,6 +596,10 @@ add_noreturn_fake_exit_edges (void)
 void
 connect_infinite_loops_to_exit (void)
 {
+  /* First add fake exits to noreturn blocks, this is required to
+     discover only truly infinite loops below.  */
+  add_noreturn_fake_exit_edges ();
+
   /* Perform depth-first search in the reverse graph to find nodes
      reachable from the exit block.  */
   depth_first_search dfs;

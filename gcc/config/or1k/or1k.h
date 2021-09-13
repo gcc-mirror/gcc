@@ -21,6 +21,8 @@
 #ifndef GCC_OR1K_H
 #define GCC_OR1K_H
 
+#include "config/or1k/or1k-opts.h"
+
 /* Names to predefine in the preprocessor for this target machine.  */
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
@@ -36,6 +38,11 @@
       builtin_assert ("machine=or1k");		\
     }						\
   while (0)
+
+#define TARGET_CMODEL_SMALL \
+  (or1k_code_model == CMODEL_SMALL)
+#define TARGET_CMODEL_LARGE \
+  (or1k_code_model == CMODEL_LARGE)
 
 /* Storage layout.  */
 

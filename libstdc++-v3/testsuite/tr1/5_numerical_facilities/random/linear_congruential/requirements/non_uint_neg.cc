@@ -19,7 +19,8 @@
 
 // { dg-do compile }
 // { dg-options "-D_GLIBCXX_CONCEPT_CHECKS" }
-// { dg-error "not a valid type" "" { target *-*-* } 29 }
+// { dg-error "not a valid type" "" { target { ! c++20 } } 30 }
+// { dg-error "from 'int' to 'double'" "" { target c++20 } 30 }
 
 // 5.1.4.1 class template linear_congruential [tr.rand.eng.lcong]
 // 5.1.4.1 [4]

@@ -1,6 +1,7 @@
 /* { dg-do compile { target aarch64*-*-* } } */
 /* { dg-options "-O3" } */
-/* { dg-skip-if "" { *-*-* } {"*sve*"} {""} } */
+
+#pragma GCC target "+nosve"
 
 #include <stdint.h>
 

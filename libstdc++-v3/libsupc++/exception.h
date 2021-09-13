@@ -44,8 +44,9 @@ namespace std
   /**
    * @defgroup exceptions Exceptions
    * @ingroup diagnostics
+   * @since C++98
    *
-   * Classes and functions for reporting errors via exception classes.
+   * Classes and functions for reporting errors via exceptions.
    * @{
    */
 
@@ -74,6 +75,8 @@ namespace std
     virtual const char*
     what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
   };
+
+  /// @}
 
 } // namespace std
 

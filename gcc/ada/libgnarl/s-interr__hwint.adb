@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2020, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2021, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -478,7 +478,7 @@ package body System.Interrupts is
    ---------------------------------
 
    procedure Install_Restricted_Handlers
-      (Prio     : Any_Priority;
+      (Prio     : Interrupt_Priority;
        Handlers : New_Handler_Array)
    is
       pragma Unreferenced (Prio);
@@ -1023,7 +1023,7 @@ package body System.Interrupts is
                null;
 
             when others =>
-               pragma Assert (False);
+               pragma Assert (Standard.False);
                null;
          end;
       end loop;

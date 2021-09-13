@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *            Copyright (C) 1992-2020, Free Software Foundation, Inc.       *
+ *            Copyright (C) 1992-2021, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -32,26 +32,28 @@
 extern "C" {
 #endif
 
-/* Structure defining a names table entry.  */
-
+/* Structure defining a name table entry.  */
 struct Name_Entry
 {
-  Int Name_Chars_Index; /* Starting location of char in Name_Chars table. */
-  Short Name_Len;         /* Length of this name in characters. */
-  Byte Byte_Info;       /* Byte value associated with this name */
-  Byte Spare;           /* Unused */
-  Name_Id Hash_Link;    /* Link to next entry in names table for same hash
-                           code. Not accessed by C routines.  */
-  Int Int_Info;         /* Int value associated with this name */
+  Int Name_Chars_Index;
+  Short Name_Len;
+  Byte Byte_Info;
+  Byte Name_Has_No_Encodings : 1;
+  Byte Boolean1_Info : 1;
+  Byte Boolean2_Info : 1;
+  Byte Boolean3_Info : 1;
+  Byte Spare : 4;
+  Name_Id Hash_Link;
+  Int Int_Info;
 };
 
-/* Pointer to names table vector. */
+/* Pointer to the name table.  */
 #define Names_Ptr namet__name_entries__table
-extern struct Name_Entry *Names_Ptr;
+extern struct Name_Entry (*Names_Ptr)[];
 
-/* Pointer to name characters table. */
+/* Pointer to the name character table.  */
 #define Name_Chars_Ptr namet__name_chars__table
-extern char *Name_Chars_Ptr;
+extern char (*Name_Chars_Ptr)[];
 
 /* This is Hostparm.Max_Line_Length.  */
 #define Max_Line_Length (32767 - 1)
@@ -75,12 +77,13 @@ extern struct Bounded_String Global_Name_Buffer;
    strings we want are sitting in the name strings table in exactly the form
    we need them (NUL terminated), we just point to the name directly. */
 
-static char *Get_Name_String (Name_Id);
+INLINE char *Get_Name_String (Name_Id);
 
 INLINE char *
 Get_Name_String (Name_Id Id)
 {
-  return Name_Chars_Ptr + Names_Ptr[Id - First_Name_Id].Name_Chars_Index + 1;
+  return
+    &(*Name_Chars_Ptr)[(*Names_Ptr)[Id - First_Name_Id].Name_Chars_Index + 1];
 }
 
 #define Name_Equals namet__name_equals

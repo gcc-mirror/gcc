@@ -55,6 +55,11 @@ struct fileloc
 extern const input_file** gt_files;
 extern size_t num_gt_files;
 
+/* Table of headers to be included in gtype-desc.c that are generated
+   during the build.  These are identified as "./<filename>.h".  */
+extern const char **build_headers;
+extern size_t num_build_headers;
+
 /* A number of places use the name of this "gengtype.c" file for a
    location for things that we can't rely on the source to define.  We
    also need to refer to the "system.h" file specifically.  These two

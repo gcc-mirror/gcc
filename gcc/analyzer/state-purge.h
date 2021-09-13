@@ -159,6 +159,10 @@ public:
     const FINAL OVERRIDE;
 
 private:
+  void print_needed (graphviz_out *gv,
+		     const function_point &point,
+		     bool within_table) const;
+
   const state_purge_map *m_map;
 };
 

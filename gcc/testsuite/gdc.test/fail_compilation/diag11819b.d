@@ -14,7 +14,7 @@ fail_compilation/diag11819b.d(37): Error: unrecognized trait `AllMembers`, did y
 fail_compilation/diag11819b.d(38): Error: unrecognized trait `DerivedMembers`, did you mean `derivedMembers`?
 fail_compilation/diag11819b.d(39): Error: unrecognized trait `IsSame`, did you mean `isSame`?
 fail_compilation/diag11819b.d(40): Error: unrecognized trait `Compiles`, did you mean `compiles`?
-fail_compilation/diag11819b.d(41): Error: unrecognized trait `Parameters`, did you mean `parameters`?
+fail_compilation/diag11819b.d(41): Error: unrecognized trait `Parameters`
 fail_compilation/diag11819b.d(42): Error: unrecognized trait `GetAliasThis`, did you mean `getAliasThis`?
 fail_compilation/diag11819b.d(43): Error: unrecognized trait `GetAttributes`, did you mean `getAttributes`?
 fail_compilation/diag11819b.d(44): Error: unrecognized trait `GetFunctionAttributes`, did you mean `getFunctionAttributes`?

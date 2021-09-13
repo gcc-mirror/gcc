@@ -992,7 +992,7 @@ public:
 
   void visit (SwitchErrorStatement *s)
   {
-    add_stmt (d_assert_call (s->loc, LIBCALL_SWITCH_ERROR));
+    add_stmt (build_assert_call (s->loc, LIBCALL_SWITCH_ERROR));
   }
 
   /* A return statement exits the current function and supplies its return
@@ -1034,14 +1034,37 @@ public:
 	/* Detect a call to a constructor function, or if returning a struct
 	   literal, write result directly into the return value.  */
 	StructLiteralExp *sle = NULL;
+	bool using_rvo_p = false;
 
 	if (DotVarExp *dve = (s->exp->op == TOKcall
 			      && s->exp->isCallExp ()->e1->op == TOKdotvar
 			      ? s->exp->isCallExp ()->e1->isDotVarExp ()
 			      : NULL))
 	  {
-	    sle = (dve->var->isCtorDeclaration ()
-		   ? dve->e1->isStructLiteralExp () : NULL);
+	    if (dve->var->isCtorDeclaration ())
+	      {
+		if (CommaExp *ce = dve->e1->isCommaExp ())
+		  {
+		    /* Temporary initialized inside a return expression, and
+		       used as the return value.  Replace it with the hidden
+			reference to allow RVO return.  */
+		    DeclarationExp *de = ce->e1->isDeclarationExp ();
+		    VarExp *ve = ce->e2->isVarExp ();
+		    if (de != NULL && ve != NULL
+			&& ve->var == de->declaration
+			&& ve->var->storage_class & STCtemp)
+		      {
+			tree var = get_symbol_decl (ve->var);
+			TREE_ADDRESSABLE (var) = 1;
+			SET_DECL_VALUE_EXPR (var, decl);
+			DECL_HAS_VALUE_EXPR_P (var) = 1;
+			SET_DECL_LANG_NRVO (var, this->func_->shidden);
+			using_rvo_p = true;
+		      }
+		  }
+		else
+		  sle = dve->e1->isStructLiteralExp ();
+	      }
 	  }
 	else
 	  sle = s->exp->isStructLiteralExp ();
@@ -1050,11 +1073,16 @@ public:
 	  {
 	    StructDeclaration *sd = type->baseElemOf ()->isTypeStruct ()->sym;
 	    sle->sym = build_address (this->func_->shidden);
+	    using_rvo_p = true;
 
 	    /* Fill any alignment holes in the return slot using memset.  */
 	    if (!identity_compare_p (sd) || sd->isUnionDeclaration ())
 	      add_stmt (build_memset_call (this->func_->shidden));
+	  }
 
+	if (using_rvo_p == true)
+	  {
+	    /* Generate: (expr, return <retval>);  */
 	    add_stmt (build_expr_dtor (s->exp));
 	  }
 	else
@@ -1067,6 +1095,13 @@ public:
 	  }
 
 	add_stmt (return_expr (decl));
+      }
+    else if (tf->next->ty == Tnoreturn)
+      {
+	/* Returning an expression that has no value, but has a side effect
+	   that should never return.  */
+	add_stmt (build_expr_dtor (s->exp));
+	add_stmt (return_expr (NULL_TREE));
       }
     else
       {

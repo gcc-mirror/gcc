@@ -464,12 +464,17 @@ rtx_addr_can_trap_p_1 (const_rtx x, poly_int64 offset, poly_int64 size,
 		       machine_mode mode, bool unaligned_mems)
 {
   enum rtx_code code = GET_CODE (x);
-  gcc_checking_assert (mode == BLKmode || known_size_p (size));
+  gcc_checking_assert (mode == BLKmode
+		       || mode == VOIDmode
+		       || known_size_p (size));
   poly_int64 const_x1;
 
   /* The offset must be a multiple of the mode size if we are considering
      unaligned memory references on strict alignment machines.  */
-  if (STRICT_ALIGNMENT && unaligned_mems && mode != BLKmode)
+  if (STRICT_ALIGNMENT
+      && unaligned_mems
+      && mode != BLKmode
+      && mode != VOIDmode)
     {
       poly_int64 actual_offset = offset;
 
@@ -991,7 +996,6 @@ count_occurrences (const_rtx x, const_rtx find, int count_dest)
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
       return 0;
 
     case EXPR_LIST:
@@ -1085,7 +1089,6 @@ reg_mentioned_p (const_rtx reg, const_rtx in)
       /* These codes have no constituent expressions
 	 and are unique.  */
     case SCRATCH:
-    case CC0:
     case PC:
       return 0;
 
@@ -1168,11 +1171,10 @@ reg_referenced_p (const_rtx x, const_rtx body)
       if (reg_overlap_mentioned_p (x, SET_SRC (body)))
 	return 1;
 
-      /* If the destination is anything other than CC0, PC, a REG or a SUBREG
+      /* If the destination is anything other than PC, a REG or a SUBREG
 	 of a REG that occupies all of the REG, the insn references X if
 	 it is mentioned in the destination.  */
-      if (GET_CODE (SET_DEST (body)) != CC0
-	  && GET_CODE (SET_DEST (body)) != PC
+      if (GET_CODE (SET_DEST (body)) != PC
 	  && !REG_P (SET_DEST (body))
 	  && ! (GET_CODE (SET_DEST (body)) == SUBREG
 		&& REG_P (SUBREG_REG (SET_DEST (body)))
@@ -1319,7 +1321,6 @@ modified_between_p (const_rtx x, const rtx_insn *start, const rtx_insn *end)
       return 0;
 
     case PC:
-    case CC0:
       return 1;
 
     case MEM:
@@ -1374,7 +1375,6 @@ modified_in_p (const_rtx x, const_rtx insn)
       return 0;
 
     case PC:
-    case CC0:
       return 1;
 
     case MEM:
@@ -1912,7 +1912,6 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
 
     case SCRATCH:
     case PC:
-    case CC0:
       return reg_mentioned_p (x, in);
 
     case PARALLEL:
@@ -1938,7 +1937,7 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
    ignored by note_stores, but passed to FUN.
 
    FUN receives three arguments:
-   1. the REG, MEM, CC0 or PC being stored in or clobbered,
+   1. the REG, MEM or PC being stored in or clobbered,
    2. the SET or CLOBBER rtx that does the store,
    3. the pointer DATA provided to note_stores.
 
@@ -2306,18 +2305,37 @@ rtx_properties::try_to_add_insn (const rtx_insn *insn, bool include_notes)
 {
   if (CALL_P (insn))
     {
-      /* Adding the global registers first removes a situation in which
+      /* Non-const functions can read from global registers.  Impure
+	 functions can also set them.
+
+	 Adding the global registers first removes a situation in which
 	 a fixed-form clobber of register R could come before a real set
 	 of register R.  */
-      if (!hard_reg_set_empty_p (global_reg_set))
+      if (!hard_reg_set_empty_p (global_reg_set)
+	  && !RTL_CONST_CALL_P (insn))
 	{
-	  unsigned int flags = (rtx_obj_flags::IS_READ
-				| rtx_obj_flags::IS_WRITE);
+	  unsigned int flags = rtx_obj_flags::IS_READ;
+	  if (!RTL_PURE_CALL_P (insn))
+	    flags |= rtx_obj_flags::IS_WRITE;
 	  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
-	    if (global_regs[regno] && ref_iter != ref_end)
+	    /* As a special case, the stack pointer is invariant across calls
+	       even if it has been marked global; see the corresponding
+	       handling in df_get_call_refs.  */
+	    if (regno != STACK_POINTER_REGNUM
+		&& global_regs[regno]
+		&& ref_iter != ref_end)
 	      *ref_iter++ = rtx_obj_reference (regno, flags,
 					       reg_raw_mode[regno], 0);
 	}
+      /* Untyped calls implicitly set all function value registers.
+	 Again, we add them first in case the main pattern contains
+	 a fixed-form clobber.  */
+      if (find_reg_note (insn, REG_UNTYPED_CALL, NULL_RTX))
+	for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+	  if (targetm.calls.function_value_regno_p (regno)
+	      && ref_iter != ref_end)
+	    *ref_iter++ = rtx_obj_reference (regno, rtx_obj_flags::IS_WRITE,
+					     reg_raw_mode[regno], 0);
       if (ref_iter != ref_end && !RTL_CONST_CALL_P (insn))
 	{
 	  auto mem_flags = rtx_obj_flags::IS_READ;
@@ -2368,8 +2386,8 @@ vec_rtx_properties_base::grow (ptrdiff_t start)
 }
 
 /* Return nonzero if X's old contents don't survive after INSN.
-   This will be true if X is (cc0) or if X is a register and
-   X dies in INSN or because INSN entirely sets X.
+   This will be true if X is a register and X dies in INSN or because
+   INSN entirely sets X.
 
    "Entirely set" means set directly and not through a SUBREG, or
    ZERO_EXTRACT, so no trace of the old contents remains.
@@ -2389,10 +2407,6 @@ dead_or_set_p (const rtx_insn *insn, const_rtx x)
 {
   unsigned int regno, end_regno;
   unsigned int i;
-
-  /* Can't use cc0_rtx below since this file is used by genattrtab.c.  */
-  if (GET_CODE (x) == CC0)
-    return 1;
 
   gcc_assert (REG_P (x));
 
@@ -2693,8 +2707,6 @@ alloc_reg_note (enum reg_note kind, rtx datum, rtx list)
   gcc_checking_assert (!int_reg_note_p (kind));
   switch (kind)
     {
-    case REG_CC_SETTER:
-    case REG_CC_USER:
     case REG_LABEL_TARGET:
     case REG_LABEL_OPERAND:
     case REG_TM:
@@ -2939,7 +2951,6 @@ volatile_insn_p (const_rtx x)
     case SYMBOL_REF:
     case CONST:
     CASE_CONST_ANY:
-    case CC0:
     case PC:
     case REG:
     case SCRATCH:
@@ -3000,7 +3011,6 @@ volatile_refs_p (const_rtx x)
     case SYMBOL_REF:
     case CONST:
     CASE_CONST_ANY:
-    case CC0:
     case PC:
     case REG:
     case SCRATCH:
@@ -3060,7 +3070,6 @@ side_effects_p (const_rtx x)
     case SYMBOL_REF:
     case CONST:
     CASE_CONST_ANY:
-    case CC0:
     case PC:
     case REG:
     case SCRATCH:
@@ -3148,7 +3157,6 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case LABEL_REF:
     case CONST:
     case PC:
-    case CC0:
     case REG:
     case SCRATCH:
       return 0;
@@ -3253,6 +3261,7 @@ may_trap_p_1 (const_rtx x, unsigned flags)
       break;
 
     case FIX:
+    case UNSIGNED_FIX:
       /* Conversion of floating point might trap.  */
       if (flag_trapping_math && HONOR_NANS (XEXP (x, 0)))
 	return 1;
@@ -4317,6 +4326,17 @@ simplify_subreg_regno (unsigned int xregno, machine_mode xmode,
   return (int) yregno;
 }
 
+/* A wrapper around simplify_subreg_regno that uses subreg_lowpart_offset
+   (xmode, ymode) as the offset.  */
+
+int
+lowpart_subreg_regno (unsigned int regno, machine_mode xmode,
+		      machine_mode ymode)
+{
+  poly_uint64 offset = subreg_lowpart_offset (xmode, ymode);
+  return simplify_subreg_regno (regno, xmode, offset, ymode);
+}
+
 /* Return the final regno that a subreg expression refers to.  */
 unsigned int
 subreg_regno (const_rtx x)
@@ -4862,7 +4882,7 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	  /* If PUSH_ROUNDING is defined, it is possible for the
 	     stack to be momentarily aligned only to that amount,
 	     so we pick the least alignment.  */
-	  if (x == stack_pointer_rtx && PUSH_ARGS)
+	  if (x == stack_pointer_rtx && targetm.calls.push_argument (0))
 	    {
 	      poly_uint64 rounded_1 = PUSH_ROUNDING (poly_int64 (1));
 	      alignment = MIN (known_alignment (rounded_1), alignment);
@@ -5804,7 +5824,7 @@ seq_cost (const rtx_insn *seq, bool speed)
    canonical form to simplify testing by callers.  Specifically:
 
    (1) The code will always be a comparison operation (EQ, NE, GT, etc.).
-   (2) Both operands will be machine operands; (cc0) will have been replaced.
+   (2) Both operands will be machine operands.
    (3) If an operand is a constant, it will be the second operand.
    (4) (LE x const) will be replaced with (LT x <const+1>) and similarly
        for GE, GEU, and LEU.
@@ -5866,22 +5886,6 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
     {
       /* Set nonzero when we find something of interest.  */
       rtx x = 0;
-
-      /* If comparison with cc0, import actual comparison from compare
-	 insn.  */
-      if (op0 == cc0_rtx)
-	{
-	  if ((prev = prev_nonnote_insn (prev)) == 0
-	      || !NONJUMP_INSN_P (prev)
-	      || (set = single_set (prev)) == 0
-	      || SET_DEST (set) != cc0_rtx)
-	    return 0;
-
-	  op0 = SET_SRC (set);
-	  op1 = CONST0_RTX (GET_MODE (op0));
-	  if (earliest)
-	    *earliest = prev;
-	}
 
       /* If this is a COMPARE, pick up the two things being compared.  */
       if (GET_CODE (op0) == COMPARE)
@@ -6070,10 +6074,6 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
 	  break;
 	}
     }
-
-  /* Never return CC0; return zero instead.  */
-  if (CC0_P (op0))
-    return 0;
 
   /* We promised to return a comparison.  */
   rtx ret = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
@@ -6951,4 +6951,42 @@ register_asm_p (const_rtx x)
 	  && HAS_DECL_ASSEMBLER_NAME_P (REG_EXPR (x))
 	  && DECL_ASSEMBLER_NAME_SET_P (REG_EXPR (x))
 	  && DECL_REGISTER (REG_EXPR (x)));
+}
+
+/* Return true if, for all OP of mode OP_MODE:
+
+     (vec_select:RESULT_MODE OP SEL)
+
+   is equivalent to the highpart RESULT_MODE of OP.  */
+
+bool
+vec_series_highpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel)
+{
+  int nunits;
+  if (GET_MODE_NUNITS (op_mode).is_constant (&nunits)
+      && targetm.can_change_mode_class (op_mode, result_mode, ALL_REGS))
+    {
+      int offset = BYTES_BIG_ENDIAN ? 0 : nunits - XVECLEN (sel, 0);
+      return rtvec_series_p (XVEC (sel, 0), offset);
+    }
+  return false;
+}
+
+/* Return true if, for all OP of mode OP_MODE:
+
+     (vec_select:RESULT_MODE OP SEL)
+
+   is equivalent to the lowpart RESULT_MODE of OP.  */
+
+bool
+vec_series_lowpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel)
+{
+  int nunits;
+  if (GET_MODE_NUNITS (op_mode).is_constant (&nunits)
+      && targetm.can_change_mode_class (op_mode, result_mode, ALL_REGS))
+    {
+      int offset = BYTES_BIG_ENDIAN ? nunits - XVECLEN (sel, 0) : 0;
+      return rtvec_series_p (XVEC (sel, 0), offset);
+    }
+  return false;
 }

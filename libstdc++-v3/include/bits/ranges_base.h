@@ -89,10 +89,7 @@ namespace ranges
   namespace __cust_access
   {
     using std::ranges::__detail::__maybe_borrowed_range;
-    using std::__detail::__class_or_enum;
-    using std::__detail::__decay_copy;
-    using std::__detail::__member_begin;
-    using std::__detail::__adl_begin;
+    using std::__detail::__range_iter_t;
 
     struct _Begin
     {
@@ -114,13 +111,11 @@ namespace ranges
 	requires is_array_v<remove_reference_t<_Tp>> || __member_begin<_Tp>
 	  || __adl_begin<_Tp>
 	constexpr auto
-	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
 	    {
 	      static_assert(is_lvalue_reference_v<_Tp>);
-	      using _Up = remove_all_extents_t<remove_reference_t<_Tp>>;
-	      static_assert(sizeof(_Up) != 0, "not array of incomplete type");
 	      return __t + 0;
 	    }
 	  else if constexpr (__member_begin<_Tp>)
@@ -133,10 +128,10 @@ namespace ranges
     template<typename _Tp>
       concept __member_end = requires(_Tp& __t)
 	{
-	  { __decay_copy(__t.end()) }
-	    -> sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
+	  { __decay_copy(__t.end()) } -> sentinel_for<__range_iter_t<_Tp>>;
 	};
 
+    // Poison pills so that unqualified lookup doesn't find std::end.
     void end(auto&) = delete;
     void end(const auto&) = delete;
 
@@ -144,8 +139,7 @@ namespace ranges
       concept __adl_end = __class_or_enum<remove_reference_t<_Tp>>
 	&& requires(_Tp& __t)
 	{
-	  { __decay_copy(end(__t)) }
-	    -> sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
+	  { __decay_copy(end(__t)) } -> sentinel_for<__range_iter_t<_Tp>>;
 	};
 
     struct _End
@@ -165,10 +159,10 @@ namespace ranges
 
     public:
       template<__maybe_borrowed_range _Tp>
-	requires is_bounded_array_v<remove_reference_t<_Tp>> || __member_end<_Tp>
-	|| __adl_end<_Tp>
+	requires is_bounded_array_v<remove_reference_t<_Tp>>
+	  || __member_end<_Tp> || __adl_end<_Tp>
 	constexpr auto
-	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    {
@@ -182,12 +176,15 @@ namespace ranges
 	}
     };
 
-    template<typename _Tp>
+    // If _To is an lvalue-reference, return const _Tp&, otherwise const _Tp&&.
+    template<typename _To, typename _Tp>
       constexpr decltype(auto)
-      __as_const(_Tp&& __t) noexcept
+      __as_const(_Tp& __t) noexcept
       {
-	if constexpr (is_lvalue_reference_v<_Tp>)
-	  return static_cast<const remove_reference_t<_Tp>&>(__t);
+	static_assert(std::is_same_v<_To&, _Tp&>);
+
+	if constexpr (is_lvalue_reference_v<_To>)
+	  return const_cast<const _Tp&>(__t);
 	else
 	  return static_cast<const _Tp&&>(__t);
       }
@@ -195,24 +192,26 @@ namespace ranges
     struct _CBegin
     {
       template<typename _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
-	noexcept(noexcept(_Begin{}(__cust_access::__as_const((_Tp&&)__e))))
-	requires requires { _Begin{}(__cust_access::__as_const((_Tp&&)__e)); }
+	noexcept(noexcept(_Begin{}(__cust_access::__as_const<_Tp>(__e))))
+	requires requires { _Begin{}(__cust_access::__as_const<_Tp>(__e)); }
 	{
-	  return _Begin{}(__cust_access::__as_const(std::forward<_Tp>(__e)));
+	  return _Begin{}(__cust_access::__as_const<_Tp>(__e));
 	}
     };
 
-    struct _CEnd
+    struct _CEnd final
     {
       template<typename _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
-	noexcept(noexcept(_End{}(__cust_access::__as_const((_Tp&&)__e))))
-	requires requires { _End{}(__cust_access::__as_const((_Tp&&)__e)); }
+	noexcept(noexcept(_End{}(__cust_access::__as_const<_Tp>(__e))))
+	requires requires { _End{}(__cust_access::__as_const<_Tp>(__e)); }
 	{
-	  return _End{}(__cust_access::__as_const(std::forward<_Tp>(__e)));
+	  return _End{}(__cust_access::__as_const<_Tp>(__e));
 	}
     };
 
@@ -267,8 +266,8 @@ namespace ranges
       template<__maybe_borrowed_range _Tp>
 	requires __member_rbegin<_Tp> || __adl_rbegin<_Tp> || __reversable<_Tp>
 	constexpr auto
-	operator()(_Tp&& __t) const
-	noexcept(_S_noexcept<_Tp>())
+	operator()[[nodiscard]](_Tp&& __t) const
+	noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (__member_rbegin<_Tp>)
 	    return __t.rbegin();
@@ -283,7 +282,7 @@ namespace ranges
       concept __member_rend = requires(_Tp& __t)
 	{
 	  { __decay_copy(__t.rend()) }
-	    -> sentinel_for<decltype(_RBegin{}(__t))>;
+	    -> sentinel_for<decltype(_RBegin{}(std::forward<_Tp>(__t)))>;
 	};
 
     void rend(auto&) = delete;
@@ -325,8 +324,8 @@ namespace ranges
       template<__maybe_borrowed_range _Tp>
 	requires __member_rend<_Tp> || __adl_rend<_Tp> || __reversable<_Tp>
 	constexpr auto
-	operator()(_Tp&& __t) const
-	noexcept(_S_noexcept<_Tp>())
+	operator()[[nodiscard]](_Tp&& __t) const
+	noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (__member_rend<_Tp>)
 	    return __t.rend();
@@ -340,33 +339,34 @@ namespace ranges
     struct _CRBegin
     {
       template<typename _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
-	noexcept(noexcept(_RBegin{}(__cust_access::__as_const((_Tp&&)__e))))
-	requires requires { _RBegin{}(__cust_access::__as_const((_Tp&&)__e)); }
+	noexcept(noexcept(_RBegin{}(__cust_access::__as_const<_Tp>(__e))))
+	requires requires { _RBegin{}(__cust_access::__as_const<_Tp>(__e)); }
 	{
-	  return _RBegin{}(__cust_access::__as_const(std::forward<_Tp>(__e)));
+	  return _RBegin{}(__cust_access::__as_const<_Tp>(__e));
 	}
     };
 
     struct _CREnd
     {
       template<typename _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
-	noexcept(noexcept(_REnd{}(__cust_access::__as_const((_Tp&&)__e))))
-	requires requires { _REnd{}(__cust_access::__as_const((_Tp&&)__e)); }
+	noexcept(noexcept(_REnd{}(__cust_access::__as_const<_Tp>(__e))))
+	requires requires { _REnd{}(__cust_access::__as_const<_Tp>(__e)); }
 	{
-	  return _REnd{}(__cust_access::__as_const(std::forward<_Tp>(__e)));
+	  return _REnd{}(__cust_access::__as_const<_Tp>(__e));
 	}
     };
 
     template<typename _Tp>
       concept __member_size = !disable_sized_range<remove_cvref_t<_Tp>>
-	&& requires(_Tp&& __t)
+	&& requires(_Tp& __t)
 	{
-	  { __decay_copy(std::forward<_Tp>(__t).size()) }
-	    -> __detail::__is_integer_like;
+	  { __decay_copy(__t.size()) } -> __detail::__is_integer_like;
 	};
 
     void size(auto&) = delete;
@@ -375,19 +375,19 @@ namespace ranges
     template<typename _Tp>
       concept __adl_size = __class_or_enum<remove_reference_t<_Tp>>
 	&& !disable_sized_range<remove_cvref_t<_Tp>>
-	&& requires(_Tp&& __t)
+	&& requires(_Tp& __t)
 	{
-	  { __decay_copy(size(std::forward<_Tp>(__t))) }
-	    -> __detail::__is_integer_like;
+	  { __decay_copy(size(__t)) } -> __detail::__is_integer_like;
 	};
 
     template<typename _Tp>
-      concept __sentinel_size = requires(_Tp&& __t)
+      concept __sentinel_size = requires(_Tp& __t)
 	{
-	  { _Begin{}(std::forward<_Tp>(__t)) } -> forward_iterator;
+	  { _Begin{}(__t) } -> forward_iterator;
 
-	  { _End{}(std::forward<_Tp>(__t)) }
-	    -> sized_sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
+	  { _End{}(__t) } -> sized_sentinel_for<decltype(_Begin{}(__t))>;
+
+	  __detail::__to_unsigned_like(_End{}(__t) - _Begin{}(__t));
 	};
 
     struct _Size
@@ -400,12 +400,12 @@ namespace ranges
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    return true;
 	  else if constexpr (__member_size<_Tp>)
-	    return noexcept(__decay_copy(std::declval<_Tp>().size()));
+	    return noexcept(__decay_copy(std::declval<_Tp&>().size()));
 	  else if constexpr (__adl_size<_Tp>)
-	    return noexcept(__decay_copy(size(std::declval<_Tp>())));
+	    return noexcept(__decay_copy(size(std::declval<_Tp&>())));
 	  else if constexpr (__sentinel_size<_Tp>)
-	    return noexcept(_End{}(std::declval<_Tp>())
-			    - _Begin{}(std::declval<_Tp>()));
+	    return noexcept(_End{}(std::declval<_Tp&>())
+			    - _Begin{}(std::declval<_Tp&>()));
 	}
 
     public:
@@ -413,63 +413,62 @@ namespace ranges
 	requires is_bounded_array_v<remove_reference_t<_Tp>>
 	  || __member_size<_Tp> || __adl_size<_Tp> || __sentinel_size<_Tp>
 	constexpr auto
-	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
-	    {
-	      return extent_v<remove_reference_t<_Tp>>;
-	    }
+	    return extent_v<remove_reference_t<_Tp>>;
 	  else if constexpr (__member_size<_Tp>)
-	    return std::forward<_Tp>(__e).size();
+	    return __t.size();
 	  else if constexpr (__adl_size<_Tp>)
-	    return size(std::forward<_Tp>(__e));
+	    return size(__t);
 	  else if constexpr (__sentinel_size<_Tp>)
-	    return __detail::__to_unsigned_like(
-		_End{}(std::forward<_Tp>(__e))
-		- _Begin{}(std::forward<_Tp>(__e)));
+	    return __detail::__to_unsigned_like(_End{}(__t) - _Begin{}(__t));
 	}
     };
 
     struct _SSize
     {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3403. Domain of ranges::ssize(E) doesn't match ranges::size(E)
       template<typename _Tp>
-	requires requires (_Tp&& __e)
-	  {
-	    _Begin{}(std::forward<_Tp>(__e));
-	    _Size{}(std::forward<_Tp>(__e));
-	  }
+	requires requires (_Tp& __t) { _Size{}(__t); }
 	constexpr auto
-	operator()(_Tp&& __e) const
-	noexcept(noexcept(_Size{}(std::forward<_Tp>(__e))))
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(noexcept(_Size{}(__t)))
 	{
-	  using __iter_type = decltype(_Begin{}(std::forward<_Tp>(__e)));
-	  using __diff_type = iter_difference_t<__iter_type>;
-	  using __gnu_cxx::__int_traits;
-	  auto __size = _Size{}(std::forward<_Tp>(__e));
-	  if constexpr (integral<__diff_type>)
+	  auto __size = _Size{}(__t);
+	  using __size_type = decltype(__size);
+	  // Return the wider of ptrdiff_t and make-signed-like-t<__size_type>.
+	  if constexpr (integral<__size_type>)
 	    {
-	      if constexpr (__int_traits<__diff_type>::__digits
+	      using __gnu_cxx::__int_traits;
+	      if constexpr (__int_traits<__size_type>::__digits
 			    < __int_traits<ptrdiff_t>::__digits)
 		return static_cast<ptrdiff_t>(__size);
+	      else
+		return static_cast<make_signed_t<__size_type>>(__size);
 	    }
-	  return static_cast<__diff_type>(__size);
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+	  // For strict-ansi modes integral<__int128> is false
+	  else if constexpr (__detail::__is_int128<__size_type>)
+	    return static_cast<__int128>(__size);
+#endif
+	  else // Must be one of __max_diff_type or __max_size_type.
+	    return __detail::__max_diff_type(__size);
 	}
     };
 
     template<typename _Tp>
-      concept __member_empty = requires(_Tp&& __t)
-	{ bool(std::forward<_Tp>(__t).empty()); };
+      concept __member_empty = requires(_Tp& __t) { bool(__t.empty()); };
 
     template<typename _Tp>
-      concept __size0_empty = requires(_Tp&& __t)
-	{ _Size{}(std::forward<_Tp>(__t)) == 0; };
+      concept __size0_empty = requires(_Tp& __t) { _Size{}(__t) == 0; };
 
     template<typename _Tp>
-      concept __eq_iter_empty = requires(_Tp&& __t)
+      concept __eq_iter_empty = requires(_Tp& __t)
 	{
-	  { _Begin{}(std::forward<_Tp>(__t)) } -> forward_iterator;
-	  bool(_Begin{}(std::forward<_Tp>(__t))
-	      == _End{}(std::forward<_Tp>(__t)));
+	  { _Begin{}(__t) } -> forward_iterator;
+
+	  bool(_Begin{}(__t) == _End{}(__t));
 	};
 
     struct _Empty
@@ -480,28 +479,27 @@ namespace ranges
 	_S_noexcept()
 	{
 	  if constexpr (__member_empty<_Tp>)
-	    return noexcept(std::declval<_Tp>().empty());
+	    return noexcept(bool(std::declval<_Tp&>().empty()));
 	  else if constexpr (__size0_empty<_Tp>)
-	    return noexcept(_Size{}(std::declval<_Tp>()) == 0);
+	    return noexcept(_Size{}(std::declval<_Tp&>()) == 0);
 	  else
-	    return noexcept(bool(_Begin{}(std::declval<_Tp>())
-		== _End{}(std::declval<_Tp>())));
+	    return noexcept(bool(_Begin{}(std::declval<_Tp&>())
+		== _End{}(std::declval<_Tp&>())));
 	}
 
     public:
       template<typename _Tp>
 	requires __member_empty<_Tp> || __size0_empty<_Tp>
-	|| __eq_iter_empty<_Tp>
+	  || __eq_iter_empty<_Tp>
 	constexpr bool
-	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (__member_empty<_Tp>)
-	    return bool(std::forward<_Tp>(__e).empty());
+	    return bool(__t.empty());
 	  else if constexpr (__size0_empty<_Tp>)
-	    return _Size{}(std::forward<_Tp>(__e)) == 0;
+	    return _Size{}(__t) == 0;
 	  else
-	    return bool(_Begin{}(std::forward<_Tp>(__e))
-		== _End{}(std::forward<_Tp>(__e)));
+	    return bool(_Begin{}(__t) == _End{}(__t));
 	}
     };
 
@@ -510,12 +508,13 @@ namespace ranges
 				    && is_object_v<remove_pointer_t<_Tp>>;
 
     template<typename _Tp>
-      concept __member_data = is_lvalue_reference_v<_Tp>
-	&& requires(_Tp __t) { { __t.data() } -> __pointer_to_object; };
+      concept __member_data = requires(_Tp& __t)
+	{
+	  { __decay_copy(__t.data()) } -> __pointer_to_object;
+	};
 
     template<typename _Tp>
-      concept __begin_data = requires(_Tp&& __t)
-	{ { _Begin{}(std::forward<_Tp>(__t)) } -> contiguous_iterator; };
+      concept __begin_data = contiguous_iterator<__range_iter_t<_Tp>>;
 
     struct _Data
     {
@@ -525,33 +524,34 @@ namespace ranges
 	_S_noexcept()
 	{
 	  if constexpr (__member_data<_Tp>)
-	    return noexcept(__decay_copy(std::declval<_Tp>().data()));
+	    return noexcept(__decay_copy(std::declval<_Tp&>().data()));
 	  else
-	    return noexcept(_Begin{}(std::declval<_Tp>()));
+	    return noexcept(_Begin{}(std::declval<_Tp&>()));
 	}
 
     public:
       template<__maybe_borrowed_range _Tp>
 	requires __member_data<_Tp> || __begin_data<_Tp>
 	constexpr auto
-	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
 	{
 	  if constexpr (__member_data<_Tp>)
-	    return __e.data();
+	    return __t.data();
 	  else
-	    return std::to_address(_Begin{}(std::forward<_Tp>(__e)));
+	    return std::to_address(_Begin{}(__t));
 	}
     };
 
     struct _CData
     {
       template<typename _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
-	noexcept(noexcept(_Data{}(__cust_access::__as_const((_Tp&&)__e))))
-	requires requires { _Data{}(__cust_access::__as_const((_Tp&&)__e)); }
+	noexcept(noexcept(_Data{}(__cust_access::__as_const<_Tp>(__e))))
+	requires requires { _Data{}(__cust_access::__as_const<_Tp>(__e)); }
 	{
-	  return _Data{}(__cust_access::__as_const(std::forward<_Tp>(__e)));
+	  return _Data{}(__cust_access::__as_const<_Tp>(__e));
 	}
     };
 
@@ -624,8 +624,7 @@ namespace ranges
   /// [range.view] The ranges::view concept.
   template<typename _Tp>
     concept view
-      = range<_Tp> && movable<_Tp> && default_initializable<_Tp>
-	&& enable_view<_Tp>;
+      = range<_Tp> && movable<_Tp> && enable_view<_Tp>;
 
   // [range.refinements]
 
@@ -674,197 +673,230 @@ namespace ranges
 
   // [range.iter.ops] range iterator operations
 
-  template<input_or_output_iterator _It>
-    constexpr void
-    advance(_It& __it, iter_difference_t<_It> __n)
-    {
-      if constexpr (random_access_iterator<_It>)
-	__it += __n;
-      else if constexpr (bidirectional_iterator<_It>)
-	{
-	  if (__n > 0)
-	    {
-	      do
-		{
-		  ++__it;
-		}
-	      while (--__n);
-	    }
-	  else if (__n < 0)
-	    {
-	      do
-		{
-		  --__it;
-		}
-	      while (++__n);
-	    }
-	}
-      else
-	{
-	  // cannot decrement a non-bidirectional iterator
-	  __glibcxx_assert(__n >= 0);
-	  while (__n-- > 0)
-	    ++__it;
-	}
-    }
-
-  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
-    constexpr void
-    advance(_It& __it, _Sent __bound)
-    {
-      if constexpr (assignable_from<_It&, _Sent>)
-	__it = std::move(__bound);
-      else if constexpr (sized_sentinel_for<_Sent, _It>)
-	ranges::advance(__it, __bound - __it);
-      else
-	{
-	  while (__it != __bound)
-	    ++__it;
-	}
-    }
-
-  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
-    constexpr iter_difference_t<_It>
-    advance(_It& __it, iter_difference_t<_It> __n, _Sent __bound)
-    {
-      if constexpr (sized_sentinel_for<_Sent, _It>)
-	{
-	  const auto __diff = __bound - __it;
-#ifdef __cpp_lib_is_constant_evaluated
-	  if (std::is_constant_evaluated()
-	      && !(__n == 0 || __diff == 0 || (__n < 0 == __diff < 0)))
-	    throw "inconsistent directions for distance and bound";
-#endif
-	  // n and bound must not lead in opposite directions:
-	  __glibcxx_assert(__n == 0 || __diff == 0 || (__n < 0 == __diff < 0));
-	  const auto __absdiff = __diff < 0 ? -__diff : __diff;
-	  const auto __absn = __n < 0 ? -__n : __n;;
-	  if (__absn >= __absdiff)
-	    {
-	      ranges::advance(__it, __bound);
-	      return __n - __diff;
-	    }
-	  else
-	    {
-	      ranges::advance(__it, __n);
-	      return 0;
-	    }
-	}
-      else if (__it == __bound || __n == 0)
-	return iter_difference_t<_It>(0);
-      else if (__n > 0)
-	{
-	  iter_difference_t<_It> __m = 0;
-	  do
-	    {
+  struct __advance_fn final
+  {
+    template<input_or_output_iterator _It>
+      constexpr void
+      operator()(_It& __it, iter_difference_t<_It> __n) const
+      {
+	if constexpr (random_access_iterator<_It>)
+	  __it += __n;
+	else if constexpr (bidirectional_iterator<_It>)
+	  {
+	    if (__n > 0)
+	      {
+		do
+		  {
+		    ++__it;
+		  }
+		while (--__n);
+	      }
+	    else if (__n < 0)
+	      {
+		do
+		  {
+		    --__it;
+		  }
+		while (++__n);
+	      }
+	  }
+	else
+	  {
+	    // cannot decrement a non-bidirectional iterator
+	    __glibcxx_assert(__n >= 0);
+	    while (__n-- > 0)
 	      ++__it;
-	      ++__m;
-	    }
-	  while (__m != __n && __it != __bound);
-	  return __n - __m;
-	}
-      else if constexpr (bidirectional_iterator<_It> && same_as<_It, _Sent>)
-	{
-	  iter_difference_t<_It> __m = 0;
-	  do
-	    {
-	      --__it;
-	      --__m;
-	    }
-	  while (__m != __n && __it != __bound);
-	  return __n - __m;
-	}
-      else
-	{
-	  // cannot decrement a non-bidirectional iterator
-	  __glibcxx_assert(__n >= 0);
+	  }
+      }
+
+    template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+      constexpr void
+      operator()(_It& __it, _Sent __bound) const
+      {
+	if constexpr (assignable_from<_It&, _Sent>)
+	  __it = std::move(__bound);
+	else if constexpr (sized_sentinel_for<_Sent, _It>)
+	  (*this)(__it, __bound - __it);
+	else
+	  {
+	    while (__it != __bound)
+	      ++__it;
+	  }
+      }
+
+    template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+      constexpr iter_difference_t<_It>
+      operator()(_It& __it, iter_difference_t<_It> __n, _Sent __bound) const
+      {
+	if constexpr (sized_sentinel_for<_Sent, _It>)
+	  {
+	    const auto __diff = __bound - __it;
+
+	    // n and bound must not lead in opposite directions:
+	    __glibcxx_assert(__n == 0 || __diff == 0 || (__n < 0 == __diff < 0));
+	    const auto __absdiff = __diff < 0 ? -__diff : __diff;
+	    const auto __absn = __n < 0 ? -__n : __n;;
+	    if (__absn >= __absdiff)
+	      {
+		(*this)(__it, __bound);
+		return __n - __diff;
+	      }
+	    else
+	      {
+		(*this)(__it, __n);
+		return 0;
+	      }
+	  }
+	else if (__it == __bound || __n == 0)
 	  return __n;
-	}
-    }
+	else if (__n > 0)
+	  {
+	    iter_difference_t<_It> __m = 0;
+	    do
+	      {
+		++__it;
+		++__m;
+	      }
+	    while (__m != __n && __it != __bound);
+	    return __n - __m;
+	  }
+	else if constexpr (bidirectional_iterator<_It> && same_as<_It, _Sent>)
+	  {
+	    iter_difference_t<_It> __m = 0;
+	    do
+	      {
+		--__it;
+		--__m;
+	      }
+	    while (__m != __n && __it != __bound);
+	    return __n - __m;
+	  }
+	else
+	  {
+	    // cannot decrement a non-bidirectional iterator
+	    __glibcxx_assert(__n >= 0);
+	    return __n;
+	  }
+      }
 
-  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
-    constexpr iter_difference_t<_It>
-    distance(_It __first, _Sent __last)
-    {
-      if constexpr (sized_sentinel_for<_Sent, _It>)
-	return __last - __first;
-      else
-	{
-	  iter_difference_t<_It> __n = 0;
-	  while (__first != __last)
-	    {
-	      ++__first;
-	      ++__n;
-	    }
-	  return __n;
-	}
-    }
+    void operator&() const = delete;
+  };
 
-  template<range _Range>
-    constexpr range_difference_t<_Range>
-    distance(_Range&& __r)
-    {
-      if constexpr (sized_range<_Range>)
-	return static_cast<range_difference_t<_Range>>(ranges::size(__r));
-      else
-	return ranges::distance(ranges::begin(__r), ranges::end(__r));
-    }
+  inline constexpr __advance_fn advance{};
 
-  template<input_or_output_iterator _It>
-    constexpr _It
-    next(_It __x)
-    {
-      ++__x;
-      return __x;
-    }
+  struct __distance_fn final
+  {
+    template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+      [[nodiscard]]
+      constexpr iter_difference_t<_It>
+      operator()(_It __first, _Sent __last) const
+      {
+	if constexpr (sized_sentinel_for<_Sent, _It>)
+	  return __last - __first;
+	else
+	  {
+	    iter_difference_t<_It> __n = 0;
+	    while (__first != __last)
+	      {
+		++__first;
+		++__n;
+	      }
+	    return __n;
+	  }
+      }
 
-  template<input_or_output_iterator _It>
-    constexpr _It
-    next(_It __x, iter_difference_t<_It> __n)
-    {
-      ranges::advance(__x, __n);
-      return __x;
-    }
+    template<range _Range>
+      [[nodiscard]]
+      constexpr range_difference_t<_Range>
+      operator()(_Range&& __r) const
+      {
+	if constexpr (sized_range<_Range>)
+	  return static_cast<range_difference_t<_Range>>(ranges::size(__r));
+	else
+	  return (*this)(ranges::begin(__r), ranges::end(__r));
+      }
 
-  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
-    constexpr _It
-    next(_It __x, _Sent __bound)
-    {
-      ranges::advance(__x, __bound);
-      return __x;
-    }
+    void operator&() const = delete;
+  };
 
-  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
-    constexpr _It
-    next(_It __x, iter_difference_t<_It> __n, _Sent __bound)
-    {
-      ranges::advance(__x, __n, __bound);
-      return __x;
-    }
+  inline constexpr __distance_fn distance{};
 
-  template<bidirectional_iterator _It>
-    constexpr _It
-    prev(_It __x)
-    {
-      --__x;
-      return __x;
-    }
+  struct __next_fn final
+  {
+    template<input_or_output_iterator _It>
+      [[nodiscard]]
+      constexpr _It
+      operator()(_It __x) const
+      {
+	++__x;
+	return __x;
+      }
 
-  template<bidirectional_iterator _It>
-    constexpr _It
-    prev(_It __x, iter_difference_t<_It> __n)
-    {
-      ranges::advance(__x, -__n);
-      return __x;
-    }
+    template<input_or_output_iterator _It>
+      [[nodiscard]]
+      constexpr _It
+      operator()(_It __x, iter_difference_t<_It> __n) const
+      {
+	ranges::advance(__x, __n);
+	return __x;
+      }
 
-  template<bidirectional_iterator _It>
-    constexpr _It
-    prev(_It __x, iter_difference_t<_It> __n, _It __bound)
-    {
-      ranges::advance(__x, -__n, __bound);
-      return __x;
-    }
+    template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+      [[nodiscard]]
+      constexpr _It
+      operator()(_It __x, _Sent __bound) const
+      {
+	ranges::advance(__x, __bound);
+	return __x;
+      }
+
+    template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+      [[nodiscard]]
+      constexpr _It
+      operator()(_It __x, iter_difference_t<_It> __n, _Sent __bound) const
+      {
+	ranges::advance(__x, __n, __bound);
+	return __x;
+      }
+
+    void operator&() const = delete;
+  };
+
+  inline constexpr __next_fn next{};
+
+  struct __prev_fn final
+  {
+    template<bidirectional_iterator _It>
+      [[nodiscard]]
+      constexpr _It
+      operator()(_It __x) const
+      {
+	--__x;
+	return __x;
+      }
+
+    template<bidirectional_iterator _It>
+      [[nodiscard]]
+      constexpr _It
+      operator()(_It __x, iter_difference_t<_It> __n) const
+      {
+	ranges::advance(__x, -__n);
+	return __x;
+      }
+
+    template<bidirectional_iterator _It>
+      [[nodiscard]]
+      constexpr _It
+      operator()(_It __x, iter_difference_t<_It> __n, _It __bound) const
+      {
+	ranges::advance(__x, -__n, __bound);
+	return __x;
+      }
+
+    void operator&() const = delete;
+  };
+
+  inline constexpr __prev_fn prev{};
 
   /// Type returned by algorithms instead of a dangling iterator or subrange.
   struct dangling

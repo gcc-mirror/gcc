@@ -69,8 +69,8 @@ bar ()
   source_location a = foo ();
   source_location b = source_location::current ();
   source_location c = foo ();
-  //                       ^ column 28
-  //                                            ^ column 49
+  //                      ^ column 27
+  //                                           ^ column 48
   const source_location *d[3] = { &a, &b, &c };
   const char *file1 = __FILE__;
   const char *function1 = __PRETTY_FUNCTION__;
@@ -83,7 +83,7 @@ bar ()
 	return false;
       if (d[j]->line () != line + j + 1)
 	return false;
-      if (d[j]->column () != (j == 1 ? 49 : 28))
+      if (d[j]->column () != (j == 1 ? 48 : 27))
 	return false;
     }
 

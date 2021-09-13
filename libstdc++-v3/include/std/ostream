@@ -96,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       class sentry;
       friend class sentry;
 
-      //@{
+      ///@{
       /**
        *  @brief  Interface for manipulators.
        *
@@ -132,9 +132,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__pf(*this);
 	return *this;
       }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @name Inserters
        *
@@ -153,7 +153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  be rethrown.
       */
 
-      //@{
+      ///@{
       /**
        *  @brief Integer arithmetic inserters
        *  @param  __n A variable of builtin integral type.
@@ -205,9 +205,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator<<(unsigned long long __n)
       { return _M_insert(__n); }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief  Floating point arithmetic inserters
        *  @param  __f A variable of builtin floating point type.
@@ -231,7 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ostream_type&
       operator<<(long double __f)
       { return _M_insert(__f); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Pointer arithmetic inserters
@@ -274,9 +274,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       __ostream_type&
       operator<<(__streambuf_type* __sb);
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @name Unformatted Output Functions
        *
@@ -309,19 +309,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       put(char_type __c);
 
       /**
-       *  @brief  Core write functionality, without sentry.
-       *  @param  __s  The array to insert.
-       *  @param  __n  Maximum number of characters to insert.
-      */
-      void
-      _M_write(const char_type* __s, streamsize __n)
-      {
-	const streamsize __put = this->rdbuf()->sputn(__s, __n);
-	if (__put != __n)
-	  this->setstate(ios_base::badbit);
-      }
-
-      /**
        *  @brief  Character string insertion.
        *  @param  __s  The array to insert.
        *  @param  __n  Maximum number of characters to insert.
@@ -339,7 +326,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       __ostream_type&
       write(const char_type* __s, streamsize __n);
-      //@}
+      ///@}
 
       /**
        *  @brief  Synchronizing the stream buffer.
@@ -419,6 +406,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _ValueT>
 	__ostream_type&
 	_M_insert(_ValueT __v);
+
+    private:
+#if !_GLIBCXX_INLINE_VERSION
+      void
+      _M_write(const char_type* __s, streamsize __n)
+      { std::__ostream_insert(*this, __s, __n); }
+#endif
     };
 
   /**
@@ -485,7 +479,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_ok; }
     };
 
-  //@{
+  ///@{
   /**
    *  @brief  Character inserters
    *  @param  __out  An output stream.
@@ -568,9 +562,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<<(basic_ostream<wchar_t, _Traits>&, char32_t) = delete;
 #endif // _GLIBCXX_USE_WCHAR_T
 #endif // C++20
-  //@}
+  ///@}
 
-  //@{
+  ///@{
   /**
    *  @brief  String inserters
    *  @param  __out  An output stream.
@@ -664,7 +658,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<<(basic_ostream<wchar_t, _Traits>&, const char32_t*) = delete;
 #endif // _GLIBCXX_USE_WCHAR_T
 #endif // C++20
-  //@}
+  ///@}
 
   // Standard basic_ostream manipulators
 
@@ -704,77 +698,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __os.flush(); }
 
 #if __cplusplus >= 201103L
-  template<typename _Ch, typename _Up>
-    basic_ostream<_Ch, _Up>&
-    __is_convertible_to_basic_ostream_test(basic_ostream<_Ch, _Up>*);
+  // C++11 27.7.3.9 Rvalue stream insertion [ostream.rvalue]
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 1203. More useful rvalue stream insertion
 
-  template<typename _Tp, typename = void>
-    struct __is_convertible_to_basic_ostream_impl
-    {
-      using __ostream_type = void;
-    };
-
+#if __cpp_lib_concepts
+  // Use concepts if possible because they're cheaper to evaluate.
   template<typename _Tp>
-    using __do_is_convertible_to_basic_ostream_impl =
-    decltype(__is_convertible_to_basic_ostream_test
-	     (declval<typename remove_reference<_Tp>::type*>()));
+    concept __derived_from_ios_base = is_class_v<_Tp>
+      && (!is_same_v<_Tp, ios_base>)
+      && requires (_Tp* __t, ios_base* __b) { __b = __t; };
 
+  template<typename _Os, typename _Tp>
+    requires __derived_from_ios_base<_Os>
+      && requires (_Os& __os, const _Tp& __t) { __os << __t; }
+    using __rvalue_stream_insertion_t = _Os&&;
+#else
   template<typename _Tp>
-    struct __is_convertible_to_basic_ostream_impl
-    <_Tp,
-     __void_t<__do_is_convertible_to_basic_ostream_impl<_Tp>>>
-    {
-      using __ostream_type =
-	__do_is_convertible_to_basic_ostream_impl<_Tp>;
-    };
+    using _Require_derived_from_ios_base
+      = _Require<is_class<_Tp>, __not_<is_same<_Tp, ios_base>>,
+		 is_convertible<typename add_pointer<_Tp>::type, ios_base*>>;
 
-  template<typename _Tp>
-    struct __is_convertible_to_basic_ostream
-    : __is_convertible_to_basic_ostream_impl<_Tp>
-    {
-    public:
-      using type = __not_<is_void<
-        typename __is_convertible_to_basic_ostream_impl<_Tp>::__ostream_type>>;
-      constexpr static bool value = type::value;
-    };
-
-  template<typename _Ostream, typename _Tp, typename = void>
-    struct __is_insertable : false_type {};
-
-  template<typename _Ostream, typename _Tp>
-    struct __is_insertable<_Ostream, _Tp,
-			   __void_t<decltype(declval<_Ostream&>()
-					     << declval<const _Tp&>())>>
-				    : true_type {};
-
-  template<typename _Ostream>
-    using __rvalue_ostream_type =
-      typename __is_convertible_to_basic_ostream<
-	_Ostream>::__ostream_type;
+  template<typename _Os, typename _Tp,
+	   typename = _Require_derived_from_ios_base<_Os>,
+	   typename
+	     = decltype(std::declval<_Os&>() << std::declval<const _Tp&>())>
+    using __rvalue_stream_insertion_t = _Os&&;
+#endif
 
   /**
    *  @brief  Generic inserter for rvalue stream
    *  @param  __os  An input stream.
    *  @param  __x  A reference to the object being inserted.
-   *  @return  os
+   *  @return  __os
    *
    *  This is just a forwarding function to allow insertion to
    *  rvalue streams since they won't bind to the inserter functions
    *  that take an lvalue reference.
   */
   template<typename _Ostream, typename _Tp>
-    inline
-    typename enable_if<__and_<__not_<is_lvalue_reference<_Ostream>>,
-			      __is_convertible_to_basic_ostream<_Ostream>,
-			      __is_insertable<
-				__rvalue_ostream_type<_Ostream>,
-				const _Tp&>>::value,
-		       __rvalue_ostream_type<_Ostream>>::type
+    inline __rvalue_stream_insertion_t<_Ostream, _Tp>
     operator<<(_Ostream&& __os, const _Tp& __x)
     {
-      __rvalue_ostream_type<_Ostream> __ret_os = __os;
-      __ret_os << __x;
-      return __ret_os;
+      __os << __x;
+      return std::move(__os);
     }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI

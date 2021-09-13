@@ -54,9 +54,10 @@ AC_DEFUN([DRUNTIME_OS_DETECT],
 
 # DRUNTIME_OS_SOURCES
 # -------------------
-# Detect target OS and add DRUNTIME_OS_AIX DRUNTIME_OS_DARWIN
-# DRUNTIME_OS_FREEBSD DRUNTIME_OS_LINUX DRUNTIME_OS_MINGW
-# DRUNTIME_OS_SOLARIS DRUNTIME_OS_OPENBSD conditionals.
+# Detect target OS and add DRUNTIME_OS_AIX DRUNTIME_OS_ANDROID
+# DRUNTIME_OS_DARWIN DRUNTIME_OS_DRAGONFLYBSD DRUNTIME_OS_FREEBSD
+# DRUNTIME_OS_LINUX DRUNTIME_OS_MINGW DRUNTIME_OS_NETBSD
+# DRUNTIME_OS_OPENBSD DRUNTIME_OS_SOLARIS conditionals.
 # If the system is posix, add DRUNTIME_OS_POSIX conditional.
 AC_DEFUN([DRUNTIME_OS_SOURCES],
 [
@@ -149,17 +150,31 @@ AC_DEFUN([DRUNTIME_OS_ARM_EABI_UNWINDER],
 # substitute DCFG_MINFO_BRACKETING.
 AC_DEFUN([DRUNTIME_OS_MINFO_BRACKETING],
 [
+  AC_REQUIRE([DRUNTIME_OS_DETECT])
+
   AC_LANG_PUSH([C])
   AC_MSG_CHECKING([for minfo section bracketing])
+  case "$druntime_cv_target_os" in
+      darwin*)
+	section="__DATA,__minfodata"
+	start="section\$start\$__DATA\$__minfodata"
+	stop="section\$end\$__DATA\$__minfodata"
+	;;
+      *)
+	section="minfo"
+	start="__start_minfo"
+	stop="__stop_minfo"
+	;;
+  esac
   AC_LINK_IFELSE([AC_LANG_SOURCE([
-    void* module_info_ptr __attribute__((section ("minfo")));
-    extern void* __start_minfo __attribute__((visibility ("hidden")));
-    extern void* __stop_minfo __attribute__((visibility ("hidden")));
+    void* module_info_ptr __attribute__((section ("$section")));
+    extern void* start_minfo __asm__("$start") __attribute__((visibility ("hidden")));
+    extern void* stop_minfo __asm__("$stop") __attribute__((visibility ("hidden")));
 
     int main()
     {
         // Never run, just to prevent compiler from optimizing access
-        return &__start_minfo == &__stop_minfo;
+        return (int)(&stop_minfo - &start_minfo);
     }
   ])],
     [AC_MSG_RESULT([yes])

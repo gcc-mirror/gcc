@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1301,11 +1301,11 @@ build_binary_op (enum tree_code op_code, tree result_type,
       if (TYPE_VOLATILE (operation_type))
 	TREE_THIS_VOLATILE (result) = 1;
     }
-  else
-    TREE_CONSTANT (result)
-      |= (TREE_CONSTANT (left_operand) && TREE_CONSTANT (right_operand));
+  else if (TREE_CONSTANT (left_operand) && TREE_CONSTANT (right_operand))
+    TREE_CONSTANT (result) = 1;
 
-  TREE_SIDE_EFFECTS (result) |= has_side_effects;
+  if (has_side_effects)
+    TREE_SIDE_EFFECTS (result) = 1;
 
   /* If we are working with modular types, perform the MOD operation
      if something above hasn't eliminated the need for it.  */
@@ -1528,7 +1528,9 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	  result = build_fold_addr_expr (operand);
 	}
 
-      TREE_CONSTANT (result) = staticp (operand) || TREE_CONSTANT (operand);
+      if (TREE_CONSTANT (operand) || staticp (operand))
+	TREE_CONSTANT (result) = 1;
+
       break;
 
     case INDIRECT_REF:
@@ -1957,14 +1959,19 @@ gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v)
      the elements along the way for possible sorting purposes below.  */
   FOR_EACH_CONSTRUCTOR_ELT (v, n_elmts, obj, val)
     {
-      /* The predicate must be in keeping with output_constructor.  */
+      /* The predicate must be in keeping with output_constructor and, unlike
+	 initializer_constant_valid_p, we accept "&{...}" because we'll put
+	 the CONSTRUCTOR into the constant pool during gimplification.  */
       if ((!TREE_CONSTANT (val) && !TREE_STATIC (val))
 	  || (TREE_CODE (type) == RECORD_TYPE
 	      && CONSTRUCTOR_BITFIELD_P (obj)
 	      && !initializer_constant_valid_for_bitfield_p (val))
-	  || !initializer_constant_valid_p (val,
-					    TREE_TYPE (val),
-					    TYPE_REVERSE_STORAGE_ORDER (type)))
+	  || (!initializer_constant_valid_p (val,
+					     TREE_TYPE (val),
+					     TYPE_REVERSE_STORAGE_ORDER (type))
+	      && !(TREE_CODE (val) == ADDR_EXPR
+		   && TREE_CODE (TREE_OPERAND (val, 0)) == CONSTRUCTOR
+		   && TREE_CONSTANT (TREE_OPERAND (val, 0)))))
 	allconstant = false;
 
       if (!TREE_READONLY (val))
@@ -2064,7 +2071,9 @@ build_simple_component_ref (tree record, tree field, bool no_fold)
      need to warn since this will be done on trying to declare the object.  */
   if (TREE_CODE (DECL_FIELD_OFFSET (field)) == INTEGER_CST
       && TREE_OVERFLOW (DECL_FIELD_OFFSET (field)))
-    return NULL_TREE;
+    return build1 (NULL_EXPR, TREE_TYPE (field),
+		   build_call_raise (SE_Object_Too_Large, Empty,
+				     N_Raise_Storage_Error));
 
   ref = build3 (COMPONENT_REF, TREE_TYPE (field), record, field, NULL_TREE);
 
@@ -2098,7 +2107,7 @@ build_simple_component_ref (tree record, tree field, bool no_fold)
   return fold (ref);
 }
 
-/* Likewise, but return NULL_EXPR and generate a Constraint_Error if the
+/* Likewise, but return NULL_EXPR and generate a Program_Error if the
    field is not found in the record.  */
 
 tree
@@ -2108,10 +2117,13 @@ build_component_ref (tree record, tree field, bool no_fold)
   if (ref)
     return ref;
 
-  /* Assume this is an invalid user field so raise Constraint_Error.  */
+  /* The missing field should have been detected in the front-end.  */
+  gigi_checking_assert (false);
+
+  /* Assume this is an invalid user field so raise Program_Error.  */
   return build1 (NULL_EXPR, TREE_TYPE (field),
-		 build_call_raise (CE_Discriminant_Check_Failed, Empty,
-				   N_Raise_Constraint_Error));
+		 build_call_raise (PE_Explicit_Raise, Empty,
+				   N_Raise_Program_Error));
 }
 
 /* Helper for build_call_alloc_dealloc, with arguments to be interpreted
@@ -2676,9 +2688,12 @@ gnat_stabilize_reference_1 (tree e, void *data)
       gcc_unreachable ();
     }
 
+  /* See gnat_rewrite_reference below for the rationale.  */
   TREE_READONLY (result) = TREE_READONLY (e);
-  TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (e);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
+
+  if (TREE_SIDE_EFFECTS (e))
+    TREE_SIDE_EFFECTS (result) = 1;
 
   return result;
 }
@@ -2796,17 +2811,17 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
       gcc_unreachable ();
     }
 
-  /* TREE_THIS_VOLATILE and TREE_SIDE_EFFECTS set on the initial expression
-     may not be sustained across some paths, such as the way via build1 for
-     INDIRECT_REF.  We reset those flags here in the general case, which is
-     consistent with the GCC version of this routine.
+  /* TREE_READONLY and TREE_THIS_VOLATILE set on the initial expression may
+     not be sustained across some paths, such as the one for INDIRECT_REF.
 
      Special care should be taken regarding TREE_SIDE_EFFECTS, because some
      paths introduce side-effects where there was none initially (e.g. if a
      SAVE_EXPR is built) and we also want to keep track of that.  */
   TREE_READONLY (result) = TREE_READONLY (ref);
-  TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (ref);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (ref);
+
+  if (TREE_SIDE_EFFECTS (ref))
+    TREE_SIDE_EFFECTS (result) = 1;
 
   if (code == INDIRECT_REF
       || code == UNCONSTRAINED_ARRAY_REF
@@ -2945,6 +2960,17 @@ gnat_invariant_expr (tree expr)
 
   if (TREE_CONSTANT (expr))
     return fold_convert (type, expr);
+
+  /* Deal with aligning patterns.  */
+  if (TREE_CODE (expr) == BIT_AND_EXPR
+      && TREE_CONSTANT (TREE_OPERAND (expr, 1)))
+    {
+      tree op0 = gnat_invariant_expr (TREE_OPERAND (expr, 0));
+      if (op0)
+	return fold_build2 (BIT_AND_EXPR, type, op0, TREE_OPERAND (expr, 1));
+      else
+	return NULL_TREE;
+    }
 
   /* Deal with addition or subtraction of constants.  */
   if (is_simple_additive_expression (expr, &add, &cst, &minus_p))

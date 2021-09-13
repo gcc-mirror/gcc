@@ -25,6 +25,18 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+/* An enum for identifying different spaces within memory.  */
+
+enum memory_space
+{
+  MEMSPACE_UNKNOWN,
+  MEMSPACE_CODE,
+  MEMSPACE_GLOBALS,
+  MEMSPACE_STACK,
+  MEMSPACE_HEAP,
+  MEMSPACE_READONLY_DATA
+};
+
 /* An enum for discriminating between the different concrete subclasses
    of region.  */
 
@@ -43,6 +55,7 @@ enum region_kind
   RK_FIELD,
   RK_ELEMENT,
   RK_OFFSET,
+  RK_SIZED,
   RK_CAST,
   RK_HEAP_ALLOCATED,
   RK_ALLOCA,
@@ -70,6 +83,7 @@ enum region_kind
      field_region (RK_FIELD)
      element_region (RK_ELEMENT)
      offset_region (RK_OFFSET)
+     sized_region (RK_SIZED)
      cast_region (RK_CAST)
      heap_allocated_region (RK_HEAP_ALLOCATED)
      alloca_region (RK_ALLOCA)
@@ -107,6 +121,8 @@ public:
   dyn_cast_element_region () const { return NULL; }
   virtual const offset_region *
   dyn_cast_offset_region () const { return NULL; }
+  virtual const sized_region *
+  dyn_cast_sized_region () const { return NULL; }
   virtual const cast_region *
   dyn_cast_cast_region () const { return NULL; }
   virtual const string_region *
@@ -119,6 +135,8 @@ public:
   bool base_region_p () const;
   bool descendent_of_p (const region *elder) const;
   const frame_region *maybe_get_frame_region () const;
+  enum memory_space get_memory_space () const;
+  bool can_have_initial_svalue_p () const;
 
   tree maybe_get_decl () const;
 
@@ -127,11 +145,6 @@ public:
   void print (const region_model &model,
 	      pretty_printer *pp) const;
   label_text get_desc (bool simple=true) const;
-
-  void dump_to_pp (const region_model &model,
-		   pretty_printer *pp,
-		   const char *prefix,
-		   bool is_last_child) const;
 
   virtual void dump_to_pp (pretty_printer *pp, bool simple) const = 0;
   void dump (bool simple) const;
@@ -142,9 +155,28 @@ public:
 
   static int cmp_ptr_ptr (const void *, const void *);
 
+  bool involves_p (const svalue *sval) const;
+
   region_offset get_offset () const;
-  bool get_byte_size (byte_size_t *out) const;
-  bool get_bit_size (bit_size_t *out) const;
+
+  /* Attempt to get the size of this region as a concrete number of bytes.
+     If successful, return true and write the size to *OUT.
+     Otherwise return false.  */
+  virtual bool get_byte_size (byte_size_t *out) const;
+
+  /* Attempt to get the size of this region as a concrete number of bits.
+     If successful, return true and write the size to *OUT.
+     Otherwise return false.  */
+  virtual bool get_bit_size (bit_size_t *out) const;
+
+  /* Get a symbolic value describing the size of this region in bytes
+     (which could be "unknown").  */
+  virtual const svalue *get_byte_size_sval (region_model_manager *mgr) const;
+
+  /* Attempt to get the offset in bits of this region relative to its parent.
+     If successful, return true and write to *OUT.
+     Otherwise return false.  */
+  virtual bool get_relative_concrete_offset (bit_offset_t *out) const;
 
   void
   get_subregions_for_binding (region_model_manager *mgr,
@@ -675,6 +707,8 @@ public:
 
   tree get_field () const { return m_field; }
 
+  bool get_relative_concrete_offset (bit_offset_t *out) const FINAL OVERRIDE;
+
 private:
   tree m_field;
 };
@@ -755,6 +789,9 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
 
   const svalue *get_index () const { return m_index; }
+
+  virtual bool
+  get_relative_concrete_offset (bit_offset_t *out) const FINAL OVERRIDE;
 
 private:
   const svalue *m_index;
@@ -838,6 +875,8 @@ public:
 
   const svalue *get_byte_offset () const { return m_byte_offset; }
 
+  bool get_relative_concrete_offset (bit_offset_t *out) const FINAL OVERRIDE;
+
 private:
   const svalue *m_byte_offset;
 };
@@ -854,6 +893,99 @@ is_a_helper <const offset_region *>::test (const region *reg)
 
 template <> struct default_hash_traits<offset_region::key_t>
 : public member_function_hash_traits<offset_region::key_t>
+{
+  static const bool empty_zero_p = true;
+};
+
+namespace ana {
+
+/* A region that is size BYTES_SIZE_SVAL in size within its parent
+   region (or possibly larger, which would lead to an overflow.  */
+
+class sized_region : public region
+{
+public:
+  /* A support class for uniquifying instances of sized_region.  */
+  struct key_t
+  {
+    key_t (const region *parent, tree element_type,
+	   const svalue *byte_size_sval)
+      : m_parent (parent), m_element_type (element_type),
+	m_byte_size_sval (byte_size_sval)
+    {
+      gcc_assert (byte_size_sval);
+    }
+
+    hashval_t hash () const
+    {
+      inchash::hash hstate;
+      hstate.add_ptr (m_parent);
+      hstate.add_ptr (m_element_type);
+      hstate.add_ptr (m_byte_size_sval);
+      return hstate.end ();
+    }
+
+    bool operator== (const key_t &other) const
+    {
+      return (m_parent == other.m_parent
+	      && m_element_type == other.m_element_type
+	      && m_byte_size_sval == other.m_byte_size_sval);
+    }
+
+    void mark_deleted () { m_byte_size_sval = reinterpret_cast<const svalue *> (1); }
+    void mark_empty () { m_byte_size_sval = NULL; }
+    bool is_deleted () const
+    {
+      return m_byte_size_sval == reinterpret_cast<const svalue *> (1);
+    }
+    bool is_empty () const { return m_byte_size_sval == NULL; }
+
+    const region *m_parent;
+    tree m_element_type;
+    const svalue *m_byte_size_sval;
+    const svalue *m_end_offset;
+  };
+
+  sized_region (unsigned id, const region *parent, tree type,
+		const svalue *byte_size_sval)
+  : region (complexity::from_pair (parent, byte_size_sval),
+	    id, parent, type),
+    m_byte_size_sval (byte_size_sval)
+  {}
+
+  enum region_kind get_kind () const FINAL OVERRIDE { return RK_SIZED; }
+  const sized_region *
+  dyn_cast_sized_region () const FINAL OVERRIDE { return this; }
+
+  void accept (visitor *v) const FINAL OVERRIDE;
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+
+  bool get_byte_size (byte_size_t *out) const FINAL OVERRIDE;
+  bool get_bit_size (bit_size_t *out) const FINAL OVERRIDE;
+
+  const svalue *
+  get_byte_size_sval (region_model_manager *) const FINAL OVERRIDE
+  {
+    return m_byte_size_sval;
+  }
+
+private:
+  const svalue *m_byte_size_sval;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const sized_region *>::test (const region *reg)
+{
+  return reg->get_kind () == RK_SIZED;
+}
+
+template <> struct default_hash_traits<sized_region::key_t>
+: public member_function_hash_traits<sized_region::key_t>
 {
   static const bool empty_zero_p = true;
 };

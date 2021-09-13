@@ -1109,7 +1109,8 @@ gfc_match_char (char c)
    %t  Matches end of statement.
    %o  Matches an intrinsic operator, returned as an INTRINSIC enum.
    %l  Matches a statement label
-   %v  Matches a variable expression (an lvalue)
+   %v  Matches a variable expression (an lvalue, except function references
+   having a data pointer result)
    %   Matches a required space (in free form) and optional spaces.  */
 
 match
@@ -1409,7 +1410,7 @@ gfc_match_pointer_assignment (void)
   gfc_matching_procptr_assignment = 0;
 
   m = gfc_match (" %v =>", &lvalue);
-  if (m != MATCH_YES)
+  if (m != MATCH_YES || !lvalue->symtree)
     {
       m = MATCH_NO;
       goto cleanup;
@@ -3854,7 +3855,7 @@ sync_statement (gfc_statement st)
 
   for (;;)
     {
-      m = gfc_match (" stat = %v", &tmp);
+      m = gfc_match (" stat = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto syntax;
       if (m == MATCH_YES)
@@ -3874,7 +3875,7 @@ sync_statement (gfc_statement st)
 	  break;
 	}
 
-      m = gfc_match (" errmsg = %v", &tmp);
+      m = gfc_match (" errmsg = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto syntax;
       if (m == MATCH_YES)
@@ -4078,7 +4079,7 @@ gfc_match_goto (void)
 	}
       while (gfc_match_char (',') == MATCH_YES);
 
-      if (gfc_match (")%t") != MATCH_YES)
+      if (gfc_match (" )%t") != MATCH_YES)
 	goto syntax;
 
       if (head == NULL)
@@ -4405,7 +4406,7 @@ gfc_match_allocate (void)
 
 alloc_opt_list:
 
-      m = gfc_match (" stat = %v", &tmp);
+      m = gfc_match (" stat = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
@@ -4434,7 +4435,7 @@ alloc_opt_list:
 	    goto alloc_opt_list;
 	}
 
-      m = gfc_match (" errmsg = %v", &tmp);
+      m = gfc_match (" errmsg = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
@@ -4777,7 +4778,7 @@ gfc_match_deallocate (void)
 
 dealloc_opt_list:
 
-      m = gfc_match (" stat = %v", &tmp);
+      m = gfc_match (" stat = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
@@ -4799,7 +4800,7 @@ dealloc_opt_list:
 	    goto dealloc_opt_list;
 	}
 
-      m = gfc_match (" errmsg = %v", &tmp);
+      m = gfc_match (" errmsg = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
@@ -5470,20 +5471,22 @@ gfc_free_namelist (gfc_namelist *name)
 /* Free an OpenMP namelist structure.  */
 
 void
-gfc_free_omp_namelist (gfc_omp_namelist *name)
+gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns)
 {
   gfc_omp_namelist *n;
 
   for (; name; name = n)
     {
       gfc_free_expr (name->expr);
-      if (name->udr)
+      if (free_ns)
+	gfc_free_namespace (name->u2.ns);
+      else if (name->u2.udr)
 	{
-	  if (name->udr->combiner)
-	    gfc_free_statement (name->udr->combiner);
-	  if (name->udr->initializer)
-	    gfc_free_statement (name->udr->initializer);
-	  free (name->udr);
+	  if (name->u2.udr->combiner)
+	    gfc_free_statement (name->u2.udr->combiner);
+	  if (name->u2.udr->initializer)
+	    gfc_free_statement (name->u2.udr->initializer);
+	  free (name->u2.udr);
 	}
       n = name->next;
       free (name);
@@ -6330,7 +6333,7 @@ select_intrinsic_set_tmp (gfc_typespec *ts)
 static void
 select_type_set_tmp (gfc_typespec *ts)
 {
-  char name[GFC_MAX_SYMBOL_LEN];
+  char name[GFC_MAX_SYMBOL_LEN + 12 + 1];
   gfc_symtree *tmp = NULL;
   gfc_symbol *selector = select_type_stack->selector;
   gfc_symbol *sym;
@@ -6409,7 +6412,7 @@ gfc_match_select_type (void)
 {
   gfc_expr *expr1, *expr2 = NULL;
   match m;
-  char name[GFC_MAX_SYMBOL_LEN];
+  char name[GFC_MAX_SYMBOL_LEN + 1];
   bool class_array;
   gfc_symbol *sym;
   gfc_namespace *ns = gfc_current_ns;
@@ -6634,7 +6637,7 @@ gfc_match_select_rank (void)
 {
   gfc_expr *expr1, *expr2 = NULL;
   match m;
-  char name[GFC_MAX_SYMBOL_LEN];
+  char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *sym, *sym2;
   gfc_namespace *ns = gfc_current_ns;
   gfc_array_spec *as = NULL;

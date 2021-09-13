@@ -1,3 +1,202 @@
+2021-09-10  Petter Tomner  <tomner@kth.se>
+
+	* MAINTAINERS: Me added to DCO and write after approval
+
+2021-09-01  YunQiang Su  <syq@debian.org>
+
+	* MAINTAINERS: Add myself for write after approval.
+
+2021-08-31  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* Makefile.def: Add all-gdb dependency on all-libbacktrace.
+	* Makefile.in: Regenerate.
+
+2021-08-21  Dragan Mladjenovic  <Dragan.Mladjenovic@syrmia.com>
+
+	* MAINTAINERS: Add myself for write after approval.
+
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Make the state of the configured host
+	shared flag available to makefile fragements.
+
+2021-08-09  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* .dir-locals.el (bug-reference-url-format): Use https.
+
+2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* .dir-locals.el (c-mode): Change fill-column to 79.
+
+2021-07-15  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* MAINTAINERS: Add myself to DCO section.
+
+2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Adjust cases for which it is necessary to
+	include the Darwin host config fragment.
+
+2021-07-06  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* MAINTAINERS: Add myself for write after approval and DCO.
+
+2021-07-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.def: Add dsymutil defs.
+	* Makefile.in: Regenerated.
+	* Makefile.tpl: Add dsymutil to flags.
+	* configure: Regenerated.
+	* configure.ac: Add dsymutil to target and build recipes.
+
+2021-07-01  Ankur Saini  <arsenic@sourceware.org>
+
+	* MAINTAINERS: Add myself for write after approval.
+
+2021-06-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-06-25  Matthias Kretz  <m.kretz@gsi.de>
+
+	* MAINTAINERS: Add myself for write after approval and DCO
+
+2021-06-24  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* .gitignore: Add entry for cscope.out.
+
+2021-06-22  liuhongt  <hongtao.liu@intel.com>
+
+	* MAINTAINERS: Remove my Write After Approval entry.
+
+2021-06-21  liuhongt  <hongtao.liu@intel.com>
+
+	* MAINTAINERS: Add myself as maintainer of the i386 vector
+	extensions.
+
+2021-06-18  Antoni Boucher  <bouanto@zoho.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-06-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* MAINTAINERS (Various Maintainers): Add Andrew and myself
+	as *vrp and ranger maintainers.
+
+2021-06-05  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Adjust my entry in the DCO section so that it does
+	not trigger testsuite failures.
+
+2021-06-05  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Add myself to DCO section with both email addresses.
+
+2021-06-03  Jason Merrill  <jason@redhat.com>
+
+	* MAINTAINERS: Add DCO version number.
+
+2021-06-02  Jason Merrill  <jason@redhat.com>
+
+	* MAINTAINERS: Add DCO section.
+
+2021-05-31  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-05-29  Mike Frysinger  <vapier@gentoo.org>
+
+	* configure.ac: Add gnulib to configdirs for sim.
+	* configure: Regenerate.
+
+2021-05-18  Mike Frysinger  <vapier@gentoo.org>
+
+	* Makefile.def: Add configure-sim dependency on all-gnulib.
+	* Makefile.in: Regenerated.
+
+2021-05-17  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-05-12  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Remove entries for removed
+	components (HSA, BRIG, libhsail-rt).
+	Move Pekka to Write After Approval.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.def: Remove libhsail-rt.
+	* Makefile.in: Likewise.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* libhsail-rt/ChangeLog: Removed.
+	* libhsail-rt/Makefile.am: Removed.
+	* libhsail-rt/Makefile.in: Removed.
+	* libhsail-rt/README: Removed.
+	* libhsail-rt/aclocal.m4: Removed.
+	* libhsail-rt/configure: Removed.
+	* libhsail-rt/configure.ac: Removed.
+	* libhsail-rt/configure.tgt: Removed.
+	* libhsail-rt/include/internal/fibers.h: Removed.
+	* libhsail-rt/include/internal/phsa-queue-interface.h: Removed.
+	* libhsail-rt/include/internal/phsa-rt.h: Removed.
+	* libhsail-rt/include/internal/workitems.h: Removed.
+	* libhsail-rt/rt/arithmetic.c: Removed.
+	* libhsail-rt/rt/atomics.c: Removed.
+	* libhsail-rt/rt/bitstring.c: Removed.
+	* libhsail-rt/rt/fbarrier.c: Removed.
+	* libhsail-rt/rt/fibers.c: Removed.
+	* libhsail-rt/rt/fp16.c: Removed.
+	* libhsail-rt/rt/misc.c: Removed.
+	* libhsail-rt/rt/multimedia.c: Removed.
+	* libhsail-rt/rt/queue.c: Removed.
+	* libhsail-rt/rt/sat_arithmetic.c: Removed.
+	* libhsail-rt/rt/segment.c: Removed.
+	* libhsail-rt/rt/workitems.c: Removed.
+	* libhsail-rt/target-config.h.in: Removed.
+
+2021-05-04  Nick Clifton  <nickc@redhat.com>
+
+	* configure.ac (AC_PROG_CC): Replace with AC_PROG_CC_C99.
+	* configure: Regenerate.
+
+2021-04-28  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* configure.ac (--enable-offload-defaulted): New.
+	* configure: Regenerate.
+
+2021-04-23  David Faust  <david.faust@oracle.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-04-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-03-26  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* MAINTAINERS: Add myself as pru port maintainer.
+
+2021-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* MAINTAINERS: Add myself as static analyzer maintainer.
+
+2021-03-18  Jeff Law  <jlaw@tachyum.com>
+
+	* MAINTAINERS: Update primary entry.
+
 2021-03-13  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

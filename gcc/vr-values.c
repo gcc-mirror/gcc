@@ -117,14 +117,16 @@ vr_values::get_lattice_entry (const_tree var)
 	     default definitions of PARM_DECLs.  */
 	  if (POINTER_TYPE_P (TREE_TYPE (sym))
 	      && (nonnull_arg_p (sym)
-		  || get_ptr_nonnull (var)))
+		  || (get_global_range_query ()->range_of_expr (*vr,
+						const_cast <tree> (var))
+		      && vr->nonzero_p ())))
 	    {
 	      vr->set_nonzero (TREE_TYPE (sym));
 	      vr->equiv_clear ();
 	    }
 	  else if (INTEGRAL_TYPE_P (TREE_TYPE (sym)))
 	    {
-	      get_range_info (var, *vr);
+	      get_global_range_query ()->range_of_expr (*vr, const_cast <tree> (var));
 	      if (vr->undefined_p ())
 		vr->set_varying (TREE_TYPE (sym));
 	    }
@@ -178,11 +180,11 @@ bool
 vr_values::range_of_expr (irange &r, tree expr, gimple *stmt)
 {
   if (!gimple_range_ssa_p (expr))
-    return get_tree_range (r, expr);
+    return get_tree_range (r, expr, stmt);
 
   if (const value_range *vr = get_value_range (expr, stmt))
     {
-      if (vr->undefined_p () || vr->varying_p () || vr->constant_p ())
+      if (vr->undefined_p () || vr->constant_p ())
 	r = *vr;
       else
 	{
@@ -262,7 +264,7 @@ vr_values::update_value_range (const_tree var, value_range_equiv *new_vr)
   if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
     {
       value_range_equiv nr;
-      get_range_info (var, nr);
+      get_global_range_query ()->range_of_expr (nr, const_cast <tree> (var));
       if (!nr.undefined_p ())
 	new_vr->intersect (&nr);
     }
@@ -336,16 +338,17 @@ gimple_assign_nonzero_p (gimple *stmt)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
   bool strict_overflow_p;
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
   switch (get_gimple_rhs_class (code))
     {
     case GIMPLE_UNARY_RHS:
       return tree_unary_nonzero_warnv_p (gimple_assign_rhs_code (stmt),
-					 gimple_expr_type (stmt),
+					 type,
 					 gimple_assign_rhs1 (stmt),
 					 &strict_overflow_p);
     case GIMPLE_BINARY_RHS:
       return tree_binary_nonzero_warnv_p (gimple_assign_rhs_code (stmt),
-					  gimple_expr_type (stmt),
+					  type,
 					  gimple_assign_rhs1 (stmt),
 					  gimple_assign_rhs2 (stmt),
 					  &strict_overflow_p);
@@ -427,7 +430,7 @@ vr_values::vrp_stmt_computes_nonzero (gimple *stmt)
 		  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (expr))))
 	    {
 	      const value_range_equiv *vr
-		= get_value_range (TREE_OPERAND (base, 0));
+		= get_value_range (TREE_OPERAND (base, 0), stmt);
 	      if (!range_includes_zero_p (vr))
 		return true;
 	    }
@@ -484,7 +487,7 @@ vr_values::op_with_constant_singleton_value_range (tree op)
 /* Return true if op is in a boolean [0, 1] value-range.  */
 
 bool
-simplify_using_ranges::op_with_boolean_value_range_p (tree op)
+simplify_using_ranges::op_with_boolean_value_range_p (tree op, gimple *s)
 {
   if (TYPE_PRECISION (TREE_TYPE (op)) == 1)
     return true;
@@ -498,7 +501,7 @@ simplify_using_ranges::op_with_boolean_value_range_p (tree op)
 
   /* ?? Errr, this should probably check for [0,0] and [1,1] as well
      as [0,1].  */
-  const value_range *vr = query->get_value_range (op);
+  const value_range *vr = query->get_value_range (op, s);
   return *vr == value_range (build_zero_cst (TREE_TYPE (op)),
 			     build_one_cst (TREE_TYPE (op)));
 }
@@ -697,7 +700,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
 				   build_int_cst (TREE_TYPE (max), 1));
 	      /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	      if (EXPR_P (max))
-		TREE_NO_WARNING (max) = 1;
+		suppress_warning (max, OPT_Woverflow);
 	    }
 
 	  vr_p->update (min, max);
@@ -737,7 +740,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
 				   build_int_cst (TREE_TYPE (min), 1));
 	      /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	      if (EXPR_P (min))
-		TREE_NO_WARNING (min) = 1;
+		suppress_warning (min, OPT_Woverflow);
 	    }
 
 	  vr_p->update (min, max);
@@ -1023,7 +1026,7 @@ vr_values::extract_range_from_comparison (value_range_equiv *vr,
 					  gimple *stmt)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
-  tree type = gimple_expr_type (stmt);
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
   bool sop;
@@ -1055,18 +1058,18 @@ vr_values::extract_range_from_comparison (value_range_equiv *vr,
 static bool
 check_for_binary_op_overflow (range_query *query,
 			      enum tree_code subcode, tree type,
-			      tree op0, tree op1, bool *ovf)
+			      tree op0, tree op1, bool *ovf, gimple *s = NULL)
 {
   value_range vr0, vr1;
   if (TREE_CODE (op0) == SSA_NAME)
-    vr0 = *query->get_value_range (op0);
+    vr0 = *query->get_value_range (op0, s);
   else if (TREE_CODE (op0) == INTEGER_CST)
     vr0.set (op0);
   else
     vr0.set_varying (TREE_TYPE (op0));
 
   if (TREE_CODE (op1) == SSA_NAME)
-    vr1 = *query->get_value_range (op1);
+    vr1 = *query->get_value_range (op1, s);
   else if (TREE_CODE (op1) == INTEGER_CST)
     vr1.set (op1);
   else
@@ -1162,7 +1165,6 @@ bool
 vr_values::extract_range_from_ubsan_builtin (value_range_equiv *vr, gimple *stmt)
 {
   gcc_assert (is_gimple_call (stmt));
-  tree type = gimple_expr_type (stmt);
   enum tree_code subcode = ERROR_MARK;
   combined_fn cfn = gimple_call_combined_fn (stmt);
   scalar_int_mode mode;
@@ -1188,7 +1190,8 @@ vr_values::extract_range_from_ubsan_builtin (value_range_equiv *vr, gimple *stmt
 	 any overflow, we'll complain, but will actually do
 	 wrapping operation.  */
       flag_wrapv = 1;
-      extract_range_from_binary_expr (vr, subcode, type,
+      extract_range_from_binary_expr (vr, subcode,
+				      TREE_TYPE (gimple_call_arg (stmt, 0)),
 				      gimple_call_arg (stmt, 0),
 				      gimple_call_arg (stmt, 1));
       flag_wrapv = saved_flag_wrapv;
@@ -1215,7 +1218,6 @@ void
 vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 {
   bool sop;
-  tree type = gimple_expr_type (stmt);
 
   if (is_gimple_call (stmt))
     {
@@ -1229,7 +1231,7 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 	    return;
 	  break;
 	default:
-	  if (range_of_builtin_call (*this, *vr, as_a<gcall *> (stmt)))
+	  if (fold_range (*vr, stmt, this))
 	    {
 	      /* The original code nuked equivalences every time a
 		 range was found, so do the same here.  */
@@ -1242,13 +1244,14 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
   /* Handle extraction of the two results (result of arithmetics and
      a flag whether arithmetics overflowed) from {ADD,SUB,MUL}_OVERFLOW
      internal function.  Similarly from ATOMIC_COMPARE_EXCHANGE.  */
-  else if (is_gimple_assign (stmt)
-	   && (gimple_assign_rhs_code (stmt) == REALPART_EXPR
-	       || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR)
-	   && INTEGRAL_TYPE_P (type))
+  if (is_gimple_assign (stmt)
+      && (gimple_assign_rhs_code (stmt) == REALPART_EXPR
+	  || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR)
+      && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt))))
     {
       enum tree_code code = gimple_assign_rhs_code (stmt);
       tree op = gimple_assign_rhs1 (stmt);
+      tree type = TREE_TYPE (gimple_assign_lhs (stmt));
       if (TREE_CODE (op) == code && TREE_CODE (TREE_OPERAND (op, 0)) == SSA_NAME)
 	{
 	  gimple *g = SSA_NAME_DEF_STMT (TREE_OPERAND (op, 0));
@@ -1326,6 +1329,9 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 	    }
 	}
     }
+  /* None of the below should need a 'type', but we are only called
+     for assignments and calls with a LHS.  */
+  tree type = TREE_TYPE (gimple_get_lhs (stmt));
   if (INTEGRAL_TYPE_P (type)
       && gimple_stmt_nonnegative_warnv_p (stmt, &sop))
     set_value_range_to_nonnegative (vr, type);
@@ -1353,12 +1359,12 @@ vr_values::extract_range_from_assignment (value_range_equiv *vr, gassign *stmt)
     extract_range_from_ssa_name (vr, gimple_assign_rhs1 (stmt));
   else if (TREE_CODE_CLASS (code) == tcc_binary)
     extract_range_from_binary_expr (vr, gimple_assign_rhs_code (stmt),
-				    gimple_expr_type (stmt),
+				    TREE_TYPE (gimple_assign_lhs (stmt)),
 				    gimple_assign_rhs1 (stmt),
 				    gimple_assign_rhs2 (stmt));
   else if (TREE_CODE_CLASS (code) == tcc_unary)
     extract_range_from_unary_expr (vr, gimple_assign_rhs_code (stmt),
-				   gimple_expr_type (stmt),
+				   TREE_TYPE (gimple_assign_lhs (stmt)),
 				   gimple_assign_rhs1 (stmt));
   else if (code == COND_EXPR)
     extract_range_from_cond_expr (vr, stmt);
@@ -1650,6 +1656,9 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
   init = initial_condition_in_loop_num (chrec, loop->num);
   step = evolution_part_in_loop_num (chrec, loop->num);
 
+  if (!init || !step)
+    return false;
+
   /* If INIT is an SSA with a singleton range, set INIT to said
      singleton, otherwise leave INIT alone.  */
   if (TREE_CODE (init) == SSA_NAME)
@@ -1816,7 +1825,7 @@ vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
 /* Dump value ranges of all SSA_NAMEs to FILE.  */
 
 void
-vr_values::dump_all_value_ranges (FILE *file)
+vr_values::dump (FILE *file)
 {
   size_t i;
 
@@ -1975,10 +1984,11 @@ vr_values::vrp_visit_assignment_or_call (gimple *stmt, tree *output_p,
    is varying or undefined.  Uses TEM as storage for the alternate range.  */
 
 const value_range_equiv *
-simplify_using_ranges::get_vr_for_comparison (int i, value_range_equiv *tem)
+simplify_using_ranges::get_vr_for_comparison (int i, value_range_equiv *tem,
+					      gimple *s)
 {
   /* Shallow-copy equiv bitmap.  */
-  const value_range_equiv *vr = query->get_value_range (ssa_name (i));
+  const value_range_equiv *vr = query->get_value_range (ssa_name (i), s);
 
   /* If name N_i does not have a valid range, use N_i as its own
      range.  This allows us to compare against names that may
@@ -2000,10 +2010,11 @@ simplify_using_ranges::get_vr_for_comparison (int i, value_range_equiv *tem)
 tree
 simplify_using_ranges::compare_name_with_value
 				(enum tree_code comp, tree var, tree val,
-				 bool *strict_overflow_p, bool use_equiv_p)
+				 bool *strict_overflow_p, bool use_equiv_p,
+				 gimple *s)
 {
   /* Get the set of equivalences for VAR.  */
-  bitmap e = query->get_value_range (var)->equiv ();
+  bitmap e = query->get_value_range (var, s)->equiv ();
 
   /* Start at -1.  Set it to 0 if we do a comparison without relying
      on overflow, or 1 if all comparisons rely on overflow.  */
@@ -2012,7 +2023,7 @@ simplify_using_ranges::compare_name_with_value
   /* Compare vars' value range with val.  */
   value_range_equiv tem_vr;
   const value_range_equiv *equiv_vr
-    = get_vr_for_comparison (SSA_NAME_VERSION (var), &tem_vr);
+    = get_vr_for_comparison (SSA_NAME_VERSION (var), &tem_vr, s);
   bool sop = false;
   tree retval = compare_range_with_value (comp, equiv_vr, val, &sop);
   if (retval)
@@ -2039,7 +2050,7 @@ simplify_using_ranges::compare_name_with_value
 	  && prop_simulate_again_p (SSA_NAME_DEF_STMT (name)))
 	continue;
 
-      equiv_vr = get_vr_for_comparison (i, &tem_vr);
+      equiv_vr = get_vr_for_comparison (i, &tem_vr, s);
       sop = false;
       tree t = compare_range_with_value (comp, equiv_vr, val, &sop);
       if (t)
@@ -2079,12 +2090,12 @@ simplify_using_ranges::compare_name_with_value
 
 tree
 simplify_using_ranges::compare_names (enum tree_code comp, tree n1, tree n2,
-				      bool *strict_overflow_p)
+				      bool *strict_overflow_p, gimple *s)
 {
   /* Compare the ranges of every name equivalent to N1 against the
      ranges of every name equivalent to N2.  */
-  bitmap e1 = query->get_value_range (n1)->equiv ();
-  bitmap e2 = query->get_value_range (n2)->equiv ();
+  bitmap e1 = query->get_value_range (n1, s)->equiv ();
+  bitmap e2 = query->get_value_range (n2, s)->equiv ();
 
   /* Use the fake bitmaps if e1 or e2 are not available.  */
   static bitmap s_e1 = NULL, s_e2 = NULL;
@@ -2134,7 +2145,7 @@ simplify_using_ranges::compare_names (enum tree_code comp, tree n1, tree n2,
 	continue;
 
       value_range_equiv tem_vr1;
-      const value_range_equiv *vr1 = get_vr_for_comparison (i1, &tem_vr1);
+      const value_range_equiv *vr1 = get_vr_for_comparison (i1, &tem_vr1, s);
 
       tree t = NULL_TREE, retval = NULL_TREE;
       bitmap_iterator bi2;
@@ -2147,7 +2158,8 @@ simplify_using_ranges::compare_names (enum tree_code comp, tree n1, tree n2,
 	  bool sop = false;
 
 	  value_range_equiv tem_vr2;
-	  const value_range_equiv *vr2 = get_vr_for_comparison (i2, &tem_vr2);
+	  const value_range_equiv *vr2 = get_vr_for_comparison (i2, &tem_vr2,
+								s);
 
 	  t = compare_ranges (comp, vr1, vr2, &sop);
 	  if (t)
@@ -2193,11 +2205,12 @@ simplify_using_ranges::compare_names (enum tree_code comp, tree n1, tree n2,
 
 tree
 simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops_using_ranges
-    (enum tree_code code, tree op0, tree op1, bool * strict_overflow_p)
+    (enum tree_code code, tree op0, tree op1, bool * strict_overflow_p,
+     gimple *s)
 {
   const value_range_equiv *vr0, *vr1;
-  vr0 = (TREE_CODE (op0) == SSA_NAME) ? query->get_value_range (op0) : NULL;
-  vr1 = (TREE_CODE (op1) == SSA_NAME) ? query->get_value_range (op1) : NULL;
+  vr0 = (TREE_CODE (op0) == SSA_NAME) ? query->get_value_range (op0, s) : NULL;
+  vr1 = (TREE_CODE (op1) == SSA_NAME) ? query->get_value_range (op1, s) : NULL;
 
   tree res = NULL_TREE;
   if (vr0 && vr1)
@@ -2297,20 +2310,20 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
     }
 
   if ((ret = vrp_evaluate_conditional_warnv_with_ops_using_ranges
-	       (code, op0, op1, strict_overflow_p)))
+	       (code, op0, op1, strict_overflow_p, stmt)))
     return ret;
   if (only_ranges)
     *only_ranges = false;
   /* Do not use compare_names during propagation, it's quadratic.  */
   if (TREE_CODE (op0) == SSA_NAME && TREE_CODE (op1) == SSA_NAME
       && use_equiv_p)
-    return compare_names (code, op0, op1, strict_overflow_p);
+    return compare_names (code, op0, op1, strict_overflow_p, stmt);
   else if (TREE_CODE (op0) == SSA_NAME)
     return compare_name_with_value (code, op0, op1,
-				    strict_overflow_p, use_equiv_p);
+				    strict_overflow_p, use_equiv_p, stmt);
   else if (TREE_CODE (op1) == SSA_NAME)
     return compare_name_with_value (swap_tree_comparison (code), op1, op0,
-				    strict_overflow_p, use_equiv_p);
+				    strict_overflow_p, use_equiv_p, stmt);
   return NULL_TREE;
 }
 
@@ -2924,11 +2937,11 @@ simplify_using_ranges::simplify_truth_ops_using_ranges
   gcc_assert (rhs_code == EQ_EXPR || rhs_code == NE_EXPR);
 
   op0 = gimple_assign_rhs1 (stmt);
-  if (!op_with_boolean_value_range_p (op0))
+  if (!op_with_boolean_value_range_p (op0, stmt))
     return false;
 
   op1 = gimple_assign_rhs2 (stmt);
-  if (!op_with_boolean_value_range_p (op1))
+  if (!op_with_boolean_value_range_p (op1, stmt))
     return false;
 
   /* Reduce number of cases to handle to NE_EXPR.  As there is no
@@ -3126,12 +3139,12 @@ simplify_using_ranges::simplify_min_or_max_using_ranges
   tree val;
 
   val = (vrp_evaluate_conditional_warnv_with_ops_using_ranges
-	 (LE_EXPR, op0, op1, &sop));
+	 (LE_EXPR, op0, op1, &sop, stmt));
   if (!val)
     {
       sop = false;
       val = (vrp_evaluate_conditional_warnv_with_ops_using_ranges
-	     (LT_EXPR, op0, op1, &sop));
+	     (LT_EXPR, op0, op1, &sop, stmt));
     }
 
   if (val)
@@ -3350,7 +3363,7 @@ test_for_singularity (enum tree_code cond_code, tree op0,
 	  max = fold_build2 (MINUS_EXPR, TREE_TYPE (op0), max, one);
 	  /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	  if (EXPR_P (max))
-	    TREE_NO_WARNING (max) = 1;
+	    suppress_warning (max, OPT_Woverflow);
 	}
     }
   else if (cond_code == GE_EXPR || cond_code == GT_EXPR)
@@ -3364,7 +3377,7 @@ test_for_singularity (enum tree_code cond_code, tree op0,
 	  min = fold_build2 (PLUS_EXPR, TREE_TYPE (op0), min, one);
 	  /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	  if (EXPR_P (min))
-	    TREE_NO_WARNING (min) = 1;
+	    suppress_warning (min, OPT_Woverflow);
 	}
     }
 
@@ -3447,11 +3460,6 @@ range_fits_type_p (const value_range *vr,
 bool
 simplify_using_ranges::fold_cond (gcond *cond)
 {
-  /* ?? vrp_folder::fold_predicate_in() is a superset of this.  At
-     some point we should merge all variants of this code.  */
-  edge taken_edge;
-  vrp_visit_cond_stmt (cond, &taken_edge);
-
   int_range_max r;
   if (query->range_of_stmt (r, cond) && r.singleton_p ())
     {
@@ -3462,17 +3470,13 @@ simplify_using_ranges::fold_cond (gcond *cond)
 
       if (r.zero_p ())
 	{
-	  gcc_checking_assert (!taken_edge
-			       || taken_edge->flags & EDGE_FALSE_VALUE);
-	  if (dump_file && (dump_flags & TDF_DETAILS) && !taken_edge)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "\nPredicate evaluates to: 0\n");
 	  gimple_cond_make_false (cond);
 	}
       else
 	{
-	  gcc_checking_assert (!taken_edge
-			       || taken_edge->flags & EDGE_TRUE_VALUE);
-	  if (dump_file && (dump_flags & TDF_DETAILS) && !taken_edge)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "\nPredicate evaluates to: 1\n");
 	  gimple_cond_make_true (cond);
 	}
@@ -3480,12 +3484,25 @@ simplify_using_ranges::fold_cond (gcond *cond)
       return true;
     }
 
+  /* ?? vrp_folder::fold_predicate_in() is a superset of this.  At
+     some point we should merge all variants of this code.  */
+  edge taken_edge;
+  vrp_visit_cond_stmt (cond, &taken_edge);
+
   if (taken_edge)
     {
       if (taken_edge->flags & EDGE_TRUE_VALUE)
-       gimple_cond_make_true (cond);
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "\nVRP Predicate evaluates to: 1\n");
+	  gimple_cond_make_true (cond);
+	}
       else if (taken_edge->flags & EDGE_FALSE_VALUE)
-       gimple_cond_make_false (cond);
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "\nVRP Predicate evaluates to: 0\n");
+	  gimple_cond_make_false (cond);
+	}
       else
        gcc_unreachable ();
       update_stmt (cond);
@@ -3826,13 +3843,13 @@ simplify_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
       || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (innerop))
     return false;
 
-  /* Get the value-range of the inner operand.  Use get_range_info in
+  /* Get the value-range of the inner operand.  Use global ranges in
      case innerop was created during substitute-and-fold.  */
   wide_int imin, imax;
   value_range vr;
   if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop)))
     return false;
-  get_range_info (innerop, vr);
+  get_range_query (cfun)->range_of_expr (vr, innerop, stmt);
   if (vr.undefined_p () || vr.varying_p ())
     return false;
   innermin = widest_int::from (vr.lower_bound (), TYPE_SIGN (TREE_TYPE (innerop)));
@@ -3995,7 +4012,7 @@ simplify_using_ranges::simplify_internal_call_using_ranges
     return false;
   else
     type = TREE_TYPE (TREE_TYPE (gimple_call_lhs (stmt)));
-  if (!check_for_binary_op_overflow (query, subcode, type, op0, op1, &ovf)
+  if (!check_for_binary_op_overflow (query, subcode, type, op0, op1, &ovf, stmt)
       || (is_ubsan && ovf))
     return false;
 
@@ -4052,9 +4069,10 @@ simplify_using_ranges::simplify_internal_call_using_ranges
    two-values when it is true.  Return false otherwise.  */
 
 bool
-simplify_using_ranges::two_valued_val_range_p (tree var, tree *a, tree *b)
+simplify_using_ranges::two_valued_val_range_p (tree var, tree *a, tree *b,
+					       gimple *s)
 {
-  value_range vr = *query->get_value_range (var);
+  value_range vr = *query->get_value_range (var, s);
   vr.normalize_symbolics ();
   if (vr.varying_p () || vr.undefined_p ())
     return false;
@@ -4128,7 +4146,7 @@ simplify_using_ranges::simplify (gimple_stmt_iterator *gsi)
 	  tree cmp_var = NULL_TREE;
 
 	  if (TREE_CODE (rhs2) == SSA_NAME
-	      && two_valued_val_range_p (rhs2, &val1, &val2))
+	      && two_valued_val_range_p (rhs2, &val1, &val2, stmt))
 	    {
 	      /* Optimize RHS1 OP [VAL1, VAL2].  */
 	      new_rhs1 = int_const_binop (rhs_code, rhs1, val1);
@@ -4136,7 +4154,7 @@ simplify_using_ranges::simplify (gimple_stmt_iterator *gsi)
 	      cmp_var = rhs2;
 	    }
 	  else if (TREE_CODE (rhs1) == SSA_NAME
-		   && two_valued_val_range_p (rhs1, &val1, &val2))
+		   && two_valued_val_range_p (rhs1, &val1, &val2, stmt))
 	    {
 	      /* Optimize [VAL1, VAL2] OP RHS2.  */
 	      new_rhs1 = int_const_binop (rhs_code, val1, rhs2);

@@ -541,18 +541,16 @@ vec_copy_construct (T *dst, const T *src, unsigned n)
     ::new (static_cast<void*>(dst)) T (*src);
 }
 
-/* Type to provide NULL values for vec<T, A, L>.  This is used to
-   provide nil initializers for vec instances.  Since vec must be
-   a POD, we cannot have proper ctor/dtor for it.  To initialize
-   a vec instance, you can assign it the value vNULL.  This isn't
-   needed for file-scope and function-local static vectors, which
-   are zero-initialized by default.  */
-struct vnull
-{
-  template <typename T, typename A, typename L>
-  CONSTEXPR operator vec<T, A, L> () const { return vec<T, A, L>(); }
-};
-extern vnull vNULL;
+/* Type to provide zero-initialized values for vec<T, A, L>.  This is
+   used to  provide nil initializers for vec instances.  Since vec must
+   be a trivially copyable type that can be copied by memcpy and zeroed
+   out by memset, it must have defaulted default and copy ctor and copy
+   assignment.  To initialize a vec either use value initialization
+   (e.g., vec() or vec v{ };) or assign it the value vNULL.  This isn't
+   needed for file-scope and function-local static vectors, which are
+   zero-initialized by default.  */
+struct vnull { };
+constexpr vnull vNULL{ };
 
 
 /* Embeddable vector.  These vectors are suitable to be embedded
@@ -612,6 +610,7 @@ public:
   void block_remove (unsigned, unsigned);
   void qsort (int (*) (const void *, const void *));
   void sort (int (*) (const void *, const void *, void *), void *);
+  void stablesort (int (*) (const void *, const void *, void *), void *);
   T *bsearch (const void *key, int (*compar)(const void *, const void *));
   T *bsearch (const void *key,
 	      int (*compar)(const void *, const void *, void *), void *);
@@ -1160,6 +1159,17 @@ vec<T, A, vl_embed>::sort (int (*cmp) (const void *, const void *, void *),
     gcc_sort_r (address (), length (), sizeof (T), cmp, data);
 }
 
+/* Sort the contents of this vector with gcc_stablesort_r.  CMP is the
+   comparison function to pass to qsort.  */
+
+template<typename T, typename A>
+inline void
+vec<T, A, vl_embed>::stablesort (int (*cmp) (const void *, const void *,
+					     void *), void *data)
+{
+  if (length () > 1)
+    gcc_stablesort_r (address (), length (), sizeof (T), cmp, data);
+}
 
 /* Search the contents of the sorted vector with a binary search.
    CMP is the comparison function to pass to bsearch.  */
@@ -1419,10 +1429,34 @@ gt_pch_nx (vec<T, A, vl_embed> *v, gt_pointer_operator op, void *cookie)
    As long as we use C++03, we cannot have constructors nor
    destructors in classes that are stored in unions.  */
 
+template<typename T, size_t N = 0>
+class auto_vec;
+
 template<typename T>
 struct vec<T, va_heap, vl_ptr>
 {
 public:
+  /* Default ctors to ensure triviality.  Use value-initialization
+     (e.g., vec() or vec v{ };) or vNULL to create a zero-initialized
+     instance.  */
+  vec () = default;
+  vec (const vec &) = default;
+  /* Initialization from the generic vNULL.  */
+  vec (vnull): m_vec () { }
+  /* Same as default ctor: vec storage must be released manually.  */
+  ~vec () = default;
+
+  /* Defaulted same as copy ctor.  */
+  vec& operator= (const vec &) = default;
+
+  /* Prevent implicit conversion from auto_vec.  Use auto_vec::to_vec()
+     instead.  */
+  template <size_t N>
+  vec (auto_vec<T, N> &) = delete;
+
+  template <size_t N>
+  void operator= (auto_vec<T, N> &) = delete;
+
   /* Memory allocation and deallocation for the embedded vector.
      Needed because we cannot have proper ctors/dtors defined.  */
   void create (unsigned nelems CXX_MEM_STAT_INFO);
@@ -1488,6 +1522,7 @@ public:
   void block_remove (unsigned, unsigned);
   void qsort (int (*) (const void *, const void *));
   void sort (int (*) (const void *, const void *, void *), void *);
+  void stablesort (int (*) (const void *, const void *, void *), void *);
   T *bsearch (const void *key, int (*compar)(const void *, const void *));
   T *bsearch (const void *key,
 	      int (*compar)(const void *, const void *, void *), void *);
@@ -1509,7 +1544,7 @@ public:
    want to ask for internal storage for vectors on the stack because if the
    size of the vector is larger than the internal storage that space is wasted.
    */
-template<typename T, size_t N = 0>
+template<typename T, size_t N /* = 0 */>
 class auto_vec : public vec<T, va_heap>
 {
 public:
@@ -1536,6 +1571,14 @@ public:
     this->release ();
   }
 
+  /* Explicitly convert to the base class.  There is no conversion
+     from a const auto_vec because a copy of the returned vec can
+     be used to modify *THIS.
+     This is a legacy function not to be used in new code.  */
+  vec<T, va_heap> to_vec_legacy () {
+    return *static_cast<vec<T, va_heap> *>(this);
+  }
+
 private:
   vec<T, va_heap, vl_embed> m_auto;
   T m_data[MAX (N - 1, 1)];
@@ -1557,14 +1600,51 @@ public:
       this->m_vec = r.m_vec;
       r.m_vec = NULL;
     }
+
+  auto_vec (auto_vec<T> &&r)
+    {
+      gcc_assert (!r.using_auto_storage ());
+      this->m_vec = r.m_vec;
+      r.m_vec = NULL;
+    }
+
   auto_vec& operator= (vec<T, va_heap>&& r)
     {
+	    if (this == &r)
+		    return *this;
+
       gcc_assert (!r.using_auto_storage ());
       this->release ();
       this->m_vec = r.m_vec;
       r.m_vec = NULL;
       return *this;
     }
+
+  auto_vec& operator= (auto_vec<T> &&r)
+    {
+	    if (this == &r)
+		    return *this;
+
+      gcc_assert (!r.using_auto_storage ());
+      this->release ();
+      this->m_vec = r.m_vec;
+      r.m_vec = NULL;
+      return *this;
+    }
+
+  /* Explicitly convert to the base class.  There is no conversion
+     from a const auto_vec because a copy of the returned vec can
+     be used to modify *THIS.
+     This is a legacy function not to be used in new code.  */
+  vec<T, va_heap> to_vec_legacy () {
+    return *static_cast<vec<T, va_heap> *>(this);
+  }
+
+  // You probably don't want to copy a vector, so these are deleted to prevent
+  // unintentional use.  If you really need a copy of the vectors contents you
+  // can use copy ().
+  auto_vec(const auto_vec &) = delete;
+  auto_vec &operator= (const auto_vec &) = delete;
 };
 
 
@@ -1739,7 +1819,7 @@ template<typename T>
 inline vec<T, va_heap, vl_ptr>
 vec<T, va_heap, vl_ptr>::copy (ALONE_MEM_STAT_DECL) const
 {
-  vec<T, va_heap, vl_ptr> new_vec = vNULL;
+  vec<T, va_heap, vl_ptr> new_vec{ };
   if (length ())
     new_vec.m_vec = m_vec->copy (ALONE_PASS_MEM_STAT);
   return new_vec;
@@ -2053,6 +2133,17 @@ vec<T, va_heap, vl_ptr>::sort (int (*cmp) (const void *, const void *,
     m_vec->sort (cmp, data);
 }
 
+/* Sort the contents of this vector with gcc_stablesort_r.  CMP is the
+   comparison function to pass to qsort.  */
+
+template<typename T>
+inline void
+vec<T, va_heap, vl_ptr>::stablesort (int (*cmp) (const void *, const void *,
+						 void *), void *data)
+{
+  if (m_vec)
+    m_vec->stablesort (cmp, data);
+}
 
 /* Search the contents of the sorted vector with a binary search.
    CMP is the comparison function to pass to bsearch.  */
@@ -2123,7 +2214,7 @@ template<typename T>
 inline bool
 vec<T, va_heap, vl_ptr>::using_auto_storage () const
 {
-  return m_vec->m_vecpfx.m_using_auto_storage;
+  return m_vec ? m_vec->m_vecpfx.m_using_auto_storage : false;
 }
 
 /* Release VEC and call release of all element vectors.  */

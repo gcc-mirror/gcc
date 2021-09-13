@@ -602,6 +602,9 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
   /* Whether pc-relative code is being generated.  */
   if ((flags & OPTION_MASK_PCREL) != 0)
     rs6000_define_or_undefine_macro (define_p, "__PCREL__");
+  /* Tell the user -mrop-protect is in play.  */
+  if (rs6000_rop_protect)
+    rs6000_define_or_undefine_macro (define_p, "__ROP_PROTECT__");
 }
 
 void
@@ -1602,7 +1605,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  stmt = build1 (COMPOUND_LITERAL_EXPR, arg1_type, stmt);
 	}
 
-      if (TARGET_P8_VECTOR && TARGET_DIRECT_MOVE_64BIT)
+      if (TARGET_VSX)
 	{
 	  stmt = build_array_ref (loc, stmt, arg2);
 	  stmt = fold_build2 (MODIFY_EXPR, TREE_TYPE (arg0), stmt,

@@ -28,6 +28,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
+#include "tree-cfg.h"
+
+#define DEBUG_RANGE_CACHE (dump_file && (param_evrp_mode & EVRP_MODE_CACHE) \
+					 == EVRP_MODE_CACHE)
 
 // During contructor, allocate the vector of ssa_names.
 
@@ -48,9 +52,10 @@ non_null_ref::~non_null_ref ()
 
 // Return true if NAME has a non-null dereference in block bb.  If this is the
 // first query for NAME, calculate the summary first.
+// If SEARCH_DOM is true, the search the dominator tree as well.
 
 bool
-non_null_ref::non_null_deref_p (tree name, basic_block bb)
+non_null_ref::non_null_deref_p (tree name, basic_block bb, bool search_dom)
 {
   if (!POINTER_TYPE_P (TREE_TYPE (name)))
     return false;
@@ -59,7 +64,52 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb)
   if (!m_nn[v])
     process_name (name);
 
-  return bitmap_bit_p (m_nn[v], bb->index);
+  if (bitmap_bit_p (m_nn[v], bb->index))
+    return true;
+
+  // See if any dominator has set non-zero.
+  if (search_dom && dom_info_available_p (CDI_DOMINATORS))
+    {
+      // Search back to the Def block, or the top, whichever is closer.
+      basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+      basic_block def_dom = def_bb
+			    ? get_immediate_dominator (CDI_DOMINATORS, def_bb)
+			    : NULL;
+      for ( ;
+	    bb && bb != def_dom;
+	    bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+	if (bitmap_bit_p (m_nn[v], bb->index))
+	  return true;
+    }
+  return false;
+}
+
+// If NAME has a non-null dereference in block BB, adjust R with the
+// non-zero information from non_null_deref_p, and return TRUE.  If
+// SEARCH_DOM is true, non_null_deref_p should search the dominator tree.
+
+bool
+non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
+			    bool search_dom)
+{
+  // Non-call exceptions mean we could throw in the middle of the
+  // block, so just punt on those for now.
+  if (cfun->can_throw_non_call_exceptions)
+    return false;
+
+  // We only care about the null / non-null property of pointers.
+  if (!POINTER_TYPE_P (TREE_TYPE (name)) || r.zero_p () || r.nonzero_p ())
+    return false;
+
+  // Check if pointers have any non-null dereferences.
+  if (non_null_deref_p (name, bb, search_dom))
+    {
+      int_range<2> nz;
+      nz.set_nonzero (TREE_TYPE (name));
+      r.intersect (nz);
+      return true;
+    }
+  return false;
 }
 
 // Allocate an populate the bitmap for NAME.  An ON bit for a block
@@ -107,103 +157,18 @@ non_null_ref::process_name (tree name)
 
 // -------------------------------------------------------------------------
 
-// This class implements a cache of ranges indexed by basic block.  It
-// represents all that is known about an SSA_NAME on entry to each
-// block.  It caches a range-for-type varying range so it doesn't need
-// to be reformed all the time.  If a range is ever always associated
-// with a type, we can use that instead.  Whenever varying is being
-// set for a block, the cache simply points to this cached one rather
-// than create a new one each time.
+// This class represents the API into a cache of ranges for an SSA_NAME.
+// Routines must be implemented to set, get, and query if a value is set.
 
 class ssa_block_ranges
 {
 public:
-  ssa_block_ranges (tree t, irange_allocator *allocator);
-  ~ssa_block_ranges ();
-
-  void set_bb_range (const basic_block bb, const irange &r);
-  void set_bb_varying (const basic_block bb);
-  bool get_bb_range (irange &r, const basic_block bb);
-  bool bb_range_p (const basic_block bb);
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) = 0;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) = 0;
+  virtual bool bb_range_p (const_basic_block bb) = 0;
 
   void dump(FILE *f);
-private:
-  vec<irange *> m_tab;
-  irange *m_type_range;
-  tree m_type;
-  irange_allocator *m_irange_allocator;
 };
-
-
-// Initialize a block cache for an ssa_name of type T.
-
-ssa_block_ranges::ssa_block_ranges (tree t, irange_allocator *allocator)
-{
-  gcc_checking_assert (TYPE_P (t));
-  m_type = t;
-  m_irange_allocator = allocator;
-
-  m_tab.create (0);
-  m_tab.safe_grow_cleared (last_basic_block_for_fn (cfun));
-
-  // Create the cached type range.
-  m_type_range = m_irange_allocator->allocate (2);
-  m_type_range->set_varying (t);
-
-  m_tab[ENTRY_BLOCK_PTR_FOR_FN (cfun)->index] = m_type_range;
-}
-
-// Destruct block range.
-
-ssa_block_ranges::~ssa_block_ranges ()
-{
-  m_tab.release ();
-}
-
-// Set the range for block BB to be R.
-
-void
-ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  irange *m = m_irange_allocator->allocate (r);
-  m_tab[bb->index] = m;
-}
-
-// Set the range for block BB to the range for the type.
-
-void
-ssa_block_ranges::set_bb_varying (const basic_block bb)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  m_tab[bb->index] = m_type_range;
-}
-
-// Return the range associated with block BB in R.  Return false if
-// there is no range.
-
-bool
-ssa_block_ranges::get_bb_range (irange &r, const basic_block bb)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  irange *m = m_tab[bb->index];
-  if (m)
-    {
-      r = *m;
-      return true;
-    }
-  return false;
-}
-
-// Return true if a range is present.
-
-bool
-ssa_block_ranges::bb_range_p (const basic_block bb)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  return m_tab[bb->index] != NULL;
-}
-
 
 // Print the list of known ranges for file F in a nice format.
 
@@ -222,12 +187,220 @@ ssa_block_ranges::dump (FILE *f)
       }
 }
 
+// This class implements the range cache as a linear vector, indexed by BB.
+// It caches a varying and undefined range which are used instead of
+// allocating new ones each time.
+
+class sbr_vector : public ssa_block_ranges
+{
+public:
+  sbr_vector (tree t, irange_allocator *allocator);
+
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) OVERRIDE;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) OVERRIDE;
+  virtual bool bb_range_p (const_basic_block bb) OVERRIDE;
+protected:
+  irange **m_tab;	// Non growing vector.
+  int m_tab_size;
+  int_range<2> m_varying;
+  int_range<2> m_undefined;
+  tree m_type;
+  irange_allocator *m_irange_allocator;
+};
+
+
+// Initialize a block cache for an ssa_name of type T.
+
+sbr_vector::sbr_vector (tree t, irange_allocator *allocator)
+{
+  gcc_checking_assert (TYPE_P (t));
+  m_type = t;
+  m_irange_allocator = allocator;
+  m_tab_size = last_basic_block_for_fn (cfun) + 1;
+  m_tab = (irange **)allocator->get_memory (m_tab_size * sizeof (irange *));
+  memset (m_tab, 0, m_tab_size * sizeof (irange *));
+
+  // Create the cached type range.
+  m_varying.set_varying (t);
+  m_undefined.set_undefined ();
+}
+
+// Set the range for block BB to be R.
+
+bool
+sbr_vector::set_bb_range (const_basic_block bb, const irange &r)
+{
+  irange *m;
+  gcc_checking_assert (bb->index < m_tab_size);
+  if (r.varying_p ())
+    m = &m_varying;
+  else if (r.undefined_p ())
+    m = &m_undefined;
+  else
+    m = m_irange_allocator->allocate (r);
+  m_tab[bb->index] = m;
+  return true;
+}
+
+// Return the range associated with block BB in R.  Return false if
+// there is no range.
+
+bool
+sbr_vector::get_bb_range (irange &r, const_basic_block bb)
+{
+  gcc_checking_assert (bb->index < m_tab_size);
+  irange *m = m_tab[bb->index];
+  if (m)
+    {
+      r = *m;
+      return true;
+    }
+  return false;
+}
+
+// Return true if a range is present.
+
+bool
+sbr_vector::bb_range_p (const_basic_block bb)
+{
+  gcc_checking_assert (bb->index < m_tab_size);
+  return m_tab[bb->index] != NULL;
+}
+
+// This class implements the on entry cache via a sparse bitmap.
+// It uses the quad bit routines to access 4 bits at a time.
+// A value of 0 (the default) means there is no entry, and a value of
+// 1 thru SBR_NUM represents an element in the m_range vector.
+// Varying is given the first value (1) and pre-cached.
+// SBR_NUM + 1 represents the value of UNDEFINED, and is never stored.
+// SBR_NUM is the number of values that can be cached.
+// Indexes are 1..SBR_NUM and are stored locally at m_range[0..SBR_NUM-1]
+
+#define SBR_NUM		14
+#define SBR_UNDEF	SBR_NUM + 1
+#define SBR_VARYING	1
+
+class sbr_sparse_bitmap : public ssa_block_ranges
+{
+public:
+  sbr_sparse_bitmap (tree t, irange_allocator *allocator, bitmap_obstack *bm);
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) OVERRIDE;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) OVERRIDE;
+  virtual bool bb_range_p (const_basic_block bb) OVERRIDE;
+private:
+  void bitmap_set_quad (bitmap head, int quad, int quad_value);
+  int bitmap_get_quad (const_bitmap head, int quad);
+  irange_allocator *m_irange_allocator;
+  irange *m_range[SBR_NUM];
+  bitmap bitvec;
+  tree m_type;
+};
+
+// Initialize a block cache for an ssa_name of type T.
+
+sbr_sparse_bitmap::sbr_sparse_bitmap (tree t, irange_allocator *allocator,
+				bitmap_obstack *bm)
+{
+  gcc_checking_assert (TYPE_P (t));
+  m_type = t;
+  bitvec = BITMAP_ALLOC (bm);
+  m_irange_allocator = allocator;
+  // Pre-cache varying.
+  m_range[0] = m_irange_allocator->allocate (2);
+  m_range[0]->set_varying (t);
+  // Pre-cache zero and non-zero values for pointers.
+  if (POINTER_TYPE_P (t))
+    {
+      m_range[1] = m_irange_allocator->allocate (2);
+      m_range[1]->set_nonzero (t);
+      m_range[2] = m_irange_allocator->allocate (2);
+      m_range[2]->set_zero (t);
+    }
+  else
+    m_range[1] = m_range[2] = NULL;
+  // Clear SBR_NUM entries.
+  for (int x = 3; x < SBR_NUM; x++)
+    m_range[x] = 0;
+}
+
+// Set 4 bit values in a sparse bitmap. This allows a bitmap to
+// function as a sparse array of 4 bit values.
+// QUAD is the index, QUAD_VALUE is the 4 bit value to set.
+
+inline void
+sbr_sparse_bitmap::bitmap_set_quad (bitmap head, int quad, int quad_value)
+{
+  bitmap_set_aligned_chunk (head, quad, 4, (BITMAP_WORD) quad_value);
+}
+
+// Get a 4 bit value from a sparse bitmap. This allows a bitmap to
+// function as a sparse array of 4 bit values.
+// QUAD is the index.
+inline int
+sbr_sparse_bitmap::bitmap_get_quad (const_bitmap head, int quad)
+{
+  return (int) bitmap_get_aligned_chunk (head, quad, 4);
+}
+
+// Set the range on entry to basic block BB to R.
+
+bool
+sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const irange &r)
+{
+  if (r.undefined_p ())
+    {
+      bitmap_set_quad (bitvec, bb->index, SBR_UNDEF);
+      return true;
+    }
+
+  // Loop thru the values to see if R is already present.
+  for (int x = 0; x < SBR_NUM; x++)
+    if (!m_range[x] || r == *(m_range[x]))
+      {
+	if (!m_range[x])
+	  m_range[x] = m_irange_allocator->allocate (r);
+	bitmap_set_quad (bitvec, bb->index, x + 1);
+	return true;
+      }
+  // All values are taken, default to VARYING.
+  bitmap_set_quad (bitvec, bb->index, SBR_VARYING);
+  return false;
+}
+
+// Return the range associated with block BB in R.  Return false if
+// there is no range.
+
+bool
+sbr_sparse_bitmap::get_bb_range (irange &r, const_basic_block bb)
+{
+  int value = bitmap_get_quad (bitvec, bb->index);
+
+  if (!value)
+    return false;
+
+  gcc_checking_assert (value <= SBR_UNDEF);
+  if (value == SBR_UNDEF)
+    r.set_undefined ();
+  else
+    r = *(m_range[value - 1]);
+  return true;
+}
+
+// Return true if a range is present.
+
+bool
+sbr_sparse_bitmap::bb_range_p (const_basic_block bb)
+{
+  return (bitmap_get_quad (bitvec, bb->index) != 0);
+}
+
 // -------------------------------------------------------------------------
 
 // Initialize the block cache.
 
 block_range_cache::block_range_cache ()
 {
+  bitmap_obstack_initialize (&m_bitmaps);
   m_ssa_ranges.create (0);
   m_ssa_ranges.safe_grow_cleared (num_ssa_names);
   m_irange_allocator = new irange_allocator;
@@ -237,38 +410,49 @@ block_range_cache::block_range_cache ()
 
 block_range_cache::~block_range_cache ()
 {
-  unsigned x;
-  for (x = 0; x < m_ssa_ranges.length (); ++x)
-    {
-      if (m_ssa_ranges[x])
-	delete m_ssa_ranges[x];
-    }
   delete m_irange_allocator;
   // Release the vector itself.
   m_ssa_ranges.release ();
+  bitmap_obstack_release (&m_bitmaps);
 }
 
-// Return a reference to the ssa_block_cache for NAME.  If it has not been
-// accessed yet, allocate it first.
+// Set the range for NAME on entry to block BB to R.
+// If it has not been accessed yet, allocate it first.
 
-ssa_block_ranges &
-block_range_cache::get_block_ranges (tree name)
+bool
+block_range_cache::set_bb_range (tree name, const_basic_block bb,
+				 const irange &r)
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_ssa_ranges.length ())
     m_ssa_ranges.safe_grow_cleared (num_ssa_names + 1);
 
   if (!m_ssa_ranges[v])
-    m_ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name),
-					    m_irange_allocator);
-  return *(m_ssa_ranges[v]);
+    {
+      // Use sparse representation if there are too many basic blocks.
+      if (last_basic_block_for_fn (cfun) > param_evrp_sparse_threshold)
+	{
+	  void *r = m_irange_allocator->get_memory (sizeof (sbr_sparse_bitmap));
+	  m_ssa_ranges[v] = new (r) sbr_sparse_bitmap (TREE_TYPE (name),
+						       m_irange_allocator,
+						       &m_bitmaps);
+	}
+      else
+	{
+	  // Otherwise use the default vector implemntation.
+	  void *r = m_irange_allocator->get_memory (sizeof (sbr_vector));
+	  m_ssa_ranges[v] = new (r) sbr_vector (TREE_TYPE (name),
+						m_irange_allocator);
+	}
+    }
+  return m_ssa_ranges[v]->set_bb_range (bb, r);
 }
 
 
 // Return a pointer to the ssa_block_cache for NAME.  If it has not been
 // accessed yet, return NULL.
 
-ssa_block_ranges *
+inline ssa_block_ranges *
 block_range_cache::query_block_ranges (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
@@ -277,28 +461,13 @@ block_range_cache::query_block_ranges (tree name)
   return m_ssa_ranges[v];
 }
 
-// Set the range for NAME on entry to block BB to R.
 
-void
-block_range_cache::set_bb_range (tree name, const basic_block bb,
-				 const irange &r)
-{
-  return get_block_ranges (name).set_bb_range (bb, r);
-}
-
-// Set the range for NAME on entry to block BB to varying.
-
-void
-block_range_cache::set_bb_varying (tree name, const basic_block bb)
-{
-  return get_block_ranges (name).set_bb_varying (bb);
-}
 
 // Return the range for NAME on entry to BB in R.  Return true if there
 // is one.
 
 bool
-block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
+block_range_cache::get_bb_range (irange &r, tree name, const_basic_block bb)
 {
   ssa_block_ranges *ptr = query_block_ranges (name);
   if (ptr)
@@ -309,7 +478,7 @@ block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 // Return true if NAME has a range set in block BB.
 
 bool
-block_range_cache::bb_range_p (tree name, const basic_block bb)
+block_range_cache::bb_range_p (tree name, const_basic_block bb)
 {
   ssa_block_ranges *ptr = query_block_ranges (name);
   if (ptr)
@@ -389,7 +558,6 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
 ssa_global_cache::ssa_global_cache ()
 {
   m_tab.create (0);
-  m_tab.safe_grow_cleared (num_ssa_names);
   m_irange_allocator = new irange_allocator;
 }
 
@@ -460,61 +628,58 @@ ssa_global_cache::clear ()
 void
 ssa_global_cache::dump (FILE *f)
 {
-  unsigned x;
-  int_range_max r;
-  fprintf (f, "Non-varying global ranges:\n");
-  fprintf (f, "=========================:\n");
-  for ( x = 1; x < num_ssa_names; x++)
-    if (gimple_range_ssa_p (ssa_name (x)) &&
-	get_global_range (r, ssa_name (x))  && !r.varying_p ())
-      {
-	print_generic_expr (f, ssa_name (x), TDF_NONE);
-	fprintf (f, "  : ");
-	r.dump (f);
-	fprintf (f, "\n");
-      }
-  fputc ('\n', f);
+  /* Cleared after the table header has been printed.  */
+  bool print_header = true;
+  for (unsigned x = 1; x < num_ssa_names; x++)
+    {
+      int_range_max r;
+      if (gimple_range_ssa_p (ssa_name (x)) &&
+	  get_global_range (r, ssa_name (x))  && !r.varying_p ())
+	{
+	  if (print_header)
+	    {
+	      /* Print the header only when there's something else
+		 to print below.  */
+	      fprintf (f, "Non-varying global ranges:\n");
+	      fprintf (f, "=========================:\n");
+	      print_header = false;
+	    }
+
+	  print_generic_expr (f, ssa_name (x), TDF_NONE);
+	  fprintf (f, "  : ");
+	  r.dump (f);
+	  fprintf (f, "\n");
+	}
+    }
+
+  if (!print_header)
+    fputc ('\n', f);
 }
 
 // --------------------------------------------------------------------------
 
 
-// This struct provides a timestamp for a global range calculation.
-// it contains the time counter, as well as a limited number of ssa-names
-// that it is dependent upon.  If the timestamp for any of the dependent names
-// Are newer, then this range could need updating.
-
-struct range_timestamp
-{
-  unsigned time;
-  unsigned ssa1;
-  unsigned ssa2;
-};
-
 // This class will manage the timestamps for each ssa_name.
-// When a value is calcualted, its timestamp is set to the current time.
-// The ssanames it is dependent on have already been calculated, so they will
-// have older times.  If one fo those values is ever calculated again, it
-// will get a newer timestamp, and the "current_p" check will fail.
+// When a value is calculated, the timestamp is set to the current time.
+// Current time is then incremented.  Any dependencies will already have
+// been calculated, and will thus have older timestamps.
+// If one of those values is ever calculated again, it will get a newer
+// timestamp, and the "current_p" check will fail.
 
 class temporal_cache
 {
 public:
   temporal_cache ();
   ~temporal_cache ();
-  bool current_p (tree name) const;
+  bool current_p (tree name, tree dep1, tree dep2) const;
   void set_timestamp (tree name);
-  void set_dependency (tree name, tree dep);
   void set_always_current (tree name);
 private:
   unsigned temporal_value (unsigned ssa) const;
-  const range_timestamp *get_timestamp (unsigned ssa) const;
-  range_timestamp *get_timestamp (unsigned ssa);
 
   unsigned m_current_time;
-  vec <range_timestamp> m_timestamp;
+  vec <unsigned> m_timestamp;
 };
-
 
 inline
 temporal_cache::temporal_cache ()
@@ -530,65 +695,35 @@ temporal_cache::~temporal_cache ()
   m_timestamp.release ();
 }
 
-// Return a pointer to the timetamp for ssa-name at index SSA, if there is
-// one, otherwise return NULL.
-
-inline const range_timestamp *
-temporal_cache::get_timestamp (unsigned ssa) const
-{
-  if (ssa >= m_timestamp.length ())
-    return NULL;
-  return &(m_timestamp[ssa]);
-}
-
-// Return a reference to the timetamp for ssa-name at index SSA.  If the index
-// is past the end of the vector, extend the vector.
-
-inline range_timestamp *
-temporal_cache::get_timestamp (unsigned ssa)
-{
-  if (ssa >= m_timestamp.length ())
-    m_timestamp.safe_grow_cleared (num_ssa_names + 20);
-  return &(m_timestamp[ssa]);
-}
-
-// This routine will fill NAME's next operand slot with DEP if DEP is a valid
-// SSA_NAME and there is a free slot.
-
-inline void
-temporal_cache::set_dependency (tree name, tree dep)
-{
-  if (dep && TREE_CODE (dep) == SSA_NAME)
-    {
-      gcc_checking_assert (get_timestamp (SSA_NAME_VERSION (name)));
-      range_timestamp& ts = *(get_timestamp (SSA_NAME_VERSION (name)));
-      if (!ts.ssa1)
-	ts.ssa1 = SSA_NAME_VERSION (dep);
-      else if (!ts.ssa2 && ts.ssa1 != SSA_NAME_VERSION (name))
-	ts.ssa2 = SSA_NAME_VERSION (dep);
-    }
-}
-
 // Return the timestamp value for SSA, or 0 if there isnt one.
+
 inline unsigned
 temporal_cache::temporal_value (unsigned ssa) const
 {
-  const range_timestamp *ts = get_timestamp (ssa);
-  return ts ? ts->time : 0;
+  if (ssa >= m_timestamp.length ())
+    return 0;
+  return m_timestamp[ssa];
 }
 
 // Return TRUE if the timestampe for NAME is newer than any of its dependents.
+// Up to 2 dependencies can be checked.
 
 bool
-temporal_cache::current_p (tree name) const
+temporal_cache::current_p (tree name, tree dep1, tree dep2) const
 {
-  const range_timestamp *ts = get_timestamp (SSA_NAME_VERSION (name));
-  if (!ts || ts->time == 0)
+  unsigned ts = temporal_value (SSA_NAME_VERSION (name));
+  if (ts == 0)
     return true;
+
   // Any non-registered dependencies will have a value of 0 and thus be older.
   // Return true if time is newer than either dependent.
-  return ts->time > temporal_value (ts->ssa1)
-	 && ts->time > temporal_value (ts->ssa2);
+
+  if (dep1 && ts < temporal_value (SSA_NAME_VERSION (dep1)))
+    return false;
+  if (dep2 && ts < temporal_value (SSA_NAME_VERSION (dep2)))
+    return false;
+
+  return true;
 }
 
 // This increments the global timer and sets the timestamp for NAME.
@@ -596,8 +731,10 @@ temporal_cache::current_p (tree name) const
 inline void
 temporal_cache::set_timestamp (tree name)
 {
-  gcc_checking_assert (get_timestamp (SSA_NAME_VERSION (name)));
-  get_timestamp (SSA_NAME_VERSION (name))->time = ++m_current_time;
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_timestamp.length ())
+    m_timestamp.safe_grow_cleared (num_ssa_names + 20);
+  m_timestamp[v] = ++m_current_time;
 }
 
 // Set the timestamp to 0, marking it as "always up to date".
@@ -605,30 +742,47 @@ temporal_cache::set_timestamp (tree name)
 inline void
 temporal_cache::set_always_current (tree name)
 {
-  gcc_checking_assert (get_timestamp (SSA_NAME_VERSION (name)));
-  get_timestamp (SSA_NAME_VERSION (name))->time = 0;
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_timestamp.length ())
+    m_timestamp.safe_grow_cleared (num_ssa_names + 20);
+  m_timestamp[v] = 0;
 }
-
 
 // --------------------------------------------------------------------------
 
-ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
+ranger_cache::ranger_cache ()
 {
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
   m_update_list.create (0);
   m_update_list.safe_grow_cleared (last_basic_block_for_fn (cfun));
   m_update_list.truncate (0);
-  m_poor_value_list.create (0);
-  m_poor_value_list.safe_grow_cleared (20);
-  m_poor_value_list.truncate (0);
   m_temporal = new temporal_cache;
+  // If DOM info is available, spawn an oracle as well.
+  if (dom_info_available_p (CDI_DOMINATORS))
+      m_oracle = new relation_oracle ();
+    else
+      m_oracle = NULL;
+
+  unsigned x, lim = last_basic_block_for_fn (cfun);
+  // Calculate outgoing range info upfront.  This will fully populate the
+  // m_maybe_variant bitmap which will help eliminate processing of names
+  // which never have their ranges adjusted.
+  for (x = 0; x < lim ; x++)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, x);
+      if (bb)
+	m_gori.exports (bb);
+    }
+  m_propfail = BITMAP_ALLOC (NULL);
 }
 
 ranger_cache::~ranger_cache ()
 {
+  BITMAP_FREE (m_propfail);
+  if (m_oracle)
+    delete m_oracle;
   delete m_temporal;
-  m_poor_value_list.release ();
   m_workback.release ();
   m_update_list.release ();
 }
@@ -637,23 +791,21 @@ ranger_cache::~ranger_cache ()
 // gori map as well.
 
 void
-ranger_cache::dump (FILE *f, bool gori_dump)
+ranger_cache::dump (FILE *f)
 {
   m_globals.dump (f);
-  if (gori_dump)
-    {
-      fprintf (f, "\nDUMPING GORI MAP\n");
-      gori_compute::dump (f);
-    }
   fprintf (f, "\n");
 }
 
 // Dump the caches for basic block BB to file F.
 
 void
-ranger_cache::dump (FILE *f, basic_block bb)
+ranger_cache::dump_bb (FILE *f, basic_block bb)
 {
+  m_gori.gori_map::dump (f, bb, false);
   m_on_entry.dump (f, bb);
+  if (m_oracle)
+    m_oracle->dump (f, bb);
 }
 
 // Get the global range for NAME, and return in R.  Return false if the
@@ -677,7 +829,10 @@ ranger_cache::get_non_stale_global_range (irange &r, tree name)
 {
   if (m_globals.get_global_range (r, name))
     {
-      if (m_temporal->current_p (name))
+      // Use this value if the range is constant or current.
+      if (r.singleton_p ()
+	  || m_temporal->current_p (name, m_gori.depend1 (name),
+				    m_gori.depend2 (name)))
 	return true;
     }
   else
@@ -708,102 +863,126 @@ ranger_cache::set_global_range (tree name, const irange &r)
 
       propagate_updated_value (name, bb);
     }
-  // Mark the value as up-to-date.
+  // Constants no longer need to tracked.  Any further refinement has to be
+  // undefined. Propagation works better with constants. PR 100512.
+  // Pointers which resolve to non-zero also do not need
+  // tracking in the cache as they will never change.  See PR 98866.
+  // Timestamp must always be updated, or dependent calculations may
+  // not include this latest value. PR 100774.
+
+  if (r.singleton_p ()
+      || (POINTER_TYPE_P (TREE_TYPE (name)) && r.nonzero_p ()))
+    m_gori.set_range_invariant (name);
   m_temporal->set_timestamp (name);
-}
-
-// Register a dependency on DEP to name.  If the timestamp for DEP is ever
-// greateer than the timestamp for NAME, then it is newer and NAMEs value
-// becomes stale.
-
-void
-ranger_cache::register_dependency (tree name, tree dep)
-{
-  m_temporal->set_dependency (name, dep);
-}
-
-// Push a request for a new lookup in block BB of name.  Return true if
-// the request is actually made (ie, isn't a duplicate).
-
-bool
-ranger_cache::push_poor_value (basic_block bb, tree name)
-{
-  if (m_poor_value_list.length ())
-    {
-      // Don't push anything else to the same block.  If there are multiple 
-      // things required, another request will come during a later evaluation
-      // and this prevents oscillation building uneccessary depth.
-      if ((m_poor_value_list.last ()).bb == bb)
-	return false;
-    }
-
-  struct update_record rec;
-  rec.bb = bb;
-  rec.calc = name;
-  m_poor_value_list.safe_push (rec);
-  return true;
 }
 
 //  Provide lookup for the gori-computes class to access the best known range
 //  of an ssa_name in any given basic block.  Note, this does no additonal
 //  lookups, just accesses the data that is already known.
 
+// Get the range of NAME when the def occurs in block BB.  If BB is NULL
+// get the best global value available.
+
 void
-ranger_cache::ssa_range_in_bb (irange &r, tree name, basic_block bb)
+ranger_cache::range_of_def (irange &r, tree name, basic_block bb)
 {
-  gimple *s = SSA_NAME_DEF_STMT (name);
-  basic_block def_bb = ((s && gimple_bb (s)) ? gimple_bb (s) :
-					       ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  if (bb == def_bb)
+  gcc_checking_assert (gimple_range_ssa_p (name));
+  gcc_checking_assert (!bb || bb == gimple_bb (SSA_NAME_DEF_STMT (name)));
+
+  // Pick up the best global range available.
+  if (!m_globals.get_global_range (r, name))
     {
-      // NAME is defined in this block, so request its current value
-      if (!m_globals.get_global_range (r, name))
-	{
-	  // If it doesn't have a value calculated, it means it's a
-	  // "poor" value being used in some calculation.  Queue it up
-	  // as a poor value to be improved later.
-	  r = gimple_range_global (name);
-	  if (push_poor_value (bb, name))
-	    {
-	      if (DEBUG_RANGE_CACHE)
-		{
-		  fprintf (dump_file,
-			   "*CACHE* no global def in bb %d for ", bb->index);
-		  print_generic_expr (dump_file, name, TDF_SLIM);
-		  fprintf (dump_file, " depth : %d\n",
-			   m_poor_value_list.length ());
-		}
-	    }
-	 }
-    }
-  // Look for the on-entry value of name in BB from the cache.
-  else if (!m_on_entry.get_bb_range (r, name, bb))
-    {
-      // If it has no entry but should, then mark this as a poor value.
-      // Its not a poor value if it does not have *any* edge ranges,
-      // Then global range is as good as it gets.
-      if (has_edge_range_p (name) && push_poor_value (bb, name))
-	{
-	  if (DEBUG_RANGE_CACHE)
-	    {
-	      fprintf (dump_file,
-		       "*CACHE* no on entry range in bb %d for ", bb->index);
-	      print_generic_expr (dump_file, name, TDF_SLIM);
-	      fprintf (dump_file, " depth : %d\n", m_poor_value_list.length ());
-	    }
-	}
-      // Try to pick up any known global value as a best guess for now.
-      if (!m_globals.get_global_range (r, name))
+      // If that fails, try to calculate the range using just global values.
+      gimple *s = SSA_NAME_DEF_STMT (name);
+      if (gimple_get_lhs (s) == name)
+	fold_range (r, s, get_global_range_query ());
+      else
 	r = gimple_range_global (name);
     }
 
-  // Check if pointers have any non-null dereferences.  Non-call
-  // exceptions mean we could throw in the middle of the block, so just
-  // punt for now on those.
-  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb) &&
-      !cfun->can_throw_non_call_exceptions)
-    r = range_nonzero (TREE_TYPE (name));
+  if (bb)
+    m_non_null.adjust_range (r, name, bb, false);
 }
+
+// Get the range of NAME as it occurs on entry to block BB.
+
+void
+ranger_cache::entry_range (irange &r, tree name, basic_block bb)
+{
+  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+    {
+      r = gimple_range_global (name);
+      return;
+    }
+
+  // Look for the on-entry value of name in BB from the cache.
+  // Otherwise pick up the best available global value.
+  if (!m_on_entry.get_bb_range (r, name, bb))
+    range_of_def (r, name);
+
+  m_non_null.adjust_range (r, name, bb, false);
+}
+
+// Get the range of NAME as it occurs on exit from block BB.
+
+void
+ranger_cache::exit_range (irange &r, tree name, basic_block bb)
+{
+  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+    {
+      r = gimple_range_global (name);
+      return;
+    }
+
+  gimple *s = SSA_NAME_DEF_STMT (name);
+  basic_block def_bb = gimple_bb (s);
+  if (def_bb == bb)
+    range_of_def (r, name, bb);
+  else
+    entry_range (r, name, bb);
+ }
+
+
+// Implement range_of_expr.
+
+bool
+ranger_cache::range_of_expr (irange &r, tree name, gimple *stmt)
+{
+  if (!gimple_range_ssa_p (name))
+    {
+      get_tree_range (r, name, stmt);
+      return true;
+    }
+
+  basic_block bb = gimple_bb (stmt);
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+  basic_block def_bb = gimple_bb (def_stmt);
+
+  if (bb == def_bb)
+    range_of_def (r, name, bb);
+  else
+    entry_range (r, name, bb);
+  return true;
+}
+
+
+// Implement range_on_edge.  Always return the best available range.
+
+ bool
+ ranger_cache::range_on_edge (irange &r, edge e, tree expr)
+ {
+   if (gimple_range_ssa_p (expr))
+    {
+      exit_range (r, expr, e->src);
+      int_range_max edge_range;
+      if (m_gori.outgoing_edge_range_p (edge_range, e, expr, *this))
+	r.intersect (edge_range);
+      return true;
+    }
+
+  return get_tree_range (r, expr, NULL);
+}
+
 
 // Return a static range for NAME on entry to basic block BB in R.  If
 // calc is true, fill any cache entries required between BB and the
@@ -816,7 +995,7 @@ ranger_cache::block_range (irange &r, basic_block bb, tree name, bool calc)
 
   // If there are no range calculations anywhere in the IL, global range
   // applies everywhere, so don't bother caching it.
-  if (!has_edge_range_p (name))
+  if (!m_gori.has_edge_range_p (name))
     return false;
 
   if (calc)
@@ -850,7 +1029,9 @@ ranger_cache::block_range (irange &r, basic_block bb, tree name, bool calc)
 void
 ranger_cache::add_to_update (basic_block bb)
 {
-  if (!m_update_list.contains (bb))
+  // If propagation has failed for BB, or its already in the list, don't
+  // add it again.
+  if (!bitmap_bit_p (m_propfail, bb->index) &&  !m_update_list.contains (bb))
     m_update_list.quick_push (bb);
 }
 
@@ -867,6 +1048,7 @@ ranger_cache::propagate_cache (tree name)
   int_range_max current_range;
   int_range_max e_range;
 
+  gcc_checking_assert (bitmap_empty_p (m_propfail));
   // Process each block by seeing if its calculated range on entry is
   // the same as its cached value. If there is a difference, update
   // the cache to reflect the new value, and check to see if any
@@ -879,37 +1061,6 @@ ranger_cache::propagate_cache (tree name)
       gcc_checking_assert (m_on_entry.bb_range_p (name, bb));
       m_on_entry.get_bb_range (current_range, name, bb);
 
-      // Calculate the "new" range on entry by unioning the pred edges.
-      new_range.set_undefined ();
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  if (DEBUG_RANGE_CACHE)
-	    fprintf (dump_file, "   edge %d->%d :", e->src->index, bb->index);
-	  // Get whatever range we can for this edge.
-	  if (!outgoing_edge_range_p (e_range, e, name))
-	    {
-	      ssa_range_in_bb (e_range, name, e->src);
-	      if (DEBUG_RANGE_CACHE)
-		{
-		  fprintf (dump_file, "No outgoing edge range, picked up ");
-		  e_range.dump(dump_file);
-		  fprintf (dump_file, "\n");
-		}
-	    }
-	  else
-	    {
-	      if (DEBUG_RANGE_CACHE)
-		{
-		  fprintf (dump_file, "outgoing range :");
-		  e_range.dump(dump_file);
-		  fprintf (dump_file, "\n");
-		}
-	    }
-	  new_range.union_ (e_range);
-	  if (new_range.varying_p ())
-	    break;
-	}
-
       if (DEBUG_RANGE_CACHE)
 	{
 	  fprintf (dump_file, "FWD visiting block %d for ", bb->index);
@@ -919,16 +1070,44 @@ ranger_cache::propagate_cache (tree name)
 	  fprintf (dump_file, "\n");
 	}
 
+      // Calculate the "new" range on entry by unioning the pred edges.
+      new_range.set_undefined ();
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  range_on_edge (e_range, e, name);
+	  if (DEBUG_RANGE_CACHE)
+	    {
+	      fprintf (dump_file, "   edge %d->%d :", e->src->index, bb->index);
+	      e_range.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
+	  new_range.union_ (e_range);
+	  if (new_range.varying_p ())
+	    break;
+	}
+
       // If the range on entry has changed, update it.
       if (new_range != current_range)
 	{
+	  bool ok_p = m_on_entry.set_bb_range (name, bb, new_range);
+	  // If the cache couldn't set the value, mark it as failed.
+	  if (!ok_p)
+	    bitmap_set_bit (m_propfail, bb->index);
 	  if (DEBUG_RANGE_CACHE) 
 	    {
-	      fprintf (dump_file, "      Updating range to ");
-	      new_range.dump (dump_file);
+	      if (!ok_p)
+		{
+		  fprintf (dump_file, "   Cache failure to store value:");
+		  print_generic_expr (dump_file, name, TDF_SLIM);
+		  fprintf (dump_file, "  ");
+		}
+	      else
+		{
+		  fprintf (dump_file, "      Updating range to ");
+		  new_range.dump (dump_file);
+		}
 	      fprintf (dump_file, "\n      Updating blocks :");
 	    }
-	  m_on_entry.set_bb_range (name, bb, new_range);
 	  // Mark each successor that has a range to re-check its range
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (m_on_entry.bb_range_p (name, e->dest))
@@ -941,12 +1120,13 @@ ranger_cache::propagate_cache (tree name)
 	    fprintf (dump_file, "\n");
 	}
     }
-    if (DEBUG_RANGE_CACHE)
-      {
-	fprintf (dump_file, "DONE visiting blocks for ");
-	print_generic_expr (dump_file, name, TDF_SLIM);
-	fprintf (dump_file, "\n");
-      }
+  if (DEBUG_RANGE_CACHE)
+    {
+      fprintf (dump_file, "DONE visiting blocks for ");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+  bitmap_clear (m_propfail);
 }
 
 // Check to see if an update to the value for NAME in BB has any effect
@@ -1004,7 +1184,6 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   edge e;
   int_range_max block_result;
   int_range_max undefined;
-  unsigned poor_list_start = m_poor_value_list.length ();  
 
   // At this point we shouldn't be looking at the def, entry or exit block.
   gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) &&
@@ -1066,7 +1245,8 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 
 	  // Regardless of whether we have visited pred or not, if the
 	  // pred has a non-null reference, revisit this block.
-	  if (m_non_null.non_null_deref_p (name, pred))
+	  // Don't search the DOM tree.
+	  if (m_non_null.non_null_deref_p (name, pred, false))
 	    {
 	      if (DEBUG_RANGE_CACHE)
 		fprintf (dump_file, "nonnull: update ");
@@ -1078,8 +1258,12 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  if (m_on_entry.get_bb_range (r, name, pred))
 	    {
 	      if (DEBUG_RANGE_CACHE)
-		fprintf (dump_file, "has cache, ");
-	      if (!r.undefined_p () || has_edge_range_p (name, e))
+		{
+		  fprintf (dump_file, "has cache, ");
+		  r.dump (dump_file);
+		  fprintf (dump_file, ", ");
+		}
+	      if (!r.undefined_p () || m_gori.has_edge_range_p (name, e))
 		{
 		  add_to_update (node);
 		  if (DEBUG_RANGE_CACHE)
@@ -1089,7 +1273,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	    }
 
 	  if (DEBUG_RANGE_CACHE)
-	    fprintf (dump_file, "pushing undefined pred block. ");
+	    fprintf (dump_file, "pushing undefined pred block.\n");
 	  // If the pred hasn't been visited (has no range), add it to
 	  // the list.
 	  gcc_checking_assert (!m_on_entry.bb_range_p (name, pred));
@@ -1105,44 +1289,5 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   propagate_cache (name);
   if (DEBUG_RANGE_CACHE)
     fprintf (dump_file, "  Propagation update done.\n");
-
-  // Now that the cache has been updated, check to see if there were any 
-  // SSA_NAMES used in filling the cache which were "poor values".
-  // Evaluate them, and inject any new values into the propagation
-  // list, and see if it improves any on-entry values.
-  if (poor_list_start !=  m_poor_value_list.length ())
-    {
-      gcc_checking_assert (poor_list_start < m_poor_value_list.length ());
-      while (poor_list_start < m_poor_value_list.length ())
-	{
-	  // Find a range for this unresolved value.   
-	  // Note, this may spawn new cache filling cycles, but by the time it
-	  // is finished, the work vectors will all be back to the same state
-	  // as before the call.  The update record vector will always be
-	  // returned to the current state upon return.
-	  struct update_record rec = m_poor_value_list.pop ();
-	  basic_block calc_bb = rec.bb;
-	  int_range_max tmp;
-
-	  if (DEBUG_RANGE_CACHE)
-	    {
-	      fprintf (dump_file, "(%d:%d)Calculating ",
-		       m_poor_value_list.length () + 1, poor_list_start);
-	      print_generic_expr (dump_file, name, TDF_SLIM);
-	      fprintf (dump_file, " used POOR VALUE for ");
-	      print_generic_expr (dump_file, rec.calc, TDF_SLIM);
-	      fprintf (dump_file, " in bb%d, trying to improve:\n",
-		       calc_bb->index);
-	    }
-
-	  // Calculate a range at the exit from the block so the caches feeding
-	  // this block will be filled, and we'll get a "better" value.
-	  query.range_on_exit (tmp, calc_bb, rec.calc);
-	  
-	  // Then ask for NAME to be re-evaluated on outgoing edges and 
-	  // use any new values.
-	  propagate_updated_value (name, calc_bb);
-	}
-    }
 }
 

@@ -21,6 +21,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <string>
+#include <debug/string>
 #include <exception/safety.h>
 
 void
@@ -31,8 +32,16 @@ value()
   typedef char value_type;
   typedef __gnu_cxx::throw_allocator_limit<value_type> allocator_type;
   typedef std::char_traits<value_type> traits_type;
-  typedef std::basic_string<value_type, traits_type, allocator_type> test_type;
-  __gnu_test::basic_safety<test_type> test;
+
+  {
+    typedef std::basic_string<value_type, traits_type, allocator_type> test_type;
+    __gnu_test::basic_safety<test_type> test;
+  }
+
+  {
+    typedef __gnu_debug::basic_string<value_type, traits_type, allocator_type> test_type;
+    __gnu_test::basic_safety<test_type> test;
+  }
 }
 
 // Container requirement testing, exceptional behavior

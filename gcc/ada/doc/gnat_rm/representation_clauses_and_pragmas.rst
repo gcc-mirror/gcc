@@ -1738,7 +1738,7 @@ of the use of this pragma. This may cause an overlay to have this
 unintended clobbering effect. The compiler avoids this for scalar
 types, but not for composite objects (where in general the effect
 of ``Initialize_Scalars`` is part of the initialization routine
-for the composite object:
+for the composite object):
 
 ::
 

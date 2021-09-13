@@ -1731,14 +1731,9 @@ decompose_multiword_subregs (bool decompose_copies)
 	}
     }
 
-  {
-    unsigned int i;
-    bitmap b;
-
-    FOR_EACH_VEC_ELT (reg_copy_graph, i, b)
-      if (b)
-	BITMAP_FREE (b);
-  }
+  for (bitmap b : reg_copy_graph)
+    if (b)
+      BITMAP_FREE (b);
 
   reg_copy_graph.release ();
 

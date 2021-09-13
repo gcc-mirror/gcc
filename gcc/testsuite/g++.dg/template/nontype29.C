@@ -3,7 +3,7 @@
 // { dg-do compile }
 // { dg-options "-Wall" }
 
-#if __cpluspls >= 201103L
+#if __cplusplus >= 201103L
 
 // C++ 11 test case from comment #0.
 namespace comment_0 {
@@ -60,7 +60,7 @@ void h ()
 }   // comment_2
 
 
-#if __cpluspls >= 201103L
+#if __cplusplus >= 201103L
 
 // C++ 11 test case from comment #5.
 namespace comment_5 {

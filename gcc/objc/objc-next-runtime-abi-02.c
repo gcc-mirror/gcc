@@ -245,7 +245,7 @@ objc_next_runtime_abi_02_init (objc_runtime_hooks *rthooks)
 {
   extern_names = ggc_cleared_vec_alloc<hash> (SIZEHASHTABLE);
 
-  if (flag_objc_exceptions && flag_objc_sjlj_exceptions)
+  if (flag_objc_sjlj_exceptions)
     {
       inform (UNKNOWN_LOCATION,
 	      "%<-fobjc-sjlj-exceptions%> is ignored for "
@@ -253,6 +253,10 @@ objc_next_runtime_abi_02_init (objc_runtime_hooks *rthooks)
 	      "greater than 1");
       flag_objc_sjlj_exceptions = 0;
     }
+
+  /* NeXT ABI 2 is intended to default to checking for nil receivers.  */
+  if (! global_options_set.x_flag_objc_nilcheck)
+    flag_objc_nilcheck = 1;
 
   rthooks->initialize = next_runtime_02_initialize;
   rthooks->default_constant_string_class_name = DEF_CONSTANT_STRING_CLASS_NAME;
@@ -379,7 +383,7 @@ static void next_runtime_02_initialize (void)
 						TYPE_DECL,
 						objc_selector_name,
 						objc_selector_type));
-  TREE_NO_WARNING (type) = 1;
+  suppress_warning (type);
 
   /* IMP : id (*) (id, _message_ref_t*, ...)
      SUPER_IMP : id (*) ( super_t*, _super_message_ref_t*, ...)
@@ -507,7 +511,7 @@ static void next_runtime_02_initialize (void)
   objc_getPropertyStruct_decl = NULL_TREE;
   objc_setPropertyStruct_decl = NULL_TREE;
 
-  gcc_assert (!flag_objc_sjlj_exceptions);
+  gcc_checking_assert (!flag_objc_sjlj_exceptions);
 
   /* Although we warn that fobjc-exceptions is required for exceptions
      code, we carry on and create it anyway.  */
@@ -1675,13 +1679,8 @@ build_v2_objc_method_fixup_call (int super_flag, tree method_prototype,
 
       if (TREE_CODE (ret_type) == RECORD_TYPE
 	  || TREE_CODE (ret_type) == UNION_TYPE)
-	{
-	  vec<constructor_elt, va_gc> *rtt = NULL;
-	  /* ??? CHECKME. hmmm..... think we need something more
-	     here.  */
-	  CONSTRUCTOR_APPEND_ELT (rtt, NULL_TREE, NULL_TREE);
-	  ftree = objc_build_constructor (ret_type, rtt);
-	}
+	/* An empty constructor is zero-filled by the middle end.  */
+	ftree = objc_build_constructor (ret_type, NULL);
       else
 	ftree = fold_convert (ret_type, integer_zero_node);
 
@@ -1694,11 +1693,11 @@ build_v2_objc_method_fixup_call (int super_flag, tree method_prototype,
 					ifexp, ret_val, ftree,
 					tf_warning_or_error);
 #else
-     /* ??? CHECKME.   */
       ret_val = build_conditional_expr (input_location,
-					ifexp, 1,
+					ifexp, 0,
 					ret_val, NULL_TREE, input_location,
 					ftree, NULL_TREE, input_location);
+      ret_val = fold_convert (ret_type, ret_val);
 #endif
     }
   return ret_val;
@@ -1740,15 +1739,16 @@ build_v2_build_objc_method_call (int super, tree method_prototype,
   /* Param list + 2 slots for object and selector.  */
   vec_alloc (parms, nparm + 2);
 
-  /* If we are returning a struct in memory, and the address
-     of that memory location is passed as a hidden first
-     argument, then change which messenger entry point this
-     expr will call.  NB: Note that sender_cast remains
-     unchanged (it already has a struct return type).  */
-  if (!targetm.calls.struct_value_rtx (0, 0)
-      && (TREE_CODE (ret_type) == RECORD_TYPE
-	  || TREE_CODE (ret_type) == UNION_TYPE)
-      && targetm.calls.return_in_memory (ret_type, 0))
+  /* If we are returning an item that must be returned in memory, and the
+     target ABI does this by an invisible pointer provided as the first arg,
+     we need to adjust the message signature to include this.  The second
+     part of this excludes targets that provide some alternate scheme for
+     structure returns.  */
+  if (ret_type && !VOID_TYPE_P (ret_type)
+      && targetm.calls.return_in_memory (ret_type, 0)
+      && !(targetm.calls.struct_value_rtx (0, 0)
+	   && (TREE_CODE (ret_type) == RECORD_TYPE
+	       || TREE_CODE (ret_type) == UNION_TYPE)))
     {
       if (super)
 	sender = umsg_id_super2_stret_fixup_decl;
@@ -1790,11 +1790,8 @@ build_v2_build_objc_method_call (int super, tree method_prototype,
       if (TREE_CODE (ret_type) == RECORD_TYPE
 	  || TREE_CODE (ret_type) == UNION_TYPE)
 	{
-	  vec<constructor_elt, va_gc> *rtt = NULL;
-	  /* ??? CHECKME. hmmm..... think we need something more
-	     here.  */
-	  CONSTRUCTOR_APPEND_ELT (rtt, NULL_TREE, NULL_TREE);
-	  ftree = objc_build_constructor (ret_type, rtt);
+	/* An empty constructor is zero-filled by the middle end.  */
+	  ftree = objc_build_constructor (ret_type, NULL);
 	}
       else
 	ftree = fold_convert (ret_type, integer_zero_node);
@@ -1807,10 +1804,10 @@ build_v2_build_objc_method_call (int super, tree method_prototype,
       ret_val = build_conditional_expr (loc, ifexp, ret_val, ftree,
 					tf_warning_or_error);
 #else
-     /* ??? CHECKME.   */
       ret_val = build_conditional_expr (loc, ifexp, 1,
 					ret_val, NULL_TREE, loc,
 					ftree, NULL_TREE, loc);
+      ret_val = fold_convert (ret_type, ret_val);
 #endif
     }
   return ret_val;
@@ -1853,10 +1850,12 @@ next_runtime_abi_02_build_objc_method_call (location_t loc,
 	     ? TREE_VALUE (TREE_TYPE (method_prototype))
 	     : objc_object_type;
 
-  if (!targetm.calls.struct_value_rtx (0, 0)
-      && (TREE_CODE (ret_type) == RECORD_TYPE
-	  || TREE_CODE (ret_type) == UNION_TYPE)
-      && targetm.calls.return_in_memory (ret_type, 0))
+  /* See comment for the fixup version above.  */
+  if (ret_type && !VOID_TYPE_P (ret_type)
+      && targetm.calls.return_in_memory (ret_type, 0)
+      && !(targetm.calls.struct_value_rtx (0, 0)
+	   && (TREE_CODE (ret_type) == RECORD_TYPE
+	       || TREE_CODE (ret_type) == UNION_TYPE)))
     {
       if (super)
 	message_func_decl = umsg_id_super2_stret_fixup_decl;
@@ -2209,7 +2208,7 @@ has_load_impl (tree clsmeth)
     {
       tree id = METHOD_SEL_NAME (clsmeth);
       if (IDENTIFIER_LENGTH (id) == 4
-	  && strncmp (IDENTIFIER_POINTER (id), "load", 4) == 0)
+	  && startswith (IDENTIFIER_POINTER (id), "load"))
         return true;
       clsmeth = DECL_CHAIN (clsmeth);
     }

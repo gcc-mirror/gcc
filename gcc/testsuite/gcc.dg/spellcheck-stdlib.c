@@ -38,6 +38,16 @@ void test_stdio_h (void)
   /* { dg-message "'EOF' is defined in header '<stdio.h>'; did you forget to '#include <stdio.h>'?" "" { target *-*-* } .-1 } */
 }
 
+/* Missing <stdlib.h>.  */
+
+void test_stdlib (int i)
+{
+  i = EXIT_SUCCESS; /* { dg-error "'EXIT_SUCCESS' undeclared" } */
+  /* { dg-message "'EXIT_SUCCESS' is defined in header '<stdlib.h>'; did you forget to '#include <stdlib.h>'?" "" { target *-*-* } .-1 } */
+  i = EXIT_FAILURE; /* { dg-error "'EXIT_FAILURE' undeclared" } */
+  /* { dg-message "'EXIT_FAILURE' is defined in header '<stdlib.h>'; did you forget to '#include <stdlib.h>'?" "" { target *-*-* } .-1 } */
+}
+
 /* Missing <errno.h>.  */
 
 int test_errno_h (void)

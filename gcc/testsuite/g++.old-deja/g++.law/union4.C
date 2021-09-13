@@ -7,7 +7,7 @@
 // Message-ID: <m0pA49A-0000LdC@piano.veritas.com>
 
 static union {
-        struct SS {
+        struct SS {		// { dg-error "anonymous union" }
                 int ss;
         };
 };// { dg-error "no members" }

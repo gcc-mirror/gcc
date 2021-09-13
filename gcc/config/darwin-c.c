@@ -808,8 +808,7 @@ darwin_cfstring_ref_p (const_tree strp)
     tn = DECL_NAME (tn);
   return (tn 
 	  && IDENTIFIER_POINTER (tn)
-	  && !strncmp (IDENTIFIER_POINTER (tn), "CFStringRef",
-		       strlen ("CFStringRef")));
+	  && startswith (IDENTIFIER_POINTER (tn), "CFStringRef"));
 }
 
 /* At present the behavior of this is undefined and it does nothing.  */
@@ -843,7 +842,7 @@ darwin_objc_declare_unresolved_class_reference (const char *name)
   size_t len = strlen (reference) + strlen(name) + 2;
   char *buf = (char *) alloca (len);
 
-  gcc_checking_assert (!strncmp (name, ".objc_class_name_", 17));
+  gcc_checking_assert (startswith (name, ".objc_class_name_"));
 
   snprintf (buf, len, "%s%s", reference, name);
   symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
@@ -856,8 +855,8 @@ darwin_objc_declare_class_definition (const char *name)
   size_t len = strlen (xname) + 7 + 5;
   char *buf = (char *) alloca (len);
 
-  gcc_checking_assert (!strncmp (name, ".objc_class_name_", 17)
-		       || !strncmp (name, "*.objc_category_name_", 21));
+  gcc_checking_assert (startswith (name, ".objc_class_name_")
+		       || startswith (name, "*.objc_category_name_"));
 
   /* Mimic default_globalize_label.  */
   snprintf (buf, len, ".globl\t%s", xname);

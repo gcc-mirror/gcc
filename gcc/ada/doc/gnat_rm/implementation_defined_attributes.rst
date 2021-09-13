@@ -196,7 +196,7 @@ Attribute Default_Bit_Order
 .. index:: Default_Bit_Order
 
 ``Standard'Default_Bit_Order`` (``Standard`` is the only
-permissible prefix), provides the value ``System.Default_Bit_Order``
+allowed prefix), provides the value ``System.Default_Bit_Order``
 as a ``Pos`` value (0 for ``High_Order_First``, 1 for
 ``Low_Order_First``).  This is used to construct the definition of
 ``Default_Bit_Order`` in package ``System``.
@@ -210,7 +210,7 @@ Attribute Default_Scalar_Storage_Order
 .. index:: Default_Scalar_Storage_Order
 
 ``Standard'Default_Scalar_Storage_Order`` (``Standard`` is the only
-permissible prefix), provides the current value of the default scalar storage
+allowed prefix), provides the current value of the default scalar storage
 order (as specified using pragma ``Default_Scalar_Storage_Order``, or
 equal to ``Default_Bit_Order`` if unspecified) as a
 ``System.Bit_Order`` value. This is a static attribute.
@@ -665,7 +665,7 @@ Attribute Maximum_Alignment
 .. index:: Maximum_Alignment
 
 ``Standard'Maximum_Alignment`` (``Standard`` is the only
-permissible prefix) provides the maximum useful alignment value for the
+allowed prefix) provides the maximum useful alignment value for the
 target.  This is a static value that can be used to specify the alignment
 for an object, guaranteeing that it is properly aligned in all
 cases.
@@ -674,7 +674,7 @@ Attribute Max_Integer_Size
 ==========================
 .. index:: Max_Integer_Size
 
-``Standard'Max_Integer_Size`` (``Standard`` is the only permissible
+``Standard'Max_Integer_Size`` (``Standard`` is the only allowed
 prefix) provides the size of the largest supported integer type for
 the target. The result is a static constant.
 
@@ -1057,6 +1057,46 @@ If a component of ``T`` is itself of a record or array type, the specfied
 attribute definition clause must be provided for the component type as well
 if desired.
 
+Representation changes that explicitly or implicitly toggle the scalar storage
+order are not supported and may result in erroneous execution of the program,
+except when performed by means of an instance of ``Ada.Unchecked_Conversion``.
+
+In particular, overlays are not supported and a warning is given for them:
+
+.. code-block:: ada
+
+     type Rec_LE is record
+        I : Integer;
+     end record;
+
+     for Rec_LE use record
+        I at 0 range 0 .. 31;
+     end record;
+
+     for Rec_LE'Bit_Order use System.Low_Order_First;
+     for Rec_LE'Scalar_Storage_Order use System.Low_Order_First;
+
+     type Rec_BE is record
+        I : Integer;
+     end record;
+
+     for Rec_BE use record
+        I at 0 range 0 .. 31;
+     end record;
+
+     for Rec_BE'Bit_Order use System.High_Order_First;
+     for Rec_BE'Scalar_Storage_Order use System.High_Order_First;
+
+     R_LE : Rec_LE;
+
+     R_BE : Rec_BE;
+     for R_BE'Address use R_LE'Address;
+
+``warning: overlay changes scalar storage order [enabled by default]``
+
+In most cases, such representation changes ought to be replaced by an
+instantiation of a function or procedure provided by ``GNAT.Byte_Swapping``.
+
 Note that the scalar storage order only affects the in-memory data
 representation. It has no effect on the representation used by stream
 attributes.
@@ -1164,7 +1204,7 @@ Attribute Storage_Unit
 ======================
 .. index:: Storage_Unit
 
-``Standard'Storage_Unit`` (``Standard`` is the only permissible
+``Standard'Storage_Unit`` (``Standard`` is the only allowed
 prefix) provides the same value as ``System.Storage_Unit``.
 
 Attribute Stub_Type
@@ -1195,7 +1235,7 @@ Attribute System_Allocator_Alignment
 .. index:: System_Allocator_Alignment
 
 ``Standard'System_Allocator_Alignment`` (``Standard`` is the only
-permissible prefix) provides the observable guaranted to be honored by
+allowed prefix) provides the observable guaranted to be honored by
 the system allocator (malloc). This is a static value that can be used
 in user storage pools based on malloc either to reject allocation
 with alignment too large or to enable a realignment circuitry if the
@@ -1205,7 +1245,7 @@ Attribute Target_Name
 =====================
 .. index:: Target_Name
 
-``Standard'Target_Name`` (``Standard`` is the only permissible
+``Standard'Target_Name`` (``Standard`` is the only allowed
 prefix) provides a static string value that identifies the target
 for the current compilation. For GCC implementations, this is the
 standard gcc target name without the terminating slash (for
@@ -1216,7 +1256,7 @@ Attribute To_Address
 .. index:: To_Address
 
 The ``System'To_Address``
-(``System`` is the only permissible prefix)
+(``System`` is the only allowed prefix)
 denotes a function identical to
 ``System.Storage_Elements.To_Address`` except that
 it is a static attribute.  This means that if its argument is
@@ -1587,6 +1627,15 @@ Multi-dimensional arrays can be modified, as shown by this example:
 
 which changes element (1,2) to 20 and (3,4) to 30.
 
+Attribute Valid_Image
+=======================
+.. index:: Valid_Image
+
+The ``'Valid_Image`` attribute is defined for enumeration types other than
+those in package Standard. This attribute is a function that takes
+a String, and returns Boolean. ``T'Valid_Image (S)`` returns True
+if and only if ``T'Value (S)`` would not raise Constraint_Error.
+
 Attribute Valid_Scalars
 =======================
 .. index:: Valid_Scalars
@@ -1650,7 +1699,7 @@ Attribute Wchar_T_Size
 ======================
 .. index:: Wchar_T_Size
 
-``Standard'Wchar_T_Size`` (``Standard`` is the only permissible
+``Standard'Wchar_T_Size`` (``Standard`` is the only allowed
 prefix) provides the size in bits of the C ``wchar_t`` type
 primarily for constructing the definition of this type in
 package ``Interfaces.C``. The result is a static constant.
@@ -1659,6 +1708,6 @@ Attribute Word_Size
 ===================
 .. index:: Word_Size
 
-``Standard'Word_Size`` (``Standard`` is the only permissible
+``Standard'Word_Size`` (``Standard`` is the only allowed
 prefix) provides the value ``System.Word_Size``. The result is
 a static constant.

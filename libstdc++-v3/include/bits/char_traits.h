@@ -235,62 +235,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#if __cplusplus >= 201703L
-
-#if __cplusplus == 201703L
-// Unofficial macro indicating P0426R1 support
-# define __cpp_lib_constexpr_char_traits 201611L
-#else
-// Also support P1032R1 in C++20
+#ifdef __cpp_lib_is_constant_evaluated
+// Unofficial macro indicating P1032R1 support in C++20
 # define __cpp_lib_constexpr_char_traits 201811L
-#endif
-
-  /**
-   *  @brief Determine whether the characters of a NULL-terminated
-   *  string are known at compile time.
-   *  @param  __s  The string.
-   *
-   *  Assumes that _CharT is a built-in character type.
-   */
-  template<typename _CharT>
-    static _GLIBCXX_ALWAYS_INLINE constexpr bool
-    __constant_string_p(const _CharT* __s)
-    {
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-      (void) __s;
-      // In constexpr contexts all strings should be constant.
-      return __builtin_is_constant_evaluated();
-#else
-      while (__builtin_constant_p(*__s) && *__s)
-	__s++;
-      return __builtin_constant_p(*__s);
-#endif
-    }
-
-  /**
-   *  @brief Determine whether the characters of a character array are
-   *  known at compile time.
-   *  @param  __a  The character array.
-   *  @param  __n  Number of characters.
-   *
-   *  Assumes that _CharT is a built-in character type.
-   */
-  template<typename _CharT>
-    static _GLIBCXX_ALWAYS_INLINE constexpr bool
-    __constant_char_array_p(const _CharT* __a, size_t __n)
-    {
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-      (void) __a;
-      (void) __n;
-      // In constexpr contexts all character arrays should be constant.
-      return __builtin_is_constant_evaluated();
-#else
-      size_t __i = 0;
-      while (__i < __n && __builtin_constant_p(__a[__i]))
-	__i++;
-      return __i == __n;
-#endif
-    }
+#elif __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+// Unofficial macro indicating P0426R1 support in C++17
+# define __cpp_lib_constexpr_char_traits 201611L
 #endif
 
   // 21.1
@@ -345,10 +295,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__n == 0)
 	  return 0;
-#if __cplusplus >= 201703L
-	if (__builtin_constant_p(__n)
-	    && __constant_char_array_p(__s1, __n)
-	    && __constant_char_array_p(__s2, __n))
+#if __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
 	  {
 	    for (size_t __i = 0; __i < __n; ++__i)
 	      if (lt(__s1[__i], __s2[__i]))
@@ -364,8 +312,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX17_CONSTEXPR size_t
       length(const char_type* __s)
       {
-#if __cplusplus >= 201703L
-	if (__constant_string_p(__s))
+#if __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
 	  return __gnu_cxx::char_traits<char_type>::length(__s);
 #endif
 	return __builtin_strlen(__s);
@@ -376,10 +324,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__n == 0)
 	  return 0;
-#if __cplusplus >= 201703L
-	if (__builtin_constant_p(__n)
-	    && __builtin_constant_p(__a)
-	    && __constant_char_array_p(__s, __n))
+#if __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
 	  return __gnu_cxx::char_traits<char_type>::find(__s, __n, __a);
 #endif
 	return static_cast<const char_type*>(__builtin_memchr(__s, __a, __n));
@@ -476,10 +422,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__n == 0)
 	  return 0;
-#if __cplusplus >= 201703L
-	if (__builtin_constant_p(__n)
-	    && __constant_char_array_p(__s1, __n)
-	    && __constant_char_array_p(__s2, __n))
+#if __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
 	  return __gnu_cxx::char_traits<char_type>::compare(__s1, __s2, __n);
 #endif
 	return wmemcmp(__s1, __s2, __n);
@@ -488,8 +432,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX17_CONSTEXPR size_t
       length(const char_type* __s)
       {
-#if __cplusplus >= 201703L
-	if (__constant_string_p(__s))
+#if __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
 	  return __gnu_cxx::char_traits<char_type>::length(__s);
 #endif
 	return wcslen(__s);
@@ -500,10 +444,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__n == 0)
 	  return 0;
-#if __cplusplus >= 201703L
-	if (__builtin_constant_p(__n)
-	    && __builtin_constant_p(__a)
-	    && __constant_char_array_p(__s, __n))
+#if __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
 	  return __gnu_cxx::char_traits<char_type>::find(__s, __n, __a);
 #endif
 	return wmemchr(__s, __a, __n);
@@ -597,10 +539,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__n == 0)
 	  return 0;
-#if __cplusplus > 201402
-	if (__builtin_constant_p(__n)
-	    && __constant_char_array_p(__s1, __n)
-	    && __constant_char_array_p(__s2, __n))
+#if __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
 	  return __gnu_cxx::char_traits<char_type>::compare(__s1, __s2, __n);
 #endif
 	return __builtin_memcmp(__s1, __s2, __n);
@@ -609,8 +549,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX17_CONSTEXPR size_t
       length(const char_type* __s)
       {
-#if __cplusplus > 201402
-	if (__constant_string_p(__s))
+#if __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
 	  return __gnu_cxx::char_traits<char_type>::length(__s);
 #endif
 	size_t __i = 0;
@@ -624,10 +564,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__n == 0)
 	  return 0;
-#if __cplusplus > 201402
-	if (__builtin_constant_p(__n)
-	    && __builtin_constant_p(__a)
-	    && __constant_char_array_p(__s, __n))
+#if __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
 	  return __gnu_cxx::char_traits<char_type>::find(__s, __n, __a);
 #endif
 	return static_cast<const char_type*>(__builtin_memchr(__s, __a, __n));

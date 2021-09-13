@@ -1805,7 +1805,7 @@ parse_options_from_collect_gcc_options (const char *collect_gcc_options,
 	      if (argv_storage[j] == '\0')
 		fatal_error (input_location,
 			     "malformed %<COLLECT_GCC_OPTIONS%>");
-	      else if (strncmp (&argv_storage[j], "'\\''", 4) == 0)
+	      else if (startswith (&argv_storage[j], "'\\''"))
 		{
 		  argv_storage[k++] = '\'';
 		  j += 4;

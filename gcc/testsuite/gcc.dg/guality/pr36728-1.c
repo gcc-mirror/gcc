@@ -32,7 +32,7 @@ foo (int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7)
 /* { dg-final { gdb-test 16 "arg5" "5" } } */
 /* { dg-final { gdb-test 16 "arg6" "6" } } */
 /* { dg-final { gdb-test 16 "arg7" "30" } } */
-/* { dg-final { gdb-test 16 "y" "2" } } */
+/* { dg-final { gdb-test 16 "y" "2" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" } } } } } */
 /* { dg-final { gdb-test 18 "arg1" "1" { target { ! "s390*-*-*" } } } } */
 /* { dg-final { gdb-test 18 "arg2" "2" { target { ! "s390*-*-*" } } } } */
 /* { dg-final { gdb-test 18 "arg3" "3" } } */

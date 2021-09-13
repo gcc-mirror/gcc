@@ -694,12 +694,10 @@ typedef enum
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
 
-/* We don't have to worry about dbx compatibility for the v850.  */
-#define DEFAULT_GDB_EXTENSIONS 1
-
 /* Use dwarf2 debugging info by default.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE   DWARF2_DEBUG
+#define DWARF2_DEBUGGING_INFO	   1
 
 #define DWARF2_FRAME_INFO          1
 #define DWARF2_UNWIND_INFO         0

@@ -410,8 +410,7 @@ valid_address_p (rtx op, struct address_info *ad,
      Need to extract memory from op for special memory constraint,
      i.e. bcst_mem_operand in i386 backend.  */
   if (MEM_P (extract_mem_from_operand (op))
-      && (insn_extra_memory_constraint (constraint)
-	  || insn_extra_special_memory_constraint (constraint))
+      && insn_extra_relaxed_memory_constraint (constraint)
       && constraint_satisfied_p (op, constraint))
     return true;
 
@@ -834,6 +833,11 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
     {
     CASE_CONST_UNIQUE:
       return false;
+
+    case CONST_VECTOR:
+      if (!same_vector_encodings_p (x, y))
+	return false;
+      break;
 
     case LABEL_REF:
       return label_ref_label (x) == label_ref_label (y);
@@ -2418,6 +2422,7 @@ process_alt_operands (int only_alternative)
 		      break;
 
 		    case CT_MEMORY:
+		    case CT_RELAXED_MEMORY:
 		      if (MEM_P (op)
 			  && satisfies_memory_constraint_p (op, cn))
 			win = true;
@@ -2766,7 +2771,7 @@ process_alt_operands (int only_alternative)
 		  if (lra_dump_file != NULL)
 		    fprintf
 		      (lra_dump_file,
-		       "            alt=%d: No input/otput reload -- refuse\n",
+		       "            alt=%d: No input/output reload -- refuse\n",
 		       nalt);
 		  goto fail;
 		}
@@ -3395,12 +3400,12 @@ equiv_address_substitution (struct address_info *ad)
 /* Skip all modifiers and whitespaces in constraint STR and return the
    result.  */
 static const char *
-skip_contraint_modifiers (const char *str)
+skip_constraint_modifiers (const char *str)
 {
   for (;;str++)
     switch (*str)
       {
-      case '+' : case '&' : case '=': case '*': case ' ': case '\t':
+      case '+': case '&' : case '=': case '*': case ' ': case '\t':
       case '$': case '^' : case '%': case '?': case '!':
 	break;
       default: return str;
@@ -3451,15 +3456,25 @@ process_address_1 (int nop, bool check_only_p,
     return false;
 
   constraint
-    = skip_contraint_modifiers (curr_static_id->operand[nop].constraint);
+    = skip_constraint_modifiers (curr_static_id->operand[nop].constraint);
   if (IN_RANGE (constraint[0], '0', '9'))
     {
       char *end;
       unsigned long dup = strtoul (constraint, &end, 10);
       constraint
-	= skip_contraint_modifiers (curr_static_id->operand[dup].constraint);
+	= skip_constraint_modifiers (curr_static_id->operand[dup].constraint);
     }
   cn = lookup_constraint (*constraint == '\0' ? "X" : constraint);
+  /* If we have several alternatives or/and several constraints in an
+     alternative and we can not say at this stage what constraint will be used,
+     use unknown constraint.  The exception is an address constraint.  If
+     operand has one address constraint, probably all others constraints are
+     address ones.  */
+  if (constraint[0] != '\0' && get_constraint_type (cn) != CT_ADDRESS
+      && *skip_constraint_modifiers (constraint
+				     + CONSTRAINT_LEN (constraint[0],
+						       constraint)) != '\0')
+    cn = CONSTRAINT__UNKNOWN;
   if (insn_extra_address_constraint (cn)
       /* When we find an asm operand with an address constraint that
 	 doesn't satisfy address_operand to begin with, we clear
@@ -3974,15 +3989,9 @@ curr_insn_transform (bool check_only_p)
   no_input_reloads_p = no_output_reloads_p = false;
   goal_alt_number = -1;
   change_p = sec_mem_p = false;
-  /* CALL_INSNs are not allowed to have any output reloads; neither
-     are insns that SET cc0.  Insns that use CC0 are not allowed to
-     have any input reloads.  */
-  if (CALL_P (curr_insn))
-    no_output_reloads_p = true;
 
-  if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (curr_insn)))
-    no_input_reloads_p = true;
-  if (HAVE_cc0 && reg_set_p (cc0_rtx, PATTERN (curr_insn)))
+  /* CALL_INSNs are not allowed to have any output reloads.  */
+  if (CALL_P (curr_insn))
     no_output_reloads_p = true;
 
   n_operands = curr_static_id->n_operands;
@@ -4360,7 +4369,8 @@ curr_insn_transform (bool check_only_p)
 	      {
 		enum constraint_num cn = lookup_constraint (constraint);
 		if ((insn_extra_memory_constraint (cn)
-		     || insn_extra_special_memory_constraint (cn))
+		     || insn_extra_special_memory_constraint (cn)
+		     || insn_extra_relaxed_memory_constraint (cn))
 		    && satisfies_memory_constraint_p (tem, cn))
 		  break;
 	      }
@@ -5785,11 +5795,14 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       nregs = 1;
       mode = lra_reg_info[hard_regno].biggest_mode;
       machine_mode reg_rtx_mode = GET_MODE (regno_reg_rtx[hard_regno]);
-      /* A reg can have a biggest_mode of VOIDmode if it was only ever seen
-	 as part of a multi-word register.  In that case, or if the biggest
-	 mode was larger than a register, just use the reg_rtx.  Otherwise,
-	 limit the size to that of the biggest access in the function.  */
+      /* A reg can have a biggest_mode of VOIDmode if it was only ever seen as
+	 part of a multi-word register.  In that case, just use the reg_rtx
+	 mode.  Do the same also if the biggest mode was larger than a register
+	 or we can not compare the modes.  Otherwise, limit the size to that of
+	 the biggest access in the function.  */
       if (mode == VOIDmode
+	  || !ordered_p (GET_MODE_PRECISION (mode),
+			 GET_MODE_PRECISION (reg_rtx_mode))
 	  || paradoxical_subreg_p (mode, reg_rtx_mode))
 	{
 	  original_reg = regno_reg_rtx[hard_regno];

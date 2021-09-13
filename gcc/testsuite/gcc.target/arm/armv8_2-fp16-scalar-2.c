@@ -1,7 +1,9 @@
 /* { dg-do compile }  */
+/* { dg-require-effective-target arm_hard_ok }  */
 /* { dg-require-effective-target arm_v8_2a_fp16_scalar_ok }  */
 /* { dg-options "-O2 -std=c11" }  */
 /* { dg-add-options arm_v8_2a_fp16_scalar }  */
+/* { dg-additional-options "-mfloat-abi=hard" } */
 
 /* Test compiler use of FP16 instructions.  */
 #include <arm_fp16.h>

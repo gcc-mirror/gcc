@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -144,6 +144,13 @@ is
    ---------
    -- "=" --
    ---------
+
+   function "=" (Left, Right : Cursor) return Boolean is
+   begin
+      return
+       Left.Container = Right.Container
+         and then Left.Node = Right.Node;
+   end "=";
 
    function "=" (Left, Right : Set) return Boolean is
    begin
@@ -605,13 +612,13 @@ is
    is
       HT   : Hash_Table_Type renames Container'Unrestricted_Access.HT;
       Node : constant Node_Access := Element_Keys.Find (HT, Item);
-
    begin
       if Node = null then
          return No_Element;
       end if;
 
-      return Cursor'(Container'Unrestricted_Access, Node, Hash_Type'Last);
+      return Cursor'
+        (Container'Unrestricted_Access, Node, HT_Ops.Index (HT, Node));
    end Find;
 
    --------------------
@@ -766,6 +773,11 @@ is
    begin
       Insert (Container.HT, New_Item, Position.Node, Inserted);
       Position.Container := Container'Unchecked_Access;
+
+      --  Note that we do not set the Position component of the cursor,
+      --  because it may become incorrect on subsequent insertions/deletions
+      --  from the container. This will lose some optimizations but prevents
+      --  anomalies when the underlying hash-table is expanded or shrunk.
    end Insert;
 
    procedure Insert
@@ -1168,7 +1180,7 @@ is
    ---------------
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Set)
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Set)
    is
       First_Time : Boolean := True;
       use System.Put_Images;
@@ -1998,7 +2010,7 @@ is
             return No_Element;
          else
             return Cursor'
-              (Container'Unrestricted_Access, Node, Hash_Type'Last);
+              (Container'Unrestricted_Access, Node, HT_Ops.Index (HT, Node));
          end if;
       end Find;
 

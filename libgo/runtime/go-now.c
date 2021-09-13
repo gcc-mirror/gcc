@@ -8,7 +8,7 @@
 
 #include "runtime.h"
 
-// Return current time.  This is the implementation of time.walltime1().
+// Return current time.  This is the implementation of runtime.walltime().
 
 struct walltime_ret
 {
@@ -16,7 +16,7 @@ struct walltime_ret
   int32_t nsec;
 };
 
-struct walltime_ret now(void) __asm__ (GOSYM_PREFIX "runtime.walltime1")
+struct walltime_ret now(void) __asm__ (GOSYM_PREFIX "runtime.walltime")
   __attribute__ ((no_split_stack));
 
 struct walltime_ret

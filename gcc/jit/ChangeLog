@@ -1,3 +1,39 @@
+2021-09-10  Petter Tomner  <tomner@kth.se>
+
+	* jit-playback.c: Moved global var processing to after loc handling.
+	  Setting TYPE_NAME for fundamental types.
+	  Using common functions for finalizing globals.
+	* jit-playback.h: New method init_types().
+	  Changed get_tree_node_for_type() to method.
+
+2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* docs/examples/tut04-toyvm/toyvm.c: Include jit-dejagnu.h.
+	* docs/examples/tut04-toyvm/toyvm.cc: Likewise.
+	* jit-dejagnu.h: New file, imported from dejagnu-1.6.2 and
+	patched for this application.
+
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR jit/100613
+	* Make-lang.in: Provide clauses for Darwin hosts.
+
+2021-07-18  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95498
+	* jit-playback.c (convert): Add support to handle truncation and
+	extension in the convert function.
+
+2021-05-19  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100658
+	* libgccjit.c (gcc_jit_context_new_function): Fix typos.
+
+2021-03-24  Matthias Klose  <doko@ubuntu.com>
+
+	* Make-lang.in (jit.sphinx.html, jit.sphinx.pdf): Use $(mkinstalldirs),
+	(jit.install-headers): Depend on installdirs.
+
 2021-02-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/99126

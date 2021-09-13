@@ -22,6 +22,19 @@
 #include "declaration.h"
 #include "init.h"
 
+bool isSpecialEnumIdent(const Identifier *ident)
+{
+    return  ident == Id::__c_long ||
+            ident == Id::__c_ulong ||
+            ident == Id::__c_longlong ||
+            ident == Id::__c_ulonglong ||
+            ident == Id::__c_long_double ||
+            ident == Id::__c_wchar_t ||
+            ident == Id::__c_complex_float ||
+            ident == Id::__c_complex_double ||
+            ident == Id::__c_complex_real;
+}
+
 /********************************* EnumDeclaration ****************************/
 
 EnumDeclaration::EnumDeclaration(Loc loc, Identifier *id, Type *memtype)
@@ -109,7 +122,7 @@ Expression *EnumDeclaration::getMaxMinValue(Loc loc, Identifier *id)
         dsymbolSemantic(this, _scope);
     if (errors)
         goto Lerrors;
-    if (semanticRun == PASSinit || !members)
+    if (!members)
     {
         if (isSpecial())
         {
@@ -118,7 +131,7 @@ Expression *EnumDeclaration::getMaxMinValue(Loc loc, Identifier *id)
             return memtype->getProperty(loc, id, 0);
         }
 
-        error("is forward referenced looking for .%s", id->toChars());
+        error(loc, "is opaque and has no `.%s`", id->toChars());
         goto Lerrors;
     }
     if (!(memtype && memtype->isintegral()))
@@ -135,12 +148,21 @@ Expression *EnumDeclaration::getMaxMinValue(Loc loc, Identifier *id)
         if (!em)
             continue;
         if (em->errors)
-            goto Lerrors;
+        {
+            errors = true;
+            continue;
+        }
 
-        Expression *e = em->value();
+        if (em->semanticRun < PASSsemanticdone)
+        {
+            em->error("is forward referenced looking for `.%s`", id->toChars());
+            errors = true;
+            continue;
+        }
+
         if (first)
         {
-            *pval = e;
+            *pval = em->value();
             first = false;
         }
         else
@@ -155,15 +177,23 @@ Expression *EnumDeclaration::getMaxMinValue(Loc loc, Identifier *id)
              *   if (e > maxval)
              *      maxval = e;
              */
+            Expression *e = em->value();
             Expression *ec = new CmpExp(id == Id::max ? TOKgt : TOKlt, em->loc, e, *pval);
             inuse++;
             ec = expressionSemantic(ec, em->_scope);
             inuse--;
             ec = ec->ctfeInterpret();
+            if (ec->op == TOKerror)
+            {
+                errors = true;
+                continue;
+            }
             if (ec->toInteger())
                 *pval = e;
         }
     }
+    if (errors)
+        goto Lerrors;
 Ldone:
   {
     Expression *e = *pval;
@@ -187,11 +217,7 @@ Lerrors:
  */
 bool EnumDeclaration::isSpecial() const
 {
-    return (ident == Id::__c_long ||
-            ident == Id::__c_ulong ||
-            ident == Id::__c_longlong ||
-            ident == Id::__c_ulonglong ||
-            ident == Id::__c_long_double) && memtype;
+    return isSpecialEnumIdent(ident) && memtype;
 }
 
 Expression *EnumDeclaration::getDefaultValue(Loc loc)
@@ -204,16 +230,17 @@ Expression *EnumDeclaration::getDefaultValue(Loc loc)
         dsymbolSemantic(this, _scope);
     if (errors)
         goto Lerrors;
-    if (semanticRun == PASSinit || !members)
+    if (!members)
     {
         if (isSpecial())
         {
             /* Allow these special enums to not need a member list
              */
-            return memtype->defaultInit(loc);
+            defaultval = memtype->defaultInit(loc);
+            return defaultval;
         }
 
-        error(loc, "forward reference of %s.init", toChars());
+        error(loc, "is opaque and has no default initializer");
         goto Lerrors;
     }
 
@@ -222,6 +249,12 @@ Expression *EnumDeclaration::getDefaultValue(Loc loc)
         EnumMember *em = (*members)[i]->isEnumMember();
         if (em)
         {
+            if (em->semanticRun < PASSsemanticdone)
+            {
+                error(loc, "forward reference of `%s.init`", toChars());
+                goto Lerrors;
+            }
+
             defaultval = em->value();
             return defaultval;
         }
@@ -243,15 +276,10 @@ Type *EnumDeclaration::getMemtype(Loc loc)
          */
         if (memtype)
             memtype = typeSemantic(memtype, loc, _scope);
-        else
-        {
-            if (!isAnonymous() && members)
-                memtype = Type::tint32;
-        }
     }
     if (!memtype)
     {
-        if (!isAnonymous() && members)
+        if (!isAnonymous() && (members || semanticRun >= PASSsemanticdone))
             memtype = Type::tint32;
         else
         {
@@ -296,13 +324,6 @@ Dsymbol *EnumDeclaration::search(const Loc &loc, Identifier *ident, int flags)
     {
         // Try one last time to resolve this enum
         dsymbolSemantic(this, _scope);
-    }
-
-    if (!members || !symtab || _scope)
-    {
-        error("is forward referenced when looking for `%s`", ident->toChars());
-        //*(char*)0=0;
-        return NULL;
     }
 
     Dsymbol *s = ScopeDsymbol::search(loc, ident, flags);

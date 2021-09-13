@@ -1,6 +1,6 @@
 /* { dg-do run { target openacc_nvidia_accel_selected } } */
 /* { dg-additional-options "-fopenacc-dim=:2:128" } */
-/* { dg-additional-options "-foffload=-fdump-tree-oaccdevlow" } */
+/* { dg-additional-options "-foffload=-fdump-tree-oaccloops" } */
 /* { dg-set-target-env-var "GOMP_DEBUG" "1" } */
 
 #include <stdlib.h>
@@ -37,5 +37,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-offload-tree-dump "__attribute__\\(\\(oacc function \\(1, 2, 128\\)" "oaccdevlow" } } */
+/* { dg-final { scan-offload-tree-dump "__attribute__\\(\\(oacc function \\(1, 2, 128\\)" "oaccloops" } } */
 /* { dg-output "nvptx_exec: kernel main\\\$_omp_fn\\\$0: launch gangs=1, workers=2, vectors=128" } */

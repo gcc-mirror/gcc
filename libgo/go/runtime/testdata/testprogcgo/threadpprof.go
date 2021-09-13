@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build !plan9,!windows
-// +build !gccgo
+//go:build !plan9 && !windows && !gccgo
+// +build !plan9,!windows,!gccgo
 
 package main
 
@@ -50,13 +50,13 @@ void pprofCgoThreadTraceback(void* parg) {
 	arg->buf[0] = (uintptr_t)(cpuHogThread) + 0x10;
 	arg->buf[1] = (uintptr_t)(cpuHogThread2) + 0x4;
 	arg->buf[2] = 0;
-	__atomic_add_fetch(&cpuHogThreadCount, 1, __ATOMIC_SEQ_CST);
+	__sync_add_and_fetch(&cpuHogThreadCount, 1);
 }
 
 // getCPUHogThreadCount fetches the number of times we've seen cpuHogThread
 // in the traceback.
 int getCPUHogThreadCount() {
-	return __atomic_load(&cpuHogThreadCount, __ATOMIC_SEQ_CST);
+	return __sync_add_and_fetch(&cpuHogThreadCount, 0);
 }
 
 static void* cpuHogDriver(void* arg __attribute__ ((unused))) {

@@ -80,8 +80,8 @@ Scope *AttribDeclaration::createNewScope(Scope *sc,
     if (stc != sc->stc ||
         linkage != sc->linkage ||
         cppmangle != sc->cppmangle ||
-        !protection.isSubsetOf(sc->protection) ||
         explicitProtection != sc->explicitProtection ||
+        !(protection == sc->protection) ||
         aligndecl != sc->aligndecl ||
         inlining != sc->inlining)
     {
@@ -552,10 +552,21 @@ void ProtDeclaration::addMember(Scope *sc, ScopeDsymbol *sds)
     if (protection.kind == Prot::package_ && protection.pkg && sc->_module)
     {
         Module *m = sc->_module;
-        Package* pkg = m->parent ? m->parent->isPackage() : NULL;
-        if (!pkg || !protection.pkg->isAncestorPackageOf(pkg))
-            error("does not bind to one of ancestor packages of module `%s`",
-               m->toPrettyChars(true));
+
+        // While isAncestorPackageOf does an equality check, the fix for issue 17441 adds a check to see if
+        // each package's .isModule() properites are equal.
+        //
+        // Properties generated from `package(foo)` i.e. protection.pkg have .isModule() == null.
+        // This breaks package declarations of the package in question if they are declared in
+        // the same package.d file, which _do_ have a module associated with them, and hence a non-null
+        // isModule()
+        if (!m->isPackage() || !protection.pkg->ident->equals(m->isPackage()->ident))
+        {
+            Package* pkg = m->parent ? m->parent->isPackage() : NULL;
+            if (!pkg || !protection.pkg->isAncestorPackageOf(pkg))
+                error("does not bind to one of ancestor packages of module `%s`",
+                      m->toPrettyChars(true));
+        }
     }
 
     return AttribDeclaration::addMember(sc, sds);
@@ -794,6 +805,18 @@ Scope *PragmaDeclaration::newScope(Scope *sc)
         return createNewScope(sc, sc->stc, sc->linkage, sc->cppmangle,
             sc->protection, sc->explicitProtection, sc->aligndecl,
             inlining);
+    }
+    if (ident == Id::printf || ident == Id::scanf)
+    {
+        Scope *sc2 = sc->push();
+
+        if (ident == Id::printf)
+            // Override previous setting, never let both be set
+            sc2->flags = (sc2->flags & ~SCOPEscanf) | SCOPEprintf;
+        else
+            sc2->flags = (sc2->flags & ~SCOPEprintf) | SCOPEscanf;
+
+        return sc2;
     }
     return sc;
 }
@@ -1164,12 +1187,12 @@ void ForwardingAttribDeclaration::addMember(Scope *sc, ScopeDsymbol *sds)
 
 // These are mixin declarations, like mixin("int x");
 
-CompileDeclaration::CompileDeclaration(Loc loc, Expression *exp)
+CompileDeclaration::CompileDeclaration(Loc loc, Expressions *exps)
     : AttribDeclaration(NULL)
 {
     //printf("CompileDeclaration(loc = %d)\n", loc.linnum);
     this->loc = loc;
-    this->exp = exp;
+    this->exps = exps;
     this->scopesym = NULL;
     this->compiled = false;
 }
@@ -1177,7 +1200,7 @@ CompileDeclaration::CompileDeclaration(Loc loc, Expression *exp)
 Dsymbol *CompileDeclaration::syntaxCopy(Dsymbol *)
 {
     //printf("CompileDeclaration::syntaxCopy('%s')\n", toChars());
-    return new CompileDeclaration(loc, exp->syntaxCopy());
+    return new CompileDeclaration(loc, Expression::arraySyntaxCopy(exps));
 }
 
 void CompileDeclaration::addMember(Scope *, ScopeDsymbol *sds)

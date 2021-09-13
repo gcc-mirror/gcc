@@ -1,3 +1,173 @@
+2021-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* Makefile.am (gfor_built_src): Depend on
+	include/ISO_Fortran_binding.h not on ISO_Fortran_binding.h.
+	(ISO_Fortran_binding.h): Rename make target to ...
+	(include/ISO_Fortran_binding.h): ... this.
+	* Makefile.in: Regenerate.
+
+2021-09-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* ISO_Fortran_binding-1-tmpl.h: Deleted.
+	* ISO_Fortran_binding-2-tmpl.h: Deleted.
+	* ISO_Fortran_binding-3-tmpl.h: Deleted.
+	* ISO_Fortran_binding.h: New file to replace the above.
+	* Makefile.am (gfor_cdir): Remove MULTISUBDIR.
+	(ISO_Fortran_binding.h): Simplify to just copy the file.
+	* Makefile.in: Regenerated.
+	* mk-kinds-h.sh: Revert pieces no longer needed for
+	ISO_Fortran_binding.h.
+
+2021-09-02  Sandra Loosemore  <sandra@codesourcery.com>
+	    José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100907
+	PR fortran/100911
+	PR fortran/100914
+	PR fortran/100915
+	PR fortran/100917
+	* ISO_Fortran_binding-1-tmpl.h (CFI_type_cfunptr): Make equivalent
+	to CFI_type_cptr.
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Fix
+	handling of CFI_type_cptr and CFI_type_cfunptr.  Additional error
+	checking and code cleanup.
+	(gfc_desc_to_cfi_desc): Likewise.  Also correct kind mapping
+	for character, complex, and long double types.
+
+2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Use configured libm availability.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use libtool macro to find libm availability.
+	* libgfortran.spec.in: Use configured libm availability.
+
+2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/101305
+	PR fortran/101660
+	PR testsuite/101847
+	* Makefile.am (ISO_Fortran_binding.h): Create include/ in the build dir
+	and copy the include file to it.
+	(clean-local): Add for removing the 'include' directory.
+	* Makefile.in: Regenerate.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101317
+	* runtime/ISO_Fortran_binding.c: Include <inttypes.h>.
+	(CFI_address): Tidy error messages and comments.
+	(CFI_allocate): Likewise.
+	(CFI_deallocate): Likewise.
+	(CFI_establish): Likewise.  Add new checks for validity of
+	elem_len when it's used, plus type argument and extents.
+	(CFI_is_contiguous): Tidy error messages and comments.
+	(CFI_section): Likewise.  Refactor some repetitive code to
+	make it more understandable.
+	(CFI_select_part): Likewise.
+	(CFI_setpointer): Likewise.  Check that source is not an
+	unallocated allocatable array or an assumed-size array.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101310
+	* runtime/ISO_Fortran_binding.c (CFI_section): Fix the base
+	address computation and simplify the code.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101305
+	* runtime/ISO_Fortran_binding.c (CFI_establish): Special-case
+	CFI_type_cptr and CFI_type_cfunptr.  Correct size of long double
+	on targets where it has kind 10.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/101305
+	* ISO_Fortran_binding.h: Fix hard-coded sizes and split into...
+	* ISO_Fortran_binding-1-tmpl.h: New file.
+	* ISO_Fortran_binding-2-tmpl.h: New file.
+	* ISO_Fortran_binding-3-tmpl.h: New file.
+	* Makefile.am: Add rule for generating ISO_Fortran_binding.h.
+	Adjust pathnames to that file.
+	* Makefile.in: Regenerated.
+	* mk-kinds-h.sh: New file.
+	* runtime/ISO_Fortran_binding.c: Fix include path.
+
+2021-07-26  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93308
+	PR fortran/93963
+	PR fortran/94327
+	PR fortran/94331
+	PR fortran/97046
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Add code
+	to verify the descriptor. Correct bounds calculation.
+	(gfc_desc_to_cfi_desc): Add code to verify the descriptor.
+
+2021-07-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* runtime/ISO_Fortran_binding.c (CFI_allocate): Don't use elem_len
+	for CFI_type_signed_char.
+	(CFI_select_part): Likewise.
+
+2021-07-01  Tobias Burnus  <tobias@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc):
+	Initialize version field to 0.
+	(gfc_desc_to_cfi_desc): Initialize version field to CFI_VERSION.
+
+2021-06-29  Julian Brown  <julian@codesourcery.com>
+
+	PR target/96306
+	* configure.ac: Remove stanza that removes KIND=16 integers for AMD GCN.
+	* configure: Regenerate.
+
+2021-06-22  Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93524
+	* runtime/ISO_Fortran_binding.c (CFI_allocate): Fix
+	sm computation.
+
+2021-06-08  Martin Liska  <mliska@suse.cz>
+
+	* intrinsics/chmod.c (chmod_internal): Fix typo.
+	* io/transfer.c (read_sf): Likewise.
+
+2021-06-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100120
+	* intrinsics/associated.c (associated): have associated verify if
+	the "span" matches insted of the "elem_len".
+	* libgfortran.h (GFC_DESCRIPTOR_SPAN): add macro to retrive the
+	descriptor "span".
+
+2021-05-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/98301
+	* caf/libcaf.h (_gfortran_caf_random_init): New function.
+	* caf/single.c (_gfortran_caf_random_init): New function.
+	* gfortran.map: Added fndecl.
+	* intrinsics/random_init.f90: Implement random_init.
+
+2021-05-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* intrinsics/chmod.c (chmod_internal): Only declare mode_mask var
+	if HAVE_UMASK.
+
+2021-05-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/100352
+	* io/transfer.c (st_read_done_worker, st_write_done_worker): Add new
+	arg whether to unlock unit.
+	(st_read_done, st_write_done): Call it with true.
+	* io/async.c (async_io): Call it with false.
+	* io/io.h (st_write_done_worker, st_read_done_worker): Update prototype.
+
 2021-03-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* io/transfer.c (st_read_done_worker, st_write_done_worker):

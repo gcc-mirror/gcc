@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---          Copyright (C) 1995-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,6 +50,8 @@ package System.OS_Interface is
    --  Needed for clock_getres with glibc versions prior to 2.17
 
    pragma Linker_Options ("-lpthread");
+
+   use type System.Linux.time_t;
 
    subtype int            is Interfaces.C.int;
    subtype char           is Interfaces.C.char;

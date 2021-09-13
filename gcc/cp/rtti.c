@@ -433,7 +433,7 @@ get_tinfo_decl_direct (tree type, tree name, int pseudo_ix)
   if (!name)
     name = mangle_typeinfo_for_type (type);
 
-  if (!CLASS_TYPE_P (type))
+  if (!CLASS_TYPE_P (type) || TYPE_TRANSPARENT_AGGR (type))
     d = get_global_binding (name);
 
   if (!d)
@@ -536,14 +536,14 @@ build_if_nonnull (tree test, tree result, tsubst_flags_t complain)
 
   /* This is a compiler generated comparison, don't emit
      e.g. -Wnonnull-compare warning for it.  */
-  TREE_NO_WARNING (cond) = 1;
+  suppress_warning (cond, OPT_Wnonnull);
 
   null_ptr = cp_convert (TREE_TYPE (result), nullptr_node, complain);
   cond = build3 (COND_EXPR, TREE_TYPE (result), cond, result, null_ptr);
 
   /* Likewise, don't emit -Wnonnull for using the result to call
      a member function.  */
-  TREE_NO_WARNING (cond) = 1;
+  suppress_warning (cond, OPT_Wnonnull);
   return cond;
 }
 

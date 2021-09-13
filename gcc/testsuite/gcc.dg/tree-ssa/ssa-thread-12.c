@@ -1,8 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread2-details -fdump-tree-thread3-details -fdump-tree-thread4-details -fno-finite-loops --param early-inlining-insns=14 -fno-inline-functions" } */
-/* { dg-final { scan-tree-dump "FSM" "thread2" } } */
-/* { dg-final { scan-tree-dump "FSM" "thread3" } } */
-/* { dg-final { scan-tree-dump "FSM" "thread4" { xfail *-*-* } } } */
+/* { dg-options "-O2 -fdump-tree-thread3-details -fdump-tree-thread4-details -fno-finite-loops --param early-inlining-insns=14 -fno-inline-functions" } */
+/* { dg-final { scan-tree-dump "Registering jump thread" "thread3" } } */
+/* { dg-final { scan-tree-dump "Registering jump thread" "thread4" } } */
 
 typedef struct bitmap_head_def *bitmap;
 typedef const struct bitmap_head_def *const_bitmap;
