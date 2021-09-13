@@ -277,6 +277,8 @@ case ${target} in
  | crisv32-*-*				\
  | i[34567]86-go32-*			\
  | i[34567]86-*-go32*			\
+ | m32r-*-linux*			\
+ | m32rle-*-linux*			\
  | m68k-*-uclinuxoldabi*		\
  | mips64orion*-*-rtems*		\
  | pdp11-*-bsd				\
@@ -2301,22 +2303,6 @@ m32r-*-elf*)
  	;;
 m32rle-*-elf*)
 	tm_file="elfos.h newlib-stdint.h m32r/little.h ${tm_file}"
-	;;
-m32r-*-linux*)
-	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
-	tmake_file="${tmake_file} m32r/t-linux t-slibgcc"
-	gnu_ld=yes
-	if test x$enable_threads = xyes; then
-		thread_file='posix'
-	fi
- 	;;
-m32rle-*-linux*)
-	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
-	tmake_file="${tmake_file} m32r/t-linux t-slibgcc"
-	gnu_ld=yes
-	if test x$enable_threads = xyes; then
-		thread_file='posix'
-	fi
 	;;
 m68k-*-elf* | fido-*-elf*)
 	case ${target} in
