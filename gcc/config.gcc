@@ -3511,11 +3511,6 @@ vax-*-netbsdelf*)
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt vax/elf.opt"
 	tm_defines="${tm_defines} CHAR_FAST8=1 SHORT_FAST16=1"
 	;;
-vax-*-openbsd*)
-	tm_file="vax/vax.h vax/openbsd1.h openbsd.h openbsd-stdint.h openbsd-libpthread.h vax/openbsd.h"
-	extra_options="${extra_options} openbsd.opt"
-	use_collect2=yes
-	;;
 visium-*-elf*)
 	tm_file="dbxelf.h elfos.h ${tm_file} visium/elf.h newlib-stdint.h"
 	tmake_file="visium/t-visium visium/t-crtstuff"
