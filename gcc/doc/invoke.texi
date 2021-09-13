@@ -2652,7 +2652,7 @@ under @code{OFFLOAD_TARGET_NAMES}.
 
 @item -foffload-options=@var{options}
 @itemx -foffload-options=@var{target-triplet-list}=@var{options}
-@opindex foffload
+@opindex foffload-options
 @cindex Offloading options
 @cindex OpenACC offloading options
 @cindex OpenMP offloading options
