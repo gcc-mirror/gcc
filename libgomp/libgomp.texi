@@ -172,8 +172,98 @@ The OpenMP 4.5 specification is fully supported.
 @node OpenMP 5.0
 @section OpenMP 5.0
 
-Partial support of the OpenMP 5.0 specification. The OMPT and the OMPD
-interfaces are unsupported.
+@unnumberedsubsec New features listed in Appendix B of the OpenMP specification
+@c This list is sorted as in OpenMP 5.1's B.3 not as in OpenMP 5.0's B.2
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item Array shaping @tab N @tab
+@item Array sections with non-unit strides in C and C++ @tab N @tab
+@item Iterators @tab Y @tab
+@item @code{metadirective} directive @tab N @tab
+@item @code{declare variant} directive
+      @tab P @tab Only C and C++, simd traits not handled correctly
+@item @emph{target-offload-var} ICV and @code{OMP_TARGET_OFFLOAD}
+      env variable @tab Y @tab
+@item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
+@item @code{requires} directive @tab P
+      @tab Only fulfillable requirement is @code{atomic_default_mem_order}
+@item @code{teams} construct outside an enclosing target region @tab Y @tab
+@item Non-rectangular loop nests @tab Y @tab
+@item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
+@item @code{nonmonotonic} as default loop schedule modifier for worksharing-loop
+      constructs @tab Y @tab
+@item Collapse of associated loops that are imperfectly nested loops @tab N @tab
+@item Clauses @code{if}, @code{nontemporal} and @code{order(concurrent)} in
+      @code{simd} construct @tab Y @tab
+@item @code{atomic} constructs in @code{simd} @tab Y @tab
+@item @code{loop} construct @tab Y @tab
+@item @code{order(concurrent)} clause @tab Y @tab
+@item @code{scan} directive and @code{in_scan} modifier for the
+      @code{reduction} clause @tab Y @tab
+@item @code{in_reduction} clause on @code{task} constructs @tab Y @tab
+@item @code{in_reduction} clause on @code{target} constructs @tab P
+      @tab Only C/C++, @code{nowait} only stub
+@item @code{task_reduction} clause with @code{taskgroup} @tab Y @tab
+@item @code{task} modifier to @code{reduction} clause @tab Y @tab
+@item @code{affinity} clause to @code{task} construct @tab Y @tab Stub only
+@item @code{detach} clause to @code{task} construct @tab Y @tab
+@item @code{omp_fulfill_event} runtime routine @tab Y @tab
+@item @code{reduction} and @code{in_reduction} clauses on @code{taskloop}
+      and @code{taskloop simd} constructs @tab Y @tab
+@item @code{taskloop} construct cancelable by @code{cancel} construct
+      @tab Y @tab
+@item @code{mutexinouset} @emph{dependence-type} for @code{depend} clause
+      @tab Y @tab
+@item Predefined memory spaces, memory allocators, allocator traits
+      @tab Y @tab Some are only stubs
+@item Memory management routines @tab Y @tab
+@item @code{allocate} directive @tab N @tab
+@item @code{allocate} clause @tab P @tab initial support in C/C++ only
+@item @code{use_device_addr} clause on @code{target data} @tab Y @tab
+@item @code{ancestor} modifier on @code{device} clause
+      @tab P @tab Reverse offload unsupported
+@item Implicit declare target directive @tab Y @tab
+@item Discontiguous array section with @code{target update} construct
+      @tab N @tab
+@item C/C++'s lvalue expressions in @code{to}, @code{from}
+      and @code{map} clauses @tab N @tab
+@item C/C++'s lvalue expressions in @code{depend} clauses @tab Y @tab
+@item Nested @code{declare target} directive @tab Y @tab
+@item Combined @code{master} constructs @tab Y @tab
+@item @code{depend} clause on @code{taskwait} @tab Y @tab
+@item Weak memory ordering clauses on @code{atomic} and @code{flush} construct
+      @tab Y @tab
+@item @code{hint} clause on the @code{atomic} construct @tab Y @tab Stub only
+@item @code{depobj} construct and depend objects  @tab Y @tab
+@item Lock hints were renamed to synchronization hints @tab Y @tab
+@item @code{conditional} modifier to @code{lastprivate} clause @tab Y @tab
+@item Map-order clarifications @tab P @tab
+@item @code{close} @emph{map-type-modifier} @tab Y @tab
+@item Mapping C/C++ pointer variables and to assign the address of
+      device memory mapped by an array section @tab P @tab
+@item Mapping of Fortran pointer and allocatable variables, including pointer
+      and allocatable components of variables
+      @tab P @tab Mapping of vars with allocatable components unspported
+@item @code{defaultmap} extensions @tab Y @tab
+@item @code{declare mapper} directive @tab N @tab
+@item @code{omp_get_supported_active_levels} routine @tab Y @tab
+@item Runtime routines and environment variables to display runtime thread
+      affinity information @tab Y @tab
+@item @code{omp_pause_resource} and @code{omp_pause_resource_all} runtime
+      routines @tab Y @tab
+@item @code{omp_get_device_num} runtime routine @tab Y @tab
+@item OMPT interface @tab N @tab
+@item OMPD interface @tab N @tab
+@end multitable
+
+@unnumberedsubsec Other new OpenMP 5.0 features
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item Supporting C++'s range-based for loop @tab Y @tab
+@end multitable
+
 
 @node OpenMP 5.1
 @section OpenMP 5.1
@@ -3848,7 +3938,7 @@ Remarks about certain event types:
 @c See 'DEVICE_INIT_INSIDE_COMPUTE_CONSTRUCT' in
 @c 'libgomp.oacc-c-c++-common/acc_prof-kernels-1.c',
 @c 'libgomp.oacc-c-c++-common/acc_prof-parallel-1.c'.
-Whan a compute construct triggers implicit
+When a compute construct triggers implicit
 @code{acc_ev_device_init_start} and @code{acc_ev_device_init_end}
 events, they currently aren't @emph{nested within} the corresponding
 @code{acc_ev_compute_construct_start} and
