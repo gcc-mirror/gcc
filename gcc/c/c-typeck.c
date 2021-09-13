@@ -12421,6 +12421,13 @@ build_binary_op (location_t location, enum tree_code code,
 	maybe_warn_bool_compare (location, code, orig_op0, orig_op1);
       break;
 
+    case MIN_EXPR:
+    case MAX_EXPR:
+      /* Used for OpenMP atomics.  */
+      gcc_assert (flag_openmp);
+      common = 1;
+      break;
+
     default:
       gcc_unreachable ();
     }

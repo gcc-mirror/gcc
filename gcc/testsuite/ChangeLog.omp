@@ -1,6 +1,29 @@
 2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/atomic-17.c (foo): Add tests for atomic read,
+	write or update with acq_rel clause and atomic update with acquire clause.
+	* c-c++-common/gomp/atomic-18.c (foo): Adjust expected diagnostics
+	wording, remove tests moved to atomic-17.c.
+	* c-c++-common/gomp/atomic-21.c: Expect only 2 omp atomic release and
+	2 omp atomic acq_rel directives instead of 4 omp atomic release.
+	* c-c++-common/gomp/atomic-25.c: New test.
+	* c-c++-common/gomp/atomic-26.c: New test.
+	* c-c++-common/gomp/atomic-27.c: New test.
+	* c-c++-common/gomp/atomic-28.c: New test.
+	* c-c++-common/gomp/atomic-29.c: New test.
+	* c-c++-common/gomp/atomic-30.c: New test.
+	* c-c++-common/goacc-gomp/atomic.c: Expect 1 omp atomic release and
+	1 omp atomic_acq_rel instead of 2 omp atomic release directives.
+	* gcc.dg/gomp/atomic-5.c: Adjust expected error diagnostic wording.
+	* g++.dg/gomp/atomic-18.C:Expect 4 omp atomic release and
+	1 omp atomic_acq_rel instead of 5 omp atomic release directives.
+
+2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/bind_c_char_6.f90: Update dg-error.

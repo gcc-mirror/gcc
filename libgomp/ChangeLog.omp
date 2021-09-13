@@ -1,6 +1,15 @@
 2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/atomic-19.c: New test.
+	* testsuite/libgomp.c-c++-common/atomic-20.c: New test.
+	* testsuite/libgomp.c-c++-common/atomic-21.c: New test.
+
+2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP Implementation Status): Extend

@@ -1,3 +1,19 @@
+2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_conditional_expression): If omp_atomic_lhs and
+	cond.value is >, < or == with omp_atomic_lhs as one of the operands,
+	don't call build_conditional_expr, instead build a COND_EXPR directly.
+	(c_parser_binary_expression): Avoid calling parser_build_binary_op
+	if omp_atomic_lhs even in more cases for >, < or ==.
+	(c_parser_omp_atomic): Update function comment for OpenMP 5.1 atomics,
+	parse OpenMP 5.1 atomics and fail, compare and weak clauses, allow
+	acq_rel on atomic read/write and acq_rel/acquire clauses on update.
+	* c-typeck.c (build_binary_op): For flag_openmp only handle
+	MIN_EXPR/MAX_EXPR.
+
 2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

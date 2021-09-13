@@ -1,6 +1,49 @@
 2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_memory_order): Add OMP_MEMORY_ORDER_MASK,
+	OMP_FAIL_MEMORY_ORDER_UNSPECIFIED, OMP_FAIL_MEMORY_ORDER_RELAXED,
+	OMP_FAIL_MEMORY_ORDER_ACQUIRE, OMP_FAIL_MEMORY_ORDER_RELEASE,
+	OMP_FAIL_MEMORY_ORDER_ACQ_REL, OMP_FAIL_MEMORY_ORDER_SEQ_CST and
+	OMP_FAIL_MEMORY_ORDER_MASK enumerators.
+	(OMP_FAIL_MEMORY_ORDER_SHIFT): Define.
+	* gimple-pretty-print.c (dump_gimple_omp_atomic_load,
+	dump_gimple_omp_atomic_store): Print [weak] for weak atomic
+	load/store.
+	* gimple.h (enum gf_mask): Change GF_OMP_ATOMIC_MEMORY_ORDER
+	to 6-bit mask, adjust GF_OMP_ATOMIC_NEED_VALUE value and add
+	GF_OMP_ATOMIC_WEAK.
+	(gimple_omp_atomic_weak_p, gimple_omp_atomic_set_weak): New inline
+	functions.
+	* tree.h (OMP_ATOMIC_WEAK): Define.
+	* tree-pretty-print.c (dump_omp_atomic_memory_order): Adjust for
+	fail memory order being encoded in the same enum and also print
+	fail clause if present.
+	(dump_generic_node): Print weak clause if OMP_ATOMIC_WEAK.
+	* gimplify.c (goa_stabilize_expr): Add target_expr and rhs arguments,
+	handle pre_p == NULL case as a test mode that only returns value
+	but doesn't change gimplify nor change anything otherwise, adjust
+	recursive calls, add MODIFY_EXPR, ADDR_EXPR, COND_EXPR, TARGET_EXPR
+	and CALL_EXPR handling, adjust COMPOUND_EXPR handling for
+	__builtin_clear_padding calls, for !rhs gimplify as lvalue rather
+	than rvalue.
+	(gimplify_omp_atomic): Adjust goa_stabilize_expr caller.  Handle
+	COND_EXPR rhs.  Set weak flag on gimple load/store for
+	OMP_ATOMIC_WEAK.
+	* omp-expand.c (omp_memory_order_to_fail_memmodel): New function.
+	(omp_memory_order_to_memmodel): Adjust for fail clause encoded
+	in the same enum.
+	(expand_omp_atomic_cas): New function.
+	(expand_omp_atomic_pipeline): Use omp_memory_order_to_fail_memmodel
+	function.
+	(expand_omp_atomic): Attempt to optimize atomic compare and exchange
+	using expand_omp_atomic_cas.
+
+2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* doc/invoke.texi (-foffload-options): Fix @opindex.

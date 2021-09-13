@@ -14703,14 +14703,15 @@ goa_lhs_expr_p (tree expr, tree addr)
 
 static int
 goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
-		    tree lhs_var)
+		    tree lhs_var, tree &target_expr, bool rhs)
 {
   tree expr = *expr_p;
   int saw_lhs;
 
   if (goa_lhs_expr_p (expr, lhs_addr))
     {
-      *expr_p = lhs_var;
+      if (pre_p)
+	*expr_p = lhs_var;
       return 1;
     }
   if (is_gimple_val (expr))
@@ -14722,11 +14723,11 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
     case tcc_binary:
     case tcc_comparison:
       saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1), pre_p, lhs_addr,
-				     lhs_var);
+				     lhs_var, target_expr, true);
       /* FALLTHRU */
     case tcc_unary:
       saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p, lhs_addr,
-				     lhs_var);
+				     lhs_var, target_expr, true);
       break;
     case tcc_expression:
       switch (TREE_CODE (expr))
@@ -14738,36 +14739,131 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
 	case TRUTH_XOR_EXPR:
 	case BIT_INSERT_EXPR:
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1), pre_p,
-					 lhs_addr, lhs_var);
+					 lhs_addr, lhs_var, target_expr, true);
 	  /* FALLTHRU */
 	case TRUTH_NOT_EXPR:
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
-					 lhs_addr, lhs_var);
+					 lhs_addr, lhs_var, target_expr, true);
+	  break;
+	case MODIFY_EXPR:
+	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1), pre_p,
+					 lhs_addr, lhs_var, target_expr, true);
+	  /* FALLTHRU */
+	case ADDR_EXPR:
+	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
+					 lhs_addr, lhs_var, target_expr, false);
 	  break;
 	case COMPOUND_EXPR:
+	  /* Special-case __builtin_clear_padding call before
+	     __builtin_memcmp.  */
+	  if (TREE_CODE (TREE_OPERAND (expr, 0)) == CALL_EXPR)
+	    {
+	      tree fndecl = get_callee_fndecl (TREE_OPERAND (expr, 0));
+	      if (fndecl
+		  && fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING)
+		  && VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0))))
+		{
+		  saw_lhs = goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
+						lhs_addr, lhs_var,
+						target_expr, true);
+		  if (!saw_lhs)
+		    {
+		      expr = TREE_OPERAND (expr, 1);
+		      if (!pre_p)
+			return goa_stabilize_expr (&expr, pre_p, lhs_addr,
+						   lhs_var, target_expr, true);
+		      *expr_p = expr;
+		      return goa_stabilize_expr (expr_p, pre_p, lhs_addr,
+						 lhs_var, target_expr, true);
+		    }
+		  else
+		    {
+		      saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1),
+						     pre_p, lhs_addr, lhs_var,
+						     target_expr, rhs);
+		      break;
+		    }
+		}
+	    }
 	  /* Break out any preevaluations from cp_build_modify_expr.  */
 	  for (; TREE_CODE (expr) == COMPOUND_EXPR;
 	       expr = TREE_OPERAND (expr, 1))
-	    gimplify_stmt (&TREE_OPERAND (expr, 0), pre_p);
+	    if (pre_p)
+	      gimplify_stmt (&TREE_OPERAND (expr, 0), pre_p);
+	  if (!pre_p)
+	    return goa_stabilize_expr (&expr, pre_p, lhs_addr, lhs_var,
+				       target_expr, rhs);
 	  *expr_p = expr;
-	  return goa_stabilize_expr (expr_p, pre_p, lhs_addr, lhs_var);
+	  return goa_stabilize_expr (expr_p, pre_p, lhs_addr, lhs_var,
+				     target_expr, rhs);
+	case COND_EXPR:
+	  if (!goa_stabilize_expr (&TREE_OPERAND (expr, 0), NULL, lhs_addr,
+				   lhs_var, target_expr, true))
+	    break;
+	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
+					 lhs_addr, lhs_var, target_expr, true);
+	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1), pre_p,
+					 lhs_addr, lhs_var, target_expr, true);
+	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 2), pre_p,
+					 lhs_addr, lhs_var, target_expr, true);
+	  break;
+	case TARGET_EXPR:
+	  if (TARGET_EXPR_INITIAL (expr))
+	    {
+	      if (expr == target_expr)
+		saw_lhs = 1;
+	      else
+		{
+		  saw_lhs = goa_stabilize_expr (&TARGET_EXPR_INITIAL (expr),
+						pre_p, lhs_addr, lhs_var,
+						target_expr, true);
+		  if (saw_lhs && target_expr == NULL_TREE && pre_p)
+		    target_expr = expr;
+		}
+	    }
+	  break;
 	default:
 	  break;
 	}
       break;
     case tcc_reference:
-      if (TREE_CODE (expr) == BIT_FIELD_REF)
+      if (TREE_CODE (expr) == BIT_FIELD_REF
+	  || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
 	saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
-				       lhs_addr, lhs_var);
+				       lhs_addr, lhs_var, target_expr, true);
+      break;
+    case tcc_vl_exp:
+      if (TREE_CODE (expr) == CALL_EXPR)
+	{
+	  if (tree fndecl = get_callee_fndecl (expr))
+	    if (fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING)
+		|| fndecl_built_in_p (fndecl, BUILT_IN_MEMCMP))
+	      {
+		int nargs = call_expr_nargs (expr);
+		for (int i = 0; i < nargs; i++)
+		  saw_lhs |= goa_stabilize_expr (&CALL_EXPR_ARG (expr, i),
+						 pre_p, lhs_addr, lhs_var,
+						 target_expr, true);
+	      }
+	  if (saw_lhs == 0 && VOID_TYPE_P (TREE_TYPE (expr)))
+	    {
+	      if (pre_p)
+		gimplify_stmt (&expr, pre_p);
+	      return 0;
+	    }
+	}
       break;
     default:
       break;
     }
 
-  if (saw_lhs == 0)
+  if (saw_lhs == 0 && pre_p)
     {
       enum gimplify_status gs;
-      gs = gimplify_expr (expr_p, pre_p, NULL, is_gimple_val, fb_rvalue);
+      if (rhs)
+	gs = gimplify_expr (expr_p, pre_p, NULL, is_gimple_val, fb_rvalue);
+      else
+	gs = gimplify_expr (expr_p, pre_p, NULL, is_gimple_lvalue, fb_lvalue);
       if (gs != GS_ALL_DONE)
 	saw_lhs = -1;
     }
@@ -14787,9 +14883,12 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
   tree tmp_load;
   gomp_atomic_load *loadstmt;
   gomp_atomic_store *storestmt;
+  tree target_expr = NULL_TREE;
 
   tmp_load = create_tmp_reg (type);
-  if (rhs && goa_stabilize_expr (&rhs, pre_p, addr, tmp_load) < 0)
+  if (rhs
+      && goa_stabilize_expr (&rhs, pre_p, addr, tmp_load, target_expr,
+			     true) < 0)
     return GS_ERROR;
 
   if (gimplify_expr (&addr, pre_p, NULL, is_gimple_val, fb_rvalue)
@@ -14803,11 +14902,14 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
     {
       /* BIT_INSERT_EXPR is not valid for non-integral bitfield
 	 representatives.  Use BIT_FIELD_REF on the lhs instead.  */
-      if (TREE_CODE (rhs) == BIT_INSERT_EXPR
+      tree rhsarg = rhs;
+      if (TREE_CODE (rhs) == COND_EXPR)
+	rhsarg = TREE_OPERAND (rhs, 1);
+      if (TREE_CODE (rhsarg) == BIT_INSERT_EXPR
 	  && !INTEGRAL_TYPE_P (TREE_TYPE (tmp_load)))
 	{
-	  tree bitpos = TREE_OPERAND (rhs, 2);
-	  tree op1 = TREE_OPERAND (rhs, 1);
+	  tree bitpos = TREE_OPERAND (rhsarg, 2);
+	  tree op1 = TREE_OPERAND (rhsarg, 1);
 	  tree bitsize;
 	  tree tmp_store = tmp_load;
 	  if (TREE_CODE (*expr_p) == OMP_ATOMIC_CAPTURE_OLD)
@@ -14816,17 +14918,25 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
 	    bitsize = bitsize_int (TYPE_PRECISION (TREE_TYPE (op1)));
 	  else
 	    bitsize = TYPE_SIZE (TREE_TYPE (op1));
-	  gcc_assert (TREE_OPERAND (rhs, 0) == tmp_load);
-	  tree t = build2_loc (EXPR_LOCATION (rhs),
+	  gcc_assert (TREE_OPERAND (rhsarg, 0) == tmp_load);
+	  tree t = build2_loc (EXPR_LOCATION (rhsarg),
 			       MODIFY_EXPR, void_type_node,
-			       build3_loc (EXPR_LOCATION (rhs), BIT_FIELD_REF,
-					   TREE_TYPE (op1), tmp_store, bitsize,
-					   bitpos), op1);
+			       build3_loc (EXPR_LOCATION (rhsarg),
+					   BIT_FIELD_REF, TREE_TYPE (op1),
+					   tmp_store, bitsize, bitpos), op1);
+	  if (TREE_CODE (rhs) == COND_EXPR)
+	    t = build3_loc (EXPR_LOCATION (rhs), COND_EXPR, void_type_node,
+			    TREE_OPERAND (rhs, 0), t, void_node);
 	  gimplify_and_add (t, pre_p);
 	  rhs = tmp_store;
 	}
-      if (gimplify_expr (&rhs, pre_p, NULL, is_gimple_val, fb_rvalue)
-	  != GS_ALL_DONE)
+      bool save_allow_rhs_cond_expr = gimplify_ctxp->allow_rhs_cond_expr;
+      if (TREE_CODE (rhs) == COND_EXPR)
+	gimplify_ctxp->allow_rhs_cond_expr = true;
+      enum gimplify_status gs = gimplify_expr (&rhs, pre_p, NULL,
+					       is_gimple_val, fb_rvalue);
+      gimplify_ctxp->allow_rhs_cond_expr = save_allow_rhs_cond_expr;
+      if (gs != GS_ALL_DONE)
 	return GS_ERROR;
     }
 
@@ -14834,6 +14944,11 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
     rhs = tmp_load;
   storestmt
     = gimple_build_omp_atomic_store (rhs, OMP_ATOMIC_MEMORY_ORDER (*expr_p));
+  if (TREE_CODE (*expr_p) != OMP_ATOMIC_READ && OMP_ATOMIC_WEAK (*expr_p))
+    {
+      gimple_omp_atomic_set_weak (loadstmt);
+      gimple_omp_atomic_set_weak (storestmt);
+    }
   gimplify_seq_add_stmt (pre_p, storestmt);
   switch (TREE_CODE (*expr_p))
     {

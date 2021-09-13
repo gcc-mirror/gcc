@@ -2550,6 +2550,8 @@ dump_gimple_omp_atomic_load (pretty_printer *buffer, const gomp_atomic_load *gs,
 				    gimple_omp_atomic_memory_order (gs));
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, " [needed]");
+      if (gimple_omp_atomic_weak_p (gs))
+	pp_string (buffer, " [weak]");
       newline_and_indent (buffer, spc + 2);
       dump_generic_node (buffer, gimple_omp_atomic_load_lhs (gs),
 	  		 spc, flags, false);
@@ -2584,6 +2586,8 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer,
       pp_space (buffer);
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, "[needed] ");
+      if (gimple_omp_atomic_weak_p (gs))
+	pp_string (buffer, "[weak] ");
       pp_left_paren (buffer);
       dump_generic_node (buffer, gimple_omp_atomic_store_val (gs),
 	  		 spc, flags, false);

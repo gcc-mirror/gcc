@@ -1529,6 +1529,11 @@ class auto_suppress_location_wrappers
   (TREE_RANGE_CHECK (NODE, OMP_ATOMIC, \
 		     OMP_ATOMIC_CAPTURE_NEW)->base.u.omp_atomic_memory_order)
 
+/* Weak clause on OMP_ATOMIC*.  */
+#define OMP_ATOMIC_WEAK(NODE) \
+  (TREE_RANGE_CHECK (NODE, OMP_ATOMIC, \
+		     OMP_ATOMIC_CAPTURE_NEW)->base.public_flag)
+
 /* True on a PRIVATE clause if its decl is kept around for debugging
    information only and its DECL_VALUE_EXPR is supposed to point
    to what it has been remapped to.  */
