@@ -1,3 +1,64 @@
+2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/60318
+	* doc/trouble.texi (Copy Assignment): Fix description of
+	behaviour and fix code in example.
+
+2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102224
+	* config/i386/i386.md (xorsign<mode>3): If operands[1] is equal to
+	operands[2], emit abs<mode>2 instead.
+	(@xorsign<mode>3_1): Add early-clobber for output operand.
+
+2021-09-07  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backported from master:
+	2021-09-07  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	PR target/102115
+	* config/xtensa/xtensa.c (xtensa_emit_move_sequence): Add
+	'CONST_INT_P (src)' to the condition of the block that tries to
+	eliminate literal when loading integer contant.
+
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102046
+	* tree-vect-slp.c (vect_build_slp_tree_2): Conservatively
+	update ->any_pattern when swapping operands.
+
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101925
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Set
+	reverse on COMPONENT_REF and ARRAY_REF according to
+	what reverse_storage_order_for_component_p does.
+	(vn_reference_eq): Compare reversed on reference ops.
+	(reverse_storage_order_for_component_p): New overload.
+	(vn_reference_lookup_3): Check reverse_storage_order_for_component_p
+	on the reference looked up.
+
+2021-09-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101824
+	* tree-nested.c (get_frame_field): Mark the COMPONENT_REF as
+	volatile in case the variable was.
+
 2021-09-03  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/altivec.md (UNSPEC_XXSPLTIDP): Rename from

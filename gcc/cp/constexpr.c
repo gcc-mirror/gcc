@@ -871,7 +871,7 @@ maybe_save_constexpr_fundef (tree fun)
   if (processing_template_decl
       || !DECL_DECLARED_CONSTEXPR_P (fun)
       || cp_function_chain->invalid_constexpr
-      || DECL_CLONED_FUNCTION_P (fun))
+      || (DECL_CLONED_FUNCTION_P (fun) && !DECL_DELETING_DESTRUCTOR_P (fun)))
     return;
 
   if (!is_valid_constexpr_fn (fun, !DECL_GENERATED_P (fun)))
@@ -2353,7 +2353,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       *non_constant_p = true;
       return t;
     }
-  if (DECL_CLONED_FUNCTION_P (fun))
+  if (DECL_CLONED_FUNCTION_P (fun) && !DECL_DELETING_DESTRUCTOR_P (fun))
     fun = DECL_CLONED_FUNCTION (fun);
 
   if (is_ubsan_builtin_p (fun))

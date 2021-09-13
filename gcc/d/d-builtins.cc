@@ -369,7 +369,7 @@ d_eval_constant_expression (const Loc &loc, tree cst)
       else if (code == STRING_CST)
 	{
 	  const void *string = TREE_STRING_POINTER (cst);
-	  size_t len = TREE_STRING_LENGTH (cst);
+	  size_t len = TREE_STRING_LENGTH (cst) - 1;
 	  return StringExp::create (loc, CONST_CAST (void *, string), len);
 	}
       else if (code == VECTOR_CST)
