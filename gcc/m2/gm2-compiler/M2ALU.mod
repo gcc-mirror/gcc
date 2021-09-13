@@ -148,7 +148,7 @@ VAR
    EnumerationValue: Tree ;
    EnumerationField: CARDINAL ;
    CurrentTokenNo  : CARDINAL ;
-   WatchedValue    : PtrToValue ;
+   (* WatchedValue    : PtrToValue ;  *)
 
 
 (*
@@ -358,9 +358,6 @@ BEGIN
       e := NIL
    END
 END DisposeElements ;
-
-
-PROCEDURE stop ; BEGIN END stop ;
 
 
 (*
@@ -2476,7 +2473,6 @@ END AddElements ;
 
 (*
    AddElement -
-*)
 
 PROCEDURE AddElement (v: listOfElements;
                       e, b: CARDINAL) : listOfElements ;
@@ -2497,6 +2493,7 @@ BEGIN
    v^.next := el ;
    RETURN( v )
 END AddElement ;
+*)
 
 
 (*
@@ -2684,7 +2681,7 @@ VAR
    max : CARDINAL ;
    r, s: listOfRange ;
    v   : PtrToValue ;
-   i, j: CARDINAL ;
+   i   : CARDINAL ;
 BEGIN
    v := Pop() ;
    Eval(tokenno, v) ;
@@ -2975,8 +2972,6 @@ END Swap ;
 *)
 
 PROCEDURE DisplayElements (i: listOfRange) ;
-VAR
-   t: Tree ;
 BEGIN
    WHILE i#NIL DO
       PushValue(i^.low) ;
@@ -3240,7 +3235,6 @@ END IsArrayValueDependants ;
 PROCEDURE IsConstructorDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
 VAR
    v         : PtrToValue ;
-   r         : listOfRange ;
    typeResult,
    result    : BOOLEAN ;
 BEGIN
@@ -3279,7 +3273,6 @@ END IsConstructorDependants ;
 PROCEDURE WalkConstructorDependants (sym: CARDINAL; p: WalkAction) ;
 VAR
    v: PtrToValue ;
-   r: listOfRange ;
 BEGIN
    PushValue(sym) ;
    IF IsValueTypeNone()
@@ -3696,8 +3689,6 @@ END SubBit ;
 *)
 
 PROCEDURE PerformSetIn (tokenno: CARDINAL; op1: CARDINAL; h: listOfRange) : BOOLEAN ;
-VAR
-   v: listOfRange ;
 BEGIN
    WHILE h#NIL DO
       WITH h^ DO
@@ -4371,8 +4362,7 @@ END GetRange ;
 
 PROCEDURE BuildStructBitset (tokenno: CARDINAL; v: PtrToValue; low, high: Tree) : Tree ;
 VAR
-   BitsInSet,
-   GccField  : Tree ;
+   BitsInSet : Tree ;
    bpw       : CARDINAL ;
    cons      : Constructor ;
 BEGIN
@@ -4522,16 +4512,11 @@ END ConvertConstToType ;
 PROCEDURE ConstructRecordConstant (tokenno: CARDINAL; v: PtrToValue) : Tree ;
 VAR
    n1, n2      : Name ;
-   GccFieldType,
-   gccsym      : Tree ;
    i,
    Field,
-   baseType,
-   high, low   : CARDINAL ;
+   baseType    : CARDINAL ;
    cons        : Constructor ;
-   location    : location_t ;
 BEGIN
-   location := TokenToLocation(tokenno) ;
    WITH v^ DO
       IF constructorType=NulSym
       THEN
@@ -4716,7 +4701,7 @@ END GetArrayLimits ;
 *)
 
 PROCEDURE InitialiseArrayOfCharWithString (tokenno: CARDINAL; cons: Tree;
-                                           v: PtrToValue; el, baseType, arrayType: CARDINAL) : Tree ;
+                                           el, baseType, arrayType: CARDINAL) : Tree ;
 VAR
    isChar   : BOOLEAN ;
    s, letter: String ;
@@ -4799,15 +4784,14 @@ END InitialiseArrayOfCharWithString ;
    CheckElementString -
 *)
 
-PROCEDURE CheckElementString (el, arrayType, baseType: CARDINAL;
-                              tokenno: CARDINAL) : Tree ;
+PROCEDURE CheckElementString (el, arrayType: CARDINAL; tokenno: CARDINAL) : Tree ;
 VAR
    cons: Tree ;
 BEGIN
    IF IsString(arrayType) AND IsString(el)
    THEN
       cons := BuildStartArrayConstructor(Mod2Gcc(arrayType)) ;
-      RETURN( InitialiseArrayOfCharWithString(tokenno, cons, NIL, el, arrayType, SkipType(GetType(arrayType))) )
+      RETURN( InitialiseArrayOfCharWithString(tokenno, cons, el, arrayType, SkipType(GetType(arrayType))) )
    ELSE
       RETURN( Mod2Gcc(el) )
    END
@@ -4819,7 +4803,7 @@ END CheckElementString ;
 *)
 
 PROCEDURE InitialiseArrayWith (tokenno: CARDINAL; cons: Tree;
-                               v: PtrToValue; el, high, low, baseType, arrayType: CARDINAL) : Tree ;
+                               v: PtrToValue; el, high, low, arrayType: CARDINAL) : Tree ;
 VAR
    location: location_t ;
    i       : CARDINAL ;
@@ -4834,7 +4818,7 @@ BEGIN
       PushInt (i) ;
       Addn ;
       indice := PopIntegerTree () ;
-      value := CheckElementString (el, arrayType, baseType, tokenno) ;
+      value := CheckElementString (el, arrayType, tokenno) ;
       IF value = NIL
       THEN
          MetaErrorT0 (tokenno, '{%W}too few characters found when trying to construct a compound literal array') ;
@@ -4911,7 +4895,7 @@ END CheckGetCharFromString ;
 *)
 
 PROCEDURE InitialiseArrayOfCharWith (tokenno: CARDINAL; cons: Tree;
-                                     constDecl: PtrToValue; el, high, low, baseType, arrayType: CARDINAL) : Tree ;
+                                     constDecl: PtrToValue; el, high, low, arrayType: CARDINAL) : Tree ;
 VAR
    location  : location_t ;
    arrayIndex: CARDINAL ;      (* arrayIndex is the char position index of the final string.  *)
@@ -4954,11 +4938,8 @@ VAR
    n1, n2    : Name ;
    el1, el2,
    baseType,
-   Subrange,
-   Subscript,
    arrayType,
    high, low : CARDINAL ;
-   seenString: BOOLEAN ;
    cons      : Constructor ;
 BEGIN
    WITH v^ DO
@@ -4983,12 +4964,12 @@ BEGIN
          IF (el2 = NulSym) AND IsString(baseType) AND IsString(el1)
          THEN
             (* constructorType is ARRAY [low..high] OF CHAR and using a string to initialise it *)
-            RETURN InitialiseArrayOfCharWithString (tokenno, cons, v, el1, baseType, arrayType)
+            RETURN InitialiseArrayOfCharWithString (tokenno, cons, el1, baseType, arrayType)
          ELSIF SkipType(arrayType)=Char
          THEN
-            RETURN InitialiseArrayOfCharWith (tokenno, cons, v, el1, high, low, baseType, arrayType)
+            RETURN InitialiseArrayOfCharWith (tokenno, cons, v, el1, high, low, arrayType)
          ELSE
-            RETURN InitialiseArrayWith (tokenno, cons, v, el1, high, low, baseType, arrayType)
+            RETURN InitialiseArrayWith (tokenno, cons, v, el1, high, low, arrayType)
          END
       END
    END

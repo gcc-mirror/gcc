@@ -38,6 +38,7 @@ FROM m2block IMPORT RememberType ;
 FROM m2type IMPORT GetMinFrom ;
 FROM Storage IMPORT ALLOCATE ;
 FROM M2Base IMPORT IsExpressionCompatible ;
+FROM M2Printf IMPORT printf1 ;
 
 FROM SymbolTable IMPORT NulSym, IsConst, IsFieldVarient, IsRecord, IsRecordField, GetVarientTag, GetType,
                         ForeachLocalSymDo, GetSymName, IsEnumeration, SkipType ;
@@ -473,7 +474,7 @@ END OverlappingCaseBound ;
                            messages for each overlapping bound found.
 *)
 
-PROCEDURE OverlappingCaseBounds (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
+PROCEDURE OverlappingCaseBounds (c: CARDINAL) : BOOLEAN ;
 VAR
    p      : CaseDescriptor ;
    q      : CaseList ;
@@ -768,8 +769,9 @@ BEGIN
          IF set#NIL
          THEN
             missing := TRUE ;
-            MetaError2('not all variant record alternatives in the CASE clause are specified, hint you either need to specify each value of {%2ad} or use an ELSE clause {%1U}',
-                        varient, type) ;
+            MetaErrorT2 (tokenno,
+                         'not all variant record alternatives in the CASE clause are specified, hint you either need to specify each value of {%2ad} or use an ELSE clause {%1U}',
+                         varient, type) ;
             ErrorRanges(p, type, set)
          END ;
          set := DisposeRanges(set)
@@ -780,18 +782,7 @@ END MissingCaseBounds ;
 
 
 (*
-   WriteCase -
-*)
-
-PROCEDURE WriteCase (c: CARDINAL) ;
-BEGIN
-
-END WriteCase ;
-
-
-(*
    InRangeList - returns TRUE if the value, tag, is defined in the case list.
-*)
 
 PROCEDURE InRangeList (cl: CaseList; tag: CARDINAL) : BOOLEAN ;
 VAR
@@ -821,6 +812,18 @@ BEGIN
    END ;
    RETURN( FALSE )
 END InRangeList ;
+*)
+
+
+(*
+   WriteCase - dump out the case list (internal debugging).
+*)
+
+PROCEDURE WriteCase (c: CARDINAL) ;
+BEGIN
+   (* this debugging procedure should be finished.  *)
+   printf1 ("%d", c)
+END WriteCase ;
 
 
 (*

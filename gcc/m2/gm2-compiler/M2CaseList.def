@@ -100,7 +100,7 @@ PROCEDURE TypeCaseBounds (c: CARDINAL) : BOOLEAN ;
                            messages for each overlapping bound found.
 *)
 
-PROCEDURE OverlappingCaseBounds (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
+PROCEDURE OverlappingCaseBounds (c: CARDINAL) : BOOLEAN ;
 
 
 (*

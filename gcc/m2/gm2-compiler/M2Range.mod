@@ -1952,7 +1952,7 @@ BEGIN
          THEN
             (* nothing to do *)
          END ;
-         IF OverlappingCaseBounds(tokenno, caseList)
+         IF OverlappingCaseBounds(caseList)
          THEN
             PutQuad(q, ErrorOp, NulSym, NulSym, r) ;
             IF VariantValueChecking AND MissingCaseBounds(tokenno, caseList)
@@ -1986,7 +1986,7 @@ BEGIN
       THEN
          (* nothing to do *)
       END ;
-      IF OverlappingCaseBounds(tokenno, caseList)
+      IF OverlappingCaseBounds (caseList)
       THEN
          (* nothing to do *)
       END ;
