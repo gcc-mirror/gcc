@@ -249,6 +249,7 @@ md_file=
 # Obsolete configurations.
 case ${target} in
   tile*-*-*				\
+ | cr16-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
