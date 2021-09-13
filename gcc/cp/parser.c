@@ -6379,7 +6379,8 @@ cp_parser_unqualified_id (cp_parser* parser,
 
 	/* DR 2237 (C++20 only): A simple-template-id is no longer valid as the
 	   declarator-id of a constructor or destructor.  */
-	if (token->type == CPP_TEMPLATE_ID && cxx_dialect >= cxx20)
+	if (token->type == CPP_TEMPLATE_ID && declarator_p
+	    && cxx_dialect >= cxx20)
 	  {
 	    if (!cp_parser_simulate_error (parser))
 	      error_at (tilde_loc, "template-id not allowed for destructor");
