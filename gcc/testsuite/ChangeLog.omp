@@ -1,3 +1,17 @@
+2021-08-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/bind_c_char_6.f90: Update dg-error.
+	* gfortran.dg/bind_c_char_7.f90: Likewise.
+	* gfortran.dg/bind_c_char_8.f90: Likewise.
+	* gfortran.dg/iso_c_binding_char_1.f90: Likewise.
+	* gfortran.dg/pr32599.f03: Likewise.
+	* gfortran.dg/bind_c_char_9.f90: Comment testcase bits which are
+	implementable but not valid F2018.
+	* gfortran.dg/bind_c_contiguous.f90: New test.
+
 2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
