@@ -23,6 +23,7 @@
 #include "rust-hir-map.h"
 #include "rust-tyty.h"
 #include "rust-hir-trait-ref.h"
+#include "rust-autoderef.h"
 
 namespace Rust {
 namespace Resolver {
@@ -183,6 +184,24 @@ public:
     return UNKNOWN_HIRID;
   }
 
+  void insert_autoderef_mappings (HirId id,
+				  std::vector<Adjustment> &&adjustments)
+  {
+    rust_assert (autoderef_mappings.find (id) == autoderef_mappings.end ());
+    autoderef_mappings.emplace (id, std::move (adjustments));
+  }
+
+  bool lookup_autoderef_mappings (HirId id,
+				  std::vector<Adjustment> **adjustments)
+  {
+    auto it = autoderef_mappings.find (id);
+    if (it == autoderef_mappings.end ())
+      return false;
+
+    *adjustments = &it->second;
+    return true;
+  }
+
 private:
   TypeCheckContext ();
 
@@ -200,6 +219,9 @@ private:
     associated_traits_to_impls;
 
   std::map<HirId, HirId> associated_type_mappings;
+
+  // adjustment mappings
+  std::map<HirId, std::vector<Adjustment>> autoderef_mappings;
 };
 
 class TypeResolution
