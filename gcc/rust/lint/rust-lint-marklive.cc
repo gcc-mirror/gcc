@@ -214,9 +214,22 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
       rust_error_at (expr.get_receiver_expr ()->get_locus (),
 		     "unresolved type for receiver");
     }
-  bool ok = receiver->get_kind () == TyTy::TypeKind::ADT;
-  rust_assert (ok);
-  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver);
+
+  TyTy::ADTType *adt = nullptr;
+  if (receiver->get_kind () == TyTy::TypeKind::ADT)
+    {
+      adt = static_cast<TyTy::ADTType *> (receiver);
+    }
+  else if (receiver->get_kind () == TyTy::TypeKind::REF)
+    {
+      TyTy::ReferenceType *r = static_cast<TyTy::ReferenceType *> (receiver);
+      TyTy::BaseType *b = r->get_base ();
+      rust_assert (b->get_kind () == TyTy::TypeKind::ADT);
+
+      adt = static_cast<TyTy::ADTType *> (b);
+    }
+
+  rust_assert (adt != nullptr);
 
   // get the field index
   size_t index = 0;
@@ -228,6 +241,7 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
 		     adt->get_name ().c_str (), index);
       return;
     }
+
   // get the field hir id
   HirId field_id = adt->get_field (index)->get_ref ();
   mark_hir_id (field_id);

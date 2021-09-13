@@ -64,11 +64,18 @@ public:
   {
     auto resolved
       = TypeCheckExpr::Resolve (expr.get_tuple_expr ().get (), inside_loop);
-    if (resolved == nullptr)
+    if (resolved->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (expr.get_tuple_expr ()->get_locus (),
 		       "failed to resolve TupleIndexExpr receiver");
 	return;
+      }
+
+    // FIXME does this require autoderef here?
+    if (resolved->get_kind () == TyTy::TypeKind::REF)
+      {
+	TyTy::ReferenceType *r = static_cast<TyTy::ReferenceType *> (resolved);
+	resolved = r->get_base ();
       }
 
     bool is_valid_type = resolved->get_kind () == TyTy::TypeKind::ADT
@@ -901,6 +908,14 @@ public:
   {
     auto struct_base
       = TypeCheckExpr::Resolve (expr.get_receiver_expr ().get (), false);
+
+    // FIXME does this require autoderef here?
+    if (struct_base->get_kind () == TyTy::TypeKind::REF)
+      {
+	TyTy::ReferenceType *r
+	  = static_cast<TyTy::ReferenceType *> (struct_base);
+	struct_base = r->get_base ();
+      }
 
     bool is_valid_type = struct_base->get_kind () == TyTy::TypeKind::ADT;
     if (!is_valid_type)
