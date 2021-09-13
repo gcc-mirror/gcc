@@ -46,6 +46,26 @@ public:
     TupleIndex index = expr.get_tuple_index ();
 
     Bexpression *receiver_ref = CompileExpr::Compile (tuple_expr, ctx);
+
+    TyTy::BaseType *tuple_expr_ty = nullptr;
+    bool ok = ctx->get_tyctx ()->lookup_type (
+      tuple_expr->get_mappings ().get_hirid (), &tuple_expr_ty);
+    rust_assert (ok);
+
+    // do we need to add an indirect reference
+    if (tuple_expr_ty->get_kind () == TyTy::TypeKind::REF)
+      {
+	TyTy::ReferenceType *r
+	  = static_cast<TyTy::ReferenceType *> (tuple_expr_ty);
+	TyTy::BaseType *tuple_type = r->get_base ();
+	Btype *tuple_tyty = TyTyResolveCompile::compile (ctx, tuple_type);
+
+	Bexpression *indirect
+	  = ctx->get_backend ()->indirect_expression (tuple_tyty, receiver_ref,
+						      true, expr.get_locus ());
+	receiver_ref = indirect;
+      }
+
     translated
       = ctx->get_backend ()->struct_field_expression (receiver_ref, index,
 						      expr.get_locus ());
@@ -606,6 +626,9 @@ public:
 
   void visit (HIR::FieldAccessExpr &expr) override
   {
+    Bexpression *receiver_ref
+      = CompileExpr::Compile (expr.get_receiver_expr ().get (), ctx);
+
     // resolve the receiver back to ADT type
     TyTy::BaseType *receiver = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (
@@ -615,17 +638,31 @@ public:
 		       "unresolved type for receiver");
 	return;
       }
-    rust_assert (receiver->get_kind () == TyTy::TypeKind::ADT);
-    TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver);
 
-    size_t index = 0;
-    adt->get_field (expr.get_field_name (), &index);
+    size_t field_index = 0;
+    if (receiver->get_kind () == TyTy::TypeKind::ADT)
+      {
+	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver);
+	adt->get_field (expr.get_field_name (), &field_index);
+      }
+    else if (receiver->get_kind () == TyTy::TypeKind::REF)
+      {
+	TyTy::ReferenceType *r = static_cast<TyTy::ReferenceType *> (receiver);
+	TyTy::BaseType *b = r->get_base ();
+	rust_assert (b->get_kind () == TyTy::TypeKind::ADT);
 
-    Bexpression *struct_ref
-      = CompileExpr::Compile (expr.get_receiver_expr ().get (), ctx);
+	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (b);
+	adt->get_field (expr.get_field_name (), &field_index);
+	Btype *adt_tyty = TyTyResolveCompile::compile (ctx, adt);
+
+	Bexpression *indirect
+	  = ctx->get_backend ()->indirect_expression (adt_tyty, receiver_ref,
+						      true, expr.get_locus ());
+	receiver_ref = indirect;
+      }
 
     translated
-      = ctx->get_backend ()->struct_field_expression (struct_ref, index,
+      = ctx->get_backend ()->struct_field_expression (receiver_ref, field_index,
 						      expr.get_locus ());
   }
 
