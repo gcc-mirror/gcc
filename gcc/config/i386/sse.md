@@ -9089,7 +9089,8 @@
   [(V16SF "avx512f") (V16SI "avx512f") (V8DF "avx512dq") (V8DI "avx512dq")])
 
 (define_mode_attr extract_suf
-  [(V16SF "32x4") (V16SI "32x4") (V8DF "64x2") (V8DI "64x2")])
+  [(V16SF "32x4") (V16SI "32x4") (V8DF "64x2") (V8DI "64x2")
+   (V8SF "32x4") (V8SI "32x4") (V4DF "64x2") (V4DI "64x2")])
 
 (define_mode_iterator AVX512_VEC
   [(V8DF "TARGET_AVX512DQ") (V8DI "TARGET_AVX512DQ") V16SF V16SI])
@@ -10661,9 +10662,21 @@
 	  (match_operand:V48_256_512_AVX512VL 1 "register_operand" "v")
 	  (parallel [(match_operand 2 "<vec_extract_imm_predicate>")])))]
   "TARGET_AVX512F
-   && INTVAL(operands[2]) >= 16 / GET_MODE_SIZE (<ssescalarmode>mode)"
-  "valign<ternlogsuffix>\t{%2, %1, %1, %<xtg_mode>0|%<xtg_mode>0, %1, %1, %2}";
-  [(set_attr "prefix" "evex")
+   && INTVAL(operands[2]) * GET_MODE_SIZE (<ssescalarmode>mode) >= 16"
+{
+  int byte_offset = INTVAL (operands[2]) * GET_MODE_SIZE (<ssescalarmode>mode);
+  if (byte_offset % 16 == 0)
+    {
+      operands[2] = GEN_INT (byte_offset / 16);
+      if (byte_offset / 16 == 1)
+	return "vextract<shuffletype><extract_suf>\t{%2, %t1, %x0|%x0, %t1, %2}";
+      else
+	return "vextract<shuffletype><extract_suf>\t{%2, %1, %x0|%x0, %1, %2}";
+    }
+  else
+    return "valign<ternlogsuffix>\t{%2, %1, %1, %<xtg_mode>0|%<xtg_mode>0, %1, %1, %2}";
+}
+  [(set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<sseintvecinsnmode>")])
 
 (define_expand "avx512f_shufps512_mask"
