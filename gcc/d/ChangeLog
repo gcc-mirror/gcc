@@ -1,3 +1,12 @@
+2021-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102185
+	* d-builtins.cc (d_eval_constant_expression): Don't include
+	terminating null pointer in string expression conversion.
+
 2021-07-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
