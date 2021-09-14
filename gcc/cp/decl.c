@@ -4776,7 +4776,8 @@ cxx_init_decl_processing (void)
       if (param_construct_interfere_size < max_align)
 	error ("%<--param constructive-interference-size=%d%> is less than "
 	       "%d", param_construct_interfere_size, max_align);
-      else if (param_construct_interfere_size > param_l1_cache_line_size)
+      else if (param_construct_interfere_size > param_l1_cache_line_size
+	       && param_l1_cache_line_size >= max_align)
 	warning (OPT_Winterference_size,
 		 "%<--param constructive-interference-size=%d%> "
 		 "is greater than %<--param l1-cache-line-size=%d%>",
