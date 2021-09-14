@@ -317,6 +317,9 @@ package body Bindgen is
    procedure Gen_CodePeer_Wrapper;
    --  For CodePeer, generate wrapper which calls user-defined main subprogram
 
+   procedure Gen_CUDA_Init;
+   --  When CUDA registration code is needed.
+
    procedure Gen_Elab_Calls (Elab_Order : Unit_Id_Array);
    --  Generate sequence of elaboration calls
 
@@ -1238,6 +1241,137 @@ package body Bindgen is
       Cancel_Special_Output;
       Bind_Env_String_Built := True;
    end Gen_Bind_Env_String;
+
+   -------------------
+   -- Gen_CUDA_Init --
+   -------------------
+
+   procedure Gen_CUDA_Init is
+      Unit_Name : constant String :=
+        Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+      Unit : constant String :=
+        Unit_Name (Unit_Name'First .. Unit_Name'Last - 2);
+   begin
+      if not Enable_CUDA_Expansion then
+         return;
+      end if;
+
+      WBI ("");
+      WBI ("   ");
+
+      WBI ("   function CUDA_Register_Function");
+      WBI ("      (Fat_Binary_Handle : System.Address;");
+      WBI ("       Func : System.Address;");
+      WBI ("       Kernel_Name : Interfaces.C.Strings.chars_ptr;");
+      WBI ("       Kernel_Name_2 : Interfaces.C.Strings.chars_ptr;");
+      WBI ("       Minus_One : Integer;");
+      WBI ("       Nullptr1 : System.Address;");
+      WBI ("       Nullptr2 : System.Address;");
+      WBI ("       Nullptr3 : System.Address;");
+      WBI ("       Nullptr4 : System.Address;");
+      WBI ("       Nullptr5 : System.Address) return Boolean;");
+      WBI ("   pragma Import");
+      WBI ("     (Convention => C,");
+      WBI ("      Entity => CUDA_Register_Function,");
+      WBI ("      External_Name => ""__cudaRegisterFunction"");");
+      WBI ("");
+      WBI ("   function CUDA_Register_Fat_Binary");
+      WBI ("     (Fat_Binary : System.Address)");
+      WBI ("      return System.Address;");
+      WBI ("    pragma Import");
+      WBI ("      (Convention => C,");
+      WBI ("       Entity => CUDA_Register_Fat_Binary,");
+      WBI ("       External_Name => ""__cudaRegisterFatBinary"");");
+      WBI ("");
+      WBI ("   function CUDA_Register_Fat_Binary_End");
+      WBI ("     (Fat_Binary : System.Address) return Boolean;");
+      WBI ("   pragma Import");
+      WBI ("     (Convention => C,");
+      WBI ("      Entity => CUDA_Register_Fat_Binary_End,");
+      WBI ("      External_Name => ""__cudaRegisterFatBinaryEnd"");");
+      WBI ("");
+      WBI ("   type Fatbin_Wrapper is record");
+      WBI ("      Magic   : Interfaces.C.int;");
+      WBI ("      Version : Interfaces.C.int;");
+      WBI ("      Data    : System.Address;");
+      WBI ("      Filename_Or_Fatbins : System.Address;");
+      WBI ("   end record;");
+      WBI ("");
+      WBI ("   Fat_Binary : System.Address;");
+      WBI ("   pragma Import");
+      WBI ("      (Convention    => C,");
+      WBI ("       Entity        => Fat_Binary,");
+      WBI ("       External_Name => ""_binary_" & Unit & "_fatbin_start"");");
+      WBI ("");
+      WBI ("   Wrapper : Fatbin_Wrapper :=");
+      WBI ("     (16#466243b1#,");
+      WBI ("      1,");
+      WBI ("      Fat_Binary'Address,");
+      WBI ("      System.Null_Address);");
+      WBI ("");
+      WBI ("   Fat_Binary_Handle : System.Address :=");
+      WBI ("     CUDA_Register_Fat_Binary (Wrapper'Address);");
+      WBI ("");
+
+      for K in CUDA_Kernels.First .. CUDA_Kernels.Last loop
+         declare
+            K_String : constant String := CUDA_Kernel_Id'Image (K);
+            N : constant String :=
+              K_String (K_String'First + 1 .. K_String'Last);
+            Kernel_Symbol : constant String := "Kernel_" & N;
+            --  K_Symbol is a unique identifier used to derive all symbol names
+            --  related to kernel K.
+
+            Kernel_Addr : constant String := Kernel_Symbol & "_Addr";
+            --  Kernel_Addr is the name of the symbol representing the address
+            --  of the host-side procedure of the kernel. The address is
+            --  pragma-imported and then used while registering the kernel with
+            --  the CUDA runtime.
+            Kernel_String : constant String := Kernel_Symbol & "_String";
+            --  Kernel_String is the name of the C-string containing the name
+            --  of the kernel. It is used for registering the kernel with the
+            --  CUDA runtime.
+            Kernel_Name : constant String :=
+               Get_Name_String (CUDA_Kernels.Table (K).Kernel_Name);
+            --  Kernel_Name is the name of the kernel, after package expansion.
+
+         begin
+            --  Import host-side kernel address.
+            WBI ("   " & Kernel_Addr & " : constant System.Address;");
+            WBI ("   pragma Import");
+            WBI ("      (Convention    => C,");
+            WBI ("       Entity        => " & Kernel_Addr & ",");
+            WBI ("       External_Name => """ & Kernel_Name & """);");
+            WBI ("");
+
+            --  Generate C-string containing name of kernel.
+            WBI
+              ("   " & Kernel_String & " : Interfaces.C.Strings.Chars_Ptr :=");
+            WBI ("    Interfaces.C.Strings.New_Char_Array ("""
+                  & Kernel_Name
+                  & """);");
+            WBI ("");
+
+            --  Generate call to CUDA runtime to register function.
+            WBI ("   CUDA_Register" & N & " : Boolean :=");
+            WBI ("     CUDA_Register_Function (");
+            WBI ("       Fat_Binary_Handle, ");
+            WBI ("       " & Kernel_Addr & ",");
+            WBI ("       " & Kernel_String & ",");
+            WBI ("       " & Kernel_String & ",");
+            WBI ("       -1,");
+            WBI ("       System.Null_Address,");
+            WBI ("       System.Null_Address,");
+            WBI ("       System.Null_Address,");
+            WBI ("       System.Null_Address,");
+            WBI ("       System.Null_Address);");
+            WBI ("");
+         end;
+      end loop;
+
+      WBI ("   CUDA_End : Boolean := ");
+      WBI ("      CUDA_Register_Fat_Binary_End(Fat_Binary_Handle);");
+   end Gen_CUDA_Init;
 
    --------------------------
    -- Gen_CodePeer_Wrapper --
@@ -2353,6 +2487,11 @@ package body Bindgen is
          WBI ("with System.Secondary_Stack;");
       end if;
 
+      if Enable_CUDA_Expansion then
+         WBI ("with Interfaces.C;");
+         WBI ("with Interfaces.C.Strings;");
+      end if;
+
       Resolve_Binder_Options (Elab_Order);
 
       --  Generate standard with's
@@ -2501,6 +2640,8 @@ package body Bindgen is
          WBI ("   pragma Export (C, " & Get_Main_Name & ", """ &
            Get_Main_Name & """);");
       end if;
+
+      Gen_CUDA_Init;
 
       --  Generate version numbers for units, only if needed. Be very safe on
       --  the condition.

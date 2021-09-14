@@ -92,4 +92,9 @@ package GNAT_CUDA is
    --  - Empty content of CUDA_Global procedures.
    --  - Remove declarations of CUDA_Device entities.
 
+   function Get_CUDA_Kernels (Pack_Id : Entity_Id) return Elist_Id;
+   --  Returns an Elist of all procedures marked with pragma CUDA_Global that
+   --  are declared within package body Pack_Body. Returns No_Elist if Pack_Id
+   --  does not contain such procedures.
+
 end GNAT_CUDA;

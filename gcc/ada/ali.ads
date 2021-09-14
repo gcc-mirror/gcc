@@ -46,6 +46,9 @@ package ALI is
    type ALI_Id is range 0 .. 99_999_999;
    --  Id values used for ALIs table entries
 
+   type CUDA_Kernel_Id is range 0 .. 99_999_999;
+   --  Id values used for CUDA_Kernel table entries
+
    type Unit_Id is range 0 .. 99_999_999;
    --  Id values used for Unit table entries
 
@@ -254,6 +257,12 @@ package ALI is
       Restrictions : Restrictions_Info;
       --  Restrictions information reconstructed from R lines
 
+      First_CUDA_Kernel : CUDA_Kernel_Id;
+      Last_CUDA_Kernel  : CUDA_Kernel_Id'Base;
+      --  These point to the first and last entries in the CUDA_Kernels table
+      --  for this unit. If there are no entries, First_CUDA_Kernel =
+      --  Last_CUDA_Kernel + 1.
+
       First_Interrupt_State : Interrupt_State_Id;
       Last_Interrupt_State  : Interrupt_State_Id'Base;
       --  These point to the first and last entries in the interrupt state
@@ -289,6 +298,27 @@ package ALI is
      Table_Initial        => 500,
      Table_Increment      => 200,
      Table_Name           => "ALIs");
+
+   ---------------------------
+   -- CUDA Kernels Table --
+   ---------------------------
+
+   --  An entry is made in this table for each K (CUDA Kernel) line
+   --  encountered in the input ALI file. The First/Last_CUDA_Kernel_Id
+   --  fields of the ALI file entry show the range of entries defined
+   --  within a particular ALI file.
+
+   type CUDA_Kernel_Record is record
+      Kernel_Name : Name_Id;
+   end record;
+
+   package CUDA_Kernels is new Table.Table (
+     Table_Component_Type => CUDA_Kernel_Record,
+     Table_Index_Type     => CUDA_Kernel_Id'Base,
+     Table_Low_Bound      => CUDA_Kernel_Id'First,
+     Table_Initial        => 100,
+     Table_Increment      => 200,
+     Table_Name           => "Cuda_Kernels");
 
    ----------------
    -- Unit Table --

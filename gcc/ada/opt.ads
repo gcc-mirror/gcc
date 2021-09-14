@@ -527,6 +527,12 @@ package Opt is
 
    --  WARNING: There is a matching C declaration of this variable in fe.h
 
+   Enable_CUDA_Expansion : Boolean := False;
+   --  GNAT, GNATBIND
+   --  Set to True to enable CUDA host expansion:
+   --    - Removal of CUDA_Global and CUDA_Device symbols
+   --    - Generation of kernel registration code in packages
+
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT
    --  Records the error message line length limit. If this is set to zero,
