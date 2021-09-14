@@ -499,9 +499,8 @@ extern GTY(()) int darwin_ms_struct;
 /* We now require C++11 to bootstrap and newer tools than those based on
    stabs, so require DWARF-2, even if stabs is supported by the assembler.  */
 
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-#define DARWIN_PREFER_DWARF
 #define DWARF2_DEBUGGING_INFO 1
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 #ifdef HAVE_AS_STABS_DIRECTIVE
 #define DBX_DEBUGGING_INFO 1

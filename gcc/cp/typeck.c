@@ -2618,36 +2618,14 @@ rationalize_conditional_expr (enum tree_code code, tree t,
    that are directly reachable.  */
 
 tree
-lookup_anon_field (tree t, tree type)
+lookup_anon_field (tree, tree type)
 {
   tree field;
 
-  t = TYPE_MAIN_VARIANT (t);
-
-  for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
-    {
-      if (TREE_STATIC (field))
-	continue;
-      if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
-	continue;
-
-      /* If we find it directly, return the field.  */
-      if (DECL_NAME (field) == NULL_TREE
-	  && type == TYPE_MAIN_VARIANT (TREE_TYPE (field)))
-	{
-	  return field;
-	}
-
-      /* Otherwise, it could be nested, search harder.  */
-      if (DECL_NAME (field) == NULL_TREE
-	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-	{
-	  tree subfield = lookup_anon_field (TREE_TYPE (field), type);
-	  if (subfield)
-	    return subfield;
-	}
-    }
-  return NULL_TREE;
+  type = TYPE_MAIN_VARIANT (type);
+  field = ANON_AGGR_TYPE_FIELD (type);
+  gcc_assert (field);
+  return field;
 }
 
 /* Build an expression representing OBJECT.MEMBER.  OBJECT is an

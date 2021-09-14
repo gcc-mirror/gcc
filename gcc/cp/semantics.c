@@ -3489,6 +3489,14 @@ finish_member_declaration (tree decl)
   if (TREE_CODE (decl) != CONST_DECL)
     DECL_CONTEXT (decl) = current_class_type;
 
+  /* Remember the single FIELD_DECL an anonymous aggregate type is used for.  */
+  if (TREE_CODE (decl) == FIELD_DECL
+      && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
+    {
+      gcc_assert (!ANON_AGGR_TYPE_FIELD (TYPE_MAIN_VARIANT (TREE_TYPE (decl))));
+      ANON_AGGR_TYPE_FIELD (TYPE_MAIN_VARIANT (TREE_TYPE (decl))) = decl;
+    }
+
   if (TREE_CODE (decl) == USING_DECL)
     /* For now, ignore class-scope USING_DECLS, so that debugging
        backends do not see them. */
@@ -9948,7 +9956,7 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	  return;
 	}
       stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs,
-				  v, lhs1, rhs1, swapped, mo,
+				  v, lhs1, rhs1, NULL_TREE, swapped, mo, false,
 				  processing_template_decl != 0);
       if (stmt == error_mark_node)
 	return;
@@ -10039,7 +10047,7 @@ finish_omp_flush (int mo)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
   releasing_vec vec;
-  if (mo != MEMMODEL_LAST)
+  if (mo != MEMMODEL_LAST && mo != MEMMODEL_SEQ_CST)
     {
       fn = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
       vec->quick_push (build_int_cst (integer_type_node, mo));

@@ -1237,21 +1237,18 @@ fully_constant_expression (pre_expr e)
   return e;
 }
 
-/* Translate the VUSE backwards through phi nodes in PHIBLOCK, so that
-   it has the value it would have in BLOCK.  Set *SAME_VALID to true
+/* Translate the VUSE backwards through phi nodes in E->dest, so that
+   it has the value it would have in E->src.  Set *SAME_VALID to true
    in case the new vuse doesn't change the value id of the OPERANDS.  */
 
 static tree
 translate_vuse_through_block (vec<vn_reference_op_s> operands,
 			      alias_set_type set, alias_set_type base_set,
-			      tree type, tree vuse,
-			      basic_block phiblock,
-			      basic_block block, bool *same_valid)
+			      tree type, tree vuse, edge e, bool *same_valid)
 {
+  basic_block phiblock = e->dest;
   gimple *phi = SSA_NAME_DEF_STMT (vuse);
   ao_ref ref;
-  edge e = NULL;
-  bool use_oracle;
 
   if (same_valid)
     *same_valid = true;
@@ -1259,59 +1256,40 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   if (gimple_bb (phi) != phiblock)
     return vuse;
 
-  unsigned int cnt = param_sccvn_max_alias_queries_per_access;
-  use_oracle = ao_ref_init_from_vn_reference (&ref, set, base_set,
-					      type, operands);
+  /* We have pruned expressions that are killed in PHIBLOCK via
+     prune_clobbered_mems but we have not rewritten the VUSE to the one
+     live at the start of the block.  If there is no virtual PHI to translate
+     through return the VUSE live at entry.  Otherwise the VUSE to translate
+     is the def of the virtual PHI node.  */
+  phi = get_virtual_phi (phiblock);
+  if (!phi)
+    return BB_LIVE_VOP_ON_EXIT
+	     (get_immediate_dominator (CDI_DOMINATORS, phiblock));
 
-  /* Use the alias-oracle to find either the PHI node in this block,
-     the first VUSE used in this block that is equivalent to vuse or
-     the first VUSE which definition in this block kills the value.  */
-  if (gimple_code (phi) == GIMPLE_PHI)
-    e = find_edge (block, phiblock);
-  else if (use_oracle)
-    while (cnt > 0
-	   && !stmt_may_clobber_ref_p_1 (phi, &ref))
-      {
-	--cnt;
-	vuse = gimple_vuse (phi);
-	phi = SSA_NAME_DEF_STMT (vuse);
-	if (gimple_bb (phi) != phiblock)
-	  return vuse;
-	if (gimple_code (phi) == GIMPLE_PHI)
-	  {
-	    e = find_edge (block, phiblock);
-	    break;
-	  }
-      }
-  else
-    return NULL_TREE;
-
-  if (e)
+  if (same_valid
+      && ao_ref_init_from_vn_reference (&ref, set, base_set, type, operands))
     {
-      if (use_oracle && same_valid)
-	{
-	  bitmap visited = NULL;
-	  /* Try to find a vuse that dominates this phi node by skipping
-	     non-clobbering statements.  */
-	  vuse = get_continuation_for_phi (phi, &ref, true,
-					   cnt, &visited, false, NULL, NULL);
-	  if (visited)
-	    BITMAP_FREE (visited);
-	}
-      else
-	vuse = NULL_TREE;
-      /* If we didn't find any, the value ID can't stay the same.  */
-      if (!vuse && same_valid)
-	*same_valid = false;
-      /* ??? We would like to return vuse here as this is the canonical
-         upmost vdef that this reference is associated with.  But during
-	 insertion of the references into the hash tables we only ever
-	 directly insert with their direct gimple_vuse, hence returning
-	 something else would make us not find the other expression.  */
-      return PHI_ARG_DEF (phi, e->dest_idx);
+      bitmap visited = NULL;
+      /* Try to find a vuse that dominates this phi node by skipping
+	 non-clobbering statements.  */
+      unsigned int cnt = param_sccvn_max_alias_queries_per_access;
+      vuse = get_continuation_for_phi (phi, &ref, true,
+				       cnt, &visited, false, NULL, NULL);
+      if (visited)
+	BITMAP_FREE (visited);
     }
+  else
+    vuse = NULL_TREE;
+  /* If we didn't find any, the value ID can't stay the same.  */
+  if (!vuse && same_valid)
+    *same_valid = false;
 
-  return NULL_TREE;
+  /* ??? We would like to return vuse here as this is the canonical
+     upmost vdef that this reference is associated with.  But during
+     insertion of the references into the hash tables we only ever
+     directly insert with their direct gimple_vuse, hence returning
+     something else would make us not find the other expression.  */
+  return PHI_ARG_DEF (phi, e->dest_idx);
 }
 
 /* Like bitmap_find_leader, but checks for the value existing in SET1 *or*
@@ -1630,8 +1608,7 @@ phi_translate_1 (bitmap_set_t dest,
 	    newvuse = translate_vuse_through_block (newoperands.exists ()
 						    ? newoperands : operands,
 						    ref->set, ref->base_set,
-						    ref->type,
-						    vuse, phiblock, pred,
+						    ref->type, vuse, e,
 						    changed
 						    ? NULL : &same_valid);
 	    if (newvuse == NULL_TREE)

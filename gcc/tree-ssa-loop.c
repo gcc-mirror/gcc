@@ -540,7 +540,7 @@ const pass_data pass_data_tree_loop_done =
   OPTGROUP_LOOP, /* optinfo_flags */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
-  0, /* properties_provided */
+  PROP_loop_opts_done, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
   TODO_cleanup_cfg, /* todo_flags_finish */

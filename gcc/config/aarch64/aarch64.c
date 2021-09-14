@@ -9770,7 +9770,6 @@ aarch64_classify_address (struct aarch64_address_info *info,
 			    || mode == TImode
 			    || mode == TFmode
 			    || (BYTES_BIG_ENDIAN && advsimd_struct_p));
-
   /* If we are dealing with ADDR_QUERY_LDP_STP_N that means the incoming mode
      corresponds to the actual size of the memory being loaded/stored and the
      mode of the corresponding addressing mode is half of that.  */
@@ -9779,12 +9778,14 @@ aarch64_classify_address (struct aarch64_address_info *info,
     mode = DFmode;
 
   bool allow_reg_index_p = (!load_store_pair_p
-			    && (known_lt (GET_MODE_SIZE (mode), 16)
+			    && ((vec_flags == 0
+				 && known_lt (GET_MODE_SIZE (mode), 16))
 				|| vec_flags == VEC_ADVSIMD
 				|| vec_flags & VEC_SVE_DATA));
 
-  /* For SVE, only accept [Rn], [Rn, Rm, LSL #shift] and
-     [Rn, #offset, MUL VL].  */
+  /* For SVE, only accept [Rn], [Rn, #offset, MUL VL] and [Rn, Rm, LSL #shift].
+     The latter is not valid for SVE predicates, and that's rejected through
+     allow_reg_index_p above.  */
   if ((vec_flags & (VEC_SVE_DATA | VEC_SVE_PRED)) != 0
       && (code != REG && code != PLUS))
     return false;
@@ -16539,6 +16540,28 @@ aarch64_override_options_internal (struct gcc_options *opts)
     SET_OPTION_IF_UNSET (opts, &global_options_set,
 			 param_l1_cache_line_size,
 			 aarch64_tune_params.prefetch->l1_cache_line_size);
+
+  if (aarch64_tune_params.prefetch->l1_cache_line_size >= 0)
+    {
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_destruct_interfere_size,
+			   aarch64_tune_params.prefetch->l1_cache_line_size);
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_construct_interfere_size,
+			   aarch64_tune_params.prefetch->l1_cache_line_size);
+    }
+  else
+    {
+      /* For a generic AArch64 target, cover the current range of cache line
+	 sizes.  */
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_destruct_interfere_size,
+			   256);
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_construct_interfere_size,
+			   64);
+    }
+
   if (aarch64_tune_params.prefetch->l2_cache_size >= 0)
     SET_OPTION_IF_UNSET (opts, &global_options_set,
 			 param_l2_cache_size,
@@ -25045,6 +25068,7 @@ aarch64_excess_precision (enum excess_precision_type type)
 		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
 		: FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
       case EXCESS_PRECISION_TYPE_IMPLICIT:
+      case EXCESS_PRECISION_TYPE_FLOAT16:
 	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
       default:
 	gcc_unreachable ();

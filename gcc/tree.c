@@ -7637,7 +7637,8 @@ excess_precision_type (tree type)
   enum excess_precision_type requested_type
     = (flag_excess_precision == EXCESS_PRECISION_FAST
        ? EXCESS_PRECISION_TYPE_FAST
-       : EXCESS_PRECISION_TYPE_STANDARD);
+       : (flag_excess_precision == EXCESS_PRECISION_FLOAT16
+	  ? EXCESS_PRECISION_TYPE_FLOAT16 :EXCESS_PRECISION_TYPE_STANDARD));
 
   enum flt_eval_method target_flt_eval_method
     = targetm.c.excess_precision (requested_type);
@@ -9509,6 +9510,19 @@ build_common_builtin_nodes (void)
 {
   tree tmp, ftype;
   int ecf_flags;
+
+  if (!builtin_decl_explicit_p (BUILT_IN_CLEAR_PADDING))
+    {
+      ftype = build_function_type_list (void_type_node,
+					ptr_type_node,
+					ptr_type_node,
+					integer_type_node,
+					NULL_TREE);
+      local_define_builtin ("__builtin_clear_padding", ftype,
+			    BUILT_IN_CLEAR_PADDING,
+			    "__builtin_clear_padding",
+			      ECF_LEAF | ECF_NOTHROW);
+    }
 
   if (!builtin_decl_explicit_p (BUILT_IN_UNREACHABLE)
       || !builtin_decl_explicit_p (BUILT_IN_ABORT))

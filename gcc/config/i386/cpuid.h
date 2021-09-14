@@ -126,6 +126,7 @@
 #define bit_AVX5124VNNIW (1 << 2)
 #define bit_AVX5124FMAPS (1 << 3)
 #define bit_AVX512VP2INTERSECT	(1 << 8)
+#define bit_AVX512FP16   (1 << 23)
 #define bit_IBT	(1 << 20)
 #define bit_UINTR (1 << 5)
 #define bit_PCONFIG	(1 << 18)

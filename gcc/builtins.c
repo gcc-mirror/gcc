@@ -142,7 +142,6 @@ static rtx expand_builtin_strcpy (tree, rtx);
 static rtx expand_builtin_strcpy_args (tree, tree, tree, rtx);
 static rtx expand_builtin_stpcpy (tree, rtx, machine_mode);
 static rtx expand_builtin_strncpy (tree, rtx);
-static rtx expand_builtin_memset (tree, rtx, machine_mode);
 static rtx expand_builtin_memset_args (tree, tree, tree, rtx, machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
 static rtx expand_builtin_strlen (tree, rtx, machine_mode);
@@ -3872,7 +3871,7 @@ builtin_memset_gen_str (void *data, void *prev,
    try to get the result in TARGET, if convenient (and in mode MODE if that's
    convenient).  */
 
-static rtx
+rtx
 expand_builtin_memset (tree exp, rtx target, machine_mode mode)
 {
   if (!validate_arglist (exp,

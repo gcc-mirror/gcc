@@ -223,7 +223,8 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mhreset",		OPTION_MASK_ISA2_HRESET },
   { "-mkl",		OPTION_MASK_ISA2_KL },
   { "-mwidekl", 	OPTION_MASK_ISA2_WIDEKL },
-  { "-mavxvnni",	OPTION_MASK_ISA2_AVXVNNI }
+  { "-mavxvnni",	OPTION_MASK_ISA2_AVXVNNI },
+  { "-mavx512fp16",	OPTION_MASK_ISA2_AVX512FP16 }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1049,6 +1050,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("amx-bf16", OPT_mamx_bf16),
     IX86_ATTR_ISA ("hreset", OPT_mhreset),
     IX86_ATTR_ISA ("avxvnni",   OPT_mavxvnni),
+    IX86_ATTR_ISA ("avx512fp16", OPT_mavx512fp16),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -2576,6 +2578,12 @@ ix86_option_override_internal (bool main_args_p,
 		       ix86_tune_cost->l1_cache_size);
   SET_OPTION_IF_UNSET (opts, opts_set, param_l2_cache_size,
 		       ix86_tune_cost->l2_cache_size);
+
+  /* 64B is the accepted value for these for all x86.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_destruct_interfere_size, 64);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_construct_interfere_size, 64);
 
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (opts->x_flag_prefetch_loop_arrays < 0

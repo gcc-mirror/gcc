@@ -203,6 +203,8 @@ private:
 
 extern location_t get_stmt_location (const gimple *stmt, function *fun);
 
+extern bool compat_types_p (tree src_type, tree dst_type);
+
 /* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */
 
 class plugin_analyzer_init_iface

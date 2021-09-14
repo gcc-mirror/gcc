@@ -917,6 +917,27 @@ gen_ctf_type (ctf_container_ref ctfc, dw_die_ref die)
   return type_id;
 }
 
+/* Prepare for output and write out the CTF debug information.  */
+
+static void
+ctf_debug_finalize (const char *filename, bool btf)
+{
+  if (btf)
+    {
+      btf_output (filename);
+      btf_finalize ();
+    }
+
+  else
+    {
+      /* Emit the collected CTF information.  */
+      ctf_output (filename);
+
+      /* Reset the CTF state.  */
+      ctf_finalize ();
+    }
+}
+
 bool
 ctf_do_die (dw_die_ref die)
 {
@@ -966,24 +987,31 @@ ctf_debug_init_postprocess (bool btf)
     btf_init_postprocess ();
 }
 
-/* Prepare for output and write out the CTF debug information.  */
+/* Early finish CTF/BTF debug info.  */
 
 void
-ctf_debug_finalize (const char *filename, bool btf)
+ctf_debug_early_finish (const char * filename)
 {
-  if (btf)
-    {
-      btf_output (filename);
-      btf_finalize ();
-    }
+  /* Emit CTF debug info early always.  */
+  if (ctf_debug_info_level > CTFINFO_LEVEL_NONE
+      /* Emit BTF debug info early if CO-RE relocations are not
+	 required.  */
+      || (btf_debuginfo_p () && !btf_with_core_debuginfo_p ()))
+    ctf_debug_finalize (filename, btf_debuginfo_p ());
+}
 
-  else
-    {
-      /* Emit the collected CTF information.  */
-      ctf_output (filename);
+/* Finish CTF/BTF debug info emission.  */
 
-      /* Reset the CTF state.  */
-      ctf_finalize ();
+void
+ctf_debug_finish (const char * filename)
+{
+  /* Emit BTF debug info here when CO-RE relocations need to be generated.
+     BTF with CO-RE relocations needs to be generated when CO-RE is in effect
+     for the BPF target.  */
+  if (btf_with_core_debuginfo_p ())
+    {
+      gcc_assert (btf_debuginfo_p ());
+      ctf_debug_finalize (filename, btf_debuginfo_p ());
     }
 }
 

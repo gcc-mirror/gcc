@@ -40,7 +40,7 @@ package body System.Atomic_Operations.Test_And_Set is
    function Atomic_Test_And_Set
      (Item : aliased in out Test_And_Set_Flag) return Boolean is
    begin
-      return Boolean (Atomic_Test_And_Set (Item'Address));
+      return Atomic_Test_And_Set (Item'Address);
    end Atomic_Test_And_Set;
 
    ------------------

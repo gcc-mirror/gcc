@@ -9350,7 +9350,7 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
               ref2 = Expression::make_cast(uint_type, ref2, loc);
               cond = Expression::make_binary(OPERATOR_GT, ref, ref2, loc);
               zero = Expression::make_integer_ul(0, int_type, loc);
-              call = Expression::make_conditional(cond, call, zero, loc);
+              call = Expression::make_conditional(cond, zero, call, loc);
             }
         }
       else

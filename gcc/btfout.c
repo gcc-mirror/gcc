@@ -156,7 +156,7 @@ init_btf_id_map (size_t len)
 /* Return the BTF type ID of CTF type ID KEY, or BTF_INVALID_TYPEID if the CTF
    type with ID KEY does not map to a BTF type.  */
 
-static inline ctf_id_t
+ctf_id_t
 get_btf_id (ctf_id_t key)
 {
   return btf_id_map[key];

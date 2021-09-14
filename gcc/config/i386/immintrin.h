@@ -94,6 +94,12 @@
 
 #include <avx512vp2intersectvlintrin.h>
 
+#ifdef __SSE2__
+#include <avx512fp16intrin.h>
+
+#include <avx512fp16vlintrin.h>
+#endif
+
 #include <shaintrin.h>
 
 #include <fmaintrin.h>

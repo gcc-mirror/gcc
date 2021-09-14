@@ -1,3 +1,39 @@
+2021-09-13  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Winterference-size.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Add __GCC_DESTRUCTIVE_SIZE
+	and __GCC_CONSTRUCTIVE_SIZE.
+
+2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_atomic): Add r and weak arguments.
+	* c-omp.c: Include gimple-fold.h.
+	(c_finish_omp_atomic): Add r and weak arguments.  Add support for
+	OpenMP 5.1 atomics.
+
+2021-09-09  qing zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.c (handle_uninitialized_attribute): New function.
+	(c_common_attribute_table): Add "uninitialized" attribute.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* c-common.c (excess_precision_mode_join): Update below comments.
+	(c_ts18661_flt_eval_method): Set excess_precision_type to
+	EXCESS_PRECISION_TYPE_FLOAT16 when -fexcess-precision=16.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Update below comments.
+	(c_cpp_flt_eval_method_iec_559): Set excess_precision_type to
+	EXCESS_PRECISION_TYPE_FLOAT16 when -fexcess-precision=16.
+
+2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-omp.c (c_finish_omp_flush): Handle MEMMODEL_SEQ_CST.
+
+2021-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ads): Generate pragmas to disable style checks
+	and -gnatwu warning for the package specification.
+
 2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-attribs.c (handle_unavailable_attribute): New.

@@ -678,6 +678,10 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
       extract = gen_avx_vextractf128v32qi;
       mode = V16QImode;
       break;
+    case E_V16HFmode:
+      extract = gen_avx_vextractf128v16hf;
+      mode = V8HFmode;
+      break;
     case E_V8SFmode:
       extract = gen_avx_vextractf128v8sf;
       mode = V4SFmode;
@@ -1851,12 +1855,21 @@ ix86_expand_convert_uns_sisf_sse (rtx target, rtx input)
   fp_lo = gen_reg_rtx (SFmode);
   emit_insn (gen_floatsisf2 (fp_hi, int_hi));
   emit_insn (gen_floatsisf2 (fp_lo, int_lo));
-  fp_hi = expand_simple_binop (SFmode, MULT, fp_hi, x, fp_hi,
-			       0, OPTAB_DIRECT);
-  fp_hi = expand_simple_binop (SFmode, PLUS, fp_hi, fp_lo, target,
-			       0, OPTAB_DIRECT);
-  if (!rtx_equal_p (target, fp_hi))
-    emit_move_insn (target, fp_hi);
+  if (TARGET_FMA)
+    {
+      x = validize_mem (force_const_mem (SFmode, x));
+      fp_hi = gen_rtx_FMA (SFmode, fp_hi, x, fp_lo);
+      emit_move_insn (target, fp_hi);
+    }
+  else
+    {
+      fp_hi = expand_simple_binop (SFmode, MULT, fp_hi, x, fp_hi,
+				   0, OPTAB_DIRECT);
+      fp_hi = expand_simple_binop (SFmode, PLUS, fp_hi, fp_lo, target,
+				   0, OPTAB_DIRECT);
+      if (!rtx_equal_p (target, fp_hi))
+	emit_move_insn (target, fp_hi);
+    }
 }
 
 /* floatunsv{4,8}siv{4,8}sf2 expander.  Expand code to convert
@@ -1888,12 +1901,20 @@ ix86_expand_vector_convert_uns_vsivsf (rtx target, rtx val)
   real_ldexp (&TWO16r, &dconst1, 16);
   tmp[5] = const_double_from_real_value (TWO16r, SFmode);
   tmp[5] = force_reg (fltmode, ix86_build_const_vector (fltmode, 1, tmp[5]));
-  tmp[6] = expand_simple_binop (fltmode, MULT, tmp[4], tmp[5], NULL_RTX, 1,
-				OPTAB_DIRECT);
-  tmp[7] = expand_simple_binop (fltmode, PLUS, tmp[3], tmp[6], target, 1,
-				OPTAB_DIRECT);
-  if (tmp[7] != target)
-    emit_move_insn (target, tmp[7]);
+  if (TARGET_FMA)
+    {
+      tmp[6] = gen_rtx_FMA (fltmode, tmp[4], tmp[5], tmp[3]);
+      emit_move_insn (target, tmp[6]);
+    }
+  else
+    {
+      tmp[6] = expand_simple_binop (fltmode, MULT, tmp[4], tmp[5],
+				    NULL_RTX, 1, OPTAB_DIRECT);
+      tmp[7] = expand_simple_binop (fltmode, PLUS, tmp[3], tmp[6],
+				    target, 1, OPTAB_DIRECT);
+      if (tmp[7] != target)
+	emit_move_insn (target, tmp[7]);
+    }
 }
 
 /* Adjust a V*SFmode/V*DFmode value VAL so that *sfix_trunc* resp. fix_trunc*
@@ -2098,13 +2119,9 @@ void
 ix86_expand_copysign (rtx operands[])
 {
   machine_mode mode, vmode;
-  rtx dest, op0, op1, mask;
+  rtx dest, op0, op1, mask, op2, op3;
 
-  dest = operands[0];
-  op0 = operands[1];
-  op1 = operands[2];
-
-  mode = GET_MODE (dest);
+  mode = GET_MODE (operands[0]);
 
   if (mode == SFmode)
     vmode = V4SFmode;
@@ -2115,136 +2132,40 @@ ix86_expand_copysign (rtx operands[])
   else
     gcc_unreachable ();
 
-  mask = ix86_build_signbit_mask (vmode, 0, 0);
-
-  if (CONST_DOUBLE_P (op0))
+  if (rtx_equal_p (operands[1], operands[2]))
     {
-      if (real_isneg (CONST_DOUBLE_REAL_VALUE (op0)))
-	op0 = simplify_unary_operation (ABS, mode, op0, mode);
-
-      if (mode == SFmode || mode == DFmode)
-	{
-	  if (op0 == CONST0_RTX (mode))
-	    op0 = CONST0_RTX (vmode);
-	  else
-	    {
-	      rtx v = ix86_build_const_vector (vmode, false, op0);
-
-	      op0 = force_reg (vmode, v);
-	    }
-	}
-      else if (op0 != CONST0_RTX (mode))
-	op0 = force_reg (mode, op0);
-
-      emit_insn (gen_copysign3_const (mode, dest, op0, op1, mask));
-    }
-  else
-    {
-      rtx nmask = ix86_build_signbit_mask (vmode, 0, 1);
-
-      emit_insn (gen_copysign3_var
-		 (mode, dest, NULL_RTX, op0, op1, nmask, mask));
-    }
-}
-
-/* Deconstruct a copysign operation into bit masks.  Operand 0 is known to
-   be a constant, and so has already been expanded into a vector constant.  */
-
-void
-ix86_split_copysign_const (rtx operands[])
-{
-  machine_mode mode, vmode;
-  rtx dest, op0, mask, x;
-
-  dest = operands[0];
-  op0 = operands[1];
-  mask = operands[3];
-
-  mode = GET_MODE (dest);
-  vmode = GET_MODE (mask);
-
-  dest = lowpart_subreg (vmode, dest, mode);
-  x = gen_rtx_AND (vmode, dest, mask);
-  emit_insn (gen_rtx_SET (dest, x));
-
-  if (op0 != CONST0_RTX (vmode))
-    {
-      x = gen_rtx_IOR (vmode, dest, op0);
-      emit_insn (gen_rtx_SET (dest, x));
-    }
-}
-
-/* Deconstruct a copysign operation into bit masks.  Operand 0 is variable,
-   so we have to do two masks.  */
-
-void
-ix86_split_copysign_var (rtx operands[])
-{
-  machine_mode mode, vmode;
-  rtx dest, scratch, op0, op1, mask, nmask, x;
-
-  dest = operands[0];
-  scratch = operands[1];
-  op0 = operands[2];
-  op1 = operands[3];
-  nmask = operands[4];
-  mask = operands[5];
-
-  mode = GET_MODE (dest);
-  vmode = GET_MODE (mask);
-
-  if (rtx_equal_p (op0, op1))
-    {
-      /* Shouldn't happen often (it's useless, obviously), but when it does
-	 we'd generate incorrect code if we continue below.  */
-      emit_move_insn (dest, op0);
+      emit_move_insn (operands[0], operands[1]);
       return;
     }
 
-  if (REG_P (mask) && REGNO (dest) == REGNO (mask))	/* alternative 0 */
+  dest = lowpart_subreg (vmode, operands[0], mode);
+  op1 = lowpart_subreg (vmode, operands[2], mode);
+  mask = ix86_build_signbit_mask (vmode, 0, 0);
+
+  if (CONST_DOUBLE_P (operands[1]))
     {
-      gcc_assert (REGNO (op1) == REGNO (scratch));
+      op0 = simplify_unary_operation (ABS, mode, operands[1], mode);
+      /* Optimize for 0, simplify b = copy_signf (0.0f, a) to b = mask & a.  */
+      if (op0 == CONST0_RTX (mode))
+	{
+	  emit_move_insn (dest, gen_rtx_AND (vmode, mask, op1));
+	  return;
+	}
 
-      x = gen_rtx_AND (vmode, scratch, mask);
-      emit_insn (gen_rtx_SET (scratch, x));
-
-      dest = mask;
-      op0 = lowpart_subreg (vmode, op0, mode);
-      x = gen_rtx_NOT (vmode, dest);
-      x = gen_rtx_AND (vmode, x, op0);
-      emit_insn (gen_rtx_SET (dest, x));
+      if (GET_MODE_SIZE (mode) < 16)
+	op0 = ix86_build_const_vector (vmode, false, op0);
+      op0 = force_reg (vmode, op0);
     }
   else
-    {
-      if (REGNO (op1) == REGNO (scratch))		/* alternative 1,3 */
-	{
-	  x = gen_rtx_AND (vmode, scratch, mask);
-	}
-      else						/* alternative 2,4 */
-	{
-          gcc_assert (REGNO (mask) == REGNO (scratch));
-          op1 = lowpart_subreg (vmode, op1, mode);
-	  x = gen_rtx_AND (vmode, scratch, op1);
-	}
-      emit_insn (gen_rtx_SET (scratch, x));
+    op0 = lowpart_subreg (vmode, operands[1], mode);
 
-      if (REGNO (op0) == REGNO (dest))			/* alternative 1,2 */
-	{
-	  dest = lowpart_subreg (vmode, op0, mode);
-	  x = gen_rtx_AND (vmode, dest, nmask);
-	}
-      else						/* alternative 3,4 */
-	{
-          gcc_assert (REGNO (nmask) == REGNO (dest));
-	  dest = nmask;
-	  op0 = lowpart_subreg (vmode, op0, mode);
-	  x = gen_rtx_AND (vmode, dest, op0);
-	}
-      emit_insn (gen_rtx_SET (dest, x));
-    }
-
-  x = gen_rtx_IOR (vmode, dest, scratch);
-  emit_insn (gen_rtx_SET (dest, x));
+  op2 = gen_reg_rtx (vmode);
+  op3 = gen_reg_rtx (vmode);
+  emit_move_insn (op2, gen_rtx_AND (vmode,
+				    gen_rtx_NOT (vmode, mask),
+				    op0));
+  emit_move_insn (op3, gen_rtx_AND (vmode, mask, op1));
+  emit_move_insn (dest, gen_rtx_IOR (vmode, op2, op3));
 }
 
 /* Expand an xorsign operation.  */
@@ -2253,7 +2174,7 @@ void
 ix86_expand_xorsign (rtx operands[])
 {
   machine_mode mode, vmode;
-  rtx dest, op0, op1, mask;
+  rtx dest, op0, op1, mask, x, temp;
 
   dest = operands[0];
   op0 = operands[1];
@@ -2268,32 +2189,17 @@ ix86_expand_xorsign (rtx operands[])
   else
     gcc_unreachable ();
 
+  temp = gen_reg_rtx (vmode);
   mask = ix86_build_signbit_mask (vmode, 0, 0);
 
-  emit_insn (gen_xorsign3_1 (mode, dest, op0, op1, mask));
-}
-
-/* Deconstruct an xorsign operation into bit masks.  */
-
-void
-ix86_split_xorsign (rtx operands[])
-{
-  machine_mode mode, vmode;
-  rtx dest, op0, mask, x;
-
-  dest = operands[0];
-  op0 = operands[1];
-  mask = operands[3];
-
-  mode = GET_MODE (dest);
-  vmode = GET_MODE (mask);
-
-  dest = lowpart_subreg (vmode, dest, mode);
-  x = gen_rtx_AND (vmode, dest, mask);
-  emit_insn (gen_rtx_SET (dest, x));
+  op1 = lowpart_subreg (vmode, op1, mode);
+  x = gen_rtx_AND (vmode, op1, mask);
+  emit_insn (gen_rtx_SET (temp, x));
 
   op0 = lowpart_subreg (vmode, op0, mode);
-  x = gen_rtx_XOR (vmode, dest, op0);
+  x = gen_rtx_XOR (vmode, temp, op0);
+
+  dest = lowpart_subreg (vmode, dest, mode);
   emit_insn (gen_rtx_SET (dest, x));
 }
 
@@ -2331,6 +2237,7 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 
   switch (mode)
     {
+    case E_HFmode:
     case E_SFmode:
     case E_DFmode:
     case E_XFmode:
@@ -2644,7 +2551,7 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   bool unordered_compare = ix86_unordered_fp_compare (code);
   rtx op0 = *pop0, op1 = *pop1;
   machine_mode op_mode = GET_MODE (op0);
-  bool is_sse = TARGET_SSE_MATH && SSE_FLOAT_MODE_P (op_mode);
+  bool is_sse = SSE_FLOAT_MODE_SSEMATH_OR_HF_P (op_mode);
 
   /* All of the unordered compare instructions only work on registers.
      The same is true of the fcomi compare instructions.  The XFmode
@@ -3968,6 +3875,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       break;
     case E_V16QImode:
     case E_V8HImode:
+    case E_V8HFmode:
     case E_V4SImode:
     case E_V2DImode:
       if (TARGET_SSE4_1)
@@ -3990,6 +3898,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       break;
     case E_V32QImode:
     case E_V16HImode:
+    case E_V16HFmode:
     case E_V8SImode:
     case E_V4DImode:
       if (TARGET_AVX2)
@@ -4008,6 +3917,9 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       break;
     case E_V32HImode:
       gen = gen_avx512bw_blendmv32hi;
+      break;
+    case E_V32HFmode:
+      gen = gen_avx512bw_blendmv32hf;
       break;
     case E_V16SImode:
       gen = gen_avx512f_blendmv16si;
@@ -4129,7 +4041,7 @@ ix86_expand_fp_movcc (rtx operands[])
   rtx op0 = XEXP (operands[1], 0);
   rtx op1 = XEXP (operands[1], 1);
 
-  if (TARGET_SSE_MATH && SSE_FLOAT_MODE_P (mode))
+  if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
     {
       machine_mode cmode;
 
@@ -9615,12 +9527,14 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case FLOAT128_FTYPE_FLOAT128_FLOAT128:
     case V16QI_FTYPE_V16QI_V16QI:
     case V16QI_FTYPE_V8HI_V8HI:
+    case V16HF_FTYPE_V16HF_V16HF:
     case V16SF_FTYPE_V16SF_V16SF:
     case V8QI_FTYPE_V8QI_V8QI:
     case V8QI_FTYPE_V4HI_V4HI:
     case V8HI_FTYPE_V8HI_V8HI:
     case V8HI_FTYPE_V16QI_V16QI:
     case V8HI_FTYPE_V4SI_V4SI:
+    case V8HF_FTYPE_V8HF_V8HF:
     case V8SF_FTYPE_V8SF_V8SF:
     case V8SF_FTYPE_V8SF_V8SI:
     case V8DF_FTYPE_V8DF_V8DF:
@@ -9796,6 +9710,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HI_FTYPE_V16SI_V16HI_UHI:
     case V16QI_FTYPE_V16SI_V16QI_UHI:
     case V16QI_FTYPE_V8DI_V16QI_UQI:
+    case V32HF_FTYPE_V32HF_V32HF_USI:
     case V16SF_FTYPE_V16SF_V16SF_UHI:
     case V16SF_FTYPE_V4SF_V16SF_UHI:
     case V16SI_FTYPE_SI_V16SI_UHI:
@@ -9825,12 +9740,14 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HI_FTYPE_HI_V16HI_UHI:
     case V8HI_FTYPE_V8HI_V8HI_UQI:
     case V8HI_FTYPE_HI_V8HI_UQI:
+    case V16HF_FTYPE_V16HF_V16HF_UHI:
     case V8SF_FTYPE_V8HI_V8SF_UQI:
     case V4SF_FTYPE_V8HI_V4SF_UQI:
     case V8SI_FTYPE_V8SF_V8SI_UQI:
     case V4SI_FTYPE_V4SF_V4SI_UQI:
     case V4DI_FTYPE_V4SF_V4DI_UQI:
     case V2DI_FTYPE_V4SF_V2DI_UQI:
+    case V8HF_FTYPE_V8HF_V8HF_UQI:
     case V4SF_FTYPE_V4DI_V4SF_UQI:
     case V4SF_FTYPE_V2DI_V4SF_UQI:
     case V4DF_FTYPE_V4DI_V4DF_UQI:
@@ -9996,6 +9913,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case HI_FTYPE_V16SF_INT_UHI:
     case QI_FTYPE_V8SF_INT_UQI:
     case QI_FTYPE_V4SF_INT_UQI:
+    case QI_FTYPE_V8HF_INT_UQI:
+    case HI_FTYPE_V16HF_INT_UHI:
+    case SI_FTYPE_V32HF_INT_USI:
     case V4SI_FTYPE_V4SI_V4SI_UHI:
     case V8SI_FTYPE_V8SI_V8SI_UHI:
       nargs = 3;
@@ -10030,6 +9950,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HI_FTYPE_V8SI_V8SI_V16HI_UHI:
     case V8HI_FTYPE_V4SI_V4SI_V8HI_UQI:
     case V4DF_FTYPE_V4DF_V4DI_V4DF_UQI:
+    case V32HF_FTYPE_V32HF_V32HF_V32HF_USI:
     case V8SF_FTYPE_V8SF_V8SI_V8SF_UQI:
     case V4SF_FTYPE_V4SF_V4SI_V4SF_UQI:
     case V2DF_FTYPE_V2DF_V2DI_V2DF_UQI:
@@ -10047,6 +9968,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8HI_FTYPE_V8HI_V8HI_V8HI_UQI:
     case V8SI_FTYPE_V8SI_V8SI_V8SI_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI_UQI:
+    case V16HF_FTYPE_V16HF_V16HF_V16HF_UHI:
     case V8SF_FTYPE_V8SF_V8SF_V8SF_UQI:
     case V16QI_FTYPE_V16QI_V16QI_V16QI_UHI:
     case V16HI_FTYPE_V16HI_V16HI_V16HI_UHI:
@@ -10054,6 +9976,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DF_FTYPE_V2DF_V2DF_V2DF_UQI:
     case V4DI_FTYPE_V4DI_V4DI_V4DI_UQI:
     case V4DF_FTYPE_V4DF_V4DF_V4DF_UQI:
+    case V8HF_FTYPE_V8HF_V8HF_V8HF_UQI:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_UQI:
     case V8DF_FTYPE_V8DF_V8DF_V8DF_UQI:
     case V8DF_FTYPE_V8DF_V8DI_V8DF_UQI:
@@ -10082,14 +10005,17 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case UQI_FTYPE_V8SI_V8SI_INT_UQI:
     case QI_FTYPE_V4DF_V4DF_INT_UQI:
     case QI_FTYPE_V8SF_V8SF_INT_UQI:
+    case UHI_FTYPE_V16HF_V16HF_INT_UHI:
     case UQI_FTYPE_V2DI_V2DI_INT_UQI:
     case UQI_FTYPE_V4SI_V4SI_INT_UQI:
     case UQI_FTYPE_V2DF_V2DF_INT_UQI:
     case UQI_FTYPE_V4SF_V4SF_INT_UQI:
+    case UQI_FTYPE_V8HF_V8HF_INT_UQI:
     case UDI_FTYPE_V64QI_V64QI_INT_UDI:
     case USI_FTYPE_V32QI_V32QI_INT_USI:
     case UHI_FTYPE_V16QI_V16QI_INT_UHI:
     case USI_FTYPE_V32HI_V32HI_INT_USI:
+    case USI_FTYPE_V32HF_V32HF_INT_USI:
     case UHI_FTYPE_V16HI_V16HI_INT_UHI:
     case UQI_FTYPE_V8HI_V8HI_INT_UQI:
       nargs = 4;
@@ -10138,6 +10064,8 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_V16SF_INT_V16SF_UHI:
     case V16HI_FTYPE_V16SF_INT_V16HI_UHI:
     case V16SI_FTYPE_V16SI_INT_V16SI_UHI:
+    case V16HF_FTYPE_V16HF_INT_V16HF_UHI:
+    case V8HF_FTYPE_V8HF_INT_V8HF_UQI:
     case V4SI_FTYPE_V16SI_INT_V4SI_UQI:
     case V4DI_FTYPE_V8DI_INT_V4DI_UQI:
     case V4DF_FTYPE_V8DF_INT_V4DF_UQI:
@@ -10309,8 +10237,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx_vpermilv4df_mask:
 	      case CODE_FOR_avx512f_getmantv8df_mask:
 	      case CODE_FOR_avx512f_getmantv16sf_mask:
+	      case CODE_FOR_avx512vl_getmantv16hf_mask:
 	      case CODE_FOR_avx512vl_getmantv8sf_mask:
 	      case CODE_FOR_avx512vl_getmantv4df_mask:
+	      case CODE_FOR_avx512fp16_getmantv8hf_mask:
 	      case CODE_FOR_avx512vl_getmantv4sf_mask:
 	      case CODE_FOR_avx512vl_getmantv2df_mask:
 	      case CODE_FOR_avx512dq_rangepv8df_mask_round:
@@ -10373,6 +10303,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx512f_cmpv16sf3_mask:
 	      case CODE_FOR_avx512f_vmcmpv2df3_mask:
 	      case CODE_FOR_avx512f_vmcmpv4sf3_mask:
+	      case CODE_FOR_avx512bw_cmpv32hf3_mask:
+	      case CODE_FOR_avx512vl_cmpv16hf3_mask:
+	      case CODE_FOR_avx512fp16_cmpv8hf3_mask:
 		error ("the last argument must be a 5-bit immediate");
 		return const0_rtx;
 
@@ -10730,6 +10663,8 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case INT_FTYPE_V4SF_INT:
       nargs = 2;
       break;
+    case V32HF_FTYPE_V32HF_V32HF_INT:
+    case V8HF_FTYPE_V8HF_V8HF_INT:
     case V4SF_FTYPE_V4SF_UINT_INT:
     case V4SF_FTYPE_V4SF_UINT64_INT:
     case V2DF_FTYPE_V2DF_UINT64_INT:
@@ -10748,6 +10683,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V8DI_FTYPE_V8DF_V8DI_QI_INT:
     case V8SF_FTYPE_V8DI_V8SF_QI_INT:
     case V8DF_FTYPE_V8DI_V8DF_QI_INT:
+    case V32HF_FTYPE_V32HF_V32HF_USI_INT:
     case V16SF_FTYPE_V16SF_V16SF_HI_INT:
     case V8DI_FTYPE_V8SF_V8DI_QI_INT:
     case V16SF_FTYPE_V16SI_V16SF_HI_INT:
@@ -10770,14 +10706,17 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V2DF_FTYPE_V2DF_V2DF_V2DF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_UQI_INT:
     case V16SF_FTYPE_V16SF_V16SF_V16SF_HI_INT:
+    case V32HF_FTYPE_V32HF_V32HF_V32HF_USI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V4SF_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V4SF_V2DF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_QI_INT:
     case V4SF_FTYPE_V4SF_V2DF_V4SF_QI_INT:
     case V4SF_FTYPE_V4SF_V2DF_V4SF_UQI_INT:
+    case V8HF_FTYPE_V8HF_V8HF_V8HF_UQI_INT:
       nargs = 5;
       break;
+    case V32HF_FTYPE_V32HF_INT_V32HF_USI_INT:
     case V16SF_FTYPE_V16SF_INT_V16SF_HI_INT:
     case V8DF_FTYPE_V8DF_INT_V8DF_QI_INT:
     case V8DF_FTYPE_V8DF_INT_V8DF_UQI_INT:
@@ -10789,6 +10728,8 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case UQI_FTYPE_V2DF_V2DF_INT_UQI_INT:
     case UHI_FTYPE_V16SF_V16SF_INT_UHI_INT:
     case UQI_FTYPE_V4SF_V4SF_INT_UQI_INT:
+    case USI_FTYPE_V32HF_V32HF_INT_USI_INT:
+    case UQI_FTYPE_V8HF_V8HF_INT_UQI_INT:
       nargs_constant = 3;
       nargs = 5;
       break;
@@ -10798,6 +10739,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_INT_V4SF_UQI_INT:
+    case V8HF_FTYPE_V8HF_V8HF_INT_V8HF_UQI_INT:
       nargs = 6;
       nargs_constant = 4;
       break;
@@ -10834,16 +10776,20 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 		{
 		case CODE_FOR_avx512f_getmantv8df_mask_round:
 		case CODE_FOR_avx512f_getmantv16sf_mask_round:
+		case CODE_FOR_avx512bw_getmantv32hf_mask_round:
 		case CODE_FOR_avx512f_vgetmantv2df_round:
 		case CODE_FOR_avx512f_vgetmantv2df_mask_round:
 		case CODE_FOR_avx512f_vgetmantv4sf_round:
 		case CODE_FOR_avx512f_vgetmantv4sf_mask_round:
+		case CODE_FOR_avx512f_vgetmantv8hf_mask_round:
 		  error ("the immediate argument must be a 4-bit immediate");
 		  return const0_rtx;
 		case CODE_FOR_avx512f_cmpv8df3_mask_round:
 		case CODE_FOR_avx512f_cmpv16sf3_mask_round:
 		case CODE_FOR_avx512f_vmcmpv2df3_mask_round:
 		case CODE_FOR_avx512f_vmcmpv4sf3_mask_round:
+		case CODE_FOR_avx512f_vmcmpv8hf3_mask_round:
+		case CODE_FOR_avx512bw_cmpv32hf3_mask_round:
 		  error ("the immediate argument must be a 5-bit immediate");
 		  return const0_rtx;
 		default:
@@ -14207,6 +14153,11 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	}
       return true;
 
+    case E_V8HFmode:
+    case E_V16HFmode:
+    case E_V32HFmode:
+      return ix86_vector_duplicate_value (mode, target, val);
+
     default:
       return false;
     }
@@ -14290,6 +14241,18 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       /* Use ix86_expand_vector_set in 64bit mode only.  */
       use_vector_set = TARGET_AVX512F && TARGET_64BIT && one_var == 0;
       gen_vec_set_0 = gen_vec_setv8di_0;
+      break;
+    case E_V8HFmode:
+      use_vector_set = TARGET_AVX512FP16 && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv8hf_0;
+      break;
+    case E_V16HFmode:
+      use_vector_set = TARGET_AVX512FP16 && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv16hf_0;
+      break;
+    case E_V32HFmode:
+      use_vector_set = TARGET_AVX512FP16 && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv32hf_0;
       break;
     default:
       break;
@@ -14440,6 +14403,8 @@ ix86_expand_vector_init_one_var (bool mmx_ok, machine_mode mode,
       if (!TARGET_64BIT)
 	return false;
       /* FALLTHRU */
+    case E_V8HFmode:
+    case E_V16HFmode:
     case E_V4DFmode:
     case E_V8SFmode:
     case E_V8SImode:
@@ -14520,6 +14485,9 @@ ix86_expand_vector_init_concat (machine_mode mode,
     case 2:
       switch (mode)
 	{
+	case E_V32HFmode:
+	  half_mode = V16HFmode;
+	  break;
 	case E_V16SImode:
 	  half_mode = V8SImode;
 	  break;
@@ -14531,6 +14499,9 @@ ix86_expand_vector_init_concat (machine_mode mode,
 	  break;
 	case E_V8DFmode:
 	  half_mode = V4DFmode;
+	  break;
+	case E_V16HFmode:
+	  half_mode = V8HFmode;
 	  break;
 	case E_V8SImode:
 	  half_mode = V4SImode;
@@ -14674,13 +14645,22 @@ ix86_expand_vector_init_interleave (machine_mode mode,
 {
   machine_mode first_imode, second_imode, third_imode, inner_mode;
   int i, j;
-  rtx op0, op1;
+  rtx op, op0, op1;
   rtx (*gen_load_even) (rtx, rtx, rtx);
   rtx (*gen_interleave_first_low) (rtx, rtx, rtx);
   rtx (*gen_interleave_second_low) (rtx, rtx, rtx);
 
   switch (mode)
     {
+    case E_V8HFmode:
+      gen_load_even = gen_vec_setv8hf;
+      gen_interleave_first_low = gen_vec_interleave_lowv4si;
+      gen_interleave_second_low = gen_vec_interleave_lowv2di;
+      inner_mode = HFmode;
+      first_imode = V4SImode;
+      second_imode = V2DImode;
+      third_imode = VOIDmode;
+      break;
     case E_V8HImode:
       gen_load_even = gen_vec_setv8hi;
       gen_interleave_first_low = gen_vec_interleave_lowv4si;
@@ -14705,9 +14685,19 @@ ix86_expand_vector_init_interleave (machine_mode mode,
 
   for (i = 0; i < n; i++)
     {
+      op = ops [i + i];
+      if (inner_mode == HFmode)
+	{
+	  /* Convert HFmode to HImode.  */
+	  op1 = gen_reg_rtx (HImode);
+	  op1 = gen_rtx_SUBREG (HImode, force_reg (HFmode, op), 0);
+	  op = gen_reg_rtx (HImode);
+	  emit_move_insn (op, op1);
+	}
+
       /* Extend the odd elment to SImode using a paradoxical SUBREG.  */
       op0 = gen_reg_rtx (SImode);
-      emit_move_insn (op0, gen_lowpart (SImode, ops [i + i]));
+      emit_move_insn (op0, gen_lowpart (SImode, op));
 
       /* Insert the SImode value as low element of V4SImode vector. */
       op1 = gen_reg_rtx (V4SImode);
@@ -14844,6 +14834,10 @@ ix86_expand_vector_init_general (bool mmx_ok, machine_mode mode,
       half_mode = V8HImode;
       goto half;
 
+    case E_V16HFmode:
+      half_mode = V8HFmode;
+      goto half;
+
 half:
       n = GET_MODE_NUNITS (mode);
       for (i = 0; i < n; i++)
@@ -14865,6 +14859,11 @@ half:
     case E_V32HImode:
       quarter_mode = V8HImode;
       half_mode = V16HImode;
+      goto quarter;
+
+    case E_V32HFmode:
+      quarter_mode = V8HFmode;
+      half_mode = V16HFmode;
       goto quarter;
 
 quarter:
@@ -14903,6 +14902,9 @@ quarter:
 	 move from GPR to SSE register directly.  */
       if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
 	break;
+      /* FALLTHRU */
+
+    case E_V8HFmode:
 
       n = GET_MODE_NUNITS (mode);
       for (i = 0; i < n; i++)
@@ -15150,6 +15152,16 @@ ix86_expand_vector_set_var (rtx target, rtx val, rtx idx)
 	case E_V16SFmode:
 	  cmp_mode = V16SImode;
 	  break;
+	/* TARGET_AVX512FP16 implies TARGET_AVX512BW.  */
+	case E_V8HFmode:
+	  cmp_mode = V8HImode;
+	  break;
+	case E_V16HFmode:
+	  cmp_mode = V16HImode;
+	  break;
+	case E_V32HFmode:
+	  cmp_mode = V32HImode;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -15186,23 +15198,25 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
   machine_mode half_mode;
   bool use_vec_merge = false;
   rtx tmp;
-  static rtx (*gen_extract[6][2]) (rtx, rtx)
+  static rtx (*gen_extract[7][2]) (rtx, rtx)
     = {
 	{ gen_vec_extract_lo_v32qi, gen_vec_extract_hi_v32qi },
 	{ gen_vec_extract_lo_v16hi, gen_vec_extract_hi_v16hi },
 	{ gen_vec_extract_lo_v8si, gen_vec_extract_hi_v8si },
 	{ gen_vec_extract_lo_v4di, gen_vec_extract_hi_v4di },
 	{ gen_vec_extract_lo_v8sf, gen_vec_extract_hi_v8sf },
-	{ gen_vec_extract_lo_v4df, gen_vec_extract_hi_v4df }
+	{ gen_vec_extract_lo_v4df, gen_vec_extract_hi_v4df },
+	{ gen_vec_extract_lo_v16hf, gen_vec_extract_hi_v16hf }
       };
-  static rtx (*gen_insert[6][2]) (rtx, rtx, rtx)
+  static rtx (*gen_insert[7][2]) (rtx, rtx, rtx)
     = {
 	{ gen_vec_set_lo_v32qi, gen_vec_set_hi_v32qi },
 	{ gen_vec_set_lo_v16hi, gen_vec_set_hi_v16hi },
 	{ gen_vec_set_lo_v8si, gen_vec_set_hi_v8si },
 	{ gen_vec_set_lo_v4di, gen_vec_set_hi_v4di },
 	{ gen_vec_set_lo_v8sf, gen_vec_set_hi_v8sf },
-	{ gen_vec_set_lo_v4df, gen_vec_set_hi_v4df }
+	{ gen_vec_set_lo_v4df, gen_vec_set_hi_v4df },
+	{ gen_vec_set_lo_v16hf, gen_vec_set_hi_v16hf },
       };
   int i, j, n;
   machine_mode mmode = VOIDmode;
@@ -15369,6 +15383,10 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	}
       return;
 
+    case E_V8HFmode:
+      use_vec_merge = true;
+      break;
+
     case E_V8HImode:
     case E_V2HImode:
       use_vec_merge = TARGET_SSE2;
@@ -15390,6 +15408,12 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       half_mode = V16QImode;
       j = 0;
       n = 16;
+      goto half;
+
+    case E_V16HFmode:
+      half_mode = V8HFmode;
+      j = 6;
+      n = 8;
       goto half;
 
     case E_V16HImode:
@@ -15472,6 +15496,13 @@ half:
 	}
       break;
 
+    case E_V32HFmode:
+      if (TARGET_AVX512BW)
+	{
+	  mmode = SImode;
+	  gen_blendm = gen_avx512bw_blendmv32hf;
+	}
+      break;
     case E_V32HImode:
       if (TARGET_AVX512BW)
 	{
@@ -15842,6 +15873,28 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 	emit_insn (gen_vec_extract_hi_v8di (tmp, vec));
       ix86_expand_vector_extract (false, target, tmp, elt & 3);
       return;
+
+    case E_V32HFmode:
+      tmp = gen_reg_rtx (V16HFmode);
+      if (elt < 16)
+	emit_insn (gen_vec_extract_lo_v32hf (tmp, vec));
+      else
+	emit_insn (gen_vec_extract_hi_v32hf (tmp, vec));
+      ix86_expand_vector_extract (false, target, tmp, elt & 15);
+      return;
+
+    case E_V16HFmode:
+      tmp = gen_reg_rtx (V8HFmode);
+      if (elt < 8)
+	emit_insn (gen_vec_extract_lo_v16hf (tmp, vec));
+      else
+	emit_insn (gen_vec_extract_hi_v16hf (tmp, vec));
+      ix86_expand_vector_extract (false, target, tmp, elt & 7);
+      return;
+
+    case E_V8HFmode:
+      use_vec_extr = true;
+      break;
 
     case E_V8QImode:
       use_vec_extr = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;

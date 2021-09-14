@@ -115,7 +115,7 @@ path_range_query::debug ()
 // Return the range of NAME at the end of the path being analyzed.
 
 bool
-path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
+path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
 {
   if (!irange::supports_type_p (TREE_TYPE (name)))
     return false;
@@ -127,6 +127,9 @@ path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
   basic_block bb = stmt ? gimple_bb (stmt) : exit_bb ();
   if (stmt && range_defined_in_block (r, name, bb))
     {
+      if (TREE_CODE (name) == SSA_NAME)
+	r.intersect (gimple_range_global (name));
+
       set_cache (r, name);
       return true;
     }
@@ -135,8 +138,26 @@ path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
   return true;
 }
 
+bool
+path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
+{
+  if (internal_range_of_expr (r, name, stmt))
+    {
+      if (r.undefined_p ())
+	m_undefined_path = true;
+
+      return true;
+    }
+  return false;
+}
+
+bool
+path_range_query::unreachable_path_p ()
+{
+  return m_undefined_path;
+}
+
 // Return the range of STMT at the end of the path being analyzed.
-// Anything but the final conditional in a BB will return VARYING.
 
 bool
 path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
@@ -146,10 +167,9 @@ path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
   if (!irange::supports_type_p (type))
     return false;
 
-  if (gimple_code (stmt) == GIMPLE_COND && fold_range (r, stmt, this))
-    return true;
+  if (!fold_range (r, stmt, this))
+    r.set_varying (type);
 
-  r.set_varying (type);
   return true;
 }
 
@@ -218,7 +238,7 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
 
   if (gimple_code (def_stmt) == GIMPLE_PHI)
     ssa_range_in_phi (r, as_a<gphi *> (def_stmt));
-  else if (!fold_range (r, def_stmt, this))
+  else if (!range_of_stmt (r, def_stmt, name))
     r.set_varying (TREE_TYPE (name));
 
   if (bb)
@@ -345,6 +365,7 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
 {
   set_path (path);
   m_imports = imports;
+  m_undefined_path = false;
 
   if (DEBUG_SOLVER)
     {

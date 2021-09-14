@@ -360,6 +360,10 @@ DEF_INTERNAL_FN (VEC_CONVERT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (UNIQUE, ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (PHI, 0, NULL)
 
+/* A function to represent an artifical initialization to an uninitialized
+   automatic variable.  */
+DEF_INTERNAL_FN (DEFERRED_INIT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+
 /* DIM_SIZE and DIM_POS return the size of a particular compute
    dimension and the executing thread's position within that
    dimension.  DIM_POS is pure (and not const) so that it isn't

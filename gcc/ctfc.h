@@ -388,7 +388,10 @@ extern bool ctf_type_exists (ctf_container_ref, dw_die_ref, ctf_id_t *);
 
 extern void ctf_add_cuname (ctf_container_ref, const char *);
 
-extern ctf_dvdef_ref ctf_dvd_lookup (const ctf_container_ref, dw_die_ref);
+extern ctf_dtdef_ref ctf_dtd_lookup (const ctf_container_ref ctfc,
+				     dw_die_ref die);
+extern ctf_dvdef_ref ctf_dvd_lookup (const ctf_container_ref ctfc,
+				     dw_die_ref die);
 
 extern const char * ctf_add_string (ctf_container_ref, const char *,
 				    uint32_t *, int);
@@ -426,6 +429,9 @@ extern int ctf_add_function_arg (ctf_container_ref, dw_die_ref,
 				 const char *, ctf_id_t);
 extern int ctf_add_variable (ctf_container_ref, const char *, ctf_id_t,
 			     dw_die_ref, unsigned int);
+
+extern ctf_id_t ctf_lookup_tree_type (ctf_container_ref, const tree);
+extern ctf_id_t get_btf_id (ctf_id_t);
 
 /* CTF section does not emit location information; at this time, location
    information is needed for BTF CO-RE use-cases.  */

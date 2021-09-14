@@ -741,6 +741,20 @@ cpp_atomic_builtins (cpp_reader *pfile)
   builtin_define_with_int_value ("__GCC_ATOMIC_TEST_AND_SET_TRUEVAL",
 				 targetm.atomic_test_and_set_trueval);
 
+  /* Macros for C++17 hardware interference size constants.  Either both or
+     neither should be set.  */
+  gcc_assert (!param_destruct_interfere_size
+	      == !param_construct_interfere_size);
+  if (param_destruct_interfere_size)
+    {
+      /* FIXME The way of communicating these values to the library should be
+	 part of the C++ ABI, whether macro or builtin.  */
+      builtin_define_with_int_value ("__GCC_DESTRUCTIVE_SIZE",
+				     param_destruct_interfere_size);
+      builtin_define_with_int_value ("__GCC_CONSTRUCTIVE_SIZE",
+				     param_construct_interfere_size);
+    }
+
   /* ptr_type_node can't be used here since ptr_mode is only set when
      toplev calls backend_init which is not done with -E  or pch.  */
   psize = POINTER_SIZE_UNITS;
@@ -753,7 +767,7 @@ cpp_atomic_builtins (cpp_reader *pfile)
 /* Return TRUE if the implicit excess precision in which the back-end will
    compute floating-point calculations is not more than the explicit
    excess precision that the front-end will apply under
-   -fexcess-precision=[standard|fast].
+   -fexcess-precision=[standard|fast|16].
 
    More intuitively, return TRUE if the excess precision proposed by the
    front-end is the excess precision that will actually be used.  */
@@ -764,7 +778,9 @@ c_cpp_flt_eval_method_iec_559 (void)
   enum excess_precision_type front_end_ept
     = (flag_excess_precision == EXCESS_PRECISION_STANDARD
        ? EXCESS_PRECISION_TYPE_STANDARD
-       : EXCESS_PRECISION_TYPE_FAST);
+       : (flag_excess_precision == EXCESS_PRECISION_FLOAT16
+	  ? EXCESS_PRECISION_TYPE_FLOAT16
+	  : EXCESS_PRECISION_TYPE_FAST));
 
   enum flt_eval_method back_end
     = targetm.c.excess_precision (EXCESS_PRECISION_TYPE_IMPLICIT);

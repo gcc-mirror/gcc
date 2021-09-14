@@ -3669,6 +3669,28 @@ arm_option_override (void)
     SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 			 param_l1_cache_line_size,
 			 current_tune->prefetch.l1_cache_line_size);
+  if (current_tune->prefetch.l1_cache_line_size >= 0)
+    {
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_destruct_interfere_size,
+			   current_tune->prefetch.l1_cache_line_size);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_construct_interfere_size,
+			   current_tune->prefetch.l1_cache_line_size);
+    }
+  else
+    {
+      /* For a generic ARM target, JF Bastien proposed using 64 for both.  */
+      /* ??? Cortex A9 has a 32-byte cache line, so why not 32 for
+	 constructive?  */
+      /* More recent Cortex chips have a 64-byte cache line, but are marked
+	 ARM_PREFETCH_NOT_BENEFICIAL, so they get these defaults.  */
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_destruct_interfere_size, 64);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_construct_interfere_size, 64);
+    }
+
   if (current_tune->prefetch.l1_cache_size >= 0)
     SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 			 param_l1_cache_size,
@@ -25612,6 +25634,7 @@ arm_excess_precision (enum excess_precision_type type)
 		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
 		: FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
       case EXCESS_PRECISION_TYPE_IMPLICIT:
+      case EXCESS_PRECISION_TYPE_FLOAT16:
 	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
       default:
 	gcc_unreachable ();

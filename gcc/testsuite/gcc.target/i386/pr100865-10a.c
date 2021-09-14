@@ -1,5 +1,5 @@
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-O3 -march=skylake" } */
+/* { dg-options "-O3 -march=skylake -mtune-ctrl=avx256_store_by_pieces" } */
 
 extern __int128 array[16];
 

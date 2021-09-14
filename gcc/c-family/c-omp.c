@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "langhooks.h"
 #include "bitmap.h"
+#include "gimple-fold.h"
 
 
 /* Complete a #pragma oacc wait construct.  LOC is the location of
@@ -215,15 +216,17 @@ c_finish_omp_taskyield (location_t loc)
 tree
 c_finish_omp_atomic (location_t loc, enum tree_code code,
 		     enum tree_code opcode, tree lhs, tree rhs,
-		     tree v, tree lhs1, tree rhs1, bool swapped,
-		     enum omp_memory_order memory_order, bool test)
+		     tree v, tree lhs1, tree rhs1, tree r, bool swapped,
+		     enum omp_memory_order memory_order, bool weak,
+		     bool test)
 {
-  tree x, type, addr, pre = NULL_TREE;
+  tree x, type, addr, pre = NULL_TREE, rtmp = NULL_TREE, vtmp = NULL_TREE;
   HOST_WIDE_INT bitpos = 0, bitsize = 0;
+  enum tree_code orig_opcode = opcode;
 
   if (lhs == error_mark_node || rhs == error_mark_node
       || v == error_mark_node || lhs1 == error_mark_node
-      || rhs1 == error_mark_node)
+      || rhs1 == error_mark_node || r == error_mark_node)
     return error_mark_node;
 
   /* ??? According to one reading of the OpenMP spec, complex type are
@@ -241,6 +244,12 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   if (TYPE_ATOMIC (type))
     {
       error_at (loc, "%<_Atomic%> expression in %<#pragma omp atomic%>");
+      return error_mark_node;
+    }
+  if (r && r != void_list_node && !INTEGRAL_TYPE_P (TREE_TYPE (r)))
+    {
+      error_at (loc, "%<#pragma omp atomic compare capture%> with non-integral "
+		     "comparison result");
       return error_mark_node;
     }
 
@@ -299,6 +308,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
       x = build1 (OMP_ATOMIC_READ, type, addr);
       SET_EXPR_LOCATION (x, loc);
       OMP_ATOMIC_MEMORY_ORDER (x) = memory_order;
+      gcc_assert (!weak);
       if (blhs)
 	x = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), x,
 			bitsize_int (bitsize), bitsize_int (bitpos));
@@ -313,10 +323,27 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
     {
       lhs = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), lhs,
 			bitsize_int (bitsize), bitsize_int (bitpos));
-      if (swapped)
+      if (opcode == COND_EXPR)
+	{
+	  bool save = in_late_binary_op;
+	  in_late_binary_op = true;
+	  std::swap (rhs, rhs1);
+	  rhs1 = build_binary_op (loc, EQ_EXPR, lhs, rhs1, true);
+	  in_late_binary_op = save;
+	}
+      else if (swapped)
 	rhs = build_binary_op (loc, opcode, rhs, lhs, true);
       else if (opcode != NOP_EXPR)
 	rhs = build_binary_op (loc, opcode, lhs, rhs, true);
+      opcode = NOP_EXPR;
+    }
+  else if (opcode == COND_EXPR)
+    {
+      bool save = in_late_binary_op;
+      in_late_binary_op = true;
+      std::swap (rhs, rhs1);
+      rhs1 = build_binary_op (loc, EQ_EXPR, lhs, rhs1, true);
+      in_late_binary_op = save;
       opcode = NOP_EXPR;
     }
   else if (swapped)
@@ -343,6 +370,100 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   if (blhs)
     rhs = build3_loc (loc, BIT_INSERT_EXPR, type, new_lhs,
 		      rhs, bitsize_int (bitpos));
+  if (orig_opcode == COND_EXPR)
+    {
+      if (error_operand_p (rhs1))
+	return error_mark_node;
+      gcc_assert (TREE_CODE (rhs1) == EQ_EXPR);
+      tree cmptype = TREE_TYPE (TREE_OPERAND (rhs1, 0));
+      if (SCALAR_FLOAT_TYPE_P (cmptype))
+	{
+	  bool clear_padding = false;
+	  if (BITS_PER_UNIT == 8 && CHAR_BIT == 8)
+	    {
+	      HOST_WIDE_INT sz = int_size_in_bytes (cmptype), i;
+	      gcc_assert (sz > 0);
+	      unsigned char *buf = XALLOCAVEC (unsigned char, sz);
+	      memset (buf, ~0, sz);
+	      clear_type_padding_in_mask (cmptype, buf);
+	      for (i = 0; i < sz; i++)
+		if (buf[i] != (unsigned char) ~0)
+		  {
+		    clear_padding = true;
+		    break;
+		  }
+	    }
+	  tree inttype = NULL_TREE;
+	  if (!clear_padding && tree_fits_uhwi_p (TYPE_SIZE (cmptype)))
+	    {
+	      HOST_WIDE_INT prec = tree_to_uhwi (TYPE_SIZE (cmptype));
+	      inttype = c_common_type_for_size (prec, 1);
+	      if (inttype
+		  && (!tree_int_cst_equal (TYPE_SIZE (cmptype),
+					   TYPE_SIZE (inttype))
+		      || TYPE_PRECISION (inttype) != prec))
+		inttype = NULL_TREE;
+	    }
+	  if (inttype)
+	    {
+	      TREE_OPERAND (rhs1, 0)
+		= build1_loc (loc, VIEW_CONVERT_EXPR, inttype,
+			      TREE_OPERAND (rhs1, 0));
+	      TREE_OPERAND (rhs1, 1)
+		= build1_loc (loc, VIEW_CONVERT_EXPR, inttype,
+			      TREE_OPERAND (rhs1, 1));
+	    }
+	  else
+	    {
+	      tree pcmptype = build_pointer_type (cmptype);
+	      tree tmp1 = create_tmp_var_raw (cmptype);
+	      TREE_ADDRESSABLE (tmp1) = 1;
+	      DECL_CONTEXT (tmp1) = current_function_decl;
+	      tmp1 = build4 (TARGET_EXPR, cmptype, tmp1,
+			     TREE_OPERAND (rhs1, 0), NULL, NULL);
+	      tmp1 = build1 (ADDR_EXPR, pcmptype, tmp1);
+	      tree tmp2 = create_tmp_var_raw (cmptype);
+	      TREE_ADDRESSABLE (tmp2) = 1;
+	      DECL_CONTEXT (tmp2) = current_function_decl;
+	      tmp2 = build4 (TARGET_EXPR, cmptype, tmp2,
+			     TREE_OPERAND (rhs1, 1), NULL, NULL);
+	      tmp2 = build1 (ADDR_EXPR, pcmptype, tmp2);
+	      tree fndecl = builtin_decl_explicit (BUILT_IN_MEMCMP);
+	      rhs1 = build_call_expr_loc (loc, fndecl, 3, tmp1, tmp2,
+					  TYPE_SIZE_UNIT (cmptype));
+	      rhs1 = build2 (EQ_EXPR, boolean_type_node, rhs1,
+			     integer_zero_node);
+	      if (clear_padding)
+		{
+		  fndecl = builtin_decl_explicit (BUILT_IN_CLEAR_PADDING);
+		  tree cp1 = build_call_expr_loc (loc, fndecl, 1, tmp1);
+		  tree cp2 = build_call_expr_loc (loc, fndecl, 1, tmp2);
+		  rhs1 = omit_two_operands_loc (loc, boolean_type_node,
+						rhs1, cp2, cp1);
+		}
+	    }
+	}
+      if (r)
+	{
+	  tree var = create_tmp_var (boolean_type_node);
+	  DECL_CONTEXT (var) = current_function_decl;
+	  rtmp = build4 (TARGET_EXPR, boolean_type_node, var,
+			 NULL, NULL, NULL);
+	  save = in_late_binary_op;
+	  in_late_binary_op = true;
+	  x = build_modify_expr (loc, var, NULL_TREE, NOP_EXPR,
+				 loc, rhs1, NULL_TREE);
+	  in_late_binary_op = save;
+	  if (x == error_mark_node)
+	    return error_mark_node;
+	  gcc_assert (TREE_CODE (x) == MODIFY_EXPR
+		      && TREE_OPERAND (x, 0) == var);
+	  TREE_OPERAND (x, 0) = rtmp;
+	  rhs1 = omit_one_operand_loc (loc, boolean_type_node, x, rtmp);
+	}
+      rhs = build3_loc (loc, COND_EXPR, type, rhs1, rhs, new_lhs);
+      rhs1 = NULL_TREE;
+    }
 
   /* Punt the actual generation of atomic operations to common code.  */
   if (code == OMP_ATOMIC)
@@ -350,6 +471,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   x = build2 (code, type, addr, rhs);
   SET_EXPR_LOCATION (x, loc);
   OMP_ATOMIC_MEMORY_ORDER (x) = memory_order;
+  OMP_ATOMIC_WEAK (x) = weak;
 
   /* Generally it is hard to prove lhs1 and lhs are the same memory
      location, just diagnose different variables.  */
@@ -412,8 +534,25 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 			  bitsize_int (bitsize), bitsize_int (bitpos));
 	  type = TREE_TYPE (blhs);
 	}
-      x = build_modify_expr (loc, v, NULL_TREE, NOP_EXPR,
+      if (r)
+	{
+	  vtmp = create_tmp_var (TREE_TYPE (x));
+	  DECL_CONTEXT (vtmp) = current_function_decl;
+	}
+      else
+	vtmp = v;
+      x = build_modify_expr (loc, vtmp, NULL_TREE, NOP_EXPR,
 			     loc, x, NULL_TREE);
+      if (x == error_mark_node)
+	return error_mark_node;
+      if (r)
+	{
+	  vtmp = build4 (TARGET_EXPR, boolean_type_node, vtmp,
+			 NULL, NULL, NULL);
+	  gcc_assert (TREE_CODE (x) == MODIFY_EXPR
+		      && TREE_OPERAND (x, 0) == TARGET_EXPR_SLOT (vtmp));
+	  TREE_OPERAND (x, 0) = vtmp;
+	}
       if (rhs1 && rhs1 != orig_lhs)
 	{
 	  tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, false);
@@ -446,6 +585,28 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 
   if (pre)
     x = omit_one_operand_loc (loc, type, x, pre);
+  if (r && r != void_list_node)
+    {
+      in_late_binary_op = true;
+      tree x2 = build_modify_expr (loc, r, NULL_TREE, NOP_EXPR,
+				   loc, rtmp, NULL_TREE);
+      in_late_binary_op = save;
+      if (x2 == error_mark_node)
+	return error_mark_node;
+      x = omit_one_operand_loc (loc, TREE_TYPE (x2), x2, x);
+    }
+  if (v && vtmp != v)
+    {
+      in_late_binary_op = true;
+      tree x2 = build_modify_expr (loc, v, NULL_TREE, NOP_EXPR,
+				   loc, vtmp, NULL_TREE);
+      in_late_binary_op = save;
+      if (x2 == error_mark_node)
+	return error_mark_node;
+      x2 = build3_loc (loc, COND_EXPR, void_type_node, rtmp,
+		       void_node, x2);
+      x = omit_one_operand_loc (loc, TREE_TYPE (x2), x2, x);
+    }
   return x;
 }
 
@@ -606,7 +767,7 @@ c_finish_omp_flush (location_t loc, int mo)
 {
   tree x;
 
-  if (mo == MEMMODEL_LAST)
+  if (mo == MEMMODEL_LAST || mo == MEMMODEL_SEQ_CST)
     {
       x = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
       x = build_call_expr_loc (loc, x, 0);

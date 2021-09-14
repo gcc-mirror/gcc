@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-avx512f -mavx2 -mtune=haswell" } */
+/* { dg-options "-O2 -mno-avx512f -mavx2 -mtune-ctrl=avx256_store_by_pieces" } */
 
 extern char *dst;
 

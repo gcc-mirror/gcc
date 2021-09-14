@@ -75,7 +75,7 @@ private:
   // Dummy condition to avoid creating lots of throw away statements.
   gcond *dummy_cond;
 
-  class jump_thread_path_registry *m_registry;
+  class fwd_jt_path_registry *m_registry;
   jump_threader_simplifier *m_simplifier;
   jt_state *m_state;
 };

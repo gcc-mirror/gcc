@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include "cpuid.h"
 #define CHECK___builtin_cpu_is(cpu) assert (__builtin_cpu_is (cpu))
+#define CHECK___builtin_cpu_supports(isa) \
+  assert (__builtin_cpu_supports (isa))
 #define gcc_assert(a) assert (a)
 #define gcc_unreachable() abort ()
 #define inline

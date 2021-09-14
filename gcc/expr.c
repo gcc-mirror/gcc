@@ -236,8 +236,27 @@ convert_move (rtx to, rtx from, int unsignedp)
 	  >= GET_MODE_PRECISION (to_int_mode))
       && SUBREG_CHECK_PROMOTED_SIGN (from, unsignedp))
     {
+      scalar_int_mode int_orig_mode;
+      scalar_int_mode int_inner_mode;
+      machine_mode orig_mode = GET_MODE (from);
+
       from = gen_lowpart (to_int_mode, SUBREG_REG (from));
       from_mode = to_int_mode;
+
+      /* Preserve SUBREG_PROMOTED_VAR_P if the new mode is wider than
+	 the original mode, but narrower than the inner mode.  */
+      if (GET_CODE (from) == SUBREG
+	  && is_a <scalar_int_mode> (orig_mode, &int_orig_mode)
+	  && GET_MODE_PRECISION (to_int_mode)
+	     > GET_MODE_PRECISION (int_orig_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (from)),
+				     &int_inner_mode)
+	  && GET_MODE_PRECISION (int_inner_mode)
+	     > GET_MODE_PRECISION (to_int_mode))
+	{
+	  SUBREG_PROMOTED_VAR_P (from) = 1;
+	  SUBREG_PROMOTED_SET (from, unsignedp);
+	}
     }
 
   gcc_assert (GET_CODE (to) != SUBREG || !SUBREG_PROMOTED_VAR_P (to));

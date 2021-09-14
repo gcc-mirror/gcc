@@ -2977,14 +2977,15 @@ reset_type_linkage (tree type)
 	  SET_DECL_ASSEMBLER_NAME (vt, name);
 	  reset_decl_linkage (vt);
 	}
-      if (tree ti = CLASSTYPE_TYPEINFO_VAR (type))
-	{
-	  tree name = mangle_typeinfo_for_type (type);
-	  DECL_NAME (ti) = name;
-	  SET_DECL_ASSEMBLER_NAME (ti, name);
-	  TREE_TYPE (name) = type;
-	  reset_decl_linkage (ti);
-	}
+      if (!ANON_AGGR_TYPE_P (type))
+	if (tree ti = CLASSTYPE_TYPEINFO_VAR (type))
+	  {
+	    tree name = mangle_typeinfo_for_type (type);
+	    DECL_NAME (ti) = name;
+	    SET_DECL_ASSEMBLER_NAME (ti, name);
+	    TREE_TYPE (name) = type;
+	    reset_decl_linkage (ti);
+	  }
       for (tree m = TYPE_FIELDS (type); m; m = DECL_CHAIN (m))
 	{
 	  tree mem = STRIP_TEMPLATE (m);

@@ -3782,7 +3782,9 @@ gfc_match_omp_flush (void)
   enum gfc_omp_memorder mo = OMP_MEMORDER_UNSET;
   if (gfc_match_omp_eos () == MATCH_NO && gfc_peek_ascii_char () != '(')
     {
-      if (gfc_match ("acq_rel") == MATCH_YES)
+      if (gfc_match ("seq_cst") == MATCH_YES)
+	mo = OMP_MEMORDER_SEQ_CST;
+      else if (gfc_match ("acq_rel") == MATCH_YES)
 	mo = OMP_MEMORDER_ACQ_REL;
       else if (gfc_match ("release") == MATCH_YES)
 	mo = OMP_MEMORDER_RELEASE;
@@ -3790,7 +3792,7 @@ gfc_match_omp_flush (void)
 	mo = OMP_MEMORDER_ACQUIRE;
       else
 	{
-	  gfc_error ("Expected AQC_REL, RELEASE, or ACQUIRE at %C");
+	  gfc_error ("Expected SEQ_CST, AQC_REL, RELEASE, or ACQUIRE at %C");
 	  return MATCH_ERROR;
 	}
       c = gfc_get_omp_clauses ();

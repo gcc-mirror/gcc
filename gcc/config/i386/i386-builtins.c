@@ -125,6 +125,7 @@ BDESC_VERIFYS (IX86_BUILTIN_MAX,
 /* Table for the ix86 builtin non-function types.  */
 static GTY(()) tree ix86_builtin_type_tab[(int) IX86_BT_LAST_CPTR + 1];
 
+tree ix86_float16_type_node = NULL_TREE;
 /* Retrieve an element from the above table, building some of
    the types lazily.  */
 
@@ -1344,6 +1345,26 @@ ix86_init_builtins_va_builtins_abi (void)
 }
 
 static void
+ix86_register_float16_builtin_type (void)
+{
+  /* Provide the _Float16 type and float16_type_node if needed so that
+     it can be used in AVX512FP16 intrinsics and builtins.  */
+  if (!float16_type_node)
+    {
+      ix86_float16_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (ix86_float16_type_node) = 16;
+      SET_TYPE_MODE (ix86_float16_type_node, HFmode);
+      layout_type (ix86_float16_type_node);
+    }
+  else
+    ix86_float16_type_node = float16_type_node;
+
+  if (!maybe_get_identifier ("_Float16") && TARGET_SSE2)
+    lang_hooks.types.register_builtin_type (ix86_float16_type_node,
+					    "_Float16");
+}
+
+static void
 ix86_init_builtin_types (void)
 {
   tree float80_type_node, const_string_type_node;
@@ -1370,6 +1391,8 @@ ix86_init_builtin_types (void)
      _Float128, so we only need to register the __float128 name for
      it.  */
   lang_hooks.types.register_builtin_type (float128_type_node, "__float128");
+
+  ix86_register_float16_builtin_type ();
 
   const_string_type_node
     = build_pointer_type (build_qualified_type
@@ -1904,8 +1927,24 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	return 0;
       new_target = TREE_TARGET_OPTION (target_node);
       gcc_assert (new_target);
-      
-      if (new_target->arch_specified && new_target->arch > 0)
+      enum ix86_builtins builtin_fn = IX86_BUILTIN_CPU_IS;
+
+      /* Special case x86-64 micro-level architectures.  */
+      const char *arch_name = attrs_str + strlen ("arch=");
+      if (startswith (arch_name, "x86-64"))
+	{
+	  arg_str = arch_name;
+	  builtin_fn = IX86_BUILTIN_CPU_SUPPORTS;
+	  if (strcmp (arch_name, "x86-64") == 0)
+	    priority = P_X86_64_BASELINE;
+	  else if (strcmp (arch_name, "x86-64-v2") == 0)
+	    priority = P_X86_64_V2;
+	  else if (strcmp (arch_name, "x86-64-v3") == 0)
+	    priority = P_X86_64_V3;
+	  else if (strcmp (arch_name, "x86-64-v4") == 0)
+	    priority = P_X86_64_V4;
+	}
+      else if (new_target->arch_specified && new_target->arch > 0)
 	for (i = 0; i < pta_size; i++)
 	  if (processor_alias_table[i].processor == new_target->arch)
 	    {
@@ -1975,7 +2014,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
     
       if (predicate_list)
 	{
-          predicate_decl = ix86_builtins [(int) IX86_BUILTIN_CPU_IS];
+	  predicate_decl = ix86_builtins [(int) builtin_fn];
           /* For a C string literal the length includes the trailing NULL.  */
           predicate_arg = build_string_literal (strlen (arg_str) + 1, arg_str);
           predicate_chain = tree_cons (predicate_decl, predicate_arg,

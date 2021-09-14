@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "tree-cfgcleanup.h"
 #include "tree-pretty-print.h"
+#include "cfghooks.h"
 
 // Path registry for the backwards threader.  After all paths have been
 // registered with register_path(), thread_through_all_blocks() is called
@@ -55,7 +56,7 @@ public:
   bool register_path (const vec<basic_block> &, edge taken);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
-  jump_thread_path_registry m_lowlevel_registry;
+  back_jt_path_registry m_lowlevel_registry;
   const int m_max_allowable_paths;
   int m_threaded_paths;
 };
@@ -83,7 +84,7 @@ public:
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   void find_paths (basic_block bb, tree name);
-  void maybe_register_path (edge taken_edge);
+  edge maybe_register_path ();
   bool find_paths_to_names (basic_block bb, bitmap imports);
   bool resolve_def (tree name, bitmap interesting, vec<tree> &worklist);
   bool resolve_phi (gphi *phi, bitmap imports);
@@ -134,22 +135,31 @@ back_threader::~back_threader ()
 }
 
 // Register the current path for jump threading if it's profitable to
-// do so.  TAKEN_EDGE is the known edge out of the path.
+// do so.
+//
+// Return the known taken edge out of the path, even if the path was
+// not registered, or NULL if the taken edge could not be determined.
 
-void
-back_threader::maybe_register_path (edge taken_edge)
+edge
+back_threader::maybe_register_path ()
 {
-  bool irreducible = false;
-  bool profitable
-    = m_profit.profitable_path_p (m_path, m_name, taken_edge, &irreducible);
+  edge taken_edge = find_taken_edge (m_path);
 
-  if (profitable)
+  if (taken_edge && taken_edge != UNREACHABLE_EDGE)
     {
-      m_registry.register_path (m_path, taken_edge);
+      bool irreducible = false;
+      bool profitable
+	= m_profit.profitable_path_p (m_path, m_name, taken_edge, &irreducible);
 
-      if (irreducible)
-	vect_free_loop_info_assumptions (m_path[0]->loop_father);
+      if (profitable)
+	{
+	  m_registry.register_path (m_path, taken_edge);
+
+	  if (irreducible)
+	    vect_free_loop_info_assumptions (m_path[0]->loop_father);
+	}
     }
+  return taken_edge;
 }
 
 // Return the known taken edge out of a path.  If the path can be
@@ -204,19 +214,13 @@ edge
 back_threader::find_taken_edge_cond (const vec<basic_block> &path,
 				     gcond *cond)
 {
-  m_solver.precompute_ranges (path, m_imports);
-
-  // Check if either operand is unreachable since this knowledge could
-  // help the caller cut down the search space.
   int_range_max r;
-  m_solver.range_of_expr (r, gimple_cond_lhs (cond));
-  if (r.undefined_p ())
-    return UNREACHABLE_EDGE;
-  m_solver.range_of_expr (r, gimple_cond_rhs (cond));
-  if (r.undefined_p ())
-    return UNREACHABLE_EDGE;
 
+  m_solver.precompute_ranges (path, m_imports);
   m_solver.range_of_stmt (r, cond);
+
+  if (m_solver.unreachable_path_p ())
+    return UNREACHABLE_EDGE;
 
   int_range<2> true_range (boolean_true_node, boolean_true_node);
   int_range<2> false_range (boolean_false_node, boolean_false_node);
@@ -295,12 +299,9 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
       else if (TREE_CODE (arg) == INTEGER_CST)
 	{
 	  m_path.safe_push (e->src);
-	  edge taken_edge = find_taken_edge (m_path);
+	  edge taken_edge = maybe_register_path ();
 	  if (taken_edge && taken_edge != UNREACHABLE_EDGE)
-	    {
-	      maybe_register_path (taken_edge);
-	      done = true;
-	    }
+	    done = true;
 	  m_path.pop ();
 	}
     }
@@ -388,12 +389,8 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
 	   || bitmap_bit_p (m_ranger.gori ().exports (bb), i))
 	  && m_path.length () > 1)
 	{
-	  edge taken_edge = find_taken_edge (m_path);
-	  if (taken_edge)
+	  if (maybe_register_path ())
 	    {
-	      if (taken_edge != UNREACHABLE_EDGE)
-		maybe_register_path (taken_edge);
-
 	      done = true;
 	      goto leave_bb;
 	    }
@@ -568,7 +565,10 @@ back_threader_registry::thread_through_all_blocks (bool may_peel_loop_headers)
    TAKEN_EDGE, otherwise it is NULL.
 
    CREATES_IRREDUCIBLE_LOOP, if non-null is set to TRUE if threading this path
-   would create an irreducible loop.  */
+   would create an irreducible loop.
+
+   ?? It seems we should be able to loosen some of the restrictions in
+   this function after loop optimizations have run.  */
 
 bool
 back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
@@ -593,7 +593,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
   if (m_path.length () > (unsigned) param_max_fsm_thread_length)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: FSM jump-thread path not considered: "
+	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
 		 "the number of basic blocks on the path "
 		 "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
       return false;
@@ -729,7 +729,11 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
 	 the last entry in the array when determining if we thread
 	 through the loop latch.  */
       if (loop->latch == bb)
-	threaded_through_latch = true;
+	{
+	  threaded_through_latch = true;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " (latch)");
+	}
     }
 
   gimple *stmt = get_gimple_control_stmt (m_path[0]);
@@ -764,7 +768,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
   if (path_crosses_loops)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: FSM jump-thread path not considered: "
+	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
 		 "the path crosses loops.\n");
       return false;
     }
@@ -780,7 +784,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
       if (n_insns >= param_max_fsm_thread_path_insns)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  FAIL: FSM jump-thread path not considered: "
+	    fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
 		     "the number of instructions on the path "
 		     "exceeds PARAM_MAX_FSM_THREAD_PATH_INSNS.\n");
 	  return false;
@@ -789,7 +793,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
   else if (!m_speed_p && n_insns > 1)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: FSM jump-thread path not considered: "
+	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
 		 "duplication of %i insns is needed and optimizing for size.\n",
 		 n_insns);
       return false;
@@ -814,25 +818,22 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "  FAIL: FSM would create irreducible loop without threading "
+		 "  FAIL: Would create irreducible loop without threading "
 		 "multiway branch.\n");
       return false;
     }
 
-  /* If this path does not thread through the loop latch, then we are
-     using the FSM threader to find old style jump threads.  This
-     is good, except the FSM threader does not re-use an existing
-     threading path to reduce code duplication.
-
-     So for that case, drastically reduce the number of statements
-     we are allowed to copy.  */
+  /* The generic copier used by the backthreader does not re-use an
+     existing threading path to reduce code duplication.  So for that
+     case, drastically reduce the number of statements we are allowed
+     to copy.  */
   if (!(threaded_through_latch && threaded_multiway_branch)
       && (n_insns * param_fsm_scale_path_stmts
 	  >= param_max_jump_thread_duplication_stmts))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "  FAIL: FSM did not thread around loop and would copy too "
+		 "  FAIL: Did not thread around loop and would copy too "
 		 "many statements.\n");
       return false;
     }
@@ -845,9 +846,25 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "  FAIL: FSM Thread through multiway branch without threading "
+		 "  FAIL: Thread through multiway branch without threading "
 		 "a multiway branch.\n");
       return false;
+    }
+
+  /* Threading through an empty latch would cause code to be added to
+     the latch.  This could alter the loop form sufficiently to cause
+     loop optimizations to fail.  Disable these threads until after
+     loop optimizations have run.  */
+  if ((threaded_through_latch
+       || (taken_edge && taken_edge->dest == loop->latch))
+      && !(cfun->curr_properties & PROP_loop_opts_done)
+      && empty_block_p (loop->latch))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  FAIL: Thread through latch before loop opts would create non-empty latch\n");
+      return false;
+
     }
   return true;
 }
@@ -867,8 +884,8 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
   if (m_threaded_paths > m_max_allowable_paths)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: FSM jump-thread path not considered: "
-		 "the number of previously recorded FSM paths to "
+	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
+		 "the number of previously recorded paths to "
 		 "thread exceeds PARAM_MAX_FSM_THREAD_PATHS.\n");
       return false;
     }
@@ -876,7 +893,8 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
   vec<jump_thread_edge *> *jump_thread_path
     = m_lowlevel_registry.allocate_thread_path ();
 
-  /* Record the edges between the blocks in PATH.  */
+  // The generic copier ignores the edge type.  We can build the
+  // thread edges with any type.
   for (unsigned int j = 0; j + 1 < m_path.length (); j++)
     {
       basic_block bb1 = m_path[m_path.length () - j - 1];
@@ -885,11 +903,10 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
       edge e = find_edge (bb1, bb2);
       gcc_assert (e);
       jump_thread_edge *x
-	= m_lowlevel_registry.allocate_thread_edge (e, EDGE_FSM_THREAD);
+	= m_lowlevel_registry.allocate_thread_edge (e, EDGE_COPY_SRC_BLOCK);
       jump_thread_path->safe_push (x);
     }
 
-  /* Add the edge taken when the control variable has value ARG.  */
   jump_thread_edge *x
     = m_lowlevel_registry.allocate_thread_edge (taken_edge,
 						EDGE_NO_COPY_SRC_BLOCK);

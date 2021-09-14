@@ -212,11 +212,96 @@
   }
   [(set (attr "length") (symbol_ref "<MODE>mode == SImode ? 6 : 4"))])
 
-;; Recognize this scc and generate code we can match
-(define_insn_and_split "*store_c_i_<mode>"
+;; Similarly, but with a negated result
+(define_insn "*store_neg_c_<mode>"
   [(set (match_operand:QHSI 0 "register_operand" "=r")
-	(geultu:QHSI (match_operand:QHSI 1 "register_operand" "r")
-		     (match_operand:QHSI 2 "register_operand" "r")))]
+	(neg:QHSI (ne:QHSI (reg:CCC CC_REG) (const_int 0))))]
+  "reload_completed"
+  {
+    if (<MODE>mode == QImode)
+      return "subx\t%X0,%X0";
+    else if (<MODE>mode == HImode)
+      return "subx\t%X0,%X0\;exts.w\t%T0";
+    else if (<MODE>mode == SImode)
+      return "subx\t%X0,%X0\;exts.w\t%T0\;exts.l\t%S0";
+    gcc_unreachable ();
+  }
+  [(set
+     (attr "length")
+     (symbol_ref "(<MODE>mode == SImode ? 6 : <MODE>mode == HImode ? 4 : 2)"))])
+
+;; Using b[i]st we can store the C bit into any of the low 16 bits of
+;; a destination.  We can also rotate it up into the high bit of a 32 bit
+;; destination.
+(define_insn "*store_shifted_c<mode>"
+  [(set (match_operand:QHSI 0 "register_operand" "=r")
+	(ashift:QHSI (eqne:QHSI (reg:CCC CC_REG) (const_int 0))
+		     (match_operand 1 "immediate_operand" "n")))]
+  "(reload_completed
+    && (INTVAL (operands[1]) == 31 || INTVAL (operands[1]) <= 15))"
+  {
+    if (<CODE> == NE)
+      {
+	if (<MODE>mode == QImode)
+	  return "xor.b\t%X0,%X0\;bst\t%1,%X0";
+	else if (<MODE>mode == HImode && INTVAL (operands[1]) < 8)
+	  return "xor.w\t%T0,%T0\;bst\t%1,%X0";
+	else if (<MODE>mode == HImode)
+	  {
+	    operands[1] = GEN_INT (INTVAL (operands[1]) - 8);
+	    output_asm_insn ("xor.w\t%T0,%T0\;bst\t%1,%t0", operands);
+	    return "";
+	  }
+	else if (<MODE>mode == SImode && INTVAL (operands[1]) == 31)
+	  return "xor.l\t%S0,%S0\;rotxr.l\t%S0";
+	else if (<MODE>mode == SImode && INTVAL (operands[1]) < 8)
+	  return "xor.l\t%S0,%S0\;bst\t%1,%X0";
+	else if (<MODE>mode == SImode)
+	  {
+	    operands[1] = GEN_INT (INTVAL (operands[1]) - 8);
+	    output_asm_insn ("xor.l\t%S0,%S0\;bst\t%1,%t0", operands);
+	    return "";
+	  }
+	gcc_unreachable ();
+      }
+    else if (<CODE> == EQ)
+      {
+	if (<MODE>mode == QImode)
+	  return "xor.b\t%X0,%X0\;bist\t%1,%X0";
+	else if (<MODE>mode == HImode && INTVAL (operands[1]) < 8)
+	  return "xor.w\t%T0,%T0\;bist\t%1,%X0";
+	else if (<MODE>mode == HImode)
+	  {
+	    operands[1] = GEN_INT (INTVAL (operands[1]) - 8);
+	    output_asm_insn ("xor.w\t%T0,%T0\;bist\t%1,%t0", operands);
+	    return "";
+	  }
+	else if (<MODE>mode == SImode && INTVAL (operands[1]) == 31)
+	  return "xor.l\t%S0,%S0\;bixor\t#0,%X0\;rotxr.l\t%S0";
+	else if (<MODE>mode == SImode && INTVAL (operands[1]) < 8)
+	  return "xor.l\t%S0,%S0\;bist\t%1,%X0";
+	else if (<MODE>mode == SImode)
+	  {
+	    operands[1] = GEN_INT (INTVAL (operands[1]) - 8);
+	    output_asm_insn ("xor.l\t%S0,%S0\;bist\t%1,%t0", operands);
+	    return "";
+	  }
+	gcc_unreachable ();
+      }
+    gcc_unreachable ();
+  }
+  [(set
+     (attr "length")
+     (symbol_ref "(<MODE>mode == QImode ? 4
+		   : <MODE>mode == HImode ? 4
+		   : <CODE> == NE ? 6
+		   : INTVAL (operands[1]) == 31 ? 8 : 6)"))])
+
+;; Recognize this scc and generate code we can match
+(define_insn_and_split "*store_c"
+  [(set (match_operand:QHSI 0 "register_operand" "=r")
+	(geultu:QHSI (match_operand:QHSI2 1 "register_operand" "r")
+		     (match_operand:QHSI2 2 "register_operand" "r")))]
   ""
   "#"
   "&& reload_completed"
@@ -224,3 +309,34 @@
 	(ltu:CCC (match_dup 1) (match_dup 2)))
    (set (match_dup 0)
 	(<geultu_to_c>:QHSI (reg:CCC CC_REG) (const_int 0)))])
+
+;; We can fold in negation of the result and generate better code than
+;; what the generic bits would do when testing for C == 1
+(define_insn_and_split "*store_neg_c"
+  [(set (match_operand:QHSI 0 "register_operand" "=r")
+	(neg:QHSI
+	  (ltu:QHSI (match_operand:QHSI2 1 "register_operand" "r")
+		    (match_operand:QHSI2 2 "register_operand" "r"))))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(set (reg:CCC CC_REG)
+	(ltu:CCC (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(neg:QHSI (ne:QHSI (reg:CCC CC_REG) (const_int 0))))])
+
+;; We can use rotates and bst/bist to put the C bit into various places
+;; in the destination.
+(define_insn_and_split "*store_shifted_c"
+  [(set (match_operand:QHSI 0 "register_operand" "=r")
+       (ashift:QHSI (geultu:QHSI (match_operand:QHSI2 1 "register_operand" "r")
+                                 (match_operand:QHSI2 2 "register_operand" "r"))
+		    (match_operand 3 "immediate_operand" "n")))]
+  "INTVAL (operands[3]) == 31 || INTVAL (operands[3]) <= 15"
+  "#"
+  "&& reload_completed"
+  [(set (reg:CCC CC_REG) (ltu:CCC (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(ashift:QHSI (<geultu_to_c>:QHSI (reg:CCC CC_REG) (const_int 0))
+		     (match_dup 3)))])
+

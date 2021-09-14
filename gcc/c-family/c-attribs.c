@@ -83,6 +83,7 @@ static tree handle_artificial_attribute (tree *, tree, tree, int, bool *);
 static tree handle_flatten_attribute (tree *, tree, tree, int, bool *);
 static tree handle_error_attribute (tree *, tree, tree, int, bool *);
 static tree handle_used_attribute (tree *, tree, tree, int, bool *);
+static tree handle_uninitialized_attribute (tree *, tree, tree, int, bool *);
 static tree handle_externally_visible_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_no_reorder_attribute (tree *, tree, tree, int,
@@ -333,6 +334,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_used_attribute, NULL },
   { "unused",                 0, 0, false, false, false, false,
 			      handle_unused_attribute, NULL },
+  { "uninitialized",	      0, 0, true, false, false, false,
+			      handle_uninitialized_attribute, NULL },
   { "retain",                 0, 0, true,  false, false, false,
 			      handle_retain_attribute, NULL },
   { "externally_visible",     0, 0, true,  false, false, false,
@@ -1611,6 +1614,30 @@ handle_retain_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
   else
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle an "uninitialized" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_uninitialized_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+				int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree decl = *node;
+  if (!VAR_P (decl))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored because %qD "
+	       "is not a variable", name, decl);
+      *no_add_attrs = true;
+    }
+  else if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored because %qD "
+	       "is not a local variable", name, decl);
       *no_add_attrs = true;
     }
 

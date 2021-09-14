@@ -60,10 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_OUTPUT_ALIGN
 
-/* Undefine the definition from elfos.h to enable our default.  */
-
-#undef PREFERRED_DEBUGGING_TYPE
-
 /* The file i386.c defines TARGET_HAVE_TLS unconditionally if
    HAVE_AS_TLS is defined.  HAVE_AS_TLS is defined as gas support for
    TLS is detected by configure.  We undefine it here.  */

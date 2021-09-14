@@ -417,6 +417,7 @@ extern dw_die_ref new_die_raw (enum dwarf_tag);
 extern dw_die_ref base_type_die (tree, bool);
 
 extern dw_die_ref lookup_decl_die (tree);
+extern dw_die_ref lookup_type_die (tree);
 
 extern dw_die_ref dw_get_die_child (dw_die_ref);
 extern dw_die_ref dw_get_die_sib (dw_die_ref);

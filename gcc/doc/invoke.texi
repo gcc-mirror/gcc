@@ -573,9 +573,9 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-parallelize-loops=@var{n}  -ftree-pre  -ftree-partial-pre  -ftree-pta @gol
 -ftree-reassoc  -ftree-scev-cprop  -ftree-sink  -ftree-slsr  -ftree-sra @gol
 -ftree-switch-conversion  -ftree-tail-merge @gol
--ftree-ter  -ftree-vectorize  -ftree-vrp  -funconstrained-commons @gol
--funit-at-a-time  -funroll-all-loops  -funroll-loops @gol
--funsafe-math-optimizations  -funswitch-loops @gol
+-ftree-ter  -ftree-vectorize  -ftree-vrp  -ftrivial-auto-var-init @gol
+-funconstrained-commons -funit-at-a-time  -funroll-all-loops @gol
+-funroll-loops -funsafe-math-optimizations  -funswitch-loops @gol
 -fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt @gol
 -fweb  -fwhole-program  -fwpa  -fuse-linker-plugin -fzero-call-used-regs @gol
 --param @var{name}=@var{value}
@@ -904,7 +904,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{eBPF Options}
 @gccoptlist{-mbig-endian -mlittle-endian -mkernel=@var{version}
--mframe-limit=@var{bytes} -mxbpf}
+-mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re
+-mjmpext -mjmp32 -malu32 -mcpu=@var{version}}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -1395,6 +1396,7 @@ See RS/6000 and PowerPC Options.
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni@gol
+-mavx512fp16 @gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mkl -mwidekl @gol
@@ -2651,7 +2653,7 @@ under @code{OFFLOAD_TARGET_NAMES}.
 
 @item -foffload-options=@var{options}
 @itemx -foffload-options=@var{target-triplet-list}=@var{options}
-@opindex foffload
+@opindex foffload-options
 @cindex Offloading options
 @cindex OpenACC offloading options
 @cindex OpenMP offloading options
@@ -9016,6 +9018,43 @@ that has already been done in the current function.  Therefore,
 seemingly insignificant changes in the source program can cause the
 warnings produced by @option{-Winline} to appear or disappear.
 
+@item -Winterference-size
+@opindex Winterference-size
+Warn about use of C++17 @code{std::hardware_destructive_interference_size}
+without specifying its value with @option{--param destructive-interference-size}.
+Also warn about questionable values for that option.
+
+This variable is intended to be used for controlling class layout, to
+avoid false sharing in concurrent code:
+
+@smallexample
+struct independent_fields @{
+  alignas(std::hardware_destructive_interference_size) std::atomic<int> one;
+  alignas(std::hardware_destructive_interference_size) std::atomic<int> two;
+@};
+@end smallexample
+
+Here @samp{one} and @samp{two} are intended to be far enough apart
+that stores to one won't require accesses to the other to reload the
+cache line.
+
+By default, @option{--param destructive-interference-size} and
+@option{--param constructive-interference-size} are set based on the
+current @option{-mtune} option, typically to the L1 cache line size
+for the particular target CPU, sometimes to a range if tuning for a
+generic target.  So all translation units that depend on ABI
+compatibility for the use of these variables must be compiled with
+the same @option{-mtune} (or @option{-mcpu}).
+
+If ABI stability is important, such as if the use is in a header for a
+library, you should probably not use the hardware interference size
+variables at all.  Alternatively, you can force a particular value
+with @option{--param}.
+
+If you are confident that your use of the variable does not affect ABI
+outside a single build of your project, you can turn off the warning
+with @option{-Wno-interference-size}.
+
 @item -Wint-in-bool-context
 @opindex Wint-in-bool-context
 @opindex Wno-int-in-bool-context
@@ -11842,6 +11881,41 @@ Perform basic block vectorization on trees. This flag is enabled by default at
 @option{-O3} and by @option{-ftree-vectorize}, @option{-fprofile-use},
 and @option{-fauto-profile}.
 
+@item -ftrivial-auto-var-init=@var{choice}
+@opindex ftrivial-auto-var-init
+Initialize automatic variables with either a pattern or with zeroes to increase
+the security and predictability of a program by preventing uninitialized memory
+disclosure and use.
+GCC still considers an automatic variable that doesn't have an explicit
+initializer as uninitialized, -Wuninitialized will still report warning messages
+on such automatic variables.
+With this option, GCC will also initialize any padding of automatic variables
+that have structure or union types to zeroes.
+
+The three values of @var{choice} are:
+
+@itemize @bullet
+@item
+@samp{uninitialized} doesn't initialize any automatic variables.
+This is C and C++'s default.
+
+@item
+@samp{pattern} Initialize automatic variables with values which will likely
+transform logic bugs into crashes down the line, are easily recognized in a
+crash dump and without being values that programmers can rely on for useful
+program semantics.
+The current value is byte-repeatable pattern with byte "0xFE".
+The values used for pattern initialization might be changed in the future.
+
+@item
+@samp{zero} Initialize automatic variables with zeroes.
+@end itemize
+
+The default is @samp{uninitialized}.
+
+You can control this behavior for a specific variable by using the variable
+attribute @code{uninitialized} (@pxref{Variable Attributes}).
+
 @item -fvect-cost-model=@var{model}
 @opindex fvect-cost-model
 Alter the cost model used for vectorization.  The @var{model} argument
@@ -13900,6 +13974,34 @@ A value of -1 means we don't have a threshold and therefore
 prefetch hints can be issued for any constant stride.
 
 This setting is only useful for strides that are known and constant.
+
+@item destructive-interference-size
+@item constructive-interference-size
+The values for the C++17 variables
+@code{std::hardware_destructive_interference_size} and
+@code{std::hardware_constructive_interference_size}.  The destructive
+interference size is the minimum recommended offset between two
+independent concurrently-accessed objects; the constructive
+interference size is the maximum recommended size of contiguous memory
+accessed together.  Typically both will be the size of an L1 cache
+line for the target, in bytes.  For a generic target covering a range of L1
+cache line sizes, typically the constructive interference size will be
+the small end of the range and the destructive size will be the large
+end.
+
+The destructive interference size is intended to be used for layout,
+and thus has ABI impact.  The default value is not expected to be
+stable, and on some targets varies with @option{-mtune}, so use of
+this variable in a context where ABI stability is important, such as
+the public interface of a library, is strongly discouraged; if it is
+used in that context, users can stabilize the value using this
+option.
+
+The constructive interference size is less sensitive, as it is
+typically only used in a @samp{static_assert} to make sure that a type
+fits within a cache line.
+
+See also @option{-Winterference-size}.
 
 @item loop-interchange-max-num-stmts
 The maximum number of stmts in a loop to be interchanged.
@@ -22635,6 +22737,53 @@ Generate code for a big-endian target.
 @opindex mlittle-endian
 Generate code for a little-endian target.  This is the default.
 
+@item -mjmpext
+@opindex mjmpext
+Enable generation of extra conditional-branch instructions.
+Enabled for CPU v2 and above.
+
+@item -mjmp32
+@opindex mjmp32
+Enable 32-bit jump instructions. Enabled for CPU v3 and above.
+
+@item -malu32
+@opindex malu32
+Enable 32-bit ALU instructions. Enabled for CPU v3 and above.
+
+@item -mcpu=@var{version}
+@opindex mcpu
+This specifies which version of the eBPF ISA to target. Newer versions
+may not be supported by all kernels. The default is @samp{v3}.
+
+Supported values for @var{version} are:
+
+@table @samp
+@item v1
+The first stable eBPF ISA with no special features or extensions.
+
+@item v2
+Supports the jump extensions, as in @option{-mjmpext}.
+
+@item v3
+All features of v2, plus:
+@itemize @minus
+@item 32-bit jump operations, as in @option{-mjmp32}
+@item 32-bit ALU operations, as in @option{-malu32}
+@end itemize
+
+@end table
+
+@item -mco-re
+@opindex mco-re
+Enable BPF Compile Once - Run Everywhere (CO-RE) support. Requires and
+is implied by @option{-gbtf}.
+
+@item -mno-co-re
+@opindex mno-co-re
+Disable BPF Compile Once - Run Everywhere (CO-RE) support. BPF CO-RE
+support is enabled by default when generating BTF debug information for
+the BPF target.
+
 @item -mxbpf
 Generate code for an expanded version of BPF, which relaxes some of
 the restrictions imposed by the BPF architecture:
@@ -31278,6 +31427,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mavx512bf16
 @opindex mavx512bf16
 @need 200
+@itemx -mavx512fp16
+@opindex mavx512fp16
+@need 200
 @itemx -mgfni
 @opindex mgfni
 @need 200
@@ -31356,9 +31508,9 @@ WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
 ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
-UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL, AVXVNNI or CLDEMOTE
-extended instruction sets. Each has a corresponding @option{-mno-} option to
-disable use of these instructions.
+UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL, AVXVNNI, AVX512FP16
+or CLDEMOTE extended instruction sets. Each has a corresponding
+@option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and

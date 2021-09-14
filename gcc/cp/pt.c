@@ -3855,6 +3855,18 @@ expand_builtin_pack_call (tree call, tree args, tsubst_flags_t complain,
   return NULL_TREE;
 }
 
+/* Return true if the tree T has the extra args mechanism for
+   avoiding partial instantiation.  */
+
+static bool
+has_extra_args_mechanism_p (const_tree t)
+{
+  return (PACK_EXPANSION_P (t) /* PACK_EXPANSION_EXTRA_ARGS  */
+	  || TREE_CODE (t) == REQUIRES_EXPR /* REQUIRES_EXPR_EXTRA_ARGS  */
+	  || (TREE_CODE (t) == IF_STMT
+	      && IF_STMT_CONSTEXPR_P (t))); /* IF_STMT_EXTRA_ARGS  */
+}
+
 /* Structure used to track the progress of find_parameter_packs_r.  */
 struct find_parameter_pack_data
 {
@@ -3867,6 +3879,9 @@ struct find_parameter_pack_data
 
   /* True iff we're making a type pack expansion.  */
   bool type_pack_expansion_p;
+
+  /* True iff we found a subtree that has the extra args mechanism.  */
+  bool found_extra_args_tree_p = false;
 };
 
 /* Identifies all of the argument packs that occur in a template
@@ -3967,6 +3982,9 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       /* Add this parameter pack to the list.  */
       *ppd->parameter_packs = tree_cons (NULL_TREE, t, *ppd->parameter_packs);
     }
+
+  if (has_extra_args_mechanism_p (t) && !PACK_EXPANSION_P (t))
+    ppd->found_extra_args_tree_p = true;
 
   if (TYPE_P (t))
     cp_walk_tree (&TYPE_CONTEXT (t),
@@ -4229,6 +4247,14 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
   PACK_EXPANSION_PARAMETER_PACKS (result) = parameter_packs;
 
   PACK_EXPANSION_LOCAL_P (result) = at_function_scope_p ();
+  if (ppd.found_extra_args_tree_p)
+    /* If the pattern of this pack expansion contains a subtree that has
+       the extra args mechanism for avoiding partial instantiation, then
+       force this pack expansion to also use extra args.  Otherwise
+       partial instantiation of this pack expansion may not lower the
+       level of some parameter packs within the pattern, which would
+       confuse tsubst_pack_expansion later (PR101764).  */
+    PACK_EXPANSION_FORCE_EXTRA_ARGS_P (result) = true;
 
   return result;
 }
@@ -12405,10 +12431,15 @@ make_argument_pack_select (tree arg_pack, unsigned index)
     substitution.  */
 
 static bool
-use_pack_expansion_extra_args_p (tree parm_packs,
+use_pack_expansion_extra_args_p (tree t,
+				 tree parm_packs,
 				 int arg_pack_len,
 				 bool has_empty_arg)
 {
+  if (has_empty_arg
+      && PACK_EXPANSION_FORCE_EXTRA_ARGS_P (t))
+    return true;
+
   /* If one pack has an expansion and another pack has a normal
      argument or if one pack has an empty argument and an another
      one hasn't then tsubst_pack_expansion cannot perform the
@@ -13161,7 +13192,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
   /* We cannot expand this expansion expression, because we don't have
      all of the argument packs we need.  */
-  if (use_pack_expansion_extra_args_p (packs, len, unsubstituted_packs))
+  if (use_pack_expansion_extra_args_p (t, packs, len, unsubstituted_packs))
     {
       /* We got some full packs, but we can't substitute them in until we
 	 have values for all the packs.  So remember these until then.  */

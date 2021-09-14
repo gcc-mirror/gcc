@@ -1,3 +1,31 @@
+2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/atomic-19.c: New test.
+	* testsuite/libgomp.c-c++-common/atomic-20.c: New test.
+	* testsuite/libgomp.c-c++-common/atomic-21.c: New test.
+
+2021-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Implementation Status): Extend
+	OpenMP 5.0 section.
+	(OpenACC Profiling Interface): Fix typo.
+
+2021-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Enabling OpenMP): Refer to OMP spec in general
+	not to 4.5; link to new section.
+	(OpenMP Implementation Status): New.
+
+2021-09-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/target-43.c: '-latomic' for nvptx offloading.
+
+2021-09-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/error-1.c: Use \r\n not \n\r in
+	dg-output.
+	* testsuite/libgomp.fortran/error-1.f90: Likewise.
+
 2021-08-23  Thomas Schwinge  <thomas@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
