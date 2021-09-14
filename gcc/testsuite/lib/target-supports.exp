@@ -7972,7 +7972,7 @@ proc check_effective_target_sync_int_128_runtime { } {
 # Note: 32bit s390 targets require -mzarch in dg-options.
 
 proc check_effective_target_sync_long_long { } {
-    if { [istarget i?86-*-*] || [istarget x86_64-*-*])
+    if { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	 || [istarget aarch64*-*-*]
 	 || [istarget arm*-*-*]
 	 || [istarget alpha*-*-*]

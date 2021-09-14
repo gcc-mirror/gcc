@@ -1,3 +1,14 @@
+2021-09-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/atomic-29.c: Add -march=pentium
+	dg-additional-options for ia32.  Use sync_long_long effective target
+	instead of sync_int_long.
+	* lib/target-supports.exp (check_effective_target_sync_long_long): Fix
+	a syntax error.
+
 2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
