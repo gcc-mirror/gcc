@@ -99,6 +99,10 @@
    UNSPEC_MMA_XXMTACC
   ])
 
+(define_c_enum "unspecv"
+  [UNSPECV_MMA_XXSETACCZ
+  ])
+
 ;; MMA instructions with 1 accumulator argument
 (define_int_iterator MMA_ACC		[UNSPEC_MMA_XXMFACC
 					 UNSPEC_MMA_XXMTACC])
@@ -325,26 +329,24 @@
 })
 
 (define_insn_and_split "*movpxi"
-  [(set (match_operand:PXI 0 "nonimmediate_operand" "=d,m,d,d")
-	(match_operand:PXI 1 "input_operand" "m,d,d,O"))]
+  [(set (match_operand:PXI 0 "nonimmediate_operand" "=d,m,d")
+	(match_operand:PXI 1 "input_operand" "m,d,d"))]
   "TARGET_MMA
    && (gpc_reg_operand (operands[0], PXImode)
        || gpc_reg_operand (operands[1], PXImode))"
   "@
    #
    #
-   #
-   xxsetaccz %A0"
-  "&& reload_completed
-   && !(fpr_reg_operand (operands[0], PXImode) && operands[1] == const0_rtx)"
+   #"
+  "&& reload_completed"
   [(const_int 0)]
 {
   rs6000_split_multireg_move (operands[0], operands[1]);
   DONE;
 }
-  [(set_attr "type" "vecload,vecstore,veclogical,mma")
-   (set_attr "length" "8,8,16,*")
-   (set_attr "max_prefixed_insns" "2,2,*,*")])
+  [(set_attr "type" "vecload,vecstore,veclogical")
+   (set_attr "length" "8,8,16")
+   (set_attr "max_prefixed_insns" "2,2,*")])
 
 (define_expand "vsx_assemble_pair"
   [(match_operand:POI 0 "vsx_register_operand")
@@ -413,14 +415,16 @@
   "<acc> %A0"
   [(set_attr "type" "mma")])
 
-(define_expand "mma_xxsetaccz"
-  [(set (match_operand:PXI 0 "fpr_reg_operand")
-	(const_int 0))]
+;; We can't have integer constants in PXImode so we wrap this in an
+;; UNSPEC_VOLATILE.
+
+(define_insn "mma_xxsetaccz"
+  [(set (match_operand:PXI 0 "fpr_reg_operand" "=d")
+	(unspec_volatile:PXI [(const_int 0)]
+			     UNSPECV_MMA_XXSETACCZ))]
   "TARGET_MMA"
-{
-  emit_insn (gen_movpxi (operands[0], const0_rtx));
-  DONE;
-})
+  "xxsetaccz %A0"
+  [(set_attr "type" "mma")])
 
 (define_insn "mma_<vv>"
   [(set (match_operand:PXI 0 "fpr_reg_operand" "=&d")

@@ -21353,6 +21353,14 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	}
       break;
 
+    case UNSPEC_VOLATILE:
+      if (XINT (x, 1) == UNSPECV_MMA_XXSETACCZ)
+        {
+          *total = 0;
+          return true;
+        }
+      break;
+
     default:
       break;
     }
