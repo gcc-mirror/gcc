@@ -28,6 +28,7 @@
 #include "coretypes.h"
 #include "target.h"
 #include "tree.h"
+#include "gimple-expr.h"
 #include "stringpool.h"
 #include "diagnostic-core.h"
 #include "alias.h"
@@ -9492,46 +9493,6 @@ check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
 		   gnat_error_point, gnat_entity);
 }
 
-
-/* Helper for the intrin compatibility checks family.  Evaluate whether
-   two types are definitely incompatible.  */
-
-static bool
-intrin_types_incompatible_p (tree t1, tree t2)
-{
-  enum tree_code code;
-
-  if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
-    return false;
-
-  if (TYPE_MODE (t1) != TYPE_MODE (t2))
-    return true;
-
-  if (TREE_CODE (t1) != TREE_CODE (t2))
-    return true;
-
-  code = TREE_CODE (t1);
-
-  switch (code)
-    {
-    case INTEGER_TYPE:
-    case REAL_TYPE:
-      return TYPE_PRECISION (t1) != TYPE_PRECISION (t2);
-
-    case POINTER_TYPE:
-    case REFERENCE_TYPE:
-      /* Assume designated types are ok.  We'd need to account for char * and
-	 void * variants to do better, which could rapidly get messy and isn't
-	 clearly worth the effort.  */
-      return false;
-
-    default:
-      break;
-    }
-
-  return false;
-}
-
 /* Helper for intrin_profiles_compatible_p, to perform compatibility checks
    on the Ada/builtin argument lists for the INB binding.  */
 
@@ -9577,8 +9538,8 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
 	}
 
       /* Otherwise, check that types match for the current argument.  */
-      argpos ++;
-      if (intrin_types_incompatible_p (ada_type, btin_type))
+      argpos++;
+      if (!types_compatible_p (ada_type, btin_type))
 	{
 	  post_error_ne_num ("??intrinsic binding type mismatch on argument ^!",
 			     inb->gnat_entity, inb->gnat_entity, argpos);
@@ -9609,7 +9570,7 @@ intrin_return_compatible_p (intrin_binding_t * inb)
 
   /* Check return types compatibility otherwise.  Note that this
      handles void/void as well.  */
-  if (intrin_types_incompatible_p (btin_return_type, ada_return_type))
+  if (!types_compatible_p (btin_return_type, ada_return_type))
     {
       post_error ("??intrinsic binding type mismatch on return value!",
 		  inb->gnat_entity);

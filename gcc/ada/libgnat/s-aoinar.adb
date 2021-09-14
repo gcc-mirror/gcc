@@ -203,7 +203,7 @@ package body System.Atomic_Operations.Integer_Arithmetic is
       pragma Unreferenced (Item);
       use type Interfaces.C.size_t;
    begin
-      return Boolean (Atomic_Always_Lock_Free (Atomic_Type'Object_Size / 8));
+      return Atomic_Always_Lock_Free (Atomic_Type'Object_Size / 8);
    end Is_Lock_Free;
 
 end System.Atomic_Operations.Integer_Arithmetic;
