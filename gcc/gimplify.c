@@ -13859,10 +13859,10 @@ goa_lhs_expr_p (tree expr, tree addr)
 
 static int
 goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
-		    tree lhs_var, tree &target_expr, bool rhs)
+		    tree lhs_var, tree &target_expr, bool rhs, int depth)
 {
   tree expr = *expr_p;
-  int saw_lhs;
+  int saw_lhs = 0;
 
   if (goa_lhs_expr_p (expr, lhs_addr))
     {
@@ -13873,17 +13873,22 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
   if (is_gimple_val (expr))
     return 0;
 
-  saw_lhs = 0;
+  /* Maximum depth of lhs in expression is for the
+     __builtin_clear_padding (...), __builtin_clear_padding (...),
+     __builtin_memcmp (&TARGET_EXPR <lhs, >, ...) == 0 ? ... : lhs;  */
+  if (++depth > 7)
+    goto finish;
+
   switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
     case tcc_binary:
     case tcc_comparison:
       saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1), pre_p, lhs_addr,
-				     lhs_var, target_expr, true);
+				     lhs_var, target_expr, true, depth);
       /* FALLTHRU */
     case tcc_unary:
       saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p, lhs_addr,
-				     lhs_var, target_expr, true);
+				     lhs_var, target_expr, true, depth);
       break;
     case tcc_expression:
       switch (TREE_CODE (expr))
@@ -13895,84 +13900,101 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
 	case TRUTH_XOR_EXPR:
 	case BIT_INSERT_EXPR:
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1), pre_p,
-					 lhs_addr, lhs_var, target_expr, true);
+					 lhs_addr, lhs_var, target_expr, true,
+					 depth);
 	  /* FALLTHRU */
 	case TRUTH_NOT_EXPR:
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
-					 lhs_addr, lhs_var, target_expr, true);
+					 lhs_addr, lhs_var, target_expr, true,
+					 depth);
 	  break;
 	case MODIFY_EXPR:
+	  if (pre_p && !goa_stabilize_expr (expr_p, NULL, lhs_addr, lhs_var,
+					    target_expr, true, depth))
+	    break;
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1), pre_p,
-					 lhs_addr, lhs_var, target_expr, true);
+					 lhs_addr, lhs_var, target_expr, true,
+					 depth);
+	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
+					 lhs_addr, lhs_var, target_expr, false,
+					 depth);
+	  break;
 	  /* FALLTHRU */
 	case ADDR_EXPR:
+	  if (pre_p && !goa_stabilize_expr (expr_p, NULL, lhs_addr, lhs_var,
+					    target_expr, true, depth))
+	    break;
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
-					 lhs_addr, lhs_var, target_expr, false);
+					 lhs_addr, lhs_var, target_expr, false,
+					 depth);
 	  break;
 	case COMPOUND_EXPR:
-	  /* Special-case __builtin_clear_padding call before
-	     __builtin_memcmp.  */
-	  if (TREE_CODE (TREE_OPERAND (expr, 0)) == CALL_EXPR)
-	    {
-	      tree fndecl = get_callee_fndecl (TREE_OPERAND (expr, 0));
-	      if (fndecl
-		  && fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING)
-		  && VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0))))
-		{
-		  saw_lhs = goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
-						lhs_addr, lhs_var,
-						target_expr, true);
-		  if (!saw_lhs)
-		    {
-		      expr = TREE_OPERAND (expr, 1);
-		      if (!pre_p)
-			return goa_stabilize_expr (&expr, pre_p, lhs_addr,
-						   lhs_var, target_expr, true);
-		      *expr_p = expr;
-		      return goa_stabilize_expr (expr_p, pre_p, lhs_addr,
-						 lhs_var, target_expr, true);
-		    }
-		  else
-		    {
-		      saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1),
-						     pre_p, lhs_addr, lhs_var,
-						     target_expr, rhs);
-		      break;
-		    }
-		}
-	    }
 	  /* Break out any preevaluations from cp_build_modify_expr.  */
 	  for (; TREE_CODE (expr) == COMPOUND_EXPR;
 	       expr = TREE_OPERAND (expr, 1))
-	    if (pre_p)
-	      gimplify_stmt (&TREE_OPERAND (expr, 0), pre_p);
+	    {
+	      /* Special-case __builtin_clear_padding call before
+		 __builtin_memcmp.  */
+	      if (TREE_CODE (TREE_OPERAND (expr, 0)) == CALL_EXPR)
+		{
+		  tree fndecl = get_callee_fndecl (TREE_OPERAND (expr, 0));
+		  if (fndecl
+		      && fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING)
+		      && VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)))
+		      && (!pre_p
+			  || goa_stabilize_expr (&TREE_OPERAND (expr, 0), NULL,
+						 lhs_addr, lhs_var,
+						 target_expr, true, depth)))
+		    {
+		      if (pre_p)
+			*expr_p = expr;
+		      saw_lhs = goa_stabilize_expr (&TREE_OPERAND (expr, 0),
+						    pre_p, lhs_addr, lhs_var,
+						    target_expr, true, depth);
+		      saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1),
+						     pre_p, lhs_addr, lhs_var,
+						     target_expr, rhs, depth);
+		      return saw_lhs;
+		    }
+		}
+
+	      if (pre_p)
+		gimplify_stmt (&TREE_OPERAND (expr, 0), pre_p);
+	    }
 	  if (!pre_p)
 	    return goa_stabilize_expr (&expr, pre_p, lhs_addr, lhs_var,
-				       target_expr, rhs);
+				       target_expr, rhs, depth);
 	  *expr_p = expr;
 	  return goa_stabilize_expr (expr_p, pre_p, lhs_addr, lhs_var,
-				     target_expr, rhs);
+				     target_expr, rhs, depth);
 	case COND_EXPR:
 	  if (!goa_stabilize_expr (&TREE_OPERAND (expr, 0), NULL, lhs_addr,
-				   lhs_var, target_expr, true))
+				   lhs_var, target_expr, true, depth))
 	    break;
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
-					 lhs_addr, lhs_var, target_expr, true);
+					 lhs_addr, lhs_var, target_expr, true,
+					 depth);
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1), pre_p,
-					 lhs_addr, lhs_var, target_expr, true);
+					 lhs_addr, lhs_var, target_expr, true,
+					 depth);
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 2), pre_p,
-					 lhs_addr, lhs_var, target_expr, true);
+					 lhs_addr, lhs_var, target_expr, true,
+					 depth);
 	  break;
 	case TARGET_EXPR:
 	  if (TARGET_EXPR_INITIAL (expr))
 	    {
+	      if (pre_p && !goa_stabilize_expr (expr_p, NULL, lhs_addr,
+						lhs_var, target_expr, true,
+						depth))
+		break;
 	      if (expr == target_expr)
 		saw_lhs = 1;
 	      else
 		{
 		  saw_lhs = goa_stabilize_expr (&TARGET_EXPR_INITIAL (expr),
 						pre_p, lhs_addr, lhs_var,
-						target_expr, true);
+						target_expr, true, depth);
 		  if (saw_lhs && target_expr == NULL_TREE && pre_p)
 		    target_expr = expr;
 		}
@@ -13986,7 +14008,8 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
       if (TREE_CODE (expr) == BIT_FIELD_REF
 	  || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
 	saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
-				       lhs_addr, lhs_var, target_expr, true);
+				       lhs_addr, lhs_var, target_expr, true,
+				       depth);
       break;
     case tcc_vl_exp:
       if (TREE_CODE (expr) == CALL_EXPR)
@@ -13999,24 +14022,24 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
 		for (int i = 0; i < nargs; i++)
 		  saw_lhs |= goa_stabilize_expr (&CALL_EXPR_ARG (expr, i),
 						 pre_p, lhs_addr, lhs_var,
-						 target_expr, true);
+						 target_expr, true, depth);
 	      }
-	  if (saw_lhs == 0 && VOID_TYPE_P (TREE_TYPE (expr)))
-	    {
-	      if (pre_p)
-		gimplify_stmt (&expr, pre_p);
-	      return 0;
-	    }
 	}
       break;
     default:
       break;
     }
 
+ finish:
   if (saw_lhs == 0 && pre_p)
     {
       enum gimplify_status gs;
-      if (rhs)
+      if (TREE_CODE (expr) == CALL_EXPR && VOID_TYPE_P (TREE_TYPE (expr)))
+	{
+	  gimplify_stmt (&expr, pre_p);
+	  return saw_lhs;
+	}
+      else if (rhs)
 	gs = gimplify_expr (expr_p, pre_p, NULL, is_gimple_val, fb_rvalue);
       else
 	gs = gimplify_expr (expr_p, pre_p, NULL, is_gimple_lvalue, fb_lvalue);
@@ -14044,7 +14067,7 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
   tmp_load = create_tmp_reg (type);
   if (rhs
       && goa_stabilize_expr (&rhs, pre_p, addr, tmp_load, target_expr,
-			     true) < 0)
+			     true, 0) < 0)
     return GS_ERROR;
 
   if (gimplify_expr (&addr, pre_p, NULL, is_gimple_val, fb_rvalue)
