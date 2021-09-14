@@ -1,3 +1,14 @@
+2021-09-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (goa_stabilize_expr): Add depth argument, propagate
+	it to recursive calls, for depth above 7 just gimplify or return.
+	Perform a test even for MODIFY_EXPR, ADDR_EXPR, COMPOUND_EXPR with
+	__builtin_clear_padding and TARGET_EXPR.
+	(gimplify_omp_atomic): Adjust goa_stabilize_expr callers.
+
 2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
