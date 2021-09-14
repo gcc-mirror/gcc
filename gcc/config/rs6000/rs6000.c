@@ -22174,7 +22174,7 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
       break;
 
     case UNSPEC:
-      if (XINT (x, 1) == UNSPEC_MMA_XXSETACCZ)
+      if (XINT (x, 1) == UNSPECV_MMA_XXSETACCZ)
 	{
 	  *total = 0;
 	  return true;
