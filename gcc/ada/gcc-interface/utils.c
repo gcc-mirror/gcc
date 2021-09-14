@@ -5858,8 +5858,7 @@ can_materialize_object_renaming_p (Node_Id expr)
 
 	    const Uint bitpos
 	      = Normalized_First_Bit (Entity (Selector_Name (expr)));
-	    if (!UI_Is_In_Int_Range (bitpos)
-		|| (bitpos != UI_No_Uint && bitpos != UI_From_Int (0)))
+	    if (bitpos != UI_No_Uint && bitpos != Uint_0)
 	      return false;
 
 	    expr = Prefix (expr);
