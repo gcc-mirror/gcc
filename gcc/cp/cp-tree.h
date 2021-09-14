@@ -204,12 +204,11 @@ enum cp_tree_index
     /* These are created at init time, but the library/headers provide
        definitions.  */
     CPTI_ALIGN_TYPE,
-    CPTI_CONST_TYPE_INFO_TYPE,
-    CPTI_TYPE_INFO_PTR_TYPE,
     CPTI_TERMINATE_FN,
     CPTI_CALL_UNEXPECTED_FN,
 
     /* These are lazily inited.  */
+    CPTI_CONST_TYPE_INFO_TYPE,
     CPTI_GET_EXCEPTION_PTR_FN,
     CPTI_BEGIN_CATCH_FN,
     CPTI_END_CATCH_FN,
@@ -251,7 +250,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define abi_node			cp_global_trees[CPTI_ABI]
 #define global_namespace		cp_global_trees[CPTI_GLOBAL]
 #define const_type_info_type_node	cp_global_trees[CPTI_CONST_TYPE_INFO_TYPE]
-#define type_info_ptr_type		cp_global_trees[CPTI_TYPE_INFO_PTR_TYPE]
 #define conv_op_marker			cp_global_trees[CPTI_CONV_OP_MARKER]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
