@@ -262,7 +262,7 @@ typedef struct {
   tree btin_fntype;       /* The GCC builtin function type node.  */
 } intrin_binding_t;
 
-static bool intrin_profiles_compatible_p (intrin_binding_t *);
+static bool intrin_profiles_compatible_p (const intrin_binding_t *);
 
 /* Given GNAT_ENTITY, a GNAT defining identifier node, which denotes some Ada
    entity, return the equivalent GCC tree for that entity (a ..._DECL node)
@@ -6297,14 +6297,13 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     the checker is expected to post diagnostics in this case.  */
 	  if (gnu_builtin_decl)
 	    {
-	      intrin_binding_t inb
+	      const intrin_binding_t inb
 		= { gnat_subprog, gnu_type, TREE_TYPE (gnu_builtin_decl) };
 
 	      if (!intrin_profiles_compatible_p (&inb))
 		post_error
 		  ("??profile of& doesn''t match the builtin it binds!",
 		   gnat_subprog);
-
 	      return gnu_builtin_decl;
 	    }
 
@@ -6315,7 +6314,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     on demand without risking false positives with common default sets
 	     of options.  */
 	  if (warn_shadow)
-	    post_error ("??gcc intrinsic not found for&!", gnat_subprog);
+	    post_error ("'G'C'C intrinsic not found for&!??", gnat_subprog);
 	}
     }
 
@@ -9497,7 +9496,7 @@ check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
    on the Ada/builtin argument lists for the INB binding.  */
 
 static bool
-intrin_arglists_compatible_p (intrin_binding_t * inb)
+intrin_arglists_compatible_p (const intrin_binding_t *inb)
 {
   function_args_iterator ada_iter, btin_iter;
 
@@ -9522,17 +9521,15 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
 
       /* If we're done with the Ada args and not with the internal builtin
 	 args, or the other way around, complain.  */
-      if (ada_type == void_type_node
-	  && btin_type != void_type_node)
+      if (ada_type == void_type_node && btin_type != void_type_node)
 	{
-	  post_error ("??Ada arguments list too short!", inb->gnat_entity);
+	  post_error ("??Ada parameter list too short!", inb->gnat_entity);
 	  return false;
 	}
 
-      if (btin_type == void_type_node
-	  && ada_type != void_type_node)
+      if (btin_type == void_type_node && ada_type != void_type_node)
 	{
-	  post_error_ne_num ("??Ada arguments list too long ('> ^)!",
+	  post_error_ne_num ("??Ada parameter list too long ('> ^)!",
 			     inb->gnat_entity, inb->gnat_entity, argpos);
 	  return false;
 	}
@@ -9541,8 +9538,15 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
       argpos++;
       if (!types_compatible_p (ada_type, btin_type))
 	{
-	  post_error_ne_num ("??intrinsic binding type mismatch on argument ^!",
-			     inb->gnat_entity, inb->gnat_entity, argpos);
+	  /* For vector builtins, issue an error to avoid an ICE.  */
+	  if (VECTOR_TYPE_P (btin_type))
+	    post_error_ne_num
+	      ("intrinsic binding type mismatch on parameter ^",
+	       inb->gnat_entity, inb->gnat_entity, argpos);
+	  else
+	    post_error_ne_num
+	      ("??intrinsic binding type mismatch on parameter ^!",
+	       inb->gnat_entity, inb->gnat_entity, argpos);
 	  return false;
 	}
 
@@ -9558,22 +9562,26 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
    on the Ada/builtin return values for the INB binding.  */
 
 static bool
-intrin_return_compatible_p (intrin_binding_t * inb)
+intrin_return_compatible_p (const intrin_binding_t *inb)
 {
   tree ada_return_type = TREE_TYPE (inb->ada_fntype);
   tree btin_return_type = TREE_TYPE (inb->btin_fntype);
 
   /* Accept function imported as procedure, common and convenient.  */
-  if (VOID_TYPE_P (ada_return_type)
-      && !VOID_TYPE_P (btin_return_type))
+  if (VOID_TYPE_P (ada_return_type) && !VOID_TYPE_P (btin_return_type))
     return true;
 
   /* Check return types compatibility otherwise.  Note that this
      handles void/void as well.  */
   if (!types_compatible_p (btin_return_type, ada_return_type))
     {
-      post_error ("??intrinsic binding type mismatch on return value!",
-		  inb->gnat_entity);
+      /* For vector builtins, issue an error to avoid an ICE.  */
+      if (VECTOR_TYPE_P (btin_return_type))
+	post_error ("intrinsic binding type mismatch on result",
+		    inb->gnat_entity);
+      else
+	post_error ("??intrinsic binding type mismatch on result",
+		    inb->gnat_entity);
       return false;
     }
 
@@ -9589,7 +9597,7 @@ intrin_return_compatible_p (intrin_binding_t * inb)
    especially when binding straight to a compiler internal.  */
 
 static bool
-intrin_profiles_compatible_p (intrin_binding_t * inb)
+intrin_profiles_compatible_p (const intrin_binding_t *inb)
 {
   /* Check compatibility on return values and argument lists, each responsible
      for posting warnings as appropriate.  Ensure use of the proper sloc for
