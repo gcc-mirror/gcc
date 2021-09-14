@@ -1,3 +1,29 @@
+2021-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/sfp-machine.h (alias_HFtype, alias_SFtype
+	alias_DFtype, alias_TFtype): New.
+	(ALIAS_SELECTOR): New.
+	(strong_alias): Use __typeof and a _Generic selector to
+	provide the type to the synthesized function.
+
+2021-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/32/sfp-machine.h (_FP_NANFRAC_H): New macro.
+	* config/i386/64/sfp-machine.h (_FP_NANFRAC_H): Ditto.
+	* config/i386/sfp-machine.h (_FP_NANSIGN_H): Ditto.
+	* config/i386/t-softfp: Add hf soft-fp.
+	* config.host: Add i386/64/t-softfp.
+	* config/i386/64/t-softfp: New file.
+
+2021-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	* soft-fp/eqhf2.c: New file.
+	* soft-fp/extendhfdf2.c: New file.
+	* soft-fp/extendhfsf2.c: New file.
+	* soft-fp/half.h (FP_CMP_EQ_H): New marco.
+	* soft-fp/truncdfhf2.c: New file
+	* soft-fp/truncsfhf2.c: New file
+
 2021-09-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* unwind-arm-common.inc (abort): Remove.

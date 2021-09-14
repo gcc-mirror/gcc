@@ -1,3 +1,288 @@
+2021-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::range_of_stmt): Remove
+	GIMPLE_COND special casing.
+	(path_range_query::range_defined_in_block): Use range_of_stmt
+	instead of calling fold_range directly.
+
+2021-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::range_of_expr): Set
+	m_undefined_path when appropriate.
+	(path_range_query::internal_range_of_expr): Copy from range_of_expr.
+	(path_range_query::unreachable_path_p): New.
+	(path_range_query::precompute_ranges): Set m_undefined_path.
+	* gimple-range-path.h (path_range_query::unreachable_path_p): New.
+	(path_range_query::internal_range_of_expr): New.
+	* tree-ssa-threadbackward.c (back_threader::find_taken_edge_cond):
+	Use unreachable_path_p.
+
+2021-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::maybe_register_path):
+	Remove argument and call find_taken_edge.
+	(back_threader::resolve_phi): Do not calculate taken edge before
+	calling maybe_register_path.
+	(back_threader::find_paths_to_names): Same.
+
+2021-09-05  Jeff Law  <jlaw@localhost.localdomain>
+
+	* config/h8300/h8300.md (QHSI2 mode iterator): New mode iterator.
+	* config/h8300/testcompare.md (store_c): Update name, use new
+	QHSI2 iterator.
+	(store_neg_c, store_shifted_c): New patterns.
+
+2021-09-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/102107
+	* config/rs6000/rs6000-logue.c (rs6000_emit_prologue): On ELFv2 use r11
+	instead of r12 for CR save, in all cases.
+
+2021-09-03  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (register_vector_type):
+	Handle error_mark_node as the type of the type_decl.
+
+2021-09-03  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64-builtins.c (struct aarch64_simd_type_info):
+	Mark with GTY.
+	(aarch64_simd_types): Likewise.
+	(aarch64_simd_intOI_type_node): Likewise.
+	(aarch64_simd_intCI_type_node): Likewise.
+	(aarch64_simd_intXI_type_node): Likewise.
+	* config/aarch64/aarch64.h (aarch64_fp16_type_node): Likewise.
+	(aarch64_fp16_ptr_type_node): Likewise.
+	(aarch64_bf16_type_node): Likewise.
+	(aarch64_bf16_ptr_type_node): Likewise.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_minus::op1_op2_relation_effect): Abstract
+	out to...
+	(minus_op1_op2_relation_effect): ...here.
+	(class operator_pointer_diff): New.
+	(operator_pointer_diff::op1_op2_relation_effect): Call
+	minus_op1_op2_relation_effect.
+	(integral_table::integral_table): Add entry for POINTER_DIFF_EXPR.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::thread_through_all_blocks):
+	Add may_peel_loop_headers.
+	(back_threader_registry::thread_through_all_blocks): Same.
+	(try_thread_blocks): Pass may_peel_loop_headers argument.
+	(pass_early_thread_jumps::execute): Same.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadedge.c (has_phis_p): New.
+	(forwarder_block_p): New.
+	(potentially_threadable_block): Call forwarder_block_p.
+	(jump_threader::thread_around_empty_blocks): Call has_phis_p.
+	(jump_threader::thread_through_normal_block): Call
+	forwarder_block_p.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::dump): New.
+	(back_threader::debug): New.
+	(back_threader_profitability::profitable_path_p): Dump blocks
+	even if we are bailing early.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadupdate.c (cancel_thread): New.
+	(jump_thread_path_registry::thread_block_1): Use cancel_thread.
+	(jump_thread_path_registry::mark_threaded_blocks): Same.
+	(jump_thread_path_registry::register_jump_thread): Same.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadedge.c (jt_state::push): Only call methods for
+	which objects are available.
+	(jt_state::pop): Same.
+	(jt_state::register_equiv): Same.
+	(jt_state::register_equivs_on_edge): Same.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadedge.c (jump_threader::thread_across_edge):
+	Move pop until after a thread is registered.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadupdate.c (debug): New.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-trace.cc (push_dump_file::push_dump_file): New.
+	(push_dump_file::~push_dump_file): New.
+	(dump_ranger): Change dump_file temporarily while dumping
+	ranger.
+	* gimple-range-trace.h (class push_dump_file): New.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-trace.cc (debug_seed_ranger): Remove static.
+	(dump_ranger): Dump function name.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::range_defined_in_block):
+	Adjust for non-null.
+	(path_range_query::adjust_for_non_null_uses): New.
+	(path_range_query::precompute_ranges): Call
+	adjust_for_non_null_uses.
+	* gimple-range-path.h: Add m_non_null and
+	adjust_for_non_null_uses.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::dump): Dump path
+	length.
+	(path_range_query::precompute_ranges): Dump entire path.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-relation.cc (relation_oracle::debug): New.
+	* value-relation.h (relation_oracle::debug): New.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-loop-ch.c: Remove unnecessary include file.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::postfold_gcond_edges):
+	Skip statements with no defining BB.
+	* gimple-range-path.cc (path_range_query::range_defined_in_block):
+	Do not get confused by statements with no defining BB.
+
+2021-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (adjust_imagpart_expr): Move from
+	gimple_range_adjustment.  Add support for constants.
+	(adjust_realpart_expr): New.
+	(gimple_range_adjustment): Move IMAGPART_EXPR code to
+	adjust_imagpart_expr.
+	* range-op.cc (integral_table::integral_table): Add entry for
+	REALPART_CST.
+
+2021-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_atomic_pipeline): Use
+	IFN_ATOMIC_COMPARE_EXCHANGE instead of
+	BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_? so that memory order
+	can be provided.
+
+2021-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102024
+	* tree.h (DECL_FIELD_ABI_IGNORED): Changed into rvalue only macro
+	that is false if DECL_BIT_FIELD.
+	(SET_DECL_FIELD_ABI_IGNORED, DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD,
+	SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD): Define.
+	* tree-streamer-out.c (pack_ts_decl_common_value_fields): For
+	DECL_BIT_FIELD stream DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD instead
+	of DECL_FIELD_ABI_IGNORED.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields): Use
+	SET_DECL_FIELD_ABI_IGNORED instead of writing to
+	DECL_FIELD_ABI_IGNORED and for DECL_BIT_FIELD use
+	SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD instead.
+	* lto-streamer-out.c (hash_tree): For DECL_BIT_FIELD hash
+	DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD instead of DECL_FIELD_ABI_IGNORED.
+
+2021-09-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102166
+	* config/i386/amxbf16intrin.h : Remove macro check for __AMX_BF16__.
+	* config/i386/amxint8intrin.h : Remove macro check for __AMX_INT8__.
+	* config/i386/amxtileintrin.h : Remove macro check for __AMX_TILE__.
+
+2021-09-02  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/17506
+	PR testsuite/37182
+	* tree-ssa-uninit.c (warn_uninit): Remove conditional guarding note.
+
+2021-09-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (fill_always_executed_in_1): Refine
+	fix for PR78185 and continue processing when leaving
+	finite inner loops.
+
+2021-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99591
+	* match.pd: Demote operands of IFN_{ADD,SUB,MUL}_OVERFLOW if they
+	were promoted.
+
+2021-09-02  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2021-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102155
+	* tree-ssa-loop-im.c (fill_always_executed_in_1): Iterate
+	over a part of the RPO array and do not recurse here.
+	Dump blocks marked as always executed.
+	(fill_always_executed_in): Walk over the RPO array and
+	process loops whose header we run into.
+	(loop_invariant_motion_in_fun): Compute the first RPO
+	using rev_post_order_and_mark_dfs_back_seme in iteration
+	order and pass that to fill_always_executed_in.
+
+2021-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-modes.def (FLOAT_MODE): Define ieee HFmode.
+	* config/i386/i386.c (enum x86_64_reg_class): Add
+	X86_64_SSEHF_CLASS.
+	(merge_classes): Handle X86_64_SSEHF_CLASS.
+	(examine_argument): Ditto.
+	(construct_container): Ditto.
+	(classify_argument): Ditto, and set HFmode/HCmode to
+	X86_64_SSEHF_CLASS.
+	(function_value_32): Return _FLoat16/Complex Float16 by
+	%xmm0.
+	(function_value_64): Return _Float16/Complex Float16 by SSE
+	register.
+	(ix86_print_operand): Handle CONST_DOUBLE HFmode.
+	(ix86_secondary_reload): Require gpr as intermediate register
+	to store _Float16 from sse register when sse4 is not
+	available.
+	(ix86_libgcc_floating_mode_supported_p): Enable _FLoat16 under
+	sse2.
+	(ix86_scalar_mode_supported_p): Ditto.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Defined.
+	* config/i386/i386.h (VALID_SSE2_REG_MODE): Add HFmode.
+	(VALID_INT_MODE_P): Add HFmode and HCmode.
+	* config/i386/i386.md (*pushhf_rex64): New define_insn.
+	(*pushhf): Ditto.
+	(*movhf_internal): Ditto.
+	* doc/extend.texi (Half-Precision Floating Point): Documemt
+	_Float16 for x86.
+
+2021-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102155
+	* tree-ssa-loop-im.c (fill_always_executed_in_1): Iterate
+	over a part of the RPO array and do not recurse here.
+	Dump blocks marked as always executed.
+	(fill_always_executed_in): Walk over the RPO array and
+	process loops whose header we run into.
+	(loop_invariant_motion_in_fun): Compute the first RPO
+	using rev_post_order_and_mark_dfs_back_seme in iteration
+	order and pass that to fill_always_executed_in.
+
+2021-09-02  YunQiang Su  <syq@debian.org>
+
+	Revert:
+	2021-08-31  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.c (mips_module_isa_name): New.
+	  mips_file_start: add .module mipsREV to all asm output
+
 2021-09-01  Jeff Law  <jlaw@localhost.localdomain>
 
 	PR tree-optimization/102152

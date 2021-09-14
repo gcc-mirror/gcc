@@ -142,6 +142,7 @@ public:
 
   void dump (FILE *f, basic_block bb) const;
   void dump (FILE *f) const;
+  void debug () const;
 private:
   bitmap m_tmp, m_tmp2;
   bitmap m_relation_set;  // Index by ssa-name. True if a relation exists

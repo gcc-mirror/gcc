@@ -256,7 +256,11 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       DECL_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_NONADDRESSABLE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_PADDING_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-      DECL_FIELD_ABI_IGNORED (expr) = (unsigned) bp_unpack_value (bp, 1);
+      unsigned val = (unsigned) bp_unpack_value (bp, 1);
+      if (DECL_BIT_FIELD (expr))
+	SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (expr, val);
+      else
+	SET_DECL_FIELD_ABI_IGNORED (expr, val);
       expr->decl_common.off_align = bp_unpack_value (bp, 8);
     }
 

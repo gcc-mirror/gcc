@@ -1,3 +1,9 @@
+2021-09-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* decl.c (gfc_verify_c_interop_param): Reject pointer with
+	CONTIGUOUS attributes as dummy arg. Reject character len > 1
+	when passed as byte stream.
+
 2021-09-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/56985

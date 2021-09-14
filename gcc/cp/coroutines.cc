@@ -1474,6 +1474,29 @@ coro_build_cvt_void_expr_stmt (tree expr, location_t loc)
   return coro_build_expr_stmt (t, loc);
 }
 
+/* Helpers to build an artificial var, with location LOC, NAME and TYPE, in
+   CTX, and with initializer INIT.  */
+
+static tree
+coro_build_artificial_var (location_t loc, tree name, tree type, tree ctx,
+			   tree init)
+{
+  tree res = build_lang_decl (VAR_DECL, name, type);
+  DECL_SOURCE_LOCATION (res) = loc;
+  DECL_CONTEXT (res) = ctx;
+  DECL_ARTIFICIAL (res) = true;
+  DECL_INITIAL (res) = init;
+  return res;
+}
+
+static tree
+coro_build_artificial_var (location_t loc, const char *name, tree type,
+			   tree ctx, tree init)
+{
+  return coro_build_artificial_var (loc, get_identifier (name),
+				    type, ctx, init);
+}
+
 /* Helpers for label creation:
    1. Create a named label in the specified context.  */
 
@@ -1974,8 +1997,7 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
   local_vars_transform *lvd = (local_vars_transform *) d;
 
   /* For each var in this bind expr (that has a frame id, which means it was
-     accessed), build a frame reference for each and then walk the bind expr
-     statements, substituting the frame ref for the original var.  */
+     accessed), build a frame reference and add it as the DECL_VALUE_EXPR.  */
 
   if (TREE_CODE (*stmt) == BIND_EXPR)
     {
@@ -1991,13 +2013,9 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  /* Re-write the variable's context to be in the actor func.  */
 	  DECL_CONTEXT (lvar) = lvd->context;
 
-	/* For capture proxies, this could include the decl value expr.  */
-	if (local_var.is_lambda_capture || local_var.has_value_expr_p)
-	  {
-	    tree ve = DECL_VALUE_EXPR (lvar);
-	    cp_walk_tree (&ve, transform_local_var_uses, d, NULL);
+	  /* For capture proxies, this could include the decl value expr.  */
+	  if (local_var.is_lambda_capture || local_var.has_value_expr_p)
 	    continue; /* No frame entry for this.  */
-	  }
 
 	  /* TODO: implement selective generation of fields when vars are
 	     known not-used.  */
@@ -2011,103 +2029,13 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  tree fld_idx = build3_loc (lvd->loc, COMPONENT_REF, TREE_TYPE (lvar),
 				     lvd->actor_frame, fld_ref, NULL_TREE);
 	  local_var.field_idx = fld_idx;
-	}
-      /* FIXME: we should be able to do this in the loop above, but (at least
-	 for range for) there are cases where the DECL_INITIAL contains
-	 forward references.
-	 So, now we've built the revised var in the frame, substitute uses of
-	 it in initializers and the bind expr body.  */
-      for (lvar = BIND_EXPR_VARS (*stmt); lvar != NULL;
-	   lvar = DECL_CHAIN (lvar))
-	{
-	  /* we need to walk some of the decl trees, which might contain
-	     references to vars replaced at a higher level.  */
-	  cp_walk_tree (&DECL_INITIAL (lvar), transform_local_var_uses, d,
-			NULL);
-	  cp_walk_tree (&DECL_SIZE (lvar), transform_local_var_uses, d, NULL);
-	  cp_walk_tree (&DECL_SIZE_UNIT (lvar), transform_local_var_uses, d,
-			NULL);
+	  SET_DECL_VALUE_EXPR (lvar, fld_idx);
+	  DECL_HAS_VALUE_EXPR_P (lvar) = true;
 	}
       cp_walk_tree (&BIND_EXPR_BODY (*stmt), transform_local_var_uses, d, NULL);
-
-      /* Now we have processed and removed references to the original vars,
-	 we can drop those from the bind - leaving capture proxies alone.  */
-      for (tree *pvar = &BIND_EXPR_VARS (*stmt); *pvar != NULL;)
-	{
-	  bool existed;
-	  local_var_info &local_var
-	    = lvd->local_var_uses->get_or_insert (*pvar, &existed);
-	  gcc_checking_assert (existed);
-
-	  /* Leave lambda closure captures alone, we replace the *this
-	     pointer with the frame version and let the normal process
-	     deal with the rest.
-	     Likewise, variables with their value found elsewhere.
-	     Skip past unused ones too.  */
-	  if (local_var.is_lambda_capture
-	     || local_var.has_value_expr_p
-	     || local_var.field_id == NULL_TREE)
-	    {
-	      pvar = &DECL_CHAIN (*pvar);
-	      continue;
-	    }
-
-	  /* Discard this one, we replaced it.  */
-	  *pvar = DECL_CHAIN (*pvar);
-	}
-
       *do_subtree = 0; /* We've done the body already.  */
       return NULL_TREE;
     }
-
-  tree var_decl = *stmt;
-  /* Look inside cleanups, we don't want to wrap a statement list in a
-     cleanup.  */
-  bool needs_cleanup = true;
-  if (TREE_CODE (var_decl) == CLEANUP_POINT_EXPR)
-    var_decl = TREE_OPERAND (var_decl, 0);
-  else
-    needs_cleanup = false;
-
-  /* Look inside the decl_expr for the actual var.  */
-  bool decl_expr_p = TREE_CODE (var_decl) == DECL_EXPR;
-  if (decl_expr_p && TREE_CODE (DECL_EXPR_DECL (var_decl)) == VAR_DECL)
-    var_decl = DECL_EXPR_DECL (var_decl);
-  else if (TREE_CODE (var_decl) != VAR_DECL)
-    return NULL_TREE;
-
-  /* VAR_DECLs that are not recorded can belong to the proxies we've placed
-     for the promise and coroutine handle(s), to global vars or to compiler
-     temporaries.  Skip past these, we will handle them later.  */
-  local_var_info *local_var_i = lvd->local_var_uses->get (var_decl);
-
-  if (local_var_i == NULL)
-    return NULL_TREE;
-
-  if (local_var_i->is_lambda_capture
-      || local_var_i->is_static
-      || local_var_i->has_value_expr_p)
-    return NULL_TREE;
-
-  /* This is our revised 'local' i.e. a frame slot.  */
-  tree revised = local_var_i->field_idx;
-  gcc_checking_assert (DECL_CONTEXT (var_decl) == lvd->context);
-
-  if (decl_expr_p && DECL_INITIAL (var_decl))
-    {
-      location_t loc = DECL_SOURCE_LOCATION (var_decl);
-      tree r
-	= cp_build_modify_expr (loc, revised, INIT_EXPR,
-				DECL_INITIAL (var_decl), tf_warning_or_error);
-      if (needs_cleanup)
-	r = coro_build_cvt_void_expr_stmt (r, EXPR_LOCATION (*stmt));
-      *stmt = r;
-    }
-  else
-    *stmt = revised;
-
-  if (decl_expr_p)
-    *do_subtree = 0; /* We've accounted for the nested use.  */
   return NULL_TREE;
 }
 
@@ -2208,12 +2136,10 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree top_block = make_node (BLOCK);
   BIND_EXPR_BLOCK (actor_bind) = top_block;
 
-  tree continuation = build_lang_decl (VAR_DECL,
-				       get_identifier ("actor.continue"),
-				       void_coro_handle_type);
-  DECL_ARTIFICIAL (continuation) = 1;
-  DECL_IGNORED_P (continuation) = 1;
-  DECL_CONTEXT (continuation) = actor;
+  tree continuation = coro_build_artificial_var (loc, "_Coro_actor_continue",
+						 void_coro_handle_type, actor,
+						 NULL_TREE);
+
   BIND_EXPR_VARS (actor_bind) = continuation;
 
   /* Link in the block associated with the outer scope of the re-written
@@ -3959,8 +3885,6 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 
   if (TREE_CODE (*stmt) == BIND_EXPR)
     {
-      lvd->bind_indx++;
-      lvd->nest_depth++;
       tree lvar;
       for (lvar = BIND_EXPR_VARS (*stmt); lvar != NULL;
 	   lvar = DECL_CHAIN (lvar))
@@ -3999,11 +3923,17 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	    continue;
 
 	  /* Make names depth+index unique, so that we can support nested
-	     scopes with identically named locals.  */
+	     scopes with identically named locals and still be able to
+	     identify them in the coroutine frame.  */
 	  tree lvname = DECL_NAME (lvar);
 	  char *buf;
-	  if (lvname != NULL_TREE)
-	    buf = xasprintf ("__%s.%u.%u", IDENTIFIER_POINTER (lvname),
+	  /* The outermost bind scope contains the artificial variables that
+	     we inject to implement the coro state machine.  We want to be able
+	     to inspect these in debugging.  */
+	  if (lvname != NULL_TREE && lvd->nest_depth == 0)
+	    buf = xasprintf ("%s", IDENTIFIER_POINTER (lvname));
+	  else if (lvname != NULL_TREE)
+	    buf = xasprintf ("%s_%u_%u", IDENTIFIER_POINTER (lvname),
 			     lvd->nest_depth, lvd->bind_indx);
 	  else
 	    buf = xasprintf ("_D%u.%u.%u", DECL_UID (lvar), lvd->nest_depth,
@@ -4016,6 +3946,8 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  /* We don't walk any of the local var sub-trees, they won't contain
 	     any bind exprs.  */
 	}
+      lvd->bind_indx++;
+      lvd->nest_depth++;
       cp_walk_tree (&BIND_EXPR_BODY (*stmt), register_local_var_uses, d, NULL);
       *do_subtree = 0; /* We've done this.  */
       lvd->nest_depth--;
@@ -4164,12 +4096,13 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
 					 fn_start, NULL, /*musthave=*/true);
       /* Create and initialize the initial-await-resume-called variable per
 	 [dcl.fct.def.coroutine] / 5.3.  */
-      tree i_a_r_c = build_lang_decl (VAR_DECL, get_identifier ("i_a_r_c"),
-				      boolean_type_node);
-      DECL_ARTIFICIAL (i_a_r_c) = true;
+      tree i_a_r_c
+	= coro_build_artificial_var (fn_start,
+				     "_Coro_initial_await_resume_called",
+				     boolean_type_node, orig,
+				     boolean_false_node);
       DECL_CHAIN (i_a_r_c) = var_list;
       var_list = i_a_r_c;
-      DECL_INITIAL (i_a_r_c) = boolean_false_node;
       add_decl_expr (i_a_r_c);
       /* Start the try-catch.  */
       tree tcb = build_stmt (fn_start, TRY_BLOCK, NULL_TREE, NULL_TREE);
@@ -4554,8 +4487,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   add_stmt (ramp_bind);
   tree ramp_body = push_stmt_list ();
 
-  tree coro_fp = build_lang_decl (VAR_DECL, get_identifier ("coro.frameptr"),
-				  coro_frame_ptr);
+  tree zeroinit = build1_loc (fn_start, CONVERT_EXPR,
+			      coro_frame_ptr, integer_zero_node);
+  tree coro_fp = coro_build_artificial_var (fn_start, "_Coro_frameptr",
+					    coro_frame_ptr, orig, zeroinit);
   tree varlist = coro_fp;
 
   /* To signal that we need to cleanup copied function args.  */
@@ -4573,21 +4508,19 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Signal that we need to clean up the promise object on exception.  */
   tree coro_promise_live
-   = build_lang_decl (VAR_DECL, get_identifier ("coro.promise.live"),
-		      boolean_type_node);
-  DECL_ARTIFICIAL (coro_promise_live) = true;
+    = coro_build_artificial_var (fn_start, "_Coro_promise_live",
+				 boolean_type_node, orig, boolean_false_node);
   DECL_CHAIN (coro_promise_live) = varlist;
   varlist = coro_promise_live;
-  DECL_INITIAL (coro_promise_live) = boolean_false_node;
+
   /* When the get-return-object is in the RETURN slot, we need to arrange for
      cleanup on exception.  */
   tree coro_gro_live
-   = build_lang_decl (VAR_DECL, get_identifier ("coro.gro.live"),
-		      boolean_type_node);
-  DECL_ARTIFICIAL (coro_gro_live) = true;
+    = coro_build_artificial_var (fn_start, "_Coro_gro_live",
+				 boolean_type_node, orig, boolean_false_node);
+
   DECL_CHAIN (coro_gro_live) = varlist;
   varlist = coro_gro_live;
-  DECL_INITIAL (coro_gro_live) = boolean_false_node;
 
   /* Collected the scope vars we need ... only one for now. */
   BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
@@ -4603,8 +4536,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* The decl_expr for the coro frame pointer, initialize to zero so that we
      can pass it to the IFN_CO_FRAME (since there's no way to pass a type,
      directly apparently).  This avoids a "used uninitialized" warning.  */
-  tree zeroinit = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
-  DECL_INITIAL (coro_fp) = zeroinit;
+
   add_decl_expr (coro_fp);
   if (flag_exceptions && DECL_ARGUMENTS (orig))
     for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
@@ -5064,10 +4996,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     {
       /* ... or ... Construct an object that will be used as the single
 	param to the CTOR for the return object.  */
-      gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"), gro_type);
-      DECL_CONTEXT (gro) = current_scope ();
-      DECL_ARTIFICIAL (gro) = true;
-      DECL_IGNORED_P (gro) = true;
+      gro = coro_build_artificial_var (fn_start, "_Coro_gro", gro_type, orig,
+				       NULL_TREE);
       add_decl_expr (gro);
       gro_bind_vars = gro;
       r = cp_build_modify_expr (input_location, gro, INIT_EXPR, get_ro,

@@ -593,7 +593,7 @@ enum aarch64_simd_type
 };
 #undef ENTRY
 
-struct aarch64_simd_type_info
+struct GTY(()) aarch64_simd_type_info
 {
   enum aarch64_simd_type type;
 
@@ -625,14 +625,14 @@ struct aarch64_simd_type_info
 
 #define ENTRY(E, M, Q, G)  \
   {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, E_##M##mode, qualifier_##Q},
-static struct aarch64_simd_type_info aarch64_simd_types [] = {
+static GTY(()) struct aarch64_simd_type_info aarch64_simd_types [] = {
 #include "aarch64-simd-builtin-types.def"
 };
 #undef ENTRY
 
-static tree aarch64_simd_intOI_type_node = NULL_TREE;
-static tree aarch64_simd_intCI_type_node = NULL_TREE;
-static tree aarch64_simd_intXI_type_node = NULL_TREE;
+static GTY(()) tree aarch64_simd_intOI_type_node = NULL_TREE;
+static GTY(()) tree aarch64_simd_intCI_type_node = NULL_TREE;
+static GTY(()) tree aarch64_simd_intXI_type_node = NULL_TREE;
 
 /* The user-visible __fp16 type, and a pointer to that type.  Used
    across the back-end.  */

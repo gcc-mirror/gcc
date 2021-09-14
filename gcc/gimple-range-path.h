@@ -41,10 +41,13 @@ public:
 			  const bitmap_head *imports);
   bool range_of_expr (irange &r, tree name, gimple * = NULL) override;
   bool range_of_stmt (irange &r, gimple *, tree name = NULL) override;
+  bool unreachable_path_p ();
   void dump (FILE *) override;
   void debug ();
 
 private:
+  bool internal_range_of_expr (irange &r, tree name, gimple *);
+
   // Cache manipulation.
   void set_cache (const irange &r, tree name);
   bool get_cache (irange &r, tree name);
@@ -53,6 +56,7 @@ private:
   // Methods to precompute ranges for the given path.
   bool range_defined_in_block (irange &, tree name, basic_block bb);
   void precompute_ranges_in_block (basic_block bb);
+  void adjust_for_non_null_uses (basic_block bb);
   void ssa_range_in_phi (irange &r, gphi *phi);
 
   // Path navigation.
@@ -80,6 +84,10 @@ private:
 
   const bitmap_head *m_imports;
   gimple_ranger &m_ranger;
+  non_null_ref m_non_null;
+
+  // Set if there were any undefined expressions while pre-calculating path.
+  bool m_undefined_path;
 };
 
 #endif // GCC_TREE_SSA_THREADSOLVER_H

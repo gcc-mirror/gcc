@@ -8807,8 +8807,6 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   edge e;
   enum built_in_function fncode;
 
-  /* ??? We need a non-pointer interface to __atomic_compare_exchange in
-     order to use the RELAXED memory model effectively.  */
   fncode = (enum built_in_function)((int)BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N
 				    + index + 1);
   cmpxchg = builtin_decl_explicit (fncode);
@@ -8825,6 +8823,15 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   /* Load the initial value, replacing the GIMPLE_OMP_ATOMIC_LOAD.  */
   si = gsi_last_nondebug_bb (load_bb);
   gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_ATOMIC_LOAD);
+  location_t loc = gimple_location (gsi_stmt (si));
+  enum omp_memory_order omo = gimple_omp_atomic_memory_order (gsi_stmt (si));
+  enum memmodel imo = omp_memory_order_to_memmodel (omo);
+  tree mo = build_int_cst (NULL, imo);
+  if (imo == MEMMODEL_RELEASE)
+    imo = MEMMODEL_RELAXED;
+  else if (imo == MEMMODEL_ACQ_REL)
+    imo = MEMMODEL_ACQUIRE;
+  tree fmo = build_int_cst (NULL, imo);
 
   /* For floating-point values, we'll need to view-convert them to integers
      so that we can perform the atomic compare and swap.  Simplify the
@@ -8921,7 +8928,15 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
 				  GSI_SAME_STMT);
 
   /* Build the compare&swap statement.  */
-  new_storedi = build_call_expr (cmpxchg, 3, iaddr, loadedi, storedi);
+  tree ctype = build_complex_type (itype);
+  int flag = int_size_in_bytes (itype);
+  new_storedi = build_call_expr_internal_loc (loc, IFN_ATOMIC_COMPARE_EXCHANGE,
+					      ctype, 6, iaddr, loadedi,
+					      storedi,
+					      build_int_cst (integer_type_node,
+							     flag),
+					      mo, fmo);
+  new_storedi = build1 (REALPART_EXPR, itype, new_storedi);
   new_storedi = force_gimple_operand_gsi (&si,
 					  fold_convert (TREE_TYPE (loadedi),
 							new_storedi),

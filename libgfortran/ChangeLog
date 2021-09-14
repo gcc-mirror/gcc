@@ -1,3 +1,19 @@
+2021-09-02  Sandra Loosemore  <sandra@codesourcery.com>
+	    José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100907
+	PR fortran/100911
+	PR fortran/100914
+	PR fortran/100915
+	PR fortran/100917
+	* ISO_Fortran_binding-1-tmpl.h (CFI_type_cfunptr): Make equivalent
+	to CFI_type_cptr.
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Fix
+	handling of CFI_type_cptr and CFI_type_cfunptr.  Additional error
+	checking and code cleanup.
+	(gfc_desc_to_cfi_desc): Likewise.  Also correct kind mapping
+	for character, complex, and long double types.
+
 2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.am: Use configured libm availability.

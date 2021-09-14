@@ -58,4 +58,18 @@ range_tracer::header (const char *str)
     return do_header (str);
   return 0;
 }
+
+// RAII class to change current dump_file and dump_flags, and restore
+// when the object goes out of scope.
+
+class push_dump_file
+{
+public:
+  push_dump_file (FILE *, dump_flags_t);
+  ~push_dump_file ();
+private:
+  FILE *old_dump_file;
+  dump_flags_t old_dump_flags;
+};
+
 #endif // GCC_GIMPLE_RANGE_TRACE_H

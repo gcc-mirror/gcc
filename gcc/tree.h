@@ -2852,16 +2852,34 @@ extern void decl_value_expr_insert (tree, tree);
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
 #define DECL_PACKED(NODE) (FIELD_DECL_CHECK (NODE)->base.u.bits.packed_flag)
 
+/* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
+   specially.  */
+#define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_1)
+
 /* In a FIELD_DECL, indicates this field should be ignored for ABI decisions
    like passing/returning containing struct by value.
    Set for C++17 empty base artificial FIELD_DECLs as well as
    empty [[no_unique_address]] non-static data members.  */
 #define DECL_FIELD_ABI_IGNORED(NODE) \
-  (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_0)
+  (!DECL_BIT_FIELD (NODE) && (NODE)->decl_common.decl_flag_0)
+#define SET_DECL_FIELD_ABI_IGNORED(NODE, VAL) \
+  do {									\
+    gcc_checking_assert (!DECL_BIT_FIELD (NODE));			\
+    FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_0 = (VAL);		\
+  } while (0)
 
-/* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
-   specially.  */
-#define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_1)
+/* In a FIELD_DECL, indicates C++ zero-width bitfield that used to be
+   removed from the IL since PR42217 until PR101539 and by that changed
+   the ABI on several targets.  This flag is provided so that the backends
+   can decide on the ABI with zero-width bitfields and emit -Wpsabi
+   warnings.  */
+#define DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD(NODE) \
+  (DECL_BIT_FIELD (NODE) && (NODE)->decl_common.decl_flag_0)
+#define SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD(NODE, VAL) \
+  do {									\
+    gcc_checking_assert (DECL_BIT_FIELD (NODE));			\
+    FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_0 = (VAL);		\
+  } while (0)
 
 /* Used in a FIELD_DECL to indicate that we cannot form the address of
    this component.  This makes it possible for Type-Based Alias Analysis
