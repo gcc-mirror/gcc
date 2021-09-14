@@ -4257,6 +4257,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
      handling alignment and possible padding.  */
   if (is_type && (!gnu_decl || this_made_decl))
     {
+      const bool is_by_ref = Is_By_Reference_Type (gnat_entity);
+
       gcc_assert (!TYPE_IS_DUMMY_P (gnu_type));
 
       /* Process the attributes, if not already done.  Note that the type is
@@ -4271,15 +4273,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 non-constant).  */
       if (!gnu_size && kind != E_String_Literal_Subtype)
 	{
+	  const char *size_s = "size for %s too small{, minimum allowed is ^}";
+	  const char *type_s = is_by_ref ? "by-reference type &" : "&";
+
 	  if (Known_Esize (gnat_entity))
 	    gnu_size
 	      = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
-			       VAR_DECL, false, false, NULL, NULL);
+			       VAR_DECL, false, false, size_s, type_s);
 	  else
 	    gnu_size
 	      = validate_size (RM_Size (gnat_entity), gnu_type, gnat_entity,
 			       TYPE_DECL, false, Has_Size_Clause (gnat_entity),
-			       NULL, NULL);
+			       size_s, type_s);
 	}
 
       /* If a size was specified, see if we can make a new type of that size
@@ -4582,7 +4587,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    TYPE_ALIGN_OK (gnu_type) = 1;
 
 	  /* Record whether the type is passed by reference.  */
-	  if (Is_By_Reference_Type (gnat_entity) && !VOID_TYPE_P (gnu_type))
+	  if (is_by_ref && !VOID_TYPE_P (gnu_type))
 	    TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
 	  /* Record whether an alignment clause was specified.  */
@@ -9037,7 +9042,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
       char buf[128];
       const char *s;
 
-      if (kind == FIELD_DECL)
+      if (s1 && s2)
 	{
 	  snprintf (buf, sizeof (buf), s1, s2);
 	  s = buf;
@@ -9046,6 +9051,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
 	s = "component size for& too small{, minimum allowed is ^}";
       else
 	s = "size for& too small{, minimum allowed is ^}";
+
       post_error_ne_tree (s, gnat_error_node, gnat_object, old_size);
 
       return NULL_TREE;
