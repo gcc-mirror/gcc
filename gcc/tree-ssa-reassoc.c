@@ -180,6 +180,10 @@ along with GCC; see the file COPYING3.  If not see
    point 3a in the pass header comment.  */
 static bool reassoc_insert_powi_p;
 
+/* Enable biasing ranks of loop accumulators.  We don't want this before
+   vectorization, since it interferes with reduction chains.  */
+static bool reassoc_bias_loop_carried_phi_ranks_p;
+
 /* Statistics */
 static struct
 {
@@ -268,6 +272,9 @@ phi_rank (gimple *stmt)
   unsigned i;
   use_operand_p use;
   gimple *use_stmt;
+
+  if (!reassoc_bias_loop_carried_phi_ranks_p)
+    return bb_rank[bb->index];
 
   /* We only care about real loops (those with a latch).  */
   if (!father->latch)
@@ -6940,9 +6947,10 @@ fini_reassoc (void)
    optimization of a gimple conditional.  Otherwise returns zero.  */
 
 static unsigned int
-execute_reassoc (bool insert_powi_p)
+execute_reassoc (bool insert_powi_p, bool bias_loop_carried_phi_ranks_p)
 {
   reassoc_insert_powi_p = insert_powi_p;
+  reassoc_bias_loop_carried_phi_ranks_p = bias_loop_carried_phi_ranks_p;
 
   init_reassoc ();
 
@@ -6983,15 +6991,19 @@ public:
     {
       gcc_assert (n == 0);
       insert_powi_p = param;
+      bias_loop_carried_phi_ranks_p = !param;
     }
   virtual bool gate (function *) { return flag_tree_reassoc != 0; }
   virtual unsigned int execute (function *)
-    { return execute_reassoc (insert_powi_p); }
+  {
+    return execute_reassoc (insert_powi_p, bias_loop_carried_phi_ranks_p);
+  }
 
  private:
   /* Enable insertion of __builtin_powi calls during execute_reassoc.  See
      point 3a in the pass header comment.  */
   bool insert_powi_p;
+  bool bias_loop_carried_phi_ranks_p;
 }; // class pass_reassoc
 
 } // anon namespace

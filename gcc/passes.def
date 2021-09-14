@@ -243,7 +243,7 @@ along with GCC; see the file COPYING3.  If not see
       /* Identify paths that should never be executed in a conforming
 	 program and isolate those paths.  */
       NEXT_PASS (pass_isolate_erroneous_paths);
-      NEXT_PASS (pass_reassoc, true /* insert_powi_p */);
+      NEXT_PASS (pass_reassoc, true /* early_p */);
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt, false /* early_p */);
@@ -326,7 +326,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_lower_switch);
       NEXT_PASS (pass_cse_reciprocals);
-      NEXT_PASS (pass_reassoc, false /* insert_powi_p */);
+      NEXT_PASS (pass_reassoc, false /* early_p */);
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_split_paths);
       NEXT_PASS (pass_tracer);
