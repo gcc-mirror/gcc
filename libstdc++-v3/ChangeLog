@@ -1,3 +1,8 @@
+2021-09-13  Jason Merrill  <jason@redhat.com>
+
+	* include/std/version: Define __cpp_lib_hardware_interference_size.
+	* libsupc++/new: Define hardware interference size variables.
+
 2021-09-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/net/internet/resolver/ops/lookup.cc:

@@ -1,3 +1,9 @@
+2021-09-13  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* ISO_Fortran_binding.h (CFI_type_long_double)
+	(CFI_type_long_double_Complex) [LDBL_MANT_DIG == 64 &&
+	LDBL_MIN_EXP == -16382 && LDBL_MAX_EXP == 16384]: Define.
+
 2021-09-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	* Makefile.am (gfor_built_src): Depend on

@@ -1,3 +1,104 @@
+2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82314
+	* gfortran.dg/pr82314.f90: New test.
+
+2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85130
+	* gfortran.dg/substr_6.f90: Revert commit r8-7574, adding again
+	test that was erroneously considered as illegal.
+
+2021-09-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/Winterference.H: New file.
+	* g++.dg/warn/Winterference.C: New test.
+	* g++.target/aarch64/interference.C: New test.
+	* g++.target/arm/interference.C: New test.
+	* g++.target/i386/interference.C: New test.
+	* g++.dg/warn/Winterference-2.C: New file.
+
+2021-09-13  Martin Liska  <mliska@suse.cz>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101696
+	* g++.target/i386/mv30.C: New test.
+	* gcc.target/i386/mvc16.c: New test.
+	* gcc.target/i386/builtin_target.c (CHECK___builtin_cpu_supports):
+	New.
+
+2021-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/95969
+	* gcc.target/aarch64/lane-bound-1.c: New test.
+	* gcc.target/aarch64/lane-bound-2.c: New test.
+
+2021-09-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/102252
+	* g++.target/aarch64/sve/pr102252.C: New test.
+
+2021-09-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/pr21417.c: Adjust for FSM removal.
+	* gcc.dg/tree-ssa/pr66752-3.c: Same.
+	* gcc.dg/tree-ssa/pr68198.c: Same.
+	* gcc.dg/tree-ssa/pr69196-1.c: Same.
+	* gcc.dg/tree-ssa/pr70232.c: Same.
+	* gcc.dg/tree-ssa/pr77445.c: Same.
+	* gcc.dg/tree-ssa/ranger-threader-4.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-18.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-6.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-13.c: Same.
+
+2021-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101764
+	* g++.dg/cpp1z/constexpr-if35.C: New test.
+
+2021-09-13  Martin Liska  <mliska@suse.cz>
+
+	PR c++/101331
+	* g++.dg/pr101331.C: New test.
+
+2021-09-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust for aarch64.
+
+2021-09-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101935
+	* g++.target/i386/pr80566-1.C: Add
+	-mtune-ctrl=avx256_store_by_pieces.
+	* gcc.target/i386/pr100865-4a.c: Likewise.
+	* gcc.target/i386/pr100865-10a.c: Likewise.
+	* gcc.target/i386/pr90773-20.c: Likewise.
+	* gcc.target/i386/pr90773-21.c: Likewise.
+	* gcc.target/i386/pr90773-22.c: Likewise.
+	* gcc.target/i386/pr90773-23.c: Likewise.
+	* g++.target/i386/pr80566-2.C: Add
+	-mtune-ctrl=avx256_move_by_pieces.
+	* gcc.target/i386/eh_return-1.c: Likewise.
+	* gcc.target/i386/pr90773-26.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-12.c: Replace -mtune=haswell
+	with -mtune-ctrl=avx256_move_by_pieces.
+	* gcc.target/i386/pieces-memcpy-15.c: Likewise.
+	* gcc.target/i386/pieces-memset-2.c: Replace -mtune=haswell
+	with -mtune-ctrl=avx256_store_by_pieces.
+	* gcc.target/i386/pieces-memset-5.c: Likewise.
+	* gcc.target/i386/pieces-memset-11.c: Likewise.
+	* gcc.target/i386/pieces-memset-14.c: Likewise.
+	* gcc.target/i386/pieces-memset-20.c: Likewise.
+	* gcc.target/i386/pieces-memset-23.c: Likewise.
+	* gcc.target/i386/pieces-memset-29.c: Likewise.
+	* gcc.target/i386/pieces-memset-30.c: Likewise.
+	* gcc.target/i386/pieces-memset-33.c: Likewise.
+	* gcc.target/i386/pieces-memset-34.c: Likewise.
+	* gcc.target/i386/pieces-memset-44.c: Likewise.
+	* gcc.target/i386/pieces-memset-37.c: Replace -mtune=generic
+	with -mtune-ctrl=avx256_store_by_pieces.
+
 2021-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/102185

@@ -1,3 +1,231 @@
+2021-09-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR bootstrap/101574
+	* diagnostic-spec.c (warning_suppressed_at, copy_warning): Handle
+	'RESERVED_LOCATION_P' locations.
+	* warning-control.cc (get_nowarn_spec, suppress_warning)
+	(copy_warning): Likewise.
+
+2021-09-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* diagnostic-spec.h (typedef xint_hash_t): Use 'location_t' instead of...
+	(typedef key_type_t): ... this.  Remove.
+	(nowarn_map): Document.
+	* diagnostic-spec.c (nowarn_map): Likewise.
+	* warning-control.cc (convert_to_key): Evolve functions into...
+	(get_location): ... these.  Adjust all users.
+
+2021-09-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* warning-control.cc (copy_warning): Remove 'nowarn_map' setup.
+
+2021-09-13  Jason Merrill  <jason@redhat.com>
+
+	* params.opt: Add destructive-interference-size and
+	constructive-interference-size.
+	* doc/invoke.texi: Document them.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Set them.
+	* config/arm/arm.c (arm_option_override): Set them.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Set them.
+
+2021-09-13  Martin Liska  <mliska@suse.cz>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101696
+	* common/config/i386/cpuinfo.h (cpu_indicator_init): Add support
+	for x86-64 micro levels for __builtin_cpu_supports.
+	* common/config/i386/i386-cpuinfo.h (enum feature_priority):
+	Add priorities for the micro-arch levels.
+	(enum processor_features): Add new features.
+	* common/config/i386/i386-isas.h: Add micro-arch features.
+	* config/i386/i386-builtins.c (get_builtin_code_for_version):
+	Support the micro-arch levels by callsing
+	__builtin_cpu_supports.
+	* doc/extend.texi: Document that the levels are support by
+	  __builtin_cpu_supports.
+
+2021-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/95969
+	* config/aarch64/aarch64-builtins.c (aarch64_fold_builtin_lane_check):
+	New function.
+	(aarch64_general_fold_builtin): Handle AARCH64_SIMD_BUILTIN_LANE_CHECK.
+	(aarch64_general_gimple_fold_builtin): Likewise.
+
+2021-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	* config.gcc: Add m32r-*-linux* and m32rle-*-linux*
+	to the Unsupported targets list.
+	Remove support for m32r-*-linux* and m32rle-*-linux*.
+	* config/m32r/linux.h: Removed.
+	* config/m32r/t-linux: Removed.
+
+2021-09-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/102252
+	* config/aarch64/aarch64.c (aarch64_classify_address): Don't allow
+	register index for SVE predicate modes.
+
+2021-09-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c
+	(back_threader_profitability::profitable_path_p): Remove FSM
+	references.
+	(back_threader_registry::register_path): Same.
+	* tree-ssa-threadedge.c
+	(jump_threader::simplify_control_stmt_condition): Same.
+	* tree-ssa-threadupdate.c (jt_path_registry::jt_path_registry):
+	Add backedge_threads argument.
+	(fwd_jt_path_registry::fwd_jt_path_registry): Pass
+	backedge_threads argument.
+	(back_jt_path_registry::back_jt_path_registry):  Same.
+	(dump_jump_thread_path): Adjust for FSM removal.
+	(back_jt_path_registry::rewire_first_differing_edge): Same.
+	(back_jt_path_registry::adjust_paths_after_duplication): Same.
+	(back_jt_path_registry::update_cfg): Same.
+	(jt_path_registry::register_jump_thread): Same.
+	* tree-ssa-threadupdate.h (enum jump_thread_edge_type): Remove
+	EDGE_FSM_THREAD.
+	(class back_jt_path_registry): Add backedge_threads to
+	constructor.
+
+2021-09-13  Martin Liska  <mliska@suse.cz>
+
+	PR c++/101331
+	* asan.h (sanitize_coverage_p): Handle when fn == NULL.
+
+2021-09-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101935
+	* config/i386/i386.h (TARGET_AVX256_MOVE_BY_PIECES): New.
+	(TARGET_AVX256_STORE_BY_PIECES): Likewise.
+	(MOVE_MAX): Check TARGET_AVX256_MOVE_BY_PIECES and
+	TARGET_AVX256_STORE_BY_PIECES instead of
+	TARGET_AVX256_SPLIT_UNALIGNED_LOAD and
+	TARGET_AVX256_SPLIT_UNALIGNED_STORE.
+	(STORE_MAX_PIECES): Check TARGET_AVX256_STORE_BY_PIECES instead
+	of TARGET_AVX256_SPLIT_UNALIGNED_STORE.
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_MOVE_BY_PIECES): New.
+	(X86_TUNE_AVX256_STORE_BY_PIECES): Likewise.
+
+2021-09-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR bootstrap/102302
+	* expmed.c (extract_bit_field_using_extv): Use
+	gen_lowpart_if_possible instead of gen_lowpart to avoid ICE.
+
+2021-09-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add value-pointer-equiv.o.
+	* gimple-ssa-evrp.c (class ssa_equiv_stack): Move to
+	value-pointer-equiv.*.
+	(ssa_equiv_stack::ssa_equiv_stack): Same.
+	(ssa_equiv_stack::enter): Same.
+	(ssa_equiv_stack::leave): Same.
+	(ssa_equiv_stack::push_replacement): Same.
+	(ssa_equiv_stack::get_replacement): Same.
+	(is_pointer_ssa): Same.
+	(class pointer_equiv_analyzer): Same.
+	(pointer_equiv_analyzer::pointer_equiv_analyzer): Same.
+	(pointer_equiv_analyzer::~pointer_equiv_analyzer): Same.
+	(pointer_equiv_analyzer::set_global_equiv): Same.
+	(pointer_equiv_analyzer::set_cond_equiv): Same.
+	(pointer_equiv_analyzer::get_equiv): Same.
+	(pointer_equiv_analyzer::enter): Same.
+	(pointer_equiv_analyzer::leave): Same.
+	(pointer_equiv_analyzer::get_equiv_expr): Same.
+	(pta_valueize): Same.
+	(pointer_equiv_analyzer::visit_stmt): Same.
+	(pointer_equiv_analyzer::visit_edge): Same.
+	(hybrid_folder::value_of_expr): Same.
+	(hybrid_folder::value_on_edge): Same.
+	* value-pointer-equiv.cc: New file.
+	* value-pointer-equiv.h: New file.
+
+2021-09-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102125
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Allow folding
+	memcpy if the size is not more than MOVE_MAX * MOVE_RATIO.
+
+2021-09-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102125
+	* config/arm/arm.md (movmisaligndi): New define_expand.
+	* config/arm/vec-common.md (movmisalign<mode>): Iterate over VDQ mode.
+
+2021-09-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102125
+	* emit-rtl.c (gen_highpart): Use adjust_address to handle
+	MEM rather than calling simplify_gen_subreg.
+
+2021-09-13  Jan-Benedict Glaw  <jbglaw@ług-owl.de>
+
+	* config/alpha/vms.h (INIT_CUMULATIVE_ARGS): Wrap multi-statment
+	define into a block.
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/darwin.h (DARWIN_PREFER_DWARF): Do not define.
+	* config/i386/darwin.h (PREFERRED_DEBUGGING_TYPE): Do not
+	change based on DARWIN_PREFER_DWARF not being defined.
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/lynx.h: Remove undef of PREFERRED_DEBUGGING_TYPE
+	to inherit from elfos.h
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Add cr16-*-* to the list of obsoleted targets.
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/avr/elf.h (PREFERRED_DEBUGGING_TYPE): Remove
+	override, pick up DWARF2_DEBUG define from elfos.h
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/rx/rx.h (PREFERRED_DEBUGGING_TYPE): Always define to
+	DWARF2_DEBUG.
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/alpha/vms.h (PREFERRED_DEBUGGING_TYPE): Define to
+	DWARF2_DEBUG.
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/cygming.h: Always default to DWARF2 debugging.
+	Do not define DBX_DEBUGGING_INFO, that's done via dbxcoff.h
+	already.
+	* doc/install.texi: Document binutils 2.16 as minimum
+	requirement for mingw.
+
+2021-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (struct rs6000_cost_data): New members
+	nstmts, nloads and extra_ctor_cost.
+	(rs6000_density_test): Add load density related heuristics.  Do
+	extra costing on vector construction statements if need.
+	(rs6000_init_cost): Init new members.
+	(rs6000_update_target_cost_per_stmt): New function.
+	(rs6000_add_stmt_cost): Factor vect_nonmem hunk out to function
+	rs6000_update_target_cost_per_stmt and call it.
+
+2021-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (struct rs6000_cost_data): Remove typedef.
+	(rs6000_init_cost): Adjust.
+
+2021-09-13  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md: (UNSPEC_COPYSIGN): Remove.
+	(UNSPEC_XORSIGN): Ditto.
+
 2021-09-12  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* expr.c (convert_move): Preserve SUBREG_PROMOTED_VAR_P when

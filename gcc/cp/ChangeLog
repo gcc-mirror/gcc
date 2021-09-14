@@ -1,3 +1,28 @@
+2021-09-13  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (maybe_warn_about_constant_value):
+	Complain about std::hardware_destructive_interference_size.
+	(cxx_eval_constant_expression): Call it.
+	* decl.c (cxx_init_decl_processing): Check
+	--param *-interference-size values.
+
+2021-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101764
+	* cp-tree.h (PACK_EXPANSION_FORCE_EXTRA_ARGS_P): New accessor
+	macro.
+	* pt.c (has_extra_args_mechanism_p): New function.
+	(find_parameter_pack_data::found_extra_args_tree_p): New data
+	member.
+	(find_parameter_packs_r): Set ppd->found_extra_args_tree_p
+	appropriately.
+	(make_pack_expansion): Set PACK_EXPANSION_FORCE_EXTRA_ARGS_P if
+	ppd.found_extra_args_tree_p.
+	(use_pack_expansion_extra_args_p): Return true if there were
+	unsubstituted packs and PACK_EXPANSION_FORCE_EXTRA_ARGS_P.
+	(tsubst_pack_expansion): Pass the pack expansion to
+	use_pack_expansion_extra_args_p.
+
 2021-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_atomic): Allow acq_rel on atomic read/write

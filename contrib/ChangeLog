@@ -1,3 +1,12 @@
+2021-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	* config-list.mk: Remove m32r-linux and m32rle-linux
+	from the list.
+
+2021-09-13  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config-list.mk (LIST): --enable-obsolete for cr16-elf.
+
 2021-09-06  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
 
 	* gcc_update: Derive human readable name for HEAD using git describe

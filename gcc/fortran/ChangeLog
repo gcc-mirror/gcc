@@ -1,3 +1,16 @@
+2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82314
+	* decl.c (add_init_expr_to_sym): For proper initialization of
+	array-valued named constants the array bounds need to be
+	simplified before adding the initializer.
+
+2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85130
+	* expr.c (find_substring_ref): Handle given substring start and
+	end indices as signed integers, not unsigned.
+
 2021-09-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/98490
