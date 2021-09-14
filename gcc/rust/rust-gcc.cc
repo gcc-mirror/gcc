@@ -3370,7 +3370,7 @@ Gcc_backend::function (Btype *fntype, const std::string &name,
       DECL_CONTEXT (resdecl) = decl;
       DECL_RESULT (decl) = resdecl;
     }
-  if ((flags & function_is_inlinable) == 0)
+  if ((flags & function_is_uninlinable) != 0)
     DECL_UNINLINABLE (decl) = 1;
   if ((flags & function_does_not_return) != 0)
     TREE_THIS_VOLATILE (decl) = 1;
