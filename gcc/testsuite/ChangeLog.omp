@@ -1,6 +1,15 @@
 2021-09-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-09-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102313
+	* gfortran.dg/goacc/unexpected-end.f90: New test.
+	* gfortran.dg/gomp/unexpected-end.f90: New test.
+
+2021-09-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/atomic-29.c: Add -march=pentium

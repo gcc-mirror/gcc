@@ -2408,6 +2408,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_END_DO_SIMD:
       p = "!$OMP END DO SIMD";
       break;
+    case ST_OMP_END_SCOPE:
+      p = "!$OMP END SCOPE";
+      break;
     case ST_OMP_END_SIMD:
       p = "!$OMP END SIMD";
       break;
