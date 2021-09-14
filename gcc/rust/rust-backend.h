@@ -830,10 +830,9 @@ public:
   // the definition will be in another compilation unit.
   static const unsigned int function_is_declaration = 1 << 1;
 
-  // Set if the function can be inlined.  This is normally set, but is
-  // false for functions that may not be inlined because they call
+  // Set if the function should never be inlined because they call
   // recover and must be visible for correct panic recovery.
-  static const unsigned int function_is_inlinable = 1 << 2;
+  static const unsigned int function_is_uninlinable = 1 << 2;
 
   // Set if the function does not return.  This is set for the
   // implementation of panic.
