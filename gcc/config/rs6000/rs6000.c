@@ -18731,7 +18731,12 @@ is_load_insn1 (rtx pat, rtx *load_mem)
     return false;
 
   if (GET_CODE (pat) == SET)
-    return find_mem_ref (SET_SRC (pat), load_mem);
+    {
+      if (REG_P (SET_DEST (pat)))
+	return find_mem_ref (SET_SRC (pat), load_mem);
+      else
+	return false;
+    }
 
   if (GET_CODE (pat) == PARALLEL)
     {
@@ -18768,7 +18773,12 @@ is_store_insn1 (rtx pat, rtx *str_mem)
     return false;
 
   if (GET_CODE (pat) == SET)
-    return find_mem_ref (SET_DEST (pat), str_mem);
+    {
+      if (REG_P (SET_SRC (pat)) || SUBREG_P (SET_SRC (pat)))
+	return find_mem_ref (SET_DEST (pat), str_mem);
+      else
+	return false;
+    }
 
   if (GET_CODE (pat) == PARALLEL)
     {
