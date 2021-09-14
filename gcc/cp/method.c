@@ -1196,6 +1196,7 @@ constructible_expr (tree to, tree from)
 static tree
 is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
 {
+  to = complete_type (to);
   if (VOID_TYPE_P (to) || ABSTRACT_CLASS_TYPE_P (to)
       || (from && FUNC_OR_METHOD_TYPE_P (from)
 	  && (TYPE_READONLY (from) || FUNCTION_REF_QUALIFIED (from))))
