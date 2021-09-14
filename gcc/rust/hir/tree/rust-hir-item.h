@@ -310,10 +310,10 @@ struct SelfParam
 public:
   enum ImplicitSelfKind
   {
-    IMM,
-    MUT,
-    IMM_REF,
-    MUT_REF,
+    IMM,     // self
+    MUT,     // mut self
+    IMM_REF, // &self
+    MUT_REF, // &mut self
     NONE
   };
 

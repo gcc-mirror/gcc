@@ -277,6 +277,32 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   // method receiver
   Bexpression *self = CompileExpr::Compile (expr.get_receiver ().get (), ctx);
   rust_assert (self != nullptr);
+
+  // lookup the autoderef mappings
+  std::vector<Resolver::Adjustment> *adjustments = nullptr;
+  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (
+    expr.get_mappings ().get_hirid (), &adjustments);
+  rust_assert (ok);
+
+  for (auto &adjustment : *adjustments)
+    {
+      switch (adjustment.get_type ())
+	{
+	case Resolver::Adjustment::AdjustmentType::IMM_REF:
+	case Resolver::Adjustment::AdjustmentType::MUT_REF:
+	  self = ctx->get_backend ()->address_expression (
+	    self, expr.get_receiver ()->get_locus ());
+	  break;
+
+	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
+	  Btype *expected_type
+	    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
+	  self = ctx->get_backend ()->indirect_expression (
+	    expected_type, self, true, /* known_valid*/
+	    expr.get_receiver ()->get_locus ());
+	  break;
+	}
+    }
   args.push_back (self);
 
   // normal args

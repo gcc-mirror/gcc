@@ -529,10 +529,43 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 				      self_param.is_ref (),
 				      self_param.is_mut (),
 				      std::unique_ptr<HIR::Pattern> (nullptr));
-      context->insert_type (self_param.get_mappings (), self->clone ());
+      // might have a specified type
+      TyTy::BaseType *self_type = nullptr;
+      if (self_param.has_type ())
+	{
+	  std::unique_ptr<HIR::Type> &specified_type = self_param.get_type ();
+	  self_type = TypeCheckType::Resolve (specified_type.get ());
+	}
+      else
+	{
+	  switch (self_param.get_self_kind ())
+	    {
+	    case HIR::SelfParam::IMM:
+	    case HIR::SelfParam::MUT:
+	      self_type = self->clone ();
+	      break;
+
+	    case HIR::SelfParam::IMM_REF:
+	      self_type = new TyTy::ReferenceType (
+		self_param.get_mappings ().get_hirid (),
+		TyTy::TyVar (self->get_ref ()), false);
+	      break;
+
+	    case HIR::SelfParam::MUT_REF:
+	      self_type = new TyTy::ReferenceType (
+		self_param.get_mappings ().get_hirid (),
+		TyTy::TyVar (self->get_ref ()), true);
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	      return nullptr;
+	    }
+	}
+
+      context->insert_type (self_param.get_mappings (), self_type);
       params.push_back (
-	std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern,
-						     self->clone ()));
+	std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern, self_type));
     }
 
   for (auto &param : function.get_function_params ())

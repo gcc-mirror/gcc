@@ -30,6 +30,7 @@
 #include "rust-hir-const-fold.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-type-bounds.h"
+#include "rust-hir-dot-operator.h"
 
 namespace Rust {
 namespace Resolver {
@@ -207,7 +208,7 @@ public:
   {
     auto receiver_tyty
       = TypeCheckExpr::Resolve (expr.get_receiver ().get (), false);
-    if (receiver_tyty == nullptr)
+    if (receiver_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (expr.get_receiver ()->get_locus (),
 		       "failed to resolve receiver in MethodCallExpr");
@@ -216,50 +217,67 @@ public:
 
     context->insert_receiver (expr.get_mappings ().get_hirid (), receiver_tyty);
 
+    // in order to probe of the correct type paths we need the root type, which
+    // strips any references
+    TyTy::BaseType *root = receiver_tyty->get_root ();
+
     // https://doc.rust-lang.org/reference/expressions/method-call-expr.html
     // method resolution is complex in rust once we start handling generics and
     // traits. For now we only support looking up the valid name in impl blocks
     // which is simple. There will need to be adjustments to ensure we can turn
     // the receiver into borrowed references etc
 
-    bool reciever_is_generic
-      = receiver_tyty->get_kind () == TyTy::TypeKind::PARAM;
+    bool reciever_is_generic = root->get_kind () == TyTy::TypeKind::PARAM;
     bool probe_bounds = true;
     bool probe_impls = !reciever_is_generic;
     bool ignore_mandatory_trait_items = !reciever_is_generic;
 
     auto candidates
-      = PathProbeType::Probe (receiver_tyty,
-			      expr.get_method_name ().get_segment (),
+      = PathProbeType::Probe (root, expr.get_method_name ().get_segment (),
 			      probe_impls, probe_bounds,
 			      ignore_mandatory_trait_items);
-    if (candidates.size () == 0)
+    if (candidates.empty ())
       {
 	rust_error_at (expr.get_locus (),
-		       "failed to resolve the PathExprSegment to any Method");
-	return;
-      }
-    else if (candidates.size () > 1)
-      {
-	ReportMultipleCandidateError::Report (
-	  candidates, expr.get_method_name ().get_segment (),
-	  expr.get_method_name ().get_locus ());
+		       "failed to resolve the PathExprSegment to any item");
 	return;
       }
 
-    auto resolved_candidate = candidates.at (0);
-    TyTy::BaseType *lookup_tyty = resolved_candidate.ty;
+    std::vector<Adjustment> adjustments;
+    PathProbeCandidate *resolved_candidate
+      = MethodResolution::Select (candidates, receiver_tyty, adjustments);
+    if (resolved_candidate == nullptr)
+      {
+	if (candidates.size () > 1)
+	  {
+	    // not sure if this is the correct error here
+	    ReportMultipleCandidateError::Report (
+	      candidates, expr.get_method_name ().get_segment (),
+	      expr.get_method_name ().get_locus ());
+	  }
+	else
+	  {
+	    rust_error_at (expr.get_locus (), "failed to resolve method");
+	  }
+	return;
+      }
+
+    // store the adjustments for code-generation to know what to do
+    context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
+					std::move (adjustments));
+
+    TyTy::BaseType *lookup_tyty = resolved_candidate->ty;
     NodeId resolved_node_id
-      = resolved_candidate.is_impl_candidate ()
-	  ? resolved_candidate.item.impl.impl_item->get_impl_mappings ()
+      = resolved_candidate->is_impl_candidate ()
+	  ? resolved_candidate->item.impl.impl_item->get_impl_mappings ()
 	      .get_nodeid ()
-	  : resolved_candidate.item.trait.item_ref->get_mappings ()
+	  : resolved_candidate->item.trait.item_ref->get_mappings ()
 	      .get_nodeid ();
 
     if (lookup_tyty->get_kind () != TyTy::TypeKind::FNDEF)
       {
 	RichLocation r (expr.get_method_name ().get_locus ());
-	r.add_range (resolved_candidate.locus);
+	r.add_range (resolved_candidate->locus);
 	rust_error_at (r, "associated impl item is not a method");
 	return;
       }
@@ -269,14 +287,14 @@ public:
     if (!fn->is_method ())
       {
 	RichLocation r (expr.get_method_name ().get_locus ());
-	r.add_range (resolved_candidate.locus);
+	r.add_range (resolved_candidate->locus);
 	rust_error_at (r, "associated function is not a method");
 	return;
       }
 
-    if (receiver_tyty->get_kind () == TyTy::TypeKind::ADT)
+    if (root->get_kind () == TyTy::TypeKind::ADT)
       {
-	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver_tyty);
+	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (root);
 	if (adt->has_substitutions () && fn->needs_substitution ())
 	  {
 	    // consider the case where we have:
@@ -298,7 +316,7 @@ public:
 	    // default types GenericParams on impl blocks since these must
 	    // always be at the end of the list
 
-	    auto s = fn->get_self_type ();
+	    auto s = fn->get_self_type ()->get_root ();
 	    rust_assert (s->can_eq (adt, false));
 	    rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
 	    TyTy::ADTType *self_adt = static_cast<TyTy::ADTType *> (s);

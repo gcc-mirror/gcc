@@ -112,6 +112,18 @@ BaseType::inherit_bounds (
     }
 }
 
+BaseType *
+BaseType::get_root ()
+{
+  BaseType *root = this;
+  while (root->get_kind () == TyTy::REF)
+    {
+      ReferenceType *r = static_cast<ReferenceType *> (root);
+      root = r->get_base ();
+    }
+  return root;
+}
+
 TyVar::TyVar (HirId ref) : ref (ref)
 {
   // ensure this reference is defined within the context

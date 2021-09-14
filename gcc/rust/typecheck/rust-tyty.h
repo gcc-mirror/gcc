@@ -221,8 +221,7 @@ public:
 
   // Unify two types. Returns a pointer to the newly-created unified ty, or
   // nullptr if the two ty cannot be unified. The caller is responsible for
-  // releasing the memory of the returned ty. using ignore_errors alows for a
-  // can_eq style unification
+  // releasing the memory of the returned ty.
   virtual BaseType *unify (BaseType *other) = 0;
 
   // similar to unify but does not actually perform type unification but
@@ -311,6 +310,8 @@ public:
     rust_debug ("[%p] %s", static_cast<const void *> (this),
 		debug_str ().c_str ());
   }
+
+  BaseType *get_root ();
 
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind,
@@ -1146,8 +1147,7 @@ public:
   BaseType *get_self_type () const
   {
     rust_assert (is_method ());
-    // FIXME this will need updated when we support coercion for & mut self etc
-    return get_params ().at (0).second;
+    return param_at (0).second;
   }
 
   std::vector<std::pair<HIR::Pattern *, BaseType *>> &get_params ()
