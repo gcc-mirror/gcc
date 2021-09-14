@@ -256,6 +256,9 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   /* Excess precision other than "fast" requires front-end support.  */
   if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
     sorry ("%<-fexcess-precision=standard%> for Ada");
+  else if (flag_excess_precision == EXCESS_PRECISION_FLOAT16)
+    sorry ("%<-fexcess-precision=16%> for Ada");
+
   flag_excess_precision = EXCESS_PRECISION_FAST;
 
   /* No psABI change warnings for Ada.  */

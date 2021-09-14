@@ -44,6 +44,10 @@ const char * debug_set_names (uint32_t w_symbols);
 
 extern bool btf_debuginfo_p ();
 
+/* Return true iff BTF with CO-RE debug info is enabled.  */
+
+extern bool btf_with_core_debuginfo_p ();
+
 /* Return true iff CTF debug info is enabled.  */
 
 extern bool ctf_debuginfo_p ();

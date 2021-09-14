@@ -528,6 +528,12 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   ;
   [[omp::directive (flush, acq_rel)]]
   ;
+  [[omp::directive (flush, acquire)]]
+  ;
+  [[omp::directive (flush, release)]]
+  ;
+  [[omp::directive (flush, seq_cst)]]
+  ;
   [[omp::directive (flush (p, f))]]
   ;
   [[omp::directive (simd,

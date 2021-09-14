@@ -25,5 +25,5 @@ main (int argc)
   if (b)
     test2 ();
 }
-/* { dg-final { scan-tree-dump-times "Registering FSM jump thread" 2 "thread3" } } */
+/* { dg-final { scan-tree-dump-times "Registering jump thread" 2 "thread3" } } */
 /* { dg-final { scan-tree-dump-not "Invalid sum" "thread3" } } */

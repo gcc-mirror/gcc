@@ -43,299 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa-evrp-analyze.h"
 #include "gimple-range.h"
 #include "fold-const.h"
-
-// Unwindable SSA equivalence table for pointers.
-//
-// The main query point is get_replacement() which returns what a
-// given SSA can be replaced with in the current scope.
-
-class ssa_equiv_stack
-{
-public:
-  ssa_equiv_stack ();
-  void enter (basic_block);
-  void leave (basic_block);
-  void push_replacement (tree name, tree replacement);
-  tree get_replacement (tree name) const;
-
-private:
-  auto_vec<std::pair <tree, tree>> m_stack;
-  auto_vec<tree> m_replacements;
-  const std::pair <tree, tree> m_marker = std::make_pair (NULL, NULL);
-};
-
-ssa_equiv_stack::ssa_equiv_stack ()
-{
-  m_replacements.safe_grow_cleared (num_ssa_names);
-}
-
-// Pushes a marker at the given point.
-
-void
-ssa_equiv_stack::enter (basic_block)
-{
-  m_stack.safe_push (m_marker);
-}
-
-// Pops the stack to the last marker, while performing replacements
-// along the way.
-
-void
-ssa_equiv_stack::leave (basic_block)
-{
-  gcc_checking_assert (!m_stack.is_empty ());
-  while (m_stack.last () != m_marker)
-    {
-      std::pair<tree, tree> e = m_stack.pop ();
-      m_replacements[SSA_NAME_VERSION (e.first)] = e.second;
-    }
-  m_stack.pop ();
-}
-
-// Set the equivalence of NAME to REPLACEMENT.
-
-void
-ssa_equiv_stack::push_replacement (tree name, tree replacement)
-{
-  tree old = m_replacements[SSA_NAME_VERSION (name)];
-  m_replacements[SSA_NAME_VERSION (name)] = replacement;
-  m_stack.safe_push (std::make_pair (name, old));
-}
-
-// Return the equivalence of NAME.
-
-tree
-ssa_equiv_stack::get_replacement (tree name) const
-{
-  return m_replacements[SSA_NAME_VERSION (name)];
-}
-
-// Return TRUE if EXPR is an SSA holding a pointer.
-
-static bool inline
-is_pointer_ssa (tree expr)
-{
-  return TREE_CODE (expr) == SSA_NAME && POINTER_TYPE_P (TREE_TYPE (expr));
-}
-
-// Simple context-aware pointer equivalency analyzer that returns what
-// a pointer SSA name is equivalent to at a given point during a walk
-// of the IL.
-//
-// Note that global equivalency take priority over conditional
-// equivalency.  That is, p = &q takes priority over a later p == &t.
-//
-// This class is meant to be called during a DOM walk.
-
-class pointer_equiv_analyzer
-{
-public:
-  pointer_equiv_analyzer (gimple_ranger *r);
-  ~pointer_equiv_analyzer ();
-  void enter (basic_block);
-  void leave (basic_block);
-  void visit_stmt (gimple *stmt);
-  tree get_equiv (tree ssa) const;
-
-private:
-  void visit_edge (edge e);
-  tree get_equiv_expr (tree_code code, tree expr) const;
-  void set_global_equiv (tree ssa, tree pointee);
-  void set_cond_equiv (tree ssa, tree pointee);
-
-  gimple_ranger *m_ranger;
-  // Global pointer equivalency indexed by SSA_NAME_VERSION.
-  tree *m_global_points;
-  // Conditional pointer equivalency.
-  ssa_equiv_stack m_cond_points;
-};
-
-pointer_equiv_analyzer::pointer_equiv_analyzer (gimple_ranger *r)
-{
-  m_ranger = r;
-  m_global_points = new tree[num_ssa_names] ();
-}
-
-pointer_equiv_analyzer::~pointer_equiv_analyzer ()
-{
-  delete[] m_global_points;
-}
-
-// Set the global pointer equivalency for SSA to POINTEE.
-
-void
-pointer_equiv_analyzer::set_global_equiv (tree ssa, tree pointee)
-{
-  m_global_points[SSA_NAME_VERSION (ssa)] = pointee;
-}
-
-// Set the conditional pointer equivalency for SSA to POINTEE.
-
-void
-pointer_equiv_analyzer::set_cond_equiv (tree ssa, tree pointee)
-{
-  m_cond_points.push_replacement (ssa, pointee);
-}
-
-// Return the current pointer equivalency info for SSA, or NULL if
-// none is available.  Note that global info takes priority over
-// conditional info.
-
-tree
-pointer_equiv_analyzer::get_equiv (tree ssa) const
-{
-  tree ret = m_global_points[SSA_NAME_VERSION (ssa)];
-  if (ret)
-    return ret;
-  return m_cond_points.get_replacement (ssa);
-}
-
-// Method to be called on entry to a BB.
-
-void
-pointer_equiv_analyzer::enter (basic_block bb)
-{
-  m_cond_points.enter (bb);
-
-  for (gphi_iterator iter = gsi_start_phis (bb);
-       !gsi_end_p (iter);
-       gsi_next (&iter))
-    {
-      gphi *phi = iter.phi ();
-      tree lhs = gimple_phi_result (phi);
-      if (!POINTER_TYPE_P (TREE_TYPE (lhs)))
-	continue;
-      tree arg0 = gimple_phi_arg_def (phi, 0);
-      if (TREE_CODE (arg0) == SSA_NAME && !is_gimple_min_invariant (arg0))
-	arg0 = get_equiv (arg0);
-      if (arg0 && is_gimple_min_invariant (arg0))
-	{
-	  // If all the PHI args point to the same place, set the
-	  // pointer equivalency info for the PHI result.  This can
-	  // happen for passes that create redundant PHIs like
-	  // PHI<&foo, &foo> or PHI<&foo>.
-	  for (size_t i = 1; i < gimple_phi_num_args (phi); ++i)
-	    {
-	      tree argi = gimple_phi_arg_def (phi, i);
-	      if (TREE_CODE (argi) == SSA_NAME
-		  && !is_gimple_min_invariant (argi))
-		argi = get_equiv (argi);
-	      if (!argi || !operand_equal_p (arg0, argi))
-		return;
-	    }
-	  set_global_equiv (lhs, arg0);
-	}
-    }
-
-  edge pred = single_pred_edge_ignoring_loop_edges (bb, false);
-  if (pred)
-    visit_edge (pred);
-}
-
-// Method to be called on exit from a BB.
-
-void
-pointer_equiv_analyzer::leave (basic_block bb)
-{
-  m_cond_points.leave (bb);
-}
-
-// Helper function to return the pointer equivalency information for
-// EXPR from a gimple statement with CODE.  This returns either the
-// cached pointer equivalency info for an SSA, or an invariant in case
-// EXPR is one (i.e. &foo).  Returns NULL if EXPR is neither an SSA
-// nor an invariant.
-
-tree
-pointer_equiv_analyzer::get_equiv_expr (tree_code code, tree expr) const
-{
-  if (code == SSA_NAME)
-    return get_equiv (expr);
-
-  if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS
-      && is_gimple_min_invariant (expr))
-    return expr;
-
-  return NULL;
-}
-
-// Hack to provide context to the gimple fold callback.
-static struct
-{
-  gimple *m_stmt;
-  gimple_ranger *m_ranger;
-  pointer_equiv_analyzer *m_pta;
-} x_fold_context;
-
-// Gimple fold callback.
-static tree
-pta_valueize (tree name)
-{
-  tree ret
-    = x_fold_context.m_ranger->value_of_expr (name, x_fold_context.m_stmt);
-
-  if (!ret && is_pointer_ssa (name))
-    ret = x_fold_context.m_pta->get_equiv (name);
-
-  return ret ? ret : name;
-}
-
-// Method to be called on gimple statements during traversal of the IL.
-
-void
-pointer_equiv_analyzer::visit_stmt (gimple *stmt)
-{
-  if (gimple_code (stmt) != GIMPLE_ASSIGN)
-    return;
-
-  tree lhs = gimple_assign_lhs (stmt);
-  if (!is_pointer_ssa (lhs))
-    return;
-
-  tree rhs = gimple_assign_rhs1 (stmt);
-  rhs = get_equiv_expr (gimple_assign_rhs_code (stmt), rhs);
-  if (rhs)
-    {
-      set_global_equiv (lhs, rhs);
-      return;
-    }
-
-  // If we couldn't find anything, try fold.
-  x_fold_context = { stmt, m_ranger, this};
-  rhs = gimple_fold_stmt_to_constant_1 (stmt, pta_valueize, pta_valueize);
-  if (rhs)
-    {
-      rhs = get_equiv_expr (TREE_CODE (rhs), rhs);
-      if (rhs)
-	{
-	  set_global_equiv (lhs, rhs);
-	  return;
-	}
-    }
-}
-
-// If the edge in E is a conditional that sets a pointer equality, set the
-// conditional pointer equivalency information.
-
-void
-pointer_equiv_analyzer::visit_edge (edge e)
-{
-  gimple *stmt = last_stmt (e->src);
-  tree lhs;
-  // Recognize: x_13 [==,!=] &foo.
-  if (stmt
-      && gimple_code (stmt) == GIMPLE_COND
-      && (lhs = gimple_cond_lhs (stmt))
-      && TREE_CODE (lhs) == SSA_NAME
-      && POINTER_TYPE_P (TREE_TYPE (lhs))
-      && TREE_CODE (gimple_cond_rhs (stmt)) == ADDR_EXPR)
-    {
-      tree_code code = gimple_cond_code (stmt);
-      if ((code == EQ_EXPR && e->flags & EDGE_TRUE_VALUE)
-	  || ((code == NE_EXPR && e->flags & EDGE_FALSE_VALUE)))
-	set_cond_equiv (lhs, gimple_cond_rhs (stmt));
-    }
-}
+#include "value-pointer-equiv.h"
 
 // This is the classic EVRP folder which uses a dominator walk and pushes
 // ranges into the next block if it is a single predecessor block.
@@ -430,7 +138,7 @@ public:
   tree value_of_expr (tree name, gimple *s = NULL) OVERRIDE
   {
     tree ret = m_ranger->value_of_expr (name, s);
-    if (!ret && is_pointer_ssa (name))
+    if (!ret && supported_pointer_equiv_p (name))
       ret = m_pta->get_equiv (name);
     return ret;
   }
@@ -438,7 +146,7 @@ public:
   tree value_on_edge (edge e, tree name) OVERRIDE
   {
     tree ret = m_ranger->value_on_edge (e, name);
-    if (!ret && is_pointer_ssa (name))
+    if (!ret && supported_pointer_equiv_p (name))
       ret = m_pta->get_equiv (name);
     return ret;
   }
@@ -570,7 +278,7 @@ hybrid_folder::value_of_expr (tree op, gimple *stmt)
 {
   tree evrp_ret = evrp_folder::value_of_expr (op, stmt);
   tree ranger_ret = m_ranger->value_of_expr (op, stmt);
-  if (!ranger_ret && is_pointer_ssa (op))
+  if (!ranger_ret && supported_pointer_equiv_p (op))
     ranger_ret = m_pta->get_equiv (op);
   return choose_value (evrp_ret, ranger_ret);
 }
@@ -582,7 +290,7 @@ hybrid_folder::value_on_edge (edge e, tree op)
   // via hybrid_folder::value_of_expr, but without an edge.
   tree evrp_ret = evrp_folder::value_of_expr (op, NULL);
   tree ranger_ret = m_ranger->value_on_edge (e, op);
-  if (!ranger_ret && is_pointer_ssa (op))
+  if (!ranger_ret && supported_pointer_equiv_p (op))
     ranger_ret = m_pta->get_equiv (op);
   return choose_value (evrp_ret, ranger_ret);
 }

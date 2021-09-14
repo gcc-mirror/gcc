@@ -3740,7 +3740,6 @@ static bool remove_AT (dw_die_ref, enum dwarf_attribute);
 static void remove_child_TAG (dw_die_ref, enum dwarf_tag);
 static void add_child_die (dw_die_ref, dw_die_ref);
 static dw_die_ref new_die (enum dwarf_tag, dw_die_ref, tree);
-static dw_die_ref lookup_type_die (tree);
 static dw_die_ref strip_naming_typedef (tree, dw_die_ref);
 static dw_die_ref lookup_type_die_strip_naming_typedef (tree);
 static void equate_type_number_to_die (tree, dw_die_ref);
@@ -5838,7 +5837,7 @@ new_die (enum dwarf_tag tag_value, dw_die_ref parent_die, tree t)
 
 /* Return the DIE associated with the given type specifier.  */
 
-static inline dw_die_ref
+dw_die_ref
 lookup_type_die (tree type)
 {
   dw_die_ref die = TYPE_SYMTAB_DIE (type);
@@ -13542,6 +13541,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
   tree qualified_type;
   tree name, low, high;
   dw_die_ref mod_scope;
+  struct array_descr_info info;
   /* Only these cv-qualifiers are currently handled.  */
   const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
 			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC | 
@@ -13786,6 +13786,13 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	    }
 	}
     }
+  else if (code == ARRAY_TYPE
+	   || (lang_hooks.types.get_array_descr_info
+	       && lang_hooks.types.get_array_descr_info (type, &info)))
+    {
+      gen_type_die (type, context_die);
+      return lookup_type_die (type);
+    }
   else if (code == INTEGER_TYPE
 	   && TREE_TYPE (type) != NULL_TREE
 	   && subrange_type_for_debug_p (type, &low, &high))
@@ -13822,8 +13829,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	 copy was created to help us keep track of typedef names) and
 	 that copy might have a different TYPE_UID from the original
 	 ..._TYPE node.  */
-      if (TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE)
+      if (code == FUNCTION_TYPE || code == METHOD_TYPE)
 	{
 	  /* For function/method types, can't just use type_main_variant here,
 	     because that can have different ref-qualifiers for C++,
@@ -13836,13 +13842,12 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	      return lookup_type_die (t);
 	  return lookup_type_die (type);
 	}
-      else if (TREE_CODE (type) != VECTOR_TYPE
-	       && TREE_CODE (type) != ARRAY_TYPE)
-	return lookup_type_die (type_main_variant (type));
-      else
-	/* Vectors have the debugging information in the type,
-	   not the main variant.  */
+      /* Vectors have the debugging information in the type,
+	 not the main variant.  */
+      else if (code == VECTOR_TYPE)
 	return lookup_type_die (type);
+      else
+	return lookup_type_die (type_main_variant (type));
     }
 
   /* Builtin types don't have a DECL_ORIGINAL_TYPE.  For those,
@@ -30289,6 +30294,40 @@ mark_base_types (dw_loc_descr_ref loc)
     }
 }
 
+/* Stripped-down variant of resolve_addr, mark DW_TAG_base_type nodes
+   referenced from typed stack ops and count how often they are used.  */
+
+static void
+mark_base_types (dw_die_ref die)
+{
+  dw_die_ref c;
+  dw_attr_node *a;
+  dw_loc_list_ref *curr;
+  unsigned ix;
+
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
+    switch (AT_class (a))
+      {
+      case dw_val_class_loc_list:
+	curr = AT_loc_list_ptr (a);
+	while (*curr)
+	  {
+	    mark_base_types ((*curr)->expr);
+	    curr = &(*curr)->dw_loc_next;
+	  }
+	break;
+
+      case dw_val_class_loc:
+	mark_base_types (AT_loc (a));
+	break;
+
+      default:
+	break;
+      }
+
+  FOR_EACH_CHILD (die, c, mark_base_types (c));
+}
+
 /* Comparison function for sorting marked base types.  */
 
 static int
@@ -31913,6 +31952,11 @@ dwarf2out_finish (const char *filename)
   unsigned char checksum[16];
   char dl_section_ref[MAX_ARTIFICIAL_LABEL_BYTES];
 
+  /* Generate CTF/BTF debug info.  */
+  if ((ctf_debug_info_level > CTFINFO_LEVEL_NONE
+       || btf_debuginfo_p ()) && lang_GNU_C ())
+    ctf_debug_finish (filename);
+
   /* Skip emitting DWARF if not required.  */
   if (!dwarf_debuginfo_p ())
     return;
@@ -32691,6 +32735,7 @@ ctf_debug_do_cu (dw_die_ref die)
 static void
 dwarf2out_early_finish (const char *filename)
 {
+  comdat_type_node *ctnode;
   set_early_dwarf s;
   char dl_section_ref[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -32770,8 +32815,7 @@ dwarf2out_early_finish (const char *filename)
       /* For each new comdat type unit, copy declarations for incomplete
          types to make the new unit self-contained (i.e., no direct
          references to the main compile unit).  */
-      for (comdat_type_node *ctnode = comdat_type_list;
-	   ctnode != NULL; ctnode = ctnode->next)
+      for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
         copy_decls_for_unworthy_types (ctnode->root_die);
       copy_decls_for_unworthy_types (comp_unit_die ());
 
@@ -32786,8 +32830,7 @@ dwarf2out_early_finish (const char *filename)
   note_variable_value (comp_unit_die ());
   for (limbo_die_node *node = cu_die_list; node; node = node->next)
     note_variable_value (node->die);
-  for (comdat_type_node *ctnode = comdat_type_list; ctnode != NULL;
-       ctnode = ctnode->next)
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     note_variable_value (ctnode->root_die);
   for (limbo_die_node *node = limbo_die_list; node; node = node->next)
     note_variable_value (node->die);
@@ -32817,8 +32860,8 @@ dwarf2out_early_finish (const char *filename)
 	ctf_debug_do_cu (node->die);
       /* Post process the debug data in the CTF container if necessary.  */
       ctf_debug_init_postprocess (btf_debuginfo_p ());
-      /* Emit CTF/BTF debug info.  */
-      ctf_debug_finalize (filename, btf_debuginfo_p ());
+
+      ctf_debug_early_finish (filename);
     }
 
   /* Do not generate DWARF assembler now when not producing LTO bytecode.  */
@@ -32839,13 +32882,17 @@ dwarf2out_early_finish (const char *filename)
      location related output removed and some LTO specific changes.
      Some refactoring might make both smaller and easier to match up.  */
 
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
+    mark_base_types (ctnode->root_die);
+  mark_base_types (comp_unit_die ());
+  move_marked_base_types ();
+
   /* Traverse the DIE's and add sibling attributes to those DIE's
      that have children.  */
   add_sibling_attributes (comp_unit_die ());
   for (limbo_die_node *node = limbo_die_list; node; node = node->next)
     add_sibling_attributes (node->die);
-  for (comdat_type_node *ctnode = comdat_type_list;
-       ctnode != NULL; ctnode = ctnode->next)
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     add_sibling_attributes (ctnode->root_die);
 
   /* AIX Assembler inserts the length, so adjust the reference to match the
@@ -32875,8 +32922,7 @@ dwarf2out_early_finish (const char *filename)
     output_comp_unit (node->die, 0, NULL);
 
   hash_table<comdat_type_hasher> comdat_type_table (100);
-  for (comdat_type_node *ctnode = comdat_type_list;
-       ctnode != NULL; ctnode = ctnode->next)
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     {
       comdat_type_node **slot = comdat_type_table.find_slot (ctnode, INSERT);
 

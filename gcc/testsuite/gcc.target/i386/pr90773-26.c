@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=skylake" } */
+/* { dg-options "-O2 -march=skylake -mtune-ctrl=avx256_move_by_pieces" } */
 
 struct S
 {

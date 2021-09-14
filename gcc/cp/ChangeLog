@@ -1,3 +1,63 @@
+2021-09-13  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (maybe_warn_about_constant_value):
+	Complain about std::hardware_destructive_interference_size.
+	(cxx_eval_constant_expression): Call it.
+	* decl.c (cxx_init_decl_processing): Check
+	--param *-interference-size values.
+
+2021-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101764
+	* cp-tree.h (PACK_EXPANSION_FORCE_EXTRA_ARGS_P): New accessor
+	macro.
+	* pt.c (has_extra_args_mechanism_p): New function.
+	(find_parameter_pack_data::found_extra_args_tree_p): New data
+	member.
+	(find_parameter_packs_r): Set ppd->found_extra_args_tree_p
+	appropriately.
+	(make_pack_expansion): Set PACK_EXPANSION_FORCE_EXTRA_ARGS_P if
+	ppd.found_extra_args_tree_p.
+	(use_pack_expansion_extra_args_p): Return true if there were
+	unsubstituted packs and PACK_EXPANSION_FORCE_EXTRA_ARGS_P.
+	(tsubst_pack_expansion): Pass the pack expansion to
+	use_pack_expansion_extra_args_p.
+
+2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_atomic): Allow acq_rel on atomic read/write
+	and acq_rel/acquire clauses on update.
+	* semantics.c (finish_omp_atomic): Adjust c_finish_omp_atomic caller.
+
+2021-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR c++/102228
+	* cp-tree.h (ANON_AGGR_TYPE_FIELD): New define.
+	* decl.c (fixup_anonymous_aggr): Wipe RTTI info put in
+	place on invalid code.
+	* decl2.c (reset_type_linkage): Guard CLASSTYPE_TYPEINFO_VAR
+	access.
+	* module.cc (trees_in::read_class_def): Likewise.  Reconstruct
+	ANON_AGGR_TYPE_FIELD.
+	* semantics.c (finish_member_declaration): Populate
+	ANON_AGGR_TYPE_FIELD for anon aggregate typed members.
+	* typeck.c (lookup_anon_field): Remove DFS search and return
+	ANON_AGGR_TYPE_FIELD directly.
+
+2021-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100495
+	* constexpr.c (maybe_save_constexpr_fundef): Save body even for
+	constexpr deleting dtors.
+	(cxx_eval_call_expression): Don't use DECL_CLONED_FUNCTION for
+	deleting dtors.
+
+2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* parser.c (cp_parser_omp_flush): Parse 'seq_cst' clause on 'flush'
+	directive.
+	* semantics.c (finish_omp_flush): Handle MEMMODEL_SEQ_CST.
+
 2021-09-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (register_local_var_uses): Do not mangle

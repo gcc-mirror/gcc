@@ -24,13 +24,15 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DWARF2CTF_H 1
 
 #include "dwarf2out.h"
+#include "flags.h"
 
 /* Debug Format Interface.  Used in dwarf2out.c.  */
 
 extern void ctf_debug_init (void);
 extern void ctf_debug_init_postprocess (bool);
 extern bool ctf_do_die (dw_die_ref);
-extern void ctf_debug_finalize (const char *, bool);
+extern void ctf_debug_early_finish (const char *);
+extern void ctf_debug_finish (const char *);
 
 /* Wrappers for CTF/BTF to fetch information from GCC DWARF DIE.  Used in
    ctfc.c.

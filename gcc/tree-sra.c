@@ -384,6 +384,13 @@ static struct
 
   /* Numbber of components created when splitting aggregate parameters.  */
   int param_reductions_created;
+
+  /* Number of deferred_init calls that are modified.  */
+  int deferred_init;
+
+  /* Number of deferred_init calls that are created by
+     generate_subtree_deferred_init.  */
+  int subtree_deferred_init;
 } sra_stats;
 
 static void
@@ -1388,7 +1395,14 @@ scan_function (void)
 
 	      t = gimple_call_lhs (stmt);
 	      if (t && !disqualify_if_bad_bb_terminating_stmt (stmt, t, NULL))
-		ret |= build_access_from_expr (t, stmt, true);
+		{
+		  /* If the STMT is a call to DEFERRED_INIT, avoid setting
+		     cannot_scalarize_away_bitmap.  */
+		  if (gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
+		    ret |= !!build_access_from_expr_1 (t, stmt, true);
+		  else
+		    ret |= build_access_from_expr (t, stmt, true);
+		}
 	      break;
 
 	    case GIMPLE_ASM:
@@ -4099,6 +4113,88 @@ get_repl_default_def_ssa_name (struct access *racc, tree reg_type)
   return get_or_create_ssa_default_def (cfun, racc->replacement_decl);
 }
 
+
+/* Generate statements to call .DEFERRED_INIT to initialize scalar replacements
+   of accesses within a subtree ACCESS; all its children, siblings and their
+   children are to be processed.
+   GSI is a statement iterator used to place the new statements.  */
+static void
+generate_subtree_deferred_init (struct access *access,
+				tree init_type,
+				tree is_vla,
+				gimple_stmt_iterator *gsi,
+				location_t loc)
+{
+  do
+    {
+      if (access->grp_to_be_replaced)
+	{
+	  tree repl = get_access_replacement (access);
+	  gimple *call
+	    = gimple_build_call_internal (IFN_DEFERRED_INIT, 3,
+					  TYPE_SIZE_UNIT (TREE_TYPE (repl)),
+					  init_type, is_vla);
+	  gimple_call_set_lhs (call, repl);
+	  gsi_insert_before (gsi, call, GSI_SAME_STMT);
+	  update_stmt (call);
+	  gimple_set_location (call, loc);
+	  sra_stats.subtree_deferred_init++;
+	}
+      if (access->first_child)
+	generate_subtree_deferred_init (access->first_child, init_type,
+					is_vla, gsi, loc);
+
+      access = access ->next_sibling;
+    }
+  while (access);
+}
+
+/* For a call to .DEFERRED_INIT:
+   var = .DEFERRED_INIT (size_of_var, init_type, is_vla);
+   examine the LHS variable VAR and replace it with a scalar replacement if
+   there is one, also replace the RHS call to a call to .DEFERRED_INIT of
+   the corresponding scalar relacement variable.  Examine the subtree and
+   do the scalar replacements in the subtree too.  STMT is the call, GSI is
+   the statment iterator to place newly created statement.  */
+
+static enum assignment_mod_result
+sra_modify_deferred_init (gimple *stmt, gimple_stmt_iterator *gsi)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree init_type = gimple_call_arg (stmt, 1);
+  tree is_vla = gimple_call_arg (stmt, 2);
+
+  struct access *lhs_access = get_access_for_expr (lhs);
+  if (!lhs_access)
+    return SRA_AM_NONE;
+
+  location_t loc = gimple_location (stmt);
+
+  if (lhs_access->grp_to_be_replaced)
+    {
+      tree lhs_repl = get_access_replacement (lhs_access);
+      gimple_call_set_lhs (stmt, lhs_repl);
+      tree arg0_repl = TYPE_SIZE_UNIT (TREE_TYPE (lhs_repl));
+      gimple_call_set_arg (stmt, 0, arg0_repl);
+      sra_stats.deferred_init++;
+      gcc_assert (!lhs_access->first_child);
+      return SRA_AM_MODIFIED;
+    }
+
+  if (lhs_access->first_child)
+    generate_subtree_deferred_init (lhs_access->first_child,
+				    init_type, is_vla, gsi, loc);
+  if (lhs_access->grp_covered)
+    {
+      unlink_stmt_vdef (stmt);
+      gsi_remove (gsi, true);
+      release_defs (stmt);
+      return SRA_AM_REMOVED;
+    }
+
+  return SRA_AM_MODIFIED;
+}
+
 /* Examine both sides of the assignment statement pointed to by STMT, replace
    them with a scalare replacement if there is one and generate copying of
    replacements if scalarized aggregates have been used in the assignment.  GSI
@@ -4463,17 +4559,27 @@ sra_modify_function_body (void)
 	      break;
 
 	    case GIMPLE_CALL:
-	      /* Operands must be processed before the lhs.  */
-	      for (i = 0; i < gimple_call_num_args (stmt); i++)
+	      /* Handle calls to .DEFERRED_INIT specially.  */
+	      if (gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
 		{
-		  t = gimple_call_arg_ptr (stmt, i);
-		  modified |= sra_modify_expr (t, &gsi, false);
+		  assign_result = sra_modify_deferred_init (stmt, &gsi);
+		  modified |= assign_result == SRA_AM_MODIFIED;
+		  deleted = assign_result == SRA_AM_REMOVED;
 		}
-
-	      if (gimple_call_lhs (stmt))
+	      else
 		{
-		  t = gimple_call_lhs_ptr (stmt);
-		  modified |= sra_modify_expr (t, &gsi, true);
+		  /* Operands must be processed before the lhs.  */
+		  for (i = 0; i < gimple_call_num_args (stmt); i++)
+		    {
+		      t = gimple_call_arg_ptr (stmt, i);
+		      modified |= sra_modify_expr (t, &gsi, false);
+		    }
+
+	      	  if (gimple_call_lhs (stmt))
+		    {
+		      t = gimple_call_lhs_ptr (stmt);
+		      modified |= sra_modify_expr (t, &gsi, true);
+		    }
 		}
 	      break;
 

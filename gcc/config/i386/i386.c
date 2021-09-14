@@ -2422,6 +2422,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
+    case E_V16HFmode:
     case E_V16HImode:
     case E_V4DFmode:
     case E_V4DImode:
@@ -2432,6 +2433,7 @@ classify_argument (machine_mode mode, const_tree type,
       return 4;
     case E_V8DFmode:
     case E_V16SFmode:
+    case E_V32HFmode:
     case E_V8DImode:
     case E_V16SImode:
     case E_V32HImode:
@@ -2449,6 +2451,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V4SImode:
     case E_V16QImode:
     case E_V8HImode:
+    case E_V8HFmode:
     case E_V2DFmode:
     case E_V2DImode:
       classes[0] = X86_64_SSE_CLASS;
@@ -2862,12 +2865,14 @@ pass_in_reg:
 	break;
       /* FALLTHRU */
 
+    case E_V16HFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V64QImode:
     case E_V32HImode:
     case E_V16SImode:
     case E_V8DImode:
+    case E_V32HFmode:
     case E_V16SFmode:
     case E_V8DFmode:
     case E_V32QImode:
@@ -2879,6 +2884,7 @@ pass_in_reg:
     case E_V8HImode:
     case E_V4SImode:
     case E_V2DImode:
+    case E_V8HFmode:
     case E_V4SFmode:
     case E_V2DFmode:
       if (!type || !AGGREGATE_TYPE_P (type))
@@ -2933,7 +2939,9 @@ function_arg_advance_64 (CUMULATIVE_ARGS *cum, machine_mode mode,
 
   /* Unnamed 512 and 256bit vector mode parameters are passed on stack.  */
   if (!named && (VALID_AVX512F_REG_MODE (mode)
-		 || VALID_AVX256_REG_MODE (mode)))
+		 || VALID_AVX256_REG_MODE (mode)
+		 || mode == V16HFmode
+		 || mode == V32HFmode))
     return 0;
 
   if (!examine_argument (mode, type, 0, &int_nregs, &sse_nregs)
@@ -3101,6 +3109,7 @@ pass_in_reg:
     case E_V8HImode:
     case E_V4SImode:
     case E_V2DImode:
+    case E_V8HFmode:
     case E_V4SFmode:
     case E_V2DFmode:
       if (!type || !AGGREGATE_TYPE_P (type))
@@ -3120,8 +3129,10 @@ pass_in_reg:
     case E_V32HImode:
     case E_V16SImode:
     case E_V8DImode:
+    case E_V32HFmode:
     case E_V16SFmode:
     case E_V8DFmode:
+    case E_V16HFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
@@ -3180,12 +3191,14 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
     default:
       break;
 
+    case E_V16HFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
     case E_V16HImode:
     case E_V4DFmode:
     case E_V4DImode:
+    case E_V32HFmode:
     case E_V16SFmode:
     case E_V16SImode:
     case E_V64QImode:
@@ -4680,12 +4693,14 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   nat_mode = type_natural_mode (type, NULL, false);
   switch (nat_mode)
     {
+    case E_V16HFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
     case E_V16HImode:
     case E_V4DFmode:
     case E_V4DImode:
+    case E_V32HFmode:
     case E_V16SFmode:
     case E_V16SImode:
     case E_V64QImode:
@@ -5359,7 +5374,12 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       switch (type)
 	{
 	case opcode_int:
-	  opcode = misaligned_p ? "vmovdqu32" : "vmovdqa32";
+	  if (scalar_mode == E_HFmode)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW ? "vmovdqu16" : "vmovdqu64")
+		      : "vmovdqa64");
+	  else
+	    opcode = misaligned_p ? "vmovdqu32" : "vmovdqa32";
 	  break;
 	case opcode_float:
 	  opcode = misaligned_p ? "vmovups" : "vmovaps";
@@ -5373,6 +5393,11 @@ ix86_get_ssemov (rtx *operands, unsigned size,
     {
       switch (scalar_mode)
 	{
+	case E_HFmode:
+	  opcode = (misaligned_p
+		    ? (TARGET_AVX512BW ? "vmovdqu16" : "vmovdqu64")
+		    : "vmovdqa64");
+	  break;
 	case E_SFmode:
 	  opcode = misaligned_p ? "%vmovups" : "%vmovaps";
 	  break;
@@ -5508,6 +5533,14 @@ ix86_output_ssemov (rtx_insn *insn, rtx *operands)
     case MODE_SI:
       return "%vmovd\t{%1, %0|%0, %1}";
 
+    case MODE_HI:
+      if (GENERAL_REG_P (operands[0]))
+	return "vmovw\t{%1, %k0|%k0, %1}";
+      else if (GENERAL_REG_P (operands[1]))
+	return "vmovw\t{%k1, %0|%0, %k1}";
+      else
+	return "vmovw\t{%1, %0|%0, %1}";
+
     case MODE_DF:
       if (TARGET_AVX && REG_P (operands[0]) && REG_P (operands[1]))
 	return "vmovsd\t{%d1, %0|%0, %d1}";
@@ -5519,6 +5552,12 @@ ix86_output_ssemov (rtx_insn *insn, rtx *operands)
 	return "vmovss\t{%d1, %0|%0, %d1}";
       else
 	return "%vmovss\t{%1, %0|%0, %1}";
+
+    case MODE_HF:
+      if (REG_P (operands[0]) && REG_P (operands[1]))
+	return "vmovsh\t{%d1, %0|%0, %d1}";
+      else
+	return "vmovsh\t{%1, %0|%0, %1}";
 
     case MODE_V1DF:
       gcc_assert (!TARGET_AVX);
@@ -13999,7 +14038,7 @@ output_387_binary_op (rtx_insn *insn, rtx *operands)
 
   if (is_sse)
    {
-     p = (GET_MODE (operands[0]) == SFmode) ? "ss" : "sd";
+     p = GET_MODE (operands[0]) == SFmode ? "ss" : "sd";
      strcat (buf, p);
 
      if (TARGET_AVX)
@@ -19311,10 +19350,19 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
       if (!TARGET_SSE2)
 	return true;
 
+      if (!(INTEGER_CLASS_P (class1) || INTEGER_CLASS_P (class2)))
+	return true;
+
+      int msize = GET_MODE_SIZE (mode);
+
       /* Between SSE and general, we have moves no larger than word size.  */
-      if (!(INTEGER_CLASS_P (class1) || INTEGER_CLASS_P (class2))
-	  || GET_MODE_SIZE (mode) < GET_MODE_SIZE (SImode)
-	  || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+      if (msize > UNITS_PER_WORD)
+	return true;
+
+      /* In addition to SImode moves, AVX512FP16 also enables HImode moves.  */
+      int minsize = GET_MODE_SIZE (TARGET_AVX512FP16 ? HImode : SImode);
+
+      if (msize < minsize)
 	return true;
 
       /* If the target says that inter-unit moves are more expensive
@@ -19408,21 +19456,27 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
 static inline int
 sse_store_index (machine_mode mode)
 {
-      switch (GET_MODE_SIZE (mode))
-	{
-	  case 4:
-	    return 0;
-	  case 8:
-	    return 1;
-	  case 16:
-	    return 2;
-	  case 32:
-	    return 3;
-	  case 64:
-	    return 4;
-	  default:
-	    return -1;
-	}
+  /* NB: Use SFmode cost for HFmode instead of adding HFmode load/store
+     costs to processor_costs, which requires changes to all entries in
+     processor cost table.  */
+  if (mode == E_HFmode)
+    mode = E_SFmode;
+
+  switch (GET_MODE_SIZE (mode))
+    {
+    case 4:
+      return 0;
+    case 8:
+      return 1;
+    case 16:
+      return 2;
+    case 32:
+      return 3;
+    case 64:
+      return 4;
+    default:
+      return -1;
+    }
 }
 
 /* Return the cost of moving data of mode M between a
@@ -19444,6 +19498,7 @@ static inline int
 inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 {
   int cost;
+
   if (FLOAT_CLASS_P (regclass))
     {
       int index;
@@ -19549,11 +19604,32 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	  }
 	break;
       case 2:
-	if (in == 2)
-	  return MAX (ix86_cost->hard_register.int_load[1],
-		      ix86_cost->hard_register.int_store[1]);
-	return in ? ix86_cost->hard_register.int_load[1]
-		  : ix86_cost->hard_register.int_store[1];
+	{
+	  int cost;
+	  if (in == 2)
+	    cost = MAX (ix86_cost->hard_register.int_load[1],
+			ix86_cost->hard_register.int_store[1]);
+	  else
+	    cost = in ? ix86_cost->hard_register.int_load[1]
+		      : ix86_cost->hard_register.int_store[1];
+
+	  if (mode == E_HFmode)
+	    {
+	      /* Prefer SSE over GPR for HFmode.  */
+	      int sse_cost;
+	      int index = sse_store_index (mode);
+	      if (in == 2)
+		sse_cost = MAX (ix86_cost->hard_register.sse_load[index],
+				ix86_cost->hard_register.sse_store[index]);
+	      else
+		sse_cost = (in
+			    ? ix86_cost->hard_register.sse_load [index]
+			    : ix86_cost->hard_register.sse_store [index]);
+	      if (sse_cost >= cost)
+		cost = sse_cost + 1;
+	    }
+	  return cost;
+	}
       default:
 	if (in == 2)
 	  cost = MAX (ix86_cost->hard_register.int_load[2],
@@ -19727,8 +19803,11 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	  - XI mode
 	  - any of 512-bit wide vector mode
 	  - any scalar mode.  */
+      /* For AVX512FP16, vmovw supports movement of HImode
+	 between gpr and sse registser.  */
       if (TARGET_AVX512F
 	  && (mode == XImode
+	      || mode == V32HFmode
 	      || VALID_AVX512F_REG_MODE (mode)
 	      || VALID_AVX512F_SCALAR_MODE (mode)))
 	return true;
@@ -19743,9 +19822,7 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       /* TODO check for QI/HI scalars.  */
       /* AVX512VL allows sse regs16+ for 128/256 bit modes.  */
       if (TARGET_AVX512VL
-	  && (mode == OImode
-	      || mode == TImode
-	      || VALID_AVX256_REG_MODE (mode)
+	  && (VALID_AVX256_REG_OR_OI_VHF_MODE (mode)
 	      || VALID_AVX512VL_128_REG_MODE (mode)))
 	return true;
 
@@ -19755,9 +19832,9 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
       /* OImode and AVX modes are available only when AVX is enabled.  */
       return ((TARGET_AVX
-	       && VALID_AVX256_REG_OR_OI_MODE (mode))
+	       && VALID_AVX256_REG_OR_OI_VHF_MODE (mode))
 	      || VALID_SSE_REG_MODE (mode)
-	      || VALID_SSE2_REG_MODE (mode)
+	      || VALID_SSE2_REG_VHF_MODE (mode)
 	      || VALID_MMX_REG_MODE (mode)
 	      || VALID_MMX_REG_MODE_3DNOW (mode));
     }
@@ -19968,7 +20045,8 @@ ix86_set_reg_reg_cost (machine_mode mode)
 
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
-      if ((TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
+      if ((TARGET_AVX512FP16 && VALID_AVX512FP16_REG_MODE (mode))
+	  || (TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
 	  || (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
 	  || (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
 	  || (TARGET_SSE && VALID_SSE_REG_MODE (mode))
@@ -20048,7 +20126,7 @@ ix86_multiplication_cost (const struct processor_costs *cost,
   if (VECTOR_MODE_P (mode))
     inner_mode = GET_MODE_INNER (mode);
 
-  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+  if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
     return inner_mode == DFmode ? cost->mulsd : cost->mulss;
   else if (X87_FLOAT_MODE_P (mode))
     return cost->fmul;
@@ -20100,7 +20178,7 @@ ix86_division_cost (const struct processor_costs *cost,
   if (VECTOR_MODE_P (mode))
     inner_mode = GET_MODE_INNER (mode);
 
-  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+  if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
     return inner_mode == DFmode ? cost->divsd : cost->divss;
   else if (X87_FLOAT_MODE_P (mode))
     return cost->fdiv;
@@ -20518,7 +20596,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	  return true;
 	}
 
-      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
 	{
 	  *total = cost->addss;
 	  return false;
@@ -20557,7 +20635,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       /* FALLTHRU */
 
     case NEG:
-      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
 	{
 	  *total = cost->sse_op;
 	  return false;
@@ -20639,14 +20717,14 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case FLOAT_EXTEND:
-      if (!(SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH))
+      if (!SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
 	*total = 0;
       else
         *total = ix86_vec_cost (mode, cost->addss);
       return false;
 
     case FLOAT_TRUNCATE:
-      if (!(SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH))
+      if (!SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
 	*total = cost->fadd;
       else
         *total = ix86_vec_cost (mode, cost->addss);
@@ -20656,7 +20734,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       /* SSE requires memory load for the constant operand. It may make
 	 sense to account for this.  Of course the constant operand may or
 	 may not be reused. */
-      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
 	*total = cost->sse_op;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fabs;
@@ -20665,7 +20743,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case SQRT:
-      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
 	*total = mode == SFmode ? cost->sqrtss : cost->sqrtsd;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fsqrt;
@@ -21881,6 +21959,8 @@ ix86_vector_mode_supported_p (machine_mode mode)
   if ((TARGET_MMX || TARGET_MMX_WITH_SSE)
       && VALID_MMX_REG_MODE (mode))
     return true;
+  if (TARGET_AVX512FP16 && VALID_AVX512FP16_REG_MODE (mode))
+    return true;
   if ((TARGET_3DNOW || TARGET_MMX_WITH_SSE)
       && VALID_MMX_REG_MODE_3DNOW (mode))
     return true;
@@ -22154,6 +22234,10 @@ ix86_mangle_type (const_tree type)
 
   switch (TYPE_MODE (type))
     {
+    case E_HFmode:
+      /* _Float16 is "DF16_".
+	 Align with clang's decision in https://reviews.llvm.org/D33719. */
+      return "DF16_";
     case E_TFmode:
       /* __float128 is "g".  */
       return "g";
@@ -22557,6 +22641,20 @@ ix86_preferred_simd_mode (scalar_mode mode)
       else
 	return V2DImode;
 
+    case E_HFmode:
+      if (TARGET_AVX512FP16)
+	{
+	  if (TARGET_AVX512VL)
+	    {
+	      if (TARGET_PREFER_AVX128)
+		return V8HFmode;
+	      else if (TARGET_PREFER_AVX256)
+		return V16HFmode;
+	    }
+	  return V32HFmode;
+	}
+      return word_mode;
+
     case E_SFmode:
       if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V16SFmode;
@@ -22777,7 +22875,7 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	case MINUS_EXPR:
 	  if (kind == scalar_stmt)
 	    {
-	      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+	      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
 		stmt_cost = ix86_cost->addss;
 	      else if (X87_FLOAT_MODE_P (mode))
 		stmt_cost = ix86_cost->fadd;
@@ -22803,7 +22901,7 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	  break;
 
 	case NEGATE_EXPR:
-	  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+	  if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
 	    stmt_cost = ix86_cost->sse_op;
 	  else if (X87_FLOAT_MODE_P (mode))
 	    stmt_cost = ix86_cost->fchs;
@@ -22859,7 +22957,7 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	case BIT_XOR_EXPR:
 	case BIT_AND_EXPR:
 	case BIT_NOT_EXPR:
-	  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+	  if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
 	    stmt_cost = ix86_cost->sse_op;
 	  else if (VECTOR_MODE_P (mode))
 	    stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
@@ -23574,14 +23672,18 @@ ix86_get_excess_precision (enum excess_precision_type type)
 	/* The fastest type to promote to will always be the native type,
 	   whether that occurs with implicit excess precision or
 	   otherwise.  */
-	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+	return TARGET_AVX512FP16
+	       ? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
+	       : FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
       case EXCESS_PRECISION_TYPE_STANDARD:
       case EXCESS_PRECISION_TYPE_IMPLICIT:
 	/* Otherwise, the excess precision we want when we are
 	   in a standards compliant mode, and the implicit precision we
 	   provide would be identical were it not for the unpredictable
 	   cases.  */
-	if (!TARGET_80387)
+	if (TARGET_AVX512FP16 && TARGET_SSE_MATH)
+	  return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
+	else if (!TARGET_80387)
 	  return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
 	else if (!TARGET_MIX_SSE_I387)
 	  {
@@ -23599,6 +23701,11 @@ ix86_get_excess_precision (enum excess_precision_type type)
 	return (type == EXCESS_PRECISION_TYPE_STANDARD
 		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT
 		: FLT_EVAL_METHOD_UNPREDICTABLE);
+      case EXCESS_PRECISION_TYPE_FLOAT16:
+	if (TARGET_80387
+	    && !(TARGET_SSE_MATH && TARGET_SSE))
+	  error ("%<-fexcess-precision=16%> is not compatible with %<-mfpmath=387%>");
+	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
       default:
 	gcc_unreachable ();
     }

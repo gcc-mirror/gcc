@@ -845,13 +845,6 @@ fi
 # Miscenalleous configure options
 # -------------------------------
 
-# With stabs
-AC_ARG_WITH(stabs,
-[AS_HELP_STRING([--with-stabs],
-		[arrange to use stabs instead of host debug format])],
-stabs="$with_stabs",
-stabs=no)
-
 # Determine whether or not multilibs are enabled.
 AC_ARG_ENABLE(multilib,
 [AS_HELP_STRING([--enable-multilib],

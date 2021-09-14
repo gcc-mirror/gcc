@@ -3030,19 +3030,19 @@ do_store_motion (void)
 static void
 fill_always_executed_in_1 (class loop *loop, sbitmap contains_call)
 {
-  basic_block bb = NULL, *bbs, last = NULL;
-  unsigned i;
+  basic_block bb = NULL, last = NULL;
   edge e;
   class loop *inn_loop = loop;
 
   if (ALWAYS_EXECUTED_IN (loop->header) == NULL)
     {
-      bbs = get_loop_body_in_dom_order (loop);
-
-      for (i = 0; i < loop->num_nodes; i++)
+      auto_vec<basic_block, 64> worklist;
+      worklist.reserve_exact (loop->num_nodes);
+      worklist.quick_push (loop->header);
+      do
 	{
 	  edge_iterator ei;
-	  bb = bbs[i];
+	  bb = worklist.pop ();
 
 	  if (!flow_bb_inside_loop_p (inn_loop, bb))
 	    {
@@ -3074,16 +3074,39 @@ fill_always_executed_in_1 (class loop *loop, sbitmap contains_call)
 	    break;
 
 	  if (bb->loop_father->header == bb)
-	    {
-	      if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
-		break;
+	    /* Record that we enter into a subloop since it might not
+	       be finite.  */
+	    /* ???  Entering into a not always executed subloop makes
+	       fill_always_executed_in quadratic in loop depth since
+	       we walk those loops N times.  This is not a problem
+	       in practice though, see PR102253 for a worst-case testcase.  */
+	    inn_loop = bb->loop_father;
 
-	      /* In a loop that is always entered we may proceed anyway.
-		 But record that we entered it and stop once we leave it
-		 since it might not be finite.  */
-	      inn_loop = bb->loop_father;
+	  /* Walk the body of LOOP sorted by dominance relation.  Additionally,
+	     if a basic block S dominates the latch, then only blocks dominated
+	     by S are after it.
+	     This is get_loop_body_in_dom_order using a worklist algorithm and
+	     stopping once we are no longer interested in visiting further
+	     blocks.  */
+	  unsigned old_len = worklist.length ();
+	  unsigned postpone = 0;
+	  for (basic_block son = first_dom_son (CDI_DOMINATORS, bb);
+	       son;
+	       son = next_dom_son (CDI_DOMINATORS, son))
+	    {
+	      if (!flow_bb_inside_loop_p (loop, son))
+		continue;
+	      if (dominated_by_p (CDI_DOMINATORS, loop->latch, son))
+		postpone = worklist.length ();
+	      worklist.quick_push (son);
 	    }
+	  if (postpone)
+	    /* Postponing the block that dominates the latch means
+	       processing it last and thus putting it earliest in the
+	       worklist.  */
+	    std::swap (worklist[old_len], worklist[postpone]);
 	}
+      while (!worklist.is_empty ());
 
       while (1)
 	{
@@ -3095,8 +3118,6 @@ fill_always_executed_in_1 (class loop *loop, sbitmap contains_call)
 	    break;
 	  last = get_immediate_dominator (CDI_DOMINATORS, last);
 	}
-
-      free (bbs);
     }
 
   for (loop = loop->inner; loop; loop = loop->next)

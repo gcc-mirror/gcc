@@ -8778,7 +8778,7 @@ excess_precision_mode_join (enum flt_eval_method x,
 
    This relates to the effective excess precision seen by the user,
    which is the join point of the precision the target requests for
-   -fexcess-precision={standard,fast} and the implicit excess precision
+   -fexcess-precision={standard,fast,16} and the implicit excess precision
    the target uses.  */
 
 static enum flt_eval_method
@@ -8790,7 +8790,9 @@ c_ts18661_flt_eval_method (void)
   enum excess_precision_type flag_type
     = (flag_excess_precision == EXCESS_PRECISION_STANDARD
        ? EXCESS_PRECISION_TYPE_STANDARD
-       : EXCESS_PRECISION_TYPE_FAST);
+       : (flag_excess_precision == EXCESS_PRECISION_FLOAT16
+	  ? EXCESS_PRECISION_TYPE_FLOAT16
+	  : EXCESS_PRECISION_TYPE_FAST));
 
   enum flt_eval_method requested
     = targetm.c.excess_precision (flag_type);

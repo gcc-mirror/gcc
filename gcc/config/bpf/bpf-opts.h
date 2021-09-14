@@ -53,4 +53,11 @@ enum bpf_kernel_version
   LINUX_NATIVE,
 };
 
+enum bpf_isa_version
+{
+  ISA_V1,
+  ISA_V2,
+  ISA_V3,
+};
+
 #endif /* ! BPF_OPTS_H */

@@ -1,3 +1,40 @@
+2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82314
+	* decl.c (add_init_expr_to_sym): For proper initialization of
+	array-valued named constants the array bounds need to be
+	simplified before adding the initializer.
+
+2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85130
+	* expr.c (find_substring_ref): Handle given substring start and
+	end indices as signed integers, not unsigned.
+
+2021-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98490
+	* trans-expr.c (gfc_conv_substring): Do not generate substring
+	bounds check for implied do loop index variable before it actually
+	becomes defined.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* options.c (gfc_post_options): Issue an error for
+	-fexcess-precision=16.
+
+2021-09-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101327
+	* expr.c (find_array_element): When bounds cannot be determined as
+	constant, return error instead of aborting.
+
+2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_flush): Parse 'seq_cst' clause on 'flush'
+	directive.
+	* trans-openmp.c (gfc_trans_omp_flush): Handle OMP_MEMORDER_SEQ_CST.
+
 2021-09-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* decl.c (gfc_verify_c_interop_param): Reject pointer with

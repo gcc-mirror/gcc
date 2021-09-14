@@ -4752,6 +4752,39 @@ cxx_init_decl_processing (void)
   /* Show we use EH for cleanups.  */
   if (flag_exceptions)
     using_eh_for_cleanups ();
+
+  /* Check that the hardware interference sizes are at least
+     alignof(max_align_t), as required by the standard.  */
+  const int max_align = max_align_t_align () / BITS_PER_UNIT;
+  if (param_destruct_interfere_size)
+    {
+      if (param_destruct_interfere_size < max_align)
+	error ("%<--param destructive-interference-size=%d%> is less than "
+	       "%d", param_destruct_interfere_size, max_align);
+      else if (param_destruct_interfere_size < param_l1_cache_line_size)
+	warning (OPT_Winterference_size,
+		 "%<--param destructive-interference-size=%d%> "
+		 "is less than %<--param l1-cache-line-size=%d%>",
+		 param_destruct_interfere_size, param_l1_cache_line_size);
+    }
+  else if (param_l1_cache_line_size >= max_align)
+    param_destruct_interfere_size = param_l1_cache_line_size;
+  /* else leave it unset.  */
+
+  if (param_construct_interfere_size)
+    {
+      if (param_construct_interfere_size < max_align)
+	error ("%<--param constructive-interference-size=%d%> is less than "
+	       "%d", param_construct_interfere_size, max_align);
+      else if (param_construct_interfere_size > param_l1_cache_line_size
+	       && param_l1_cache_line_size >= max_align)
+	warning (OPT_Winterference_size,
+		 "%<--param constructive-interference-size=%d%> "
+		 "is greater than %<--param l1-cache-line-size=%d%>",
+		 param_construct_interfere_size, param_l1_cache_line_size);
+    }
+  else if (param_l1_cache_line_size >= max_align)
+    param_construct_interfere_size = param_l1_cache_line_size;
 }
 
 /* Enter an abi node in global-module context.  returns a cookie to
@@ -5095,6 +5128,9 @@ fixup_anonymous_aggr (tree t)
     if (!is_overloaded_fn (elt))
       (*vec)[store++] = elt;
   vec_safe_truncate (vec, store);
+
+  /* Wipe RTTI info.  */
+  CLASSTYPE_TYPEINFO_VAR (t) = NULL_TREE;
 
   /* Anonymous aggregates cannot have fields with ctors, dtors or complex
      assignment operators (because they cannot have these methods themselves).

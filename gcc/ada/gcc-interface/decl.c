@@ -28,6 +28,7 @@
 #include "coretypes.h"
 #include "target.h"
 #include "tree.h"
+#include "gimple-expr.h"
 #include "stringpool.h"
 #include "diagnostic-core.h"
 #include "alias.h"
@@ -261,7 +262,7 @@ typedef struct {
   tree btin_fntype;       /* The GCC builtin function type node.  */
 } intrin_binding_t;
 
-static bool intrin_profiles_compatible_p (intrin_binding_t *);
+static bool intrin_profiles_compatible_p (const intrin_binding_t *);
 
 /* Given GNAT_ENTITY, a GNAT defining identifier node, which denotes some Ada
    entity, return the equivalent GCC tree for that entity (a ..._DECL node)
@@ -4279,6 +4280,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
      handling alignment and possible padding.  */
   if (is_type && (!gnu_decl || this_made_decl))
     {
+      const bool is_by_ref = Is_By_Reference_Type (gnat_entity);
+
       gcc_assert (!TYPE_IS_DUMMY_P (gnu_type));
 
       /* Process the attributes, if not already done.  Note that the type is
@@ -4293,15 +4296,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 non-constant).  */
       if (!gnu_size && kind != E_String_Literal_Subtype)
 	{
+	  const char *size_s = "size for %s too small{, minimum allowed is ^}";
+	  const char *type_s = is_by_ref ? "by-reference type &" : "&";
+
 	  if (Known_Esize (gnat_entity))
 	    gnu_size
 	      = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
-			       VAR_DECL, false, false, NULL, NULL);
+			       VAR_DECL, false, false, size_s, type_s);
 	  else
 	    gnu_size
 	      = validate_size (RM_Size (gnat_entity), gnu_type, gnat_entity,
 			       TYPE_DECL, false, Has_Size_Clause (gnat_entity),
-			       NULL, NULL);
+			       size_s, type_s);
 	}
 
       /* If a size was specified, see if we can make a new type of that size
@@ -4614,7 +4620,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    TYPE_ALIGN_OK (gnu_type) = 1;
 
 	  /* Record whether the type is passed by reference.  */
-	  if (Is_By_Reference_Type (gnat_entity) && !VOID_TYPE_P (gnu_type))
+	  if (is_by_ref && !VOID_TYPE_P (gnu_type))
 	    TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
 	  /* Record whether an alignment clause was specified.  */
@@ -4734,6 +4740,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       else
 	gnu_decl = create_type_decl (gnu_entity_name, gnu_type, artificial_p,
 				     debug_info_p, gnat_entity);
+
+      /* For vector types, make the representative array the debug type.  */
+      if (VECTOR_TYPE_P (gnu_type))
+	{
+	  tree rep = TYPE_REPRESENTATIVE_ARRAY (gnu_type);
+	  TYPE_NAME (rep) = DECL_NAME (gnu_decl);
+	  SET_TYPE_DEBUG_TYPE (gnu_type, rep);
+	}
     }
 
   /* Otherwise, for a type reusing an existing DECL, back-annotate values.  */
@@ -6291,14 +6305,13 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     the checker is expected to post diagnostics in this case.  */
 	  if (gnu_builtin_decl)
 	    {
-	      intrin_binding_t inb
+	      const intrin_binding_t inb
 		= { gnat_subprog, gnu_type, TREE_TYPE (gnu_builtin_decl) };
 
 	      if (!intrin_profiles_compatible_p (&inb))
 		post_error
 		  ("??profile of& doesn''t match the builtin it binds!",
 		   gnat_subprog);
-
 	      return gnu_builtin_decl;
 	    }
 
@@ -6309,7 +6322,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     on demand without risking false positives with common default sets
 	     of options.  */
 	  if (warn_shadow)
-	    post_error ("??gcc intrinsic not found for&!", gnat_subprog);
+	    post_error ("'G'C'C intrinsic not found for&!??", gnat_subprog);
 	}
     }
 
@@ -9178,13 +9191,12 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
   /* Issue an error either if the default size of the object isn't a constant
      or if the new size is smaller than it.  */
   if (TREE_CODE (old_size) != INTEGER_CST
-      || TREE_OVERFLOW (old_size)
-      || tree_int_cst_lt (size, old_size))
+      || (!TREE_OVERFLOW (old_size) && tree_int_cst_lt (size, old_size)))
     {
       char buf[128];
       const char *s;
 
-      if (kind == FIELD_DECL)
+      if (s1 && s2)
 	{
 	  snprintf (buf, sizeof (buf), s1, s2);
 	  s = buf;
@@ -9193,6 +9205,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
 	s = "component size for& too small{, minimum allowed is ^}";
       else
 	s = "size for& too small{, minimum allowed is ^}";
+
       post_error_ne_tree (s, gnat_error_node, gnat_object, old_size);
 
       return NULL_TREE;
@@ -9486,51 +9499,11 @@ check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
 		   gnat_error_point, gnat_entity);
 }
 
-
-/* Helper for the intrin compatibility checks family.  Evaluate whether
-   two types are definitely incompatible.  */
-
-static bool
-intrin_types_incompatible_p (tree t1, tree t2)
-{
-  enum tree_code code;
-
-  if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
-    return false;
-
-  if (TYPE_MODE (t1) != TYPE_MODE (t2))
-    return true;
-
-  if (TREE_CODE (t1) != TREE_CODE (t2))
-    return true;
-
-  code = TREE_CODE (t1);
-
-  switch (code)
-    {
-    case INTEGER_TYPE:
-    case REAL_TYPE:
-      return TYPE_PRECISION (t1) != TYPE_PRECISION (t2);
-
-    case POINTER_TYPE:
-    case REFERENCE_TYPE:
-      /* Assume designated types are ok.  We'd need to account for char * and
-	 void * variants to do better, which could rapidly get messy and isn't
-	 clearly worth the effort.  */
-      return false;
-
-    default:
-      break;
-    }
-
-  return false;
-}
-
 /* Helper for intrin_profiles_compatible_p, to perform compatibility checks
    on the Ada/builtin argument lists for the INB binding.  */
 
 static bool
-intrin_arglists_compatible_p (intrin_binding_t * inb)
+intrin_arglists_compatible_p (const intrin_binding_t *inb)
 {
   function_args_iterator ada_iter, btin_iter;
 
@@ -9555,27 +9528,32 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
 
       /* If we're done with the Ada args and not with the internal builtin
 	 args, or the other way around, complain.  */
-      if (ada_type == void_type_node
-	  && btin_type != void_type_node)
+      if (ada_type == void_type_node && btin_type != void_type_node)
 	{
-	  post_error ("??Ada arguments list too short!", inb->gnat_entity);
+	  post_error ("??Ada parameter list too short!", inb->gnat_entity);
 	  return false;
 	}
 
-      if (btin_type == void_type_node
-	  && ada_type != void_type_node)
+      if (btin_type == void_type_node && ada_type != void_type_node)
 	{
-	  post_error_ne_num ("??Ada arguments list too long ('> ^)!",
+	  post_error_ne_num ("??Ada parameter list too long ('> ^)!",
 			     inb->gnat_entity, inb->gnat_entity, argpos);
 	  return false;
 	}
 
       /* Otherwise, check that types match for the current argument.  */
-      argpos ++;
-      if (intrin_types_incompatible_p (ada_type, btin_type))
+      argpos++;
+      if (!types_compatible_p (ada_type, btin_type))
 	{
-	  post_error_ne_num ("??intrinsic binding type mismatch on argument ^!",
-			     inb->gnat_entity, inb->gnat_entity, argpos);
+	  /* For vector builtins, issue an error to avoid an ICE.  */
+	  if (VECTOR_TYPE_P (btin_type))
+	    post_error_ne_num
+	      ("intrinsic binding type mismatch on parameter ^",
+	       inb->gnat_entity, inb->gnat_entity, argpos);
+	  else
+	    post_error_ne_num
+	      ("??intrinsic binding type mismatch on parameter ^!",
+	       inb->gnat_entity, inb->gnat_entity, argpos);
 	  return false;
 	}
 
@@ -9591,22 +9569,26 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
    on the Ada/builtin return values for the INB binding.  */
 
 static bool
-intrin_return_compatible_p (intrin_binding_t * inb)
+intrin_return_compatible_p (const intrin_binding_t *inb)
 {
   tree ada_return_type = TREE_TYPE (inb->ada_fntype);
   tree btin_return_type = TREE_TYPE (inb->btin_fntype);
 
   /* Accept function imported as procedure, common and convenient.  */
-  if (VOID_TYPE_P (ada_return_type)
-      && !VOID_TYPE_P (btin_return_type))
+  if (VOID_TYPE_P (ada_return_type) && !VOID_TYPE_P (btin_return_type))
     return true;
 
   /* Check return types compatibility otherwise.  Note that this
      handles void/void as well.  */
-  if (intrin_types_incompatible_p (btin_return_type, ada_return_type))
+  if (!types_compatible_p (btin_return_type, ada_return_type))
     {
-      post_error ("??intrinsic binding type mismatch on return value!",
-		  inb->gnat_entity);
+      /* For vector builtins, issue an error to avoid an ICE.  */
+      if (VECTOR_TYPE_P (btin_return_type))
+	post_error ("intrinsic binding type mismatch on result",
+		    inb->gnat_entity);
+      else
+	post_error ("??intrinsic binding type mismatch on result",
+		    inb->gnat_entity);
       return false;
     }
 
@@ -9622,7 +9604,7 @@ intrin_return_compatible_p (intrin_binding_t * inb)
    especially when binding straight to a compiler internal.  */
 
 static bool
-intrin_profiles_compatible_p (intrin_binding_t * inb)
+intrin_profiles_compatible_p (const intrin_binding_t *inb)
 {
   /* Check compatibility on return values and argument lists, each responsible
      for posting warnings as appropriate.  Ensure use of the proper sloc for

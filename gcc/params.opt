@@ -361,6 +361,22 @@ The maximum code size growth ratio when expanding into a jump table (in percent)
 Common Joined UInteger Var(param_l1_cache_line_size) Init(32) Param Optimization
 The size of L1 cache line.
 
+-param=destructive-interference-size=
+Common Joined UInteger Var(param_destruct_interfere_size) Init(0) Param Optimization
+The minimum recommended offset between two concurrently-accessed objects to
+avoid additional performance degradation due to contention introduced by the
+implementation.  Typically the L1 cache line size, but can be larger to
+accommodate a variety of target processors with different cache line sizes.
+C++17 code might use this value in structure layout, but is strongly
+discouraged from doing so in public ABIs.
+
+-param=constructive-interference-size=
+Common Joined UInteger Var(param_construct_interfere_size) Init(0) Param Optimization
+The maximum recommended size of contiguous memory occupied by two objects
+accessed with temporal locality by concurrent threads.  Typically the L1 cache
+line size, but can be smaller to accommodate a variety of target processors with
+different cache line sizes.
+
 -param=l1-cache-size=
 Common Joined UInteger Var(param_l1_cache_size) Init(64) Param Optimization
 The size of L1 cache.

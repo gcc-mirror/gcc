@@ -12617,6 +12617,22 @@
   }"
 )
 
+;; movmisalign for DImode
+(define_expand "movmisaligndi"
+  [(match_operand:DI 0 "general_operand")
+   (match_operand:DI 1 "general_operand")]
+  "unaligned_access"
+{
+  rtx lo_op0 = gen_lowpart (SImode, operands[0]);
+  rtx lo_op1 = gen_lowpart (SImode, operands[1]);
+  rtx hi_op0 = gen_highpart_mode (SImode, DImode, operands[0]);
+  rtx hi_op1 = gen_highpart_mode (SImode, DImode, operands[1]);
+
+  emit_insn (gen_movmisalignsi (lo_op0, lo_op1));
+  emit_insn (gen_movmisalignsi (hi_op0, hi_op1));
+  DONE;
+})
+
 ;; movmisalign patterns for HImode and SImode.
 (define_expand "movmisalign<mode>"
   [(match_operand:HSI 0 "general_operand")

@@ -67,6 +67,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vector-builder.h"
 #include "tree-ssa-strlen.h"
 #include "varasm.h"
+#include "memmodel.h"
+#include "optabs.h"
 
 enum strlen_range_kind {
   /* Compute the exact constant string length.  */
@@ -957,14 +959,17 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	= build_int_cst (build_pointer_type_for_mode (char_type_node,
 						      ptr_mode, true), 0);
 
-      /* If we can perform the copy efficiently with first doing all loads
-         and then all stores inline it that way.  Currently efficiently
-	 means that we can load all the memory into a single integer
-	 register which is what MOVE_MAX gives us.  */
+      /* If we can perform the copy efficiently with first doing all loads and
+	 then all stores inline it that way.  Currently efficiently means that
+	 we can load all the memory with a single set operation and that the
+	 total size is less than MOVE_MAX * MOVE_RATIO.  */
       src_align = get_pointer_alignment (src);
       dest_align = get_pointer_alignment (dest);
       if (tree_fits_uhwi_p (len)
-	  && compare_tree_int (len, MOVE_MAX) <= 0
+	  && (compare_tree_int
+	      (len, (MOVE_MAX
+		     * MOVE_RATIO (optimize_function_for_size_p (cfun))))
+	      <= 0)
 	  /* FIXME: Don't transform copies from strings with known length.
 	     Until GCC 9 this prevented a case in gcc.dg/strlenopt-8.c
 	     from being handled, and the case was XFAILed for that reason.
@@ -1000,6 +1005,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	      if (type
 		  && is_a <scalar_int_mode> (TYPE_MODE (type), &mode)
 		  && GET_MODE_SIZE (mode) * BITS_PER_UNIT == ilen * 8
+		  && have_insn_for (SET, mode)
 		  /* If the destination pointer is not aligned we must be able
 		     to emit an unaligned store.  */
 		  && (dest_align >= GET_MODE_ALIGNMENT (mode)
@@ -4518,12 +4524,14 @@ clear_padding_add_padding (clear_padding_struct *buf,
     }
 }
 
-static void clear_padding_type (clear_padding_struct *, tree, HOST_WIDE_INT);
+static void clear_padding_type (clear_padding_struct *, tree,
+				HOST_WIDE_INT, bool);
 
 /* Clear padding bits of union type TYPE.  */
 
 static void
-clear_padding_union (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
+clear_padding_union (clear_padding_struct *buf, tree type,
+		     HOST_WIDE_INT sz, bool for_auto_init)
 {
   clear_padding_struct *union_buf;
   HOST_WIDE_INT start_off = 0, next_off = 0;
@@ -4568,7 +4576,7 @@ clear_padding_union (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 	      continue;
 	    gcc_assert (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
 			&& !COMPLETE_TYPE_P (TREE_TYPE (field)));
-	    if (!buf->clear_in_mask)
+	    if (!buf->clear_in_mask && !for_auto_init)
 	      error_at (buf->loc, "flexible array member %qD does not have "
 				  "well defined padding bits for %qs",
 			field, "__builtin_clear_padding");
@@ -4579,7 +4587,7 @@ clear_padding_union (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 	union_buf->off = start_off;
 	union_buf->size = start_size;
 	memset (union_buf->buf, ~0, start_size);
-	clear_padding_type (union_buf, TREE_TYPE (field), fldsz);
+	clear_padding_type (union_buf, TREE_TYPE (field), fldsz, for_auto_init);
 	clear_padding_add_padding (union_buf, sz - fldsz);
 	clear_padding_flush (union_buf, true);
       }
@@ -4649,7 +4657,8 @@ clear_padding_type_may_have_padding_p (tree type)
      __builtin_clear_padding (buf.base);  */
 
 static void
-clear_padding_emit_loop (clear_padding_struct *buf, tree type, tree end)
+clear_padding_emit_loop (clear_padding_struct *buf, tree type,
+			 tree end, bool for_auto_init)
 {
   tree l1 = create_artificial_label (buf->loc);
   tree l2 = create_artificial_label (buf->loc);
@@ -4660,7 +4669,7 @@ clear_padding_emit_loop (clear_padding_struct *buf, tree type, tree end)
   g = gimple_build_label (l1);
   gimple_set_location (g, buf->loc);
   gsi_insert_before (buf->gsi, g, GSI_SAME_STMT);
-  clear_padding_type (buf, type, buf->sz);
+  clear_padding_type (buf, type, buf->sz, for_auto_init);
   clear_padding_flush (buf, true);
   g = gimple_build_assign (buf->base, POINTER_PLUS_EXPR, buf->base,
 			   size_int (buf->sz));
@@ -4678,10 +4687,16 @@ clear_padding_emit_loop (clear_padding_struct *buf, tree type, tree end)
 }
 
 /* Clear padding bits for TYPE.  Called recursively from
-   gimple_fold_builtin_clear_padding.  */
+   gimple_fold_builtin_clear_padding.  If FOR_AUTO_INIT is true,
+   the __builtin_clear_padding is not called by the end user,
+   instead, it's inserted by the compiler to initialize the
+   paddings of automatic variable.  Therefore, we should not
+   emit the error messages for flexible array members to confuse
+   the end user.  */
 
 static void
-clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
+clear_padding_type (clear_padding_struct *buf, tree type,
+		    HOST_WIDE_INT sz, bool for_auto_init)
 {
   switch (TREE_CODE (type))
     {
@@ -4765,7 +4780,7 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 		  continue;
 		gcc_assert (TREE_CODE (ftype) == ARRAY_TYPE
 			    && !COMPLETE_TYPE_P (ftype));
-		if (!buf->clear_in_mask)
+		if (!buf->clear_in_mask && !for_auto_init)
 		  error_at (buf->loc, "flexible array member %qD does not "
 				      "have well defined padding bits for %qs",
 			    field, "__builtin_clear_padding");
@@ -4781,7 +4796,8 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 		gcc_assert (pos >= 0 && fldsz >= 0 && pos >= cur_pos);
 		clear_padding_add_padding (buf, pos - cur_pos);
 		cur_pos = pos;
-		clear_padding_type (buf, TREE_TYPE (field), fldsz);
+		clear_padding_type (buf, TREE_TYPE (field),
+				    fldsz, for_auto_init);
 		cur_pos += fldsz;
 	      }
 	  }
@@ -4821,7 +4837,7 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 	  buf->align = TYPE_ALIGN (elttype);
 	  buf->off = 0;
 	  buf->size = 0;
-	  clear_padding_emit_loop (buf, elttype, end);
+	  clear_padding_emit_loop (buf, elttype, end, for_auto_init);
 	  buf->base = base;
 	  buf->sz = prev_sz;
 	  buf->align = prev_align;
@@ -4831,10 +4847,10 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 	  break;
 	}
       for (HOST_WIDE_INT i = 0; i < nelts; i++)
-	clear_padding_type (buf, TREE_TYPE (type), fldsz);
+	clear_padding_type (buf, TREE_TYPE (type), fldsz, for_auto_init);
       break;
     case UNION_TYPE:
-      clear_padding_union (buf, type, sz);
+      clear_padding_union (buf, type, sz, for_auto_init);
       break;
     case REAL_TYPE:
       gcc_assert ((size_t) sz <= clear_padding_unit);
@@ -4858,14 +4874,14 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
       break;
     case COMPLEX_TYPE:
       fldsz = int_size_in_bytes (TREE_TYPE (type));
-      clear_padding_type (buf, TREE_TYPE (type), fldsz);
-      clear_padding_type (buf, TREE_TYPE (type), fldsz);
+      clear_padding_type (buf, TREE_TYPE (type), fldsz, for_auto_init);
+      clear_padding_type (buf, TREE_TYPE (type), fldsz, for_auto_init);
       break;
     case VECTOR_TYPE:
       nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
       fldsz = int_size_in_bytes (TREE_TYPE (type));
       for (HOST_WIDE_INT i = 0; i < nelts; i++)
-	clear_padding_type (buf, TREE_TYPE (type), fldsz);
+	clear_padding_type (buf, TREE_TYPE (type), fldsz, for_auto_init);
       break;
     case NULLPTR_TYPE:
       gcc_assert ((size_t) sz <= clear_padding_unit);
@@ -4901,7 +4917,7 @@ clear_type_padding_in_mask (tree type, unsigned char *mask)
   buf.sz = int_size_in_bytes (type);
   buf.size = 0;
   buf.union_ptr = mask;
-  clear_padding_type (&buf, type, buf.sz);
+  clear_padding_type (&buf, type, buf.sz, false);
   clear_padding_flush (&buf, true);
 }
 
@@ -4911,9 +4927,13 @@ static bool
 gimple_fold_builtin_clear_padding (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
-  gcc_assert (gimple_call_num_args (stmt) == 2);
+  gcc_assert (gimple_call_num_args (stmt) == 3);
   tree ptr = gimple_call_arg (stmt, 0);
   tree typearg = gimple_call_arg (stmt, 1);
+  /* the 3rd argument of __builtin_clear_padding is to distinguish whether
+     this call is made by the user or by the compiler for automatic variable
+     initialization.  */
+  bool for_auto_init = (bool) TREE_INT_CST_LOW (gimple_call_arg (stmt, 2));
   tree type = TREE_TYPE (TREE_TYPE (typearg));
   location_t loc = gimple_location (stmt);
   clear_padding_struct buf;
@@ -4970,7 +4990,7 @@ gimple_fold_builtin_clear_padding (gimple_stmt_iterator *gsi)
 	  buf.sz = eltsz;
 	  buf.align = TYPE_ALIGN (elttype);
 	  buf.alias_type = build_pointer_type (elttype);
-	  clear_padding_emit_loop (&buf, elttype, end);
+	  clear_padding_emit_loop (&buf, elttype, end, for_auto_init);
 	}
     }
   else
@@ -4983,7 +5003,7 @@ gimple_fold_builtin_clear_padding (gimple_stmt_iterator *gsi)
 	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
 	}
       buf.alias_type = build_pointer_type (type);
-      clear_padding_type (&buf, type, buf.sz);
+      clear_padding_type (&buf, type, buf.sz, for_auto_init);
       clear_padding_flush (&buf, true);
     }
 

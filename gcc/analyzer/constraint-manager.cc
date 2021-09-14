@@ -2088,10 +2088,11 @@ constraint_manager::get_or_add_equiv_class (const svalue *sval)
 
   /* Convert all NULL pointers to (void *) to avoid state explosions
      involving all of the various (foo *)NULL vs (bar *)NULL.  */
-  if (POINTER_TYPE_P (sval->get_type ()))
-    if (tree cst = sval->maybe_get_constant ())
-      if (zerop (cst))
-	sval = m_mgr->get_or_create_constant_svalue (null_pointer_node);
+  if (sval->get_type ())
+    if (POINTER_TYPE_P (sval->get_type ()))
+      if (tree cst = sval->maybe_get_constant ())
+	if (zerop (cst))
+	  sval = m_mgr->get_or_create_constant_svalue (null_pointer_node);
 
   /* Try svalue match.  */
   if (get_equiv_class_by_svalue (sval, &result))

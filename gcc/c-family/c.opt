@@ -722,6 +722,11 @@ Winit-list-lifetime
 C++ ObjC++ Var(warn_init_list) Warning Init(1)
 Warn about uses of std::initializer_list that can result in dangling pointers.
 
+Winterference-size
+C++ ObjC++ Var(warn_interference_size) Warning Init(1)
+Warn about nonsensical values of --param destructive-interference-size or
+constructive-interference-size.
+
 Wimplicit
 C ObjC Var(warn_implicit) Warning LangEnabledBy(C ObjC,Wall)
 Warn about implicit declarations.

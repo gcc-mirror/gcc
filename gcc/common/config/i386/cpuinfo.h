@@ -46,6 +46,10 @@ struct __processor_model2
 # define CHECK___builtin_cpu_is(cpu)
 #endif
 
+#ifndef CHECK___builtin_cpu_supports
+# define CHECK___builtin_cpu_supports(isa)
+#endif
+
 /* Return non-zero if the processor has feature F.  */
 
 static inline int
@@ -731,6 +735,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX5124FMAPS);
 	  if (edx & bit_AVX512VP2INTERSECT)
 	    set_feature (FEATURE_AVX512VP2INTERSECT);
+	  if (edx & bit_AVX512FP16)
+	    set_feature (FEATURE_AVX512FP16);
 	}
 
       __cpuid_count (7, 1, eax, ebx, ecx, edx);
@@ -930,6 +936,50 @@ cpu_indicator_init (struct __processor_model *cpu_model,
     cpu_model->__cpu_vendor = VENDOR_NSC;
   else
     cpu_model->__cpu_vendor = VENDOR_OTHER;
+
+  if (has_cpu_feature (cpu_model, cpu_features2, FEATURE_LM)
+      && has_cpu_feature (cpu_model, cpu_features2, FEATURE_SSE2))
+    {
+      CHECK___builtin_cpu_supports ("x86-64");
+      set_cpu_feature (cpu_model, cpu_features2,
+		       FEATURE_X86_64_BASELINE);
+      if (has_cpu_feature (cpu_model, cpu_features2, FEATURE_CMPXCHG16B)
+	  && has_cpu_feature (cpu_model, cpu_features2, FEATURE_POPCNT)
+	  && has_cpu_feature (cpu_model, cpu_features2, FEATURE_LAHF_LM)
+	  && has_cpu_feature (cpu_model, cpu_features2, FEATURE_SSE4_2))
+	{
+	  CHECK___builtin_cpu_supports ("x86-64-v2");
+	  set_cpu_feature (cpu_model, cpu_features2,
+			   FEATURE_X86_64_V2);
+	  if (has_cpu_feature (cpu_model, cpu_features2, FEATURE_AVX2)
+	      && has_cpu_feature (cpu_model, cpu_features2, FEATURE_BMI)
+	      && has_cpu_feature (cpu_model, cpu_features2, FEATURE_BMI2)
+	      && has_cpu_feature (cpu_model, cpu_features2, FEATURE_F16C)
+	      && has_cpu_feature (cpu_model, cpu_features2, FEATURE_FMA)
+	      && has_cpu_feature (cpu_model, cpu_features2,
+				  FEATURE_LZCNT)
+	      && has_cpu_feature (cpu_model, cpu_features2,
+				  FEATURE_MOVBE))
+	    {
+	      CHECK___builtin_cpu_supports ("x86-64-v3");
+	      set_cpu_feature (cpu_model, cpu_features2,
+			       FEATURE_X86_64_V3);
+	      if (has_cpu_feature (cpu_model, cpu_features2,
+				   FEATURE_AVX512BW)
+		  && has_cpu_feature (cpu_model, cpu_features2,
+				      FEATURE_AVX512CD)
+		  && has_cpu_feature (cpu_model, cpu_features2,
+				      FEATURE_AVX512DQ)
+		  && has_cpu_feature (cpu_model, cpu_features2,
+				      FEATURE_AVX512VL))
+		{
+		  CHECK___builtin_cpu_supports ("x86-64-v4");
+		  set_cpu_feature (cpu_model, cpu_features2,
+				   FEATURE_X86_64_V4);
+		}
+	    }
+	}
+    }
 
   gcc_assert (cpu_model->__cpu_vendor < VENDOR_MAX);
   gcc_assert (cpu_model->__cpu_type < CPU_TYPE_MAX);

@@ -1698,6 +1698,7 @@ OBJS = \
 	typed-splay-tree.o \
 	unique-ptr-tests.o \
 	valtrack.o \
+	value-pointer-equiv.o \
 	value-query.o \
 	value-range.o \
 	value-range-equiv.o \

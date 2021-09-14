@@ -493,6 +493,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CONSTRUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
       OVL_NESTED_P (in OVERLOAD)
       DECL_MODULE_EXPORT_P (in _DECL)
+      PACK_EXPANSION_FORCE_EXTRA_ARGS_P (in *_PACK_EXPANSION)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
@@ -3903,6 +3904,10 @@ struct GTY(()) lang_decl {
 /* True iff this pack expansion is for auto... in lambda init-capture.  */
 #define PACK_EXPANSION_AUTO_P(NODE) TREE_LANG_FLAG_2 (NODE)
 
+/* True if we must use PACK_EXPANSION_EXTRA_ARGS and avoid partial
+   instantiation of this pack expansion.  */
+#define PACK_EXPANSION_FORCE_EXTRA_ARGS_P(NODE) TREE_LANG_FLAG_3 (NODE)
+
 /* True iff the wildcard can match a template parameter pack.  */
 #define WILDCARD_PACK_P(NODE) TREE_LANG_FLAG_0 (NODE)
 
@@ -4799,6 +4804,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Nonzero if TYPE is an anonymous union type.  */
 #define ANON_UNION_TYPE_P(NODE) \
   (TREE_CODE (NODE) == UNION_TYPE && ANON_AGGR_TYPE_P (NODE))
+
+/* For an ANON_AGGR_TYPE_P the single FIELD_DECL it is used with.  */
+#define ANON_AGGR_TYPE_FIELD(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->typeinfo_var)
 
 /* Define fields and accessors for nodes representing declared names.  */
 

@@ -1337,7 +1337,9 @@ find_array_element (gfc_constructor_base base, gfc_array_ref *ar,
   for (i = 0; i < ar->dimen; i++)
     {
       if (!gfc_reduce_init_expr (ar->as->lower[i])
-	  || !gfc_reduce_init_expr (ar->as->upper[i]))
+	  || !gfc_reduce_init_expr (ar->as->upper[i])
+	  || ar->as->upper[i]->expr_type != EXPR_CONSTANT
+	  || ar->as->lower[i]->expr_type != EXPR_CONSTANT)
 	{
 	  t = false;
 	  cons = NULL;
@@ -1350,9 +1352,6 @@ find_array_element (gfc_constructor_base base, gfc_array_ref *ar,
 	  cons = NULL;
 	  goto depart;
 	}
-
-      gcc_assert (ar->as->upper[i]->expr_type == EXPR_CONSTANT
-		  && ar->as->lower[i]->expr_type == EXPR_CONSTANT);
 
       /* Check the bounds.  */
       if ((ar->as->upper[i]
@@ -1725,8 +1724,8 @@ find_substring_ref (gfc_expr *p, gfc_expr **newp)
   *newp = gfc_copy_expr (p);
   free ((*newp)->value.character.string);
 
-  end = (gfc_charlen_t) mpz_get_ui (p->ref->u.ss.end->value.integer);
-  start = (gfc_charlen_t) mpz_get_ui (p->ref->u.ss.start->value.integer);
+  end = (gfc_charlen_t) mpz_get_si (p->ref->u.ss.end->value.integer);
+  start = (gfc_charlen_t) mpz_get_si (p->ref->u.ss.start->value.integer);
   if (end >= start)
     length = end - start + 1;
   else

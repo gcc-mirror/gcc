@@ -31,7 +31,8 @@ enum debug_info_type
   DINFO_TYPE_VMS = 4,		  /* VMS debug info.  */
   DINFO_TYPE_CTF = 5,		  /* CTF debug info.  */
   DINFO_TYPE_BTF = 6,		  /* BTF debug info.  */
-  DINFO_TYPE_MAX = DINFO_TYPE_BTF /* Marker only.  */
+  DINFO_TYPE_BTF_WITH_CORE = 7,	  /* BTF debug info with CO-RE relocations.  */
+  DINFO_TYPE_MAX = DINFO_TYPE_BTF_WITH_CORE /* Marker only.  */
 };
 
 #define NO_DEBUG      (0U)
@@ -47,6 +48,9 @@ enum debug_info_type
 #define CTF_DEBUG     (1U << DINFO_TYPE_CTF)
 /* Write BTF debug info (using btfout.c).  */
 #define BTF_DEBUG     (1U << DINFO_TYPE_BTF)
+/* Write BTF debug info for BPF CO-RE usecase (using btfout.c).  */
+#define BTF_WITH_CORE_DEBUG     (1U << DINFO_TYPE_BTF_WITH_CORE)
+
 /* Note: Adding new definitions to handle -combination- of debug formats,
    like VMS_AND_DWARF2_DEBUG is not recommended.  This definition remains
    here for historical reasons.  */
@@ -198,7 +202,8 @@ enum excess_precision
 {
   EXCESS_PRECISION_DEFAULT,
   EXCESS_PRECISION_FAST,
-  EXCESS_PRECISION_STANDARD
+  EXCESS_PRECISION_STANDARD,
+  EXCESS_PRECISION_FLOAT16
 };
 
 /* The options for which values of FLT_EVAL_METHOD are permissible.  */
@@ -274,6 +279,13 @@ enum vect_cost_model {
   VECT_COST_MODEL_DYNAMIC = -1,
   VECT_COST_MODEL_UNLIMITED = 0,
   VECT_COST_MODEL_DEFAULT = 1
+};
+
+/* Automatic variable initialization type.  */
+enum auto_init_type {
+  AUTO_INIT_UNINITIALIZED = 0,
+  AUTO_INIT_PATTERN = 1,
+  AUTO_INIT_ZERO = 2
 };
 
 /* Different instrumentation modes.  */

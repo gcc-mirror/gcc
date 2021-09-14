@@ -158,13 +158,6 @@ along with GCC; see the file COPYING3.  If not see
   while (0)
 #endif
 
-/* Keep the *_DEBUGGING_INFO defines from elfos.h except that stabs is
-   the default on LynxOS.  */
-
-#ifndef PREFERRED_DEBUGGING_TYPE
-# define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-#endif
-
 #ifndef TARGET_POSIX_IO
 # define TARGET_POSIX_IO
 #endif

@@ -5262,16 +5262,22 @@ rs6000_preferred_simd_mode (scalar_mode mode)
   return word_mode;
 }
 
-typedef struct _rs6000_cost_data
+struct rs6000_cost_data
 {
   struct loop *loop_info;
   unsigned cost[3];
+  /* Total number of vectorized stmts (loop only).  */
+  unsigned nstmts;
+  /* Total number of loads (loop only).  */
+  unsigned nloads;
+  /* Possible extra penalized cost on vector construction (loop only).  */
+  unsigned extra_ctor_cost;
   /* For each vectorized loop, this var holds TRUE iff a non-memory vector
      instruction is needed by the vectorization.  */
   bool vect_nonmem;
   /* Indicates this is costing for the scalar version of a loop or block.  */
   bool costing_for_scalar;
-} rs6000_cost_data;
+};
 
 /* Test for likely overcommitment of vector hardware resources.  If a
    loop iteration is relatively large, and too large a percentage of
@@ -5327,8 +5333,47 @@ rs6000_density_test (rs6000_cost_data *data)
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "density %d%%, cost %d exceeds threshold, penalizing "
-			 "loop body cost by %d%%", density_pct,
+			 "loop body cost by %d%%\n", density_pct,
 			 vec_cost + not_vec_cost, DENSITY_PENALTY);
+    }
+
+  /* Check whether we need to penalize the body cost to account
+     for excess strided or elementwise loads.  */
+  if (data->extra_ctor_cost > 0)
+    {
+      /* Threshold for load stmts percentage in all vectorized stmts.  */
+      const int DENSITY_LOAD_PCT_THRESHOLD = 45;
+      /* Threshold for total number of load stmts.  */
+      const int DENSITY_LOAD_NUM_THRESHOLD = 20;
+
+      gcc_assert (data->nloads <= data->nstmts);
+      unsigned int load_pct = (data->nloads * 100) / data->nstmts;
+
+      /* It's likely to be bounded by latency and execution resources
+	 from many scalar loads which are strided or elementwise loads
+	 into a vector if both conditions below are found:
+	   1. there are many loads, it's easy to result in a long wait
+	      for load units;
+	   2. load has a big proportion of all vectorized statements,
+	      it's not easy to schedule other statements to spread among
+	      the loads.
+	 One typical case is the innermost loop of the hotspot of SPEC2017
+	 503.bwaves_r without loop interchange.  */
+      if (data->nloads > DENSITY_LOAD_NUM_THRESHOLD
+	  && load_pct > DENSITY_LOAD_PCT_THRESHOLD)
+	{
+	  data->cost[vect_body] += data->extra_ctor_cost;
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Found %u loads and "
+			     "load pct. %u%% exceed "
+			     "the threshold, "
+			     "penalizing loop body "
+			     "cost by extra cost %u "
+			     "for ctor.\n",
+			     data->nloads, load_pct,
+			     data->extra_ctor_cost);
+	}
     }
 }
 
@@ -5337,12 +5382,15 @@ rs6000_density_test (rs6000_cost_data *data)
 static void *
 rs6000_init_cost (struct loop *loop_info, bool costing_for_scalar)
 {
-  rs6000_cost_data *data = XNEW (struct _rs6000_cost_data);
+  rs6000_cost_data *data = XNEW (rs6000_cost_data);
   data->loop_info = loop_info;
   data->cost[vect_prologue] = 0;
   data->cost[vect_body]     = 0;
   data->cost[vect_epilogue] = 0;
   data->vect_nonmem = false;
+  data->nstmts = 0;
+  data->nloads = 0;
+  data->extra_ctor_cost = 0;
   data->costing_for_scalar = costing_for_scalar;
   return data;
 }
@@ -5370,6 +5418,70 @@ rs6000_adjust_vect_cost_per_stmt (enum vect_cost_for_stmt kind,
   return 0;
 }
 
+/* Helper function for add_stmt_cost.  Check each statement cost
+   entry, gather information and update the target_cost fields
+   accordingly.  */
+static void
+rs6000_update_target_cost_per_stmt (rs6000_cost_data *data,
+				    enum vect_cost_for_stmt kind,
+				    struct _stmt_vec_info *stmt_info,
+				    enum vect_cost_model_location where,
+				    int stmt_cost,
+				    unsigned int orig_count)
+{
+
+  /* Check whether we're doing something other than just a copy loop.
+     Not all such loops may be profitably vectorized; see
+     rs6000_finish_cost.  */
+  if (kind == vec_to_scalar
+      || kind == vec_perm
+      || kind == vec_promote_demote
+      || kind == vec_construct
+      || kind == scalar_to_vec
+      || (where == vect_body && kind == vector_stmt))
+    data->vect_nonmem = true;
+
+  /* Gather some information when we are costing the vectorized instruction
+     for the statements located in a loop body.  */
+  if (!data->costing_for_scalar && data->loop_info && where == vect_body)
+    {
+      data->nstmts += orig_count;
+
+      if (kind == scalar_load || kind == vector_load
+	  || kind == unaligned_load || kind == vector_gather_load)
+	data->nloads += orig_count;
+
+      /* Power processors do not currently have instructions for strided
+	 and elementwise loads, and instead we must generate multiple
+	 scalar loads.  This leads to undercounting of the cost.  We
+	 account for this by scaling the construction cost by the number
+	 of elements involved, and saving this as extra cost that we may
+	 or may not need to apply.  When finalizing the cost of the loop,
+	 the extra penalty is applied when the load density heuristics
+	 are satisfied.  */
+      if (kind == vec_construct && stmt_info
+	  && STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
+	  && (STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
+	      || STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_STRIDED_SLP))
+	{
+	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+	  unsigned int nunits = vect_nunits_for_cost (vectype);
+	  unsigned int extra_cost = nunits * stmt_cost;
+	  /* As function rs6000_builtin_vectorization_cost shows, we have
+	     priced much on V16QI/V8HI vector construction as their units,
+	     if we penalize them with nunits * stmt_cost, it can result in
+	     an unreliable body cost, eg: for V16QI on Power8, stmt_cost
+	     is 20 and nunits is 16, the extra cost is 320 which looks
+	     much exaggerated.  So let's use one maximum bound for the
+	     extra penalized cost for vector construction here.  */
+	  const unsigned int MAX_PENALIZED_COST_FOR_CTOR = 12;
+	  if (extra_cost > MAX_PENALIZED_COST_FOR_CTOR)
+	    extra_cost = MAX_PENALIZED_COST_FOR_CTOR;
+	  data->extra_ctor_cost += extra_cost;
+	}
+    }
+}
+
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
 static unsigned
@@ -5389,6 +5501,7 @@ rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
+      unsigned int orig_count = count;
       if (where == vect_body && stmt_info
 	  && stmt_in_inner_loop_p (vinfo, stmt_info))
 	{
@@ -5400,14 +5513,8 @@ rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
       retval = (unsigned) (count * stmt_cost);
       cost_data->cost[where] += retval;
 
-      /* Check whether we're doing something other than just a copy loop.
-	 Not all such loops may be profitably vectorized; see
-	 rs6000_finish_cost.  */
-      if ((kind == vec_to_scalar || kind == vec_perm
-	   || kind == vec_promote_demote || kind == vec_construct
-	   || kind == scalar_to_vec)
-	  || (where == vect_body && kind == vector_stmt))
-	cost_data->vect_nonmem = true;
+      rs6000_update_target_cost_per_stmt (cost_data, kind, stmt_info, where,
+					  stmt_cost, orig_count);
     }
 
   return retval;
