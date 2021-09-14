@@ -4157,16 +4157,16 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   This switch enables most warnings from the GCC back end.
   The code generator detects a number of warning situations that are missed
   by the GNAT front end, and this switch can be used to activate them.
-  The use of this switch also sets the default front end warning mode to
-  :switch:`-gnatwa`, that is, most front end warnings activated as well.
+  The use of this switch also sets the default front-end warning mode to
+  :switch:`-gnatwa`, that is, most front-end warnings are activated as well.
 
 
 .. index:: -w (gcc)
 
 :switch:`-w`
   Conversely, this switch suppresses warnings from the GCC back end.
-  The use of this switch also sets the default front end warning mode to
-  :switch:`-gnatws`, that is, front end warnings suppressed as well.
+  The use of this switch also sets the default front-end warning mode to
+  :switch:`-gnatws`, that is, front-end warnings are suppressed as well.
 
 
 .. index:: -Werror (gcc)
@@ -4175,6 +4175,9 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   This switch causes warnings from the GCC back end to be treated as
   errors.  The warning string still appears, but the warning messages are
   counted as errors, and prevent the generation of an object file.
+  The use of this switch also sets the default front-end warning mode to
+  :switch:`-gnatwe`, that is, front-end warning messages and style check
+  messages are treated as errors as well.
 
 
 A string of warning parameters can be used in the same parameter. For example::
