@@ -4329,6 +4329,7 @@ update_pointer_to (tree old_type, tree new_type)
 	    TREE_TYPE (t) = new_type;
 	    if (TYPE_NULL_BOUNDS (t))
 	      TREE_TYPE (TREE_OPERAND (TYPE_NULL_BOUNDS (t), 0)) = new_type;
+	    TYPE_CANONICAL (t) = TYPE_CANONICAL (TYPE_POINTER_TO (new_type));
 	  }
 
       /* Chain REF and its variants at the end.  */
@@ -4345,7 +4346,10 @@ update_pointer_to (tree old_type, tree new_type)
       /* Now adjust them.  */
       for (; ref; ref = TYPE_NEXT_REF_TO (ref))
 	for (t = TYPE_MAIN_VARIANT (ref); t; t = TYPE_NEXT_VARIANT (t))
-	  TREE_TYPE (t) = new_type;
+	  {
+	    TREE_TYPE (t) = new_type;
+	    TYPE_CANONICAL (t) = TYPE_CANONICAL (TYPE_REFERENCE_TO (new_type));
+	  }
 
       TYPE_POINTER_TO (old_type) = NULL_TREE;
       TYPE_REFERENCE_TO (old_type) = NULL_TREE;
