@@ -90,26 +90,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         constexpr _Head_base(_UHead&& __h)
 	: _Head(std::forward<_UHead>(__h)) { }
 
+      _GLIBCXX20_CONSTEXPR
       _Head_base(allocator_arg_t, __uses_alloc0)
       : _Head() { }
 
       template<typename _Alloc>
+	_GLIBCXX20_CONSTEXPR
 	_Head_base(allocator_arg_t, __uses_alloc1<_Alloc> __a)
 	: _Head(allocator_arg, *__a._M_a) { }
 
       template<typename _Alloc>
+	_GLIBCXX20_CONSTEXPR
 	_Head_base(allocator_arg_t, __uses_alloc2<_Alloc> __a)
 	: _Head(*__a._M_a) { }
 
       template<typename _UHead>
+	_GLIBCXX20_CONSTEXPR
 	_Head_base(__uses_alloc0, _UHead&& __uhead)
 	: _Head(std::forward<_UHead>(__uhead)) { }
 
       template<typename _Alloc, typename _UHead>
+	_GLIBCXX20_CONSTEXPR
 	_Head_base(__uses_alloc1<_Alloc> __a, _UHead&& __uhead)
 	: _Head(allocator_arg, *__a._M_a, std::forward<_UHead>(__uhead)) { }
 
       template<typename _Alloc, typename _UHead>
+	_GLIBCXX20_CONSTEXPR
 	_Head_base(__uses_alloc2<_Alloc> __a, _UHead&& __uhead)
 	: _Head(std::forward<_UHead>(__uhead), *__a._M_a) { }
 
@@ -141,10 +147,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_head_impl() { }
 
       template<typename _Alloc>
+	_GLIBCXX20_CONSTEXPR
 	_Head_base(allocator_arg_t, __uses_alloc1<_Alloc> __a)
 	: _M_head_impl(allocator_arg, *__a._M_a) { }
 
       template<typename _Alloc>
+	_GLIBCXX20_CONSTEXPR
 	_Head_base(allocator_arg_t, __uses_alloc2<_Alloc> __a)
 	: _M_head_impl(*__a._M_a) { }
 
@@ -154,11 +162,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_head_impl(std::forward<_UHead>(__uhead)) { }
 
       template<typename _Alloc, typename _UHead>
+	_GLIBCXX20_CONSTEXPR
 	_Head_base(__uses_alloc1<_Alloc> __a, _UHead&& __uhead)
 	: _M_head_impl(allocator_arg, *__a._M_a, std::forward<_UHead>(__uhead))
 	{ }
 
       template<typename _Alloc, typename _UHead>
+	_GLIBCXX20_CONSTEXPR
 	_Head_base(__uses_alloc2<_Alloc> __a, _UHead&& __uhead)
 	: _M_head_impl(std::forward<_UHead>(__uhead), *__a._M_a) { }
 
@@ -255,6 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           _Base(__tag, __use_alloc<_Head>(__a)) { }
 
       template<typename _Alloc>
+	_GLIBCXX20_CONSTEXPR
 	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
 		    const _Head& __head, const _Tail&... __tail)
 	: _Inherited(__tag, __a, __tail...),
@@ -389,6 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Base(__tag, __use_alloc<_Head>(__a)) { }
 
       template<typename _Alloc>
+	_GLIBCXX20_CONSTEXPR
 	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
 		    const _Head& __head)
 	: _Base(__use_alloc<_Head, _Alloc, _Head>(__a), __head) { }
@@ -872,6 +884,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class tuple<>
     {
     public:
+      _GLIBCXX20_CONSTEXPR
       void swap(tuple&) noexcept { /* no-op */ }
       // We need the default since we're going to define no-op
       // allocator constructors.
