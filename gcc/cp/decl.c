@@ -4756,7 +4756,7 @@ cxx_init_decl_processing (void)
   /* Check that the hardware interference sizes are at least
      alignof(max_align_t), as required by the standard.  */
   const int max_align = max_align_t_align () / BITS_PER_UNIT;
-  if (param_destruct_interfere_size)
+  if (global_options_set.x_param_destruct_interfere_size)
     {
       if (param_destruct_interfere_size < max_align)
 	error ("%<--param destructive-interference-size=%d%> is less than "
@@ -4767,11 +4767,13 @@ cxx_init_decl_processing (void)
 		 "is less than %<--param l1-cache-line-size=%d%>",
 		 param_destruct_interfere_size, param_l1_cache_line_size);
     }
+  else if (param_destruct_interfere_size)
+    /* Assume the internal value is OK.  */;
   else if (param_l1_cache_line_size >= max_align)
     param_destruct_interfere_size = param_l1_cache_line_size;
   /* else leave it unset.  */
 
-  if (param_construct_interfere_size)
+  if (global_options_set.x_param_construct_interfere_size)
     {
       if (param_construct_interfere_size < max_align)
 	error ("%<--param constructive-interference-size=%d%> is less than "
@@ -4783,6 +4785,8 @@ cxx_init_decl_processing (void)
 		 "is greater than %<--param l1-cache-line-size=%d%>",
 		 param_construct_interfere_size, param_l1_cache_line_size);
     }
+  else if (param_construct_interfere_size)
+    /* Assume the internal value is OK.  */;
   else if (param_l1_cache_line_size >= max_align)
     param_construct_interfere_size = param_l1_cache_line_size;
 }
