@@ -1,3 +1,35 @@
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (validate_size): Do not issue an error if the
+	old size has overflowed.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): For vector types, make
+	the representative array the debug type.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (update_pointer_to): Set TYPE_CANONICAL on
+	pointer and reference types.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (can_materialize_object_renaming_p): Do not
+	call UI_Is_In_Int_Range on the result of Normalized_First_Bit.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <is_type>: Declare new
+	constant.  Adjust error message issued by validate_size in the case
+	of by-reference types.
+	(validate_size): Always use the error strings passed by the caller.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Strict_Alignment): Do not set the flag for
+	a bit-packed array type, even if it is a by-reference type.
+
 2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (finish_subprog_decl): Remove obsolete line.

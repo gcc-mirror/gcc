@@ -1,3 +1,11 @@
+2021-09-14  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	Backported from master:
+	2021-09-07  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/97142
+	* gcc.target/powerpc/pr97142.c: New test.
+
 2021-09-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
