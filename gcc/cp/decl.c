@@ -14847,9 +14847,11 @@ grok_special_member_properties (tree decl)
 	  if (ctor > 1)
 	    TYPE_HAS_CONST_COPY_CTOR (class_type) = 1;
 	}
-      else if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
+
+      if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
 	TYPE_HAS_DEFAULT_CONSTRUCTOR (class_type) = 1;
-      else if (is_list_ctor (decl))
+
+      if (is_list_ctor (decl))
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
       if (DECL_DECLARED_CONSTEXPR_P (decl)
