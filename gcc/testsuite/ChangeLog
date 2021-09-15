@@ -1,3 +1,152 @@
+2021-09-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102311
+	* gfortran.dg/entry_25.f90: New test.
+
+2021-09-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-6.c: Add second call to xxsetacc
+	built-in.  Update instruction counts.
+
+2021-09-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102163
+	* g++.dg/cpp0x/constexpr-empty17.C: New test.
+
+2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102295
+	* g++.target/i386/pr102295.C: New test.
+
+2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102305
+	* g++.dg/cpp0x/pr102305.C: New test.
+
+2021-09-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102313
+	* gfortran.dg/goacc/unexpected-end.f90: New test.
+	* gfortran.dg/gomp/unexpected-end.f90: New test.
+
+2021-09-14  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/gcov.py: Fix failing pytests as gcov.json.gz
+	  filename was changed in b777f228b481ae881a7fbb09de367a053740932c.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/enum_rep2.adb: New test.
+
+2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/atomic-29.c: Add -march=pentium
+	dg-additional-options for ia32.  Use sync_long_long effective target
+	instead of sync_int_long.
+	* lib/target-supports.exp (check_effective_target_sync_long_long): Fix
+	a syntax error.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-helper.h (V512):
+	Add xmm component.
+	* gcc.target/i386/avx512fp16-vfpclassph-1a.c: New test.
+	* gcc.target/i386/avx512fp16-vfpclassph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfpclasssh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfpclasssh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vgetexpph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vgetexpph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vgetexpsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vgetexpsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vgetmantph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vgetmantph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vgetmantsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vgetmantsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfpclassph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfpclassph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vgetexpph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vgetexpph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vgetmantph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vgetmantph-1b.c: Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add test for new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add test for new intrinsics.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-helper.h (_ROUND_CUR): New macro.
+	* gcc.target/i386/avx512fp16-vreduceph-1a.c: New test.
+	* gcc.target/i386/avx512fp16-vreduceph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vreducesh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vreducesh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vrndscaleph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vrndscaleph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vrndscalesh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vrndscalesh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vreduceph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vreduceph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vrndscaleph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vrndscaleph-1b.c: Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add test for new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add test for new intrinsics.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-vrcpph-1a.c: New test.
+	* gcc.target/i386/avx512fp16-vrcpph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vrcpsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vrcpsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vscalefph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vscalefph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vscalefsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vscalefsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vrcpph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vrcpph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vscalefph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vscalefph-1b.c: Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add test for new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add test for new intrinsics.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-vrsqrtph-1a.c: New test.
+	* gcc.target/i386/avx512fp16-vrsqrtph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vrsqrtsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vrsqrtsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vsqrtph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vsqrtph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vsqrtsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vsqrtsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vrsqrtph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vrsqrtph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vsqrtph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vsqrtph-1b.c: Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add test for new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add test for new intrinsics.
+	* gcc.target/i386/sse-22.c: Ditto.
+
 2021-09-13  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/82314

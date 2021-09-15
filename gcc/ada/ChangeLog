@@ -1,3 +1,71 @@
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/101970
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Enum_Rep>:
+	Use an unchecked conversion instead of a regular conversion in the
+	enumeration case and remove Conversion_OK flag in the integer case.
+	<Attribute_Pos>: Remove superfluous test.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (validate_size): Do not issue an error if the
+	old size has overflowed.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): For vector types, make
+	the representative array the debug type.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_subprog_type): Turn variable
+	into constant.  Capitalize GCC in warning message.
+	(intrin_arglists_compatible_p): Change parameter to pointer-to-const
+	Adjust warning messages.  Turn warning into error for vector types.
+	(intrin_return_compatible_p): Likewise.
+	(intrin_profiles_compatible_p): Change parameter to pointer-to-const
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-atopri.ads (bool): Delete.
+	(Atomic_Test_And_Set): Replace bool with Boolean.
+	(Atomic_Always_Lock_Free): Likewise.
+	* libgnat/s-aoinar.adb (Is_Lock_Free): Adjust.
+	* libgnat/s-aomoar.adb (Is_Lock_Free): Likewise.
+	* libgnat/s-aotase.adb (Atomic_Test_And_Set): Likewise.
+	* libgnat/s-atopex.adb (Atomic_Compare_And_Exchange): Likewise.
+	* gcc-interface/decl.c: Include gimple-expr.h.
+	(intrin_types_incompatible_p): Delete.
+	(intrin_arglists_compatible_p): Call types_compatible_p.
+	(intrin_return_compatible_p): Likewise.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (update_pointer_to): Set TYPE_CANONICAL on
+	pointer and reference types.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/101385
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(-Wall): Minor fixes.
+	(-w): Likewise.
+	(-Werror): Document that it also sets -gnatwe by default.
+	* gcc-interface/lang-specs.h (ada): Expand -gnatwe if -Werror is
+	passed and move expansion of -gnatw switches to before -gnatez.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (can_materialize_object_renaming_p): Do not
+	call UI_Is_In_Int_Range on the result of Normalized_First_Bit.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <is_type>: Declare new
+	constant.  Adjust error message issued by validate_size in the case
+	of by-reference types.
+	(validate_size): Always use the error strings passed by the caller.
+
 2021-09-08  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc-interface/misc.c (gnat_post_options): Issue an error for

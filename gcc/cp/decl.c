@@ -4756,7 +4756,7 @@ cxx_init_decl_processing (void)
   /* Check that the hardware interference sizes are at least
      alignof(max_align_t), as required by the standard.  */
   const int max_align = max_align_t_align () / BITS_PER_UNIT;
-  if (param_destruct_interfere_size)
+  if (global_options_set.x_param_destruct_interfere_size)
     {
       if (param_destruct_interfere_size < max_align)
 	error ("%<--param destructive-interference-size=%d%> is less than "
@@ -4767,11 +4767,13 @@ cxx_init_decl_processing (void)
 		 "is less than %<--param l1-cache-line-size=%d%>",
 		 param_destruct_interfere_size, param_l1_cache_line_size);
     }
+  else if (param_destruct_interfere_size)
+    /* Assume the internal value is OK.  */;
   else if (param_l1_cache_line_size >= max_align)
     param_destruct_interfere_size = param_l1_cache_line_size;
   /* else leave it unset.  */
 
-  if (param_construct_interfere_size)
+  if (global_options_set.x_param_construct_interfere_size)
     {
       if (param_construct_interfere_size < max_align)
 	error ("%<--param constructive-interference-size=%d%> is less than "
@@ -4783,6 +4785,8 @@ cxx_init_decl_processing (void)
 		 "is greater than %<--param l1-cache-line-size=%d%>",
 		 param_construct_interfere_size, param_l1_cache_line_size);
     }
+  else if (param_construct_interfere_size)
+    /* Assume the internal value is OK.  */;
   else if (param_l1_cache_line_size >= max_align)
     param_construct_interfere_size = param_l1_cache_line_size;
 }
@@ -14843,9 +14847,11 @@ grok_special_member_properties (tree decl)
 	  if (ctor > 1)
 	    TYPE_HAS_CONST_COPY_CTOR (class_type) = 1;
 	}
-      else if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
+
+      if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
 	TYPE_HAS_DEFAULT_CONSTRUCTOR (class_type) = 1;
-      else if (is_list_ctor (decl))
+
+      if (is_list_ctor (decl))
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
       if (DECL_DECLARED_CONSTEXPR_P (decl)

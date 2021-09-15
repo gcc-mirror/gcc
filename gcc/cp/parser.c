@@ -6379,7 +6379,8 @@ cp_parser_unqualified_id (cp_parser* parser,
 
 	/* DR 2237 (C++20 only): A simple-template-id is no longer valid as the
 	   declarator-id of a constructor or destructor.  */
-	if (token->type == CPP_TEMPLATE_ID && cxx_dialect >= cxx20)
+	if (token->type == CPP_TEMPLATE_ID && declarator_p
+	    && cxx_dialect >= cxx20)
 	  {
 	    if (!cp_parser_simulate_error (parser))
 	      error_at (tilde_loc, "template-id not allowed for destructor");
@@ -18404,6 +18405,7 @@ cp_parser_template_name (cp_parser* parser,
 	    {
 	      /* We're optimizing away the call to cp_parser_lookup_name, but
 		 we still need to do this.  */
+	      parser->object_scope = parser->context->object_type;
 	      parser->context->object_type = NULL_TREE;
 	      return identifier;
 	    }
@@ -33574,7 +33576,8 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
   /* Set the scope from the stored value.  */
   parser->scope = saved_checks_value (check_value);
   parser->qualifying_scope = check_value->qualifying_scope;
-  parser->object_scope = NULL_TREE;
+  parser->object_scope = parser->context->object_type;
+  parser->context->object_type = NULL_TREE;
 }
 
 /* Consume tokens up through a non-nested END token.  Returns TRUE if we

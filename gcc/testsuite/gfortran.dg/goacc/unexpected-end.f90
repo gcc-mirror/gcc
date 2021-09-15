@@ -4,7 +4,7 @@
 
 !$acc end DATA  ! { dg-error "Unexpected !.ACC END DATA" }
 
-!$acc end HOST DATA  ! { dg-error "Unclassifiable OpenACC directive" }
+!$acc end HOST_DATA  ! { dg-error "Unexpected !.ACC END HOST_DATA" }
 
 !$acc end KERNELS  ! { dg-error "Unexpected !.ACC END KERNELS" }
 
@@ -19,5 +19,7 @@
 !$acc end SERIAL  ! { dg-error "Unexpected !.ACC END SERIAL" }
 
 !$acc end SERIAL LOOP  ! { dg-error "Unexpected !.ACC END SERIAL LOOP" }
+
+!$acc end EUPHORBIA LATHYRIS  ! { dg-error "Unclassifiable OpenACC directive" }
 
 end
