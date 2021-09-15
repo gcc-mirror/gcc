@@ -1,3 +1,59 @@
+2021-09-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (struct param_info): Add copy_var.
+	(build_actor_fn): Use simplified param references.
+	(register_param_uses): Likewise.
+	(rewrite_param_uses): Likewise.
+	(analyze_fn_parms): New function.
+	(coro_rewrite_function_body): Add proxies for the fn
+	parameters to the outer bind scope of the rewritten code.
+	(morph_fn_to_coro): Use simplified version of param ref.
+
+2021-09-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (coro_resume_fn_id, coro_destroy_fn_id,
+	coro_promise_id, coro_frame_needs_free_id, coro_resume_index_id,
+	coro_self_handle_id, coro_actor_continue_id,
+	coro_frame_i_a_r_c_id): New.
+	(coro_init_identifiers): Initialize new name identifiers.
+	(coro_promise_type_found_p): Use pre-built identifiers.
+	(struct await_xform_data): Remove unused fields.
+	(transform_await_expr): Delete code that is now unused.
+	(build_actor_fn): Simplify interface, use pre-built identifiers and
+	remove transforms that are no longer needed.
+	(build_destroy_fn): Use revised field names.
+	(register_local_var_uses): Use pre-built identifiers.
+	(coro_rewrite_function_body): Simplify interface, use pre-built
+	identifiers.  Generate proxy vars in the outer bind expr scope for the
+	implementation state that we wish to expose.
+	(morph_fn_to_coro): Adjust comments for new variable names, use pre-
+	built identifiers.  Remove unused code to generate frame entries for
+	the implementation state.  Adjust call for build_actor_fn.
+
+2021-09-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102163
+	* constexpr.c (cxx_eval_call_expression): After evaluating a
+	subobject constructor call for an empty union member, produce a
+	side effect that makes sure the member gets activated.
+
+2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102295
+	* decl.c (layout_var_decl): For aggregates ending with a flexible
+	array member, add the size of the initializer for that member to
+	DECL_SIZE and DECL_SIZE_UNIT.
+
+2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102305
+	* method.c (is_xible_helper): Call complete_type on to.
+
+2021-09-14  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cxx_init_decl_processing): Don't warn if L1 cache line
+	size is smaller than maxalign.
+
 2021-09-13  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (maybe_warn_about_constant_value):

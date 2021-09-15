@@ -1,3 +1,9 @@
+2021-09-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* resolver.cc (module_resolver::ModuleCompiledRequest):
+	Add a simple handler.
+	* resolver.h: Declare handler for ModuleCompiledRequest.
+
 2021-07-21  Iain Sandoe  <iain@sandoe.co.uk>
 	    Jakub Jelinek  <jakub@redhat.com>
 

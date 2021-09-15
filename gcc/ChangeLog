@@ -1,3 +1,243 @@
+2021-09-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/mma.md (unspec): Delete UNSPEC_MMA_XXSETACCZ.
+	(unspecv): Add UNSPECV_MMA_XXSETACCZ.
+	(*mma_xxsetaccz): Delete.
+	(mma_xxsetaccz): Change to define_insn.  Remove operand 1.
+	Use UNSPECV_MMA_XXSETACCZ.  Update comment.
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Use UNSPECV_MMA_XXSETACCZ.
+
+2021-09-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: Remove variables related to applying no-PIE
+	to the exes on $build.
+	* configure: Regenerate.
+	* configure.ac: Remove configuration related to applying
+	no-PIE to the exes on $build.
+
+2021-09-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (doloop_end): Add missing mode.
+	(loop_end): Likewise.
+
+2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (goa_stabilize_expr): Add depth argument, propagate
+	it to recursive calls, for depth above 7 just gimplify or return.
+	Perform a test even for MODIFY_EXPR, ADDR_EXPR, COMPOUND_EXPR with
+	__builtin_clear_padding and TARGET_EXPR.
+	(gimplify_omp_atomic): Adjust goa_stabilize_expr callers.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm_fpclass_sh_mask):
+	New intrinsic.
+	(_mm_mask_fpclass_sh_mask): Likewise.
+	(_mm512_mask_fpclass_ph_mask): Likewise.
+	(_mm512_fpclass_ph_mask): Likewise.
+	(_mm_getexp_sh): Likewise.
+	(_mm_mask_getexp_sh): Likewise.
+	(_mm_maskz_getexp_sh): Likewise.
+	(_mm512_getexp_ph): Likewise.
+	(_mm512_mask_getexp_ph): Likewise.
+	(_mm512_maskz_getexp_ph): Likewise.
+	(_mm_getexp_round_sh): Likewise.
+	(_mm_mask_getexp_round_sh): Likewise.
+	(_mm_maskz_getexp_round_sh): Likewise.
+	(_mm512_getexp_round_ph): Likewise.
+	(_mm512_mask_getexp_round_ph): Likewise.
+	(_mm512_maskz_getexp_round_ph): Likewise.
+	(_mm_getmant_sh): Likewise.
+	(_mm_mask_getmant_sh): Likewise.
+	(_mm_maskz_getmant_sh): Likewise.
+	(_mm512_getmant_ph): Likewise.
+	(_mm512_mask_getmant_ph): Likewise.
+	(_mm512_maskz_getmant_ph): Likewise.
+	(_mm_getmant_round_sh): Likewise.
+	(_mm_mask_getmant_round_sh): Likewise.
+	(_mm_maskz_getmant_round_sh): Likewise.
+	(_mm512_getmant_round_ph): Likewise.
+	(_mm512_mask_getmant_round_ph): Likewise.
+	(_mm512_maskz_getmant_round_ph): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_mask_fpclass_ph_mask):
+	New intrinsic.
+	(_mm_fpclass_ph_mask): Likewise.
+	(_mm256_mask_fpclass_ph_mask): Likewise.
+	(_mm256_fpclass_ph_mask): Likewise.
+	(_mm256_getexp_ph): Likewise.
+	(_mm256_mask_getexp_ph): Likewise.
+	(_mm256_maskz_getexp_ph): Likewise.
+	(_mm_getexp_ph): Likewise.
+	(_mm_mask_getexp_ph): Likewise.
+	(_mm_maskz_getexp_ph): Likewise.
+	(_mm256_getmant_ph): Likewise.
+	(_mm256_mask_getmant_ph): Likewise.
+	(_mm256_maskz_getmant_ph): Likewise.
+	(_mm_getmant_ph): Likewise.
+	(_mm_mask_getmant_ph): Likewise.
+	(_mm_maskz_getmant_ph): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtin types.
+	(ix86_expand_round_builtin): Ditto.
+	* config/i386/sse.md (vecmemsuffix): Add HF vector modes.
+	(<avx512>_getexp<mode><mask_name><round_saeonly_name>): Adjust
+	to support HF vector modes.
+	(avx512f_sgetexp<mode><mask_scalar_name><round_saeonly_scalar_name):
+	Ditto.
+	(avx512dq_fpclass<mode><mask_scalar_merge_name>): Ditto.
+	(avx512dq_vmfpclass<mode><mask_scalar_merge_name>): Ditto.
+	(<avx512>_getmant<mode><mask_name><round_saeonly_name>): Ditto.
+	(avx512f_vgetmant<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_reduce_ph):
+	New intrinsic.
+	(_mm512_mask_reduce_ph): Likewise.
+	(_mm512_maskz_reduce_ph): Likewise.
+	(_mm512_reduce_round_ph): Likewise.
+	(_mm512_mask_reduce_round_ph): Likewise.
+	(_mm512_maskz_reduce_round_ph): Likewise.
+	(_mm_reduce_sh): Likewise.
+	(_mm_mask_reduce_sh): Likewise.
+	(_mm_maskz_reduce_sh): Likewise.
+	(_mm_reduce_round_sh): Likewise.
+	(_mm_mask_reduce_round_sh): Likewise.
+	(_mm_maskz_reduce_round_sh): Likewise.
+	(_mm512_roundscale_ph): Likewise.
+	(_mm512_mask_roundscale_ph): Likewise.
+	(_mm512_maskz_roundscale_ph): Likewise.
+	(_mm512_roundscale_round_ph): Likewise.
+	(_mm512_mask_roundscale_round_ph): Likewise.
+	(_mm512_maskz_roundscale_round_ph): Likewise.
+	(_mm_roundscale_sh): Likewise.
+	(_mm_mask_roundscale_sh): Likewise.
+	(_mm_maskz_roundscale_sh): Likewise.
+	(_mm_roundscale_round_sh): Likewise.
+	(_mm_mask_roundscale_round_sh): Likewise.
+	(_mm_maskz_roundscale_round_sh): Likewise.
+	* config/i386/avx512fp16vlintrin.h: (_mm_reduce_ph):
+	New intrinsic.
+	(_mm_mask_reduce_ph): Likewise.
+	(_mm_maskz_reduce_ph): Likewise.
+	(_mm256_reduce_ph): Likewise.
+	(_mm256_mask_reduce_ph): Likewise.
+	(_mm256_maskz_reduce_ph): Likewise.
+	(_mm_roundscale_ph): Likewise.
+	(_mm_mask_roundscale_ph): Likewise.
+	(_mm_maskz_roundscale_ph): Likewise.
+	(_mm256_roundscale_ph): Likewise.
+	(_mm256_mask_roundscale_ph): Likewise.
+	(_mm256_maskz_roundscale_ph): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtin types.
+	(ix86_expand_round_builtin): Ditto.
+	* config/i386/sse.md (<mask_codefor>reducep<mode><mask_name>):
+	Renamed to ...
+	(<mask_codefor>reducep<mode><mask_name><round_saeonly_name>):
+	... this, and adjust for round operands.
+	(reduces<mode><mask_scalar_name>): Likewise, with ...
+	(reduces<mode><mask_scalar_name><round_saeonly_scalar_name):
+	... this.
+	(<avx512>_rndscale<mode><mask_name><round_saeonly_name>):
+	Adjust for HF vector modes.
+	(avx512f_rndscale<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Ditto.
+	(*avx512f_rndscale<mode><round_saeonly_name>): Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h: (_mm512_rcp_ph):
+	New intrinsic.
+	(_mm512_mask_rcp_ph): Likewise.
+	(_mm512_maskz_rcp_ph): Likewise.
+	(_mm_rcp_sh): Likewise.
+	(_mm_mask_rcp_sh): Likewise.
+	(_mm_maskz_rcp_sh): Likewise.
+	(_mm512_scalef_ph): Likewise.
+	(_mm512_mask_scalef_ph): Likewise.
+	(_mm512_maskz_scalef_ph): Likewise.
+	(_mm512_scalef_round_ph): Likewise.
+	(_mm512_mask_scalef_round_ph): Likewise.
+	(_mm512_maskz_scalef_round_ph): Likewise.
+	(_mm_scalef_sh): Likewise.
+	(_mm_mask_scalef_sh): Likewise.
+	(_mm_maskz_scalef_sh): Likewise.
+	(_mm_scalef_round_sh): Likewise.
+	(_mm_mask_scalef_round_sh): Likewise.
+	(_mm_maskz_scalef_round_sh): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_rcp_ph):
+	New intrinsic.
+	(_mm256_rcp_ph): Likewise.
+	(_mm_mask_rcp_ph): Likewise.
+	(_mm256_mask_rcp_ph): Likewise.
+	(_mm_maskz_rcp_ph): Likewise.
+	(_mm256_maskz_rcp_ph): Likewise.
+	(_mm_scalef_ph): Likewise.
+	(_mm256_scalef_ph): Likewise.
+	(_mm_mask_scalef_ph): Likewise.
+	(_mm256_mask_scalef_ph): Likewise.
+	(_mm_maskz_scalef_ph): Likewise.
+	(_mm256_maskz_scalef_ph): Likewise.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/sse.md (VFH_AVX512VL): New.
+	(avx512fp16_rcp<mode>2<mask_name>): Ditto.
+	(avx512fp16_vmrcpv8hf2<mask_scalar_name>): Ditto.
+	(avx512f_vmscalef<mode><mask_scalar_name><round_scalar_name>):
+	Adjust to support HF vector modes.
+	(<avx512>_scalef<mode><mask_name><round_name>): Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h: (_mm512_sqrt_ph):
+	New intrinsic.
+	(_mm512_mask_sqrt_ph): Likewise.
+	(_mm512_maskz_sqrt_ph): Likewise.
+	(_mm512_sqrt_round_ph): Likewise.
+	(_mm512_mask_sqrt_round_ph): Likewise.
+	(_mm512_maskz_sqrt_round_ph): Likewise.
+	(_mm512_rsqrt_ph): Likewise.
+	(_mm512_mask_rsqrt_ph): Likewise.
+	(_mm512_maskz_rsqrt_ph): Likewise.
+	(_mm_rsqrt_sh): Likewise.
+	(_mm_mask_rsqrt_sh): Likewise.
+	(_mm_maskz_rsqrt_sh): Likewise.
+	(_mm_sqrt_sh): Likewise.
+	(_mm_mask_sqrt_sh): Likewise.
+	(_mm_maskz_sqrt_sh): Likewise.
+	(_mm_sqrt_round_sh): Likewise.
+	(_mm_mask_sqrt_round_sh): Likewise.
+	(_mm_maskz_sqrt_round_sh): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_sqrt_ph): New intrinsic.
+	(_mm256_sqrt_ph): Likewise.
+	(_mm_mask_sqrt_ph): Likewise.
+	(_mm256_mask_sqrt_ph): Likewise.
+	(_mm_maskz_sqrt_ph): Likewise.
+	(_mm256_maskz_sqrt_ph): Likewise.
+	(_mm_rsqrt_ph): Likewise.
+	(_mm256_rsqrt_ph): Likewise.
+	(_mm_mask_rsqrt_ph): Likewise.
+	(_mm256_mask_rsqrt_ph): Likewise.
+	(_mm_maskz_rsqrt_ph): Likewise.
+	(_mm256_maskz_rsqrt_ph): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtins.
+	(ix86_expand_round_builtin): Ditto.
+	* config/i386/sse.md (VF_AVX512FP16VL): New.
+	(sqrt<mode>2): Adjust for HF vector modes.
+	(<sse>_sqrt<mode>2<mask_name><round_name>): Likewise.
+	(<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>):
+	Likewise.
+	(<sse>_rsqrt<mode>2<mask_name>): New.
+	(avx512fp16_vmrsqrtv8hf2<mask_scalar_name>): Likewise.
+
 2021-09-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR bootstrap/101574
