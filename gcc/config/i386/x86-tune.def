@@ -64,6 +64,21 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
 	  | m_BDVER | m_ZNVER | m_TREMONT | m_GENERIC)
 
+/* X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY: This knob avoids
+   partial write to the destination in scalar SSE conversion from FP
+   to FP.  */
+DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY,
+	  "sse_partial_reg_fp_converts_dependency",
+	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
+	  | m_BDVER | m_ZNVER | m_GENERIC)
+
+/* X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY: This knob avoids partial
+   write to the destination in scalar SSE conversion from integer to FP.  */
+DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY,
+	  "sse_partial_reg_converts_dependency",
+	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
+	  | m_BDVER | m_ZNVER | m_GENERIC)
+
 /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
    are resolved on SSE register parts instead of whole registers, so we may
    maintain just lower part of scalar values in proper format leaving the

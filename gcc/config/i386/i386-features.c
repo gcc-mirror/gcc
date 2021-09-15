@@ -2222,12 +2222,14 @@ remove_partial_avx_dependency (void)
 	    {
 	    case E_SFmode:
 	    case E_DFmode:
-	      if (TARGET_USE_VECTOR_FP_CONVERTS)
+	      if (TARGET_USE_VECTOR_FP_CONVERTS
+		  || !TARGET_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY)
 		continue;
 	      break;
 	    case E_SImode:
 	    case E_DImode:
-	      if (TARGET_USE_VECTOR_CONVERTS)
+	      if (TARGET_USE_VECTOR_CONVERTS
+		  || !TARGET_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY)
 		continue;
 	      break;
 	    default:
