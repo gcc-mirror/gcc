@@ -289,6 +289,8 @@ public:
 			       translated);
   }
 
+  void visit (AST::TraitObjectTypeOneBound &type) override;
+
 private:
   ASTLoweringType () : ASTLoweringBase (), translated (nullptr) {}
 

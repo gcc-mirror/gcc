@@ -367,6 +367,8 @@ public:
     // TODO: check to ensure invariants are met?
     return trait_bound;
   }
+
+  bool is_dyn () const { return has_dyn; }
 };
 
 class TypePath; // definition moved to "rust-path.h"

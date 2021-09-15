@@ -310,7 +310,6 @@ class TraitObjectTypeOneBound : public TypeNoBounds
 {
   bool has_dyn;
   TraitBound trait_bound;
-
   Location locus;
 
 protected:
@@ -318,37 +317,31 @@ protected:
    * than base */
   TraitObjectTypeOneBound *clone_type_impl () const override
   {
-    return new TraitObjectTypeOneBound (*this);
+    return new TraitObjectTypeOneBound (mappings, trait_bound, locus, has_dyn);
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   TraitObjectTypeOneBound *clone_type_no_bounds_impl () const override
   {
-    return new TraitObjectTypeOneBound (*this);
+    return new TraitObjectTypeOneBound (mappings, trait_bound, locus, has_dyn);
   }
 
 public:
   TraitObjectTypeOneBound (Analysis::NodeMapping mappings,
 			   TraitBound trait_bound, Location locus,
-			   bool is_dyn_dispatch = false)
+			   bool is_dyn_dispatch)
     : TypeNoBounds (mappings), has_dyn (is_dyn_dispatch),
       trait_bound (std::move (trait_bound)), locus (locus)
   {}
 
   std::string as_string () const override;
 
-  // Creates a trait bound (clone of this one's trait bound) - HACK
-  TraitBound *to_trait_bound (bool in_parens ATTRIBUTE_UNUSED) const override
-  {
-    /* NOTE: this assumes there is no dynamic dispatch specified- if there was,
-     * this cloning would not be required as parsing is unambiguous. */
-    return new HIR::TraitBound (trait_bound);
-  }
-
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  TraitBound &get_trait_bound () { return trait_bound; }
 };
 
 class TypePath; // definition moved to "rust-path.h"
