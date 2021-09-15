@@ -720,6 +720,14 @@ ResolveType::visit (AST::ArrayType &type)
   ResolveExpr::go (type.get_size_expr ().get (), type.get_node_id ());
 }
 
+void
+ResolveType::visit (AST::TraitObjectTypeOneBound &type)
+{
+  NodeId bound_resolved_id
+    = ResolveTypeBound::go (&type.get_trait_bound (), type.get_node_id ());
+  ok = bound_resolved_id != UNKNOWN_NODEID;
+}
+
 // rust-ast-resolve-item.h
 
 void

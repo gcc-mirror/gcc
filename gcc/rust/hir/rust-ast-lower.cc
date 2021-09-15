@@ -515,6 +515,29 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
   mappings->insert_hir_type (crate_num, hirid, translated);
 }
 
+void
+ASTLoweringType::visit (AST::TraitObjectTypeOneBound &type)
+{
+  HIR::TypeParamBound *b
+    = ASTLoweringTypeBounds::translate (&type.get_trait_bound ());
+  rust_assert (b->get_bound_type () == HIR::TypeParamBound::TRAITBOUND);
+  HIR::TraitBound *bb = static_cast<HIR::TraitBound *> (b);
+  HIR::TraitBound bound (*bb);
+  delete bb;
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 mappings->get_next_localdef_id (crate_num));
+
+  translated
+    = new HIR::TraitObjectTypeOneBound (mapping, std::move (bound),
+					type.get_locus (), type.is_dyn ());
+
+  mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
+			     translated);
+}
+
 // rust-ast-lower-base
 
 HIR::Type *
