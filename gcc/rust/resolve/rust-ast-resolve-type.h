@@ -359,6 +359,8 @@ public:
     type.get_type_pointed_to ()->accept_vis (*this);
   }
 
+  void visit (AST::TraitObjectTypeOneBound &type) override;
+
 private:
   ResolveType (NodeId parent, bool canonicalize_type_with_generics)
     : ResolverBase (parent),
