@@ -63,7 +63,8 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 }
 
 bool
-BaseType::bounds_compatible (const BaseType &other, Location locus) const
+BaseType::bounds_compatible (const BaseType &other, Location locus,
+			     bool emit_error) const
 {
   std::vector<std::reference_wrapper<const TypeBoundPredicate>>
     unsatisfied_bounds;
@@ -89,8 +90,9 @@ BaseType::bounds_compatible (const BaseType &other, Location locus) const
 	    missing_preds += ", ";
 	}
 
-      rust_error_at (r, "bounds not satisfied for %s %<%s%> is not satisfied",
-		     other.get_name ().c_str (), missing_preds.c_str ());
+      if (emit_error)
+	rust_error_at (r, "bounds not satisfied for %s %<%s%> is not satisfied",
+		       other.get_name ().c_str (), missing_preds.c_str ());
     }
 
   return unsatisfied_bounds.size () == 0;
@@ -2255,6 +2257,71 @@ ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
     }
 
   return projection;
+}
+
+void
+DynamicObjectType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+DynamicObjectType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
+std::string
+DynamicObjectType::as_string () const
+{
+  return "dyn [" + raw_bounds_as_string () + "]";
+}
+
+BaseType *
+DynamicObjectType::unify (BaseType *other)
+{
+  DynamicRules r (this);
+  return r.unify (other);
+}
+
+bool
+DynamicObjectType::can_eq (const BaseType *other, bool emit_errors) const
+{
+  DynamicCmp r (this, emit_errors);
+  return r.can_eq (other);
+}
+
+BaseType *
+DynamicObjectType::coerce (BaseType *other)
+{
+  DynamicCoercionRules r (this);
+  return r.coerce (other);
+}
+
+BaseType *
+DynamicObjectType::cast (BaseType *other)
+{
+  DynamicCastRules r (this);
+  return r.cast (other);
+}
+
+BaseType *
+DynamicObjectType::clone () const
+{
+  return new DynamicObjectType (get_ref (), get_ty_ref (), specified_bounds,
+				get_combined_refs ());
+}
+
+bool
+DynamicObjectType::is_equal (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    return false;
+
+  if (num_specified_bounds () != other.num_specified_bounds ())
+    return false;
+
+  return bounds_compatible (other, Location (), false);
 }
 
 // rust-tyty-call.h

@@ -610,6 +610,8 @@ public:
     translated = ctx->get_backend ()->unit_type ();
   }
 
+  void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
+
 private:
   TyTyResolveCompile (Context *ctx) : ctx (ctx), translated (nullptr) {}
 

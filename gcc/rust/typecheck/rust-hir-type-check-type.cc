@@ -221,5 +221,21 @@ TypeCheckType::resolve_segments (
   gcc_unreachable ();
 }
 
+void
+TypeCheckType::visit (HIR::TraitObjectTypeOneBound &type)
+{
+  std::vector<TyTy::TypeBoundPredicate> specified_bounds;
+
+  HIR::TraitBound &trait_bound = type.get_trait_bound ();
+  TraitReference *trait = resolve_trait_path (trait_bound.get_path ());
+  TyTy::TypeBoundPredicate predicate (trait->get_mappings ().get_defid (),
+				      trait_bound.get_locus ());
+
+  specified_bounds.push_back (std::move (predicate));
+
+  translated = new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (),
+					    std::move (specified_bounds));
+}
+
 } // namespace Resolver
 } // namespace Rust

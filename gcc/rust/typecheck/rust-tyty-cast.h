@@ -318,6 +318,17 @@ public:
 		   type.as_string ().c_str ());
   }
 
+  virtual void visit (DynamicObjectType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "invalid cast [%s] to [%s]",
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
+  }
+
 protected:
   BaseCastRules (BaseType *base)
     : mappings (Analysis::Mappings::get ()),
@@ -554,6 +565,19 @@ public:
   }
 
   void visit (ParamType &type) override
+  {
+    bool is_valid
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
+    if (is_valid)
+      {
+	resolved = type.clone ();
+	return;
+      }
+
+    BaseCastRules::visit (type);
+  }
+
+  void visit (DynamicObjectType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
@@ -1271,6 +1295,20 @@ private:
   BaseType *get_base () override { return base; }
 
   PlaceholderType *base;
+};
+
+class DynamicCastRules : public BaseCastRules
+{
+  using Rust::TyTy::BaseCastRules::visit;
+
+public:
+  DynamicCastRules (DynamicObjectType *base) : BaseCastRules (base), base (base)
+  {}
+
+private:
+  BaseType *get_base () override { return base; }
+
+  DynamicObjectType *base;
 };
 
 } // namespace TyTy
