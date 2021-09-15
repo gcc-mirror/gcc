@@ -61261,6 +61261,7 @@ all-bison: maybe-all-intl
 all-flex: maybe-all-intl
 all-m4: maybe-all-intl
 configure-target-libgo: maybe-all-target-libstdc++-v3
+configure-target-libffi: maybe-all-target-libstdc++-v3
 configure-target-liboffloadmic: maybe-configure-target-libgomp
 all-target-liboffloadmic: maybe-all-target-libgomp
 configure-target-newlib: maybe-all-binutils
