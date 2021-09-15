@@ -3718,6 +3718,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline string
   to_string(int __val)
+#if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_INT__) <= 32
+  noexcept // any 32-bit value fits in the SSO buffer
+#endif
   {
     const bool __neg = __val < 0;
     const unsigned __uval = __neg ? (unsigned)~__val + 1u : __val;
@@ -3729,6 +3732,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline string
   to_string(unsigned __val)
+#if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_INT__) <= 32
+  noexcept // any 32-bit value fits in the SSO buffer
+#endif
   {
     string __str(__detail::__to_chars_len(__val), '\0');
     __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
@@ -3737,6 +3743,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline string
   to_string(long __val)
+#if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_LONG__) <= 32
+  noexcept // any 32-bit value fits in the SSO buffer
+#endif
   {
     const bool __neg = __val < 0;
     const unsigned long __uval = __neg ? (unsigned long)~__val + 1ul : __val;
@@ -3748,6 +3757,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline string
   to_string(unsigned long __val)
+#if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_LONG__) <= 32
+  noexcept // any 32-bit value fits in the SSO buffer
+#endif
   {
     string __str(__detail::__to_chars_len(__val), '\0');
     __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
