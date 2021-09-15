@@ -1,3 +1,13 @@
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/enum_rep2.adb: New test.
+
+2021-09-14  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/97142
+	* gcc.target/powerpc/pr97142.c: New test.
+	(cherry-picked from 546ecb0054af302acf0839c7f3eb78598f8c0672)
+
 2021-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

@@ -1,3 +1,15 @@
+2021-09-14  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (is_load_insn1): Verify destination is a
+	register.
+	(is_store_insn1): Verify source is a register.
+
+2021-09-14  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/97142
+	* config/rs6000/rs6000.md (fmod<mode>3): New define_expand.
+	(remainder<mode>3): Likewise.
+
 2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
