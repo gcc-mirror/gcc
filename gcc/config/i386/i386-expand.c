@@ -14069,7 +14069,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	  tmp1 = gen_reg_rtx (SImode);
 	  emit_move_insn (tmp1, gen_lowpart (SImode, val));
 
-	  /* Insert the SImode value as low element of a V4SImode vector. */
+	  /* Insert the SImode value as low element of a V4SImode vector.  */
 	  tmp2 = gen_reg_rtx (V4SImode);
 	  emit_insn (gen_vec_setv4si_0 (tmp2, CONST0_RTX (V4SImode), tmp1));
 	  emit_move_insn (dperm.op0, gen_lowpart (mode, tmp2));
@@ -14653,7 +14653,7 @@ ix86_expand_vector_init_interleave (machine_mode mode,
   switch (mode)
     {
     case E_V8HFmode:
-      gen_load_even = gen_vec_setv8hf;
+      gen_load_even = gen_vec_interleave_lowv8hf;
       gen_interleave_first_low = gen_vec_interleave_lowv4si;
       gen_interleave_second_low = gen_vec_interleave_lowv2di;
       inner_mode = HFmode;
@@ -14688,35 +14688,40 @@ ix86_expand_vector_init_interleave (machine_mode mode,
       op = ops [i + i];
       if (inner_mode == HFmode)
 	{
-	  /* Convert HFmode to HImode.  */
-	  op1 = gen_reg_rtx (HImode);
-	  op1 = gen_rtx_SUBREG (HImode, force_reg (HFmode, op), 0);
-	  op = gen_reg_rtx (HImode);
-	  emit_move_insn (op, op1);
+	  rtx even, odd;
+	  /* Use vpuncklwd to pack 2 HFmode.  */
+	  op0 = gen_reg_rtx (V8HFmode);
+	  even = lowpart_subreg (V8HFmode, force_reg (HFmode, op), HFmode);
+	  odd = lowpart_subreg (V8HFmode,
+				force_reg (HFmode, ops[i + i + 1]),
+				HFmode);
+	  emit_insn (gen_load_even (op0, even, odd));
 	}
+      else
+	{
+	  /* Extend the odd elment to SImode using a paradoxical SUBREG.  */
+	  op0 = gen_reg_rtx (SImode);
+	  emit_move_insn (op0, gen_lowpart (SImode, op));
 
-      /* Extend the odd elment to SImode using a paradoxical SUBREG.  */
-      op0 = gen_reg_rtx (SImode);
-      emit_move_insn (op0, gen_lowpart (SImode, op));
+	  /* Insert the SImode value as low element of V4SImode vector.  */
+	  op1 = gen_reg_rtx (V4SImode);
+	  op0 = gen_rtx_VEC_MERGE (V4SImode,
+				   gen_rtx_VEC_DUPLICATE (V4SImode,
+							  op0),
+				   CONST0_RTX (V4SImode),
+				   const1_rtx);
+	  emit_insn (gen_rtx_SET (op1, op0));
 
-      /* Insert the SImode value as low element of V4SImode vector. */
-      op1 = gen_reg_rtx (V4SImode);
-      op0 = gen_rtx_VEC_MERGE (V4SImode,
-			       gen_rtx_VEC_DUPLICATE (V4SImode,
-						      op0),
-			       CONST0_RTX (V4SImode),
-			       const1_rtx);
-      emit_insn (gen_rtx_SET (op1, op0));
+	  /* Cast the V4SImode vector back to a vector in orignal mode.  */
+	  op0 = gen_reg_rtx (mode);
+	  emit_move_insn (op0, gen_lowpart (mode, op1));
 
-      /* Cast the V4SImode vector back to a vector in orignal mode.  */
-      op0 = gen_reg_rtx (mode);
-      emit_move_insn (op0, gen_lowpart (mode, op1));
-
-      /* Load even elements into the second position.  */
-      emit_insn (gen_load_even (op0,
-				force_reg (inner_mode,
-					   ops [i + i + 1]),
-				const1_rtx));
+	  /* Load even elements into the second position.  */
+	  emit_insn (gen_load_even (op0,
+				    force_reg (inner_mode,
+					       ops[i + i + 1]),
+				    const1_rtx));
+	}
 
       /* Cast vector to FIRST_IMODE vector.  */
       ops[i] = gen_reg_rtx (first_imode);
@@ -15197,6 +15202,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
   machine_mode inner_mode = GET_MODE_INNER (mode);
   machine_mode half_mode;
   bool use_vec_merge = false;
+  bool blendm_const = false;
   rtx tmp;
   static rtx (*gen_extract[7][2]) (rtx, rtx)
     = {
@@ -15384,7 +15390,14 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       return;
 
     case E_V8HFmode:
-      use_vec_merge = true;
+      if (TARGET_AVX2)
+	{
+	  mmode = SImode;
+	  gen_blendm = gen_sse4_1_pblendph;
+	  blendm_const = true;
+	}
+      else
+	use_vec_merge = true;
       break;
 
     case E_V8HImode:
@@ -15411,10 +15424,20 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       goto half;
 
     case E_V16HFmode:
-      half_mode = V8HFmode;
-      j = 6;
-      n = 8;
-      goto half;
+      if (TARGET_AVX2)
+	{
+	  mmode = SImode;
+	  gen_blendm = gen_avx2_pblendph;
+	  blendm_const = true;
+	  break;
+	}
+      else
+	{
+	  half_mode = V8HFmode;
+	  j = 6;
+	  n = 8;
+	  goto half;
+	}
 
     case E_V16HImode:
       half_mode = V8HImode;
@@ -15575,15 +15598,15 @@ quarter:
     {
       tmp = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (tmp, gen_rtx_VEC_DUPLICATE (mode, val)));
+      rtx merge_mask = gen_int_mode (HOST_WIDE_INT_1U << elt, mmode);
       /* The avx512*_blendm<mode> expanders have different operand order
 	 from VEC_MERGE.  In VEC_MERGE, the first input operand is used for
 	 elements where the mask is set and second input operand otherwise,
 	 in {sse,avx}*_*blend* the first input operand is used for elements
 	 where the mask is clear and second input operand otherwise.  */
-      emit_insn (gen_blendm (target, target, tmp,
-			     force_reg (mmode,
-					gen_int_mode (HOST_WIDE_INT_1U << elt,
-						      mmode))));
+      if (!blendm_const)
+	merge_mask = force_reg (mmode, merge_mask);
+      emit_insn (gen_blendm (target, target, tmp, merge_mask));
     }
   else if (use_vec_merge)
     {
