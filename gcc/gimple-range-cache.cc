@@ -760,7 +760,7 @@ ranger_cache::ranger_cache ()
   m_temporal = new temporal_cache;
   // If DOM info is available, spawn an oracle as well.
   if (dom_info_available_p (CDI_DOMINATORS))
-      m_oracle = new relation_oracle ();
+      m_oracle = new dom_oracle ();
     else
       m_oracle = NULL;
 
