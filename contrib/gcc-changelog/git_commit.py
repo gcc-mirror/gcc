@@ -811,5 +811,6 @@ class GitCommit:
         email = self.info.author.split(' ')[-1].strip('<>')
 
         # Verify that all characters are ASCII
+        # TODO: Python 3.7 provides a nicer function: isascii
         if len(email) != len(email.encode()):
             self.errors.append(Error(f'non-ASCII characters in git commit email address ({email})'))
