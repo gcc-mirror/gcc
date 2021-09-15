@@ -838,8 +838,6 @@ static char *         minipool_startobj;
    will be conditionalised if possible.  */
 static int max_insns_skipped = 5;
 
-extern FILE * asm_out_file;
-
 /* True if we are currently building a constant table.  */
 int making_const_table;
 
@@ -29408,7 +29406,7 @@ arm_dwarf_register_span (rtx rtl)
    epilogue.  */
 
 static void
-arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
+arm_unwind_emit_sequence (FILE * out_file, rtx p)
 {
   int i;
   HOST_WIDE_INT offset;
@@ -29452,14 +29450,14 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
 	padlast = offset - 4;
       gcc_assert (padlast == 0 || padlast == 4);
       if (padlast == 4)
-	fprintf (asm_out_file, "\t.pad #4\n");
+	fprintf (out_file, "\t.pad #4\n");
       reg_size = 4;
-      fprintf (asm_out_file, "\t.save {");
+      fprintf (out_file, "\t.save {");
     }
   else if (IS_VFP_REGNUM (reg))
     {
       reg_size = 8;
-      fprintf (asm_out_file, "\t.vsave {");
+      fprintf (out_file, "\t.vsave {");
     }
   else
     /* Unknown register type.  */
@@ -29485,13 +29483,13 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
       gcc_assert (reg >= lastreg);
 
       if (i != 1)
-	fprintf (asm_out_file, ", ");
+	fprintf (out_file, ", ");
       /* We can't use %r for vfp because we need to use the
 	 double precision register names.  */
       if (IS_VFP_REGNUM (reg))
-	asm_fprintf (asm_out_file, "d%d", (reg - FIRST_VFP_REGNUM) / 2);
+	asm_fprintf (out_file, "d%d", (reg - FIRST_VFP_REGNUM) / 2);
       else
-	asm_fprintf (asm_out_file, "%r", reg);
+	asm_fprintf (out_file, "%r", reg);
 
       if (flag_checking)
 	{
@@ -29509,15 +29507,15 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
 	  offset += reg_size;
 	}
     }
-  fprintf (asm_out_file, "}\n");
+  fprintf (out_file, "}\n");
   if (padfirst)
-    fprintf (asm_out_file, "\t.pad #%d\n", padfirst);
+    fprintf (out_file, "\t.pad #%d\n", padfirst);
 }
 
 /*  Emit unwind directives for a SET.  */
 
 static void
-arm_unwind_emit_set (FILE * asm_out_file, rtx p)
+arm_unwind_emit_set (FILE * out_file, rtx p)
 {
   rtx e0;
   rtx e1;
@@ -29534,12 +29532,12 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 	  || REGNO (XEXP (XEXP (e0, 0), 0)) != SP_REGNUM)
 	abort ();
 
-      asm_fprintf (asm_out_file, "\t.save ");
+      asm_fprintf (out_file, "\t.save ");
       if (IS_VFP_REGNUM (REGNO (e1)))
-	asm_fprintf(asm_out_file, "{d%d}\n",
+	asm_fprintf(out_file, "{d%d}\n",
 		    (REGNO (e1) - FIRST_VFP_REGNUM) / 2);
       else
-	asm_fprintf(asm_out_file, "{%r}\n", REGNO (e1));
+	asm_fprintf(out_file, "{%r}\n", REGNO (e1));
       break;
 
     case REG:
@@ -29552,7 +29550,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 	      || !CONST_INT_P (XEXP (e1, 1)))
 	    abort ();
 
-	  asm_fprintf (asm_out_file, "\t.pad #%wd\n",
+	  asm_fprintf (out_file, "\t.pad #%wd\n",
 		       -INTVAL (XEXP (e1, 1)));
 	}
       else if (REGNO (e0) == HARD_FRAME_POINTER_REGNUM)
@@ -29566,14 +29564,14 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 		abort ();
 	      reg = REGNO (XEXP (e1, 0));
 	      offset = INTVAL (XEXP (e1, 1));
-	      asm_fprintf (asm_out_file, "\t.setfp %r, %r, #%wd\n",
+	      asm_fprintf (out_file, "\t.setfp %r, %r, #%wd\n",
 			   HARD_FRAME_POINTER_REGNUM, reg,
 			   offset);
 	    }
 	  else if (REG_P (e1))
 	    {
 	      reg = REGNO (e1);
-	      asm_fprintf (asm_out_file, "\t.setfp %r, %r\n",
+	      asm_fprintf (out_file, "\t.setfp %r, %r\n",
 			   HARD_FRAME_POINTER_REGNUM, reg);
 	    }
 	  else
@@ -29582,7 +29580,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
       else if (REG_P (e1) && REGNO (e1) == SP_REGNUM)
 	{
 	  /* Move from sp to reg.  */
-	  asm_fprintf (asm_out_file, "\t.movsp %r\n", REGNO (e0));
+	  asm_fprintf (out_file, "\t.movsp %r\n", REGNO (e0));
 	}
      else if (GET_CODE (e1) == PLUS
 	      && REG_P (XEXP (e1, 0))
@@ -29590,7 +29588,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 	      && CONST_INT_P (XEXP (e1, 1)))
 	{
 	  /* Set reg to offset from sp.  */
-	  asm_fprintf (asm_out_file, "\t.movsp %r, #%d\n",
+	  asm_fprintf (out_file, "\t.movsp %r, #%d\n",
 		       REGNO (e0), (int)INTVAL(XEXP (e1, 1)));
 	}
       else
@@ -29606,7 +29604,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 /* Emit unwind directives for the given insn.  */
 
 static void
-arm_unwind_emit (FILE * asm_out_file, rtx_insn *insn)
+arm_unwind_emit (FILE * out_file, rtx_insn *insn)
 {
   rtx note, pat;
   bool handled_one = false;
@@ -29649,7 +29647,7 @@ arm_unwind_emit (FILE * asm_out_file, rtx_insn *insn)
 
 	    gcc_assert (src == stack_pointer_rtx);
 	    reg = REGNO (dest);
-	    asm_fprintf (asm_out_file, "\t.unwind_raw 0, 0x%x @ vsp = r%d\n",
+	    asm_fprintf (out_file, "\t.unwind_raw 0, 0x%x @ vsp = r%d\n",
 			 reg + 0x90, reg);
 	  }
 	  handled_one = true;
@@ -29682,12 +29680,12 @@ arm_unwind_emit (FILE * asm_out_file, rtx_insn *insn)
   switch (GET_CODE (pat))
     {
     case SET:
-      arm_unwind_emit_set (asm_out_file, pat);
+      arm_unwind_emit_set (out_file, pat);
       break;
 
     case SEQUENCE:
       /* Store multiple.  */
-      arm_unwind_emit_sequence (asm_out_file, pat);
+      arm_unwind_emit_sequence (out_file, pat);
       break;
 
     default:

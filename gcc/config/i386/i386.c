@@ -1567,7 +1567,7 @@ ix86_function_naked (const_tree fn)
 /* Write the extra assembler code needed to declare a function properly.  */
 
 void
-ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
+ix86_asm_output_function_label (FILE *out_file, const char *fname,
 				tree decl)
 {
   bool is_ms_hook = ix86_function_ms_hook_prologue (decl);
@@ -1581,14 +1581,14 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
       unsigned int filler_cc = 0xcccccccc;
 
       for (i = 0; i < filler_count; i += 4)
-        fprintf (asm_out_file, ASM_LONG " %#x\n", filler_cc);
+	fprintf (out_file, ASM_LONG " %#x\n", filler_cc);
     }
 
 #ifdef SUBTARGET_ASM_UNWIND_INIT
-  SUBTARGET_ASM_UNWIND_INIT (asm_out_file);
+  SUBTARGET_ASM_UNWIND_INIT (out_file);
 #endif
 
-  ASM_OUTPUT_LABEL (asm_out_file, fname);
+  ASM_OUTPUT_LABEL (out_file, fname);
 
   /* Output magic byte marker, if hot-patch attribute is set.  */
   if (is_ms_hook)
@@ -1597,14 +1597,14 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
 	{
 	  /* leaq [%rsp + 0], %rsp  */
 	  fputs (ASM_BYTE "0x48, 0x8d, 0xa4, 0x24, 0x00, 0x00, 0x00, 0x00\n",
-		 asm_out_file);
+		 out_file);
 	}
       else
 	{
           /* movl.s %edi, %edi
 	     push   %ebp
 	     movl.s %esp, %ebp */
-	  fputs (ASM_BYTE "0x8b, 0xff, 0x55, 0x8b, 0xec\n", asm_out_file);
+	  fputs (ASM_BYTE "0x8b, 0xff, 0x55, 0x8b, 0xec\n", out_file);
 	}
     }
 }
