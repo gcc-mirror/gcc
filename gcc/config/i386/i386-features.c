@@ -2210,15 +2210,32 @@ remove_partial_avx_dependency (void)
 	      != AVX_PARTIAL_XMM_UPDATE_TRUE)
 	    continue;
 
-	  if (!v4sf_const0)
-	    v4sf_const0 = gen_reg_rtx (V4SFmode);
-
 	  /* Convert PARTIAL_XMM_UPDATE_TRUE insns, DF -> SF, SF -> DF,
 	     SI -> SF, SI -> DF, DI -> SF, DI -> DF, to vec_dup and
 	     vec_merge with subreg.  */
 	  rtx src = SET_SRC (set);
 	  rtx dest = SET_DEST (set);
 	  machine_mode dest_mode = GET_MODE (dest);
+	  machine_mode src_mode = GET_MODE (XEXP (src, 0));
+
+	  switch (src_mode)
+	    {
+	    case E_SFmode:
+	    case E_DFmode:
+	      if (TARGET_USE_VECTOR_FP_CONVERTS)
+		continue;
+	      break;
+	    case E_SImode:
+	    case E_DImode:
+	      if (TARGET_USE_VECTOR_CONVERTS)
+		continue;
+	      break;
+	    default:
+	      break;
+	    }
+
+	  if (!v4sf_const0)
+	    v4sf_const0 = gen_reg_rtx (V4SFmode);
 
 	  rtx zero;
 	  machine_mode dest_vecmode;
