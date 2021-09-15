@@ -273,7 +273,7 @@ DEF_TUNE (X86_TUNE_SINGLE_STRINGOP, "single_stringop", m_386 | m_P4_NOCONA)
    move/set sequences of bytes with known size.  */
 DEF_TUNE (X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB,
 	  "prefer_known_rep_movsb_stosb",
-	  m_SKYLAKE | m_ALDERLAKE | m_CORE_AVX512)
+	  m_SKYLAKE | m_ALDERLAKE | m_TREMONT | m_CORE_AVX512)
 
 /* X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES: Enable generation of
    compact prologues and epilogues by issuing a misaligned moves.  This
