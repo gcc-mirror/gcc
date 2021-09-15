@@ -22,6 +22,7 @@
 #include "rust-compile-struct-field-expr.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
+#include "rust-hir-dot-operator.h"
 
 namespace Rust {
 namespace Compile {
@@ -171,10 +172,11 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	  // item so its up to us to figure out if this path should resolve
 	  // to an trait-impl-block-item or if it can be defaulted to the
 	  // trait-impl-item's definition
+
+	  auto root = receiver->get_root ();
 	  std::vector<Resolver::PathProbeCandidate> candidates
 	    = Resolver::PathProbeType::Probe (
-	      receiver, expr.get_method_name ().get_segment (), true, false,
-	      true);
+	      root, expr.get_method_name ().get_segment (), true, false, true);
 
 	  if (candidates.size () == 0)
 	    {
@@ -185,6 +187,11 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 							  &trait_item_ref);
 	      rust_assert (ok);				    // found
 	      rust_assert (trait_item_ref->is_optional ()); // has definition
+
+	      // FIXME Optional means it has a definition and an associated
+	      // block which can be a default implementation, if it does not
+	      // contain an implementation we should actually return
+	      // error_mark_node
 
 	      TyTy::BaseType *self_type = nullptr;
 	      if (!ctx->get_tyctx ()->lookup_type (
@@ -209,10 +216,19 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	    }
 	  else
 	    {
-	      Resolver::PathProbeCandidate &candidate = candidates.at (0);
-	      rust_assert (candidate.is_impl_candidate ());
+	      std::vector<Resolver::Adjustment> adjustments;
+	      Resolver::PathProbeCandidate *candidate
+		= Resolver::MethodResolution::Select (candidates, root,
+						      adjustments);
 
-	      HIR::ImplItem *impl_item = candidate.item.impl.impl_item;
+	      // FIXME this will be a case to return error_mark_node, there is
+	      // an error scenario where a Trait Foo has a method Bar, but this
+	      // receiver does not implement this trait or has an incompatible
+	      // implementation and we should just return error_mark_node
+	      rust_assert (candidate != nullptr);
+	      rust_assert (candidate->is_impl_candidate ());
+
+	      HIR::ImplItem *impl_item = candidate->item.impl.impl_item;
 
 	      TyTy::BaseType *self_type = nullptr;
 	      if (!ctx->get_tyctx ()->lookup_type (
