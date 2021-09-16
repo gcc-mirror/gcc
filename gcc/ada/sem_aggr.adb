@@ -1954,7 +1954,7 @@ package body Sem_Aggr is
                    or else (Nb_Choices = 1 and then not Others_Present))
       then
          Error_Msg_N
-           ("named association cannot follow positional association",
+           ("cannot mix named and positional associations in array aggregate",
             First (Choice_List (First (Component_Associations (N)))));
          return Failure;
       end if;
