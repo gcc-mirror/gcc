@@ -1357,7 +1357,7 @@ inline ptrdiff_t
 distance(filesystem::path::iterator __first, filesystem::path::iterator __last)
 { return __path_iter_distance(__first, __last); }
 
-template<typename _InputIterator, typename _Distance>
+template<typename _Distance>
   void
   advance(filesystem::path::iterator& __i, _Distance __n)
   { __path_iter_advance(__i, static_cast<ptrdiff_t>(__n)); }
