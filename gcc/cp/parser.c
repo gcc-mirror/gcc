@@ -23107,7 +23107,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      else if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
 		/* Let compute_array_index_type diagnose this.  */;
 	      else if (!parser->in_function_body
-		       || current_binding_level->kind == sk_function_parms)
+		       || parsing_function_declarator ())
 		{
 		  /* Normally, the array bound must be an integral constant
 		     expression.  However, as an extension, we allow VLAs
@@ -23829,6 +23829,17 @@ parsing_nsdmi (void)
       && DECL_CONTEXT (current_class_ptr) == NULL_TREE)
     return true;
   return false;
+}
+
+/* True if we're parsing a function declarator.  */
+
+bool
+parsing_function_declarator ()
+{
+  /* this_entity is NULL for a function parameter scope while parsing the
+     declarator; it is set when parsing the body of the function.  */
+  return (current_binding_level->kind == sk_function_parms
+	  && !current_binding_level->this_entity);
 }
 
 /* Parse a late-specified return type, if any.  This is not a separate

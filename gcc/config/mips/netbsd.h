@@ -87,7 +87,7 @@ along with GCC; see the file COPYING3.  If not see
       else if (mips_isa >= MIPS_ISA_MIPS32			\
 	       && mips_isa < MIPS_ISA_MIPS64)			\
 	builtin_define ("__mips=32");				\
-      else if (mips_isa >= MIPS_ISA_64)				\
+      else if (mips_isa >= MIPS_ISA_MIPS64)			\
 	builtin_define ("__mips=64");				\
       if (mips_isa_rev > 0)					\
         builtin_define_with_int_value ("__mips_isa_rev",	\

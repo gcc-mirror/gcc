@@ -1,3 +1,60 @@
+2021-09-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101904
+	* g++.dg/ext/conv2.C: New test.
+	* g++.dg/template/conv17.C: Extend test.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88578
+	PR c++/102295
+	* g++.dg/ext/flexary39.C: New test.
+	* g++.dg/ext/flexary40.C: New test.
+
+2021-09-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102050
+	* g++.dg/cpp0x/initlist125.C: New test.
+	* g++.dg/cpp0x/initlist126.C: New test.
+
+2021-09-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* gnat.dg/zcur_attr.adb, gnat.dg/zcur_attr.ads: New.
+
+2021-09-15  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102327-1.c: New test.
+	* gcc.target/i386/pr102327-2.c: New test.
+	* gcc.target/i386/avx512fp16-1c.c: Adjust testcase.
+
+2021-09-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx-1.c: Adjust builtin macros.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102318
+	* gcc.dg/vect/pr102318.c: New testcase.
+
+2021-09-15  Hongtao Liu  <hongtao.liu@intel.com>
+	    Peter Cordes  <peter@cordes.ca>
+
+	PR target/91103
+	* gcc.target/i386/pr91103-1.c: Add extract tests.
+	* gcc.target/i386/pr91103-2.c: Ditto.
+
+2021-09-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/unexpected-end.f90: Add OpenACC 'host_data'
+	testing.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48396
+	* g++.dg/rtti/undeclared1.C: New test.
+
 2021-09-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102311

@@ -9743,11 +9743,20 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HF_FTYPE_V16HF_V16HF_UHI:
     case V8SF_FTYPE_V8HI_V8SF_UQI:
     case V4SF_FTYPE_V8HI_V4SF_UQI:
+    case V8SI_FTYPE_V8HF_V8SI_UQI:
     case V8SI_FTYPE_V8SF_V8SI_UQI:
     case V4SI_FTYPE_V4SF_V4SI_UQI:
+    case V4SI_FTYPE_V8HF_V4SI_UQI:
+    case V4DI_FTYPE_V8HF_V4DI_UQI:
     case V4DI_FTYPE_V4SF_V4DI_UQI:
+    case V2DI_FTYPE_V8HF_V2DI_UQI:
     case V2DI_FTYPE_V4SF_V2DI_UQI:
     case V8HF_FTYPE_V8HF_V8HF_UQI:
+    case V8HF_FTYPE_V8HI_V8HF_UQI:
+    case V8HF_FTYPE_V8SI_V8HF_UQI:
+    case V8HF_FTYPE_V4SI_V8HF_UQI:
+    case V8HF_FTYPE_V4DI_V8HF_UQI:
+    case V8HF_FTYPE_V2DI_V8HF_UQI:
     case V4SF_FTYPE_V4DI_V4SF_UQI:
     case V4SF_FTYPE_V2DI_V4SF_UQI:
     case V4DF_FTYPE_V4DI_V4DF_UQI:
@@ -9756,6 +9765,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16QI_FTYPE_V16HI_V16QI_UHI:
     case V16QI_FTYPE_V4SI_V16QI_UQI:
     case V16QI_FTYPE_V8SI_V16QI_UQI:
+    case V8HI_FTYPE_V8HF_V8HI_UQI:
     case V8HI_FTYPE_V4SI_V8HI_UQI:
     case V8HI_FTYPE_V8SI_V8HI_UQI:
     case V16QI_FTYPE_V2DI_V16QI_UQI:
@@ -9813,6 +9823,8 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8DI_FTYPE_DI_V8DI_UQI:
     case V16SF_FTYPE_V8SF_V16SF_UHI:
     case V16SI_FTYPE_V8SI_V16SI_UHI:
+    case V16HF_FTYPE_V16HI_V16HF_UHI:
+    case V16HI_FTYPE_V16HF_V16HI_UHI:
     case V16HI_FTYPE_V16HI_V16HI_UHI:
     case V8HI_FTYPE_V16QI_V8HI_UQI:
     case V16HI_FTYPE_V16QI_V16HI_UHI:
@@ -10679,19 +10691,25 @@ ix86_expand_round_builtin (const struct builtin_description *d,
       break;
     case V8SF_FTYPE_V8DF_V8SF_QI_INT:
     case V8DF_FTYPE_V8DF_V8DF_QI_INT:
+    case V32HI_FTYPE_V32HF_V32HI_USI_INT:
     case V8SI_FTYPE_V8DF_V8SI_QI_INT:
+    case V8DI_FTYPE_V8HF_V8DI_UQI_INT:
     case V8DI_FTYPE_V8DF_V8DI_QI_INT:
     case V8SF_FTYPE_V8DI_V8SF_QI_INT:
     case V8DF_FTYPE_V8DI_V8DF_QI_INT:
+    case V32HF_FTYPE_V32HI_V32HF_USI_INT:
     case V32HF_FTYPE_V32HF_V32HF_USI_INT:
     case V16SF_FTYPE_V16SF_V16SF_HI_INT:
     case V8DI_FTYPE_V8SF_V8DI_QI_INT:
     case V16SF_FTYPE_V16SI_V16SF_HI_INT:
     case V16SI_FTYPE_V16SF_V16SI_HI_INT:
+    case V16SI_FTYPE_V16HF_V16SI_UHI_INT:
+    case V16HF_FTYPE_V16SI_V16HF_UHI_INT:
     case V8DF_FTYPE_V8SF_V8DF_QI_INT:
     case V16SF_FTYPE_V16HI_V16SF_HI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_INT:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_INT:
+    case V8HF_FTYPE_V8DI_V8HF_UQI_INT:
       nargs = 4;
       break;
     case V4SF_FTYPE_V4SF_V4SF_INT_INT:
@@ -11085,6 +11103,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PFLOAT_V16SF_UHI:
     case VOID_FTYPE_PFLOAT_V8SF_UQI:
     case VOID_FTYPE_PFLOAT_V4SF_UQI:
+    case VOID_FTYPE_PCFLOAT16_V8HF_UQI:
     case VOID_FTYPE_PV32QI_V32HI_USI:
     case VOID_FTYPE_PV16QI_V16HI_UHI:
     case VOID_FTYPE_PUDI_V8HI_UQI:
@@ -11157,6 +11176,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_PCFLOAT_V16SF_UHI:
     case V8SF_FTYPE_PCFLOAT_V8SF_UQI:
     case V4SF_FTYPE_PCFLOAT_V4SF_UQI:
+    case V8HF_FTYPE_PCFLOAT16_V8HF_UQI:
       nargs = 3;
       klass = load;
       memory = 0;
@@ -14194,6 +14214,8 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       break;
     case E_V8HImode:
       use_vector_set = TARGET_SSE2;
+      gen_vec_set_0 = TARGET_AVX512FP16 && one_var == 0
+	? gen_vec_setv8hi_0 : NULL;
       break;
     case E_V8QImode:
       use_vector_set = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
@@ -14205,8 +14227,12 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       use_vector_set = TARGET_SSE4_1;
       break;
     case E_V32QImode:
+      use_vector_set = TARGET_AVX;
+      break;
     case E_V16HImode:
       use_vector_set = TARGET_AVX;
+      gen_vec_set_0 = TARGET_AVX512FP16 && one_var == 0
+	? gen_vec_setv16hi_0 : NULL;
       break;
     case E_V8SImode:
       use_vector_set = TARGET_AVX;
@@ -14254,6 +14280,9 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       use_vector_set = TARGET_AVX512FP16 && one_var == 0;
       gen_vec_set_0 = gen_vec_setv32hf_0;
       break;
+    case E_V32HImode:
+      use_vector_set = TARGET_AVX512FP16 && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv32hi_0;
     default:
       break;
     }

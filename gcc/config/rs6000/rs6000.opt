@@ -561,10 +561,6 @@ mpower9-minmax
 Target Undocumented Mask(P9_MINMAX) Var(rs6000_isa_flags)
 Use the new min/max instructions defined in ISA 3.0.
 
-mtoc-fusion
-Target Undocumented Mask(TOC_FUSION) Var(rs6000_isa_flags)
-Fuse medium/large code model toc references with the memory instruction.
-
 mmodulo
 Target Undocumented Mask(MODULO) Var(rs6000_isa_flags)
 Generate the integer modulo instructions.

@@ -1,3 +1,59 @@
+2021-09-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101904
+	* call.c (build_user_type_conversion_1): Add tf_conv to complain.
+	(add_candidates): When in a SFINAE context, instead of adding a
+	candidate to bad_fns just mark it unviable.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (parsing_function_declarator): Declare.
+	* name-lookup.c (set_decl_context_in_fn): Use it.
+	* parser.c (cp_parser_direct_declarator): Use it.
+	(parsing_function_declarator): New.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88578
+	PR c++/102295
+	* typeck2.c (split_nonconstant_init_1): Don't throw away empty
+	initializers of flexible array members if they have non-zero type
+	size.
+
+2021-09-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102050
+	* decl.c (grok_special_member_properties): Set
+	TYPE_HAS_COPY_CTOR, TYPE_HAS_DEFAULT_CONSTRUCTOR
+	and TYPE_HAS_LIST_CTOR independently from each other.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cxx_init_decl_processing): Only warn about odd
+	interference sizes if they were specified with --param.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48396
+	* cp-tree.h (enum cp_tree_index): Remove CPTI_TYPE_INFO_PTR_TYPE.
+	(type_info_ptr_type): Remove.
+	* rtti.c (init_rtti_processing): Don't predeclare std::type_info.
+	(typeid_ok_p): Check for null const_type_info_type_node.
+	(type_info_ptr_type, get_void_tinfo_ptr): New fns.
+	(get_tinfo_decl_dynamic, get_tinfo_ptr): Use them.
+	(ptr_initializer, ptm_initializer, get_pseudo_ti_init): Use them.
+	(get_tinfo_desc): Use const_ptr_type_node.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_template_name): Move object type.
+	(cp_parser_pre_parsed_nested_name_specifier): Likewise.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_unqualified_id): Only complain about ~A<T> in
+	a declarator.
+
 2021-09-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (struct param_info): Add copy_var.

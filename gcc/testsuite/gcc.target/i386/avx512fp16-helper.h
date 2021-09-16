@@ -25,13 +25,17 @@ typedef union
 {
   __m512          zmm;
   __m512h         zmmh;
+  __m512i         zmmi;
   __m256          ymm[2];
   __m256h         ymmh[2];
   __m256i         ymmi[2];
   __m128h         xmmh[4];
   __m128	  xmm[4];
+  __m128i	  xmmi[4];
   unsigned short  u16[32];
   unsigned int    u32[16];
+  long long	  s64[8];
+  unsigned long long u64[8];
   float           f32[16];
   _Float16        f16[32];
 } V512;
@@ -162,9 +166,9 @@ init_src()
     int i;
 
     for (i = 0; i < AVX512F_MAX_ELEM; i++) {
-        v1.f32[i] = -i + 1;
+        v1.f32[i] = i + 1;
         v2.f32[i] = i * 0.5f;
-        v3.f32[i] = i * 2.5f;
+        v3.f32[i] = i * 1.5f;
         v4.f32[i] = i - 0.5f;
 
         src3.u32[i] = (i + 1) * 10;
@@ -217,30 +221,45 @@ init_dest(V512 * res, V512 * exp)
 #if AVX512F_LEN == 256
 #undef HF
 #undef SF
+#undef SI
+#undef H_HF
 #undef NET_MASK 
-#undef MASK_VALUE 
+#undef MASK_VALUE
+#undef HALF_MASK
 #undef ZMASK_VALUE 
 #define NET_MASK 0xffff
 #define MASK_VALUE 0xcccc
 #define ZMASK_VALUE 0xfcc1
+#define HALF_MASK 0xcc
 #define HF(x) x.ymmh[0]
+#define H_HF(x) x.xmmh[0]
 #define SF(x) x.ymm[0]
+#define SI(x) x.ymmi[0]
 #elif AVX512F_LEN == 128
 #undef HF
 #undef SF
+#undef SI
+#undef H_HF
 #undef NET_MASK 
 #undef MASK_VALUE 
 #undef ZMASK_VALUE 
+#undef HALF_MASK
 #define NET_MASK 0xff
 #define MASK_VALUE 0xcc
+#define HALF_MASK MASK_VALUE
 #define ZMASK_VALUE 0xc1
 #define HF(x) x.xmmh[0]
 #define SF(x) x.xmm[0]
+#define SI(x) x.xmmi[0]
+#define H_HF(x) x.xmmh[0]
 #else
 #define NET_MASK 0xffffffff
 #define MASK_VALUE 0xcccccccc
 #define ZMASK_VALUE 0xfcc1fcc1
+#define HALF_MASK 0xcccc
 #define HF(x) x.zmmh
 #define SF(x) x.zmm
+#define SI(x) x.zmmi
+#define H_HF(x) x.ymmh[0]
 #endif
 

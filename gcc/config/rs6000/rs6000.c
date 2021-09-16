@@ -21728,8 +21728,8 @@ rs6000_xcoff_encode_section_info (tree decl, rtx rtl, int first)
   if (decl
       && DECL_P (decl)
       && VAR_OR_FUNCTION_DECL_P (decl)
-      && symtab_node::get (decl) != NULL
-      && symtab_node::get (decl)->alias == 0
+      && (symtab_node::get (decl) == NULL
+	  || symtab_node::get (decl)->alias == 0)
       && symname[strlen (symname) - 1] != ']')
     {
       const char *smclass = NULL;

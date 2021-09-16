@@ -4591,6 +4591,7 @@ extern tree build_string_literal (unsigned, const char * = NULL,
 extern tree signed_or_unsigned_type_for (int, tree);
 extern tree signed_type_for (tree);
 extern tree unsigned_type_for (tree);
+extern bool is_truth_type_for (tree, tree);
 extern tree truth_type_for (tree);
 extern tree build_pointer_type_for_mode (tree, machine_mode, bool);
 extern tree build_pointer_type (tree);

@@ -2236,7 +2236,7 @@ cgraph_node::dump (FILE *f)
     }
   fprintf (f, "\n");
 
-  if (count.ipa ().initialized_p ())
+  if (!body_removed && count.ipa ().initialized_p ())
     {
       bool ok = true;
       bool min = false;
@@ -2245,7 +2245,7 @@ cgraph_node::dump (FILE *f)
       FOR_EACH_ALIAS (this, ref)
 	if (dyn_cast <cgraph_node *> (ref->referring)->count.initialized_p ())
 	  sum += dyn_cast <cgraph_node *> (ref->referring)->count.ipa ();
-  
+
       if (inlined_to
 	  || (symtab->state < EXPANSION
 	      && ultimate_alias_target () == this && only_called_directly_p ()))

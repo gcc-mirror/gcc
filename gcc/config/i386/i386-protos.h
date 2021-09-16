@@ -320,7 +320,7 @@ struct ix86_address
   addr_space_t seg;
 };
 
-extern int ix86_decompose_address (rtx, struct ix86_address *);
+extern bool ix86_decompose_address (rtx, struct ix86_address *);
 extern int memory_address_length (rtx, bool);
 extern void x86_output_aligned_bss (FILE *, tree, const char *,
 				    unsigned HOST_WIDE_INT, unsigned);

@@ -1,3 +1,9 @@
+2021-09-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/utils.c: Include opts.h.
+	(handle_zero_call_used_regs_attribute): New.
+	(gnat_internal_attribute_table): Add zero_call_used_regs.
+
 2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/101970

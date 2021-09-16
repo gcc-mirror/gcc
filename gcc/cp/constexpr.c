@@ -7502,8 +7502,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   /* Remember the original location if that wouldn't need a wrapper.  */
   if (location_t loc = EXPR_LOCATION (t))
-    if (CAN_HAVE_LOCATION_P (r))
-      SET_EXPR_LOCATION (r, loc);
+    protected_set_expr_location (r, loc);
 
   return r;
 }

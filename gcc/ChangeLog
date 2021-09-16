@@ -1,3 +1,118 @@
+2021-09-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_encode_section_info):
+	Proceed if no symbol summary or the symbol alias flag is false.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88578
+	PR c++/102295
+	* varasm.c (output_constructor_regular_field): Instead of assertion
+	that array_size_for_constructor result is equal to size of
+	TREE_TYPE (local->val) in bytes, assert that the type size is greater
+	or equal to array_size_for_constructor result and use type size as
+	fieldsize.
+
+2021-09-15  Martin Liska  <mliska@suse.cz>
+
+	PR target/102351
+	* config/i386/vxworks.h: Use new macro TARGET_CPU_P.
+
+2021-09-15  Martin Liska  <mliska@suse.cz>
+
+	PR target/102349
+	* config/rs6000/rs6000.c (rs6000_xcoff_encode_section_info):
+	Check that we have a symbol summary for a symbol.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR target/102348
+	* config/rs6000/lynx.h: Remove undef of PREFERRED_DEBUGGING_TYPE
+	to inherit from elfos.h
+
+2021-09-15  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102327
+	* config/i386/i386-expand.c
+	(ix86_expand_vector_init_interleave): Use puncklwd to pack 2
+	HFmodes.
+	(ix86_expand_vector_set): Use blendw instead of pinsrw.
+	* config/i386/i386.c (ix86_can_change_mode_class): Adjust for
+	AVX512FP16 which supports 16bit vector load.
+	* config/i386/sse.md (avx512bw_interleave_highv32hi<mask_name>):
+	Rename to ..
+	(avx512bw_interleave_high<mode><mask_name>): .. this, and
+	extend to V32HFmode.
+	(avx2_interleave_highv16hi<mask_name>): Rename to ..
+	(avx2_interleave_high<mode><mask_name>): .. this, and extend
+	to V16HFmode.
+	(vec_interleave_highv8hi<mask_name>): Rename to ..
+	(vec_interleave_high<mode><mask_name>): .. this, and extend to V8HFmode.
+	(<mask_codefor>avx512bw_interleave_lowv32hi<mask_name>):
+	Rename to ..
+	(<mask_codefor>avx512bw_interleave_low<mode><mask_name>):
+	this, and extend to V32HFmode.
+	(avx2_interleave_lowv16hi<mask_name>): Rename to ..
+	(avx2_interleave_low<mode><mask_name>): .. this, and extend to V16HFmode.
+	(vec_interleave_lowv8hi<mask_name>): Rename to ..
+	(vec_interleave_low<mode><mask_name>): .. this, and extend to V8HFmode.
+	(sse4_1_pblendw): Rename to ..
+	(sse4_1_pblend<blendsuf>): .. this, and extend to V8HFmode.
+	(avx2_pblendph): New define_expand.
+	(<sse2p4_1>_pinsr<ssemodesuffix>): Refactor, use
+	sseintmodesuffix instead of ssemodesuffix.
+	(blendsuf): New mode attr.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (dr_misalignment): Move out of line.
+	(dr_target_alignment): New.
+	(DR_TARGET_ALIGNMENT): Wrap dr_target_alignment.
+	(set_dr_target_alignment): New.
+	(SET_DR_TARGET_ALIGNMENT): Wrap set_dr_target_alignment.
+	* tree-vect-data-refs.c (dr_misalignment): Compute and
+	return the group members misalignment.
+	(vect_compute_data_ref_alignment): Use SET_DR_TARGET_ALIGNMENT.
+	(vect_analyze_data_refs_alignment): Compute alignment only
+	for the first element of a DR group.
+	(vect_slp_analyze_node_alignment): Likewise.
+
+2021-09-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/avx512fp16intrin.h: Adjust all builtin calls.
+	* config/i386/avx512fp16vlintrin.h: Likewise.
+	* config/i386/i386-builtin.def: Adjust builtin name and
+	enumeration to match AVX512F style.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102318
+	* tree-vect-loop.c (vect_transform_cycle_phi): Revert
+	previous change and do the mode conversion separately from
+	the sign conversion.
+
+2021-09-15  Hongtao Liu  <hongtao.liu@intel.com>
+	    Peter Cordes  <peter@cordes.ca>
+
+	PR target/91103
+	* config/i386/sse.md (extract_suf): Add V8SF/V8SI/V4DF/V4DI.
+	(*vec_extract<mode><ssescalarmodelower>_valign): Output
+	vextract{i,f}{32x4,64x2} instruction when byte_offset % 16 ==
+	0.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Remove vax-*-openbsd* configuration.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Remove m68k-openbsd.
+
+2021-09-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/102336
+	* config/xtensa/t-xtensa (TM_H): Add include/xtensa-config.h.
+
 2021-09-14  Peter Bergner  <bergner@linux.ibm.com>
 
 	* config/rs6000/mma.md (unspec): Delete UNSPEC_MMA_XXSETACCZ.
