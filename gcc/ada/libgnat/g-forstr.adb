@@ -420,7 +420,7 @@ package body GNAT.Formatted_String is
 
       --  Zero padding if required and possible
 
-      if F_Spec.Left_Justify = False
+      if not F_Spec.Left_Justify
         and then F_Spec.Zero_Pad
         and then F_Spec.Width > Len + Value'First - S
       then
