@@ -519,7 +519,7 @@ package body GNAT.Formatted_String is
          J := J + 1;
       end loop;
 
-      if F (J) /= '%' or else J = F'Last then
+      if J >= F'Last or else F (J) /= '%'  then
          raise Format_Error with "no format specifier found for parameter"
            & Positive'Image (Format.D.Current);
       end if;
