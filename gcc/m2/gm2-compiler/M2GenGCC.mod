@@ -207,6 +207,7 @@ FROM m2statement IMPORT BuildAsm, BuildProcedureCallTree, BuildParam, BuildFunct
                         DoJump, BuildUnaryForeachWordDo, BuildGoto, BuildCall2, BuildCall3,
                         BuildStart, BuildEnd, BuildCallInner, BuildStartFunctionCode,
                         BuildEndFunctionCode, BuildAssignmentTree, DeclareLabel,
+                        BuildAssignmentStatement,
                         BuildIndirectProcedureCallTree,
                         BuildPushFunctionContext, BuildPopFunctionContext,
                         BuildReturnValueCode, SetLastFunction,
@@ -428,7 +429,7 @@ BEGIN
    GetQuad(q, op, op1, op2, op3) ;
    IF op=StatementNoteOp
    THEN
-      FoldStatementNote (q, op1, op2, op3)  (* will change CurrentQuadToken using op3  *)
+      FoldStatementNote (op3)  (* will change CurrentQuadToken using op3  *)
    ELSE
       CurrentQuadToken := QuadToTokenNo (q)
    END ;
@@ -454,7 +455,7 @@ BEGIN
    KillLocalVarOp     : CodeKillLocalVar(q, op1, op2, op3) |
    ProcedureScopeOp   : CodeProcedureScope(q, op1, op2, op3) |
    ReturnOp           : CodeReturn(q, op1, op2, op3) |
-   ReturnValueOp      : CodeReturnValue(q, op1, op2, op3) |
+   ReturnValueOp      : CodeReturnValue(q, op1, op3) |
    TryOp              : CodeTry(q, op1, op2, op3) |
    ThrowOp            : CodeThrow(q, op1, op2, op3) |
    CatchBeginOp       : CodeCatchBegin(q, op1, op2, op3) |
@@ -474,7 +475,7 @@ BEGIN
    ModCeilOp          : CodeModCeil(q, op1, op2, op3) |
    DivFloorOp         : CodeDivFloor(q, op1, op2, op3) |
    ModFloorOp         : CodeModFloor(q, op1, op2, op3) |
-   GotoOp             : CodeGoto(q, op1, op2, op3) |
+   GotoOp             : CodeGoto (op3) |
    InclOp             : CodeIncl(q, op1, op2, op3) |
    ExclOp             : CodeExcl(q, op1, op2, op3) |
    NegateOp           : CodeNegateChecked(q, op1, op2, op3) |
@@ -512,8 +513,8 @@ BEGIN
    SavePriorityOp     : CodeSavePriority(q, op1, op2, op3) |
    RestorePriorityOp  : CodeRestorePriority(q, op1, op2, op3) |
 
-   InlineOp           : CodeInline(location, CurrentQuadToken, q, op1, op2, op3) |
-   StatementNoteOp    : CodeStatementNote(q, op1, op2, op3) |
+   InlineOp           : CodeInline (location, CurrentQuadToken, op3) |
+   StatementNoteOp    : CodeStatementNote (op3) |
    CodeOnOp           : |           (* the following make no sense with gcc *)
    CodeOffOp          : |
    ProfileOnOp        : |
@@ -522,8 +523,8 @@ BEGIN
    OptimizeOffOp      : |
    RangeCheckOp       : CodeRange(q, op1, op2, op3) |
    ErrorOp            : CodeError(q, op1, op2, op3) |
-   SaveExceptionOp    : CodeSaveException(q, op1, op2, op3) |
-   RestoreExceptionOp : CodeRestoreException(q, op1, op2, op3)
+   SaveExceptionOp    : CodeSaveException (op1, op3) |
+   RestoreExceptionOp : CodeRestoreException (op1, op3)
 
    ELSE
       WriteFormat1('quadruple %d not yet implemented', q) ;
@@ -599,8 +600,8 @@ BEGIN
          LogicalShiftOp     : FoldSetShift(tokenno, p, quad, op1, op2, op3) |
          LogicalRotateOp    : FoldSetRotate(tokenno, p, quad, op1, op2, op3) |
          ParamOp            : FoldBuiltinFunction(tokenno, p, quad, op1, op2, op3) |
-         RangeCheckOp       : FoldRange(tokenno, p, quad, op1, op2, op3) |
-         StatementNoteOp    : FoldStatementNote(quad, op1, op2, op3)
+         RangeCheckOp       : FoldRange (tokenno, quad, op3) |
+         StatementNoteOp    : FoldStatementNote (op3)
 
          ELSE
             (* ignore quadruple as it is not associated with a constant expression *)
@@ -766,7 +767,7 @@ END BuildTrashTreeFromInterface ;
                 The inline asm statement, Sym, is written to standard output.
 *)
 
-PROCEDURE CodeInline (location: location_t; tokenno: CARDINAL; quad: CARDINAL; op1, op2, GnuAsm: CARDINAL) ;
+PROCEDURE CodeInline (location: location_t; tokenno: CARDINAL; GnuAsm: CARDINAL) ;
 VAR
    string  : CARDINAL ;
    inputs,
@@ -780,16 +781,16 @@ BEGIN
       can handle the register dependency providing the user
       specifies VOLATILE and input/output/trash sets correctly.
    *)
-   inputs  := BuildTreeFromInterface(GetGnuAsmInput(GnuAsm)) ;
-   outputs := BuildTreeFromInterface(GetGnuAsmOutput(GnuAsm)) ;
-   trash   := BuildTrashTreeFromInterface(GetGnuAsmTrash(GnuAsm)) ;
+   inputs  := BuildTreeFromInterface (GetGnuAsmInput(GnuAsm)) ;
+   outputs := BuildTreeFromInterface (GetGnuAsmOutput(GnuAsm)) ;
+   trash   := BuildTrashTreeFromInterface (GetGnuAsmTrash(GnuAsm)) ;
    labels  := NIL ;  (* at present it makes no sence for Modula-2 to jump to a label,
                         given that labels are not allowed in Modula-2.  *)
-   string  := GetGnuAsm(GnuAsm) ;
-   DeclareConstant(tokenno, string) ;
-   BuildAsm(location,
-            Mod2Gcc(string), IsGnuAsmVolatile(GnuAsm), IsGnuAsmSimple(GnuAsm),
-            inputs, outputs, trash, labels)
+   string  := GetGnuAsm (GnuAsm) ;
+   DeclareConstant (tokenno, string) ;
+   BuildAsm (location,
+             Mod2Gcc (string), IsGnuAsmVolatile (GnuAsm), IsGnuAsmSimple (GnuAsm),
+             inputs, outputs, trash, labels)
 END CodeInline ;
 
 
@@ -797,7 +798,7 @@ END CodeInline ;
    FoldStatementNote -
 *)
 
-PROCEDURE FoldStatementNote (quad: CARDINAL; filename, none, tokenno: CARDINAL) ;
+PROCEDURE FoldStatementNote (tokenno: CARDINAL) ;
 BEGIN
    CurrentQuadToken := tokenno
 END FoldStatementNote ;
@@ -807,7 +808,7 @@ END FoldStatementNote ;
    CodeStatementNote -
 *)
 
-PROCEDURE CodeStatementNote (quad: CARDINAL; filename, none, tokenno: CARDINAL) ;
+PROCEDURE CodeStatementNote (tokenno: CARDINAL) ;
 BEGIN
    CurrentQuadToken := tokenno ;
    addStmtNote (TokenToLocation (tokenno))
@@ -819,10 +820,10 @@ END CodeStatementNote ;
                --fixme-- complete this
 *)
 
-PROCEDURE FoldRange (tokenno: CARDINAL; p: WalkAction;
-                     q: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE FoldRange (tokenno: CARDINAL; (* p: WalkAction; *)
+                     quad: CARDINAL; rangeno: CARDINAL) ;
 BEGIN
-   FoldRangeCheck(tokenno, q, op3)
+   FoldRangeCheck (tokenno, quad, rangeno)
 END FoldRange ;
 
 
@@ -830,16 +831,19 @@ END FoldRange ;
    CodeSaveException - op1 := op3(TRUE)
 *)
 
-PROCEDURE CodeSaveException (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE CodeSaveException (des, exceptionProcedure: CARDINAL) ;
 VAR
-   t       : Tree ;
-   location: location_t;
+   functValue,
+   exceptionCall: Tree ;
+   location     : location_t;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-   BuildParam(location, Mod2Gcc(True)) ;
-   t := BuildProcedureCallTree(location, Mod2Gcc(op3), Mod2Gcc(GetType(op3))) ;
-   t := BuildFunctValue(location, Mod2Gcc(op1)) ;
-   AddStatement(location, t)
+   location := TokenToLocation (CurrentQuadToken) ;
+   BuildParam (location, Mod2Gcc (True)) ;
+   exceptionCall := BuildProcedureCallTree (location,
+                                            Mod2Gcc (exceptionProcedure),
+                                            Mod2Gcc (GetType (exceptionProcedure))) ;
+   functValue := BuildFunctValue (location, Mod2Gcc (des)) ;
+   AddStatement (location, functValue)
 END CodeSaveException ;
 
 
@@ -847,16 +851,19 @@ END CodeSaveException ;
    CodeRestoreException - op1 := op3(op1)
 *)
 
-PROCEDURE CodeRestoreException (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE CodeRestoreException (des, exceptionProcedure: CARDINAL) ;
 VAR
-   t       : Tree ;
-   location: location_t;
+   functValue,
+   exceptionCall: Tree ;
+   location     : location_t;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-   BuildParam(location, Mod2Gcc(op1)) ;
-   t := BuildProcedureCallTree(location, Mod2Gcc(op3), Mod2Gcc(GetType(op3))) ;
-   t := BuildFunctValue(location, Mod2Gcc(op1)) ;
-   AddStatement(location, t)
+   location := TokenToLocation (CurrentQuadToken) ;
+   BuildParam (location, Mod2Gcc (des)) ;
+   exceptionCall := BuildProcedureCallTree (location,
+                                            Mod2Gcc (exceptionProcedure),
+                                            Mod2Gcc (GetType (exceptionProcedure))) ;
+   functValue := BuildFunctValue (location, Mod2Gcc (des)) ;
+   AddStatement (location, functValue)
 END CodeRestoreException ;
 
 
@@ -866,7 +873,7 @@ END CodeRestoreException ;
 
 PROCEDURE PushScope (sym: CARDINAL) ;
 BEGIN
-   PushWord(ScopeStack, sym)
+   PushWord (ScopeStack, sym)
 END PushScope ;
 
 
@@ -878,7 +885,7 @@ PROCEDURE PopScope ;
 VAR
    sym: CARDINAL ;
 BEGIN
-   sym := PopWord(ScopeStack)
+   sym := PopWord (ScopeStack)
 END PopScope ;
 
 
@@ -1360,7 +1367,6 @@ PROCEDURE MakeCopyAndUse (tokenno: CARDINAL; proc, param, i: CARDINAL) ;
 VAR
    location     : location_t;
    UnboundedType: CARDINAL ;
-   t,
    Addr,
    High,
    NewArray,
@@ -1379,9 +1385,9 @@ BEGIN
 
    (* now assign  param.Addr := ADR(NewArray) *)
 
-   t := BuildAssignmentTree(location,
-                            BuildComponentRef(location, Mod2Gcc(param), Mod2Gcc(GetUnboundedAddressOffset(UnboundedType))),
-                            NewArray)
+   BuildAssignmentStatement (location,
+                             BuildComponentRef (location, Mod2Gcc (param), Mod2Gcc (GetUnboundedAddressOffset (UnboundedType))),
+                             NewArray)
 END MakeCopyAndUse ;
 
 
@@ -1734,7 +1740,6 @@ END SaveNonVarUnboundedParameters ;
 PROCEDURE AutoInitVariable (location: location_t; sym: CARDINAL) ;
 VAR
    type: CARDINAL ;
-   t   : Tree ;
 BEGIN
    IF (NOT IsParameter (sym)) AND IsVar (sym) AND
       (NOT IsTemporary (sym))
@@ -1744,7 +1749,7 @@ BEGIN
       (* the type SYSTEM.ADDRESS is a pointer type.  *)
       IF IsPointer (type)
       THEN
-         t := BuildAssignmentTree (location,
+         BuildAssignmentStatement (location,
                                    Mod2Gcc (sym),
                                    BuildConvert (location,
                                                  Mod2Gcc (GetType (sym)),
@@ -1860,9 +1865,9 @@ END CodeReturn ;
                      allocated by the function call.
 *)
 
-PROCEDURE CodeReturnValue (quad: CARDINAL; res, op2, Procedure: CARDINAL) ;
+PROCEDURE CodeReturnValue (quad: CARDINAL; res, Procedure: CARDINAL) ;
 VAR
-   t, op3t : Tree ;
+   value, length, op3t : Tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation(CurrentQuadToken) ;
@@ -1870,13 +1875,13 @@ BEGIN
    TryDeclareConstructor(CurrentQuadToken, res) ;
    IF IsConstString(res) AND (SkipTypeAndSubrange(GetType(Procedure))#Char)
    THEN
-      DoCopyString(CurrentQuadToken, t, op3t, GetType(Procedure), res) ;
-      t := BuildArrayStringConstructor(location,
-                                       Mod2Gcc(GetType(Procedure)), op3t, t)
+      DoCopyString (CurrentQuadToken, length, op3t, GetType (Procedure), res) ;
+      value := BuildArrayStringConstructor (location,
+                                            Mod2Gcc(GetType(Procedure)), op3t, length)
    ELSE
-      t := Mod2Gcc(res)
+      value := Mod2Gcc(res)
    END ;
-   BuildReturnValueCode(location, Mod2Gcc(Procedure), t)
+   BuildReturnValueCode (location, Mod2Gcc (Procedure), value)
 END CodeReturnValue ;
 
 
@@ -2318,7 +2323,7 @@ BEGIN
                    'total number of bit specified as parameters to {%kMAKEADR} exceeds address width')
    END ;
    SubQuad(n) ;
-   res := BuildAssignmentTree(location, res, val)
+   BuildAssignmentStatement (location, res, val)
 END CodeMakeAdr ;
 
 
@@ -2640,8 +2645,7 @@ END CodeFunctValue ;
 
 PROCEDURE CodeAddr (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   value,
-   t       : Tree ;
+   value   : Tree ;
    type    : CARDINAL ;
    location: location_t ;
 BEGIN
@@ -2649,19 +2653,19 @@ BEGIN
    THEN
       MetaErrorT1 (CurrentQuadToken, 'error in expression, trying to find the address of a constant {%1Ead}', op3)
    ELSE
-      location := TokenToLocation(CurrentQuadToken) ;
-      type := SkipType(GetType(op3)) ;
-      DeclareConstant(CurrentQuadToken, op3) ;  (* we might be asked to find the address of a constant string *)
-      DeclareConstructor(CurrentQuadToken, quad, op3) ;
-      IF (IsConst(op3) AND (type=Char)) OR IsConstString(op3)
+      location := TokenToLocation (CurrentQuadToken) ;
+      type := SkipType (GetType (op3)) ;
+      DeclareConstant (CurrentQuadToken, op3) ;  (* we might be asked to find the address of a constant string *)
+      DeclareConstructor (CurrentQuadToken, quad, op3) ;
+      IF (IsConst (op3) AND (type=Char)) OR IsConstString (op3)
       THEN
-         value := BuildStringConstant(KeyToCharStar(GetString(op3)), GetStringLength(op3))
+         value := BuildStringConstant (KeyToCharStar (GetString (op3)), GetStringLength (op3))
       ELSE
-         value := Mod2Gcc(op3)
+         value := Mod2Gcc (op3)
       END ;
-      t := BuildAssignmentTree(location,
-                               Mod2Gcc(op1),
-                               BuildAddr(location, value, FALSE))
+      BuildAssignmentStatement (location,
+                                Mod2Gcc (op1),
+                                BuildAddr (location, value, FALSE))
    END
 END CodeAddr ;
 
@@ -2949,12 +2953,12 @@ END FoldConstBecomes ;
 
 (*
    DoCopyString - returns trees:
-                  t    number of bytes to be copied (including the nul)
+                  length    number of bytes to be copied (including the nul)
                   op1t the new string _type_ (with the extra nul character).
                   op3t the actual string with the extra nul character.
 *)
 
-PROCEDURE DoCopyString (tokenno: CARDINAL; VAR t, op3t: Tree; op1t, op3: CARDINAL) ;
+PROCEDURE DoCopyString (tokenno: CARDINAL; VAR length, op3t: Tree; op1t, op3: CARDINAL) ;
 VAR
    location: location_t ;
 BEGIN
@@ -2984,18 +2988,18 @@ BEGIN
    IF Less(tokenno)
    THEN
       (* there is room for the extra <nul> character *)
-      t := BuildAdd(location, FindSize(tokenno, op3), GetIntegerOne(location), FALSE)
+      length := BuildAdd(location, FindSize(tokenno, op3), GetIntegerOne(location), FALSE)
    ELSE
       PushIntegerTree(FindSize(tokenno, op3)) ;
       PushIntegerTree(FindSize(tokenno, op1t)) ;
-      IF Gre(tokenno)
+      IF Gre (tokenno)
       THEN
-         WarnStringAt(InitString('string constant is too large to be assigned to the array'),
-                      tokenno) ;
-         t := FindSize(tokenno, op1t)
+         WarnStringAt (InitString('string constant is too large to be assigned to the array'),
+                       tokenno) ;
+         length := FindSize (tokenno, op1t)
       ELSE
          (* equal so return max characters in the array *)
-         t := FindSize(tokenno, op1t)
+         length := FindSize (tokenno, op1t)
       END
    END
 END DoCopyString ;
@@ -3039,7 +3043,6 @@ END checkArrayElements ;
 
 PROCEDURE CodeInitAddress (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
    location: location_t ;
 BEGIN
    DeclareConstant(CurrentQuadToken, op3) ;  (* checks to see whether it is a constant and declares it *)
@@ -3049,7 +3052,7 @@ BEGIN
 
    Assert(op2=NulSym) ;
    Assert(GetMode(op1)=LeftValue) ;
-   t := BuildAssignmentTree(location,
+   BuildAssignmentStatement (location,
                             Mod2Gcc(op1),
                             BuildConvert(location, GetPointerType(), Mod2Gcc(op3), FALSE))
 END CodeInitAddress ;
@@ -3166,7 +3169,8 @@ VAR
    op1pos,
    op2pos,
    op3pos    : CARDINAL ;
-   op3t, t   : Tree ;
+   length,
+   op3t      : Tree ;
    location  : location_t ;
 BEGIN
    GetQuadOtok (quad, becomespos, op, op1, op2, op3, op1pos, op2pos, op3pos) ;
@@ -3187,12 +3191,12 @@ BEGIN
    ELSIF IsConstString (op3) AND (SkipTypeAndSubrange (GetType (op1)) # Char)
    THEN
       checkDeclare (op1) ;
-      DoCopyString (CurrentQuadToken, t, op3t, SkipType (GetType (op1)), op3) ;
+      DoCopyString (CurrentQuadToken, length, op3t, SkipType (GetType (op1)), op3) ;
       AddStatement (location,
                     MaybeDebugBuiltinMemcpy (location, CurrentQuadToken,
                                              BuildAddr (location, Mod2Gcc (op1), FALSE),
                                              BuildAddr (location, op3t, FALSE),
-                                             t))
+                                             length))
    ELSE
       IF ((IsGenericSystemType(SkipType(GetType(op1))) #
            IsGenericSystemType(SkipType(GetType(op3)))) OR
@@ -3215,7 +3219,7 @@ BEGIN
             THEN
                Replace (op1, FoldConstBecomes (CurrentQuadToken, op1, op3))
             ELSE
-               t := BuildAssignmentTree (location,
+               BuildAssignmentStatement (location,
                                          Mod2Gcc (op1),
                                          FoldConstBecomes (CurrentQuadToken, op1, op3))
             END
@@ -3419,7 +3423,7 @@ VAR
    type      : CARDINAL ;
    min, max,
    lowest,
-   t, tv,
+   tv,
    tl, tr    : Tree ;
    location  : location_t ;
 BEGIN
@@ -3453,7 +3457,7 @@ BEGIN
       THEN
          Replace (op1, tv)
       ELSE
-         t := BuildAssignmentTree (location, Mod2Gcc (op1), tv)
+         BuildAssignmentStatement (location, Mod2Gcc (op1), tv)
       END
    END
 END CodeBinaryCheck ;
@@ -3472,7 +3476,7 @@ VAR
    op2pos,
    op3pos,
    type    : CARDINAL ;
-   t, tv,
+   tv,
    tl, tr  : Tree ;
    location: location_t ;
 BEGIN
@@ -3499,7 +3503,7 @@ BEGIN
       THEN
          Replace (op1, tv)
       ELSE
-         t := BuildAssignmentTree (location, Mod2Gcc (op1), tv)
+         BuildAssignmentStatement (location, Mod2Gcc (op1), tv)
       END
    END
 END CodeBinary ;
@@ -3579,7 +3583,7 @@ BEGIN
    END ;
    IF NOT result
    THEN
-      SubQuad(quad)   (* we do not want multiple copies of the same error *)
+      SubQuad (quad)   (* we do not want multiple copies of the same error *)
    END ;
    RETURN result
 END BinaryOperands ;
@@ -4297,7 +4301,6 @@ END FoldStandardFunction ;
 PROCEDURE CodeStandardFunction (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
    type    : CARDINAL ;
-   t       : Tree ;
    location: location_t ;
 BEGIN
    DeclareConstant(CurrentQuadToken, op3) ;
@@ -4316,7 +4319,7 @@ BEGIN
       THEN
          InternalError ('CAP function should already have been folded')
       ELSE
-         t := BuildAssignmentTree(location, Mod2Gcc(op1), BuildCap(location, Mod2Gcc(op3)))
+         BuildAssignmentStatement (location, Mod2Gcc(op1), BuildCap(location, Mod2Gcc(op3)))
       END
    ELSIF (op2#NulSym) AND (GetSymName(op2)=MakeKey('ABS'))
    THEN
@@ -4324,7 +4327,7 @@ BEGIN
       THEN
          InternalError ('ABS function should already have been folded')
       ELSE
-         t := BuildAssignmentTree(location, Mod2Gcc(op1), BuildAbs(location, Mod2Gcc(op3)))
+         BuildAssignmentStatement (location, Mod2Gcc(op1), BuildAbs(location, Mod2Gcc(op3)))
       END
    ELSIF op2=Im
    THEN
@@ -4332,7 +4335,7 @@ BEGIN
       THEN
          InternalError ('IM function should already have been folded')
       ELSE
-         t := BuildAssignmentTree(location, Mod2Gcc(op1), BuildIm(Mod2Gcc(op3)))
+         BuildAssignmentStatement (location, Mod2Gcc(op1), BuildIm(Mod2Gcc(op3)))
       END
    ELSIF op2=Re
    THEN
@@ -4340,7 +4343,7 @@ BEGIN
       THEN
          InternalError ('RE function should already have been folded')
       ELSE
-         t := BuildAssignmentTree(location, Mod2Gcc(op1), BuildRe(Mod2Gcc(op3)))
+         BuildAssignmentStatement (location, Mod2Gcc(op1), BuildRe(Mod2Gcc(op3)))
       END
    ELSIF op2=Cmplx
    THEN
@@ -4355,19 +4358,19 @@ BEGIN
                          'real {%1Eatd} and imaginary {%2atd} types are incompatible',
                          GetNth(op3, 1), GetNth(op3, 2))
          ELSE
-            t := BuildAssignmentTree(location, Mod2Gcc(op1), BuildCmplx(location,
-                                                                        Mod2Gcc(type),
-                                                                        Mod2Gcc(GetNth(op3, 1)),
-                                                                        Mod2Gcc(GetNth(op3, 2))))
+            BuildAssignmentStatement (location, Mod2Gcc (op1), BuildCmplx(location,
+                                                                          Mod2Gcc (type),
+                                                                          Mod2Gcc (GetNth (op3, 1)),
+                                                                          Mod2Gcc (GetNth (op3, 2))))
          END
       END
    ELSIF op2=TBitSize
    THEN
-      IF IsConst(op1)
+      IF IsConst (op1)
       THEN
          InternalError ('TBITSIZE function should already have been folded')
       ELSE
-         t := BuildAssignmentTree(location, Mod2Gcc(op1), BuildTBitSize(location, Mod2Gcc(op3)))
+         BuildAssignmentStatement (location, Mod2Gcc (op1), BuildTBitSize (location, Mod2Gcc (op3)))
       END
    ELSE
       InternalError ('expecting LENGTH, CAP, ABS, IM')
@@ -5180,7 +5183,7 @@ VAR
    lowestType: CARDINAL ;
    min, max,
    lowest,
-   t, tv     : Tree ;
+   tv        : Tree ;
    location  : location_t ;
 BEGIN
    (* firstly ensure that any constant literal is declared *)
@@ -5216,7 +5219,7 @@ BEGIN
       THEN
          Replace (op1, tv)
       ELSE
-         t := BuildAssignmentTree(location, Mod2Gcc(op1), tv)
+         BuildAssignmentStatement (location, Mod2Gcc(op1), tv)
       END
    END
 END CodeUnaryCheck ;
@@ -5229,7 +5232,7 @@ END CodeUnaryCheck ;
 PROCEDURE CodeUnary (unop: BuildUnaryProcedure; ZConstToTypedConst: Tree;
                      quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t, tv   : Tree ;
+   tv      : Tree ;
    location: location_t ;
 BEGIN
    (* firstly ensure that any constant literal is declared *)
@@ -5253,7 +5256,7 @@ BEGIN
       THEN
          Replace (op1, tv)
       ELSE
-         t := BuildAssignmentTree (location, Mod2Gcc (op1), tv)
+         BuildAssignmentStatement (location, Mod2Gcc (op1), tv)
       END
    END
 END CodeUnary ;
@@ -5339,8 +5342,8 @@ END FoldSize ;
 
 PROCEDURE CodeSize (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t: Tree ;
    location: location_t ;
+   t       : Tree ;
 BEGIN
    location := TokenToLocation(CurrentQuadToken) ;
 
@@ -5361,7 +5364,7 @@ BEGIN
                                                 GetIntegerType(),
                                                 PopIntegerTree()))
    ELSE
-      t := BuildAssignmentTree(location, Mod2Gcc(op1), PopIntegerTree())
+      BuildAssignmentStatement (location, Mod2Gcc(op1), PopIntegerTree())
    END
 END CodeSize ;
 
@@ -5475,32 +5478,32 @@ END FoldOffset ;
 
 PROCEDURE CodeOffset (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
+   offset  : Tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation(CurrentQuadToken) ;
 
    (* firstly ensure that any constant literal is declared *)
-   IF IsRecordField(op3) OR IsFieldVarient(op3)
+   IF IsRecordField (op3) OR IsFieldVarient (op3)
    THEN
-      IF GccKnowsAbout(op2) AND GccKnowsAbout(op3) AND
-         CompletelyResolved(op2) AND CompletelyResolved(op3)
+      IF GccKnowsAbout (op2) AND GccKnowsAbout (op3) AND
+         CompletelyResolved (op2) AND CompletelyResolved (op3)
       THEN
-         t := BuildOffset(location, Mod2Gcc(op2), Mod2Gcc(op3), FALSE) ;
-         IF IsConst(op1)
+         offset := BuildOffset (location, Mod2Gcc (op2), Mod2Gcc (op3), FALSE) ;
+         IF IsConst (op1)
          THEN
             (* fine, we can take advantage of this and fold constants *)
-            IF NOT IsValueSolved(op1)
+            IF NOT IsValueSolved (op1)
             THEN
-               PushIntegerTree(t) ;
-               PopValue(op1)
+               PushIntegerTree (offset) ;
+               PopValue (op1)
             END ;
-            PutConst(op1, Address) ;
-            ConstantKnownAndUsed(op1,
-                                 DeclareKnownConstant(location, GetPointerType(), t))
+            PutConst (op1, Address) ;
+            ConstantKnownAndUsed (op1,
+                                  DeclareKnownConstant (location, GetPointerType (), offset))
          ELSE
             (* ok, use assignment *)
-            t := BuildAssignmentTree(location, Mod2Gcc(op1), t)
+            BuildAssignmentStatement (location, Mod2Gcc (op1), offset)
          END
       ELSE
          InternalError ('symbol type should have been declared by now')
@@ -5522,7 +5525,7 @@ PROCEDURE FoldRecordField (tokenno: CARDINAL; p: WalkAction;
 VAR
    recordType,
    fieldType : CARDINAL ;
-   t         : Tree ;
+   ptr       : Tree ;
    location  : location_t ;
 BEGIN
    RETURN ;  (* this procedure should no longer be called *)
@@ -5541,17 +5544,17 @@ BEGIN
          (* fine, we can take advantage of this and fold constants *)
          IF IsConst(op1)
          THEN
-            t := BuildComponentRef(location, Mod2Gcc(record), Mod2Gcc(field)) ;
+            ptr := BuildComponentRef(location, Mod2Gcc(record), Mod2Gcc(field)) ;
             IF NOT IsValueSolved(op1)
             THEN
-               PushIntegerTree(t) ;
-               PopValue(op1)
+               PushIntegerTree (ptr) ;
+               PopValue (op1)
             END ;
-            PutConst(op1, fieldType) ;
-            AddModGcc(op1, DeclareKnownConstant(location, Mod2Gcc(fieldType), t)) ;
-            p(op1) ;
+            PutConst (op1, fieldType) ;
+            AddModGcc (op1, DeclareKnownConstant(location, Mod2Gcc(fieldType), ptr)) ;
+            p (op1) ;
             NoChange := FALSE ;
-            SubQuad(quad)
+            SubQuad (quad)
          ELSE
             (* we can still fold the expression, but not the assignment, however, we will
                not do this here but in CodeOffset
@@ -5572,28 +5575,28 @@ PROCEDURE CodeRecordField (quad: CARDINAL; op1, record, field: CARDINAL) ;
 VAR
    recordType,
    fieldType : CARDINAL ;
-   t         : Tree ;
+   ptr       : Tree ;
    location  : location_t ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
+   location := TokenToLocation (CurrentQuadToken) ;
    (* firstly ensure that any constant literal is declared *)
-   IF IsRecordField(field) OR IsFieldVarient(field)
+   IF IsRecordField (field) OR IsFieldVarient (field)
    THEN
-      recordType := GetType(record) ;
-      fieldType := GetType(field) ;
-      IF GccKnowsAbout(record) AND GccKnowsAbout(field) AND
-         GccKnowsAbout(recordType) AND GccKnowsAbout(fieldType) AND
-         CompletelyResolved(recordType) AND CompletelyResolved(fieldType)
+      recordType := GetType (record) ;
+      fieldType := GetType (field) ;
+      IF GccKnowsAbout (record) AND GccKnowsAbout (field) AND
+         GccKnowsAbout (recordType) AND GccKnowsAbout (fieldType) AND
+         CompletelyResolved (recordType) AND CompletelyResolved (fieldType)
       THEN
          IF GetMode(record)=LeftValue
          THEN
-            t := BuildComponentRef(location,
-                                   BuildIndirect(location, Mod2Gcc(record), Mod2Gcc(recordType)),
-                                   Mod2Gcc(field))
+            ptr := BuildComponentRef (location,
+                                      BuildIndirect (location, Mod2Gcc (record), Mod2Gcc (recordType)),
+                                      Mod2Gcc (field))
          ELSE
-            t := BuildComponentRef(location, Mod2Gcc(record), Mod2Gcc(field))
+            ptr := BuildComponentRef (location, Mod2Gcc (record), Mod2Gcc (field))
          END ;
-         AddModGcc(op1, t)
+         AddModGcc (op1, ptr)
       ELSE
          InternalError ('symbol type should have been declared by now')
       END
@@ -5787,27 +5790,26 @@ END FoldHigh ;
 
 PROCEDURE CodeHigh (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation(CurrentQuadToken) ;
 
    (* firstly ensure that any constant literal is declared *)
-   DeclareConstant(CurrentQuadToken, op3) ;
-   IF IsConst(op1)
+   DeclareConstant (CurrentQuadToken, op3) ;
+   IF IsConst (op1)
    THEN
       (* still have a constant which was not resolved, pass it to gcc *)
-      ConstantKnownAndUsed(op1,
-                           DeclareKnownConstant(location,
-                                                GetM2ZType(),
-                                                ResolveHigh(CurrentQuadToken, op2, op3)))
+      ConstantKnownAndUsed (op1,
+                            DeclareKnownConstant(location,
+                                                 GetM2ZType (),
+                                                 ResolveHigh (CurrentQuadToken, op2, op3)))
    ELSE
-      t := BuildAssignmentTree(location,
-                               Mod2Gcc(op1),
-                               BuildConvert(location,
-                                            Mod2Gcc(GetType(op1)),
-                                            ResolveHigh(CurrentQuadToken, op2, op3),
-                                            FALSE))
+      BuildAssignmentStatement (location,
+                                Mod2Gcc (op1),
+                                BuildConvert (location,
+                                              Mod2Gcc (GetType(op1)),
+                                              ResolveHigh (CurrentQuadToken, op2, op3),
+                                              FALSE))
    END
 END CodeHigh ;
 
@@ -5819,7 +5821,7 @@ END CodeHigh ;
 
 PROCEDURE CodeUnbounded (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   Addr, t : Tree ;
+   Addr    : Tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation(CurrentQuadToken) ;
@@ -5827,10 +5829,10 @@ BEGIN
    DeclareConstant(CurrentQuadToken, op3) ;
    IF IsConstString(op3)
    THEN
-      t := BuildAssignmentTree(location, Mod2Gcc(op1), BuildAddr(location, PromoteToString(CurrentQuadToken, op3), FALSE))
+      BuildAssignmentStatement (location, Mod2Gcc(op1), BuildAddr(location, PromoteToString(CurrentQuadToken, op3), FALSE))
    ELSIF IsConstructor(op3)
    THEN
-      t := BuildAssignmentTree(location, Mod2Gcc(op1), BuildAddr(location, Mod2Gcc(op3), TRUE))
+      BuildAssignmentStatement (location, Mod2Gcc(op1), BuildAddr(location, Mod2Gcc(op3), TRUE))
    ELSIF IsUnbounded(GetType(op3))
    THEN
       IF GetMode(op3)=LeftValue
@@ -5839,12 +5841,12 @@ BEGIN
       ELSE
          Addr := BuildComponentRef(location, Mod2Gcc(op3), Mod2Gcc(GetUnboundedAddressOffset(GetType(op3))))
       END ;
-      t := BuildAssignmentTree(location, Mod2Gcc(op1), Addr)
+      BuildAssignmentStatement (location, Mod2Gcc(op1), Addr)
    ELSIF GetMode(op3)=RightValue
    THEN
-      t := BuildAssignmentTree(location, Mod2Gcc(op1), BuildAddr(location, Mod2Gcc(op3), FALSE))
+      BuildAssignmentStatement (location, Mod2Gcc(op1), BuildAddr(location, Mod2Gcc(op3), FALSE))
    ELSE
-      t := BuildAssignmentTree(location, Mod2Gcc(op1), Mod2Gcc(op3))
+      BuildAssignmentStatement (location, Mod2Gcc(op1), Mod2Gcc(op3))
    END
 END CodeUnbounded ;
 
@@ -5889,7 +5891,7 @@ VAR
    low, high,
    subscript  : CARDINAL ;
    elementSize,
-   t, a, ta,
+   a, ta,
    ti, tl     : Tree ;
    location   : location_t ;
 BEGIN
@@ -5926,14 +5928,14 @@ BEGIN
          ti := BuildConvert(location, GetIntegerType(), Mod2Gcc(index), FALSE)
       END ;
       (* ti := BuildConvert(location, GetIntegerType(), Mod2Gcc(high), FALSE) ; *)
-      t := BuildAssignmentTree(location,
-                               Mod2Gcc(res),
-                               BuildConvert(location,
-                                            Mod2Gcc(resType),
-                                            BuildAddr(location, BuildArray(location,
-                                                                           ta, a, ti, tl),
-                                                      FALSE),
-                                            FALSE))
+      BuildAssignmentStatement (location,
+                                Mod2Gcc (res),
+                                BuildConvert (location,
+                                              Mod2Gcc (resType),
+                                              BuildAddr (location, BuildArray (location,
+                                                                               ta, a, ti, tl),
+                                                        FALSE),
+                                              FALSE))
    ELSE
       InternalError ('subranges not yet resolved')
    END
@@ -6162,8 +6164,8 @@ END FoldConvert ;
 
 PROCEDURE CodeConvert (quad: CARDINAL; lhs, type, rhs: CARDINAL) ;
 VAR
-   t, tl, tr: Tree ;
-   location : location_t ;
+   tl, tr  : Tree ;
+   location: location_t ;
 BEGIN
    CheckStop(quad) ;
 
@@ -6185,10 +6187,10 @@ BEGIN
       (* fine, we can take advantage of this and fold constant *)
       PutConst(lhs, type) ;
       tl := Mod2Gcc(SkipType(type)) ;
-      ConstantKnownAndUsed(lhs,
-                           BuildConvert(location, tl, Mod2Gcc(rhs), TRUE))
+      ConstantKnownAndUsed (lhs,
+                            BuildConvert (location, tl, Mod2Gcc (rhs), TRUE))
    ELSE
-      t := BuildAssignmentTree(location, Mod2Gcc(lhs), BuildConvert(location, tl, tr, TRUE))
+      BuildAssignmentStatement (location, Mod2Gcc (lhs), BuildConvert (location, tl, tr, TRUE)) ;
    END
 END CodeConvert ;
 
@@ -6206,7 +6208,6 @@ END CodeConvert ;
 
 PROCEDURE CodeCoerce (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
    location: location_t ;
 BEGIN
    DeclareConstant(CurrentQuadToken, op3) ;  (* checks to see whether it is a constant literal and declares it *)
@@ -6221,7 +6222,7 @@ BEGIN
          THEN
             ConstantKnownAndUsed(op1, CheckConstant(CurrentQuadToken, op1, op3))
          ELSE
-            t := BuildAssignmentTree(location, Mod2Gcc(op1), Mod2Gcc(op3))
+            BuildAssignmentStatement (location, Mod2Gcc (op1), Mod2Gcc (op3))
          END
       ELSE
          MetaErrorT0 (CurrentQuadToken,
@@ -6239,15 +6240,15 @@ BEGIN
          Assert(GccKnowsAbout(op2)) ;
          IF IsConst(op3)
          THEN
-            t := BuildAssignmentTree(location, Mod2Gcc(op1), Mod2Gcc(op3))
+            BuildAssignmentStatement (location, Mod2Gcc(op1), Mod2Gcc(op3))
          ELSE
             (* does not work t := BuildCoerce(Mod2Gcc(op1), Mod2Gcc(op2), Mod2Gcc(op3)) *)
             checkDeclare (op1) ;
-            AddStatement(location,
-                         MaybeDebugBuiltinMemcpy(location, CurrentQuadToken,
-                                                 BuildAddr(location, Mod2Gcc(op1), FALSE),
-                                                 BuildAddr(location, Mod2Gcc(op3), FALSE),
-                                                 FindSize(CurrentQuadToken, op2)))
+            AddStatement (location,
+                          MaybeDebugBuiltinMemcpy(location, CurrentQuadToken,
+                                                  BuildAddr(location, Mod2Gcc(op1), FALSE),
+                                                  BuildAddr(location, Mod2Gcc(op3), FALSE),
+                                                  FindSize(CurrentQuadToken, op2)))
          END
       END
    ELSE
@@ -6331,7 +6332,6 @@ END CanConvert ;
 
 PROCEDURE CodeCast (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t: Tree ;
    location: location_t ;
 BEGIN
    DeclareConstant(CurrentQuadToken, op3) ;  (* checks to see whether it is a constant literal and declares it *)
@@ -6346,7 +6346,7 @@ BEGIN
          THEN
             ConstantKnownAndUsed(op1, CheckConstant(CurrentQuadToken, op1, op3))
          ELSE
-            t := BuildAssignmentTree(location, Mod2Gcc(op1), Mod2Gcc(op3))
+            BuildAssignmentStatement (location, Mod2Gcc(op1), Mod2Gcc(op3))
          END
       ELSE
          MetaErrorT0 (CurrentQuadToken,
@@ -6425,12 +6425,12 @@ END CreateLabelName ;
    CodeGoto - creates a jump to a labeled quadruple.
 *)
 
-PROCEDURE CodeGoto (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE CodeGoto (destquad: CARDINAL) ;
 VAR
    location: location_t ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-   BuildGoto(location, string(CreateLabelName(op3)))
+   location := TokenToLocation (CurrentQuadToken) ;
+   BuildGoto (location, string (CreateLabelName (destquad)))
 END CodeGoto ;
 
 
@@ -7264,27 +7264,25 @@ END CodeIfNotIn ;
 
 PROCEDURE CodeIndrX (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
    location: location_t ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
+   location := TokenToLocation (CurrentQuadToken) ;
 
    (*
       Follow the Quadruple rules:
    *)
-   DeclareConstant(CurrentQuadToken, op3) ;  (* checks to see whether it is a constant and declares it *)
-   DeclareConstructor(CurrentQuadToken, quad, op3) ;
-   IF IsConstString(op3)
+   DeclareConstant (CurrentQuadToken, op3) ;  (* checks to see whether it is a constant and declares it *)
+   DeclareConstructor (CurrentQuadToken, quad, op3) ;
+   IF IsConstString (op3)
    THEN
       InternalError ('not expecting to index through a constant string')
    ELSE
       (*
          Mem[op1] := Mem[Mem[op3]]
       *)
-      t := BuildAssignmentTree(location, Mod2Gcc(op1), BuildIndirect(location, Mod2Gcc(op3), Mod2Gcc(op2)))
+      BuildAssignmentStatement (location, Mod2Gcc (op1), BuildIndirect (location, Mod2Gcc (op3), Mod2Gcc (op2)))
    END
 END CodeIndrX ;
-
 
 
 (*
@@ -7299,8 +7297,9 @@ END CodeIndrX ;
 
 PROCEDURE CodeXIndr (quad: CARDINAL; op1, type, op3: CARDINAL) ;
 VAR
-   newstr, t: Tree ;
-   location : location_t ;
+   length,
+   newstr  : Tree ;
+   location: location_t ;
 BEGIN
    location := TokenToLocation(CurrentQuadToken) ;
 
@@ -7314,7 +7313,7 @@ BEGIN
    *)
    IF IsProcType(SkipType(type))
    THEN
-      t := BuildAssignmentTree(location, BuildIndirect(location, Mod2Gcc(op1), GetPointerType()), Mod2Gcc(op3))
+      BuildAssignmentStatement (location, BuildIndirect(location, Mod2Gcc(op1), GetPointerType()), Mod2Gcc(op3))
    ELSIF IsConstString(op3) AND (GetStringLength(op3)=0) AND (GetMode(op1)=LeftValue)
    THEN
       (*
@@ -7323,21 +7322,21 @@ BEGIN
          complains if we pass through a "" and ask it to copy the
          contents.
       *)
-      t := BuildAssignmentTree(location,
-                               BuildIndirect(location, LValueToGenericPtr(location, op1), Mod2Gcc(Char)),
-                               StringToChar(Mod2Gcc(op3), Char, op3))
+      BuildAssignmentStatement (location,
+                                BuildIndirect(location, LValueToGenericPtr(location, op1), Mod2Gcc(Char)),
+                                StringToChar(Mod2Gcc(op3), Char, op3))
    ELSIF IsConstString(op3) AND (SkipTypeAndSubrange(GetType(op1))#Char)
    THEN
-      DoCopyString(CurrentQuadToken, t, newstr, type, op3) ;
-      AddStatement(location,
-                   MaybeDebugBuiltinMemcpy(location, CurrentQuadToken,
-                                           Mod2Gcc(op1),
-                                           BuildAddr(location, newstr, FALSE),
-                                           t))
+      DoCopyString (CurrentQuadToken, length, newstr, type, op3) ;
+      AddStatement (location,
+                    MaybeDebugBuiltinMemcpy (location, CurrentQuadToken,
+                                             Mod2Gcc (op1),
+                                             BuildAddr (location, newstr, FALSE),
+                                             length))
    ELSE
-      t := BuildAssignmentTree(location,
-                               BuildIndirect(location, Mod2Gcc(op1), Mod2Gcc(type)),
-                               ConvertRHS(Mod2Gcc(op3), type, op3))
+      BuildAssignmentStatement (location,
+                                BuildIndirect (location, Mod2Gcc (op1), Mod2Gcc (type)),
+                                ConvertRHS (Mod2Gcc (op3), type, op3))
    END
 END CodeXIndr ;
 

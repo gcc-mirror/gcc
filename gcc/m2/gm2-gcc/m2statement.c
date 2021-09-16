@@ -178,7 +178,7 @@ m2statement_SetEndLocation (location_t location)
     cfun->function_end_locus = location;
 }
 
-/* BuildAssignmentTree - builds the assignment of, des, and, expr.
+/* BuildAssignmentTree builds the assignment of, des, and, expr.
    It returns, des.  */
 
 tree
@@ -208,7 +208,15 @@ m2statement_BuildAssignmentTree (location_t location, tree des, tree expr)
   return des;
 }
 
-/* BuildGoto - builds a goto operation.  */
+/* BuildAssignmentStatement builds the assignment of, des, and, expr.  */
+
+void
+m2statement_BuildAssignmentStatement (location_t location, tree des, tree expr)
+{
+  m2statement_BuildAssignmentTree (location, des, expr);
+}
+
+/* BuildGoto builds a goto operation.  */
 
 void
 m2statement_BuildGoto (location_t location, char *name)

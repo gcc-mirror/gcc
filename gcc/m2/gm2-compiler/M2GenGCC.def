@@ -97,7 +97,7 @@ PROCEDURE ZConstToTypedConst (t: Tree; op1, op2: CARDINAL) : Tree ;
                        providing it fits.
 *)
 
-PROCEDURE DoCopyString (tokenno: CARDINAL; VAR t, op3t: Tree; op1t, op3: CARDINAL) ;
+PROCEDURE DoCopyString (tokenno: CARDINAL; VAR length, op3t: Tree; op1t, op3: CARDINAL) ;
 
 
 END M2GenGCC.

@@ -77,6 +77,8 @@ EXTERN void m2statement_DeclareLabel (location_t location, char *name);
 EXTERN void m2statement_BuildGoto (location_t location, char *name);
 EXTERN tree m2statement_BuildAssignmentTree (location_t location, tree des,
                                              tree expr);
+EXTERN void m2statement_BuildAssignmentStatement (location_t location, tree des,
+						  tree expr);
 EXTERN void m2statement_BuildPopFunctionContext (void);
 EXTERN void m2statement_BuildPushFunctionContext (void);
 EXTERN void m2statement_BuildReturnValueCode (location_t location, tree fndecl,

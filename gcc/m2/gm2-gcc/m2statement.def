@@ -78,7 +78,14 @@ PROCEDURE BuildPopFunctionContext ;
                          It returns, des.
 *)
 
-PROCEDURE BuildAssignmentTree (location: location_t; des: Tree; expr: Tree) : Tree ;
+PROCEDURE BuildAssignmentTree (location: location_t; des, expr: Tree) : Tree ;
+
+
+(*
+   BuildAssignmentStatement builds the assignment of, des, and, expr.
+*)
+
+PROCEDURE BuildAssignmentStatement (location: location_t; des, expr: Tree) ;
 
 
 (*
