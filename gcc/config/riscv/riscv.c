@@ -1707,6 +1707,16 @@ riscv_extend_cost (rtx op, bool unsigned_p)
   if (TARGET_ZBA && TARGET_64BIT && unsigned_p && GET_MODE (op) == SImode)
     return COSTS_N_INSNS (1);
 
+  /* ZBB provide zext.h, sext.b and sext.h.  */
+  if (TARGET_ZBB)
+    {
+      if (!unsigned_p && GET_MODE (op) == QImode)
+	return COSTS_N_INSNS (1);
+
+      if (GET_MODE (op) == HImode)
+	return COSTS_N_INSNS (1);
+    }
+
   if (!unsigned_p && GET_MODE (op) == SImode)
     /* We can use SEXT.W.  */
     return COSTS_N_INSNS (1);
@@ -1797,6 +1807,13 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       gcc_fallthrough ();
     case IOR:
     case XOR:
+      /* orn, andn and xorn pattern for zbb.  */
+      if (TARGET_ZBB
+	  && GET_CODE (XEXP (x, 0)) == NOT)
+	{
+	  *total = riscv_binary_cost (x, 1, 2);
+	  return true;
+	}
       /* Double-word operations use two single-word operations.  */
       *total = riscv_binary_cost (x, 1, 2);
       return false;
