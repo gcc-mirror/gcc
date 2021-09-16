@@ -33,15 +33,14 @@ template<typename S>
     if constexpr (std::atomic_ref<S>::is_always_lock_free)
     {
       S aa{ va };
-      S bb{ vb };
       std::atomic_ref<S> a{ aa };
-      a.wait(bb);
+      a.wait(vb);
       std::thread t([&]
         {
-	  a.store(bb);
+	  a.store(vb);
 	  a.notify_one();
         });
-      a.wait(aa);
+      a.wait(va);
       t.join();
     }
   }
