@@ -1,3 +1,41 @@
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88578
+	PR c++/102295
+	* g++.dg/ext/flexary39.C: New test.
+	* g++.dg/ext/flexary40.C: New test.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102295
+	* g++.target/i386/pr102295.C: New test.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102305
+	* g++.dg/cpp0x/pr102305.C: New test.
+
+2021-09-15  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-stst.c: New test.
+	* gcc.target/powerpc/fusion-p10-stst2.c: New test.
+
+2021-09-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-9.c: New test.
+
 2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/enum_rep2.adb: New test.
