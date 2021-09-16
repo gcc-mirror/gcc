@@ -2218,7 +2218,8 @@ determine_specialization (tree template_id,
       targs = coerce_template_parms (parms, explicit_targs, fns,
 				     tf_warning_or_error,
 				     /*req_all*/true, /*use_defarg*/true);
-      if (targs != error_mark_node)
+      if (targs != error_mark_node
+	  && constraints_satisfied_p (fns, targs))
         templates = tree_cons (targs, fns, templates);
     }
   else for (lkp_iterator iter (fns); iter; ++iter)
