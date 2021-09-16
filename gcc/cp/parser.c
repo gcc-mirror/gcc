@@ -1051,6 +1051,16 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
     case RID_FLOAT:
     case RID_DOUBLE:
     case RID_VOID:
+      /* CV qualifiers.  */
+    case RID_CONST:
+    case RID_VOLATILE:
+      /* Function specifiers.  */
+    case RID_EXPLICIT:
+    case RID_VIRTUAL:
+      /* friend/typdef/inline specifiers.  */
+    case RID_FRIEND:
+    case RID_TYPEDEF:
+    case RID_INLINE:
       /* GNU extensions.  */
     case RID_ATTRIBUTE:
     case RID_TYPEOF:
