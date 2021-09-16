@@ -424,7 +424,7 @@ package body GNAT.Formatted_String is
         and then F_Spec.Zero_Pad
         and then F_Spec.Width > Len + Value'First - S
       then
-         Append (Res, String'((F_Spec.Width - Len + Value'First - S) * '0'));
+         Append (Res, String'((F_Spec.Width - (Len + Value'First - S)) * '0'));
       end if;
 
       --  Add the value now
