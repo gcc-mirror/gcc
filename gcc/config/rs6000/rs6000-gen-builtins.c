@@ -2314,7 +2314,7 @@ write_decls (void)
 
   fprintf (header_file, "extern void rs6000_init_generated_builtins ();\n\n");
   fprintf (header_file,
-	   "extern bool rs6000_new_builtin_is_supported_p "
+	   "extern bool rs6000_new_builtin_is_supported "
 	   "(rs6000_gen_builtins);\n");
   fprintf (header_file,
 	   "extern tree rs6000_builtin_decl (unsigned, "

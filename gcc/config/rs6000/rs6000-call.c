@@ -12971,6 +12971,59 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   return false;
 }
 
+/* Check whether a builtin function is supported in this target
+   configuration.  */
+bool
+rs6000_new_builtin_is_supported (enum rs6000_gen_builtins fncode)
+{
+  switch (rs6000_builtin_info_x[(size_t) fncode].enable)
+    {
+    case ENB_ALWAYS:
+      return true;
+    case ENB_P5:
+      return TARGET_POPCNTB;
+    case ENB_P6:
+      return TARGET_CMPB;
+    case ENB_P7:
+      return TARGET_POPCNTD;
+    case ENB_P7_64:
+      return TARGET_POPCNTD && TARGET_POWERPC64;
+    case ENB_P8:
+      return TARGET_DIRECT_MOVE;
+    case ENB_P8V:
+      return TARGET_P8_VECTOR;
+    case ENB_P9:
+      return TARGET_MODULO;
+    case ENB_P9_64:
+      return TARGET_MODULO && TARGET_POWERPC64;
+    case ENB_P9V:
+      return TARGET_P9_VECTOR;
+    case ENB_P10:
+      return TARGET_POWER10;
+    case ENB_P10_64:
+      return TARGET_POWER10 && TARGET_POWERPC64;
+    case ENB_ALTIVEC:
+      return TARGET_ALTIVEC;
+    case ENB_VSX:
+      return TARGET_VSX;
+    case ENB_CELL:
+      return TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL;
+    case ENB_IEEE128_HW:
+      return TARGET_FLOAT128_HW;
+    case ENB_DFP:
+      return TARGET_DFP;
+    case ENB_CRYPTO:
+      return TARGET_CRYPTO;
+    case ENB_HTM:
+      return TARGET_HTM;
+    case ENB_MMA:
+      return TARGET_MMA;
+    default:
+      gcc_unreachable ();
+    }
+  gcc_unreachable ();
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
