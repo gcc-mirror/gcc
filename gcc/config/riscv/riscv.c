@@ -1852,6 +1852,24 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	    *total = COSTS_N_INSNS (1);
 	    return true;
 	}
+      /* bclri pattern for zbs.  */
+      if (TARGET_ZBS
+	  && not_single_bit_mask_operand (XEXP (x, 1), VOIDmode))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      /* bclr pattern for zbs.  */
+      if (TARGET_ZBS
+	  && REG_P (XEXP (x, 1))
+	  && GET_CODE (XEXP (x, 0)) == ROTATE
+	  && CONST_INT_P (XEXP ((XEXP (x, 0)), 0))
+	  && INTVAL (XEXP ((XEXP (x, 0)), 0)) == -2)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+
       gcc_fallthrough ();
     case IOR:
     case XOR:
@@ -1862,6 +1880,18 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  *total = riscv_binary_cost (x, 1, 2);
 	  return true;
 	}
+
+      /* bset[i] and binv[i] pattern for zbs.  */
+      if ((GET_CODE (x) == IOR || GET_CODE (x) == XOR)
+	  && TARGET_ZBS
+	  && ((GET_CODE (XEXP (x, 0)) == ASHIFT
+	      && CONST_INT_P (XEXP (XEXP (x, 0), 0)))
+	      || single_bit_mask_operand (XEXP (x, 1), VOIDmode)))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+
       /* Double-word operations use two single-word operations.  */
       *total = riscv_binary_cost (x, 1, 2);
       return false;
@@ -1877,9 +1907,26 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
 	  return true;
 	}
+      /* bext pattern for zbs.  */
+      if (TARGET_ZBS && outer_code == SET
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) == 1)
+	{
+	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
+	  return true;
+	}
       return false;
 
     case ASHIFT:
+      /* bset pattern for zbs.  */
+      if (TARGET_ZBS
+	  && CONST_INT_P (XEXP (x, 0))
+	  && INTVAL (XEXP (x, 0)) == 1)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      gcc_fallthrough ();
     case ASHIFTRT:
     case LSHIFTRT:
       *total = riscv_binary_cost (x, SINGLE_SHIFT_COST,
