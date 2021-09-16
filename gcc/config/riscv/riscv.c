@@ -1703,6 +1703,10 @@ riscv_extend_cost (rtx op, bool unsigned_p)
     /* We can use ANDI.  */
     return COSTS_N_INSNS (1);
 
+  /* ZBA provide zext.w.  */
+  if (TARGET_ZBA && TARGET_64BIT && unsigned_p && GET_MODE (op) == SImode)
+    return COSTS_N_INSNS (1);
+
   if (!unsigned_p && GET_MODE (op) == SImode)
     /* We can use SEXT.W.  */
     return COSTS_N_INSNS (1);
@@ -1776,6 +1780,21 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case AND:
+      /* slli.uw pattern for zba.  */
+      if (TARGET_ZBA && TARGET_64BIT && mode == DImode
+	  && GET_CODE (XEXP (x, 0)) == ASHIFT)
+	{
+	  rtx and_rhs = XEXP (x, 1);
+	  rtx ashift_lhs = XEXP (XEXP (x, 0), 0);
+	  rtx ashift_rhs = XEXP (XEXP (x, 0), 1);
+	  if (REG_P (ashift_lhs)
+	      && CONST_INT_P (ashift_rhs)
+	      && CONST_INT_P (and_rhs)
+	      && ((INTVAL (and_rhs) >> INTVAL (ashift_rhs)) == 0xffffffff))
+	    *total = COSTS_N_INSNS (1);
+	    return true;
+	}
+      gcc_fallthrough ();
     case IOR:
     case XOR:
       /* Double-word operations use two single-word operations.  */
@@ -1867,6 +1886,68 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 
     case MINUS:
     case PLUS:
+      /* add.uw pattern for zba.  */
+      if (TARGET_ZBA
+	  && (TARGET_64BIT && (mode == DImode))
+	  && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == SImode)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      /* shNadd pattern for zba.  */
+      if (TARGET_ZBA
+	  && ((!TARGET_64BIT && (mode == SImode)) ||
+	      (TARGET_64BIT && (mode == DImode)))
+	  && (GET_CODE (XEXP (x, 0)) == ASHIFT)
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 0))
+	  && IN_RANGE (INTVAL (XEXP (XEXP (x, 0), 0)), 1, 3))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      /* shNadd.uw pattern for zba.
+	 [(set (match_operand:DI 0 "register_operand" "=r")
+	       (plus:DI
+		 (and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
+				    (match_operand:QI 2 "immediate_operand" "I"))
+			 (match_operand 3 "immediate_operand" ""))
+		 (match_operand:DI 4 "register_operand" "r")))]
+	 "TARGET_64BIT && TARGET_ZBA
+	  && (INTVAL (operands[2]) >= 1) && (INTVAL (operands[2]) <= 3)
+	  && (INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff"
+      */
+      if (TARGET_ZBA
+	  && (TARGET_64BIT && (mode == DImode))
+	  && (GET_CODE (XEXP (x, 0)) == AND)
+	  && (REG_P (XEXP (x, 1))))
+	{
+	  do {
+	    rtx and_lhs = XEXP (XEXP (x, 0), 0);
+	    rtx and_rhs = XEXP (XEXP (x, 0), 1);
+	    if (GET_CODE (and_lhs) != ASHIFT)
+	      break;
+	    if (!CONST_INT_P (and_rhs))
+	      break;
+
+	    rtx ashift_lhs = XEXP (and_lhs, 0);
+	    rtx ashift_rhs = XEXP (and_lhs, 1);
+
+	    if (!CONST_INT_P (ashift_rhs)
+		|| !IN_RANGE (INTVAL (ashift_rhs), 1, 3))
+	      break;
+
+	    if (CONST_INT_P (and_rhs)
+		&& ((INTVAL (and_rhs) >> INTVAL (ashift_rhs)) == 0xffffffff))
+	      {
+		*total = COSTS_N_INSNS (1);
+		return true;
+	      }
+	  } while (false);
+	}
+
       if (float_mode_p)
 	*total = tune_param->fp_add[mode == DFmode];
       else
