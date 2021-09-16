@@ -4,7 +4,7 @@
 // { dg-require-cstdint "" }
 // This can take long on simulators, timing out the test.
 // { dg-options "-DITERATIONS=5" { target simulator } }
-// { dg-timeout-factor 2.0 }
+// { dg-timeout-factor 3.0 }
 
 // -*- C++ -*-
 
