@@ -1,3 +1,28 @@
+2021-09-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85130
+	* gfortran.dg/substr_6.f90: Revert commit r8-7574, adding again
+	test that was erroneously considered as illegal.
+
+2021-09-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82314
+	* gfortran.dg/pr82314.f90: New test.
+
+2021-09-16  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2021-09-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101934
+	* gcc.target/aarch64/memset-strict-align-1.c: New test.
+
 2021-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
