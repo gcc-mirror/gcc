@@ -98,8 +98,18 @@ public:
   void debug () const;
 };
 
-// Declared internally in value-relation.cc
-class equiv_chain;
+// This class represents an equivalency set, and contains a link to the next
+// one in the list to be searched.
+
+class equiv_chain
+{
+public:
+  bitmap m_names;		// ssa-names in equiv set.
+  basic_block m_bb;		// Block this belongs to
+  equiv_chain *m_next;		// Next in block list.
+  void dump (FILE *f) const;	// Show names in this list.
+  equiv_chain *find (unsigned ssa);
+};
 
 // The equivalency oracle maintains equivalencies using the dominator tree.
 // Equivalencies apply to an entire basic block.  Equivalencies on edges
@@ -188,4 +198,41 @@ private:
 
 };
 
+// A path_oracle implements relations in a list.  The only sense of ordering
+// is the latest registered relation is the first found during a search.
+// It can be constructed with an optional "root" oracle which will be used
+// to look up any relations not found in the list.
+// This allows the client to walk paths starting at some block and register
+// and query relations along that path, ignoring other edges.
+//
+// For registering a relation, a query if made of the root oracle if there is
+// any known relationship at block BB, and it is combined with this new
+// relation and entered in the list.
+//
+// Queries are resolved by looking first in the list, and only if nothing is
+// found is the root oracle queried at block BB.
+//
+// reset_path is used to clear all locally registered paths to initial state.
+
+class path_oracle : public relation_oracle
+{
+public:
+  path_oracle (relation_oracle *oracle = NULL);
+  ~path_oracle ();
+  const_bitmap equiv_set (tree, basic_block);
+  void register_relation (basic_block, relation_kind, tree, tree);
+  relation_kind query_relation (basic_block, tree, tree);
+  relation_kind query_relation (basic_block, const_bitmap, const_bitmap);
+  void reset_path ();
+  void dump (FILE *, basic_block) const;
+  void dump (FILE *) const;
+private:
+  void register_equiv (basic_block bb, tree ssa1, tree ssa2);
+  equiv_chain m_equiv;
+  relation_chain_head m_relations;
+  relation_oracle *m_root;
+
+  bitmap_obstack m_bitmaps;
+  struct obstack m_chain_obstack;
+};
 #endif  /* GCC_VALUE_RELATION_H */

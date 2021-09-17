@@ -190,9 +190,6 @@ relation_transitive (relation_kind r1, relation_kind r2)
 
 // -------------------------------------------------------------------------
 
-// This class represents an equivalency set, and contains a link to the next
-// one in the list to be searched.
-
 // The very first element in the m_equiv chain is actually just a summary
 // element in which the m_names bitmap is used to indicate that an ssa_name
 // has an equivalence set in this block.
@@ -200,16 +197,6 @@ relation_transitive (relation_kind r1, relation_kind r2)
 // SSA_NAME simply requires walking the DOM chain until a block is found
 // which has the bit for SSA_NAME set. Then scan for the equivalency set in
 // that block.   No previous lists need be searched.
-
-class equiv_chain
-{
-public:
-  bitmap m_names;		// ssa-names in equiv set.
-  basic_block m_bb;		// Block this belongs to
-  equiv_chain *m_next;		// Next in block list.
-  void dump (FILE *f) const;	// Show names in this list.
-  equiv_chain *find (unsigned ssa);
-};
 
 // If SSA has an equivalence in this list, find and return it.
 // Otherwise return NULL.
@@ -1171,4 +1158,179 @@ void
 relation_oracle::debug () const
 {
   dump (stderr);
+}
+
+path_oracle::path_oracle (relation_oracle *oracle)
+{
+  m_root = oracle;
+  bitmap_obstack_initialize (&m_bitmaps);
+  obstack_init (&m_chain_obstack);
+
+  // Initialize header records.
+  m_equiv.m_names = BITMAP_ALLOC (&m_bitmaps);
+  m_equiv.m_bb = NULL;
+  m_equiv.m_next = NULL;
+  m_relations.m_names = BITMAP_ALLOC (&m_bitmaps);
+  m_relations.m_head = NULL;
+}
+
+path_oracle::~path_oracle ()
+{
+  obstack_free (&m_chain_obstack, NULL);
+  bitmap_obstack_release (&m_bitmaps);
+}
+
+// Return the equiv set for SSA, and if there isn't one, check for equivs
+// starting in block BB.
+
+const_bitmap
+path_oracle::equiv_set (tree ssa, basic_block bb)
+{
+  // Check the list first.
+  equiv_chain *ptr = m_equiv.find (SSA_NAME_VERSION (ssa));
+  if (ptr)
+    return ptr->m_names;
+
+  // Otherwise defer to the root oracle.
+  if (m_root)
+    return m_root->equiv_set (ssa, bb);
+
+  // Allocate a throw away bitmap if there isn't a root oracle.
+  bitmap tmp = BITMAP_ALLOC (&m_bitmaps);
+  bitmap_set_bit (tmp, SSA_NAME_VERSION (ssa));
+  return tmp;
+}
+
+// Register an equivalence between SSA1 and SSA2 resolving unkowns from
+// block BB.
+
+void
+path_oracle::register_equiv (basic_block bb, tree ssa1, tree ssa2)
+{
+  const_bitmap equiv_1 = equiv_set (ssa1, bb);
+  const_bitmap equiv_2 = equiv_set (ssa2, bb);
+
+  // Check if they are the same set, if so, we're done.
+  if (bitmap_equal_p (equiv_1, equiv_2))
+    return;
+
+  // Don't mess around, simply create a new record and insert it first.
+  bitmap b = BITMAP_ALLOC (&m_bitmaps);
+  bitmap_copy (b, equiv_1);
+  bitmap_ior_into (b, equiv_2);
+
+  equiv_chain *ptr = (equiv_chain *) obstack_alloc (&m_chain_obstack,
+						    sizeof (equiv_chain));
+  ptr->m_names = b;
+  ptr->m_bb = NULL;
+  ptr->m_next = m_equiv.m_next;
+  m_equiv.m_next = ptr;
+  bitmap_ior_into (m_equiv.m_names, b);
+}
+
+// Register relation K between SSA1 and SSA2, resolving unknowns by
+// querying from BB.
+
+void
+path_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
+				tree ssa2)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      value_relation vr (k, ssa1, ssa2);
+      fprintf (dump_file, " Registering value_relation (path_oracle) ");
+      vr.dump (dump_file);
+      fprintf (dump_file, " (bb%d)\n", bb->index);
+    }
+
+  if (k == EQ_EXPR)
+    {
+      register_equiv (bb, ssa1, ssa2);
+      return;
+    }
+
+  relation_kind curr = query_relation (bb, ssa1, ssa2);
+  if (curr != VREL_NONE)
+    k = relation_intersect (curr, k);
+
+  bitmap_set_bit (m_relations.m_names, SSA_NAME_VERSION (ssa1));
+  bitmap_set_bit (m_relations.m_names, SSA_NAME_VERSION (ssa2));
+  relation_chain *ptr = (relation_chain *) obstack_alloc (&m_chain_obstack,
+						      sizeof (relation_chain));
+  ptr->set_relation (k, ssa1, ssa2);
+  ptr->m_next = m_relations.m_head;
+  m_relations.m_head = ptr;
+}
+
+// Query for a relationship between equiv set B1 and B2, resolving unknowns
+// starting at block BB.
+
+relation_kind
+path_oracle::query_relation (basic_block bb, const_bitmap b1, const_bitmap b2)
+{
+  if (bitmap_equal_p (b1, b2))
+    return EQ_EXPR;
+
+  relation_kind k = m_relations.find_relation (b1, b2);
+
+  if (k == VREL_NONE && m_root)
+    k = m_root->query_relation (bb, b1, b2);
+
+  return k;
+}
+
+// Query for a relationship between SSA1 and SSA2, resolving unknowns
+// starting at block BB.
+
+relation_kind
+path_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
+{
+  unsigned v1 = SSA_NAME_VERSION (ssa1);
+  unsigned v2 = SSA_NAME_VERSION (ssa2);
+
+  if (v1 == v2)
+    return EQ_EXPR;
+
+  const_bitmap equiv_1 = equiv_set (ssa1, bb);
+  const_bitmap equiv_2 = equiv_set (ssa2, bb);
+  if (bitmap_bit_p (equiv_1, v2) && bitmap_bit_p (equiv_2, v1))
+    return EQ_EXPR;
+
+  return query_relation (bb, equiv_1, equiv_2);
+}
+
+// Reset any relations registered on this path.
+
+void
+path_oracle::reset_path ()
+{
+  m_equiv.m_next = NULL;
+  bitmap_clear (m_equiv.m_names);
+  m_relations.m_head = NULL;
+  bitmap_clear (m_relations.m_names);
+}
+
+// Dump relation in basic block... Do nothing here.
+
+void
+path_oracle::dump (FILE *, basic_block) const
+{
+}
+
+// Dump the relations and equivalencies found in the path.
+
+void
+path_oracle::dump (FILE *f) const
+{
+  equiv_chain *ptr = m_equiv.m_next;
+  for (; ptr; ptr = ptr->m_next)
+    ptr->dump (f);
+
+  relation_chain *ptr2 = m_relations.m_head;
+  for (; ptr2; ptr2 = ptr2->m_next)
+    {
+      fprintf (f, "Relational : ");
+      ptr2->dump (f);
+      fprintf (f, "\n");
+    }
 }
