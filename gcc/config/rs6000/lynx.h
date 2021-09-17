@@ -80,7 +80,6 @@
 
 #undef SIZE_TYPE
 #undef ASM_OUTPUT_ALIGN
-#undef PREFERRED_DEBUGGING_TYPE
 
 /* The file rs6000.c defines TARGET_HAVE_TLS unconditionally to the
    value of HAVE_AS_TLS.  HAVE_AS_TLS is true as gas support for TLS

@@ -53,4 +53,11 @@ concept D = requires (const T t) {
 };
 
 static_assert(D<C>);
+
+// Test that when there's no strictly viable candidate and we're in a
+// SFINAE context, we still stop at the first bad argument conversion.
+template<class T>
+concept E = requires { T().h(nullptr); };
+
+static_assert(!E<C>);
 #endif

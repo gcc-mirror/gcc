@@ -21728,7 +21728,8 @@ rs6000_xcoff_encode_section_info (tree decl, rtx rtl, int first)
   if (decl
       && DECL_P (decl)
       && VAR_OR_FUNCTION_DECL_P (decl)
-      && symtab_node::get (decl)->alias == 0
+      && (symtab_node::get (decl) == NULL
+	  || symtab_node::get (decl)->alias == 0)
       && symname[strlen (symname) - 1] != ']')
     {
       const char *smclass = NULL;
@@ -22174,7 +22175,7 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
       break;
 
     case UNSPEC:
-      if (XINT (x, 1) == UNSPEC_MMA_XXSETACCZ)
+      if (XINT (x, 1) == UNSPECV_MMA_XXSETACCZ)
 	{
 	  *total = 0;
 	  return true;

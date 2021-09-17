@@ -1,3 +1,9 @@
+2021-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	* config.host: Remove m32r-*-linux* and m32rle-*-linux*.
+	* config/m32r/libgcc-glibc.ver: Removed.
+	* config/m32r/t-linux: Removed.
+
 2021-09-08  liuhongt  <hongtao.liu@intel.com>
 
 	* config/i386/t-softfp: Compile __{mul,div}hc3 into

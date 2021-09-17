@@ -96,6 +96,10 @@ public:
 				       std::string &include)
     override;
 
+  using parent::ModuleCompiledRequest;
+  virtual int ModuleCompiledRequest (Cody::Server *s, Cody::Flags Flags,
+				     std::string &Module) override;
+
 private:
   using parent::GetCMISuffix;
   virtual char const *GetCMISuffix () override;

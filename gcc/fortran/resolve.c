@@ -811,7 +811,7 @@ resolve_entries (gfc_namespace *ns)
 	      gfc_error ("Function %s at %L has entry %s with mismatched "
 			 "characteristics", ns->entries->sym->name,
 			 &ns->entries->sym->declared_at, el->sym->name);
-	      return;
+	      goto cleanup;
 	    }
 	  else if (ts->type == BT_CHARACTER && ts->u.cl && fts->u.cl
 		   && (((ts->u.cl->length && !fts->u.cl->length)
@@ -917,6 +917,8 @@ resolve_entries (gfc_namespace *ns)
 	    }
 	}
     }
+
+cleanup:
   proc->attr.access = ACCESS_PRIVATE;
   proc->attr.entry_master = 1;
 

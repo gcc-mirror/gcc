@@ -1606,13 +1606,7 @@ set_dr_misalignment (dr_vec_info *dr_info, int val)
   dr_info->misalignment = val;
 }
 
-inline int
-dr_misalignment (dr_vec_info *dr_info)
-{
-  int misalign = dr_info->misalignment;
-  gcc_assert (misalign != DR_MISALIGNMENT_UNINITIALIZED);
-  return misalign;
-}
+extern int dr_misalignment (dr_vec_info *dr_info);
 
 /* Reflects actual alignment of first access in the vectorized loop,
    taking into account peeling/versioning if applied.  */
@@ -1620,7 +1614,21 @@ dr_misalignment (dr_vec_info *dr_info)
 #define SET_DR_MISALIGNMENT(DR, VAL) set_dr_misalignment (DR, VAL)
 
 /* Only defined once DR_MISALIGNMENT is defined.  */
-#define DR_TARGET_ALIGNMENT(DR) ((DR)->target_alignment)
+static inline const poly_uint64
+dr_target_alignment (dr_vec_info *dr_info)
+{
+  if (STMT_VINFO_GROUPED_ACCESS (dr_info->stmt))
+    dr_info = STMT_VINFO_DR_INFO (DR_GROUP_FIRST_ELEMENT (dr_info->stmt));
+  return dr_info->target_alignment;
+}
+#define DR_TARGET_ALIGNMENT(DR) dr_target_alignment (DR)
+
+static inline void
+set_dr_target_alignment (dr_vec_info *dr_info, poly_uint64 val)
+{
+  dr_info->target_alignment = val;
+}
+#define SET_DR_TARGET_ALIGNMENT(DR, VAL) set_dr_target_alignment (DR, VAL)
 
 /* Return true if data access DR_INFO is aligned to its target alignment
    (which may be less than a full vector).  */

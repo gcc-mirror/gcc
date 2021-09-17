@@ -4175,6 +4175,9 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   flags |= LOOKUP_NO_CONVERSION;
   if (BRACE_ENCLOSED_INITIALIZER_P (expr))
     flags |= LOOKUP_NO_NARROWING;
+  /* Prevent add_candidates from treating a non-strictly viable candidate
+     as unviable.  */
+  complain |= tf_conv;
 
   /* It's OK to bind a temporary for converting constructor arguments, but
      not in converting the return value of a conversion operator.  */
@@ -6232,8 +6235,18 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	     stopped at the first bad conversion).  Add the function to BAD_FNS
 	     to fully reconsider later if we don't find any strictly viable
 	     candidates.  */
-	  bad_fns = lookup_add (fn, bad_fns);
-	  *candidates = (*candidates)->next;
+	  if (complain & (tf_error | tf_conv))
+	    {
+	      bad_fns = lookup_add (fn, bad_fns);
+	      *candidates = (*candidates)->next;
+	    }
+	  else
+	    /* But if we're in a SFINAE context, just mark this candidate as
+	       unviable outright and avoid potentially reconsidering it.
+	       This is safe to do because in a SFINAE context, performing a bad
+	       conversion is always an error (even with -fpermissive), so a
+	       non-strictly viable candidate is effectively unviable anyway.  */
+	    cand->viable = 0;
 	}
     }
   if (which == non_templates && !seen_perfect)

@@ -12,14 +12,12 @@ foo (int j)
   v = i;
   #pragma omp atomic acquire , write	/* { dg-error "incompatible with 'acquire' clause" } */
   i = v;
-  #pragma omp atomic capture hint (0) capture	/* { dg-error "too many 'capture' clauses" "" { target c } } */
-					/* { dg-error "too many atomic clauses" "" { target c++ } .-1 } */
+  #pragma omp atomic capture hint (0) capture	/* { dg-error "too many 'capture' clauses" } */
   v = i = i + 1;
   #pragma omp atomic hint(j + 2)	/* { dg-error "constant integer expression" } */
   i = i + 1;
   #pragma omp atomic hint(f)		/* { dg-error "integ" } */
   i = i + 1;
-  #pragma omp atomic foobar		/* { dg-error "expected 'read', 'write', 'update', 'capture', 'compare', 'weak', 'fail', 'seq_cst', 'acq_rel', 'release', 'relaxed' or 'hint' clause" "" { target c } } */
-					/* { dg-error "expected 'read', 'write', 'update', 'capture', 'seq_cst', 'acq_rel', 'release', 'relaxed' or 'hint' clause" "" { target c++ } .-1 } */
-  i = i + 1;				/* { dg-error "expected end of line before" "" { target *-*-* } .-2 } */
+  #pragma omp atomic foobar		/* { dg-error "expected 'read', 'write', 'update', 'capture', 'compare', 'weak', 'fail', 'seq_cst', 'acq_rel', 'release', 'relaxed' or 'hint' clause" } */
+  i = i + 1;				/* { dg-error "expected end of line before" "" { target *-*-* } .-1 } */
 }

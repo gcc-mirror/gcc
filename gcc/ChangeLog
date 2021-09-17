@@ -1,3 +1,893 @@
+2021-09-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-c.c (rs6000-builtins.h): New include.
+	(altivec_resolve_new_overloaded_builtin): New forward decl.
+	(rs6000_new_builtin_type_compatible): New function.
+	(altivec_resolve_overloaded_builtin): Call
+	altivec_resolve_new_overloaded_builtin.
+	(altivec_build_new_resolved_builtin): New function.
+	(altivec_resolve_new_overloaded_builtin): Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_new_builtin_is_supported):
+	Likewise.
+	* config/rs6000/rs6000-gen-builtins.c (write_decls): Remove _p from
+	name of rs6000_new_builtin_is_supported.
+
+2021-09-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (ix86_decompose_address):
+	Change return type to bool.
+	* config/i386/i386.c (ix86_decompose_address): Ditto.
+
+2021-09-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/102353
+	* config/rs6000/t-rs6000 (build/rs6000-gen-builtins.o, build/rbtree.o):
+	Added 'build/' to target, use build/%.o rule.
+	(build/rs6000-gen-builtins$(build_exeext)): Add 'build/' and
+	'$(build_exeext)' to target and 'build/' for the *.o files.
+	(rs6000-builtins.c): Update for those changes; run rs6000-gen-builtins
+	with $(RUN_GEN).
+
+2021-09-16  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.c (cgraph_node::dump): Do not check caller count sums if
+	the body has been removed.  Remove trailing whitespace.
+
+2021-09-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102360
+	* internal-fn.c (expand_DEFERRED_INIT): Make pattern-init
+	of non-memory more robust.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc-opts.h (enum sparc_processor_type): Add LEON5
+	* config/sparc/sparc.c (struct processor_costs): Add LEON5 costs
+	(leon5_adjust_cost): Increase cost of store with data dependency
+	on ALU instruction and FPU anti-dependencies.
+	(sparc_option_override): Add LEON5 costs
+	(sparc_adjust_cost): Add LEON5 cost adjustments
+	* config/sparc/sparc.h: Add LEON5
+	* config/sparc/sparc.md: Include LEON5 scheduling information
+	* config/sparc/sparc.opt: Add LEON5
+	* doc/invoke.texi: Add LEON5
+	* config/sparc/leon5.md: New file.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.md (stack_protect_set32): Add NOP to prevent
+	sensitive sequence for B2BST errata workaround.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Do not begin
+	functions with atomic instruction in the UT700 errata workaround.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (next_active_non_empty_insn): New function
+	that returns next active non empty assembly instruction.
+	(sparc_do_work_around_errata): Use new function.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (store_insn_p): Add predicate for store
+	attributes.
+	(load_insn_p): Add predicate for load attributes.
+	(sparc_do_work_around_errata): Use new predicates.
+
+2021-09-16  Andreas Larsson  <andreas@gaisler.com>
+
+	* config/sparc/sparc.c (dump_target_flag_bits): Print bit names for
+	LEON and LEON3.
+
+2021-09-16  Martin Liska  <mliska@suse.cz>
+
+	* config/mips/netbsd.h: Fix typo in name of a macro.
+
+2021-09-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/102080
+	* match.pd: Check mask type when doing cond_op related gimple
+	simplification.
+	* tree.c (is_truth_type_for): New function.
+	* tree.h (is_truth_type_for): New declaration.
+
+2021-09-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_cvtepi32_ph): New
+	intrinsic.
+	(_mm512_mask_cvtepi32_ph): Likewise.
+	(_mm512_maskz_cvtepi32_ph): Likewise.
+	(_mm512_cvt_roundepi32_ph): Likewise.
+	(_mm512_mask_cvt_roundepi32_ph): Likewise.
+	(_mm512_maskz_cvt_roundepi32_ph): Likewise.
+	(_mm512_cvtepu32_ph): Likewise.
+	(_mm512_mask_cvtepu32_ph): Likewise.
+	(_mm512_maskz_cvtepu32_ph): Likewise.
+	(_mm512_cvt_roundepu32_ph): Likewise.
+	(_mm512_mask_cvt_roundepu32_ph): Likewise.
+	(_mm512_maskz_cvt_roundepu32_ph): Likewise.
+	(_mm512_cvtepi64_ph): Likewise.
+	(_mm512_mask_cvtepi64_ph): Likewise.
+	(_mm512_maskz_cvtepi64_ph): Likewise.
+	(_mm512_cvt_roundepi64_ph): Likewise.
+	(_mm512_mask_cvt_roundepi64_ph): Likewise.
+	(_mm512_maskz_cvt_roundepi64_ph): Likewise.
+	(_mm512_cvtepu64_ph): Likewise.
+	(_mm512_mask_cvtepu64_ph): Likewise.
+	(_mm512_maskz_cvtepu64_ph): Likewise.
+	(_mm512_cvt_roundepu64_ph): Likewise.
+	(_mm512_mask_cvt_roundepu64_ph): Likewise.
+	(_mm512_maskz_cvt_roundepu64_ph): Likewise.
+	(_mm512_cvtepi16_ph): Likewise.
+	(_mm512_mask_cvtepi16_ph): Likewise.
+	(_mm512_maskz_cvtepi16_ph): Likewise.
+	(_mm512_cvt_roundepi16_ph): Likewise.
+	(_mm512_mask_cvt_roundepi16_ph): Likewise.
+	(_mm512_maskz_cvt_roundepi16_ph): Likewise.
+	(_mm512_cvtepu16_ph): Likewise.
+	(_mm512_mask_cvtepu16_ph): Likewise.
+	(_mm512_maskz_cvtepu16_ph): Likewise.
+	(_mm512_cvt_roundepu16_ph): Likewise.
+	(_mm512_mask_cvt_roundepu16_ph): Likewise.
+	(_mm512_maskz_cvt_roundepu16_ph): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_cvtepi32_ph): New
+	intrinsic.
+	(_mm_mask_cvtepi32_ph): Likewise.
+	(_mm_maskz_cvtepi32_ph): Likewise.
+	(_mm256_cvtepi32_ph): Likewise.
+	(_mm256_mask_cvtepi32_ph): Likewise.
+	(_mm256_maskz_cvtepi32_ph): Likewise.
+	(_mm_cvtepu32_ph): Likewise.
+	(_mm_mask_cvtepu32_ph): Likewise.
+	(_mm_maskz_cvtepu32_ph): Likewise.
+	(_mm256_cvtepu32_ph): Likewise.
+	(_mm256_mask_cvtepu32_ph): Likewise.
+	(_mm256_maskz_cvtepu32_ph): Likewise.
+	(_mm_cvtepi64_ph): Likewise.
+	(_mm_mask_cvtepi64_ph): Likewise.
+	(_mm_maskz_cvtepi64_ph): Likewise.
+	(_mm256_cvtepi64_ph): Likewise.
+	(_mm256_mask_cvtepi64_ph): Likewise.
+	(_mm256_maskz_cvtepi64_ph): Likewise.
+	(_mm_cvtepu64_ph): Likewise.
+	(_mm_mask_cvtepu64_ph): Likewise.
+	(_mm_maskz_cvtepu64_ph): Likewise.
+	(_mm256_cvtepu64_ph): Likewise.
+	(_mm256_mask_cvtepu64_ph): Likewise.
+	(_mm256_maskz_cvtepu64_ph): Likewise.
+	(_mm_cvtepi16_ph): Likewise.
+	(_mm_mask_cvtepi16_ph): Likewise.
+	(_mm_maskz_cvtepi16_ph): Likewise.
+	(_mm256_cvtepi16_ph): Likewise.
+	(_mm256_mask_cvtepi16_ph): Likewise.
+	(_mm256_maskz_cvtepi16_ph): Likewise.
+	(_mm_cvtepu16_ph): Likewise.
+	(_mm_mask_cvtepu16_ph): Likewise.
+	(_mm_maskz_cvtepu16_ph): Likewise.
+	(_mm256_cvtepu16_ph): Likewise.
+	(_mm256_mask_cvtepu16_ph): Likewise.
+	(_mm256_maskz_cvtepu16_ph): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtin types.
+	(ix86_expand_round_builtin): Ditto.
+	* config/i386/i386-modes.def: Declare V2HF and V6HF.
+	* config/i386/sse.md (VI2H_AVX512VL): New.
+	(qq2phsuff): Ditto.
+	(sseintvecmode): Add HF vector modes.
+	(avx512fp16_vcvt<floatsuffix><sseintconvert>2ph_<mode><mask_name><round_name>):
+	New.
+	(avx512fp16_vcvt<floatsuffix><sseintconvert>2ph_<mode>): Ditto.
+	(*avx512fp16_vcvt<floatsuffix><sseintconvert>2ph_<mode>): Ditto.
+	(avx512fp16_vcvt<floatsuffix><sseintconvert>2ph_<mode>_mask): Ditto.
+	(*avx512fp16_vcvt<floatsuffix><sseintconvert>2ph_<mode>_mask): Ditto.
+	(*avx512fp16_vcvt<floatsuffix><sseintconvert>2ph_<mode>_mask_1): Ditto.
+	(avx512fp16_vcvt<floatsuffix>qq2ph_v2di): Ditto.
+	(*avx512fp16_vcvt<floatsuffix>qq2ph_v2di): Ditto.
+	(avx512fp16_vcvt<floatsuffix>qq2ph_v2di_mask): Ditto.
+	(*avx512fp16_vcvt<floatsuffix>qq2ph_v2di_mask): Ditto.
+	(*avx512fp16_vcvt<floatsuffix>qq2ph_v2di_mask_1): Ditto.
+	* config/i386/subst.md (round_qq2phsuff): New subst_attr.
+
+2021-09-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_cvtph_epi32):
+	New intrinsic/
+	(_mm512_mask_cvtph_epi32): Likewise.
+	(_mm512_maskz_cvtph_epi32): Likewise.
+	(_mm512_cvt_roundph_epi32): Likewise.
+	(_mm512_mask_cvt_roundph_epi32): Likewise.
+	(_mm512_maskz_cvt_roundph_epi32): Likewise.
+	(_mm512_cvtph_epu32): Likewise.
+	(_mm512_mask_cvtph_epu32): Likewise.
+	(_mm512_maskz_cvtph_epu32): Likewise.
+	(_mm512_cvt_roundph_epu32): Likewise.
+	(_mm512_mask_cvt_roundph_epu32): Likewise.
+	(_mm512_maskz_cvt_roundph_epu32): Likewise.
+	(_mm512_cvtph_epi64): Likewise.
+	(_mm512_mask_cvtph_epi64): Likewise.
+	(_mm512_maskz_cvtph_epi64): Likewise.
+	(_mm512_cvt_roundph_epi64): Likewise.
+	(_mm512_mask_cvt_roundph_epi64): Likewise.
+	(_mm512_maskz_cvt_roundph_epi64): Likewise.
+	(_mm512_cvtph_epu64): Likewise.
+	(_mm512_mask_cvtph_epu64): Likewise.
+	(_mm512_maskz_cvtph_epu64): Likewise.
+	(_mm512_cvt_roundph_epu64): Likewise.
+	(_mm512_mask_cvt_roundph_epu64): Likewise.
+	(_mm512_maskz_cvt_roundph_epu64): Likewise.
+	(_mm512_cvtph_epi16): Likewise.
+	(_mm512_mask_cvtph_epi16): Likewise.
+	(_mm512_maskz_cvtph_epi16): Likewise.
+	(_mm512_cvt_roundph_epi16): Likewise.
+	(_mm512_mask_cvt_roundph_epi16): Likewise.
+	(_mm512_maskz_cvt_roundph_epi16): Likewise.
+	(_mm512_cvtph_epu16): Likewise.
+	(_mm512_mask_cvtph_epu16): Likewise.
+	(_mm512_maskz_cvtph_epu16): Likewise.
+	(_mm512_cvt_roundph_epu16): Likewise.
+	(_mm512_mask_cvt_roundph_epu16): Likewise.
+	(_mm512_maskz_cvt_roundph_epu16): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_cvtph_epi32):
+	New intrinsic.
+	(_mm_mask_cvtph_epi32): Likewise.
+	(_mm_maskz_cvtph_epi32): Likewise.
+	(_mm256_cvtph_epi32): Likewise.
+	(_mm256_mask_cvtph_epi32): Likewise.
+	(_mm256_maskz_cvtph_epi32): Likewise.
+	(_mm_cvtph_epu32): Likewise.
+	(_mm_mask_cvtph_epu32): Likewise.
+	(_mm_maskz_cvtph_epu32): Likewise.
+	(_mm256_cvtph_epu32): Likewise.
+	(_mm256_mask_cvtph_epu32): Likewise.
+	(_mm256_maskz_cvtph_epu32): Likewise.
+	(_mm_cvtph_epi64): Likewise.
+	(_mm_mask_cvtph_epi64): Likewise.
+	(_mm_maskz_cvtph_epi64): Likewise.
+	(_mm256_cvtph_epi64): Likewise.
+	(_mm256_mask_cvtph_epi64): Likewise.
+	(_mm256_maskz_cvtph_epi64): Likewise.
+	(_mm_cvtph_epu64): Likewise.
+	(_mm_mask_cvtph_epu64): Likewise.
+	(_mm_maskz_cvtph_epu64): Likewise.
+	(_mm256_cvtph_epu64): Likewise.
+	(_mm256_mask_cvtph_epu64): Likewise.
+	(_mm256_maskz_cvtph_epu64): Likewise.
+	(_mm_cvtph_epi16): Likewise.
+	(_mm_mask_cvtph_epi16): Likewise.
+	(_mm_maskz_cvtph_epi16): Likewise.
+	(_mm256_cvtph_epi16): Likewise.
+	(_mm256_mask_cvtph_epi16): Likewise.
+	(_mm256_maskz_cvtph_epi16): Likewise.
+	(_mm_cvtph_epu16): Likewise.
+	(_mm_mask_cvtph_epu16): Likewise.
+	(_mm_maskz_cvtph_epu16): Likewise.
+	(_mm256_cvtph_epu16): Likewise.
+	(_mm256_mask_cvtph_epu16): Likewise.
+	(_mm256_maskz_cvtph_epu16): Likewise.
+	* config/i386/i386-builtin-types.def: Add new builtin types.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtin types.
+	(ix86_expand_round_builtin): Ditto.
+	* config/i386/sse.md (sseintconvert): New.
+	(ssePHmode): Ditto.
+	(UNSPEC_US_FIX_NOTRUNC): Ditto.
+	(sseintconvertsignprefix): Ditto.
+	(avx512fp16_vcvtph2<sseintconvertsignprefix><sseintconvert>_<mode><mask_name><round_name>):
+	Ditto.
+
+2021-09-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h: (_mm_cvtsi16_si128):
+	New intrinsic.
+	(_mm_cvtsi128_si16): Likewise.
+	(_mm_mask_load_sh): Likewise.
+	(_mm_maskz_load_sh): Likewise.
+	(_mm_mask_store_sh): Likewise.
+	(_mm_move_sh): Likewise.
+	(_mm_mask_move_sh): Likewise.
+	(_mm_maskz_move_sh): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_special_args_builtin): Handle new builtin types.
+	(ix86_expand_vector_init_one_nonzero): Adjust for FP16 target.
+	* config/i386/sse.md (VI2F): New mode iterator.
+	(vec_set<mode>_0): Use new mode iterator.
+	(avx512f_mov<ssescalarmodelower>_mask): Adjust for HF vector mode.
+	(avx512f_store<mode>_mask): Ditto.
+
+2021-09-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.opt (-mtoc-fusion): Remove.
+
+2021-09-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_encode_section_info):
+	Proceed if no symbol summary or the symbol alias flag is false.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88578
+	PR c++/102295
+	* varasm.c (output_constructor_regular_field): Instead of assertion
+	that array_size_for_constructor result is equal to size of
+	TREE_TYPE (local->val) in bytes, assert that the type size is greater
+	or equal to array_size_for_constructor result and use type size as
+	fieldsize.
+
+2021-09-15  Martin Liska  <mliska@suse.cz>
+
+	PR target/102351
+	* config/i386/vxworks.h: Use new macro TARGET_CPU_P.
+
+2021-09-15  Martin Liska  <mliska@suse.cz>
+
+	PR target/102349
+	* config/rs6000/rs6000.c (rs6000_xcoff_encode_section_info):
+	Check that we have a symbol summary for a symbol.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR target/102348
+	* config/rs6000/lynx.h: Remove undef of PREFERRED_DEBUGGING_TYPE
+	to inherit from elfos.h
+
+2021-09-15  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102327
+	* config/i386/i386-expand.c
+	(ix86_expand_vector_init_interleave): Use puncklwd to pack 2
+	HFmodes.
+	(ix86_expand_vector_set): Use blendw instead of pinsrw.
+	* config/i386/i386.c (ix86_can_change_mode_class): Adjust for
+	AVX512FP16 which supports 16bit vector load.
+	* config/i386/sse.md (avx512bw_interleave_highv32hi<mask_name>):
+	Rename to ..
+	(avx512bw_interleave_high<mode><mask_name>): .. this, and
+	extend to V32HFmode.
+	(avx2_interleave_highv16hi<mask_name>): Rename to ..
+	(avx2_interleave_high<mode><mask_name>): .. this, and extend
+	to V16HFmode.
+	(vec_interleave_highv8hi<mask_name>): Rename to ..
+	(vec_interleave_high<mode><mask_name>): .. this, and extend to V8HFmode.
+	(<mask_codefor>avx512bw_interleave_lowv32hi<mask_name>):
+	Rename to ..
+	(<mask_codefor>avx512bw_interleave_low<mode><mask_name>):
+	this, and extend to V32HFmode.
+	(avx2_interleave_lowv16hi<mask_name>): Rename to ..
+	(avx2_interleave_low<mode><mask_name>): .. this, and extend to V16HFmode.
+	(vec_interleave_lowv8hi<mask_name>): Rename to ..
+	(vec_interleave_low<mode><mask_name>): .. this, and extend to V8HFmode.
+	(sse4_1_pblendw): Rename to ..
+	(sse4_1_pblend<blendsuf>): .. this, and extend to V8HFmode.
+	(avx2_pblendph): New define_expand.
+	(<sse2p4_1>_pinsr<ssemodesuffix>): Refactor, use
+	sseintmodesuffix instead of ssemodesuffix.
+	(blendsuf): New mode attr.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (dr_misalignment): Move out of line.
+	(dr_target_alignment): New.
+	(DR_TARGET_ALIGNMENT): Wrap dr_target_alignment.
+	(set_dr_target_alignment): New.
+	(SET_DR_TARGET_ALIGNMENT): Wrap set_dr_target_alignment.
+	* tree-vect-data-refs.c (dr_misalignment): Compute and
+	return the group members misalignment.
+	(vect_compute_data_ref_alignment): Use SET_DR_TARGET_ALIGNMENT.
+	(vect_analyze_data_refs_alignment): Compute alignment only
+	for the first element of a DR group.
+	(vect_slp_analyze_node_alignment): Likewise.
+
+2021-09-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/avx512fp16intrin.h: Adjust all builtin calls.
+	* config/i386/avx512fp16vlintrin.h: Likewise.
+	* config/i386/i386-builtin.def: Adjust builtin name and
+	enumeration to match AVX512F style.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102318
+	* tree-vect-loop.c (vect_transform_cycle_phi): Revert
+	previous change and do the mode conversion separately from
+	the sign conversion.
+
+2021-09-15  Hongtao Liu  <hongtao.liu@intel.com>
+	    Peter Cordes  <peter@cordes.ca>
+
+	PR target/91103
+	* config/i386/sse.md (extract_suf): Add V8SF/V8SI/V4DF/V4DI.
+	(*vec_extract<mode><ssescalarmodelower>_valign): Output
+	vextract{i,f}{32x4,64x2} instruction when byte_offset % 16 ==
+	0.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Remove vax-*-openbsd* configuration.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Remove m68k-openbsd.
+
+2021-09-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/102336
+	* config/xtensa/t-xtensa (TM_H): Add include/xtensa-config.h.
+
+2021-09-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/mma.md (unspec): Delete UNSPEC_MMA_XXSETACCZ.
+	(unspecv): Add UNSPECV_MMA_XXSETACCZ.
+	(*mma_xxsetaccz): Delete.
+	(mma_xxsetaccz): Change to define_insn.  Remove operand 1.
+	Use UNSPECV_MMA_XXSETACCZ.  Update comment.
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Use UNSPECV_MMA_XXSETACCZ.
+
+2021-09-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: Remove variables related to applying no-PIE
+	to the exes on $build.
+	* configure: Regenerate.
+	* configure.ac: Remove configuration related to applying
+	no-PIE to the exes on $build.
+
+2021-09-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (doloop_end): Add missing mode.
+	(loop_end): Likewise.
+
+2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (goa_stabilize_expr): Add depth argument, propagate
+	it to recursive calls, for depth above 7 just gimplify or return.
+	Perform a test even for MODIFY_EXPR, ADDR_EXPR, COMPOUND_EXPR with
+	__builtin_clear_padding and TARGET_EXPR.
+	(gimplify_omp_atomic): Adjust goa_stabilize_expr callers.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm_fpclass_sh_mask):
+	New intrinsic.
+	(_mm_mask_fpclass_sh_mask): Likewise.
+	(_mm512_mask_fpclass_ph_mask): Likewise.
+	(_mm512_fpclass_ph_mask): Likewise.
+	(_mm_getexp_sh): Likewise.
+	(_mm_mask_getexp_sh): Likewise.
+	(_mm_maskz_getexp_sh): Likewise.
+	(_mm512_getexp_ph): Likewise.
+	(_mm512_mask_getexp_ph): Likewise.
+	(_mm512_maskz_getexp_ph): Likewise.
+	(_mm_getexp_round_sh): Likewise.
+	(_mm_mask_getexp_round_sh): Likewise.
+	(_mm_maskz_getexp_round_sh): Likewise.
+	(_mm512_getexp_round_ph): Likewise.
+	(_mm512_mask_getexp_round_ph): Likewise.
+	(_mm512_maskz_getexp_round_ph): Likewise.
+	(_mm_getmant_sh): Likewise.
+	(_mm_mask_getmant_sh): Likewise.
+	(_mm_maskz_getmant_sh): Likewise.
+	(_mm512_getmant_ph): Likewise.
+	(_mm512_mask_getmant_ph): Likewise.
+	(_mm512_maskz_getmant_ph): Likewise.
+	(_mm_getmant_round_sh): Likewise.
+	(_mm_mask_getmant_round_sh): Likewise.
+	(_mm_maskz_getmant_round_sh): Likewise.
+	(_mm512_getmant_round_ph): Likewise.
+	(_mm512_mask_getmant_round_ph): Likewise.
+	(_mm512_maskz_getmant_round_ph): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_mask_fpclass_ph_mask):
+	New intrinsic.
+	(_mm_fpclass_ph_mask): Likewise.
+	(_mm256_mask_fpclass_ph_mask): Likewise.
+	(_mm256_fpclass_ph_mask): Likewise.
+	(_mm256_getexp_ph): Likewise.
+	(_mm256_mask_getexp_ph): Likewise.
+	(_mm256_maskz_getexp_ph): Likewise.
+	(_mm_getexp_ph): Likewise.
+	(_mm_mask_getexp_ph): Likewise.
+	(_mm_maskz_getexp_ph): Likewise.
+	(_mm256_getmant_ph): Likewise.
+	(_mm256_mask_getmant_ph): Likewise.
+	(_mm256_maskz_getmant_ph): Likewise.
+	(_mm_getmant_ph): Likewise.
+	(_mm_mask_getmant_ph): Likewise.
+	(_mm_maskz_getmant_ph): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtin types.
+	(ix86_expand_round_builtin): Ditto.
+	* config/i386/sse.md (vecmemsuffix): Add HF vector modes.
+	(<avx512>_getexp<mode><mask_name><round_saeonly_name>): Adjust
+	to support HF vector modes.
+	(avx512f_sgetexp<mode><mask_scalar_name><round_saeonly_scalar_name):
+	Ditto.
+	(avx512dq_fpclass<mode><mask_scalar_merge_name>): Ditto.
+	(avx512dq_vmfpclass<mode><mask_scalar_merge_name>): Ditto.
+	(<avx512>_getmant<mode><mask_name><round_saeonly_name>): Ditto.
+	(avx512f_vgetmant<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_reduce_ph):
+	New intrinsic.
+	(_mm512_mask_reduce_ph): Likewise.
+	(_mm512_maskz_reduce_ph): Likewise.
+	(_mm512_reduce_round_ph): Likewise.
+	(_mm512_mask_reduce_round_ph): Likewise.
+	(_mm512_maskz_reduce_round_ph): Likewise.
+	(_mm_reduce_sh): Likewise.
+	(_mm_mask_reduce_sh): Likewise.
+	(_mm_maskz_reduce_sh): Likewise.
+	(_mm_reduce_round_sh): Likewise.
+	(_mm_mask_reduce_round_sh): Likewise.
+	(_mm_maskz_reduce_round_sh): Likewise.
+	(_mm512_roundscale_ph): Likewise.
+	(_mm512_mask_roundscale_ph): Likewise.
+	(_mm512_maskz_roundscale_ph): Likewise.
+	(_mm512_roundscale_round_ph): Likewise.
+	(_mm512_mask_roundscale_round_ph): Likewise.
+	(_mm512_maskz_roundscale_round_ph): Likewise.
+	(_mm_roundscale_sh): Likewise.
+	(_mm_mask_roundscale_sh): Likewise.
+	(_mm_maskz_roundscale_sh): Likewise.
+	(_mm_roundscale_round_sh): Likewise.
+	(_mm_mask_roundscale_round_sh): Likewise.
+	(_mm_maskz_roundscale_round_sh): Likewise.
+	* config/i386/avx512fp16vlintrin.h: (_mm_reduce_ph):
+	New intrinsic.
+	(_mm_mask_reduce_ph): Likewise.
+	(_mm_maskz_reduce_ph): Likewise.
+	(_mm256_reduce_ph): Likewise.
+	(_mm256_mask_reduce_ph): Likewise.
+	(_mm256_maskz_reduce_ph): Likewise.
+	(_mm_roundscale_ph): Likewise.
+	(_mm_mask_roundscale_ph): Likewise.
+	(_mm_maskz_roundscale_ph): Likewise.
+	(_mm256_roundscale_ph): Likewise.
+	(_mm256_mask_roundscale_ph): Likewise.
+	(_mm256_maskz_roundscale_ph): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtin types.
+	(ix86_expand_round_builtin): Ditto.
+	* config/i386/sse.md (<mask_codefor>reducep<mode><mask_name>):
+	Renamed to ...
+	(<mask_codefor>reducep<mode><mask_name><round_saeonly_name>):
+	... this, and adjust for round operands.
+	(reduces<mode><mask_scalar_name>): Likewise, with ...
+	(reduces<mode><mask_scalar_name><round_saeonly_scalar_name):
+	... this.
+	(<avx512>_rndscale<mode><mask_name><round_saeonly_name>):
+	Adjust for HF vector modes.
+	(avx512f_rndscale<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Ditto.
+	(*avx512f_rndscale<mode><round_saeonly_name>): Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h: (_mm512_rcp_ph):
+	New intrinsic.
+	(_mm512_mask_rcp_ph): Likewise.
+	(_mm512_maskz_rcp_ph): Likewise.
+	(_mm_rcp_sh): Likewise.
+	(_mm_mask_rcp_sh): Likewise.
+	(_mm_maskz_rcp_sh): Likewise.
+	(_mm512_scalef_ph): Likewise.
+	(_mm512_mask_scalef_ph): Likewise.
+	(_mm512_maskz_scalef_ph): Likewise.
+	(_mm512_scalef_round_ph): Likewise.
+	(_mm512_mask_scalef_round_ph): Likewise.
+	(_mm512_maskz_scalef_round_ph): Likewise.
+	(_mm_scalef_sh): Likewise.
+	(_mm_mask_scalef_sh): Likewise.
+	(_mm_maskz_scalef_sh): Likewise.
+	(_mm_scalef_round_sh): Likewise.
+	(_mm_mask_scalef_round_sh): Likewise.
+	(_mm_maskz_scalef_round_sh): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_rcp_ph):
+	New intrinsic.
+	(_mm256_rcp_ph): Likewise.
+	(_mm_mask_rcp_ph): Likewise.
+	(_mm256_mask_rcp_ph): Likewise.
+	(_mm_maskz_rcp_ph): Likewise.
+	(_mm256_maskz_rcp_ph): Likewise.
+	(_mm_scalef_ph): Likewise.
+	(_mm256_scalef_ph): Likewise.
+	(_mm_mask_scalef_ph): Likewise.
+	(_mm256_mask_scalef_ph): Likewise.
+	(_mm_maskz_scalef_ph): Likewise.
+	(_mm256_maskz_scalef_ph): Likewise.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/sse.md (VFH_AVX512VL): New.
+	(avx512fp16_rcp<mode>2<mask_name>): Ditto.
+	(avx512fp16_vmrcpv8hf2<mask_scalar_name>): Ditto.
+	(avx512f_vmscalef<mode><mask_scalar_name><round_scalar_name>):
+	Adjust to support HF vector modes.
+	(<avx512>_scalef<mode><mask_name><round_name>): Ditto.
+
+2021-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h: (_mm512_sqrt_ph):
+	New intrinsic.
+	(_mm512_mask_sqrt_ph): Likewise.
+	(_mm512_maskz_sqrt_ph): Likewise.
+	(_mm512_sqrt_round_ph): Likewise.
+	(_mm512_mask_sqrt_round_ph): Likewise.
+	(_mm512_maskz_sqrt_round_ph): Likewise.
+	(_mm512_rsqrt_ph): Likewise.
+	(_mm512_mask_rsqrt_ph): Likewise.
+	(_mm512_maskz_rsqrt_ph): Likewise.
+	(_mm_rsqrt_sh): Likewise.
+	(_mm_mask_rsqrt_sh): Likewise.
+	(_mm_maskz_rsqrt_sh): Likewise.
+	(_mm_sqrt_sh): Likewise.
+	(_mm_mask_sqrt_sh): Likewise.
+	(_mm_maskz_sqrt_sh): Likewise.
+	(_mm_sqrt_round_sh): Likewise.
+	(_mm_mask_sqrt_round_sh): Likewise.
+	(_mm_maskz_sqrt_round_sh): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_sqrt_ph): New intrinsic.
+	(_mm256_sqrt_ph): Likewise.
+	(_mm_mask_sqrt_ph): Likewise.
+	(_mm256_mask_sqrt_ph): Likewise.
+	(_mm_maskz_sqrt_ph): Likewise.
+	(_mm256_maskz_sqrt_ph): Likewise.
+	(_mm_rsqrt_ph): Likewise.
+	(_mm256_rsqrt_ph): Likewise.
+	(_mm_mask_rsqrt_ph): Likewise.
+	(_mm256_mask_rsqrt_ph): Likewise.
+	(_mm_maskz_rsqrt_ph): Likewise.
+	(_mm256_maskz_rsqrt_ph): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c
+	(ix86_expand_args_builtin): Handle new builtins.
+	(ix86_expand_round_builtin): Ditto.
+	* config/i386/sse.md (VF_AVX512FP16VL): New.
+	(sqrt<mode>2): Adjust for HF vector modes.
+	(<sse>_sqrt<mode>2<mask_name><round_name>): Likewise.
+	(<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>):
+	Likewise.
+	(<sse>_rsqrt<mode>2<mask_name>): New.
+	(avx512fp16_vmrsqrtv8hf2<mask_scalar_name>): Likewise.
+
+2021-09-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR bootstrap/101574
+	* diagnostic-spec.c (warning_suppressed_at, copy_warning): Handle
+	'RESERVED_LOCATION_P' locations.
+	* warning-control.cc (get_nowarn_spec, suppress_warning)
+	(copy_warning): Likewise.
+
+2021-09-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* diagnostic-spec.h (typedef xint_hash_t): Use 'location_t' instead of...
+	(typedef key_type_t): ... this.  Remove.
+	(nowarn_map): Document.
+	* diagnostic-spec.c (nowarn_map): Likewise.
+	* warning-control.cc (convert_to_key): Evolve functions into...
+	(get_location): ... these.  Adjust all users.
+
+2021-09-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* warning-control.cc (copy_warning): Remove 'nowarn_map' setup.
+
+2021-09-13  Jason Merrill  <jason@redhat.com>
+
+	* params.opt: Add destructive-interference-size and
+	constructive-interference-size.
+	* doc/invoke.texi: Document them.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Set them.
+	* config/arm/arm.c (arm_option_override): Set them.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Set them.
+
+2021-09-13  Martin Liska  <mliska@suse.cz>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101696
+	* common/config/i386/cpuinfo.h (cpu_indicator_init): Add support
+	for x86-64 micro levels for __builtin_cpu_supports.
+	* common/config/i386/i386-cpuinfo.h (enum feature_priority):
+	Add priorities for the micro-arch levels.
+	(enum processor_features): Add new features.
+	* common/config/i386/i386-isas.h: Add micro-arch features.
+	* config/i386/i386-builtins.c (get_builtin_code_for_version):
+	Support the micro-arch levels by callsing
+	__builtin_cpu_supports.
+	* doc/extend.texi: Document that the levels are support by
+	  __builtin_cpu_supports.
+
+2021-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/95969
+	* config/aarch64/aarch64-builtins.c (aarch64_fold_builtin_lane_check):
+	New function.
+	(aarch64_general_fold_builtin): Handle AARCH64_SIMD_BUILTIN_LANE_CHECK.
+	(aarch64_general_gimple_fold_builtin): Likewise.
+
+2021-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	* config.gcc: Add m32r-*-linux* and m32rle-*-linux*
+	to the Unsupported targets list.
+	Remove support for m32r-*-linux* and m32rle-*-linux*.
+	* config/m32r/linux.h: Removed.
+	* config/m32r/t-linux: Removed.
+
+2021-09-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/102252
+	* config/aarch64/aarch64.c (aarch64_classify_address): Don't allow
+	register index for SVE predicate modes.
+
+2021-09-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c
+	(back_threader_profitability::profitable_path_p): Remove FSM
+	references.
+	(back_threader_registry::register_path): Same.
+	* tree-ssa-threadedge.c
+	(jump_threader::simplify_control_stmt_condition): Same.
+	* tree-ssa-threadupdate.c (jt_path_registry::jt_path_registry):
+	Add backedge_threads argument.
+	(fwd_jt_path_registry::fwd_jt_path_registry): Pass
+	backedge_threads argument.
+	(back_jt_path_registry::back_jt_path_registry):  Same.
+	(dump_jump_thread_path): Adjust for FSM removal.
+	(back_jt_path_registry::rewire_first_differing_edge): Same.
+	(back_jt_path_registry::adjust_paths_after_duplication): Same.
+	(back_jt_path_registry::update_cfg): Same.
+	(jt_path_registry::register_jump_thread): Same.
+	* tree-ssa-threadupdate.h (enum jump_thread_edge_type): Remove
+	EDGE_FSM_THREAD.
+	(class back_jt_path_registry): Add backedge_threads to
+	constructor.
+
+2021-09-13  Martin Liska  <mliska@suse.cz>
+
+	PR c++/101331
+	* asan.h (sanitize_coverage_p): Handle when fn == NULL.
+
+2021-09-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101935
+	* config/i386/i386.h (TARGET_AVX256_MOVE_BY_PIECES): New.
+	(TARGET_AVX256_STORE_BY_PIECES): Likewise.
+	(MOVE_MAX): Check TARGET_AVX256_MOVE_BY_PIECES and
+	TARGET_AVX256_STORE_BY_PIECES instead of
+	TARGET_AVX256_SPLIT_UNALIGNED_LOAD and
+	TARGET_AVX256_SPLIT_UNALIGNED_STORE.
+	(STORE_MAX_PIECES): Check TARGET_AVX256_STORE_BY_PIECES instead
+	of TARGET_AVX256_SPLIT_UNALIGNED_STORE.
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_MOVE_BY_PIECES): New.
+	(X86_TUNE_AVX256_STORE_BY_PIECES): Likewise.
+
+2021-09-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR bootstrap/102302
+	* expmed.c (extract_bit_field_using_extv): Use
+	gen_lowpart_if_possible instead of gen_lowpart to avoid ICE.
+
+2021-09-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add value-pointer-equiv.o.
+	* gimple-ssa-evrp.c (class ssa_equiv_stack): Move to
+	value-pointer-equiv.*.
+	(ssa_equiv_stack::ssa_equiv_stack): Same.
+	(ssa_equiv_stack::enter): Same.
+	(ssa_equiv_stack::leave): Same.
+	(ssa_equiv_stack::push_replacement): Same.
+	(ssa_equiv_stack::get_replacement): Same.
+	(is_pointer_ssa): Same.
+	(class pointer_equiv_analyzer): Same.
+	(pointer_equiv_analyzer::pointer_equiv_analyzer): Same.
+	(pointer_equiv_analyzer::~pointer_equiv_analyzer): Same.
+	(pointer_equiv_analyzer::set_global_equiv): Same.
+	(pointer_equiv_analyzer::set_cond_equiv): Same.
+	(pointer_equiv_analyzer::get_equiv): Same.
+	(pointer_equiv_analyzer::enter): Same.
+	(pointer_equiv_analyzer::leave): Same.
+	(pointer_equiv_analyzer::get_equiv_expr): Same.
+	(pta_valueize): Same.
+	(pointer_equiv_analyzer::visit_stmt): Same.
+	(pointer_equiv_analyzer::visit_edge): Same.
+	(hybrid_folder::value_of_expr): Same.
+	(hybrid_folder::value_on_edge): Same.
+	* value-pointer-equiv.cc: New file.
+	* value-pointer-equiv.h: New file.
+
+2021-09-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102125
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Allow folding
+	memcpy if the size is not more than MOVE_MAX * MOVE_RATIO.
+
+2021-09-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102125
+	* config/arm/arm.md (movmisaligndi): New define_expand.
+	* config/arm/vec-common.md (movmisalign<mode>): Iterate over VDQ mode.
+
+2021-09-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102125
+	* emit-rtl.c (gen_highpart): Use adjust_address to handle
+	MEM rather than calling simplify_gen_subreg.
+
+2021-09-13  Jan-Benedict Glaw  <jbglaw@ług-owl.de>
+
+	* config/alpha/vms.h (INIT_CUMULATIVE_ARGS): Wrap multi-statment
+	define into a block.
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/darwin.h (DARWIN_PREFER_DWARF): Do not define.
+	* config/i386/darwin.h (PREFERRED_DEBUGGING_TYPE): Do not
+	change based on DARWIN_PREFER_DWARF not being defined.
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/lynx.h: Remove undef of PREFERRED_DEBUGGING_TYPE
+	to inherit from elfos.h
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Add cr16-*-* to the list of obsoleted targets.
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/avr/elf.h (PREFERRED_DEBUGGING_TYPE): Remove
+	override, pick up DWARF2_DEBUG define from elfos.h
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/rx/rx.h (PREFERRED_DEBUGGING_TYPE): Always define to
+	DWARF2_DEBUG.
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/alpha/vms.h (PREFERRED_DEBUGGING_TYPE): Define to
+	DWARF2_DEBUG.
+
+2021-09-13  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/cygming.h: Always default to DWARF2 debugging.
+	Do not define DBX_DEBUGGING_INFO, that's done via dbxcoff.h
+	already.
+	* doc/install.texi: Document binutils 2.16 as minimum
+	requirement for mingw.
+
+2021-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (struct rs6000_cost_data): New members
+	nstmts, nloads and extra_ctor_cost.
+	(rs6000_density_test): Add load density related heuristics.  Do
+	extra costing on vector construction statements if need.
+	(rs6000_init_cost): Init new members.
+	(rs6000_update_target_cost_per_stmt): New function.
+	(rs6000_add_stmt_cost): Factor vect_nonmem hunk out to function
+	rs6000_update_target_cost_per_stmt and call it.
+
+2021-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (struct rs6000_cost_data): Remove typedef.
+	(rs6000_init_cost): Adjust.
+
+2021-09-13  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md: (UNSPEC_COPYSIGN): Remove.
+	(UNSPEC_XORSIGN): Ditto.
+
 2021-09-12  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* expr.c (convert_move): Preserve SUBREG_PROMOTED_VAR_P when

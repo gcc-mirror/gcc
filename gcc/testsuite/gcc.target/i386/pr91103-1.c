@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512vl -O2" } */
-/* { dg-final { scan-assembler-times "valign\[dq\]" 16 } } */
+/* { dg-final { scan-assembler-times "valign\[dq\]" 8 } } */
+/* { dg-final { scan-assembler-times "vextract" 12 } } */
 
 typedef float v8sf __attribute__((vector_size(32)));
 typedef float v16sf __attribute__((vector_size(64)));
@@ -23,9 +24,13 @@ EXTRACT (v8sf, float, 4);
 EXTRACT (v8sf, float, 7);
 EXTRACT (v8si, int, 4);
 EXTRACT (v8si, int, 7);
+EXTRACT (v16sf, float, 4);
 EXTRACT (v16sf, float, 8);
+EXTRACT (v16sf, float, 12);
 EXTRACT (v16sf, float, 15);
+EXTRACT (v16si, int, 4);
 EXTRACT (v16si, int, 8);
+EXTRACT (v16si, int, 12);
 EXTRACT (v16si, int, 15);
 EXTRACT (v4df, double, 2);
 EXTRACT (v4df, double, 3);

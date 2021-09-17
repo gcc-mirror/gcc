@@ -3363,12 +3363,9 @@ set_decl_context_in_fn (tree ctx, tree decl)
 
   if (!DECL_CONTEXT (decl)
       /* When parsing the parameter list of a function declarator,
-	 don't set DECL_CONTEXT to an enclosing function.  When we
-	 push the PARM_DECLs in order to process the function body,
-	 current_binding_level->this_entity will be set.  */
+	 don't set DECL_CONTEXT to an enclosing function.  */
       && !(TREE_CODE (decl) == PARM_DECL
-	   && current_binding_level->kind == sk_function_parms
-	   && current_binding_level->this_entity == NULL))
+	   && parsing_function_declarator ()))
     DECL_CONTEXT (decl) = ctx;
 }
 

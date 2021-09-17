@@ -1,4 +1,4 @@
-/* { dg-do compile { target c } } */
+/* { dg-do compile } */
 /* { dg-additional-options "-O2 -fdump-tree-ompexp" } */
 /* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 4, 5, 5\\\);" 1 "ompexp" { target sync_int_long } } } */
 /* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 4, 4, 2\\\);" 1 "ompexp" { target sync_int_long } } } */

@@ -7755,11 +7755,20 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 						  (reduc_info),
 						&stmts);
 	    }
-	  if (!useless_type_conversion_p (vectype_out, TREE_TYPE (def)))
-	    def = gimple_convert (&stmts, vectype_out, def);
+	  /* The epilogue loop might use a different vector mode, like
+	     VNx2DI vs. V2DI.  */
+	  if (TYPE_MODE (vectype_out) != TYPE_MODE (TREE_TYPE (def)))
+	    {
+	      tree reduc_type = build_vector_type_for_mode
+		(TREE_TYPE (TREE_TYPE (def)), TYPE_MODE (vectype_out));
+	      def = gimple_convert (&stmts, reduc_type, def);
+	    }
 	  /* Adjust the input so we pick up the partially reduced value
 	     for the skip edge in vect_create_epilog_for_reduction.  */
 	  accumulator->reduc_input = def;
+	  /* And the reduction could be carried out using a different sign.  */
+	  if (!useless_type_conversion_p (vectype_out, TREE_TYPE (def)))
+	    def = gimple_convert (&stmts, vectype_out, def);
 	  if (loop_vinfo->main_loop_edge)
 	    {
 	      /* While we'd like to insert on the edge this will split

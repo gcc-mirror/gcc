@@ -724,7 +724,7 @@ static const struct processor_costs *processor_cost_table[] =
   &slm_cost,
   &slm_cost,
   &slm_cost,
-  &slm_cost,
+  &tremont_cost,
   &slm_cost,
   &slm_cost,
   &skylake_cost,

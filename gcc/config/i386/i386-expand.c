@@ -9710,6 +9710,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HI_FTYPE_V16SI_V16HI_UHI:
     case V16QI_FTYPE_V16SI_V16QI_UHI:
     case V16QI_FTYPE_V8DI_V16QI_UQI:
+    case V32HF_FTYPE_V32HF_V32HF_USI:
     case V16SF_FTYPE_V16SF_V16SF_UHI:
     case V16SF_FTYPE_V4SF_V16SF_UHI:
     case V16SI_FTYPE_SI_V16SI_UHI:
@@ -9739,20 +9740,40 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HI_FTYPE_HI_V16HI_UHI:
     case V8HI_FTYPE_V8HI_V8HI_UQI:
     case V8HI_FTYPE_HI_V8HI_UQI:
+    case V16HF_FTYPE_V16HF_V16HF_UHI:
     case V8SF_FTYPE_V8HI_V8SF_UQI:
     case V4SF_FTYPE_V8HI_V4SF_UQI:
+    case V8SI_FTYPE_V8HF_V8SI_UQI:
+    case V8SF_FTYPE_V8HF_V8SF_UQI:
     case V8SI_FTYPE_V8SF_V8SI_UQI:
     case V4SI_FTYPE_V4SF_V4SI_UQI:
+    case V4SI_FTYPE_V8HF_V4SI_UQI:
+    case V4SF_FTYPE_V8HF_V4SF_UQI:
+    case V4DI_FTYPE_V8HF_V4DI_UQI:
     case V4DI_FTYPE_V4SF_V4DI_UQI:
+    case V2DI_FTYPE_V8HF_V2DI_UQI:
     case V2DI_FTYPE_V4SF_V2DI_UQI:
+    case V8HF_FTYPE_V8HF_V8HF_UQI:
+    case V8HF_FTYPE_V8HI_V8HF_UQI:
+    case V8HF_FTYPE_V8SI_V8HF_UQI:
+    case V8HF_FTYPE_V8SF_V8HF_UQI:
+    case V8HF_FTYPE_V4SI_V8HF_UQI:
+    case V8HF_FTYPE_V4SF_V8HF_UQI:
+    case V8HF_FTYPE_V4DI_V8HF_UQI:
+    case V8HF_FTYPE_V4DF_V8HF_UQI:
+    case V8HF_FTYPE_V2DI_V8HF_UQI:
+    case V8HF_FTYPE_V2DF_V8HF_UQI:
     case V4SF_FTYPE_V4DI_V4SF_UQI:
     case V4SF_FTYPE_V2DI_V4SF_UQI:
     case V4DF_FTYPE_V4DI_V4DF_UQI:
+    case V4DF_FTYPE_V8HF_V4DF_UQI:
+    case V2DF_FTYPE_V8HF_V2DF_UQI:
     case V2DF_FTYPE_V2DI_V2DF_UQI:
     case V16QI_FTYPE_V8HI_V16QI_UQI:
     case V16QI_FTYPE_V16HI_V16QI_UHI:
     case V16QI_FTYPE_V4SI_V16QI_UQI:
     case V16QI_FTYPE_V8SI_V16QI_UQI:
+    case V8HI_FTYPE_V8HF_V8HI_UQI:
     case V8HI_FTYPE_V4SI_V8HI_UQI:
     case V8HI_FTYPE_V8SI_V8HI_UQI:
     case V16QI_FTYPE_V2DI_V16QI_UQI:
@@ -9810,6 +9831,8 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8DI_FTYPE_DI_V8DI_UQI:
     case V16SF_FTYPE_V8SF_V16SF_UHI:
     case V16SI_FTYPE_V8SI_V16SI_UHI:
+    case V16HF_FTYPE_V16HI_V16HF_UHI:
+    case V16HI_FTYPE_V16HF_V16HI_UHI:
     case V16HI_FTYPE_V16HI_V16HI_UHI:
     case V8HI_FTYPE_V16QI_V8HI_UQI:
     case V16HI_FTYPE_V16QI_V16HI_UHI:
@@ -9910,6 +9933,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case HI_FTYPE_V16SF_INT_UHI:
     case QI_FTYPE_V8SF_INT_UQI:
     case QI_FTYPE_V4SF_INT_UQI:
+    case QI_FTYPE_V8HF_INT_UQI:
+    case HI_FTYPE_V16HF_INT_UHI:
+    case SI_FTYPE_V32HF_INT_USI:
     case V4SI_FTYPE_V4SI_V4SI_UHI:
     case V8SI_FTYPE_V8SI_V8SI_UHI:
       nargs = 3;
@@ -10058,6 +10084,8 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_V16SF_INT_V16SF_UHI:
     case V16HI_FTYPE_V16SF_INT_V16HI_UHI:
     case V16SI_FTYPE_V16SI_INT_V16SI_UHI:
+    case V16HF_FTYPE_V16HF_INT_V16HF_UHI:
+    case V8HF_FTYPE_V8HF_INT_V8HF_UQI:
     case V4SI_FTYPE_V16SI_INT_V4SI_UQI:
     case V4DI_FTYPE_V8DI_INT_V4DI_UQI:
     case V4DF_FTYPE_V8DF_INT_V4DF_UQI:
@@ -10229,8 +10257,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx_vpermilv4df_mask:
 	      case CODE_FOR_avx512f_getmantv8df_mask:
 	      case CODE_FOR_avx512f_getmantv16sf_mask:
+	      case CODE_FOR_avx512vl_getmantv16hf_mask:
 	      case CODE_FOR_avx512vl_getmantv8sf_mask:
 	      case CODE_FOR_avx512vl_getmantv4df_mask:
+	      case CODE_FOR_avx512fp16_getmantv8hf_mask:
 	      case CODE_FOR_avx512vl_getmantv4sf_mask:
 	      case CODE_FOR_avx512vl_getmantv2df_mask:
 	      case CODE_FOR_avx512dq_rangepv8df_mask_round:
@@ -10645,16 +10675,24 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     {
     case UINT64_FTYPE_V2DF_INT:
     case UINT64_FTYPE_V4SF_INT:
+    case UINT64_FTYPE_V8HF_INT:
     case UINT_FTYPE_V2DF_INT:
     case UINT_FTYPE_V4SF_INT:
+    case UINT_FTYPE_V8HF_INT:
     case INT64_FTYPE_V2DF_INT:
     case INT64_FTYPE_V4SF_INT:
+    case INT64_FTYPE_V8HF_INT:
     case INT_FTYPE_V2DF_INT:
     case INT_FTYPE_V4SF_INT:
+    case INT_FTYPE_V8HF_INT:
       nargs = 2;
       break;
     case V32HF_FTYPE_V32HF_V32HF_INT:
     case V8HF_FTYPE_V8HF_V8HF_INT:
+    case V8HF_FTYPE_V8HF_INT_INT:
+    case V8HF_FTYPE_V8HF_UINT_INT:
+    case V8HF_FTYPE_V8HF_INT64_INT:
+    case V8HF_FTYPE_V8HF_UINT64_INT:
     case V4SF_FTYPE_V4SF_UINT_INT:
     case V4SF_FTYPE_V4SF_UINT64_INT:
     case V2DF_FTYPE_V2DF_UINT64_INT:
@@ -10669,18 +10707,29 @@ ix86_expand_round_builtin (const struct builtin_description *d,
       break;
     case V8SF_FTYPE_V8DF_V8SF_QI_INT:
     case V8DF_FTYPE_V8DF_V8DF_QI_INT:
+    case V32HI_FTYPE_V32HF_V32HI_USI_INT:
     case V8SI_FTYPE_V8DF_V8SI_QI_INT:
+    case V8DI_FTYPE_V8HF_V8DI_UQI_INT:
     case V8DI_FTYPE_V8DF_V8DI_QI_INT:
     case V8SF_FTYPE_V8DI_V8SF_QI_INT:
     case V8DF_FTYPE_V8DI_V8DF_QI_INT:
+    case V8DF_FTYPE_V8HF_V8DF_UQI_INT:
+    case V16SF_FTYPE_V16HF_V16SF_UHI_INT:
+    case V32HF_FTYPE_V32HI_V32HF_USI_INT:
+    case V32HF_FTYPE_V32HF_V32HF_USI_INT:
     case V16SF_FTYPE_V16SF_V16SF_HI_INT:
     case V8DI_FTYPE_V8SF_V8DI_QI_INT:
     case V16SF_FTYPE_V16SI_V16SF_HI_INT:
     case V16SI_FTYPE_V16SF_V16SI_HI_INT:
+    case V16SI_FTYPE_V16HF_V16SI_UHI_INT:
+    case V16HF_FTYPE_V16SI_V16HF_UHI_INT:
     case V8DF_FTYPE_V8SF_V8DF_QI_INT:
     case V16SF_FTYPE_V16HI_V16SF_HI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_INT:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_INT:
+    case V8HF_FTYPE_V8DI_V8HF_UQI_INT:
+    case V8HF_FTYPE_V8DF_V8HF_UQI_INT:
+    case V16HF_FTYPE_V16SF_V16HF_UHI_INT:
       nargs = 4;
       break;
     case V4SF_FTYPE_V4SF_V4SF_INT_INT:
@@ -10694,8 +10743,10 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V8DF_FTYPE_V8DF_V8DF_V8DF_UQI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_UQI_INT:
+    case V4SF_FTYPE_V8HF_V4SF_V4SF_UQI_INT:
     case V16SF_FTYPE_V16SF_V16SF_V16SF_HI_INT:
     case V32HF_FTYPE_V32HF_V32HF_V32HF_USI_INT:
+    case V2DF_FTYPE_V8HF_V2DF_V2DF_UQI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V4SF_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V4SF_V2DF_UQI_INT:
@@ -10703,8 +10754,11 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V4SF_FTYPE_V4SF_V2DF_V4SF_QI_INT:
     case V4SF_FTYPE_V4SF_V2DF_V4SF_UQI_INT:
     case V8HF_FTYPE_V8HF_V8HF_V8HF_UQI_INT:
+    case V8HF_FTYPE_V2DF_V8HF_V8HF_UQI_INT:
+    case V8HF_FTYPE_V4SF_V8HF_V8HF_UQI_INT:
       nargs = 5;
       break;
+    case V32HF_FTYPE_V32HF_INT_V32HF_USI_INT:
     case V16SF_FTYPE_V16SF_INT_V16SF_HI_INT:
     case V8DF_FTYPE_V8DF_INT_V8DF_QI_INT:
     case V8DF_FTYPE_V8DF_INT_V8DF_UQI_INT:
@@ -10727,6 +10781,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_INT_V4SF_UQI_INT:
+    case V8HF_FTYPE_V8HF_V8HF_INT_V8HF_UQI_INT:
       nargs = 6;
       nargs_constant = 4;
       break;
@@ -10763,10 +10818,12 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 		{
 		case CODE_FOR_avx512f_getmantv8df_mask_round:
 		case CODE_FOR_avx512f_getmantv16sf_mask_round:
+		case CODE_FOR_avx512bw_getmantv32hf_mask_round:
 		case CODE_FOR_avx512f_vgetmantv2df_round:
 		case CODE_FOR_avx512f_vgetmantv2df_mask_round:
 		case CODE_FOR_avx512f_vgetmantv4sf_round:
 		case CODE_FOR_avx512f_vgetmantv4sf_mask_round:
+		case CODE_FOR_avx512f_vgetmantv8hf_mask_round:
 		  error ("the immediate argument must be a 4-bit immediate");
 		  return const0_rtx;
 		case CODE_FOR_avx512f_cmpv8df3_mask_round:
@@ -11070,6 +11127,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PFLOAT_V16SF_UHI:
     case VOID_FTYPE_PFLOAT_V8SF_UQI:
     case VOID_FTYPE_PFLOAT_V4SF_UQI:
+    case VOID_FTYPE_PCFLOAT16_V8HF_UQI:
     case VOID_FTYPE_PV32QI_V32HI_USI:
     case VOID_FTYPE_PV16QI_V16HI_UHI:
     case VOID_FTYPE_PUDI_V8HI_UQI:
@@ -11142,6 +11200,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_PCFLOAT_V16SF_UHI:
     case V8SF_FTYPE_PCFLOAT_V8SF_UQI:
     case V4SF_FTYPE_PCFLOAT_V4SF_UQI:
+    case V8HF_FTYPE_PCFLOAT16_V8HF_UQI:
       nargs = 3;
       klass = load;
       memory = 0;
@@ -14054,7 +14113,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	  tmp1 = gen_reg_rtx (SImode);
 	  emit_move_insn (tmp1, gen_lowpart (SImode, val));
 
-	  /* Insert the SImode value as low element of a V4SImode vector. */
+	  /* Insert the SImode value as low element of a V4SImode vector.  */
 	  tmp2 = gen_reg_rtx (V4SImode);
 	  emit_insn (gen_vec_setv4si_0 (tmp2, CONST0_RTX (V4SImode), tmp1));
 	  emit_move_insn (dperm.op0, gen_lowpart (mode, tmp2));
@@ -14179,6 +14238,8 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       break;
     case E_V8HImode:
       use_vector_set = TARGET_SSE2;
+      gen_vec_set_0 = TARGET_AVX512FP16 && one_var == 0
+	? gen_vec_setv8hi_0 : NULL;
       break;
     case E_V8QImode:
       use_vector_set = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
@@ -14190,8 +14251,12 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       use_vector_set = TARGET_SSE4_1;
       break;
     case E_V32QImode:
+      use_vector_set = TARGET_AVX;
+      break;
     case E_V16HImode:
       use_vector_set = TARGET_AVX;
+      gen_vec_set_0 = TARGET_AVX512FP16 && one_var == 0
+	? gen_vec_setv16hi_0 : NULL;
       break;
     case E_V8SImode:
       use_vector_set = TARGET_AVX;
@@ -14239,6 +14304,9 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       use_vector_set = TARGET_AVX512FP16 && one_var == 0;
       gen_vec_set_0 = gen_vec_setv32hf_0;
       break;
+    case E_V32HImode:
+      use_vector_set = TARGET_AVX512FP16 && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv32hi_0;
     default:
       break;
     }
@@ -14638,7 +14706,7 @@ ix86_expand_vector_init_interleave (machine_mode mode,
   switch (mode)
     {
     case E_V8HFmode:
-      gen_load_even = gen_vec_setv8hf;
+      gen_load_even = gen_vec_interleave_lowv8hf;
       gen_interleave_first_low = gen_vec_interleave_lowv4si;
       gen_interleave_second_low = gen_vec_interleave_lowv2di;
       inner_mode = HFmode;
@@ -14673,35 +14741,40 @@ ix86_expand_vector_init_interleave (machine_mode mode,
       op = ops [i + i];
       if (inner_mode == HFmode)
 	{
-	  /* Convert HFmode to HImode.  */
-	  op1 = gen_reg_rtx (HImode);
-	  op1 = gen_rtx_SUBREG (HImode, force_reg (HFmode, op), 0);
-	  op = gen_reg_rtx (HImode);
-	  emit_move_insn (op, op1);
+	  rtx even, odd;
+	  /* Use vpuncklwd to pack 2 HFmode.  */
+	  op0 = gen_reg_rtx (V8HFmode);
+	  even = lowpart_subreg (V8HFmode, force_reg (HFmode, op), HFmode);
+	  odd = lowpart_subreg (V8HFmode,
+				force_reg (HFmode, ops[i + i + 1]),
+				HFmode);
+	  emit_insn (gen_load_even (op0, even, odd));
 	}
+      else
+	{
+	  /* Extend the odd elment to SImode using a paradoxical SUBREG.  */
+	  op0 = gen_reg_rtx (SImode);
+	  emit_move_insn (op0, gen_lowpart (SImode, op));
 
-      /* Extend the odd elment to SImode using a paradoxical SUBREG.  */
-      op0 = gen_reg_rtx (SImode);
-      emit_move_insn (op0, gen_lowpart (SImode, op));
+	  /* Insert the SImode value as low element of V4SImode vector.  */
+	  op1 = gen_reg_rtx (V4SImode);
+	  op0 = gen_rtx_VEC_MERGE (V4SImode,
+				   gen_rtx_VEC_DUPLICATE (V4SImode,
+							  op0),
+				   CONST0_RTX (V4SImode),
+				   const1_rtx);
+	  emit_insn (gen_rtx_SET (op1, op0));
 
-      /* Insert the SImode value as low element of V4SImode vector. */
-      op1 = gen_reg_rtx (V4SImode);
-      op0 = gen_rtx_VEC_MERGE (V4SImode,
-			       gen_rtx_VEC_DUPLICATE (V4SImode,
-						      op0),
-			       CONST0_RTX (V4SImode),
-			       const1_rtx);
-      emit_insn (gen_rtx_SET (op1, op0));
+	  /* Cast the V4SImode vector back to a vector in orignal mode.  */
+	  op0 = gen_reg_rtx (mode);
+	  emit_move_insn (op0, gen_lowpart (mode, op1));
 
-      /* Cast the V4SImode vector back to a vector in orignal mode.  */
-      op0 = gen_reg_rtx (mode);
-      emit_move_insn (op0, gen_lowpart (mode, op1));
-
-      /* Load even elements into the second position.  */
-      emit_insn (gen_load_even (op0,
-				force_reg (inner_mode,
-					   ops [i + i + 1]),
-				const1_rtx));
+	  /* Load even elements into the second position.  */
+	  emit_insn (gen_load_even (op0,
+				    force_reg (inner_mode,
+					       ops[i + i + 1]),
+				    const1_rtx));
+	}
 
       /* Cast vector to FIRST_IMODE vector.  */
       ops[i] = gen_reg_rtx (first_imode);
@@ -15182,6 +15255,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
   machine_mode inner_mode = GET_MODE_INNER (mode);
   machine_mode half_mode;
   bool use_vec_merge = false;
+  bool blendm_const = false;
   rtx tmp;
   static rtx (*gen_extract[7][2]) (rtx, rtx)
     = {
@@ -15369,7 +15443,14 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       return;
 
     case E_V8HFmode:
-      use_vec_merge = true;
+      if (TARGET_AVX2)
+	{
+	  mmode = SImode;
+	  gen_blendm = gen_sse4_1_pblendph;
+	  blendm_const = true;
+	}
+      else
+	use_vec_merge = true;
       break;
 
     case E_V8HImode:
@@ -15396,10 +15477,20 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       goto half;
 
     case E_V16HFmode:
-      half_mode = V8HFmode;
-      j = 6;
-      n = 8;
-      goto half;
+      if (TARGET_AVX2)
+	{
+	  mmode = SImode;
+	  gen_blendm = gen_avx2_pblendph;
+	  blendm_const = true;
+	  break;
+	}
+      else
+	{
+	  half_mode = V8HFmode;
+	  j = 6;
+	  n = 8;
+	  goto half;
+	}
 
     case E_V16HImode:
       half_mode = V8HImode;
@@ -15560,15 +15651,15 @@ quarter:
     {
       tmp = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (tmp, gen_rtx_VEC_DUPLICATE (mode, val)));
+      rtx merge_mask = gen_int_mode (HOST_WIDE_INT_1U << elt, mmode);
       /* The avx512*_blendm<mode> expanders have different operand order
 	 from VEC_MERGE.  In VEC_MERGE, the first input operand is used for
 	 elements where the mask is set and second input operand otherwise,
 	 in {sse,avx}*_*blend* the first input operand is used for elements
 	 where the mask is clear and second input operand otherwise.  */
-      emit_insn (gen_blendm (target, target, tmp,
-			     force_reg (mmode,
-					gen_int_mode (HOST_WIDE_INT_1U << elt,
-						      mmode))));
+      if (!blendm_const)
+	merge_mask = force_reg (mmode, merge_mask);
+      emit_insn (gen_blendm (target, target, tmp, merge_mask));
     }
   else if (use_vec_merge)
     {

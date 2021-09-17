@@ -440,3 +440,8 @@ class TestGccChangelog(unittest.TestCase):
     def test_copyright_years(self):
         email = self.from_patch_glob('copyright-years.patch')
         assert not email.errors
+
+    def test_non_ascii_email(self):
+        email = self.from_patch_glob('non-ascii-email.patch')
+        assert (email.errors[0].message ==
+                'non-ASCII characters in git commit email address (jbglaw@ług-owl.de)')

@@ -9877,14 +9877,15 @@ finish_omp_for_block (tree bind, tree omp_for)
 
 void
 finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
-		   tree lhs, tree rhs, tree v, tree lhs1, tree rhs1,
-		   tree clauses, enum omp_memory_order mo)
+		   tree lhs, tree rhs, tree v, tree lhs1, tree rhs1, tree r,
+		   tree clauses, enum omp_memory_order mo, bool weak)
 {
   tree orig_lhs;
   tree orig_rhs;
   tree orig_v;
   tree orig_lhs1;
   tree orig_rhs1;
+  tree orig_r;
   bool dependent_p;
   tree stmt;
 
@@ -9893,6 +9894,7 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
   orig_v = v;
   orig_lhs1 = lhs1;
   orig_rhs1 = rhs1;
+  orig_r = r;
   dependent_p = false;
   stmt = NULL_TREE;
 
@@ -9904,7 +9906,10 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 		     || (rhs && type_dependent_expression_p (rhs))
 		     || (v && type_dependent_expression_p (v))
 		     || (lhs1 && type_dependent_expression_p (lhs1))
-		     || (rhs1 && type_dependent_expression_p (rhs1)));
+		     || (rhs1 && type_dependent_expression_p (rhs1))
+		     || (r
+			 && r != void_list_node
+			 && type_dependent_expression_p (r)));
       if (clauses)
 	{
 	  gcc_assert (TREE_CODE (clauses) == OMP_CLAUSE
@@ -9925,17 +9930,19 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	    lhs1 = build_non_dependent_expr (lhs1);
 	  if (rhs1)
 	    rhs1 = build_non_dependent_expr (rhs1);
+	  if (r && r != void_list_node)
+	    r = build_non_dependent_expr (r);
 	}
     }
   if (!dependent_p)
     {
       bool swapped = false;
-      if (rhs1 && cp_tree_equal (lhs, rhs))
+      if (rhs1 && opcode != COND_EXPR && cp_tree_equal (lhs, rhs))
 	{
 	  std::swap (rhs, rhs1);
 	  swapped = !commutative_tree_code (opcode);
 	}
-      if (rhs1 && !cp_tree_equal (lhs, rhs1))
+      if (rhs1 && opcode != COND_EXPR && !cp_tree_equal (lhs, rhs1))
 	{
 	  if (code == OMP_ATOMIC)
 	    error ("%<#pragma omp atomic update%> uses two different "
@@ -9956,7 +9963,7 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	  return;
 	}
       stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs,
-				  v, lhs1, rhs1, NULL_TREE, swapped, mo, false,
+				  v, lhs1, rhs1, r, swapped, mo, weak,
 				  processing_template_decl != 0);
       if (stmt == error_mark_node)
 	return;
@@ -9973,6 +9980,16 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	{
 	  if (opcode == NOP_EXPR)
 	    stmt = build2 (MODIFY_EXPR, void_type_node, orig_lhs, orig_rhs);
+	  else if (opcode == COND_EXPR)
+	    {
+	      stmt = build2 (EQ_EXPR, boolean_type_node, orig_lhs, orig_rhs);
+	      if (orig_r)
+		stmt = build2 (MODIFY_EXPR, boolean_type_node, orig_r,
+			       stmt);
+	      stmt = build3 (COND_EXPR, void_type_node, stmt, orig_rhs1,
+			     orig_lhs);
+	      orig_rhs1 = NULL_TREE;
+	    }
 	  else
 	    stmt = build2 (opcode, void_type_node, orig_lhs, orig_rhs);
 	  if (orig_rhs1)
@@ -9982,12 +9999,14 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	    {
 	      stmt = build_min_nt_loc (loc, code, orig_lhs1, stmt);
 	      OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
+	      OMP_ATOMIC_WEAK (stmt) = weak;
 	      stmt = build2 (MODIFY_EXPR, void_type_node, orig_v, stmt);
 	    }
 	}
       stmt = build2 (OMP_ATOMIC, void_type_node,
 		     clauses ? clauses : integer_zero_node, stmt);
       OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
+      OMP_ATOMIC_WEAK (stmt) = weak;
       SET_EXPR_LOCATION (stmt, loc);
     }
 

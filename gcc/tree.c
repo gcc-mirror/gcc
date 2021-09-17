@@ -10737,6 +10737,35 @@ signed_type_for (tree type)
   return signed_or_unsigned_type_for (0, type);
 }
 
+/* - For VECTOR_TYPEs:
+    - The truth type must be a VECTOR_BOOLEAN_TYPE.
+    - The number of elements must match (known_eq).
+    - targetm.vectorize.get_mask_mode exists, and exactly
+      the same mode as the truth type.
+   - Otherwise, the truth type must be a BOOLEAN_TYPE
+     or useless_type_conversion_p to BOOLEAN_TYPE.  */
+bool
+is_truth_type_for (tree type, tree truth_type)
+{
+  machine_mode mask_mode = TYPE_MODE (truth_type);
+  machine_mode vmode = TYPE_MODE (type);
+  machine_mode tmask_mode;
+
+  if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      if (VECTOR_BOOLEAN_TYPE_P (truth_type)
+	  && known_eq (TYPE_VECTOR_SUBPARTS (type),
+		       TYPE_VECTOR_SUBPARTS (truth_type))
+	  && targetm.vectorize.get_mask_mode (vmode).exists (&tmask_mode)
+	  && tmask_mode == mask_mode)
+	return true;
+
+      return false;
+    }
+
+  return useless_type_conversion_p (boolean_type_node, truth_type);
+}
+
 /* If TYPE is a vector type, return a signed integer vector type with the
    same width and number of subparts. Otherwise return boolean_type_node.  */
 

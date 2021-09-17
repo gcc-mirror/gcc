@@ -1,3 +1,9 @@
+2021-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR lto/49664
+	* Makefile.am: Export only onload.
+	* Makefile.in: Regenerate.
+
 2021-06-25  Richard Biener  <rguenther@suse.de>
 
 	* lto-plugin.c (ltrans_objects): New global.

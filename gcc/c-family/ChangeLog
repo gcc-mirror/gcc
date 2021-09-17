@@ -1,3 +1,9 @@
+2021-09-13  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Winterference-size.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Add __GCC_DESTRUCTIVE_SIZE
+	and __GCC_CONSTRUCTIVE_SIZE.
+
 2021-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_finish_omp_atomic): Add r and weak arguments.

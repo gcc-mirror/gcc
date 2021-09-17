@@ -1,10 +1,11 @@
-/* { dg-do compile { target c } } */
+/* { dg-do compile } */
 /* { dg-additional-options "-O2 -fdump-tree-ompexp" } */
-/* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 8, 5, 5\\\);" 1 "ompexp" { target sync_int_long } } } */
-/* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 8, 4, 2\\\);" 1 "ompexp" { target sync_int_long } } } */
-/* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 264, 5, 0\\\);" 1 "ompexp" { target sync_int_long } } } */
-/* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 8, 0, 0\\\);" 1 "ompexp" { target sync_int_long } } } */
-/* { dg-final { scan-tree-dump-not "__atomic_load_8 \\\(" "ompexp" { target sync_int_long } } } */
+/* { dg-additional-options "-march=pentium" { target ia32 } } */
+/* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 8, 5, 5\\\);" 1 "ompexp" { target sync_long_long } } } */
+/* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 8, 4, 2\\\);" 1 "ompexp" { target sync_long_long } } } */
+/* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 264, 5, 0\\\);" 1 "ompexp" { target sync_long_long } } } */
+/* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 8, 0, 0\\\);" 1 "ompexp" { target sync_long_long } } } */
+/* { dg-final { scan-tree-dump-not "__atomic_load_8 \\\(" "ompexp" { target sync_long_long } } } */
 
 double x;
 

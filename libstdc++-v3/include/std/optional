@@ -70,7 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     enum class _Construct { _Token };
 
     // Must be constexpr for nullopt_t to be literal.
-    explicit constexpr nullopt_t(_Construct) { }
+    explicit constexpr nullopt_t(_Construct) noexcept { }
   };
 
   /// Tag to disengage optional objects.

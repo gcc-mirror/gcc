@@ -279,6 +279,7 @@ case ${target} in
  | i[34567]86-*-go32*			\
  | m32r-*-linux*			\
  | m32rle-*-linux*			\
+ | m68k*-*-openbsd*			\
  | m68k-*-uclinuxoldabi*		\
  | mips64orion*-*-rtems*		\
  | pdp11-*-bsd				\
@@ -2342,17 +2343,6 @@ m68k*-*-netbsdelf*)
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tm_defines="${tm_defines} MOTOROLA=1 CHAR_FAST8=1 SHORT_FAST16=1"
 	;;
-m68k*-*-openbsd*)
-	default_m68k_cpu=68020
-	default_cf_cpu=5475
-	# needed to unconfuse gdb
-	tm_defines="${tm_defines} OBSD_OLD_GAS"
-	tm_file="${tm_file} openbsd.h openbsd-stdint.h openbsd-libpthread.h m68k/openbsd.h"
-	extra_options="${extra_options} openbsd.opt"
-	tmake_file="t-openbsd m68k/t-openbsd"
-	# we need collect2 until our bug is fixed...
-	use_collect2=yes
-	;;
 m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
 				# with uClibc, using the new GNU/Linux-style
 				# ABI.
@@ -3520,11 +3510,6 @@ vax-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h ${nbsd_tm_file} vax/elf.h vax/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt vax/elf.opt"
 	tm_defines="${tm_defines} CHAR_FAST8=1 SHORT_FAST16=1"
-	;;
-vax-*-openbsd*)
-	tm_file="vax/vax.h vax/openbsd1.h openbsd.h openbsd-stdint.h openbsd-libpthread.h vax/openbsd.h"
-	extra_options="${extra_options} openbsd.opt"
-	use_collect2=yes
 	;;
 visium-*-elf*)
 	tm_file="dbxelf.h elfos.h ${tm_file} visium/elf.h newlib-stdint.h"

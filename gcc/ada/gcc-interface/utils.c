@@ -38,6 +38,7 @@
 #include "attribs.h"
 #include "varasm.h"
 #include "toplev.h"
+#include "opts.h"
 #include "output.h"
 #include "debug.h"
 #include "convert.h"
@@ -109,6 +110,8 @@ static tree handle_target_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_clones_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_type_attribute (tree *, tree, tree, int, bool *);
+static tree handle_zero_call_used_regs_attribute (tree *, tree, tree, int,
+						  bool *);
 
 static const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
 {
@@ -190,6 +193,9 @@ const struct attribute_spec gnat_internal_attribute_table[] =
     handle_vector_type_attribute, NULL },
   { "may_alias",    0, 0,  false, true,  false, false,
     NULL, NULL },
+
+  { "zero_call_used_regs", 1, 1, true, false, false, false,
+    handle_zero_call_used_regs_attribute, NULL },
 
   /* ??? format and format_arg are heavy and not supported, which actually
      prevents support for stdio builtins, which we however declare as part
@@ -4329,6 +4335,7 @@ update_pointer_to (tree old_type, tree new_type)
 	    TREE_TYPE (t) = new_type;
 	    if (TYPE_NULL_BOUNDS (t))
 	      TREE_TYPE (TREE_OPERAND (TYPE_NULL_BOUNDS (t), 0)) = new_type;
+	    TYPE_CANONICAL (t) = TYPE_CANONICAL (TYPE_POINTER_TO (new_type));
 	  }
 
       /* Chain REF and its variants at the end.  */
@@ -4345,7 +4352,10 @@ update_pointer_to (tree old_type, tree new_type)
       /* Now adjust them.  */
       for (; ref; ref = TYPE_NEXT_REF_TO (ref))
 	for (t = TYPE_MAIN_VARIANT (ref); t; t = TYPE_NEXT_VARIANT (t))
-	  TREE_TYPE (t) = new_type;
+	  {
+	    TREE_TYPE (t) = new_type;
+	    TYPE_CANONICAL (t) = TYPE_CANONICAL (TYPE_REFERENCE_TO (new_type));
+	  }
 
       TYPE_POINTER_TO (old_type) = NULL_TREE;
       TYPE_REFERENCE_TO (old_type) = NULL_TREE;
@@ -5858,8 +5868,7 @@ can_materialize_object_renaming_p (Node_Id expr)
 
 	    const Uint bitpos
 	      = Normalized_First_Bit (Entity (Selector_Name (expr)));
-	    if (!UI_Is_In_Int_Range (bitpos)
-		|| (bitpos != UI_No_Uint && bitpos != UI_From_Int (0)))
+	    if (bitpos != UI_No_Uint && bitpos != Uint_0)
 	      return false;
 
 	    expr = Prefix (expr);
@@ -6980,6 +6989,59 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 
   TYPE_REPRESENTATIVE_ARRAY (vector_type) = type;
   *node = vector_type;
+
+  return NULL_TREE;
+}
+
+/* Handle a "zero_call_used_regs" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_zero_call_used_regs_attribute (tree *node, tree name, tree args,
+				      int ARG_UNUSED (flags),
+				      bool *no_add_attrs)
+{
+  tree decl = *node;
+  tree id = TREE_VALUE (args);
+
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE attribute applies only to functions", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* pragma Machine_Attribute turns string arguments into identifiers.
+     Reverse it.  */
+  if (TREE_CODE (id) == IDENTIFIER_NODE)
+    id = TREE_VALUE (args) = build_string
+      (IDENTIFIER_LENGTH (id), IDENTIFIER_POINTER (id));
+
+  if (TREE_CODE (id) != STRING_CST)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE argument not a string", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  bool found = false;
+  for (unsigned int i = 0; zero_call_used_regs_opts[i].name != NULL; ++i)
+    if (strcmp (TREE_STRING_POINTER (id),
+		zero_call_used_regs_opts[i].name) == 0)
+      {
+	found = true;
+	break;
+      }
+
+  if (!found)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"unrecognized %qE attribute argument %qs",
+		name, TREE_STRING_POINTER (id));
+      *no_add_attrs = true;
+    }
 
   return NULL_TREE;
 }

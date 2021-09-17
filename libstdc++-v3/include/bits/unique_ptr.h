@@ -169,10 +169,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      pointer&   _M_ptr() { return std::get<0>(_M_t); }
-      pointer    _M_ptr() const { return std::get<0>(_M_t); }
-      _Dp&       _M_deleter() { return std::get<1>(_M_t); }
-      const _Dp& _M_deleter() const { return std::get<1>(_M_t); }
+      pointer&   _M_ptr() noexcept { return std::get<0>(_M_t); }
+      pointer    _M_ptr() const noexcept { return std::get<0>(_M_t); }
+      _Dp&       _M_deleter() noexcept { return std::get<1>(_M_t); }
+      const _Dp& _M_deleter() const noexcept { return std::get<1>(_M_t); }
 
       void reset(pointer __p) noexcept
       {

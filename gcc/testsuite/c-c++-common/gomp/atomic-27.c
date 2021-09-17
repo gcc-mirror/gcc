@@ -1,5 +1,5 @@
 /* PR middle-end/88968 */
-/* { dg-do compile { target c } } */
+/* { dg-do compile } */
 
 struct __attribute__((packed)) S {
   unsigned int a : 16;
