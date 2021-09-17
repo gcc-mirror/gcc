@@ -1,4 +1,4 @@
-/* { dg-do compile { target c } } */
+/* { dg-do compile } */
 /* { dg-additional-options "-O2 -fdump-tree-ompexp" } */
 /* { dg-additional-options "-march=pentium" { target ia32 } } */
 /* { dg-final { scan-tree-dump-times "\.ATOMIC_COMPARE_EXCHANGE \\\(\[^\n\r]*, 8, 5, 5\\\);" 1 "ompexp" { target sync_long_long } } } */

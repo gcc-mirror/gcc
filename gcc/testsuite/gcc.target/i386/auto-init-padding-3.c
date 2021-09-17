@@ -1,7 +1,7 @@
 /* Verify zero initialization for nested structure type automatic variables with
    padding.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=zero" } */
+/* { dg-options "-ftrivial-auto-var-init=zero -march=x86-64" } */
 
 struct test_aligned {
         unsigned internal1;
@@ -24,7 +24,9 @@ int foo ()
 }
 
 /* { dg-final { scan-assembler "movl\t\\\$0," } } */
-/* { dg-final { scan-assembler "movl\t\\\$16," } } */
-/* { dg-final { scan-assembler "rep stosq" } } */
+/* { dg-final { scan-assembler "movl\t\\\$16," { target lp64 } } } */
+/* { dg-final { scan-assembler "rep stosq" { target lp64 } } } */
+/* { dg-final { scan-assembler "movl\t\\\$32," { target ia32 } } } */
+/* { dg-final { scan-assembler "rep stosl" { target ia32 } } } */
 
 

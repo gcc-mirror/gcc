@@ -1,3 +1,10 @@
+2021-09-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102287
+	* trans-expr.c (gfc_conv_procedure_call): Wrap deallocation of
+	allocatable components of optional allocatable derived type
+	procedure arguments with INTENT(OUT) into a presence check.
+
 2021-09-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102311

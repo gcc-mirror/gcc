@@ -192,6 +192,159 @@ _mm512_setzero_ph (void)
   return _mm512_set1_ph (0.0f);
 }
 
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_undefined_ph (void)
+{
+  __m128h __Y = __Y;
+  return __Y;
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_undefined_ph (void)
+{
+  __m256h __Y = __Y;
+  return __Y;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_undefined_ph (void)
+{
+  __m512h __Y = __Y;
+  return __Y;
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_h (__m128h __A)
+{
+  return __A[0];
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvtsh_h (__m256h __A)
+{
+  return __A[0];
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtsh_h (__m512h __A)
+{
+  return __A[0];
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph_ps (__m512h __a)
+{
+  return (__m512) __a;
+}
+
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph_pd (__m512h __a)
+{
+  return (__m512d) __a;
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph_si512 (__m512h __a)
+{
+  return (__m512i) __a;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph512_ph128 (__m512h __A)
+{
+  union
+  {
+    __m128h a[4];
+    __m512h v;
+  } u = { .v = __A };
+  return u.a[0];
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph512_ph256 (__m512h __A)
+{
+  union
+  {
+    __m256h a[2];
+    __m512h v;
+  } u = { .v = __A };
+  return u.a[0];
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph128_ph512 (__m128h __A)
+{
+  union
+  {
+    __m128h a[4];
+    __m512h v;
+  } u;
+  u.a[0] = __A;
+  return u.v;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph256_ph512 (__m256h __A)
+{
+  union
+  {
+    __m256h a[2];
+    __m512h v;
+  } u;
+  u.a[0] = __A;
+  return u.v;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_zextph128_ph512 (__m128h __A)
+{
+  return (__m512h) _mm512_insertf32x4 (_mm512_setzero_ps (),
+				       (__m128) __A, 0);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_zextph256_ph512 (__m256h __A)
+{
+  return (__m512h) _mm512_insertf64x4 (_mm512_setzero_pd (),
+				       (__m256d) __A, 0);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castps_ph (__m512 __a)
+{
+  return (__m512h) __a;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castpd_ph (__m512d __a)
+{
+  return (__m512h) __a;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castsi512_ph (__m512i __a)
+{
+  return (__m512h) __a;
+}
+
 /* Create a vector with element 0 as F and the rest zero.  */
 extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -2702,6 +2855,203 @@ _mm512_maskz_cvt_roundph_epu32 (__mmask16 __A, __m256h __B, int __C)
 
 #endif /* __OPTIMIZE__ */
 
+/* Intrinsics vcvttph2dq.  */
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvttph_epi32 (__m256h __A)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2dq512_mask_round (__A,
+					     (__v16si)
+					     _mm512_setzero_si512 (),
+					     (__mmask16) -1,
+					     _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvttph_epi32 (__m512i __A, __mmask16 __B, __m256h __C)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2dq512_mask_round (__C,
+					     (__v16si) __A,
+					     __B,
+					     _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvttph_epi32 (__mmask16 __A, __m256h __B)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2dq512_mask_round (__B,
+					     (__v16si)
+					     _mm512_setzero_si512 (),
+					     __A,
+					     _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtt_roundph_epi32 (__m256h __A, int __B)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2dq512_mask_round (__A,
+					     (__v16si)
+					     _mm512_setzero_si512 (),
+					     (__mmask16) -1,
+					     __B);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtt_roundph_epi32 (__m512i __A, __mmask16 __B,
+				__m256h __C, int __D)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2dq512_mask_round (__C,
+					     (__v16si) __A,
+					     __B,
+					     __D);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtt_roundph_epi32 (__mmask16 __A, __m256h __B, int __C)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2dq512_mask_round (__B,
+					     (__v16si)
+					     _mm512_setzero_si512 (),
+					     __A,
+					     __C);
+}
+
+#else
+#define _mm512_cvtt_roundph_epi32(A, B)					\
+  ((__m512i)								\
+   __builtin_ia32_vcvttph2dq512_mask_round ((A),			\
+					    (__v16si)			\
+					    (_mm512_setzero_si512 ()),	\
+					    (__mmask16)(-1), (B)))
+
+#define _mm512_mask_cvtt_roundph_epi32(A, B, C, D)		\
+  ((__m512i)							\
+   __builtin_ia32_vcvttph2dq512_mask_round ((C),		\
+					    (__v16si)(A),	\
+					    (B),		\
+					    (D)))
+
+#define _mm512_maskz_cvtt_roundph_epi32(A, B, C)			\
+  ((__m512i)								\
+   __builtin_ia32_vcvttph2dq512_mask_round ((B),			\
+					    (__v16si)			\
+					    _mm512_setzero_si512 (),	\
+					    (A),			\
+					    (C)))
+
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vcvttph2udq.  */
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvttph_epu32 (__m256h __A)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2udq512_mask_round (__A,
+					      (__v16si)
+					      _mm512_setzero_si512 (),
+					      (__mmask16) -1,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvttph_epu32 (__m512i __A, __mmask16 __B, __m256h __C)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2udq512_mask_round (__C,
+					      (__v16si) __A,
+					      __B,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvttph_epu32 (__mmask16 __A, __m256h __B)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2udq512_mask_round (__B,
+					      (__v16si)
+					      _mm512_setzero_si512 (),
+					      __A,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtt_roundph_epu32 (__m256h __A, int __B)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2udq512_mask_round (__A,
+					      (__v16si)
+					      _mm512_setzero_si512 (),
+					      (__mmask16) -1,
+					      __B);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtt_roundph_epu32 (__m512i __A, __mmask16 __B,
+				__m256h __C, int __D)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2udq512_mask_round (__C,
+					      (__v16si) __A,
+					      __B,
+					      __D);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtt_roundph_epu32 (__mmask16 __A, __m256h __B, int __C)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2udq512_mask_round (__B,
+					      (__v16si)
+					      _mm512_setzero_si512 (),
+					      __A,
+					      __C);
+}
+
+#else
+#define _mm512_cvtt_roundph_epu32(A, B)					\
+  ((__m512i)								\
+   __builtin_ia32_vcvttph2udq512_mask_round ((A),			\
+					     (__v16si)			\
+					     _mm512_setzero_si512 (),	\
+					     (__mmask16)-1,		\
+					     (B)))
+
+#define _mm512_mask_cvtt_roundph_epu32(A, B, C, D)		\
+  ((__m512i)							\
+   __builtin_ia32_vcvttph2udq512_mask_round ((C),		\
+					     (__v16si)(A),	\
+					     (B),		\
+					     (D)))
+
+#define _mm512_maskz_cvtt_roundph_epu32(A, B, C)			\
+  ((__m512i)								\
+   __builtin_ia32_vcvttph2udq512_mask_round ((B),			\
+					     (__v16si)			\
+					     _mm512_setzero_si512 (),	\
+					     (A),			\
+					     (C)))
+
+#endif /* __OPTIMIZE__ */
+
 /* Intrinsics vcvtdq2ph.  */
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -3016,6 +3366,156 @@ _mm512_maskz_cvt_roundph_epu64 (__mmask8 __A, __m128h __B, int __C)
 					    _mm512_setzero_si512 (),	\
 					    (A),			\
 					    (C)))
+
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vcvttph2qq.  */
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvttph_epi64 (__m128h __A)
+{
+  return __builtin_ia32_vcvttph2qq512_mask_round (__A,
+						  _mm512_setzero_si512 (),
+						  (__mmask8) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvttph_epi64 (__m512i __A, __mmask8 __B, __m128h __C)
+{
+  return __builtin_ia32_vcvttph2qq512_mask_round (__C, __A, __B,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvttph_epi64 (__mmask8 __A, __m128h __B)
+{
+  return __builtin_ia32_vcvttph2qq512_mask_round (__B,
+						  _mm512_setzero_si512 (),
+						  __A,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtt_roundph_epi64 (__m128h __A, int __B)
+{
+  return __builtin_ia32_vcvttph2qq512_mask_round (__A,
+						  _mm512_setzero_si512 (),
+						  (__mmask8) -1,
+						  __B);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtt_roundph_epi64 (__m512i __A, __mmask8 __B, __m128h __C, int __D)
+{
+  return __builtin_ia32_vcvttph2qq512_mask_round (__C, __A, __B, __D);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtt_roundph_epi64 (__mmask8 __A, __m128h __B, int __C)
+{
+  return __builtin_ia32_vcvttph2qq512_mask_round (__B,
+						  _mm512_setzero_si512 (),
+						  __A,
+						  __C);
+}
+
+#else
+#define _mm512_cvtt_roundph_epi64(A, B)					\
+  (__builtin_ia32_vcvttph2qq512_mask_round ((A),			\
+					    _mm512_setzero_si512 (),	\
+					    (__mmask8)-1,		\
+					    (B)))
+
+#define _mm512_mask_cvtt_roundph_epi64(A, B, C, D)			\
+  __builtin_ia32_vcvttph2qq512_mask_round ((C), (A), (B), (D))
+
+#define _mm512_maskz_cvtt_roundph_epi64(A, B, C)			\
+  (__builtin_ia32_vcvttph2qq512_mask_round ((B),			\
+					    _mm512_setzero_si512 (),	\
+					    (A),			\
+					    (C)))
+
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vcvttph2uqq.  */
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvttph_epu64 (__m128h __A)
+{
+  return __builtin_ia32_vcvttph2uqq512_mask_round (__A,
+						   _mm512_setzero_si512 (),
+						   (__mmask8) -1,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvttph_epu64 (__m512i __A, __mmask8 __B, __m128h __C)
+{
+  return __builtin_ia32_vcvttph2uqq512_mask_round (__C, __A, __B,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvttph_epu64 (__mmask8 __A, __m128h __B)
+{
+  return __builtin_ia32_vcvttph2uqq512_mask_round (__B,
+						   _mm512_setzero_si512 (),
+						   __A,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtt_roundph_epu64 (__m128h __A, int __B)
+{
+  return __builtin_ia32_vcvttph2uqq512_mask_round (__A,
+						   _mm512_setzero_si512 (),
+						   (__mmask8) -1,
+						   __B);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtt_roundph_epu64 (__m512i __A, __mmask8 __B, __m128h __C, int __D)
+{
+  return __builtin_ia32_vcvttph2uqq512_mask_round (__C, __A, __B, __D);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtt_roundph_epu64 (__mmask8 __A, __m128h __B, int __C)
+{
+  return __builtin_ia32_vcvttph2uqq512_mask_round (__B,
+						   _mm512_setzero_si512 (),
+						   __A,
+						   __C);
+}
+
+#else
+#define _mm512_cvtt_roundph_epu64(A, B)					\
+  (__builtin_ia32_vcvttph2uqq512_mask_round ((A),			\
+					     _mm512_setzero_si512 (),	\
+					     (__mmask8)-1,		\
+					     (B)))
+
+#define _mm512_mask_cvtt_roundph_epu64(A, B, C, D)			\
+  __builtin_ia32_vcvttph2uqq512_mask_round ((C), (A), (B), (D))
+
+#define _mm512_maskz_cvtt_roundph_epu64(A, B, C)			\
+  (__builtin_ia32_vcvttph2uqq512_mask_round ((B),			\
+					     _mm512_setzero_si512 (),	\
+					     (A),			\
+					     (C)))
 
 #endif /* __OPTIMIZE__ */
 
@@ -3363,6 +3863,204 @@ _mm512_maskz_cvt_roundph_epu16 (__mmask32 __A, __m512h __B, int __C)
 
 #endif /* __OPTIMIZE__ */
 
+/* Intrinsics vcvttph2w.  */
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvttph_epi16 (__m512h __A)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2w512_mask_round (__A,
+					    (__v32hi)
+					    _mm512_setzero_si512 (),
+					    (__mmask32) -1,
+					    _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvttph_epi16 (__m512i __A, __mmask32 __B, __m512h __C)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2w512_mask_round (__C,
+					    (__v32hi) __A,
+					    __B,
+					    _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvttph_epi16 (__mmask32 __A, __m512h __B)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2w512_mask_round (__B,
+					    (__v32hi)
+					    _mm512_setzero_si512 (),
+					    __A,
+					    _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtt_roundph_epi16 (__m512h __A, int __B)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2w512_mask_round (__A,
+					    (__v32hi)
+					    _mm512_setzero_si512 (),
+					    (__mmask32) -1,
+					    __B);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtt_roundph_epi16 (__m512i __A, __mmask32 __B,
+				__m512h __C, int __D)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2w512_mask_round (__C,
+					    (__v32hi) __A,
+					    __B,
+					    __D);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtt_roundph_epi16 (__mmask32 __A, __m512h __B, int __C)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2w512_mask_round (__B,
+					    (__v32hi)
+					    _mm512_setzero_si512 (),
+					    __A,
+					    __C);
+}
+
+#else
+#define _mm512_cvtt_roundph_epi16(A, B)				    \
+  ((__m512i)							    \
+   __builtin_ia32_vcvttph2w512_mask_round ((A),			    \
+					   (__v32hi)		    \
+					   _mm512_setzero_si512 (), \
+					   (__mmask32)-1,	    \
+					   (B)))
+
+#define _mm512_mask_cvtt_roundph_epi16(A, B, C, D)		\
+  ((__m512i)							\
+   __builtin_ia32_vcvttph2w512_mask_round ((C),			\
+					   (__v32hi)(A),	\
+					   (B),			\
+					   (D)))
+
+#define _mm512_maskz_cvtt_roundph_epi16(A, B, C)		    \
+  ((__m512i)							    \
+   __builtin_ia32_vcvttph2w512_mask_round ((B),			    \
+					   (__v32hi)		    \
+					   _mm512_setzero_si512 (), \
+					   (A),			    \
+					   (C)))
+
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vcvttph2uw.  */
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvttph_epu16 (__m512h __A)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2uw512_mask_round (__A,
+					     (__v32hi)
+					     _mm512_setzero_si512 (),
+					     (__mmask32) -1,
+					     _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvttph_epu16 (__m512i __A, __mmask32 __B, __m512h __C)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2uw512_mask_round (__C,
+					     (__v32hi) __A,
+					     __B,
+					     _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvttph_epu16 (__mmask32 __A, __m512h __B)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2uw512_mask_round (__B,
+					     (__v32hi)
+					     _mm512_setzero_si512 (),
+					     __A,
+					     _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtt_roundph_epu16 (__m512h __A, int __B)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2uw512_mask_round (__A,
+					     (__v32hi)
+					     _mm512_setzero_si512 (),
+					     (__mmask32) -1,
+					     __B);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtt_roundph_epu16 (__m512i __A, __mmask32 __B,
+				__m512h __C, int __D)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2uw512_mask_round (__C,
+					     (__v32hi) __A,
+					     __B,
+					     __D);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtt_roundph_epu16 (__mmask32 __A, __m512h __B, int __C)
+{
+  return (__m512i)
+    __builtin_ia32_vcvttph2uw512_mask_round (__B,
+					     (__v32hi)
+					     _mm512_setzero_si512 (),
+					     __A,
+					     __C);
+}
+
+#else
+#define _mm512_cvtt_roundph_epu16(A, B)				     \
+  ((__m512i)							     \
+   __builtin_ia32_vcvttph2uw512_mask_round ((A),		     \
+					    (__v32hi)		     \
+					    _mm512_setzero_si512 (), \
+					    (__mmask32)-1,	     \
+					    (B)))
+
+#define _mm512_mask_cvtt_roundph_epu16(A, B, C, D)		\
+  ((__m512i)							\
+   __builtin_ia32_vcvttph2uw512_mask_round ((C),		\
+					    (__v32hi)(A),	\
+					    (B),		\
+					    (D)))
+
+#define _mm512_maskz_cvtt_roundph_epu16(A, B, C)		     \
+  ((__m512i)							     \
+   __builtin_ia32_vcvttph2uw512_mask_round ((B),		     \
+					    (__v32hi)		     \
+					    _mm512_setzero_si512 (), \
+					    (A),		     \
+					    (C)))
+
+#endif /* __OPTIMIZE__ */
+
 /* Intrinsics vcvtw2ph.  */
 extern __inline __m512h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -3526,6 +4224,822 @@ _mm512_maskz_cvt_roundepu16_ph (__mmask32 __A, __m512i __B, int __C)
 					   _mm512_setzero_ph (),	\
 					   (A),				\
 					   (C)))
+
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vcvtsh2si, vcvtsh2us.  */
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_i32 (__m128h __A)
+{
+  return (int) __builtin_ia32_vcvtsh2si32_round (__A, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline unsigned
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_u32 (__m128h __A)
+{
+  return (int) __builtin_ia32_vcvtsh2usi32_round (__A,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsh_i32 (__m128h __A, const int __R)
+{
+  return (int) __builtin_ia32_vcvtsh2si32_round (__A, __R);
+}
+
+extern __inline unsigned
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsh_u32 (__m128h __A, const int __R)
+{
+  return (int) __builtin_ia32_vcvtsh2usi32_round (__A, __R);
+}
+
+#else
+#define _mm_cvt_roundsh_i32(A, B)		\
+  ((int)__builtin_ia32_vcvtsh2si32_round ((A), (B)))
+#define _mm_cvt_roundsh_u32(A, B)		\
+  ((int)__builtin_ia32_vcvtsh2usi32_round ((A), (B)))
+
+#endif /* __OPTIMIZE__ */
+
+#ifdef __x86_64__
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_i64 (__m128h __A)
+{
+  return (long long)
+    __builtin_ia32_vcvtsh2si64_round (__A, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_u64 (__m128h __A)
+{
+  return (long long)
+    __builtin_ia32_vcvtsh2usi64_round (__A, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsh_i64 (__m128h __A, const int __R)
+{
+  return (long long) __builtin_ia32_vcvtsh2si64_round (__A, __R);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsh_u64 (__m128h __A, const int __R)
+{
+  return (long long) __builtin_ia32_vcvtsh2usi64_round (__A, __R);
+}
+
+#else
+#define _mm_cvt_roundsh_i64(A, B)			\
+  ((long long)__builtin_ia32_vcvtsh2si64_round ((A), (B)))
+#define _mm_cvt_roundsh_u64(A, B)			\
+  ((long long)__builtin_ia32_vcvtsh2usi64_round ((A), (B)))
+
+#endif /* __OPTIMIZE__ */
+#endif /* __x86_64__ */
+
+/* Intrinsics vcvttsh2si, vcvttsh2us.  */
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvttsh_i32 (__m128h __A)
+{
+  return (int)
+    __builtin_ia32_vcvttsh2si32_round (__A, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline unsigned
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvttsh_u32 (__m128h __A)
+{
+  return (int)
+    __builtin_ia32_vcvttsh2usi32_round (__A, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtt_roundsh_i32 (__m128h __A, const int __R)
+{
+  return (int) __builtin_ia32_vcvttsh2si32_round (__A, __R);
+}
+
+extern __inline unsigned
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtt_roundsh_u32 (__m128h __A, const int __R)
+{
+  return (int) __builtin_ia32_vcvttsh2usi32_round (__A, __R);
+}
+
+#else
+#define _mm_cvtt_roundsh_i32(A, B)		\
+  ((int)__builtin_ia32_vcvttsh2si32_round ((A), (B)))
+#define _mm_cvtt_roundsh_u32(A, B)		\
+  ((int)__builtin_ia32_vcvttsh2usi32_round ((A), (B)))
+
+#endif /* __OPTIMIZE__ */
+
+#ifdef __x86_64__
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvttsh_i64 (__m128h __A)
+{
+  return (long long)
+    __builtin_ia32_vcvttsh2si64_round (__A, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvttsh_u64 (__m128h __A)
+{
+  return (long long)
+    __builtin_ia32_vcvttsh2usi64_round (__A, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtt_roundsh_i64 (__m128h __A, const int __R)
+{
+  return (long long) __builtin_ia32_vcvttsh2si64_round (__A, __R);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtt_roundsh_u64 (__m128h __A, const int __R)
+{
+  return (long long) __builtin_ia32_vcvttsh2usi64_round (__A, __R);
+}
+
+#else
+#define _mm_cvtt_roundsh_i64(A, B)			\
+  ((long long)__builtin_ia32_vcvttsh2si64_round ((A), (B)))
+#define _mm_cvtt_roundsh_u64(A, B)			\
+  ((long long)__builtin_ia32_vcvttsh2usi64_round ((A), (B)))
+
+#endif /* __OPTIMIZE__ */
+#endif /* __x86_64__ */
+
+/* Intrinsics vcvtsi2sh, vcvtusi2sh.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvti32_sh (__m128h __A, int __B)
+{
+  return __builtin_ia32_vcvtsi2sh32_round (__A, __B, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtu32_sh (__m128h __A, unsigned int __B)
+{
+  return __builtin_ia32_vcvtusi2sh32_round (__A, __B, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundi32_sh (__m128h __A, int __B, const int __R)
+{
+  return __builtin_ia32_vcvtsi2sh32_round (__A, __B, __R);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundu32_sh (__m128h __A, unsigned int __B, const int __R)
+{
+  return __builtin_ia32_vcvtusi2sh32_round (__A, __B, __R);
+}
+
+#else
+#define _mm_cvt_roundi32_sh(A, B, C)		\
+  (__builtin_ia32_vcvtsi2sh32_round ((A), (B), (C)))
+#define _mm_cvt_roundu32_sh(A, B, C)		\
+  (__builtin_ia32_vcvtusi2sh32_round ((A), (B), (C)))
+
+#endif /* __OPTIMIZE__ */
+
+#ifdef __x86_64__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvti64_sh (__m128h __A, long long __B)
+{
+  return __builtin_ia32_vcvtsi2sh64_round (__A, __B, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtu64_sh (__m128h __A, unsigned long long __B)
+{
+  return __builtin_ia32_vcvtusi2sh64_round (__A, __B, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundi64_sh (__m128h __A, long long __B, const int __R)
+{
+  return __builtin_ia32_vcvtsi2sh64_round (__A, __B, __R);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundu64_sh (__m128h __A, unsigned long long __B, const int __R)
+{
+  return __builtin_ia32_vcvtusi2sh64_round (__A, __B, __R);
+}
+
+#else
+#define _mm_cvt_roundi64_sh(A, B, C)		\
+  (__builtin_ia32_vcvtsi2sh64_round ((A), (B), (C)))
+#define _mm_cvt_roundu64_sh(A, B, C)		\
+  (__builtin_ia32_vcvtusi2sh64_round ((A), (B), (C)))
+
+#endif /* __OPTIMIZE__ */
+#endif /* __x86_64__ */
+
+/* Intrinsics vcvtph2pd.  */
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtph_pd (__m128h __A)
+{
+  return __builtin_ia32_vcvtph2pd512_mask_round (__A,
+						 _mm512_setzero_pd (),
+						 (__mmask8) -1,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtph_pd (__m512d __A, __mmask8 __B, __m128h __C)
+{
+  return __builtin_ia32_vcvtph2pd512_mask_round (__C, __A, __B,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtph_pd (__mmask8 __A, __m128h __B)
+{
+  return __builtin_ia32_vcvtph2pd512_mask_round (__B,
+						 _mm512_setzero_pd (),
+						 __A,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvt_roundph_pd (__m128h __A, int __B)
+{
+  return __builtin_ia32_vcvtph2pd512_mask_round (__A,
+						 _mm512_setzero_pd (),
+						 (__mmask8) -1,
+						 __B);
+}
+
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvt_roundph_pd (__m512d __A, __mmask8 __B, __m128h __C, int __D)
+{
+  return __builtin_ia32_vcvtph2pd512_mask_round (__C, __A, __B, __D);
+}
+
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvt_roundph_pd (__mmask8 __A, __m128h __B, int __C)
+{
+  return __builtin_ia32_vcvtph2pd512_mask_round (__B,
+						 _mm512_setzero_pd (),
+						 __A,
+						 __C);
+}
+
+#else
+#define _mm512_cvt_roundph_pd(A, B)					\
+  (__builtin_ia32_vcvtph2pd512_mask_round ((A),			\
+					   _mm512_setzero_pd (),	\
+					   (__mmask8)-1,		\
+					   (B)))
+
+#define _mm512_mask_cvt_roundph_pd(A, B, C, D)				\
+  (__builtin_ia32_vcvtph2pd512_mask_round ((C), (A), (B), (D)))
+
+#define _mm512_maskz_cvt_roundph_pd(A, B, C)				\
+  (__builtin_ia32_vcvtph2pd512_mask_round ((B),			\
+					   _mm512_setzero_pd (),	\
+					   (A),			\
+					   (C)))
+
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vcvtph2psx.  */
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtxph_ps (__m256h __A)
+{
+  return __builtin_ia32_vcvtph2psx512_mask_round (__A,
+						  _mm512_setzero_ps (),
+						  (__mmask16) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtxph_ps (__m512 __A, __mmask16 __B, __m256h __C)
+{
+  return __builtin_ia32_vcvtph2psx512_mask_round (__C, __A, __B,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtxph_ps (__mmask16 __A, __m256h __B)
+{
+  return __builtin_ia32_vcvtph2psx512_mask_round (__B,
+						  _mm512_setzero_ps (),
+						  __A,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtx_roundph_ps (__m256h __A, int __B)
+{
+  return __builtin_ia32_vcvtph2psx512_mask_round (__A,
+						  _mm512_setzero_ps (),
+						  (__mmask16) -1,
+						  __B);
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtx_roundph_ps (__m512 __A, __mmask16 __B, __m256h __C, int __D)
+{
+  return __builtin_ia32_vcvtph2psx512_mask_round (__C, __A, __B, __D);
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtx_roundph_ps (__mmask16 __A, __m256h __B, int __C)
+{
+  return __builtin_ia32_vcvtph2psx512_mask_round (__B,
+						  _mm512_setzero_ps (),
+						  __A,
+						  __C);
+}
+
+#else
+#define _mm512_cvtx_roundph_ps(A, B)					\
+  (__builtin_ia32_vcvtph2psx512_mask_round ((A),			\
+					    _mm512_setzero_ps (),	\
+					    (__mmask16)-1,		\
+					    (B)))
+
+#define _mm512_mask_cvtx_roundph_ps(A, B, C, D)				\
+  (__builtin_ia32_vcvtph2psx512_mask_round ((C), (A), (B), (D)))
+
+#define _mm512_maskz_cvtx_roundph_ps(A, B, C)				\
+  (__builtin_ia32_vcvtph2psx512_mask_round ((B),			\
+					    _mm512_setzero_ps (),	\
+					    (A),			\
+					    (C)))
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vcvtps2ph.  */
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtxps_ph (__m512 __A)
+{
+  return __builtin_ia32_vcvtps2phx512_mask_round ((__v16sf) __A,
+						  _mm256_setzero_ph (),
+						  (__mmask16) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtxps_ph (__m256h __A, __mmask16 __B, __m512 __C)
+{
+  return __builtin_ia32_vcvtps2phx512_mask_round ((__v16sf) __C,
+						  __A, __B,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtxps_ph (__mmask16 __A, __m512 __B)
+{
+  return __builtin_ia32_vcvtps2phx512_mask_round ((__v16sf) __B,
+						  _mm256_setzero_ph (),
+						  __A,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtx_roundps_ph (__m512 __A, int __B)
+{
+  return __builtin_ia32_vcvtps2phx512_mask_round ((__v16sf) __A,
+						  _mm256_setzero_ph (),
+						  (__mmask16) -1,
+						  __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtx_roundps_ph (__m256h __A, __mmask16 __B, __m512 __C, int __D)
+{
+  return __builtin_ia32_vcvtps2phx512_mask_round ((__v16sf) __C,
+						  __A, __B, __D);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtx_roundps_ph (__mmask16 __A, __m512 __B, int __C)
+{
+  return __builtin_ia32_vcvtps2phx512_mask_round ((__v16sf) __B,
+						  _mm256_setzero_ph (),
+						  __A, __C);
+}
+
+#else
+#define _mm512_cvtx_roundps_ph(A, B)				\
+  (__builtin_ia32_vcvtps2phx512_mask_round ((__v16sf)(A),	\
+					    _mm256_setzero_ph (),\
+					    (__mmask16)-1, (B)))
+
+#define _mm512_mask_cvtx_roundps_ph(A, B, C, D)			\
+  (__builtin_ia32_vcvtps2phx512_mask_round ((__v16sf)(C),	\
+					    (A), (B), (D)))
+
+#define _mm512_maskz_cvtx_roundps_ph(A, B, C)			\
+  (__builtin_ia32_vcvtps2phx512_mask_round ((__v16sf)(B),	\
+					    _mm256_setzero_ph (),\
+					    (A), (C)))
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vcvtpd2ph.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtpd_ph (__m512d __A)
+{
+  return __builtin_ia32_vcvtpd2ph512_mask_round ((__v8df) __A,
+						 _mm_setzero_ph (),
+						 (__mmask8) -1,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtpd_ph (__m128h __A, __mmask8 __B, __m512d __C)
+{
+  return __builtin_ia32_vcvtpd2ph512_mask_round ((__v8df) __C,
+						 __A, __B,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtpd_ph (__mmask8 __A, __m512d __B)
+{
+  return __builtin_ia32_vcvtpd2ph512_mask_round ((__v8df) __B,
+						 _mm_setzero_ph (),
+						 __A,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvt_roundpd_ph (__m512d __A, int __B)
+{
+  return __builtin_ia32_vcvtpd2ph512_mask_round ((__v8df) __A,
+						 _mm_setzero_ph (),
+						 (__mmask8) -1,
+						 __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvt_roundpd_ph (__m128h __A, __mmask8 __B, __m512d __C, int __D)
+{
+  return __builtin_ia32_vcvtpd2ph512_mask_round ((__v8df) __C,
+						 __A, __B, __D);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvt_roundpd_ph (__mmask8 __A, __m512d __B, int __C)
+{
+  return __builtin_ia32_vcvtpd2ph512_mask_round ((__v8df) __B,
+						 _mm_setzero_ph (),
+						 __A, __C);
+}
+
+#else
+#define _mm512_cvt_roundpd_ph(A, B)				\
+  (__builtin_ia32_vcvtpd2ph512_mask_round ((__v8df)(A),		\
+					   _mm_setzero_ph (),	\
+					   (__mmask8)-1, (B)))
+
+#define _mm512_mask_cvt_roundpd_ph(A, B, C, D)			\
+  (__builtin_ia32_vcvtpd2ph512_mask_round ((__v8df)(C),		\
+					   (A), (B), (D)))
+
+#define _mm512_maskz_cvt_roundpd_ph(A, B, C)			\
+  (__builtin_ia32_vcvtpd2ph512_mask_round ((__v8df)(B),		\
+					   _mm_setzero_ph (),	\
+					   (A), (C)))
+
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vcvtsh2ss, vcvtsh2sd.  */
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_ss (__m128 __A, __m128h __B)
+{
+  return __builtin_ia32_vcvtsh2ss_mask_round (__B, __A,
+					      _mm_setzero_ps (),
+					      (__mmask8) -1,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtsh_ss (__m128 __A, __mmask8 __B, __m128 __C,
+			 __m128h __D)
+{
+  return __builtin_ia32_vcvtsh2ss_mask_round (__D, __C, __A, __B,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvtsh_ss (__mmask8 __A, __m128 __B,
+			  __m128h __C)
+{
+  return __builtin_ia32_vcvtsh2ss_mask_round (__C, __B,
+					      _mm_setzero_ps (),
+					      __A, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_sd (__m128d __A, __m128h __B)
+{
+  return __builtin_ia32_vcvtsh2sd_mask_round (__B, __A,
+					      _mm_setzero_pd (),
+					      (__mmask8) -1,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtsh_sd (__m128d __A, __mmask8 __B, __m128d __C,
+			 __m128h __D)
+{
+  return __builtin_ia32_vcvtsh2sd_mask_round (__D, __C, __A, __B,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvtsh_sd (__mmask8 __A, __m128d __B, __m128h __C)
+{
+  return __builtin_ia32_vcvtsh2sd_mask_round (__C, __B,
+					      _mm_setzero_pd (),
+					      __A, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsh_ss (__m128 __A, __m128h __B, const int __R)
+{
+  return __builtin_ia32_vcvtsh2ss_mask_round (__B, __A,
+					      _mm_setzero_ps (),
+					      (__mmask8) -1, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvt_roundsh_ss (__m128 __A, __mmask8 __B, __m128 __C,
+			 __m128h __D, const int __R)
+{
+  return __builtin_ia32_vcvtsh2ss_mask_round (__D, __C, __A, __B, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvt_roundsh_ss (__mmask8 __A, __m128 __B,
+			  __m128h __C, const int __R)
+{
+  return __builtin_ia32_vcvtsh2ss_mask_round (__C, __B,
+					      _mm_setzero_ps (),
+					      __A, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsh_sd (__m128d __A, __m128h __B, const int __R)
+{
+  return __builtin_ia32_vcvtsh2sd_mask_round (__B, __A,
+					      _mm_setzero_pd (),
+					      (__mmask8) -1, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvt_roundsh_sd (__m128d __A, __mmask8 __B, __m128d __C,
+			 __m128h __D, const int __R)
+{
+  return __builtin_ia32_vcvtsh2sd_mask_round (__D, __C, __A, __B, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvt_roundsh_sd (__mmask8 __A, __m128d __B, __m128h __C, const int __R)
+{
+  return __builtin_ia32_vcvtsh2sd_mask_round (__C, __B,
+					      _mm_setzero_pd (),
+					      __A, __R);
+}
+
+#else
+#define _mm_cvt_roundsh_ss(A, B, R)				\
+  (__builtin_ia32_vcvtsh2ss_mask_round ((B), (A),		\
+					_mm_setzero_ps (),	\
+					(__mmask8) -1, (R)))
+
+#define _mm_mask_cvt_roundsh_ss(A, B, C, D, R)				\
+  (__builtin_ia32_vcvtsh2ss_mask_round ((D), (C), (A), (B), (R)))
+
+#define _mm_maskz_cvt_roundsh_ss(A, B, C, R)			\
+  (__builtin_ia32_vcvtsh2ss_mask_round ((C), (B),		\
+					_mm_setzero_ps (),	\
+					(A), (R)))
+
+#define _mm_cvt_roundsh_sd(A, B, R)				\
+  (__builtin_ia32_vcvtsh2sd_mask_round ((B), (A),		\
+					_mm_setzero_pd (),	\
+					(__mmask8) -1, (R)))
+
+#define _mm_mask_cvt_roundsh_sd(A, B, C, D, R)				\
+  (__builtin_ia32_vcvtsh2sd_mask_round ((D), (C), (A), (B), (R)))
+
+#define _mm_maskz_cvt_roundsh_sd(A, B, C, R)			\
+  (__builtin_ia32_vcvtsh2sd_mask_round ((C), (B),		\
+					_mm_setzero_pd (),	\
+					(A), (R)))
+
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vcvtss2sh, vcvtsd2sh.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtss_sh (__m128h __A, __m128 __B)
+{
+  return __builtin_ia32_vcvtss2sh_mask_round (__B, __A,
+					      _mm_setzero_ph (),
+					      (__mmask8) -1,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtss_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128 __D)
+{
+  return __builtin_ia32_vcvtss2sh_mask_round (__D, __C, __A, __B,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvtss_sh (__mmask8 __A, __m128h __B, __m128 __C)
+{
+  return __builtin_ia32_vcvtss2sh_mask_round (__C, __B,
+					      _mm_setzero_ph (),
+					      __A, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsd_sh (__m128h __A, __m128d __B)
+{
+  return __builtin_ia32_vcvtsd2sh_mask_round (__B, __A,
+					      _mm_setzero_ph (),
+					      (__mmask8) -1,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtsd_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128d __D)
+{
+  return __builtin_ia32_vcvtsd2sh_mask_round (__D, __C, __A, __B,
+					      _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvtsd_sh (__mmask8 __A, __m128h __B, __m128d __C)
+{
+  return __builtin_ia32_vcvtsd2sh_mask_round (__C, __B,
+					      _mm_setzero_ph (),
+					      __A, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundss_sh (__m128h __A, __m128 __B, const int __R)
+{
+  return __builtin_ia32_vcvtss2sh_mask_round (__B, __A,
+					      _mm_setzero_ph (),
+					      (__mmask8) -1, __R);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvt_roundss_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128 __D,
+			 const int __R)
+{
+  return __builtin_ia32_vcvtss2sh_mask_round (__D, __C, __A, __B, __R);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvt_roundss_sh (__mmask8 __A, __m128h __B, __m128 __C,
+			  const int __R)
+{
+  return __builtin_ia32_vcvtss2sh_mask_round (__C, __B,
+					      _mm_setzero_ph (),
+					      __A, __R);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsd_sh (__m128h __A, __m128d __B, const int __R)
+{
+  return __builtin_ia32_vcvtsd2sh_mask_round (__B, __A,
+					      _mm_setzero_ph (),
+					      (__mmask8) -1, __R);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvt_roundsd_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128d __D,
+			 const int __R)
+{
+  return __builtin_ia32_vcvtsd2sh_mask_round (__D, __C, __A, __B, __R);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvt_roundsd_sh (__mmask8 __A, __m128h __B, __m128d __C,
+			  const int __R)
+{
+  return __builtin_ia32_vcvtsd2sh_mask_round (__C, __B,
+					      _mm_setzero_ph (),
+					      __A, __R);
+}
+
+#else
+#define _mm_cvt_roundss_sh(A, B, R)				\
+  (__builtin_ia32_vcvtss2sh_mask_round ((B), (A),		\
+					_mm_setzero_ph (),	\
+					(__mmask8) -1, R))
+
+#define _mm_mask_cvt_roundss_sh(A, B, C, D, R)				\
+  (__builtin_ia32_vcvtss2sh_mask_round ((D), (C), (A), (B), (R)))
+
+#define _mm_maskz_cvt_roundss_sh(A, B, C, R)			\
+  (__builtin_ia32_vcvtss2sh_mask_round ((C), (B),		\
+					_mm_setzero_ph (),	\
+					A, R))
+
+#define _mm_cvt_roundsd_sh(A, B, R)				\
+  (__builtin_ia32_vcvtsd2sh_mask_round ((B), (A),		\
+					_mm_setzero_ph (),	\
+					(__mmask8) -1, R))
+
+#define _mm_mask_cvt_roundsd_sh(A, B, C, D, R)				\
+  (__builtin_ia32_vcvtsd2sh_mask_round ((D), (C), (A), (B), (R)))
+
+#define _mm_maskz_cvt_roundsd_sh(A, B, C, R)			\
+  (__builtin_ia32_vcvtsd2sh_mask_round ((C), (B),		\
+					_mm_setzero_ph (),	\
+					(A), (R)))
 
 #endif /* __OPTIMIZE__ */
 

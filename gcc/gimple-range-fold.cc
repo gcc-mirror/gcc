@@ -195,7 +195,7 @@ void
 fur_depend::register_relation (gimple *s, relation_kind k, tree op1, tree op2)
 {
   if (m_oracle)
-    m_oracle->register_relation (s, k, op1, op2);
+    m_oracle->register_stmt (s, k, op1, op2);
 }
 
 // Register a relation on an edge if there is an oracle.
@@ -204,7 +204,7 @@ void
 fur_depend::register_relation (edge e, relation_kind k, tree op1, tree op2)
 {
   if (m_oracle)
-    m_oracle->register_relation (e, k, op1, op2);
+    m_oracle->register_edge (e, k, op1, op2);
 }
 
 // This version of fur_source will pick a range up from a list of ranges

@@ -1,3 +1,65 @@
+2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/Makefile.am (stamp-debug): Add all Makefiles as
+	prerequisites.
+	* src/Makefile.in: Regenerate.
+
+2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/ext/pb_ds/regression/tree_map_rand.cc: Increase
+	timeout factor to 3.
+	* testsuite/ext/pb_ds/regression/tree_set_rand.cc: Likewise.
+
+2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml: Generalize to apply to more than
+	just -std=c++11.
+	* doc/html/manual/using_macros.html: Regenerate.
+
+2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (nullptr_t): Make constructor noexcept.
+
+2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (advance): Remove non-deducible
+	template parameter.
+
+2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102270
+	* include/std/tuple (_Head_base, _Tuple_impl): Add
+	_GLIBCXX20_CONSTEXPR to allocator-extended constructors.
+	(tuple<>::swap(tuple&)): Add _GLIBCXX20_CONSTEXPR.
+	* testsuite/20_util/tuple/cons/102270.C: New test.
+
+2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102280
+	* include/std/span (span(Range&&)): Add constraint to deduction
+	guide.
+
+2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/Makefile.am: Use CXXCOMPILE not LTCXXCOMPILE.
+	* src/c++98/Makefile.in: Regenerate.
+
+2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(to_string): Add noexcept if the type width is 32 bits or less.
+
+2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (__uniq_ptr_impl::_M_ptr)
+	(__uniq_ptr_impl::_M_deleter): Add noexcept.
+
+2021-09-16  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	PR libstdc++/101761
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc (test): Use
+	va and vb as arguments to wait/notify, remove unused bb local.
+
 2021-09-15  Hugo Beauzée-Luyssen  <hugo@beauzee.fr>
 
 	* crossconfig.m4: Check for TLS support on mingw.

@@ -1,3 +1,22 @@
+2021-09-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98486
+	* constraint.cc (get_normalized_constraints_from_decl): Always
+	look up constraints using the most general template.
+	* decl.c (grokdeclarator): Set constraints on a static data
+	member template.
+	* pt.c (determine_specialization): Check constraints on a
+	variable template.
+
+2021-09-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (await_statement_walker): Code cleanups.
+
+2021-09-16  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_outermost_constant_expr): Use
+	protected_set_expr_location.
+
 2021-09-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101904
