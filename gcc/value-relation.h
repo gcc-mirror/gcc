@@ -146,7 +146,8 @@ private:
   bitmap register_equiv (basic_block bb, unsigned v, equiv_chain *equiv_1);
   bitmap register_equiv (basic_block bb, equiv_chain *equiv_1,
 			 equiv_chain *equiv_2);
-
+  void register_initial_def (tree ssa);
+  void add_equiv_to_block (basic_block bb, bitmap equiv);
 };
 
 // Summary block header for relations.

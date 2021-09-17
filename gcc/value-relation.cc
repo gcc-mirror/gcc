@@ -407,6 +407,24 @@ equiv_oracle::register_equiv (basic_block bb, equiv_chain *equiv_1,
   return b;
 }
 
+// Create an equivalency set containing only SSA in its definition block.
+// This is done the first time SSA is registered in an equivalency and blocks
+// any DOM searches past the definition.
+
+void
+equiv_oracle::register_initial_def (tree ssa)
+{
+  if (SSA_NAME_IS_DEFAULT_DEF (ssa))
+    return;
+  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (ssa));
+  gcc_checking_assert (bb && !find_equiv_dom (ssa, bb));
+
+  unsigned v = SSA_NAME_VERSION (ssa);
+  bitmap_set_bit (m_equiv_set, v);
+  bitmap equiv_set = BITMAP_ALLOC (&m_bitmaps);
+  bitmap_set_bit (equiv_set, v);
+  add_equiv_to_block (bb, equiv_set);
+}
 
 // Register an equivalence between SSA1 and SSA2 in block BB.
 // The equivalence oracle maintains a vector of equivalencies indexed by basic
@@ -425,6 +443,14 @@ equiv_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
 
   unsigned v1 = SSA_NAME_VERSION (ssa1);
   unsigned v2 = SSA_NAME_VERSION (ssa2);
+
+  // If this is the first time an ssa_name has an equivalency registered
+  // create a self-equivalency record in the def block.
+  if (!bitmap_bit_p (m_equiv_set, v1))
+    register_initial_def (ssa1);
+  if (!bitmap_bit_p (m_equiv_set, v2))
+    register_initial_def (ssa2);
+
   equiv_chain *equiv_1 = find_equiv_dom (ssa1, bb);
   equiv_chain *equiv_2 = find_equiv_dom (ssa2, bb);
 
@@ -456,6 +482,15 @@ equiv_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
   if (!equiv_set)
     return;
 
+  add_equiv_to_block (bb, equiv_set);
+}
+
+// Add an equivalency record in block BB containing bitmap EQUIV_SET.
+// Note the internal caller is responible for allocating EQUIV_SET properly.
+
+void
+equiv_oracle::add_equiv_to_block (basic_block bb, bitmap equiv_set)
+{
   equiv_chain *ptr;
 
   // Check if this is the first time a block has an equivalence added.
@@ -786,6 +821,28 @@ relation_oracle::register_stmt (gimple *stmt, relation_kind k, tree op1,
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
 
+  // If an equivalence is being added between a PHI and one of its arguments
+  // make sure that that argument is not defined in the same block.
+  // This can happen along back edges and the equivalence will not be
+  // applicable as it would require a use before def.
+  if (k == EQ_EXPR && is_a<gphi *> (stmt))
+    {
+      tree phi_def = gimple_phi_result (stmt);
+      gcc_checking_assert (phi_def == op1 || phi_def == op2);
+      tree arg = op2;
+      if (phi_def == op2)
+	arg = op1;
+      if (gimple_bb (stmt) == gimple_bb (SSA_NAME_DEF_STMT (arg)))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "  Not registered due to ");
+	      print_generic_expr (dump_file, arg, TDF_SLIM);
+	      fprintf (dump_file, " being defined in the same block.\n");
+	    }
+	  return;
+	}
+    }
   register_relation (gimple_bb (stmt), k, op1, op2);
 }
 
