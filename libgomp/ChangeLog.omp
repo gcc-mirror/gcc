@@ -1,3 +1,15 @@
+2021-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/atomic-19.c: Drop c effective target.
+	Use /* */ comments instead of //.
+	* testsuite/libgomp.c-c++-common/atomic-20.c: Likewise.
+	* testsuite/libgomp.c-c++-common/atomic-21.c: Likewise.
+	* testsuite/libgomp.c++/atomic-16.C: New test.
+	* testsuite/libgomp.c++/atomic-17.C: New test.
+
 2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

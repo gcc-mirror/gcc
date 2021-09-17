@@ -18524,7 +18524,7 @@ restart:
 		  c_parser_consume_token (parser);
 		  goto restart;
 		}
-	      if (structured_block)
+	      if (structured_block && !compare)
 		{
 		  opcode = NOP_EXPR;
 		  expr = default_function_array_read_conversion (eloc, expr);

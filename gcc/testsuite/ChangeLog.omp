@@ -1,3 +1,29 @@
+2021-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/atomic-18.c: Expect same diagnostics in C++ as in
+	C.
+	* c-c++-common/gomp/atomic-25.c: Drop c effective target.
+	* c-c++-common/gomp/atomic-26.c: Likewise.
+	* c-c++-common/gomp/atomic-27.c: Likewise.
+	* c-c++-common/gomp/atomic-28.c: Likewise.
+	* c-c++-common/gomp/atomic-29.c: Likewise.
+	* c-c++-common/gomp/atomic-30.c: Likewise.  Adjust expected diagnostics
+	for C++ when it differs from C.
+	(foo): Change return type from double to void.
+	* g++.dg/gomp/atomic-5.C: Adjust expected diagnostics wording.
+	* g++.dg/gomp/atomic-20.C: New test.
+
+2021-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/unexpected-end.f90: Add OpenACC 'host_data'
+	testing.
+
 2021-09-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

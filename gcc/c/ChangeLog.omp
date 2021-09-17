@@ -1,3 +1,11 @@
+2021-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_atomic): Reject atomic swap if capture
+	is true.
+
 2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
