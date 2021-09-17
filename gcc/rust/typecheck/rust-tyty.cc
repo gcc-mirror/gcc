@@ -2352,14 +2352,14 @@ TypeCheckCallExpr::visit (ADTType &type)
     BaseType *field_tyty = field->get_field_type ();
 
     BaseType *arg = Resolver::TypeCheckExpr::Resolve (p, false);
-    if (arg == nullptr)
+    if (arg->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (p->get_locus (), "failed to resolve argument type");
 	return false;
       }
 
     auto res = field_tyty->unify (arg);
-    if (res == nullptr)
+    if (res->get_kind () == TyTy::TypeKind::ERROR)
       {
 	return false;
       }
@@ -2407,7 +2407,7 @@ TypeCheckCallExpr::visit (FnType &type)
   size_t i = 0;
   call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
     auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
-    if (argument_expr_tyty == nullptr)
+    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
 		       "failed to resolve type for argument expr in CallExpr");
@@ -2421,7 +2421,7 @@ TypeCheckCallExpr::visit (FnType &type)
       {
 	auto fnparam = type.param_at (i);
 	resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
-	if (resolved_argument_type == nullptr)
+	if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    rust_error_at (param->get_locus (),
 			   "Type Resolution failure on parameter");
@@ -2472,7 +2472,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
   call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
     auto fnparam = type.param_at (i);
     auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
-    if (argument_expr_tyty == nullptr)
+    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
 		       "failed to resolve type for argument expr in CallExpr");
@@ -2480,7 +2480,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
       }
 
     auto resolved_argument_type = fnparam->unify (argument_expr_tyty);
-    if (resolved_argument_type == nullptr)
+    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
 		       "Type Resolution failure on parameter");
@@ -2523,7 +2523,7 @@ TypeCheckMethodCallExpr::visit (FnType &type)
   call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
     auto fnparam = type.param_at (i);
     auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
-    if (argument_expr_tyty == nullptr)
+    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
 		       "failed to resolve type for argument expr in CallExpr");
@@ -2531,7 +2531,7 @@ TypeCheckMethodCallExpr::visit (FnType &type)
       }
 
     auto resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
-    if (resolved_argument_type == nullptr)
+    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
 		       "Type Resolution failure on parameter");
