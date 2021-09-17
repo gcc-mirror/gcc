@@ -66,7 +66,8 @@ public:
     type->accept_vis (resolver);
 
     if (resolver.translated == nullptr)
-      return new TyTy::ErrorType (type->get_mappings ().get_hirid ());
+      resolver.translated
+	= new TyTy::ErrorType (type->get_mappings ().get_hirid ());
 
     resolver.context->insert_type (type->get_mappings (), resolver.translated);
     return resolver.translated;
