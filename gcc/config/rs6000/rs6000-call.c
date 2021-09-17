@@ -13072,8 +13072,10 @@ rs6000_gimple_fold_new_mma_builtin (gimple_stmt_iterator *gsi,
 
   /* Each call that can be gimple-expanded has an associated built-in
      function that it will expand into.  If this one doesn't, we have
-     already expanded it!  */
-  if (rs6000_builtin_info_x[fncode].assoc_bif == RS6000_BIF_NONE)
+     already expanded it!  Exceptions: lxvp and stxvp.  */
+  if (rs6000_builtin_info_x[fncode].assoc_bif == RS6000_BIF_NONE
+      && fncode != RS6000_BIF_LXVP
+      && fncode != RS6000_BIF_STXVP)
     return false;
 
   bifdata *bd = &rs6000_builtin_info_x[fncode];
@@ -13146,6 +13148,41 @@ rs6000_gimple_fold_new_mma_builtin (gimple_stmt_iterator *gsi,
 	  gimple_seq_add_stmt (&new_seq, new_call);
 	  gimplify_assign (dst, dstssa, &new_seq);
 	}
+      pop_gimplify_context (NULL);
+      gsi_replace_with_seq (gsi, new_seq, true);
+      return true;
+    }
+
+  /* TODO: Do some factoring on these two chunks.  */
+  if (fncode == RS6000_BIF_LXVP)
+    {
+      push_gimplify_context (true);
+      tree offset = gimple_call_arg (stmt, 0);
+      tree ptr = gimple_call_arg (stmt, 1);
+      tree lhs = gimple_call_lhs (stmt);
+      if (TREE_TYPE (TREE_TYPE (ptr)) != vector_pair_type_node)
+	ptr = build1 (VIEW_CONVERT_EXPR,
+		      build_pointer_type (vector_pair_type_node), ptr);
+      tree mem = build_simple_mem_ref (build2 (POINTER_PLUS_EXPR,
+					       TREE_TYPE (ptr), ptr, offset));
+      gimplify_assign (lhs, mem, &new_seq);
+      pop_gimplify_context (NULL);
+      gsi_replace_with_seq (gsi, new_seq, true);
+      return true;
+    }
+
+  if (fncode == RS6000_BIF_STXVP)
+    {
+      push_gimplify_context (true);
+      tree src = gimple_call_arg (stmt, 0);
+      tree offset = gimple_call_arg (stmt, 1);
+      tree ptr = gimple_call_arg (stmt, 2);
+      if (TREE_TYPE (TREE_TYPE (ptr)) != vector_pair_type_node)
+	ptr = build1 (VIEW_CONVERT_EXPR,
+		      build_pointer_type (vector_pair_type_node), ptr);
+      tree mem = build_simple_mem_ref (build2 (POINTER_PLUS_EXPR,
+					       TREE_TYPE (ptr), ptr, offset));
+      gimplify_assign (mem, src, &new_seq);
       pop_gimplify_context (NULL);
       gsi_replace_with_seq (gsi, new_seq, true);
       return true;

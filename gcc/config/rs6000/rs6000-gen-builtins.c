@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
      mma      Needs special handling for MMA instructions
      quad     MMA instruction using a register quad as an input operand
      pair     MMA instruction using a register pair as an input operand
+     mmaint   MMA instruction expanding to internal call at GIMPLE time
      no32bit  Not valid for TARGET_32BIT
      32bit    Requires different handling for TARGET_32BIT
      cpu      This is a "cpu_is" or "cpu_supports" builtin
@@ -369,6 +370,7 @@ struct attrinfo
   bool ismma;
   bool isquad;
   bool ispair;
+  bool ismmaint;
   bool isno32bit;
   bool is32bit;
   bool iscpu;
@@ -1363,6 +1365,8 @@ parse_bif_attrs (attrinfo *attrptr)
 	  attrptr->isquad = 1;
 	else if (!strcmp (attrname, "pair"))
 	  attrptr->ispair = 1;
+	else if (!strcmp (attrname, "mmaint"))
+	  attrptr->ismmaint = 1;
 	else if (!strcmp (attrname, "no32bit"))
 	  attrptr->isno32bit = 1;
 	else if (!strcmp (attrname, "32bit"))
@@ -1409,15 +1413,15 @@ parse_bif_attrs (attrinfo *attrptr)
   (*diag) ("attribute set: init = %d, set = %d, extract = %d, nosoft = %d, "
 	   "ldvec = %d, stvec = %d, reve = %d, pred = %d, htm = %d, "
 	   "htmspr = %d, htmcr = %d, mma = %d, quad = %d, pair = %d, "
-	   "no32bit = %d, 32bit = %d, cpu = %d, ldstmask = %d, lxvrse = %d, "
-	   "lxvrze = %d, endian = %d.\n",
+	   "mmaint = %d, no32bit = %d, 32bit = %d, cpu = %d, ldstmask = %d, "
+	   "lxvrse = %d, lxvrze = %d, endian = %d.\n",
 	   attrptr->isinit, attrptr->isset, attrptr->isextract,
 	   attrptr->isnosoft, attrptr->isldvec, attrptr->isstvec,
 	   attrptr->isreve, attrptr->ispred, attrptr->ishtm, attrptr->ishtmspr,
 	   attrptr->ishtmcr, attrptr->ismma, attrptr->isquad, attrptr->ispair,
-	   attrptr->isno32bit, attrptr->is32bit, attrptr->iscpu,
-	   attrptr->isldstmask, attrptr->islxvrse, attrptr->islxvrze,
-	   attrptr->isendian);
+	   attrptr->ismmaint, attrptr->isno32bit, attrptr->is32bit,
+	   attrptr->iscpu, attrptr->isldstmask, attrptr->islxvrse,
+	   attrptr->islxvrze, attrptr->isendian);
 #endif
 
   return PC_OK;
@@ -2223,13 +2227,14 @@ write_decls (void)
   fprintf (header_file, "#define bif_mma_bit\t\t(0x00000800)\n");
   fprintf (header_file, "#define bif_quad_bit\t\t(0x00001000)\n");
   fprintf (header_file, "#define bif_pair_bit\t\t(0x00002000)\n");
-  fprintf (header_file, "#define bif_no32bit_bit\t\t(0x00004000)\n");
-  fprintf (header_file, "#define bif_32bit_bit\t\t(0x00008000)\n");
-  fprintf (header_file, "#define bif_cpu_bit\t\t(0x00010000)\n");
-  fprintf (header_file, "#define bif_ldstmask_bit\t(0x00020000)\n");
-  fprintf (header_file, "#define bif_lxvrse_bit\t\t(0x00040000)\n");
-  fprintf (header_file, "#define bif_lxvrze_bit\t\t(0x00080000)\n");
-  fprintf (header_file, "#define bif_endian_bit\t\t(0x00100000)\n");
+  fprintf (header_file, "#define bif_mmaint_bit\t\t(0x00004000)\n");
+  fprintf (header_file, "#define bif_no32bit_bit\t\t(0x00008000)\n");
+  fprintf (header_file, "#define bif_32bit_bit\t\t(0x00010000)\n");
+  fprintf (header_file, "#define bif_cpu_bit\t\t(0x00020000)\n");
+  fprintf (header_file, "#define bif_ldstmask_bit\t(0x00040000)\n");
+  fprintf (header_file, "#define bif_lxvrse_bit\t\t(0x00080000)\n");
+  fprintf (header_file, "#define bif_lxvrze_bit\t\t(0x00100000)\n");
+  fprintf (header_file, "#define bif_endian_bit\t\t(0x00200000)\n");
   fprintf (header_file, "\n");
   fprintf (header_file,
 	   "#define bif_is_init(x)\t\t((x).bifattrs & bif_init_bit)\n");
@@ -2259,6 +2264,8 @@ write_decls (void)
 	   "#define bif_is_quad(x)\t\t((x).bifattrs & bif_quad_bit)\n");
   fprintf (header_file,
 	   "#define bif_is_pair(x)\t\t((x).bifattrs & bif_pair_bit)\n");
+  fprintf (header_file,
+	   "#define bif_is_mmaint(x)\t\t((x).bifattrs & bif_mmaint_bit)\n");
   fprintf (header_file,
 	   "#define bif_is_no32bit(x)\t((x).bifattrs & bif_no32bit_bit)\n");
   fprintf (header_file,
@@ -2491,6 +2498,8 @@ write_bif_static_init (void)
 	fprintf (init_file, " | bif_quad_bit");
       if (bifp->attrs.ispair)
 	fprintf (init_file, " | bif_pair_bit");
+      if (bifp->attrs.ismmaint)
+	fprintf (init_file, " | bif_mmaint_bit");
       if (bifp->attrs.isno32bit)
 	fprintf (init_file, " | bif_no32bit_bit");
       if (bifp->attrs.is32bit)
@@ -2537,10 +2546,9 @@ write_bif_static_init (void)
 		: (bifp->kind == FNK_PURE ? "= pure"
 		   : (bifp->kind == FNK_FPMATH ? "= fp, const"
 		      : ""))));
-      bool no_icode = !strcmp (bifp->patname, "nothing");
       fprintf (init_file, "      /* assoc_bif */\tRS6000_BIF_%s%s\n",
-	       bifp->attrs.ismma && no_icode ? bifp->idname : "NONE",
-	       bifp->attrs.ismma && no_icode ? "_INTERNAL" : "");
+	       bifp->attrs.ismmaint ? bifp->idname : "NONE",
+	       bifp->attrs.ismmaint ? "_INTERNAL" : "");
       fprintf (init_file, "    },\n");
     }
   fprintf (init_file, "  };\n\n");
