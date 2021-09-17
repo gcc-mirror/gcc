@@ -736,7 +736,6 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 
   /* Keep variables larger than max-stack-var-size off stack.  */
   if (!(sym->ns->proc_name && sym->ns->proc_name->attr.recursive)
-      && !(sym->ns->proc_name && sym->ns->proc_name->attr.is_main_program)
       && !sym->attr.automatic
       && sym->attr.save != SAVE_EXPLICIT
       && sym->attr.save != SAVE_IMPLICIT
@@ -750,7 +749,9 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	  || sym->attr.allocatable)
       && !DECL_ARTIFICIAL (decl))
     {
-      if (flag_max_stack_var_size > 0)
+      if (flag_max_stack_var_size > 0
+	  && !(sym->ns->proc_name
+	       && sym->ns->proc_name->attr.is_main_program))
 	gfc_warning (OPT_Wsurprising,
 		     "Array %qs at %L is larger than limit set by "
 		     "%<-fmax-stack-var-size=%>, moved from stack to static "
