@@ -2312,6 +2312,13 @@ DynamicObjectType::clone () const
 				get_combined_refs ());
 }
 
+std::string
+DynamicObjectType::get_name () const
+{
+  std::string bounds = "[" + raw_bounds_as_string () + "]";
+  return "dyn " + bounds;
+}
+
 bool
 DynamicObjectType::is_equal (const BaseType &other) const
 {
@@ -2322,6 +2329,35 @@ DynamicObjectType::is_equal (const BaseType &other) const
     return false;
 
   return bounds_compatible (other, Location (), false);
+}
+
+const std::vector<const Resolver::TraitItemReference *>
+DynamicObjectType::get_object_items () const
+{
+  std::vector<const Resolver::TraitItemReference *> items;
+  for (auto &bound : get_specified_bounds ())
+    {
+      const Resolver::TraitReference *trait = bound.get ();
+      for (auto &item : trait->get_trait_items ())
+	{
+	  if (item.get_trait_item_type ()
+		== Resolver::TraitItemReference::TraitItemType::FN
+	      && item.is_object_safe ())
+	    items.push_back (&item);
+	}
+
+      for (auto &super_trait : trait->get_super_traits ())
+	{
+	  for (auto &item : super_trait->get_trait_items ())
+	    {
+	      if (item.get_trait_item_type ()
+		    == Resolver::TraitItemReference::TraitItemType::FN
+		  && item.is_object_safe ())
+		items.push_back (&item);
+	    }
+	}
+    }
+  return items;
 }
 
 // rust-tyty-call.h

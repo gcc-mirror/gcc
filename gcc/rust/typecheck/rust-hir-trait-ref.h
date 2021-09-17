@@ -177,6 +177,7 @@ private:
 };
 
 // this wraps up the HIR::Trait so we can do analysis on it
+
 class TraitReference
 {
 public:

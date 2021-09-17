@@ -200,6 +200,19 @@ protected:
 
   bool compile_locals_for_block (Resolver::Rib &rib, Bfunction *fndecl,
 				 std::vector<Bvariable *> &locals);
+
+  Bexpression *coercion_site (Bexpression *compiled_ref, TyTy::BaseType *actual,
+			      TyTy::BaseType *expected, Location locus);
+
+  Bexpression *coerce_to_dyn_object (Bexpression *compiled_ref,
+				     TyTy::BaseType *actual,
+				     TyTy::BaseType *expected,
+				     TyTy::DynamicObjectType *ty,
+				     Location locus);
+
+  Bexpression *
+  compute_address_for_trait_item (const Resolver::TraitItemReference *ref,
+				  TyTy::BaseType *receiver);
 };
 
 } // namespace Compile

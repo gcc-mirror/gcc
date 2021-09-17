@@ -58,6 +58,7 @@ public:
     if (!ctx->get_tyctx ()->lookup_type (stmt.get_mappings ().get_hirid (),
 					 &ty))
       {
+	// FIXME this should be an assertion instead
 	rust_fatal_error (stmt.get_locus (),
 			  "failed to lookup variable declaration type");
 	return;
@@ -66,14 +67,25 @@ public:
     Bvariable *var = nullptr;
     if (!ctx->lookup_var_decl (stmt.get_mappings ().get_hirid (), &var))
       {
+	// FIXME this should be an assertion instead and use error mark node
 	rust_fatal_error (stmt.get_locus (),
 			  "failed to lookup compiled variable declaration");
 	return;
       }
 
     Bexpression *init = CompileExpr::Compile (stmt.get_init_expr (), ctx);
+    // FIXME use error_mark_node, check that CompileExpr returns error_mark_node
+    // on failure and make this an assertion
     if (init == nullptr)
       return;
+
+    TyTy::BaseType *actual = nullptr;
+    bool ok = ctx->get_tyctx ()->lookup_type (
+      stmt.get_init_expr ()->get_mappings ().get_hirid (), &actual);
+    rust_assert (ok);
+
+    TyTy::BaseType *expected = ty;
+    init = coercion_site (init, actual, expected, stmt.get_locus ());
 
     auto fnctx = ctx->peek_fn ();
     if (ty->is_unit ())

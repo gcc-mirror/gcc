@@ -26,8 +26,10 @@
 #include "rust-abi.h"
 
 namespace Rust {
+
 namespace Resolver {
 class TraitReference;
+class TraitItemReference;
 class AssociatedImplTrait;
 } // namespace Resolver
 
@@ -186,9 +188,12 @@ public:
   std::string raw_bounds_as_string () const
   {
     std::string buf;
-    for (auto &b : specified_bounds)
-      buf += b.as_string () + " + ";
-
+    for (size_t i = 0; i < specified_bounds.size (); i++)
+      {
+	const TypeBoundPredicate &b = specified_bounds.at (i);
+	bool has_next = (i + 1) < specified_bounds.size ();
+	buf += b.get_name () + (has_next ? " + " : "");
+      }
     return buf;
   }
 
@@ -1857,7 +1862,11 @@ public:
 
   BaseType *clone () const final override;
 
-  std::string get_name () const override final { return as_string (); }
+  std::string get_name () const override final;
+
+  // this returns a flat list of items including super trait bounds
+  const std::vector<const Resolver::TraitItemReference *>
+  get_object_items () const;
 };
 
 } // namespace TyTy

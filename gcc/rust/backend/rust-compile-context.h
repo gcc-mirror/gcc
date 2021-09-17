@@ -343,9 +343,10 @@ private:
 class TyTyResolveCompile : public TyTy::TyVisitor
 {
 public:
-  static ::Btype *compile (Context *ctx, TyTy::BaseType *ty)
+  static ::Btype *compile (Context *ctx, TyTy::BaseType *ty,
+			   bool trait_object_mode = false)
   {
-    TyTyResolveCompile compiler (ctx);
+    TyTyResolveCompile compiler (ctx, trait_object_mode);
     ty->accept_vis (compiler);
     return compiler.translated;
   }
@@ -378,7 +379,8 @@ public:
     if (!type.get_return_type ()->is_unit ())
       {
 	auto hir_type = type.get_return_type ();
-	auto ret = TyTyResolveCompile::compile (ctx, hir_type);
+	auto ret
+	  = TyTyResolveCompile::compile (ctx, hir_type, trait_object_mode);
 	results.push_back (Backend::Btyped_identifier (
 	  "_", ret,
 	  ctx->get_mappings ()->lookup_location (hir_type->get_ref ())));
@@ -388,7 +390,7 @@ public:
       {
 	auto param_tyty = param_pair.second;
 	auto compiled_param_type
-	  = TyTyResolveCompile::compile (ctx, param_tyty);
+	  = TyTyResolveCompile::compile (ctx, param_tyty, trait_object_mode);
 
 	auto compiled_param = Backend::Btyped_identifier (
 	  param_pair.first->as_string (), compiled_param_type,
@@ -429,7 +431,6 @@ public:
     if (ctx->lookup_compiled_types (type.get_ty_ref (), &translated, &type))
       return;
 
-    // create implicit struct
     std::vector<Backend::Btyped_identifier> fields;
     for (size_t i = 0; i < type.num_fields (); i++)
       {
@@ -570,7 +571,7 @@ public:
   void visit (TyTy::ReferenceType &type) override
   {
     Btype *base_compiled_type
-      = TyTyResolveCompile::compile (ctx, type.get_base ());
+      = TyTyResolveCompile::compile (ctx, type.get_base (), trait_object_mode);
     if (type.is_mutable ())
       {
 	translated = ctx->get_backend ()->reference_type (base_compiled_type);
@@ -585,7 +586,7 @@ public:
   void visit (TyTy::PointerType &type) override
   {
     Btype *base_compiled_type
-      = TyTyResolveCompile::compile (ctx, type.get_base ());
+      = TyTyResolveCompile::compile (ctx, type.get_base (), trait_object_mode);
     if (type.is_mutable ())
       {
 	translated = ctx->get_backend ()->pointer_type (base_compiled_type);
@@ -610,12 +611,63 @@ public:
     translated = ctx->get_backend ()->unit_type ();
   }
 
-  void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
+  void visit (TyTy::DynamicObjectType &type) override
+  {
+    if (trait_object_mode)
+      {
+	translated = ctx->get_backend ()->integer_type (
+	  true, ctx->get_backend ()->get_pointer_size ());
+	return;
+      }
+
+    if (ctx->lookup_compiled_types (type.get_ty_ref (), &translated, &type))
+      return;
+
+    // create implicit struct
+    auto items = type.get_object_items ();
+    std::vector<Backend::Btyped_identifier> fields;
+
+    Btype *uint = ctx->get_backend ()->integer_type (
+      true, ctx->get_backend ()->get_pointer_size ());
+    Btype *uintptr_ty = ctx->get_backend ()->pointer_type (uint);
+
+    Backend::Btyped_identifier f ("__receiver_trait_obj_ptr", uintptr_ty,
+				  ctx->get_mappings ()->lookup_location (
+				    type.get_ty_ref ()));
+    fields.push_back (std::move (f));
+
+    for (size_t i = 0; i < items.size (); i++)
+      {
+	// mrustc seems to make a vtable consisting of uintptr's
+	Btype *uint = ctx->get_backend ()->integer_type (
+	  true, ctx->get_backend ()->get_pointer_size ());
+	Btype *uintptr_ty = ctx->get_backend ()->pointer_type (uint);
+
+	Backend::Btyped_identifier f ("__" + std::to_string (i), uintptr_ty,
+				      ctx->get_mappings ()->lookup_location (
+					type.get_ty_ref ()));
+	fields.push_back (std::move (f));
+      }
+
+    Btype *type_record = ctx->get_backend ()->struct_type (fields);
+    Btype *named_struct
+      = ctx->get_backend ()->named_type (type.get_name (), type_record,
+					 ctx->get_mappings ()->lookup_location (
+					   type.get_ty_ref ()));
+
+    ctx->push_type (named_struct);
+    translated = named_struct;
+
+    ctx->insert_compiled_type (type.get_ty_ref (), named_struct, &type);
+  }
 
 private:
-  TyTyResolveCompile (Context *ctx) : ctx (ctx), translated (nullptr) {}
+  TyTyResolveCompile (Context *ctx, bool trait_object_mode)
+    : ctx (ctx), trait_object_mode (trait_object_mode), translated (nullptr)
+  {}
 
   Context *ctx;
+  bool trait_object_mode;
   ::Btype *translated;
 };
 
