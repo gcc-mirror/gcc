@@ -1,6 +1,6 @@
 /* Verify pattern initialization for integer and pointer type automatic variables.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=pattern -fdump-rtl-expand" } */
+/* { dg-options "-ftrivial-auto-var-init=pattern -fdump-rtl-expand -march=x86-64 -mtune=generic -msse" } */
 
 #ifndef __cplusplus
 # define bool _Bool
@@ -31,6 +31,8 @@ void foo()
 
 /* { dg-final { scan-rtl-dump-times "0xfffffffffffffffe" 2 "expand" } } */
 /* { dg-final { scan-rtl-dump-times "0xfffffffffffffefe" 1 "expand" } } */
-/* { dg-final { scan-rtl-dump-times "0xfffffffffefefefe" 2 "expand" } } */
-/* { dg-final { scan-rtl-dump-times "0xfefefefefefefefe" 3 "expand" } } */
+/* { dg-final { scan-rtl-dump-times "0xfffffffffefefefe" 2 "expand" { target lp64 } } } */
+/* { dg-final { scan-rtl-dump-times "0xfefefefefefefefe" 3 "expand" { target lp64 } } } */
+/* { dg-final { scan-rtl-dump-times "0xfffffffffefefefe" 4 "expand" { target ia32 } } } */
+/* { dg-final { scan-rtl-dump-times "0xfefefefefefefefe" 1 "expand" { target ia32 } } } */
 

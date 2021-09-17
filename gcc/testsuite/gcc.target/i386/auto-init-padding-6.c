@@ -1,7 +1,7 @@
 /* Verify pattern initialization for structure type automatic variables with
    tail padding.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=pattern -fdump-rtl-expand" } */
+/* { dg-options "-ftrivial-auto-var-init=pattern -fdump-rtl-expand -march=x86-64 -mtune=generic -msse" } */
 
 struct test_trailing_hole {
         char *one;
