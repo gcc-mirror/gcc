@@ -56,6 +56,9 @@ constexpr bool construct_using_allocator()
 
   std::tuple<X1a, X1a, X1b, X1b> t1a1b(std::allocator_arg, a, 1, i, 1, i);
 
+  const int c = 0;
+  std::tuple<int, int> tii(std::allocator_arg, a, c, c);
+
   return true;
 }
 static_assert( construct_using_allocator() );
