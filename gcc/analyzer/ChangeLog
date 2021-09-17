@@ -1,3 +1,8 @@
+2021-09-16  Maxim Blinov  <maxim.blinov@embecosm.com>
+
+	PR bootstrap/102242
+	* engine.cc (INCLUDE_UNIQUE_PTR): Define.
+
 2021-09-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/102225
