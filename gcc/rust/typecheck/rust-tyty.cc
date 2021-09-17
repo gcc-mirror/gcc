@@ -2358,7 +2358,7 @@ TypeCheckCallExpr::visit (ADTType &type)
 	return false;
       }
 
-    auto res = field_tyty->unify (arg);
+    auto res = field_tyty->coerce (arg);
     if (res->get_kind () == TyTy::TypeKind::ERROR)
       {
 	return false;
@@ -2420,7 +2420,7 @@ TypeCheckCallExpr::visit (FnType &type)
     if (i < type.num_params ())
       {
 	auto fnparam = type.param_at (i);
-	resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
+	resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
 	if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    rust_error_at (param->get_locus (),
@@ -2479,7 +2479,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
 	return false;
       }
 
-    auto resolved_argument_type = fnparam->unify (argument_expr_tyty);
+    auto resolved_argument_type = fnparam->coerce (argument_expr_tyty);
     if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
@@ -2530,7 +2530,7 @@ TypeCheckMethodCallExpr::visit (FnType &type)
 	return false;
       }
 
-    auto resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
+    auto resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
     if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),

@@ -1326,6 +1326,37 @@ public:
     : BaseCoercionRules (base), base (base)
   {}
 
+  BaseType *coerce (BaseType *other) override final
+  {
+    if (!base->can_resolve ())
+      return BaseCoercionRules::coerce (other);
+
+    BaseType *lookup = base->resolve ();
+    return lookup->unify (other);
+  }
+
+  void visit (PlaceholderType &type) override
+  {
+    if (base->get_symbol ().compare (type.get_symbol ()) != 0)
+      {
+	BaseCoercionRules::visit (type);
+	return;
+      }
+
+    resolved = type.clone ();
+  }
+
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseCoercionRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+  }
+
 private:
   BaseType *get_base () override { return base; }
 
