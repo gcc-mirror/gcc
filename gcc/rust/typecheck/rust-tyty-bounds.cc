@@ -88,7 +88,24 @@ TypeBoundPredicate::get () const
 std::string
 TypeBoundPredicate::get_name () const
 {
-  return get ()->get_name ();
+  auto mappings = Analysis::Mappings::get ();
+  auto trait = get ();
+  auto nodeid = trait->get_mappings ().get_nodeid ();
+
+  const Resolver::CanonicalPath *p = nullptr;
+  if (mappings->lookup_canonical_path (mappings->get_current_crate (), nodeid,
+				       &p))
+    return p->get ();
+
+  return trait->get_name ();
+}
+
+bool
+TypeBoundPredicate::is_object_safe (bool emit_error, Location locus) const
+{
+  const Resolver::TraitReference *trait = get ();
+  rust_assert (trait != nullptr);
+  return trait->is_object_safe (emit_error, locus);
 }
 
 } // namespace TyTy

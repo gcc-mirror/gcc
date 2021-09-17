@@ -137,6 +137,7 @@ public:
   void visit (TyTy::ParamType &) override { gcc_unreachable (); }
   void visit (TyTy::StrType &) override { gcc_unreachable (); }
   void visit (TyTy::NeverType &) override { gcc_unreachable (); }
+  void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
 
 private:
   SubstMapper (HirId ref, HIR::GenericArgs *generics, Location locus)
@@ -230,6 +231,7 @@ public:
   void visit (TyTy::CharType &) override { gcc_unreachable (); }
   void visit (TyTy::StrType &) override { gcc_unreachable (); }
   void visit (TyTy::NeverType &) override { gcc_unreachable (); }
+  void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
 
 private:
   SubstMapperInternal (HirId ref, TyTy::SubstitutionArgumentMappings &mappings)
@@ -288,6 +290,7 @@ public:
   void visit (TyTy::NeverType &) override { gcc_unreachable (); }
   void visit (TyTy::PlaceholderType &) override { gcc_unreachable (); }
   void visit (TyTy::ProjectionType &) override { gcc_unreachable (); }
+  void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
 
 private:
   SubstMapperFromExisting (TyTy::BaseType *concrete, TyTy::BaseType *receiver)
@@ -339,6 +342,7 @@ public:
   void visit (TyTy::NeverType &) override {}
   void visit (TyTy::PlaceholderType &) override {}
   void visit (TyTy::ProjectionType &) override {}
+  void visit (TyTy::DynamicObjectType &) override {}
 
 private:
   GetUsedSubstArgs () : args (TyTy::SubstitutionArgumentMappings::error ()) {}

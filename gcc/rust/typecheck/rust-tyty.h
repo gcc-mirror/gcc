@@ -26,8 +26,10 @@
 #include "rust-abi.h"
 
 namespace Rust {
+
 namespace Resolver {
 class TraitReference;
+class TraitItemReference;
 class AssociatedImplTrait;
 } // namespace Resolver
 
@@ -57,6 +59,7 @@ enum TypeKind
   NEVER,
   PLACEHOLDER,
   PROJECTION,
+  DYNAMIC,
   // there are more to add...
   ERROR
 };
@@ -128,6 +131,9 @@ public:
       case TypeKind::PROJECTION:
 	return "Projection";
 
+      case TypeKind::DYNAMIC:
+	return "Dynamic";
+
       case TypeKind::ERROR:
 	return "ERROR";
       }
@@ -149,6 +155,10 @@ public:
   Location get_locus () const { return locus; }
 
   std::string get_name () const;
+
+  // check that this predicate is object-safe see:
+  // https://doc.rust-lang.org/reference/items/traits.html#object-safety
+  bool is_object_safe (bool emit_error, Location locus) const;
 
 private:
   DefId reference;
@@ -173,13 +183,23 @@ public:
     return specified_bounds;
   }
 
-  std::string bounds_as_string () const
+  size_t num_specified_bounds () const { return specified_bounds.size (); }
+
+  std::string raw_bounds_as_string () const
   {
     std::string buf;
-    for (auto &b : specified_bounds)
-      buf += b.as_string () + ", ";
+    for (size_t i = 0; i < specified_bounds.size (); i++)
+      {
+	const TypeBoundPredicate &b = specified_bounds.at (i);
+	bool has_next = (i + 1) < specified_bounds.size ();
+	buf += b.get_name () + (has_next ? " + " : "");
+      }
+    return buf;
+  }
 
-    return "bounds:[" + buf + "]";
+  std::string bounds_as_string () const
+  {
+    return "bounds:[" + raw_bounds_as_string () + "]";
   }
 
 protected:
@@ -253,7 +273,8 @@ public:
 
   bool satisfies_bound (const TypeBoundPredicate &predicate) const;
 
-  bool bounds_compatible (const BaseType &other, Location locus) const;
+  bool bounds_compatible (const BaseType &other, Location locus,
+			  bool emit_error) const;
 
   void inherit_bounds (const BaseType &other);
 
@@ -608,7 +629,7 @@ public:
       }
     else
       {
-	if (!param->bounds_compatible (*type, locus))
+	if (!param->bounds_compatible (*type, locus, true))
 	  return;
       }
 
@@ -1811,6 +1832,41 @@ private:
   BaseType *base;
   Resolver::TraitReference *trait;
   DefId item;
+};
+
+class DynamicObjectType : public BaseType
+{
+public:
+  DynamicObjectType (HirId ref,
+		     std::vector<TypeBoundPredicate> specified_bounds,
+		     std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::DYNAMIC, specified_bounds, refs)
+  {}
+
+  DynamicObjectType (HirId ref, HirId ty_ref,
+		     std::vector<TypeBoundPredicate> specified_bounds,
+		     std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::DYNAMIC, specified_bounds, refs)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  BaseType *unify (BaseType *other) override;
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
+  BaseType *cast (BaseType *other) override;
+  bool is_equal (const BaseType &other) const override;
+
+  BaseType *clone () const final override;
+
+  std::string get_name () const override final;
+
+  // this returns a flat list of items including super trait bounds
+  const std::vector<const Resolver::TraitItemReference *>
+  get_object_items () const;
 };
 
 } // namespace TyTy

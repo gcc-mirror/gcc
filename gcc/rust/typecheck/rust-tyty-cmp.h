@@ -375,6 +375,22 @@ public:
     ok = true;
   }
 
+  virtual void visit (const DynamicObjectType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
+
 protected:
   BaseCmp (const BaseType *base, bool emit_errors)
     : mappings (Analysis::Mappings::get ()),
@@ -610,6 +626,19 @@ public:
   }
 
   void visit (const ParamType &type) override
+  {
+    bool is_valid
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
+    if (is_valid)
+      {
+	ok = true;
+	return;
+      }
+
+    BaseCmp::visit (type);
+  }
+
+  void visit (const DynamicObjectType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
@@ -1229,6 +1258,33 @@ private:
   const BaseType *get_base () const override { return base; }
 
   const PlaceholderType *base;
+};
+
+class DynamicCmp : public BaseCmp
+{
+  using Rust::TyTy::BaseCmp::visit;
+
+public:
+  DynamicCmp (const DynamicObjectType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
+
+  void visit (const DynamicObjectType &type) override
+  {
+    if (base->num_specified_bounds () != type.num_specified_bounds ())
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    ok = base->bounds_compatible (type, ref_locus, false);
+  }
+
+private:
+  const BaseType *get_base () const override { return base; }
+
+  const DynamicObjectType *base;
 };
 
 } // namespace TyTy

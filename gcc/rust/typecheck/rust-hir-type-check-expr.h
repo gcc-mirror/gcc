@@ -227,10 +227,13 @@ public:
     // which is simple. There will need to be adjustments to ensure we can turn
     // the receiver into borrowed references etc
 
-    bool reciever_is_generic = root->get_kind () == TyTy::TypeKind::PARAM;
+    bool receiver_is_type_param = root->get_kind () == TyTy::TypeKind::PARAM;
+    bool receiver_is_dyn = root->get_kind () == TyTy::TypeKind::DYNAMIC;
+
+    bool receiver_is_generic = receiver_is_type_param || receiver_is_dyn;
     bool probe_bounds = true;
-    bool probe_impls = !reciever_is_generic;
-    bool ignore_mandatory_trait_items = !reciever_is_generic;
+    bool probe_impls = !receiver_is_generic;
+    bool ignore_mandatory_trait_items = !receiver_is_generic;
 
     auto candidates
       = PathProbeType::Probe (root, expr.get_method_name ().get_segment (),
@@ -345,7 +348,7 @@ public:
 	  }
       }
 
-    if (!reciever_is_generic)
+    if (!receiver_is_type_param)
       {
 	// apply any remaining generic arguments
 	if (expr.get_method_name ().has_generic_args ())

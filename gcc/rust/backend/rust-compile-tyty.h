@@ -237,6 +237,8 @@ public:
     translated = backend->unit_type ();
   }
 
+  void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
+
 private:
   TyTyCompile (::Backend *backend)
     : backend (backend), translated (nullptr),

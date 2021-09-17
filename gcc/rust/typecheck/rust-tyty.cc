@@ -63,7 +63,8 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 }
 
 bool
-BaseType::bounds_compatible (const BaseType &other, Location locus) const
+BaseType::bounds_compatible (const BaseType &other, Location locus,
+			     bool emit_error) const
 {
   std::vector<std::reference_wrapper<const TypeBoundPredicate>>
     unsatisfied_bounds;
@@ -89,8 +90,9 @@ BaseType::bounds_compatible (const BaseType &other, Location locus) const
 	    missing_preds += ", ";
 	}
 
-      rust_error_at (r, "bounds not satisfied for %s %<%s%> is not satisfied",
-		     other.get_name ().c_str (), missing_preds.c_str ());
+      if (emit_error)
+	rust_error_at (r, "bounds not satisfied for %s %<%s%> is not satisfied",
+		       other.get_name ().c_str (), missing_preds.c_str ());
     }
 
   return unsatisfied_bounds.size () == 0;
@@ -2257,6 +2259,107 @@ ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
   return projection;
 }
 
+void
+DynamicObjectType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+DynamicObjectType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
+std::string
+DynamicObjectType::as_string () const
+{
+  return "dyn [" + raw_bounds_as_string () + "]";
+}
+
+BaseType *
+DynamicObjectType::unify (BaseType *other)
+{
+  DynamicRules r (this);
+  return r.unify (other);
+}
+
+bool
+DynamicObjectType::can_eq (const BaseType *other, bool emit_errors) const
+{
+  DynamicCmp r (this, emit_errors);
+  return r.can_eq (other);
+}
+
+BaseType *
+DynamicObjectType::coerce (BaseType *other)
+{
+  DynamicCoercionRules r (this);
+  return r.coerce (other);
+}
+
+BaseType *
+DynamicObjectType::cast (BaseType *other)
+{
+  DynamicCastRules r (this);
+  return r.cast (other);
+}
+
+BaseType *
+DynamicObjectType::clone () const
+{
+  return new DynamicObjectType (get_ref (), get_ty_ref (), specified_bounds,
+				get_combined_refs ());
+}
+
+std::string
+DynamicObjectType::get_name () const
+{
+  std::string bounds = "[" + raw_bounds_as_string () + "]";
+  return "dyn " + bounds;
+}
+
+bool
+DynamicObjectType::is_equal (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    return false;
+
+  if (num_specified_bounds () != other.num_specified_bounds ())
+    return false;
+
+  return bounds_compatible (other, Location (), false);
+}
+
+const std::vector<const Resolver::TraitItemReference *>
+DynamicObjectType::get_object_items () const
+{
+  std::vector<const Resolver::TraitItemReference *> items;
+  for (auto &bound : get_specified_bounds ())
+    {
+      const Resolver::TraitReference *trait = bound.get ();
+      for (auto &item : trait->get_trait_items ())
+	{
+	  if (item.get_trait_item_type ()
+		== Resolver::TraitItemReference::TraitItemType::FN
+	      && item.is_object_safe ())
+	    items.push_back (&item);
+	}
+
+      for (auto &super_trait : trait->get_super_traits ())
+	{
+	  for (auto &item : super_trait->get_trait_items ())
+	    {
+	      if (item.get_trait_item_type ()
+		    == Resolver::TraitItemReference::TraitItemType::FN
+		  && item.is_object_safe ())
+		items.push_back (&item);
+	    }
+	}
+    }
+  return items;
+}
+
 // rust-tyty-call.h
 
 void
@@ -2285,14 +2388,14 @@ TypeCheckCallExpr::visit (ADTType &type)
     BaseType *field_tyty = field->get_field_type ();
 
     BaseType *arg = Resolver::TypeCheckExpr::Resolve (p, false);
-    if (arg == nullptr)
+    if (arg->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (p->get_locus (), "failed to resolve argument type");
 	return false;
       }
 
-    auto res = field_tyty->unify (arg);
-    if (res == nullptr)
+    auto res = field_tyty->coerce (arg);
+    if (res->get_kind () == TyTy::TypeKind::ERROR)
       {
 	return false;
       }
@@ -2340,7 +2443,7 @@ TypeCheckCallExpr::visit (FnType &type)
   size_t i = 0;
   call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
     auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
-    if (argument_expr_tyty == nullptr)
+    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
 		       "failed to resolve type for argument expr in CallExpr");
@@ -2353,8 +2456,8 @@ TypeCheckCallExpr::visit (FnType &type)
     if (i < type.num_params ())
       {
 	auto fnparam = type.param_at (i);
-	resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
-	if (resolved_argument_type == nullptr)
+	resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
+	if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    rust_error_at (param->get_locus (),
 			   "Type Resolution failure on parameter");
@@ -2405,15 +2508,15 @@ TypeCheckCallExpr::visit (FnPtr &type)
   call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
     auto fnparam = type.param_at (i);
     auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
-    if (argument_expr_tyty == nullptr)
+    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
 		       "failed to resolve type for argument expr in CallExpr");
 	return false;
       }
 
-    auto resolved_argument_type = fnparam->unify (argument_expr_tyty);
-    if (resolved_argument_type == nullptr)
+    auto resolved_argument_type = fnparam->coerce (argument_expr_tyty);
+    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
 		       "Type Resolution failure on parameter");
@@ -2456,15 +2559,15 @@ TypeCheckMethodCallExpr::visit (FnType &type)
   call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
     auto fnparam = type.param_at (i);
     auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
-    if (argument_expr_tyty == nullptr)
+    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
 		       "failed to resolve type for argument expr in CallExpr");
 	return false;
       }
 
-    auto resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
-    if (resolved_argument_type == nullptr)
+    auto resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
+    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (param->get_locus (),
 		       "Type Resolution failure on parameter");

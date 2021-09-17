@@ -48,6 +48,7 @@ public:
   virtual void visit (NeverType &type) = 0;
   virtual void visit (PlaceholderType &type) = 0;
   virtual void visit (ProjectionType &type) = 0;
+  virtual void visit (DynamicObjectType &type) = 0;
 };
 
 class TyConstVisitor
@@ -74,6 +75,7 @@ public:
   virtual void visit (const NeverType &type) = 0;
   virtual void visit (const PlaceholderType &type) = 0;
   virtual void visit (const ProjectionType &type) = 0;
+  virtual void visit (const DynamicObjectType &type) = 0;
 };
 
 } // namespace TyTy

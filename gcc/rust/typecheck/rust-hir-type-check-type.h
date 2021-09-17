@@ -66,7 +66,8 @@ public:
     type->accept_vis (resolver);
 
     if (resolver.translated == nullptr)
-      return new TyTy::ErrorType (type->get_mappings ().get_hirid ());
+      resolver.translated
+	= new TyTy::ErrorType (type->get_mappings ().get_hirid ());
 
     resolver.context->insert_type (type->get_mappings (), resolver.translated);
     return resolver.translated;
@@ -145,6 +146,8 @@ public:
     translated = new TyTy::InferType (type.get_mappings ().get_hirid (),
 				      TyTy::InferType::InferTypeKind::GENERAL);
   }
+
+  void visit (HIR::TraitObjectTypeOneBound &type) override;
 
 private:
   TypeCheckType (std::vector<TyTy::SubstitutionParamMapping> *subst_mappings)

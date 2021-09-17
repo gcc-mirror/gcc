@@ -39,24 +39,25 @@ public:
     return checker.resolved;
   }
 
-  void visit (InferType &type) override { gcc_unreachable (); }
-  void visit (TupleType &type) override { gcc_unreachable (); }
-  void visit (ArrayType &type) override { gcc_unreachable (); }
-  void visit (BoolType &type) override { gcc_unreachable (); }
-  void visit (IntType &type) override { gcc_unreachable (); }
-  void visit (UintType &type) override { gcc_unreachable (); }
-  void visit (FloatType &type) override { gcc_unreachable (); }
-  void visit (USizeType &type) override { gcc_unreachable (); }
-  void visit (ISizeType &type) override { gcc_unreachable (); }
-  void visit (ErrorType &type) override { gcc_unreachable (); }
-  void visit (CharType &type) override { gcc_unreachable (); }
-  void visit (ReferenceType &type) override { gcc_unreachable (); }
-  void visit (PointerType &type) override { gcc_unreachable (); }
+  void visit (InferType &) override { gcc_unreachable (); }
+  void visit (TupleType &) override { gcc_unreachable (); }
+  void visit (ArrayType &) override { gcc_unreachable (); }
+  void visit (BoolType &) override { gcc_unreachable (); }
+  void visit (IntType &) override { gcc_unreachable (); }
+  void visit (UintType &) override { gcc_unreachable (); }
+  void visit (FloatType &) override { gcc_unreachable (); }
+  void visit (USizeType &) override { gcc_unreachable (); }
+  void visit (ISizeType &) override { gcc_unreachable (); }
+  void visit (ErrorType &) override { gcc_unreachable (); }
+  void visit (CharType &) override { gcc_unreachable (); }
+  void visit (ReferenceType &) override { gcc_unreachable (); }
+  void visit (PointerType &) override { gcc_unreachable (); }
   void visit (ParamType &) override { gcc_unreachable (); }
   void visit (StrType &) override { gcc_unreachable (); }
   void visit (NeverType &) override { gcc_unreachable (); }
   void visit (PlaceholderType &) override { gcc_unreachable (); }
   void visit (ProjectionType &) override { gcc_unreachable (); }
+  void visit (DynamicObjectType &) override { gcc_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;
@@ -89,25 +90,26 @@ public:
     return checker.resolved;
   }
 
-  void visit (InferType &type) override { gcc_unreachable (); }
-  void visit (TupleType &type) override { gcc_unreachable (); }
-  void visit (ArrayType &type) override { gcc_unreachable (); }
-  void visit (BoolType &type) override { gcc_unreachable (); }
-  void visit (IntType &type) override { gcc_unreachable (); }
-  void visit (UintType &type) override { gcc_unreachable (); }
-  void visit (FloatType &type) override { gcc_unreachable (); }
-  void visit (USizeType &type) override { gcc_unreachable (); }
-  void visit (ISizeType &type) override { gcc_unreachable (); }
-  void visit (ErrorType &type) override { gcc_unreachable (); }
-  void visit (ADTType &type) override { gcc_unreachable (); };
-  void visit (CharType &type) override { gcc_unreachable (); }
-  void visit (ReferenceType &type) override { gcc_unreachable (); }
-  void visit (PointerType &type) override { gcc_unreachable (); }
+  void visit (InferType &) override { gcc_unreachable (); }
+  void visit (TupleType &) override { gcc_unreachable (); }
+  void visit (ArrayType &) override { gcc_unreachable (); }
+  void visit (BoolType &) override { gcc_unreachable (); }
+  void visit (IntType &) override { gcc_unreachable (); }
+  void visit (UintType &) override { gcc_unreachable (); }
+  void visit (FloatType &) override { gcc_unreachable (); }
+  void visit (USizeType &) override { gcc_unreachable (); }
+  void visit (ISizeType &) override { gcc_unreachable (); }
+  void visit (ErrorType &) override { gcc_unreachable (); }
+  void visit (ADTType &) override { gcc_unreachable (); };
+  void visit (CharType &) override { gcc_unreachable (); }
+  void visit (ReferenceType &) override { gcc_unreachable (); }
+  void visit (PointerType &) override { gcc_unreachable (); }
   void visit (ParamType &) override { gcc_unreachable (); }
   void visit (StrType &) override { gcc_unreachable (); }
   void visit (NeverType &) override { gcc_unreachable (); }
   void visit (PlaceholderType &) override { gcc_unreachable (); }
   void visit (ProjectionType &) override { gcc_unreachable (); }
+  void visit (DynamicObjectType &) override { gcc_unreachable (); }
 
   // FIXME
   void visit (FnPtr &type) override { gcc_unreachable (); }

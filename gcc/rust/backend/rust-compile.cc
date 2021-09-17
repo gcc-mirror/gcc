@@ -108,6 +108,9 @@ CompileExpr::visit (HIR::CallExpr &expr)
 void
 CompileExpr::visit (HIR::MethodCallExpr &expr)
 {
+  // method receiver
+  Bexpression *self = CompileExpr::Compile (expr.get_receiver ().get (), ctx);
+
   // lookup the resolved name
   NodeId resolved_node_id = UNKNOWN_NODEID;
   if (!ctx->get_resolver ()->lookup_resolved_name (
@@ -134,6 +137,110 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   rust_assert (lookup_fntype->get_kind () == TyTy::TypeKind::FNDEF);
   TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup_fntype);
 
+  TyTy::BaseType *receiver = nullptr;
+  ok = ctx->get_tyctx ()->lookup_receiver (expr.get_mappings ().get_hirid (),
+					   &receiver);
+  rust_assert (ok);
+
+  bool is_dyn_dispatch
+    = receiver->get_root ()->get_kind () == TyTy::TypeKind::DYNAMIC;
+  bool is_generic_receiver = receiver->get_kind () == TyTy::TypeKind::PARAM;
+  if (is_generic_receiver)
+    {
+      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (receiver);
+      receiver = p->resolve ();
+    }
+
+  if (is_dyn_dispatch)
+    {
+      TyTy::DynamicObjectType *dyn
+	= static_cast<TyTy::DynamicObjectType *> (receiver->get_root ());
+
+      size_t offs = 0;
+      const Resolver::TraitItemReference *ref = nullptr;
+      for (auto &item : dyn->get_object_items ())
+	{
+	  auto t = item->get_tyty ();
+	  rust_assert (t->get_kind () == TyTy::TypeKind::FNDEF);
+	  auto ft = static_cast<TyTy::FnType *> (t);
+
+	  if (ft->get_id () == fntype->get_id ())
+	    {
+	      ref = item;
+	      break;
+	    }
+	  offs++;
+	}
+
+      if (ref == nullptr)
+	{
+	  translated = ctx->get_backend ()->error_expression ();
+	  return;
+	}
+
+      // get any indirection sorted out
+      auto receiver_ref = self;
+      if (receiver->get_kind () == TyTy::TypeKind::REF)
+	{
+	  TyTy::ReferenceType *r
+	    = static_cast<TyTy::ReferenceType *> (receiver);
+	  auto indirect_ty = r->get_base ();
+	  Btype *indrect_compiled_tyty
+	    = TyTyResolveCompile::compile (ctx, indirect_ty);
+
+	  Bexpression *indirect
+	    = ctx->get_backend ()->indirect_expression (indrect_compiled_tyty,
+							receiver_ref, true,
+							expr.get_locus ());
+	  receiver_ref = indirect;
+	}
+
+      // access the offs + 1 for the fnptr and offs=0 for the reciever obj
+      Bexpression *self_argument
+	= ctx->get_backend ()->struct_field_expression (receiver_ref, 0,
+							expr.get_locus ());
+
+      // access the vtable for the fn
+      Bexpression *fn_vtable_access
+	= ctx->get_backend ()->struct_field_expression (receiver_ref, offs + 1,
+							expr.get_locus ());
+
+      // cast it to the correct fntype
+      Btype *expected_fntype = TyTyResolveCompile::compile (ctx, fntype, true);
+      Bexpression *fn_convert_expr
+	= ctx->get_backend ()->convert_expression (expected_fntype,
+						   fn_vtable_access,
+						   expr.get_locus ());
+
+      fncontext fnctx = ctx->peek_fn ();
+      Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+      bool is_address_taken = false;
+      Bstatement *ret_var_stmt = nullptr;
+
+      Bvariable *fn_convert_expr_tmp = ctx->get_backend ()->temporary_variable (
+	fnctx.fndecl, enclosing_scope, expected_fntype, fn_convert_expr,
+	is_address_taken, expr.get_locus (), &ret_var_stmt);
+      ctx->add_statement (ret_var_stmt);
+
+      std::vector<Bexpression *> args;
+      args.push_back (self_argument);
+      expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
+	Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
+	rust_assert (compiled_expr != nullptr);
+	args.push_back (compiled_expr);
+	return true;
+      });
+
+      Bexpression *fn_expr
+	= ctx->get_backend ()->var_expression (fn_convert_expr_tmp,
+					       expr.get_locus ());
+
+      translated
+	= ctx->get_backend ()->call_expression (fnctx.fndecl, fn_expr, args,
+						nullptr, expr.get_locus ());
+      return;
+    }
+
   // lookup compiled functions
   Bfunction *fn = nullptr;
   if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
@@ -156,17 +263,6 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	  bool ok = ctx->get_tyctx ()->lookup_trait_reference (
 	    trait->get_mappings ().get_defid (), &trait_ref);
 	  rust_assert (ok);
-
-	  TyTy::BaseType *receiver = nullptr;
-	  ok = ctx->get_tyctx ()->lookup_receiver (
-	    expr.get_mappings ().get_hirid (), &receiver);
-	  rust_assert (ok);
-
-	  if (receiver->get_kind () == TyTy::TypeKind::PARAM)
-	    {
-	      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (receiver);
-	      receiver = p->resolve ();
-	    }
 
 	  // the type resolver can only resolve type bounds to their trait
 	  // item so its up to us to figure out if this path should resolve
@@ -289,10 +385,6 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
     = ctx->get_backend ()->function_code_expression (fn, expr.get_locus ());
 
   std::vector<Bexpression *> args;
-
-  // method receiver
-  Bexpression *self = CompileExpr::Compile (expr.get_receiver ().get (), ctx);
-  rust_assert (self != nullptr);
 
   // lookup the autoderef mappings
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
@@ -579,5 +671,138 @@ HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, Bfunction *fndecl,
 
   return true;
 }
+
+Bexpression *
+HIRCompileBase::coercion_site (Bexpression *compiled_ref,
+			       TyTy::BaseType *actual, TyTy::BaseType *expected,
+			       Location locus)
+{
+  auto root_actual_kind = actual->get_root ()->get_kind ();
+  auto root_expected_kind = expected->get_root ()->get_kind ();
+
+  if (root_expected_kind == TyTy::TypeKind::DYNAMIC
+      && root_actual_kind != TyTy::TypeKind::DYNAMIC)
+    {
+      TyTy::DynamicObjectType *dyn
+	= static_cast<TyTy::DynamicObjectType *> (expected->get_root ());
+      return coerce_to_dyn_object (compiled_ref, actual, expected, dyn, locus);
+    }
+
+  return compiled_ref;
+}
+
+Bexpression *
+HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
+				      TyTy::BaseType *actual,
+				      TyTy::BaseType *expected,
+				      TyTy::DynamicObjectType *ty,
+				      Location locus)
+{
+  Btype *dynamic_object = TyTyResolveCompile::compile (ctx, ty);
+
+  //' this assumes ordering and current the structure is
+  // __trait_object_ptr
+  // [list of function ptrs]
+
+  std::vector<Bexpression *> vals;
+  vals.push_back (compiled_ref);
+  for (auto &item : ty->get_object_items ())
+    {
+      // compute the address of each method item
+      auto address = compute_address_for_trait_item (item, actual->get_root ());
+      vals.push_back (address);
+    }
+
+  Bexpression *constructed_trait_object
+    = ctx->get_backend ()->constructor_expression (dynamic_object, vals, -1,
+
+						   locus);
+
+  fncontext fnctx = ctx->peek_fn ();
+  Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+  bool is_address_taken = false;
+  Bstatement *ret_var_stmt = nullptr;
+
+  Bvariable *dyn_tmp = ctx->get_backend ()->temporary_variable (
+    fnctx.fndecl, enclosing_scope, dynamic_object, constructed_trait_object,
+    is_address_taken, locus, &ret_var_stmt);
+  ctx->add_statement (ret_var_stmt);
+
+  // FIXME this needs to be more generic to apply any covariance
+
+  auto e = expected;
+  std::vector<Resolver::Adjustment> adjustments;
+  while (e->get_kind () == TyTy::TypeKind::REF)
+    {
+      auto r = static_cast<TyTy::ReferenceType *> (e);
+      e = r->get_base ();
+
+      if (r->is_mutable ())
+	adjustments.push_back (
+	  Resolver::Adjustment (Resolver::Adjustment::AdjustmentType::MUT_REF,
+				e));
+      else
+	adjustments.push_back (
+	  Resolver::Adjustment (Resolver::Adjustment::AdjustmentType::IMM_REF,
+				e));
+    }
+
+  auto resulting_dyn_object_ref
+    = ctx->get_backend ()->var_expression (dyn_tmp, locus);
+  for (auto it = adjustments.rbegin (); it != adjustments.rend (); it++)
+    {
+      bool ok
+	= it->get_type () == Resolver::Adjustment::AdjustmentType::IMM_REF
+	  || it->get_type () == Resolver::Adjustment::AdjustmentType::MUT_REF;
+      rust_assert (ok);
+
+      resulting_dyn_object_ref
+	= ctx->get_backend ()->address_expression (resulting_dyn_object_ref,
+						   locus);
+    }
+  return resulting_dyn_object_ref;
+}
+
+Bexpression *
+HIRCompileBase::compute_address_for_trait_item (
+  const Resolver::TraitItemReference *trait_item_ref, TyTy::BaseType *receiver)
+{
+  TyTy::BaseType *item_type = trait_item_ref->get_tyty ();
+  rust_assert (item_type->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (item_type);
+
+  auto root = receiver->get_root ();
+  HIR::PathIdentSegment segment_name (trait_item_ref->get_identifier ());
+  std::vector<Resolver::PathProbeCandidate> candidates
+    = Resolver::PathProbeType::Probe (root, segment_name, true, false, true);
+
+  // FIXME for default trait item resolution
+  //
+  // if (candidates.size () == 0)
+  //   {
+  //     rust_assert (trait_item_ref->is_optional ()); // has definition
+  //
+  //     CompileTraitItem::Compile (self_type,
+  //       			 trait_item_ref->get_hir_trait_item (), ctx,
+  //       			 fntype);
+  //     if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
+  //       {
+  //         return ctx->get_backend ()->error_expression ();
+  //       }
+  //   }
+
+  rust_assert (!candidates.empty ());
+  rust_assert (candidates.size () == 1);
+
+  Resolver::PathProbeCandidate *candidate = &candidates.at (0);
+  rust_assert (candidate->is_impl_candidate ());
+
+  HIR::ImplItem *impl_item = candidate->item.impl.impl_item;
+
+  return CompileInherentImplItem::Compile (receiver->get_root (), impl_item,
+					   ctx, true, fntype, true,
+					   Location () /* FIXME */);
+}
+
 } // namespace Compile
 } // namespace Rust
