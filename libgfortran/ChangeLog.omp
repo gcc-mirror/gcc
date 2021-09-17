@@ -1,3 +1,13 @@
+2021-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	* ISO_Fortran_binding.h: Only include float.h if the C compiler
+	doesn't have predefined __LDBL_* and __DBL_* macros. Handle
+	LDBL_MANT_DIG == 53 for FreeBSD.
+
 2021-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
