@@ -10783,10 +10783,19 @@ c_finish_goto_label (location_t loc, tree label)
    the GOTO.  */
 
 tree
-c_finish_goto_ptr (location_t loc, tree expr)
+c_finish_goto_ptr (location_t loc, c_expr val)
 {
+  tree expr = val.value;
   tree t;
   pedwarn (loc, OPT_Wpedantic, "ISO C forbids %<goto *expr;%>");
+  if (expr != error_mark_node
+      && !POINTER_TYPE_P (TREE_TYPE (expr))
+      && !null_pointer_constant_p (expr))
+    {
+      error_at (val.get_location (),
+		"computed goto must be pointer type");
+      expr = build_zero_cst (ptr_type_node);
+    }
   expr = c_fully_fold (expr, false, NULL);
   expr = convert (ptr_type_node, expr);
   t = build1 (GOTO_EXPR, void_type_node, expr);

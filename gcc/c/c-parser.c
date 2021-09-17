@@ -6141,7 +6141,7 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 	      c_parser_consume_token (parser);
 	      val = c_parser_expression (parser);
 	      val = convert_lvalue_to_rvalue (loc, val, false, true);
-	      stmt = c_finish_goto_ptr (loc, val.value);
+	      stmt = c_finish_goto_ptr (loc, val);
 	    }
 	  else
 	    c_parser_error (parser, "expected identifier or %<*%>");
