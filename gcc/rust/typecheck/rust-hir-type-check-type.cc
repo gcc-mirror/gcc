@@ -231,10 +231,13 @@ TypeCheckType::visit (HIR::TraitObjectTypeOneBound &type)
   TyTy::TypeBoundPredicate predicate (trait->get_mappings ().get_defid (),
 				      trait_bound.get_locus ());
 
-  specified_bounds.push_back (std::move (predicate));
-
-  translated = new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (),
-					    std::move (specified_bounds));
+  if (predicate.is_object_safe (true, type.get_locus ()))
+    {
+      specified_bounds.push_back (std::move (predicate));
+      translated
+	= new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (),
+				       std::move (specified_bounds));
+    }
 }
 
 } // namespace Resolver

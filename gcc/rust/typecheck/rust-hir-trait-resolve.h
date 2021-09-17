@@ -153,6 +153,7 @@ private:
       TyTy::TypeBoundPredicate (trait_reference->get_mappings ().get_defid (),
 				trait_reference->get_locus ()));
 
+    std::vector<const TraitReference *> super_traits;
     if (trait_reference->has_type_param_bounds ())
       {
 	for (auto &bound : trait_reference->get_type_param_bounds ())
@@ -170,6 +171,7 @@ private:
 		  trait->get_mappings ().get_defid (), bound->get_locus ());
 
 		specified_bounds.push_back (std::move (predicate));
+		super_traits.push_back (predicate.get ());
 	      }
 	  }
       }
@@ -189,7 +191,8 @@ private:
 	item_refs.push_back (std::move (trait_item_ref));
       }
 
-    TraitReference trait_object (trait_reference, item_refs);
+    TraitReference trait_object (trait_reference, item_refs,
+				 std::move (super_traits));
     context->insert_trait_reference (
       trait_reference->get_mappings ().get_defid (), std::move (trait_object));
 

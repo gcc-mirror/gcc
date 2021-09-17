@@ -154,6 +154,10 @@ public:
 
   std::string get_name () const;
 
+  // check that this predicate is object-safe see:
+  // https://doc.rust-lang.org/reference/items/traits.html#object-safety
+  bool is_object_safe (bool emit_error, Location locus) const;
+
 private:
   DefId reference;
   Location locus;

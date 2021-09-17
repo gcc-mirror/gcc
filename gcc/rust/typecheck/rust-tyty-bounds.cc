@@ -91,5 +91,13 @@ TypeBoundPredicate::get_name () const
   return get ()->get_name ();
 }
 
+bool
+TypeBoundPredicate::is_object_safe (bool emit_error, Location locus) const
+{
+  const Resolver::TraitReference *trait = get ();
+  rust_assert (trait != nullptr);
+  return trait->is_object_safe (emit_error, locus);
+}
+
 } // namespace TyTy
 } // namespace Rust

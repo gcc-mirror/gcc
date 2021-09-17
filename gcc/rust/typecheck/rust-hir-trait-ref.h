@@ -143,6 +143,8 @@ public:
 
   void associated_type_reset ();
 
+  bool is_object_safe () const;
+
 private:
   TyTy::ErrorType *get_error () const
   {
@@ -179,8 +181,10 @@ class TraitReference
 {
 public:
   TraitReference (const HIR::Trait *hir_trait_ref,
-		  std::vector<TraitItemReference> item_refs)
-    : hir_trait_ref (hir_trait_ref), item_refs (item_refs)
+		  std::vector<TraitItemReference> item_refs,
+		  std::vector<const TraitReference *> super_traits)
+    : hir_trait_ref (hir_trait_ref), item_refs (item_refs),
+      super_traits (super_traits)
   {}
 
   TraitReference (TraitReference const &other)
@@ -198,7 +202,7 @@ public:
   TraitReference (TraitReference &&other) = default;
   TraitReference &operator= (TraitReference &&other) = default;
 
-  static TraitReference error () { return TraitReference (nullptr, {}); }
+  static TraitReference error () { return TraitReference (nullptr, {}, {}); }
 
   bool is_error () const { return hir_trait_ref == nullptr; }
 
@@ -323,9 +327,48 @@ public:
     return this_id == other_id;
   }
 
+  const std::vector<const TraitReference *> get_super_traits () const
+  {
+    return super_traits;
+  }
+
+  bool is_object_safe (bool emit_error, Location locus) const
+  {
+    // https: // doc.rust-lang.org/reference/items/traits.html#object-safety
+    std::vector<const TraitReference *> non_object_super_traits;
+    for (auto &item : super_traits)
+      {
+	if (!item->is_object_safe (false, Location ()))
+	  non_object_super_traits.push_back (item);
+      }
+
+    std::vector<const Resolver::TraitItemReference *> non_object_safe_items;
+    for (auto &item : get_trait_items ())
+      {
+	if (!item.is_object_safe ())
+	  non_object_safe_items.push_back (&item);
+      }
+
+    bool is_safe
+      = non_object_super_traits.empty () && non_object_safe_items.empty ();
+    if (emit_error && !is_safe)
+      {
+	RichLocation r (locus);
+	for (auto &item : non_object_super_traits)
+	  r.add_range (item->get_locus ());
+	for (auto &item : non_object_safe_items)
+	  r.add_range (item->get_locus ());
+
+	rust_error_at (r, "trait bound is not object safe");
+      }
+
+    return is_safe;
+  }
+
 private:
   const HIR::Trait *hir_trait_ref;
   std::vector<TraitItemReference> item_refs;
+  std::vector<const TraitReference *> super_traits;
 };
 
 class AssociatedImplTrait

@@ -193,6 +193,36 @@ TraitItemReference::get_parent_trait_mappings () const
   return trait->get_mappings ();
 }
 
+bool
+TraitItemReference::is_object_safe () const
+{
+  // https://doc.rust-lang.org/reference/items/traits.html#object-safety
+  switch (get_trait_item_type ())
+    {
+      case TraitItemReference::TraitItemType::FN: {
+	// lets be boring and just check that this is indeed a method will do
+	// for now
+	const HIR::TraitItem *item = get_hir_trait_item ();
+	const HIR::TraitItemFunc *fn
+	  = static_cast<const HIR::TraitItemFunc *> (item);
+	return fn->get_decl ().is_method ();
+      }
+
+      // constants are not available via dyn dispatch and so is not object safe
+    case TraitItemReference::TraitItemType::CONST:
+      return false;
+
+      // types are object safe since they are not available via dyn dispatch
+    case TraitItemReference::TraitItemType::TYPE:
+      return true;
+
+      // this is just an error so lets just fail it
+    case TraitItemReference::TraitItemType::ERROR:
+      return false;
+    }
+  return false;
+}
+
 TyTy::BaseType *
 AssociatedImplTrait::get_projected_type (
   const TraitItemReference *trait_item_ref, TyTy::BaseType *receiver, HirId ref,

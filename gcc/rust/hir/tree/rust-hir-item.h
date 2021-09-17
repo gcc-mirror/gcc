@@ -2264,6 +2264,8 @@ public:
 
   TraitFunctionDecl &get_decl () { return decl; }
 
+  const TraitFunctionDecl &get_decl () const { return decl; }
+
   bool has_block_defined () const { return block_expr != nullptr; }
 
   std::unique_ptr<BlockExpr> &get_block_expr ()
