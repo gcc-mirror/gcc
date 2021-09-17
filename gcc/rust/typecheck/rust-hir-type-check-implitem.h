@@ -424,9 +424,6 @@ public:
 	  trait_reference.get_name ().c_str ());
       }
 
-    rust_debug_loc (type.get_locus (), "type-alias within impl block");
-    lookup->debug ();
-
     // its actually a projection, since we need a way to actually bind the
     // generic substitutions to the type itself
     TyTy::ProjectionType *projection = new TyTy::ProjectionType (
