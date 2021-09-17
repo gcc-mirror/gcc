@@ -3222,6 +3222,16 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       return 0;
     }
 
+  /* We cannot safely duplicate volatile references in any case.  */
+
+  if ((added_sets_2 && volatile_refs_p (PATTERN (i2)))
+      || (added_sets_1 && volatile_refs_p (PATTERN (i1)))
+      || (added_sets_0 && volatile_refs_p (PATTERN (i0))))
+    {
+      undo_all ();
+      return 0;
+    }
+
   /* Count how many auto_inc expressions there were in the original insns;
      we need to have the same number in the resulting patterns.  */
 
