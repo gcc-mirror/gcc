@@ -117,7 +117,7 @@ void test_min (void)
   {
     /* Exercise a pointer pointing to a known object plus constant offset
        with one pointing to an unknown object.  */
-    char a6[6];               // { dg-message ": destination object 'a6'" "note" }
+    char a6[6];               // { dg-message "(at offset 1 into )?destination object 'a6'" "note" }
     char *p1 = ptr;
     char *p2 = a6 + 1;
     char *q = MIN (p1, p2);

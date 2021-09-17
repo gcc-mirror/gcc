@@ -1087,6 +1087,34 @@ access_ref::inform_access (access_mode mode) const
       else if (gimple_nop_p (stmt))
 	/* Handle DECL_PARM below.  */
 	ref = SSA_NAME_VAR (ref);
+      else if (is_gimple_assign (stmt)
+	       && (gimple_assign_rhs_code (stmt) == MIN_EXPR
+		   || gimple_assign_rhs_code (stmt) == MAX_EXPR))
+	{
+	  /* MIN or MAX_EXPR here implies a reference to a known object
+	     and either an unknown or distinct one (the latter being
+	     the result of an invalid relational expression).  Determine
+	     the identity of the former and point to it in the note.
+	     TODO: Consider merging with PHI handling.  */
+	  access_ref arg_ref[2];
+	  tree arg = gimple_assign_rhs1 (stmt);
+	  compute_objsize (arg, /* ostype = */ 1 , &arg_ref[0]);
+	  arg = gimple_assign_rhs2 (stmt);
+	  compute_objsize (arg, /* ostype = */ 1 , &arg_ref[1]);
+
+	  /* Use the argument that references a known object with more
+	     space remaining.  */
+	  const bool idx
+	    = (!arg_ref[0].ref || !arg_ref[0].base0
+	       || (arg_ref[0].base0 && arg_ref[1].base0
+		   && (arg_ref[0].size_remaining ()
+		       < arg_ref[1].size_remaining ())));
+
+	  arg_ref[idx].offrng[0] = offrng[0];
+	  arg_ref[idx].offrng[1] = offrng[1];
+	  arg_ref[idx].inform_access (mode);
+	  return;
+	}
     }
 
   if (DECL_P (ref))
@@ -1463,15 +1491,18 @@ pointer_query::dump (FILE *dump_file, bool contents /* = false */)
 }
 
 /* A helper of compute_objsize_r() to determine the size from an assignment
-   statement STMT with the RHS of either MIN_EXPR or MAX_EXPR.  */
+   statement STMT with the RHS of either MIN_EXPR or MAX_EXPR.  On success
+   set PREF->REF to the operand with more or less space remaining,
+   respectively, if both refer to the same (sub)object, or to PTR if they
+   might not, and return true.  Otherwise, if the identity of neither
+   operand can be determined, return false.  */
 
 static bool
-handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
+handle_min_max_size (tree ptr, int ostype, access_ref *pref,
 		     ssa_name_limit_t &snlim, pointer_query *qry)
 {
-  tree_code code = gimple_assign_rhs_code (stmt);
-
-  tree ptr = gimple_assign_rhs1 (stmt);
+  const gimple *stmt = SSA_NAME_DEF_STMT (ptr);
+  const tree_code code = gimple_assign_rhs_code (stmt);
 
   /* In a valid MAX_/MIN_EXPR both operands must refer to the same array.
      Determine the size/offset of each and use the one with more or less
@@ -1479,7 +1510,8 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
      determined from the other instead, adjusted up or down as appropriate
      for the expression.  */
   access_ref aref[2] = { *pref, *pref };
-  if (!compute_objsize_r (ptr, ostype, &aref[0], snlim, qry))
+  tree arg1 = gimple_assign_rhs1 (stmt);
+  if (!compute_objsize_r (arg1, ostype, &aref[0], snlim, qry))
     {
       aref[0].base0 = false;
       aref[0].offrng[0] = aref[0].offrng[1] = 0;
@@ -1487,8 +1519,8 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
       aref[0].set_max_size_range ();
     }
 
-  ptr = gimple_assign_rhs2 (stmt);
-  if (!compute_objsize_r (ptr, ostype, &aref[1], snlim, qry))
+  tree arg2 = gimple_assign_rhs2 (stmt);
+  if (!compute_objsize_r (arg2, ostype, &aref[1], snlim, qry))
     {
       aref[1].base0 = false;
       aref[1].offrng[0] = aref[1].offrng[1] = 0;
@@ -1517,6 +1549,13 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
 	    *pref = aref[i1];
 	  else
 	    *pref = aref[i0];
+
+	  if (aref[i0].ref != aref[i1].ref)
+	    /* If the operands don't refer to the same (sub)object set
+	       PREF->REF to the SSA_NAME from which STMT was obtained
+	       so that both can be identified in a diagnostic.  */
+	    pref->ref = ptr;
+
 	  return true;
 	}
 
@@ -1537,6 +1576,10 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
       pref->offrng[0] = aref[i0].offrng[0];
       pref->offrng[1] = aref[i0].offrng[1];
     }
+
+  /* Replace PTR->REF with the SSA_NAME to indicate the expression
+     might not refer to the same (sub)object.  */
+  pref->ref = ptr;
   return true;
 }
 
@@ -2009,8 +2052,9 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 
       if (code == MAX_EXPR || code == MIN_EXPR)
 	{
-	  if (!handle_min_max_size (stmt, ostype, pref, snlim, qry))
+	  if (!handle_min_max_size (ptr, ostype, pref, snlim, qry))
 	    return false;
+
 	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
