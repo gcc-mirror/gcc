@@ -884,33 +884,42 @@ namespace __detail
     using pointer		= const path*;
     using iterator_category	= std::bidirectional_iterator_tag;
 
-    iterator() : _M_path(nullptr), _M_cur(), _M_at_end() { }
+    iterator() noexcept : _M_path(nullptr), _M_cur(), _M_at_end() { }
 
     iterator(const iterator&) = default;
     iterator& operator=(const iterator&) = default;
 
-    reference operator*() const;
-    pointer   operator->() const { return std::__addressof(**this); }
+    reference operator*() const noexcept;
+    pointer   operator->() const noexcept { return std::__addressof(**this); }
 
-    iterator& operator++();
-    iterator  operator++(int) { auto __tmp = *this; ++*this; return __tmp; }
+    iterator& operator++() noexcept;
 
-    iterator& operator--();
-    iterator  operator--(int) { auto __tmp = *this; --*this; return __tmp; }
+    iterator  operator++(int) noexcept
+    { auto __tmp = *this; ++*this; return __tmp; }
 
-    friend bool operator==(const iterator& __lhs, const iterator& __rhs)
+    iterator& operator--() noexcept;
+
+    iterator  operator--(int) noexcept
+    { auto __tmp = *this; --*this; return __tmp; }
+
+    friend bool
+    operator==(const iterator& __lhs, const iterator& __rhs) noexcept
     { return __lhs._M_equals(__rhs); }
 
-    friend bool operator!=(const iterator& __lhs, const iterator& __rhs)
+    friend bool
+    operator!=(const iterator& __lhs, const iterator& __rhs) noexcept
     { return !__lhs._M_equals(__rhs); }
 
   private:
     friend class path;
 
-    bool _M_is_multi() const { return _M_path->_M_type() == _Type::_Multi; }
+    bool
+    _M_is_multi() const noexcept
+    { return _M_path->_M_type() == _Type::_Multi; }
 
     friend difference_type
     __path_iter_distance(const iterator& __first, const iterator& __last)
+    noexcept
     {
       __glibcxx_assert(__first._M_path != nullptr);
       __glibcxx_assert(__first._M_path == __last._M_path);
@@ -923,7 +932,7 @@ namespace __detail
     }
 
     friend void
-    __path_iter_advance(iterator& __i, difference_type __n)
+    __path_iter_advance(iterator& __i, difference_type __n) noexcept
     {
       if (__n == 1)
 	++__i;
@@ -938,15 +947,15 @@ namespace __detail
 	}
     }
 
-    iterator(const path* __path, path::_List::const_iterator __iter)
+    iterator(const path* __path, path::_List::const_iterator __iter) noexcept
     : _M_path(__path), _M_cur(__iter), _M_at_end()
     { }
 
-    iterator(const path* __path, bool __at_end)
+    iterator(const path* __path, bool __at_end) noexcept
     : _M_path(__path), _M_cur(), _M_at_end(__at_end)
     { }
 
-    bool _M_equals(iterator) const;
+    bool _M_equals(iterator) const noexcept;
 
     const path* 		_M_path;
     path::_List::const_iterator _M_cur;
@@ -1266,7 +1275,7 @@ namespace __detail
   }
 
   inline path::iterator
-  path::begin() const
+  path::begin() const noexcept
   {
     if (_M_type() == _Type::_Multi)
       return iterator(this, _M_cmpts.begin());
@@ -1274,7 +1283,7 @@ namespace __detail
   }
 
   inline path::iterator
-  path::end() const
+  path::end() const noexcept
   {
     if (_M_type() == _Type::_Multi)
       return iterator(this, _M_cmpts.end());
@@ -1282,10 +1291,10 @@ namespace __detail
   }
 
   inline path::iterator&
-  path::iterator::operator++()
+  path::iterator::operator++() noexcept
   {
     __glibcxx_assert(_M_path != nullptr);
-    if (_M_path->_M_type() == _Type::_Multi)
+    if (_M_is_multi())
       {
 	__glibcxx_assert(_M_cur != _M_path->_M_cmpts.end());
 	++_M_cur;
@@ -1299,10 +1308,10 @@ namespace __detail
   }
 
   inline path::iterator&
-  path::iterator::operator--()
+  path::iterator::operator--() noexcept
   {
     __glibcxx_assert(_M_path != nullptr);
-    if (_M_path->_M_type() == _Type::_Multi)
+    if (_M_is_multi())
       {
 	__glibcxx_assert(_M_cur != _M_path->_M_cmpts.begin());
 	--_M_cur;
@@ -1316,10 +1325,10 @@ namespace __detail
   }
 
   inline path::iterator::reference
-  path::iterator::operator*() const
+  path::iterator::operator*() const noexcept
   {
     __glibcxx_assert(_M_path != nullptr);
-    if (_M_path->_M_type() == _Type::_Multi)
+    if (_M_is_multi())
       {
 	__glibcxx_assert(_M_cur != _M_path->_M_cmpts.end());
 	return *_M_cur;
@@ -1328,13 +1337,13 @@ namespace __detail
   }
 
   inline bool
-  path::iterator::_M_equals(iterator __rhs) const
+  path::iterator::_M_equals(iterator __rhs) const noexcept
   {
     if (_M_path != __rhs._M_path)
       return false;
     if (_M_path == nullptr)
       return true;
-    if (_M_path->_M_type() == path::_Type::_Multi)
+    if (_M_is_multi())
       return _M_cur == __rhs._M_cur;
     return _M_at_end == __rhs._M_at_end;
   }
@@ -1355,11 +1364,12 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
 inline ptrdiff_t
 distance(filesystem::path::iterator __first, filesystem::path::iterator __last)
+noexcept
 { return __path_iter_distance(__first, __last); }
 
 template<typename _Distance>
-  void
-  advance(filesystem::path::iterator& __i, _Distance __n)
+  inline void
+  advance(filesystem::path::iterator& __i, _Distance __n) noexcept
   { __path_iter_advance(__i, static_cast<ptrdiff_t>(__n)); }
 
 extern template class __shared_ptr<const filesystem::filesystem_error::_Impl>;
