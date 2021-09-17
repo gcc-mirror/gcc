@@ -7582,8 +7582,8 @@ extern tree finish_omp_for			(location_t, enum tree_code,
 extern tree finish_omp_for_block		(tree, tree);
 extern void finish_omp_atomic			(location_t, enum tree_code,
 						 enum tree_code, tree, tree,
-						 tree, tree, tree, tree,
-						 enum omp_memory_order);
+						 tree, tree, tree, tree, tree,
+						 enum omp_memory_order, bool);
 extern void finish_omp_barrier			(void);
 extern void finish_omp_depobj			(location_t, tree,
 						 enum omp_clause_depend_kind,

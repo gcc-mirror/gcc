@@ -1,4 +1,4 @@
-/* { dg-do compile { target c } } */
+/* { dg-do compile } */
 
 int x, r, z;
 double d, v;
