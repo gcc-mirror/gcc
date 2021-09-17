@@ -1,3 +1,45 @@
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc-opts.h (enum sparc_processor_type): Add LEON5
+	* config/sparc/sparc.c (struct processor_costs): Add LEON5 costs
+	(leon5_adjust_cost): Increase cost of store with data dependency
+	on ALU instruction and FPU anti-dependencies.
+	(sparc_option_override): Add LEON5 costs
+	(sparc_adjust_cost): Add LEON5 cost adjustments
+	* config/sparc/sparc.h: Add LEON5
+	* config/sparc/sparc.md: Include LEON5 scheduling information
+	* config/sparc/sparc.opt: Add LEON5
+	* doc/invoke.texi: Add LEON5
+	* config/sparc/leon5.md: New file.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.md (stack_protect_setsi): Add NOP to prevent
+	sensitive sequence for B2BST errata workaround.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Do not begin
+	functions with atomic instruction in the UT700 errata workaround.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (next_active_non_empty_insn): New function
+	that returns next active non empty assembly instruction.
+	(sparc_do_work_around_errata): Use new function.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (store_insn_p): Add predicate for store
+	attributes.
+	(load_insn_p): Add predicate for load attributes.
+	(sparc_do_work_around_errata): Use new predicates.
+
+2021-09-16  Andreas Larsson  <andreas@gaisler.com>
+
+	* config/sparc/sparc.c (dump_target_flag_bits): Print bit names for
+	LEON and LEON3.
+
 2021-09-14  Xionghu Luo  <luoxhu@linux.ibm.com>
 
 	Backported from master:
