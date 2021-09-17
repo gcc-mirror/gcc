@@ -3,6 +3,14 @@
 	Backported from master:
 	2021-09-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* libgomp.texi (OpenMP 5.1): Spelling fix,
+	declare variante -> declare variant.
+
+2021-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
 	* testsuite/libgomp.c-c++-common/atomic-19.c: Drop c effective target.
 	Use /* */ comments instead of //.
 	* testsuite/libgomp.c-c++-common/atomic-20.c: Likewise.
