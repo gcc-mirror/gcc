@@ -190,6 +190,7 @@ static tree builtin_function_type (machine_mode, machine_mode,
 static void rs6000_common_init_builtins (void);
 static void htm_init_builtins (void);
 static void mma_init_builtins (void);
+static bool rs6000_gimple_fold_new_builtin (gimple_stmt_iterator *gsi);
 
 
 /* Hash table to keep track of the argument types for builtin functions.  */
@@ -12024,6 +12025,9 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
 bool
 rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 {
+  if (new_builtins_are_live)
+    return rs6000_gimple_fold_new_builtin (gsi);
+
   gimple *stmt = gsi_stmt (*gsi);
   tree fndecl = gimple_call_fndecl (stmt);
   gcc_checking_assert (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD);
@@ -12971,6 +12975,35 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   return false;
 }
 
+/*  Helper function to sort out which built-ins may be valid without having
+    a LHS.  */
+static bool
+rs6000_new_builtin_valid_without_lhs (enum rs6000_gen_builtins fn_code,
+				      tree fndecl)
+{
+  if (TREE_TYPE (TREE_TYPE (fndecl)) == void_type_node)
+    return true;
+
+  switch (fn_code)
+    {
+    case RS6000_BIF_STVX_V16QI:
+    case RS6000_BIF_STVX_V8HI:
+    case RS6000_BIF_STVX_V4SI:
+    case RS6000_BIF_STVX_V4SF:
+    case RS6000_BIF_STVX_V2DI:
+    case RS6000_BIF_STVX_V2DF:
+    case RS6000_BIF_STXVW4X_V16QI:
+    case RS6000_BIF_STXVW4X_V8HI:
+    case RS6000_BIF_STXVW4X_V4SF:
+    case RS6000_BIF_STXVW4X_V4SI:
+    case RS6000_BIF_STXVD2X_V2DF:
+    case RS6000_BIF_STXVD2X_V2DI:
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* Check whether a builtin function is supported in this target
    configuration.  */
 bool
@@ -13022,6 +13055,1138 @@ rs6000_new_builtin_is_supported (enum rs6000_gen_builtins fncode)
       gcc_unreachable ();
     }
   gcc_unreachable ();
+}
+
+/* Expand the MMA built-ins early, so that we can convert the pass-by-reference
+   __vector_quad arguments into pass-by-value arguments, leading to more
+   efficient code generation.  */
+static bool
+rs6000_gimple_fold_new_mma_builtin (gimple_stmt_iterator *gsi,
+				    rs6000_gen_builtins fn_code)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  size_t fncode = (size_t) fn_code;
+
+  if (!bif_is_mma (rs6000_builtin_info_x[fncode]))
+    return false;
+
+  /* Each call that can be gimple-expanded has an associated built-in
+     function that it will expand into.  If this one doesn't, we have
+     already expanded it!  */
+  if (rs6000_builtin_info_x[fncode].assoc_bif == RS6000_BIF_NONE)
+    return false;
+
+  bifdata *bd = &rs6000_builtin_info_x[fncode];
+  unsigned nopnds = bd->nargs;
+  gimple_seq new_seq = NULL;
+  gimple *new_call;
+  tree new_decl;
+
+  /* Compatibility built-ins; we used to call these
+     __builtin_mma_{dis,}assemble_pair, but now we call them
+     __builtin_vsx_{dis,}assemble_pair.  Handle the old versions.  */
+  if (fncode == RS6000_BIF_ASSEMBLE_PAIR)
+    fncode = RS6000_BIF_ASSEMBLE_PAIR_V;
+  else if (fncode == RS6000_BIF_DISASSEMBLE_PAIR)
+    fncode = RS6000_BIF_DISASSEMBLE_PAIR_V;
+
+  if (fncode == RS6000_BIF_DISASSEMBLE_ACC
+      || fncode == RS6000_BIF_DISASSEMBLE_PAIR_V)
+    {
+      /* This is an MMA disassemble built-in function.  */
+      push_gimplify_context (true);
+      unsigned nvec = (fncode == RS6000_BIF_DISASSEMBLE_ACC) ? 4 : 2;
+      tree dst_ptr = gimple_call_arg (stmt, 0);
+      tree src_ptr = gimple_call_arg (stmt, 1);
+      tree src_type = TREE_TYPE (src_ptr);
+      tree src = create_tmp_reg_or_ssa_name (TREE_TYPE (src_type));
+      gimplify_assign (src, build_simple_mem_ref (src_ptr), &new_seq);
+
+      /* If we are not disassembling an accumulator/pair or our destination is
+	 another accumulator/pair, then just copy the entire thing as is.  */
+      if ((fncode == RS6000_BIF_DISASSEMBLE_ACC
+	   && TREE_TYPE (TREE_TYPE (dst_ptr)) == vector_quad_type_node)
+	  || (fncode == RS6000_BIF_DISASSEMBLE_PAIR_V
+	      && TREE_TYPE (TREE_TYPE (dst_ptr)) == vector_pair_type_node))
+	{
+	  tree dst = build_simple_mem_ref (build1 (VIEW_CONVERT_EXPR,
+						   src_type, dst_ptr));
+	  gimplify_assign (dst, src, &new_seq);
+	  pop_gimplify_context (NULL);
+	  gsi_replace_with_seq (gsi, new_seq, true);
+	  return true;
+	}
+
+      /* If we're disassembling an accumulator into a different type, we need
+	 to emit a xxmfacc instruction now, since we cannot do it later.  */
+      if (fncode == RS6000_BIF_DISASSEMBLE_ACC)
+	{
+	  new_decl = rs6000_builtin_decls_x[RS6000_BIF_XXMFACC_INTERNAL];
+	  new_call = gimple_build_call (new_decl, 1, src);
+	  src = create_tmp_reg_or_ssa_name (vector_quad_type_node);
+	  gimple_call_set_lhs (new_call, src);
+	  gimple_seq_add_stmt (&new_seq, new_call);
+	}
+
+      /* Copy the accumulator/pair vector by vector.  */
+      new_decl
+	= rs6000_builtin_decls_x[rs6000_builtin_info_x[fncode].assoc_bif];
+      tree dst_type = build_pointer_type_for_mode (unsigned_V16QI_type_node,
+						   ptr_mode, true);
+      tree dst_base = build1 (VIEW_CONVERT_EXPR, dst_type, dst_ptr);
+      for (unsigned i = 0; i < nvec; i++)
+	{
+	  unsigned index = WORDS_BIG_ENDIAN ? i : nvec - 1 - i;
+	  tree dst = build2 (MEM_REF, unsigned_V16QI_type_node, dst_base,
+			     build_int_cst (dst_type, index * 16));
+	  tree dstssa = create_tmp_reg_or_ssa_name (unsigned_V16QI_type_node);
+	  new_call = gimple_build_call (new_decl, 2, src,
+					build_int_cstu (uint16_type_node, i));
+	  gimple_call_set_lhs (new_call, dstssa);
+	  gimple_seq_add_stmt (&new_seq, new_call);
+	  gimplify_assign (dst, dstssa, &new_seq);
+	}
+      pop_gimplify_context (NULL);
+      gsi_replace_with_seq (gsi, new_seq, true);
+      return true;
+    }
+
+  /* Convert this built-in into an internal version that uses pass-by-value
+     arguments.  The internal built-in is found in the assoc_bif field.  */
+  new_decl = rs6000_builtin_decls_x[rs6000_builtin_info_x[fncode].assoc_bif];
+  tree lhs, op[MAX_MMA_OPERANDS];
+  tree acc = gimple_call_arg (stmt, 0);
+  push_gimplify_context (true);
+
+  if (bif_is_quad (*bd))
+    {
+      /* This built-in has a pass-by-reference accumulator input, so load it
+	 into a temporary accumulator for use as a pass-by-value input.  */
+      op[0] = create_tmp_reg_or_ssa_name (vector_quad_type_node);
+      for (unsigned i = 1; i < nopnds; i++)
+	op[i] = gimple_call_arg (stmt, i);
+      gimplify_assign (op[0], build_simple_mem_ref (acc), &new_seq);
+    }
+  else
+    {
+      /* This built-in does not use its pass-by-reference accumulator argument
+	 as an input argument, so remove it from the input list.  */
+      nopnds--;
+      for (unsigned i = 0; i < nopnds; i++)
+	op[i] = gimple_call_arg (stmt, i + 1);
+    }
+
+  switch (nopnds)
+    {
+    case 0:
+      new_call = gimple_build_call (new_decl, 0);
+      break;
+    case 1:
+      new_call = gimple_build_call (new_decl, 1, op[0]);
+      break;
+    case 2:
+      new_call = gimple_build_call (new_decl, 2, op[0], op[1]);
+      break;
+    case 3:
+      new_call = gimple_build_call (new_decl, 3, op[0], op[1], op[2]);
+      break;
+    case 4:
+      new_call = gimple_build_call (new_decl, 4, op[0], op[1], op[2], op[3]);
+      break;
+    case 5:
+      new_call = gimple_build_call (new_decl, 5, op[0], op[1], op[2], op[3],
+				    op[4]);
+      break;
+    case 6:
+      new_call = gimple_build_call (new_decl, 6, op[0], op[1], op[2], op[3],
+				    op[4], op[5]);
+      break;
+    case 7:
+      new_call = gimple_build_call (new_decl, 7, op[0], op[1], op[2], op[3],
+				    op[4], op[5], op[6]);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (fncode == RS6000_BIF_BUILD_PAIR || fncode == RS6000_BIF_ASSEMBLE_PAIR_V)
+    lhs = create_tmp_reg_or_ssa_name (vector_pair_type_node);
+  else
+    lhs = create_tmp_reg_or_ssa_name (vector_quad_type_node);
+  gimple_call_set_lhs (new_call, lhs);
+  gimple_seq_add_stmt (&new_seq, new_call);
+  gimplify_assign (build_simple_mem_ref (acc), lhs, &new_seq);
+  pop_gimplify_context (NULL);
+  gsi_replace_with_seq (gsi, new_seq, true);
+
+  return true;
+}
+
+/* Fold a machine-dependent built-in in GIMPLE.  (For folding into
+   a constant, use rs6000_fold_builtin.)  */
+static bool
+rs6000_gimple_fold_new_builtin (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree fndecl = gimple_call_fndecl (stmt);
+  gcc_checking_assert (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD);
+  enum rs6000_gen_builtins fn_code
+    = (enum rs6000_gen_builtins) DECL_MD_FUNCTION_CODE (fndecl);
+  tree arg0, arg1, lhs, temp;
+  enum tree_code bcode;
+  gimple *g;
+
+  size_t uns_fncode = (size_t) fn_code;
+  enum insn_code icode = rs6000_builtin_info_x[uns_fncode].icode;
+  const char *fn_name1 = rs6000_builtin_info_x[uns_fncode].bifname;
+  const char *fn_name2 = (icode != CODE_FOR_nothing)
+			  ? get_insn_name ((int) icode)
+			  : "nothing";
+
+  if (TARGET_DEBUG_BUILTIN)
+      fprintf (stderr, "rs6000_gimple_fold_new_builtin %d %s %s\n",
+	       fn_code, fn_name1, fn_name2);
+
+  if (!rs6000_fold_gimple)
+    return false;
+
+  /* Prevent gimple folding for code that does not have a LHS, unless it is
+     allowed per the rs6000_new_builtin_valid_without_lhs helper function.  */
+  if (!gimple_call_lhs (stmt)
+      && !rs6000_new_builtin_valid_without_lhs (fn_code, fndecl))
+    return false;
+
+  /* Don't fold invalid builtins, let rs6000_expand_builtin diagnose it.  */
+  if (!rs6000_new_builtin_is_supported (fn_code))
+    return false;
+
+  if (rs6000_gimple_fold_new_mma_builtin (gsi, fn_code))
+    return true;
+
+  switch (fn_code)
+    {
+    /* Flavors of vec_add.  We deliberately don't expand
+       RS6000_BIF_VADDUQM as it gets lowered from V1TImode to
+       TImode, resulting in much poorer code generation.  */
+    case RS6000_BIF_VADDUBM:
+    case RS6000_BIF_VADDUHM:
+    case RS6000_BIF_VADDUWM:
+    case RS6000_BIF_VADDUDM:
+    case RS6000_BIF_VADDFP:
+    case RS6000_BIF_XVADDDP:
+    case RS6000_BIF_XVADDSP:
+      bcode = PLUS_EXPR;
+    do_binary:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (lhs)))
+	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (TREE_TYPE (lhs))))
+	{
+	  /* Ensure the binary operation is performed in a type
+	     that wraps if it is integral type.  */
+	  gimple_seq stmts = NULL;
+	  tree type = unsigned_type_for (TREE_TYPE (lhs));
+	  tree uarg0 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				     type, arg0);
+	  tree uarg1 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				     type, arg1);
+	  tree res = gimple_build (&stmts, gimple_location (stmt), bcode,
+				   type, uarg0, uarg1);
+	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	  g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR,
+				   build1 (VIEW_CONVERT_EXPR,
+					   TREE_TYPE (lhs), res));
+	  gsi_replace (gsi, g, true);
+	  return true;
+	}
+      g = gimple_build_assign (lhs, bcode, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_sub.  We deliberately don't expand
+       RS6000_BIF_VSUBUQM. */
+    case RS6000_BIF_VSUBUBM:
+    case RS6000_BIF_VSUBUHM:
+    case RS6000_BIF_VSUBUWM:
+    case RS6000_BIF_VSUBUDM:
+    case RS6000_BIF_VSUBFP:
+    case RS6000_BIF_XVSUBDP:
+    case RS6000_BIF_XVSUBSP:
+      bcode = MINUS_EXPR;
+      goto do_binary;
+    case RS6000_BIF_XVMULSP:
+    case RS6000_BIF_XVMULDP:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, MULT_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Even element flavors of vec_mul (signed). */
+    case RS6000_BIF_VMULESB:
+    case RS6000_BIF_VMULESH:
+    case RS6000_BIF_VMULESW:
+    /* Even element flavors of vec_mul (unsigned).  */
+    case RS6000_BIF_VMULEUB:
+    case RS6000_BIF_VMULEUH:
+    case RS6000_BIF_VMULEUW:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, VEC_WIDEN_MULT_EVEN_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Odd element flavors of vec_mul (signed).  */
+    case RS6000_BIF_VMULOSB:
+    case RS6000_BIF_VMULOSH:
+    case RS6000_BIF_VMULOSW:
+    /* Odd element flavors of vec_mul (unsigned). */
+    case RS6000_BIF_VMULOUB:
+    case RS6000_BIF_VMULOUH:
+    case RS6000_BIF_VMULOUW:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, VEC_WIDEN_MULT_ODD_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_div (Integer).  */
+    case RS6000_BIF_DIV_V2DI:
+    case RS6000_BIF_UDIV_V2DI:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, TRUNC_DIV_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_div (Float).  */
+    case RS6000_BIF_XVDIVSP:
+    case RS6000_BIF_XVDIVDP:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, RDIV_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_and.  */
+    case RS6000_BIF_VAND_V16QI_UNS:
+    case RS6000_BIF_VAND_V16QI:
+    case RS6000_BIF_VAND_V8HI_UNS:
+    case RS6000_BIF_VAND_V8HI:
+    case RS6000_BIF_VAND_V4SI_UNS:
+    case RS6000_BIF_VAND_V4SI:
+    case RS6000_BIF_VAND_V2DI_UNS:
+    case RS6000_BIF_VAND_V2DI:
+    case RS6000_BIF_VAND_V4SF:
+    case RS6000_BIF_VAND_V2DF:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, BIT_AND_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_andc.  */
+    case RS6000_BIF_VANDC_V16QI_UNS:
+    case RS6000_BIF_VANDC_V16QI:
+    case RS6000_BIF_VANDC_V8HI_UNS:
+    case RS6000_BIF_VANDC_V8HI:
+    case RS6000_BIF_VANDC_V4SI_UNS:
+    case RS6000_BIF_VANDC_V4SI:
+    case RS6000_BIF_VANDC_V2DI_UNS:
+    case RS6000_BIF_VANDC_V2DI:
+    case RS6000_BIF_VANDC_V4SF:
+    case RS6000_BIF_VANDC_V2DF:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+      g = gimple_build_assign (temp, BIT_NOT_EXPR, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      g = gimple_build_assign (lhs, BIT_AND_EXPR, arg0, temp);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_nand.  */
+    case RS6000_BIF_NAND_V16QI_UNS:
+    case RS6000_BIF_NAND_V16QI:
+    case RS6000_BIF_NAND_V8HI_UNS:
+    case RS6000_BIF_NAND_V8HI:
+    case RS6000_BIF_NAND_V4SI_UNS:
+    case RS6000_BIF_NAND_V4SI:
+    case RS6000_BIF_NAND_V2DI_UNS:
+    case RS6000_BIF_NAND_V2DI:
+    case RS6000_BIF_NAND_V4SF:
+    case RS6000_BIF_NAND_V2DF:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+      g = gimple_build_assign (temp, BIT_AND_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      g = gimple_build_assign (lhs, BIT_NOT_EXPR, temp);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_or.  */
+    case RS6000_BIF_VOR_V16QI_UNS:
+    case RS6000_BIF_VOR_V16QI:
+    case RS6000_BIF_VOR_V8HI_UNS:
+    case RS6000_BIF_VOR_V8HI:
+    case RS6000_BIF_VOR_V4SI_UNS:
+    case RS6000_BIF_VOR_V4SI:
+    case RS6000_BIF_VOR_V2DI_UNS:
+    case RS6000_BIF_VOR_V2DI:
+    case RS6000_BIF_VOR_V4SF:
+    case RS6000_BIF_VOR_V2DF:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, BIT_IOR_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* flavors of vec_orc.  */
+    case RS6000_BIF_ORC_V16QI_UNS:
+    case RS6000_BIF_ORC_V16QI:
+    case RS6000_BIF_ORC_V8HI_UNS:
+    case RS6000_BIF_ORC_V8HI:
+    case RS6000_BIF_ORC_V4SI_UNS:
+    case RS6000_BIF_ORC_V4SI:
+    case RS6000_BIF_ORC_V2DI_UNS:
+    case RS6000_BIF_ORC_V2DI:
+    case RS6000_BIF_ORC_V4SF:
+    case RS6000_BIF_ORC_V2DF:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+      g = gimple_build_assign (temp, BIT_NOT_EXPR, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      g = gimple_build_assign (lhs, BIT_IOR_EXPR, arg0, temp);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_xor.  */
+    case RS6000_BIF_VXOR_V16QI_UNS:
+    case RS6000_BIF_VXOR_V16QI:
+    case RS6000_BIF_VXOR_V8HI_UNS:
+    case RS6000_BIF_VXOR_V8HI:
+    case RS6000_BIF_VXOR_V4SI_UNS:
+    case RS6000_BIF_VXOR_V4SI:
+    case RS6000_BIF_VXOR_V2DI_UNS:
+    case RS6000_BIF_VXOR_V2DI:
+    case RS6000_BIF_VXOR_V4SF:
+    case RS6000_BIF_VXOR_V2DF:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, BIT_XOR_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_nor.  */
+    case RS6000_BIF_VNOR_V16QI_UNS:
+    case RS6000_BIF_VNOR_V16QI:
+    case RS6000_BIF_VNOR_V8HI_UNS:
+    case RS6000_BIF_VNOR_V8HI:
+    case RS6000_BIF_VNOR_V4SI_UNS:
+    case RS6000_BIF_VNOR_V4SI:
+    case RS6000_BIF_VNOR_V2DI_UNS:
+    case RS6000_BIF_VNOR_V2DI:
+    case RS6000_BIF_VNOR_V4SF:
+    case RS6000_BIF_VNOR_V2DF:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+      g = gimple_build_assign (temp, BIT_IOR_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      g = gimple_build_assign (lhs, BIT_NOT_EXPR, temp);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* flavors of vec_abs.  */
+    case RS6000_BIF_ABS_V16QI:
+    case RS6000_BIF_ABS_V8HI:
+    case RS6000_BIF_ABS_V4SI:
+    case RS6000_BIF_ABS_V4SF:
+    case RS6000_BIF_ABS_V2DI:
+    case RS6000_BIF_XVABSDP:
+    case RS6000_BIF_XVABSSP:
+      arg0 = gimple_call_arg (stmt, 0);
+      if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (arg0)))
+	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (TREE_TYPE (arg0))))
+	return false;
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, ABS_EXPR, arg0);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* flavors of vec_min.  */
+    case RS6000_BIF_XVMINDP:
+    case RS6000_BIF_XVMINSP:
+    case RS6000_BIF_VMINSD:
+    case RS6000_BIF_VMINUD:
+    case RS6000_BIF_VMINSB:
+    case RS6000_BIF_VMINSH:
+    case RS6000_BIF_VMINSW:
+    case RS6000_BIF_VMINUB:
+    case RS6000_BIF_VMINUH:
+    case RS6000_BIF_VMINUW:
+    case RS6000_BIF_VMINFP:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, MIN_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* flavors of vec_max.  */
+    case RS6000_BIF_XVMAXDP:
+    case RS6000_BIF_XVMAXSP:
+    case RS6000_BIF_VMAXSD:
+    case RS6000_BIF_VMAXUD:
+    case RS6000_BIF_VMAXSB:
+    case RS6000_BIF_VMAXSH:
+    case RS6000_BIF_VMAXSW:
+    case RS6000_BIF_VMAXUB:
+    case RS6000_BIF_VMAXUH:
+    case RS6000_BIF_VMAXUW:
+    case RS6000_BIF_VMAXFP:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, MAX_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_eqv.  */
+    case RS6000_BIF_EQV_V16QI:
+    case RS6000_BIF_EQV_V8HI:
+    case RS6000_BIF_EQV_V4SI:
+    case RS6000_BIF_EQV_V4SF:
+    case RS6000_BIF_EQV_V2DF:
+    case RS6000_BIF_EQV_V2DI:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+      g = gimple_build_assign (temp, BIT_XOR_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      g = gimple_build_assign (lhs, BIT_NOT_EXPR, temp);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+    /* Flavors of vec_rotate_left.  */
+    case RS6000_BIF_VRLB:
+    case RS6000_BIF_VRLH:
+    case RS6000_BIF_VRLW:
+    case RS6000_BIF_VRLD:
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      lhs = gimple_call_lhs (stmt);
+      g = gimple_build_assign (lhs, LROTATE_EXPR, arg0, arg1);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_replace (gsi, g, true);
+      return true;
+  /* Flavors of vector shift right algebraic.
+     vec_sra{b,h,w} -> vsra{b,h,w}.  */
+    case RS6000_BIF_VSRAB:
+    case RS6000_BIF_VSRAH:
+    case RS6000_BIF_VSRAW:
+    case RS6000_BIF_VSRAD:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	tree arg1_type = TREE_TYPE (arg1);
+	tree unsigned_arg1_type = unsigned_type_for (TREE_TYPE (arg1));
+	tree unsigned_element_type = unsigned_type_for (TREE_TYPE (arg1_type));
+	location_t loc = gimple_location (stmt);
+	/* Force arg1 into the range valid matching the arg0 type.  */
+	/* Build a vector consisting of the max valid bit-size values.  */
+	int n_elts = VECTOR_CST_NELTS (arg1);
+	tree element_size = build_int_cst (unsigned_element_type,
+					   128 / n_elts);
+	tree_vector_builder elts (unsigned_arg1_type, n_elts, 1);
+	for (int i = 0; i < n_elts; i++)
+	  elts.safe_push (element_size);
+	tree modulo_tree = elts.build ();
+	/* Modulo the provided shift value against that vector.  */
+	gimple_seq stmts = NULL;
+	tree unsigned_arg1 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+					   unsigned_arg1_type, arg1);
+	tree new_arg1 = gimple_build (&stmts, loc, TRUNC_MOD_EXPR,
+				      unsigned_arg1_type, unsigned_arg1,
+				      modulo_tree);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	/* And finally, do the shift.  */
+	g = gimple_build_assign (lhs, RSHIFT_EXPR, arg0, new_arg1);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+   /* Flavors of vector shift left.
+      builtin_altivec_vsl{b,h,w} -> vsl{b,h,w}.  */
+    case RS6000_BIF_VSLB:
+    case RS6000_BIF_VSLH:
+    case RS6000_BIF_VSLW:
+    case RS6000_BIF_VSLD:
+      {
+	location_t loc;
+	gimple_seq stmts = NULL;
+	arg0 = gimple_call_arg (stmt, 0);
+	tree arg0_type = TREE_TYPE (arg0);
+	if (INTEGRAL_TYPE_P (TREE_TYPE (arg0_type))
+	    && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0_type)))
+	  return false;
+	arg1 = gimple_call_arg (stmt, 1);
+	tree arg1_type = TREE_TYPE (arg1);
+	tree unsigned_arg1_type = unsigned_type_for (TREE_TYPE (arg1));
+	tree unsigned_element_type = unsigned_type_for (TREE_TYPE (arg1_type));
+	loc = gimple_location (stmt);
+	lhs = gimple_call_lhs (stmt);
+	/* Force arg1 into the range valid matching the arg0 type.  */
+	/* Build a vector consisting of the max valid bit-size values.  */
+	int n_elts = VECTOR_CST_NELTS (arg1);
+	int tree_size_in_bits = TREE_INT_CST_LOW (size_in_bytes (arg1_type))
+				* BITS_PER_UNIT;
+	tree element_size = build_int_cst (unsigned_element_type,
+					   tree_size_in_bits / n_elts);
+	tree_vector_builder elts (unsigned_type_for (arg1_type), n_elts, 1);
+	for (int i = 0; i < n_elts; i++)
+	  elts.safe_push (element_size);
+	tree modulo_tree = elts.build ();
+	/* Modulo the provided shift value against that vector.  */
+	tree unsigned_arg1 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+					   unsigned_arg1_type, arg1);
+	tree new_arg1 = gimple_build (&stmts, loc, TRUNC_MOD_EXPR,
+				      unsigned_arg1_type, unsigned_arg1,
+				      modulo_tree);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	/* And finally, do the shift.  */
+	g = gimple_build_assign (lhs, LSHIFT_EXPR, arg0, new_arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Flavors of vector shift right.  */
+    case RS6000_BIF_VSRB:
+    case RS6000_BIF_VSRH:
+    case RS6000_BIF_VSRW:
+    case RS6000_BIF_VSRD:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	tree arg1_type = TREE_TYPE (arg1);
+	tree unsigned_arg1_type = unsigned_type_for (TREE_TYPE (arg1));
+	tree unsigned_element_type = unsigned_type_for (TREE_TYPE (arg1_type));
+	location_t loc = gimple_location (stmt);
+	gimple_seq stmts = NULL;
+	/* Convert arg0 to unsigned.  */
+	tree arg0_unsigned
+	  = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+			  unsigned_type_for (TREE_TYPE (arg0)), arg0);
+	/* Force arg1 into the range valid matching the arg0 type.  */
+	/* Build a vector consisting of the max valid bit-size values.  */
+	int n_elts = VECTOR_CST_NELTS (arg1);
+	tree element_size = build_int_cst (unsigned_element_type,
+					   128 / n_elts);
+	tree_vector_builder elts (unsigned_arg1_type, n_elts, 1);
+	for (int i = 0; i < n_elts; i++)
+	  elts.safe_push (element_size);
+	tree modulo_tree = elts.build ();
+	/* Modulo the provided shift value against that vector.  */
+	tree unsigned_arg1 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+					   unsigned_arg1_type, arg1);
+	tree new_arg1 = gimple_build (&stmts, loc, TRUNC_MOD_EXPR,
+				      unsigned_arg1_type, unsigned_arg1,
+				      modulo_tree);
+	/* Do the shift.  */
+	tree res
+	  = gimple_build (&stmts, RSHIFT_EXPR,
+			  TREE_TYPE (arg0_unsigned), arg0_unsigned, new_arg1);
+	/* Convert result back to the lhs type.  */
+	res = gimple_build (&stmts, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), res);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	replace_call_with_value (gsi, res);
+	return true;
+      }
+    /* Vector loads.  */
+    case RS6000_BIF_LVX_V16QI:
+    case RS6000_BIF_LVX_V8HI:
+    case RS6000_BIF_LVX_V4SI:
+    case RS6000_BIF_LVX_V4SF:
+    case RS6000_BIF_LVX_V2DI:
+    case RS6000_BIF_LVX_V2DF:
+    case RS6000_BIF_LVX_V1TI:
+      {
+	arg0 = gimple_call_arg (stmt, 0);  // offset
+	arg1 = gimple_call_arg (stmt, 1);  // address
+	lhs = gimple_call_lhs (stmt);
+	location_t loc = gimple_location (stmt);
+	/* Since arg1 may be cast to a different type, just use ptr_type_node
+	   here instead of trying to enforce TBAA on pointer types.  */
+	tree arg1_type = ptr_type_node;
+	tree lhs_type = TREE_TYPE (lhs);
+	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	   the tree using the value from arg0.  The resulting type will match
+	   the type of arg1.  */
+	gimple_seq stmts = NULL;
+	tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg0);
+	tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+				       arg1_type, arg1, temp_offset);
+	/* Mask off any lower bits from the address.  */
+	tree aligned_addr = gimple_build (&stmts, loc, BIT_AND_EXPR,
+					  arg1_type, temp_addr,
+					  build_int_cst (arg1_type, -16));
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	if (!is_gimple_mem_ref_addr (aligned_addr))
+	  {
+	    tree t = make_ssa_name (TREE_TYPE (aligned_addr));
+	    gimple *g = gimple_build_assign (t, aligned_addr);
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	    aligned_addr = t;
+	  }
+	/* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
+	   take an offset, but since we've already incorporated the offset
+	   above, here we just pass in a zero.  */
+	gimple *g
+	  = gimple_build_assign (lhs, build2 (MEM_REF, lhs_type, aligned_addr,
+					      build_int_cst (arg1_type, 0)));
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Vector stores.  */
+    case RS6000_BIF_STVX_V16QI:
+    case RS6000_BIF_STVX_V8HI:
+    case RS6000_BIF_STVX_V4SI:
+    case RS6000_BIF_STVX_V4SF:
+    case RS6000_BIF_STVX_V2DI:
+    case RS6000_BIF_STVX_V2DF:
+      {
+	arg0 = gimple_call_arg (stmt, 0); /* Value to be stored.  */
+	arg1 = gimple_call_arg (stmt, 1); /* Offset.  */
+	tree arg2 = gimple_call_arg (stmt, 2); /* Store-to address.  */
+	location_t loc = gimple_location (stmt);
+	tree arg0_type = TREE_TYPE (arg0);
+	/* Use ptr_type_node (no TBAA) for the arg2_type.
+	   FIXME: (Richard)  "A proper fix would be to transition this type as
+	   seen from the frontend to GIMPLE, for example in a similar way we
+	   do for MEM_REFs by piggy-backing that on an extra argument, a
+	   constant zero pointer of the alias pointer type to use (which would
+	   also serve as a type indicator of the store itself).  I'd use a
+	   target specific internal function for this (not sure if we can have
+	   those target specific, but I guess if it's folded away then that's
+	   fine) and get away with the overload set."  */
+	tree arg2_type = ptr_type_node;
+	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	   the tree using the value from arg0.  The resulting type will match
+	   the type of arg2.  */
+	gimple_seq stmts = NULL;
+	tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg1);
+	tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+				       arg2_type, arg2, temp_offset);
+	/* Mask off any lower bits from the address.  */
+	tree aligned_addr = gimple_build (&stmts, loc, BIT_AND_EXPR,
+					  arg2_type, temp_addr,
+					  build_int_cst (arg2_type, -16));
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	if (!is_gimple_mem_ref_addr (aligned_addr))
+	  {
+	    tree t = make_ssa_name (TREE_TYPE (aligned_addr));
+	    gimple *g = gimple_build_assign (t, aligned_addr);
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	    aligned_addr = t;
+	  }
+	/* The desired gimple result should be similar to:
+	   MEM[(__vector floatD.1407 *)_1] = vf1D.2697;  */
+	gimple *g
+	  = gimple_build_assign (build2 (MEM_REF, arg0_type, aligned_addr,
+					 build_int_cst (arg2_type, 0)), arg0);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
+    /* unaligned Vector loads.  */
+    case RS6000_BIF_LXVW4X_V16QI:
+    case RS6000_BIF_LXVW4X_V8HI:
+    case RS6000_BIF_LXVW4X_V4SF:
+    case RS6000_BIF_LXVW4X_V4SI:
+    case RS6000_BIF_LXVD2X_V2DF:
+    case RS6000_BIF_LXVD2X_V2DI:
+      {
+	arg0 = gimple_call_arg (stmt, 0);  // offset
+	arg1 = gimple_call_arg (stmt, 1);  // address
+	lhs = gimple_call_lhs (stmt);
+	location_t loc = gimple_location (stmt);
+	/* Since arg1 may be cast to a different type, just use ptr_type_node
+	   here instead of trying to enforce TBAA on pointer types.  */
+	tree arg1_type = ptr_type_node;
+	tree lhs_type = TREE_TYPE (lhs);
+	/* In GIMPLE the type of the MEM_REF specifies the alignment.  The
+	  required alignment (power) is 4 bytes regardless of data type.  */
+	tree align_ltype = build_aligned_type (lhs_type, 4);
+	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	   the tree using the value from arg0.  The resulting type will match
+	   the type of arg1.  */
+	gimple_seq stmts = NULL;
+	tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg0);
+	tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+				       arg1_type, arg1, temp_offset);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	if (!is_gimple_mem_ref_addr (temp_addr))
+	  {
+	    tree t = make_ssa_name (TREE_TYPE (temp_addr));
+	    gimple *g = gimple_build_assign (t, temp_addr);
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	    temp_addr = t;
+	  }
+	/* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
+	   take an offset, but since we've already incorporated the offset
+	   above, here we just pass in a zero.  */
+	gimple *g;
+	g = gimple_build_assign (lhs, build2 (MEM_REF, align_ltype, temp_addr,
+					      build_int_cst (arg1_type, 0)));
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
+    /* unaligned Vector stores.  */
+    case RS6000_BIF_STXVW4X_V16QI:
+    case RS6000_BIF_STXVW4X_V8HI:
+    case RS6000_BIF_STXVW4X_V4SF:
+    case RS6000_BIF_STXVW4X_V4SI:
+    case RS6000_BIF_STXVD2X_V2DF:
+    case RS6000_BIF_STXVD2X_V2DI:
+      {
+	arg0 = gimple_call_arg (stmt, 0); /* Value to be stored.  */
+	arg1 = gimple_call_arg (stmt, 1); /* Offset.  */
+	tree arg2 = gimple_call_arg (stmt, 2); /* Store-to address.  */
+	location_t loc = gimple_location (stmt);
+	tree arg0_type = TREE_TYPE (arg0);
+	/* Use ptr_type_node (no TBAA) for the arg2_type.  */
+	tree arg2_type = ptr_type_node;
+	/* In GIMPLE the type of the MEM_REF specifies the alignment.  The
+	   required alignment (power) is 4 bytes regardless of data type.  */
+	tree align_stype = build_aligned_type (arg0_type, 4);
+	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	   the tree using the value from arg1.  */
+	gimple_seq stmts = NULL;
+	tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg1);
+	tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+				       arg2_type, arg2, temp_offset);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	if (!is_gimple_mem_ref_addr (temp_addr))
+	  {
+	    tree t = make_ssa_name (TREE_TYPE (temp_addr));
+	    gimple *g = gimple_build_assign (t, temp_addr);
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	    temp_addr = t;
+	  }
+	gimple *g;
+	g = gimple_build_assign (build2 (MEM_REF, align_stype, temp_addr,
+					 build_int_cst (arg2_type, 0)), arg0);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
+    /* Vector Fused multiply-add (fma).  */
+    case RS6000_BIF_VMADDFP:
+    case RS6000_BIF_XVMADDDP:
+    case RS6000_BIF_XVMADDSP:
+    case RS6000_BIF_VMLADDUHM:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	tree arg2 = gimple_call_arg (stmt, 2);
+	lhs = gimple_call_lhs (stmt);
+	gcall *g = gimple_build_call_internal (IFN_FMA, 3, arg0, arg1, arg2);
+	gimple_call_set_lhs (g, lhs);
+	gimple_call_set_nothrow (g, true);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
+    /* Vector compares; EQ, NE, GE, GT, LE.  */
+    case RS6000_BIF_VCMPEQUB:
+    case RS6000_BIF_VCMPEQUH:
+    case RS6000_BIF_VCMPEQUW:
+    case RS6000_BIF_VCMPEQUD:
+    /* We deliberately omit RS6000_BIF_VCMPEQUT for now, because gimple
+       folding produces worse code for 128-bit compares.  */
+      fold_compare_helper (gsi, EQ_EXPR, stmt);
+      return true;
+
+    case RS6000_BIF_VCMPNEB:
+    case RS6000_BIF_VCMPNEH:
+    case RS6000_BIF_VCMPNEW:
+    /* We deliberately omit RS6000_BIF_VCMPNET for now, because gimple
+       folding produces worse code for 128-bit compares.  */
+      fold_compare_helper (gsi, NE_EXPR, stmt);
+      return true;
+
+    case RS6000_BIF_CMPGE_16QI:
+    case RS6000_BIF_CMPGE_U16QI:
+    case RS6000_BIF_CMPGE_8HI:
+    case RS6000_BIF_CMPGE_U8HI:
+    case RS6000_BIF_CMPGE_4SI:
+    case RS6000_BIF_CMPGE_U4SI:
+    case RS6000_BIF_CMPGE_2DI:
+    case RS6000_BIF_CMPGE_U2DI:
+    /* We deliberately omit RS6000_BIF_CMPGE_1TI and RS6000_BIF_CMPGE_U1TI
+       for now, because gimple folding produces worse code for 128-bit
+       compares.  */
+      fold_compare_helper (gsi, GE_EXPR, stmt);
+      return true;
+
+    case RS6000_BIF_VCMPGTSB:
+    case RS6000_BIF_VCMPGTUB:
+    case RS6000_BIF_VCMPGTSH:
+    case RS6000_BIF_VCMPGTUH:
+    case RS6000_BIF_VCMPGTSW:
+    case RS6000_BIF_VCMPGTUW:
+    case RS6000_BIF_VCMPGTUD:
+    case RS6000_BIF_VCMPGTSD:
+    /* We deliberately omit RS6000_BIF_VCMPGTUT and RS6000_BIF_VCMPGTST
+       for now, because gimple folding produces worse code for 128-bit
+       compares.  */
+      fold_compare_helper (gsi, GT_EXPR, stmt);
+      return true;
+
+    case RS6000_BIF_CMPLE_16QI:
+    case RS6000_BIF_CMPLE_U16QI:
+    case RS6000_BIF_CMPLE_8HI:
+    case RS6000_BIF_CMPLE_U8HI:
+    case RS6000_BIF_CMPLE_4SI:
+    case RS6000_BIF_CMPLE_U4SI:
+    case RS6000_BIF_CMPLE_2DI:
+    case RS6000_BIF_CMPLE_U2DI:
+    /* We deliberately omit RS6000_BIF_CMPLE_1TI and RS6000_BIF_CMPLE_U1TI
+       for now, because gimple folding produces worse code for 128-bit
+       compares.  */
+      fold_compare_helper (gsi, LE_EXPR, stmt);
+      return true;
+
+    /* flavors of vec_splat_[us]{8,16,32}.  */
+    case RS6000_BIF_VSPLTISB:
+    case RS6000_BIF_VSPLTISH:
+    case RS6000_BIF_VSPLTISW:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	lhs = gimple_call_lhs (stmt);
+
+	/* Only fold the vec_splat_*() if the lower bits of arg 0 is a
+	   5-bit signed constant in range -16 to +15.  */
+	if (TREE_CODE (arg0) != INTEGER_CST
+	    || !IN_RANGE (TREE_INT_CST_LOW (arg0), -16, 15))
+	  return false;
+	gimple_seq stmts = NULL;
+	location_t loc = gimple_location (stmt);
+	tree splat_value = gimple_convert (&stmts, loc,
+					   TREE_TYPE (TREE_TYPE (lhs)), arg0);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	tree splat_tree = build_vector_from_val (TREE_TYPE (lhs), splat_value);
+	g = gimple_build_assign (lhs, splat_tree);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
+    /* Flavors of vec_splat.  */
+    /* a = vec_splat (b, 0x3) becomes a = { b[3],b[3],b[3],...};  */
+    case RS6000_BIF_VSPLTB:
+    case RS6000_BIF_VSPLTH:
+    case RS6000_BIF_VSPLTW:
+    case RS6000_BIF_XXSPLTD_V2DI:
+    case RS6000_BIF_XXSPLTD_V2DF:
+      {
+	arg0 = gimple_call_arg (stmt, 0); /* input vector.  */
+	arg1 = gimple_call_arg (stmt, 1); /* index into arg0.  */
+	/* Only fold the vec_splat_*() if arg1 is both a constant value and
+	   is a valid index into the arg0 vector.  */
+	unsigned int n_elts = VECTOR_CST_NELTS (arg0);
+	if (TREE_CODE (arg1) != INTEGER_CST
+	    || TREE_INT_CST_LOW (arg1) > (n_elts -1))
+	  return false;
+	lhs = gimple_call_lhs (stmt);
+	tree lhs_type = TREE_TYPE (lhs);
+	tree arg0_type = TREE_TYPE (arg0);
+	tree splat;
+	if (TREE_CODE (arg0) == VECTOR_CST)
+	  splat = VECTOR_CST_ELT (arg0, TREE_INT_CST_LOW (arg1));
+	else
+	  {
+	    /* Determine (in bits) the length and start location of the
+	       splat value for a call to the tree_vec_extract helper.  */
+	    int splat_elem_size = TREE_INT_CST_LOW (size_in_bytes (arg0_type))
+				  * BITS_PER_UNIT / n_elts;
+	    int splat_start_bit = TREE_INT_CST_LOW (arg1) * splat_elem_size;
+	    tree len = build_int_cst (bitsizetype, splat_elem_size);
+	    tree start = build_int_cst (bitsizetype, splat_start_bit);
+	    splat = tree_vec_extract (gsi, TREE_TYPE (lhs_type), arg0,
+				      len, start);
+	  }
+	/* And finally, build the new vector.  */
+	tree splat_tree = build_vector_from_val (lhs_type, splat);
+	g = gimple_build_assign (lhs, splat_tree);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
+    /* vec_mergel (integrals).  */
+    case RS6000_BIF_VMRGLH:
+    case RS6000_BIF_VMRGLW:
+    case RS6000_BIF_XXMRGLW_4SI:
+    case RS6000_BIF_VMRGLB:
+    case RS6000_BIF_VEC_MERGEL_V2DI:
+    case RS6000_BIF_XXMRGLW_4SF:
+    case RS6000_BIF_VEC_MERGEL_V2DF:
+      fold_mergehl_helper (gsi, stmt, 1);
+      return true;
+    /* vec_mergeh (integrals).  */
+    case RS6000_BIF_VMRGHH:
+    case RS6000_BIF_VMRGHW:
+    case RS6000_BIF_XXMRGHW_4SI:
+    case RS6000_BIF_VMRGHB:
+    case RS6000_BIF_VEC_MERGEH_V2DI:
+    case RS6000_BIF_XXMRGHW_4SF:
+    case RS6000_BIF_VEC_MERGEH_V2DF:
+      fold_mergehl_helper (gsi, stmt, 0);
+      return true;
+
+    /* Flavors of vec_mergee.  */
+    case RS6000_BIF_VMRGEW_V4SI:
+    case RS6000_BIF_VMRGEW_V2DI:
+    case RS6000_BIF_VMRGEW_V4SF:
+    case RS6000_BIF_VMRGEW_V2DF:
+      fold_mergeeo_helper (gsi, stmt, 0);
+      return true;
+    /* Flavors of vec_mergeo.  */
+    case RS6000_BIF_VMRGOW_V4SI:
+    case RS6000_BIF_VMRGOW_V2DI:
+    case RS6000_BIF_VMRGOW_V4SF:
+    case RS6000_BIF_VMRGOW_V2DF:
+      fold_mergeeo_helper (gsi, stmt, 1);
+      return true;
+
+    /* d = vec_pack (a, b) */
+    case RS6000_BIF_VPKUDUM:
+    case RS6000_BIF_VPKUHUM:
+    case RS6000_BIF_VPKUWUM:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, VEC_PACK_TRUNC_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
+    /* d = vec_unpackh (a) */
+    /* Note that the UNPACK_{HI,LO}_EXPR used in the gimple_build_assign call
+       in this code is sensitive to endian-ness, and needs to be inverted to
+       handle both LE and BE targets.  */
+    case RS6000_BIF_VUPKHSB:
+    case RS6000_BIF_VUPKHSH:
+    case RS6000_BIF_VUPKHSW:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	lhs = gimple_call_lhs (stmt);
+	if (BYTES_BIG_ENDIAN)
+	  g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
+	else
+	  g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* d = vec_unpackl (a) */
+    case RS6000_BIF_VUPKLSB:
+    case RS6000_BIF_VUPKLSH:
+    case RS6000_BIF_VUPKLSW:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	lhs = gimple_call_lhs (stmt);
+	if (BYTES_BIG_ENDIAN)
+	  g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
+	else
+	  g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* There is no gimple type corresponding with pixel, so just return.  */
+    case RS6000_BIF_VUPKHPX:
+    case RS6000_BIF_VUPKLPX:
+      return false;
+
+    /* vec_perm.  */
+    case RS6000_BIF_VPERM_16QI:
+    case RS6000_BIF_VPERM_8HI:
+    case RS6000_BIF_VPERM_4SI:
+    case RS6000_BIF_VPERM_2DI:
+    case RS6000_BIF_VPERM_4SF:
+    case RS6000_BIF_VPERM_2DF:
+    case RS6000_BIF_VPERM_16QI_UNS:
+    case RS6000_BIF_VPERM_8HI_UNS:
+    case RS6000_BIF_VPERM_4SI_UNS:
+    case RS6000_BIF_VPERM_2DI_UNS:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	tree permute = gimple_call_arg (stmt, 2);
+	lhs = gimple_call_lhs (stmt);
+	location_t loc = gimple_location (stmt);
+	gimple_seq stmts = NULL;
+	// convert arg0 and arg1 to match the type of the permute
+	// for the VEC_PERM_EXPR operation.
+	tree permute_type = (TREE_TYPE (permute));
+	tree arg0_ptype = gimple_build (&stmts, loc, VIEW_CONVERT_EXPR,
+					permute_type, arg0);
+	tree arg1_ptype = gimple_build (&stmts, loc, VIEW_CONVERT_EXPR,
+					permute_type, arg1);
+	tree lhs_ptype = gimple_build (&stmts, loc, VEC_PERM_EXPR,
+				      permute_type, arg0_ptype, arg1_ptype,
+				      permute);
+	// Convert the result back to the desired lhs type upon completion.
+	tree temp = gimple_build (&stmts, loc, VIEW_CONVERT_EXPR,
+				  TREE_TYPE (lhs), lhs_ptype);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	g = gimple_build_assign (lhs, temp);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
+    default:
+      if (TARGET_DEBUG_BUILTIN)
+	fprintf (stderr, "gimple builtin intrinsic not matched:%d %s %s\n",
+		 fn_code, fn_name1, fn_name2);
+      break;
+    }
+
+  return false;
 }
 
 /* Expand an expression EXP that calls a built-in function,
