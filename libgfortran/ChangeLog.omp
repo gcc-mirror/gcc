@@ -1,3 +1,11 @@
+2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* ISO_Fortran_binding.h: Update comments.
+	* runtime/ISO_Fortran_binding.c: Likewise.
+
 2021-09-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

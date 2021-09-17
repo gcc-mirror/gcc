@@ -55,7 +55,7 @@ extern GTY(()) tree gfc_charlen_type_node;
 
 /* The following flags give us information on the correspondence of
    real (and complex) kinds with C floating-point types long double
-   and __float128.  */
+   and _Float128.  */
 extern bool gfc_real16_is_float128;
 
 enum gfc_packed {

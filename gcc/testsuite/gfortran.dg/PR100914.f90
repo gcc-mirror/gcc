@@ -2,6 +2,7 @@
 ! { dg-do run { xfail { { x86_64*-*-* i?86*-*-* } && longdouble128 } } }
 ! { dg-additional-sources PR100914.c }
 ! { dg-require-effective-target fortran_real_c_float128 }
+! { dg-additional-options "-Wno-pedantic" }
 !
 ! Test the fix for PR100914
 ! 

@@ -1,6 +1,22 @@
 2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
+	2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.dg/PR100914.c: Do not include quadmath.h.  Use
+	_Float128 _Complex instead of __complex128.
+	* gfortran.dg/PR100914.f90: Add -Wno-pedantic to suppress error
+	about use of _Float128.
+	* gfortran.dg/c-interop/typecodes-array-float128-c.c: Use
+	_Float128 instead of __float128.
+	* gfortran.dg/c-interop/typecodes-sanity-c.c: Likewise.
+	* gfortran.dg/c-interop/typecodes-scalar-float128-c.c: Likewise.
+	* lib/target-supports.exp 
+	(check_effective_target_fortran_real_c_float128): Update comments.
+
+2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
 	2021-09-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gfortran.dg/c-interop/allocatable-dummy-c.c: New file.

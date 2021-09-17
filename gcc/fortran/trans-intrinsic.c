@@ -175,7 +175,7 @@ gfc_builtin_decl_for_float_kind (enum built_in_function double_built_in,
 
   if (gfc_real_kinds[i].c_float128)
     {
-      /* For __float128, the story is a bit different, because we return
+      /* For _Float128, the story is a bit different, because we return
 	 a decl to a library function rather than a built-in.  */
       gfc_intrinsic_map_t *m;
       for (m = gfc_intrinsic_map; m->double_built_in != double_built_in ; m++)
@@ -387,7 +387,7 @@ build_round_expr (tree arg, tree restype)
   resprec = TYPE_PRECISION (restype);
 
   /* Depending on the type of the result, choose the int intrinsic (iround,
-     available only as a builtin, therefore cannot use it for __float128), long
+     available only as a builtin, therefore cannot use it for _Float128), long
      int intrinsic (lround family) or long long intrinsic (llround).  If we
      don't have an appropriate function that converts directly to the integer
      type (such as kind == 16), just use ROUND, and then convert the result to
@@ -689,7 +689,7 @@ gfc_build_intrinsic_lib_fndecls (void)
   if (gfc_real16_is_float128)
   {
     /* If we have soft-float types, we create the decls for their
-       C99-like library functions.  For now, we only handle __float128
+       C99-like library functions.  For now, we only handle _Float128
        q-suffixed functions.  */
 
     tree type, complex_type, func_1, func_2, func_cabs, func_frexp;
