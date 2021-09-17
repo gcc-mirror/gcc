@@ -6007,6 +6007,38 @@ layout_var_decl (tree decl)
 	  error_at (DECL_SOURCE_LOCATION (decl),
 		    "storage size of %qD isn%'t constant", decl);
 	  TREE_TYPE (decl) = error_mark_node;
+	  type = error_mark_node;
+	}
+    }
+
+  /* If the final element initializes a flexible array field, add the size of
+     that initializer to DECL's size.  */
+  if (type != error_mark_node
+      && DECL_INITIAL (decl)
+      && TREE_CODE (DECL_INITIAL (decl)) == CONSTRUCTOR
+      && !vec_safe_is_empty (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)))
+      && DECL_SIZE (decl) != NULL_TREE
+      && TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST
+      && TYPE_SIZE (type) != NULL_TREE
+      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+      && tree_int_cst_equal (DECL_SIZE (decl), TYPE_SIZE (type)))
+    {
+      constructor_elt &elt = CONSTRUCTOR_ELTS (DECL_INITIAL (decl))->last ();
+      if (elt.index)
+	{
+	  tree itype = TREE_TYPE (elt.index);
+	  tree vtype = TREE_TYPE (elt.value);
+	  if (TREE_CODE (itype) == ARRAY_TYPE
+	      && TYPE_DOMAIN (itype) == NULL
+	      && TREE_CODE (vtype) == ARRAY_TYPE
+	      && COMPLETE_TYPE_P (vtype))
+	    {
+	      DECL_SIZE (decl)
+		= size_binop (PLUS_EXPR, DECL_SIZE (decl), TYPE_SIZE (vtype));
+	      DECL_SIZE_UNIT (decl)
+		= size_binop (PLUS_EXPR, DECL_SIZE_UNIT (decl),
+			      TYPE_SIZE_UNIT (vtype));
+	    }
 	}
     }
 }

@@ -23598,8 +23598,8 @@ aarch64_expand_setmem (rtx *operands)
       /* Do certain trailing copies as overlapping if it's going to be
 	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
 	 byte copy it's more efficient to do two overlapping 8 byte copies than
-	 8 + 4 + 2 + 1.  */
-      if (n > 0 && n < copy_limit / 2)
+	 8 + 4 + 2 + 1.  Only do this when -mstrict-align is not supplied.  */
+      if (n > 0 && n < copy_limit / 2 && !STRICT_ALIGNMENT)
 	{
 	  next_mode = smallest_mode_for_size (n, MODE_INT);
 	  int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();

@@ -1,3 +1,111 @@
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc-opts.h (enum sparc_processor_type): Add LEON5
+	* config/sparc/sparc.c (struct processor_costs): Add LEON5 costs
+	(leon5_adjust_cost): Increase cost of store with data dependency
+	on ALU instruction and FPU anti-dependencies.
+	(sparc_option_override): Add LEON5 costs
+	(sparc_adjust_cost): Add LEON5 cost adjustments
+	* config/sparc/sparc.h: Add LEON5
+	* config/sparc/sparc.md: Include LEON5 scheduling information
+	* config/sparc/sparc.opt: Add LEON5
+	* doc/invoke.texi: Add LEON5
+	* config/sparc/leon5.md: New file.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.md (stack_protect_setsi): Add NOP to prevent
+	sensitive sequence for B2BST errata workaround.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Do not begin
+	functions with atomic instruction in the UT700 errata workaround.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (next_active_non_empty_insn): New function
+	that returns next active non empty assembly instruction.
+	(sparc_do_work_around_errata): Use new function.
+
+2021-09-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (store_insn_p): Add predicate for store
+	attributes.
+	(load_insn_p): Add predicate for load attributes.
+	(sparc_do_work_around_errata): Use new predicates.
+
+2021-09-16  Andreas Larsson  <andreas@gaisler.com>
+
+	* config/sparc/sparc.c (dump_target_flag_bits): Print bit names for
+	LEON and LEON3.
+
+2021-09-16  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2021-09-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101934
+	* config/aarch64/aarch64.c (aarch64_expand_setmem):
+	Check STRICT_ALIGNMENT before creating an overlapping
+	store.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88578
+	PR c++/102295
+	* varasm.c (output_constructor_regular_field): Instead of assertion
+	that array_size_for_constructor result is equal to size of
+	TREE_TYPE (local->val) in bytes, assert that the type size is greater
+	or equal to array_size_for_constructor result and use type size as
+	fieldsize.
+
+2021-09-15  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (ISA_3_1_MASKS_SERVER): Add
+	OPTION_MASK_P10_FUSION_2STORE.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Enable
+	store fusion for Power10.
+	(is_fusable_store): New.
+	(power10_sched_reorder): Likewise.
+	(rs6000_sched_reorder): Do Power10 specific reordering.
+	(rs6000_sched_reorder2): Likewise.
+	* config/rs6000/rs6000.opt: Add new option.
+
+2021-09-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (adjacent_mem_locations): Return the lower
+	addressed memory rtx, if any.
+	(rs6000_split_multireg_move): Fix code formatting.
+	Handle MMA build built-ins with operands in adjacent memory locations.
+
+2021-09-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Move to later
+	in the file.
+
+2021-09-14  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (is_load_insn1): Verify destination is a
+	register.
+	(is_store_insn1): Verify source is a register.
+
+2021-09-14  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/97142
+	* config/rs6000/rs6000.md (fmod<mode>3): New define_expand.
+	(remainder<mode>3): Likewise.
+
 2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

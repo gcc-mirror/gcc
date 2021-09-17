@@ -1,3 +1,76 @@
+2021-09-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85130
+	* gfortran.dg/substr_6.f90: Revert commit r8-7574, adding again
+	test that was erroneously considered as illegal.
+
+2021-09-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82314
+	* gfortran.dg/pr82314.f90: New test.
+
+2021-09-16  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2021-09-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101934
+	* gcc.target/aarch64/memset-strict-align-1.c: New test.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88578
+	PR c++/102295
+	* g++.dg/ext/flexary39.C: New test.
+	* g++.dg/ext/flexary40.C: New test.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102295
+	* g++.target/i386/pr102295.C: New test.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102305
+	* g++.dg/cpp0x/pr102305.C: New test.
+
+2021-09-15  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-stst.c: New test.
+	* gcc.target/powerpc/fusion-p10-stst2.c: New test.
+
+2021-09-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-9.c: New test.
+
+2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/enum_rep2.adb: New test.
+
+2021-09-14  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/97142
+	* gcc.target/powerpc/pr97142.c: New test.
+	(cherry-picked from 546ecb0054af302acf0839c7f3eb78598f8c0672)
+
 2021-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

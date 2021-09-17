@@ -4290,6 +4290,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
      handling alignment and possible padding.  */
   if (is_type && (!gnu_decl || this_made_decl))
     {
+      const bool is_by_ref = Is_By_Reference_Type (gnat_entity);
+
       gcc_assert (!TYPE_IS_DUMMY_P (gnu_type));
 
       /* Process the attributes, if not already done.  Note that the type is
@@ -4304,15 +4306,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 non-constant).  */
       if (!gnu_size && kind != E_String_Literal_Subtype)
 	{
+	  const char *size_s = "size for %s too small{, minimum allowed is ^}";
+	  const char *type_s = is_by_ref ? "by-reference type &" : "&";
+
 	  if (Known_Esize (gnat_entity))
 	    gnu_size
 	      = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
-			       VAR_DECL, false, false, NULL, NULL);
+			       VAR_DECL, false, false, size_s, type_s);
 	  else
 	    gnu_size
 	      = validate_size (RM_Size (gnat_entity), gnu_type, gnat_entity,
 			       TYPE_DECL, false, Has_Size_Clause (gnat_entity),
-			       NULL, NULL);
+			       size_s, type_s);
 	}
 
       /* If a size was specified, see if we can make a new type of that size
@@ -4620,7 +4625,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    TYPE_ALIGN_OK (gnu_type) = 1;
 
 	  /* Record whether the type is passed by reference.  */
-	  if (Is_By_Reference_Type (gnat_entity) && !VOID_TYPE_P (gnu_type))
+	  if (is_by_ref && !VOID_TYPE_P (gnu_type))
 	    TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
 	  /* Record whether an alignment clause was specified.  */
@@ -4740,6 +4745,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       else
 	gnu_decl = create_type_decl (gnu_entity_name, gnu_type, artificial_p,
 				     debug_info_p, gnat_entity);
+
+      /* For vector types, make the representative array the debug type.  */
+      if (VECTOR_TYPE_P (gnu_type))
+	{
+	  tree rep = TYPE_REPRESENTATIVE_ARRAY (gnu_type);
+	  TYPE_NAME (rep) = DECL_NAME (gnu_decl);
+	  SET_TYPE_DEBUG_TYPE (gnu_type, rep);
+	}
     }
 
   /* Otherwise, for a type reusing an existing DECL, back-annotate values.  */
@@ -9120,13 +9133,12 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
   /* Issue an error either if the default size of the object isn't a constant
      or if the new size is smaller than it.  */
   if (TREE_CODE (old_size) != INTEGER_CST
-      || TREE_OVERFLOW (old_size)
-      || tree_int_cst_lt (size, old_size))
+      || (!TREE_OVERFLOW (old_size) && tree_int_cst_lt (size, old_size)))
     {
       char buf[128];
       const char *s;
 
-      if (kind == FIELD_DECL)
+      if (s1 && s2)
 	{
 	  snprintf (buf, sizeof (buf), s1, s2);
 	  s = buf;
@@ -9135,6 +9147,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
 	s = "component size for& too small{, minimum allowed is ^}";
       else
 	s = "size for& too small{, minimum allowed is ^}";
+
       post_error_ne_tree (s, gnat_error_node, gnat_object, old_size);
 
       return NULL_TREE;

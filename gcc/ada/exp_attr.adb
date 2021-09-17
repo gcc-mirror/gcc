@@ -3254,14 +3254,15 @@ package body Exp_Attr is
          --  If not constant-folded, Enum_Type'Enum_Rep (X) or X'Enum_Rep
          --  expands to
 
-         --    target-type (X)
+         --    target-type!(X)
 
-         --  This is simply a direct conversion from the enumeration type to
-         --  the target integer type, which is treated by the back end as a
-         --  normal integer conversion, treating the enumeration type as an
-         --  integer, which is exactly what we want. We set Conversion_OK to
-         --  make sure that the analyzer does not complain about what otherwise
-         --  might be an illegal conversion.
+         --  This is an unchecked conversion from the enumeration type to the
+         --  target integer type, which is treated by the back end as a normal
+         --  integer conversion, treating the enumeration type as an integer,
+         --  which is exactly what we want. Unlike for the Pos attribute, we
+         --  cannot use a regular conversion since the associated check would
+         --  involve comparing the converted bounds, i.e. would involve the use
+         --  of 'Pos instead 'Enum_Rep for these bounds.
 
          --  However the target type is universal integer in most cases, which
          --  is a very large type, so in the case of an enumeration type, we
@@ -3269,11 +3270,13 @@ package body Exp_Attr is
          --  the size information.
 
          if Is_Enumeration_Type (Ptyp) then
-            Rewrite (N, OK_Convert_To (Get_Integer_Type (Ptyp), Expr));
+            Rewrite (N, Unchecked_Convert_To (Get_Integer_Type (Ptyp), Expr));
             Convert_To_And_Rewrite (Typ, N);
 
+         --  Deal with integer types (replace by conversion)
+
          else
-            Rewrite (N, OK_Convert_To (Typ, Expr));
+            Rewrite (N, Convert_To (Typ, Expr));
          end if;
 
          Analyze_And_Resolve (N, Typ);
@@ -5447,7 +5450,7 @@ package body Exp_Attr is
 
          --  Deal with integer types (replace by conversion)
 
-         elsif Is_Integer_Type (Etyp) then
+         else
             Rewrite (N, Convert_To (Typ, Expr));
          end if;
 

@@ -5507,14 +5507,20 @@ output_constructor_regular_field (oc_local_state *local)
 	  && (!TYPE_DOMAIN (TREE_TYPE (local->field))
 	      || !TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (local->field)))))
 	{
-	  fieldsize = array_size_for_constructor (local->val);
+	  unsigned HOST_WIDE_INT fldsize
+	    = array_size_for_constructor (local->val);
+	  fieldsize = int_size_in_bytes (TREE_TYPE (local->val));
+	  /* In most cases fieldsize == fldsize as the size of the initializer
+	     determines how many elements the flexible array member has.  For
+	     C++ fldsize can be smaller though, if the last or several last or
+	     all initializers of the flexible array member have side-effects
+	     and the FE splits them into dynamic initialization.  */
+	  gcc_checking_assert (fieldsize >= fldsize);
 	  /* Given a non-empty initialization, this field had better
 	     be last.  Given a flexible array member, the next field
 	     on the chain is a TYPE_DECL of the enclosing struct.  */
 	  const_tree next = DECL_CHAIN (local->field);
 	  gcc_assert (!fieldsize || !next || TREE_CODE (next) != FIELD_DECL);
-	  tree size = TYPE_SIZE_UNIT (TREE_TYPE (local->val));
-	  gcc_checking_assert (compare_tree_int (size, fieldsize) == 0);
 	}
       else
 	fieldsize = tree_to_uhwi (DECL_SIZE_UNIT (local->field));
