@@ -1130,7 +1130,7 @@ public:
     auto base_type = base->get_base ();
     auto other_base_type = type.get_base ();
 
-    TyTy::BaseType *base_resolved = base_type->unify (other_base_type);
+    TyTy::BaseType *base_resolved = base_type->coerce (other_base_type);
     if (base_resolved == nullptr
 	|| base_resolved->get_kind () == TypeKind::ERROR)
       {
