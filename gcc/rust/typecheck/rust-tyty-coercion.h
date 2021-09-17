@@ -24,6 +24,7 @@
 #include "rust-tyty-visitor.h"
 #include "rust-hir-map.h"
 #include "rust-hir-type-check.h"
+#include "rust-hir-type-bounds.h"
 
 extern ::Backend *
 rust_get_backend ();
@@ -1386,6 +1387,16 @@ public:
 	BaseCoercionRules::visit (type);
 	return;
       }
+
+    resolved = base->clone ();
+  }
+
+  void visit (ADTType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    bool ok = base->bounds_compatible (type, ref_locus, true);
+    if (!ok)
+      return;
 
     resolved = base->clone ();
   }
