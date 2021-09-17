@@ -23,8 +23,7 @@ static struct tc_info tc_table[] =
 {
   /* Extension types.
      Note there is no portable C equivalent type for CFI_type_ucs4_char type
-     (4-byte Unicode characters), and GCC rejects "__float128 _Complex",
-     so this is kind of hacky...  */
+     (4-byte Unicode characters), so this is kind of hacky...  */
 #if CFI_type_int128_t > 0
   { CFI_type_int128_t, "CFI_type_int128_t",
     sizeof (__int128), 1 },
@@ -38,9 +37,9 @@ static struct tc_info tc_table[] =
 #endif
 #if CFI_type_float128 > 0  
   { CFI_type_float128, "CFI_type_float128",
-    sizeof (__float128), 1 },
+    sizeof (_Float128), 1 },
   { CFI_type_float128_Complex, "CFI_type_float128_Complex",
-    sizeof (__float128) * 2, 1 },
+    sizeof (_Float128 _Complex), 1 },
 #endif
 #if CFI_type_cfunptr > 0  
   { CFI_type_cfunptr, "CFI_type_cfunptr",

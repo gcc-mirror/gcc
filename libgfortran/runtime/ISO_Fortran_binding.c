@@ -222,7 +222,7 @@ gfc_desc_to_cfi_desc (CFI_cdesc_t **d_ptr, const gfc_array_void *s)
      elem_len and not the kind, we get into trouble with long double kinds
      that do not correspond directly to the elem_len, specifically the
      kind 10 80-bit long double on x86 targets.  On x86_64, this has size
-     16 and cannot be differentiated from true __float128.  Prefer the
+     16 and cannot be differentiated from true _Float128.  Prefer the
      standard long double type over the GNU extension in that case.  */
   if (d->type == CFI_type_Real && kind == sizeof (long double))
     d->type = CFI_type_long_double;

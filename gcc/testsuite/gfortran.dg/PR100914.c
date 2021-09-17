@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
-#include <quadmath.h>
 
 #include <ISO_Fortran_binding.h>
 
@@ -29,7 +28,7 @@
 #define CMPLXL(x, y) ((long double complex)((long double)(x) + (long double complex)I * (long double)(y)))
 
 #undef CMPLX
-#define CMPLX(x, y) ((__complex128 )((double)(x) + (double complex)I * (double)(y)))
+#define CMPLX(x, y) ((_Float128 _Complex )((double)(x) + (double complex)I * (double)(y)))
 
 #define N 11
 #define M 7
@@ -37,7 +36,7 @@
 typedef float _Complex c_float_complex;
 typedef double _Complex c_double_complex;
 typedef long double _Complex c_long_double_complex;
-typedef __complex128 c_float128_complex;
+typedef _Float128 _Complex c_float128_complex;
 
 bool c_vrfy_c_float_complex (const CFI_cdesc_t *restrict);
 

@@ -281,7 +281,7 @@ extern int CFI_setpointer (CFI_cdesc_t *, CFI_cdesc_t *, const CFI_index_t []);
 #define CFI_type_long_double (CFI_type_Real + (10 << CFI_type_kind_shift))
 #define CFI_type_long_double_Complex (CFI_type_Complex + (10 << CFI_type_kind_shift))
 
-/* This is the IEEE 128-bit encoding, same as float128.  */
+/* This is the IEEE 128-bit encoding, same as _Float128.  */
 #elif (__CFI_LDBL_MANT_DIG__ == 113 \
        && __CFI_LDBL_MIN_EXP__ == -16381 \
        && __CFI_LDBL_MAX_EXP__ == 16384)
@@ -303,7 +303,7 @@ extern int CFI_setpointer (CFI_cdesc_t *, CFI_cdesc_t *, const CFI_index_t []);
 #error "Can't determine kind of long double"
 #endif
 
-/* Similarly for __float128.  This always refers to the IEEE encoding
+/* Similarly for _Float128.  This always refers to the IEEE encoding
    and not some other 128-bit representation, so if we already used
    kind 16 for a non-IEEE representation, this one must be unsupported
    in Fortran even if it's available in C.  */
