@@ -8650,7 +8650,7 @@ vectorizable_load (vec_info *vinfo,
 	      FOR_EACH_VEC_ELT (SLP_TREE_LOAD_PERMUTATION (slp_node), j, k)
 		if (k > maxk)
 		  maxk = k;
-	      tree vectype = STMT_VINFO_VECTYPE (group_info);
+	      tree vectype = SLP_TREE_VECTYPE (slp_node);
 	      if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits)
 		  || maxk >= (DR_GROUP_SIZE (group_info) & ~(nunits - 1)))
 		{
