@@ -22,11 +22,4 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-/* The system ___divdc3 routine in libSystem on darwin10 is not
-   accurate to 1ulp, ours is, so we avoid ever using the system name
-   for this routine and instead install a non-conflicting name that is
-   accurate.  See darwin_rename_builtins.  */
-#ifdef L_divdc3
-#define DECLARE_LIBRARY_RENAMES \
-  asm(".text; ___divdc3: jmp ___ieee_divdc3 ; .globl ___divdc3");
-#endif
+extern void * _darwin10_Unwind_FindEnclosingFunction (void *);

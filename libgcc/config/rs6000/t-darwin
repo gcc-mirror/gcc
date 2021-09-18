@@ -56,3 +56,6 @@ unwind-dw2_s.o: HOST_LIBGCC2_CFLAGS += -maltivec
 unwind-dw2.o: HOST_LIBGCC2_CFLAGS += -maltivec
 
 LIB2ADDEH += $(srcdir)/config/rs6000/darwin-fallback.c
+
+# Build a legacy libgcc_s.1
+BUILD_LIBGCCS1 = YES
