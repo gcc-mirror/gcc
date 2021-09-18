@@ -1,3 +1,9 @@
+2021-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/102306
+	* combine.c (try_combine): Abort the combination if we are about to
+	duplicate volatile references.
+
 2021-09-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
