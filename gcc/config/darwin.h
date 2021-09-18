@@ -230,7 +230,7 @@ extern GTY(()) int darwin_ms_struct;
       %{%:sanitize(address): -lasan } \
       %{%:sanitize(undefined): -lubsan } \
       %(link_ssp) \
-      %:version-compare(>< 10.6 10.7 mmacosx-version-min= -ld10-uwfef.o) \
+      %:version-compare(>< 10.6 10.7 mmacosx-version-min= -ld10-uwfef) \
       %(link_gcc_c_sequence) \
     }}}\
     %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*} %{F*} "\
