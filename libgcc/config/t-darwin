@@ -24,3 +24,6 @@ d10-uwfef.o: $(srcdir)/config/darwin10-unwind-find-enc-func.c
 libd10-uwfef.a: d10-uwfef.o
 	$(AR_CREATE_FOR_TARGET) $@ d10-uwfef.o
 	$(RANLIB_FOR_TARGET) $@
+
+# Symbols for all the sub-ports.
+SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/libgcc-libsystem.ver
