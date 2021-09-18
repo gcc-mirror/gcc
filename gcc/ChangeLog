@@ -1,3 +1,9 @@
+2021-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/102306
+	* combine.c (try_combine): Abort the combination if we are about to
+	duplicate volatile references.
+
 2021-09-16  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/sparc-opts.h (enum sparc_processor_type): Add LEON5
