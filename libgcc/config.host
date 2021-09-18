@@ -214,8 +214,18 @@ esac
 case ${host} in
 *-*-darwin*)
   asm_hidden_op=.private_extern
-  tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic t-slibgcc-darwin"
-  extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o"
+  tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic"
+  # The unwinder is provided by the system shared libraries, do not add one
+  # to the shared libgcc but, for older systems, we build a shared unwinder
+  # separately so that we can construct a libgcc_s.1 to use for binaries
+  # linked against the old libgcc_ext.10.x stubs.
+  case ${host} in
+    *-*-darwin[89]* | *-*-darwin10*)
+      tmake_file="$tmake_file t-darwin-ehs ${cpu_type}/t-darwin-ehs"
+      ;;
+  esac
+  tmake_file="$tmake_file t-slibgcc-darwin"
+  extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o libemutls_w.a"
   ;;
 *-*-dragonfly*)
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
@@ -1143,10 +1153,14 @@ powerpc-*-darwin*)
 	  md_unwind_header=rs6000/darwin-unwind.h
 	  ;;
 	esac
+	# We build the darwin10 EH shim for Rosetta (running on x86 machines).
+	tm_file="$tm_file i386/darwin-lib.h"
 	tmake_file="$tmake_file rs6000/t-ppc64-fp rs6000/t-ibm-ldouble"
 	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
 powerpc64-*-darwin*)
+	# We build the darwin10 EH shim for Rosetta (running on x86 machines).
+	tm_file="$tm_file i386/darwin-lib.h"
 	tmake_file="$tmake_file rs6000/t-darwin64 rs6000/t-ibm-ldouble"
 	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;

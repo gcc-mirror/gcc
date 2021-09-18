@@ -233,6 +233,10 @@ no_dead_strip_inits_and_terms
 Driver RejectNegative
 (Obsolete) Current linkers never dead-strip these items, so the option is not needed.
 
+nodefaultexport
+Driver RejectNegative
+Do not add a default symbol exports to modules or dynamic libraries.
+
 nofixprebinding
 Driver RejectNegative
 (Obsolete after 10.3.9) Set MH_NOPREFIXBINDING, in an executable.

@@ -1,0 +1,7 @@
+# Build the unwinder separately so that we can construct a replacement for
+# libgcc_s.1 on systems that used the unwinder in libgcc_s.
+
+LIBEHSOBJS = unwind-dw2_s.o unwind-dw2-fde-darwin_s.o unwind-c_s.o
+
+unwind-dw2_s.o: gthr-default.h md-unwind-support.h unwind.h
+$(LIBEHSOBJS): libgcc_tm.h
