@@ -1,3 +1,14 @@
+2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (finish_omp_atomic): Add r and weak arguments.
+	* parser.c (cp_parser_omp_atomic): Update function comment for
+	OpenMP 5.1 atomics, parse OpenMP 5.1 atomics and fail, compare and
+	weak clauses.
+	* semantics.c (finish_omp_atomic): Add r and weak arguments, handle
+	them, handle COND_EXPRs.
+	* pt.c (tsubst_expr): Adjust for COND_EXPR forms that
+	finish_omp_atomic can now produce.
+
 2021-09-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/98486

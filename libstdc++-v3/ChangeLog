@@ -1,3 +1,29 @@
+2021-09-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::iterator): Add noexcept to all
+	member functions and friend functions.
+	(distance): Add noexcept.
+	(advance): Add noexcept and inline.
+	* include/experimental/bits/fs_path.h (path::iterator):
+	Add noexcept to all member functions.
+
+2021-09-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102270
+	* include/std/tuple (_Tuple_impl): Add constexpr to constructor
+	missed in previous patch.
+	* testsuite/20_util/tuple/cons/102270.C: Moved to...
+	* testsuite/20_util/tuple/cons/102270.cc: ...here.
+	* testsuite/util/testsuite_allocator.h (SimpleAllocator): Add
+	constexpr to constructor so it can be used for C++20 tests.
+
+2021-09-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/valarray/dr630-3.C: Moved to...
+	* testsuite/26_numerics/valarray/dr630-3.cc: ...here.
+	* testsuite/27_io/basic_iostream/cons/16251.C: Moved to...
+	* testsuite/27_io/basic_iostream/cons/16251.cc: ...here.
+
 2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/Makefile.am (stamp-debug): Add all Makefiles as

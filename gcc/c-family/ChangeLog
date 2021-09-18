@@ -1,3 +1,12 @@
+2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_finish_omp_atomic): Avoid creating
+	TARGET_EXPR if test is true, use create_tmp_var_raw instead of
+	create_tmp_var and add a zero initializer to TARGET_EXPRs that
+	had NULL initializer.  When omitting operands after v = x,
+	use type of v rather than type of x.  Fix type of vtmp
+	TARGET_EXPR.
+
 2021-09-13  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -Winterference-size.

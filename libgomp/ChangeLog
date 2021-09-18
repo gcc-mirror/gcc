@@ -1,3 +1,25 @@
+2021-09-17  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/broadcast-many.c: Update.
+
+2021-09-17  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/broadcast-many.c: New test.
+
+2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1): Spelling fix,
+	declare variante -> declare variant.
+
+2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/atomic-19.c: Drop c effective target.
+	Use /* */ comments instead of //.
+	* testsuite/libgomp.c-c++-common/atomic-20.c: Likewise.
+	* testsuite/libgomp.c-c++-common/atomic-21.c: Likewise.
+	* testsuite/libgomp.c++/atomic-16.C: New test.
+	* testsuite/libgomp.c++/atomic-17.C: New test.
+
 2021-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/atomic-19.c: New test.
