@@ -13610,11 +13610,16 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	case E_V8SFmode:
 	case E_V8DFmode:
 	case E_V8DImode:
+	case E_V8HFmode:
 	  fputs ("{1to8}", file);
 	  break;
 	case E_V16SFmode:
 	case E_V16SImode:
+	case E_V16HFmode:
 	  fputs ("{1to16}", file);
+	  break;
+	case E_V32HFmode:
+	  fputs ("{1to32}", file);
 	  break;
 	default:
 	  gcc_unreachable ();

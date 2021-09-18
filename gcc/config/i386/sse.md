@@ -841,14 +841,6 @@
 (define_mode_iterator V16_256 [V16HI V16HF])
 (define_mode_iterator V32_512 [V32HI V32HF])
 
-(define_mode_attr avx512bcst
-  [(V4SI "%{1to4%}") (V2DI "%{1to2%}")
-   (V8SI "%{1to8%}") (V4DI "%{1to4%}")
-   (V16SI "%{1to16%}") (V8DI "%{1to8%}")
-   (V4SF "%{1to4%}") (V2DF "%{1to2%}")
-   (V8SF "%{1to8%}") (V4DF "%{1to4%}")
-   (V16SF "%{1to16%}") (V8DF "%{1to8%}")])
-
 ;; Mapping from float mode to required SSE level
 (define_mode_attr sse
   [(SF "sse") (DF "sse2") (HF "avx512fp16")
