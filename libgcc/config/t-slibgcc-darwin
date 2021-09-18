@@ -93,16 +93,6 @@ install-darwin-libgcc-stubs :
 	for d in $(INSTALL_FILES) ; do \
 	  $(INSTALL_DATA) $$d $(DESTDIR)$(slibdir)/$$d || exit 1 ; \
 	done
-	if [ -f $(DESTDIR)$(slibdir)/libgcc_s_ppc64.1.dylib ]; then \
-	  rm -f $(DESTDIR)$(slibdir)/libgcc_s_ppc64.1.dylib; \
-	else true; fi
-	$(LN_S) libgcc_s.1.dylib \
-		$(DESTDIR)$(slibdir)/libgcc_s_ppc64.1.dylib
-	if [ -f $(DESTDIR)$(slibdir)/libgcc_s_x86_64.1.dylib ]; then \
-	  rm -f $(DESTDIR)$(slibdir)/libgcc_s_x86_64.1.dylib; \
-	else true; fi
-	$(LN_S) libgcc_s.1.dylib \
-		$(DESTDIR)$(slibdir)/libgcc_s_x86_64.1.dylib
 
 else
 
@@ -121,13 +111,5 @@ install-darwin-libgcc-links:
 	  rm -f $(gcc_objdir)$(MULTISUBDIR)/$$file;		\
 	  $(LN_S) ../$$file $(gcc_objdir)$(MULTISUBDIR)/;	\
 	done
-
-	rm -f $(gcc_objdir)$(MULTISUBDIR)/libgcc_s_x86_64.1.dylib
-	$(LN_S) libgcc_s.1.dylib \
-		$(gcc_objdir)$(MULTISUBDIR)/libgcc_s_x86_64.1.dylib
-
-	rm -f $(gcc_objdir)$(MULTISUBDIR)/libgcc_s_ppc64.1.dylib
-	$(LN_S) libgcc_s.1.dylib \
-		$(gcc_objdir)$(MULTISUBDIR)/libgcc_s_ppc64.1.dylib
 
 endif
