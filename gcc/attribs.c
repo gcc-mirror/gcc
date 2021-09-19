@@ -1022,40 +1022,6 @@ common_function_versions (tree fn1, tree fn2)
   return result;
 }
 
-/* Return a new name by appending SUFFIX to the DECL name.  If make_unique
-   is true, append the full path name of the source file.  */
-
-char *
-make_unique_name (tree decl, const char *suffix, bool make_unique)
-{
-  char *global_var_name;
-  int name_len;
-  const char *name;
-  const char *unique_name = NULL;
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-
-  /* Get a unique name that can be used globally without any chances
-     of collision at link time.  */
-  if (make_unique)
-    unique_name = IDENTIFIER_POINTER (get_file_function_name ("\0"));
-
-  name_len = strlen (name) + strlen (suffix) + 2;
-
-  if (make_unique)
-    name_len += strlen (unique_name) + 1;
-  global_var_name = XNEWVEC (char, name_len);
-
-  /* Use '.' to concatenate names as it is demangler friendly.  */
-  if (make_unique)
-    snprintf (global_var_name, name_len, "%s.%s.%s", name, unique_name,
-	      suffix);
-  else
-    snprintf (global_var_name, name_len, "%s.%s", name, suffix);
-
-  return global_var_name;
-}
-
 /* Make a dispatcher declaration for the multi-versioned function DECL.
    Calls to DECL function will be replaced with calls to the dispatcher
    by the front-end.  Return the decl created.  */
