@@ -80,6 +80,92 @@ legacy_mangle_self (const TyTy::BaseType *self)
 }
 
 static std::string
+v0_tuple_prefix (const TyTy::BaseType *ty)
+{
+  if (ty->is_unit ())
+    return "u";
+
+  // FIXME: ARTHUR: Add rest of algorithm
+  return "";
+}
+
+static std::string
+v0_numeric_prefix (const TyTy::BaseType *ty)
+{
+  static const std::map<std::string, std::string> num_prefixes = {
+    {"[i8]", "a"},    {"[u8]", "h"},	{"[i16]", "s"}, {"[u16]", "t"},
+    {"[i32]", "l"},   {"[u32]", "m"},	{"[i64]", "x"}, {"[u64]", "y"},
+    {"[isize]", "i"}, {"[usize]", "j"}, {"[f32]", "f"}, {"[f64]", "d"},
+  };
+
+  auto ty_kind = ty->get_kind ();
+  auto ty_str = ty->as_string ();
+  auto numeric_iter = num_prefixes.end ();
+
+  // Special numeric types
+  if (ty_kind == TyTy::TypeKind::ISIZE)
+    return "i";
+  else if (ty_kind == TyTy::TypeKind::USIZE)
+    return "j";
+
+  numeric_iter = num_prefixes.find (ty_str);
+  if (numeric_iter != num_prefixes.end ())
+    return numeric_iter->second;
+
+  return "";
+}
+
+static std::string
+v0_simple_type_prefix (const TyTy::BaseType *ty)
+{
+  switch (ty->get_kind ())
+    {
+    case TyTy::TypeKind::BOOL:
+      return "b";
+    case TyTy::TypeKind::CHAR:
+      return "c";
+    case TyTy::TypeKind::STR:
+      return "e";
+    case TyTy::TypeKind::NEVER:
+      return "z";
+
+      // Placeholder types
+    case TyTy::TypeKind::ERROR:	      // Fallthrough
+    case TyTy::TypeKind::INFER:	      // Fallthrough
+    case TyTy::TypeKind::PLACEHOLDER: // Fallthrough
+    case TyTy::TypeKind::PARAM:
+      // FIXME: TyTy::TypeKind::BOUND is also a valid variant in rustc
+      return "p";
+
+    case TyTy::TypeKind::TUPLE:
+      return v0_tuple_prefix (ty);
+
+    case TyTy::TypeKind::UINT:	// Fallthrough
+    case TyTy::TypeKind::INT:	// Fallthrough
+    case TyTy::TypeKind::FLOAT: // Fallthrough
+    case TyTy::TypeKind::ISIZE: // Fallthrough
+    case TyTy::TypeKind::USIZE: // Fallthrough
+      return v0_numeric_prefix (ty);
+
+    default:
+      return "";
+    }
+
+  gcc_unreachable ();
+}
+
+static std::string
+v0_type_prefix (const TyTy::BaseType *ty)
+{
+  auto ty_prefix = v0_simple_type_prefix (ty);
+  if (!ty_prefix.empty ())
+    return ty_prefix;
+
+  // FIXME: We need to fetch more type prefixes
+  gcc_unreachable ();
+}
+
+static std::string
 legacy_mangle_item (const TyTy::BaseType *ty,
 		    const Resolver::CanonicalPath &path,
 		    const std::string &crate_name)
@@ -104,17 +190,16 @@ legacy_mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
 	 + kMangledSymbolDelim;
 }
 
-// FIXME: Uncomment once v0 mangling is implemented
-// static std::string
-// Mangler::v0_mangle_item (const TyTy::BaseType *ty,
-// 			 const std::string &name)
-// {}
-//
-// static std::string
-// Mangler::v0_mangle_impl_item (const TyTy::BaseType *self,
-// 			      const TyTy::BaseType *ty,
-// 			      const std::string &name)
-// {}
+static std::string
+v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
+		const std::string &crate_name)
+{
+  auto ty_prefix = v0_type_prefix (ty);
+}
+
+static std::string
+v0_mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
+		     const std::string &name, const std::string &crate_name);
 
 std::string
 Mangler::mangle_item (const TyTy::BaseType *ty,
@@ -126,7 +211,7 @@ Mangler::mangle_item (const TyTy::BaseType *ty,
     case Mangler::MangleVersion::LEGACY:
       return legacy_mangle_item (ty, path, crate_name);
     case Mangler::MangleVersion::V0:
-      gcc_unreachable ();
+      return v0_mangle_item (ty, path, crate_name);
     default:
       gcc_unreachable ();
     }
