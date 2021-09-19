@@ -50,7 +50,16 @@ struct __emutls_array
   void **data[];
 };
 
+/* EMUTLS_ATTR is provided to allow targets to build the emulated tls
+   routines as weak definitions, for example.
+   If there is no definition, fall back to the default.  */
+#ifndef EMUTLS_ATTR
+#  define EMUTLS_ATTR
+#endif
+
+EMUTLS_ATTR
 void *__emutls_get_address (struct __emutls_object *);
+EMUTLS_ATTR
 void __emutls_register_common (struct __emutls_object *, word, word, void *);
 
 #ifdef __GTHREADS
@@ -123,7 +132,11 @@ emutls_alloc (struct __emutls_object *obj)
   return ret;
 }
 
-void *
+/* Despite applying the attribute to the declaration, in this case the mis-
+   match between the builtin's declaration [void * (*)(void *)] and the
+   implementation here, causes the decl. attributes to be discarded.  */
+
+EMUTLS_ATTR void *
 __emutls_get_address (struct __emutls_object *obj)
 {
   if (! __gthread_active_p ())
@@ -187,7 +200,7 @@ __emutls_get_address (struct __emutls_object *obj)
 #endif
 }
 
-void
+EMUTLS_ATTR void
 __emutls_register_common (struct __emutls_object *obj,
 			  word size, word align, void *templ)
 {
