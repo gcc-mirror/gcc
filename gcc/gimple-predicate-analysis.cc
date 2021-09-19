@@ -2361,7 +2361,11 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
       dump (NULL, "");
     }
 
-  gcc_assert (has_valid_pred == (m_preds.length () > 0));
+  if (has_valid_pred)
+    gcc_assert (m_preds.length () != 0);
+  else
+    /* Clear M_PREDS to indicate failure.  */
+    m_preds.release ();
 }
 
 /* Return the predicate expression guarding the definition of
