@@ -37,6 +37,9 @@ along with GCC; see the file COPYING3.  If not see
 path_range_query::path_range_query (gimple_ranger &ranger)
   : m_ranger (ranger)
 {
+  if (DEBUG_SOLVER)
+    fprintf (dump_file, "\n*********** path_range_query ******************\n");
+
   m_cache = new ssa_global_cache;
   m_has_cache_entry = BITMAP_ALLOC (NULL);
   m_path = NULL;
@@ -85,14 +88,15 @@ path_range_query::set_cache (const irange &r, tree name)
 void
 path_range_query::dump (FILE *dump_file)
 {
+  push_dump_file save (dump_file, dump_flags & ~TDF_DETAILS);
+
   if (m_path->is_empty ())
     return;
 
   unsigned i;
   bitmap_iterator bi;
-  extern void dump_ranger (FILE *, const vec<basic_block> &);
 
-  fprintf (dump_file, "Path is (length=%d):\n", m_path->length ());
+  fprintf (dump_file, "\nPath is (length=%d):\n", m_path->length ());
   dump_ranger (dump_file, *m_path);
 
   fprintf (dump_file, "Imports:\n");
