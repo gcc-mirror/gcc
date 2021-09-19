@@ -1,3 +1,14 @@
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_order): Parse unconstrained
+	and reproducible modifiers.
+	(OMP_DISTRIBUTE_CLAUSE_MASK): Add order clause.
+
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_default): Handle private and
+	firstprivate arguments, adjust diagnostics on unknown argument.
+
 2021-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_atomic): Reject atomic swap if capture

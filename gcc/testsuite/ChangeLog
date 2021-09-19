@@ -1,3 +1,120 @@
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/order-1.c (f2): Add tests for distribute
+	with order clause.
+	(f3): Remove.
+	* c-c++-common/gomp/order-2.c: Don't expect error for distribute
+	with order clause.
+	* c-c++-common/gomp/order-5.c: New test.
+	* c-c++-common/gomp/order-6.c: New test.
+	* c-c++-common/gomp/clause-dups-1.c (f1): Add tests for
+	duplicated order clause.
+	(f9): New function.
+	* c-c++-common/gomp/clauses-1.c (baz, bar): Don't mix copyin and
+	order(concurrent) clauses on the same composite construct combined
+	with distribute, instead split it into two tests, one without
+	copyin and one without order(concurrent).  Add order(concurrent)
+	clauses to {,{,target} teams} distribute.
+	* g++.dg/gomp/attrs-1.C (baz, bar): Likewise.
+	* g++.dg/gomp/attrs-2.C (baz, bar): Likewise.
+
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/default-2.c: New test.
+	* c-c++-common/gomp/default-3.c: New test.
+	* g++.dg/gomp/default-1.C: New test.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-vfmaddXXXsh-1a.c: New test.
+	* gcc.target/i386/avx512fp16-vfmaddXXXsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfmsubXXXsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfmsubXXXsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfnmaddXXXsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfnmaddXXXsh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfnmsubXXXsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfnmsubXXXsh-1b.c: Ditto.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add test for new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add test for new intrinsics.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2021-09-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/avx512fp16-xorsign-1.c: New test.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-neg-1a.c: New test.
+	* gcc.target/i386/avx512fp16-neg-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-scalar-bitwise-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-scalar-bitwise-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vector-bitwise-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vector-bitwise-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-neg-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-neg-1b.c: Ditto.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-vfmaddXXXph-1a.c: New test.
+	* gcc.target/i386/avx512fp16-vfmaddXXXph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfmsubXXXph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfmsubXXXph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfnmaddXXXph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfnmaddXXXph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfnmsubXXXph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfnmsubXXXph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfmaddXXXph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfmaddXXXph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfmsubXXXph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfmsubXXXph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfnmaddXXXph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfnmaddXXXph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfnmsubXXXph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfnmsubXXXph-1b.c: Ditto.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add test for new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add test fot new intrinsics.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-vfmaddsubXXXph-1a.c: New test.
+	* gcc.target/i386/avx512fp16-vfmaddsubXXXph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfmsubaddXXXph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfmsubaddXXXph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfmaddsubXXXph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfmaddsubXXXph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfmsubaddXXXph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfmsubaddXXXph-1b.c: Ditto.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add test for new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add test for new intrinsics.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-broadcast-1.c: New test.
+	* gcc.target/i386/avx512fp16-broadcast-2.c: New test.
+
+2021-09-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/dtor5.C: Adjust expected error.
+	* g++.dg/cpp23/lookup2.C: New test.
+	* g++.dg/template/dtor11.C: New test.
+
 2021-09-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102366
