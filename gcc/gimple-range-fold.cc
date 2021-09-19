@@ -651,7 +651,17 @@ fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 		}
 	    }
 	  else if (is_a<gcond *> (s))
-	    postfold_gcond_edges (as_a<gcond *> (s), r, src);
+	    {
+	      basic_block bb = gimple_bb (s);
+	      edge e0 = EDGE_SUCC (bb, 0);
+	      edge e1 = EDGE_SUCC (bb, 1);
+
+	      if (!single_pred_p (e0->dest))
+		e0 = NULL;
+	      if (!single_pred_p (e1->dest))
+		e1 = NULL;
+	      src.register_outgoing_edges (as_a<gcond *> (s), r, e0, e1);
+	    }
 	}
       else
 	r.set_varying (type);
@@ -1386,8 +1396,7 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
 // Register any outgoing edge relations from a conditional branch.
 
 void
-fold_using_range::postfold_gcond_edges (gcond *s, irange& lhs_range,
-					fur_source &src)
+fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge e1)
 {
   int_range_max r;
   int_range<2> e0_range, e1_range;
@@ -1399,10 +1408,7 @@ fold_using_range::postfold_gcond_edges (gcond *s, irange& lhs_range,
   if (!bb)
     return;
 
-  edge e0 = EDGE_SUCC (bb, 0);
-  if (!single_pred_p (e0->dest))
-    e0 = NULL;
-  else
+  if (e0)
     {
       // If this edge is never taken, ignore it.
       gcond_edge_range (e0_range, e0);
@@ -1412,10 +1418,7 @@ fold_using_range::postfold_gcond_edges (gcond *s, irange& lhs_range,
     }
 
 
-  edge e1 = EDGE_SUCC (bb, 1);
-  if (!single_pred_p (e1->dest))
-    e1 = NULL;
-  else
+  if (e1)
     {
       // If this edge is never taken, ignore it.
       gcond_edge_range (e1_range, e1);
@@ -1424,7 +1427,6 @@ fold_using_range::postfold_gcond_edges (gcond *s, irange& lhs_range,
 	e1 = NULL;
     }
 
-  // At least one edge needs to be single pred.
   if (!e0 && !e1)
     return;
 
@@ -1440,27 +1442,25 @@ fold_using_range::postfold_gcond_edges (gcond *s, irange& lhs_range,
 	{
 	  relation_kind relation = handler->op1_op2_relation (e0_range);
 	  if (relation != VREL_NONE)
-	    src.register_relation (e0, relation, ssa1, ssa2);
+	    register_relation (e0, relation, ssa1, ssa2);
 	}
       if (e1)
 	{
 	  relation_kind relation = handler->op1_op2_relation (e1_range);
 	  if (relation != VREL_NONE)
-	    src.register_relation (e1, relation, ssa1, ssa2);
+	    register_relation (e1, relation, ssa1, ssa2);
 	}
     }
 
   // Outgoing relations of GORI exports require a gori engine.
-  if (!src.gori ())
+  if (!gori ())
     return;
 
-  range_query *q = src.query ();
   // Now look for other relations in the exports.  This will find stmts
   // leading to the condition such as:
   // c_2 = a_4 < b_7
   // if (c_2)
-
-  FOR_EACH_GORI_EXPORT_NAME (*(src.gori ()), bb, name)
+  FOR_EACH_GORI_EXPORT_NAME (*(gori ()), bb, name)
     {
       if (TREE_CODE (TREE_TYPE (name)) != BOOLEAN_TYPE)
 	continue;
@@ -1472,19 +1472,19 @@ fold_using_range::postfold_gcond_edges (gcond *s, irange& lhs_range,
       tree ssa2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
       if (ssa1 && ssa2)
 	{
-	  if (e0 && src.gori ()->outgoing_edge_range_p (r, e0, name, *q)
+	  if (e0 && gori ()->outgoing_edge_range_p (r, e0, name, *m_query)
 	      && r.singleton_p ())
 	    {
 	      relation_kind relation = handler->op1_op2_relation (r);
 	      if (relation != VREL_NONE)
-		src.register_relation (e0, relation, ssa1, ssa2);
+		register_relation (e0, relation, ssa1, ssa2);
 	    }
-	  if (e1 && src.gori ()->outgoing_edge_range_p (r, e1, name, *q)
+	  if (e1 && gori ()->outgoing_edge_range_p (r, e1, name, *m_query)
 	      && r.singleton_p ())
 	    {
 	      relation_kind relation = handler->op1_op2_relation (r);
 	      if (relation != VREL_NONE)
-		src.register_relation (e1, relation, ssa1, ssa2);
+		register_relation (e1, relation, ssa1, ssa2);
 	    }
 	}
     }
