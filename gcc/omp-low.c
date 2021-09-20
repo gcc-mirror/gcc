@@ -1409,9 +1409,13 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 		      gcc_assert (DECL_P (t));
 		    }
 		  tree at = t;
+		  omp_context *scan_ctx = ctx;
 		  if (ctx->outer)
-		    scan_omp_op (&at, ctx->outer);
-		  tree nt = omp_copy_decl_1 (at, ctx);
+		    {
+		      scan_omp_op (&at, ctx->outer);
+		      scan_ctx = ctx->outer;
+		    }
+		  tree nt = omp_copy_decl_1 (at, scan_ctx);
 		  splay_tree_insert (ctx->field_map,
 				     (splay_tree_key) &DECL_CONTEXT (t),
 				     (splay_tree_value) nt);
@@ -1450,9 +1454,13 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	  if (is_omp_target (ctx->stmt))
 	    {
 	      tree at = decl;
+	      omp_context *scan_ctx = ctx;
 	      if (ctx->outer)
-		scan_omp_op (&at, ctx->outer);
-	      tree nt = omp_copy_decl_1 (at, ctx);
+		{
+		  scan_omp_op (&at, ctx->outer);
+		  scan_ctx = ctx->outer;
+		}
+	      tree nt = omp_copy_decl_1 (at, scan_ctx);
 	      splay_tree_insert (ctx->field_map,
 				 (splay_tree_key) &DECL_CONTEXT (decl),
 				 (splay_tree_value) nt);
@@ -1472,7 +1480,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	      if (!is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx)))
 		{
 		  by_ref = use_pointer_for_field (decl, ctx);
-		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION)
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+		      && !splay_tree_lookup (ctx->field_map,
+					     (splay_tree_key) decl))
 		    install_var_field (decl, by_ref, 3, ctx);
 		}
 	      install_var_local (decl, ctx);

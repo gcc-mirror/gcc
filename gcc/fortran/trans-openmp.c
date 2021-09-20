@@ -6428,12 +6428,17 @@ gfc_trans_omp_task (gfc_code *code)
 static tree
 gfc_trans_omp_taskgroup (gfc_code *code)
 {
+  stmtblock_t block;
+  gfc_start_block (&block);
   tree body = gfc_trans_code (code->block->next);
   tree stmt = make_node (OMP_TASKGROUP);
   TREE_TYPE (stmt) = void_type_node;
   OMP_TASKGROUP_BODY (stmt) = body;
-  OMP_TASKGROUP_CLAUSES (stmt) = NULL_TREE;
-  return stmt;
+  OMP_TASKGROUP_CLAUSES (stmt) = gfc_trans_omp_clauses (&block,
+							code->ext.omp_clauses,
+							code->loc);
+  gfc_add_expr_to_block (&block, stmt);
+  return gfc_finish_block (&block);
 }
 
 static tree

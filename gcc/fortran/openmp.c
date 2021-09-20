@@ -1139,7 +1139,7 @@ failed:
 
 static match
 gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
-				bool allow_derived)
+				bool allow_derived, bool openmp_target = false)
 {
   if (pc == 'r' && gfc_match ("reduction ( ") != MATCH_YES)
     return MATCH_NO;
@@ -1286,6 +1286,19 @@ gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
 	    n->u2.udr = gfc_get_omp_namelist_udr ();
 	    n->u2.udr->udr = udr;
 	  }
+	if (openmp_target && list_idx == OMP_LIST_IN_REDUCTION)
+	  {
+	    gfc_omp_namelist *p = gfc_get_omp_namelist (), **tl;
+	    p->sym = n->sym;
+	    p->where = p->where;
+	    p->u.map_op = OMP_MAP_ALWAYS_TOFROM;
+
+	    tl = &c->lists[OMP_LIST_MAP];
+	    while (*tl)
+	      tl = &((*tl)->next);
+	    *tl = p;
+	    p->next = NULL;
+	  }
      }
   return MATCH_YES;
 }
@@ -1354,7 +1367,7 @@ gfc_match_dupl_atomic (bool not_dupl, const char *name)
 static match
 gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		       bool first = true, bool needs_space = true,
-		       bool openacc = false)
+		       bool openacc = false, bool openmp_target = false)
 {
   bool error = false;
   gfc_omp_clauses *c = gfc_get_omp_clauses ();
@@ -2058,8 +2071,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      goto error;
 	    }
 	  if ((mask & OMP_CLAUSE_IN_REDUCTION)
-	      && gfc_match_omp_clause_reduction (pc, c, openacc,
-						 allow_derived) == MATCH_YES)
+	      && gfc_match_omp_clause_reduction (pc, c, openacc, allow_derived,
+						 openmp_target) == MATCH_YES)
 	    continue;
 	  if ((mask & OMP_CLAUSE_INBRANCH)
 	      && (m = gfc_match_dupl_check (!c->inbranch && !c->notinbranch,
@@ -3484,7 +3497,8 @@ static match
 match_omp (gfc_exec_op op, const omp_mask mask)
 {
   gfc_omp_clauses *c;
-  if (gfc_match_omp_clauses (&c, mask) != MATCH_YES)
+  if (gfc_match_omp_clauses (&c, mask, true, true, false,
+			     (op == EXEC_OMP_TARGET)) != MATCH_YES)
     return MATCH_ERROR;
   new_st.op = op;
   new_st.ext.omp_clauses = c;
