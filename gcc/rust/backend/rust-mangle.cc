@@ -195,11 +195,15 @@ v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
 		const std::string &crate_name)
 {
   auto ty_prefix = v0_type_prefix (ty);
+  gcc_unreachable ();
 }
 
 static std::string
 v0_mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
-		     const std::string &name, const std::string &crate_name);
+		     const std::string &name, const std::string &crate_name)
+{
+  gcc_unreachable ();
+}
 
 std::string
 Mangler::mangle_item (const TyTy::BaseType *ty,
@@ -227,7 +231,7 @@ Mangler::mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
     case Mangler::MangleVersion::LEGACY:
       return legacy_mangle_impl_item (self, ty, name, crate_name);
     case Mangler::MangleVersion::V0:
-      gcc_unreachable ();
+      return v0_mangle_impl_item (self, ty, name, crate_name);
     default:
       gcc_unreachable ();
     }
