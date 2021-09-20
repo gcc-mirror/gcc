@@ -2038,6 +2038,7 @@ cxx_omp_finish_clause (tree c, gimple_seq *, bool /* openacc */)
   bool make_shared = false;
 
   if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FIRSTPRIVATE
+      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_PRIVATE
       && (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_LASTPRIVATE
 	  || !OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c)))
     return;
@@ -2058,9 +2059,10 @@ cxx_omp_finish_clause (tree c, gimple_seq *, bool /* openacc */)
      Save the results, because later we won't be in the right context
      for making these queries.  */
   bool first = OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE;
+  bool last = OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE;
   if (!make_shared
       && CLASS_TYPE_P (inner_type)
-      && cxx_omp_create_clause_info (c, inner_type, !first, first, !first,
+      && cxx_omp_create_clause_info (c, inner_type, !first, first, last,
 				     true))
     make_shared = true;
 

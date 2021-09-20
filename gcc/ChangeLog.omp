@@ -1,3 +1,12 @@
+2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (omp_default_clause): For C/C++ default({,first}private),
+	if file/namespace scope variable doesn't have predetermined sharing,
+	treat it as if there was default(none).
+
 2021-09-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

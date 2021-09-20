@@ -36740,6 +36740,9 @@ cp_parser_omp_clause_collapse (cp_parser *parser, tree list, location_t location
 /* OpenMP 2.5:
    default ( none | shared )
 
+   OpenMP 5.1:
+   default ( private | firstprivate )
+
    OpenACC:
    default ( none | present ) */
 
@@ -36753,7 +36756,12 @@ cp_parser_omp_clause_default (cp_parser *parser, tree list,
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
-  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  if (!is_oacc && cp_lexer_next_token_is_keyword (parser->lexer, RID_PRIVATE))
+    {
+      kind = OMP_CLAUSE_DEFAULT_PRIVATE;
+      cp_lexer_consume_token (parser->lexer);
+    }
+  else if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
@@ -36770,6 +36778,12 @@ cp_parser_omp_clause_default (cp_parser *parser, tree list,
 	  if (strcmp ("present", p) != 0 || !is_oacc)
 	    goto invalid_kind;
 	  kind = OMP_CLAUSE_DEFAULT_PRESENT;
+	  break;
+
+	case 'f':
+	  if (strcmp ("firstprivate", p) != 0 || is_oacc)
+	    goto invalid_kind;
+	  kind = OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
 	  break;
 
 	case 's':
@@ -36790,7 +36804,8 @@ cp_parser_omp_clause_default (cp_parser *parser, tree list,
       if (is_oacc)
 	cp_parser_error (parser, "expected %<none%> or %<present%>");
       else
-	cp_parser_error (parser, "expected %<none%> or %<shared%>");
+	cp_parser_error (parser, "expected %<none%>, %<shared%>, "
+				 "%<private%> or %<firstprivate%>");
     }
 
   if (kind == OMP_CLAUSE_DEFAULT_UNSPECIFIED

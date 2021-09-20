@@ -13436,6 +13436,9 @@ c_parser_omp_clause_copyprivate (c_parser *parser, tree list)
 /* OpenMP 2.5:
    default ( none | shared )
 
+   OpenMP 5.1:
+   default ( private | firstprivate )
+
    OpenACC:
    default ( none | present ) */
 
@@ -13462,9 +13465,24 @@ c_parser_omp_clause_default (c_parser *parser, tree list, bool is_oacc)
 	  break;
 
 	case 'p':
-	  if (strcmp ("present", p) != 0 || !is_oacc)
+	  if (is_oacc)
+	    {
+	      if (strcmp ("present", p) != 0)
+		goto invalid_kind;
+	      kind = OMP_CLAUSE_DEFAULT_PRESENT;
+	    }
+	  else
+	    {
+	      if (strcmp ("private", p) != 0)
+		goto invalid_kind;
+	      kind = OMP_CLAUSE_DEFAULT_PRIVATE;
+	    }
+	  break;
+
+	case 'f':
+	  if (strcmp ("firstprivate", p) != 0 || is_oacc)
 	    goto invalid_kind;
-	  kind = OMP_CLAUSE_DEFAULT_PRESENT;
+	  kind = OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
 	  break;
 
 	case 's':
@@ -13485,7 +13503,8 @@ c_parser_omp_clause_default (c_parser *parser, tree list, bool is_oacc)
       if (is_oacc)
 	c_parser_error (parser, "expected %<none%> or %<present%>");
       else
-	c_parser_error (parser, "expected %<none%> or %<shared%>");
+	c_parser_error (parser, "expected %<none%>, %<shared%>, "
+				"%<private%> or %<firstprivate%>");
     }
   parens.skip_until_found_close (parser);
 
