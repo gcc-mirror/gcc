@@ -1,3 +1,33 @@
+2021-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102403
+	* gcc.dg/uninit-pr102403.c: New test.
+	* gcc.dg/uninit-pr102403-c2.c: New test.
+
+2021-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102243
+	* g++.dg/warn/Wplacement-new-size-10.C: New test.
+
+2021-09-19  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gfortran.dg/goacc/privatization-1-compute.f90: Make test names
+	unique.
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2.f:
+	Likewise.
+
+2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/jit.exp (fixed_local_execute): Amend the match and
+	exit conditions to cater for more platforms.
+
+2021-09-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/88173
+	* c-c++-common/pr57371-4.c: Tweak/correct test case for QNaNs.
+	* g++.dg/pr88173-1.C: New test case.
+	* g++.dg/pr88173-2.C: New test case.
+
 2021-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/order-1.c (f2): Add tests for distribute

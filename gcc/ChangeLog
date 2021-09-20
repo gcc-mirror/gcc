@@ -1,3 +1,78 @@
+2021-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102403
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Correct a function pre/postcondition.
+
+2021-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102243
+	* tree-ssa-strlen.c (get_range): Handle null cfun.
+
+2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Use Darwin10
+	unwinder shim as a convenience library.
+
+2021-09-19  Andrew Pinski  <apinski@marvell.com>
+
+	* doc/install.texi: Add note about
+	binutils 2.35 is required for LTO usage.
+
+2021-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c
+	(back_threader_registry::register_path): Use push_edge.
+	* tree-ssa-threadedge.c
+	(jump_threader::thread_around_empty_blocks): Same.
+	(jump_threader::thread_through_normal_block): Same.
+	(jump_threader::thread_across_edge): Same.  Also, use auto_bitmap.
+	Tidy up code.
+	* tree-ssa-threadupdate.c
+	(jt_path_registry::allocate_thread_edge): Remove.
+	(jt_path_registry::push_edge): New.
+	(dump_jump_thread_path): Make static.
+	* tree-ssa-threadupdate.h (allocate_thread_edge): Remove.
+	(push_edge): New.
+
+2021-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::path_range_query): Add
+	header.
+	(path_range_query::dump): Remove extern declaration of dump_ranger.
+	* gimple-range-trace.cc (dump_ranger): Add DEBUG_FUNCTION marker.
+	* gimple-range-trace.h (dump_ranger): Add prototype.
+
+2021-09-19  John Ericson  <git@JohnEricson.me>
+
+	* gcc.c (find_a_program): New function, factored out of...
+	(find_a_file): Here.
+	(execute): Use find_a_program when looking for programs rather
+	than find_a_file.
+
+2021-09-19  Matwey V. Kornilov  <matwey.kornilov@gmail.com>
+
+	* config/avr/avr-mcus.def: Add atmega324pb.
+	* doc/avr-mmcu.texi: Corresponding changes.
+
+2021-09-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/88173
+	* match.pd (cmp @0 REAL_CST@1): When @0 is also REAL_CST, apply
+	the same transformations as to @1.  For comparisons against NaN,
+	don't check HONOR_SNANS but confirm that neither operand is a
+	signaling NaN.
+
+2021-09-19  Benjamin Peterson  <benjamin@locrian.net>
+
+	* attribs.c (make_unique_name): Delete.
+	* attribs.h (make_unique_name): Delete.
+
+2021-09-19  Andrew Pinski  <apinski@marvell.com>
+
+	* lra-constraints.c (check_and_process_move): Assert
+	that dclass and sclass are greater than or equal to NO_REGS.
+
 2021-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (OMP_CLAUSE_ORDER_UNCONSTRAINED): Define.
