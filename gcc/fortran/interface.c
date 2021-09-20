@@ -2634,7 +2634,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		   && formal->as->type == AS_ASSUMED_SHAPE))
 	  && actual->expr_type != EXPR_NULL)
       || (actual->rank == 0 && formal->attr.dimension
-	  && gfc_is_coindexed (actual)))
+	  && gfc_is_coindexed (actual))
+      /* Assumed-rank actual argument; F2018 C838.  */
+      || actual->rank == -1)
     {
       if (where
 	  && (!formal->attr.artificial || (!formal->maybe_array

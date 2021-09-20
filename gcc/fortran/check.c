@@ -1520,7 +1520,9 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
   t = true;
   if (!same_type_check (pointer, 0, target, 1, true))
     t = false;
-  if (!rank_check (target, 0, pointer->rank))
+  /* F2018 C838 explicitly allows an assumed-rank variable as the first
+     argument of intrinsic inquiry functions.  */
+  if (pointer->rank != -1 && !rank_check (target, 0, pointer->rank))
     t = false;
   if (target->rank > 0)
     {
