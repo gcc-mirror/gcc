@@ -1,6 +1,17 @@
 2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/order-5.f90: New test.
+	* gfortran.dg/gomp/order-6.f90: New test.
+	* gfortran.dg/gomp/order-7.f90: New test.
+	* gfortran.dg/gomp/order-8.f90: New test.
+	* gfortran.dg/gomp/order-9.f90: New test.
+
+2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/order-1.c (f2): Add tests for distribute
