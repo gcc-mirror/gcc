@@ -26970,6 +26970,15 @@ dependent_scope_p (tree scope)
 	  && !currently_open_class (scope));
 }
 
+/* True if we might find more declarations in SCOPE during instantiation than
+   we can when parsing the template.  */
+
+bool
+dependentish_scope_p (tree scope)
+{
+  return dependent_scope_p (scope) || any_dependent_bases_p (scope);
+}
+
 /* T is a SCOPE_REF.  Return whether it represents a non-static member of
    an unknown base of 'this' (and is therefore instantiation-dependent).  */
 

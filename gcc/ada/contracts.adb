@@ -144,7 +144,13 @@ package body Contracts is
       --    Part_Of
 
       if Ekind (Id) = E_Constant then
-         if Prag_Nam = Name_Part_Of then
+         if Prag_Nam in Name_Async_Readers
+                      | Name_Async_Writers
+                      | Name_Effective_Reads
+                      | Name_Effective_Writes
+                      | Name_No_Caching
+                      | Name_Part_Of
+         then
             Add_Classification;
 
          --  The pragma is not a proper contract item
@@ -778,25 +784,9 @@ package body Contracts is
    procedure Check_Type_Or_Object_External_Properties
      (Type_Or_Obj_Id : Entity_Id)
    is
-      function Decl_Kind (Is_Type     : Boolean;
-                          Object_Kind : String) return String;
-      --  Returns "type" or Object_Kind, depending on Is_Type
-
-      ---------------
-      -- Decl_Kind --
-      ---------------
-
-      function Decl_Kind (Is_Type     : Boolean;
-                          Object_Kind : String) return String is
-      begin
-         if Is_Type then
-            return "type";
-         else
-            return Object_Kind;
-         end if;
-      end Decl_Kind;
-
       Is_Type_Id : constant Boolean := Is_Type (Type_Or_Obj_Id);
+      Decl_Kind  : constant String :=
+        (if Is_Type_Id then "type" else "object");
 
       --  Local variables
 
@@ -923,8 +913,7 @@ package body Contracts is
             if not Is_Library_Level_Entity (Type_Or_Obj_Id) then
                Error_Msg_N
                  ("effectively volatile "
-                    & Decl_Kind (Is_Type     => Is_Type_Id,
-                                 Object_Kind => "variable")
+                    & Decl_Kind
                     & " & must be declared at library level "
                     & "(SPARK RM 7.1.3(3))", Type_Or_Obj_Id);
 
@@ -935,10 +924,7 @@ package body Contracts is
               and then not Is_Protected_Type (Obj_Typ)
             then
                Error_Msg_N
-                ("discriminated "
-                   & Decl_Kind (Is_Type     => Is_Type_Id,
-                                Object_Kind => "object")
-                   & " & cannot be volatile",
+                ("discriminated " & Decl_Kind & " & cannot be volatile",
                  Type_Or_Obj_Id);
             end if;
 
@@ -1019,7 +1005,7 @@ package body Contracts is
       Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
       --  Save the SPARK_Mode-related data to restore on exit
 
-      NC_Val   : Boolean := False;
+      NC_Val   : Boolean;
       Items    : Node_Id;
       Prag     : Node_Id;
       Ref_Elmt : Elmt_Id;
@@ -1056,6 +1042,19 @@ package body Contracts is
          Set_SPARK_Mode (Obj_Id);
       end if;
 
+      --  Checks related to external properties, same for constants and
+      --  variables.
+
+      Check_Type_Or_Object_External_Properties (Type_Or_Obj_Id => Obj_Id);
+
+      --  Analyze the non-external volatility property No_Caching
+
+      Prag := Get_Pragma (Obj_Id, Pragma_No_Caching);
+
+      if Present (Prag) then
+         Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
+      end if;
+
       --  Constant-related checks
 
       if Ekind (Obj_Id) = E_Constant then
@@ -1071,34 +1070,9 @@ package body Contracts is
             Check_Missing_Part_Of (Obj_Id);
          end if;
 
-         --  A constant cannot be effectively volatile (SPARK RM 7.1.3(4)).
-         --  This check is relevant only when SPARK_Mode is on, as it is not
-         --  a standard Ada legality rule. Internally-generated constants that
-         --  map generic formals to actuals in instantiations are allowed to
-         --  be volatile.
-
-         if SPARK_Mode = On
-           and then Comes_From_Source (Obj_Id)
-           and then Is_Effectively_Volatile (Obj_Id)
-           and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
-         then
-            Error_Msg_N ("constant cannot be volatile", Obj_Id);
-         end if;
-
       --  Variable-related checks
 
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
-
-         Check_Type_Or_Object_External_Properties
-           (Type_Or_Obj_Id => Obj_Id);
-
-         --  Analyze the non-external volatility property No_Caching
-
-         Prag := Get_Pragma (Obj_Id, Pragma_No_Caching);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
-         end if;
 
          --  The anonymous object created for a single task type carries
          --  pragmas Depends and Global of the type.

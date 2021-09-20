@@ -862,7 +862,7 @@ package body Sem_Ch13 is
         and then not Has_Alignment_Clause (Typ)
         and then Size mod (Alignment (Typ) * SSU) /= 0
       then
-         Init_Alignment (Typ);
+         Reinit_Alignment (Typ);
       end if;
    end Alignment_Check_For_Size_Change;
 
@@ -1455,9 +1455,17 @@ package body Sem_Ch13 is
                      --  Aspect Full_Access_Only must be analyzed last so that
                      --  aspects Volatile and Atomic, if any, are analyzed.
 
+                     --  Skip creation of pragma Preelaborable_Initialization
+                     --  in the case where the aspect has an expression,
+                     --  because the pragma is only needed for setting flag
+                     --  Known_To_Have_Preelab_Init, which is set by other
+                     --  means following resolution of the aspect expression.
+
                      if A_Id not in Aspect_Export
                                   | Aspect_Full_Access_Only
                                   | Aspect_Import
+                       and then (A_Id /= Aspect_Preelaborable_Initialization
+                                  or else not Present (Expression (ASN)))
                      then
                         Make_Pragma_From_Boolean_Aspect (ASN);
                      end if;
@@ -2915,6 +2923,7 @@ package body Sem_Ch13 is
                             | Aspect_Async_Writers
                             | Aspect_Effective_Reads
                             | Aspect_Effective_Writes
+                            | Aspect_Preelaborable_Initialization
             then
                Error_Msg_Name_1 := Nam;
 
@@ -2951,6 +2960,7 @@ package body Sem_Ch13 is
                                   | Aspect_Async_Writers
                                   | Aspect_Effective_Reads
                                   | Aspect_Effective_Writes
+                                  | Aspect_Preelaborable_Initialization
                   then
                      Error_Msg_N
                        ("aspect % not allowed for formal type declaration",
@@ -6621,7 +6631,7 @@ package body Sem_Ch13 is
             elsif Duplicate_Clause then
                null;
 
-            elsif Align /= No_Uint then
+            elsif Present (Align) then
                Set_Has_Alignment_Clause (U_Ent);
 
                --  Tagged type case, check for attempt to set alignment to a
@@ -6711,7 +6721,7 @@ package body Sem_Ch13 is
             elsif Rep_Item_Too_Early (Btype, N) then
                null;
 
-            elsif Csize /= No_Uint then
+            elsif Present (Csize) then
                Check_Size (Expr, Ctyp, Csize, Biased);
 
                --  For the biased case, build a declaration for a subtype that
@@ -6736,9 +6746,9 @@ package body Sem_Ch13 is
                   Analyze (Decl, Suppress => All_Checks);
 
                   Set_Has_Delayed_Freeze        (New_Ctyp, False);
-                  Init_Esize                    (New_Ctyp);
+                  Reinit_Esize                  (New_Ctyp);
                   Set_RM_Size                   (New_Ctyp, Csize);
-                  Init_Alignment                (New_Ctyp);
+                  Reinit_Alignment              (New_Ctyp);
                   Set_Is_Itype                  (New_Ctyp, True);
                   Set_Associated_Node_For_Itype (New_Ctyp, U_Ent);
 
@@ -7051,7 +7061,7 @@ package body Sem_Ch13 is
             elsif Duplicate_Clause then
                null;
 
-            elsif Radix /= No_Uint then
+            elsif Present (Radix) then
                Set_Has_Machine_Radix_Clause (U_Ent);
                Set_Has_Non_Standard_Rep (Base_Type (U_Ent));
 
@@ -7264,7 +7274,7 @@ package body Sem_Ch13 is
                Error_Msg_N
                  (Attr_Name & " cannot be given for unconstrained array", Nam);
 
-            elsif Size /= No_Uint then
+            elsif Present (Size) then
                declare
                   Etyp : constant Entity_Id :=
                     (if Is_Type (U_Ent) then U_Ent else Etype (U_Ent));
@@ -7312,13 +7322,14 @@ package body Sem_Ch13 is
                      if Is_First_Subtype (U_Ent) then
                         if Is_Elementary_Type (U_Ent) then
                            if Size <= System_Storage_Unit then
-                              Init_Esize (U_Ent, System_Storage_Unit);
+                              Set_Esize
+                                (U_Ent, UI_From_Int (System_Storage_Unit));
                            elsif Size <= 16 then
-                              Init_Esize (U_Ent, 16);
+                              Set_Esize (U_Ent, Uint_16);
                            elsif Size <= 32 then
-                              Init_Esize (U_Ent, 32);
+                              Set_Esize (U_Ent, Uint_32);
                            else
-                              Set_Esize  (U_Ent, (Size + 63) / 64 * 64);
+                              Set_Esize (U_Ent, (Size + 63) / 64 * 64);
                            end if;
 
                            Alignment_Check_For_Size_Change
@@ -8095,7 +8106,7 @@ package body Sem_Ch13 is
             --  the list. The final checks for completeness and ordering are
             --  skipped in this case.
 
-            if Val = No_Uint then
+            if No (Val) then
                Err := True;
 
             elsif Val < Lo or else Hi < Val then
@@ -8174,7 +8185,7 @@ package body Sem_Ch13 is
                         Expr := Expression (Assoc);
                         Val := Static_Integer (Expr);
 
-                        if Val = No_Uint then
+                        if No (Val) then
                            Err := True;
 
                         elsif Val < Lo or else Hi < Val then
@@ -8209,12 +8220,12 @@ package body Sem_Ch13 is
             else
                Val := Enumeration_Rep (Elit);
 
-               if Min = No_Uint then
+               if No (Min) then
                   Min := Val;
                end if;
 
-               if Val /= No_Uint then
-                  if Max /= No_Uint and then Val <= Max then
+               if Present (Val) then
+                  if Present (Max) and then Val <= Max then
                      Error_Msg_NE
                        ("enumeration value for& not ordered!",
                         Enumeration_Rep_Expr (Elit), Elit);
@@ -8499,9 +8510,9 @@ package body Sem_Ch13 is
             Fbit  := Static_Integer (First_Bit (CC));
             Lbit  := Static_Integer (Last_Bit  (CC));
 
-            if Posit /= No_Uint
-              and then Fbit /= No_Uint
-              and then Lbit /= No_Uint
+            if Present (Posit)
+              and then Present (Fbit)
+              and then Present (Lbit)
             then
                if Posit < 0 then
                   Error_Msg_N ("position cannot be negative", Position (CC));
@@ -8642,9 +8653,6 @@ package body Sem_Ch13 is
                         Set_Normalized_First_Bit (Comp, Fbit mod SSU);
                         Set_Normalized_Position  (Comp, Fbit / SSU);
 
-                        Set_Normalized_Position_Max
-                          (Comp, Normalized_Position (Comp));
-
                         if Warn_On_Overridden_Size
                           and then Has_Size_Clause (Etype (Comp))
                           and then RM_Size (Etype (Comp)) /= Esize (Comp)
@@ -8675,9 +8683,6 @@ package body Sem_Ch13 is
                            Set_Esize                (Ocomp, 1 + (Lbit - Fbit));
                            Set_Normalized_First_Bit (Ocomp, Fbit mod SSU);
                            Set_Normalized_Position  (Ocomp, Fbit / SSU);
-
-                           Set_Normalized_Position_Max
-                             (Ocomp, Normalized_Position (Ocomp));
 
                            --  Note: we don't use Set_Biased here, because we
                            --  already gave a warning above if needed, and we
@@ -11938,7 +11943,7 @@ package body Sem_Ch13 is
                   begin
                      --  Skip components with unknown offsets
 
-                     if CBO /= No_Uint and then CBO >= 0 then
+                     if Present (CBO) and then CBO >= 0 then
                         Error_Msg_Uint_1 := CBO - Nbit;
 
                         if Warn and then Error_Msg_Uint_1 > 0 then
@@ -12053,7 +12058,7 @@ package body Sem_Ch13 is
             Pcomp := First_Entity (Tagged_Parent);
             while Present (Pcomp) loop
                if Ekind (Pcomp) in E_Discriminant | E_Component then
-                  if Component_Bit_Offset (Pcomp) /= No_Uint
+                  if Present (Component_Bit_Offset (Pcomp))
                     and then Known_Static_Esize (Pcomp)
                   then
                      Parent_Last_Bit :=
@@ -12094,8 +12099,7 @@ package body Sem_Ch13 is
          Set_Component_Bit_Offset    (Fent, Uint_0);
          Set_Normalized_Position     (Fent, Uint_0);
          Set_Normalized_First_Bit    (Fent, Uint_0);
-         Set_Normalized_Position_Max (Fent, Uint_0);
-         Init_Esize                  (Fent, System_Address_Size);
+         Set_Esize                   (Fent, UI_From_Int (System_Address_Size));
 
          Set_Component_Clause (Fent,
            Make_Component_Clause (Loc,
@@ -13123,7 +13127,7 @@ package body Sem_Ch13 is
       Align : constant Uint := Static_Integer (Expr);
 
    begin
-      if Align = No_Uint then
+      if No (Align) then
          return No_Uint;
 
       elsif Align < 0 then
@@ -13700,6 +13704,7 @@ package body Sem_Ch13 is
                                       | Attribute_Iterable
                                       | Attribute_Iterator_Element
                                       | Attribute_Output
+                                      | Attribute_Put_Image
                                       | Attribute_Read
                                       | Attribute_Variable_Indexing
                                       | Attribute_Write;
@@ -15681,17 +15686,16 @@ package body Sem_Ch13 is
    ------------------------------
 
    procedure Resolve_Aspect_Aggregate
-    (Typ :  Entity_Id;
+    (Typ  : Entity_Id;
      Expr : Node_Id)
    is
+      function Valid_Empty          (E : Entity_Id) return Boolean;
+      function Valid_Add_Named      (E : Entity_Id) return Boolean;
+      function Valid_Add_Unnamed    (E : Entity_Id) return Boolean;
+      function Valid_New_Indexed    (E : Entity_Id) return Boolean;
+      function Valid_Assign_Indexed (E : Entity_Id) return Boolean;
       --  Predicates that establish the legality of each possible operation in
       --  an Aggregate aspect.
-
-      function Valid_Empty             (E : Entity_Id) return Boolean;
-      function Valid_Add_Named         (E : Entity_Id) return Boolean;
-      function Valid_Add_Unnamed       (E : Entity_Id) return Boolean;
-      function Valid_New_Indexed       (E : Entity_Id) return Boolean;
-      function Valid_Assign_Indexed    (E : Entity_Id) return Boolean;
 
       generic
         with function Pred (Id : Node_Id) return Boolean;
@@ -15715,7 +15719,7 @@ package body Sem_Ch13 is
       end Valid_Assign_Indexed;
 
       -----------------
-      -- Valid_Emoty --
+      -- Valid_Empty --
       -----------------
 
       function Valid_Empty (E :  Entity_Id) return Boolean is
@@ -15740,7 +15744,7 @@ package body Sem_Ch13 is
       -- Valid_Add_Named --
       ---------------------
 
-      function Valid_Add_Named  (E : Entity_Id) return Boolean is
+      function Valid_Add_Named (E : Entity_Id) return Boolean is
          F2, F3 : Entity_Id;
       begin
          if Ekind (E) = E_Procedure
@@ -15839,6 +15843,9 @@ package body Sem_Ch13 is
       procedure Resolve_Assign_Indexed
                                 is new Resolve_Operation
                                                       (Valid_Assign_Indexed);
+
+   --  Start of processing for Resolve_Aspect_Aggregate
+
    begin
       Assoc := First (Component_Associations (Expr));
 
@@ -16120,10 +16127,10 @@ package body Sem_Ch13 is
    procedure Set_Enum_Esize (T : Entity_Id) is
       Lo : Uint;
       Hi : Uint;
-      Sz : Nat;
+      Sz : Unat;
 
    begin
-      Init_Alignment (T);
+      Reinit_Alignment (T);
 
       --  Find the minimum standard size (8,16,32,64,128) that fits
 
@@ -16131,37 +16138,38 @@ package body Sem_Ch13 is
       Hi := Enumeration_Rep (Entity (Type_High_Bound (T)));
 
       if Lo < 0 then
-         if Lo >= -Uint_2**07 and then Hi < Uint_2**07 then
-            Sz := Standard_Character_Size;  -- May be > 8 on some targets
+         if Lo >= -Uint_2**7 and then Hi < Uint_2**7 then
+            Sz := UI_From_Int (Standard_Character_Size);
+            --  Might be > 8 on some targets
 
          elsif Lo >= -Uint_2**15 and then Hi < Uint_2**15 then
-            Sz := 16;
+            Sz := Uint_16;
 
          elsif Lo >= -Uint_2**31 and then Hi < Uint_2**31 then
-            Sz := 32;
+            Sz := Uint_32;
 
          elsif Lo >= -Uint_2**63 and then Hi < Uint_2**63 then
-            Sz := 64;
+            Sz := Uint_64;
 
          else pragma Assert (Lo >= -Uint_2**127 and then Hi < Uint_2**127);
-            Sz := 128;
+            Sz := Uint_128;
          end if;
 
       else
-         if Hi < Uint_2**08 then
-            Sz := Standard_Character_Size;  -- May be > 8 on some targets
+         if Hi < Uint_2**8 then
+            Sz := UI_From_Int (Standard_Character_Size);
 
          elsif Hi < Uint_2**16 then
-            Sz := 16;
+            Sz := Uint_16;
 
          elsif Hi < Uint_2**32 then
-            Sz := 32;
+            Sz := Uint_32;
 
          elsif Hi < Uint_2**64 then
-            Sz := 64;
+            Sz := Uint_64;
 
          else pragma Assert (Hi < Uint_2**128);
-            Sz := 128;
+            Sz := Uint_128;
          end if;
       end if;
 
@@ -16177,9 +16185,9 @@ package body Sem_Ch13 is
 
         and then not Target_Short_Enums
       then
-         Init_Esize (T, Standard_Integer_Size);
+         Set_Esize (T, UI_From_Int (Standard_Integer_Size));
       else
-         Init_Esize (T, Sz);
+         Set_Esize (T, Sz);
       end if;
    end Set_Enum_Esize;
 
@@ -16262,7 +16270,7 @@ package body Sem_Ch13 is
 
             elsif Nkind (N) = N_Selected_Component then
                Off := Component_Bit_Offset (Entity (Selector_Name (N)));
-               if Off /= No_Uint and then Off >= Uint_0 then
+               if Present (Off) and then Off >= Uint_0 then
                   Val := Val + Off;
                   N   := Prefix (N);
                else
@@ -16271,7 +16279,7 @@ package body Sem_Ch13 is
 
             elsif Nkind (N) = N_Indexed_Component then
                Off := Indexed_Component_Bit_Offset (N);
-               if Off /= No_Uint then
+               if Present (Off) then
                   Val := Val + Off;
                   N   := Prefix (N);
                else

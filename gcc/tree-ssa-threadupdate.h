@@ -66,7 +66,7 @@ public:
   virtual ~jt_path_registry ();
   bool register_jump_thread (vec<jump_thread_edge *> *);
   bool thread_through_all_blocks (bool peel_loop_headers);
-  jump_thread_edge *allocate_thread_edge (edge e, jump_thread_edge_type t);
+  void push_edge (vec<jump_thread_edge *> *path, edge, jump_thread_edge_type);
   vec<jump_thread_edge *> *allocate_thread_path ();
   void debug ();
 protected:

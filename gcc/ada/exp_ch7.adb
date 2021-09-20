@@ -5918,12 +5918,7 @@ package body Exp_Ch7 is
             Build_Static_Dispatch_Tables (N);
          end if;
 
-         --  If procedures marked with CUDA_Global have been defined within N,
-         --  we need to register them with the CUDA runtime at program startup.
-         --  This requires multiple declarations and function calls which need
-         --  to be appended to N's declarations.
-
-         Build_And_Insert_CUDA_Initialization (N);
+         Expand_CUDA_Package (N);
 
          Build_Task_Activation_Call (N);
 
@@ -6072,7 +6067,7 @@ package body Exp_Ch7 is
          Pop_Scope;
       end if;
 
-      --  Build dispatch tables of library level tagged types
+      --  Build dispatch tables of library-level tagged types
 
       if Tagged_Type_Expansion
         and then (Is_Compilation_Unit (Id)

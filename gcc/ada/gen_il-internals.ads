@@ -190,11 +190,6 @@ package Gen_IL.Internals is
      (Field_Type : Type_Enum) return String is
       (if Field_Type = Elist_Id then "No_Elist" else "Uint_0");
 
-   function Invalid_Val
-     (Field_Type : Uint_Subtype) return String is
-      ("No_Uint");
-   --  We could generalize this to other than Uint at some point
-
    ----------------
 
    subtype Node_Field is

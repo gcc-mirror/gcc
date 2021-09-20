@@ -3069,7 +3069,7 @@ package body Sem_Eval is
             --  Note that in this case, both Right_Int and Left_Int are set
             --  to No_Uint, so need to test for both.
 
-            if Right_Int = No_Uint then
+            if No (Right_Int) then
                Fold_Uint (N, Uint_0, Stat);
             else
                Fold_Uint (N,
@@ -3083,7 +3083,7 @@ package body Sem_Eval is
             --  Note that in this case, both Right_Int and Left_Int are set
             --  to No_Uint, so need to test for both.
 
-            if Right_Int = No_Uint then
+            if No (Right_Int) then
                Fold_Uint (N, Uint_1, Stat);
             else
                Fold_Uint (N,

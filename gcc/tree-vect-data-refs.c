@@ -2268,8 +2268,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           if (npeel)
             LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) = npeel;
           else
-            LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
-	      = DR_MISALIGNMENT (dr0_info);
+	    LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) = -1;
 	  SET_DR_MISALIGNMENT (dr0_info, 0);
 	  if (dump_enabled_p ())
             {
@@ -4636,13 +4635,6 @@ static void
 vect_duplicate_ssa_name_ptr_info (tree name, dr_vec_info *dr_info)
 {
   duplicate_ssa_name_ptr_info (name, DR_PTR_INFO (dr_info->dr));
-  int misalign = DR_MISALIGNMENT (dr_info);
-  if (misalign == DR_MISALIGNMENT_UNKNOWN)
-    mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
-  else
-    set_ptr_info_alignment (SSA_NAME_PTR_INFO (name),
-			    known_alignment (DR_TARGET_ALIGNMENT (dr_info)),
-			    misalign);
 }
 
 /* Function vect_create_addr_base_for_vector_ref.

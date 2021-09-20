@@ -332,8 +332,8 @@ pr87652 (const char *stem, int counter)
 				OFFSET + end_idx);		\
   } while (0)
 
-/* { dg-error "unable to read substring location: unable to read source line" "" { target c } 329 } */
-/* { dg-error "unable to read substring location: failed to get ordinary maps" "" { target c++ } 329 } */
+/* { dg-error "unable to read substring location: failed to get ordinary maps" "" { target c } 329 } */
+/* { dg-error "unable to read substring location: macro expansion" "" { target c++ } 329 } */
 /* { dg-begin-multiline-output "" }
      __emit_string_literal_range(__FILE__":%5d: " format,        \
                                  ^~~~~~~~

@@ -6589,6 +6589,7 @@ package body Exp_Util is
       Related_Id    : Entity_Id := Empty;
       Is_Low_Bound  : Boolean   := False;
       Is_High_Bound : Boolean   := False;
+      Discr_Number  : Int       := 0;
       Mode          : Force_Evaluation_Mode := Relaxed)
    is
    begin
@@ -6600,6 +6601,7 @@ package body Exp_Util is
          Related_Id         => Related_Id,
          Is_Low_Bound       => Is_Low_Bound,
          Is_High_Bound      => Is_High_Bound,
+         Discr_Number       => Discr_Number,
          Check_Side_Effects =>
            Is_Static_Expression (Exp)
              or else Mode = Relaxed);
@@ -11623,6 +11625,7 @@ package body Exp_Util is
       Related_Id         : Entity_Id := Empty;
       Is_Low_Bound       : Boolean   := False;
       Is_High_Bound      : Boolean   := False;
+      Discr_Number       : Int       := 0;
       Check_Side_Effects : Boolean   := True)
    is
       function Build_Temporary
@@ -11653,13 +11656,28 @@ package body Exp_Util is
          Temp_Nam : Name_Id;
 
       begin
-         --  The context requires an external symbol
+         --  The context requires an external symbol : expression is
+         --  the bound of an array, or a discriminant value. We create
+         --  a unique string using the related entity and an appropriate
+         --  suffix, rather than a numeric serial number (used for internal
+         --  entities) that may vary depending on compilation options, in
+         --  particular on the Assertions_Enabled mode. This avoids spurious
+         --  link errors.
 
          if Present (Related_Id) then
             if Is_Low_Bound then
                Temp_Nam := New_External_Name (Chars (Related_Id), "_FIRST");
-            else pragma Assert (Is_High_Bound);
+
+            elsif Is_High_Bound then
                Temp_Nam := New_External_Name (Chars (Related_Id), "_LAST");
+
+            else
+               pragma Assert (Discr_Number > 0);
+               --  Use fully qualified name to avoid ambiguities.
+
+               Temp_Nam :=
+                  New_External_Name
+                   (Get_Qualified_Name (Related_Id), "_DISCR", Discr_Number);
             end if;
 
             Temp_Id := Make_Defining_Identifier (Loc, Temp_Nam);
@@ -13111,11 +13129,11 @@ package body Exp_Util is
                                            (Component_Type (Ityp))));
       end if;
 
-      if Ialign /= No_Uint and then Ialign > Maximum_Alignment then
+      if Present (Ialign) and then Ialign > Maximum_Alignment then
          return True;
 
-      elsif Ialign /= No_Uint
-        and then Oalign /= No_Uint
+      elsif Present (Ialign)
+        and then Present (Oalign)
         and then Ialign <= Oalign
       then
          return True;

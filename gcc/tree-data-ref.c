@@ -99,6 +99,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "vr-values.h"
 #include "range-op.h"
+#include "tree-ssa-loop-ivopts.h"
 
 static struct datadep_stats
 {
@@ -1300,22 +1301,18 @@ base_supports_access_fn_components_p (tree base)
    DR, analyzed in LOOP and instantiated before NEST.  */
 
 static void
-dr_analyze_indices (struct data_reference *dr, edge nest, loop_p loop)
+dr_analyze_indices (struct indices *dri, tree ref, edge nest, loop_p loop)
 {
-  vec<tree> access_fns = vNULL;
-  tree ref, op;
-  tree base, off, access_fn;
-
   /* If analyzing a basic-block there are no indices to analyze
      and thus no access functions.  */
   if (!nest)
     {
-      DR_BASE_OBJECT (dr) = DR_REF (dr);
-      DR_ACCESS_FNS (dr).create (0);
+      dri->base_object = ref;
+      dri->access_fns.create (0);
       return;
     }
 
-  ref = DR_REF (dr);
+  vec<tree> access_fns = vNULL;
 
   /* REALPART_EXPR and IMAGPART_EXPR can be handled like accesses
      into a two element array with a constant index.  The base is
@@ -1338,8 +1335,8 @@ dr_analyze_indices (struct data_reference *dr, edge nest, loop_p loop)
     {
       if (TREE_CODE (ref) == ARRAY_REF)
 	{
-	  op = TREE_OPERAND (ref, 1);
-	  access_fn = analyze_scalar_evolution (loop, op);
+	  tree op = TREE_OPERAND (ref, 1);
+	  tree access_fn = analyze_scalar_evolution (loop, op);
 	  access_fn = instantiate_scev (nest, loop, access_fn);
 	  access_fns.safe_push (access_fn);
 	}
@@ -1370,16 +1367,16 @@ dr_analyze_indices (struct data_reference *dr, edge nest, loop_p loop)
      analyzed nest, add it as an additional independent access-function.  */
   if (TREE_CODE (ref) == MEM_REF)
     {
-      op = TREE_OPERAND (ref, 0);
-      access_fn = analyze_scalar_evolution (loop, op);
+      tree op = TREE_OPERAND (ref, 0);
+      tree access_fn = analyze_scalar_evolution (loop, op);
       access_fn = instantiate_scev (nest, loop, access_fn);
       if (TREE_CODE (access_fn) == POLYNOMIAL_CHREC)
 	{
-	  tree orig_type;
 	  tree memoff = TREE_OPERAND (ref, 1);
-	  base = initial_condition (access_fn);
-	  orig_type = TREE_TYPE (base);
+	  tree base = initial_condition (access_fn);
+	  tree orig_type = TREE_TYPE (base);
 	  STRIP_USELESS_TYPE_CONVERSION (base);
+	  tree off;
 	  split_constant_offset (base, &base, &off);
 	  STRIP_USELESS_TYPE_CONVERSION (base);
 	  /* Fold the MEM_REF offset into the evolutions initial
@@ -1424,7 +1421,7 @@ dr_analyze_indices (struct data_reference *dr, edge nest, loop_p loop)
 				 base, memoff);
 	  MR_DEPENDENCE_CLIQUE (ref) = MR_DEPENDENCE_CLIQUE (old);
 	  MR_DEPENDENCE_BASE (ref) = MR_DEPENDENCE_BASE (old);
-	  DR_UNCONSTRAINED_BASE (dr) = true;
+	  dri->unconstrained_base = true;
 	  access_fns.safe_push (access_fn);
 	}
     }
@@ -1436,8 +1433,8 @@ dr_analyze_indices (struct data_reference *dr, edge nest, loop_p loop)
 		    build_int_cst (reference_alias_ptr_type (ref), 0));
     }
 
-  DR_BASE_OBJECT (dr) = ref;
-  DR_ACCESS_FNS (dr) = access_fns;
+  dri->base_object = ref;
+  dri->access_fns = access_fns;
 }
 
 /* Extracts the alias analysis information from the memory reference DR.  */
@@ -1463,6 +1460,8 @@ void
 free_data_ref (data_reference_p dr)
 {
   DR_ACCESS_FNS (dr).release ();
+  if (dr->alt_indices.base_object)
+    dr->alt_indices.access_fns.release ();
   free (dr);
 }
 
@@ -1497,7 +1496,7 @@ create_data_ref (edge nest, loop_p loop, tree memref, gimple *stmt,
 
   dr_analyze_innermost (&DR_INNERMOST (dr), memref,
 			nest != NULL ? loop : NULL, stmt);
-  dr_analyze_indices (dr, nest, loop);
+  dr_analyze_indices (&dr->indices, DR_REF (dr), nest, loop);
   dr_analyze_alias (dr);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3066,41 +3065,30 @@ access_fn_components_comparable_p (tree ref_a, tree ref_b)
 			     TREE_TYPE (TREE_OPERAND (ref_b, 0)));
 }
 
-/* Initialize a data dependence relation between data accesses A and
-   B.  NB_LOOPS is the number of loops surrounding the references: the
-   size of the classic distance/direction vectors.  */
+/* Initialize a data dependence relation RES in LOOP_NEST.  USE_ALT_INDICES
+   is true when the main indices of A and B were not comparable so we try again
+   with alternate indices computed on an indirect reference.  */
 
 struct data_dependence_relation *
-initialize_data_dependence_relation (struct data_reference *a,
-				     struct data_reference *b,
- 				     vec<loop_p> loop_nest)
+initialize_data_dependence_relation (struct data_dependence_relation *res,
+				     vec<loop_p> loop_nest,
+				     bool use_alt_indices)
 {
-  struct data_dependence_relation *res;
+  struct data_reference *a = DDR_A (res);
+  struct data_reference *b = DDR_B (res);
   unsigned int i;
 
-  res = XCNEW (struct data_dependence_relation);
-  DDR_A (res) = a;
-  DDR_B (res) = b;
-  DDR_LOOP_NEST (res).create (0);
-  DDR_SUBSCRIPTS (res).create (0);
-  DDR_DIR_VECTS (res).create (0);
-  DDR_DIST_VECTS (res).create (0);
-
-  if (a == NULL || b == NULL)
+  struct indices *indices_a = &a->indices;
+  struct indices *indices_b = &b->indices;
+  if (use_alt_indices)
     {
-      DDR_ARE_DEPENDENT (res) = chrec_dont_know;
-      return res;
+      if (TREE_CODE (DR_REF (a)) != MEM_REF)
+	indices_a = &a->alt_indices;
+      if (TREE_CODE (DR_REF (b)) != MEM_REF)
+	indices_b = &b->alt_indices;
     }
-
-  /* If the data references do not alias, then they are independent.  */
-  if (!dr_may_alias_p (a, b, loop_nest.exists () ? loop_nest[0] : NULL))
-    {
-      DDR_ARE_DEPENDENT (res) = chrec_known;
-      return res;
-    }
-
-  unsigned int num_dimensions_a = DR_NUM_DIMENSIONS (a);
-  unsigned int num_dimensions_b = DR_NUM_DIMENSIONS (b);
+  unsigned int num_dimensions_a = indices_a->access_fns.length ();
+  unsigned int num_dimensions_b = indices_b->access_fns.length ();
   if (num_dimensions_a == 0 || num_dimensions_b == 0)
     {
       DDR_ARE_DEPENDENT (res) = chrec_dont_know;
@@ -3125,9 +3113,9 @@ initialize_data_dependence_relation (struct data_reference *a,
 
      the a and b accesses have a single ARRAY_REF component reference [0]
      but have two subscripts.  */
-  if (DR_UNCONSTRAINED_BASE (a))
+  if (indices_a->unconstrained_base)
     num_dimensions_a -= 1;
-  if (DR_UNCONSTRAINED_BASE (b))
+  if (indices_b->unconstrained_base)
     num_dimensions_b -= 1;
 
   /* These structures describe sequences of component references in
@@ -3210,6 +3198,10 @@ initialize_data_dependence_relation (struct data_reference *a,
         B: [3, 4]  (i.e. s.e)  */
   while (index_a < num_dimensions_a && index_b < num_dimensions_b)
     {
+      /* The alternate indices form always has a single dimension
+	 with unconstrained base.  */
+      gcc_assert (!use_alt_indices);
+
       /* REF_A and REF_B must be one of the component access types
 	 allowed by dr_analyze_indices.  */
       gcc_checking_assert (access_fn_component_p (ref_a));
@@ -3280,11 +3272,12 @@ initialize_data_dependence_relation (struct data_reference *a,
   /* See whether FULL_SEQ ends at the base and whether the two bases
      are equal.  We do not care about TBAA or alignment info so we can
      use OEP_ADDRESS_OF to avoid false negatives.  */
-  tree base_a = DR_BASE_OBJECT (a);
-  tree base_b = DR_BASE_OBJECT (b);
+  tree base_a = indices_a->base_object;
+  tree base_b = indices_b->base_object;
   bool same_base_p = (full_seq.start_a + full_seq.length == num_dimensions_a
 		      && full_seq.start_b + full_seq.length == num_dimensions_b
-		      && DR_UNCONSTRAINED_BASE (a) == DR_UNCONSTRAINED_BASE (b)
+		      && (indices_a->unconstrained_base
+			  == indices_b->unconstrained_base)
 		      && operand_equal_p (base_a, base_b, OEP_ADDRESS_OF)
 		      && (types_compatible_p (TREE_TYPE (base_a),
 					      TREE_TYPE (base_b))
@@ -3323,7 +3316,7 @@ initialize_data_dependence_relation (struct data_reference *a,
      both lvalues are distinct from the object's declared type.  */
   if (same_base_p)
     {
-      if (DR_UNCONSTRAINED_BASE (a))
+      if (indices_a->unconstrained_base)
 	full_seq.length += 1;
     }
   else
@@ -3332,8 +3325,41 @@ initialize_data_dependence_relation (struct data_reference *a,
   /* Punt if we didn't find a suitable sequence.  */
   if (full_seq.length == 0)
     {
-      DDR_ARE_DEPENDENT (res) = chrec_dont_know;
-      return res;
+      if (use_alt_indices
+	  || (TREE_CODE (DR_REF (a)) == MEM_REF
+	      && TREE_CODE (DR_REF (b)) == MEM_REF)
+	  || may_be_nonaddressable_p (DR_REF (a))
+	  || may_be_nonaddressable_p (DR_REF (b)))
+	{
+	  /* Fully exhausted possibilities.  */
+	  DDR_ARE_DEPENDENT (res) = chrec_dont_know;
+	  return res;
+	}
+
+      /* Try evaluating both DRs as dereferences of pointers.  */
+      if (!a->alt_indices.base_object
+	  && TREE_CODE (DR_REF (a)) != MEM_REF)
+	{
+	  tree alt_ref = build2 (MEM_REF, TREE_TYPE (DR_REF (a)),
+				 build1 (ADDR_EXPR, ptr_type_node, DR_REF (a)),
+				 build_int_cst
+				   (reference_alias_ptr_type (DR_REF (a)), 0));
+	  dr_analyze_indices (&a->alt_indices, alt_ref,
+			      loop_preheader_edge (loop_nest[0]),
+			      loop_containing_stmt (DR_STMT (a)));
+	}
+      if (!b->alt_indices.base_object
+	  && TREE_CODE (DR_REF (b)) != MEM_REF)
+	{
+	  tree alt_ref = build2 (MEM_REF, TREE_TYPE (DR_REF (b)),
+				 build1 (ADDR_EXPR, ptr_type_node, DR_REF (b)),
+				 build_int_cst
+				   (reference_alias_ptr_type (DR_REF (b)), 0));
+	  dr_analyze_indices (&b->alt_indices, alt_ref,
+			      loop_preheader_edge (loop_nest[0]),
+			      loop_containing_stmt (DR_STMT (b)));
+	}
+      return initialize_data_dependence_relation (res, loop_nest, true);
     }
 
   if (!same_base_p)
@@ -3381,8 +3407,8 @@ initialize_data_dependence_relation (struct data_reference *a,
       struct subscript *subscript;
 
       subscript = XNEW (struct subscript);
-      SUB_ACCESS_FN (subscript, 0) = DR_ACCESS_FN (a, full_seq.start_a + i);
-      SUB_ACCESS_FN (subscript, 1) = DR_ACCESS_FN (b, full_seq.start_b + i);
+      SUB_ACCESS_FN (subscript, 0) = indices_a->access_fns[full_seq.start_a + i];
+      SUB_ACCESS_FN (subscript, 1) = indices_b->access_fns[full_seq.start_b + i];
       SUB_CONFLICTS_IN_A (subscript) = conflict_fn_not_known ();
       SUB_CONFLICTS_IN_B (subscript) = conflict_fn_not_known ();
       SUB_LAST_CONFLICT (subscript) = chrec_dont_know;
@@ -3392,6 +3418,40 @@ initialize_data_dependence_relation (struct data_reference *a,
 
   return res;
 }
+
+/* Initialize a data dependence relation between data accesses A and
+   B.  NB_LOOPS is the number of loops surrounding the references: the
+   size of the classic distance/direction vectors.  */
+
+struct data_dependence_relation *
+initialize_data_dependence_relation (struct data_reference *a,
+				     struct data_reference *b,
+				     vec<loop_p> loop_nest)
+{
+  data_dependence_relation *res = XCNEW (struct data_dependence_relation);
+  DDR_A (res) = a;
+  DDR_B (res) = b;
+  DDR_LOOP_NEST (res).create (0);
+  DDR_SUBSCRIPTS (res).create (0);
+  DDR_DIR_VECTS (res).create (0);
+  DDR_DIST_VECTS (res).create (0);
+
+  if (a == NULL || b == NULL)
+    {
+      DDR_ARE_DEPENDENT (res) = chrec_dont_know;
+      return res;
+    }
+
+  /* If the data references do not alias, then they are independent.  */
+  if (!dr_may_alias_p (a, b, loop_nest.exists () ? loop_nest[0] : NULL))
+    {
+      DDR_ARE_DEPENDENT (res) = chrec_known;
+      return res;
+    }
+
+  return initialize_data_dependence_relation (res, loop_nest, false);
+}
+
 
 /* Frees memory used by the conflict function F.  */
 

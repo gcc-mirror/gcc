@@ -298,6 +298,7 @@ GNAT_ADA_OBJS =	\
  ada/alloc.o	\
  ada/aspects.o  \
  ada/atree.o	\
+ ada/backend_utils.o	\
  ada/butil.o	\
  ada/casing.o	\
  ada/checks.o	\

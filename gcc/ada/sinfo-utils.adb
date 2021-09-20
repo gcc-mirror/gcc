@@ -191,7 +191,7 @@ package body Sinfo.Utils is
    function End_Location (N : Node_Id) return Source_Ptr is
       L : constant Uint := End_Span (N);
    begin
-      if L = No_Uint then
+      if No (L) then
          return No_Location;
       else
          return Source_Ptr (Int (Sloc (N)) + UI_To_Int (L));

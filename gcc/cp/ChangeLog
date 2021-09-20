@@ -1,3 +1,40 @@
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_order): Parse unconstrained
+	and reproducible modifiers.
+	(OMP_DISTRIBUTE_CLAUSE_MASK): Add order clause.
+
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_default): Handle private and
+	firstprivate arguments, adjust diagnostics on unknown argument.
+	* cp-gimplify.c (cxx_omp_finish_clause): Handle OMP_CLAUSE_PRIVATE.
+
+2021-09-18  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (dependentish_scope_p): Declare.
+	* pt.c (dependentish_scope_p): New.
+	* parser.c (cp_parser_lookup_name): Return a TYPENAME_TYPE
+	for lookup of a type in a dependent object.
+	(cp_parser_template_id): Handle TYPENAME_TYPE.
+	(cp_parser_template_name): If we're looking for a type,
+	a name followed by < names a template.
+
+2021-09-18  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h: Fix typo in LANG_FLAG list.
+
+2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (finish_omp_atomic): Add r and weak arguments.
+	* parser.c (cp_parser_omp_atomic): Update function comment for
+	OpenMP 5.1 atomics, parse OpenMP 5.1 atomics and fail, compare and
+	weak clauses.
+	* semantics.c (finish_omp_atomic): Add r and weak arguments, handle
+	them, handle COND_EXPRs.
+	* pt.c (tsubst_expr): Adjust for COND_EXPR forms that
+	finish_omp_atomic can now produce.
+
 2021-09-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/98486

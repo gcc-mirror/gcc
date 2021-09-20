@@ -1105,7 +1105,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_BCST_MODE_P(MODE)			\
   ((MODE) == SFmode || (MODE) == DFmode		\
-   || (MODE) == SImode || (MODE) == DImode)
+   || (MODE) == SImode || (MODE) == DImode	\
+   || (MODE) == HFmode)
 
 /* It is possible to write patterns to move flags; but until someone
    does it,  */

@@ -73,6 +73,18 @@ package body Uintp is
    --  These values are used in some cases where the use of numeric literals
    --  would cause ambiguities (integer vs Uint).
 
+   type UI_Vector is array (Pos range <>) of Int;
+   --  Vector containing the integer values of a Uint value
+
+   --  Note: An earlier version of this package used pointers of arrays of Ints
+   --  (dynamically allocated) for the Uint type. The change leads to a few
+   --  less natural idioms used throughout this code, but eliminates all uses
+   --  of the heap except for the table package itself. For example, Uint
+   --  parameters are often converted to UI_Vectors for internal manipulation.
+   --  This is done by creating the local UI_Vector using the function N_Digits
+   --  on the Uint to find the size needed for the vector, and then calling
+   --  Init_Operand to copy the values out of the table into the vector.
+
    ----------------------------
    -- UI_From_Int Hash Table --
    ----------------------------
@@ -126,6 +138,22 @@ package body Uintp is
    --  that the input may be directly represented, and in this case Vec will
    --  contain the corresponding one or two digit value. The low bound of Vec
    --  is always 1.
+
+   function Vector_To_Uint
+     (In_Vec   : UI_Vector;
+      Negative : Boolean) return Uint;
+   --  Functions that calculate values in UI_Vectors, call this function to
+   --  create and return the Uint value. In_Vec contains the multiple precision
+   --  (Base) representation of a non-negative value. Leading zeroes are
+   --  permitted. Negative is set if the desired result is the negative of the
+   --  given value. The result will be either the appropriate directly
+   --  represented value, or a table entry in the proper canonical format is
+   --  created and returned.
+   --
+   --  Note that Init_Operand puts a signed value in the result vector, but
+   --  Vector_To_Uint is always presented with a non-negative value. The
+   --  processing of signs is something that is done by the caller before
+   --  calling Vector_To_Uint.
 
    function Least_Sig_Digit (Arg : Uint) return Int;
    pragma Inline (Least_Sig_Digit);
@@ -361,7 +389,7 @@ package body Uintp is
    --  Start of processing for Image_Out
 
    begin
-      if Input = No_Uint then
+      if No (Input) then
          Image_Char ('?');
          return;
       end if;
@@ -1404,7 +1432,7 @@ package body Uintp is
 
       U := UI_Ints.Get (Input);
 
-      if U /= No_Uint then
+      if Present (U) then
          return U;
       end if;
 
@@ -2183,9 +2211,7 @@ package body Uintp is
    -- UI_To_Int --
    ---------------
 
-   function UI_To_Int (Input : Uint) return Int is
-      pragma Assert (Input /= No_Uint);
-
+   function UI_To_Int (Input : Valid_Uint) return Int is
    begin
       if Direct (Input) then
          return Direct_Val (Input);
@@ -2234,9 +2260,7 @@ package body Uintp is
    -- UI_To_Uns64 --
    -----------------
 
-   function UI_To_Unsigned_64 (Input : Uint) return Unsigned_64 is
-      pragma Assert (Input /= No_Uint);
-
+   function UI_To_Unsigned_64 (Input : Valid_Uint) return Unsigned_64 is
    begin
       if Input < Uint_0 then
          raise Constraint_Error;

@@ -287,7 +287,7 @@ package System.Object_Reader is
      (Obj   : in out Object_File;
       Low, High : out uint64);
    --  Return the low and high addresses of the code for the object file. Can
-   --  be used to check if an address in within this object file. This
+   --  be used to check if an address lies within this object file. This
    --  procedure is not efficient and the result should be saved to avoid
    --  recomputation.
 
@@ -381,9 +381,8 @@ private
    subtype Any_PECOFF is Object_Format range PECOFF .. PECOFF_PLUS;
 
    type Object_File (Format : Object_Format) is record
-      Mf           : System.Mmap.Mapped_File :=
-                        System.Mmap.Invalid_Mapped_File;
-      Arch         : Object_Arch := Unknown;
+      Mf   : System.Mmap.Mapped_File := System.Mmap.Invalid_Mapped_File;
+      Arch : Object_Arch := Unknown;
 
       Num_Sections : uint32 := 0;
       --  Number of sections
@@ -406,6 +405,7 @@ private
          when ELF =>
             Secstr_Stream : Mapped_Stream;
             --  Section strings
+
          when Any_PECOFF =>
             ImageBase   : uint64;       --  ImageBase value from header
 
@@ -413,19 +413,20 @@ private
 
             GSVA_Sec  : uint32 := uint32'Last;
             GSVA_Addr : uint64;
+
          when XCOFF32 =>
             null;
       end case;
    end record;
 
-   subtype ELF_Object_File is Object_File; -- with
-   --  Predicate => ELF_Object_File.Format in ELF;
-   subtype PECOFF_Object_File is Object_File; -- with
-   --  Predicate => PECOFF_Object_File.Format in Any_PECOFF;
-   subtype XCOFF32_Object_File is Object_File; -- with
-   --  Predicate => XCOFF32_Object_File.Format in XCOFF32;
-   --  ???Above predicates cause the compiler to crash when instantiating
-   --  ELF64_Ops (see package body).
+   subtype ELF_Object_File is Object_File
+     with Predicate => ELF_Object_File.Format in ELF;
+
+   subtype PECOFF_Object_File is Object_File
+     with Predicate => PECOFF_Object_File.Format in Any_PECOFF;
+
+   subtype XCOFF32_Object_File is Object_File
+     with Predicate => XCOFF32_Object_File.Format in XCOFF32;
 
    type Object_Section is record
       Num        : uint32 := 0;

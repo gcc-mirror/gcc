@@ -1768,11 +1768,16 @@ package body Sem_Ch7 is
          end if;
 
          --  Check preelaborable initialization for full type completing a
-         --  private type for which pragma Preelaborable_Initialization given.
+         --  private type when aspect Preelaborable_Initialization is True.
+         --  We pass True for the parameter Formal_Types_Have_Preelab_Init
+         --  to take into account the rule that presumes that subcomponents
+         --  of generic formal types mentioned in the type's P_I aspect have
+         --  preelaborable initialization (see RM 10.2.1(11.8/5)).
 
          if Is_Type (E)
            and then Must_Have_Preelab_Init (E)
-           and then not Has_Preelaborable_Initialization (E)
+           and then not Has_Preelaborable_Initialization
+                          (E, Formal_Types_Have_Preelab_Init => True)
          then
             Error_Msg_N
               ("full view of & does not have preelaborable initialization", E);
@@ -1891,7 +1896,7 @@ package body Sem_Ch7 is
    begin
       Generate_Definition (Id);
       Set_Is_Pure         (Id, PF);
-      Init_Size_Align     (Id);
+      Reinit_Size_Align   (Id);
 
       if not Is_Package_Or_Generic_Package (Current_Scope)
         or else In_Private_Part (Current_Scope)
@@ -2568,7 +2573,7 @@ package body Sem_Ch7 is
       Set_Etype              (Id, Id);
       Set_Has_Delayed_Freeze (Id);
       Set_Is_First_Subtype   (Id);
-      Init_Size_Align        (Id);
+      Reinit_Size_Align      (Id);
 
       Set_Is_Constrained (Id,
         No (Discriminant_Specifications (N))

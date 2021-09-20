@@ -1530,9 +1530,18 @@ package Sem_Util is
    --  non-null), which causes the type to not have preelaborable
    --  initialization.
 
-   function Has_Preelaborable_Initialization (E : Entity_Id) return Boolean;
+   function Has_Preelaborable_Initialization
+     (E                              : Entity_Id;
+      Formal_Types_Have_Preelab_Init : Boolean := False) return Boolean;
    --  Return True iff type E has preelaborable initialization as defined in
    --  Ada 2005 (see AI-161 for details of the definition of this attribute).
+   --  If Formal_Types_Have_Preelab_Init is True, indicates that the function
+   --  should presume that for any subcomponents of formal private or derived
+   --  types, the types have preelaborable initialization (RM 10.2.1(11.8/5)).
+   --  NOTE: The treatment of subcomponents of formal types should only apply
+   --  for types actually specified in the P_I aspect of the outer type, but
+   --  for now we take a more liberal interpretation. This needs addressing,
+   --  perhaps by passing the outermost type instead of the simple flag. ???
 
    function Has_Prefix (N : Node_Id) return Boolean;
    --  Return True if N has attribute Prefix
@@ -1827,6 +1836,13 @@ package Sem_Util is
                           return Boolean;
    --  Returns true if the two specifications of the given
    --  nonoverridable aspect are compatible.
+
+   function Is_Conjunction_Of_Formal_Preelab_Init_Attributes
+     (Expr : Node_Id) return Boolean;
+   --  Returns True if Expr is a Preelaborable_Initialization attribute applied
+   --  to a formal type, or a sequence of two or more such attributes connected
+   --  by "and" operators, or if the Original_Node of Expr or its constituents
+   --  is such an attribute.
 
    function Is_Constant_Bound (Exp : Node_Id) return Boolean;
    --  Exp is the expression for an array bound. Determines whether the
@@ -2844,6 +2860,10 @@ package Sem_Util is
    --  or overrides an inherited dispatching primitive S2, the original
    --  corresponding operation of S is the original corresponding operation of
    --  S2. Otherwise, it is S itself.
+
+   function Original_View_In_Visible_Part (Typ : Entity_Id) return Boolean;
+   --  Returns True if the type Typ has a private view or if the public view
+   --  appears in the visible part of a package spec.
 
    procedure Output_Entity (Id : Entity_Id);
    --  Print entity Id to standard output. The name of the entity appears in

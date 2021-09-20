@@ -8506,7 +8506,7 @@ package body Exp_Ch3 is
             if Compile_Time_Known_Value (Lo) then
                Lo_Val := Expr_Value (Lo);
 
-               if Lo_Bound = No_Uint or else Lo_Bound < Lo_Val then
+               if No (Lo_Bound) or else Lo_Bound < Lo_Val then
                   Lo_Bound := Lo_Val;
                end if;
             end if;
@@ -8514,7 +8514,7 @@ package body Exp_Ch3 is
             if Compile_Time_Known_Value (Hi) then
                Hi_Val := Expr_Value (Hi);
 
-               if Hi_Bound = No_Uint or else Hi_Bound > Hi_Val then
+               if No (Hi_Bound) or else Hi_Bound > Hi_Val then
                   Hi_Bound := Hi_Val;
                end if;
             end if;
@@ -8643,7 +8643,7 @@ package body Exp_Ch3 is
          --  If zero is invalid, it is a convenient value to use that is for
          --  sure an appropriate invalid value in all situations.
 
-         elsif Lo_Bound /= No_Uint and then Lo_Bound > Uint_0 then
+         elsif Present (Lo_Bound) and then Lo_Bound > Uint_0 then
             return Make_Integer_Literal (Loc, 0);
 
          --  Unsigned types
@@ -8702,7 +8702,7 @@ package body Exp_Ch3 is
          --  If zero is invalid, it is a convenient value to use that is for
          --  sure an appropriate invalid value in all situations.
 
-         if Lo_Bound /= No_Uint and then Lo_Bound > Uint_0 then
+         if Present (Lo_Bound) and then Lo_Bound > Uint_0 then
             Expr := Make_Integer_Literal (Loc, 0);
 
          --  Cases where all one bits is the appropriate invalid value
@@ -8741,7 +8741,7 @@ package body Exp_Ch3 is
 
             --  For this exceptional case, use largest positive value
 
-            if Lo_Bound /= No_Uint and then Hi_Bound /= No_Uint
+            if Present (Lo_Bound) and then Present (Hi_Bound)
               and then Lo_Bound <= (-(2 ** Signed_Size))
               and then Hi_Bound < 2 ** Signed_Size
             then
@@ -8811,7 +8811,7 @@ package body Exp_Ch3 is
          --  Determine the size of the object. This is either the size provided
          --  by the caller, or the Esize of the scalar type.
 
-         if Size = No_Uint or else Size <= Uint_0 then
+         if No (Size) or else Size <= Uint_0 then
             Size_To_Use := UI_Max (Uint_1, Esize (Typ));
          else
             Size_To_Use := Size;
@@ -8821,7 +8821,7 @@ package body Exp_Ch3 is
          --  will create values of type Long_Long_Long_Unsigned and the range
          --  must fit this type.
 
-         if Size_To_Use /= No_Uint
+         if Present (Size_To_Use)
            and then Size_To_Use > System_Max_Integer_Size
          then
             Size_To_Use := UI_From_Int (System_Max_Integer_Size);

@@ -196,10 +196,12 @@ back_jt_path_registry::back_jt_path_registry ()
 {
 }
 
-jump_thread_edge *
-jt_path_registry::allocate_thread_edge (edge e, jump_thread_edge_type t)
+void
+jt_path_registry::push_edge (vec<jump_thread_edge *> *path,
+			     edge e, jump_thread_edge_type type)
 {
-  return m_allocator.allocate_thread_edge (e, t);
+  jump_thread_edge *x =  m_allocator.allocate_thread_edge (e, type);
+  path->safe_push (x);
 }
 
 vec<jump_thread_edge *> *
@@ -211,9 +213,9 @@ jt_path_registry::allocate_thread_path ()
 /* Dump a jump threading path, including annotations about each
    edge in the path.  */
 
-void
+static void
 dump_jump_thread_path (FILE *dump_file,
-		       const vec<jump_thread_edge *> path,
+		       const vec<jump_thread_edge *> &path,
 		       bool registering)
 {
   fprintf (dump_file,

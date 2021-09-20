@@ -310,75 +310,115 @@ package Einfo.Utils is
    pragma Inline (Type_High_Bound);
    pragma Inline (Type_Low_Bound);
 
-   ----------------------------------------------
-   -- Type Representation Attribute Predicates --
-   ----------------------------------------------
+   ------------------------------------------
+   -- Type Representation Attribute Fields --
+   ------------------------------------------
 
-   --  These predicates test the setting of the indicated attribute. The
-   --  Known predicate is True if and only if the value has been set. The
-   --  Known_Static predicate is True only if the value is set (Known) and is
-   --  set to a compile time known value. Note that in the case of Alignment
-   --  and Normalized_First_Bit, dynamic values are not possible, so we do not
-   --  need a separate Known_Static calls in these cases. The not set (unknown)
-   --  values are as follows:
+   --  Each of the following fields can be in a "known" or "unknown" state:
 
-   --    Alignment               Uint_0 or No_Uint
-   --    Component_Size          Uint_0 or No_Uint
-   --    Component_Bit_Offset    No_Uint
-   --    Digits_Value            Uint_0 or No_Uint
-   --    Esize                   Uint_0 or No_Uint
-   --    Normalized_First_Bit    No_Uint
-   --    Normalized_Position     No_Uint
-   --    Normalized_Position_Max No_Uint
-   --    RM_Size                 Uint_0 or No_Uint
-
-   --  It would be cleaner to use No_Uint in all these cases, but historically
-   --  we chose to use Uint_0 at first, and the change over will take time ???
-   --  This is particularly true for the RM_Size field, where a value of zero
-   --  is legitimate. We deal with this by a considering that the value is
-   --  always known static for discrete types (and no other types can have
-   --  an RM_Size value of zero).
-
+   --    Alignment
+   --    Component_Size
+   --    Component_Bit_Offset
+   --    Digits_Value
+   --    Esize
+   --    Normalized_First_Bit
+   --    Normalized_Position
+   --    RM_Size
+   --
+   --  NOTE: "known" here does not mean "known at compile time". It means that
+   --  the compiler has computed the value of the field (either by default, or
+   --  by noting some representation clauses), and the field has not been
+   --  reinitialized.
+   --
+   --  We document the Esize functions here; the others are analogous:
+   --
+   --     Known_Esize: True if Set_Esize has been called without a subsequent
+   --     Reinit_Esize.
+   --
+   --     Known_Static_Esize: True if Known_Esize and the Esize is known at
+   --     compile time. (We're not using "static" in the Ada RM sense here. We
+   --     are using it to mean "known at compile time.)
+   --
+   --     Reinit_Esize: Set the Esize field to its initial unknown state.
+   --
+   --     Copy_Esize: Copies the Esize from From to To; Known_Esize (From) may
+   --     be False, in which case Known_Esize (To) becomes False.
+   --
+   --     Esize: This is the normal automatially-generated getter for Esize,
+   --     declared elsewhere. It is an error to call this if Set_Esize has not
+   --     yet been called, or if Reinit_Esize has been called subsequently.
+   --
+   --     Set_Esize: This is the normal automatially-generated setter for
+   --     Esize. After a call to this, Known_Esize is True. It is an error
+   --     to call this with a No_Uint value.
+   --
+   --  Normally, we call Set_Esize first, and then query Esize (and similarly
+   --  for other fields). However in some cases, we need to check Known_Esize
+   --  before calling Esize, because the code is written in such a way that we
+   --  don't know whether Set_Esize has already been called.
+   --
+   --  We intend to use the initial zero value to represent "unknown". Note
+   --  that this value is different from No_Uint, and different from Uint_0.
+   --  However, this is work in progress; we are still using No_Uint or Uint_0
+   --  to represent "unknown" in some cases. Using Uint_0 leads to several
+   --  bugs, because zero is a legitimate value (T'Size can be zero bits) --
+   --  Uint_0 shouldn't mean two different things.
+   --
    --  In two cases, Known_Static_Esize and Known_Static_RM_Size, there is one
    --  more consideration, which is that we always return False for generic
-   --  types. Within a template, the size can look known, because of the fake
-   --  size values we put in template types, but they are not really known and
-   --  anyone testing if they are known within the template should get False as
-   --  a result to prevent incorrect assumptions.
+   --  types. Within a template, the size can look Known_Static, because of the
+   --  fake size values we put in template types, but they are not really
+   --  Known_Static and anyone testing if they are Known_Static within the
+   --  template should get False as a result to prevent incorrect assumptions.
 
-   function Known_Alignment                       (E : Entity_Id) return B;
-   function Known_Component_Bit_Offset            (E : Entity_Id) return B;
-   function Known_Component_Size                  (E : Entity_Id) return B;
-   function Known_Esize                           (E : Entity_Id) return B;
-   function Known_Normalized_First_Bit            (E : Entity_Id) return B;
-   function Known_Normalized_Position             (E : Entity_Id) return B;
-   function Known_Normalized_Position_Max         (E : Entity_Id) return B;
-   function Known_RM_Size                         (E : Entity_Id) return B;
+   function Known_Alignment (E : Entity_Id) return B with Inline;
+   procedure Reinit_Alignment (Id : E) with Inline;
+   procedure Copy_Alignment (To, From : E);
 
-   function Known_Static_Component_Bit_Offset     (E : Entity_Id) return B;
-   function Known_Static_Component_Size           (E : Entity_Id) return B;
-   function Known_Static_Esize                    (E : Entity_Id) return B;
-   function Known_Static_Normalized_First_Bit     (E : Entity_Id) return B;
-   function Known_Static_Normalized_Position      (E : Entity_Id) return B;
-   function Known_Static_Normalized_Position_Max  (E : Entity_Id) return B;
-   function Known_Static_RM_Size                  (E : Entity_Id) return B;
+   function Known_Component_Bit_Offset (E : Entity_Id) return B with Inline;
+   function Known_Static_Component_Bit_Offset (E : Entity_Id) return B
+     with Inline;
 
-   pragma Inline (Known_Alignment);
-   pragma Inline (Known_Component_Bit_Offset);
-   pragma Inline (Known_Component_Size);
-   pragma Inline (Known_Esize);
-   pragma Inline (Known_Normalized_First_Bit);
-   pragma Inline (Known_Normalized_Position);
-   pragma Inline (Known_Normalized_Position_Max);
-   pragma Inline (Known_RM_Size);
+   function Known_Component_Size (E : Entity_Id) return B with Inline;
+   function Known_Static_Component_Size (E : Entity_Id) return B with Inline;
 
-   pragma Inline (Known_Static_Component_Bit_Offset);
-   pragma Inline (Known_Static_Component_Size);
-   pragma Inline (Known_Static_Esize);
-   pragma Inline (Known_Static_Normalized_First_Bit);
-   pragma Inline (Known_Static_Normalized_Position);
-   pragma Inline (Known_Static_Normalized_Position_Max);
-   pragma Inline (Known_Static_RM_Size);
+   function Known_Esize (E : Entity_Id) return B with Inline;
+   function Known_Static_Esize (E : Entity_Id) return B with Inline;
+   procedure Reinit_Esize (Id : E) with Inline;
+   procedure Copy_Esize (To, From : E);
+
+   function Known_Normalized_First_Bit (E : Entity_Id) return B with Inline;
+   function Known_Static_Normalized_First_Bit (E : Entity_Id) return B
+     with Inline;
+
+   function Known_Normalized_Position (E : Entity_Id) return B with Inline;
+   function Known_Static_Normalized_Position (E : Entity_Id) return B
+     with Inline;
+
+   function Known_RM_Size (E : Entity_Id) return B with Inline;
+   function Known_Static_RM_Size (E : Entity_Id) return B with Inline;
+   procedure Reinit_RM_Size (Id : E) with Inline;
+   procedure Copy_RM_Size (To, From : E);
+
+   ---------------------------------------------------------
+   -- Procedures for setting multiple of the above fields --
+   ---------------------------------------------------------
+
+   procedure Reinit_Component_Location (Id : E);
+   --  Initializes all fields describing the location of a component
+   --  (Normalized_Position, Component_Bit_Offset, Normalized_First_Bit,
+   --  Esize) to all be Unknown.
+
+   procedure Init_Size (Id : E; V : Int);
+   --  Initialize both the Esize and RM_Size fields of E to V
+
+   procedure Reinit_Size_Align (Id : E);
+   --  This procedure initializes both size fields and the alignment
+   --  field to all be Unknown.
+
+   procedure Reinit_Object_Size_Align (Id : E);
+   --  Same as Reinit_Size_Align except RM_Size field (which is only for types)
+   --  is unaffected.
 
    ---------------------------------------------------
    -- Access to Subprograms in Subprograms_For_Type --
@@ -403,89 +443,6 @@ package Einfo.Utils is
    procedure Set_Partial_Invariant_Procedure     (Id : E; V : E);
    procedure Set_Predicate_Function              (Id : E; V : E);
    procedure Set_Predicate_Function_M            (Id : E; V : E);
-
-   -----------------------------------
-   -- Field Initialization Routines --
-   -----------------------------------
-
-   --  These routines are overloadings of some of the above Set procedures
-   --  where the argument is normally a Uint. The overloadings take an Int
-   --  parameter instead, and appropriately convert it. There are also
-   --  versions that implicitly initialize to the appropriate "not set"
-   --  value. The not set (unknown) values are as follows:
-
-   --    Alignment                 Uint_0
-   --    Component_Size            Uint_0
-   --    Component_Bit_Offset      No_Uint
-   --    Digits_Value              Uint_0
-   --    Esize                     Uint_0
-   --    Normalized_First_Bit      No_Uint
-   --    Normalized_Position       No_Uint
-   --    Normalized_Position_Max   No_Uint
-   --    RM_Size                   Uint_0
-
-   --  It would be cleaner to use No_Uint in all these cases, but historically
-   --  we chose to use Uint_0 at first, and the change over will take time ???
-   --  This is particularly true for the RM_Size field, where a value of zero
-   --  is legitimate and causes some special tests around the code.
-
-   --  Contrary to the corresponding Set procedures above, these routines
-   --  do NOT check the entity kind of their argument, instead they set the
-   --  underlying Uint fields directly (this allows them to be used for
-   --  entities whose Ekind has not been set yet).
-
-   procedure Init_Alignment                (Id : E; V : Int);
-   procedure Init_Component_Bit_Offset     (Id : E; V : Int);
-   procedure Init_Component_Size           (Id : E; V : Int);
-   procedure Init_Digits_Value             (Id : E; V : Int);
-   procedure Init_Esize                    (Id : E; V : Int);
-   procedure Init_Normalized_First_Bit     (Id : E; V : Int);
-   procedure Init_Normalized_Position      (Id : E; V : Int);
-   procedure Init_Normalized_Position_Max  (Id : E; V : Int);
-   procedure Init_RM_Size                  (Id : E; V : Int);
-
-   procedure Init_Alignment                (Id : E);
-   procedure Init_Component_Bit_Offset     (Id : E);
-   procedure Init_Component_Size           (Id : E);
-   procedure Init_Digits_Value             (Id : E);
-   procedure Init_Esize                    (Id : E);
-   procedure Init_Normalized_First_Bit     (Id : E);
-   procedure Init_Normalized_Position      (Id : E);
-   procedure Init_Normalized_Position_Max  (Id : E);
-   procedure Init_RM_Size                  (Id : E);
-
-   --  The following Copy_xxx procedures copy the value of xxx from From to
-   --  To. If xxx is set to its initial invalid (zero-bits) value, then it is
-   --  reset to invalid in To. We only have Copy_Alignment so far, but more are
-   --  planned.
-
-   procedure Copy_Alignment (To, From : E);
-
-   pragma Inline (Init_Alignment);
-   pragma Inline (Init_Component_Bit_Offset);
-   pragma Inline (Init_Component_Size);
-   pragma Inline (Init_Digits_Value);
-   pragma Inline (Init_Esize);
-   pragma Inline (Init_Normalized_First_Bit);
-   pragma Inline (Init_Normalized_Position);
-   pragma Inline (Init_Normalized_Position_Max);
-   pragma Inline (Init_RM_Size);
-
-   procedure Init_Component_Location (Id : E);
-   --  Initializes all fields describing the location of a component
-   --  (Normalized_Position, Component_Bit_Offset, Normalized_First_Bit,
-   --  Normalized_Position_Max, Esize) to all be Unknown.
-
-   procedure Init_Size (Id : E; V : Int);
-   --  Initialize both the Esize and RM_Size fields of E to V
-
-   procedure Init_Size_Align (Id : E);
-   --  This procedure initializes both size fields and the alignment
-   --  field to all be Unknown.
-
-   procedure Init_Object_Size_Align (Id : E);
-   --  Same as Init_Size_Align except RM_Size field (which is only for types)
-   --  is unaffected.
 
    ---------------
    -- Iterators --

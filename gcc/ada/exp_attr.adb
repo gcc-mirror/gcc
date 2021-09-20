@@ -5530,6 +5530,21 @@ package body Exp_Attr is
          end if;
       end Pred;
 
+      ----------------------------------
+      -- Preelaborable_Initialization --
+      ----------------------------------
+
+      when Attribute_Preelaborable_Initialization =>
+
+         --  This attribute should already be folded during analysis, but if
+         --  for some reason it hasn't been, we fold it now.
+
+         Fold_Uint
+           (N,
+            UI_From_Int
+              (Boolean'Pos (Has_Preelaborable_Initialization (Ptyp))),
+            Static => False);
+
       --------------
       -- Priority --
       --------------
@@ -8028,7 +8043,7 @@ package body Exp_Attr is
 
       --  Common processing for record and array component case
 
-      if Siz /= No_Uint and then Siz /= 0 then
+      if Present (Siz) and then Siz /= 0 then
          declare
             CS : constant Boolean := Comes_From_Source (N);
 

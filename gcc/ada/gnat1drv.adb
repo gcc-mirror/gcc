@@ -1616,7 +1616,14 @@ begin
 
       Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;
-      Repinfo.List_Rep_Info (Ttypes.Bytes_Big_Endian);
+
+      --  Back annotation of representation info is not done in CodePeer and
+      --  SPARK modes.
+
+      if not (Generate_SCIL or GNATprove_Mode) then
+         Repinfo.List_Rep_Info (Ttypes.Bytes_Big_Endian);
+      end if;
+
       Inline.List_Inlining_Info;
 
       --  Only write the library if the backend did not generate any error
