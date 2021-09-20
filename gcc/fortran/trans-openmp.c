@@ -5176,8 +5176,6 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* Duplicate collapse.  */
 	  clausesa[GFC_OMP_SPLIT_DISTRIBUTE].collapse
 	    = code->ext.omp_clauses->collapse;
-	  clausesa[GFC_OMP_SPLIT_DISTRIBUTE].order_concurrent
-	    = code->ext.omp_clauses->order_concurrent;
 	}
       if (mask & GFC_OMP_MASK_PARALLEL)
 	{
