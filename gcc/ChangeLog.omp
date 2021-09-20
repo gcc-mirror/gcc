@@ -3,6 +3,15 @@
 	Backported from master:
 	2021-09-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree.h (OMP_CLAUSE_ORDER_UNCONSTRAINED): Define.
+	* tree-pretty-print.c (dump_omp_clause): Print unconstrained:
+	for OMP_CLAUSE_ORDER_UNCONSTRAINED.
+
+2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
 	* gimplify.c (omp_default_clause): For C/C++ default({,first}private),
 	if file/namespace scope variable doesn't have predetermined sharing,
 	treat it as if there was default(none).

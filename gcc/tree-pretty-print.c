@@ -1200,7 +1200,10 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       break;
 
     case OMP_CLAUSE_ORDER:
-      pp_string (pp, "order(concurrent)");
+      pp_string (pp, "order(");
+      if (OMP_CLAUSE_ORDER_UNCONSTRAINED (clause))
+	pp_string (pp, "unconstrained:");
+      pp_string (pp, "concurrent)");
       break;
 
     case OMP_CLAUSE_BIND:

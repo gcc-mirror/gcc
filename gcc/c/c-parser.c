@@ -14626,7 +14626,14 @@ c_parser_oacc_clause_wait (c_parser *parser, tree list)
 
 
 /* OpenMP 5.0:
-   order ( concurrent ) */
+   order ( concurrent )
+
+   OpenMP 5.1:
+   order ( order-modifier : concurrent )
+
+   order-modifier:
+     reproducible
+     unconstrained  */
 
 static tree
 c_parser_omp_clause_order (c_parser *parser, tree list)
@@ -14634,10 +14641,26 @@ c_parser_omp_clause_order (c_parser *parser, tree list)
   location_t loc = c_parser_peek_token (parser)->location;
   tree c;
   const char *p;
+  bool unconstrained = false;
 
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
+  if (c_parser_next_token_is (parser, CPP_NAME)
+      && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
+    {
+      p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      if (strcmp (p, "unconstrained") == 0)
+	unconstrained = true;
+      else if (strcmp (p, "reproducible") != 0)
+	{
+	  c_parser_error (parser, "expected %<reproducible%> or "
+				  "%<unconstrained%>");
+	  goto out_err;
+	}
+      c_parser_consume_token (parser);
+      c_parser_consume_token (parser);
+    }
   if (!c_parser_next_token_is (parser, CPP_NAME))
     {
       c_parser_error (parser, "expected %<concurrent%>");
@@ -14651,8 +14674,9 @@ c_parser_omp_clause_order (c_parser *parser, tree list)
     }
   c_parser_consume_token (parser);
   parens.skip_until_found_close (parser);
-  /* check_no_duplicate_clause (list, OMP_CLAUSE_ORDER, "order"); */
+  check_no_duplicate_clause (list, OMP_CLAUSE_ORDER, "order");
   c = build_omp_clause (loc, OMP_CLAUSE_ORDER);
+  OMP_CLAUSE_ORDER_UNCONSTRAINED (c) = unconstrained;
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 
@@ -20275,7 +20299,8 @@ c_parser_omp_cancellation_point (c_parser *parser, enum pragma_context context)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LASTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDER))
 
 static tree
 c_parser_omp_distribute (location_t loc, c_parser *parser,

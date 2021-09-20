@@ -2259,14 +2259,31 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    }
 	  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	  break;
-	/* order clauses are allowed on for, simd and loop.  */
+	/* order clauses are allowed on distribute, for, simd and loop.  */
 	case OMP_CLAUSE_ORDER:
+	  if ((mask & (OMP_CLAUSE_MASK_1
+		       << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)) != 0)
+	    {
+	      if (code == OMP_DISTRIBUTE)
+		{
+		  s = C_OMP_CLAUSE_SPLIT_DISTRIBUTE;
+		  break;
+		}
+	      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+				    OMP_CLAUSE_ORDER);
+	      OMP_CLAUSE_ORDER_UNCONSTRAINED (c)
+		= OMP_CLAUSE_ORDER_UNCONSTRAINED (clauses);
+	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE];
+	      cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE] = c;
+	    }
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)) != 0)
 	    {
 	      if (code == OMP_SIMD)
 		{
 		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
 					OMP_CLAUSE_ORDER);
+		  OMP_CLAUSE_ORDER_UNCONSTRAINED (c)
+		    = OMP_CLAUSE_ORDER_UNCONSTRAINED (clauses);
 		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
 		  cclauses[C_OMP_CLAUSE_SPLIT_FOR] = c;
 		  s = C_OMP_CLAUSE_SPLIT_SIMD;

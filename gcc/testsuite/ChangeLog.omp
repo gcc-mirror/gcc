@@ -3,6 +3,29 @@
 	Backported from master:
 	2021-09-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/order-1.c (f2): Add tests for distribute
+	with order clause.
+	(f3): Remove.
+	* c-c++-common/gomp/order-2.c: Don't expect error for distribute
+	with order clause.
+	* c-c++-common/gomp/order-5.c: New test.
+	* c-c++-common/gomp/order-6.c: New test.
+	* c-c++-common/gomp/clause-dups-1.c (f1): Add tests for
+	duplicated order clause.
+	(f9): New function.
+	* c-c++-common/gomp/clauses-1.c (baz, bar): Don't mix copyin and
+	order(concurrent) clauses on the same composite construct combined
+	with distribute, instead split it into two tests, one without
+	copyin and one without order(concurrent).  Add order(concurrent)
+	clauses to {,{,target} teams} distribute.
+	* g++.dg/gomp/attrs-1.C (baz, bar): Likewise.
+	* g++.dg/gomp/attrs-2.C (baz, bar): Likewise.
+
+2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-c++-common/gomp/default-2.c: New test.
 	* c-c++-common/gomp/default-3.c: New test.
 	* g++.dg/gomp/default-1.C: New test.

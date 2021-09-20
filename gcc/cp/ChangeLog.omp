@@ -3,6 +3,15 @@
 	Backported from master:
 	2021-09-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_omp_clause_order): Parse unconstrained
+	and reproducible modifiers.
+	(OMP_DISTRIBUTE_CLAUSE_MASK): Add order clause.
+
+2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
 	* parser.c (cp_parser_omp_clause_default): Handle private and
 	firstprivate arguments, adjust diagnostics on unknown argument.
 	* cp-gimplify.c (cxx_omp_finish_clause): Handle OMP_CLAUSE_PRIVATE.
