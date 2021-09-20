@@ -224,7 +224,6 @@ Implementation Defined Pragmas
 * Pragma Post:: 
 * Pragma Postcondition:: 
 * Pragma Post_Class:: 
-* Pragma Rename_Pragma:: 
 * Pragma Pre:: 
 * Pragma Precondition:: 
 * Pragma Predicate:: 
@@ -247,6 +246,7 @@ Implementation Defined Pragmas
 * Pragma Refined_State:: 
 * Pragma Relative_Deadline:: 
 * Pragma Remote_Access_Type:: 
+* Pragma Rename_Pragma:: 
 * Pragma Restricted_Run_Time:: 
 * Pragma Restriction_Warnings:: 
 * Pragma Reviewable:: 
@@ -1305,7 +1305,6 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Post:: 
 * Pragma Postcondition:: 
 * Pragma Post_Class:: 
-* Pragma Rename_Pragma:: 
 * Pragma Pre:: 
 * Pragma Precondition:: 
 * Pragma Predicate:: 
@@ -1328,6 +1327,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Refined_State:: 
 * Pragma Relative_Deadline:: 
 * Pragma Remote_Access_Type:: 
+* Pragma Rename_Pragma:: 
 * Pragma Restricted_Run_Time:: 
 * Pragma Restriction_Warnings:: 
 * Pragma Reviewable:: 
@@ -6352,7 +6352,7 @@ use of the pragma identifier @code{Check}. Historically, pragma
 Ada 2012, and has been retained in its original form for
 compatibility purposes.
 
-@node Pragma Post_Class,Pragma Rename_Pragma,Pragma Postcondition,Implementation Defined Pragmas
+@node Pragma Post_Class,Pragma Pre,Pragma Postcondition,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-post-class}@anchor{b9}
 @section Pragma Post_Class
 
@@ -6387,47 +6387,8 @@ aspects, but is prepared to ignore the pragmas. The assertion
 policy that controls this pragma is @code{Post'Class}, not
 @code{Post_Class}.
 
-@node Pragma Rename_Pragma,Pragma Pre,Pragma Post_Class,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-rename-pragma}@anchor{ba}
-@section Pragma Rename_Pragma
-
-
-@geindex Pragmas
-@geindex synonyms
-
-Syntax:
-
-@example
-pragma Rename_Pragma (
-         [New_Name =>] IDENTIFIER,
-         [Renamed  =>] pragma_IDENTIFIER);
-@end example
-
-This pragma provides a mechanism for supplying new names for existing
-pragmas. The @code{New_Name} identifier can subsequently be used as a synonym for
-the Renamed pragma. For example, suppose you have code that was originally
-developed on a compiler that supports Inline_Only as an implementation defined
-pragma. And suppose the semantics of pragma Inline_Only are identical to (or at
-least very similar to) the GNAT implementation defined pragma
-Inline_Always. You could globally replace Inline_Only with Inline_Always.
-
-However, to avoid that source modification, you could instead add a
-configuration pragma:
-
-@example
-pragma Rename_Pragma (
-         New_Name => Inline_Only,
-         Renamed  => Inline_Always);
-@end example
-
-Then GNAT will treat “pragma Inline_Only …” as if you had written
-“pragma Inline_Always …”.
-
-Pragma Inline_Only will not necessarily mean the same thing as the other Ada
-compiler; it’s up to you to make sure the semantics are close enough.
-
-@node Pragma Pre,Pragma Precondition,Pragma Rename_Pragma,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-pre}@anchor{bb}
+@node Pragma Pre,Pragma Precondition,Pragma Post_Class,Implementation Defined Pragmas
+@anchor{gnat_rm/implementation_defined_pragmas pragma-pre}@anchor{ba}
 @section Pragma Pre
 
 
@@ -6452,7 +6413,7 @@ appear at the start of the declarations in a subprogram body
 (preceded only by other pragmas).
 
 @node Pragma Precondition,Pragma Predicate,Pragma Pre,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-precondition}@anchor{bc}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-precondition}@anchor{bb}
 @section Pragma Precondition
 
 
@@ -6511,7 +6472,7 @@ Ada 2012, and has been retained in its original form for
 compatibility purposes.
 
 @node Pragma Predicate,Pragma Predicate_Failure,Pragma Precondition,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas id30}@anchor{bd}@anchor{gnat_rm/implementation_defined_pragmas pragma-predicate}@anchor{be}
+@anchor{gnat_rm/implementation_defined_pragmas id30}@anchor{bc}@anchor{gnat_rm/implementation_defined_pragmas pragma-predicate}@anchor{bd}
 @section Pragma Predicate
 
 
@@ -6565,7 +6526,7 @@ defined for subtype B). When following this approach, the
 use of predicates should be avoided.
 
 @node Pragma Predicate_Failure,Pragma Preelaborable_Initialization,Pragma Predicate,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-predicate-failure}@anchor{bf}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-predicate-failure}@anchor{be}
 @section Pragma Predicate_Failure
 
 
@@ -6582,7 +6543,7 @@ the language-defined
 @code{Predicate_Failure} aspect, and shares its restrictions and semantics.
 
 @node Pragma Preelaborable_Initialization,Pragma Prefix_Exception_Messages,Pragma Predicate_Failure,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-preelaborable-initialization}@anchor{c0}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-preelaborable-initialization}@anchor{bf}
 @section Pragma Preelaborable_Initialization
 
 
@@ -6597,7 +6558,7 @@ versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
 
 @node Pragma Prefix_Exception_Messages,Pragma Pre_Class,Pragma Preelaborable_Initialization,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-prefix-exception-messages}@anchor{c1}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-prefix-exception-messages}@anchor{c0}
 @section Pragma Prefix_Exception_Messages
 
 
@@ -6628,7 +6589,7 @@ prefixing in this case, you can always call
 @code{GNAT.Source_Info.Enclosing_Entity} and prepend the string manually.
 
 @node Pragma Pre_Class,Pragma Priority_Specific_Dispatching,Pragma Prefix_Exception_Messages,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-pre-class}@anchor{c2}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-pre-class}@anchor{c1}
 @section Pragma Pre_Class
 
 
@@ -6663,7 +6624,7 @@ policy that controls this pragma is @code{Pre'Class}, not
 @code{Pre_Class}.
 
 @node Pragma Priority_Specific_Dispatching,Pragma Profile,Pragma Pre_Class,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-priority-specific-dispatching}@anchor{c3}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-priority-specific-dispatching}@anchor{c2}
 @section Pragma Priority_Specific_Dispatching
 
 
@@ -6687,7 +6648,7 @@ versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
 
 @node Pragma Profile,Pragma Profile_Warnings,Pragma Priority_Specific_Dispatching,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-profile}@anchor{c4}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-profile}@anchor{c3}
 @section Pragma Profile
 
 
@@ -6966,7 +6927,7 @@ conforming Ada constructs.  The profile enables the following three pragmas:
 @end itemize
 
 @node Pragma Profile_Warnings,Pragma Propagate_Exceptions,Pragma Profile,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-profile-warnings}@anchor{c5}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-profile-warnings}@anchor{c4}
 @section Pragma Profile_Warnings
 
 
@@ -6984,7 +6945,7 @@ violations of the profile generate warning messages instead
 of error messages.
 
 @node Pragma Propagate_Exceptions,Pragma Provide_Shift_Operators,Pragma Profile_Warnings,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-propagate-exceptions}@anchor{c6}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-propagate-exceptions}@anchor{c5}
 @section Pragma Propagate_Exceptions
 
 
@@ -7003,7 +6964,7 @@ purposes. It used to be used in connection with optimization of
 a now-obsolete mechanism for implementation of exceptions.
 
 @node Pragma Provide_Shift_Operators,Pragma Psect_Object,Pragma Propagate_Exceptions,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-provide-shift-operators}@anchor{c7}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-provide-shift-operators}@anchor{c6}
 @section Pragma Provide_Shift_Operators
 
 
@@ -7023,7 +6984,7 @@ including the function declarations for these five operators, together
 with the pragma Import (Intrinsic, …) statements.
 
 @node Pragma Psect_Object,Pragma Pure_Function,Pragma Provide_Shift_Operators,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-psect-object}@anchor{c8}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-psect-object}@anchor{c7}
 @section Pragma Psect_Object
 
 
@@ -7043,7 +7004,7 @@ EXTERNAL_SYMBOL ::=
 This pragma is identical in effect to pragma @code{Common_Object}.
 
 @node Pragma Pure_Function,Pragma Rational,Pragma Psect_Object,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas id31}@anchor{c9}@anchor{gnat_rm/implementation_defined_pragmas pragma-pure-function}@anchor{ca}
+@anchor{gnat_rm/implementation_defined_pragmas id31}@anchor{c8}@anchor{gnat_rm/implementation_defined_pragmas pragma-pure-function}@anchor{c9}
 @section Pragma Pure_Function
 
 
@@ -7105,7 +7066,7 @@ unit is not a Pure unit in the categorization sense. So for example, a function
 thus marked is free to @code{with} non-pure units.
 
 @node Pragma Rational,Pragma Ravenscar,Pragma Pure_Function,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-rational}@anchor{cb}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-rational}@anchor{ca}
 @section Pragma Rational
 
 
@@ -7123,7 +7084,7 @@ pragma Profile (Rational);
 @end example
 
 @node Pragma Ravenscar,Pragma Refined_Depends,Pragma Rational,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-ravenscar}@anchor{cc}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-ravenscar}@anchor{cb}
 @section Pragma Ravenscar
 
 
@@ -7143,7 +7104,7 @@ pragma Profile (Ravenscar);
 which is the preferred method of setting the @code{Ravenscar} profile.
 
 @node Pragma Refined_Depends,Pragma Refined_Global,Pragma Ravenscar,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas id32}@anchor{cd}@anchor{gnat_rm/implementation_defined_pragmas pragma-refined-depends}@anchor{ce}
+@anchor{gnat_rm/implementation_defined_pragmas id32}@anchor{cc}@anchor{gnat_rm/implementation_defined_pragmas pragma-refined-depends}@anchor{cd}
 @section Pragma Refined_Depends
 
 
@@ -7176,7 +7137,7 @@ For the semantics of this pragma, see the entry for aspect @code{Refined_Depends
 the SPARK 2014 Reference Manual, section 6.1.5.
 
 @node Pragma Refined_Global,Pragma Refined_Post,Pragma Refined_Depends,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas id33}@anchor{cf}@anchor{gnat_rm/implementation_defined_pragmas pragma-refined-global}@anchor{d0}
+@anchor{gnat_rm/implementation_defined_pragmas id33}@anchor{ce}@anchor{gnat_rm/implementation_defined_pragmas pragma-refined-global}@anchor{cf}
 @section Pragma Refined_Global
 
 
@@ -7201,7 +7162,7 @@ For the semantics of this pragma, see the entry for aspect @code{Refined_Global}
 the SPARK 2014 Reference Manual, section 6.1.4.
 
 @node Pragma Refined_Post,Pragma Refined_State,Pragma Refined_Global,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas id34}@anchor{d1}@anchor{gnat_rm/implementation_defined_pragmas pragma-refined-post}@anchor{d2}
+@anchor{gnat_rm/implementation_defined_pragmas id34}@anchor{d0}@anchor{gnat_rm/implementation_defined_pragmas pragma-refined-post}@anchor{d1}
 @section Pragma Refined_Post
 
 
@@ -7215,7 +7176,7 @@ For the semantics of this pragma, see the entry for aspect @code{Refined_Post} i
 the SPARK 2014 Reference Manual, section 7.2.7.
 
 @node Pragma Refined_State,Pragma Relative_Deadline,Pragma Refined_Post,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas id35}@anchor{d3}@anchor{gnat_rm/implementation_defined_pragmas pragma-refined-state}@anchor{d4}
+@anchor{gnat_rm/implementation_defined_pragmas id35}@anchor{d2}@anchor{gnat_rm/implementation_defined_pragmas pragma-refined-state}@anchor{d3}
 @section Pragma Refined_State
 
 
@@ -7241,7 +7202,7 @@ For the semantics of this pragma, see the entry for aspect @code{Refined_State} 
 the SPARK 2014 Reference Manual, section 7.2.2.
 
 @node Pragma Relative_Deadline,Pragma Remote_Access_Type,Pragma Refined_State,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-relative-deadline}@anchor{d5}
+@anchor{gnat_rm/implementation_defined_pragmas pragma-relative-deadline}@anchor{d4}
 @section Pragma Relative_Deadline
 
 
@@ -7255,8 +7216,8 @@ This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
 
-@node Pragma Remote_Access_Type,Pragma Restricted_Run_Time,Pragma Relative_Deadline,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas id36}@anchor{d6}@anchor{gnat_rm/implementation_defined_pragmas pragma-remote-access-type}@anchor{d7}
+@node Pragma Remote_Access_Type,Pragma Rename_Pragma,Pragma Relative_Deadline,Implementation Defined Pragmas
+@anchor{gnat_rm/implementation_defined_pragmas id36}@anchor{d5}@anchor{gnat_rm/implementation_defined_pragmas pragma-remote-access-type}@anchor{d6}
 @section Pragma Remote_Access_Type
 
 
@@ -7281,7 +7242,46 @@ In the generic unit, the formal type is subject to all restrictions
 pertaining to remote access to class-wide types. At instantiation, the
 actual type must be a remote access to class-wide type.
 
-@node Pragma Restricted_Run_Time,Pragma Restriction_Warnings,Pragma Remote_Access_Type,Implementation Defined Pragmas
+@node Pragma Rename_Pragma,Pragma Restricted_Run_Time,Pragma Remote_Access_Type,Implementation Defined Pragmas
+@anchor{gnat_rm/implementation_defined_pragmas pragma-rename-pragma}@anchor{d7}
+@section Pragma Rename_Pragma
+
+
+@geindex Pragmas
+@geindex synonyms
+
+Syntax:
+
+@example
+pragma Rename_Pragma (
+         [New_Name =>] IDENTIFIER,
+         [Renamed  =>] pragma_IDENTIFIER);
+@end example
+
+This pragma provides a mechanism for supplying new names for existing
+pragmas. The @code{New_Name} identifier can subsequently be used as a synonym for
+the Renamed pragma. For example, suppose you have code that was originally
+developed on a compiler that supports Inline_Only as an implementation defined
+pragma. And suppose the semantics of pragma Inline_Only are identical to (or at
+least very similar to) the GNAT implementation defined pragma
+Inline_Always. You could globally replace Inline_Only with Inline_Always.
+
+However, to avoid that source modification, you could instead add a
+configuration pragma:
+
+@example
+pragma Rename_Pragma (
+         New_Name => Inline_Only,
+         Renamed  => Inline_Always);
+@end example
+
+Then GNAT will treat “pragma Inline_Only …” as if you had written
+“pragma Inline_Always …”.
+
+Pragma Inline_Only will not necessarily mean the same thing as the other Ada
+compiler; it’s up to you to make sure the semantics are close enough.
+
+@node Pragma Restricted_Run_Time,Pragma Restriction_Warnings,Pragma Rename_Pragma,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-restricted-run-time}@anchor{d8}
 @section Pragma Restricted_Run_Time
 
@@ -9888,7 +9888,7 @@ This boolean aspect is equivalent to @ref{b6,,pragma Persistent_BSS}.
 
 @geindex Predicate
 
-This aspect is equivalent to @ref{be,,pragma Predicate}. It is thus
+This aspect is equivalent to @ref{bd,,pragma Predicate}. It is thus
 similar to the language defined aspects @code{Dynamic_Predicate}
 and @code{Static_Predicate} except that whether the resulting
 predicate is static or dynamic is controlled by the form of the
@@ -9902,7 +9902,7 @@ expression. It is also separately controllable using pragma
 
 @geindex Pure_Function
 
-This boolean aspect is equivalent to @ref{ca,,pragma Pure_Function}.
+This boolean aspect is equivalent to @ref{c9,,pragma Pure_Function}.
 
 @node Aspect Refined_Depends,Aspect Refined_Global,Aspect Pure_Function,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-refined-depends}@anchor{147}
@@ -9911,7 +9911,7 @@ This boolean aspect is equivalent to @ref{ca,,pragma Pure_Function}.
 
 @geindex Refined_Depends
 
-This aspect is equivalent to @ref{ce,,pragma Refined_Depends}.
+This aspect is equivalent to @ref{cd,,pragma Refined_Depends}.
 
 @node Aspect Refined_Global,Aspect Refined_Post,Aspect Refined_Depends,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-refined-global}@anchor{148}
@@ -9920,7 +9920,7 @@ This aspect is equivalent to @ref{ce,,pragma Refined_Depends}.
 
 @geindex Refined_Global
 
-This aspect is equivalent to @ref{d0,,pragma Refined_Global}.
+This aspect is equivalent to @ref{cf,,pragma Refined_Global}.
 
 @node Aspect Refined_Post,Aspect Refined_State,Aspect Refined_Global,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-refined-post}@anchor{149}
@@ -9929,7 +9929,7 @@ This aspect is equivalent to @ref{d0,,pragma Refined_Global}.
 
 @geindex Refined_Post
 
-This aspect is equivalent to @ref{d2,,pragma Refined_Post}.
+This aspect is equivalent to @ref{d1,,pragma Refined_Post}.
 
 @node Aspect Refined_State,Aspect Relaxed_Initialization,Aspect Refined_Post,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-refined-state}@anchor{14a}
@@ -9938,7 +9938,7 @@ This aspect is equivalent to @ref{d2,,pragma Refined_Post}.
 
 @geindex Refined_State
 
-This aspect is equivalent to @ref{d4,,pragma Refined_State}.
+This aspect is equivalent to @ref{d3,,pragma Refined_State}.
 
 @node Aspect Relaxed_Initialization,Aspect Remote_Access_Type,Aspect Refined_State,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-relaxed-initialization}@anchor{14b}
@@ -9957,7 +9957,7 @@ Manual, section 6.10.
 
 @geindex Remote_Access_Type
 
-This aspect is equivalent to @ref{d7,,pragma Remote_Access_Type}.
+This aspect is equivalent to @ref{d6,,pragma Remote_Access_Type}.
 
 @node Aspect Secondary_Stack_Size,Aspect Scalar_Storage_Order,Aspect Remote_Access_Type,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-secondary-stack-size}@anchor{14d}
