@@ -31,7 +31,10 @@ contains
   subroutine test_array (a)
     use iso_c_binding, only: c_size_t
     class(*), dimension(..), target :: a
-    call test_lib (a, int (sizeof (a), kind=c_size_t))
+    select rank (a)
+      rank (1)
+        call test_lib (a, int (sizeof (a), kind=c_size_t))
+    end select
   end subroutine
 
 end module
