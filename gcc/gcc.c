@@ -3083,17 +3083,17 @@ find_a_program (const char *name)
   /* Do not search if default matches query. */
 
 #ifdef DEFAULT_ASSEMBLER
-  if (! strcmp (name, "as") && access (DEFAULT_ASSEMBLER, mode) == 0)
+  if (! strcmp (name, "as") && access (DEFAULT_ASSEMBLER, X_OK) == 0)
     return xstrdup (DEFAULT_ASSEMBLER);
 #endif
 
 #ifdef DEFAULT_LINKER
-  if (! strcmp (name, "ld") && access (DEFAULT_LINKER, mode) == 0)
+  if (! strcmp (name, "ld") && access (DEFAULT_LINKER, X_OK) == 0)
     return xstrdup (DEFAULT_LINKER);
 #endif
 
 #ifdef DEFAULT_DSYMUTIL
-  if (! strcmp (name, "dsymutil") && access (DEFAULT_DSYMUTIL, mode) == 0)
+  if (! strcmp (name, "dsymutil") && access (DEFAULT_DSYMUTIL, X_OK) == 0)
     return xstrdup (DEFAULT_DSYMUTIL);
 #endif
 
