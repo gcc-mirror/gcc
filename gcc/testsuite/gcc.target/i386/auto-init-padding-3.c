@@ -24,9 +24,7 @@ int foo ()
 }
 
 /* { dg-final { scan-assembler "movl\t\\\$0," } } */
-/* { dg-final { scan-assembler "movl\t\\\$16," { target lp64 } } } */
-/* { dg-final { scan-assembler "rep stosq" { target lp64 } } } */
+/* { dg-final { scan-assembler "movl\t\\\$16," { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "rep stosq" { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler "movl\t\\\$32," { target ia32 } } } */
 /* { dg-final { scan-assembler "rep stosl" { target ia32 } } } */
-
-
