@@ -146,7 +146,7 @@ AM_PROG_CC_C_O
 
 # Add -Wall -fno-repack-arrays -fno-underscoring if we are using GCC.
 if test "x$GCC" = "xyes"; then
-  AM_FCFLAGS="-I . -Wall -Werror -fimplicit-none -fno-repack-arrays -fno-underscoring"
+  AM_FCFLAGS="-I . -Wall -Werror -fimplicit-none -fno-repack-arrays -fno-underscoring -Wno-missing-include-dirs"
   ## We like to use C11 and C99 routines when available.  This makes
   ## sure that
   ## __STDC_VERSION__ is set such that libc includes make them available.

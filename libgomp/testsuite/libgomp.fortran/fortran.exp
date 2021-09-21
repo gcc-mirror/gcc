@@ -20,6 +20,9 @@ dg-init
 
 # Turn on OpenMP.
 lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
+# Silence warnings due to explicitly passed but nonexisting
+# -isystem <instdir>/target>/{sys-,}include (gfortran warns by default)
+lappend ALWAYS_CFLAGS "additional_flags=-Wno-missing-include-dirs"
 
 if { $blddir != "" } {
     set lang_source_re {^.*\.[fF](|90|95|03|08)$}
