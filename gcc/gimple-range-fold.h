@@ -160,7 +160,7 @@ public:
 				  tree op2) OVERRIDE;
   virtual void register_relation (edge e, relation_kind k, tree op1,
 				  tree op2) OVERRIDE;
-private:
+protected:
   relation_oracle *m_oracle;
 };
 

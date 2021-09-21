@@ -30,11 +30,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "gimple-range-path.h"
 #include "ssa.h"
+#include "tree-cfg.h"
+#include "gimple-iterator.h"
 
 // Internal construct to help facilitate debugging of solver.
 #define DEBUG_SOLVER (0 && dump_file)
 
-path_range_query::path_range_query (gimple_ranger &ranger)
+path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
   : m_ranger (ranger)
 {
   if (DEBUG_SOLVER)
@@ -43,12 +45,15 @@ path_range_query::path_range_query (gimple_ranger &ranger)
   m_cache = new ssa_global_cache;
   m_has_cache_entry = BITMAP_ALLOC (NULL);
   m_path = NULL;
+  m_resolve = resolve;
+  m_oracle = new path_oracle (ranger.oracle ());
 }
 
 path_range_query::~path_range_query ()
 {
   BITMAP_FREE (m_has_cache_entry);
   delete m_cache;
+  delete m_oracle;
 }
 
 // Mark cache entry for NAME as unused.
@@ -159,22 +164,6 @@ bool
 path_range_query::unreachable_path_p ()
 {
   return m_undefined_path;
-}
-
-// Return the range of STMT at the end of the path being analyzed.
-
-bool
-path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
-{
-  tree type = gimple_range_type (stmt);
-
-  if (!irange::supports_type_p (type))
-    return false;
-
-  if (!fold_range (r, stmt, this))
-    r.set_varying (type);
-
-  return true;
 }
 
 // Initialize the current path to PATH.  The current block is set to
@@ -371,6 +360,12 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
   m_imports = imports;
   m_undefined_path = false;
 
+  if (m_resolve)
+    {
+      m_oracle->reset_path ();
+      precompute_relations (path);
+    }
+
   if (DEBUG_SOLVER)
     {
       fprintf (dump_file, "\npath_range_query: precompute_ranges for path: ");
@@ -399,4 +394,179 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
 
   if (DEBUG_SOLVER)
     dump (dump_file);
+}
+
+// A folding aid used to register and query relations along a path.
+// When queried, it returns relations as they would appear on exit to
+// the path.
+//
+// Relations are registered on entry so the path_oracle knows which
+// block to query the root oracle at when a relation lies outside the
+// path.  However, when queried we return the relation on exit to the
+// path, since the root_oracle ignores the registered.
+
+class jt_fur_source : public fur_depend
+{
+public:
+  jt_fur_source (gimple *s, path_range_query *, gori_compute *,
+		 const vec<basic_block> &);
+  relation_kind query_relation (tree op1, tree op2) override;
+  void register_relation (gimple *, relation_kind, tree op1, tree op2) override;
+  void register_relation (edge, relation_kind, tree op1, tree op2) override;
+private:
+  basic_block m_entry;
+};
+
+jt_fur_source::jt_fur_source (gimple *s,
+			      path_range_query *query,
+			      gori_compute *gori,
+			      const vec<basic_block> &path)
+  : fur_depend (s, gori, query)
+{
+  gcc_checking_assert (!path.is_empty ());
+
+  m_entry = path[path.length () - 1];
+
+  if (dom_info_available_p (CDI_DOMINATORS))
+    m_oracle = query->oracle ();
+  else
+    m_oracle = NULL;
+}
+
+// Ignore statement and register relation on entry to path.
+
+void
+jt_fur_source::register_relation (gimple *, relation_kind k, tree op1, tree op2)
+{
+  if (m_oracle)
+    m_oracle->register_relation (m_entry, k, op1, op2);
+}
+
+// Ignore edge and register relation on entry to path.
+
+void
+jt_fur_source::register_relation (edge, relation_kind k, tree op1, tree op2)
+{
+  if (m_oracle)
+    m_oracle->register_relation (m_entry, k, op1, op2);
+}
+
+relation_kind
+jt_fur_source::query_relation (tree op1, tree op2)
+{
+  if (!m_oracle)
+    return VREL_NONE;
+
+  if (TREE_CODE (op1) != SSA_NAME || TREE_CODE (op2) != SSA_NAME)
+    return VREL_NONE;
+
+  return m_oracle->query_relation (m_entry, op1, op2);
+}
+
+// Return the range of STMT at the end of the path being analyzed.
+
+bool
+path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
+{
+  tree type = gimple_range_type (stmt);
+
+  if (!irange::supports_type_p (type))
+    return false;
+
+  // If resolving unknowns, fold the statement as it would have
+  // appeared at the end of the path.
+  if (m_resolve)
+    {
+      fold_using_range f;
+      jt_fur_source src (stmt, this, &m_ranger.gori (), *m_path);
+      if (!f.fold_stmt (r, stmt, src))
+	r.set_varying (type);
+    }
+  // Otherwise, use the global ranger to fold it as it would appear in
+  // the original IL.  This is more conservative, but faster.
+  else if (!fold_range (r, stmt, this))
+    r.set_varying (type);
+
+  return true;
+}
+
+// Precompute relations on a path.  This involves two parts: relations
+// along the conditionals joining a path, and relations determined by
+// examining PHIs.
+
+void
+path_range_query::precompute_relations (const vec<basic_block> &path)
+{
+  if (!dom_info_available_p (CDI_DOMINATORS))
+    return;
+
+  jt_fur_source src (NULL, this, &m_ranger.gori (), path);
+  basic_block prev = NULL;
+  for (unsigned i = path.length (); i > 0; --i)
+    {
+      basic_block bb = path[i - 1];
+      gimple *stmt = last_stmt (bb);
+
+      precompute_phi_relations (bb, prev);
+
+      // Compute relations in outgoing edges along the path.  Skip the
+      // final conditional which we don't know yet.
+      if (i > 1
+	  && stmt
+	  && gimple_code (stmt) == GIMPLE_COND
+	  && irange::supports_type_p (TREE_TYPE (gimple_cond_lhs (stmt))))
+	{
+	  basic_block next = path[i - 2];
+	  int_range<2> r;
+	  gcond *cond = as_a<gcond *> (stmt);
+
+	  if (EDGE_SUCC (bb, 0)->dest == next)
+	    gcond_edge_range (r, EDGE_SUCC (bb, 0));
+	  else if (EDGE_SUCC (bb, 1)->dest == next)
+	    gcond_edge_range (r, EDGE_SUCC (bb, 1));
+	  else
+	    gcc_unreachable ();
+
+	  edge e0 = EDGE_SUCC (bb, 0);
+	  edge e1 = EDGE_SUCC (bb, 1);
+	  src.register_outgoing_edges (cond, r, e0, e1);
+	}
+      prev = bb;
+    }
+}
+
+// Precompute relations for each PHI in BB.  For example:
+//
+//   x_5 = PHI<y_9(5),...>
+//
+// If the path flows through BB5, we can register that x_5 == y_9.
+
+void
+path_range_query::precompute_phi_relations (basic_block bb, basic_block prev)
+{
+  if (prev == NULL)
+    return;
+
+  basic_block entry = entry_bb ();
+  edge e_in = find_edge (prev, bb);
+  gcc_checking_assert (e_in);
+
+  for (gphi_iterator iter = gsi_start_phis (bb); !gsi_end_p (iter);
+       gsi_next (&iter))
+    {
+      gphi *phi = iter.phi ();
+      tree result = gimple_phi_result (phi);
+      unsigned nargs = gimple_phi_num_args (phi);
+
+      for (size_t i = 0; i < nargs; ++i)
+	if (e_in == gimple_phi_arg_edge (phi, i))
+	  {
+	    tree arg = gimple_phi_arg_def (phi, i);
+
+	    if (gimple_range_ssa_p (arg))
+	      m_oracle->register_relation (entry, EQ_EXPR, arg, result);
+
+	    break;
+	  }
+    }
 }
