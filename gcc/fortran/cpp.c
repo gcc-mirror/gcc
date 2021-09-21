@@ -19,10 +19,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+
+#define GCC_C_COMMON_C
+#include "options.h"  /* For cpp_reason_option_codes. */
+#undef GCC_C_COMMON_C
+
 #include "target.h"
 #include "gfortran.h"
 #include "diagnostic.h"
-
 
 #include "toplev.h"
 
@@ -240,6 +244,18 @@ gfc_cpp_temporary_file (void)
   return gfc_cpp_option.temporary_filename;
 }
 
+static void
+gfc_cpp_register_include_paths (void)
+{
+  int cxx_stdinc = 0;
+  cpp_get_options (cpp_in)->warn_missing_include_dirs
+    = global_options.x_cpp_warn_missing_include_dirs;
+  register_include_chains (cpp_in, gfc_cpp_option.sysroot,
+			   gfc_cpp_option.prefix, gfc_cpp_option.multilib,
+			   gfc_cpp_option.standard_include_paths, cxx_stdinc,
+			   gfc_cpp_option.verbose);
+}
+
 void
 gfc_cpp_init_options (unsigned int decoded_options_count,
 		      struct cl_decoded_option *decoded_options ATTRIBUTE_UNUSED)
@@ -435,6 +451,37 @@ gfc_cpp_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED
   return result;
 }
 
+/* This function needs to be called before gfc_cpp_register_include_paths
+   as the latter may diagnose missing include directories.  */
+static void
+gfc_cpp_init_cb (void)
+{
+  struct cpp_callbacks *cb;
+
+  cb = cpp_get_callbacks (cpp_in);
+  cb->file_change = cb_file_change;
+  cb->line_change = cb_line_change;
+  cb->ident = cb_ident;
+  cb->def_pragma = cb_def_pragma;
+  cb->diagnostic = cb_cpp_diagnostic;
+
+  if (gfc_cpp_option.dump_includes)
+    cb->include = cb_include;
+
+  if ((gfc_cpp_option.dump_macros == 'D')
+      || (gfc_cpp_option.dump_macros == 'N'))
+    {
+      cb->define = cb_define;
+      cb->undef  = cb_undef;
+    }
+
+  if (gfc_cpp_option.dump_macros == 'U')
+    {
+      cb->before_define = dump_queued_macros;
+      cb->used_define = cb_used_define;
+      cb->used_undef = cb_used_undef;
+    }
+}
 
 void
 gfc_cpp_post_options (void)
@@ -493,6 +540,8 @@ gfc_cpp_post_options (void)
 
   cpp_post_options (cpp_in);
 
+  gfc_cpp_init_cb ();
+
   gfc_cpp_register_include_paths ();
 }
 
@@ -500,32 +549,6 @@ gfc_cpp_post_options (void)
 void
 gfc_cpp_init_0 (void)
 {
-  struct cpp_callbacks *cb;
-
-  cb = cpp_get_callbacks (cpp_in);
-  cb->file_change = cb_file_change;
-  cb->line_change = cb_line_change;
-  cb->ident = cb_ident;
-  cb->def_pragma = cb_def_pragma;
-  cb->diagnostic = cb_cpp_diagnostic;
-
-  if (gfc_cpp_option.dump_includes)
-    cb->include = cb_include;
-
-  if ((gfc_cpp_option.dump_macros == 'D')
-      || (gfc_cpp_option.dump_macros == 'N'))
-    {
-      cb->define = cb_define;
-      cb->undef  = cb_undef;
-    }
-
-  if (gfc_cpp_option.dump_macros == 'U')
-    {
-      cb->before_define = dump_queued_macros;
-      cb->used_define = cb_used_define;
-      cb->used_undef = cb_used_undef;
-    }
-
   /* Initialize the print structure.  Setting print.src_line to -1 here is
      a trick to guarantee that the first token of the file will cause
      a linemarker to be output by maybe_print_line.  */
@@ -716,17 +739,6 @@ gfc_cpp_add_include_path_after (char *path, bool user_supplied)
   int cxx_aware = 0;
   add_path (path, INC_AFTER, cxx_aware, user_supplied);
 }
-
-void
-gfc_cpp_register_include_paths (void)
-{
-  int cxx_stdinc = 0;
-  register_include_chains (cpp_in, gfc_cpp_option.sysroot,
-			   gfc_cpp_option.prefix, gfc_cpp_option.multilib,
-			   gfc_cpp_option.standard_include_paths, cxx_stdinc,
-			   gfc_cpp_option.verbose);
-}
-
 
 
 static void scan_translation_unit_trad (cpp_reader *);
@@ -1037,6 +1049,21 @@ cb_used_define (cpp_reader *pfile, location_t line ATTRIBUTE_UNUSED,
   cpp_define_queue = q;
 }
 
+/* Return the gcc option code associated with the reason for a cpp
+   message, or 0 if none.  */
+
+static int
+cb_cpp_diagnostic_cpp_option (enum cpp_warning_reason reason)
+{
+  const struct cpp_reason_option_codes_t *entry;
+
+  for (entry = cpp_reason_option_codes; entry->reason != CPP_W_NONE; entry++)
+    if (entry->reason == reason)
+      return entry->option_code;
+  return 0;
+}
+
+
 /* Callback from cpp_error for PFILE to print diagnostics from the
    preprocessor.  The diagnostic is of type LEVEL, with REASON set
    to the reason code if LEVEL is represents a warning, at location
@@ -1083,8 +1110,8 @@ cb_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
     }
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
-  if (reason == CPP_W_WARNING_DIRECTIVE)
-    diagnostic_override_option_index (&diagnostic, OPT_Wcpp);
+  diagnostic_override_option_index (&diagnostic,
+				    cb_cpp_diagnostic_cpp_option (reason));
   ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   if (level == CPP_DL_WARNING_SYSHDR)
     global_dc->dc_warn_system_headers = save_warn_system_headers;

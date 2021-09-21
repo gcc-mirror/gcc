@@ -1,3 +1,12 @@
+2021-09-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* configure.ac (AM_FCFLAGS): Add -Wno-missing-include-dirs.
+	* configure: Regenerate.
+
 2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:

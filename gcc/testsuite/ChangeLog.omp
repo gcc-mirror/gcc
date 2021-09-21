@@ -1,3 +1,20 @@
+2021-09-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* gfortran.dg/include_6.f90: Change dg-error to
+	dg-warning and update pattern.
+	* gfortran.dg/include_14.f90: New test.
+	* gfortran.dg/include_15.f90: New test.
+	* gfortran.dg/include_16.f90: New test.
+	* gfortran.dg/include_17.f90: New test.
+	* gfortran.dg/include_18.f90: New test.
+	* gfortran.dg/include_19.f90: New test.
+	* gfortran.dg/include_20.f90: New test.
+	* gfortran.dg/include_21.f90: New test.
+
 2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
