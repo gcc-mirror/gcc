@@ -1331,6 +1331,13 @@
 #endif
 
 
+/* Define if your Arm assembler permits context-specific feature extensions.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_ARM_EXTENDED_ARCH
+#endif
+
+
 /* Define if your assembler supports .balign and .p2align. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_BALIGN_AND_P2ALIGN

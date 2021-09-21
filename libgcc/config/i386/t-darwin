@@ -1,3 +1,6 @@
 LIB2_SIDITI_CONV_FUNCS = yes
 LIB2ADD = $(srcdir)/config/darwin-64.c
 LIB2FUNCS_EXCLUDE = _fixtfdi _fixunstfdi _floatditf _floatunditf
+
+# Extra symbols for this port.
+SHLIB_MAPFILES += $(srcdir)/config/i386/libgcc-darwin.ver

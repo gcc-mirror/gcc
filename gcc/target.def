@@ -1764,7 +1764,17 @@ of REC to place the new variable in shared GPU memory.\n\
 \n\
 Presence of this target hook indicates that middle end neutering/broadcasting\n\
 be used.",
-tree, (tree rec, bool sender, const char *name),
+tree, (tree rec, bool sender, const char *name, unsigned HOST_WIDE_INT offset),
+NULL)
+
+DEFHOOK
+(shared_mem_layout,
+"Lay out a fixed shared-memory region on the target.  The LO and HI\n\
+arguments should be set to a range of addresses that can be used for worker\n\
+broadcasting. The dimensions, reduction size and gang-private size\n\
+arguments are for the current offload region.",
+void, (unsigned HOST_WIDE_INT *, unsigned HOST_WIDE_INT *, int[],
+       unsigned HOST_WIDE_INT[], unsigned HOST_WIDE_INT[]),
 NULL)
 
 HOOK_VECTOR_END (goacc)

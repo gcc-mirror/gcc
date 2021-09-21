@@ -4482,9 +4482,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    /* a CMP (-0) -> a CMP 0  */
    (if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@1)))
     (cmp @0 { build_real (TREE_TYPE (@1), dconst0); }))
+   /* (-0) CMP b -> 0 CMP b.  */
+   (if (TREE_CODE (@0) == REAL_CST
+	&& REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@0)))
+    (cmp { build_real (TREE_TYPE (@0), dconst0); } @1))
    /* x != NaN is always true, other ops are always false.  */
    (if (REAL_VALUE_ISNAN (TREE_REAL_CST (@1))
-	&& ! HONOR_SNANS (@1))
+	&& !tree_expr_signaling_nan_p (@1)
+	&& !tree_expr_maybe_signaling_nan_p (@0))
+    { constant_boolean_node (cmp == NE_EXPR, type); })
+   /* NaN != y is always true, other ops are always false.  */
+   (if (TREE_CODE (@0) == REAL_CST
+	&& REAL_VALUE_ISNAN (TREE_REAL_CST (@0))
+        && !tree_expr_signaling_nan_p (@0)
+        && !tree_expr_signaling_nan_p (@1))
     { constant_boolean_node (cmp == NE_EXPR, type); })
    /* Fold comparisons against infinity.  */
    (if (REAL_VALUE_ISINF (TREE_REAL_CST (@1))

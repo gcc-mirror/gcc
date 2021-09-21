@@ -25,7 +25,7 @@
 
 --  This package contains constants describing target properties
 
-with Types;    use Types;
+with Types; use Types;
 with Set_Targ;
 
 package Ttypes is

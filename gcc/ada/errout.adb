@@ -106,15 +106,15 @@ package body Errout is
       Opan     : Source_Span;
       Msg_Cont : Boolean;
       Node     : Node_Id);
-   --  This is the low level routine used to post messages after dealing with
+   --  This is the low-level routine used to post messages after dealing with
    --  the issue of messages placed on instantiations (which get broken up
-   --  into separate calls in Error_Msg). Sptr is the location on which the
+   --  into separate calls in Error_Msg). Span is the location on which the
    --  flag will be placed in the output. In the case where the flag is on
    --  the template, this points directly to the template, not to one of the
-   --  instantiation copies of the template. Optr is the original location
+   --  instantiation copies of the template. Opan is the original location
    --  used to flag the error, and this may indeed point to an instantiation
-   --  copy. So typically we can see Optr pointing to the template location
-   --  in an instantiation copy when Sptr points to the source location of
+   --  copy. So typically we can see Opan pointing to the template location
+   --  in an instantiation copy when Span points to the source location of
    --  the actual instantiation (i.e the line with the new). Msg_Cont is
    --  set true if this is a continuation message. Node is the relevant
    --  Node_Id for this message, to be used to compute the enclosing entity if
@@ -2473,7 +2473,8 @@ package body Errout is
          function Get_Line_End
            (Buf : Source_Buffer_Ptr;
             Loc : Source_Ptr) return Source_Ptr;
-         --  Get the source location for the end of the line in Buf for Loc
+         --  Get the source location for the end of the line in Buf for Loc. If
+         --  Loc is past the end of Buf already, return Buf'Last.
 
          function Get_Line_Start
            (Buf : Source_Buffer_Ptr;
@@ -2515,9 +2516,9 @@ package body Errout is
            (Buf : Source_Buffer_Ptr;
             Loc : Source_Ptr) return Source_Ptr
          is
-            Cur_Loc : Source_Ptr := Loc;
+            Cur_Loc : Source_Ptr := Source_Ptr'Min (Loc, Buf'Last);
          begin
-            while Cur_Loc <= Buf'Last
+            while Cur_Loc < Buf'Last
               and then Buf (Cur_Loc) /= ASCII.LF
             loop
                Cur_Loc := Cur_Loc + 1;
@@ -2692,9 +2693,7 @@ package body Errout is
                      Write_Buffer_Char (Buf, Cur_Loc);
                   end if;
 
-                  Cur_Loc := Cur_Loc + 1;
-
-                  if Buf (Cur_Loc - 1) = ASCII.LF then
+                  if Buf (Cur_Loc) = ASCII.LF then
                      Cur_Line := Cur_Line + 1;
 
                      --  Output ... for skipped lines
@@ -2719,6 +2718,8 @@ package body Errout is
                            Width);
                      end if;
                   end if;
+
+                  Cur_Loc := Cur_Loc + 1;
                end loop;
             end;
 

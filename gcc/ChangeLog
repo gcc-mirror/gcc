@@ -1,3 +1,1105 @@
+2021-09-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Ignore
+	undefined edges, apply an equivalence if appropriate.
+	* gimple-range-gori.cc (gori_compute::outgoing_edge_range_p): Return
+	UNDEFINED if EDGE_EXECUTABLE is not set.
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Set all edges
+	as EXECUTABLE upon startup.
+	(gimple_ranger::range_on_edge): Return UNDEFINED for edges without
+	EDGE_EXECUTABLE set.
+	* vr-values.c (set_and_propagate_unexecutable): New.
+	(simplify_using_ranges::fold_cond): Call set_and_propagate.
+	(simplify_using_ranges::simplify_switch_using_ranges): Ditto.
+	* vr-values.h: Add prototype.
+
+2021-09-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (equiv_oracle::register_initial_def): New.
+	(equiv_oracle::register_relation): Call register_initial_def.
+	(equiv_oracle::add_equiv_to_block): New.  Split register_relation.
+	(relation_oracle::register_stmt): Check def block of PHI arguments.
+	* value-relation.h (equiv_oracle): Add new prototypes.
+
+2021-09-20  Matthias Kretz  <m.kretz@gsi.de>
+
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):
+	Define __RECIPROCAL_MATH__, __NO_SIGNED_ZEROS__,
+	__NO_TRAPPING_MATH__, __ASSOCIATIVE_MATH__, and
+	__ROUNDING_MATH__ according to their corresponding flags.
+	* doc/cpp.texi: Document __RECIPROCAL_MATH__,
+	__NO_SIGNED_ZEROS__, __NO_TRAPPING_MATH__, __ASSOCIATIVE_MATH__,
+	and __ROUNDING_MATH__.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_load): Use the vectype
+	from the SLP node.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_duplicate_ssa_name_ptr_info):
+	Do not compute alignment of the vectorized access here.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Store -1 for runtime alias peeling iterations.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Obsolete hppa[12]*-*-hpux10* and hppa[12]*-*-hpux11*.
+
+2021-09-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* input.c (string_concat_db::record_string_concatenation)
+	(string_concat_db::get_string_concatenation): Skip for
+	'RESERVED_LOCATION_P'.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65206
+	* tree-data-ref.h (struct data_reference): Add alt_indices,
+	order it last.
+	* tree-data-ref.c (free_data_ref): Release alt_indices.
+	(dr_analyze_indices): Work on struct indices and get DR_REF as tree.
+	(create_data_ref): Adjust.
+	(initialize_data_dependence_relation): Split into head
+	and tail.  When the base objects fail to match up try
+	again with pointer-based analysis of indices.
+	* tree-vectorizer.c (vec_info_shared::check_datarefs): Do
+	not compare the lazily computed alternate set of indices.
+
+2021-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.c: Test for execute OK when we find the
+	programs for assembler linker and dsymutil and those
+	were specified at configure-time.
+
+2021-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102403
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Correct a function pre/postcondition.
+
+2021-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102243
+	* tree-ssa-strlen.c (get_range): Handle null cfun.
+
+2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Use Darwin10
+	unwinder shim as a convenience library.
+
+2021-09-19  Andrew Pinski  <apinski@marvell.com>
+
+	* doc/install.texi: Add note about
+	binutils 2.35 is required for LTO usage.
+
+2021-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c
+	(back_threader_registry::register_path): Use push_edge.
+	* tree-ssa-threadedge.c
+	(jump_threader::thread_around_empty_blocks): Same.
+	(jump_threader::thread_through_normal_block): Same.
+	(jump_threader::thread_across_edge): Same.  Also, use auto_bitmap.
+	Tidy up code.
+	* tree-ssa-threadupdate.c
+	(jt_path_registry::allocate_thread_edge): Remove.
+	(jt_path_registry::push_edge): New.
+	(dump_jump_thread_path): Make static.
+	* tree-ssa-threadupdate.h (allocate_thread_edge): Remove.
+	(push_edge): New.
+
+2021-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::path_range_query): Add
+	header.
+	(path_range_query::dump): Remove extern declaration of dump_ranger.
+	* gimple-range-trace.cc (dump_ranger): Add DEBUG_FUNCTION marker.
+	* gimple-range-trace.h (dump_ranger): Add prototype.
+
+2021-09-19  John Ericson  <git@JohnEricson.me>
+
+	* gcc.c (find_a_program): New function, factored out of...
+	(find_a_file): Here.
+	(execute): Use find_a_program when looking for programs rather
+	than find_a_file.
+
+2021-09-19  Matwey V. Kornilov  <matwey.kornilov@gmail.com>
+
+	* config/avr/avr-mcus.def: Add atmega324pb.
+	* doc/avr-mmcu.texi: Corresponding changes.
+
+2021-09-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/88173
+	* match.pd (cmp @0 REAL_CST@1): When @0 is also REAL_CST, apply
+	the same transformations as to @1.  For comparisons against NaN,
+	don't check HONOR_SNANS but confirm that neither operand is a
+	signaling NaN.
+
+2021-09-19  Benjamin Peterson  <benjamin@locrian.net>
+
+	* attribs.c (make_unique_name): Delete.
+	* attribs.h (make_unique_name): Delete.
+
+2021-09-19  Andrew Pinski  <apinski@marvell.com>
+
+	* lra-constraints.c (check_and_process_move): Assert
+	that dclass and sclass are greater than or equal to NO_REGS.
+
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_ORDER_UNCONSTRAINED): Define.
+	* tree-pretty-print.c (dump_omp_clause): Print unconstrained:
+	for OMP_CLAUSE_ORDER_UNCONSTRAINED.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-features.c (remove_partial_avx_dependency):
+	Restrict TARGET_USE_VECTOR_FP_CONVERTS and
+	TARGET_USE_VECTOR_CONVERTS to conversion instructions only.
+
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (omp_default_clause): For C/C++ default({,first}private),
+	if file/namespace scope variable doesn't have predetermined sharing,
+	treat it as if there was default(none).
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm_fmadd_sh):
+	New intrinsic.
+	(_mm_mask_fmadd_sh): Likewise.
+	(_mm_mask3_fmadd_sh): Likewise.
+	(_mm_maskz_fmadd_sh): Likewise.
+	(_mm_fmadd_round_sh): Likewise.
+	(_mm_mask_fmadd_round_sh): Likewise.
+	(_mm_mask3_fmadd_round_sh): Likewise.
+	(_mm_maskz_fmadd_round_sh): Likewise.
+	(_mm_fnmadd_sh): Likewise.
+	(_mm_mask_fnmadd_sh): Likewise.
+	(_mm_mask3_fnmadd_sh): Likewise.
+	(_mm_maskz_fnmadd_sh): Likewise.
+	(_mm_fnmadd_round_sh): Likewise.
+	(_mm_mask_fnmadd_round_sh): Likewise.
+	(_mm_mask3_fnmadd_round_sh): Likewise.
+	(_mm_maskz_fnmadd_round_sh): Likewise.
+	(_mm_fmsub_sh): Likewise.
+	(_mm_mask_fmsub_sh): Likewise.
+	(_mm_mask3_fmsub_sh): Likewise.
+	(_mm_maskz_fmsub_sh): Likewise.
+	(_mm_fmsub_round_sh): Likewise.
+	(_mm_mask_fmsub_round_sh): Likewise.
+	(_mm_mask3_fmsub_round_sh): Likewise.
+	(_mm_maskz_fmsub_round_sh): Likewise.
+	(_mm_fnmsub_sh): Likewise.
+	(_mm_mask_fnmsub_sh): Likewise.
+	(_mm_mask3_fnmsub_sh): Likewise.
+	(_mm_maskz_fnmsub_sh): Likewise.
+	(_mm_fnmsub_round_sh): Likewise.
+	(_mm_mask_fnmsub_round_sh): Likewise.
+	(_mm_mask3_fnmsub_round_sh): Likewise.
+	(_mm_maskz_fnmsub_round_sh): Likewise.
+	* config/i386/i386-builtin-types.def
+	(V8HF_FTYPE_V8HF_V8HF_V8HF_UQI_INT): New builtin type.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-expand.c: Handle new builtin type.
+	* config/i386/sse.md (fmai_vmfmadd_<mode><round_name>):
+	Ajdust to support FP16.
+	(fmai_vmfmsub_<mode><round_name>): Ditto.
+	(fmai_vmfnmadd_<mode><round_name>): Ditto.
+	(fmai_vmfnmsub_<mode><round_name>): Ditto.
+	(*fmai_fmadd_<mode>): Ditto.
+	(*fmai_fmsub_<mode>): Ditto.
+	(*fmai_fnmadd_<mode><round_name>): Ditto.
+	(*fmai_fnmsub_<mode><round_name>): Ditto.
+	(avx512f_vmfmadd_<mode>_mask<round_name>): Ditto.
+	(avx512f_vmfmadd_<mode>_mask3<round_name>): Ditto.
+	(avx512f_vmfmadd_<mode>_maskz<round_expand_name>): Ditto.
+	(avx512f_vmfmadd_<mode>_maskz_1<round_name>): Ditto.
+	(*avx512f_vmfmsub_<mode>_mask<round_name>): Ditto.
+	(avx512f_vmfmsub_<mode>_mask3<round_name>): Ditto.
+	(*avx512f_vmfmsub_<mode>_maskz_1<round_name>): Ditto.
+	(*avx512f_vmfnmsub_<mode>_mask<round_name>): Ditto.
+	(*avx512f_vmfnmsub_<mode>_mask3<round_name>): Ditto.
+	(*avx512f_vmfnmsub_<mode>_mask<round_name>): Ditto.
+	(*avx512f_vmfnmadd_<mode>_mask<round_name>): Renamed to ...
+	(avx512f_vmfnmadd_<mode>_mask<round_name>) ... this, and
+	adjust to support FP16.
+	(avx512f_vmfnmadd_<mode>_mask3<round_name>): Ditto.
+	(avx512f_vmfnmadd_<mode>_maskz_1<round_name>): Ditto.
+	(avx512f_vmfnmadd_<mode>_maskz<round_expand_name>): New
+	expander.
+
+2021-09-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/sse.md (avx512fmaskmodelower): Extend to support
+	HF modes.
+	(maskload<mode><avx512fmaskmodelower>): Ditto.
+	(maskstore<mode><avx512fmaskmodelower>): Ditto.
+
+2021-09-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_fp_absneg_operator):
+	Handle HFmode.
+	(ix86_expand_copysign): Ditto.
+	(ix86_expand_xorsign): Ditto.
+	* config/i386/i386.c (ix86_build_const_vector): Handle HF vector
+	modes.
+	(ix86_build_signbit_mask): Ditto.
+	(ix86_can_change_mode_class): Ditto.
+	* config/i386/i386.md
+	(SSEMODEF): Add HFmode.
+	(ssevecmodef): Ditto.
+	(<code>hf2): New define_expand.
+	(*<code>hf2_1): New define_insn_and_split.
+	(copysign<mode>): Extend to support HFmode under AVX512FP16.
+	(xorsign<mode>): Ditto.
+	* config/i386/sse.md (VFB): New mode iterator.
+	(VFB_128_256): Ditto.
+	(VFB_512): Ditto.
+	(sseintvecmode2): Support HF vector mode.
+	(<code><mode>2): Use new mode iterator.
+	(*<code><mode>2): Ditto.
+	(copysign<mode>3): Ditto.
+	(xorsign<mode>3): Ditto.
+	(<code><mode>3<mask_name>): Ditto.
+	(<code><mode>3<mask_name>): Ditto.
+	(<sse>_andnot<mode>3<mask_name>): Adjust for HF vector mode.
+	(<sse>_andnot<mode>3<mask_name>): Ditto.
+	(*<code><mode>3<mask_name>): Ditto.
+	(*<code><mode>3<mask_name>): Ditto.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_mask_fmadd_ph):
+	New intrinsic.
+	(_mm512_mask3_fmadd_ph): Likewise.
+	(_mm512_maskz_fmadd_ph): Likewise.
+	(_mm512_fmadd_round_ph): Likewise.
+	(_mm512_mask_fmadd_round_ph): Likewise.
+	(_mm512_mask3_fmadd_round_ph): Likewise.
+	(_mm512_maskz_fmadd_round_ph): Likewise.
+	(_mm512_fnmadd_ph): Likewise.
+	(_mm512_mask_fnmadd_ph): Likewise.
+	(_mm512_mask3_fnmadd_ph): Likewise.
+	(_mm512_maskz_fnmadd_ph): Likewise.
+	(_mm512_fnmadd_round_ph): Likewise.
+	(_mm512_mask_fnmadd_round_ph): Likewise.
+	(_mm512_mask3_fnmadd_round_ph): Likewise.
+	(_mm512_maskz_fnmadd_round_ph): Likewise.
+	(_mm512_fmsub_ph): Likewise.
+	(_mm512_mask_fmsub_ph): Likewise.
+	(_mm512_mask3_fmsub_ph): Likewise.
+	(_mm512_maskz_fmsub_ph): Likewise.
+	(_mm512_fmsub_round_ph): Likewise.
+	(_mm512_mask_fmsub_round_ph): Likewise.
+	(_mm512_mask3_fmsub_round_ph): Likewise.
+	(_mm512_maskz_fmsub_round_ph): Likewise.
+	(_mm512_fnmsub_ph): Likewise.
+	(_mm512_mask_fnmsub_ph): Likewise.
+	(_mm512_mask3_fnmsub_ph): Likewise.
+	(_mm512_maskz_fnmsub_ph): Likewise.
+	(_mm512_fnmsub_round_ph): Likewise.
+	(_mm512_mask_fnmsub_round_ph): Likewise.
+	(_mm512_mask3_fnmsub_round_ph): Likewise.
+	(_mm512_maskz_fnmsub_round_ph): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm256_fmadd_ph):
+	New intrinsic.
+	(_mm256_mask_fmadd_ph): Likewise.
+	(_mm256_mask3_fmadd_ph): Likewise.
+	(_mm256_maskz_fmadd_ph): Likewise.
+	(_mm_fmadd_ph): Likewise.
+	(_mm_mask_fmadd_ph): Likewise.
+	(_mm_mask3_fmadd_ph): Likewise.
+	(_mm_maskz_fmadd_ph): Likewise.
+	(_mm256_fnmadd_ph): Likewise.
+	(_mm256_mask_fnmadd_ph): Likewise.
+	(_mm256_mask3_fnmadd_ph): Likewise.
+	(_mm256_maskz_fnmadd_ph): Likewise.
+	(_mm_fnmadd_ph): Likewise.
+	(_mm_mask_fnmadd_ph): Likewise.
+	(_mm_mask3_fnmadd_ph): Likewise.
+	(_mm_maskz_fnmadd_ph): Likewise.
+	(_mm256_fmsub_ph): Likewise.
+	(_mm256_mask_fmsub_ph): Likewise.
+	(_mm256_mask3_fmsub_ph): Likewise.
+	(_mm256_maskz_fmsub_ph): Likewise.
+	(_mm_fmsub_ph): Likewise.
+	(_mm_mask_fmsub_ph): Likewise.
+	(_mm_mask3_fmsub_ph): Likewise.
+	(_mm_maskz_fmsub_ph): Likewise.
+	(_mm256_fnmsub_ph): Likewise.
+	(_mm256_mask_fnmsub_ph): Likewise.
+	(_mm256_mask3_fnmsub_ph): Likewise.
+	(_mm256_maskz_fnmsub_ph): Likewise.
+	(_mm_fnmsub_ph): Likewise.
+	(_mm_mask_fnmsub_ph): Likewise.
+	(_mm_mask3_fnmsub_ph): Likewise.
+	(_mm_maskz_fnmsub_ph): Likewise.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/sse.md
+	(<avx512>_fmadd_<mode>_maskz<round_expand_name>): Adjust to
+	support HF vector modes.
+	(<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name><round_name>):
+	Ditto.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_1): Ditto.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_2): Ditto.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_3): Ditto.
+	(<avx512>_fmadd_<mode>_mask<round_name>): Ditto.
+	(<avx512>_fmadd_<mode>_mask3<round_name>): Ditto.
+	(<avx512>_fmsub_<mode>_maskz<round_expand_name>): Ditto.
+	(<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name><round_name>):
+	Ditto.
+	(*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_1): Ditto.
+	(*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_2): Ditto.
+	(*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_3): Ditto.
+	(<avx512>_fmsub_<mode>_mask<round_name>): Ditto.
+	(<avx512>_fmsub_<mode>_mask3<round_name>): Ditto.
+	(<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name><round_name>):
+	Ditto.
+	(*<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name>_bcst_1): Ditto.
+	(*<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name>_bcst_2): Ditto.
+	(*<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name>_bcst_3): Ditto.
+	(<avx512>_fnmadd_<mode>_mask<round_name>): Ditto.
+	(<avx512>_fnmadd_<mode>_mask3<round_name>): Ditto.
+	(<avx512>_fnmsub_<mode>_maskz<round_expand_name>): Ditto.
+	(<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name><round_name>):
+	Ditto.
+	(*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_1): Ditto.
+	(*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_2): Ditto.
+	(*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_3): Ditto.
+	(<avx512>_fnmsub_<mode>_mask<round_name>): Ditto.
+	(<avx512>_fnmsub_<mode>_mask3<round_name>): Ditto.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_fmaddsub_ph):
+	New intrinsic.
+	(_mm512_mask_fmaddsub_ph): Likewise.
+	(_mm512_mask3_fmaddsub_ph): Likewise.
+	(_mm512_maskz_fmaddsub_ph): Likewise.
+	(_mm512_fmaddsub_round_ph): Likewise.
+	(_mm512_mask_fmaddsub_round_ph): Likewise.
+	(_mm512_mask3_fmaddsub_round_ph): Likewise.
+	(_mm512_maskz_fmaddsub_round_ph): Likewise.
+	(_mm512_mask_fmsubadd_ph): Likewise.
+	(_mm512_mask3_fmsubadd_ph): Likewise.
+	(_mm512_maskz_fmsubadd_ph): Likewise.
+	(_mm512_fmsubadd_round_ph): Likewise.
+	(_mm512_mask_fmsubadd_round_ph): Likewise.
+	(_mm512_mask3_fmsubadd_round_ph): Likewise.
+	(_mm512_maskz_fmsubadd_round_ph): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm256_fmaddsub_ph):
+	New intrinsic.
+	(_mm256_mask_fmaddsub_ph): Likewise.
+	(_mm256_mask3_fmaddsub_ph): Likewise.
+	(_mm256_maskz_fmaddsub_ph): Likewise.
+	(_mm_fmaddsub_ph): Likewise.
+	(_mm_mask_fmaddsub_ph): Likewise.
+	(_mm_mask3_fmaddsub_ph): Likewise.
+	(_mm_maskz_fmaddsub_ph): Likewise.
+	(_mm256_fmsubadd_ph): Likewise.
+	(_mm256_mask_fmsubadd_ph): Likewise.
+	(_mm256_mask3_fmsubadd_ph): Likewise.
+	(_mm256_maskz_fmsubadd_ph): Likewise.
+	(_mm_fmsubadd_ph): Likewise.
+	(_mm_mask_fmsubadd_ph): Likewise.
+	(_mm_mask3_fmsubadd_ph): Likewise.
+	(_mm_maskz_fmsubadd_ph): Likewise.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/sse.md (VFH_SF_AVX512VL): New mode iterator.
+	* (<avx512>_fmsubadd_<mode>_maskz<round_expand_name>): New expander.
+	* (<avx512>_fmaddsub_<mode>_maskz<round_expand_name>): Use
+	VFH_SF_AVX512VL.
+	* (<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>):
+	Ditto.
+	* (<avx512>_fmaddsub_<mode>_mask<round_name>): Ditto.
+	* (<avx512>_fmaddsub_<mode>_mask3<round_name>): Ditto.
+	* (<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>):
+	Ditto.
+	* (<avx512>_fmsubadd_<mode>_mask<round_name>): Ditto.
+	* (<avx512>_fmsubadd_<mode>_mask3<round_name>): Ditto.
+
+2021-09-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/87767
+	* config/i386/i386.c (ix86_print_operand): Handle
+	V8HF/V16HF/V32HFmode.
+	* config/i386/i386.h (VALID_BCST_MODE_P): Add HFmode.
+	* config/i386/sse.md (avx512bcst): Remove.
+
+2021-09-17  Martin Sebor  <msebor@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-predicate-analysis.o.
+	* tree-ssa-uninit.c (max_phi_args): Move to gimple-predicate-analysis.
+	(MASK_SET_BIT, MASK_TEST_BIT, MASK_EMPTY): Same.
+	(check_defs): Add comment.
+	(can_skip_redundant_opnd): Update comment.
+	(compute_uninit_opnds_pos): Adjust to namespace change.
+	(find_pdom): Move to gimple-predicate-analysis.cc.
+	(find_dom): Same.
+	(struct uninit_undef_val_t): New.
+	(is_non_loop_exit_postdominating): Move to gimple-predicate-analysis.cc.
+	(find_control_equiv_block): Same.
+	(MAX_NUM_CHAINS, MAX_CHAIN_LEN, MAX_POSTDOM_CHECK): Same.
+	(MAX_SWITCH_CASES): Same.
+	(compute_control_dep_chain): Same.
+	(find_uninit_use): Use predicate analyzer.
+	(struct pred_info): Move to gimple-predicate-analysis.
+	(convert_control_dep_chain_into_preds): Same.
+	(find_predicates): Same.
+	(collect_phi_def_edges): Same.
+	(warn_uninitialized_phi): Use predicate analyzer.
+	(find_def_preds): Move to gimple-predicate-analysis.
+	(dump_pred_info): Same.
+	(dump_pred_chain): Same.
+	(dump_predicates): Same.
+	(destroy_predicate_vecs): Remove.
+	(execute_late_warn_uninitialized): New.
+	(get_cmp_code): Move to gimple-predicate-analysis.
+	(is_value_included_in): Same.
+	(value_sat_pred_p): Same.
+	(find_matching_predicate_in_rest_chains): Same.
+	(is_use_properly_guarded): Same.
+	(prune_uninit_phi_opnds): Same.
+	(find_var_cmp_const): Same.
+	(use_pred_not_overlap_with_undef_path_pred): Same.
+	(pred_equal_p): Same.
+	(is_neq_relop_p): Same.
+	(is_neq_zero_form_p): Same.
+	(pred_expr_equal_p): Same.
+	(is_pred_expr_subset_of): Same.
+	(is_pred_chain_subset_of): Same.
+	(is_included_in): Same.
+	(is_superset_of): Same.
+	(pred_neg_p): Same.
+	(simplify_pred): Same.
+	(simplify_preds_2): Same.
+	(simplify_preds_3): Same.
+	(simplify_preds_4): Same.
+	(simplify_preds): Same.
+	(push_pred): Same.
+	(push_to_worklist): Same.
+	(get_pred_info_from_cmp): Same.
+	(is_degenerated_phi): Same.
+	(normalize_one_pred_1): Same.
+	(normalize_one_pred): Same.
+	(normalize_one_pred_chain): Same.
+	(normalize_preds): Same.
+	(can_one_predicate_be_invalidated_p): Same.
+	(can_chain_union_be_invalidated_p): Same.
+	(uninit_uses_cannot_happen): Same.
+	(pass_late_warn_uninitialized::execute): Define.
+	* gimple-predicate-analysis.cc: New file.
+	* gimple-predicate-analysis.h: New file.
+
+2021-09-17  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.c (gimple.h): Include.
+	(gcn_fork_join): Emit barrier for worker-level joins.
+	* omp-oacc-neuter-broadcast.cc (find_local_vars_to_propagate): Add
+	writes_gang_private bitmap parameter. Set bit for blocks
+	containing gang-private variable writes.
+	(worker_single_simple): Don't emit barrier after predicated block.
+	(worker_single_copy): Don't emit barrier if we're not broadcasting
+	anything and the block contains no gang-private writes.
+	(neuter_worker_single): Don't predicate blocks that only contain
+	NOPs or internal marker functions.  Pass has_gang_private_write
+	argument to worker_single_copy.
+	(oacc_do_neutering): Add writes_gang_private bitmap handling.
+
+2021-09-17  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn-protos.h
+	(gcn_goacc_create_worker_broadcast_record): Update prototype.
+	* config/gcn/gcn-tree.c (gcn_goacc_get_worker_red_decl): Use
+	preallocated block of LDS memory.  Do not cache/share decls for
+	reduction temporaries between invocations.
+	(gcn_goacc_reduction_teardown): Unshare VAR on second use.
+	(gcn_goacc_create_worker_broadcast_record): Add OFFSET parameter
+	and return temporary LDS space at that offset.  Return pointer in
+	"sender" case.
+	* config/gcn/gcn.c (acc_lds_size, gang_private_hwm, lds_allocs):
+	New global vars.
+	(ACC_LDS_SIZE): Define as acc_lds_size.
+	(gcn_init_machine_status): Don't initialise lds_allocated,
+	lds_allocs, reduc_decls fields of machine function struct.
+	(gcn_option_override): Handle default size for gang-private
+	variables and -mgang-private-size option.
+	(gcn_expand_prologue): Use LDS_SIZE instead of LDS_SIZE-1 when
+	initialising M0_REG.
+	(gcn_shared_mem_layout): New function.
+	(gcn_print_lds_decl): Update comment. Use global lds_allocs map and
+	gang_private_hwm variable.
+	(TARGET_GOACC_SHARED_MEM_LAYOUT): Define target hook.
+	* config/gcn/gcn.h (machine_function): Remove lds_allocated,
+	lds_allocs, reduc_decls. Add reduction_base, reduction_limit.
+	* config/gcn/gcn.opt (gang_private_size_opt): New global.
+	(mgang-private-size=): New option.
+	* doc/tm.texi.in (TARGET_GOACC_SHARED_MEM_LAYOUT): Place
+	documentation hook.
+	* doc/tm.texi: Regenerate.
+	* omp-oacc-neuter-broadcast.cc (targhooks.h, diagnostic-core.h):
+	Add includes.
+	(build_sender_ref): Handle sender_decl being pointer.
+	(worker_single_copy): Add PLACEMENT and ISOLATE_BROADCASTS
+	parameters.  Pass placement argument to
+	create_worker_broadcast_record hook invocations.  Handle
+	sender_decl being pointer and isolate_broadcasts inserting extra
+	barriers.
+	(blk_offset_map_t): Add typedef.
+	(neuter_worker_single): Add BLK_OFFSET_MAP parameter.  Pass
+	preallocated range to worker_single_copy call.
+	(dfs_broadcast_reachable_1): New function.
+	(idx_decl_pair_t, used_range_vec_t): New typedefs.
+	(sort_size_descending): New function.
+	(addr_range): New class.
+	(splay_tree_compare_addr_range, splay_tree_free_key)
+	(first_fit_range, merge_ranges_1, merge_ranges): New functions.
+	(execute_omp_oacc_neuter_broadcast): Rename to...
+	(oacc_do_neutering): ... this.  Add BOUNDS_LO, BOUNDS_HI
+	parameters.  Arrange layout of shared memory for broadcast
+	operations.
+	(execute_omp_oacc_neuter_broadcast): New function.
+	(pass_omp_oacc_neuter_broadcast::gate): Remove num_workers==1
+	handling from here.  Enable pass for all OpenACC routines in order
+	to call shared memory-layout hook.
+	* target.def (create_worker_broadcast_record): Add OFFSET
+	parameter.
+	(shared_mem_layout): New hook.
+
+2021-09-17  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-neuter-broadcast.cc
+	(pass_omp_oacc_neuter_broadcast::gate): Disable if num_workers is
+	1.
+	(execute_omp_oacc_neuter_broadcast): Adjust.
+
+2021-09-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (class equiv_chain): Move to header file.
+	(path_oracle::path_oracle): New.
+	(path_oracle::~path_oracle): New.
+	(path_oracle::register_relation): New.
+	(path_oracle::query_relation): New.
+	(path_oracle::reset_path): New.
+	(path_oracle::dump): New.
+	* value-relation.h (class equiv_chain): Move to here.
+	(class path_oracle): New.
+
+2021-09-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Create a DOM
+	based oracle.
+	* gimple-range-fold.cc (fur_depend::register_relation): Use
+	register_stmt/edge routines.
+	* value-relation.cc (equiv_chain::find): Relocate from equiv_oracle.
+	(equiv_oracle::equiv_oracle): Create self equivalence cache.
+	(equiv_oracle::~equiv_oracle): Release same.
+	(equiv_oracle::equiv_set): Return entry from self equiv cache if there
+	are no equivalences.
+	(equiv_oracle::find_equiv_block): Move list find to equiv_chain.
+	(equiv_oracle::register_relation): Rename from register_equiv.
+	(relation_chain_head::find_relation): Relocate from dom_oracle.
+	(relation_oracle::register_stmt): New.
+	(relation_oracle::register_edge): New.
+	(dom_oracle::*): Rename from relation_oracle.
+	(dom_oracle::register_relation): Adjust to call equiv_oracle.
+	(dom_oracle::set_one_relation): Split from register_relation.
+	(dom_oracle::register_transitives): Consolidate 2 methods.
+	(dom_oracle::find_relation_block): Move core to relation_chain.
+	(dom_oracle::query_relation): Rename from find_relation_dom and adjust.
+	* value-relation.h (class relation_oracle): New pure virtual base.
+	(class equiv_oracle): Inherit from relation_oracle and adjust.
+	(class dom_oracle): Rename from old relation_oracle and adjust.
+
+2021-09-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102200
+	* pointer-query.cc (access_ref::inform_access): Handle MIN/MAX_EXPR.
+	(handle_min_max_size): Change argument.  Store original SSA_NAME for
+	operands to potentially distinct (sub)objects.
+	(compute_objsize_r): Adjust call to the above.
+
+2021-09-17  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000-builtins.h): New include.
+	(rs6000_new_builtin_vectorized_function): New function.
+	(rs6000_new_builtin_md_vectorized_function): Likewise.
+	(rs6000_builtin_vectorized_function): Call
+	rs6000_new_builtin_vectorized_function.
+	(rs6000_builtin_md_vectorized_function): Call
+	rs6000_new_builtin_md_vectorized_function.
+
+2021-09-17  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def (ASSEMBLE_ACC): Add mmaint flag.
+	(ASSEMBLE_PAIR): Likewise.
+	(BUILD_ACC): Likewise.
+	(DISASSEMBLE_ACC): Likewise.
+	(DISASSEMBLE_PAIR): Likewise.
+	(PMXVBF16GER2): Likewise.
+	(PMXVBF16GER2NN): Likewise.
+	(PMXVBF16GER2NP): Likewise.
+	(PMXVBF16GER2PN): Likewise.
+	(PMXVBF16GER2PP): Likewise.
+	(PMXVF16GER2): Likewise.
+	(PMXVF16GER2NN): Likewise.
+	(PMXVF16GER2NP): Likewise.
+	(PMXVF16GER2PN): Likewise.
+	(PMXVF16GER2PP): Likewise.
+	(PMXVF32GER): Likewise.
+	(PMXVF32GERNN): Likewise.
+	(PMXVF32GERNP): Likewise.
+	(PMXVF32GERPN): Likewise.
+	(PMXVF32GERPP): Likewise.
+	(PMXVF64GER): Likewise.
+	(PMXVF64GERNN): Likewise.
+	(PMXVF64GERNP): Likewise.
+	(PMXVF64GERPN): Likewise.
+	(PMXVF64GERPP): Likewise.
+	(PMXVI16GER2): Likewise.
+	(PMXVI16GER2PP): Likewise.
+	(PMXVI16GER2S): Likewise.
+	(PMXVI16GER2SPP): Likewise.
+	(PMXVI4GER8): Likewise.
+	(PMXVI4GER8PP): Likewise.
+	(PMXVI8GER4): Likewise.
+	(PMXVI8GER4PP): Likewise.
+	(PMXVI8GER4SPP): Likewise.
+	(XVBF16GER2): Likewise.
+	(XVBF16GER2NN): Likewise.
+	(XVBF16GER2NP): Likewise.
+	(XVBF16GER2PN): Likewise.
+	(XVBF16GER2PP): Likewise.
+	(XVF16GER2): Likewise.
+	(XVF16GER2NN): Likewise.
+	(XVF16GER2NP): Likewise.
+	(XVF16GER2PN): Likewise.
+	(XVF16GER2PP): Likewise.
+	(XVF32GER): Likewise.
+	(XVF32GERNN): Likewise.
+	(XVF32GERNP): Likewise.
+	(XVF32GERPN): Likewise.
+	(XVF32GERPP): Likewise.
+	(XVF64GER): Likewise.
+	(XVF64GERNN): Likewise.
+	(XVF64GERNP): Likewise.
+	(XVF64GERPN): Likewise.
+	(XVF64GERPP): Likewise.
+	(XVI16GER2): Likewise.
+	(XVI16GER2PP): Likewise.
+	(XVI16GER2S): Likewise.
+	(XVI16GER2SPP): Likewise.
+	(XVI4GER8): Likewise.
+	(XVI4GER8PP): Likewise.
+	(XVI8GER4): Likewise.
+	(XVI8GER4PP): Likewise.
+	(XVI8GER4SPP): Likewise.
+	(XXMFACC): Likewise.
+	(XXMTACC): Likewise.
+	(XXSETACCZ): Likewise.
+	(ASSEMBLE_PAIR_V): Likewise.
+	(BUILD_PAIR): Likewise.
+	(DISASSEMBLE_PAIR_V): Likewise.
+	(LXVP): New.
+	(STXVP): New.
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_new_mma_builtin):
+	Handle RS6000_BIF_LXVP and RS6000_BIF_STXVP.
+	* config/rs6000/rs6000-gen-builtins.c (attrinfo): Add ismmaint.
+	(parse_bif_attrs): Handle ismmaint.
+	(write_decls): Add bif_mmaint_bit and bif_is_mmaint.
+	(write_bif_static_init): Handle ismmaint.
+
+2021-09-17  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_new_builtin): New
+	forward decl.
+	(rs6000_gimple_fold_builtin): Call rs6000_gimple_fold_new_builtin.
+	(rs6000_new_builtin_valid_without_lhs): New function.
+	(rs6000_gimple_fold_new_mma_builtin): Likewise.
+	(rs6000_gimple_fold_new_builtin): Likewise.
+
+2021-09-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* hash-table.h (hash_table<Descriptor, Lazy, Allocator>::expand):
+	Destruct stale Value objects.
+	* hash-map-tests.c (test_map_of_type_with_ctor_and_dtor_expand):
+	Update.
+
+2021-09-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c/102245
+	* match.pd (shift optimizations): Disable recent sign-changing
+	optimization for shifts by zero, these will be folded later.
+
+2021-09-17  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def (__builtin_mffsl): Move from
+	[power9] to [always].
+
+2021-09-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_load): Do not frob
+	stmt_info for SLP.
+
+2021-09-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-features.c (remove_partial_avx_dependency):
+	Also check TARGET_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY and
+	and TARGET_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY before generating
+	vxorps.
+	* config/i386/i386.h (TARGET_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY):
+	New.
+	(TARGET_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY): Likewise.
+	* config/i386/i386.md (SSE FP to FP splitters): Replace
+	TARGET_SSE_PARTIAL_REG_DEPENDENCY with
+	TARGET_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY.
+	(SSE INT to FP splitter): Replace TARGET_SSE_PARTIAL_REG_DEPENDENCY
+	with TARGET_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY.
+	* config/i386/x86-tune.def
+	(X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY): New.
+	(X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY): Likewise.
+
+2021-09-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101900
+	* config/i386/i386-features.c (remove_partial_avx_dependency):
+	Check TARGET_USE_VECTOR_FP_CONVERTS and TARGET_USE_VECTOR_CONVERTS
+	before generating vxorps.
+
+2021-09-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-options.c (processor_cost_table): Use
+	tremont_cost for Tremont.
+	* config/i386/x86-tune-costs.h (tremont_memcpy): New.
+	(tremont_memset): Likewise.
+	(tremont_cost): Likewise.
+	* config/i386/x86-tune.def (X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB):
+	Enable for Tremont.
+
+2021-09-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	* common/config/i386/i386-common.c: Use Haswell scheduling model
+	for Tremont.
+	* config/i386/i386.c (ix86_sched_init_global): Prepare for Tremont
+	scheduling pass.
+	* config/i386/x86-tune-sched.c (ix86_issue_rate): Change Tremont
+	issue rate to 4.
+	(ix86_adjust_cost): Handle Tremont.
+	* config/i386/x86-tune.def (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY):
+	Enable for Tremont.
+	(X86_TUNE_USE_LEAVE): Likewise.
+	(X86_TUNE_PUSH_MEMORY): Likewise.
+	(X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES): Likewise.
+	(X86_TUNE_USE_CLTD): Likewise.
+	(X86_TUNE_AVOID_FALSE_DEP_FOR_BMI): Likewise.
+	(X86_TUNE_AVOID_MFENCE): Likewise.
+	(X86_TUNE_SSE_TYPELESS_STORES): Likewise.
+	(X86_TUNE_SSE_LOAD0_BY_PXOR): Likewise.
+	(X86_TUNE_ACCUMULATE_OUTGOING_ARGS): Disable for Tremont.
+	(X86_TUNE_FOUR_JUMP_LIMIT): Likewise.
+	(X86_TUNE_OPT_AGU): Likewise.
+	(X86_TUNE_AVOID_LEA_FOR_ADDR): Likewise.
+	(X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE): Likewise.
+	(X86_TUNE_EXPAND_ABS): Likewise.
+	(X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS): Likewise.
+	(X86_TUNE_SLOW_PSHUFB): Likewise.
+
+2021-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/102306
+	* combine.c (try_combine): Abort the combination if we are about to
+	duplicate volatile references.
+
+2021-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm_undefined_ph):
+	New intrinsic.
+	(_mm256_undefined_ph): Likewise.
+	(_mm512_undefined_ph): Likewise.
+	(_mm_cvtsh_h): Likewise.
+	(_mm256_cvtsh_h): Likewise.
+	(_mm512_cvtsh_h): Likewise.
+	(_mm512_castph_ps): Likewise.
+	(_mm512_castph_pd): Likewise.
+	(_mm512_castph_si512): Likewise.
+	(_mm512_castph512_ph128): Likewise.
+	(_mm512_castph512_ph256): Likewise.
+	(_mm512_castph128_ph512): Likewise.
+	(_mm512_castph256_ph512): Likewise.
+	(_mm512_zextph128_ph512): Likewise.
+	(_mm512_zextph256_ph512): Likewise.
+	(_mm512_castps_ph): Likewise.
+	(_mm512_castpd_ph): Likewise.
+	(_mm512_castsi512_ph): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_castph_ps):
+	New intrinsic.
+	(_mm256_castph_ps): Likewise.
+	(_mm_castph_pd): Likewise.
+	(_mm256_castph_pd): Likewise.
+	(_mm_castph_si128): Likewise.
+	(_mm256_castph_si256): Likewise.
+	(_mm_castps_ph): Likewise.
+	(_mm256_castps_ph): Likewise.
+	(_mm_castpd_ph): Likewise.
+	(_mm256_castpd_ph): Likewise.
+	(_mm_castsi128_ph): Likewise.
+	(_mm256_castsi256_ph): Likewise.
+	(_mm256_castph256_ph128): Likewise.
+	(_mm256_castph128_ph256): Likewise.
+	(_mm256_zextph128_ph256): Likewise.
+
+2021-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm_cvtsh_ss):
+	New intrinsic.
+	(_mm_mask_cvtsh_ss): Likewise.
+	(_mm_maskz_cvtsh_ss): Likewise.
+	(_mm_cvtsh_sd): Likewise.
+	(_mm_mask_cvtsh_sd): Likewise.
+	(_mm_maskz_cvtsh_sd): Likewise.
+	(_mm_cvt_roundsh_ss): Likewise.
+	(_mm_mask_cvt_roundsh_ss): Likewise.
+	(_mm_maskz_cvt_roundsh_ss): Likewise.
+	(_mm_cvt_roundsh_sd): Likewise.
+	(_mm_mask_cvt_roundsh_sd): Likewise.
+	(_mm_maskz_cvt_roundsh_sd): Likewise.
+	(_mm_cvtss_sh): Likewise.
+	(_mm_mask_cvtss_sh): Likewise.
+	(_mm_maskz_cvtss_sh): Likewise.
+	(_mm_cvtsd_sh): Likewise.
+	(_mm_mask_cvtsd_sh): Likewise.
+	(_mm_maskz_cvtsd_sh): Likewise.
+	(_mm_cvt_roundss_sh): Likewise.
+	(_mm_mask_cvt_roundss_sh): Likewise.
+	(_mm_maskz_cvt_roundss_sh): Likewise.
+	(_mm_cvt_roundsd_sh): Likewise.
+	(_mm_mask_cvt_roundsd_sh): Likewise.
+	(_mm_maskz_cvt_roundsd_sh): Likewise.
+	* config/i386/i386-builtin-types.def
+	(V8HF_FTYPE_V2DF_V8HF_V8HF_UQI_INT,
+	V8HF_FTYPE_V4SF_V8HF_V8HF_UQI_INT,
+	V2DF_FTYPE_V8HF_V2DF_V2DF_UQI_INT,
+	V4SF_FTYPE_V8HF_V4SF_V4SF_UQI_INT): Add new builtin types.
+	* config/i386/i386-builtin.def: Add corrresponding new builtins.
+	* config/i386/i386-expand.c: Handle new builtin types.
+	* config/i386/sse.md (VF48_128): New mode iterator.
+	(avx512fp16_vcvtsh2<ssescalarmodesuffix><mask_scalar_name><round_saeonly_scalar_name>):
+	New.
+	(avx512fp16_vcvt<ssescalarmodesuffix>2sh<mask_scalar_name><round_scalar_name>):
+	Ditto.
+
+2021-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_cvtph_pd):
+	New intrinsic.
+	(_mm512_mask_cvtph_pd): Likewise.
+	(_mm512_maskz_cvtph_pd): Likewise.
+	(_mm512_cvt_roundph_pd): Likewise.
+	(_mm512_mask_cvt_roundph_pd): Likewise.
+	(_mm512_maskz_cvt_roundph_pd): Likewise.
+	(_mm512_cvtxph_ps): Likewise.
+	(_mm512_mask_cvtxph_ps): Likewise.
+	(_mm512_maskz_cvtxph_ps): Likewise.
+	(_mm512_cvtx_roundph_ps): Likewise.
+	(_mm512_mask_cvtx_roundph_ps): Likewise.
+	(_mm512_maskz_cvtx_roundph_ps): Likewise.
+	(_mm512_cvtxps_ph): Likewise.
+	(_mm512_mask_cvtxps_ph): Likewise.
+	(_mm512_maskz_cvtxps_ph): Likewise.
+	(_mm512_cvtx_roundps_ph): Likewise.
+	(_mm512_mask_cvtx_roundps_ph): Likewise.
+	(_mm512_maskz_cvtx_roundps_ph): Likewise.
+	(_mm512_cvtpd_ph): Likewise.
+	(_mm512_mask_cvtpd_ph): Likewise.
+	(_mm512_maskz_cvtpd_ph): Likewise.
+	(_mm512_cvt_roundpd_ph): Likewise.
+	(_mm512_mask_cvt_roundpd_ph): Likewise.
+	(_mm512_maskz_cvt_roundpd_ph): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_cvtph_pd):
+	New intrinsic.
+	(_mm_mask_cvtph_pd): Likewise.
+	(_mm_maskz_cvtph_pd): Likewise.
+	(_mm256_cvtph_pd): Likewise.
+	(_mm256_mask_cvtph_pd): Likewise.
+	(_mm256_maskz_cvtph_pd): Likewise.
+	(_mm_cvtxph_ps): Likewise.
+	(_mm_mask_cvtxph_ps): Likewise.
+	(_mm_maskz_cvtxph_ps): Likewise.
+	(_mm256_cvtxph_ps): Likewise.
+	(_mm256_mask_cvtxph_ps): Likewise.
+	(_mm256_maskz_cvtxph_ps): Likewise.
+	(_mm_cvtxps_ph): Likewise.
+	(_mm_mask_cvtxps_ph): Likewise.
+	(_mm_maskz_cvtxps_ph): Likewise.
+	(_mm256_cvtxps_ph): Likewise.
+	(_mm256_mask_cvtxps_ph): Likewise.
+	(_mm256_maskz_cvtxps_ph): Likewise.
+	(_mm_cvtpd_ph): Likewise.
+	(_mm_mask_cvtpd_ph): Likewise.
+	(_mm_maskz_cvtpd_ph): Likewise.
+	(_mm256_cvtpd_ph): Likewise.
+	(_mm256_mask_cvtpd_ph): Likewise.
+	(_mm256_maskz_cvtpd_ph): Likewise.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-expand.c: Handle new builtin types.
+	* config/i386/sse.md
+	(VF4_128_8_256): New.
+	(VF48H_AVX512VL): Ditto.
+	(ssePHmode): Add HF vector modes.
+	(castmode): Add new convertable modes.
+	(qq2phsuff): Ditto.
+	(ph2pssuffix): New.
+	(avx512fp16_vcvt<castmode>2ph_<mode><mask_name><round_name>): Ditto.
+	(avx512fp16_vcvt<castmode>2ph_<mode>): Ditto.
+	(*avx512fp16_vcvt<castmode>2ph_<mode>): Ditto.
+	(avx512fp16_vcvt<castmode>2ph_<mode>_mask): Ditto.
+	(*avx512fp16_vcvt<castmode>2ph_<mode>_mask): Ditto.
+	(*avx512fp16_vcvt<castmode>2ph_<mode>_mask_1): Ditto.
+	(avx512fp16_float_extend_ph<mode>2<mask_name><round_saeonly_name>):
+	Ditto.
+	(avx512fp16_float_extend_ph<mode>2<mask_name>): Ditto.
+	(*avx512fp16_float_extend_ph<mode>2_load<mask_name>): Ditto.
+	(avx512fp16_float_extend_phv2df2<mask_name>): Ditto.
+	(*avx512fp16_float_extend_phv2df2_load<mask_name>): Ditto.
+
+2021-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm_cvttsh_i32):
+	New intrinsic.
+	(_mm_cvttsh_u32): Likewise.
+	(_mm_cvtt_roundsh_i32): Likewise.
+	(_mm_cvtt_roundsh_u32): Likewise.
+	(_mm_cvttsh_i64): Likewise.
+	(_mm_cvttsh_u64): Likewise.
+	(_mm_cvtt_roundsh_i64): Likewise.
+	(_mm_cvtt_roundsh_u64): Likewise.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/sse.md
+	(avx512fp16_fix<fixunssuffix>_trunc<mode>2<round_saeonly_name>):
+	New.
+
+2021-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_cvttph_epi32):
+	New intrinsic.
+	(_mm512_mask_cvttph_epi32): Likewise.
+	(_mm512_maskz_cvttph_epi32): Likewise.
+	(_mm512_cvtt_roundph_epi32): Likewise.
+	(_mm512_mask_cvtt_roundph_epi32): Likewise.
+	(_mm512_maskz_cvtt_roundph_epi32): Likewise.
+	(_mm512_cvttph_epu32): Likewise.
+	(_mm512_mask_cvttph_epu32): Likewise.
+	(_mm512_maskz_cvttph_epu32): Likewise.
+	(_mm512_cvtt_roundph_epu32): Likewise.
+	(_mm512_mask_cvtt_roundph_epu32): Likewise.
+	(_mm512_maskz_cvtt_roundph_epu32): Likewise.
+	(_mm512_cvttph_epi64): Likewise.
+	(_mm512_mask_cvttph_epi64): Likewise.
+	(_mm512_maskz_cvttph_epi64): Likewise.
+	(_mm512_cvtt_roundph_epi64): Likewise.
+	(_mm512_mask_cvtt_roundph_epi64): Likewise.
+	(_mm512_maskz_cvtt_roundph_epi64): Likewise.
+	(_mm512_cvttph_epu64): Likewise.
+	(_mm512_mask_cvttph_epu64): Likewise.
+	(_mm512_maskz_cvttph_epu64): Likewise.
+	(_mm512_cvtt_roundph_epu64): Likewise.
+	(_mm512_mask_cvtt_roundph_epu64): Likewise.
+	(_mm512_maskz_cvtt_roundph_epu64): Likewise.
+	(_mm512_cvttph_epi16): Likewise.
+	(_mm512_mask_cvttph_epi16): Likewise.
+	(_mm512_maskz_cvttph_epi16): Likewise.
+	(_mm512_cvtt_roundph_epi16): Likewise.
+	(_mm512_mask_cvtt_roundph_epi16): Likewise.
+	(_mm512_maskz_cvtt_roundph_epi16): Likewise.
+	(_mm512_cvttph_epu16): Likewise.
+	(_mm512_mask_cvttph_epu16): Likewise.
+	(_mm512_maskz_cvttph_epu16): Likewise.
+	(_mm512_cvtt_roundph_epu16): Likewise.
+	(_mm512_mask_cvtt_roundph_epu16): Likewise.
+	(_mm512_maskz_cvtt_roundph_epu16): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_cvttph_epi32):
+	New intirnsic.
+	(_mm_mask_cvttph_epi32): Likewise.
+	(_mm_maskz_cvttph_epi32): Likewise.
+	(_mm256_cvttph_epi32): Likewise.
+	(_mm256_mask_cvttph_epi32): Likewise.
+	(_mm256_maskz_cvttph_epi32): Likewise.
+	(_mm_cvttph_epu32): Likewise.
+	(_mm_mask_cvttph_epu32): Likewise.
+	(_mm_maskz_cvttph_epu32): Likewise.
+	(_mm256_cvttph_epu32): Likewise.
+	(_mm256_mask_cvttph_epu32): Likewise.
+	(_mm256_maskz_cvttph_epu32): Likewise.
+	(_mm_cvttph_epi64): Likewise.
+	(_mm_mask_cvttph_epi64): Likewise.
+	(_mm_maskz_cvttph_epi64): Likewise.
+	(_mm256_cvttph_epi64): Likewise.
+	(_mm256_mask_cvttph_epi64): Likewise.
+	(_mm256_maskz_cvttph_epi64): Likewise.
+	(_mm_cvttph_epu64): Likewise.
+	(_mm_mask_cvttph_epu64): Likewise.
+	(_mm_maskz_cvttph_epu64): Likewise.
+	(_mm256_cvttph_epu64): Likewise.
+	(_mm256_mask_cvttph_epu64): Likewise.
+	(_mm256_maskz_cvttph_epu64): Likewise.
+	(_mm_cvttph_epi16): Likewise.
+	(_mm_mask_cvttph_epi16): Likewise.
+	(_mm_maskz_cvttph_epi16): Likewise.
+	(_mm256_cvttph_epi16): Likewise.
+	(_mm256_mask_cvttph_epi16): Likewise.
+	(_mm256_maskz_cvttph_epi16): Likewise.
+	(_mm_cvttph_epu16): Likewise.
+	(_mm_mask_cvttph_epu16): Likewise.
+	(_mm_maskz_cvttph_epu16): Likewise.
+	(_mm256_cvttph_epu16): Likewise.
+	(_mm256_mask_cvttph_epu16): Likewise.
+	(_mm256_maskz_cvttph_epu16): Likewise.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/sse.md
+	(avx512fp16_fix<fixunssuffix>_trunc<mode>2<mask_name><round_saeonly_name>):
+	New.
+	(avx512fp16_fix<fixunssuffix>_trunc<mode>2<mask_name>): Ditto.
+	(*avx512fp16_fix<fixunssuffix>_trunc<mode>2_load<mask_name>): Ditto.
+	(avx512fp16_fix<fixunssuffix>_truncv2di2<mask_name>): Ditto.
+	(avx512fp16_fix<fixunssuffix>_truncv2di2_load<mask_name>): Ditto.
+
+2021-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm_cvtsh_i32): New intrinsic.
+	(_mm_cvtsh_u32): Likewise.
+	(_mm_cvt_roundsh_i32): Likewise.
+	(_mm_cvt_roundsh_u32): Likewise.
+	(_mm_cvtsh_i64): Likewise.
+	(_mm_cvtsh_u64): Likewise.
+	(_mm_cvt_roundsh_i64): Likewise.
+	(_mm_cvt_roundsh_u64): Likewise.
+	(_mm_cvti32_sh): Likewise.
+	(_mm_cvtu32_sh): Likewise.
+	(_mm_cvt_roundi32_sh): Likewise.
+	(_mm_cvt_roundu32_sh): Likewise.
+	(_mm_cvti64_sh): Likewise.
+	(_mm_cvtu64_sh): Likewise.
+	(_mm_cvt_roundi64_sh): Likewise.
+	(_mm_cvt_roundu64_sh): Likewise.
+	* config/i386/i386-builtin-types.def: Add corresponding builtin types.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/i386-expand.c (ix86_expand_round_builtin):
+	Handle new builtin types.
+	* config/i386/sse.md
+	(avx512fp16_vcvtsh2<sseintconvertsignprefix>si<rex64namesuffix><round_name>):
+	New define_insn.
+	(avx512fp16_vcvtsh2<sseintconvertsignprefix>si<rex64namesuffix>_2): Likewise.
+	(avx512fp16_vcvt<floatsuffix>si2sh<rex64namesuffix><round_name>): Likewise.
+
 2021-09-16  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-c.c (rs6000-builtins.h): New include.

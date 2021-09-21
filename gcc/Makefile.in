@@ -1394,6 +1394,7 @@ OBJS = \
 	gimple-loop-jam.o \
 	gimple-loop-versioning.o \
 	gimple-low.o \
+	gimple-predicate-analysis.o \
 	gimple-pretty-print.o \
 	gimple-range.o \
 	gimple-range-cache.o \

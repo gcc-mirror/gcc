@@ -898,10 +898,7 @@ jump_threader::thread_around_empty_blocks (vec<jump_thread_edge *> *path,
 
 	  if (!bitmap_bit_p (visited, taken_edge->dest->index))
 	    {
-	      jump_thread_edge *x
-		= m_registry->allocate_thread_edge (taken_edge,
-						    EDGE_NO_COPY_SRC_BLOCK);
-	      path->safe_push (x);
+	      m_registry->push_edge (path, taken_edge, EDGE_NO_COPY_SRC_BLOCK);
 	      bitmap_set_bit (visited, taken_edge->dest->index);
 	      return thread_around_empty_blocks (path, taken_edge, visited);
 	    }
@@ -942,10 +939,7 @@ jump_threader::thread_around_empty_blocks (vec<jump_thread_edge *> *path,
 	return false;
       bitmap_set_bit (visited, taken_edge->dest->index);
 
-      jump_thread_edge *x
-	= m_registry->allocate_thread_edge (taken_edge,
-					    EDGE_NO_COPY_SRC_BLOCK);
-      path->safe_push (x);
+      m_registry->push_edge (path, taken_edge, EDGE_NO_COPY_SRC_BLOCK);
 
       thread_around_empty_blocks (path, taken_edge, visited);
       return true;
@@ -1051,16 +1045,9 @@ jump_threader::thread_through_normal_block (vec<jump_thread_edge *> *path,
 	  /* Only push the EDGE_START_JUMP_THREAD marker if this is
 	     first edge on the path.  */
 	  if (path->length () == 0)
-	    {
-              jump_thread_edge *x
-		= m_registry->allocate_thread_edge (e, EDGE_START_JUMP_THREAD);
-	      path->safe_push (x);
-	    }
+	    m_registry->push_edge (path, e, EDGE_START_JUMP_THREAD);
 
-	  jump_thread_edge *x
-	    = m_registry->allocate_thread_edge (taken_edge,
-						EDGE_COPY_SRC_BLOCK);
-	  path->safe_push (x);
+	  m_registry->push_edge (path, taken_edge, EDGE_COPY_SRC_BLOCK);
 
 	  /* See if we can thread through DEST as well, this helps capture
 	     secondary effects of threading without having to re-run DOM or
@@ -1146,53 +1133,43 @@ edge_forwards_cmp_to_conditional_jump_through_empty_bb_p (edge e)
 void
 jump_threader::thread_across_edge (edge e)
 {
-  bitmap visited = BITMAP_ALLOC (NULL);
+  auto_bitmap visited;
 
   m_state->push (e);
 
   stmt_count = 0;
 
   vec<jump_thread_edge *> *path = m_registry->allocate_thread_path ();
-  bitmap_clear (visited);
   bitmap_set_bit (visited, e->src->index);
   bitmap_set_bit (visited, e->dest->index);
 
-  int threaded;
+  int threaded = 0;
   if ((e->flags & EDGE_DFS_BACK) == 0)
     threaded = thread_through_normal_block (path, e, visited);
-  else
-    threaded = 0;
 
   if (threaded > 0)
     {
       propagate_threaded_block_debug_into (path->last ()->e->dest,
 					   e->dest);
-      BITMAP_FREE (visited);
       m_registry->register_jump_thread (path);
       m_state->pop ();
       return;
     }
-  else
-    {
-      /* Negative and zero return values indicate no threading was possible,
-	 thus there should be no edges on the thread path and no need to walk
-	 through the vector entries.  */
-      gcc_assert (path->length () == 0);
-      path->release ();
 
-      /* A negative status indicates the target block was deemed too big to
-	 duplicate.  Just quit now rather than trying to use the block as
-	 a joiner in a jump threading path.
+  gcc_checking_assert (path->length () == 0);
+  path->release ();
+
+  if (threaded < 0)
+    {
+      /* The target block was deemed too big to duplicate.  Just quit
+	 now rather than trying to use the block as a joiner in a jump
+	 threading path.
 
 	 This prevents unnecessary code growth, but more importantly if we
 	 do not look at all the statements in the block, then we may have
 	 missed some invalidations if we had traversed a backedge!  */
-      if (threaded < 0)
-	{
-	  BITMAP_FREE (visited);
-	  m_state->pop ();
-	  return;
-	}
+      m_state->pop ();
+      return;
     }
 
  /* We were unable to determine what out edge from E->dest is taken.  However,
@@ -1217,7 +1194,6 @@ jump_threader::thread_across_edge (edge e)
       if (taken_edge->flags & EDGE_COMPLEX)
 	{
 	  m_state->pop ();
-	  BITMAP_FREE (visited);
 	  return;
 	}
 
@@ -1235,17 +1211,11 @@ jump_threader::thread_across_edge (edge e)
 	bitmap_set_bit (visited, e->src->index);
 	bitmap_set_bit (visited, e->dest->index);
 	bitmap_set_bit (visited, taken_edge->dest->index);
+
 	vec<jump_thread_edge *> *path = m_registry->allocate_thread_path ();
+	m_registry->push_edge (path, e, EDGE_START_JUMP_THREAD);
+	m_registry->push_edge (path, taken_edge, EDGE_COPY_SRC_JOINER_BLOCK);
 
-	/* Record whether or not we were able to thread through a successor
-	   of E->dest.  */
-	jump_thread_edge *x
-	  = m_registry->allocate_thread_edge (e, EDGE_START_JUMP_THREAD);
-	path->safe_push (x);
-
-	x = m_registry->allocate_thread_edge (taken_edge,
-					      EDGE_COPY_SRC_JOINER_BLOCK);
-	path->safe_push (x);
 	found = thread_around_empty_blocks (path, taken_edge, visited);
 
 	if (!found)
@@ -1267,7 +1237,6 @@ jump_threader::thread_across_edge (edge e)
 
 	m_state->pop ();
       }
-    BITMAP_FREE (visited);
   }
 
   m_state->pop ();

@@ -4215,8 +4215,6 @@ package body Inline is
      (Subp  : Entity_Id;
       Decls : List_Id) return Boolean
    is
-      D : Node_Id;
-
       function Is_Unchecked_Conversion (D : Node_Id) return Boolean;
       --  Nested subprograms make a given body ineligible for inlining, but
       --  we make an exception for instantiations of unchecked conversion.
@@ -4250,6 +4248,10 @@ package body Inline is
            and then Is_Intrinsic_Subprogram (Conv);
       end Is_Unchecked_Conversion;
 
+      --  Local variables
+
+      Decl : Node_Id;
+
    --  Start of processing for Has_Excluded_Declaration
 
    begin
@@ -4259,19 +4261,19 @@ package body Inline is
          return False;
       end if;
 
-      D := First (Decls);
-      while Present (D) loop
+      Decl := First (Decls);
+      while Present (Decl) loop
 
          --  First declarations universally excluded
 
-         if Nkind (D) = N_Package_Declaration then
+         if Nkind (Decl) = N_Package_Declaration then
             Cannot_Inline
-              ("cannot inline & (nested package declaration)?", D, Subp);
+              ("cannot inline & (nested package declaration)?", Decl, Subp);
             return True;
 
-         elsif Nkind (D) = N_Package_Instantiation then
+         elsif Nkind (Decl) = N_Package_Instantiation then
             Cannot_Inline
-              ("cannot inline & (nested package instantiation)?", D, Subp);
+              ("cannot inline & (nested package instantiation)?", Decl, Subp);
             return True;
          end if;
 
@@ -4280,51 +4282,50 @@ package body Inline is
          if Back_End_Inlining then
             null;
 
-         elsif Nkind (D) = N_Task_Type_Declaration
-           or else Nkind (D) = N_Single_Task_Declaration
+         elsif Nkind (Decl) = N_Task_Type_Declaration
+           or else Nkind (Decl) = N_Single_Task_Declaration
          then
             Cannot_Inline
-              ("cannot inline & (nested task type declaration)?", D, Subp);
+              ("cannot inline & (nested task type declaration)?", Decl, Subp);
             return True;
 
-         elsif Nkind (D) = N_Protected_Type_Declaration
-           or else Nkind (D) = N_Single_Protected_Declaration
+         elsif Nkind (Decl) in N_Protected_Type_Declaration
+                             | N_Single_Protected_Declaration
          then
             Cannot_Inline
               ("cannot inline & (nested protected type declaration)?",
-               D, Subp);
+               Decl, Subp);
             return True;
 
-         elsif Nkind (D) = N_Subprogram_Body then
+         elsif Nkind (Decl) = N_Subprogram_Body then
             Cannot_Inline
-              ("cannot inline & (nested subprogram)?", D, Subp);
+              ("cannot inline & (nested subprogram)?", Decl, Subp);
             return True;
 
-         elsif Nkind (D) = N_Function_Instantiation
-           and then not Is_Unchecked_Conversion (D)
+         elsif Nkind (Decl) = N_Function_Instantiation
+           and then not Is_Unchecked_Conversion (Decl)
          then
             Cannot_Inline
-              ("cannot inline & (nested function instantiation)?", D, Subp);
+              ("cannot inline & (nested function instantiation)?", Decl, Subp);
             return True;
 
-         elsif Nkind (D) = N_Procedure_Instantiation then
+         elsif Nkind (Decl) = N_Procedure_Instantiation then
             Cannot_Inline
-              ("cannot inline & (nested procedure instantiation)?", D, Subp);
+              ("cannot inline & (nested procedure instantiation)?",
+               Decl, Subp);
             return True;
 
          --  Subtype declarations with predicates will generate predicate
          --  functions, i.e. nested subprogram bodies, so inlining is not
          --  possible.
 
-         elsif Nkind (D) = N_Subtype_Declaration
-           and then Present (Aspect_Specifications (D))
-         then
+         elsif Nkind (Decl) = N_Subtype_Declaration then
             declare
                A    : Node_Id;
                A_Id : Aspect_Id;
 
             begin
-               A := First (Aspect_Specifications (D));
+               A := First (Aspect_Specifications (Decl));
                while Present (A) loop
                   A_Id := Get_Aspect_Id (Chars (Identifier (A)));
 
@@ -4334,7 +4335,7 @@ package body Inline is
                   then
                      Cannot_Inline
                        ("cannot inline & (subtype declaration with "
-                        & "predicate)?", D, Subp);
+                        & "predicate)?", Decl, Subp);
                      return True;
                   end if;
 
@@ -4343,7 +4344,7 @@ package body Inline is
             end;
          end if;
 
-         Next (D);
+         Next (Decl);
       end loop;
 
       return False;

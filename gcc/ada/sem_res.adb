@@ -3454,7 +3454,6 @@ package body Sem_Res is
    procedure Resolve_Actuals (N : Node_Id; Nam : Entity_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       A      : Node_Id;
-      A_Id   : Entity_Id;
       A_Typ  : Entity_Id := Empty; -- init to avoid warning
       F      : Entity_Id;
       F_Typ  : Entity_Id;
@@ -4969,31 +4968,6 @@ package body Sem_Res is
                --  must be resolved first.
 
                Flag_Effectively_Volatile_Objects (A);
-
-               --  An effectively volatile variable cannot act as an actual
-               --  parameter in a procedure call when the variable has enabled
-               --  property Effective_Reads and the corresponding formal is of
-               --  mode IN (SPARK RM 7.1.3(10)).
-
-               if Ekind (Nam) = E_Procedure
-                 and then Ekind (F) = E_In_Parameter
-                 and then Is_Entity_Name (A)
-               then
-                  A_Id := Entity (A);
-
-                  if Ekind (A_Id) = E_Variable
-                    and then Is_Effectively_Volatile_For_Reading (Etype (A_Id))
-                    and then Effective_Reads_Enabled (A_Id)
-                  then
-                     Error_Msg_NE
-                       ("effectively volatile variable & cannot appear as "
-                        & "actual in procedure call", A, A_Id);
-
-                     Error_Msg_Name_1 := Name_Effective_Reads;
-                     Error_Msg_N ("\\variable has enabled property %", A);
-                     Error_Msg_N ("\\corresponding formal has mode IN", A);
-                  end if;
-               end if;
             end if;
 
             --  A formal parameter of a specific tagged type whose related

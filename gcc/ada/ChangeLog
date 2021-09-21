@@ -1,3 +1,339 @@
+2021-09-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Has_Excluded_Declaration): Remove redundant guard;
+	the guarded code will call First on a No_List, which is
+	well-defined and gives Empty.
+
+2021-09-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Has_Excluded_Declaration): Rename and reduce scope
+	of a local variable.
+
+2021-09-20  Bob Duff  <duff@adacore.com>
+
+	* uintp.ads, uintp.adb (Present, No): New functions for
+	comparing with No_Uint.
+	* checks.adb, einfo-utils.adb, exp_aggr.adb, exp_attr.adb,
+	exp_ch3.adb, exp_ch4.adb, exp_dbug.adb, exp_disp.adb,
+	exp_util.adb, repinfo.adb, repinfo-input.adb, scn.adb,
+	sem_attr.adb, sem_ch13.adb, sem_eval.adb, sem_util.adb,
+	sinfo-utils.adb, treepr.adb: Use Present (...) instead of "...
+	/= No_Uint", and No (...) instead of "... = No_Uint".
+
+2021-09-20  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-ficobl.ads: The entire package has a SPARK_Mode =>
+	Off aspect.
+
+2021-09-20  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/a-calend.adb: Remove time_t, replace with OS_Time.
+	* libgnat/s-os_lib.ads: Fix comments regarding time_t conversion
+	functions to reflect the use of To_Ada in in Ada.Calendar
+	package body.
+	* sysdep.c (__gnat_localtime_tzoff): Use OS_Time instead of
+	time_t.
+
+2021-09-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Actual): Remove
+
+2021-09-20  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.ads, einfo-utils.adb, fe.h, einfo.ads,
+	gen_il-fields.ads: Remove unused and no-longer-used routines.
+	Move related routines together.  Rewrite incorrect
+	documentation, and documentation that will be incorrect when
+	e.g. Esize-related routines are fixed.  Remove unused field
+	Normalized_Position_Max.
+	* cstand.adb, exp_pakd.adb, freeze.adb,
+	gen_il-gen-gen_entities.adb, itypes.adb, layout.adb,
+	sem_ch10.adb, sem_ch12.adb, sem_ch13.adb, sem_ch3.adb,
+	sem_ch7.adb, sem_ch8.adb, sem_ch9.adb, sem_prag.adb,
+	sem_util.adb, ttypes.ads: Update calls to routines removed from
+	or renamed in Einfo.Utils.
+	* uintp.ads (Upos): Fix this subtype, which was unintentionally
+	declared to include Uint_0.
+
+2021-09-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch7.adb (Expand_N_Package_Declaration): Fix wording in
+	comment.
+	* exp_disp.adb (Mark_DT): Remove unnecessary initialization of
+	I_Depth.
+
+2021-09-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Add_Contract_Item): Accept volatile-related
+	properties on constants.
+	(Analyze_Object_Contract): Check external properties on
+	constants; accept volatile constants.
+	(Check_Type_Or_Object_External_Properties): Replace "variable"
+	with "object" in error messages; replace Decl_Kind with a local
+	constant.
+	* sem_prag.adb (Analyze_Pragma): Accept volatile-related
+	properties on constants.
+
+2021-09-20  Pierre-Alexandre Bazin  <bazin@adacore.com>
+
+	* libgnat/a-strfix.adb ("*"): Added loop invariants and lemmas
+	for proof.
+	(Delete): Added assertions for proof, and conditions to avoid
+	overflow.
+	(Head): Added loop invariant.
+	(Insert): Same as Delete.
+	(Move): Declared with SPARK_Mode Off.
+	(Overwrite): Added assertions for proof, and conditions to avoid
+	overflow.
+	(Replace_Slice): Added assertions for proof, and conditions to
+	avoid overflow.
+	(Tail): Added loop invariant and avoided overflows.
+	(Translate): Added loop invariants.
+	(Trim): Ensured empty strings returned start at 1.
+	* libgnat/a-strfix.ads (Index): Rewrote contract cases for
+	easier proof.
+	(Index_Non_Blank): Separated the null string case.
+	(Count): Specified Mapping shouldn't be null.
+	(Find_Token): Specified Source'First should be Positive when no
+	From is given.
+	(Translate): Specified Mapping shouldn't be null.
+	("*"): Rewrote postcondition for easier proof.
+	* libgnat/a-strsea.adb (Belongs): Added postcondition.
+	(Count): Rewrote loops and added loop invariants to avoid
+	overflows.
+	(Find_Token): Added loop invariants.
+	(Index): Rewrote loops to avoid overflows and added loop
+	invariants for proof.
+	(Index_Non_Blank): Added loop invariants.
+	(Is_Identity): New function isolated without SPARK_Mode.
+	* libgnat/a-strsea.ads: Fix starting comment as package is no
+	longer private.
+	(Match): Declared ghost expression function Match.
+	(Is_Identity): Described identity in the postcondition.
+	(Index, Index_Non_Blank, Count, Find_Token): Added contract from
+	a-strfix.ads.
+
+2021-09-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Resolve_Aspect_Aggregate): Move comments after
+	specs; fix typo in header box; cleanup whitespace.
+
+2021-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-objrea.adb (Get_Load_Address): Return 0 for ELF.
+
+2021-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.c (__gnat_get_executable_load_address): Add Win32 support.
+	* libgnat/s-objrea.ads (Get_Xcode_Bounds): Fix typo in comment.
+	(Object_File): Minor reformatting.
+	(ELF_Object_File): Uncomment predicate.
+	(PECOFF_Object_File): Likewise.
+	(XCOFF32_Object_File): Likewise.
+	* libgnat/s-objrea.adb: Minor reformatting throughout.
+	(Get_Load_Address): Implement for PE-COFF.
+	* libgnat/s-dwalin.ads: Remove clause for System.Storage_Elements
+	and use consistent wording in comments.
+	(Dwarf_Context): Set type of Low, High and Load_Address to Address.
+	* libgnat/s-dwalin.adb (Get_Load_Displacement): New function.
+	(Is_Inside): Call Get_Load_Displacement.
+	(Low_Address): Likewise.
+	(Open): Adjust to type change.
+	(Aranges_Lookup): Change type of Addr to Address.
+	(Read_Aranges_Entry): Likewise for Start and adjust.
+	(Enable_Cach): Adjust to type change.
+	(Symbolic_Address): Change type of Addr to Address.
+	(Symbolic_Traceback): Call Get_Load_Displacement.
+
+2021-09-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_disp.adb (Make_DT): Move call to Set_Has_Dispatch_Table,
+	so it is executed regardless of the Generate_SCIL mode.
+
+2021-09-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.ads (Force_Evaluation): Add formal parameter
+	Discr_Number, to indicate discriminant expression for which an
+	external name must be created.
+	(Remove_Side_Effects): Ditto.
+	* exp_util.adb (Force_Evaluation): Call Remove_Side_Effects with
+	added parameter.
+	(Remove_Side_Effects, Build_Temporary): If Discr_Number is
+	positive, create an external name with suffix DISCR and the
+	given discriminant number, analogous to what is done for
+	temporaries for array type bounds.
+	* sem_ch3.adb (Process_Discriminant_Expressions): If the
+	constraint is for an object or component declaration and the
+	corresponding entity may be visible in another unit, invoke
+	Force_Evaluation with the new parameter.
+
+2021-09-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gen_il-internals.ads (Invalid_Val): Remove, unused and
+	generates warnings.
+
+2021-09-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb, exp_ch4.adb, exp_ch5.adb, sprint.adb: Refine
+	types of local constants.
+
+2021-09-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Fold
+	Preelaborable_Initialization attribute in cases where it hasn't
+	been folded by the analyzer.
+	* exp_disp.adb (Original_View_In_Visible_Part): This function is
+	removed and moved to sem_util.adb.
+	* sem_attr.adb (Attribute_22): Add
+	Attribute_Preelaborable_Initialization as an Ada 2022 attribute.
+	(Analyze_Attribute, Attribute_Preelaborable_Initialization):
+	Check that the prefix of the attribute is either a formal
+	private or derived type, or a composite type declared within the
+	visible part of a package or generic package.
+	(Eval_Attribute): Perform folding of
+	Preelaborable_Initialization attribute based on
+	Has_Preelaborable_Initialization applied to the prefix type.
+	* sem_ch3.adb (Resolve_Aspects): Add specialized code for
+	Preelaborable_Initialization used at the end of a package
+	visible part for setting Known_To_Have_Preelab_Init on types
+	that are specified with True or that have a conjunction of one
+	or more P_I attributes applied to formal types.
+	* sem_ch7.adb (Analyze_Package_Specification): On call to
+	Has_Preelaborable_Initialization, pass True for new formal
+	Formal_Types_Have_Preelab_Init, so that error checking treats
+	subcomponents that are declared within types in generics as
+	having preelaborable initialization when the subcomponents are
+	of formal types.
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Add test for
+	P_I to prevent calling Make_Pragma_From_Boolean_Aspect, since
+	this aspect is handled specially and the
+	Known_To_Have_Preelab_Init flag will get set on types that have
+	the aspect by other means.
+	(Analyze_Aspect_Specifications.Analyze_One_Aspect): Add test for
+	Aspect_Preelaborable_Initialization for allowing the aspect to
+	be specified on formal type declarations.
+	(Is_Operational_Item): Treat Attribute_Put_Image as an
+	operational attribute.  The need for this was encountered while
+	working on these changes.
+	* sem_util.ads (Has_Preelaborable_Initialization): Add
+	Formal_Types_Have_Preelab_Init as a new formal parameter that
+	defaults to False.
+	(Is_Conjunction_Of_Formal_Preelab_Init_Attributes): New
+	function.
+	(Original_View_In_Visible_Part): Moved here from exp_disp.adb,
+	so it can be called by Analyze_Attribute.
+	* sem_util.adb (Has_Preelaborable_Initialization): Return True
+	for formal private and derived types when new formal
+	Formal_Types_Have_Preelab_Init is True, and pass along the
+	Formal_Types_Have_Preelab_Init flag in the array component case.
+	(Check_Components): Pass along Formal_Types_Have_Preelab_Init
+	flag on call to Has_Preelaborable_Initialization.
+	(Is_Conjunction_Of_Formal_Preelab_Init_Attributes): New function
+	that returns True when passed an expression that includes one or
+	more attributes for Preelaborable_Initialization applied to
+	prefixes that denote formal types.
+	(Is_Formal_Preelab_Init_Attribute): New utility function nested
+	within Is_Conjunction_Of_Formal_Preelab_Init_Attributes that
+	determines whether a node is a P_I attribute applied to a
+	generic formal type.
+	(Original_View_In_Visible_Part): Moved here from exp_util.adb,
+	so it can be called by Analyze_Attribute.
+	* snames.ads-tmpl: Add note near the start of spec giving
+	details about what needs to be done when adding a name that
+	corresponds to both an attribute and a pragma.  Delete existing
+	occurrence of Name_Preelaborable_Initialization, and add a note
+	comment in the list of Name_* constants at that place,
+	indicating that it's included in type Pragma_Id, etc., echoing
+	other such comments for names that are both an attribute and a
+	pragma.  Insert Name_Preelaborable_Initialization in the
+	alphabetized set of Name_* constants corresponding to
+	attributes (between First_Attribute_Name and
+	Last_Attribute_Name).
+	(type Attribute_Id): Add new literal
+	Attribute_Preelaborable_Initialization.
+	(type Pragma_Id): Move Pragma_Preelaborable_Initialization from
+	its current position to the end of the type, in the special set
+	of pragma literals that have corresponding atttributes. Add to
+	accompanying comment, indicating that functions Get_Pragma_Id
+	and Is_Pragma_Name need to be updated when adding a pragma
+	literal to the special set.
+	* snames.adb-tmpl (Get_Pragma_Id): Add case alternative for
+	Pragma_Preelaborable_Initialization.
+	(Is_Pragma_Name): Add test for
+	Name_Preelaborable_Initialization.
+
+2021-09-20  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch4.adb (Finc_Non_Universal_Interpretations): Fix check.
+
+2021-09-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Build_Discriminant_Constraints): Exit once a
+	first discriminant is found and the Discrim_Present flag is set.
+
+2021-09-20  Bob Duff  <duff@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Avoid calling List_Rep_Info in
+	Generate_SCIL and GNATprove_Mode.
+	* repinfo.adb (List_Common_Type_Info): Fix comment.
+
+2021-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.ads: Remove clause for Ada.Exceptions.Traceback,
+	add clause for System.Traceback_Entries and alphabetize.
+	(AET): Delete.
+	(STE): New package renaming.
+	(Symbolic_Traceback): Adjust.
+	* libgnat/s-dwalin.adb: Remove clauses for Ada.Exceptions.Traceback
+	and System.Traceback_Entries.
+	(Symbolic_Traceback): Adjust.
+
+2021-09-20  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch4.adb (Find_Non_Universal_Interpretations): Check if
+	types are compatible before adding interpretation.
+
+2021-09-20  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Add guard to protect
+	against calculating accessibility levels against internal
+	compiler-generated types.
+
+2021-09-20  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_dim.adb (Dimensions_Msg_Of): Capitalize comment.
+
+2021-09-20  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* adabkend.adb (Scan_Back_End_Switches): Replace switch-scanning
+	logic with call to Backend_Utils.Scan_Common_Back_End_Switches.
+	* back_end.adb (Scan_Back_End_Switches): Replace switch-scanning
+	logic with call to Backend_Utils.Scan_Common_Back_End_Switches.
+	* backend_utils.adb: New file.
+	* backend_utils.ads: New file.
+	* gcc-interface/Make-lang.in: Add ada/backend_utils.o.
+
+2021-09-20  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* atree.adb (Get_32_Bit_Field): Declare result before returning.
+
+2021-09-20  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_ch7.adb (Expand_N_Package_Body): Replace
+	Build_And_Insert_Cuda_Initialization with Expand_CUDA_Package.
+	* gnat_cuda.adb (Expand_CUDA_Package): New procedure.
+	(Build_And_Insert_Cuda_Initialization): Make internal.
+	* gnat_cuda.ads (Expand_CUDA_Package): New procedure.
+	(Build_And_Insert_Cuda_Initialization): Remove from spec.
+
+2021-09-20  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* usage.adb (Usage): Update -gnatw.c messages.
+
+2021-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_aux.adb (Is_By_Reference_Type): Do not test Error_Posted.
+
 2021-09-15  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc-interface/utils.c: Include opts.h.

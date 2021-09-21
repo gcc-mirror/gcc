@@ -1,4 +1,5 @@
 // PR c++/65209
+// { dg-additional-options "-fno-pie" { target sparc*-*-* } }
 // { dg-final { scan-assembler-not "comdat" } }
 
 // Everything involving the anonymous namespace bits should be private, not

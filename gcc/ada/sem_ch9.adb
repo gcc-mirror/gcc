@@ -2024,7 +2024,7 @@ package body Sem_Ch9 is
 
       Mutate_Ekind           (T, E_Protected_Type);
       Set_Is_First_Subtype   (T);
-      Init_Size_Align        (T);
+      Reinit_Size_Align      (T);
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T);
       Set_Stored_Constraint  (T, No_Elist);
@@ -2143,7 +2143,7 @@ package body Sem_Ch9 is
       while Present (E) loop
          if Ekind (E) = E_Void then
             Mutate_Ekind (E, E_Component);
-            Init_Component_Location (E);
+            Reinit_Component_Location (E);
          end if;
 
          Next_Entity (E);
@@ -3151,7 +3151,7 @@ package body Sem_Ch9 is
       Mutate_Ekind           (T, E_Task_Type);
       Set_Is_First_Subtype   (T, True);
       Set_Has_Task           (T, True);
-      Init_Size_Align        (T);
+      Reinit_Size_Align      (T);
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
       Set_Stored_Constraint  (T, No_Elist);

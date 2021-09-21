@@ -545,6 +545,14 @@ s-gcpu: Makefile
 	$(SHELL) $(srcdir)/mvifdiff.sh gcpugen.go.tmp gcpugen.go
 	$(STAMP) $@
 
+goroot.go: s-goroot; @true
+s-goroot: Makefile
+	rm -f goroot.go.tmp
+	echo "package runtime" > goroot.go.tmp
+	echo 'var defaultGOROOT = `$(prefix)`' >> goroot.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh goroot.go.tmp goroot.go
+	$(STAMP) $@
+
 buildcfg.go: s-buildcfg; @true
 s-buildcfg: Makefile
 	rm -f buildcfg.go.tmp
@@ -1005,7 +1013,8 @@ math_lo_GOCFLAGS = $(MATH_FLAG)
 math_check_GOCFLAGS = $(MATH_FLAG)
 
 # Add generated files to the runtime package.
-extra_go_files_runtime = runtime_linknames.go runtime_sysinfo.go sigtab.go
+extra_go_files_runtime = \
+	runtime_linknames.go runtime_sysinfo.go sigtab.go goroot.go
 runtime.lo.dep: $(extra_go_files_runtime)
 
 # Add generated files to the syscall package.

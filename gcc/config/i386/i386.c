@@ -13610,11 +13610,16 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	case E_V8SFmode:
 	case E_V8DFmode:
 	case E_V8DImode:
+	case E_V8HFmode:
 	  fputs ("{1to8}", file);
 	  break;
 	case E_V16SFmode:
 	case E_V16SImode:
+	case E_V16HFmode:
 	  fputs ("{1to16}", file);
+	  break;
+	case E_V32HFmode:
+	  fputs ("{1to32}", file);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -15556,6 +15561,9 @@ ix86_build_const_vector (machine_mode mode, bool vect, rtx value)
     case E_V2DImode:
       gcc_assert (vect);
       /* FALLTHRU */
+    case E_V8HFmode:
+    case E_V16HFmode:
+    case E_V32HFmode:
     case E_V16SFmode:
     case E_V8SFmode:
     case E_V4SFmode:
@@ -15594,6 +15602,13 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
 
   switch (mode)
     {
+    case E_V8HFmode:
+    case E_V16HFmode:
+    case E_V32HFmode:
+      vec_mode = mode;
+      imode = HImode;
+      break;
+
     case E_V16SImode:
     case E_V16SFmode:
     case E_V8SImode:

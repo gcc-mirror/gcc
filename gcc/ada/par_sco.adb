@@ -2248,6 +2248,8 @@ package body Par_SCO is
                         | Name_Loop_Invariant
                         | Name_Postcondition
                         | Name_Precondition
+                        | Name_Type_Invariant
+                        | Name_Invariant
                      =>
                         --  For Assert/Check/Precondition/Postcondition, we
                         --  must generate a P entry for the decision. Note
@@ -2256,7 +2258,10 @@ package body Par_SCO is
                         --  on when we output the decision line in Put_SCOs,
                         --  depending on setting by Set_SCO_Pragma_Enabled.
 
-                        if Nam = Name_Check then
+                        if Nam = Name_Check
+                           or else Nam = Name_Type_Invariant
+                           or else Nam = Name_Invariant
+                        then
                            Next (Arg);
                         end if;
 
@@ -2285,8 +2290,7 @@ package body Par_SCO is
                      --  never disabled.
 
                      --  Should generate P decisions (not X) for assertion
-                     --  related pragmas: [Type_]Invariant,
-                     --  [{Static,Dynamic}_]Predicate???
+                     --  related pragmas: [{Static,Dynamic}_]Predicate???
 
                      when others =>
                         Process_Decisions_Defer (N, 'X');

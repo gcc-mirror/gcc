@@ -82,26 +82,8 @@ package GNAT_CUDA is
    --  Kernel is a procedure entity marked with CUDA_Global, Pack_Id is the
    --  entity of its parent package body.
 
-   procedure Build_And_Insert_CUDA_Initialization (N : Node_Id);
-   --  Builds declarations necessary for CUDA initialization and inserts them
-   --  in N, the package body that contains CUDA_Global nodes. These
-   --  declarations are:
-   --
-   --    * A symbol to hold the pointer to the CUDA fat binary
-   --
-   --    * A type definition for a wrapper that contains the pointer to the
-   --      CUDA fat binary
-   --
-   --    * An object of the aforementioned type to hold the aforementioned
-   --      pointer.
-   --
-   --    * For each CUDA_Global procedure in the package, a declaration of a C
-   --      string containing the function's name.
-   --
-   --    * A function that takes care of calling CUDA functions that register
-   --      CUDA_Global procedures with the runtime.
-   --
-   --    * A boolean that holds the result of the call to the aforementioned
-   --      function.
+   procedure Expand_CUDA_Package (N : Node_Id);
+   --  When compiling for the host, generate code to register kernels with the
+   --  CUDA runtime and post-process kernels.
 
 end GNAT_CUDA;

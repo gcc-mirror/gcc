@@ -1,3 +1,27 @@
+2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-slibgcc-darwin: Delete unused code.
+
+2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/t-darwin: Add in a vers file for X86-specific
+	symbols.
+	* config/t-darwin: Add the generic symbol maps here...
+	* config/t-slibgcc-darwin: ... removing from here.
+	* config/i386/libgcc-darwin.ver: New file.
+
+2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/t-softfp: Exclude libgcc2 versions of __divhc3
+	and __mulhc3.
+
+2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Use convenience library for Darwin10
+	unwinder shim.
+	* config/t-darwin: Build Darwin10 unwinder shim as a
+	convenience library.
+
 2021-09-13  Andrew Pinski  <apinski@marvell.com>
 
 	* config.host: Remove m32r-*-linux* and m32rle-*-linux*.

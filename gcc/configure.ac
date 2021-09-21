@@ -5357,6 +5357,16 @@ case "$target" in
       [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX908, 1,
        [Define if your assembler allows -mattr=+sram-ecc for gfx908.])])
     ;;
+  arm*)
+    gcc_GAS_CHECK_FEATURE([assembler for arm accepts context-specific architecture extensions],
+      gcc_cv_as_arm_option_extensions,
+      [-march=armv8.1-m.main+mve],
+      [.text
+	.thumb
+	.syntax unified
+	vmov.f32 s0, s1],,
+      [AC_DEFINE(HAVE_GAS_ARM_EXTENDED_ARCH, 1,
+       [Define if your Arm assembler permits context-specific feature extensions.])])
 esac
 
 # ??? Not all targets support dwarf2 debug_line, even within a version

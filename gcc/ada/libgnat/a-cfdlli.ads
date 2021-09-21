@@ -1596,8 +1596,7 @@ is
              M_Elements_Sorted'Result =
                (for all I in 1 .. M.Length (Container) =>
                  (for all J in I .. M.Length (Container) =>
-                   Element (Container, I) = Element (Container, J)
-                     or Element (Container, I) < Element (Container, J)));
+                   not (Element (Container, J) < Element (Container, I))));
          pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Sorted);
 
       end Formal_Model;

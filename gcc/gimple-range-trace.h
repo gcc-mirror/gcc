@@ -72,4 +72,7 @@ private:
   dump_flags_t old_dump_flags;
 };
 
+void dump_ranger (FILE *);
+void dump_ranger (FILE *, const vec<basic_block> &path);
+
 #endif // GCC_GIMPLE_RANGE_TRACE_H

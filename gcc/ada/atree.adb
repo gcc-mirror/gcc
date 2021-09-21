@@ -513,8 +513,13 @@ package body Atree is
 
          function Cast is new
            Unchecked_Conversion (Field_Size_32_Bit, Field_Type);
+
+         Result : constant Field_Type := Cast (Get_32_Bit_Val (N, Offset));
+         --  Note: declaring Result here instead of directly returning
+         --  Cast (...) helps CodePeer understand that there are no issues
+         --  around uninitialized variables.
       begin
-         return Cast (Get_32_Bit_Val (N, Offset));
+         return Result;
       end Get_32_Bit_Field;
 
       function Get_32_Bit_Field_With_Default
@@ -1823,7 +1828,7 @@ package body Atree is
 
    function Parent (N : Node_Or_Entity_Id) return Node_Or_Entity_Id is
    begin
-      pragma Assert (Atree.Present (N));
+      pragma Assert (Present (N));
 
       if Is_List_Member (N) then
          return Parent (List_Containing (N));
@@ -2146,7 +2151,7 @@ package body Atree is
 
    procedure Set_Parent (N : Node_Or_Entity_Id; Val : Node_Or_Entity_Id) is
    begin
-      pragma Assert (Atree.Present (N));
+      pragma Assert (Present (N));
       pragma Assert (not In_List (N));
       Set_Link (N, Union_Id (Val));
    end Set_Parent;

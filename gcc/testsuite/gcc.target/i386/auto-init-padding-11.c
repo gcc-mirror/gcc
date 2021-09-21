@@ -1,7 +1,7 @@
 /* Verify zero initialization for union type with structure field with
    padding.  */ 
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=zero -fdump-rtl-expand" } */
+/* { dg-options "-ftrivial-auto-var-init=zero -fdump-rtl-expand -march=x86-64 -mtune=generic -msse" } */
 
 struct test_trailing_hole {
         int one;

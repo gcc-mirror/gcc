@@ -3454,6 +3454,32 @@ range_fits_type_p (const value_range *vr,
   return true;
 }
 
+// Clear edge E of EDGE_EXECUTABLE (it is unexecutable). If it wasn't
+// previously clear, propagate to successor blocks if appropriate.
+
+void
+simplify_using_ranges::set_and_propagate_unexecutable (edge e)
+{
+  // If EXECUUTABLE is already clear, we're done.
+  if ((e->flags & EDGE_EXECUTABLE) == 0)
+    return;
+
+  e->flags &= ~EDGE_EXECUTABLE;
+
+  // Check if the destination block needs to propagate the property.
+  basic_block bb = e->dest;
+
+  // If any entry edge is marked EXECUTABLE, we are done.
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e->flags & EDGE_EXECUTABLE)
+      return;
+
+  // This block is also unexecutable, propagate to all exit edges as well.
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    set_and_propagate_unexecutable (e);
+}
+
 /* If COND can be folded entirely as TRUE or FALSE, rewrite the
    conditional as such, and return TRUE.  */
 
@@ -3467,18 +3493,27 @@ simplify_using_ranges::fold_cond (gcond *cond)
       if (TREE_CODE (gimple_cond_lhs (cond)) != SSA_NAME
 	  && TREE_CODE (gimple_cond_rhs (cond)) != SSA_NAME)
 	return false;
-
+      edge e0 = EDGE_SUCC (gimple_bb (cond), 0);
+      edge e1 = EDGE_SUCC (gimple_bb (cond), 1);
       if (r.zero_p ())
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "\nPredicate evaluates to: 0\n");
 	  gimple_cond_make_false (cond);
+	  if (e0->flags & EDGE_TRUE_VALUE)
+	    set_and_propagate_unexecutable (e0);
+	  else
+	    set_and_propagate_unexecutable (e1);
 	}
       else
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "\nPredicate evaluates to: 1\n");
 	  gimple_cond_make_true (cond);
+	  if (e0->flags & EDGE_FALSE_VALUE)
+	    set_and_propagate_unexecutable (e0);
+	  else
+	    set_and_propagate_unexecutable (e1);
 	}
       update_stmt (cond);
       return true;
@@ -3769,7 +3804,7 @@ simplify_using_ranges::simplify_switch_using_ranges (gswitch *stmt)
 	  fprintf (dump_file, "removing unreachable case label\n");
 	}
       to_remove_edges.safe_push (e);
-      e->flags &= ~EDGE_EXECUTABLE;
+      set_and_propagate_unexecutable (e);
       e->flags |= EDGE_IGNORE;
     }
 

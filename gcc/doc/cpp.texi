@@ -2462,6 +2462,24 @@ features are supported by GCC.
 This macro is defined if @option{-fno-math-errno} is used, or enabled
 by another option such as @option{-ffast-math} or by default.
 
+@item __RECIPROCAL_MATH__
+This macro is defined if @option{-freciprocal-math} is used, or enabled
+by another option such as @option{-ffast-math} or by default.
+
+@item __NO_SIGNED_ZEROS__
+This macro is defined if @option{-fno-signed-zeros} is used, or enabled
+by another option such as @option{-ffast-math} or by default.
+
+@item __NO_TRAPPING_MATH__
+This macro is defined if @option{-fno-trapping-math} is used.
+
+@item __ASSOCIATIVE_MATH__
+This macro is defined if @option{-fassociative-math} is used, or enabled
+by another option such as @option{-ffast-math} or by default.
+
+@item __ROUNDING_MATH__
+This macro is defined if @option{-frounding-math} is used.
+
 @item __GNUC_EXECUTION_CHARSET_NAME
 @itemx __GNUC_WIDE_EXECUTION_CHARSET_NAME
 These macros are defined to expand to a narrow string literal of

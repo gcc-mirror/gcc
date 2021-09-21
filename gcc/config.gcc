@@ -250,6 +250,8 @@ md_file=
 case ${target} in
   tile*-*-*				\
  | cr16-*-*				\
+ | hppa[12]*-*-hpux10*			\
+ | hppa[12]*-*-hpux11*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2

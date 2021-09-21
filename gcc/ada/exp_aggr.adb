@@ -504,7 +504,7 @@ package body Exp_Aggr is
       --  Scalar types are OK if their size is a multiple of Storage_Unit
 
       elsif Is_Scalar_Type (Ctyp) then
-         pragma Assert (Csiz /= No_Uint);
+         pragma Assert (Present (Csiz));
 
          if Csiz mod System_Storage_Unit /= 0 then
             return False;
@@ -4003,7 +4003,7 @@ package body Exp_Aggr is
                  and then Present (First_Index (Etype (Expr_Q)))
                then
                   declare
-                     Expr_Q_Type : constant Node_Id := Etype (Expr_Q);
+                     Expr_Q_Type : constant Entity_Id := Etype (Expr_Q);
                   begin
                      Append_List_To (L,
                        Build_Array_Aggr_Code

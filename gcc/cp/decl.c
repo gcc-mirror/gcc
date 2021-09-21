@@ -5772,14 +5772,6 @@ start_decl_1 (tree decl, bool initialized)
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
     }
 
-  if (is_global_var (decl))
-    {
-      type_context_kind context = (DECL_THREAD_LOCAL_P (decl)
-				   ? TCTX_THREAD_STORAGE
-				   : TCTX_STATIC_STORAGE);
-      verify_type_context (input_location, context, TREE_TYPE (decl));
-    }
-
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?  */
     {
@@ -7976,6 +7968,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 			      TCTX_STATIC_STORAGE, type)
       && DECL_INITIALIZED_IN_CLASS_P (decl))
     check_static_variable_definition (decl, type);
+
+  if (!processing_template_decl && VAR_P (decl) && is_global_var (decl))
+    {
+      type_context_kind context = (DECL_THREAD_LOCAL_P (decl)
+				   ? TCTX_THREAD_STORAGE
+				   : TCTX_STATIC_STORAGE);
+      verify_type_context (input_location, context, TREE_TYPE (decl));
+    }
 
   if (init && TREE_CODE (decl) == FUNCTION_DECL)
     {

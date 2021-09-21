@@ -37,6 +37,9 @@ proc prune_gcc_output { text } {
     # Handle any freeform regexps.
     set text [handle-dg-regexps $text]
 
+    # Remove Windows .exe suffix
+    regsub -all "(as|cc1|cc1plus|collect2|f951|ld|lto-wrapper)\.exe?:" $text {\1:} text
+
     regsub -all "(^|\n)(\[^\n\]*: \[iI\]|I)n ((static member |lambda )?function|member|method|(copy )?constructor|destructor|instantiation|substitution|program|subroutine|block-data)\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*(: )?At (top level|global scope):\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   (recursively )?required \[^\n\]*" $text "" text

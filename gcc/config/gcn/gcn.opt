@@ -68,6 +68,12 @@ mstack-size=
 Target RejectNegative Joined UInteger Var(stack_size_opt) Init(-1)
 -mstack-size=<number>	Set the private segment size per wave-front, in bytes.
 
+int gang_private_size_opt = -1
+
+mgang-private-size=
+Target RejectNegative Joined UInteger Var(gang_private_size_opt) Init(-1)
+Amount of local data-share (LDS) memory to reserve for gang-private variables.
+
 Wopenacc-dims
 Target Var(warn_openacc_dims) Warning
 Warn about invalid OpenACC dimensions.
