@@ -61,6 +61,8 @@ private:
   void ssa_range_in_phi (irange &r, gphi *phi);
   void precompute_relations (const vec<basic_block> &);
   void precompute_phi_relations (basic_block bb, basic_block prev);
+  void add_copies_to_imports ();
+  bool add_to_imports (tree name, bitmap imports);
 
   // Path navigation.
   void set_path (const vec<basic_block> &);
@@ -82,7 +84,7 @@ private:
   // Path being analyzed.
   const vec<basic_block> *m_path;
 
-  const bitmap_head *m_imports;
+  auto_bitmap m_imports;
   gimple_ranger &m_ranger;
   non_null_ref m_non_null;
   path_oracle *m_oracle;

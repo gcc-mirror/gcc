@@ -343,6 +343,71 @@ path_range_query::adjust_for_non_null_uses (basic_block bb)
     }
 }
 
+// If NAME is a supported SSA_NAME, add it the bitmap in IMPORTS.
+
+bool
+path_range_query::add_to_imports (tree name, bitmap imports)
+{
+  if (TREE_CODE (name) == SSA_NAME
+      && irange::supports_type_p (TREE_TYPE (name)))
+    return bitmap_set_bit (imports, SSA_NAME_VERSION (name));
+  return false;
+}
+
+// Add the copies of any SSA names in IMPORTS to IMPORTS.
+//
+// These are hints for the solver.  Adding more elements (within
+// reason) doesn't slow us down, because we don't solve anything that
+// doesn't appear in the path.  On the other hand, not having enough
+// imports will limit what we can solve.
+
+void
+path_range_query::add_copies_to_imports ()
+{
+  auto_vec<tree> worklist (bitmap_count_bits (m_imports));
+  bitmap_iterator bi;
+  unsigned i;
+
+  EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
+    {
+      tree name = ssa_name (i);
+      worklist.quick_push (name);
+    }
+
+  while (!worklist.is_empty ())
+    {
+      tree name = worklist.pop ();
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+
+      if (is_gimple_assign (def_stmt))
+	{
+	  // ?? Adding assignment copies doesn't get us much.  At the
+	  // time of writing, we got 63 more threaded paths across the
+	  // .ii files from a bootstrap.
+	  add_to_imports (gimple_assign_rhs1 (def_stmt), m_imports);
+	  tree rhs = gimple_assign_rhs2 (def_stmt);
+	  if (rhs && add_to_imports (rhs, m_imports))
+	    worklist.safe_push (rhs);
+	  rhs = gimple_assign_rhs3 (def_stmt);
+	  if (rhs && add_to_imports (rhs, m_imports))
+	    worklist.safe_push (rhs);
+	}
+      else if (gphi *phi = dyn_cast <gphi *> (def_stmt))
+	{
+	  for (size_t i = 0; i < gimple_phi_num_args (phi); ++i)
+	    {
+	      edge e = gimple_phi_arg_edge (phi, i);
+	      tree arg = gimple_phi_arg (phi, i)->def;
+
+	      if (TREE_CODE (arg) == SSA_NAME
+		  && m_path->contains (e->src)
+		  && bitmap_set_bit (m_imports, SSA_NAME_VERSION (arg)))
+		worklist.safe_push (arg);
+	    }
+	}
+    }
+}
+
 // Precompute the ranges for IMPORTS along PATH.
 //
 // IMPORTS are the set of SSA names, any of which could potentially
@@ -353,11 +418,12 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
 				     const bitmap_head *imports)
 {
   set_path (path);
-  m_imports = imports;
+  bitmap_copy (m_imports, imports);
   m_undefined_path = false;
 
   if (m_resolve)
     {
+      add_copies_to_imports ();
       m_oracle->reset_path ();
       precompute_relations (path);
     }
@@ -378,6 +444,18 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
   while (1)
     {
       basic_block bb = curr_bb ();
+
+      if (m_resolve)
+	{
+	  gori_compute &gori = m_ranger.gori ();
+	  tree name;
+
+	  // Exported booleans along the path, may help conditionals.
+	  // Add them as interesting imports.
+	  FOR_EACH_GORI_EXPORT_NAME (gori, bb, name)
+	    if (TREE_CODE (TREE_TYPE (name)) == BOOLEAN_TYPE)
+	      bitmap_set_bit (m_imports, SSA_NAME_VERSION (name));
+	}
 
       precompute_ranges_in_block (bb);
       adjust_for_non_null_uses (bb);
