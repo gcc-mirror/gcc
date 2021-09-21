@@ -246,10 +246,6 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
       fprintf (dump_file, "\n");
     }
 
-  // We may have an artificial statement not in the IL.
-  if (!bb && r.varying_p ())
-    return false;
-
   return true;
 }
 
