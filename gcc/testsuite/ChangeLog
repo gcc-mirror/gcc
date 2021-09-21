@@ -1,3 +1,45 @@
+2021-09-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp-ignore.c: New.
+
+2021-09-20  Matthias Kretz  <m.kretz@gsi.de>
+
+	* gcc.dg/associative-math-1.c: New test.
+	* gcc.dg/associative-math-2.c: New test.
+	* gcc.dg/no-signed-zeros-1.c: New test.
+	* gcc.dg/no-signed-zeros-2.c: New test.
+	* gcc.dg/no-trapping-math-1.c: New test.
+	* gcc.dg/no-trapping-math-2.c: New test.
+	* gcc.dg/reciprocal-math-1.c: New test.
+	* gcc.dg/reciprocal-math-2.c: New test.
+	* gcc.dg/rounding-math-1.c: New test.
+	* gcc.dg/rounding-math-2.c: New test.
+
+2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/order-5.f90: New test.
+	* gfortran.dg/gomp/order-6.f90: New test.
+	* gfortran.dg/gomp/order-7.f90: New test.
+	* gfortran.dg/gomp/order-8.f90: New test.
+	* gfortran.dg/gomp/order-9.f90: New test.
+
+2021-09-20  Christophe Lyon  <christophe.lyon@foss.st.com>
+	    Torbjörn SVENSSON  <torbjorn.svensson@st.com>
+
+	* lib/prune.exp (prune_gcc_output): Remove .exe suffix from
+	toolchain executables names.
+
+2021-09-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c: Adjust
+	expected error diagnostics.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65206
+	* gcc.dg/torture/20210916.c: New testcase.
+	* gcc.dg/vect/pr65206.c: Likewise.
+
 2021-09-19  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/102403

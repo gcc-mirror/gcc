@@ -1,3 +1,14 @@
+2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (gfc_omp_clauses): Add order_unconstrained.
+	* dump-parse-tree.c (show_omp_clauses): Dump it.
+	* openmp.c (gfc_match_omp_clauses): Match unconstrained/reproducible
+	modifiers to ordered(concurrent).
+	(OMP_DISTRIBUTE_CLAUSES): Accept ordered clause.
+	(resolve_omp_clauses): Reject ordered + order on same directive.
+	* trans-openmp.c (gfc_trans_omp_clauses, gfc_split_omp_clauses): Pass
+	on unconstrained modifier of ordered(concurrent).
+
 2021-09-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102366

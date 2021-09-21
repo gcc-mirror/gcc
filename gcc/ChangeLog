@@ -1,3 +1,81 @@
+2021-09-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Ignore
+	undefined edges, apply an equivalence if appropriate.
+	* gimple-range-gori.cc (gori_compute::outgoing_edge_range_p): Return
+	UNDEFINED if EDGE_EXECUTABLE is not set.
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Set all edges
+	as EXECUTABLE upon startup.
+	(gimple_ranger::range_on_edge): Return UNDEFINED for edges without
+	EDGE_EXECUTABLE set.
+	* vr-values.c (set_and_propagate_unexecutable): New.
+	(simplify_using_ranges::fold_cond): Call set_and_propagate.
+	(simplify_using_ranges::simplify_switch_using_ranges): Ditto.
+	* vr-values.h: Add prototype.
+
+2021-09-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (equiv_oracle::register_initial_def): New.
+	(equiv_oracle::register_relation): Call register_initial_def.
+	(equiv_oracle::add_equiv_to_block): New.  Split register_relation.
+	(relation_oracle::register_stmt): Check def block of PHI arguments.
+	* value-relation.h (equiv_oracle): Add new prototypes.
+
+2021-09-20  Matthias Kretz  <m.kretz@gsi.de>
+
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):
+	Define __RECIPROCAL_MATH__, __NO_SIGNED_ZEROS__,
+	__NO_TRAPPING_MATH__, __ASSOCIATIVE_MATH__, and
+	__ROUNDING_MATH__ according to their corresponding flags.
+	* doc/cpp.texi: Document __RECIPROCAL_MATH__,
+	__NO_SIGNED_ZEROS__, __NO_TRAPPING_MATH__, __ASSOCIATIVE_MATH__,
+	and __ROUNDING_MATH__.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_load): Use the vectype
+	from the SLP node.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_duplicate_ssa_name_ptr_info):
+	Do not compute alignment of the vectorized access here.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Store -1 for runtime alias peeling iterations.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Obsolete hppa[12]*-*-hpux10* and hppa[12]*-*-hpux11*.
+
+2021-09-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* input.c (string_concat_db::record_string_concatenation)
+	(string_concat_db::get_string_concatenation): Skip for
+	'RESERVED_LOCATION_P'.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65206
+	* tree-data-ref.h (struct data_reference): Add alt_indices,
+	order it last.
+	* tree-data-ref.c (free_data_ref): Release alt_indices.
+	(dr_analyze_indices): Work on struct indices and get DR_REF as tree.
+	(create_data_ref): Adjust.
+	(initialize_data_dependence_relation): Split into head
+	and tail.  When the base objects fail to match up try
+	again with pointer-based analysis of indices.
+	* tree-vectorizer.c (vec_info_shared::check_datarefs): Do
+	not compare the lazily computed alternate set of indices.
+
+2021-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.c: Test for execute OK when we find the
+	programs for assembler linker and dsymutil and those
+	were specified at configure-time.
+
 2021-09-19  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/102403
