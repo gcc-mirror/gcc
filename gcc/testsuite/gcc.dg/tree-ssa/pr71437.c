@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-ffast-math -O3 -fdump-tree-vrp1-details" } */
+/* { dg-options "-ffast-math -O3 -fdump-tree-vrp-thread1-details" } */
 
 int I = 50, J = 50;
 int S, L;
@@ -39,4 +39,4 @@ void foo (int K)
 	bar (LD, SD);
     }
 }
-/* { dg-final { scan-tree-dump-times "Threaded jump " 2 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Threaded jump " 2 "vrp-thread1" } } */

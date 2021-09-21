@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fdisable-tree-thread1" } */
+/* { dg-additional-options "-fdisable-tree-thread1 -fdisable-tree-vrp-thread1" } */
 
 #define N 1500
 

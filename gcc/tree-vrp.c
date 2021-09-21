@@ -66,6 +66,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "range-op.h"
 #include "value-range-equiv.h"
 #include "gimple-array-bounds.h"
+#include "gimple-range.h"
+#include "gimple-range-path.h"
 #include "tree-ssa-dom.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
@@ -4591,11 +4593,6 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
       array_checker.check ();
     }
 
-  /* We must identify jump threading opportunities before we release
-     the datastructures built by VRP.  */
-  vrp_jump_threader threader (fun, &vrp_vr_values);
-  threader.thread_jumps ();
-
   simplify_casted_conds (fun, &vrp_vr_values);
 
   free_numbers_of_iterations_estimates (fun);
@@ -4604,21 +4601,6 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
      as finalizing jump threads calls the CFG cleanup code which
      does not properly handle ASSERT_EXPRs.  */
   assert_engine.remove_range_assertions ();
-
-  /* If we exposed any new variables, go ahead and put them into
-     SSA form now, before we handle jump threading.  This simplifies
-     interactions between rewriting of _DECL nodes into SSA form
-     and rewriting SSA_NAME nodes into SSA form after block
-     duplication and CFG manipulation.  */
-  update_ssa (TODO_update_ssa);
-
-  /* We identified all the jump threading opportunities earlier, but could
-     not transform the CFG at that time.  This routine transforms the
-     CFG and arranges for the dominator tree to be rebuilt if necessary.
-
-     Note the SSA graph update will occur during the normal TODO
-     processing by the pass manager.  */
-  threader.thread_through_all_blocks ();
 
   scev_finalize ();
   loop_optimizer_finalize ();
@@ -4668,4 +4650,125 @@ gimple_opt_pass *
 make_pass_vrp (gcc::context *ctxt)
 {
   return new pass_vrp (ctxt);
+}
+
+// This is the dom walker for the hybrid threader.  The reason this is
+// here, as opposed to the generic threading files, is because the
+// other client would be DOM, and they have their own custom walker.
+
+class hybrid_threader : public dom_walker
+{
+public:
+  hybrid_threader ();
+  ~hybrid_threader ();
+
+  void thread_jumps (function *fun)
+  {
+    walk (fun->cfg->x_entry_block_ptr);
+  }
+  void thread_through_all_blocks ()
+  {
+    m_threader->thread_through_all_blocks (false);
+  }
+
+private:
+  edge before_dom_children (basic_block) override;
+  void after_dom_children (basic_block bb) override;
+
+  hybrid_jt_simplifier *m_simplifier;
+  jump_threader *m_threader;
+  jt_state *m_state;
+  gimple_ranger *m_ranger;
+  path_range_query *m_query;
+};
+
+hybrid_threader::hybrid_threader () : dom_walker (CDI_DOMINATORS, REACHABLE_BLOCKS)
+{
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+  scev_initialize ();
+  calculate_dominance_info (CDI_DOMINATORS);
+  mark_dfs_back_edges ();
+
+  m_ranger = new gimple_ranger;
+  m_query = new path_range_query (*m_ranger, /*resolve=*/true);
+  m_simplifier = new hybrid_jt_simplifier (m_ranger, m_query);
+  m_state = new hybrid_jt_state;
+  m_threader = new jump_threader (m_simplifier, m_state);
+}
+
+hybrid_threader::~hybrid_threader ()
+{
+  delete m_simplifier;
+  delete m_threader;
+  delete m_state;
+  delete m_ranger;
+
+  scev_finalize ();
+  loop_optimizer_finalize ();
+}
+
+edge
+hybrid_threader::before_dom_children (basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+  int_range<2> r;
+
+  for (gsi = gsi_start_nondebug_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      m_ranger->range_of_stmt (r, stmt);
+    }
+  return NULL;
+}
+
+void
+hybrid_threader::after_dom_children (basic_block bb)
+{
+  m_threader->thread_outgoing_edges (bb);
+}
+
+static unsigned int
+execute_vrp_threader (function *fun)
+{
+  hybrid_threader threader;
+  threader.thread_jumps (fun);
+  threader.thread_through_all_blocks ();
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_vrp_threader =
+{
+  GIMPLE_PASS, /* type */
+  "vrp-thread", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_TREE_VRP, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_update_ssa ), /* todo_flags_finish */
+};
+
+class pass_vrp_threader : public gimple_opt_pass
+{
+public:
+  pass_vrp_threader (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_vrp_threader, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_vrp_threader (m_ctxt); }
+  virtual bool gate (function *) { return flag_tree_vrp != 0; }
+  virtual unsigned int execute (function *fun)
+    { return execute_vrp_threader (fun); }
+};
+
+} // namespace {
+
+gimple_opt_pass *
+make_pass_vrp_threader (gcc::context *ctxt)
+{
+  return new pass_vrp_threader (ctxt);
 }
