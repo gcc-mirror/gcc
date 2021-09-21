@@ -814,7 +814,9 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
       }
 
   // If SCEV is available, query if this PHI has any knonwn values.
-  if (scev_initialized_p () && !POINTER_TYPE_P (TREE_TYPE (phi_def)))
+  if (dom_info_available_p (CDI_DOMINATORS)
+      && scev_initialized_p ()
+      && !POINTER_TYPE_P (TREE_TYPE (phi_def)))
     {
       value_range loop_range;
       class loop *l = loop_containing_stmt (phi);
