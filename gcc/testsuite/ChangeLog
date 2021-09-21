@@ -1,3 +1,7 @@
+2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/distribute-order-concurrent.f90: New test.
+
 2021-09-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

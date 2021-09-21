@@ -1,3 +1,8 @@
+2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_split_omp_clauses): Don't put 'order(concurrent)'
+	on 'distribute' for combined directives, matching OpenMP 5.0
+
 2021-09-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
