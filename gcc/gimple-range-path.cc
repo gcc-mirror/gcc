@@ -121,6 +121,34 @@ path_range_query::debug ()
   dump (stderr);
 }
 
+// Return TRUE if NAME is defined outside the current path.
+
+bool
+path_range_query::defined_outside_path (tree name)
+{
+  gimple *def = SSA_NAME_DEF_STMT (name);
+  basic_block bb = gimple_bb (def);
+
+  return !bb || !m_path->contains (bb);
+}
+
+// Return the range of NAME on entry to the path.
+
+void
+path_range_query::range_on_path_entry (irange &r, tree name)
+{
+  int_range_max tmp;
+  basic_block entry = entry_bb ();
+  r.set_undefined ();
+  for (unsigned i = 0; i < EDGE_COUNT (entry->preds); ++i)
+    {
+      edge e = EDGE_PRED (entry, i);
+      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	  && m_ranger.range_on_edge (tmp, e, name))
+	r.union_ (tmp);
+    }
+}
+
 // Return the range of NAME at the end of the path being analyzed.
 
 bool
@@ -132,12 +160,25 @@ path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
   if (get_cache (r, name))
     return true;
 
+  if (m_resolve && defined_outside_path (name))
+    {
+      range_on_path_entry (r, name);
+
+      if (r.varying_p ())
+	improve_range_with_equivs (r, name);
+
+      set_cache (r, name);
+      return true;
+    }
 
   basic_block bb = stmt ? gimple_bb (stmt) : exit_bb ();
   if (stmt && range_defined_in_block (r, name, bb))
     {
       if (TREE_CODE (name) == SSA_NAME)
 	r.intersect (gimple_range_global (name));
+
+      if (m_resolve && r.varying_p ())
+	improve_range_with_equivs (r, name);
 
       set_cache (r, name);
       return true;
@@ -158,6 +199,33 @@ path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
       return true;
     }
   return false;
+}
+
+// Improve the range of NAME with the range of any of its equivalences.
+
+void
+path_range_query::improve_range_with_equivs (irange &r, tree name)
+{
+  if (TREE_CODE (name) != SSA_NAME)
+    return;
+
+  basic_block entry = entry_bb ();
+  relation_oracle *oracle = m_ranger.oracle ();
+
+  if (const bitmap_head *equivs = oracle->equiv_set (name, entry))
+    {
+      int_range_max t;
+      bitmap_iterator bi;
+      unsigned i;
+
+      EXECUTE_IF_SET_IN_BITMAP (equivs, 0, i, bi)
+	if (i != SSA_NAME_VERSION (name) && r.varying_p ())
+	  {
+	    tree equiv = ssa_name (i);
+	    range_on_path_entry (t, equiv);
+	    r.intersect (t);
+	  }
+    }
 }
 
 bool
@@ -189,10 +257,11 @@ path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
   tree name = gimple_phi_result (phi);
   basic_block bb = gimple_bb (phi);
 
-  // We experimented with querying ranger's range_on_entry here, but
-  // the performance penalty was too high, for hardly any improvements.
   if (at_entry ())
     {
+      if (m_resolve && m_ranger.range_of_expr (r, name, phi))
+	return;
+
       // Try fold just in case we can resolve simple things like PHI <5(99), 6(88)>.
       if (!fold_range (r, phi, this))
 	r.set_varying (TREE_TYPE (name));
@@ -210,8 +279,20 @@ path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
 	tree arg = gimple_phi_arg_def (phi, i);
 
 	if (!get_cache (r, arg))
-	  r.set_varying (TREE_TYPE (name));
-
+	  {
+	    if (m_resolve)
+	      {
+		int_range_max tmp;
+		// Using both the range on entry to the path, and the
+		// range on this edge yields significantly better
+		// results.
+		range_on_path_entry (r, arg);
+		m_ranger.range_on_edge (tmp, e_in, arg);
+		r.intersect (tmp);
+		return;
+	      }
+	    r.set_varying (TREE_TYPE (name));
+	  }
 	return;
       }
   gcc_unreachable ();
