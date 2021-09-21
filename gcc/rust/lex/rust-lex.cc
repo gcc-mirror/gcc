@@ -1559,13 +1559,6 @@ Lexer::parse_byte_char (Location loc)
       byte_char = std::get<0> (escape_length_pair);
       length += std::get<1> (escape_length_pair);
 
-      if (byte_char > 127)
-	{
-	  rust_error_at (get_current_location (),
-			 "%<byte char%> %<%c%> out of range", byte_char);
-	  byte_char = 0;
-	}
-
       current_char = peek_input ();
 
       if (current_char != '\'')
@@ -1633,14 +1626,6 @@ Lexer::parse_byte_string (Location loc)
 	    length = std::get<1> (escape_length_pair) - 1;
 	  else
 	    length += std::get<1> (escape_length_pair);
-
-	  if (output_char > 127)
-	    {
-	      rust_error_at (get_current_location (),
-			     "character %<%c%> in byte string out of range",
-			     output_char);
-	      output_char = 0;
-	    }
 
 	  if (output_char != 0)
 	    str += output_char;
