@@ -2960,6 +2960,13 @@ package body Sem_Ch4 is
       --  If a set of alternatives is present, analyze each and find the
       --  common type to which they must all resolve.
 
+      procedure Find_Interpretation;
+      function Find_Interpretation return Boolean;
+      --  Routine and wrapper to find a matching interpretation in case
+      --  of overloading. The wrapper returns True iff a matching
+      --  interpretation is found. Beware, in absence of overloading,
+      --  using this function will break gnat's bootstrapping.
+
       procedure Try_One_Interp (T1 : Entity_Id);
       --  Routine to try one proposed interpretation. Note that the context
       --  of the operation plays no role in resolving the arguments, so that
@@ -3064,6 +3071,26 @@ package body Sem_Ch4 is
          end if;
       end Analyze_Set_Membership;
 
+      -------------------------
+      -- Find_Interpretation --
+      -------------------------
+
+      procedure Find_Interpretation is
+      begin
+         Get_First_Interp (L, Index, It);
+         while Present (It.Typ) loop
+            Try_One_Interp (It.Typ);
+            Get_Next_Interp (Index, It);
+         end loop;
+      end Find_Interpretation;
+
+      function Find_Interpretation return Boolean is
+      begin
+         Find_Interpretation;
+
+         return Found;
+      end Find_Interpretation;
+
       --------------------
       -- Try_One_Interp --
       --------------------
@@ -3119,11 +3146,7 @@ package body Sem_Ch4 is
             Try_One_Interp (Etype (L));
 
          else
-            Get_First_Interp (L, Index, It);
-            while Present (It.Typ) loop
-               Try_One_Interp (It.Typ);
-               Get_Next_Interp (Index, It);
-            end loop;
+            Find_Interpretation;
          end if;
 
       --  If not a range, it can be a subtype mark, or else it is a degenerate
@@ -3139,13 +3162,14 @@ package body Sem_Ch4 is
             Find_Type (R);
             Check_Fully_Declared (Entity (R), R);
 
-         elsif Ada_Version >= Ada_2012
-           and then Has_Compatible_Type (R, Etype (L))
+         elsif Ada_Version >= Ada_2012 and then
+           ((Is_Overloaded (L) and then Find_Interpretation) or else
+           (not Is_Overloaded (L) and then Has_Compatible_Type (R, Etype (L))))
          then
             if Nkind (N) = N_In then
-               Op := Make_Op_Eq (Loc, Left_Opnd  => L, Right_Opnd => R);
+               Op := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);
             else
-               Op := Make_Op_Ne (Loc, Left_Opnd  => L, Right_Opnd => R);
+               Op := Make_Op_Ne (Loc, Left_Opnd => L, Right_Opnd => R);
             end if;
 
             if Is_Record_Or_Limited_Type (Etype (L)) then
