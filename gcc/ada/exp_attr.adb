@@ -7354,7 +7354,7 @@ package body Exp_Attr is
                if Nkind (P) in N_Has_Entity
                  and then Present (Entity (P))
                  and then Is_Object (Entity (P))
-                 and then Esize (Entity (P)) /= Uint_0
+                 and then Known_Esize (Entity (P))
                then
                   if Esize (Entity (P)) <= System_Max_Integer_Size then
                      Size := Esize (Entity (P));

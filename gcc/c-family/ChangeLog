@@ -1,3 +1,10 @@
+2021-09-20  Matthias Kretz  <m.kretz@gsi.de>
+
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Define or
+	undefine __RECIPROCAL_MATH__, __NO_SIGNED_ZEROS__,
+	__NO_TRAPPING_MATH__, __ASSOCIATIVE_MATH__, and
+	__ROUNDING_MATH__ according to the new optimization flags.
+
 2021-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_omp_split_clauses): Split order clause also to

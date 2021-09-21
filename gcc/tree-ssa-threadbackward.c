@@ -122,7 +122,7 @@ const edge back_threader::UNREACHABLE_EDGE = (edge) -1;
 back_threader::back_threader (bool speed_p)
   : m_registry (param_max_fsm_thread_paths),
     m_profit (speed_p),
-    m_solver (m_ranger)
+    m_solver (m_ranger, /*resolve=*/false)
 {
   m_last_stmt = NULL;
   m_imports = BITMAP_ALLOC (NULL);

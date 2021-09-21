@@ -2047,6 +2047,7 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
       if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	{
 	  stmt_vec_info first_element = DR_GROUP_FIRST_ELEMENT (stmt_info);
+	  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (first_element);
 	  unsigned int group_size = DR_GROUP_SIZE (first_element);
 
 	  /* Check if SLP-only groups.  */
@@ -2067,6 +2068,24 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
 		    DR_GROUP_GAP (vinfo) = 0;
 		  else
 		    DR_GROUP_GAP (vinfo) = group_size - 1;
+		  /* Duplicate and adjust alignment info, it needs to
+		     be present on each group leader, see dr_misalignment.  */
+		  if (vinfo != first_element)
+		    {
+		      dr_vec_info *dr_info2 = STMT_VINFO_DR_INFO (vinfo);
+		      dr_info2->target_alignment = dr_info->target_alignment;
+		      int misalignment = dr_info->misalignment;
+		      if (misalignment != DR_MISALIGNMENT_UNKNOWN)
+			{
+			  HOST_WIDE_INT diff
+			    = (TREE_INT_CST_LOW (DR_INIT (dr_info2->dr))
+			       - TREE_INT_CST_LOW (DR_INIT (dr_info->dr)));
+			  unsigned HOST_WIDE_INT align_c
+			    = dr_info->target_alignment.to_constant ();
+			  misalignment = (misalignment + diff) % align_c;
+			}
+		      dr_info2->misalignment = misalignment;
+		    }
 		  vinfo = next;
 		}
 	    }

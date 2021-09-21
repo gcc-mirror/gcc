@@ -1698,8 +1698,8 @@ package body Exp_Ch5 is
                             (Etype (Left_Base_Index)))
                  and then RTE_Available (RE_Fast_Copy_Bitfield)
                then
-                  pragma Assert (Esize (L_Type) /= 0);
-                  pragma Assert (Esize (R_Type) /= 0);
+                  pragma Assert (Known_Esize (L_Type));
+                  pragma Assert (Known_Esize (R_Type));
 
                   return Expand_Assign_Array_Bitfield_Fast (N, Larray, Rarray);
                end if;

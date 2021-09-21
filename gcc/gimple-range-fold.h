@@ -129,6 +129,7 @@ public:
 				  tree op2);
   virtual void register_relation (edge e, relation_kind k, tree op1,
 				  tree op2);
+  void register_outgoing_edges (gcond *, irange &lhs_range, edge e0, edge e1);
 protected:
   range_query *m_query;
   gori_compute *m_gori;
@@ -159,7 +160,7 @@ public:
 				  tree op2) OVERRIDE;
   virtual void register_relation (edge e, relation_kind k, tree op1,
 				  tree op2) OVERRIDE;
-private:
+protected:
   relation_oracle *m_oracle;
 };
 
@@ -188,6 +189,5 @@ protected:
   void range_of_ssa_name_with_loop_info (irange &, tree, class loop *, gphi *,
 					 fur_source &src);
   void relation_fold_and_or (irange& lhs_range, gimple *s, fur_source &src);
-  void postfold_gcond_edges (gcond *s, irange &lhs_range, fur_source &src);
 };
 #endif // GCC_GIMPLE_RANGE_FOLD_H

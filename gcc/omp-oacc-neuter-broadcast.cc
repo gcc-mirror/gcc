@@ -1782,9 +1782,8 @@ oacc_do_neutering (unsigned HOST_WIDE_INT bounds_lo,
 
       if (ar.invalid ())
 	{
-	  unsigned HOST_WIDE_INT base;
-	  base = bounds_lo + random () % 512;
-	  base = (base + align - 1) & ~(align - 1);
+	  unsigned HOST_WIDE_INT base
+	    = (bounds_lo + align - 1) & ~(align - 1);
 	  if (base + size > bounds_hi)
 	    error_at (UNKNOWN_LOCATION, "shared-memory region overflow");
 	  std::pair<unsigned HOST_WIDE_INT, bool> base_inrng

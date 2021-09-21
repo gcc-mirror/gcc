@@ -6892,6 +6892,7 @@ package body Checks is
       elsif Is_Known_Valid (Typ) then
          if Is_Entity_Name (Expr)
            and then Ekind (Entity (Expr)) = E_Variable
+           and then Known_Esize (Entity (Expr))
            and then Esize (Entity (Expr)) > Esize (Typ)
          then
             return False;

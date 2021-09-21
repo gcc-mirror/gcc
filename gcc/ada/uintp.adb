@@ -110,12 +110,12 @@ package body Uintp is
    -- Local Subprograms --
    -----------------------
 
-   function Direct (U : Uint) return Boolean;
+   function Direct (U : Valid_Uint) return Boolean;
    pragma Inline (Direct);
    --  Returns True if U is represented directly
 
-   function Direct_Val (U : Uint) return Int;
-   --  U is a Uint for is represented directly. The returned result is the
+   function Direct_Val (U : Valid_Uint) return Int;
+   --  U is a Uint that is represented directly. The returned result is the
    --  value represented.
 
    function GCD (Jin, Kin : Int) return Int;
@@ -129,7 +129,7 @@ package body Uintp is
    --  UI_Image, and false for UI_Write, and Format is copied from the Format
    --  parameter to UI_Image or UI_Write.
 
-   procedure Init_Operand (UI : Uint; Vec : out UI_Vector);
+   procedure Init_Operand (UI : Valid_Uint; Vec : out UI_Vector);
    pragma Inline (Init_Operand);
    --  This procedure puts the value of UI into the vector in canonical
    --  multiple precision format. The parameter should be of the correct size
@@ -141,7 +141,7 @@ package body Uintp is
 
    function Vector_To_Uint
      (In_Vec   : UI_Vector;
-      Negative : Boolean) return Uint;
+      Negative : Boolean) return Valid_Uint;
    --  Functions that calculate values in UI_Vectors, call this function to
    --  create and return the Uint value. In_Vec contains the multiple precision
    --  (Base) representation of a non-negative value. Leading zeroes are
@@ -155,7 +155,7 @@ package body Uintp is
    --  processing of signs is something that is done by the caller before
    --  calling Vector_To_Uint.
 
-   function Least_Sig_Digit (Arg : Uint) return Int;
+   function Least_Sig_Digit (Arg : Valid_Uint) return Int;
    pragma Inline (Least_Sig_Digit);
    --  Returns the Least Significant Digit of Arg quickly. When the given Uint
    --  is less than 2**15, the value returned is the input value, in this case
@@ -165,8 +165,8 @@ package body Uintp is
    --  two.
 
    procedure Most_Sig_2_Digits
-     (Left      : Uint;
-      Right     : Uint;
+     (Left      : Valid_Uint;
+      Right     : Valid_Uint;
       Left_Hat  : out Int;
       Right_Hat : out Int);
    --  Returns leading two significant digits from the given pair of Uint's.
@@ -174,29 +174,40 @@ package body Uintp is
    --  K is as small as possible S.T. Right_Hat < Base * Base. It is required
    --  that Left >= Right for the algorithm to work.
 
-   function N_Digits (Input : Uint) return Int;
+   function N_Digits (Input : Valid_Uint) return Int;
    pragma Inline (N_Digits);
    --  Returns number of "digits" in a Uint
 
    procedure UI_Div_Rem
-     (Left, Right       : Uint;
+     (Left, Right       : Valid_Uint;
       Quotient          : out Uint;
       Remainder         : out Uint;
       Discard_Quotient  : Boolean := False;
       Discard_Remainder : Boolean := False);
    --  Compute Euclidean division of Left by Right. If Discard_Quotient is
-   --  False then the quotient is returned in Quotient (otherwise Quotient is
-   --  set to No_Uint). If Discard_Remainder is False, then the remainder is
-   --  returned in Remainder (otherwise Remainder is set to No_Uint).
+   --  False then the quotient is returned in Quotient. If Discard_Remainder
+   --  is False, then the remainder is returned in Remainder.
    --
-   --  If Discard_Quotient is True, Quotient is set to No_Uint
-   --  If Discard_Remainder is True, Remainder is set to No_Uint
+   --  If Discard_Quotient is True, Quotient is set to No_Uint.
+   --  If Discard_Remainder is True, Remainder is set to No_Uint.
+
+   function UI_Modular_Exponentiation
+     (B      : Valid_Uint;
+      E      : Valid_Uint;
+      Modulo : Valid_Uint) return Valid_Uint with Unreferenced;
+   --  Efficiently compute (B**E) rem Modulo
+
+   function UI_Modular_Inverse
+     (N : Valid_Uint; Modulo : Valid_Uint) return Valid_Uint with Unreferenced;
+   --  Compute the multiplicative inverse of N in modular arithmetics with the
+   --  given Modulo (uses Euclid's algorithm). Note: the call is considered
+   --  to be erroneous (and the behavior is undefined) if n is not invertible.
 
    ------------
    -- Direct --
    ------------
 
-   function Direct (U : Uint) return Boolean is
+   function Direct (U : Valid_Uint) return Boolean is
    begin
       return Int (U) <= Int (Uint_Direct_Last);
    end Direct;
@@ -205,7 +216,7 @@ package body Uintp is
    -- Direct_Val --
    ----------------
 
-   function Direct_Val (U : Uint) return Int is
+   function Direct_Val (U : Valid_Uint) return Int is
    begin
       pragma Assert (Direct (U));
       return Int (U) - Int (Uint_Direct_Bias);
@@ -252,8 +263,8 @@ package body Uintp is
       Format    : UI_Format)
    is
       Marks  : constant Uintp.Save_Mark := Uintp.Mark;
-      Base   : Uint;
-      Ainput : Uint;
+      Base   : Valid_Uint;
+      Ainput : Valid_Uint;
 
       Digs_Output : Natural := 0;
       --  Counts digits output. In hex mode, but not in decimal mode, we
@@ -277,7 +288,7 @@ package body Uintp is
       --  Output non-zero exponent. Note that we only use the exponent form in
       --  the buffer case, so we know that To_Buffer is true.
 
-      procedure Image_Uint (U : Uint);
+      procedure Image_Uint (U : Valid_Uint);
       --  Internal procedure to output characters of non-negative Uint
 
       -------------------
@@ -285,8 +296,8 @@ package body Uintp is
       -------------------
 
       function Better_In_Hex return Boolean is
-         T16 : constant Uint := Uint_2**Int'(16);
-         A   : Uint;
+         T16 : constant Valid_Uint := Uint_2**Int'(16);
+         A   : Valid_Uint;
 
       begin
          A := UI_Abs (Input);
@@ -364,11 +375,11 @@ package body Uintp is
       -- Image_Uint --
       ----------------
 
-      procedure Image_Uint (U : Uint) is
+      procedure Image_Uint (U : Valid_Uint) is
          H : constant array (Int range 0 .. 15) of Character :=
                "0123456789ABCDEF";
 
-         Q, R : Uint;
+         Q, R : Valid_Uint;
       begin
          UI_Div_Rem (U, Base, Q, R);
 
@@ -431,7 +442,7 @@ package body Uintp is
    -- Init_Operand --
    -------------------
 
-   procedure Init_Operand (UI : Uint; Vec : out UI_Vector) is
+   procedure Init_Operand (UI : Valid_Uint; Vec : out UI_Vector) is
       Loc : Int;
 
       pragma Assert (Vec'First = Int'(1));
@@ -482,7 +493,7 @@ package body Uintp is
    -- Least_Sig_Digit --
    ---------------------
 
-   function Least_Sig_Digit (Arg : Uint) return Int is
+   function Least_Sig_Digit (Arg : Valid_Uint) return Int is
       V : Int;
 
    begin
@@ -518,8 +529,8 @@ package body Uintp is
    -----------------------
 
    procedure Most_Sig_2_Digits
-     (Left      : Uint;
-      Right     : Uint;
+     (Left      : Valid_Uint;
+      Right     : Valid_Uint;
       Left_Hat  : out Int;
       Right_Hat : out Int)
    is
@@ -580,9 +591,7 @@ package body Uintp is
    -- N_Digits --
    ---------------
 
-   --  Note: N_Digits returns 1 for No_Uint
-
-   function N_Digits (Input : Uint) return Int is
+   function N_Digits (Input : Valid_Uint) return Int is
    begin
       if Direct (Input) then
          if Direct_Val (Input) >= Base then
@@ -600,7 +609,7 @@ package body Uintp is
    -- Num_Bits --
    --------------
 
-   function Num_Bits (Input : Uint) return Nat is
+   function Num_Bits (Input : Valid_Uint) return Nat is
       Bits : Nat;
       Num  : Nat;
 
@@ -661,7 +670,7 @@ package body Uintp is
 
    procedure Release (M : Save_Mark) is
    begin
-      Uints.Set_Last   (Uint'Max (M.Save_Uint,   Uints_Min));
+      Uints.Set_Last   (Valid_Uint'Max (M.Save_Uint, Uints_Min));
       Udigits.Set_Last (Int'Max  (M.Save_Udigit, Udigits_Min));
    end Release;
 
@@ -669,7 +678,7 @@ package body Uintp is
    -- Release_And_Save --
    ----------------------
 
-   procedure Release_And_Save (M : Save_Mark; UI : in out Uint) is
+   procedure Release_And_Save (M : Save_Mark; UI : in out Valid_Uint) is
    begin
       if Direct (UI) then
          Release (M);
@@ -695,7 +704,7 @@ package body Uintp is
       end if;
    end Release_And_Save;
 
-   procedure Release_And_Save (M : Save_Mark; UI1, UI2 : in out Uint) is
+   procedure Release_And_Save (M : Save_Mark; UI1, UI2 : in out Valid_Uint) is
    begin
       if Direct (UI1) then
          Release_And_Save (M, UI2);
@@ -741,7 +750,7 @@ package body Uintp is
    -- UI_Abs --
    -------------
 
-   function UI_Abs (Right : Uint) return Uint is
+   function UI_Abs (Right : Valid_Uint) return Unat is
    begin
       if Right < Uint_0 then
          return -Right;
@@ -754,18 +763,23 @@ package body Uintp is
    -- UI_Add --
    -------------
 
-   function UI_Add (Left : Int; Right : Uint) return Uint is
+   function UI_Add (Left : Int; Right : Valid_Uint) return Valid_Uint is
    begin
       return UI_Add (UI_From_Int (Left), Right);
    end UI_Add;
 
-   function UI_Add (Left : Uint; Right : Int) return Uint is
+   function UI_Add (Left : Valid_Uint; Right : Int) return Valid_Uint is
    begin
       return UI_Add (Left, UI_From_Int (Right));
    end UI_Add;
 
-   function UI_Add (Left : Uint; Right : Uint) return Uint is
+   function UI_Add (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint is
    begin
+      pragma Assert (Present (Left));
+      pragma Assert (Present (Right));
+      --  Assertions are here in case we're called from C++ code, which does
+      --  not check the predicates.
+
       --  Simple cases of direct operands and addition of zero
 
       if Direct (Left) then
@@ -930,7 +944,7 @@ package body Uintp is
    -- UI_Decimal_Digits_Hi --
    --------------------------
 
-   function UI_Decimal_Digits_Hi (U : Uint) return Nat is
+   function UI_Decimal_Digits_Hi (U : Valid_Uint) return Nat is
    begin
       --  The maximum value of a "digit" is 32767, which is 5 decimal digits,
       --  so an N_Digit number could take up to 5 times this number of digits.
@@ -944,7 +958,7 @@ package body Uintp is
    -- UI_Decimal_Digits_Lo --
    --------------------------
 
-   function UI_Decimal_Digits_Lo (U : Uint) return Nat is
+   function UI_Decimal_Digits_Lo (U : Valid_Uint) return Nat is
    begin
       --  The maximum value of a "digit" is 32767, which is more than four
       --  decimal digits, but not a full five digits. The easily computed
@@ -959,24 +973,27 @@ package body Uintp is
    -- UI_Div --
    ------------
 
-   function UI_Div (Left : Int; Right : Uint) return Uint is
+   function UI_Div (Left : Int; Right : Nonzero_Uint) return Valid_Uint is
    begin
       return UI_Div (UI_From_Int (Left), Right);
    end UI_Div;
 
-   function UI_Div (Left : Uint; Right : Int) return Uint is
+   function UI_Div
+     (Left : Valid_Uint; Right : Nonzero_Int) return Valid_Uint
+   is
    begin
       return UI_Div (Left, UI_From_Int (Right));
    end UI_Div;
 
-   function UI_Div (Left, Right : Uint) return Uint is
-      Quotient  : Uint;
-      Remainder : Uint;
-      pragma Warnings (Off, Remainder);
+   function UI_Div
+     (Left : Valid_Uint; Right : Nonzero_Uint) return Valid_Uint
+   is
+      Quotient  : Valid_Uint;
+      Ignored_Remainder : Uint;
    begin
       UI_Div_Rem
         (Left, Right,
-         Quotient, Remainder,
+         Quotient, Ignored_Remainder,
          Discard_Remainder => True);
       return Quotient;
    end UI_Div;
@@ -986,7 +1003,7 @@ package body Uintp is
    ----------------
 
    procedure UI_Div_Rem
-     (Left, Right       : Uint;
+     (Left, Right       : Valid_Uint;
       Quotient          : out Uint;
       Remainder         : out Uint;
       Discard_Quotient  : Boolean := False;
@@ -1260,14 +1277,13 @@ package body Uintp is
             if not Discard_Remainder then
                declare
                   Remainder_V : UI_Vector (1 .. R_Length);
-                  Discard_Int : Int;
-                  pragma Warnings (Off, Discard_Int);
+                  Ignore : Int;
                begin
                   pragma Assert (D /= Int'(0));
                   UI_Div_Vector
                     (Dividend (Dividend'Last - R_Length + 1 .. Dividend'Last),
                      D,
-                     Remainder_V, Discard_Int);
+                     Remainder_V, Ignore);
                   Remainder := Vector_To_Uint (Remainder_V, L_Vec (1) < Int_0);
                end;
             end if;
@@ -1279,17 +1295,17 @@ package body Uintp is
    -- UI_Eq --
    ------------
 
-   function UI_Eq (Left : Int; Right : Uint) return Boolean is
+   function UI_Eq (Left : Int; Right : Valid_Uint) return Boolean is
    begin
       return not UI_Ne (UI_From_Int (Left), Right);
    end UI_Eq;
 
-   function UI_Eq (Left : Uint; Right : Int) return Boolean is
+   function UI_Eq (Left : Valid_Uint; Right : Int) return Boolean is
    begin
       return not UI_Ne (Left, UI_From_Int (Right));
    end UI_Eq;
 
-   function UI_Eq (Left : Uint; Right : Uint) return Boolean is
+   function UI_Eq (Left : Valid_Uint; Right : Valid_Uint) return Boolean is
    begin
       return not UI_Ne (Left, Right);
    end UI_Eq;
@@ -1298,22 +1314,24 @@ package body Uintp is
    -- UI_Expon --
    --------------
 
-   function UI_Expon (Left : Int; Right : Uint) return Uint is
+   function UI_Expon (Left : Int; Right : Unat) return Valid_Uint is
    begin
       return UI_Expon (UI_From_Int (Left), Right);
    end UI_Expon;
 
-   function UI_Expon (Left : Uint; Right : Int) return Uint is
+   function UI_Expon (Left : Valid_Uint; Right : Nat) return Valid_Uint is
    begin
       return UI_Expon (Left, UI_From_Int (Right));
    end UI_Expon;
 
-   function UI_Expon (Left : Int; Right : Int) return Uint is
+   function UI_Expon (Left : Int; Right : Nat) return Valid_Uint is
    begin
       return UI_Expon (UI_From_Int (Left), UI_From_Int (Right));
    end UI_Expon;
 
-   function UI_Expon (Left : Uint; Right : Uint) return Uint is
+   function UI_Expon
+     (Left : Valid_Uint; Right : Unat) return Valid_Uint
+   is
    begin
       pragma Assert (Right >= Uint_0);
 
@@ -1386,9 +1404,9 @@ package body Uintp is
       --  If we fall through, then we have the general case (see Knuth 4.6.3)
 
       declare
-         N       : Uint := Right;
-         Squares : Uint := Left;
-         Result  : Uint := Uint_1;
+         N       : Valid_Uint := Right;
+         Squares : Valid_Uint := Left;
+         Result  : Valid_Uint := Uint_1;
          M       : constant Uintp.Save_Mark := Uintp.Mark;
 
       begin
@@ -1411,7 +1429,7 @@ package body Uintp is
    -- UI_From_CC --
    ----------------
 
-   function UI_From_CC (Input : Char_Code) return Uint is
+   function UI_From_CC (Input : Char_Code) return Valid_Uint is
    begin
       return UI_From_Int (Int (Input));
    end UI_From_CC;
@@ -1420,12 +1438,12 @@ package body Uintp is
    -- UI_From_Int --
    -----------------
 
-   function UI_From_Int (Input : Int) return Uint is
+   function UI_From_Int (Input : Int) return Valid_Uint is
       U : Uint;
 
    begin
       if Min_Direct <= Input and then Input <= Max_Direct then
-         return Uint (Int (Uint_Direct_Bias) + Input);
+         return Valid_Uint (Int (Uint_Direct_Bias) + Input);
       end if;
 
       --  If already in the hash table, return entry
@@ -1466,7 +1484,7 @@ package body Uintp is
    -- UI_From_Integral --
    ----------------------
 
-   function UI_From_Integral (Input : In_T) return Uint is
+   function UI_From_Integral (Input : In_T) return Valid_Uint is
    begin
       --  If in range of our normal conversion function, use it so we can use
       --  direct access and our cache.
@@ -1487,7 +1505,7 @@ package body Uintp is
             --  Base is defined so that 3 Uint digits is sufficient to hold the
             --  largest possible Int value.
 
-            U : Uint;
+            U : Valid_Uint;
             V : UI_Vector (1 .. Max_For_In_T);
 
          begin
@@ -1517,8 +1535,8 @@ package body Uintp is
 
    --  We use the same notation as Knuth (U_Hat standing for the obvious)
 
-   function UI_GCD (Uin, Vin : Uint) return Uint is
-      U, V : Uint;
+   function UI_GCD (Uin, Vin : Valid_Uint) return Valid_Uint is
+      U, V : Valid_Uint;
       --  Copies of Uin and Vin
 
       U_Hat, V_Hat : Int;
@@ -1526,7 +1544,7 @@ package body Uintp is
 
       A, B, C, D, T, Q, Den1, Den2 : Int;
 
-      Tmp_UI : Uint;
+      Tmp_UI : Valid_Uint;
       Marks  : constant Uintp.Save_Mark := Uintp.Mark;
       Iterations : Integer := 0;
 
@@ -1619,17 +1637,17 @@ package body Uintp is
    -- UI_Ge --
    ------------
 
-   function UI_Ge (Left : Int; Right : Uint) return Boolean is
+   function UI_Ge (Left : Int; Right : Valid_Uint) return Boolean is
    begin
       return not UI_Lt (UI_From_Int (Left), Right);
    end UI_Ge;
 
-   function UI_Ge (Left : Uint; Right : Int) return Boolean is
+   function UI_Ge (Left : Valid_Uint; Right : Int) return Boolean is
    begin
       return not UI_Lt (Left, UI_From_Int (Right));
    end UI_Ge;
 
-   function UI_Ge (Left : Uint; Right : Uint) return Boolean is
+   function UI_Ge (Left : Valid_Uint; Right : Valid_Uint) return Boolean is
    begin
       return not UI_Lt (Left, Right);
    end UI_Ge;
@@ -1638,17 +1656,17 @@ package body Uintp is
    -- UI_Gt --
    ------------
 
-   function UI_Gt (Left : Int; Right : Uint) return Boolean is
+   function UI_Gt (Left : Int; Right : Valid_Uint) return Boolean is
    begin
       return UI_Lt (Right, UI_From_Int (Left));
    end UI_Gt;
 
-   function UI_Gt (Left : Uint; Right : Int) return Boolean is
+   function UI_Gt (Left : Valid_Uint; Right : Int) return Boolean is
    begin
       return UI_Lt (UI_From_Int (Right), Left);
    end UI_Gt;
 
-   function UI_Gt (Left : Uint; Right : Uint) return Boolean is
+   function UI_Gt (Left : Valid_Uint; Right : Valid_Uint) return Boolean is
    begin
       return UI_Lt (Left => Right, Right => Left);
    end UI_Gt;
@@ -1675,7 +1693,10 @@ package body Uintp is
    -- UI_Is_In_Int_Range --
    -------------------------
 
-   function UI_Is_In_Int_Range (Input : Uint) return Boolean is
+   function UI_Is_In_Int_Range (Input : Valid_Uint) return Boolean is
+      pragma Assert (Present (Input));
+      --  Assertion is here in case we're called from C++ code, which does
+      --  not check the predicates.
    begin
       --  Make sure we don't get called before Initialize
 
@@ -1684,8 +1705,7 @@ package body Uintp is
       if Direct (Input) then
          return True;
       else
-         return Input >= Uint_Int_First
-           and then Input <= Uint_Int_Last;
+         return Input >= Uint_Int_First and then Input <= Uint_Int_Last;
       end if;
    end UI_Is_In_Int_Range;
 
@@ -1693,17 +1713,17 @@ package body Uintp is
    -- UI_Le --
    ------------
 
-   function UI_Le (Left : Int; Right : Uint) return Boolean is
+   function UI_Le (Left : Int; Right : Valid_Uint) return Boolean is
    begin
       return not UI_Lt (Right, UI_From_Int (Left));
    end UI_Le;
 
-   function UI_Le (Left : Uint; Right : Int) return Boolean is
+   function UI_Le (Left : Valid_Uint; Right : Int) return Boolean is
    begin
       return not UI_Lt (UI_From_Int (Right), Left);
    end UI_Le;
 
-   function UI_Le (Left : Uint; Right : Uint) return Boolean is
+   function UI_Le (Left : Valid_Uint; Right : Valid_Uint) return Boolean is
    begin
       return not UI_Lt (Left => Right, Right => Left);
    end UI_Le;
@@ -1712,18 +1732,23 @@ package body Uintp is
    -- UI_Lt --
    ------------
 
-   function UI_Lt (Left : Int; Right : Uint) return Boolean is
+   function UI_Lt (Left : Int; Right : Valid_Uint) return Boolean is
    begin
       return UI_Lt (UI_From_Int (Left), Right);
    end UI_Lt;
 
-   function UI_Lt (Left : Uint; Right : Int) return Boolean is
+   function UI_Lt (Left : Valid_Uint; Right : Int) return Boolean is
    begin
       return UI_Lt (Left, UI_From_Int (Right));
    end UI_Lt;
 
-   function UI_Lt (Left : Uint; Right : Uint) return Boolean is
+   function UI_Lt (Left : Valid_Uint; Right : Valid_Uint) return Boolean is
    begin
+      pragma Assert (Present (Left));
+      pragma Assert (Present (Right));
+      --  Assertions are here in case we're called from C++ code, which does
+      --  not check the predicates.
+
       --  Quick processing for identical arguments
 
       if Int (Left) = Int (Right) then
@@ -1805,17 +1830,17 @@ package body Uintp is
    -- UI_Max --
    ------------
 
-   function UI_Max (Left : Int; Right : Uint) return Uint is
+   function UI_Max (Left : Int; Right : Valid_Uint) return Valid_Uint is
    begin
       return UI_Max (UI_From_Int (Left), Right);
    end UI_Max;
 
-   function UI_Max (Left : Uint; Right : Int) return Uint is
+   function UI_Max (Left : Valid_Uint; Right : Int) return Valid_Uint is
    begin
       return UI_Max (Left, UI_From_Int (Right));
    end UI_Max;
 
-   function UI_Max (Left : Uint; Right : Uint) return Uint is
+   function UI_Max (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint is
    begin
       if Left >= Right then
          return Left;
@@ -1828,17 +1853,17 @@ package body Uintp is
    -- UI_Min --
    ------------
 
-   function UI_Min (Left : Int; Right : Uint) return Uint is
+   function UI_Min (Left : Int; Right : Valid_Uint) return Valid_Uint is
    begin
       return UI_Min (UI_From_Int (Left), Right);
    end UI_Min;
 
-   function UI_Min (Left : Uint; Right : Int) return Uint is
+   function UI_Min (Left : Valid_Uint; Right : Int) return Valid_Uint is
    begin
       return UI_Min (Left, UI_From_Int (Right));
    end UI_Min;
 
-   function UI_Min (Left : Uint; Right : Uint) return Uint is
+   function UI_Min (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint is
    begin
       if Left <= Right then
          return Left;
@@ -1851,18 +1876,22 @@ package body Uintp is
    -- UI_Mod --
    -------------
 
-   function UI_Mod (Left : Int; Right : Uint) return Uint is
+   function UI_Mod (Left : Int; Right : Nonzero_Uint) return Valid_Uint is
    begin
       return UI_Mod (UI_From_Int (Left), Right);
    end UI_Mod;
 
-   function UI_Mod (Left : Uint; Right : Int) return Uint is
+   function UI_Mod
+     (Left : Valid_Uint; Right : Nonzero_Int) return Valid_Uint
+   is
    begin
       return UI_Mod (Left, UI_From_Int (Right));
    end UI_Mod;
 
-   function UI_Mod (Left : Uint; Right : Uint) return Uint is
-      Urem : constant Uint := Left rem Right;
+   function UI_Mod
+     (Left : Valid_Uint; Right : Nonzero_Uint) return Valid_Uint
+   is
+      Urem : constant Valid_Uint := Left rem Right;
 
    begin
       if (Left < Uint_0) = (Right < Uint_0)
@@ -1879,15 +1908,15 @@ package body Uintp is
    -------------------------------
 
    function UI_Modular_Exponentiation
-     (B      : Uint;
-      E      : Uint;
-      Modulo : Uint) return Uint
+     (B      : Valid_Uint;
+      E      : Valid_Uint;
+      Modulo : Valid_Uint) return Valid_Uint
    is
       M : constant Save_Mark := Mark;
 
-      Result   : Uint := Uint_1;
-      Base     : Uint := B;
-      Exponent : Uint := E;
+      Result   : Valid_Uint := Uint_1;
+      Base     : Valid_Uint := B;
+      Exponent : Valid_Uint := E;
 
    begin
       while Exponent /= Uint_0 loop
@@ -1907,15 +1936,17 @@ package body Uintp is
    -- UI_Modular_Inverse --
    ------------------------
 
-   function UI_Modular_Inverse (N : Uint; Modulo : Uint) return Uint is
+   function UI_Modular_Inverse
+     (N : Valid_Uint; Modulo : Valid_Uint) return Valid_Uint
+   is
       M : constant Save_Mark := Mark;
-      U : Uint;
-      V : Uint;
-      Q : Uint;
-      R : Uint;
-      X : Uint;
-      Y : Uint;
-      T : Uint;
+      U : Valid_Uint;
+      V : Valid_Uint;
+      Q : Valid_Uint;
+      R : Valid_Uint;
+      X : Valid_Uint;
+      Y : Valid_Uint;
+      T : Valid_Uint;
       S : Int := 1;
 
    begin
@@ -1951,17 +1982,17 @@ package body Uintp is
    -- UI_Mul --
    ------------
 
-   function UI_Mul (Left : Int; Right : Uint) return Uint is
+   function UI_Mul (Left : Int; Right : Valid_Uint) return Valid_Uint is
    begin
       return UI_Mul (UI_From_Int (Left), Right);
    end UI_Mul;
 
-   function UI_Mul (Left : Uint; Right : Int) return Uint is
+   function UI_Mul (Left : Valid_Uint; Right : Int) return Valid_Uint is
    begin
       return UI_Mul (Left, UI_From_Int (Right));
    end UI_Mul;
 
-   function UI_Mul (Left : Uint; Right : Uint) return Uint is
+   function UI_Mul (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint is
    begin
       --  Case where product fits in the range of a 32-bit integer
 
@@ -2019,20 +2050,24 @@ package body Uintp is
    -- UI_Ne --
    ------------
 
-   function UI_Ne (Left : Int; Right : Uint) return Boolean is
+   function UI_Ne (Left : Int; Right : Valid_Uint) return Boolean is
    begin
       return UI_Ne (UI_From_Int (Left), Right);
    end UI_Ne;
 
-   function UI_Ne (Left : Uint; Right : Int) return Boolean is
+   function UI_Ne (Left : Valid_Uint; Right : Int) return Boolean is
    begin
       return UI_Ne (Left, UI_From_Int (Right));
    end UI_Ne;
 
-   function UI_Ne (Left : Uint; Right : Uint) return Boolean is
+   function UI_Ne (Left : Valid_Uint; Right : Valid_Uint) return Boolean is
    begin
-      --  Quick processing for identical arguments. Note that this takes
-      --  care of the case of two No_Uint arguments.
+      pragma Assert (Present (Left));
+      pragma Assert (Present (Right));
+      --  Assertions are here in case we're called from C++ code, which does
+      --  not check the predicates.
+
+      --  Quick processing for identical arguments
 
       if Int (Left) = Int (Right) then
          return False;
@@ -2090,7 +2125,7 @@ package body Uintp is
    -- UI_Negate --
    ----------------
 
-   function UI_Negate (Right : Uint) return Uint is
+   function UI_Negate (Right : Valid_Uint) return Valid_Uint is
    begin
       --  Case where input is directly represented. Note that since the range
       --  of Direct values is non-symmetrical, the result may not be directly
@@ -2123,20 +2158,23 @@ package body Uintp is
    -- UI_Rem --
    -------------
 
-   function UI_Rem (Left : Int; Right : Uint) return Uint is
+   function UI_Rem (Left : Int; Right : Nonzero_Uint) return Valid_Uint is
    begin
       return UI_Rem (UI_From_Int (Left), Right);
    end UI_Rem;
 
-   function UI_Rem (Left : Uint; Right : Int) return Uint is
+   function UI_Rem
+     (Left : Valid_Uint; Right : Nonzero_Int) return Valid_Uint
+   is
    begin
       return UI_Rem (Left, UI_From_Int (Right));
    end UI_Rem;
 
-   function UI_Rem (Left, Right : Uint) return Uint is
-      Remainder : Uint;
-      Quotient  : Uint;
-      pragma Warnings (Off, Quotient);
+   function UI_Rem
+     (Left : Valid_Uint; Right : Nonzero_Uint) return Valid_Uint
+   is
+      Remainder : Valid_Uint;
+      Ignored_Quotient  : Uint;
 
    begin
       pragma Assert (Right /= Uint_0);
@@ -2146,7 +2184,8 @@ package body Uintp is
 
       else
          UI_Div_Rem
-           (Left, Right, Quotient, Remainder, Discard_Quotient => True);
+           (Left, Right, Ignored_Quotient, Remainder,
+            Discard_Quotient => True);
          return Remainder;
       end if;
    end UI_Rem;
@@ -2155,17 +2194,17 @@ package body Uintp is
    -- UI_Sub --
    ------------
 
-   function UI_Sub (Left : Int; Right : Uint) return Uint is
+   function UI_Sub (Left : Int; Right : Valid_Uint) return Valid_Uint is
    begin
       return UI_Add (Left, -Right);
    end UI_Sub;
 
-   function UI_Sub (Left : Uint; Right : Int) return Uint is
+   function UI_Sub (Left : Valid_Uint; Right : Int) return Valid_Uint is
    begin
       return UI_Add (Left, -Right);
    end UI_Sub;
 
-   function UI_Sub (Left : Uint; Right : Uint) return Uint is
+   function UI_Sub (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint is
    begin
       if Direct (Left) and then Direct (Right) then
          return UI_From_Int (Direct_Val (Left) - Direct_Val (Right));
@@ -2178,7 +2217,7 @@ package body Uintp is
    -- UI_To_CC --
    --------------
 
-   function UI_To_CC (Input : Uint) return Char_Code is
+   function UI_To_CC (Input : Valid_Uint) return Char_Code is
    begin
       if Direct (Input) then
          return Char_Code (Direct_Val (Input));
@@ -2309,8 +2348,7 @@ package body Uintp is
 
    function Vector_To_Uint
      (In_Vec   : UI_Vector;
-      Negative : Boolean)
-      return     Uint
+      Negative : Boolean) return Valid_Uint
    is
       Size : Int;
       Val  : Int;
@@ -2330,9 +2368,9 @@ package body Uintp is
 
             if Size = Int_1 then
                if Negative then
-                  return Uint (Int (Uint_Direct_Bias) - In_Vec (J));
+                  return Valid_Uint (Int (Uint_Direct_Bias) - In_Vec (J));
                else
-                  return Uint (Int (Uint_Direct_Bias) + In_Vec (J));
+                  return Valid_Uint (Int (Uint_Direct_Bias) + In_Vec (J));
                end if;
 
             --  Positive two digit values may be in direct representation range
@@ -2341,7 +2379,7 @@ package body Uintp is
                Val := In_Vec (J) * Base + In_Vec (J + 1);
 
                if Val <= Max_Direct then
-                  return Uint (Int (Uint_Direct_Bias) + Val);
+                  return Valid_Uint (Int (Uint_Direct_Bias) + Val);
                end if;
             end if;
 

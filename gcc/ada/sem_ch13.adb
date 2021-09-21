@@ -1884,6 +1884,11 @@ package body Sem_Ch13 is
             --  expression is allowed. Includes checking that the expression
             --  does not raise Constraint_Error.
 
+            function Directly_Specified
+              (Id : Entity_Id; A : Aspect_Id) return Boolean;
+            --  Returns True if the given aspect is directly (as opposed to
+            --  via any form of inheritance) specified for the given entity.
+
             function Make_Aitem_Pragma
               (Pragma_Argument_Associations : List_Id;
                Pragma_Name                  : Name_Id) return Node_Id;
@@ -2777,6 +2782,18 @@ package body Sem_Ch13 is
                end if;
             end Check_Expr_Is_OK_Static_Expression;
 
+            ------------------------
+            -- Directly_Specified --
+            ------------------------
+
+            function Directly_Specified
+              (Id : Entity_Id; A : Aspect_Id) return Boolean
+            is
+               Aspect_Spec : constant Node_Id := Find_Aspect (Id, A);
+            begin
+               return Present (Aspect_Spec) and then Entity (Aspect_Spec) = Id;
+            end Directly_Specified;
+
             -----------------------
             -- Make_Aitem_Pragma --
             -----------------------
@@ -3341,6 +3358,15 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("Predicate_Failure requires previous predicate" &
                         " specification", Aspect);
+                     goto Continue;
+
+                  elsif not (Directly_Specified (E, Aspect_Dynamic_Predicate)
+                    or else Directly_Specified (E, Aspect_Static_Predicate)
+                    or else Directly_Specified (E, Aspect_Predicate))
+                  then
+                     Error_Msg_N
+                       ("Predicate_Failure requires accompanying" &
+                        " noninherited predicate specification", Aspect);
                      goto Continue;
                   end if;
 
@@ -7799,11 +7825,16 @@ package body Sem_Ch13 is
                null;
 
             elsif Is_Elementary_Type (U_Ent) then
-               if Size /= System_Storage_Unit
-                 and then Size /= System_Storage_Unit * 2
-                 and then Size /= System_Storage_Unit * 3
-                 and then Size /= System_Storage_Unit * 4
-                 and then Size /= System_Storage_Unit * 8
+               --  Size will be empty if we already detected an error
+               --  (e.g. Expr is of the wrong type); we might as well
+               --  give the useful hint below even in that case.
+
+               if No (Size) or else
+                 (Size /= System_Storage_Unit
+                  and then Size /= System_Storage_Unit * 2
+                  and then Size /= System_Storage_Unit * 3
+                  and then Size /= System_Storage_Unit * 4
+                  and then Size /= System_Storage_Unit * 8)
                then
                   Error_Msg_N
                     ("stream size for elementary type must be 8, 16, 24, " &
@@ -11877,9 +11908,23 @@ package body Sem_Ch13 is
                --------
 
                function Lt (Op1, Op2 : Natural) return Boolean is
+                  K1 : constant Boolean :=
+                    Known_Component_Bit_Offset (Comps (Op1));
+                  K2 : constant Boolean :=
+                    Known_Component_Bit_Offset (Comps (Op2));
+                  --  Record representation clauses can be incomplete, so the
+                  --  Component_Bit_Offsets can be unknown.
                begin
-                  return Component_Bit_Offset (Comps (Op1))
-                       < Component_Bit_Offset (Comps (Op2));
+                  if K1 then
+                     if K2 then
+                        return Component_Bit_Offset (Comps (Op1))
+                             < Component_Bit_Offset (Comps (Op2));
+                     else
+                        return True;
+                     end if;
+                  else
+                     return K2;
+                  end if;
                end Lt;
 
                ----------
@@ -13984,7 +14029,7 @@ package body Sem_Ch13 is
 
    function Minimum_Size
      (T      : Entity_Id;
-      Biased : Boolean := False) return Nat
+      Biased : Boolean := False) return Int
    is
       Lo     : Uint    := No_Uint;
       Hi     : Uint    := No_Uint;
@@ -13998,17 +14043,17 @@ package body Sem_Ch13 is
       R_Typ  : constant Entity_Id := Root_Type (T);
 
    begin
-      --  If bad type, return 0
+      --  Bad type
 
       if T = Any_Type then
-         return 0;
+         return Unknown_Minimum_Size;
 
-      --  For generic types, just return zero. There cannot be any legitimate
-      --  need to know such a size, but this routine may be called with a
-      --  generic type as part of normal processing.
+      --  For generic types, just return unknown. There cannot be any
+      --  legitimate need to know such a size, but this routine may be
+      --  called with a generic type as part of normal processing.
 
       elsif Is_Generic_Type (R_Typ) or else R_Typ = Any_Type then
-         return 0;
+         return Unknown_Minimum_Size;
 
          --  Access types (cannot have size smaller than System.Address)
 
@@ -14031,7 +14076,7 @@ package body Sem_Ch13 is
          Ancest := T;
          loop
             if Ancest = Any_Type or else Etype (Ancest) = Any_Type then
-               return 0;
+               return Unknown_Minimum_Size;
             end if;
 
             if not LoSet then
@@ -14056,7 +14101,7 @@ package body Sem_Ch13 is
                Ancest := Base_Type (T);
 
                if Is_Generic_Type (Ancest) then
-                  return 0;
+                  return Unknown_Minimum_Size;
                end if;
             end if;
          end loop;
@@ -14077,7 +14122,7 @@ package body Sem_Ch13 is
          Ancest := T;
          loop
             if Ancest = Any_Type or else Etype (Ancest) = Any_Type then
-               return 0;
+               return Unknown_Minimum_Size;
             end if;
 
             --  Note: In the following two tests for LoSet and HiSet, it may
@@ -14117,7 +14162,7 @@ package body Sem_Ch13 is
                Ancest := Base_Type (T);
 
                if Is_Generic_Type (Ancest) then
-                  return 0;
+                  return Unknown_Minimum_Size;
                end if;
             end if;
          end loop;
@@ -14147,7 +14192,7 @@ package body Sem_Ch13 is
       --  type case, since that's the odd case that came up. Probably we should
       --  also do this in the fixed-point case, but doing so causes peculiar
       --  gigi failures, and it is not worth worrying about this incredibly
-      --  marginal case (explicit null-range fixed-point type declarations)???
+      --  marginal case (explicit null-range fixed-point type declarations).
 
       if Lo > Hi and then Is_Discrete_Type (T) then
          S := 0;
@@ -16327,7 +16372,8 @@ package body Sem_Ch13 is
 
                if Present (ACCR.Y) then
                   Y_Alignment := Alignment (ACCR.Y);
-                  Y_Size      := Esize (ACCR.Y);
+                  Y_Size :=
+                    (if Known_Esize (ACCR.Y) then Esize (ACCR.Y) else Uint_0);
                end if;
 
                if ACCR.Off

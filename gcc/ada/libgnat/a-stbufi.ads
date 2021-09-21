@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Finalization;
-with GNAT.OS_Lib;
+with System.OS_Lib;
 
 package Ada.Strings.Text_Buffers.Files is
 
@@ -38,7 +38,7 @@ package Ada.Strings.Text_Buffers.Files is
    --  Output written to a File_Buffer is written to the associated file.
 
    function Create_From_FD
-     (FD                      : GNAT.OS_Lib.File_Descriptor;
+     (FD                      : System.OS_Lib.File_Descriptor;
       Close_Upon_Finalization : Boolean := True)
      return File_Buffer;
    --  file closed upon finalization if specified
@@ -47,9 +47,11 @@ package Ada.Strings.Text_Buffers.Files is
    --  file closed upon finalization
 
    function Create_Standard_Output_Buffer return File_Buffer is
-     (Create_From_FD (GNAT.OS_Lib.Standout, Close_Upon_Finalization => False));
+     (Create_From_FD (System.OS_Lib.Standout,
+                      Close_Upon_Finalization => False));
    function Create_Standard_Error_Buffer return File_Buffer is
-     (Create_From_FD (GNAT.OS_Lib.Standerr, Close_Upon_Finalization => False));
+     (Create_From_FD (System.OS_Lib.Standerr,
+                      Close_Upon_Finalization => False));
 
 private
 
@@ -60,7 +62,7 @@ private
 
    package Mapping is new Output_Mapping (Put_UTF_8_Implementation);
 
-   package OS renames GNAT.OS_Lib;
+   package OS renames System.OS_Lib;
 
    type Self_Ref (Self : not null access File_Buffer)
      is new Finalization.Limited_Controlled with null record;

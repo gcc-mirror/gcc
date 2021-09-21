@@ -3029,9 +3029,10 @@ match gfc_get_pdt_instance (gfc_actual_arglist *, gfc_symbol **,
 void gfc_scanner_done_1 (void);
 void gfc_scanner_init_1 (void);
 
-void gfc_add_include_path (const char *, bool, bool, bool);
+void gfc_add_include_path (const char *, bool, bool, bool, bool);
 void gfc_add_intrinsic_modules_path (const char *);
 void gfc_release_include_path (void);
+void gfc_check_include_dirs (void);
 FILE *gfc_open_included_file (const char *, bool, bool);
 
 int gfc_at_end (void);

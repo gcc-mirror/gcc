@@ -5063,12 +5063,20 @@ package body Sem_Eval is
                --  result is always positive, even if the original operand was
                --  negative.
 
-               Fold_Uint
-                 (N,
-                  (Expr_Value (Left) +
-                     (if Expr_Value (Left) >= Uint_0 then Uint_0 else Modulus))
-                  / (Uint_2 ** Expr_Value (Right)),
-                  Static => Static);
+               declare
+                  M : Unat;
+               begin
+                  if Expr_Value (Left) >= Uint_0 then
+                     M := Uint_0;
+                  else
+                     M := Modulus;
+                  end if;
+
+                  Fold_Uint
+                    (N,
+                     (Expr_Value (Left) + M) / (Uint_2 ** Expr_Value (Right)),
+                     Static => Static);
+               end;
             end if;
          elsif Op = N_Op_Shift_Right_Arithmetic then
             Check_Elab_Call;
@@ -5741,6 +5749,8 @@ package body Sem_Eval is
       elsif Has_Dynamic_Predicate_Aspect (Typ)
         or else (Is_Derived_Type (Typ)
                   and then Has_Aspect (Typ, Aspect_Dynamic_Predicate))
+        or else (Has_Aspect (Typ, Aspect_Predicate)
+                  and then not Has_Static_Predicate (Typ))
       then
          return False;
 

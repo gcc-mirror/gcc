@@ -728,17 +728,6 @@ package body Sem_Util is
                return Make_Level_Literal
                         (Typ_Access_Level (Etype (E)));
 
-            --  When E is a component of the current instance of a
-            --  protected type, we assume the level to be deeper than that of
-            --  the type itself.
-
-            elsif not Is_Overloadable (E)
-              and then Ekind (Scope (E)) = E_Protected_Type
-              and then Comes_From_Source (Scope (E))
-            then
-               return Make_Level_Literal
-                        (Scope_Depth (Enclosing_Dynamic_Scope (E)) + 1);
-
             --  Check if E is an expansion-generated renaming of an iterator
             --  by examining Related_Expression. If so, determine the
             --  accessibility level based on the original expression.
@@ -11802,7 +11791,7 @@ package body Sem_Util is
          --  Set to a factor of the offset from the base object when Expr is a
          --  selected or indexed component, based on Component_Bit_Offset and
          --  Component_Size respectively. A negative value is used to represent
-         --  a value which is not known at compile time.
+         --  a value that is not known at compile time.
 
          procedure Check_Prefix;
          --  Checks the prefix recursively in the case where the expression
@@ -11910,7 +11899,7 @@ package body Sem_Util is
          --  If we have a null offset, the result is entirely determined by
          --  the base object and has already been computed recursively.
 
-         if Offs = Uint_0 then
+         if Present (Offs) and then Offs = Uint_0 then
             null;
 
          --  Case where we know the alignment of the object
@@ -11932,7 +11921,7 @@ package body Sem_Util is
                else
                   --  If we have an offset, see if it is compatible
 
-                  if Present (Offs) and Offs > Uint_0 then
+                  if Present (Offs) and then Offs > Uint_0 then
                      if Offs mod (System_Storage_Unit * ObjA) /= 0 then
                         Set_Result (Known_Incompatible);
                      end if;
@@ -17549,9 +17538,9 @@ package body Sem_Util is
    -- Is_False --
    --------------
 
-   function Is_False (U : Uint) return Boolean is
+   function Is_False (U : Opt_Ubool) return Boolean is
    begin
-      return (U = 0);
+      return not Is_True (U);
    end Is_False;
 
    ---------------------------
@@ -21047,9 +21036,9 @@ package body Sem_Util is
    -- Is_True --
    -------------
 
-   function Is_True (U : Uint) return Boolean is
+   function Is_True (U : Opt_Ubool) return Boolean is
    begin
-      return U /= 0;
+      return No (U) or else U = Uint_1;
    end Is_True;
 
    --------------------------------------
@@ -28449,7 +28438,7 @@ package body Sem_Util is
       --  We copy Esize, but not RM_Size, since in general RM_Size is
       --  subtype specific and does not get inherited by all subtypes.
 
-      Set_Esize                     (T1, Esize                     (T2));
+      Copy_Esize (To => T1, From => T2);
       Set_Has_Biased_Representation (T1, Has_Biased_Representation (T2));
 
       if Is_Discrete_Or_Fixed_Point_Type (T1)
@@ -28498,7 +28487,7 @@ package body Sem_Util is
    -- Static_Boolean --
    --------------------
 
-   function Static_Boolean (N : Node_Id) return Uint is
+   function Static_Boolean (N : Node_Id) return Opt_Ubool is
    begin
       Analyze_And_Resolve (N, Standard_Boolean);
 

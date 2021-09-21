@@ -8029,6 +8029,7 @@ package body Sem_Ch4 is
                while Present (It.Nam) loop
                   if Is_Numeric_Type (It.Typ)
                     and then Scope (It.Typ) = Standard_Standard
+                    and then Ekind (It.Nam) = E_Operator
                   then
                      Set_Abstract_Op (I, Abstract_Op);
                   end if;

@@ -90,13 +90,23 @@ package Uintp is
    Uint_Minus_127 : constant Uint;
    Uint_Minus_128 : constant Uint;
 
+   --  Functions for detecting No_Uint. Note that clients of this package
+   --  cannot use "=" and "/=" to compare with No_Uint; they must use No
+   --  and Present instead.
+
    function No (X : Uint) return Boolean is (X = No_Uint);
+   --  Note that this is using the predefined "=", not the "=" declared below,
+   --  which would blow up on No_Uint.
+
    function Present (X : Uint) return Boolean is (not No (X));
 
    subtype Valid_Uint is Uint with Predicate => Present (Valid_Uint);
    subtype Unat is Valid_Uint with Predicate => Unat >= Uint_0; -- natural
    subtype Upos is Valid_Uint with Predicate => Upos >= Uint_1; -- positive
    subtype Nonzero_Uint is Valid_Uint with Predicate => Nonzero_Uint /= Uint_0;
+   subtype Ubool is Valid_Uint with Predicate => Ubool in Uint_0 | Uint_1;
+   subtype Opt_Ubool is Uint with
+     Predicate => No (Opt_Ubool) or else Opt_Ubool in Ubool;
 
    -----------------
    -- Subprograms --
@@ -107,141 +117,130 @@ package Uintp is
    --  unit, these are among the few tables that can be expanded during
    --  gigi processing.
 
-   function UI_Abs (Right : Uint) return Uint;
+   function UI_Abs (Right : Valid_Uint) return Unat;
    pragma Inline (UI_Abs);
    --  Returns abs function of universal integer
 
-   function UI_Add (Left : Uint; Right : Uint) return Uint;
-   function UI_Add (Left : Int;  Right : Uint) return Uint;
-   function UI_Add (Left : Uint; Right : Int)  return Uint;
+   function UI_Add (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint;
+   function UI_Add (Left : Int;  Right : Valid_Uint) return Valid_Uint;
+   function UI_Add (Left : Valid_Uint; Right : Int)  return Valid_Uint;
    --  Returns sum of two integer values
 
-   function UI_Decimal_Digits_Hi (U : Uint) return Nat;
+   function UI_Decimal_Digits_Hi (U : Valid_Uint) return Nat;
    --  Returns an estimate of the number of decimal digits required to
    --  represent the absolute value of U. This estimate is correct or high,
    --  i.e. it never returns a value that is too low. The accuracy of the
    --  estimate affects only the effectiveness of comparison optimizations
    --  in Urealp.
 
-   function UI_Decimal_Digits_Lo (U : Uint) return Nat;
+   function UI_Decimal_Digits_Lo (U : Valid_Uint) return Nat;
    --  Returns an estimate of the number of decimal digits required to
    --  represent the absolute value of U. This estimate is correct or low,
    --  i.e. it never returns a value that is too high. The accuracy of the
    --  estimate affects only the effectiveness of comparison optimizations
    --  in Urealp.
 
-   function UI_Div (Left : Uint; Right : Uint) return Uint;
-   function UI_Div (Left : Int;  Right : Uint) return Uint;
-   function UI_Div (Left : Uint; Right : Int)  return Uint;
+   function UI_Div (Left : Valid_Uint; Right : Nonzero_Uint) return Valid_Uint;
+   function UI_Div (Left : Int;  Right : Nonzero_Uint) return Valid_Uint;
+   function UI_Div (Left : Valid_Uint; Right : Nonzero_Int)  return Valid_Uint;
    --  Returns quotient of two integer values. Fatal error if Right = 0
 
-   function UI_Eq (Left : Uint; Right : Uint) return Boolean;
-   function UI_Eq (Left : Int;  Right : Uint) return Boolean;
-   function UI_Eq (Left : Uint; Right : Int)  return Boolean;
+   function UI_Eq (Left : Valid_Uint; Right : Valid_Uint) return Boolean;
+   function UI_Eq (Left : Int;  Right : Valid_Uint) return Boolean;
+   function UI_Eq (Left : Valid_Uint; Right : Int)  return Boolean;
    pragma Inline (UI_Eq);
    --  Compares integer values for equality
 
-   function UI_Expon (Left : Uint; Right : Uint) return Uint;
-   function UI_Expon (Left : Int;  Right : Uint) return Uint;
-   function UI_Expon (Left : Uint; Right : Int)  return Uint;
-   function UI_Expon (Left : Int;  Right : Int)  return Uint;
+   function UI_Expon (Left : Valid_Uint; Right : Unat) return Valid_Uint;
+   function UI_Expon (Left : Int;  Right : Unat) return Valid_Uint;
+   function UI_Expon (Left : Valid_Uint; Right : Nat)  return Valid_Uint;
+   function UI_Expon (Left : Int;  Right : Nat)  return Valid_Uint;
    --  Returns result of exponentiating two integer values.
    --  Fatal error if Right is negative.
 
-   function UI_GCD (Uin, Vin : Uint) return Uint;
+   function UI_GCD (Uin, Vin : Valid_Uint) return Valid_Uint;
    --  Computes GCD of input values. Assumes Uin >= Vin >= 0
 
-   function UI_Ge (Left : Uint; Right : Uint) return Boolean;
-   function UI_Ge (Left : Int;  Right : Uint) return Boolean;
-   function UI_Ge (Left : Uint; Right : Int)  return Boolean;
+   function UI_Ge (Left : Valid_Uint; Right : Valid_Uint) return Boolean;
+   function UI_Ge (Left : Int;  Right : Valid_Uint) return Boolean;
+   function UI_Ge (Left : Valid_Uint; Right : Int)  return Boolean;
    pragma Inline (UI_Ge);
    --  Compares integer values for greater than or equal
 
-   function UI_Gt (Left : Uint; Right : Uint) return Boolean;
-   function UI_Gt (Left : Int;  Right : Uint) return Boolean;
-   function UI_Gt (Left : Uint; Right : Int)  return Boolean;
+   function UI_Gt (Left : Valid_Uint; Right : Valid_Uint) return Boolean;
+   function UI_Gt (Left : Int;  Right : Valid_Uint) return Boolean;
+   function UI_Gt (Left : Valid_Uint; Right : Int)  return Boolean;
    pragma Inline (UI_Gt);
    --  Compares integer values for greater than
 
-   function UI_Is_In_Int_Range (Input : Uint) return Boolean;
+   function UI_Is_In_Int_Range (Input : Valid_Uint) return Boolean;
    pragma Inline (UI_Is_In_Int_Range);
-   --  Determines if universal integer is in Int range
+   --  Determines if universal integer is in Int range.
 
-   function UI_Le (Left : Uint; Right : Uint) return Boolean;
-   function UI_Le (Left : Int;  Right : Uint) return Boolean;
-   function UI_Le (Left : Uint; Right : Int)  return Boolean;
+   function UI_Le (Left : Valid_Uint; Right : Valid_Uint) return Boolean;
+   function UI_Le (Left : Int;  Right : Valid_Uint) return Boolean;
+   function UI_Le (Left : Valid_Uint; Right : Int)  return Boolean;
    pragma Inline (UI_Le);
    --  Compares integer values for less than or equal
 
-   function UI_Lt (Left : Uint; Right : Uint) return Boolean;
-   function UI_Lt (Left : Int;  Right : Uint) return Boolean;
-   function UI_Lt (Left : Uint; Right : Int)  return Boolean;
+   function UI_Lt (Left : Valid_Uint; Right : Valid_Uint) return Boolean;
+   function UI_Lt (Left : Int;  Right : Valid_Uint) return Boolean;
+   function UI_Lt (Left : Valid_Uint; Right : Int)  return Boolean;
    --  Compares integer values for less than
 
-   function UI_Max (Left : Uint; Right : Uint) return Uint;
-   function UI_Max (Left : Int;  Right : Uint) return Uint;
-   function UI_Max (Left : Uint; Right : Int)  return Uint;
+   function UI_Max (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint;
+   function UI_Max (Left : Int;  Right : Valid_Uint) return Valid_Uint;
+   function UI_Max (Left : Valid_Uint; Right : Int)  return Valid_Uint;
    --  Returns maximum of two integer values
 
-   function UI_Min (Left : Uint; Right : Uint) return Uint;
-   function UI_Min (Left : Int;  Right : Uint) return Uint;
-   function UI_Min (Left : Uint; Right : Int)  return Uint;
+   function UI_Min (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint;
+   function UI_Min (Left : Int;  Right : Valid_Uint) return Valid_Uint;
+   function UI_Min (Left : Valid_Uint; Right : Int)  return Valid_Uint;
    --  Returns minimum of two integer values
 
-   function UI_Mod (Left : Uint; Right : Uint) return Uint;
-   function UI_Mod (Left : Int;  Right : Uint) return Uint;
-   function UI_Mod (Left : Uint; Right : Int)  return Uint;
+   function UI_Mod (Left : Valid_Uint; Right : Nonzero_Uint) return Valid_Uint;
+   function UI_Mod (Left : Int;  Right : Nonzero_Uint) return Valid_Uint;
+   function UI_Mod (Left : Valid_Uint; Right : Nonzero_Int)  return Valid_Uint;
    pragma Inline (UI_Mod);
    --  Returns mod function of two integer values
 
-   function UI_Mul (Left : Uint; Right : Uint) return Uint;
-   function UI_Mul (Left : Int;  Right : Uint) return Uint;
-   function UI_Mul (Left : Uint; Right : Int)  return Uint;
+   function UI_Mul (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint;
+   function UI_Mul (Left : Int;  Right : Valid_Uint) return Valid_Uint;
+   function UI_Mul (Left : Valid_Uint; Right : Int)  return Valid_Uint;
    --  Returns product of two integer values
 
-   function UI_Ne (Left : Uint; Right : Uint) return Boolean;
-   function UI_Ne (Left : Int;  Right : Uint) return Boolean;
-   function UI_Ne (Left : Uint; Right : Int)  return Boolean;
+   function UI_Ne (Left : Valid_Uint; Right : Valid_Uint) return Boolean;
+   function UI_Ne (Left : Int;  Right : Valid_Uint) return Boolean;
+   function UI_Ne (Left : Valid_Uint; Right : Int)  return Boolean;
    pragma Inline (UI_Ne);
    --  Compares integer values for inequality
 
-   function UI_Negate (Right : Uint) return Uint;
+   function UI_Negate (Right : Valid_Uint) return Valid_Uint;
    pragma Inline (UI_Negate);
    --  Returns negative of universal integer
 
-   function UI_Rem (Left : Uint; Right : Uint) return Uint;
-   function UI_Rem (Left : Int;  Right : Uint) return Uint;
-   function UI_Rem (Left : Uint; Right : Int)  return Uint;
+   function UI_Rem (Left : Valid_Uint; Right : Nonzero_Uint) return Valid_Uint;
+   function UI_Rem (Left : Int;  Right : Nonzero_Uint) return Valid_Uint;
+   function UI_Rem (Left : Valid_Uint; Right : Nonzero_Int)  return Valid_Uint;
    --  Returns rem of two integer values
 
-   function UI_Sub (Left : Uint; Right : Uint) return Uint;
-   function UI_Sub (Left : Int;  Right : Uint) return Uint;
-   function UI_Sub (Left : Uint; Right : Int)  return Uint;
+   function UI_Sub (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint;
+   function UI_Sub (Left : Int;  Right : Valid_Uint) return Valid_Uint;
+   function UI_Sub (Left : Valid_Uint; Right : Int)  return Valid_Uint;
    pragma Inline (UI_Sub);
    --  Returns difference of two integer values
 
-   function UI_Modular_Exponentiation
-     (B      : Uint;
-      E      : Uint;
-      Modulo : Uint) return Uint;
-   --  Efficiently compute (B**E) rem Modulo
-
-   function UI_Modular_Inverse (N : Uint; Modulo : Uint) return Uint;
-   --  Compute the multiplicative inverse of N in modular arithmetics with the
-   --  given Modulo (uses Euclid's algorithm). Note: the call is considered
-   --  to be erroneous (and the behavior is undefined) if n is not invertible.
-
-   function UI_From_Int (Input : Int) return Uint;
+   function UI_From_Int (Input : Int) return Valid_Uint;
    --  Converts Int value to universal integer form
 
    generic
       type In_T is range <>;
-   function UI_From_Integral (Input : In_T) return Uint;
+   function UI_From_Integral (Input : In_T) return Valid_Uint;
    --  Likewise, but converts from any integer type. Must not be applied to
    --  biased types (instantiation will provide a warning if actual is a biased
    --  type).
 
-   function UI_From_CC (Input : Char_Code) return Uint;
+   function UI_From_CC (Input : Char_Code) return Valid_Uint;
    --  Converts Char_Code value to universal integer form
 
    function UI_To_Int (Input : Valid_Uint) return Int;
@@ -253,11 +252,11 @@ package Uintp is
    --  Converts universal integer value to Unsigned_64. Constraint_Error if
    --  value is not in appropriate range.
 
-   function UI_To_CC (Input : Uint) return Char_Code;
+   function UI_To_CC (Input : Valid_Uint) return Char_Code;
    --  Converts universal integer value to Char_Code. Constraint_Error if value
    --  is not in Char_Code range.
 
-   function Num_Bits (Input : Uint) return Nat;
+   function Num_Bits (Input : Valid_Uint) return Nat;
    --  Approximate number of binary bits in given universal integer. This
    --  function is used for capacity checks, and it can be one bit off
    --  without affecting its usage.
@@ -313,58 +312,97 @@ package Uintp is
    -- Operator Renamings --
    ------------------------
 
-   function "+" (Left : Uint; Right : Uint) return Uint renames UI_Add;
-   function "+" (Left : Int;  Right : Uint) return Uint renames UI_Add;
-   function "+" (Left : Uint; Right : Int)  return Uint renames UI_Add;
+   function "+" (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint
+     renames UI_Add;
+   function "+" (Left : Int;  Right : Valid_Uint) return Valid_Uint
+     renames UI_Add;
+   function "+" (Left : Valid_Uint; Right : Int)  return Valid_Uint
+     renames UI_Add;
 
-   function "/" (Left : Uint; Right : Uint) return Uint renames UI_Div;
-   function "/" (Left : Int;  Right : Uint) return Uint renames UI_Div;
-   function "/" (Left : Uint; Right : Int)  return Uint renames UI_Div;
+   function "/" (Left : Valid_Uint; Right : Nonzero_Uint) return Valid_Uint
+     renames UI_Div;
+   function "/" (Left : Int;  Right : Nonzero_Uint) return Valid_Uint
+     renames UI_Div;
+   function "/" (Left : Valid_Uint; Right : Nonzero_Int)  return Valid_Uint
+     renames UI_Div;
 
-   function "*" (Left : Uint; Right : Uint) return Uint renames UI_Mul;
-   function "*" (Left : Int;  Right : Uint) return Uint renames UI_Mul;
-   function "*" (Left : Uint; Right : Int)  return Uint renames UI_Mul;
+   function "*" (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint
+     renames UI_Mul;
+   function "*" (Left : Int;  Right : Valid_Uint) return Valid_Uint
+     renames UI_Mul;
+   function "*" (Left : Valid_Uint; Right : Int)  return Valid_Uint
+     renames UI_Mul;
 
-   function "-" (Left : Uint; Right : Uint) return Uint renames UI_Sub;
-   function "-" (Left : Int;  Right : Uint) return Uint renames UI_Sub;
-   function "-" (Left : Uint; Right : Int)  return Uint renames UI_Sub;
+   function "-" (Left : Valid_Uint; Right : Valid_Uint) return Valid_Uint
+     renames UI_Sub;
+   function "-" (Left : Int;  Right : Valid_Uint) return Valid_Uint
+     renames UI_Sub;
+   function "-" (Left : Valid_Uint; Right : Int)  return Valid_Uint
+     renames UI_Sub;
 
-   function "**"  (Left : Uint; Right : Uint) return Uint renames UI_Expon;
-   function "**"  (Left : Uint; Right : Int)  return Uint renames UI_Expon;
-   function "**"  (Left : Int;  Right : Uint) return Uint renames UI_Expon;
-   function "**"  (Left : Int;  Right : Int)  return Uint renames UI_Expon;
+   function "**"  (Left : Valid_Uint; Right : Unat) return Valid_Uint
+     renames UI_Expon;
+   function "**"  (Left : Valid_Uint; Right : Nat)  return Valid_Uint
+     renames UI_Expon;
+   function "**"  (Left : Int;  Right : Unat) return Valid_Uint
+     renames UI_Expon;
+   function "**"  (Left : Int;  Right : Nat)  return Valid_Uint
+     renames UI_Expon;
 
-   function "abs" (Real : Uint) return Uint renames UI_Abs;
+   function "abs" (Real : Valid_Uint) return Unat
+     renames UI_Abs;
 
-   function "mod" (Left : Uint; Right : Uint) return Uint renames UI_Mod;
-   function "mod" (Left : Int;  Right : Uint) return Uint renames UI_Mod;
-   function "mod" (Left : Uint; Right : Int)  return Uint renames UI_Mod;
+   function "mod" (Left : Valid_Uint; Right : Nonzero_Uint) return Valid_Uint
+     renames UI_Mod;
+   function "mod" (Left : Int;  Right : Nonzero_Uint) return Valid_Uint
+     renames UI_Mod;
+   function "mod" (Left : Valid_Uint; Right : Nonzero_Int)  return Valid_Uint
+     renames UI_Mod;
 
-   function "rem" (Left : Uint; Right : Uint) return Uint renames UI_Rem;
-   function "rem" (Left : Int;  Right : Uint) return Uint renames UI_Rem;
-   function "rem" (Left : Uint; Right : Int)  return Uint renames UI_Rem;
+   function "rem" (Left : Valid_Uint; Right : Nonzero_Uint) return Valid_Uint
+     renames UI_Rem;
+   function "rem" (Left : Int;  Right : Nonzero_Uint) return Valid_Uint
+     renames UI_Rem;
+   function "rem" (Left : Valid_Uint; Right : Nonzero_Int)  return Valid_Uint
+     renames UI_Rem;
 
-   function "-"   (Real : Uint) return Uint renames UI_Negate;
+   function "-"   (Real : Valid_Uint) return Valid_Uint
+     renames UI_Negate;
 
-   function "="   (Left : Uint; Right : Uint) return Boolean renames UI_Eq;
-   function "="   (Left : Int;  Right : Uint) return Boolean renames UI_Eq;
-   function "="   (Left : Uint; Right : Int)  return Boolean renames UI_Eq;
+   function "="   (Left : Valid_Uint; Right : Valid_Uint) return Boolean
+     renames UI_Eq;
+   function "="   (Left : Int;  Right : Valid_Uint) return Boolean
+     renames UI_Eq;
+   function "="   (Left : Valid_Uint; Right : Int)  return Boolean
+     renames UI_Eq;
 
-   function ">="  (Left : Uint; Right : Uint) return Boolean renames UI_Ge;
-   function ">="  (Left : Int;  Right : Uint) return Boolean renames UI_Ge;
-   function ">="  (Left : Uint; Right : Int)  return Boolean renames UI_Ge;
+   function ">="  (Left : Valid_Uint; Right : Valid_Uint) return Boolean
+     renames UI_Ge;
+   function ">="  (Left : Int;  Right : Valid_Uint) return Boolean
+     renames UI_Ge;
+   function ">="  (Left : Valid_Uint; Right : Int)  return Boolean
+     renames UI_Ge;
 
-   function ">"   (Left : Uint; Right : Uint) return Boolean renames UI_Gt;
-   function ">"   (Left : Int;  Right : Uint) return Boolean renames UI_Gt;
-   function ">"   (Left : Uint; Right : Int)  return Boolean renames UI_Gt;
+   function ">"   (Left : Valid_Uint; Right : Valid_Uint) return Boolean
+     renames UI_Gt;
+   function ">"   (Left : Int;  Right : Valid_Uint) return Boolean
+     renames UI_Gt;
+   function ">"   (Left : Valid_Uint; Right : Int)  return Boolean
+     renames UI_Gt;
 
-   function "<="  (Left : Uint; Right : Uint) return Boolean renames UI_Le;
-   function "<="  (Left : Int;  Right : Uint) return Boolean renames UI_Le;
-   function "<="  (Left : Uint; Right : Int)  return Boolean renames UI_Le;
+   function "<="  (Left : Valid_Uint; Right : Valid_Uint) return Boolean
+     renames UI_Le;
+   function "<="  (Left : Int;  Right : Valid_Uint) return Boolean
+     renames UI_Le;
+   function "<="  (Left : Valid_Uint; Right : Int)  return Boolean
+     renames UI_Le;
 
-   function "<"   (Left : Uint; Right : Uint) return Boolean renames UI_Lt;
-   function "<"   (Left : Int;  Right : Uint) return Boolean renames UI_Lt;
-   function "<"   (Left : Uint; Right : Int)  return Boolean renames UI_Lt;
+   function "<"   (Left : Valid_Uint; Right : Valid_Uint) return Boolean
+     renames UI_Lt;
+   function "<"   (Left : Int;  Right : Valid_Uint) return Boolean
+     renames UI_Lt;
+   function "<"   (Left : Valid_Uint; Right : Int)  return Boolean
+     renames UI_Lt;
 
    -----------------------------
    -- Mark/Release Processing --
@@ -384,12 +422,12 @@ package Uintp is
    procedure Release (M : Save_Mark);
    --  Release storage allocated since mark was noted
 
-   procedure Release_And_Save (M : Save_Mark; UI : in out Uint);
+   procedure Release_And_Save (M : Save_Mark; UI : in out Valid_Uint);
    --  Like Release, except that the given Uint value (which is typically among
    --  the data being released) is recopied after the release, so that it is
    --  the most recent item, and UI is updated to point to its copied location.
 
-   procedure Release_And_Save (M : Save_Mark; UI1, UI2 : in out Uint);
+   procedure Release_And_Save (M : Save_Mark; UI1, UI2 : in out Valid_Uint);
    --  Like Release, except that the given Uint values (which are typically
    --  among the data being released) are recopied after the release, so that
    --  they are the most recent items, and UI1 and UI2 are updated if necessary
@@ -493,7 +531,7 @@ private
    --  UI_Mul to efficiently compute the product in this case.
 
    type Save_Mark is record
-      Save_Uint   : Uint;
+      Save_Uint   : Valid_Uint;
       Save_Udigit : Int;
    end record;
 

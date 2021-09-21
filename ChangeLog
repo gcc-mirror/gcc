@@ -1,3 +1,7 @@
+2021-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	* MAINTAINERS (Reviewers): Add myself as Fortran reviewer.
+
 2021-09-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.def: Add a jit check target for the jit

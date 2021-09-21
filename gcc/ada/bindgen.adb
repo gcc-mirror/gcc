@@ -588,6 +588,27 @@ package body Bindgen is
             WBI ("");
          end if;
 
+         --  Import the default stack object if a size has been provided to the
+         --  binder.
+
+         if Opt.Default_Stack_Size /= Opt.No_Stack_Size then
+            WBI ("      Default_Stack_Size : Integer;");
+            WBI ("      pragma Import (C, Default_Stack_Size, " &
+                 """__gl_default_stack_size"");");
+         end if;
+
+         --  Initialize stack limit variable of the environment task if the
+         --  stack check method is stack limit and stack check is enabled.
+
+         if Stack_Check_Limits_On_Target
+           and then (Stack_Check_Default_On_Target or Stack_Check_Switch_Set)
+         then
+            WBI ("");
+            WBI ("      procedure Initialize_Stack_Limit;");
+            WBI ("      pragma Import (C, Initialize_Stack_Limit, " &
+                 """__gnat_initialize_stack_limit"");");
+         end if;
+
          if System_Secondary_Stack_Package_In_Closure then
             --  System.Secondary_Stack is in the closure of the program
             --  because the program uses the secondary stack or the restricted
@@ -619,6 +640,15 @@ package body Bindgen is
 
          WBI ("   begin");
 
+         --  Set the default stack size if provided to the binder
+
+         if Opt.Default_Stack_Size /= Opt.No_Stack_Size then
+            Set_String ("      Default_Stack_Size := ");
+            Set_Int (Default_Stack_Size);
+            Set_String (";");
+            Write_Statement_Buffer;
+         end if;
+
          if Main_Priority /= No_Main_Priority then
             Set_String ("      Main_Priority := ");
             Set_Int    (Main_Priority);
@@ -643,6 +673,7 @@ package body Bindgen is
          end if;
 
          if Main_Priority = No_Main_Priority
+           and then Opt.Default_Stack_Size = Opt.No_Stack_Size
            and then Main_CPU = No_Main_CPU
            and then not System_Tasking_Restricted_Stages_Used
          then

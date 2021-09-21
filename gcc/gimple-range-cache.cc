@@ -37,8 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 
 non_null_ref::non_null_ref ()
 {
-  m_nn.create (0);
-  m_nn.safe_grow_cleared (num_ssa_names);
+  m_nn.create (num_ssa_names);
+  m_nn.quick_grow_cleared (num_ssa_names);
   bitmap_obstack_initialize (&m_bitmaps);
 }
 

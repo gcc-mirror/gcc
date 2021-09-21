@@ -8124,13 +8124,13 @@ package body Sem_Attr is
       end if;
 
       --  If we are asked to evaluate an attribute where the prefix is a
-      --  non-frozen generic actual type whose RM_Size is still set to zero,
+      --  non-frozen generic actual type whose RM_Size has not been set,
       --  then abandon the effort.
 
       if Is_Type (P_Entity)
         and then (not Is_Frozen (P_Entity)
                    and then Is_Generic_Actual_Type (P_Entity)
-                   and then RM_Size (P_Entity) = 0)
+                   and then not Known_RM_Size (P_Entity))
 
         --  However, the attribute Unconstrained_Array must be evaluated,
         --  since it is documented to be a static attribute (and can for
@@ -9881,9 +9881,9 @@ package body Sem_Attr is
             P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
 
          begin
-            if Is_Scalar_Type (P_TypeA)
-              or else RM_Size (P_TypeA) /= Uint_0
-            then
+            pragma Assert
+              (if Is_Scalar_Type (P_TypeA) then Known_RM_Size (P_TypeA));
+            if Known_RM_Size (P_TypeA) then
                --  VADS_Size case
 
                if Id = Attribute_VADS_Size or else Use_VADS_Size then
@@ -10159,7 +10159,9 @@ package body Sem_Attr is
          P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
 
       begin
-         if Is_Scalar_Type (P_TypeA) or else RM_Size (P_TypeA) /= Uint_0 then
+         pragma Assert
+           (if Is_Scalar_Type (P_TypeA) then Known_RM_Size (P_TypeA));
+         if Known_RM_Size (P_TypeA) then
             Fold_Uint (N, RM_Size (P_TypeA), Static);
          end if;
       end Value_Size;

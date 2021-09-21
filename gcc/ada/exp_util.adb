@@ -4892,6 +4892,9 @@ package body Exp_Util is
       then
          return False;
 
+      elsif not Known_Normalized_First_Bit (Comp) then
+         return True;
+
       --  Otherwise if the component is not byte aligned, we know we have the
       --  nasty unaligned case.
 
@@ -10994,26 +10997,25 @@ package body Exp_Util is
    --  At the current time, the only types that we return False for (i.e. where
    --  we decide we know they cannot generate large temps) are ones where we
    --  know the size is 256 bits or less at compile time, and we are still not
-   --  doing a thorough job on arrays and records ???
+   --  doing a thorough job on arrays and records.
 
    function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean is
    begin
       if not Size_Known_At_Compile_Time (Typ) then
          return False;
+      end if;
 
-      elsif Esize (Typ) /= 0 and then Esize (Typ) <= 256 then
+      if Known_Esize (Typ) and then Esize (Typ) <= 256 then
          return False;
+      end if;
 
-      elsif Is_Array_Type (Typ)
+      if Is_Array_Type (Typ)
         and then Present (Packed_Array_Impl_Type (Typ))
       then
          return May_Generate_Large_Temp (Packed_Array_Impl_Type (Typ));
-
-      --  We could do more here to find other small types ???
-
-      else
-         return True;
       end if;
+
+      return True;
    end May_Generate_Large_Temp;
 
    --------------------------------------------
@@ -11654,6 +11656,7 @@ package body Exp_Util is
       is
          Temp_Id  : Entity_Id;
          Temp_Nam : Name_Id;
+         Should_Set_Related_Expression : Boolean := False;
 
       begin
          --  The context requires an external symbol : expression is
@@ -11673,6 +11676,12 @@ package body Exp_Util is
 
             else
                pragma Assert (Discr_Number > 0);
+
+               --  We don't have any intelligible way of printing T_DISCR in
+               --  CodePeer. Thus, set a related expression in this case.
+
+               Should_Set_Related_Expression := True;
+
                --  Use fully qualified name to avoid ambiguities.
 
                Temp_Nam :=
@@ -11681,6 +11690,10 @@ package body Exp_Util is
             end if;
 
             Temp_Id := Make_Defining_Identifier (Loc, Temp_Nam);
+
+            if Should_Set_Related_Expression then
+               Set_Related_Expression (Temp_Id, Related_Nod);
+            end if;
 
          --  Otherwise generate an internal temporary
 

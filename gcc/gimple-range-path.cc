@@ -30,11 +30,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "gimple-range-path.h"
 #include "ssa.h"
+#include "tree-cfg.h"
+#include "gimple-iterator.h"
 
 // Internal construct to help facilitate debugging of solver.
 #define DEBUG_SOLVER (0 && dump_file)
 
-path_range_query::path_range_query (gimple_ranger &ranger)
+path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
   : m_ranger (ranger)
 {
   if (DEBUG_SOLVER)
@@ -43,12 +45,15 @@ path_range_query::path_range_query (gimple_ranger &ranger)
   m_cache = new ssa_global_cache;
   m_has_cache_entry = BITMAP_ALLOC (NULL);
   m_path = NULL;
+  m_resolve = resolve;
+  m_oracle = new path_oracle (ranger.oracle ());
 }
 
 path_range_query::~path_range_query ()
 {
   BITMAP_FREE (m_has_cache_entry);
   delete m_cache;
+  delete m_oracle;
 }
 
 // Mark cache entry for NAME as unused.
@@ -116,6 +121,34 @@ path_range_query::debug ()
   dump (stderr);
 }
 
+// Return TRUE if NAME is defined outside the current path.
+
+bool
+path_range_query::defined_outside_path (tree name)
+{
+  gimple *def = SSA_NAME_DEF_STMT (name);
+  basic_block bb = gimple_bb (def);
+
+  return !bb || !m_path->contains (bb);
+}
+
+// Return the range of NAME on entry to the path.
+
+void
+path_range_query::range_on_path_entry (irange &r, tree name)
+{
+  int_range_max tmp;
+  basic_block entry = entry_bb ();
+  r.set_undefined ();
+  for (unsigned i = 0; i < EDGE_COUNT (entry->preds); ++i)
+    {
+      edge e = EDGE_PRED (entry, i);
+      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	  && m_ranger.range_on_edge (tmp, e, name))
+	r.union_ (tmp);
+    }
+}
+
 // Return the range of NAME at the end of the path being analyzed.
 
 bool
@@ -127,12 +160,25 @@ path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
   if (get_cache (r, name))
     return true;
 
+  if (m_resolve && defined_outside_path (name))
+    {
+      range_on_path_entry (r, name);
+
+      if (r.varying_p ())
+	improve_range_with_equivs (r, name);
+
+      set_cache (r, name);
+      return true;
+    }
 
   basic_block bb = stmt ? gimple_bb (stmt) : exit_bb ();
   if (stmt && range_defined_in_block (r, name, bb))
     {
       if (TREE_CODE (name) == SSA_NAME)
 	r.intersect (gimple_range_global (name));
+
+      if (m_resolve && r.varying_p ())
+	improve_range_with_equivs (r, name);
 
       set_cache (r, name);
       return true;
@@ -155,26 +201,37 @@ path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
   return false;
 }
 
+// Improve the range of NAME with the range of any of its equivalences.
+
+void
+path_range_query::improve_range_with_equivs (irange &r, tree name)
+{
+  if (TREE_CODE (name) != SSA_NAME)
+    return;
+
+  basic_block entry = entry_bb ();
+  relation_oracle *oracle = m_ranger.oracle ();
+
+  if (const bitmap_head *equivs = oracle->equiv_set (name, entry))
+    {
+      int_range_max t;
+      bitmap_iterator bi;
+      unsigned i;
+
+      EXECUTE_IF_SET_IN_BITMAP (equivs, 0, i, bi)
+	if (i != SSA_NAME_VERSION (name) && r.varying_p ())
+	  {
+	    tree equiv = ssa_name (i);
+	    range_on_path_entry (t, equiv);
+	    r.intersect (t);
+	  }
+    }
+}
+
 bool
 path_range_query::unreachable_path_p ()
 {
   return m_undefined_path;
-}
-
-// Return the range of STMT at the end of the path being analyzed.
-
-bool
-path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
-{
-  tree type = gimple_range_type (stmt);
-
-  if (!irange::supports_type_p (type))
-    return false;
-
-  if (!fold_range (r, stmt, this))
-    r.set_varying (type);
-
-  return true;
 }
 
 // Initialize the current path to PATH.  The current block is set to
@@ -200,10 +257,11 @@ path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
   tree name = gimple_phi_result (phi);
   basic_block bb = gimple_bb (phi);
 
-  // We experimented with querying ranger's range_on_entry here, but
-  // the performance penalty was too high, for hardly any improvements.
   if (at_entry ())
     {
+      if (m_resolve && m_ranger.range_of_expr (r, name, phi))
+	return;
+
       // Try fold just in case we can resolve simple things like PHI <5(99), 6(88)>.
       if (!fold_range (r, phi, this))
 	r.set_varying (TREE_TYPE (name));
@@ -221,8 +279,20 @@ path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
 	tree arg = gimple_phi_arg_def (phi, i);
 
 	if (!get_cache (r, arg))
-	  r.set_varying (TREE_TYPE (name));
-
+	  {
+	    if (m_resolve)
+	      {
+		int_range_max tmp;
+		// Using both the range on entry to the path, and the
+		// range on this edge yields significantly better
+		// results.
+		range_on_path_entry (r, arg);
+		m_ranger.range_on_edge (tmp, e_in, arg);
+		r.intersect (tmp);
+		return;
+	      }
+	    r.set_varying (TREE_TYPE (name));
+	  }
 	return;
       }
   gcc_unreachable ();
@@ -256,10 +326,6 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
       r.dump (dump_file);
       fprintf (dump_file, "\n");
     }
-
-  // We may have an artificial statement not in the IL.
-  if (!bb && r.varying_p ())
-    return false;
 
   return true;
 }
@@ -358,6 +424,71 @@ path_range_query::adjust_for_non_null_uses (basic_block bb)
     }
 }
 
+// If NAME is a supported SSA_NAME, add it the bitmap in IMPORTS.
+
+bool
+path_range_query::add_to_imports (tree name, bitmap imports)
+{
+  if (TREE_CODE (name) == SSA_NAME
+      && irange::supports_type_p (TREE_TYPE (name)))
+    return bitmap_set_bit (imports, SSA_NAME_VERSION (name));
+  return false;
+}
+
+// Add the copies of any SSA names in IMPORTS to IMPORTS.
+//
+// These are hints for the solver.  Adding more elements (within
+// reason) doesn't slow us down, because we don't solve anything that
+// doesn't appear in the path.  On the other hand, not having enough
+// imports will limit what we can solve.
+
+void
+path_range_query::add_copies_to_imports ()
+{
+  auto_vec<tree> worklist (bitmap_count_bits (m_imports));
+  bitmap_iterator bi;
+  unsigned i;
+
+  EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
+    {
+      tree name = ssa_name (i);
+      worklist.quick_push (name);
+    }
+
+  while (!worklist.is_empty ())
+    {
+      tree name = worklist.pop ();
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+
+      if (is_gimple_assign (def_stmt))
+	{
+	  // ?? Adding assignment copies doesn't get us much.  At the
+	  // time of writing, we got 63 more threaded paths across the
+	  // .ii files from a bootstrap.
+	  add_to_imports (gimple_assign_rhs1 (def_stmt), m_imports);
+	  tree rhs = gimple_assign_rhs2 (def_stmt);
+	  if (rhs && add_to_imports (rhs, m_imports))
+	    worklist.safe_push (rhs);
+	  rhs = gimple_assign_rhs3 (def_stmt);
+	  if (rhs && add_to_imports (rhs, m_imports))
+	    worklist.safe_push (rhs);
+	}
+      else if (gphi *phi = dyn_cast <gphi *> (def_stmt))
+	{
+	  for (size_t i = 0; i < gimple_phi_num_args (phi); ++i)
+	    {
+	      edge e = gimple_phi_arg_edge (phi, i);
+	      tree arg = gimple_phi_arg (phi, i)->def;
+
+	      if (TREE_CODE (arg) == SSA_NAME
+		  && m_path->contains (e->src)
+		  && bitmap_set_bit (m_imports, SSA_NAME_VERSION (arg)))
+		worklist.safe_push (arg);
+	    }
+	}
+    }
+}
+
 // Precompute the ranges for IMPORTS along PATH.
 //
 // IMPORTS are the set of SSA names, any of which could potentially
@@ -368,8 +499,15 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
 				     const bitmap_head *imports)
 {
   set_path (path);
-  m_imports = imports;
+  bitmap_copy (m_imports, imports);
   m_undefined_path = false;
+
+  if (m_resolve)
+    {
+      add_copies_to_imports ();
+      m_oracle->reset_path ();
+      precompute_relations (path);
+    }
 
   if (DEBUG_SOLVER)
     {
@@ -388,6 +526,18 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
     {
       basic_block bb = curr_bb ();
 
+      if (m_resolve)
+	{
+	  gori_compute &gori = m_ranger.gori ();
+	  tree name;
+
+	  // Exported booleans along the path, may help conditionals.
+	  // Add them as interesting imports.
+	  FOR_EACH_GORI_EXPORT_NAME (gori, bb, name)
+	    if (TREE_CODE (TREE_TYPE (name)) == BOOLEAN_TYPE)
+	      bitmap_set_bit (m_imports, SSA_NAME_VERSION (name));
+	}
+
       precompute_ranges_in_block (bb);
       adjust_for_non_null_uses (bb);
 
@@ -399,4 +549,179 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
 
   if (DEBUG_SOLVER)
     dump (dump_file);
+}
+
+// A folding aid used to register and query relations along a path.
+// When queried, it returns relations as they would appear on exit to
+// the path.
+//
+// Relations are registered on entry so the path_oracle knows which
+// block to query the root oracle at when a relation lies outside the
+// path.  However, when queried we return the relation on exit to the
+// path, since the root_oracle ignores the registered.
+
+class jt_fur_source : public fur_depend
+{
+public:
+  jt_fur_source (gimple *s, path_range_query *, gori_compute *,
+		 const vec<basic_block> &);
+  relation_kind query_relation (tree op1, tree op2) override;
+  void register_relation (gimple *, relation_kind, tree op1, tree op2) override;
+  void register_relation (edge, relation_kind, tree op1, tree op2) override;
+private:
+  basic_block m_entry;
+};
+
+jt_fur_source::jt_fur_source (gimple *s,
+			      path_range_query *query,
+			      gori_compute *gori,
+			      const vec<basic_block> &path)
+  : fur_depend (s, gori, query)
+{
+  gcc_checking_assert (!path.is_empty ());
+
+  m_entry = path[path.length () - 1];
+
+  if (dom_info_available_p (CDI_DOMINATORS))
+    m_oracle = query->oracle ();
+  else
+    m_oracle = NULL;
+}
+
+// Ignore statement and register relation on entry to path.
+
+void
+jt_fur_source::register_relation (gimple *, relation_kind k, tree op1, tree op2)
+{
+  if (m_oracle)
+    m_oracle->register_relation (m_entry, k, op1, op2);
+}
+
+// Ignore edge and register relation on entry to path.
+
+void
+jt_fur_source::register_relation (edge, relation_kind k, tree op1, tree op2)
+{
+  if (m_oracle)
+    m_oracle->register_relation (m_entry, k, op1, op2);
+}
+
+relation_kind
+jt_fur_source::query_relation (tree op1, tree op2)
+{
+  if (!m_oracle)
+    return VREL_NONE;
+
+  if (TREE_CODE (op1) != SSA_NAME || TREE_CODE (op2) != SSA_NAME)
+    return VREL_NONE;
+
+  return m_oracle->query_relation (m_entry, op1, op2);
+}
+
+// Return the range of STMT at the end of the path being analyzed.
+
+bool
+path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
+{
+  tree type = gimple_range_type (stmt);
+
+  if (!irange::supports_type_p (type))
+    return false;
+
+  // If resolving unknowns, fold the statement as it would have
+  // appeared at the end of the path.
+  if (m_resolve)
+    {
+      fold_using_range f;
+      jt_fur_source src (stmt, this, &m_ranger.gori (), *m_path);
+      if (!f.fold_stmt (r, stmt, src))
+	r.set_varying (type);
+    }
+  // Otherwise, use the global ranger to fold it as it would appear in
+  // the original IL.  This is more conservative, but faster.
+  else if (!fold_range (r, stmt, this))
+    r.set_varying (type);
+
+  return true;
+}
+
+// Precompute relations on a path.  This involves two parts: relations
+// along the conditionals joining a path, and relations determined by
+// examining PHIs.
+
+void
+path_range_query::precompute_relations (const vec<basic_block> &path)
+{
+  if (!dom_info_available_p (CDI_DOMINATORS))
+    return;
+
+  jt_fur_source src (NULL, this, &m_ranger.gori (), path);
+  basic_block prev = NULL;
+  for (unsigned i = path.length (); i > 0; --i)
+    {
+      basic_block bb = path[i - 1];
+      gimple *stmt = last_stmt (bb);
+
+      precompute_phi_relations (bb, prev);
+
+      // Compute relations in outgoing edges along the path.  Skip the
+      // final conditional which we don't know yet.
+      if (i > 1
+	  && stmt
+	  && gimple_code (stmt) == GIMPLE_COND
+	  && irange::supports_type_p (TREE_TYPE (gimple_cond_lhs (stmt))))
+	{
+	  basic_block next = path[i - 2];
+	  int_range<2> r;
+	  gcond *cond = as_a<gcond *> (stmt);
+
+	  if (EDGE_SUCC (bb, 0)->dest == next)
+	    gcond_edge_range (r, EDGE_SUCC (bb, 0));
+	  else if (EDGE_SUCC (bb, 1)->dest == next)
+	    gcond_edge_range (r, EDGE_SUCC (bb, 1));
+	  else
+	    gcc_unreachable ();
+
+	  edge e0 = EDGE_SUCC (bb, 0);
+	  edge e1 = EDGE_SUCC (bb, 1);
+	  src.register_outgoing_edges (cond, r, e0, e1);
+	}
+      prev = bb;
+    }
+}
+
+// Precompute relations for each PHI in BB.  For example:
+//
+//   x_5 = PHI<y_9(5),...>
+//
+// If the path flows through BB5, we can register that x_5 == y_9.
+
+void
+path_range_query::precompute_phi_relations (basic_block bb, basic_block prev)
+{
+  if (prev == NULL)
+    return;
+
+  basic_block entry = entry_bb ();
+  edge e_in = find_edge (prev, bb);
+  gcc_checking_assert (e_in);
+
+  for (gphi_iterator iter = gsi_start_phis (bb); !gsi_end_p (iter);
+       gsi_next (&iter))
+    {
+      gphi *phi = iter.phi ();
+      tree result = gimple_phi_result (phi);
+      unsigned nargs = gimple_phi_num_args (phi);
+
+      for (size_t i = 0; i < nargs; ++i)
+	if (e_in == gimple_phi_arg_edge (phi, i))
+	  {
+	    tree arg = gimple_phi_arg_def (phi, i);
+
+	    if (gimple_range_ssa_p (arg))
+	      m_oracle->register_relation (entry, EQ_EXPR, arg, result);
+
+	    break;
+	  }
+    }
 }

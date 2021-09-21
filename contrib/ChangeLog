@@ -1,3 +1,8 @@
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* config-list.mk: --enable-obsolete for hppa2.0-hpux10.1 and
+	hppa2.0-hpux11.9.
+
 2021-09-15  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Add FIXME note.

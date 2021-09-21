@@ -159,14 +159,7 @@ gfc_init_options (unsigned int decoded_options_count,
 			   | GFC_FPE_UNDERFLOW;
   gfc_option.rtcheck = 0;
 
-  /* ??? Wmissing-include-dirs is disabled by default in C/C++ but
-     enabled by default in Fortran.  Ideally, we should express this
-     in .opt, but that is not supported yet.  */
-  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
-		       cpp_warn_missing_include_dirs, 1);
-
   set_dec_flags (0);
-
   set_default_std_flags ();
 
   /* Initialize cpp-related options.  */
@@ -260,6 +253,13 @@ gfc_post_options (const char **pfilename)
   char *source_path;
   int i;
 
+  /* This needs to be after the commandline has been processed.
+     In Fortran, the options is by default enabled, in C/C++
+     by default disabled.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       cpp_warn_missing_include_dirs, 1);
+  gfc_check_include_dirs ();
+
   /* Finalize DEC flags.  */
   post_dec_flags (flag_dec);
 
@@ -339,10 +339,10 @@ gfc_post_options (const char **pfilename)
       source_path = (char *) alloca (i + 1);
       memcpy (source_path, canon_source_file, i);
       source_path[i] = 0;
-      gfc_add_include_path (source_path, true, true, true);
+      gfc_add_include_path (source_path, true, true, true, false);
     }
   else
-    gfc_add_include_path (".", true, true, true);
+    gfc_add_include_path (".", true, true, true, false);
 
   if (canon_source_file != gfc_source_file)
     free (CONST_CAST (char *, canon_source_file));
@@ -511,7 +511,7 @@ gfc_handle_module_path_options (const char *arg)
   gfc_option.module_dir = XCNEWVEC (char, strlen (arg) + 2);
   strcpy (gfc_option.module_dir, arg);
 
-  gfc_add_include_path (gfc_option.module_dir, true, false, true);
+  gfc_add_include_path (gfc_option.module_dir, true, false, true, true);
 
   strcat (gfc_option.module_dir, "/");
 }
@@ -690,7 +690,7 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	 with intrinsic modules.  Do no warn because during testing
 	 without an installed compiler, we would get lots of bogus
 	 warnings for a missing include directory.  */
-      gfc_add_include_path (arg, false, false, false);
+      gfc_add_include_path (arg, false, false, false, true);
 
       gfc_add_intrinsic_modules_path (arg);
       break;
@@ -737,7 +737,7 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_I:
-      gfc_add_include_path (arg, true, false, true);
+      gfc_add_include_path (arg, true, false, true, true);
       break;
 
     case OPT_J:

@@ -1828,7 +1828,7 @@ package body Atree is
 
    function Parent (N : Node_Or_Entity_Id) return Node_Or_Entity_Id is
    begin
-      pragma Assert (Atree.Present (N));
+      pragma Assert (Present (N));
 
       if Is_List_Member (N) then
          return Parent (List_Containing (N));
@@ -2151,7 +2151,7 @@ package body Atree is
 
    procedure Set_Parent (N : Node_Or_Entity_Id; Val : Node_Or_Entity_Id) is
    begin
-      pragma Assert (Atree.Present (N));
+      pragma Assert (Present (N));
       pragma Assert (not In_List (N));
       Set_Link (N, Union_Id (Val));
    end Set_Parent;

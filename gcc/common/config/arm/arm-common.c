@@ -115,7 +115,12 @@ const char *
 arm_rewrite_mcpu (int argc, const char **argv)
 {
   gcc_assert (argc);
+
+#ifdef HAVE_GAS_ARM_EXTENDED_ARCH
+  return argv[argc - 1];
+#else
   return arm_rewrite_selected_cpu (argv[argc - 1]);
+#endif
 }
 
 /* Comparator for arm_rewrite_selected_arch.  Compare the two arch extension
@@ -223,7 +228,12 @@ const char *
 arm_rewrite_march (int argc, const char **argv)
 {
   gcc_assert (argc);
+
+#ifdef HAVE_GAS_ARM_EXTENDED_ARCH
+  return argv[argc - 1];
+#else
   return arm_rewrite_selected_arch (argv[argc - 1]);
+#endif
 }
 
 #include "arm-cpu-cdata.h"

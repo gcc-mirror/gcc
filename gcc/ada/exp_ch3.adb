@@ -3421,7 +3421,8 @@ package body Exp_Ch3 is
 
                   Clean_Task_Names (Typ, Proc_Id);
 
-               --  Simple initialization
+               --  Simple initialization. If the Esize is not yet set, we pass
+               --  Uint_0 as expected by Get_Simple_Init_Val.
 
                elsif Component_Needs_Simple_Initialization (Typ) then
                   Actions :=
@@ -3431,7 +3432,9 @@ package body Exp_Ch3 is
                          Get_Simple_Init_Val
                            (Typ  => Typ,
                             N    => N,
-                            Size => Esize (Id)));
+                            Size =>
+                              (if Known_Esize (Id) then Esize (Id)
+                               else Uint_0)));
 
                --  Nothing needed for this case
 
@@ -6507,7 +6510,8 @@ package body Exp_Ch3 is
                     Get_Simple_Init_Val
                       (Typ  => Typ,
                        N    => Obj_Def,
-                       Size => Esize (Def_Id)));
+                       Size => (if Known_Esize (Def_Id) then Esize (Def_Id)
+                                else Uint_0)));
 
                   Analyze_And_Resolve
                     (Expression (N), Typ, Suppress => All_Checks);
@@ -6534,7 +6538,8 @@ package body Exp_Ch3 is
               Get_Simple_Init_Val
                 (Typ  => Typ,
                  N    => Obj_Def,
-                 Size => Esize (Def_Id)));
+                 Size =>
+                   (if Known_Esize (Def_Id) then Esize (Def_Id) else Uint_0)));
 
             Analyze_And_Resolve (Expression (N), Typ);
          end if;

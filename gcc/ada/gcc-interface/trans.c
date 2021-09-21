@@ -9279,10 +9279,10 @@ process_freeze_entity (Node_Id gnat_node)
 	Copy_Alignment (gnat_entity, full_view);
 
       if (!Known_Esize (gnat_entity))
-	Set_Esize (gnat_entity, Esize (full_view));
+	Copy_Esize (gnat_entity, full_view);
 
       if (!Known_RM_Size (gnat_entity))
-	Set_RM_Size (gnat_entity, RM_Size (full_view));
+	Copy_RM_Size (gnat_entity, full_view);
 
       /* The above call may have defined this entity (the simplest example
 	 of this is when we have a private enumeral type since the bounds
