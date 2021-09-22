@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-add-options no_pch }
 
 // Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
