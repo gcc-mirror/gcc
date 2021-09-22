@@ -176,7 +176,7 @@ push_dump_file::~push_dump_file ()
 
 // Dump all that ranger knows for the current function.
 
-DEBUG_FUNCTION void
+void
 dump_ranger (FILE *out)
 {
   push_dump_file save (out, dump_flags);
@@ -201,7 +201,7 @@ debug_ranger ()
 // Note that the blocks are in reverse order, thus the exit block is
 // path[0].
 
-DEBUG_FUNCTION void
+void
 dump_ranger (FILE *dump_file, const vec<basic_block> &path)
 {
   if (path.length () == 0)

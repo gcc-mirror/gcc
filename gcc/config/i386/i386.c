@@ -10101,10 +10101,10 @@ ix86_live_on_entry (bitmap regs)
 }
 
 /* Extract the parts of an RTL expression that is a valid memory address
-   for an instruction.  Return 0 if the structure of the address is
+   for an instruction.  Return false if the structure of the address is
    grossly off.  */
 
-int
+bool
 ix86_decompose_address (rtx addr, struct ix86_address *out)
 {
   rtx base = NULL_RTX, index = NULL_RTX, disp = NULL_RTX;
@@ -10123,17 +10123,17 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	{
 	  addr = XEXP (addr, 0);
 	  if (CONST_INT_P (addr))
-	    return 0;
+	    return false;
 	}	      
       else if (GET_CODE (addr) == AND
 	       && const_32bit_mask (XEXP (addr, 1), DImode))
 	{
 	  addr = lowpart_subreg (SImode, XEXP (addr, 0), DImode);
 	  if (addr == NULL_RTX)
-	    return 0;
+	    return false;
 
 	  if (CONST_INT_P (addr))
-	    return 0;
+	    return false;
 	}
       else if (GET_CODE (addr) == AND)
 	{
@@ -10167,7 +10167,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	{
 	  addr = SUBREG_REG (addr);
 	  if (CONST_INT_P (addr))
-	    return 0;
+	    return false;
 	}
     }
 
@@ -10178,7 +10178,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       if (REG_P (SUBREG_REG (addr)))
 	base = addr;
       else
-	return 0;
+	return false;
     }
   else if (GET_CODE (addr) == PLUS)
     {
@@ -10189,13 +10189,13 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       do
 	{
 	  if (n >= 4)
-	    return 0;
+	    return false;
 	  addends[n++] = XEXP (op, 1);
 	  op = XEXP (op, 0);
 	}
       while (GET_CODE (op) == PLUS);
       if (n >= 4)
-	return 0;
+	return false;
       addends[n] = op;
 
       for (i = n; i >= 0; --i)
@@ -10205,28 +10205,28 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	    {
 	    case MULT:
 	      if (index)
-		return 0;
+		return false;
 	      index = XEXP (op, 0);
 	      scale_rtx = XEXP (op, 1);
 	      break;
 
 	    case ASHIFT:
 	      if (index)
-		return 0;
+		return false;
 	      index = XEXP (op, 0);
 	      tmp = XEXP (op, 1);
 	      if (!CONST_INT_P (tmp))
-		return 0;
+		return false;
 	      scale = INTVAL (tmp);
 	      if ((unsigned HOST_WIDE_INT) scale > 3)
-		return 0;
+		return false;
 	      scale = 1 << scale;
 	      break;
 
 	    case ZERO_EXTEND:
 	      op = XEXP (op, 0);
 	      if (GET_CODE (op) != UNSPEC)
-		return 0;
+		return false;
 	      /* FALLTHRU */
 
 	    case UNSPEC:
@@ -10235,12 +10235,12 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	          && seg == ADDR_SPACE_GENERIC)
 		seg = DEFAULT_TLS_SEG_REG;
 	      else
-		return 0;
+		return false;
 	      break;
 
 	    case SUBREG:
 	      if (!REG_P (SUBREG_REG (op)))
-		return 0;
+		return false;
 	      /* FALLTHRU */
 
 	    case REG:
@@ -10249,7 +10249,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	      else if (!index)
 		index = op;
 	      else
-		return 0;
+		return false;
 	      break;
 
 	    case CONST:
@@ -10257,12 +10257,12 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	    case SYMBOL_REF:
 	    case LABEL_REF:
 	      if (disp)
-		return 0;
+		return false;
 	      disp = op;
 	      break;
 
 	    default:
-	      return 0;
+	      return false;
 	    }
 	}
     }
@@ -10277,10 +10277,10 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       index = XEXP (addr, 0);
       tmp = XEXP (addr, 1);
       if (!CONST_INT_P (tmp))
-	return 0;
+	return false;
       scale = INTVAL (tmp);
       if ((unsigned HOST_WIDE_INT) scale > 3)
-	return 0;
+	return false;
       scale = 1 << scale;
     }
   else
@@ -10294,14 +10294,14 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	       && REG_P (SUBREG_REG (index)))
 	;
       else
-	return 0;
+	return false;
     }
 
   /* Extract the integral value of scale.  */
   if (scale_rtx)
     {
       if (!CONST_INT_P (scale_rtx))
-	return 0;
+	return false;
       scale = INTVAL (scale_rtx);
     }
 
@@ -10354,7 +10354,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   out->scale = scale;
   out->seg = seg;
 
-  return 1;
+  return true;
 }
 
 /* Return cost of the memory address x.
@@ -13610,11 +13610,16 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	case E_V8SFmode:
 	case E_V8DFmode:
 	case E_V8DImode:
+	case E_V8HFmode:
 	  fputs ("{1to8}", file);
 	  break;
 	case E_V16SFmode:
 	case E_V16SImode:
+	case E_V16HFmode:
 	  fputs ("{1to16}", file);
+	  break;
+	case E_V32HFmode:
+	  fputs ("{1to32}", file);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -15556,6 +15561,9 @@ ix86_build_const_vector (machine_mode mode, bool vect, rtx value)
     case E_V2DImode:
       gcc_assert (vect);
       /* FALLTHRU */
+    case E_V8HFmode:
+    case E_V16HFmode:
+    case E_V32HFmode:
     case E_V16SFmode:
     case E_V8SFmode:
     case E_V4SFmode:
@@ -15594,6 +15602,13 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
 
   switch (mode)
     {
+    case E_V8HFmode:
+    case E_V16HFmode:
+    case E_V32HFmode:
+      vec_mode = mode;
+      imode = HImode;
+      break;
+
     case E_V16SImode:
     case E_V16SFmode:
     case E_V8SImode:
@@ -16976,6 +16991,7 @@ ix86_sched_init_global (FILE *, int, int)
     case PROCESSOR_NEHALEM:
     case PROCESSOR_SANDYBRIDGE:
     case PROCESSOR_HASWELL:
+    case PROCESSOR_TREMONT:
     case PROCESSOR_GENERIC:
       /* Do not perform multipass scheduling for pre-reload schedule
          to save compile time.  */
@@ -19443,8 +19459,11 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
       /* Vector registers do not support QI or HImode loads.  If we don't
 	 disallow a change to these modes, reload will assume it's ok to
 	 drop the subreg from (subreg:SI (reg:HI 100) 0).  This affects
-	 the vec_dupv4hi pattern.  */
-      if (GET_MODE_SIZE (from) < 4)
+	 the vec_dupv4hi pattern.
+	 NB: AVX512FP16 supports vmovw which can load 16bit data to sse
+	 register.  */
+      int mov_size = MAYBE_SSE_CLASS_P (regclass) && TARGET_AVX512FP16 ? 2 : 4;
+      if (GET_MODE_SIZE (from) < mov_size)
 	return false;
     }
 

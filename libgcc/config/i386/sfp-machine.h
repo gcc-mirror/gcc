@@ -74,7 +74,7 @@ void __sfp_handle_exceptions (int);
 #define __BYTE_ORDER __LITTLE_ENDIAN
 
 /* Define ALIASNAME as a strong alias for NAME.  */
-#if defined __MACH__
+#if defined __APPLE__
 /* Mach-O doesn't support aliasing, so we build a secondary function for
    the alias - we need to do a bit of a dance to find out what the type of
    the arguments is and then apply that to the secondary function.

@@ -1,6 +1,6 @@
 /* Verify zero initialization for array, union, and structure type automatic variables.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=zero -fdump-rtl-expand" } */
+/* { dg-options "-ftrivial-auto-var-init=zero -fdump-rtl-expand -march=x86-64 -mtune=generic -fno-stack-protector -msse" } */
 
 struct S
 {

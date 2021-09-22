@@ -1461,7 +1461,7 @@ package body Sem_Ch8 is
          Mutate_Ekind (Id, E_Variable);
       end if;
 
-      Init_Object_Size_Align (Id);
+      Reinit_Object_Size_Align (Id);
 
       --  If N comes from source then check that the original node is an
       --  object reference since there may have been several rewritting and

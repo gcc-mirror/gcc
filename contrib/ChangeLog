@@ -1,3 +1,26 @@
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* config-list.mk: --enable-obsolete for hppa2.0-hpux10.1 and
+	hppa2.0-hpux11.9.
+
+2021-09-15  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add FIXME note.
+
+2021-09-15  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Check commit email.
+	* gcc-changelog/test_email.py: Add new test.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	* config-list.mk: Remove vax-openbsd.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	* config-list.mk: Remove m68k-openbsd.
+
 2021-09-13  Andrew Pinski  <apinski@marvell.com>
 
 	* config-list.mk: Remove m32r-linux and m32rle-linux

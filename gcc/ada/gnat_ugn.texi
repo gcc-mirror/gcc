@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jun 23, 2021
+GNAT User's Guide for Native Platforms , Aug 03, 2021
 
 AdaCore
 
@@ -12633,8 +12633,8 @@ See @ref{e6,,Static Stack Usage Analysis} for details.
 This switch enables most warnings from the GCC back end.
 The code generator detects a number of warning situations that are missed
 by the GNAT front end, and this switch can be used to activate them.
-The use of this switch also sets the default front end warning mode to
-@code{-gnatwa}, that is, most front end warnings activated as well.
+The use of this switch also sets the default front-end warning mode to
+@code{-gnatwa}, that is, most front-end warnings are activated as well.
 @end table
 
 @geindex -w (gcc)
@@ -12645,8 +12645,8 @@ The use of this switch also sets the default front end warning mode to
 @item @code{-w}
 
 Conversely, this switch suppresses warnings from the GCC back end.
-The use of this switch also sets the default front end warning mode to
-@code{-gnatws}, that is, front end warnings suppressed as well.
+The use of this switch also sets the default front-end warning mode to
+@code{-gnatws}, that is, front-end warnings are suppressed as well.
 @end table
 
 @geindex -Werror (gcc)
@@ -12659,6 +12659,9 @@ The use of this switch also sets the default front end warning mode to
 This switch causes warnings from the GCC back end to be treated as
 errors.  The warning string still appears, but the warning messages are
 counted as errors, and prevent the generation of an object file.
+The use of this switch also sets the default front-end warning mode to
+@code{-gnatwe}, that is, front-end warning messages and style check
+messages are treated as errors as well.
 @end table
 
 A string of warning parameters can be used in the same parameter. For example:
@@ -23100,9 +23103,9 @@ calling convention. All convention specifiers are ignored on this
 platform.
 
 When a subprogram @code{F} (caller) calls a subprogram @code{G}
-(callee), there are several ways to push @code{G}’s parameters on the
+(callee), there are several ways to push @code{G}‘s parameters on the
 stack and there are several possible scenarios to clean up the stack
-upon @code{G}’s return. A calling convention is an agreed upon software
+upon @code{G}‘s return. A calling convention is an agreed upon software
 protocol whereby the responsibilities between the caller (@code{F}) and
 the callee (@code{G}) are clearly defined. Several calling conventions
 are available for Windows:

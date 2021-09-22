@@ -4303,7 +4303,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    gnu_size
 	      = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
 			       VAR_DECL, false, false, size_s, type_s);
-	  else
+
+	  /* ??? The test on Has_Size_Clause must be removed when "unknown" is
+	     no longer represented as Uint_0 (i.e. Use_New_Unknown_Rep).  */
+	  else if (Known_RM_Size (gnat_entity)
+		   || Has_Size_Clause (gnat_entity))
 	    gnu_size
 	      = validate_size (RM_Size (gnat_entity), gnu_type, gnat_entity,
 			       TYPE_DECL, false, Has_Size_Clause (gnat_entity),
@@ -4386,7 +4390,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
       /* Now set the RM size of the type.  We cannot do it before padding
 	 because we need to accept arbitrary RM sizes on integral types.  */
-      set_rm_size (RM_Size (gnat_entity), gnu_type, gnat_entity);
+      if (Known_RM_Size (gnat_entity))
+	set_rm_size (RM_Size (gnat_entity), gnu_type, gnat_entity);
 
       /* Back-annotate the alignment of the type if not already set.  */
       if (!Known_Alignment (gnat_entity))
@@ -4417,16 +4422,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* Likewise for the size, if any.  */
       if (!Known_Esize (gnat_entity) && TYPE_SIZE (gnu_type))
 	{
-	  tree gnu_size = TYPE_SIZE (gnu_type);
+	  tree size = TYPE_SIZE (gnu_type);
 
 	  /* If the size is self-referential, annotate the maximum value
 	     after saturating it, if need be, to avoid a No_Uint value.  */
-	  if (CONTAINS_PLACEHOLDER_P (gnu_size))
+	  if (CONTAINS_PLACEHOLDER_P (size))
 	    {
 	      const unsigned int align
 		= UI_To_Int (Alignment (gnat_entity)) * BITS_PER_UNIT;
-	      gnu_size
-		= maybe_saturate_size (max_size (gnu_size, true), align);
+	      size = maybe_saturate_size (max_size (size, true), align);
 	    }
 
 	  /* If we are just annotating types and the type is tagged, the tag
@@ -4464,12 +4468,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		  if (TYPE_FIELDS (gnu_type))
 		    offset
 		      = round_up (offset, DECL_ALIGN (TYPE_FIELDS (gnu_type)));
-		  gnu_size = size_binop (PLUS_EXPR, gnu_size, offset);
+		  size = size_binop (PLUS_EXPR, size, offset);
 		}
 
-	      gnu_size
-		= maybe_saturate_size (round_up (gnu_size, align), align);
-	      Set_Esize (gnat_entity, annotate_value (gnu_size));
+	      size = maybe_saturate_size (round_up (size, align), align);
+	      Set_Esize (gnat_entity, annotate_value (size));
 
 	      /* Tagged types are Strict_Alignment so RM_Size = Esize.  */
 	      if (!Known_RM_Size (gnat_entity))
@@ -4478,12 +4481,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  /* Otherwise no adjustment is needed.  */
 	  else
-	    Set_Esize (gnat_entity, annotate_value (gnu_size));
+	    Set_Esize (gnat_entity, No_Uint_To_0 (annotate_value (size)));
 	}
 
       /* Likewise for the RM size, if any.  */
       if (!Known_RM_Size (gnat_entity) && TYPE_SIZE (gnu_type))
-	Set_RM_Size (gnat_entity, annotate_value (rm_size (gnu_type)));
+	Set_RM_Size (gnat_entity,
+		     No_Uint_To_0 (annotate_value (rm_size (gnu_type))));
 
       /* If we are at global level, GCC applied variable_size to the size but
 	 this has done nothing.  So, if it's not constant or self-referential,
@@ -4758,9 +4762,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       if (!Known_Alignment (gnat_entity))
 	Copy_Alignment (gnat_entity, gnat_annotate_type);
       if (!Known_Esize (gnat_entity))
-	Set_Esize (gnat_entity, Esize (gnat_annotate_type));
+	Copy_Esize (gnat_entity, gnat_annotate_type);
       if (!Known_RM_Size (gnat_entity))
-	Set_RM_Size (gnat_entity, RM_Size (gnat_annotate_type));
+	Copy_RM_Size (gnat_entity, gnat_annotate_type);
     }
 
   /* If we haven't already, associate the ..._DECL node that we just made with
@@ -6499,7 +6503,8 @@ range_cannot_be_superflat (Node_Id gnat_range)
   Node_Id gnat_scalar_range;
   tree gnu_lb, gnu_hb, gnu_lb_minus_one;
 
-  /* If the low bound is not constant, try to find an upper bound.  */
+  /* If the low bound is not constant, take the worst case by finding an upper
+     bound for its type, repeatedly if need be.  */
   while (Nkind (gnat_lb) != N_Integer_Literal
 	 && (Ekind (Etype (gnat_lb)) == E_Signed_Integer_Subtype
 	     || Ekind (Etype (gnat_lb)) == E_Modular_Integer_Subtype)
@@ -6508,7 +6513,8 @@ range_cannot_be_superflat (Node_Id gnat_range)
 	     || Nkind (gnat_scalar_range) == N_Range))
     gnat_lb = High_Bound (gnat_scalar_range);
 
-  /* If the high bound is not constant, try to find a lower bound.  */
+  /* If the high bound is not constant, take the worst case by finding a lower
+     bound for its type, repeatedly if need be.  */
   while (Nkind (gnat_hb) != N_Integer_Literal
 	 && (Ekind (Etype (gnat_hb)) == E_Signed_Integer_Subtype
 	     || Ekind (Etype (gnat_hb)) == E_Modular_Integer_Subtype)
@@ -8774,7 +8780,7 @@ annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size, bool by_ref)
 	size = TYPE_SIZE (gnu_type);
 
       if (size)
-	Set_Esize (gnat_entity, annotate_value (size));
+	Set_Esize (gnat_entity, No_Uint_To_0 (annotate_value (size)));
     }
 
   if (!Known_Alignment (gnat_entity))
@@ -8880,8 +8886,9 @@ annotate_rep (Entity_Id gnat_entity, tree gnu_type)
 	      (gnat_field,
 	       annotate_value (bit_from_pos (offset, bit_offset)));
 
-	    Set_Esize (gnat_field,
-		       annotate_value (DECL_SIZE (TREE_PURPOSE (t))));
+	    Set_Esize
+	      (gnat_field,
+	       No_Uint_To_0 (annotate_value (DECL_SIZE (TREE_PURPOSE (t)))));
 	  }
 	else if (is_extension)
 	  {

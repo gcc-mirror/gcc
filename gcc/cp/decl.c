@@ -4756,7 +4756,7 @@ cxx_init_decl_processing (void)
   /* Check that the hardware interference sizes are at least
      alignof(max_align_t), as required by the standard.  */
   const int max_align = max_align_t_align () / BITS_PER_UNIT;
-  if (param_destruct_interfere_size)
+  if (global_options_set.x_param_destruct_interfere_size)
     {
       if (param_destruct_interfere_size < max_align)
 	error ("%<--param destructive-interference-size=%d%> is less than "
@@ -4767,11 +4767,13 @@ cxx_init_decl_processing (void)
 		 "is less than %<--param l1-cache-line-size=%d%>",
 		 param_destruct_interfere_size, param_l1_cache_line_size);
     }
+  else if (param_destruct_interfere_size)
+    /* Assume the internal value is OK.  */;
   else if (param_l1_cache_line_size >= max_align)
     param_destruct_interfere_size = param_l1_cache_line_size;
   /* else leave it unset.  */
 
-  if (param_construct_interfere_size)
+  if (global_options_set.x_param_construct_interfere_size)
     {
       if (param_construct_interfere_size < max_align)
 	error ("%<--param constructive-interference-size=%d%> is less than "
@@ -4783,6 +4785,8 @@ cxx_init_decl_processing (void)
 		 "is greater than %<--param l1-cache-line-size=%d%>",
 		 param_construct_interfere_size, param_l1_cache_line_size);
     }
+  else if (param_construct_interfere_size)
+    /* Assume the internal value is OK.  */;
   else if (param_l1_cache_line_size >= max_align)
     param_construct_interfere_size = param_l1_cache_line_size;
 }
@@ -5768,14 +5772,6 @@ start_decl_1 (tree decl, bool initialized)
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
     }
 
-  if (is_global_var (decl))
-    {
-      type_context_kind context = (DECL_THREAD_LOCAL_P (decl)
-				   ? TCTX_THREAD_STORAGE
-				   : TCTX_STATIC_STORAGE);
-      verify_type_context (input_location, context, TREE_TYPE (decl));
-    }
-
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?  */
     {
@@ -6124,6 +6120,38 @@ layout_var_decl (tree decl)
 	  error_at (DECL_SOURCE_LOCATION (decl),
 		    "storage size of %qD isn%'t constant", decl);
 	  TREE_TYPE (decl) = error_mark_node;
+	  type = error_mark_node;
+	}
+    }
+
+  /* If the final element initializes a flexible array field, add the size of
+     that initializer to DECL's size.  */
+  if (type != error_mark_node
+      && DECL_INITIAL (decl)
+      && TREE_CODE (DECL_INITIAL (decl)) == CONSTRUCTOR
+      && !vec_safe_is_empty (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)))
+      && DECL_SIZE (decl) != NULL_TREE
+      && TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST
+      && TYPE_SIZE (type) != NULL_TREE
+      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+      && tree_int_cst_equal (DECL_SIZE (decl), TYPE_SIZE (type)))
+    {
+      constructor_elt &elt = CONSTRUCTOR_ELTS (DECL_INITIAL (decl))->last ();
+      if (elt.index)
+	{
+	  tree itype = TREE_TYPE (elt.index);
+	  tree vtype = TREE_TYPE (elt.value);
+	  if (TREE_CODE (itype) == ARRAY_TYPE
+	      && TYPE_DOMAIN (itype) == NULL
+	      && TREE_CODE (vtype) == ARRAY_TYPE
+	      && COMPLETE_TYPE_P (vtype))
+	    {
+	      DECL_SIZE (decl)
+		= size_binop (PLUS_EXPR, DECL_SIZE (decl), TYPE_SIZE (vtype));
+	      DECL_SIZE_UNIT (decl)
+		= size_binop (PLUS_EXPR, DECL_SIZE_UNIT (decl),
+			      TYPE_SIZE_UNIT (vtype));
+	    }
 	}
     }
 }
@@ -7940,6 +7968,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 			      TCTX_STATIC_STORAGE, type)
       && DECL_INITIALIZED_IN_CLASS_P (decl))
     check_static_variable_definition (decl, type);
+
+  if (!processing_template_decl && VAR_P (decl) && is_global_var (decl))
+    {
+      type_context_kind context = (DECL_THREAD_LOCAL_P (decl)
+				   ? TCTX_THREAD_STORAGE
+				   : TCTX_STATIC_STORAGE);
+      verify_type_context (input_location, context, TREE_TYPE (decl));
+    }
 
   if (init && TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -13944,6 +13980,17 @@ grokdeclarator (const cp_declarator *declarator,
 		    if (declspecs->gnu_thread_keyword_p)
 		      SET_DECL_GNU_TLS_P (decl);
 		  }
+
+		/* Set the constraints on the declaration.  */
+		bool memtmpl = (processing_template_decl
+				> template_class_depth (current_class_type));
+		if (memtmpl)
+		  {
+		    tree tmpl_reqs
+		      = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
+		    tree ci = build_constraints (tmpl_reqs, NULL_TREE);
+		    set_constraints (decl, ci);
+		  }
 	      }
 	    else
 	      {
@@ -14811,9 +14858,11 @@ grok_special_member_properties (tree decl)
 	  if (ctor > 1)
 	    TYPE_HAS_CONST_COPY_CTOR (class_type) = 1;
 	}
-      else if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
+
+      if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
 	TYPE_HAS_DEFAULT_CONSTRUCTOR (class_type) = 1;
-      else if (is_list_ctor (decl))
+
+      if (is_list_ctor (decl))
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
       if (DECL_DECLARED_CONSTEXPR_P (decl)

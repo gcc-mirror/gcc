@@ -31,8 +31,8 @@ void
 ctest (CFI_cdesc_t *arg_float128,
        CFI_cdesc_t *arg_complex128)
 {
-  check (arg_float128, sizeof (__float128), CFI_type_float128);
-  check (arg_complex128, sizeof (__float128) * 2,
+  check (arg_float128, sizeof (_Float128), CFI_type_float128);
+  check (arg_complex128, sizeof (_Float128) * 2,
 	 CFI_type_float128_Complex);
 }
 

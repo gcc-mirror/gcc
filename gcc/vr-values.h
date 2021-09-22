@@ -66,6 +66,7 @@ private:
   tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
 							     tree, tree,
 							     bool *, gimple *s);
+  void set_and_propagate_unexecutable (edge e);
   void cleanup_edges_and_switches (void);
 
   /* Vectors of edges that need removing and switch statements that

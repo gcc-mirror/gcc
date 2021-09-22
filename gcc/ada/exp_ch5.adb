@@ -742,8 +742,8 @@ package body Exp_Ch5 is
       --  in the front end.
 
       declare
-         L_Index_Typ : constant Node_Id := Etype (First_Index (L_Type));
-         R_Index_Typ : constant Node_Id := Etype (First_Index (R_Type));
+         L_Index_Typ : constant Entity_Id := Etype (First_Index (L_Type));
+         R_Index_Typ : constant Entity_Id := Etype (First_Index (R_Type));
 
          Left_Lo  : constant Node_Id := Type_Low_Bound  (L_Index_Typ);
          Left_Hi  : constant Node_Id := Type_High_Bound (L_Index_Typ);
@@ -1382,8 +1382,8 @@ package body Exp_Ch5 is
 
       Loc  : constant Source_Ptr := Sloc (N);
 
-      L_Index_Typ : constant Node_Id := Etype (First_Index (L_Type));
-      R_Index_Typ : constant Node_Id := Etype (First_Index (R_Type));
+      L_Index_Typ : constant Entity_Id := Etype (First_Index (L_Type));
+      R_Index_Typ : constant Entity_Id := Etype (First_Index (R_Type));
       Left_Lo  : constant Node_Id := Type_Low_Bound  (L_Index_Typ);
       Right_Lo : constant Node_Id := Type_Low_Bound  (R_Index_Typ);
 
@@ -1698,8 +1698,8 @@ package body Exp_Ch5 is
                             (Etype (Left_Base_Index)))
                  and then RTE_Available (RE_Fast_Copy_Bitfield)
                then
-                  pragma Assert (Esize (L_Type) /= 0);
-                  pragma Assert (Esize (R_Type) /= 0);
+                  pragma Assert (Known_Esize (L_Type));
+                  pragma Assert (Known_Esize (R_Type));
 
                   return Expand_Assign_Array_Bitfield_Fast (N, Larray, Rarray);
                end if;

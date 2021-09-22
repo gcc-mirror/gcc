@@ -1,7 +1,7 @@
 /* Verify zero initialization for array type with structure element with
    padding.  */ 
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=zero" } */
+/* { dg-options "-ftrivial-auto-var-init=zero -march=x86-64" } */
 
 struct test_trailing_hole {
         int one;
@@ -19,4 +19,7 @@ int foo ()
 }
 
 /* { dg-final { scan-assembler "movl\t\\\$0," } } */
-/* { dg-final { scan-assembler "rep stosq" } } */
+/* { dg-final { scan-assembler "movl\t\\\$20," { target lp64} } } */
+/* { dg-final { scan-assembler "rep stosq" { target lp64 } } } */
+/* { dg-final { scan-assembler "movl\t\\\$40," { target ia32} } } */
+/* { dg-final { scan-assembler "rep stosl" { target ia32 } } } */

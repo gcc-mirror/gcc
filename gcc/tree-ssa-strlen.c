@@ -199,16 +199,22 @@ static bool handle_assign (gimple_stmt_iterator *, tree, bool *,
 
 /* Sets MINMAX to either the constant value or the range VAL is in
    and returns either the constant value or VAL on success or null
-   when the range couldn't be determined.  Uses RVALS when nonnull
-   to determine the range, otherwise uses CFUN or global range info,
-   whichever is nonnull.  */
+   when the range couldn't be determined.  Uses RVALS or CFUN for
+   range info, whichever is nonnull.  */
 
 tree
 get_range (tree val, gimple *stmt, wide_int minmax[2],
 	   range_query *rvals /* = NULL */)
 {
   if (!rvals)
-    rvals = get_range_query (cfun);
+    {
+      if (!cfun)
+	/* When called from front ends for global initializers CFUN
+	   may be null.  */
+	return NULL_TREE;
+
+      rvals = get_range_query (cfun);
+    }
 
   value_range vr;
   if (!rvals->range_of_expr (vr, val, stmt))

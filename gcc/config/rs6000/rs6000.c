@@ -78,6 +78,7 @@
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
 #include "rs6000-internal.h"
+#include "rs6000-builtins.h"
 #include "opts.h"
 
 /* This file should be included last.  */
@@ -5288,9 +5289,6 @@ struct rs6000_cost_data
 static void
 rs6000_density_test (rs6000_cost_data *data)
 {
-  const int DENSITY_PCT_THRESHOLD = 85;
-  const int DENSITY_SIZE_THRESHOLD = 70;
-  const int DENSITY_PENALTY = 10;
   struct loop *loop = data->loop_info;
   basic_block *bbs = get_loop_body (loop);
   int nbbs = loop->num_nodes;
@@ -5326,26 +5324,21 @@ rs6000_density_test (rs6000_cost_data *data)
   free (bbs);
   density_pct = (vec_cost * 100) / (vec_cost + not_vec_cost);
 
-  if (density_pct > DENSITY_PCT_THRESHOLD
-      && vec_cost + not_vec_cost > DENSITY_SIZE_THRESHOLD)
+  if (density_pct > rs6000_density_pct_threshold
+      && vec_cost + not_vec_cost > rs6000_density_size_threshold)
     {
-      data->cost[vect_body] = vec_cost * (100 + DENSITY_PENALTY) / 100;
+      data->cost[vect_body] = vec_cost * (100 + rs6000_density_penalty) / 100;
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "density %d%%, cost %d exceeds threshold, penalizing "
-			 "loop body cost by %d%%\n", density_pct,
-			 vec_cost + not_vec_cost, DENSITY_PENALTY);
+			 "loop body cost by %u%%\n", density_pct,
+			 vec_cost + not_vec_cost, rs6000_density_penalty);
     }
 
   /* Check whether we need to penalize the body cost to account
      for excess strided or elementwise loads.  */
   if (data->extra_ctor_cost > 0)
     {
-      /* Threshold for load stmts percentage in all vectorized stmts.  */
-      const int DENSITY_LOAD_PCT_THRESHOLD = 45;
-      /* Threshold for total number of load stmts.  */
-      const int DENSITY_LOAD_NUM_THRESHOLD = 20;
-
       gcc_assert (data->nloads <= data->nstmts);
       unsigned int load_pct = (data->nloads * 100) / data->nstmts;
 
@@ -5359,8 +5352,8 @@ rs6000_density_test (rs6000_cost_data *data)
 	      the loads.
 	 One typical case is the innermost loop of the hotspot of SPEC2017
 	 503.bwaves_r without loop interchange.  */
-      if (data->nloads > DENSITY_LOAD_NUM_THRESHOLD
-	  && load_pct > DENSITY_LOAD_PCT_THRESHOLD)
+      if (data->nloads > (unsigned int) rs6000_density_load_num_threshold
+	  && load_pct > (unsigned int) rs6000_density_load_pct_threshold)
 	{
 	  data->cost[vect_body] += data->extra_ctor_cost;
 	  if (dump_enabled_p ())
@@ -5608,6 +5601,255 @@ rs6000_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
   return nunroll;
 }
 
+/* Returns a function decl for a vectorized version of the builtin function
+   with builtin function code FN and the result vector type TYPE, or NULL_TREE
+   if it is not available.
+
+   Implement targetm.vectorize.builtin_vectorized_function.  */
+
+static tree
+rs6000_new_builtin_vectorized_function (unsigned int fn, tree type_out,
+					tree type_in)
+{
+  machine_mode in_mode, out_mode;
+  int in_n, out_n;
+
+  if (TARGET_DEBUG_BUILTIN)
+    fprintf (stderr, "rs6000_new_builtin_vectorized_function (%s, %s, %s)\n",
+	     combined_fn_name (combined_fn (fn)),
+	     GET_MODE_NAME (TYPE_MODE (type_out)),
+	     GET_MODE_NAME (TYPE_MODE (type_in)));
+
+  /* TODO: Should this be gcc_assert?  */
+  if (TREE_CODE (type_out) != VECTOR_TYPE
+      || TREE_CODE (type_in) != VECTOR_TYPE)
+    return NULL_TREE;
+
+  out_mode = TYPE_MODE (TREE_TYPE (type_out));
+  out_n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+
+  switch (fn)
+    {
+    CASE_CFN_COPYSIGN:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_CPSGNDP];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_CPSGNSP];
+      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_COPYSIGN_V4SF];
+      break;
+    CASE_CFN_CEIL:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIP];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIP];
+      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VRFIP];
+      break;
+    CASE_CFN_FLOOR:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIM];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIM];
+      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VRFIM];
+      break;
+    CASE_CFN_FMA:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVMADDDP];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVMADDSP];
+      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VMADDFP];
+      break;
+    CASE_CFN_TRUNC:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIZ];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIZ];
+      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VRFIZ];
+      break;
+    CASE_CFN_NEARBYINT:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && flag_unsafe_math_optimizations
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPI];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && flag_unsafe_math_optimizations
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPI];
+      break;
+    CASE_CFN_RINT:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && !flag_trapping_math
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIC];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && !flag_trapping_math
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIC];
+      break;
+    default:
+      break;
+    }
+
+  /* Generate calls to libmass if appropriate.  */
+  if (rs6000_veclib_handler)
+    return rs6000_veclib_handler (combined_fn (fn), type_out, type_in);
+
+  return NULL_TREE;
+}
+
+/* Implement targetm.vectorize.builtin_md_vectorized_function.  */
+
+static tree
+rs6000_new_builtin_md_vectorized_function (tree fndecl, tree type_out,
+					   tree type_in)
+{
+  machine_mode in_mode, out_mode;
+  int in_n, out_n;
+
+  if (TARGET_DEBUG_BUILTIN)
+    fprintf (stderr,
+	     "rs6000_new_builtin_md_vectorized_function (%s, %s, %s)\n",
+	     IDENTIFIER_POINTER (DECL_NAME (fndecl)),
+	     GET_MODE_NAME (TYPE_MODE (type_out)),
+	     GET_MODE_NAME (TYPE_MODE (type_in)));
+
+  /* TODO: Should this be gcc_assert?  */
+  if (TREE_CODE (type_out) != VECTOR_TYPE
+      || TREE_CODE (type_in) != VECTOR_TYPE)
+    return NULL_TREE;
+
+  out_mode = TYPE_MODE (TREE_TYPE (type_out));
+  out_n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+
+  enum rs6000_gen_builtins fn
+    = (enum rs6000_gen_builtins) DECL_MD_FUNCTION_CODE (fndecl);
+  switch (fn)
+    {
+    case RS6000_BIF_RSQRTF:
+      if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VRSQRTFP];
+      break;
+    case RS6000_BIF_RSQRT:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_RSQRT_2DF];
+      break;
+    case RS6000_BIF_RECIPF:
+      if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VRECIPFP];
+      break;
+    case RS6000_BIF_RECIP:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_RECIP_V2DF];
+      break;
+    default:
+      break;
+    }
+
+  machine_mode in_vmode = TYPE_MODE (type_in);
+  machine_mode out_vmode = TYPE_MODE (type_out);
+
+  /* Power10 supported vectorized built-in functions.  */
+  if (TARGET_POWER10
+      && in_vmode == out_vmode
+      && VECTOR_UNIT_ALTIVEC_OR_VSX_P (in_vmode))
+    {
+      machine_mode exp_mode = DImode;
+      machine_mode exp_vmode = V2DImode;
+      enum rs6000_gen_builtins bif;
+      switch (fn)
+	{
+	case RS6000_BIF_DIVWE:
+	case RS6000_BIF_DIVWEU:
+	  exp_mode = SImode;
+	  exp_vmode = V4SImode;
+	  if (fn == RS6000_BIF_DIVWE)
+	    bif = RS6000_BIF_VDIVESW;
+	  else
+	    bif = RS6000_BIF_VDIVEUW;
+	  break;
+	case RS6000_BIF_DIVDE:
+	case RS6000_BIF_DIVDEU:
+	  if (fn == RS6000_BIF_DIVDE)
+	    bif = RS6000_BIF_VDIVESD;
+	  else
+	    bif = RS6000_BIF_VDIVEUD;
+	  break;
+	case RS6000_BIF_CFUGED:
+	  bif = RS6000_BIF_VCFUGED;
+	  break;
+	case RS6000_BIF_CNTLZDM:
+	  bif = RS6000_BIF_VCLZDM;
+	  break;
+	case RS6000_BIF_CNTTZDM:
+	  bif = RS6000_BIF_VCTZDM;
+	  break;
+	case RS6000_BIF_PDEPD:
+	  bif = RS6000_BIF_VPDEPD;
+	  break;
+	case RS6000_BIF_PEXTD:
+	  bif = RS6000_BIF_VPEXTD;
+	  break;
+	default:
+	  return NULL_TREE;
+	}
+
+      if (in_mode == exp_mode && in_vmode == exp_vmode)
+	return rs6000_builtin_decls_x[bif];
+    }
+
+  return NULL_TREE;
+}
+
 /* Handler for the Mathematical Acceleration Subsystem (mass) interface to a
    library with vectorized intrinsics.  */
 
@@ -5726,6 +5968,9 @@ rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
+
+  if (new_builtins_are_live)
+    return rs6000_new_builtin_vectorized_function (fn, type_out, type_in);
 
   if (TARGET_DEBUG_BUILTIN)
     fprintf (stderr, "rs6000_builtin_vectorized_function (%s, %s, %s)\n",
@@ -5857,6 +6102,10 @@ rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
+
+  if (new_builtins_are_live)
+    return rs6000_new_builtin_md_vectorized_function (fndecl, type_out,
+						      type_in);
 
   if (TARGET_DEBUG_BUILTIN)
     fprintf (stderr, "rs6000_builtin_md_vectorized_function (%s, %s, %s)\n",
@@ -21728,7 +21977,8 @@ rs6000_xcoff_encode_section_info (tree decl, rtx rtl, int first)
   if (decl
       && DECL_P (decl)
       && VAR_OR_FUNCTION_DECL_P (decl)
-      && symtab_node::get (decl)->alias == 0
+      && (symtab_node::get (decl) == NULL
+	  || symtab_node::get (decl)->alias == 0)
       && symname[strlen (symname) - 1] != ']')
     {
       const char *smclass = NULL;
@@ -22174,7 +22424,7 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
       break;
 
     case UNSPEC:
-      if (XINT (x, 1) == UNSPEC_MMA_XXSETACCZ)
+      if (XINT (x, 1) == UNSPECV_MMA_XXSETACCZ)
 	{
 	  *total = 0;
 	  return true;

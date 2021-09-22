@@ -1,3 +1,77 @@
+2021-09-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* cpp.c: Define GCC_C_COMMON_C for #include "options.h" to make
+	cpp_reason_option_codes available.
+	(gfc_cpp_register_include_paths): Make static, set pfile's
+	warn_missing_include_dirs and move before caller.
+	(gfc_cpp_init_cb): New, cb code moved from ...
+	(gfc_cpp_init_0): ... here.
+	(gfc_cpp_post_options): Call gfc_cpp_init_cb.
+	(cb_cpp_diagnostic_cpp_option): New. As implemented in c-family
+	to match CppReason flags to -W... names.
+	(cb_cpp_diagnostic): Use it to replace single special case.
+	* cpp.h (gfc_cpp_register_include_paths): Remove as now static.
+	* gfortran.h (gfc_check_include_dirs): New prototype.
+	(gfc_add_include_path): Add new bool arg.
+	* options.c (gfc_init_options): Don't set -Wmissing-include-dirs.
+	(gfc_post_options): Set it here after commandline processing. Call
+	gfc_add_include_path with defer_warn=false.
+	(gfc_handle_option): Call it with defer_warn=true.
+	* scanner.c (gfc_do_check_include_dir, gfc_do_check_include_dirs,
+	gfc_check_include_dirs): New. Diagnostic moved from ...
+	(add_path_to_list): ... here, which came before cmdline processing.
+	Take additional bool defer_warn argument.
+	(gfc_add_include_path): Take additional defer_warn arg.
+	* scanner.h (struct gfc_directorylist): Reorder for alignment issues,
+	add new 'bool warn'.
+
+2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (gfc_omp_clauses): Add order_unconstrained.
+	* dump-parse-tree.c (show_omp_clauses): Dump it.
+	* openmp.c (gfc_match_omp_clauses): Match unconstrained/reproducible
+	modifiers to ordered(concurrent).
+	(OMP_DISTRIBUTE_CLAUSES): Accept ordered clause.
+	(resolve_omp_clauses): Reject ordered + order on same directive.
+	* trans-openmp.c (gfc_trans_omp_clauses, gfc_split_omp_clauses): Pass
+	on unconstrained modifier of ordered(concurrent).
+
+2021-09-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102366
+	* trans-decl.c (gfc_finish_var_decl): Disable the warning message
+	for variables moved from stack to static storange if they are
+	declared in the main, but allow the move to happen.
+
+2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* intrinsic.texi (ISO_C_BINDING): Change C_FLOAT128 to correspond
+	to _Float128 rather than __float128.
+	* iso-c-binding.def (c_float128): Update comments.
+	* trans-intrinsic.c (gfc_builtin_decl_for_float_kind): Likewise.
+	(build_round_expr): Likewise.
+	(gfc_build_intrinsic_lib_fndcecls): Likewise.
+	* trans-types.h (gfc_real16_is_float128): Likewise.
+
+2021-09-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102287
+	* trans-expr.c (gfc_conv_procedure_call): Wrap deallocation of
+	allocatable components of optional allocatable derived type
+	procedure arguments with INTENT(OUT) into a presence check.
+
+2021-09-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102311
+	* resolve.c (resolve_entries): Attempt to recover cleanly after
+	rejecting mismatched function entries.
+
+2021-09-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102313
+	* parse.c (gfc_ascii_statement): Add missing ST_OMP_END_SCOPE.
+
 2021-09-13  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/82314

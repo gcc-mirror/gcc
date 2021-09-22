@@ -668,6 +668,7 @@ package Exp_Util is
       Related_Id    : Entity_Id := Empty;
       Is_Low_Bound  : Boolean   := False;
       Is_High_Bound : Boolean   := False;
+      Discr_Number  : Int       := 0;
       Mode          : Force_Evaluation_Mode := Relaxed);
    --  Force the evaluation of the expression right away. Similar behavior
    --  to Remove_Side_Effects when Variable_Ref is set to TRUE. That is to
@@ -687,6 +688,12 @@ package Exp_Util is
    --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, then exactly one
    --  of the Is_xxx_Bound flags must be set. For use of these parameters see
    --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
+
+   --  Discr_Number is positive when the expression is a discriminant value
+   --  in an object or component declaration. In that case Discr_Number is
+   --  the position of the corresponding discriminant in the corresponding
+   --  type declaration, and the name for the evaluated expression is built
+   --  out of the Related_Id and the Discr_Number.
 
    function Fully_Qualified_Name_String
      (E          : Entity_Id;
@@ -1004,6 +1011,7 @@ package Exp_Util is
       Related_Id         : Entity_Id := Empty;
       Is_Low_Bound       : Boolean   := False;
       Is_High_Bound      : Boolean   := False;
+      Discr_Number       : Int       := 0;
       Check_Side_Effects : Boolean   := True);
    --  Given the node for a subexpression, this function replaces the node if
    --  necessary by an equivalent subexpression that is guaranteed to be side
@@ -1028,6 +1036,9 @@ package Exp_Util is
    --  of the Is_xxx_Bound flags must be set. For use of these parameters see
    --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
    --
+   --  If Discr_Number is positive, the expression denotes a discrimant value
+   --  in a constraint, the suffix DISCR is used to create the external name.
+
    --  The side effects are captured using one of the following methods:
    --
    --    1) a constant initialized with the value of the subexpression

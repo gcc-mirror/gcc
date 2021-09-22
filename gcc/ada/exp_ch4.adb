@@ -767,8 +767,7 @@ package body Exp_Ch4 is
             Cond :=
               Make_Op_Gt (Loc,
                 Left_Opnd  => Cond,
-                Right_Opnd =>
-                  Make_Integer_Literal (Loc, Type_Access_Level (PtrT)));
+                Right_Opnd => Accessibility_Level (N, Dynamic_Level));
 
             --  Due to the complexity and side effects of the check, utilize an
             --  if statement instead of the regular Program_Error circuitry.
@@ -2294,7 +2293,7 @@ package body Exp_Ch4 is
       --  We can only do this if we in fact have full range information (which
       --  won't be the case if either operand is bignum at this stage).
 
-      if Llo /= No_Uint and then Rlo /= No_Uint then
+      if Present (Llo) and then Present (Rlo) then
          case N_Op_Compare (Nkind (N)) is
             when N_Op_Eq =>
                if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then
@@ -7763,8 +7762,8 @@ package body Exp_Ch4 is
 
          if Is_Unchecked_Union (Op_Type) then
             declare
-               Lhs_Type : constant Node_Id := Etype (L_Exp);
-               Rhs_Type : constant Node_Id := Etype (R_Exp);
+               Lhs_Type : constant Entity_Id := Etype (L_Exp);
+               Rhs_Type : constant Entity_Id := Etype (R_Exp);
 
                Lhs_Discr_Vals : Elist_Id;
                --  List of inferred discriminant values for left operand.
@@ -12361,10 +12360,16 @@ package body Exp_Ch4 is
          --  an instantiation, otherwise the conversion will already have been
          --  rejected as illegal.
 
-         --  Note: warnings are issued by the analyzer for the instance cases
+         --  Note: warnings are issued by the analyzer for the instance cases,
+         --  and, since we are late in expansion, a check is performed to
+         --  verify that neither the target type nor the operand type are
+         --  internally generated - as this can lead to spurious errors when,
+         --  for example, the operand type is a result of BIP expansion.
 
          elsif In_Instance_Body
            and then Statically_Deeper_Relation_Applies (Target_Type)
+           and then not Is_Internal (Target_Type)
+           and then not Is_Internal (Operand_Type)
            and then
              Type_Access_Level (Operand_Type) > Type_Access_Level (Target_Type)
          then

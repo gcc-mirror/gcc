@@ -561,10 +561,6 @@ mpower9-minmax
 Target Undocumented Mask(P9_MINMAX) Var(rs6000_isa_flags)
 Use the new min/max instructions defined in ISA 3.0.
 
-mtoc-fusion
-Target Undocumented Mask(TOC_FUSION) Var(rs6000_isa_flags)
-Fuse medium/large code model toc references with the memory instruction.
-
 mmodulo
 Target Undocumented Mask(MODULO) Var(rs6000_isa_flags)
 Generate the integer modulo instructions.
@@ -643,3 +639,41 @@ Enable instructions that guard against return-oriented programming attacks.
 mprivileged
 Target Var(rs6000_privileged) Init(0)
 Generate code that will run in privileged state.
+
+-param=rs6000-density-pct-threshold=
+Target Undocumented Joined UInteger Var(rs6000_density_pct_threshold) Init(85) IntegerRange(0, 100) Param
+When costing for loop vectorization, we probably need to penalize the loop body
+cost if the existing cost model may not adequately reflect delays from
+unavailable vector resources.  We collect the cost for vectorized statements
+and non-vectorized statements separately, check the proportion of vec_cost to
+total cost of vec_cost and non vec_cost, and penalize only if the proportion
+exceeds the threshold specified by this parameter.  The default value is 85.
+
+-param=rs6000-density-size-threshold=
+Target Undocumented Joined UInteger Var(rs6000_density_size_threshold) Init(70) IntegerRange(0, 1000) Param
+Like parameter rs6000-density-pct-threshold, we also check the total sum of
+vec_cost and non vec_cost, and penalize only if the sum exceeds the threshold
+specified by this parameter.  The default value is 70.
+
+-param=rs6000-density-penalty=
+Target Undocumented Joined UInteger Var(rs6000_density_penalty) Init(10) IntegerRange(0, 1000) Param
+When both heuristics with rs6000-density-pct-threshold and
+rs6000-density-size-threshold are satisfied, we decide to penalize the loop
+body cost by the value which is specified by this parameter.  The default
+value is 10.
+
+-param=rs6000-density-load-pct-threshold=
+Target Undocumented Joined UInteger Var(rs6000_density_load_pct_threshold) Init(45) IntegerRange(0, 100) Param
+When costing for loop vectorization, we probably need to penalize the loop body
+cost by accounting for excess strided or elementwise loads.  We collect the
+numbers for general statements and load statements according to the information
+for statements to be vectorized, check the proportion of load statements, and
+penalize only if the proportion exceeds the threshold specified by this
+parameter.  The default value is 45.
+
+-param=rs6000-density-load-num-threshold=
+Target Undocumented Joined UInteger Var(rs6000_density_load_num_threshold) Init(20) IntegerRange(0, 1000) Param
+Like parameter rs6000-density-load-pct-threshold, we also check if the total
+number of load statements exceeds the threshold specified by this parameter,
+and penalize only if it's satisfied.  The default value is 20.
+

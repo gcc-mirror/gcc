@@ -3045,23 +3045,18 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
 
       if (init_type == AUTO_INIT_PATTERN)
 	{
-	  tree alt_type = NULL_TREE;
-	  if (!can_native_interpret_type_p (var_type))
-	    {
-	      alt_type
-		= lang_hooks.types.type_for_mode (TYPE_MODE (var_type),
-						  TYPE_UNSIGNED (var_type));
-	      gcc_assert (can_native_interpret_type_p (alt_type));
-	    }
-
 	  unsigned char *buf = (unsigned char *) xmalloc (total_bytes);
 	  memset (buf, INIT_PATTERN_VALUE, total_bytes);
-	  init = native_interpret_expr (alt_type ? alt_type : var_type,
-					buf, total_bytes);
-	  gcc_assert (init);
-
-	  if (alt_type)
-	    init = build1 (VIEW_CONVERT_EXPR, var_type, init);
+	  if (can_native_interpret_type_p (var_type))
+	    init = native_interpret_expr (var_type, buf, total_bytes);
+	  else
+	    {
+	      tree itype = build_nonstandard_integer_type
+			     (total_bytes * BITS_PER_UNIT, 1);
+	      wide_int w = wi::from_buffer (buf, total_bytes);
+	      init = build1 (VIEW_CONVERT_EXPR, var_type,
+			     wide_int_to_tree (itype, w));
+	    }
 	}
 
       expand_assignment (lhs, init, false);

@@ -1,7 +1,7 @@
 /* Verify pattern initialization for structure type automatic variables with
    padding and has explicit initialization.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=pattern" } */
+/* { dg-options "-ftrivial-auto-var-init=pattern -fdump-rtl-expand -march=x86-64 -mtune=generic -msse -fno-stack-protector" } */
 
 struct test_trailing_hole {
         int one;
@@ -17,6 +17,5 @@ int foo ()
   return var.four;
 }
 
-/* { dg-final { scan-assembler-times "movq\t\\\$0," 2 } } */
-
-
+/* { dg-final { scan-rtl-dump-times "const_int 0 \\\[0\\\]\\\) repeated x16" 1 "expand" { target ia32 } } } */
+/* { dg-final { scan-rtl-dump-times "const_int 0 \\\[0\\\]\\\)" 1 "expand" { target lp64 } } } */

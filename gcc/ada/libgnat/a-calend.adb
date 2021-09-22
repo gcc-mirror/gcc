@@ -35,6 +35,8 @@ with Interfaces.C;
 
 with System.OS_Primitives;
 
+with System.OS_Lib;
+
 package body Ada.Calendar with
   SPARK_Mode => Off
 is
@@ -685,13 +687,10 @@ is
       type int_Pointer  is access all Interfaces.C.int;
       type long_Pointer is access all Interfaces.C.long;
 
-      type time_t is
-        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
-              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
-      type time_t_Pointer is access all time_t;
+      type OS_Time_Pointer is access all System.OS_Lib.OS_Time;
 
       procedure localtime_tzoff
-        (timer       : time_t_Pointer;
+        (timer       : OS_Time_Pointer;
          is_historic : int_Pointer;
          off         : long_Pointer);
       pragma Import (C, localtime_tzoff, "__gnat_localtime_tzoff");
@@ -708,7 +707,7 @@ is
       Date_N   : Time_Rep;
       Flag     : aliased Interfaces.C.int;
       Offset   : aliased Interfaces.C.long;
-      Secs_T   : aliased time_t;
+      Secs_T   : aliased System.OS_Lib.OS_Time;
 
    --  Start of processing for UTC_Time_Offset
 
@@ -745,7 +744,7 @@ is
 
       --  Convert the date into seconds
 
-      Secs_T := time_t (Date_N / Nano);
+      Secs_T := System.OS_Lib.To_Ada (Long_Long_Integer (Date_N / Nano));
 
       --  Determine whether to treat the input date as historical or not. A
       --  value of "0" signifies that the date is NOT historic.

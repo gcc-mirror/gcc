@@ -316,7 +316,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Interface_Name, Node_Id),
         Sm (Normalized_First_Bit, Uint),
         Sm (Normalized_Position, Uint),
-        Sm (Normalized_Position_Max, Uint),
         Sm (Original_Record_Component, Node_Id)));
 
    Cc (E_Component, Record_Field_Kind,

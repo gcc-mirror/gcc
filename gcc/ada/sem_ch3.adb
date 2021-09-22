@@ -1299,7 +1299,7 @@ package body Sem_Ch3 is
       Set_Can_Use_Internal_Rep     (T_Name,
                                       not Always_Compatible_Rep_On_Target);
       Set_Etype                    (T_Name, T_Name);
-      Init_Size_Align              (T_Name);
+      Reinit_Size_Align            (T_Name);
       Set_Directly_Designated_Type (T_Name, Desig_Type);
 
       --  If the access_to_subprogram is not declared at the library level,
@@ -1465,7 +1465,7 @@ package body Sem_Ch3 is
       --  and the pointer size is already set. Else, initialize.
 
       if not From_Limited_With (T) then
-         Init_Size_Align (T);
+         Reinit_Size_Align (T);
       end if;
 
       --  Note that Has_Task is always false, since the access type itself
@@ -1551,7 +1551,7 @@ package body Sem_Ch3 is
          Set_Is_Aliased          (Tag);
          Set_Is_Independent      (Tag);
          Set_Related_Type        (Tag, Iface);
-         Init_Component_Location (Tag);
+         Reinit_Component_Location (Tag);
 
          pragma Assert (Is_Frozen (Iface));
 
@@ -1591,7 +1591,7 @@ package body Sem_Ch3 is
             Set_Is_Aliased          (Offset);
             Set_Is_Independent      (Offset);
             Set_Related_Type        (Offset, Iface);
-            Init_Component_Location (Offset);
+            Reinit_Component_Location (Offset);
             Insert_After (Last_Tag, Decl);
             Last_Tag := Decl;
          end if;
@@ -2648,6 +2648,48 @@ package body Sem_Ch3 is
          E := First_Entity (Current_Scope);
          while Present (E) loop
             Resolve_Aspect_Expressions (E);
+
+            --  Now that the aspect expressions have been resolved, if this is
+            --  at the end of the visible declarations, we can set the flag
+            --  Known_To_Have_Preelab_Init properly on types declared in the
+            --  visible part, which is needed for checking whether full types
+            --  in the private part satisfy the Preelaborable_Initialization
+            --  aspect of the partial view. We can't wait for the creation of
+            --  the pragma by Analyze_Aspects_At_Freeze_Point, because the
+            --  freeze point may occur after the end of the package declaration
+            --  (in the case of nested packages).
+
+            if Is_Type (E)
+              and then L = Visible_Declarations (Parent (L))
+              and then Has_Aspect (E, Aspect_Preelaborable_Initialization)
+            then
+               declare
+                  ASN  : constant Node_Id :=
+                    Find_Aspect (E, Aspect_Preelaborable_Initialization);
+                  Expr : constant Node_Id := Expression (ASN);
+               begin
+                  --  Set Known_To_Have_Preelab_Init to True if aspect has no
+                  --  expression, or if the expression is True (or was folded
+                  --  to True), or if the expression is a conjunction of one or
+                  --  more Preelaborable_Initialization attributes applied to
+                  --  formal types and wasn't folded to False. (Note that
+                  --  Is_Conjunction_Of_Formal_Preelab_Init_Attributes goes to
+                  --  Original_Node if needed, hence test for Standard_False.)
+
+                  if not Present (Expr)
+                    or else (Is_Entity_Name (Expr)
+                              and then Entity (Expr) = Standard_True)
+                    or else
+                      (Is_Conjunction_Of_Formal_Preelab_Init_Attributes (Expr)
+                        and then
+                          not (Is_Entity_Name (Expr)
+                                and then Entity (Expr) = Standard_False))
+                  then
+                     Set_Known_To_Have_Preelab_Init (E);
+                  end if;
+               end;
+            end if;
+
             Next_Entity (E);
          end loop;
       end Resolve_Aspects;
@@ -3450,7 +3492,7 @@ package body Sem_Ch3 is
       Mutate_Ekind         (T, E_Incomplete_Type);
       Set_Etype            (T, T);
       Set_Is_First_Subtype (T);
-      Init_Size_Align      (T);
+      Reinit_Size_Align    (T);
 
       --  Set the SPARK mode from the current context
 
@@ -4849,8 +4891,8 @@ package body Sem_Ch3 is
 
       --  Initialize alignment and size and capture alignment setting
 
-      Init_Alignment               (Id);
-      Init_Esize                   (Id);
+      Reinit_Alignment             (Id);
+      Reinit_Esize                 (Id);
       Set_Optimize_Alignment_Flags (Id);
 
       --  Deal with aliased case
@@ -5183,7 +5225,7 @@ package body Sem_Ch3 is
       Set_Is_Pure          (T, Is_Pure (Current_Scope));
       Set_Scope            (T, Current_Scope);
       Mutate_Ekind         (T, E_Record_Type_With_Private);
-      Init_Size_Align      (T);
+      Reinit_Size_Align    (T);
       Set_Default_SSO      (T);
       Set_No_Reordering    (T, No_Component_Reordering);
 
@@ -5348,7 +5390,7 @@ package body Sem_Ch3 is
    begin
       Generate_Definition (Id);
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
-      Init_Size_Align (Id);
+      Reinit_Size_Align (Id);
 
       --  The following guard condition on Enter_Name is to handle cases where
       --  the defining identifier has already been entered into the scope but
@@ -5466,7 +5508,7 @@ package body Sem_Ch3 is
                Set_Machine_Radix_10     (Id, Machine_Radix_10   (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
-               Set_RM_Size              (Id, RM_Size            (T));
+               Copy_RM_Size             (To => Id, From => T);
 
             when Enumeration_Kind =>
                Mutate_Ekind             (Id, E_Enumeration_Subtype);
@@ -5475,7 +5517,7 @@ package body Sem_Ch3 is
                Set_Is_Character_Type    (Id, Is_Character_Type  (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
-               Set_RM_Size              (Id, RM_Size            (T));
+               Copy_RM_Size             (To => Id, From => T);
 
             when Ordinary_Fixed_Point_Kind =>
                Mutate_Ekind          (Id, E_Ordinary_Fixed_Point_Subtype);
@@ -5484,7 +5526,7 @@ package body Sem_Ch3 is
                Set_Delta_Value          (Id, Delta_Value        (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
-               Set_RM_Size              (Id, RM_Size            (T));
+               Copy_RM_Size             (To => Id, From => T);
 
             when Float_Kind =>
                Mutate_Ekind             (Id, E_Floating_Point_Subtype);
@@ -5500,14 +5542,14 @@ package body Sem_Ch3 is
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
-               Set_RM_Size              (Id, RM_Size            (T));
+               Copy_RM_Size             (To => Id, From => T);
 
             when Modular_Integer_Kind =>
                Mutate_Ekind             (Id, E_Modular_Integer_Subtype);
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
-               Set_RM_Size              (Id, RM_Size            (T));
+               Copy_RM_Size             (To => Id, From => T);
 
             when Class_Wide_Kind =>
                Mutate_Ekind             (Id, E_Class_Wide_Subtype);
@@ -5534,7 +5576,7 @@ package body Sem_Ch3 is
                --  the type they rename.
 
                if Present (Generic_Parent_Type (N)) then
-                  Set_RM_Size           (Id, RM_Size (T));
+                  Copy_RM_Size (To => Id, From => T);
                end if;
 
                if Ekind (T) = E_Record_Subtype
@@ -6290,7 +6332,7 @@ package body Sem_Ch3 is
          --  The constrained array type is a subtype of the unconstrained one
 
          Mutate_Ekind           (T, E_Array_Subtype);
-         Init_Size_Align        (T);
+         Reinit_Size_Align      (T);
          Set_Etype              (T, Implicit_Base);
          Set_Scope              (T, Current_Scope);
          Set_Is_Constrained     (T);
@@ -6326,7 +6368,7 @@ package body Sem_Ch3 is
          end if;
 
          Mutate_Ekind                 (T, E_Array_Type);
-         Init_Size_Align              (T);
+         Reinit_Size_Align            (T);
          Set_Etype                    (T, T);
          Set_Scope                    (T, Current_Scope);
          Set_Component_Size           (T, Uint_0);
@@ -6813,8 +6855,8 @@ package body Sem_Ch3 is
 
       Set_Is_Constrained     (Derived_Type, Is_Constrained (Subt));
       Set_Is_Access_Constant (Derived_Type, Is_Access_Constant (Parent_Type));
-      Set_Size_Info          (Derived_Type,                     Parent_Type);
-      Set_RM_Size            (Derived_Type, RM_Size            (Parent_Type));
+      Set_Size_Info          (Derived_Type, Parent_Type);
+      Copy_RM_Size           (To => Derived_Type, From => Parent_Type);
       Set_Depends_On_Private (Derived_Type,
                               Has_Private_Component (Derived_Type));
       Conditional_Delay      (Derived_Type, Subt);
@@ -8945,7 +8987,7 @@ package body Sem_Ch3 is
 
       if Is_Tagged then
          Set_Is_Tagged_Type (Derived_Type);
-         Init_Size_Align    (Derived_Type);
+         Reinit_Size_Align  (Derived_Type);
       end if;
 
       --  STEP 0a: figure out what kind of derived type declaration we have
@@ -9854,8 +9896,8 @@ package body Sem_Ch3 is
       Mutate_Ekind               (Derived_Type, Ekind (Parent_Base));
       Propagate_Concurrent_Flags (Derived_Type,        Parent_Base);
 
-      Set_Size_Info (Derived_Type,          Parent_Type);
-      Set_RM_Size   (Derived_Type, RM_Size (Parent_Type));
+      Set_Size_Info (Derived_Type, Parent_Type);
+      Copy_RM_Size (To => Derived_Type, From => Parent_Type);
 
       Set_Is_Controlled_Active
         (Derived_Type, Is_Controlled_Active (Parent_Type));
@@ -10392,6 +10434,7 @@ package body Sem_Ch3 is
               (Discr_Expr (J), Check_Concurrent => True)
          then
             Discrim_Present := True;
+            exit;
          end if;
       end loop;
 
@@ -10449,7 +10492,43 @@ package body Sem_Ch3 is
                   Apply_Range_Check (Discr_Expr (J), Etype (Discr));
                end if;
 
-               Force_Evaluation (Discr_Expr (J));
+               --  If the value of the discriminant may be visible in
+               --  another unit or child unit, create an external name
+               --  for it. We use the name of the object or component
+               --  that carries the discriminated subtype. The code
+               --  below may generate external symbols for the discriminant
+               --  expression when not strictly needed, which is harmless.
+
+               if Expander_Active
+                 and then Comes_From_Source (Def)
+                 and then not Is_Subprogram (Current_Scope)
+               then
+                  declare
+                     Id : Entity_Id := Empty;
+                  begin
+                     if Nkind (Parent (Def)) = N_Object_Declaration then
+                        Id := Defining_Identifier (Parent (Def));
+
+                     elsif Nkind (Parent (Def)) = N_Component_Definition
+                       and then
+                         Nkind (Parent (Parent (Def)))
+                            = N_Component_Declaration
+                     then
+                        Id := Defining_Identifier (Parent (Parent (Def)));
+                     end if;
+
+                     if Present (Id) then
+                        Force_Evaluation (
+                          Discr_Expr (J),
+                          Related_Id => Id,
+                          Discr_Number => J);
+                     else
+                        Force_Evaluation (Discr_Expr (J));
+                     end if;
+                  end;
+               else
+                  Force_Evaluation (Discr_Expr (J));
+               end if;
             end if;
 
             --  Check that the designated type of an access discriminant's
@@ -10554,7 +10633,7 @@ package body Sem_Ch3 is
       end if;
 
       Set_Etype             (Def_Id, T);
-      Init_Size_Align       (Def_Id);
+      Reinit_Size_Align     (Def_Id);
       Set_Has_Discriminants (Def_Id, Has_Discrs);
       Set_Is_Constrained    (Def_Id, Constrained);
 
@@ -12689,7 +12768,7 @@ package body Sem_Ch3 is
       Set_Is_First_Subtype (Full, False);
       Set_Scope            (Full, Scope (Priv));
       Set_Size_Info        (Full, Full_Base);
-      Set_RM_Size          (Full, RM_Size (Full_Base));
+      Copy_RM_Size         (To => Full, From => Full_Base);
       Set_Is_Itype         (Full);
 
       --  A subtype of a private-type-without-discriminants, whose full-view
@@ -14516,7 +14595,7 @@ package body Sem_Ch3 is
       end if;
 
       Set_Size_Info      (Def_Id,                (T));
-      Set_RM_Size        (Def_Id, RM_Size        (T));
+      Copy_RM_Size       (To => Def_Id, From => T);
       Set_First_Rep_Item (Def_Id, First_Rep_Item (T));
 
       --  If this is a range for a fixed-lower-bound subtype, then set the
@@ -15320,12 +15399,12 @@ package body Sem_Ch3 is
 
       Set_Fixed_Range (Implicit_Base, Loc, -Bound_Val, Bound_Val);
 
-      --  Note: We leave size as zero for now, size will be set at freeze
+      --  Note: We leave Esize unset for now, size will be set at freeze
       --  time. We have to do this for ordinary fixed-point, because the size
       --  depends on the specified small, and we might as well do the same for
       --  decimal fixed-point.
 
-      pragma Assert (Esize (Implicit_Base) = Uint_0);
+      pragma Assert (not Known_Esize (Implicit_Base));
 
       --  If there are bounds given in the declaration use them as the
       --  bounds of the first named subtype.
@@ -15676,7 +15755,7 @@ package body Sem_Ch3 is
 
                   --  Set remaining characterstics of anonymous access type
 
-                  Init_Alignment (Acc_Type);
+                  Reinit_Alignment (Acc_Type);
                   Set_Directly_Designated_Type (Acc_Type, Derived_Type);
 
                   Set_Etype (New_Id, Acc_Type);
@@ -19750,10 +19829,10 @@ package body Sem_Ch3 is
                Siz := Siz * 2;
             end loop;
 
-            Init_Esize (T, Siz);
+            Set_Esize (T, UI_From_Int (Siz));
 
          else
-            Init_Esize (T, System_Max_Binary_Modulus_Power);
+            Set_Esize (T, UI_From_Int (System_Max_Binary_Modulus_Power));
          end if;
 
          if not Non_Binary_Modulus (T) and then Esize (T) = RM_Size (T) then
@@ -19788,7 +19867,7 @@ package body Sem_Ch3 is
 
       Set_Etype (T, T);
       Mutate_Ekind (T, E_Modular_Integer_Type);
-      Init_Alignment (T);
+      Reinit_Alignment (T);
       Set_Is_Constrained (T);
 
       if not Is_OK_Static_Expression (Mod_Expr) then
@@ -19867,7 +19946,7 @@ package body Sem_Ch3 is
       Error_Msg_F ("modulus exceeds limit (2 '*'*^)", Mod_Expr);
 
       Set_Modular_Size (System_Max_Binary_Modulus_Power);
-      Init_Alignment (T);
+      Reinit_Alignment (T);
 
    end Modular_Type_Declaration;
 
@@ -20189,7 +20268,7 @@ package body Sem_Ch3 is
 
       Mutate_Ekind           (T, E_Ordinary_Fixed_Point_Subtype);
       Set_Etype              (T, Implicit_Base);
-      Init_Size_Align        (T);
+      Reinit_Size_Align      (T);
       Inherit_Rep_Item_Chain (T, Implicit_Base);
       Set_Small_Value        (T, Small_Val);
       Set_Delta_Value        (T, Delta_Val);
@@ -20591,8 +20670,8 @@ package body Sem_Ch3 is
          end if;
 
          Mutate_Ekind (Id, E_Discriminant);
-         Init_Component_Location (Id);
-         Init_Esize (Id);
+         Reinit_Component_Location (Id);
+         Reinit_Esize (Id);
          Set_Discriminant_Number (Id, Discr_Number);
 
          --  Make sure this is always set, even in illegal programs
@@ -22260,7 +22339,7 @@ package body Sem_Ch3 is
 
       Mutate_Ekind          (T, E_Record_Type);
       Set_Etype             (T, T);
-      Init_Size_Align       (T);
+      Reinit_Size_Align     (T);
       Set_Interfaces        (T, No_Elist);
       Set_Stored_Constraint (T, No_Elist);
       Set_Default_SSO       (T);
@@ -22369,7 +22448,7 @@ package body Sem_Ch3 is
             Set_Etype                     (Tag_Comp, RTE (RE_Tag));
             Set_DT_Entry_Count            (Tag_Comp, No_Uint);
             Set_Original_Record_Component (Tag_Comp, Tag_Comp);
-            Init_Component_Location       (Tag_Comp);
+            Reinit_Component_Location     (Tag_Comp);
 
             --  Ada 2005 (AI-251): Addition of the Tag corresponding to all the
             --  implemented interfaces.
@@ -22473,7 +22552,7 @@ package body Sem_Ch3 is
            and then not Is_Itype (Component)
          then
             Mutate_Ekind (Component, E_Component);
-            Init_Component_Location (Component);
+            Reinit_Component_Location (Component);
          end if;
 
          Propagate_Concurrent_Flags (T, Etype (Component));

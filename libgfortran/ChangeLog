@@ -1,3 +1,21 @@
+2021-09-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* configure.ac (AM_FCFLAGS): Add -Wno-missing-include-dirs.
+	* configure: Regenerate.
+
+2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* ISO_Fortran_binding.h: Update comments.
+	* runtime/ISO_Fortran_binding.c: Likewise.
+
+2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* ISO_Fortran_binding.h: Only include float.h if the C compiler
+	doesn't have predefined __LDBL_* and __DBL_* macros. Handle
+	LDBL_MANT_DIG == 53 for FreeBSD.
+
 2021-09-13  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* ISO_Fortran_binding.h (CFI_type_long_double)

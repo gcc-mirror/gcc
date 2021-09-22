@@ -8515,17 +8515,6 @@ vectorizable_load (vec_info *vinfo,
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
-  /* ???  Alignment analysis for SLP looks at SLP_TREE_SCALAR_STMTS[0]
-     for unpermuted loads but we get passed SLP_TREE_REPRESENTATIVE
-     which can be different when reduction chains were re-ordered.
-     Now that we figured we're a dataref reset stmt_info back to
-     SLP_TREE_SCALAR_STMTS[0].  When we're SLP only things should be
-     refactored in a way to maintain the dr_vec_info pointer for the
-     relevant access explicitely.  */
-  stmt_vec_info orig_stmt_info = stmt_info;
-  if (slp_node)
-    stmt_info = SLP_TREE_SCALAR_STMTS (slp_node)[0];
-
   tree mask = NULL_TREE, mask_vectype = NULL_TREE;
   if (gassign *assign = dyn_cast <gassign *> (stmt_info->stmt))
     {
@@ -8661,7 +8650,7 @@ vectorizable_load (vec_info *vinfo,
 	      FOR_EACH_VEC_ELT (SLP_TREE_LOAD_PERMUTATION (slp_node), j, k)
 		if (k > maxk)
 		  maxk = k;
-	      tree vectype = STMT_VINFO_VECTYPE (group_info);
+	      tree vectype = SLP_TREE_VECTYPE (slp_node);
 	      if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits)
 		  || maxk >= (DR_GROUP_SIZE (group_info) & ~(nunits - 1)))
 		{
@@ -8768,7 +8757,7 @@ vectorizable_load (vec_info *vinfo,
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Vectorizing an unaligned access.\n");
 
-      STMT_VINFO_TYPE (orig_stmt_info) = load_vec_info_type;
+      STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
       vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
 			    &gs_info, slp_node, cost_vec);
       return true;

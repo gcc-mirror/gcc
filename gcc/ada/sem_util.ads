@@ -1530,9 +1530,18 @@ package Sem_Util is
    --  non-null), which causes the type to not have preelaborable
    --  initialization.
 
-   function Has_Preelaborable_Initialization (E : Entity_Id) return Boolean;
+   function Has_Preelaborable_Initialization
+     (E                              : Entity_Id;
+      Formal_Types_Have_Preelab_Init : Boolean := False) return Boolean;
    --  Return True iff type E has preelaborable initialization as defined in
    --  Ada 2005 (see AI-161 for details of the definition of this attribute).
+   --  If Formal_Types_Have_Preelab_Init is True, indicates that the function
+   --  should presume that for any subcomponents of formal private or derived
+   --  types, the types have preelaborable initialization (RM 10.2.1(11.8/5)).
+   --  NOTE: The treatment of subcomponents of formal types should only apply
+   --  for types actually specified in the P_I aspect of the outer type, but
+   --  for now we take a more liberal interpretation. This needs addressing,
+   --  perhaps by passing the outermost type instead of the simple flag. ???
 
    function Has_Prefix (N : Node_Id) return Boolean;
    --  Return True if N has attribute Prefix
@@ -1828,6 +1837,13 @@ package Sem_Util is
    --  Returns true if the two specifications of the given
    --  nonoverridable aspect are compatible.
 
+   function Is_Conjunction_Of_Formal_Preelab_Init_Attributes
+     (Expr : Node_Id) return Boolean;
+   --  Returns True if Expr is a Preelaborable_Initialization attribute applied
+   --  to a formal type, or a sequence of two or more such attributes connected
+   --  by "and" operators, or if the Original_Node of Expr or its constituents
+   --  is such an attribute.
+
    function Is_Constant_Bound (Exp : Node_Id) return Boolean;
    --  Exp is the expression for an array bound. Determines whether the
    --  bound is a compile-time known value, or a constant entity, or an
@@ -2038,11 +2054,17 @@ package Sem_Util is
    --    3) An if expression with at least one EVF dependent_expression
    --    4) A case expression with at least one EVF dependent_expression
 
-   function Is_False (U : Uint) return Boolean;
+   function Is_False (U : Opt_Ubool) return Boolean;
    pragma Inline (Is_False);
-   --  The argument is a Uint value which is the Boolean'Pos value of a Boolean
-   --  operand (i.e. is either 0 for False, or 1 for True). This function tests
-   --  if it is False (i.e. zero).
+   --  True if U is Boolean'Pos (False) (i.e. Uint_0)
+
+   function Is_True (U : Opt_Ubool) return Boolean;
+   pragma Inline (Is_True);
+   --  True if U is Boolean'Pos (True) (i.e. Uint_1). Also True if U is
+   --  No_Uint; we allow No_Uint because Static_Boolean returns that in
+   --  case of error. It doesn't really matter whether the error case is
+   --  considered True or False, but we don't want this to blow up in that
+   --  case.
 
    function Is_Fixed_Model_Number (U : Ureal; T : Entity_Id) return Boolean;
    --  Returns True iff the number U is a model number of the fixed-point type
@@ -2405,12 +2427,6 @@ package Sem_Util is
    --  Returns True if the node N is a statement which is known to cause an
    --  unconditional transfer of control at run time, i.e. the following
    --  statement definitely will not be executed.
-
-   function Is_True (U : Uint) return Boolean;
-   pragma Inline (Is_True);
-   --  The argument is a Uint value which is the Boolean'Pos value of a Boolean
-   --  operand (i.e. is either 0 for False, or 1 for True). This function tests
-   --  if it is True (i.e. non-zero).
 
    function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean;
    --  Determine whether an arbitrary entity denotes an instance of function
@@ -2845,6 +2861,10 @@ package Sem_Util is
    --  corresponding operation of S is the original corresponding operation of
    --  S2. Otherwise, it is S itself.
 
+   function Original_View_In_Visible_Part (Typ : Entity_Id) return Boolean;
+   --  Returns True if the type Typ has a private view or if the public view
+   --  appears in the visible part of a package spec.
+
    procedure Output_Entity (Id : Entity_Id);
    --  Print entity Id to standard output. The name of the entity appears in
    --  fully qualified form.
@@ -3199,7 +3219,7 @@ package Sem_Util is
    --  predefined unit. The _Par version should be called only from the parser;
    --  the _Sem version should be called only during semantic analysis.
 
-   function Static_Boolean (N : Node_Id) return Uint;
+   function Static_Boolean (N : Node_Id) return Opt_Ubool;
    --  This function analyzes the given expression node and then resolves it
    --  as Standard.Boolean. If the result is static, then Uint_1 or Uint_0 is
    --  returned corresponding to the value, otherwise an error message is

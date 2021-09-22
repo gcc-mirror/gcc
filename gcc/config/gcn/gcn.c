@@ -51,6 +51,7 @@
 #include "intl.h"
 #include "rtl-iter.h"
 #include "dwarf2.h"
+#include "gimple.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -73,13 +74,20 @@ int gcn_isa = 3;		/* Default to GCN3.  */
  
    We want to permit full occupancy, so size accordingly.  */
 
+/* Use this as a default, but allow it to grow if the user requests a large
+   amount of gang-private shared-memory space.  */
+static int acc_lds_size = 0x600;
+
 #define OMP_LDS_SIZE 0x600    /* 0x600 is 1/40 total, rounded down.  */
-#define ACC_LDS_SIZE 32768    /* Half of the total should be fine.  */
+#define ACC_LDS_SIZE acc_lds_size
 #define OTHER_LDS_SIZE 65536  /* If in doubt, reserve all of it.  */
 
 #define LDS_SIZE (flag_openacc ? ACC_LDS_SIZE \
 		  : flag_openmp ? OMP_LDS_SIZE \
 		  : OTHER_LDS_SIZE)
+
+static int gang_private_hwm = 32;
+static hash_map<tree, int> lds_allocs;
 
 /* The number of registers usable by normal non-kernel functions.
    The SGPR count includes any special extra registers such as VCC.  */
@@ -98,13 +106,6 @@ gcn_init_machine_status (void)
   struct machine_function *f;
 
   f = ggc_cleared_alloc<machine_function> ();
-
-  /* Set up LDS allocation for broadcasting for this function.  */
-  f->lds_allocated = 32;
-  f->lds_allocs = hash_map<tree, int>::create_ggc (64);
-
-  /* And LDS temporary decls for worker reductions.  */
-  vec_alloc (f->reduc_decls, 0);
 
   if (TARGET_GCN3)
     f->use_flat_addressing = true;
@@ -143,6 +144,24 @@ gcn_option_override (void)
       else
 	/* 1MB total.  */
 	stack_size_opt = 1048576;
+    }
+
+  /* Reserve 1Kb (somewhat arbitrarily) of LDS space for reduction results and
+     worker broadcasts.  */
+  if (gang_private_size_opt == -1)
+    gang_private_size_opt = 512;
+  else if (gang_private_size_opt < gang_private_hwm)
+    gang_private_size_opt = gang_private_hwm;
+  else if (gang_private_size_opt >= acc_lds_size - 1024)
+    {
+      /* We need some space for reductions and worker broadcasting.  If the
+	 user requests a large amount of gang-private LDS space, we might not
+	 have enough left for the former.  Increase the LDS allocation in that
+	 case, although this may reduce the maximum occupancy on the
+	 hardware.  */
+      acc_lds_size = gang_private_size_opt + 1024;
+      if (acc_lds_size > 32768)
+	acc_lds_size = 32768;
     }
 
   /* The xnack option is a placeholder, for now.  */
@@ -3066,7 +3085,7 @@ gcn_expand_prologue ()
      The low-part is the address of the topmost addressable byte, which is
      size-1.  The high-part is an offset and should be zero.  */
   emit_move_insn (gen_rtx_REG (SImode, M0_REG),
-		  gen_int_mode (LDS_SIZE-1, SImode));
+		  gen_int_mode (LDS_SIZE, SImode));
 
   emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
 
@@ -5115,10 +5134,14 @@ gcn_oacc_dim_pos (int dim)
 /* Implement TARGET_GOACC_FORK_JOIN.  */
 
 static bool
-gcn_fork_join (gcall *ARG_UNUSED (call), const int *ARG_UNUSED (dims),
-	       bool ARG_UNUSED (is_fork))
+gcn_fork_join (gcall *call, const int dims[], bool is_fork)
 {
-  /* GCN does not need to expand fork/join markers at the RTL level.  */
+  tree arg = gimple_call_arg (call, 2);
+  unsigned axis = TREE_INT_CST_LOW (arg);
+
+  if (!is_fork && axis == GOMP_DIM_WORKER && dims[axis] != 1)
+    return true;
+
   return false;
 }
 
@@ -5159,6 +5182,28 @@ gcn_fixup_accel_lto_options (tree fndecl)
       cl_optimization_restore (&global_options, &global_options_set,
 			       TREE_OPTIMIZATION (old_optimize));
     }
+}
+
+/* Implement TARGET_GOACC_SHARED_MEM_LAYOUT hook.  */
+
+static void
+gcn_shared_mem_layout (unsigned HOST_WIDE_INT *lo,
+		       unsigned HOST_WIDE_INT *hi,
+		       int ARG_UNUSED (dims[GOMP_DIM_MAX]),
+		       unsigned HOST_WIDE_INT
+			 ARG_UNUSED (private_size[GOMP_DIM_MAX]),
+		       unsigned HOST_WIDE_INT reduction_size[GOMP_DIM_MAX])
+{
+  *lo = gang_private_size_opt + reduction_size[GOMP_DIM_WORKER];
+  /* !!! We can maybe use dims[] to estimate the maximum number of work
+     groups/wavefronts/etc. we will launch, and therefore tune the maximum
+     amount of LDS we should use.  For now, use a minimal amount to try to
+     maximise occupancy.  */
+  *hi = acc_lds_size;
+  machine_function *machfun = cfun->machine;
+  machfun->reduction_base = gang_private_size_opt;
+  machfun->reduction_limit
+    = gang_private_size_opt + reduction_size[GOMP_DIM_WORKER];
 }
 
 /* }}}  */
@@ -5488,17 +5533,18 @@ gcn_section_type_flags (tree decl, const char *name, int reloc)
 
 /* Helper function for gcn_asm_output_symbol_ref.
 
-   FIXME: If we want to have propagation blocks allocated separately and
-   statically like this, it would be better done via symbol refs and the
-   assembler/linker.  This is a temporary hack.  */
+   FIXME: This function is used to lay out gang-private variables in LDS
+   on a per-CU basis.
+   There may be cases in which gang-private variables in different compilation
+   units could clobber each other.  In that case we should be relying on the
+   linker to lay out gang-private LDS space, but that doesn't appear to be
+   possible at present.  */
 
 static void
 gcn_print_lds_decl (FILE *f, tree var)
 {
   int *offset;
-  machine_function *machfun = cfun->machine;
-
-  if ((offset = machfun->lds_allocs->get (var)))
+  if ((offset = lds_allocs.get (var)))
     fprintf (f, "%u", (unsigned) *offset);
   else
     {
@@ -5508,14 +5554,14 @@ gcn_print_lds_decl (FILE *f, tree var)
       if (size > align && size > 4 && align < 8)
 	align = 8;
 
-      machfun->lds_allocated = ((machfun->lds_allocated + align - 1)
-				& ~(align - 1));
+      gang_private_hwm = ((gang_private_hwm + align - 1) & ~(align - 1));
 
-      machfun->lds_allocs->put (var, machfun->lds_allocated);
-      fprintf (f, "%u", machfun->lds_allocated);
-      machfun->lds_allocated += size;
-      if (machfun->lds_allocated > LDS_SIZE)
-	error ("local data-share memory exhausted");
+      lds_allocs.put (var, gang_private_hwm);
+      fprintf (f, "%u", gang_private_hwm);
+      gang_private_hwm += size;
+      if (gang_private_hwm > gang_private_size_opt)
+	error ("gang-private data-share memory exhausted (increase with "
+	       "%<-mgang-private-size=<number>%>)");
     }
 }
 
@@ -6515,6 +6561,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_GOACC_REDUCTION gcn_goacc_reduction
 #undef  TARGET_GOACC_VALIDATE_DIMS
 #define TARGET_GOACC_VALIDATE_DIMS gcn_goacc_validate_dims
+#undef  TARGET_GOACC_SHARED_MEM_LAYOUT
+#define TARGET_GOACC_SHARED_MEM_LAYOUT gcn_shared_mem_layout
 #undef  TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK gcn_hard_regno_mode_ok
 #undef  TARGET_HARD_REGNO_NREGS

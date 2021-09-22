@@ -37,6 +37,17 @@ package Snames is
    --  some exceptions). See the body of Get_Attribute_Id for details. The
    --  same is true of other enumeration types declared in this package.
 
+   --  ALSO NOTE: In the case of a name that corresponds to both an attribute
+   --  and a pragma, the Name_Id must be defined in the attribute section
+   --  (between First_Attribute_Name and Last_Attribute_Name). Also, please
+   --  add a comment in the list of Name_Ids at the point where the name would
+   --  normally appear alphabetically (for an example, see comment starting
+   --  "Note: CPU ..."). The Pragma_Id with that name must be defined in the
+   --  last section of literals for type Pragma_Id (see set of Pragma_Ids that
+   --  require special processing due to matching an attribute name). Finally,
+   --  the bodies of functions Get_Pragma_Id and Is_Pragma_Name must be updated
+   --  to test for each such pragma that shares a name with an attribute.
+
    ------------------
    -- Preset Names --
    ------------------
@@ -624,7 +635,13 @@ package Snames is
    Name_Precondition                   : constant Name_Id := N + $; -- GNAT
    Name_Predicate                      : constant Name_Id := N + $; -- GNAT
    Name_Predicate_Failure              : constant Name_Id := N + $; -- Ada 12
-   Name_Preelaborable_Initialization   : constant Name_Id := N + $; -- Ada 05
+
+   --  Note: Preelaborable_Initialization is not in this list because its name
+   --  matches the name of the corresponding attribute. However, it is included
+   --  in the definition of the type Pragma_Id, and the functions Get_Pragma_Id
+   --  and Is_Pragma_Name correctly recognize and process that pragma name.
+   --  Preelaborable_Initialization is a standard Ada 2005 pragma.
+
    Name_Preelaborate                   : constant Name_Id := N + $;
    Name_Pre_Class                      : constant Name_Id := N + $; -- GNAT
 
@@ -1007,6 +1024,7 @@ package Snames is
    Name_Pool_Address                   : constant Name_Id := N + $; -- GNAT
    Name_Pos                            : constant Name_Id := N + $;
    Name_Position                       : constant Name_Id := N + $;
+   Name_Preelaborable_Initialization   : constant Name_Id := N + $; -- Ada 22
    Name_Priority                       : constant Name_Id := N + $; -- Ada 05
    Name_Range                          : constant Name_Id := N + $;
    Name_Range_Length                   : constant Name_Id := N + $; -- GNAT
@@ -1536,6 +1554,7 @@ package Snames is
       Attribute_Pool_Address,
       Attribute_Pos,
       Attribute_Position,
+      Attribute_Preelaborable_Initialization,
       Attribute_Priority,
       Attribute_Range,
       Attribute_Range_Length,
@@ -1921,7 +1940,6 @@ package Snames is
       Pragma_Precondition,
       Pragma_Predicate,
       Pragma_Predicate_Failure,
-      Pragma_Preelaborable_Initialization,
       Pragma_Preelaborate,
       Pragma_Pre_Class,
       Pragma_Provide_Shift_Operators,
@@ -1974,7 +1992,9 @@ package Snames is
 
       --  The following pragmas are on their own, out of order, because of the
       --  special processing required to deal with the fact that their names
-      --  match existing attribute names.
+      --  match existing attribute names. Note that when a pragma is added in
+      --  this section, functions Get_Pragma_Id and Is_Pragma_Name must be
+      --  updated to account for the new pragma.
 
       Pragma_CPU,
       Pragma_Default_Scalar_Storage_Order,
@@ -1983,6 +2003,7 @@ package Snames is
       Pragma_Interface,
       Pragma_Interrupt_Priority,
       Pragma_Lock_Free,
+      Pragma_Preelaborable_Initialization,
       Pragma_Priority,
       Pragma_Secondary_Stack_Size,
       Pragma_Storage_Size,

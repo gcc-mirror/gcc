@@ -846,10 +846,7 @@ package body Sem_Aux is
       Btype : constant Entity_Id := Base_Type (Ent);
 
    begin
-      if Error_Posted (Ent) or else Error_Posted (Btype) then
-         return False;
-
-      elsif Is_Private_Type (Btype) then
+      if Is_Private_Type (Btype) then
          declare
             Utyp : constant Entity_Id := Underlying_Type (Btype);
          begin

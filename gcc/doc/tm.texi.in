@@ -4228,6 +4228,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD
 
+@hook TARGET_GOACC_SHARED_MEM_LAYOUT
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses

@@ -6626,7 +6626,7 @@ package body Sem_Ch4 is
                Get_Next_Interp (Index, It);
             end loop;
          end if;
-      else
+      elsif Has_Compatible_Type (R, T1) or else Covers (Etype (R), T1) then
          Add_One_Interp (N, Op_Id, Standard_Boolean, Base_Type (T1));
       end if;
    end Find_Non_Universal_Interpretations;
@@ -8029,6 +8029,7 @@ package body Sem_Ch4 is
                while Present (It.Nam) loop
                   if Is_Numeric_Type (It.Typ)
                     and then Scope (It.Typ) = Standard_Standard
+                    and then Ekind (It.Nam) = E_Operator
                   then
                      Set_Abstract_Op (I, Abstract_Op);
                   end if;

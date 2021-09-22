@@ -326,6 +326,8 @@ class GitCommit:
         if not self.info:
             return
 
+        self.check_commit_email()
+
         # Extract PR numbers form the subject line
         # Match either [PRnnnn] / (PRnnnn) or PR component/nnnn
         if self.info.lines and not self.revert_commit:
@@ -803,3 +805,12 @@ class GitCommit:
         print('Errors:')
         for error in self.errors:
             print(error)
+
+    def check_commit_email(self):
+        # Parse 'Martin Liska  <mliska@suse.cz>'
+        email = self.info.author.split(' ')[-1].strip('<>')
+
+        # Verify that all characters are ASCII
+        # TODO: Python 3.7 provides a nicer function: isascii
+        if len(email) != len(email.encode()):
+            self.errors.append(Error(f'non-ASCII characters in git commit email address ({email})'))

@@ -887,6 +887,39 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
   return res;
 }
 
+/* Return the misalignment of DR_INFO.  */
+
+int
+dr_misalignment (dr_vec_info *dr_info)
+{
+  if (STMT_VINFO_GROUPED_ACCESS (dr_info->stmt))
+    {
+      dr_vec_info *first_dr
+	= STMT_VINFO_DR_INFO (DR_GROUP_FIRST_ELEMENT (dr_info->stmt));
+      int misalign = first_dr->misalignment;
+      gcc_assert (misalign != DR_MISALIGNMENT_UNINITIALIZED);
+      if (misalign == DR_MISALIGNMENT_UNKNOWN)
+	return misalign;
+      /* vect_analyze_data_ref_accesses guarantees that DR_INIT are
+	 INTEGER_CSTs and the first element in the group has the lowest
+	 address.  Likewise vect_compute_data_ref_alignment will
+	 have ensured that target_alignment is constant and otherwise
+	 set misalign to DR_MISALIGNMENT_UNKNOWN.  */
+      HOST_WIDE_INT diff = (TREE_INT_CST_LOW (DR_INIT (dr_info->dr))
+			    - TREE_INT_CST_LOW (DR_INIT (first_dr->dr)));
+      gcc_assert (diff >= 0);
+      unsigned HOST_WIDE_INT target_alignment_c
+	= first_dr->target_alignment.to_constant ();
+      return (misalign + diff) % target_alignment_c;
+    }
+  else
+    {
+      int misalign = dr_info->misalignment;
+      gcc_assert (misalign != DR_MISALIGNMENT_UNINITIALIZED);
+      return misalign;
+    }
+}
+
 /* Record the base alignment guarantee given by DRB, which occurs
    in STMT_INFO.  */
 
@@ -992,7 +1025,7 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info)
 
   poly_uint64 vector_alignment
     = exact_div (vect_calculate_target_alignment (dr_info), BITS_PER_UNIT);
-  DR_TARGET_ALIGNMENT (dr_info) = vector_alignment;
+  SET_DR_TARGET_ALIGNMENT (dr_info, vector_alignment);
 
   /* If the main loop has peeled for alignment we have no way of knowing
      whether the data accesses in the epilogues are aligned.  We can't at
@@ -2235,8 +2268,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           if (npeel)
             LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) = npeel;
           else
-            LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
-	      = DR_MISALIGNMENT (dr0_info);
+	    LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) = -1;
 	  SET_DR_MISALIGNMENT (dr0_info, 0);
 	  if (dump_enabled_p ())
             {
@@ -2408,7 +2440,12 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
       if (STMT_VINFO_VECTORIZABLE (dr_info->stmt))
-	vect_compute_data_ref_alignment (loop_vinfo, dr_info);
+	{
+	  if (STMT_VINFO_GROUPED_ACCESS (dr_info->stmt)
+	      && DR_GROUP_FIRST_ELEMENT (dr_info->stmt) != dr_info->stmt)
+	    continue;
+	  vect_compute_data_ref_alignment (loop_vinfo, dr_info);
+	}
     }
 
   return opt_result::success ();
@@ -2420,13 +2457,9 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 static bool
 vect_slp_analyze_node_alignment (vec_info *vinfo, slp_tree node)
 {
-  /* We vectorize from the first scalar stmt in the node unless
-     the node is permuted in which case we start from the first
-     element in the group.  */
+  /* Alignment is maintained in the first element of the group.  */
   stmt_vec_info first_stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
-  dr_vec_info *first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
-  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
-    first_stmt_info = DR_GROUP_FIRST_ELEMENT (first_stmt_info);
+  first_stmt_info = DR_GROUP_FIRST_ELEMENT (first_stmt_info);
 
   /* We need to commit to a vector type for the group now.  */
   if (is_a <bb_vec_info> (vinfo)
@@ -2440,22 +2473,8 @@ vect_slp_analyze_node_alignment (vec_info *vinfo, slp_tree node)
     }
 
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
-  vect_compute_data_ref_alignment (vinfo, dr_info);
-  /* In several places we need alignment of the first element anyway.  */
-  if (dr_info != first_dr_info)
-    vect_compute_data_ref_alignment (vinfo, first_dr_info);
-
-  /* For creating the data-ref pointer we need alignment of the
-     first element as well.  */
-  first_stmt_info
-    = vect_stmt_to_vectorize (vect_find_first_scalar_stmt_in_slp (node));
-  if (first_stmt_info != SLP_TREE_SCALAR_STMTS (node)[0])
-    {
-      first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
-      if (dr_info != first_dr_info)
-	vect_compute_data_ref_alignment (vinfo, first_dr_info);
-    }
-
+  if (dr_info->misalignment == DR_MISALIGNMENT_UNINITIALIZED)
+    vect_compute_data_ref_alignment (vinfo, dr_info);
   return true;
 }
 
@@ -4616,13 +4635,6 @@ static void
 vect_duplicate_ssa_name_ptr_info (tree name, dr_vec_info *dr_info)
 {
   duplicate_ssa_name_ptr_info (name, DR_PTR_INFO (dr_info->dr));
-  int misalign = DR_MISALIGNMENT (dr_info);
-  if (misalign == DR_MISALIGNMENT_UNKNOWN)
-    mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
-  else
-    set_ptr_info_alignment (SSA_NAME_PTR_INFO (name),
-			    known_alignment (DR_TARGET_ALIGNMENT (dr_info)),
-			    misalign);
 }
 
 /* Function vect_create_addr_base_for_vector_ref.

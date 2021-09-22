@@ -276,9 +276,9 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{omp_all_memory} reserved locator @tab N @tab
 @item @emph{target_device trait} in OpenMP Context @tab N @tab
 @item @code{target_device} selector set in context selectors @tab N @tab
-@item C/C++'s @code{declare variante} directive: elision support of
+@item C/C++'s @code{declare variant} directive: elision support of
       preprocessed code @tab N @tab
-@item @code{declare variante}: new clauses @code{adjust_args} and
+@item @code{declare variant}: new clauses @code{adjust_args} and
       @code{append_args} @tab N @tab
 @item @code{dispatch} construct @tab N @tab
 @item device-specific ICV settings the environment variables @tab N @tab
@@ -305,7 +305,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{seq_cst} clause on a @code{flush} construct @tab Y @tab
 @item @code{inoutset} argument to the @code{depend} clause @tab N @tab
 @item @code{private} and @code{firstprivate} argument to @code{default}
-      clause in C and C++ @tab N @tab
+      clause in C and C++ @tab Y @tab
 @item @code{present} argument to @code{defaultmap} clause @tab N @tab
 @item @code{omp_set_num_teams}, @code{omp_set_teams_thread_limit},
       @code{omp_get_max_teams}, @code{omp_get_teams_thread_limit} runtime

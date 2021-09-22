@@ -265,6 +265,7 @@ dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
 dataflow		Kenneth Zadeck		<zadeck@naturalbridge.com>
 driver			Joseph Myers		<joseph@codesourcery.com>
+Fortran			Harald Anlauf		<anlauf@gmx.de>
 Fortran			Janne Blomqvist		<jb@gcc.gnu.org>
 Fortran			Tobias Burnus		<tobias@codesourcery.com>
 Fortran			François-Xavier Coudert	<fxcoudert@gcc.gnu.org>
@@ -307,7 +308,6 @@ from other maintainers or reviewers.
 
 Mark G. Adams					<mark.g.adams@sympatico.ca>
 Pedro Alves					<palves@redhat.com>
-Harald Anlauf					<anlauf@gmx.de>
 Raksit Ashok					<raksit@google.com>
 Matt Austern					<austern@google.com>
 David Ayers					<ayers@fsfe.org>

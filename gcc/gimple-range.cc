@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "gimple-range.h"
+#include "domwalk.h"
 
 gimple_ranger::gimple_ranger () : tracer ("")
 {
@@ -41,6 +42,7 @@ gimple_ranger::gimple_ranger () : tracer ("")
   m_oracle = m_cache.oracle ();
   if (dump_file && (param_evrp_mode & EVRP_MODE_TRACE))
     tracer.enable_trace ();
+  set_all_edges_as_executable (cfun);
 }
 
 bool
@@ -164,10 +166,6 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
   int_range_max edge_range;
   gcc_checking_assert (irange::supports_type_p (TREE_TYPE (name)));
 
-  // PHI arguments can be constants, catch these here.
-  if (!gimple_range_ssa_p (name))
-    return range_of_expr (r, name);
-
   unsigned idx;
   if ((idx = tracer.header ("range_on_edge (")))
     {
@@ -175,16 +173,32 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
       fprintf (dump_file, ") on edge %d->%d\n", e->src->index, e->dest->index);
     }
 
-  range_on_exit (r, e->src, name);
-  gcc_checking_assert  (r.undefined_p ()
-			|| range_compatible_p (r.type(), TREE_TYPE (name)));
+  // Check to see if the edge is executable.
+  if ((e->flags & EDGE_EXECUTABLE) == 0)
+    {
+      r.set_undefined ();
+      if (idx)
+	tracer.trailer (idx, "range_on_edge [Unexecutable] ", true,
+			name, r);
+      return true;
+    }
 
-  // Check to see if NAME is defined on edge e.
-  if (m_cache.range_on_edge (edge_range, e, name))
-    r.intersect (edge_range);
+  bool res = true;
+  if (!gimple_range_ssa_p (name))
+    res = range_of_expr (r, name);
+  else
+    {
+      range_on_exit (r, e->src, name);
+      gcc_checking_assert  (r.undefined_p ()
+			    || range_compatible_p (r.type(), TREE_TYPE (name)));
+
+      // Check to see if NAME is defined on edge e.
+      if (m_cache.range_on_edge (edge_range, e, name))
+	r.intersect (edge_range);
+    }
 
   if (idx)
-    tracer.trailer (idx, "range_on_edge", true, name, r);
+    tracer.trailer (idx, "range_on_edge", res, name, r);
   return true;
 }
 

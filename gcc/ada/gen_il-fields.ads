@@ -828,7 +828,6 @@ package Gen_IL.Fields is
       Nonzero_Is_True,
       Normalized_First_Bit,
       Normalized_Position,
-      Normalized_Position_Max,
       OK_To_Rename,
       Optimize_Alignment_Space,
       Optimize_Alignment_Time,

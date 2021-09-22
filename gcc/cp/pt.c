@@ -2218,7 +2218,8 @@ determine_specialization (tree template_id,
       targs = coerce_template_parms (parms, explicit_targs, fns,
 				     tf_warning_or_error,
 				     /*req_all*/true, /*use_defarg*/true);
-      if (targs != error_mark_node)
+      if (targs != error_mark_node
+	  && constraints_satisfied_p (fns, targs))
         templates = tree_cons (targs, fns, templates);
     }
   else for (lkp_iterator iter (fns); iter; ++iter)
@@ -17488,12 +17489,22 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	  break;
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_ALIGNED:
+	  OMP_CLAUSE_DECL (nc)
+	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
+				      in_decl, NULL);
+	  OMP_CLAUSE_OPERAND (nc, 1)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 1), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  break;
 	case OMP_CLAUSE_ALLOCATE:
 	  OMP_CLAUSE_DECL (nc)
 	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
 				      in_decl, NULL);
 	  OMP_CLAUSE_OPERAND (nc, 1)
 	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 1), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  OMP_CLAUSE_OPERAND (nc, 2)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 2), args, complain,
 			   in_decl, /*integral_constant_expression_p=*/false);
 	  break;
 	case OMP_CLAUSE_LINEAR:
@@ -19029,23 +19040,42 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	{
 	  tree op1 = TREE_OPERAND (t, 1);
 	  tree rhs1 = NULL_TREE;
+	  tree r = NULL_TREE;
 	  tree lhs, rhs;
 	  if (TREE_CODE (op1) == COMPOUND_EXPR)
 	    {
 	      rhs1 = RECUR (TREE_OPERAND (op1, 0));
 	      op1 = TREE_OPERAND (op1, 1);
 	    }
-	  lhs = RECUR (TREE_OPERAND (op1, 0));
-	  rhs = RECUR (TREE_OPERAND (op1, 1));
+	  if (TREE_CODE (op1) == COND_EXPR)
+	    {
+	      gcc_assert (rhs1 == NULL_TREE);
+	      tree c = TREE_OPERAND (op1, 0);
+	      if (TREE_CODE (c) == MODIFY_EXPR)
+		{
+		  r = RECUR (TREE_OPERAND (c, 0));
+		  c = TREE_OPERAND (c, 1);
+		}
+	      gcc_assert (TREE_CODE (c) == EQ_EXPR);
+	      rhs = RECUR (TREE_OPERAND (c, 1));
+	      lhs = RECUR (TREE_OPERAND (op1, 2));
+	      rhs1 = RECUR (TREE_OPERAND (op1, 1));
+	    }
+	  else
+	    {
+	      lhs = RECUR (TREE_OPERAND (op1, 0));
+	      rhs = RECUR (TREE_OPERAND (op1, 1));
+	    }
 	  finish_omp_atomic (EXPR_LOCATION (t), OMP_ATOMIC, TREE_CODE (op1),
-			     lhs, rhs, NULL_TREE, NULL_TREE, rhs1, tmp,
-			     OMP_ATOMIC_MEMORY_ORDER (t));
+			     lhs, rhs, NULL_TREE, NULL_TREE, rhs1, r,
+			     tmp, OMP_ATOMIC_MEMORY_ORDER (t),
+			     OMP_ATOMIC_WEAK (t));
 	}
       else
 	{
 	  tree op1 = TREE_OPERAND (t, 1);
 	  tree v = NULL_TREE, lhs, rhs = NULL_TREE, lhs1 = NULL_TREE;
-	  tree rhs1 = NULL_TREE;
+	  tree rhs1 = NULL_TREE, r = NULL_TREE;
 	  enum tree_code code = TREE_CODE (TREE_OPERAND (op1, 1));
 	  enum tree_code opcode = NOP_EXPR;
 	  if (code == OMP_ATOMIC_READ)
@@ -19064,8 +19094,25 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		  rhs1 = RECUR (TREE_OPERAND (op11, 0));
 		  op11 = TREE_OPERAND (op11, 1);
 		}
-	      lhs = RECUR (TREE_OPERAND (op11, 0));
-	      rhs = RECUR (TREE_OPERAND (op11, 1));
+	      if (TREE_CODE (op11) == COND_EXPR)
+		{
+		  gcc_assert (rhs1 == NULL_TREE);
+		  tree c = TREE_OPERAND (op11, 0);
+		  if (TREE_CODE (c) == MODIFY_EXPR)
+		    {
+		      r = RECUR (TREE_OPERAND (c, 0));
+		      c = TREE_OPERAND (c, 1);
+		    }
+		  gcc_assert (TREE_CODE (c) == EQ_EXPR);
+		  rhs = RECUR (TREE_OPERAND (c, 1));
+		  lhs = RECUR (TREE_OPERAND (op11, 2));
+		  rhs1 = RECUR (TREE_OPERAND (op11, 1));
+		}
+	      else
+		{
+		  lhs = RECUR (TREE_OPERAND (op11, 0));
+		  rhs = RECUR (TREE_OPERAND (op11, 1));
+		}
 	      opcode = TREE_CODE (op11);
 	      if (opcode == MODIFY_EXPR)
 		opcode = NOP_EXPR;
@@ -19077,7 +19124,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	      rhs = RECUR (TREE_OPERAND (op1, 1));
 	    }
 	  finish_omp_atomic (EXPR_LOCATION (t), code, opcode, lhs, rhs, v,
-			     lhs1, rhs1, tmp, OMP_ATOMIC_MEMORY_ORDER (t));
+			     lhs1, rhs1, r, tmp,
+			     OMP_ATOMIC_MEMORY_ORDER (t), OMP_ATOMIC_WEAK (t));
 	}
       break;
 
@@ -26932,6 +26980,15 @@ dependent_scope_p (tree scope)
 	  && !currently_open_class (scope));
 }
 
+/* True if we might find more declarations in SCOPE during instantiation than
+   we can when parsing the template.  */
+
+bool
+dependentish_scope_p (tree scope)
+{
+  return dependent_scope_p (scope) || any_dependent_bases_p (scope);
+}
+
 /* T is a SCOPE_REF.  Return whether it represents a non-static member of
    an unknown base of 'this' (and is therefore instantiation-dependent).  */
 
@@ -27766,6 +27823,20 @@ dependent_template_arg_p (tree arg)
     return value_dependent_expression_p (arg);
 }
 
+/* Identify any expressions that use function parms.  */
+
+static tree
+find_parm_usage_r (tree *tp, int *walk_subtrees, void*)
+{
+  tree t = *tp;
+  if (TREE_CODE (t) == PARM_DECL)
+    {
+      *walk_subtrees = 0;
+      return t;
+    }
+  return NULL_TREE;
+}
+
 /* Returns true if ARGS (a collection of template arguments) contains
    any types that require structural equality testing.  */
 
@@ -27809,6 +27880,13 @@ any_template_arguments_need_structural_equality_p (tree args)
 		return true;
 	      else if (!TYPE_P (arg) && TREE_TYPE (arg)
 		       && TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (arg)))
+		return true;
+	      /* Checking current_function_decl because this structural
+		 comparison is only necessary for redeclaration.  */
+	      else if (!current_function_decl
+		       && dependent_template_arg_p (arg)
+		       && (cp_walk_tree_without_duplicates
+			   (&arg, find_parm_usage_r, NULL)))
 		return true;
 	    }
 	}

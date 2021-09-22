@@ -2466,23 +2466,13 @@ BUILD_CXXFLAGS='$(ALL_CXXFLAGS)' AC_SUBST(BUILD_CXXFLAGS)
 BUILD_LDFLAGS='$(LDFLAGS)'	AC_SUBST(BUILD_LDFLAGS)
 STMP_FIXINC=stmp-fixinc		AC_SUBST(STMP_FIXINC)
 
-BUILD_NO_PIE_CFLAGS='$(NO_PIE_CFLAGS)' AC_SUBST(BUILD_NO_PIE_CFLAGS)
-BUILD_NO_PIE_FLAG='$(NO_PIE_FLAG)' AC_SUBST(BUILD_NO_PIE_FLAG)
-
 # And these apply if build != host, or we are generating coverage data
 if test x$build != x$host || test "x$coverage_flags" != x
 then
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS-$@) $(CFLAGS_FOR_BUILD)'
     BUILD_CXXFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS-$@) $(CXXFLAGS_FOR_BUILD)'
     BUILD_LDFLAGS='$(LDFLAGS_FOR_BUILD)'
-
-    NO_PIE_CFLAGS_FOR_BUILD=${NO_PIE_CFLAGS_FOR_BUILD-${NO_PIE_CFLAGS}}
-    NO_PIE_FLAG_FOR_BUILD=${NO_PIE_FLAG_FOR_BUILD-${NO_PIE_FLAG}}
-    BUILD_NO_PIE_CFLAGS='$(NO_PIE_CFLAGS_FOR_BUILD)'
-    BUILD_NO_PIE_FLAG='$(NO_PIE_FLAG_FOR_BUILD)'
 fi
-AC_SUBST(NO_PIE_CFLAGS_FOR_BUILD)
-AC_SUBST(NO_PIE_FLAG_FOR_BUILD)
 
 # Expand extra_headers to include complete path.
 # This substitutes for lots of t-* files.
@@ -5367,6 +5357,16 @@ case "$target" in
       [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX908, 1,
        [Define if your assembler allows -mattr=+sram-ecc for gfx908.])])
     ;;
+  arm*)
+    gcc_GAS_CHECK_FEATURE([assembler for arm accepts context-specific architecture extensions],
+      gcc_cv_as_arm_option_extensions,
+      [-march=armv8.1-m.main+mve],
+      [.text
+	.thumb
+	.syntax unified
+	vmov.f32 s0, s1],,
+      [AC_DEFINE(HAVE_GAS_ARM_EXTENDED_ARCH, 1,
+       [Define if your Arm assembler permits context-specific feature extensions.])])
 esac
 
 # ??? Not all targets support dwarf2 debug_line, even within a version

@@ -7369,6 +7369,18 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
     default_kind = kind;
   else if (VAR_P (decl) && TREE_STATIC (decl) && DECL_IN_CONSTANT_POOL (decl))
     default_kind = OMP_CLAUSE_DEFAULT_SHARED;
+  /* For C/C++ default({,first}private), variables with static storage duration
+     declared in a namespace or global scope and referenced in construct
+     must be explicitly specified, i.e. acts as default(none).  */
+  else if ((default_kind == OMP_CLAUSE_DEFAULT_PRIVATE
+	    || default_kind == OMP_CLAUSE_DEFAULT_FIRSTPRIVATE)
+	   && VAR_P (decl)
+	   && is_global_var (decl)
+	   && (DECL_FILE_SCOPE_P (decl)
+	       || (DECL_CONTEXT (decl)
+		   && TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL))
+	   && !lang_GNU_Fortran ())
+    default_kind = OMP_CLAUSE_DEFAULT_NONE;
 
   switch (default_kind)
     {

@@ -6548,6 +6548,17 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		    // deallocate the components first
 		    tmp = gfc_deallocate_alloc_comp (fsym->ts.u.derived,
 						     parmse.expr, e->rank);
+		    /* But check whether dummy argument is optional.  */
+		    if (tmp != NULL_TREE
+			&& fsym->attr.optional
+			&& e->expr_type == EXPR_VARIABLE
+			&& e->symtree->n.sym->attr.optional)
+		      {
+			tree present;
+			present = gfc_conv_expr_present (e->symtree->n.sym);
+			tmp = build3_v (COND_EXPR, present, tmp,
+					build_empty_stmt (input_location));
+		      }
 		    if (tmp != NULL_TREE)
 		      gfc_add_expr_to_block (&se->pre, tmp);
 		  }
@@ -11716,4 +11727,38 @@ tree
 gfc_trans_assign (gfc_code * code)
 {
   return gfc_trans_assignment (code->expr1, code->expr2, false, true);
+}
+
+/* Generate a simple loop for internal use of the form
+   for (var = begin; var <cond> end; var += step)
+      body;  */
+void
+gfc_simple_for_loop (stmtblock_t *block, tree var, tree begin, tree end,
+		     enum tree_code cond, tree step, tree body)
+{
+  tree tmp;
+
+  /* var = begin. */
+  gfc_add_modify (block, var, begin);
+
+  /* Loop: for (var = begin; var <cond> end; var += step).  */
+  tree label_loop = gfc_build_label_decl (NULL_TREE);
+  tree label_cond = gfc_build_label_decl (NULL_TREE);
+  TREE_USED (label_loop) = 1;
+  TREE_USED (label_cond) = 1;
+
+  gfc_add_expr_to_block (block, build1_v (GOTO_EXPR, label_cond));
+  gfc_add_expr_to_block (block, build1_v (LABEL_EXPR, label_loop));
+
+  /* Loop body.  */
+  gfc_add_expr_to_block (block, body);
+
+  /* End of loop body.  */
+  tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (var), var, step);
+  gfc_add_modify (block, var, tmp);
+  gfc_add_expr_to_block (block, build1_v (LABEL_EXPR, label_cond));
+  tmp = fold_build2_loc (input_location, cond, boolean_type_node, var, end);
+  tmp = build3_v (COND_EXPR, tmp, build1_v (GOTO_EXPR, label_loop),
+		  build_empty_stmt (input_location));
+  gfc_add_expr_to_block (block, tmp);
 }

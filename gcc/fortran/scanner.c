@@ -298,17 +298,69 @@ gfc_scanner_done_1 (void)
     }
 }
 
+static bool
+gfc_do_check_include_dir (const char *path, bool warn)
+{
+  struct stat st;
+  if (stat (path, &st))
+    {
+      if (errno != ENOENT)
+	gfc_warning_now (0, "Include directory %qs: %s",
+			 path, xstrerror(errno));
+      else if (warn && !gfc_cpp_enabled ())
+	  gfc_warning_now (OPT_Wmissing_include_dirs,
+			     "Nonexistent include directory %qs", path);
+      return false;
+    }
+  else if (!S_ISDIR (st.st_mode))
+    {
+      gfc_fatal_error ("%qs is not a directory", path);
+      return false;
+    }
+  return true;
+}
+
+/* In order that -W(no-)missing-include-dirs works, the diagnostic can only be
+   run after processing the commandline.  */
+static void
+gfc_do_check_include_dirs (gfc_directorylist **list)
+{
+  gfc_directorylist *prev, *q, *n;
+  prev = NULL;
+  n = *list;
+  while (n)
+    {
+      q = n; n = n->next;
+      if (gfc_do_check_include_dir (q->path, q->warn))
+	{
+	  prev = q;
+	  continue;
+	}
+      if (prev == NULL)
+	*list = n;
+      else
+	prev->next = n;
+      free (q->path);
+      free (q);
+    }
+}
+
+void
+gfc_check_include_dirs ()
+{
+  gfc_do_check_include_dirs (&include_dirs);
+  gfc_do_check_include_dirs (&intrinsic_modules_dirs);
+}
 
 /* Adds path to the list pointed to by list.  */
 
 static void
 add_path_to_list (gfc_directorylist **list, const char *path,
-		  bool use_for_modules, bool head, bool warn)
+		  bool use_for_modules, bool head, bool warn, bool defer_warn)
 {
   gfc_directorylist *dir;
   const char *p;
   char *q;
-  struct stat st;
   size_t len;
   int i;
   
@@ -326,21 +378,8 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   while (i >=0 && IS_DIR_SEPARATOR (q[i]))
     q[i--] = '\0';
 
-  if (stat (q, &st))
-    {
-      if (errno != ENOENT)
-	gfc_warning_now (0, "Include directory %qs: %s", path,
-			 xstrerror(errno));
-      else if (warn)
-	gfc_warning_now (OPT_Wmissing_include_dirs,
-			 "Nonexistent include directory %qs", path);
-      return;
-    }
-  else if (!S_ISDIR (st.st_mode))
-    {
-      gfc_fatal_error ("%qs is not a directory", path);
-      return;
-    }
+  if (!defer_warn && !gfc_do_check_include_dir (q, warn))
+    return;
 
   if (head || *list == NULL)
     {
@@ -362,17 +401,20 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   if (head)
     *list = dir;
   dir->use_for_modules = use_for_modules;
+  dir->warn = warn;
   dir->path = XCNEWVEC (char, strlen (p) + 2);
   strcpy (dir->path, p);
   strcat (dir->path, "/");	/* make '/' last character */
 }
 
+/* defer_warn is set to true while parsing the commandline.  */
 
 void
 gfc_add_include_path (const char *path, bool use_for_modules, bool file_dir,
-		      bool warn)
+		      bool warn, bool defer_warn)
 {
-  add_path_to_list (&include_dirs, path, use_for_modules, file_dir, warn);
+  add_path_to_list (&include_dirs, path, use_for_modules, file_dir, warn,
+		    defer_warn);
 
   /* For '#include "..."' these directories are automatically searched.  */
   if (!file_dir)
@@ -383,7 +425,7 @@ gfc_add_include_path (const char *path, bool use_for_modules, bool file_dir,
 void
 gfc_add_intrinsic_modules_path (const char *path)
 {
-  add_path_to_list (&intrinsic_modules_dirs, path, true, false, false);
+  add_path_to_list (&intrinsic_modules_dirs, path, true, false, false, false);
 }
 
 

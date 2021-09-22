@@ -45,8 +45,9 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
   fr30-elf frv-elf frv-linux ft32-elf h8300-elf hppa-linux-gnu \
   hppa-linux-gnuOPT-enable-sjlj-exceptions=yes hppa64-linux-gnu \
-  hppa2.0-hpux10.1 hppa64-hpux11.3 \
-  hppa64-hpux11.0OPT-enable-sjlj-exceptions=yes hppa2.0-hpux11.9 \
+  hppa2.0-hpux10.1OPT-enable-obsolete hppa64-hpux11.3 \
+  hppa64-hpux11.0OPT-enable-sjlj-exceptions=yes \
+  hppa2.0-hpux11.9OPT-enable-obsolete \
   i686-pc-linux-gnu i686-apple-darwin i686-apple-darwin9 i686-apple-darwin10 \
   i486-freebsd4 i686-freebsd6 i686-kfreebsd-gnu \
   i686-netbsdelf9 \
@@ -58,7 +59,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   ia64-freebsd6 ia64-linux ia64-hpux ia64-hp-vms iq2000-elf lm32-elf \
   lm32-rtems lm32-uclinux m32c-rtems m32c-elf m32r-elf m32rle-elf \
   m68k-elf m68k-netbsdelf \
-  m68k-openbsd m68k-uclinux m68k-linux m68k-rtems \
+  m68k-uclinux m68k-linux m68k-rtems \
   mcore-elf microblaze-linux microblaze-elf \
   mips-netbsd \
   mips64el-st-linux-gnu mips64octeon-linux mipsisa64r2-linux \
@@ -96,7 +97,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   tilegx-linux-gnuOPT-enable-obsolete tilegxbe-linux-gnuOPT-enable-obsolete \
   tilepro-linux-gnuOPT-enable-obsolete \
   v850e1-elf v850e-elf v850-elf v850-rtems vax-linux-gnu \
-  vax-netbsdelf vax-openbsd visium-elf x86_64-apple-darwin \
+  vax-netbsdelf visium-elf x86_64-apple-darwin \
   x86_64-pc-linux-gnuOPT-with-fpmath=avx \
   x86_64-elfOPT-with-fpmath=sse x86_64-freebsd6 x86_64-netbsd \
   x86_64-w64-mingw32 \

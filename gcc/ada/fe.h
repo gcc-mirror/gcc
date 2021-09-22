@@ -69,6 +69,15 @@ extern Boolean Debug_Flag_NN;
 
 /* einfo: */
 
+/* Valid_Uint is used to preserve the old behavior of Esize and
+   friends, where Uint_0 was the default. All calls to this
+   are questionable. */
+INLINE Valid_Uint
+No_Uint_To_0 (Uint X)
+{
+  return X == No_Uint ? Uint_0 : X;
+}
+
 #define Set_Alignment			einfo__entities__set_alignment
 #define Set_Component_Bit_Offset	einfo__entities__set_component_bit_offset
 #define Set_Component_Size		einfo__entities__set_component_size
@@ -615,29 +624,14 @@ B Known_Normalized_Position_Max         (Entity_Id E);
 #define Known_RM_Size einfo__utils__known_rm_size
 B Known_RM_Size                         (Entity_Id E);
 
-#define Known_Static_Component_Bit_Offset einfo__utils__known_static_component_bit_offset
-B Known_Static_Component_Bit_Offset     (Entity_Id E);
-
-#define Known_Static_Component_Size einfo__utils__known_static_component_size
-B Known_Static_Component_Size           (Entity_Id E);
-
-#define Known_Static_Esize einfo__utils__known_static_esize
-B Known_Static_Esize                    (Entity_Id E);
-
-#define Known_Static_Normalized_First_Bit einfo__utils__known_static_normalized_first_bit
-B Known_Static_Normalized_First_Bit     (Entity_Id E);
-
-#define Known_Static_Normalized_Position einfo__utils__known_static_normalized_position
-B Known_Static_Normalized_Position      (Entity_Id E);
-
-#define Known_Static_Normalized_Position_Max einfo__utils__known_static_normalized_position_max
-B Known_Static_Normalized_Position_Max  (Entity_Id E);
-
-#define Known_Static_RM_Size einfo__utils__known_static_rm_size
-B Known_Static_RM_Size                  (Entity_Id E);
-
 #define Copy_Alignment einfo__utils__copy_alignment
 B Copy_Alignment(Entity_Id To, Entity_Id From);
+
+#define Copy_Esize einfo__utils__copy_esize
+B Copy_Esize(Entity_Id To, Entity_Id From);
+
+#define Copy_RM_Size einfo__utils__copy_rm_size
+B Copy_RM_Size(Entity_Id To, Entity_Id From);
 
 #define Is_Discrete_Or_Fixed_Point_Type einfo__utils__is_discrete_or_fixed_point_type
 B Is_Discrete_Or_Fixed_Point_Type     (E Id);

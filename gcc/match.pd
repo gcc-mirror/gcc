@@ -3401,13 +3401,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (cmp @0 @2)))))
 
 /* Both signed and unsigned lshift produce the same result, so use
-   the form that minimizes the number of conversions.  */
+   the form that minimizes the number of conversions.  Postpone this
+   transformation until after shifts by zero have been folded.  */
 (simplify
  (convert (lshift:s@0 (convert:s@1 @2) INTEGER_CST@3))
  (if (INTEGRAL_TYPE_P (type)
       && tree_nop_conversion_p (type, TREE_TYPE (@0))
       && INTEGRAL_TYPE_P (TREE_TYPE (@2))
-      && TYPE_PRECISION (TREE_TYPE (@2)) <= TYPE_PRECISION (type))
+      && TYPE_PRECISION (TREE_TYPE (@2)) <= TYPE_PRECISION (type)
+      && !integer_zerop (@3))
   (lshift (convert @2) @3)))
 
 /* Simplifications of conversions.  */
@@ -4480,9 +4482,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    /* a CMP (-0) -> a CMP 0  */
    (if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@1)))
     (cmp @0 { build_real (TREE_TYPE (@1), dconst0); }))
+   /* (-0) CMP b -> 0 CMP b.  */
+   (if (TREE_CODE (@0) == REAL_CST
+	&& REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@0)))
+    (cmp { build_real (TREE_TYPE (@0), dconst0); } @1))
    /* x != NaN is always true, other ops are always false.  */
    (if (REAL_VALUE_ISNAN (TREE_REAL_CST (@1))
-	&& ! HONOR_SNANS (@1))
+	&& !tree_expr_signaling_nan_p (@1)
+	&& !tree_expr_maybe_signaling_nan_p (@0))
+    { constant_boolean_node (cmp == NE_EXPR, type); })
+   /* NaN != y is always true, other ops are always false.  */
+   (if (TREE_CODE (@0) == REAL_CST
+	&& REAL_VALUE_ISNAN (TREE_REAL_CST (@0))
+        && !tree_expr_signaling_nan_p (@0)
+        && !tree_expr_signaling_nan_p (@1))
     { constant_boolean_node (cmp == NE_EXPR, type); })
    /* Fold comparisons against infinity.  */
    (if (REAL_VALUE_ISINF (TREE_REAL_CST (@1))
@@ -7020,13 +7033,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (vec_cond @0 (view_convert? (uncond_op@4 @1 @2)) @3)
   (with { tree op_type = TREE_TYPE (@4); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& element_precision (type) == element_precision (op_type))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
     (view_convert (cond_op @0 @1 @2 (view_convert:op_type @3))))))
  (simplify
   (vec_cond @0 @1 (view_convert? (uncond_op@4 @2 @3)))
   (with { tree op_type = TREE_TYPE (@4); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& element_precision (type) == element_precision (op_type))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
     (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1)))))))
 
 /* Same for ternary operations.  */
@@ -7036,13 +7049,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (vec_cond @0 (view_convert? (uncond_op@5 @1 @2 @3)) @4)
   (with { tree op_type = TREE_TYPE (@5); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& element_precision (type) == element_precision (op_type))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
     (view_convert (cond_op @0 @1 @2 @3 (view_convert:op_type @4))))))
  (simplify
   (vec_cond @0 @1 (view_convert? (uncond_op@5 @2 @3 @4)))
   (with { tree op_type = TREE_TYPE (@5); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& element_precision (type) == element_precision (op_type))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
     (view_convert (cond_op (bit_not @0) @2 @3 @4
 		  (view_convert:op_type @1)))))))
 #endif

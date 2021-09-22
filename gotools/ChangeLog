@@ -1,3 +1,8 @@
+2021-09-21  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-runtime): Add goroot.go to --extrafiles.
+	* Makefile.in: Regenerate.
+
 2021-02-02  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (check-embed): New target.

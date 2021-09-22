@@ -5825,7 +5825,7 @@ package body Sem_Ch10 is
          Set_Is_First_Subtype   (Ent);
          Set_Scope              (Ent, Scop);
          Set_Stored_Constraint  (Ent, No_Elist);
-         Init_Size_Align        (Ent);
+         Reinit_Size_Align      (Ent);
 
          if From_Limited_With (Ent) then
             Set_Private_Dependents (Ent, New_Elmt_List);
@@ -5865,7 +5865,7 @@ package body Sem_Ch10 is
             Set_Is_Tagged_Type            (CW_Typ);
             Set_Materialize_Entity        (CW_Typ, Materialize);
             Set_Scope                     (CW_Typ, Scop);
-            Init_Size_Align               (CW_Typ);
+            Reinit_Size_Align             (CW_Typ);
          end if;
       end Decorate_Type;
 

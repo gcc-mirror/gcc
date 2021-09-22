@@ -37,8 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 
 non_null_ref::non_null_ref ()
 {
-  m_nn.create (0);
-  m_nn.safe_grow_cleared (num_ssa_names);
+  m_nn.create (num_ssa_names);
+  m_nn.quick_grow_cleared (num_ssa_names);
   bitmap_obstack_initialize (&m_bitmaps);
 }
 
@@ -760,7 +760,7 @@ ranger_cache::ranger_cache ()
   m_temporal = new temporal_cache;
   // If DOM info is available, spawn an oracle as well.
   if (dom_info_available_p (CDI_DOMINATORS))
-      m_oracle = new relation_oracle ();
+      m_oracle = new dom_oracle ();
     else
       m_oracle = NULL;
 

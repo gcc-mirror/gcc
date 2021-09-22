@@ -334,6 +334,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_PARTIAL_REG_DEPENDENCY]
 #define TARGET_SSE_PARTIAL_REG_DEPENDENCY \
 	ix86_tune_features[X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY]
+#define TARGET_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY \
+	ix86_tune_features[X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY]
+#define TARGET_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY \
+	ix86_tune_features[X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY]
 #define TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
 	ix86_tune_features[X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL]
 #define TARGET_SSE_UNALIGNED_STORE_OPTIMAL \
@@ -1101,7 +1105,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_BCST_MODE_P(MODE)			\
   ((MODE) == SFmode || (MODE) == DFmode		\
-   || (MODE) == SImode || (MODE) == DImode)
+   || (MODE) == SImode || (MODE) == DImode	\
+   || (MODE) == HFmode)
 
 /* It is possible to write patterns to move flags; but until someone
    does it,  */

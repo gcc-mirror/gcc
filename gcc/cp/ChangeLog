@@ -1,3 +1,176 @@
+2021-09-21  wangpc  <pc.wang@linux.alibaba.com>
+
+	* decl.c (start_decl_1): Move verify_type_context to ...
+	(cp_finish_decl): ... to here.
+
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_order): Parse unconstrained
+	and reproducible modifiers.
+	(OMP_DISTRIBUTE_CLAUSE_MASK): Add order clause.
+
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_default): Handle private and
+	firstprivate arguments, adjust diagnostics on unknown argument.
+	* cp-gimplify.c (cxx_omp_finish_clause): Handle OMP_CLAUSE_PRIVATE.
+
+2021-09-18  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (dependentish_scope_p): Declare.
+	* pt.c (dependentish_scope_p): New.
+	* parser.c (cp_parser_lookup_name): Return a TYPENAME_TYPE
+	for lookup of a type in a dependent object.
+	(cp_parser_template_id): Handle TYPENAME_TYPE.
+	(cp_parser_template_name): If we're looking for a type,
+	a name followed by < names a template.
+
+2021-09-18  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h: Fix typo in LANG_FLAG list.
+
+2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (finish_omp_atomic): Add r and weak arguments.
+	* parser.c (cp_parser_omp_atomic): Update function comment for
+	OpenMP 5.1 atomics, parse OpenMP 5.1 atomics and fail, compare and
+	weak clauses.
+	* semantics.c (finish_omp_atomic): Add r and weak arguments, handle
+	them, handle COND_EXPRs.
+	* pt.c (tsubst_expr): Adjust for COND_EXPR forms that
+	finish_omp_atomic can now produce.
+
+2021-09-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98486
+	* constraint.cc (get_normalized_constraints_from_decl): Always
+	look up constraints using the most general template.
+	* decl.c (grokdeclarator): Set constraints on a static data
+	member template.
+	* pt.c (determine_specialization): Check constraints on a
+	variable template.
+
+2021-09-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (await_statement_walker): Code cleanups.
+
+2021-09-16  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_outermost_constant_expr): Use
+	protected_set_expr_location.
+
+2021-09-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101904
+	* call.c (build_user_type_conversion_1): Add tf_conv to complain.
+	(add_candidates): When in a SFINAE context, instead of adding a
+	candidate to bad_fns just mark it unviable.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (parsing_function_declarator): Declare.
+	* name-lookup.c (set_decl_context_in_fn): Use it.
+	* parser.c (cp_parser_direct_declarator): Use it.
+	(parsing_function_declarator): New.
+
+2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88578
+	PR c++/102295
+	* typeck2.c (split_nonconstant_init_1): Don't throw away empty
+	initializers of flexible array members if they have non-zero type
+	size.
+
+2021-09-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102050
+	* decl.c (grok_special_member_properties): Set
+	TYPE_HAS_COPY_CTOR, TYPE_HAS_DEFAULT_CONSTRUCTOR
+	and TYPE_HAS_LIST_CTOR independently from each other.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cxx_init_decl_processing): Only warn about odd
+	interference sizes if they were specified with --param.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48396
+	* cp-tree.h (enum cp_tree_index): Remove CPTI_TYPE_INFO_PTR_TYPE.
+	(type_info_ptr_type): Remove.
+	* rtti.c (init_rtti_processing): Don't predeclare std::type_info.
+	(typeid_ok_p): Check for null const_type_info_type_node.
+	(type_info_ptr_type, get_void_tinfo_ptr): New fns.
+	(get_tinfo_decl_dynamic, get_tinfo_ptr): Use them.
+	(ptr_initializer, ptm_initializer, get_pseudo_ti_init): Use them.
+	(get_tinfo_desc): Use const_ptr_type_node.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_template_name): Move object type.
+	(cp_parser_pre_parsed_nested_name_specifier): Likewise.
+
+2021-09-15  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_unqualified_id): Only complain about ~A<T> in
+	a declarator.
+
+2021-09-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (struct param_info): Add copy_var.
+	(build_actor_fn): Use simplified param references.
+	(register_param_uses): Likewise.
+	(rewrite_param_uses): Likewise.
+	(analyze_fn_parms): New function.
+	(coro_rewrite_function_body): Add proxies for the fn
+	parameters to the outer bind scope of the rewritten code.
+	(morph_fn_to_coro): Use simplified version of param ref.
+
+2021-09-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (coro_resume_fn_id, coro_destroy_fn_id,
+	coro_promise_id, coro_frame_needs_free_id, coro_resume_index_id,
+	coro_self_handle_id, coro_actor_continue_id,
+	coro_frame_i_a_r_c_id): New.
+	(coro_init_identifiers): Initialize new name identifiers.
+	(coro_promise_type_found_p): Use pre-built identifiers.
+	(struct await_xform_data): Remove unused fields.
+	(transform_await_expr): Delete code that is now unused.
+	(build_actor_fn): Simplify interface, use pre-built identifiers and
+	remove transforms that are no longer needed.
+	(build_destroy_fn): Use revised field names.
+	(register_local_var_uses): Use pre-built identifiers.
+	(coro_rewrite_function_body): Simplify interface, use pre-built
+	identifiers.  Generate proxy vars in the outer bind expr scope for the
+	implementation state that we wish to expose.
+	(morph_fn_to_coro): Adjust comments for new variable names, use pre-
+	built identifiers.  Remove unused code to generate frame entries for
+	the implementation state.  Adjust call for build_actor_fn.
+
+2021-09-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102163
+	* constexpr.c (cxx_eval_call_expression): After evaluating a
+	subobject constructor call for an empty union member, produce a
+	side effect that makes sure the member gets activated.
+
+2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102295
+	* decl.c (layout_var_decl): For aggregates ending with a flexible
+	array member, add the size of the initializer for that member to
+	DECL_SIZE and DECL_SIZE_UNIT.
+
+2021-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102305
+	* method.c (is_xible_helper): Call complete_type on to.
+
+2021-09-14  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cxx_init_decl_processing): Don't warn if L1 cache line
+	size is smaller than maxalign.
+
 2021-09-13  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (maybe_warn_about_constant_value):

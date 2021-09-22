@@ -735,10 +735,23 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "allocate(");
       if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause))
 	{
+	  pp_string (pp, "allocator(");
 	  dump_generic_node (pp, OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause),
 			     spc, flags, false);
-	  pp_colon (pp);
+	  pp_right_paren (pp);
 	}
+      if (OMP_CLAUSE_ALLOCATE_ALIGN (clause))
+	{
+	  if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause))
+	    pp_comma (pp);
+	  pp_string (pp, "align(");
+	  dump_generic_node (pp, OMP_CLAUSE_ALLOCATE_ALIGN (clause),
+			     spc, flags, false);
+	  pp_right_paren (pp);
+	}
+      if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause)
+	  || OMP_CLAUSE_ALLOCATE_ALIGN (clause))
+	pp_colon (pp);
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
@@ -1149,7 +1162,10 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       break;
 
     case OMP_CLAUSE_ORDER:
-      pp_string (pp, "order(concurrent)");
+      pp_string (pp, "order(");
+      if (OMP_CLAUSE_ORDER_UNCONSTRAINED (clause))
+	pp_string (pp, "unconstrained:");
+      pp_string (pp, "concurrent)");
       break;
 
     case OMP_CLAUSE_BIND:

@@ -2369,9 +2369,23 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  break;
 	case 'o':
 	  if ((mask & OMP_CLAUSE_ORDER)
-	      && !c->order_concurrent
-	      && gfc_match ("order ( concurrent )") == MATCH_YES)
+	      && (m = gfc_match_dupl_check (!c->order_concurrent, "order ("))
+		 != MATCH_NO)
 	    {
+	      if (m == MATCH_ERROR)
+		goto error;
+	      if (gfc_match (" reproducible : concurrent )") == MATCH_YES
+		  || gfc_match (" concurrent )") == MATCH_YES)
+		;
+	      else if (gfc_match (" unconstrained : concurrent )") == MATCH_YES)
+		c->order_unconstrained = true;
+	      else
+		{
+		  gfc_error ("Expected ORDER(CONCURRENT) at %C "
+			     "with optional %<reproducible%> or "
+			     "%<unconstrained%> modifier");
+		  goto error;
+		}
 	      c->order_concurrent = true;
 	      continue;
 	    }
@@ -3475,7 +3489,8 @@ cleanup:
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_REDUCTION)
 #define OMP_DISTRIBUTE_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
-   | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_DIST_SCHEDULE)
+   | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_DIST_SCHEDULE \
+   | OMP_CLAUSE_ORDER)
 #define OMP_SINGLE_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE)
 #define OMP_ORDERED_CLAUSES \
@@ -5643,7 +5658,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->orderedc && omp_clauses->orderedc < omp_clauses->collapse)
     gfc_error ("ORDERED clause parameter is less than COLLAPSE at %L",
 	       &code->loc);
-
+  if (omp_clauses->order_concurrent && omp_clauses->ordered)
+    gfc_error ("ORDER clause must not be used together ORDERED at %L",
+	       &code->loc);
   if (omp_clauses->if_expr)
     {
       gfc_expr *expr = omp_clauses->if_expr;
