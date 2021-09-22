@@ -16,8 +16,38 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OSDIRNAMES := ../lib64$(call if_multiarch,:loongarch64-linux-gnu)
-MULTIARCH_DIRNAME := $(call if_multiarch,loongarch64-linux-gnu)
+# Multilib
+MULTILIB_OPTIONS = mabi=lp64 mfloat-abi=soft/mfloat-abi=single
+MULTILIB_DIRNAMES = lp64 soft single
 
-# haven't supported lp32 yet
-MULTILIB_EXCEPTIONS = mabi=lp32
+# The GCC driver always gets all abi-related options on the command line.
+# (see loongarch-driver.c:driver_get_normalized_m_opts)
+comma=,
+MULTILIB_REQUIRED = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))
+
+# Multiarch
+ifneq ($(call if_multiarch,yes),yes)
+    # Define __DISABLE_MULTIARCH if multiarch is disabled.
+    tm_defines += __DISABLE_MULTIARCH
+else
+    # Only define MULTIARCH_DIRNAME when multiarch is enabled,
+    # or it would always introduce ${target} into the search path.
+    MULTIARCH_DIRNAME = $(LARCH_MULTIARCH_TRIPLET)
+endif
+
+# Don't define MULTILIB_OSDIRNAMES if multilib is disabled.
+ifeq ($(filter __DISABLE_MULTILIB,$(tm_defines)),)
+
+    MULTILIB_OSDIRNAMES = \
+      mabi.lp64=../lib64$\
+      $(call if_multiarch,:loongarch64-linux-gnu)
+
+    MULTILIB_OSDIRNAMES += \
+      mabi.lp64/mfloat-abi.soft=../lib64/soft$\
+      $(call if_multiarch,:loongarch64-linux-gnu/soft)
+
+    MULTILIB_OSDIRNAMES += \
+      mabi.lp64/mfloat-abi.single=../lib64/single$\
+      $(call if_multiarch,:loongarch64-linux-gnu/single)
+
+endif

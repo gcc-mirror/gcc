@@ -17,34 +17,37 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef TARGET_OS_CPP_BUILTINS
-#define TARGET_OS_CPP_BUILTINS() \
-  do \
-    { \
-      GNU_USER_TARGET_OS_CPP_BUILTINS (); \
-      /* The GNU C++ standard library requires this.  */ \
-      if (c_dialect_cxx ()) \
-	builtin_define ("_GNU_SOURCE"); \
-    } \
-  while (0)
+/* Default system library search paths.
+ * This ensures that a compiler configured with --disable-multilib
+ * can work in an multilib environment.  */
 
-#define GNU_USER_LINK_EMULATION32 "elf32loongarch"
-#define GNU_USER_LINK_EMULATION64 "elf64loongarch"
+#if defined(__DISABLE_MULTILIB) && defined(__DISABLE_MULTIARCH)
 
-#define GLIBC_DYNAMIC_LINKERLP32 "/lib32/ld.so.1"
-#define GLIBC_DYNAMIC_LINKERLP64 "/lib64/ld.so.1"
+  /* Integer ABI */
+  #if DEFAULT_ABI_INT == ABI_LP64
+    #define INT_ABI_SUFFIX "lib64"
+  #endif
 
-#define GNU_USER_DYNAMIC_LINKERLP32 GLIBC_DYNAMIC_LINKERLP32
-#define GNU_USER_DYNAMIC_LINKERLP64 GLIBC_DYNAMIC_LINKERLP64
+  /* Floating-Point ABI */
+  #if DEFAULT_ABI_FLOAT == ABI_SOFT_FLOAT
+    #define FLOAT_ABI_SUFFIX "soft/"
+  #elif DEFAULT_ABI_FLOAT == ABI_SINGLE_FLOAT
+    #define FLOAT_ABI_SUFFIX "single/"
+  #endif
 
-#undef LINK_SPEC
-#define LINK_SPEC GNU_USER_TARGET_LINK_SPEC
+#endif
 
-#undef SUBTARGET_CC1_SPEC
-#define SUBTARGET_CC1_SPEC GNU_USER_TARGET_CC1_SPEC
+#ifndef INT_ABI_SUFFIX
+#define INT_ABI_SUFFIX "lib"
+#endif
 
-#undef LIB_SPEC
-#define LIB_SPEC GNU_USER_TARGET_LIB_SPEC
+#ifndef FLOAT_ABI_SUFFIX
+#define FLOAT_ABI_SUFFIX ""
+#endif
+
+#define STANDARD_STARTFILE_PREFIX_1 "/" INT_ABI_SUFFIX "/" FLOAT_ABI_SUFFIX
+#define STANDARD_STARTFILE_PREFIX_2 "/usr/" INT_ABI_SUFFIX "/" FLOAT_ABI_SUFFIX
+
 
 /* Define this to be nonzero if static stack checking is supported.  */
 #define STACK_CHECK_STATIC_BUILTIN 1

@@ -107,18 +107,6 @@ enum loongarch_address_type
   ADDRESS_SYMBOLIC
 };
 
-/* Tuning information that is automatically derived from other sources
-   (such as the scheduler).  */
-static struct
-{
-  /* The architecture and tuning settings that this structure describes.  */
-  enum processor arch;
-  enum processor tune;
-
-  /* True if the structure has been initialized.  */
-  bool initialized_p;
-
-} loongarch_tuning_info;
 
 /* Information about an address described by loongarch_address_type.
 
@@ -182,23 +170,6 @@ struct loongarch_integer_op
    or LU12I.W,LU32I.D,LU52I.D,ADDI.D DECL_ASSEMBLER_NAME.  */
 #define LARCH_MAX_INTEGER_OPS 4
 
-/* Costs of various operations on the different architectures.  */
-
-struct loongarch_rtx_cost_data
-{
-  unsigned short fp_add;
-  unsigned short fp_mult_sf;
-  unsigned short fp_mult_df;
-  unsigned short fp_div_sf;
-  unsigned short fp_div_df;
-  unsigned short int_mult_si;
-  unsigned short int_mult_di;
-  unsigned short int_div_si;
-  unsigned short int_div_di;
-  unsigned short branch_cost;
-  unsigned short memory_latency;
-};
-
 /* Global variables for machine-dependent things.  */
 
 /* The -G setting, or the configuration's default small-data limit if
@@ -207,20 +178,6 @@ static unsigned int loongarch_small_data_threshold;
 
 /* Arrays that map GCC register numbers to debugger register numbers.  */
 int loongarch_dwarf_regno[FIRST_PSEUDO_REGISTER];
-
-/* The current instruction-set architecture.  */
-enum processor loongarch_arch;
-const struct loongarch_cpu_info *loongarch_arch_info;
-
-/* The processor that we should tune the code for.  */
-enum processor loongarch_tune;
-const struct loongarch_cpu_info *loongarch_tune_info;
-
-/* The ISA level associated with loongarch_arch.  */
-int loongarch_isa;
-
-/* Which cost information to use.  */
-static const struct loongarch_rtx_cost_data *loongarch_cost;
 
 /* Index [M][R] is true if register R is allowed to hold a value of mode M.  */
 static bool loongarch_hard_regno_mode_ok_p[MAX_MACHINE_MODE]
@@ -266,61 +223,8 @@ static const struct attribute_spec loongarch_attribute_table[] = {
 };
 
 
-/* A table describing all the processors GCC knows about; see
-   loongarch-cpus.def for details.  */
-static const struct loongarch_cpu_info loongarch_cpu_info_table[] = {
-#define LARCH_CPU(NAME, CPU, ISA, FLAGS) { NAME, CPU, ISA, FLAGS },
-#include "loongarch-cpus.def"
-#undef LARCH_CPU
-};
-
-/* Default costs.  If these are used for a processor we should look
-   up the actual costs.  */
-#define DEFAULT_COSTS COSTS_N_INSNS (6),  /* fp_add */       \
-		      COSTS_N_INSNS (7),  /* fp_mult_sf */   \
-		      COSTS_N_INSNS (8),  /* fp_mult_df */   \
-		      COSTS_N_INSNS (23), /* fp_div_sf */    \
-		      COSTS_N_INSNS (36), /* fp_div_df */    \
-		      COSTS_N_INSNS (10), /* int_mult_si */  \
-		      COSTS_N_INSNS (10), /* int_mult_di */  \
-		      COSTS_N_INSNS (69), /* int_div_si */   \
-		      COSTS_N_INSNS (69), /* int_div_di */   \
-		      2, /* branch_cost */  \
-		      4  /* memory_latency */
-
-/* Floating-point costs for processors without an FPU.  Just assume that
-   all floating-point libcalls are very expensive.  */
-#define SOFT_FP_COSTS COSTS_N_INSNS (256), /* fp_add */       \
-		      COSTS_N_INSNS (256), /* fp_mult_sf */   \
-		      COSTS_N_INSNS (256), /* fp_mult_df */   \
-		      COSTS_N_INSNS (256), /* fp_div_sf */    \
-		      COSTS_N_INSNS (256)  /* fp_div_df */
-
-/* Costs to use when optimizing for size.  */
-static const struct loongarch_rtx_cost_data loongarch_rtx_cost_optimize_size = {
-    COSTS_N_INSNS (1),		    /* fp_add */
-    COSTS_N_INSNS (1),		    /* fp_mult_sf */
-    COSTS_N_INSNS (1),		    /* fp_mult_df */
-    COSTS_N_INSNS (1),		    /* fp_div_sf */
-    COSTS_N_INSNS (1),		    /* fp_div_df */
-    COSTS_N_INSNS (1),		    /* int_mult_si */
-    COSTS_N_INSNS (1),		    /* int_mult_di */
-    COSTS_N_INSNS (1),		    /* int_div_si */
-    COSTS_N_INSNS (1),		    /* int_div_di */
-    2,				    /* branch_cost */
-    4				    /* memory_latency */
-};
-
-/* Costs to use when optimizing for speed, indexed by processor.  */
-static const struct loongarch_rtx_cost_data
-loongarch_rtx_cost_data[NUM_PROCESSOR_VALUES] = {
-      { /* PROCESSOR_LOONGARCH64 */
-	DEFAULT_COSTS
-      },
-      { /* PROCESSOR_GS464V */
-	DEFAULT_COSTS
-      }
-};
+/* Which cost information to use.  */
+static const struct loongarch_rtx_cost_data *loongarch_cost;
 
 /* Information about a single argument.  */
 struct loongarch_arg_info
@@ -3495,8 +3399,8 @@ loongarch_output_move (rtx dest, rtx src)
 
       if (symbolic_operand (src, VOIDmode))
 	{
-	  if (loongarch_cmodel_var == LARCH_CMODEL_TINY
-	      || loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC)
+	  if (TARGET_CMODEL_NORMAL
+	      || TARGET_CMODEL_TINY_STATIC)
 	    {
 	      /* The symbol must be aligned to 4 byte.  */
 	      unsigned int align;
@@ -3519,7 +3423,7 @@ loongarch_output_move (rtx dest, rtx src)
 	      else
 		align = BITS_PER_UNIT;
 
-	      if (loongarch_cmodel_var == LARCH_CMODEL_TINY)
+	      if (TARGET_CMODEL_TINY)
 		{
 		  if (!loongarch_global_symbol_p (src)
 		      || loongarch_symbol_binds_local_p (src))
@@ -3528,7 +3432,7 @@ loongarch_output_move (rtx dest, rtx src)
 			return "pcaddi\t%0,%%pcrel(%1)>>2";
 		    }
 		}
-	      if (loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC)
+	      if (TARGET_CMODEL_TINY_STATIC)
 		{
 		  if (!loongarch_weak_symbol_p (src))
 		    {
@@ -3537,10 +3441,10 @@ loongarch_output_move (rtx dest, rtx src)
 		    }
 		}
 	    }
-	  if (loongarch_cmodel_var == LARCH_CMODEL_TINY
-	      || loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC
-	      || loongarch_cmodel_var == LARCH_CMODEL_NORMAL
-	      || loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+	  if (TARGET_CMODEL_TINY
+	      || TARGET_CMODEL_TINY_STATIC
+	      || TARGET_CMODEL_NORMAL
+	      || TARGET_CMODEL_LARGE)
 	    {
 	      if (!loongarch_global_symbol_p (src)
 		  || loongarch_symbol_binds_local_p (src))
@@ -3548,7 +3452,7 @@ loongarch_output_move (rtx dest, rtx src)
 	      else
 		return "la.global\t%0,%1";
 	    }
-	  if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+	  if (TARGET_CMODEL_EXTREME)
 	    {
 	      sorry ("Normal symbol loading not implemented in extreme mode.");
 	      /* GCC complains.  */
@@ -5806,15 +5710,10 @@ loongarch_adjust_cost (rtx_insn *, int dep_type, rtx_insn *, int cost,
 static int
 loongarch_issue_rate (void)
 {
-  switch (loongarch_tune)
-    {
-    case PROCESSOR_LOONGARCH64:
-    case PROCESSOR_GS464V:
-      return 4;
-
-    default:
-      return 1;
-    }
+  if ((unsigned long) loongarch_cpu_tune < N_CPU_TYPES)
+    return loongarch_cpu_issue_rate [loongarch_cpu_tune];
+  else
+    return 1;
 }
 
 /* Implement TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD.  This should
@@ -5823,10 +5722,10 @@ loongarch_issue_rate (void)
 static int
 loongarch_multipass_dfa_lookahead (void)
 {
-  if (TUNE_LOONGARCH64 || TUNE_GS464V)
-    return 4;
-
-  return 0;
+  if ((unsigned long) loongarch_cpu_tune < N_CPU_TYPES)
+    return loongarch_cpu_multipass_dfa_lookahead [loongarch_cpu_tune];
+  else
+    return 0;
 }
 
 
@@ -5885,28 +5784,11 @@ loongarch_variable_issue (FILE *file ATTRIBUTE_UNUSED,
   cached_can_issue_more = more;
   return more;
 }
-
-/* Given that we have an rtx of the form (prefetch ... WRITE LOCALITY),
-   return the first operand of the associated PREF or PREFX insn.  */
-
-rtx
-loongarch_prefetch_cookie (rtx write, rtx locality)
-{
-  /* store_streamed / load_streamed.  */
-  if (INTVAL (locality) <= 0)
-    return GEN_INT (INTVAL (write) + 4);
-
-  /* store / load.  */
-  if (INTVAL (locality) <= 2)
-    return write;
-
-  /* store_retained / load_retained.  */
-  return GEN_INT (INTVAL (write) + 6);
-}
 
 
 /* A structure representing the state of the processor pipeline.
    Used by the loongarch_sim_* family of functions.  */
+
 struct loongarch_sim
 {
   /* The maximum number of instructions that can be issued in a cycle.
@@ -5964,16 +5846,12 @@ loongarch_sim_init (struct loongarch_sim *state, state_t dfa_state)
   state->dfa_state = dfa_state;
   loongarch_sim_reset (state);
 }
-
+
 /* Set up costs based on the current architecture and tuning settings.  */
 
 static void
 loongarch_set_tuning_info (void)
 {
-  loongarch_tuning_info.arch = loongarch_arch;
-  loongarch_tuning_info.tune = loongarch_tune;
-  loongarch_tuning_info.initialized_p = true;
-
   dfa_start ();
 
   struct loongarch_sim state;
@@ -5997,7 +5875,27 @@ loongarch_expand_to_rtl_hook (void)
      We may need to move the call elsewhere if loongarch_tuning_info starts
      to be used for other things (such as rtx_costs, or expanders that
      could be called during gimple optimization).  */
+
   loongarch_set_tuning_info ();
+}
+
+
+/* Given that we have an rtx of the form (prefetch ... WRITE LOCALITY),
+   return the first operand of the associated PREF or PREFX insn.  */
+
+rtx
+loongarch_prefetch_cookie (rtx write, rtx locality)
+{
+  /* store_streamed / load_streamed.  */
+  if (INTVAL (locality) <= 0)
+    return GEN_INT (INTVAL (write) + 4);
+
+  /* store / load.  */
+  if (INTVAL (locality) <= 2)
+    return write;
+
+  /* store_retained / load_retained.  */
+  return GEN_INT (INTVAL (write) + 6);
 }
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
@@ -6098,95 +5996,6 @@ loongarch_init_machine_status (void)
   return ggc_cleared_alloc<machine_function> ();
 }
 
-/* Return the processor associated with the given ISA level, or null
-   if the ISA isn't valid.  */
-
-static const struct loongarch_cpu_info *
-loongarch_cpu_info_from_isa (int isa)
-{
-  unsigned int i;
-
-  for (i = 0; i < ARRAY_SIZE (loongarch_cpu_info_table); i++)
-    if (loongarch_cpu_info_table[i].isa == isa)
-      return loongarch_cpu_info_table + i;
-
-  return NULL;
-}
-
-/* Return a default loongarch_cpu_info entry, given that no -march= option
-   was explicitly specified.  */
-
-static const struct loongarch_cpu_info *
-loongarch_default_arch (void)
-{
-#if defined(LARCH_ISA_DEFAULT)
-  return loongarch_cpu_info_from_isa (LARCH_ISA_DEFAULT);
-#else
-  gcc_unreachable ();
-#endif
-}
-
-/* Set up globals to generate code for the ISA or processor
-   described by INFO.  */
-
-static void
-loongarch_set_architecture_and_tune (struct gcc_options *opts, struct gcc_options *opts_set)
-{
-  const struct loongarch_cpu_info *arch_info = NULL;
-  const struct loongarch_cpu_info *tune_info = NULL;
-
-  if (opts_set->x_loongarch_arch_option)
-    arch_info = &loongarch_cpu_info_table[opts->x_loongarch_arch_option];
-  else
-    arch_info = loongarch_default_arch ();
-
-  gcc_assert (arch_info);
-
-  if (opts_set->x_loongarch_tune_option)
-    tune_info = &loongarch_cpu_info_table[opts->x_loongarch_tune_option];
-  else
-    tune_info = arch_info;
-
-  gcc_assert (tune_info);
-
-  loongarch_arch_info = arch_info;
-  loongarch_arch = arch_info->cpu;
-  loongarch_isa = arch_info->isa;
-
-  /* ISA value:
-   * loongarch64 0
-   * gs464v      2
-   * */
-
-  switch (loongarch_isa)
-  {
-  case 0:
-    target_flags |= MASK_64BIT;
-    if (TARGET_DOUBLE_FLOAT)
-      target_flags |= MASK_FLOAT64;
-    break;
-
-  case 2:
-    if (loongarch_abi == ABILP64)
-      {
-	target_flags |= MASK_64BIT;
-	if (TARGET_DOUBLE_FLOAT)
-	  target_flags |= MASK_FLOAT64;
-      }
-    else
-      {
-	target_flags &= ~MASK_64BIT;
-	target_flags &= ~MASK_FLOAT64;
-      }
-    break;
-
-  default:
-    gcc_unreachable ();
-  }
-
-  loongarch_tune_info = tune_info;
-  loongarch_tune = tune_info->cpu;
-}
 static void
 loongarch_option_override_internal (struct gcc_options *opts,
 				    struct gcc_options *opts_set);
@@ -6210,18 +6019,31 @@ loongarch_option_override_internal (struct gcc_options *opts,
 				    ? g_switch_value
 				    : LARCH_DEFAULT_GVALUE);
 
-  loongarch_set_architecture_and_tune (opts, opts_set);
+  /* Handle machine option combinations: compute defaults/conflicts etc.  */
+  loongarch_handle_m_option_combinations(
+    & loongarch_cpu_arch,
+    & loongarch_cpu_tune,
+    & loongarch_isa_int,
+    & loongarch_isa_float,
+    & loongarch_abi_int,
+    & loongarch_abi_float,
+#ifdef __loongarch__
+    & loongarch_native_cpu_type,
+#else
+    NULL,
+#endif
+    & loongarch_ext_fix_lns3_llsc
+  );
 
   /* End of code shared with GAS.  */
-
-  if (TARGET_LP64ABI)
+  if (TARGET_ABI_LP64)
     flag_pcc_struct_return = 0;
 
   /* Decide which rtx_costs structure to use.  */
   if (optimize_size)
     loongarch_cost = &loongarch_rtx_cost_optimize_size;
   else
-    loongarch_cost = &loongarch_rtx_cost_data[loongarch_tune];
+    loongarch_cost = &loongarch_cpu_rtx_cost_data[loongarch_cpu_tune];
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
@@ -6232,16 +6054,16 @@ loongarch_option_override_internal (struct gcc_options *opts,
     {
       switch (opts->x_loongarch_cmodel_var)
 	{
-	  case LARCH_CMODEL_TINY_STATIC:
-	  case LARCH_CMODEL_EXTREME:
+	  case CMODEL_TINY_STATIC:
+	  case CMODEL_EXTREME:
 	    if (opts->x_flag_plt)
 	      error ("code model %qs and %qs not support %s mode",
 		     "tiny-static", "extreme", "plt");
-	    break;
+	      break;
 
-	  case LARCH_CMODEL_NORMAL:
-	  case LARCH_CMODEL_TINY:
-	  case LARCH_CMODEL_LARGE:
+	  case CMODEL_NORMAL:
+	  case CMODEL_TINY:
+	  case CMODEL_LARGE:
 	    break;
 
 	  default:
@@ -6251,7 +6073,7 @@ loongarch_option_override_internal (struct gcc_options *opts,
 
   /* .cfi_* directives generate a read-only section, so fall back on
      manual .eh_frame creation if we need the section to be writable.  */
-  if (TARGET_WRITABLE_EH_FRAME)
+  if (flag_pic && TARGET_SHARED)
     flag_dwarf2_cfi_asm = 0;
 
   loongarch_init_print_operand_punct ();
@@ -6411,10 +6233,10 @@ loongarch_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 #undef OP
 
   for (j = 0; j < i; j++)
-    {
-      mem = adjust_address (m_tramp, SImode, j * GET_MODE_SIZE (SImode));
-      loongarch_emit_move (mem, trampoline[j]);
-    }
+   {
+     mem = adjust_address (m_tramp, SImode, j * GET_MODE_SIZE (SImode));
+     loongarch_emit_move (mem, trampoline[j]);
+   }
 
   /* Set up the static chain pointer field.  */
   mem = adjust_address (m_tramp, ptr_mode, static_chain_offset);

@@ -19,31 +19,6 @@
 
 /* LoongArch external variables defined in loongarch.c.  */
 
-/* Which ABI to use.  ABILP64 is defined by Loongson.  */
-
-#define ABILP64 3
-
-/* Information about one recognized processor.  Defined here for the
-   benefit of TARGET_CPU_CPP_BUILTINS.  */
-struct loongarch_cpu_info
-{
-  /* The 'canonical' name of the processor as far as GCC is concerned.
-     It's typically a manufacturer's prefix followed by a numerical
-     designation.  It should be lowercase.  */
-  const char *name;
-
-  /* The internal processor number that most closely matches this
-     entry.  Several processors can have the same value, if there's no
-     difference between them from GCC's point of view.  */
-  enum processor cpu;
-
-  /* The ISA level that the processor implements.  */
-  int isa;
-
-  /* A mask of PTF_* values.  */
-  unsigned int tune_flags;
-};
-
 #include "config/loongarch/loongarch-opts.h"
 
 /* Macros to silence warnings about numbers being signed in traditional
@@ -53,50 +28,6 @@ struct loongarch_cpu_info
 
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
-
-/* True if we can use the JIRL instructions.  */
-#define TARGET_ABSOLUTE_JUMPS (!flag_pic)
-
-/* True if the output must have a writable .eh_frame.
-   See ASM_PREFERRED_EH_DATA_FORMAT for details.  */
-#define TARGET_WRITABLE_EH_FRAME (flag_pic && TARGET_SHARED)
-
-/* Architecture target defines.  */
-#define TARGET_LOONGARCH64 (loongarch_arch == PROCESSOR_LOONGARCH64)
-#define TUNE_LOONGARCH64 (loongarch_tune == PROCESSOR_LOONGARCH64)
-#define TARGET_GS464V (loongarch_arch == PROCESSOR_GS464V)
-#define TUNE_GS464V (loongarch_tune == PROCESSOR_GS464V)
-
-#define TARGET_LP64ABI (loongarch_abi == ABILP64)
-
-/* TARGET_HARD_FLOAT and TARGET_SOFT_FLOAT reflect whether the FPU is
-   directly accessible, while the command-line options select
-   TARGET_HARD_FLOAT_ABI and TARGET_SOFT_FLOAT_ABI to reflect the ABI
-   in use.  */
-#define TARGET_HARD_FLOAT (TARGET_HARD_FLOAT_ABI)
-#define TARGET_SOFT_FLOAT (TARGET_SOFT_FLOAT_ABI)
-
-#define TARGET_FLOAT32 (!TARGET_FLOAT64)
-
-/* Define preprocessor macros for the -march and -mtune options.
-   PREFIX is either _LOONGARCH_ARCH or _LOONGARCH_TUNE, INFO is
-   the selected processor.  If INFO's canonical name is "foo",
-   define PREFIX to be "foo", and define an additional macro
-   PREFIX_FOO.  */
-#define LARCH_CPP_SET_PROCESSOR(PREFIX, INFO) \
-  do \
-    { \
-      char *macro, *p; \
-\
-      macro = concat ((PREFIX), "_", (INFO)->name, NULL); \
-      for (p = macro; *p != 0; p++) \
-	*p = TOUPPER (*p); \
-\
-      builtin_define (macro); \
-      builtin_define_with_value ((PREFIX), (INFO)->name, 1); \
-      free (macro); \
-    } \
-  while (0)
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() loongarch_cpu_cpp_builtins (pfile)
@@ -123,58 +54,14 @@ struct loongarch_cpu_info
 
 #define TARGET_LIBGCC_SDATA_SECTION ".sdata"
 
-#ifndef MULTILIB_ISA_DEFAULT
-#if LARCH_ISA_DEFAULT == 0
-#define MULTILIB_ISA_DEFAULT "loongarch64"
-#elif LARCH_ISA_DEFAULT == 2
-#define MULTILIB_ISA_DEFAULT "gs464v"
-#endif
-#endif
-
-#ifndef LARCH_ABI_DEFAULT
-#define LARCH_ABI_DEFAULT ABILP64
-#endif
-
-/* Use the most portable ABI flag for the ASM specs.  */
-#if LARCH_ABI_DEFAULT == ABILP64
-#define MULTILIB_ABI_DEFAULT "mabi=lp64"
-#endif
-
-#ifndef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS \
-    { MULTILIB_ISA_DEFAULT, MULTILIB_ABI_DEFAULT }
-#endif
-
 /* Support for a compile-time default CPU, et cetera.  The rules are:
-   --with-arch is ignored if -march is specified
-   --with-tune is ignored if -mtune is specified
-   --with-abi is ignored if -mabi is specified.
-   --with-float is ignored if -mhard-float or -msoft-float are
-     specified.
-   --with-fpu is ignored if -msoft-float, -msingle-float or -mdouble-float are
-     specified.
    --with-divide is ignored if -mdivide-traps or -mdivide-breaks are
-     specified.
-   --with-fix-loongson3-llsc is ignored if -mfix-loongson3-llsc is specified.  */
+     specified.  */
 #define OPTION_DEFAULT_SPECS \
-  {"arch", "%{!match=*:-march=%(VALUE)}"}, \
-  {"tune", "%{!mtune=*:-mtune=%(VALUE)}"}, \
-  {"abi", "%{!mabi=*:-mabi=%(VALUE)}"}, \
-  {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}"}, \
-  {"fpu", \
-    "%{!msoft-float:%{!msingle-float:%{!mdouble-float:-m%(VALUE)-float}}}"}, \
-  {"divide", "%{!mdivide-traps:%{!mdivide-breaks:-mdivide-%(VALUE)}}"}, \
-  {"fix-loongson3-llsc", "%{!mfix-loongson3-llsc: \
-    %{!mno-fix-loongson3-llsc:-m%(VALUE)}}" }
+  {"divide", "%{!mdivide-traps:%{!mdivide-breaks:-mdivide-%(VALUE)}}"},
 
-#define ABI_SPEC \
-  "%{mabi=lp64:64}"
-
-/* Default system library search paths.  */
-#if LARCH_ABI_DEFAULT == ABILP64
-#define STANDARD_STARTFILE_PREFIX_1 "/lib64/"
-#define STANDARD_STARTFILE_PREFIX_2 "/usr/lib64/"
-#endif
+/* Driver native functions for SPEC processing in the GCC driver.  */
+#include "loongarch-driver.h"
 
 /* This definition replaces the formerly used 'm' constraint with a
    different constraint letter in order to avoid changing semantics of
@@ -208,9 +95,8 @@ struct loongarch_cpu_info
 #endif
 
 #undef ASM_SPEC
-#define ASM_SPEC "\
-%{mabi=*} %{!mabi=*: %(asm_abi_default_spec)} \
-"
+#define ASM_SPEC "%{mabi=*} %{subtarget_asm_spec}"
+
 /* Extra switches sometimes passed to the linker.  */
 
 #ifndef LINK_SPEC
@@ -250,13 +136,7 @@ struct loongarch_cpu_info
   {"subtarget_cc1_spec", SUBTARGET_CC1_SPEC}, \
   {"subtarget_cpp_spec", SUBTARGET_CPP_SPEC}, \
   {"subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC}, \
-  {"subtarget_asm_spec", SUBTARGET_ASM_SPEC}, \
-  {"asm_abi_default_spec", "-" MULTILIB_ABI_DEFAULT}, \
-  SUBTARGET_EXTRA_SPECS
-
-#ifndef SUBTARGET_EXTRA_SPECS
-#define SUBTARGET_EXTRA_SPECS
-#endif
+  {"subtarget_asm_spec", SUBTARGET_ASM_SPEC},
 
 /* Registers may have a prefix which can be ignored when matching
    user asm and register definitions.  */
@@ -826,7 +706,7 @@ enum reg_class
    `crtl->outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
-#define STACK_BOUNDARY (TARGET_LP64ABI ? 128 : 64)
+#define STACK_BOUNDARY (TARGET_ABI_LP64 ? 128 : 64)
 
 /* Symbolic macros for the registers used to return integer and floating
    point values.  */
@@ -887,7 +767,7 @@ typedef struct loongarch_args
 /* Treat LOC as a byte offset from the stack pointer and round it up
    to the next fully-aligned offset.  */
 #define LARCH_STACK_ALIGN(LOC) \
-  (TARGET_LP64ABI ? ROUND_UP ((LOC), 16) : ROUND_UP ((LOC), 8))
+  (TARGET_ABI_LP64 ? ROUND_UP ((LOC), 16) : ROUND_UP ((LOC), 8))
 
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
@@ -1217,7 +1097,7 @@ typedef struct loongarch_args
 #define ASM_OUTPUT_ALIGN(STREAM, LOG) fprintf (STREAM, "\t.align\t%d\n", (LOG))
 
 /* "nop" instruction 54525952 (andi $r0,$r0,0) is
-   used for padding. */
+   used for padding.  */
 #define ASM_OUTPUT_ALIGN_WITH_NOP(STREAM, LOG) \
   fprintf (STREAM, "\t.align\t%d,54525952,4\n", (LOG))
 
@@ -1327,10 +1207,6 @@ typedef struct loongarch_args
 #ifndef USED_FOR_TARGET
 extern const enum reg_class loongarch_regno_to_class[];
 extern int loongarch_dwarf_regno[];
-extern enum processor loongarch_arch; /* Which cpu to codegen for.  */
-extern enum processor loongarch_tune; /* Which cpu to schedule for.  */
-extern const struct loongarch_cpu_info *loongarch_arch_info;
-extern const struct loongarch_cpu_info *loongarch_tune_info;
 
 /* Information about a function's frame layout.  */
 struct GTY (()) loongarch_frame_info

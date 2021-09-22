@@ -129,7 +129,7 @@
    (clobber (match_scratch:GPR 6 "=&r"))]
   ""
 {
-  if (FIX_LOONGSON3_LLSC)
+  if (TARGET_FIX_LOONGSON3_LLSC)
     return "%G5\n\t1:\n\tll.<amo>\t%0,%1\n\tbne\t%0,%z2,2f\n\tor%i3\t%6,$zero,%3\n\tsc.<amo>\t%6,%1\n\tbeq\t$zero,%6,1b\n\t2:\n\tdbar\t0";
   else
     return "%G5\n\t1:\n\tll.<amo>\t%0,%1\n\tbne\t%0,%z2,2f\n\tor%i3\t%6,$zero,%3\n\tsc.<amo>\t%6,%1\n\tbeq\t$zero,%6,1b\n\t2:";
@@ -227,7 +227,7 @@
    (clobber (match_scratch:GPR 7 "=&r"))]
   ""
 {
-  if (FIX_LOONGSON3_LLSC)
+  if (TARGET_FIX_LOONGSON3_LLSC)
     return "%G6\n\t1:\n\tll.<amo>\t%0,%1\n\tand\t%7,%0,%2\n\tbne\t%7,%z4,2f\n\tand\t%7,%0,%z3\n\tor%i5\t%7,%7,%5\n\tsc.<amo>\t%7,%1\n\tbeq\t$zero,%7,1b\n\t2:\n\tdbar\t0";
   else
     return "%G6\n\t1:\n\tll.<amo>\t%0,%1\n\tand\t%7,%0,%2\n\tbne\t%7,%z4,2f\n\tand\t%7,%0,%z3\n\tor%i5\t%7,%7,%5\n\tsc.<amo>\t%7,%1\n\tbeq\t$zero,%7,1b\n\t2:";

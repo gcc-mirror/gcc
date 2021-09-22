@@ -17,11 +17,6 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_enum "processor" [
-  loongarch64
-  gs464v
-])
-
 (define_c_enum "unspec" [
   ;; Integer operations that are too cumbersome to describe directly.
   UNSPEC_REVB_2H
@@ -373,7 +368,7 @@
                    (const_int 4)
 
                  ;; The non-PIC case: branch, and J.
-                 (match_test "TARGET_ABSOLUTE_JUMPS")
+		 (match_test "!flag_pic")
                    (const_int 8)]
 
                  ;; Use MAX_PIC_BRANCH_LENGTH as a (gross) overestimate.
@@ -387,9 +382,6 @@
          (symbol_ref "get_attr_insn_count (insn) * 4")))
 
 ;; Attribute describing the processor.
-(define_enum_attr "cpu" "processor"
-  (const (symbol_ref "loongarch_tune")))
-
 ;; The type of hardware hazard associated with this instruction.
 ;; DELAY means that the next instruction cannot read the result
 ;; of this one.
@@ -2988,7 +2980,7 @@
 (define_insn "*jump_absolute"
   [(set (pc)
 	(label_ref (match_operand 0)))]
-  "TARGET_ABSOLUTE_JUMPS"
+  "!flag_pic"
 {
   return "b\t%l0";
 }
@@ -2997,7 +2989,7 @@
 (define_insn "*jump_pic"
   [(set (pc)
 	(label_ref (match_operand 0)))]
-  "!TARGET_ABSOLUTE_JUMPS"
+  "flag_pic"
 {
   return "b\t%0";
 }
@@ -3219,28 +3211,28 @@
     case 0:
       return "jr\t%0";
     case 1:
-      if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r12,(%%pcrel(%0+0x20000))>>18\n\tjirl\t$r0,$r12,%%pcrel(%0+4)-(%%pcrel(%0+4+0x20000)>>18<<18)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.local\t$r12,$r13,%0\n\tjr\t$r12";
       else
         return "b\t%0";
     case 2:
-      if (loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC)
+      if (TARGET_CMODEL_TINY_STATIC)
         return "b\t%0";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r12,$r13,%0\n\tjr\t$r12";
       else
         return "la.global\t$r12,%0\n\tjr\t$r12";
     case 3:
-      if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r12,$r13,%0\n\tjr\t$r12";
       else
         return "la.global\t$r12,%0\n\tjr\t$r12";
     case 4:
-      if (loongarch_cmodel_var == LARCH_CMODEL_NORMAL || loongarch_cmodel_var == LARCH_CMODEL_TINY)
+      if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
         return "b\t%%plt(%0)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      else if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r12,(%%plt(%0)+0x20000)>>18\n\tjirl\t$r0,$r12,%%plt(%0)+4-((%%plt(%0)+(4+0x20000))>>18<<18)";
       else
 	{
@@ -3290,28 +3282,28 @@
     case 0:
       return "jr\t%1";
     case 1:
-      if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r12,%%pcrel(%1+0x20000)>>18\n\tjirl\t$r0,$r12,%%pcrel(%1+4)-((%%pcrel(%1+4+0x20000))>>18<<18)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.local\t$r12,$r13,%1\n\tjr\t$r12";
       else
         return "b\t%1";
     case 2:
-      if (loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC)
+      if (TARGET_CMODEL_TINY_STATIC)
         return "b\t%1";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r12,$r13,%1\n\tjr\t$r12";
       else
         return "la.global\t$r12,%1\n\tjr\t$r12";
     case 3:
-      if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r12,$r13,%1\n\tjr\t$r12";
       else
         return "la.global\t$r12,%1\n\tjr\t$r12";
     case 4:
-      if (loongarch_cmodel_var == LARCH_CMODEL_NORMAL || loongarch_cmodel_var == LARCH_CMODEL_TINY)
+      if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
         return " b\t%%plt(%1)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      else if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r12,(%%plt(%1)+0x20000)>>18\n\tjirl\t$r0,$r12,%%plt(%1)+4-((%%plt(%1)+(4+0x20000))>>18<<18)";
       else
 	{
@@ -3338,28 +3330,28 @@
     case 0:
       return "jr\t%1";
     case 1:
-      if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r12,%%pcrel(%1+0x20000)>>18\n\tjirl\t$r0,$r12,%%pcrel(%1+4)-(%%pcrel(%1+4+0x20000)>>18<<18)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.local\t$r12,$r13,%1\n\tjr\t$r12";
       else
         return "b\t%1";
     case 2:
-      if (loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC)
+      if (TARGET_CMODEL_TINY_STATIC)
         return "b\t%1";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r12,$r13,%1\n\tjr\t$r12";
       else
         return "la.global\t$r12,%1\n\tjr\t$r12";
     case 3:
-      if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r12,$r13,%1\n\tjr\t$r12";
       else
         return "la.global\t$r12,%1\n\tjr\t$r12";
     case 4:
-      if (loongarch_cmodel_var == LARCH_CMODEL_NORMAL || loongarch_cmodel_var == LARCH_CMODEL_TINY)
+      if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
         return "b\t%%plt(%1)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      else if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r12,(%%plt(%1)+0x20000)>>18\n\tjirl\t$r0,$r12,%%plt(%1)+4-((%%plt(%1)+(4+0x20000))>>18<<18)";
       else
 	{
@@ -3396,28 +3388,28 @@
     case 0:
       return "jirl\t$r1,%0,0";
     case 1:
-      if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r1,%%pcrel(%0+0x20000)>>18\n\tjirl\t$r1,$r1,%%pcrel(%0+4)-(%%pcrel(%0+4+0x20000)>>18<<18)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.local\t$r1,$r12,%0\n\tjirl\t$r1,$r1,0";
       else
         return "bl\t%0";
     case 2:
-      if (loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC)
+      if (TARGET_CMODEL_TINY_STATIC)
         return "bl\t%0";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r1,$r12,%0\n\tjirl\t$r1,$r1,0";
       else
         return "la.global\t$r1,%0\n\tjirl\t$r1,$r1,0";
     case 3:
-      if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r1,$r12,%0\n\tjirl\t$r1,$r1,0";
       else
         return "la.global\t$r1,%0\n\tjirl\t$r1,$r1,0";
     case 4:
-      if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r1,(%%plt(%0)+0x20000)>>18\n\tjirl\t$r1,$r1,%%plt(%0)+4-((%%plt(%0)+(4+0x20000))>>18<<18)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_NORMAL || loongarch_cmodel_var == LARCH_CMODEL_TINY)
+      else if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
         return "bl\t%%plt(%0)";
       else
 	{
@@ -3467,28 +3459,28 @@
     case 0:
       return "jirl\t$r1,%1,0";
     case 1:
-      if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r1,%%pcrel(%1+0x20000)>>18\n\tjirl\t$r1,$r1,%%pcrel(%1+4)-(%%pcrel(%1+4+0x20000)>>18<<18)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.local\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0";
       else
         return "bl\t%1";
     case 2:
-      if (loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC)
+      if (TARGET_CMODEL_TINY_STATIC)
         return "bl\t%1";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0";
       else
         return "la.global\t$r1,%1\n\tjirl\t$r1,$r1,0";
     case 3:
-      if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0";
       else
         return "la.global\t$r1,%1\n\tjirl\t$r1,$r1,0";
     case 4:
-      if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r1,(%%plt(%1)+0x20000)>>18\n\tjirl\t$r1,$r1,%%plt(%1)+4-((%%plt(%1)+(4+0x20000))>>18<<18)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_NORMAL || loongarch_cmodel_var == LARCH_CMODEL_TINY)
+      else if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
         return "bl\t%%plt(%1)";
       else
 	{
@@ -3518,28 +3510,28 @@
     case 0:
       return "jirl\t$r1,%1,0";
     case 1:
-      if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r1,%%pcrel(%1+0x20000)>>18\n\tjirl\t$r1,$r1,%%pcrel(%1+4)-(%%pcrel(%1+4+0x20000)>>18<<18)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.local\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0";
       else
         return "bl\t%1";
     case 2:
-      if (loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC)
+      if (TARGET_CMODEL_TINY_STATIC)
         return "bl\t%1";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      else if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0 ";
       else
         return "la.global\t$r1,%1\n\tjirl\t$r1,$r1,0";
     case 3:
-      if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+      if (TARGET_CMODEL_EXTREME)
         return "la.global\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0";
       else
         return "la.global\t$r1,%1\n\tjirl\t$r1,$r1,0";
     case 4:
-      if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+      if (TARGET_CMODEL_LARGE)
         return "pcaddu18i\t$r1,(%%plt(%1)+0x20000)>>18\n\tjirl\t$r1,$r1,%%plt(%1)+4-((%%plt(%1)+(4+0x20000))>>18<<18)";
-      else if (loongarch_cmodel_var == LARCH_CMODEL_NORMAL || loongarch_cmodel_var == LARCH_CMODEL_TINY)
+      else if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
         return "bl\t%%plt(%1)";
       else
 	{
