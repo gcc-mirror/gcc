@@ -4239,13 +4239,20 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       bp = streamer_read_bitpack (&ib);
       if (info)
 	{
-          info->inlinable = bp_unpack_value (&bp, 1);
-          info->fp_expressions = bp_unpack_value (&bp, 1);
+	  info->inlinable = bp_unpack_value (&bp, 1);
+	  /* On the side of streaming out, there is still one bit
+	     streamed out between inlinable and fp_expressions bits,
+	     which was used for cilk+ before but now always false.
+	     To remove the bit packing need to bump LTO minor version,
+	     so unpack a dummy bit here to keep consistent instead.  */
+	  bp_unpack_value (&bp, 1);
+	  info->fp_expressions = bp_unpack_value (&bp, 1);
 	}
       else
 	{
-          bp_unpack_value (&bp, 1);
-          bp_unpack_value (&bp, 1);
+	  bp_unpack_value (&bp, 1);
+	  bp_unpack_value (&bp, 1);
+	  bp_unpack_value (&bp, 1);
 	}
 
       count2 = streamer_read_uhwi (&ib);
