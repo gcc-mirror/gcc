@@ -1,3 +1,21 @@
+2021-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2021-09-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/102107
+	* config/rs6000/rs6000-logue.c (rs6000_emit_epilogue): For ELFv2 use
+	r11 instead of r12 for restoring CR.
+
+2021-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2021-09-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/102107
+	* config/rs6000/rs6000-logue.c (rs6000_emit_prologue): On ELFv2 use r11
+	instead of r12 for CR save, in all cases.
+
 2021-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/102306

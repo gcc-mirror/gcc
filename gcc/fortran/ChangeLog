@@ -1,3 +1,32 @@
+2021-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85130
+	* expr.c (find_substring_ref): Handle given substring start and
+	end indices as signed integers, not unsigned.
+
+2021-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102287
+	* trans-expr.c (gfc_conv_procedure_call): Wrap deallocation of
+	allocatable components of optional allocatable derived type
+	procedure arguments with INTENT(OUT) into a presence check.
+
+2021-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102366
+	* trans-decl.c (gfc_finish_var_decl): Disable the warning message
+	for variables moved from stack to static storange if they are
+	declared in the main, but allow the move to happen.
+
 2021-09-16  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
