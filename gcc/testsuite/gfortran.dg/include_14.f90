@@ -1,5 +1,6 @@
-! { dg-additional-options "-cpp -idirafter /fdaf/ -I bar" }
+! { dg-additional-options "-cpp -idirafter /fdaf/ -I bar -J foo/bar" }
 end
+! default: warn for -I and -J but ignore other options.
+! { dg-warning "Nonexistent include directory 'bar/'" "" { target *-*-* } 0 }
+! { dg-warning "Nonexistent include directory 'foo/bar/'" "" { target *-*-* } 0 }
 
-! { dg-warning "/fdaf/: No such file or directory" "" { target *-*-* } 0 }
-! { dg-warning "bar: No such file or directory" "" { target *-*-* } 0 }

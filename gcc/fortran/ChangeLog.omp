@@ -1,3 +1,26 @@
+2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* cpp.c (gfc_cpp_register_include_paths, gfc_cpp_post_options):
+	Add new bool verbose_missing_dir_warn argument.
+	* cpp.h (gfc_cpp_post_options): Update prototype.
+	* f95-lang.c (gfc_init): Remove duplicated file-not found diag.
+	* gfortran.h (gfc_check_include_dirs): Takes bool
+	verbose_missing_dir_warn arg.
+	(gfc_new_file): Returns now void.
+	* options.c (gfc_post_options): Update to warn for -I and -J,
+	only, by default but for all when user requested.
+	* scanner.c (gfc_do_check_include_dir):
+	(gfc_do_check_include_dirs, gfc_check_include_dirs): Take bool
+	verbose warn arg and update to avoid printing the same message
+	twice or never.
+	(load_file): Fix indent.
+	(gfc_new_file): Return void and exit when load_file failed
+	as all other load_file users do.
+
 2021-09-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
