@@ -6253,6 +6253,46 @@ package body Exp_Ch4 is
             return;
          end if;
 
+      --  For the sake of GNATcoverage, generate an intermediate temporary in
+      --  the case where the if-expression is a condition in an outer decision,
+      --  in order to make sure that no branch is shared between the decisions.
+
+      elsif Opt.Suppress_Control_Flow_Optimizations
+        and then Nkind (Original_Node (Parent (N))) in N_Case_Expression
+                                                     | N_Case_Statement
+                                                     | N_If_Expression
+                                                     | N_If_Statement
+                                                     | N_Goto_When_Statement
+                                                     | N_Loop_Statement
+                                                     | N_Return_When_Statement
+                                                     | N_Short_Circuit
+      then
+         declare
+            Cnn  : constant Entity_Id := Make_Temporary (Loc, 'C');
+            Acts : List_Id;
+
+         begin
+            --  Generate:
+            --    do
+            --       Cnn : constant Typ := N;
+            --    in Cnn end
+
+            Acts := New_List (
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Cnn,
+                Constant_Present    => True,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                Expression          => Relocate_Node (N)));
+
+            Rewrite (N,
+              Make_Expression_With_Actions (Loc,
+                Expression => New_Occurrence_Of (Cnn, Loc),
+                Actions    => Acts));
+
+            Analyze_And_Resolve (N, Typ);
+            return;
+         end;
+
       --  If no actions then no expansion needed, gigi will handle it using the
       --  same approach as a C conditional expression.
 
@@ -8569,8 +8609,7 @@ package body Exp_Ch4 is
       --  f'Machine (expr) to eliminate surprise from extra precision.
 
       if Is_Floating_Point_Type (Typl)
-        and then Nkind (Original_Node (Lhs)) = N_Attribute_Reference
-        and then Attribute_Name (Original_Node (Lhs)) = Name_Result
+        and then Is_Attribute_Result (Original_Node (Lhs))
       then
          --  Stick in the Typ'Machine call if not already there
 

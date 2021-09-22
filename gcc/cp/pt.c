@@ -17489,12 +17489,22 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	  break;
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_ALIGNED:
+	  OMP_CLAUSE_DECL (nc)
+	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
+				      in_decl, NULL);
+	  OMP_CLAUSE_OPERAND (nc, 1)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 1), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  break;
 	case OMP_CLAUSE_ALLOCATE:
 	  OMP_CLAUSE_DECL (nc)
 	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
 				      in_decl, NULL);
 	  OMP_CLAUSE_OPERAND (nc, 1)
 	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 1), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  OMP_CLAUSE_OPERAND (nc, 2)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 2), args, complain,
 			   in_decl, /*integral_constant_expression_p=*/false);
 	  break;
 	case OMP_CLAUSE_LINEAR:
@@ -27237,7 +27247,8 @@ value_dependent_expression_p (tree expression)
       }
 
     case TEMPLATE_ID_EXPR:
-      return concept_definition_p (TREE_OPERAND (expression, 0));
+      return concept_definition_p (TREE_OPERAND (expression, 0))
+	&& any_dependent_template_arguments_p (TREE_OPERAND (expression, 1));
 
     case CONSTRUCTOR:
       {
@@ -27644,18 +27655,6 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
     case REQUIRES_EXPR:
       return *tp;
 
-    case CALL_EXPR:
-      /* Treat concept checks as dependent. */
-      if (concept_check_p (*tp))
-        return *tp;
-      break;
-
-    case TEMPLATE_ID_EXPR:
-      /* Treat concept checks as dependent.  */
-      if (concept_check_p (*tp))
-	return *tp;
-      break;
-
     case CONSTRUCTOR:
       if (CONSTRUCTOR_IS_DEPENDENT (*tp))
 	return *tp;
@@ -27813,6 +27812,20 @@ dependent_template_arg_p (tree arg)
     return value_dependent_expression_p (arg);
 }
 
+/* Identify any expressions that use function parms.  */
+
+static tree
+find_parm_usage_r (tree *tp, int *walk_subtrees, void*)
+{
+  tree t = *tp;
+  if (TREE_CODE (t) == PARM_DECL)
+    {
+      *walk_subtrees = 0;
+      return t;
+    }
+  return NULL_TREE;
+}
+
 /* Returns true if ARGS (a collection of template arguments) contains
    any types that require structural equality testing.  */
 
@@ -27856,6 +27869,13 @@ any_template_arguments_need_structural_equality_p (tree args)
 		return true;
 	      else if (!TYPE_P (arg) && TREE_TYPE (arg)
 		       && TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (arg)))
+		return true;
+	      /* Checking current_function_decl because this structural
+		 comparison is only necessary for redeclaration.  */
+	      else if (!current_function_decl
+		       && dependent_template_arg_p (arg)
+		       && (cp_walk_tree_without_duplicates
+			   (&arg, find_parm_usage_r, NULL)))
 		return true;
 	    }
 	}

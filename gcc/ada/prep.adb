@@ -1410,7 +1410,12 @@ package body Prep is
 
                      Scan.all;
 
-                     if Token /= Tok_If then
+                     --  Ignore all recoverable errors if Relaxed_RM_Semantics
+
+                     if Relaxed_RM_Semantics then
+                        null;
+
+                     elsif Token /= Tok_If then
                         Error_Msg -- CODEFIX
                           ("IF expected", Token_Ptr);
                         No_Error_Found := False;
@@ -1453,21 +1458,31 @@ package body Prep is
                   --  Illegal preprocessor line
 
                   when others =>
-                     No_Error_Found := False;
-
                      if Pp_States.Last = 0 then
                         Error_Msg -- CODEFIX
                           ("IF expected", Token_Ptr);
+                        No_Error_Found := False;
 
-                     elsif
-                       Pp_States.Table (Pp_States.Last).Else_Ptr = 0
+                     elsif Relaxed_RM_Semantics
+                       and then Get_Name_String (Token_Name) = "endif"
                      then
+                        --  In relaxed mode, accept "endif" instead of
+                        --  "end if".
+
+                        --  Decrement the depth of the #if stack
+
+                        if Pp_States.Last > 0 then
+                           Pp_States.Decrement_Last;
+                        end if;
+                     elsif Pp_States.Table (Pp_States.Last).Else_Ptr = 0 then
                         Error_Msg
                           ("IF, ELSIF, ELSE, or `END IF` expected",
                            Token_Ptr);
+                        No_Error_Found := False;
 
                      else
                         Error_Msg ("IF or `END IF` expected", Token_Ptr);
+                        No_Error_Found := False;
                      end if;
 
                      --  Skip to the end of this illegal line

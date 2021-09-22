@@ -1119,17 +1119,11 @@ package body Erroutc is
       end if;
 
       --  The following assignments ensure that the second and third {
-      --  insertion characters will correspond to the Error_Msg_File_2 and
-      --  Error_Msg_File_3 values and We suppress possible validity checks in
-      --  case operating in -gnatVa mode, and Error_Msg_File_2 or
-      --  Error_Msg_File_3 is not needed and has not been set.
+      --  insertion characters will correspond to the Error_Msg_File_2
+      --  and Error_Msg_File_3 values.
 
-      declare
-         pragma Suppress (Range_Check);
-      begin
-         Error_Msg_File_1 := Error_Msg_File_2;
-         Error_Msg_File_2 := Error_Msg_File_3;
-      end;
+      Error_Msg_File_1 := Error_Msg_File_2;
+      Error_Msg_File_2 := Error_Msg_File_3;
    end Set_Msg_Insertion_File_Name;
 
    -----------------------------------
@@ -1299,16 +1293,10 @@ package body Erroutc is
 
       --  The following assignments ensure that the second and third percent
       --  insertion characters will correspond to the Error_Msg_Name_2 and
-      --  Error_Msg_Name_3 as required. We suppress possible validity checks in
-      --  case operating in -gnatVa mode, and Error_Msg_Name_1/2 is not needed
-      --  and has not been set.
+      --  Error_Msg_Name_3 as required.
 
-      declare
-         pragma Suppress (Range_Check);
-      begin
-         Error_Msg_Name_1 := Error_Msg_Name_2;
-         Error_Msg_Name_2 := Error_Msg_Name_3;
-      end;
+      Error_Msg_Name_1 := Error_Msg_Name_2;
+      Error_Msg_Name_2 := Error_Msg_Name_3;
    end Set_Msg_Insertion_Name;
 
    ------------------------------------
@@ -1334,16 +1322,10 @@ package body Erroutc is
 
       --  The following assignments ensure that the second and third % or %%
       --  insertion characters will correspond to the Error_Msg_Name_2 and
-      --  Error_Msg_Name_3 values and We suppress possible validity checks in
-      --  case operating in -gnatVa mode, and Error_Msg_Name_2 or
-      --  Error_Msg_Name_3 is not needed and has not been set.
+      --  Error_Msg_Name_3 values.
 
-      declare
-         pragma Suppress (Range_Check);
-      begin
-         Error_Msg_Name_1 := Error_Msg_Name_2;
-         Error_Msg_Name_2 := Error_Msg_Name_3;
-      end;
+      Error_Msg_Name_1 := Error_Msg_Name_2;
+      Error_Msg_Name_2 := Error_Msg_Name_3;
    end Set_Msg_Insertion_Name_Literal;
 
    -------------------------------------
@@ -1427,15 +1409,9 @@ package body Erroutc is
       end loop;
 
       --  The following assignment ensures that a second caret insertion
-      --  character will correspond to the Error_Msg_Uint_2 parameter. We
-      --  suppress possible validity checks in case operating in -gnatVa mode,
-      --  and Error_Msg_Uint_2 is not needed and has not been set.
+      --  character will correspond to the Error_Msg_Uint_2 parameter.
 
-      declare
-         pragma Suppress (Range_Check);
-      begin
-         Error_Msg_Uint_1 := Error_Msg_Uint_2;
-      end;
+      Error_Msg_Uint_1 := Error_Msg_Uint_2;
    end Set_Msg_Insertion_Uint;
 
    -----------------

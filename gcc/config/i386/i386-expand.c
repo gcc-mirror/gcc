@@ -9762,6 +9762,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DI_FTYPE_V8HF_V2DI_UQI:
     case V2DI_FTYPE_V4SF_V2DI_UQI:
     case V8HF_FTYPE_V8HF_V8HF_UQI:
+    case V8HF_FTYPE_V8HF_V8HF_V8HF:
     case V8HF_FTYPE_V8HI_V8HF_UQI:
     case V8HF_FTYPE_V8SI_V8HF_UQI:
     case V8HF_FTYPE_V8SF_V8HF_UQI:
@@ -9840,6 +9841,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_V8SF_V16SF_UHI:
     case V16SI_FTYPE_V8SI_V16SI_UHI:
     case V16HF_FTYPE_V16HI_V16HF_UHI:
+    case V16HF_FTYPE_V16HF_V16HF_V16HF:
     case V16HI_FTYPE_V16HF_V16HI_UHI:
     case V16HI_FTYPE_V16HI_V16HI_UHI:
     case V8HI_FTYPE_V16QI_V8HI_UQI:
@@ -9996,6 +9998,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8HI_FTYPE_V8HI_V8HI_V8HI_UQI:
     case V8SI_FTYPE_V8SI_V8SI_V8SI_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI_UQI:
+    case V16HF_FTYPE_V16HF_V16HF_V16HF_UQI:
     case V16HF_FTYPE_V16HF_V16HF_V16HF_UHI:
     case V8SF_FTYPE_V8SF_V8SF_V8SF_UQI:
     case V16QI_FTYPE_V16QI_V16QI_V16QI_UHI:
@@ -10725,6 +10728,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_V16HF_V16SF_UHI_INT:
     case V32HF_FTYPE_V32HI_V32HF_USI_INT:
     case V32HF_FTYPE_V32HF_V32HF_USI_INT:
+    case V32HF_FTYPE_V32HF_V32HF_V32HF_INT:
     case V16SF_FTYPE_V16SF_V16SF_HI_INT:
     case V8DI_FTYPE_V8SF_V8DI_QI_INT:
     case V16SF_FTYPE_V16SI_V16SF_HI_INT:
@@ -10754,6 +10758,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V4SF_FTYPE_V4SF_V4SF_V4SF_UQI_INT:
     case V4SF_FTYPE_V8HF_V4SF_V4SF_UQI_INT:
     case V16SF_FTYPE_V16SF_V16SF_V16SF_HI_INT:
+    case V32HF_FTYPE_V32HF_V32HF_V32HF_UHI_INT:
     case V32HF_FTYPE_V32HF_V32HF_V32HF_USI_INT:
     case V2DF_FTYPE_V8HF_V2DF_V2DF_UQI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_QI_INT:

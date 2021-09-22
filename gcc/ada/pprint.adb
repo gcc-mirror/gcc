@@ -100,7 +100,7 @@ package body Pprint is
             Add_Space : Boolean := True;
             Add_Paren : Boolean := True;
             Num       : Natural := 1) return String;
-         --  ??? what does this do
+         --  Created for purposes of recursing on embedded lists
 
          ------------------------
          -- Internal_List_Name --
@@ -113,30 +113,6 @@ package body Pprint is
             Add_Paren : Boolean := True;
             Num       : Natural := 1) return String
          is
-            function Prepend (S : String) return String;
-            --  ??? what does this do
-
-            -------------
-            -- Prepend --
-            -------------
-
-            function Prepend (S : String) return String is
-            begin
-               if Add_Space then
-                  if Add_Paren then
-                     return " (" & S;
-                  else
-                     return ' ' & S;
-                  end if;
-               elsif Add_Paren then
-                  return '(' & S;
-               else
-                  return S;
-               end if;
-            end Prepend;
-
-         --  Start of processing for Internal_List_Name
-
          begin
             if not Present (List) then
                if First or else not Add_Paren then
@@ -152,23 +128,22 @@ package body Pprint is
                end if;
             end if;
 
-            --  ??? the Internal_List_Name calls can be factored out
+            --  Continue recursing on the list - handling the first element
+            --  in a special way.
 
-            if First then
-               return Prepend (Expr_Name (List)
-                 & Internal_List_Name
-                     (List      => Next (List),
-                      First     => False,
-                      Add_Paren => Add_Paren,
-                      Num       => Num + 1));
-            else
-               return ", " & Expr_Name (List)
-                 & Internal_List_Name
-                     (List      => Next (List),
-                      First     => False,
-                      Add_Paren => Add_Paren,
-                      Num       => Num + 1);
-            end if;
+            return
+              (if First then
+                  (if Add_Space and Add_Paren then " ("
+                   elsif Add_Paren then "("
+                   elsif Add_Space then " "
+                   else "")
+               else ", ")
+               & Expr_Name (List)
+               & Internal_List_Name
+                   (List      => Next (List),
+                    First     => False,
+                    Add_Paren => Add_Paren,
+                    Num       => Num + 1);
          end Internal_List_Name;
 
       --  Start of processing for List_Name

@@ -249,7 +249,6 @@ package body ALI.Util is
                     Scan_ALI
                       (F         => Afile,
                        T         => Text,
-                       Ignore_ED => False,
                        Err       => False);
 
                   Free (Text);

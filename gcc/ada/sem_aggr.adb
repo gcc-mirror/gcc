@@ -365,7 +365,7 @@ package body Sem_Aggr is
    --  to the expansion phase. As an optimization, if the discrete choice
    --  specifies a single value we do not delay resolution.
 
-   function Array_Aggr_Subtype (N : Node_Id; Typ : Node_Id) return Entity_Id;
+   function Array_Aggr_Subtype (N : Node_Id; Typ : Entity_Id) return Entity_Id;
    --  This routine returns the type or subtype of an array aggregate.
    --
    --    N is the array aggregate node whose type we return.

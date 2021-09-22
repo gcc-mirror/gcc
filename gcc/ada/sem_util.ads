@@ -356,7 +356,7 @@ package Sem_Util is
    --  carries the name of the reference discriminant.
 
    function Build_Overriding_Spec
-     (Op  : Node_Id;
+     (Op  : Entity_Id;
       Typ : Entity_Id) return Node_Id;
    --  Build a subprogram specification for the wrapper of an inherited
    --  operation with a modified pre- or postcondition (See AI12-0113).

@@ -752,10 +752,10 @@ package body Exp_Prag is
       --  value of which is Init_Val if present or null if not.
 
       function Build_Simple_Declaration_With_Default
-         (Decl_Id     : Entity_Id;
-          Init_Val    : Entity_Id;
-          Typ         : Entity_Id;
-          Default_Val : Entity_Id) return Node_Id;
+        (Decl_Id     : Entity_Id;
+         Init_Val    : Node_Id;
+         Typ         : Node_Id;
+         Default_Val : Node_Id) return Node_Id;
       --  Build a declaration the Defining_Identifier of which is Decl_Id, the
       --  Object_Definition of which is Typ, the value of which is Init_Val if
       --  present or Default otherwise.
@@ -983,7 +983,7 @@ package body Exp_Prag is
       function Build_Simple_Declaration_With_Default
         (Decl_Id     : Entity_Id;
          Init_Val    : Node_Id;
-         Typ         : Entity_Id;
+         Typ         : Node_Id;
          Default_Val : Node_Id) return Node_Id
       is
          Value : Node_Id := Init_Val;
@@ -1525,9 +1525,7 @@ package body Exp_Prag is
          begin
             --  Attribute 'Old
 
-            if Nkind (N) = N_Attribute_Reference
-              and then Attribute_Name (N) = Name_Old
-            then
+            if Is_Attribute_Old (N) then
                Pref := Prefix (N);
 
                Indirect := Indirect_Temp_Needed (Etype (Pref));
@@ -2862,7 +2860,7 @@ package body Exp_Prag is
 
    procedure Expand_Pragma_Subprogram_Variant
      (Prag       : Node_Id;
-      Subp_Id    : Node_Id;
+      Subp_Id    : Entity_Id;
       Body_Decls : List_Id)
    is
       Curr_Decls : List_Id;

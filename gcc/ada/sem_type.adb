@@ -1403,7 +1403,9 @@ package body Sem_Type is
            and then Nkind (Unit_Declaration_Node (S)) =
                                          N_Subprogram_Renaming_Declaration
 
-           --  Why the Comes_From_Source test here???
+           --  Determine if the renaming came from source or was generated as a
+           --  a result of generic expansion since the actual is represented by
+           --  a constructed subprogram renaming.
 
            and then not Comes_From_Source (Unit_Declaration_Node (S))
 
@@ -1460,7 +1462,8 @@ package body Sem_Type is
             then
                return True;
 
-            --  ??? There are possibly other cases to consider
+            --  Formal_Typ is a private view, or Opnd_Typ and Formal_Typ are
+            --  compatible only on a base-type basis.
 
             else
                return False;

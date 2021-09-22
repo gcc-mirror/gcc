@@ -2070,7 +2070,7 @@ package body Sem_Elab is
    --  Change the status of the elaboration phase of the compiler to Status
 
    procedure Spec_And_Body_From_Entity
-     (Id        : Node_Id;
+     (Id        : Entity_Id;
       Spec_Decl : out Node_Id;
       Body_Decl : out Node_Id);
    pragma Inline (Spec_And_Body_From_Entity);
@@ -15835,7 +15835,7 @@ package body Sem_Elab is
    -------------------------------
 
    procedure Spec_And_Body_From_Entity
-     (Id        : Node_Id;
+     (Id        : Entity_Id;
       Spec_Decl : out Node_Id;
       Body_Decl : out Node_Id)
    is

@@ -1,3 +1,31 @@
+2021-09-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* cpp.c: Define GCC_C_COMMON_C for #include "options.h" to make
+	cpp_reason_option_codes available.
+	(gfc_cpp_register_include_paths): Make static, set pfile's
+	warn_missing_include_dirs and move before caller.
+	(gfc_cpp_init_cb): New, cb code moved from ...
+	(gfc_cpp_init_0): ... here.
+	(gfc_cpp_post_options): Call gfc_cpp_init_cb.
+	(cb_cpp_diagnostic_cpp_option): New. As implemented in c-family
+	to match CppReason flags to -W... names.
+	(cb_cpp_diagnostic): Use it to replace single special case.
+	* cpp.h (gfc_cpp_register_include_paths): Remove as now static.
+	* gfortran.h (gfc_check_include_dirs): New prototype.
+	(gfc_add_include_path): Add new bool arg.
+	* options.c (gfc_init_options): Don't set -Wmissing-include-dirs.
+	(gfc_post_options): Set it here after commandline processing. Call
+	gfc_add_include_path with defer_warn=false.
+	(gfc_handle_option): Call it with defer_warn=true.
+	* scanner.c (gfc_do_check_include_dir, gfc_do_check_include_dirs,
+	gfc_check_include_dirs): New. Diagnostic moved from ...
+	(add_path_to_list): ... here, which came before cmdline processing.
+	Take additional bool defer_warn argument.
+	(gfc_add_include_path): Take additional defer_warn arg.
+	* scanner.h (struct gfc_directorylist): Reorder for alignment issues,
+	add new 'bool warn'.
+
 2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (gfc_omp_clauses): Add order_unconstrained.

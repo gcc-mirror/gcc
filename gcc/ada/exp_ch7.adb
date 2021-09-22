@@ -486,11 +486,11 @@ package body Exp_Ch7 is
    function Make_Deep_Proc
      (Prim  : Final_Primitives;
       Typ   : Entity_Id;
-      Stmts : List_Id) return Node_Id;
+      Stmts : List_Id) return Entity_Id;
    --  This function generates the tree for Deep_Initialize, Deep_Adjust or
-   --  Deep_Finalize procedures according to the first parameter, these
-   --  procedures operate on the type Typ. The Stmts parameter gives the body
-   --  of the procedure.
+   --  Deep_Finalize procedures according to the first parameter. These
+   --  procedures operate on the type Typ. The Stmts parameter gives the
+   --  body of the procedure.
 
    function Make_Deep_Array_Body
      (Prim : Final_Primitives;

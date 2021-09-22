@@ -63,7 +63,6 @@ private:
   void ssa_range_in_phi (irange &r, gphi *phi);
   void precompute_relations (const vec<basic_block> &);
   void precompute_phi_relations (basic_block bb, basic_block prev);
-  void improve_range_with_equivs (irange &r, tree name);
   void add_copies_to_imports ();
   bool add_to_imports (tree name, bitmap imports);
 

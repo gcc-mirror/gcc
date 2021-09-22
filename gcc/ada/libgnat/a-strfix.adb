@@ -865,7 +865,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       High, Low : Integer;
 
    begin
-      Low := Index (Source, Set => Left, Test  => Outside, Going => Forward);
+      Low := Index (Source, Set => Left, Test => Outside, Going => Forward);
 
       --  Case where source comprises only characters in Left
 

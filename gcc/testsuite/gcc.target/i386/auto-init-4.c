@@ -14,9 +14,8 @@ long double foo()
   return result;
 }
 
-/* { dg-final { scan-rtl-dump-times "0xfffffffffefefefe" 1 "expand" { target lp64 } } } */
-/* { dg-final { scan-rtl-dump-times "\\\[0xfefefefefefefefe\\\]" 1 "expand" { target lp64 } } } */
-/* { dg-final { scan-rtl-dump-times "0xfffffffffffffffe\\\]\\\) repeated x16" 1 "expand" { target lp64 } } } */
+/* { dg-final { scan-rtl-dump-times "0xfffffffffefefefe" 1 "expand" { target { ! ia32 } } } } */
+/* { dg-final { scan-rtl-dump-times "\\\[0xfefefefefefefefe\\\]" 1 "expand" { target { ! ia32 } } } } */
+/* { dg-final { scan-rtl-dump-times "0xfffffffffffffffe\\\]\\\) repeated x16" 1 "expand" { target { ! ia32 } } } } */
 /* { dg-final { scan-rtl-dump-times "0xfffffffffefefefe" 2 "expand" { target ia32 } } } */
 /* { dg-final { scan-rtl-dump-times "\\\[0xfefefefefefefefe\\\]" 2 "expand" { target ia32 } } } */
-

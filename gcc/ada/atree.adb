@@ -2025,10 +2025,16 @@ package body Atree is
 
          --  Both the old and new copies of the node will share the same list
          --  of aspect specifications if aspect specifications are present.
+         --  Restore the parent link of the aspect list to the old node, which
+         --  is the one linked in the tree.
 
          if Old_Has_Aspects then
-            Set_Aspect_Specifications
-              (Sav_Node, Aspect_Specifications (Old_Node));
+            declare
+               Aspects : constant List_Id := Aspect_Specifications (Old_Node);
+            begin
+               Set_Aspect_Specifications (Sav_Node, Aspects);
+               Set_Parent (Aspects, Old_Node);
+            end;
          end if;
       end if;
 

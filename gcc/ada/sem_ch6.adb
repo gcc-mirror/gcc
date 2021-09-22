@@ -385,15 +385,9 @@ package body Sem_Ch6 is
          Analyze (New_Body);
          Set_Is_Inlined (Prev);
 
-      --  If the expression function is a completion, the previous declaration
-      --  must come from source. We know already that it appears in the current
-      --  scope. The entity itself may be internally created if within a body
-      --  to be inlined.
-
       elsif Present (Prev)
         and then Is_Overloadable (Prev)
         and then not Is_Formal_Subprogram (Prev)
-        and then Comes_From_Source (Parent (Prev))
       then
          Set_Has_Completion (Prev, False);
          Set_Is_Inlined (Prev);
@@ -7760,7 +7754,7 @@ package body Sem_Ch6 is
                  ("RETURN statement missing following this statement<<!",
                   Last_Stm);
                Error_Msg_N
-                 ("\Program_Error ]<<!", Last_Stm);
+                 ("\Program_Error [<<!", Last_Stm);
             end if;
 
             --  Note: we set Err even though we have not issued a warning
@@ -9480,13 +9474,12 @@ package body Sem_Ch6 is
          end if;
 
       --  Here if type is not frozen yet. It is illegal to have a primitive
-      --  equality declared in the private part if the type is visible.
+      --  equality declared in the private part if the type is visible
+      --  (RM 4.5.2(9.8)).
 
       elsif not In_Same_List (Parent (Typ), Decl)
         and then not Is_Limited_Type (Typ)
       then
-         --  Shouldn't we give an RM reference here???
-
          if Ada_Version >= Ada_2012 then
             Error_Msg_N
               ("equality operator appears too late<<", Eq_Op);
@@ -9817,7 +9810,8 @@ package body Sem_Ch6 is
       --  conform when they do not, e.g. by converting 1+2 into 3.
 
       function FCE (Given_E1 : Node_Id; Given_E2 : Node_Id) return Boolean;
-      --  ???
+      --  Convenience function to abbreviate recursive calls to
+      --  Fully_Conformant_Expressions without having to pass Report.
 
       function FCL (L1 : List_Id; L2 : List_Id) return Boolean;
       --  Compare elements of two lists for conformance. Elements have to be
@@ -10778,7 +10772,7 @@ package body Sem_Ch6 is
                   Error_Msg_Node_2 := F_Typ;
                   Error_Msg_NE
                     ("private operation& in generic unit does not override "
-                     & "any primitive operation of& (RM 12.3 (18))??",
+                     & "any primitive operation of& (RM 12.3(18))??",
                      New_E, New_E);
                end if;
 

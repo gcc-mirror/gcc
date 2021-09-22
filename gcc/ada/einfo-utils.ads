@@ -625,7 +625,7 @@ package Einfo.Utils is
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
-   procedure Link_Entities (First : Entity_Id; Second : Entity_Id);
+   procedure Link_Entities (First, Second : Entity_Id);
    --  Link entities First and Second in one entity chain.
    --
    --  NOTE: No updates are done to the First_Entity and Last_Entity fields

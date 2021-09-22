@@ -145,7 +145,7 @@ package body Exp_Ch9 is
 
    function Build_Corresponding_Record
      (N    : Node_Id;
-      Ctyp : Node_Id;
+      Ctyp : Entity_Id;
       Loc  : Source_Ptr) return Node_Id;
    --  Common to tasks and protected types. Copy discriminant specifications,
    --  build record declaration. N is the type declaration, Ctyp is the
@@ -1583,9 +1583,9 @@ package body Exp_Ch9 is
    --------------------------------
 
    function Build_Corresponding_Record
-    (N    : Node_Id;
-     Ctyp : Entity_Id;
-     Loc  : Source_Ptr) return Node_Id
+     (N    : Node_Id;
+      Ctyp : Entity_Id;
+      Loc  : Source_Ptr) return Node_Id
    is
       Rec_Ent  : constant Entity_Id :=
                    Make_Defining_Identifier
@@ -14867,7 +14867,7 @@ package body Exp_Ch9 is
       Actuals : List_Id;
       Formals : List_Id;
       Decls   : List_Id;
-      Stmts   : List_Id) return Node_Id
+      Stmts   : List_Id) return Entity_Id
    is
       Actual    : Entity_Id;
       Expr      : Node_Id := Empty;

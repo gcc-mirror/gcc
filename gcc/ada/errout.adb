@@ -3602,15 +3602,9 @@ package body Errout is
       end if;
 
       --  The following assignment ensures that a second ampersand insertion
-      --  character will correspond to the Error_Msg_Node_2 parameter. We
-      --  suppress possible validity checks in case operating in -gnatVa mode,
-      --  and Error_Msg_Node_2 is not needed and has not been set.
+      --  character will correspond to the Error_Msg_Node_2 parameter.
 
-      declare
-         pragma Suppress (Range_Check);
-      begin
-         Error_Msg_Node_1 := Error_Msg_Node_2;
-      end;
+      Error_Msg_Node_1 := Error_Msg_Node_2;
    end Set_Msg_Insertion_Node;
 
    --------------------------------------
@@ -3790,15 +3784,9 @@ package body Errout is
       end if;
 
       --  The following assignment ensures that a second percent insertion
-      --  character will correspond to the Error_Msg_Unit_2 parameter. We
-      --  suppress possible validity checks in case operating in -gnatVa mode,
-      --  and Error_Msg_Unit_2 is not needed and has not been set.
+      --  character will correspond to the Error_Msg_Unit_2 parameter.
 
-      declare
-         pragma Suppress (Range_Check);
-      begin
-         Error_Msg_Unit_1 := Error_Msg_Unit_2;
-      end;
+      Error_Msg_Unit_1 := Error_Msg_Unit_2;
    end Set_Msg_Insertion_Unit_Name;
 
    ------------------

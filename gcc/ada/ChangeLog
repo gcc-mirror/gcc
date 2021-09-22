@@ -1,3 +1,242 @@
+2021-09-21  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (__gnat_error_handler) [LynxOS]: Add a comment about
+	missing optional args.
+
+2021-09-21  Yannick Moy  <moy@adacore.com>
+
+	* gen_il-gen.adb (Put_Opt_Subtype): Add suffix.
+
+2021-09-21  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb (Accessibility_Level): Remove spurious special
+	case for protected type components.
+	* exp_ch4.adb (Generate_Accessibility_Check): Use general
+	Accessibility_Level instead of the low-level function
+	Type_Access_Level.
+
+2021-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Regenerate.
+
+2021-09-21  Matthieu Eyraud  <eyraud@adacore.com>
+
+	* par_sco.adb (Traverse_One): Add support for pragma Invariant /
+	Type_Invariant.
+
+2021-09-21  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen.adb (Put_Opt_Subtype): Print out subtypes of the
+	form:
+	subtype Opt_N_Declaration is
+	Node_Id with Predicate =>
+	Opt_N_Declaration = Empty or else
+	Opt_N_Declaration in N_Declaration_Id;
+	One for each node or entity type, with the predicate allowing
+	Empty.
+	* atree.adb (Parent, Set_Parent): Remove unnecessary "Atree.".
+
+2021-09-21  Patrick Bernardi  <bernardi@adacore.com>
+
+	* bindgen.adb (Gen_Adainit): For targets that suppress the
+	standard library: set the default stack size global variable if
+	a value is provided via the -d switch, and generate a call to
+	__gnat_initialize_stack_limit if stack checking using stack
+	limits is enabled.
+
+2021-09-21  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Stream_Size): Print message about allowed stream
+	sizes even if other error were already found. This avoids
+	falling into the 'else', which prints "Stream_Size cannot be
+	given for...", which is misleading -- the Size COULD be given if
+	it were correct.
+
+2021-09-21  Daniel Mercier  <mercier@adacore.com>
+
+	* exp_util.adb (Build_Temporary): In case of an external DISCR
+	symbol, set the related expression for CodePeer so that a more
+	comprehensible message can be emitted to the user.
+
+2021-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.adb (Parse_Header): Tweak comments.
+	(Read_Entry_Format_Array): Tweak exception message.
+	(Symbolic_Address.Set_Result): Likewise.
+
+2021-09-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Make_Init_Call): Add guard to protect against a
+	missing initialization procedure for a type.
+
+2021-09-21  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl: Remove unused VxWorks sections.
+	* libgnarl/s-vxwext__noints.adb: Remove.
+	* libgnarl/s-vxwext__vthreads.ads: Remove.
+	* libgnat/a-elchha__vxworks-ppc-full.adb: Remove.
+	* libgnat/s-osprim__vxworks.adb: Remove.
+	* libgnat/s-osvers__vxworks-653.ads: Remove.
+	* libgnat/system-vxworks-e500-vthread.ads: Remove.
+	* libgnat/system-vxworks-ppc-vthread.ads: Remove.
+	* libgnat/system-vxworks-x86-vthread.ads: Remove.
+
+2021-09-21  Bob Duff  <duff@adacore.com>
+
+	* uintp.ads, uintp.adb (UI_Is_In_Int_Range): Change the type of
+	the formal parameter to Valid_Uint. Remove code that preserved
+	the previous behavior, and replace it with an assertion. The
+	previous behavior is no longer needed given the recent change to
+	gigi.
+	(No, Present): Add comment.
+
+2021-09-21  Bob Duff  <duff@adacore.com>
+
+	* sem_eval.adb (Fold_Shift): Replace an if_expression with an
+	if_statement.
+
+2021-09-21  Bob Duff  <duff@adacore.com>
+
+	* uintp.ads, uintp.adb: Add assertions.
+	(Ubool, Opt_Ubool): New "boolean" subtypes.
+	(UI_Is_In_Int_Range): The parameter should probably be
+	Valid_Uint, but we don't change that for now, because it causes
+	failures in gigi.
+	* sem_util.ads, sem_util.adb (Is_True, Is_False,
+	Static_Boolean): Use Opt_Ubool subtype.  Document the fact that
+	Is_True (No_Uint) = True.  Implement Is_False in terms of
+	Is_True.  We considered changing Static_Boolean to return Uint_1
+	in case of error, but that doesn't fit in well with
+	Static_Integer.
+	(Has_Compatible_Alignment_Internal): Deal with cases where Offs
+	is No_Uint. Change one "and" to "and then" to ensure we don't
+	pass No_Uint to ">", which would violate the new assertions.
+	* exp_util.adb, freeze.adb, sem_ch13.adb: Avoid violating new
+	assertions in Uintp.
+
+2021-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.adb (To_File_Name): Fetch only the last string
+	from the .debug_line_str section.
+	(Symbolic_Address.Set_Result): Likewise.
+
+2021-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.adb (Skip_Form): Fix cases of DW_FORM_addrx
+	and DW_FORM_implicit_const.  Replace Constraint_Error with
+	Dwarf_Error.
+
+2021-09-21  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_pakd.adb (Expand_Packed_Not): Replace expression with
+	statement.
+
+2021-09-21  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_eval.adb (Is_Static_Subtype): Take predicates created
+	through "predicate" pragma into account.
+
+2021-09-21  Frederic Konrad  <konrad@adacore.com>
+
+	* Makefile.rtl (aarch64-rtems*): Add GNATRTL_128BIT_PAIRS to
+	the LIBGNAT_TARGET_PAIRS list and also GNATRTL_128BIT_OBJS to
+	the EXTRA_GNATRTL_NONTASKING_OBJS list.
+
+2021-09-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Remove_Abstract_Operations): Add condition to
+	test for an E_Operator as part of criteria for setting
+	Abstract_Op on interpretations involving predefined operators.
+
+2021-09-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): For explicit
+	dereference of type conversion, enable code that ensures that
+	the tag of the result is that of the result type.
+
+2021-09-21  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.adb: Add support (currently disabled) for using
+	"initial zero" instead of "Uint_0" to represent "unknown".  Call
+	Known_ functions, instead of evilly duplicating their code
+	inline.
+	* fe.h (No_Uint_To_0): New function to convert No_Uint to
+	Uint_0, in order to preserve existing behavior.
+	(Copy_Esize, Copy_RM_Size): New imports from Einfo.Utils.
+	* cstand.adb: Set size fields of Standard_Debug_Renaming_Type
+	and Standard_Exception_Type.
+	* checks.adb, exp_attr.adb, exp_ch3.adb, exp_ch5.adb,
+	exp_ch6.adb, exp_pakd.adb, exp_util.adb, freeze.adb, itypes.adb,
+	layout.adb, repinfo.adb, sem_attr.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_ch13.ads, sem_ch3.adb, sem_ch7.adb,
+	sem_util.adb: Protect calls with Known_..., use Copy_...  Remove
+	assumption that Uint_0 represents "unknown".
+	* types.ads (Nonzero_Int): New subtype.
+	* gcc-interface/decl.c, gcc-interface/trans.c: Protect calls
+	with Known_... and use Copy_...  as appropriate, to avoid
+	blowing up in unknown cases. Similarly, call No_Uint_To_0 to
+	preserve existing behavior.
+
+2021-09-21  Steve Baird  <baird@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add a new nested
+	function, Directly_Specified, and then use it in the
+	implementation of the required check.
+
+2021-09-21  Steve Baird  <baird@adacore.com>
+
+	* libgnat/a-costso.ads, libgnat/a-costso.adb: A new library
+	unit, Ada.Containers.Stable_Sorting, which exports a pair of
+	generics (one within the other) which are instantiated by each
+	of the 5 doubly-linked list container generics to implement
+	their respective Sort procedures. We use a pair of generics,
+	rather than a single generic, in order to further reduce code
+	duplication. The outer generic takes a formal private Node_Ref
+	type representing a reference to a linked list element. For some
+	instances, the corresponding actual parameter will be an access
+	type; for others, it will be the index type for an array.
+	* Makefile.rtl: Include new Ada.Containers.Stable_Sorting unit.
+	* libgnat/a-cbdlli.adb, libgnat/a-cdlili.adb,
+	libgnat/a-cfdlli.adb, libgnat/a-cidlli.adb, libgnat/a-crdlli.adb
+	(Sort): Replace existing Sort implementation with a call to an
+	instance of
+	Ada.Containers.Stable_Sorting.Doubly_Linked_List_Sort. Declare
+	the (trivial) actual parameters needed to declare that instance.
+	* libgnat/a-cfdlli.ads: Fix a bug encountered during testing in
+	the postcondition for M_Elements_Sorted. With a partial
+	ordering, it is possible for all three of (X < Y), (Y < X),
+	and (X = Y) to be simultaneously false, so that case needs to
+	handled correctly.
+
+2021-09-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): Fix references to Sptr and
+	Optr in comment; fix grammar of "low-level" where it is used as
+	an adjective.
+
+2021-09-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (Write_Source_Code_Lines): Use Cur_Loc before
+	incrementing it, so that we don't need to decrement it.
+
+2021-09-21  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (Get_Line_End): Do not allow the result to go past
+	the end of the buffer.
+
+2021-09-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Process_Discriminant_Expressions): If the
+	constraint is for a Component_Definition that appears in a
+	Component_Declaration, the entity to be used to create the
+	potentially global symbol is the Defining_Identifier of the
+	Component_Declaration.
+
+2021-09-21  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-stbufi.ads, libgnat/a-stbufi.adb: Change all
+	occurrences of GNAT.OS_Lib to System.OS_Lib.
+
 2021-09-20  Piotr Trojanek  <trojanek@adacore.com>
 
 	* inline.adb (Has_Excluded_Declaration): Remove redundant guard;

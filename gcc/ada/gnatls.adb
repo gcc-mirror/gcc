@@ -2278,7 +2278,6 @@ begin
                  Scan_ALI
                    (Ali_File,
                     Text,
-                    Ignore_ED     => False,
                     Err           => False,
                     Ignore_Errors => True);
             end;

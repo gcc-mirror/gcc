@@ -284,11 +284,11 @@ package body Freeze is
    --  Full_View or Corresponding_Record_Type.
 
    procedure Warn_Overlay (Expr : Node_Id; Typ : Entity_Id; Nam : Node_Id);
-   --  Expr is the expression for an address clause for entity Nam whose type
-   --  is Typ. If Typ has a default initialization, and there is no explicit
-   --  initialization in the source declaration, check whether the address
-   --  clause might cause overlaying of an entity, and emit a warning on the
-   --  side effect that the initialization will cause.
+   --  Expr is the expression for an address clause for the entity denoted by
+   --  Nam whose type is Typ. If Typ has a default initialization, and there is
+   --  no explicit initialization in the source declaration, check whether the
+   --  address clause might cause overlaying of an entity, and emit a warning
+   --  on the side effect that the initialization will cause.
 
    -------------------------------
    -- Adjust_Esize_For_Alignment --
@@ -636,13 +636,26 @@ package body Freeze is
          Next (Param_Spec);
       end loop;
 
-      Body_Node :=
-        Make_Subprogram_Body (Loc,
-          Specification => Spec,
-          Declarations => New_List,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (Call_Node)));
+      --  In GNATprove, prefer to generate an expression function whenever
+      --  possible, to benefit from the more precise analysis in that case
+      --  (as if an implicit postcondition had been generated).
+
+      if GNATprove_Mode
+        and then Nkind (Call_Node) = N_Simple_Return_Statement
+      then
+         Body_Node :=
+           Make_Expression_Function (Loc,
+             Specification => Spec,
+             Expression    => Expression (Call_Node));
+      else
+         Body_Node :=
+           Make_Subprogram_Body (Loc,
+             Specification              => Spec,
+             Declarations               => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Call_Node)));
+      end if;
 
       if Nkind (Decl) /= N_Subprogram_Declaration then
          Rewrite (N,
@@ -1352,9 +1365,15 @@ package body Freeze is
             elsif Is_Record_Type (Encl_Base)
               and then not Comp_Byte_Aligned
             then
-               Error_Msg_N
-                 ("type of non-byte-aligned component must have same scalar "
-                  & "storage order as enclosing composite", Err_Node);
+               if Present (Component_Clause (Comp)) then
+                  Error_Msg_N
+                    ("type of non-byte-aligned component must have same scalar"
+                     & " storage order as enclosing record", Err_Node);
+               else
+                  Error_Msg_N
+                    ("type of packed component must have same scalar"
+                     & " storage order as enclosing record", Err_Node);
+               end if;
 
             --  Warn if specified only for the outer composite
 
@@ -10062,7 +10081,7 @@ package body Freeze is
    -- Warn_Overlay --
    ------------------
 
-   procedure Warn_Overlay (Expr : Node_Id; Typ : Entity_Id; Nam : Entity_Id) is
+   procedure Warn_Overlay (Expr : Node_Id; Typ : Entity_Id; Nam : Node_Id) is
       Ent : constant Entity_Id := Entity (Nam);
       --  The object to which the address clause applies
 

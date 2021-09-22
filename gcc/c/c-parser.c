@@ -15305,7 +15305,15 @@ c_parser_omp_clause_aligned (c_parser *parser, tree list)
 
 /* OpenMP 5.0:
    allocate ( variable-list )
-   allocate ( expression : variable-list ) */
+   allocate ( expression : variable-list )
+
+   OpenMP 5.1:
+   allocate ( allocator-modifier : variable-list )
+   allocate ( allocator-modifier , allocator-modifier : variable-list )
+
+   allocator-modifier:
+   allocator ( expression )
+   align ( expression )  */
 
 static tree
 c_parser_omp_clause_allocate (c_parser *parser, tree list)
@@ -15313,6 +15321,7 @@ c_parser_omp_clause_allocate (c_parser *parser, tree list)
   location_t clause_loc = c_parser_peek_token (parser)->location;
   tree nl, c;
   tree allocator = NULL_TREE;
+  tree align = NULL_TREE;
 
   matching_parens parens;
   if (!parens.require_open (parser))
@@ -15323,17 +15332,128 @@ c_parser_omp_clause_allocate (c_parser *parser, tree list)
       || (c_parser_peek_2nd_token (parser)->type != CPP_COMMA
 	  && c_parser_peek_2nd_token (parser)->type != CPP_CLOSE_PAREN))
     {
-      location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr expr = c_parser_expr_no_commas (parser, NULL);
-      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
-      allocator = expr.value;
-      allocator = c_fully_fold (allocator, false, NULL);
-      tree orig_type
-	= expr.original_type ? expr.original_type : TREE_TYPE (allocator);
-      orig_type = TYPE_MAIN_VARIANT (orig_type);
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (allocator))
-	  || TREE_CODE (orig_type) != ENUMERAL_TYPE
-	  || TYPE_NAME (orig_type) != get_identifier ("omp_allocator_handle_t"))
+      bool has_modifiers = false;
+      tree orig_type = NULL_TREE;
+      if (c_parser_next_token_is (parser, CPP_NAME)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_OPEN_PAREN)
+	{
+	  unsigned int n = 3;
+	  const char *p
+	    = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	  if ((strcmp (p, "allocator") == 0 || strcmp (p, "align") == 0)
+	      && c_parser_check_balanced_raw_token_sequence (parser, &n)
+	      && (c_parser_peek_nth_token_raw (parser, n)->type
+		  == CPP_CLOSE_PAREN))
+	    {
+	      if (c_parser_peek_nth_token_raw (parser, n + 1)->type
+		  == CPP_COLON)
+		has_modifiers = true;
+	      else if (c_parser_peek_nth_token_raw (parser, n + 1)->type
+		       == CPP_COMMA
+		       && (c_parser_peek_nth_token_raw (parser, n + 2)->type
+			   == CPP_NAME)
+		       && (c_parser_peek_nth_token_raw (parser, n + 3)->type
+			   == CPP_OPEN_PAREN))
+		{
+		  c_token *tok = c_parser_peek_nth_token_raw (parser, n + 2);
+		  const char *q = IDENTIFIER_POINTER (tok->value);
+		  n += 4;
+		  if ((strcmp (q, "allocator") == 0
+		       || strcmp (q, "align") == 0)
+		      && c_parser_check_balanced_raw_token_sequence (parser,
+								     &n)
+		      && (c_parser_peek_nth_token_raw (parser, n)->type
+			  == CPP_CLOSE_PAREN)
+		      && (c_parser_peek_nth_token_raw (parser, n + 1)->type
+			  == CPP_COLON))
+		    has_modifiers = true;
+		}
+	    }
+	  if (has_modifiers)
+	    {
+	      c_parser_consume_token (parser);
+	      matching_parens parens2;;
+	      parens2.require_open (parser);
+	      location_t expr_loc = c_parser_peek_token (parser)->location;
+	      c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+	      if (strcmp (p, "allocator") == 0)
+		{
+		  allocator = expr.value;
+		  allocator = c_fully_fold (allocator, false, NULL);
+		  orig_type = expr.original_type
+			      ? expr.original_type : TREE_TYPE (allocator);
+		  orig_type = TYPE_MAIN_VARIANT (orig_type);
+		}
+	      else
+		{
+		  align = expr.value;
+		  align = c_fully_fold (align, false, NULL);
+		}
+	      parens2.skip_until_found_close (parser);
+	      if (c_parser_next_token_is (parser, CPP_COMMA))
+		{
+		  c_parser_consume_token (parser);
+		  c_token *tok = c_parser_peek_token (parser);
+		  const char *q = "";
+		  if (c_parser_next_token_is (parser, CPP_NAME))
+		    q = IDENTIFIER_POINTER (tok->value);
+		  if (strcmp (q, "allocator") != 0 && strcmp (q, "align") != 0)
+		    {
+		      c_parser_error (parser, "expected %<allocator%> or "
+					      "%<align%>");
+		      parens.skip_until_found_close (parser);
+		      return list;
+		    }
+		  else if (strcmp (p, q) == 0)
+		    {
+		      error_at (tok->location, "duplicate %qs modifier", p);
+		      parens.skip_until_found_close (parser);
+		      return list;
+		    }
+		  c_parser_consume_token (parser);
+		  if (!parens2.require_open (parser))
+		    {
+		      parens.skip_until_found_close (parser);
+		      return list;
+		    }
+		  expr_loc = c_parser_peek_token (parser)->location;
+		  expr = c_parser_expr_no_commas (parser, NULL);
+		  expr = convert_lvalue_to_rvalue (expr_loc, expr, false,
+						   true);
+		  if (strcmp (q, "allocator") == 0)
+		    {
+		      allocator = expr.value;
+		      allocator = c_fully_fold (allocator, false, NULL);
+		      orig_type = expr.original_type
+				  ? expr.original_type : TREE_TYPE (allocator);
+		      orig_type = TYPE_MAIN_VARIANT (orig_type);
+		    }
+		  else
+		    {
+		      align = expr.value;
+		      align = c_fully_fold (align, false, NULL);
+		    }
+		  parens2.skip_until_found_close (parser);
+		}
+	    }
+	}
+      if (!has_modifiers)
+	{
+	  location_t expr_loc = c_parser_peek_token (parser)->location;
+	  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	  expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+	  allocator = expr.value;
+	  allocator = c_fully_fold (allocator, false, NULL);
+	  orig_type = expr.original_type
+		      ? expr.original_type : TREE_TYPE (allocator);
+	  orig_type = TYPE_MAIN_VARIANT (orig_type);
+	}
+      if (allocator
+	  && (!INTEGRAL_TYPE_P (TREE_TYPE (allocator))
+	      || TREE_CODE (orig_type) != ENUMERAL_TYPE
+	      || (TYPE_NAME (orig_type)
+		  != get_identifier ("omp_allocator_handle_t"))))
         {
           error_at (clause_loc, "%<allocate%> clause allocator expression "
 				"has type %qT rather than "
@@ -15341,6 +15461,16 @@ c_parser_omp_clause_allocate (c_parser *parser, tree list)
 				TREE_TYPE (allocator));
           allocator = NULL_TREE;
         }
+      if (align
+	  && (!INTEGRAL_TYPE_P (TREE_TYPE (align))
+	      || !tree_fits_uhwi_p (align)
+	      || !integer_pow2p (align)))
+	{
+	  error_at (clause_loc, "%<allocate%> clause %<align%> modifier "
+				"argument needs to be positive constant "
+				"power of two integer expression");
+	  align = NULL_TREE;
+	}
       if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
 	{
 	  parens.skip_until_found_close (parser);
@@ -15351,9 +15481,12 @@ c_parser_omp_clause_allocate (c_parser *parser, tree list)
   nl = c_parser_omp_variable_list (parser, clause_loc,
 				   OMP_CLAUSE_ALLOCATE, list);
 
-  if (allocator)
+  if (allocator || align)
     for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
-      OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
+      {
+	OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
+	OMP_CLAUSE_ALLOCATE_ALIGN (c) = align;
+      }
 
   parens.skip_until_found_close (parser);
   return nl;

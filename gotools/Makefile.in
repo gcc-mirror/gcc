@@ -703,8 +703,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@NATIVE_FALSE@uninstall-local:
 @NATIVE_FALSE@install-exec-local:
+@NATIVE_FALSE@uninstall-local:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-noinstPROGRAMS \
@@ -916,14 +916,14 @@ mostlyclean-local:
 @NATIVE_TRUE@	export LD_LIBRARY_PATH; \
 @NATIVE_TRUE@	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 @NATIVE_TRUE@	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
-@NATIVE_TRUE@	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
+@NATIVE_TRUE@	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go $(libgodir)/goroot.go" --tag=libffi`; \
 @NATIVE_TRUE@	echo "$(ECHO_ENV) GC='$(abs_builddir)/check-gccgo -fgo-compiling-runtime' GOARCH=$${GOARCH} GOOS=$${GOOS} $(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles='$${files}' $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > runtime-testlog
 @NATIVE_TRUE@	$(CHECK_ENV) \
 @NATIVE_TRUE@	GC="$${GCCGO} -fgo-compiling-runtime"; \
 @NATIVE_TRUE@	export GC; \
 @NATIVE_TRUE@	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 @NATIVE_TRUE@	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
-@NATIVE_TRUE@	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
+@NATIVE_TRUE@	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go $(libgodir)/goroot.go" --tag=libffi`; \
 @NATIVE_TRUE@	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v >> runtime-testlog 2>&1 || echo "--- $${fl}: go test runtime (0.00s)" >> runtime-testlog
 @NATIVE_TRUE@	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
