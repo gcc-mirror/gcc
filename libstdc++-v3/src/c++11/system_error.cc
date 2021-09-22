@@ -70,6 +70,8 @@ namespace
     virtual std::error_condition
     default_error_condition(int ev) const noexcept
     {
+      // Use generic category for all known POSIX errno values (including zero)
+      // and system category otherwise.
       switch (ev)
       {
       // List of errno macros from [cerrno.syn].
@@ -310,6 +312,7 @@ namespace
 #ifdef EXDEV
       case EXDEV:
 #endif
+      case 0:
         return std::error_condition(ev, std::generic_category());
 
       /* Additional system-dependent mappings from non-standard error codes
