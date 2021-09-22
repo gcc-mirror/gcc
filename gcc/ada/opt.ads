@@ -1031,22 +1031,6 @@ package Opt is
    --  GNATBIND
    --  Set to True to enable XDR in s-stratt.adb. Set by -xdr.
 
-   type Create_Repinfo_File_Proc is access procedure (Src  : String);
-   type Write_Repinfo_Line_Proc  is access procedure (Info : String);
-   type Close_Repinfo_File_Proc  is access procedure;
-   --  Types used for procedure addresses below
-
-   Create_Repinfo_File_Access : Create_Repinfo_File_Proc := null;
-   Write_Repinfo_Line_Access  : Write_Repinfo_Line_Proc  := null;
-   Close_Repinfo_File_Access  : Close_Repinfo_File_Proc  := null;
-   --  GNAT
-   --  These three locations are left null when operating in non-compiler (e.g.
-   --  ASIS mode), but when operating in compiler mode, they are set to point
-   --  to the three corresponding procedures in Osint-C. The reason for this
-   --  slightly strange interface is to stop Repinfo from dragging in Osint in
-   --  ASIS mode, which would include lots of unwanted units in the ASIS build.
-   --  ??? Revisit this now that ASIS mode is gone.
-
    type Create_List_File_Proc is access procedure (S : String);
    type Write_List_Info_Proc  is access procedure (S : String);
    type Close_List_File_Proc  is access procedure;

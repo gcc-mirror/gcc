@@ -426,12 +426,10 @@ package body Sem_Ch8 is
    --  body at the point of freezing will not work. Subp is the subprogram
    --  for which N provides the Renaming_As_Body.
 
-   procedure Check_In_Previous_With_Clause
-     (N   : Node_Id;
-      Nam : Node_Id);
+   procedure Check_In_Previous_With_Clause (N, Nam : Node_Id);
    --  N is a use_package clause and Nam the package name, or N is a use_type
    --  clause and Nam is the prefix of the type name. In either case, verify
-   --  that the package is visible at that point in the context: either  it
+   --  that the package is visible at that point in the context: either it
    --  appears in a previous with_clause, or because it is a fully qualified
    --  name and the root ancestor appears in a previous with_clause.
 
@@ -4670,10 +4668,7 @@ package body Sem_Ch8 is
    -- Check_In_Previous_With_Clause --
    -----------------------------------
 
-   procedure Check_In_Previous_With_Clause
-     (N   : Node_Id;
-      Nam : Entity_Id)
-   is
+   procedure Check_In_Previous_With_Clause (N, Nam : Node_Id) is
       Pack : constant Entity_Id := Entity (Original_Node (Nam));
       Item : Node_Id;
       Par  : Node_Id;

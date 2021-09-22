@@ -86,7 +86,7 @@ package body Exp_Smem is
 
    function Build_Shared_Var_Proc_Call
      (Loc : Source_Ptr;
-      E   : Node_Id;
+      E   : Entity_Id;
       N   : Name_Id) return Node_Id;
    --  Build a call to support procedure N for shared object E (provided by the
    --  instance of System.Shared_Storage.Shared_Var_Procs associated to E).

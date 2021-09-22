@@ -233,7 +233,7 @@ package Aspects is
        Aspect_Implicit_Dereference | Aspect_Constant_Indexing |
        Aspect_Variable_Indexing | Aspect_Aggregate |
        Aspect_Max_Entry_Queue_Length
-       --  | Aspect_No_Controlled_Parts
+        | Aspect_No_Controlled_Parts
        --  ??? No_Controlled_Parts not yet in Aspect_Id enumeration
        ;  --  see RM 13.1.1(18.7)
 

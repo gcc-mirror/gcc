@@ -35,6 +35,7 @@ with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
 with Output;         use Output;
+with Osint.C;        use Osint.C;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Eval;       use Sem_Eval;
 with Sinfo;          use Sinfo;
@@ -1724,7 +1725,7 @@ package body Repinfo is
                --  List representation information to file
 
                else
-                  Create_Repinfo_File_Access.all
+                  Create_Repinfo_File
                     (Get_Name_String (File_Name (Source_Index (U))));
                   Set_Special_Output (Write_Info_Line'Access);
                   if List_Representation_Info_To_JSON then
@@ -1736,7 +1737,7 @@ package body Repinfo is
                      Write_Line ("]");
                   end if;
                   Cancel_Special_Output;
-                  Close_Repinfo_File_Access.all;
+                  Close_Repinfo_File;
                end if;
             end if;
          end loop;
@@ -2328,7 +2329,7 @@ package body Repinfo is
 
    procedure Write_Info_Line (S : String) is
    begin
-      Write_Repinfo_Line_Access.all (S (S'First .. S'Last - 1));
+      Write_Repinfo_Line (S (S'First .. S'Last - 1));
    end Write_Info_Line;
 
    ---------------------

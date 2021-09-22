@@ -18,4 +18,4 @@ int foo ()
 }
 
 /* { dg-final { scan-rtl-dump-times "const_int 0 \\\[0\\\]\\\) repeated x16" 1 "expand" { target ia32 } } } */
-/* { dg-final { scan-rtl-dump-times "const_int 0 \\\[0\\\]\\\)" 1 "expand" { target lp64 } } } */
+/* { dg-final { scan-rtl-dump-times "const_int 0 \\\[0\\\]\\\)" 1 "expand" { target { ! ia32 } } } } */

@@ -1519,14 +1519,6 @@ package body Sem_Attr is
             Check_E1;
             Set_Etype (N, Str_Typ);
 
-            --  ???It's not clear why 'Img should behave any differently than
-            --  'Image.
-
-            if Attr_Id = Attribute_Img then
-               Error_Attr_P
-                 ("prefix of % attribute must be a scalar object name");
-            end if;
-
             pragma Assert (Is_Entity_Name (P) and then Is_Type (Entity (P)));
 
             if Ekind (Entity (P)) = E_Incomplete_Type
@@ -12477,7 +12469,7 @@ package body Sem_Attr is
    function Stream_Attribute_Available
      (Typ          : Entity_Id;
       Nam          : TSS_Name_Type;
-      Partial_View : Node_Id := Empty) return Boolean
+      Partial_View : Entity_Id := Empty) return Boolean
    is
       Etyp : Entity_Id := Typ;
 

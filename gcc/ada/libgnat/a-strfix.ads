@@ -382,7 +382,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
         =>
           Index'Result = 0,
 
-        --  Otherwise, a index in the range of Source is returned
+        --  Otherwise, an index in the range of Source is returned
 
         others
         =>
@@ -392,7 +392,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
           Index'Result in Source'Range
 
             --  The character at the returned index satisfies the property
-            --  Test on Set
+            --  Test on Set.
 
             and then
               (Test = Inside)
@@ -433,7 +433,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
         =>
           Index'Result = 0,
 
-        --  Otherwise, a index in the considered range of Source is returned
+        --  Otherwise, an index in the considered range of Source is returned
 
         others
         =>
@@ -1133,31 +1133,15 @@ package Ada.Strings.Fixed with SPARK_Mode is
             --  Otherwise, the returned string is a slice of Source
 
             else
-              (for some Low in Source'Range =>
-                 (for some High in Source'Range =>
-
-                    --  Trim returns the slice of Source between Low and High
-
-                    Trim'Result = Source (Low .. High)
-
-                      --  Values of Low and High and the characters at their
-                      --  position depend on Side.
-
-                      and then
-                        (if Side = Left then High = Source'Last
-                         else Source (High) /= ' ')
-                      and then
-                        (if Side = Right then Low = Source'First
-                         else Source (Low) /= ' ')
-
-                      --  All characters outside range Low .. High are
-                      --  Space characters.
-
-                      and then
-                        (for all J in Source'Range =>
-                           (if J < Low then Source (J) = ' ')
-                              and then
-                                (if J > High then Source (J) = ' '))))),
+              (declare
+                 Low  : constant Positive :=
+                   (if Side = Right then Source'First
+                    else Index_Non_Blank (Source, Forward));
+                 High : constant Positive :=
+                   (if Side = Left then Source'Last
+                    else Index_Non_Blank (Source, Backward));
+               begin
+                 Trim'Result = Source (Low .. High))),
      Global => null;
    --  Returns the string obtained by removing from Source all leading Space
    --  characters (if Side = Left), all trailing Space characters (if
@@ -1203,30 +1187,13 @@ package Ada.Strings.Fixed with SPARK_Mode is
         --  Otherwise, the returned string is a slice of Source
 
         else
-          (for some Low in Source'Range =>
-             (for some High in Source'Range =>
-
-                --  Trim returns the slice of Source between Low and High
-
-                Trim'Result = Source (Low .. High)
-
-                  --  Characters at the bounds of the returned string are
-                  --  not contained in Left or Right.
-
-                  and then not Ada.Strings.Maps.Is_In (Source (Low), Left)
-                  and then not Ada.Strings.Maps.Is_In (Source (High), Right)
-
-                  --  All characters before Low are contained in Left.
-                  --  All characters after High are contained in Right.
-
-                  and then
-                    (for all K in Source'Range =>
-                       (if K < Low
-                        then
-                          Ada.Strings.Maps.Is_In (Source (K), Left))
-                            and then
-                              (if K > High then
-                               Ada.Strings.Maps.Is_In (Source (K), Right)))))),
+           (declare
+              Low  : constant Positive :=
+                Index (Source, Left, Outside, Forward);
+              High : constant Positive :=
+                Index (Source, Right, Outside, Backward);
+            begin
+              Trim'Result = Source (Low .. High))),
      Global => null;
    --  Returns the string obtained by removing from Source all leading
    --  characters in Left and all trailing characters in Right.

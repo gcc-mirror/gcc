@@ -501,6 +501,7 @@ package Atree is
    --  the contents of these two nodes fixing up the parent pointers of the
    --  replaced node (we do not attempt to preserve parent pointers for the
    --  original node). Neither Old_Node nor New_Node can be extended nodes.
+   --  ??? The above explanation is incorrect, instead Copy_Node is called.
    --
    --  Note: New_Node may not contain references to Old_Node, for example as
    --  descendants, since the rewrite would make such references invalid. If

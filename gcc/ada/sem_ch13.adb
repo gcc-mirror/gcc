@@ -860,6 +860,7 @@ package body Sem_Ch13 is
 
       if Known_Alignment (Typ)
         and then not Has_Alignment_Clause (Typ)
+        and then Present (Size)
         and then Size mod (Alignment (Typ) * SSU) /= 0
       then
          Reinit_Alignment (Typ);
@@ -7125,7 +7126,7 @@ package body Sem_Ch13 is
             else
                Check_Size (Expr, U_Ent, Size, Biased);
 
-               if Size <= 0 then
+               if No (Size) or else Size <= 0 then
                   Error_Msg_N ("Object_Size must be positive", Expr);
 
                elsif Is_Scalar_Type (U_Ent) then
@@ -10103,7 +10104,10 @@ package body Sem_Ch13 is
          --  If the type is private, check whether full view has inherited
          --  predicates.
 
-         if Is_Private_Type (Typ) and then No (Ritem) then
+         if Is_Private_Type (Typ)
+           and then No (Ritem)
+           and then Present (Full_View (Typ))
+         then
             Ritem := First_Rep_Item (Full_View (Typ));
          end if;
 
@@ -10191,6 +10195,9 @@ package body Sem_Ch13 is
         or else
           (Is_Itype (Typ)
            and then not Comes_From_Source (Typ)
+           and then Ekind (Typ) in E_Array_Subtype
+                                 | E_Record_Subtype
+                                 | E_Record_Subtype_With_Private
            and then Present (Predicated_Parent (Typ)))
       then
          return;
@@ -12361,8 +12368,8 @@ package body Sem_Ch13 is
                   end if;
 
                   --  Outer level of record definition, check discriminants
-                  --  but be careful not to flag a non-girder discriminant
-                  --  and the girder discriminant it renames as overlapping.
+                  --  but be careful not to flag a non-stored discriminant
+                  --  and the stored discriminant it renames as overlapping.
 
                   if Nkind (Clist) in N_Full_Type_Declaration
                                     | N_Private_Type_Declaration

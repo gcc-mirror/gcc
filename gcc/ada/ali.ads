@@ -1389,7 +1389,6 @@ package ALI is
    function Scan_ALI
      (F                : File_Name_Type;
       T                : Text_Buffer_Ptr;
-      Ignore_ED        : Boolean;
       Err              : Boolean;
       Ignore_Lines     : String  := "X";
       Ignore_Errors    : Boolean := False;
@@ -1398,11 +1397,6 @@ package ALI is
    --  from the file, and return the Id of the resulting entry in the ALI
    --  table. Switch settings may be modified as described above in the
    --  switch description settings.
-   --
-   --    Ignore_ED is normally False. If set to True, it indicates that
-   --    all AD/ED (elaboration desirable) indications in the ALI file are
-   --    to be ignored. This parameter is obsolete now that the -f switch
-   --    is removed from gnatbind, and should be removed ???
    --
    --    Err determines the action taken on an incorrectly formatted file.
    --    If Err is False, then an error message is output, and the program

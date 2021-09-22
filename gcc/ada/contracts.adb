@@ -3440,7 +3440,7 @@ package body Contracts is
    -- Get_Postcond_Enabled --
    --------------------------
 
-   function Get_Postcond_Enabled (Subp : Entity_Id) return Node_Id is
+   function Get_Postcond_Enabled (Subp : Entity_Id) return Entity_Id is
       Decl : Node_Id;
    begin
       Decl :=
@@ -3465,7 +3465,7 @@ package body Contracts is
    ------------------------------------
 
    function Get_Result_Object_For_Postcond
-     (Subp : Entity_Id) return Node_Id
+     (Subp : Entity_Id) return Entity_Id
    is
       Decl : Node_Id;
    begin
@@ -3490,7 +3490,7 @@ package body Contracts is
    -- Get_Return_Success_For_Postcond --
    -------------------------------------
 
-   function Get_Return_Success_For_Postcond (Subp : Entity_Id) return Node_Id
+   function Get_Return_Success_For_Postcond (Subp : Entity_Id) return Entity_Id
    is
       Decl : Node_Id;
    begin

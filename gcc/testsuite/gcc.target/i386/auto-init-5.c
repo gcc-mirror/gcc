@@ -15,7 +15,5 @@ _Complex long double foo()
   return result;
 }
 
-/* { dg-final { scan-assembler-times "\\.long\t0" 14 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "\\.long\t0" 14 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "\\.long\t0" 12 { target ia32 } } } */
-
-
