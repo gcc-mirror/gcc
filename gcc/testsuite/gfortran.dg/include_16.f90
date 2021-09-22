@@ -1,2 +1,2 @@
-! { dg-additional-options "-cpp -idirafter /fdaf/ -I bar -Wno-missing-include-dirs" }
+! { dg-additional-options "-cpp -idirafter /fdaf/ -I bar -J foo/bar -Wno-missing-include-dirs" }
 end
