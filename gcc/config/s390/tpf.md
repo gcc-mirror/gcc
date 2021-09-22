@@ -21,7 +21,8 @@
   [(unspec_volatile [(match_operand 0 "const_int_operand" "J")
 		     (match_operand 1 "const_int_operand" "J")]
 		    UNSPECV_TPF_PROLOGUE)
-   (clobber (reg:DI 1))]
+   (clobber (reg:DI 1))
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_TPF_PROFILING"
   "larl\t%%r1,.+14\;tm\t%0,255\;bnz\t%1"
   [(set_attr "length"   "14")])
@@ -31,7 +32,8 @@
   [(unspec_volatile [(match_operand 0 "const_int_operand" "J")
 		     (match_operand 1 "const_int_operand" "J")]
 		    UNSPECV_TPF_EPILOGUE)
-   (clobber (reg:DI 1))]
+   (clobber (reg:DI 1))
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_TPF_PROFILING"
   "larl\t%%r1,.+14\;tm\t%0,255\;bnz\t%1"
   [(set_attr "length"   "14")])
