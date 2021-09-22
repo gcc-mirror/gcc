@@ -73,7 +73,7 @@ contains
     type(t4) :: a4
 
     call s1 (a1)  ! OK
-    call s1 (a2)  ! { dg-error "assumed-type dummy" "pr101319" { xfail *-*-* } }
+    call s1 (a2)  ! { dg-error "assumed-type dummy" }
     call s1 (a3)  ! { dg-error "assumed-type dummy" }
     call s1 (a4)  ! { dg-error "assumed-type dummy" }
   end subroutine
