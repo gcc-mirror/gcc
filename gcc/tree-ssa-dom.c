@@ -585,31 +585,137 @@ record_edge_info (basic_block bb)
     }
 }
 
-class dom_jump_threader_simplifier : public jump_threader_simplifier
+class dom_jt_state : public jt_state
 {
 public:
-  dom_jump_threader_simplifier (vr_values *v,
-				avail_exprs_stack *avails)
-    : jump_threader_simplifier (v), m_avail_exprs_stack (avails) { }
+  dom_jt_state (const_and_copies *copies, avail_exprs_stack *avails,
+		evrp_range_analyzer *evrp)
+    : m_copies (copies), m_avails (avails), m_evrp (evrp)
+  {
+  }
+  void push (edge e) override
+  {
+    m_copies->push_marker ();
+    m_avails->push_marker ();
+    m_evrp->push_marker ();
+    jt_state::push (e);
+  }
+  void pop () override
+  {
+    m_copies->pop_to_marker ();
+    m_avails->pop_to_marker ();
+    m_evrp->pop_to_marker ();
+    jt_state::pop ();
+  }
+  void register_equivs_edge (edge e) override
+  {
+    record_temporary_equivalences (e, m_copies, m_avails);
+  }
+  void record_ranges_from_stmt (gimple *stmt, bool temporary) override
+  {
+    m_evrp->record_ranges_from_stmt (stmt, temporary);
+  }
+  void register_equiv (tree dest, tree src, bool update) override;
+private:
+  const_and_copies *m_copies;
+  avail_exprs_stack *m_avails;
+  evrp_range_analyzer *m_evrp;
+};
+
+void
+dom_jt_state::register_equiv (tree dest, tree src, bool update)
+{
+  m_copies->record_const_or_copy (dest, src);
+
+  /* If requested, update the value range associated with DST, using
+     the range from SRC.  */
+  if (update)
+    {
+      /* Get new VR we can pass to push_value_range.  */
+      value_range_equiv *new_vr = m_evrp->allocate_value_range_equiv ();
+      new (new_vr) value_range_equiv ();
+
+      /* There are three cases to consider:
+
+	 First if SRC is an SSA_NAME, then we can copy the value range
+	 from SRC into NEW_VR.
+
+	 Second if SRC is an INTEGER_CST, then we can just set NEW_VR
+	 to a singleton range.  Note that even if SRC is a constant we
+	 need to set a suitable output range so that VR_UNDEFINED
+	 ranges do not leak through.
+
+	 Otherwise set NEW_VR to varying.  This may be overly
+	 conservative.  */
+      if (TREE_CODE (src) == SSA_NAME)
+	new_vr->deep_copy (m_evrp->get_value_range (src));
+      else if (TREE_CODE (src) == INTEGER_CST)
+	new_vr->set (src);
+      else
+	new_vr->set_varying (TREE_TYPE (src));
+
+      /* This is a temporary range for DST, so push it.  */
+      m_evrp->push_value_range (dest, new_vr);
+    }
+}
+
+class dom_jt_simplifier : public jt_simplifier
+{
+public:
+  dom_jt_simplifier (vr_values *v, avail_exprs_stack *avails)
+    : m_vr_values (v), m_avails (avails) { }
 
 private:
   tree simplify (gimple *, gimple *, basic_block, jt_state *) override;
-  avail_exprs_stack *m_avail_exprs_stack;
+  vr_values *m_vr_values;
+  avail_exprs_stack *m_avails;
 };
 
 tree
-dom_jump_threader_simplifier::simplify (gimple *stmt,
-					gimple *within_stmt,
-					basic_block bb,
-					jt_state *state)
+dom_jt_simplifier::simplify (gimple *stmt, gimple *within_stmt,
+			     basic_block, jt_state *)
 {
   /* First see if the conditional is in the hash table.  */
-  tree cached_lhs =  m_avail_exprs_stack->lookup_avail_expr (stmt,
-							     false, true);
+  tree cached_lhs =  m_avails->lookup_avail_expr (stmt, false, true);
   if (cached_lhs)
     return cached_lhs;
 
-  return jump_threader_simplifier::simplify (stmt, within_stmt, bb, state);
+  if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+    {
+      simplify_using_ranges simplifier (m_vr_values);
+      return simplifier.vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+						  gimple_cond_lhs (cond_stmt),
+						  gimple_cond_rhs (cond_stmt),
+						  within_stmt);
+    }
+  if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
+    {
+      tree op = gimple_switch_index (switch_stmt);
+      if (TREE_CODE (op) != SSA_NAME)
+	return NULL_TREE;
+
+      const value_range_equiv *vr = m_vr_values->get_value_range (op);
+      return find_case_label_range (switch_stmt, vr);
+    }
+  if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
+    {
+      tree lhs = gimple_assign_lhs (assign_stmt);
+      if (TREE_CODE (lhs) == SSA_NAME
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	  && stmt_interesting_for_vrp (stmt))
+	{
+	  edge dummy_e;
+	  tree dummy_tree;
+	  value_range_equiv new_vr;
+	  m_vr_values->extract_range_from_stmt (stmt, &dummy_e, &dummy_tree,
+						&new_vr);
+	  tree singleton;
+	  if (new_vr.singleton_p (&singleton))
+	    return singleton;
+	}
+    }
+  return NULL;
 }
 
 class dom_opt_dom_walker : public dom_walker
@@ -752,8 +858,8 @@ pass_dominator::execute (function *fun)
 
   /* Recursively walk the dominator tree optimizing statements.  */
   evrp_range_analyzer analyzer (true);
-  dom_jump_threader_simplifier simplifier (&analyzer, avail_exprs_stack);
-  jt_state state (const_and_copies, avail_exprs_stack, &analyzer);
+  dom_jt_simplifier simplifier (&analyzer, avail_exprs_stack);
+  dom_jt_state state (const_and_copies, avail_exprs_stack, &analyzer);
   jump_threader threader (&simplifier, &state);
   dom_opt_dom_walker walker (CDI_DOMINATORS,
 			     &threader,
