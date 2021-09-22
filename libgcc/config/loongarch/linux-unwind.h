@@ -28,18 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <signal.h>
 #include <sys/syscall.h>
-
-/* The third parameter to the signal handler points to something with
- * this structure defined in asm/ucontext.h, but the name clashes with
- * struct ucontext from sys/ucontext.h so this private copy is used.  */
-typedef struct _sig_ucontext
-{
-  unsigned long uc_flags;
-  struct _sig_ucontext *uc_link;
-  stack_t uc_stack;
-  struct sigcontext uc_mcontext;
-  sigset_t uc_sigmask;
-} _sig_ucontext_t;
+#include <sys/ucontext.h>
 
 #define MD_FALLBACK_FRAME_STATE_FOR loongarch_fallback_frame_state
 
@@ -63,7 +52,7 @@ loongarch_fallback_frame_state (struct _Unwind_Context *context,
 	u_int32_t ass[4]; /* Argument save space for o32.  */
 	u_int32_t trampoline[2];
 	siginfo_t info;
-	_sig_ucontext_t uc;
+	ucontext_t uc;
       } *rt_ = context->cfa;
       sc = &rt_->uc.uc_mcontext;
     }
