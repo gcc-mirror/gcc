@@ -36,39 +36,58 @@ namespace
 {
   using std::string;
 
-  struct generic_error_category : public std::error_category
+  template<typename T>
+    struct constant_init
+    {
+      union {
+	unsigned char unused;
+	T obj;
+      };
+      constexpr constant_init() : obj() { }
+
+      ~constant_init() { /* do nothing, union member is not destroyed */ }
+    };
+
+  struct generic_error_category final : public std::error_category
   {
-    virtual const char*
-    name() const noexcept
+    const char*
+    name() const noexcept final
     { return "generic"; }
 
     _GLIBCXX_DEFAULT_ABI_TAG
-    virtual string
-    message(int i) const
+    string
+    message(int i) const final
     {
       // XXX locale issues: how does one get or set loc.
       // _GLIBCXX_HAVE_STRERROR_L, strerror_l(i, cloc)
       return string(strerror(i));
     }
+
+    // Override this to avoid a virtual call to default_error_condition(i).
+    bool
+    equivalent(int i, const std::error_condition& cond) const noexcept final
+    { return i == cond.value() && *this == cond.category(); }
   };
 
-  struct system_error_category : public std::error_category
+  __constinit constant_init<generic_error_category> generic_category_instance{};
+
+  struct system_error_category final : public std::error_category
   {
-    virtual const char*
-    name() const noexcept
+    const char*
+    name() const noexcept final
     { return "system"; }
 
     _GLIBCXX_DEFAULT_ABI_TAG
-    virtual string
-    message(int i) const
+    string
+    message(int i) const final
     {
       // XXX locale issues: how does one get or set loc.
       // _GLIBCXX_HAVE_STRERROR_L, strerror_l(i, cloc)
       return string(strerror(i));
     }
 
-    virtual std::error_condition
-    default_error_condition(int ev) const noexcept
+    std::error_condition
+    default_error_condition(int ev) const noexcept final
     {
       // Use generic category for all known POSIX errno values (including zero)
       // and system category otherwise.
@@ -79,7 +98,7 @@ namespace
       // They expand to integer constant expressions with type int,
       // and distinct positive values, suitable for use in #if directives.
       // POSIX adds more macros (but they're not defined on all targets,
-      // see config/os/*/error_constants.h), and POSIX allows
+      // see config/os/.../error_constants.h), and POSIX allows
       // EAGAIN == EWOULDBLOCK and ENOTSUP == EOPNOTSUPP.
 
 #ifdef E2BIG
@@ -313,7 +332,7 @@ namespace
       case EXDEV:
 #endif
       case 0:
-        return std::error_condition(ev, std::generic_category());
+	return std::error_condition(ev, generic_category_instance.obj);
 
       /* Additional system-dependent mappings from non-standard error codes
        * to one of the POSIX values above would go here, e.g.
@@ -322,13 +341,17 @@ namespace
        */
 
       default:
-	return std::error_condition(ev, std::system_category());
+	return std::error_condition(ev, *this);
       }
     }
+
+    // Override this to avoid a virtual call to default_error_condition(i).
+    bool
+    equivalent(int i, const std::error_condition& cond) const noexcept final
+    { return system_error_category::default_error_condition(i) == cond; }
   };
 
-  const generic_error_category generic_category_instance{};
-  const system_error_category system_category_instance{};
+  __constinit constant_init<system_error_category> system_category_instance{};
 }
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -338,16 +361,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   __throw_system_error(int __i __attribute__((unused)))
   {
-    _GLIBCXX_THROW_OR_ABORT(system_error(error_code(__i, generic_category())));
+    _GLIBCXX_THROW_OR_ABORT(system_error(__i, generic_category_instance.obj));
   }
 
   error_category::~error_category() = default;
 
   const error_category&
-  _V2::system_category() noexcept { return system_category_instance; }
+  _V2::system_category() noexcept { return system_category_instance.obj; }
 
   const error_category&
-  _V2::generic_category() noexcept { return generic_category_instance; }
+  _V2::generic_category() noexcept { return generic_category_instance.obj; }
 
   system_error::~system_error() = default;
 
