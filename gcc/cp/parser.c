@@ -38337,13 +38337,21 @@ cp_parser_omp_clause_aligned (cp_parser *parser, tree list)
 
 /* OpenMP 5.0:
    allocate ( variable-list )
-   allocate ( expression : variable-list )  */
+   allocate ( expression : variable-list )
+
+   OpenMP 5.1:
+   allocate ( allocator-modifier : variable-list )
+   allocate ( allocator-modifier , allocator-modifier : variable-list )
+
+   allocator-modifier:
+   allocator ( expression )
+   align ( expression )  */
 
 static tree
 cp_parser_omp_clause_allocate (cp_parser *parser, tree list)
 {
-  tree nlist, c, allocator = NULL_TREE;
-  bool colon;
+  tree nlist, c, allocator = NULL_TREE, align = NULL_TREE;
+  bool colon, has_modifiers = false;
 
   matching_parens parens;
   if (!parens.require_open (parser))
@@ -38352,7 +38360,51 @@ cp_parser_omp_clause_allocate (cp_parser *parser, tree list)
   cp_parser_parse_tentatively (parser);
   bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
   parser->colon_corrects_to_scope_p = false;
-  allocator = cp_parser_assignment_expression (parser);
+  for (int mod = 0; mod < 2; mod++)
+    if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	&& cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN))
+      {
+	tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+	const char *p = IDENTIFIER_POINTER (id);
+	if (strcmp (p, "allocator") != 0 && strcmp (p, "align") != 0)
+	  break;
+	cp_lexer_consume_token (parser->lexer);
+	matching_parens parens2;
+	if (!parens2.require_open (parser))
+	  break;
+	if (strcmp (p, "allocator") == 0)
+	  {
+	    if (allocator != NULL_TREE)
+	      break;
+	    allocator = cp_parser_assignment_expression (parser);
+	  }
+	else
+	  {
+	    if (align != NULL_TREE)
+	      break;
+	    align = cp_parser_assignment_expression (parser);
+	  }
+	if (!parens2.require_close (parser))
+	  break;
+	if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+	  {
+	    has_modifiers = true;
+	    break;
+	  }
+	if (mod != 0 || cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
+	  break;
+	cp_lexer_consume_token (parser->lexer);
+      }
+    else
+      break;
+  if (!has_modifiers)
+    {
+      cp_parser_abort_tentative_parse (parser);
+      align = NULL_TREE;
+      allocator = NULL_TREE;
+      cp_parser_parse_tentatively (parser);
+      allocator = cp_parser_assignment_expression (parser);
+    }
   parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
     {
@@ -38360,18 +38412,25 @@ cp_parser_omp_clause_allocate (cp_parser *parser, tree list)
       cp_lexer_consume_token (parser->lexer);
       if (allocator == error_mark_node)
 	allocator = NULL_TREE;
+      if (align == error_mark_node)
+	align = NULL_TREE;
     }
   else
     {
       cp_parser_abort_tentative_parse (parser);
       allocator = NULL_TREE;
+      align = NULL_TREE;
     }
 
   nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_ALLOCATE, list,
 					  &colon);
 
-  for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
-    OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
+  if (allocator || align)
+    for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
+      {
+	OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
+	OMP_CLAUSE_ALLOCATE_ALIGN (c) = align;
+      }
 
   return nlist;
 }
