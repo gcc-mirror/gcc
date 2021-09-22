@@ -7585,7 +7585,44 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      bitmap_set_bit (&aligned_head, DECL_UID (t));
 	      allocate_seen = true;
 	    }
-	  tree allocator;
+	  tree allocator, align;
+	  align = OMP_CLAUSE_ALLOCATE_ALIGN (c);
+	  if (error_operand_p (align))
+	    {
+	      remove = true;
+	      break;
+	    }
+	  if (align)
+	    {
+	      if (!type_dependent_expression_p (align)
+		  && !INTEGRAL_TYPE_P (TREE_TYPE (align)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<allocate%> clause %<align%> modifier "
+			    "argument needs to be positive constant "
+			    "power of two integer expression");
+		  remove = true;
+		}
+	      else
+		{
+		  align = mark_rvalue_use (align);
+		  if (!processing_template_decl)
+		    {
+		      align = maybe_constant_value (align);
+		      if (TREE_CODE (align) != INTEGER_CST
+			  || !tree_fits_uhwi_p (align)
+			  || !integer_pow2p (align))
+			{
+			  error_at (OMP_CLAUSE_LOCATION (c),
+				    "%<allocate%> clause %<align%> modifier "
+				    "argument needs to be positive constant "
+				    "power of two integer expression");
+			  remove = true;
+			}
+		    }
+		}
+	      OMP_CLAUSE_ALLOCATE_ALIGN (c) = align;
+	    }
 	  allocator = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
 	  if (error_operand_p (allocator))
 	    {
@@ -7610,6 +7647,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"type %qT rather than %<omp_allocator_handle_t%>",
 			TREE_TYPE (allocator));
 	      remove = true;
+	      break;
 	    }
 	  else
 	    {

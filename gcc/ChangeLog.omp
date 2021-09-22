@@ -1,3 +1,20 @@
+2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_ALLOCATE_ALIGN): Define.
+	* tree.c (omp_clause_num_ops): Change number of OMP_CLAUSE_ALLOCATE
+	arguments from 2 to 3.
+	* tree-pretty-print.c (dump_omp_clause): Print allocator() around
+	allocate clause allocator and print align if present.
+	* omp-low.c (scan_sharing_clauses): Force allocate_map entry even
+	for omp_default_mem_alloc if align modifier is present.  If align
+	modifier is present, use TREE_LIST to encode both allocator and
+	align.
+	(lower_private_allocate, lower_rec_input_clauses, create_task_copyfn):
+	Handle align modifier on allocator clause if present.
+
 2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

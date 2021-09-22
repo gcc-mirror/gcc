@@ -2656,6 +2656,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		    = OMP_CLAUSE_DECL (clauses);
 		  OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
 		    = OMP_CLAUSE_ALLOCATE_ALLOCATOR (clauses);
+		  OMP_CLAUSE_ALLOCATE_ALIGN (c)
+		    = OMP_CLAUSE_ALLOCATE_ALIGN (clauses);
 		  OMP_CLAUSE_CHAIN (c) = cclauses[s];
 		  cclauses[s] = c;
 		  has_dup_allocate = true;

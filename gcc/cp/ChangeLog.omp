@@ -1,3 +1,15 @@
+2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_allocate): Parse allocate clause
+	modifiers.
+	* semantics.c (finish_omp_clauses) <OMP_CLAUSE_ALLOCATE>: Perform
+	semantic analysis of OMP_CLAUSE_ALLOCATE_ALIGN.
+	* pt.c (tsubst_omp_clauses) <case OMP_CLAUSE_ALLOCATE>: Handle
+	also OMP_CLAUSE_ALLOCATE_ALIGN.
+
 2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
