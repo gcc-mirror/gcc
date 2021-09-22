@@ -650,7 +650,9 @@ fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 		    src.register_relation (s, rel, lhs, op2);
 		}
 	    }
-	  else if (is_a<gcond *> (s))
+	  // Check for an existing BB, as we maybe asked to fold an
+	  // artificial statement not in the CFG.
+	  else if (is_a<gcond *> (s) && gimple_bb (s))
 	    {
 	      basic_block bb = gimple_bb (s);
 	      edge e0 = EDGE_SUCC (bb, 0);
@@ -1403,10 +1405,6 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge 
   tree name;
   range_operator *handler;
   basic_block bb = gimple_bb (s);
-
-  // We may get asked to fold an artificial statement not in the CFG.
-  if (!bb)
-    return;
 
   if (e0)
     {
