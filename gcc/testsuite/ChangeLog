@@ -1,3 +1,20 @@
+2021-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85130
+	* gfortran.dg/substr_6.f90: Revert commit r8-7574, adding again
+	test that was erroneously considered as illegal.
+
+2021-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102287
+	* gfortran.dg/intent_out_14.f90: New test.
+
 2021-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20210917-1.c: New test.
