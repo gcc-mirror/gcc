@@ -34,15 +34,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "gimple-range.h"
-#include "domwalk.h"
 
-gimple_ranger::gimple_ranger () : tracer ("")
+gimple_ranger::gimple_ranger () :
+	non_executable_edge_flag (cfun),
+	m_cache (non_executable_edge_flag),
+	tracer ("")
 {
   // If the cache has a relation oracle, use it.
   m_oracle = m_cache.oracle ();
   if (dump_file && (param_evrp_mode & EVRP_MODE_TRACE))
     tracer.enable_trace ();
-  set_all_edges_as_executable (cfun);
+
+  // Ensure the not_executable flag is clear everywhere.
+  if (flag_checking)
+    {
+      basic_block bb;
+      FOR_ALL_BB_FN (bb, cfun)
+	{
+	  edge_iterator ei;
+	  edge e;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    gcc_checking_assert ((e->flags & non_executable_edge_flag) == 0);
+	}
+    }
 }
 
 bool
@@ -174,7 +188,7 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
     }
 
   // Check to see if the edge is executable.
-  if ((e->flags & EDGE_EXECUTABLE) == 0)
+  if ((e->flags & non_executable_edge_flag))
     {
       r.set_undefined ();
       if (idx)

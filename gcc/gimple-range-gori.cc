@@ -634,8 +634,9 @@ debug (gori_map &g)
 
 // Construct a gori_compute object.
 
-gori_compute::gori_compute () : tracer ("GORI ")
+gori_compute::gori_compute (int not_executable_flag) : tracer ("GORI ")
 {
+  m_not_executable_flag = not_executable_flag;
   // Create a boolean_type true and false range.
   m_bool_zero = int_range<2> (boolean_false_node, boolean_false_node);
   m_bool_one = int_range<2> (boolean_true_node, boolean_true_node);
@@ -1214,7 +1215,7 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
   int_range_max lhs;
   unsigned idx;
 
-  if ((e->flags & EDGE_EXECUTABLE) == 0)
+  if ((e->flags & m_not_executable_flag))
     {
       r.set_undefined ();
       if (dump_file && (dump_flags & TDF_DETAILS))

@@ -121,7 +121,7 @@ public:
   rvrp_folder () : substitute_and_fold_engine (), m_simplifier ()
   {
     m_ranger = enable_ranger (cfun);
-    m_simplifier.set_range_query (m_ranger);
+    m_simplifier.set_range_query (m_ranger, m_ranger->non_executable_edge_flag);
     m_pta = new pointer_equiv_analyzer (m_ranger);
   }
       
@@ -205,12 +205,16 @@ public:
     if (evrp_first)
       {
 	first = &m_range_analyzer;
+	first_exec_flag = 0;
 	second = m_ranger;
+	second_exec_flag = m_ranger->non_executable_edge_flag;
       }
      else
       {
 	first = m_ranger;
+	first_exec_flag = m_ranger->non_executable_edge_flag;
 	second = &m_range_analyzer;
+	second_exec_flag = 0;
       }
     m_pta = new pointer_equiv_analyzer (m_ranger);
   }
@@ -227,11 +231,11 @@ public:
 
   bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
     {
-      simplifier.set_range_query (first);
+      simplifier.set_range_query (first, first_exec_flag);
       if (simplifier.simplify (gsi))
 	return true;
 
-      simplifier.set_range_query (second);
+      simplifier.set_range_query (second, second_exec_flag);
       if (simplifier.simplify (gsi))
 	{
 	  if (dump_file)
@@ -267,7 +271,9 @@ private:
   DISABLE_COPY_AND_ASSIGN (hybrid_folder);
   gimple_ranger *m_ranger;
   range_query *first;
+  int first_exec_flag;
   range_query *second;
+  int second_exec_flag;
   pointer_equiv_analyzer *m_pta;
   tree choose_value (tree evrp_val, tree ranger_val);
 };

@@ -147,12 +147,16 @@ private:
 // expr_range_in_bb is simply a wrapper which calls ssa_range_in_bb for 
 // SSA_NAMES and otherwise simply calculates the range of the expression.
 //
+// The constructor takes a flag value to use on edges to check for the
+// NON_EXECUTABLE_EDGE property.  The zero default means no flag is checked.
+// All value requests from NON_EXECUTABLE_EDGE edges are returned UNDEFINED.
+//
 // The remaining routines are internal use only.
 
 class gori_compute : public gori_map
 {
 public:
-  gori_compute ();
+  gori_compute (int not_executable_flag = 0);
   bool outgoing_edge_range_p (irange &r, edge e, tree name, range_query &q);
   bool has_edge_range_p (tree name, edge e = NULL);
   void dump (FILE *f);
@@ -181,6 +185,7 @@ private:
 
   gimple_outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
   range_tracer tracer;
+  int m_not_executable_flag;
 };
 
 // These routines provide a GIMPLE interface to the range-ops code.
