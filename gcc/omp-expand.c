@@ -8483,10 +8483,16 @@ expand_omp_single (struct omp_region *region)
   exit_bb = region->exit;
 
   si = gsi_last_nondebug_bb (entry_bb);
-  gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_SINGLE
-	      || gimple_code (gsi_stmt (si)) == GIMPLE_OMP_SCOPE);
+  enum gimple_code code = gimple_code (gsi_stmt (si));
+  gcc_assert (code == GIMPLE_OMP_SINGLE || code == GIMPLE_OMP_SCOPE);
   gsi_remove (&si, true);
   single_succ_edge (entry_bb)->flags = EDGE_FALLTHRU;
+
+  if (exit_bb == NULL)
+    {
+      gcc_assert (code == GIMPLE_OMP_SCOPE);
+      return;
+    }
 
   si = gsi_last_nondebug_bb (exit_bb);
   if (!gimple_omp_return_nowait_p (gsi_stmt (si)))
