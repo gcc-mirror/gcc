@@ -163,10 +163,6 @@ path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
   if (m_resolve && defined_outside_path (name))
     {
       range_on_path_entry (r, name);
-
-      if (r.varying_p ())
-	improve_range_with_equivs (r, name);
-
       set_cache (r, name);
       return true;
     }
@@ -178,7 +174,7 @@ path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
 	r.intersect (gimple_range_global (name));
 
       if (m_resolve && r.varying_p ())
-	improve_range_with_equivs (r, name);
+	range_on_path_entry (r, name);
 
       set_cache (r, name);
       return true;
@@ -199,33 +195,6 @@ path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
       return true;
     }
   return false;
-}
-
-// Improve the range of NAME with the range of any of its equivalences.
-
-void
-path_range_query::improve_range_with_equivs (irange &r, tree name)
-{
-  if (TREE_CODE (name) != SSA_NAME)
-    return;
-
-  basic_block entry = entry_bb ();
-  relation_oracle *oracle = m_ranger.oracle ();
-
-  if (const bitmap_head *equivs = oracle->equiv_set (name, entry))
-    {
-      int_range_max t;
-      bitmap_iterator bi;
-      unsigned i;
-
-      EXECUTE_IF_SET_IN_BITMAP (equivs, 0, i, bi)
-	if (i != SSA_NAME_VERSION (name) && r.varying_p ())
-	  {
-	    tree equiv = ssa_name (i);
-	    range_on_path_entry (t, equiv);
-	    r.intersect (t);
-	  }
-    }
 }
 
 bool
