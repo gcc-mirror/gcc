@@ -7117,7 +7117,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    break;
 	  }
 
-	if (!processing_template_decl
+	if (!value_dependent_expression_p (t)
 	    && !uid_sensitive_constexpr_evaluation_p ())
 	  r = evaluate_concept_check (t);
 	else

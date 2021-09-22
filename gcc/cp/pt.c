@@ -27247,7 +27247,8 @@ value_dependent_expression_p (tree expression)
       }
 
     case TEMPLATE_ID_EXPR:
-      return concept_definition_p (TREE_OPERAND (expression, 0));
+      return concept_definition_p (TREE_OPERAND (expression, 0))
+	&& any_dependent_template_arguments_p (TREE_OPERAND (expression, 1));
 
     case CONSTRUCTOR:
       {
@@ -27653,18 +27654,6 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
       /* Treat requires-expressions as dependent. */
     case REQUIRES_EXPR:
       return *tp;
-
-    case CALL_EXPR:
-      /* Treat concept checks as dependent. */
-      if (concept_check_p (*tp))
-        return *tp;
-      break;
-
-    case TEMPLATE_ID_EXPR:
-      /* Treat concept checks as dependent.  */
-      if (concept_check_p (*tp))
-	return *tp;
-      break;
 
     case CONSTRUCTOR:
       if (CONSTRUCTOR_IS_DEPENDENT (*tp))
