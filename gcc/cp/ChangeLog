@@ -1,3 +1,8 @@
+2021-09-21  wangpc  <pc.wang@linux.alibaba.com>
+
+	* decl.c (start_decl_1): Move verify_type_context to ...
+	(cp_finish_decl): ... to here.
+
 2021-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_order): Parse unconstrained

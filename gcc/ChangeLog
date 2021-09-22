@@ -1,3 +1,97 @@
+2021-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::defined_outside_path):
+	New.
+	(path_range_query::range_on_path_entry): New.
+	(path_range_query::internal_range_of_expr): Resolve unknowns
+	with ranger.
+	(path_range_query::improve_range_with_equivs): New.
+	(path_range_query::ssa_range_in_phi): Resolve unknowns with
+	ranger.
+	* gimple-range-path.h (class path_range_query): Add
+	defined_outside_path, range_on_path_entry, and
+	improve_range_with_equivs.
+
+2021-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::add_to_imports): New.
+	(path_range_query::add_copies_to_imports): New.
+	(path_range_query::precompute_ranges): Call
+	add_copies_to_imports.
+	* gimple-range-path.h (class path_range_query): Add prototypes
+	for add_copies_to_imports and add_to_imports.
+
+2021-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::range_defined_in_block):
+	Remove useless code.
+
+2021-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.h (class fur_source): Make oracle protected.
+	* gimple-range-path.cc (path_range_query::path_range_query): Add
+	resolve argument.  Initialize oracle.
+	(path_range_query::~path_range_query): Delete oracle.
+	(path_range_query::range_of_stmt): Adapt to use relations.
+	(path_range_query::precompute_ranges): Pre-compute relations.
+	(class jt_fur_source): New
+	(jt_fur_source::jt_fur_source): New.
+	(jt_fur_source::register_relation): New.
+	(jt_fur_source::query_relation): New.
+	(path_range_query::precompute_relations): New.
+	(path_range_query::precompute_phi_relations): New.
+	* gimple-range-path.h (path_range_query): Add resolve argument.
+	Add oracle, precompute_relations, precompute_phi_relations.
+	* tree-ssa-threadbackward.c (back_threader::back_threader): Pass
+	resolve argument to solver.
+
+2021-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op):
+	Rename postfold_gcond_edges to register_outgoing_edges and
+	adapt.
+	(fold_using_range::postfold_gcond_edges): Rename...
+	(fur_source::register_outgoing_edges): ...to this.
+	* gimple-range-fold.h (postfold_gcond_edges): Rename to
+	register_outgoing_edges and move to fur_source.
+
+2021-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Check
+	dom_info_available_p.
+
+2021-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (non_null_ref::non_null_ref): Use create
+	and quick_grow_cleared instead of safe_grow_cleared.
+
+2021-09-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/102408
+	* omp-oacc-neuter-broadcast.cc (oacc_do_neutering): Evaluate
+	'random ()' to '0'.
+
+2021-09-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* configure.ac: Detect when the assembler supports new-style
+	architecture extensions.
+	* common/config/arm/arm-common.c (arm_rewrite_mcpu): Return
+	the full CPU string if the assembler can grok it.
+	(arm_rewrite_march): Likewise but for the architecture.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2021-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102421
+	* tree-vect-loop.c (vect_dissolve_slp_only_groups): Copy and
+	adjust alignment info.
+
+2021-09-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* ipa-fnsummary.c (ipa_fn_summary_write): Remove inconsistent
+	bitfield stream out.
+
 2021-09-20  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-fold.cc (fold_using_range::range_of_phi): Ignore
