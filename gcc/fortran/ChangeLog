@@ -1,3 +1,13 @@
+2021-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102366
+	* trans-decl.c (gfc_finish_var_decl): Disable the warning message
+	for variables moved from stack to static storange if they are
+	declared in the main, but allow the move to happen.
+
 2021-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.c (gfc_split_omp_clauses): Don't put 'order(concurrent)'
