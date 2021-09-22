@@ -2292,8 +2292,11 @@ package body Exp_Ch6 is
                null;
 
             elsif Is_Build_In_Place_Function_Call (Actual) then
-               Build_Activation_Chain_Entity (N);
-               Build_Master_Entity (Etype (Actual));
+               if Might_Have_Tasks (Etype (Actual)) then
+                  Build_Activation_Chain_Entity (N);
+                  Build_Master_Entity (Etype (Actual));
+               end if;
+
                Make_Build_In_Place_Call_In_Anonymous_Context (Actual);
 
             --  Ada 2005 (AI-318-02): Specialization of the previous case for
