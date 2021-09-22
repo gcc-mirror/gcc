@@ -6414,6 +6414,15 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
   if (bitsize + bitpos > GET_MODE_BITSIZE (mode))
     return false;
 
+  /* Just a move.  */
+  if (bitpos == 0
+      && bitsize == GET_MODE_BITSIZE (GET_MODE (src))
+      && mode == GET_MODE (src))
+    {
+      emit_move_insn (dest, src);
+      return true;
+    }
+
   /* Generate INSERT IMMEDIATE (IILL et al).  */
   /* (set (ze (reg)) (const_int)).  */
   if (TARGET_ZARCH
@@ -6510,6 +6519,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
       && (bitpos & 32) == ((bitpos + bitsize - 1) & 32)
       && MEM_P (src)
       && (mode == DImode || mode == SImode)
+      && mode != smode
       && register_operand (dest, mode))
     {
       /* Emit a strict_low_part pattern if possible.  */
