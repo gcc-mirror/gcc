@@ -165,8 +165,7 @@ package body Exp_Attr is
    --  the appropriate instantiation of System.Fat_Gen. Float arguments in Args
    --  have already been converted to the floating-point type for which Pkg was
    --  instantiated. The Nam argument is the relevant attribute processing
-   --  routine to be called. This is the same as the attribute name, except in
-   --  the Unaligned_Valid case.
+   --  routine to be called. This is the same as the attribute name.
 
    procedure Expand_Fpt_Attribute_R (N : Node_Id);
    --  This procedure expands a call to a floating-point attribute function

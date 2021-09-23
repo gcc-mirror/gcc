@@ -1400,7 +1400,6 @@ package Snames is
    --  Note that the UP_ prefix means use the rest of the name in uppercase,
    --  e.g. Name_UP_RESULT corresponds to the name "RESULT".
 
-   Name_Unaligned_Valid                  : constant Name_Id := N + $;
    Name_UP_RESULT                        : constant Name_Id := N + $;
    Name_Suspension_Object                : constant Name_Id := N + $;
    Name_Synchronous_Task_Control         : constant Name_Id := N + $;
