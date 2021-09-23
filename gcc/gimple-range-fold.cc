@@ -1358,6 +1358,10 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
   range_operator *handler1 = gimple_range_handler (SSA_NAME_DEF_STMT (ssa1));
   range_operator *handler2 = gimple_range_handler (SSA_NAME_DEF_STMT (ssa2));
 
+  // If either handler is not present, no relation is found.
+  if (!handler1 || !handler2)
+    return;
+
   int_range<2> bool_one (boolean_true_node, boolean_true_node);
 
   relation_kind relation1 = handler1->op1_op2_relation (bool_one);
