@@ -1,6 +1,14 @@
 2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
+	2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/101319
+	* gfortran.dg/c-interop/assumed-type-dummy.f90: Remove xfail.
+
+2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
 	2021-09-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR fortran/101334

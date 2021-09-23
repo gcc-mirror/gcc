@@ -1,6 +1,16 @@
 2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
+	2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/101319
+	* interface.c (gfc_compare_actual_formal): Extend existing
+	assumed-type diagnostic to also check for argument with type
+	parameters.
+
+2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
 	2021-09-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR fortran/101334
