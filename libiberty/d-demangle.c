@@ -381,7 +381,7 @@ dlang_symbol_backref (string *decl, const char *mangled,
 
   /* Must point to a simple identifier.  */
   backref = dlang_number (backref, &len);
-  if (backref == NULL)
+  if (backref == NULL || strlen(backref) < len)
     return NULL;
 
   backref = dlang_lname (decl, backref, len);
