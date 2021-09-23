@@ -2,6 +2,23 @@
 
 ! { dg-do run }
 
+! { dg-additional-options "-fopt-info-note-omp" }
+! { dg-additional-options "--param=openacc-privatization=noisy" }
+! { dg-additional-options "-foffload=-fopt-info-note-omp" }
+! { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
+! for testing/documenting aspects of that functionality.
+
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
+! It's only with Tcl 8.5 (released in 2007) that "the variable 'varName'
+! passed to 'incr' may be unset, and in that case, it will be set to [...]",
+! so to maintain compatibility with earlier Tcl releases, we manually
+! initialize counter variables:
+! { dg-line l_dummy[variable c_loop 0] }
+! { dg-message "dummy" "" { target iN-VAl-Id } l_dummy } to avoid
+! "WARNING: dg-line var l_dummy defined, but not used".
+
 
 ! Test of gang-private variables declared on loop directive.
 
@@ -13,7 +30,11 @@ subroutine t1()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang private(x)
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 }
+  !$acc loop gang private(x) ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+  ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 1, 32
      x = i * 2;
      arr(i) = arr(i) + x
@@ -37,11 +58,15 @@ subroutine t2()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang private(x)
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-1 }
+  !$acc loop gang private(x) ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+  ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
      x = i * 2;
 
-     !$acc loop worker
+     !$acc loop worker ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
         arr(i * 32 + j) = arr(i * 32 + j) + x
      end do
@@ -65,11 +90,15 @@ subroutine t3()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang private(x)
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
+  !$acc loop gang private(x) ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+  ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
      x = i * 2;
 
-     !$acc loop vector
+     !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
         arr(i * 32 + j) = arr(i * 32 + j) + x
      end do
@@ -98,14 +127,27 @@ subroutine t4()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang private(pt)
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
+  !$acc loop gang private(pt) ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+  ! { dg-note {variable 'pt' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
+  ! But, with optimizations enabled, per the '*.ssa' dump ('gcc/tree-ssa.c:execute_update_addresses_taken'):
+  !     No longer having address taken: pt
+  ! However, 'pt' remains in the candidate set:
+  ! { dg-note {variable 'pt' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } l_loop$c_loop }
+  ! Now, for GCN offloading, 'adjust_private_decl' does the privatization change right away:
+  ! { dg-note {variable 'pt' adjusted for OpenACC privatization level: 'gang'} "" { target openacc_radeon_accel_selected } l_loop$c_loop }
+  ! For nvptx offloading however, we first mark up 'pt', and then later apply the privatization change -- or, with optimizations enabled, don't, because we then don't actually call 'expand_var_decl'.
+  ! { dg-note {variable 'pt' adjusted for OpenACC privatization level: 'gang'} "" { target { openacc_nvidia_accel_selected && { ! __OPTIMIZE__ } } } l_loop$c_loop }
+  ! { dg-bogus {note: variable 'pt' adjusted for OpenACC privatization level: 'gang'} "" { target { openacc_nvidia_accel_selected && __OPTIMIZE__ } } l_loop$c_loop }
   do i = 0, 31
      pt%x = i
      pt%y = i * 2
      pt%z = i * 4
      pt%attr(5) = i * 6
 
-     !$acc loop vector
+     !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
         arr(i * 32 + j) = arr(i * 32 + j) + pt%x + pt%y + pt%z + pt%attr(5);
      end do
@@ -128,16 +170,22 @@ subroutine t5()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang
+  !$acc loop gang ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
-     !$acc loop worker
+     !$acc loop worker ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
-        !$acc loop vector private(x)
+        !$acc loop vector private(x) ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+        ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            x = ieor(i, j * 3)
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + x * k
         end do
-        !$acc loop vector private(x)
+        !$acc loop vector private(x) ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+        ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            x = ior(i, j * 5)
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + x * k
@@ -169,11 +217,18 @@ subroutine t6()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang
+  !$acc loop gang ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
-     !$acc loop worker
+     !$acc loop worker ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
-        !$acc loop vector private(x, pt)
+        !$acc loop vector private(x, pt) ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+        ! { dg-bogus {note: variable 'x' in 'private' clause} "" { target *-*-* } l_loop$c_loop }
+        ! { dg-note {variable 'pt' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
+        ! { dg-note {variable 'pt' ought to be adjusted for OpenACC privatization level: 'vector'} "" { target *-*-* } l_loop$c_loop }
+        ! { dg-note {variable 'pt' adjusted for OpenACC privatization level: 'vector'} "" { target { ! openacc_host_selected } } l_loop$c_loop }
         do k = 0, 31
            pt(1) = ieor(i, j * 3)
            pt(2) = ior(i, j * 5)
@@ -208,9 +263,14 @@ subroutine t7()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang private(x)
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-1 }
+  !$acc loop gang private(x) ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+  ! { dg-bogus {note: variable 'x' in 'private' clause} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
-     !$acc loop worker private(x)
+     !$acc loop worker private(x) ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
         x = ieor(i, j * 3)
         arr(i * 32 + j) = arr(i * 32 + j) + x
@@ -235,13 +295,17 @@ subroutine t8()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang
+  !$acc loop gang ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
-     !$acc loop worker private(x)
+     !$acc loop worker private(x) ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
         x = ieor(i, j * 3)
 
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + x * k
         end do
@@ -271,23 +335,30 @@ subroutine t9()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang
+  !$acc loop gang ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
-     !$acc loop worker private(x)
+     !$acc loop worker private(x) ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
         x = ieor(i, j * 3)
 
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + x * k
         end do
      end do
 
-     !$acc loop worker private(x)
+     !$acc loop worker private(x) ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
         x = ior(i, j * 5)
 
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + x * k
         end do
@@ -319,20 +390,25 @@ subroutine t10()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang
+  !$acc loop gang ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
-     !$acc loop worker private(x)
+     !$acc loop worker private(x) ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
         x = ieor(i, j * 3)
 
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + x * k
         end do
 
         x = ior(i, j * 5)
 
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + x * k
         end do
@@ -366,21 +442,29 @@ subroutine t11()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang
+  !$acc loop gang ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
-     !$acc loop worker private(x, p)
+     !$acc loop worker private(x, p) ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'x' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'x' ought to be adjusted for OpenACC privatization level: 'worker'} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'x' adjusted for OpenACC privatization level: 'worker'} "TODO" { target { ! openacc_host_selected } xfail *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'p' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
         p => x
         x = ieor(i, j * 3)
 
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + x * k
         end do
 
         p = ior(i, j * 5)
 
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + x * k
         end do
@@ -417,19 +501,24 @@ subroutine t12()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang
+  !$acc loop gang ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
-     !$acc loop worker private(pt)
+     !$acc loop worker private(pt) ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'pt' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
      do j = 0, 31
         pt%x = ieor(i, j * 3)
         pt%y = ior(i, j * 5)
         
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + pt%x * k
         end do
 
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + pt%y * k
         end do
@@ -461,19 +550,26 @@ subroutine t13()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  !$acc loop gang
+  !$acc loop gang ! { dg-line l_loop[incr c_loop] }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
   do i = 0, 31
-     !$acc loop worker private(pt)
+     !$acc loop worker private(pt) ! { dg-line l_loop[incr c_loop] }
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'pt' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'pt' ought to be adjusted for OpenACC privatization level: 'worker'} "" { target *-*-* } l_loop$c_loop }
+     ! { dg-note {variable 'pt' adjusted for OpenACC privatization level: 'worker'} "TODO" { target { ! openacc_host_selected } xfail *-*-* } l_loop$c_loop } */
      do j = 0, 31
         pt(1) = ieor(i, j * 3)
         pt(2) = ior(i, j * 5)
         
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + pt(1) * k
         end do
 
-        !$acc loop vector
+        !$acc loop vector ! { dg-line l_loop[incr c_loop] }
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + pt(2) * k
         end do
@@ -507,13 +603,19 @@ subroutine t14()
   end do
 
   !$acc parallel private(x) copy(arr) num_gangs(n) num_workers(8) vector_length(32)
-    !$acc loop gang(static:1)
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 }
+    !$acc loop gang(static:1) ! { dg-line l_loop[incr c_loop] }
+    ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     do i = 1, n
       x = i * 2;
     end do
 
-   !$acc loop gang(static:1)
+   !$acc loop gang(static:1) ! { dg-line l_loop[incr c_loop] }
+    ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     do i = 1, n
+       ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { target *-*-* } l_loop$c_loop }
+       !TODO Unhandled 'CONST_DECL' instance for constant argument in 'acc_on_device' call.
       if (acc_on_device (acc_device_host) .eqv. .TRUE.) x = i * 2
       arr(i) = arr(i) + x
     end do

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2018-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2018-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ package body Repinfo.Input is
    --  Value for Storage_Unit
 
    type JSON_Entity_Kind is (JE_Record_Type, JE_Array_Type, JE_Other);
-   --  Kind of an entiy
+   --  Kind of an entity
 
    type JSON_Entity_Node (Kind : JSON_Entity_Kind := JE_Other) is record
       Esize   : Node_Ref_Or_Val;
@@ -215,7 +215,7 @@ package body Repinfo.Input is
          J_COMMA,
          J_COLON,
          J_EOF);
-      --  JSON Token kind. Note that in ECMA 404 there is no notion of integer.
+      --  JSON token kind. Note that in ECMA 404 there is no notion of integer.
       --  Only numbers are supported. In our implementation we return J_INTEGER
       --  if there is no decimal part in the number. The semantic is that this
       --  is a J_NUMBER token that might be represented as an integer. Special
@@ -1219,7 +1219,7 @@ package body Repinfo.Input is
          Var         : JSON_Variant_Node;
 
       begin
-         --  Read a non-empty array of components
+         --  Read a nonempty array of components
 
          Read_Token_And_Error (J_ARRAY, Token_Start, Token_End);
 

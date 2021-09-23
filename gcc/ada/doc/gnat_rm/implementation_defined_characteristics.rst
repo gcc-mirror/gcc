@@ -129,20 +129,29 @@ There are no nonstandard real types.
   "What combinations of requested decimal precision and range
   are supported for floating point types.  See 3.5.7(7)."
 
-The precision and range is as defined by the IEEE standard.
+The precision and range are defined by the IEEE Standard for Floating-Point
+Arithmetic (IEEE 754-2019).
 
 *
   "The predefined floating point types declared in
   ``Standard``.  See 3.5.7(16)."
 
-====================== ====================================================
+====================== ===============================================
 Type                   Representation
-====================== ====================================================
-*Short_Float*          32 bit IEEE short
-*Float*                (Short) 32 bit IEEE short
-*Long_Float*           64 bit IEEE long
-*Long_Long_Float*      64 bit IEEE long (80 bit IEEE long on x86 processors)
-====================== ====================================================
+====================== ===============================================
+*Short_Float*          IEEE Binary32 (Single)
+*Float*                IEEE Binary32 (Single)
+*Long_Float*           IEEE Binary64 (Double)
+*Long_Long_Float*      IEEE Binary64 (Double) on non-x86 architectures
+                       IEEE 80-bit Extended on x86 architecture
+====================== ===============================================
+
+The default rounding mode specified by the IEEE 754 Standard is assumed for
+static computations, i.e. round to nearest, ties to even. The input routines
+yield correctly rounded values for Short_Float, Float and Long_Float at least.
+The output routines can compute up to twice as many exact digits as the value
+of ``T'Digits`` for any type, for example 30 digits for Long_Float; if more
+digits are requested, zeros are printed.
 
 *
   "The small of an ordinary fixed point type.  See 3.5.9(8)."

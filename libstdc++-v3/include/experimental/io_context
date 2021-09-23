@@ -475,6 +475,9 @@ inline namespace v1
 	return 0;
       }
 
+    // The caller must know what the wait-type __w will be interpreted.
+    // In the current implementation the reactor is based on <poll.h>
+    // so the parameter must be one of POLLIN, POLLOUT or POLLERR.
     template<typename _Op>
       void
       async_wait(int __fd, int __w, _Op&& __op)
@@ -713,6 +716,7 @@ inline namespace v1
 
     struct __reactor
     {
+#ifdef _GLIBCXX_HAVE_POLL_H
       __reactor() : _M_fds(1)
       {
 	int __pipe[2];
@@ -736,6 +740,7 @@ inline namespace v1
 	::close(_M_fds.back().fd);
 	::close(_M_notify_wr);
       }
+#endif
 
       // write a notification byte to the pipe (ignoring errors)
       void _M_notify()
@@ -796,8 +801,12 @@ inline namespace v1
 	_M_notify();
       }
 
-# ifdef _GLIBCXX_HAVE_POLL_H
+#ifdef _GLIBCXX_HAVE_POLL_H
       using __fdvec = vector<::pollfd>;
+#else
+      struct dummy_pollfd { int fd = -1; short events = 0, revents = 0; };
+      using __fdvec = vector<dummy_pollfd>;
+#endif
 
       // Find first element p such that !(p.fd < __fd)
       // N.B. always returns a dereferencable iterator.
@@ -813,6 +822,7 @@ inline namespace v1
       __status
       wait(__fdvec& __fds, chrono::milliseconds __timeout)
       {
+#ifdef _GLIBCXX_HAVE_POLL_H
 	// XXX not thread-safe!
 	__fds = _M_fds;  // take snapshot to pass to poll()
 
@@ -842,10 +852,14 @@ inline namespace v1
 	__fds.erase(__part, __fds.end());
 
 	return _S_ok;
+#else
+	(void) __timeout;
+	__fds.clear();
+	return _S_error;
+#endif
       }
 
       __fdvec _M_fds;	// _M_fds.back() is the read end of the self-pipe
-#endif
       int _M_notify_wr;	// write end of the self-pipe
     };
 

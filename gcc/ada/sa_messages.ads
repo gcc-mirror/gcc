@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                       C O D E P E E R / S P A R K                        --
 --                                                                          --
---                     Copyright (C) 2015-2020, AdaCore                     --
+--                     Copyright (C) 2015-2021, AdaCore                     --
 --                                                                          --
 -- This is free software;  you can redistribute it  and/or modify it  under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -96,7 +96,7 @@ package SA_Messages is
    --  Contract_Cases, Default_Initial_Condition, Initial_Condition,
    --  Loop_Invariant, Loop_Variant, Refined_Post, and Subprogram_Variant.
    --
-   --  TBD: it might be nice to distinguish these different kinds of assertions
+   --  It might be nice to distinguish these different kinds of assertions
    --  as is done in SPARK's VC_Kind enumeration type, but any distinction
    --  which isn't already present in CP's BE_Message_Subkind enumeration type
    --  would require more work on the CP side.

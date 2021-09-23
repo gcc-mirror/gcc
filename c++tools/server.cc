@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <csignal>
 #include <cstring>
 #include <cstdarg>
+#include <cstdlib>
 // OS
 #include <unistd.h>
 #include <sys/types.h>
@@ -58,6 +59,10 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #ifndef HAVE_AF_INET6
 # define gai_strerror(X) ""
+#endif
+
+#ifndef AI_NUMERICSERV
+#define AI_NUMERICSERV 0
 #endif
 
 #include <getopt.h>
@@ -90,6 +95,28 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
 #endif
+
+/* Imported from libcpp/system.h
+   Use gcc_assert(EXPR) to test invariants.  */
+#if ENABLE_ASSERT_CHECKING
+#define gcc_assert(EXPR)                                                \
+   ((void)(!(EXPR) ? fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0 : 0))
+#elif (GCC_VERSION >= 4005)
+#define gcc_assert(EXPR)                                                \
+  ((void)(__builtin_expect (!(EXPR), 0) ? __builtin_unreachable (), 0 : 0))
+#else
+/* Include EXPR, so that unused variable warnings do not occur.  */
+#define gcc_assert(EXPR) ((void)(0 && (EXPR)))
+#endif
+
+/* Use gcc_unreachable() to mark unreachable locations (like an
+   unreachable default case of a switch.  Do not use gcc_assert(0).  */
+#if (GCC_VERSION >= 4005) && !ENABLE_ASSERT_CHECKING
+#define gcc_unreachable() __builtin_unreachable ()
+#else
+#define gcc_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
+#endif
+
 
 #if NETWORKING
 struct netmask {
@@ -201,11 +228,13 @@ internal_error (const char *fmt, ...)
 
 /* Hooked to from gcc_assert & gcc_unreachable.  */
 
+#if ENABLE_ASSERT_CHECKING
 void ATTRIBUTE_NORETURN ATTRIBUTE_COLD
 fancy_abort (const char *file, int line, const char *func)
 {
   internal_error ("in %s, at %s:%d", func, trim_src_file (file), line);
 }
+#endif
 
 /* Exploded on a signal.  */
 
@@ -290,7 +319,7 @@ static void ATTRIBUTE_NORETURN
 print_version (void)
 {
   fnotice (stdout, "%s %s%s\n", progname, pkgversion_string, version_string);
-  fprintf (stdout, "Copyright %s 2018-2020 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2018-2021 Free Software Foundation, Inc.\n",
 	   ("(C)"));
   fnotice (stdout,
 	   ("This is free software; see the source for copying conditions.\n"

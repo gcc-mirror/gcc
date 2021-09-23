@@ -15,7 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
@@ -143,9 +142,9 @@ test03()
 void
 test04()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // no permissions
-#else
+  if (!__gnu_test::permissions_are_testable())
+    return;
+
   // PR libstdc++/93201
   std::error_code ec;
   std::uintmax_t n;
@@ -173,7 +172,6 @@ test04()
   fs::permissions(dir, fs::perms::owner_write, fs::perm_options::add);
   fs::remove_all(dir, ec);
   f.path.clear();
-#endif
 }
 
 int

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@
 --  not been explicitly With'ed.
 
 with Types; use Types;
+with Uintp; use Uintp;
 
 package Rtsfind is
 
@@ -125,12 +126,11 @@ package Rtsfind is
       Ada_Strings_Wide_Superbounded,
       Ada_Strings_Wide_Wide_Superbounded,
       Ada_Strings_Unbounded,
-      Ada_Strings_Text_Output,
+      Ada_Strings_Text_Buffers,
 
-      --  Children of Ada.Strings.Text_Output
+      --  Children of Ada.Strings.Text_Buffers
 
-      Ada_Strings_Text_Output_Utils,
-      Ada_Strings_Text_Output_Buffers,
+      Ada_Strings_Text_Buffers_Unbounded,
 
       --  Children of Ada.Text_IO (for Check_Text_IO_Special_Unit)
 
@@ -195,6 +195,7 @@ package Rtsfind is
       System_Arith_128,
       System_AST_Handling,
       System_Assertions,
+      System_Atomic_Operations,
       System_Atomic_Primitives,
       System_Aux_DEC,
       System_Bignums,
@@ -228,6 +229,8 @@ package Rtsfind is
       System_Exception_Table,
       System_Exceptions_Debug,
       System_Exn_Int,
+      System_Exn_Flt,
+      System_Exn_LFlt,
       System_Exn_LLF,
       System_Exn_LLI,
       System_Exn_LLLI,
@@ -259,18 +262,21 @@ package Rtsfind is
       System_Img_Decimal_32,
       System_Img_Decimal_64,
       System_Img_Decimal_128,
-      System_Img_Enum,
-      System_Img_Enum_New,
+      System_Img_Enum_8,
+      System_Img_Enum_16,
+      System_Img_Enum_32,
       System_Img_Fixed_32,
       System_Img_Fixed_64,
       System_Img_Fixed_128,
+      System_Img_Flt,
       System_Img_Int,
+      System_Img_LFlt,
+      System_Img_LLF,
       System_Img_LLI,
       System_Img_LLLI,
       System_Img_LLU,
       System_Img_LLLU,
       System_Img_Name,
-      System_Img_Real,
       System_Img_Uns,
       System_Img_WChar,
       System_Interrupts,
@@ -428,7 +434,9 @@ package Rtsfind is
       System_Val_Decimal_32,
       System_Val_Decimal_64,
       System_Val_Decimal_128,
-      System_Val_Enum,
+      System_Val_Enum_8,
+      System_Val_Enum_16,
+      System_Val_Enum_32,
       System_Val_Fixed_32,
       System_Val_Fixed_64,
       System_Val_Fixed_128,
@@ -460,6 +468,10 @@ package Rtsfind is
       System_WWd_Char,
       System_WWd_Enum,
       System_WWd_Wchar,
+
+      --  Children of System.Atomic_Operations
+
+       System_Atomic_Operations_Test_And_Set,
 
       --  Children of System.Dim
 
@@ -596,15 +608,14 @@ package Rtsfind is
 
      RE_Unbounded_String,                -- Ada.Strings.Unbounded
 
-     RE_Sink,                            -- Ada.Strings.Text_Output
+     RE_Root_Buffer_Type,                -- Ada.Strings.Text_Buffers
+     RE_Put_UTF_8,                       -- Ada.Strings.Text_Buffers
+     RE_Wide_Wide_Put,                   -- Ada.Strings.Text_Buffers
 
-     RE_Put_UTF_8,                       -- Ada.Strings.Text_Output.Utils
-     RE_Put_Wide_Wide_String,            -- Ada.Strings.Text_Output.Utils
-
-     RE_Buffer,                          -- Ada.Strings.Text_Output.Buffers
-     RE_New_Buffer,                      -- Ada.Strings.Text_Output.Buffers
-     RE_Destroy,                         -- Ada.Strings.Text_Output.Buffers
-     RE_Get,                             -- Ada.Strings.Text_Output.Buffers
+     RE_Buffer_Type,                     -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Get,                             -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Wide_Get,                        -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Wide_Wide_Get,                   -- Ada.Strings.Text_Buffers.Unbounded
 
      RE_Wait_For_Release,                -- Ada.Synchronous_Barriers
 
@@ -702,6 +713,7 @@ package Rtsfind is
      RE_TK_Tagged,                       -- Ada.Tags
      RE_TK_Task,                         -- Ada.Tags
      RE_Unregister_Tag,                  -- Ada.Tags
+     RE_Wide_Wide_Expanded_Name,         -- Ada.Tags
 
      RE_Set_Specific_Handler,            -- Ada.Task_Termination
      RE_Specific_Handler,                -- Ada.Task_Termination
@@ -793,6 +805,9 @@ package Rtsfind is
      RE_Uint32,                          -- System.Atomic_Primitives
      RE_Uint64,                          -- System.Atomic_Primitives
 
+     RE_Test_And_Set_Flag,             -- System.Atomic_Operations.Test_And_Set
+     RE_Atomic_Test_And_Set,           -- System.Atomic_Operations.Test_And_Set
+
      RE_AST_Handler,                     -- System.Aux_DEC
      RE_Import_Address,                  -- System.Aux_DEC
      RE_Import_Value,                    -- System.Aux_DEC
@@ -830,7 +845,9 @@ package Rtsfind is
      RE_To_Bignum,                       -- System.Bignums
      RE_From_Bignum,                     -- System.Bignums
 
+     RE_Val_2,                           -- System.Bitfields
      RE_Copy_Bitfield,                   -- System.Bitfields
+     RE_Fast_Copy_Bitfield,              -- System.Bitfields
 
      RE_Bit_And,                         -- System.Bit_Ops
      RE_Bit_Eq,                          -- System.Bit_Ops
@@ -901,8 +918,10 @@ package Rtsfind is
 
      RE_Exn_Integer,                     -- System.Exn_Int
 
-     RE_Exn_Float,                       -- System.Exn_LLF
-     RE_Exn_Long_Float,                  -- System.Exn_LLF
+     RE_Exn_Float,                       -- System.Exn_Flt
+
+     RE_Exn_Long_Float,                  -- System.Exn_LFlt
+
      RE_Exn_Long_Long_Float,             -- System.Exn_LLF
 
      RE_Exn_Long_Long_Integer,           -- System.Exn_LLI
@@ -956,13 +975,13 @@ package Rtsfind is
 
      RE_Fore_Decimal128,                 -- System.Fore_Decimal_128
 
+     RE_Fore_Fixed,                      -- System.Fore_Real
+
      RE_Fore_Fixed32,                    -- System.Fore_Fixed_32
 
      RE_Fore_Fixed64,                    -- System.Fore_Fixed_64
 
      RE_Fore_Fixed128,                   -- System.Fore_Fixed_128
-
-     RE_Fore_Real,                       -- System.Fore_Real
 
      RE_Image_Boolean,                   -- System.Img_Bool
 
@@ -979,7 +998,13 @@ package Rtsfind is
      RE_Image_Enumeration_16,            -- System.Img_Enum_New
      RE_Image_Enumeration_32,            -- System.Img_Enum_New
 
+     RE_Image_Float,                     -- System_Img_Flt
+
      RE_Image_Integer,                   -- System.Img_Int
+
+     RE_Image_Long_Float,                -- System_Img_LFlt
+
+     RE_Image_Long_Long_Float,           -- System_Img_LLF
 
      RE_Image_Long_Long_Integer,         -- System.Img_LLI
 
@@ -989,12 +1014,13 @@ package Rtsfind is
 
      RE_Image_Long_Long_Long_Unsigned,   -- System.Img_LLLU
 
-     RE_Image_Fixed32,                   -- System.Img_Fixed_32
-     RE_Image_Fixed64,                   -- System.Img_Fixed_64
-     RE_Image_Fixed128,                  -- System.Img_Fixed_128
+     RE_Image_Fixed,                     -- System.Img_LFlt
 
-     RE_Image_Ordinary_Fixed_Point,      -- System.Img_Real
-     RE_Image_Floating_Point,            -- System.Img_Real
+     RE_Image_Fixed32,                   -- System.Img_Fixed_32
+
+     RE_Image_Fixed64,                   -- System.Img_Fixed_64
+
+     RE_Image_Fixed128,                  -- System.Img_Fixed_128
 
      RE_Image_Unsigned,                  -- System.Img_Uns
 
@@ -1959,11 +1985,6 @@ package Rtsfind is
      RE_Conditional_Call,                -- System.Tasking
      RE_Asynchronous_Call,               -- System.Tasking
 
-     RE_Foreign_Task_Level,              -- System.Tasking
-     RE_Environment_Task_Level,          -- System.Tasking
-     RE_Independent_Task_Level,          -- System.Tasking
-     RE_Library_Task_Level,              -- System.Tasking
-
      RE_Ada_Task_Control_Block,          -- System.Tasking
 
      RE_Task_List,                       -- System.Tasking
@@ -1980,7 +2001,6 @@ package Rtsfind is
      RE_Task_Entry_Index,                -- System.Tasking
      RE_Self,                            -- System.Tasking
 
-     RE_Master_Id,                       -- System.Tasking
      RE_Unspecified_Priority,            -- System.Tasking
 
      RE_Activation_Chain,                -- System.Tasking
@@ -2004,7 +2024,6 @@ package Rtsfind is
      RE_Bits_1,                          -- System.Unsigned_Types
      RE_Bits_2,                          -- System.Unsigned_Types
      RE_Bits_4,                          -- System.Unsigned_Types
-     RE_Float_Unsigned,                  -- System.Unsigned_Types
      RE_Long_Long_Unsigned,              -- System.Unsigned_Types
      RE_Long_Long_Long_Unsigned,         -- System.Unsigned_Types
      RE_Packed_Byte,                     -- System.Unsigned_Types
@@ -2026,9 +2045,13 @@ package Rtsfind is
 
      RE_Value_Decimal128,                -- System_Val_Decimal_128
 
-     RE_Value_Enumeration_8,             -- System.Val_Enum
-     RE_Value_Enumeration_16,            -- System.Val_Enum
-     RE_Value_Enumeration_32,            -- System.Val_Enum
+     RE_Value_Enumeration_8,             -- System.Val_Enum_8
+     RE_Value_Enumeration_16,            -- System.Val_Enum_16
+     RE_Value_Enumeration_32,            -- System.Val_Enum_32
+
+     RE_Valid_Value_Enumeration_8,       -- System.Val_Enum_8
+     RE_Valid_Value_Enumeration_16,      -- System.Val_Enum_16
+     RE_Valid_Value_Enumeration_32,      -- System.Val_Enum_32
 
      RE_Value_Fixed32,                   -- System_Val_Fixed_32
 
@@ -2270,15 +2293,14 @@ package Rtsfind is
 
      RE_Unbounded_String                 => Ada_Strings_Unbounded,
 
-     RE_Sink                             => Ada_Strings_Text_Output,
+     RE_Root_Buffer_Type                 => Ada_Strings_Text_Buffers,
+     RE_Put_UTF_8                        => Ada_Strings_Text_Buffers,
+     RE_Wide_Wide_Put                    => Ada_Strings_Text_Buffers,
 
-     RE_Put_UTF_8                        => Ada_Strings_Text_Output_Utils,
-     RE_Put_Wide_Wide_String             => Ada_Strings_Text_Output_Utils,
-
-     RE_Buffer                           => Ada_Strings_Text_Output_Buffers,
-     RE_New_Buffer                       => Ada_Strings_Text_Output_Buffers,
-     RE_Destroy                          => Ada_Strings_Text_Output_Buffers,
-     RE_Get                              => Ada_Strings_Text_Output_Buffers,
+     RE_Buffer_Type                      => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Get                              => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Wide_Get                         => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Wide_Wide_Get                    => Ada_Strings_Text_Buffers_Unbounded,
 
      RE_Wait_For_Release                 => Ada_Synchronous_Barriers,
 
@@ -2376,6 +2398,7 @@ package Rtsfind is
      RE_TK_Tagged                        => Ada_Tags,
      RE_TK_Task                          => Ada_Tags,
      RE_Unregister_Tag                   => Ada_Tags,
+     RE_Wide_Wide_Expanded_Name          => Ada_Tags,
 
      RE_Set_Specific_Handler             => Ada_Task_Termination,
      RE_Specific_Handler                 => Ada_Task_Termination,
@@ -2467,6 +2490,9 @@ package Rtsfind is
      RE_Uint32                           => System_Atomic_Primitives,
      RE_Uint64                           => System_Atomic_Primitives,
 
+     RE_Test_And_Set_Flag             => System_Atomic_Operations_Test_And_Set,
+     RE_Atomic_Test_And_Set           => System_Atomic_Operations_Test_And_Set,
+
      RE_AST_Handler                      => System_Aux_DEC,
      RE_Import_Address                   => System_Aux_DEC,
      RE_Import_Value                     => System_Aux_DEC,
@@ -2504,7 +2530,9 @@ package Rtsfind is
      RE_To_Bignum                        => System_Bignums,
      RE_From_Bignum                      => System_Bignums,
 
+     RE_Val_2                            => System_Bitfields,
      RE_Copy_Bitfield                    => System_Bitfields,
+     RE_Fast_Copy_Bitfield               => System_Bitfields,
 
      RE_Bit_And                          => System_Bit_Ops,
      RE_Bit_Eq                           => System_Bit_Ops,
@@ -2581,8 +2609,10 @@ package Rtsfind is
 
      RE_Exn_Integer                      => System_Exn_Int,
 
-     RE_Exn_Float                        => System_Exn_LLF,
-     RE_Exn_Long_Float                   => System_Exn_LLF,
+     RE_Exn_Float                        => System_Exn_Flt,
+
+     RE_Exn_Long_Float                   => System_Exn_LFlt,
+
      RE_Exn_Long_Long_Float              => System_Exn_LLF,
 
      RE_Exn_Long_Long_Integer            => System_Exn_LLI,
@@ -2636,13 +2666,13 @@ package Rtsfind is
 
      RE_Fore_Decimal128                  => System_Fore_Decimal_128,
 
+     RE_Fore_Fixed                       => System_Fore_Real,
+
      RE_Fore_Fixed32                     => System_Fore_Fixed_32,
 
      RE_Fore_Fixed64                     => System_Fore_Fixed_64,
 
      RE_Fore_Fixed128                    => System_Fore_Fixed_128,
-
-     RE_Fore_Real                        => System_Fore_Real,
 
      RE_Image_Boolean                    => System_Img_Bool,
 
@@ -2655,11 +2685,19 @@ package Rtsfind is
 
      RE_Image_Decimal128                 => System_Img_Decimal_128,
 
-     RE_Image_Enumeration_8              => System_Img_Enum_New,
-     RE_Image_Enumeration_16             => System_Img_Enum_New,
-     RE_Image_Enumeration_32             => System_Img_Enum_New,
+     RE_Image_Enumeration_8              => System_Img_Enum_8,
+
+     RE_Image_Enumeration_16             => System_Img_Enum_16,
+
+     RE_Image_Enumeration_32             => System_Img_Enum_32,
+
+     RE_Image_Float                      => System_Img_Flt,
 
      RE_Image_Integer                    => System_Img_Int,
+
+     RE_Image_Long_Float                 => System_Img_LFlt,
+
+     RE_Image_Long_Long_Float            => System_Img_LLF,
 
      RE_Image_Long_Long_Integer          => System_Img_LLI,
 
@@ -2669,12 +2707,13 @@ package Rtsfind is
 
      RE_Image_Long_Long_Long_Unsigned    => System_Img_LLLU,
 
-     RE_Image_Fixed32                    => System_Img_Fixed_32,
-     RE_Image_Fixed64                    => System_Img_Fixed_64,
-     RE_Image_Fixed128                   => System_Img_Fixed_128,
+     RE_Image_Fixed                      => System_Img_LFlt,
 
-     RE_Image_Ordinary_Fixed_Point       => System_Img_Real,
-     RE_Image_Floating_Point             => System_Img_Real,
+     RE_Image_Fixed32                    => System_Img_Fixed_32,
+
+     RE_Image_Fixed64                    => System_Img_Fixed_64,
+
+     RE_Image_Fixed128                   => System_Img_Fixed_128,
 
      RE_Image_Unsigned                   => System_Img_Uns,
 
@@ -3639,11 +3678,6 @@ package Rtsfind is
      RE_Conditional_Call                 => System_Tasking,
      RE_Asynchronous_Call                => System_Tasking,
 
-     RE_Foreign_Task_Level               => System_Tasking,
-     RE_Environment_Task_Level           => System_Tasking,
-     RE_Independent_Task_Level           => System_Tasking,
-     RE_Library_Task_Level               => System_Tasking,
-
      RE_Ada_Task_Control_Block           => System_Tasking,
 
      RE_Task_List                        => System_Tasking,
@@ -3660,7 +3694,6 @@ package Rtsfind is
      RE_Task_Entry_Index                 => System_Tasking,
      RE_Self                             => System_Tasking,
 
-     RE_Master_Id                        => System_Tasking,
      RE_Unspecified_Priority             => System_Tasking,
 
      RE_Activation_Chain                 => System_Tasking,
@@ -3684,7 +3717,6 @@ package Rtsfind is
      RE_Bits_1                           => System_Unsigned_Types,
      RE_Bits_2                           => System_Unsigned_Types,
      RE_Bits_4                           => System_Unsigned_Types,
-     RE_Float_Unsigned                   => System_Unsigned_Types,
      RE_Long_Long_Unsigned               => System_Unsigned_Types,
      RE_Long_Long_Long_Unsigned          => System_Unsigned_Types,
      RE_Packed_Byte                      => System_Unsigned_Types,
@@ -3706,9 +3738,17 @@ package Rtsfind is
 
      RE_Value_Decimal128                 => System_Val_Decimal_128,
 
-     RE_Value_Enumeration_8              => System_Val_Enum,
-     RE_Value_Enumeration_16             => System_Val_Enum,
-     RE_Value_Enumeration_32             => System_Val_Enum,
+     RE_Value_Enumeration_8              => System_Val_Enum_8,
+
+     RE_Value_Enumeration_16             => System_Val_Enum_16,
+
+     RE_Value_Enumeration_32             => System_Val_Enum_32,
+
+     RE_Valid_Value_Enumeration_8        => System_Val_Enum_8,
+
+     RE_Valid_Value_Enumeration_16       => System_Val_Enum_16,
+
+     RE_Valid_Value_Enumeration_32       => System_Val_Enum_32,
 
      RE_Value_Fixed32                    => System_Val_Fixed_32,
 
@@ -3967,6 +4007,9 @@ package Rtsfind is
       System_Unsigned_Types   => True,
       others                  => False);
 
+   Library_Task_Level : constant Uint := Uint_3;
+   --  Corresponds to System.Tasking.Library_Task_Level
+
    -----------------
    -- Subprograms --
    -----------------
@@ -4055,10 +4098,11 @@ package Rtsfind is
    --  and without generating an error message, i.e. if the call will obtain
    --  the desired entity without any problems.
    --
-   --  If we call this and it returns True, we should generate a call to E.
-   --  In other words, the compiler should not call RTE_Available (E) until
-   --  it has decided it wants to generate a call to E. Otherwise we can get
-   --  spurious dependencies and elaboration orders.
+   --  If we call this and it returns True, we should generate a reference to
+   --  E (usually a call). In other words, for a subprogram E, the compiler
+   --  should not call RTE_Available (E) until it has decided it wants to
+   --  generate a call to E. Otherwise we can get spurious dependencies and
+   --  elaboration orders.
    --
    --     if RTE_Available (E) -- WRONG!
    --       and then <some condition>

@@ -249,6 +249,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/kickstart.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/parser.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/tests.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/tests2.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/thompson.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/package.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/signals.lo std/socket.lo \
@@ -387,6 +388,7 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
+SECTION_FLAGS = @SECTION_FLAGS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -414,6 +416,8 @@ datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
+enable_shared = @enable_shared@
+enable_static = @enable_static@
 exec_prefix = @exec_prefix@
 gcc_version = @gcc_version@
 gdc_include_dir = @gdc_include_dir@
@@ -443,6 +447,7 @@ oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 phobos_compiler_pic_flag = @phobos_compiler_pic_flag@
 phobos_compiler_shared_flag = @phobos_compiler_shared_flag@
+phobos_lt_pic_flag = @phobos_lt_pic_flag@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
@@ -477,8 +482,8 @@ D_EXTRA_DFLAGS = -nostdinc -I $(srcdir) \
 
 # D flags for compilation
 AM_DFLAGS = \
-	$(phobos_compiler_pic_flag) \
-	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(CET_DFLAGS)
+	$(phobos_lt_pic_flag) $(phobos_compiler_shared_flag) \
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_DFLAGS)
 
 
 # Flags for other kinds of sources
@@ -499,9 +504,10 @@ libgphobos_la_LIBTOOLFLAGS =
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
     -version-info $(libtool_VERSION)
 
-libgphobos_la_LIBADD = \
-    ../libdruntime/libgdruntime_convenience.la $(LIBZ)
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@libgphobos_la_LIBADD = \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@    ../libdruntime/libgdruntime_convenience.la $(LIBZ)
 
+@ENABLE_LIBDRUNTIME_ONLY_TRUE@libgphobos_la_LIBADD = ../libdruntime/libgdruntime_convenience.la
 libgphobos_la_DEPENDENCIES = \
     ../libdruntime/libgdruntime_convenience.la libgphobos.spec
 
@@ -569,12 +575,12 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/backtracking.d std/regex/internal/generator.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/ir.d std/regex/internal/kickstart.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/parser.d std/regex/internal/tests.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/thompson.d std/regex/package.d std/signals.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/socket.d std/stdint.d std/stdio.d std/string.d std/system.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/traits.d std/typecons.d std/typetuple.d std/uni.d std/uri.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/utf.d std/uuid.d std/variant.d std/windows/charset.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/registry.d std/windows/syserror.d std/xml.d std/zip.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/zlib.d
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/tests2.d std/regex/internal/thompson.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/package.d std/signals.d std/socket.d std/stdint.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/stdio.d std/string.d std/system.d std/traits.d std/typecons.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/typetuple.d std/uni.d std/uri.d std/utf.d std/uuid.d std/variant.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/charset.d std/windows/registry.d std/windows/syserror.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/xml.d std/zip.d std/zlib.d
 
 
 # Source file definitions. Boring stuff, auto-generated with
@@ -848,6 +854,7 @@ std/regex/internal/ir.lo: std/regex/internal/$(am__dirstamp)
 std/regex/internal/kickstart.lo: std/regex/internal/$(am__dirstamp)
 std/regex/internal/parser.lo: std/regex/internal/$(am__dirstamp)
 std/regex/internal/tests.lo: std/regex/internal/$(am__dirstamp)
+std/regex/internal/tests2.lo: std/regex/internal/$(am__dirstamp)
 std/regex/internal/thompson.lo: std/regex/internal/$(am__dirstamp)
 std/regex/$(am__dirstamp):
 	@$(MKDIR_P) std/regex

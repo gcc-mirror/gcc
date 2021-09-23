@@ -169,9 +169,6 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used, md_rtx_info *info)
 	  return;
 	}
       break;
-    case CC0:
-      printf ("cc0_rtx");
-      return;
 
     case CONST_INT:
       if (INTVAL (x) == 0)

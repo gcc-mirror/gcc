@@ -53,6 +53,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+  template<typename _OuterAlloc, typename... _InnerAllocs>
+    class scoped_allocator_adaptor;
+
   /// @cond undocumented
 
   template<typename _Alloc>
@@ -81,14 +84,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __base::_S_outermost(__a.outer_allocator()); }
     };
 
-  /// Implementation of the OUTERMOST pseudofunction
+  // Implementation of the OUTERMOST pseudofunction
   template<typename _Alloc>
     inline typename __outermost_type<_Alloc>::type&
     __outermost(_Alloc& __a)
     { return __outermost_type<_Alloc>::_S_outermost(__a); }
-
-  template<typename _OuterAlloc, typename... _InnerAllocs>
-    class scoped_allocator_adaptor;
 
   template<typename...>
     struct __inner_type_impl;

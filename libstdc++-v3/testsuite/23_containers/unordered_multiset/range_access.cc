@@ -25,6 +25,6 @@ void
 test01()
 {
   std::unordered_multiset<int> ums{1, 2, 3};
-  std::begin(ums);
-  std::end(ums);
+  (void) std::begin(ums);
+  (void) std::end(ums);
 }

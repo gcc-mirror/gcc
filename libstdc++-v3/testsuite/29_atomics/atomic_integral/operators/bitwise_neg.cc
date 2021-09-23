@@ -26,8 +26,8 @@ int main()
   return 0;
 }
 
-// { dg-error "operator" "" { target *-*-* } 495 }
-// { dg-error "operator" "" { target *-*-* } 496 }
-// { dg-error "operator" "" { target *-*-* } 497 }
+// { dg-error "operator" "" { target *-*-* } 499 }
+// { dg-error "operator" "" { target *-*-* } 500 }
+// { dg-error "operator" "" { target *-*-* } 501 }
 
 // { dg-prune-output "declared here" }

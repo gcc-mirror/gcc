@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1053,6 +1053,9 @@ package Lib.Writ is
    --  The Object parameter is true if an object file is created, and false
    --  otherwise. Note that the pseudo-object file generated in GNATprove mode
    --  does count as an object file from this point of view.
+   --  May output duplicate D lines caused by generic instantiations. This is
+   --  by design as GNATcoverage relies on them for its coverage of generic
+   --  instantiations, although this may be revisited in the future.
 
    procedure Add_Preprocessing_Dependency (S : Source_File_Index);
    --  Indicate that there is a dependency to be added on a preprocessing data

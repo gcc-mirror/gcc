@@ -25,5 +25,5 @@ void test01()
 {
   std::default_delete<void> d;
   d(nullptr);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 81 }
+  // { dg-error "delete pointer to incomplete type" "" { target *-*-* } 0 }
 }

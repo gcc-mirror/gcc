@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -279,7 +279,7 @@ package Errout is
    --      The character ? appearing anywhere in a message makes the message
    --      warning instead of a normal error message, and the text of the
    --      message will be preceded by "warning:" in the normal case. The
-   --      handling of warnings if further controlled by the Warning_Mode
+   --      handling of warnings is further controlled by the Warning_Mode
    --      option (-w switch), see package Opt for further details, and also by
    --      the current setting from pragma Warnings. This pragma applies only
    --      to warnings issued from the semantic phase (not the parser), but
@@ -519,7 +519,7 @@ package Errout is
    --  The prefixes error and warning are supplied automatically (depending
    --  on the use of the ? insertion character), and the call to the error
    --  message routine supplies the text. The "error: " prefix is omitted
-   --  in brief error message formats.
+   --  if -gnatd_U is among the options given to gnat.
 
    --  Reserved Ada keywords in the message are in the default keyword case
    --  (determined from the given source program), surrounded by quotation
@@ -703,10 +703,15 @@ package Errout is
    procedure Error_Msg
      (Msg : String; Flag_Location : Source_Ptr);
    procedure Error_Msg
+     (Msg : String; Flag_Span : Source_Span);
+   procedure Error_Msg
      (Msg : String; Flag_Location : Source_Ptr; N : Node_Id);
+   procedure Error_Msg
+     (Msg : String; Flag_Span : Source_Span; N : Node_Id);
    --  Output a message at specified location. Can be called from the parser
    --  or the semantic analyzer. If N is set, points to the relevant node for
-   --  this message.
+   --  this message. The version with a span is preferred whenever possible,
+   --  in other cases the version with a location can still be used.
 
    procedure Error_Msg
      (Msg                    : String;
@@ -782,8 +787,13 @@ package Errout is
       N             : Node_Or_Entity_Id;
       E             : Node_Or_Entity_Id;
       Flag_Location : Source_Ptr);
+   procedure Error_Msg_NEL
+     (Msg       : String;
+      N         : Node_Or_Entity_Id;
+      E         : Node_Or_Entity_Id;
+      Flag_Span : Source_Span);
    --  Exactly the same as Error_Msg_NE, except that the flag is placed at
-   --  the specified Flag_Location instead of at Sloc (N).
+   --  the specified Flag_Location/Flag_Span instead of at Sloc (N).
 
    procedure Error_Msg_NW
      (Eflag : Boolean;
@@ -801,12 +811,17 @@ package Errout is
    --  the given text. This text may contain insertion characters in the
    --  usual manner, and need not be the same length as the original text.
 
+   procedure First_And_Last_Nodes
+     (C                     : Node_Id;
+      First_Node, Last_Node : out Node_Id);
+   --  Given a construct C, finds the first and last node in the construct,
+   --  i.e. the ones with the lowest and highest Sloc value. This is useful in
+   --  placing error msgs. Note that this procedure uses Original_Node to look
+   --  at the original source tree, since that's what we want for placing an
+   --  error message flag in the right place.
+
    function First_Node (C : Node_Id) return Node_Id;
-   --  Given a construct C, finds the first node in the construct, i.e. the one
-   --  with the lowest Sloc value. This is useful in placing error msgs. Note
-   --  that this procedure uses Original_Node to look at the original source
-   --  tree, since that's what we want for placing an error message flag in
-   --  the right place.
+   --  Return the first output of First_And_Last_Nodes
 
    function First_Sloc (N : Node_Id) return Source_Ptr;
    --  Given the node for an expression, return a source pointer value that
@@ -816,6 +831,15 @@ package Errout is
 
    function Get_Ignore_Errors return Boolean;
    --  Return True if all error calls are ignored.
+
+   function Last_Node (C : Node_Id) return Node_Id;
+   --  Return the last output of First_And_Last_Nodes
+
+   function Last_Sloc (N : Node_Id) return Source_Ptr;
+   --  Given the node for an expression, return a source pointer value that
+   --  points to the end of the last token in the expression. In the case
+   --  where the expression is parenthesized, an attempt is made to include
+   --  the parentheses (i.e. to return the location of the final paren).
 
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr)
      renames Erroutc.Purge_Messages;
@@ -915,8 +939,13 @@ package Errout is
    --  contain error message insertion characters in the normal manner, and in
    --  particular may start with | to flag a non-serious error.
 
-   procedure Error_Msg_Ada_2020_Feature (Feature : String; Loc : Source_Ptr);
-   --  Analogous to Error_Msg_Ada_2012_Feature
+   procedure Error_Msg_Ada_2022_Feature (Feature : String; Loc : Source_Ptr);
+   --  Analogous to Error_Msg_Ada_2012_Feature, for Ada 2022
+
+   procedure Error_Msg_GNAT_Extension (Extension : String);
+   --  If not operating with extensions allowed, posts errors complaining
+   --  that Extension is only supported when the -gnatX switch is enabled,
+   --  with appropriate suggestions to fix it.
 
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message
@@ -956,13 +985,10 @@ package Errout is
    --  the name at that source location, we copy the casing from the source,
    --  otherwise we set appropriate default casing.
 
-   procedure Adjust_Name_Case (Loc : Source_Ptr);
-   --  Uses Buf => Global_Name_Buffer. There are no calls to this in the
-   --  compiler, but it is called in SPARK 2014.
-
    procedure Set_Identifier_Casing
      (Identifier_Name : System.Address;
       File_Name       : System.Address);
+   pragma Convention (C, Set_Identifier_Casing);
    --  This subprogram can be used by the back end for the purposes of
    --  concocting error messages that are not output via Errout, e.g.
    --  the messages generated by the gcc back end.
@@ -982,8 +1008,8 @@ package Errout is
    Size_Too_Small_Message : constant String :=
      "size for& too small, minimum allowed is ^";
    --  This message is printed in Freeze and Sem_Ch13. We also test for it in
-   --  the body of this package (see Special_Msg_Delete) ???which is somewhat
-   --  questionable. The Is_Size_Too_Small_Message function tests for it by
-   --  testing a prefix. The function and constant should be kept in synch.
+   --  the body of this package (see Special_Msg_Delete).
+   --  Function Is_Size_Too_Small_Message tests for it by testing a prefix.
+   --  The function and constant should be kept in synch.
 
 end Errout;

@@ -18,4 +18,4 @@ void h ()
 
 /* { dg-final { scan-assembler "@(PLT|plt)" { target i?86-*-* x86_64-*-* } } } */
 /* { dg-final { scan-assembler "@(PLT|plt)" { target { powerpc*-*-linux* && ilp32 } } } } */
-/* { dg-final { scan-assembler "bl f\n\\s*nop" { target { powerpc*-*-linux* && lp64 } } } } */
+/* { dg-final { scan-assembler "(bl f\n\\s*nop)|(bl f@notoc)" { target { powerpc*-*-linux* && lp64 } } } } */

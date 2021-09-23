@@ -482,6 +482,10 @@ struct cpp_options
      in C11 and C++11.  */
   unsigned char c11_identifiers;
 
+  /* Nonzero means extended identifiers allow the characters specified
+     in C++23.  */
+  unsigned char cxx23_identifiers;
+
   /* Nonzero for C++ 2014 Standard binary constants.  */
   unsigned char binary_constants;
 
@@ -496,6 +500,9 @@ struct cpp_options
 
   /* Nonzero for the '::' token.  */
   unsigned char scope;
+
+  /* Nonzero for the '#elifdef' and '#elifndef' directives.  */
+  unsigned char elifdef;
 
   /* Nonzero means tokenize C++20 module directives.  */
   unsigned char module_directives;
@@ -883,6 +890,7 @@ enum cpp_builtin_type
   BT_SPECLINE = 0,		/* `__LINE__' */
   BT_DATE,			/* `__DATE__' */
   BT_FILE,			/* `__FILE__' */
+  BT_FILE_NAME,			/* `__FILE_NAME__' */
   BT_BASE_FILE,			/* `__BASE_FILE__' */
   BT_INCLUDE_LEVEL,		/* `__INCLUDE_LEVEL__' */
   BT_TIME,			/* `__TIME__' */
@@ -1375,6 +1383,20 @@ extern struct _cpp_file *cpp_get_file (cpp_buffer *);
 extern cpp_buffer *cpp_get_prev (cpp_buffer *);
 extern void cpp_clear_file_cache (cpp_reader *);
 
+/* cpp_get_converted_source returns the contents of the given file, as it exists
+   after cpplib has read it and converted it from the input charset to the
+   source charset.  Return struct will be zero-filled if the data could not be
+   read for any reason.  The data starts at the DATA pointer, but the TO_FREE
+   pointer is what should be passed to free(), as there may be an offset.  */
+struct cpp_converted_source
+{
+  char *to_free;
+  char *data;
+  size_t len;
+};
+cpp_converted_source cpp_get_converted_source (const char *fname,
+					       const char *input_charset);
+
 /* In pch.c */
 struct save_macro_data;
 extern int cpp_save_state (cpp_reader *, FILE *);
@@ -1445,6 +1467,7 @@ class cpp_display_width_computation {
 /* Convenience functions that are simple use cases for class
    cpp_display_width_computation.  Tab characters will be expanded to spaces
    as determined by TABSTOP.  */
+
 int cpp_byte_column_to_display_column (const char *data, int data_length,
 				       int column, int tabstop);
 inline int cpp_display_width (const char *data, int data_length,
@@ -1456,5 +1479,8 @@ inline int cpp_display_width (const char *data, int data_length,
 int cpp_display_column_to_byte_column (const char *data, int data_length,
 				       int display_col, int tabstop);
 int cpp_wcwidth (cppchar_t c);
+
+bool cpp_input_conversion_is_trivial (const char *input_charset);
+int cpp_check_utf8_bom (const char *data, size_t data_length);
 
 #endif /* ! LIBCPP_CPPLIB_H */

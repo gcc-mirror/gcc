@@ -24,8 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 namespace ana {
 
 class supergraph;
+class supernode;
 class call_superedge;
 class return_superedge;
+
 
 /* A string of return_superedge pointers, representing a call stack
    at a program point.
@@ -33,13 +35,37 @@ class return_superedge;
    This is used to ensure that we generate interprocedurally valid paths
    i.e. that we return to the same callsite that called us.
 
-   The class actually stores the return edges, rather than the call edges,
-   since that's what we need to compare against.  */
+   The class stores returning calls ( which may be represented by a
+   returning superedge ). We do so because this is what we need to compare 
+   against.  */
 
 class call_string
 {
 public:
-  call_string () : m_return_edges () {}
+  /* A struct representing an element in the call_string.
+
+   Each element represents a path from m_callee to m_caller which represents
+   returning from function.  */
+
+  struct element_t
+  {
+    element_t (const supernode *caller, const supernode *callee)
+    :  m_caller (caller), m_callee (callee)
+    {
+    }
+
+    bool operator== (const element_t &other) const;
+    bool operator!= (const element_t &other) const;
+
+    /* Accessors */
+    function *get_caller_function () const;
+    function *get_callee_function () const;
+    
+    const supernode *m_caller;
+    const supernode *m_callee;
+  };
+
+  call_string () : m_elements () {}
   call_string (const call_string &other);
   call_string& operator= (const call_string &other);
 
@@ -51,27 +77,35 @@ public:
 
   hashval_t hash () const;
 
-  bool empty_p () const { return m_return_edges.is_empty (); }
+  bool empty_p () const { return m_elements.is_empty (); }
 
   void push_call (const supergraph &sg,
 		  const call_superedge *sedge);
-  const return_superedge *pop () { return m_return_edges.pop (); }
+
+  void push_call (const supernode *src, 
+    const supernode *dest);
+
+  element_t pop ();
 
   int calc_recursion_depth () const;
 
   static int cmp (const call_string &a,
 		  const call_string &b);
 
-  unsigned length () const { return m_return_edges.length (); }
-  const return_superedge *operator[] (unsigned idx) const
+  /* Accessors */
+
+  const supernode *get_callee_node () const;
+  const supernode *get_caller_node () const;
+  unsigned length () const { return m_elements.length (); }
+  element_t operator[] (unsigned idx) const
   {
-    return m_return_edges[idx];
+    return m_elements[idx];
   }
 
   void validate () const;
 
 private:
-  auto_vec<const return_superedge *> m_return_edges;
+  auto_vec<element_t> m_elements;
 };
 
 } // namespace ana

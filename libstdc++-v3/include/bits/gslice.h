@@ -177,7 +177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return *this;
   }
 
-  // @} group numeric_arrays
+  /// @} group numeric_arrays
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

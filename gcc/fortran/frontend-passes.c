@@ -373,7 +373,7 @@ optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
-/* Auxiliary function to handle the arguments to reduction intrnisics.  If the
+/* Auxiliary function to handle the arguments to reduction intrinsics.  If the
    function is a scalar, just copy it; otherwise returns the new element, the
    old one can be freed.  */
 
@@ -1299,8 +1299,8 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 		std::swap (start->value.op.op1, start->value.op.op2);
 	      gcc_fallthrough ();
 	    case INTRINSIC_MINUS:
-	      if ((start->value.op.op1->expr_type!= EXPR_VARIABLE
-		   && start->value.op.op2->expr_type != EXPR_CONSTANT)
+	      if (start->value.op.op1->expr_type!= EXPR_VARIABLE
+		  || start->value.op.op2->expr_type != EXPR_CONSTANT
 		  || start->value.op.op1->ref)
 		return false;
 	      if (!stack_top || !stack_top->iter
@@ -4193,6 +4193,19 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   if (m_case == none)
     return 0;
 
+  /* We only handle assignment to numeric or logical variables.  */
+  switch(expr1->ts.type)
+    {
+    case BT_INTEGER:
+    case BT_LOGICAL:
+    case BT_REAL:
+    case BT_COMPLEX:
+      break;
+
+    default:
+      return 0;
+    }
+
   ns = insert_block ();
 
   /* Assign the type of the zero expression for initializing the resulting
@@ -5542,6 +5555,13 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_PARALLEL_LOOP:
+	    case EXEC_OMP_PARALLEL_MASKED:
+	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+	    case EXEC_OMP_PARALLEL_MASTER:
+	    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+	    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
 
 	      in_omp_workshare = false;
@@ -5564,6 +5584,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_OMP_DISTRIBUTE_SIMD:
 	    case EXEC_OMP_DO:
 	    case EXEC_OMP_DO_SIMD:
+	    case EXEC_OMP_LOOP:
 	    case EXEC_OMP_ORDERED:
 	    case EXEC_OMP_SECTIONS:
 	    case EXEC_OMP_SINGLE:
@@ -5578,12 +5599,14 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_OMP_TARGET_PARALLEL:
 	    case EXEC_OMP_TARGET_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
 	    case EXEC_OMP_TARGET_SIMD:
 	    case EXEC_OMP_TARGET_TEAMS:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_LOOP:
 	    case EXEC_OMP_TARGET_UPDATE:
 	    case EXEC_OMP_TASK:
 	    case EXEC_OMP_TEAMS:
@@ -5591,6 +5614,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TEAMS_LOOP:
 
 	      /* Come to this label only from the
 		 EXEC_OMP_PARALLEL_* cases above.  */

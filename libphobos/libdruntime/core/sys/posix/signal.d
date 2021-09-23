@@ -3503,7 +3503,7 @@ struct sigevent
     pthread_attr_t* sigev_notify_attributes;
 }
 
-int sigqueue(pid_t, int, in sigval);
+int sigqueue(pid_t, int, const sigval);
 int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
 int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 */
@@ -3543,7 +3543,7 @@ version (CRuntime_Glibc)
         } _sigev_un_t _sigev_un;
     }
 
-    int sigqueue(pid_t, int, in sigval);
+    int sigqueue(pid_t, int, const sigval);
     int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
     int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
@@ -3566,7 +3566,7 @@ else version (FreeBSD)
         }
     }
 
-    int sigqueue(pid_t, int, in sigval);
+    int sigqueue(pid_t, int, const sigval);
     int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
     int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
@@ -3581,7 +3581,7 @@ else version (NetBSD)
         void /* pthread_attr_t */*sigev_notify_attributes;
     }
 
-    int sigqueue(pid_t, int, in sigval);
+    int sigqueue(pid_t, int, const sigval);
     int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
     int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
@@ -3613,7 +3613,7 @@ else version (DragonFlyBSD)
         void function(_sigval_t)  sigev_notify_function;
     }
 
-    int sigqueue(pid_t, int, in sigval);
+    int sigqueue(pid_t, int, const sigval);
     int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
     int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
@@ -3640,7 +3640,7 @@ else version (Solaris)
         int __sigev_pad2;
     }
 
-    int sigqueue(pid_t, int, in sigval);
+    int sigqueue(pid_t, int, const sigval);
     int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
     int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }
@@ -3717,7 +3717,7 @@ else version (CRuntime_UClibc)
     @property void function(sigval) sigev_notify_function(ref sigevent _sigevent) { return _sigevent._sigev_un._sigev_thread._function; }
     @property void* sigev_notify_attributes(ref sigevent _sigevent) { return  _sigevent._sigev_un._sigev_thread._attribute; }
 
-    int sigqueue(pid_t, int, in sigval);
+    int sigqueue(pid_t, int, const sigval);
     int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
     int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }

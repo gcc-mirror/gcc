@@ -1,5 +1,6 @@
 // PR c++/52830
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-fchecking" }
 // { dg-ice "comptypes" }
 
 template<bool b> struct eif { typedef void type; };

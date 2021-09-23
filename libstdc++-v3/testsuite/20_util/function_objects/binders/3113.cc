@@ -17,28 +17,30 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-add-options using-deprecated }
+
 // 20.3.6 Binders
 
 #include <vector>
 #include <algorithm> // for_each
 #include <functional>
 
-class Elem 
-{ 
-public: 
-  void print(int) const { } 
-  void modify(int) { } 
-}; 
+class Elem
+{
+public:
+  void print(int) const { }
+  void modify(int) { }
+};
 
 // libstdc++/3113
 void test01()
-{ 
-  std::vector<Elem> coll(2); 
-  // OK 
-  std::for_each(coll.begin(), coll.end(), 
+{
+  std::vector<Elem> coll(2);
+  // OK
+  std::for_each(coll.begin(), coll.end(),
 	   std::bind2nd(std::mem_fun_ref(&Elem::print), 42));
   // OK
-  std::for_each(coll.begin(), coll.end(), 
+  std::for_each(coll.begin(), coll.end(),
 	   std::bind2nd(std::mem_fun_ref(&Elem::modify), 42));
 }
 

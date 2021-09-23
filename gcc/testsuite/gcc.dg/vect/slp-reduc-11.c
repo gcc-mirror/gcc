@@ -16,5 +16,5 @@ double dotprod(const double *a, const double *b, unsigned long long n)
 
 /* We should use a SLP reduction even without -ffast-math by using a
    VF of one.  */
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" } } */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { xfail vect_variable_length } } } */
 /* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" } } */

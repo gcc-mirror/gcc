@@ -325,6 +325,7 @@ foreach option {
     finite-math-only
     fixed-hi
     fixed-lo
+    inline
     lax-vector-conversions
     omit-frame-pointer
     optimize-sibling-calls
@@ -332,6 +333,7 @@ foreach option {
     schedule-insns2
     split-wide-types
     tree-vectorize
+    tree-vrp
     unroll-all-loops
     unroll-loops
     ipa-ra

@@ -1,6 +1,6 @@
-/* Exercise acc_update_device on unmapped data on nvidia targets.  */
+/* Exercise acc_update_device on unmapped data.  */
 
-/* { dg-do run { target openacc_nvidia_accel_selected } } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-DACC_MEM_SHARED=0" } } */
 
 #include <stdio.h>
 #include <stdlib.h>

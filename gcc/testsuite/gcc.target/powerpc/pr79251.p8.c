@@ -14,9 +14,9 @@
 /* { dg-final { scan-assembler-times {\mxxsel\M} 7 { target lp64 } } } */
 
 /* { dg-final { scan-assembler-times {\mrlwinm\M} 10 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mstxvw4x\M} 6 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mstxvd2x\M} 4 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mstb\M|\msth\M|\mstw\M|\mstfs\M|\mstfd\M} 12 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mlxvw4x\M} 6 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mlxvd2x\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstxvw4x\M} 0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M} 0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstb\M|\msth\M|\mstw\M|\mstfs\M|\mstfd\M} 1 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlxvw4x\M} 0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlxvd2x\M} 7 { target ilp32 } } } */
 

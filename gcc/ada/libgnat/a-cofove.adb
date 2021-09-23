@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -141,6 +141,22 @@ is
    begin
       Container.Last := No_Index;
    end Clear;
+
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Vector;
+      Index     : Index_Type) return not null access constant Element_Type
+   is
+   begin
+      if Index > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      end if;
+
+      return Container.Elements (To_Array_Index (Index))'Access;
+   end Constant_Reference;
 
    --------------
    -- Contains --
@@ -868,11 +884,7 @@ is
             --  less than 0, so it is safe to compute the following sum without
             --  fear of overflow.
 
-            pragma Warnings
-              (Off, "value not in range of type ""T"" defined at line 4");
             Index := No_Index + Index_Type'Base (Count_Type'Last);
-            pragma Warnings
-              (On, "value not in range of type ""T"" defined at line 4");
 
             if Index <= Index_Type'Last then
 
@@ -1099,6 +1111,22 @@ is
          Container.Elements (I) := New_Item;
       end;
    end Replace_Element;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Reference
+     (Container : not null access Vector;
+      Index     : Index_Type) return not null access Element_Type
+   is
+   begin
+      if Index > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      end if;
+
+      return Container.Elements (To_Array_Index (Index))'Access;
+   end Reference;
 
    ----------------------
    -- Reserve_Capacity --

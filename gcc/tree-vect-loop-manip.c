@@ -609,11 +609,8 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 	    }
 
 	  if (use_masks_p)
-	    {
-	      init_ctrl = make_temp_ssa_name (ctrl_type, NULL, "max_mask");
-	      gimple *tmp_stmt = vect_gen_while (init_ctrl, start, end);
-	      gimple_seq_add_stmt (preheader_seq, tmp_stmt);
-	    }
+	    init_ctrl = vect_gen_while (preheader_seq, ctrl_type,
+					start, end, "max_mask");
 	  else
 	    {
 	      init_ctrl = make_temp_ssa_name (compare_type, NULL, "max_len");
@@ -652,9 +649,10 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
       /* Get the control value for the next iteration of the loop.  */
       if (use_masks_p)
 	{
-	  next_ctrl = make_temp_ssa_name (ctrl_type, NULL, "next_mask");
-	  gcall *call = vect_gen_while (next_ctrl, test_index, this_test_limit);
-	  gsi_insert_before (test_gsi, call, GSI_SAME_STMT);
+	  gimple_seq stmts = NULL;
+	  next_ctrl = vect_gen_while (&stmts, ctrl_type, test_index,
+				      this_test_limit, "next_mask");
+	  gsi_insert_seq_before (test_gsi, stmts, GSI_SAME_STMT);
 	}
       else
 	{
@@ -2457,6 +2455,28 @@ vect_update_epilogue_niters (loop_vec_info epilogue_vinfo,
   return vect_determine_partial_vectors_and_peeling (epilogue_vinfo, true);
 }
 
+/* LOOP_VINFO is an epilogue loop whose corresponding main loop can be skipped.
+   Return a value that equals:
+
+   - MAIN_LOOP_VALUE when LOOP_VINFO is entered from the main loop and
+   - SKIP_VALUE when the main loop is skipped.  */
+
+tree
+vect_get_main_loop_result (loop_vec_info loop_vinfo, tree main_loop_value,
+			   tree skip_value)
+{
+  gcc_assert (loop_vinfo->main_loop_edge);
+
+  tree phi_result = make_ssa_name (TREE_TYPE (main_loop_value));
+  basic_block bb = loop_vinfo->main_loop_edge->dest;
+  gphi *new_phi = create_phi_node (phi_result, bb);
+  add_phi_arg (new_phi, main_loop_value, loop_vinfo->main_loop_edge,
+	       UNKNOWN_LOCATION);
+  add_phi_arg (new_phi, skip_value,
+	       loop_vinfo->skip_main_loop_edge, UNKNOWN_LOCATION);
+  return phi_result;
+}
+
 /* Function vect_do_peeling.
 
    Input:
@@ -2986,6 +3006,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 					   skip_vector ? anchor : guard_bb,
 					   prob_epilog.invert (),
 					   irred_flag);
+	  if (vect_epilogues)
+	    epilogue_vinfo->skip_this_loop_edge = guard_e;
 	  slpeel_update_phi_nodes_for_guard2 (loop, epilog, guard_e,
 					      single_exit (epilog));
 	  /* Only need to handle basic block before epilog loop if it's not
@@ -3057,6 +3079,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  add_phi_arg (new_phi, build_zero_cst (TREE_TYPE (niters)), skip_e,
 		       UNKNOWN_LOCATION);
 	  niters = PHI_RESULT (new_phi);
+	  epilogue_vinfo->main_loop_edge = update_e;
+	  epilogue_vinfo->skip_main_loop_edge = skip_e;
 	}
 
       /* Set ADVANCE to the number of iterations performed by the previous
@@ -3168,7 +3192,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
                                    tree *cond_expr,
 				   gimple_seq *cond_expr_stmt_list)
 {
-  vec<stmt_vec_info> may_misalign_stmts
+  const vec<stmt_vec_info> &may_misalign_stmts
     = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
   stmt_vec_info stmt_info;
   int mask = LOOP_VINFO_PTR_MASK (loop_vinfo);
@@ -3259,7 +3283,8 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 static void
 vect_create_cond_for_unequal_addrs (loop_vec_info loop_vinfo, tree *cond_expr)
 {
-  vec<vec_object_pair> pairs = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo);
+  const vec<vec_object_pair> &pairs
+    = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo);
   unsigned int i;
   vec_object_pair *pair;
   FOR_EACH_VEC_ELT (pairs, i, pair)
@@ -3278,7 +3303,8 @@ vect_create_cond_for_unequal_addrs (loop_vec_info loop_vinfo, tree *cond_expr)
 static void
 vect_create_cond_for_lower_bounds (loop_vec_info loop_vinfo, tree *cond_expr)
 {
-  vec<vec_lower_bound> lower_bounds = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo);
+  const vec<vec_lower_bound> &lower_bounds
+    = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo);
   for (unsigned int i = 0; i < lower_bounds.length (); ++i)
     {
       tree expr = lower_bounds[i].expr;
@@ -3320,7 +3346,7 @@ vect_create_cond_for_lower_bounds (loop_vec_info loop_vinfo, tree *cond_expr)
 void
 vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
 {
-  vec<dr_with_seg_len_pair_t> comp_alias_ddrs =
+  const vec<dr_with_seg_len_pair_t> &comp_alias_ddrs =
     LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo);
 
   if (comp_alias_ddrs.is_empty ())
@@ -3597,8 +3623,6 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 	 niter information which is copied from the original loop.  */
       gcc_assert (loop_constraint_set_p (loop, LOOP_C_FINITE));
       vect_free_loop_info_assumptions (nloop);
-      /* And set constraint LOOP_C_INFINITE for niter analyzer.  */
-      loop_constraint_set (loop, LOOP_C_INFINITE);
     }
 
   if (LOCATION_LOCUS (vect_location.get_location_t ()) != UNKNOWN_LOCATION

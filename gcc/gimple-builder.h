@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_BUILDER_H
 #define GCC_GIMPLE_BUILDER_H
 
+/* ???  This API is legacy and should not be used in new code.  */
+
 gassign *build_assign (enum tree_code, tree, int, tree lhs = NULL_TREE);
 gassign *build_assign (enum tree_code, gimple *, int, tree lhs = NULL_TREE);
 gassign *build_assign (enum tree_code, tree, tree, tree lhs = NULL_TREE);

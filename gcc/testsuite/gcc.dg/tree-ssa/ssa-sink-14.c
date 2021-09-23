@@ -13,5 +13,5 @@ void foo (int b)
 /* We should have sunk the store and inserted a PHI to merge the
    stored values.  */
 
-/* { dg-final { scan-tree-dump-times " = PHI" 1 "sink" } } */
-/* { dg-final { scan-tree-dump-times "x = " 1 "sink" } } */
+/* { dg-final { scan-tree-dump-times " = PHI" 1 "sink1" } } */
+/* { dg-final { scan-tree-dump-times "x = " 1 "sink1" } } */

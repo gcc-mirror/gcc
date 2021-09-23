@@ -40,13 +40,17 @@
 
 #include <map>
 #include <set>
-#include <tr1/functional>
-#include <tr1/unordered_map>
-#include <tr1/unordered_set>
 
 #if __cplusplus >= 201103L
 #include <atomic>
 #include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
+namespace unord = std;
+#else
+#include <tr1/unordered_map>
+#include <tr1/unordered_set>
+namespace unord = std::tr1;
 #endif
 
 namespace __gnu_test
@@ -185,14 +189,14 @@ namespace __gnu_test
       typedef Tp			    		value_type;
       typedef Tp 					key_type;
       typedef std::pair<const key_type, value_type> 	pair_type;
-      typedef std::tr1::hash<key_type>      		hash_function;
+      typedef unord::hash<key_type>      		hash_function;
       typedef std::equal_to<key_type>      		equality_function;
 
       template<typename Tl>
         struct container
 	{
 	  typedef Tl 					allocator_type;
-	  typedef std::tr1::unordered_map<key_type, value_type, hash_function, equality_function, allocator_type>	type;
+	  typedef unord::unordered_map<key_type, value_type, hash_function, equality_function, allocator_type>	type;
 	};
 
       typedef allocator_policies<pair_type, Thread>	allocator_types;
@@ -224,14 +228,14 @@ namespace __gnu_test
     {
       typedef Tp			    		value_type;
       typedef Tp 					key_type;
-      typedef std::tr1::hash<key_type>      		hash_function;
+      typedef unord::hash<key_type>      		hash_function;
       typedef std::equal_to<key_type>      		equality_function;
 
       template<typename Tl>
         struct container
 	{
 	  typedef Tl 					allocator_type;
-	  typedef std::tr1::unordered_set<key_type, hash_function, equality_function, allocator_type>	type;
+	  typedef unord::unordered_set<key_type, hash_function, equality_function, allocator_type>	type;
 	};
 
       typedef allocator_policies<key_type, Thread>	allocator_types;
@@ -952,5 +956,104 @@ namespace __gnu_test
       }
   };
 #endif
+
+#if __cplusplus >= 201402L
+  // Check that bitmask type T supports all the required operators,
+  // with the required semantics. Check that each bitmask element
+  // has a distinct, nonzero value, and that each bitmask constant
+  // has no bits set which do not correspond to a bitmask element.
+  template<typename T>
+    constexpr bool
+    test_bitmask_values(std::initializer_list<T> elements,
+			std::initializer_list<T> constants = {})
+    {
+      const T t0{};
+
+      if (!(t0 == t0))
+	return false;
+      if (t0 != t0)
+	return false;
+
+      if (t0 & t0)
+	return false;
+      if (t0 | t0)
+	return false;
+      if (t0 ^ t0)
+	return false;
+
+      T all = t0;
+
+      for (auto t : elements)
+	{
+	  // Each bitmask element has a distinct value.
+	  if (t & all)
+	    return false;
+
+	  // Each bitmask element has a nonzero value.
+	  if (!bool(t))
+	    return false;
+
+	  // Check operators
+
+	  if (!(t == t))
+	    return false;
+	  if (t != t)
+	    return false;
+	  if (t == t0)
+	    return false;
+	  if (t == all)
+	    return false;
+
+	  if (t & t0)
+	    return false;
+	  if ((t | t0) != t)
+	    return false;
+	  if ((t ^ t0) != t)
+	    return false;
+
+	  if ((t & t) != t)
+	    return false;
+	  if ((t | t) != t)
+	    return false;
+	  if (t ^ t)
+	    return false;
+
+	  T t1 = t;
+	  if ((t1 &= t) != t)
+	    return false;
+	  if ((t1 |= t) != t)
+	    return false;
+	  if (t1 ^= t)
+	    return false;
+
+	  t1 = all;
+	  if ((t1 &= t) != (all & t))
+	    return false;
+	  t1 = all;
+	  if ((t1 |= t) != (all | t))
+	    return false;
+	  t1 = all;
+	  if ((t1 ^= t) != (all ^ t))
+	    return false;
+
+	  all |= t;
+	  if (!(all & t))
+	    return false;
+	}
+
+      for (auto t : constants)
+	{
+	  // Check that bitmask constants are composed of the bitmask elements.
+	  if ((t & all) != t)
+	    return false;
+	  if ((t | all) != all)
+	    return false;
+	}
+
+      return true;
+    }
+#endif // C++14
+
+
 } // namespace __gnu_test
 #endif

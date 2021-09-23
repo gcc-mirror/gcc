@@ -281,7 +281,7 @@ TEST_UNIFORM_ZD (mad_s4_f32_x_tied2, svfloat32_t, float,
 		 z0 = svmad_x (p0, z1, z0, d4))
 
 /*
-** mad_s4_f32_x_untied: { xfail *-*-* }
+** mad_s4_f32_x_untied:
 **	mov	z0\.s, s4
 **	fmla	z0\.s, p0/m, z1\.s, z2\.s
 **	ret

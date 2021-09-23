@@ -13,6 +13,6 @@ integer function foo(a,b, n) result(r)
   end do
 end
 
-! { dg-final { scan-tree-dump-times "#pragma omp parallel firstprivate\\(a\\) firstprivate\\(b\\) default\\(none\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp parallel firstprivate\\(a\\) firstprivate\\(b\\) shared\\(r\\) default\\(none\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp for reduction\\(inscan,\\\+:r\\) nowait" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp scan inclusive\\(r\\)" 1 "original" } }

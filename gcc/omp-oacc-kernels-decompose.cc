@@ -1527,7 +1527,7 @@ public:
   virtual bool gate (function *)
   {
     return (flag_openacc
-	    && flag_openacc_kernels == OPENACC_KERNELS_DECOMPOSE);
+	    && param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE);
   }
   virtual unsigned int execute (function *)
   {

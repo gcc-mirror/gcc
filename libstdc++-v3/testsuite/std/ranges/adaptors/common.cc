@@ -60,9 +60,21 @@ test02()
   VERIFY( std::count(v2.begin(), v2.end(), 1) == 2);
 }
 
+template<auto common = views::common>
+void
+test03()
+{
+  // Verify SFINAE behavior.
+  static_assert(!requires { common(); });
+  static_assert(!requires { common(0, 0); });
+  static_assert(!requires { common(0); });
+  static_assert(!requires { 0 | common; });
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

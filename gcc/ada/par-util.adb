@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -254,7 +254,7 @@ package body Util is
       then
          return Mark;
       else
-         Error_Msg ("subtype mark expected", Sloc (Mark));
+         Error_Msg_N ("subtype mark expected", Mark);
          return Error;
       end if;
    end Check_Subtype_Mark;
@@ -276,10 +276,10 @@ package body Util is
 
       --  If we have a right paren, then that is taken as ending the list
       --  i.e. no comma is present.
-      --  Ditto for a right bracket in Ada 2020.
+      --  Ditto for a right bracket in Ada 2022.
 
       elsif Token = Tok_Right_Paren
-        or else (Token = Tok_Right_Bracket and then Ada_Version >= Ada_2020)
+        or else (Token = Tok_Right_Bracket and then Ada_Version >= Ada_2022)
       then
          return False;
 
@@ -629,6 +629,35 @@ package body Util is
       Error_Msg_SC ("unexpected identifier, possibly & was meant here");
       Scan;
    end Merge_Identifier;
+
+   -------------------------------
+   -- Missing_Semicolon_On_When --
+   -------------------------------
+
+   function Missing_Semicolon_On_When return Boolean is
+      State : Saved_Scan_State;
+
+   begin
+      if not Token_Is_At_Start_Of_Line then
+         return False;
+
+      elsif Scopes (Scope.Last).Etyp /= E_Case then
+         return False;
+
+      else
+         Save_Scan_State (State);
+         Scan; -- past WHEN
+         Scan; -- past token after WHEN
+
+         if Token = Tok_Arrow then
+            Restore_Scan_State (State);
+            return True;
+         else
+            Restore_Scan_State (State);
+            return False;
+         end if;
+      end if;
+   end Missing_Semicolon_On_When;
 
    -------------------
    -- Next_Token_Is --

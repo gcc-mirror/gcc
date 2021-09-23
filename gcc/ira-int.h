@@ -971,7 +971,7 @@ extern void ira_debug_disposition (void);
 extern void ira_debug_allocno_classes (void);
 extern void ira_init_register_move_cost (machine_mode);
 extern alternative_mask ira_setup_alts (rtx_insn *);
-extern int ira_get_dup_out_num (int, alternative_mask);
+extern int ira_get_dup_out_num (int, alternative_mask, bool &);
 
 /* ira-build.c */
 

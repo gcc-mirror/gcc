@@ -15,7 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
 #include <memory>
@@ -32,5 +31,5 @@ test01()
   std::unique_ptr bad2{new double, D()}; // { dg-error "class template argument deduction failed" }
 }
 
-// { dg-error "no matching function" "" { target *-*-* } 29 }
-// { dg-error "no matching function" "" { target *-*-* } 32 }
+// { dg-error "no matching function" "" { target *-*-* } 28 }
+// { dg-error "no matching function" "" { target *-*-* } 31 }

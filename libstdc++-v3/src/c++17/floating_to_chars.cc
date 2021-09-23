@@ -50,7 +50,9 @@ extern "C" int __sprintfieee128(char*, const char*, ...);
 
 // This implementation crucially assumes float/double have the
 // IEEE binary32/binary64 formats.
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
+    /* And it also assumes that uint64_t POW10_SPLIT_2[3133][3] is valid.  */\
+    && __SIZE_WIDTH__ >= 32
 
 // Determine the binary format of 'long double'.
 

@@ -25,6 +25,6 @@ void
 test01()
 {
   std::forward_list<int> fl{1, 2, 3};
-  std::begin(fl);
-  std::end(fl);
+  (void) std::begin(fl);
+  (void) std::end(fl);
 }

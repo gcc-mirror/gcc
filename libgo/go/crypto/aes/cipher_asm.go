@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ignore_for_gccgo
-// +build amd64 arm64
+//go:build ignore
+// +build ignore
 
 package aes
 

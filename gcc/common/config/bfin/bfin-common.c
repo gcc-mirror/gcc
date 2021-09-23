@@ -313,7 +313,7 @@ bfin_handle_option (struct gcc_options *opts,
 	i = 0;
 	while ((p = bfin_cpus[i].name) != NULL)
 	  {
-	    if (strncmp (arg, p, strlen (p)) == 0)
+	    if (startswith (arg, p))
 	      break;
 	    i++;
 	  }

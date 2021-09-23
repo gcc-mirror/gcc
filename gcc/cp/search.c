@@ -1226,7 +1226,10 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       rval = error_mark_node;
     }
 
-  if (rval && is_overloaded_fn (rval))
+  if (rval && is_overloaded_fn (rval)
+      /* Don't use a BASELINK for class-scope deduction guides since
+	 they're not actually member functions.  */
+      && !dguide_name_p (name))
     rval = build_baselink (rval_binfo, basetype_path, rval,
 			   (IDENTIFIER_CONV_OP_P (name)
 			   ? TREE_TYPE (name): NULL_TREE));
@@ -1945,7 +1948,13 @@ check_final_overrider (tree overrider, tree basefn)
       fail = !INDIRECT_TYPE_P (base_return);
       if (!fail)
 	{
-	  fail = cp_type_quals (base_return) != cp_type_quals (over_return);
+	  if (cp_type_quals (base_return) != cp_type_quals (over_return))
+	    fail = 1;
+
+	  if (TYPE_REF_P (base_return)
+	      && (TYPE_REF_IS_RVALUE (base_return)
+		  != TYPE_REF_IS_RVALUE (over_return)))
+	    fail = 1;
 
 	  base_return = TREE_TYPE (base_return);
 	  over_return = TREE_TYPE (over_return);

@@ -19,7 +19,11 @@
 #ifndef GCC_D_SYSTEM_H
 #define GCC_D_SYSTEM_H
 
+#ifdef GENERATOR_FILE
+#include "bconfig.h"
+#else
 #include "config.h"
+#endif
 #include "system.h"
 
 /* Used by the dmd front-end to determine if we have POSIX-style IO.  */

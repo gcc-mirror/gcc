@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---            Copyright (C) 2014-2020, Free Software Foundation, Inc.       --
+--            Copyright (C) 2014-2021, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package
 
 with Interfaces.C;
+with System.Parameters;
 
 package System.Linux is
    pragma Preelaborate;
@@ -46,7 +47,8 @@ package System.Linux is
 
    subtype long        is Interfaces.C.long;
    subtype suseconds_t is Interfaces.C.long;
-   subtype time_t      is Interfaces.C.long;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
    subtype clockid_t   is Interfaces.C.int;
 
    type timespec is record

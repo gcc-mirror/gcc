@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -floop-unroll-and-jam -fno-tree-loop-im --param unroll-jam-min-percent=0 -fdump-tree-unrolljam-details" } */
+/* { dg-additional-options "--param max-completely-peel-times=16" { target { s390*-*-* } } } */
 /* { dg-require-effective-target int32plus } */
 
 #include <stdio.h>

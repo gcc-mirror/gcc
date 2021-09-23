@@ -28,7 +28,8 @@ case ${query} in
       ;;
     --gdcflags)
       GDCFLAGS_default="-fmessage-length=0 -fno-show-column"
-      GDCFLAGS_config="@WARN_DFLAGS@ @GDCFLAGS@ @CET_DFLAGS@ -fno-release -funittest"
+      GDCFLAGS_config="@WARN_DFLAGS@ @GDCFLAGS@ @CET_DFLAGS@
+		       @phobos_compiler_shared_flag@ -fno-release -funittest"
       echo ${GDCFLAGS_default} ${GDCFLAGS_config}
       ;;
     --gdcpaths)

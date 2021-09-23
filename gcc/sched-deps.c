@@ -2579,21 +2579,6 @@ sched_analyze_2 (class deps_desc *deps, rtx x, rtx_insn *insn)
 
       return;
 
-    case CC0:
-      if (!HAVE_cc0)
-	gcc_unreachable ();
-
-      /* User of CC0 depends on immediately preceding insn.  */
-      SCHED_GROUP_P (insn) = 1;
-       /* Don't move CC0 setter to another block (it can set up the
-        same flag for previous CC0 users which is safe).  */
-      CANT_MOVE (prev_nonnote_insn (insn)) = 1;
-
-      if (cslr_p && sched_deps_info->finish_rhs)
-	sched_deps_info->finish_rhs ();
-
-      return;
-
     case REG:
       {
 	int regno = REGNO (x);

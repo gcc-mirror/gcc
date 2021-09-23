@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!	-*- c++ -*-
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -24,8 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 // Mapper interface for client and server bits
 #include "cody.hh"
 // C++
+#if !IN_GCC
 #include <string>
 #include <map>
+#endif
 
 // This is a GCC class, so GCC coding conventions on new bits.  
 class module_resolver : public Cody::Resolver
@@ -93,6 +95,10 @@ public:
   virtual int IncludeTranslateRequest (Cody::Server *s, Cody::Flags,
 				       std::string &include)
     override;
+
+  using parent::ModuleCompiledRequest;
+  virtual int ModuleCompiledRequest (Cody::Server *s, Cody::Flags Flags,
+				     std::string &Module) override;
 
 private:
   using parent::GetCMISuffix;

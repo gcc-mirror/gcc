@@ -4512,6 +4512,49 @@ gfc_simplify_leadz (gfc_expr *e)
 }
 
 
+/* Check for constant length of a substring.  */
+
+static bool
+substring_has_constant_len (gfc_expr *e)
+{
+  gfc_ref *ref;
+  HOST_WIDE_INT istart, iend, length;
+  bool equal_length = false;
+
+  if (e->ts.type != BT_CHARACTER)
+    return false;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type != REF_COMPONENT && ref->type != REF_ARRAY)
+      break;
+
+  if (!ref
+      || ref->type != REF_SUBSTRING
+      || !ref->u.ss.start
+      || ref->u.ss.start->expr_type != EXPR_CONSTANT
+      || !ref->u.ss.end
+      || ref->u.ss.end->expr_type != EXPR_CONSTANT)
+    return false;
+
+  /* Basic checks on substring starting and ending indices.  */
+  if (!gfc_resolve_substring (ref, &equal_length))
+    return false;
+
+  istart = gfc_mpz_get_hwi (ref->u.ss.start->value.integer);
+  iend = gfc_mpz_get_hwi (ref->u.ss.end->value.integer);
+
+  if (istart <= iend)
+    length = iend - istart + 1;
+  else
+    length = 0;
+
+  /* Fix substring length.  */
+  e->value.character.length = length;
+
+  return true;
+}
+
+
 gfc_expr *
 gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
 {
@@ -4521,7 +4564,8 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
   if (k == -1)
     return &gfc_bad_expr;
 
-  if (e->expr_type == EXPR_CONSTANT)
+  if (e->expr_type == EXPR_CONSTANT
+      || substring_has_constant_len (e))
     {
       result = gfc_get_constant_expr (BT_INTEGER, k, &e->where);
       mpz_set_si (result->value.integer, e->value.character.length);
@@ -8123,8 +8167,8 @@ gfc_simplify_transpose (gfc_expr *matrix)
 			       &matrix->where);
   result->rank = 2;
   result->shape = gfc_get_shape (result->rank);
-  mpz_set (result->shape[0], matrix->shape[1]);
-  mpz_set (result->shape[1], matrix->shape[0]);
+  mpz_init_set (result->shape[0], matrix->shape[1]);
+  mpz_init_set (result->shape[1], matrix->shape[0]);
 
   if (matrix->ts.type == BT_CHARACTER)
     result->ts.u.cl = matrix->ts.u.cl;

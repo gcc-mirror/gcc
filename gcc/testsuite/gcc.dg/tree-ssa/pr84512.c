@@ -13,4 +13,4 @@ int foo()
 }
 
 /* Listed targets xfailed due to PR84958.  */
-/* { dg-final { scan-tree-dump "return 285;" "optimized" { xfail { amdgcn*-*-* } } } } */
+/* { dg-final { scan-tree-dump "return 285;" "optimized" { xfail { amdgcn*-*-* || vect_variable_length } } } } */

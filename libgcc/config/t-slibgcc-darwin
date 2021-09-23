@@ -15,7 +15,7 @@ SHLIB_LC = -lc
 # Note that this version is used for the loader, not the linker; the linker
 # uses the stub versions named by the versioned members of $(INSTALL_FILES).
 
-SHLIB_LINK = $(CC) $(LIBGCC2_CFLAGS) -dynamiclib -nodefaultlibs \
+SHLIB_LINK = $(CC) $(LIBGCC2_CFLAGS) $(LDFLAGS) -dynamiclib -nodefaultlibs \
 	-install_name @shlib_slibdir@/$(SHLIB_INSTALL_NAME) \
 	-single_module -o $(SHLIB_DIR)/$(SHLIB_SONAME) \
 	-Wl,-exported_symbols_list,$(SHLIB_MAP) \

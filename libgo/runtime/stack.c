@@ -23,7 +23,7 @@ bool runtime_usestackmaps;
 #pragma GCC optimize ("-fno-optimize-sibling-calls")
 
 extern void scanstackblock(uintptr addr, uintptr size, void *gcw)
-  __asm__("runtime.scanstackblock");
+  __asm__(GOSYM_PREFIX "runtime.scanstackblock");
 
 static bool doscanstack1(G*, void*)
   __attribute__ ((noinline));
@@ -124,4 +124,67 @@ static bool doscanstack1(G *gp, void *gcw) {
 	}
 #endif
 	return true;
+}
+
+extern bool onCurrentStack(uintptr p)
+  __asm__(GOSYM_PREFIX "runtime.onCurrentStack");
+
+bool onCurrentStack(uintptr p)
+{
+#ifdef USING_SPLIT_STACK
+
+	void* sp;
+	size_t spsize;
+	void* next_segment;
+	void* next_sp;
+	void* initial_sp;
+
+	sp = __splitstack_find(nil, nil, &spsize, &next_segment, &next_sp,
+			       &initial_sp);
+	while (sp != nil) {
+		if (p >= (uintptr)(sp) && p < (uintptr)(sp) + spsize) {
+			return true;
+		}
+		sp = __splitstack_find(next_segment, next_sp, &spsize,
+				       &next_segment, &next_sp, &initial_sp);
+	}
+	return false;
+
+#else
+
+	G* gp;
+	byte* bottom;
+	byte* top;
+	byte* temp;
+	byte* nextsp2;
+	byte* initialsp2;
+
+	gp = runtime_g();
+	bottom = (byte*)(&p);
+	top = (byte*)(void*)(gp->gcinitialsp) + gp->gcstacksize;
+	if ((uintptr)(top) < (uintptr)(bottom)) {
+		temp = top;
+		top = bottom;
+		bottom = temp;
+	}
+	if (p >= (uintptr)(bottom) && p < (uintptr)(top)) {
+		return true;
+	}
+
+	nextsp2 = secondary_stack_pointer();
+	if (nextsp2 != nil) {
+		initialsp2 = (byte*)(void*)(gp->gcinitialsp2);
+		if ((uintptr)(initialsp2) < (uintptr)(nextsp2)) {
+			temp = initialsp2;
+			initialsp2 = nextsp2;
+			nextsp2 = temp;
+		}
+		if (p >= (uintptr)(nextsp2) && p < (uintptr)(initialsp2)) {
+			return true;
+		}
+	}
+
+	return false;
+
+#endif
 }

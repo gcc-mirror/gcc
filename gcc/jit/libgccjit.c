@@ -909,7 +909,7 @@ gcc_jit_context_new_function (gcc_jit_context *ctxt,
   RETURN_NULL_IF_FAIL (return_type, ctxt, loc, "NULL return_type");
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
   /* The assembler can only handle certain names, so for now, enforce
-     C's rules for identiers upon the name, using ISALPHA and ISALNUM
+     C's rules for identifiers upon the name, using ISALPHA and ISALNUM
      from safe-ctype.h to ignore the current locale.
      Eventually we'll need some way to interact with e.g. C++ name
      mangling.  */

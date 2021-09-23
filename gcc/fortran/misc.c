@@ -124,8 +124,10 @@ gfc_basic_typename (bt type)
 const char *
 gfc_typename (gfc_typespec *ts, bool for_hash)
 {
-  static char buffer1[GFC_MAX_SYMBOL_LEN + 7];  /* 7 for "TYPE()" + '\0'.  */
-  static char buffer2[GFC_MAX_SYMBOL_LEN + 7];
+  /* Need to add sufficient padding for "TYPE()" + '\0', "UNION()" + '\0',
+     or "CLASS()" + '\0'.  */
+  static char buffer1[GFC_MAX_SYMBOL_LEN + 8];
+  static char buffer2[GFC_MAX_SYMBOL_LEN + 8];
   static int flag = 0;
   char *buffer;
   gfc_typespec *ts1;

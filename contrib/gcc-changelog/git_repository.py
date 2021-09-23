@@ -29,7 +29,7 @@ except ImportError:
 from git_commit import GitCommit, GitInfo, decode_path
 
 
-def parse_git_revisions(repo_path, revisions, strict=True):
+def parse_git_revisions(repo_path, revisions, ref_name=None):
     repo = Repo(repo_path)
 
     def commit_to_info(commit):
@@ -72,7 +72,8 @@ def parse_git_revisions(repo_path, revisions, strict=True):
         commits = [repo.commit(revisions)]
 
     for commit in commits:
-        git_commit = GitCommit(commit_to_info(commit.hexsha), strict=strict,
-                               commit_to_info_hook=commit_to_info)
+        git_commit = GitCommit(commit_to_info(commit.hexsha),
+                               commit_to_info_hook=commit_to_info,
+                               ref_name=ref_name)
         parsed_commits.append(git_commit)
     return parsed_commits

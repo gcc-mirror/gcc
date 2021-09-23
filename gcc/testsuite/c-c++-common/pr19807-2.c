@@ -1,5 +1,4 @@
-/* Some targets can optimize this on RTL.  */
-/* { dg-do link { target { x86_64-*-* i?86-*-* } } } */
+/* { dg-do link } */
 /* { dg-options "-O -fdump-tree-optimized" } */
 
 extern void link_error(void);
@@ -12,4 +11,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "link_error" "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-not "link_error" "optimized" } } */

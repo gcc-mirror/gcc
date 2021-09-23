@@ -83,6 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _Bit_reference(const _Bit_reference&) = default;
 #endif
 
+    _GLIBCXX_NODISCARD
     operator bool() const _GLIBCXX_NOEXCEPT
     { return !!(*_M_p & _M_mask); }
 
@@ -100,10 +101,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     operator=(const _Bit_reference& __x) _GLIBCXX_NOEXCEPT
     { return *this = bool(__x); }
 
+    _GLIBCXX_NODISCARD
     bool
     operator==(const _Bit_reference& __x) const
     { return bool(*this) == bool(__x); }
 
+    _GLIBCXX_NODISCARD
     bool
     operator<(const _Bit_reference& __x) const
     { return !bool(*this) && bool(__x); }
@@ -182,11 +185,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_offset = static_cast<unsigned int>(__n);
     }
 
+    _GLIBCXX_NODISCARD
     friend _GLIBCXX20_CONSTEXPR bool
     operator==(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     { return __x._M_p == __y._M_p && __x._M_offset == __y._M_offset; }
 
 #if __cpp_lib_three_way_comparison
+    [[nodiscard]]
     friend constexpr strong_ordering
     operator<=>(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     noexcept
@@ -196,6 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return __x._M_offset <=> __y._M_offset;
     }
 #else
+    _GLIBCXX_NODISCARD
     friend bool
     operator<(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     {
@@ -203,18 +209,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    || (__x._M_p == __y._M_p && __x._M_offset < __y._M_offset);
     }
 
+    _GLIBCXX_NODISCARD
     friend bool
     operator!=(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     { return !(__x == __y); }
 
+    _GLIBCXX_NODISCARD
     friend bool
     operator>(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     { return __y < __x; }
 
+    _GLIBCXX_NODISCARD
     friend bool
     operator<=(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     { return !(__y < __x); }
 
+    _GLIBCXX_NODISCARD
     friend bool
     operator>=(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     { return !(__x < __y); }
@@ -247,6 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _M_const_cast() const
     { return *this; }
 
+    _GLIBCXX_NODISCARD
     reference
     operator*() const
     { return reference(_M_p, 1UL << _M_offset); }
@@ -295,10 +306,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return *this;
     }
 
+    _GLIBCXX_NODISCARD
     reference
     operator[](difference_type __i) const
     { return *(*this + __i); }
 
+    _GLIBCXX_NODISCARD
     friend iterator
     operator+(const iterator& __x, difference_type __n)
     {
@@ -307,10 +320,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return __tmp;
     }
 
+    _GLIBCXX_NODISCARD
     friend iterator
     operator+(difference_type __n, const iterator& __x)
     { return __x + __n; }
 
+    _GLIBCXX_NODISCARD
     friend iterator
     operator-(const iterator& __x, difference_type __n)
     {
@@ -343,6 +358,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _M_const_cast() const
     { return _Bit_iterator(_M_p, _M_offset); }
 
+    _GLIBCXX_NODISCARD
     const_reference
     operator*() const
     { return _Bit_reference(_M_p, 1UL << _M_offset); }
@@ -391,10 +407,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return *this;
     }
 
+    _GLIBCXX_NODISCARD
     const_reference
     operator[](difference_type __i) const
     { return *(*this + __i); }
 
+    _GLIBCXX_NODISCARD
     friend const_iterator
     operator+(const const_iterator& __x, difference_type __n)
     {
@@ -403,6 +421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return __tmp;
     }
 
+    _GLIBCXX_NODISCARD
     friend const_iterator
     operator-(const const_iterator& __x, difference_type __n)
     {
@@ -411,6 +430,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return __tmp;
     }
 
+    _GLIBCXX_NODISCARD
     friend const_iterator
     operator+(difference_type __n, const const_iterator& __x)
     { return __x + __n; }
@@ -827,60 +847,74 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { _M_assign_aux(__l.begin(), __l.end(), random_access_iterator_tag()); }
 #endif
 
+      _GLIBCXX_NODISCARD
       iterator
       begin() _GLIBCXX_NOEXCEPT
       { return iterator(this->_M_impl._M_start._M_p, 0); }
 
+      _GLIBCXX_NODISCARD
       const_iterator
       begin() const _GLIBCXX_NOEXCEPT
       { return const_iterator(this->_M_impl._M_start._M_p, 0); }
 
+      _GLIBCXX_NODISCARD
       iterator
       end() _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_finish; }
 
+      _GLIBCXX_NODISCARD
       const_iterator
       end() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_finish; }
 
+      _GLIBCXX_NODISCARD
       reverse_iterator
       rbegin() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(end()); }
 
+      _GLIBCXX_NODISCARD
       const_reverse_iterator
       rbegin() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(end()); }
 
+      _GLIBCXX_NODISCARD
       reverse_iterator
       rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(begin()); }
 
+      _GLIBCXX_NODISCARD
       const_reverse_iterator
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
 #if __cplusplus >= 201103L
+      [[__nodiscard__]]
       const_iterator
       cbegin() const noexcept
       { return const_iterator(this->_M_impl._M_start._M_p, 0); }
 
+      [[__nodiscard__]]
       const_iterator
       cend() const noexcept
       { return this->_M_impl._M_finish; }
 
+      [[__nodiscard__]]
       const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
+      [[__nodiscard__]]
       const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(begin()); }
 #endif
 
+      _GLIBCXX_NODISCARD
       size_type
       size() const _GLIBCXX_NOEXCEPT
       { return size_type(end() - begin()); }
 
+      _GLIBCXX_NODISCARD
       size_type
       max_size() const _GLIBCXX_NOEXCEPT
       {
@@ -893,6 +927,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		? __asize * int(_S_word_bit) : __isize);
       }
 
+      _GLIBCXX_NODISCARD
       size_type
       capacity() const _GLIBCXX_NOEXCEPT
       { return size_type(const_iterator(this->_M_impl._M_end_addr(), 0)
@@ -902,10 +937,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       empty() const _GLIBCXX_NOEXCEPT
       { return begin() == end(); }
 
+      _GLIBCXX_NODISCARD
       reference
       operator[](size_type __n)
       { return begin()[__n]; }
 
+      _GLIBCXX_NODISCARD
       const_reference
       operator[](size_type __n) const
       { return begin()[__n]; }
@@ -939,18 +976,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _M_reallocate(__n);
       }
 
+      _GLIBCXX_NODISCARD
       reference
       front()
       { return *begin(); }
 
+      _GLIBCXX_NODISCARD
       const_reference
       front() const
       { return *begin(); }
 
+      _GLIBCXX_NODISCARD
       reference
       back()
       { return *(end() - 1); }
 
+      _GLIBCXX_NODISCARD
       const_reference
       back() const
       { return *(end() - 1); }

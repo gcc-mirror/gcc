@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build hurd || linux
 // +build hurd linux
 
 // glibc library calls.
@@ -9,6 +10,7 @@
 package syscall
 
 import (
+	"internal/itoa"
 	"internal/race"
 	"unsafe"
 )
@@ -28,7 +30,7 @@ func Futimesat(dirfd int, path string, tv []Timeval) (err error) {
 func Futimes(fd int, tv []Timeval) (err error) {
 	// Believe it or not, this is the best we can do on GNU/Linux
 	// (and is what glibc does).
-	return Utimes("/proc/self/fd/"+itoa(fd), tv)
+	return Utimes("/proc/self/fd/"+itoa.Itoa(fd), tv)
 }
 
 //sys	accept4(fd int, sa *RawSockaddrAny, len *Socklen_t, flags int) (nfd int, err error)

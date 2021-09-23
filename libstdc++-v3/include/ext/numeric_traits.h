@@ -93,12 +93,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Enable __numeric_traits_integer for types where the __is_integer_nonstrict
   // primary template doesn't give the right answer.
 #define _GLIBCXX_INT_N_TRAITS(T, WIDTH)			\
+  __extension__						\
   template<> struct __is_integer_nonstrict<T>		\
   {							\
     enum { __value = 1 };				\
     typedef std::__true_type __type;			\
     enum { __width = WIDTH };				\
   };							\
+  __extension__						\
   template<> struct __is_integer_nonstrict<unsigned T>	\
   {							\
     enum { __value = 1 };				\

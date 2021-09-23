@@ -30,7 +30,7 @@ t1 ()
     }
 
 #pragma acc enter data copyin(a)
-#pragma acc acc enter data attach(s.e)
+#pragma acc enter data attach(s.e)
 #pragma acc exit data detach(s.e)
 
 #pragma acc data attach(s.e)
@@ -43,14 +43,15 @@ t1 ()
   }
 }
 
-/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_exit_data map.to:s .len: 32.." 1 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_data map.to:s .len: 32.." 1 "omplower" } } */
 /* { dg-final { scan-tree-dump-times "pragma omp target oacc_data map.tofrom:.z .len: 40.. map.struct:s .len: 1.. map.alloc:s.a .len: 8.. map.tofrom:._1 .len: 40.. map.attach:s.a .bias: 0.." 1 "omplower" } } */
 /* { dg-final { scan-tree-dump-times "pragma omp target oacc_parallel map.attach:s.e .bias: 0.. map.tofrom:s .len: 32" 1 "omplower" } } */
-/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_exit_data map.attach:a .bias: 0.." 1 "omplower" } } */
-/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_exit_data map.detach:a .bias: 0.." 1 "omplower" } } */
-/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_exit_data map.to:a .len: 8.." 1 "omplower" } } */
-/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_exit_data map.detach:s.e .bias: 0.." 1 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_data map.attach:a .bias: 0.." 1 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "pragma omp target oacc_exit_data map.detach:a .bias: 0.." 1 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_data map.to:a .len: 8.." 1 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_data map.attach:s.e .bias: 0.." 1 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "pragma omp target oacc_exit_data map.detach:s.e .bias: 0.." 1 "omplower" } } */
 /* { dg-final { scan-tree-dump-times "pragma omp target oacc_data map.attach:s.e .bias: 0.." 1 "omplower" } } */
-/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_exit_data map.release:a .len: 8.." 1 "omplower" } } */
-/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_exit_data finalize map.force_detach:a .bias: 0.." 1 "omplower" } } */
-/* { dg-final { scan-tree-dump-times "pragma omp target oacc_enter_exit_data finalize map.force_detach:s.a .bias: 0.." 1 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "pragma omp target oacc_exit_data map.release:a .len: 8.." 1 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "pragma omp target oacc_exit_data finalize map.force_detach:a .bias: 0.." 1 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "pragma omp target oacc_exit_data finalize map.force_detach:s.a .bias: 0.." 1 "omplower" } } */

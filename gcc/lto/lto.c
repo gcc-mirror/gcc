@@ -306,7 +306,7 @@ lto_wpa_write_files (void)
   cgraph_node *node;
   /* Do body modifications needed for streaming before we fork out
      worker processes.  */
-  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+  FOR_EACH_FUNCTION (node)
     if (!node->clone_of && gimple_has_body_p (node->decl))
       lto_prepare_function_for_streaming (node);
 

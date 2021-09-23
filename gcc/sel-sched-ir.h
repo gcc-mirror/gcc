@@ -1166,7 +1166,7 @@ get_all_loop_exits (basic_block bb)
 	     || (inner_loop_header_p (e->dest)))
 	    && loop_depth (e->dest->loop_father) >= this_depth)
 	  {
-	    vec<edge> next_exits = get_all_loop_exits (e->dest);
+	    auto_vec<edge> next_exits = get_all_loop_exits (e->dest);
 
 	    if (next_exits.exists ())
 	      {

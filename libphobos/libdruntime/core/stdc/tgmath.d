@@ -32,12 +32,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.acosl         acos;
 
-    ///
-    alias core.stdc.complex.cacos      acos;
-    ///
-    alias core.stdc.complex.cacosf     acos;
-    ///
-    alias core.stdc.complex.cacosl     acos;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cacos      acos;
+    deprecated alias core.stdc.complex.cacosf     acos;
+    deprecated alias core.stdc.complex.cacosl     acos;
 
     ///
     alias core.stdc.math.asin          asin;
@@ -46,12 +44,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.asinl         asin;
 
-    ///
-    alias core.stdc.complex.casin      asin;
-    ///
-    alias core.stdc.complex.casinf     asin;
-    ///
-    alias core.stdc.complex.casinl     asin;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.casin      asin;
+    deprecated alias core.stdc.complex.casinf     asin;
+    deprecated alias core.stdc.complex.casinl     asin;
 
     ///
     alias core.stdc.math.atan          atan;
@@ -60,12 +56,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.atanl         atan;
 
-    ///
-    alias core.stdc.complex.catan      atan;
-    ///
-    alias core.stdc.complex.catanf     atan;
-    ///
-    alias core.stdc.complex.catanl     atan;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.catan      atan;
+    deprecated alias core.stdc.complex.catanf     atan;
+    deprecated alias core.stdc.complex.catanl     atan;
 
     ///
     alias core.stdc.math.atan2         atan2;
@@ -81,12 +75,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.cosl          cos;
 
-    ///
-    alias core.stdc.complex.ccos       cos;
-    ///
-    alias core.stdc.complex.ccosf      cos;
-    ///
-    alias core.stdc.complex.ccosl      cos;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ccos       cos;
+    deprecated alias core.stdc.complex.ccosf      cos;
+    deprecated alias core.stdc.complex.ccosl      cos;
 
     ///
     alias core.stdc.math.sin           sin;
@@ -95,12 +87,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.sinl          sin;
 
-    ///
-    alias core.stdc.complex.csin       csin;
-    ///
-    alias core.stdc.complex.csinf      csin;
-    ///
-    alias core.stdc.complex.csinl      csin;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.csin       csin;
+    deprecated alias core.stdc.complex.csinf      csin;
+    deprecated alias core.stdc.complex.csinl      csin;
 
     ///
     alias core.stdc.math.tan           tan;
@@ -109,12 +99,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.tanl          tan;
 
-    ///
-    alias core.stdc.complex.ctan       tan;
-    ///
-    alias core.stdc.complex.ctanf      tan;
-    ///
-    alias core.stdc.complex.ctanl      tan;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ctan       tan;
+    deprecated alias core.stdc.complex.ctanf      tan;
+    deprecated alias core.stdc.complex.ctanl      tan;
 
     ///
     alias core.stdc.math.acosh         acosh;
@@ -123,12 +111,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.acoshl        acosh;
 
-    ///
-    alias core.stdc.complex.cacosh     acosh;
-    ///
-    alias core.stdc.complex.cacoshf    acosh;
-    ///
-    alias core.stdc.complex.cacoshl    acosh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cacosh     acosh;
+    deprecated alias core.stdc.complex.cacoshf    acosh;
+    deprecated alias core.stdc.complex.cacoshl    acosh;
 
     ///
     alias core.stdc.math.asinh         asinh;
@@ -137,12 +123,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.asinhl        asinh;
 
-    ///
-    alias core.stdc.complex.casinh     asinh;
-    ///
-    alias core.stdc.complex.casinhf    asinh;
-    ///
-    alias core.stdc.complex.casinhl    asinh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.casinh     asinh;
+    deprecated alias core.stdc.complex.casinhf    asinh;
+    deprecated alias core.stdc.complex.casinhl    asinh;
 
     ///
     alias core.stdc.math.atanh         atanh;
@@ -151,12 +135,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.atanhl        atanh;
 
-    ///
-    alias core.stdc.complex.catanh     atanh;
-    ///
-    alias core.stdc.complex.catanhf    atanh;
-    ///
-    alias core.stdc.complex.catanhl    atanh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.catanh     atanh;
+    deprecated alias core.stdc.complex.catanhf    atanh;
+    deprecated alias core.stdc.complex.catanhl    atanh;
 
     ///
     alias core.stdc.math.cosh          cosh;
@@ -165,12 +147,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.coshl         cosh;
 
-    ///
-    alias core.stdc.complex.ccosh      cosh;
-    ///
-    alias core.stdc.complex.ccoshf     cosh;
-    ///
-    alias core.stdc.complex.ccoshl     cosh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ccosh      cosh;
+    deprecated alias core.stdc.complex.ccoshf     cosh;
+    deprecated alias core.stdc.complex.ccoshl     cosh;
 
     ///
     alias core.stdc.math.sinh          sinh;
@@ -179,12 +159,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.sinhl         sinh;
 
-    ///
-    alias core.stdc.complex.csinh      sinh;
-    ///
-    alias core.stdc.complex.csinhf     sinh;
-    ///
-    alias core.stdc.complex.csinhl     sinh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.csinh      sinh;
+    deprecated alias core.stdc.complex.csinhf     sinh;
+    deprecated alias core.stdc.complex.csinhl     sinh;
 
     ///
     alias core.stdc.math.tanh          tanh;
@@ -193,12 +171,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.tanhl         tanh;
 
-    ///
-    alias core.stdc.complex.ctanh      tanh;
-    ///
-    alias core.stdc.complex.ctanhf     tanh;
-    ///
-    alias core.stdc.complex.ctanhl     tanh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ctanh      tanh;
+    deprecated alias core.stdc.complex.ctanhf     tanh;
+    deprecated alias core.stdc.complex.ctanhl     tanh;
 
     ///
     alias core.stdc.math.exp           exp;
@@ -207,12 +183,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.expl          exp;
 
-    ///
-    alias core.stdc.complex.cexp       exp;
-    ///
-    alias core.stdc.complex.cexpf      exp;
-    ///
-    alias core.stdc.complex.cexpl      exp;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cexp       exp;
+    deprecated alias core.stdc.complex.cexpf      exp;
+    deprecated alias core.stdc.complex.cexpl      exp;
 
     ///
     alias core.stdc.math.exp2          exp2;
@@ -256,12 +230,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.logl          log;
 
-    ///
-    alias core.stdc.complex.clog       log;
-    ///
-    alias core.stdc.complex.clogf      log;
-    ///
-    alias core.stdc.complex.clogl      log;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.clog       log;
+    deprecated alias core.stdc.complex.clogf      log;
+    deprecated alias core.stdc.complex.clogl      log;
 
     ///
     alias core.stdc.math.log10         log10;
@@ -325,12 +297,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.fabsl         fabs;
 
-    ///
-    alias core.stdc.complex.cabs       fabs;
-    ///
-    alias core.stdc.complex.cabsf      fabs;
-    ///
-    alias core.stdc.complex.cabsl      fabs;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cabs       fabs;
+    deprecated alias core.stdc.complex.cabsf      fabs;
+    deprecated alias core.stdc.complex.cabsl      fabs;
 
     ///
     alias core.stdc.math.hypot         hypot;
@@ -346,12 +316,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.powl          pow;
 
-    ///
-    alias core.stdc.complex.cpow       pow;
-    ///
-    alias core.stdc.complex.cpowf      pow;
-    ///
-    alias core.stdc.complex.cpowl      pow;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cpow       pow;
+    deprecated alias core.stdc.complex.cpowf      pow;
+    deprecated alias core.stdc.complex.cpowl      pow;
 
     ///
     alias core.stdc.math.sqrt          sqrt;
@@ -360,12 +328,10 @@ version (NetBSD)
     ///
     alias core.stdc.math.sqrtl         sqrt;
 
-    ///
-    alias core.stdc.complex.csqrt      sqrt;
-    ///
-    alias core.stdc.complex.csqrtf     sqrt;
-    ///
-    alias core.stdc.complex.csqrtl     sqrt;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.csqrt      sqrt;
+    deprecated alias core.stdc.complex.csqrtf     sqrt;
+    deprecated alias core.stdc.complex.csqrtl     sqrt;
 
     ///
     alias core.stdc.math.erf           erf;
@@ -539,37 +505,23 @@ version (NetBSD)
     ///
     alias core.stdc.math.fmal          fma;
 
-    ///
-    alias core.stdc.complex.carg       carg;
-    ///
-    alias core.stdc.complex.cargf      carg;
-    ///
-    alias core.stdc.complex.cargl      carg;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.carg       carg;
+    deprecated alias core.stdc.complex.cargf      carg;
+    deprecated alias core.stdc.complex.cargl      carg;
+    deprecated alias core.stdc.complex.cimag      cimag;
+    deprecated alias core.stdc.complex.cimagf     cimag;
+    deprecated alias core.stdc.complex.cimagl     cimag;
+    deprecated alias core.stdc.complex.conj       conj;
+    deprecated alias core.stdc.complex.conjf      conj;
+    deprecated alias core.stdc.complex.conjl      conj;
+    deprecated alias core.stdc.complex.cproj      cproj;
+    deprecated alias core.stdc.complex.cprojf     cproj;
+    deprecated alias core.stdc.complex.cprojl     cproj;
 
-    ///
-    alias core.stdc.complex.cimag      cimag;
-    ///
-    alias core.stdc.complex.cimagf     cimag;
-    ///
-    alias core.stdc.complex.cimagl     cimag;
-
-    ///
-    alias core.stdc.complex.conj       conj;
-    ///
-    alias core.stdc.complex.conjf      conj;
-    ///
-    alias core.stdc.complex.conjl      conj;
-
-    ///
-    alias core.stdc.complex.cproj      cproj;
-    ///
-    alias core.stdc.complex.cprojf     cproj;
-    ///
-    alias core.stdc.complex.cprojl     cproj;
-
-//  alias core.stdc.complex.creal      creal;
-//  alias core.stdc.complex.crealf     creal;
-//  alias core.stdc.complex.creall     creal;
+//  deprecated alias core.stdc.complex.creal      creal;
+//  deprecated alias core.stdc.complex.crealf     creal;
+//  deprecated alias core.stdc.complex.creall     creal;
 }
 else version (OpenBSD)
 {
@@ -580,12 +532,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.acosl         acos;
 
-    ///
-    alias core.stdc.complex.cacos      acos;
-    ///
-    alias core.stdc.complex.cacosf     acos;
-    ///
-    alias core.stdc.complex.cacosl     acos;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cacos      acos;
+    deprecated alias core.stdc.complex.cacosf     acos;
+    deprecated alias core.stdc.complex.cacosl     acos;
 
     ///
     alias core.stdc.math.asin          asin;
@@ -594,12 +544,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.asinl         asin;
 
-    ///
-    alias core.stdc.complex.casin      asin;
-    ///
-    alias core.stdc.complex.casinf     asin;
-    ///
-    alias core.stdc.complex.casinl     asin;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.casin      asin;
+    deprecated alias core.stdc.complex.casinf     asin;
+    deprecated alias core.stdc.complex.casinl     asin;
 
     ///
     alias core.stdc.math.atan          atan;
@@ -608,12 +556,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.atanl         atan;
 
-    ///
-    alias core.stdc.complex.catan      atan;
-    ///
-    alias core.stdc.complex.catanf     atan;
-    ///
-    alias core.stdc.complex.catanl     atan;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.catan      atan;
+    deprecated alias core.stdc.complex.catanf     atan;
+    deprecated alias core.stdc.complex.catanl     atan;
 
     ///
     alias core.stdc.math.atan2         atan2;
@@ -629,12 +575,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.cosl          cos;
 
-    ///
-    alias core.stdc.complex.ccos       cos;
-    ///
-    alias core.stdc.complex.ccosf      cos;
-    ///
-    alias core.stdc.complex.ccosl      cos;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ccos       cos;
+    deprecated alias core.stdc.complex.ccosf      cos;
+    deprecated alias core.stdc.complex.ccosl      cos;
 
     ///
     alias core.stdc.math.sin           sin;
@@ -643,12 +587,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.sinl          sin;
 
-    ///
-    alias core.stdc.complex.csin       csin;
-    ///
-    alias core.stdc.complex.csinf      csin;
-    ///
-    alias core.stdc.complex.csinl      csin;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.csin       csin;
+    deprecated alias core.stdc.complex.csinf      csin;
+    deprecated alias core.stdc.complex.csinl      csin;
 
     ///
     alias core.stdc.math.tan           tan;
@@ -657,12 +599,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.tanl          tan;
 
-    ///
-    alias core.stdc.complex.ctan       tan;
-    ///
-    alias core.stdc.complex.ctanf      tan;
-    ///
-    alias core.stdc.complex.ctanl      tan;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ctan       tan;
+    deprecated alias core.stdc.complex.ctanf      tan;
+    deprecated alias core.stdc.complex.ctanl      tan;
 
     ///
     alias core.stdc.math.acosh         acosh;
@@ -671,12 +611,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.acoshl        acosh;
 
-    ///
-    alias core.stdc.complex.cacosh     acosh;
-    ///
-    alias core.stdc.complex.cacoshf    acosh;
-    ///
-    alias core.stdc.complex.cacoshl    acosh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cacosh     acosh;
+    deprecated alias core.stdc.complex.cacoshf    acosh;
+    deprecated alias core.stdc.complex.cacoshl    acosh;
 
     ///
     alias core.stdc.math.asinh         asinh;
@@ -685,12 +623,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.asinhl        asinh;
 
-    ///
-    alias core.stdc.complex.casinh     asinh;
-    ///
-    alias core.stdc.complex.casinhf    asinh;
-    ///
-    alias core.stdc.complex.casinhl    asinh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.casinh     asinh;
+    deprecated alias core.stdc.complex.casinhf    asinh;
+    deprecated alias core.stdc.complex.casinhl    asinh;
 
     ///
     alias core.stdc.math.atanh         atanh;
@@ -699,12 +635,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.atanhl        atanh;
 
-    ///
-    alias core.stdc.complex.catanh     atanh;
-    ///
-    alias core.stdc.complex.catanhf    atanh;
-    ///
-    alias core.stdc.complex.catanhl    atanh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.catanh     atanh;
+    deprecated alias core.stdc.complex.catanhf    atanh;
+    deprecated alias core.stdc.complex.catanhl    atanh;
 
     ///
     alias core.stdc.math.cosh          cosh;
@@ -713,12 +647,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.coshl         cosh;
 
-    ///
-    alias core.stdc.complex.ccosh      cosh;
-    ///
-    alias core.stdc.complex.ccoshf     cosh;
-    ///
-    alias core.stdc.complex.ccoshl     cosh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ccosh      cosh;
+    deprecated alias core.stdc.complex.ccoshf     cosh;
+    deprecated alias core.stdc.complex.ccoshl     cosh;
 
     ///
     alias core.stdc.math.sinh          sinh;
@@ -727,12 +659,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.sinhl         sinh;
 
-    ///
-    alias core.stdc.complex.csinh      sinh;
-    ///
-    alias core.stdc.complex.csinhf     sinh;
-    ///
-    alias core.stdc.complex.csinhl     sinh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.csinh      sinh;
+    deprecated alias core.stdc.complex.csinhf     sinh;
+    deprecated alias core.stdc.complex.csinhl     sinh;
 
     ///
     alias core.stdc.math.tanh          tanh;
@@ -741,12 +671,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.tanhl         tanh;
 
-    ///
-    alias core.stdc.complex.ctanh      tanh;
-    ///
-    alias core.stdc.complex.ctanhf     tanh;
-    ///
-    alias core.stdc.complex.ctanhl     tanh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ctanh      tanh;
+    deprecated alias core.stdc.complex.ctanhf     tanh;
+    deprecated alias core.stdc.complex.ctanhl     tanh;
 
     ///
     alias core.stdc.math.exp           exp;
@@ -755,12 +683,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.expl          exp;
 
-    ///
-    alias core.stdc.complex.cexp       exp;
-    ///
-    alias core.stdc.complex.cexpf      exp;
-    ///
-    alias core.stdc.complex.cexpl      exp;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cexp       exp;
+    deprecated alias core.stdc.complex.cexpf      exp;
+    deprecated alias core.stdc.complex.cexpl      exp;
 
     ///
     alias core.stdc.math.exp2          exp2;
@@ -804,12 +730,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.logl          log;
 
-    ///
-    alias core.stdc.complex.clog       log;
-    ///
-    alias core.stdc.complex.clogf      log;
-    ///
-    alias core.stdc.complex.clogl      log;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.clog       log;
+    deprecated alias core.stdc.complex.clogf      log;
+    deprecated alias core.stdc.complex.clogl      log;
 
     ///
     alias core.stdc.math.log10         log10;
@@ -874,12 +798,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.fabsl         fabs;
 
-    ///
-    alias core.stdc.complex.cabs       fabs;
-    ///
-    alias core.stdc.complex.cabsf      fabs;
-    ///
-    alias core.stdc.complex.cabsl      fabs;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cabs       fabs;
+    deprecated alias core.stdc.complex.cabsf      fabs;
+    deprecated alias core.stdc.complex.cabsl      fabs;
 
     ///
     alias core.stdc.math.hypot         hypot;
@@ -895,12 +817,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.powl          pow;
 
-    ///
-    alias core.stdc.complex.cpow       pow;
-    ///
-    alias core.stdc.complex.cpowf      pow;
-    ///
-    alias core.stdc.complex.cpowl      pow;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cpow       pow;
+    deprecated alias core.stdc.complex.cpowf      pow;
+    deprecated alias core.stdc.complex.cpowl      pow;
 
     ///
     alias core.stdc.math.sqrt          sqrt;
@@ -909,12 +829,10 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.sqrtl         sqrt;
 
-    ///
-    alias core.stdc.complex.csqrt      sqrt;
-    ///
-    alias core.stdc.complex.csqrtf     sqrt;
-    ///
-    alias core.stdc.complex.csqrtl     sqrt;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.csqrt      sqrt;
+    deprecated alias core.stdc.complex.csqrtf     sqrt;
+    deprecated alias core.stdc.complex.csqrtl     sqrt;
 
     ///
     alias core.stdc.math.erf           erf;
@@ -1077,37 +995,23 @@ else version (OpenBSD)
     ///
     alias core.stdc.math.fmal          fma;
 
-    ///
-    alias core.stdc.complex.carg       carg;
-    ///
-    alias core.stdc.complex.cargf      carg;
-    ///
-    alias core.stdc.complex.cargl      carg;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.carg       carg;
+    deprecated alias core.stdc.complex.cargf      carg;
+    deprecated alias core.stdc.complex.cargl      carg;
+    deprecated alias core.stdc.complex.cimag      cimag;
+    deprecated alias core.stdc.complex.cimagf     cimag;
+    deprecated alias core.stdc.complex.cimagl     cimag;
+    deprecated alias core.stdc.complex.conj       conj;
+    deprecated alias core.stdc.complex.conjf      conj;
+    deprecated alias core.stdc.complex.conjl      conj;
+    deprecated alias core.stdc.complex.cproj      cproj;
+    deprecated alias core.stdc.complex.cprojf     cproj;
+    deprecated alias core.stdc.complex.cprojl     cproj;
 
-    ///
-    alias core.stdc.complex.cimag      cimag;
-    ///
-    alias core.stdc.complex.cimagf     cimag;
-    ///
-    alias core.stdc.complex.cimagl     cimag;
-
-    ///
-    alias core.stdc.complex.conj       conj;
-    ///
-    alias core.stdc.complex.conjf      conj;
-    ///
-    alias core.stdc.complex.conjl      conj;
-
-    ///
-    alias core.stdc.complex.cproj      cproj;
-    ///
-    alias core.stdc.complex.cprojf     cproj;
-    ///
-    alias core.stdc.complex.cprojl     cproj;
-
-//  alias core.stdc.complex.creal      creal;
-//  alias core.stdc.complex.crealf     creal;
-//  alias core.stdc.complex.creall     creal;
+//  deprecated alias core.stdc.complex.creal      creal;
+//  deprecated alias core.stdc.complex.crealf     creal;
+//  deprecated alias core.stdc.complex.creall     creal;
 }
 else
 {
@@ -1118,12 +1022,10 @@ else
     ///
     alias core.stdc.math.acosl         acos;
 
-    ///
-    alias core.stdc.complex.cacos      acos;
-    ///
-    alias core.stdc.complex.cacosf     acos;
-    ///
-    alias core.stdc.complex.cacosl     acos;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cacos      acos;
+    deprecated alias core.stdc.complex.cacosf     acos;
+    deprecated alias core.stdc.complex.cacosl     acos;
 
     ///
     alias core.stdc.math.asin          asin;
@@ -1132,12 +1034,10 @@ else
     ///
     alias core.stdc.math.asinl         asin;
 
-    ///
-    alias core.stdc.complex.casin      asin;
-    ///
-    alias core.stdc.complex.casinf     asin;
-    ///
-    alias core.stdc.complex.casinl     asin;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.casin      asin;
+    deprecated alias core.stdc.complex.casinf     asin;
+    deprecated alias core.stdc.complex.casinl     asin;
 
     ///
     alias core.stdc.math.atan          atan;
@@ -1146,12 +1046,10 @@ else
     ///
     alias core.stdc.math.atanl         atan;
 
-    ///
-    alias core.stdc.complex.catan      atan;
-    ///
-    alias core.stdc.complex.catanf     atan;
-    ///
-    alias core.stdc.complex.catanl     atan;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.catan      atan;
+    deprecated alias core.stdc.complex.catanf     atan;
+    deprecated alias core.stdc.complex.catanl     atan;
 
     ///
     alias core.stdc.math.atan2         atan2;
@@ -1167,12 +1065,10 @@ else
     ///
     alias core.stdc.math.cosl          cos;
 
-    ///
-    alias core.stdc.complex.ccos       cos;
-    ///
-    alias core.stdc.complex.ccosf      cos;
-    ///
-    alias core.stdc.complex.ccosl      cos;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ccos       cos;
+    deprecated alias core.stdc.complex.ccosf      cos;
+    deprecated alias core.stdc.complex.ccosl      cos;
 
     ///
     alias core.stdc.math.sin           sin;
@@ -1181,12 +1077,10 @@ else
     ///
     alias core.stdc.math.sinl          sin;
 
-    ///
-    alias core.stdc.complex.csin       csin;
-    ///
-    alias core.stdc.complex.csinf      csin;
-    ///
-    alias core.stdc.complex.csinl      csin;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.csin       csin;
+    deprecated alias core.stdc.complex.csinf      csin;
+    deprecated alias core.stdc.complex.csinl      csin;
 
     ///
     alias core.stdc.math.tan           tan;
@@ -1195,12 +1089,10 @@ else
     ///
     alias core.stdc.math.tanl          tan;
 
-    ///
-    alias core.stdc.complex.ctan       tan;
-    ///
-    alias core.stdc.complex.ctanf      tan;
-    ///
-    alias core.stdc.complex.ctanl      tan;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ctan       tan;
+    deprecated alias core.stdc.complex.ctanf      tan;
+    deprecated alias core.stdc.complex.ctanl      tan;
 
     ///
     alias core.stdc.math.acosh         acosh;
@@ -1209,12 +1101,10 @@ else
     ///
     alias core.stdc.math.acoshl        acosh;
 
-    ///
-    alias core.stdc.complex.cacosh     acosh;
-    ///
-    alias core.stdc.complex.cacoshf    acosh;
-    ///
-    alias core.stdc.complex.cacoshl    acosh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cacosh     acosh;
+    deprecated alias core.stdc.complex.cacoshf    acosh;
+    deprecated alias core.stdc.complex.cacoshl    acosh;
 
     ///
     alias core.stdc.math.asinh         asinh;
@@ -1223,12 +1113,10 @@ else
     ///
     alias core.stdc.math.asinhl        asinh;
 
-    ///
-    alias core.stdc.complex.casinh     asinh;
-    ///
-    alias core.stdc.complex.casinhf    asinh;
-    ///
-    alias core.stdc.complex.casinhl    asinh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.casinh     asinh;
+    deprecated alias core.stdc.complex.casinhf    asinh;
+    deprecated alias core.stdc.complex.casinhl    asinh;
 
     ///
     alias core.stdc.math.atanh         atanh;
@@ -1237,12 +1125,10 @@ else
     ///
     alias core.stdc.math.atanhl        atanh;
 
-    ///
-    alias core.stdc.complex.catanh     atanh;
-    ///
-    alias core.stdc.complex.catanhf    atanh;
-    ///
-    alias core.stdc.complex.catanhl    atanh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.catanh     atanh;
+    deprecated alias core.stdc.complex.catanhf    atanh;
+    deprecated alias core.stdc.complex.catanhl    atanh;
 
     ///
     alias core.stdc.math.cosh          cosh;
@@ -1251,12 +1137,10 @@ else
     ///
     alias core.stdc.math.coshl         cosh;
 
-    ///
-    alias core.stdc.complex.ccosh      cosh;
-    ///
-    alias core.stdc.complex.ccoshf     cosh;
-    ///
-    alias core.stdc.complex.ccoshl     cosh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ccosh      cosh;
+    deprecated alias core.stdc.complex.ccoshf     cosh;
+    deprecated alias core.stdc.complex.ccoshl     cosh;
 
     ///
     alias core.stdc.math.sinh          sinh;
@@ -1265,12 +1149,10 @@ else
     ///
     alias core.stdc.math.sinhl         sinh;
 
-    ///
-    alias core.stdc.complex.csinh      sinh;
-    ///
-    alias core.stdc.complex.csinhf     sinh;
-    ///
-    alias core.stdc.complex.csinhl     sinh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.csinh      sinh;
+    deprecated alias core.stdc.complex.csinhf     sinh;
+    deprecated alias core.stdc.complex.csinhl     sinh;
 
     ///
     alias core.stdc.math.tanh          tanh;
@@ -1279,12 +1161,10 @@ else
     ///
     alias core.stdc.math.tanhl         tanh;
 
-    ///
-    alias core.stdc.complex.ctanh      tanh;
-    ///
-    alias core.stdc.complex.ctanhf     tanh;
-    ///
-    alias core.stdc.complex.ctanhl     tanh;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.ctanh      tanh;
+    deprecated alias core.stdc.complex.ctanhf     tanh;
+    deprecated alias core.stdc.complex.ctanhl     tanh;
 
     ///
     alias core.stdc.math.exp           exp;
@@ -1293,12 +1173,10 @@ else
     ///
     alias core.stdc.math.expl          exp;
 
-    ///
-    alias core.stdc.complex.cexp       exp;
-    ///
-    alias core.stdc.complex.cexpf      exp;
-    ///
-    alias core.stdc.complex.cexpl      exp;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cexp       exp;
+    deprecated alias core.stdc.complex.cexpf      exp;
+    deprecated alias core.stdc.complex.cexpl      exp;
 
     ///
     alias core.stdc.math.exp2          exp2;
@@ -1342,12 +1220,10 @@ else
     ///
     alias core.stdc.math.logl          log;
 
-    ///
-    alias core.stdc.complex.clog       log;
-    ///
-    alias core.stdc.complex.clogf      log;
-    ///
-    alias core.stdc.complex.clogl      log;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.clog       log;
+    deprecated alias core.stdc.complex.clogf      log;
+    deprecated alias core.stdc.complex.clogl      log;
 
     ///
     alias core.stdc.math.log10         log10;
@@ -1409,6 +1285,13 @@ else
     alias core.stdc.math.fabs          fabs;
     version (CRuntime_Microsoft)
     {
+        version (MinGW)
+        {
+            ///
+            alias core.stdc.math.fabsf     fabs;
+            ///
+            alias core.stdc.math.fabsl     fabs;
+        }
     }
     else
     {
@@ -1418,12 +1301,10 @@ else
         alias core.stdc.math.fabsl         fabs;
     }
 
-    ///
-    alias core.stdc.complex.cabs       fabs;
-    ///
-    alias core.stdc.complex.cabsf      fabs;
-    ///
-    alias core.stdc.complex.cabsl      fabs;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cabs       fabs;
+    deprecated alias core.stdc.complex.cabsf      fabs;
+    deprecated alias core.stdc.complex.cabsl      fabs;
 
     ///
     alias core.stdc.math.hypot         hypot;
@@ -1439,12 +1320,10 @@ else
     ///
     alias core.stdc.math.powl          pow;
 
-    ///
-    alias core.stdc.complex.cpow       pow;
-    ///
-    alias core.stdc.complex.cpowf      pow;
-    ///
-    alias core.stdc.complex.cpowl      pow;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.cpow       pow;
+    deprecated alias core.stdc.complex.cpowf      pow;
+    deprecated alias core.stdc.complex.cpowl      pow;
 
     ///
     alias core.stdc.math.sqrt          sqrt;
@@ -1453,12 +1332,10 @@ else
     ///
     alias core.stdc.math.sqrtl         sqrt;
 
-    ///
-    alias core.stdc.complex.csqrt      sqrt;
-    ///
-    alias core.stdc.complex.csqrtf     sqrt;
-    ///
-    alias core.stdc.complex.csqrtl     sqrt;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.csqrt      sqrt;
+    deprecated alias core.stdc.complex.csqrtf     sqrt;
+    deprecated alias core.stdc.complex.csqrtl     sqrt;
 
     ///
     alias core.stdc.math.erf           erf;
@@ -1635,35 +1512,20 @@ else
     ///
     alias core.stdc.math.fmal          fma;
 
-    ///
-    alias core.stdc.complex.carg       carg;
-    ///
-    alias core.stdc.complex.cargf      carg;
-    ///
-    alias core.stdc.complex.cargl      carg;
-
-    ///
-    alias core.stdc.complex.cimag      cimag;
-    ///
-    alias core.stdc.complex.cimagf     cimag;
-    ///
-    alias core.stdc.complex.cimagl     cimag;
-
-    ///
-    alias core.stdc.complex.conj       conj;
-    ///
-    alias core.stdc.complex.conjf      conj;
-    ///
-    alias core.stdc.complex.conjl      conj;
-
-    ///
-    alias core.stdc.complex.cproj      cproj;
-    ///
-    alias core.stdc.complex.cprojf     cproj;
-    ///
-    alias core.stdc.complex.cprojl     cproj;
-
-//  alias core.stdc.complex.creal      creal;
-//  alias core.stdc.complex.crealf     creal;
-//  alias core.stdc.complex.creall     creal;
+    // @@@DEPRECATED_2.105@@@
+    deprecated alias core.stdc.complex.carg       carg;
+    deprecated alias core.stdc.complex.cargf      carg;
+    deprecated alias core.stdc.complex.cargl      carg;
+    deprecated alias core.stdc.complex.cimag      cimag;
+    deprecated alias core.stdc.complex.cimagf     cimag;
+    deprecated alias core.stdc.complex.cimagl     cimag;
+    deprecated alias core.stdc.complex.conj       conj;
+    deprecated alias core.stdc.complex.conjf      conj;
+    deprecated alias core.stdc.complex.conjl      conj;
+    deprecated alias core.stdc.complex.cproj      cproj;
+    deprecated alias core.stdc.complex.cprojf     cproj;
+    deprecated alias core.stdc.complex.cprojl     cproj;
+//  deprecated alias core.stdc.complex.creal      creal;
+//  deprecated alias core.stdc.complex.crealf     creal;
+//  deprecated alias core.stdc.complex.creall     creal;
 }

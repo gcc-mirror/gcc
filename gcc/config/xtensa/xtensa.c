@@ -898,7 +898,7 @@ gen_conditional_move (enum rtx_code code, machine_mode mode,
 	  code = GE;
 	  op1 = const0_rtx;
 	}
-      cmp = gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
+      cmp = gen_rtx_fmt_ee (code, VOIDmode, pc_rtx, const0_rtx);
 
       if (boolean_operator (cmp, VOIDmode))
 	{
@@ -1084,7 +1084,8 @@ xtensa_emit_move_sequence (rtx *operands, machine_mode mode)
 	{
 	  /* Try to emit MOVI + SLLI sequence, that is smaller
 	     than L32R + literal.  */
-	  if (optimize_size && mode == SImode && register_operand (dst, mode))
+	  if (optimize_size && mode == SImode && CONST_INT_P (src)
+	      && register_operand (dst, mode))
 	    {
 	      HOST_WIDE_INT srcval = INTVAL (src);
 	      int shift = ctz_hwi (srcval);

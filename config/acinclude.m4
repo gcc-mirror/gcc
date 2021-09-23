@@ -374,88 +374,6 @@ AC_SUBST(INTLLIB)
 ])
 
 dnl ====================================================================
-dnl Find the simulator library.
-AC_DEFUN([CYG_AC_PATH_SIM], [
-dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.. ../../../../../../../../../.."
-case "$target_cpu" in
-    powerpc)	target_dir=ppc ;;
-    sparc*)	target_dir=erc32 ;;
-    mips*)	target_dir=mips ;;
-    *)		target_dir=$target_cpu ;;
-esac
-dnl First look for the header file
-AC_MSG_CHECKING(for the simulator header file)
-AC_CACHE_VAL(ac_cv_c_simh,[
-for i in $dirlist; do
-    if test -f "${srcdir}/$i/include/remote-sim.h" ; then
-	ac_cv_c_simh=`(cd ${srcdir}/$i/include; ${PWDCMD-pwd})`
-	break
-    fi
-done
-])
-if test x"${ac_cv_c_simh}" != x; then
-    SIMHDIR="-I${ac_cv_c_simh}"
-    AC_MSG_RESULT(${ac_cv_c_simh})
-else
-    AC_MSG_RESULT(none)
-fi
-AC_SUBST(SIMHDIR)
-
-dnl See whether it's a devo or Foundry branch simulator
-AC_MSG_CHECKING(Whether this is a devo simulator )
-AC_CACHE_VAL(ac_cv_c_simdevo,[
-    CPPFLAGS="$CPPFLAGS $SIMHDIR"
-    AC_EGREP_HEADER([SIM_DESC sim_open.*struct _bfd], remote-sim.h,
-        ac_cv_c_simdevo=yes,
-        ac_cv_c_simdevo=no)
-])
-if test x"$ac_cv_c_simdevo" = x"yes" ; then
-    AC_DEFINE(HAVE_DEVO_SIM)
-fi
-AC_MSG_RESULT(${ac_cv_c_simdevo})
-AC_SUBST(HAVE_DEVO_SIM)
-
-dnl Next look for the library
-AC_MSG_CHECKING(for the simulator library)
-AC_CACHE_VAL(ac_cv_c_simlib,[
-for i in $dirlist; do
-    if test -f "$i/sim/$target_dir/Makefile" ; then
-	ac_cv_c_simlib=`(cd $i/sim/$target_dir; ${PWDCMD-pwd})`
-    fi
-done
-])
-if test x"${ac_cv_c_simlib}" != x; then
-    SIMLIB="-L${ac_cv_c_simlib}"
-else
-    AC_MSG_RESULT(none)
-    dnl FIXME: this is kinda bogus, cause umtimately the TM will build
-    dnl all the libraries for several architectures. But for now, this
-    dnl will work till then.
-dnl     AC_MSG_CHECKING(for the simulator installed with the compiler libraries)
-    dnl Transform the name of the compiler to it's cross variant, unless
-    dnl CXX is set. This is also what CXX gets set to in the generated
-    dnl Makefile.
-    CROSS_GCC=`echo gcc | sed -e "s/^/$target/"`
-
-    dnl Get G++'s full path to libgcc.a
-changequote(,)
-    gccpath=`${CROSS_GCC} --print-libgcc | sed -e 's:[a-z0-9A-Z\.\-]*/libgcc.a::' -e 's:lib/gcc-lib/::'`lib
-changequote([,])
-    if test -f $gccpath/libsim.a -o -f $gccpath/libsim.so ; then
-        ac_cv_c_simlib="$gccpath/"
-        SIMLIB="-L${ac_cv_c_simlib}"
-	AC_MSG_RESULT(${ac_cv_c_simlib})
-    else
-        AM_CONDITIONAL(PSIM, test x$psim = xno)
-	SIMLIB=""
-	AC_MSG_RESULT(none)
-dnl         ac_cv_c_simlib=none
-    fi
-fi
-AC_SUBST(SIMLIB)
-])
-
-dnl ====================================================================
 dnl Find the libiberty library.
 AC_DEFUN([CYG_AC_PATH_LIBIBERTY], [
 AC_MSG_CHECKING(for the libiberty library in the build tree)
@@ -474,26 +392,6 @@ else
     AC_MSG_RESULT(none)
 fi
 AC_SUBST(LIBIBERTY)
-])
-
-dnl ====================================================================
-AC_DEFUN([CYG_AC_PATH_DEVO], [
-AC_MSG_CHECKING(for devo headers in the source tree)
-dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
-AC_CACHE_VAL(ac_cv_c_devoh,[
-for i in $dirlist; do
-    if test -f "${srcdir}/$i/include/remote-sim.h" ; then
-	ac_cv_c_devoh=`(cd ${srcdir}/$i/include; ${PWDCMD-pwd})`
-    fi
-done
-])
-if test x"${ac_cv_c_devoh}" != x; then
-    DEVOHDIR="-I${ac_cv_c_devoh}"
-    AC_MSG_RESULT(${ac_cv_c_devoh})
-else
-    AC_MSG_RESULT(none)
-fi
-AC_SUBST(DEVOHDIR)
 ])
 
 dnl ====================================================================

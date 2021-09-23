@@ -1,3 +1,7 @@
+2021-04-06  Nathan Sidwell  <nathan@acm.org>
+
+	* LICENSE.gcc: Delete.
+
 2021-01-12  Nathan Sidwell  <nathan@acm.org>
 
 	* Makefile.in: Remove auto parallelize, swallow Makesub.in. Don't

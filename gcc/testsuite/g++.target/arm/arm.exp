@@ -35,7 +35,7 @@ if ![info exists DEFAULT_CXXFLAGS] then {
 
 global dg_runtest_extra_prunes
 set dg_runtest_extra_prunes ""
-lappend dg_runtest_extra_prunes "warning: switch '-m(cpu|arch)=.*' conflicts with '-m(cpu|arch)=.*' switch"
+lappend dg_runtest_extra_prunes "warning: switch '-m(cpu|arch)=.*' conflicts with switch '-m(cpu|arch)=.*'"
 
 # Initialize `dg'.
 dg-init

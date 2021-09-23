@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++17 -g -O0 -Wno-unused" }
+// { dg-options "-g -O0 -Wno-unused" }
 // { dg-do run { target c++17 } }
 
 // Copyright (C) 2019-2021 Free Software Foundation, Inc.

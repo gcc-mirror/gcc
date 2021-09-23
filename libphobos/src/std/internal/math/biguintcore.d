@@ -2503,13 +2503,13 @@ pure nothrow
     void printBiguint(const uint [] data)
     {
         char [] buff = biguintToHex(new char[data.length*9], data, '_');
-        printf("%.*s\n", buff.length, buff.ptr);
+        printf("%.*s\n", cast(int) buff.length, buff.ptr);
     }
 
     void printDecimalBigUint(BigUint data)
     {
         auto str = data.toDecimalString(0);
-        printf("%.*s\n", str.length, str.ptr);
+        printf("%.*s\n", cast(int) str.length, str.ptr);
     }
 
     uint [] a, b;

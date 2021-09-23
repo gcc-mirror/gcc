@@ -18,13 +18,12 @@ package math
 //	Mod(x, 0) = NaN
 //	Mod(x, ±Inf) = x
 //	Mod(x, NaN) = NaN
-
-//extern fmod
-func libc_fmod(float64, float64) float64
-
 func Mod(x, y float64) float64 {
 	return libc_fmod(x, y)
 }
+
+//extern fmod
+func libc_fmod(float64, float64) float64
 
 func mod(x, y float64) float64 {
 	if y == 0 || IsInf(x, 0) || IsNaN(x) || IsNaN(y) {

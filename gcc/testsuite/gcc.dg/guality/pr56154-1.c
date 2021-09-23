@@ -17,7 +17,7 @@ foo (int fd, union U x)
   asm (NOP : : : "memory");	  /* { dg-final { gdb-test pr56154-1.c:17 "x.a" "4" } } */
   z = x.a;
   x.a = 6;
-  asm (NOP : : : "memory");	  /* { dg-final { gdb-test pr56154-1.c:20 "x.a" "6" } } */
+  asm (NOP : : : "memory");	  /* { dg-final { gdb-test pr56154-1.c:20 "x.a" "6" { xfail { aarch64*-*-* && { any-opts "-Og" } } } } } */
   return result;
 }
 

@@ -1311,7 +1311,7 @@
    && (INTVAL (operands[3]) == 2 || INTVAL (operands[3]) == 4)
    && (reload_in_progress || reload_completed)"
   "#"
-  ""
+  "&& 1"
   [(set (match_dup 0)
 	(plus:SI (ashift:SI (match_dup 2) (match_dup 3)) (match_dup 1)))]
   "operands[3] = operands[3] == const2_rtx ? const1_rtx : const2_rtx;")

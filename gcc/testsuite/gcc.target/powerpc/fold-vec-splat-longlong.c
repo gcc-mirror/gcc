@@ -25,7 +25,7 @@ vector signed long long test_sll () { const vector signed long long y = {34, 45}
 vector unsigned long long test_ull () { const vector unsigned long long y = {56, 67}; return vec_splat (y, 0b00010); }
 
 /* Assorted load instructions for the initialization with known constants. */
-/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvd2x\M|\mlxv\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvd2x\M|\mlxv\M|\mplxv\M} 3 } } */
 
 /* xxpermdi for vec_splat of long long vectors.
  At the time of this writing, the number of xxpermdi instructions

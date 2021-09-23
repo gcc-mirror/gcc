@@ -106,11 +106,12 @@ class Collect_export_references : public Traverse
 {
  public:
   Collect_export_references(Export* exp,
+			    const std::map<std::string, Package*>& packages,
                             Unordered_set(Named_object*)* exports,
                             Unordered_set(const Package*)* imports)
     : Traverse(traverse_expressions
                | traverse_types),
-      exp_(exp), exports_(exports), imports_(imports),
+      exp_(exp), packages_(packages), exports_(exports), imports_(imports),
       inline_fcn_worklist_(NULL), exports_finalized_(false)
   { }
 
@@ -150,6 +151,8 @@ class Collect_export_references : public Traverse
 
   // The exporter.
   Export* exp_;
+  // The list of packages known to this compilation.
+  const std::map<std::string, Package*>& packages_;
   // The set of named objects to export.
   Unordered_set(Named_object*)* exports_;
   // Set containing all directly and indirectly imported packages.
@@ -255,6 +258,24 @@ Collect_export_references::expression(Expression** pexpr)
       const Named_constant *nc = nco->const_value();
       Type::traverse(nc->type(), this);
       return TRAVERSE_CONTINUE;
+    }
+
+  const Call_expression* call = expr->call_expression();
+  if (call != NULL)
+    {
+      const Builtin_call_expression* bce = call->builtin_call_expression();
+      if (bce != NULL
+	  && (bce->code() == Builtin_call_expression::BUILTIN_ADD
+	      || bce->code() == Builtin_call_expression::BUILTIN_SLICE))
+	{
+	  // This is a reference to unsafe.Add or unsafe.Slice.  Make
+	  // sure we list the "unsafe" package in the imports and give
+	  // it a package index.
+	  const std::map<std::string, Package*>::const_iterator p =
+	    this->packages_.find("unsafe");
+	  go_assert(p != this->packages_.end());
+	  this->imports_->insert(p->second);
+	}
     }
 
   return TRAVERSE_CONTINUE;
@@ -589,7 +610,7 @@ Export::export_globals(const std::string& package_name,
   // Track all imported packages mentioned in export data.
   Unordered_set(const Package*) all_imports;
 
-  Collect_export_references collect(this, &exports, &all_imports);
+  Collect_export_references collect(this, packages, &exports, &all_imports);
 
   // Walk the set of inlinable routine bodies collected above. This
   // can potentially expand the exports set.
@@ -1272,6 +1293,25 @@ Export::package_index(const Package* pkg) const
   int index = p->second;
   go_assert(index != 0);
   return index;
+}
+
+// Return the index of the "unsafe" package.
+
+int
+Export::unsafe_package_index() const
+{
+  for (Unordered_map(const Package*, int)::const_iterator p =
+	 this->packages_.begin();
+       p != this->packages_.end();
+       ++p)
+    {
+      if (p->first->pkgpath() == "unsafe")
+	{
+	  go_assert(p->second != 0);
+	  return p->second;
+	}
+    }
+  go_unreachable();
 }
 
 // Return the index of a type.

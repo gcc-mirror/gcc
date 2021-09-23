@@ -97,7 +97,7 @@ do_warn_nonnull_compare (function *fun, tree arg)
       if (op
 	  && (POINTER_TYPE_P (TREE_TYPE (arg))
 	      ? integer_zerop (op) : integer_minus_onep (op))
-	  && !gimple_no_warning_p (stmt))
+	  && !warning_suppressed_p (stmt, OPT_Wnonnull_compare))
 	warning_at (loc, OPT_Wnonnull_compare,
 		    "%<nonnull%> argument %qD compared to NULL", arg);
     }

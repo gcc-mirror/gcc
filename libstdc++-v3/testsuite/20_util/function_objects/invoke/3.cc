@@ -15,10 +15,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
 #include <functional>
+
+#ifndef __cpp_lib_invoke
+# error Feature-test macro for invoke is missing in <functional>
+#elif __cpp_lib_invoke < 201411L
+# error Feature-test macro for invoke has the wrong value in <functional>
+#endif
 
 struct abstract {
   virtual ~abstract() = 0;

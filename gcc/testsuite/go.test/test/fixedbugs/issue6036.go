@@ -1,4 +1,4 @@
-// +build !386,!arm,!mips,!mipsle,!amd64p32
+// +build !386,!arm,!mips,!mipsle,!amd64p32,!sparc
 // compile
 
 // Copyright 2013 The Go Authors. All rights reserved.

@@ -25,7 +25,7 @@ int main()
   std::list<greedy_ops::X> l;
   const std::list<greedy_ops::X> cl;
 
-  l.size();
+  (void) l.size();
   l.insert(l.begin(), greedy_ops::X());
   l.insert(l.begin(), 1, greedy_ops::X());
   l.insert(l.begin(), cl.begin(), cl.end());

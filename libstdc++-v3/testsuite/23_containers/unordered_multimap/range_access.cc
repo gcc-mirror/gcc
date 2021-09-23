@@ -25,6 +25,6 @@ void
 test01()
 {
   std::unordered_multimap<int, double> umm{{1, 1.0}, {2, 2.0}, {3, 3.0}};
-  std::begin(umm);
-  std::end(umm);
+  (void) std::begin(umm);
+  (void) std::end(umm);
 }

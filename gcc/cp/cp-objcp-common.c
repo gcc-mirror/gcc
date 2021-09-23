@@ -72,10 +72,13 @@ cp_tree_size (enum tree_code code)
     case DEFERRED_NOEXCEPT:	return sizeof (tree_deferred_noexcept);
     case OVERLOAD:		return sizeof (tree_overload);
     case STATIC_ASSERT:         return sizeof (tree_static_assert);
-    case TYPE_ARGUMENT_PACK:
-    case TYPE_PACK_EXPANSION:	return sizeof (tree_type_non_common);
-    case NONTYPE_ARGUMENT_PACK:
-    case EXPR_PACK_EXPANSION:	return sizeof (tree_exp);
+#if 0
+      /* This would match cp_common_init_ts, but breaks GC because
+	 tree_node_structure_for_code returns TS_TYPE_NON_COMMON for all
+	 types.  */
+    case UNBOUND_CLASS_TEMPLATE:
+    case TYPE_ARGUMENT_PACK:	return sizeof (tree_type_common);
+#endif
     case ARGUMENT_PACK_SELECT:	return sizeof (tree_argument_pack_select);
     case TRAIT_EXPR:		return sizeof (tree_trait_expr);
     case LAMBDA_EXPR:           return sizeof (tree_lambda_expr);
@@ -314,6 +317,15 @@ cxx_block_may_fallthru (const_tree stmt)
 	return true;
       return block_may_fallthru (ELSE_CLAUSE (stmt));
 
+    case CLEANUP_STMT:
+      /* Just handle the try/finally cases.  */
+      if (!CLEANUP_EH_ONLY (stmt))
+	{
+	  return (block_may_fallthru (CLEANUP_BODY (stmt))
+		  && block_may_fallthru (CLEANUP_EXPR (stmt)));
+	}
+      return true;
+
     default:
       return c_block_may_fallthru (stmt);
     }
@@ -390,6 +402,7 @@ names_builtin_p (const char *name)
     case RID_BUILTIN_CONVERTVECTOR:
     case RID_BUILTIN_HAS_ATTRIBUTE:
     case RID_BUILTIN_SHUFFLE:
+    case RID_BUILTIN_SHUFFLEVECTOR:
     case RID_BUILTIN_LAUNDER:
     case RID_BUILTIN_BIT_CAST:
     case RID_OFFSETOF:
@@ -409,7 +422,9 @@ names_builtin_p (const char *name)
     case RID_IS_EMPTY:
     case RID_IS_ENUM:
     case RID_IS_FINAL:
+    case RID_IS_LAYOUT_COMPATIBLE:
     case RID_IS_LITERAL_TYPE:
+    case RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
     case RID_IS_POD:
     case RID_IS_POLYMORPHIC:
     case RID_IS_SAME_AS:
@@ -455,13 +470,8 @@ cp_common_init_ts (void)
 
   /* Random new trees.  */
   MARK_TS_COMMON (BASELINK);
-  MARK_TS_COMMON (DECLTYPE_TYPE);
   MARK_TS_COMMON (OVERLOAD);
   MARK_TS_COMMON (TEMPLATE_PARM_INDEX);
-  MARK_TS_COMMON (TYPENAME_TYPE);
-  MARK_TS_COMMON (TYPEOF_TYPE);
-  MARK_TS_COMMON (UNBOUND_CLASS_TEMPLATE);
-  MARK_TS_COMMON (UNDERLYING_TYPE);
 
   /* New decls.  */
   MARK_TS_DECL_COMMON (TEMPLATE_DECL);
@@ -471,10 +481,16 @@ cp_common_init_ts (void)
   MARK_TS_DECL_NON_COMMON (USING_DECL);
 
   /* New Types.  */
+  MARK_TS_TYPE_COMMON (UNBOUND_CLASS_TEMPLATE);
+  MARK_TS_TYPE_COMMON (TYPE_ARGUMENT_PACK);
+
+  MARK_TS_TYPE_NON_COMMON (DECLTYPE_TYPE);
+  MARK_TS_TYPE_NON_COMMON (TYPENAME_TYPE);
+  MARK_TS_TYPE_NON_COMMON (TYPEOF_TYPE);
+  MARK_TS_TYPE_NON_COMMON (UNDERLYING_TYPE);
   MARK_TS_TYPE_NON_COMMON (BOUND_TEMPLATE_TEMPLATE_PARM);
   MARK_TS_TYPE_NON_COMMON (TEMPLATE_TEMPLATE_PARM);
   MARK_TS_TYPE_NON_COMMON (TEMPLATE_TYPE_PARM);
-  MARK_TS_TYPE_NON_COMMON (TYPE_ARGUMENT_PACK);
   MARK_TS_TYPE_NON_COMMON (TYPE_PACK_EXPANSION);
 
   /* Statements.  */

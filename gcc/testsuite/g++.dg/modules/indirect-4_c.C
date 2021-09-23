@@ -10,7 +10,7 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar@bar:.::quux'@'bar' section:} module } }
-// { dg-final { scan-lang-dump {>Loading entity foo\[2\] section:1} module } }
+// { dg-final { scan-lang-dump {>Loading entity foo\[.\] section:1} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo@foo:.::template TPL@foo:.'@foo} module } }
 
 // { dg-final { scan-lang-dump {Reading definition function_decl '::foo@foo:.::TPL@bar:.<0x1>::frob@bar:.<0x2>'} module } }

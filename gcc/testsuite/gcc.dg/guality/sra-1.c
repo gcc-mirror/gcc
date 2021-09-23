@@ -18,7 +18,7 @@ f1 (int k)
   asm ("" : "+r" (a.i));
   a.j++;
   bar (a.i);		/* { dg-final { gdb-test .+1 "a.i" "4" } } */
-  bar (a.j);		/* { dg-final { gdb-test . "a.j" "14" } } */
+  bar (a.j);		/* { dg-final { gdb-test . "a.j" "14" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" } } } } } */
   return a.i + a.j;
 }
 
@@ -29,7 +29,7 @@ f2 (int k)
   asm ("" : "+r" (a[0]));
   a[1]++;
   bar (a[0]);		/* { dg-final { gdb-test .+1 "a\[0\]" "4" } } */
-  bar (a[1]);		/* { dg-final { gdb-test . "a\[1\]" "14" } } */
+  bar (a[1]);		/* { dg-final { gdb-test . "a\[1\]" "14" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" } } } } } */
   return a[0] + a[1];
 }
 
@@ -39,8 +39,8 @@ f3 (int k)
   struct B a = { 4, k + 6 };
   asm ("" : "+r" (a.i));
   a.j++;
-  bar (a.i);		/* { dg-final { gdb-test .+1 "a.i" "4" } } */
-  bar (a.j);		/* { dg-final { gdb-test . "a.j" "14" } } */
+  bar (a.i);		/* { dg-final { gdb-test .+1 "a.i" "4" { xfail { aarch64*-*-* && { any-opts "-Og" } } } } } */
+  bar (a.j);		/* { dg-final { gdb-test . "a.j" "14" { xfail { aarch64*-*-* && { any-opts "-Og" "-fno-fat-lto-objects" } } } } } */
   return a.i + a.j;
 }
 

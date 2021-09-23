@@ -149,9 +149,9 @@ constexpr int x3 = f3 ();
 constexpr int
 f4 ()
 {
-  W7 w13 = 5;			// { dg-message "in 'constexpr' expansion of" }
+  W7 w13 = 5;
   return 0;
-}
+}			// { dg-message "in 'constexpr' expansion of" }
 
 constexpr int x4 = f4 ();	// { dg-message "in 'constexpr' expansion of" }
 

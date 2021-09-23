@@ -63,5 +63,5 @@ bool operator!=(Alloc<T> l, Alloc<T> r) { return false; }
 int main()
 {
   std::vector<int, Alloc<int>> a;
-  a.data();
+  (void) a.data();
 }

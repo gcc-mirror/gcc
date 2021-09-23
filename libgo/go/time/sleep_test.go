@@ -512,6 +512,56 @@ func TestZeroTimerStopPanics(t *testing.T) {
 	tr.Stop()
 }
 
+// Test that zero duration timers aren't missed by the scheduler. Regression test for issue 44868.
+func TestZeroTimer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("-short")
+	}
+
+	for i := 0; i < 1000000; i++ {
+		s := Now()
+		ti := NewTimer(0)
+		<-ti.C
+		if diff := Since(s); diff > 2*Second {
+			t.Errorf("Expected time to get value from Timer channel in less than 2 sec, took %v", diff)
+		}
+	}
+}
+
+// Test that rapidly moving a timer earlier doesn't cause it to get dropped.
+// Issue 47329.
+func TestTimerModifiedEarlier(t *testing.T) {
+	past := Until(Unix(0, 0))
+	count := 1000
+	fail := 0
+	for i := 0; i < count; i++ {
+		timer := NewTimer(Hour)
+		for j := 0; j < 10; j++ {
+			if !timer.Stop() {
+				<-timer.C
+			}
+			timer.Reset(past)
+		}
+
+		deadline := NewTimer(10 * Second)
+		defer deadline.Stop()
+		now := Now()
+		select {
+		case <-timer.C:
+			if since := Since(now); since > 8*Second {
+				t.Errorf("timer took too long (%v)", since)
+				fail++
+			}
+		case <-deadline.C:
+			t.Error("deadline expired")
+		}
+	}
+
+	if fail > 0 {
+		t.Errorf("%d failures", fail)
+	}
+}
+
 // Benchmark timer latency when the thread that creates the timer is busy with
 // other work and the timers must be serviced by other threads.
 // https://golang.org/issue/38860

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2015-2020, Free Software Foundation, Inc.        --
+--           Copyright (C) 2015-2021, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,13 @@
 ------------------------------------------------------------------------------
 
 package body Ada.Containers.Helpers is
+
+   Max_Count : constant := 2**31 - 1;
+   --  Used in assertions below, to make sure the counts don't wrap around.
+   --  This can help detect bugs in which Adjust and Finalize calls are
+   --  improperly generated. An extra Decrement could otherwise cause
+   --  wraparound from 0 to 2**32-1. The highest count seen so far is
+   --  around 25, so this should be plenty.
 
    package body Generic_Implementation is
 
@@ -50,6 +57,7 @@ package body Ada.Containers.Helpers is
       begin
          if T_Check then
             SAC.Increment (T_Counts.Busy);
+            pragma Assert (T_Counts.Busy <= Max_Count);
          end if;
       end Busy;
 
@@ -112,7 +120,9 @@ package body Ada.Containers.Helpers is
       begin
          if T_Check then
             SAC.Increment (T_Counts.Lock);
+            pragma Assert (T_Counts.Lock <= Max_Count);
             SAC.Increment (T_Counts.Busy);
+            pragma Assert (T_Counts.Busy <= Max_Count);
          end if;
       end Lock;
 
@@ -122,17 +132,20 @@ package body Ada.Containers.Helpers is
 
       procedure TC_Check (T_Counts : Tamper_Counts) is
       begin
-         if T_Check and then T_Counts.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors";
+         if T_Check then
+            if T_Counts.Busy > 0 then
+               raise Program_Error with
+                 "attempt to tamper with cursors";
+            end if;
+
+            --  The lock status (which monitors "element tampering") always
+            --  implies that the busy status (which monitors "cursor
+            --  tampering") is set too; this is a representation invariant.
+            --  Thus if the busy count is zero, then the lock count
+            --  must also be zero.
+
+            pragma Assert (T_Counts.Lock = 0);
          end if;
-
-         --  The lock status (which monitors "element tampering") always
-         --  implies that the busy status (which monitors "cursor tampering")
-         --  is set too; this is a representation invariant. Thus if the busy
-         --  bit is not set, then the lock bit must not be set either.
-
-         pragma Assert (T_Counts.Lock = 0);
       end TC_Check;
 
       --------------
@@ -155,6 +168,7 @@ package body Ada.Containers.Helpers is
       begin
          if T_Check then
             SAC.Decrement (T_Counts.Busy);
+            pragma Assert (T_Counts.Busy <= Max_Count);
          end if;
       end Unbusy;
 
@@ -166,7 +180,9 @@ package body Ada.Containers.Helpers is
       begin
          if T_Check then
             SAC.Decrement (T_Counts.Lock);
+            pragma Assert (T_Counts.Lock <= Max_Count);
             SAC.Decrement (T_Counts.Busy);
+            pragma Assert (T_Counts.Busy <= Max_Count);
          end if;
       end Unlock;
 

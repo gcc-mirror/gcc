@@ -257,7 +257,7 @@
 #define ASM_OUTPUT_ALIGN(STREAM, POWER)			\
   do							\
     {							\
-      register int amount = 1 << (POWER);		\
+      int amount = 1 << (POWER);			\
 							\
       if (amount == 2)					\
 	fprintf (STREAM, "\t.even\n");			\

@@ -9,5 +9,5 @@
 uint32_t threadExited;
 
 void setExited(void *x) {
-	__atomic_add_fetch(&threadExited, 1, __ATOMIC_SEQ_CST);
+	__sync_fetch_and_add(&threadExited, 1);
 }

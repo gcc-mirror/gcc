@@ -379,9 +379,9 @@ void test_stnrdup_warn (struct MemArrays *p)
   T (strndup (p->arr, N));
 
 
-  T (strndup (arr, N + 1));     /* { dg-warning "specified bound 5 exceeds source size 4" } */
+  T (strndup (arr, N + 1));     /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound 5|specified bound 5 exceeds source size 4" } */
   T (strndup (parr, N + 1));
-  T (strndup (p->arr, N + 1));  /* { dg-warning "specified bound 5 exceeds source size 4" } */
+  T (strndup (p->arr, N + 1));  /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound 5|specified bound 5 exceeds source size 4" } */
   T (strndup (p->parr, N + 1));
 }
 

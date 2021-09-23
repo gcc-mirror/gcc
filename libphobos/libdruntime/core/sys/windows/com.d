@@ -39,16 +39,16 @@ public import core.sys.windows.winerror :
     RPC_E_CHANGED_MODE;
 
 public import core.sys.windows.wtypes :
-    OLECHAR, LPOLESTR, LPCOLESTR;
+    CLSCTX, OLECHAR, LPOLESTR, LPCOLESTR;
 
-alias CLSCTX_INPROC_SERVER     = core.sys.windows.wtypes.CLSCTX.CLSCTX_INPROC_SERVER    ;
-alias CLSCTX_INPROC_HANDLER    = core.sys.windows.wtypes.CLSCTX.CLSCTX_INPROC_HANDLER   ;
-alias CLSCTX_LOCAL_SERVER      = core.sys.windows.wtypes.CLSCTX.CLSCTX_LOCAL_SERVER     ;
-alias CLSCTX_INPROC_SERVER16   = core.sys.windows.wtypes.CLSCTX.CLSCTX_INPROC_SERVER16  ;
-alias CLSCTX_REMOTE_SERVER     = core.sys.windows.wtypes.CLSCTX.CLSCTX_REMOTE_SERVER    ;
-alias CLSCTX_INPROC_HANDLER16  = core.sys.windows.wtypes.CLSCTX.CLSCTX_INPROC_HANDLER16 ;
-alias CLSCTX_INPROC_SERVERX86  = core.sys.windows.wtypes.CLSCTX.CLSCTX_INPROC_SERVERX86 ;
-alias CLSCTX_INPROC_HANDLERX86 = core.sys.windows.wtypes.CLSCTX.CLSCTX_INPROC_HANDLERX86;
+alias CLSCTX_INPROC_SERVER     = CLSCTX.CLSCTX_INPROC_SERVER    ;
+alias CLSCTX_INPROC_HANDLER    = CLSCTX.CLSCTX_INPROC_HANDLER   ;
+alias CLSCTX_LOCAL_SERVER      = CLSCTX.CLSCTX_LOCAL_SERVER     ;
+alias CLSCTX_INPROC_SERVER16   = CLSCTX.CLSCTX_INPROC_SERVER16  ;
+alias CLSCTX_REMOTE_SERVER     = CLSCTX.CLSCTX_REMOTE_SERVER    ;
+alias CLSCTX_INPROC_HANDLER16  = CLSCTX.CLSCTX_INPROC_HANDLER16 ;
+alias CLSCTX_INPROC_SERVERX86  = CLSCTX.CLSCTX_INPROC_SERVERX86 ;
+alias CLSCTX_INPROC_HANDLERX86 = CLSCTX.CLSCTX_INPROC_HANDLERX86;
 
 alias COINIT_APARTMENTTHREADED   = COINIT.COINIT_APARTMENTTHREADED;
 alias COINIT_MULTITHREADED       = COINIT.COINIT_MULTITHREADED    ;
@@ -57,12 +57,12 @@ alias COINIT_SPEED_OVER_MEMORY   = COINIT.COINIT_SPEED_OVER_MEMORY;
 
 public import core.sys.windows.uuid;
 
-extern (System)
+extern (Windows)
 {
 
 class ComObject : IUnknown
 {
-extern (System):
+extern (Windows):
     HRESULT QueryInterface(const(IID)* riid, void** ppv)
     {
         if (*riid == IID_IUnknown)

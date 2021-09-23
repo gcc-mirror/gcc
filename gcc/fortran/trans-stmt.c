@@ -1226,7 +1226,8 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 
   if (code->expr2)
     {
-      gcc_assert (code->expr2->expr_type == EXPR_VARIABLE);
+      gcc_assert (code->expr2->expr_type == EXPR_VARIABLE
+		  || code->expr2->expr_type == EXPR_FUNCTION);
       gfc_init_se (&argse, NULL);
       gfc_conv_expr_val (&argse, code->expr2);
       stat = argse.expr;
@@ -1236,7 +1237,8 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 
   if (code->expr3 && flag_coarray == GFC_FCOARRAY_LIB)
     {
-      gcc_assert (code->expr3->expr_type == EXPR_VARIABLE);
+      gcc_assert (code->expr3->expr_type == EXPR_VARIABLE
+		  || code->expr3->expr_type == EXPR_FUNCTION);
       gfc_init_se (&argse, NULL);
       argse.want_pointer = 1;
       gfc_conv_expr (&argse, code->expr3);

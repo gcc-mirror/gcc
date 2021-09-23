@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "regs.h"
 #include "function-abi.h"
+#include "rtlanal.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -255,18 +256,6 @@ struct qty_table_elem
 /* The table of all qtys, indexed by qty number.  */
 static struct qty_table_elem *qty_table;
 
-/* For machines that have a CC0, we do not record its value in the hash
-   table since its use is guaranteed to be the insn immediately following
-   its definition and any other insn is presumed to invalidate it.
-
-   Instead, we store below the current and last value assigned to CC0.
-   If it should happen to be a constant, it is stored in preference
-   to the actual assigned value.  In case it is a constant, we store
-   the mode in which the constant should be interpreted.  */
-
-static rtx this_insn_cc0, prev_insn_cc0;
-static machine_mode this_insn_cc0_mode, prev_insn_cc0_mode;
-
 /* Insn being scanned.  */
 
 static rtx_insn *this_insn;
@@ -348,9 +337,8 @@ static bool cse_jumps_altered;
    to put in the note.  */
 static bool recorded_label_ref;
 
-/* canon_hash stores 1 in do_not_record
-   if it notices a reference to CC0, PC, or some other volatile
-   subexpression.  */
+/* canon_hash stores 1 in do_not_record if it notices a reference to PC or
+   some other volatile subexpression.  */
 
 static int do_not_record;
 
@@ -592,7 +580,7 @@ static struct cse_reg_info * get_cse_reg_info (unsigned int regno);
 
 static void flush_hash_table (void);
 static bool insn_live_p (rtx_insn *, int *);
-static bool set_live_p (rtx, rtx_insn *, int *);
+static bool set_live_p (rtx, int *);
 static void cse_change_cc_mode_insn (rtx_insn *, rtx);
 static void cse_change_cc_mode_insns (rtx_insn *, rtx_insn *, rtx);
 static machine_mode cse_cc_succs (basic_block, basic_block, rtx, rtx,
@@ -854,8 +842,6 @@ new_basic_block (void)
 	  free_element_chain = first;
 	}
     }
-
-  prev_insn_cc0 = 0;
 }
 
 /* Say that register REG contains a quantity in mode MODE not in any
@@ -2448,7 +2434,6 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
     case PRE_MODIFY:
     case POST_MODIFY:
     case PC:
-    case CC0:
     case CALL:
     case UNSPEC_VOLATILE:
       if (do_not_record_p) {
@@ -2633,9 +2618,13 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
   switch (code)
     {
     case PC:
-    case CC0:
     CASE_CONST_UNIQUE:
       return x == y;
+
+    case CONST_VECTOR:
+      if (!same_vector_encodings_p (x, y))
+	return false;
+      break;
 
     case LABEL_REF:
       return label_ref_label (x) == label_ref_label (y);
@@ -2848,7 +2837,6 @@ canon_reg (rtx x, rtx_insn *insn)
   switch (code)
     {
     case PC:
-    case CC0:
     case CONST:
     CASE_CONST_ANY:
     case SYMBOL_REF:
@@ -2904,9 +2892,9 @@ canon_reg (rtx x, rtx_insn *insn)
    what values are being compared.
 
    *PARG1 and *PARG2 are updated to contain the rtx representing the values
-   actually being compared.  For example, if *PARG1 was (cc0) and *PARG2
-   was (const_int 0), *PARG1 and *PARG2 will be set to the objects that were
-   compared to produce cc0.
+   actually being compared.  For example, if *PARG1 was (reg:CC CC_REG) and
+   *PARG2 was (const_int 0), *PARG1 and *PARG2 will be set to the objects that
+   were compared to produce (reg:CC CC_REG).
 
    The return value is the comparison operator and is either the code of
    A or the code corresponding to the inverse of the comparison.  */
@@ -2938,10 +2926,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 	  x = 0;
 	}
 
-      /* If arg1 is a COMPARE, extract the comparison arguments from it.
-	 On machines with CC0, this is the only case that can occur, since
-	 fold_rtx will return the COMPARE or item being compared with zero
-	 when given CC0.  */
+      /* If arg1 is a COMPARE, extract the comparison arguments from it.  */
 
       if (GET_CODE (arg1) == COMPARE && arg2 == const0_rtx)
 	x = arg1;
@@ -3174,9 +3159,6 @@ fold_rtx (rtx x, rtx_insn *insn)
     case EXPR_LIST:
       return x;
 
-    case CC0:
-      return prev_insn_cc0;
-
     case ASM_OPERANDS:
       if (insn)
 	{
@@ -3190,6 +3172,19 @@ fold_rtx (rtx x, rtx_insn *insn)
       if (NO_FUNCTION_CSE && CONSTANT_P (XEXP (XEXP (x, 0), 0)))
 	return x;
       break;
+    case VEC_SELECT:
+      {
+	rtx trueop0 = XEXP (x, 0);
+	mode = GET_MODE (trueop0);
+	rtx trueop1 = XEXP (x, 1);
+	/* If we select a low-part subreg, return that.  */
+	if (vec_series_lowpart_p (GET_MODE (x), mode, trueop1))
+	  {
+	    rtx new_rtx = lowpart_subreg (GET_MODE (x), trueop0, mode);
+	    if (new_rtx != NULL_RTX)
+	      return new_rtx;
+	  }
+      }
 
     /* Anything else goes through the loop below.  */
     default:
@@ -3225,30 +3220,6 @@ fold_rtx (rtx x, rtx_insn *insn)
 	  case SYMBOL_REF:
 	  case LABEL_REF:
 	    const_arg = folded_arg;
-	    break;
-
-	  case CC0:
-	    /* The cc0-user and cc0-setter may be in different blocks if
-	       the cc0-setter potentially traps.  In that case PREV_INSN_CC0
-	       will have been cleared as we exited the block with the
-	       setter.
-
-	       While we could potentially track cc0 in this case, it just
-	       doesn't seem to be worth it given that cc0 targets are not
-	       terribly common or important these days and trapping math
-	       is rarely used.  The combination of those two conditions
-	       necessary to trip this situation is exceedingly rare in the
-	       real world.  */
-	    if (!prev_insn_cc0)
-	      {
-		const_arg = NULL_RTX;
-	      }
-	    else
-	      {
-		folded_arg = prev_insn_cc0;
-		mode_arg = prev_insn_cc0_mode;
-		const_arg = equiv_constant (folded_arg);
-	      }
 	    break;
 
 	  default:
@@ -3905,10 +3876,7 @@ record_jump_equiv (rtx_insn *insn, bool taken)
   op0 = fold_rtx (XEXP (XEXP (SET_SRC (set), 0), 0), insn);
   op1 = fold_rtx (XEXP (XEXP (SET_SRC (set), 0), 1), insn);
 
-  /* On a cc0 target the cc0-setter and cc0-user may end up in different
-     blocks.  When that happens the tracking of the cc0-setter via
-     PREV_INSN_CC0 is spoiled.  That means that fold_rtx may return
-     NULL_RTX.  In those cases, there's nothing to record.  */
+  /* If fold_rtx returns NULL_RTX, there's nothing to record.  */
   if (op0 == NULL_RTX || op1 == NULL_RTX)
     return;
 
@@ -4550,9 +4518,6 @@ cse_insn (rtx_insn *insn)
     sets = XALLOCAVEC (struct set, XVECLEN (x, 0));
 
   this_insn = insn;
-  /* Records what this insn does to set CC0.  */
-  this_insn_cc0 = 0;
-  this_insn_cc0_mode = VOIDmode;
 
   /* Find all regs explicitly clobbered in this insn,
      to ensure they are not replaced with any other regs
@@ -5653,21 +5618,6 @@ cse_insn (rtx_insn *insn)
 	      sets[i].rtl = 0;
 	    }
 	}
-
-      /* If setting CC0, record what it was set to, or a constant, if it
-	 is equivalent to a constant.  If it is being set to a floating-point
-	 value, make a COMPARE with the appropriate constant of 0.  If we
-	 don't do this, later code can interpret this as a test against
-	 const0_rtx, which can cause problems if we try to put it into an
-	 insn as a floating-point operand.  */
-      if (dest == cc0_rtx)
-	{
-	  this_insn_cc0 = src_const && mode != VOIDmode ? src_const : src;
-	  this_insn_cc0_mode = mode;
-	  if (FLOAT_MODE_P (mode))
-	    this_insn_cc0 = gen_rtx_COMPARE (VOIDmode, this_insn_cc0,
-					     CONST0_RTX (mode));
-	}
     }
 
   /* Now enter all non-volatile source expressions in the hash table
@@ -6589,34 +6539,6 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	      if (INSN_P (insn) && !recorded_label_ref
 		  && check_for_label_ref (insn))
 		recorded_label_ref = true;
-
-	      if (HAVE_cc0 && NONDEBUG_INSN_P (insn))
-		{
-		  /* If the previous insn sets CC0 and this insn no
-		     longer references CC0, delete the previous insn.
-		     Here we use fact that nothing expects CC0 to be
-		     valid over an insn, which is true until the final
-		     pass.  */
-		  rtx_insn *prev_insn;
-		  rtx tem;
-
-		  prev_insn = prev_nonnote_nondebug_insn (insn);
-		  if (prev_insn && NONJUMP_INSN_P (prev_insn)
-		      && (tem = single_set (prev_insn)) != NULL_RTX
-		      && SET_DEST (tem) == cc0_rtx
-		      && ! reg_mentioned_p (cc0_rtx, PATTERN (insn)))
-		    delete_insn (prev_insn);
-
-		  /* If this insn is not the last insn in the basic
-		     block, it will be PREV_INSN(insn) in the next
-		     iteration.  If we recorded any CC0-related
-		     information for this insn, remember it.  */
-		  if (insn != BB_END (bb))
-		    {
-		      prev_insn_cc0 = this_insn_cc0;
-		      prev_insn_cc0_mode = this_insn_cc0_mode;
-		    }
-		}
 	    }
 	}
 
@@ -6665,10 +6587,6 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	  bool taken = (next_bb == BRANCH_EDGE (bb)->dest);
 	  record_jump_equiv (insn, taken);
 	}
-
-      /* Clear the CC0-tracking related insns, they can't provide
-	 useful information across basic block boundaries.  */
-      prev_insn_cc0 = 0;
     }
 
   gcc_assert (next_qty <= max_qty);
@@ -6811,7 +6729,6 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
       return;
 
     case PC:
-    case CC0:
     case CONST:
     CASE_CONST_ANY:
     case SYMBOL_REF:
@@ -6920,23 +6837,15 @@ is_dead_reg (const_rtx x, int *counts)
 
 /* Return true if set is live.  */
 static bool
-set_live_p (rtx set, rtx_insn *insn ATTRIBUTE_UNUSED, /* Only used with HAVE_cc0.  */
-	    int *counts)
+set_live_p (rtx set, int *counts)
 {
-  rtx_insn *tem;
-
   if (set_noop_p (set))
-    ;
-
-  else if (GET_CODE (SET_DEST (set)) == CC0
-	   && !side_effects_p (SET_SRC (set))
-	   && ((tem = next_nonnote_nondebug_insn (insn)) == NULL_RTX
-	       || !INSN_P (tem)
-	       || !reg_referenced_p (cc0_rtx, PATTERN (tem))))
     return false;
-  else if (!is_dead_reg (SET_DEST (set), counts)
-	   || side_effects_p (SET_SRC (set)))
+
+  if (!is_dead_reg (SET_DEST (set), counts)
+      || side_effects_p (SET_SRC (set)))
     return true;
+
   return false;
 }
 
@@ -6949,7 +6858,7 @@ insn_live_p (rtx_insn *insn, int *counts)
   if (!cfun->can_delete_dead_exceptions && !insn_nothrow_p (insn))
     return true;
   else if (GET_CODE (PATTERN (insn)) == SET)
-    return set_live_p (PATTERN (insn), insn, counts);
+    return set_live_p (PATTERN (insn), counts);
   else if (GET_CODE (PATTERN (insn)) == PARALLEL)
     {
       for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
@@ -6958,7 +6867,7 @@ insn_live_p (rtx_insn *insn, int *counts)
 
 	  if (GET_CODE (elt) == SET)
 	    {
-	      if (set_live_p (elt, insn, counts))
+	      if (set_live_p (elt, counts))
 		return true;
 	    }
 	  else if (GET_CODE (elt) != CLOBBER && GET_CODE (elt) != USE)

@@ -841,6 +841,13 @@ htab_hash_string (const PTR p)
   return r;
 }
 
+/* An equality function for null-terminated strings.  */
+int
+htab_eq_string (const void *a, const void *b)
+{
+  return strcmp ((const char *) a, (const char *) b) == 0;
+}
+
 /* DERIVED FROM:
 --------------------------------------------------------------------
 lookup2.c, by Bob Jenkins, December 1996, Public Domain.

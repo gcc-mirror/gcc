@@ -89,6 +89,14 @@ public:
   {
     return m_mutable_svals.end ();
   }
+  hash_set<const region *>::iterator begin_mutable_base_regs ()
+  {
+    return m_mutable_base_regs.begin ();
+  }
+  hash_set<const region *>::iterator end_mutable_base_regs ()
+  {
+    return m_mutable_base_regs.end ();
+  }
 
   void dump_to_pp (pretty_printer *pp) const;
 

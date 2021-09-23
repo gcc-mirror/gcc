@@ -239,7 +239,7 @@ TEST_UNIFORM_ZD (divr_h4_f16_x_tied1, svfloat16_t, __fp16,
 		 z0 = svdivr_x (p0, z0, d4))
 
 /*
-** divr_h4_f16_x_untied: { xfail *-*-* }
+** divr_h4_f16_x_untied:
 **	mov	z0\.h, h4
 **	fdiv	z0\.h, p0/m, z0\.h, z1\.h
 **	ret

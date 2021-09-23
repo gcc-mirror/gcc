@@ -61,7 +61,7 @@ constexpr int Z = 10;
 
 static_assert(deduced_as<0, int>);
 static_assert(deduced_as<0, int&>); // { dg-error "invalid variable template" }
-static_assert(deduced_as<Z, const int>);
+static_assert(deduced_as<Z, int>);
 static_assert(deduced_as<(Z), const int>); // { dg-error "invalid variable template" }
 static_assert(deduced_as<(Z), const int&>);
 

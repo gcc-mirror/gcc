@@ -260,6 +260,8 @@ void AggregateDeclaration::setScope(Scope *sc)
  */
 bool AggregateDeclaration::determineFields()
 {
+    if (_scope)
+        dsymbolSemantic(this, NULL);
     if (sizeok != SIZEOKnone)
         return true;
 

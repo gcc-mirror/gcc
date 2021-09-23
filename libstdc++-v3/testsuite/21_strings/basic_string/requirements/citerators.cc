@@ -19,13 +19,17 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <string>
+#include <debug/string>
+
 #include <testsuite_containers.h>
 
 int main()
 {
   __gnu_test::citerator<std::string> test1;
+  __gnu_test::citerator<__gnu_debug::string> dtest1;
 #ifdef _GLIBCXX_USE_WCHAR_T
   __gnu_test::citerator<std::wstring> test2;
+  __gnu_test::citerator<__gnu_debug::wstring> dtest2;
 #endif
   return 0;
 }

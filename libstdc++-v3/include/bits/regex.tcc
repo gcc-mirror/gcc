@@ -56,7 +56,7 @@ namespace __detail
       if (__re._M_automaton == nullptr)
 	return false;
 
-      typename match_results<_BiIter, _Alloc>::_Base_type& __res = __m;
+      typename match_results<_BiIter, _Alloc>::_Unchecked& __res = __m;
       __m._M_begin = __s;
       __m._M_resize(__re._M_automaton->_M_sub_count());
 
@@ -66,7 +66,7 @@ namespace __detail
 	      && !__re._M_automaton->_M_has_backref))
 	{
 	  _Executor<_BiIter, _Alloc, _TraitsT, false>
-	    __executor(__s, __e, __m, __re, __flags);
+	    __executor(__s, __e, __res, __re, __flags);
 	  if (__match_mode)
 	    __ret = __executor._M_match();
 	  else
@@ -75,7 +75,7 @@ namespace __detail
       else
 	{
 	  _Executor<_BiIter, _Alloc, _TraitsT, true>
-	    __executor(__s, __e, __m, __re, __flags);
+	    __executor(__s, __e, __res, __re, __flags);
 	  if (__match_mode)
 	    __ret = __executor._M_match();
 	  else

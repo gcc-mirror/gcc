@@ -2,9 +2,15 @@
 /* { dg-do run { target avx2 } } */
 /* { dg-options "-O2 -std=c++14 -mavx2 -mno-xop -mno-avx512f" } */
 
-#include "avx2-check.h"
+#ifndef CHECK_H
+#define CHECK_H "avx2-check.h"
+#endif
 
+#ifndef TEST
 #define TEST avx2_test
+#endif
+
+#include CHECK_H
 
 #include "avx2-pr54700-1.C"
 

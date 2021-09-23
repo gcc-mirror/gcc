@@ -234,12 +234,12 @@ public:
 class CompileDeclaration : public AttribDeclaration
 {
 public:
-    Expression *exp;
+    Expressions *exps;
 
     ScopeDsymbol *scopesym;
     bool compiled;
 
-    CompileDeclaration(Loc loc, Expression *exp);
+    CompileDeclaration(Loc loc, Expressions *exps);
     Dsymbol *syntaxCopy(Dsymbol *s);
     void addMember(Scope *sc, ScopeDsymbol *sds);
     void setScope(Scope *sc);

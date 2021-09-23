@@ -4,13 +4,17 @@
 #include "Wobjsize-1.h"
 
 char buf[6];
-/* { dg-warning "writing" "" { target *-*-* } .-1 } */
 
 int main(int argc, char **argv)
 {
-  strcpy (buf,"hello ");
+  strcpy (buf,"hello ");    /* { dg-warning "\\\[-Wstringop-overflow" } */
   return 0;
 }
 
-/* { dg-message "file included" "included" { target *-*-* } 0 } */
-/* { dg-message "inlined from" "inlined" { target *-*-* } 0 } */
+/* { dg-message "file included" "included" { target *-*-* } 0 }
+   { dg-message "inlined from" "inlined" { target *-*-* } 0 }
+
+   The test might emit two warnings, one for the strcpy call and
+   another for the inlined call to __builtin___strcpy_chk() called
+   from strcpy().
+   { dg-prune-output "writing 7 bytes into a region of size 6" } */

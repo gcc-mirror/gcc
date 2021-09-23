@@ -1972,17 +1972,17 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
   else if (*str == '+')
     str++;
 
-  if (!strncmp (str, "QNaN", 4))
+  if (startswith (str, "QNaN"))
     {
       get_canonical_qnan (r, sign);
       return 0;
     }
-  else if (!strncmp (str, "SNaN", 4))
+  else if (startswith (str, "SNaN"))
     {
       get_canonical_snan (r, sign);
       return 0;
     }
-  else if (!strncmp (str, "Inf", 3))
+  else if (startswith (str, "Inf"))
     {
       get_inf (r, sign);
       return 0;

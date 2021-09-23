@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --            Copyright (C) 1991-2017, Florida State University             --
---          Copyright (C) 1995-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,7 @@ with Interfaces.C;
 with System.VxWorks;
 with System.VxWorks.Ext;
 with System.Multiprocessors;
+with System.Parameters;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -239,7 +240,11 @@ package System.OS_Interface is
    -- Time --
    ----------
 
-   type time_t is new unsigned_long;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
+   --  Time_t here used to be unsigned to match the VxWorks header declaration.
+   --  The header declaration has changed in newer releases and is now signed
+   --  for applications.
 
    type timespec is record
       ts_sec  : time_t;

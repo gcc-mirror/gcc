@@ -25,7 +25,7 @@ fn2(tmp *p1)
 {
   char *d = (char *)p1->d1;
   int *b = p1->h1;
-  for (int a; a; a++, d += 4)
+  for (int a = 0; a; a++, d += 4)
     fn1(d, *b++);
 }
 

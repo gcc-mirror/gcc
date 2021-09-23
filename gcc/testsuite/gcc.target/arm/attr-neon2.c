@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_neon_ok } */
 /* { dg-require-effective-target arm_fp_ok } */
-/* { dg-options "-O2" } */
+/* { dg-options "-Ofast" } */
 /* { dg-add-options arm_fp } */
 
 /* Reset fpu to a value compatible with the next pragmas.  */
@@ -12,23 +12,36 @@
 #include <arm_neon.h>
 
 /* Check that pragma target is used.  */
-int8x8_t 
-my (int8x8_t __a, int8x8_t __b)
+/*
+**my:
+**	...
+**	vadd.f32	d[0-9]+, d[0-9]+, d[0-9]+
+**	...
+**	bx	lr
+*/
+float32x2_t
+my (float32x2_t __a, float32x2_t __b)
 {
   return __a + __b;
 }
 
 #pragma GCC pop_options
 
-/* Check that command line option is restored.  */
-int8x8_t 
-my1 (int8x8_t __a, int8x8_t __b)
+/* Check that fpu=vfp is restored.  */
+/*
+**my1:
+**	...
+**	vadd.f32	s[0-9]+, s[0-9]+, s[0-9]+
+**	vadd.f32	s[0-9]+, s[0-9]+, s[0-9]+
+**	...
+**	bx	lr
+*/
+float32x2_t
+my1 (float32x2_t __a, float32x2_t __b)
 {
   return __a + __b;
 }
 
-/* { dg-final { scan-assembler-times "\.fpu vfp" 1 } } */
-/* { dg-final { scan-assembler-times "\.fpu neon" 1 } } */
-/* { dg-final { scan-assembler "vadd" } } */
-
-
+/* { dg-final { scan-assembler "\.fpu\\s+vfp\n" } } */
+/* { dg-final { scan-assembler "\.fpu\\s+neon\n" } } */
+/* { dg-final { check-function-bodies "**" "" } } */

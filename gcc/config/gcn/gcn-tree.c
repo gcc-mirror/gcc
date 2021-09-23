@@ -309,7 +309,6 @@ static tree
 gcn_goacc_get_worker_red_decl (tree type, unsigned offset)
 {
   machine_function *machfun = cfun->machine;
-  tree existing_decl;
 
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
@@ -319,31 +318,12 @@ gcn_goacc_get_worker_red_decl (tree type, unsigned offset)
 			    (TYPE_QUALS (type)
 			     | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_LDS)));
 
-  if (machfun->reduc_decls
-      && offset < machfun->reduc_decls->length ()
-      && (existing_decl = (*machfun->reduc_decls)[offset]))
-    {
-      gcc_assert (TREE_TYPE (existing_decl) == var_type);
-      return existing_decl;
-    }
-  else
-    {
-      char name[50];
-      sprintf (name, ".oacc_reduction_%u", offset);
-      tree decl = create_tmp_var_raw (var_type, name);
+  gcc_assert (offset
+	      < (machfun->reduction_limit - machfun->reduction_base));
+  tree ptr_type = build_pointer_type (var_type);
+  tree addr = build_int_cst (ptr_type, machfun->reduction_base + offset);
 
-      DECL_CONTEXT (decl) = NULL_TREE;
-      TREE_STATIC (decl) = 1;
-
-      varpool_node::finalize_decl (decl);
-
-      vec_safe_grow_cleared (machfun->reduc_decls, offset + 1, true);
-      (*machfun->reduc_decls)[offset] = decl;
-
-      return decl;
-    }
-
-  return NULL_TREE;
+  return build_simple_mem_ref (addr);
 }
 
 /* Expand IFN_GOACC_REDUCTION_SETUP.  */
@@ -500,7 +480,7 @@ gcn_goacc_reduction_teardown (gcall *call)
     }
 
   if (lhs)
-    gimplify_assign (lhs, var, &seq);
+    gimplify_assign (lhs, unshare_expr (var), &seq);
 
   pop_gimplify_context (NULL);
 
@@ -548,38 +528,12 @@ gcn_goacc_reduction (gcall *call)
     }
 }
 
-/* Implement TARGET_GOACC_ADJUST_PROPAGATION_RECORD.
- 
-   Tweak (worker) propagation record, e.g. to put it in shared memory.  */
-
 tree
-gcn_goacc_adjust_propagation_record (tree record_type, bool sender,
-				     const char *name)
+gcn_goacc_adjust_private_decl (location_t, tree var, int level)
 {
-  tree type = record_type;
+  if (level != GOMP_DIM_GANG)
+    return var;
 
-  TYPE_ADDR_SPACE (type) = ADDR_SPACE_LDS;
-
-  if (!sender)
-    type = build_pointer_type (type);
-
-  tree decl = create_tmp_var_raw (type, name);
-
-  if (sender)
-    {
-      DECL_CONTEXT (decl) = NULL_TREE;
-      TREE_STATIC (decl) = 1;
-    }
-
-  if (sender)
-    varpool_node::finalize_decl (decl);
-
-  return decl;
-}
-
-void
-gcn_goacc_adjust_gangprivate_decl (tree var)
-{
   tree type = TREE_TYPE (var);
   tree lds_type = build_qualified_type (type,
 		    TYPE_QUALS_NO_ADDR_SPACE (type)
@@ -597,6 +551,34 @@ gcn_goacc_adjust_gangprivate_decl (tree var)
 
   if (machfun)
     machfun->use_flat_addressing = true;
+
+  return var;
+}
+
+/* Implement TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD.
+
+   Create OpenACC worker state propagation record in shared memory.  */
+
+tree
+gcn_goacc_create_worker_broadcast_record (tree record_type, bool sender,
+					  const char *name,
+					  unsigned HOST_WIDE_INT offset)
+{
+  tree type = build_qualified_type (record_type,
+				    TYPE_QUALS_NO_ADDR_SPACE (record_type)
+				    | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_LDS));
+
+  if (!sender)
+    {
+      tree ptr_type = build_pointer_type (type);
+      return create_tmp_var_raw (ptr_type, name);
+    }
+
+  if (record_type == char_type_node)
+    offset = 1;
+
+  tree ptr_type = build_pointer_type (type);
+  return build_int_cst (ptr_type, offset);
 }
 
 /* }}}  */

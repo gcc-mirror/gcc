@@ -154,6 +154,7 @@ struct cl_option_handlers;
 struct diagnostic_context;
 class pretty_printer;
 class diagnostic_event_id_t;
+typedef const char * (*diagnostic_input_charset_callback)(const char *);
 
 template<typename T> struct array_traits;
 
@@ -424,7 +425,8 @@ enum excess_precision_type
 {
   EXCESS_PRECISION_TYPE_IMPLICIT,
   EXCESS_PRECISION_TYPE_STANDARD,
-  EXCESS_PRECISION_TYPE_FAST
+  EXCESS_PRECISION_TYPE_FAST,
+  EXCESS_PRECISION_TYPE_FLOAT16
 };
 
 /* Level of size optimization.  */

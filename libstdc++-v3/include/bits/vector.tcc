@@ -198,7 +198,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     vector<_Tp, _Alloc>::
     operator=(const vector<_Tp, _Alloc>& __x)
     {
-      if (&__x != this)
+      if (std::__addressof(__x) != this)
 	{
 	  _GLIBCXX_ASAN_ANNOTATE_REINIT;
 #if __cplusplus >= 201103L

@@ -25,6 +25,6 @@ void
 test01()
 {
   std::list<int> l{1, 2, 3};
-  std::begin(l);
-  std::end(l);
+  (void) std::begin(l);
+  (void) std::end(l);
 }

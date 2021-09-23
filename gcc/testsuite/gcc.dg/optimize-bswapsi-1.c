@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target bswap } */
 /* { dg-require-effective-target stdint_types } */
-/* { dg-options "-O2 -fdump-tree-bswap" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 /* { dg-additional-options "-march=z900" { target s390*-*-* } } */
 
 #include <stdint.h>
@@ -89,4 +89,4 @@ swap32_f (unsigned in)
   return in;
 }
 
-/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 6 "bswap" } } */
+/* { dg-final { scan-tree-dump-times "= __builtin_bswap32 \\\(" 6 "optimized" } } */

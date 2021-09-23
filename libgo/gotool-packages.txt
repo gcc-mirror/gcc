@@ -27,7 +27,6 @@ cmd/go/internal/modinfo
 cmd/go/internal/modload
 cmd/go/internal/mvs
 cmd/go/internal/par
-cmd/go/internal/renameio
 cmd/go/internal/robustio
 cmd/go/internal/run
 cmd/go/internal/search
@@ -86,6 +85,7 @@ golang.org/x/tools/go/analysis/passes/nilfunc
 golang.org/x/tools/go/analysis/passes/pkgfact
 golang.org/x/tools/go/analysis/passes/printf
 golang.org/x/tools/go/analysis/passes/shift
+golang.org/x/tools/go/analysis/passes/sigchanyzer
 golang.org/x/tools/go/analysis/passes/stdmethods
 golang.org/x/tools/go/analysis/passes/stringintconv
 golang.org/x/tools/go/analysis/passes/structtag

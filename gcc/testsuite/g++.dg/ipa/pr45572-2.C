@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-finline-small-functions -findirect-inlining -finline-function+
+// { dg-options "-finline-small-functions -findirect-inlining -finline-functions -O" }
 typedef struct
 {} __mpf_struct;
 typedef __mpf_struct mpf_t[1];

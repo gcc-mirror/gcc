@@ -53,3 +53,5 @@
 
 /* Use the default */
 #undef LINK_GCC_C_SEQUENCE_SPEC
+
+#define SPARC_GCOV_TYPE_SIZE 32

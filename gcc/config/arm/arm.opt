@@ -81,6 +81,12 @@ Specify the name of the target architecture.
 EnumValue
 Enum(arm_arch) String(native) Value(-1) DriverOnly
 
+; Set to the name of target architecture which is required for
+; multilib linking.  This option is undocumented because it
+; should not be used by the users.
+mlibarch=
+Target RejectNegative JoinedOrMissing NoDWARFRecord DriverOnly Undocumented
+
 marm
 Target RejectNegative Negative(mthumb) InverseMask(THUMB)
 Generate code in 32 bit ARM state.
@@ -261,6 +267,10 @@ mfix-cortex-m3-ldrd
 Target Var(fix_cm3_ldrd) Init(2)
 Avoid overlapping destination and address registers on LDRD instructions
 that may trigger Cortex-M3 errata.
+
+mfix-cmse-cve-2021-35465
+Target Var(fix_vlldm) Init(2)
+Mitigate issues with VLLDM on some M-profile devices (CVE-2021-35465).
 
 munaligned-access
 Target Var(unaligned_access) Init(2) Save

@@ -5,14 +5,14 @@
 # Roland Stigge <stigge@antcom.de>, 2003-2008, 2010, 2012-2013.
 # Mario Blättermann <mario.blaettermann@gmail.com>, 2014-2016.
 # Philipp Thomas <pth@suse.de>, 2016.
-# Roland Illig <roland.illig@gmx.de>, 2017-2020.
+# Roland Illig <roland.illig@gmx.de>, 2017-2021.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 10.1-b20200209\n"
+"Project-Id-Version: cpplib 11.1-b20210207\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-02-05 21:38+0000\n"
-"PO-Revision-Date: 2020-02-10 20:08+0100\n"
+"PO-Revision-Date: 2021-08-15 06:13+0200\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 3.0\n"
 
 #: charset.c:677
 #, c-format
@@ -56,7 +56,7 @@ msgstr "universelle Zeichennamen sind nur in C++ und C99 gültig"
 
 #: charset.c:1061
 msgid "C99's universal character names are incompatible with C90"
-msgstr "universelle Zeichennamen in C99 sind zu C90 inkompatibel"
+msgstr "Die universellen Zeichennamen von C99 sind mit C90 nicht kompatibel"
 
 #: charset.c:1064
 #, c-format
@@ -490,23 +490,19 @@ msgstr "ungültiges Suffix »%.*s« an Ganzzahlkonstante"
 
 #: expr.c:807
 msgid "use of C++11 long long integer constant"
-msgstr "C++11 long long Ganzzahlkonstante verwendet"
+msgstr "Verwendung einer long-long-Ganzzahlkonstante aus C++11"
 
 #: expr.c:808
 msgid "use of C99 long long integer constant"
-msgstr "C99 long long Ganzzahlkonstante verwendet"
+msgstr "Verwendung einer long-long-Ganzzahlkonstante aus C99"
 
 #: expr.c:822
-#, fuzzy
-#| msgid "use of C++11 long long integer constant"
 msgid "use of C++23 %<size_t%> integer constant"
-msgstr "C++11 long long Ganzzahlkonstante verwendet"
+msgstr "Verwendung von %<size_t%>-Ganzzahlkonstante aus C++23"
 
 #: expr.c:823
-#, fuzzy
-#| msgid "use of C++11 long long integer constant"
 msgid "use of C++23 %<make_signed_t<size_t>%> integer constant"
-msgstr "C++11 long long Ganzzahlkonstante verwendet"
+msgstr "Verwendung von %<make_signed_t<size_t>%>-Ganzzahlkonstante aus C++23"
 
 #: expr.c:834
 msgid "imaginary constants are a GCC extension"
@@ -517,16 +513,12 @@ msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "binäre Konstanten sind ein C++14-Funktionsmerkmal oder eine GCC-Erweiterung"
 
 #: expr.c:843
-#, fuzzy
-#| msgid "binary constants are a C++14 feature or GCC extension"
 msgid "binary constants are a C2X feature or GCC extension"
-msgstr "binäre Konstanten sind ein C++14-Funktionsmerkmal oder eine GCC-Erweiterung"
+msgstr "binäre Konstanten sind ein C2X-Funktionsmerkmal oder eine GCC-Erweiterung"
 
 #: expr.c:848
-#, fuzzy
-#| msgid "decimal float constants are a C2X feature"
 msgid "binary constants are a C2X feature"
-msgstr "dezimale Gleitkommakonstanten sind ein C2X-Feature"
+msgstr "binäre Konstanten sind ein C2X-Funktionsmerkmal"
 
 #: expr.c:944
 msgid "integer constant is too large for its type"
@@ -719,16 +711,12 @@ msgid "`%.*s' is not in NFC"
 msgstr "»%.*s« ist nicht in NFC"
 
 #: lex.c:1375
-#, fuzzy
-#| msgid "__VA_OPT__ is not available until C++2a"
 msgid "__VA_OPT__ is not available until C++20"
-msgstr "__VA_OPT__ ist erst mit C++2a verfügbar"
+msgstr "__VA_OPT__ ist erst mit C++20 verfügbar"
 
 #: lex.c:1382
-#, fuzzy
-#| msgid "__VA_OPT__ can only appear in the expansion of a C++2a variadic macro"
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
-msgstr "__VA_OPT__ kann nur in der Expansion eines variadischen C++2a-Makros auftreten"
+msgstr "__VA_OPT__ kann nur in der Expansion eines variadischen C++20-Makros auftreten"
 
 #: lex.c:1413 lex.c:1506
 #, c-format
@@ -784,12 +772,12 @@ msgstr "C++11 erfordert Leerzeichen zwischen Zeichenketten-Literal und Makro"
 
 #: lex.c:2711
 msgid "module control-line cannot be in included file"
-msgstr ""
+msgstr "Modul-Steuerzeile darf nicht in eingebundener Datei vorkommen"
 
 #: lex.c:2725
 #, c-format
 msgid "module control-line \"%s\" cannot be an object-like macro"
-msgstr ""
+msgstr "Modul-Steuerzeile \"%s\" darf nicht in einem objektartigen Makro vorkommen"
 
 #: lex.c:3099 lex.c:4472 traditional.c:174
 msgid "unterminated comment"
@@ -817,16 +805,13 @@ msgid "unspellable token %s"
 msgstr "nicht buchstabierbares Token %s"
 
 #: lex.c:4627
-#, fuzzy, c-format
-#| msgid "raw string delimiter longer than 16 characters"
+#, c-format
 msgid "raw string delimiter longer than %d characters"
-msgstr "Roh-Zeichenketten-Trennsymbol länger als 16 Zeichen"
+msgstr "Roh-Zeichenketten-Trennsymbol länger als %d Zeichen"
 
 #: lex.c:4697
-#, fuzzy
-#| msgid "unterminated #%s"
 msgid "unterminated literal"
-msgstr "unbeendetes #%s"
+msgstr "unbeendetes Literal"
 
 #: macro.c:94
 msgid "'##' cannot appear at either end of __VA_OPT__"

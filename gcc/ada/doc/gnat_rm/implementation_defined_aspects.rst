@@ -397,6 +397,19 @@ This aspect is equivalent to :ref:`pragma No_Tagged_Streams<Pragma-No_Tagged_Str
 argument specifying a root tagged type (thus this aspect can only be
 applied to such a type).
 
+Aspect No_Task_Parts
+========================
+.. index:: No_Task_Parts
+
+Applies to a type. If True, requires that the type and any descendants
+do not have any task parts. The rules for this aspect are the same as
+for the language-defined No_Controlled_Parts aspect (see RM-H.4.1),
+replacing "controlled" with "task".
+
+If No_Task_Parts is True for a type T, then the compiler can optimize
+away certain tasking-related code that would otherwise be needed
+for T'Class, because descendants of T might contain tasks.
+
 Aspect Object_Size
 ==================
 .. index:: Object_Size
@@ -548,12 +561,6 @@ Aspect Universal_Aliasing
 
 This boolean aspect is equivalent to :ref:`pragma Universal_Aliasing<Pragma-Universal_Aliasing>`.
 
-Aspect Universal_Data
-=====================
-.. index:: Universal_Data
-
-This aspect is equivalent to :ref:`pragma Universal_Data<Pragma-Universal_Data>`.
-
 Aspect Unmodified
 =================
 .. index:: Unmodified
@@ -566,7 +573,7 @@ Aspect Unreferenced
 
 This boolean aspect is equivalent to :ref:`pragma Unreferenced<Pragma-Unreferenced>`.
 
-When using the ``-gnat2020`` switch, this aspect is also supported on formal
+When using the ``-gnat2022`` switch, this aspect is also supported on formal
 parameters, which is in particular the only form possible for expression
 functions.
 

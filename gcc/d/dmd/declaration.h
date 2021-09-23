@@ -118,7 +118,7 @@ struct Match
     FuncDeclaration *anyf;      // pick a func, any func, to use for error recovery
 };
 
-void functionResolve(Match *m, Dsymbol *fd, Loc loc, Scope *sc, Objects *tiargs, Type *tthis, Expressions *fargs);
+void functionResolve(Match *m, Dsymbol *fd, Loc loc, Scope *sc, Objects *tiargs, Type *tthis, Expressions *fargs, const char **pMessage = NULL);
 int overloadApply(Dsymbol *fstart, void *param, int (*fp)(void *, Dsymbol *));
 void aliasSemantic(AliasDeclaration *ds, Scope *sc);
 
@@ -551,6 +551,8 @@ void builtin_init();
 #define FUNCFLAGreturnInprocess 0x10    // working on inferring 'return' for parameters
 #define FUNCFLAGinlineScanned   0x20    // function has been scanned for inline possibilities
 #define FUNCFLAGinferScope      0x40    // infer 'scope' for parameters
+#define FUNCFLAGprintf          0x200   // is a printf-like function
+#define FUNCFLAGscanf           0x400   // is a scanf-like function
 
 class FuncDeclaration : public Declaration
 {

@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "tree-ssa-reassoc.h"
 #include "tree-ssa-math-opts.h"
+#include "gimple-range.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -593,6 +594,36 @@ add_repeat_to_ops_vec (vec<operand_entry *> *ops, tree op,
   reassociate_stats.pows_encountered++;
 }
 
+/* Returns true if we can associate the SSA def OP.  */
+
+static bool
+can_reassociate_op_p (tree op)
+{
+  if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+    return false;
+  /* Make sure asm goto outputs do not participate in reassociation since
+     we have no way to find an insertion place after asm goto.  */
+  if (TREE_CODE (op) == SSA_NAME
+      && gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_ASM
+      && gimple_asm_nlabels (as_a <gasm *> (SSA_NAME_DEF_STMT (op))) != 0)
+    return false;
+  return true;
+}
+
+/* Returns true if we can reassociate operations of TYPE.
+   That is for integral or non-saturating fixed-point types, and for
+   floating point type when associative-math is enabled.  */
+
+static bool
+can_reassociate_type_p (tree type)
+{
+  if ((ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
+      || NON_SAT_FIXED_POINT_TYPE_P (type)
+      || (flag_associative_math && FLOAT_TYPE_P (type)))
+    return true;
+  return false;
+}
+
 /* Return true if STMT is reassociable operation containing a binary
    operation with tree code CODE, and is inside LOOP.  */
 
@@ -613,12 +644,8 @@ is_reassociable_op (gimple *stmt, enum tree_code code, class loop *loop)
     {
       tree rhs1 = gimple_assign_rhs1 (stmt);
       tree rhs2 = gimple_assign_rhs2 (stmt);
-      if (TREE_CODE (rhs1) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
-	return false;
-      if (rhs2
-	  && TREE_CODE (rhs2) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs2))
+      if (!can_reassociate_op_p (rhs1)
+	  || (rhs2 && !can_reassociate_op_p (rhs2)))
 	return false;
       return true;
     }
@@ -1035,7 +1062,7 @@ eliminate_using_constants (enum tree_code opcode,
 	  if (integer_zerop (oelast->op)
 	      || (FLOAT_TYPE_P (type)
 		  && (opcode == PLUS_EXPR || opcode == MINUS_EXPR)
-		  && fold_real_zero_addition_p (type, oelast->op,
+		  && fold_real_zero_addition_p (type, 0, oelast->op,
 						opcode == MINUS_EXPR)))
 	    {
 	      if (ops->length () != 1)
@@ -1446,6 +1473,10 @@ insert_stmt_after (gimple *stmt, gimple *insert_point)
       gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
       return;
     }
+  else if (gimple_code (insert_point) == GIMPLE_ASM)
+    /* We have no idea where to insert - it depends on where the
+       uses will be placed.  */
+    gcc_unreachable ();
   else
     /* We assume INSERT_POINT is a SSA_NAME_DEF_STMT of some SSA_NAME,
        thus if it must end a basic block, it should be a call that can
@@ -3191,12 +3222,14 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	 amount, then we can merge the entry test in the bit test.  In this
 	 case, if we would need otherwise 2 or more comparisons, then use
 	 the bit test; in the other cases, the threshold is 3 comparisons.  */
-      wide_int min, max;
       bool entry_test_needed;
+      value_range r;
       if (TREE_CODE (exp) == SSA_NAME
-	  && get_range_info (exp, &min, &max) == VR_RANGE
-	  && wi::leu_p (max - min, prec - 1))
+	  && get_range_query (cfun)->range_of_expr (r, exp)
+	  && r.kind () == VR_RANGE
+	  && wi::leu_p (r.upper_bound () - r.lower_bound (), prec - 1))
 	{
+	  wide_int min = r.lower_bound ();
 	  wide_int ilowi = wi::to_wide (lowi);
 	  if (wi::lt_p (min, ilowi, TYPE_SIGN (TREE_TYPE (lowi))))
 	    {
@@ -4453,7 +4486,7 @@ get_ops (tree var, enum tree_code code, vec<operand_entry *> *ops,
    stmts.  */
 
 static tree
-update_ops (tree var, enum tree_code code, vec<operand_entry *> ops,
+update_ops (tree var, enum tree_code code, const vec<operand_entry *> &ops,
 	    unsigned int *pidx, class loop *loop)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (var);
@@ -5000,7 +5033,7 @@ remove_visited_stmt_chain (tree var)
    cases, but it is unlikely to be worth it.  */
 
 static void
-swap_ops_for_binary_stmt (vec<operand_entry *> ops,
+swap_ops_for_binary_stmt (const vec<operand_entry *> &ops,
 			  unsigned int opindex, gimple *stmt)
 {
   operand_entry *oe1, *oe2, *oe3;
@@ -5071,7 +5104,8 @@ insert_stmt_before_use (gimple *stmt, gimple *stmt_to_insert)
 
 static tree
 rewrite_expr_tree (gimple *stmt, enum tree_code rhs_code, unsigned int opindex,
-		   vec<operand_entry *> ops, bool changed, bool next_changed)
+		   const vec<operand_entry *> &ops, bool changed,
+		   bool next_changed)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree rhs2 = gimple_assign_rhs2 (stmt);
@@ -5293,7 +5327,7 @@ get_reassociation_width (int ops_num, enum tree_code opc,
 
 static void
 rewrite_expr_tree_parallel (gassign *stmt, int width,
-			    vec<operand_entry *> ops)
+			    const vec<operand_entry *> &ops)
 {
   enum tree_code opcode = gimple_assign_rhs_code (stmt);
   int op_num = ops.length ();
@@ -5883,23 +5917,6 @@ repropagate_negates (void)
     }
 }
 
-/* Returns true if OP is of a type for which we can do reassociation.
-   That is for integral or non-saturating fixed-point types, and for
-   floating point type when associative-math is enabled.  */
-
-static bool
-can_reassociate_p (tree op)
-{
-  tree type = TREE_TYPE (op);
-  if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
-    return false;
-  if ((ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
-      || NON_SAT_FIXED_POINT_TYPE_P (type)
-      || (flag_associative_math && FLOAT_TYPE_P (type)))
-    return true;
-  return false;
-}
-
 /* Break up subtract operations in block BB.
 
    We do this top down because we don't know whether the subtract is
@@ -5932,14 +5949,15 @@ break_up_subtract_bb (basic_block bb)
       gimple_set_uid (stmt, uid++);
 
       if (!is_gimple_assign (stmt)
-	  || !can_reassociate_p (gimple_assign_lhs (stmt)))
+	  || !can_reassociate_type_p (TREE_TYPE (gimple_assign_lhs (stmt)))
+	  || !can_reassociate_op_p (gimple_assign_lhs (stmt)))
 	continue;
 
       /* Look for simple gimple subtract operations.  */
       if (gimple_assign_rhs_code (stmt) == MINUS_EXPR)
 	{
-	  if (!can_reassociate_p (gimple_assign_rhs1 (stmt))
-	      || !can_reassociate_p (gimple_assign_rhs2 (stmt)))
+	  if (!can_reassociate_op_p (gimple_assign_rhs1 (stmt))
+	      || !can_reassociate_op_p (gimple_assign_rhs2 (stmt)))
 	    continue;
 
 	  /* Check for a subtract used only in an addition.  If this
@@ -5950,7 +5968,7 @@ break_up_subtract_bb (basic_block bb)
 	    break_up_subtract (stmt, &gsi);
 	}
       else if (gimple_assign_rhs_code (stmt) == NEGATE_EXPR
-	       && can_reassociate_p (gimple_assign_rhs1 (stmt)))
+	       && can_reassociate_op_p (gimple_assign_rhs1 (stmt)))
 	plus_negates.safe_push (gimple_assign_lhs (stmt));
     }
   for (son = first_dom_son (CDI_DOMINATORS, bb);
@@ -6543,14 +6561,14 @@ reassociate_bb (basic_block bb)
 
 	  /* For non-bit or min/max operations we can't associate
 	     all types.  Verify that here.  */
-	  if (rhs_code != BIT_IOR_EXPR
-	      && rhs_code != BIT_AND_EXPR
-	      && rhs_code != BIT_XOR_EXPR
-	      && rhs_code != MIN_EXPR
-	      && rhs_code != MAX_EXPR
-	      && (!can_reassociate_p (lhs)
-		  || !can_reassociate_p (rhs1)
-		  || !can_reassociate_p (rhs2)))
+	  if ((rhs_code != BIT_IOR_EXPR
+	       && rhs_code != BIT_AND_EXPR
+	       && rhs_code != BIT_XOR_EXPR
+	       && rhs_code != MIN_EXPR
+	       && rhs_code != MAX_EXPR
+	       && !can_reassociate_type_p (TREE_TYPE (lhs)))
+	      || !can_reassociate_op_p (rhs1)
+	      || !can_reassociate_op_p (rhs2))
 	    continue;
 
 	  if (associative_tree_code (rhs_code))

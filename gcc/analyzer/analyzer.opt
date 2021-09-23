@@ -134,6 +134,10 @@ Wanalyzer-write-to-string-literal
 Common Var(warn_analyzer_write_to_string_literal) Init(1) Warning
 Warn about code paths which attempt to write to a string literal.
 
+Wanalyzer-use-of-uninitialized-value
+Common Var(warn_analyzer_use_of_uninitialized_value) Init(1) Warning
+Warn about code paths in which an uninitialized value is used.
+
 Wanalyzer-too-complex
 Common Var(warn_analyzer_too_complex) Init(0) Warning
 Warn if the code is too complicated for the analyzer to fully explore.
@@ -209,6 +213,10 @@ Dump a textual representation of the exploded graph to SRCFILE.eg.txt.
 fdump-analyzer-exploded-nodes-3
 Common RejectNegative Var(flag_dump_analyzer_exploded_nodes_3)
 Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
+
+fdump-analyzer-exploded-paths
+Common RejectNegative Var(flag_dump_analyzer_exploded_paths)
+Dump a textual representation of each diagnostic's exploded path to SRCFILE.IDX.KIND.epath.txt.
 
 fdump-analyzer-feasibility
 Common RejectNegative Var(flag_dump_analyzer_feasibility)

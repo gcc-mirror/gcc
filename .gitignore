@@ -32,6 +32,7 @@ POTFILES
 
 TAGS
 TAGS.sub
+cscope.out
 
 .local.vimrc
 .lvimrc

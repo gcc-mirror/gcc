@@ -5657,6 +5657,59 @@ relate_compare_use_with_all_cands (struct ivopts_data *data)
     }
 }
 
+/* If PREFERRED_MODE is suitable and profitable, use the preferred
+   PREFERRED_MODE to compute doloop iv base from niter: base = niter + 1.  */
+
+static tree
+compute_doloop_base_on_mode (machine_mode preferred_mode, tree niter,
+			     const widest_int &iterations_max)
+{
+  tree ntype = TREE_TYPE (niter);
+  tree pref_type = lang_hooks.types.type_for_mode (preferred_mode, 1);
+  if (!pref_type)
+    return fold_build2 (PLUS_EXPR, ntype, unshare_expr (niter),
+			build_int_cst (ntype, 1));
+
+  gcc_assert (TREE_CODE (pref_type) == INTEGER_TYPE);
+
+  int prec = TYPE_PRECISION (ntype);
+  int pref_prec = TYPE_PRECISION (pref_type);
+
+  tree base;
+
+  /* Check if the PREFERRED_MODED is able to present niter.  */
+  if (pref_prec > prec
+      || wi::ltu_p (iterations_max,
+		    widest_int::from (wi::max_value (pref_prec, UNSIGNED),
+				      UNSIGNED)))
+    {
+      /* No wrap, it is safe to use preferred type after niter + 1.  */
+      if (wi::ltu_p (iterations_max,
+		     widest_int::from (wi::max_value (prec, UNSIGNED),
+				       UNSIGNED)))
+	{
+	  /* This could help to optimize "-1 +1" pair when niter looks
+	     like "n-1": n is in original mode.  "base = (n - 1) + 1"
+	     in PREFERRED_MODED: it could be base = (PREFERRED_TYPE)n.  */
+	  base = fold_build2 (PLUS_EXPR, ntype, unshare_expr (niter),
+			      build_int_cst (ntype, 1));
+	  base = fold_convert (pref_type, base);
+	}
+
+      /* To avoid wrap, convert niter to preferred type before plus 1.  */
+      else
+	{
+	  niter = fold_convert (pref_type, niter);
+	  base = fold_build2 (PLUS_EXPR, pref_type, unshare_expr (niter),
+			      build_int_cst (pref_type, 1));
+	}
+    }
+  else
+    base = fold_build2 (PLUS_EXPR, ntype, unshare_expr (niter),
+			build_int_cst (ntype, 1));
+  return base;
+}
+
 /* Add one doloop dedicated IV candidate:
      - Base is (may_be_zero ? 1 : (niter + 1)).
      - Step is -1.  */
@@ -5688,8 +5741,20 @@ add_iv_candidate_for_doloop (struct ivopts_data *data)
 	return;
     }
 
-  tree base = fold_build2 (PLUS_EXPR, ntype, unshare_expr (niter),
-			   build_int_cst (ntype, 1));
+  machine_mode mode = TYPE_MODE (ntype);
+  machine_mode pref_mode = targetm.preferred_doloop_mode (mode);
+
+  tree base;
+  if (mode != pref_mode)
+    {
+      base = compute_doloop_base_on_mode (pref_mode, niter, niter_desc->max);
+      ntype = TREE_TYPE (base);
+    }
+  else
+    base = fold_build2 (PLUS_EXPR, ntype, unshare_expr (niter),
+			build_int_cst (ntype, 1));
+
+
   add_candidate (data, base, build_int_cst (ntype, -1), true, NULL, NULL, true);
 }
 
@@ -7286,12 +7351,13 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
     }
 
   comp = fold_convert (type, comp);
-  if (!valid_gimple_rhs_p (comp)
-      || (gimple_code (use->stmt) != GIMPLE_PHI
-	  /* We can't allow re-allocating the stmt as it might be pointed
-	     to still.  */
-	  && (get_gimple_rhs_num_ops (TREE_CODE (comp))
-	      >= gimple_num_ops (gsi_stmt (bsi)))))
+  comp = force_gimple_operand (comp, &seq, false, NULL);
+  gimple_seq_add_seq (&stmt_list, seq);
+  if (gimple_code (use->stmt) != GIMPLE_PHI
+      /* We can't allow re-allocating the stmt as it might be pointed
+	 to still.  */
+      && (get_gimple_rhs_num_ops (TREE_CODE (comp))
+	  >= gimple_num_ops (gsi_stmt (bsi))))
     {
       comp = force_gimple_operand (comp, &seq, true, NULL);
       gimple_seq_add_seq (&stmt_list, seq);
@@ -8065,14 +8131,13 @@ finish:
 void
 tree_ssa_iv_optimize (void)
 {
-  class loop *loop;
   struct ivopts_data data;
   auto_bitmap toremove;
 
   tree_ssa_iv_optimize_init (&data);
 
   /* Optimize the loops starting with the innermost ones.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       if (!dbg_cnt (ivopts_loop))
 	continue;

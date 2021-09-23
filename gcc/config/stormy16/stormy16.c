@@ -516,7 +516,7 @@ xstormy16_preferred_reload_class (rtx x, reg_class_t rclass)
 /* Predicate for symbols and addresses that reflect special 8-bit
    addressing.  */
 
-int
+bool
 xstormy16_below100_symbol (rtx x,
 			   machine_mode mode ATTRIBUTE_UNUSED)
 {
@@ -542,7 +542,7 @@ xstormy16_below100_symbol (rtx x,
 /* Likewise, but only for non-volatile MEMs, for patterns where the
    MEM will get split into smaller sized accesses.  */
 
-int
+bool
 xstormy16_splittable_below100_operand (rtx x, machine_mode mode)
 {
   if (MEM_P (x) && MEM_VOLATILE_P (x))

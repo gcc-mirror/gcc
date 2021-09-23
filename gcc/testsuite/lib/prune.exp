@@ -54,8 +54,11 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)\[ \]+from \[^\n\]*" $text "" text
     regsub -all "(^|\n)(In|of) module( \[^\n \]*,)? imported at \[^\n\]*" $text "" text
 
-    # Ignore informational notes.
-    regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text
+    global prune_notes
+    if { $prune_notes } {
+	# Ignore informational notes.
+	regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text
+    }
 
     # Ignore harmless -fpic warnings.
     regsub -all "(^|\n)\[^\n\]*: warning: -f(pic|PIC) ignored for target\[^\n\]*" $text "" text

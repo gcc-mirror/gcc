@@ -1,5 +1,3 @@
-/* { dg-do run { target openacc_nvidia_accel_selected } } */
-
 /* Test mapping of async values to specific underlying queues.  */
 
 #undef NDEBUG
@@ -29,6 +27,8 @@ int main(void)
   acc_device_t d;
 #if defined ACC_DEVICE_TYPE_nvidia
   d = acc_device_nvidia;
+#elif defined ACC_DEVICE_TYPE_radeon
+  d = acc_device_radeon;
 #elif defined ACC_DEVICE_TYPE_host
   d = acc_device_host;
 #else
@@ -88,6 +88,9 @@ int main(void)
 	assert (queues[i].cuda_stream == NULL);
       else
 	assert (queues[i].cuda_stream != NULL);
+#elif defined ACC_DEVICE_TYPE_radeon
+      /* For "acc_device_radeon" there are no CUDA streams.  */
+      assert (queues[i].cuda_stream == NULL);
 #elif defined ACC_DEVICE_TYPE_host
       /* For "acc_device_host" there are no CUDA streams.  */
       assert (queues[i].cuda_stream == NULL);

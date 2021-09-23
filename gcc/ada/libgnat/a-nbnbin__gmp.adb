@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019-2020, Free Software Foundation, Inc.      --
+--             Copyright (C) 2019-2021, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,6 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Interfaces.C;               use Interfaces.C;
 with Interfaces.C.Strings;       use Interfaces.C.Strings;
-with Ada.Strings.Text_Output.Utils;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
 package body Ada.Numerics.Big_Numbers.Big_Integers is
@@ -403,12 +402,12 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- Put_Image --
    ---------------
 
-   procedure Put_Image (S : in out Sink'Class; V : Big_Integer) is
+   procedure Put_Image (S : in out Root_Buffer_Type'Class; V : Big_Integer) is
       --  This is implemented in terms of To_String. It might be more elegant
       --  and more efficient to do it the other way around, but this is the
       --  most expedient implementation for now.
    begin
-      Strings.Text_Output.Utils.Put_UTF_8 (S, To_String (V));
+      Strings.Text_Buffers.Put_UTF_8 (S, To_String (V));
    end Put_Image;
 
    ---------

@@ -88,9 +88,6 @@ extern void ggc_pch_read (FILE *, void *);
 
 /* Allocation and collection.  */
 
-/* When set, ggc_collect will do collection.  */
-extern bool ggc_force_collect;
-
 extern void ggc_record_overhead (size_t, size_t, void * FINAL_MEM_STAT_DECL);
 
 extern void ggc_free_overhead (void *);

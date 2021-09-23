@@ -534,6 +534,9 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
 	{
 	  int n;
 
+	  if (cmp->as->type != AS_EXPLICIT)
+	    return 0;
+
 	  e->expr_type = EXPR_ARRAY;
 	  e->rank = cmp->as->rank;
 

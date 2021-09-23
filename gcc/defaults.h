@@ -801,15 +801,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define NEXT_OBJC_RUNTIME 0
 #endif
 
-/* Supply a default definition for PUSH_ARGS.  */
-#ifndef PUSH_ARGS
-#ifdef PUSH_ROUNDING
-#define PUSH_ARGS	!ACCUMULATE_OUTGOING_ARGS
-#else
-#define PUSH_ARGS	0
-#endif
-#endif
-
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
 
@@ -820,7 +811,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef PUSH_ARGS_REVERSED
 #if defined (STACK_GROWS_DOWNWARD) != defined (ARGS_GROW_DOWNWARD)
-#define PUSH_ARGS_REVERSED  PUSH_ARGS
+#define PUSH_ARGS_REVERSED targetm.calls.push_argument (0)
 #endif
 #endif
 

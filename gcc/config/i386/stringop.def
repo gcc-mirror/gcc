@@ -17,21 +17,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the files COPYING3.  If not,
 see <http://www.gnu.org/licenses/>.  */
 
-DEF_ENUM
 DEF_ALG (no_stringop, no_stringop)
-DEF_ENUM
 DEF_ALG (libcall, libcall)
-DEF_ENUM
 DEF_ALG (rep_prefix_1_byte, rep_byte)
-DEF_ENUM
 DEF_ALG (rep_prefix_4_byte, rep_4byte)
-DEF_ENUM
 DEF_ALG (rep_prefix_8_byte, rep_8byte)
-DEF_ENUM
 DEF_ALG (loop_1_byte, byte_loop)
-DEF_ENUM
 DEF_ALG (loop, loop)
-DEF_ENUM
 DEF_ALG (unrolled_loop, unrolled_loop)
-DEF_ENUM
 DEF_ALG (vector_loop, vector_loop)

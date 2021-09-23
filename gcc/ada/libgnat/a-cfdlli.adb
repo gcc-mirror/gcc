@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,6 +187,22 @@ is
 
       Free (Container, X);
    end Clear;
+
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased List;
+      Position  : Cursor) return not null access constant Element_Type
+   is
+   begin
+      if not Has_Element (Container => Container, Position  => Position) then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      return Container.Nodes (Position.Node).Element'Access;
+   end Constant_Reference;
 
    --------------
    -- Contains --
@@ -1375,6 +1391,22 @@ is
 
       return (Node => Container.Nodes (Position.Node).Prev);
    end Previous;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Reference
+     (Container : not null access List;
+      Position  : Cursor) return not null access Element_Type
+   is
+   begin
+      if not Has_Element (Container.all, Position) then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      return Container.Nodes (Position.Node).Element'Access;
+   end Reference;
 
    ---------------------
    -- Replace_Element --

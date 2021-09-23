@@ -87,7 +87,9 @@ extern "C" {
 void *malloc (size_t);
 void *realloc (void *, size_t);
 void *calloc (size_t, size_t);
+#ifdef HAVE_SBRK
 void *sbrk (ptrdiff_t);
+#endif
 #    ifdef __cplusplus
 }
 #    endif /* __cplusplus */

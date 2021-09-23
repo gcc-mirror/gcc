@@ -26,6 +26,6 @@ void
 test01()
 {
   std::smatch sm;
-  std::begin(sm);
-  std::end(sm);
+  (void) std::begin(sm);
+  (void) std::end(sm);
 }

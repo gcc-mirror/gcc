@@ -1,10 +1,10 @@
 /* REQUIRED_ARGS: -dip25
    TEST_OUTPUT:
 ---
-fail_compilation/test16228.d(22): Error: function type 'return int()' has 'return' but does not return any indirections
-fail_compilation/test16228.d(23): Error: function test16228.S.foo static member has no 'this' to which 'return' can apply
+fail_compilation/test16228.d(23): Error: function `test16228.S.bar` `static` member has no `this` to which `return` can apply
 ---
 */
+
 
 
 
@@ -20,5 +20,16 @@ struct S
     int x;
 
     int foo() return { return 3; }
-    static ref int foo() return { return x; }
+    static ref int bar() return { return x; }
+}
+
+
+// https://issues.dlang.org/show_bug.cgi?id=18963
+
+T Identity(T)(return T t) { return t; }
+
+void bar(int i, void* p)
+{
+    Identity(p);
+    Identity(i);
 }

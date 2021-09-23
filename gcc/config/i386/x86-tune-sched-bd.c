@@ -800,8 +800,9 @@ bool
 ix86_bd_has_dispatch (rtx_insn *insn, int action)
 {
   /* Current implementation of dispatch scheduler models buldozer only.  */
-  if ((TARGET_BDVER1 || TARGET_BDVER2 || TARGET_BDVER3
-      || TARGET_BDVER4) && flag_dispatch_scheduler)
+  if ((TARGET_CPU_P (BDVER1) || TARGET_CPU_P (BDVER2)
+       || TARGET_CPU_P (BDVER3) || TARGET_CPU_P (BDVER4))
+      && flag_dispatch_scheduler)
     switch (action)
       {
       default:

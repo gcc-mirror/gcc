@@ -395,8 +395,15 @@ vars="sys_errlist sys_nerr sys_siglist"
 
 checkfuncs="__fsetlocking canonicalize_file_name dup3 getrlimit getrusage \
  getsysinfo gettimeofday on_exit pipe2 psignal pstat_getdynamic pstat_getstatic \
- realpath setrlimit sbrk spawnve spawnvpe strerror strsignal sysconf sysctl \
+ realpath setrlimit spawnve spawnvpe strerror strsignal sysconf sysctl \
  sysmp table times wait3 wait4"
+
+# Darwin has sbrk, but it is deprecated and that produces build-time warnings
+# so do not check for it.
+case "${host}" in
+  *-*-darwin*) ;;
+  *) checkfuncs="$checkfuncs sbrk"
+esac
 
 # These are neither executed nor required, but they help keep
 # autoheader happy without adding a bunch of text to acconfig.h.
@@ -611,6 +618,12 @@ if test -z "${setobjs}"; then
     ac_cv_func_getpagesize=yes
     ;;
 
+  hppa*-*-hpux*)
+    # Replace system snprintf and vsnprintf with libiberty implementations.
+    AC_LIBOBJ([snprintf])
+    AC_LIBOBJ([vsnprintf])
+    ;;
+
   *-*-mingw32*)
     # Under mingw32, sys_nerr and sys_errlist exist, but they are
     # macros, so the test below won't find them.
@@ -665,7 +678,7 @@ if test -z "${setobjs}"; then
   for v in $vars; do
     AC_MSG_CHECKING([for $v])
     AC_CACHE_VAL(libiberty_cv_var_$v,
-      [AC_LINK_IFELSE([AC_LANG_PROGRAM([[int *p;]],[[extern int $v []; p = $v;]])],
+      [AC_LINK_IFELSE([AC_LANG_PROGRAM([[extern int $v [];]],[[if ($v [0]) return 1;]])],
 		      [eval "libiberty_cv_var_$v=yes"],
 		      [eval "libiberty_cv_var_$v=no"])])
     if eval "test \"`echo '$libiberty_cv_var_'$v`\" = yes"; then
@@ -689,7 +702,11 @@ if test -z "${setobjs}"; then
 
   AC_CHECK_FUNCS($checkfuncs)
   AC_CHECK_DECLS([basename(char *), ffs, asprintf, vasprintf, snprintf, vsnprintf])
-  AC_CHECK_DECLS([calloc, getenv, getopt, malloc, realloc, sbrk])
+  AC_CHECK_DECLS([calloc, getenv, getopt, malloc, realloc])
+  case "${host}" in
+      *-*-darwin*) ;; # Darwin's sbrk implementation is deprecated.
+      *) AC_CHECK_DECLS([sbrk]);;
+  esac
   AC_CHECK_DECLS([strtol, strtoul, strtoll, strtoull])
   AC_CHECK_DECLS([strverscmp])
   AC_CHECK_DECLS([strnlen])

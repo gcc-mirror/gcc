@@ -21,6 +21,14 @@ foo2 (__vector_pair *dst, vec_t *src)
 }
 
 void
+foo3 (__vector_pair *dst, vec_t *src)
+{
+  __vector_pair pair;
+  __builtin_vsx_build_pair (&pair, src[4], src[0]);
+  *dst = pair;
+}
+
+void
 bar (vec_t *dst, __vector_pair *src)
 {
   vec_t res[2];
@@ -54,8 +62,12 @@ bar2 (vec_t *dst, __vector_pair *src)
 #  error "__has_builtin (__builtin_mma_disassemble_pair) failed"
 #endif
 
-/* { dg-final { scan-assembler-times {\mlxv\M} 4 } } */
+#if !__has_builtin (__builtin_vsx_build_pair)
+#  error "__has_builtin (__builtin_vsx_build_pair) failed"
+#endif
+
+/* { dg-final { scan-assembler-times {\mlxv\M} 6 } } */
 /* { dg-final { scan-assembler-times {\mlxvp\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mstxv\M} 4 } } */
-/* { dg-final { scan-assembler-times {\mstxvp\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mstxvp\M} 3 } } */
 

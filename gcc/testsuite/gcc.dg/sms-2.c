@@ -31,5 +31,3 @@ fun (nb)
 	  sy = 0;
       }
 }
-
-/* { dg-final { scan-rtl-dump-times "SMS loop many exits" 1 "sms" { target powerpc*-*-* } } } */

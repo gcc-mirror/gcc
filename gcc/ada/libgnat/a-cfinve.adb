@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,6 +183,28 @@ is
 
       Free (Container.Elements_Ptr);
    end Clear;
+
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Vector;
+      Index     : Index_Type) return not null access constant Element_Type
+   is
+   begin
+      if Index > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      end if;
+
+      declare
+         II : constant Int'Base := Int (Index) - Int (No_Index);
+         I  : constant Capacity_Range := Capacity_Range (II);
+
+      begin
+         return Constant_Reference (Elemsc (Container) (I));
+      end;
+   end Constant_Reference;
 
    --------------
    -- Contains --
@@ -1179,6 +1201,32 @@ is
    begin
       Insert (Container, Index_Type'First, New_Item, Count);
    end Prepend;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Reference
+     (Container : not null access Vector;
+      Index     : Index_Type) return not null access Element_Type
+   is
+   begin
+      if Index > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      end if;
+
+      declare
+         II : constant Int'Base := Int (Index) - Int (No_Index);
+         I  : constant Capacity_Range := Capacity_Range (II);
+
+      begin
+         if Container.Elements_Ptr = null then
+            return Reference (Container.Elements (I)'Access);
+         else
+            return Reference (Container.Elements_Ptr (I)'Access);
+         end if;
+      end;
+   end Reference;
 
    ---------------------
    -- Replace_Element --

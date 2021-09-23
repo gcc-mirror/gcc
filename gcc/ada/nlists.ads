@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,9 +146,9 @@ package Nlists is
    --  No_List. (No_List is not considered to be the same as an empty list).
 
    function List_Length (List : List_Id) return Nat;
-   --  Returns number of items in the given list. It is an error to call
-   --  this function with No_List (No_List is not considered to be the same
-   --  as an empty list).
+   --  Returns number of items in the given list. If called on No_List it
+   --  returns 0, even though No_List is not considered to be the same as an
+   --  empty list.
 
    function Next (Node : Node_Or_Entity_Id) return Node_Or_Entity_Id;
    pragma Inline (Next);

@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build 386 amd64p32 arm armbe m68k mips mipsle mips64p32 mips64p32le nios2 ppc riscv s390 sh shbe sparc
+//go:build 386 || arm || mips || mipsle || amd64p32 || armbe || m68k || mips64p32 || mips64p32le || nios2 || ppc || riscv || s390 || sh || shbe || sparc
+// +build 386 arm mips mipsle amd64p32 armbe m68k mips64p32 mips64p32le nios2 ppc riscv s390 sh shbe sparc
 
 package runtime
 

@@ -109,7 +109,7 @@ bar_u8_u64 (v4di * dst, v32qi src)
   dst[0] = *(v4di *) tem;
 }
 
-/* { dg-final { scan-assembler-times "pmovzxbq" 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "pmovzxbq" 2 } } */
 
 void
 foo_u16_u32 (v8si * dst, v16hi * __restrict src)

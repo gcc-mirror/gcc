@@ -2336,9 +2336,9 @@ static bool
 nios2_small_section_name_p (const char *section)
 {
   return (strcmp (section, ".sbss") == 0
-	  || strncmp (section, ".sbss.", 6) == 0
+	  || startswith (section, ".sbss.")
 	  || strcmp (section, ".sdata") == 0
-	  || strncmp (section, ".sdata.", 7) == 0
+	  || startswith (section, ".sdata.")
 	  || (nios2_gprel_sec 
 	      && regexec (&nios2_gprel_sec_regex, section, 0, NULL, 0) == 0));
 }
@@ -4199,12 +4199,12 @@ nios2_valid_target_attribute_rec (tree args)
 	    *p = '\0';
 	  if (eq) *eq = '\0';
 
-	  if (!strncmp (argstr, "no-", 3))
+	  if (startswith (argstr, "no-"))
 	    {
 	      no_opt = true;
 	      argstr += 3;
 	    }
-	  if (!strncmp (argstr, "custom-fpu-cfg", 14))
+	  if (startswith (argstr, "custom-fpu-cfg"))
 	    {
 	      char *end_eq = p;
 	      if (no_opt)
@@ -4225,13 +4225,12 @@ nios2_valid_target_attribute_rec (tree args)
 
 	      nios2_handle_custom_fpu_cfg (eq, end_eq + 1, true);
 	    }
-	  else if (!strncmp (argstr, "custom-", 7))
+	  else if (startswith (argstr, "custom-"))
 	    {
 	      int code = -1;
 	      unsigned int i;
 	      for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
-		if (!strncmp (argstr + 7, N2FPU_NAME (i),
-			      strlen (N2FPU_NAME (i))))
+		if (startswith (argstr + 7, N2FPU_NAME (i)))
 		  {
 		    /* Found insn.  */
 		    code = i;

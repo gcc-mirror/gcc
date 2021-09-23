@@ -72,5 +72,5 @@ main (void)
   set_and_test_case3 ();
   return 0;
 }
-/* { dg-final { scan-assembler-times "fmulx\[ \t\]+\[dD\]\[0-9\]+, ?\[dD\]\[0-9\]+, ?\[vV\]\[0-9\]+\.\[dD\]\\\[0\\\]\n" 1 } } */
+/* { dg-final { scan-assembler-times "fmulx\[ \t\]+\[dD\]\[0-9\]+, ?\[dD\]\[0-9\]+, ?\[dD\]\[0-9\]\n" 1 } } */
 /* { dg-final { scan-assembler-times "fmulx\[ \t\]+\[dD\]\[0-9\]+, ?\[dD\]\[0-9\]+, ?\[vV\]\[0-9\]+\.\[dD\]\\\[1\\\]\n" 1 } } */

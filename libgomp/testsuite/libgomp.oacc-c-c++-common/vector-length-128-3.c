@@ -1,5 +1,5 @@
 /* { dg-do run { target openacc_nvidia_accel_selected } } */
-/* { dg-additional-options "-foffload=-fdump-tree-oaccdevlow" } */
+/* { dg-additional-options "-foffload=-fdump-tree-oaccloops" } */
 /* We default to warp size 32 for the vector length, so the GOMP_OPENACC_DIM has
    no effect.  */
 /* { dg-set-target-env-var "GOMP_OPENACC_DIM" "::128" } */
@@ -38,5 +38,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-offload-tree-dump "__attribute__\\(\\(oacc function \\(1, 1, 32\\)" "oaccdevlow" } } */
+/* { dg-final { scan-offload-tree-dump "__attribute__\\(\\(oacc function \\(1, 1, 32\\)" "oaccloops" } } */
 /* { dg-output "nvptx_exec: kernel main\\\$_omp_fn\\\$0: launch gangs=1, workers=1, vectors=32" } */

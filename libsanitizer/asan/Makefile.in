@@ -156,9 +156,9 @@ am__objects_1 = asan_activation.lo asan_allocator.lo asan_debugging.lo \
 	asan_interceptors_memintrinsics.lo asan_linux.lo asan_mac.lo \
 	asan_malloc_linux.lo asan_malloc_mac.lo asan_malloc_win.lo \
 	asan_memory_profile.lo asan_new_delete.lo asan_poisoning.lo \
-	asan_posix.lo asan_premap_shadow.lo asan_report.lo \
-	asan_rtems.lo asan_rtl.lo asan_shadow_setup.lo asan_stack.lo \
-	asan_stats.lo asan_suppressions.lo asan_thread.lo asan_win.lo \
+	asan_posix.lo asan_premap_shadow.lo asan_report.lo asan_rtl.lo \
+	asan_shadow_setup.lo asan_stack.lo asan_stats.lo \
+	asan_suppressions.lo asan_thread.lo asan_win.lo \
 	asan_win_dll_thunk.lo asan_win_dynamic_runtime_thunk.lo \
 	asan_interceptors_vfork.lo
 am_libasan_la_OBJECTS = $(am__objects_1)
@@ -446,7 +446,6 @@ asan_files = \
 	asan_posix.cpp \
 	asan_premap_shadow.cpp \
 	asan_report.cpp \
-	asan_rtems.cpp \
 	asan_rtl.cpp \
 	asan_shadow_setup.cpp \
 	asan_stack.cpp \
@@ -604,7 +603,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_premap_shadow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_report.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_rtems.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_rtl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_shadow_setup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_stack.Plo@am__quote@

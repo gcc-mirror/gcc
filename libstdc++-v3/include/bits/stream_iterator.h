@@ -89,6 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~istream_iterator() = default;
 #endif
 
+      _GLIBCXX_NODISCARD
       const _Tp&
       operator*() const
       {
@@ -98,6 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_value;
       }
 
+      _GLIBCXX_NODISCARD
       const _Tp*
       operator->() const { return std::__addressof((operator*())); }
 
@@ -143,17 +145,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// Return true if the iterators refer to the same stream,
       /// or are both at end-of-stream.
+      _GLIBCXX_NODISCARD
       friend bool
       operator==(const istream_iterator& __x, const istream_iterator& __y)
       { return __x._M_equal(__y); }
 
+#if __cpp_impl_three_way_comparison < 201907L
       /// Return true if the iterators refer to different streams,
       /// or if one is at end-of-stream and the other is not.
+      _GLIBCXX_NODISCARD
       friend bool
       operator!=(const istream_iterator& __x, const istream_iterator& __y)
       { return !__x._M_equal(__y); }
+#endif
 
 #if __cplusplus > 201703L && __cpp_lib_concepts
+      [[nodiscard]]
       friend bool
       operator==(const istream_iterator& __i, default_sentinel_t)
       { return !__i._M_stream; }
@@ -177,7 +184,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     public:
-      //@{
+      ///@{
       /// Public typedef
 #if __cplusplus > 201703L
       using difference_type = ptrdiff_t;
@@ -185,18 +192,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _CharT                         char_type;
       typedef _Traits                        traits_type;
       typedef basic_ostream<_CharT, _Traits> ostream_type;
-      //@}
+      ///@}
 
     private:
       ostream_type*	_M_stream;
       const _CharT*	_M_string;
 
     public:
-#if __cplusplus > 201703L
-      constexpr ostream_iterator() noexcept
-      : _M_stream(nullptr), _M_string(nullptr) { }
-#endif
-
       /// Construct from an ostream.
       ostream_iterator(ostream_type& __s)
       : _M_stream(std::__addressof(__s)), _M_string(0) {}
@@ -236,6 +238,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX_NODISCARD
       ostream_iterator&
       operator*()
       { return *this; }
@@ -249,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return *this; }
     };
 
-  // @} group iterators
+  /// @} group iterators
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

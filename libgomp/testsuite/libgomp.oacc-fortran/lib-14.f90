@@ -1,7 +1,8 @@
 ! Exercise the data movement runtime library functions on non-shared memory
 ! targets.
 
-! { dg-do run { target openacc_nvidia_accel_selected } }
+! { dg-do run }
+! { dg-skip-if "" { *-*-* } { "*" } { "-DACC_MEM_SHARED=0" } }
 
 program main
   use openacc

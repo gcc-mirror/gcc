@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "diagnostic.h"
-#include "diagnostic-core.h"
 #include "selftest.h"
 #include "cpplib.h"
 
@@ -30,11 +29,46 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_ICONV 0
 #endif
 
+/* Input charset configuration.  */
+static const char *default_charset_callback (const char *)
+{
+  return nullptr;
+}
+
+void
+file_cache::initialize_input_context (diagnostic_input_charset_callback ccb,
+				      bool should_skip_bom)
+{
+  in_context.ccb = (ccb ? ccb : default_charset_callback);
+  in_context.should_skip_bom = should_skip_bom;
+}
+
 /* This is a cache used by get_next_line to store the content of a
    file to be searched for file lines.  */
-class fcache
+class file_cache_slot
 {
 public:
+  file_cache_slot ();
+  ~file_cache_slot ();
+
+  bool read_line_num (size_t line_num,
+		      char ** line, ssize_t *line_len);
+
+  /* Accessors.  */
+  const char *get_file_path () const { return m_file_path; }
+  unsigned get_use_count () const { return m_use_count; }
+  bool missing_trailing_newline_p () const
+  {
+    return m_missing_trailing_newline;
+  }
+
+  void inc_use_count () { m_use_count++; }
+
+  bool create (const file_cache::input_context &in_context,
+	       const char *file_path, FILE *fp, unsigned highest_use_count);
+  void evict ();
+
+ private:
   /* These are information used to store a line boundary.  */
   class line_info
   {
@@ -61,36 +95,52 @@ public:
     {}
   };
 
+  bool needs_read_p () const;
+  bool needs_grow_p () const;
+  void maybe_grow ();
+  bool read_data ();
+  bool maybe_read_data ();
+  bool get_next_line (char **line, ssize_t *line_len);
+  bool read_next_line (char ** line, ssize_t *line_len);
+  bool goto_next_line ();
+
+  static const size_t buffer_size = 4 * 1024;
+  static const size_t line_record_size = 100;
+
   /* The number of time this file has been accessed.  This is used
      to designate which file cache to evict from the cache
      array.  */
-  unsigned use_count;
+  unsigned m_use_count;
 
   /* The file_path is the key for identifying a particular file in
      the cache.
      For libcpp-using code, the underlying buffer for this field is
      owned by the corresponding _cpp_file within the cpp_reader.  */
-  const char *file_path;
+  const char *m_file_path;
 
-  FILE *fp;
+  FILE *m_fp;
 
   /* This points to the content of the file that we've read so
      far.  */
-  char *data;
+  char *m_data;
+
+  /* The allocated buffer to be freed may start a little earlier than DATA,
+     e.g. if a UTF8 BOM was skipped at the beginning.  */
+  int m_alloc_offset;
 
   /*  The size of the DATA array above.*/
-  size_t size;
+  size_t m_size;
 
   /* The number of bytes read from the underlying file so far.  This
      must be less (or equal) than SIZE above.  */
-  size_t nb_read;
+  size_t m_nb_read;
 
   /* The index of the beginning of the current line.  */
-  size_t line_start_idx;
+  size_t m_line_start_idx;
 
   /* The number of the previous line read.  This starts at 1.  Zero
      means we've read no line so far.  */
-  size_t line_num;
+  size_t m_line_num;
 
   /* This is the total number of lines of the current file.  At the
      moment, we try to get this information from the line map
@@ -100,24 +150,32 @@ public:
      the number of lines before compilation really starts.  For e.g,
      the C front-end, it can happen that we start emitting diagnostics
      before the line map has seen the end of the file.  */
-  size_t total_lines;
+  size_t m_total_lines;
 
   /* Could this file be missing a trailing newline on its final line?
      Initially true (to cope with empty files), set to true/false
      as each line is read.  */
-  bool missing_trailing_newline;
+  bool m_missing_trailing_newline;
 
   /* This is a record of the beginning and end of the lines we've seen
      while reading the file.  This is useful to avoid walking the data
      from the beginning when we are asked to read a line that is
      before LINE_START_IDX above.  Note that the maximum size of this
-     record is fcache_line_record_size, so that the memory consumption
+     record is line_record_size, so that the memory consumption
      doesn't explode.  We thus scale total_lines down to
-     fcache_line_record_size.  */
-  vec<line_info, va_heap> line_record;
+     line_record_size.  */
+  vec<line_info, va_heap> m_line_record;
 
-  fcache ();
-  ~fcache ();
+  void offset_buffer (int offset)
+  {
+    gcc_assert (offset < 0 ? m_alloc_offset + offset >= 0
+		: (size_t) offset <= m_size);
+    gcc_assert (m_data);
+    m_alloc_offset += offset;
+    m_data += offset;
+    m_size -= offset;
+  }
+
 };
 
 /* Current position in real source file.  */
@@ -132,11 +190,6 @@ class line_maps *line_table;
    during a line_table_test.  */
 
 class line_maps *saved_line_table;
-
-static fcache *fcache_tab;
-static const size_t fcache_tab_size = 16;
-static const size_t fcache_buffer_size = 4 * 1024;
-static const size_t fcache_line_record_size = 100;
 
 /* Expand the source location LOC into a human readable location.  If
    LOC resolves to a builtin location, the file name of the readable
@@ -233,8 +286,9 @@ expand_location_1 (location_t loc,
 static void
 diagnostic_file_cache_init (void)
 {
-  if (fcache_tab == NULL)
-    fcache_tab = new fcache[fcache_tab_size];
+  gcc_assert (global_dc);
+  if (global_dc->m_file_cache == NULL)
+    global_dc->m_file_cache = new file_cache ();
 }
 
 /* Free the resources used by the set of cache used for files accessed
@@ -243,10 +297,10 @@ diagnostic_file_cache_init (void)
 void
 diagnostic_file_cache_fini (void)
 {
-  if (fcache_tab)
+  if (global_dc->m_file_cache)
     {
-      delete [] (fcache_tab);
-      fcache_tab = NULL;
+      delete global_dc->m_file_cache;
+      global_dc->m_file_cache = NULL;
     }
 }
 
@@ -273,28 +327,25 @@ total_lines_num (const char *file_path)
    caret diagnostic.  Return the found cached file, or NULL if no
    cached file was found.  */
 
-static fcache*
-lookup_file_in_cache_tab (const char *file_path)
+file_cache_slot *
+file_cache::lookup_file (const char *file_path)
 {
-  if (file_path == NULL)
-    return NULL;
-
-  diagnostic_file_cache_init ();
+  gcc_assert (file_path);
 
   /* This will contain the found cached file.  */
-  fcache *r = NULL;
-  for (unsigned i = 0; i < fcache_tab_size; ++i)
+  file_cache_slot *r = NULL;
+  for (unsigned i = 0; i < num_file_slots; ++i)
     {
-      fcache *c = &fcache_tab[i];
-      if (c->file_path && !strcmp (c->file_path, file_path))
+      file_cache_slot *c = &m_file_slots[i];
+      if (c->get_file_path () && !strcmp (c->get_file_path (), file_path))
 	{
-	  ++c->use_count;
+	  c->inc_use_count ();
 	  r = c;
 	}
     }
 
   if (r)
-    ++r->use_count;
+    r->inc_use_count ();
 
   return r;
 }
@@ -308,22 +359,39 @@ diagnostics_file_cache_forcibly_evict_file (const char *file_path)
 {
   gcc_assert (file_path);
 
-  fcache *r = lookup_file_in_cache_tab (file_path);
+  if (!global_dc->m_file_cache)
+    return;
+
+  global_dc->m_file_cache->forcibly_evict_file (file_path);
+}
+
+void
+file_cache::forcibly_evict_file (const char *file_path)
+{
+  gcc_assert (file_path);
+
+  file_cache_slot *r = lookup_file (file_path);
   if (!r)
     /* Not found.  */
     return;
 
-  r->file_path = NULL;
-  if (r->fp)
-    fclose (r->fp);
-  r->fp = NULL;
-  r->nb_read = 0;
-  r->line_start_idx = 0;
-  r->line_num = 0;
-  r->line_record.truncate (0);
-  r->use_count = 0;
-  r->total_lines = 0;
-  r->missing_trailing_newline = true;
+  r->evict ();
+}
+
+void
+file_cache_slot::evict ()
+{
+  m_file_path = NULL;
+  if (m_fp)
+    fclose (m_fp);
+  m_fp = NULL;
+  m_nb_read = 0;
+  m_line_start_idx = 0;
+  m_line_num = 0;
+  m_line_record.truncate (0);
+  m_use_count = 0;
+  m_total_lines = 0;
+  m_missing_trailing_newline = true;
 }
 
 /* Return the file cache that has been less used, recently, or the
@@ -331,26 +399,26 @@ diagnostics_file_cache_forcibly_evict_file (const char *file_path)
    *HIGHEST_USE_COUNT is set to the highest use count of the entries
    in the cache table.  */
 
-static fcache*
-evicted_cache_tab_entry (unsigned *highest_use_count)
+file_cache_slot*
+file_cache::evicted_cache_tab_entry (unsigned *highest_use_count)
 {
   diagnostic_file_cache_init ();
 
-  fcache *to_evict = &fcache_tab[0];
-  unsigned huc = to_evict->use_count;
-  for (unsigned i = 1; i < fcache_tab_size; ++i)
+  file_cache_slot *to_evict = &m_file_slots[0];
+  unsigned huc = to_evict->get_use_count ();
+  for (unsigned i = 1; i < num_file_slots; ++i)
     {
-      fcache *c = &fcache_tab[i];
-      bool c_is_empty = (c->file_path == NULL);
+      file_cache_slot *c = &m_file_slots[i];
+      bool c_is_empty = (c->get_file_path () == NULL);
 
-      if (c->use_count < to_evict->use_count
-	  || (to_evict->file_path && c_is_empty))
+      if (c->get_use_count () < to_evict->get_use_count ()
+	  || (to_evict->get_file_path () && c_is_empty))
 	/* We evict C because it's either an entry with a lower use
 	   count or one that is empty.  */
 	to_evict = c;
 
-      if (huc < c->use_count)
-	huc = c->use_count;
+      if (huc < c->get_use_count ())
+	huc = c->get_use_count ();
 
       if (c_is_empty)
 	/* We've reached the end of the cache; subsequent elements are
@@ -368,10 +436,10 @@ evicted_cache_tab_entry (unsigned *highest_use_count)
    accessed by caret diagnostic.  This cache is added to an array of
    cache and can be retrieved by lookup_file_in_cache_tab.  This
    function returns the created cache.  Note that only the last
-   fcache_tab_size files are cached.  */
+   num_file_slots files are cached.  */
 
-static fcache*
-add_file_to_cache_tab (const char *file_path)
+file_cache_slot*
+file_cache::add_file (const char *file_path)
 {
 
   FILE *fp = fopen (file_path, "r");
@@ -379,22 +447,80 @@ add_file_to_cache_tab (const char *file_path)
     return NULL;
 
   unsigned highest_use_count = 0;
-  fcache *r = evicted_cache_tab_entry (&highest_use_count);
-  r->file_path = file_path;
-  if (r->fp)
-    fclose (r->fp);
-  r->fp = fp;
-  r->nb_read = 0;
-  r->line_start_idx = 0;
-  r->line_num = 0;
-  r->line_record.truncate (0);
+  file_cache_slot *r = evicted_cache_tab_entry (&highest_use_count);
+  if (!r->create (in_context, file_path, fp, highest_use_count))
+    return NULL;
+  return r;
+}
+
+/* Populate this slot for use on FILE_PATH and FP, dropping any
+   existing cached content within it.  */
+
+bool
+file_cache_slot::create (const file_cache::input_context &in_context,
+			 const char *file_path, FILE *fp,
+			 unsigned highest_use_count)
+{
+  m_file_path = file_path;
+  if (m_fp)
+    fclose (m_fp);
+  m_fp = fp;
+  if (m_alloc_offset)
+    offset_buffer (-m_alloc_offset);
+  m_nb_read = 0;
+  m_line_start_idx = 0;
+  m_line_num = 0;
+  m_line_record.truncate (0);
   /* Ensure that this cache entry doesn't get evicted next time
      add_file_to_cache_tab is called.  */
-  r->use_count = ++highest_use_count;
-  r->total_lines = total_lines_num (file_path);
-  r->missing_trailing_newline = true;
+  m_use_count = ++highest_use_count;
+  m_total_lines = total_lines_num (file_path);
+  m_missing_trailing_newline = true;
 
-  return r;
+
+  /* Check the input configuration to determine if we need to do any
+     transformations, such as charset conversion or BOM skipping.  */
+  if (const char *input_charset = in_context.ccb (file_path))
+    {
+      /* Need a full-blown conversion of the input charset.  */
+      fclose (m_fp);
+      m_fp = NULL;
+      const cpp_converted_source cs
+	= cpp_get_converted_source (file_path, input_charset);
+      if (!cs.data)
+	return false;
+      if (m_data)
+	XDELETEVEC (m_data);
+      m_data = cs.data;
+      m_nb_read = m_size = cs.len;
+      m_alloc_offset = cs.data - cs.to_free;
+    }
+  else if (in_context.should_skip_bom)
+    {
+      if (read_data ())
+	{
+	  const int offset = cpp_check_utf8_bom (m_data, m_nb_read);
+	  offset_buffer (offset);
+	  m_nb_read -= offset;
+	}
+    }
+
+  return true;
+}
+
+/* file_cache's ctor.  */
+
+file_cache::file_cache ()
+: m_file_slots (new file_cache_slot[num_file_slots])
+{
+  initialize_input_context (nullptr, false);
+}
+
+/* file_cache's dtor.  */
+
+file_cache::~file_cache ()
+{
+  delete[] m_file_slots;
 }
 
 /* Lookup the cache used for the content of a given file accessed by
@@ -402,41 +528,42 @@ add_file_to_cache_tab (const char *file_path)
    for this file, add it to the array of cached file and return
    it.  */
 
-static fcache*
-lookup_or_add_file_to_cache_tab (const char *file_path)
+file_cache_slot*
+file_cache::lookup_or_add_file (const char *file_path)
 {
-  fcache *r = lookup_file_in_cache_tab (file_path);
+  file_cache_slot *r = lookup_file (file_path);
   if (r == NULL)
-    r = add_file_to_cache_tab (file_path);
+    r = add_file (file_path);
   return r;
 }
 
 /* Default constructor for a cache of file used by caret
    diagnostic.  */
 
-fcache::fcache ()
-: use_count (0), file_path (NULL), fp (NULL), data (0),
-  size (0), nb_read (0), line_start_idx (0), line_num (0),
-  total_lines (0), missing_trailing_newline (true)
+file_cache_slot::file_cache_slot ()
+: m_use_count (0), m_file_path (NULL), m_fp (NULL), m_data (0),
+  m_alloc_offset (0), m_size (0), m_nb_read (0), m_line_start_idx (0),
+  m_line_num (0), m_total_lines (0), m_missing_trailing_newline (true)
 {
-  line_record.create (0);
+  m_line_record.create (0);
 }
 
 /* Destructor for a cache of file used by caret diagnostic.  */
 
-fcache::~fcache ()
+file_cache_slot::~file_cache_slot ()
 {
-  if (fp)
+  if (m_fp)
     {
-      fclose (fp);
-      fp = NULL;
+      fclose (m_fp);
+      m_fp = NULL;
     }
-  if (data)
+  if (m_data)
     {
-      XDELETEVEC (data);
-      data = 0;
+      offset_buffer (-m_alloc_offset);
+      XDELETEVEC (m_data);
+      m_data = 0;
     }
-  line_record.release ();
+  m_line_record.release ();
 }
 
 /* Returns TRUE iff the cache would need to be filled with data coming
@@ -444,55 +571,66 @@ fcache::~fcache ()
    current line is empty.  Note that if the cache is full, it would
    need to be extended and filled again.  */
 
-static bool
-needs_read (fcache *c)
+bool
+file_cache_slot::needs_read_p () const
 {
-  return (c->nb_read == 0
-	  || c->nb_read == c->size
-	  || (c->line_start_idx >= c->nb_read - 1));
+  return m_fp && (m_nb_read == 0
+	  || m_nb_read == m_size
+	  || (m_line_start_idx >= m_nb_read - 1));
 }
 
 /*  Return TRUE iff the cache is full and thus needs to be
     extended.  */
 
-static bool
-needs_grow (fcache *c)
+bool
+file_cache_slot::needs_grow_p () const
 {
-  return c->nb_read == c->size;
+  return m_nb_read == m_size;
 }
 
 /* Grow the cache if it needs to be extended.  */
 
-static void
-maybe_grow (fcache *c)
+void
+file_cache_slot::maybe_grow ()
 {
-  if (!needs_grow (c))
+  if (!needs_grow_p ())
     return;
 
-  size_t size = c->size == 0 ? fcache_buffer_size : c->size * 2;
-  c->data = XRESIZEVEC (char, c->data, size);
-  c->size = size;
+  if (!m_data)
+    {
+      gcc_assert (m_size == 0 && m_alloc_offset == 0);
+      m_size = buffer_size;
+      m_data = XNEWVEC (char, m_size);
+    }
+  else
+    {
+      const int offset = m_alloc_offset;
+      offset_buffer (-offset);
+      m_size *= 2;
+      m_data = XRESIZEVEC (char, m_data, m_size);
+      offset_buffer (offset);
+    }
 }
 
 /*  Read more data into the cache.  Extends the cache if need be.
     Returns TRUE iff new data could be read.  */
 
-static bool
-read_data (fcache *c)
+bool
+file_cache_slot::read_data ()
 {
-  if (feof (c->fp) || ferror (c->fp))
+  if (feof (m_fp) || ferror (m_fp))
     return false;
 
-  maybe_grow (c);
+  maybe_grow ();
 
-  char * from = c->data + c->nb_read;
-  size_t to_read = c->size - c->nb_read;
-  size_t nb_read = fread (from, 1, to_read, c->fp);
+  char * from = m_data + m_nb_read;
+  size_t to_read = m_size - m_nb_read;
+  size_t nb_read = fread (from, 1, to_read, m_fp);
 
-  if (ferror (c->fp))
+  if (ferror (m_fp))
     return false;
 
-  c->nb_read += nb_read;
+  m_nb_read += nb_read;
   return !!nb_read;
 }
 
@@ -500,12 +638,12 @@ read_data (fcache *c)
    coming from the file FP.  Return TRUE iff the cache was filled with
    mode data.  */
 
-static bool
-maybe_read_data (fcache *c)
+bool
+file_cache_slot::maybe_read_data ()
 {
-  if (!needs_read (c))
+  if (!needs_read_p ())
     return false;
-  return read_data (c);
+  return read_data ();
 }
 
 /* Read a new line from file FP, using C as a cache for the data
@@ -518,18 +656,18 @@ maybe_read_data (fcache *c)
    otherwise.  Note that subsequent calls to get_next_line might
    make the content of *LINE invalid.  */
 
-static bool
-get_next_line (fcache *c, char **line, ssize_t *line_len)
+bool
+file_cache_slot::get_next_line (char **line, ssize_t *line_len)
 {
   /* Fill the cache with data to process.  */
-  maybe_read_data (c);
+  maybe_read_data ();
 
-  size_t remaining_size = c->nb_read - c->line_start_idx;
+  size_t remaining_size = m_nb_read - m_line_start_idx;
   if (remaining_size == 0)
     /* There is no more data to process.  */
     return false;
 
-  char *line_start = c->data + c->line_start_idx;
+  char *line_start = m_data + m_line_start_idx;
 
   char *next_line_start = NULL;
   size_t len = 0;
@@ -539,10 +677,10 @@ get_next_line (fcache *c, char **line, ssize_t *line_len)
       /* We haven't found the end-of-line delimiter in the cache.
 	 Fill the cache with more data from the file and look for the
 	 '\n'.  */
-      while (maybe_read_data (c))
+      while (maybe_read_data ())
 	{
-	  line_start = c->data + c->line_start_idx;
-	  remaining_size = c->nb_read - c->line_start_idx;
+	  line_start = m_data + m_line_start_idx;
+	  remaining_size = m_nb_read - m_line_start_idx;
 	  line_end = (char *) memchr (line_start, '\n', remaining_size);
 	  if (line_end != NULL)
 	    {
@@ -558,19 +696,19 @@ get_next_line (fcache *c, char **line, ssize_t *line_len)
 	     of when the line ends up with a '\n' and line_end points to
 	     that terminal '\n'.  That consistency is useful below in
 	     the len calculation.  */
-	  line_end = c->data + c->nb_read ;
-	  c->missing_trailing_newline = true;
+	  line_end = m_data + m_nb_read ;
+	  m_missing_trailing_newline = true;
 	}
       else
-	c->missing_trailing_newline = false;
+	m_missing_trailing_newline = false;
     }
   else
     {
       next_line_start = line_end + 1;
-      c->missing_trailing_newline = false;
+      m_missing_trailing_newline = false;
     }
 
-  if (ferror (c->fp))
+  if (m_fp && ferror (m_fp))
     return false;
 
   /* At this point, we've found the end of the of line.  It either
@@ -580,54 +718,56 @@ get_next_line (fcache *c, char **line, ssize_t *line_len)
 
   len = line_end - line_start;
 
-  if (c->line_start_idx < c->nb_read)
+  if (m_line_start_idx < m_nb_read)
     *line = line_start;
 
-  ++c->line_num;
+  ++m_line_num;
 
   /* Before we update our line record, make sure the hint about the
      total number of lines of the file is correct.  If it's not, then
      we give up recording line boundaries from now on.  */
   bool update_line_record = true;
-  if (c->line_num > c->total_lines)
+  if (m_line_num > m_total_lines)
     update_line_record = false;
 
     /* Now update our line record so that re-reading lines from the
-     before c->line_start_idx is faster.  */
+     before m_line_start_idx is faster.  */
   if (update_line_record
-      && c->line_record.length () < fcache_line_record_size)
+      && m_line_record.length () < line_record_size)
     {
       /* If the file lines fits in the line record, we just record all
 	 its lines ...*/
-      if (c->total_lines <= fcache_line_record_size
-	  && c->line_num > c->line_record.length ())
-	c->line_record.safe_push (fcache::line_info (c->line_num,
-						 c->line_start_idx,
-						 line_end - c->data));
-      else if (c->total_lines > fcache_line_record_size)
+      if (m_total_lines <= line_record_size
+	  && m_line_num > m_line_record.length ())
+	m_line_record.safe_push
+	  (file_cache_slot::line_info (m_line_num,
+				       m_line_start_idx,
+				       line_end - m_data));
+      else if (m_total_lines > line_record_size)
 	{
 	  /* ... otherwise, we just scale total_lines down to
-	     (fcache_line_record_size lines.  */
-	  size_t n = (c->line_num * fcache_line_record_size) / c->total_lines;
-	  if (c->line_record.length () == 0
-	      || n >= c->line_record.length ())
-	    c->line_record.safe_push (fcache::line_info (c->line_num,
-						     c->line_start_idx,
-						     line_end - c->data));
+	     (line_record_size lines.  */
+	  size_t n = (m_line_num * line_record_size) / m_total_lines;
+	  if (m_line_record.length () == 0
+	      || n >= m_line_record.length ())
+	    m_line_record.safe_push
+	      (file_cache_slot::line_info (m_line_num,
+					   m_line_start_idx,
+					   line_end - m_data));
 	}
     }
 
-  /* Update c->line_start_idx so that it points to the next line to be
+  /* Update m_line_start_idx so that it points to the next line to be
      read.  */
   if (next_line_start)
-    c->line_start_idx = next_line_start - c->data;
+    m_line_start_idx = next_line_start - m_data;
   else
     /* We didn't find any terminal '\n'.  Let's consider that the end
        of line is the end of the data in the cache.  The next
        invocation of get_next_line will either read more data from the
        underlying file or return false early because we've reached the
        end of the file.  */
-    c->line_start_idx = c->nb_read;
+    m_line_start_idx = m_nb_read;
 
   *line_len = len;
 
@@ -640,13 +780,13 @@ get_next_line (fcache *c, char **line, ssize_t *line_len)
    copying from the cache involved.  Return TRUE upon successful
    completion.  */
 
-static bool
-goto_next_line (fcache *cache)
+bool
+file_cache_slot::goto_next_line ()
 {
   char *l;
   ssize_t len;
 
-  return get_next_line (cache, &l, &len);
+  return get_next_line (&l, &len);
 }
 
 /* Read an arbitrary line number LINE_NUM from the file cached in C.
@@ -656,54 +796,54 @@ goto_next_line (fcache *cache)
    *LINE is only valid until the next call of read_line_num.
    This function returns bool if a line was read.  */
 
-static bool
-read_line_num (fcache *c, size_t line_num,
-	       char **line, ssize_t *line_len)
+bool
+file_cache_slot::read_line_num (size_t line_num,
+		       char ** line, ssize_t *line_len)
 {
   gcc_assert (line_num > 0);
 
-  if (line_num <= c->line_num)
+  if (line_num <= m_line_num)
     {
-      /* We've been asked to read lines that are before c->line_num.
+      /* We've been asked to read lines that are before m_line_num.
 	 So lets use our line record (if it's not empty) to try to
 	 avoid re-reading the file from the beginning again.  */
 
-      if (c->line_record.is_empty ())
+      if (m_line_record.is_empty ())
 	{
-	  c->line_start_idx = 0;
-	  c->line_num = 0;
+	  m_line_start_idx = 0;
+	  m_line_num = 0;
 	}
       else
 	{
-	  fcache::line_info *i = NULL;
-	  if (c->total_lines <= fcache_line_record_size)
+	  file_cache_slot::line_info *i = NULL;
+	  if (m_total_lines <= line_record_size)
 	    {
 	      /* In languages where the input file is not totally
-		 preprocessed up front, the c->total_lines hint
+		 preprocessed up front, the m_total_lines hint
 		 can be smaller than the number of lines of the
 		 file.  In that case, only the first
-		 c->total_lines have been recorded.
+		 m_total_lines have been recorded.
 
-		 Otherwise, the first c->total_lines we've read have
+		 Otherwise, the first m_total_lines we've read have
 		 their start/end recorded here.  */
-	      i = (line_num <= c->total_lines)
-		? &c->line_record[line_num - 1]
-		: &c->line_record[c->total_lines - 1];
+	      i = (line_num <= m_total_lines)
+		? &m_line_record[line_num - 1]
+		: &m_line_record[m_total_lines - 1];
 	      gcc_assert (i->line_num <= line_num);
 	    }
 	  else
 	    {
 	      /*  So the file had more lines than our line record
 		  size.  Thus the number of lines we've recorded has
-		  been scaled down to fcache_line_reacord_size.  Let's
+		  been scaled down to line_record_size.  Let's
 		  pick the start/end of the recorded line that is
 		  closest to line_num.  */
-	      size_t n = (line_num <= c->total_lines)
-		? line_num * fcache_line_record_size / c->total_lines
-		: c ->line_record.length () - 1;
-	      if (n < c->line_record.length ())
+	      size_t n = (line_num <= m_total_lines)
+		? line_num * line_record_size / m_total_lines
+		: m_line_record.length () - 1;
+	      if (n < m_line_record.length ())
 		{
-		  i = &c->line_record[n];
+		  i = &m_line_record[n];
 		  gcc_assert (i->line_num <= line_num);
 		}
 	    }
@@ -711,33 +851,33 @@ read_line_num (fcache *c, size_t line_num,
 	  if (i && i->line_num == line_num)
 	    {
 	      /* We have the start/end of the line.  */
-	      *line = c->data + i->start_pos;
+	      *line = m_data + i->start_pos;
 	      *line_len = i->end_pos - i->start_pos;
 	      return true;
 	    }
 
 	  if (i)
 	    {
-	      c->line_start_idx = i->start_pos;
-	      c->line_num = i->line_num - 1;
+	      m_line_start_idx = i->start_pos;
+	      m_line_num = i->line_num - 1;
 	    }
 	  else
 	    {
-	      c->line_start_idx = 0;
-	      c->line_num = 0;
+	      m_line_start_idx = 0;
+	      m_line_num = 0;
 	    }
 	}
     }
 
-  /*  Let's walk from line c->line_num up to line_num - 1, without
+  /*  Let's walk from line m_line_num up to line_num - 1, without
       copying any line.  */
-  while (c->line_num < line_num - 1)
-    if (!goto_next_line (c))
+  while (m_line_num < line_num - 1)
+    if (!goto_next_line ())
       return false;
 
   /* The line we want is the next one.  Let's read and copy it back to
      the caller.  */
-  return get_next_line (c, line, line_len);
+  return get_next_line (line, line_len);
 }
 
 /* Return the physical source line that corresponds to FILE_PATH/LINE.
@@ -756,11 +896,16 @@ location_get_source_line (const char *file_path, int line)
   if (line == 0)
     return char_span (NULL, 0);
 
-  fcache *c = lookup_or_add_file_to_cache_tab (file_path);
+  if (file_path == NULL)
+    return char_span (NULL, 0);
+
+  diagnostic_file_cache_init ();
+
+  file_cache_slot *c = global_dc->m_file_cache->lookup_or_add_file (file_path);
   if (c == NULL)
     return char_span (NULL, 0);
 
-  bool read = read_line_num (c, line, &buffer, &len);
+  bool read = c->read_line_num (line, &buffer, &len);
   if (!read)
     return char_span (NULL, 0);
 
@@ -774,11 +919,13 @@ location_get_source_line (const char *file_path, int line)
 bool
 location_missing_trailing_newline (const char *file_path)
 {
-  fcache *c = lookup_or_add_file_to_cache_tab (file_path);
+  diagnostic_file_cache_init ();
+
+  file_cache_slot *c = global_dc->m_file_cache->lookup_or_add_file (file_path);
   if (c == NULL)
     return false;
 
-  return c->missing_trailing_newline;
+  return c->missing_trailing_newline_p ();
 }
 
 /* Test if the location originates from the spelling location of a

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target bswap } */
 /* { dg-require-effective-target stdint_types } */
-/* { dg-options "-O2 -fdump-tree-bswap" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 /* { dg-additional-options "-march=z900" { target s390-*-* } } */
 
 typedef int SItype __attribute__ ((mode (SI)));
@@ -20,4 +20,4 @@ swap32 (SItype in)
 	 | (((in >> 24) & 0xFF) << 0);
 }
 
-/* { dg-final { scan-tree-dump-not "32 bit bswap implementation found at" "bswap" } } */
+/* { dg-final { scan-tree-dump-times "= __builtin_bswap32 \\\(" 1 "optimized" } } */

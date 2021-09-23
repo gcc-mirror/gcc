@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,16 +174,30 @@ package body Urealp is
          return UI_Decimal_Digits_Hi (Val.Num) -
                 UI_Decimal_Digits_Lo (Val.Den);
 
-      --  For based numbers, just subtract the decimal exponent from the
-      --  high estimate of the number of digits in the numerator and add
-      --  one to accommodate possible round off errors for non-decimal
-      --  bases. For example:
+      --  For based numbers, get the maximum number of digits in the numerator
+      --  minus one and the either exact or floor value of the decimal exponent
+      --  of the denominator, and subtract. For example:
 
-      --     1_500_000 / 10**4 = 1.50E-2
+      --      321 / 10**3 = 3.21E-1
+      --      435 / 5**7  = 5.57E-3
 
-      else -- Val.Rbase /= 0
-         return UI_Decimal_Digits_Hi (Val.Num) -
-                Equivalent_Decimal_Exponent (Val) + 1;
+      else
+         declare
+            E : Int;
+
+         begin
+            if Val.Rbase = 10 then
+               E := UI_To_Int (Val.Den);
+
+            else
+               E := Equivalent_Decimal_Exponent (Val);
+               if E < 0 then
+                  E := E - 1;
+               end if;
+            end if;
+
+            return UI_Decimal_Digits_Hi (Val.Num) - 1 - E;
+         end;
       end if;
    end Decimal_Exponent_Hi;
 
@@ -213,16 +227,30 @@ package body Urealp is
          return UI_Decimal_Digits_Lo (Val.Num) -
                 UI_Decimal_Digits_Hi (Val.Den) - 1;
 
-      --  For based numbers, just subtract the decimal exponent from the
-      --  low estimate of the number of digits in the numerator and subtract
-      --  one to accommodate possible round off errors for non-decimal
-      --  bases. For example:
+      --  For based numbers, get the minimum number of digits in the numerator
+      --  minus one and the either exact or ceil value of the decimal exponent
+      --  of the denominator, and subtract. For example:
 
-      --     1_500_000 / 10**4 = 1.50E-2
+      --      321 / 10**3 = 3.21E-1
+      --      435 / 5**7  = 5.57E-3
 
-      else -- Val.Rbase /= 0
-         return UI_Decimal_Digits_Lo (Val.Num) -
-                Equivalent_Decimal_Exponent (Val) - 1;
+      else
+         declare
+            E : Int;
+
+         begin
+            if Val.Rbase = 10 then
+               E := UI_To_Int (Val.Den);
+
+            else
+               E := Equivalent_Decimal_Exponent (Val);
+               if E > 0 then
+                  E := E + 1;
+               end if;
+            end if;
+
+            return UI_Decimal_Digits_Lo (Val.Num) - 1 - E;
+         end;
       end if;
    end Decimal_Exponent_Lo;
 
@@ -270,23 +298,21 @@ package body Urealp is
         15 => (Num =>  53_385_559, Den =>   45_392_361),  -- 1.176091259055681
         16 => (Num =>  78_897_839, Den =>   65_523_237)); -- 1.204119982655924
 
-      function Scale (X : Int; R : Ratio) return Int;
+      function Scale (X : Uint; R : Ratio) return Int;
       --  Compute the value of X scaled by R
 
       -----------
       -- Scale --
       -----------
 
-      function Scale (X : Int; R : Ratio) return Int is
-         type Wide_Int is range -2**63 .. 2**63 - 1;
-
+      function Scale (X : Uint; R : Ratio) return Int is
       begin
-         return Int (Wide_Int (X) * Wide_Int (R.Num) / Wide_Int (R.Den));
+         return UI_To_Int (X * R.Num / R.Den);
       end Scale;
 
    begin
       pragma Assert (U.Rbase /= 0);
-      return Scale (UI_To_Int (U.Den), Logs (U.Rbase));
+      return Scale (U.Den, Logs (U.Rbase));
    end Equivalent_Decimal_Exponent;
 
    ----------------
@@ -376,7 +402,7 @@ package body Urealp is
       Tmp : Uint;
       Num : Uint;
       Den : Uint;
-      M   : constant Uintp.Save_Mark := Uintp.Mark;
+      M   : constant Uintp.Save_Mark := Mark;
 
    begin
       --  Start by setting J to the greatest of the absolute values of the
@@ -1487,6 +1513,80 @@ package body Urealp is
          end if;
       end if;
    end UR_Write;
+
+   ----------------------
+   -- UR_Write_To_JSON --
+   ----------------------
+
+   --  We defer to the implementation of UR_Write in all cases, either directly
+   --  for values that are naturally written in a JSON compatible format, or by
+   --  first computing a decimal approxixmation for other values.
+
+   procedure UR_Write_To_JSON (Real : Ureal) is
+      Val  : constant Ureal_Entry      := Ureals.Table (Real);
+      Imrk : constant Uintp.Save_Mark  := Mark;
+      Rmrk : constant Urealp.Save_Mark := Mark;
+
+      T : Ureal;
+
+   begin
+      --  Zero is zero
+
+      if Val.Num = 0 then
+         T := Real;
+
+      --  For constants with a denominator of zero, the value is simply the
+      --  numerator value, since we are dividing by base**0, which is 1.
+
+      elsif Val.Den = 0 then
+         T := Real;
+
+      --  Small powers of 2 get written in decimal fixed-point format
+
+      elsif Val.Rbase = 2
+        and then Val.Den <= 3
+        and then Val.Den >= -16
+      then
+         T := Real;
+
+      --  Constants in base 10 can be written in normal Ada literal style
+
+      elsif Val.Rbase = 10 then
+         T := Real;
+
+      --  Rationals where numerator is divisible by denominator can be output
+      --  as literals after we do the division. This includes the common case
+      --  where the denominator is 1.
+
+      elsif Val.Rbase = 0 and then Val.Num mod Val.Den = 0 then
+         T := Real;
+
+      --  For other constants, compute an approxixmation in base 10
+
+      else
+         declare
+            A : constant Ureal := UR_Abs (Real);
+            --  The absolute value
+
+            E : constant Uint  :=
+                  (if A < Ureal_1
+                   then UI_From_Int (3 - Decimal_Exponent_Lo (Real))
+                   else Uint_3);
+            --  The exponent for at least 3 digits after the decimal point
+
+            Num : constant Uint :=
+                    UR_To_Uint (UR_Mul (A, UR_Exponentiate (Ureal_10, E)));
+            --  The numerator appropriately rounded
+
+         begin
+            T := UR_From_Components (Num, E, 10, Val.Negative);
+         end;
+      end if;
+
+      UR_Write (T);
+      Release (Imrk);
+      Release (Rmrk);
+   end UR_Write_To_JSON;
 
    -------------
    -- Ureal_0 --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ private generic
 
    type Num is digits <>;
 
-   with package Aux is new Ada.Wide_Text_IO.Float_Aux (Num, <>);
+   with package Aux is new Ada.Wide_Text_IO.Float_Aux (Num, <>, <>);
 
 package Ada.Wide_Text_IO.Complex_Aux is
 

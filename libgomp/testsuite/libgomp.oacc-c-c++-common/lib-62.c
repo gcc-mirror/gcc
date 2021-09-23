@@ -1,4 +1,5 @@
-/* { dg-do run { target openacc_nvidia_accel_selected } } */
+/* Not all implement this checking.
+   { dg-skip-if "" { openacc_radeon_accel_selected || openacc_host_selected } } */
 
 #include <stdio.h>
 #include <string.h>

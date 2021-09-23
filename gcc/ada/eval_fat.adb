@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,10 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Opt;      use Opt;
-with Sem_Util; use Sem_Util;
+with Einfo;          use Einfo;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Opt;            use Opt;
+with Sem_Util;       use Sem_Util;
 
 package body Eval_Fat is
 
@@ -729,29 +730,39 @@ package body Eval_Fat is
       New_Frac : T;
 
    begin
+      --  Treat zero as a regular denormalized number if they are supported,
+      --  otherwise return the smallest normalized number.
+
       if UR_Is_Zero (X) then
-         Exp := Emin;
+         if Has_Denormals (RT) then
+            Exp := Emin;
+         else
+            return Scaling (RT, Ureal_Half, Emin);
+         end if;
       end if;
 
-      --  Set exponent such that the radix point will be directly following the
-      --  mantissa after scaling.
+      --  Multiply the number by 2.0**(Mantissa-Exp) so that the radix point
+      --  will be directly following the mantissa after scaling.
 
-      if Has_Denormals (RT) or Exp /= Emin then
-         Exp := Exp - Mantissa;
-      else
-         Exp := Exp - 1;
-      end if;
-
+      Exp := Exp - Mantissa;
       Frac := Scaling (RT, X, -Exp);
+
+      --  Round to the neareast integer towards +Inf
+
       New_Frac := Ceiling (RT, Frac);
+
+      --  If the rounding was a NOP, add one, except for -2.0**(Mantissa-1)
+      --  because the exponent is going to be reduced.
 
       if New_Frac = Frac then
          if New_Frac = Scaling (RT, -Ureal_1, Mantissa - 1) then
-            New_Frac := New_Frac + Scaling (RT, Ureal_1, Uint_Minus_1);
+            New_Frac := New_Frac + Ureal_Half;
          else
             New_Frac := New_Frac + Ureal_1;
          end if;
       end if;
+
+      --  Divide back by 2.0**(Mantissa-Exp) to get the final result
 
       return Scaling (RT, New_Frac, Exp);
    end Succ;

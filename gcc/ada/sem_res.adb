@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,65 +23,70 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Debug_A;  use Debug_A;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Expander; use Expander;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Disp; use Exp_Disp;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Inline;   use Inline;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Output;   use Output;
-with Par_SCO;  use Par_SCO;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aggr; use Sem_Aggr;
-with Sem_Attr; use Sem_Attr;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch4;  use Sem_Ch4;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Elab; use Sem_Elab;
-with Sem_Elim; use Sem_Elim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Intr; use Sem_Intr;
-with Sem_Mech; use Sem_Mech;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Sinfo.CN; use Sinfo.CN;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Style;    use Style;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Debug_A;        use Debug_A;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Expander;       use Expander;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Inline;         use Inline;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Output;         use Output;
+with Par_SCO;        use Par_SCO;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aggr;       use Sem_Aggr;
+with Sem_Attr;       use Sem_Attr;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Case;       use Sem_Case;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch4;        use Sem_Ch4;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Elim;       use Sem_Elim;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Intr;       use Sem_Intr;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinfo.CN;       use Sinfo.CN;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Style;          use Style;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
 
 package body Sem_Res is
 
@@ -649,9 +654,9 @@ package body Sem_Res is
       end if;
    end Check_For_Visible_Operator;
 
-   ----------------------------------
-   --  Check_Fully_Declared_Prefix --
-   ----------------------------------
+   ---------------------------------
+   -- Check_Fully_Declared_Prefix --
+   ---------------------------------
 
    procedure Check_Fully_Declared_Prefix
      (Typ  : Entity_Id;
@@ -1285,8 +1290,10 @@ package body Sem_Res is
          Check_Parameterless_Call (Explicit_Actual_Parameter (N));
 
       elsif Nkind (N) = N_Operator_Symbol then
-         Change_Operator_Symbol_To_String_Literal (N);
+         Set_Etype (N, Empty);
+         Set_Entity (N, Empty);
          Set_Is_Overloaded (N, False);
+         Change_Operator_Symbol_To_String_Literal (N);
          Set_Etype (N, Any_String);
       end if;
    end Check_Parameterless_Call;
@@ -1879,9 +1886,9 @@ package body Sem_Res is
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
-      Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
 
       if not With_Freezing then
+         Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
          Inside_Preanalysis_Without_Freezing :=
            Inside_Preanalysis_Without_Freezing - 1;
       end if;
@@ -2114,7 +2121,7 @@ package body Sem_Res is
             end loop;
          end if;
 
-         --  Additional message and hint if the ambiguity involves an Ada2020
+         --  Additional message and hint if the ambiguity involves an Ada 2022
          --  container aggregate.
 
          Check_Ambiguous_Aggregate (N);
@@ -2233,7 +2240,7 @@ package body Sem_Res is
                   then
                      Is_Remote := False;
                      Error_Msg_N
-                       ("prefix must statically denote a remote subprogram ",
+                       ("prefix must statically denote a remote subprogram",
                         N);
                   end if;
 
@@ -2344,8 +2351,7 @@ package body Sem_Res is
 
                if Ada_Version >= Ada_2005
                  and then It.Typ = Typ
-                 and then Typ /= Universal_Integer
-                 and then Typ /= Universal_Real
+                 and then not Is_Universal_Numeric_Type (Typ)
                  and then Present (It.Abstract_Op)
                then
                   if Debug_Flag_V then
@@ -2781,7 +2787,7 @@ package body Sem_Res is
             elsif Nkind (N) = N_Aggregate
               and then Etype (N) = Any_Composite
             then
-               if Ada_Version >= Ada_2020
+               if Ada_Version >= Ada_2022
                  and then Has_Aspect (Typ, Aspect_Aggregate)
                then
                   Resolve_Container_Aggregate (N, Typ);
@@ -2928,6 +2934,11 @@ package body Sem_Res is
                      else
                         UI_Image (Norm_Num (Expr_Value_R (Expr)), Decimal);
                         Start_String;
+
+                        if UR_Is_Negative (Expr_Value_R (Expr)) then
+                           Store_String_Chars ("-");
+                        end if;
+
                         Store_String_Chars
                           (UI_Image_Buffer (1 .. UI_Image_Length));
                         Param1 := Make_String_Literal (Loc, End_String);
@@ -3385,12 +3396,9 @@ package body Sem_Res is
          --  Here we are resolving the corresponding expanded body, so we do
          --  need to perform normal freezing.
 
-         --  As elsewhere we do not emit freeze node within a generic. We make
-         --  an exception for entities that are expressions, only to detect
-         --  misuses of deferred constants and preserve the output of various
-         --  tests.
+         --  As elsewhere we do not emit freeze node within a generic.
 
-         if not Inside_A_Generic or else Is_Entity_Name (N) then
+         if not Inside_A_Generic then
             Freeze_Expression (N);
          end if;
 
@@ -3749,26 +3757,34 @@ package body Sem_Res is
             Id : Entity_Id;
 
          begin
-            --  Do not consider nested function calls because they have already
-            --  been processed during their own resolution.
+            case Nkind (N) is
+               --  Do not consider nested function calls because they have
+               --  already been processed during their own resolution.
 
-            if Nkind (N) = N_Function_Call then
-               return Skip;
-
-            elsif Is_Entity_Name (N) and then Present (Entity (N)) then
-               Id := Entity (N);
-
-               if Is_Object (Id)
-                 and then Is_Effectively_Volatile_For_Reading (Id)
-               then
-                  Error_Msg_N
-                    ("volatile object cannot appear in this context (SPARK "
-                     & "RM 7.1.3(10))", N);
+               when N_Function_Call =>
                   return Skip;
-               end if;
-            end if;
 
-            return OK;
+               when N_Identifier | N_Expanded_Name =>
+                  Id := Entity (N);
+
+                  if Present (Id)
+                    and then Is_Object (Id)
+                    and then Is_Effectively_Volatile_For_Reading (Id)
+                    and then
+                      not Is_OK_Volatile_Context (Context       => Parent (N),
+                                                  Obj_Ref       => N,
+                                                  Check_Actuals => True)
+                  then
+                     Error_Msg_N
+                       ("volatile object cannot appear in this context"
+                        & " (SPARK RM 7.1.3(10))", N);
+                  end if;
+
+                  return Skip;
+
+               when others =>
+                  return OK;
+            end case;
          end Flag_Object;
 
          procedure Flag_Objects is new Traverse_Proc (Flag_Object);
@@ -4747,6 +4763,13 @@ package body Sem_Res is
                --  Expand_Actuals routine in Exp_Ch6.
             end if;
 
+            --  If the formal is of an unconstrained array subtype with fixed
+            --  lower bound, then sliding to that bound may be needed.
+
+            if Is_Fixed_Lower_Bound_Array_Subtype (F_Typ) then
+               Expand_Sliding_Conversion (A, F_Typ);
+            end if;
+
             --  An actual associated with an access parameter is implicitly
             --  converted to the anonymous access type of the formal and must
             --  satisfy the legality checks for access conversions.
@@ -4774,11 +4797,11 @@ package body Sem_Res is
 
             --  Check illegal cases of atomic/volatile/VFA actual (RM C.6(12))
 
-            if (Is_By_Reference_Type (Etype (F)) or else Is_Aliased (F))
+            if (Is_By_Reference_Type (F_Typ) or else Is_Aliased (F))
               and then Comes_From_Source (N)
             then
                if Is_Atomic_Object (A)
-                 and then not Is_Atomic (Etype (F))
+                 and then not Is_Atomic (F_Typ)
                then
                   Error_Msg_NE
                     ("cannot pass atomic object to nonatomic formal&",
@@ -4786,8 +4809,8 @@ package body Sem_Res is
                   Error_Msg_N
                     ("\which is passed by reference (RM C.6(12))", A);
 
-               elsif Is_Volatile_Object (A)
-                 and then not Is_Volatile (Etype (F))
+               elsif Is_Volatile_Object_Ref (A)
+                 and then not Is_Volatile (F_Typ)
                then
                   Error_Msg_NE
                     ("cannot pass volatile object to nonvolatile formal&",
@@ -4795,8 +4818,8 @@ package body Sem_Res is
                   Error_Msg_N
                     ("\which is passed by reference (RM C.6(12))", A);
 
-               elsif Is_Volatile_Full_Access_Object (A)
-                 and then not Is_Volatile_Full_Access (Etype (F))
+               elsif Is_Volatile_Full_Access_Object_Ref (A)
+                 and then not Is_Volatile_Full_Access (F_Typ)
                then
                   Error_Msg_NE
                     ("cannot pass full access object to nonfull access "
@@ -4806,9 +4829,9 @@ package body Sem_Res is
                end if;
 
                --  Check for nonatomic subcomponent of a full access object
-               --  in Ada 2020 (RM C.6 (12)).
+               --  in Ada 2022 (RM C.6 (12)).
 
-               if Ada_Version >= Ada_2020
+               if Ada_Version >= Ada_2022
                  and then Is_Subcomponent_Of_Full_Access_Object (A)
                  and then not Is_Atomic_Object (A)
                then
@@ -4831,9 +4854,9 @@ package body Sem_Res is
             if Is_Controlling_Formal (F) then
                Set_Is_Controlling_Actual (A);
 
-               if Ekind (Etype (F)) = E_Anonymous_Access_Type then
+               if Ekind (F_Typ) = E_Anonymous_Access_Type then
                   declare
-                     Desig : constant Entity_Id := Designated_Type (Etype (F));
+                     Desig : constant Entity_Id := Designated_Type (F_Typ);
                   begin
                      if Ekind (Desig) = E_Incomplete_Type
                        and then No (Full_View (Desig))
@@ -4938,40 +4961,14 @@ package body Sem_Res is
 
             if SPARK_Mode = On and then Comes_From_Source (A) then
 
-               --  An effectively volatile object for reading may act as an
-               --  actual when the corresponding formal is of a non-scalar
-               --  effectively volatile type for reading (SPARK RM 7.1.3(10)).
+               --  Inspect the expression and flag each effectively volatile
+               --  object for reading as illegal because it appears within
+               --  an interfering context. Note that this is usually done
+               --  in Resolve_Entity_Name, but when the effectively volatile
+               --  object for reading appears as an actual in a call, the call
+               --  must be resolved first.
 
-               if not Is_Scalar_Type (Etype (F))
-                 and then Is_Effectively_Volatile_For_Reading (Etype (F))
-               then
-                  null;
-
-               --  An effectively volatile object for reading may act as an
-               --  actual in a call to an instance of Unchecked_Conversion.
-               --  (SPARK RM 7.1.3(10)).
-
-               elsif Is_Unchecked_Conversion_Instance (Nam) then
-                  null;
-
-               --  The actual denotes an object
-
-               elsif Is_Effectively_Volatile_Object_For_Reading (A) then
-                  Error_Msg_N
-                    ("volatile object cannot act as actual in a call (SPARK "
-                     & "RM 7.1.3(10))", A);
-
-               --  Otherwise the actual denotes an expression. Inspect the
-               --  expression and flag each effectively volatile object
-               --  for reading as illegal because it apprears within an
-               --  interfering context. Note that this is usually done in
-               --  Resolve_Entity_Name, but when the effectively volatile
-               --  object for reading appears as an actual in a call, the
-               --  call must be resolved first.
-
-               else
-                  Flag_Effectively_Volatile_Objects (A);
-               end if;
+               Flag_Effectively_Volatile_Objects (A);
 
                --  An effectively volatile variable cannot act as an actual
                --  parameter in a procedure call when the variable has enabled
@@ -5034,6 +5031,41 @@ package body Sem_Res is
                else
                   Error_Msg_N ("\corresponding formal has mode OUT", A);
                end if;
+            end if;
+
+            --  (AI12-0397): The target of a subprogram call that occurs within
+            --  the expression of an Default_Initial_Condition aspect and has
+            --  an actual that is the current instance of the type must be
+            --  either a primitive of the type or a class-wide subprogram,
+            --  because the type of the current instance in such an aspect is
+            --  considered to be a notional formal derived type whose only
+            --  operations correspond to the primitives of the enclosing type.
+            --  Nonprimitives can be called, but the current instance must be
+            --  converted rather than passed directly. Note that a current
+            --  instance of a type with DIC will occur as a reference to an
+            --  in-mode formal of an enclosing DIC procedure or partial DIC
+            --  procedure. (It seems that this check should perhaps also apply
+            --  to calls within Type_Invariant'Class, but not Type_Invariant,
+            --  aspects???)
+
+            if Nkind (A) = N_Identifier
+              and then Ekind (Entity (A)) = E_In_Parameter
+
+              and then Is_Subprogram (Scope (Entity (A)))
+              and then Is_DIC_Procedure (Scope (Entity (A)))
+
+              --  We check Comes_From_Source to exclude inherited primitives
+              --  from being flagged, because such subprograms turn out to not
+              --  always have the Is_Primitive flag set. ???
+
+              and then Comes_From_Source (Nam)
+
+              and then not Is_Primitive (Nam)
+              and then not Is_Class_Wide_Type (F_Typ)
+            then
+               Error_Msg_NE
+                 ("call to nonprimitive & with current instance not allowed " &
+                  "for aspect", A, Nam);
             end if;
 
             Next_Actual (A);
@@ -5696,14 +5728,12 @@ package body Sem_Res is
          if not Is_Overloaded (N) then
             T := Etype (N);
             return Base_Type (T) = Base_Type (Standard_Integer)
-              or else T = Universal_Integer
-              or else T = Universal_Real;
+              or else Is_Universal_Numeric_Type (T);
          else
             Get_First_Interp (N, Index, It);
             while Present (It.Typ) loop
                if Base_Type (It.Typ) = Base_Type (Standard_Integer)
-                 or else It.Typ = Universal_Integer
-                 or else It.Typ = Universal_Real
+                 or else Is_Universal_Numeric_Type (It.Typ)
                then
                   return True;
                end if;
@@ -5738,8 +5768,7 @@ package body Sem_Res is
 
          elsif Universal_Interpretation (N) = Universal_Real
            and then (T = Base_Type (Standard_Integer)
-                      or else T = Universal_Integer
-                      or else T = Universal_Real)
+                      or else Is_Universal_Numeric_Type (T))
          then
             --  A universal real can appear in a fixed-type context. We resolve
             --  the literal with that context, even though this might raise an
@@ -5872,9 +5901,7 @@ package body Sem_Res is
 
       procedure Set_Operand_Type (N : Node_Id) is
       begin
-         if Etype (N) = Universal_Integer
-           or else Etype (N) = Universal_Real
-         then
+         if Is_Universal_Numeric_Type (Etype (N)) then
             Set_Etype (N, T);
          end if;
       end Set_Operand_Type;
@@ -5899,7 +5926,7 @@ package body Sem_Res is
       --  Set the type of the node to its universal interpretation because
       --  legality checks on an exponentiation operand need the context.
 
-      elsif (B_Typ = Universal_Integer or else B_Typ = Universal_Real)
+      elsif Is_Universal_Numeric_Type (B_Typ)
         and then Present (Universal_Interpretation (L))
         and then Present (Universal_Interpretation (R))
       then
@@ -6012,9 +6039,9 @@ package body Sem_Res is
          end if;
 
       else
-         if (TL = Universal_Integer or else TL = Universal_Real)
+         if Is_Universal_Numeric_Type (TL)
                and then
-            (TR = Universal_Integer or else TR = Universal_Real)
+            Is_Universal_Numeric_Type (TR)
          then
             Check_For_Visible_Operator (N, B_Typ);
          end if;
@@ -6123,13 +6150,6 @@ package body Sem_Res is
                   when others =>
                      raise Program_Error;
                end case;
-
-               --  In GNATprove mode, we enable the division check so that
-               --  GNATprove will issue a message if it cannot be proved.
-
-               if GNATprove_Mode then
-                  Activate_Division_Check (N);
-               end if;
 
             --  Otherwise just set the flag to check at run time
 
@@ -6645,7 +6665,7 @@ package body Sem_Res is
             Scope_Loop : while Scop /= Standard_Standard loop
                if Same_Or_Aliased_Subprograms (Nam, Scop) then
 
-                  --  Ada 202x (AI12-0075): Static functions are never allowed
+                  --  Ada 2022 (AI12-0075): Static functions are never allowed
                   --  to make a recursive call, as specified by 6.8(5.4/5).
 
                   if Is_Static_Function (Scop) then
@@ -7076,7 +7096,7 @@ package body Sem_Res is
 
       Warn_On_Overlapping_Actuals (Nam, N);
 
-      --  Ada 202x (AI12-0075): If the call is a static call to a static
+      --  Ada 2022 (AI12-0075): If the call is a static call to a static
       --  expression function, then we want to "inline" the call, replacing
       --  it with the folded static result. This is not done if the checking
       --  for a potentially static expression is enabled or if an error has
@@ -7506,7 +7526,7 @@ package body Sem_Res is
          end;
 
          if Need_Transient_Scope then
-            Establish_Transient_Scope (Decl, True);
+            Establish_Transient_Scope (Decl, Manage_Sec_Stack => True);
          else
             Push_Scope (Scope (Defining_Identifier (Decl)));
          end if;
@@ -7646,8 +7666,7 @@ package body Sem_Res is
          Expr    : Node_Id) return Boolean
       is
       begin
-         if Nkind (Context) in
-              N_Assignment_Statement | N_Object_Declaration
+         if Nkind (Context) in N_Assignment_Statement | N_Object_Declaration
            and then Expression (Context) = Expr
          then
             return True;
@@ -7689,6 +7708,11 @@ package body Sem_Res is
          while Present (N) loop
             if Nkind (N) = N_Attribute_Reference then
                return True;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (N) then
+               return False;
             end if;
 
             N := Parent (N);
@@ -7734,10 +7758,12 @@ package body Sem_Res is
 
       --  Case of (sub)type name appearing in a context where an expression
       --  is expected. This is legal if occurrence is a current instance.
-      --  See RM 8.6 (17/3).
+      --  See RM 8.6 (17/3). It is also legal if the expression is
+      --  part of a choice pattern for a case stmt/expr having a
+      --  non-discrete selecting expression.
 
       elsif Is_Type (E) then
-         if Is_Current_Instance (N) then
+         if Is_Current_Instance (N) or else Is_Case_Choice_Pattern (N) then
             null;
 
          --  Any other use is an error
@@ -7831,7 +7857,8 @@ package body Sem_Res is
 
             if Is_Object (E)
               and then Is_Effectively_Volatile_For_Reading (E)
-              and then not Is_OK_Volatile_Context (Par, N)
+              and then
+                not Is_OK_Volatile_Context (Par, N, Check_Actuals => False)
             then
                SPARK_Msg_N
                  ("volatile object cannot appear in this context "
@@ -8791,18 +8818,12 @@ package body Sem_Res is
                or else Is_Private_Type (T))
          then
             if Etype (L) /= T then
-               Rewrite (L,
-                 Make_Unchecked_Type_Conversion (Sloc (L),
-                   Subtype_Mark => New_Occurrence_Of (T, Sloc (L)),
-                   Expression   => Relocate_Node (L)));
+               Rewrite (L, Unchecked_Convert_To (T, L));
                Analyze_And_Resolve (L, T);
             end if;
 
             if (Etype (R)) /= T then
-               Rewrite (R,
-                  Make_Unchecked_Type_Conversion (Sloc (R),
-                    Subtype_Mark => New_Occurrence_Of (Etype (L), Sloc (R)),
-                    Expression   => Relocate_Node (R)));
+               Rewrite (R, Unchecked_Convert_To (Etype (L), R));
                Analyze_And_Resolve (R, T);
             end if;
          end if;
@@ -9065,6 +9086,16 @@ package body Sem_Res is
       --  that the context in general allows sliding, while a qualified
       --  expression forces equality of bounds.
 
+      Result_Type  : Entity_Id := Typ;
+      --  So in most cases the type of the If_Expression and of its
+      --  dependent expressions is that of the context. However, if
+      --  the expression is the index of an Indexed_Component, we must
+      --  ensure that a proper index check is applied, rather than a
+      --  range check on the index type (which might be discriminant
+      --  dependent). In this case we resolve with the base type of the
+      --  index type, and the index check is generated in the resolution
+      --  of the indexed_component above.
+
       -----------------
       -- Apply_Check --
       -----------------
@@ -9088,10 +9119,10 @@ package body Sem_Res is
          else
             Rewrite (Expr,
               Make_Qualified_Expression (Loc,
-                Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                Subtype_Mark => New_Occurrence_Of (Result_Type, Loc),
                 Expression   => Relocate_Node (Expr)));
 
-            Analyze_And_Resolve (Expr, Typ);
+            Analyze_And_Resolve (Expr, Result_Type);
          end if;
       end Apply_Check;
 
@@ -9110,6 +9141,13 @@ package body Sem_Res is
          return;
       end if;
 
+      if Present (Parent (N))
+        and then (Nkind (Parent (N)) = N_Indexed_Component
+                    or else Nkind (Parent (Parent (N))) = N_Indexed_Component)
+      then
+         Result_Type := Base_Type (Typ);
+      end if;
+
       Then_Expr := Next (Condition);
 
       if No (Then_Expr) then
@@ -9119,7 +9157,7 @@ package body Sem_Res is
       Else_Expr := Next (Then_Expr);
 
       Resolve (Condition, Any_Boolean);
-      Resolve (Then_Expr, Typ);
+      Resolve (Then_Expr, Result_Type);
       Apply_Check (Then_Expr);
 
       --  If ELSE expression present, just resolve using the determined type
@@ -9133,7 +9171,7 @@ package body Sem_Res is
             Resolve (Else_Expr, Any_Real);
 
          else
-            Resolve (Else_Expr, Typ);
+            Resolve (Else_Expr, Result_Type);
          end if;
 
          Apply_Check (Else_Expr);
@@ -9157,7 +9195,7 @@ package body Sem_Res is
       elsif Root_Type (Typ) = Standard_Boolean then
          Else_Expr :=
            Convert_To (Typ, New_Occurrence_Of (Standard_True, Sloc (N)));
-         Analyze_And_Resolve (Else_Expr, Typ);
+         Analyze_And_Resolve (Else_Expr, Result_Type);
          Append_To (Expressions (N), Else_Expr);
 
       else
@@ -9165,7 +9203,7 @@ package body Sem_Res is
          Append_To (Expressions (N), Error);
       end if;
 
-      Set_Etype (N, Typ);
+      Set_Etype (N, Result_Type);
 
       if not Error_Posted (N) then
          Eval_If_Expression (N);
@@ -9330,7 +9368,7 @@ package body Sem_Res is
       end if;
 
       --  If the array type is atomic and the component is not, then this is
-      --  worth a warning before Ada 2020, since we have a situation where the
+      --  worth a warning before Ada 2022, since we have a situation where the
       --  access to the component may cause extra read/writes of the atomic
       --  object, or partial word accesses, both of which may be unexpected.
 
@@ -9341,7 +9379,7 @@ package body Sem_Res is
                                  and then Has_Atomic_Components
                                             (Entity (Prefix (N)))))
         and then not Is_Atomic (Component_Type (Array_Type))
-        and then Ada_Version < Ada_2020
+        and then Ada_Version < Ada_2022
       then
          Error_Msg_N
            ("??access to non-atomic component of atomic array", Prefix (N));
@@ -9756,10 +9794,7 @@ package body Sem_Res is
          goto SM_Exit;
 
       elsif not Is_Overloaded (R)
-        and then
-          (Etype (R) = Universal_Integer
-             or else
-           Etype (R) = Universal_Real)
+        and then Is_Universal_Numeric_Type (Etype (R))
         and then Is_Overloaded (L)
       then
          T := Etype (R);
@@ -10201,9 +10236,7 @@ package body Sem_Res is
          return;
       end if;
 
-      if Etype (Left_Opnd (N)) = Universal_Integer
-        or else Etype (Left_Opnd (N)) = Universal_Real
-      then
+      if Is_Universal_Numeric_Type (Etype (Left_Opnd (N))) then
          Check_For_Visible_Operator (N, B_Typ);
       end if;
 
@@ -10466,8 +10499,57 @@ package body Sem_Res is
       if Typ = Raise_Type then
          Error_Msg_N ("cannot find unique type for raise expression", N);
          Set_Etype (N, Any_Type);
+
       else
          Set_Etype (N, Typ);
+
+         --  Apply check for required parentheses in the enclosing
+         --  context of raise_expressions (RM 11.3 (2)), including default
+         --  expressions in contexts that can include aspect specifications,
+         --  and ancestor parts of extension aggregates.
+
+         declare
+            Par : Node_Id := Parent (N);
+            Parentheses_Found : Boolean := Paren_Count (N) > 0;
+
+         begin
+            while Present (Par)
+              and then Nkind (Par) in N_Has_Etype
+            loop
+               if Paren_Count (Par) > 0 then
+                  Parentheses_Found := True;
+               end if;
+
+               if Nkind (Par) = N_Extension_Aggregate
+                 and then N = Ancestor_Part (Par)
+               then
+                  exit;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            if not Parentheses_Found
+              and then Comes_From_Source (Par)
+              and then
+                ((Nkind (Par) in N_Modular_Type_Definition
+                               | N_Floating_Point_Definition
+                               | N_Ordinary_Fixed_Point_Definition
+                               | N_Decimal_Fixed_Point_Definition
+                               | N_Extension_Aggregate
+                               | N_Discriminant_Specification
+                               | N_Parameter_Specification
+                               | N_Formal_Object_Declaration)
+
+                  or else (Nkind (Par) = N_Object_Declaration
+                    and then
+                      Nkind (Parent (Par)) /= N_Extended_Return_Statement))
+            then
+               Error_Msg_N
+                 ("raise_expression must be parenthesized in this context",
+                   N);
+            end if;
+         end;
       end if;
    end Resolve_Raise_Expression;
 
@@ -10501,12 +10583,9 @@ package body Sem_Res is
                PL : constant Node_Id := Prefix (Lorig);
                PH : constant Node_Id := Prefix (Horig);
             begin
-               if Is_Entity_Name (PL)
+               return Is_Entity_Name (PL)
                  and then Is_Entity_Name (PH)
-                 and then Entity (PL) = Entity (PH)
-               then
-                  return True;
-               end if;
+                 and then Entity (PL) = Entity (PH);
             end;
          end if;
 
@@ -10575,11 +10654,11 @@ package body Sem_Res is
 
       if Is_Discrete_Type (Typ) and then Expander_Active then
          if Is_OK_Static_Expression (L) then
-            Fold_Uint (L, Expr_Value (L), Is_OK_Static_Expression (L));
+            Fold_Uint (L, Expr_Value (L), Static => True);
          end if;
 
          if Is_OK_Static_Expression (H) then
-            Fold_Uint (H, Expr_Value (H), Is_OK_Static_Expression (H));
+            Fold_Uint (H, Expr_Value (H), Static => True);
          end if;
       end if;
    end Resolve_Range;
@@ -10919,7 +10998,7 @@ package body Sem_Res is
       if Nkind (N) = N_Selected_Component then
 
          --  If the record type is atomic and the component is not, then this
-         --  is worth a warning before Ada 2020, since we have a situation
+         --  is worth a warning before Ada 2022, since we have a situation
          --  where the access to the component may cause extra read/writes of
          --  the atomic object, or partial word accesses, both of which may be
          --  unexpected.
@@ -10927,7 +11006,7 @@ package body Sem_Res is
          if Is_Atomic_Ref_With_Address (N)
            and then not Is_Atomic (Entity (S))
            and then not Is_Atomic (Etype (Entity (S)))
-           and then Ada_Version < Ada_2020
+           and then Ada_Version < Ada_2022
          then
             Error_Msg_N
               ("??access to non-atomic component of atomic record",
@@ -11530,14 +11609,14 @@ package body Sem_Res is
                Comp_Typ_Hi : constant Node_Id :=
                                Type_High_Bound (Component_Type (Typ));
 
-               Char_Val : Uint;
+               Char_Val : Int;
 
             begin
                if Compile_Time_Known_Value (Comp_Typ_Lo)
                  and then Compile_Time_Known_Value (Comp_Typ_Hi)
                then
                   for J in 1 .. Strlen loop
-                     Char_Val := UI_From_Int (Int (Get_String_Char (Str, J)));
+                     Char_Val := Int (Get_String_Char (Str, J));
 
                      if Char_Val < Expr_Value (Comp_Typ_Lo)
                        or else Char_Val > Expr_Value (Comp_Typ_Hi)
@@ -11562,7 +11641,7 @@ package body Sem_Res is
       --  heavy artillery for this situation, but it is hard work to avoid.
 
       declare
-         Lits : constant List_Id    := New_List;
+         Lits : constant List_Id := New_List;
          P    : Source_Ptr := Loc + 1;
          C    : Char_Code;
 
@@ -12045,15 +12124,34 @@ package body Sem_Res is
 
       --  Deal with universal cases
 
-      if Etype (R) = Universal_Integer
-           or else
-         Etype (R) = Universal_Real
-      then
+      if Is_Universal_Numeric_Type (Etype (R)) then
          Check_For_Visible_Operator (N, B_Typ);
       end if;
 
       Set_Etype (N, B_Typ);
       Resolve (R, B_Typ);
+
+      --  Generate warning for negative literal of a modular type, unless it is
+      --  enclosed directly in a type qualification or a type conversion, as it
+      --  is likely not what the user intended. We don't issue the warning for
+      --  the common use of -1 to denote OxFFFF_FFFF...
+
+      if Warn_On_Suspicious_Modulus_Value
+        and then Nkind (N) = N_Op_Minus
+        and then Nkind (R) = N_Integer_Literal
+        and then Is_Modular_Integer_Type (B_Typ)
+        and then Nkind (Parent (N)) not in N_Qualified_Expression
+                                         | N_Type_Conversion
+        and then Expr_Value (R) > Uint_1
+      then
+         Error_Msg_N
+           ("?M?negative literal of modular type is in fact positive", N);
+         Error_Msg_Uint_1 := (-Expr_Value (R)) mod Modulus (B_Typ);
+         Error_Msg_Uint_2 := Expr_Value (R);
+         Error_Msg_N ("\do you really mean^ when writing -^ '?", N);
+         Error_Msg_N
+           ("\if you do, use qualification to avoid this warning", N);
+      end if;
 
       --  Generate warning for expressions like abs (x mod 2)
 
@@ -12496,10 +12594,9 @@ package body Sem_Res is
       --  the point where actions for the slice are analyzed). Note that this
       --  is different from freezing the itype immediately, which might be
       --  premature (e.g. if the slice is within a transient scope). This needs
-      --  to be done only if expansion is enabled, or in GNATprove mode to
-      --  capture the associated run-time exceptions if any.
+      --  to be done only if expansion is enabled.
 
-      elsif Expander_Active or GNATprove_Mode then
+      elsif Expander_Active then
          Ensure_Defined (Typ => Slice_Subtype, N => N);
       end if;
    end Set_Slice_Subtype;
@@ -12630,10 +12727,7 @@ package body Sem_Res is
             Set_Etype          (Array_Subtype, Base_Type (Typ));
             Set_Is_Constrained (Array_Subtype, True);
 
-            Rewrite (N,
-              Make_Unchecked_Type_Conversion (Loc,
-                Subtype_Mark => New_Occurrence_Of (Array_Subtype, Loc),
-                Expression   => Relocate_Node (N)));
+            Rewrite (N, Unchecked_Convert_To (Array_Subtype, N));
             Set_Etype (N, Array_Subtype);
          end;
       end if;
@@ -13570,12 +13664,24 @@ package body Sem_Res is
             then
                if Is_Itype (Opnd_Type) then
 
+                  --  When applying restriction No_Dynamic_Accessibility_Check,
+                  --  implicit conversions are allowed when the operand type is
+                  --  not deeper than the target type.
+
+                  if No_Dynamic_Accessibility_Checks_Enabled (N) then
+                     if Type_Access_Level (Opnd_Type)
+                          > Deepest_Type_Access_Level (Target_Type)
+                     then
+                        Conversion_Error_N
+                          ("operand has deeper level than target", Operand);
+                     end if;
+
                   --  Implicit conversions aren't allowed for objects of an
                   --  anonymous access type, since such objects have nonstatic
                   --  levels in Ada 2012.
 
-                  if Nkind (Associated_Node_For_Itype (Opnd_Type)) =
-                       N_Object_Declaration
+                  elsif Nkind (Associated_Node_For_Itype (Opnd_Type))
+                          = N_Object_Declaration
                   then
                      Conversion_Error_N
                        ("implicit conversion of stand-alone anonymous "
@@ -13628,12 +13734,16 @@ package body Sem_Res is
             --  the target type is anonymous access as well - see RM 3.10.2
             --  (10.3/3).
 
-            elsif Type_Access_Level (Opnd_Type) >
-                    Deepest_Type_Access_Level (Target_Type)
-              and then (Nkind (Associated_Node_For_Itype (Opnd_Type)) /=
-                         N_Function_Specification
-                        or else Ekind (Target_Type) in
-                                  Anonymous_Access_Kind)
+            --  Note that when the restriction No_Dynamic_Accessibility_Checks
+            --  is in effect wei also want to proceed with the conversion check
+            --  described above.
+
+            elsif Type_Access_Level (Opnd_Type, Assoc_Ent => Operand)
+                    > Deepest_Type_Access_Level (Target_Type)
+              and then (Nkind (Associated_Node_For_Itype (Opnd_Type))
+                          /= N_Function_Specification
+                        or else Ekind (Target_Type) in Anonymous_Access_Kind
+                        or else No_Dynamic_Accessibility_Checks_Enabled (N))
 
               --  Check we are not in a return value ???
 
@@ -13952,7 +14062,7 @@ package body Sem_Res is
       then
          Conversion_Error_N ("target type must be general access type!", N);
          Conversion_Error_NE -- CODEFIX
-            ("add ALL to }!", N, Target_Type);
+            ("\add ALL to }!", N, Target_Type);
          return False;
 
       --  Here we have a real conversion error

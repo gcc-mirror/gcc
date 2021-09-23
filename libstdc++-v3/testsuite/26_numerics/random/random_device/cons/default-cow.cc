@@ -1,6 +1,5 @@
 // { dg-options "-D_GLIBCXX_USE_CXX11_ABI=0" }
 // { dg-do run { target c++11 } }
-// { dg-require-effective-target random_device }
 // { dg-require-cstdint "" }
 //
 // Copyright (C) 2019-2021 Free Software Foundation, Inc.

@@ -20,8 +20,10 @@
 // { dg-do compile }
 
 #include <string>
+#include <debug/string>
 
 void f()
 {
   std::string s(10, 1);
+  __gnu_debug::string ds(10, 1);
 }

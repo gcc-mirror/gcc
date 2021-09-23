@@ -299,7 +299,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     virtual ~underflow_error() _GLIBCXX_NOTHROW;
   };
 
-  // @} group exceptions
+  /// @} group exceptions
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

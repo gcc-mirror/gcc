@@ -2600,9 +2600,11 @@ diagnostic_show_locus (diagnostic_context * context,
     return;
 
   /* Don't print the same source location twice in a row, unless we have
-     fix-it hints.  */
+     fix-it hints, or multiple locations, or a label.  */
   if (loc == context->last_location
-      && richloc->get_num_fixit_hints () == 0)
+      && richloc->get_num_fixit_hints () == 0
+      && richloc->get_num_locations () == 1
+      && richloc->get_range (0)->m_label == NULL)
     return;
 
   context->last_location = loc;

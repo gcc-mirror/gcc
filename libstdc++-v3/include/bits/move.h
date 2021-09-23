@@ -72,6 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  This function is used to implement "perfect forwarding".
    */
   template<typename _Tp>
+    _GLIBCXX_NODISCARD
     constexpr _Tp&&
     forward(typename std::remove_reference<_Tp>::type& __t) noexcept
     { return static_cast<_Tp&&>(__t); }
@@ -83,11 +84,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  This function is used to implement "perfect forwarding".
    */
   template<typename _Tp>
+    _GLIBCXX_NODISCARD
     constexpr _Tp&&
     forward(typename std::remove_reference<_Tp>::type&& __t) noexcept
     {
       static_assert(!std::is_lvalue_reference<_Tp>::value, "template argument"
-		    " substituting _Tp is an lvalue reference type");
+		    " substituting _Tp must not be an lvalue reference type");
       return static_cast<_Tp&&>(__t);
     }
 
@@ -97,6 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return The parameter cast to an rvalue-reference to allow moving it.
   */
   template<typename _Tp>
+    _GLIBCXX_NODISCARD
     constexpr typename std::remove_reference<_Tp>::type&&
     move(_Tp&& __t) noexcept
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
@@ -116,6 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  type is copyable, in which case an lvalue-reference is returned instead.
    */
   template<typename _Tp>
+    _GLIBCXX_NODISCARD
     constexpr typename
     conditional<__move_if_noexcept_cond<_Tp>::value, const _Tp&, _Tp&&>::type
     move_if_noexcept(_Tp& __x) noexcept
@@ -136,6 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return   The actual address.
   */
   template<typename _Tp>
+    _GLIBCXX_NODISCARD
     inline _GLIBCXX17_CONSTEXPR _Tp*
     addressof(_Tp& __r) noexcept
     { return std::__addressof(__r); }

@@ -16,8 +16,7 @@ void f1(void)
 
 void f2(void)
 {
-  label:       /* { dg-error "label at end of compound statement" } */
-    /* { dg-warning "defined but not used" "" { target *-*-* } .-1 } */
+  label:			/* { dg-warning "defined but not used" } */
     #pragma omp barrier		/* { dg-error "may only be used in compound statements" } */
 }
 

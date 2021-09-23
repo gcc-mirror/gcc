@@ -30,7 +30,7 @@ void vla_bounded (int n)
   a[0] = 0;
   a[1] = 1;
   a[n] = n;         // { dg-warning "\\\[-Wstringop-overflow" "pr82608" { xfail *-*-* } }
-  a[69] = n;        // { dg-warning "\\\[-Wstringop-overflow" "pr82608" { xfail *-*-* } }
+  a[69] = n;        // { dg-warning "\\\[-Wstringop-overflow" "pr82608" }
 
   sink (&a);
 }

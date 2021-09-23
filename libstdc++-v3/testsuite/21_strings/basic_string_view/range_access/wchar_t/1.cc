@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
 // Copyright (C) 2013-2021 Free Software Foundation, Inc.
@@ -26,10 +25,10 @@ void
 test01()
 {
   std::wstring_view ws(L"Hello, World!");
-  std::begin(ws);
-  std::end(ws);
-  std::rbegin(ws);
-  std::rend(ws);
+  (void) std::begin(ws);
+  (void) std::end(ws);
+  (void) std::rbegin(ws);
+  (void) std::rend(ws);
 }
 
 void

@@ -25,6 +25,6 @@ void
 test01()
 {
   std::multimap<int, double> mm{{1, 1.0}, {2, 2.0}, {3, 3.0}};
-  std::begin(mm);
-  std::end(mm);
+  (void) std::begin(mm);
+  (void) std::end(mm);
 }

@@ -208,6 +208,8 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
+  global_dc->caret_max_width = 80;
+
   pass_info.pass = new pass_test_string_literals (g);
   pass_info.reference_pass_name = "ssa";
   pass_info.ref_pass_instance_number = 1;

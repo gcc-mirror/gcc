@@ -40,11 +40,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     streamsize
     __copy_streambufs(basic_streambuf<char>*, basic_streambuf<char>*);
 
-  template
-    streamsize
-    __copy_streambufs_eof(basic_streambuf<char>*,
-			  basic_streambuf<char>*, bool&);
-
 #ifdef _GLIBCXX_USE_WCHAR_T
   // wstreambuf
   template class basic_streambuf<wchar_t>;
@@ -52,11 +47,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template
     streamsize
     __copy_streambufs(basic_streambuf<wchar_t>*, basic_streambuf<wchar_t>*);
-
-  template
-    streamsize
-    __copy_streambufs_eof(basic_streambuf<wchar_t>*,
-			  basic_streambuf<wchar_t>*, bool&);
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

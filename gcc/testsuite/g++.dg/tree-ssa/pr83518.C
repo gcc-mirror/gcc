@@ -24,4 +24,4 @@ unsigned test()
   return sum;
 }
 
-/* { dg-final { scan-tree-dump "return 15;" "optimized" } } */
+/* { dg-final { scan-tree-dump "return 15;" "optimized" { xfail vect_variable_length } } } */

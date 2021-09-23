@@ -369,11 +369,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT			char_type;
       typedef _InIter			iter_type;
-      //@}
+      ///@}
 
       /// Numpunct facet id.
       static locale::id			id;
@@ -798,11 +798,11 @@ _GLIBCXX_END_NAMESPACE_CXX11
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT			char_type;
       typedef _OutIter			iter_type;
-      //@}
+      ///@}
 
       /// Numpunct facet id.
       static locale::id			id;
@@ -1025,11 +1025,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT			char_type;
       typedef basic_string<_CharT>	string_type;
-      //@}
+      ///@}
       typedef __moneypunct_cache<_CharT, _Intl>     __cache_type;
 
     private:
@@ -1201,7 +1201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       frac_digits() const
       { return this->do_frac_digits(); }
 
-      //@{
+      ///@{
       /**
        *  @brief  Return pattern for money values.
        *
@@ -1240,7 +1240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       pattern
       neg_format() const
       { return this->do_neg_format(); }
-      //@}
+      ///@}
 
     protected:
       /// Destructor.
@@ -1469,12 +1469,12 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT			char_type;
       typedef _InIter			iter_type;
       typedef basic_string<_CharT>	string_type;
-      //@}
+      ///@}
 
       /// Numpunct facet id.
       static locale::id			id;
@@ -1629,12 +1629,12 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
     class money_put : public locale::facet
     {
     public:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT			char_type;
       typedef _OutIter			iter_type;
       typedef basic_string<_CharT>	string_type;
-      //@}
+      ///@}
 
       /// Numpunct facet id.
       static locale::id			id;
@@ -1816,11 +1816,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT			char_type;
       typedef basic_string<_CharT>	string_type;
-      //@}
+      ///@}
 
     protected:
       // Underlying "C" library locale information saved from

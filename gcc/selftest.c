@@ -150,8 +150,7 @@ assert_str_startswith (const location &loc,
 		    "ASSERT_STR_STARTSWITH (%s, %s) str=\"%s\" prefix=NULL",
 		    desc_str, desc_prefix, val_str);
 
-  const char *test = strstr (val_str, val_prefix);
-  if (test == val_str)
+  if (startswith (val_str, val_prefix))
     pass (loc, "ASSERT_STR_STARTSWITH");
   else
     fail_formatted

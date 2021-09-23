@@ -1,6 +1,12 @@
 ! { dg-do run }
 ! { dg-skip-if "" { *-*-* } { "-DACC_MEM_SHARED=1" } }
 
+! { dg-additional-options "-fopt-info-all-omp" }
+! { dg-additional-options "--param=openacc-privatization=noisy" }
+! { dg-additional-options "-foffload=-fopt-info-all-omp" }
+! { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
+! for testing/documenting aspects of that functionality.
+
 ! Tests to exercise the declare directive along with
 ! the clauses: copy
 !              copyin
@@ -34,6 +40,7 @@ subroutine subr5 (a, b, c, d)
   i = 0
 
   !$acc parallel
+  ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
     do i = 1, N
       b(i) = a(i)
       c(i) = b(i)
@@ -55,6 +62,7 @@ subroutine subr4 (a, b)
   i = 0
 
   !$acc parallel
+  ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
   do i = 1, N
     b(i) = a(i)
   end do
@@ -74,6 +82,7 @@ subroutine subr3 (a, c)
   i = 0
 
   !$acc parallel
+  ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
   do i = 1, N
     a(i) = c(i)
     c(i) = 0
@@ -96,6 +105,7 @@ subroutine subr2 (a, b, c)
   i = 0
 
   !$acc parallel
+  ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
   do i = 1, N
     b(i) = a(i)
     c(i) = b(i) + c(i) + 1
@@ -114,6 +124,7 @@ subroutine subr1 (a)
   i = 0
 
   !$acc parallel
+  ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
   do i = 1, N
     a(i) = a(i) + 1
   end do
@@ -133,6 +144,9 @@ subroutine test (a, e)
 end subroutine
 
 subroutine subr0 (a, b, c, d)
+  ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { target *-*-* } .-1 }
+  ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
+  ! { dg-note {variable 'a\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
   implicit none
   integer, parameter :: N = 8
   integer :: a(N)
@@ -198,6 +212,10 @@ subroutine subr0 (a, b, c, d)
 end subroutine
 
 program main
+  ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { target *-*-* } .-1 }
+  ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
+  ! { dg-note {variable 'S\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
+  ! { dg-note {variable 'desc\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-4 }
   use vars
   use openacc
   implicit none

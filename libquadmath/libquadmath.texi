@@ -309,7 +309,7 @@ the format.
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{s}    @tab output string
-@item @var{size} @tab byte size of the string, including tailing NUL
+@item @var{size} @tab byte size of the string, including trailing NUL
 @item @var{format} @tab conversion specifier string
 @end multitable
 

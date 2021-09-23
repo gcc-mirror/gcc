@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2020, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2021, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -208,7 +208,7 @@ package body Monotonic is
                      exit Inner;
 
                   when others =>
-                     pragma Assert (False);
+                     pragma Assert (Standard.False);
 
                end case;
 
@@ -292,7 +292,7 @@ package body Monotonic is
                   when 0 | EINTR => null;
 
                   when others =>
-                     pragma Assert (False);
+                     pragma Assert (Standard.False);
 
                end case;
 

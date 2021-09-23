@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,35 +23,39 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Exp_Atag; use Exp_Atag;
-with Exp_Strm; use Exp_Strm;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Lib;      use Lib;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Dist; use Sem_Dist;
-with Sem_Eval; use Sem_Eval;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Exp_Atag;       use Exp_Atag;
+with Exp_Strm;       use Exp_Strm;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Lib;            use Lib;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Uintp;          use Uintp;
 
-with GNAT.HTable; use GNAT.HTable;
+with GNAT.HTable;    use GNAT.HTable;
 
 package body Exp_Dist is
 
@@ -1420,6 +1424,7 @@ package body Exp_Dist is
               and then Chars (Current_Primitive) /= Name_uAlignment
               and then not
                 (Is_TSS (Current_Primitive, TSS_Deep_Finalize) or else
+                 Is_TSS (Current_Primitive, TSS_Put_Image)     or else
                  Is_TSS (Current_Primitive, TSS_Stream_Input)  or else
                  Is_TSS (Current_Primitive, TSS_Stream_Output) or else
                  Is_TSS (Current_Primitive, TSS_Stream_Read)   or else
@@ -1728,7 +1733,7 @@ package body Exp_Dist is
                New_Occurrence_Of (
                  Entity (Result_Definition (Spec)), Loc));
 
-         Set_Ekind (Proc, E_Function);
+         Mutate_Ekind (Proc, E_Function);
          Set_Etype (Proc,
            New_Occurrence_Of (Entity (Result_Definition (Spec)), Loc));
 
@@ -1738,7 +1743,7 @@ package body Exp_Dist is
              Defining_Unit_Name       => Proc,
              Parameter_Specifications => Param_Specs);
 
-         Set_Ekind (Proc, E_Procedure);
+         Mutate_Ekind (Proc, E_Procedure);
          Set_Etype (Proc, Standard_Void_Type);
       end if;
 
@@ -1975,7 +1980,7 @@ package body Exp_Dist is
 
       Existing := False;
       Stub_Type := Make_Temporary (Loc, 'S');
-      Set_Ekind (Stub_Type, E_Record_Type);
+      Mutate_Ekind (Stub_Type, E_Record_Type);
       Set_Is_RACW_Stub_Type (Stub_Type);
       Stub_Type_Access :=
         Make_Defining_Identifier (Loc,
@@ -2165,7 +2170,7 @@ package body Exp_Dist is
                    Object_Definition   =>
                      New_Occurrence_Of
                        (Defining_Identifier (Last (Decls)), Loc)));
-               Set_Ekind (Object, E_Variable);
+               Mutate_Ekind (Object, E_Variable);
 
                --  Suppress default initialization:
                --  pragma Import (Ada, Object);
@@ -2209,9 +2214,9 @@ package body Exp_Dist is
              Expression          => Expr));
 
          if Constant_Present (Last (Decls)) then
-            Set_Ekind (Object, E_Constant);
+            Mutate_Ekind (Object, E_Constant);
          else
-            Set_Ekind (Object, E_Variable);
+            Mutate_Ekind (Object, E_Variable);
          end if;
       end if;
    end Build_Actual_Object_Declaration;
@@ -2855,9 +2860,9 @@ package body Exp_Dist is
       if E_Calling_Stubs = Empty then
          RCI_Locator := RCI_Locator_Table.Get (RCI_Package);
 
-         --  The RCI_Locator package and calling stub are is inserted at the
-         --  top level in the current unit, and must appear in the proper scope
-         --  so that it is not prematurely removed by the GCC back end.
+         --  The RCI_Locator package and calling stub are inserted at the top
+         --  level in the current unit, and must appear in the proper scope so
+         --  that it is not prematurely removed by the GCC back end.
 
          declare
             Scop : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
@@ -3723,7 +3728,7 @@ package body Exp_Dist is
          --  Set the kind and return type of the function to prevent
          --  ambiguities between Ras_Type and Fat_Type in subsequent analysis.
 
-         Set_Ekind (Proc, E_Function);
+         Mutate_Ekind (Proc, E_Function);
          Set_Etype (Proc, Fat_Type);
 
          Discard_Node (
@@ -6468,7 +6473,7 @@ package body Exp_Dist is
          --  Set the kind and return type of the function to prevent
          --  ambiguities between Ras_Type and Fat_Type in subsequent analysis.
 
-         Set_Ekind (Proc, E_Function);
+         Mutate_Ekind (Proc, E_Function);
          Set_Etype (Proc, Fat_Type);
 
          Discard_Node (
@@ -8261,7 +8266,7 @@ package body Exp_Dist is
             with procedure Add_Process_Element
               (Stmts     : List_Id;
                Container : Node_Or_Entity_Id;
-               Counter   : in out Int;
+               Counter   : in out Nat;
                Rec       : Entity_Id;
                Field     : Node_Id);
             --  Rec is the instance of the record type, or Empty.
@@ -8272,7 +8277,7 @@ package body Exp_Dist is
            (Stmts     : List_Id;
             Clist     : Node_Id;
             Container : Node_Or_Entity_Id;
-            Counter   : in out Int);
+            Counter   : in out Nat);
          --  Process component list Clist. Individual fields are passed
          --  to Field_Processing. Each variant part is also processed.
          --  Container is the outer Any (for From_Any/To_Any),
@@ -8286,7 +8291,7 @@ package body Exp_Dist is
            (Stmts     : List_Id;
             Clist     : Node_Id;
             Container : Node_Or_Entity_Id;
-            Counter   : in out Int)
+            Counter   : in out Nat)
          is
             CI : List_Id;
             VP : Node_Id;
@@ -8444,9 +8449,9 @@ package body Exp_Dist is
          is
             Loc : constant Source_Ptr := Sloc (N);
 
-            U_Type : Entity_Id  := Underlying_Type (Typ);
+            U_Type : Entity_Id := Underlying_Type (Typ);
 
-            Fnam    : Entity_Id := Empty;
+            Fnam    : Entity_Id;
             Lib_RE  : RE_Id := RE_Null;
             Result  : Node_Id;
 
@@ -8516,7 +8521,7 @@ package body Exp_Dist is
             --  Integer types
 
             elsif U_Type = RTE (RE_Integer_8) then
-                  Lib_RE := RE_FA_I8;
+               Lib_RE := RE_FA_I8;
 
             elsif U_Type = RTE (RE_Integer_16) then
                Lib_RE := RE_FA_I16;
@@ -8674,7 +8679,7 @@ package body Exp_Dist is
                      Rdef                      : constant Node_Id :=
                                                    Type_Definition
                                                      (Declaration_Node (Typ));
-                     Component_Counter         : Int := 0;
+                     Component_Counter         : Nat := 0;
 
                      --  The returned object
 
@@ -8685,7 +8690,7 @@ package body Exp_Dist is
                      procedure FA_Rec_Add_Process_Element
                        (Stmts   : List_Id;
                         Any     : Entity_Id;
-                        Counter : in out Int;
+                        Counter : in out Nat;
                         Rec     : Entity_Id;
                         Field   : Node_Id);
 
@@ -8701,7 +8706,7 @@ package body Exp_Dist is
                      procedure FA_Rec_Add_Process_Element
                        (Stmts   : List_Id;
                         Any     : Entity_Id;
-                        Counter : in out Int;
+                        Counter : in out Nat;
                         Rec     : Entity_Id;
                         Field   : Node_Id)
                      is
@@ -8735,7 +8740,7 @@ package body Exp_Dist is
 
                            declare
                               Variant        : Node_Id;
-                              Struct_Counter : Int := 0;
+                              Struct_Counter : Nat := 0;
 
                               Block_Decls : constant List_Id := New_List;
                               Block_Stmts : constant List_Id := New_List;
@@ -9243,7 +9248,7 @@ package body Exp_Dist is
             Typ    : Entity_Id := Etype (N);
             U_Type : Entity_Id;
             C_Type : Entity_Id;
-            Fnam   : Entity_Id := Empty;
+            Fnam   : Entity_Id;
             Lib_RE : RE_Id := RE_Null;
 
          begin
@@ -9540,13 +9545,13 @@ package body Exp_Dist is
                      Disc     : Entity_Id := Empty;
                      Rdef     : constant Node_Id :=
                                   Type_Definition (Declaration_Node (Typ));
-                     Counter  : Int := 0;
+                     Counter  : Nat := 0;
                      Elements : constant List_Id := New_List;
 
                      procedure TA_Rec_Add_Process_Element
                        (Stmts     : List_Id;
                         Container : Node_Or_Entity_Id;
-                        Counter   : in out Int;
+                        Counter   : in out Nat;
                         Rec       : Entity_Id;
                         Field     : Node_Id);
                      --  Processing routine for traversal below
@@ -9563,7 +9568,7 @@ package body Exp_Dist is
                      procedure TA_Rec_Add_Process_Element
                        (Stmts     : List_Id;
                         Container : Node_Or_Entity_Id;
-                        Counter   : in out Int;
+                        Counter   : in out Nat;
                         Rec       : Entity_Id;
                         Field     : Node_Id)
                      is
@@ -9593,7 +9598,7 @@ package body Exp_Dist is
 
                            Variant_Part : declare
                               Variant        : Node_Id;
-                              Struct_Counter : Int := 0;
+                              Struct_Counter : Nat := 0;
 
                               Block_Decls : constant List_Id := New_List;
                               Block_Stmts : constant List_Id := New_List;
@@ -10101,7 +10106,7 @@ package body Exp_Dist is
             --  The full view, if Typ is private; the completion,
             --  if Typ is incomplete.
 
-            Fnam   : Entity_Id := Empty;
+            Fnam   : Entity_Id;
             Lib_RE : RE_Id := RE_Null;
             Expr   : Node_Id;
 
@@ -10396,7 +10401,7 @@ package body Exp_Dist is
             procedure TC_Rec_Add_Process_Element
               (Params  : List_Id;
                Any     : Entity_Id;
-               Counter : in out Int;
+               Counter : in out Nat;
                Rec     : Entity_Id;
                Field   : Node_Id);
 
@@ -10412,7 +10417,7 @@ package body Exp_Dist is
             procedure TC_Rec_Add_Process_Element
               (Params  : List_Id;
                Any     : Entity_Id;
-               Counter : in out Int;
+               Counter : in out Nat;
                Rec     : Entity_Id;
                Field   : Node_Id)
             is
@@ -10451,7 +10456,7 @@ package body Exp_Dist is
                      Default : constant Node_Id :=
                                  Make_Integer_Literal (Loc, -1);
 
-                     Dummy_Counter : Int := 0;
+                     Dummy_Counter : Nat := 0;
 
                      Choice_Index : Int := 0;
                      --  Index of current choice in TypeCode, used to identify
@@ -10902,8 +10907,8 @@ package body Exp_Dist is
                raise Program_Error;
             end if;
 
-            --  TBD: fixed point types???
-            --  TBverified numeric types with a biased representation???
+            --  What about fixed point types and numeric types with a biased
+            --  representation???
 
          end Find_Numeric_Representation;
 
@@ -11344,10 +11349,10 @@ package body Exp_Dist is
 
    begin
       if Nkind (Spec) = N_Function_Specification then
-         Set_Ekind (Snam, E_Function);
+         Mutate_Ekind (Snam, E_Function);
          Set_Etype (Snam, Entity (Result_Definition (Spec)));
       else
-         Set_Ekind (Snam, E_Procedure);
+         Mutate_Ekind (Snam, E_Procedure);
          Set_Etype (Snam, Standard_Void_Type);
       end if;
 

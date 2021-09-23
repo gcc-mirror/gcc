@@ -128,8 +128,9 @@ am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
 	sanitizer_file.lo sanitizer_flags.lo sanitizer_flag_parser.lo \
 	sanitizer_libc.lo sanitizer_libignore.lo sanitizer_linux.lo \
 	sanitizer_linux_libcdep.lo sanitizer_linux_s390.lo \
-	sanitizer_mac.lo sanitizer_mac_libcdep.lo sanitizer_netbsd.lo \
-	sanitizer_openbsd.lo sanitizer_persistent_allocator.lo \
+	sanitizer_mac.lo sanitizer_mac_libcdep.lo sanitizer_mutex.lo \
+	sanitizer_netbsd.lo sanitizer_openbsd.lo \
+	sanitizer_persistent_allocator.lo \
 	sanitizer_platform_limits_freebsd.lo \
 	sanitizer_platform_limits_linux.lo \
 	sanitizer_platform_limits_openbsd.lo \
@@ -138,11 +139,11 @@ am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
 	sanitizer_posix_libcdep.lo sanitizer_printf.lo \
 	sanitizer_procmaps_bsd.lo sanitizer_procmaps_common.lo \
 	sanitizer_procmaps_linux.lo sanitizer_procmaps_mac.lo \
-	sanitizer_procmaps_solaris.lo sanitizer_rtems.lo \
-	sanitizer_solaris.lo sanitizer_stackdepot.lo \
-	sanitizer_stacktrace.lo sanitizer_stacktrace_libcdep.lo \
-	sanitizer_stacktrace_sparc.lo sanitizer_symbolizer_mac.lo \
-	sanitizer_symbolizer_report.lo sanitizer_stacktrace_printer.lo \
+	sanitizer_procmaps_solaris.lo sanitizer_solaris.lo \
+	sanitizer_stackdepot.lo sanitizer_stacktrace.lo \
+	sanitizer_stacktrace_libcdep.lo sanitizer_stacktrace_sparc.lo \
+	sanitizer_symbolizer_mac.lo sanitizer_symbolizer_report.lo \
+	sanitizer_stacktrace_printer.lo \
 	sanitizer_stoptheworld_linux_libcdep.lo \
 	sanitizer_stoptheworld_mac.lo sanitizer_suppressions.lo \
 	sanitizer_symbolizer.lo sanitizer_symbolizer_libbacktrace.lo \
@@ -400,6 +401,7 @@ sanitizer_common_files = \
 	sanitizer_linux_s390.cpp \
 	sanitizer_mac.cpp \
 	sanitizer_mac_libcdep.cpp \
+	sanitizer_mutex.cpp \
 	sanitizer_netbsd.cpp \
 	sanitizer_openbsd.cpp \
 	sanitizer_persistent_allocator.cpp \
@@ -416,7 +418,6 @@ sanitizer_common_files = \
 	sanitizer_procmaps_linux.cpp \
 	sanitizer_procmaps_mac.cpp \
 	sanitizer_procmaps_solaris.cpp \
-	sanitizer_rtems.cpp \
 	sanitizer_solaris.cpp \
 	sanitizer_stackdepot.cpp \
 	sanitizer_stacktrace.cpp \
@@ -557,6 +558,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux_s390.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_mac_libcdep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_mutex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_netbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_openbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_persistent_allocator.Plo@am__quote@
@@ -573,7 +575,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_solaris.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_rtems.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_solaris.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stackdepot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace.Plo@am__quote@

@@ -1280,6 +1280,8 @@ subvalues (struct entry *e, char *p, char *letter)
       if (e[0].len != 0)
 	output_FNB ('B', e);
       return 1;
+    default:
+      return 0;
     }
 }
 

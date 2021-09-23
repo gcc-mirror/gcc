@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,12 +31,12 @@
 
 package body System.Fore_Real is
 
-   ---------------
-   -- Fore_Real --
-   ---------------
+   ----------------
+   -- Fore_Fixed --
+   ----------------
 
-   function Fore_Real (Lo, Hi : Long_Long_Float) return Natural is
-      T : Long_Long_Float := Long_Long_Float'Max (abs Lo, abs Hi);
+   function Fore_Fixed (Lo, Hi : Long_Float) return Natural is
+      T : Long_Float := Long_Float'Max (abs Lo, abs Hi);
       F : Natural;
 
    begin
@@ -52,6 +52,6 @@ package body System.Fore_Real is
       end loop;
 
       return F;
-   end Fore_Real;
+   end Fore_Fixed;
 
 end System.Fore_Real;

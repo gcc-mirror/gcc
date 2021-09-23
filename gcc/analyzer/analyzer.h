@@ -46,11 +46,14 @@ class svalue;
   class unaryop_svalue;
   class binop_svalue;
   class sub_svalue;
+  class repeated_svalue;
+  class bits_within_svalue;
   class unmergeable_svalue;
   class placeholder_svalue;
   class widening_svalue;
   class compound_svalue;
   class conjured_svalue;
+  class asm_output_svalue;
 typedef hash_set<const svalue *> svalue_set;
 class region;
   class frame_region;
@@ -60,6 +63,7 @@ class region;
   class symbolic_region;
   class element_region;
   class offset_region;
+  class sized_region;
   class cast_region;
   class field_region;
   class string_region;
@@ -71,9 +75,12 @@ class region_model;
 class region_model_context;
   class impl_region_model_context;
 class call_details;
-struct rejected_constraint;
+class rejected_constraint;
 class constraint_manager;
 class equiv_class;
+class reachable_regions;
+class bounded_ranges;
+class bounded_ranges_manager;
 
 class pending_diagnostic;
 class state_change_event;
@@ -108,6 +115,8 @@ extern void dump_quoted_tree (pretty_printer *pp, tree t);
 extern void print_quoted_type (pretty_printer *pp, tree t);
 extern int readability_comparator (const void *p1, const void *p2);
 extern int tree_cmp (const void *p1, const void *p2);
+extern tree fixup_tree_for_diagnostic (tree);
+extern tree get_diagnostic_tree_for_gassign (const gassign *);
 
 /* A tree, extended with stack frame information for locals, so that
    we can distinguish between different values of locals within a potentially
@@ -141,7 +150,12 @@ public:
 
 typedef offset_int bit_offset_t;
 typedef offset_int bit_size_t;
+typedef offset_int byte_offset_t;
 typedef offset_int byte_size_t;
+
+extern bool int_size_in_bits (const_tree type, bit_size_t *out);
+
+extern tree get_field_at_bit_offset (tree record_type, bit_offset_t bit_offset);
 
 /* The location of a region expressesd as an offset relative to a
    base region.  */
@@ -189,6 +203,8 @@ private:
 
 extern location_t get_stmt_location (const gimple *stmt, function *fun);
 
+extern bool compat_types_p (tree src_type, tree dst_type);
+
 /* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */
 
 class plugin_analyzer_init_iface
@@ -198,15 +214,74 @@ public:
   virtual logger *get_logger () const = 0;
 };
 
+/* An enum for describing the direction of an access to memory.  */
+
+enum access_direction
+{
+  DIR_READ,
+  DIR_WRITE
+};
+
+/* Abstract base class for associating custom data with an
+   exploded_edge, for handling non-standard edges such as
+   rewinding from a longjmp, signal handlers, etc.
+   Also used when "bifurcating" state: splitting the execution
+   path in non-standard ways (e.g. for simulating the various
+   outcomes of "realloc").  */
+
+class custom_edge_info
+{
+public:
+  virtual ~custom_edge_info () {}
+
+  /* Hook for making .dot label more readable.  */
+  virtual void print (pretty_printer *pp) const = 0;
+
+  /* Hook for updating MODEL within exploded_path::feasible_p
+     and when handling bifurcation.  */
+  virtual bool update_model (region_model *model,
+			     const exploded_edge *eedge,
+			     region_model_context *ctxt) const = 0;
+
+  virtual void add_events_to_path (checker_path *emission_path,
+				   const exploded_edge &eedge) const = 0;
+};
+
+/* Abstract base class for splitting state.
+
+   Most of the state-management code in the analyzer involves
+   modifying state objects in-place, which assumes a single outcome.
+
+   This class provides an escape hatch to allow for multiple outcomes
+   for such updates e.g. for modelling multiple outcomes from function
+   calls, such as the various outcomes of "realloc".  */
+
+class path_context
+{
+public:
+  virtual ~path_context () {}
+
+  /* Hook for clients to split state with a non-standard path.
+     Take ownership of INFO.  */
+  virtual void bifurcate (custom_edge_info *info) = 0;
+
+  /* Hook for clients to terminate the standard path.  */
+  virtual void terminate_path () = 0;
+
+  /* Hook for clients to determine if the standard path has been
+     terminated.  */
+  virtual bool terminate_path_p () const = 0;
+};
+
 } // namespace ana
 
 extern bool is_special_named_call_p (const gcall *call, const char *funcname,
 				     unsigned int num_args);
-extern bool is_named_call_p (tree fndecl, const char *funcname);
-extern bool is_named_call_p (tree fndecl, const char *funcname,
+extern bool is_named_call_p (const_tree fndecl, const char *funcname);
+extern bool is_named_call_p (const_tree fndecl, const char *funcname,
 			     const gcall *call, unsigned int num_args);
-extern bool is_std_named_call_p (tree fndecl, const char *funcname);
-extern bool is_std_named_call_p (tree fndecl, const char *funcname,
+extern bool is_std_named_call_p (const_tree fndecl, const char *funcname);
+extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
 				 const gcall *call, unsigned int num_args);
 extern bool is_setjmp_call_p (const gcall *call);
 extern bool is_longjmp_call_p (const gcall *call);

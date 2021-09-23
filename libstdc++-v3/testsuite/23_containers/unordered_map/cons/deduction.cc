@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
 #include <unordered_map>
@@ -25,7 +24,13 @@ static_assert(std::is_same_v<
 static_assert(std::is_same_v<
 	      decltype(std::unordered_map{{std::pair{1, 2.0},
 		      {2, 3.0}, {3, 4.0}},
-		    {}, std::hash<int>{}, {}}),
+		    {}, std::hash<int>{}, std::equal_to<int>{}}),
+	      std::unordered_map<int, double>>);
+
+static_assert(std::is_same_v<
+	      decltype(std::unordered_map{{std::pair{1, 2.0},
+		      {2, 3.0}, {3, 4.0}},
+		    {}, std::hash<int>{}, std::allocator<std::pair<const int, double>>{}}),
 	      std::unordered_map<int, double>>);
 
 static_assert(std::is_same_v<
@@ -60,9 +65,14 @@ void f()
 
   static_assert(std::is_same_v<
 		decltype(std::unordered_map{x.begin(), x.end(),
-		      {}, std::hash<int>{}, {}}),
+		      {}, std::hash<int>{}, std::equal_to<int>{}}),
 		std::unordered_map<int, double>>);
-  
+
+  static_assert(std::is_same_v<
+		decltype(std::unordered_map{x.begin(), x.end(),
+		      {}, std::hash<int>{}, std::allocator<std::pair<const int, double>>{}}),
+		std::unordered_map<int, double>>);
+
   static_assert(std::is_same_v<
 		decltype(std::unordered_map(x.begin(), x.end(),
 		      {})),

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1133,11 +1133,12 @@ package body Namet is
           Name_Len              => Short (Buf.Length),
           Byte_Info             => 0,
           Int_Info              => 0,
+          Hash_Link             => No_Name,
+          Name_Has_No_Encodings => False,
           Boolean1_Info         => False,
           Boolean2_Info         => False,
           Boolean3_Info         => False,
-          Name_Has_No_Encodings => False,
-          Hash_Link             => No_Name));
+          Spare                 => False));
 
       --  Set corresponding string entry in the Name_Chars table
 
@@ -1239,12 +1240,13 @@ package body Namet is
            ((Name_Chars_Index      => Name_Chars.Last,
              Name_Len              => Short (Buf.Length),
              Hash_Link             => No_Name,
-             Name_Has_No_Encodings => False,
              Int_Info              => 0,
              Byte_Info             => 0,
+             Name_Has_No_Encodings => False,
              Boolean1_Info         => False,
              Boolean2_Info         => False,
-             Boolean3_Info         => False));
+             Boolean3_Info         => False,
+             Spare                 => False));
 
          --  Set corresponding string entry in the Name_Chars table
 
@@ -1324,11 +1326,12 @@ package body Namet is
              Name_Len              => 1,
              Byte_Info             => 0,
              Int_Info              => 0,
+             Hash_Link             => No_Name,
+             Name_Has_No_Encodings => True,
              Boolean1_Info         => False,
              Boolean2_Info         => False,
              Boolean3_Info         => False,
-             Name_Has_No_Encodings => True,
-             Hash_Link             => No_Name));
+             Spare                 => False));
 
          Name_Chars.Append (C);
          Name_Chars.Append (ASCII.NUL);

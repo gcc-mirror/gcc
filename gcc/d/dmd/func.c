@@ -1473,7 +1473,8 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
     memset(&m, 0, sizeof(m));
     m.last = MATCHnomatch;
 
-    functionResolve(&m, s, loc, sc, tiargs, tthis, fargs);
+    const char *failMessage = NULL;
+    functionResolve(&m, s, loc, sc, tiargs, tthis, fargs, &failMessage);
 
     if (m.last > MATCHnomatch && m.lastf)
     {
@@ -1555,20 +1556,23 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
                     ::error(loc, "none of the overloads of `%s` are callable using a %sobject, candidates are:",
                         fd->ident->toChars(), thisBuf.peekChars());
                 else
-                    ::error(loc, "%smethod %s is not callable using a %sobject",
+                    ::error(loc, "%smethod `%s` is not callable using a %sobject",
                         funcBuf.peekChars(), fd->toPrettyChars(), thisBuf.peekChars());
             }
             else
             {
                 //printf("tf = %s, args = %s\n", tf->deco, (*fargs)[0]->type->deco);
                 if (hasOverloads)
-                    ::error(loc, "none of the overloads of `%s` are callable using argument types %s, candidates are:",
+                    ::error(loc, "none of the overloads of `%s` are callable using argument types `%s`, candidates are:",
                             fd->ident->toChars(), fargsBuf.peekChars());
                 else
-                    fd->error(loc, "%s%s is not callable using argument types %s",
-                        parametersTypeToChars(tf->parameterList),
-                        tf->modToChars(),
-                        fargsBuf.peekChars());
+                {
+                    fd->error(loc, "%s `%s%s%s` is not callable using argument types `%s`",
+                        fd->kind(), fd->toPrettyChars(), parametersTypeToChars(tf->parameterList),
+                        tf->modToChars(), fargsBuf.peekChars());
+                    if (failMessage)
+                        errorSupplemental(loc, failMessage);
+                }
             }
 
             // Display candidate functions

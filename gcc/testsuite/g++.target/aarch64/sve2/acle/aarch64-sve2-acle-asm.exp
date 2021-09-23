@@ -37,6 +37,10 @@ if { [check_effective_target_aarch64_sve2] } {
     set sve2_flags "-march=armv8.5-a+sve2"
 }
 
+# Turn off any codegen tweaks by default that may affect expected assembly.
+# Tests relying on those should turn them on explicitly.
+set sve2_flags "$sve2_flags -mtune=generic -moverride=tune=none"
+
 set gcc_subdir [string replace $subdir 0 2 gcc]
 lappend extra_flags "-fno-ipa-icf" "-I$srcdir/$gcc_subdir/../../sve/acle/asm"
 

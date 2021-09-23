@@ -202,9 +202,13 @@ namespace __gnu_debug
 	__iterator_value_type
       } _M_kind;
 
-      struct _Type
+      struct _Named
       {
 	const char*		_M_name;
+      };
+
+      struct _Type : _Named
+      {
 	const type_info*	_M_type;
       };
 
@@ -228,16 +232,14 @@ namespace __gnu_debug
 	_Instance _M_sequence;
 
 	// When _M_kind == __integer
-	struct
+	struct : _Named
 	{
-	  const char*		_M_name;
 	  long			_M_value;
 	} _M_integer;
 
 	// When _M_kind == __string
-	struct
+	struct : _Named
 	{
-	  const char*		_M_name;
 	  const char*		_M_value;
 	} _M_string;
 

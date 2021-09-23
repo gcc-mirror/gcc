@@ -68,6 +68,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define DWARF2_DEBUGGING_INFO 1
 
+/* All ELF targets can support CTF.  */
+
+#define CTF_DEBUGGING_INFO 1
+
+/* All ELF targets can support BTF.  */
+
+#define BTF_DEBUGGING_INFO 1
+
 /* The GNU tools operate better with dwarf2, and it is required by some
    psABI's.  Since we don't have any native tools to be compatible with,
    default to dwarf2.  */

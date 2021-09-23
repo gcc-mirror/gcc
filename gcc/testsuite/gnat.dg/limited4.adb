@@ -22,11 +22,12 @@ procedure Limited4 is
     Obj2 : Lim_Tagged'Class := Lim_Tagged'Class'(raise TBD_Error);
 
     --  b) initialization expression of a CW component_declaration
-
-    type Rec is record
-       Comp01 : Lim_Tagged'Class := (raise TBD_Error);
-       Comp02 : Lim_Tagged'Class := Lim_Tagged'Class'((raise TBD_Error));
-    end record;
+    --  ... is illegal: cannot have unconstrained components.
+    --
+    --  type Rec is record
+    --     Comp01 : Lim_Tagged'Class := (raise TBD_Error);
+    --     Comp02 : Lim_Tagged'Class := Lim_Tagged'Class'((raise TBD_Error));
+    --  end record;
 
     --  c) the expression of a record_component_association
 

@@ -9,9 +9,9 @@
 Ö
 ΄
 
-٩ /* { dg-error "not valid at the start of an identifier" } */
+٩
 A٩
 0º
 0٩
-๙ /* { dg-error "not valid at the start of an identifier" } */
+๙
 A๙

@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-additional-options "-O1" }
+// { dg-additional-options "-O1 -Wno-analyzer-use-of-uninitialized-value" }
 
 template <typename DV> DV
 vu (DV j4)

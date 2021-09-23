@@ -3,9 +3,9 @@
 // { dg-options "-fdump-tree-optimized" }
 // { dg-final { scan-tree-dump-times "sum_array \\(array\\)" 0 "optimized"} }
 
-import gcc.attribute;
+import gcc.attributes;
 
-@attribute("forceinline") int sum_array(int[] input);
+@attribute("always_inline") int sum_array(int[] input);
 
 int sum_array(int[] input)
 {

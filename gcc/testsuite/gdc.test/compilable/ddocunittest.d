@@ -357,6 +357,7 @@ auto redBlackTree(bool allowDuplicates, E)(E[] elems...)
 }
 /// ditto
 auto redBlackTree(alias less, E)(E[] elems...)
+if (__traits(compiles, (E a, E b) => mixin(less)))
 {
     return 3;
 }

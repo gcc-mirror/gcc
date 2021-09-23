@@ -29,6 +29,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "ssa.h"
 #include "memmodel.h"
 #include "tm_p.h"
 #include "expmed.h"
@@ -209,6 +210,10 @@ static enum aarch64_type_qualifiers
 aarch64_types_ternop_ssus_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_none };
 #define TYPES_TERNOP_SSUS (aarch64_types_ternop_ssus_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_ternop_suss_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned, qualifier_none, qualifier_none };
+#define TYPES_TERNOP_SUSS (aarch64_types_ternop_suss_qualifiers)
 
 
 static enum aarch64_type_qualifiers
@@ -589,7 +594,7 @@ enum aarch64_simd_type
 };
 #undef ENTRY
 
-struct aarch64_simd_type_info
+struct GTY(()) aarch64_simd_type_info
 {
   enum aarch64_simd_type type;
 
@@ -621,14 +626,14 @@ struct aarch64_simd_type_info
 
 #define ENTRY(E, M, Q, G)  \
   {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, E_##M##mode, qualifier_##Q},
-static struct aarch64_simd_type_info aarch64_simd_types [] = {
+static GTY(()) struct aarch64_simd_type_info aarch64_simd_types [] = {
 #include "aarch64-simd-builtin-types.def"
 };
 #undef ENTRY
 
-static tree aarch64_simd_intOI_type_node = NULL_TREE;
-static tree aarch64_simd_intCI_type_node = NULL_TREE;
-static tree aarch64_simd_intXI_type_node = NULL_TREE;
+static GTY(()) tree aarch64_simd_intOI_type_node = NULL_TREE;
+static GTY(()) tree aarch64_simd_intCI_type_node = NULL_TREE;
+static GTY(()) tree aarch64_simd_intXI_type_node = NULL_TREE;
 
 /* The user-visible __fp16 type, and a pointer to that type.  Used
    across the back-end.  */
@@ -906,14 +911,13 @@ aarch64_init_simd_builtin_scalar_types (void)
 					     "__builtin_aarch64_simd_udi");
 }
 
-/* Return a set of FLAG_* flags that describe what the function could do,
+/* Return a set of FLAG_* flags derived from FLAGS
+   that describe what a function with result MODE could do,
    taking the command-line flags into account.  */
 static unsigned int
-aarch64_call_properties (aarch64_simd_builtin_datum *d)
+aarch64_call_properties (unsigned int flags, machine_mode mode)
 {
-  unsigned int flags = d->flags;
-
-  if (!(flags & FLAG_AUTO_FP) && FLOAT_MODE_P (d->mode))
+  if (!(flags & FLAG_AUTO_FP) && FLOAT_MODE_P (mode))
     flags |= FLAG_FP;
 
   /* -fno-trapping-math means that we can assume any FP exceptions
@@ -924,12 +928,12 @@ aarch64_call_properties (aarch64_simd_builtin_datum *d)
   return flags;
 }
 
-/* Return true if calls to the function could modify some form of
-   global state.  */
+/* Return true if calls to a function with flags F and mode MODE
+   could modify some form of global state.  */
 static bool
-aarch64_modifies_global_state_p (aarch64_simd_builtin_datum *d)
+aarch64_modifies_global_state_p (unsigned int f, machine_mode mode)
 {
-  unsigned int flags = aarch64_call_properties (d);
+  unsigned int flags = aarch64_call_properties (f, mode);
 
   if (flags & FLAG_RAISE_FP_EXCEPTIONS)
     return true;
@@ -940,12 +944,12 @@ aarch64_modifies_global_state_p (aarch64_simd_builtin_datum *d)
   return flags & FLAG_WRITE_MEMORY;
 }
 
-/* Return true if calls to the function could read some form of
-   global state.  */
+/* Return true if calls to a function with flags F and mode MODE
+   could read some form of global state.  */
 static bool
-aarch64_reads_global_state_p (aarch64_simd_builtin_datum *d)
+aarch64_reads_global_state_p (unsigned int f, machine_mode mode)
 {
-  unsigned int flags = aarch64_call_properties (d);
+  unsigned int flags = aarch64_call_properties (f,  mode);
 
   if (flags & FLAG_READ_FPCR)
     return true;
@@ -953,11 +957,12 @@ aarch64_reads_global_state_p (aarch64_simd_builtin_datum *d)
   return flags & FLAG_READ_MEMORY;
 }
 
-/* Return true if calls to the function could raise a signal.  */
+/* Return true if calls to a function with flags F and mode MODE
+   could raise a signal.  */
 static bool
-aarch64_could_trap_p (aarch64_simd_builtin_datum *d)
+aarch64_could_trap_p (unsigned int f, machine_mode mode)
 {
-  unsigned int flags = aarch64_call_properties (d);
+  unsigned int flags = aarch64_call_properties (f, mode);
 
   if (flags & FLAG_RAISE_FP_EXCEPTIONS)
     return true;
@@ -975,21 +980,22 @@ aarch64_add_attribute (const char *name, tree attrs)
   return tree_cons (get_identifier (name), NULL_TREE, attrs);
 }
 
-/* Return the appropriate function attributes.  */
+/* Return the appropriate attributes for a function that has
+   flags F and mode MODE.  */
 static tree
-aarch64_get_attributes (aarch64_simd_builtin_datum *d)
+aarch64_get_attributes (unsigned int f, machine_mode mode)
 {
   tree attrs = NULL_TREE;
 
-  if (!aarch64_modifies_global_state_p (d))
+  if (!aarch64_modifies_global_state_p (f, mode))
     {
-      if (aarch64_reads_global_state_p (d))
+      if (aarch64_reads_global_state_p (f, mode))
 	attrs = aarch64_add_attribute ("pure", attrs);
       else
 	attrs = aarch64_add_attribute ("const", attrs);
     }
 
-  if (!flag_non_call_exceptions || !aarch64_could_trap_p (d))
+  if (!flag_non_call_exceptions || !aarch64_could_trap_p (f, mode))
     attrs = aarch64_add_attribute ("nothrow", attrs);
 
   return aarch64_add_attribute ("leaf", attrs);
@@ -1018,7 +1024,9 @@ aarch64_init_fcmla_laneq_builtins (void)
 	= aarch64_simd_builtin_std_type (SImode, qualifier_lane_pair_index);
       tree ftype = build_function_type_list (argtype, argtype, argtype,
 					     quadtype, lanetype, NULL_TREE);
-      tree fndecl = aarch64_general_add_builtin (d->name, ftype, d->fcode);
+      tree attrs = aarch64_get_attributes (FLAG_FP, d->mode);
+      tree fndecl
+	= aarch64_general_add_builtin (d->name, ftype, d->fcode, attrs);
 
       aarch64_builtin_decls[d->fcode] = fndecl;
     }
@@ -1148,7 +1156,7 @@ aarch64_init_simd_builtins (void)
 	snprintf (namebuf, sizeof (namebuf), "__builtin_aarch64_%s",
 		  d->name);
 
-      tree attrs = aarch64_get_attributes (d);
+      tree attrs = aarch64_get_attributes (d->flags, d->mode);
 
       fndecl = aarch64_general_add_builtin (namebuf, ftype, fcode, attrs);
       aarch64_builtin_decls[fcode] = fndecl;
@@ -1170,7 +1178,9 @@ aarch64_init_crc32_builtins ()
       tree argtype = aarch64_simd_builtin_std_type (d->mode,
 						    qualifier_unsigned);
       tree ftype = build_function_type_list (usi_type, usi_type, argtype, NULL_TREE);
-      tree fndecl = aarch64_general_add_builtin (d->name, ftype, d->fcode);
+      tree attrs = aarch64_get_attributes (FLAG_NONE, d->mode);
+      tree fndecl
+	= aarch64_general_add_builtin (d->name, ftype, d->fcode, attrs);
 
       aarch64_builtin_decls[d->fcode] = fndecl;
     }
@@ -1210,8 +1220,9 @@ aarch64_init_builtin_rsqrt (void)
   for (; bdd < bdd_end; bdd++)
   {
     ftype = build_function_type_list (bdd->type_node, bdd->type_node, NULL_TREE);
+    tree attrs = aarch64_get_attributes (FLAG_FP, TYPE_MODE (bdd->type_node));
     fndecl = aarch64_general_add_builtin (bdd->builtin_name,
-					  ftype, bdd->function_code);
+					  ftype, bdd->function_code, attrs);
     aarch64_builtin_decls[bdd->function_code] = fndecl;
   }
 }
@@ -1592,8 +1603,9 @@ constant_arg:
 	      if (!(*insn_data[icode].operand[opc].predicate)
 		  (op[opc], mode))
 	      {
-		error ("%Kargument %d must be a constant immediate",
-		       exp, opc + 1 - have_retval);
+		error_at (EXPR_LOCATION (exp),
+			  "argument %d must be a constant immediate",
+			  opc + 1 - have_retval);
 		return const0_rtx;
 	      }
 	      break;
@@ -1663,10 +1675,13 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
 				       / UINTVAL (elementsize),
 				      exp);
           else
-	    error ("%Klane index must be a constant immediate", exp);
+	    error_at (EXPR_LOCATION (exp),
+		      "lane index must be a constant immediate");
 	}
       else
-	error ("%Ktotal size and element size must be a non-zero constant immediate", exp);
+	error_at (EXPR_LOCATION (exp),
+		  "total size and element size must be a non-zero "
+		  "constant immediate");
       /* Don't generate any RTL.  */
       return const0_rtx;
     }
@@ -1822,7 +1837,8 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
   /* Validate that the lane index is a constant.  */
   if (!CONST_INT_P (lane_idx))
     {
-      error ("%Kargument %d must be a constant immediate", exp, 4);
+      error_at (EXPR_LOCATION (exp),
+		"argument %d must be a constant immediate", 4);
       return const0_rtx;
     }
 
@@ -1911,7 +1927,8 @@ aarch64_expand_builtin_tme (int fcode, tree exp, rtx target)
 	  emit_insn (GEN_FCN (CODE_FOR_tcancel) (op0));
 	else
 	  {
-	    error ("%Kargument must be a 16-bit constant immediate", exp);
+	    error_at (EXPR_LOCATION (exp),
+		      "argument must be a 16-bit constant immediate");
 	    return const0_rtx;
 	  }
       }
@@ -2000,8 +2017,9 @@ aarch64_expand_builtin_memtag (int fcode, tree exp, rtx target)
 		  pat = GEN_FCN (icode) (target, op0, const0_rtx, op1);
 		  break;
 		}
-	      error ("%Kargument %d must be a constant immediate "
-		     "in range [0,15]", exp, 2);
+	      error_at (EXPR_LOCATION (exp),
+			"argument %d must be a constant immediate "
+			"in range [0,15]", 2);
 	      return const0_rtx;
 	    }
 	  else
@@ -2316,6 +2334,27 @@ aarch64_general_builtin_rsqrt (unsigned int fn)
   return NULL_TREE;
 }
 
+/* Return true if the lane check can be removed as there is no
+   error going to be emitted.  */
+static bool
+aarch64_fold_builtin_lane_check (tree arg0, tree arg1, tree arg2)
+{
+  if (TREE_CODE (arg0) != INTEGER_CST)
+    return false;
+  if (TREE_CODE (arg1) != INTEGER_CST)
+    return false;
+  if (TREE_CODE (arg2) != INTEGER_CST)
+    return false;
+
+  auto totalsize = wi::to_widest (arg0);
+  auto elementsize = wi::to_widest (arg1);
+  if (totalsize == 0 || elementsize == 0)
+    return false;
+  auto lane = wi::to_widest (arg2);
+  auto high = wi::udiv_trunc (totalsize, elementsize);
+  return wi::ltu_p (lane, high);
+}
+
 #undef VAR1
 #define VAR1(T, N, MAP, FLAG, A) \
   case AARCH64_SIMD_BUILTIN_##T##_##N##A:
@@ -2336,6 +2375,11 @@ aarch64_general_fold_builtin (unsigned int fcode, tree type,
       VAR1 (UNOP, floatv4si, 2, ALL, v4sf)
       VAR1 (UNOP, floatv2di, 2, ALL, v2df)
 	return fold_build1 (FLOAT_EXPR, type, args[0]);
+      case AARCH64_SIMD_BUILTIN_LANE_CHECK:
+	gcc_assert (n_args == 3);
+	if (aarch64_fold_builtin_lane_check (args[0], args[1], args[2]))
+	  return void_node;
+	break;
       default:
 	break;
     }
@@ -2423,6 +2467,14 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt)
 	    }
 	  break;
 	}
+    case AARCH64_SIMD_BUILTIN_LANE_CHECK:
+      if (aarch64_fold_builtin_lane_check (args[0], args[1], args[2]))
+	{
+	  unlink_stmt_vdef (stmt);
+	  release_defs (stmt);
+	  new_stmt = gimple_build_nop ();
+	}
+      break;
     default:
       break;
     }

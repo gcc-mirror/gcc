@@ -1,5 +1,6 @@
 /* { dg-require-alias "" } */
 /* { dg-require-weak "" } */
+/* { dg-xfail-if "weak alias" { powerpc-ibm-aix* } } */
 
 static int dummy = 0;
 extern int foo __attribute__((__weak__, __alias__("dummy")));

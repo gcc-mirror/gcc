@@ -14,11 +14,12 @@
 #ifndef HWASAN_H
 #define HWASAN_H
 
+#include "hwasan_flags.h"
+#include "hwasan_interface_internal.h"
+#include "sanitizer_common/sanitizer_common.h"
 #include "sanitizer_common/sanitizer_flags.h"
 #include "sanitizer_common/sanitizer_internal_defs.h"
 #include "sanitizer_common/sanitizer_stacktrace.h"
-#include "hwasan_interface_internal.h"
-#include "hwasan_flags.h"
 #include "ubsan/ubsan_platform.h"
 
 #ifndef HWASAN_CONTAINS_UBSAN
@@ -35,10 +36,38 @@
 
 typedef u8 tag_t;
 
+#if defined(HWASAN_ALIASING_MODE)
+#  if !defined(__x86_64__)
+#    error Aliasing mode is only supported on x86_64
+#  endif
+// Tags are done in middle bits using userspace aliasing.
+constexpr unsigned kAddressTagShift = 39;
+constexpr unsigned kTagBits = 3;
+
+// The alias region is placed next to the shadow so the upper bits of all
+// taggable addresses matches the upper bits of the shadow base.  This shift
+// value determines which upper bits must match.  It has a floor of 44 since the
+// shadow is always 8TB.
+// TODO(morehouse): In alias mode we can shrink the shadow and use a
+// simpler/faster shadow calculation.
+constexpr unsigned kTaggableRegionCheckShift =
+    __sanitizer::Max(kAddressTagShift + kTagBits + 1U, 44U);
+#elif defined(__x86_64__)
+// Tags are done in upper bits using Intel LAM.
+constexpr unsigned kAddressTagShift = 57;
+constexpr unsigned kTagBits = 6;
+#else
 // TBI (Top Byte Ignore) feature of AArch64: bits [63:56] are ignored in address
 // translation and can be used to store a tag.
-const unsigned kAddressTagShift = 56;
-const uptr kAddressTagMask = 0xFFUL << kAddressTagShift;
+constexpr unsigned kAddressTagShift = 56;
+constexpr unsigned kTagBits = 8;
+#endif  // defined(HWASAN_ALIASING_MODE)
+
+// Mask for extracting tag bits from the lower 8 bits.
+constexpr uptr kTagMask = (1UL << kTagBits) - 1;
+
+// Mask for extracting tag bits from full pointers.
+constexpr uptr kAddressTagMask = kTagMask << kAddressTagShift;
 
 // Minimal alignment of the shadow base address. Determines the space available
 // for threads and stack histories. This is an ABI constant.
@@ -50,7 +79,7 @@ const unsigned kRecordFPLShift = 4;
 const unsigned kRecordFPModulus = 1 << (64 - kRecordFPShift + kRecordFPLShift);
 
 static inline tag_t GetTagFromPointer(uptr p) {
-  return p >> kAddressTagShift;
+  return (p >> kAddressTagShift) & kTagMask;
 }
 
 static inline uptr UntagAddr(uptr tagged_addr) {
@@ -73,7 +102,7 @@ extern bool hwasan_init_is_running;
 extern int hwasan_report_count;
 
 bool InitShadow();
-void InitPrctl();
+void InitializeOsSupport();
 void InitThreads();
 void InitializeInterceptors();
 
@@ -105,17 +134,9 @@ void InstallAtExitHandler();
   if (hwasan_inited)                                     \
     stack.Unwind(pc, bp, nullptr, common_flags()->fast_unwind_on_fatal)
 
-#define GET_FATAL_STACK_TRACE_HERE \
-  GET_FATAL_STACK_TRACE_PC_BP(StackTrace::GetCurrentPc(), GET_CURRENT_FRAME())
-
-#define PRINT_CURRENT_STACK_CHECK() \
-  {                                 \
-    GET_FATAL_STACK_TRACE_HERE;     \
-    stack.Print();                  \
-  }
-
 void HwasanTSDInit();
 void HwasanTSDThreadInit();
+void HwasanAtExit();
 
 void HwasanOnDeadlySignal(int signo, void *info, void *context);
 
@@ -124,6 +145,26 @@ void UpdateMemoryUsage();
 void AppendToErrorMessageBuffer(const char *buffer);
 
 void AndroidTestTlsSlot();
+
+// This is a compiler-generated struct that can be shared between hwasan
+// implementations.
+struct AccessInfo {
+  uptr addr;
+  uptr size;
+  bool is_store;
+  bool is_load;
+  bool recover;
+};
+
+// Given access info and frame information, unwind the stack and report the tag
+// mismatch.
+void HandleTagMismatch(AccessInfo ai, uptr pc, uptr frame, void *uc,
+                       uptr *registers_frame = nullptr);
+
+// This dispatches to HandleTagMismatch but sets up the AccessInfo, program
+// counter, and frame pointer.
+void HwasanTagMismatch(uptr addr, uptr access_info, uptr *registers_frame,
+                       size_t outsize);
 
 }  // namespace __hwasan
 
@@ -161,5 +202,13 @@ struct __hw_jmp_buf_struct {
 typedef struct __hw_jmp_buf_struct __hw_jmp_buf[1];
 typedef struct __hw_jmp_buf_struct __hw_sigjmp_buf[1];
 #endif // HWASAN_WITH_INTERCEPTORS && __aarch64__
+
+#define ENSURE_HWASAN_INITED()      \
+  do {                              \
+    CHECK(!hwasan_init_is_running); \
+    if (!hwasan_inited) {           \
+      __hwasan_init();              \
+    }                               \
+  } while (0)
 
 #endif  // HWASAN_H

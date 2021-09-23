@@ -27,8 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() riscv_cpu_cpp_builtins (pfile)
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS riscv_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO riscv_d_register_target_info
 
 /* Target CPU info for Rust.  */
 #define TARGET_RUST_CPU_INFO riscv_rust_target_cpu_info
@@ -100,6 +101,7 @@ extern const char *riscv_default_mtune (int argc, const char **argv);
 %{" FPIE_OR_FPIC_SPEC ":-fpic} \
 %{march=*} \
 %{mabi=*} \
+%{mno-relax} \
 %{mbig-endian} \
 %{mlittle-endian} \
 %(subtarget_asm_spec)" \
@@ -147,6 +149,10 @@ ASM_MISA_SPEC
 #ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD 4
 #endif
+
+/* Allows SImode op in builtin overflow pattern, see internal-fn.c.  */
+#undef TARGET_MIN_ARITHMETIC_PRECISION
+#define TARGET_MIN_ARITHMETIC_PRECISION riscv_min_arithmetic_precision
 
 /* The `Q' extension is not yet supported.  */
 #define UNITS_PER_FP_REG (TARGET_DOUBLE_FLOAT ? 8 : 4)

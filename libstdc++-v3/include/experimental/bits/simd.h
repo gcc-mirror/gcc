@@ -45,6 +45,9 @@
 #include <arm_neon.h>
 #endif
 
+/** @ingroup ts_simd
+ * @{
+ */
 /* There are several closely related types, with the following naming
  * convention:
  * _Tp: vectorizable (arithmetic) type (or any type)
@@ -234,7 +237,8 @@ namespace __detail
 // unrolled/pack execution helpers
 // __execute_n_times{{{
 template <typename _Fp, size_t... _I>
-  _GLIBCXX_SIMD_INTRINSIC constexpr void
+  [[__gnu__::__flatten__]] _GLIBCXX_SIMD_INTRINSIC constexpr
+  void
   __execute_on_index_sequence(_Fp&& __f, index_sequence<_I...>)
   { ((void)__f(_SizeConstant<_I>()), ...); }
 
@@ -254,7 +258,8 @@ template <size_t _Np, typename _Fp>
 // }}}
 // __generate_from_n_evaluations{{{
 template <typename _R, typename _Fp, size_t... _I>
-  _GLIBCXX_SIMD_INTRINSIC constexpr _R
+  [[__gnu__::__flatten__]] _GLIBCXX_SIMD_INTRINSIC constexpr
+  _R
   __execute_on_index_sequence_with_return(_Fp&& __f, index_sequence<_I...>)
   { return _R{__f(_SizeConstant<_I>())...}; }
 
@@ -269,7 +274,8 @@ template <size_t _Np, typename _R, typename _Fp>
 // }}}
 // __call_with_n_evaluations{{{
 template <size_t... _I, typename _F0, typename _FArgs>
-  _GLIBCXX_SIMD_INTRINSIC constexpr auto
+  [[__gnu__::__flatten__]] _GLIBCXX_SIMD_INTRINSIC constexpr
+  auto
   __call_with_n_evaluations(index_sequence<_I...>, _F0&& __f0, _FArgs&& __fargs)
   { return __f0(__fargs(_SizeConstant<_I>())...); }
 
@@ -285,7 +291,8 @@ template <size_t _Np, typename _F0, typename _FArgs>
 // }}}
 // __call_with_subscripts{{{
 template <size_t _First = 0, size_t... _It, typename _Tp, typename _Fp>
-  _GLIBCXX_SIMD_INTRINSIC constexpr auto
+  [[__gnu__::__flatten__]] _GLIBCXX_SIMD_INTRINSIC constexpr
+  auto
   __call_with_subscripts(_Tp&& __x, index_sequence<_It...>, _Fp&& __fun)
   { return __fun(__x[_First + _It]...); }
 
@@ -1598,7 +1605,9 @@ template <typename _To, typename _From>
   _GLIBCXX_SIMD_INTRINSIC constexpr _To
   __bit_cast(const _From __x)
   {
-    // TODO: implement with / replace by __builtin_bit_cast ASAP
+#if __has_builtin(__builtin_bit_cast)
+    return __builtin_bit_cast(_To, __x);
+#else
     static_assert(sizeof(_To) == sizeof(_From));
     constexpr bool __to_is_vectorizable
       = is_arithmetic_v<_To> || is_enum_v<_To>;
@@ -1629,6 +1638,7 @@ template <typename _To, typename _From>
 			 reinterpret_cast<const char*>(&__x), sizeof(_To));
 	return __r;
       }
+#endif
   }
 
 // }}}
@@ -2900,6 +2910,58 @@ template <typename _Tp, typename _Up, typename _Ap,
     return {__private_init, _RM::abi_type::_MaskImpl::template _S_convert<
 			      typename _RM::simd_type::value_type>(__x)};
   }
+
+template <typename _To, typename _Up, typename _Abi>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR
+  _To
+  simd_bit_cast(const simd<_Up, _Abi>& __x)
+  {
+    using _Tp = typename _To::value_type;
+    using _ToMember = typename _SimdTraits<_Tp, typename _To::abi_type>::_SimdMember;
+    using _From = simd<_Up, _Abi>;
+    using _FromMember = typename _SimdTraits<_Up, _Abi>::_SimdMember;
+    // with concepts, the following should be constraints
+    static_assert(sizeof(_To) == sizeof(_From));
+    static_assert(is_trivially_copyable_v<_Tp> && is_trivially_copyable_v<_Up>);
+    static_assert(is_trivially_copyable_v<_ToMember> && is_trivially_copyable_v<_FromMember>);
+#if __has_builtin(__builtin_bit_cast)
+    return {__private_init, __builtin_bit_cast(_ToMember, __data(__x))};
+#else
+    return {__private_init, __bit_cast<_ToMember>(__data(__x))};
+#endif
+  }
+
+template <typename _To, typename _Up, typename _Abi>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR
+  _To
+  simd_bit_cast(const simd_mask<_Up, _Abi>& __x)
+  {
+    using _From = simd_mask<_Up, _Abi>;
+    static_assert(sizeof(_To) == sizeof(_From));
+    static_assert(is_trivially_copyable_v<_From>);
+    // _To can be simd<T, A>, specifically simd<T, fixed_size<N>> in which case _To is not trivially
+    // copyable.
+    if constexpr (is_simd_v<_To>)
+      {
+	using _Tp = typename _To::value_type;
+	using _ToMember = typename _SimdTraits<_Tp, typename _To::abi_type>::_SimdMember;
+	static_assert(is_trivially_copyable_v<_ToMember>);
+#if __has_builtin(__builtin_bit_cast)
+	return {__private_init, __builtin_bit_cast(_ToMember, __x)};
+#else
+	return {__private_init, __bit_cast<_ToMember>(__x)};
+#endif
+      }
+    else
+      {
+	static_assert(is_trivially_copyable_v<_To>);
+#if __has_builtin(__builtin_bit_cast)
+	return __builtin_bit_cast(_To, __x);
+#else
+	return __bit_cast<_To>(__x);
+#endif
+      }
+  }
 } // namespace __proposed
 
 // simd_cast {{{2
@@ -3976,6 +4038,7 @@ template <typename _Tp, typename _Abi, size_t _Np>
 
 // }}}
 
+/// @cond undocumented
 // _SmartReference {{{
 template <typename _Up, typename _Accessor = _Up,
 	  typename _ValueType = typename _Up::value_type>
@@ -4257,6 +4320,7 @@ template <typename _Tp, size_t _Np, typename>
   struct __deduce_impl : public __deduce_fixed_size_fallback<_Tp, _Np> {};
 
 //}}}1
+/// @endcond
 
 // simd_mask {{{
 template <typename _Tp, typename _Abi>
@@ -4604,6 +4668,7 @@ template <typename _Tp, typename _Abi>
 
 // }}}
 
+/// @cond undocumented
 // __data(simd_mask) {{{
 template <typename _Tp, typename _Ap>
   _GLIBCXX_SIMD_INTRINSIC constexpr const auto&
@@ -4616,6 +4681,7 @@ template <typename _Tp, typename _Ap>
   { return __x._M_data; }
 
 // }}}
+/// @endcond
 
 // simd_mask reductions [simd_mask.reductions] {{{
 template <typename _Tp, typename _Abi>
@@ -4758,6 +4824,7 @@ find_last_set(_ExactBool)
 
 // }}}
 
+/// @cond undocumented
 // _SimdIntOperators{{{1
 template <typename _V, typename _Impl, bool>
   class _SimdIntOperators {};
@@ -4878,6 +4945,7 @@ template <typename _V, typename _Impl>
   };
 
 //}}}1
+/// @endcond
 
 // simd {{{
 template <typename _Tp, typename _Abi>
@@ -5153,6 +5221,7 @@ template <typename _Tp, typename _Abi>
   };
 
 // }}}
+/// @cond undocumented
 // __data {{{
 template <typename _Tp, typename _Ap>
   _GLIBCXX_SIMD_INTRINSIC constexpr const auto&
@@ -5189,8 +5258,16 @@ template <typename _Tp, typename _Ap>
     return {__private_init,
 	    _Ap::_SimdImpl::_S_bit_and(__data(__a), __data(__b))};
   }
-} // namespace __float_bitwise_operators }}}
 
+template <typename _Tp, typename _Ap>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR
+  enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Ap>>
+  operator~(const simd<_Tp, _Ap>& __a)
+  { return {__private_init, _Ap::_SimdImpl::_S_complement(__data(__a))}; }
+} // namespace __float_bitwise_operators }}}
+/// @endcond
+
+/// @}
 _GLIBCXX_SIMD_END_NAMESPACE
 
 #endif // __cplusplus >= 201703L

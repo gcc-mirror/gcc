@@ -97,6 +97,8 @@ fnoinline1 (void);       /* { dg-message "previous declaration here" } */
 /* Verify a warning for always_inline conflict.  */
 void ATTR ((always_inline))
 fnoinline1 (void) { }    /* { dg-warning "ignoring attribute .always_inline. because it conflicts with attribute .noinline." } */
+			 /* { dg-note	 "previous declaration here" "" { target *-*-* } .-1 } */
+			 /* { dg-note	 "previous definition" "" { target *-*-* } .-2 } */
 
 /* Verify a warning for gnu_inline conflict.  */
 inline void ATTR ((gnu_inline))
@@ -364,13 +366,15 @@ inline int ATTR ((cold))
 finline_cold_noreturn (int);
 
 inline int ATTR ((noreturn))
-finline_cold_noreturn (int);
+finline_cold_noreturn (int);	/* { dg-note	"previous declaration here" } */
 
 inline int ATTR ((noinline))
 finline_cold_noreturn (int);    /* { dg-warning "ignoring attribute .noinline. because it conflicts with attribute .always_inline." } */
+				/* { dg-note	"previous declaration here" "" { target *-*-* } .-1 } */
 
 inline int ATTR ((hot))
 finline_cold_noreturn (int);    /* { dg-warning "ignoring attribute .hot. because it conflicts with attribute .cold." } */
+				/* { dg-note	"previous declaration here" "" { target *-*-* } .-1 } */
 
 inline int ATTR ((warn_unused_result))
 finline_cold_noreturn (int);    /* { dg-warning "ignoring attribute .warn_unused_result. because it conflicts with attribute .noreturn." } */
@@ -389,23 +393,25 @@ finline_cold_noreturn (int i) { (void)&i; __builtin_abort (); }
    and some on distinct declarations.  */
 
 inline int ATTR ((always_inline, hot))
-finline_hot_noret_align (int);
+finline_hot_noret_align (int);	/* { dg-note	"previous declaration here" } */
 
 inline int ATTR ((noreturn, noinline))
 finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .noinline. because it conflicts with attribute .always_inline." } */
+				/* { dg-note	"previous declaration here" "" { target *-*-* } .-1 } */
 
 inline int ATTR ((cold, aligned (8)))
 finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .cold. because it conflicts with attribute .hot." } */
+				/* { dg-note	"previous declaration here" "" { target *-*-* } .-1 } */
 
 inline int ATTR ((warn_unused_result))
 finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .warn_unused_result. because it conflicts with attribute .noreturn." } */
+				/* { dg-note	"previous declaration here" "" { target *-*-* } .-1 } */
 
 inline int ATTR ((aligned (4)))
-  finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .aligned \\(4\\). because it conflicts with attribute .aligned \\(8\\)." "" { target { ! { hppa*64*-*-* s390*-*-* } } } } */
-/* { dg-error "alignment for 'finline_hot_noret_align' must be at least 8" "" { target s390*-*-* } .-1 } */
+  finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .aligned \\(4\\). because it conflicts with attribute .aligned \\(8\\)." "" { target { ! { hppa*64*-*-* } } } } */
 
 inline int ATTR ((aligned (8)))
-finline_hot_noret_align (int);
+finline_hot_noret_align (int);  /* { dg-note	"previous declaration here" } */
 
 inline int ATTR ((const))
 finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .const. because it conflicts with attribute .noreturn." } */
@@ -414,6 +420,26 @@ finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .const. beca
    the function is noreturn.  */
 inline int ATTR ((noreturn))
 finline_hot_noret_align (int i) { (void)&i; __builtin_abort (); }
+
+
+/* Expect a warning about conflicting alignment but without
+   other declarations inbetween.  */
+inline int ATTR ((aligned (32)))
+finline_align (int);	        /* { dg-note	"previous declaration here" } */
+
+inline int ATTR ((aligned (4)))
+finline_align (int);  /* { dg-warning "ignoring attribute .aligned \\(4\\). because it conflicts with attribute .aligned \\(32\\)." "" } */
+
+inline int ATTR ((noreturn))
+finline_align (int i) { (void)&i; __builtin_abort (); }
+
+
+/* Expect no note that would refer to the same declaration.  */
+inline int ATTR ((aligned (32), aligned (4)))
+finline_double_align (int); /* { dg-warning "ignoring attribute .aligned \\(4\\). because it conflicts with attribute .aligned \\(32\\)." } */
+
+inline int ATTR ((noreturn))
+finline_double_align (int i) { (void)&i; __builtin_abort (); }
 
 
 /* Exercise variable attributes.  */

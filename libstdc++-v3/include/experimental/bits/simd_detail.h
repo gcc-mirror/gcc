@@ -30,6 +30,7 @@
 #include <cstddef>
 #include <cstdint>
 
+/// @cond undocumented
 
 #define _GLIBCXX_SIMD_BEGIN_NAMESPACE                                          \
   namespace std _GLIBCXX_VISIBILITY(default)                                   \
@@ -299,6 +300,8 @@
 // constraint on (static)_simd_cast)
 #define _GLIBCXX_SIMD_FIX_P2TS_ISSUE66 1
 // }}}
+
+/// @endcond
 
 #endif // __cplusplus >= 201703L
 #endif // _GLIBCXX_EXPERIMENTAL_SIMD_DETAIL_H_

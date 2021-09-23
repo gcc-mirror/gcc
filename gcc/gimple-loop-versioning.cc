@@ -30,19 +30,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "ssa.h"
 #include "tree-scalar-evolution.h"
-#include "tree-chrec.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "fold-const.h"
 #include "tree-ssa-propagate.h"
 #include "tree-inline.h"
 #include "domwalk.h"
-#include "alloc-pool.h"
-#include "vr-values.h"
-#include "gimple-ssa-evrp-analyze.h"
 #include "tree-vectorizer.h"
 #include "omp-general.h"
 #include "predict.h"
 #include "tree-into-ssa.h"
+#include "gimple-range.h"
+#include "tree-cfg.h"
 
 namespace {
 
@@ -261,14 +259,10 @@ private:
     lv_dom_walker (loop_versioning &);
 
     edge before_dom_children (basic_block) FINAL OVERRIDE;
-    void after_dom_children (basic_block) FINAL OVERRIDE;
 
   private:
     /* The parent pass.  */
     loop_versioning &m_lv;
-
-    /* Used to build context-dependent range information.  */
-    evrp_range_analyzer m_range_analyzer;
   };
 
   /* Used to simplify statements based on conditions that are established
@@ -308,7 +302,7 @@ private:
   bool analyze_block (basic_block);
   bool analyze_blocks ();
 
-  void prune_loop_conditions (class loop *, vr_values *);
+  void prune_loop_conditions (class loop *);
   bool prune_conditions ();
 
   void merge_loop_info (class loop *, class loop *);
@@ -500,7 +494,7 @@ loop_info::worth_versioning_p () const
 }
 
 loop_versioning::lv_dom_walker::lv_dom_walker (loop_versioning &lv)
-  : dom_walker (CDI_DOMINATORS), m_lv (lv), m_range_analyzer (false)
+  : dom_walker (CDI_DOMINATORS), m_lv (lv)
 {
 }
 
@@ -509,24 +503,10 @@ loop_versioning::lv_dom_walker::lv_dom_walker (loop_versioning &lv)
 edge
 loop_versioning::lv_dom_walker::before_dom_children (basic_block bb)
 {
-  m_range_analyzer.enter (bb);
-
   if (bb == bb->loop_father->header)
-    m_lv.prune_loop_conditions (bb->loop_father, &m_range_analyzer);
-
-  for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
-       gsi_next (&si))
-    m_range_analyzer.record_ranges_from_stmt (gsi_stmt (si), false);
+    m_lv.prune_loop_conditions (bb->loop_father);
 
   return NULL;
-}
-
-/* Process BB after processing the blocks it dominates.  */
-
-void
-loop_versioning::lv_dom_walker::after_dom_children (basic_block bb)
-{
-  m_range_analyzer.leave (bb);
 }
 
 /* Decide whether to replace VAL with a new value in a versioned loop.
@@ -1428,8 +1408,7 @@ loop_versioning::analyze_blocks ()
      versioning at that level could be useful in some cases.  */
   get_loop_info (get_loop (m_fn, 0)).rejected_p = true;
 
-  class loop *loop;
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       loop_info &linfo = get_loop_info (loop);
 
@@ -1483,18 +1462,21 @@ loop_versioning::analyze_blocks ()
    LOOP.  */
 
 void
-loop_versioning::prune_loop_conditions (class loop *loop, vr_values *vrs)
+loop_versioning::prune_loop_conditions (class loop *loop)
 {
   loop_info &li = get_loop_info (loop);
 
   int to_remove = -1;
   bitmap_iterator bi;
   unsigned int i;
+  int_range_max r;
   EXECUTE_IF_SET_IN_BITMAP (&li.unity_names, 0, i, bi)
     {
       tree name = ssa_name (i);
-      const value_range_equiv *vr = vrs->get_value_range (name);
-      if (vr && !vr->may_contain_p (build_one_cst (TREE_TYPE (name))))
+      gimple *stmt = first_stmt (loop->header);
+
+      if (get_range_query (cfun)->range_of_expr (r, name, stmt)
+	  && !r.contains_p (build_one_cst (TREE_TYPE (name))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, find_loop_location (loop),
@@ -1650,8 +1632,7 @@ loop_versioning::make_versioning_decisions ()
   AUTO_DUMP_SCOPE ("make_versioning_decisions",
 		   dump_user_location_t::from_function_decl (m_fn->decl));
 
-  class loop *loop;
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       loop_info &linfo = get_loop_info (loop);
       if (decide_whether_loop_is_versionable (loop))
@@ -1810,7 +1791,10 @@ pass_loop_versioning::execute (function *fn)
   if (number_of_loops (fn) <= 1)
     return 0;
 
-  return loop_versioning (fn).run ();
+  enable_ranger (fn);
+  unsigned int ret = loop_versioning (fn).run ();
+  disable_ranger (fn);
+  return ret;
 }
 
 } // anon namespace

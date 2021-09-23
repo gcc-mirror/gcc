@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,15 +35,12 @@
 --  floating-point implementations.
 
 with Ada.Unchecked_Conversion;
-with Interfaces;
 with System.Unsigned_Types;
 
 pragma Warnings (Off, "non-static constant in preelaborated unit");
 --  Every constant is static given our instantiation model
 
 package body System.Fat_Gen is
-   use type Interfaces.Unsigned_64;
-
    pragma Assert (T'Machine_Radix = 2);
    --  This version does not handle radix 16
 
@@ -61,17 +58,6 @@ package body System.Fat_Gen is
 
    --  Tiny : constant T := Rad ** (T'Machine_Emin - Mantissa);
    --  Smallest positive denormalized number
-
-   Tiny16 : constant Interfaces.Unsigned_16 := 1;
-   Tiny32 : constant Interfaces.Unsigned_32 := 1;
-   Tiny64 : constant Interfaces.Unsigned_64 := 1;
-   Tiny80 : constant array (1 .. 2) of Interfaces.Unsigned_64 :=
-              (1 * Standard'Default_Bit_Order,
-               2**48 * (1 - Standard'Default_Bit_Order));
-   for Tiny80'Alignment use Standard'Maximum_Alignment;
-   --  We cannot use the direct declaration because it cannot be translated
-   --  into C90, as the hexadecimal floating constants were introduced in C99.
-   --  So we work around this by using an overlay of the integer constant.
 
    RM1 : constant T := Rad ** (Mantissa - 1);
    --  Smallest positive member of the large consecutive integers. It is equal
@@ -110,22 +96,23 @@ package body System.Fat_Gen is
    --      component of Float_Rep, named Most Significant Word (MSW).
 
    --    - The sign occupies the most significant bit of the MSW and the
-   --      exponent is in the following bits. The exception is 80-bit
-   --      double extended, where they occupy the low 16-bit halfword.
+   --      exponent is in the following bits.
 
-   --  The low-level primitives Copy_Sign, Decompose, Scaling and Valid are
-   --  implemented by accessing the bit pattern of the floating-point number.
-   --  Only the normalization of denormalized numbers, if any, and the gradual
-   --  underflow are left to the hardware, mainly because there is some leeway
-   --  for the hardware implementation in this area: for example, the MSB of
-   --  the mantissa, which is 1 for normalized numbers and 0 for denormalized
+   --  The low-level primitives Copy_Sign, Decompose, Finite_Succ, Scaling and
+   --  Valid are implemented by accessing the bit pattern of the floating-point
+   --  number. Only the normalization of denormalized numbers, if any, and the
+   --  gradual underflow are left to the hardware, mainly because there is some
+   --  leeway for the hardware implementation in this area: for example the MSB
+   --  of the mantissa, that is 1 for normalized numbers and 0 for denormalized
    --  numbers, may or may not be stored by the hardware.
 
-   Siz : constant := (if System.Word_Size > 32 then 32 else System.Word_Size);
+   Siz : constant := 16;
    type Float_Word is mod 2**Siz;
+   --  We use the GCD of the size of all the supported floating-point formats
 
-   N : constant Natural := (T'Size + Siz - 1) / Siz;
-   Rep_Last : constant Natural := Natural'Min (N - 1, (Mantissa + 16) / Siz);
+   N  : constant Natural := (T'Size + Siz - 1) / Siz;
+   NR : constant Natural := (Mantissa + 16 + Siz - 1) / Siz;
+   Rep_Last : constant Natural := Natural'Min (N, NR) - 1;
    --  Determine the number of Float_Words needed for representing the
    --  entire floating-point value. Do not take into account excessive
    --  padding, as occurs on IA-64 where 80 bits floats get padded to 128
@@ -143,12 +130,9 @@ package body System.Fat_Gen is
    --  we assume Word_Order = Bit_Order.
 
    Exp_Factor : constant Float_Word :=
-                  (if Mantissa = 64
-                   then 1
-                   else 2**(Siz - 1) / Float_Word (IEEE_Emax - IEEE_Emin + 3));
+                  2**(Siz - 1) / Float_Word (IEEE_Emax - IEEE_Emin + 3);
    --  Factor that the extracted exponent needs to be divided by to be in
-   --  range 0 .. IEEE_Emax - IEEE_Emin + 2. The special case is 80-bit
-   --  double extended, where the exponent starts the 3rd float word.
+   --  range 0 .. IEEE_Emax - IEEE_Emin + 2
 
    Exp_Mask : constant Float_Word :=
                 Float_Word (IEEE_Emax - IEEE_Emin + 2) * Exp_Factor;
@@ -156,10 +140,8 @@ package body System.Fat_Gen is
    --  range 0 .. IEEE_Emax - IEEE_Emin + 2 contains 2**N values, for some
    --  N in Natural.
 
-   Sign_Mask : constant Float_Word :=
-                 (if Mantissa = 64 then 2**15 else 2**(Siz - 1));
-   --  Value needed to mask out the sign field. The special case is 80-bit
-   --  double extended, where the exponent starts the 3rd float word.
+   Sign_Mask : constant Float_Word := 2**(Siz - 1);
+   --  Value needed to mask out the sign field
 
    -----------------------
    -- Local Subprograms --
@@ -170,6 +152,9 @@ package body System.Fat_Gen is
    --  Both results are signed, with Frac having the sign of XX, and UI has
    --  the sign of the exponent. The absolute value of Frac is in the range
    --  0.0 <= Frac < 1.0. If Frac = 0.0 or -0.0, then Expo is always zero.
+
+   function Finite_Succ (X : T) return T;
+   --  Return the successor of X, a finite number not equal to T'Last
 
    --------------
    -- Adjacent --
@@ -306,6 +291,179 @@ package body System.Fat_Gen is
       return X_Exp;
    end Exponent;
 
+   -----------------
+   -- Finite_Succ --
+   -----------------
+
+   function Finite_Succ (X : T) return T is
+      XX : T := T'Machine (X);
+
+      Rep : Float_Rep;
+      for Rep'Address use XX'Address;
+      --  Rep is a view of the input floating-point parameter
+
+   begin
+      --  If the floating-point type does not support denormalized numbers,
+      --  there is a couple of problematic values, namely -Small and Zero,
+      --  because the increment is equal to Small in these cases.
+
+      if not T'Denorm then
+         declare
+            Small : constant T := Rad ** (T'Machine_Emin - 1);
+            --  Smallest positive normalized number declared here and not at
+            --  library level for the sake of the CCG compiler, which cannot
+            --  currently compile the constant because the target is C90.
+
+         begin
+            if X = -Small then
+               XX := 0.0;
+               return -XX;
+            elsif X = 0.0 then
+               return Small;
+            end if;
+         end;
+      end if;
+
+      --  In all the other cases, the increment is equal to 1 in the binary
+      --  integer representation of the number if X is nonnegative and equal
+      --  to -1 if X is negative.
+
+      if XX >= 0.0 then
+         --  First clear the sign of negative Zero
+
+         Rep (MSW) := Rep (MSW) and not Sign_Mask;
+
+         --  Deal with big endian
+
+         if MSW = 0 then
+            for J in reverse 0 .. Rep_Last loop
+               Rep (J) := Rep (J) + 1;
+
+               --  For 80-bit IEEE Extended, the MSB of the mantissa is stored
+               --  so, when it has been flipped, its status must be reanalyzed.
+
+               if Mantissa = 64 and then J = 1 then
+
+                  --  If the MSB changed from denormalized to normalized, then
+                  --  keep it normalized since the exponent will be bumped.
+
+                  if Rep (J) = 2**(Siz - 1) then
+                     null;
+
+                  --  If the MSB changed from normalized, restore it since we
+                  --  cannot denormalize in this context.
+
+                  elsif Rep (J) = 0 then
+                     Rep (J) := 2**(Siz - 1);
+
+                  else
+                     exit;
+                  end if;
+
+               --  In other cases, stop if there is no carry
+
+               else
+                  exit when Rep (J) > 0;
+               end if;
+            end loop;
+
+         --  Deal with little endian
+
+         else
+            for J in 0 .. Rep_Last loop
+               Rep (J) := Rep (J) + 1;
+
+               --  For 80-bit IEEE Extended, the MSB of the mantissa is stored
+               --  so, when it has been flipped, its status must be reanalyzed.
+
+               if Mantissa = 64 and then J = Rep_Last - 1 then
+
+                  --  If the MSB changed from denormalized to normalized, then
+                  --  keep it normalized since the exponent will be bumped.
+
+                  if Rep (J) = 2**(Siz - 1) then
+                     null;
+
+                  --  If the MSB changed from normalized, restore it since we
+                  --  cannot denormalize in this context.
+
+                  elsif Rep (J) = 0 then
+                     Rep (J) := 2**(Siz - 1);
+
+                  else
+                     exit;
+                  end if;
+
+               --  In other cases, stop if there is no carry
+
+               else
+                  exit when Rep (J) > 0;
+               end if;
+            end loop;
+         end if;
+
+      else
+         if MSW = 0 then
+            for J in reverse 0 .. Rep_Last loop
+               Rep (J) := Rep (J) - 1;
+
+               --  For 80-bit IEEE Extended, the MSB of the mantissa is stored
+               --  so, when it has been flipped, its status must be reanalyzed.
+
+               if Mantissa = 64 and then J = 1 then
+
+                  --  If the MSB changed from normalized to denormalized, then
+                  --  keep it normalized if the exponent is not 1.
+
+                  if Rep (J) = 2**(Siz - 1) - 1 then
+                     if Rep (0) /= 2**(Siz - 1) + 1 then
+                        Rep (J) := 2**Siz - 1;
+                     end if;
+
+                  else
+                     exit;
+                  end if;
+
+               --  In other cases, stop if there is no borrow
+
+               else
+                  exit when Rep (J) < 2**Siz - 1;
+               end if;
+            end loop;
+
+         else
+            for J in 0 .. Rep_Last loop
+               Rep (J) := Rep (J) - 1;
+
+               --  For 80-bit IEEE Extended, the MSB of the mantissa is stored
+               --  so, when it has been flipped, its status must be reanalyzed.
+
+               if Mantissa = 64 and then J = Rep_Last - 1 then
+
+                  --  If the MSB changed from normalized to denormalized, then
+                  --  keep it normalized if the exponent is not 1.
+
+                  if Rep (J) = 2**(Siz - 1) - 1 then
+                     if Rep (Rep_Last) /= 2**(Siz - 1) + 1 then
+                        Rep (J) := 2**Siz - 1;
+                     end if;
+
+                  else
+                     exit;
+                  end if;
+
+               --  In other cases, stop if there is no borrow
+
+               else
+                  exit when Rep (J) < 2**Siz - 1;
+               end if;
+            end loop;
+         end if;
+      end if;
+
+      return XX;
+   end Finite_Succ;
+
    -----------
    -- Floor --
    -----------
@@ -424,66 +582,27 @@ package body System.Fat_Gen is
    ----------
 
    function Pred (X : T) return T is
-      Tiny : constant T;
-      pragma Import (Ada, Tiny);
-      for Tiny'Address use (if     T'Size   = 16 then Tiny16'Address
-                             elsif T'Size   = 32 then Tiny32'Address
-                             elsif T'Size   = 64 then Tiny64'Address
-                             elsif Mantissa = 64 then Tiny80'Address
-                             else raise Program_Error);
-      X_Frac : T;
-      X_Exp  : UI;
-
    begin
-      --  Zero has to be treated specially, since its exponent is zero
-
-      if X = 0.0 then
-         return -Tiny;
-
       --  Special treatment for largest negative number: raise Constraint_Error
 
-      elsif X = T'First then
+      if X = T'First then
          raise Constraint_Error with "Pred of largest negative number";
 
-      --  For infinities, return unchanged
+      --  For finite numbers, use the symmetry around zero of floating point
 
-      elsif X < T'First or else X > T'Last then
+      elsif X > T'First and then X <= T'Last then
+         pragma Annotate (CodePeer, Intentional, "test always true",
+                          "Check for invalid float");
          pragma Annotate (CodePeer, Intentional, "condition predetermined",
                           "Check for invalid float");
+         return -Finite_Succ (-X);
+
+      --  For infinities and NaNs, return unchanged
+
+      else
          return X;
          pragma Annotate (CodePeer, Intentional, "dead code",
                           "Check float range.");
-
-      --  Subtract from the given number a number equivalent to the value
-      --  of its least significant bit. Given that the most significant bit
-      --  represents a value of 1.0 * Radix ** (Exp - 1), the value we want
-      --  is obtained by shifting this by (Mantissa-1) bits to the right,
-      --  i.e. decreasing the exponent by that amount.
-
-      else
-         Decompose (X, X_Frac, X_Exp);
-
-         --  For a denormalized number or a normalized number with the lowest
-         --  exponent, just subtract the Tiny.
-
-         if X_Exp <= T'Machine_Emin then
-            return X - Tiny;
-
-         --  A special case, if the number we had was a power of two on the
-         --  positive side of zero, then we want to subtract half of what we
-         --  would have subtracted, since the exponent is going to be reduced.
-
-         --  Note that X_Frac has the same sign as X so, if X_Frac is Invrad,
-         --  then we know that we had a power of two on the positive side.
-
-         elsif X_Frac = Invrad then
-            return X - Scaling (1.0, X_Exp - Mantissa - 1);
-
-         --  Otherwise the adjustment is unchanged
-
-         else
-            return X - Scaling (1.0, X_Exp - Mantissa);
-         end if;
       end if;
    end Pred;
 
@@ -652,21 +771,26 @@ package body System.Fat_Gen is
          --  Check for overflow
 
          if Adjustment > IEEE_Emax - Exp then
-            XX := 0.0;
-            return (if Minus then -1.0 / XX else 1.0 / XX);
-            pragma Annotate
-              (CodePeer, Intentional, "overflow check", "Infinity produced");
-            pragma Annotate
-              (CodePeer, Intentional, "divide by zero", "Infinity produced");
+            --  Optionally raise Constraint_Error as per RM A.5.3(29)
+
+            if T'Machine_Overflows then
+               raise Constraint_Error with "Too large exponent";
+
+            else
+               XX := 0.0;
+               return (if Minus then -1.0 / XX else 1.0 / XX);
+               pragma Annotate (CodePeer, Intentional, "overflow check",
+                                "Infinity produced");
+               pragma Annotate (CodePeer, Intentional, "divide by zero",
+                                "Infinity produced");
+            end if;
 
          --  Check for underflow
 
          elsif Adjustment < IEEE_Emin - Exp then
-            --  Check for gradual underflow
+            --  Check for possibly gradual underflow (up to the hardware)
 
-            if T'Denorm
-              and then Adjustment >= IEEE_Emin - (Mantissa - 1) - Exp
-            then
+            if Adjustment >= IEEE_Emin - Mantissa - Exp then
                Expf := IEEE_Emin;
                Expi := Exp + Adjustment - Expf;
 
@@ -688,6 +812,16 @@ package body System.Fat_Gen is
                         Float_Word (IEEE_Ebias + Expf) * Exp_Factor;
 
          if Expi < 0 then
+            --  Given that Expi >= -Mantissa, only -64 is problematic
+
+            if Expi = -64 then
+               pragma Annotate
+                 (CodePeer, Intentional, "test always false",
+                  "test always false in some instantiations");
+               XX := XX / 2.0;
+               Expi := -63;
+            end if;
+
             XX := XX / T (UST.Long_Long_Unsigned (2) ** (-Expi));
          end if;
 
@@ -700,66 +834,27 @@ package body System.Fat_Gen is
    ----------
 
    function Succ (X : T) return T is
-      Tiny : constant T;
-      pragma Import (Ada, Tiny);
-      for Tiny'Address use (if     T'Size   = 16 then Tiny16'Address
-                             elsif T'Size   = 32 then Tiny32'Address
-                             elsif T'Size   = 64 then Tiny64'Address
-                             elsif Mantissa = 64 then Tiny80'Address
-                             else raise Program_Error);
-      X_Frac : T;
-      X_Exp  : UI;
-
    begin
-      --  Treat zero specially since it has a zero exponent
-
-      if X = 0.0 then
-         return Tiny;
-
       --  Special treatment for largest positive number: raise Constraint_Error
 
-      elsif X = T'Last then
+      if X = T'Last then
          raise Constraint_Error with "Succ of largest positive number";
 
-      --  For infinities, return unchanged
+      --  For finite numbers, call the specific routine
 
-      elsif X < T'First or else X > T'Last then
+      elsif X >= T'First and then X < T'Last then
+         pragma Annotate (CodePeer, Intentional, "test always true",
+                          "Check for invalid float");
          pragma Annotate (CodePeer, Intentional, "condition predetermined",
                           "Check for invalid float");
+         return Finite_Succ (X);
+
+      --  For infinities and NaNs, return unchanged
+
+      else
          return X;
          pragma Annotate (CodePeer, Intentional, "dead code",
                           "Check float range.");
-
-      --  Add to the given number a number equivalent to the value of its
-      --  least significant bit. Given that the most significant bit
-      --  represents a value of 1.0 * Radix ** (Exp - 1), the value we want
-      --  is obtained by shifting this by (Mantissa-1) bits to the right,
-      --  i.e. decreasing the exponent by that amount.
-
-      else
-         Decompose (X, X_Frac, X_Exp);
-
-         --  For a denormalized number or a normalized number with the lowest
-         --  exponent, just add the Tiny.
-
-         if X_Exp <= T'Machine_Emin then
-            return X + Tiny;
-
-         --  A special case, if the number we had was a power of two on the
-         --  negative side of zero, then we want to add half of what we would
-         --  have added, since the exponent is going to be reduced.
-
-         --  Note that X_Frac has the same sign as X, so if X_Frac is -Invrad,
-         --  then we know that we had a power of two on the negative side.
-
-         elsif X_Frac = -Invrad then
-            return X + Scaling (1.0, X_Exp - Mantissa - 1);
-
-         --  Otherwise the adjustment is unchanged
-
-         else
-            return X + Scaling (1.0, X_Exp - Mantissa);
-         end if;
       end if;
    end Succ;
 
@@ -879,7 +974,19 @@ package body System.Fat_Gen is
       else pragma Assert (Exp = IEEE_Emin - 1);
          --  This is a denormalized number, valid if T'Denorm is True or 0.0
 
-         return T'Denorm or else X.all = 0.0;
+         if T'Denorm then
+            return True;
+
+         --  Note that we cannot do a direct comparison with 0.0 because the
+         --  hardware may evaluate it to True for all denormalized numbers.
+
+         else
+            --  First clear the sign bit (the exponent is already zero)
+
+            Rep (MSW) := Rep (MSW) and not Sign_Mask;
+
+            return (for all J in 0 .. Rep_Last => Rep (J) = 0);
+         end if;
       end if;
    end Valid;
 

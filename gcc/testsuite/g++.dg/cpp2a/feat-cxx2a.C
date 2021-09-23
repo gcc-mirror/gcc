@@ -520,13 +520,11 @@
 #  error "__cpp_constexpr_in_decltype != 201711"
 #endif
 
-/* Not supported fully yet:
 #ifndef __cpp_consteval
 #  error "__cpp_consteval"
 #elif __cpp_consteval != 201811
 #  error "__cpp_consteval != 201811"
 #endif
-*/
 
 #ifndef __cpp_concepts
 #  error "__cpp_concepts"

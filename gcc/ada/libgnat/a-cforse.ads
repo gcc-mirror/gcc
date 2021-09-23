@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -59,6 +59,11 @@ generic
 package Ada.Containers.Formal_Ordered_Sets with
   SPARK_Mode
 is
+   --  Contracts in this unit are meant for analysis only, not for run-time
+   --  checking.
+
+   pragma Assertion_Policy (Pre => Ignore);
+   pragma Assertion_Policy (Post => Ignore);
    pragma Annotate (CodePeer, Skip_Analysis);
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean
@@ -523,6 +528,16 @@ is
                  P_Right  => Positions (Container),
                  Position => Position)
           and Positions (Container) = Positions (Container)'Old;
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return not null access constant Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Position),
+     Post   =>
+       Constant_Reference'Result.all =
+         E.Get (Elements (Container), P.Get (Positions (Container), Position));
 
    procedure Move (Target : in out Set; Source : in out Set) with
      Global => null,
@@ -1765,18 +1780,19 @@ private
 
    type Node_Type is record
       Has_Element : Boolean := False;
-      Parent  : Count_Type := 0;
-      Left    : Count_Type := 0;
-      Right   : Count_Type := 0;
-      Color   : Red_Black_Trees.Color_Type;
-      Element : Element_Type;
+      Parent      : Count_Type := 0;
+      Left        : Count_Type := 0;
+      Right       : Count_Type := 0;
+      Color       : Red_Black_Trees.Color_Type;
+      Element     : aliased Element_Type;
    end record;
 
    package Tree_Types is
      new Red_Black_Trees.Generic_Bounded_Tree_Types (Node_Type);
 
-   type Set (Capacity : Count_Type) is
-     new Tree_Types.Tree_Type (Capacity) with null record;
+   type Set (Capacity : Count_Type) is record
+     Content : Tree_Types.Tree_Type (Capacity);
+   end record;
 
    use Red_Black_Trees;
 

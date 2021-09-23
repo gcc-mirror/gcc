@@ -13,7 +13,7 @@ void
 foo (void)
 {
   struct list l;
-  tlist t = l;
+  tlist t = l; /* { dg-warning "use of uninitialized value 'l'" } */
   for (;;)
     bar (&t);
 }

@@ -400,7 +400,7 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
       break;
     }
 
-  if (GET_MODE_CLASS (mode) == MODE_CC || CC0_P (arg0))
+  if (GET_MODE_CLASS (mode) == MODE_CC)
     {
       /* Try to search for the comparison to determine the real mode.
          This code is expensive, but with sane machine description it
@@ -1008,55 +1008,6 @@ jump_to_label_p (const rtx_insn *insn)
   return (JUMP_P (insn)
 	  && JUMP_LABEL (insn) != NULL && !ANY_RETURN_P (JUMP_LABEL (insn)));
 }
-
-/* Return nonzero if X is an RTX that only sets the condition codes
-   and has no side effects.  */
-
-int
-only_sets_cc0_p (const_rtx x)
-{
-  if (! x)
-    return 0;
-
-  if (INSN_P (x))
-    x = PATTERN (x);
-
-  return sets_cc0_p (x) == 1 && ! side_effects_p (x);
-}
-
-/* Return 1 if X is an RTX that does nothing but set the condition codes
-   and CLOBBER or USE registers.
-   Return -1 if X does explicitly set the condition codes,
-   but also does other things.  */
-
-int
-sets_cc0_p (const_rtx x)
-{
-  if (! x)
-    return 0;
-
-  if (INSN_P (x))
-    x = PATTERN (x);
-
-  if (GET_CODE (x) == SET && SET_DEST (x) == cc0_rtx)
-    return 1;
-  if (GET_CODE (x) == PARALLEL)
-    {
-      int i;
-      int sets_cc0 = 0;
-      int other_things = 0;
-      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-	{
-	  if (GET_CODE (XVECEXP (x, 0, i)) == SET
-	      && SET_DEST (XVECEXP (x, 0, i)) == cc0_rtx)
-	    sets_cc0 = 1;
-	  else if (GET_CODE (XVECEXP (x, 0, i)) == SET)
-	    other_things = 1;
-	}
-      return ! sets_cc0 ? 0 : other_things ? -1 : 1;
-    }
-  return 0;
-}
 
 /* Find all CODE_LABELs referred to in X, and increment their use
    counts.  If INSN is a JUMP_INSN and there is at least one
@@ -1101,7 +1052,6 @@ mark_jump_label_1 (rtx x, rtx_insn *insn, bool in_mem, bool is_target)
   switch (code)
     {
     case PC:
-    case CC0:
     case REG:
     case CLOBBER:
     case CALL:
@@ -1771,11 +1721,15 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
   switch (code)
     {
     case PC:
-    case CC0:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
     CASE_CONST_UNIQUE:
       return 0;
+
+    case CONST_VECTOR:
+      if (!same_vector_encodings_p (x, y))
+	return false;
+      break;
 
     case LABEL_REF:
       /* We can't assume nonlocal labels have their following insns yet.  */

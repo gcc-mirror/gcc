@@ -104,6 +104,7 @@
 <para>The following library components provide extra debugging
   capabilities in debug mode:</para>
 <itemizedlist>
+  <listitem><para><code>std::array</code> (no safe iterators)</para></listitem>
   <listitem><para><code>std::basic_string</code> (no safe iterators and see note below)</para></listitem>
   <listitem><para><code>std::bitset</code></para></listitem>
   <listitem><para><code>std::deque</code></para></listitem>
@@ -122,7 +123,7 @@
 <para>N.B. although there are precondition checks for some string operations,
 e.g.  <code>operator[]</code>,
 they will not always be run when using the <code>char</code> and
-<code>wchar_t</code> specialisations (<code>std::string</code> and
+<code>wchar_t</code> specializations (<code>std::string</code> and
 <code>std::wstring</code>).  This is because libstdc++ uses GCC's
 <code>extern template</code> extension to provide explicit instantiations
 of <code>std::string</code> and <code>std::wstring</code>, and those
@@ -263,7 +264,7 @@ which always works correctly.
 </tgroup>
 </table>
 
-<para>In addition, when compiling in C++11 mode, these additional
+<para>When compiling in C++11 mode (or newer), these
 containers have additional debug capability.
 </para>
 
@@ -285,12 +286,6 @@ containers have additional debug capability.
   </row>
 </thead>
 <tbody>
-  <row>
-    <entry><classname>std::array</classname></entry>
-    <entry><filename class="headerfile">array</filename></entry>
-    <entry><classname>__gnu_debug::array</classname></entry>
-    <entry><filename class="headerfile">&lt;debug/array&gt;</filename></entry>
-  </row>
   <row>
     <entry><classname>std::forward_list</classname></entry>
     <entry><filename class="headerfile">forward_list</filename></entry>
@@ -324,6 +319,20 @@ containers have additional debug capability.
 </tbody>
 </tgroup>
 </table>
+
+<para>Prior to GCC 11 a debug version of <classname>std::array</classname>
+was available as <classname>__gnu_debug::array</classname> in the
+header <filename class="headerfile">&lt;debug/array&gt;</filename>.
+Because <classname>array::iterator</classname> is just a pointer,
+the debug <classname>array</classname> can't check iterator operations,
+it can only check direct accesses to the container.
+Starting with GCC 11 all the debug capabilities are available in
+<classname>std::array</classname>, without needing a separate type,
+so <classname>__gnu_debug::array</classname> is just an alias for
+<classname>std::array</classname>.
+That alias is deprecated and may be removed in a future release.
+</para>
+
 </section>
 </section>
 

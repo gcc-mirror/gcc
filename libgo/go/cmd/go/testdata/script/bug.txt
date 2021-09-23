@@ -2,9 +2,11 @@
 
 [!linux] skip
 [gccgo] skip
+[short] skip
 
 go install
-env BROWSER=$GOPATH/bin/browser
+go build -o $TMPDIR/go ./go
+env BROWSER=$GOPATH/bin/browser PATH=$TMPDIR:$PATH
 go bug
 exists $TMPDIR/browser
 grep '^go version' $TMPDIR/browser
@@ -45,3 +47,13 @@ func main() {
 	}
 }
 
+-- go/main.go --
+package main
+
+import (
+    "os"
+)
+
+func main() {
+    os.Exit(1)
+}

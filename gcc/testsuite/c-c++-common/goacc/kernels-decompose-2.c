@@ -1,8 +1,11 @@
 /* Test OpenACC 'kernels' construct decomposition.  */
 
 /* { dg-additional-options "-fopt-info-omp-all" } */
-/* { dg-additional-options "-fopenacc-kernels=decompose" }
+/* { dg-additional-options "--param=openacc-kernels=decompose" }
 /* { dg-additional-options "-O2" } for 'parloops'.  */
+
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
 
 /* See also '../../gfortran.dg/goacc/kernels-decompose-2.f95'.  */
 
@@ -116,6 +119,7 @@ main ()
   }
 
 #pragma acc kernels
+  /* { dg-bogus "warning: region contains gang partitioned code but is not gang partitioned" "TODO 'kernels'" { xfail *-*-* } .-1 } */
   {
     y = f_g (a[5]); /* { dg-line l_part[incr c_part] } */
     /*TODO If such a construct is placed in its own part (like it is, here), can't this actually use gang paralelism, instead of "gang-single"?

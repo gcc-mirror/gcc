@@ -221,11 +221,11 @@ template <class V>
     if constexpr (sizeof(T) <= sizeof(double))
       {
 	using I = rebind_simd_t<__int_for_sizeof_t<T>, V>;
-	const I abs_x = __bit_cast<I>(abs(x));
-	const I min = __bit_cast<I>(V(std::__norm_min_v<T>));
-	const I max = __bit_cast<I>(V(std::__finite_max_v<T>));
+	const I abs_x = simd_bit_cast<I>(abs(x));
+	const I min = simd_bit_cast<I>(V(std::__norm_min_v<T>));
+	const I max = simd_bit_cast<I>(V(std::__finite_max_v<T>));
 	return static_simd_cast<typename V::mask_type>(
-		 __bit_cast<I>(x) == 0 || (abs_x >= min && abs_x <= max));
+		 simd_bit_cast<I>(x) == 0 || (abs_x >= min && abs_x <= max));
       }
     else
       {

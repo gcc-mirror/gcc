@@ -17,7 +17,6 @@
 
 // { dg-do run { target c++11 } }
 // { dg-options "-O0" }
-// { dg-xfail-run-if "PR c++/65816" { *-*-* } }
 
 #include <map>
 #include <testsuite_hooks.h>

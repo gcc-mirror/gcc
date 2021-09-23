@@ -199,14 +199,6 @@ mark_operand_necessary (tree op)
 static void
 mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 {
-  /* With non-call exceptions, we have to assume that all statements could
-     throw.  If a statement could throw, it can be deemed necessary.  */
-  if (stmt_unremovable_because_of_non_call_eh_p (cfun, stmt))
-    {
-      mark_stmt_necessary (stmt, true);
-      return;
-    }
-
   /* Statements that are implicitly live.  Most function calls, asm
      and return statements are required.  Labels and GIMPLE_BIND nodes
      are kept because they are control flow, and we have no way of
@@ -250,14 +242,6 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    && DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee))
 	  return;
 
-	/* Most, but not all function calls are required.  Function calls that
-	   produce no result and have no side effects (i.e. const pure
-	   functions) are unnecessary.  */
-	if (gimple_has_side_effects (stmt))
-	  {
-	    mark_stmt_necessary (stmt, true);
-	    return;
-	  }
 	/* IFN_GOACC_LOOP calls are necessary in that they are used to
 	   represent parameter (i.e. step, bound) of a lowered OpenACC
 	   partitioned loop.  But this kind of partitioned loop might not
@@ -269,8 +253,6 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    mark_stmt_necessary (stmt, true);
 	    return;
 	  }
-	if (!gimple_call_lhs (stmt))
-	  return;
 	break;
       }
 
@@ -312,19 +294,24 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
   /* If the statement has volatile operands, it needs to be preserved.
      Same for statements that can alter control flow in unpredictable
      ways.  */
-  if (gimple_has_volatile_ops (stmt) || is_ctrl_altering_stmt (stmt))
+  if (gimple_has_side_effects (stmt) || is_ctrl_altering_stmt (stmt))
     {
       mark_stmt_necessary (stmt, true);
       return;
     }
 
-  if (stmt_may_clobber_global_p (stmt))
+  /* If a statement could throw, it can be deemed necessary unless we
+     are allowed to remove dead EH.  Test this after checking for
+     new/delete operators since we always elide their EH.  */
+  if (!cfun->can_delete_dead_exceptions
+      && stmt_could_throw_p (cfun, stmt))
     {
       mark_stmt_necessary (stmt, true);
       return;
     }
 
-  if (gimple_vdef (stmt) && keep_all_vdefs_p ())
+  if ((gimple_vdef (stmt) && keep_all_vdefs_p ())
+      || stmt_may_clobber_global_p (stmt))
     {
       mark_stmt_necessary (stmt, true);
       return;
@@ -427,10 +414,11 @@ find_obviously_necessary_stmts (bool aggressive)
   if ((flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE))
     return;
 
-  /* Prevent the empty possibly infinite loops from being removed.  */
+  /* Prevent the empty possibly infinite loops from being removed.  This is
+     needed to make the logic in remove_dead_stmt work to identify the
+     correct edge to keep when removing a controlling condition.  */
   if (aggressive)
     {
-      class loop *loop;
       if (mark_irreducible_loops ())
 	FOR_EACH_BB_FN (bb, cfun)
 	  {
@@ -440,17 +428,19 @@ find_obviously_necessary_stmts (bool aggressive)
 		  && (e->flags & EDGE_IRREDUCIBLE_LOOP))
 		{
 	          if (dump_file)
-	            fprintf (dump_file, "Marking back edge of irreducible loop %i->%i\n",
-		    	     e->src->index, e->dest->index);
+		    fprintf (dump_file, "Marking back edge of irreducible "
+			     "loop %i->%i\n", e->src->index, e->dest->index);
 		  mark_control_dependent_edges_necessary (e->dest, false);
 		}
 	  }
 
-      FOR_EACH_LOOP (loop, 0)
-	if (!finite_loop_p (loop))
+      for (auto loop : loops_list (cfun, 0))
+	/* For loops without an exit do not mark any condition.  */
+	if (loop->exits->next && !finite_loop_p (loop))
 	  {
 	    if (dump_file)
-	      fprintf (dump_file, "cannot prove finiteness of loop %i\n", loop->num);
+	      fprintf (dump_file, "cannot prove finiteness of loop %i\n",
+		       loop->num);
 	    mark_control_dependent_edges_necessary (loop->latch, false);
 	  }
     }
@@ -465,7 +455,7 @@ ref_may_be_aliased (tree ref)
   gcc_assert (TREE_CODE (ref) != WITH_SIZE_EXPR);
   while (handled_component_p (ref))
     ref = TREE_OPERAND (ref, 0);
-  if (TREE_CODE (ref) == MEM_REF
+  if ((TREE_CODE (ref) == MEM_REF || TREE_CODE (ref) == TARGET_MEM_REF)
       && TREE_CODE (TREE_OPERAND (ref, 0)) == ADDR_EXPR)
     ref = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
   return !(DECL_P (ref)
@@ -1274,8 +1264,7 @@ maybe_optimize_arith_overflow (gimple_stmt_iterator *gsi,
       fprintf (dump_file, "\n");
     }
 
-  if (!update_call_from_tree (gsi, result))
-    gimplify_and_update_call_from_tree (gsi, result);
+  gimplify_and_update_call_from_tree (gsi, result);
 }
 
 /* Eliminate unnecessary statements. Any instruction not marked as necessary
@@ -1289,7 +1278,6 @@ eliminate_unnecessary_stmts (void)
   gimple_stmt_iterator gsi, psi;
   gimple *stmt;
   tree call;
-  vec<basic_block> h;
   auto_vec<edge> to_remove_edges;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1320,6 +1308,7 @@ eliminate_unnecessary_stmts (void)
 
      as desired.  */
   gcc_assert (dom_info_available_p (CDI_DOMINATORS));
+  auto_vec<basic_block> h;
   h = get_all_dominated_blocks (CDI_DOMINATORS,
 				single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 
@@ -1474,7 +1463,6 @@ eliminate_unnecessary_stmts (void)
       something_changed |= remove_dead_phis (bb);
     }
 
-  h.release ();
 
   /* Since we don't track liveness of virtual PHI nodes, it is possible that we
      rendered some PHI nodes unreachable while they are still in use.

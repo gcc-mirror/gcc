@@ -491,7 +491,7 @@ read_sf (st_parameter_dt *dtp, size_t *length)
 
    If the read is short, then it is because the current record does not
    have enough data to satisfy the read request and the file was
-   opened with PAD=YES.  The caller must assume tailing spaces for
+   opened with PAD=YES.  The caller must assume trailing spaces for
    short reads.  */
 
 void *
@@ -4337,7 +4337,7 @@ extern void st_read_done (st_parameter_dt *);
 export_proto(st_read_done);
 
 void
-st_read_done_worker (st_parameter_dt *dtp)
+st_read_done_worker (st_parameter_dt *dtp, bool unlock)
 {
   bool free_newunit = false;
   finalize_transfer (dtp);
@@ -4367,7 +4367,8 @@ st_read_done_worker (st_parameter_dt *dtp)
 	  free_format (dtp);
 	}
     }
-   unlock_unit (dtp->u.p.current_unit);
+   if (unlock)
+     unlock_unit (dtp->u.p.current_unit);
    if (free_newunit)
      {
        /* Avoid inverse lock issues by placing after unlock_unit.  */
@@ -4394,7 +4395,7 @@ st_read_done (st_parameter_dt *dtp)
 	  unlock_unit (dtp->u.p.current_unit);
 	}
       else
-	st_read_done_worker (dtp);  /* Calls unlock_unit.  */
+	st_read_done_worker (dtp, true);  /* Calls unlock_unit.  */
     }
 
   library_end ();
@@ -4412,7 +4413,7 @@ st_write (st_parameter_dt *dtp)
 
 
 void
-st_write_done_worker (st_parameter_dt *dtp)
+st_write_done_worker (st_parameter_dt *dtp, bool unlock)
 {
   bool free_newunit = false;
   finalize_transfer (dtp);
@@ -4463,7 +4464,8 @@ st_write_done_worker (st_parameter_dt *dtp)
 	  free_format (dtp);
 	}
     }
-   unlock_unit (dtp->u.p.current_unit);
+   if (unlock)
+     unlock_unit (dtp->u.p.current_unit);
    if (free_newunit)
      {
        /* Avoid inverse lock issues by placing after unlock_unit.  */
@@ -4496,7 +4498,7 @@ st_write_done (st_parameter_dt *dtp)
 	  unlock_unit (dtp->u.p.current_unit);
 	}
       else
-	st_write_done_worker (dtp);  /* Calls unlock_unit.  */
+	st_write_done_worker (dtp, true);  /* Calls unlock_unit.  */
     }
 
   library_end ();

@@ -231,6 +231,9 @@
 ;; Vector modes for 16-bit floating-point support.
 (define_mode_iterator VH [V8HF V4HF])
 
+;; Modes with 16-bit elements only.
+(define_mode_iterator V16 [V4HI V4HF V8HI V8HF])
+
 ;; 16-bit floating-point vector modes suitable for moving (includes BFmode).
 (define_mode_iterator VHFBF [V8HF V4HF V4BF V8BF])
 
@@ -261,6 +264,7 @@
 
 ;; MVE mode iterator.
 (define_mode_iterator MVE_types [V16QI V8HI V4SI V2DI TI V8HF V4SF V2DF])
+(define_mode_iterator MVE_vecs [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
 (define_mode_iterator MVE_VLD_ST [V16QI V8HI V4SI V8HF V4SF])
 (define_mode_iterator MVE_0 [V8HF V4SF])
 (define_mode_iterator MVE_1 [V16QI V8HI V4SI V2DI])
@@ -284,6 +288,9 @@
 
 ;; Comparisons for vc<cmp>
 (define_code_iterator COMPARISONS [eq gt ge le lt])
+;; Comparisons for MVE
+(define_code_iterator MVE_COMPARISONS [eq ge geu gt gtu le lt ne])
+(define_code_iterator MVE_FP_COMPARISONS [eq ge gt le lt ne])
 
 ;; A list of ...
 (define_code_iterator IOR_XOR [ior xor])
@@ -335,7 +342,13 @@
 (define_code_attr cmp_op [(eq "eq") (gt "gt") (ge "ge") (lt "lt") (le "le")
                           (gtu "gt") (geu "ge")])
 
+(define_code_attr mve_cmp_op [(eq "eq") (gt "gt") (ge "ge") (lt "lt") (le "le")
+                              (gtu "hi") (geu "cs") (ne "ne")])
+
 (define_code_attr cmp_type [(eq "i") (gt "s") (ge "s") (lt "s") (le "s")])
+
+(define_code_attr mve_cmp_type [(eq "i") (gt "s") (ge "s") (lt "s") (le "s")
+                                (gtu "u") (geu "u") (ne "i")])
 
 (define_code_attr vfml_op [(plus "a") (minus "s")])
 
@@ -350,8 +363,6 @@
 
 (define_int_iterator NEON_VCMP [UNSPEC_VCEQ UNSPEC_VCGT UNSPEC_VCGE
 				UNSPEC_VCLT UNSPEC_VCLE])
-
-(define_int_iterator NEON_VACMP [UNSPEC_VCAGE UNSPEC_VCAGT])
 
 (define_int_iterator NEON_VAGLTE [UNSPEC_VCAGE UNSPEC_VCAGT
 				  UNSPEC_VCALE UNSPEC_VCALT])
@@ -561,15 +572,18 @@
 ;; (Opposite) mode to convert to/from for vector-half mode conversions.
 (define_mode_attr VH_CVTTO [(V4HI "V4HF") (V4HF "V4HI")
 			    (V8HI "V8HF") (V8HF "V8HI")])
+(define_mode_attr VH_cvtto [(V4HI "v4hf") (V4HF "v4hi")
+			    (V8HI "v8hf") (V8HF "v8hi")])
 
 ;; Define element mode for each vector mode.
 (define_mode_attr V_elem [(V8QI "QI") (V16QI "QI")
 			  (V4HI "HI") (V8HI "HI")
 			  (V4HF "HF") (V8HF "HF")
 			  (V4BF "BF") (V8BF "BF")
-                          (V2SI "SI") (V4SI "SI")
-                          (V2SF "SF") (V4SF "SF")
-                          (DI "DI")   (V2DI "DI")])
+			  (V2SI "SI") (V4SI "SI")
+			  (V2SF "SF") (V4SF "SF")
+			  (DI   "DI") (V2DI "DI")
+			  (V2DF "DF")])
 
 ;; As above but in lower case.
 (define_mode_attr V_elem_l [(V8QI "qi") (V16QI "qi")
@@ -709,6 +723,7 @@
 (define_mode_attr v_cmp_result [(V8QI "v8qi") (V16QI "v16qi")
 				(V4HI "v4hi") (V8HI  "v8hi")
 				(V2SI "v2si") (V4SI  "v4si")
+				(V4HF "v4hi") (V8HF  "v8hi")
 				(DI   "di")   (V2DI  "v2di")
 				(V2SF "v2si") (V4SF  "v4si")])
 
@@ -1271,19 +1286,17 @@
 		       (VMOVLBQ_U "u") (VCVTQ_FROM_F_S "s") (VCVTQ_FROM_F_U "u")
 		       (VCVTPQ_S "s") (VCVTPQ_U "u") (VCVTNQ_S "s")
 		       (VCVTNQ_U "u") (VCVTMQ_S "s") (VCVTMQ_U "u")
-		       (VCLZQ_U "u") (VCLZQ_S "s") (VREV32Q_U "u")
+		       (VREV32Q_U "u")
 		       (VREV32Q_S "s") (VADDLVQ_U "u") (VADDLVQ_S "s")
 		       (VCVTQ_N_TO_F_S "s") (VCVTQ_N_TO_F_U "u")
 		       (VCREATEQ_U "u") (VCREATEQ_S "s") (VSHRQ_N_S "s")
 		       (VSHRQ_N_U "u") (VCVTQ_N_FROM_F_S "s") (VSHLQ_U "u")
 		       (VCVTQ_N_FROM_F_U "u") (VADDLVQ_P_S "s") (VSHLQ_S "s")
-		       (VADDLVQ_P_U "u") (VCMPNEQ_U "u") (VCMPNEQ_S "s")
+		       (VADDLVQ_P_U "u")
 		       (VABDQ_M_S "s") (VABDQ_M_U "u") (VABDQ_S "s")
 		       (VABDQ_U "u") (VADDQ_N_S "s") (VADDQ_N_U "u")
 		       (VADDVQ_P_S "s")	(VADDVQ_P_U "u") (VBRSRQ_N_S "s")
-		       (VBRSRQ_N_U "u") (VCMPEQQ_S "s") (VCMPEQQ_U "u")
-		       (VCMPEQQ_N_S "s") (VCMPEQQ_N_U "u") (VCMPNEQ_N_S "s")
-		       (VCMPNEQ_N_U "u")
+		       (VBRSRQ_N_U "u")
 		       (VHADDQ_N_S "s") (VHADDQ_N_U "u") (VHADDQ_S "s")
 		       (VHADDQ_U "u") (VHSUBQ_N_S "s")	(VHSUBQ_N_U "u")
 		       (VHSUBQ_S "s") (VMAXQ_S "s") (VMAXQ_U "u") (VHSUBQ_U "u")
@@ -1523,7 +1536,6 @@
 (define_int_iterator VREV16Q [VREV16Q_U VREV16Q_S])
 (define_int_iterator VCVTAQ [VCVTAQ_U VCVTAQ_S])
 (define_int_iterator VDUPQ_N [VDUPQ_N_U VDUPQ_N_S])
-(define_int_iterator VCLZQ [VCLZQ_U VCLZQ_S])
 (define_int_iterator VADDVQ [VADDVQ_U VADDVQ_S])
 (define_int_iterator VREV32Q [VREV32Q_U VREV32Q_S])
 (define_int_iterator VMOVLBQ [VMOVLBQ_S VMOVLBQ_U])
@@ -1539,16 +1551,12 @@
 (define_int_iterator VSHRQ_N [VSHRQ_N_S VSHRQ_N_U])
 (define_int_iterator VCVTQ_N_FROM_F [VCVTQ_N_FROM_F_S VCVTQ_N_FROM_F_U])
 (define_int_iterator VADDLVQ_P [VADDLVQ_P_S VADDLVQ_P_U])
-(define_int_iterator VCMPNEQ [VCMPNEQ_U VCMPNEQ_S])
 (define_int_iterator VSHLQ [VSHLQ_S VSHLQ_U])
 (define_int_iterator VABDQ [VABDQ_S VABDQ_U])
 (define_int_iterator VADDQ_N [VADDQ_N_S VADDQ_N_U])
 (define_int_iterator VADDVAQ [VADDVAQ_S VADDVAQ_U])
 (define_int_iterator VADDVQ_P [VADDVQ_P_U VADDVQ_P_S])
 (define_int_iterator VBRSRQ_N [VBRSRQ_N_U VBRSRQ_N_S])
-(define_int_iterator VCMPEQQ [VCMPEQQ_U VCMPEQQ_S])
-(define_int_iterator VCMPEQQ_N [VCMPEQQ_N_S VCMPEQQ_N_U])
-(define_int_iterator VCMPNEQ_N [VCMPNEQ_N_U VCMPNEQ_N_S])
 (define_int_iterator VHADDQ [VHADDQ_S VHADDQ_U])
 (define_int_iterator VHADDQ_N [VHADDQ_N_U VHADDQ_N_S])
 (define_int_iterator VHSUBQ [VHSUBQ_S VHSUBQ_U])

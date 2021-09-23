@@ -131,9 +131,6 @@ static tree m_acc, a_acc;
 
 static bitmap tailr_arg_needs_copy;
 
-static bool optimize_tail_call (struct tailcall *, bool);
-static void eliminate_tail_call (struct tailcall *);
-
 /* Returns false when the function is not suitable for tail call optimization
    from some reason (e.g. if it takes variable number of arguments).  */
 
@@ -710,9 +707,11 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   ret_var = gimple_return_retval (as_a <greturn *> (stmt));
 
   /* We may proceed if there either is no return value, or the return value
-     is identical to the call's return.  */
+     is identical to the call's return or if the return decl is an empty type
+     variable and the call's return was not assigned. */
   if (ret_var
-      && (ret_var != ass_var))
+      && (ret_var != ass_var
+	  && !(is_empty_type (TREE_TYPE (ret_var)) && !ass_var)))
     return;
 
   /* If this is not a tail recursive call, we cannot handle addends or
@@ -924,10 +923,11 @@ decrease_profile (basic_block bb, profile_count count)
 }
 
 /* Eliminates tail call described by T.  TMP_VARS is a list of
-   temporary variables used to copy the function arguments.  */
+   temporary variables used to copy the function arguments.
+   Allocates *NEW_LOOP if not already done and initializes it.  */
 
 static void
-eliminate_tail_call (struct tailcall *t)
+eliminate_tail_call (struct tailcall *t, class loop *&new_loop)
 {
   tree param, rslt;
   gimple *stmt, *call;
@@ -997,6 +997,16 @@ eliminate_tail_call (struct tailcall *t)
   gcc_assert (e);
   PENDING_STMT (e) = NULL;
 
+  /* Add the new loop.  */
+  if (!new_loop)
+    {
+      new_loop = alloc_loop ();
+      new_loop->header = first;
+      new_loop->finite_p = true;
+    }
+  else
+    gcc_assert (new_loop->header == first);
+
   /* Add phi node entries for arguments.  The ordering of the phi nodes should
      be the same as the ordering of the arguments.  */
   for (param = DECL_ARGUMENTS (current_function_decl),
@@ -1035,11 +1045,12 @@ eliminate_tail_call (struct tailcall *t)
    mark the tailcalls for the sibcall optimization.  */
 
 static bool
-optimize_tail_call (struct tailcall *t, bool opt_tailcalls)
+optimize_tail_call (struct tailcall *t, bool opt_tailcalls,
+		    class loop *&new_loop)
 {
   if (t->tail_recursion)
     {
-      eliminate_tail_call (t);
+      eliminate_tail_call (t, new_loop);
       return true;
     }
 
@@ -1077,8 +1088,7 @@ create_tailcall_accumulator (const char *label, basic_block bb, tree init)
   gphi *phi;
 
   phi = create_phi_node (tmp, bb);
-  /* RET_TYPE can be a float when -ffast-maths is enabled.  */
-  add_phi_arg (phi, fold_convert (ret_type, init), single_pred_edge (bb),
+  add_phi_arg (phi, init, single_pred_edge (bb),
 	       UNKNOWN_LOCATION);
   return PHI_RESULT (phi);
 }
@@ -1155,14 +1165,17 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	      }
 	  phis_constructed = true;
 	}
+      tree ret_type = TREE_TYPE (DECL_RESULT (current_function_decl));
+      if (POINTER_TYPE_P (ret_type))
+	ret_type = sizetype;
 
       if (act->add && !a_acc)
 	a_acc = create_tailcall_accumulator ("add_acc", first,
-					     integer_zero_node);
+					     build_zero_cst (ret_type));
 
       if (act->mult && !m_acc)
 	m_acc = create_tailcall_accumulator ("mult_acc", first,
-					     integer_one_node);
+					     build_one_cst (ret_type));
     }
 
   if (a_acc || m_acc)
@@ -1173,12 +1186,15 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
       opt_tailcalls = false;
     }
 
+  class loop *new_loop = NULL;
   for (; tailcalls; tailcalls = next)
     {
       next = tailcalls->next;
-      changed |= optimize_tail_call (tailcalls, opt_tailcalls);
+      changed |= optimize_tail_call (tailcalls, opt_tailcalls, new_loop);
       free (tailcalls);
     }
+  if (new_loop)
+    add_loop (new_loop, loops_for_fn (cfun)->tree_root);
 
   if (a_acc || m_acc)
     {
@@ -1194,11 +1210,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
     }
 
   if (changed)
-    {
-      /* We may have created new loops.  Make them magically appear.  */
-      loops_state_set (LOOPS_NEED_FIXUP);
-      free_dominance_info (CDI_DOMINATORS);
-    }
+    free_dominance_info (CDI_DOMINATORS);
 
   /* Add phi nodes for the virtual operands defined in the function to the
      header of the loop created by tail recursion elimination.  Do so

@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
 
+#pragma GCC target "+nosve"
+
 typedef int __attribute__ ((mode (SI))) int32_t;
 typedef int __attribute__ ((mode (DI))) int64_t;
 typedef unsigned __attribute__ ((mode (SI))) size_t;

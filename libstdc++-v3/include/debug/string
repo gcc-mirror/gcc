@@ -41,6 +41,14 @@
     __gnu_debug::_Error_formatter::_S_at(_File, _Line, _Func)		\
       ._M_message(#_Cond)._M_error()
 
+#if _GLIBCXX_USE_CXX11_ABI && __cplusplus >= 201103
+# define _GLIBCXX_INSERT_RETURNS_ITERATOR 1
+# define _GLIBCXX_INSERT_RETURNS_ITERATOR_ONLY(expr) expr
+#else
+# define _GLIBCXX_INSERT_RETURNS_ITERATOR 0
+# define _GLIBCXX_INSERT_RETURNS_ITERATOR_ONLY(expr)
+#endif
+
 namespace __gnu_debug
 {
   /** Checks that __s is non-NULL or __n == 0, and then returns __s. */
@@ -123,21 +131,21 @@ namespace __gnu_debug
 
       using _Base::npos;
 
-      basic_string()
-	_GLIBCXX_NOEXCEPT_IF(std::is_nothrow_default_constructible<_Base>::value)
-	: _Base() { }
-
       // 21.3.1 construct/copy/destroy:
+
       explicit
       basic_string(const _Allocator& __a) _GLIBCXX_NOEXCEPT
       : _Base(__a) { }
 
 #if __cplusplus < 201103L
+      basic_string() : _Base() { }
+
       basic_string(const basic_string& __str)
       : _Base(__str) { }
 
       ~basic_string() { }
 #else
+      basic_string() = default;
       basic_string(const basic_string&) = default;
       basic_string(basic_string&&) = default;
 
@@ -146,13 +154,15 @@ namespace __gnu_debug
       : _Base(__l, __a)
       { }
 
-#if _GLIBCXX_USE_CXX11_ABI
       basic_string(const basic_string& __s, const _Allocator& __a)
       : _Base(__s, __a) { }
 
       basic_string(basic_string&& __s, const _Allocator& __a)
-      : _Base(std::move(__s), __a) { }
-#endif
+      noexcept(
+	std::is_nothrow_constructible<_Base, _Base, const _Allocator&>::value )
+      : _Safe(std::move(__s._M_safe()), __a),
+	_Base(std::move(__s._M_base()), __a)
+      { }
 
       ~basic_string() = default;
 
@@ -178,7 +188,7 @@ namespace __gnu_debug
 
       basic_string(const _CharT* __s, const _Allocator& __a = _Allocator())
       : _Base(__glibcxx_check_string_constructor(__s), __a)
-      { this->assign(__s); }
+      { }
 
       basic_string(size_type __n, _CharT __c,
 		   const _Allocator& __a = _Allocator())
@@ -635,15 +645,22 @@ namespace __gnu_debug
 	  __glibcxx_check_insert_range(__p, __first, __last, __dist);
 
 	  typename _Base::iterator __res;
-#if _GLIBCXX_USE_CXX11_ABI && __cplusplus >= 201103
-	  if (__dist.second >= __dp_sign)
-	    __res = _Base::insert(__p.base(), __gnu_debug::__unsafe(__first),
-				  __gnu_debug::__unsafe(__last));
-	  else
-	    __res = _Base::insert(__p.base(), __first, __last);
-#else
+#if ! _GLIBCXX_INSERT_RETURNS_ITERATOR
 	  const size_type __offset = __p.base() - _Base::begin();
-	  _Base::insert(__p.base(), __first, __last);
+#endif
+	  if (__dist.second >= __dp_sign)
+	    {
+	      _GLIBCXX_INSERT_RETURNS_ITERATOR_ONLY(__res =)
+		_Base::insert(__p.base(), __gnu_debug::__unsafe(__first),
+			      __gnu_debug::__unsafe(__last));
+	    }
+	  else
+	    {
+	      _GLIBCXX_INSERT_RETURNS_ITERATOR_ONLY(__res =)
+		_Base::insert(__p.base(), __first, __last);
+	    }
+
+#if ! _GLIBCXX_INSERT_RETURNS_ITERATOR
 	  __res = _Base::begin() + __offset;
 #endif
 	  this->_M_invalidate_all();
@@ -676,7 +693,7 @@ namespace __gnu_debug
       }
 
       iterator
-      erase(iterator __position)
+      erase(__const_iterator __position)
       {
 	__glibcxx_check_erase(__position);
 	typename _Base::iterator __res = _Base::erase(__position.base());
@@ -685,7 +702,7 @@ namespace __gnu_debug
       }
 
       iterator
-      erase(iterator __first, iterator __last)
+      erase(__const_iterator __first, __const_iterator __last)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
@@ -1285,11 +1302,47 @@ namespace __gnu_debug
   typedef basic_string<wchar_t> wstring;
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  /// A string of @c char8_t
+  typedef basic_string<char8_t> u8string;
+#endif
+
+#if __cplusplus >= 201103L
+  /// A string of @c char16_t
+  typedef basic_string<char16_t> u16string;
+
+  /// A string of @c char32_t
+  typedef basic_string<char32_t> u32string;
+#endif
+
   template<typename _CharT, typename _Traits, typename _Allocator>
     struct _Insert_range_from_self_is_safe<
       __gnu_debug::basic_string<_CharT, _Traits, _Allocator> >
       { enum { __value = 1 }; };
 
 } // namespace __gnu_debug
+
+#if __cplusplus >= 201103L
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  /// std::hash specialization for __gnu_debug::basic_string.
+  template<typename _CharT>
+    struct hash<__gnu_debug::basic_string<_CharT>>
+    : public hash<std::basic_string<_CharT>>
+    { };
+
+  template<typename _CharT>
+    struct __is_fast_hash<hash<__gnu_debug::basic_string<_CharT>>>
+    : __is_fast_hash<hash<std::basic_string<_CharT>>>
+    { };
+
+_GLIBCXX_END_NAMESPACE_VERSION
+}
+#endif /* C++11 */
+
+#undef _GLIBCXX_INSERT_RETURNS_ITERATOR
+#undef _GLIBCXX_INSERT_RETURNS_ITERATOR_ONLY
 
 #endif

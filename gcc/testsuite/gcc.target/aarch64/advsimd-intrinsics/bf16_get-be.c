@@ -1,4 +1,5 @@
 /* { dg-do assemble { target { aarch64*-*-* } } } */
+/* { dg-require-effective-target stdint_types_mbig_endian } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
 /* { dg-add-options arm_v8_2a_bf16_neon } */
 /* { dg-additional-options "-mbig-endian -save-temps" } */

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,6 +38,7 @@
 #include "attribs.h"
 #include "varasm.h"
 #include "toplev.h"
+#include "opts.h"
 #include "output.h"
 #include "debug.h"
 #include "convert.h"
@@ -109,6 +110,8 @@ static tree handle_target_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_clones_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_type_attribute (tree *, tree, tree, int, bool *);
+static tree handle_zero_call_used_regs_attribute (tree *, tree, tree, int,
+						  bool *);
 
 static const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
 {
@@ -190,6 +193,9 @@ const struct attribute_spec gnat_internal_attribute_table[] =
     handle_vector_type_attribute, NULL },
   { "may_alias",    0, 0,  false, true,  false, false,
     NULL, NULL },
+
+  { "zero_call_used_regs", 1, 1, true, false, false, false,
+    handle_zero_call_used_regs_attribute, NULL },
 
   /* ??? format and format_arg are heavy and not supported, which actually
      prevents support for stdio builtins, which we however declare as part
@@ -784,7 +790,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   tree context = NULL_TREE;
   struct deferred_decl_context_node *deferred_decl_context = NULL;
 
-  /* If explicitely asked to make DECL global or if it's an imported nested
+  /* If explicitly asked to make DECL global or if it's an imported nested
      object, short-circuit the regular Scope-based context computation.  */
   if (!((TREE_PUBLIC (decl) && DECL_EXTERNAL (decl)) || force_global == 1))
     {
@@ -836,7 +842,8 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   if (!deferred_decl_context)
     DECL_CONTEXT (decl) = context;
 
-  TREE_NO_WARNING (decl) = (No (gnat_node) || Warnings_Off (gnat_node));
+  suppress_warning (decl, all_warnings,
+		    No (gnat_node) || Warnings_Off (gnat_node));
 
   /* Set the location of DECL and emit a declaration for it.  */
   if (Present (gnat_node) && !renaming_from_instantiation_p (gnat_node))
@@ -1276,7 +1283,7 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
 
   finish_record_type (new_type, nreverse (new_field_list), 2, false);
   relate_alias_sets (new_type, type, ALIAS_SET_COPY);
-  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
     SET_TYPE_DEBUG_TYPE (new_type, TYPE_DEBUG_TYPE (type));
   else if (TYPE_STUB_DECL (type))
     SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
@@ -1547,7 +1554,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   TYPE_SIZE (record) = size ? size : orig_size;
   TYPE_SIZE_UNIT (record)
     = convert (sizetype,
-	       size_binop (CEIL_DIV_EXPR, TYPE_SIZE (record),
+	       size_binop (EXACT_DIV_EXPR, TYPE_SIZE (record),
 			   bitsize_unit_node));
 
   /* If we are changing the alignment and the input type is a record with
@@ -1609,7 +1616,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     }
 
   /* Make the inner type the debug type of the padded type.  */
-  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
     SET_TYPE_DEBUG_TYPE (record, maybe_debug_type (type));
 
   /* Unless debugging information isn't being written for the input type,
@@ -1637,14 +1644,14 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	    = create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
 			      size_unit, true, global_bindings_p (),
 			      !definition && global_bindings_p (), false,
-			      false, true, true, NULL, gnat_entity);
+			      false, true, true, NULL, gnat_entity, false);
 	  TYPE_SIZE_UNIT (record) = size_unit;
 	}
 
       /* There is no need to show what we are a subtype of when outputting as
 	 few encodings as possible: regular debugging infomation makes this
 	 redundant.  */
-      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 	{
 	  tree marker = make_node (RECORD_TYPE);
 	  tree orig_name = TYPE_IDENTIFIER (type);
@@ -1721,11 +1728,11 @@ built:
       if (Comes_From_Source (gnat_entity))
 	{
 	  if (is_component_type)
-	    post_error_ne_tree ("component of& padded{ by ^ bits}?",
+	    post_error_ne_tree ("component of& padded{ by ^ bits}??",
 				gnat_entity, gnat_entity,
 				size_diffop (size, orig_size));
 	  else if (Present (gnat_error_node))
-	    post_error_ne_tree ("{^ }bits of & unused?",
+	    post_error_ne_tree ("{^ }bits of & unused??",
 				gnat_error_node, gnat_entity,
 				size_diffop (size, orig_size));
 	}
@@ -1970,7 +1977,6 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 {
   const enum tree_code orig_code = TREE_CODE (record_type);
   const bool had_size = TYPE_SIZE (record_type) != NULL_TREE;
-  const bool had_size_unit = TYPE_SIZE_UNIT (record_type) != NULL_TREE;
   const bool had_align = TYPE_ALIGN (record_type) > 0;
   /* For all-repped records with a size specified, lay the QUAL_UNION_TYPE
      out just like a UNION_TYPE, since the size will be fixed.  */
@@ -1997,9 +2003,6 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 
       if (!had_size)
 	TYPE_SIZE (record_type) = bitsize_zero_node;
-
-      if (!had_size_unit)
-	TYPE_SIZE_UNIT (record_type) = size_zero_node;
     }
   else
     {
@@ -2155,19 +2158,22 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
   /* We need to set the regular sizes if REP_LEVEL is one.  */
   if (rep_level == 1)
     {
-      /* If this is a padding record, we never want to make the size smaller
-	 than what was specified in it, if any.  */
-      if (TYPE_IS_PADDING_P (record_type) && TYPE_SIZE (record_type))
-	size = TYPE_SIZE (record_type);
-
-      tree size_unit = had_size_unit
-		       ? TYPE_SIZE_UNIT (record_type)
-		       : convert (sizetype,
-				  size_binop (CEIL_DIV_EXPR, size,
-					      bitsize_unit_node));
+      /* We round TYPE_SIZE and TYPE_SIZE_UNIT up to TYPE_ALIGN separately
+	 to avoid having very large masking constants in TYPE_SIZE_UNIT.  */
       const unsigned int align = TYPE_ALIGN (record_type);
 
+      /* If this is a padding record, we never want to make the size smaller
+	 than what was specified in it, if any.  */
+      if (TYPE_IS_PADDING_P (record_type) && had_size)
+	size = TYPE_SIZE (record_type);
+      else
+	size = round_up (size, BITS_PER_UNIT);
+
       TYPE_SIZE (record_type) = variable_size (round_up (size, align));
+
+      tree size_unit
+	= convert (sizetype,
+		   size_binop (EXACT_DIV_EXPR, size, bitsize_unit_node));
       TYPE_SIZE_UNIT (record_type)
 	= variable_size (round_up (size_unit, align / BITS_PER_UNIT));
     }
@@ -2274,7 +2280,7 @@ rest_of_record_type_compilation (tree record_type)
 
   /* If this record type is of variable size, make a parallel record type that
      will tell the debugger how the former is laid out (see exp_dbug.ads).  */
-  if (var_size && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (var_size && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
     {
       tree new_record_type
 	= make_node (TREE_CODE (record_type) == QUAL_UNION_TYPE
@@ -3543,9 +3549,6 @@ finish_subprog_decl (tree decl, tree asm_name, tree type)
   DECL_BY_REFERENCE (result_decl) = TREE_ADDRESSABLE (type);
   DECL_RESULT (decl) = result_decl;
 
-  /* Propagate the "const" property.  */
-  TREE_READONLY (decl) = TYPE_READONLY (type);
-
   /* Propagate the "pure" property.  */
   DECL_PURE_P (decl) = TYPE_RESTRICT (type);
 
@@ -4332,6 +4335,7 @@ update_pointer_to (tree old_type, tree new_type)
 	    TREE_TYPE (t) = new_type;
 	    if (TYPE_NULL_BOUNDS (t))
 	      TREE_TYPE (TREE_OPERAND (TYPE_NULL_BOUNDS (t), 0)) = new_type;
+	    TYPE_CANONICAL (t) = TYPE_CANONICAL (TYPE_POINTER_TO (new_type));
 	  }
 
       /* Chain REF and its variants at the end.  */
@@ -4348,7 +4352,10 @@ update_pointer_to (tree old_type, tree new_type)
       /* Now adjust them.  */
       for (; ref; ref = TYPE_NEXT_REF_TO (ref))
 	for (t = TYPE_MAIN_VARIANT (ref); t; t = TYPE_NEXT_VARIANT (t))
-	  TREE_TYPE (t) = new_type;
+	  {
+	    TREE_TYPE (t) = new_type;
+	    TYPE_CANONICAL (t) = TYPE_CANONICAL (TYPE_REFERENCE_TO (new_type));
+	  }
 
       TYPE_POINTER_TO (old_type) = NULL_TREE;
       TYPE_REFERENCE_TO (old_type) = NULL_TREE;
@@ -5861,8 +5868,7 @@ can_materialize_object_renaming_p (Node_Id expr)
 
 	    const Uint bitpos
 	      = Normalized_First_Bit (Entity (Selector_Name (expr)));
-	    if (!UI_Is_In_Int_Range (bitpos)
-		|| (bitpos != UI_No_Uint && bitpos != UI_From_Int (0)))
+	    if (bitpos != UI_No_Uint && bitpos != Uint_0)
 	      return false;
 
 	    expr = Prefix (expr);
@@ -6987,6 +6993,59 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   return NULL_TREE;
 }
 
+/* Handle a "zero_call_used_regs" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_zero_call_used_regs_attribute (tree *node, tree name, tree args,
+				      int ARG_UNUSED (flags),
+				      bool *no_add_attrs)
+{
+  tree decl = *node;
+  tree id = TREE_VALUE (args);
+
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE attribute applies only to functions", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* pragma Machine_Attribute turns string arguments into identifiers.
+     Reverse it.  */
+  if (TREE_CODE (id) == IDENTIFIER_NODE)
+    id = TREE_VALUE (args) = build_string
+      (IDENTIFIER_LENGTH (id), IDENTIFIER_POINTER (id));
+
+  if (TREE_CODE (id) != STRING_CST)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE argument not a string", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  bool found = false;
+  for (unsigned int i = 0; zero_call_used_regs_opts[i].name != NULL; ++i)
+    if (strcmp (TREE_STRING_POINTER (id),
+		zero_call_used_regs_opts[i].name) == 0)
+      {
+	found = true;
+	break;
+      }
+
+  if (!found)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"unrecognized %qE attribute argument %qs",
+		name, TREE_STRING_POINTER (id));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* ----------------------------------------------------------------------- *
  *                              BUILTIN FUNCTIONS                          *
  * ----------------------------------------------------------------------- */
@@ -7016,8 +7075,7 @@ def_builtin_1 (enum built_in_function fncode,
     return;
 
   gcc_assert ((!both_p && !fallback_p)
-	      || !strncmp (name, "__builtin_",
-			   strlen ("__builtin_")));
+	      || startswith (name, "__builtin_"));
 
   libname = name + strlen ("__builtin_");
   decl = add_builtin_function (name, fntype, fncode, fnclass,

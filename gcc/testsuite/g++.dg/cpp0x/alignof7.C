@@ -18,5 +18,5 @@ template void f4<int>(std::size_t);
 
 // { dg-final { scan-assembler "_Z2f1IiEvDTatT_E" } }
 // { dg-final { scan-assembler "_Z2f2IiEvDTaztlT_EE" } }
-// { dg-final { scan-assembler "_Z2f3IiEvDTv111__alignof__T_E" } }
-// { dg-final { scan-assembler "_Z2f4IiEvDTv111__alignof__tlT_EE" } }
+// { dg-final { scan-assembler "_Z2f3IiEvDTu11__alignof__T_EE" } }
+// { dg-final { scan-assembler "_Z2f4IiEvDTu11__alignof__XtlT_EEEE" } }

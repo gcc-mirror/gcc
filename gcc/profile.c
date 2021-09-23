@@ -1466,13 +1466,12 @@ branch_prob (bool thunk)
   if (flag_branch_probabilities
       && (profile_status_for_fn (cfun) == PROFILE_READ))
     {
-      class loop *loop;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	report_predictor_hitrates ();
 
       /* At this moment we have precise loop iteration count estimates.
 	 Record them to loop structure before the profile gets out of date. */
-      FOR_EACH_LOOP (loop, 0)
+      for (auto loop : loops_list (cfun, 0))
 	if (loop->header->count > 0 && loop->header->count.reliable_p ())
 	  {
 	    gcov_type nit = expected_loop_iterations_unbounded (loop);

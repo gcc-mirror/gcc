@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,14 +29,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routine used for the Fore attribute of ordinary
---  fixed point types whose Small is neither an integer nor its reciprocal.
+--  This package contains the routine for the Fore attribute of ordinary fixed
+--  point types whose Small is not a ratio of two sufficiently small integers.
 
 package System.Fore_Real is
    pragma Pure;
 
-   function Fore_Real (Lo, Hi : Long_Long_Float) return Natural;
+   function Fore_Fixed (Lo, Hi : Long_Float) return Natural;
    --  Compute Fore attribute value for a fixed point type. The parameters
-   --  are the low and high bounds, converted to Long_Long_Float.
+   --  are the low and high bounds, converted to Long_Float.
 
 end System.Fore_Real;

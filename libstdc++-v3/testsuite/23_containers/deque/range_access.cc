@@ -25,6 +25,6 @@ void
 test01()
 {
   std::deque<int> d{1, 2, 3};
-  std::begin(d);
-  std::end(d);
+  (void) std::begin(d);
+  (void) std::end(d);
 }

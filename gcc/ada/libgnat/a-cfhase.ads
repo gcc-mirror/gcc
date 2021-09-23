@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -62,6 +62,11 @@ generic
 package Ada.Containers.Formal_Hashed_Sets with
   SPARK_Mode
 is
+   --  Contracts in this unit are meant for analysis only, not for run-time
+   --  checking.
+
+   pragma Assertion_Policy (Pre => Ignore);
+   pragma Assertion_Policy (Post => Ignore);
    pragma Annotate (CodePeer, Skip_Analysis);
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is private with
@@ -509,6 +514,16 @@ is
                  P_Right  => Positions (Container),
                  Position => Position)
           and Positions (Container) = Positions (Container)'Old;
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return not null access constant Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Position),
+     Post   =>
+       Constant_Reference'Result.all =
+         E.Get (Elements (Container), P.Get (Positions (Container), Position));
 
    procedure Move (Target : in out Set; Source : in out Set) with
      Global => null,
@@ -1457,7 +1472,7 @@ private
 
    type Node_Type is
       record
-         Element     : Element_Type;
+         Element     : aliased Element_Type;
          Next        : Count_Type;
          Has_Element : Boolean := False;
       end record;
@@ -1465,8 +1480,9 @@ private
    package HT_Types is new
      Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
 
-   type Set (Capacity : Count_Type; Modulus : Hash_Type) is
-     new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
+   type Set (Capacity : Count_Type; Modulus : Hash_Type) is record
+     Content : HT_Types.Hash_Table_Type (Capacity, Modulus);
+   end record;
 
    use HT_Types;
 

@@ -43,7 +43,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (this->rdbuf())
 	_M_streambuf_state = __state;
       else
-	  _M_streambuf_state = __state | badbit;
+	_M_streambuf_state = __state | badbit;
       if (this->exceptions() & this->rdstate())
 	__throw_ios_failure(__N("basic_ios::clear"));
     }
@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 292. effects of a.copyfmt (a)
-      if (this != &__rhs)
+      if (this != std::__addressof(__rhs))
 	{
 	  // Per 27.1.1, do not call imbue, yet must trash all caches
 	  // associated with imbue()

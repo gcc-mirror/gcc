@@ -78,7 +78,6 @@ gomp_thread_start (void *xdata)
 #else
   struct gomp_thread local_thr;
   thr = &local_thr;
-  pthread_setspecific (gomp_tls_key, thr);
 #endif
   gomp_sem_init (&thr->release, 0);
 
@@ -91,6 +90,9 @@ gomp_thread_start (void *xdata)
   thr->place = data->place;
 #ifdef GOMP_NEEDS_THREAD_HANDLE
   thr->handle = data->handle;
+#endif
+#if !(defined HAVE_TLS || defined USE_EMUTLS)
+  pthread_setspecific (gomp_tls_key, thr);
 #endif
 
   thr->ts.team->ordered_release[thr->ts.team_id] = &thr->release;

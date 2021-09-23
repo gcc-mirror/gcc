@@ -27,6 +27,8 @@ program main
 
   if (acc_is_present (h) .neqv. .TRUE.) stop 1
 
+  call acc_wait (async)
+
   h(:) = 0
 
   call acc_copyout_async (h, sizeof (h), async)
@@ -44,6 +46,8 @@ program main
   call acc_update_self_async (h, sizeof (h), async)
   
   if (acc_is_present (h) .neqv. .TRUE.) stop 3
+
+  call acc_wait (async)
 
   do i = 1, N
     if (h(i) /= i + i) stop 4

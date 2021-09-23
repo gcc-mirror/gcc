@@ -39,6 +39,7 @@ maxalign=8
 minframesize=0
 pcquantum=1
 ptrsize=8
+stackalign=8
 
 case $goarch in
     386)
@@ -46,6 +47,7 @@ case $goarch in
 	int64align=4
 	maxalign=4
 	ptrsize=4
+	stackalign=4
 	;;
     alpha)
 	family=ALPHA
@@ -58,6 +60,7 @@ case $goarch in
     amd64p32)
 	family=AMD64
 	ptrsize=4
+	stackalign=4
 	;;
     arm | armbe)
 	family=ARM
@@ -65,6 +68,7 @@ case $goarch in
 	minframesize=4
 	pcquantum=4
 	ptrsize=4
+	stackalign=4
 	case $goarch in
 	    *be)
 		bigendian=true
@@ -77,6 +81,7 @@ case $goarch in
 	defaultphyspagesize=65536
 	minframesize=8
 	pcquantum=4
+	stackalign=16
 	case $goarch in
 	    *be)
 		bigendian=true
@@ -96,6 +101,7 @@ case $goarch in
 	maxalign=2
 	pcquantum=4
 	ptrsize=4
+	stackalign=4
 	;;
     mips | mipsle | mips64p32 | mips64p32le)
 	family=MIPS
@@ -105,6 +111,7 @@ case $goarch in
 	minframesize=4
 	pcquantum=4
 	ptrsize=4
+	stackalign=4
 	case $goarch in
 	    *le)
 		bigendian=false
@@ -130,6 +137,7 @@ case $goarch in
         minframesize=16
         pcquantum=4
         ptrsize=4
+	stackalign=4
         ;;
     ppc)
 	family=PPC
@@ -138,6 +146,7 @@ case $goarch in
 	minframesize=32
 	pcquantum=4
 	ptrsize=4
+	stackalign=4
 	;;
     ppc64 | ppc64le)
 	family=PPC64
@@ -145,6 +154,7 @@ case $goarch in
 	defaultphyspagesize=65536
 	minframesize=32
 	pcquantum=4
+	stackalign=16
 	case $goarch in
 	    *le)
 		bigendian=false
@@ -155,6 +165,7 @@ case $goarch in
 	family=RISCV
 	pcquantum=2
 	ptrsize=4
+	stackalign=4
 	;;
     riscv64)
 	family=RISCV64
@@ -167,6 +178,7 @@ case $goarch in
 	minframesize=4
 	pcquantum=2
 	ptrsize=4
+	stackalign=4
 	;;
     s390x)
 	family=S390X
@@ -182,6 +194,7 @@ case $goarch in
 	minframesize=4
 	pcquantum=2
 	ptrsize=4
+	stackalign=4
 	case $goarch in
 	    *be)
 		bigendian=true
@@ -194,6 +207,7 @@ case $goarch in
 	defaultphyspagesize=8192
 	pcquantum=4
 	ptrsize=4
+	stackalign=4
 	;;
     sparc64)
 	family=SPARC64
@@ -243,6 +257,9 @@ case $keyword in
 	;;
     ptrsize)
 	echo $ptrsize
+	;;
+    stackalign)
+	echo $stackalign
 	;;
     *)
 	echo 1>&2 "unrecognized keyword \"$keyword\""

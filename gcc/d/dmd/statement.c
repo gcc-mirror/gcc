@@ -31,6 +31,7 @@ StorageClass mergeFuncAttrs(StorageClass s1, FuncDeclaration *f);
 bool checkEscapeRef(Scope *sc, Expression *e, bool gag);
 VarDeclaration *copyToTemp(StorageClass stc, const char *name, Expression *e);
 Statement *makeTupleForeachStatic(Scope *sc, ForeachStatement *fs, bool needExpansion);
+bool expressionsToString(OutBuffer &buf, Scope *sc, Expressions *exps);
 
 Identifier *fixupLabelName(Scope *sc, Identifier *ident)
 {
@@ -504,12 +505,19 @@ Statement *DtorExpStatement::syntaxCopy()
 CompileStatement::CompileStatement(Loc loc, Expression *exp)
     : Statement(loc)
 {
-    this->exp = exp;
+    this->exps = new Expressions();
+    this->exps->push(exp);
+}
+
+CompileStatement::CompileStatement(Loc loc, Expressions *exps)
+    : Statement(loc)
+{
+    this->exps = exps;
 }
 
 Statement *CompileStatement::syntaxCopy()
 {
-    return new CompileStatement(loc, exp->syntaxCopy());
+    return new CompileStatement(loc, Expression::arraySyntaxCopy(exps));
 }
 
 static Statements *errorStatements()
@@ -519,30 +527,34 @@ static Statements *errorStatements()
     return a;
 }
 
-Statements *CompileStatement::flatten(Scope *sc)
+static Statements *compileIt(CompileStatement *cs, Scope *sc)
 {
-    //printf("CompileStatement::flatten() %s\n", exp->toChars());
-    StringExp *se = semanticString(sc, exp, "argument to mixin");
-    if (!se)
+    //printf("CompileStatement::compileIt() %s\n", exp->toChars());
+    OutBuffer buf;
+    if (expressionsToString(buf, sc, cs->exps))
         return errorStatements();
-    se = se->toUTF8(sc);
 
     unsigned errors = global.errors;
-    Parser p(loc, sc->_module, (utf8_t *)se->string, se->len, 0);
+    const size_t len = buf.length();
+    const char *str = buf.extractChars();
+    Parser p(cs->loc, sc->_module, (const utf8_t *)str, len, false);
     p.nextToken();
 
     Statements *a = new Statements();
     while (p.token.value != TOKeof)
     {
         Statement *s = p.parseStatement(PSsemi | PScurlyscope);
-        if (!s || p.errors)
-        {
-            assert(!p.errors || global.errors != errors); // make sure we caught all the cases
+        if (!s || global.errors != errors)
             return errorStatements();
-        }
         a->push(s);
     }
     return a;
+}
+
+Statements *CompileStatement::flatten(Scope *sc)
+{
+    //printf("CompileStatement::flatten() %s\n", exp->toChars());
+    return compileIt(this, sc);
 }
 
 /******************************** CompoundStatement ***************************/

@@ -370,6 +370,10 @@ rtx_writer::print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx)
       print_rtx_head, m_indent * 2, "");
       m_sawclose = 0;
     }
+  if (GET_CODE (in_rtx) == CONST_VECTOR
+      && !GET_MODE_NUNITS (GET_MODE (in_rtx)).is_constant ()
+      && CONST_VECTOR_DUPLICATE_P (in_rtx))
+    fprintf (m_outfile, " repeat");
   fputs (" [", m_outfile);
   if (XVEC (in_rtx, idx) != NULL)
     {
@@ -377,12 +381,32 @@ rtx_writer::print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx)
       if (XVECLEN (in_rtx, idx))
 	m_sawclose = 1;
 
+      int barrier = XVECLEN (in_rtx, idx);
+      if (GET_CODE (in_rtx) == CONST_VECTOR
+	  && !GET_MODE_NUNITS (GET_MODE (in_rtx)).is_constant ())
+	barrier = CONST_VECTOR_NPATTERNS (in_rtx);
+
       for (int j = 0; j < XVECLEN (in_rtx, idx); j++)
 	{
 	  int j1;
 
+	  if (j == barrier)
+	    {
+	      fprintf (m_outfile, "\n%s%*s",
+		       print_rtx_head, m_indent * 2, "");
+	      if (!CONST_VECTOR_STEPPED_P (in_rtx))
+		fprintf (m_outfile, "repeat [");
+	      else if (CONST_VECTOR_NPATTERNS (in_rtx) == 1)
+		fprintf (m_outfile, "stepped [");
+	      else
+		fprintf (m_outfile, "stepped (interleave %d) [",
+			 CONST_VECTOR_NPATTERNS (in_rtx));
+	      m_indent += 2;
+	    }
+
 	  print_rtx (XVECEXP (in_rtx, idx, j));
-	  for (j1 = j + 1; j1 < XVECLEN (in_rtx, idx); j1++)
+	  int limit = MIN (barrier, XVECLEN (in_rtx, idx));
+	  for (j1 = j + 1; j1 < limit; j1++)
 	    if (XVECEXP (in_rtx, idx, j) != XVECEXP (in_rtx, idx, j1))
 	      break;
 
@@ -391,6 +415,12 @@ rtx_writer::print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx)
 	      fprintf (m_outfile, " repeated x%i", j1 - j);
 	      j = j1 - 1;
 	    }
+	}
+
+      if (barrier < XVECLEN (in_rtx, idx))
+	{
+	  m_indent -= 2;
+	  fprintf (m_outfile, "\n%s%*s]", print_rtx_head, m_indent * 2, "");
 	}
 
       m_indent -= 2;
@@ -1237,7 +1267,7 @@ print_rtx_insn_vec (FILE *file, const vec<rtx_insn *> &vec)
   unsigned int len = vec.length ();
   for (unsigned int i = 0; i < len; i++)
     {
-      print_rtl (file, vec[i]);
+      print_rtl_single (file, vec[i]);
       if (i < len - 1)
 	fputs (", ", file);
     }
@@ -1718,7 +1748,6 @@ print_value (pretty_printer *pp, const_rtx x, int verbose)
       pp_wide_integer (pp, SUBREG_BYTE (x));
       break;
     case SCRATCH:
-    case CC0:
     case PC:
       pp_string (pp, GET_RTX_NAME (GET_CODE (x)));
       break;

@@ -43,9 +43,9 @@ test02()
   VERIFY( iter != std::default_sentinel );
   VERIFY( std::default_sentinel != iter );
 
-  *iter++;
-  *iter++;
-  *iter++;
+  (void) *iter++;
+  (void) *iter++;
+  (void) *iter++;
   VERIFY( iter == std::default_sentinel );
   VERIFY( std::default_sentinel == iter );
 }

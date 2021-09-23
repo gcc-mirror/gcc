@@ -2,7 +2,7 @@
 
 /* Contributed by Gilles Gouaillardet  <gilles@rist.or.jp> */
 
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include <ISO_Fortran_binding.h>
 #include <stdlib.h>
 
 int cdesc_c(CFI_cdesc_t* x, long *expected)

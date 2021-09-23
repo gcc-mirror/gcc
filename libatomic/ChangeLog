@@ -1,3 +1,9 @@
+2021-07-21  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/101379
+	* config/linux/arm/host-config.h (__kernel_helper_version): New
+	function.  Adjust shadow macro.
+
 2021-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70454

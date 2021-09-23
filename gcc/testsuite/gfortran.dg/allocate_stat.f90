@@ -38,7 +38,7 @@ function func2() result(res)
   implicit none
   real, pointer :: gain 
   integer :: res
-  allocate (gain,STAT=func2) ! { dg-error "is not a variable" }
+  allocate (gain,STAT=func2) ! { dg-error "requires an argument list" }
   deallocate(gain)
   res = 0
 end function func2
@@ -51,7 +51,7 @@ subroutine sub()
   end interface
   real, pointer :: gain 
   integer, parameter :: res = 2
-  allocate (gain,STAT=func2) ! { dg-error "is not a variable" }
+  allocate (gain,STAT=func2) ! { dg-error "requires an argument list" }
   deallocate(gain)
 end subroutine sub
 
@@ -68,9 +68,9 @@ contains
  end function one
  subroutine sub()
    integer, pointer :: p
-   allocate(p, stat=one) ! { dg-error "is not a variable" }
+   allocate(p, stat=one) ! { dg-error "requires an argument list" }
    if(associated(p)) deallocate(p)
-   allocate(p, stat=two) ! { dg-error "is not a variable" }
+   allocate(p, stat=two) ! { dg-error "requires an argument list" }
    if(associated(p)) deallocate(p)
  end subroutine sub
 end module test

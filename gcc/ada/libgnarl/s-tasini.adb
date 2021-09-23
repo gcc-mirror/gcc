@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2020, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2021, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -420,7 +420,7 @@ package body System.Tasking.Initialization is
             when Terminated
                | Unactivated
             =>
-               pragma Assert (False);
+               pragma Assert (Standard.False);
                null;
 
             when Activating
@@ -535,7 +535,7 @@ package body System.Tasking.Initialization is
          C := C.Common.All_Tasks_Link;
       end loop;
 
-      pragma Assert (False);
+      pragma Assert (Standard.False);
    end Remove_From_All_Tasks_List;
 
    ---------------

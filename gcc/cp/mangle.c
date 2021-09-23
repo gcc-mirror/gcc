@@ -832,10 +832,22 @@ write_encoding (const tree decl)
       write_bare_function_type (fn_type,
 				mangle_return_type_p (decl),
 				d);
+
+      /* If this is a coroutine helper, then append an appropriate string to
+	 identify which.  */
+      if (tree ramp = DECL_RAMP_FN (decl))
+	{
+	  if (DECL_ACTOR_FN (ramp) == decl)
+	    write_string (JOIN_STR "actor");
+	  else if (DECL_DESTROY_FN (ramp) == decl)
+	    write_string (JOIN_STR "destroy");
+	  else
+	    gcc_unreachable ();
+	}
     }
 }
 
-/* Interface to substitution and identifer mangling, used by the
+/* Interface to substitution and identifier mangling, used by the
    module name mangler.  */
 
 void
@@ -1308,10 +1320,10 @@ find_decomp_unqualified_name (tree decl, size_t *len)
   const char *p = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   const char *end = p + IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl));
   bool nested = false;
-  if (strncmp (p, "_Z", 2))
+  if (!startswith (p, "_Z"))
     return NULL;
   p += 2;
-  if (!strncmp (p, "St", 2))
+  if (startswith (p, "St"))
     p += 2;
   else if (*p == 'N')
     {
@@ -1327,7 +1339,7 @@ find_decomp_unqualified_name (tree decl, size_t *len)
 	    break;
 	}
     }
-  if (strncmp (p, "DC", 2))
+  if (!startswith (p, "DC"))
     return NULL;
   if (nested)
     {
@@ -1423,9 +1435,12 @@ write_unqualified_name (tree decl)
 	}
       else if (DECL_OVERLOADED_OPERATOR_P (decl))
 	{
+	  tree t;
+	  if (!(t = DECL_RAMP_FN (decl)))
+	    t = decl;
 	  const char *mangled_name
-	    = (ovl_op_info[DECL_ASSIGNMENT_OPERATOR_P (decl)]
-	       [DECL_OVERLOADED_OPERATOR_CODE_RAW (decl)].mangled_name);
+	    = (ovl_op_info[DECL_ASSIGNMENT_OPERATOR_P (t)]
+	       [DECL_OVERLOADED_OPERATOR_CODE_RAW (t)].mangled_name);
 	  write_string (mangled_name);
 	}
       else if (UDLIT_OPER_P (DECL_NAME (decl)))
@@ -1628,6 +1643,7 @@ write_literal_operator_name (tree identifier)
 static void
 write_compact_number (int num)
 {
+  gcc_checking_assert (num >= 0);
   if (num > 0)
     write_unsigned_number (num - 1);
   write_char ('_');
@@ -2027,15 +2043,7 @@ write_local_name (tree function, const tree local_entity,
   /* For this purpose, parameters are numbered from right-to-left.  */
   if (parm)
     {
-      tree t;
-      int i = 0;
-      for (t = DECL_ARGUMENTS (function); t; t = DECL_CHAIN (t))
-	{
-	  if (t == parm)
-	    i = 1;
-	  else if (i)
-	    ++i;
-	}
+      int i = list_length (parm);
       write_char ('d');
       write_compact_number (i - 1);
     }
@@ -2947,6 +2955,16 @@ write_base_ref (tree expr, tree base = NULL_TREE)
   return true;
 }
 
+/* The number of elements spanned by a RANGE_EXPR.  */
+
+unsigned HOST_WIDE_INT
+range_expr_nelts (tree expr)
+{
+  tree lo = TREE_OPERAND (expr, 0);
+  tree hi = TREE_OPERAND (expr, 1);
+  return tree_to_uhwi (hi) - tree_to_uhwi (lo) + 1;
+}
+
 /* <expression> ::= <unary operator-name> <expression>
 		::= <binary operator-name> <expression> <expression>
 		::= <expr-primary>
@@ -3119,16 +3137,14 @@ write_expression (tree expr)
     {
       if (!ALIGNOF_EXPR_STD_P (expr))
 	{
-	  if (abi_warn_or_compat_version_crosses (15))
+	  if (abi_warn_or_compat_version_crosses (16))
 	    G.need_abi_warning = true;
-	  if (abi_version_at_least (15))
+	  if (abi_version_at_least (16))
 	    {
 	      /* We used to mangle __alignof__ like alignof.  */
-	      write_string ("v111__alignof__");
-	      if (TYPE_P (TREE_OPERAND (expr, 0)))
-		write_type (TREE_OPERAND (expr, 0));
-	      else
-		write_expression (TREE_OPERAND (expr, 0));
+	      write_string ("u11__alignof__");
+	      write_template_arg (TREE_OPERAND (expr, 0));
+	      write_char ('E');
 	      return;
 	    }
 	}
@@ -3293,8 +3309,14 @@ write_expression (tree expr)
 	  write_type (etype);
 	}
 
-      bool nontriv = !trivial_type_p (etype);
-      if (nontriv || !zero_init_expr_p (expr))
+      /* If this is an undigested initializer, mangle it as written.
+	 COMPOUND_LITERAL_P doesn't actually distinguish between digested and
+	 undigested braced casts, but it should work to use it to distinguish
+	 between braced casts in a template signature (undigested) and template
+	 parm object values (digested), and all CONSTRUCTORS that get here
+	 should be one of those two cases.  */
+      bool undigested = braced_init || COMPOUND_LITERAL_P (expr);
+      if (undigested || !zero_init_expr_p (expr))
 	{
 	  /* Convert braced initializer lists to STRING_CSTs so that
 	     A<"Foo"> mangles the same as A<{'F', 'o', 'o', 0}> while
@@ -3305,28 +3327,32 @@ write_expression (tree expr)
 	  if (TREE_CODE (expr) == CONSTRUCTOR)
 	    {
 	      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (expr);
-	      unsigned last_nonzero = UINT_MAX, i;
+	      unsigned last_nonzero = UINT_MAX;
 	      constructor_elt *ce;
-	      tree val;
 
-	      if (!nontriv)
-		FOR_EACH_CONSTRUCTOR_VALUE (elts, i, val)
-		  if (!zero_init_expr_p (val))
+	      if (!undigested)
+		for (HOST_WIDE_INT i = 0; vec_safe_iterate (elts, i, &ce); ++i)
+		  if ((TREE_CODE (etype) == UNION_TYPE
+		       && ce->index != first_field (etype))
+		      || !zero_init_expr_p (ce->value))
 		    last_nonzero = i;
 
-	      if (nontriv || last_nonzero != UINT_MAX)
+	      if (undigested || last_nonzero != UINT_MAX)
 		for (HOST_WIDE_INT i = 0; vec_safe_iterate (elts, i, &ce); ++i)
 		  {
 		    if (i > last_nonzero)
 		      break;
-		    /* FIXME handle RANGE_EXPR */
 		    if (TREE_CODE (etype) == UNION_TYPE)
 		      {
 			/* Express the active member as a designator.  */
 			write_string ("di");
 			write_unqualified_name (ce->index);
 		      }
-		    write_expression (ce->value);
+		    unsigned reps = 1;
+		    if (ce->index && TREE_CODE (ce->index) == RANGE_EXPR)
+		      reps = range_expr_nelts (ce->index);
+		    for (unsigned j = 0; j < reps; ++j)
+		      write_expression (ce->value);
 		  }
 	    }
 	  else
@@ -3352,9 +3378,9 @@ write_expression (tree expr)
       tree name = dependent_name (expr);
       if (IDENTIFIER_ANY_OP_P (name))
 	{
-	  if (abi_version_at_least (15))
+	  if (abi_version_at_least (16))
 	    write_string ("on");
-	  if (abi_warn_or_compat_version_crosses (15))
+	  if (abi_warn_or_compat_version_crosses (16))
 	    G.need_abi_warning = 1;
 	}
       write_unqualified_id (name);
@@ -4419,7 +4445,7 @@ static void
 write_guarded_var_name (const tree variable)
 {
   if (DECL_NAME (variable)
-      && strncmp (IDENTIFIER_POINTER (DECL_NAME (variable)), "_ZGR", 4) == 0)
+      && startswith (IDENTIFIER_POINTER (DECL_NAME (variable)), "_ZGR"))
     /* The name of a guard variable for a reference temporary should refer
        to the reference, not the temporary.  */
     write_string (IDENTIFIER_POINTER (DECL_NAME (variable)) + 4);
@@ -4477,8 +4503,7 @@ decl_tls_wrapper_p (const tree fn)
   if (TREE_CODE (fn) != FUNCTION_DECL)
     return false;
   tree name = DECL_NAME (fn);
-  return strncmp (IDENTIFIER_POINTER (name), TLS_WRAPPER_PREFIX,
-		  strlen (TLS_WRAPPER_PREFIX)) == 0;
+  return startswith (IDENTIFIER_POINTER (name), TLS_WRAPPER_PREFIX);
 }
 
 /* Return an identifier for the name of a temporary variable used to

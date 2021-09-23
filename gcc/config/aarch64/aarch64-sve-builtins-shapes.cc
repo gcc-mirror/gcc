@@ -191,12 +191,12 @@ parse_type (const function_instance &instance, const char *&format)
 
   if (ch == 'e')
     {
-      if (strncmp (format, "pattern", 7) == 0)
+      if (startswith (format, "pattern"))
 	{
 	  format += 7;
 	  return acle_svpattern;
 	}
-      if (strncmp (format, "prfop", 5) == 0)
+      if (startswith (format, "prfop"))
 	{
 	  format += 5;
 	  return acle_svprfop;

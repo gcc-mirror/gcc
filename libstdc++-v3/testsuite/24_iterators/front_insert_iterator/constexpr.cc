@@ -42,8 +42,7 @@ constexpr bool
 test01()
 {
   container c;
-  std::front_insert_iterator<container> iter;
-  iter = std::front_inserter(c);
+  std::front_insert_iterator<container> iter = std::front_inserter(c);
   *iter++ = 1;
   int i = 2;
   *iter = i;

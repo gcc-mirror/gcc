@@ -25,9 +25,7 @@
 
 // Test std::from_chars error handling.
 
-// As of July 2020 __cpp_lib_to_chars is not defined, but std::from_chars
-// works for floating-point types when _GLIBCXX_HAVE_USELOCALE is defined.
-#if __cpp_lib_to_chars >= 201611L || _GLIBCXX_HAVE_USELOCALE
+#if __cpp_lib_to_chars >= 201611L
 void
 test01()
 {
@@ -160,7 +158,7 @@ test04()
 int
 main()
 {
-#if __cpp_lib_to_chars >= 201611L || _GLIBCXX_HAVE_USELOCALE
+#if __cpp_lib_to_chars >= 201611L
   test01();
   test02();
   test03();

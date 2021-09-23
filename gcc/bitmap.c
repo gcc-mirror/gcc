@@ -1004,6 +1004,83 @@ bitmap_bit_p (const_bitmap head, int bit)
   return (ptr->bits[word_num] >> bit_num) & 1;
 }
 
+/* Set CHUNK_SIZE bits at a time in bitmap HEAD.
+   Store CHUNK_VALUE starting at bits CHUNK * chunk_size.
+   This is the set routine for viewing bitmap as a multi-bit sparse array.  */
+
+void
+bitmap_set_aligned_chunk (bitmap head, unsigned int chunk,
+			  unsigned int chunk_size, BITMAP_WORD chunk_value)
+{
+  // Ensure chunk size is a power of 2 and fits in BITMAP_WORD.
+  gcc_checking_assert (pow2p_hwi (chunk_size));
+  gcc_checking_assert (chunk_size < (sizeof (BITMAP_WORD) * CHAR_BIT));
+
+  // Ensure chunk_value is within range of chunk_size bits.
+  BITMAP_WORD max_value = (1 << chunk_size) - 1;
+  gcc_checking_assert (chunk_value <= max_value);
+
+  unsigned bit = chunk * chunk_size;
+  unsigned indx = bit / BITMAP_ELEMENT_ALL_BITS;
+  bitmap_element *ptr;
+  if (!head->tree_form)
+    ptr = bitmap_list_find_element (head, indx);
+  else
+    ptr = bitmap_tree_find_element (head, indx);
+  unsigned word_num = bit / BITMAP_WORD_BITS % BITMAP_ELEMENT_WORDS;
+  unsigned bit_num  = bit % BITMAP_WORD_BITS;
+  BITMAP_WORD bit_val = chunk_value << bit_num;
+  BITMAP_WORD mask = ~(max_value << bit_num);
+
+  if (ptr != 0)
+    {
+      ptr->bits[word_num] &= mask;
+      ptr->bits[word_num] |= bit_val;
+      return;
+    }
+
+  ptr = bitmap_element_allocate (head);
+  ptr->indx = bit / BITMAP_ELEMENT_ALL_BITS;
+  ptr->bits[word_num] = bit_val;
+  if (!head->tree_form)
+    bitmap_list_link_element (head, ptr);
+  else
+    bitmap_tree_link_element (head, ptr);
+}
+
+/* This is the get routine for viewing bitmap as a multi-bit sparse array.
+   Return a set of CHUNK_SIZE consecutive bits from HEAD, starting at bit
+   CHUNK * chunk_size.   */
+
+BITMAP_WORD
+bitmap_get_aligned_chunk (const_bitmap head, unsigned int chunk,
+			  unsigned int chunk_size)
+{
+  // Ensure chunk size is a power of 2, fits in BITMAP_WORD and is in range.
+  gcc_checking_assert (pow2p_hwi (chunk_size));
+  gcc_checking_assert (chunk_size < (sizeof (BITMAP_WORD) * CHAR_BIT));
+
+  BITMAP_WORD max_value = (1 << chunk_size) - 1;
+  unsigned bit = chunk * chunk_size;
+  unsigned int indx = bit / BITMAP_ELEMENT_ALL_BITS;
+  const bitmap_element *ptr;
+  unsigned bit_num;
+  unsigned word_num;
+
+  if (!head->tree_form)
+    ptr = bitmap_list_find_element (const_cast<bitmap> (head), indx);
+  else
+    ptr = bitmap_tree_find_element (const_cast<bitmap> (head), indx);
+  if (ptr == 0)
+    return 0;
+
+  bit_num = bit % BITMAP_WORD_BITS;
+  word_num = bit / BITMAP_WORD_BITS % BITMAP_ELEMENT_WORDS;
+
+  // Return 4 bits.
+  return (ptr->bits[word_num] >> bit_num) & max_value;
+}
+
 #if GCC_VERSION < 3400
 /* Table of number of set bits in a character, indexed by value of char.  */
 static const unsigned char popcount_table[] =
@@ -2857,6 +2934,33 @@ test_bitmap_single_bit_set_p ()
   ASSERT_EQ (1066, bitmap_first_set_bit (b));
 }
 
+/* Verify accessing aligned bit chunks works as expected.  */
+
+static void
+test_aligned_chunk (unsigned num_bits)
+{
+  bitmap b = bitmap_gc_alloc ();
+  int limit = 2 ^ num_bits;
+
+  int index = 3;
+  for (int x = 0; x < limit; x++)
+    {
+      bitmap_set_aligned_chunk (b, index, num_bits, (BITMAP_WORD) x);
+      ASSERT_TRUE ((int) bitmap_get_aligned_chunk (b, index, num_bits) == x);
+      ASSERT_TRUE ((int) bitmap_get_aligned_chunk (b, index + 1,
+						   num_bits) == 0);
+      ASSERT_TRUE ((int) bitmap_get_aligned_chunk (b, index - 1,
+						   num_bits) == 0);
+      index += 3;
+    }
+  index = 3;
+  for (int x = 0; x < limit ; x++)
+    {
+      ASSERT_TRUE ((int) bitmap_get_aligned_chunk (b, index, num_bits) == x);
+      index += 3;
+    }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -2867,6 +2971,10 @@ bitmap_c_tests ()
   test_clear_bit_in_middle ();
   test_copying ();
   test_bitmap_single_bit_set_p ();
+  /* Test 2, 4 and 8 bit aligned chunks.  */
+  test_aligned_chunk (2);
+  test_aligned_chunk (4);
+  test_aligned_chunk (8);
 }
 
 } // namespace selftest

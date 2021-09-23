@@ -36,6 +36,13 @@ test01()
   VERIFY( seq.size() == 10 );
 }
 
+void
+lwg3422()
+{
+  int i[32] = { };
+  std::seed_seq ss{i, i+32}; // LWG 3422
+}
+
 int main()
 {
   test01();

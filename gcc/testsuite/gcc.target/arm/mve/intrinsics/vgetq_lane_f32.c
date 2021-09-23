@@ -8,7 +8,7 @@
 float32_t
 foo (float32x4_t a)
 {
-  return vgetq_lane_f32 (a, 0);
+  return vgetq_lane_f32 (a, 1);
 }
 
 /* { dg-final { scan-assembler "vmov.32"  }  } */
@@ -16,7 +16,7 @@ foo (float32x4_t a)
 float32_t
 foo1 (float32x4_t a)
 {
-  return vgetq_lane (a, 0);
+  return vgetq_lane (a, 1);
 }
 
 /* { dg-final { scan-assembler "vmov.32"  }  } */

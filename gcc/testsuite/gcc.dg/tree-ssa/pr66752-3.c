@@ -32,9 +32,9 @@ foo (int N, int c, int b, int *a)
    pt--;
 }
 
-/* There are 4 FSM jump threading opportunities, all of which will be
+/* There are 4 jump threading opportunities, all of which will be
    realized, which will eliminate testing of FLAG, completely.  */
-/* { dg-final { scan-tree-dump-times "Registering FSM" 4 "thread1"} } */
+/* { dg-final { scan-tree-dump-times "Registering jump" 4 "thread1"} } */
 
 /* There should be no assignments or references to FLAG, verify they're
    eliminated as early as possible.  */

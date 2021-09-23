@@ -1,6 +1,5 @@
-
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp" } */
+/* { dg-options "-O2 -fdump-tree-evrp-details" } */
 
 extern void abort (void);
 

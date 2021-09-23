@@ -162,7 +162,14 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
     {"stdout", {"<stdio.h>", "<cstdio>"} },
 
     /* <stdlib.h> and <cstdlib>.  */
+    {"EXIT_FAILURE", {"<stdlib.h>", "<cstdlib>"} },
+    {"EXIT_SUCCESS", {"<stdlib.h>", "<cstdlib>"} },
+    {"abort", {"<stdlib.h>", "<cstdlib>"} },
+    {"atexit", {"<stdlib.h>", "<cstdlib>"} },
+    {"calloc", {"<stdlib.h>", "<cstdlib>"} },
+    {"exit", {"<stdlib.h>", "<cstdlib>"} },
     {"free", {"<stdlib.h>", "<cstdlib>"} },
+    {"getenv", {"<stdlib.h>", "<cstdlib>"} },
     {"malloc", {"<stdlib.h>", "<cstdlib>"} },
     {"realloc", {"<stdlib.h>", "<cstdlib>"} },
 

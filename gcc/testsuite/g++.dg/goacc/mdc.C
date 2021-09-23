@@ -45,7 +45,7 @@ t1 ()
 #pragma acc enter data attach(rz[3]) /* { dg-error "expected pointer in .attach. clause" } */
 #pragma acc exit data detach(rz[3]) /* { dg-error "expected pointer in .detach. clause" } */
 
-#pragma acc acc enter data attach(rs.e)
+#pragma acc enter data attach(rs.e)
 #pragma acc exit data detach(rs.e) attach(rz) /* { dg-error ".attach. is not valid for" } */
 
 #pragma acc data attach(rs.e)

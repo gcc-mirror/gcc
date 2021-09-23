@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_neon }  */
+/* { dg-require-effective-target arm_arch_v7a_ok }  */
 /* { dg-options "-std=c99 -Os -g -march=armv7-a" } */
 /* { dg-add-options arm_neon } */
 

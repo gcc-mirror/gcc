@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -164,8 +164,21 @@ package System.OS_Lib is
    --  component parts to be interpreted in the local time zone, and returns
    --  an OS_Time. Returns Invalid_Time if the creation fails.
 
-   subtype time_t is Long_Integer;
-   --  C time_t type of the time representation
+   ------------------
+   -- Time_t Stuff --
+   ------------------
+
+   --  Note: Do not use time_t in the compiler and host-based tools; instead
+   --  use OS_Time. These 3 declarations are intended for use only by consumers
+   --  of the GNAT.OS_Lib renaming of this package.
+
+   subtype time_t is Long_Long_Integer;
+   --  C time_t can be either long or long long, but this is a subtype not used
+   --  in the compiler or tools, but only for user applications, so we choose
+   --  the Ada equivalent of the latter because eventually that will be the
+   --  type used out of necessity. This may affect some user code on 32-bit
+   --  targets that have not yet migrated to the Posix 2008 standard,
+   --  particularly pre version 5 32-bit Linux.
 
    function To_C (Time : OS_Time) return time_t;
    --  Convert OS_Time to C time_t type
@@ -1098,24 +1111,18 @@ private
    pragma Import (C, Current_Process_Id, "__gnat_current_process_id");
 
    type OS_Time is
-     range -(2 ** (Standard'Address_Size - Integer'(1))) ..
-           +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
+     range -(2 ** 63) ..  +(2 ** 63 - 1);
    --  Type used for timestamps in the compiler. This type is used to hold
    --  time stamps, but may have a different representation than C's time_t.
    --  This type needs to match the declaration of OS_Time in adaint.h.
 
-   --  Add pragma Inline statements for comparison operations on OS_Time. It
-   --  would actually be nice to use pragma Import (Intrinsic) here, but this
-   --  was not properly supported till GNAT 3.15a, so that would cause
-   --  bootstrap path problems. To be changed later ???
-
    Invalid_Time : constant OS_Time := -1;
    --  This value should match the return value from __gnat_file_time_*
 
-   pragma Inline ("<");
-   pragma Inline (">");
-   pragma Inline ("<=");
-   pragma Inline (">=");
+   pragma Import (Intrinsic, "<");
+   pragma Import (Intrinsic, ">");
+   pragma Import (Intrinsic, "<=");
+   pragma Import (Intrinsic, ">=");
    pragma Inline (To_C);
    pragma Inline (To_Ada);
 

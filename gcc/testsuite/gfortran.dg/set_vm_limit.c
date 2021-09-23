@@ -8,9 +8,20 @@
 void
 set_vm_limit (int vm_limit)
 {
-  struct rlimit rl = { vm_limit, RLIM_INFINITY };
+  struct rlimit rl;
   int r;
 
+  r = getrlimit (RLIMIT_AS, &rl);
+  if (r)
+    {
+      perror ("get_vm_limit");
+      exit (1);
+    }
+
+  if (vm_limit >= rl.rlim_cur)
+    return;
+
+  rl.rlim_cur = vm_limit;
   r = setrlimit (RLIMIT_AS, &rl);
   if (r)
     {

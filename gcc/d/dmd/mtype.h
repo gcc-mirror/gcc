@@ -96,6 +96,8 @@ enum ENUMTY
     Tint128,
     Tuns128,
     Ttraits,
+    Tmixin,
+    Tnoreturn,
     TMAX
 };
 typedef unsigned char TY;       // ENUMTY
@@ -201,6 +203,7 @@ public:
     static Type *tdstring;              // immutable(dchar)[]
     static Type *terror;                // for error recovery
     static Type *tnull;                 // for null type
+    static Type *tnoreturn;             // for bottom type typeof(*null)
 
     static Type *tsize_t;               // matches size_t alias
     static Type *tptrdiff_t;            // matches ptrdiff_t alias
@@ -367,7 +370,9 @@ public:
     TypeTuple *isTypeTuple();
     TypeSlice *isTypeSlice();
     TypeNull *isTypeNull();
+    TypeMixin *isTypeMixin();
     TypeTraits *isTypeTraits();
+    TypeNoreturn *isTypeNoreturn();
 
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -686,7 +691,7 @@ public:
     int attributesApply(void *param, int (*fp)(void *, const char *), TRUSTformat trustFormat = TRUSTformatDefault);
 
     Type *substWildTo(unsigned mod);
-    MATCH callMatch(Type *tthis, Expressions *toargs, int flag = 0);
+    MATCH callMatch(Type *tthis, Expressions *toargs, int flag = 0, const char **pMessage = NULL);
     bool checkRetType(Loc loc);
 
     Expression *defaultInit(Loc loc) /*const*/;
@@ -726,8 +731,24 @@ public:
 
     TypeTraits(const Loc &loc, TraitsExp *exp);
     Type *syntaxCopy();
+    Dsymbol *toDsymbol(Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     d_uns64 size(Loc loc);
+    void accept(Visitor *v) { v->visit(this); }
+};
+
+class TypeMixin : public Type
+{
+public:
+    Loc loc;
+    Expressions *exps;
+    RootObject *obj;
+
+    TypeMixin(const Loc &loc, Expressions *exps);
+    const char *kind();
+    Type *syntaxCopy();
+    Dsymbol *toDsymbol(Scope *sc);
+    void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -963,6 +984,21 @@ public:
 
     d_uns64 size(Loc loc) /*const*/;
     Expression *defaultInit(Loc loc) /*const*/;
+    void accept(Visitor *v) { v->visit(this); }
+};
+
+class TypeNoreturn : public Type
+{
+public:
+    TypeNoreturn();
+    const char *kind();
+
+    Type *syntaxCopy();
+    MATCH implicitConvTo(Type *to);
+    bool isBoolean() /*const*/;
+
+    d_uns64 size(Loc loc) /*const*/;
+    unsigned alignsize();
     void accept(Visitor *v) { v->visit(this); }
 };
 

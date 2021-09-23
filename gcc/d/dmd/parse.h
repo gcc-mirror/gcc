@@ -83,6 +83,7 @@ public:
     TemplateParameters *parseTemplateParameterList(int flag = 0);
     Dsymbol *parseMixin();
     Objects *parseTemplateArguments();
+    RootObject *parseTypeOrAssignExp(TOK endtoken = TOKreserved);
     Objects *parseTemplateArgumentList();
     Objects *parseTemplateSingleArgument();
     StaticAssert *parseStaticAssert();

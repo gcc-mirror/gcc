@@ -25,10 +25,10 @@ void
 test01()
 {
   std::vector<double> v{1.0, 2.0, 3.0};
-  std::begin(v);
-  std::end(v);
+  (void) std::begin(v);
+  (void) std::end(v);
 
   std::vector<bool> vb{true, false, true};
-  std::begin(vb);
-  std::end(vb);
+  (void) std::begin(vb);
+  (void) std::end(vb);
 }

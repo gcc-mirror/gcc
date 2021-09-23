@@ -147,25 +147,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // which are defined via explicit instantiations elsewhere.
 #if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_streambuf<char>;
+
   extern template
     streamsize
     __copy_streambufs(basic_streambuf<char>*,
 		      basic_streambuf<char>*);
-  extern template
-    streamsize
-    __copy_streambufs_eof(basic_streambuf<char>*,
-			  basic_streambuf<char>*, bool&);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_streambuf<wchar_t>;
+
   extern template
     streamsize
     __copy_streambufs(basic_streambuf<wchar_t>*,
 		      basic_streambuf<wchar_t>*);
-  extern template
-    streamsize
-    __copy_streambufs_eof(basic_streambuf<wchar_t>*,
-			  basic_streambuf<wchar_t>*, bool&);
 #endif
 #endif
 

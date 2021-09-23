@@ -41,6 +41,7 @@ build_lambda_expr (void)
   LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) = CPLD_NONE;
   LAMBDA_EXPR_CAPTURE_LIST         (lambda) = NULL_TREE;
   LAMBDA_EXPR_THIS_CAPTURE         (lambda) = NULL_TREE;
+  LAMBDA_EXPR_REGEN_INFO           (lambda) = NULL_TREE;
   LAMBDA_EXPR_PENDING_PROXIES      (lambda) = NULL;
   LAMBDA_EXPR_MUTABLE_P            (lambda) = false;
   return lambda;
@@ -157,24 +158,6 @@ begin_lambda_type (tree lambda)
   type = begin_class_definition (type);
 
   return type;
-}
-
-/* Returns the type to use for the return type of the operator() of a
-   closure class.  */
-
-tree
-lambda_return_type (tree expr)
-{
-  if (expr == NULL_TREE)
-    return void_type_node;
-  if (type_unknown_p (expr)
-      || BRACE_ENCLOSED_INITIALIZER_P (expr))
-    {
-      cxx_incomplete_type_error (expr, TREE_TYPE (expr));
-      return error_mark_node;
-    }
-  gcc_checking_assert (!type_dependent_expression_p (expr));
-  return cv_unqualified (type_decays_to (unlowered_expr_type (expr)));
 }
 
 /* Given a LAMBDA_EXPR or closure type LAMBDA, return the op() of the
@@ -606,8 +589,11 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	   parameter pack in this context.  We will want as many fields as we
 	   have elements in the expansion of the initializer, so use its packs
 	   instead.  */
-	PACK_EXPANSION_PARAMETER_PACKS (type)
-	  = uses_parameter_packs (initializer);
+	{
+	  PACK_EXPANSION_PARAMETER_PACKS (type)
+	    = uses_parameter_packs (initializer);
+	  PACK_EXPANSION_AUTO_P (type) = true;
+	}
     }
 
   /* Make member variable.  */
@@ -1352,9 +1338,9 @@ is_lambda_ignored_entity (tree val)
 
   /* None of the lookups that use qualify_lookup want the op() from the
      lambda; they want the one from the enclosing class.  */
-  val = OVL_FIRST (val);
-  if (LAMBDA_FUNCTION_P (val))
-    return true;
+  if (tree fns = maybe_get_fns (val))
+    if (LAMBDA_FUNCTION_P (OVL_FIRST (fns)))
+      return true;
 
   return false;
 }

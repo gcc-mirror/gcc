@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,33 +23,35 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Debug;    use Debug;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Fname;    use Fname;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Namet.Sp; use Namet.Sp;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Par_SCO;  use Par_SCO;
-with Restrict; use Restrict;
-with Scans;    use Scans;
-with Scn;      use Scn;
-with Sem_Util; use Sem_Util;
-with Sinput;   use Sinput;
-with Sinput.L; use Sinput.L;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Debug;          use Debug;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Fname;          use Fname;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Namet.Sp;       use Namet.Sp;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Par_SCO;        use Par_SCO;
+with Restrict;       use Restrict;
+with Scans;          use Scans;
+with Scn;            use Scn;
+with Sem_Util;       use Sem_Util;
+with Sinput;         use Sinput;
+with Sinput.L;       use Sinput.L;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
 with Style;
-with Stylesw;  use Stylesw;
+with Stylesw;        use Stylesw;
 with Table;
-with Tbuild;   use Tbuild;
+with Tbuild;         use Tbuild;
 
 ---------
 -- Par --
@@ -1349,6 +1351,18 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  conditions are met, an error message is issued, and the merge is
       --  carried out, modifying the Chars field of Prev.
 
+      function Missing_Semicolon_On_When return Boolean;
+      --  This function deals with the following specialized situations
+      --
+      --    when 'x' =>
+      --       exit/return [identifier]
+      --    when 'y' =>
+      --
+      --  This looks like a messed up EXIT WHEN or RETURN WHEN, when in fact
+      --  the problem is a missing semicolon. It is called with Token pointing
+      --  to the WHEN token, and returns True if a semicolon is missing before
+      --  the WHEN as in the above example.
+
       function Next_Token_Is (Tok : Token_Type) return Boolean;
       --  Looks at token after current one and returns True if the token type
       --  matches Tok. The scan is unconditionally restored on return.
@@ -1636,14 +1650,12 @@ begin
                      Uname : constant String :=
                                Get_Name_String
                                  (Unit_Name (Current_Source_Unit));
-                     Name  : String (1 .. Uname'Length - 2);
-
-                  begin
+                     Name  : String renames
+                       Uname (Uname'First .. Uname'Last - 2);
                      --  Because Unit_Name includes "%s"/"%b", we need to strip
                      --  the last two characters to get the real unit name.
 
-                     Name := Uname (Uname'First .. Uname'Last - 2);
-
+                  begin
                      if Name = "ada"         or else
                         Name = "interfaces"  or else
                         Name = "system"

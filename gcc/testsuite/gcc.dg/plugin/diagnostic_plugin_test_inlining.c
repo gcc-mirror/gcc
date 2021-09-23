@@ -133,7 +133,7 @@ test_inlining (gimple *stmt)
       return;
     }
 
-  warning_at (call->location, 0, "%G%s", call,
+  warning_at (call->location, 0, "%s",
 	      TREE_STRING_POINTER (t_string));
 }
 
@@ -168,6 +168,8 @@ plugin_init (struct plugin_name_args *plugin_info,
 
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
+
+  global_dc->caret_max_width = 80;
 
   pass_info.pass = new pass_test_inlining (g);
   pass_info.reference_pass_name = "*warn_function_noreturn";

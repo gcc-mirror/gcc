@@ -799,6 +799,22 @@ flushed before the ``Get_Immediate`` call. A special unit
 ``Interfaces.Vxworks.IO`` is provided that contains routines to enable
 this functionality.
 
+.. index:: Containers
+
+RM A.18: ``Containers``
+================================
+
+All implementation advice pertaining to Ada.Containers and its
+child units (that is, all implementation advice occurring within
+section A.18 and its subsections) is followed except for A.18.24(17):
+
+   "Bounded ordered set objects should be implemented without implicit pointers or dynamic allocation. "
+
+The implementations of the two Reference_Preserving_Key functions of
+the generic package Ada.Containers.Bounded_Ordered_Sets each currently make
+use of dynamic allocation; other operations on bounded ordered set objects
+follow the implementation advice.
+
 .. index:: Export
 
 RM B.1(39-41): Pragma ``Export``

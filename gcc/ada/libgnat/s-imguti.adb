@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020, Free Software Foundation, Inc.            --
+--            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -399,5 +399,86 @@ package body System.Img_Util is
          end if;
       end if;
    end Set_Decimal_Digits;
+
+   --------------------------------
+   -- Set_Floating_Invalid_Value --
+   --------------------------------
+
+   procedure Set_Floating_Invalid_Value
+     (V    : Floating_Invalid_Value;
+      S    : out String;
+      P    : in out Natural;
+      Fore : Natural;
+      Aft  : Natural;
+      Exp  : Natural)
+   is
+      procedure Set (C : Character);
+      --  Sets character C in output buffer
+
+      procedure Set_Special_Fill (N : Natural);
+      --  After outputting +Inf, -Inf or NaN, this routine fills out the
+      --  rest of the field with * characters. The argument is the number
+      --  of characters output so far (either 3 or 4)
+
+      ---------
+      -- Set --
+      ---------
+
+      procedure Set (C : Character) is
+      begin
+         pragma Assert (P in S'First - 1 .. S'Last - 1);
+         --  No check is done as documented in the header: updating P to point
+         --  to the last character stored, the caller promises that the buffer
+         --  is large enough and no check is made for this. Constraint_Error
+         --  will not necessarily be raised if this requirement is violated,
+         --  since it is perfectly valid to compile this unit with checks off.
+
+         P := P + 1;
+         S (P) := C;
+      end Set;
+
+      ----------------------
+      -- Set_Special_Fill --
+      ----------------------
+
+      procedure Set_Special_Fill (N : Natural) is
+      begin
+         if Exp /= 0 then
+            for J in N + 1 .. Fore + 1 + Aft + 1 + Exp loop
+               Set ('*');
+            end loop;
+
+         else
+            for J in N + 1 .. Fore + 1 + Aft loop
+               Set ('*');
+            end loop;
+         end if;
+      end Set_Special_Fill;
+
+   --  Start of processing for Set_Floating_Invalid_Value
+
+   begin
+      case V is
+         when Minus_Infinity =>
+            Set ('-');
+            Set ('I');
+            Set ('n');
+            Set ('f');
+            Set_Special_Fill (4);
+
+         when Infinity =>
+            Set ('+');
+            Set ('I');
+            Set ('n');
+            Set ('f');
+            Set_Special_Fill (4);
+
+         when Not_A_Number =>
+            Set ('N');
+            Set ('a');
+            Set ('N');
+            Set_Special_Fill (3);
+      end case;
+   end Set_Floating_Invalid_Value;
 
 end System.Img_Util;

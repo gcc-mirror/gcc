@@ -9,7 +9,7 @@
 /* We do not know which is output first so look for both invalid abstract
    origins on the lexical blocks (knowing that the abstract instance has
    no attribute following the DW_TAG_lexical_block.  */
-/* { dg-final { scan-assembler-not "\\(DIE \\(0x(\[0-9a-f\]*)\\) DW_TAG_lexical_block\\)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +\[^(\].*DW_TAG_lexical_block\\)\[^#/!@;\\|x\]*x\\1\[^#/!@;\\|\]*\[#/!@;\\|\] +DW_AT_abstract_origin" { xfail { { *-*-aix* || *-*-solaris2.* } && { ! gas } } } } } */
+/* { dg-final { scan-assembler-not "\\(DIE \\(0x(\[0-9a-f\]*)\\) DW_TAG_lexical_block\\)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +DW_AT.*DW_TAG_lexical_block\\)\[^#/!@;\\|x\]*x\\1\[^#/!@;\\|\]*\[#/!@;\\|\] +DW_AT_abstract_origin" { xfail { { *-*-aix* || *-*-solaris2.* } && { ! gas } } } } } */
 /* { dg-final { scan-assembler-not "DW_TAG_lexical_block\\)\[^#/!@;\\|x\]*x(\[0-9a-f\]*)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +DW_AT_abstract_origin.*\\(DIE \\(0x\\1\\) DW_TAG_lexical_block\\)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +DW_AT" } } */
 
 int foo (int i)

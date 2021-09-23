@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
 #include <set>
@@ -21,7 +20,7 @@ static_assert(std::is_same_v<
 	      std::multiset<int>>);
 
 static_assert(std::is_same_v<
-	      decltype(std::multiset{{1, 2, 3}, {}}),
+	      decltype(std::multiset{{1, 2, 3}, std::less<int>{}}),
 	      std::multiset<int>>);
 
 static_assert(std::is_same_v<
@@ -53,7 +52,7 @@ void f()
 
   static_assert(std::is_same_v<
 		decltype(std::multiset(x.begin(), x.end(),
-				  {})),
+				  std::less<int>{})),
 		std::multiset<int>>);
 
   static_assert(std::is_same_v<
@@ -104,7 +103,7 @@ void g()
 
   static_assert(std::is_same_v<
 		decltype(std::multiset(x.begin(), x.end(),
-				  {})),
+				  std::less<int>{})),
 		std::multiset<int>>);
 
   static_assert(std::is_same_v<

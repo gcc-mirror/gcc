@@ -22,27 +22,31 @@
 
 module gcc.sections;
 
-version (CRuntime_Glibc)
-    public import gcc.sections.elf_shared;
-else version (CRuntime_Musl)
-    public import gcc.sections.elf_shared;
-else version (CRuntime_UClibc)
-    public import gcc.sections.elf_shared;
-else version (FreeBSD)
-    public import gcc.sections.elf_shared;
-else version (NetBSD)
-    public import gcc.sections.elf_shared;
-else version (DragonFlyBSD)
-    public import gcc.sections.elf_shared;
-else version (Solaris)
-    public import gcc.sections.elf_shared;
-else version (OSX)
-    public import gcc.sections.osx;
-else version (CRuntime_DigitalMars)
-    public import gcc.sections.win32;
-else version (CRuntime_Microsoft)
-    public import gcc.sections.win64;
-else version (CRuntime_Bionic)
-    public import gcc.sections.android;
+version (CRuntime_Glibc)  version = SectionsElf;
+version (CRuntime_Musl)   version = SectionsElf;
+version (CRuntime_UClibc) version = SectionsElf;
+version (FreeBSD)         version = SectionsElf;
+version (NetBSD)          version = SectionsElf;
+version (OpenBSD)         version = SectionsElf;
+version (DragonFlyBSD)    version = SectionsElf;
+version (Solaris)         version = SectionsElf;
+version (OSX)             version = SectionsMacho;
+version (Windows)         version = SectionsPeCoff;
+
+version (SectionsElf)
+    public import gcc.sections.elf;
+else version (SectionsMacho)
+    public import gcc.sections.macho;
+else version (SectionsPeCoff)
+    public import gcc.sections.pecoff;
 else
     static assert(0, "unimplemented");
+
+version (Shared)
+{
+    // interface for core.thread to inherit loaded libraries
+    void* pinLoadedLibraries() nothrow @nogc;
+    void unpinLoadedLibraries(void* p) nothrow @nogc;
+    void inheritLoadedLibraries(void* p) nothrow @nogc;
+    void cleanupLoadedLibraries() nothrow @nogc;
+}

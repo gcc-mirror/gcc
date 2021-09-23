@@ -19,5 +19,4 @@ void test(uint8_t *ptr, uint8_t *mask)
     }
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" { xfail sparc*-*-* } } } */
-
+/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" { xfail { { s390*-*-* sparc*-*-* } || vect32 } } } } */

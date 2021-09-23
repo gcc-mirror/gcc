@@ -1629,3 +1629,8 @@ GFORTRAN_10.2 {
   _gfortran_mfindloc1_c10;
   _gfortran_sfindloc1_c10;
 } GFORTRAN_10;
+
+GFORTRAN_12 {
+  global:
+  _gfortran_caf_random_init;
+} GFORTRAN_10.2;

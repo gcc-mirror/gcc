@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ignore_for_gccgo
-// +build !math_big_pure_go
+//go:build ignore
+// +build ignore
 
 package big
 

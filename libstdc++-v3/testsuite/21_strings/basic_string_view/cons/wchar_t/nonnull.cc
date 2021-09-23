@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17 -Wnonnull" }
+// { dg-options "-Wnonnull" }
 // { dg-do compile { target c++17 } }
 
 #include <string_view>

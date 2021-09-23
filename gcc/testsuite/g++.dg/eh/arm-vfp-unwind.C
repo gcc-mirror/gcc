@@ -12,7 +12,11 @@ using namespace std;
 
 static void donkey ()
 {
-  asm volatile ("fcpyd d9, %P0" : : "w" (1.2345) : "d9");
+#if __ARM_FP & 8
+  asm volatile ("vmov.f64 d9, %P0" : : "w" (1.2345) : "d9");
+#else
+  asm volatile ("vmov.f32 s18, %0" : : "t" (1.2345f) : "s18");
+#endif
   throw 1;
 }
 

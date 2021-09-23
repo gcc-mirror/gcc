@@ -1786,21 +1786,21 @@ match_arg_list_function (gfc_actual_arglist *result)
       switch (name[0])
 	{
 	case 'l':
-	  if (gfc_str_startswith (name, "loc"))
+	  if (startswith (name, "loc"))
 	    {
 	      result->name = "%LOC";
 	      break;
 	    }
 	  /* FALLTHRU */
 	case 'r':
-	  if (gfc_str_startswith (name, "ref"))
+	  if (startswith (name, "ref"))
 	    {
 	      result->name = "%REF";
 	      break;
 	    }
 	  /* FALLTHRU */
 	case 'v':
-	  if (gfc_str_startswith (name, "val"))
+	  if (startswith (name, "val"))
 	    {
 	      result->name = "%VAL";
 	      break;
@@ -2779,7 +2779,7 @@ gfc_expr_attr (gfc_expr *e)
 	       && e->value.function.isym->transformational
 	       && e->ts.type == BT_CLASS)
 	attr = CLASS_DATA (e)->attr;
-      else
+      else if (e->symtree)
 	attr = gfc_variable_attr (e, NULL);
 
       /* TODO: NULL() returns pointers.  May have to take care of this

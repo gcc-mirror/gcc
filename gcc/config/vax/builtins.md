@@ -174,8 +174,7 @@
 
   label = gen_label_rtx ();
   emit_move_insn (operands[0], const1_rtx);
-  emit_jump_insn (gen_jbbssi<mode> (operands[1], const0_rtx, label,
-				    operands[1]));
+  emit_jump_insn (gen_jbbssi<mode> (operands[1], const0_rtx, label));
   emit_move_insn (operands[0], const0_rtx);
   emit_label (label);
   DONE;
@@ -193,8 +192,7 @@
     FAIL;
 
   label = gen_label_rtx ();
-  emit_jump_insn (gen_jbbcci<mode> (operands[0], const0_rtx, label,
-				    operands[0]));
+  emit_jump_insn (gen_jbbcci<mode> (operands[0], const0_rtx, label));
   emit_label (label);
   DONE;
 }")
@@ -204,13 +202,13 @@
     [(set (pc)
 	  (if_then_else
 	    (eq (zero_extract:SI
-		  (match_operand:VAXint 0 "any_memory_operand" "<bb_mem>")
+		  (match_operand:VAXint 0 "any_memory_operand" "+<bb_mem>")
 		  (const_int 1)
 		  (match_operand:SI 1 "general_operand" "nrmT"))
 		(const_int bit))
 	    (label_ref (match_operand 2 "" ""))
 	    (pc)))
-     (set (zero_extract:SI (match_operand:VAXint 3 "any_memory_operand" "+0")
+     (set (zero_extract:SI (match_dup 0)
 			   (const_int 1)
 			   (match_dup 1))
 	  (const_int bit))]

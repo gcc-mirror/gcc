@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target avx2 } */
-/* { dg-options "-mavx2 -O3 -fopenmp-simd -fdump-tree-vect-details" } */
+/* { dg-options "-mavx2 -O3 -fopenmp-simd -fdump-tree-vect-details -fdisable-tree-thread1" } */
 
 #include "avx2-check.h"
 #define N 64

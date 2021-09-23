@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build cgo
 // +build cgo
 
 package runtime_test
@@ -284,6 +285,18 @@ func TestCgoTracebackContext(t *testing.T) {
 		t.Skip("gccgo does not have SetCgoTraceback")
 	}
 	got := runTestProg(t, "testprogcgo", "TracebackContext")
+	want := "OK\n"
+	if got != want {
+		t.Errorf("expected %q got %v", want, got)
+	}
+}
+
+func TestCgoTracebackContextPreemption(t *testing.T) {
+	t.Parallel()
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not have SetCgoTraceback")
+	}
+	got := runTestProg(t, "testprogcgo", "TracebackContextPreemption")
 	want := "OK\n"
 	if got != want {
 		t.Errorf("expected %q got %v", want, got)

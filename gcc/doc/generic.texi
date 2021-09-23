@@ -33,7 +33,7 @@ before handing off to @code{tree_rest_of_compilation}, but this
 seems inelegant.
 
 @menu
-* Deficiencies::                Topics net yet covered in this document.
+* Deficiencies::                Topics not yet covered in this document.
 * Tree overview::               All about @code{tree}s.
 * Types::                       Fundamental and aggregate types.
 * Declarations::                Type declarations and variables.

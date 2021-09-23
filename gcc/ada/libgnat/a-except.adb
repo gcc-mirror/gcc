@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -278,6 +278,23 @@ package body Ada.Exceptions is
      "ada__exceptions__raise_exception_no_defer");
    pragma No_Return (Raise_Exception_No_Defer);
    --  Similar to Raise_Exception, but with no abort deferral
+
+   procedure Raise_From_Signal_Handler
+     (E : Exception_Id;
+      M : System.Address);
+   pragma Export
+     (C, Raise_From_Signal_Handler, "__gnat_raise_from_signal_handler");
+   pragma No_Return (Raise_From_Signal_Handler);
+   --  This routine is used to raise an exception from a signal handler. The
+   --  signal handler has already stored the machine state (i.e. the state that
+   --  corresponds to the location at which the signal was raised). E is the
+   --  Exception_Id specifying what exception is being raised, and M is a
+   --  pointer to a null-terminated string which is the message to be raised.
+   --  Note that this routine never returns, so it is permissible to simply
+   --  jump to this routine, rather than call it. This may be appropriate for
+   --  systems where the right way to get out of signal handler is to alter the
+   --  PC value in the machine state or in some other way ask the operating
+   --  system to return here rather than to the original location.
 
    procedure Raise_With_Msg (E : Exception_Id);
    pragma No_Return (Raise_With_Msg);

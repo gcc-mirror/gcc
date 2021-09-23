@@ -1,3 +1,4 @@
+/* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 /* { dg-additional-options "-Wno-incompatible-pointer-types -Wno-analyzer-too-complex" } */
 /* TODO: ideally we shouldn't have -Wno-analyzer-too-complex above; it
    appears to be needed due to the recursion.  */
@@ -57,7 +58,7 @@ ts (struct dz *cx)
 {
   struct dz nt;
 
-  if (nt.r5)
+  if (nt.r5) /* { dg-warning "use of uninitialized value 'nt.r5'" } */
     {
       m6 (cx);
       h5 (cx);

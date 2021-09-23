@@ -3,6 +3,7 @@
 
 ! { dg-do run { target openacc_nvidia_accel_selected } }
 ! { dg-additional-options "-lcublas -Wall -Wextra" }
+! { dg-require-effective-target openacc_cublas }
 
 program test
   implicit none

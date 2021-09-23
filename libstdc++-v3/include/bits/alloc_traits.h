@@ -341,7 +341,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { __a.deallocate(__p, __n); }
 
       /**
-       *  @brief  Construct an object of type @a _Tp
+       *  @brief  Construct an object of type `_Tp`
        *  @param  __a  An allocator.
        *  @param  __p  Pointer to memory of suitable size and alignment for Tp
        *  @param  __args Constructor arguments.
@@ -553,6 +553,110 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Obtain an allocator to use when copying a container.
        *  @param  __rhs  An allocator.
        *  @return @c __rhs
+      */
+      static _GLIBCXX20_CONSTEXPR allocator_type
+      select_on_container_copy_construction(const allocator_type& __rhs)
+      { return __rhs; }
+    };
+
+  /// Explicit specialization for std::allocator<void>.
+  template<>
+    struct allocator_traits<allocator<void>>
+    {
+      /// The allocator type
+      using allocator_type = allocator<void>;
+
+      /// The allocated type
+      using value_type = void;
+
+      /// The allocator's pointer type.
+      using pointer = void*;
+
+      /// The allocator's const pointer type.
+      using const_pointer = const void*;
+
+      /// The allocator's void pointer type.
+      using void_pointer = void*;
+
+      /// The allocator's const void pointer type.
+      using const_void_pointer = const void*;
+
+      /// The allocator's difference type
+      using difference_type = std::ptrdiff_t;
+
+      /// The allocator's size type
+      using size_type = std::size_t;
+
+      /// How the allocator is propagated on copy assignment
+      using propagate_on_container_copy_assignment = false_type;
+
+      /// How the allocator is propagated on move assignment
+      using propagate_on_container_move_assignment = true_type;
+
+      /// How the allocator is propagated on swap
+      using propagate_on_container_swap = false_type;
+
+      /// Whether all instances of the allocator type compare equal.
+      using is_always_equal = true_type;
+
+      template<typename _Up>
+	using rebind_alloc = allocator<_Up>;
+
+      template<typename _Up>
+	using rebind_traits = allocator_traits<allocator<_Up>>;
+
+      /// allocate is ill-formed for allocator<void>
+      static void*
+      allocate(allocator_type&, size_type, const void* = nullptr) = delete;
+
+      /// deallocate is ill-formed for allocator<void>
+      static void
+      deallocate(allocator_type&, void*, size_type) = delete;
+
+      /**
+       *  @brief  Construct an object of type `_Up`
+       *  @param  __a  An allocator.
+       *  @param  __p  Pointer to memory of suitable size and alignment for
+       *	       an object of type `_Up`.
+       *  @param  __args Constructor arguments.
+       *
+       *  Calls `__a.construct(__p, std::forward<_Args>(__args)...)`
+       *  in C++11, C++14 and C++17. Changed in C++20 to call
+       *  `std::construct_at(__p, std::forward<_Args>(__args)...)` instead.
+      */
+      template<typename _Up, typename... _Args>
+	static _GLIBCXX20_CONSTEXPR void
+	construct(allocator_type&, _Up* __p, _Args&&... __args)
+	noexcept(std::is_nothrow_constructible<_Up, _Args...>::value)
+	{
+#if __cplusplus <= 201703L
+	  ::new((void *)__p) _Up(std::forward<_Args>(__args)...);
+#else
+	  std::construct_at(__p, std::forward<_Args>(__args)...);
+#endif
+	}
+
+      /**
+       *  @brief  Destroy an object of type `_Up`
+       *  @param  __a  An allocator.
+       *  @param  __p  Pointer to the object to destroy
+       *
+       *  Invokes the destructor for `*__p`.
+      */
+      template<typename _Up>
+	static _GLIBCXX20_CONSTEXPR void
+	destroy(allocator_type&, _Up* __p)
+	noexcept(is_nothrow_destructible<_Up>::value)
+	{ std::_Destroy(__p); }
+
+      /// max_size is ill-formed for allocator<void>
+      static size_type
+      max_size(const allocator_type&) = delete;
+
+      /**
+       *  @brief  Obtain an allocator to use when copying a container.
+       *  @param  __rhs  An allocator.
+       *  @return `__rhs`
       */
       static _GLIBCXX20_CONSTEXPR allocator_type
       select_on_container_copy_construction(const allocator_type& __rhs)

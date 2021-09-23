@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-additional-sources "pr94947-2.c" } */
 /* { dg-additional-options "-fipa-pta -flto-partition=1to1" } */
+/* { dg-prune-output "warning: using serial compilation" } */
 
 extern void abort ();
 extern void baz ();

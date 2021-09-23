@@ -200,6 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return c.empty(); }
 
       /**  Returns the number of elements in the %stack.  */
+      _GLIBCXX_NODISCARD
       size_type
       size() const
       { return c.size(); }
@@ -208,6 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns a read/write reference to the data at the first
        *  element of the %stack.
        */
+      _GLIBCXX_NODISCARD
       reference
       top()
       {
@@ -219,6 +221,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %stack.
        */
+      _GLIBCXX_NODISCARD
       const_reference
       top() const
       {
@@ -315,6 +318,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  equal.
   */
   template<typename _Tp, typename _Seq>
+    _GLIBCXX_NODISCARD
     inline bool
     operator==(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return __x.c == __y.c; }
@@ -333,36 +337,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  determination.
   */
   template<typename _Tp, typename _Seq>
+    _GLIBCXX_NODISCARD
     inline bool
     operator<(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return __x.c < __y.c; }
 
   /// Based on operator==
   template<typename _Tp, typename _Seq>
+    _GLIBCXX_NODISCARD
     inline bool
     operator!=(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return !(__x == __y); }
 
   /// Based on operator<
   template<typename _Tp, typename _Seq>
+    _GLIBCXX_NODISCARD
     inline bool
     operator>(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return __y < __x; }
 
   /// Based on operator<
   template<typename _Tp, typename _Seq>
+    _GLIBCXX_NODISCARD
     inline bool
     operator<=(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return !(__y < __x); }
 
   /// Based on operator<
   template<typename _Tp, typename _Seq>
+    _GLIBCXX_NODISCARD
     inline bool
     operator>=(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return !(__x < __y); }
 
 #if __cpp_lib_three_way_comparison
   template<typename _Tp, three_way_comparable _Seq>
+    [[nodiscard]]
     inline compare_three_way_result_t<_Seq>
     operator<=>(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return __x.c <=> __y.c; }

@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-spellcheck.h"
 #include "selftest.h"
 #include "debug.h"
+#include "tree-vector-builder.h"
+#include "vec-perm-indices.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -383,6 +385,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
+  { "__builtin_shufflevector", RID_BUILTIN_SHUFFLEVECTOR, 0 },
   { "__builtin_tgmath", RID_BUILTIN_TGMATH, D_CONLY },
   { "__builtin_offsetof", RID_OFFSETOF, 0 },
   { "__builtin_types_compatible_p", RID_TYPES_COMPATIBLE_P, D_CONLY },
@@ -417,7 +420,10 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_empty",	RID_IS_EMPTY,	D_CXXONLY },
   { "__is_enum",	RID_IS_ENUM,	D_CXXONLY },
   { "__is_final",	RID_IS_FINAL,	D_CXXONLY },
+  { "__is_layout_compatible", RID_IS_LAYOUT_COMPATIBLE, D_CXXONLY },
   { "__is_literal_type", RID_IS_LITERAL_TYPE, D_CXXONLY },
+  { "__is_pointer_interconvertible_base_of",
+			RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF, D_CXXONLY },
   { "__is_pod",		RID_IS_POD,	D_CXXONLY },
   { "__is_polymorphic",	RID_IS_POLYMORPHIC, D_CXXONLY },
   { "__is_same",     RID_IS_SAME_AS, D_CXXONLY },
@@ -1101,6 +1107,142 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
     v1 = v0 = save_expr (v0);
 
   ret = build3_loc (loc, VEC_PERM_EXPR, TREE_TYPE (v0), v0, v1, mask);
+
+  if (!c_dialect_cxx () && !wrap)
+    ret = c_wrap_maybe_const (ret, true);
+
+  return ret;
+}
+
+/* Build a VEC_PERM_EXPR if V0, V1 are not error_mark_nodes
+   and have vector types, V0 has the same element type as V1, and the
+   number of elements the result is that of MASK.  */
+tree
+c_build_shufflevector (location_t loc, tree v0, tree v1,
+		       const vec<tree> &mask, bool complain)
+{
+  tree ret;
+  bool wrap = true;
+  bool maybe_const = false;
+
+  if (v0 == error_mark_node || v1 == error_mark_node)
+    return error_mark_node;
+
+  if (!gnu_vector_type_p (TREE_TYPE (v0))
+      || !gnu_vector_type_p (TREE_TYPE (v1)))
+    {
+      if (complain)
+	error_at (loc, "%<__builtin_shufflevector%> arguments must be vectors");
+      return error_mark_node;
+    }
+
+  /* ???  In principle one could select a constant part of a variable size
+     vector but things get a bit awkward with trying to support this here.  */
+  unsigned HOST_WIDE_INT v0n, v1n;
+  if (!TYPE_VECTOR_SUBPARTS (TREE_TYPE (v0)).is_constant (&v0n)
+      || !TYPE_VECTOR_SUBPARTS (TREE_TYPE (v1)).is_constant (&v1n))
+    {
+      if (complain)
+	error_at (loc, "%<__builtin_shufflevector%> arguments must be constant"
+		  " size vectors");
+      return error_mark_node;
+    }
+
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (v0)))
+      != TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (v1))))
+    {
+      if (complain)
+	error_at (loc, "%<__builtin_shufflevector%> argument vectors must "
+		  "have the same element type");
+      return error_mark_node;
+    }
+
+  if (!pow2p_hwi (mask.length ()))
+    {
+      if (complain)
+	error_at (loc, "%<__builtin_shufflevector%> must specify a result "
+		  "with a power of two number of elements");
+      return error_mark_node;
+    }
+
+  if (!c_dialect_cxx ())
+    {
+      /* Avoid C_MAYBE_CONST_EXPRs inside VEC_PERM_EXPR.  */
+      v0 = c_fully_fold (v0, false, &maybe_const);
+      wrap &= maybe_const;
+
+      v1 = c_fully_fold (v1, false, &maybe_const);
+      wrap &= maybe_const;
+    }
+
+  unsigned HOST_WIDE_INT maskl = MAX (mask.length (), MAX (v0n, v1n));
+  unsigned HOST_WIDE_INT pad = (v0n < maskl ? maskl - v0n : 0);
+  vec_perm_builder sel (maskl, maskl, 1);
+  unsigned i;
+  for (i = 0; i < mask.length (); ++i)
+    {
+      tree idx = mask[i];
+      if (!tree_fits_shwi_p (idx))
+	{
+	  if (complain)
+	    error_at (loc, "invalid element index %qE to "
+		      "%<__builtin_shufflevector%>", idx);
+	  return error_mark_node;
+	}
+      HOST_WIDE_INT iidx = tree_to_shwi (idx);
+      if (iidx < -1
+	  || (iidx != -1
+	      && (unsigned HOST_WIDE_INT) iidx >= v0n + v1n))
+	{
+	  if (complain)
+	    error_at (loc, "invalid element index %qE to "
+		      "%<__builtin_shufflevector%>", idx);
+	  return error_mark_node;
+	}
+      /* ???  Our VEC_PERM_EXPR does not allow for -1 yet.  */
+      if (iidx == -1)
+	iidx = i;
+      /* ???  Our VEC_PERM_EXPR does not allow different sized inputs,
+	 so pad out a smaller v0.  */
+      else if ((unsigned HOST_WIDE_INT) iidx >= v0n)
+	iidx += pad;
+      sel.quick_push (iidx);
+    }
+  /* ???  VEC_PERM_EXPR does not support a result that is smaller than
+     the inputs, so we have to pad id out.  */
+  for (; i < maskl; ++i)
+    sel.quick_push (i);
+
+  vec_perm_indices indices (sel, 2, maskl);
+
+  tree ret_type = build_vector_type (TREE_TYPE (TREE_TYPE (v0)), maskl);
+  tree mask_type = build_vector_type (build_nonstandard_integer_type
+		(TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (ret_type))), 1),
+		maskl);
+  /* Pad out arguments to the common vector size.  */
+  if (v0n < maskl)
+    {
+      constructor_elt elt = { NULL_TREE, build_zero_cst (TREE_TYPE (v0)) };
+      v0 = build_constructor_single (ret_type, NULL_TREE, v0);
+      for (i = 1; i < maskl / v0n; ++i)
+	vec_safe_push (CONSTRUCTOR_ELTS (v0), elt);
+    }
+  if (v1n < maskl)
+    {
+      constructor_elt elt = { NULL_TREE, build_zero_cst (TREE_TYPE (v1)) };
+      v1 = build_constructor_single (ret_type, NULL_TREE, v1);
+      for (i = 1; i < maskl / v1n; ++i)
+	vec_safe_push (CONSTRUCTOR_ELTS (v1), elt);
+    }
+  ret = build3_loc (loc, VEC_PERM_EXPR, ret_type, v0, v1,
+		    vec_perm_indices_to_tree (mask_type, indices));
+  /* Get the lowpart we are interested in.  */
+  if (mask.length () < maskl)
+    {
+      tree lpartt = build_vector_type (TREE_TYPE (ret_type), mask.length ());
+      ret = build3_loc (loc, BIT_FIELD_REF,
+			lpartt, ret, TYPE_SIZE (lpartt), bitsize_zero_node);
+    }
 
   if (!c_dialect_cxx () && !wrap)
     ret = c_wrap_maybe_const (ret, true);
@@ -3236,7 +3378,6 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 tree
 c_wrap_maybe_const (tree expr, bool non_const)
 {
-  bool nowarning = TREE_NO_WARNING (expr);
   location_t loc = EXPR_LOCATION (expr);
 
   /* This should never be called for C++.  */
@@ -3247,8 +3388,6 @@ c_wrap_maybe_const (tree expr, bool non_const)
   STRIP_TYPE_NOPS (expr);
   expr = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (expr), NULL, expr);
   C_MAYBE_CONST_EXPR_NON_CONST (expr) = non_const;
-  if (nowarning)
-    TREE_NO_WARNING (expr) = 1;
   protected_set_expr_location (expr, loc);
 
   return expr;
@@ -3494,12 +3633,12 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       break;
 
     case MODIFY_EXPR:
-      if (!TREE_NO_WARNING (expr)
+      if (!warning_suppressed_p (expr, OPT_Wparentheses)
 	  && warn_parentheses
 	  && warning_at (location, OPT_Wparentheses,
 			 "suggest parentheses around assignment used as "
 			 "truth value"))
-	TREE_NO_WARNING (expr) = 1;
+	suppress_warning (expr, OPT_Wparentheses);
       break;
 
     case CONST_DECL:
@@ -4670,7 +4809,7 @@ static bool builtin_function_disabled_p (const char *);
 void
 disable_builtin_function (const char *name)
 {
-  if (strncmp (name, "__builtin_", strlen ("__builtin_")) == 0)
+  if (startswith (name, "__builtin_"))
     error ("cannot disable built-in function %qs", name);
   else
     {
@@ -4718,8 +4857,7 @@ def_builtin_1 (enum built_in_function fncode,
     return;
 
   gcc_assert ((!both_p && !fallback_p)
-	      || !strncmp (name, "__builtin_",
-			   strlen ("__builtin_")));
+	      || startswith (name, "__builtin_"));
 
   libname = name + strlen ("__builtin_");
   decl = add_builtin_function (name, fntype, fncode, fnclass,
@@ -5663,7 +5801,7 @@ parse_optimize_options (tree args, bool attr_p)
 
       if (TREE_CODE (value) == INTEGER_CST)
 	{
-	  char buffer[20];
+	  char buffer[HOST_BITS_PER_LONG / 3 + 4];
 	  sprintf (buffer, "-O%ld", (long) TREE_INT_CST_LOW (value));
 	  vec_safe_push (optimize_args, ggc_strdup (buffer));
 	}
@@ -5881,7 +6019,7 @@ check_function_arguments_recurse (void (*callback)
 				  void *ctx, tree param,
 				  unsigned HOST_WIDE_INT param_num)
 {
-  if (TREE_NO_WARNING (param))
+  if (warning_suppressed_p (param))
     return;
 
   if (CONVERT_EXPR_P (param)
@@ -6759,10 +6897,13 @@ complete_flexible_array_elts (tree init)
 void 
 c_common_mark_addressable_vec (tree t)
 {   
-  if (TREE_CODE (t) == C_MAYBE_CONST_EXPR)
-    t = C_MAYBE_CONST_EXPR_EXPR (t);
-  while (handled_component_p (t))
-    t = TREE_OPERAND (t, 0);
+  while (handled_component_p (t) || TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+    {
+      if (TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+	t = C_MAYBE_CONST_EXPR_EXPR (t);
+      else
+	t = TREE_OPERAND (t, 0);
+    }
   if (!VAR_P (t)
       && TREE_CODE (t) != PARM_DECL
       && TREE_CODE (t) != COMPOUND_LITERAL_EXPR)
@@ -8637,7 +8778,7 @@ excess_precision_mode_join (enum flt_eval_method x,
 
    This relates to the effective excess precision seen by the user,
    which is the join point of the precision the target requests for
-   -fexcess-precision={standard,fast} and the implicit excess precision
+   -fexcess-precision={standard,fast,16} and the implicit excess precision
    the target uses.  */
 
 static enum flt_eval_method
@@ -8649,7 +8790,9 @@ c_ts18661_flt_eval_method (void)
   enum excess_precision_type flag_type
     = (flag_excess_precision == EXCESS_PRECISION_STANDARD
        ? EXCESS_PRECISION_TYPE_STANDARD
-       : EXCESS_PRECISION_TYPE_FAST);
+       : (flag_excess_precision == EXCESS_PRECISION_FLOAT16
+	  ? EXCESS_PRECISION_TYPE_FLOAT16
+	  : EXCESS_PRECISION_TYPE_FAST));
 
   enum flt_eval_method requested
     = targetm.c.excess_precision (flag_type);
@@ -9058,6 +9201,12 @@ braced_list_to_string (tree type, tree ctor, bool member)
      bound.  */
   tree typesize = TYPE_SIZE_UNIT (type);
   if (!member && !tree_fits_uhwi_p (typesize))
+    return ctor;
+
+  /* If the target char size differes from the host char size, we'd risk
+     loosing data and getting object sizes wrong by converting to
+     host chars.  */
+  if (TYPE_PRECISION (char_type_node) != CHAR_BIT)
     return ctor;
 
   /* If the array has an explicit bound, use it to constrain the size

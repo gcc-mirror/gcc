@@ -274,9 +274,6 @@ func checkASM() bool {
 	return true
 }
 
-// For gccgo this is in the C code.
-func osyield()
-
 //extern __go_syscall6
 func syscall(trap uintptr, a1, a2, a3, a4, a5, a6 uintptr) uintptr
 

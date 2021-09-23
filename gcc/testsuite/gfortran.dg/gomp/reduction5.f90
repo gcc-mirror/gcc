@@ -22,8 +22,7 @@ end do
 
 !$omp taskloop reduction(inscan,+:a) in_reduction(+:b) ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
   ! { dg-error "34: With INSCAN at .1., expected loop body with ..OMP SCAN between two structured-block-sequences" "" { target *-*-* } .-1 }
-  ! { dg-error "Only DEFAULT permitted as reduction-modifier in REDUCTION clause" "" { target *-*-* } .-2 }
-  ! { dg-error "'inscan' and non-'inscan' 'reduction' clauses on the same construct" "" { target *-*-* } .-3 }
+  ! { dg-error "'inscan' and non-'inscan' 'reduction' clauses on the same construct" "" { target *-*-* } .-2 }
 do i=1,10
   a = a + 1
 end do
@@ -34,7 +33,6 @@ do i=1,10
 end do
 
 !$omp teams reduction(inscan,+:b) ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
-  ! { dg-error "Only DEFAULT permitted as reduction-modifier in REDUCTION clause" "" { target *-*-* } .-1 }
   a = a + 1
 !$omp end teams
 

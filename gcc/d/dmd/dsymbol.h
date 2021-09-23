@@ -107,7 +107,6 @@ struct Prot
 
     bool isMoreRestrictiveThan(const Prot other) const;
     bool operator==(const Prot& other) const;
-    bool isSubsetOf(const Prot& other) const;
 };
 
 // in hdrgen.c
@@ -207,7 +206,7 @@ public:
     virtual void importAll(Scope *sc);
     virtual Dsymbol *search(const Loc &loc, Identifier *ident, int flags = IgnoreNone);
     Dsymbol *search_correct(Identifier *id);
-    Dsymbol *searchX(Loc loc, Scope *sc, RootObject *id);
+    Dsymbol *searchX(Loc loc, Scope *sc, RootObject *id, int flags);
     virtual bool overloadInsert(Dsymbol *s);
     virtual d_uns64 size(Loc loc);
     virtual bool isforwardRef();
@@ -267,6 +266,8 @@ public:
     virtual UnitTestDeclaration *isUnitTestDeclaration() { return NULL; }
     virtual NewDeclaration *isNewDeclaration() { return NULL; }
     virtual VarDeclaration *isVarDeclaration() { return NULL; }
+    virtual VersionSymbol *isVersionSymbol() { return NULL; }
+    virtual DebugSymbol *isDebugSymbol() { return NULL; }
     virtual ClassDeclaration *isClassDeclaration() { return NULL; }
     virtual StructDeclaration *isStructDeclaration() { return NULL; }
     virtual UnionDeclaration *isUnionDeclaration() { return NULL; }

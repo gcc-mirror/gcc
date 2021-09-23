@@ -113,6 +113,14 @@ struct GTY (()) cp_lexer {
   /* True if we're in the context of parsing a pragma, and should not
      increment past the end-of-line marker.  */
   bool in_pragma;
+
+  /* True if we're in the context of OpenMP directives written as C++11
+     attributes turned into pragma.  */
+  bool in_omp_attribute_pragma;
+
+  /* True for in_omp_attribute_pragma lexer that should be destroyed
+     when it is no longer in use.  */
+  bool orphan_p;
 };
 
 
@@ -208,13 +216,14 @@ struct cp_omp_declare_simd_data {
   bool error_seen; /* Set if error has been reported.  */
   bool fndecl_seen; /* Set if one fn decl/definition has been seen already.  */
   bool variant_p; /* Set for #pragma omp declare variant.  */
+  location_t loc;
   vec<cp_token_cache_ptr> tokens;
-  tree clauses;
+  tree *attribs[2];
 };
 
 /* Helper data structure for parsing #pragma acc routine.  */
 struct cp_oacc_routine_data : cp_omp_declare_simd_data {
-  location_t loc;
+  tree clauses;
 };
 
 /* The cp_parser structure represents the C++ parser.  */
@@ -391,6 +400,9 @@ struct GTY(()) cp_parser {
      parameter list containing generic type specifiers (`auto' or concept
      identifiers) rather than an explicit template parameter list.  */
   bool fully_implicit_function_template_p;
+
+  /* TRUE if omp::directive or omp::sequence attributes may not appear.  */
+  bool omp_attrs_forbidden_p;
 
   /* Tracks the function's template parameter list when declaring a function
      using generic type parameters.  This is either a new chain in the case of a

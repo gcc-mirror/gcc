@@ -16,4 +16,5 @@ void foo (double *p)
 }
 
 /* See that we vectorize three SLP instances.  */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "slp2" } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "slp2" { target { ! s390*-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 5 "slp2" { target {   s390*-*-* } } } } */

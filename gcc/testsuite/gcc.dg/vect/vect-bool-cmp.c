@@ -253,4 +253,4 @@ main (int argc, char **argv)
   check (res, ne);
 }
 
-/* { dg-final { scan-tree-dump-times "VECTORIZED" 18 "vect" { target sse4_runtime } } } */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 18 "vect" { target sse4_runtime } } } */

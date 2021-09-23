@@ -17,7 +17,7 @@ foo (int z, int x, int b)
   else
     {
       int a = (x + z) + b;
-      return a; /* { dg-final { gdb-test . "z" "3" } } */
+      return a; /* { dg-final { gdb-test . "z" "3" { xfail { aarch64*-*-* && { no-opts "-O0" "-Og" } } } } } */
     }
 }
 

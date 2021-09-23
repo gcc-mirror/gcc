@@ -49,7 +49,7 @@ subroutine bar(n, m, u)
 end
 
 
-! { dg-final { scan-tree-dump-times "#pragma omp teams firstprivate\\(a1\\) firstprivate\\(b1\\) shared\\(u\\) default\\(none\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp teams firstprivate\\(a1\\) firstprivate\\(b1\\) shared\\(u\\) shared\\(d1\\) default\\(none\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp distribute lastprivate\\(d1\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp parallel firstprivate\\(a1\\) firstprivate\\(b1\\) lastprivate\\(d1\\) shared\\(u\\) default\\(none\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp for nowait" 1 "original" } }

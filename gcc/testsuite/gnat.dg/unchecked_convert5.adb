@@ -1,4 +1,4 @@
--- { dg-do run { target hppa*-*-* sparc*-*-* powerpc*-*-* } }
+-- { dg-do run { target hppa*-*-* sparc*-*-* powerpc-*-* powerpc64-*-* } }
 
 with Unchecked_Conversion;
 

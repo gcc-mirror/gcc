@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,9 +47,6 @@ package System.Unsigned_Types is
    type Long_Unsigned           is mod 2 ** Long_Integer'Size;
    type Long_Long_Unsigned      is mod 2 ** Long_Long_Integer'Size;
    type Long_Long_Long_Unsigned is mod Max_Binary_Modulus;
-
-   type Float_Unsigned          is mod 2 ** Float'Size;
-   --  Used in the implementation of Is_Negative intrinsic (see Exp_Intr)
 
    type Packed_Byte is mod 2 ** 8;
    for Packed_Byte'Size use 8;

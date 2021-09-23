@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-details" } */
+/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-details -fdisable-tree-thread2 -fdisable-tree-thread3" } */
 
 void foo (float **a, float **b, float *c, int n, int m, int l)
 {

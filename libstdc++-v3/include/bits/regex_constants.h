@@ -50,7 +50,7 @@ namespace regex_constants
   /**
    * @name 5.1 Regular Expression Syntax Options
    */
-  //@{
+  ///@{
   enum __syntax_option
   {
     _S_icase,
@@ -216,7 +216,7 @@ namespace regex_constants
   operator^=(syntax_option_type& __a, syntax_option_type __b)
   { return __a = __a ^ __b; }
 
-  //@}
+  ///@}
 
   /**
    * @name 5.2 Matching Rules
@@ -227,7 +227,7 @@ namespace regex_constants
    * below for any bitmask elements set.
    *
    */
-  //@{
+  ///@{
 
   enum __match_flag
   {
@@ -407,9 +407,9 @@ namespace regex_constants
   operator^=(match_flag_type& __a, match_flag_type __b)
   { return __a = __a ^ __b; }
 
-  //@}
+  ///@}
 } // namespace regex_constants
-/* @} */ // group regex
+/// @} group regex
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

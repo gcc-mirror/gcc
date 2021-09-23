@@ -507,8 +507,8 @@ predicate
 predicate::remap_after_inlining (class ipa_fn_summary *info,
 				 class ipa_node_params *params_summary,
 				 class ipa_fn_summary *callee_info,
-				 vec<int> operand_map,
-				 vec<HOST_WIDE_INT> offset_map,
+				 const vec<int> &operand_map,
+				 const vec<HOST_WIDE_INT> &offset_map,
 				 clause_t possible_truths,
 				 const predicate &toplev_predicate)
 {

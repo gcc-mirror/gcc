@@ -11,7 +11,7 @@ f (uint64_t *restrict dst, uint32_t *restrict src1, uint16_t *restrict src2)
 
 /* { dg-final { scan-assembler-times {\tld1w\tz[0-9]+\.d,} 2 } } */
 /* { dg-final { scan-assembler-times {\tld1h\tz[0-9]+\.d,} 2 } } */
-/* { dg-final { scan-assembler-times {\tuxth\tz[0-9]+\.s,} 1 } } */
+/* { dg-final { scan-assembler-not {\tuxth\tz[0-9]+\.s,} } } */
 /* { dg-final { scan-assembler-times {\torr\tz[0-9]+\.d,} 2 } } */
 /* { dg-final { scan-assembler-times {\tuxtw\tz[0-9]+\.d,} 2 } } */
 /* { dg-final { scan-assembler-times {\tst1d\tz[0-9]+\.d,} 2 } } */

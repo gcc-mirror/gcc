@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,24 +51,19 @@ package body System.Atomic_Counters is
 
    procedure Decrement (Item : aliased in out Atomic_Unsigned) is
    begin
-      if Sync_Sub_And_Fetch (Item'Unrestricted_Access, 1) = 0 then
+      if Sync_Sub_And_Fetch (Item'Unchecked_Access, 1) = 0 then
          null;
       end if;
    end Decrement;
 
    function Decrement (Item : aliased in out Atomic_Unsigned) return Boolean is
    begin
-      return Sync_Sub_And_Fetch (Item'Unrestricted_Access, 1) = 0;
+      return Sync_Sub_And_Fetch (Item'Unchecked_Access, 1) = 0;
    end Decrement;
 
    function Decrement (Item : in out Atomic_Counter) return Boolean is
    begin
-      --  Note: the use of Unrestricted_Access here is required because we
-      --  are obtaining an access-to-volatile pointer to a non-volatile object.
-      --  This is not allowed for [Unchecked_]Access, but is safe in this case
-      --  because we know that no aliases are being created.
-
-      return Sync_Sub_And_Fetch (Item.Value'Unrestricted_Access, 1) = 0;
+      return Sync_Sub_And_Fetch (Item.Value'Unchecked_Access, 1) = 0;
    end Decrement;
 
    ---------------
@@ -77,17 +72,12 @@ package body System.Atomic_Counters is
 
    procedure Increment (Item : aliased in out Atomic_Unsigned) is
    begin
-      Sync_Add_And_Fetch (Item'Unrestricted_Access, 1);
+      Sync_Add_And_Fetch (Item'Unchecked_Access, 1);
    end Increment;
 
    procedure Increment (Item : in out Atomic_Counter) is
    begin
-      --  Note: the use of Unrestricted_Access here is required because we are
-      --  obtaining an access-to-volatile pointer to a non-volatile object.
-      --  This is not allowed for [Unchecked_]Access, but is safe in this case
-      --  because we know that no aliases are being created.
-
-      Sync_Add_And_Fetch (Item.Value'Unrestricted_Access, 1);
+      Sync_Add_And_Fetch (Item.Value'Unchecked_Access, 1);
    end Increment;
 
    ----------------

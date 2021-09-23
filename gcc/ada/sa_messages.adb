@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                       C O D E P E E R / S P A R K                        --
 --                                                                          --
---                     Copyright (C) 2015-2020, AdaCore                     --
+--                     Copyright (C) 2015-2021, AdaCore                     --
 --                                                                          --
 -- This is free software;  you can redistribute it  and/or modify it  under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --

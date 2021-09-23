@@ -23,4 +23,8 @@
 
 typedef std::list<int> ltype;
 
-static_assert(std::is_nothrow_move_constructible<ltype>::value, "Error");
+static_assert( std::is_nothrow_move_constructible<ltype>::value,
+	       "noexcept move constructor" );
+static_assert( std::is_nothrow_constructible<ltype,
+	       ltype, const typename ltype::allocator_type&>::value,
+	       "noexcept move constructor with allocator" );

@@ -68,9 +68,12 @@
 #define BYTES_BIG_ENDIAN 0
 #define WORDS_BIG_ENDIAN 0
 
-#define BITS_PER_WORD 32
-#define UNITS_PER_WORD (BITS_PER_WORD/BITS_PER_UNIT)
-#define LIBGCC2_UNITS_PER_WORD 4
+#ifdef IN_LIBGCC2
+/* We want DImode and TImode helpers.  */
+#define UNITS_PER_WORD 8
+#else
+#define UNITS_PER_WORD 4
+#endif
 
 #define POINTER_SIZE	     64
 #define PARM_BOUNDARY	     64
@@ -78,7 +81,7 @@
 #define FUNCTION_BOUNDARY    32
 #define BIGGEST_ALIGNMENT    64
 #define EMPTY_FIELD_BOUNDARY 32
-#define MAX_FIXED_MODE_SIZE  64
+#define MAX_FIXED_MODE_SIZE  128
 #define MAX_REGS_PER_ADDRESS 2
 #define STACK_SIZE_MODE      DImode
 #define Pmode		     DImode
@@ -107,6 +110,7 @@
 #define FIRST_PARM_OFFSET(FNDECL)    0
 #define DYNAMIC_CHAIN_ADDRESS(FP)    plus_constant (Pmode, (FP), -16)
 #define INCOMING_RETURN_ADDR_RTX     gen_rtx_REG (Pmode, LINK_REGNUM)
+#define DWARF_FRAME_RETURN_COLUMN    16
 #define STACK_DYNAMIC_OFFSET(FNDECL) (-crtl->outgoing_args_size)
 #define ACCUMULATE_OUTGOING_ARGS     1
 #define RETURN_ADDR_RTX(COUNT,FRAMEADDR) \
@@ -157,7 +161,8 @@
 #define WORK_ITEM_ID_Z_REG	  162
 #define SOFT_ARG_REG		  416
 #define FRAME_POINTER_REGNUM	  418
-#define FIRST_PSEUDO_REGISTER	  420
+#define DWARF_LINK_REGISTER	  420
+#define FIRST_PSEUDO_REGISTER	  421
 
 #define FIRST_PARM_REG 24
 #define NUM_PARM_REGS  6
@@ -219,7 +224,7 @@
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     /* Other registers.  */			    \
-    1, 1, 1, 1					    \
+    1, 1, 1, 1, 1				    \
 }
 
 #define CALL_USED_REGISTERS {			    \
@@ -257,7 +262,7 @@
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     /* Other registers.  */			    \
-    1, 1, 1, 1					    \
+    1, 1, 1, 1, 1				    \
 }
 
 
@@ -536,7 +541,7 @@ enum gcn_address_spaces
     "v236", "v237", "v238", "v239", "v240", "v241", "v242", "v243", "v244", \
     "v245", "v246", "v247", "v248", "v249", "v250", "v251", "v252", "v253", \
     "v254", "v255",							    \
-    "?ap0", "?ap1", "?fp0", "?fp1" }
+    "?ap0", "?ap1", "?fp0", "?fp1", "?dwlr" }
 
 #define PRINT_OPERAND(FILE, X, CODE)  print_operand(FILE, X, CODE)
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  print_operand_address (FILE, ADDR)
@@ -593,10 +598,8 @@ struct GTY(()) machine_function
   HOST_WIDE_INT local_vars;
   HOST_WIDE_INT callee_saves;
 
-  unsigned lds_allocated;
-  hash_map<tree, int> *lds_allocs;
-
-  vec<tree, va_gc> *reduc_decls;
+  unsigned HOST_WIDE_INT reduction_base;
+  unsigned HOST_WIDE_INT reduction_limit;
 
   bool use_flat_addressing;
 };

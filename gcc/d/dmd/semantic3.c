@@ -850,32 +850,18 @@ public:
                     }
                     assert(!funcdecl->returnLabel);
                 }
+                else if (f->next->ty == Tnoreturn)
+                {
+                }
                 else
                 {
                     const bool inlineAsm = (funcdecl->hasReturnExp & 8) != 0;
                     if ((blockexit & BEfallthru) && f->next->ty != Tvoid && !inlineAsm)
                     {
-                        Expression *e;
                         if (!funcdecl->hasReturnExp)
-                            funcdecl->error("has no return statement, but is expected to return a value of type %s", f->next->toChars());
+                            funcdecl->error("has no `return` statement, but is expected to return a value of type `%s`", f->next->toChars());
                         else
-                            funcdecl->error("no return exp; or assert(0); at end of function");
-                        if (global.params.useAssert == CHECKENABLEon &&
-                            !global.params.useInline)
-                        {
-                            /* Add an assert(0, msg); where the missing return
-                             * should be.
-                             */
-                            e = new AssertExp(funcdecl->endloc,
-                                              new IntegerExp(0),
-                                              new StringExp(funcdecl->loc, const_cast<char *>("missing return expression")));
-                        }
-                        else
-                            e = new HaltExp(funcdecl->endloc);
-                        e = new CommaExp(Loc(), e, f->next->defaultInit());
-                        e = expressionSemantic(e, sc2);
-                        Statement *s = new ExpStatement(Loc(), e);
-                        funcdecl->fbody = new CompoundStatement(Loc(), funcdecl->fbody, s);
+                            funcdecl->error("no `return exp;` or `assert(0);` at end of function");
                     }
                 }
 
@@ -1162,15 +1148,7 @@ public:
 
                     if (cd)
                     {
-                        if (!global.params.is64bit &&
-                            global.params.isWindows &&
-                            !funcdecl->isStatic() && !sbody->usesEH() && !global.params.trace)
-                        {
-                            /* The back end uses the "jmonitor" hack for syncing;
-                             * no need to do the sync at this level.
-                             */
-                        }
-                        else
+                        if (target.libraryObjectMonitors(funcdecl, sbody))
                         {
                             Expression *vsync;
                             if (funcdecl->isStatic())

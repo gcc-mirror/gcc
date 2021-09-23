@@ -245,7 +245,7 @@ Merging can be disabled via @option{-fno-analyzer-state-merge}.
 
 Part of the state stored at a @code{exploded_node} is a @code{region_model}.
 This is an implementation of the region-based ternary model described in
-@url{http://lcs.ios.ac.cn/~xzx/memmodel.pdf,
+@url{https://www.researchgate.net/publication/221430855_A_Memory_Model_for_Static_Analysis_of_C_Programs,
 "A Memory Model for Static Analysis of C Programs"}
 (Zhongxing Xu, Ted Kremenek, and Jian Zhang).
 
@@ -480,6 +480,13 @@ will dump the copious information about the analyzer's state each time it
 reaches the call in its traversal of the source.
 
 @smallexample
+extern void __analyzer_dump_capacity (const void *ptr);
+@end smallexample
+
+will emit a warning describing the capacity of the base region of
+the region pointed to by the 1st argument.
+
+@smallexample
 __analyzer_dump_path ();
 @end smallexample
 
@@ -513,6 +520,15 @@ it will also dump all of the states within the ``processed'' nodes.
    __analyzer_dump_region_model ();
 @end smallexample
 will dump the region_model's state to stderr.
+
+@smallexample
+__analyzer_dump_state ("malloc", ptr);
+@end smallexample
+
+will emit a warning describing the state of the 2nd argument
+(which can be of any type) with respect to the state machine with
+a name matching the 1st argument (which must be a string literal).
+This is for use when debugging, and may be of use in DejaGnu tests.
 
 @smallexample
 __analyzer_eval (expr);

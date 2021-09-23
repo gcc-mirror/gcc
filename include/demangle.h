@@ -408,6 +408,9 @@ enum demangle_component_type
      number which involves neither modifying the mangled string nor
      allocating a new copy of the literal in memory.  */
   DEMANGLE_COMPONENT_LITERAL_NEG,
+  /* A vendor's builtin expression.  The left subtree holds the
+     expression's name, and the right subtree is a argument list.  */
+  DEMANGLE_COMPONENT_VENDOR_EXPR,
   /* A libgcj compiled resource.  The left subtree is the name of the
      resource.  */
   DEMANGLE_COMPONENT_JAVA_RESOURCE,

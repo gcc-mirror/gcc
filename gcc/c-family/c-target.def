@@ -43,73 +43,73 @@ DEFHOOK
 
 DEFHOOK
 (objc_construct_string_object,
- "Targets may provide a string object type that can be used within\
- and between C, C++ and their respective Objective-C dialects.\
- A string object might, for example, embed encoding and length information.\
- These objects are considered opaque to the compiler and handled as references.\
- An ideal implementation makes the composition of the string object\
- match that of the Objective-C @code{NSString} (@code{NXString} for GNUStep),\
- allowing efficient interworking between C-only and Objective-C code.\
- If a target implements string objects then this hook should return a\
- reference to such an object constructed from the normal `C' string\
- representation provided in @var{string}.\
- At present, the hook is used by Objective-C only, to obtain a\
+ "Targets may provide a string object type that can be used within\n\
+and between C, C++ and their respective Objective-C dialects.\n\
+A string object might, for example, embed encoding and length information.\n\
+These objects are considered opaque to the compiler and handled as references.\n\
+An ideal implementation makes the composition of the string object\n\
+match that of the Objective-C @code{NSString} (@code{NXString} for GNUStep),\n\
+allowing efficient interworking between C-only and Objective-C code.\n\
+If a target implements string objects then this hook should return a\n\
+reference to such an object constructed from the normal `C' string\n\
+representation provided in @var{string}.\n\
+At present, the hook is used by Objective-C only, to obtain a\n\
  common-format string object when the target provides one.",
  tree, (tree string),
  NULL)
 
 DEFHOOK
 (objc_declare_unresolved_class_reference,
- "Declare that Objective C class @var{classname} is referenced\
-  by the current TU.",
+ "Declare that Objective C class @var{classname} is referenced\n\
+by the current TU.",
  void, (const char *classname),
  NULL)
 
 DEFHOOK
 (objc_declare_class_definition,
- "Declare that Objective C class @var{classname} is defined\
-  by the current TU.",
+ "Declare that Objective C class @var{classname} is defined\n\
+by the current TU.",
  void, (const char *classname),
  NULL)
 
 DEFHOOK
 (string_object_ref_type_p,
- "If a target implements string objects then this hook should return\
- @code{true} if @var{stringref} is a valid reference to such an object.",
+ "If a target implements string objects then this hook should return\n\
+@code{true} if @var{stringref} is a valid reference to such an object.",
  bool, (const_tree stringref),
  hook_bool_const_tree_false)
 
 DEFHOOK
 (check_string_object_format_arg,
- "If a target implements string objects then this hook should should\
-  provide a facility to check the function arguments in @var{args_list}\
-  against the format specifiers in @var{format_arg} where the type of\
-  @var{format_arg} is one recognized as a valid string reference type.",
+ "If a target implements string objects then this hook should should\n\
+provide a facility to check the function arguments in @var{args_list}\n\
+against the format specifiers in @var{format_arg} where the type of\n\
+@var{format_arg} is one recognized as a valid string reference type.",
  void, (tree format_arg, tree args_list),
  NULL)
 
 DEFHOOK
 (c_preinclude,
- "Define this hook to return the name of a header file to be included at\
- the start of all compilations, as if it had been included with\
- @code{#include <@var{file}>}.  If this hook returns @code{NULL}, or is\
- not defined, or the header is not found, or if the user specifies\
- @option{-ffreestanding} or @option{-nostdinc}, no header is included.\n\
+ "Define this hook to return the name of a header file to be included at\n\
+the start of all compilations, as if it had been included with\n\
+@code{#include <@var{file}>}.  If this hook returns @code{NULL}, or is\n\
+not defined, or the header is not found, or if the user specifies\n\
+@option{-ffreestanding} or @option{-nostdinc}, no header is included.\n\
 \n\
- This hook can be used together with a header provided by the system C\
- library to implement ISO C requirements for certain macros to be\
- predefined that describe properties of the whole implementation rather\
- than just the compiler.",
+This hook can be used together with a header provided by the system C\n\
+library to implement ISO C requirements for certain macros to be\n\
+predefined that describe properties of the whole implementation rather\n\
+than just the compiler.",
  const char *, (void),
  hook_constcharptr_void_null)
 
 DEFHOOK
 (cxx_implicit_extern_c,
- "Define this hook to add target-specific C++ implicit extern C functions.\
- If this function returns true for the name of a file-scope function, that\
- function implicitly gets extern \"C\" linkage rather than whatever language\
- linkage the declaration would normally have.  An example of such function\
- is WinMain on Win32 targets.",
+ "Define this hook to add target-specific C++ implicit extern C functions.\n\
+If this function returns true for the name of a file-scope function, that\n\
+function implicitly gets extern \"C\" linkage rather than whatever language\n\
+linkage the declaration would normally have.  An example of such function\n\
+is WinMain on Win32 targets.",
  bool, (const char*),
  NULL)
  

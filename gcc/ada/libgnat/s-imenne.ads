@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,11 +34,11 @@
 --  package System (where it is too early to start building image tables).
 --  Special routines exist for the enumeration types in these packages.
 
---  This is the new version of the package, for use by compilers built after
---  Nov 21st, 2007, which provides procedures that avoid using the secondary
---  stack. The original package System.Img_Enum is maintained in the sources
---  for bootstrapping with older versions of the compiler which expect to find
---  functions in this package.
+--  Note: this is an obsolete package replaced by instantiations of the generic
+--  package System.Image_N. The reason we maintain this package is that when
+--  bootstrapping with an old compiler, the old compiler will search for this
+--  unit, expecting to find these functions. The new compiler will search for
+--  procedures in the instances of System.Image_N instead.
 
 pragma Compiler_Unit_Warning;
 

@@ -316,7 +316,7 @@ template <typename _From, int _Np, typename _To, typename _Ap>
 
     _GLIBCXX_SIMD_INTRINSIC constexpr
       typename _SimdTraits<_To, _Ap>::_SimdMember
-      operator()(_Arg __x) const noexcept
+      operator()(const _Arg& __x) const noexcept
     {
       if constexpr (_Arg::_S_tuple_size == 1)
 	return __vector_convert<__vector_type_t<_To, _Np>>(__x.first);

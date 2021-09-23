@@ -208,7 +208,7 @@ main (int argc, char **argv)
   for (unsigned int i = 0; builtin_names[i]; ++i)
     {
       const char *name = builtin_names[i];
-      if (strncmp (name, "BUILT_IN_", 9) == 0)
+      if (startswith (name, "BUILT_IN_"))
 	{
 	  const char *root = name + 9;
 	  for (unsigned int j = 0; suffix_lists[j]; ++j)

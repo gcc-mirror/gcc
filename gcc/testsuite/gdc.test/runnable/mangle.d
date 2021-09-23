@@ -599,6 +599,12 @@ void fooB(void delegate (void delegate()) scope dg)
 //pragma(msg, fooB.mangleof);
 static assert(typeof(fooA).mangleof != typeof(fooB).mangleof);
 
+/***************************************************/
+
+alias noreturn = typeof(*null);
+alias fpd = noreturn function();
+int funcd(fpd);
+static assert(funcd.mangleof == "_D6mangle5funcdFPFZNnZi");
 
 /***************************************************/
 

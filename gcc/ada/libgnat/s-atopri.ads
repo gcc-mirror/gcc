@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2012-2020, Free Software Foundation, Inc.     --
+--              Copyright (C) 2012-2021, Free Software Foundation, Inc.     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,9 +61,6 @@ package System.Atomic_Primitives is
    Last    : constant := 6;
 
    subtype Mem_Model is Integer range Relaxed .. Last;
-
-   type bool is new Boolean;
-   pragma Convention (C, bool);
 
    ------------------------------------
    -- GCC built-in atomic primitives --
@@ -137,7 +134,7 @@ package System.Atomic_Primitives is
 
    function Atomic_Test_And_Set
      (Ptr   : System.Address;
-      Model : Mem_Model := Seq_Cst) return bool;
+      Model : Mem_Model := Seq_Cst) return Boolean;
    pragma Import (Intrinsic, Atomic_Test_And_Set, "__atomic_test_and_set");
 
    procedure Atomic_Clear
@@ -147,7 +144,7 @@ package System.Atomic_Primitives is
 
    function Atomic_Always_Lock_Free
      (Size : Interfaces.C.size_t;
-      Ptr  : System.Address := System.Null_Address) return bool;
+      Ptr  : System.Address := System.Null_Address) return Boolean;
    pragma Import
      (Intrinsic, Atomic_Always_Lock_Free, "__atomic_always_lock_free");
 

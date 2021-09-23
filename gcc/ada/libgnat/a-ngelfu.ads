@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2012-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -126,7 +126,7 @@ is
      Pre => Cycle > 0.0
        and then X /= 0.0
        and then Float_Type'Base'Remainder (X, Cycle) /= 0.0
-       and then abs Float_Type'Base'Remainder (X, Cycle) = 0.5 * Cycle;
+       and then abs Float_Type'Base'Remainder (X, Cycle) /= 0.5 * Cycle;
 
    function Arcsin (X : Float_Type'Base) return Float_Type'Base with
      Pre  => abs X <= 1.0,

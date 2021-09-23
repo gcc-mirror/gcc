@@ -22,14 +22,6 @@ DEFVEC (extern, 30);
 
 #if __SIZEOF_SIZE_T__ > 4
 
-DEFVEC (extern, 31);
-DEFVEC (extern, 32);
-DEFVEC (extern, 33);
-DEFVEC (extern, 34);
-DEFVEC (extern, 60);
-DEFVEC (extern, 61);
-DEFVEC (extern, 62);
-
 VEC (POW2 (63)) char v63;     /* { dg-error  "'vector_size' attribute argument value '9223372036854775808' exceeds 9223372036854775807" "LP64" { target lp64 } } */
 
 #else
@@ -48,14 +40,6 @@ void test_local_scope (void)
   DEFVEC (auto, 30);
 
 #if __SIZEOF_SIZE_T__ > 4
-
-  DEFVEC (auto, 31);
-  DEFVEC (auto, 32);
-  DEFVEC (auto, 33);
-  DEFVEC (auto, 34);
-  DEFVEC (auto, 60);
-  DEFVEC (auto, 61);
-  DEFVEC (auto, 62);
 
   VEC (POW2 (63)) char v63;   /* { dg-error  "'vector_size' attribute argument value '9223372036854775808' exceeds 9223372036854775807" "LP64" { target lp64 } } */
 

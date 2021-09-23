@@ -153,7 +153,7 @@ GLIBCXX_ENABLE_THREADS
 GLIBCXX_ENABLE_ATOMIC_BUILTINS
 GLIBCXX_ENABLE_LOCK_POLICY
 GLIBCXX_ENABLE_DECIMAL_FLOAT
-GLIBCXX_ENABLE_INT128_FLOAT128
+GLIBCXX_ENABLE_FLOAT128
 if test "$enable_float128" = yes; then
   port_specific_symbol_files="$port_specific_symbol_files \$(top_srcdir)/config/abi/pre/float128.ver"
 fi
@@ -184,9 +184,6 @@ GLIBCXX_ENABLE_VTABLE_VERIFY([no])
 GLIBCXX_CHECK_STDIO_PROTO
 GLIBCXX_CHECK_MATH11_PROTO
 GLIBCXX_CHECK_UCHAR_H
-
-# For the streamoff typedef.
-GLIBCXX_CHECK_INT64_T
 
 # For LFS support.
 GLIBCXX_CHECK_LFS
@@ -276,6 +273,7 @@ if $GLIBCXX_IS_NATIVE; then
   AC_CHECK_FUNCS(__cxa_thread_atexit_impl __cxa_thread_atexit)
   AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
   AC_CHECK_FUNCS(_wfopen)
+  AC_CHECK_FUNCS(secure_getenv)
 
   # C11 functions for C++17 library
   AC_CHECK_FUNCS(timespec_get)
@@ -483,6 +481,11 @@ GLIBCXX_CHECK_FILESYSTEM_DEPS
 
 # For Networking TS.
 AC_CHECK_HEADERS([fcntl.h sys/ioctl.h sys/socket.h sys/uio.h poll.h netdb.h arpa/inet.h netinet/in.h netinet/tcp.h])
+AC_CHECK_DECL(F_GETFL,,,[#include <fcntl.h>])
+AC_CHECK_DECL(F_SETFL,,,[#include <fcntl.h>])
+if test "$ac_cv_have_decl_F_GETFL$ac_cv_have_decl_F_SETFL" = yesyes ; then
+  AC_CHECK_DECL(O_NONBLOCK,,,[#include <fcntl.h>])
+fi
 
 # For Transactional Memory TS
 GLIBCXX_CHECK_SIZE_T_MANGLING

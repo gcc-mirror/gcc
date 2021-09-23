@@ -808,8 +808,6 @@ record_loads (tag_map_t &tag_map, struct loop *loop)
 void
 execute_tag_collision_avoidance ()
 {
-  struct loop *loop;
-
   df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
   df_chain_add_problem (DF_UD_CHAIN);
   df_compute_regs_ever_live (true);
@@ -824,7 +822,7 @@ execute_tag_collision_avoidance ()
   calculate_dominance_info (CDI_DOMINATORS);
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       tag_map_t tag_map (512);
 

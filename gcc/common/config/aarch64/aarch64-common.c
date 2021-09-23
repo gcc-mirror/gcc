@@ -219,7 +219,7 @@ aarch64_parse_extension (const char *str, uint64_t *isa_flags,
       else
 	len = strlen (str);
 
-      if (len >= 2 && strncmp (str, "no", 2) == 0)
+      if (len >= 2 && startswith (str, "no"))
 	{
 	  adding_ext = 0;
 	  len -= 2;

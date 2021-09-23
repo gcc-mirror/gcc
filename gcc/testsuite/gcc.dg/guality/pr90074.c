@@ -25,7 +25,7 @@ int main()
      debug stmt for the final value of the loop during loop distribution
      which would fix the UNSUPPORTED cases.
      c is optimized out at -Og for no obvious reason.  */
-  optimize_me_not(); /* { dg-final { gdb-test . "i + 1" "8" } } */
-    /* { dg-final { gdb-test .-1 "c + 1" "2" } } */
+  optimize_me_not(); /* { dg-final { gdb-test . "i + 1" "8" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" } } } } } */
+    /* { dg-final { gdb-test .-1 "c + 1" "2" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" } } } } } */
   return 0;
 }

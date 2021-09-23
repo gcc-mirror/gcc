@@ -27,6 +27,26 @@ static assert(C2.int1.offsetof == payloadOffset + 8);
 static assert(C2.alignof == size_t.sizeof);
 static assert(__traits(classInstanceSize, C2) == payloadOffset + 12);
 
+align(8) struct PaddedStruct
+{
+    bool flag;
+    align(2) S1 s1;
+}
+
+static assert(PaddedStruct.s1.offsetof == 2);
+static assert(PaddedStruct.alignof == 8);
+static assert(PaddedStruct.sizeof == 16);
+
+align(1) struct UglyStruct
+{
+    bool flag;
+    int i;
+    ubyte u;
+}
+
+static assert(UglyStruct.i.offsetof == 4);
+static assert(UglyStruct.alignof == 1);
+static assert(UglyStruct.sizeof == 9);
 
 /***************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=19914

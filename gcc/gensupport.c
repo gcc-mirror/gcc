@@ -1230,6 +1230,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op,
     case MATCH_OPERATOR:
     case MATCH_SCRATCH:
     case MATCH_PARALLEL:
+    case MATCH_DUP:
       XINT (pattern, 0) += max_op;
       break;
 
@@ -1290,6 +1291,9 @@ alter_constraints (rtx pattern, int n_dup, constraints_handler_t alter)
     {
     case MATCH_OPERAND:
       XSTR (pattern, 2) = alter (XSTR (pattern, 2), n_dup);
+      break;
+    case MATCH_SCRATCH:
+      XSTR (pattern, 1) = alter (XSTR (pattern, 1), n_dup);
       break;
 
     default:
@@ -2320,14 +2324,6 @@ gen_reader::handle_unknown_directive (file_location loc, const char *rtx_name)
   unsigned int i;
   FOR_EACH_VEC_ELT (subrtxs, i, x)
     process_rtx (x, loc);
-}
-
-/* Comparison function for the mnemonic hash table.  */
-
-static int
-htab_eq_string (const void *s1, const void *s2)
-{
-  return strcmp ((const char*)s1, (const char*)s2) == 0;
 }
 
 /* Add mnemonic STR with length LEN to the mnemonic hash table

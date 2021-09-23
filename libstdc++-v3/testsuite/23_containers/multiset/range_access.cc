@@ -25,6 +25,6 @@ void
 test01()
 {
   std::multiset<int> ms{1, 2, 3};
-  std::begin(ms);
-  std::end(ms);
+  (void) std::begin(ms);
+  (void) std::end(ms);
 }

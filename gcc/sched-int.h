@@ -43,12 +43,12 @@ extern void sched_init_bbs (void);
 
 extern void sched_extend_luids (void);
 extern void sched_init_insn_luid (rtx_insn *);
-extern void sched_init_luids (bb_vec_t);
+extern void sched_init_luids (const bb_vec_t &);
 extern void sched_finish_luids (void);
 
 extern void sched_extend_target (void);
 
-extern void haifa_init_h_i_d (bb_vec_t);
+extern void haifa_init_h_i_d (const bb_vec_t &);
 extern void haifa_finish_h_i_d (void);
 
 /* Hooks that are common to all the schedulers.  */

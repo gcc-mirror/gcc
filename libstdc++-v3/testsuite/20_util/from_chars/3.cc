@@ -29,7 +29,7 @@ long long
 read(const char* first, const char* last, int base)
 {
   long long val = 0;
-  long long place = 1;
+  unsigned long long place = 1;
   while (last > first)
   {
     val += (*--last - '0') * place;

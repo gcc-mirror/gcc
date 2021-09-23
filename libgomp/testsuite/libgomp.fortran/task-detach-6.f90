@@ -1,6 +1,6 @@
 ! { dg-do run }
 
-! { dg-additional-sources ../lib/on_device_arch.c }
+! { dg-additional-sources on_device_arch.c }
   ! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
 
 ! Test tasks with detach clause on an offload device.  Each device
@@ -21,7 +21,8 @@ program task_detach_6
 
   !TODO See '../libgomp.c/pr99555-1.c'.
   if (on_device_arch_nvptx () /= 0) then
-     error stop !TODO Until resolved, skip, with error status.
+     call alarm (4, 0); !TODO Until resolved, make sure that we exit quickly, with error status.
+     ! { dg-xfail-run-if "PR99555" { offload_device_nvptx } }
   end if
 
   !$omp target map (tofrom: x, y, z) map (from: thread_count)

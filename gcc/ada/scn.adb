@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,16 +23,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Csets;    use Csets;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Scans;    use Scans;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Uintp;    use Uintp;
+with Atree;          use Atree;
+with Csets;          use Csets;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Scans;          use Scans;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinput;         use Sinput;
+with Uintp;          use Uintp;
 
 package body Scn is
 
@@ -154,7 +155,14 @@ package body Scn is
 
          when Tok_Integer_Literal =>
             Token_Node := New_Node (N_Integer_Literal, Token_Ptr);
-            Set_Intval (Token_Node, Int_Literal_Value);
+
+            --  Int_Literal_Value can be No_Uint in some cases in syntax-only
+            --  mode (see Scng.Scan.Nlit).
+
+            if Int_Literal_Value /= No_Uint then
+               Set_Intval (Token_Node, Int_Literal_Value);
+            end if;
+
             Check_Obsolete_Base_Char;
 
          when Tok_String_Literal =>

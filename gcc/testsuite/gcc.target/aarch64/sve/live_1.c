@@ -32,10 +32,9 @@ TEST_ALL (EXTRACT_LAST)
 /* { dg-final { scan-assembler-times {\twhilelo\tp[0-7].s, } 4 } } */
 /* { dg-final { scan-assembler-times {\twhilelo\tp[0-7].d, } 4 } } */
 
-/* { dg-final { scan-assembler-times {\tlastb\tw[0-9]+, p[0-7], z[0-9]+\.b\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tlastb\tw[0-9]+, p[0-7], z[0-9]+\.h\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tlastb\tb[0-9]+, p[0-7], z[0-9]+\.b\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tlastb\th[0-9]+, p[0-7], z[0-9]+\.h\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tlastb\tw[0-9]+, p[0-7], z[0-9]+\.s\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tlastb\tx[0-9]+, p[0-7], z[0-9]+\.d\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tlastb\th[0-9]+, p[0-7], z[0-9]+\.h\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tlastb\ts[0-9]+, p[0-7], z[0-9]+\.s\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tlastb\td[0-9]+, p[0-7], z[0-9]+\.d\n} 1 } } */

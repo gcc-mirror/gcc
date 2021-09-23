@@ -38,7 +38,6 @@
 #include <bits/stringfwd.h>
 #include <bits/allocator.h>
 #include <bits/codecvt.h>
-#include <bits/unique_ptr.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -221,6 +220,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif  // _GLIBCXX_USE_CHAR8_T
 
+  namespace __detail
+  {
+    template<typename _Tp>
+      struct _Scoped_ptr
+      {
+	__attribute__((__nonnull__(2)))
+	explicit
+	_Scoped_ptr(_Tp* __ptr) noexcept
+	: _M_ptr(__ptr)
+	{ }
+
+	_Scoped_ptr(_Tp* __ptr, const char* __msg)
+	: _M_ptr(__ptr)
+	{
+	  if (!__ptr)
+	    __throw_logic_error(__msg);
+	}
+
+	~_Scoped_ptr() { delete _M_ptr; }
+
+	_Scoped_ptr(const _Scoped_ptr&) = delete;
+	_Scoped_ptr& operator=(const _Scoped_ptr&) = delete;
+
+	__attribute__((__returns_nonnull__))
+	_Tp* operator->() const noexcept { return _M_ptr; }
+
+	_Tp& operator*() const noexcept { return *_M_ptr; }
+
+      private:
+	_Tp* _M_ptr;
+      };
+  }
+
 #ifdef _GLIBCXX_USE_WCHAR_T
 
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
@@ -247,11 +279,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * Takes ownership of @p __pcvt and will delete it in the destructor.
        */
       explicit
-      wstring_convert(_Codecvt* __pcvt) : _M_cvt(__pcvt)
-      {
-	if (!_M_cvt)
-	  __throw_logic_error("wstring_convert");
-      }
+      wstring_convert(_Codecvt* __pcvt) : _M_cvt(__pcvt, "wstring_convert")
+      { }
 
       /** Construct with an initial converstion state.
        *
@@ -262,11 +291,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * The object's conversion state will persist between conversions.
        */
       wstring_convert(_Codecvt* __pcvt, state_type __state)
-      : _M_cvt(__pcvt), _M_state(__state), _M_with_cvtstate(true)
-      {
-	if (!_M_cvt)
-	  __throw_logic_error("wstring_convert");
-      }
+      : _M_cvt(__pcvt, "wstring_convert"),
+	_M_state(__state), _M_with_cvtstate(true)
+      { }
 
       /** Construct with error strings.
        *
@@ -279,10 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       : _M_cvt(new _Codecvt),
 	_M_byte_err_string(__byte_err), _M_wide_err_string(__wide_err),
 	_M_with_strings(true)
-      {
-	if (!_M_cvt)
-	  __throw_logic_error("wstring_convert");
-      }
+      { }
 
       ~wstring_convert() = default;
 
@@ -370,7 +394,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       state_type state() const { return _M_state; }
 
     private:
-      unique_ptr<_Codecvt>	_M_cvt;
+      __detail::_Scoped_ptr<_Codecvt>	_M_cvt;
       byte_string		_M_byte_err_string;
       wide_string		_M_wide_err_string;
       state_type		_M_state = state_type();
@@ -405,13 +429,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
       explicit
       wbuffer_convert(streambuf* __bytebuf, _Codecvt* __pcvt = new _Codecvt,
 		      state_type __state = state_type())
-      : _M_buf(__bytebuf), _M_cvt(__pcvt), _M_state(__state)
+      : _M_buf(__bytebuf), _M_cvt(__pcvt, "wbuffer_convert"),
+	_M_state(__state), _M_always_noconv(_M_cvt->always_noconv())
       {
-	if (!_M_cvt)
-	  __throw_logic_error("wbuffer_convert");
-
-	_M_always_noconv = _M_cvt->always_noconv();
-
 	if (_M_buf)
 	  {
 	    this->setp(_M_put_area, _M_put_area + _S_buffer_length);
@@ -593,9 +613,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	return __next != __first;
       }
 
-      streambuf*		_M_buf;
-      unique_ptr<_Codecvt>	_M_cvt;
-      state_type		_M_state;
+      streambuf*			_M_buf;
+      __detail::_Scoped_ptr<_Codecvt>	_M_cvt;
+      state_type			_M_state;
 
       static const streamsize	_S_buffer_length = 32;
       static const streamsize	_S_putback_length = 3;

@@ -1325,6 +1325,46 @@ ssa_undefined_value_p (tree t, bool partial)
   if (gimple_nop_p (def_stmt))
     return true;
 
+  /* The value is undefined if the definition statement is a call
+     to .DEFERRED_INIT function.  */
+  if (gimple_call_internal_p (def_stmt, IFN_DEFERRED_INIT))
+    return true;
+
+  /* The value is partially undefined if the definition statement is
+     a REALPART_EXPR or IMAGPART_EXPR and its operand is defined by
+     the call to .DEFERRED_INIT function.  This is for handling the
+     following case:
+
+  1 typedef _Complex float C;
+  2 C foo (int cond)
+  3 {
+  4   C f;
+  5   __imag__ f = 0;
+  6   if (cond)
+  7     {
+  8       __real__ f = 1;
+  9       return f;
+ 10     }
+ 11   return f;
+ 12 }
+
+    with -ftrivial-auto-var-init, compiler will insert the following
+    artificial initialization:
+  f = .DEFERRED_INIT (f, 2);
+  _1 = REALPART_EXPR <f>;
+
+    we should treat the definition _1 = REALPART_EXPR <f> as undefined.  */
+  if (partial && is_gimple_assign (def_stmt)
+      && (gimple_assign_rhs_code (def_stmt) == REALPART_EXPR
+	  || gimple_assign_rhs_code (def_stmt) == IMAGPART_EXPR))
+    {
+      tree real_imag_part = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0);
+      if (TREE_CODE (real_imag_part) == SSA_NAME
+	 && gimple_call_internal_p (SSA_NAME_DEF_STMT (real_imag_part),
+				    IFN_DEFERRED_INIT))
+	return true;
+    }
+
   /* Check if the complex was not only partially defined.  */
   if (partial && is_gimple_assign (def_stmt)
       && gimple_assign_rhs_code (def_stmt) == COMPLEX_EXPR)
@@ -1490,6 +1530,16 @@ non_rewritable_mem_ref_base (tree ref)
 		  == TYPE_PRECISION (TREE_TYPE (base))))
 	  && wi::umod_trunc (wi::to_offset (TYPE_SIZE (TREE_TYPE (base))),
 			     BITS_PER_UNIT) == 0)
+	return NULL_TREE;
+      return decl;
+    }
+
+  /* We cannot rewrite TARGET_MEM_REFs.  */
+  if (TREE_CODE (base) == TARGET_MEM_REF
+      && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
+    {
+      tree decl = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
+      if (! DECL_P (decl))
 	return NULL_TREE;
       return decl;
     }

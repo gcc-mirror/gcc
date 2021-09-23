@@ -2541,9 +2541,9 @@ operation_could_trap_p (enum tree_code op, bool fp_operation, bool honor_trapv,
   bool honor_snans = fp_operation && flag_signaling_nans != 0;
   bool handled;
 
-  /* This function cannot tell whether or not COND_EXPR and VEC_COND_EXPR could
-     trap, because that depends on the respective condition op.  */
-  gcc_assert (op != COND_EXPR && op != VEC_COND_EXPR);
+  /* This function cannot tell whether or not COND_EXPR could trap,
+     because that depends on its condition op.  */
+  gcc_assert (op != COND_EXPR);
 
   if (TREE_CODE_CLASS (op) != tcc_comparison
       && TREE_CODE_CLASS (op) != tcc_unary
@@ -2723,8 +2723,11 @@ tree_could_trap_p (tree expr)
       return TREE_THIS_VOLATILE (expr);
 
     case CALL_EXPR:
+      /* Internal function calls do not trap.  */
+      if (CALL_EXPR_FN (expr) == NULL_TREE)
+	return false;
       t = get_callee_fndecl (expr);
-      /* Assume that calls to weak functions may trap.  */
+      /* Assume that indirect and calls to weak functions may trap.  */
       if (!t || !DECL_P (t))
 	return true;
       if (DECL_WEAK (t))
@@ -2853,7 +2856,7 @@ stmt_could_throw_1_p (gassign *stmt)
       if (TREE_CODE_CLASS (code) == tcc_comparison)
 	t = TREE_TYPE (gimple_assign_rhs1 (stmt));
       else
-	t = gimple_expr_type (stmt);
+	t = TREE_TYPE (gimple_assign_lhs (stmt));
       fp_operation = FLOAT_TYPE_P (t);
       if (fp_operation)
 	{

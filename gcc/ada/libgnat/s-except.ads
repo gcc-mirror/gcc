@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,29 +34,9 @@ pragma Compiler_Unit_Warning;
 package System.Exceptions is
 
    pragma Preelaborate;
-   --  To let Ada.Exceptions "with" us and let us "with" Standard_Library
-
-   ZCX_By_Default : constant Boolean;
-   --  Visible copy to allow Ada.Exceptions to know the exception model
+   --  To let Ada.Exceptions "with" us
 
 private
-
-   type Require_Body;
-   --  Dummy Taft-amendment type to make it legal (and required) to provide
-   --  a body for this package.
-   --
-   --  We do this because this unit used to have a body in earlier versions
-   --  of GNAT, and it causes various bootstrap path problems etc if we remove
-   --  a body, since we may pick up old unwanted bodies.
-   --
-   --  Note: we use this standard Ada method of requiring a body rather
-   --  than the cleaner pragma No_Body because System.Exceptions is a compiler
-   --  unit, and older bootstrap compilers do not support pragma No_Body. This
-   --  type can be removed, and s-except.adb can be replaced by a source
-   --  containing just that pragma, when we decide to move to a 2008 compiler
-   --  as the minimal bootstrap compiler version. ???
-
-   ZCX_By_Default : constant Boolean := System.ZCX_By_Default;
 
    Foreign_Exception : exception;
    pragma Unreferenced (Foreign_Exception);

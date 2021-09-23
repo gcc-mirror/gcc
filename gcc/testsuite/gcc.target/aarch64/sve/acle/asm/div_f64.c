@@ -218,7 +218,7 @@ TEST_UNIFORM_ZD (div_d4_f64_x_tied1, svfloat64_t, double,
 		 z0 = svdiv_x (p0, z0, d4))
 
 /*
-** div_d4_f64_x_untied: { xfail *-*-* }
+** div_d4_f64_x_untied:
 **	mov	z0\.d, d4
 **	fdivr	z0\.d, p0/m, z0\.d, z1\.d
 **	ret

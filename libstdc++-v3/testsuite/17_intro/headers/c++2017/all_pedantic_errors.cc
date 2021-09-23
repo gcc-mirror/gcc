@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++17 -pedantic-errors" }
+// { dg-options "-pedantic-errors" }
 // { dg-do compile { target c++17 } }
 
 // Copyright (C) 2015-2021 Free Software Foundation, Inc.

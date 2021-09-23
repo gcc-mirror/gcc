@@ -15,7 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
@@ -80,10 +79,8 @@ test03()
 void
 test04()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // filesystem permissions not supported
-  return;
-#endif
+  if (!__gnu_test::permissions_are_testable())
+    return;
 
   using std::filesystem::perms;
   using std::filesystem::perm_options;

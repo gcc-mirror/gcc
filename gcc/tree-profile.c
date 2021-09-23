@@ -250,7 +250,7 @@ gimple_gen_edge_profiler (int edgeno, edge e)
     {
       /* __atomic_fetch_add (&counter, 1, MEMMODEL_RELAXED); */
       tree addr = tree_coverage_counter_addr (GCOV_COUNTER_ARCS, edgeno);
-      tree f = builtin_decl_explicit (LONG_LONG_TYPE_SIZE > 32
+      tree f = builtin_decl_explicit (TYPE_PRECISION (gcov_type_node) > 32
 				      ? BUILT_IN_ATOMIC_FETCH_ADD_8:
 				      BUILT_IN_ATOMIC_FETCH_ADD_4);
       gcall *stmt = gimple_build_call (f, 3, addr, one,
@@ -525,7 +525,7 @@ gimple_gen_time_profiler (unsigned tag)
 			  tree_time_profiler_counter);
       gassign *assign = gimple_build_assign (ptr, NOP_EXPR, addr);
       gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
-      tree f = builtin_decl_explicit (LONG_LONG_TYPE_SIZE > 32
+      tree f = builtin_decl_explicit (TYPE_PRECISION (gcov_type_node) > 32
 				      ? BUILT_IN_ATOMIC_ADD_FETCH_8:
 				      BUILT_IN_ATOMIC_ADD_FETCH_4);
       gcall *stmt = gimple_build_call (f, 3, ptr, one,

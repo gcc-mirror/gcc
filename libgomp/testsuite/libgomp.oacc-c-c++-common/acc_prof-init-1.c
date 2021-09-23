@@ -19,6 +19,19 @@
 #define DEBUG_printf(...) //__builtin_printf (__VA_ARGS__)
 
 
+static acc_prof_reg reg;
+static acc_prof_reg unreg;
+static acc_prof_lookup_func lookup;
+void acc_register_library (acc_prof_reg reg_, acc_prof_reg unreg_, acc_prof_lookup_func lookup_)
+{
+  DEBUG_printf ("%s\n", __FUNCTION__);
+
+  reg = reg_;
+  unreg = unreg_;
+  lookup = lookup_;
+}
+
+
 static int state = -1;
 
 #define STATE_OP(state, op) \
@@ -34,7 +47,7 @@ static int state = -1;
 
 static acc_device_t acc_device_type;
 static int acc_device_num;
-static int acc_async;
+static int acc_async = acc_async_sync;
 
 
 struct tool_info
@@ -192,6 +205,21 @@ static void cb_compute_construct_end (acc_prof_info *prof_info, acc_event_info *
 
   assert (state == 11
 	  || state == 111);
+#if defined COPYIN
+  /* In an 'async' setting, this event may be triggered before actual 'async'
+     data copying has completed.  Given that 'state' appears in 'COPYIN', we
+     first have to synchronize (that is, let the 'async' 'COPYIN' read the
+     current 'state' value)...  */
+  if (acc_async != acc_async_sync)
+    {
+      /* "We're not yet accounting for the fact that _OpenACC events may occur
+	 during event processing_"; temporarily disable to avoid deadlock.  */
+      unreg (acc_ev_none, NULL, acc_toggle_per_thread);
+      acc_wait (acc_async);
+      reg (acc_ev_none, NULL, acc_toggle_per_thread);
+    }
+  /* ... before modifying it in the following.  */
+#endif
   STATE_OP (state, ++);
 
   assert (tool_info != NULL);
@@ -240,19 +268,6 @@ static void cb_compute_construct_end (acc_prof_info *prof_info, acc_event_info *
 }
 
 
-static acc_prof_reg reg;
-static acc_prof_reg unreg;
-static acc_prof_lookup_func lookup;
-void acc_register_library (acc_prof_reg reg_, acc_prof_reg unreg_, acc_prof_lookup_func lookup_)
-{
-  DEBUG_printf ("%s\n", __FUNCTION__);
-
-  reg = reg_;
-  unreg = unreg_;
-  lookup = lookup_;
-}
-
-
 int main()
 {
   acc_register_library (acc_prof_register, acc_prof_unregister, acc_prof_lookup);
@@ -271,14 +286,15 @@ int main()
 
   acc_device_type = acc_get_device_type ();
   acc_device_num = acc_get_device_num (acc_device_type);
-  acc_async = 12;
 
   {
     int state_init;
+    acc_async = 12;
 #pragma acc parallel async(acc_async) COPYIN(state) copyout(state_init)
     {
       state_init = state;
     }
+    acc_async = acc_async_sync;
 #pragma acc wait
     assert (state_init == 11);
   }
@@ -297,14 +313,15 @@ int main()
 
   acc_device_type = acc_get_device_type ();
   acc_device_num = acc_get_device_num (acc_device_type);
-  acc_async = 12;
 
   {
     int state_init;
+    acc_async = 12;
 #pragma acc parallel async(acc_async) COPYIN(state) copyout(state_init)
     {
       state_init = state;
     }
+    acc_async = acc_async_sync;
 #pragma acc wait
     assert (state_init == 111);
   }

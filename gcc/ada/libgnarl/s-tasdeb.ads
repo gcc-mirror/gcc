@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1997-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,9 +65,11 @@ package System.Tasking.Debug is
    -- General GDB support --
    -------------------------
 
-   Known_Tasks : array (0 .. 999) of Task_Id := (others => null);
+   Known_Tasks : array (0 .. 999) of Task_Id := (others => null)
+     with Atomic_Components;
    --  Global array of tasks read by gdb, and updated by Create_Task and
-   --  Finalize_TCB
+   --  Finalize_TCB. Ensure access to its components is atomic to allow
+   --  lock-free concurrent access.
 
    Debug_Event_Activating           : constant := 1;
    Debug_Event_Run                  : constant := 2;

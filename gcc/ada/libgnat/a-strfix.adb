@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,30 +145,26 @@ package body Ada.Strings.Fixed is
      (Left  : Natural;
       Right : Character) return String
    is
-      Result : String (1 .. Left);
-
    begin
-      for J in Result'Range loop
-         Result (J) := Right;
-      end loop;
-
-      return Result;
+      return Result : String (1 .. Left) do
+         for J in Result'Range loop
+            Result (J) := Right;
+         end loop;
+      end return;
    end "*";
 
    function "*"
      (Left  : Natural;
       Right : String) return String
    is
-      Result : String (1 .. Left * Right'Length);
       Ptr    : Integer := 1;
-
    begin
-      for J in 1 .. Left loop
-         Result (Ptr .. Ptr + Right'Length - 1) := Right;
-         Ptr := Ptr + Right'Length;
-      end loop;
-
-      return Result;
+      return Result : String (1 .. Left * Right'Length) do
+         for J in 1 .. Left loop
+            Result (Ptr .. Ptr + Right'Length - 1) := Right;
+            Ptr := Ptr + Right'Length;
+         end loop;
+      end return;
    end "*";
 
    ------------
@@ -180,6 +176,7 @@ package body Ada.Strings.Fixed is
       From    : Positive;
       Through : Natural) return String
    is
+      Front : Integer;
    begin
       if From > Through then
          declare
@@ -207,18 +204,13 @@ package body Ada.Strings.Fixed is
          end if;
 
       else
-         declare
-            Front  : constant Integer := From - Source'First;
-            Result : String (1 .. Source'Length - (Through - From + 1));
-
-         begin
+         Front := From - Source'First;
+         return Result : String (1 .. Source'Length - (Through - From + 1)) do
             Result (1 .. Front) :=
               Source (Source'First .. From - 1);
             Result (Front + 1 .. Result'Last) :=
               Source (Through + 1 .. Source'Last);
-
-            return Result;
-         end;
+         end return;
       end if;
    end Delete;
 
@@ -253,18 +245,13 @@ package body Ada.Strings.Fixed is
            Result_Type (Source (Source'First .. Source'First + Count - 1));
 
       else
-         declare
-            Result : Result_Type;
-
-         begin
+         return Result : Result_Type do
             Result (1 .. Source'Length) := Source;
 
             for J in Source'Length + 1 .. Count loop
                Result (J) := Pad;
             end loop;
-
-            return Result;
-         end;
+         end return;
       end if;
    end Head;
 
@@ -291,7 +278,6 @@ package body Ada.Strings.Fixed is
       Before   : Positive;
       New_Item : String) return String
    is
-      Result : String (1 .. Source'Length + New_Item'Length);
       Front  : constant Integer := Before - Source'First;
 
    begin
@@ -299,14 +285,14 @@ package body Ada.Strings.Fixed is
          raise Index_Error;
       end if;
 
-      Result (1 .. Front) :=
-        Source (Source'First .. Before - 1);
-      Result (Front + 1 .. Front + New_Item'Length) :=
-        New_Item;
-      Result (Front + New_Item'Length + 1 .. Result'Last) :=
-        Source (Before .. Source'Last);
-
-      return Result;
+      return Result : String (1 .. Source'Length + New_Item'Length) do
+         Result (1 .. Front) :=
+           Source (Source'First .. Before - 1);
+         Result (Front + 1 .. Front + New_Item'Length) :=
+           New_Item;
+         Result (Front + New_Item'Length + 1 .. Result'Last) :=
+           Source (Before .. Source'Last);
+      end return;
    end Insert;
 
    procedure Insert
@@ -435,8 +421,7 @@ package body Ada.Strings.Fixed is
    function Overwrite
      (Source   : String;
       Position : Positive;
-      New_Item : String) return String
-   is
+      New_Item : String) return String is
    begin
       if Position not in Source'First .. Source'Last + 1 then
          raise Index_Error;
@@ -444,21 +429,17 @@ package body Ada.Strings.Fixed is
 
       declare
          Result_Length : constant Natural :=
-           Integer'Max
-             (Source'Length,
-              Position - Source'First + New_Item'Length);
-
-         Result : String (1 .. Result_Length);
-         Front  : constant Integer := Position - Source'First;
+           Integer'Max (Source'Length,
+                        Position - Source'First + New_Item'Length);
+         Front         : constant Integer := Position - Source'First;
 
       begin
-         Result (1 .. Front) :=
-           Source (Source'First .. Position - 1);
-         Result (Front + 1 .. Front + New_Item'Length) :=
-           New_Item;
-         Result (Front + New_Item'Length + 1 .. Result'Length) :=
-           Source (Position + New_Item'Length .. Source'Last);
-         return Result;
+         return Result : String (1 .. Result_Length) do
+            Result (1 .. Front) := Source (Source'First .. Position - 1);
+            Result (Front + 1 .. Front + New_Item'Length) := New_Item;
+            Result (Front + New_Item'Length + 1 .. Result'Length) :=
+              Source (Position + New_Item'Length .. Source'Last);
+         end return;
       end;
    end Overwrite;
 
@@ -495,24 +476,21 @@ package body Ada.Strings.Fixed is
               Integer'Max (0, Low - Source'First);
             --  Length of prefix of Source copied to result
 
-            Back_Len : constant Integer :=
-              Integer'Max (0, Source'Last - High);
+            Back_Len : constant Integer := Integer'Max (0, Source'Last - High);
             --  Length of suffix of Source copied to result
 
             Result_Length : constant Integer :=
               Front_Len + By'Length + Back_Len;
             --  Length of result
 
-            Result : String (1 .. Result_Length);
-
          begin
-            Result (1 .. Front_Len) := Source (Source'First .. Low - 1);
-            Result (Front_Len + 1 .. Front_Len + By'Length) := By;
-            Result (Front_Len + By'Length + 1 .. Result'Length) :=
-              Source (High + 1 .. Source'Last);
-            return Result;
+            return Result : String (1 .. Result_Length) do
+               Result (1 .. Front_Len) := Source (Source'First .. Low - 1);
+               Result (Front_Len + 1 .. Front_Len + By'Length) := By;
+               Result (Front_Len + By'Length + 1 .. Result'Length) :=
+                 Source (High + 1 .. Source'Last);
+            end return;
          end;
-
       else
          return Insert (Source, Before => Low, New_Item => By);
       end if;
@@ -549,17 +527,13 @@ package body Ada.Strings.Fixed is
       --  Pad on left
 
       else
-         declare
-            Result : Result_Type;
-
-         begin
+         return Result : Result_Type do
             for J in 1 .. Count - Source'Length loop
                Result (J) := Pad;
             end loop;
 
             Result (Count - Source'Length + 1 .. Count) := Source;
-            return Result;
-         end;
+         end return;
       end if;
    end Tail;
 
@@ -585,14 +559,12 @@ package body Ada.Strings.Fixed is
      (Source  : String;
       Mapping : Maps.Character_Mapping) return String
    is
-      Result : String (1 .. Source'Length);
-
    begin
-      for J in Source'Range loop
-         Result (J - (Source'First - 1)) := Value (Mapping, Source (J));
-      end loop;
-
-      return Result;
+      return Result : String (1 .. Source'Length) do
+         for J in Source'Range loop
+            Result (J - (Source'First - 1)) := Value (Mapping, Source (J));
+         end loop;
+      end return;
    end Translate;
 
    procedure Translate
@@ -609,15 +581,13 @@ package body Ada.Strings.Fixed is
      (Source  : String;
       Mapping : Maps.Character_Mapping_Function) return String
    is
-      Result : String (1 .. Source'Length);
       pragma Unsuppress (Access_Check);
-
    begin
-      for J in Source'Range loop
-         Result (J - (Source'First - 1)) := Mapping.all (Source (J));
-      end loop;
-
-      return Result;
+      return Result : String (1 .. Source'Length) do
+         for J in Source'Range loop
+            Result (J - (Source'First - 1)) := Mapping.all (Source (J));
+         end loop;
+      end return;
    end Translate;
 
    procedure Translate

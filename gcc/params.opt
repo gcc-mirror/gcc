@@ -126,9 +126,13 @@ Maximum size (in bytes) of objects tracked bytewise by dead store elimination.
 Common Joined UInteger Var(param_early_inlining_insns) Init(6) Optimization Param
 Maximal estimated growth of function body caused by early inlining of single call.
 
+-param=evrp-sparse-threshold=
+Common Joined UInteger Var(param_evrp_sparse_threshold) Init(800) Optimization Param
+Maximum number of basic blocks before EVRP uses a sparse cache.
+
 -param=evrp-mode=
-Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_EVRP_FIRST) Param Optimization
---param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in.
+Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_RVRP_ONLY) Param Optimization
+--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|trace|gori|cache|tracegori|debug] Specifies the mode Early VRP should operate in.
 
 Enum
 Name(evrp_mode) Type(enum evrp_mode) UnknownError(unknown evrp mode %qs)
@@ -146,16 +150,24 @@ EnumValue
 Enum(evrp_mode) String(ranger-first) Value(EVRP_MODE_RVRP_FIRST)
 
 EnumValue
-Enum(evrp_mode) String(ranger-trace) Value(EVRP_MODE_RVRP_TRACE)
-
-EnumValue
-Enum(evrp_mode) String(ranger-debug) Value(EVRP_MODE_RVRP_DEBUG)
-
-EnumValue
 Enum(evrp_mode) String(trace) Value(EVRP_MODE_TRACE)
 
 EnumValue
+Enum(evrp_mode) String(cache) Value(EVRP_MODE_CACHE)
+
+EnumValue
+Enum(evrp_mode) String(gori) Value(EVRP_MODE_GORI)
+
+EnumValue
+Enum(evrp_mode) String(tracegori) Value(EVRP_MODE_TRACE_GORI)
+
+EnumValue
 Enum(evrp_mode) String(debug) Value(EVRP_MODE_DEBUG)
+
+-param=ranger-logical-depth=
+Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 999) Param Optimization
+Maximum depth of logical expression evaluation ranger will look through when
+evaluating outgoing edge ranges.
 
 -param=fsm-maximum-phi-arguments=
 Common Joined UInteger Var(param_fsm_maximum_phi_arguments) Init(100) IntegerRange(1, 999999) Param Optimization
@@ -321,6 +333,10 @@ Max size of conflict table in MB.
 Common Joined UInteger Var(param_ira_max_loops_num) Init(100) Param Optimization
 Max loops number for regional RA.
 
+-param=ira-consider-dup-in-all-alts=
+Common Joined UInteger Var(param_ira_consider_dup_in_all_alts) Init(1) IntegerRange(0, 1) Param Optimization
+Control ira to consider matching constraint (duplicated operand number) heavily in all available alternatives for preferred register class.  If it is set as zero, it means ira only respects the matching constraint when it's in the only available alternative with an appropriate register class.  Otherwise, it means ira will check all available alternatives for preferred register class even if it has found some choice with an appropriate register class and respect the found qualified matching constraint.
+
 -param=iv-always-prune-cand-set-bound=
 Common Joined UInteger Var(param_iv_always_prune_cand_set_bound) Init(10) Param Optimization
 If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization.
@@ -344,6 +360,22 @@ The maximum code size growth ratio when expanding into a jump table (in percent)
 -param=l1-cache-line-size=
 Common Joined UInteger Var(param_l1_cache_line_size) Init(32) Param Optimization
 The size of L1 cache line.
+
+-param=destructive-interference-size=
+Common Joined UInteger Var(param_destruct_interfere_size) Init(0) Param Optimization
+The minimum recommended offset between two concurrently-accessed objects to
+avoid additional performance degradation due to contention introduced by the
+implementation.  Typically the L1 cache line size, but can be larger to
+accommodate a variety of target processors with different cache line sizes.
+C++17 code might use this value in structure layout, but is strongly
+discouraged from doing so in public ABIs.
+
+-param=constructive-interference-size=
+Common Joined UInteger Var(param_construct_interfere_size) Init(0) Param Optimization
+The maximum recommended size of contiguous memory occupied by two objects
+accessed with temporal locality by concurrent threads.  Typically the L1 cache
+line size, but can be smaller to accommodate a variety of target processors with
+different cache line sizes.
 
 -param=l1-cache-size=
 Common Joined UInteger Var(param_l1_cache_size) Init(64) Param Optimization
@@ -777,6 +809,32 @@ The minimum probability of reaching a source block for interblock speculative sc
 Common Joined UInteger Var(param_min_vect_loop_bound) Param Optimization
 If -ftree-vectorize is used, the minimal loop bound of a loop to be considered for vectorization.
 
+-param=openacc-kernels=
+Common Joined Enum(openacc_kernels) Var(param_openacc_kernels) Init(OPENACC_KERNELS_PARLOOPS) Param
+--param=openacc-kernels=[decompose|parloops]	Specify mode of OpenACC 'kernels' constructs handling.
+
+Enum
+Name(openacc_kernels) Type(enum openacc_kernels)
+
+EnumValue
+Enum(openacc_kernels) String(decompose) Value(OPENACC_KERNELS_DECOMPOSE)
+
+EnumValue
+Enum(openacc_kernels) String(parloops) Value(OPENACC_KERNELS_PARLOOPS)
+
+-param=openacc-privatization=
+Common Joined Enum(openacc_privatization) Var(param_openacc_privatization) Init(OPENACC_PRIVATIZATION_QUIET) Param
+--param=openacc-privatization=[quiet|noisy]	Specify mode of OpenACC privatization diagnostics.
+
+Enum
+Name(openacc_privatization) Type(enum openacc_privatization)
+
+EnumValue
+Enum(openacc_privatization) String(quiet) Value(OPENACC_PRIVATIZATION_QUIET)
+
+EnumValue
+Enum(openacc_privatization) String(noisy) Value(OPENACC_PRIVATIZATION_NOISY)
+
 -param=parloops-chunk-size=
 Common Joined UInteger Var(param_parloops_chunk_size) Param Optimization
 Chunk size of omp schedule for loops parallelized by parloops.
@@ -971,6 +1029,10 @@ Maximum depth of DFS walk used by modref escape analysis.
 Common Joined UInteger Var(param_modref_max_escape_points) Init(256) Param Optimization
 Maximum number of escape points tracked by modref per SSA-name.
 
+-param=modref-max-adjustments=
+Common Joined UInteger Var(param_modref_max_adjustments) Init(8) IntegerRange (0, 254) Param Optimization
+Maximum number of times a given range is adjusted during the dataflow.
+
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization
 Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs.
@@ -1070,5 +1132,9 @@ Bound on number of runtime checks inserted by the vectorizer's loop versioning f
 -param=vect-partial-vector-usage=
 Common Joined UInteger Var(param_vect_partial_vector_usage) Init(2) IntegerRange(0, 2) Param Optimization
 Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only for loops whose need to iterate can be removed, 2 means for all loops.  The default value is 2.
+
+-param=vect-inner-loop-cost-factor=
+Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRange(1, 10000) Param Optimization
+The maximum factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
 
 ; This comment is to ensure we retain the blank line above.

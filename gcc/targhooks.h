@@ -88,6 +88,7 @@ extern bool default_fixed_point_supported_p (void);
 extern bool default_has_ifunc_p (void);
 
 extern bool default_predict_doloop_p (class loop *);
+extern machine_mode default_preferred_doloop_mode (machine_mode);
 extern const char * default_invalid_within_doloop (const rtx_insn *);
 
 extern tree default_builtin_vectorized_function (unsigned int, tree, tree);
@@ -117,7 +118,7 @@ extern opt_machine_mode default_vectorize_related_mode (machine_mode,
 							poly_uint64);
 extern opt_machine_mode default_get_mask_mode (machine_mode);
 extern bool default_empty_mask_is_expensive (unsigned);
-extern void *default_init_cost (class loop *);
+extern void *default_init_cost (class loop *, bool);
 extern unsigned default_add_stmt_cost (class vec_info *, void *, int,
 				       enum vect_cost_for_stmt,
 				       class _stmt_vec_info *, tree, int,
@@ -149,6 +150,7 @@ extern const char *hook_invalid_arg_for_unprototyped_fn
   (const_tree, const_tree, const_tree);
 extern void default_function_arg_advance
   (cumulative_args_t, const function_arg_info &);
+extern bool default_push_argument (unsigned int);
 extern HOST_WIDE_INT default_function_arg_offset (machine_mode, const_tree);
 extern pad_direction default_function_arg_padding (machine_mode, const_tree);
 extern rtx default_function_arg (cumulative_args_t, const function_arg_info &);
@@ -230,6 +232,9 @@ extern bool default_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						    bool);
 extern int default_compare_by_pieces_branch_ratio (machine_mode);
 
+extern void default_print_patchable_function_entry_1 (FILE *,
+						      unsigned HOST_WIDE_INT,
+						      bool, unsigned int);
 extern void default_print_patchable_function_entry (FILE *,
 						    unsigned HOST_WIDE_INT,
 						    bool);
@@ -296,5 +301,7 @@ extern rtx default_memtag_add_tag (rtx, poly_int64, uint8_t);
 extern rtx default_memtag_set_tag (rtx, rtx, rtx);
 extern rtx default_memtag_extract_tag (rtx, rtx);
 extern rtx default_memtag_untagged_pointer (rtx, rtx);
+
+extern HOST_WIDE_INT default_gcov_type_size (void);
 
 #endif /* GCC_TARGHOOKS_H */

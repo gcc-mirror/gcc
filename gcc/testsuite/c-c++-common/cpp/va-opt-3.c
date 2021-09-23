@@ -85,10 +85,10 @@ t25 f19 (f16 (), 1);
 t26 f20 (f21 (), 2);
 /* { dg-final { scan-file va-opt-3.i "t26 f17 h;" } } */
 t27 f22 (, x);
-/* { dg-final { scan-file va-opt-3.i "t27 123;" } } */
+/* { dg-final { scan-file va-opt-3.i "t27 1 23;" } } */
 t28 f23 (, x);
-/* { dg-final { scan-file va-opt-3.i "t28 123;" } } */
+/* { dg-final { scan-file va-opt-3.i "t28 1 23;" } } */
 t29 f24 (, x);
-/* { dg-final { scan-file va-opt-3.i "t29 123;" } } */
+/* { dg-final { scan-file va-opt-3.i "t29 12 3;" } } */
 t30 f25 (, x);
-/* { dg-final { scan-file va-opt-3.i "t30 123;" } } */
+/* { dg-final { scan-file va-opt-3.i "t30 12 3;" } } */

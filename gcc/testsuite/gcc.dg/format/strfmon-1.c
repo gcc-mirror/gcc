@@ -57,7 +57,7 @@ foo (char *s, size_t m, double d, long double ld)
   strfmon (s, m, "%n%n", d); /* { dg-warning "matching" "too few args" } */
   strfmon (s, m, ""); /* { dg-warning "zero-length" "empty" } */
   strfmon (s, m, NULL); /* { dg-warning "null" "null format string" } */
-  strfmon (s, m, "%"); /* { dg-warning "trailing" "tailing %" } */
+  strfmon (s, m, "%"); /* { dg-warning "trailing" "trailing %" } */
   strfmon (s, m, "%n\0", d); /* { dg-warning "embedded" "embedded NUL" } */
   strfmon (s, m, "%^^n", d); /* { dg-warning "repeated" "repeated flag" } */
 }

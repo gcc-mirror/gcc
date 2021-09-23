@@ -46,3 +46,9 @@ void test02()
   test_type l1, l2, l3;
   std::lock(l1, l2, l3);
 }
+
+void test03()
+{
+  test_type l1, l2, l3;
+  std::try_lock(l1, l2, l3);
+}

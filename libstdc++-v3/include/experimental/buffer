@@ -172,7 +172,7 @@ inline namespace v1
     buffer_sequence_end(const _Cont& __c) -> decltype(__c.end())
     { return __c.end(); }
 
-  // @}
+  /// @}
 
 
   /** @brief buffer type traits
@@ -250,7 +250,7 @@ inline namespace v1
   template<typename _Tp>
     constexpr bool is_dynamic_buffer_v = is_dynamic_buffer<_Tp>::value;
 
-  // @}
+  /// @}
 
   /// buffer size
   template<typename _ConstBufferSequence>
@@ -727,7 +727,7 @@ inline namespace v1
       return net::read(__stream, __b, __completion_condition, __ec);
     }
 
-  // @}
+  /// @}
 
   /** @brief asynchronous read operations
    * @{
@@ -775,7 +775,7 @@ inline namespace v1
 			     std::forward<_CompletionToken>(__token));
     }
 
-  // @}
+  /// @}
 
 #if 0
   /** @brief synchronous write operations:
@@ -811,7 +811,7 @@ inline namespace v1
     size_t write(_SyncWriteStream& __stream, _DynamicBuffer&& __b,
                  _CompletionCondition __completion_condition, error_code& __ec);
 
-  // @}
+  /// @}
 
   /** @brief asynchronous write operations
    * @{
@@ -839,7 +839,7 @@ inline namespace v1
                        _CompletionCondition __completion_condition,
                        _CompletionToken&& __token);
 
-  // @}
+  /// @}
 
   /** @brief synchronous delimited read operations
    * @{
@@ -856,7 +856,7 @@ inline namespace v1
     size_t read_until(_SyncReadStream& __s, _DynamicBuffer&& __b,
                       string_view __delim, error_code& __ec);
 
-  // @}
+  /// @}
 
   /** @brief asynchronous delimited read operations
    * @{
@@ -871,7 +871,7 @@ inline namespace v1
                           _DynamicBuffer&& __b, string_view __delim,
                           _CompletionToken&& __token);
 
-  // @}
+  /// @}
 
 #endif
   /// @}

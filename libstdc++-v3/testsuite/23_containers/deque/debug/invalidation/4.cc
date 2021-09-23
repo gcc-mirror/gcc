@@ -58,7 +58,7 @@ void test04()
   before = v.begin();
   at = before + 3;
   v.erase(at, v.end());
-  *before;
+  (void) *before;
 
   // clear()
   before = v.begin();

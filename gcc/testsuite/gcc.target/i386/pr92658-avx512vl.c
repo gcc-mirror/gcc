@@ -122,8 +122,7 @@ truncdb_128 (v16qi * dst, v4si * __restrict src)
 }
 
 /* { dg-final { scan-assembler-times "vpmovqd" 2 } } */
-/* { dg-final { scan-assembler-times "vpmovqw" 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vpmovqw" 2 } } */
 /* { dg-final { scan-assembler-times "vpmovqb" 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "vpmovdw" 1 } } */
-/* { dg-final { scan-assembler-times "vpmovdw" 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "vpmovdb" 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vpmovdw" 2 } } */
+/* { dg-final { scan-assembler-times "vpmovdb" 2 } } */

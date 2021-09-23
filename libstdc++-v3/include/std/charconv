@@ -44,8 +44,9 @@
 #include <bits/error_constants.h> // for std::errc
 #include <ext/numeric_traits.h>
 
-// FIXME: Define when floating point is supported:
-// #define __cpp_lib_to_chars 201611L
+#if _GLIBCXX_HAVE_USELOCALE
+# define __cpp_lib_to_chars 201611L
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -93,7 +94,7 @@ namespace __detail
     struct __to_chars_unsigned_type : __make_unsigned_selector_base
     {
       using _UInts = _List<unsigned int, unsigned long, unsigned long long
-#if _GLIBCXX_USE_INT128
+#if __SIZEOF_INT128__ > __SIZEOF_LONG_LONG__
 	, unsigned __int128
 #endif
 	>;
@@ -335,12 +336,10 @@ namespace __detail
 	  *__first = '0';
 	  return { __first + 1, errc{} };
 	}
-
-      if _GLIBCXX17_CONSTEXPR (std::is_signed<_Tp>::value)
+      else if _GLIBCXX17_CONSTEXPR (std::is_signed<_Tp>::value)
 	if (__value < 0)
 	  {
-	    if (__builtin_expect(__first != __last, 1))
-	      *__first++ = '-';
+	    *__first++ = '-';
 	    __unsigned_val = _Up(~__value) + _Up(1);
 	  }
 
@@ -702,7 +701,8 @@ namespace __detail
 	     chars_format __fmt = chars_format::general) noexcept;
 #endif
 
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
+    && __SIZE_WIDTH__ >= 32
   // Floating-point std::to_chars
 
   // Overloads for float.

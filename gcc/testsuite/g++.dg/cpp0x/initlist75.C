@@ -3,4 +3,4 @@
 
 #include <initializer_list>
 
-auto foo[] = {};    // { dg-error "6:.foo. declared as array of .auto" }
+auto foo[] = {};    // { dg-error "15:unable to deduce" }

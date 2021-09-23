@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                 Copyright (C) 2019-2020, Free Software Foundation, Inc.  --
+--                 Copyright (C) 2019-2021, Free Software Foundation, Inc.  --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,7 +209,7 @@ package body System.Atomic_Operations.Modular_Arithmetic is
       pragma Unreferenced (Item);
       use type Interfaces.C.size_t;
    begin
-      return Boolean (Atomic_Always_Lock_Free (Atomic_Type'Object_Size / 8));
+      return Atomic_Always_Lock_Free (Atomic_Type'Object_Size / 8);
    end Is_Lock_Free;
 
 end System.Atomic_Operations.Modular_Arithmetic;

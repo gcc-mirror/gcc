@@ -183,6 +183,24 @@ f5 (int *a)
     }
   #pragma omp loop
   for (i = 0; i < 64; i++)
+    {
+      #pragma omp master		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" } */
+      foo ();
+    }
+  #pragma omp loop
+  for (i = 0; i < 64; i++)
+    {
+      #pragma omp masked		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" } */
+      foo ();
+    }
+  #pragma omp loop
+  for (i = 0; i < 64; i++)
+    {
+      #pragma omp scope			/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" } */
+      foo ();
+    }
+  #pragma omp loop
+  for (i = 0; i < 64; i++)
     a[i] += omp_get_thread_num ();	/* { dg-error "OpenMP runtime API call '\[^\n\r]*omp_get_thread_num\[^\n\r]*' in a region with 'order\\(concurrent\\)' clause" } */
   #pragma omp loop
   for (i = 0; i < 64; i++)

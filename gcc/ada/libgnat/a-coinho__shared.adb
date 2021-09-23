@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2013-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2013-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -325,7 +325,7 @@ package body Ada.Containers.Indefinite_Holders is
    ---------------
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Holder)
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Holder)
    is
       use System.Put_Images;
    begin

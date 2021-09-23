@@ -20,7 +20,7 @@
 #include <utility>
 
 struct X
-{ 
+{
   explicit X(int, int) { }
 
 private:
@@ -36,7 +36,7 @@ private:
   move_only(const move_only&) = delete;
 };
 
-// libstdc++/40925
+// libstdc++/40925 and LWG 811
 void test01()
 {
   int *ip = 0;
@@ -52,10 +52,12 @@ void test01()
   std::pair<int X::*, int X::*> p7(0, mp);
   std::pair<int X::*, int X::*> p8(mp, mp);
 
-  std::pair<int*, move_only> p9(0, move_only());
-  std::pair<int X::*, move_only> p10(0, move_only());
-  std::pair<move_only, int*> p11(move_only(), 0);
-  std::pair<move_only, int X::*> p12(move_only(), 0);
+  // LWG 811 resolution doesn't support move-only types,
+  // so we have to use nullptr here not a literal 0.
+  std::pair<int*, move_only> p9(nullptr, move_only());
+  std::pair<int X::*, move_only> p10(nullptr, move_only());
+  std::pair<move_only, int*> p11(move_only(), nullptr);
+  std::pair<move_only, int X::*> p12(move_only(), nullptr);
 
   std::pair<int*, move_only> p13(ip, move_only());
   std::pair<int X::*, move_only> p14(mp, move_only());

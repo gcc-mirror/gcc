@@ -733,7 +733,7 @@ encode_type (tree type, int curtype, int format)
 	  char *enc = (char *) obstack_base (&util_obstack) + curtype;
 
 	  /* Rewrite "in const" from "nr" to "rn".  */
-	  if (curtype >= 1 && !strncmp (enc - 1, "nr", 2))
+	  if (curtype >= 1 && startswith (enc - 1, "nr"))
 	    memcpy (enc - 1, "rn", 2);
 	}
     }

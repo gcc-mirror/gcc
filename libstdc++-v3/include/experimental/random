@@ -50,6 +50,7 @@ inline namespace fundamentals_v2 {
 
   // 13.2.2.1, Function template randint
   template<typename _IntType>
+    [[__nodiscard__]]
     inline _IntType
     randint(_IntType __a, _IntType __b)
     {

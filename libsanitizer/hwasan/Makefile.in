@@ -146,8 +146,9 @@ am__DEPENDENCIES_1 =
 libhwasan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(am__append_1) $(am__append_2) $(am__DEPENDENCIES_1)
-am__objects_1 = hwasan_allocator.lo hwasan.lo hwasan_dynamic_shadow.lo \
-	hwasan_exceptions.lo hwasan_globals.lo hwasan_interceptors.lo \
+am__objects_1 = hwasan_allocation_functions.lo hwasan_allocator.lo \
+	hwasan.lo hwasan_dynamic_shadow.lo hwasan_exceptions.lo \
+	hwasan_fuchsia.lo hwasan_globals.lo hwasan_interceptors.lo \
 	hwasan_interceptors_vfork.lo hwasan_linux.lo \
 	hwasan_memintrinsics.lo hwasan_new_delete.lo \
 	hwasan_poisoning.lo hwasan_report.lo hwasan_setjmp.lo \
@@ -411,11 +412,13 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 toolexeclib_LTLIBRARIES = libhwasan.la
 hwasan_files = \
+	hwasan_allocation_functions.cpp \
 	hwasan_allocator.cpp \
 	hwasan.cpp \
 	hwasan_dynamic_shadow.cpp \
 	hwasan_exceptions.cpp \
 	hwasan_flags.inc \
+	hwasan_fuchsia.cpp \
 	hwasan_globals.cpp \
 	hwasan_interceptors.cpp \
 	hwasan_interceptors_vfork.S \
@@ -554,9 +557,11 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_allocation_functions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_allocator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_dynamic_shadow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_exceptions.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_fuchsia.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_globals.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_interceptors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_interceptors_vfork.Plo@am__quote@

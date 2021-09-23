@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
+// { dg-options "-Wno-unused-result" }
 
 #include <deque>
 #include <testsuite_greedy_ops.h>

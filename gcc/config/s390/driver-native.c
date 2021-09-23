@@ -73,7 +73,7 @@ s390_host_detect_local_cpu (int argc, const char **argv)
        (has_features == 0 || has_processor == 0)
 	 && fgets (buf, sizeof (buf), f) != NULL; )
     {
-      if (has_processor == 0 && strncmp (buf, "processor", 9) == 0)
+      if (has_processor == 0 && startswith (buf, "processor"))
 	{
 	  const char *p;
 	  long machine_id;
@@ -128,7 +128,7 @@ s390_host_detect_local_cpu (int argc, const char **argv)
 	      break;
 	    }
 	}
-      if (has_features == 0 && strncmp (buf, "features", 8) == 0)
+      if (has_features == 0 && startswith (buf, "features"))
 	{
 	  const char *p;
 
@@ -144,13 +144,13 @@ s390_host_detect_local_cpu (int argc, const char **argv)
 		p++;
 	      for (i = 0; !ISSPACE (p[i]) && p[i] != 0; i++)
 		;
-	      if (i == 3 && strncmp (p, "dfp", 3) == 0)
+	      if (i == 3 && startswith (p, "dfp"))
 		has_dfp = 1;
-	      else if (i == 2 && strncmp (p, "te", 2) == 0)
+	      else if (i == 2 && startswith (p, "te"))
 		has_te = 1;
-	      else if (i == 2 && strncmp (p, "vx", 2) == 0)
+	      else if (i == 2 && startswith (p, "vx"))
 		has_vx = 1;
-	      else if (i == 8 && strncmp (p, "highgprs", 8) == 0)
+	      else if (i == 8 && startswith (p, "highgprs"))
 		has_highgprs = 1;
 	      p += i;
 	    }

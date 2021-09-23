@@ -3,7 +3,7 @@
 
 struct S
 {
-  #pragma omp declare simd linear(this)		// { dg-error "is not a function argument" }
+  #pragma omp declare simd linear(this)	// { dg-error "invalid use of .this" }
   static void foo ();
   void bar ();
 };
@@ -21,9 +21,13 @@ S::bar ()
   #pragma omp for linear (this)			// { dg-error ".this. allowed in OpenMP only in .declare simd. clauses" }
   for (int i = 0; i < 10; i++)
     ;
-  #pragma omp task depend(inout: this)		// { dg-error ".this. allowed in OpenMP only in .declare simd. clauses" }
+  #pragma omp task depend(inout: this)		// { dg-error ".this. is not lvalue expression nor array section in .depend. clause" }
     ;
-  #pragma omp task depend(inout: this[0])	// { dg-error ".this. allowed in OpenMP only in .declare simd. clauses" }
+  #pragma omp task depend(inout: this[0])
+    ;
+  #pragma omp task affinity(this)		// { dg-error ".this. is not lvalue expression nor array section in .affinity. clause" }
+    ;
+  #pragma omp task affinity(this[0])
     ;
   #pragma omp parallel private (this)		// { dg-error ".this. allowed in OpenMP only in .declare simd. clauses" }
   {
@@ -35,7 +39,7 @@ S::bar ()
 template <int N>
 struct T
 {
-  #pragma omp declare simd linear(this)		// { dg-error "is not a function argument" }
+  #pragma omp declare simd linear(this)	// { dg-error "invalid use of .this" }
   static void foo ();
   void bar ();
 };
@@ -54,9 +58,13 @@ T<N>::bar ()
   #pragma omp for linear (this)			// { dg-error ".this. allowed in OpenMP only in .declare simd. clauses" }
   for (int i = 0; i < 10; i++)
     ;
-  #pragma omp task depend(inout: this)		// { dg-error ".this. allowed in OpenMP only in .declare simd. clauses" }
+  #pragma omp task depend(inout: this)		// { dg-error ".this. is not lvalue expression nor array section in .depend. clause" }
     ;
-  #pragma omp task depend(inout: this[0])	// { dg-error ".this. allowed in OpenMP only in .declare simd. clauses" }
+  #pragma omp task depend(inout: this[0])
+    ;
+  #pragma omp task affinity(this)		// { dg-error ".this. is not lvalue expression nor array section in .affinity. clause" }
+    ;
+  #pragma omp task affinity(this[0])
     ;
   #pragma omp parallel private (this)		// { dg-error ".this. allowed in OpenMP only in .declare simd. clauses" }
   {

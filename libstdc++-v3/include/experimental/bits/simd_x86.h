@@ -2611,13 +2611,14 @@ template <typename _Abi>
       _S_ldexp(_SimdWrapper<_Tp, _Np> __x,
 	       __fixed_size_storage_t<int, _Np> __exp)
       {
-	if constexpr (__is_avx512_abi<_Abi>())
+	if constexpr (sizeof(__x) == 64 || __have_avx512vl)
 	  {
 	    const auto __xi = __to_intrin(__x);
 	    constexpr _SimdConverter<int, simd_abi::fixed_size<_Np>, _Tp, _Abi>
 	      __cvt;
 	    const auto __expi = __to_intrin(__cvt(__exp));
-	    constexpr auto __k1 = _Abi::template _S_implicit_mask_intrin<_Tp>();
+	    using _Up = __bool_storage_member_type_t<_Np>;
+	    constexpr _Up __k1 = _Np < sizeof(_Up) * __CHAR_BIT__ ? _Up((1ULL << _Np) - 1) : ~_Up();
 	    if constexpr (sizeof(__xi) == 16)
 	      {
 		if constexpr (sizeof(_Tp) == 8)
@@ -2656,13 +2657,13 @@ template <typename _Abi>
 	else if constexpr (__is_avx512_pd<_Tp, _Np>())
 	  return _mm512_roundscale_pd(__x, 0x0b);
 	else if constexpr (__is_avx_ps<_Tp, _Np>())
-	  return _mm256_round_ps(__x, 0x3);
+	  return _mm256_round_ps(__x, 0xb);
 	else if constexpr (__is_avx_pd<_Tp, _Np>())
-	  return _mm256_round_pd(__x, 0x3);
+	  return _mm256_round_pd(__x, 0xb);
 	else if constexpr (__have_sse4_1 && __is_sse_ps<_Tp, _Np>())
-	  return __auto_bitcast(_mm_round_ps(__to_intrin(__x), 0x3));
+	  return __auto_bitcast(_mm_round_ps(__to_intrin(__x), 0xb));
 	else if constexpr (__have_sse4_1 && __is_sse_pd<_Tp, _Np>())
-	  return _mm_round_pd(__x, 0x3);
+	  return _mm_round_pd(__x, 0xb);
 	else if constexpr (__is_sse_ps<_Tp, _Np>())
 	  {
 	    auto __truncated
@@ -2785,13 +2786,13 @@ template <typename _Abi>
 	else if constexpr (__is_avx512_pd<_Tp, _Np>())
 	  return _mm512_roundscale_pd(__x, 0x09);
 	else if constexpr (__is_avx_ps<_Tp, _Np>())
-	  return _mm256_round_ps(__x, 0x1);
+	  return _mm256_round_ps(__x, 0x9);
 	else if constexpr (__is_avx_pd<_Tp, _Np>())
-	  return _mm256_round_pd(__x, 0x1);
+	  return _mm256_round_pd(__x, 0x9);
 	else if constexpr (__have_sse4_1 && __is_sse_ps<_Tp, _Np>())
-	  return __auto_bitcast(_mm_floor_ps(__to_intrin(__x)));
+	  return __auto_bitcast(_mm_round_ps(__to_intrin(__x), 0x9));
 	else if constexpr (__have_sse4_1 && __is_sse_pd<_Tp, _Np>())
-	  return _mm_floor_pd(__x);
+	  return _mm_round_pd(__x, 0x9);
 	else
 	  return _Base::_S_floor(__x);
       }
@@ -2807,13 +2808,13 @@ template <typename _Abi>
 	else if constexpr (__is_avx512_pd<_Tp, _Np>())
 	  return _mm512_roundscale_pd(__x, 0x0a);
 	else if constexpr (__is_avx_ps<_Tp, _Np>())
-	  return _mm256_round_ps(__x, 0x2);
+	  return _mm256_round_ps(__x, 0xa);
 	else if constexpr (__is_avx_pd<_Tp, _Np>())
-	  return _mm256_round_pd(__x, 0x2);
+	  return _mm256_round_pd(__x, 0xa);
 	else if constexpr (__have_sse4_1 && __is_sse_ps<_Tp, _Np>())
-	  return __auto_bitcast(_mm_ceil_ps(__to_intrin(__x)));
+	  return __auto_bitcast(_mm_round_ps(__to_intrin(__x), 0xa));
 	else if constexpr (__have_sse4_1 && __is_sse_pd<_Tp, _Np>())
-	  return _mm_ceil_pd(__x);
+	  return _mm_round_pd(__x, 0xa);
 	else
 	  return _Base::_S_ceil(__x);
       }

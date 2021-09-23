@@ -9457,11 +9457,11 @@ alpha_elf_section_type_flags (tree decl, const char *name, int reloc)
   unsigned int flags = 0;
 
   if (strcmp (name, ".sdata") == 0
-      || strncmp (name, ".sdata.", 7) == 0
-      || strncmp (name, ".gnu.linkonce.s.", 16) == 0
+      || startswith (name, ".sdata.")
+      || startswith (name, ".gnu.linkonce.s.")
       || strcmp (name, ".sbss") == 0
-      || strncmp (name, ".sbss.", 6) == 0
-      || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
+      || startswith (name, ".sbss.")
+      || startswith (name, ".gnu.linkonce.sb."))
     flags = SECTION_SMALL;
 
   flags |= default_section_type_flags (decl, name, reloc);

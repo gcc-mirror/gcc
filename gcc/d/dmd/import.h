@@ -47,6 +47,7 @@ public:
     Dsymbol *syntaxCopy(Dsymbol *s);    // copy only syntax trees
     void load(Scope *sc);
     void importAll(Scope *sc);
+    void addPackageAccess(ScopeDsymbol *scopesym);
     Dsymbol *toAlias();
     void addMember(Scope *sc, ScopeDsymbol *sds);
     void setScope(Scope* sc);

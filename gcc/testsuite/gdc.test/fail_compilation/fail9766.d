@@ -1,7 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail9766.d(14): Error: cannot interpret Foo!int at compile time
+fail_compilation/fail9766.d(14): Error: integer constant expression expected instead of `Foo!int`
+fail_compilation/fail9766.d(14): Error: alignment must be an integer positive power of 2, not Foo!int
 fail_compilation/fail9766.d(17): Error: alignment must be an integer positive power of 2, not -1
 fail_compilation/fail9766.d(20): Error: alignment must be an integer positive power of 2, not 0
 fail_compilation/fail9766.d(23): Error: alignment must be an integer positive power of 2, not 3
@@ -9,6 +10,7 @@ fail_compilation/fail9766.d(26): Error: alignment must be an integer positive po
 ---
 */
 
+#line 12
 template Foo(T) {}
 
 align(Foo!int)

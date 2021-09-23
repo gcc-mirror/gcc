@@ -38,7 +38,6 @@ asan_files = \
 	asan_posix.cpp \
 	asan_premap_shadow.cpp \
 	asan_report.cpp \
-	asan_rtems.cpp \
 	asan_rtl.cpp \
 	asan_shadow_setup.cpp \
 	asan_stack.cpp \

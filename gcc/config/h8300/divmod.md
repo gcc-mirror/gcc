@@ -8,7 +8,7 @@
 		  (match_operand:HSI 2 "reg_or_nibble_operand" "r IP4>X")))]
   "TARGET_H8300SX"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (udiv:HSI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -27,7 +27,7 @@
 		 (match_operand:HSI 2 "reg_or_nibble_operand" "r IP4>X")))]
   "TARGET_H8300SX"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (div:HSI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -53,7 +53,7 @@
 	    (zero_extend:HI (match_dup 2)))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (truncate:QI
 				   (udiv:HI (match_dup 1)
 					    (zero_extend:HI (match_dup 2)))))
@@ -97,7 +97,7 @@
 	    (sign_extend:HI (match_dup 2)))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (truncate:QI
 				   (div:HI (match_dup 1)
 					   (sign_extend:HI (match_dup 2)))))
@@ -140,7 +140,7 @@
 	    (zero_extend:SI (match_dup 2)))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (truncate:HI
 				   (udiv:SI (match_dup 1)
 					    (zero_extend:SI (match_dup 2)))))
@@ -183,7 +183,7 @@
 	    (sign_extend:SI (match_dup 2)))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (truncate:HI
 				   (div:SI (match_dup 1)
 					   (sign_extend:SI (match_dup 2)))))

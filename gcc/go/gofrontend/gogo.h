@@ -533,6 +533,10 @@ class Gogo
   register_package(const std::string& pkgpath,
 		   const std::string& pkgpath_symbol, Location);
 
+  // Add the unsafe bindings to the unsafe package.
+  void
+  add_unsafe_bindings(Package*);
+
   // Look up a package by pkgpath, and return its pkgpath_symbol.
   std::string
   pkgpath_symbol_for_package(const std::string&);
@@ -1724,6 +1728,10 @@ class Function
   set_is_referenced_by_inline()
   { this->is_referenced_by_inline_ = true; }
 
+  // Set the receiver type.  This is used to remove aliases.
+  void
+  set_receiver_type(Type* rtype);
+
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1989,6 +1997,10 @@ class Function_declaration
   void
   set_is_on_inlinable_list()
   { this->is_on_inlinable_list_ = true; }
+
+  // Set the receiver type.  This is used to remove aliases.
+  void
+  set_receiver_type(Type* rtype);
 
   // Import the function body, creating a function.
   void

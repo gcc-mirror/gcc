@@ -54,6 +54,10 @@ extern "C"
   void *posix_memalign(void **, size_t alignment, size_t size);
 # elif _GLIBCXX_HAVE_MEMALIGN
   void *memalign(size_t alignment, size_t size);
+# else
+  // A freestanding C runtime may not provide "malloc" -- but there is no
+  // other reasonable way to implement "operator new".
+  void *malloc(size_t);
 # endif
 }
 #endif

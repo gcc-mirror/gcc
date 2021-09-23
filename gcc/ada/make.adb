@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,6 +61,7 @@ with Ada.Directories;
 with Ada.Exceptions;   use Ada.Exceptions;
 
 with GNAT.Command_Line;         use GNAT.Command_Line;
+with GNAT.Ctrl_C;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
@@ -76,15 +77,7 @@ package body Make is
    --  is not always explicit and considering it is important when -f and -a
    --  are used.
 
-   type Sigint_Handler is access procedure;
-   pragma Convention (C, Sigint_Handler);
-
-   procedure Install_Int_Handler (Handler : Sigint_Handler);
-   pragma Import (C, Install_Int_Handler, "__gnat_install_int_handler");
-   --  Called by Gnatmake to install the SIGINT handler below
-
    procedure Sigint_Intercepted;
-   pragma Convention (C, Sigint_Intercepted);
    pragma No_Return (Sigint_Intercepted);
    --  Called when the program is interrupted by Ctrl-C to delete the
    --  temporary mapping files and configuration pragmas files.
@@ -406,7 +399,10 @@ package body Make is
       Non_Std_Executable : out Boolean);
    --  Parse the linker switches and project file to compute the name of the
    --  executable to generate.
-   --  ??? What is the meaning of Non_Std_Executable
+   --
+   --  When the platform expects a specific extension for the generated binary,
+   --  there is a chance that the linker might not use the right name for the
+   --  it. Non_Std_Executable is set to True in this case.
 
    procedure Compilation_Phase
      (Main_Source_File           : File_Name_Type;
@@ -2368,7 +2364,7 @@ package body Make is
             Osint.Full_Source_Name
               (Source.File,
                Full_File => Full_Source_File,
-               Attr      => Source_File_Attr'Access);
+               Attr      => Source_File_Attr'Unchecked_Access);
 
             Lib_File := Osint.Lib_File_Name (Source.File, Source.Index);
 
@@ -2396,7 +2392,7 @@ package body Make is
                   Get_Name_String (Full_Lib_File);
                   Name_Buffer (Name_Len + 1) := ASCII.NUL;
                   Read_Only := not Is_Writable_File
-                    (Name_Buffer'Address, Lib_File_Attr'Access);
+                    (Name_Buffer'Address, Lib_File_Attr'Unchecked_Access);
                else
                   Read_Only := False;
                end if;
@@ -2464,7 +2460,7 @@ package body Make is
                          The_Args       => Args,
                          Lib_File       => Lib_File,
                          Full_Lib_File  => Full_Lib_File,
-                         Lib_File_Attr  => Lib_File_Attr'Access,
+                         Lib_File_Attr  => Lib_File_Attr'Unchecked_Access,
                          Read_Only      => Read_Only,
                          ALI            => ALI,
                          O_File         => Obj_File,
@@ -2634,7 +2630,8 @@ package body Make is
 
                   Text :=
                     Read_Library_Info_From_Full
-                      (Data.Full_Lib_File, Data.Lib_File_Attr'Access);
+                      (Data.Full_Lib_File,
+                       Data.Lib_File_Attr'Unchecked_Access);
 
                   --  Restore Check_Object_Consistency to its initial value
 
@@ -3322,7 +3319,7 @@ package body Make is
       pragma Warnings (Off, Discard);
 
    begin
-      Install_Int_Handler (Sigint_Intercepted'Access);
+      GNAT.Ctrl_C.Install_Handler (Sigint_Intercepted'Access);
 
       Do_Compile_Step := True;
       Do_Bind_Step    := True;
@@ -4597,18 +4594,6 @@ package body Make is
             Add_Library_Search_Dir (Argv (4 .. Argv'Last));
             Add_Switch
               ("-aO" & Argv (4 .. Argv'Last), Binder);
-
-         --  -aamp_target=...
-
-         elsif Argv'Length >= 13 and then Argv (2 .. 13) = "aamp_target=" then
-            Add_Switch (Argv, Compiler);
-
-            --  Set the aamp_target environment variable so that the binder and
-            --  linker will use the proper target library. This is consistent
-            --  with how things work when -aamp_target is passed on the command
-            --  line to gnaampmake.
-
-            Setenv ("aamp_target", Argv (14 .. Argv'Last));
 
          --  -Adir (to gnatbind this is like a -aO switch, to gcc like a -I)
 

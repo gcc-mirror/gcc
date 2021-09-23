@@ -369,7 +369,7 @@ endif
 # Build a debug variant.
 # Take care to fix all possibly-relative paths.
 debugdir = ${glibcxx_builddir}/src/debug
-stamp-debug:
+stamp-debug: Makefile $(foreach dir,$(SUBDIRS),$(dir)/Makefile)
 	if test ! -d ${debugdir} || test ! -f ${debugdir}/Makefile ; then \
 	  mkdir -p ${debugdir}; \
 	  for d in $(SUBDIRS); do mkdir -p  ${debugdir}/$$d; done; \

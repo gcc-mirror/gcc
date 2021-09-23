@@ -115,14 +115,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     public:
       // typedefs:
-      //@{
+      ///@{
       /// Public typedefs.
       typedef _Key     key_type;
       typedef _Key     value_type;
       typedef _Compare key_compare;
       typedef _Compare value_compare;
       typedef _Alloc   allocator_type;
-      //@}
+      ///@}
 
     private:
       typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
@@ -135,7 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef __gnu_cxx::__alloc_traits<_Key_alloc_type> _Alloc_traits;
 
     public:
-      //@{
+      ///@{
       ///  Iterator-related typedefs.
       typedef typename _Alloc_traits::pointer		 pointer;
       typedef typename _Alloc_traits::const_pointer	 const_pointer;
@@ -150,7 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
       typedef typename _Rep_type::size_type		 size_type;
       typedef typename _Rep_type::difference_type	 difference_type;
-      //@}
+      ///@}
 
 #if __cplusplus > 201402L
       using node_type = typename _Rep_type::node_type;
@@ -735,7 +735,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // set operations:
 
-      //@{
+      ///@{
       /**
        *  @brief  Finds the number of elements.
        *  @param  __x  Element to located.
@@ -755,10 +755,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	-> decltype(_M_t._M_count_tr(__x))
 	{ return _M_t._M_count_tr(__x); }
 #endif
-      //@}
+      ///@}
 
 #if __cplusplus > 201703L
-      //@{
+      ///@{
       /**
        *  @brief  Finds whether an element with the given key exists.
        *  @param  __x  Key of elements to be located.
@@ -773,12 +773,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	contains(const _Kt& __x) const
 	-> decltype(_M_t._M_find_tr(__x), void(), true)
 	{ return _M_t._M_find_tr(__x) != _M_t.end(); }
-      //@}
+      ///@}
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 214.  set::find() missing const overload
-      //@{
+      ///@{
       /**
        *  @brief Tries to locate an element in a %set.
        *  @param  __x  Element to be located.
@@ -811,9 +811,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	-> decltype(const_iterator{_M_t._M_find_tr(__x)})
 	{ return const_iterator{_M_t._M_find_tr(__x)}; }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
        *  @param  __x  Key to be located.
@@ -846,9 +846,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	-> decltype(const_iterator(_M_t._M_lower_bound_tr(__x)))
 	{ return const_iterator(_M_t._M_lower_bound_tr(__x)); }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief Finds the end of a subsequence matching given key.
        *  @param  __x  Key to be located.
@@ -876,9 +876,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	-> decltype(iterator(_M_t._M_upper_bound_tr(__x)))
 	{ return const_iterator(_M_t._M_upper_bound_tr(__x)); }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief Finds a subsequence matching given key.
        *  @param  __x  Key to be located.
@@ -915,7 +915,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	-> decltype(pair<iterator, iterator>(_M_t._M_equal_range_tr(__x)))
 	{ return pair<iterator, iterator>(_M_t._M_equal_range_tr(__x)); }
 #endif
-      //@}
+      ///@}
 
       template<typename _K1, typename _C1, typename _A1>
 	friend bool

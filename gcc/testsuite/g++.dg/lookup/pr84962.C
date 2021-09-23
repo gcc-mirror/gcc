@@ -9,6 +9,6 @@ struct X {
     // { dg-error "public non-static data member" "" { target *-*-* } .-1 }
   };
 
-  int  : a; // { dg-error "non-integral" }
+  int  : a; // { dg-error "" }
 };
 

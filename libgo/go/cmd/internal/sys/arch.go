@@ -41,6 +41,12 @@ type Arch struct {
 
 	// MinLC is the minimum length of an instruction code.
 	MinLC int
+
+	// Alignment is maximum alignment required by the architecture
+	// for any (compiler-generated) load or store instruction.
+	// Loads or stores smaller than Alignment must be naturally aligned.
+	// Loads or stores larger than Alignment need only be Alignment-aligned.
+	Alignment int8
 }
 
 // InFamily reports whether a is a member of any of the specified
@@ -61,6 +67,7 @@ var Arch386 = &Arch{
 	PtrSize:   4,
 	RegSize:   4,
 	MinLC:     1,
+	Alignment: 1,
 }
 
 var ArchAMD64 = &Arch{
@@ -70,6 +77,7 @@ var ArchAMD64 = &Arch{
 	PtrSize:   8,
 	RegSize:   8,
 	MinLC:     1,
+	Alignment: 1,
 }
 
 var ArchARM = &Arch{
@@ -79,6 +87,7 @@ var ArchARM = &Arch{
 	PtrSize:   4,
 	RegSize:   4,
 	MinLC:     4,
+	Alignment: 4, // TODO: just for arm5?
 }
 
 var ArchARM64 = &Arch{
@@ -88,6 +97,7 @@ var ArchARM64 = &Arch{
 	PtrSize:   8,
 	RegSize:   8,
 	MinLC:     4,
+	Alignment: 1,
 }
 
 var ArchMIPS = &Arch{
@@ -97,6 +107,7 @@ var ArchMIPS = &Arch{
 	PtrSize:   4,
 	RegSize:   4,
 	MinLC:     4,
+	Alignment: 4,
 }
 
 var ArchMIPSLE = &Arch{
@@ -106,6 +117,7 @@ var ArchMIPSLE = &Arch{
 	PtrSize:   4,
 	RegSize:   4,
 	MinLC:     4,
+	Alignment: 4,
 }
 
 var ArchMIPS64 = &Arch{
@@ -115,6 +127,7 @@ var ArchMIPS64 = &Arch{
 	PtrSize:   8,
 	RegSize:   8,
 	MinLC:     4,
+	Alignment: 8,
 }
 
 var ArchMIPS64LE = &Arch{
@@ -124,6 +137,7 @@ var ArchMIPS64LE = &Arch{
 	PtrSize:   8,
 	RegSize:   8,
 	MinLC:     4,
+	Alignment: 8,
 }
 
 var ArchPPC64 = &Arch{
@@ -133,6 +147,7 @@ var ArchPPC64 = &Arch{
 	PtrSize:   8,
 	RegSize:   8,
 	MinLC:     4,
+	Alignment: 1,
 }
 
 var ArchPPC64LE = &Arch{
@@ -142,6 +157,7 @@ var ArchPPC64LE = &Arch{
 	PtrSize:   8,
 	RegSize:   8,
 	MinLC:     4,
+	Alignment: 1,
 }
 
 var ArchRISCV = &Arch{
@@ -160,6 +176,7 @@ var ArchRISCV64 = &Arch{
 	PtrSize:   8,
 	RegSize:   8,
 	MinLC:     4,
+	Alignment: 8, // riscv unaligned loads work, but are really slow (trap + simulated by OS)
 }
 
 var ArchS390X = &Arch{
@@ -169,6 +186,7 @@ var ArchS390X = &Arch{
 	PtrSize:   8,
 	RegSize:   8,
 	MinLC:     2,
+	Alignment: 1,
 }
 
 var ArchWasm = &Arch{
@@ -178,6 +196,7 @@ var ArchWasm = &Arch{
 	PtrSize:   8,
 	RegSize:   8,
 	MinLC:     1,
+	Alignment: 1,
 }
 
 var Archs = [...]*Arch{

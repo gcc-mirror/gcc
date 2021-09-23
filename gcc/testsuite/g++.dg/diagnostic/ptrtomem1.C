@@ -19,7 +19,7 @@ void f2(T)
 { }
 
 template<typename T>
-requires (sizeof(T)==1) // dg-message {\[with T = int \(X::\*\)\[5\]\]} }
+requires (sizeof(T)==1) // { dg-message {\[with T = int \(X::\*\)\[5\]\]} }
 void f3(T)
 { }
 

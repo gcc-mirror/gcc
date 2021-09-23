@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++14 } }
+// { dg-require-effective-target net_ts_ip }
 // { dg-add-options net_ts }
 
 #include <experimental/internet>
@@ -26,8 +27,6 @@ using std::experimental::net::ip::address_v4;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   address_v4 addrs[] = {
     address_v4::any(), address_v4::loopback(), address_v4::broadcast(),
     address_v4{0x11001100}, address_v4{0xEFEFEFEF}

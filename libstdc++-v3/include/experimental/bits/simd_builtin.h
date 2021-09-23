@@ -1632,7 +1632,12 @@ template <typename _Abi>
     template <typename _Tp, size_t _Np>
       _GLIBCXX_SIMD_INTRINSIC static constexpr _SimdWrapper<_Tp, _Np>
       _S_complement(_SimdWrapper<_Tp, _Np> __x) noexcept
-      { return ~__x._M_data; }
+      {
+	if constexpr (is_floating_point_v<_Tp>)
+	  return __vector_bitcast<_Tp>(~__vector_bitcast<__int_for_sizeof_t<_Tp>>(__x));
+	else
+	  return ~__x._M_data;
+      }
 
     // _S_unary_minus {{{2
     template <typename _Tp, size_t _Np>

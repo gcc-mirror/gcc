@@ -47,6 +47,7 @@ test01()
   auto p = sa.allocate(1);
   sa.construct(p);  // this is required to be ill-formed
   // { dg-error "failed: .* uses_allocator is true" "" { target *-*-* } 0 }
+  // { dg-error "too many initializers for 'X'" "" { target c++2a } 0 }
 }
 
 // Needed because of PR c++/92193

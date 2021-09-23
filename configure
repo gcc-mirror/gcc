@@ -609,6 +609,7 @@ OBJCOPY_FOR_TARGET
 NM_FOR_TARGET
 LIPO_FOR_TARGET
 LD_FOR_TARGET
+DSYMUTIL_FOR_TARGET
 DLLTOOL_FOR_TARGET
 AS_FOR_TARGET
 AR_FOR_TARGET
@@ -629,6 +630,7 @@ RANLIB
 NM
 LIPO
 LD
+DSYMUTIL
 DLLTOOL
 AS
 AR
@@ -649,6 +651,7 @@ LDFLAGS_FOR_BUILD
 GDC_FOR_BUILD
 GOC_FOR_BUILD
 GFORTRAN_FOR_BUILD
+DSYMUTIL_FOR_BUILD
 DLLTOOL_FOR_BUILD
 CXX_FOR_BUILD
 CXXFLAGS_FOR_BUILD
@@ -786,6 +789,7 @@ with_build_libsubdir
 with_system_zlib
 enable_as_accelerator_for
 enable_offload_targets
+enable_offload_defaulted
 enable_gold
 enable_ld
 enable_compressed_debug_sections
@@ -853,6 +857,7 @@ target_configargs
 AR
 AS
 DLLTOOL
+DSYMUTIL
 LD
 LIPO
 NM
@@ -873,6 +878,7 @@ GDC_FOR_TARGET
 AR_FOR_TARGET
 AS_FOR_TARGET
 DLLTOOL_FOR_TARGET
+DSYMUTIL_FOR_TARGET
 LD_FOR_TARGET
 LIPO_FOR_TARGET
 NM_FOR_TARGET
@@ -1515,6 +1521,11 @@ Optional Features:
                           enable offloading to devices from comma-separated
                           LIST of TARGET[=DIR]. Use optional path to find
                           offload target compiler during the build
+  --enable-offload-defaulted
+		If enabled, configured but not installed offload compilers and
+		libgomp plugins are silently ignored.  Useful for distribution
+		compilers where those are in separate optional packages.
+
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
   --enable-ld[=ARG]       build ld [ARG={default,yes,no}]
   --enable-compressed-debug-sections={all,gas,gold,ld,none}
@@ -1636,6 +1647,7 @@ Some influential environment variables:
   AR          AR for the host
   AS          AS for the host
   DLLTOOL     DLLTOOL for the host
+  DSYMUTIL    DSYMUTIL for the host
   LD          LD for the host
   LIPO        LIPO for the host
   NM          NM for the host
@@ -1665,6 +1677,8 @@ Some influential environment variables:
               AS for the target
   DLLTOOL_FOR_TARGET
               DLLTOOL for the target
+  DSYMUTIL_FOR_TARGET
+              DSYMUTIL for the target
   LD_FOR_TARGET
               LD for the target
   LIPO_FOR_TARGET
@@ -2806,7 +2820,6 @@ target_libraries="target-libgcc \
 		target-newlib \
 		target-libgomp \
 		target-liboffloadmic \
-		target-libhsail-rt \
 		target-libatomic \
 		target-libitm \
 		target-libstdc++-v3 \
@@ -2978,6 +2991,14 @@ if test "${enable_offload_targets+set}" = set; then :
 
 else
   enable_offload_targets=
+fi
+
+
+# Check whether --enable-offload-defaulted was given.
+if test "${enable_offload_defaulted+set}" = set; then :
+  enableval=$enable_offload_defaulted; enable_offload_defaulted=$enableval
+else
+  enable_offload_defaulted=
 fi
 
 
@@ -3317,29 +3338,6 @@ $as_echo "yes" >&6; }
 	fi
     fi
 fi
-
-
-# Disable libhsail-rt on unsupported systems.
-if test -d ${srcdir}/libhsail-rt; then
-    if test x$enable_libhsail_rt = x; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libhsail-rt support" >&5
-$as_echo_n "checking for libhsail-rt support... " >&6; }
-        if (srcdir=${srcdir}/libhsail-rt; \
-                . ${srcdir}/configure.tgt; \
-                test -n "$UNSUPPORTED")
-        then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-            unsupported_languages="$unsupported_languages brig"
-            # This implicitly disables also target-libhsail-rt as it won't
-            # get added to the build without BRIG FE.
-        else
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-        fi
-    fi
-fi
-
 
 # Disable libquadmath for some systems.
 case "${target}" in
@@ -4076,7 +4074,7 @@ fi
   hppa*-*)
     host_makefile_frag="config/mh-pa"
     ;;
-  *-*-darwin*)
+  i?86-*-darwin[89]* | i?86-*-darwin1[0-7]* | powerpc*-*-darwin*)
     host_makefile_frag="config/mh-darwin"
     ;;
   powerpc-*-aix*)
@@ -4093,6 +4091,7 @@ if test "${build}" != "${host}" ; then
   AS_FOR_BUILD=${AS_FOR_BUILD-as}
   CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
   CXX_FOR_BUILD=${CXX_FOR_BUILD-g++}
+  DSYMUTIL_FOR_BUILD=${DSYMUTIL_FOR_BUILD-dsymutil}
   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
   GDC_FOR_BUILD=${GDC_FOR_BUILD-gdc}
@@ -4107,6 +4106,7 @@ else
   AS_FOR_BUILD="\$(AS)"
   CC_FOR_BUILD="\$(CC)"
   CXX_FOR_BUILD="\$(CXX)"
+  DSYMUTIL_FOR_BUILD="\$(DSYMUTIL)"
   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
   GOC_FOR_BUILD="\$(GOC)"
   GDC_FOR_BUILD="\$(GDC)"
@@ -4906,6 +4906,183 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CC option to accept ISO C99" >&5
+$as_echo_n "checking for $CC option to accept ISO C99... " >&6; }
+if ${ac_cv_prog_cc_c99+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_cv_prog_cc_c99=no
+ac_save_CC=$CC
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <wchar.h>
+#include <stdio.h>
+
+// Check varargs macros.  These examples are taken from C99 6.10.3.5.
+#define debug(...) fprintf (stderr, __VA_ARGS__)
+#define showlist(...) puts (#__VA_ARGS__)
+#define report(test,...) ((test) ? puts (#test) : printf (__VA_ARGS__))
+static void
+test_varargs_macros (void)
+{
+  int x = 1234;
+  int y = 5678;
+  debug ("Flag");
+  debug ("X = %d\n", x);
+  showlist (The first, second, and third items.);
+  report (x>y, "x is %d but y is %d", x, y);
+}
+
+// Check long long types.
+#define BIG64 18446744073709551615ull
+#define BIG32 4294967295ul
+#define BIG_OK (BIG64 / BIG32 == 4294967297ull && BIG64 % BIG32 == 0)
+#if !BIG_OK
+  your preprocessor is broken;
+#endif
+#if BIG_OK
+#else
+  your preprocessor is broken;
+#endif
+static long long int bignum = -9223372036854775807LL;
+static unsigned long long int ubignum = BIG64;
+
+struct incomplete_array
+{
+  int datasize;
+  double data[];
+};
+
+struct named_init {
+  int number;
+  const wchar_t *name;
+  double average;
+};
+
+typedef const char *ccp;
+
+static inline int
+test_restrict (ccp restrict text)
+{
+  // See if C++-style comments work.
+  // Iterate through items via the restricted pointer.
+  // Also check for declarations in for loops.
+  for (unsigned int i = 0; *(text+i) != '\0'; ++i)
+    continue;
+  return 0;
+}
+
+// Check varargs and va_copy.
+static void
+test_varargs (const char *format, ...)
+{
+  va_list args;
+  va_start (args, format);
+  va_list args_copy;
+  va_copy (args_copy, args);
+
+  const char *str;
+  int number;
+  float fnumber;
+
+  while (*format)
+    {
+      switch (*format++)
+	{
+	case 's': // string
+	  str = va_arg (args_copy, const char *);
+	  break;
+	case 'd': // int
+	  number = va_arg (args_copy, int);
+	  break;
+	case 'f': // float
+	  fnumber = va_arg (args_copy, double);
+	  break;
+	default:
+	  break;
+	}
+    }
+  va_end (args_copy);
+  va_end (args);
+}
+
+int
+main ()
+{
+
+  // Check bool.
+  _Bool success = false;
+
+  // Check restrict.
+  if (test_restrict ("String literal") == 0)
+    success = true;
+  char *restrict newvar = "Another string";
+
+  // Check varargs.
+  test_varargs ("s, d' f .", "string", 65, 34.234);
+  test_varargs_macros ();
+
+  // Check flexible array members.
+  struct incomplete_array *ia =
+    malloc (sizeof (struct incomplete_array) + (sizeof (double) * 10));
+  ia->datasize = 10;
+  for (int i = 0; i < ia->datasize; ++i)
+    ia->data[i] = i * 1.234;
+
+  // Check named initializers.
+  struct named_init ni = {
+    .number = 34,
+    .name = L"Test wide string",
+    .average = 543.34343,
+  };
+
+  ni.number = 58;
+
+  int dynamic_array[ni.number];
+  dynamic_array[ni.number - 1] = 543;
+
+  // work around unused variable warnings
+  return (!success || bignum == 0LL || ubignum == 0uLL || newvar[0] == 'x'
+	  || dynamic_array[ni.number - 1] != 543);
+
+  ;
+  return 0;
+}
+_ACEOF
+for ac_arg in '' -std=gnu99 -std=c99 -c99 -AC99 -D_STDC_C99= -qlanglvl=extc99
+do
+  CC="$ac_save_CC $ac_arg"
+  if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_prog_cc_c99=$ac_arg
+fi
+rm -f core conftest.err conftest.$ac_objext
+  test "x$ac_cv_prog_cc_c99" != "xno" && break
+done
+rm -f conftest.$ac_ext
+CC=$ac_save_CC
+
+fi
+# AC_CACHE_VAL
+case "x$ac_cv_prog_cc_c99" in
+  x)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: none needed" >&5
+$as_echo "none needed" >&6; } ;;
+  xno)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: unsupported" >&5
+$as_echo "unsupported" >&6; } ;;
+  *)
+    CC="$CC $ac_cv_prog_cc_c99"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_prog_cc_c99" >&5
+$as_echo "$ac_cv_prog_cc_c99" >&6; } ;;
+esac
+if test "x$ac_cv_prog_cc_c99" != xno; then :
+
+fi
+
 
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -9353,6 +9530,9 @@ case " ${configdirs} " in
   *\ gdbserver\ *)
     configdirs="${configdirs} gnulib gdbsupport"
     ;;
+  *\ sim\ *)
+    configdirs="${configdirs} gnulib"
+    ;;
 esac
 
 # Strip out unwanted targets.
@@ -9871,6 +10051,7 @@ done
 
 
 # Build tools.
+
 
 
 
@@ -10715,6 +10896,147 @@ if test -z "$ac_cv_prog_DLLTOOL" ; then
     DLLTOOL="$2"
   else
     DLLTOOL="${ncn_tool_prefix}$2"
+  fi
+fi
+
+
+
+if test -n "$DSYMUTIL"; then
+  ac_cv_prog_DSYMUTIL=$DSYMUTIL
+elif test -n "$ac_cv_prog_DSYMUTIL"; then
+  DSYMUTIL=$ac_cv_prog_DSYMUTIL
+fi
+
+if test -n "$ac_cv_prog_DSYMUTIL"; then
+  for ncn_progname in dsymutil; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DSYMUTIL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DSYMUTIL"; then
+  ac_cv_prog_DSYMUTIL="$DSYMUTIL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DSYMUTIL="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DSYMUTIL=$ac_cv_prog_DSYMUTIL
+if test -n "$DSYMUTIL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DSYMUTIL" >&5
+$as_echo "$DSYMUTIL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  done
+fi
+
+for ncn_progname in dsymutil; do
+  if test -n "$ncn_tool_prefix"; then
+    # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DSYMUTIL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DSYMUTIL"; then
+  ac_cv_prog_DSYMUTIL="$DSYMUTIL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DSYMUTIL="${ncn_tool_prefix}${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DSYMUTIL=$ac_cv_prog_DSYMUTIL
+if test -n "$DSYMUTIL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DSYMUTIL" >&5
+$as_echo "$DSYMUTIL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  fi
+  if test -z "$ac_cv_prog_DSYMUTIL" && test $build = $host ; then
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DSYMUTIL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DSYMUTIL"; then
+  ac_cv_prog_DSYMUTIL="$DSYMUTIL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DSYMUTIL="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DSYMUTIL=$ac_cv_prog_DSYMUTIL
+if test -n "$DSYMUTIL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DSYMUTIL" >&5
+$as_echo "$DSYMUTIL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  fi
+  test -n "$ac_cv_prog_DSYMUTIL" && break
+done
+
+if test -z "$ac_cv_prog_DSYMUTIL" ; then
+  set dummy dsymutil
+  if test $build = $host ; then
+    DSYMUTIL="$2"
+  else
+    DSYMUTIL="${ncn_tool_prefix}$2"
   fi
 fi
 
@@ -13950,6 +14272,236 @@ fi
 
 
 
+if test -z "$ac_cv_path_DSYMUTIL_FOR_TARGET" ; then
+  if test -n "$with_build_time_tools"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dsymutil in $with_build_time_tools" >&5
+$as_echo_n "checking for dsymutil in $with_build_time_tools... " >&6; }
+    if test -x $with_build_time_tools/dsymutil; then
+      DSYMUTIL_FOR_TARGET=`cd $with_build_time_tools && pwd`/dsymutil
+      ac_cv_path_DSYMUTIL_FOR_TARGET=$DSYMUTIL_FOR_TARGET
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_DSYMUTIL_FOR_TARGET" >&5
+$as_echo "$ac_cv_path_DSYMUTIL_FOR_TARGET" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+  elif test $build != $host && test $have_gcc_for_target = yes; then
+    DSYMUTIL_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=dsymutil`
+    test $DSYMUTIL_FOR_TARGET = dsymutil && DSYMUTIL_FOR_TARGET=
+    test -n "$DSYMUTIL_FOR_TARGET" && ac_cv_path_DSYMUTIL_FOR_TARGET=$DSYMUTIL_FOR_TARGET
+  fi
+fi
+if test -z "$ac_cv_path_DSYMUTIL_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
+  # Extract the first word of "dsymutil", so it can be a program name with args.
+set dummy dsymutil; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_DSYMUTIL_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $DSYMUTIL_FOR_TARGET in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_DSYMUTIL_FOR_TARGET="$DSYMUTIL_FOR_TARGET" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $gcc_cv_tool_dirs
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_DSYMUTIL_FOR_TARGET="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+DSYMUTIL_FOR_TARGET=$ac_cv_path_DSYMUTIL_FOR_TARGET
+if test -n "$DSYMUTIL_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DSYMUTIL_FOR_TARGET" >&5
+$as_echo "$DSYMUTIL_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_DSYMUTIL_FOR_TARGET" ; then
+
+
+if test -n "$DSYMUTIL_FOR_TARGET"; then
+  ac_cv_prog_DSYMUTIL_FOR_TARGET=$DSYMUTIL_FOR_TARGET
+elif test -n "$ac_cv_prog_DSYMUTIL_FOR_TARGET"; then
+  DSYMUTIL_FOR_TARGET=$ac_cv_prog_DSYMUTIL_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_DSYMUTIL_FOR_TARGET"; then
+  for ncn_progname in dsymutil; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DSYMUTIL_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DSYMUTIL_FOR_TARGET"; then
+  ac_cv_prog_DSYMUTIL_FOR_TARGET="$DSYMUTIL_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DSYMUTIL_FOR_TARGET="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DSYMUTIL_FOR_TARGET=$ac_cv_prog_DSYMUTIL_FOR_TARGET
+if test -n "$DSYMUTIL_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DSYMUTIL_FOR_TARGET" >&5
+$as_echo "$DSYMUTIL_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  done
+fi
+
+if test -z "$ac_cv_prog_DSYMUTIL_FOR_TARGET" && test -n "$with_build_time_tools"; then
+  for ncn_progname in dsymutil; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${ncn_progname} in $with_build_time_tools" >&5
+$as_echo_n "checking for ${ncn_progname} in $with_build_time_tools... " >&6; }
+    if test -x $with_build_time_tools/${ncn_progname}; then
+      ac_cv_prog_DSYMUTIL_FOR_TARGET=$with_build_time_tools/${ncn_progname}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      break
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+  done
+fi
+
+if test -z "$ac_cv_prog_DSYMUTIL_FOR_TARGET"; then
+  for ncn_progname in dsymutil; do
+    if test -n "$ncn_target_tool_prefix"; then
+      # Extract the first word of "${ncn_target_tool_prefix}${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_target_tool_prefix}${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DSYMUTIL_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DSYMUTIL_FOR_TARGET"; then
+  ac_cv_prog_DSYMUTIL_FOR_TARGET="$DSYMUTIL_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DSYMUTIL_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DSYMUTIL_FOR_TARGET=$ac_cv_prog_DSYMUTIL_FOR_TARGET
+if test -n "$DSYMUTIL_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DSYMUTIL_FOR_TARGET" >&5
+$as_echo "$DSYMUTIL_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    fi
+    if test -z "$ac_cv_prog_DSYMUTIL_FOR_TARGET" && test $build = $target ; then
+      # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DSYMUTIL_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DSYMUTIL_FOR_TARGET"; then
+  ac_cv_prog_DSYMUTIL_FOR_TARGET="$DSYMUTIL_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DSYMUTIL_FOR_TARGET="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DSYMUTIL_FOR_TARGET=$ac_cv_prog_DSYMUTIL_FOR_TARGET
+if test -n "$DSYMUTIL_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DSYMUTIL_FOR_TARGET" >&5
+$as_echo "$DSYMUTIL_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    fi
+    test -n "$ac_cv_prog_DSYMUTIL_FOR_TARGET" && break
+  done
+fi
+
+if test -z "$ac_cv_prog_DSYMUTIL_FOR_TARGET" ; then
+  set dummy dsymutil
+  if test $build = $target ; then
+    DSYMUTIL_FOR_TARGET="$2"
+  else
+    DSYMUTIL_FOR_TARGET="${ncn_target_tool_prefix}$2"
+  fi
+else
+  DSYMUTIL_FOR_TARGET="$ac_cv_prog_DSYMUTIL_FOR_TARGET"
+fi
+
+else
+  DSYMUTIL_FOR_TARGET=$ac_cv_path_DSYMUTIL_FOR_TARGET
+fi
+
+
+
+
 if test -z "$ac_cv_path_LD_FOR_TARGET" ; then
   if test -n "$with_build_time_tools"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld in $with_build_time_tools" >&5
@@ -16729,6 +17281,37 @@ $as_echo "pre-installed in $ac_dir" >&6; }
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     DLLTOOL_FOR_TARGET='$(DLLTOOL)'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
+$as_echo "host tool" >&6; }
+  else
+    # We need a cross tool
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target dsymutil" >&5
+$as_echo_n "checking where to find the target dsymutil... " >&6; }
+if test "x${build}" != "x${host}" ; then
+  if expr "x$DSYMUTIL_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $DSYMUTIL_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  else
+    # Canadian cross, just use what we found
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+else
+  if expr "x$DSYMUTIL_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $DSYMUTIL_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  elif test "x$target" = "x$host"; then
+    # We can use an host tool
+    DSYMUTIL_FOR_TARGET='$(DSYMUTIL)'
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
 $as_echo "host tool" >&6; }
   else

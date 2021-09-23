@@ -24,15 +24,15 @@ testd_cst (double d, vector double vd)
 
 /* { dg-final { scan-assembler-times {\mrldic\M|\mrlwinm\M} 1 } } */
 
-/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxv\M|\mstvx\M} 1 { target { ! has_arch_pwr8 } } } } */
-/* { dg-final { scan-assembler-times {\mstfdx\M|\mstfd\M} 1 { target { ! has_arch_pwr8 } } } } */
-/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 1 { target { ! has_arch_pwr8 } } } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxv\M|\mstvx\M} 1 { target { ! has_arch_pwr7 } } } } */
+/* { dg-final { scan-assembler-times {\mstfdx\M|\mstfd\M} 1 { target { ! has_arch_pwr7 } } } } */
+/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 1 { target { ! has_arch_pwr7 } } } } */
 
-/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxv\M|\mstvx\M} 0 { target { has_arch_pwr8 && lp64 } } } } */
-/* { dg-final { scan-assembler-times {\mstfdx\M|\mstfd\M} 0 { target { has_arch_pwr8 && lp64 } } } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxv\M|\mstvx\M} 0 { target { has_arch_pwr7 && lp64 } } } } */
+/* { dg-final { scan-assembler-times {\mstfdx\M|\mstfd\M} 0 { target { has_arch_pwr7 && lp64 } } } } */
 
-/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 0 { target { has_arch_pwr8 && lp64 } } } } */
-/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 1 { target { has_arch_pwr8 && ilp32 } } } } */
-/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxv\M|\mstvx\M} 1 { target { has_arch_pwr8 && ilp32 } } } } */
-/* { dg-final { scan-assembler-times {\mstfdx\M|\mstfd\M} 1 { target { has_arch_pwr8 && ilp32 } } } } */
+/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 0 { target { has_arch_pwr7 && lp64 } } } } */
+/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 0 { target { has_arch_pwr7 && ilp32 } } } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxv\M|\mstvx\M} 0 { target { has_arch_pwr7 && ilp32 } } } } */
+/* { dg-final { scan-assembler-times {\mstfdx\M|\mstfd\M} 0 { target { has_arch_pwr7 && ilp32 } } } } */
 

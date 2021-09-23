@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                         (GNU/Linux/m68k Version)                         --
 --                                                                          --
---          Copyright (C) 2014-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --

@@ -91,7 +91,10 @@
    UNSPEC_MMA_XVI8GER4SPP
    UNSPEC_MMA_XXMFACC
    UNSPEC_MMA_XXMTACC
-   UNSPEC_MMA_XXSETACCZ
+  ])
+
+(define_c_enum "unspecv"
+  [UNSPECV_MMA_XXSETACCZ
   ])
 
 ;; MMA instructions with 1 accumulator argument
@@ -467,30 +470,16 @@
   "<acc> %A0"
   [(set_attr "type" "mma")])
 
-;; We can't have integer constants in XOmode so we wrap this in an UNSPEC.
+;; We can't have integer constants in XOmode so we wrap this in an
+;; UNSPEC_VOLATILE.
 
-(define_expand "mma_xxsetaccz"
-  [(set (match_operand:XO 0 "fpr_reg_operand")
-	(const_int 0))]
-  "TARGET_MMA"
-{
-  rtx xo0 = gen_rtx_UNSPEC (XOmode, gen_rtvec (1, const0_rtx),
-			    UNSPEC_MMA_XXSETACCZ);
-  emit_insn (gen_rtx_SET (operands[0], xo0));
-  DONE;
-})
-
-(define_insn_and_split "*mma_xxsetaccz"
+(define_insn "mma_xxsetaccz"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=d")
-	(unspec:XO [(match_operand 1 "const_0_to_1_operand" "O")]
-	 UNSPEC_MMA_XXSETACCZ))]
+	(unspec_volatile:XO [(const_int 0)]
+			    UNSPECV_MMA_XXSETACCZ))]
   "TARGET_MMA"
   "xxsetaccz %A0"
-  "&& reload_completed"
-  [(set (match_dup 0) (unspec:XO [(match_dup 1)] UNSPEC_MMA_XXSETACCZ))]
-  ""
-  [(set_attr "type" "mma")
-   (set_attr "length" "4")])
+  [(set_attr "type" "mma")])
 
 (define_insn "mma_<vv>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -540,7 +529,8 @@
 		    MMA_VVI4I4I8))]
   "TARGET_MMA"
   "<vvi4i4i8> %A0,%x1,%x2,%3,%4,%5"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4i8>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -553,7 +543,8 @@
 		    MMA_AVVI4I4I8))]
   "TARGET_MMA"
   "<avvi4i4i8> %A0,%x2,%x3,%4,%5,%6"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<vvi4i4i2>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -565,7 +556,8 @@
 		    MMA_VVI4I4I2))]
   "TARGET_MMA"
   "<vvi4i4i2> %A0,%x1,%x2,%3,%4,%5"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4i2>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -578,7 +570,8 @@
 		    MMA_AVVI4I4I2))]
   "TARGET_MMA"
   "<avvi4i4i2> %A0,%x2,%x3,%4,%5,%6"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<vvi4i4>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -589,7 +582,8 @@
 		    MMA_VVI4I4))]
   "TARGET_MMA"
   "<vvi4i4> %A0,%x1,%x2,%3,%4"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -601,7 +595,8 @@
 		    MMA_AVVI4I4))]
   "TARGET_MMA"
   "<avvi4i4> %A0,%x2,%x3,%4,%5"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<pvi4i2>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -612,7 +607,8 @@
 		    MMA_PVI4I2))]
   "TARGET_MMA"
   "<pvi4i2> %A0,%x1,%x2,%3,%4"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<apvi4i2>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -624,7 +620,8 @@
 		    MMA_APVI4I2))]
   "TARGET_MMA"
   "<apvi4i2> %A0,%x2,%x3,%4,%5"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<vvi4i4i4>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -636,7 +633,8 @@
 		    MMA_VVI4I4I4))]
   "TARGET_MMA"
   "<vvi4i4i4> %A0,%x1,%x2,%3,%4,%5"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4i4>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
@@ -649,4 +647,5 @@
 		    MMA_AVVI4I4I4))]
   "TARGET_MMA"
   "<avvi4i4i4> %A0,%x2,%x3,%4,%5,%6"
-  [(set_attr "type" "mma")])
+  [(set_attr "type" "mma")
+   (set_attr "prefixed" "yes")])

@@ -9,7 +9,7 @@ struct integral_constant
 integral_constant<bool, true> inst;
 
 template <typename _Tp>
-struct integral_constant<bool, __is_enum(_Tp)> // { dg-error "32:template argument" }
+struct integral_constant<bool, __is_enum(_Tp)> // { dg-error "not deducible" }
 {
 };
 

@@ -65,14 +65,14 @@ void main()
         string prefix = "";
         for ({ size_t i; Throwable ex = original; } ex; ex = ex.next, ++i)
         {
-            printf("%.*s%.*s\n", prefix.length, prefix.ptr, ex.msg.length, ex.msg.ptr);
+            printf("%.*s%.*s\n", cast(int)prefix.length, prefix.ptr, cast(int)ex.msg.length, ex.msg.ptr);
             prefix = prefix~" ";
         }
         printf("Bypassed chain was:\n");
         prefix = "";
         for ({ size_t i; Throwable ex = original.bypassedException; } ex; ex = ex.next, ++i)
         {
-            printf("%.*s%.*s\n", prefix.length, prefix.ptr, ex.msg.length, ex.msg.ptr);
+            printf("%.*s%.*s\n", cast(int)prefix.length, prefix.ptr, cast(int)ex.msg.length, ex.msg.ptr);
             prefix = prefix~" ";
         }
     }

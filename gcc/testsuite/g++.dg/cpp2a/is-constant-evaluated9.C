@@ -32,7 +32,7 @@ constexpr int
 foo3(int i)
 {
   // I is not a constant expression but we short-circuit it.
-  if constexpr (__builtin_is_constant_evaluated () || i)
+  if constexpr (__builtin_is_constant_evaluated () || i) // { dg-warning ".std::is_constant_evaluated. always evaluates to true in .if constexpr." }
     return 42;
   else
     return i;
@@ -42,7 +42,7 @@ constexpr int
 foo4(int i)
 {
   const int j = 0;
-  if constexpr (j && __builtin_is_constant_evaluated ())
+  if constexpr (j && __builtin_is_constant_evaluated ()) // { dg-warning ".std::is_constant_evaluated. always evaluates to true in .if constexpr." }
     return 42;
   else
     return i;

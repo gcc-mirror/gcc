@@ -22,7 +22,7 @@
 
 (define_mode_iterator V_HW_32_64 [V4SI V2DI V2DF (V4SF "TARGET_VXE")])
 (define_mode_iterator VI_HW_SD [V4SI V2DI])
-(define_mode_iterator V_HW_4 [V4SI V4SF])
+
 ; Full size vector modes with more than one element which are directly supported in vector registers by the hardware.
 (define_mode_iterator VEC_HW  [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE")])
 (define_mode_iterator VECF_HW [(V4SF "TARGET_VXE") V2DF])
@@ -232,28 +232,27 @@
   [(set_attr "op_type" "VRS,VRX,VSI")])
 
 
-; FIXME: The following two patterns might using vec_merge. But what is
-; the canonical form: (vec_select (vec_merge op0 op1)) or (vec_merge
-; (vec_select op0) (vec_select op1)
 ; vmrhb, vmrhh, vmrhf, vmrhg
-(define_insn "vec_mergeh<mode>"
-  [(set (match_operand:V_128_NOSINGLE                         0 "register_operand" "=v")
-	(unspec:V_128_NOSINGLE [(match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
-			(match_operand:V_128_NOSINGLE         2 "register_operand"  "v")]
-		       UNSPEC_VEC_MERGEH))]
+(define_expand "vec_mergeh<mode>"
+  [(match_operand:V_128_NOSINGLE 0 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 1 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 2 "register_operand" "")]
   "TARGET_VX"
-  "vmrh<bhfgq>\t%v0,%1,%2"
-  [(set_attr "op_type" "VRR")])
+{
+  s390_expand_merge (operands[0], operands[1], operands[2], true);
+  DONE;
+})
 
 ; vmrlb, vmrlh, vmrlf, vmrlg
-(define_insn "vec_mergel<mode>"
-  [(set (match_operand:V_128_NOSINGLE                         0 "register_operand" "=v")
-	(unspec:V_128_NOSINGLE [(match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
-			(match_operand:V_128_NOSINGLE         2 "register_operand"  "v")]
-		     UNSPEC_VEC_MERGEL))]
+(define_expand "vec_mergel<mode>"
+  [(match_operand:V_128_NOSINGLE 0 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 1 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 2 "register_operand" "")]
   "TARGET_VX"
-  "vmrl<bhfgq>\t%v0,%1,%2"
-  [(set_attr "op_type" "VRR")])
+{
+  s390_expand_merge (operands[0], operands[1], operands[2], false);
+  DONE;
+})
 
 
 ; Vector pack
@@ -404,27 +403,21 @@
   "vperm\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
+; Incoming op3 is in vec_permi format and will we turned into a
+; permute vector consisting of op3 and op4.
 (define_expand "vec_permi<mode>"
-  [(set (match_operand:V_HW_64                  0 "register_operand"   "")
-	(unspec:V_HW_64 [(match_operand:V_HW_64 1 "register_operand"   "")
-			 (match_operand:V_HW_64 2 "register_operand"   "")
-			 (match_operand:QI      3 "const_mask_operand" "")]
-			UNSPEC_VEC_PERMI))]
+  [(set (match_operand:V_HW_2   0 "register_operand" "")
+	(vec_select:V_HW_2
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_2 1 "register_operand" "")
+	  (match_operand:V_HW_2 2 "register_operand" ""))
+	 (parallel [(match_operand:QI 3 "const_mask_operand" "") (match_dup 4)])))]
   "TARGET_VX"
 {
   HOST_WIDE_INT val = INTVAL (operands[3]);
-  operands[3] = GEN_INT ((val & 1) | (val & 2) << 1);
+  operands[3] = GEN_INT ((val & 2) >> 1);
+  operands[4] = GEN_INT ((val & 1) + 2);
 })
-
-(define_insn "*vec_permi<mode>"
-  [(set (match_operand:V_HW_64                  0 "register_operand"  "=v")
-	(unspec:V_HW_64 [(match_operand:V_HW_64 1 "register_operand"   "v")
-			 (match_operand:V_HW_64 2 "register_operand"   "v")
-			 (match_operand:QI      3 "const_mask_operand" "C")]
-			UNSPEC_VEC_PERMI))]
-  "TARGET_VX && (UINTVAL (operands[3]) & 10) == 0"
-  "vpdi\t%v0,%v1,%v2,%b3"
-  [(set_attr "op_type" "VRR")])
 
 
 ; Vector replicate
@@ -459,17 +452,17 @@
 
 ; A 31 bit target address is generated from 64 bit elements
 ; vsceg
-(define_insn "vec_scatter_element<V_HW_64:mode>_SI"
+(define_insn "vec_scatter_element<V_HW_2:mode>_SI"
   [(set (mem:<non_vec>
 	 (plus:SI (subreg:SI
-		   (unspec:<non_vec_int> [(match_operand:V_HW_64 1 "register_operand"   "v")
-					  (match_operand:QI      3 "const_mask_operand" "C")]
+		   (unspec:<non_vec_int> [(match_operand:V_HW_2 1 "register_operand"   "v")
+					  (match_operand:QI     3 "const_mask_operand" "C")]
 					 UNSPEC_VEC_EXTRACT) 4)
-		  (match_operand:SI                              2 "address_operand"   "ZQ")))
-	(unspec:<non_vec> [(match_operand:V_HW_64                0 "register_operand"   "v")
+		  (match_operand:SI                             2 "address_operand"   "ZQ")))
+	(unspec:<non_vec> [(match_operand:V_HW_2                0 "register_operand"   "v")
 			   (match_dup 3)] UNSPEC_VEC_EXTRACT))]
-  "TARGET_VX && !TARGET_64BIT && UINTVAL (operands[3]) < GET_MODE_NUNITS (<V_HW_64:MODE>mode)"
-  "vsce<V_HW_64:bhfgq>\t%v0,%O2(%v1,%R2),%3"
+  "TARGET_VX && !TARGET_64BIT && UINTVAL (operands[3]) < GET_MODE_NUNITS (<V_HW_2:MODE>mode)"
+  "vsce<V_HW_2:bhfgq>\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
 
 ; Element size and target address size is the same

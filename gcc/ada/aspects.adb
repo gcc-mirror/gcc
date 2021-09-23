@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,10 +23,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Einfo;    use Einfo;
-with Nlists;   use Nlists;
-with Sinfo;    use Sinfo;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Nlists;         use Nlists;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
 
 with GNAT.HTable;
 
@@ -224,7 +228,7 @@ package body Aspects is
       while Present (Item) loop
          if Nkind (Item) = N_Aspect_Specification
            and then Get_Aspect_Id (Item) = A
-           and then Class_Present = Sinfo.Class_Present (Item)
+           and then Class_Present = Sinfo.Nodes.Class_Present (Item)
          then
             return Item;
          end if;
@@ -237,6 +241,10 @@ package body Aspects is
       --  find the declaration node where the aspects reside. This is usually
       --  the parent or the parent of the parent.
 
+      if No (Parent (Owner)) then
+         return Empty;
+      end if;
+
       Decl := Parent (Owner);
       if not Permits_Aspect_Specifications (Decl) then
          Decl := Parent (Decl);
@@ -248,7 +256,7 @@ package body Aspects is
          Spec := First (Aspect_Specifications (Decl));
          while Present (Spec) loop
             if Get_Aspect_Id (Spec) = A
-              and then Class_Present = Sinfo.Class_Present (Spec)
+              and then Class_Present = Sinfo.Nodes.Class_Present (Spec)
             then
                return Spec;
             end if;
@@ -484,6 +492,7 @@ package body Aspects is
 
    function Permits_Aspect_Specifications (N : Node_Id) return Boolean is
    begin
+      pragma Assert (Present (N));
       return Has_Aspect_Specifications_Flag (Nkind (N));
    end Permits_Aspect_Specifications;
 

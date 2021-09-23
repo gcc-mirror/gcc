@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 2019-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2019-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -31,9 +31,11 @@
 
 /* This file provides common definitions used by GNAT C runtime files.  */
 
+/* The following include is here to meet the published VxWorks requirement
+   that the vxWorks.h header appear before any other header.  */
 #ifdef __vxworks
 #include "vxWorks.h"
-#endif /* __vxworks */
+#endif
 
 #ifndef ATTRIBUTE_UNUSED
 #define ATTRIBUTE_UNUSED __attribute__((unused))

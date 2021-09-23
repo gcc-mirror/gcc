@@ -29,7 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # include <cet.h>
 #endif
 
-#if defined(__i386__) && !defined(__CET__)
+#if !defined(__CET__)
+
+# if defined(__ELF__)
+
+#  if defined(__i386__)
 
     .text
     .globl CSYM(fiber_switchContext)
@@ -63,7 +67,9 @@ CSYM(fiber_switchContext):
     .cfi_endproc
     .size CSYM(fiber_switchContext),.-CSYM(fiber_switchContext)
 
-#elif defined(__x86_64__) && !defined(__ILP32__) && !defined(__CET__)
+#  endif /* defined(__ELF__) && defined(__i386__) */
+
+#  if defined(__x86_64__) && !defined(__ILP32__)
 
     .text
     .globl CSYM(fiber_switchContext)
@@ -98,4 +104,151 @@ CSYM(fiber_switchContext):
     .cfi_endproc
    .size CSYM(fiber_switchContext),.-CSYM(fiber_switchContext)
 
-#endif
+#  endif /* defined(__ELF__) && defined(__x86_64__) && !defined(__ILP32__) */
+
+# endif /* defined(__ELF__) */
+
+# if defined(__MACH__)
+
+#  if defined(__i386__)
+
+    .text
+    .globl CSYM(fiber_switchContext)
+    .p2align 4
+CSYM(fiber_switchContext):
+LFB0:
+    // save current stack state
+    push %ebp
+    mov  %esp, %ebp
+    push %edi
+    push %esi
+    push %ebx
+    push %eax
+
+    // store oldp again with more accurate address
+    mov 8(%ebp), %eax
+    mov %esp, (%eax)
+    // load newp to begin context switch
+    mov 12(%ebp), %esp
+
+    // load saved state from new stack
+    pop %eax
+    pop %ebx
+    pop %esi
+    pop %edi
+    pop %ebp
+
+    // 'return' to complete switch
+    ret
+LFE0:
+
+/* CFI */
+        .section __TEXT,__eh_frame,coalesced,no_toc+strip_static_syms+live_support
+EH_frame1:
+        .set L$set$0,LECIE1-LSCIE1
+        .long L$set$0   # Length of Common Information Entry
+LSCIE1:
+        .long   0       # CIE Identifier Tag
+        .byte   0x1     # CIE Version
+        .ascii "zR\0"   # CIE Augmentation
+        .byte   0x1     # uleb128 0x1; CIE Code Alignment Factor
+        .byte   0x7c    # sleb128 -4; CIE Data Alignment Factor
+        .byte   0x8     # CIE RA Column
+        .byte   0x1     # uleb128 0x1; Augmentation size
+        .byte   0x10    # FDE Encoding (pcrel)
+        .byte   0xc     # DW_CFA_def_cfa
+        .byte   0x5     # uleb128 0x5
+        .byte   0x4     # uleb128 0x4
+        .byte   0x88    # DW_CFA_offset, column 0x8
+        .byte   0x1     # uleb128 0x1
+        .p2align 2,0
+LECIE1:
+
+/* minimal FDE - does not record the stack frame changes. */
+LSFDE1:
+        .set L$set$1,LEFDE1-LASFDE1
+        .long L$set$1   # FDE Length
+LASFDE1:
+        .long   LASFDE1-EH_frame1       # FDE CIE offset
+        .long   LFB0-.  # FDE initial location
+        .set L$set$2,LFE0-LFB0
+        .long L$set$2   # FDE address range
+        .byte   0       # uleb128 0; Augmentation size
+        .p2align 2,0
+LEFDE1:
+
+#  endif /* defined(__MACH__) && defined(__i386__) */
+
+#  if defined(__x86_64__) && !defined(__ILP32__)
+
+    .text
+    .globl CSYM(fiber_switchContext)
+    .p2align 4
+CSYM(fiber_switchContext):
+LFB0:
+    // Save current stack state.save current stack state
+    push %rbp
+    mov  %rsp, %rbp
+    push %r15
+    push %r14
+    push %r13
+    push %r12
+    push %rbx
+
+    // store oldp again with more accurate address
+    mov %rsp, (%rdi)
+    // load newp to begin context switch
+    mov %rsi, %rsp
+
+    // load saved state from new stack
+    pop %rbx
+    pop %r12
+    pop %r13
+    pop %r14
+    pop %r15
+    pop %rbp
+
+    // 'return' to complete switch
+    ret
+LFE0:
+
+/* CFI */
+        .section __TEXT,__eh_frame,coalesced,no_toc+strip_static_syms+live_support
+EH_frame1:
+        .set L$set$0,LECIE1-LSCIE1
+        .long L$set$0   # Length of Common Information Entry
+LSCIE1:
+        .long   0       # CIE Identifier Tag
+        .byte   0x1     # CIE Version
+        .ascii "zR\0"   # CIE Augmentation
+        .byte   0x1     # uleb128 0x1; CIE Code Alignment Factor
+        .byte   0x78    # sleb128 -8; CIE Data Alignment Factor
+        .byte   0x10    # CIE RA Column
+        .byte   0x1     # uleb128 0x1; Augmentation size
+        .byte   0x10    # FDE Encoding (pcrel)
+        .byte   0xc     # DW_CFA_def_cfa
+        .byte   0x7     # uleb128 0x7
+        .byte   0x8     # uleb128 0x8
+        .byte   0x90    # DW_CFA_offset, column 0x10
+        .byte   0x1     # uleb128 0x1
+        .p2align 3,0
+LECIE1:
+
+/* minimal FDE - does not record the stack frame changes. */
+LSFDE1:
+        .set L$set$1,LEFDE1-LASFDE1
+        .long L$set$1   # FDE Length
+LASFDE1:
+        .long   LASFDE1-EH_frame1       # FDE CIE offset
+        .quad   LFB0-.  # FDE initial location
+        .set L$set$2,LFE0-LFB0
+        .quad L$set$2   # FDE address range
+        .byte   0       # uleb128 0; Augmentation size
+        .p2align 3,0
+LEFDE1:
+
+#  endif /* defined(__MACH__) && defined(__x86_64__) && !defined(__ILP32__) */
+
+# endif /* defined (__MACH__) */
+
+#endif /* !defined(__CET__) */

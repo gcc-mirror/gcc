@@ -154,6 +154,9 @@ class pending_diagnostic
   /* Hand-coded RTTI: get an ID for the subclass.  */
   virtual const char *get_kind () const = 0;
 
+  /* A vfunc for identifying "use of uninitialized value".  */
+  virtual bool use_of_uninit_p () const { return false; }
+
   /* Compare for equality with OTHER, which might be of a different
      subclass.  */
 
@@ -266,6 +269,16 @@ class pending_diagnostic
 
   virtual bool maybe_add_custom_events_for_superedge (const exploded_edge &,
 						      checker_path *)
+  {
+    return false;
+  }
+
+  /* Vfunc for determining that this pending_diagnostic supercedes OTHER,
+     and that OTHER should therefore not be emitted.
+     They have already been tested for being at the same stmt.  */
+
+  virtual bool
+  supercedes_p (const pending_diagnostic &other ATTRIBUTE_UNUSED) const
   {
     return false;
   }

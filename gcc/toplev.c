@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optinfo-emit-json.h"
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
+#include "ipa-param-manipulation.h"
 #include "dbgcnt.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
@@ -523,6 +524,7 @@ compile_file (void)
 
       /* This must be at the end before unwind and debug info.
 	 Some target ports emit PIC setup thunks here.  */
+      insn_locations_init ();
       targetm.asm_out.code_end ();
 
       /* Do dbx symbols.  */
@@ -1230,6 +1232,7 @@ parse_alignment_opts (void)
 static void
 process_options (void)
 {
+  const char *language_string = lang_hooks.name;
   /* Just in case lang_hooks.post_options ends up calling a debug_hook.
      This can happen with incorrect pre-processed input. */
   debug_hooks = &do_nothing_debug_hooks;
@@ -1413,6 +1416,17 @@ process_options (void)
 	debug_info_level = DINFO_LEVEL_NONE;
     }
 
+  /* CTF is supported for only C at this time.
+     Compiling with -flto results in frontend language of GNU GIMPLE.  */
+  if (!lang_GNU_C ()
+      && ctf_debug_info_level > CTFINFO_LEVEL_NONE)
+    {
+      inform (UNKNOWN_LOCATION,
+	      "CTF debug info requested, but not supported for %qs frontend",
+	      language_string);
+      ctf_debug_info_level = CTFINFO_LEVEL_NONE;
+    }
+
   if (flag_dump_final_insns && !flag_syntax_only && !no_backend)
     {
       FILE *final_output = fopen (flag_dump_final_insns, "w");
@@ -1434,7 +1448,8 @@ process_options (void)
 
   /* A lot of code assumes write_symbols == NO_DEBUG if the debugging
      level is 0.  */
-  if (debug_info_level == DINFO_LEVEL_NONE)
+  if (debug_info_level == DINFO_LEVEL_NONE
+      && ctf_debug_info_level == CTFINFO_LEVEL_NONE)
     write_symbols = NO_DEBUG;
 
   if (write_symbols == NO_DEBUG)
@@ -1448,7 +1463,15 @@ process_options (void)
     debug_hooks = &xcoff_debug_hooks;
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
-  else if (write_symbols == DWARF2_DEBUG)
+  else if (dwarf_debuginfo_p ())
+    debug_hooks = &dwarf2_debug_hooks;
+#endif
+#ifdef CTF_DEBUGGING_INFO
+  else if (ctf_debuginfo_p ())
+    debug_hooks = &dwarf2_debug_hooks;
+#endif
+#ifdef BTF_DEBUGGING_INFO
+  else if (btf_debuginfo_p ())
     debug_hooks = &dwarf2_debug_hooks;
 #endif
 #ifdef VMS_DEBUGGING_INFO
@@ -1460,13 +1483,17 @@ process_options (void)
     debug_hooks = &dwarf2_lineno_debug_hooks;
 #endif
   else
-    error_at (UNKNOWN_LOCATION,
-	      "target system does not support the %qs debug format",
-	      debug_type_names[write_symbols]);
+    {
+      gcc_assert (debug_set_count (write_symbols) <= 1);
+      error_at (UNKNOWN_LOCATION,
+		"target system does not support the %qs debug format",
+		debug_type_names[debug_set_to_format (write_symbols)]);
+    }
 
   /* We know which debug output will be used so we can set flag_var_tracking
      and flag_var_tracking_uninit if the user has not specified them.  */
   if (debug_info_level < DINFO_LEVEL_NORMAL
+      || !dwarf_debuginfo_p ()
       || debug_hooks->var_location == do_nothing_debug_hooks.var_location)
     {
       if (flag_var_tracking == 1
@@ -1523,8 +1550,7 @@ process_options (void)
     debug_nonbind_markers_p
       = (optimize
 	 && debug_info_level >= DINFO_LEVEL_NORMAL
-	 && (write_symbols == DWARF2_DEBUG
-	     || write_symbols == VMS_AND_DWARF2_DEBUG)
+	 && dwarf_debuginfo_p ()
 	 && !(flag_selective_scheduling || flag_selective_scheduling2));
 
   if (dwarf2out_as_loc_support == AUTODETECT_VALUE)
@@ -1539,8 +1565,7 @@ process_options (void)
       debug_variable_location_views
 	= (flag_var_tracking
 	   && debug_info_level >= DINFO_LEVEL_NORMAL
-	   && (write_symbols == DWARF2_DEBUG
-	       || write_symbols == VMS_AND_DWARF2_DEBUG)
+	   && dwarf_debuginfo_p ()
 	   && !dwarf_strict
 	   && dwarf2out_as_loc_support
 	   && dwarf2out_as_locview_support);
@@ -1742,12 +1767,19 @@ process_options (void)
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error
      have not been set.  */
-  if (!global_options_set.x_warnings_are_errors
-      && warn_coverage_mismatch
-      && (global_dc->classify_diagnostic[OPT_Wcoverage_mismatch] ==
-          DK_UNSPECIFIED))
-    diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_mismatch,
-                                    DK_ERROR, UNKNOWN_LOCATION);
+  if (!global_options_set.x_warnings_are_errors)
+    {
+      if (warn_coverage_mismatch
+	  && (global_dc->classify_diagnostic[OPT_Wcoverage_mismatch] ==
+	      DK_UNSPECIFIED))
+	diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_mismatch,
+					DK_ERROR, UNKNOWN_LOCATION);
+      if (warn_coverage_invalid_linenum
+	  && (global_dc->classify_diagnostic[OPT_Wcoverage_invalid_line_number] ==
+	      DK_UNSPECIFIED))
+	diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_invalid_line_number,
+					DK_ERROR, UNKNOWN_LOCATION);
+    }
 
   /* Save the current optimization options.  */
   optimization_default_node
@@ -2384,6 +2416,7 @@ toplev::finalize (void)
   ipa_reference_c_finalize ();
   ipa_fnsummary_c_finalize ();
   ipa_modref_c_finalize ();
+  ipa_edge_modifications_finalize ();
 
   cgraph_c_finalize ();
   cgraphunit_c_finalize ();

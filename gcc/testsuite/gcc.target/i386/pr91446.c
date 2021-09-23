@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -march=skylake -ftree-slp-vectorize -mtune-ctrl=^sse_typeless_stores" } */
+/* { dg-options "-O2 -march=icelake-server -ftree-slp-vectorize -mtune-ctrl=^sse_typeless_stores" } */
 
 typedef struct
 {

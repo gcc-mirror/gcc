@@ -20,5 +20,8 @@ test6 (vector unsigned long long x, vector unsigned long long y)
   return vec_mul (x, y);
 }
 
-/* { dg-final { scan-assembler-times "\[ \t\]mulld " 4 { target lp64 } } } */
-
+/* Power10 can generate the vmulld instruction even in 32-bit.  Before power10,
+   we limit the code to lp64, since 32-bit cannot generate the mulld
+   instruction.  */
+/* { dg-final { scan-assembler-times {\mmulld\M}  4 { target { lp64 && { ! has_arch_pwr10 } } } } } */
+/* { dg-final { scan-assembler-times {\mvmulld\M} 2 { target { has_arch_pwr10             } } } } */

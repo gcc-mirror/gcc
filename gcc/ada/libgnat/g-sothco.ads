@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2008-2020, AdaCore                     --
+--                     Copyright (C) 2008-2021, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@
 
 with Ada.Unchecked_Conversion;
 with Interfaces.C.Strings;
+with System.Parameters;
 
 package GNAT.Sockets.Thin_Common is
 
@@ -44,9 +45,9 @@ package GNAT.Sockets.Thin_Common is
    Failure : constant C.int := -1;
 
    type time_t is
-     range -2 ** (8 * SOSC.SIZEOF_tv_sec - 1)
-         .. 2 ** (8 * SOSC.SIZEOF_tv_sec - 1) - 1;
-   for time_t'Size use 8 * SOSC.SIZEOF_tv_sec;
+     range -2 ** (System.Parameters.time_t_bits - 1)
+        .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
+   for time_t'Size use System.Parameters.time_t_bits;
    pragma Convention (C, time_t);
 
    type suseconds_t is

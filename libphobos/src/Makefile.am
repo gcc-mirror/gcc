@@ -24,8 +24,8 @@ D_EXTRA_DFLAGS=-nostdinc -I $(srcdir) \
 
 # D flags for compilation
 AM_DFLAGS= \
-	$(phobos_compiler_pic_flag) \
-	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(CET_DFLAGS)
+	$(phobos_lt_pic_flag) $(phobos_compiler_shared_flag) \
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_DFLAGS)
 
 # Flags for other kinds of sources
 AM_CFLAGS=$(CET_FLAGS)
@@ -45,8 +45,12 @@ libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES)
 libgphobos_la_LIBTOOLFLAGS =
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
     -version-info $(libtool_VERSION)
+if ENABLE_LIBDRUNTIME_ONLY
+libgphobos_la_LIBADD = ../libdruntime/libgdruntime_convenience.la
+else
 libgphobos_la_LIBADD = \
     ../libdruntime/libgdruntime_convenience.la $(LIBZ)
+endif
 libgphobos_la_DEPENDENCIES = \
     ../libdruntime/libgdruntime_convenience.la libgphobos.spec
 
@@ -135,11 +139,11 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
 	std/regex/internal/backtracking.d std/regex/internal/generator.d \
 	std/regex/internal/ir.d std/regex/internal/kickstart.d \
 	std/regex/internal/parser.d std/regex/internal/tests.d \
-	std/regex/internal/thompson.d std/regex/package.d std/signals.d \
-	std/socket.d std/stdint.d std/stdio.d std/string.d std/system.d \
-	std/traits.d std/typecons.d std/typetuple.d std/uni.d std/uri.d \
-	std/utf.d std/uuid.d std/variant.d std/windows/charset.d \
-	std/windows/registry.d std/windows/syserror.d std/xml.d std/zip.d \
-	std/zlib.d
+	std/regex/internal/tests2.d std/regex/internal/thompson.d \
+	std/regex/package.d std/signals.d std/socket.d std/stdint.d \
+	std/stdio.d std/string.d std/system.d std/traits.d std/typecons.d \
+	std/typetuple.d std/uni.d std/uri.d std/utf.d std/uuid.d std/variant.d \
+	std/windows/charset.d std/windows/registry.d std/windows/syserror.d \
+	std/xml.d std/zip.d std/zlib.d
 
 endif

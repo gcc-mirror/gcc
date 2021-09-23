@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,7 @@ package Impunit is
       Ada_95_Unit,
       Ada_2005_Unit,
       Ada_2012_Unit,
-      Ada_202X_Unit);
+      Ada_2022_Unit);
       --  This unit is defined in the Ada RM of the given year. This is used to
       --  give a warning when withing a unit from a wrong mode (e.g. withing an
       --  Ada_2012_Unit when compiling with -gnat95). Note that in Ada 83 mode,

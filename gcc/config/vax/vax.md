@@ -1228,7 +1228,7 @@
 ;; the "*bit<mode>" pattern does for the purpose of the compare
 ;; elimination pass.  Try to get rid of the extra operation by hand
 ;; and where the sequence is used to set the condition codes only
-;; convert MNEG/BIC => BIT.
+;; convert MCOM/BIC => BIT.
 (define_peephole2
   [(parallel
      [(set (match_operand:VAXint 0 "register_operand")

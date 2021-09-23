@@ -66,7 +66,7 @@ struct lang_hooks_for_types
 
   /* Make an enum type with the given name and values, associating
      them all with the given source location.  */
-  tree (*simulate_enum_decl) (location_t, const char *, vec<string_int_pair>);
+  tree (*simulate_enum_decl) (location_t, const char *, vec<string_int_pair> *);
 
   /* Return what kind of RECORD_TYPE this is, mainly for purposes of
      debug information.  If not defined, record types are assumed to
@@ -296,9 +296,18 @@ struct lang_hooks_for_decls
   /* Do language specific checking on an implicitly determined clause.  */
   void (*omp_finish_clause) (tree clause, gimple_seq *pre_p, bool);
 
+  /* Return true if DECL is an allocatable variable (for the purpose of
+     implicit mapping).  */
+  bool (*omp_allocatable_p) (tree decl);
+
   /* Return true if DECL is a scalar variable (for the purpose of
-     implicit firstprivatization).  */
-  bool (*omp_scalar_p) (tree decl);
+     implicit firstprivatization). If 'ptr_or', pointers and
+     allocatables are also permitted.  */
+  bool (*omp_scalar_p) (tree decl, bool ptr_ok);
+
+  /* Return true if DECL is a scalar variable with Fortran target but not
+     allocatable or pointer attribute (for the purpose of implicit mapping).  */
+  bool (*omp_scalar_target_p) (tree decl);
 
   /* Return a pointer to the tree representing the initializer
      expression for the non-local variable DECL.  Return NULL if

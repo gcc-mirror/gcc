@@ -121,12 +121,12 @@
 
 (define_predicate "aarch64_sub_immediate"
   (and (match_code "const_int")
-       (match_test "aarch64_uimm12_shift (-INTVAL (op))")))
+       (match_test "aarch64_uimm12_shift (-UINTVAL (op))")))
 
 (define_predicate "aarch64_plus_immediate"
   (and (match_code "const_int")
        (ior (match_test "aarch64_uimm12_shift (INTVAL (op))")
-	    (match_test "aarch64_uimm12_shift (-INTVAL (op))"))))
+	    (match_test "aarch64_uimm12_shift (-UINTVAL (op))"))))
 
 (define_predicate "aarch64_plus_operand"
   (ior (match_operand 0 "register_operand")

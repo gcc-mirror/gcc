@@ -9080,9 +9080,7 @@ pa_asm_output_aligned_common (FILE *stream,
   max_common_align = TARGET_64BIT ? 128 : (size >= 4096 ? 256 : 64);
   if (align > max_common_align)
     {
-      warning (0, "alignment (%u) for %s exceeds maximum alignment "
-	       "for global common data.  Using %u",
-	       align / BITS_PER_UNIT, name, max_common_align / BITS_PER_UNIT);
+      /* Alignment exceeds maximum alignment for global common data.  */
       align = max_common_align;
     }
 

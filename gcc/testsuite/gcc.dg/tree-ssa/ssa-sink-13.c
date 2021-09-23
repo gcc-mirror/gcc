@@ -21,5 +21,5 @@ void test ()
 
 /* We should sink/merge all stores and end up with a single BB.  */
 
-/* { dg-final { scan-tree-dump-times "MEM\[^\n\r\]* = 0;" 3 "sink" } } */
-/* { dg-final { scan-tree-dump-times "<bb " 1 "sink" } } */
+/* { dg-final { scan-tree-dump-times "MEM\[^\n\r\]* = 0;" 3 "sink1" } } */
+/* { dg-final { scan-tree-dump-times "<bb " 1 "sink1" } } */

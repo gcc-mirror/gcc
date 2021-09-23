@@ -78,4 +78,4 @@ else
     tee="cat"
 fi
 
-git $cmd | $tee | git gcc-mklog -c "$COMMIT_MSG_FILE"
+git $cmd | $tee | git gcc-mklog $GCC_MKLOG_ARGS -c "$COMMIT_MSG_FILE"

@@ -18,6 +18,13 @@
 // { dg-do run { target c++20 } }
 
 #include <unordered_set>
+
+#ifndef __cpp_lib_generic_unordered_lookup
+# error "Feature-test macro for generic lookup missing in <unordered_set>"
+#elif __cpp_lib_generic_unordered_lookup < 201811L
+# error "Feature-test macro for generic lookup has wrong value in <unordered_set>"
+#endif
+
 #include <testsuite_hooks.h>
 
 struct Equal

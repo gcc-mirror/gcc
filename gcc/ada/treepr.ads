@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,7 +80,8 @@ package Treepr is
    pragma Export (Ada, pe);
    --  Print a node, node list, uint, or anything else that falls under
    --  the definition of Union_Id. Historically this was only for printing
-   --  nodes, hence the name.
+   --  nodes, hence the name pn. These are all the same, but the renamings
+   --  need to be in the body, or else the debugger can't find them.
 
    procedure ppar (N : Union_Id);
    pragma Export (Ada, ppar);

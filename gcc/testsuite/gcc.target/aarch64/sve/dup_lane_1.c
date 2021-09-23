@@ -56,15 +56,19 @@ TEST_ALL (DUP_LANE)
 
 /* { dg-final { scan-assembler-not {\ttbl\t} } } */
 
-/* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.d, z[0-9]+\.d\[0\]} 2 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, d[0-9]} 2 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.d, z[0-9]+\.d\[0\]} 2 { target aarch64_big_endian } } } */
 /* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.d, z[0-9]+\.d\[2\]} 2 } } */
 /* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.d, z[0-9]+\.d\[3\]} 2 } } */
-/* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.s, z[0-9]+\.s\[0\]} 2 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.s, s[0-9]} 2 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.s, z[0-9]+\.s\[0\]} 2 { target aarch64_big_endian } } } */
 /* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.s, z[0-9]+\.s\[5\]} 2 } } */
 /* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.s, z[0-9]+\.s\[7\]} 2 } } */
-/* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.h, z[0-9]+\.h\[0\]} 2 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, h[0-9]} 2 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.h, z[0-9]+\.h\[0\]} 2 { target aarch64_big_endian } } } */
 /* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.h, z[0-9]+\.h\[6\]} 2 } } */
 /* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.h, z[0-9]+\.h\[15\]} 2 } } */
-/* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.b, z[0-9]+\.b\[0\]} 1 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.b, b[0-9]} 1 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.b, z[0-9]+\.b\[0\]} 1 { target aarch64_big_endian } } } */
 /* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.b, z[0-9]+\.b\[19\]} 1 } } */
 /* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.b, z[0-9]+\.b\[31\]} 1 } } */

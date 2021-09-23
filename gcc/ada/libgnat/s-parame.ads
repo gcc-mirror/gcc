@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,6 +99,13 @@ package System.Parameters is
    Sec_Stack_Dynamic : constant Boolean := True;
    --  Indicates if secondary stacks can grow and shrink at run-time. If False,
    --  the size of a secondary stack is fixed at the point of its creation.
+
+   ------------------------------------
+   -- Characteristics of time_t type --
+   ------------------------------------
+
+   time_t_bits : constant := Long_Integer'Size;
+   --  Number of bits in type time_t
 
    ----------------------------------------------
    -- Characteristics of types in Interfaces.C --

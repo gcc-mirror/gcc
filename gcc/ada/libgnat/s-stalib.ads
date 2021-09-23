@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,44 +86,46 @@ package System.Standard_Library is
 
    --  The following record defines the underlying representation of exceptions
 
-   --  WARNING: Any changes to this may need to be reflected in the following
+   --  WARNING: Any change to the record needs to be reflected in the following
    --  locations in the compiler and runtime code:
 
-   --    1. The Internal_Exception routine in s-exctab.adb
-   --    2. The processing in gigi that tests Not_Handled_By_Others
-   --    3. Expand_N_Exception_Declaration in Exp_Ch11
-   --    4. The construction of the exception type in Cstand
+   --    1. The construction of the exception type in Cstand
+   --    2. Expand_N_Exception_Declaration in Exp_Ch11
+   --    3. Expand_Pragma_Import_Or_Interface in Exp_Prag
+   --    4. The processing in gigi that tests Not_Handled_By_Others
+   --    5. The Internal_Exception routine in s-exctab.adb
+   --    6. The declaration of the corresponding C type in raise.h
 
    type Exception_Data is record
-      Not_Handled_By_Others : Boolean;
+      Not_Handled_By_Others : aliased Boolean;
       --  Normally set False, indicating that the exception is handled in the
       --  usual way by others (i.e. an others handler handles the exception).
       --  Set True to indicate that this exception is not caught by others
       --  handlers, but must be explicitly named in a handler. This latter
       --  setting is currently used by the Abort_Signal.
 
-      Lang : Character;
+      Lang : aliased Character;
       --  A character indicating the language raising the exception.
       --  Set to "A" for exceptions defined by an Ada program.
       --  Set to "C" for imported C++ exceptions.
 
-      Name_Length : Natural;
+      Name_Length : aliased Natural;
       --  Length of fully expanded name of exception
 
-      Full_Name : System.Address;
+      Full_Name : aliased System.Address;
       --  Fully expanded name of exception, null terminated
       --  You can use To_Ptr to convert this to a string.
 
-      HTable_Ptr : Exception_Data_Ptr;
+      HTable_Ptr : aliased Exception_Data_Ptr;
       --  Hash table pointer used to link entries together in the hash table
       --  built (by Register_Exception in s-exctab.adb) for converting between
       --  identities and names.
 
-      Foreign_Data : Address;
+      Foreign_Data : aliased System.Address;
       --  Data for imported exceptions. Not used in the Ada case. This
       --  represents the address of the RTTI for the C++ case.
 
-      Raise_Hook : Raise_Action;
+      Raise_Hook : aliased Raise_Action;
       --  This field can be used to place a "hook" on an exception. If the
       --  value is non-null, then it points to a procedure which is called
       --  whenever the exception is raised. This call occurs immediately,

@@ -1,6 +1,6 @@
 /* Test the fix for PR92142. */
 
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include <ISO_Fortran_binding.h>
 
 #include <stdlib.h>
 

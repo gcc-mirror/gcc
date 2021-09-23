@@ -28,6 +28,7 @@ extern void nios2_expand_prologue (void);
 extern void nios2_expand_epilogue (bool);
 extern bool nios2_expand_return (void);
 extern void nios2_function_profiler (FILE *, int);
+extern bool nios2_fpu_insn_enabled (enum n2fpu_code);
 
 /* Routines implemented in nios2-rust.c  */
 extern void nios2_rust_target_cpu_info (void);
@@ -49,7 +50,6 @@ extern bool nios2_validate_compare (machine_mode, rtx *, rtx *, rtx *);
 extern bool nios2_validate_fpu_compare (machine_mode, rtx *, rtx *, rtx *,
 					bool);
 
-extern bool nios2_fpu_insn_enabled (enum n2fpu_code);
 extern const char * nios2_fpu_insn_asm (enum n2fpu_code);
 extern const char * nios2_add_insn_asm (rtx_insn *, rtx *);
 

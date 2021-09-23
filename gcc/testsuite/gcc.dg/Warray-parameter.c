@@ -5,7 +5,7 @@
    Also verify that the array/pointer argument form in a mismatched
    redeclaration doesn't override the form in the initial declaration.
    { dg-do compile }
-   { dg-options "-Wall -Warray-parameter -Wno-vla-paramater" } */
+   { dg-options "-Wall -Warray-parameter -Wno-vla-parameter" } */
 
 /* Redclarations with the same or equivalent array form should not
    be dianosed.  T[0] is diagnosed by -Wpedantic for being invalid

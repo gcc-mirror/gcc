@@ -9,31 +9,15 @@ void fun()
 {
   assert_true(nullptr == nullptr);
   assert_false(nullptr != nullptr);
-  assert_false(nullptr < nullptr);
-  assert_false(nullptr > nullptr);
-  assert_true(nullptr <= nullptr);
-  assert_true(nullptr >= nullptr);
 
   decltype(nullptr) mynull = 0;
 
   assert_true(mynull == nullptr);
   assert_false(mynull != nullptr);
-  assert_false(mynull < nullptr);
-  assert_false(mynull > nullptr);
-  assert_true(mynull <= nullptr);
-  assert_true(mynull >= nullptr);
 
   assert_true(nullptr == mynull);
   assert_false(nullptr != mynull);
-  assert_false(nullptr < mynull);
-  assert_false(nullptr > mynull);
-  assert_true(nullptr <= mynull);
-  assert_true(nullptr >= mynull);
 
   assert_true(mynull == mynull);
   assert_false(mynull != mynull);
-  assert_false(mynull < mynull);
-  assert_false(mynull > mynull);
-  assert_true(mynull <= mynull);
-  assert_true(mynull >= mynull);
 }

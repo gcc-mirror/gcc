@@ -602,6 +602,21 @@ add_decl_expr (tree decl)
   add_stmt (r);
 }
 
+/* Set EXPR_LOCATION of the cleanups of any CLEANUP_STMT in STMTS to LOC.  */
+
+static void
+set_cleanup_locs (tree stmts, location_t loc)
+{
+  if (TREE_CODE (stmts) == CLEANUP_STMT)
+    {
+      protected_set_expr_location (CLEANUP_EXPR (stmts), loc);
+      set_cleanup_locs (CLEANUP_BODY (stmts), loc);
+    }
+  else if (TREE_CODE (stmts) == STATEMENT_LIST)
+    for (tree stmt : tsi_range (stmts))
+      set_cleanup_locs (stmt, loc);
+}
+
 /* Finish a scope.  */
 
 tree
@@ -613,6 +628,9 @@ do_poplevel (tree stmt_list)
     block = poplevel (kept_level_p (), 1, 0);
 
   stmt_list = pop_stmt_list (stmt_list);
+
+  /* input_location is the last token of the scope, usually a }.  */
+  set_cleanup_locs (stmt_list, input_location);
 
   if (!processing_template_decl)
     {
@@ -817,12 +835,12 @@ maybe_convert_cond (tree cond)
   cond = convert_from_reference (cond);
 
   if (TREE_CODE (cond) == MODIFY_EXPR
-      && !TREE_NO_WARNING (cond)
       && warn_parentheses
+      && !warning_suppressed_p (cond, OPT_Wparentheses)
       && warning_at (cp_expr_loc_or_input_loc (cond),
 		     OPT_Wparentheses, "suggest parentheses around "
 				       "assignment used as truth value"))
-    TREE_NO_WARNING (cond) = 1;
+    suppress_warning (cond, OPT_Wparentheses);
 
   return condition_conversion (cond);
 }
@@ -909,6 +927,71 @@ is_std_constant_evaluated_p (tree fn)
   return name && id_equal (name, "is_constant_evaluated");
 }
 
+/* Callback function for maybe_warn_for_constant_evaluated that looks
+   for calls to std::is_constant_evaluated in TP.  */
+
+static tree
+find_std_constant_evaluated_r (tree *tp, int *walk_subtrees, void *)
+{
+  tree t = *tp;
+
+  if (TYPE_P (t) || TREE_CONSTANT (t))
+    {
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
+
+  switch (TREE_CODE (t))
+    {
+    case CALL_EXPR:
+      if (is_std_constant_evaluated_p (t))
+	return t;
+      break;
+    case EXPR_STMT:
+      /* Don't warn in statement expressions.  */
+      *walk_subtrees = false;
+      return NULL_TREE;
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
+/* In certain contexts, std::is_constant_evaluated() is always true (for
+   instance, in a consteval function or in a constexpr if), or always false
+   (e.g., in a non-constexpr non-consteval function) so give the user a clue.  */
+
+static void
+maybe_warn_for_constant_evaluated (tree cond, bool constexpr_if)
+{
+  if (!warn_tautological_compare)
+    return;
+
+  /* Suppress warning for std::is_constant_evaluated if the conditional
+     comes from a macro.  */
+  if (from_macro_expansion_at (EXPR_LOCATION (cond)))
+    return;
+
+  cond = cp_walk_tree_without_duplicates (&cond, find_std_constant_evaluated_r,
+					  NULL);
+  if (cond)
+    {
+      if (constexpr_if)
+	warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
+		    "%<std::is_constant_evaluated%> always evaluates to "
+		    "true in %<if constexpr%>");
+      else if (!maybe_constexpr_fn (current_function_decl))
+	warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
+		    "%<std::is_constant_evaluated%> always evaluates to "
+		    "false in a non-%<constexpr%> function");
+      else if (DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
+	warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
+		    "%<std::is_constant_evaluated%> always evaluates to "
+		    "true in a %<consteval%> function");
+    }
+}
+
 /* Process the COND of an if-statement, which may be given by
    IF_STMT.  */
 
@@ -924,23 +1007,12 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
 	 converted to bool.  */
       && TYPE_MAIN_VARIANT (TREE_TYPE (cond)) == boolean_type_node)
     {
-      /* if constexpr (std::is_constant_evaluated()) is always true,
-	 so give the user a clue.  */
-      if (warn_tautological_compare)
-	{
-	  tree t = cond;
-	  if (TREE_CODE (t) == CLEANUP_POINT_EXPR)
-	    t = TREE_OPERAND (t, 0);
-	  if (TREE_CODE (t) == CALL_EXPR
-	      && is_std_constant_evaluated_p (t))
-	    warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
-			"%qs always evaluates to true in %<if constexpr%>",
-			"std::is_constant_evaluated");
-	}
-
+      maybe_warn_for_constant_evaluated (cond, /*constexpr_if=*/true);
       cond = instantiate_non_dependent_expr (cond);
       cond = cxx_constant_value (cond, NULL_TREE);
     }
+  else
+    maybe_warn_for_constant_evaluated (cond, /*constexpr_if=*/false);
   finish_cond (&IF_COND (if_stmt), cond);
   add_stmt (if_stmt);
   THEN_CLAUSE (if_stmt) = push_stmt_list ();
@@ -1125,7 +1197,7 @@ finish_return_stmt (tree expr)
     {
       /* Suppress -Wreturn-type for this function.  */
       if (warn_return_type)
-	TREE_NO_WARNING (current_function_decl) = true;
+	suppress_warning (current_function_decl, OPT_Wreturn_type);
       return error_mark_node;
     }
 
@@ -1147,7 +1219,8 @@ finish_return_stmt (tree expr)
     }
 
   r = build_stmt (input_location, RETURN_EXPR, expr);
-  TREE_NO_WARNING (r) |= no_warning;
+  if (no_warning)
+    suppress_warning (r, OPT_Wreturn_type);
   r = maybe_cleanup_point_expr_void (r);
   r = add_stmt (r);
 
@@ -2033,7 +2106,7 @@ finish_parenthesized_expr (cp_expr expr)
 {
   if (EXPR_P (expr))
     /* This inhibits warnings in c_common_truthvalue_conversion.  */
-    TREE_NO_WARNING (expr) = 1;
+    suppress_warning (expr, OPT_Wparentheses);
 
   if (TREE_CODE (expr) == OFFSET_REF
       || TREE_CODE (expr) == SCOPE_REF)
@@ -3036,14 +3109,13 @@ finish_compound_literal (tree type, tree compound_literal,
       return error_mark_node;
     }
 
-  if (tree anode = type_uses_auto (type))
-    if (CLASS_PLACEHOLDER_TEMPLATE (anode))
-      {
-	type = do_auto_deduction (type, compound_literal, anode, complain,
-				  adc_variable_type);
-	if (type == error_mark_node)
-	  return error_mark_node;
-      }
+  if (template_placeholder_p (type))
+    {
+      type = do_auto_deduction (type, compound_literal, type, complain,
+				adc_variable_type);
+      if (type == error_mark_node)
+	return error_mark_node;
+    }
 
   /* Used to hold a copy of the compound literal in a template.  */
   tree orig_cl = NULL_TREE;
@@ -3159,9 +3231,13 @@ finish_compound_literal (tree type, tree compound_literal,
     }
 
   /* Represent other compound literals with TARGET_EXPR so we produce
-     an lvalue, but can elide copies.  */
+     a prvalue, and can elide copies.  */
   if (!VECTOR_TYPE_P (type))
-    compound_literal = get_target_expr_sfinae (compound_literal, complain);
+    {
+      /* The CONSTRUCTOR is now an initializer, not a compound literal.  */
+      TREE_HAS_CONSTRUCTOR (compound_literal) = false;
+      compound_literal = get_target_expr_sfinae (compound_literal, complain);
+    }
 
   return compound_literal;
 }
@@ -3195,12 +3271,12 @@ finish_translation_unit (void)
   /* Do file scope __FUNCTION__ et al.  */
   finish_fname_decls ();
 
-  if (scope_chain->omp_declare_target_attribute)
+  if (vec_safe_length (scope_chain->omp_declare_target_attribute))
     {
       if (!errorcount)
 	error ("%<#pragma omp declare target%> without corresponding "
 	       "%<#pragma omp end declare target%>");
-      scope_chain->omp_declare_target_attribute = 0;
+      vec_safe_truncate (scope_chain->omp_declare_target_attribute, 0);
     }
 }
 
@@ -3412,6 +3488,14 @@ finish_member_declaration (tree decl)
      a member of an enumeration.  */
   if (TREE_CODE (decl) != CONST_DECL)
     DECL_CONTEXT (decl) = current_class_type;
+
+  /* Remember the single FIELD_DECL an anonymous aggregate type is used for.  */
+  if (TREE_CODE (decl) == FIELD_DECL
+      && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
+    {
+      gcc_assert (!ANON_AGGR_TYPE_FIELD (TYPE_MAIN_VARIANT (TREE_TYPE (decl))));
+      ANON_AGGR_TYPE_FIELD (TYPE_MAIN_VARIANT (TREE_TYPE (decl))) = decl;
+    }
 
   if (TREE_CODE (decl) == USING_DECL)
     /* For now, ignore class-scope USING_DECLS, so that debugging
@@ -3642,8 +3726,10 @@ baselink_for_fns (tree fns)
   cl = currently_open_derived_class (scope);
   if (!cl)
     cl = scope;
-  cl = TYPE_BINFO (cl);
-  return build_baselink (cl, cl, fns, /*optype=*/NULL_TREE);
+  tree access_path = TYPE_BINFO (cl);
+  tree conv_path = (cl == scope ? access_path
+		    : lookup_base (cl, scope, ba_any, NULL, tf_none));
+  return build_baselink (conv_path, access_path, fns, /*optype=*/NULL_TREE);
 }
 
 /* Returns true iff DECL is a variable from a function outside
@@ -4947,7 +5033,11 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  if (REFERENCE_REF_P (t))
 	    t = TREE_OPERAND (t, 0);
 	}
-      if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+      if (TREE_CODE (t) == FIELD_DECL
+	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND))
+	ret = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
+      else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	{
 	  if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 	    return NULL_TREE;
@@ -4961,17 +5051,20 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	  return error_mark_node;
 	}
-      else if (ort == C_ORT_OMP
+      else if ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
 	       && TREE_CODE (t) == PARM_DECL
 	       && DECL_ARTIFICIAL (t)
-	       && DECL_NAME (t) == this_identifier)
+	       && DECL_NAME (t) == this_identifier
+	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND)
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "%<this%> allowed in OpenMP only in %<declare simd%>"
 		    " clauses");
 	  return error_mark_node;
 	}
-      else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+      else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 	       && VAR_P (t) && CP_DECL_THREAD_LOCAL_P (t))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
@@ -4985,7 +5078,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       return ret;
     }
 
-  if (ort == C_ORT_OMP
+  if ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
       && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
 	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
@@ -5058,7 +5151,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     {
       if (!integer_nonzerop (length))
 	{
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
@@ -5126,7 +5220,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		}
 	      if (tree_int_cst_equal (size, low_bound))
 		{
-		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
 		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
 		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
@@ -5147,7 +5242,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	    }
 	  else if (length == NULL_TREE)
 	    {
-	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION
 		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IN_REDUCTION
 		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TASK_REDUCTION)
@@ -5185,7 +5281,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	}
       else if (length == NULL_TREE)
 	{
-	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IN_REDUCTION
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TASK_REDUCTION)
@@ -5229,7 +5326,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	}
       /* If there is a pointer type anywhere but in the very first
 	 array-section-subscript, the array section can't be contiguous.  */
-      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+	  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 	  && TREE_CODE (TREE_CHAIN (t)) == TREE_LIST)
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
@@ -5277,7 +5375,8 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
   unsigned int first_non_one = 0;
   auto_vec<tree, 10> types;
   tree *tp = &OMP_CLAUSE_DECL (c);
-  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+  if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY)
       && TREE_CODE (*tp) == TREE_LIST
       && TREE_PURPOSE (*tp)
       && TREE_CODE (TREE_PURPOSE (*tp)) == TREE_VEC)
@@ -5289,7 +5388,8 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
     return true;
   if (first == NULL_TREE)
     return false;
-  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND)
+  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY)
     {
       tree t = *tp;
       tree tem = NULL_TREE;
@@ -5480,33 +5580,30 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      || (TREE_CODE (t) == COMPONENT_REF
 		  && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE))
 	    return false;
-	  if (ort == C_ORT_OMP || ort == C_ORT_ACC)
-	    switch (OMP_CLAUSE_MAP_KIND (c))
-	      {
-	      case GOMP_MAP_ALLOC:
-	      case GOMP_MAP_IF_PRESENT:
-	      case GOMP_MAP_TO:
-	      case GOMP_MAP_FROM:
-	      case GOMP_MAP_TOFROM:
-	      case GOMP_MAP_ALWAYS_TO:
-	      case GOMP_MAP_ALWAYS_FROM:
-	      case GOMP_MAP_ALWAYS_TOFROM:
-	      case GOMP_MAP_RELEASE:
-	      case GOMP_MAP_DELETE:
-	      case GOMP_MAP_FORCE_TO:
-	      case GOMP_MAP_FORCE_FROM:
-	      case GOMP_MAP_FORCE_TOFROM:
-	      case GOMP_MAP_FORCE_PRESENT:
-		OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
-		break;
-	      default:
-		break;
-	      }
+	  switch (OMP_CLAUSE_MAP_KIND (c))
+	    {
+	    case GOMP_MAP_ALLOC:
+	    case GOMP_MAP_IF_PRESENT:
+	    case GOMP_MAP_TO:
+	    case GOMP_MAP_FROM:
+	    case GOMP_MAP_TOFROM:
+	    case GOMP_MAP_ALWAYS_TO:
+	    case GOMP_MAP_ALWAYS_FROM:
+	    case GOMP_MAP_ALWAYS_TOFROM:
+	    case GOMP_MAP_RELEASE:
+	    case GOMP_MAP_DELETE:
+	    case GOMP_MAP_FORCE_TO:
+	    case GOMP_MAP_FORCE_FROM:
+	    case GOMP_MAP_FORCE_TOFROM:
+	    case GOMP_MAP_FORCE_PRESENT:
+	      OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
+	      break;
+	    default:
+	      break;
+	    }
 	  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 				      OMP_CLAUSE_MAP);
-	  if ((ort & C_ORT_OMP_DECLARE_SIMD) != C_ORT_OMP && ort != C_ORT_ACC)
-	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_POINTER);
-	  else if (TREE_CODE (t) == COMPONENT_REF)
+	  if (TREE_CODE (t) == COMPONENT_REF)
 	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
 	  else if (REFERENCE_REF_P (t)
 		   && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
@@ -5518,6 +5615,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	    }
 	  else
 	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
+	  OMP_CLAUSE_MAP_IMPLICIT (c2) = OMP_CLAUSE_MAP_IMPLICIT (c);
 	  if (OMP_CLAUSE_MAP_KIND (c2) != GOMP_MAP_FIRSTPRIVATE_POINTER
 	      && !cxx_mark_addressable (t))
 	    return false;
@@ -5544,6 +5642,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      tree c3 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 					  OMP_CLAUSE_MAP);
 	      OMP_CLAUSE_SET_MAP_KIND (c3, OMP_CLAUSE_MAP_KIND (c2));
+	      OMP_CLAUSE_MAP_IMPLICIT (c2) = OMP_CLAUSE_MAP_IMPLICIT (c);
 	      OMP_CLAUSE_DECL (c3) = ptr;
 	      if (OMP_CLAUSE_MAP_KIND (c2) == GOMP_MAP_ALWAYS_POINTER
 		  || OMP_CLAUSE_MAP_KIND (c2) == GOMP_MAP_ATTACH_DETACH)
@@ -5683,7 +5782,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 
   if (!id && CLASS_TYPE_P (type) && TYPE_BINFO (type))
     {
-      vec<tree> ambiguous = vNULL;
+      auto_vec<tree> ambiguous;
       tree binfo = TYPE_BINFO (type), base_binfo, ret = NULL_TREE;
       unsigned int ix;
       if (ambiguousp == NULL)
@@ -5720,7 +5819,6 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 	      if (idx == 0)
 		str = get_spaces (str);
 	    }
-	  ambiguous.release ();
 	  ret = error_mark_node;
 	  baselink = NULL_TREE;
 	}
@@ -5889,12 +5987,12 @@ cp_check_omp_declare_reduction (tree udr)
     {
       gcc_assert (TREE_CODE (data.stmts[0]) == DECL_EXPR
 		  && TREE_CODE (data.stmts[1]) == DECL_EXPR);
-      if (TREE_NO_WARNING (DECL_EXPR_DECL (data.stmts[0])))
+      if (warning_suppressed_p (DECL_EXPR_DECL (data.stmts[0]) /* What warning? */))
 	return true;
       data.combiner_p = true;
       if (cp_walk_tree (&data.stmts[2], cp_check_omp_declare_reduction_r,
 			&data, NULL))
-	TREE_NO_WARNING (DECL_EXPR_DECL (data.stmts[0])) = 1;
+	suppress_warning (DECL_EXPR_DECL (data.stmts[0]) /* What warning? */);
     }
   if (i >= 6)
     {
@@ -5905,7 +6003,7 @@ cp_check_omp_declare_reduction (tree udr)
 			&data, NULL)
 	  || cp_walk_tree (&DECL_INITIAL (DECL_EXPR_DECL (data.stmts[3])),
 			   cp_check_omp_declare_reduction_r, &data, NULL))
-	TREE_NO_WARNING (DECL_EXPR_DECL (data.stmts[0])) = 1;
+	suppress_warning (DECL_EXPR_DECL (data.stmts[0])  /* Wat warning? */);
       if (i == 7)
 	gcc_assert (TREE_CODE (data.stmts[6]) == DECL_EXPR);
     }
@@ -5980,7 +6078,8 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
       if (!processing_template_decl)
 	{
 	  t = require_complete_type (t);
-	  if (t == error_mark_node)
+	  if (t == error_mark_node
+	      || !complete_type_or_else (oatype, NULL_TREE))
 	    return true;
 	  tree size = size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (oatype),
 				  TYPE_SIZE_UNIT (type));
@@ -6010,6 +6109,8 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
       case PLUS_EXPR:
       case MULT_EXPR:
       case MINUS_EXPR:
+      case TRUTH_ANDIF_EXPR:
+      case TRUTH_ORIF_EXPR:
 	predefined = true;
 	break;
       case MIN_EXPR:
@@ -6022,12 +6123,6 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
       case BIT_IOR_EXPR:
       case BIT_XOR_EXPR:
 	if (FLOAT_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE)
-	  break;
-	predefined = true;
-	break;
-      case TRUTH_ANDIF_EXPR:
-      case TRUTH_ORIF_EXPR:
-	if (FLOAT_TYPE_P (type))
 	  break;
 	predefined = true;
 	break;
@@ -6484,7 +6579,8 @@ tree
 finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 {
   bitmap_head generic_head, firstprivate_head, lastprivate_head;
-  bitmap_head aligned_head, map_head, map_field_head, oacc_reduction_head;
+  bitmap_head aligned_head, map_head, map_field_head, map_firstprivate_head;
+  bitmap_head oacc_reduction_head;
   tree c, t, *pc;
   tree safelen = NULL_TREE;
   bool branch_seen = false;
@@ -6499,8 +6595,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
      has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
   int reduction_seen = 0;
   bool allocate_seen = false;
-  bool detach_seen = false;
+  tree detach_seen = NULL_TREE;
   bool mergeable_seen = false;
+  bool implicit_moved = false;
+  bool target_in_reduction_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -6510,8 +6608,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   /* If ort == C_ORT_OMP_DECLARE_SIMD used as uniform_head instead.  */
   bitmap_initialize (&map_head, &bitmap_default_obstack);
   bitmap_initialize (&map_field_head, &bitmap_default_obstack);
+  bitmap_initialize (&map_firstprivate_head, &bitmap_default_obstack);
   /* If ort == C_ORT_OMP used as nontemporal_head or use_device_xxx_head
-     instead.  */
+     instead and for ort == C_ORT_OMP_TARGET used as in_reduction_head.  */
   bitmap_initialize (&oacc_reduction_head, &bitmap_default_obstack);
 
   if (ort & C_ORT_ACC)
@@ -6774,8 +6873,22 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		   || (ort == C_ORT_OMP
 		       && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR
 			   || (OMP_CLAUSE_CODE (c)
-			       == OMP_CLAUSE_USE_DEVICE_ADDR))))
+			       == OMP_CLAUSE_USE_DEVICE_ADDR)))
+		   || (ort == C_ORT_OMP_TARGET
+		       && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION))
 	    {
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+		  && (bitmap_bit_p (&generic_head, DECL_UID (t))
+		      || bitmap_bit_p (&firstprivate_head, DECL_UID (t))))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qD appears more than once in data-sharing "
+			    "clauses", t);
+		  remove = true;
+		  break;
+		}
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION)
+		target_in_reduction_seen = true;
 	      if (bitmap_bit_p (&oacc_reduction_head, DECL_UID (t)))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
@@ -6790,7 +6903,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
 		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t))
-		   || bitmap_bit_p (&lastprivate_head, DECL_UID (t)))
+		   || bitmap_bit_p (&lastprivate_head, DECL_UID (t))
+		   || bitmap_bit_p (&map_firstprivate_head, DECL_UID (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD appears more than once in data clauses", t);
@@ -6825,6 +6939,37 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 
 	case OMP_CLAUSE_FIRSTPRIVATE:
+	  if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c) && !implicit_moved)
+	    {
+	    move_implicit:
+	      implicit_moved = true;
+	      /* Move firstprivate and map clauses with
+		 OMP_CLAUSE_{FIRSTPRIVATE,MAP}_IMPLICIT set to the end of
+		 clauses chain.  */
+	      tree cl1 = NULL_TREE, cl2 = NULL_TREE;
+	      tree *pc1 = pc, *pc2 = &cl1, *pc3 = &cl2;
+	      while (*pc1)
+		if (OMP_CLAUSE_CODE (*pc1) == OMP_CLAUSE_FIRSTPRIVATE
+		    && OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (*pc1))
+		  {
+		    *pc3 = *pc1;
+		    pc3 = &OMP_CLAUSE_CHAIN (*pc3);
+		    *pc1 = OMP_CLAUSE_CHAIN (*pc1);
+		  }
+		else if (OMP_CLAUSE_CODE (*pc1) == OMP_CLAUSE_MAP
+			 && OMP_CLAUSE_MAP_IMPLICIT (*pc1))
+		  {
+		    *pc2 = *pc1;
+		    pc2 = &OMP_CLAUSE_CHAIN (*pc2);
+		    *pc1 = OMP_CLAUSE_CHAIN (*pc1);
+		  }
+		else
+		  pc1 = &OMP_CLAUSE_CHAIN (*pc1);
+	      *pc3 = NULL;
+	      *pc2 = cl2;
+	      *pc1 = cl1;
+	      continue;
+	    }
 	  t = omp_clause_decl_field (OMP_CLAUSE_DECL (c));
 	  if (t)
 	    omp_note_field_privatization (t, OMP_CLAUSE_DECL (c));
@@ -6854,8 +6999,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  t);
 	      remove = true;
 	    }
+	  else if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
+		   && !OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET (c)
+		   && bitmap_bit_p (&map_firstprivate_head, DECL_UID (t)))
+	    remove = true;
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
-		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
+		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t))
+		   || bitmap_bit_p (&map_firstprivate_head, DECL_UID (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD appears more than once in data clauses", t);
@@ -6866,6 +7016,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (ort == C_ORT_ACC)
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD appears more than once in data clauses", t);
+	      else if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
+		       && !OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET (c))
+		/* Silently drop the clause.  */;
 	      else
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD appears both in data and map clauses", t);
@@ -7189,6 +7342,15 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"%<device%> id must be integral");
 	      remove = true;
 	    }
+	  else if (OMP_CLAUSE_DEVICE_ANCESTOR (c)
+		   && TREE_CODE (t) == INTEGER_CST
+		   && !integer_onep (t))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"the %<device%> clause expression must evaluate to "
+			"%<1%>");
+	      remove = true;
+	    }
 	  else
 	    {
 	      t = mark_rvalue_use (t);
@@ -7414,6 +7576,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		remove = true;
 	      break;
 	    }
+	  /* FALLTHRU */
+	case OMP_CLAUSE_AFFINITY:
+	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST
 	      && TREE_PURPOSE (t)
 	      && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
@@ -7433,7 +7598,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      if (handle_omp_array_sections (c, ort))
 		remove = true;
-	      else if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_DEPOBJ)
+	      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		       && (OMP_CLAUSE_DEPEND_KIND (c)
+			   == OMP_CLAUSE_DEPEND_DEPOBJ))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%<depend%> clause with %<depobj%> dependence "
@@ -7444,13 +7611,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (ort != C_ORT_ACC && t == current_class_ptr)
-	    {
-	      error_at (OMP_CLAUSE_LOCATION (c),
-			"%<this%> allowed in OpenMP only in %<declare simd%>"
-			" clauses");
-	      remove = true;
-	    }
 	  else if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 	    break;
 	  else if (!lvalue_p (t))
@@ -7458,11 +7618,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (DECL_P (t))
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD is not lvalue expression nor array section "
-			  "in %<depend%> clause", t);
+			  "in %qs clause", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      else
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qE is not lvalue expression nor array section "
-			  "in %<depend%> clause", t);
+			  "in %qs clause", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
 	  else if (TREE_CODE (t) == COMPONENT_REF
@@ -7470,10 +7632,12 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		   && DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
-			"bit-field %qE in %qs clause", t, "depend");
+			"bit-field %qE in %qs clause", t,
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_DEPOBJ)
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		   && OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_DEPOBJ)
 	    {
 	      if (!c_omp_depend_t_p (TYPE_REF_P (TREE_TYPE (t))
 				     ? TREE_TYPE (TREE_TYPE (t))
@@ -7486,9 +7650,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  remove = true;
 		}
 	    }
-	  else if (c_omp_depend_t_p (TYPE_REF_P (TREE_TYPE (t))
-				     ? TREE_TYPE (TREE_TYPE (t))
-				     : TREE_TYPE (t)))
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		   && c_omp_depend_t_p (TYPE_REF_P (TREE_TYPE (t))
+					? TREE_TYPE (TREE_TYPE (t))
+					: TREE_TYPE (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE should not have %<omp_depend_t%> type in "
@@ -7550,12 +7715,15 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			    type);
 		  remove = true;
 		}
-	      detach_seen = true;
+	      detach_seen = c;
 	      cxx_mark_addressable (t);
 	    }
 	  break;
 
 	case OMP_CLAUSE_MAP:
+	  if (OMP_CLAUSE_MAP_IMPLICIT (c) && !implicit_moved)
+	    goto move_implicit;
+	  /* FALLTHRU */
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
 	case OMP_CLAUSE__CACHE_:
@@ -7587,6 +7755,16 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			t = TREE_OPERAND (t, 0);
 		      if (REFERENCE_REF_P (t))
 			t = TREE_OPERAND (t, 0);
+		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+			  && OMP_CLAUSE_MAP_IMPLICIT (c)
+			  && (bitmap_bit_p (&map_head, DECL_UID (t))
+			      || bitmap_bit_p (&map_field_head, DECL_UID (t))
+			      || bitmap_bit_p (&map_firstprivate_head,
+					       DECL_UID (t))))
+			{
+			  remove = true;
+			  break;
+			}
 		      if (bitmap_bit_p (&map_field_head, DECL_UID (t)))
 			break;
 		      if (bitmap_bit_p (&map_head, DECL_UID (t)))
@@ -7649,13 +7827,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      t = TREE_OPERAND (t, 0);
 	      OMP_CLAUSE_DECL (c) = t;
 	    }
-	  if ((ort == C_ORT_ACC || ort == C_ORT_OMP)
-	      && TREE_CODE (t) == COMPONENT_REF
+	  if (TREE_CODE (t) == COMPONENT_REF
 	      && TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF)
 	    t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
 	  if (TREE_CODE (t) == COMPONENT_REF
-	      && ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
-		  || ort == C_ORT_ACC)
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE__CACHE_)
 	    {
 	      if (type_dependent_expression_p (t))
@@ -7696,7 +7871,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
 		{
 		  if (bitmap_bit_p (&map_field_head, DECL_UID (t))
-		      || (ort == C_ORT_OMP
+		      || (ort != C_ORT_ACC
 			  && bitmap_bit_p (&map_head, DECL_UID (t))))
 		    goto handle_map_references;
 		}
@@ -7768,10 +7943,18 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      remove = true;
 	    }
 	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		   && OMP_CLAUSE_MAP_IMPLICIT (c)
+		   && (bitmap_bit_p (&map_head, DECL_UID (t))
+		       || bitmap_bit_p (&map_field_head, DECL_UID (t))
+		       || bitmap_bit_p (&map_firstprivate_head,
+					DECL_UID (t))))
+	    remove = true;
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		   && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER)
 	    {
 	      if (bitmap_bit_p (&generic_head, DECL_UID (t))
-		  || bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
+		  || bitmap_bit_p (&firstprivate_head, DECL_UID (t))
+		  || bitmap_bit_p (&map_firstprivate_head, DECL_UID (t)))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%qD appears more than once in data clauses", t);
@@ -7788,7 +7971,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  remove = true;
 		}
 	      else
-		bitmap_set_bit (&generic_head, DECL_UID (t));
+		bitmap_set_bit (&map_firstprivate_head, DECL_UID (t));
 	    }
 	  else if (bitmap_bit_p (&map_head, DECL_UID (t))
 		   && !bitmap_bit_p (&map_field_head, DECL_UID (t)))
@@ -7804,8 +7987,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  "%qD appears more than once in map clauses", t);
 	      remove = true;
 	    }
-	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
-		   && ort == C_ORT_ACC)
+	  else if (ort == C_ORT_ACC
+		   && bitmap_bit_p (&generic_head, DECL_UID (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD appears more than once in data clauses", t);
@@ -8038,6 +8221,29 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  break;
 
+	case OMP_CLAUSE_FILTER:
+	  t = OMP_CLAUSE_FILTER_EXPR (c);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<filter%> expression must be integral");
+	      remove = true;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		{
+		  t = maybe_constant_value (t);
+		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		}
+	      OMP_CLAUSE_FILTER_EXPR (c) = t;
+	    }
+	  break;
+
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	  field_ok = (ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP;
@@ -8101,6 +8307,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	case OMP_CLAUSE_NOHOST:
 	  break;
 
 	case OMP_CLAUSE_MERGEABLE:
@@ -8355,6 +8562,22 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
+	case OMP_CLAUSE_MAP:
+	  if (target_in_reduction_seen && !processing_template_decl)
+	    {
+	      t = OMP_CLAUSE_DECL (c);
+	      while (handled_component_p (t)
+		     || TREE_CODE (t) == INDIRECT_REF
+		     || TREE_CODE (t) == ADDR_EXPR
+		     || TREE_CODE (t) == MEM_REF
+		     || TREE_CODE (t) == NON_LVALUE_EXPR)
+		t = TREE_OPERAND (t, 0);
+	      if (DECL_P (t)
+		  && bitmap_bit_p (&oacc_reduction_head, DECL_UID (t)))
+		OMP_CLAUSE_MAP_IN_REDUCTION (c) = 1;
+	    }
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
 	case OMP_CLAUSE_NOWAIT:
 	  if (copyprivate_seen)
 	    {
@@ -8520,7 +8743,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE)
-	  && OMP_CLAUSE_DECL (c) == t)
+	  && OMP_CLAUSE_DECL (c) == OMP_CLAUSE_DECL (detach_seen))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "the event handle of a %<detach%> clause "
@@ -9654,14 +9877,15 @@ finish_omp_for_block (tree bind, tree omp_for)
 
 void
 finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
-		   tree lhs, tree rhs, tree v, tree lhs1, tree rhs1,
-		   tree clauses, enum omp_memory_order mo)
+		   tree lhs, tree rhs, tree v, tree lhs1, tree rhs1, tree r,
+		   tree clauses, enum omp_memory_order mo, bool weak)
 {
   tree orig_lhs;
   tree orig_rhs;
   tree orig_v;
   tree orig_lhs1;
   tree orig_rhs1;
+  tree orig_r;
   bool dependent_p;
   tree stmt;
 
@@ -9670,6 +9894,7 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
   orig_v = v;
   orig_lhs1 = lhs1;
   orig_rhs1 = rhs1;
+  orig_r = r;
   dependent_p = false;
   stmt = NULL_TREE;
 
@@ -9681,7 +9906,10 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 		     || (rhs && type_dependent_expression_p (rhs))
 		     || (v && type_dependent_expression_p (v))
 		     || (lhs1 && type_dependent_expression_p (lhs1))
-		     || (rhs1 && type_dependent_expression_p (rhs1)));
+		     || (rhs1 && type_dependent_expression_p (rhs1))
+		     || (r
+			 && r != void_list_node
+			 && type_dependent_expression_p (r)));
       if (clauses)
 	{
 	  gcc_assert (TREE_CODE (clauses) == OMP_CLAUSE
@@ -9702,17 +9930,19 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	    lhs1 = build_non_dependent_expr (lhs1);
 	  if (rhs1)
 	    rhs1 = build_non_dependent_expr (rhs1);
+	  if (r && r != void_list_node)
+	    r = build_non_dependent_expr (r);
 	}
     }
   if (!dependent_p)
     {
       bool swapped = false;
-      if (rhs1 && cp_tree_equal (lhs, rhs))
+      if (rhs1 && opcode != COND_EXPR && cp_tree_equal (lhs, rhs))
 	{
 	  std::swap (rhs, rhs1);
 	  swapped = !commutative_tree_code (opcode);
 	}
-      if (rhs1 && !cp_tree_equal (lhs, rhs1))
+      if (rhs1 && opcode != COND_EXPR && !cp_tree_equal (lhs, rhs1))
 	{
 	  if (code == OMP_ATOMIC)
 	    error ("%<#pragma omp atomic update%> uses two different "
@@ -9733,7 +9963,7 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	  return;
 	}
       stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs,
-				  v, lhs1, rhs1, swapped, mo,
+				  v, lhs1, rhs1, r, swapped, mo, weak,
 				  processing_template_decl != 0);
       if (stmt == error_mark_node)
 	return;
@@ -9750,6 +9980,16 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	{
 	  if (opcode == NOP_EXPR)
 	    stmt = build2 (MODIFY_EXPR, void_type_node, orig_lhs, orig_rhs);
+	  else if (opcode == COND_EXPR)
+	    {
+	      stmt = build2 (EQ_EXPR, boolean_type_node, orig_lhs, orig_rhs);
+	      if (orig_r)
+		stmt = build2 (MODIFY_EXPR, boolean_type_node, orig_r,
+			       stmt);
+	      stmt = build3 (COND_EXPR, void_type_node, stmt, orig_rhs1,
+			     orig_lhs);
+	      orig_rhs1 = NULL_TREE;
+	    }
 	  else
 	    stmt = build2 (opcode, void_type_node, orig_lhs, orig_rhs);
 	  if (orig_rhs1)
@@ -9759,12 +9999,14 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	    {
 	      stmt = build_min_nt_loc (loc, code, orig_lhs1, stmt);
 	      OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
+	      OMP_ATOMIC_WEAK (stmt) = weak;
 	      stmt = build2 (MODIFY_EXPR, void_type_node, orig_v, stmt);
 	    }
 	}
       stmt = build2 (OMP_ATOMIC, void_type_node,
 		     clauses ? clauses : integer_zero_node, stmt);
       OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
+      OMP_ATOMIC_WEAK (stmt) = weak;
       SET_EXPR_LOCATION (stmt, loc);
     }
 
@@ -9824,7 +10066,7 @@ finish_omp_flush (int mo)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
   releasing_vec vec;
-  if (mo != MEMMODEL_LAST)
+  if (mo != MEMMODEL_LAST && mo != MEMMODEL_SEQ_CST)
     {
       fn = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
       vec->quick_push (build_int_cst (integer_type_node, mo));
@@ -10383,6 +10625,362 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
   return saw_copy;
 }
 
+/* Return true if DERIVED is pointer interconvertible base of BASE.  */
+
+static bool
+pointer_interconvertible_base_of_p (tree base, tree derived)
+{
+  if (base == error_mark_node || derived == error_mark_node)
+    return false;
+  base = TYPE_MAIN_VARIANT (base);
+  derived = TYPE_MAIN_VARIANT (derived);
+  if (!NON_UNION_CLASS_TYPE_P (base)
+      || !NON_UNION_CLASS_TYPE_P (derived))
+    return false;
+    
+  if (same_type_p (base, derived))
+    return true;
+
+  if (!std_layout_type_p (derived))
+    return false;
+
+  return uniquely_derived_from_p (base, derived);
+}
+
+/* Helper function for fold_builtin_is_pointer_inverconvertible_with_class,
+   return true if MEMBERTYPE is the type of the first non-static data member
+   of TYPE or for unions of any members.  */
+static bool
+first_nonstatic_data_member_p (tree type, tree membertype)
+{
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+      if (DECL_FIELD_IS_BASE (field) && is_empty_field (field))
+	continue;
+      if (DECL_FIELD_IS_BASE (field))
+	return first_nonstatic_data_member_p (TREE_TYPE (field), membertype);
+      if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	{
+	  if ((TREE_CODE (TREE_TYPE (field)) == UNION_TYPE
+	       || std_layout_type_p (TREE_TYPE (field)))
+	      && first_nonstatic_data_member_p (TREE_TYPE (field), membertype))
+	    return true;
+	}
+      else if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field),
+							  membertype))
+	return true;
+      if (TREE_CODE (type) != UNION_TYPE)
+	return false;
+    }
+  return false;
+}
+
+/* Fold __builtin_is_pointer_interconvertible_with_class call.  */
+
+tree
+fold_builtin_is_pointer_inverconvertible_with_class (location_t loc, int nargs,
+						     tree *args)
+{
+  /* Unless users call the builtin directly, the following 3 checks should be
+     ensured from std::is_pointer_interconvertible_with_class function
+     template.  */
+  if (nargs != 1)
+    {
+      error_at (loc, "%<__builtin_is_pointer_interconvertible_with_class%> "
+		     "needs a single argument");
+      return boolean_false_node;
+    }
+  tree arg = args[0];
+  if (error_operand_p (arg))
+    return boolean_false_node;
+  if (!TYPE_PTRMEM_P (TREE_TYPE (arg)))
+    {
+      error_at (loc, "%<__builtin_is_pointer_interconvertible_with_class%> "
+		     "argument is not pointer to member");
+      return boolean_false_node;
+    }
+
+  if (!TYPE_PTRDATAMEM_P (TREE_TYPE (arg)))
+    return boolean_false_node;
+
+  tree membertype = TREE_TYPE (TREE_TYPE (arg));
+  tree basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg));
+  if (!complete_type_or_else (basetype, NULL_TREE))
+    return boolean_false_node;
+
+  if (TREE_CODE (basetype) != UNION_TYPE
+      && !std_layout_type_p (basetype))
+    return boolean_false_node;
+
+  if (!first_nonstatic_data_member_p (basetype, membertype))
+    return boolean_false_node;
+
+  if (TREE_CODE (arg) == PTRMEM_CST)
+    arg = cplus_expand_constant (arg);
+
+  if (integer_nonzerop (arg))
+    return boolean_false_node;
+  if (integer_zerop (arg))
+    return boolean_true_node;
+
+  return fold_build2 (EQ_EXPR, boolean_type_node, arg,
+		      build_zero_cst (TREE_TYPE (arg)));
+}
+
+/* Helper function for is_corresponding_member_aggr.  Return true if
+   MEMBERTYPE pointer-to-data-member ARG can be found in anonymous
+   union or structure BASETYPE.  */
+
+static bool
+is_corresponding_member_union (tree basetype, tree membertype, tree arg)
+{
+  for (tree field = TYPE_FIELDS (basetype); field; field = DECL_CHAIN (field))
+    if (TREE_CODE (field) != FIELD_DECL || DECL_BIT_FIELD_TYPE (field))
+      continue;
+    else if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field),
+							membertype))
+      {
+	if (TREE_CODE (arg) != INTEGER_CST
+	    || tree_int_cst_equal (arg, byte_position (field)))
+	  return true;
+      }
+    else if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+      {
+	tree narg = arg;
+	if (TREE_CODE (basetype) != UNION_TYPE
+	    && TREE_CODE (narg) == INTEGER_CST)
+	  narg = size_binop (MINUS_EXPR, arg, byte_position (field));
+	if (is_corresponding_member_union (TREE_TYPE (field),
+					   membertype, narg))
+	  return true;
+      }
+  return false;
+}
+
+/* Helper function for fold_builtin_is_corresponding_member call.
+   Return boolean_false_node if MEMBERTYPE1 BASETYPE1::*ARG1 and
+   MEMBERTYPE2 BASETYPE2::*ARG2 aren't corresponding members,
+   boolean_true_node if they are corresponding members, or for
+   non-constant ARG2 the highest member offset for corresponding
+   members.  */
+
+static tree
+is_corresponding_member_aggr (location_t loc, tree basetype1, tree membertype1,
+			      tree arg1, tree basetype2, tree membertype2,
+			      tree arg2)
+{
+  tree field1 = TYPE_FIELDS (basetype1);
+  tree field2 = TYPE_FIELDS (basetype2);
+  tree ret = boolean_false_node;
+  while (1)
+    {
+      bool r = next_common_initial_seqence (field1, field2);
+      if (field1 == NULL_TREE || field2 == NULL_TREE)
+	break;
+      if (r
+	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field1),
+							membertype1)
+	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field2),
+							membertype2))
+	{
+	  tree pos = byte_position (field1);
+	  if (TREE_CODE (arg1) == INTEGER_CST
+	      && tree_int_cst_equal (arg1, pos))
+	    {
+	      if (TREE_CODE (arg2) == INTEGER_CST)
+		return boolean_true_node;
+	      return pos;
+	    }
+	  else if (TREE_CODE (arg1) != INTEGER_CST)
+	    ret = pos;
+	}
+      else if (ANON_AGGR_TYPE_P (TREE_TYPE (field1))
+	       && ANON_AGGR_TYPE_P (TREE_TYPE (field2)))
+	{
+	  if ((!lookup_attribute ("no_unique_address",
+				  DECL_ATTRIBUTES (field1)))
+	      != !lookup_attribute ("no_unique_address",
+				    DECL_ATTRIBUTES (field2)))
+	    break;
+	  if (!tree_int_cst_equal (bit_position (field1),
+				   bit_position (field2)))
+	    break;
+	  bool overlap = true;
+	  tree pos = byte_position (field1);
+	  if (TREE_CODE (arg1) == INTEGER_CST)
+	    {
+	      tree off1 = fold_convert (sizetype, arg1);
+	      tree sz1 = TYPE_SIZE_UNIT (TREE_TYPE (field1));
+	      if (tree_int_cst_lt (off1, pos)
+		  || tree_int_cst_le (size_binop (PLUS_EXPR, pos, sz1), off1))
+		overlap = false;
+	    }
+	  if (TREE_CODE (arg2) == INTEGER_CST)
+	    {
+	      tree off2 = fold_convert (sizetype, arg2);
+	      tree sz2 = TYPE_SIZE_UNIT (TREE_TYPE (field2));
+	      if (tree_int_cst_lt (off2, pos)
+		  || tree_int_cst_le (size_binop (PLUS_EXPR, pos, sz2), off2))
+		overlap = false;
+	    }
+	  if (overlap
+	      && NON_UNION_CLASS_TYPE_P (TREE_TYPE (field1))
+	      && NON_UNION_CLASS_TYPE_P (TREE_TYPE (field2)))
+	    {
+	      tree narg1 = arg1;
+	      if (TREE_CODE (arg1) == INTEGER_CST)
+		narg1 = size_binop (MINUS_EXPR,
+				    fold_convert (sizetype, arg1), pos);
+	      tree narg2 = arg2;
+	      if (TREE_CODE (arg2) == INTEGER_CST)
+		narg2 = size_binop (MINUS_EXPR,
+				    fold_convert (sizetype, arg2), pos);
+	      tree t1 = TREE_TYPE (field1);
+	      tree t2 = TREE_TYPE (field2);
+	      tree nret = is_corresponding_member_aggr (loc, t1, membertype1,
+							narg1, t2, membertype2,
+							narg2);
+	      if (nret != boolean_false_node)
+		{
+		  if (nret == boolean_true_node)
+		    return nret;
+		  if (TREE_CODE (arg1) == INTEGER_CST)
+		    return size_binop (PLUS_EXPR, nret, pos);
+		  ret = size_binop (PLUS_EXPR, nret, pos);
+		}
+	    }
+	  else if (overlap
+		   && TREE_CODE (TREE_TYPE (field1)) == UNION_TYPE
+		   && TREE_CODE (TREE_TYPE (field2)) == UNION_TYPE)
+	    {
+	      tree narg1 = arg1;
+	      if (TREE_CODE (arg1) == INTEGER_CST)
+		narg1 = size_binop (MINUS_EXPR,
+				    fold_convert (sizetype, arg1), pos);
+	      tree narg2 = arg2;
+	      if (TREE_CODE (arg2) == INTEGER_CST)
+		narg2 = size_binop (MINUS_EXPR,
+				    fold_convert (sizetype, arg2), pos);
+	      if (is_corresponding_member_union (TREE_TYPE (field1),
+						 membertype1, narg1)
+		  && is_corresponding_member_union (TREE_TYPE (field2),
+						    membertype2, narg2))
+		{
+		  sorry_at (loc, "%<__builtin_is_corresponding_member%> "
+				 "not well defined for anonymous unions");
+		  return boolean_false_node;
+		}
+	    }
+	}
+      if (!r)
+	break;
+      field1 = DECL_CHAIN (field1);
+      field2 = DECL_CHAIN (field2);
+    }
+  return ret;
+}
+
+/* Fold __builtin_is_corresponding_member call.  */
+
+tree
+fold_builtin_is_corresponding_member (location_t loc, int nargs,
+				      tree *args)
+{
+  /* Unless users call the builtin directly, the following 3 checks should be
+     ensured from std::is_corresponding_member function template.  */
+  if (nargs != 2)
+    {
+      error_at (loc, "%<__builtin_is_corresponding_member%> "
+		     "needs two arguments");
+      return boolean_false_node;
+    }
+  tree arg1 = args[0];
+  tree arg2 = args[1];
+  if (error_operand_p (arg1) || error_operand_p (arg2))
+    return boolean_false_node;
+  if (!TYPE_PTRMEM_P (TREE_TYPE (arg1))
+      || !TYPE_PTRMEM_P (TREE_TYPE (arg2)))
+    {
+      error_at (loc, "%<__builtin_is_corresponding_member%> "
+		     "argument is not pointer to member");
+      return boolean_false_node;
+    }
+
+  if (!TYPE_PTRDATAMEM_P (TREE_TYPE (arg1))
+      || !TYPE_PTRDATAMEM_P (TREE_TYPE (arg2)))
+    return boolean_false_node;
+
+  tree membertype1 = TREE_TYPE (TREE_TYPE (arg1));
+  tree basetype1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg1));
+  if (!complete_type_or_else (basetype1, NULL_TREE))
+    return boolean_false_node;
+
+  tree membertype2 = TREE_TYPE (TREE_TYPE (arg2));
+  tree basetype2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg2));
+  if (!complete_type_or_else (basetype2, NULL_TREE))
+    return boolean_false_node;
+
+  if (!NON_UNION_CLASS_TYPE_P (basetype1)
+      || !NON_UNION_CLASS_TYPE_P (basetype2)
+      || !std_layout_type_p (basetype1)
+      || !std_layout_type_p (basetype2))
+    return boolean_false_node;
+
+  /* If the member types aren't layout compatible, then they
+     can't be corresponding members.  */
+  if (!layout_compatible_type_p (membertype1, membertype2))
+    return boolean_false_node;
+
+  if (TREE_CODE (arg1) == PTRMEM_CST)
+    arg1 = cplus_expand_constant (arg1);
+  if (TREE_CODE (arg2) == PTRMEM_CST)
+    arg2 = cplus_expand_constant (arg2);
+
+  if (null_member_pointer_value_p (arg1)
+      || null_member_pointer_value_p (arg2))
+    return boolean_false_node;
+
+  if (TREE_CODE (arg1) == INTEGER_CST
+      && TREE_CODE (arg2) == INTEGER_CST
+      && !tree_int_cst_equal (arg1, arg2))
+    return boolean_false_node;
+
+  if (TREE_CODE (arg2) == INTEGER_CST
+      && TREE_CODE (arg1) != INTEGER_CST)
+    {
+      std::swap (arg1, arg2);
+      std::swap (membertype1, membertype2);
+      std::swap (basetype1, basetype2);
+    }
+
+  tree ret = is_corresponding_member_aggr (loc, basetype1, membertype1, arg1,
+					   basetype2, membertype2, arg2);
+  if (TREE_TYPE (ret) == boolean_type_node)
+    return ret;
+  /* If both arg1 and arg2 are INTEGER_CSTs, is_corresponding_member_aggr
+     already returns boolean_{true,false}_node whether those particular
+     members are corresponding members or not.  Otherwise, if only
+     one of them is INTEGER_CST (canonicalized to first being INTEGER_CST
+     above), it returns boolean_false_node if it is certainly not a
+     corresponding member and otherwise we need to do a runtime check that
+     those two OFFSET_TYPE offsets are equal.
+     If neither of the operands is INTEGER_CST, is_corresponding_member_aggr
+     returns the largest offset at which the members would be corresponding
+     members, so perform arg1 <= ret && arg1 == arg2 runtime check.  */
+  gcc_assert (TREE_CODE (arg2) != INTEGER_CST);
+  if (TREE_CODE (arg1) == INTEGER_CST)
+    return fold_build2 (EQ_EXPR, boolean_type_node, arg1,
+			fold_convert (TREE_TYPE (arg1), arg2));
+  ret = fold_build2 (LE_EXPR, boolean_type_node,
+		     fold_convert (pointer_sized_int_node, arg1),
+		     fold_convert (pointer_sized_int_node, ret));
+  return fold_build2 (TRUTH_AND_EXPR, boolean_type_node, ret,
+		      fold_build2 (EQ_EXPR, boolean_type_node, arg1,
+				   fold_convert (TREE_TYPE (arg1), arg2)));
+}
+
 /* Actually evaluates the trait.  */
 
 static bool
@@ -10473,8 +11071,14 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_FINAL:
       return CLASS_TYPE_P (type1) && CLASSTYPE_FINAL (type1);
 
+    case CPTK_IS_LAYOUT_COMPATIBLE:
+      return layout_compatible_type_p (type1, type2);
+
     case CPTK_IS_LITERAL_TYPE:
       return literal_type_p (type1);
+
+    case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
+      return pointer_interconvertible_base_of_p (type1, type2);
 
     case CPTK_IS_POD:
       return pod_type_p (type1);
@@ -10603,6 +11207,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
       break;
 
     case CPTK_IS_BASE_OF:
+    case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
       if (NON_UNION_CLASS_TYPE_P (type1) && NON_UNION_CLASS_TYPE_P (type2)
 	  && !same_type_ignoring_top_level_qualifiers_p (type1, type2)
 	  && !complete_type_or_else (type2, NULL_TREE))
@@ -10616,13 +11221,26 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_SAME_AS:
       break;
 
+    case CPTK_IS_LAYOUT_COMPATIBLE:
+      if (!array_of_unknown_bound_p (type1)
+	  && TREE_CODE (type1) != VOID_TYPE
+	  && !complete_type_or_else (type1, NULL_TREE))
+	/* We already issued an error.  */
+	return error_mark_node;
+      if (!array_of_unknown_bound_p (type2)
+	  && TREE_CODE (type2) != VOID_TYPE
+	  && !complete_type_or_else (type2, NULL_TREE))
+	/* We already issued an error.  */
+	return error_mark_node;
+      break;
+
     default:
       gcc_unreachable ();
     }
 
-tree val = (trait_expr_value (kind, type1, type2)
-	    ? boolean_true_node : boolean_false_node);
- return maybe_wrap_with_location (val, loc);
+  tree val = (trait_expr_value (kind, type1, type2)
+	      ? boolean_true_node : boolean_false_node);
+  return maybe_wrap_with_location (val, loc);
 }
 
 /* Do-nothing variants of functions to handle pragma FLOAT_CONST_DECIMAL64,

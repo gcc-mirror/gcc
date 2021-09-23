@@ -150,9 +150,9 @@ struct copy_body_data
   vec<gdebug *> debug_stmts;
 
   /* A map from local declarations in the inlined function to
-     equivalents in the function into which it is being inlined, where
-     the originals have been mapped to a value rather than to a
-     variable.  */
+     equivalents in the function into which it is being inlined,
+     where the originals have been mapped to a value rather than
+     to a variable.  */
   hash_map<tree, tree> *debug_map;
 
   /* A map from the inlined functions dependence info cliques to

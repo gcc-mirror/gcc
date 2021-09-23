@@ -57,8 +57,10 @@ func ceil(x float64) float64 {
 //	Trunc(±0) = ±0
 //	Trunc(±Inf) = ±Inf
 //	Trunc(NaN) = NaN
-
 func Trunc(x float64) float64 {
+	if haveArchTrunc {
+		return archTrunc(x)
+	}
 	return trunc(x)
 }
 

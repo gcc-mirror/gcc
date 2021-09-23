@@ -25,6 +25,6 @@ void
 test01()
 {
   std::string s("Hello, World!");
-  std::begin(s);
-  std::end(s);
+  (void) std::begin(s);
+  (void) std::end(s);
 }

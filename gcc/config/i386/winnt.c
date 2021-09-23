@@ -505,8 +505,7 @@ i386_pe_asm_named_section (const char *name, unsigned int flags,
 
   /* LTO sections need 1-byte alignment to avoid confusing the
      zlib decompression algorithm with trailing zero pad bytes.  */
-  if (strncmp (name, LTO_SECTION_NAME_PREFIX,
-			strlen (LTO_SECTION_NAME_PREFIX)) == 0)
+  if (startswith (name, LTO_SECTION_NAME_PREFIX))
     *f++ = '0';
 
   *f = '\0';
@@ -797,7 +796,7 @@ i386_pe_file_end (void)
 	  oname = name;
 	  if (name[0] == '.')
 	    ++name;
-	  if (strncmp (name, "refptr.", 7) != 0)
+	  if (!startswith (name, "refptr."))
 	    continue;
 	  name += 7;
 	  fprintf (asm_out_file, "\t.section\t.rdata$%s, \"dr\"\n"
@@ -921,15 +920,17 @@ i386_pe_seh_cold_init (FILE *f, const char *name)
 
   /* In the normal case, the frame pointer is near the bottom of the frame
      so we can do the full stack allocation and set it afterwards.  There
-     is an exception when the function accesses prior frames so, in this
-     case, we need to pre-allocate a small chunk before setting it.  */
-  if (crtl->accesses_prior_frames)
-    alloc_offset = seh->cfa_offset;
-  else
+     is an exception if the function overflows the SEH maximum frame size
+     or accesses prior frames so, in this case, we need to pre-allocate a
+     small chunk of stack before setting it.  */
+  offset = seh->sp_offset - INCOMING_FRAME_SP_OFFSET;
+  if (offset < SEH_MAX_FRAME_SIZE && !crtl->accesses_prior_frames)
     alloc_offset = seh->sp_offset;
+  else
+    alloc_offset = MIN (seh->cfa_offset + 240, seh->sp_offset);
 
   offset = alloc_offset - INCOMING_FRAME_SP_OFFSET;
-  if (offset > 0 && offset < SEH_MAX_FRAME_SIZE)
+  if (offset > 0)
     fprintf (f, "\t.seh_stackalloc\t" HOST_WIDE_INT_PRINT_DEC "\n", offset);
 
   for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
@@ -958,7 +959,7 @@ i386_pe_seh_cold_init (FILE *f, const char *name)
       fprintf (f, ", " HOST_WIDE_INT_PRINT_DEC "\n", offset);
     }
 
-  if (crtl->accesses_prior_frames)
+  if (alloc_offset != seh->sp_offset)
     {
       offset = seh->sp_offset - alloc_offset;
       if (offset > 0 && offset < SEH_MAX_FRAME_SIZE)

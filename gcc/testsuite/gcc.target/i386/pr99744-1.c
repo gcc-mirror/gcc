@@ -8,9 +8,18 @@ extern void bar (void);
 
 __attribute__ ((target("general-regs-only")))
 void
-foo (void)
+foo1 (void)
 {
   if (__rdtsc () < curr_deadline)
+    return; 
+  bar ();
+}
+
+__attribute__ ((target("general-regs-only")))
+void
+foo2 (unsigned int *p)
+{
+  if (__rdtscp (p) < curr_deadline)
     return; 
   bar ();
 }

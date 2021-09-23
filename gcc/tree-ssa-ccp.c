@@ -1293,6 +1293,28 @@ ccp_fold (gimple *stmt)
     }
 }
 
+/* Determine the minimum and maximum values, *MIN and *MAX respectively,
+   represented by the mask pair VAL and MASK with signedness SGN and
+   precision PRECISION.  */
+
+void
+value_mask_to_min_max (widest_int *min, widest_int *max,
+		       const widest_int &val, const widest_int &mask,
+		       signop sgn, int precision)
+{
+  *min = wi::bit_and_not (val, mask);
+  *max = val | mask;
+  if (sgn == SIGNED && wi::neg_p (mask))
+    {
+      widest_int sign_bit = wi::lshift (1, precision - 1);
+      *min ^= sign_bit;
+      *max ^= sign_bit;
+      /* MAX is zero extended, and MIN is sign extended.  */
+      *min = wi::ext (*min, precision, sgn);
+      *max = wi::ext (*max, precision, sgn);
+    }
+}
+
 /* Apply the operation CODE in type TYPE to the value, mask pair
    RVAL and RMASK representing a value of type RTYPE and set
    the value, mask pair *VAL and *MASK to the result.  */
@@ -1334,11 +1356,126 @@ bit_value_unop (enum tree_code code, signop type_sgn, int type_precision,
 	break;
       }
 
+    case ABS_EXPR:
+    case ABSU_EXPR:
+      if (wi::sext (rmask, rtype_precision) == -1)
+	*mask = -1;
+      else if (wi::neg_p (rmask))
+	{
+	  /* Result is either rval or -rval.  */
+	  widest_int temv, temm;
+	  bit_value_unop (NEGATE_EXPR, rtype_sgn, rtype_precision, &temv,
+			  &temm, type_sgn, type_precision, rval, rmask);
+	  temm |= (rmask | (rval ^ temv));
+	  /* Extend the result.  */
+	  *mask = wi::ext (temm, type_precision, type_sgn);
+	  *val = wi::ext (temv, type_precision, type_sgn);
+	}
+      else if (wi::neg_p (rval))
+	{
+	  bit_value_unop (NEGATE_EXPR, type_sgn, type_precision, val, mask,
+			  type_sgn, type_precision, rval, rmask);
+	}
+      else
+	{
+	  *mask = rmask;
+	  *val = rval;
+	}
+      break;
+
     default:
       *mask = -1;
       break;
     }
 }
+
+/* Determine the mask pair *VAL and *MASK from multiplying the
+   argument mask pair RVAL, RMASK by the unsigned constant C.  */
+void
+bit_value_mult_const (signop sgn, int width,
+		      widest_int *val, widest_int *mask,
+		      const widest_int &rval, const widest_int &rmask,
+		      widest_int c)
+{
+  widest_int sum_mask = 0;
+
+  /* Ensure rval_lo only contains known bits.  */
+  widest_int rval_lo = wi::bit_and_not (rval, rmask);
+
+  if (rval_lo != 0)
+    {
+      /* General case (some bits of multiplicand are known set).  */
+      widest_int sum_val = 0;
+      while (c != 0)
+	{
+	  /* Determine the lowest bit set in the multiplier.  */
+	  int bitpos = wi::ctz (c);
+	  widest_int term_mask = rmask << bitpos;
+	  widest_int term_val = rval_lo << bitpos;
+
+	  /* sum += term.  */
+	  widest_int lo = sum_val + term_val;
+	  widest_int hi = (sum_val | sum_mask) + (term_val | term_mask);
+	  sum_mask |= term_mask | (lo ^ hi);
+	  sum_val = lo;
+
+	  /* Clear this bit in the multiplier.  */
+	  c ^= wi::lshift (1, bitpos);
+	}
+      /* Correctly extend the result value.  */
+      *val = wi::ext (sum_val, width, sgn);
+    }
+  else
+    {
+      /* Special case (no bits of multiplicand are known set).  */
+      while (c != 0)
+	{
+	  /* Determine the lowest bit set in the multiplier.  */
+	  int bitpos = wi::ctz (c);
+	  widest_int term_mask = rmask << bitpos;
+
+	  /* sum += term.  */
+	  widest_int hi = sum_mask + term_mask;
+	  sum_mask |= term_mask | hi;
+
+	  /* Clear this bit in the multiplier.  */
+	  c ^= wi::lshift (1, bitpos);
+	}
+      *val = 0;
+    }
+
+  /* Correctly extend the result mask.  */
+  *mask = wi::ext (sum_mask, width, sgn);
+}
+
+/* Fill up to MAX values in the BITS array with values representing
+   each of the non-zero bits in the value X.  Returns the number of
+   bits in X (capped at the maximum value MAX).  For example, an X
+   value 11, places 1, 2 and 8 in BITS and returns the value 3.  */
+
+unsigned int
+get_individual_bits (widest_int *bits, widest_int x, unsigned int max)
+{
+  unsigned int count = 0;
+  while (count < max && x != 0)
+    {
+      int bitpos = wi::ctz (x);
+      bits[count] = wi::lshift (1, bitpos);
+      x ^= bits[count];
+      count++;
+    }
+  return count;
+}
+
+/* Array of 2^N - 1 values representing the bits flipped between
+   consecutive Gray codes.  This is used to efficiently enumerate
+   all permutations on N bits using XOR.  */
+static const unsigned char gray_code_bit_flips[63] = {
+  0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4,
+  0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5,
+  0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4,
+  0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
+};
 
 /* Apply the operation CODE in type TYPE to the value, mask pairs
    R1VAL, R1MASK and R2VAL, R2MASK representing a values of type R1TYPE
@@ -1349,7 +1486,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 		 widest_int *val, widest_int *mask,
 		 signop r1type_sgn, int r1type_precision,
 		 const widest_int &r1val, const widest_int &r1mask,
-		 signop r2type_sgn, int r2type_precision,
+		 signop r2type_sgn, int r2type_precision ATTRIBUTE_UNUSED,
 		 const widest_int &r2val, const widest_int &r2mask)
 {
   bool swap_p = false;
@@ -1357,6 +1494,8 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
   /* Assume we'll get a constant result.  Use an initial non varying
      value, we fall back to varying in the end if necessary.  */
   *mask = -1;
+  /* Ensure that VAL is initialized (to any value).  */
+  *val = 0;
 
   switch (code)
     {
@@ -1394,7 +1533,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	    }
 	  else
 	    {
-	      if (wi::neg_p (shift))
+	      if (wi::neg_p (shift, r2type_sgn))
 		{
 		  shift = -shift;
 		  if (code == RROTATE_EXPR)
@@ -1414,6 +1553,48 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 		}
 	    }
 	}
+      else if (wi::ltu_p (r2val | r2mask, width)
+	       && wi::popcount (r2mask) <= 4)
+	{
+	  widest_int bits[4];
+	  widest_int res_val, res_mask;
+	  widest_int tmp_val, tmp_mask;
+	  widest_int shift = wi::bit_and_not (r2val, r2mask);
+	  unsigned int bit_count = get_individual_bits (bits, r2mask, 4);
+	  unsigned int count = (1 << bit_count) - 1;
+
+	  /* Initialize result to rotate by smallest value of shift.  */
+	  if (code == RROTATE_EXPR)
+	    {
+	      res_mask = wi::rrotate (r1mask, shift, width);
+	      res_val = wi::rrotate (r1val, shift, width);
+	    }
+	  else
+	    {
+	      res_mask = wi::lrotate (r1mask, shift, width);
+	      res_val = wi::lrotate (r1val, shift, width);
+	    }
+
+	  /* Iterate through the remaining values of shift.  */
+	  for (unsigned int i=0; i<count; i++)
+	    {
+	      shift ^= bits[gray_code_bit_flips[i]];
+	      if (code == RROTATE_EXPR)
+		{
+		  tmp_mask = wi::rrotate (r1mask, shift, width);
+		  tmp_val = wi::rrotate (r1val, shift, width);
+		}
+	      else
+		{
+		  tmp_mask = wi::lrotate (r1mask, shift, width);
+		  tmp_val = wi::lrotate (r1val, shift, width);
+		}
+	      /* Accumulate the result.  */
+	      res_mask |= tmp_mask | (res_val ^ tmp_val);
+	    }
+	  *val = wi::bit_and_not (res_val, res_mask);
+	  *mask = res_mask;
+	}
       break;
 
     case LSHIFT_EXPR:
@@ -1431,7 +1612,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	    }
 	  else
 	    {
-	      if (wi::neg_p (shift))
+	      if (wi::neg_p (shift, r2type_sgn))
 		break;
 	      if (code == RSHIFT_EXPR)
 		{
@@ -1443,6 +1624,97 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 		  *mask = wi::ext (r1mask << shift, width, sgn);
 		  *val = wi::ext (r1val << shift, width, sgn);
 		}
+	    }
+	}
+      else if (wi::ltu_p (r2val | r2mask, width))
+	{
+	  if (wi::popcount (r2mask) <= 4)
+	    {
+	      widest_int bits[4];
+	      widest_int arg_val, arg_mask;
+	      widest_int res_val, res_mask;
+	      widest_int tmp_val, tmp_mask;
+	      widest_int shift = wi::bit_and_not (r2val, r2mask);
+	      unsigned int bit_count = get_individual_bits (bits, r2mask, 4);
+	      unsigned int count = (1 << bit_count) - 1;
+
+	      /* Initialize result to shift by smallest value of shift.  */
+	      if (code == RSHIFT_EXPR)
+		{
+		  arg_mask = wi::ext (r1mask, width, sgn);
+		  arg_val = wi::ext (r1val, width, sgn);
+		  res_mask = wi::rshift (arg_mask, shift, sgn);
+		  res_val = wi::rshift (arg_val, shift, sgn);
+		}
+	      else
+		{
+		  arg_mask = r1mask;
+		  arg_val = r1val;
+		  res_mask = arg_mask << shift;
+		  res_val = arg_val << shift;
+		}
+
+	      /* Iterate through the remaining values of shift.  */
+	      for (unsigned int i=0; i<count; i++)
+		{
+		  shift ^= bits[gray_code_bit_flips[i]];
+		  if (code == RSHIFT_EXPR)
+		    {
+		      tmp_mask = wi::rshift (arg_mask, shift, sgn);
+		      tmp_val = wi::rshift (arg_val, shift, sgn);
+		    }
+		  else
+		    {
+		      tmp_mask = arg_mask << shift;
+		      tmp_val = arg_val << shift;
+		    }
+		  /* Accumulate the result.  */
+		  res_mask |= tmp_mask | (res_val ^ tmp_val);
+		}
+	      res_mask = wi::ext (res_mask, width, sgn);
+	      res_val = wi::ext (res_val, width, sgn);
+	      *val = wi::bit_and_not (res_val, res_mask);
+	      *mask = res_mask;
+	    }
+	  else if ((r1val | r1mask) == 0)
+	    {
+	      /* Handle shifts of zero to avoid undefined wi::ctz below.  */
+	      *mask = 0;
+	      *val = 0;
+	    }
+	  else if (code == LSHIFT_EXPR)
+	    {
+	      widest_int tmp = wi::mask <widest_int> (width, false);
+	      tmp <<= wi::ctz (r1val | r1mask);
+	      tmp <<= wi::bit_and_not (r2val, r2mask);
+	      *mask = wi::ext (tmp, width, sgn);
+	      *val = 0;
+	    }
+	  else if (!wi::neg_p (r1val | r1mask, sgn))
+	    {
+	      /* Logical right shift, or zero sign bit.  */
+	      widest_int arg = r1val | r1mask;
+	      int lzcount = wi::clz (arg);
+	      if (lzcount)
+		lzcount -= wi::get_precision (arg) - width;
+	      widest_int tmp = wi::mask <widest_int> (width, false);
+	      tmp = wi::lrshift (tmp, lzcount);
+	      tmp = wi::lrshift (tmp, wi::bit_and_not (r2val, r2mask));
+	      *mask = wi::ext (tmp, width, sgn);
+	      *val = 0;
+	    }
+	  else if (!wi::neg_p (r1mask))
+	    {
+	      /* Arithmetic right shift with set sign bit.  */
+	      widest_int arg = wi::bit_and_not (r1val, r1mask);
+	      int sbcount = wi::clrsb (arg);
+	      sbcount -= wi::get_precision (arg) - width;
+	      widest_int tmp = wi::mask <widest_int> (width, false);
+	      tmp = wi::lrshift (tmp, sbcount);
+	      tmp = wi::lrshift (tmp, wi::bit_and_not (r2val, r2mask));
+	      *mask = wi::sext (tmp, width);
+	      tmp = wi::bit_not (tmp);
+	      *val = wi::sext (tmp, width);
 	    }
 	}
       break;
@@ -1471,35 +1743,47 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
       }
 
     case MINUS_EXPR:
+    case POINTER_DIFF_EXPR:
       {
-	widest_int temv, temm;
-	bit_value_unop (NEGATE_EXPR, r2type_sgn, r2type_precision, &temv, &temm,
-			  r2type_sgn, r2type_precision, r2val, r2mask);
-	bit_value_binop (PLUS_EXPR, sgn, width, val, mask,
-			 r1type_sgn, r1type_precision, r1val, r1mask,
-			 r2type_sgn, r2type_precision, temv, temm);
+	/* Subtraction is derived from the addition algorithm above.  */
+	widest_int lo = wi::bit_and_not (r1val, r1mask) - (r2val | r2mask);
+	lo = wi::ext (lo, width, sgn);
+	widest_int hi = (r1val | r1mask) - wi::bit_and_not (r2val, r2mask);
+	hi = wi::ext (hi, width, sgn);
+	*mask = r1mask | r2mask | (lo ^ hi);
+	*mask = wi::ext (*mask, width, sgn);
+	*val = lo;
 	break;
       }
 
     case MULT_EXPR:
-      {
-	/* Just track trailing zeros in both operands and transfer
-	   them to the other.  */
-	int r1tz = wi::ctz (r1val | r1mask);
-	int r2tz = wi::ctz (r2val | r2mask);
-	if (r1tz + r2tz >= width)
-	  {
-	    *mask = 0;
-	    *val = 0;
-	  }
-	else if (r1tz + r2tz > 0)
-	  {
-	    *mask = wi::ext (wi::mask <widest_int> (r1tz + r2tz, true),
-			     width, sgn);
-	    *val = 0;
-	  }
-	break;
-      }
+      if (r2mask == 0
+	  && !wi::neg_p (r2val, sgn)
+	  && (flag_expensive_optimizations || wi::popcount (r2val) < 8))
+	bit_value_mult_const (sgn, width, val, mask, r1val, r1mask, r2val);
+      else if (r1mask == 0
+	       && !wi::neg_p (r1val, sgn)
+	       && (flag_expensive_optimizations || wi::popcount (r1val) < 8))
+	bit_value_mult_const (sgn, width, val, mask, r2val, r2mask, r1val);
+      else
+	{
+	  /* Just track trailing zeros in both operands and transfer
+	     them to the other.  */
+	  int r1tz = wi::ctz (r1val | r1mask);
+	  int r2tz = wi::ctz (r2val | r2mask);
+	  if (r1tz + r2tz >= width)
+	    {
+	      *mask = 0;
+	      *val = 0;
+	    }
+	  else if (r1tz + r2tz > 0)
+	    {
+	      *mask = wi::ext (wi::mask <widest_int> (r1tz + r2tz, true),
+			       width, sgn);
+	      *val = 0;
+	    }
+	}
+      break;
 
     case EQ_EXPR:
     case NE_EXPR:
@@ -1527,6 +1811,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
     case LT_EXPR:
     case LE_EXPR:
       {
+	widest_int min1, max1, min2, max2;
 	int minmax, maxmin;
 
 	const widest_int &o1val = swap_p ? r2val : r1val;
@@ -1534,26 +1819,21 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	const widest_int &o2val = swap_p ? r1val : r2val;
 	const widest_int &o2mask = swap_p ? r1mask : r2mask;
 
-	/* If the most significant bits are not known we know nothing.  */
-	if (wi::neg_p (o1mask) || wi::neg_p (o2mask))
-	  break;
+	value_mask_to_min_max (&min1, &max1, o1val, o1mask,
+			       r1type_sgn, r1type_precision);
+	value_mask_to_min_max (&min2, &max2, o2val, o2mask,
+			       r1type_sgn, r1type_precision);
 
 	/* For comparisons the signedness is in the comparison operands.  */
-	sgn = r1type_sgn;
-
-	/* If we know the most significant bits we know the values
-	   value ranges by means of treating varying bits as zero
-	   or one.  Do a cross comparison of the max/min pairs.  */
-	maxmin = wi::cmp (o1val | o1mask,
-			  wi::bit_and_not (o2val, o2mask), sgn);
-	minmax = wi::cmp (wi::bit_and_not (o1val, o1mask),
-			  o2val | o2mask, sgn);
-	if (maxmin < 0)  /* o1 is less than o2.  */
+	/* Do a cross comparison of the max/min pairs.  */
+	maxmin = wi::cmp (max1, min2, r1type_sgn);
+	minmax = wi::cmp (min1, max2, r1type_sgn);
+	if (maxmin < (code == LE_EXPR ? 1: 0))  /* o1 < or <= o2.  */
 	  {
 	    *mask = 0;
 	    *val = 1;
 	  }
-	else if (minmax > 0)  /* o1 is not less or equal to o2.  */
+	else if (minmax > (code == LT_EXPR ? -1 : 0))  /* o1 >= or > o2.  */
 	  {
 	    *mask = 0;
 	    *val = 0;
@@ -1573,6 +1853,111 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	  }
 	break;
       }
+
+    case MIN_EXPR:
+    case MAX_EXPR:
+      {
+	widest_int min1, max1, min2, max2;
+
+	value_mask_to_min_max (&min1, &max1, r1val, r1mask, sgn, width);
+	value_mask_to_min_max (&min2, &max2, r2val, r2mask, sgn, width);
+
+	if (wi::cmp (max1, min2, sgn) <= 0)  /* r1 is less than r2.  */
+	  {
+	    if (code == MIN_EXPR)
+	      {
+		*mask = r1mask;
+		*val = r1val;
+	      }
+	    else
+	      {
+		*mask = r2mask;
+		*val = r2val;
+	      }
+	  }
+	else if (wi::cmp (min1, max2, sgn) >= 0)  /* r2 is less than r1.  */
+	  {
+	    if (code == MIN_EXPR)
+	      {
+		*mask = r2mask;
+		*val = r2val;
+	      }
+	    else
+	      {
+		*mask = r1mask;
+		*val = r1val;
+	      }
+	  }
+	else
+	  {
+	    /* The result is either r1 or r2.  */
+	    *mask = r1mask | r2mask | (r1val ^ r2val);
+	    *val = r1val;
+	  }
+	break;
+      }
+
+    case TRUNC_MOD_EXPR:
+      {
+	widest_int r1max = r1val | r1mask;
+	widest_int r2max = r2val | r2mask;
+	if (sgn == UNSIGNED
+	    || (!wi::neg_p (r1max) && !wi::neg_p (r2max)))
+	  {
+	    /* Confirm R2 has some bits set, to avoid division by zero.  */
+	    widest_int r2min = wi::bit_and_not (r2val, r2mask);
+	    if (r2min != 0)
+	      {
+		/* R1 % R2 is R1 if R1 is always less than R2.  */
+		if (wi::ltu_p (r1max, r2min))
+		  {
+		    *mask = r1mask;
+		    *val = r1val;
+		  }
+		else
+		  {
+		    /* R1 % R2 is always less than the maximum of R2.  */
+		    unsigned int lzcount = wi::clz (r2max);
+		    unsigned int bits = wi::get_precision (r2max) - lzcount;
+		    if (r2max == wi::lshift (1, bits))
+		      bits--;
+		    *mask = wi::mask <widest_int> (bits, false);
+		    *val = 0;
+		  }
+	       }
+	    }
+	}
+      break;
+
+    case TRUNC_DIV_EXPR:
+      {
+	widest_int r1max = r1val | r1mask;
+	widest_int r2max = r2val | r2mask;
+	if (sgn == UNSIGNED
+	    || (!wi::neg_p (r1max) && !wi::neg_p (r2max)))
+	  {
+	    /* Confirm R2 has some bits set, to avoid division by zero.  */
+	    widest_int r2min = wi::bit_and_not (r2val, r2mask);
+	    if (r2min != 0)
+	      {
+		/* R1 / R2 is zero if R1 is always less than R2.  */
+		if (wi::ltu_p (r1max, r2min))
+		  {
+		    *mask = 0;
+		    *val = 0;
+		  }
+		else
+		  {
+		    widest_int upper = wi::udiv_trunc (r1max, r2min);
+		    unsigned int lzcount = wi::clz (upper);
+		    unsigned int bits = wi::get_precision (upper) - lzcount;
+		    *mask = wi::mask <widest_int> (bits, false);
+		    *val = 0;
+		  }
+	       }
+	    }
+	}
+      break;
 
     default:;
     }
@@ -2332,12 +2717,10 @@ ccp_folder::fold_stmt (gimple_stmt_iterator *gsi)
 	    && (flags & ECF_LOOPING_CONST_OR_PURE) == 0)
 	  {
 	    tree new_rhs = unshare_expr (val);
-	    bool res;
 	    if (!useless_type_conversion_p (TREE_TYPE (lhs),
 					    TREE_TYPE (new_rhs)))
 	      new_rhs = fold_convert (TREE_TYPE (lhs), new_rhs);
-	    res = update_call_from_tree (gsi, new_rhs);
-	    gcc_assert (res);
+	    gimplify_and_update_call_from_tree (gsi, new_rhs);
 	    return true;
 	  }
 
@@ -2355,9 +2738,8 @@ ccp_folder::fold_stmt (gimple_stmt_iterator *gsi)
             tree new_rhs = fold_builtin_alloca_with_align (stmt);
             if (new_rhs)
 	      {
-		bool res = update_call_from_tree (gsi, new_rhs);
+		gimplify_and_update_call_from_tree (gsi, new_rhs);
 		tree var = TREE_OPERAND (TREE_OPERAND (new_rhs, 0),0);
-		gcc_assert (res);
 		insert_clobbers_for_var (*gsi, var);
 		return true;
 	      }
@@ -2382,8 +2764,7 @@ ccp_folder::fold_stmt (gimple_stmt_iterator *gsi)
 		    && ((TREE_INT_CST_LOW (ptrval.value) & (align - 1))
 			== (TREE_INT_CST_LOW (val.value) & (align - 1))))
 		  {
-		    bool res = update_call_from_tree (gsi, ptr);
-		    gcc_assert (res);
+		    replace_call_with_value (gsi, ptr);
 		    return true;
 		  }
 	      }
@@ -2710,7 +3091,7 @@ optimize_stack_restore (gimple_stmt_iterator i)
 
 	      stack_save_gsi = gsi_for_stmt (stack_save);
 	      rhs = build_int_cst (TREE_TYPE (gimple_call_arg (call, 0)), 0);
-	      update_call_from_tree (&stack_save_gsi, rhs);
+	      replace_call_with_value (&stack_save_gsi, rhs);
 	    }
 	}
     }
@@ -3434,8 +3815,7 @@ pass_fold_builtins::execute (function *fun)
 		  continue;
 		}
 
-	      if (!update_call_from_tree (&i, result))
-		gimplify_and_update_call_from_tree (&i, result);
+	      gimplify_and_update_call_from_tree (&i, result);
 	    }
 
 	  todoflags |= TODO_update_address_taken;
@@ -3532,7 +3912,7 @@ pass_post_ipa_warn::execute (function *fun)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-	  if (!is_gimple_call (stmt) || gimple_no_warning_p (stmt))
+	  if (!is_gimple_call (stmt) || warning_suppressed_p (stmt, OPT_Wnonnull))
 	    continue;
 
 	  tree fntype = gimple_call_fntype (stmt);
@@ -3541,6 +3921,7 @@ pass_post_ipa_warn::execute (function *fun)
 	    continue;
 
 	  tree fndecl = gimple_call_fndecl (stmt);
+	  const bool closure = fndecl && DECL_LAMBDA_FUNCTION_P (fndecl);
 
 	  for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
 	    {
@@ -3548,6 +3929,9 @@ pass_post_ipa_warn::execute (function *fun)
 	      if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
 		continue;
 	      if (!integer_zerop (arg))
+		continue;
+	      if (i == 0 && closure)
+		/* Avoid warning for the first argument to lambda functions.  */
 		continue;
 	      if (!bitmap_empty_p (nonnullargs)
 		  && !bitmap_bit_p (nonnullargs, i))
@@ -3564,7 +3948,7 @@ pass_post_ipa_warn::execute (function *fun)
 	      if (argno == 0)
 		{
 		  if (warning_at (loc, OPT_Wnonnull,
-				  "%G%qs pointer is null", stmt, "this")
+				  "%qs pointer is null", "this")
 		      && fndecl)
 		    inform (DECL_SOURCE_LOCATION (fndecl),
 			    "in a call to non-static member function %qD",
@@ -3573,8 +3957,8 @@ pass_post_ipa_warn::execute (function *fun)
 		}
 
 	      if (!warning_at (loc, OPT_Wnonnull,
-			       "%Gargument %u null where non-null "
-			       "expected", stmt, argno))
+			       "argument %u null where non-null "
+			       "expected", argno))
 		continue;
 
 	      tree fndecl = gimple_call_fndecl (stmt);

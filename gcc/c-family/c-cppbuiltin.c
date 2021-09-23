@@ -741,6 +741,20 @@ cpp_atomic_builtins (cpp_reader *pfile)
   builtin_define_with_int_value ("__GCC_ATOMIC_TEST_AND_SET_TRUEVAL",
 				 targetm.atomic_test_and_set_trueval);
 
+  /* Macros for C++17 hardware interference size constants.  Either both or
+     neither should be set.  */
+  gcc_assert (!param_destruct_interfere_size
+	      == !param_construct_interfere_size);
+  if (param_destruct_interfere_size)
+    {
+      /* FIXME The way of communicating these values to the library should be
+	 part of the C++ ABI, whether macro or builtin.  */
+      builtin_define_with_int_value ("__GCC_DESTRUCTIVE_SIZE",
+				     param_destruct_interfere_size);
+      builtin_define_with_int_value ("__GCC_CONSTRUCTIVE_SIZE",
+				     param_construct_interfere_size);
+    }
+
   /* ptr_type_node can't be used here since ptr_mode is only set when
      toplev calls backend_init which is not done with -E  or pch.  */
   psize = POINTER_SIZE_UNITS;
@@ -753,7 +767,7 @@ cpp_atomic_builtins (cpp_reader *pfile)
 /* Return TRUE if the implicit excess precision in which the back-end will
    compute floating-point calculations is not more than the explicit
    excess precision that the front-end will apply under
-   -fexcess-precision=[standard|fast].
+   -fexcess-precision=[standard|fast|16].
 
    More intuitively, return TRUE if the excess precision proposed by the
    front-end is the excess precision that will actually be used.  */
@@ -764,7 +778,9 @@ c_cpp_flt_eval_method_iec_559 (void)
   enum excess_precision_type front_end_ept
     = (flag_excess_precision == EXCESS_PRECISION_STANDARD
        ? EXCESS_PRECISION_TYPE_STANDARD
-       : EXCESS_PRECISION_TYPE_FAST);
+       : (flag_excess_precision == EXCESS_PRECISION_FLOAT16
+	  ? EXCESS_PRECISION_TYPE_FLOAT16
+	  : EXCESS_PRECISION_TYPE_FAST));
 
   enum flt_eval_method back_end
     = targetm.c.excess_precision (EXCESS_PRECISION_TYPE_IMPLICIT);
@@ -1029,6 +1045,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	{
 	  /* Set feature test macros for C++23.  */
 	  cpp_define (pfile, "__cpp_size_t_suffix=202011L");
+	  cpp_define (pfile, "__cpp_if_consteval=202106L");
 	}
       if (flag_concepts)
         {
@@ -1277,29 +1294,39 @@ c_cpp_builtins (cpp_reader *pfile)
 	{
 	  scalar_float_mode mode = mode_iter.require ();
 	  const char *name = GET_MODE_NAME (mode);
+	  const size_t name_len = strlen (name);
+	  char float_h_prefix[16] = "";
 	  char *macro_name
-	    = (char *) alloca (strlen (name)
-			       + sizeof ("__LIBGCC__MANT_DIG__"));
+	    = XALLOCAVEC (char, name_len + sizeof ("__LIBGCC__MANT_DIG__"));
 	  sprintf (macro_name, "__LIBGCC_%s_MANT_DIG__", name);
 	  builtin_define_with_int_value (macro_name,
 					 REAL_MODE_FORMAT (mode)->p);
 	  if (!targetm.scalar_mode_supported_p (mode)
 	      || !targetm.libgcc_floating_mode_supported_p (mode))
 	    continue;
-	  macro_name = (char *) alloca (strlen (name)
-					+ sizeof ("__LIBGCC_HAS__MODE__"));
+	  macro_name = XALLOCAVEC (char, name_len
+				   + sizeof ("__LIBGCC_HAS__MODE__"));
 	  sprintf (macro_name, "__LIBGCC_HAS_%s_MODE__", name);
 	  cpp_define (pfile, macro_name);
-	  macro_name = (char *) alloca (strlen (name)
-					+ sizeof ("__LIBGCC__FUNC_EXT__"));
+	  macro_name = XALLOCAVEC (char, name_len
+				   + sizeof ("__LIBGCC__FUNC_EXT__"));
 	  sprintf (macro_name, "__LIBGCC_%s_FUNC_EXT__", name);
 	  char suffix[20] = "";
 	  if (mode == TYPE_MODE (double_type_node))
-	    ; /* Empty suffix correct.  */
+	    {
+	      /* Empty suffix correct.  */
+	      memcpy (float_h_prefix, "DBL", 4);
+	    }
 	  else if (mode == TYPE_MODE (float_type_node))
-	    suffix[0] = 'f';
+	    {
+	      suffix[0] = 'f';
+	      memcpy (float_h_prefix, "FLT", 4);
+	    }
 	  else if (mode == TYPE_MODE (long_double_type_node))
-	    suffix[0] = 'l';
+	    {
+	      suffix[0] = 'l';
+	      memcpy (float_h_prefix, "LDBL", 5);
+	    }
 	  else
 	    {
 	      bool found_suffix = false;
@@ -1310,6 +1337,8 @@ c_cpp_builtins (cpp_reader *pfile)
 		    sprintf (suffix, "f%d%s", floatn_nx_types[i].n,
 			     floatn_nx_types[i].extended ? "x" : "");
 		    found_suffix = true;
+		    sprintf (float_h_prefix, "FLT%d%s", floatn_nx_types[i].n,
+			     floatn_nx_types[i].extended ? "X" : "");
 		    break;
 		  }
 	      gcc_assert (found_suffix);
@@ -1347,11 +1376,33 @@ c_cpp_builtins (cpp_reader *pfile)
 	    default:
 	      gcc_unreachable ();
 	    }
-	  macro_name = (char *) alloca (strlen (name)
-					+ sizeof ("__LIBGCC__EXCESS_"
-						  "PRECISION__"));
+	  macro_name = XALLOCAVEC (char, name_len
+				   + sizeof ("__LIBGCC__EXCESS_PRECISION__"));
 	  sprintf (macro_name, "__LIBGCC_%s_EXCESS_PRECISION__", name);
 	  builtin_define_with_int_value (macro_name, excess_precision);
+
+	  char val_name[64];
+
+	  macro_name = XALLOCAVEC (char, name_len
+				   + sizeof ("__LIBGCC__EPSILON__"));
+	  sprintf (macro_name, "__LIBGCC_%s_EPSILON__", name);
+	  sprintf (val_name, "__%s_EPSILON__", float_h_prefix);
+	  builtin_define_with_value (macro_name, val_name, 0);
+
+	  macro_name = XALLOCAVEC (char, name_len + sizeof ("__LIBGCC__MAX__"));
+	  sprintf (macro_name, "__LIBGCC_%s_MAX__", name);
+	  sprintf (val_name, "__%s_MAX__", float_h_prefix);
+	  builtin_define_with_value (macro_name, val_name, 0);
+
+	  macro_name = XALLOCAVEC (char, name_len + sizeof ("__LIBGCC__MIN__"));
+	  sprintf (macro_name, "__LIBGCC_%s_MIN__", name);
+	  sprintf (val_name, "__%s_MIN__", float_h_prefix);
+	  builtin_define_with_value (macro_name, val_name, 0);
+
+#ifdef HAVE_adddf3
+	  builtin_define_with_int_value ("__LIBGCC_HAVE_HWDBL__",
+					 HAVE_adddf3);
+#endif
 	}
 
       /* For libgcc crtstuff.c and libgcc2.c.  */
@@ -1415,6 +1466,8 @@ c_cpp_builtins (cpp_reader *pfile)
       /* For libgcov.  */
       builtin_define_with_int_value ("__LIBGCC_VTABLE_USES_DESCRIPTORS__",
 				     TARGET_VTABLE_USES_DESCRIPTORS);
+      builtin_define_with_int_value ("__LIBGCC_GCOV_TYPE_SIZE",
+				     targetm.gcov_type_size());
     }
 
   /* For use in assembly language.  */

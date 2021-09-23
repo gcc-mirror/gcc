@@ -34,6 +34,3 @@ main ()
   foo (5, a, b, c, dst);
   return 0;
 }
-
-/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms" { target powerpc*-*-* } } } */
-

@@ -1,6 +1,6 @@
-/* Exercise acc_update_self with a size zero data mapping on nvidia targets.  */
+/* Exercise acc_update_self with a size zero data mapping.  */
 
-/* { dg-do run { target openacc_nvidia_accel_selected } } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-DACC_MEM_SHARED=0" } } */
 
 #include <stdio.h>
 #include <string.h>

@@ -48,4 +48,4 @@ static_assert(test02()); // { dg-error "outside the bounds" }
 
 // { dg-prune-output "non-constant condition" }
 // { dg-prune-output "in 'constexpr'" }
-// { dg-prune-output "failed_assertion" }
+// { dg-prune-output "builtin_unreachable" }

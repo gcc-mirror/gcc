@@ -2398,7 +2398,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
       rtx_insn *prev_insn;
 
       /* First, look to see if we put a constant in a register.  */
-      prev_insn = prev_nonnote_insn (if_info->cond_earliest);
+      prev_insn = prev_nonnote_nondebug_insn (if_info->cond_earliest);
       if (prev_insn
 	  && BLOCK_FOR_INSN (prev_insn)
 	     == BLOCK_FOR_INSN (if_info->cond_earliest)
@@ -2669,7 +2669,7 @@ noce_try_abs (struct noce_if_info *if_info)
   if (REG_P (c))
     {
       rtx set;
-      rtx_insn *insn = prev_nonnote_insn (earliest);
+      rtx_insn *insn = prev_nonnote_nondebug_insn (earliest);
       if (insn
 	  && BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (earliest)
 	  && (set = single_set (insn))
@@ -3458,7 +3458,6 @@ noce_process_if_block (struct noce_if_info *if_info)
   /* First look for multiple SETS.  */
   if (!else_bb
       && HAVE_conditional_move
-      && !HAVE_cc0
       && bb_ok_for_noce_convert_multiple_sets (then_bb))
     {
       if (noce_convert_multiple_sets (if_info))
@@ -3890,11 +3889,9 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   rtx_insn *jump = if_info->jump;
   rtx cond = if_info->cond;
   rtx_insn *seq, *loc_insn;
-  rtx reg;
   int c;
   vec<rtx> then_regs = vNULL;
   vec<rtx> else_regs = vNULL;
-  unsigned int i;
   int success_p = FALSE;
   int limit = param_max_rtl_if_conversion_insns;
 
@@ -3916,7 +3913,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
      source register does not change after the assignment.  Also count
      the number of registers set in only one of the blocks.  */
   c = 0;
-  FOR_EACH_VEC_ELT (then_regs, i, reg)
+  for (rtx reg : then_regs)
     {
       rtx *then_slot = then_vals.get (reg);
       rtx *else_slot = else_vals.get (reg);
@@ -3935,7 +3932,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
     }
 
   /* Finish off c for MAX_CONDITIONAL_EXECUTE.  */
-  FOR_EACH_VEC_ELT (else_regs, i, reg)
+  for (rtx reg : else_regs)
     {
       gcc_checking_assert (else_vals.get (reg));
       if (!then_vals.get (reg))
@@ -5193,7 +5190,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
       cond = cond_exec_get_condition (jump);
       if (! cond)
-	return FALSE;
+	goto nce;
 
       rtx note = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
       profile_probability prob_val

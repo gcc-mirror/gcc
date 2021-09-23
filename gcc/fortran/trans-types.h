@@ -55,7 +55,7 @@ extern GTY(()) tree gfc_charlen_type_node;
 
 /* The following flags give us information on the correspondence of
    real (and complex) kinds with C floating-point types long double
-   and __float128.  */
+   and _Float128.  */
 extern bool gfc_real16_is_float128;
 
 enum gfc_packed {
@@ -114,7 +114,7 @@ int gfc_is_nodesc_array (gfc_symbol *);
 
 /* Return the DTYPE for an array.  */
 tree gfc_get_dtype_rank_type (int, tree);
-tree gfc_get_dtype (tree);
+tree gfc_get_dtype (tree, int *rank = NULL);
 
 tree gfc_get_ppc_type (gfc_component *);
 tree gfc_get_caf_vector_type (int dim);

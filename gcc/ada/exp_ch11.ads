@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@ package Exp_Ch11 is
    procedure Expand_N_Raise_Expression               (N : Node_Id);
    procedure Expand_N_Raise_Program_Error            (N : Node_Id);
    procedure Expand_N_Raise_Statement                (N : Node_Id);
+   procedure Expand_N_Raise_When_Statement           (N : Node_Id);
    procedure Expand_N_Raise_Storage_Error            (N : Node_Id);
 
    --  Data structures for gathering information to build exception tables

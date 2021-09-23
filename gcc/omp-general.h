@@ -93,7 +93,7 @@ struct omp_for_data
 extern tree omp_find_clause (tree clauses, enum omp_clause_code kind);
 extern bool omp_is_allocatable_or_ptr (tree decl);
 extern tree omp_check_optional_argument (tree decl, bool for_present_check);
-extern bool omp_is_reference (tree decl);
+extern bool omp_privatize_by_reference (tree decl);
 extern void omp_adjust_for_condition (location_t loc, enum tree_code *cond_code,
 				      tree *n2, tree v, tree step);
 extern tree omp_get_for_step_from_incr (location_t loc, tree incr);
@@ -131,5 +131,18 @@ enum omp_requires {
 };
 
 extern GTY(()) enum omp_requires omp_requires_mask;
+
+static inline dump_flags_t
+get_openacc_privatization_dump_flags ()
+{
+  dump_flags_t l_dump_flags = MSG_NOTE;
+
+  /* For '--param=openacc-privatization=quiet', diagnostics only go to dump
+     files.  */
+  if (param_openacc_privatization == OPENACC_PRIVATIZATION_QUIET)
+    l_dump_flags |= MSG_PRIORITY_INTERNALS;
+
+  return l_dump_flags;
+}
 
 #endif /* GCC_OMP_GENERAL_H */

@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!	-*- c++ -*-
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -307,3 +307,14 @@ module_resolver::IncludeTranslateRequest (Cody::Server *s, Cody::Flags,
   return 0;
 }
 
+/* This handles a client notification to the server that a CMI has been
+   produced for a module.  For this simplified server, we just accept
+   the transaction and respond with "OK".  */
+
+int
+module_resolver::ModuleCompiledRequest (Cody::Server *s, Cody::Flags,
+				      std::string &)
+{
+  s->OKResponse();
+  return 0;
+}

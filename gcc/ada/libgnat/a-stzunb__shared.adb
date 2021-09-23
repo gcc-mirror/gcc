@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,7 +76,7 @@ package body Ada.Strings.Wide_Wide_Unbounded is
          Reference (Empty_Shared_Wide_Wide_String'Access);
          DR := Empty_Shared_Wide_Wide_String'Access;
 
-      --  Left string is empty, return Rigth string
+      --  Left string is empty, return Right string
 
       elsif LR.Last = 0 then
          Reference (RR);

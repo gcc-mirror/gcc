@@ -90,8 +90,8 @@ static if (__BSD_VISIBLE)
 extern(C) {
     static assert(is(typeof(&dlclose) == int function(void*)));
     static assert(is(typeof(&dlerror) == char* function()));
-    static assert(is(typeof(&dlopen)  == void* function(in char*, int)));
-    static assert(is(typeof(&dlsym)   == void* function(void*, in char*)));
+    static assert(is(typeof(&dlopen)  == void* function(const scope char*, int)));
+    static assert(is(typeof(&dlsym)   == void* function(void*, const scope char*)));
 }
 
 static if (__BSD_VISIBLE)

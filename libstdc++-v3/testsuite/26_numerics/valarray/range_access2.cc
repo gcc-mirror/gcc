@@ -27,9 +27,9 @@ void
 test01()
 {
   std::valarray<double> va{1.0, 2.0, 3.0};
-  std::cbegin(va);
-  std::cend(va);
+  (void) std::cbegin(va);
+  (void) std::cend(va);
   const auto& cva = va;
-  std::cbegin(cva);
-  std::cend(cva);
+  (void) std::cbegin(cva);
+  (void) std::cend(cva);
 }

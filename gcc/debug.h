@@ -73,6 +73,10 @@ struct gcc_debug_hooks
   void (* source_line) (unsigned int line, unsigned int column,
 			const char *file, int discriminator, bool is_stmt);
 
+  /* Record a source file location for a DECL_IGNORED_P function.  */
+  void (* set_ignored_loc) (unsigned int line, unsigned int column,
+			    const char *file);
+
   /* Called at start of prologue code.  LINE is the first line in the
      function.  */
   void (* begin_prologue) (unsigned int line, unsigned int column,

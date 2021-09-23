@@ -77,7 +77,8 @@ typedef _Float16 vnx32hf __attribute__((vector_size (128)));
 
 TEST_ALL (EXTRACT)
 
-/* { dg-final { scan-assembler-times {\tumov\tx[0-9]+, v[0-9]+\.d\[0\]\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tfmov\tx[0-9]+, d[0-9]\n} 5 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {\tumov\tx[0-9]+, v[0-9]+\.d\[0\]\n} 1 { target aarch64_big_endian } } } */
 /* { dg-final { scan-assembler-times {\tumov\tx[0-9]+, v[0-9]+\.d\[1\]\n} 1 } } */
 /* { dg-final { scan-assembler-not {\tdup\td[0-9]+, v[0-9]+\.d\[0\]\n} } } */
 /* { dg-final { scan-assembler-times {\tdup\td[0-9]+, v[0-9]+\.d\[1\]\n} 1 } } */
@@ -86,7 +87,8 @@ TEST_ALL (EXTRACT)
 /* { dg-final { scan-assembler-times {\tlastb\tx[0-9]+, p[0-7], z[0-9]+\.d\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tlastb\td[0-9]+, p[0-7], z[0-9]+\.d\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tumov\tw[0-9]+, v[0-9]+\.s\[0\]\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tfmov\tw[0-9]+, s[0-9]\n} 5 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {\tumov\tw[0-9]+, v[0-9]+\.s\[0\]\n} 1 { target aarch64_big_endian } } } */
 /* { dg-final { scan-assembler-times {\tumov\tw[0-9]+, v[0-9]+\.s\[1\]\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tumov\tw[0-9]+, v[0-9]+\.s\[3\]\n} 1 } } */
 /* { dg-final { scan-assembler-not {\tdup\ts[0-9]+, v[0-9]+\.s\[0\]\n} } } */

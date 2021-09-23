@@ -40,7 +40,7 @@ struct not_noexcept_copy_cons_hash
 using type2 = std::unordered_multiset<int, not_noexcept_copy_cons_hash>;
 
 static_assert( !std::is_nothrow_move_constructible<type2>::value,
-	       "noexcept move constructor" );
+	       "not noexcept move constructor" );
 static_assert( !std::is_nothrow_constructible<type2, type2&&,
 	       const typename type2::allocator_type&>::value,
 	       "not noexcept move constructor with allocator" );
@@ -59,7 +59,7 @@ using type3 = std::unordered_multiset<int, std::hash<int>,
 				      not_noexcept_copy_cons_equal_to>;
 
 static_assert( !std::is_nothrow_move_constructible<type3>::value,
-	       "noexcept move constructor" );
+	       "not noexcept move constructor" );
 static_assert( !std::is_nothrow_constructible<type3, type3&&,
 	       const typename type3::allocator_type&>::value,
 	       "not noexcept move constructor with allocator" );

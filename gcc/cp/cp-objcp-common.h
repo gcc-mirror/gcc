@@ -38,7 +38,7 @@ extern bool cp_handle_option (size_t, const char *, HOST_WIDE_INT, int,
 			      location_t, const struct cl_option_handlers *);
 extern tree cxx_make_type_hook			(tree_code);
 extern tree cxx_simulate_enum_decl (location_t, const char *,
-				    vec<string_int_pair>);
+				    vec<string_int_pair> *);
 
 /* Lang hooks that are shared between C++ and ObjC++ are defined here.  Hooks
    specific to C++ or ObjC++ go in cp/cp-lang.c and objcp/objcp-lang.c,

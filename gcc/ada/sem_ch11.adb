@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,30 +23,34 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch5;  use Sem_Ch5;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch5;        use Sem_Ch5;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
 
 package body Sem_Ch11 is
 
@@ -61,7 +65,7 @@ package body Sem_Ch11 is
    begin
       Generate_Definition         (Id);
       Enter_Name                  (Id);
-      Set_Ekind                   (Id, E_Exception);
+      Mutate_Ekind                (Id, E_Exception);
       Set_Etype                   (Id, Standard_Exception_Type);
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);
@@ -229,7 +233,7 @@ package body Sem_Ch11 is
                Set_Etype (H_Scope, Standard_Void_Type);
 
                Enter_Name (Choice);
-               Set_Ekind (Choice, E_Variable);
+               Mutate_Ekind (Choice, E_Variable);
 
                if RTE_Available (RE_Exception_Occurrence) then
                   Set_Etype (Choice, RTE (RE_Exception_Occurrence));
@@ -431,7 +435,7 @@ package body Sem_Ch11 is
       --  postcondition, since in that case there are no source references, and
       --  we need to preserve deferred references from the enclosing scope.
 
-      if ((Is_Subprogram (Current_Scope) or else Is_Entry (Current_Scope))
+      if (Is_Subprogram_Or_Entry (Current_Scope)
            and then Chars (Current_Scope) /= Name_uPostconditions)
          or else Ekind (Current_Scope) in E_Block | E_Task_Type
       then
@@ -657,6 +661,18 @@ package body Sem_Ch11 is
 
       Kill_Current_Values (Last_Assignment_Only => True);
    end Analyze_Raise_Statement;
+
+   ----------------------------------
+   -- Analyze_Raise_When_Statement --
+   ----------------------------------
+
+   procedure Analyze_Raise_When_Statement (N : Node_Id) is
+   begin
+      --  Verify the condition is a Boolean expression
+
+      Analyze_And_Resolve (Condition (N), Any_Boolean);
+      Check_Unset_Reference (Condition (N));
+   end Analyze_Raise_When_Statement;
 
    -----------------------------
    -- Analyze_Raise_xxx_Error --

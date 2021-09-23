@@ -1,5 +1,7 @@
 /* { dg-do run { target openacc_nvidia_accel_selected } } */
 /* { dg-additional-options "-lm -lcuda -lcublas -lcudart -Wall -Wextra" } */
+/* { dg-require-effective-target openacc_cublas } */
+/* { dg-require-effective-target openacc_cudart } */
 
 #include <stdlib.h>
 #include <math.h>

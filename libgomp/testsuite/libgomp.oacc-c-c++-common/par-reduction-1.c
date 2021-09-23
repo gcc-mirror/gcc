@@ -1,4 +1,5 @@
-/* { dg-additional-options "-w" } */
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
 
 #include <assert.h>
 
@@ -18,6 +19,9 @@ main (int argc, char *argv[])
 #endif
   #pragma acc parallel num_gangs(GANGS) num_workers(32) vector_length(32) \
     reduction(+:res1) copy(res2, res1)
+  /* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction', 'atomic'" { xfail { ! openacc_host_selected } } .-2 } */
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-3 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-4 } */
   {
     res1 += 5;
 
@@ -39,6 +43,9 @@ main (int argc, char *argv[])
 #endif
   #pragma acc parallel num_gangs(GANGS) num_workers(32) vector_length(32) \
     reduction(*:res1) copy(res1, res2)
+  /* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction', 'atomic'" { xfail { ! openacc_host_selected } } .-2 } */
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-3 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-4 } */
   {
     res1 *= 5;
 

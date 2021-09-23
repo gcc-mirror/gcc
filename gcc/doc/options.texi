@@ -223,8 +223,8 @@ propagate through the @code{Negative} property of the option to be
 turned off.  The driver will prune options, removing those that are
 turned off by some later option.  This pruning is not done for options
 with @code{Joined} or @code{JoinedOrMissing} properties, unless the
-options have either @code{RejectNegative} property or the @code{Negative}
-property mentions an option other than itself.
+options have both the @code{RejectNegative} property and the @code{Negative}
+property mentions itself.
 
 As a consequence, if you have a group of mutually-exclusive
 options, their @code{Negative} properties should form a circular chain.

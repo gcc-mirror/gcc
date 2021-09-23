@@ -15,7 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 // { dg-final { scan-assembler-not "_ZT\[IS\]NSt3pmr15memory_resourceE" } }
 // { dg-final { scan-assembler-not "_ZT\[IS\]NSt3pmr25monotonic\[a-z_\]*E" } }

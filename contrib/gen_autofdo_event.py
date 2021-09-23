@@ -46,20 +46,29 @@ args = ap.parse_args()
 
 eventmap = collections.defaultdict(list)
 
-def get_cpu_str():
-    with open('/proc/cpuinfo', 'r') as c:
-        vendor, fam, model = None, None, None
-        for j in c:
-            n = j.split()
-            if n[0] == 'vendor_id':
-                vendor = n[2]
-            elif n[0] == 'model' and n[1] == ':':
-                model = int(n[2])
-            elif n[0] == 'cpu' and n[1] == 'family':
-                fam = int(n[3])
-            if vendor and fam and model:
-                return "%s-%d-%X" % (vendor, fam, model), model
-    return None, None
+def get_cpustr():
+    cpuinfo = os.getenv("CPUINFO")
+    if cpuinfo is None:
+        cpuinfo = '/proc/cpuinfo'
+    f = open(cpuinfo, 'r')
+    cpu = [None, None, None, None]
+    for j in f:
+        n = j.split()
+        if n[0] == 'vendor_id':
+            cpu[0] = n[2]
+        elif n[0] == 'model' and n[1] == ':':
+            cpu[2] = int(n[2])
+        elif n[0] == 'cpu' and n[1] == 'family':
+            cpu[1] = int(n[3])
+        elif n[0] == 'stepping' and n[1] == ':':
+            cpu[3] = int(n[2])
+        if all(v is not None for v in cpu):
+            break
+    # stepping for SKX only
+    stepping = cpu[0] == "GenuineIntel" and cpu[1] == 6 and cpu[2] == 0x55
+    if stepping:
+        return "%s-%d-%X-%X" % tuple(cpu)
+    return "%s-%d-%X" % tuple(cpu)[:3]
 
 def find_event(eventurl, model):
     print >>sys.stderr, "Downloading", eventurl
@@ -81,7 +90,7 @@ def find_event(eventurl, model):
     return found
 
 if not args.all:
-    cpu, model = get_cpu_str()
+    cpu = get_cpu_str()
     if not cpu:
         sys.exit("Unknown CPU type")
 
@@ -94,7 +103,8 @@ for j in u:
     n = j.rstrip().split(',')
     if len(n) >= 4 and (args.all or n[0] == cpu) and n[3] == "core":
         if args.all:
-            vendor, fam, model = n[0].split("-")
+            components = n[0].split("-")
+            model = components[2]
             model = int(model, 16)
         cpufound += 1
         found += find_event(baseurl + n[2], model)
@@ -146,7 +156,17 @@ case `egrep -q "^cpu family\s*: 6" /proc/cpuinfo &&
 echo >&2 "Unknown CPU. Run contrib/gen_autofdo_event.py --all --script to update script."
 	exit 1 ;;'''
     print "esac"
-    print 'exec perf record -e $E -b "$@"'
+    print "set -x"
+    print 'if ! perf record -e $E -b "$@" ; then'
+    print '  # PEBS may not actually be working even if the processor supports it'
+    print '  # (e.g., in a virtual machine). Trying to run without /p.'
+    print '  set +x'
+    print '  echo >&2 "Retrying without /p."'
+    print '  E="$(echo "${E}" | sed -e \'s/\/p/\//\')"'
+    print '  set -x'
+    print '  exec perf record -e $E -b "$@"'
+    print ' set +x'
+    print 'fi'
 
 if cpufound == 0 and not args.all:
     sys.exit('CPU %s not found' % cpu)

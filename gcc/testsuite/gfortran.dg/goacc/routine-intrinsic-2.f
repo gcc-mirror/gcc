@@ -7,6 +7,11 @@
 !$ACC ROUTINE (ABORT) GANG ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible GANG, WORKER, or VECTOR clause" }
 !$ACC ROUTINE (ABORT) VECTOR ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible GANG, WORKER, or VECTOR clause" }
 
+!$ACC ROUTINE (ABORT) NOHOST ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible NOHOST clause" }
+
+!$ACC ROUTINE (ABORT) WORKER NOHOST ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible GANG, WORKER, or VECTOR clause" }
+!$ACC ROUTINE (ABORT) NOHOST GANG ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible GANG, WORKER, or VECTOR clause" }
+
       CALL ABORT
       END SUBROUTINE sub_1
 
@@ -15,6 +20,11 @@
 !$ACC ROUTINE (ABORT) VECTOR ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible GANG, WORKER, or VECTOR clause" }
 !$ACC ROUTINE (ABORT) WORKER ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible GANG, WORKER, or VECTOR clause" }
 !$ACC ROUTINE (ABORT) GANG ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible GANG, WORKER, or VECTOR clause" }
+
+!$ACC ROUTINE (ABORT) NOHOST ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible NOHOST clause" }
+
+!$ACC ROUTINE (ABORT) VECTOR NOHOST ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible GANG, WORKER, or VECTOR clause" }
+!$ACC ROUTINE (ABORT) NOHOST WORKER ! { dg-error "Intrinsic symbol specified in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\) marked with incompatible GANG, WORKER, or VECTOR clause" }
 
       CONTAINS
       SUBROUTINE sub_2

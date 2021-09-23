@@ -170,14 +170,18 @@ $(GCC_DIR)/stamp-gnatlib-rts:
         fi
 
 
-# Build directory for the tools. Let's copy the target-dependent
-# sources using the same mechanism as for gnatlib. The other sources are
-# accessed using the vpath directive in ada/Makefile.in
+# Build directory for the tools. We first need to copy the generated files,
+# then the target-dependent sources using the same mechanism as for gnatlib.
+
+GENERATED_FILES_FOR_TOOLS = \
+  einfo-entities.ads einfo-entities.adb sdefault.adb seinfo.ads \
+  sinfo-nodes.ads sinfo-nodes.adb snames.ads snames.adb
 
 $(GCC_DIR)/stamp-tools:
 	-rm -rf $(GCC_DIR)/ada/tools
 	-mkdir -p $(GCC_DIR)/ada/tools
-	-(cd $(GCC_DIR)/ada/tools; $(LN_S) ../sdefault.adb ../snames.ads ../snames.adb .)
+	-(cd $(GCC_DIR)/ada/tools; $(foreach FILE,$(GENERATED_FILES_FOR_TOOLS), \
+			     $(LN_S) ../$(FILE) $(FILE);))
 	-$(foreach PAIR,$(TOOLS_TARGET_PAIRS), \
 	          rm -f $(GCC_DIR)/ada/tools/$(word 1,$(subst <, ,$(PAIR)));\
 	          $(LN_S) $(fsrcdir)/ada/$(word 2,$(subst <, ,$(PAIR))) \

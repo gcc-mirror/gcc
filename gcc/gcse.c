@@ -926,7 +926,6 @@ oprs_unchanged_p (const_rtx x, const rtx_insn *insn, int avail_p)
       return 0;
 
     case PC:
-    case CC0: /*FIXME*/
     case CONST:
     CASE_CONST_ANY:
     case SYMBOL_REF:
@@ -1538,7 +1537,8 @@ compute_hash_table_work (struct gcse_hash_table_d *table)
 		record_last_reg_set_info (insn, regno);
 
 	      if (! RTL_CONST_OR_PURE_CALL_P (insn)
-		  || RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
+		  || RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)
+		  || can_throw_external (insn))
 		record_last_mem_set_info (insn);
 	    }
 
@@ -2031,33 +2031,15 @@ insert_insn_end_basic_block (struct gcse_expr *expr, basic_block bb)
   while (NEXT_INSN (pat_end) != NULL_RTX)
     pat_end = NEXT_INSN (pat_end);
 
-  /* If the last insn is a jump, insert EXPR in front [taking care to
-     handle cc0, etc. properly].  Similarly we need to care trapping
-     instructions in presence of non-call exceptions.  */
+  /* If the last insn is a jump, insert EXPR in front.  Similarly we need to
+     take care of trapping instructions in presence of non-call exceptions.  */
 
   if (JUMP_P (insn)
       || (NONJUMP_INSN_P (insn)
 	  && (!single_succ_p (bb)
 	      || single_succ_edge (bb)->flags & EDGE_ABNORMAL)))
     {
-      /* FIXME: 'twould be nice to call prev_cc0_setter here but it aborts
-	 if cc0 isn't set.  */
-      if (HAVE_cc0)
-	{
-	  rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
-	  if (note)
-	    insn = safe_as_a <rtx_insn *> (XEXP (note, 0));
-	  else
-	    {
-	      rtx_insn *maybe_cc0_setter = prev_nonnote_insn (insn);
-	      if (maybe_cc0_setter
-		  && INSN_P (maybe_cc0_setter)
-		  && sets_cc0_p (PATTERN (maybe_cc0_setter)))
-		insn = maybe_cc0_setter;
-	    }
-	}
-
-      /* FIXME: What if something in cc0/jump uses value set in new insn?  */
+      /* FIXME: What if something in jump uses value set in new insn?  */
       new_insn = emit_insn_before_noloc (pat, insn, bb);
     }
 
@@ -3069,9 +3051,7 @@ static int
 hoist_code (void)
 {
   basic_block bb, dominated;
-  vec<basic_block> dom_tree_walk;
   unsigned int dom_tree_walk_index;
-  vec<basic_block> domby;
   unsigned int i, j, k;
   struct gcse_expr **index_map;
   struct gcse_expr *expr;
@@ -3125,15 +3105,16 @@ hoist_code (void)
   if (flag_ira_hoist_pressure)
     hoisted_bbs = BITMAP_ALLOC (NULL);
 
-  dom_tree_walk = get_all_dominated_blocks (CDI_DOMINATORS,
-					    ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb);
+  auto_vec<basic_block> dom_tree_walk
+  = get_all_dominated_blocks (CDI_DOMINATORS,
+			      ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb);
 
   /* Walk over each basic block looking for potentially hoistable
      expressions, nothing gets hoisted from the entry block.  */
   FOR_EACH_VEC_ELT (dom_tree_walk, dom_tree_walk_index, bb)
     {
-      domby = get_dominated_to_depth (CDI_DOMINATORS, bb,
-				      param_max_hoist_depth);
+      auto_vec<basic_block> domby
+	= get_dominated_to_depth (CDI_DOMINATORS, bb, param_max_hoist_depth);
 
       if (domby.length () == 0)
 	continue;
@@ -3334,10 +3315,8 @@ hoist_code (void)
 	      bitmap_clear (from_bbs);
 	    }
 	}
-      domby.release ();
     }
 
-  dom_tree_walk.release ();
   BITMAP_FREE (from_bbs);
   if (flag_ira_hoist_pressure)
     BITMAP_FREE (hoisted_bbs);

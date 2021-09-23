@@ -38,6 +38,10 @@ version (AArch64)
     version = AnyARM;
 version (ARM)
     version = AnyARM;
+version (PPC)
+    version = AnyPPC;
+version (PPC64)
+    version = AnyPPC;
 
 version (i386)
 {
@@ -229,6 +233,68 @@ else version (AnyARM)
 
     alias MACHINE_THREAD_STATE = ARM_THREAD_STATE;
     alias MACHINE_THREAD_STATE_COUNT = ARM_UNIFIED_THREAD_STATE_COUNT;
+
+    mach_port_t   mach_thread_self();
+    kern_return_t thread_suspend(thread_act_t);
+    kern_return_t thread_resume(thread_act_t);
+    kern_return_t thread_get_state(thread_act_t, thread_state_flavor_t, thread_state_t*, mach_msg_type_number_t*);
+}
+else version (AnyPPC)
+{
+    alias thread_act_t = mach_port_t;
+    alias thread_state_t = void;
+    alias thread_state_flavor_t = int;
+    alias mach_msg_type_number_t = natural_t;
+
+    enum
+    {
+        PPC_THREAD_STATE = 1,
+        PPC_FLOAT_STATE = 2,
+        PPC_EXCEPTION_STATE = 3,
+        PPC_VECTOR_STATE = 4,
+        PPC_THREAD_STATE64 = 5,
+        PPC_EXCEPTION_STATE64 = 6,
+        THREAD_STATE_NONE = 7
+    }
+
+    struct ppc_thread_state_t
+    {
+        uint srr0;   /// Instruction address register (PC)
+        uint srr1;   /// Machine state register (supervisor)
+        uint[32] r;  /// General purpose register r0-r31
+        uint cr;     /// Condition register
+        uint xer;    /// User's integer exception register
+        uint lr;     /// Link register
+        uint ctr;    /// Count register
+        uint mq;     /// MQ register (601 only)
+        uint vrsave; /// Vector save register
+    }
+
+    alias ppc_thread_state32_t = ppc_thread_state_t;
+
+    struct ppc_thread_state64_t
+    {
+        ulong srr0;   /// Instruction address register (PC)
+        ulong srr1;   /// Machine state register (supervisor)
+        ulong[32] r;  /// General purpose register r0-r31
+        uint cr;      /// Condition register
+        uint pad0;
+        ulong xer;    /// User's integer exception register
+        ulong lr;     /// Link register
+        ulong ctr;    /// Count register
+        uint vrsave;  /// Vector save register
+        uint pad1;
+    }
+
+    enum : mach_msg_type_number_t
+    {
+        PPC_THREAD_STATE_COUNT = cast(mach_msg_type_number_t) (ppc_thread_state_t.sizeof / uint.sizeof),
+        PPC_THREAD_STATE32_COUNT = cast(mach_msg_type_number_t) (ppc_thread_state32_t.sizeof / uint.sizeof),
+        PPC_THREAD_STATE64_COUNT = cast(mach_msg_type_number_t) (ppc_thread_state64_t.sizeof / uint.sizeof),
+    }
+
+    alias MACHINE_THREAD_STATE = PPC_THREAD_STATE;
+    alias MACHINE_THREAD_STATE_COUNT = PPC_THREAD_STATE_COUNT;
 
     mach_port_t   mach_thread_self();
     kern_return_t thread_suspend(thread_act_t);

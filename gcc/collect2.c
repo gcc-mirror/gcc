@@ -301,7 +301,6 @@ const char tool_name[] = "collect2";
 
 static symkind is_ctor_dtor (const char *);
 
-static void handler (int);
 static void maybe_unlink_list (char **);
 static void add_to_list (struct head *, const char *);
 static int extract_init_priority (const char *);
@@ -408,14 +407,6 @@ collect_atexit (void)
   tool_cleanup (false);
 }
 
-static void
-handler (int signo)
-{
-  tool_cleanup (true);
-
-  signal (signo, SIG_DFL);
-  raise (signo);
-}
 /* Notify user of a non-error, without translating the format string.  */
 void
 notice_translated (const char *cmsgid, ...)
@@ -907,11 +898,7 @@ main (int argc, char **argv)
   COLLECT2_HOST_INITIALIZATION;
 #endif
 
-#ifdef SIGCHLD
-  /* We *MUST* set SIGCHLD to SIG_DFL so that the wait4() call will
-     receive the signal.  A different setting is inheritable */
-  signal (SIGCHLD, SIG_DFL);
-#endif
+  setup_signals ();
 
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
@@ -956,7 +943,7 @@ main (int argc, char **argv)
       {
 	if (! strcmp (argv[i], "-debug"))
 	  debug = true;
-	else if (!strncmp (argv[i], "-fno-lto", 8))
+	else if (startswith (argv[i], "-fno-lto"))
 	  lto_mode = LTO_MODE_NONE;
         else if (! strcmp (argv[i], "-plugin"))
 	  {
@@ -970,7 +957,7 @@ main (int argc, char **argv)
 	  selected_linker = USE_GOLD_LD;
 	else if (strcmp (argv[i], "-fuse-ld=lld") == 0)
 	  selected_linker = USE_LLD_LD;
-	else if (strncmp (argv[i], "-o", 2) == 0)
+	else if (startswith (argv[i], "-o"))
 	  {
 	    /* Parse the output filename if it's given so that we can make
 	       meaningful temp filenames.  */
@@ -984,19 +971,19 @@ main (int argc, char **argv)
 	/* These flags are position independent, although their order
 	   is important - subsequent flags override earlier ones. */
 	else if (strcmp (argv[i], "-b64") == 0)
-	    aix64_flag = 1;
+	  aix64_flag = 1;
 	/* -bexport:filename always needs the :filename */
-	else if (strncmp (argv[i], "-bE:", 4) == 0
-	      || strncmp (argv[i], "-bexport:", 9) == 0)
-	    export_flag = 1;
+	else if (startswith (argv[i], "-bE:")
+		 || startswith (argv[i], "-bexport:"))
+	  export_flag = 1;
 	else if (strcmp (argv[i], "-brtl") == 0
 	      || strcmp (argv[i], "-bsvr4") == 0
 	      || strcmp (argv[i], "-G") == 0)
-	    aixrtl_flag = 1;
+	  aixrtl_flag = 1;
 	else if (strcmp (argv[i], "-bnortl") == 0)
-	    aixrtl_flag = 0;
+	  aixrtl_flag = 0;
 	else if (strcmp (argv[i], "-blazy") == 0)
-	    aixlazy_flag = 1;
+	  aixlazy_flag = 1;
 #endif
       }
 
@@ -1016,11 +1003,11 @@ main (int argc, char **argv)
 	const char *q = extract_string (&p);
 	if (*q == '-' && (q[1] == 'm' || q[1] == 'f'))
 	  num_c_args++;
-	if (strncmp (q, "-flto-partition=none", 20) == 0)
+	if (startswith (q, "-flto-partition=none"))
 	  no_partition = true;
-	else if (strncmp (q, "-fno-lto", 8) == 0)
+	else if (startswith (q, "-fno-lto"))
 	  lto_mode = LTO_MODE_NONE;
-	else if (strncmp (q, "-save-temps", 11) == 0)
+	else if (startswith (q, "-save-temps"))
 	  /* FIXME: Honour =obj.  */
 	  save_temps = true;
 	else if (strcmp (q, "-dumpdir") == 0)
@@ -1050,27 +1037,6 @@ main (int argc, char **argv)
 
   if (argc < 2)
     fatal_error (input_location, "no arguments");
-
-#ifdef SIGQUIT
-  if (signal (SIGQUIT, SIG_IGN) != SIG_IGN)
-    signal (SIGQUIT, handler);
-#endif
-  if (signal (SIGINT, SIG_IGN) != SIG_IGN)
-    signal (SIGINT, handler);
-#ifdef SIGALRM
-  if (signal (SIGALRM, SIG_IGN) != SIG_IGN)
-    signal (SIGALRM, handler);
-#endif
-#ifdef SIGHUP
-  if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
-    signal (SIGHUP, handler);
-#endif
-  if (signal (SIGSEGV, SIG_IGN) != SIG_IGN)
-    signal (SIGSEGV, handler);
-#ifdef SIGBUS
-  if (signal (SIGBUS, SIG_IGN) != SIG_IGN)
-    signal (SIGBUS, handler);
-#endif
 
   /* Extract COMPILER_PATH and PATH into our prefix list.  */
   prefix_from_env ("COMPILER_PATH", &cpath);
@@ -1254,7 +1220,7 @@ main (int argc, char **argv)
 	(void) extract_string (&p);
 #ifdef COLLECT_EXPORT_LIST
       /* Detect any invocation with -fvisibility.  */
-      if (strncmp (q, "-fvisibility", 12) == 0)
+      if (startswith (q, "-fvisibility"))
 	visibility_flag = 1;
 #endif
     }
@@ -1303,7 +1269,7 @@ main (int argc, char **argv)
 	      break;
 
             case 'f':
-	      if (strncmp (arg, "-flto", 5) == 0)
+	      if (startswith (arg, "-flto"))
 		{
 #ifdef ENABLE_LTO
 		  /* Do not pass LTO flag to the linker. */
@@ -1315,13 +1281,13 @@ main (int argc, char **argv)
 #endif
 		}
 	      else if (!use_collect_ld
-		       && strncmp (arg, "-fuse-ld=", 9) == 0)
+		       && startswith (arg, "-fuse-ld="))
 		{
 		  /* Do not pass -fuse-ld={bfd|gold|lld} to the linker. */
 		  ld1--;
 		  ld2--;
 		}
-	      else if (strncmp (arg, "-fno-lto", 8) == 0)
+	      else if (startswith (arg, "-fno-lto"))
 		{
 		  /* Do not pass -fno-lto to the linker. */
 		  ld1--;
@@ -1462,7 +1428,7 @@ main (int argc, char **argv)
 		  ld2--;
 #endif
 		}
-	      else if (strncmp (arg, "--demangle", 10) == 0)
+	      else if (startswith (arg, "--demangle"))
 		{
 #ifndef HAVE_LD_DEMANGLE
 		  no_demangle = 0;
@@ -1479,7 +1445,7 @@ main (int argc, char **argv)
 		  ld2--;
 #endif
 		}
-	      else if (strncmp (arg, "--sysroot=", 10) == 0)
+	      else if (startswith (arg, "--sysroot="))
 		target_system_root = arg + 10;
 	      else if (strcmp (arg, "--version") == 0)
 		verbose = true;
@@ -2307,13 +2273,9 @@ has_lto_section (void *data, const char *name ATTRIBUTE_UNUSED,
 {
   int *found = (int *) data;
 
-  if (strncmp (name, LTO_SECTION_NAME_PREFIX,
-	       sizeof (LTO_SECTION_NAME_PREFIX) - 1) != 0)
-    {
-      if (strncmp (name, OFFLOAD_SECTION_NAME_PREFIX,
-	           sizeof (OFFLOAD_SECTION_NAME_PREFIX) - 1) != 0)
-        return 1;
-    }
+  if (!startswith (name, LTO_SECTION_NAME_PREFIX)
+      && !startswith (name, OFFLOAD_SECTION_NAME_PREFIX))
+    return 1;
 
   *found = 1;
 
@@ -2619,7 +2581,7 @@ scan_libraries (const char *prog_name)
 	continue;
 
       name = p;
-      if (strncmp (name, "not found", sizeof ("not found") - 1) == 0)
+      if (startswith (name, "not found"))
 	fatal_error (input_location, "dynamic dependency %s not found", buf);
 
       /* Find the end of the symbol name.  */
@@ -2783,7 +2745,10 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
       if ((ldptr = ldopen (CONST_CAST (char *, prog_name), ldptr)) != NULL)
 	{
 	  if (! MY_ISCOFF (HEADER (ldptr).f_magic))
-	    fatal_error (input_location, "%s: not a COFF file", prog_name);
+	    {
+	      warning (0, "%s: not a COFF file", prog_name);
+	      continue;
+	    }
 
 	  if (GCC_CHECK_HDR (ldptr))
 	    {
@@ -3041,15 +3006,49 @@ process_args (int *argcp, char **argv) {
 
 static void
 do_dsymutil (const char *output_file) {
-  const char *dsymutil = DSYMUTIL + 1;
+  const char *dsymutil = 0;
   struct pex_obj *pex;
-  char **real_argv = XCNEWVEC (char *, 3);
+  char **real_argv = XCNEWVEC (char *, verbose ? 4 : 3);
   const char ** argv = CONST_CAST2 (const char **, char **,
 				    real_argv);
+/* For cross-builds search the PATH using target-qualified name if we
+   have not already found a suitable dsymutil.  In practice, all modern
+   versions of dsymutil handle all supported archs, however the approach
+   here is consistent with the way other installations work (and one can
+   always symlink a multitarget dsymutil with a target-specific name).  */
+  const char *dsname = "dsymutil";
+#ifdef CROSS_DIRECTORY_STRUCTURE
+  const char *qname = concat (target_machine, "-", dsname, NULL);
+#else
+  const char *qname = dsname;
+#endif
+#ifdef DEFAULT_DSYMUTIL
+  /* Configured default takes priority.  */
+  if (dsymutil == 0 && access (DEFAULT_DSYMUTIL, X_OK) == 0)
+    dsymutil = DEFAULT_DSYMUTIL;
+  if (dsymutil == 0)
+#endif
+#ifdef DSYMUTIL
+  /* Followed by one supplied in the target header, somewhat like the
+     REAL_XX_NAME used elsewhere.  */
+    dsymutil = find_a_file (&cpath, DSYMUTIL, X_OK);
+  if (dsymutil == 0)
+    dsymutil = find_a_file (&path, DSYMUTIL, X_OK);
+  if (dsymutil == 0)
+#endif
+    dsymutil = find_a_file (&cpath, dsname, X_OK);
+  if (dsymutil == 0)
+    dsymutil = find_a_file (&path, qname, X_OK);
 
   argv[0] = dsymutil;
   argv[1] = output_file;
-  argv[2] = (char *) 0;
+  if (verbose)
+    {
+      argv[2] = "-v";
+      argv[3] = (char *) 0;
+    }
+  else
+    argv[2] = (char *) 0;
 
   pex = collect_execute (dsymutil, real_argv, NULL, NULL,
 			 PEX_LAST | PEX_SEARCH, false, NULL);

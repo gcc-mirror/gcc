@@ -138,6 +138,24 @@ void test_cstdlib (void *q)
   // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
   q = realloc (q, 1024); // { dg-error "was not declared" }
   // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
+  q = calloc (8, 8); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
+
+  void callback ();
+  atexit (callback); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
+  int i;
+  i = EXIT_SUCCESS; // { dg-error "was not declared" }
+  // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
+  i = EXIT_FAILURE; // { dg-error "was not declared" }
+  // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
+  exit (i); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
+  abort (); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
+
+  getenv ("foo"); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
 }
 
 /* Verify that we don't offer suggestions to stdlib globals names when

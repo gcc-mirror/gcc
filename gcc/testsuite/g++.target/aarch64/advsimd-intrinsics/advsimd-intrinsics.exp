@@ -1,0 +1,72 @@
+# Copyright (C) 2014-2021 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't an ARM or AArch64 target.
+if {![istarget arm*-*-*]
+    && ![istarget aarch64*-*-*]} then {
+  return
+}
+
+# Load support procs.
+load_lib g++-dg.exp
+
+# Initialize `dg'.
+load_lib c-torture.exp
+
+dg-init
+
+# The default action for a test is 'run'.  Save current default.
+global dg-do-what-default
+set save-dg-do-what-default ${dg-do-what-default}
+
+# For ARM, make sure that we have a target compatible with NEON, and do
+# not attempt to run execution tests if the hardware doesn't support it.
+if {[istarget arm*-*-*]} then {
+    if {![check_effective_target_arm_neon_ok]} then {
+      return
+    }
+    if {![is-effective-target arm_neon_hw]} then {
+        set dg-do-what-default compile
+    } else {
+        set dg-do-what-default run
+    }
+} else {
+    set dg-do-what-default run
+}
+
+torture-init
+set-torture-options $C_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
+
+# Make sure Neon flags are provided, if necessary.  Use fp16 if we can.
+# Use fp16 arithmetic operations if the hardware supports it.
+if {[check_effective_target_arm_v8_2a_fp16_neon_hw]} then {
+  set additional_flags [add_options_for_arm_v8_2a_fp16_neon ""]
+} elseif {[check_effective_target_arm_neon_fp16_ok]} then {
+  set additional_flags [add_options_for_arm_neon_fp16 ""]
+} else {
+  set additional_flags [add_options_for_arm_neon ""]
+}
+
+# Main loop.
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] \
+	       "" ${additional_flags}
+
+# All done.
+set dg-do-what-default ${save-dg-do-what-default}
+torture-finish
+dg-finish

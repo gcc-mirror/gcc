@@ -372,7 +372,7 @@ public:
   hashval_t gcode_hash;
 
   /* Vector of subpart of memory access types.  */
-  vec<tree> memory_access_types;
+  auto_vec<tree> memory_access_types;
 
   /* Total number of SSA names used in the function.  */
   unsigned ssa_names_size;

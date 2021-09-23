@@ -109,8 +109,8 @@ __lcbb(const void *ptr, int bndry)
 #define vec_rint(X)   __builtin_s390_vfi((X), 0, 0)
 #define vec_roundc(X) __builtin_s390_vfi((X), 4, 0)
 #define vec_round(X)  __builtin_s390_vfi((X), 4, 4)
-#define vec_doublee(X) __builtin_s390_vfll((X))
-#define vec_floate(X) __builtin_s390_vflr((X), 0, 0)
+#define vec_doublee(X) __builtin_s390_vflls((X))
+#define vec_floate(X) __builtin_s390_vflrd((X), 0, 0)
 #define vec_load_len_r(X,L)				\
   (__vector unsigned char)__builtin_s390_vlrlr((L),(X))
 #define vec_store_len_r(X,Y,L) \

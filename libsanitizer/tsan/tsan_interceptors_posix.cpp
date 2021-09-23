@@ -54,10 +54,6 @@ using namespace __tsan;
 #define vfork __vfork14
 #endif
 
-#if SANITIZER_ANDROID
-#define mallopt(a, b)
-#endif
-
 #ifdef __mips__
 const int kSigCount = 129;
 #else
@@ -75,7 +71,8 @@ struct ucontext_t {
 };
 #endif
 
-#if defined(__x86_64__) || defined(__mips__) || SANITIZER_PPC64V1
+#if defined(__x86_64__) || defined(__mips__) || SANITIZER_PPC64V1 || \
+    defined(__s390x__)
 #define PTHREAD_ABI_BASE  "GLIBC_2.3.2"
 #elif defined(__aarch64__) || SANITIZER_PPC64V2
 #define PTHREAD_ABI_BASE  "GLIBC_2.17"
@@ -85,6 +82,8 @@ extern "C" int pthread_attr_init(void *attr);
 extern "C" int pthread_attr_destroy(void *attr);
 DECLARE_REAL(int, pthread_attr_getdetachstate, void *, void *)
 extern "C" int pthread_attr_setstacksize(void *attr, uptr stacksize);
+extern "C" int pthread_atfork(void (*prepare)(void), void (*parent)(void),
+                              void (*child)(void));
 extern "C" int pthread_key_create(unsigned *key, void (*destructor)(void* v));
 extern "C" int pthread_setspecific(unsigned key, const void *v);
 DECLARE_REAL(int, pthread_mutexattr_gettype, void *, void *)
@@ -97,7 +96,7 @@ extern "C" void _exit(int status);
 extern "C" int fileno_unlocked(void *stream);
 extern "C" int dirfd(void *dirp);
 #endif
-#if !SANITIZER_FREEBSD && !SANITIZER_ANDROID && !SANITIZER_NETBSD
+#if SANITIZER_GLIBC
 extern "C" int mallopt(int param, int value);
 #endif
 #if SANITIZER_NETBSD
@@ -659,8 +658,11 @@ TSAN_INTERCEPTOR(void*, malloc, uptr size) {
   return p;
 }
 
+// In glibc<2.25, dynamic TLS blocks are allocated by __libc_memalign. Intercept
+// __libc_memalign so that (1) we can detect races (2) free will not be called
+// on libc internally allocated blocks.
 TSAN_INTERCEPTOR(void*, __libc_memalign, uptr align, uptr sz) {
-  SCOPED_TSAN_INTERCEPTOR(__libc_memalign, align, sz);
+  SCOPED_INTERCEPTOR_RAW(__libc_memalign, align, sz);
   return user_memalign(thr, pc, align, sz);
 }
 
@@ -773,6 +775,11 @@ static void *mmap_interceptor(ThreadState *thr, uptr pc, Mmap real_mmap,
   if (!fix_mmap_addr(&addr, sz, flags)) return MAP_FAILED;
   void *res = real_mmap(addr, sz, prot, flags, fd, off);
   if (res != MAP_FAILED) {
+    if (!IsAppMem((uptr)res) || !IsAppMem((uptr)res + sz - 1)) {
+      Report("ThreadSanitizer: mmap at bad address: addr=%p size=%p res=%p\n",
+             addr, (void*)sz, res);
+      Die();
+    }
     if (fd > 0) FdAccess(thr, pc, fd);
     MemoryRangeImitateWriteOrResetRange(thr, pc, (uptr)res, sz);
   }
@@ -1122,27 +1129,37 @@ static void *init_cond(void *c, bool force = false) {
   return (void*)cond;
 }
 
+namespace {
+
+template <class Fn>
 struct CondMutexUnlockCtx {
   ScopedInterceptor *si;
   ThreadState *thr;
   uptr pc;
   void *m;
+  void *c;
+  const Fn &fn;
+
+  int Cancel() const { return fn(); }
+  void Unlock() const;
 };
 
-static void cond_mutex_unlock(CondMutexUnlockCtx *arg) {
+template <class Fn>
+void CondMutexUnlockCtx<Fn>::Unlock() const {
   // pthread_cond_wait interceptor has enabled async signal delivery
   // (see BlockingCall below). Disable async signals since we are running
   // tsan code. Also ScopedInterceptor and BlockingCall destructors won't run
   // since the thread is cancelled, so we have to manually execute them
   // (the thread still can run some user code due to pthread_cleanup_push).
-  ThreadSignalContext *ctx = SigCtx(arg->thr);
+  ThreadSignalContext *ctx = SigCtx(thr);
   CHECK_EQ(atomic_load(&ctx->in_blocking_func, memory_order_relaxed), 1);
   atomic_store(&ctx->in_blocking_func, 0, memory_order_relaxed);
-  MutexPostLock(arg->thr, arg->pc, (uptr)arg->m, MutexFlagDoPreLockOnPostLock);
+  MutexPostLock(thr, pc, (uptr)m, MutexFlagDoPreLockOnPostLock);
   // Undo BlockingCall ctor effects.
-  arg->thr->ignore_interceptors--;
-  arg->si->~ScopedInterceptor();
+  thr->ignore_interceptors--;
+  si->~ScopedInterceptor();
 }
+}  // namespace
 
 INTERCEPTOR(int, pthread_cond_init, void *c, void *a) {
   void *cond = init_cond(c, true);
@@ -1151,20 +1168,24 @@ INTERCEPTOR(int, pthread_cond_init, void *c, void *a) {
   return REAL(pthread_cond_init)(cond, a);
 }
 
-static int cond_wait(ThreadState *thr, uptr pc, ScopedInterceptor *si,
-                     int (*fn)(void *c, void *m, void *abstime), void *c,
-                     void *m, void *t) {
+template <class Fn>
+int cond_wait(ThreadState *thr, uptr pc, ScopedInterceptor *si, const Fn &fn,
+              void *c, void *m) {
   MemoryAccessRange(thr, pc, (uptr)c, sizeof(uptr), false);
   MutexUnlock(thr, pc, (uptr)m);
-  CondMutexUnlockCtx arg = {si, thr, pc, m};
   int res = 0;
   // This ensures that we handle mutex lock even in case of pthread_cancel.
   // See test/tsan/cond_cancel.cpp.
   {
     // Enable signal delivery while the thread is blocked.
     BlockingCall bc(thr);
+    CondMutexUnlockCtx<Fn> arg = {si, thr, pc, m, c, fn};
     res = call_pthread_cancel_with_cleanup(
-        fn, c, m, t, (void (*)(void *arg))cond_mutex_unlock, &arg);
+        [](void *arg) -> int {
+          return ((const CondMutexUnlockCtx<Fn> *)arg)->Cancel();
+        },
+        [](void *arg) { ((const CondMutexUnlockCtx<Fn> *)arg)->Unlock(); },
+        &arg);
   }
   if (res == errno_EOWNERDEAD) MutexRepair(thr, pc, (uptr)m);
   MutexPostLock(thr, pc, (uptr)m, MutexFlagDoPreLockOnPostLock);
@@ -1174,25 +1195,46 @@ static int cond_wait(ThreadState *thr, uptr pc, ScopedInterceptor *si,
 INTERCEPTOR(int, pthread_cond_wait, void *c, void *m) {
   void *cond = init_cond(c);
   SCOPED_TSAN_INTERCEPTOR(pthread_cond_wait, cond, m);
-  return cond_wait(thr, pc, &si, (int (*)(void *c, void *m, void *abstime))REAL(
-                                     pthread_cond_wait),
-                   cond, m, 0);
+  return cond_wait(
+      thr, pc, &si, [=]() { return REAL(pthread_cond_wait)(cond, m); }, cond,
+      m);
 }
 
 INTERCEPTOR(int, pthread_cond_timedwait, void *c, void *m, void *abstime) {
   void *cond = init_cond(c);
   SCOPED_TSAN_INTERCEPTOR(pthread_cond_timedwait, cond, m, abstime);
-  return cond_wait(thr, pc, &si, REAL(pthread_cond_timedwait), cond, m,
-                   abstime);
+  return cond_wait(
+      thr, pc, &si,
+      [=]() { return REAL(pthread_cond_timedwait)(cond, m, abstime); }, cond,
+      m);
 }
+
+#if SANITIZER_LINUX
+INTERCEPTOR(int, pthread_cond_clockwait, void *c, void *m,
+            __sanitizer_clockid_t clock, void *abstime) {
+  void *cond = init_cond(c);
+  SCOPED_TSAN_INTERCEPTOR(pthread_cond_clockwait, cond, m, clock, abstime);
+  return cond_wait(
+      thr, pc, &si,
+      [=]() { return REAL(pthread_cond_clockwait)(cond, m, clock, abstime); },
+      cond, m);
+}
+#define TSAN_MAYBE_PTHREAD_COND_CLOCKWAIT TSAN_INTERCEPT(pthread_cond_clockwait)
+#else
+#define TSAN_MAYBE_PTHREAD_COND_CLOCKWAIT
+#endif
 
 #if SANITIZER_MAC
 INTERCEPTOR(int, pthread_cond_timedwait_relative_np, void *c, void *m,
             void *reltime) {
   void *cond = init_cond(c);
   SCOPED_TSAN_INTERCEPTOR(pthread_cond_timedwait_relative_np, cond, m, reltime);
-  return cond_wait(thr, pc, &si, REAL(pthread_cond_timedwait_relative_np), cond,
-                   m, reltime);
+  return cond_wait(
+      thr, pc, &si,
+      [=]() {
+        return REAL(pthread_cond_timedwait_relative_np)(cond, m, reltime);
+      },
+      cond, m);
 }
 #endif
 
@@ -1937,7 +1979,8 @@ static void CallUserSignalHandler(ThreadState *thr, bool sync, bool acquire,
   // because in async signal processing case (when handler is called directly
   // from rtl_generic_sighandler) we have not yet received the reraised
   // signal; and it looks too fragile to intercept all ways to reraise a signal.
-  if (flags()->report_bugs && !sync && sig != SIGTERM && errno != 99) {
+  if (ShouldReport(thr, ReportTypeErrnoInSignal) && !sync && sig != SIGTERM &&
+      errno != 99) {
     VarSizeStackTrace stack;
     // StackTrace::GetNestInstructionPc(pc) is used because return address is
     // expected, OutputReport() will undo this.
@@ -2107,26 +2150,32 @@ TSAN_INTERCEPTOR(int, fork, int fake) {
   if (in_symbolizer())
     return REAL(fork)(fake);
   SCOPED_INTERCEPTOR_RAW(fork, fake);
+  return REAL(fork)(fake);
+}
+
+void atfork_prepare() {
+  if (in_symbolizer())
+    return;
+  ThreadState *thr = cur_thread();
+  const uptr pc = StackTrace::GetCurrentPc();
   ForkBefore(thr, pc);
-  int pid;
-  {
-    // On OS X, REAL(fork) can call intercepted functions (OSSpinLockLock), and
-    // we'll assert in CheckNoLocks() unless we ignore interceptors.
-    ScopedIgnoreInterceptors ignore;
-    pid = REAL(fork)(fake);
-  }
-  if (pid == 0) {
-    // child
-    ForkChildAfter(thr, pc);
-    FdOnFork(thr, pc);
-  } else if (pid > 0) {
-    // parent
-    ForkParentAfter(thr, pc);
-  } else {
-    // error
-    ForkParentAfter(thr, pc);
-  }
-  return pid;
+}
+
+void atfork_parent() {
+  if (in_symbolizer())
+    return;
+  ThreadState *thr = cur_thread();
+  const uptr pc = StackTrace::GetCurrentPc();
+  ForkParentAfter(thr, pc);
+}
+
+void atfork_child() {
+  if (in_symbolizer())
+    return;
+  ThreadState *thr = cur_thread();
+  const uptr pc = StackTrace::GetCurrentPc();
+  ForkChildAfter(thr, pc);
+  FdOnFork(thr, pc);
 }
 
 TSAN_INTERCEPTOR(int, vfork, int fake) {
@@ -2222,6 +2271,7 @@ static void HandleRecvmsg(ThreadState *thr, uptr pc,
 #define NEED_TLS_GET_ADDR
 #endif
 #undef SANITIZER_INTERCEPT_TLS_GET_ADDR
+#define SANITIZER_INTERCEPT_TLS_GET_OFFSET 1
 #undef SANITIZER_INTERCEPT_PTHREAD_SIGMASK
 
 #define COMMON_INTERCEPT_FUNCTION(name) INTERCEPT_FUNCTION(name)
@@ -2479,13 +2529,10 @@ static USED void syscall_fd_release(uptr pc, int fd) {
   FdRelease(thr, pc, fd);
 }
 
-static void syscall_pre_fork(uptr pc) {
-  TSAN_SYSCALL();
-  ForkBefore(thr, pc);
-}
+static void syscall_pre_fork(uptr pc) { ForkBefore(cur_thread(), pc); }
 
 static void syscall_post_fork(uptr pc, int pid) {
-  TSAN_SYSCALL();
+  ThreadState *thr = cur_thread();
   if (pid == 0) {
     // child
     ForkChildAfter(thr, pc);
@@ -2540,6 +2587,20 @@ static void syscall_post_fork(uptr pc, int pid) {
 #include "sanitizer_common/sanitizer_syscalls_netbsd.inc"
 
 #ifdef NEED_TLS_GET_ADDR
+
+static void handle_tls_addr(void *arg, void *res) {
+  ThreadState *thr = cur_thread();
+  if (!thr)
+    return;
+  DTLS::DTV *dtv = DTLS_on_tls_get_addr(arg, res, thr->tls_addr,
+                                        thr->tls_addr + thr->tls_size);
+  if (!dtv)
+    return;
+  // New DTLS block has been allocated.
+  MemoryResetRange(thr, 0, dtv->beg, dtv->size);
+}
+
+#if !SANITIZER_S390
 // Define own interceptor instead of sanitizer_common's for three reasons:
 // 1. It must not process pending signals.
 //    Signal handlers may contain MOVDQA instruction (see below).
@@ -2552,17 +2613,17 @@ static void syscall_post_fork(uptr pc, int pid) {
 // execute MOVDQA with stack addresses.
 TSAN_INTERCEPTOR(void *, __tls_get_addr, void *arg) {
   void *res = REAL(__tls_get_addr)(arg);
-  ThreadState *thr = cur_thread();
-  if (!thr)
-    return res;
-  DTLS::DTV *dtv = DTLS_on_tls_get_addr(arg, res, thr->tls_addr,
-                                        thr->tls_addr + thr->tls_size);
-  if (!dtv)
-    return res;
-  // New DTLS block has been allocated.
-  MemoryResetRange(thr, 0, dtv->beg, dtv->size);
+  handle_tls_addr(arg, res);
   return res;
 }
+#else // SANITIZER_S390
+TSAN_INTERCEPTOR(uptr, __tls_get_addr_internal, void *arg) {
+  uptr res = __tls_get_offset_wrapper(arg, REAL(__tls_get_offset));
+  char *tp = static_cast<char *>(__builtin_thread_pointer());
+  handle_tls_addr(arg, res + tp);
+  return res;
+}
+#endif
 #endif
 
 #if SANITIZER_NETBSD
@@ -2635,7 +2696,7 @@ void InitializeInterceptors() {
 #endif
 
   // Instruct libc malloc to consume less memory.
-#if SANITIZER_LINUX
+#if SANITIZER_GLIBC
   mallopt(1, 0);  // M_MXFAST
   mallopt(-3, 32*1024);  // M_MMAP_THRESHOLD
 #endif
@@ -2697,6 +2758,8 @@ void InitializeInterceptors() {
   TSAN_INTERCEPT_VER(pthread_cond_wait, PTHREAD_ABI_BASE);
   TSAN_INTERCEPT_VER(pthread_cond_timedwait, PTHREAD_ABI_BASE);
   TSAN_INTERCEPT_VER(pthread_cond_destroy, PTHREAD_ABI_BASE);
+
+  TSAN_MAYBE_PTHREAD_COND_CLOCKWAIT;
 
   TSAN_INTERCEPT(pthread_mutex_init);
   TSAN_INTERCEPT(pthread_mutex_destroy);
@@ -2783,7 +2846,12 @@ void InitializeInterceptors() {
   TSAN_INTERCEPT(_exit);
 
 #ifdef NEED_TLS_GET_ADDR
+#if !SANITIZER_S390
   TSAN_INTERCEPT(__tls_get_addr);
+#else
+  TSAN_INTERCEPT(__tls_get_addr_internal);
+  TSAN_INTERCEPT(__tls_get_offset);
+#endif
 #endif
 
   TSAN_MAYBE_INTERCEPT__LWP_EXIT;
@@ -2797,6 +2865,10 @@ void InitializeInterceptors() {
 
   if (REAL(__cxa_atexit)(&finalize, 0, 0)) {
     Printf("ThreadSanitizer: failed to setup atexit callback\n");
+    Die();
+  }
+  if (pthread_atfork(atfork_prepare, atfork_parent, atfork_child)) {
+    Printf("ThreadSanitizer: failed to setup atfork callbacks\n");
     Die();
   }
 

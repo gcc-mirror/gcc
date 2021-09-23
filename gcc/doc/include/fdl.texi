@@ -19,7 +19,7 @@ of this license document, but changing it is not allowed.
 @ifset gfdlhtml
 @ifnothtml
 @comment node-name,     next,          previous, up
-@node    GNU Free Documentation License, Concept Index, Old, Top
+@node    GNU Free Documentation License, Concept Index, Specific, Top
 @end ifnothtml
 @html
 <h1 align="center">Installing GCC: GNU Free Documentation License</h1>

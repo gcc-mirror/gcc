@@ -225,7 +225,7 @@ point to the previous edge in the sequence.
 This function returns the @code{edge} currently pointed to by an
 @code{edge_iterator}.
 
-@item ei_safe_safe
+@item ei_safe_edge
 This function returns the @code{edge} currently pointed to by an
 @code{edge_iterator}, but returns @code{NULL} if the iterator is
 pointing at the end of the sequence.  This function has been provided

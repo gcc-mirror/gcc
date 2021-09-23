@@ -39,6 +39,7 @@ Expression *extractSideEffect(Scope *sc, const char *name, Expression **e0, Expr
 Expression *resolve(Loc loc, Scope *sc, Dsymbol *s, bool hasOverloads);
 Expression *typeToExpression(Type *t);
 Expression *typeToExpressionHelper(TypeQualified *t, Expression *e, size_t i = 0);
+RootObject *compileTypeMixin(TypeMixin *tm, Loc loc, Scope *sc);
 
 /***************************** Type *****************************/
 
@@ -93,6 +94,7 @@ Type *Type::tdchar;
 Type *Type::tshiftcnt;
 Type *Type::terror;
 Type *Type::tnull;
+Type *Type::tnoreturn;
 
 Type *Type::tsize_t;
 Type *Type::tptrdiff_t;
@@ -195,6 +197,8 @@ void Type::_init()
     sizeTy[Tnull] = sizeof(TypeNull);
     sizeTy[Tvector] = sizeof(TypeVector);
     sizeTy[Ttraits] = sizeof(TypeTraits);
+    sizeTy[Tmixin] = sizeof(TypeMixin);
+    sizeTy[Tnoreturn] = sizeof(TypeNoreturn);
 
     initTypeMangle();
 
@@ -215,6 +219,10 @@ void Type::_init()
         basic[basetab[i]] = t;
     }
     basic[Terror] = new TypeError();
+
+    tnoreturn = new TypeNoreturn();
+    tnoreturn->deco = tnoreturn->merge()->deco;
+    basic[Tnoreturn] = tnoreturn;
 
     tvoid = basic[Tvoid];
     tint8 = basic[Tint8];
@@ -246,7 +254,7 @@ void Type::_init()
 
     tshiftcnt = tint32;
     terror = basic[Terror];
-    tnull = basic[Tnull];
+    tnoreturn = basic[Tnoreturn];
     tnull = new TypeNull();
     tnull->deco = tnull->merge()->deco;
 
@@ -2032,7 +2040,10 @@ Expression *Type::getProperty(Loc loc, Identifier *ident, int flag)
     }
     else if (ident == Id::__xalignof)
     {
-        e = new IntegerExp(loc, alignsize(), Type::tsize_t);
+        unsigned explicitAlignment = alignment();
+        unsigned naturalAlignment = alignsize();
+        unsigned actualAlignment = (explicitAlignment == STRUCTALIGN_DEFAULT ? naturalAlignment : explicitAlignment);
+        e = new IntegerExp(loc, actualAlignment, Type::tsize_t);
     }
     else if (ident == Id::_init)
     {
@@ -2079,7 +2090,7 @@ Expression *Type::getProperty(Loc loc, Identifier *ident, int flag)
         if (this != Type::terror)
         {
             if (s)
-                error(loc, "no property `%s` for type `%s`, did you mean `%s`?", ident->toChars(), toChars(), s->toChars());
+                error(loc, "no property `%s` for type `%s`, did you mean `%s`?", ident->toChars(), toChars(), s->toPrettyChars());
             else
                 error(loc, "no property `%s` for type `%s`", ident->toChars(), toChars());
         }
@@ -2411,6 +2422,16 @@ TypeNull *Type::isTypeNull()
 TypeTraits *Type::isTypeTraits()
 {
     return ty == Ttraits ? (TypeTraits *)this : NULL;
+}
+
+TypeMixin *Type::isTypeMixin()
+{
+    return ty == Tmixin ? (TypeMixin *)this : NULL;
+}
+
+TypeNoreturn *Type::isTypeNoreturn()
+{
+    return ty == Tnoreturn ? (TypeNoreturn *)this : NULL;
 }
 
 TypeFunction *Type::toTypeFunction()
@@ -5175,16 +5196,48 @@ void TypeFunction::purityLevel()
     tf->purity = purity;
 }
 
+// arguments get specially formatted
+static const char *getParamError(TypeFunction *tf, Expression *arg, Parameter *par)
+{
+    if (global.gag && !global.params.showGaggedErrors)
+        return NULL;
+    // show qualification when toChars() is the same but types are different
+    const char *at = arg->type->toChars();
+    bool qual = !arg->type->equals(par->type) && strcmp(at, par->type->toChars()) == 0;
+    if (qual)
+        at = arg->type->toPrettyChars(true);
+    OutBuffer buf;
+    // only mention rvalue if it's relevant
+    const bool rv = !arg->isLvalue() && (par->storageClass & (STCref | STCout)) != 0;
+    buf.printf("cannot pass %sargument `%s` of type `%s` to parameter `%s`",
+        rv ? "rvalue " : "", arg->toChars(), at,
+        parameterToChars(par, tf, qual));
+    return buf.extractChars();
+}
+
+static const char *getMatchError(const char *format, ...)
+{
+    if (global.gag && !global.params.showGaggedErrors)
+        return NULL;
+    OutBuffer buf;
+    va_list ap;
+    va_start(ap, format);
+    buf.vprintf(format, ap);
+    va_end(ap);
+    return buf.extractChars();
+}
+
 /********************************
  * 'args' are being matched to function 'this'
  * Determine match level.
  * Input:
  *      flag    1       performing a partial ordering match
+ *      pMessage        address to store error message, or null
  * Returns:
  *      MATCHxxxx
  */
 
-MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
+MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag, const char **pMessage)
 {
     //printf("TypeFunction::callMatch() %s\n", toChars());
     MATCH match = MATCHexact;           // assume exact match
@@ -5221,12 +5274,15 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
 
     size_t nparams = parameterList.length();
     size_t nargs = args ? args->length : 0;
-    if (nparams == nargs)
-        ;
-    else if (nargs > nparams)
+    if (nargs > nparams)
     {
         if (parameterList.varargs == VARARGnone)
-            goto Nomatch;               // too many args; no match
+        {
+            // suppress early exit if an error message is wanted,
+            // so we can check any matching args are valid
+            if (!pMessage)
+                goto Nomatch;           // too many args; no match
+        }
         match = MATCHconvert;           // match ... with a "conversion" match level
     }
 
@@ -5309,7 +5365,10 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
                 if (m && !arg->isLvalue())
                 {
                     if (p->storageClass & STCout)
+                    {
+                        if (pMessage) *pMessage = getParamError(this, arg, p);
                         goto Nomatch;
+                    }
 
                     if (arg->op == TOKstring && tp->ty == Tsarray)
                     {
@@ -5331,7 +5390,10 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
                         }
                     }
                     else
+                    {
+                        if (pMessage) *pMessage = getParamError(this, arg, p);
                         goto Nomatch;
+                    }
                 }
 
                 /* Find most derived alias this type being matched.
@@ -5351,7 +5413,10 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
                  *  ref T[dim] <- an lvalue of const(T[dim]) argument
                  */
                 if (!ta->constConv(tp))
+                {
+                    if (pMessage) *pMessage = getParamError(this, arg, p);
                     goto Nomatch;
+                }
             }
         }
 
@@ -5377,7 +5442,11 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
                     tsa = (TypeSArray *)tb;
                     sz = tsa->dim->toInteger();
                     if (sz != nargs - u)
+                    {
+                        if (pMessage)
+                            *pMessage = getMatchError("expected %llu variadic argument(s), not %zu", sz, nargs - u);
                         goto Nomatch;
+                    }
                     /* fall through */
                 case Tarray:
                     {
@@ -5408,7 +5477,10 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
                                 m = arg->implicitConvTo(ta->next);
 
                             if (m == MATCHnomatch)
+                            {
+                                if (pMessage) *pMessage = getParamError(this, arg, p);
                                 goto Nomatch;
+                            }
                             if (m < match)
                                 match = m;
                         }
@@ -5420,9 +5492,14 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
                     goto Ldone;
 
                 default:
-                    goto Nomatch;
+                    break;
                 }
             }
+            if (pMessage && u < nargs)
+                *pMessage = getParamError(this, (*args)[u], p);
+            else if (pMessage)
+                *pMessage = getMatchError("missing argument for parameter #%d: `%s`",
+                    u + 1, parameterToChars(p, this, false));
             goto Nomatch;
         }
         if (m < match)
@@ -5430,6 +5507,12 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
     }
 
 Ldone:
+    if (pMessage && !parameterList.varargs && nargs > nparams)
+    {
+        // all parameters had a match, but there are surplus args
+        *pMessage = getMatchError("expected %d argument(s), not %d", nparams, nargs);
+        goto Nomatch;
+    }
     //printf("match = %d\n", match);
     return match;
 
@@ -5797,6 +5880,20 @@ Type *TypeTraits::syntaxCopy()
     return tt;
 }
 
+Dsymbol *TypeTraits::toDsymbol(Scope *sc)
+{
+    Type *t = NULL;
+    Expression *e = NULL;
+    Dsymbol *s = NULL;
+    resolve(loc, sc, &e, &t, &s);
+    if (t && t->ty != Terror)
+        s = t->toDsymbol(sc);
+    else if (e)
+        s = getDsymbol(e);
+
+    return s;
+}
+
 void TypeTraits::resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool)
 {
     *pt = NULL;
@@ -5814,6 +5911,90 @@ void TypeTraits::resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol
 d_uns64 TypeTraits::size(Loc)
 {
     return SIZE_INVALID;
+}
+
+/***************************** TypeMixin *****************************/
+
+/******
+ * Implements mixin types.
+ *
+ * Semantic analysis will convert it to a real type.
+ */
+TypeMixin::TypeMixin(const Loc &loc, Expressions *exps)
+    : Type(Tmixin)
+{
+    this->loc = loc;
+    this->exps = exps;
+    this->obj = NULL; // cached result of semantic analysis.
+}
+
+const char *TypeMixin::kind()
+{
+    return "mixin";
+}
+
+Type *TypeMixin::syntaxCopy()
+{
+    return new TypeMixin(loc, Expression::arraySyntaxCopy(exps));
+}
+
+Dsymbol *TypeMixin::toDsymbol(Scope *sc)
+{
+    Type *t = NULL;
+    Expression *e = NULL;
+    Dsymbol *s = NULL;
+    resolve(loc, sc, &e, &t, &s);
+    if (t)
+        s = t->toDsymbol(sc);
+    else if (e)
+        s = getDsymbol(e);
+
+    return s;
+}
+
+void TypeMixin::resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid)
+{
+    // if already resolved just set pe/pt/ps and return.
+    if (obj)
+    {
+        *pe = isExpression(obj);
+        *pt = isType(obj);
+        *ps = isDsymbol(obj);
+        return;
+    }
+
+    RootObject *o = compileTypeMixin(this, loc, sc);
+    if (Type *t = isType(o))
+    {
+        t->resolve(loc, sc, pe, pt, ps, intypeid);
+        if (*pt)
+            (*pt) = (*pt)->addMod(mod);
+    }
+    else if (Expression *e = isExpression(o))
+    {
+        e = expressionSemantic(e, sc);
+        if (TypeExp *et = e->isTypeExp())
+        {
+            *pe = NULL;
+            *pt = et->type->addMod(mod);
+            *ps = NULL;
+        }
+        else
+        {
+            *pe = e;
+            *pt = NULL;
+            *ps = NULL;
+        }
+    }
+    else
+    {
+        *pe = NULL;
+        *pt = Type::terror;
+        *ps = NULL;
+    }
+
+    // save the result
+    obj = *pe ? (RootObject *)*pe : (*pt ? (RootObject *)*pt : (RootObject *)*ps);
 }
 
 /***************************** TypeQualified *****************************/
@@ -6003,11 +6184,25 @@ void TypeQualified::resolveHelper(Loc loc, Scope *sc,
 
             Type *t = s->getType();     // type symbol, type alias, or type tuple?
             unsigned errorsave = global.errors;
-            Dsymbol *sm = s->searchX(loc, sc, id);
-            if (sm && !(sc->flags & SCOPEignoresymbolvisibility) && !symbolIsVisible(sc, sm))
+            int flags = t == NULL ? SearchLocalsOnly : IgnorePrivateImports;
+            Dsymbol *sm = s->searchX(loc, sc, id, flags);
+            if (sm)
             {
-                ::error(loc, "`%s` is not visible from module `%s`", sm->toPrettyChars(), sc->_module->toChars());
-                sm = NULL;
+                if (!(sc->flags & SCOPEignoresymbolvisibility) && !symbolIsVisible(sc, sm))
+                {
+                    ::error(loc, "`%s` is not visible from module `%s`", sm->toPrettyChars(), sc->_module->toChars());
+                    sm = NULL;
+                }
+                // Same check as in Expression::semanticY(DotIdExp)
+                else if (sm->isPackage() && checkAccess(sc, (Package *)sm))
+                {
+                    // @@@DEPRECATED_2.096@@@
+                    // Should be an error in 2.106. Just remove the deprecation call
+                    // and uncomment the null assignment
+                    ::deprecation(loc, "%s %s is not accessible here, perhaps add 'static import %s;'",
+                         sm->kind(), sm->toPrettyChars(), sm->toPrettyChars());
+                    //sm = null;
+                }
             }
             if (global.errors != errorsave)
             {
@@ -6052,7 +6247,7 @@ void TypeQualified::resolveHelper(Loc loc, Scope *sc,
                     sm = t->toDsymbol(sc);
                     if (sm && id->dyncast() == DYNCAST_IDENTIFIER)
                     {
-                        sm = sm->search(loc, (Identifier *)id);
+                        sm = sm->search(loc, (Identifier *)id, IgnorePrivateImports);
                         if (sm)
                             goto L2;
                     }
@@ -6615,23 +6810,6 @@ Expression *TypeEnum::dotExp(Scope *sc, Expression *e, Identifier *ident, int fl
 
     if (sym->semanticRun < PASSsemanticdone)
         dsymbolSemantic(sym, NULL);
-    if (!sym->members)
-    {
-        if (sym->isSpecial())
-        {
-            /* Special enums forward to the base type
-             */
-            e = sym->memtype->dotExp(sc, e, ident, flag);
-        }
-        else if (!(flag & 1))
-        {
-            sym->error("is forward referenced when looking for `%s`", ident->toChars());
-            e = new ErrorExp();
-        }
-        else
-            e = NULL;
-        return e;
-    }
 
     Dsymbol *s = sym->search(e->loc, ident);
     if (!s)
@@ -6864,7 +7042,10 @@ Expression *TypeStruct::dotExp(Scope *sc, Expression *e, Identifier *ident, int 
          */
         e = expressionSemantic(e, sc);  // do this before turning on noaccesscheck
 
-        sym->size(e->loc);      // do semantic of type
+        if (!sym->determineFields())
+        {
+            error(e->loc, "unable to determine fields of `%s` because of forward references", toChars());
+        }
 
         Expression *e0 = NULL;
         Expression *ev = e->op == TOKtype ? NULL : e;
@@ -7198,7 +7379,9 @@ bool TypeStruct::hasPointers()
     // Probably should cache this information in sym rather than recompute
     StructDeclaration *s = sym;
 
-    sym->size(Loc());               // give error for forward references
+    if (sym->members && !sym->determineFields() && sym->type != Type::terror)
+        error(sym->loc, "no size because of forward references");
+
     for (size_t i = 0; i < s->fields.length; i++)
     {
         Declaration *d = s->fields[i];
@@ -8177,6 +8360,49 @@ Expression *TypeNull::defaultInit(Loc)
     return new NullExp(Loc(), Type::tnull);
 }
 
+/***************************** TypeNoreturn *****************************/
+
+TypeNoreturn::TypeNoreturn()
+    : Type(Tnoreturn)
+{
+    //printf("TypeNoreturn %p\n", this);
+}
+
+const char *TypeNoreturn::kind()
+{
+    return "noreturn";
+}
+
+Type *TypeNoreturn::syntaxCopy()
+{
+    // No semantic analysis done, no need to copy
+    return this;
+}
+
+MATCH TypeNoreturn::implicitConvTo(Type *to)
+{
+    //printf("TypeNoreturn::implicitConvTo(this=%p, to=%p)\n", this, to);
+    //printf("from: %s\n", toChars());
+    //printf("to  : %s\n", to.toChars());
+    MATCH m = Type::implicitConvTo(to);
+    return (m == MATCHexact) ? MATCHexact : MATCHconvert;
+}
+
+bool TypeNoreturn::isBoolean()
+{
+    return true;  // bottom type can be implicitly converted to any other type
+}
+
+d_uns64 TypeNoreturn::size(Loc)
+{
+    return 0;
+}
+
+unsigned TypeNoreturn::alignsize()
+{
+    return 0;
+}
+
 /***********************************************************
  * Encapsulate Parameters* so .length and [i] can be used on it.
  * https://dlang.org/spec/function.html#ParameterList
@@ -8471,4 +8697,26 @@ bool Parameter::isCovariantScope(bool returnByRef, StorageClass from, StorageCla
     }
 
     return covariant[SR::buildSR(returnByRef, from)][SR::buildSR(returnByRef, to)];
+}
+
+/**
+ * For printing two types with qualification when necessary.
+ * Params:
+ *    t1 = The first type to receive the type name for
+ *    t2 = The second type to receive the type name for
+ * Returns:
+ *    The fully-qualified names of both types if the two type names are not the same,
+ *    or the unqualified names of both types if the two type names are the same.
+ */
+void toAutoQualChars(const char **result, Type *t1, Type *t2)
+{
+    const char *s1 = t1->toChars();
+    const char *s2 = t2->toChars();
+    if (strcmp(s1, s2) == 0)
+    {
+        s1 = t1->toPrettyChars(true);
+        s2 = t2->toPrettyChars(true);
+    }
+    result[0] = s1;
+    result[1] = s2;
 }

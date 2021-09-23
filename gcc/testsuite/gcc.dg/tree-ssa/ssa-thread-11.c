@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-vrp2-details --param logical-op-non-short-circuit=1" } */
+/* { dg-additional-options "-fdisable-tree-ethread -fdisable-tree-thread1 -fdisable-tree-thread2" } */
 /* { dg-final { scan-tree-dump-not "IRREDUCIBLE_LOOP" "vrp2" } } */
 
 void abort (void);

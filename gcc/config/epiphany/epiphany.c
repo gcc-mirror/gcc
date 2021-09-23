@@ -1394,7 +1394,7 @@ epiphany_print_operand (FILE *file, rtx x, int code)
 static void
 epiphany_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
 {
-  register rtx base, index = 0;
+  rtx base, index = 0;
   int offset = 0;
 
   switch (GET_CODE (addr))

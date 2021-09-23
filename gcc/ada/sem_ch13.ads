@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -115,18 +115,17 @@ package Sem_Ch13 is
       Siz    : Uint;
       Biased : out Boolean);
    --  Called when size Siz is specified for subtype T. This subprogram checks
-   --  that the size is appropriate, posting errors on node N as required.
-   --  This check is effective for elementary types and bit-packed arrays.
-   --  For other non-elementary types, a check is only made if an explicit
-   --  size has been given for the type (and the specified size must match).
-   --  The parameter Biased is set False if the size specified did not require
-   --  the use of biased representation, and True if biased representation
-   --  was required to meet the size requirement. Note that Biased is only
-   --  set if the type is not currently biased, but biasing it is the only
-   --  way to meet the requirement. If the type is currently biased, then
-   --  this biased size is used in the initial check, and Biased is False.
-   --  If the size is too small, and an error message is given, then both
-   --  Esize and RM_Size are reset to the allowed minimum value in T.
+   --  that the size is appropriate, posting errors on node N as required. This
+   --  check is effective for elementary types and bit-packed arrays. For
+   --  composite types, a check is only made if an explicit size has been given
+   --  for the type (and the specified size must match).  The parameter Biased
+   --  is set False if the size specified did not require the use of biased
+   --  representation, and True if biased representation was required to meet
+   --  the size requirement. Note that Biased is only set if the type is not
+   --  currently biased, but biasing it is the only way to meet the
+   --  requirement. If the type is currently biased, then this biased size is
+   --  used in the initial check, and Biased is False. For a Component_Size
+   --  clause, T is the component type.
 
    function Has_Compatible_Representation
      (Target_Type, Operand_Type : Entity_Id) return Boolean;

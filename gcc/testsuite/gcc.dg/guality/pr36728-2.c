@@ -25,21 +25,21 @@ foo (int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7)
    and arg2.  So it is expected that these values are unavailable in
    some of these tests.  */
 
-/* { dg-final { gdb-test 16 "arg1" "1" { target { ! "s390*-*-*" } } } } */
-/* { dg-final { gdb-test 16 "arg2" "2" { target { ! "s390*-*-*" } } } } */
-/* { dg-final { gdb-test 16 "arg3" "3" } } */
-/* { dg-final { gdb-test 16 "arg4" "4" } } */
-/* { dg-final { gdb-test 16 "arg5" "5" } } */
-/* { dg-final { gdb-test 16 "arg6" "6" } } */
-/* { dg-final { gdb-test 16 "arg7" "30" } } */
-/* { dg-final { gdb-test 16 "y" "2" } } */
-/* { dg-final { gdb-test 18 "arg1" "1" { target { ! "s390*-*-*" } } } } */
-/* { dg-final { gdb-test 18 "arg2" "2" { target { ! "s390*-*-*" } } } } */
-/* { dg-final { gdb-test 18 "arg3" "3" } } */
-/* { dg-final { gdb-test 18 "arg4" "4" } } */
-/* { dg-final { gdb-test 18 "arg5" "5" } } */
-/* { dg-final { gdb-test 18 "arg6" "6" } } */
-/* { dg-final { gdb-test 18 "arg7" "30" } } */
+/* { dg-final { gdb-test 16 "arg1" "1" { target { ! "s390*-*-*" } xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 16 "arg2" "2" { target { ! "s390*-*-*" } xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 16 "arg3" "3" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 16 "arg4" "4" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 16 "arg5" "5" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 16 "arg6" "6" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 16 "arg7" "30" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 16 "y" "2" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" } } } } } */
+/* { dg-final { gdb-test 18 "arg1" "1" { target { ! "s390*-*-*" } xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 18 "arg2" "2" { target { ! "s390*-*-*" } xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 18 "arg3" "3" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 18 "arg4" "4" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 18 "arg5" "5" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 18 "arg6" "6" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
+/* { dg-final { gdb-test 18 "arg7" "30" { xfail { aarch64*-*-* && { any-opts "-fno-fat-lto-objects" "-O3" } } } } } */
 /* { dg-final { gdb-test 18 "*x" "(char) 25" } } */
 /* { dg-final { gdb-test 18 "y" "2" } } */
 

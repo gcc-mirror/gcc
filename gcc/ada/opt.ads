@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,17 +68,20 @@ package Opt is
    --  the default values.
 
    Latest_Ada_Only : Boolean := False;
-   --  If True, the only value valid for Ada_Version is Ada_Version_Type'Last,
-   --  trying to specify other values will be ignored (in case of pragma
+   --  If True, the only value valid for Ada_Version is Ada_2012 or later.
+   --  Trying to specify other values will be ignored (in case of pragma
    --  Ada_xxx) or generate an error (in case of -gnat83/95/xx switches).
 
-   type Ada_Version_Type is (Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2020);
+   type Ada_Version_Type is
+     (Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022, Ada_With_Extensions);
    pragma Ordered (Ada_Version_Type);
    pragma Convention (C, Ada_Version_Type);
    --  Versions of Ada for Ada_Version below. Note that these are ordered,
    --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.
    --  Think twice before using "="; Ada_Version >= Ada_2012 is more likely
    --  what you want, because it will apply to future versions of the language.
+   --  Note that Ada_With_Extensions should always be last since it should
+   --  always be a superset of the latest Ada version.
 
    --  WARNING: There is a matching C declaration of this type in fe.h
 
@@ -108,7 +111,7 @@ package Opt is
    --  remains set to Ada_Version_Default). This is used in the rare cases
    --  (notably pragma Obsolescent) where we want the explicit version set.
 
-   Ada_Version_Runtime : Ada_Version_Type := Ada_2020;
+   Ada_Version_Runtime : Ada_Version_Type := Ada_With_Extensions;
    --  GNAT
    --  Ada version used to compile the runtime. Used to set Ada_Version (but
    --  not Ada_Version_Explicit) when compiling predefined or internal units.
@@ -187,6 +190,8 @@ package Opt is
    --  pragma Assume_No_Invalid_Values (On)), then the compiler assumes values
    --  are valid and in range of their representations. This feature is now
    --  fully enabled in the compiler.
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
 
    Back_Annotate_Rep_Info : Boolean := False;
    --  GNAT
@@ -623,10 +628,10 @@ package Opt is
    --  Set to True to convert nonbinary modular additions into code
    --  that relies on the front-end expansion of operator Mod.
 
-   Extensions_Allowed : Boolean := False;
-   --  GNAT
-   --  Set to True by switch -gnatX if GNAT specific language extensions
-   --  are allowed. See GNAT RM for details.
+   function Extensions_Allowed return Boolean is
+     (Ada_Version = Ada_With_Extensions);
+   --  True if GNAT specific language extensions are allowed. See GNAT RM for
+   --  details.
 
    type External_Casing_Type is (
      As_Is,       -- External names cased as they appear in the Ada source
@@ -911,6 +916,11 @@ package Opt is
    --  Set True to store ALI and object files in place i.e. in the object
    --  directory if these files already exist or in the source directory
    --  if not.
+
+   JSON_Output : Boolean := False;
+   --  GNAT
+   --  Output error and warning messages in JSON format. Set to true when the
+   --  backend option "-fdiagnostics-format=json" is found on the command line.
 
    Keep_Going : Boolean := False;
    --  GNATMAKE, GPRBUILD
@@ -1528,7 +1538,7 @@ package Opt is
    Table_Factor : Int := 1;
    --  GNAT
    --  Factor by which all initial table sizes set in Alloc are multiplied.
-   --  Used in Table to calculate initial table sizes (the initial table size
+   --  Used in Table to calculate initial table sizes. The initial table size
    --  is the value in Alloc, used as the Table_Initial parameter value,
    --  multiplied by the factor given here. The default value is used if no
    --  -gnatT switch appears.
@@ -1643,7 +1653,8 @@ package Opt is
    Unique_Error_Tag : Boolean := Tag_Errors;
    --  GNAT
    --  Indicates if error messages are to be prefixed by the string error:
-   --  Initialized from Tag_Errors, can be forced on with the -gnatU switch.
+   --  Initialized from Tag_Errors, can be forced on with the -gnatU switch and
+   --  disabled with -gnatd_U.
 
    Unnest_Subprogram_Mode : Boolean := False;
    --  If true, activates the circuitry for unnesting subprograms (see the spec
@@ -1726,11 +1737,11 @@ package Opt is
    --  including warnings on Ada 2012 obsolescent features used in Ada 2012
    --  mode. Modified by use of -gnatwy/Y.
 
-   Warn_On_Ada_202X_Compatibility : Boolean := True;
+   Warn_On_Ada_2022_Compatibility : Boolean := True;
    --  GNAT
-   --  Set to True to generate all warnings on Ada 202X compatibility issues,
-   --  including warnings on Ada 202X obsolescent features used in Ada 202X
-   --  mode. ???There is no warning switch for this yet.
+   --  Set to True to generate all warnings on Ada 2022 compatibility issues,
+   --  including warnings on Ada 2022 obsolescent features used in Ada 2022
+   --  mode.
 
    Warn_On_All_Unread_Out_Parameters : Boolean := False;
    --  GNAT
@@ -1885,8 +1896,9 @@ package Opt is
 
    Warn_On_Suspicious_Modulus_Value : Boolean := True;
    --  GNAT
-   --  Set to True to generate warnings for suspicious modulus values. The
-   --  default is that this warning is enabled. Modified by -gnatw.m/.M.
+   --  Set to True to generate warnings for suspicious modulus values, as well
+   --  as negative literals of a modular type. The default is that this warning
+   --  is enabled. Modified by -gnatw.m/.M.
 
    Warn_On_Unchecked_Conversion : Boolean := True;
    --  GNAT
@@ -2038,14 +2050,6 @@ package Opt is
    Exception_Locations_Suppressed_Config : Boolean := False;
    --  GNAT
    --  Set True by use of the configuration pragma Suppress_Exception_Messages
-
-   Extensions_Allowed_Config : Boolean;
-   --  GNAT
-   --  This is the flag that indicates whether extensions are allowed. It can
-   --  be set True either by use of the -gnatX switch, or by use of the
-   --  configuration pragma Extensions_Allowed (On). It is always set to True
-   --  for internal GNAT units, since extensions are always permitted in such
-   --  units.
 
    External_Name_Exp_Casing_Config : External_Casing_Type;
    --  GNAT
@@ -2330,7 +2334,6 @@ private
       Default_SSO                    : Character;
       Dynamic_Elaboration_Checks     : Boolean;
       Exception_Locations_Suppressed : Boolean;
-      Extensions_Allowed             : Boolean;
       External_Name_Exp_Casing       : External_Casing_Type;
       External_Name_Imp_Casing       : External_Casing_Type;
       Fast_Math                      : Boolean;

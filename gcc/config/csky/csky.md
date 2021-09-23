@@ -32,6 +32,8 @@
    (CSKY_FIRST_RET_REGNUM		0)
    (CSKY_FIRST_VFP_REGNUM		52)
    (CSKY_LAST_VFP_REGNUM		67)
+   (CSKY_FIRST_VFP3_REGNUM		71)
+   (CSKY_LAST_VFP3_REGNUM		86)
    (CSKY_FIRST_HIGH_REGNUM		16)
    (CSKY_LAST_HIGH_REGNUM		31)
    (CSKY_FIRST_MINI_REGNUM		0)
@@ -423,85 +425,6 @@
    (set_attr "type" "alu,alu,alu,load,load,store")]
 )
 
-;; Float mov instructions.
-
-(define_expand "movsf"
-  [(set (match_operand:SF 0 "general_operand" "")
-	(match_operand:SF 1 "general_operand" ""))]
-  ""
-  "
-  if (GET_CODE (operands[0]) == MEM && can_create_pseudo_p ())
-    operands[1] = force_reg (SFmode, operands[1]);
-  "
-)
-
-;; FIXME: maybe the vreg load/stores should have their own type attr.
-(define_insn "*csky_movsf_fpv2"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=b,r,v,r,r,r, m,Q,v,v,v")
-	(match_operand:SF 1 "general_operand"	   " b,r,r,v,m,mF,r,v,Q,v,m"))]
-  "CSKY_ISA_FEATURE (fpv2_sf)"
-  "* return csky_output_move (insn, operands, SFmode);"
-  [(set_attr "length" "2,4,4,4,4,4,4,4,4,4,4")
-   (set_attr "type" "alu,alu,alu,alu,load,load,store,alu,alu,alu,alu")]
-)
-
-(define_insn "*ck801_movsf"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r, m")
-	(match_operand:SF 1 "general_operand"	   " r,m,mF,r"))]
-  "CSKY_ISA_FEATURE (E1)"
-  "* return csky_output_ck801_move (insn, operands, SFmode);"
-  [(set_attr "length" "2,4,4,4")
-   (set_attr "type" "alu,load,load,store")]
-)
-
-(define_insn "*csky_movsf"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=b,r,r,r, m")
-	(match_operand:SF 1 "general_operand"	   " b,r,m,mF,r"))]
-  "CSKY_ISA_FEATURE (E2) && !CSKY_ISA_FEATURE (fpv2_sf)"
-  "* return csky_output_move (insn, operands, SFmode);"
- [(set_attr "length" "2,4,4,4,4")
-  (set_attr "type" "alu,alu,load,load,store")]
-)
-
-
-(define_expand "movdf"
-  [(set (match_operand:DF 0 "general_operand" "")
-	(match_operand:DF 1 "general_operand" ""))]
-  ""
-  "
-  if (GET_CODE (operands[0]) == MEM && can_create_pseudo_p ())
-      operands[1] = force_reg (DFmode, operands[1]);
-  "
-)
-
-;; FIXME: maybe the vreg load/stores should have their own type attr.
-(define_insn "*csky_movdf_fpv2"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=b,r,v,r,r,r, m,Q,v,v,v")
-	(match_operand:DF 1 "general_operand"	    "b,r,r,v,m,mF,r,v,Q,v,m"))]
-  "CSKY_ISA_FEATURE (fpv2_df)"
-  "* return csky_output_movedouble (operands, DFmode);"
-  [(set_attr "length" "4,8,8,8,8,8,8,8,8,8,8")
-   (set_attr "type" "alu,alu,alu,alu,load,load,store,alu,alu,alu,alu")]
-)
-
-(define_insn "*ck801_movdf"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,r, m")
-	(match_operand:DF 1 "general_operand"	   " r,m,mF,r"))]
-  "CSKY_ISA_FEATURE (E1)"
-  "* return csky_output_ck801_movedouble (operands, DFmode);"
-  [(set_attr "length" "4,8,8,8")
-   (set_attr "type" "alu,load,load,store")]
-)
-
-(define_insn "*csky_movdf"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=b,r,r,r, m")
-	(match_operand:DF 1 "general_operand"	   " b,r,m,mF,r"))]
-  "CSKY_ISA_FEATURE (E2) && !CSKY_ISA_FEATURE (fpv2_df)"
-  "* return csky_output_movedouble (operands, DFmode);"
- [(set_attr "length" "4,8,8,8,8")
-  (set_attr "type" "alu,alu,load,load,store")]
-)
-
 ;; The only CCmode move supported is a nop.  Without this pattern,
 ;; CSE is unable to eliminate redundant comparisons in conditional
 ;; execution expressions.
@@ -522,7 +445,7 @@
 
 (define_expand "movsicc"
   [(set (match_operand 0 "register_operand" "")
-	(if_then_else:SI (match_operand	   1 "ordered_comparison_operator" "")
+	(if_then_else:SI (match_operand	   1 "comparison_operator" "")
 			 (match_operand:SI 2 "register_operand" "")
 			 (match_operand:SI 3 "register_operand" "")))]
   "CSKY_ISA_FEATURE (E2)"
@@ -1321,7 +1244,7 @@
 
 (define_expand "addsicc"
   [(match_operand:SI 0 "register_operand" "")
-   (match_operand    1 "ordered_comparison_operator" "")
+   (match_operand    1 "comparison_operator" "")
    (match_operand:SI 2 "register_operand" "")
    (match_operand:SI 3 "csky_literal_K_Uh_operand" "")]
   "CSKY_ISA_FEATURE (E2)"
@@ -1610,6 +1533,7 @@
   }"
 )
 
+;; hi -> si
 (define_insn "extendhisi2"
   [(set (match_operand:SI		  0 "register_operand" "=r")
 	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
@@ -1632,6 +1556,15 @@
 	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   ""
   "sextb  %0, %1"
+)
+
+(define_insn "*cskyv2_sextend_ldbs"
+  [(set (match_operand:SI		  0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:QI 1 "csky_simple_mem_operand" "m")))]
+  "CSKY_ISA_FEATURE (E2)"
+  "ld.bs\t%0, %1"
+  [(set_attr "length" "4")
+   (set_attr "type" "load")]
 )
 
 ;; qi -> hi
@@ -3316,14 +3249,18 @@
 
 (define_expand "untyped_call"
   [(parallel [(call (match_operand 0 "" "")
-        (const_int 0))
-        (match_operand 1 "" "")
-        (match_operand 2 "" "")])]
+	(const_int 0))
+	(match_operand 1 "" "")
+	(match_operand 2 "" "")])]
   ""
 {
   int i;
 
   emit_call_insn (gen_call (operands[0], const0_rtx));
+
+  for (int i = 0; i < XVECLEN (operands[2], 0); i++)
+    emit_clobber (SET_SRC (XVECEXP (operands[2], 0, i)));
+  emit_insn (gen_blockage ());
 
   for (i = 0; i < XVECLEN (operands[2], 0); i++)
     {
@@ -3349,10 +3286,24 @@
   ""
   [(set_attr "length" "0")])
 
-(define_insn "*call_value_internal_vs"
-  [(set (match_operand:SF               0 "register_operand"          "=v,v,v")
+(define_insn "*call_value_internal_vh"
+  [(set (match_operand:HF               0 "register_operand"          "=v,v,v")
         (call (mem:SI (match_operand:SI 1 "csky_call_address_operand" "b, r,S"))
               (match_operand 2 "" "")))
+   (clobber (reg:SI CSKY_LR_REGNUM))]
+  "TARGET_HARD_FLOAT_ABI && CSKY_ISA_FEATURE (fpv3_hf)"
+  "@
+    jsr\t%1
+    jsr\t%1
+    jbsr\t%1"
+  [(set_attr "length" "2,4,4")
+   (set_attr "type"   "call_jsr,call_jsr,call")]
+)
+
+(define_insn "*call_value_internal_vs"
+  [(set (match_operand:SF	       0 "register_operand"	  "=v,v,v")
+	(call (mem:SI (match_operand:SI 1 "csky_call_address_operand" "b, r,S"))
+	      (match_operand 2 "" "")))
    (clobber (reg:SI CSKY_LR_REGNUM))]
   "TARGET_HARD_FLOAT_ABI"
   "@
@@ -3364,9 +3315,9 @@
 )
 
 (define_insn "*call_value_internal_vd"
-  [(set (match_operand:DF               0 "register_operand"          "=v,v,v")
-        (call (mem:SI (match_operand:SI 1 "csky_call_address_operand" "b, r,S"))
-              (match_operand 2 "" "")))
+  [(set (match_operand:DF	       0 "register_operand"	  "=v,v,v")
+	(call (mem:SI (match_operand:SI 1 "csky_call_address_operand" "b, r,S"))
+	      (match_operand 2 "" "")))
    (clobber (reg:SI CSKY_LR_REGNUM))]
   "TARGET_HARD_FLOAT_ABI && TARGET_DOUBLE_FPU"
   "@
@@ -3378,18 +3329,18 @@
 )
 
 (define_insn "*call_value_internal_pic_vs"
-  [(set (match_operand:SF               0 "register_operand"    "=v")
-        (call (mem:SI (match_operand:SI 1 "csky_unspec_operand" "X"))
-                      (match_operand    2 "" "")))
+  [(set (match_operand:SF	       0 "register_operand"    "=v")
+	(call (mem:SI (match_operand:SI 1 "csky_unspec_operand" "X"))
+		      (match_operand    2 "" "")))
    (clobber (reg:SI CSKY_LR_REGNUM))]
   "flag_pic && TARGET_HARD_FLOAT_ABI"
   "* return csky_output_call (operands, 1);"
 )
 
 (define_insn "*call_value_internal_pic_vd"
-  [(set (match_operand:DF               0 "register_operand"    "=v")
-        (call (mem:SI (match_operand:SI 1 "csky_unspec_operand" "X"))
-                      (match_operand    2 "" "")))
+  [(set (match_operand:DF	       0 "register_operand"    "=v")
+	(call (mem:SI (match_operand:SI 1 "csky_unspec_operand" "X"))
+		      (match_operand    2 "" "")))
    (clobber (reg:SI CSKY_LR_REGNUM))]
   "flag_pic && TARGET_HARD_FLOAT_ABI && TARGET_DOUBLE_FPU"
   "* return csky_output_call (operands, 1);"

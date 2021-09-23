@@ -29,7 +29,7 @@ test01()
   std::queue<int> q;
 
   q.push(1);
-  q.front();
+  (void) q.front();
   q.pop();
 }
 

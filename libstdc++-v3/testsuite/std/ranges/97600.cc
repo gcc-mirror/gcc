@@ -24,9 +24,8 @@
 #include <ranges>
 
 void
-test01()
+test01(std::ranges::basic_istream_view<int, char, std::char_traits<char>> v)
 {
-  std::ranges::basic_istream_view<int, char, std::char_traits<char>> v;
   v.begin();
   static_assert(std::ranges::range<decltype(v)>);
 }

@@ -59,16 +59,16 @@ cxx_print_decl (FILE *file, tree node, int indent)
 
   bool need_indent = true;
 
-  if (TREE_CODE (node) == FUNCTION_DECL
-      || TREE_CODE (node) == VAR_DECL
-      || TREE_CODE (node) == TYPE_DECL
-      || TREE_CODE (node) == TEMPLATE_DECL
-      || TREE_CODE (node) == CONCEPT_DECL
-      || TREE_CODE (node) == NAMESPACE_DECL)
+  tree ntnode = STRIP_TEMPLATE (node);
+  if (TREE_CODE (ntnode) == FUNCTION_DECL
+      || TREE_CODE (ntnode) == VAR_DECL
+      || TREE_CODE (ntnode) == TYPE_DECL
+      || TREE_CODE (ntnode) == CONCEPT_DECL
+      || TREE_CODE (ntnode) == NAMESPACE_DECL)
     {
       unsigned m = 0;
-      if (DECL_LANG_SPECIFIC (node) && DECL_MODULE_IMPORT_P (node))
-	m = get_importing_module (node, true);
+      if (DECL_LANG_SPECIFIC (ntnode) && DECL_MODULE_IMPORT_P (ntnode))
+	m = get_importing_module (ntnode, true);
 
       if (const char *name = m == ~0u ? "" : module_name (m, true))
 	{
@@ -78,7 +78,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
 	  need_indent = false;
 	}
 
-      if (DECL_LANG_SPECIFIC (node) && DECL_MODULE_PURVIEW_P (node))
+      if (DECL_LANG_SPECIFIC (ntnode) && DECL_MODULE_PURVIEW_P (ntnode))
 	{
 	  if (need_indent)
 	    indent_to (file, indent + 3);
@@ -171,6 +171,7 @@ cxx_print_type (FILE *file, tree node, int indent)
       return;
 
     case TYPE_PACK_EXPANSION:
+      print_node (file, "pattern", PACK_EXPANSION_PATTERN (node), indent + 4);
       print_node (file, "args", PACK_EXPANSION_EXTRA_ARGS (node), indent + 4);
       return;
 

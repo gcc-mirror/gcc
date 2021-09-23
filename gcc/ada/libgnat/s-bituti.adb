@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---               Copyright (C) 2019-2020, Free Software Foundation, Inc.    --
+--               Copyright (C) 2019-2021, Free Software Foundation, Inc.    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,14 +30,6 @@
 ------------------------------------------------------------------------------
 
 package body System.Bitfield_Utils is
-
-   --  ???
-   --
-   --  This code does not yet work for overlapping bit fields. We need to copy
-   --  backwards in some cases (i.e. from higher to lower bit addresses).
-   --  Alternatively, we could avoid calling this if Forwards_OK is False.
-   --
-   --  ???
 
    package body G is
 
@@ -77,7 +69,7 @@ package body System.Bitfield_Utils is
 
       function Get_Bitfield
         (Src : Val_2; Src_Offset : Bit_Offset; Size : Small_Size)
-         return Val;
+         return Val with Inline;
       --  Returns the bit field in Src starting at Src_Offset, of the given
       --  Size. If Size < Small_Size'Last, then high order bits are zero.
 
@@ -86,7 +78,7 @@ package body System.Bitfield_Utils is
          Dest : Val_2;
          Dest_Offset : Bit_Offset;
          Size : Small_Size)
-        return Val_2;
+        return Val_2 with Inline;
       --  The bit field in Dest starting at Dest_Offset, of the given Size, is
       --  set to Src_Value. Src_Value must have high order bits (Size and
       --  above) zero. The result is returned as the function result.
@@ -402,11 +394,22 @@ package body System.Bitfield_Utils is
          pragma Assert (Al_Src_Address mod Val'Alignment = 0);
          pragma Assert (Al_Dest_Address mod Val'Alignment = 0);
       begin
+         --  Optimized small case
+
          if Size in Small_Size then
             Copy_Small_Bitfield
               (Al_Src_Address, Al_Src_Offset,
                Al_Dest_Address, Al_Dest_Offset,
                Size);
+
+         --  Do nothing for zero size. This is necessary to avoid doing invalid
+         --  reads, which are detected by valgrind.
+
+         elsif Size = 0 then
+            null;
+
+         --  Large case
+
          else
             Copy_Large_Bitfield
               (Al_Src_Address, Al_Src_Offset,
@@ -414,6 +417,22 @@ package body System.Bitfield_Utils is
                Size);
          end if;
       end Copy_Bitfield;
+
+      function Fast_Copy_Bitfield
+        (Src         : Val_2;
+         Src_Offset  : Bit_Offset;
+         Dest        : Val_2;
+         Dest_Offset : Bit_Offset;
+         Size        : Small_Size)
+        return Val_2 is
+         Result : constant Val_2 := Set_Bitfield
+           (Get_Bitfield (Src, Src_Offset, Size), Dest, Dest_Offset, Size);
+      begin
+         --  No need to explicitly do nothing for zero size case, because Size
+         --  cannot be zero.
+
+         return Result;
+      end Fast_Copy_Bitfield;
 
    end G;
 

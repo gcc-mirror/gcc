@@ -473,13 +473,12 @@ static bool
 split_paths ()
 {
   bool changed = false;
-  loop_p loop;
 
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   initialize_original_copy_tables ();
   calculate_dominance_info (CDI_DOMINATORS);
 
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       /* Only split paths if we are optimizing this loop for speed.  */
       if (!optimize_loop_for_speed_p (loop))

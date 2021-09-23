@@ -29,8 +29,8 @@ testf_cst (float f, vector float vf)
 /* { dg-final { scan-assembler-times {\mvperm\M} 3 { target lp64 } } } */
 
 /* -m32 codegen. */
-/* { dg-final { scan-assembler-times {\mstvx\M|\mstxv\M|\mstxvd2x\M} 1 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstvx\M|\mstxv\M|\mstxvd2x\M} 0 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mstfs\M|\mstfsx\M} 2 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mvperm\M} 1 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 3 { target ilp32 } } } */
 
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---             Copyright (C) 2013-2020, Free Software Foundation, Inc.      --
+--             Copyright (C) 2013-2021, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,8 @@
 
 --  This version is for Linux/x32
 
+with System.Parameters;
+
 package body System.OS_Primitives is
 
    --  ??? These definitions are duplicated from System.OS_Interface
@@ -38,7 +40,8 @@ package body System.OS_Primitives is
    --  these declarations in System.OS_Interface and move these ones in
    --  the spec.
 
-   type time_t is new Long_Long_Integer;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
 
    type timespec is record
       tv_sec  : time_t;

@@ -1,3 +1,6 @@
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 #include <stdio.h>
 #include <openacc.h>
 #include <gomp-constants.h>
@@ -6,6 +9,8 @@
 
 #pragma acc routine gang
 void __attribute__ ((noinline)) gang (int ary[N])
+/* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 } */
+/* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 } */
 {
 #pragma acc loop gang
     for (unsigned ix = 0; ix < N; ix++)

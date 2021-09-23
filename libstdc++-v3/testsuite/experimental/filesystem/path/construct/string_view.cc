@@ -1,4 +1,4 @@
-// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs -std=gnu++17" }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 

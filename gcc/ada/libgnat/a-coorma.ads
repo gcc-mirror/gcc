@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,7 +36,7 @@ with Ada.Iterator_Interfaces;
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Finalization;
 private with Ada.Streams;
-private with Ada.Strings.Text_Output;
+private with Ada.Strings.Text_Buffers;
 
 generic
    type Key_Type is private;
@@ -61,12 +61,15 @@ is
       Iterator_Element  => Element_Type,
       Aggregate         => (Empty     => Empty,
                             Add_Named => Insert);
+   pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
    Empty_Map : constant Map;
+
    function Empty return Map;
+   pragma Ada_2022 (Empty);
 
    No_Element : constant Cursor;
 
@@ -264,7 +267,7 @@ private
    end record with Put_Image => Put_Image;
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map);
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Map);
 
    overriding procedure Adjust (Container : in out Map);
 

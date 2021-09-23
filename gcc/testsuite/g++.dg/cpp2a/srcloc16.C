@@ -79,10 +79,10 @@ foo ()
       || u.u.line () + 1 != v.line ()
       || s.a.column () != 18
       || s.b.column () != 18
-      || s.c.column () != 50
+      || s.c.column () != 49
       || t.u.column () != 21
       || u.u.column () != 13
-      || v.column () != 49)
+      || v.column () != 48)
     return false;
   return true;
 }

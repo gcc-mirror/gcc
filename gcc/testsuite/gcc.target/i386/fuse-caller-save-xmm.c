@@ -6,7 +6,7 @@ typedef double v2df __attribute__((vector_size (16)));
 static v2df __attribute__((noinline))
 bar (v2df a)
 {
-  return a + (v2df){ 3.0, 3.0 };
+  return a + (v2df){ 3.0, 4.0 };
 }
 
 v2df __attribute__((noinline))

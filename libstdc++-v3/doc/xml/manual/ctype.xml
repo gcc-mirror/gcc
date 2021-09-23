@@ -168,7 +168,7 @@ characters.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.unix.org/version3/ieee_std.html">
+	      xlink:href="https://www.unix.org/version3/ieee_std.html">
 	The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
 	</link>
       </title>

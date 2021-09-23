@@ -25,8 +25,8 @@ fn2 ()
   switch (0) {
   case 0:
   {
-    A b; // { dg-warning "statement may fall through" }
-  }
+    A b;
+  } // { dg-warning "statement may fall through" }
   default:
     a = 0;
   }

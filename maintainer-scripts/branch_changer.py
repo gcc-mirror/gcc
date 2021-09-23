@@ -16,7 +16,8 @@
 #
 # Sample usages of the script:
 #
-# $ ./maintainer-scripts/branch_changer.py api_key --new-target-milestone=6.2:6.3 --comment '6.2 has been released....' --add-known-to-fail=6.2 --limit 3
+# $ ./maintainer-scripts/branch_changer.py api_key --new-target-milestone=6.2:6.3 \
+#       --comment '6.2 has been released....' --add-known-to-fail=6.2 --limit 3
 #
 # The invocation will set target milestone to 6.3 for all issues that
 # have mistone equal to 6.2. Apart from that, a comment is added to these
@@ -24,10 +25,18 @@
 # At maximum 3 issues will be modified and the script will run
 # in dry mode (no issues are modified), unless you append --doit option.
 #
-# $ ./maintainer-scripts/branch_changer.py api_key --new-target-milestone=5.5:6.3 --comment 'GCC 5 branch is being closed' --remove 5 --limit 3
+# $ ./maintainer-scripts/branch_changer.py api_key --new-target-milestone=5.5:6.3 \
+#       --comment 'GCC 5 branch is being closed' --remove 5 --limit 3
 #
 # Very similar to previous invocation, but instead of adding to known-to-fail,
 # '5' release is removed from all issues that have the regression prefix.
+# NOTE: If the version 5 is the only one in regression marker ([5 Regression] ...),
+# then the bug summary is not modified.
+#
+# NOTE: If we change target milestone in between releases and the PR does not
+# regress in the new branch, then target milestone change is skipped:
+#
+#  not changing target milestone: not a regression or does not regress with the new milestone
 #
 # $ ./maintainer-scripts/branch_changer.py api_key --add=7:8
 #
@@ -35,17 +44,20 @@
 # issues that contain '7' in its regression prefix.
 #
 
-import requests
-import json
 import argparse
+import json
 import re
+import sys
+
+import requests
 
 from semantic_version import Version
 
 base_url = 'https://gcc.gnu.org/bugzilla/rest.cgi/'
 statuses = ['UNCONFIRMED', 'ASSIGNED', 'SUSPENDED', 'NEW', 'WAITING', 'REOPENED']
 search_summary = ' Regression]'
-regex = '(.*\[)([0-9\./]*)( [rR]egression])(.*)'
+regex = r'(.*\[)([0-9\./]*)( [rR]egression])(.*)'
+
 
 class Bug:
     def __init__(self, data):
@@ -59,7 +71,7 @@ class Bug:
 
     def parse_summary(self):
         m = re.match(regex, self.data['summary'])
-        if m != None:
+        if m:
             self.versions = m.group(2).split('/')
             self.is_regression = True
             self.regex_match = m
@@ -70,12 +82,14 @@ class Bug:
             self.fail_versions = [x for x in re.split(' |,', v) if x != '']
 
     def name(self):
-        return 'PR%d (%s)' % (self.data['id'], self.data['summary'])
+        bugid = self.data['id']
+        url = f'https://gcc.gnu.org/bugzilla/show_bug.cgi?id={bugid}'
+        if sys.stdout.isatty():
+            return f'\u001b]8;;{url}\u001b\\PR{bugid}\u001b]8;;\u001b\\ ({self.data["summary"]})'
+        else:
+            return f'PR{bugid} ({self.data["summary"]})'
 
     def remove_release(self, release):
-        # Do not remove last value of [x Regression]
-        if len(self.versions) == 1:
-            return
         self.versions = list(filter(lambda x: x != release, self.versions))
 
     def add_release(self, releases):
@@ -94,13 +108,17 @@ class Bug:
             return True
 
     def update_summary(self, api_key, doit):
+        if not self.versions:
+            print(self.name())
+            print('  not changing summary, candidate for CLOSING')
+            return False
+
         summary = self.data['summary']
         new_summary = self.serialize_summary()
         if new_summary != summary:
             print(self.name())
-            print('  changing summary: "%s" to "%s"' % (summary, new_summary))
+            print('  changing summary to "%s"' % (new_summary))
             self.modify_bug(api_key, {'summary': new_summary}, doit)
-
             return True
 
         return False
@@ -116,15 +134,16 @@ class Bug:
             print('  changing target milestone: "%s" to "%s" (same branch)' % (old_milestone, new_milestone))
         elif self.is_regression and new_major in self.versions:
             args['target_milestone'] = new_milestone
-            print('  changing target milestone: "%s" to "%s" (regresses with the new milestone)' % (old_milestone, new_milestone))
+            print('  changing target milestone: "%s" to "%s" (regresses with the new milestone)'
+                  % (old_milestone, new_milestone))
         else:
             print('  not changing target milestone: not a regression or does not regress with the new milestone')
 
-        if 'target_milestone' in args and comment != None:
+        if 'target_milestone' in args and comment:
             print('  adding comment: "%s"' % comment)
-            args['comment'] = {'comment': comment }
+            args['comment'] = {'comment': comment}
 
-        if new_fail_version != None:
+        if new_fail_version:
             if self.add_known_to_fail(new_fail_version):
                 s = self.serialize_known_to_fail()
                 print('  changing known_to_fail: "%s" to "%s"' % (self.data['cf_known_to_fail'], s))
@@ -137,28 +156,34 @@ class Bug:
             return False
 
     def serialize_summary(self):
-        assert self.versions != None
-        assert self.is_regression == True
+        assert self.versions
+        assert self.is_regression
 
         new_version = '/'.join(self.versions)
         new_summary = self.regex_match.group(1) + new_version + self.regex_match.group(3) + self.regex_match.group(4)
         return new_summary
 
+    @staticmethod
+    def to_version(version):
+        if len(version.split('.')) == 2:
+            version += '.0'
+        return Version(version)
+
     def serialize_known_to_fail(self):
         assert type(self.fail_versions) is list
-        return ', '.join(sorted(self.fail_versions, key = lambda x: Version(x, partial = True)))
+        return ', '.join(sorted(self.fail_versions, key=self.to_version))
 
     def modify_bug(self, api_key, params, doit):
         u = base_url + 'bug/' + str(self.data['id'])
 
         data = {
             'ids': [self.data['id']],
-            'api_key': api_key }
+            'api_key': api_key}
 
         data.update(params)
 
         if doit:
-            r = requests.put(u, data = json.dumps(data), headers = {"content-type": "text/javascript"})
+            r = requests.put(u, data=json.dumps(data), headers={'content-type': 'text/javascript'})
             print(r)
 
     @staticmethod
@@ -170,8 +195,9 @@ class Bug:
     @staticmethod
     def get_bugs(api_key, query):
         u = base_url + 'bug'
-        r = requests.get(u, params = query)
+        r = requests.get(u, params=query)
         return [Bug(x) for x in r.json()['bugs']]
+
 
 def search(api_key, remove, add, limit, doit):
     bugs = Bug.get_bugs(api_key, {'api_key': api_key, 'summary': search_summary, 'bug_status': statuses})
@@ -179,9 +205,9 @@ def search(api_key, remove, add, limit, doit):
 
     modified = 0
     for bug in bugs:
-        if remove != None:
+        if remove:
             bug.remove_release(remove)
-        if add != None:
+        if add:
             bug.add_release(add)
 
         if bug.update_summary(api_key, doit):
@@ -190,6 +216,7 @@ def search(api_key, remove, add, limit, doit):
                 break
 
     print('\nModified PRs: %d' % modified)
+
 
 def replace_milestone(api_key, limit, old_milestone, new_milestone, comment, add_known_to_fail, doit):
     bugs = Bug.get_bugs(api_key, {'api_key': api_key, 'bug_status': statuses, 'target_milestone': old_milestone})
@@ -203,23 +230,26 @@ def replace_milestone(api_key, limit, old_milestone, new_milestone, comment, add
 
     print('\nModified PRs: %d' % modified)
 
+
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('api_key', help = 'API key')
-parser.add_argument('--remove', nargs = '?', help = 'Remove a release from summary')
-parser.add_argument('--add', nargs = '?', help = 'Add a new release to summary, e.g. 6:7 will add 7 where 6 is included')
-parser.add_argument('--limit', nargs = '?', help = 'Limit number of bugs affected by the script')
-parser.add_argument('--doit', action = 'store_true', help = 'Really modify BUGs in the bugzilla')
-parser.add_argument('--new-target-milestone', help = 'Set a new target milestone, e.g. 4.9.3:4.9.4 will set milestone to 4.9.4 for all PRs having milestone set to 4.9.3')
-parser.add_argument('--add-known-to-fail', help = 'Set a new known to fail for all PRs affected by --new-target-milestone')
-parser.add_argument('--comment', help = 'Comment a PR for which we set a new target milestore')
+parser.add_argument('api_key', help='API key')
+parser.add_argument('--remove', nargs='?', help='Remove a release from summary')
+parser.add_argument('--add', nargs='?', help='Add a new release to summary, e.g. 6:7 will add 7 where 6 is included')
+parser.add_argument('--limit', nargs='?', help='Limit number of bugs affected by the script')
+parser.add_argument('--doit', action='store_true', help='Really modify BUGs in the bugzilla')
+parser.add_argument('--new-target-milestone', help='Set a new target milestone, '
+                    'e.g. 8.5:9.4 will set milestone to 9.4 for all PRs having milestone set to 8.5')
+parser.add_argument('--add-known-to-fail', help='Set a new known to fail '
+                    'for all PRs affected by --new-target-milestone')
+parser.add_argument('--comment', help='Comment a PR for which we set a new target milestore')
 
 args = parser.parse_args()
 # Python3 does not have sys.maxint
-args.limit = int(args.limit) if args.limit != None else 10**10
+args.limit = int(args.limit) if args.limit else 10**10
 
-if args.remove != None or args.add != None:
+if args.remove or args.add:
     search(args.api_key, args.remove, args.add, args.limit, args.doit)
-if args.new_target_milestone != None:
+if args.new_target_milestone:
     t = args.new_target_milestone.split(':')
     assert len(t) == 2
     replace_milestone(args.api_key, args.limit, t[0], t[1], args.comment, args.add_known_to_fail, args.doit)

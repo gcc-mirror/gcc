@@ -102,12 +102,12 @@ func TestHidden(t *testing.T) {
 	t.Logf("//go:embed testdata")
 
 	testDir(t, dir, "testdata",
-		"ascii.txt", "glass.txt", "hello.txt", "i/", "ken.txt")
+		"-not-hidden/", "ascii.txt", "glass.txt", "hello.txt", "i/", "ken.txt")
 
 	t.Logf("//go:embed testdata/*")
 
 	testDir(t, star, "testdata",
-		".hidden/", "_hidden/", "ascii.txt", "glass.txt", "hello.txt", "i/", "ken.txt")
+		"-not-hidden/", ".hidden/", "_hidden/", "ascii.txt", "glass.txt", "hello.txt", "i/", "ken.txt")
 
 	testDir(t, star, "testdata/.hidden",
 		"fortune.txt", "more/") // but not .more or _more
@@ -128,4 +128,44 @@ func TestUninitialized(t *testing.T) {
 	if !fi.IsDir() {
 		t.Errorf("in uninitialized embed.FS, . is not a directory")
 	}
+}
+
+var (
+	//go:embed "testdata/hello.txt"
+	helloT []T
+	//go:embed "testdata/hello.txt"
+	helloUint8 []uint8
+	//go:embed "testdata/hello.txt"
+	helloEUint8 []EmbedUint8
+	//go:embed "testdata/hello.txt"
+	helloBytes EmbedBytes
+	//go:embed "testdata/hello.txt"
+	helloString EmbedString
+)
+
+type T byte
+type EmbedUint8 uint8
+type EmbedBytes []byte
+type EmbedString string
+
+// golang.org/issue/47735
+func TestAliases(t *testing.T) {
+	all := testDirAll
+	want, e := all.ReadFile("testdata/hello.txt")
+	if e != nil {
+		t.Fatal("ReadFile:", e)
+	}
+	check := func(g interface{}) {
+		got := reflect.ValueOf(g)
+		for i := 0; i < got.Len(); i++ {
+			if byte(got.Index(i).Uint()) != want[i] {
+				t.Fatalf("got %v want %v", got.Bytes(), want)
+			}
+		}
+	}
+	check(helloT)
+	check(helloUint8)
+	check(helloEUint8)
+	check(helloBytes)
+	check(helloString)
 }

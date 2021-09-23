@@ -7,6 +7,9 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -foptimize-sibling-calls" } */
 
+/* See note in recurser_void() as to why we disable threading.  */
+/* { dg-additional-options "-fdisable-tree-thread1" } */
+
 /* The option -foptimize-sibling-calls is the default, but serves as
    marker.  Self-recursion tail calls are optimized for all targets,
    regardless of presence of sibcall patterns.  */
@@ -26,6 +29,13 @@ int main ()
 void
 recurser_void (int n)
 {
+  /* In some architectures like ppc64*, jump threading may thread
+     paths such that there are two calls into track(), one for
+     track(0) and one for track(7).  The track(7) call can be
+     transformed into a jump instead of a call, which means that
+     different calls into track() may end up with a different
+     &stackpos.  This is the reason we disable jump threading for this
+     test.  */
   if (n == 0 || n == 7)
     track (n);
 

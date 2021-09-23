@@ -1,7 +1,7 @@
 // https://bugzilla.gdcproject.org/show_bug.cgi?id=142
 // { dg-do compile }
 
-import gcc.attribute;
+import gcc.attributes;
 
 @attribute("noinline")
 int test142a()()

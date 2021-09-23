@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,7 +36,7 @@ with Ada.Iterator_Interfaces;
 with Ada.Containers.Helpers;
 private with Ada.Finalization;
 private with Ada.Streams;
-private with Ada.Strings.Text_Output;
+private with Ada.Strings.Text_Buffers;
 
 --  The language-defined generic package Containers.Vectors provides private
 --  types Vector and Cursor, and a set of operations for each type. A vector
@@ -332,7 +332,7 @@ is
 
    function New_Vector (First, Last : Index_Type) return Vector
      with Pre => First = Index_Type'First;
-   --  Ada_2020 aggregate operation.
+   --  Ada 2022 aggregate operation.
 
    procedure Insert_Vector
      (Container : in out Vector;
@@ -745,7 +745,7 @@ private
    end record with Put_Image => Put_Image;
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Vector);
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Vector);
 
    overriding procedure Adjust (Container : in out Vector);
    overriding procedure Finalize (Container : in out Vector);

@@ -415,47 +415,46 @@ class Gcc_backend : public Backend
   global_variable(const std::string& var_name,
 		  const std::string& asm_name,
 		  Btype* btype,
-		  bool is_external,
-		  bool is_hidden,
-		  bool in_unique_section,
+		  unsigned int flags,
 		  Location location);
 
   void
   global_variable_set_init(Bvariable*, Bexpression*);
 
   Bvariable*
-  local_variable(Bfunction*, const std::string&, Btype*, Bvariable*, bool,
-		 Location);
+  local_variable(Bfunction*, const std::string&, Btype*, Bvariable*,
+		 unsigned int, Location);
 
   Bvariable*
-  parameter_variable(Bfunction*, const std::string&, Btype*, bool,
+  parameter_variable(Bfunction*, const std::string&, Btype*, unsigned int,
 		     Location);
 
   Bvariable*
-  static_chain_variable(Bfunction*, const std::string&, Btype*, Location);
+  static_chain_variable(Bfunction*, const std::string&, Btype*, unsigned int,
+			Location);
 
   Bvariable*
-  temporary_variable(Bfunction*, Bblock*, Btype*, Bexpression*, bool,
+  temporary_variable(Bfunction*, Bblock*, Btype*, Bexpression*, unsigned int,
 		     Location, Bstatement**);
 
   Bvariable*
   implicit_variable(const std::string&, const std::string&, Btype*,
-                    bool, bool, bool, int64_t);
+                    unsigned int, int64_t);
 
   void
   implicit_variable_set_init(Bvariable*, const std::string&, Btype*,
-			     bool, bool, bool, Bexpression*);
+			     unsigned int, Bexpression*);
 
   Bvariable*
   implicit_variable_reference(const std::string&, const std::string&, Btype*);
 
   Bvariable*
   immutable_struct(const std::string&, const std::string&,
-                   bool, bool, Btype*, Location);
+                   unsigned int, Btype*, Location);
 
   void
-  immutable_struct_set_init(Bvariable*, const std::string&, bool, bool, Btype*,
-			    Location, Bexpression*);
+  immutable_struct_set_init(Bvariable*, const std::string&, unsigned int,
+			    Btype*, Location, Bexpression*);
 
   Bvariable*
   immutable_struct_reference(const std::string&, const std::string&,
@@ -2696,9 +2695,7 @@ Bvariable*
 Gcc_backend::global_variable(const std::string& var_name,
 			     const std::string& asm_name,
 			     Btype* btype,
-			     bool is_external,
-			     bool is_hidden,
-			     bool in_unique_section,
+			     unsigned int flags,
 			     Location location)
 {
   tree type_tree = btype->get_tree();
@@ -2707,30 +2704,49 @@ Gcc_backend::global_variable(const std::string& var_name,
 
   // The GNU linker does not like dynamic variables with zero size.
   tree orig_type_tree = type_tree;
+  bool is_external = (flags & variable_is_external) != 0;
+  bool is_hidden = (flags & variable_is_hidden) != 0;
   if ((is_external || !is_hidden) && int_size_in_bytes(type_tree) == 0)
     type_tree = this->non_zero_size_type(type_tree);
 
   tree decl = build_decl(location.gcc_location(), VAR_DECL,
 			 get_identifier_from_string(var_name),
 			 type_tree);
-  if (is_external)
-    DECL_EXTERNAL(decl) = 1;
+  if ((flags & variable_is_external) != 0)
+    {
+      DECL_EXTERNAL(decl) = 1;
+      flags &=~ variable_is_external;
+    }
   else
     TREE_STATIC(decl) = 1;
-  if (!is_hidden)
-    {
-      TREE_PUBLIC(decl) = 1;
-      SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
-    }
+
+  if ((flags & variable_is_hidden) == 0)
+    TREE_PUBLIC(decl) = 1;
   else
+    flags &=~ variable_is_hidden;
+
+  if ((flags & variable_address_is_taken) != 0)
     {
-      SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
+      TREE_ADDRESSABLE(decl) = 1;
+      flags &=~ variable_address_is_taken;
     }
+
+  // We take the address in Bvariable::get_tree if orig_type_tree is
+  // different from type_tree.
+  if (orig_type_tree != type_tree)
+    TREE_ADDRESSABLE(decl) = 1;
+
+  SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
 
   TREE_USED(decl) = 1;
 
-  if (in_unique_section)
-    resolve_unique_section (decl, 0, 1);
+  if ((flags & variable_in_unique_section) != 0)
+    {
+      resolve_unique_section (decl, 0, 1);
+      flags &=~ variable_in_unique_section;
+    }
+
+  gcc_assert(flags == 0);
 
   go_preserve_from_gc(decl);
 
@@ -2768,7 +2784,7 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
 Bvariable*
 Gcc_backend::local_variable(Bfunction* function, const std::string& name,
 			    Btype* btype, Bvariable* decl_var, 
-			    bool is_address_taken, Location location)
+			    unsigned int flags, Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -2778,13 +2794,17 @@ Gcc_backend::local_variable(Bfunction* function, const std::string& name,
 			 type_tree);
   DECL_CONTEXT(decl) = function->get_tree();
   TREE_USED(decl) = 1;
-  if (is_address_taken)
-    TREE_ADDRESSABLE(decl) = 1;
+  if ((flags & variable_address_is_taken) != 0)
+    {
+      TREE_ADDRESSABLE(decl) = 1;
+      flags &=~ variable_address_is_taken;
+    }
   if (decl_var != NULL)
     {
       DECL_HAS_VALUE_EXPR_P(decl) = 1;
       SET_DECL_VALUE_EXPR(decl, decl_var->get_decl());
     }
+  go_assert(flags == 0);
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
 }
@@ -2793,7 +2813,7 @@ Gcc_backend::local_variable(Bfunction* function, const std::string& name,
 
 Bvariable*
 Gcc_backend::parameter_variable(Bfunction* function, const std::string& name,
-				Btype* btype, bool is_address_taken,
+				Btype* btype, unsigned int flags,
 				Location location)
 {
   tree type_tree = btype->get_tree();
@@ -2805,8 +2825,12 @@ Gcc_backend::parameter_variable(Bfunction* function, const std::string& name,
   DECL_CONTEXT(decl) = function->get_tree();
   DECL_ARG_TYPE(decl) = type_tree;
   TREE_USED(decl) = 1;
-  if (is_address_taken)
-    TREE_ADDRESSABLE(decl) = 1;
+  if ((flags & variable_address_is_taken) != 0)
+    {
+      TREE_ADDRESSABLE(decl) = 1;
+      flags &=~ variable_address_is_taken;
+    }
+  go_assert(flags == 0);
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
 }
@@ -2815,7 +2839,8 @@ Gcc_backend::parameter_variable(Bfunction* function, const std::string& name,
 
 Bvariable*
 Gcc_backend::static_chain_variable(Bfunction* function, const std::string& name,
-				   Btype* btype, Location location)
+				   Btype* btype, unsigned int flags,
+				   Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -2828,6 +2853,7 @@ Gcc_backend::static_chain_variable(Bfunction* function, const std::string& name,
   TREE_USED(decl) = 1;
   DECL_ARTIFICIAL(decl) = 1;
   DECL_IGNORED_P(decl) = 1;
+  DECL_NAMELESS(decl) = 1;
   TREE_READONLY(decl) = 1;
 
   struct function *f = DECL_STRUCT_FUNCTION(fndecl);
@@ -2840,6 +2866,7 @@ Gcc_backend::static_chain_variable(Bfunction* function, const std::string& name,
   gcc_assert(f->static_chain_decl == NULL);
   f->static_chain_decl = decl;
   DECL_STATIC_CHAIN(fndecl) = 1;
+  go_assert(flags == 0);
 
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
@@ -2850,7 +2877,7 @@ Gcc_backend::static_chain_variable(Bfunction* function, const std::string& name,
 Bvariable*
 Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 				Btype* btype, Bexpression* binit,
-				bool is_address_taken,
+				unsigned int flags,
 				Location location,
 				Bstatement** pstatement)
 {
@@ -2886,6 +2913,7 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 		       type_tree);
       DECL_ARTIFICIAL(var) = 1;
       DECL_IGNORED_P(var) = 1;
+      DECL_NAMELESS(var) = 1;
       TREE_USED(var) = 1;
       DECL_CONTEXT(var) = decl;
 
@@ -2904,8 +2932,13 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
       && TREE_TYPE(init_tree) != void_type_node)
     DECL_INITIAL(var) = this->convert_tree(type_tree, init_tree, location);
 
-  if (is_address_taken)
-    TREE_ADDRESSABLE(var) = 1;
+  if ((flags & variable_address_is_taken) != 0)
+    {
+      TREE_ADDRESSABLE(var) = 1;
+      flags &=~ variable_address_is_taken;
+    }
+
+  gcc_assert(flags == 0);
 
   *pstatement = this->make_statement(build1_loc(location.gcc_location(),
                                                 DECL_EXPR,
@@ -2929,8 +2962,8 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 Bvariable*
 Gcc_backend::implicit_variable(const std::string& name,
                                const std::string& asm_name,
-                               Btype* type, bool is_hidden, bool is_constant,
-			       bool is_common, int64_t alignment)
+                               Btype* type, unsigned int flags,
+			       int64_t alignment)
 {
   tree type_tree = type->get_tree();
   if (type_tree == error_mark_node)
@@ -2939,11 +2972,14 @@ Gcc_backend::implicit_variable(const std::string& name,
   tree decl = build_decl(BUILTINS_LOCATION, VAR_DECL,
                          get_identifier_from_string(name), type_tree);
   DECL_EXTERNAL(decl) = 0;
-  TREE_PUBLIC(decl) = !is_hidden;
+  if ((flags & variable_is_hidden) != 0)
+    flags &=~ variable_is_hidden;
+  else
+    TREE_PUBLIC(decl) = 1;
   TREE_STATIC(decl) = 1;
   TREE_USED(decl) = 1;
   DECL_ARTIFICIAL(decl) = 1;
-  if (is_common)
+  if ((flags & variable_is_common) != 0)
     {
       DECL_COMMON(decl) = 1;
 
@@ -2960,11 +2996,19 @@ Gcc_backend::implicit_variable(const std::string& name,
       // mark this symbol as weak here.  We undo that below in
       // immutable_struct_set_init before calling mark_decl_one_only.
       DECL_WEAK(decl) = 1;
+
+      flags &=~ variable_is_common;
     }
-  if (is_constant)
+  if ((flags & variable_is_constant) != 0)
     {
       TREE_READONLY(decl) = 1;
       TREE_CONSTANT(decl) = 1;
+      flags &=~ variable_is_constant;
+    }
+  if ((flags & variable_address_is_taken) != 0)
+    {
+      TREE_ADDRESSABLE(decl) = 1;
+      flags &=~ variable_address_is_taken;
     }
   if (alignment != 0)
     {
@@ -2973,6 +3017,7 @@ Gcc_backend::implicit_variable(const std::string& name,
     }
   if (! asm_name.empty())
     SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
+  gcc_assert(flags == 0);
 
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
@@ -2983,7 +3028,7 @@ Gcc_backend::implicit_variable(const std::string& name,
 
 void
 Gcc_backend::implicit_variable_set_init(Bvariable* var, const std::string&,
-					Btype*, bool, bool, bool is_common,
+					Btype*, unsigned int flags,
 					Bexpression* init)
 {
   tree decl = var->get_decl();
@@ -2999,7 +3044,7 @@ Gcc_backend::implicit_variable_set_init(Bvariable* var, const std::string&,
 
   // Now that DECL_INITIAL is set, we can't call make_decl_one_only.
   // See the comment where DECL_WEAK is set in implicit_variable.
-  if (is_common)
+  if ((flags & variable_is_common) != 0)
     {
       DECL_WEAK(decl) = 0;
       make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
@@ -3038,8 +3083,8 @@ Gcc_backend::implicit_variable_reference(const std::string& name,
 Bvariable*
 Gcc_backend::immutable_struct(const std::string& name,
                               const std::string& asm_name,
-                              bool is_hidden,
-			      bool is_common, Btype* btype, Location location)
+			      unsigned int flags, Btype* btype,
+			      Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -3053,10 +3098,17 @@ Gcc_backend::immutable_struct(const std::string& name,
   TREE_READONLY(decl) = 1;
   TREE_CONSTANT(decl) = 1;
   DECL_ARTIFICIAL(decl) = 1;
-  if (!is_hidden)
+  if ((flags & variable_is_hidden) != 0)
+    flags &=~ variable_is_hidden;
+  else
     TREE_PUBLIC(decl) = 1;
   if (! asm_name.empty())
     SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
+  if ((flags & variable_address_is_taken) != 0)
+    {
+      TREE_ADDRESSABLE(decl) = 1;
+      flags &=~ variable_address_is_taken;
+    }
 
   // When the initializer for one immutable_struct refers to another,
   // it needs to know the visibility of the referenced struct so that
@@ -3070,8 +3122,13 @@ Gcc_backend::immutable_struct(const std::string& name,
   // the right value if some other initializer refers to this one, we
   // mark this symbol as weak here.  We undo that below in
   // immutable_struct_set_init before calling mark_decl_one_only.
-  if (is_common)
-    DECL_WEAK(decl) = 1;
+  if ((flags & variable_is_common) != 0)
+    {
+      DECL_WEAK(decl) = 1;
+      flags &=~ variable_is_common;
+    }
+
+  gcc_assert(flags == 0);
 
   // We don't call rest_of_decl_compilation until we have the
   // initializer.
@@ -3085,7 +3142,7 @@ Gcc_backend::immutable_struct(const std::string& name,
 
 void
 Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
-				       bool, bool is_common, Btype*, Location,
+				       unsigned int flags, Btype*, Location,
 				       Bexpression* initializer)
 {
   tree decl = var->get_decl();
@@ -3097,7 +3154,7 @@ Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
 
   // Now that DECL_INITIAL is set, we can't call make_decl_one_only.
   // See the comment where DECL_WEAK is set in immutable_struct.
-  if (is_common)
+  if ((flags & variable_is_common) != 0)
     {
       DECL_WEAK(decl) = 0;
       make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
@@ -3235,6 +3292,7 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
           build_decl(location.gcc_location(), RESULT_DECL, NULL_TREE, restype);
       DECL_ARTIFICIAL(resdecl) = 1;
       DECL_IGNORED_P(resdecl) = 1;
+      DECL_NAMELESS(resdecl) = 1;
       DECL_CONTEXT(resdecl) = decl;
       DECL_RESULT(decl) = resdecl;
     }

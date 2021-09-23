@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-dce.h"
 #include "tree-cfgcleanup.h"
 #include "alias.h"
+#include "gimple-range.h"
 
 /* Even though this file is called tree-ssa-pre.c, we actually
    implement a bit more than just PRE here.  All of them piggy-back
@@ -1067,45 +1068,8 @@ print_pre_expr (FILE *outfile, const pre_expr expr)
 
     case REFERENCE:
       {
-	vn_reference_op_t vro;
-	unsigned int i;
 	vn_reference_t ref = PRE_EXPR_REFERENCE (expr);
-	fprintf (outfile, "{");
-	for (i = 0;
-	     ref->operands.iterate (i, &vro);
-	     i++)
-	  {
-	    bool closebrace = false;
-	    if (vro->opcode != SSA_NAME
-		&& TREE_CODE_CLASS (vro->opcode) != tcc_declaration)
-	      {
-		fprintf (outfile, "%s", get_tree_code_name (vro->opcode));
-		if (vro->op0)
-		  {
-		    fprintf (outfile, "<");
-		    closebrace = true;
-		  }
-	      }
-	    if (vro->op0)
-	      {
-		print_generic_expr (outfile, vro->op0);
-		if (vro->op1)
-		  {
-		    fprintf (outfile, ",");
-		    print_generic_expr (outfile, vro->op1);
-		  }
-		if (vro->op2)
-		  {
-		    fprintf (outfile, ",");
-		    print_generic_expr (outfile, vro->op2);
-		  }
-	      }
-	    if (closebrace)
-		fprintf (outfile, ">");
-	    if (i != ref->operands.length () - 1)
-	      fprintf (outfile, ",");
-	  }
-	fprintf (outfile, "}");
+	print_vn_reference_ops (outfile, ref->operands);
 	if (ref->vuse)
 	  {
 	    fprintf (outfile, "@");
@@ -1273,21 +1237,18 @@ fully_constant_expression (pre_expr e)
   return e;
 }
 
-/* Translate the VUSE backwards through phi nodes in PHIBLOCK, so that
-   it has the value it would have in BLOCK.  Set *SAME_VALID to true
+/* Translate the VUSE backwards through phi nodes in E->dest, so that
+   it has the value it would have in E->src.  Set *SAME_VALID to true
    in case the new vuse doesn't change the value id of the OPERANDS.  */
 
 static tree
 translate_vuse_through_block (vec<vn_reference_op_s> operands,
 			      alias_set_type set, alias_set_type base_set,
-			      tree type, tree vuse,
-			      basic_block phiblock,
-			      basic_block block, bool *same_valid)
+			      tree type, tree vuse, edge e, bool *same_valid)
 {
+  basic_block phiblock = e->dest;
   gimple *phi = SSA_NAME_DEF_STMT (vuse);
   ao_ref ref;
-  edge e = NULL;
-  bool use_oracle;
 
   if (same_valid)
     *same_valid = true;
@@ -1295,59 +1256,40 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   if (gimple_bb (phi) != phiblock)
     return vuse;
 
-  unsigned int cnt = param_sccvn_max_alias_queries_per_access;
-  use_oracle = ao_ref_init_from_vn_reference (&ref, set, base_set,
-					      type, operands);
+  /* We have pruned expressions that are killed in PHIBLOCK via
+     prune_clobbered_mems but we have not rewritten the VUSE to the one
+     live at the start of the block.  If there is no virtual PHI to translate
+     through return the VUSE live at entry.  Otherwise the VUSE to translate
+     is the def of the virtual PHI node.  */
+  phi = get_virtual_phi (phiblock);
+  if (!phi)
+    return BB_LIVE_VOP_ON_EXIT
+	     (get_immediate_dominator (CDI_DOMINATORS, phiblock));
 
-  /* Use the alias-oracle to find either the PHI node in this block,
-     the first VUSE used in this block that is equivalent to vuse or
-     the first VUSE which definition in this block kills the value.  */
-  if (gimple_code (phi) == GIMPLE_PHI)
-    e = find_edge (block, phiblock);
-  else if (use_oracle)
-    while (cnt > 0
-	   && !stmt_may_clobber_ref_p_1 (phi, &ref))
-      {
-	--cnt;
-	vuse = gimple_vuse (phi);
-	phi = SSA_NAME_DEF_STMT (vuse);
-	if (gimple_bb (phi) != phiblock)
-	  return vuse;
-	if (gimple_code (phi) == GIMPLE_PHI)
-	  {
-	    e = find_edge (block, phiblock);
-	    break;
-	  }
-      }
-  else
-    return NULL_TREE;
-
-  if (e)
+  if (same_valid
+      && ao_ref_init_from_vn_reference (&ref, set, base_set, type, operands))
     {
-      if (use_oracle && same_valid)
-	{
-	  bitmap visited = NULL;
-	  /* Try to find a vuse that dominates this phi node by skipping
-	     non-clobbering statements.  */
-	  vuse = get_continuation_for_phi (phi, &ref, true,
-					   cnt, &visited, false, NULL, NULL);
-	  if (visited)
-	    BITMAP_FREE (visited);
-	}
-      else
-	vuse = NULL_TREE;
-      /* If we didn't find any, the value ID can't stay the same.  */
-      if (!vuse && same_valid)
-	*same_valid = false;
-      /* ??? We would like to return vuse here as this is the canonical
-         upmost vdef that this reference is associated with.  But during
-	 insertion of the references into the hash tables we only ever
-	 directly insert with their direct gimple_vuse, hence returning
-	 something else would make us not find the other expression.  */
-      return PHI_ARG_DEF (phi, e->dest_idx);
+      bitmap visited = NULL;
+      /* Try to find a vuse that dominates this phi node by skipping
+	 non-clobbering statements.  */
+      unsigned int cnt = param_sccvn_max_alias_queries_per_access;
+      vuse = get_continuation_for_phi (phi, &ref, true,
+				       cnt, &visited, false, NULL, NULL);
+      if (visited)
+	BITMAP_FREE (visited);
     }
+  else
+    vuse = NULL_TREE;
+  /* If we didn't find any, the value ID can't stay the same.  */
+  if (!vuse && same_valid)
+    *same_valid = false;
 
-  return NULL_TREE;
+  /* ??? We would like to return vuse here as this is the canonical
+     upmost vdef that this reference is associated with.  But during
+     insertion of the references into the hash tables we only ever
+     directly insert with their direct gimple_vuse, hence returning
+     something else would make us not find the other expression.  */
+  return PHI_ARG_DEF (phi, e->dest_idx);
 }
 
 /* Like bitmap_find_leader, but checks for the value existing in SET1 *or*
@@ -1666,8 +1608,7 @@ phi_translate_1 (bitmap_set_t dest,
 	    newvuse = translate_vuse_through_block (newoperands.exists ()
 						    ? newoperands : operands,
 						    ref->set, ref->base_set,
-						    ref->type,
-						    vuse, phiblock, pred,
+						    ref->type, vuse, e,
 						    changed
 						    ? NULL : &same_valid);
 	    if (newvuse == NULL_TREE)
@@ -2107,6 +2048,13 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
 			  && value_dies_in_block_x (expr, block))))
 		to_remove = i;
 	    }
+	  /* If the REFERENCE may trap make sure the block does not contain
+	     a possible exit point.
+	     ???  This is overly conservative if we translate AVAIL_OUT
+	     as the available expression might be after the exit point.  */
+	  if (BB_MAY_NOTRETURN (block)
+	      && vn_reference_may_trap (ref))
+	    to_remove = i;
 	}
       else if (expr->kind == NARY)
 	{
@@ -3136,7 +3084,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 
 static bool
 insert_into_preds_of_block (basic_block block, unsigned int exprnum,
-			    vec<pre_expr> avail)
+			    vec<pre_expr> &avail)
 {
   pre_expr expr = expression_for_id (exprnum);
   pre_expr newphi;
@@ -3271,16 +3219,18 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	  >= TYPE_PRECISION (TREE_TYPE (expr->u.nary->op[0])))
       && SSA_NAME_RANGE_INFO (expr->u.nary->op[0]))
     {
-      wide_int min, max;
-      if (get_range_info (expr->u.nary->op[0], &min, &max) == VR_RANGE
-	  && !wi::neg_p (min, SIGNED)
-	  && !wi::neg_p (max, SIGNED))
+      value_range r;
+      if (get_range_query (cfun)->range_of_expr (r, expr->u.nary->op[0])
+	  && r.kind () == VR_RANGE
+	  && !wi::neg_p (r.lower_bound (), SIGNED)
+	  && !wi::neg_p (r.upper_bound (), SIGNED))
 	/* Just handle extension and sign-changes of all-positive ranges.  */
-	set_range_info (temp,
-			SSA_NAME_RANGE_TYPE (expr->u.nary->op[0]),
-			wide_int_storage::from (min, TYPE_PRECISION (type),
+	set_range_info (temp, VR_RANGE,
+			wide_int_storage::from (r.lower_bound (),
+						TYPE_PRECISION (type),
 						TYPE_SIGN (type)),
-			wide_int_storage::from (max, TYPE_PRECISION (type),
+			wide_int_storage::from (r.upper_bound (),
+						TYPE_PRECISION (type),
 						TYPE_SIGN (type)));
     }
 
@@ -3446,7 +3396,11 @@ do_pre_regular_insertion (basic_block block, basic_block dom,
 	  /* If all edges produce the same value and that value is
 	     an invariant, then the PHI has the same value on all
 	     edges.  Note this.  */
-	  else if (!cant_insert && all_same)
+	  else if (!cant_insert
+		   && all_same
+		   && (edoubleprime->kind != NAME
+		       || !SSA_NAME_OCCURS_IN_ABNORMAL_PHI
+			     (PRE_EXPR_NAME (edoubleprime))))
 	    {
 	      gcc_assert (edoubleprime->kind == CONSTANT
 			  || edoubleprime->kind == NAME);
@@ -3890,7 +3844,7 @@ insert (void)
    AVAIL_OUT[BLOCK] = AVAIL_IN[BLOCK] U PHI_GEN[BLOCK] U TMP_GEN[BLOCK].  */
 
 static void
-compute_avail (void)
+compute_avail (function *fun)
 {
 
   basic_block block, son;
@@ -3901,7 +3855,7 @@ compute_avail (void)
 
   /* We pretend that default definitions are defined in the entry block.
      This includes function arguments and the static chain decl.  */
-  FOR_EACH_SSA_NAME (i, name, cfun)
+  FOR_EACH_SSA_NAME (i, name, fun)
     {
       pre_expr e;
       if (!SSA_NAME_IS_DEFAULT_DEF (name)
@@ -3911,31 +3865,31 @@ compute_avail (void)
 
       e = get_or_alloc_expr_for_name (name);
       add_to_value (get_expr_value_id (e), e);
-      bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (cfun)), e);
-      bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+      bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (fun)), e);
+      bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (fun)),
 				    e);
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      print_bitmap_set (dump_file, TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+      print_bitmap_set (dump_file, TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (fun)),
 			"tmp_gen", ENTRY_BLOCK);
-      print_bitmap_set (dump_file, AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+      print_bitmap_set (dump_file, AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (fun)),
 			"avail_out", ENTRY_BLOCK);
     }
 
   /* Allocate the worklist.  */
-  worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
+  worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (fun));
 
   /* Seed the algorithm by putting the dominator children of the entry
      block on the worklist.  */
-  for (son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  for (son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR_FOR_FN (fun));
        son;
        son = next_dom_son (CDI_DOMINATORS, son))
     worklist[sp++] = son;
 
-  BB_LIVE_VOP_ON_EXIT (ENTRY_BLOCK_PTR_FOR_FN (cfun))
-    = ssa_default_def (cfun, gimple_vop (cfun));
+  BB_LIVE_VOP_ON_EXIT (ENTRY_BLOCK_PTR_FOR_FN (fun))
+    = ssa_default_def (fun, gimple_vop (fun));
 
   /* Loop until the worklist is empty.  */
   while (sp)
@@ -3980,6 +3934,7 @@ compute_avail (void)
 
       /* Now compute value numbers and populate value sets with all
 	 the expressions computed in BLOCK.  */
+      bool set_bb_may_notreturn = false;
       for (gimple_stmt_iterator gsi = gsi_start_bb (block); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
@@ -3987,6 +3942,12 @@ compute_avail (void)
 	  tree op;
 
 	  stmt = gsi_stmt (gsi);
+
+	  if (set_bb_may_notreturn)
+	    {
+	      BB_MAY_NOTRETURN (block) = 1;
+	      set_bb_may_notreturn = false;
+	    }
 
 	  /* Cache whether the basic-block has any non-visible side-effect
 	     or control flow.
@@ -3999,9 +3960,12 @@ compute_avail (void)
 		 that forbids hoisting possibly trapping expressions
 		 before it.  */
 	      int flags = gimple_call_flags (stmt);
-	      if (!(flags & ECF_CONST)
-		  || (flags & ECF_LOOPING_CONST_OR_PURE))
-		BB_MAY_NOTRETURN (block) = 1;
+	      if (!(flags & (ECF_CONST|ECF_PURE))
+		  || (flags & ECF_LOOPING_CONST_OR_PURE)
+		  || stmt_can_throw_external (fun, stmt))
+		/* Defer setting of BB_MAY_NOTRETURN to avoid it
+		   influencing the processing of the call itself.  */
+		set_bb_may_notreturn = true;
 	    }
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
@@ -4017,7 +3981,7 @@ compute_avail (void)
 	    BB_LIVE_VOP_ON_EXIT (block) = gimple_vdef (stmt);
 
 	  if (gimple_has_side_effects (stmt)
-	      || stmt_could_throw_p (cfun, stmt)
+	      || stmt_could_throw_p (fun, stmt)
 	      || is_gimple_debug (stmt))
 	    continue;
 
@@ -4045,17 +4009,23 @@ compute_avail (void)
 		  continue;
 
 		vn_reference_lookup_call (as_a <gcall *> (stmt), &ref, &ref1);
-		if (!ref)
+		/* There is no point to PRE a call without a value.  */
+		if (!ref || !ref->result)
 		  continue;
 
 		/* If the value of the call is not invalidated in
 		   this block until it is computed, add the expression
 		   to EXP_GEN.  */
-		if (!gimple_vuse (stmt)
-		    || gimple_code
-		         (SSA_NAME_DEF_STMT (gimple_vuse (stmt))) == GIMPLE_PHI
-		    || gimple_bb (SSA_NAME_DEF_STMT
-				    (gimple_vuse (stmt))) != block)
+		if ((!gimple_vuse (stmt)
+		     || gimple_code
+			  (SSA_NAME_DEF_STMT (gimple_vuse (stmt))) == GIMPLE_PHI
+		     || gimple_bb (SSA_NAME_DEF_STMT
+				   (gimple_vuse (stmt))) != block)
+		    /* If the REFERENCE traps and there was a preceding
+		       point in the block that might not return avoid
+		       adding the reference to EXP_GEN.  */
+		    && (!BB_MAY_NOTRETURN (block)
+			|| !vn_reference_may_trap (ref)))
 		  {
 		    result = get_or_alloc_expr_for_reference
 			       (ref, gimple_location (stmt));
@@ -4075,11 +4045,10 @@ compute_avail (void)
 		      enum tree_code code = gimple_assign_rhs_code (stmt);
 		      vn_nary_op_t nary;
 
-		      /* COND_EXPR and VEC_COND_EXPR are awkward in
-			 that they contain an embedded complex expression.
-			 Don't even try to shove those through PRE.  */
-		      if (code == COND_EXPR
-			  || code == VEC_COND_EXPR)
+		      /* COND_EXPR is awkward in that it contains an
+			 embedded complex expression.
+			 Don't even try to shove it through PRE.  */
+		      if (code == COND_EXPR)
 			continue;
 
 		      vn_nary_op_lookup_stmt (stmt, &nary);
@@ -4189,6 +4158,16 @@ compute_avail (void)
 		      if (ref->set == set
 			  || alias_set_subset_of (set, ref->set))
 			;
+		      else if (ref1->opcode != ref2->opcode
+			       || (ref1->opcode != MEM_REF
+				   && ref1->opcode != TARGET_MEM_REF))
+			{
+			  /* With mismatching base opcodes or bases
+			     other than MEM_REF or TARGET_MEM_REF we
+			     can't do any easy TBAA adjustment.  */
+			  operands.release ();
+			  continue;
+			}
 		      else if (alias_set_subset_of (ref->set, set))
 			{
 			  ref->set = set;
@@ -4231,6 +4210,11 @@ compute_avail (void)
 	    default:
 	      break;
 	    }
+	}
+      if (set_bb_may_notreturn)
+	{
+	  BB_MAY_NOTRETURN (block) = 1;
+	  set_bb_may_notreturn = false;
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4405,7 +4389,7 @@ pass_pre::execute (function *fun)
      we require AVAIL.  */
   if (n_basic_blocks_for_fn (fun) < 4000)
     {
-      compute_avail ();
+      compute_avail (fun);
       compute_antic ();
       insert ();
     }

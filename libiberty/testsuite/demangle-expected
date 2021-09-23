@@ -1471,10 +1471,10 @@ _Z2F2IZ1FvEUlvE_EN1AIT_E1XES2_
 A<F()::{lambda()#1}>::X F2<F()::{lambda()#1}>(F()::{lambda()#1})
 
 # PR 88115
-_Z1fIiEvDTv111__alignof__T_E
+_Z1fIiEvDTu11__alignof__T_EE
 void f<int>(decltype (__alignof__(int)))
 
-_Z1fIiEvDTv111__alignof__tlT_EE
+_Z1fIiEvDTu11__alignof__XtlT_EEEE
 void f<int>(decltype (__alignof__(int{})))
 
 _Z1gI1AEv1SIXadsrT_oncviEE

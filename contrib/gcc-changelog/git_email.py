@@ -17,6 +17,7 @@
 # <http://www.gnu.org/licenses/>.  */
 
 import os
+import re
 import sys
 from itertools import takewhile
 
@@ -28,16 +29,20 @@ from unidiff import PatchSet, PatchedFile
 
 DATE_PREFIX = 'Date: '
 FROM_PREFIX = 'From: '
+SUBJECT_PREFIX = 'Subject: '
+subject_patch_regex = re.compile(r'^\[PATCH( \d+/\d+)?\] ')
 unidiff_supports_renaming = hasattr(PatchedFile(), 'is_rename')
 
 
 class GitEmail(GitCommit):
-    def __init__(self, filename, strict=False):
+    def __init__(self, filename):
         self.filename = filename
         diff = PatchSet.from_filename(filename)
         date = None
         author = None
+        subject = ''
 
+        subject_last = False
         with open(self.filename, 'r') as f:
             lines = f.read().splitlines()
         lines = list(takewhile(lambda line: line != '---', lines))
@@ -46,8 +51,21 @@ class GitEmail(GitCommit):
                 date = parse(line[len(DATE_PREFIX):])
             elif line.startswith(FROM_PREFIX):
                 author = GitCommit.format_git_author(line[len(FROM_PREFIX):])
+            elif line.startswith(SUBJECT_PREFIX):
+                subject = line[len(SUBJECT_PREFIX):]
+                subject_last = True
+            elif subject_last and line.startswith(' '):
+                subject += line
+            elif line == '':
+                break
+            else:
+                subject_last = False
+
+        if subject:
+            subject = subject_patch_regex.sub('', subject)
         header = list(takewhile(lambda line: line != '', lines))
-        body = lines[len(header) + 1:]
+        # Note: commit message consists of email subject, empty line, email body
+        message = [subject] + lines[len(header):]
 
         modified_files = []
         for f in diff:
@@ -67,15 +85,28 @@ class GitEmail(GitCommit):
             else:
                 t = 'M'
             modified_files.append((target if t != 'D' else source, t))
-        git_info = GitInfo(None, date, author, body, modified_files)
-        super().__init__(git_info, strict=strict,
+        git_info = GitInfo(None, date, author, message, modified_files)
+        super().__init__(git_info,
                          commit_to_info_hook=lambda x: None)
 
 
-# With zero arguments, process every patch file in the ./patches directory.
-# With one argument, process the named patch file.
-# Patch files must be in 'git format-patch' format.
+def show_help():
+    print("""usage: git_email.py [--help] [patch file ...]
+
+Check git ChangeLog format of a patch
+
+With zero arguments, process every patch file in the
+./patches directory.
+With one argument, process the named patch file.
+
+Patch files must be in 'git format-patch' format.""")
+    sys.exit(0)
+
+
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and (sys.argv[1] == '-h' or sys.argv[1] == '--help'):
+        show_help()
+
     if len(sys.argv) == 1:
         allfiles = []
         for root, _dirs, files in os.walk('patches'):
@@ -97,7 +128,7 @@ if __name__ == '__main__':
         print()
         print('Successfully parsed: %d/%d' % (success, len(allfiles)))
     else:
-        email = GitEmail(sys.argv[1], False)
+        email = GitEmail(sys.argv[1])
         if email.success:
             print('OK')
             email.print_output()

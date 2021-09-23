@@ -496,12 +496,12 @@ sem_function::param_used_p (unsigned int i)
   if (ipa_node_params_sum == NULL)
     return true;
 
-  class ipa_node_params *parms_info = IPA_NODE_REF (get_node ());
+  ipa_node_params *parms_info = ipa_node_params_sum->get (get_node ());
 
   if (!parms_info || vec_safe_length (parms_info->descriptors) <= i)
     return true;
 
-  return ipa_is_param_used (IPA_NODE_REF (get_node ()), i);
+  return ipa_is_param_used (parms_info, i);
 }
 
 /* Perform additional check needed to match types function parameters that are

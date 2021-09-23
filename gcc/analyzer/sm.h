@@ -29,7 +29,8 @@ class state_machine;
 class sm_context;
 class pending_diagnostic;
 
-extern bool any_pointer_p (tree var);
+extern bool any_pointer_p (tree expr);
+extern bool any_pointer_p (const svalue *sval);
 
 /* An abstract base class for a state machine describing an API.
    Manages a set of state objects, and has various virtual functions
@@ -89,10 +90,14 @@ public:
   {
   }
 
-  virtual void on_condition (sm_context *sm_ctxt,
-			     const supernode *node,
-			     const gimple *stmt,
-			     tree lhs, enum tree_code op, tree rhs) const = 0;
+  virtual void on_condition (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
+			     const supernode *node ATTRIBUTE_UNUSED,
+			     const gimple *stmt ATTRIBUTE_UNUSED,
+			     const svalue *lhs ATTRIBUTE_UNUSED,
+			     enum tree_code op ATTRIBUTE_UNUSED,
+			     const svalue *rhs ATTRIBUTE_UNUSED) const
+  {
+  }
 
   /* Return true if it safe to discard the given state (to help
      when simplifying state objects).
@@ -182,11 +187,17 @@ public:
   /* Get the old state of VAR at STMT.  */
   virtual state_machine::state_t get_state (const gimple *stmt,
 					    tree var) = 0;
+  virtual state_machine::state_t get_state (const gimple *stmt,
+					    const svalue *) = 0;
   /* Set the next state of VAR to be TO, recording the "origin" of the
      state as ORIGIN.
      Use STMT for location information.  */
   virtual void set_next_state (const gimple *stmt,
 			       tree var,
+			       state_machine::state_t to,
+			       tree origin = NULL_TREE) = 0;
+  virtual void set_next_state (const gimple *stmt,
+			       const svalue *var,
 			       state_machine::state_t to,
 			       tree origin = NULL_TREE) = 0;
 
@@ -197,6 +208,18 @@ public:
   void on_transition (const supernode *node ATTRIBUTE_UNUSED,
 		      const gimple *stmt,
 		      tree var,
+		      state_machine::state_t from,
+		      state_machine::state_t to,
+		      tree origin = NULL_TREE)
+  {
+    state_machine::state_t current = get_state (stmt, var);
+    if (current == from)
+      set_next_state (stmt, var, to, origin);
+  }
+
+  void on_transition (const supernode *node ATTRIBUTE_UNUSED,
+		      const gimple *stmt,
+		      const svalue *var,
 		      state_machine::state_t from,
 		      state_machine::state_t to,
 		      tree origin = NULL_TREE)
@@ -220,6 +243,7 @@ public:
   {
     return expr;
   }
+  virtual tree get_diagnostic_tree (const svalue *) = 0;
 
   virtual state_machine::state_t get_global_state () const = 0;
   virtual void set_global_state (state_machine::state_t) = 0;
@@ -232,6 +256,11 @@ public:
      the LHS.
      Otherwise return NULL_TREE.  */
   virtual tree is_zero_assignment (const gimple *stmt) = 0;
+
+  virtual path_context *get_path_context () const
+  {
+    return NULL;
+  }
 
 protected:
   sm_context (int sm_idx, const state_machine &sm)

@@ -47,9 +47,9 @@ __dynamic_cast (const void *src_ptr,    // object started from
                 const __class_type_info *dst_type, // desired target type
                 ptrdiff_t src2dst) // how src and dst are related
   {
-  if (!src_ptr)
-    /* Handle precondition violations gracefully.  */
-    return NULL;
+  if (__builtin_expect(!src_ptr, 0))
+    return NULL; // Handle precondition violations gracefully.
+
   const void *vtable = *static_cast <const void *const *> (src_ptr);
   const vtable_prefix *prefix =
     (adjust_pointer <vtable_prefix>
@@ -70,7 +70,7 @@ __dynamic_cast (const void *src_ptr,    // object started from
      (whole_vtable, -ptrdiff_t (offsetof (vtable_prefix, origin))));
   if (whole_prefix->whole_type != whole_type)
     return NULL;
-  
+
   whole_type->__do_dyncast (src2dst, __class_type_info::__contained_public,
                             dst_type, whole_ptr, src_type, src_ptr, result);
   if (!result.dst_ptr)

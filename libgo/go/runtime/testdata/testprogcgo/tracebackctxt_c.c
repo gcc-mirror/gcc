@@ -5,6 +5,7 @@
 // The C definitions for tracebackctxt.go. That file uses //export so
 // it can't put function definitions in the "C" import comment.
 
+//go:build !gccgo
 // +build !gccgo
 
 #include <stdlib.h>
@@ -13,6 +14,7 @@
 // Functions exported from Go.
 extern void G1(void);
 extern void G2(void);
+extern void TracebackContextPreemptionGoFunction(int);
 
 void C1() {
 	G1();
@@ -49,25 +51,32 @@ struct cgoSymbolizerArg {
 static int contextCount;
 
 int getContextCount() {
-	return __atomic_load_n(&contextCount, __ATOMIC_SEQ_CST);
+	return __sync_add_and_fetch(&contextCount, 0);
 }
 
 void tcContext(void* parg) {
 	struct cgoContextArg* arg = (struct cgoContextArg*)(parg);
 	if (arg->context == 0) {
-		arg->context = __atomic_add_fetch(&contextCount, 1, __ATOMIC_SEQ_CST);
+		arg->context = __sync_add_and_fetch(&contextCount, 1);
 	} else {
-		if (arg->context != __atomic_load_n(&contextCount, __ATOMIC_SEQ_CST))
+		if (arg->context != __sync_add_and_fetch(&contextCount, 0)) {
 			abort();
 		}
-		__atomic_sub_fetch(&contextCount, 1, __ATOMIC_SEQ_CST);
+		__sync_sub_and_fetch(&contextCount, 1);
+	}
+}
+
+void tcContextSimple(void* parg) {
+	struct cgoContextArg* arg = (struct cgoContextArg*)(parg);
+	if (arg->context == 0) {
+		arg->context = 1;
 	}
 }
 
 void tcTraceback(void* parg) {
 	int base, i;
 	struct cgoTracebackArg* arg = (struct cgoTracebackArg*)(parg);
-	if (arg->context == 0) {
+	if (arg->context == 0 && arg->sigContext == 0) {
 		// This shouldn't happen in this program.
 		abort();
 	}
@@ -90,4 +99,8 @@ void tcSymbolizer(void *parg) {
 	arg->file = "tracebackctxt.go";
 	arg->func = "cFunction";
 	arg->lineno = arg->pc + (arg->more << 16);
+}
+
+void TracebackContextPreemptionCallGo(int i) {
+	TracebackContextPreemptionGoFunction(i);
 }

@@ -516,7 +516,57 @@ version (CRuntime_Glibc)
     int    putc_unlocked(int, FILE*);
     int    putchar_unlocked(int);
 }
+else version (CRuntime_Musl)
+{
+    void   flockfile(FILE*);
+    int    ftrylockfile(FILE*);
+    void   funlockfile(FILE*);
+    int    getc_unlocked(FILE*);
+    int    getchar_unlocked();
+    int    putc_unlocked(int, FILE*);
+    int    putchar_unlocked(int);
+}
+else version (Darwin)
+{
+    void   flockfile(FILE*);
+    int    ftrylockfile(FILE*);
+    void   funlockfile(FILE*);
+    int    getc_unlocked(FILE*);
+    int    getchar_unlocked();
+    int    putc_unlocked(int, FILE*);
+    int    putchar_unlocked(int);
+}
+else version (FreeBSD)
+{
+    void   flockfile(FILE*);
+    int    ftrylockfile(FILE*);
+    void   funlockfile(FILE*);
+    int    getc_unlocked(FILE*);
+    int    getchar_unlocked();
+    int    putc_unlocked(int, FILE*);
+    int    putchar_unlocked(int);
+}
+else version (NetBSD)
+{
+    void   flockfile(FILE*);
+    int    ftrylockfile(FILE*);
+    void   funlockfile(FILE*);
+    int    getc_unlocked(FILE*);
+    int    getchar_unlocked();
+    int    putc_unlocked(int, FILE*);
+    int    putchar_unlocked(int);
+}
 else version (OpenBSD)
+{
+    void   flockfile(FILE*);
+    int    ftrylockfile(FILE*);
+    void   funlockfile(FILE*);
+    int    getc_unlocked(FILE*);
+    int    getchar_unlocked();
+    int    putc_unlocked(int, FILE*);
+    int    putchar_unlocked(int);
+}
+else version (DragonFlyBSD)
 {
     void   flockfile(FILE*);
     int    ftrylockfile(FILE*);

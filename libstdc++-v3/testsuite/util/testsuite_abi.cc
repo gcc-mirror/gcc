@@ -407,6 +407,15 @@ compare_symbols(const char* baseline_file, const char* test_file,
       ++li;
     }
 
+  // Similarly for IEEE128 symbols.
+  bool ieee_version_found(false);
+  for (li = test.begin(); li != test.end(); ++li)
+    if (li->second.version_name.find("_IEEE128_") != std::string::npos)
+      {
+        ieee_version_found = true;
+        break;
+      }
+
   // Sort out names.
   // Assuming all baseline names and test names are both unique w/ no
   // duplicates.
@@ -440,9 +449,12 @@ compare_symbols(const char* baseline_file, const char* test_file,
 	{
 	  // Iff no test long double compatibility symbols at all and the symbol
 	  // missing is a baseline long double compatibility symbol, skip.
-	  string version_name(i->second.version_name);
+	  string version_name(i->second.version_name.size()
+			      ? i->second.version_name : i->first);
 	  bool base_ld(version_name.find("_LDBL_") != std::string::npos);
-	  if (!base_ld || base_ld && ld_version_found)
+	  bool base_ieee(version_name.find("_IEEE128_") != std::string::npos);
+	  if ((!base_ld || (base_ld && ld_version_found))
+	      && (!base_ieee || (base_ieee && ieee_version_found)))
 	    missing_names.push_back(name);
 	}
     }

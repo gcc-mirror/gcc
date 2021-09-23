@@ -29,6 +29,15 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#define EXTRA_TARGET_D_OS_VERSIONS()				\
+  do								\
+    {								\
+      builtin_version ("Cygwin");				\
+      builtin_version ("Posix");				\
+      builtin_version ("CRuntime_Newlib");			\
+    }								\
+  while (0)
+
 #define EXTRA_TARGET_RUST_OS_INFO()					\
   do {								\
     /*TODO: derived from llvm triple - rustc has no support for cygwin, but follows llvm triple*/ \

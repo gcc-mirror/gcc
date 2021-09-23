@@ -285,7 +285,7 @@ TEST_UNIFORM_ZD (subr_d4_f64_x_tied1, svfloat64_t, double,
 		 z0 = svsubr_x (p0, z0, d4))
 
 /*
-** subr_d4_f64_x_untied: { xfail *-*-* }
+** subr_d4_f64_x_untied:
 **	mov	z0\.d, d4
 **	fsub	z0\.d, p0/m, z0\.d, z1\.d
 **	ret

@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #ifdef HAVE_PTHREAD_AFFINITY_NP
 

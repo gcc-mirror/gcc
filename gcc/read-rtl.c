@@ -835,7 +835,7 @@ md_reader::handle_overloaded_name (rtx original, vec<mapping *> *iterators)
    gives the iterator associated with argument I of ONAME.  */
 
 static void
-add_overload_instance (overloaded_name *oname, vec<mapping *> iterators, rtx x)
+add_overload_instance (overloaded_name *oname, const vec<mapping *> &iterators, rtx x)
 {
   /* Create the instance.  */
   overloaded_instance *instance = new overloaded_instance;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.Wide_Text_IO.Generic_Aux; use Ada.Wide_Text_IO.Generic_Aux;
-
-with System.Img_Real; use System.Img_Real;
 
 package body Ada.Wide_Text_IO.Complex_Aux is
 
@@ -171,9 +169,9 @@ package body Ada.Wide_Text_IO.Complex_Aux is
       --  Both parts are initially converted with a Fore of 0
 
       Rptr := 0;
-      Set_Image_Real (Long_Long_Float (ItemR), R_String, Rptr, 0, Aft, Exp);
+      Aux.Set_Image (ItemR, R_String, Rptr, 0, Aft, Exp);
       Iptr := 0;
-      Set_Image_Real (Long_Long_Float (ItemI), I_String, Iptr, 0, Aft, Exp);
+      Aux.Set_Image (ItemI, I_String, Iptr, 0, Aft, Exp);
 
       --  Check room for both parts plus parens plus comma (RM G.1.3(34))
 

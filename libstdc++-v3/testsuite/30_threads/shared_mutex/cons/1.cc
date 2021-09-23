@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-require-gthreads "" }

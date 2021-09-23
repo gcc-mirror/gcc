@@ -281,7 +281,7 @@ TEST_UNIFORM_ZD (mls_d4_f64_x_tied2, svfloat64_t, double,
 		 z0 = svmls_x (p0, z1, z0, d4))
 
 /*
-** mls_d4_f64_x_untied: { xfail *-*-* }
+** mls_d4_f64_x_untied:
 **	mov	z0\.d, d4
 **	fmsb	z0\.d, p0/m, z2\.d, z1\.d
 **	ret

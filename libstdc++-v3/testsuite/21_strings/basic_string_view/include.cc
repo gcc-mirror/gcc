@@ -19,7 +19,7 @@
 
 // NB: This issue affected only debug-mode.
 
-// { dg-options "-std=gnu++17 -fno-rtti" }
+// { dg-options "-fno-rtti" }
 // { dg-do compile { target c++17 } }
 
 #include <string_view>

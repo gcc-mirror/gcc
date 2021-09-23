@@ -38,6 +38,7 @@ import (
 //go:linkname goPanicSlice3BU
 //go:linkname goPanicSlice3C
 //go:linkname goPanicSlice3CU
+//go:linkname goPanicSliceConvert
 //go:linkname panicshift
 //go:linkname panicdivide
 //go:linkname panicmem
@@ -173,6 +174,12 @@ func goPanicSlice3C(x int, y int) {
 func goPanicSlice3CU(x uint, y int) {
 	panicCheck1(getcallerpc(), "slice bounds out of range")
 	panic(boundsError{x: int64(x), signed: false, y: y, code: boundsSlice3C})
+}
+
+// failures in the conversion (*[x]T)s, 0 <= x <= y, x == cap(s)
+func goPanicSliceConvert(x int, y int) {
+	panicCheck1(getcallerpc(), "slice length too short to convert to pointer to array")
+	panic(boundsError{x: int64(x), signed: true, y: y, code: boundsConvert})
 }
 
 var shiftError = error(errorString("negative shift amount"))

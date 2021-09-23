@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,8 +88,8 @@ package body Back_End is
         (gnat_root                     : Int;
          max_gnat_node                 : Int;
          number_name                   : Nat;
-         nodes_ptr                     : Address;
-         flags_ptr                     : Address;
+         node_offsets_ptr              : Address;
+         slots_ptr                     : Address;
 
          next_node_ptr                 : Address;
          prev_node_ptr                 : Address;
@@ -156,8 +156,8 @@ package body Back_End is
         (gnat_root          => Int (Cunit (Main_Unit)),
          max_gnat_node      => Int (Last_Node_Id - First_Node_Id + 1),
          number_name        => Name_Entries_Count,
-         nodes_ptr          => Nodes_Address,
-         flags_ptr          => Flags_Address,
+         node_offsets_ptr   => Node_Offsets_Address,
+         slots_ptr          => Slots_Address,
 
          next_node_ptr      => Next_Node_Address,
          prev_node_ptr      => Prev_Node_Address,
@@ -280,6 +280,14 @@ package body Back_End is
 
             elsif Switch_Chars (First .. Last) = "fpreserve-control-flow" then
                Opt.Suppress_Control_Flow_Optimizations := True;
+
+            --  Back end switch -fdiagnostics-format=json tells the frontend to
+            --  output its error and warning messages in the same format GCC
+            --  uses when passed -fdiagnostics-format=json.
+
+            elsif Switch_Chars (First .. Last) = "fdiagnostics-format=json"
+            then
+               Opt.JSON_Output := True;
 
             --  Back end switch -fdump-scos, which exists primarily for C, is
             --  also accepted for Ada as a synonym of -gnateS.

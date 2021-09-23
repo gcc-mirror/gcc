@@ -1,4 +1,5 @@
 // { dg-options "-Wno-deprecated" }
+// { dg-add-options using-deprecated }
 // { dg-do run { target c++11 } }
 
 // Copyright (C) 2005-2021 Free Software Foundation, Inc.
@@ -77,7 +78,7 @@ test01()
   return 0;
 }
 
-int 
+int
 main()
 {
   test01();

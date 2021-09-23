@@ -634,6 +634,13 @@ requirements of the license of GCC.
     <listitem><para>Have <code>open</code> clear the error flags.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr415"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#415">415</link>:
+	<emphasis>Behavior of std::ws</emphasis>
+    </term>
+    <listitem><para>Change it to be an unformatted input function
+      (i.e. construct a sentry and catch exceptions).
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-closed.html#431">431</link>:
 	<emphasis>Swapping containers with unequal allocators</emphasis>
     </term>
@@ -741,6 +748,12 @@ requirements of the license of GCC.
 	<emphasis>What should the return type of pow(float,int) be?</emphasis>
     </term>
     <listitem><para>In C++11 mode, remove the pow(float,int), etc., signatures.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr581"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#581">581</link>:
+	<emphasis><code>flush()</code> not unformatted function</emphasis>
+    </term>
+    <listitem><para>Change it to be a unformatted output function (i.e. construct a sentry and catch exceptions).
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr586"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#586">586</link>:

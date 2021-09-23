@@ -70,12 +70,3 @@ foo_siv4hi (siv4hi a)
 
 /* { dg-final { scan-assembler-times "umov\\t" 8 } } */
 /* { dg-final { scan-assembler-not "and\\t" } } */
-
-/* { dg-final { scan-rtl-dump "aarch64_get_lane_zero_extenddiv16qi" "final" } } */
-/* { dg-final { scan-rtl-dump "aarch64_get_lane_zero_extenddiv8qi" "final" } } */
-/* { dg-final { scan-rtl-dump "aarch64_get_lane_zero_extenddiv8hi" "final" } } */
-/* { dg-final { scan-rtl-dump "aarch64_get_lane_zero_extenddiv4hi" "final" } } */
-/* { dg-final { scan-rtl-dump "aarch64_get_lane_zero_extendsiv16qi" "final" } } */
-/* { dg-final { scan-rtl-dump "aarch64_get_lane_zero_extendsiv8qi" "final" } } */
-/* { dg-final { scan-rtl-dump "aarch64_get_lane_zero_extendsiv8hi" "final" } } */
-/* { dg-final { scan-rtl-dump "aarch64_get_lane_zero_extendsiv4hi" "final" } } */

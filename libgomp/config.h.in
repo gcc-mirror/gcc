@@ -143,6 +143,9 @@
    */
 #undef LT_OBJDIR
 
+/* Define to 1 to if -foffload is defaulted */
+#undef OFFLOAD_DEFAULTED
+
 /* Define to offload plugins, separated by commas. */
 #undef OFFLOAD_PLUGINS
 

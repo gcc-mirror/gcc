@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,39 +35,43 @@ package Exp_Imgv is
    --  base type. The node N is the point in the tree where the resulting
    --  declarations are to be inserted.
    --
-   --    The form of the tables generated is as follows:
+   --  The form of the tables generated is as follows:
    --
-   --      xxxS : string := "chars";
-   --      xxxI : array (0 .. N) of Natural_8/16/32 := (1, n, .., n);
+   --    xxxS : constant string (1 .. M) := "chars";
+   --    xxxN : constant array (0 .. N) of Index_Type := (i1, i2, .., iN, j);
    --
-   --    Here xxxS is a string obtained by concatenating all the names
-   --    of the enumeration literals in sequence, representing any wide
-   --    characters according to the current wide character encoding
-   --    method, and with all letters forced to upper case.
+   --  Here xxxS is a string obtained by concatenating all the names of the
+   --  enumeration literals in sequence, representing any wide characters
+   --  according to the current wide character encoding method, and with all
+   --  letters forced to upper case.
    --
-   --    The array xxxI is an array of ones origin indexes to the start
-   --    of each name, with one extra entry at the end, which is the index
-   --    to the character just past the end of the last literal, i.e. it is
-   --    the length of xxxS + 1. The element type is the shortest of the
-   --    possible types that will hold all the values.
+   --  The array xxxN is an array of indexes into xxxS pointing to the start
+   --  of each name, with one extra entry at the end, which is the index to
+   --  the character just past the end of the last literal, i.e. it is the
+   --  length of xxxS + 1. The element type is the shortest of the possible
+   --  types that will hold all the values.
    --
-   --      For example, for the type
+   --  For example, for the type
    --
-   --         type x is (hello,'!',goodbye);
+   --     type x is (hello,'!',goodbye);
    --
-   --      the generated tables would consist of
+   --  the generated tables would consist of
    --
-   --          xxxS : String := "hello'!'goodbye";
-   --          xxxI : array (0 .. 3) of Natural_8 := (1, 6, 9, 16);
+   --      xxxS : constant string (1 .. 15) := "hello'!'goodbye";
+   --      xxxN : constant array (0 .. 3) of Integer_8 := (1, 6, 9, 16);
    --
-   --      Here Natural_8 is used since 16 < 2**(8-1)
+   --  Here Integer_8 is used since 16 < 2**(8-1).
    --
-   --    If the entity E needs the tables constructing, the necessary
-   --    declarations are constructed, and the fields Lit_Strings and
-   --    Lit_Indexes of E are set to point to the corresponding entities.
-   --    If no tables are needed (E is not a user defined enumeration
-   --    root type, or pragma Discard_Names is in effect, then the
-   --    declarations are not constructed, and the fields remain Empty.
+   --  If the entity E needs the tables, the necessary declarations are built
+   --  and the fields Lit_Strings and Lit_Indexes of E are set to point to the
+   --  corresponding entities. If no tables are needed (E is not a user defined
+   --  enumeration root type, or pragma Discard_Names is in effect), then the
+   --  declarations are not constructed and the fields remain Empty.
+   --
+   --  If the number of enumeration literals is large enough, a (perfect) hash
+   --  function mapping the literals to their position number is also built and
+   --  requires additional tables. See the System.Perfect_Hash_Generators unit
+   --  for a complete description of this processing.
 
    procedure Expand_Image_Attribute (N : Node_Id);
    --  This procedure is called from Exp_Attr to expand an occurrence of the
@@ -80,6 +84,10 @@ package Exp_Imgv is
    procedure Expand_Wide_Wide_Image_Attribute (N : Node_Id);
    --  This procedure is called from Exp_Attr to expand an occurrence of the
    --  attribute Wide_Wide_Image.
+
+   procedure Expand_Valid_Value_Attribute (N : Node_Id);
+   --  This procedure is called from Exp_Attr to expand an occurrence of the
+   --  attribute Valid_Value.
 
    procedure Expand_Value_Attribute (N : Node_Id);
    --  This procedure is called from Exp_Attr to expand an occurrence of the

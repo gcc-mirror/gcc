@@ -1478,6 +1478,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #define __INT_N(TYPE, BITSIZE, EXT, UEXT)				\
+  __extension__								\
   template<>								\
     struct numeric_limits<TYPE>						\
     {									\
@@ -1546,6 +1547,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= round_toward_zero; 						\
     }; 									\
 									\
+  __extension__								\
   template<>								\
     struct numeric_limits<unsigned TYPE>				\
     {									\

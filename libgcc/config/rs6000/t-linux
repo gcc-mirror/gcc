@@ -11,10 +11,12 @@ HOST_LIBGCC2_CFLAGS += -mno-minimal-toc
 # the IBM extended double format.  Also turn off gnu attributes on the static
 # modules.
 IBM128_STATIC_OBJS	= ibm-ldouble$(objext) _powitf2$(objext) \
-			  ppc64-fp$(objext) _divtc3$(object) _multc3$(object) \
-			  _fixtfdi$(object) _fixunstfdi$(object) \
-	                  _floatditf$(objext) _floatunsditf$(objext)
-IBM128_SHARED_OBJS	= $(IBM128_STATIC_OBJS:$(objext):_s$(objext))
+			  ppc64-fp$(objext) _divtc3$(objext) _multc3$(objext) \
+			  _fixtfdi$(objext) _fixunstfdi$(objext) \
+	                  _floatditf$(objext) _floatunditf$(objext) \
+			  _fixtfti$(objext) _fixunstfti$(objext) \
+	                  _floattitf$(objext) _floatuntitf$(objext)
+IBM128_SHARED_OBJS	= $(IBM128_STATIC_OBJS:$(objext)=_s$(objext))
 IBM128_OBJS		= $(IBM128_STATIC_OBJS) $(IBM128_SHARED_OBJS)
 
 IBM128_CFLAGS		= -Wno-psabi -mabi=ibmlongdouble -mno-gnu-attribute

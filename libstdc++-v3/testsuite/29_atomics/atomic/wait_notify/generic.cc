@@ -21,12 +21,27 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "atomic/wait_notify_util.h"
+#include <atomic>
+#include <thread>
+
+#include <testsuite_hooks.h>
 
 int
 main ()
 {
   struct S{ int i; };
-  check<S> check_s{S{0},S{42}};
+  S aa{ 0 };
+  S bb{ 42 };
+
+  std::atomic<S> a{ aa };
+  VERIFY( a.load().i == aa.i );
+  a.wait(bb);
+  std::thread t([&]
+    {
+      a.store(bb);
+      a.notify_one();
+    });
+  a.wait(aa);
+  t.join();
   return 0;
 }

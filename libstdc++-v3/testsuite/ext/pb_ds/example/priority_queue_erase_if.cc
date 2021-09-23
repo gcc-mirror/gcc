@@ -29,6 +29,8 @@
 // purpose. It is provided "as is" without express or implied
 // warranty.
 
+// { dg-add-options using-deprecated }
+
 /**
  * @file priority_queue_erase_if.cpp
  * Example showing how to conditionally erase values from a priority queue.

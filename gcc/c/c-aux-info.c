@@ -67,12 +67,12 @@ affix_data_type (const char *param)
 
   for (;;)
     {
-      if (!strncmp (p, "volatile ", 9))
+      if (startswith (p, "volatile "))
 	{
 	  p += 9;
 	  continue;
 	}
-      if (!strncmp (p, "const ", 6))
+      if (startswith (p, "const "))
 	{
 	  p += 6;
 	  continue;

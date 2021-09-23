@@ -262,7 +262,6 @@ static frv_stack_t *frv_stack_cache = (frv_stack_t *)0;
 static void frv_option_override			(void);
 static bool frv_legitimate_address_p		(machine_mode, rtx, bool);
 static int frv_default_flags_for_cpu		(void);
-static int frv_string_begins_with		(const char *, const char *);
 static FRV_INLINE bool frv_small_data_reloc_p	(rtx, int);
 static void frv_print_operand			(FILE *, rtx, int);
 static void frv_print_operand_address		(FILE *, machine_mode, rtx);
@@ -782,17 +781,6 @@ frv_option_override (void)
   init_machine_status = frv_init_machine_status;
 }
 
-
-/* Return true if NAME (a STRING_CST node) begins with PREFIX.  */
-
-static int
-frv_string_begins_with (const char *name, const char *prefix)
-{
-  const int prefix_len = strlen (prefix);
-
-  /* Remember: NAME's length includes the null terminator.  */
-  return (strncmp (name, prefix, prefix_len) == 0);
-}
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
@@ -9312,9 +9300,9 @@ frv_in_small_data_p (const_tree decl)
   section_name = DECL_SECTION_NAME (decl);
   if (section_name)
     {
-      if (frv_string_begins_with (section_name, ".sdata"))
+      if (startswith (section_name, ".sdata"))
 	return true;
-      if (frv_string_begins_with (section_name, ".sbss"))
+      if (startswith (section_name, ".sbss"))
 	return true;
       return false;
     }

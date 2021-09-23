@@ -31,5 +31,5 @@ test01(bool b)
 
 static_assert(test01(false));
 static_assert(test01(true)); // { dg-error "non-constant" }
-// { dg-error "assert" "" { target *-*-* } 0 }
+// { dg-error "unreachable" "" { target *-*-* } 0 }
 // { dg-prune-output "in 'constexpr' expansion" }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                 Copyright (C) 2019-2020, Free Software Foundation, Inc.  --
+--                 Copyright (C) 2019-2021, Free Software Foundation, Inc.  --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@ package body System.Atomic_Operations.Test_And_Set is
    function Atomic_Test_And_Set
      (Item : aliased in out Test_And_Set_Flag) return Boolean is
    begin
-      return Boolean (Atomic_Test_And_Set (Item'Address));
+      return Atomic_Test_And_Set (Item'Address);
    end Atomic_Test_And_Set;
 
    ------------------

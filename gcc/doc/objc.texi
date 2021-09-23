@@ -382,7 +382,7 @@ compiler on an i386 machine:
 @sp 1
 
 @multitable @columnfractions .60 .40
-@item Objective-C type
+@headitem Objective-C type
 @tab Compiler encoding
 @item
 @smallexample
@@ -416,7 +416,7 @@ Objective-C type specifiers:
 @sp 1
 
 @multitable @columnfractions .25 .75
-@item Specifier
+@headitem Specifier
 @tab Encoding
 @item @code{const}
 @tab @code{r}
@@ -445,7 +445,7 @@ Note how @code{const} interacts with pointers:
 @sp 1
 
 @multitable @columnfractions .25 .75
-@item Objective-C type
+@headitem Objective-C type
 @tab Compiler encoding
 @item
 @smallexample

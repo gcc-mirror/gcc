@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,6 +103,7 @@ package System.Rident is
       No_Direct_Boolean_Operators,               -- GNAT
       No_Dispatch,                               -- (RM H.4(19))
       No_Dispatching_Calls,                      -- GNAT
+      No_Dynamic_Accessibility_Checks,           -- GNAT
       No_Dynamic_Attachment,                     -- Ada 2012 (RM E.7(10/3))
       No_Dynamic_CPU_Assignment,                 -- Ada 202x (RM D.7(10/3))
       No_Dynamic_Priorities,                     -- (RM D.9(9))

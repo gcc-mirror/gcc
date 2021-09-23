@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,8 +85,8 @@ package Eval_Fat is
 
    type Rounding_Mode is (Floor, Ceiling, Round, Round_Even);
    for Rounding_Mode use (0, 1, 2, 3);
+   pragma Convention (C, Rounding_Mode);
    --  Used to indicate rounding mode for Machine attribute
-   --  Note that C code in gigi knows that Round_Even is 3
 
    --  The Machine attribute is special, in that it takes an extra argument
    --  indicating the rounding mode, and also an argument Enode that is a
@@ -98,6 +98,8 @@ package Eval_Fat is
       X     : T;
       Mode  : Rounding_Mode;
       Enode : Node_Id) return T;
+
+   --  WARNING: There is a matching C declaration of this function in urealp.h
 
    procedure Decompose_Int
      (RT       : R;

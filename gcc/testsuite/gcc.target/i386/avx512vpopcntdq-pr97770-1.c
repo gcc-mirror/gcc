@@ -1,13 +1,12 @@
 /* PR target/97770 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx512vpopcntdq -mavx512vl -mprefer-vector-width=512" } */
+/* { dg-options "-O2 -march=icelake-server -mprefer-vector-width=512" } */
 /* { dg-final { scan-assembler-times "vpopcntd\[ \\t\]+\[^\\n\\r\]*xmm" 1 } } */
 /* { dg-final { scan-assembler-times "vpopcntd\[ \\t\]+\[^\\n\\r\]*ymm" 1 } } */
 /* { dg-final { scan-assembler-times "vpopcntd\[ \\t\]+\[^\\n\\r\]*zmm" 1 } } */
-/* Add xfail since current vectorizor cannot generate expected code for DImode popcount */
-/* { dg-final { scan-assembler-times "vpopcntq\[ \\t\]+\[^\\n\\r\]*xmm" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "vpopcntq\[ \\t\]+\[^\\n\\r\]*ymm" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "vpopcntq\[ \\t\]+\[^\\n\\r\]*zmm" 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vpopcntq\[ \\t\]+\[^\\n\\r\]*xmm" 1  } } */
+/* { dg-final { scan-assembler-times "vpopcntq\[ \\t\]+\[^\\n\\r\]*ymm" 1  } } */
+/* { dg-final { scan-assembler-times "vpopcntq\[ \\t\]+\[^\\n\\r\]*zmm" 1  } } */
 #ifndef AVX512VPOPCNTQ_H_INCLUDED
 #define AVX512VPOPCNTQ_H_INCLUDED
 

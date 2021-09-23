@@ -1506,8 +1506,6 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
     }
 
   clone_info *callee_info = clone_info::get (e->callee);
-  clone_info *caller_info = clone_info::get (e->caller);
-
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "updating call of %s -> %s: ",
@@ -1515,18 +1513,6 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
       print_gimple_stmt (symtab->dump_file, e->call_stmt, 0, dump_flags);
       if (callee_info && callee_info->param_adjustments)
 	callee_info->param_adjustments->dump (symtab->dump_file);
-      unsigned performed_len
-	= caller_info ? vec_safe_length (caller_info->performed_splits) : 0;
-      if (performed_len > 0)
-	fprintf (symtab->dump_file, "Performed splits records:\n");
-      for (unsigned i = 0; i < performed_len; i++)
-	{
-	  ipa_param_performed_split *sm
-	    = &(*caller_info->performed_splits)[i];
-	  print_node_brief (symtab->dump_file, "  dummy_decl: ", sm->dummy_decl,
-			    TDF_UID);
-	  fprintf (symtab->dump_file, ", unit_offset: %u\n", sm->unit_offset);
-	}
     }
 
   if (ipa_param_adjustments *padjs
@@ -1541,10 +1527,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 	remove_stmt_from_eh_lp (e->call_stmt);
 
       tree old_fntype = gimple_call_fntype (e->call_stmt);
-      new_stmt = padjs->modify_call (e->call_stmt,
-				     caller_info
-				     ? caller_info->performed_splits : NULL,
-				     e->callee->decl, false);
+      new_stmt = padjs->modify_call (e, false);
       cgraph_node *origin = e->callee;
       while (origin->clone_of)
 	origin = origin->clone_of;
@@ -1564,6 +1547,9 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
     }
   else
     {
+      if (flag_checking
+	  && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
+	ipa_verify_edge_has_no_modifications (e);
       new_stmt = e->call_stmt;
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
       update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
@@ -1860,6 +1846,17 @@ cgraph_node::release_body (bool keep_arguments)
       lto_free_function_in_decl_state_for_node (this);
       lto_file_data = NULL;
     }
+  if (flag_checking && clones)
+    {
+      /* It is invalid to release body before materializing clones except
+	 for thunks that don't really need a body.  Verify also that we do
+	 not leak pointers to the call statements.  */
+      for (cgraph_node *node = clones; node;
+	   node = node->next_sibling_clone)
+	gcc_assert (node->thunk && !node->callees->call_stmt);
+    }
+  remove_callees ();
+  remove_all_references ();
 }
 
 /* Remove function from symbol table.  */
@@ -2239,7 +2236,7 @@ cgraph_node::dump (FILE *f)
     }
   fprintf (f, "\n");
 
-  if (count.ipa ().initialized_p ())
+  if (!body_removed && count.ipa ().initialized_p ())
     {
       bool ok = true;
       bool min = false;
@@ -2248,7 +2245,7 @@ cgraph_node::dump (FILE *f)
       FOR_EACH_ALIAS (this, ref)
 	if (dyn_cast <cgraph_node *> (ref->referring)->count.initialized_p ())
 	  sum += dyn_cast <cgraph_node *> (ref->referring)->count.ipa ();
-  
+
       if (inlined_to
 	  || (symtab->state < EXPANSION
 	      && ultimate_alias_target () == this && only_called_directly_p ()))
@@ -3063,10 +3060,10 @@ collect_callers_of_node_1 (cgraph_node *node, void *data)
 /* Collect all callers of cgraph_node and its aliases that are known to lead to
    cgraph_node (i.e. are not overwritable).  */
 
-vec<cgraph_edge *>
+auto_vec<cgraph_edge *>
 cgraph_node::collect_callers (void)
 {
-  vec<cgraph_edge *> redirect_callers = vNULL;
+  auto_vec<cgraph_edge *> redirect_callers;
   call_for_symbol_thunks_and_aliases (collect_callers_of_node_1,
 				    &redirect_callers, false);
   return redirect_callers;

@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     atomic_is_lock_free(const shared_ptr<_Tp>* __p)
     { return std::atomic_is_lock_free<_Tp, __default_lock_policy>(__p); }
 
-  // @}
+  /// @}
 
   /**
    *  @brief  Atomic load for shared_ptr objects.
@@ -123,7 +123,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline __shared_ptr<_Tp, _Lp>
     atomic_load(const __shared_ptr<_Tp, _Lp>* __p)
     { return std::atomic_load_explicit(__p, memory_order_seq_cst); }
-  // @}
+  /// @}
 
   /**
    *  @brief  Atomic store for shared_ptr objects.
@@ -162,7 +162,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     atomic_store(__shared_ptr<_Tp, _Lp>* __p, __shared_ptr<_Tp, _Lp> __r)
     { std::atomic_store_explicit(__p, std::move(__r), memory_order_seq_cst); }
-  // @}
+  /// @}
 
   /**
    *  @brief  Atomic exchange for shared_ptr objects.
@@ -207,7 +207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::atomic_exchange_explicit(__p, std::move(__r),
 					   memory_order_seq_cst);
     }
-  // @}
+  /// @}
 
   /**
    *  @brief  Atomic compare-and-swap for shared_ptr objects.
@@ -325,10 +325,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::atomic_compare_exchange_weak_explicit(__p, __v,
 	  std::move(__w), memory_order_seq_cst, memory_order_seq_cst);
     }
-  // @}
+  /// @}
 
-  // @} relates shared_ptr
-  // @} group pointer_abstractions
+  /// @} relates shared_ptr
+  /// @} group pointer_abstractions
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

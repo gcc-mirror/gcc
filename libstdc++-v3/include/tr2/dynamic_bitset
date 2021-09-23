@@ -748,7 +748,7 @@ namespace tr2
 	}
 
       // 23.3.5.2 dynamic_bitset operations:
-      //@{
+      ///@{
       /**
        *  @brief  Operations on dynamic_bitsets.
        *  @param  __rhs  A same-sized dynamic_bitset.
@@ -789,9 +789,9 @@ namespace tr2
 	this->_M_do_dif(__rhs);
 	return *this;
       }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief  Operations on dynamic_bitsets.
        *  @param  __pos The number of places to shift.
@@ -823,7 +823,7 @@ namespace tr2
 	  this->_M_do_reset();
 	return *this;
       }
-      //@}
+      ///@}
 
       // Set, reset, and flip.
       /**
@@ -905,7 +905,7 @@ namespace tr2
       operator~() const
       { return dynamic_bitset<_WordT, _Alloc>(*this).flip(); }
 
-      //@{
+      ///@{
       /**
        *  @brief  Array-indexing support.
        *  @param  __pos  Index into the %dynamic_bitset.
@@ -921,7 +921,7 @@ namespace tr2
       const_reference
       operator[](size_type __pos) const
       { return _M_unchecked_test(__pos); }
-      //@}
+      ///@}
 
       /**
        *  @brief Returns a numerical interpretation of the %dynamic_bitset.
@@ -1052,7 +1052,7 @@ namespace tr2
       none() const
       { return !this->_M_is_any(); }
 
-      //@{
+      ///@{
       /// Self-explanatory.
       dynamic_bitset
       operator<<(size_type __pos) const
@@ -1061,7 +1061,7 @@ namespace tr2
       dynamic_bitset
       operator>>(size_type __pos) const
       { return dynamic_bitset(*this) >>= __pos; }
-      //@}
+      ///@}
 
       /**
        *  @brief  Finds the index of the first "on" bit.
@@ -1115,7 +1115,7 @@ namespace tr2
       }
 
 
-  //@{
+  ///@{
   /// These comparisons for equality/inequality are, well, @e bitwise.
 
   template<typename _WordT, typename _Alloc>
@@ -1141,10 +1141,10 @@ namespace tr2
     operator>=(const dynamic_bitset<_WordT, _Alloc>& __lhs,
 	       const dynamic_bitset<_WordT, _Alloc>& __rhs)
     { return !(__lhs < __rhs); }
-  //@}
+  ///@}
 
   // 23.3.5.3 bitset operations:
-  //@{
+  ///@{
   /**
    *  @brief  Global bitwise operations on bitsets.
    *  @param  __x  A bitset.
@@ -1192,7 +1192,7 @@ namespace tr2
       __result -= __y;
       return __result;
     }
-  //@}
+  ///@}
 
   /// Stream output operator for dynamic_bitset.
   template <typename _CharT, typename _Traits,

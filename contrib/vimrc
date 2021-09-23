@@ -42,7 +42,7 @@ function! SetStyle()
   if &filetype == "gitcommit"
     setlocal textwidth=72
   else
-    setlocal textwidth=80
+    setlocal textwidth=79
   endif
   setlocal formatoptions-=ro formatoptions+=cqlt
   if index(l:c_exts, l:ext) != -1 || &filetype == "c" || &filetype == "cpp"

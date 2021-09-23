@@ -20,4 +20,5 @@ int __attribute__((stack_protect)) bar()
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "stack_chk_fail" 1 } } */
+/* { dg-final { scan-assembler-times "stack_chk_fail" 1 { target { ! mips*-*-* } } } }*/
+/* { dg-final { scan-assembler-times "stack_chk_fail" 2 { target { mips*-*-* } } } }*/

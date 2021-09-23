@@ -182,12 +182,7 @@ var globSymlinkTests = []struct {
 func TestGlobSymlink(t *testing.T) {
 	testenv.MustHaveSymlink(t)
 
-	tmpDir, err := os.MkdirTemp("", "globsymlink")
-	if err != nil {
-		t.Fatal("creating temp dir:", err)
-	}
-	defer os.RemoveAll(tmpDir)
-
+	tmpDir := t.TempDir()
 	for _, tt := range globSymlinkTests {
 		path := Join(tmpDir, tt.path)
 		dest := Join(tmpDir, tt.dest)
@@ -268,18 +263,7 @@ func TestWindowsGlob(t *testing.T) {
 		t.Skipf("skipping windows specific test")
 	}
 
-	tmpDir, err := os.MkdirTemp("", "TestWindowsGlob")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(tmpDir)
-
-	// /tmp may itself be a symlink
-	tmpDir, err = EvalSymlinks(tmpDir)
-	if err != nil {
-		t.Fatal("eval symlink for tmp dir:", err)
-	}
-
+	tmpDir := tempDirCanonical(t)
 	if len(tmpDir) < 3 {
 		t.Fatalf("tmpDir path %q is too short", tmpDir)
 	}
@@ -324,15 +308,13 @@ func TestWindowsGlob(t *testing.T) {
 	// test absolute paths
 	for _, test := range tests {
 		var p string
-		err = test.globAbs(tmpDir, tmpDir)
-		if err != nil {
+		if err := test.globAbs(tmpDir, tmpDir); err != nil {
 			t.Error(err)
 		}
 		// test C:\*Documents and Settings\...
 		p = tmpDir
 		p = strings.Replace(p, `:\`, `:\*`, 1)
-		err = test.globAbs(tmpDir, p)
-		if err != nil {
+		if err := test.globAbs(tmpDir, p); err != nil {
 			t.Error(err)
 		}
 		// test C:\Documents and Settings*\...
@@ -340,8 +322,7 @@ func TestWindowsGlob(t *testing.T) {
 		p = strings.Replace(p, `:\`, `:`, 1)
 		p = strings.Replace(p, `\`, `*\`, 1)
 		p = strings.Replace(p, `:`, `:\`, 1)
-		err = test.globAbs(tmpDir, p)
-		if err != nil {
+		if err := test.globAbs(tmpDir, p); err != nil {
 			t.Error(err)
 		}
 	}

@@ -33,7 +33,9 @@ class non_null_ref
 public:
   non_null_ref ();
   ~non_null_ref ();
-  bool non_null_deref_p (tree name, basic_block bb);
+  bool non_null_deref_p (tree name, basic_block bb, bool search_dom = true);
+  bool adjust_range (irange &r, tree name, basic_block bb,
+		     bool search_dom = true);
 private:
   vec <bitmap> m_nn;
   void process_name (tree name);
@@ -50,10 +52,9 @@ public:
   block_range_cache ();
   ~block_range_cache ();
 
-  void set_bb_range (tree name, const basic_block bb, const irange &r);
-  void set_bb_varying (tree name, const basic_block bb);
-  bool get_bb_range (irange &r, tree name, const basic_block bb);
-  bool bb_range_p (tree name, const basic_block bb);
+  bool set_bb_range (tree name, const_basic_block bb, const irange &r);
+  bool get_bb_range (irange &r, tree name, const_basic_block bb);
+  bool bb_range_p (tree name, const_basic_block bb);
 
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb, bool print_varying = true);
@@ -62,6 +63,7 @@ private:
   ssa_block_ranges &get_block_ranges (tree name);
   ssa_block_ranges *query_block_ranges (tree name);
   irange_allocator *m_irange_allocator;
+  bitmap_obstack m_bitmaps;
 };
 
 // This global cache is used with the range engine as markers for what
@@ -87,24 +89,25 @@ private:
 // them available for gori-computes to query so outgoing edges can be
 // properly calculated.
 
-class ranger_cache : public gori_compute_cache
+class ranger_cache : public range_query
 {
 public:
-  ranger_cache (class gimple_ranger &q);
+  ranger_cache ();
   ~ranger_cache ();
 
-  virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);
+  virtual bool range_of_expr (irange &r, tree name, gimple *stmt);
+  virtual bool range_on_edge (irange &r, edge e, tree expr);
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
 
   bool get_global_range (irange &r, tree name) const;
   bool get_non_stale_global_range (irange &r, tree name);
   void set_global_range (tree name, const irange &r);
-  void register_dependency (tree name, tree dep);
 
   non_null_ref m_non_null;
+  gori_compute m_gori;
 
-  void dump (FILE *f, bool dump_gori = true);
-  void dump (FILE *f, basic_block bb);
+  void dump_bb (FILE *f, basic_block bb);
+  virtual void dump (FILE *f) OVERRIDE;
 private:
   ssa_global_cache m_globals;
   block_range_cache m_on_entry;
@@ -113,20 +116,15 @@ private:
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
   void propagate_cache (tree name);
 
+  void range_of_def (irange &r, tree name, basic_block bb = NULL);
+  void entry_range (irange &r, tree expr, basic_block bb);
+  void exit_range (irange &r, tree expr, basic_block bb);
+
   void propagate_updated_value (tree name, basic_block bb);
 
+  bitmap m_propfail;
   vec<basic_block> m_workback;
   vec<basic_block> m_update_list;
-
-  // Iterative "poor value" calculations.
-  struct update_record
-  {
-    basic_block bb;	// Block which value needs to be calculated in.
-    tree calc;		// SSA_NAME which needs its value calculated.
-  };
-  bool push_poor_value (basic_block bb, tree name);
-  vec<update_record> m_poor_value_list;
-  class gimple_ranger &query;
 };
 
 #endif // GCC_SSA_RANGE_CACHE_H

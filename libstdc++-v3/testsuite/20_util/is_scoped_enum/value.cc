@@ -32,6 +32,8 @@ template<typename T>
   concept Is_scoped_enum
     = __gnu_test::test_category<std::is_scoped_enum, T>(true);
 
+struct Incomplete_struct;
+
 void
 test01()
 {
@@ -45,6 +47,9 @@ test01()
   static_assert( ! Is_scoped_enum<U> );
   enum F : int { f1, f2 };
   static_assert( ! Is_scoped_enum<F> );
+  static_assert( ! Is_scoped_enum<Incomplete_struct> );
+  struct S;
+  static_assert( ! Is_scoped_enum<S> );
   struct S { };
   static_assert( ! Is_scoped_enum<S> );
 
@@ -59,4 +64,37 @@ test01()
   static_assert( ! Is_scoped_enum<int()> );
   static_assert( ! Is_scoped_enum<int(*)()> );
   static_assert( ! Is_scoped_enum<int(&)()> );
+}
+
+enum opaque_unscoped : short;
+enum class opaque_scoped;
+enum class opaque_scoped_with_base : long;
+
+static_assert( ! Is_scoped_enum<opaque_unscoped> );
+static_assert( Is_scoped_enum<opaque_scoped> );
+static_assert( Is_scoped_enum<opaque_scoped_with_base> );
+
+void
+test02()
+{
+  enum unscoped {
+    u_is_enum = std::is_enum_v<unscoped>,
+    u_is_scoped = std::is_scoped_enum_v<unscoped>,
+  };
+  static_assert( unscoped::u_is_enum );
+  static_assert( ! unscoped::u_is_scoped );
+
+  enum unscoped_fixed : char {
+    uf_is_enum = std::is_enum_v<unscoped_fixed>,
+    uf_is_scoped = std::is_scoped_enum_v<unscoped_fixed>,
+  };
+  static_assert( unscoped_fixed::uf_is_enum);
+  static_assert( ! unscoped_fixed::uf_is_scoped );
+
+  enum class scoped {
+    is_enum = std::is_enum_v<scoped>,
+    is_scoped = std::is_scoped_enum_v<scoped>,
+  };
+  static_assert( (bool) scoped::is_enum );
+  static_assert( (bool) scoped::is_scoped );
 }

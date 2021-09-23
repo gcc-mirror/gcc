@@ -89,6 +89,14 @@ along with GCC; see the file COPYING3.  If not see
 # define LINK_SPEC_LARGE_ADDR_AWARE ""
 #endif
 
+#undef LINK_SPEC_DISABLE_DYNAMICBASE
+#if HAVE_LD_PE_DISABLE_DYNAMICBASE
+# define LINK_SPEC_DISABLE_DYNAMICBASE \
+  "%{!shared:%{!mdll:%{no-pie:--disable-dynamicbase}}}"
+#else
+# define LINK_SPEC_DISABLE_DYNAMICBASE ""
+#endif
+
 #undef LINK_SPEC
 #define LINK_SPEC SUB_LINK_SPEC " %{mwindows:--subsystem windows} \
   %{mconsole:--subsystem console} \
@@ -97,6 +105,7 @@ along with GCC; see the file COPYING3.  If not see
   %{static:-Bstatic} %{!static:-Bdynamic} \
   %{shared|mdll: " SUB_LINK_ENTRY " --enable-auto-image-base} \
   " LINK_SPEC_LARGE_ADDR_AWARE "\
+  " LINK_SPEC_DISABLE_DYNAMICBASE "\
   %(shared_libgcc_undefs)"
 
 /* Enable sincos optimization, overriding cygming.h.  sincos, sincosf

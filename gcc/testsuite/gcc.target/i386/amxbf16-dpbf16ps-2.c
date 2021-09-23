@@ -57,7 +57,7 @@ void calc_matrix_dpbf16ps (__tile *dst, __tile *src1, __tile *src2)
 	      (make_f32(src1_buf[i * 4 * N + 4 * j + t]) *
 	      make_f32(src2_buf[j * 4 * K + 4 * k + t])) +
 	      (make_f32(src1_buf[i * 4 * N + 4 * j + t + 1]) *
-	      make_f32(src1_buf[i * 4 * N + 4 * j + t + 1]));
+	      make_f32(src2_buf[j * 4 * K + 4 * k + t + 1]));
 	  }
 
 }
@@ -72,8 +72,8 @@ void test_amx_bf16_dpbf16ps ()
   
   init_tile_config (&cfg);
   init_tile_reg_and_src_with_buffer (1, dst, tmp_dst_buf);
-  init_tile_reg_and_src_with_buffer (2, dst, tmp_dst_buf);
-  init_tile_reg_and_src_with_buffer (3, dst, tmp_dst_buf);
+  init_tile_reg_and_src_with_buffer (2, src1, tmp_dst_buf);
+  init_tile_reg_and_src_with_buffer (3, src2, tmp_dst_buf);
 
   calc_matrix_dpbf16ps (&dst, &src1, &src2);
   

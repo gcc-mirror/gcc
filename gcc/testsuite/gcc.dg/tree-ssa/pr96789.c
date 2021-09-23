@@ -58,4 +58,4 @@ bar (int16_t res[16], uint8_t *val1, uint8_t *val2)
     }
 }
 
-/* { dg-final { scan-tree-dump {Deleted dead store:.*tmp} "dse3" } } */
+/* { dg-final { scan-tree-dump {Deleted dead store:.*tmp} "dse4" } } */

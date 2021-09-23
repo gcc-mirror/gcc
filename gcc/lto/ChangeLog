@@ -1,3 +1,33 @@
+2021-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102024
+	* lto-common.c (compare_tree_sccs_1): Also compare
+	DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD values.
+
+2021-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	* lto-lang.c (lto_type_for_mode): Return float16_type_node
+	when mode == TYPE_MODE (float16_type_node).
+
+2021-05-31  Martin Liska  <mliska@suse.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Compare
+	FUNCTION_DECL_DECL_TYPE.
+
+2021-05-24  Wang Liushuai  <wangliushuai@bytedance.com>
+
+	* lto-dump.c (get_size): Fix the NPD error about the thunk symbol.
+
+2021-04-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/98599
+	* lto.c (lto_wpa_write_files): Fix handling of clones.
+
+2021-04-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99883
+	* lto-lang.c (lto_post_options): Correct spelling.
+
 2021-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/99304

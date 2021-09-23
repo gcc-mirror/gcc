@@ -1,6 +1,6 @@
 /* PR tree-optimization/49039 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-vrp1 -fdisable-tree-ethread -fdisable-tree-thread1" } */
 
 extern void bar (void);
 

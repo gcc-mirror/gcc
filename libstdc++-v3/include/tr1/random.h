@@ -1543,7 +1543,7 @@ namespace tr1
 #endif
   };
 
-  /* @} */ // group tr1_random_generators
+  /// @} group tr1_random_generators
 
   /**
    * @addtogroup tr1_random_distributions Random Number Distributions
@@ -2046,7 +2046,7 @@ namespace tr1
       bool      _M_easy;
     };
 
-  /* @} */ // group tr1_random_distributions_discrete
+  /// @} group tr1_random_distributions_discrete
 
   /**
    * @addtogroup tr1_random_distributions_continuous Continuous Distributions
@@ -2403,9 +2403,9 @@ namespace tr1
       result_type _M_l_d;
     };
 
-  /* @} */ // group tr1_random_distributions_continuous
-  /* @} */ // group tr1_random_distributions
-  /* @} */ // group tr1_random
+  /// @} group tr1_random_distributions_continuous
+  /// @} group tr1_random_distributions
+  /// @} group tr1_random
 }
 
 _GLIBCXX_END_NAMESPACE_VERSION

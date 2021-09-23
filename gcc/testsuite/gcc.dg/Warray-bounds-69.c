@@ -1,6 +1,6 @@
 /* Verify that storing a bigger vector into smaller space is diagnosed.
    { dg-do compile }
-   { dg-options "-O2 -Warray-bounds" } */
+   { dg-options "-O2 -Warray-bounds -Wno-stringop-overflow" } */
 
 typedef __INT16_TYPE__                         int16_t;
 typedef __attribute__ ((__vector_size__ (32))) char C32;

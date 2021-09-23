@@ -57,7 +57,7 @@
 	  (match_operand:QI 2 "const_int_operand" "")]))]
   "h8300_operands_match_p (operands)"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -107,7 +107,7 @@
 	  (match_operand:QI 2 "nonmemory_operand" "r P5>X")]))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -150,173 +150,223 @@
 }
   [(set_attr "length" "4")])
 
-(define_insn_and_split "*shiftqi"
-  [(set (match_operand:QI 0 "register_operand" "=r,r")
-	(match_operator:QI 3 "nshift_operator"
-	 [(match_operand:QI 1 "register_operand" "0,0")
-	  (match_operand:QI 2 "nonmemory_operand" "R,rn")]))
-   (clobber (match_scratch:QI 4 "=X,&r"))]
-  ""
-  "#"
-  "reload_completed"
-  [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
-	      (clobber (match_dup 4))
-	      (clobber (reg:CC CC_REG))])])
-
-(define_insn "*shiftqi_clobber_flags"
-  [(set (match_operand:QI 0 "register_operand" "=r,r")
-	(match_operator:QI 3 "nshift_operator"
-	 [(match_operand:QI 1 "register_operand" "0,0")
-	  (match_operand:QI 2 "nonmemory_operand" "R,rn")]))
-   (clobber (match_scratch:QI 4 "=X,&r"))
-   (clobber (reg:CC CC_REG))]
-  ""
-{
-  return output_a_shift (operands);
-}
-  [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
-
 (define_insn_and_split "*shiftqi_noscratch"
   [(set (match_operand:QI 0 "register_operand" "=r,r")
-	(match_operator:QI 3 "nshift_operator"
-	 [(match_operand:QI 1 "register_operand" "0,0")
-	  (match_operand:QI 2 "nonmemory_operand" "R,rn")]))]
+	(shifts:QI
+	  (match_operand:QI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "R,rn")))]
   "(GET_CODE (operands[2]) == CONST_INT
     && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), QImode,
-				     GET_CODE (operands[3])))"
+				     <CODE>))"
   "#"
-  "reload_completed"
-  [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (shifts:QI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
 (define_insn "*shiftqi_noscratch_clobber_flags"
   [(set (match_operand:QI 0 "register_operand" "=r,r")
-	(match_operator:QI 3 "nshift_operator"
-	 [(match_operand:QI 1 "register_operand" "0,0")
-	  (match_operand:QI 2 "nonmemory_operand" "R,rn")]))
+	(shifts:QI
+	  (match_operand:QI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "R,rn")))
    (clobber (reg:CC CC_REG))]
   "(GET_CODE (operands[2]) == CONST_INT
-    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), QImode,
-				     GET_CODE (operands[3])))"
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), QImode, <CODE>))"
 {
-  return output_a_shift (operands);
+  return output_a_shift (operands, <CODE>);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands, <CODE>)"))])
 
-(define_insn_and_split "*shifthi"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(match_operator:HI 3 "nshift_operator"
-	 [(match_operand:HI 1 "register_operand" "0,0")
-	  (match_operand:QI 2 "nonmemory_operand" "S,rn")]))
-   (clobber (match_scratch:QI 4 "=X,&r"))]
+(define_insn "*shiftqi_noscratch_set_flags"
+  [(set (reg:CCZN CC_REG)
+	(compare:CCZN
+	  (shifts:QI
+	    (match_operand:QI 1 "register_operand" "0,0")
+	    (match_operand:QI 2 "nonmemory_operand" "R,rn"))
+	  (const_int 0)))
+   (set (match_operand:QI 0 "register_operand" "=r,r")
+	(shifts:QI (match_dup 1) (match_dup 2)))]
+  "(GET_CODE (operands[2]) == CONST_INT
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), QImode, <CODE>)
+    && compute_a_shift_cc (operands, <CODE>))"
+{
+  return output_a_shift (operands, <CODE>);
+}
+  [(set (attr "length")
+	(symbol_ref "compute_a_shift_length (operands, <CODE>)"))])
+
+
+(define_insn_and_split "*shiftqi"
+  [(set (match_operand:QI 0 "register_operand" "=r,r")
+	(shifts:QI
+	  (match_operand:QI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "R,rn")))
+   (clobber (match_scratch:QI 3 "=X,&r"))]
   ""
   "#"
-  "reload_completed"
-  [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
-	      (clobber (match_dup 4))
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (shifts:QI (match_dup 1) (match_dup 2)))
+	      (clobber (match_dup 3))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*shifthi_clobber_flags"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(match_operator:HI 3 "nshift_operator"
-	 [(match_operand:HI 1 "register_operand" "0,0")
-	  (match_operand:QI 2 "nonmemory_operand" "S,rn")]))
-   (clobber (match_scratch:QI 4 "=X,&r"))
+(define_insn "*shiftqi_clobber_flags"
+  [(set (match_operand:QI 0 "register_operand" "=r,r")
+	(shifts:QI
+	  (match_operand:QI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "R,rn")))
+   (clobber (match_scratch:QI 3 "=X,&r"))
    (clobber (reg:CC CC_REG))]
   ""
 {
-  return output_a_shift (operands);
+  return output_a_shift (operands, <CODE>);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands, <CODE>)"))])
 
 (define_insn_and_split "*shifthi_noscratch"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(match_operator:HI 3 "nshift_operator"
-	 [(match_operand:HI 1 "register_operand" "0,0")
-	  (match_operand:HI 2 "nonmemory_operand" "S,rn")]))]
+	(shifts:HI
+	  (match_operand:HI 1 "register_operand" "0,0")
+	  (match_operand:HI 2 "nonmemory_operand" "S,rn")))]
   "(GET_CODE (operands[2]) == CONST_INT
-    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), HImode,
-				     GET_CODE (operands[3])))"
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), HImode, <CODE>))"
   "#"
-  "reload_completed"
-  [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (shifts:HI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
 (define_insn "*shifthi_noscratch_clobber_flags"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(match_operator:HI 3 "nshift_operator"
-	 [(match_operand:HI 1 "register_operand" "0,0")
-	  (match_operand:HI 2 "nonmemory_operand" "S,rn")]))
+	(shifts:HI
+	  (match_operand:HI 1 "register_operand" "0,0")
+	  (match_operand:HI 2 "nonmemory_operand" "S,rn")))
    (clobber (reg:CC CC_REG))]
   "(GET_CODE (operands[2]) == CONST_INT
-    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), HImode,
-				     GET_CODE (operands[3])))"
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), HImode, <CODE>))"
 {
-  return output_a_shift (operands);
+  return output_a_shift (operands, <CODE>);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands, <CODE>)"))])
 
-(define_insn_and_split "*shiftsi"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(match_operator:SI 3 "nshift_operator"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:QI 2 "nonmemory_operand" "T,rn")]))
-   (clobber (match_scratch:QI 4 "=X,&r"))]
+(define_insn "*shifthi_noscratch_setzn"
+  [(set (reg:CCZN CC_REG)
+	(compare:CCZN
+	  (shifts:HI (match_operand:HI 1 "register_operand" "0,0")
+		     (match_operand:HI 2 "nonmemory_operand" "S,rn"))
+	  (const_int 0)))
+   (set (match_operand:HI 0 "register_operand" "=r,r")
+	(shifts:HI (match_dup 1) (match_dup 2)))]
+  "(GET_CODE (operands[2]) == CONST_INT
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), HImode, <CODE>)
+    && compute_a_shift_cc (operands, <CODE>))"
+{
+  return output_a_shift (operands, <CODE>);
+}
+  [(set (attr "length")
+	(symbol_ref "compute_a_shift_length (operands, <CODE>)"))])
+
+(define_insn_and_split "*shifthi"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(shifts:HI
+	  (match_operand:HI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "S,rn")))
+   (clobber (match_scratch:QI 3 "=X,&r"))]
   ""
   "#"
-  "reload_completed"
-  [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
-	      (clobber (match_dup 4))
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (shifts:HI (match_dup 1) (match_dup 2)))
+	      (clobber (match_dup 3))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*shiftsi_clobber_flags"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(match_operator:SI 3 "nshift_operator"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:QI 2 "nonmemory_operand" "T,rn")]))
-   (clobber (match_scratch:QI 4 "=X,&r"))
+(define_insn "*shifthi_clobber_flags"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(shifts:HI
+	  (match_operand:HI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "S,rn")))
+   (clobber (match_scratch:QI 3 "=X,&r"))
    (clobber (reg:CC CC_REG))]
   ""
 {
-  return output_a_shift (operands);
+  return output_a_shift (operands, <CODE>);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands, <CODE>)"))])
 
 (define_insn_and_split "*shiftsi_noscratch"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(match_operator:SI 3 "nshift_operator"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:QI 2 "nonmemory_operand" "T,rn")]))]
+	(shifts:SI
+	  (match_operand:SI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "T,rn")))]
   "(GET_CODE (operands[2]) == CONST_INT
-    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), SImode,
-				     GET_CODE (operands[3])))"
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), SImode, <CODE>))"
   "#"
-  "reload_completed"
-  [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (shifts:SI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
 (define_insn "*shiftsi_noscratch_clobber_flags"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(match_operator:SI 3 "nshift_operator"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:SI 2 "nonmemory_operand" "T,rn")]))
+	(shifts:SI
+	  (match_operand:SI 1 "register_operand" "0,0")
+	  (match_operand:SI 2 "nonmemory_operand" "T,rn")))
    (clobber (reg:CC CC_REG))]
   "(GET_CODE (operands[2]) == CONST_INT
-    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), SImode,
-				     GET_CODE (operands[3])))"
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), SImode, <CODE>))"
 {
-  return output_a_shift (operands);
+  return output_a_shift (operands, <CODE>);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands, <CODE>)"))])
+
+(define_insn "*shiftsi_noscratch_cczn"
+  [(set (reg:CCZN CC_REG)
+	(compare:CCZN
+	  (shifts:SI
+	    (match_operand:SI 1 "register_operand" "0,0")
+	    (match_operand:SI 2 "nonmemory_operand" "T,rn"))
+	  (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r,r")
+	(shifts:SI (match_dup 1) (match_dup 2)))]
+  "(GET_CODE (operands[2]) == CONST_INT
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), SImode, <CODE>)
+    && compute_a_shift_cc (operands, <CODE>))"
+{
+  return output_a_shift (operands, <CODE>);
+}
+  [(set (attr "length")
+	(symbol_ref "compute_a_shift_length (operands, <CODE>)"))])
 
 ;; Split a variable shift into a loop.  If the register containing
 ;; the shift count dies, then we just use that register.
+
+
+(define_insn_and_split "*shiftsi"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(shifts:SI
+	  (match_operand:SI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "T,rn")))
+   (clobber (match_scratch:QI 3 "=X,&r"))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (shifts:SI (match_dup 1) (match_dup 2)))
+	      (clobber (match_dup 3))
+	      (clobber (reg:CC CC_REG))])])
+
+(define_insn "*shiftsi_clobber_flags"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(shifts:SI
+	  (match_operand:SI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "T,rn")))
+   (clobber (match_scratch:QI 3 "=X,&r"))
+   (clobber (reg:CC CC_REG))]
+  ""
+{
+  return output_a_shift (operands, <CODE>);
+}
+  [(set (attr "length")
+	(symbol_ref "compute_a_shift_length (operands, <CODE>)"))])
 
 (define_split
   [(set (match_operand 0 "register_operand" "")
@@ -327,18 +377,25 @@
    (clobber (reg:CC CC_REG))]
   "epilogue_completed
    && find_regno_note (insn, REG_DEAD, REGNO (operands[1]))"
-  [(set (pc)
-        (if_then_else (le (match_dup 1) (const_int 0))
+  [(set (reg:CCZN CC_REG)
+        (compare:CCZN (match_dup 1) (const_int 0)))
+   (set (pc)
+        (if_then_else (le (reg:CCZN CC_REG)  (const_int 0))
 		      (label_ref (match_dup 5))
 		      (pc)))
    (match_dup 4)
    (parallel
      [(set (match_dup 0)
 	   (match_op_dup 2 [(match_dup 0) (const_int 1)]))
-      (clobber (scratch:QI))])
-   (set (match_dup 1) (plus:QI (match_dup 1) (const_int -1)))
+      (clobber (reg:CC CC_REG))])
+   (parallel
+     [(set (reg:CCZN CC_REG)
+	   (compare:CCZN
+	     (plus:QI (match_dup 1) (const_int -1))
+	     (const_int 0)))
+      (set (match_dup 1) (plus:QI (match_dup 1) (const_int -1)))])
    (set (pc)
-        (if_then_else (ne (match_dup 1) (const_int 0))
+        (if_then_else (ne (reg:CCZN CC_REG) (const_int 0))
 		      (label_ref (match_dup 4))
 		      (pc)))
    (match_dup 5)]
@@ -356,20 +413,27 @@
    (clobber (reg:CC CC_REG))]
   "epilogue_completed
    && !find_regno_note (insn, REG_DEAD, REGNO (operands[1]))"
-  [(set (match_dup 3)
-	(match_dup 1))
+  [(parallel
+     [(set (reg:CCZN CC_REG)
+	   (compare:CCZN (match_dup 1) (const_int 0)))
+      (set (match_dup 3) (match_dup 1))])
    (set (pc)
-        (if_then_else (le (match_dup 3) (const_int 0))
+        (if_then_else (le (reg:CCZN CC_REG) (const_int 0))
 		      (label_ref (match_dup 5))
 		      (pc)))
    (match_dup 4)
    (parallel
      [(set (match_dup 0)
 	   (match_op_dup 2 [(match_dup 0) (const_int 1)]))
-      (clobber (scratch:QI))])
-   (set (match_dup 3) (plus:QI (match_dup 3) (const_int -1)))
+      (clobber (reg:CC CC_REG))])
+   (parallel
+     [(set (reg:CCZN CC_REG)
+	   (compare:CCZN
+	     (plus:QI (match_dup 3) (const_int -1))
+	     (const_int 0)))
+      (set (match_dup 3) (plus:QI (match_dup 3) (const_int -1)))])
    (set (pc)
-        (if_then_else (ne (match_dup 3) (const_int 0))
+        (if_then_else (ne (reg:CCZN CC_REG) (const_int 0))
 		      (label_ref (match_dup 4))
 		      (pc)))
    (match_dup 5)]
@@ -410,7 +474,7 @@
 		     (match_operand:QI 2 "immediate_operand" "")))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (rotate:QHSI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 

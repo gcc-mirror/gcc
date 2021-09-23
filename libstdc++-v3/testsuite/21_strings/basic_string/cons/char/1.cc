@@ -36,7 +36,6 @@ using namespace std;
 void test01(void)
 {
   typedef string::size_type csize_type;
-  typedef string::iterator citerator;
   csize_type npos = string::npos;
   csize_type csz01;
 
@@ -68,6 +67,8 @@ void test01(void)
 
   // basic_string(const char* s, size_type n, alloc)
   csz01 = str01.max_size();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overread"
   // NB: As strlen(str_lit01) != csz01, this test is undefined. It
   // should not crash, but what gets constructed is a bit arbitrary.
   try {
@@ -94,6 +95,7 @@ void test01(void)
   catch(...) {
     VERIFY( false );
   }
+#pragma GCC diagnostic pop
 
   // Build a maxsize - 1 lengthed string consisting of all A's
   try {

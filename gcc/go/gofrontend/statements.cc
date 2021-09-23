@@ -643,11 +643,13 @@ Temporary_statement::do_get_backend(Translate_context* context)
     binit = context->backend()->convert_expression(btype, binit,
                                                    this->location());
 
+  unsigned int flags = 0;
+  if (this->is_address_taken_)
+    flags |= Backend::variable_address_is_taken;
   Bstatement* statement;
   this->bvariable_ =
     context->backend()->temporary_variable(bfunction, context->bblock(),
-					   btype, binit,
-					   this->is_address_taken_,
+					   btype, binit, flags,
 					   this->location(), &statement);
   return statement;
 }
@@ -6049,7 +6051,7 @@ Select_statement::lower_two_case(Block* b)
   Expression* chanref = Expression::make_temporary_reference(chantmp, loc);
 
   Block* bchan;
-  Expression* call;
+  Expression* cond;
   if (chancase.is_send())
     {
       // if selectnbsend(chan, &val) { body } else { default body }
@@ -6063,7 +6065,7 @@ Select_statement::lower_two_case(Block* b)
 
       Expression* ref = Expression::make_temporary_reference(ts, loc);
       Expression* addr = Expression::make_unary(OPERATOR_AND, ref, loc);
-      call = Runtime::make_call(Runtime::SELECTNBSEND, loc, 2, chanref, addr);
+      cond = Runtime::make_call(Runtime::SELECTNBSEND, loc, 2, chanref, addr);
       bchan = chancase.statements();
     }
   else
@@ -6073,34 +6075,31 @@ Select_statement::lower_two_case(Block* b)
 
       Expression* ref = Expression::make_temporary_reference(ts, loc);
       Expression* addr = Expression::make_unary(OPERATOR_AND, ref, loc);
-      Expression* okref = NULL;
-      if (chancase.closed() == NULL && chancase.closedvar() == NULL)
-        {
-          // Simple receive.
-          // if selectnbrecv(&lhs, chan) { body } else { default body }
-          call = Runtime::make_call(Runtime::SELECTNBRECV, loc, 2, addr, chanref);
-        }
-      else
-        {
-          // Tuple receive.
-          // if selectnbrecv2(&lhs, &ok, chan) { body } else { default body }
 
-          Type* booltype = Type::make_boolean_type();
-          Temporary_statement* okts = Statement::make_temporary(booltype, NULL,
-                                                                loc);
-          b->add_statement(okts);
+      // selected, ok = selectnbrecv(&lhs, chan)
+      Call_expression* call = Runtime::make_call(Runtime::SELECTNBRECV, loc, 2,
+						 addr, chanref);
 
-          okref = Expression::make_temporary_reference(okts, loc);
-          Expression* okaddr = Expression::make_unary(OPERATOR_AND, okref, loc);
-          call = Runtime::make_call(Runtime::SELECTNBRECV2, loc, 3, addr, okaddr,
-                                    chanref);
-        }
+      Temporary_statement* selected_temp =
+	Statement::make_temporary(Type::make_boolean_type(),
+				  Expression::make_call_result(call, 0),
+				  loc);
+      b->add_statement(selected_temp);
+
+      Temporary_statement* ok_temp =
+	Statement::make_temporary(Type::make_boolean_type(),
+				  Expression::make_call_result(call, 1),
+				  loc);
+      b->add_statement(ok_temp);
+
+      cond = Expression::make_temporary_reference(selected_temp, loc);
 
       Location cloc = chancase.location();
       bchan = new Block(b, loc);
       if (chancase.val() != NULL && !chancase.val()->is_sink_expression())
         {
-          Statement* as = Statement::make_assignment(chancase.val(), ref->copy(),
+          Statement* as = Statement::make_assignment(chancase.val(),
+						     ref->copy(),
                                                      cloc);
           bchan->add_statement(as);
         }
@@ -6112,12 +6111,18 @@ Select_statement::lower_two_case(Block* b)
 
       if (chancase.closed() != NULL && !chancase.closed()->is_sink_expression())
         {
+	  Expression* okref = Expression::make_temporary_reference(ok_temp,
+								   cloc);
           Statement* as = Statement::make_assignment(chancase.closed(),
-                                                     okref->copy(), cloc);
+                                                     okref, cloc);
           bchan->add_statement(as);
         }
       else if (chancase.closedvar() != NULL)
-        chancase.closedvar()->var_value()->set_init(okref->copy());
+	{
+	  Expression* okref = Expression::make_temporary_reference(ok_temp,
+								   cloc);
+	  chancase.closedvar()->var_value()->set_init(okref);
+	}
 
       Statement* bs = Statement::make_block_statement(chancase.statements(),
                                                       cloc);
@@ -6125,7 +6130,7 @@ Select_statement::lower_two_case(Block* b)
     }
 
   Statement* ifs =
-    Statement::make_if_statement(call, bchan, defcase.statements(), loc);
+    Statement::make_if_statement(cond, bchan, defcase.statements(), loc);
   b->add_statement(ifs);
 
   Statement* label =

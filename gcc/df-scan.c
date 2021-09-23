@@ -2576,9 +2576,21 @@ df_ref_record (enum df_ref_class cl,
 
       if (GET_CODE (reg) == SUBREG)
 	{
-	  regno += subreg_regno_offset (regno, GET_MODE (SUBREG_REG (reg)),
-					SUBREG_BYTE (reg), GET_MODE (reg));
-	  endregno = regno + subreg_nregs (reg);
+	  int off = subreg_regno_offset (regno, GET_MODE (SUBREG_REG (reg)),
+					 SUBREG_BYTE (reg), GET_MODE (reg));
+	  unsigned int nregno = regno + off;
+	  endregno = nregno + subreg_nregs (reg);
+	  if (off < 0 && regno < (unsigned) -off)
+	    /* Deal with paradoxical SUBREGs on big endian where
+	       in debug insns the hard reg number might be smaller
+	       than -off, such as (subreg:DI (reg:SI 0 [+4 ]) 0));
+	       RA decisions shouldn't be affected by debug insns
+	       and so RA can decide to put pseudo into a hard reg
+	       with small REGNO, even when it is referenced in
+	       a paradoxical SUBREG in a debug insn.  */
+	    regno = 0;
+	  else
+	    regno = nregno;
 	}
       else
 	endregno = END_REGNO (reg);
@@ -2594,6 +2606,8 @@ df_ref_record (enum df_ref_class cl,
 	  if (GET_CODE (reg) == SUBREG)
 	    ref_flags |= DF_REF_PARTIAL;
 	  ref_flags |= DF_REF_MW_HARDREG;
+
+	  gcc_assert (regno < endregno);
 
 	  hardreg = problem_data->mw_reg_pool->allocate ();
 	  hardreg->type = ref_type;
@@ -2816,7 +2830,6 @@ df_uses_record (class df_collection_rec *collection_rec,
     case CONST:
     CASE_CONST_ANY:
     case PC:
-    case CC0:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
       return;
@@ -2902,7 +2915,6 @@ df_uses_record (class df_collection_rec *collection_rec,
 	    case PARALLEL:
 	    case SCRATCH:
 	    case PC:
-	    case CC0:
 		break;
 	    case MEM:
 	      df_uses_record (collection_rec, &XEXP (dst, 0),
@@ -3092,7 +3104,8 @@ df_get_call_refs (class df_collection_rec *collection_rec,
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      if (i == STACK_POINTER_REGNUM)
+      if (i == STACK_POINTER_REGNUM
+	  && !FAKE_CALL_P (insn_info->insn))
 	/* The stack ptr is used (honorarily) by a CALL insn.  */
 	df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
 		       NULL, bb, insn_info, DF_REF_REG_USE,

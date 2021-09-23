@@ -22,7 +22,7 @@ SHLIB_LINK = \
   objdump --syms $(SHLIB_OBJS) | \
   $(SHLIB_SYMVEC) >> SYMVEC_$$$$.opt ; \
   echo "case_sensitive=NO" >> SYMVEC_$$$$.opt; \
-  $(CC) $(LIBGCC2_CFLAGS) -nodefaultlibs \
+  $(CC) $(LIBGCC2_CFLAGS) $(LDFLAGS) -nodefaultlibs \
   -shared --for-linker=/noinform -o $(SHLIB_NAME) $(SHLIB_OBJS) \
   --for-linker=SYMVEC_$$$$.opt \
   --for-linker=gsmatch=equal,$(shlib_version)

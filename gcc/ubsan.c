@@ -1443,7 +1443,10 @@ maybe_instrument_pointer_overflow (gimple_stmt_iterator *gsi, tree t)
   tree base;
   if (decl_p)
     {
-      if (DECL_REGISTER (inner))
+      if ((VAR_P (inner)
+	   || TREE_CODE (inner) == PARM_DECL
+	   || TREE_CODE (inner) == RESULT_DECL)
+	  && DECL_REGISTER (inner))
 	return;
       base = inner;
       /* If BASE is a fixed size automatic variable or
@@ -1783,7 +1786,7 @@ ubsan_use_new_style_p (location_t loc)
     return false;
 
   expanded_location xloc = expand_location (loc);
-  if (xloc.file == NULL || strncmp (xloc.file, "\1", 2) == 0
+  if (xloc.file == NULL || startswith (xloc.file, "\1")
       || xloc.file[0] == '\0' || xloc.file[0] == '\xff'
       || xloc.file[1] == '\xff')
     return false;
@@ -2115,7 +2118,10 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
   tree base;
   if (decl_p)
     {
-      if (DECL_REGISTER (inner))
+      if ((VAR_P (inner)
+	   || TREE_CODE (inner) == PARM_DECL
+	   || TREE_CODE (inner) == RESULT_DECL)
+	  && DECL_REGISTER (inner))
 	return;
       base = inner;
     }

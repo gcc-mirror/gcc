@@ -179,7 +179,7 @@ static int huft_build(uInt *b, uInt n, uInt s, const uInt *d, const uInt *e,
 
       f = 1 << (k - w);
       for (j = i >> w; j < z; j += f)
-        q[j] = r;
+        q[j] = r; /* { dg-warning "use of uninitialized value 'r.base'" } */
 
       mask = (1 << w) - 1;
       while ((i & mask) != x[h]) {

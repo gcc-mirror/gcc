@@ -11,5 +11,5 @@ subroutine foo
   type(two) x
 
   !$acc enter data copyin(x%A)
-! { dg-final { scan-tree-dump-times "omp target oacc_enter_exit_data map\\(struct:x \\\[len: 1\\\]\\) map\\(to:x.a \\\[len: \[0-9\]+\\\]\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_enter_data map\\(struct:x \\\[len: 1\\\]\\) map\\(to:x.a \\\[len: \[0-9\]+\\\]\\)" 1 "gimple" } }
 end

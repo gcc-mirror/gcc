@@ -132,6 +132,7 @@ extern GTY(()) int darwin_ms_struct;
 "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} \
    %<gsplit-dwarf",							\
 "%{gused:-g -feliminate-unused-debug-symbols} %<gused",			\
+"%{rpath*: -Xlinker -rpath -Xlinker %*}",					\
 "%{shared:-Zdynamiclib} %<shared",					\
 "%{static:%{Zdynamic:%e conflicting code gen style switches are used}}",\
 "%{y*:%nthe y option is obsolete and ignored} %<y*",			\
@@ -238,9 +239,7 @@ extern GTY(()) int darwin_ms_struct;
     DARWIN_NOPIE_SPEC \
     DARWIN_RDYNAMIC \
     DARWIN_NOCOMPACT_UNWIND \
-    "}}}}}}} %<pie %<no-pie %<rdynamic %<X "
-
-#define DSYMUTIL "\ndsymutil"
+    "}}}}}}} %<pie %<no-pie %<rdynamic %<X %<rpath "
 
 /* Spec that controls whether the debug linker is run automatically for
    a link step.  This needs to be done if there is a source file on the
@@ -250,10 +249,10 @@ extern GTY(()) int darwin_ms_struct;
 #define DSYMUTIL_SPEC \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{v} \
-    %{g*:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}\
+    %{g*:%{!gctf:%{!gbtf:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}}}\
     %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s|.f|.f90|\
       .f95|.f03|.f77|.for|.F|.F90|.F95|.F03: \
-    %{g*:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}"
+    %{g*:%{!gctf:%{!gbtf:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}}}"
 
 #define LINK_COMMAND_SPEC LINK_COMMAND_SPEC_A DSYMUTIL_SPEC
 
@@ -500,9 +499,8 @@ extern GTY(()) int darwin_ms_struct;
 /* We now require C++11 to bootstrap and newer tools than those based on
    stabs, so require DWARF-2, even if stabs is supported by the assembler.  */
 
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-#define DARWIN_PREFER_DWARF
 #define DWARF2_DEBUGGING_INFO 1
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 #ifdef HAVE_AS_STABS_DIRECTIVE
 #define DBX_DEBUGGING_INFO 1
@@ -1105,6 +1103,9 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
    needed, and there is no need for the compiler to emit them.  */
 #define MIN_LD64_OMIT_STUBS "62.1"
 
+/* Emit start labels for init and term sections from this version.  */
+#define MIN_LD64_INIT_TERM_START_LABELS "136.0"
+
 /* If we have no definition for the linker version, pick the minimum version
    that will bootstrap the compiler.  */
 #ifndef LD64_VERSION
@@ -1114,5 +1115,11 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 #  define LD64_VERSION DEF_LD64
 # endif
 #endif
+
+/* CTF and BTF support.  */
+#undef CTF_INFO_SECTION_NAME
+#define CTF_INFO_SECTION_NAME "__CTF_BTF,__ctf,regular,debug"
+#undef BTF_INFO_SECTION_NAME
+#define BTF_INFO_SECTION_NAME "__CTF_BTF,__btf,regular,debug"
 
 #endif /* CONFIG_DARWIN_H */

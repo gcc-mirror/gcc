@@ -26,7 +26,7 @@
 void
 test01(std::wistream& in, wchar_t* wc)
 {
-  in >> wc; // { dg-error "here" }
+  in >> wc; // { dg-error "no match" }
 }
 
 struct WT : std::char_traits<wchar_t> { };
@@ -34,7 +34,7 @@ struct WT : std::char_traits<wchar_t> { };
 void
 test02(std::basic_istream<wchar_t, WT>& in, wchar_t* wc)
 {
-  in >> wc; // { dg-error "here" }
+  in >> wc; // { dg-error "no match" }
 }
 
 // { dg-excess-errors "" }

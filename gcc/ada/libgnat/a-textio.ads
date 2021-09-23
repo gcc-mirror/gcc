@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -85,9 +85,6 @@ is
    --  Line and page length
 
    subtype Field is Integer range 0 .. 255;
-   --  Note: if for any reason, there is a need to increase this value, then it
-   --  will be necessary to change the corresponding value in System.Img_Real
-   --  in file s-imgrea.adb.
 
    subtype Number_Base is Integer range 2 .. 16;
 
@@ -718,7 +715,7 @@ private
    --  Returns the system-specific character indicating the end of a text file.
    --  This is exported for use by child packages such as Enumeration_Aux to
    --  eliminate their needing to depend directly on Interfaces.C_Streams,
-   --  which is not available in certain target environments (such as AAMP).
+   --  which might not be available in certain target environments.
 
    procedure Initialize_Standard_Files;
    --  Initializes the file control blocks for the standard files. Called from

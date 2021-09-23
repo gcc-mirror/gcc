@@ -116,3 +116,22 @@ AC_DEFUN([DRUNTIME_INSTALL_DIRECTORIES],
   gdc_include_dir='$(libdir)/gcc/${target_alias}/${gcc_version}/include/d'
   AC_SUBST(gdc_include_dir)
 ])
+
+# DRUNTIME_SECTION_FLAGS
+# ----------------------
+# Check for -ffunction-sections nad -fdata-sections.
+AC_DEFUN([DRUNTIME_SECTION_FLAGS],
+[
+  WITH_LOCAL_DRUNTIME([
+    AC_LANG_PUSH([D])
+    GDCFLAGS="$GDCFLAGS -g -Werror -ffunction-sections -fdata-sections"
+    AC_TRY_COMPILE([int foo; void bar() { }],[return 0;],
+		   [ac_fdsections=yes], [ac_fdsections=no])
+    if test "x$ac_fdsections" = "xyes"; then
+      SECTION_FLAGS='-ffunction-sections -fdata-sections'
+    fi
+    AC_MSG_RESULT($ac_fdsections)
+    AC_LANG_POP([D])
+  ], [-nophoboslib])
+  AC_SUBST(SECTION_FLAGS)
+])

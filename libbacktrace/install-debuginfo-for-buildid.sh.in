@@ -47,7 +47,7 @@ mkdir_p="@MKDIR_P@"
 build_id_dir="$1"
 src="$2"
 
-buildid=$($readelf -n $src \
+buildid=$(LANG=C $readelf -n $src \
 	      | $grep "Build ID" \
 	      | $awk '{print $3}')
 

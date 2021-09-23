@@ -466,7 +466,8 @@ expand_end_catch_block (void)
 	  || DECL_DESTRUCTOR_P (current_function_decl)))
     {
       tree rethrow = build_throw (input_location, NULL_TREE);
-      TREE_NO_WARNING (rethrow) = true;
+      /* Disable all warnings for the generated rethrow statement.  */
+      suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
     }
 }
@@ -1032,12 +1033,15 @@ check_handlers (tree handlers)
      expression whose type is a polymorphic class type (10.3).  */
 
 static tree
-check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
+check_noexcept_r (tree *tp, int *walk_subtrees, void *)
 {
   tree t = *tp;
   enum tree_code code = TREE_CODE (t);
-  if ((code == CALL_EXPR && CALL_EXPR_FN (t))
-      || code == AGGR_INIT_EXPR)
+
+  if (unevaluated_p (code))
+    *walk_subtrees = false;
+  else if ((code == CALL_EXPR && CALL_EXPR_FN (t))
+	   || code == AGGR_INIT_EXPR)
     {
       /* We can only use the exception specification of the called function
 	 for determining the value of a noexcept expression; we can't use
@@ -1228,6 +1232,8 @@ type_throw_all_p (const_tree type)
 tree
 build_noexcept_spec (tree expr, tsubst_flags_t complain)
 {
+  if (check_for_bare_parameter_packs (expr))
+    return error_mark_node;
   if (TREE_CODE (expr) != DEFERRED_NOEXCEPT
       && !value_dependent_expression_p (expr))
     {

@@ -119,6 +119,7 @@ bits_headers = \
 	${bits_srcdir}/charconv.h \
 	${bits_srcdir}/codecvt.h \
 	${bits_srcdir}/concept_check.h \
+	${bits_srcdir}/cow_string.h \
 	${bits_srcdir}/cpp_type_traits.h \
 	${bits_srcdir}/deque.tcc \
 	${bits_srcdir}/enable_special_members.h \
@@ -225,6 +226,7 @@ bits_headers = \
 	${bits_srcdir}/streambuf.tcc \
 	${bits_srcdir}/stringfwd.h \
 	${bits_srcdir}/string_view.tcc \
+	${bits_srcdir}/this_thread_sleep.h \
 	${bits_srcdir}/uniform_int_dist.h \
 	${bits_srcdir}/unique_lock.h \
 	${bits_srcdir}/unique_ptr.h \
@@ -232,6 +234,7 @@ bits_headers = \
 	${bits_srcdir}/unordered_set.h \
 	${bits_srcdir}/uses_allocator.h \
 	${bits_srcdir}/uses_allocator_args.h \
+	${bits_srcdir}/utility.h \
 	${bits_srcdir}/valarray_array.h \
 	${bits_srcdir}/valarray_array.tcc \
 	${bits_srcdir}/valarray_before.h \

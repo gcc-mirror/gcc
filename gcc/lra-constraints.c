@@ -834,6 +834,11 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
     CASE_CONST_UNIQUE:
       return false;
 
+    case CONST_VECTOR:
+      if (!same_vector_encodings_p (x, y))
+	return false;
+      break;
+
     case LABEL_REF:
       return label_ref_label (x) == label_ref_label (y);
     case SYMBOL_REF:
@@ -2417,6 +2422,7 @@ process_alt_operands (int only_alternative)
 		      break;
 
 		    case CT_MEMORY:
+		    case CT_RELAXED_MEMORY:
 		      if (MEM_P (op)
 			  && satisfies_memory_constraint_p (op, cn))
 			win = true;
@@ -2459,7 +2465,6 @@ process_alt_operands (int only_alternative)
 		      break;
 
 		    case CT_SPECIAL_MEMORY:
-		    case CT_RELAXED_MEMORY:
 		      if (satisfies_memory_constraint_p (op, cn))
 			win = true;
 		      else if (spilled_pseudo_p (op))
@@ -2766,7 +2771,7 @@ process_alt_operands (int only_alternative)
 		  if (lra_dump_file != NULL)
 		    fprintf
 		      (lra_dump_file,
-		       "            alt=%d: No input/otput reload -- refuse\n",
+		       "            alt=%d: No input/output reload -- refuse\n",
 		       nalt);
 		  goto fail;
 		}
@@ -3984,15 +3989,9 @@ curr_insn_transform (bool check_only_p)
   no_input_reloads_p = no_output_reloads_p = false;
   goal_alt_number = -1;
   change_p = sec_mem_p = false;
-  /* CALL_INSNs are not allowed to have any output reloads; neither
-     are insns that SET cc0.  Insns that use CC0 are not allowed to
-     have any input reloads.  */
-  if (CALL_P (curr_insn))
-    no_output_reloads_p = true;
 
-  if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (curr_insn)))
-    no_input_reloads_p = true;
-  if (HAVE_cc0 && reg_set_p (cc0_rtx, PATTERN (curr_insn)))
+  /* CALL_INSNs are not allowed to have any output reloads.  */
+  if (CALL_P (curr_insn))
     no_output_reloads_p = true;
 
   n_operands = curr_static_id->n_operands;
@@ -5796,11 +5795,14 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       nregs = 1;
       mode = lra_reg_info[hard_regno].biggest_mode;
       machine_mode reg_rtx_mode = GET_MODE (regno_reg_rtx[hard_regno]);
-      /* A reg can have a biggest_mode of VOIDmode if it was only ever seen
-	 as part of a multi-word register.  In that case, or if the biggest
-	 mode was larger than a register, just use the reg_rtx.  Otherwise,
-	 limit the size to that of the biggest access in the function.  */
+      /* A reg can have a biggest_mode of VOIDmode if it was only ever seen as
+	 part of a multi-word register.  In that case, just use the reg_rtx
+	 mode.  Do the same also if the biggest mode was larger than a register
+	 or we can not compare the modes.  Otherwise, limit the size to that of
+	 the biggest access in the function.  */
       if (mode == VOIDmode
+	  || !ordered_p (GET_MODE_PRECISION (mode),
+			 GET_MODE_PRECISION (reg_rtx_mode))
 	  || paradoxical_subreg_p (mode, reg_rtx_mode))
 	{
 	  original_reg = regno_reg_rtx[hard_regno];

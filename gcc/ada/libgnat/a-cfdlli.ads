@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -39,6 +39,11 @@ generic
 package Ada.Containers.Formal_Doubly_Linked_Lists with
   SPARK_Mode
 is
+   --  Contracts in this unit are meant for analysis only, not for run-time
+   --  checking.
+
+   pragma Assertion_Policy (Pre => Ignore);
+   pragma Assertion_Policy (Post => Ignore);
    pragma Annotate (CodePeer, Skip_Analysis);
 
    type List (Capacity : Count_Type) is private with
@@ -381,6 +386,53 @@ is
                (Model (Container)'Old,
                 Model (Container),
                 P.Get (Positions (Container), Position));
+
+   function At_End (E : access constant List) return access constant List
+   is (E)
+   with Ghost,
+     Annotate => (GNATprove, At_End_Borrow);
+
+   function At_End
+     (E : access constant Element_Type) return access constant Element_Type
+   is (E)
+   with Ghost,
+     Annotate => (GNATprove, At_End_Borrow);
+
+   function Constant_Reference
+     (Container : aliased List;
+      Position  : Cursor) return not null access constant Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Position),
+     Post   =>
+       Constant_Reference'Result.all =
+         Element (Model (Container), P.Get (Positions (Container), Position));
+
+   function Reference
+     (Container : not null access List;
+      Position  : Cursor) return not null access Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container.all, Position),
+     Post   =>
+      Length (Container.all) = Length (At_End (Container).all)
+
+         --  Cursors are preserved
+
+         and Positions (Container.all) = Positions (At_End (Container).all)
+
+         --  Container will have Result.all at position Position
+
+         and At_End (Reference'Result).all =
+           Element (Model (At_End (Container).all),
+                    P.Get (Positions (At_End (Container).all), Position))
+
+         --  All other elements are preserved
+
+         and M.Equal_Except
+               (Model (Container.all),
+                Model (At_End (Container).all),
+                P.Get (Positions (At_End (Container).all), Position));
 
    procedure Move (Target : in out List; Source : in out List) with
      Global => null,
@@ -1604,7 +1656,7 @@ private
    type Node_Type is record
       Prev    : Count_Type'Base := -1;
       Next    : Count_Type;
-      Element : Element_Type;
+      Element : aliased Element_Type;
    end record;
 
    function "=" (L, R : Node_Type) return Boolean is abstract;

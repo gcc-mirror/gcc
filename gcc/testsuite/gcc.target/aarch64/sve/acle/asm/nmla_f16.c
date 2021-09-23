@@ -281,7 +281,7 @@ TEST_UNIFORM_ZD (nmla_h4_f16_x_tied2, svfloat16_t, __fp16,
 		 z0 = svnmla_x (p0, z1, z0, d4))
 
 /*
-** nmla_h4_f16_x_untied: { xfail *-*-* }
+** nmla_h4_f16_x_untied:
 **	mov	z0\.h, h4
 **	fnmad	z0\.h, p0/m, z2\.h, z1\.h
 **	ret

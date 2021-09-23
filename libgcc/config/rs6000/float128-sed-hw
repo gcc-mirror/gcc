@@ -8,6 +8,10 @@ s/__fixtfsi/__fixkfsi_sw/g
 s/__fixunstfdi/__fixunskfdi_sw/g
 s/__fixunstfsi/__fixunskfsi_sw/g
 s/__floatditf/__floatdikf_sw/g
+s/__floattitf/__floattikf_sw/g
+s/__floatuntitf/__floatuntikf_sw/g
+s/__fixtfti/__fixkfti_sw/g
+s/__fixunstfti/__fixunskfti_sw/g
 s/__floatsitf/__floatsikf_sw/g
 s/__floatunditf/__floatundikf_sw/g
 s/__floatunsitf/__floatunsikf_sw/g

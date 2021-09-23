@@ -57,7 +57,7 @@ static bool vax_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static machine_mode vax_cc_modes_compatible (machine_mode, machine_mode);
 static rtx_insn *vax_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				    vec<machine_mode> &, vec<const char *> &,
-				    vec<rtx> &, HARD_REG_SET &);
+				    vec<rtx> &, HARD_REG_SET &, location_t);
 static rtx vax_function_arg (cumulative_args_t, const function_arg_info &);
 static void vax_function_arg_advance (cumulative_args_t,
 				      const function_arg_info &);
@@ -333,12 +333,12 @@ print_operand_address (FILE * file, rtx addr)
 
     case PLUS:
       /* There can be either two or three things added here.  One must be a
-	 REG.  One can be either a REG or a MULT of a REG and an appropriate
-	 constant, and the third can only be a constant or a MEM.
+	 REG.  One can be either a REG or a MULT/ASHIFT of a REG and an
+	 appropriate constant, and the third can only be a constant or a MEM.
 
 	 We get these two or three things and put the constant or MEM in
-	 OFFSET, the MULT or REG in IREG, and the REG in BREG.  If we have
-	 a register and can't tell yet if it is a base or index register,
+	 OFFSET, the MULT/ASHIFT or REG in IREG, and the REG in BREG.  If we
+	 have a register and can't tell yet if it is a base or index register,
 	 put it into REG1.  */
 
       reg1 = 0; ireg = 0; breg = 0; offset = 0;
@@ -355,12 +355,14 @@ print_operand_address (FILE * file, rtx addr)
 	  offset = XEXP (addr, 1);
 	  addr = XEXP (addr, 0);
 	}
-      else if (GET_CODE (XEXP (addr, 1)) == MULT)
+      else if (GET_CODE (XEXP (addr, 1)) == MULT
+	       || GET_CODE (XEXP (addr, 1)) == ASHIFT)
 	{
 	  ireg = XEXP (addr, 1);
 	  addr = XEXP (addr, 0);
 	}
-      else if (GET_CODE (XEXP (addr, 0)) == MULT)
+      else if (GET_CODE (XEXP (addr, 0)) == MULT
+	       || GET_CODE (XEXP (addr, 0)) == ASHIFT)
 	{
 	  ireg = XEXP (addr, 0);
 	  addr = XEXP (addr, 1);
@@ -385,7 +387,7 @@ print_operand_address (FILE * file, rtx addr)
 	  else
 	    reg1 = addr;
 	}
-      else if (GET_CODE (addr) == MULT)
+      else if (GET_CODE (addr) == MULT || GET_CODE (addr) == ASHIFT)
 	ireg = addr;
       else
 	{
@@ -416,7 +418,8 @@ print_operand_address (FILE * file, rtx addr)
 	    }
 	  else
 	    {
-	      gcc_assert (GET_CODE (XEXP (addr, 0)) == MULT);
+	      gcc_assert (GET_CODE (XEXP (addr, 0)) == MULT
+			  || GET_CODE (XEXP (addr, 0)) == ASHIFT);
 	      gcc_assert (!ireg);
 	      ireg = XEXP (addr, 0);
 	    }
@@ -447,7 +450,8 @@ print_operand_address (FILE * file, rtx addr)
 	    }
 	  else
 	    {
-	      gcc_assert (GET_CODE (XEXP (addr, 1)) == MULT);
+	      gcc_assert (GET_CODE (XEXP (addr, 1)) == MULT
+			  || GET_CODE (XEXP (addr, 1)) == ASHIFT);
 	      gcc_assert (!ireg);
 	      ireg = XEXP (addr, 1);
 	    }
@@ -506,7 +510,7 @@ print_operand_address (FILE * file, rtx addr)
 
       if (ireg != 0)
 	{
-	  if (GET_CODE (ireg) == MULT)
+	  if (GET_CODE (ireg) == MULT || GET_CODE (ireg) == ASHIFT)
 	    ireg = XEXP (ireg, 0);
 	  gcc_assert (REG_P (ireg));
 	  fprintf (file, "[%s]", reg_names[REGNO (ireg)]);
@@ -707,6 +711,7 @@ vax_address_cost_1 (rtx addr)
       reg = 1;
       break;
     case MULT:
+    case ASHIFT:
       indexed = 1;	/* 2 on VAX 2 */
       break;
     case CONST_INT:
@@ -1176,7 +1181,8 @@ vax_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
 		   vec<rtx> &inputs ATTRIBUTE_UNUSED,
 		   vec<machine_mode> &input_modes ATTRIBUTE_UNUSED,
 		   vec<const char *> &constraints ATTRIBUTE_UNUSED,
-		   vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+		   vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs,
+		   location_t /*loc*/)
 {
   clobbers.safe_push (gen_rtx_REG (CCmode, VAX_PSL_REGNUM));
   SET_HARD_REG_BIT (clobbered_regs, VAX_PSL_REGNUM);
@@ -1320,10 +1326,10 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	     be shorter (1 opcode byte + 1 addrmode byte + 8 immediate value
 	     bytes .vs. 2 opcode bytes + 2 addrmode bytes + 8 immediate value
 	     value bytes.  */
-	  if ((!strncmp (pattern_lo, "movl", 4)
-	      && !strncmp (pattern_hi, "movl", 4))
-	      || (!strncmp (pattern_lo, "pushl", 5)
-		  && !strncmp (pattern_hi, "pushl", 5)))
+	  if ((startswith (pattern_lo, "movl")
+	      && startswith (pattern_hi, "movl"))
+	      || (startswith (pattern_lo, "pushl")
+		  && startswith (pattern_hi, "pushl")))
 	    return "movq %1,%0";
 
 	  if (MEM_P (operands[0])
@@ -1824,23 +1830,26 @@ static bool
 index_term_p (rtx prod, machine_mode mode, bool strict)
 {
   rtx xfoo0, xfoo1;
+  bool log_p;
 
   if (GET_MODE_SIZE (mode) == 1)
     return BASE_REGISTER_P (prod, strict);
 
-  if (GET_CODE (prod) != MULT || GET_MODE_SIZE (mode) > 8)
+  if ((GET_CODE (prod) != MULT && GET_CODE (prod) != ASHIFT)
+      || GET_MODE_SIZE (mode) > 8)
     return false;
 
+  log_p = GET_CODE (prod) == ASHIFT;
   xfoo0 = XEXP (prod, 0);
   xfoo1 = XEXP (prod, 1);
 
   if (CONST_INT_P (xfoo0)
-      && INTVAL (xfoo0) == (int)GET_MODE_SIZE (mode)
+      && GET_MODE_SIZE (mode) == (log_p ? 1 << INTVAL (xfoo0) : INTVAL (xfoo0))
       && INDEX_REGISTER_P (xfoo1, strict))
     return true;
 
   if (CONST_INT_P (xfoo1)
-      && INTVAL (xfoo1) == (int)GET_MODE_SIZE (mode)
+      && GET_MODE_SIZE (mode) == (log_p ? 1 << INTVAL (xfoo1) : INTVAL (xfoo1))
       && INDEX_REGISTER_P (xfoo0, strict))
     return true;
 
@@ -2106,79 +2115,6 @@ vax_expand_addsub_di_operands (rtx * operands, enum rtx_code code)
       gcc_assert (!CONSTANT_P (operands[2]) || code == PLUS);
       emit_insn ((*gen_insn) (operands[0], operands[1], operands[2]));
     }
-}
-
-bool
-adjacent_operands_p (rtx lo, rtx hi, machine_mode mode)
-{
-  HOST_WIDE_INT lo_offset;
-  HOST_WIDE_INT hi_offset;
-
-  if (GET_CODE (lo) != GET_CODE (hi))
-    return false;
-
-  if (REG_P (lo))
-    return mode == SImode && REGNO (lo) + 1 == REGNO (hi);
-  if (CONST_INT_P (lo))
-    return INTVAL (hi) == 0 && UINTVAL (lo) < 64;
-  if (CONST_INT_P (lo))
-    return mode != SImode;
-
-  if (!MEM_P (lo))
-    return false;
-
-  if (MEM_VOLATILE_P (lo) || MEM_VOLATILE_P (hi))
-    return false;
-
-  lo = XEXP (lo, 0);
-  hi = XEXP (hi, 0);
-
-  if (GET_CODE (lo) == POST_INC /* || GET_CODE (lo) == PRE_DEC */)
-    return rtx_equal_p (lo, hi);
-
-  switch (GET_CODE (lo))
-    {
-    case REG:
-    case SYMBOL_REF:
-      lo_offset = 0;
-      break;
-    case CONST:
-      lo = XEXP (lo, 0);
-      /* FALLTHROUGH */
-    case PLUS:
-      if (!CONST_INT_P (XEXP (lo, 1)))
-	return false;
-      lo_offset = INTVAL (XEXP (lo, 1));
-      lo = XEXP (lo, 0);
-      break;
-    default:
-      return false;
-    }
-
-  switch (GET_CODE (hi))
-    {
-    case REG:
-    case SYMBOL_REF:
-      hi_offset = 0;
-      break;
-    case CONST:
-      hi = XEXP (hi, 0);
-      /* FALLTHROUGH */
-    case PLUS:
-      if (!CONST_INT_P (XEXP (hi, 1)))
-	return false;
-      hi_offset = INTVAL (XEXP (hi, 1));
-      hi = XEXP (hi, 0);
-      break;
-    default:
-      return false;
-    }
-
-  if (GET_CODE (lo) == MULT || GET_CODE (lo) == PLUS)
-    return false;
-
-  return rtx_equal_p (lo, hi)
-	 && hi_offset - lo_offset == GET_MODE_SIZE (mode);
 }
 
 /* Output assembler code for a block containing the constant parts

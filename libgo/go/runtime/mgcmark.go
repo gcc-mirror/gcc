@@ -56,8 +56,6 @@ const (
 func gcMarkRootPrepare() {
 	assertWorldStopped()
 
-	work.nFlushCacheRoots = 0
-
 	work.nDataRoots = 0
 
 	// Only scan globals once per cycle; preferably concurrently.
@@ -91,7 +89,13 @@ func gcMarkRootPrepare() {
 	work.nStackRoots = int(atomic.Loaduintptr(&allglen))
 
 	work.markrootNext = 0
-	work.markrootJobs = uint32(fixedRootCount + work.nFlushCacheRoots + work.nDataRoots + work.nSpanRoots + work.nStackRoots)
+	work.markrootJobs = uint32(fixedRootCount + work.nDataRoots + work.nSpanRoots + work.nStackRoots)
+
+	// Calculate base indexes of each root type
+	work.baseData = uint32(fixedRootCount)
+	work.baseSpans = work.baseData + uint32(work.nDataRoots)
+	work.baseStacks = work.baseSpans + uint32(work.nSpanRoots)
+	work.baseEnd = work.baseStacks + uint32(work.nStackRoots)
 }
 
 // gcMarkRootCheck checks that all roots have been scanned. It is
@@ -102,23 +106,26 @@ func gcMarkRootCheck() {
 		throw("left over markroot jobs")
 	}
 
-	lock(&allglock)
 	// Check that stacks have been scanned.
-	var gp *g
-	for i := 0; i < work.nStackRoots; i++ {
-		gp = allgs[i]
-		if !gp.gcscandone {
-			goto fail
+	//
+	// We only check the first nStackRoots Gs that we should have scanned.
+	// Since we don't care about newer Gs (see comment in
+	// gcMarkRootPrepare), no locking is required.
+	i := 0
+	forEachGRace(func(gp *g) {
+		if i >= work.nStackRoots {
+			return
 		}
-	}
-	unlock(&allglock)
-	return
 
-fail:
-	println("gp", gp, "goid", gp.goid,
-		"status", readgstatus(gp),
-		"gcscandone", gp.gcscandone)
-	throw("scan missed a g")
+		if !gp.gcscandone {
+			println("gp", gp, "goid", gp.goid,
+				"status", readgstatus(gp),
+				"gcscandone", gp.gcscandone)
+			throw("scan missed a g")
+		}
+
+		i++
+	})
 }
 
 // ptrmask for an allocation containing a single pointer.
@@ -132,22 +139,11 @@ var oneptrmask = [...]uint8{1}
 //
 //go:nowritebarrier
 func markroot(gcw *gcWork, i uint32) {
-	// TODO(austin): This is a bit ridiculous. Compute and store
-	// the bases in gcMarkRootPrepare instead of the counts.
-	baseFlushCache := uint32(fixedRootCount)
-	baseData := baseFlushCache + uint32(work.nFlushCacheRoots)
-	baseSpans := baseData + uint32(work.nDataRoots)
-	baseStacks := baseSpans + uint32(work.nSpanRoots)
-	end := baseStacks + uint32(work.nStackRoots)
-
 	// Note: if you add a case here, please also update heapdump.go:dumproots.
 	switch {
-	case baseFlushCache <= i && i < baseData:
-		flushmcache(int(i - baseFlushCache))
-
-	case baseData <= i && i < baseSpans:
+	case work.baseData <= i && i < work.baseSpans:
 		roots := gcRoots
-		c := baseData
+		c := work.baseData
 		for roots != nil {
 			if i == c {
 				markrootBlock(roots, gcw)
@@ -166,15 +162,18 @@ func markroot(gcw *gcWork, i uint32) {
 	case i == fixedRootFreeGStacks:
 		// FIXME: We don't do this for gccgo.
 
-	case baseSpans <= i && i < baseStacks:
+	case work.baseSpans <= i && i < work.baseStacks:
 		// mark mspan.specials
-		markrootSpans(gcw, int(i-baseSpans))
+		markrootSpans(gcw, int(i-work.baseSpans))
 
 	default:
 		// the rest is scanning goroutine stacks
 		var gp *g
-		if baseStacks <= i && i < end {
-			gp = allgs[i-baseStacks]
+		if work.baseStacks <= i && i < work.baseEnd {
+			// N.B. Atomic read of allglen in gcMarkRootPrepare
+			// acts as a barrier to ensure that allgs must be large
+			// enough to contain all relevant Gs.
+			gp = allgs[i-work.baseStacks]
 		} else {
 			throw("markroot: bad index")
 		}
@@ -1051,12 +1050,7 @@ func scanobject(b uintptr, gcw *gcWork) {
 	}
 
 	var i uintptr
-	for i = 0; i < n; i += sys.PtrSize {
-		// Find bits for this word.
-		if i != 0 {
-			// Avoid needless hbits.next() on last iteration.
-			hbits = hbits.next()
-		}
+	for i = 0; i < n; i, hbits = i+sys.PtrSize, hbits.next() {
 		// Load bits once. See CL 22712 and issue 16973 for discussion.
 		bits := hbits.bits()
 		if bits&bitScan == 0 {

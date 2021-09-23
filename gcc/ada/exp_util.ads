@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,12 +25,13 @@
 
 --  Package containing utility procedures used throughout the expander
 
-with Exp_Tss; use Exp_Tss;
-with Namet;   use Namet;
-with Rtsfind; use Rtsfind;
-with Sinfo;   use Sinfo;
-with Types;   use Types;
-with Uintp;   use Uintp;
+with Exp_Tss;        use Exp_Tss;
+with Namet;          use Namet;
+with Rtsfind;        use Rtsfind;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Types;          use Types;
+with Uintp;          use Uintp;
 
 package Exp_Util is
 
@@ -50,11 +51,11 @@ package Exp_Util is
    --    of statements, the actions are simply inserted into the list before
    --    the associated statement.
 
-   --    For an expression occurring in a declaration (declarations always
-   --    appear in lists), the actions are similarly inserted into the list
-   --    just before the associated declaration. ???Declarations do not always
-   --    appear in lists; in particular, a library unit declaration does not
-   --    appear in a list, and Insert_Action will crash in that case.
+   --    For an expression occurring in a declaration the actions are similarly
+   --    inserted into the list just before the associated declaration. (But
+   --    note that although declarations usually appear in lists, they don't
+   --    always; in particular, a library unit declaration does not appear in
+   --    a list, and Insert_Action will crash in that case.)
 
    --  The following special cases arise:
 
@@ -161,7 +162,7 @@ package Exp_Util is
    --
    --  Implementation limitation: Assoc_Node must be a statement. We can
    --  generalize to expressions if there is a need but this is tricky to
-   --  implement because of short-circuits (among other things).???
+   --  implement because of short-circuits (among other things).
 
    procedure Insert_Declaration (N : Node_Id; Decl : Node_Id);
    --  N must be a subexpression (Nkind in N_Subexpr). This is similar to
@@ -477,7 +478,7 @@ package Exp_Util is
    --
    --  The Name_Req flag is set to ensure that the result is suitable for use
    --  in a context requiring a name (for example, the prefix of an attribute
-   --  reference) (can't this just be a qualification in Ada 2012???).
+   --  reference).
    --
    --  The Renaming_Req flag is set to produce an object renaming declaration
    --  rather than an object declaration. This is valid only if the expression
@@ -558,6 +559,12 @@ package Exp_Util is
    --  series of checks evolved by this routine, with a final result of Empty
    --  indicating that no checks were required). The Sloc field of the
    --  constructed N_Or_Else node is copied from Cond1.
+
+   procedure Expand_Sliding_Conversion (N : Node_Id; Arr_Typ : Entity_Id);
+   --  When sliding is needed for an array object N in the context of an
+   --  unconstrained array type Arr_Typ with fixed lower bound (FLB), create
+   --  a subtype with appropriate index constraint (FLB .. N'Length + FLB - 1)
+   --  and apply a conversion from N to that subtype.
 
    procedure Expand_Static_Predicates_In_Choices (N : Node_Id);
    --  N is either a case alternative or a variant. The Discrete_Choices field
@@ -908,7 +915,7 @@ package Exp_Util is
    --  Establish the following mapping between the attributes of tagged parent
    --  type Parent_Type and tagged derived type Derived_Type.
    --
-   --    * Map each discriminant of Parent_Type to ether the corresponding
+   --    * Map each discriminant of Parent_Type to either the corresponding
    --      discriminant of Derived_Type or come constraint.
 
    --    * Map each primitive operation of Parent_Type to the corresponding

@@ -150,16 +150,12 @@ foo_notq (__m512i a, __m512i b, __m512i c, __m512i d)
   return _mm512_mask_add_epi8 (c, ~m1, a, d);
 }
 
-/* { dg-final { scan-assembler-times "knotq" "2" { target { ! ia32 } } } }  */
-
 __m512i
 foo_notd (__m512i a, __m512i b, __m512i c, __m512i d)
 {
   __mmask32 m1 = _mm512_cmpeq_epi16_mask (a, b);
   return _mm512_mask_add_epi16 (c, ~m1, a, d);
 }
-
-/* { dg-final { scan-assembler-times "knotd" "2" { target { ! ia32 } } } }  */
 
 __m512i
 foo_notw (__m512i a, __m512i b, __m512i c, __m512i d)
@@ -174,5 +170,3 @@ foo_notb (__m512i a, __m512i b, __m512i c, __m512i d)
   __mmask8 m1 = _mm512_cmpeq_epi64_mask (a, b);
   return _mm512_mask_add_epi64 (c, ~m1, a, d);
 }
-
-/* { dg-final { scan-assembler-times "knotw" "4" } }  */

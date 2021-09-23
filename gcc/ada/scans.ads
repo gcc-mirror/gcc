@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,7 +81,7 @@ package Scans is
       --  exception-name". This degrades error recovery slightly, and perhaps
       --  we could do better, but not worth the effort.
 
-      --  Ada 2020 introduces square brackets as delimiters for array and
+      --  Ada 2022 introduces square brackets as delimiters for array and
       --  container aggregates.
 
       Tok_Raise,           -- RAISE
@@ -441,12 +441,12 @@ package Scans is
    --  scanned literal.
 
    Real_Literal_Value : Ureal;
-   --  Valid only when Token is Tok_Real_Literal, contains the value of the
+   --  Valid only when Token is Tok_Real_Literal. Contains the value of the
    --  scanned literal.
 
    Int_Literal_Value : Uint;
-   --  Valid only when Token = Tok_Integer_Literal, contains the value of the
-   --  scanned literal.
+   --  Valid only when Token = Tok_Integer_Literal, and we are not in
+   --  syntax-only mode. Contains the value of the scanned literal.
 
    Based_Literal_Uses_Colon : Boolean;
    --  Valid only when Token = Tok_Integer_Literal or Tok_Real_Literal. Set

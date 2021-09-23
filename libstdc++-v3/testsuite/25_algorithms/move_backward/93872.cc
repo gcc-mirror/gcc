@@ -35,5 +35,5 @@ void
 test01()
 {
   X a[2], b[2];
-  std::move_backward(std::begin(a), std::end(a), std::begin(b));
+  std::move_backward(std::begin(a), std::end(a), std::end(b));
 }

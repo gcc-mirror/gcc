@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,25 +29,29 @@
 --  environment, and that in particular, no disallowed table expansion is
 --  allowed to occur.
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Csets;    use Csets;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Erroutc;  use Erroutc;
-with Gnatvsn;  use Gnatvsn;
-with Lib;      use Lib;
-with Opt;      use Opt;
-with Nlists;   use Nlists;
-with Output;   use Output;
-with Scans;    use Scans;
-with Sem_Aux;  use Sem_Aux;
-with Sinput;   use Sinput;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stylesw;  use Stylesw;
-with Uname;    use Uname;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Csets;          use Csets;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Erroutc;        use Erroutc;
+with Gnatvsn;        use Gnatvsn;
+with Lib;            use Lib;
+with Opt;            use Opt;
+with Nlists;         use Nlists;
+with Output;         use Output;
+with Scans;          use Scans;
+with Sem_Aux;        use Sem_Aux;
+with Sinput;         use Sinput;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stylesw;        use Stylesw;
+with Uname;          use Uname;
 
 package body Errout is
 
@@ -98,8 +102,8 @@ package body Errout is
 
    procedure Error_Msg_Internal
      (Msg      : String;
-      Sptr     : Source_Ptr;
-      Optr     : Source_Ptr;
+      Span     : Source_Span;
+      Opan     : Source_Span;
       Msg_Cont : Boolean;
       Node     : Node_Id);
    --  This is the low level routine used to post messages after dealing with
@@ -125,6 +129,11 @@ package body Errout is
    --  message is suppressed if the node already has an error posted on it,
    --  or if it refers to an Etype that has an error posted on it, or if
    --  it references an Entity that has an error posted on it.
+
+   procedure Output_JSON_Message (Error_Id : Error_Msg_Id);
+   --  Output error message Error_Id and any subsequent continuation message
+   --  using a JSON format similar to the one GCC uses when passed
+   --  -fdiagnostics-format=json.
 
    procedure Output_Source_Line
      (L     : Physical_Line_Number;
@@ -218,7 +227,7 @@ package body Errout is
       Err_Id    : Error_Msg_Id := Error_Id;
 
    begin
-      Set_Msg_Text (New_Msg, Errors.Table (Error_Id).Sptr);
+      Set_Msg_Text (New_Msg, Errors.Table (Error_Id).Sptr.Ptr);
       Errors.Table (Error_Id).Text := new String'(Msg_Buffer (1 .. Msglen));
 
       --  If in immediate error message mode, output modified error message now
@@ -300,14 +309,19 @@ package body Errout is
    ---------------
 
    --  Error_Msg posts a flag at the given location, except that if the
-   --  Flag_Location points within a generic template and corresponds to an
-   --  instantiation of this generic template, then the actual message will be
-   --  posted on the generic instantiation, along with additional messages
-   --  referencing the generic declaration.
+   --  Flag_Location/Flag_Span points within a generic template and corresponds
+   --  to an instantiation of this generic template, then the actual message
+   --  will be posted on the generic instantiation, along with additional
+   --  messages referencing the generic declaration.
 
    procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
    begin
-      Error_Msg (Msg, Flag_Location, Current_Node);
+      Error_Msg (Msg, To_Span (Flag_Location), Current_Node);
+   end Error_Msg;
+
+   procedure Error_Msg (Msg : String; Flag_Span : Source_Span) is
+   begin
+      Error_Msg (Msg, Flag_Span, Current_Node);
    end Error_Msg;
 
    procedure Error_Msg
@@ -318,7 +332,7 @@ package body Errout is
       Save_Is_Compile_Time_Msg : constant Boolean := Is_Compile_Time_Msg;
    begin
       Is_Compile_Time_Msg := Is_Compile_Time_Pragma;
-      Error_Msg (Msg, Flag_Location, Current_Node);
+      Error_Msg (Msg, To_Span (Flag_Location), Current_Node);
       Is_Compile_Time_Msg := Save_Is_Compile_Time_Msg;
    end Error_Msg;
 
@@ -327,6 +341,17 @@ package body Errout is
       Flag_Location : Source_Ptr;
       N             : Node_Id)
    is
+   begin
+      Error_Msg (Msg, To_Span (Flag_Location), N);
+   end Error_Msg;
+
+   procedure Error_Msg
+     (Msg       : String;
+      Flag_Span : Source_Span;
+      N         : Node_Id)
+   is
+      Flag_Location : constant Source_Ptr := Flag_Span.Ptr;
+
       Sindex : Source_File_Index;
       --  Source index for flag location
 
@@ -429,7 +454,7 @@ package body Errout is
       --  Error_Msg_Internal to place the message in the requested location.
 
       if Instantiation (Sindex) = No_Location then
-         Error_Msg_Internal (Msg, Flag_Location, Flag_Location, False, N);
+         Error_Msg_Internal (Msg, Flag_Span, Flag_Span, False, N);
          return;
       end if;
 
@@ -525,32 +550,32 @@ package body Errout is
                   if Is_Info_Msg then
                      Error_Msg_Internal
                        (Msg      => "info: in inlined body #",
-                        Sptr     => Actual_Error_Loc,
-                        Optr     => Flag_Location,
+                        Span     => To_Span (Actual_Error_Loc),
+                        Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status,
                         Node     => N);
 
                   elsif Is_Warning_Msg then
                      Error_Msg_Internal
                        (Msg      => Warn_Insertion & "in inlined body #",
-                        Sptr     => Actual_Error_Loc,
-                        Optr     => Flag_Location,
+                        Span     => To_Span (Actual_Error_Loc),
+                        Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status,
                         Node     => N);
 
                   elsif Is_Style_Msg then
                      Error_Msg_Internal
                        (Msg      => "style: in inlined body #",
-                        Sptr     => Actual_Error_Loc,
-                        Optr     => Flag_Location,
+                        Span     => To_Span (Actual_Error_Loc),
+                        Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status,
                         Node     => N);
 
                   else
                      Error_Msg_Internal
                        (Msg      => "error in inlined body #",
-                        Sptr     => Actual_Error_Loc,
-                        Optr     => Flag_Location,
+                        Span     => To_Span (Actual_Error_Loc),
+                        Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status,
                         Node     => N);
                   end if;
@@ -561,32 +586,32 @@ package body Errout is
                   if Is_Info_Msg then
                      Error_Msg_Internal
                        (Msg      => "info: in instantiation #",
-                        Sptr     => Actual_Error_Loc,
-                        Optr     => Flag_Location,
+                        Span     => To_Span (Actual_Error_Loc),
+                        Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status,
                         Node     => N);
 
                   elsif Is_Warning_Msg then
                      Error_Msg_Internal
                        (Msg      => Warn_Insertion & "in instantiation #",
-                        Sptr     => Actual_Error_Loc,
-                        Optr     => Flag_Location,
+                        Span     => To_Span (Actual_Error_Loc),
+                        Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status,
                         Node     => N);
 
                   elsif Is_Style_Msg then
                      Error_Msg_Internal
                        (Msg      => "style: in instantiation #",
-                        Sptr     => Actual_Error_Loc,
-                        Optr     => Flag_Location,
+                        Span     => To_Span (Actual_Error_Loc),
+                        Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status,
                         Node     => N);
 
                   else
                      Error_Msg_Internal
                        (Msg      => "instantiation error #",
-                        Sptr     => Actual_Error_Loc,
-                        Optr     => Flag_Location,
+                        Span     => To_Span (Actual_Error_Loc),
+                        Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status,
                         Node     => N);
                   end if;
@@ -605,8 +630,8 @@ package body Errout is
 
          Error_Msg_Internal
            (Msg      => Msg,
-            Sptr     => Actual_Error_Loc,
-            Optr     => Flag_Location,
+            Span     => To_Span (Actual_Error_Loc),
+            Opan     => Flag_Span,
             Msg_Cont => Msg_Cont_Status,
             Node     => N);
       end;
@@ -650,22 +675,22 @@ package body Errout is
    end Error_Msg_Ada_2012_Feature;
 
    --------------------------------
-   -- Error_Msg_Ada_2020_Feature --
+   -- Error_Msg_Ada_2022_Feature --
    --------------------------------
 
-   procedure Error_Msg_Ada_2020_Feature (Feature : String; Loc : Source_Ptr) is
+   procedure Error_Msg_Ada_2022_Feature (Feature : String; Loc : Source_Ptr) is
    begin
-      if Ada_Version < Ada_2020 then
-         Error_Msg (Feature & " is an Ada 2020 feature", Loc);
+      if Ada_Version < Ada_2022 then
+         Error_Msg (Feature & " is an Ada 2022 feature", Loc);
 
          if No (Ada_Version_Pragma) then
-            Error_Msg ("\unit must be compiled with -gnat2020 switch", Loc);
+            Error_Msg ("\unit must be compiled with -gnat2022 switch", Loc);
          else
             Error_Msg_Sloc := Sloc (Ada_Version_Pragma);
             Error_Msg ("\incompatible with Ada version set#", Loc);
          end if;
       end if;
-   end Error_Msg_Ada_2020_Feature;
+   end Error_Msg_Ada_2022_Feature;
 
    ------------------
    -- Error_Msg_AP --
@@ -834,8 +859,13 @@ package body Errout is
    -----------------
 
    procedure Error_Msg_F (Msg : String; N : Node_Id) is
+      Fst, Lst : Node_Id;
    begin
-      Error_Msg_NEL (Msg, N, N, Sloc (First_Node (N)));
+      First_And_Last_Nodes (N, Fst, Lst);
+      Error_Msg_NEL (Msg, N, N,
+                     To_Span (Ptr   => Sloc (Fst),
+                              First => First_Sloc (Fst),
+                              Last  => Last_Sloc (Lst)));
    end Error_Msg_F;
 
    ------------------
@@ -847,9 +877,27 @@ package body Errout is
       N   : Node_Id;
       E   : Node_Or_Entity_Id)
    is
+      Fst, Lst : Node_Id;
    begin
-      Error_Msg_NEL (Msg, N, E, Sloc (First_Node (N)));
+      First_And_Last_Nodes (N, Fst, Lst);
+      Error_Msg_NEL (Msg, N, E,
+                     To_Span (Ptr   => Sloc (Fst),
+                              First => First_Sloc (Fst),
+                              Last  => Last_Sloc (Lst)));
    end Error_Msg_FE;
+
+   ------------------------------
+   -- Error_Msg_GNAT_Extension --
+   ------------------------------
+
+   procedure Error_Msg_GNAT_Extension (Extension : String) is
+      Loc : constant Source_Ptr := Token_Ptr;
+   begin
+      if not Extensions_Allowed then
+         Error_Msg (Extension & " is a 'G'N'A'T specific extension", Loc);
+         Error_Msg ("\unit must be compiled with -gnatX switch", Loc);
+      end if;
+   end Error_Msg_GNAT_Extension;
 
    ------------------------
    -- Error_Msg_Internal --
@@ -857,11 +905,14 @@ package body Errout is
 
    procedure Error_Msg_Internal
      (Msg      : String;
-      Sptr     : Source_Ptr;
-      Optr     : Source_Ptr;
+      Span     : Source_Span;
+      Opan     : Source_Span;
       Msg_Cont : Boolean;
       Node     : Node_Id)
    is
+      Sptr     : constant Source_Ptr := Span.Ptr;
+      Optr     : constant Source_Ptr := Opan.Ptr;
+
       Next_Msg : Error_Msg_Id;
       --  Pointer to next message at insertion point
 
@@ -923,6 +974,11 @@ package body Errout is
    --  Start of processing for Error_Msg_Internal
 
    begin
+      --  Detect common mistake of prefixing or suffing the message with a
+      --  space character.
+
+      pragma Assert (Msg (Msg'First) /= ' ' and then Msg (Msg'Last) /= ' ');
+
       if Raise_Exception_On_Error /= 0 then
          raise Error_Msg_Exception;
       end if;
@@ -989,7 +1045,7 @@ package body Errout is
          if In_Extended_Main_Source_Unit (Sptr) then
             null;
 
-         --  If the main unit has not been read yet. the warning must be on
+         --  If the main unit has not been read yet. The warning must be on
          --  a configuration file: gnat.adc or user-defined. This means we
          --  are not parsing the main unit yet, so skip following checks.
 
@@ -1136,7 +1192,7 @@ package body Errout is
         ((Text                => new String'(Msg_Buffer (1 .. Msglen)),
           Next                => No_Error_Msg,
           Prev                => No_Error_Msg,
-          Sptr                => Sptr,
+          Sptr                => Span,
           Optr                => Optr,
           Insertion_Sloc      => (if Has_Insertion_Line then Error_Msg_Sloc
                                   else No_Location),
@@ -1196,9 +1252,9 @@ package body Errout is
          if Last_Error_Msg /= No_Error_Msg
            and then Errors.Table (Cur_Msg).Sfile =
                     Errors.Table (Last_Error_Msg).Sfile
-           and then (Sptr > Errors.Table (Last_Error_Msg).Sptr
+           and then (Sptr > Errors.Table (Last_Error_Msg).Sptr.Ptr
                        or else
-                          (Sptr = Errors.Table (Last_Error_Msg).Sptr
+                          (Sptr = Errors.Table (Last_Error_Msg).Sptr.Ptr
                              and then
                                Optr > Errors.Table (Last_Error_Msg).Optr))
          then
@@ -1216,8 +1272,8 @@ package body Errout is
 
                if Errors.Table (Cur_Msg).Sfile = Errors.Table (Next_Msg).Sfile
                then
-                  exit when Sptr < Errors.Table (Next_Msg).Sptr
-                    or else (Sptr = Errors.Table (Next_Msg).Sptr
+                  exit when Sptr < Errors.Table (Next_Msg).Sptr.Ptr
+                    or else (Sptr = Errors.Table (Next_Msg).Sptr.Ptr
                               and then Optr < Errors.Table (Next_Msg).Optr);
                end if;
 
@@ -1364,8 +1420,13 @@ package body Errout is
    -----------------
 
    procedure Error_Msg_N (Msg : String; N : Node_Or_Entity_Id) is
+      Fst, Lst : Node_Id;
    begin
-      Error_Msg_NEL (Msg, N, N, Sloc (N));
+      First_And_Last_Nodes (N, Fst, Lst);
+      Error_Msg_NEL (Msg, N, N,
+                     To_Span (Ptr   => Sloc (N),
+                              First => First_Sloc (Fst),
+                              Last  => Last_Sloc (Lst)));
    end Error_Msg_N;
 
    ------------------
@@ -1377,8 +1438,13 @@ package body Errout is
       N   : Node_Or_Entity_Id;
       E   : Node_Or_Entity_Id)
    is
+      Fst, Lst : Node_Id;
    begin
-      Error_Msg_NEL (Msg, N, E, Sloc (N));
+      First_And_Last_Nodes (N, Fst, Lst);
+      Error_Msg_NEL (Msg, N, E,
+                     To_Span (Ptr   => Sloc (N),
+                              First => First_Sloc (Fst),
+                              Last  => Last_Sloc (Lst)));
    end Error_Msg_NE;
 
    -------------------
@@ -1390,6 +1456,22 @@ package body Errout is
       N             : Node_Or_Entity_Id;
       E             : Node_Or_Entity_Id;
       Flag_Location : Source_Ptr)
+   is
+      Fst, Lst : Node_Id;
+   begin
+      First_And_Last_Nodes (N, Fst, Lst);
+      Error_Msg_NEL
+        (Msg, N, E,
+         To_Span (Ptr   => Flag_Location,
+                  First => Source_Ptr'Min (Flag_Location, First_Sloc (Fst)),
+                  Last  => Source_Ptr'Max (Flag_Location, Last_Sloc (Lst))));
+   end Error_Msg_NEL;
+
+   procedure Error_Msg_NEL
+     (Msg       : String;
+      N         : Node_Or_Entity_Id;
+      E         : Node_Or_Entity_Id;
+      Flag_Span : Source_Span)
    is
    begin
       if Special_Msg_Delete (Msg, N, E) then
@@ -1443,7 +1525,7 @@ package body Errout is
       then
          Debug_Output (N);
          Error_Msg_Node_1 := E;
-         Error_Msg (Msg, Flag_Location, N);
+         Error_Msg (Msg, Flag_Span, N);
 
       else
          Last_Killed := True;
@@ -1463,12 +1545,17 @@ package body Errout is
       Msg   : String;
       N     : Node_Or_Entity_Id)
    is
+      Fst, Lst : Node_Id;
    begin
       if Eflag
         and then In_Extended_Main_Source_Unit (N)
         and then Comes_From_Source (N)
       then
-         Error_Msg_NEL (Msg, N, N, Sloc (N));
+         First_And_Last_Nodes (N, Fst, Lst);
+         Error_Msg_NEL (Msg, N, N,
+                        To_Span (Ptr   => Sloc (N),
+                                 First => First_Sloc (Fst),
+                                 Last  => Last_Sloc (Lst)));
       end if;
    end Error_Msg_NW;
 
@@ -1563,7 +1650,7 @@ package body Errout is
 
          F := Nxt;
          while F /= No_Error_Msg
-           and then Errors.Table (F).Sptr = Errors.Table (Cur).Sptr
+           and then Errors.Table (F).Sptr.Ptr = Errors.Table (Cur).Sptr.Ptr
          loop
             Check_Duplicate_Message (Cur, F);
             F := Errors.Table (F).Next;
@@ -1583,8 +1670,8 @@ package body Errout is
          begin
             if (CE.Warn and not CE.Deleted)
               and then
-                   (Warning_Specifically_Suppressed (CE.Sptr, CE.Text, Tag) /=
-                                                                   No_String
+                   (Warning_Specifically_Suppressed (CE.Sptr.Ptr, CE.Text, Tag)
+                                                                /= No_String
                       or else
                     Warning_Specifically_Suppressed (CE.Optr, CE.Text, Tag) /=
                                                                    No_String)
@@ -1630,23 +1717,40 @@ package body Errout is
    ----------------
 
    function First_Node (C : Node_Id) return Node_Id is
+      Fst, Lst : Node_Id;
+   begin
+      First_And_Last_Nodes (C, Fst, Lst);
+      return Fst;
+   end First_Node;
+
+   --------------------------
+   -- First_And_Last_Nodes --
+   --------------------------
+
+   procedure First_And_Last_Nodes
+     (C                     : Node_Id;
+      First_Node, Last_Node : out Node_Id)
+   is
       Orig     : constant Node_Id           := Original_Node (C);
       Loc      : constant Source_Ptr        := Sloc (Orig);
       Sfile    : constant Source_File_Index := Get_Source_File_Index (Loc);
       Earliest : Node_Id;
+      Latest   : Node_Id;
       Eloc     : Source_Ptr;
+      Lloc     : Source_Ptr;
 
-      function Test_Earlier (N : Node_Id) return Traverse_Result;
+      function Test_First_And_Last (N : Node_Id) return Traverse_Result;
       --  Function applied to every node in the construct
 
-      procedure Search_Tree_First is new Traverse_Proc (Test_Earlier);
+      procedure Search_Tree_First_And_Last is new
+        Traverse_Proc (Test_First_And_Last);
       --  Create traversal procedure
 
-      ------------------
-      -- Test_Earlier --
-      ------------------
+      -------------------------
+      -- Test_First_And_Last --
+      -------------------------
 
-      function Test_Earlier (N : Node_Id) return Traverse_Result is
+      function Test_First_And_Last (N : Node_Id) return Traverse_Result is
          Norig : constant Node_Id    := Original_Node (N);
          Loc   : constant Source_Ptr := Sloc (Norig);
 
@@ -1670,22 +1774,63 @@ package body Errout is
             Eloc     := Loc;
          end if;
 
-         return OK_Orig;
-      end Test_Earlier;
+         --  Check for later
 
-   --  Start of processing for First_Node
+         if Loc > Lloc
+
+           --  Ignore nodes with no useful location information
+
+           and then Loc /= Standard_Location
+           and then Loc /= No_Location
+
+           --  Ignore nodes from a different file. This ensures against cases
+           --  of strange foreign code somehow being present. We don't want
+           --  wild placement of messages if that happens.
+
+           and then Get_Source_File_Index (Loc) = Sfile
+         then
+            Latest := Norig;
+            Lloc   := Loc;
+         end if;
+
+         return OK_Orig;
+      end Test_First_And_Last;
+
+   --  Start of processing for First_And_Last_Nodes
 
    begin
-      if Nkind (Orig) in N_Subexpr then
+      if Nkind (Orig) in N_Subexpr
+                       | N_Declaration
+                       | N_Access_To_Subprogram_Definition
+                       | N_Generic_Instantiation
+                       | N_Later_Decl_Item
+                       | N_Use_Package_Clause
+                       | N_Array_Type_Definition
+                       | N_Renaming_Declaration
+                       | N_Generic_Renaming_Declaration
+                       | N_Assignment_Statement
+                       | N_Raise_Statement
+                       | N_Simple_Return_Statement
+                       | N_Exit_Statement
+                       | N_Pragma
+                       | N_Use_Type_Clause
+                       | N_With_Clause
+                       | N_Attribute_Definition_Clause
+                       | N_Subtype_Indication
+      then
          Earliest := Orig;
          Eloc := Loc;
-         Search_Tree_First (Orig);
-         return Earliest;
+         Latest := Orig;
+         Lloc := Loc;
+         Search_Tree_First_And_Last (Orig);
+         First_Node := Earliest;
+         Last_Node := Latest;
 
       else
-         return Orig;
+         First_Node := Orig;
+         Last_Node := Orig;
       end if;
-   end First_Node;
+   end First_And_Last_Nodes;
 
    ----------------
    -- First_Sloc --
@@ -1694,12 +1839,17 @@ package body Errout is
    function First_Sloc (N : Node_Id) return Source_Ptr is
       SI : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
       SF : constant Source_Ptr        := Source_First (SI);
+      SL : constant Source_Ptr        := Source_Last (SI);
       F  : Node_Id;
       S  : Source_Ptr;
 
    begin
       F := First_Node (N);
       S := Sloc (F);
+
+      if S not in SF .. SL then
+         return S;
+      end if;
 
       --  The following circuit is a bit subtle. When we have parenthesized
       --  expressions, then the Sloc will not record the location of the paren,
@@ -1786,6 +1936,88 @@ package body Errout is
       --  True if S starts with Size_For
    end Is_Size_Too_Small_Message;
 
+   ---------------
+   -- Last_Node --
+   ---------------
+
+   function Last_Node (C : Node_Id) return Node_Id is
+      Fst, Lst : Node_Id;
+   begin
+      First_And_Last_Nodes (C, Fst, Lst);
+      return Lst;
+   end Last_Node;
+
+   ---------------
+   -- Last_Sloc --
+   ---------------
+
+   function Last_Sloc (N : Node_Id) return Source_Ptr is
+      SI : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
+      SF : constant Source_Ptr        := Source_First (SI);
+      SL : constant Source_Ptr        := Source_Last (SI);
+      F  : Node_Id;
+      S  : Source_Ptr;
+
+   begin
+      F := Last_Node (N);
+      S := Sloc (F);
+
+      if S not in SF .. SL then
+         return S;
+      end if;
+
+      --  Skip past an identifier
+
+      while S in SF .. SL - 1
+        and then Source_Text (SI) (S + 1)
+          in
+        '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' | '.' | '_'
+      loop
+         S := S + 1;
+      end loop;
+
+      --  The following circuit attempts at crawling up the tree from the
+      --  Last_Node, adjusting the Sloc value for any parentheses we know
+      --  are present, similarly to what is done in First_Sloc.
+
+      Node_Loop : loop
+         Paren_Loop : for J in 1 .. Paren_Count (F) loop
+
+            --  We don't look more than 12 characters after the current
+            --  location
+
+            Search_Loop : for K in 1 .. 12 loop
+               exit Node_Loop when S = SL;
+
+               if Source_Text (SI) (S + 1) = ')' then
+                  S := S + 1;
+                  exit Search_Loop;
+
+               elsif Source_Text (SI) (S + 1) <= ' ' then
+                  S := S + 1;
+
+               else
+                  exit Search_Loop;
+               end if;
+            end loop Search_Loop;
+         end loop Paren_Loop;
+
+         exit Node_Loop when F = N;
+         F := Parent (F);
+         exit Node_Loop when Nkind (F) not in N_Subexpr;
+      end loop Node_Loop;
+
+      --  Remove any trailing space
+
+      while S in SF + 1 .. SL
+        and then Source_Text (SI) (S) = ' '
+      loop
+         S := S - 1;
+      end loop;
+
+      return S;
+   end Last_Sloc;
+
    -----------------
    -- No_Warnings --
    -----------------
@@ -1841,6 +2073,158 @@ package body Errout is
       end if;
    end OK_Node;
 
+   -------------------------
+   -- Output_JSON_Message --
+   -------------------------
+
+   procedure Output_JSON_Message (Error_Id : Error_Msg_Id) is
+
+      function Is_Continuation (E : Error_Msg_Id) return Boolean;
+      --  Return True if E is a continuation message.
+
+      procedure Write_JSON_Escaped_String (Str : String_Ptr);
+      --  Write each character of Str, taking care of preceding each quote and
+      --  backslash with a backslash. Note that this escaping differs from what
+      --  GCC does.
+      --
+      --  Indeed, the JSON specification mandates encoding wide characters
+      --  either as their direct UTF-8 representation or as their escaped
+      --  UTF-16 surrogate pairs representation. GCC seems to prefer escaping -
+      --  we choose to use the UTF-8 representation instead.
+
+      procedure Write_JSON_Location (Sptr : Source_Ptr);
+      --  Write Sptr as a JSON location, an object containing a file attribute,
+      --  a line number and a column number.
+
+      procedure Write_JSON_Span (Span : Source_Span);
+      --  Write Span as a JSON span, an object containing a "caret" attribute
+      --  whose value is the JSON location of Span.Ptr. If Span.First and
+      --  Span.Last are different from Span.Ptr, they will be printed as JSON
+      --  locations under the names "start" and "finish".
+
+      -----------------------
+      --  Is_Continuation  --
+      -----------------------
+
+      function Is_Continuation (E : Error_Msg_Id) return Boolean is
+      begin
+         return E <= Last_Error_Msg and then Errors.Table (E).Msg_Cont;
+      end Is_Continuation;
+
+      -------------------------------
+      -- Write_JSON_Escaped_String --
+      -------------------------------
+
+      procedure Write_JSON_Escaped_String (Str : String_Ptr) is
+      begin
+         for C of Str.all loop
+            if C = '"' or else C = '\' then
+               Write_Char ('\');
+            end if;
+
+            Write_Char (C);
+         end loop;
+      end Write_JSON_Escaped_String;
+
+      -------------------------
+      -- Write_JSON_Location --
+      -------------------------
+
+      procedure Write_JSON_Location (Sptr : Source_Ptr) is
+      begin
+         Write_Str ("{""file"":""");
+         Write_Name (Full_Ref_Name (Get_Source_File_Index (Sptr)));
+         Write_Str (""",""line"":");
+         Write_Int (Pos (Get_Physical_Line_Number (Sptr)));
+         Write_Str (", ""column"":");
+         Write_Int (Nat (Get_Column_Number (Sptr)));
+         Write_Str ("}");
+      end Write_JSON_Location;
+
+      ---------------------
+      -- Write_JSON_Span --
+      ---------------------
+
+      procedure Write_JSON_Span (Span : Source_Span) is
+      begin
+         Write_Str ("{""caret"":");
+         Write_JSON_Location (Span.Ptr);
+
+         if Span.Ptr /= Span.First then
+            Write_Str (",""start"":");
+            Write_JSON_Location (Span.First);
+         end if;
+
+         if Span.Ptr /= Span.Last then
+            Write_Str (",""finish"":");
+            Write_JSON_Location (Span.Last);
+         end if;
+
+         Write_Str ("}");
+      end Write_JSON_Span;
+
+      --  Local Variables
+
+      E : Error_Msg_Id := Error_Id;
+
+      Print_Continuations : constant Boolean := not Is_Continuation (E);
+      --  Do not print continuations messages as children of the current
+      --  message if the current message is a continuation message.
+
+   --  Start of processing for Output_JSON_Message
+
+   begin
+
+      --  Print message kind
+
+      Write_Str ("{""kind"":");
+
+      if Errors.Table (E).Warn and then not Errors.Table (E).Warn_Err then
+         Write_Str ("""warning""");
+      elsif Errors.Table (E).Info or else Errors.Table (E).Check then
+         Write_Str ("""note""");
+      else
+         Write_Str ("""error""");
+      end if;
+
+      --  Print message location
+
+      Write_Str (",""locations"":[");
+      Write_JSON_Span (Errors.Table (E).Sptr);
+
+      if Errors.Table (E).Optr /= Errors.Table (E).Sptr.Ptr then
+         Write_Str (",{""caret"":");
+         Write_JSON_Location (Errors.Table (E).Optr);
+         Write_Str ("}");
+      end if;
+
+      --  Print message content
+
+      Write_Str ("],""message"":""");
+      Write_JSON_Escaped_String (Errors.Table (E).Text);
+      Write_Str ("""");
+
+      E := E + 1;
+
+      if Print_Continuations and then Is_Continuation (E) then
+
+         Write_Str (",""children"": [");
+         Output_JSON_Message (E);
+         E := E + 1;
+
+         while Is_Continuation (E) loop
+            Write_Str (", ");
+            Output_JSON_Message (E);
+            E := E + 1;
+         end loop;
+
+         Write_Str ("]");
+
+      end if;
+
+      Write_Str ("}");
+   end Output_JSON_Message;
+
    ---------------------
    -- Output_Messages --
    ---------------------
@@ -1858,13 +2242,35 @@ package body Errout is
       procedure Write_Max_Errors;
       --  Write message if max errors reached
 
-      procedure Write_Source_Code_Line (Loc : Source_Ptr);
-      --  Write the source code line corresponding to Loc, as follows:
+      procedure Write_Source_Code_Lines
+        (Span     : Source_Span;
+         SGR_Span : String);
+      --  Write the source code line corresponding to Span, as follows when
+      --  Span in on one line:
       --
-      --  line |  actual code line here with Loc somewhere
+      --  line |  actual code line here with Span somewhere
+      --       |                        ~~~~~^~~~
+      --
+      --  where the caret on the line points to location Span.Ptr, and the
+      --  range Span.First..Span.Last is underlined.
+      --
+      --  or when the span is over multiple lines:
+      --
+      --  line |  beginning of the Span on this line
+      --   ... |     ...
+      --  line>|  actual code line here with Span.Ptr somewhere
+      --   ... |     ...
+      --  line |  end of the Span on this line
+      --
+      --  or when the span is a simple location, as follows:
+      --
+      --  line |  actual code line here with Span somewhere
       --       |                             ^ here
       --
-      --  where the carret on the last line points to location Loc.
+      --  where the caret on the line points to location Span.Ptr
+      --
+      --  SGR_Span is the SGR string to start the section of code in the span,
+      --  that should be closed with SGR_Reset.
 
       -------------------------
       -- Write_Error_Summary --
@@ -2056,16 +2462,88 @@ package body Errout is
          end if;
       end Write_Max_Errors;
 
-      ----------------------------
-      -- Write_Source_Code_Line --
-      ----------------------------
+      -----------------------------
+      -- Write_Source_Code_Lines --
+      -----------------------------
 
-      procedure Write_Source_Code_Line (Loc : Source_Ptr) is
+      procedure Write_Source_Code_Lines
+        (Span     : Source_Span;
+         SGR_Span : String)
+      is
+         function Get_Line_End
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr) return Source_Ptr;
+         --  Get the source location for the end of the line in Buf for Loc
+
+         function Get_Line_Start
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr) return Source_Ptr;
+         --  Get the source location for the start of the line in Buf for Loc
 
          function Image (X : Positive; Width : Positive) return String;
          --  Output number X over Width characters, with whitespace padding.
          --  Only output the low-order Width digits of X, if X is larger than
          --  Width digits.
+
+         procedure Write_Buffer
+           (Buf   : Source_Buffer_Ptr;
+            First : Source_Ptr;
+            Last  : Source_Ptr);
+         --  Output the characters from First to Last position in Buf, using
+         --  Write_Buffer_Char.
+
+         procedure Write_Buffer_Char
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr);
+         --  Output the characters at position Loc in Buf, translating ASCII.HT
+         --  in a suitable number of spaces so that the output is not modified
+         --  by starting in a different column that 1.
+
+         procedure Write_Line_Marker
+           (Num   : Pos;
+            Mark  : Boolean;
+            Width : Positive);
+         --  Output the line number Num over Width characters, with possibly
+         --  a Mark to denote the line with the main location when reporting
+         --  a span over multiple lines.
+
+         ------------------
+         -- Get_Line_End --
+         ------------------
+
+         function Get_Line_End
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr) return Source_Ptr
+         is
+            Cur_Loc : Source_Ptr := Loc;
+         begin
+            while Cur_Loc <= Buf'Last
+              and then Buf (Cur_Loc) /= ASCII.LF
+            loop
+               Cur_Loc := Cur_Loc + 1;
+            end loop;
+
+            return Cur_Loc;
+         end Get_Line_End;
+
+         --------------------
+         -- Get_Line_Start --
+         --------------------
+
+         function Get_Line_Start
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr) return Source_Ptr
+         is
+            Cur_Loc : Source_Ptr := Loc;
+         begin
+            while Cur_Loc > Buf'First
+              and then Buf (Cur_Loc - 1) /= ASCII.LF
+            loop
+               Cur_Loc := Cur_Loc - 1;
+            end loop;
+
+            return Cur_Loc;
+         end Get_Line_Start;
 
          -----------
          -- Image --
@@ -2087,45 +2565,200 @@ package body Errout is
             return Str;
          end Image;
 
+         ------------------
+         -- Write_Buffer --
+         ------------------
+
+         procedure Write_Buffer
+           (Buf   : Source_Buffer_Ptr;
+            First : Source_Ptr;
+            Last  : Source_Ptr)
+         is
+         begin
+            for Loc in First .. Last loop
+               Write_Buffer_Char (Buf, Loc);
+            end loop;
+         end Write_Buffer;
+
+         -----------------------
+         -- Write_Buffer_Char --
+         -----------------------
+
+         procedure Write_Buffer_Char
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr)
+         is
+         begin
+            --  If the character ASCII.HT is not the last one in the file,
+            --  output as many spaces as the character represents in the
+            --  original source file.
+
+            if Buf (Loc) = ASCII.HT
+              and then Loc < Buf'Last
+            then
+               for X in Get_Column_Number (Loc) ..
+                        Get_Column_Number (Loc + 1) - 1
+               loop
+                  Write_Char (' ');
+               end loop;
+
+            --  Otherwise output the character itself
+
+            else
+               Write_Char (Buf (Loc));
+            end if;
+         end Write_Buffer_Char;
+
+         -----------------------
+         -- Write_Line_Marker --
+         -----------------------
+
+         procedure Write_Line_Marker
+           (Num   : Pos;
+            Mark  : Boolean;
+            Width : Positive)
+         is
+         begin
+            Write_Str (Image (Positive (Num), Width => Width));
+            Write_Str ((if Mark then ">" else " ") & "|");
+         end Write_Line_Marker;
+
          --  Local variables
 
-         Line    : constant Pos     := Pos (Get_Physical_Line_Number (Loc));
-         Col     : constant Natural := Natural (Get_Column_Number (Loc));
-         Width   : constant         := 5;
+         Loc     : constant Source_Ptr := Span.Ptr;
+         Line    : constant Pos        := Pos (Get_Physical_Line_Number (Loc));
 
-         Buf     : Source_Buffer_Ptr;
-         Cur_Loc : Source_Ptr := Loc;
+         Col     : constant Natural    := Natural (Get_Column_Number (Loc));
 
-      --  Start of processing for Write_Source_Code_Line
+         Fst      : constant Source_Ptr := Span.First;
+         Line_Fst : constant Pos        :=
+           Pos (Get_Physical_Line_Number (Fst));
+         Col_Fst  : constant Natural    :=
+           Natural (Get_Column_Number (Fst));
+         Lst      : constant Source_Ptr := Span.Last;
+         Line_Lst : constant Pos        :=
+           Pos (Get_Physical_Line_Number (Lst));
+         Col_Lst  : constant Natural    :=
+           Natural (Get_Column_Number (Lst));
+
+         Width    : constant := 5;
+         Buf      : Source_Buffer_Ptr;
+         Cur_Loc  : Source_Ptr := Fst;
+         Cur_Line : Pos := Line_Fst;
+
+      --  Start of processing for Write_Source_Code_Lines
 
       begin
          if Loc >= First_Source_Ptr then
             Buf := Source_Text (Get_Source_File_Index (Loc));
 
-            --  First line with the actual source code line
+            --  First line of the span with actual source code. We retrieve
+            --  the beginning of the line instead of relying on Col_Fst, as
+            --  ASCII.HT characters change column numbers by possibly more
+            --  than one.
 
-            Write_Str (Image (Positive (Line), Width => Width));
-            Write_Str (" |");
-            Write_Str (String (Buf (Loc - Source_Ptr (Col) + 1  .. Loc - 1)));
+            Write_Line_Marker
+              (Cur_Line,
+               Line_Fst /= Line_Lst and then Cur_Line = Line,
+               Width);
+            Write_Buffer (Buf, Get_Line_Start (Buf, Cur_Loc), Cur_Loc - 1);
 
-            while Cur_Loc <= Buf'Last
-              and then Buf (Cur_Loc) /= ASCII.LF
-            loop
-               Write_Char (Buf (Cur_Loc));
-               Cur_Loc := Cur_Loc + 1;
-            end loop;
+            --  Output the first/caret/last lines of the span, as well as
+            --  lines that are directly above/below the caret if they complete
+            --  the gap with first/last lines, otherwise use ... to denote
+            --  intermediate lines.
 
-            Write_Eol;
+            --  If the span is on one line and not a simple source location,
+            --  color it appropriately.
 
-            --  Second line with carret sign pointing to location Loc
+            if Line_Fst = Line_Lst
+              and then Col_Fst /= Col_Lst
+            then
+               Write_Str (SGR_Span);
+            end if;
 
-            Write_Str (String'(1 .. Width => ' '));
-            Write_Str (" |");
-            Write_Str (String'(1 .. Col - 1 => ' '));
-            Write_Str ("^ here");
-            Write_Eol;
+            declare
+               function Do_Write_Line (Cur_Line : Pos) return Boolean is
+                  (Cur_Line in Line_Fst | Line | Line_Lst
+                     or else
+                   (Cur_Line = Line_Fst + 1 and then Cur_Line = Line - 1)
+                     or else
+                   (Cur_Line = Line + 1 and then Cur_Line = Line_Lst - 1));
+            begin
+               while Cur_Loc <= Buf'Last
+                 and then Cur_Loc <= Lst
+               loop
+                  if Do_Write_Line (Cur_Line) then
+                     Write_Buffer_Char (Buf, Cur_Loc);
+                  end if;
+
+                  Cur_Loc := Cur_Loc + 1;
+
+                  if Buf (Cur_Loc - 1) = ASCII.LF then
+                     Cur_Line := Cur_Line + 1;
+
+                     --  Output ... for skipped lines
+
+                     if (Cur_Line = Line
+                          and then not Do_Write_Line (Cur_Line - 1))
+                       or else
+                        (Cur_Line = Line + 1
+                          and then not Do_Write_Line (Cur_Line))
+                     then
+                        Write_Str ((1 .. Width - 3 => ' ') & "... | ...");
+                        Write_Eol;
+                     end if;
+
+                     --  Display the line marker if the line should be
+                     --  displayed.
+
+                     if Do_Write_Line (Cur_Line) then
+                        Write_Line_Marker
+                          (Cur_Line,
+                           Line_Fst /= Line_Lst and then Cur_Line = Line,
+                           Width);
+                     end if;
+                  end if;
+               end loop;
+            end;
+
+            if Line_Fst = Line_Lst
+              and then Col_Fst /= Col_Lst
+            then
+               Write_Str (SGR_Reset);
+            end if;
+
+            --  Output the rest of the last line of the span
+
+            Write_Buffer (Buf, Cur_Loc, Get_Line_End (Buf, Cur_Loc));
+
+            --  If the span is on one line, output a second line with caret
+            --  sign pointing to location Loc
+
+            if Line_Fst = Line_Lst then
+               Write_Str (String'(1 .. Width => ' '));
+               Write_Str (" |");
+               Write_Str (String'(1 .. Col_Fst - 1 => ' '));
+
+               Write_Str (SGR_Span);
+
+               Write_Str (String'(Col_Fst .. Col - 1 => '~'));
+               Write_Str ("^");
+               Write_Str (String'(Col + 1 .. Col_Lst => '~'));
+
+               --  If the span is really just a location, add the word "here"
+               --  to clarify this is the location for the message.
+
+               if Col_Fst = Col_Lst then
+                  Write_Str (" here");
+               end if;
+
+               Write_Str (SGR_Reset);
+
+               Write_Eol;
+            end if;
          end if;
-      end Write_Source_Code_Line;
+      end Write_Source_Code_Lines;
 
       --  Local variables
 
@@ -2152,9 +2785,46 @@ package body Errout is
          Current_Error_Source_File := No_Source_File;
       end if;
 
+      if Opt.JSON_Output then
+         Set_Standard_Error;
+
+         E := First_Error_Msg;
+
+         --  Find first printable message
+
+         while E /= No_Error_Msg and then Errors.Table (E).Deleted loop
+            E := Errors.Table (E).Next;
+         end loop;
+
+         Write_Char ('[');
+
+         if E /= No_Error_Msg then
+
+            Output_JSON_Message (E);
+
+            E := Errors.Table (E).Next;
+
+            --  Skip deleted messages.
+            --  Also skip continuation messages, as they have already been
+            --  printed along the message they're attached to.
+
+            while E /= No_Error_Msg
+              and then not Errors.Table (E).Deleted
+              and then not Errors.Table (E).Msg_Cont
+            loop
+               Write_Char (',');
+               Output_JSON_Message (E);
+               E := Errors.Table (E).Next;
+            end loop;
+         end if;
+
+         Write_Char (']');
+
+         Set_Standard_Output;
+
       --  Brief Error mode
 
-      if Brief_Output or (not Full_List and not Verbose_Mode) then
+      elsif Brief_Output or (not Full_List and not Verbose_Mode) then
          Set_Standard_Error;
 
          E := First_Error_Msg;
@@ -2180,6 +2850,8 @@ package body Errout is
                end if;
 
                if Use_Prefix then
+                  Write_Str (SGR_Locus);
+
                   if Full_Path_Name_For_Brief_Errors then
                      Write_Name (Full_Ref_Name (Errors.Table (E).Sfile));
                   else
@@ -2198,6 +2870,8 @@ package body Errout is
 
                   Write_Int (Int (Errors.Table (E).Col));
                   Write_Str (": ");
+
+                  Write_Str (SGR_Reset);
                end if;
 
                Output_Msg_Text (E);
@@ -2217,12 +2891,23 @@ package body Errout is
                           Errors.Table (E).Insertion_Sloc;
                      begin
                         if Loc /= No_Location then
-                           Write_Source_Code_Line (Loc);
+                           Write_Source_Code_Lines
+                             (To_Span (Loc), SGR_Span => SGR_Note);
                         end if;
                      end;
 
                   else
-                     Write_Source_Code_Line (Errors.Table (E).Sptr);
+                     declare
+                        SGR_Span : constant String :=
+                          (if Errors.Table (E).Info then SGR_Note
+                           elsif Errors.Table (E).Warn
+                             and then not Errors.Table (E).Warn_Err
+                           then SGR_Warning
+                           else SGR_Error);
+                     begin
+                        Write_Source_Code_Lines
+                          (Errors.Table (E).Sptr, SGR_Span);
+                     end;
                   end if;
                end if;
             end if;
@@ -2355,11 +3040,12 @@ package body Errout is
          --  subunits for a body).
 
          while E /= No_Error_Msg
-           and then (not In_Extended_Main_Source_Unit (Errors.Table (E).Sptr)
+           and then (not In_Extended_Main_Source_Unit
+                           (Errors.Table (E).Sptr.Ptr)
                        or else
                         (Debug_Flag_Dot_M
                           and then Get_Source_Unit
-                                     (Errors.Table (E).Sptr) /= Main_Unit))
+                                     (Errors.Table (E).Sptr.Ptr) /= Main_Unit))
          loop
             if Errors.Table (E).Deleted then
                E := Errors.Table (E).Next;
@@ -2420,7 +3106,9 @@ package body Errout is
          Write_Error_Summary;
       end if;
 
-      Write_Max_Errors;
+      if not Opt.JSON_Output then
+         Write_Max_Errors;
+      end if;
 
       --  Even though Warning_Info_Messages are a subclass of warnings, they
       --  must not be treated as errors when -gnatwe is in effect.
@@ -2739,7 +3427,7 @@ package body Errout is
          --  For standard locations, always use mixed case
 
          if Loc <= No_Location then
-            Set_Casing (Mixed_Case);
+            Set_Casing (Buf, Mixed_Case);
 
          else
             --  Determine if the reference we are dealing with corresponds to
@@ -2775,11 +3463,6 @@ package body Errout is
             end if;
          end if;
       end;
-   end Adjust_Name_Case;
-
-   procedure Adjust_Name_Case (Loc : Source_Ptr) is
-   begin
-      Adjust_Name_Case (Global_Name_Buffer, Loc);
    end Adjust_Name_Case;
 
    ---------------------------
@@ -3535,7 +4218,8 @@ package body Errout is
          --  other errors. The reason we eliminate unfrozen types is that
          --  messages issued before the freeze type are for sure OK.
 
-         elsif Is_Frozen (E)
+         elsif Nkind (N) in N_Entity
+           and then Is_Frozen (E)
            and then Serious_Errors_Detected > 0
            and then Nkind (N) /= N_Component_Clause
            and then Nkind (Parent (N)) /= N_Component_Clause

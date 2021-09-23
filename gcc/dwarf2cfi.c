@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"		/* init_return_column_size */
 #include "output.h"		/* asm_out_file */
 #include "debug.h"		/* dwarf2out_do_frame, dwarf2out_do_cfi_asm */
-
+#include "flags.h"		/* dwarf_debuginfo_p */
 
 /* ??? Poison these here until it can be done generically.  They've been
    totally replaced in this file; make sure it stays that way.  */
@@ -1695,9 +1695,19 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      if (fde
 		  && fde->stack_realign
 		  && REGNO (src) == STACK_POINTER_REGNUM)
-		gcc_assert (REGNO (dest) == HARD_FRAME_POINTER_REGNUM
-			    && fde->drap_reg != INVALID_REGNUM
-			    && cur_cfa->reg != dwf_regno (src));
+		{
+		  gcc_assert (REGNO (dest) == HARD_FRAME_POINTER_REGNUM
+			      && fde->drap_reg != INVALID_REGNUM
+			      && cur_cfa->reg != dwf_regno (src)
+			      && fde->rule18);
+		  fde->rule18 = 0;
+		  /* The save of hard frame pointer has been deferred
+		     until this point when Rule 18 applied.  Emit it now.  */
+		  queue_reg_save (dest, NULL_RTX, 0);
+		  /* And as the instruction modifies the hard frame pointer,
+		     flush the queue as well.  */
+		  dwarf2out_flush_queued_reg_saves ();
+		}
 	      else
 		queue_reg_save (src, dest, 0);
 	    }
@@ -1907,6 +1917,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	    {
 	      gcc_assert (cur_cfa->reg != dw_frame_pointer_regnum);
 	      cur_trace->cfa_store.offset = 0;
+	      fde->rule18 = 1;
 	    }
 
 	  if (cur_cfa->reg == dw_stack_pointer_regnum)
@@ -2041,7 +2052,17 @@ dwarf2out_frame_debug_expr (rtx expr)
 	span = NULL;
 
       if (!span)
-	queue_reg_save (src, NULL_RTX, offset);
+	{
+	  if (fde->rule18)
+	    /* Just verify the hard frame pointer save when doing dynamic
+	       realignment uses expected offset.  The actual queue_reg_save
+	       needs to be deferred until the instruction that sets
+	       hard frame pointer to stack pointer, see PR99334 for
+	       details.  */
+	    gcc_assert (known_eq (offset, 0));
+	  else
+	    queue_reg_save (src, NULL_RTX, offset);
+	}
       else
 	{
 	  /* We have a PARALLEL describing where the contents of SRC live.
@@ -2268,8 +2289,7 @@ cfi_label_required_p (dw_cfi_ref cfi)
 
   if (dwarf_version == 2
       && debug_info_level > DINFO_LEVEL_TERSE
-      && (write_symbols == DWARF2_DEBUG
-	  || write_symbols == VMS_AND_DWARF2_DEBUG))
+      && dwarf_debuginfo_p ())
     {
       switch (cfi->dw_cfi_opc)
 	{
@@ -2732,6 +2752,7 @@ scan_trace (dw_trace_info *trace, bool entry)
       create_trace_edges (control);
     }
 
+  gcc_assert (!cfun->fde || !cfun->fde->rule18);
   add_cfi_insn = NULL;
   cur_row = NULL;
   cur_trace = NULL;
@@ -3535,9 +3556,9 @@ bool
 dwarf2out_do_frame (void)
 {
   /* We want to emit correct CFA location expressions or lists, so we
-     have to return true if we're going to output debug info, even if
+     have to return true if we're going to generate debug info, even if
      we're not going to output frame or unwind info.  */
-  if (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
+  if (dwarf_debuginfo_p () || dwarf_based_debuginfo_p ())
     return true;
 
   if (saved_do_cfi_asm > 0)

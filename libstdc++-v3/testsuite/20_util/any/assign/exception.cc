@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 
 // Copyright (C) 2016-2021 Free Software Foundation, Inc.
@@ -38,7 +37,7 @@ struct Bad2
 };
 
 int del_count = 0;
-struct Good 
+struct Good
 {
   Good() = default;
   Good(const Good&) = default;

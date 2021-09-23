@@ -64,7 +64,7 @@ BSD43__IOWR('T', 1) /* Some are multi-line */
 
 #if defined( MACHINE_NAME_CHECK )
 /* MACH_DIFF: */
-#if defined( i386 ) || defined( sparc ) || defined( vax )
+#if defined( i386 ) || defined( sparc ) || defined( vax ) || defined( linux ) || __has_include ( <linux.h> )
 /* no uniform test, so be careful  :-) */
 #endif  /* MACHINE_NAME_CHECK */
 

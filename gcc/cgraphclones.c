@@ -414,9 +414,6 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   else if (info && info->param_adjustments)
     clone_info::get_create (new_node)->param_adjustments
 	 = info->param_adjustments;
-  if (info && info->performed_splits)
-    clone_info::get_create (new_node)->performed_splits
-	 = vec_safe_copy (info->performed_splits);
   new_node->split_part = split_part;
 
   FOR_EACH_VEC_ELT (redirect_callers, i, e)
@@ -567,7 +564,7 @@ clone_function_name (tree decl, const char *suffix)
    bitmap interface.
    */
 cgraph_node *
-cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
+cgraph_node::create_virtual_clone (const vec<cgraph_edge *> &redirect_callers,
 				   vec<ipa_replace_map *, va_gc> *tree_map,
 				   ipa_param_adjustments *param_adjustments,
 				   const char * suffix, unsigned num_suffix)
@@ -636,7 +633,15 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
       || in_lto_p)
     new_node->unique_name = true;
   FOR_EACH_VEC_SAFE_ELT (tree_map, i, map)
-    new_node->maybe_create_reference (map->new_tree, NULL);
+    {
+      tree repl = map->new_tree;
+      if (map->force_load_ref)
+	{
+	  gcc_assert (TREE_CODE (repl) == ADDR_EXPR);
+	  repl = get_base_address (TREE_OPERAND (repl, 0));
+	}
+      new_node->maybe_create_reference (repl, NULL);
+    }
 
   if (ipa_transforms_to_apply.exists ())
     new_node->ipa_transforms_to_apply
@@ -982,6 +987,9 @@ cgraph_node::create_version_clone (tree new_decl,
    that will promote value of the attribute DECL_FUNCTION_SPECIFIC_TARGET
    of the declaration.
 
+   If VERSION_DECL is set true, use clone_function_name_numbered for the
+   function clone.  Otherwise, use clone_function_name.
+
    Return the new version's cgraph node.  */
 
 cgraph_node *
@@ -990,7 +998,7 @@ cgraph_node::create_version_clone_with_body
    vec<ipa_replace_map *, va_gc> *tree_map,
    ipa_param_adjustments *param_adjustments,
    bitmap bbs_to_copy, basic_block new_entry_block, const char *suffix,
-   tree target_attributes)
+   tree target_attributes, bool version_decl)
 {
   tree old_decl = decl;
   cgraph_node *new_version_node = NULL;
@@ -1011,8 +1019,10 @@ cgraph_node::create_version_clone_with_body
     new_decl = copy_node (old_decl);
 
   /* Generate a new name for the new version. */
-  DECL_NAME (new_decl) = clone_function_name_numbered (old_decl, suffix);
-  SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
+  tree fnname = (version_decl ? clone_function_name_numbered (old_decl, suffix)
+		: clone_function_name (old_decl, suffix));
+  DECL_NAME (new_decl) = fnname;
+  SET_DECL_ASSEMBLER_NAME (new_decl, fnname);
   SET_DECL_RTL (new_decl, NULL);
 
   DECL_VIRTUAL_P (new_decl) = 0;
@@ -1143,11 +1153,7 @@ cgraph_node::materialize_clone ()
   /* Function is no longer clone.  */
   remove_from_clone_tree ();
   if (!this_clone_of->analyzed && !this_clone_of->clones)
-    {
-      this_clone_of->release_body ();
-      this_clone_of->remove_callees ();
-      this_clone_of->remove_all_references ();
-    }
+    this_clone_of->release_body ();
 }
 
 #include "gt-cgraphclones.h"

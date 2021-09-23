@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,12 +26,14 @@
 pragma Style_Checks (All_Checks);
 --  Subprograms not all in alpha order
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Opt;      use Opt;
-with Output;   use Output;
-with Scans;    use Scans;
-with Widechar; use Widechar;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Opt;            use Opt;
+with Output;         use Output;
+with Scans;          use Scans;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Widechar;       use Widechar;
 
 with GNAT.Byte_Order_Mark; use GNAT.Byte_Order_Mark;
 
@@ -931,7 +933,7 @@ package body Sinput is
 
    procedure Sloc_Range (N : Node_Id; Min, Max : out Source_Ptr) is
 
-      Indx : constant Source_File_Index :=  Get_Source_File_Index (Sloc (N));
+      Indx : constant Source_File_Index := Get_Source_File_Index (Sloc (N));
 
       function Process (N : Node_Id) return Traverse_Result;
       --  Process function for traversing the node tree
@@ -943,25 +945,22 @@ package body Sinput is
       -------------
 
       function Process (N : Node_Id) return Traverse_Result is
-         Orig : constant Node_Id := Original_Node (N);
+         Loc : constant Source_Ptr := Sloc (Original_Node (N));
 
       begin
          --  Skip nodes that may have been added during expansion and
          --  that originate in other units, such as code for contracts
          --  in subprogram bodies.
 
-         if Get_Source_File_Index (Sloc (Orig)) /= Indx then
+         if Get_Source_File_Index (Loc) /= Indx then
             return Skip;
          end if;
 
-         if Sloc (Orig) < Min then
-            if Sloc (Orig) > No_Location then
-               Min := Sloc (Orig);
-            end if;
-
-         elsif Sloc (Orig) > Max then
-            if Sloc (Orig) > No_Location then
-               Max := Sloc (Orig);
+         if Loc > No_Location then
+            if Loc < Min then
+               Min := Loc;
+            elsif Loc > Max then
+               Max := Loc;
             end if;
          end if;
 
@@ -972,7 +971,7 @@ package body Sinput is
 
    begin
       Min := Sloc (N);
-      Max := Sloc (N);
+      Max := Min;
       Traverse (N);
    end Sloc_Range;
 
