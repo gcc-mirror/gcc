@@ -4629,12 +4629,15 @@ vect_get_new_ssa_name (tree type, enum vect_var_kind var_kind, const char *name)
   return new_vect_var;
 }
 
-/* Duplicate ptr info and set alignment/misaligment on NAME from DR_INFO.  */
+/* Duplicate points-to info on NAME from DR_INFO.  */
 
 static void
 vect_duplicate_ssa_name_ptr_info (tree name, dr_vec_info *dr_info)
 {
   duplicate_ssa_name_ptr_info (name, DR_PTR_INFO (dr_info->dr));
+  /* DR_PTR_INFO is for a base SSA name, not including constant or
+     variable offsets in the ref so its alignment info does not apply.  */
+  mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
 }
 
 /* Function vect_create_addr_base_for_vector_ref.
@@ -4738,11 +4741,7 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
   if (DR_PTR_INFO (dr)
       && TREE_CODE (addr_base) == SSA_NAME
       && !SSA_NAME_PTR_INFO (addr_base))
-    {
-      vect_duplicate_ssa_name_ptr_info (addr_base, dr_info);
-      if (offset || byte_offset)
-	mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (addr_base));
-    }
+    vect_duplicate_ssa_name_ptr_info (addr_base, dr_info);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "created %T\n", addr_base);
