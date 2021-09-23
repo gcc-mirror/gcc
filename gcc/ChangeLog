@@ -1,3 +1,25 @@
+2021-09-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2021-09-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/tpf.md (prologue_tpf, epilogue_tpf): Add cc clobber.
+
+2021-09-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2021-09-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/102222
+	* config/s390/s390.c (s390_expand_insv): Emit a normal move if it
+	is actually a full copy of the source operand into the target.
+	Don't emit a strict low part move if source and target mode match.
+
+2021-09-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	* ipa-fnsummary.c (inline_read_section): Unpack a dummy bit
+	to keep consistent with the side of streaming out.
+
 2021-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backported from master:
