@@ -3811,6 +3811,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set,
   if (result && TREE_CODE (result) == SSA_NAME)
     result = SSA_VAL (result);
   vr1->result = result;
+  vr1->result_vdef = NULL_TREE;
 
   slot = valid_info->references->find_slot_with_hash (vr1, vr1->hashcode,
 						      INSERT);
