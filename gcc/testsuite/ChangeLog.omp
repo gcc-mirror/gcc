@@ -3,6 +3,15 @@
 	Backported from master:
 	2021-09-19  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR fortran/101334
+	* gfortran.dg/c-interop/c535b-2.f90: Remove xfails.
+	* gfortran.dg/c-interop/c535b-3.f90: Likewise.
+
+2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2021-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* gfortran.dg/assumed_rank_18.f90 (g): Wrap call to h in
 	select rank.
 	* gfortran.dg/assumed_type_10.f90 (test_array): Likewise for

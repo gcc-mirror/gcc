@@ -3,6 +3,17 @@
 	Backported from master:
 	2021-09-19  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR fortran/101334
+	* check.c (gfc_check_associated): Allow an assumed-rank
+	array for the pointer argument.
+	* interface.c (compare_parameter): Also give rank mismatch
+	error on assumed-rank array.
+
+2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2021-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* trans-stmt.c (trans_associate_var): Check that result of
 	GFC_DECL_SAVED_DESCRIPTOR is not null before using it.
 
