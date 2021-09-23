@@ -28,6 +28,20 @@ with Ada.Text_IO;
 
 package body Gen_IL.Gen is
 
+   Num_Header_Slots : constant := 3;
+   --  Number of header slots; the first Num_Header_Slots slots are stored in
+   --  the header; the rest are dynamically allocated in the Slots table. We
+   --  need to subtract this off when accessing dynamic slots. The constant
+   --  Seinfo.N_Head will contain this value.
+   --
+   --  This number can be adjusted for efficiency. We choose 3 because the
+   --  minimum node size is 3 slots, and because that causes the size of type
+   --  Node_Header to be a power of 2. We can't make it zero, however, because
+   --  C doesn't allow zero-length arrays.
+
+   N_Head : constant String := Image (Field_Offset'(Num_Header_Slots));
+   --  String form of the above
+
    Enable_Assertions : constant Boolean := True;
    --  True to enable predicates on the _Id types, and preconditions on getters
    --  and setters.
@@ -36,6 +50,9 @@ package body Gen_IL.Gen is
    --  False to allocate every field so it doesn't overlay any other fields,
    --  which results in enormous nodes. For experimenting and debugging.
    --  Should be True in normal operation, for efficiency.
+
+   SS : constant := 32; -- slot size in bits
+   SSS : constant String := Image (Bit_Offset'(SS));
 
    Inline : constant String := "Inline";
    --  For experimenting with Inline_Always
@@ -563,6 +580,8 @@ package body Gen_IL.Gen is
       procedure Put_Setter_Spec (S : in out Sink; F : Field_Enum);
       procedure Put_Getter_Decl (S : in out Sink; F : Field_Enum);
       procedure Put_Setter_Decl (S : in out Sink; F : Field_Enum);
+      procedure Put_Getter_Setter_Locals
+        (S : in out Sink; F : Field_Enum; Get : Boolean);
       procedure Put_Getter_Body (S : in out Sink; F : Field_Enum);
       procedure Put_Setter_Body (S : in out Sink; F : Field_Enum);
       --  Print out the specification, declaration, or body of a getter or
@@ -573,9 +592,9 @@ package body Gen_IL.Gen is
       --  Print out the precondition, if any, for a getter or setter for the
       --  given field.
 
-      procedure Put_Low_Level_Accessor_Instantiations
+      procedure Put_Casts
         (S : in out Sink; T : Type_Enum);
-      --  Print out the low-level getter and setter for a given type
+      --  Print out the Cast functions for a given type
 
       procedure Put_Traversed_Fields (S : in out Sink);
       --  Called by Put_Nodes to print out the Traversed_Fields table in
@@ -616,19 +635,14 @@ package body Gen_IL.Gen is
       --  corresponding to the Ada Node_Kind, Entity_Kind, and subtypes
       --  thereof.
 
-      procedure Put_Low_Level_C_Getter
-        (S : in out Sink; T : Type_Enum);
-      --  Used by Put_Sinfo_Dot_H and Put_Einfo_Dot_H to print out low-level
-      --  getters.
-
-      procedure Put_High_Level_C_Getters
+      procedure Put_C_Getters
         (S : in out Sink; Root : Root_Type);
       --  Used by Put_Sinfo_Dot_H and Put_Einfo_Dot_H to print out high-level
       --  getters.
 
-      procedure Put_High_Level_C_Getter
+      procedure Put_C_Getter
         (S : in out Sink; F : Field_Enum);
-      --  Used by Put_High_Level_C_Getters to print out one high-level getter.
+      --  Used by Put_C_Getters to print out one high-level getter.
 
       procedure Put_Union_Membership
         (S : in out Sink; Root : Root_Type);
@@ -884,13 +898,13 @@ package body Gen_IL.Gen is
 
       function To_Size_In_Slots (Size_In_Bits : Bit_Offset)
         return Field_Offset is
-          ((Field_Offset (Size_In_Bits) + 31) / 32);
+          ((Field_Offset (Size_In_Bits) + (SS - 1)) / SS);
 
       function Type_Size_In_Slots (T : Concrete_Type) return Field_Offset is
         (To_Size_In_Slots (Type_Bit_Size (T))); -- rounded up to slot boundary
 
       function Type_Bit_Size_Aligned (T : Concrete_Type) return Bit_Offset is
-        (Bit_Offset (Type_Size_In_Slots (T)) * 32); -- multiple of slot size
+        (Bit_Offset (Type_Size_In_Slots (T)) * SS); -- multiple of slot size
 
       ---------------------------
       -- Compute_Field_Offsets --
@@ -1021,6 +1035,13 @@ package body Gen_IL.Gen is
          for F in Entity_Field loop
             Append (All_Fields, F);
          end loop;
+
+         --  Force Homonym to be at offset zero, which speeds up the
+         --  compiler. The Sort below will place Homonym first in
+         --  All_Fields.
+
+         Num_Concrete_Have_Field (Homonym) :=
+           Num_Concrete_Have_Field (Nkind) + 1;
 
          --  Sort All_Fields based on how many concrete types have the field.
          --  This is for efficiency; we want to choose the offsets of the most
@@ -1289,7 +1310,10 @@ package body Gen_IL.Gen is
                   end if;
                end loop;
 
-               Type_Bit_Size (T) := Max_Offset + 1;
+               --  No type can be smaller than the header slots
+
+               Type_Bit_Size (T) :=
+                 Bit_Offset'Max (Max_Offset + 1, SS * Num_Header_Slots);
             end;
          end loop;
 
@@ -1596,57 +1620,25 @@ package body Gen_IL.Gen is
            (if Setter_Needs_Parent (F) then "_With_Parent" else ""));
 
       -------------------------------------------
-      -- Put_Low_Level_Accessor_Instantiations --
+      -- Put_Casts --
       -------------------------------------------
 
-      procedure Put_Low_Level_Accessor_Instantiations
+      procedure Put_Casts
         (S : in out Sink; T : Type_Enum)
       is
+         Pre : constant String :=
+           "function Cast is new Unchecked_Conversion (";
+         Lo_Type : constant String := "Field_Size_" & Image (Field_Size (T)) & "_Bit";
+         Hi_Type : constant String := Get_Set_Id_Image (T);
       begin
-         --  Special case for subtypes of Uint that have predicates. Use
-         --  Get_Valid_32_Bit_Field in that case.
+         if T not in Uint_Subtype then
+            if T not in Node_Kind_Type | Entity_Kind_Type then
+               Put (S, Pre & Hi_Type & ", " & Lo_Type & ");" & LF);
+            end if;
 
-         if T in Uint_Subtype then
-            pragma Assert (Field_Size (T) = 32);
-            Put (S, LF & "function " & Low_Level_Getter_Name (T) &
-                 " is new Get_Valid_32_Bit_Field (" &
-                 Get_Set_Id_Image (T) &
-                 ") with " & Inline & ";" & LF);
-
-         --  Special case for types that have special defaults; instantiate
-         --  Get_32_Bit_Field_With_Default and pass in the Default_Val.
-
-         elsif Field_Has_Special_Default (T) then
-            pragma Assert (Field_Size (T) = 32);
-            Put (S, LF & "function " & Low_Level_Getter_Name (T) &
-                 " is new Get_32_Bit_Field_With_Default (" &
-                 Get_Set_Id_Image (T) & ", " & Special_Default (T) &
-                 ") with " & Inline & ";" & LF);
-
-         --  Otherwise, instantiate the normal getter for the right size in
-         --  bits.
-
-         else
-            Put (S, LF & "function " & Low_Level_Getter_Name (T) &
-                 " is new Get_" & Image (Field_Size (T)) & "_Bit_Field (" &
-                 Get_Set_Id_Image (T) & ") with " & Inline & ";" & LF);
+            Put (S, Pre & Lo_Type & ", " & Hi_Type & ");" & LF);
          end if;
-
-         if T in Node_Kind_Type | Entity_Kind_Type then
-            Put (S, "pragma Warnings (Off);" & LF);
-            --  Set_Node_Kind_Type and Set_Entity_Kind_Type might not be called
-         end if;
-
-         --  No special cases for the setter
-
-         Put (S, "procedure " & Low_Level_Setter_Name (T) & " is new Set_" &
-                 Image (Field_Size (T)) & "_Bit_Field (" & Get_Set_Id_Image (T) &
-                 ") with " & Inline & ";" & LF);
-
-         if T in Node_Kind_Type | Entity_Kind_Type then
-            Put (S, "pragma Warnings (On);" & LF);
-         end if;
-      end Put_Low_Level_Accessor_Instantiations;
+      end Put_Casts;
 
       ----------------------
       -- Put_Precondition --
@@ -1753,12 +1745,64 @@ package body Gen_IL.Gen is
          Put (S, ";" & LF);
       end Put_Getter_Decl;
 
+      ------------------------------
+      -- Put_Getter_Setter_Locals --
+      ------------------------------
+
+      procedure Put_Getter_Setter_Locals
+        (S : in out Sink; F : Field_Enum; Get : Boolean)
+      is
+         Rec : Field_Info renames Field_Table (F).all;
+
+         Off : constant Field_Offset := Rec.Offset;
+         F_Size : constant Bit_Offset := Field_Size (Rec.Field_Type);
+         F_Per_Slot : constant Field_Offset :=
+           SS / Field_Offset (Field_Size (Rec.Field_Type));
+         Slot_Off : constant Field_Offset := Off / F_Per_Slot;
+         In_NH : constant Boolean := Slot_Off < Num_Header_Slots;
+
+         N : constant String :=
+           (if Get then Node_To_Fetch_From (F) else "N");
+
+      begin
+         Put (S, " is" & LF);
+         Increase_Indent (S, 3);
+         Put (S, "--  " & Image (F_Per_Slot) & "  " & Image (F_Size) &
+                "-bit fields per " & SSS & "-bit slot." & LF);
+         Put (S, "--  Offset " & Image (Off) & " = " &
+                Image (Slot_Off) & " slots + " & Image (Off mod F_Per_Slot) &
+                " fields in slot." & LF & LF);
+
+         Put (S, "Off : constant := " & Image (Off) & ";" & LF);
+         Put (S, "F_Size : constant := " & Image (F_Size) & ";" & LF);
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "Mask : constant := 2**F_Size - 1;" & LF);
+         end if;
+
+         Put (S, "F_Per_Slot : constant Field_Offset := Slot_Size / F_Size;" & LF);
+         Put (S, "Slot_Off : constant Field_Offset := Off / F_Per_Slot;" & LF);
+
+         if In_NH then
+            Put (S, "S : Slot renames Node_Offsets.Table (" & N & ").Slots (Slot_Off);" & LF);
+         else
+            Put (S, "S : Slot renames Slots.Table (Node_Offsets.Table (" & N & ").Offset + Slot_Off);" & LF);
+         end if;
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "V : constant Natural := Natural ((Off mod F_Per_Slot) * F_Size);" & LF);
+            Put (S, LF);
+         end if;
+      end Put_Getter_Setter_Locals;
+
       ---------------------
       -- Put_Getter_Body --
       ---------------------
 
       procedure Put_Getter_Body (S : in out Sink; F : Field_Enum) is
          Rec : Field_Info renames Field_Table (F).all;
+         F_Size : constant Bit_Offset := Field_Size (Rec.Field_Type);
+         T : constant String := Get_Set_Id_Image (Rec.Field_Type);
       begin
          --  Note that we store the result in a local constant below, so that
          --  the "Pre => ..." can refer to it. The constant is called Val so
@@ -1767,15 +1811,42 @@ package body Gen_IL.Gen is
          --  and setter.
 
          Put_Getter_Spec (S, F);
-         Put (S, " is" & LF);
-         Increase_Indent (S, 3);
-         Put (S, "Val : constant " & Get_Set_Id_Image (Rec.Field_Type) &
-              " := " & Low_Level_Getter_Name (Rec.Field_Type) &
-              " (" & Node_To_Fetch_From (F) & ", " &
-              Image (Rec.Offset) & ");" & LF);
+         Put_Getter_Setter_Locals (S, F, Get => True);
+
+         Put (S, "Raw : constant Field_Size_" & Image (F_Size) & "_Bit :=" & LF);
+         Increase_Indent (S, 2);
+         Put (S, "Field_Size_" & Image (F_Size) & "_Bit (");
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "Shift_Right (S, V) and Mask);" & LF);
+         else
+            Put (S, "S);" & LF);
+         end if;
+
+         Decrease_Indent (S, 2);
+
+         Put (S, "Val : constant " & T & " :=");
+
+         if Field_Has_Special_Default (Rec.Field_Type) then
+            pragma Assert (Field_Size (Rec.Field_Type) = 32);
+            Put (S, LF);
+            Increase_Indent (S, 2);
+            Put (S, "(if Raw = 0 then " & Special_Default (Rec.Field_Type) & " else " & "Cast (Raw));");
+            Decrease_Indent (S, 2);
+
+         else
+            Put (S, " Cast (Raw);");
+         end if;
+
+         Put (S, LF);
+
          Decrease_Indent (S, 3);
          Put (S, "begin" & LF);
          Increase_Indent (S, 3);
+
+         Put (S, "--  pragma Debug (Validate_Node_And_Offset (NN, Slot_Off));" & LF);
+         --  Comment out the validation, because it's too slow, and because the
+         --  relevant routines in Atree are not visible.
 
          if Rec.Pre.all /= "" then
             Put (S, "pragma Assert (" & Rec.Pre.all & ");" & LF);
@@ -1824,6 +1895,7 @@ package body Gen_IL.Gen is
 
       procedure Put_Setter_Body (S : in out Sink; F : Field_Enum) is
          Rec : Field_Info renames Field_Table (F).all;
+         F_Size : constant Bit_Offset := Field_Size (Rec.Field_Type);
 
          --  If Type_Only was specified in the call to Create_Semantic_Field,
          --  then we assert that the node is a base type. We cannot assert that
@@ -1836,9 +1908,17 @@ package body Gen_IL.Gen is
                 "Is_Base_Type (N)");
       begin
          Put_Setter_Spec (S, F);
-         Put (S, " is" & LF);
+         Put_Getter_Setter_Locals (S, F, Get => False);
+
+         Put (S, "Raw : constant Field_Size_" & Image (F_Size) & "_Bit := Cast (Val);" & LF);
+
+         Decrease_Indent (S, 3);
          Put (S, "begin" & LF);
          Increase_Indent (S, 3);
+
+         Put (S, "--  pragma Debug (Validate_Node_And_Offset_Write (N, Slot_Off));" & LF);
+         --  Comment out the validation, because it's too slow, and because the
+         --  relevant routines in Atree are not visible.
 
          if Rec.Pre.all /= "" then
             Put (S, "pragma Assert (" & Rec.Pre.all & ");" & LF);
@@ -1852,8 +1932,28 @@ package body Gen_IL.Gen is
             Put (S, "pragma Assert (" & Type_Only_Assertion & ");" & LF);
          end if;
 
-         Put (S, Low_Level_Setter_Name (F) & " (N, " & Image (Rec.Offset)
-              & ", Val);" & LF);
+         if Setter_Needs_Parent (F) then
+            declare
+               Err : constant String :=
+                 (if Rec.Field_Type = List_Id then "Error_List" else "Error");
+            begin
+               Put (S, "if Present (Val) and then Val /= " & Err & " then" & LF);
+               Increase_Indent (S, 3);
+               Put (S, "pragma Warnings (Off, ""actuals for this call may be in wrong order"");" & LF);
+               Put (S, "Set_Parent (Val, N);" & LF);
+               Put (S, "pragma Warnings (On, ""actuals for this call may be in wrong order"");" & LF);
+               Decrease_Indent (S, 3);
+               Put (S, "end if;" & LF & LF);
+            end;
+         end if;
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "S := (S and not Shift_Left (Mask, V)) or Shift_Left (Slot (Raw), V);" & LF);
+
+         else
+            Put (S, "S := Slot (Raw);" & LF);
+         end if;
+
          Decrease_Indent (S, 3);
          Put (S, "end Set_" & Image (F) & ";" & LF & LF);
       end Put_Setter_Body;
@@ -2076,7 +2176,7 @@ package body Gen_IL.Gen is
               when others => "Entity_Field");  -- Entity_Kind
 
       begin
-         Put (S, "--  Table of sizes in 32-bit slots for given " &
+         Put (S, "--  Table of sizes in " & SSS & "-bit slots for given " &
               Image (Root) & ", for use by Atree:" & LF);
 
          case Root is
@@ -2107,34 +2207,48 @@ package body Gen_IL.Gen is
          Put (S, "); -- Size" & LF);
          Decrease_Indent (S, 2);
 
-         declare
-            type Dummy is array
-              (First_Field (Root) .. Last_Field (Root)) of Boolean;
-            Num_Fields : constant Root_Int := Dummy'Length;
-            First_Time : Boolean := True;
-         begin
-            Put (S, LF & "--  Enumeration of all " & Image (Num_Fields)
-                 & " fields:" & LF & LF);
+         if Root = Node_Kind then
+            declare
+               type Node_Dummy is array (Node_Field) of Boolean;
+               type Entity_Dummy is array (Entity_Field) of Boolean;
+               Num_Fields : constant Root_Int :=
+                 Node_Dummy'Length + Entity_Dummy'Length;
+               First_Time : Boolean := True;
+            begin
+               Put (S, LF & "--  Enumeration of all " & Image (Num_Fields)
+                    & " fields:" & LF & LF);
 
-            Put (S, "type " & Field_Enum_Type_Name & " is" & LF);
-            Increase_Indent (S, 2);
-            Put (S, "(");
-            Increase_Indent (S, 1);
+               Put (S, "type Node_Or_Entity_Field is" & LF);
+               Increase_Indent (S, 2);
+               Put (S, "(");
+               Increase_Indent (S, 1);
 
-            for F in First_Field (Root) .. Last_Field (Root) loop
-               if First_Time then
-                  First_Time := False;
-               else
+               for F in Node_Field loop
+                  if First_Time then
+                     First_Time := False;
+                  else
+                     Put (S, "," & LF);
+                  end if;
+
+                  Put (S, F_Image (F));
+               end loop;
+
+               for F in Entity_Field loop
                   Put (S, "," & LF);
-               end if;
+                  Put (S, F_Image (F));
+               end loop;
 
-               Put (S, F_Image (F));
-            end loop;
+               Decrease_Indent (S, 1);
+               Put (S, "); -- Node_Or_Entity_Field" & LF);
+               Decrease_Indent (S, 2);
+            end;
+         end if;
 
-            Decrease_Indent (S, 1);
-            Put (S, "); -- " & Field_Enum_Type_Name & LF);
-            Decrease_Indent (S, 2);
-         end;
+         Put (S, LF & "subtype " & Field_Enum_Type_Name & " is" & LF);
+         Increase_Indent (S, 2);
+         Put (S, "Node_Or_Entity_Field range " & F_Image (First_Field (Root)) &
+                " .. " & F_Image (Last_Field (Root)) & ";" & LF);
+         Decrease_Indent (S, 2);
 
          Put (S, LF & "type " & Field_Enum_Type_Name & "_Index is new Pos;" & LF);
          Put (S, "type " & Field_Enum_Type_Name & "_Array is array (" &
@@ -2193,34 +2307,43 @@ package body Gen_IL.Gen is
             Decrease_Indent (S, 2);
          end;
 
-         declare
-            First_Time : Boolean := True;
-         begin
-            Put (S, LF & "--  Table mapping fields to kind and offset:" & LF & LF);
+         if Root = Node_Kind then
+            declare
+               First_Time : Boolean := True;
+            begin
+               Put (S, LF & "--  Table mapping fields to kind and offset:" & LF & LF);
 
-            Put (S, Field_Enum_Type_Name & "_Descriptors : constant array (" &
-                 Field_Enum_Type_Name & ") of Field_Descriptor :=" & LF);
+               Put (S, "Field_Descriptors : constant array (" &
+                    "Node_Or_Entity_Field) of Field_Descriptor :=" & LF);
 
-            Increase_Indent (S, 2);
-            Put (S, "(");
-            Increase_Indent (S, 1);
+               Increase_Indent (S, 2);
+               Put (S, "(");
+               Increase_Indent (S, 1);
 
-            for F in First_Field (Root) .. Last_Field (Root) loop
-               if First_Time then
-                  First_Time := False;
-               else
+               for F in Node_Field loop
+                  if First_Time then
+                     First_Time := False;
+                  else
+                     Put (S, "," & LF);
+                  end if;
+
+                  Put (S, F_Image (F) & " => (" &
+                       Image (Field_Table (F).Field_Type) & "_Field, " &
+                       Image (Field_Table (F).Offset) & ")");
+               end loop;
+
+               for F in Entity_Field loop
                   Put (S, "," & LF);
-               end if;
+                  Put (S, F_Image (F) & " => (" &
+                       Image (Field_Table (F).Field_Type) & "_Field, " &
+                       Image (Field_Table (F).Offset) & ")");
+               end loop;
 
-               Put (S, F_Image (F) & " => (" &
-                    Image (Field_Table (F).Field_Type) & "_Field, " &
-                    Image (Field_Table (F).Offset) & ")");
-            end loop;
-
-            Decrease_Indent (S, 1);
-            Put (S, "); -- Field_Descriptors" & LF);
-            Decrease_Indent (S, 2);
-         end;
+               Decrease_Indent (S, 1);
+               Put (S, "); -- Field_Descriptors" & LF);
+               Decrease_Indent (S, 2);
+            end;
+         end if;
 
       end Put_Tables;
 
@@ -2293,6 +2416,21 @@ package body Gen_IL.Gen is
          Decrease_Indent (S, 3);
          Put (S, "end record;" & LF);
 
+         --  Print out the node header types. Note that the Offset field is of
+         --  the base type, because we are using zero-origin addressing in
+         --  Atree.
+
+         Put (S, "N_Head : constant Field_Offset := " & N_Head & ";" & LF);
+         Put (S, "" & LF);
+         Put (S, "type Node_Header_Slots is" & LF);
+         Put (S, "  array (Field_Offset range 0 .. N_Head - 1) of aliased Slot;" & LF);
+         Put (S, "type Node_Header is record" & LF);
+         Put (S, "   Slots : Node_Header_Slots;" & LF);
+         Put (S, "   Offset : Node_Offset'Base;" & LF);
+         Put (S, "end record;" & LF);
+         Put (S, "pragma Assert (Node_Header'Size = (" & N_Head &
+                " + 1) * " & SSS & ");" & LF);
+
          Decrease_Indent (S, 3);
          Put (S, LF & "end Seinfo;" & LF);
       end Put_Seinfo;
@@ -2304,39 +2442,6 @@ package body Gen_IL.Gen is
       procedure Put_Nodes is
          S : Sink;
          B : Sink;
-
-         procedure Put_Setter_With_Parent (Kind : String);
-         --  Put the low-level ..._With_Parent setter. Kind is either "Node" or
-         --  "List".
-
-         procedure Put_Setter_With_Parent (Kind : String) is
-            Error : constant String := (if Kind = "Node" then "" else "_" & Kind);
-         begin
-            Put (B, LF & "procedure Set_" & Kind & "_Id_With_Parent" & LF);
-            Increase_Indent (B, 2);
-            Put (B, "(N : Node_Id; Offset : Field_Offset; Val : " & Kind & "_Id);" & LF & LF);
-            Decrease_Indent (B, 2);
-
-            Put (B, "procedure Set_" & Kind & "_Id_With_Parent" & LF);
-            Increase_Indent (B, 2);
-            Put (B, "(N : Node_Id; Offset : Field_Offset; Val : " & Kind & "_Id) is" & LF);
-            Decrease_Indent (B, 2);
-            Put (B, "begin" & LF);
-            Increase_Indent (B, 3);
-            Put (B, "if Present (Val) and then Val /= Error" & Error & " then" & LF);
-            Increase_Indent (B, 3);
-            Put (B, "pragma Warnings (Off, ""actuals for this call may be in wrong order"");" & LF);
-            Put (B, "Set_Parent (Val, N);" & LF);
-            Put (B, "pragma Warnings (On, ""actuals for this call may be in wrong order"");" & LF);
-            Decrease_Indent (B, 3);
-            Put (B, "end if;" & LF & LF);
-
-            Put (B, "Set_" & Kind & "_Id (N, Offset, Val);" & LF);
-            Decrease_Indent (B, 3);
-            Put (B, "end Set_" & Kind & "_Id_With_Parent;" & LF);
-         end Put_Setter_With_Parent;
-
-      --  Start of processing for Put_Nodes
 
       begin
          Create_File (S, "sinfo-nodes.ads");
@@ -2369,6 +2474,7 @@ package body Gen_IL.Gen is
          Decrease_Indent (S, 3);
          Put (S, LF & "end Sinfo.Nodes;" & LF);
 
+         Put (B, "with Unchecked_Conversion;" & LF);
          Put (B, "with Atree; use Atree; use Atree.Atree_Private_Part;" & LF);
          Put (B, "with Nlists; use Nlists;" & LF);
          Put (B, "pragma Warnings (Off);" & LF);
@@ -2381,18 +2487,13 @@ package body Gen_IL.Gen is
 
          Put (B, "--  This package is automatically generated." & LF & LF);
 
-         Put (B, "--  Instantiations of low-level getters and setters that take offsets" & LF);
-         Put (B, "--  in units of the size of the field." & LF);
-
          Put (B, "pragma Style_Checks (""M200"");" & LF);
+
          for T in Special_Type loop
             if Node_Field_Types_Used (T) then
-               Put_Low_Level_Accessor_Instantiations (B, T);
+               Put_Casts (B, T);
             end if;
          end loop;
-
-         Put_Setter_With_Parent ("Node");
-         Put_Setter_With_Parent ("List");
 
          Put_Subp_Bodies (B, Node_Kind);
 
@@ -2411,7 +2512,6 @@ package body Gen_IL.Gen is
       begin
          Create_File (S, "einfo-entities.ads");
          Create_File (B, "einfo-entities.adb");
-         Put (S, "with Seinfo; use Seinfo;" & LF);
          Put (S, "with Sinfo.Nodes; use Sinfo.Nodes;" & LF);
 
          Put (S, LF & "package Einfo.Entities is" & LF & LF);
@@ -2430,6 +2530,7 @@ package body Gen_IL.Gen is
          Decrease_Indent (S, 3);
          Put (S, LF & "end Einfo.Entities;" & LF);
 
+         Put (B, "with Unchecked_Conversion;" & LF);
          Put (B, "with Atree; use Atree; use Atree.Atree_Private_Part;" & LF);
          Put (B, "with Einfo.Utils; use Einfo.Utils;" & LF);
          --  This forms a cycle between packages (via bodies, which is OK)
@@ -2439,13 +2540,11 @@ package body Gen_IL.Gen is
 
          Put (B, "--  This package is automatically generated." & LF & LF);
 
-         Put (B, "--  Instantiations of low-level getters and setters that take offsets" & LF);
-         Put (B, "--  in units of the size of the field." & LF);
-
          Put (B, "pragma Style_Checks (""M200"");" & LF);
+
          for T in Special_Type loop
             if Entity_Field_Types_Used (T) then
-               Put_Low_Level_Accessor_Instantiations (B, T);
+               Put_Casts (B, T);
             end if;
          end loop;
 
@@ -2714,11 +2813,11 @@ package body Gen_IL.Gen is
             return Result : Bit_Offset do
                if F = No_Field then
                   --  We don't have a field size for No_Field, so just look at
-                  --  the bits up to the next word boundary.
+                  --  the bits up to the next slot boundary.
 
                   Result := First_Bit;
 
-                  while (Result + 1) mod 32 /= 0
+                  while (Result + 1) mod SS /= 0
                     and then Type_Layout (T) (Result + 1) = No_Field
                   loop
                      Result := Result + 1;
@@ -2731,19 +2830,19 @@ package body Gen_IL.Gen is
          end Get_Last_Bit;
 
          function First_Bit_Image (First_Bit : Bit_Offset) return String is
-            W : constant Bit_Offset := First_Bit / 32;
-            B : constant Bit_Offset := First_Bit mod 32;
-            pragma Assert (W * 32 + B = First_Bit);
+            W : constant Bit_Offset := First_Bit / SS;
+            B : constant Bit_Offset := First_Bit mod SS;
+            pragma Assert (W * SS + B = First_Bit);
          begin
             return
-              Image (W) & "*32" & (if B = 0 then "" else " + " & Image (B));
+              Image (W) & "*" & SSS & (if B = 0 then "" else " + " & Image (B));
          end First_Bit_Image;
 
          function Last_Bit_Image (Last_Bit : Bit_Offset) return String is
-            W : constant Bit_Offset := (Last_Bit + 1) / 32;
+            W : constant Bit_Offset := (Last_Bit + 1) / SS;
          begin
-            if W * 32 - 1 = Last_Bit then
-               return Image (W) & "*32 - 1";
+            if W * SS - 1 = Last_Bit then
+               return Image (W) & "*" & SSS & " - 1";
             else
                return First_Bit_Image (Last_Bit);
             end if;
@@ -3027,76 +3126,84 @@ package body Gen_IL.Gen is
          Put_Union_Membership (S, Root);
       end Put_C_Type_And_Subtypes;
 
-      ----------------------------
-      -- Put_Low_Level_C_Getter --
-      ----------------------------
+      ------------------
+      -- Put_C_Getter --
+      ------------------
 
-      procedure Put_Low_Level_C_Getter
-        (S : in out Sink; T : Type_Enum)
-      is
-         T_Image : constant String := Get_Set_Id_Image (T);
-
-      begin
-         Put (S, "INLINE " & T_Image & "" & LF);
-         Put (S, "Get_" & Image (T) & " (Node_Id N, Field_Offset Offset)" & LF);
-
-         Increase_Indent (S, 3);
-
-         --  Same special cases for getters as in
-         --  Put_Low_Level_Accessor_Instantiations.
-
-         if T in Uint_Subtype then
-            pragma Assert (Field_Size (T) = 32);
-            Put (S, "{ return (" & T_Image &
-                 ") Get_Valid_32_Bit_Field(N, Offset); }" & LF & LF);
-
-         elsif Field_Has_Special_Default (T) then
-            pragma Assert (Field_Size (T) = 32);
-            Put (S, "{ return (" & T_Image &
-                 ") Get_32_Bit_Field_With_Default(N, Offset, " &
-                 Special_Default (T) & "); }" & LF & LF);
-
-         else
-            Put (S, "{ return (" & T_Image & ") Get_" &
-                 Image (Field_Size (T)) & "_Bit_Field(N, Offset); }" & LF & LF);
-         end if;
-
-         Decrease_Indent (S, 3);
-      end Put_Low_Level_C_Getter;
-
-      -----------------------------
-      -- Put_High_Level_C_Getter --
-      -----------------------------
-
-      procedure Put_High_Level_C_Getter
+      procedure Put_C_Getter
         (S : in out Sink; F : Field_Enum)
       is
+         Rec : Field_Info renames Field_Table (F).all;
+
+         Off : constant Field_Offset := Rec.Offset;
+         F_Size : constant Bit_Offset := Field_Size (Rec.Field_Type);
+         F_Per_Slot : constant Field_Offset :=
+           SS / Field_Offset (Field_Size (Rec.Field_Type));
+         Slot_Off : constant Field_Offset := Off / F_Per_Slot;
+         In_NH : constant Boolean := Slot_Off < Num_Header_Slots;
+
+         N : constant String := Node_To_Fetch_From (F);
       begin
-         Put (S, "INLINE " & Get_Set_Id_Image (Field_Table (F).Field_Type) &
+         Put (S, "INLINE " & Get_Set_Id_Image (Rec.Field_Type) &
               " " & Image (F) & " (Node_Id N)" & LF);
 
+         Put (S, "{" & LF);
          Increase_Indent (S, 3);
-         Put (S, "{ return " &
-              Low_Level_Getter_Name (Field_Table (F).Field_Type) &
-              "(" & Node_To_Fetch_From (F) & ", " &
-              Image (Field_Table (F).Offset) & "); }" & LF & LF);
+         Put (S, "const Field_Offset Off = " & Image (Rec.Offset) & ";" & LF);
+         Put (S, "const Field_Offset F_Size = " & Image (F_Size) & ";" & LF);
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "const any_slot Mask = (1 << F_Size) - 1;" & LF);
+         end if;
+
+         Put (S, "const Field_Offset F_Per_Slot = Slot_Size / F_Size;" & LF);
+         Put (S, "const Field_Offset Slot_Off = Off / F_Per_Slot;" & LF);
+         Put (S, LF);
+         if In_NH then
+            Put (S, "any_slot slot = Node_Offsets_Ptr[" & N & "].Slots[Slot_Off];" & LF);
+         else
+            Put (S, "any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[" & N &
+                   "].Offset + Slot_Off);" & LF);
+         end if;
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "unsigned int Raw = (slot >> (Off % F_Per_Slot) * F_Size) & Mask;" & LF);
+         else
+            Put (S, "unsigned int Raw = slot;" & LF);
+         end if;
+
+         Put (S, Get_Set_Id_Image (Rec.Field_Type) & " val = ");
+
+         if Field_Has_Special_Default (Rec.Field_Type) then
+            Increase_Indent (S, 2);
+            Put (S, "(Raw? Raw : " & Special_Default (Rec.Field_Type) & ")");
+            Decrease_Indent (S, 2);
+
+         else
+            Put (S, "Raw");
+         end if;
+
+         Put (S, ";" & LF);
+
+         Put (S, "return val;" & LF);
          Decrease_Indent (S, 3);
-      end Put_High_Level_C_Getter;
+         Put (S, "}" & LF & LF);
+      end Put_C_Getter;
 
-      ------------------------------
-      -- Put_High_Level_C_Getters --
-      ------------------------------
+      -------------------
+      -- Put_C_Getters --
+      -------------------
 
-      procedure Put_High_Level_C_Getters
+      procedure Put_C_Getters
         (S : in out Sink; Root : Root_Type)
       is
       begin
          Put (S, "// Getters for fields" & LF & LF);
 
          for F in First_Field (Root) .. Last_Field (Root) loop
-            Put_High_Level_C_Getter (S, F);
+            Put_C_Getter (S, F);
          end loop;
-      end Put_High_Level_C_Getters;
+      end Put_C_Getters;
 
       --------------------------
       -- Put_Union_Membership --
@@ -3174,16 +3281,24 @@ package body Gen_IL.Gen is
 
          Put (S, "typedef Boolean Flag;" & LF & LF);
 
+         Put (S, "#define N_Head " & N_Head & LF);
+         Put (S, "" & LF);
+         Put (S, "typedef struct Node_Header {" & LF);
+         Increase_Indent (S, 2);
+         Put (S, "any_slot Slots[N_Head];" & LF);
+         Put (S, "Field_Offset Offset;" & LF);
+         Decrease_Indent (S, 2);
+         Put (S, "} Node_Header;" & LF & LF);
+
+         Put (S, "extern Node_Header *Node_Offsets_Ptr;" & LF);
+         Put (S, "extern any_slot *Slots_Ptr;" & LF & LF);
+
          Put_C_Type_And_Subtypes (S, Node_Kind);
 
          Put (S, "// Getters corresponding to instantiations of Atree.Get_n_Bit_Field"
                  & LF & LF);
 
-         for T in Special_Type loop
-            Put_Low_Level_C_Getter (S, T);
-         end loop;
-
-         Put_High_Level_C_Getters (S, Node_Kind);
+         Put_C_Getters (S, Node_Kind);
 
          Put (S, "#ifdef __cplusplus" & LF);
          Put (S, "}" & LF);
@@ -3238,11 +3353,7 @@ package body Gen_IL.Gen is
 
          Put_C_Type_And_Subtypes (S, Entity_Kind);
 
-         --  Note that we do not call Put_Low_Level_C_Getter here. Those are in
-         --  sinfo.h, so every file that #includes einfo.h must #include
-         --  sinfo.h first.
-
-         Put_High_Level_C_Getters (S, Entity_Kind);
+         Put_C_Getters (S, Entity_Kind);
 
          Put (S, "// Abstract type queries" & LF & LF);
 

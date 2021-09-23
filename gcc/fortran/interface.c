@@ -2634,7 +2634,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		   && formal->as->type == AS_ASSUMED_SHAPE))
 	  && actual->expr_type != EXPR_NULL)
       || (actual->rank == 0 && formal->attr.dimension
-	  && gfc_is_coindexed (actual)))
+	  && gfc_is_coindexed (actual))
+      /* Assumed-rank actual argument; F2018 C838.  */
+      || actual->rank == -1)
     {
       if (where
 	  && (!formal->attr.artificial || (!formal->maybe_array
@@ -3181,21 +3183,21 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			      is_elemental, where))
 	return false;
 
-      /* TS 29113, 6.3p2.  */
+      /* TS 29113, 6.3p2; F2018 15.5.2.4.  */
       if (f->sym->ts.type == BT_ASSUMED
 	  && (a->expr->ts.type == BT_DERIVED
 	      || (a->expr->ts.type == BT_CLASS && CLASS_DATA (a->expr))))
 	{
-	  gfc_namespace *f2k_derived;
-
-	  f2k_derived = a->expr->ts.type == BT_DERIVED
-			? a->expr->ts.u.derived->f2k_derived
-			: CLASS_DATA (a->expr)->ts.u.derived->f2k_derived;
-
-	  if (f2k_derived
-	      && (f2k_derived->finalizers || f2k_derived->tb_sym_root))
+	  gfc_symbol *derived = (a->expr->ts.type == BT_DERIVED
+				 ? a->expr->ts.u.derived
+				 : CLASS_DATA (a->expr)->ts.u.derived);
+	  gfc_namespace *f2k_derived = derived->f2k_derived;
+	  if (derived->attr.pdt_type
+	      || (f2k_derived
+		  && (f2k_derived->finalizers || f2k_derived->tb_sym_root)))
 	    {
-	      gfc_error ("Actual argument at %L to assumed-type dummy is of "
+	      gfc_error ("Actual argument at %L to assumed-type dummy "
+			 "has type parameters or is of "
 			 "derived type with type-bound or FINAL procedures",
 			 &a->expr->where);
 	      return false;

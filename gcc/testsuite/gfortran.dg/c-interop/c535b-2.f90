@@ -61,15 +61,14 @@ subroutine test_calls (x, y)
   ! assumed-rank dummies
   call g (x, y)  ! OK
   ! assumed-size dummies
-  call h (x, &  ! { dg-error "(A|a)ssumed.rank" "pr101334" { xfail *-*-* } }
+  call h (x, &  ! { dg-error "(A|a)ssumed.rank" "pr101334" }
           y)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
   ! assumed-shape dummies
   call i (x, &  ! { dg-error "(A|a)ssumed.rank" }
           y)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
  ! fixed-size array dummies
-  call j (x, &  ! { dg-error "(A|a)ssumed.rank" "pr101334" { xfail *-*-* } }
+  call j (x, &  ! { dg-error "(A|a)ssumed.rank" "pr101334" }
           y)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
- ! { dg-bogus "Actual argument contains too few elements" "pr101334" { xfail *-*-* } .-2 }
 end subroutine
 
 ! Check that you can't use an assumed-rank array variable in an array

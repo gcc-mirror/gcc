@@ -6459,10 +6459,12 @@ int b[2][2] = @{ @{ 0, 1 @}, @{ 2, 3 @} @};
 
 This warning is enabled by @option{-Wall}.
 
-@item -Wmissing-include-dirs @r{(C, C++, Objective-C and Objective-C++ only)}
+@item -Wmissing-include-dirs @r{(C, C++, Objective-C, Objective-C++ and Fortran only)}
 @opindex Wmissing-include-dirs
 @opindex Wno-missing-include-dirs
-Warn if a user-supplied include directory does not exist.
+Warn if a user-supplied include directory does not exist. This opions is disabled
+by default for C, C++, Objective-C and Objective-C++. For Fortran, it is partially
+enabled by default by warning for -I and -J, only.
 
 @item -Wno-missing-profile
 @opindex Wmissing-profile

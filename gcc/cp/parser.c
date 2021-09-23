@@ -28628,7 +28628,16 @@ cp_parser_omp_directive_args (cp_parser *parser, tree attribute)
       TREE_VALUE (attribute) = NULL_TREE;
       return;
     }
-  for (size_t n = cp_parser_skip_balanced_tokens (parser, 1) - 2; n; --n)
+  size_t n = cp_parser_skip_balanced_tokens (parser, 1);
+  if (n == 1)
+    {
+      cp_lexer_consume_token (parser->lexer);
+      error_at (first->location, "expected attribute argument as balanced "
+				 "token sequence");
+      TREE_VALUE (attribute) = NULL_TREE;
+      return;
+    }
+  for (n = n - 2; n; --n)
     cp_lexer_consume_token (parser->lexer);
   cp_token *last = cp_lexer_peek_token (parser->lexer);
   cp_lexer_consume_token (parser->lexer);

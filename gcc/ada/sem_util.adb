@@ -5012,6 +5012,7 @@ package body Sem_Util is
               and then not Mentions_Post_State (Expr)
               and then not (Is_Ghost_Entity (Subp_Id)
                              and then Has_No_Output (Subp_Id))
+              and then not Is_Wrapper (Subp_Id)
             then
                if Pragma_Name (Prag) = Name_Contract_Cases then
                   Error_Msg_NE (Adjust_Message
@@ -7444,7 +7445,7 @@ package body Sem_Util is
                      return False;
                   end if;
 
-                  Next_Index (Indx);
+                  Next (Indx);
                end loop;
             end;
 
@@ -32045,6 +32046,7 @@ package body Sem_Util is
                   end if;
                end;
             end if;
+
             return False;
          end Is_Access_Type_For_Indirect_Temp;
 

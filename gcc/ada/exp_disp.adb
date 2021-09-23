@@ -1016,6 +1016,10 @@ package body Exp_Disp is
 
       Typ := Find_Specific_Type (CW_Typ);
 
+      --  The tagged type of a dispatching call must be frozen at this stage
+
+      pragma Assert (Is_Frozen (Typ));
+
       if not Is_Limited_Type (Typ) then
          Eq_Prim_Op := Find_Prim_Op (Typ, Name_Op_Eq);
       end if;

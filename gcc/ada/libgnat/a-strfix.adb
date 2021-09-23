@@ -214,7 +214,8 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       -- Lemma_Split --
       -----------------
 
-      procedure Lemma_Split (Result : String) is
+      procedure Lemma_Split (Result : String)
+      is
       begin
          for K in Ptr + 1 .. Ptr + Right'Length loop
             Lemma_Mod (K - 1);
@@ -307,7 +308,8 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       From    : Positive;
       Through : Natural;
       Justify : Alignment := Left;
-      Pad     : Character := Space) with SPARK_Mode => Off is
+      Pad     : Character := Space)
+   is
    begin
       Move (Source  => Delete (Source, From, Through),
             Target  => Source,
@@ -403,7 +405,8 @@ package body Ada.Strings.Fixed with SPARK_Mode is
      (Source   : in out String;
       Before   : Positive;
       New_Item : String;
-      Drop     : Truncation := Error) with SPARK_Mode => Off is
+      Drop     : Truncation := Error)
+   is
    begin
       Move (Source => Insert (Source, Before, New_Item),
             Target => Source,
@@ -419,7 +422,8 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       Target  : out String;
       Drop    : Truncation := Error;
       Justify : Alignment  := Left;
-      Pad     : Character  := Space) with SPARK_Mode => Off
+      Pad     : Character  := Space)
+   with SPARK_Mode => Off
    is
       Sfirst  : constant Integer := Source'First;
       Slast   : constant Integer := Source'Last;
@@ -571,7 +575,8 @@ package body Ada.Strings.Fixed with SPARK_Mode is
      (Source   : in out String;
       Position : Positive;
       New_Item : String;
-      Drop     : Truncation := Right) with SPARK_Mode => Off is
+      Drop     : Truncation := Right)
+   is
    begin
       Move (Source => Overwrite (Source, Position, New_Item),
             Target => Source,
@@ -648,7 +653,8 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       By       : String;
       Drop     : Truncation := Error;
       Justify  : Alignment  := Left;
-      Pad      : Character  := Space) with SPARK_Mode => Off is
+      Pad      : Character  := Space)
+   is
    begin
       Move (Replace_Slice (Source, Low, High, By), Source, Drop, Justify, Pad);
    end Replace_Slice;

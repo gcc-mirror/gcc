@@ -364,7 +364,9 @@ package body Einfo.Utils is
 
    function Known_Alignment (E : Entity_Id) return B is
    begin
-      return not Field_Is_Initial_Zero (E, F_Alignment);
+      --  For some reason, Empty is passed to this sometimes
+
+      return No (E) or else not Field_Is_Initial_Zero (E, F_Alignment);
    end Known_Alignment;
 
    procedure Reinit_Alignment (Id : E) is
@@ -1974,6 +1976,8 @@ package body Einfo.Utils is
 
    function Next_Index (Id : Node_Id) return Node_Id is
    begin
+      pragma Assert (Nkind (Id) in N_Is_Index);
+      pragma Assert (No (Next (Id)) or else Nkind (Next (Id)) in N_Is_Index);
       return Next (Id);
    end Next_Index;
 

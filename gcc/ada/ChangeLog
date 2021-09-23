@@ -1,3 +1,410 @@
+2021-09-22  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strfix.ads (Trim): Simplify contracts.
+	* libgnat/a-strfix.adb (Trim): Remove white space.
+
+2021-09-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Reuse Is_Attribute_Result.
+	* exp_prag.adb (Expand_Attributes): Reuse Is_Attribute_Old.
+
+2021-09-22  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Do not insert a
+	predicate check after a deferred constant declaration.
+
+2021-09-22  Bob Duff  <duff@adacore.com>
+
+	* contracts.adb, einfo-utils.adb, einfo-utils.ads, exp_ch7.adb,
+	exp_ch9.adb, exp_disp.adb, exp_prag.adb, exp_smem.adb,
+	exp_util.adb, freeze.adb, sem_aggr.adb, sem_attr.adb,
+	sem_ch8.adb, sem_prag.ads, sem_util.adb, sem_util.ads: Fix
+	conformance errors.
+	* errout.adb, erroutc.adb: Remove pragmas Suppress.
+	* err_vars.ads: Initialize variables that were previously being
+	read uninitialized.
+
+2021-09-22  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strunb.ads: Mark package in SPARK with private part
+	not in SPARK.
+	(Free): Mark not in SPARK.
+
+2021-09-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* snames.ads-tmpl: Update status of some attributes.
+
+2021-09-22  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-interr__vxworks.adb (Interfaces.C): Remove as
+	unused.
+	(System.VxWorks.Ext): Import.
+	(System.VxWorks.Ext.STATUS): use type.
+	(STATUS): New subtype.
+	(OK): New constant.
+	(Interrupt_Connector): Return STATUS type vice int.
+	(Interrupt_Connect, Notify_Interrupt, Unbind_Handler,
+	Interrupt_Server_Task): Rename Status to Result. Assert Result =
+	OK.
+	* libgnarl/s-osinte__vxworks.adb (To_Clock_Ticks): Define constant
+	IERR, and return it vice ERROR.
+	(Binary_Semaphore_Delete): Return STATUS type vice int.
+	(Binary_Semaphore_Obtain): Likewise.
+	(Binary_Semaphore_Release): Likewise.
+	(Binary_Semaphore_Flush): Likewise.
+	* libgnarl/s-osinte__vxworks.ads (SVE): Renaming of
+	System.VxWorks.Ext.
+	(STATUS): Use SVE in declaration of subtype.
+	(BOOL): Likewise.
+	(vx_freq_t): Likewise.
+	(t_id): Likewise.
+	(gitpid): Use SVE in renaming of subprogram
+	(Task_Stop): Likewise.
+	(Task_Cont): Likewise.
+	(Int_Lock): Likewise.
+	(Int_Unlock): Likewise.
+	(Set_Time_Slice): Likewise.
+	(semDelete): Likewise.
+	(taskCpuAffinitySet): Likewise.
+	(taskMaskAffinitySet): Likewise.
+	(sigset_t): Use SVE in declaration of type.
+	(OK): Remove as unused.
+	(ERROR): Likewise.
+	(taskOptionsGet): return STATUS vice int.
+	(taskSuspend): Likewise.
+	(taskResume): Likewise.
+	(taskDelay): Likewise.
+	(taskVarAdd): Likewise.
+	(taskVarDelete): Likewise.
+	(taskVarSet): Likewise.
+	(tlkKeyCreate): Likewise.
+	(taskPrioritySet): Likewise.
+	(semGive): Likewise.
+	(semTake): Likewise.
+	(Binary_Semaphore_Delete): Likewise.
+	(Binary_Semaphore_Obtain): Likewise.
+	(Binary_Semaphore_Release): Likewise.
+	(Binary_Semaphore_Flush): Likewise.
+	(Interrupt_Connect): Likewise.
+	* libgnarl/s-taprop__vxworks.adb
+	(System.VxWorks.Ext.STATUS): use type.
+	(int): Syntactically align subtype.
+	(STATUS): New subtype.
+	(OK): New constant.
+	(Finalize_Lock): Check STATUS vice int. Assert OK.
+	(Finalize_Lock): Likewise.
+	(Write_Lock): Likewise.
+	(Write_Lock): Likewise.
+	(Write_Lock): Likewise.
+	(Unlock): Likewise.
+	(Unlock): Likewise.
+	(Unlock): Likewise.
+	(Unlock): Likewise.
+	(Sleep): Likewise.
+	(Sleep): Likewise.
+	(Sleep): Likewise.
+	(Timed_Sleep): Likewise and test Result.
+	(Timed_Delay): Likewise and test Result.
+	(Wakeup): Likewise.
+	(Yield): Likewise.
+	(Finalize_TCB): Likewise.
+	(Suspend_Until_True): Check OK.
+	(Stop_All_Tasks): Declare Dummy STATUS vice in.  Check OK.
+	(Is_Task_Context): Use OSI renaming.
+	(Initialize): Use STATUS vice int.
+	* libgnarl/s-vxwext.adb
+	(IERR): Renamed from ERROR.
+	(taskCpuAffinitySet): Return IERR (int).
+	(taskMaskAffinitySet): Likewise.
+	* libgnarl/s-vxwext.ads
+	(STATUS): New subtype.
+	(OK): New STATUS constant.
+	(ERROR): Likewise.
+	* libgnarl/s-vxwext__kernel-smp.adb
+	(IERR): Renamed from ERROR.
+	(Int_Lock): Return IERR.
+	(semDelete): Return STATUS.
+	(Task_Cont): Likewise.
+	(Task_Stop): Likewise.
+	* libgnarl/s-vxwext__kernel.adb
+	(IERR): Renamed from ERROR.
+	(semDelete): Return STATUS.
+	(Task_Cont): Likewise.
+	(Task_Stop): Likewise.
+	(taskCpuAffinitySet): Return IERR (int)
+	(taskMaskAffinitySet): Likewise.
+	* libgnarl/s-vxwext__kernel.ads
+	(STATUS): New subtype.
+	(OK): New STATUS constant.
+	(ERROR): Likewise.
+	(Interrupt_Connect): Return STATUS
+	(semDelete): Likewise.
+	(Task_Cont): Likewise.
+	(Task_Stop): Likewise.
+	(Set_Time_Slice): Likewise.
+	* libgnarl/s-vxwext__rtp-smp.adb
+	(IERR): Renamed from ERROR.
+	(Int_Lock): return IERR constant vice ERROR.
+	(Interrupt_Connect): Return STATUS.
+	(semDelete): Likewise.
+	(Set_Time_Slice): Likewise.
+	* libgnarl/s-vxwext__rtp.adb
+	(IERR): Renamed from ERROR.
+	(Int_Lock): return IERR constant vice ERROR.
+	(Int_Unlock): Return STATUS.
+	(semDelete): Likewise.
+	(Set_Time_Slice): Likewise.
+	(taskCpuAffinitySet): Return IERR (int)
+	(taskMaskAffinitySet): Likewise.
+	* libgnarl/s-vxwext__rtp.ads
+	(STATUS): New subtype.
+	(OK): New STATUS constant.
+	(ERROR): Likewise.
+	(Interrupt_Connect): Return STATUS
+	(semDelete): Likewise.
+	(Task_Cont): Likewise.
+	(Task_Stop): Likewise.
+	(Set_Time_Slice): Likewise.
+
+2021-09-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* prep.adb (Preprocess): Allow for more flexibility when
+	Relaxed_RM_Semantics is set.
+
+2021-09-22  Pierre-Alexandre Bazin  <bazin@adacore.com>
+
+	* libgnat/a-strbou.adb: Turn SPARK_Mode on.
+	* libgnat/a-strbou.ads: Write contracts.
+	* libgnat/a-strfix.ads (Index): Fix grammar error in a comment.
+	* libgnat/a-strsea.ads (Index): Likewise.
+	* libgnat/a-strsup.adb: Rewrite the body to take into account
+	the new definition of Super_String using Relaxed_Initialization
+	and a predicate.
+	(Super_Replicate, Super_Translate, Times): Added loop
+	invariants, and ghost lemmas for Super_Replicate and Times.
+	(Super_Trim): Rewrite the body using search functions to
+	determine the cutting points.
+	(Super_Element, Super_Length, Super_Slice, Super_To_String):
+	Remove (now written as expression functions in a-strsup.ads).
+	* libgnat/a-strsup.ads: Added contracts.
+	(Super_Element, Super_Length, Super_Slice, Super_To_String):
+	Rewrite as expression functions.
+
+2021-09-22  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): Add guard.
+
+2021-09-22  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-vxwext.ads (BOOL): New int type.
+	(Interrupt_Context): Change return type to BOOL.
+	* libgnarl/s-vxwext__kernel.ads: Likewise.
+	* libgnarl/s-vxwext__rtp-smp.adb: Likewise.
+	* libgnarl/s-vxwext__rtp.adb: Likewise.
+	* libgnarl/s-vxwext__rtp.ads: Likewise.
+	* libgnarl/s-osinte__vxworks.adb (Interrupt_Context): Change
+	return type to BOOL.
+	* libgnarl/s-osinte__vxworks.ads (BOOL) New subtype.
+	(taskIsSuspended): Change return type to BOOL.
+	(Interrupt_Context): Change return type to BOOL. Adjust comments
+	accordingly.
+	* libgnarl/s-taprop__vxworks.adb (System.VxWorks.Ext.BOOL):
+	use type.
+	(Is_Task_Context): Test Interrupt_Context against 0.
+	* libgnat/i-vxwork.ads (BOOL): New int.
+	(intContext): Change return type to BOOL. Adjust comments.
+	* libgnat/i-vxwork__x86.ads: Likewise.
+
+2021-09-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aux.adb, sem_aux.ads (Package_Body): Moved from GNATprove.
+	* sem_elab.adb (Spec_And_Body_From_Entity): Refine type of parameter.
+
+2021-09-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/platform_specific_information.rst: Improve doc
+	on permission and containers.
+	* gnat_ugn.texi: Regenerate.
+
+2021-09-22  Yannick Moy  <moy@adacore.com>
+
+	* atree.adb (Rewrite): Fix parent node of shared aspects.
+	* atree.ads (Rewrite): Add ??? comment on incorrect
+	documentation.
+	* einfo-utils.adb (Known_Esize): Fix logic.
+	* sem_ch13.adb (Alignment_Check_For_Size_Change,
+	Analyze_Attribute_Definition_Clause): Protect against unset
+	Size.
+
+2021-09-22  Yannick Moy  <moy@adacore.com>
+
+	* freeze.adb (Build_Renamed_Body): Special case for GNATprove.
+	* sem_ch6.adb (Analyze_Expression_Function): Remove useless test
+	for a node to come from source, which becomes harmful otherwise.
+
+2021-09-22  Justin Squirek  <squirek@adacore.com>
+
+	* ali.adb, ali.ads (Scan_ALI): Remove use of deprecated
+	parameter Ignore_ED, and all specification for Lower in call to
+	Get_File_Name.
+	* ali-util.adb (Read_Withed_ALIs): Modify call to Scan_ALI.
+	* clean.adb (Clean_Executables): Likewise.
+	* gnatbind.adb (Add_Artificial_ALI_File, Executable section):
+	Likewise.
+	* gnatlink.adb (Executable section): Likewise.
+	* gnatls.adb (Executable section): Likewise.
+	* make.adb (Check, Wait_For_Available_Slot): Likewise.
+	* aspects.ads: Add Aspect_No_Controlled_Parts to
+	Nonoverridable_Aspect_Id
+	* opt.ads: Remove function pointers used as a workaround for
+	ASIS.
+	* osint-c.adb (Executable section): Remove setting of function
+	pointer workarounds needed for ASIS.
+	* osint.adb (Read_Default_Search_Dirs): Correct behavior to
+	detect EOL characters.
+	* par_sco.adb (Output_Header): Remove comment regarding use of
+	First_Sloc.
+	(Traverse_Sync_Definition): Renamed to
+	Traverse_Protected_Or_Task_Definition.
+	* pprint.adb (Interal_List_Name): Add description about purpose,
+	and refactor conditional statement.
+	(Prepend): Removed.
+	* repinfo.adb (List_Rep_Info, Write_Info_Line): Remove use of
+	subprogram pointer.
+	* scng.adb (Scan): Remove CODEFIX question, and minor comment
+	change.
+	* sem_attr.adb (Analyze_Image_Attribute): Remove special
+	processing for 'Img.
+	* sem_ch6.adb (Check_Untagged_Equality): Add RM reference.
+	(FCE): Add comment describing behavior.
+	(Is_Non_Overriding_Operation): Minor comment formatting change.
+	* sem_type.adb (Is_Actual_Subprogram): Add comment about
+	Comes_From_Source test.
+	(Matching_Types): Describe non-matching cases.
+	* sem_util.adb (Is_Confirming): Add stub case for
+	No_Controlled_Parts.
+
+2021-09-22  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): Access
+	Predicated_Parent only on subtypes.
+
+2021-09-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): Relax error when
+	Relaxed_RM_Semantics.
+
+2021-09-22  Steve Baird  <baird@adacore.com>
+
+	* libgnat/s-regpat.adb (Match): Handle the case where Self.First
+	is not NUL (so we know the first character we are looking for),
+	but case-insensitive matching has
+	been specified.
+	(Optimize): In the case of an EXACTF Op, set Self.First as is
+	done in the EXACT case, except with the addition of a call to
+	Lower_Case.
+
+2021-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-imenne.ads, libgnat/s-imenne.adb: Delete.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS): Remove s-imenne.o.
+	(GNATBIND_OBJS): Likewise.
+
+2021-09-22  Yannick Moy  <moy@adacore.com>
+
+	* einfo.ads: Fix comments.
+	* exp_aggr.adb: Fix variable name.
+	* exp_util.adb: Fix comments.
+	* sem_ch13.adb: Fix comments.
+	* sem_ch3.adb: Fix comments and variable name.
+
+2021-09-22  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-osinte__vxworks.ads: Make procedure vice function.
+	* libgnarl/s-vxwext.ads: Likewise.
+	* libgnarl/s-vxwext__kernel-smp.adb: Likewise.
+	* libgnarl/s-vxwext__kernel.adb: Likewise.
+	* libgnarl/s-vxwext__kernel.ads: Likewise.
+	* libgnarl/s-vxwext__rtp-smp.adb: Likewise.
+	* libgnarl/s-vxwext__rtp.adb: Likewise.
+	* libgnarl/s-vxwext__rtp.ads: Likewise.
+	* libgnarl/s-taprop__vxworks.adb (Stop_All_Tasks): Call
+	Int_Unlock as a procedure.
+
+2021-09-22  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-osinte__vxworks.ads (SVE): New package renaming
+	(vx_freq_t): New subtype.
+	(sysClkRateGet): Return vx_freq_t.
+	* libgnarl/s-vxwext.ads (vx_freq_t): New type.
+	* libgnarl/s-vxwext__kernel.ads: Likewise.
+	* libgnarl/s-vxwext__rtp.ads: Likewise.
+
+2021-09-22  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_case.adb (Composite_Case_Ops): Replace 'Image with
+	Error_Msg_Uint.
+
+2021-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_If_Expression): Generate an intermediate
+	temporary when the expression is a condition in an outer decision
+	and control-flow optimizations are suppressed.
+
+2021-09-22  Steve Baird  <baird@adacore.com>
+
+	* exp_ch5.adb (Expand_General_Case_Statement.Pattern_Match): Add
+	new function Indexed_Element to handle array element
+	comparisons. Handle case choices that are array aggregates,
+	string literals, or names denoting constants.
+	* sem_case.adb (Composite_Case_Ops.Array_Case_Ops): New package
+	providing utilities needed for casing on arrays.
+	(Composite_Case_Ops.Choice_Analysis): If necessary, include
+	array length as a "component" (like a discriminant) when
+	traversing components. We do not (yet) partition choice analysis
+	to deal with unequal length choices separately. Instead, we
+	embed everything in the minimum-dimensionality Cartesian product
+	space needed to handle all choices properly; this is determined
+	by the length of the longest choice pattern.
+	(Composite_Case_Ops.Choice_Analysis.Traverse_Discrete_Parts):
+	Include length as a "component" in the traversal if necessary.
+	(Composite_Case_Ops.Choice_Analysis.Parse_Choice.Traverse_Choice):
+	Add support for case choices that are string literals or names
+	denoting constants.
+	(Composite_Case_Ops.Choice_Analysis): Include length as a
+	"component" in the analysis if necessary.
+	(Check_Choices.Check_Case_Pattern_Choices.Ops.Value_Sets.Value_Index_Count):
+	Improve error message when capacity exceeded.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Update
+	documentation to reflect current implementation status.
+	* gnat_rm.texi: Regenerate.
+
+2021-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Give a specific error
+	message for non-byte-aligned component in the packed case.  Replace
+	"composite" with "record" in both cases.
+
+2021-09-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/a-tasini.ads, libgnarl/a-tasini.adb: Make compatible
+	with No_Elaboration_Code_All.
+	* libgnarl/s-taskin.ads, libgnarl/s-tassta.adb: Adjust
+	accordingly.
+
+2021-09-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Check_Returns): Change message on missing return.
+
+2021-09-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatfind.adb, gnatxref.adb: Mark these tools as obsolete
+	before removing them completely.
+
+2021-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (range_cannot_be_superflat): Tweak comments.
+
 2021-09-21  Doug Rupp  <rupp@adacore.com>
 
 	* init.c (__gnat_error_handler) [LynxOS]: Add a comment about

@@ -1,3 +1,15 @@
+2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* testsuite/libgomp.fortran/fortran.exp (ALWAYS_CFLAGS): Revert
+	r12-3722 by removing -Wno-missing-include-dirs.
+	* testsuite/libgomp.oacc-fortran/fortran.exp (ALWAYS_CFLAGS): Likewise.
+
+2021-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/allocate-2.c: New test.
+	* testsuite/libgomp.c-c++-common/allocate-3.c: New test.
+
 2021-09-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/55534

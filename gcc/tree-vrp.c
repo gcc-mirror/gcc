@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "range-op.h"
 #include "value-range-equiv.h"
 #include "gimple-array-bounds.h"
+#include "tree-ssa-dom.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -4160,28 +4161,63 @@ vrp_folder::fold_stmt (gimple_stmt_iterator *si)
   return simplifier.simplify (si);
 }
 
-class vrp_jump_threader_simplifier : public jump_threader_simplifier
+class vrp_jt_state : public jt_state
 {
 public:
-  vrp_jump_threader_simplifier (vr_values *v, avail_exprs_stack *avails)
-    : jump_threader_simplifier (v), m_avail_exprs_stack (avails) { }
+  vrp_jt_state (const_and_copies *copies, avail_exprs_stack *avails)
+    : m_copies (copies), m_avails (avails)
+  {
+  }
+  void push (edge e) override
+  {
+    m_copies->push_marker ();
+    m_avails->push_marker ();
+    jt_state::push (e);
+  }
+  void pop () override
+  {
+    m_copies->pop_to_marker ();
+    m_avails->pop_to_marker ();
+    jt_state::pop ();
+  }
+  void register_equiv (tree dest, tree src, bool) override
+  {
+    m_copies->record_const_or_copy (dest, src);
+  }
+  void register_equivs_edge (edge e) override
+  {
+    record_temporary_equivalences (e, m_copies, m_avails);
+  }
+  void record_ranges_from_stmt (gimple *, bool) override
+  {
+  }
+private:
+  const_and_copies *m_copies;
+  avail_exprs_stack *m_avails;
+};
+
+class vrp_jt_simplifier : public jt_simplifier
+{
+public:
+  vrp_jt_simplifier (vr_values *v, avail_exprs_stack *avails)
+    : m_vr_values (v), m_avail_exprs_stack (avails) { }
 
 private:
-  tree simplify (gimple *, gimple *, basic_block, jt_state *) OVERRIDE;
+  tree simplify (gimple *, gimple *, basic_block, jt_state *) override;
+  vr_values *m_vr_values;
   avail_exprs_stack *m_avail_exprs_stack;
 };
 
 tree
-vrp_jump_threader_simplifier::simplify (gimple *stmt,
-					gimple *within_stmt,
-					basic_block bb,
-					jt_state *state)
+vrp_jt_simplifier::simplify (gimple *stmt, gimple *within_stmt,
+			     basic_block bb, jt_state *)
 {
   /* First see if the conditional is in the hash table.  */
   tree cached_lhs = m_avail_exprs_stack->lookup_avail_expr (stmt, false, true);
   if (cached_lhs && is_gimple_min_invariant (cached_lhs))
     return cached_lhs;
 
+  /* Next see if we can solve it with VRP's internal structures.  */
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     {
       tree op0 = gimple_cond_lhs (cond_stmt);
@@ -4194,7 +4230,6 @@ vrp_jump_threader_simplifier::simplify (gimple *stmt,
       return simplifier.vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
 						  op0, op1, within_stmt);
     }
-
   if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
     {
       tree op = gimple_switch_index (switch_stmt);
@@ -4207,7 +4242,26 @@ vrp_jump_threader_simplifier::simplify (gimple *stmt,
       return find_case_label_range (switch_stmt, vr);
     }
 
-  return jump_threader_simplifier::simplify (stmt, within_stmt, bb, state);
+  /* Finally, try vr_values.  */
+  if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
+    {
+      tree lhs = gimple_assign_lhs (assign_stmt);
+      if (TREE_CODE (lhs) == SSA_NAME
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	  && stmt_interesting_for_vrp (stmt))
+	{
+	  edge dummy_e;
+	  tree dummy_tree;
+	  value_range_equiv new_vr;
+	  m_vr_values->extract_range_from_stmt (stmt, &dummy_e, &dummy_tree,
+						&new_vr);
+	  tree singleton;
+	  if (new_vr.singleton_p (&singleton))
+	    return singleton;
+	}
+    }
+  return NULL;
 }
 
 /* Blocks which have more than one predecessor and more than
@@ -4256,7 +4310,7 @@ private:
   const_and_copies *m_const_and_copies;
   avail_exprs_stack *m_avail_exprs_stack;
   hash_table<expr_elt_hasher> *m_avail_exprs;
-  vrp_jump_threader_simplifier *m_simplifier;
+  vrp_jt_simplifier *m_simplifier;
   jump_threader *m_threader;
   jt_state *m_state;
 };
@@ -4284,10 +4338,9 @@ vrp_jump_threader::vrp_jump_threader (struct function *fun, vr_values *v)
   m_vr_values = v;
   m_avail_exprs = new hash_table<expr_elt_hasher> (1024);
   m_avail_exprs_stack = new avail_exprs_stack (m_avail_exprs);
-  m_state = new jt_state (m_const_and_copies, m_avail_exprs_stack, NULL);
+  m_state = new vrp_jt_state (m_const_and_copies, m_avail_exprs_stack);
 
-  m_simplifier = new vrp_jump_threader_simplifier (m_vr_values,
-						   m_avail_exprs_stack);
+  m_simplifier = new vrp_jt_simplifier (m_vr_values, m_avail_exprs_stack);
   m_threader = new jump_threader (m_simplifier, m_state);
 }
 

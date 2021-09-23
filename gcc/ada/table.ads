@@ -102,7 +102,7 @@ package Table is
       --  mode parameters with scalar values.
 
       type Table_Type is
-        array (Table_Index_Type range <>) of Table_Component_Type;
+        array (Table_Index_Type range <>) of aliased Table_Component_Type;
 
       subtype Big_Table_Type is
         Table_Type (Table_Low_Bound .. Table_Index_Type'Last);

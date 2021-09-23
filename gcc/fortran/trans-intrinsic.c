@@ -8887,50 +8887,63 @@ caf_this_image_ref (gfc_ref *ref)
 static void
 gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
 {
-  gfc_actual_arglist *arg1;
   gfc_se arg1se;
   tree tmp;
-  symbol_attribute caf_attr;
+  bool coindexed_caf_comp = false;
+  gfc_expr *e = expr->value.function.actual->expr;
 
   gfc_init_se (&arg1se, NULL);
-  arg1 = expr->value.function.actual;
-
-  if (arg1->expr->ts.type == BT_CLASS)
+  if (e->ts.type == BT_CLASS)
     {
       /* Make sure that class array expressions have both a _data
 	 component reference and an array reference....  */
-      if (CLASS_DATA (arg1->expr)->attr.dimension)
-	gfc_add_class_array_ref (arg1->expr);
+      if (CLASS_DATA (e)->attr.dimension)
+	gfc_add_class_array_ref (e);
       /* .... whilst scalars only need the _data component.  */
       else
-	gfc_add_data_component (arg1->expr);
+	gfc_add_data_component (e);
     }
 
-  /* When arg1 references an allocatable component in a coarray, then call
+  /* When 'e' references an allocatable component in a coarray, then call
      the caf-library function caf_is_present ().  */
-  if (flag_coarray == GFC_FCOARRAY_LIB && arg1->expr->expr_type == EXPR_FUNCTION
-      && arg1->expr->value.function.isym
-      && arg1->expr->value.function.isym->id == GFC_ISYM_CAF_GET)
-    caf_attr = gfc_caf_attr (arg1->expr->value.function.actual->expr);
-  else
-    gfc_clear_attr (&caf_attr);
-  if (flag_coarray == GFC_FCOARRAY_LIB && caf_attr.codimension
-      && !caf_this_image_ref (arg1->expr->value.function.actual->expr->ref))
-    tmp = trans_caf_is_present (se, arg1->expr->value.function.actual->expr);
+  if (flag_coarray == GFC_FCOARRAY_LIB && e->expr_type == EXPR_FUNCTION
+      && e->value.function.isym
+      && e->value.function.isym->id == GFC_ISYM_CAF_GET)
+    {
+      e = e->value.function.actual->expr;
+      if (gfc_expr_attr (e).codimension)
+	{
+	  /* Last partref is the coindexed coarray. As coarrays are collectively
+	     (de)allocated, the allocation status must be the same as the one of
+	     the local allocation.  Convert to local access. */
+	  for (gfc_ref *ref = e->ref; ref; ref = ref->next)
+	    if (ref->type == REF_ARRAY && ref->u.ar.codimen)
+	      {
+		for (int i = ref->u.ar.dimen;
+		     i < ref->u.ar.dimen + ref->u.ar.codimen; ++i)
+		ref->u.ar.dimen_type[i] = DIMEN_THIS_IMAGE;
+		break;
+	      }
+	}
+      else if (!caf_this_image_ref (e->ref))
+	coindexed_caf_comp = true;
+    }
+  if (coindexed_caf_comp)
+    tmp = trans_caf_is_present (se, e);
   else
     {
-      if (arg1->expr->rank == 0)
+      if (e->rank == 0)
 	{
 	  /* Allocatable scalar.  */
 	  arg1se.want_pointer = 1;
-	  gfc_conv_expr (&arg1se, arg1->expr);
+	  gfc_conv_expr (&arg1se, e);
 	  tmp = arg1se.expr;
 	}
       else
 	{
 	  /* Allocatable array.  */
 	  arg1se.descriptor_only = 1;
-	  gfc_conv_expr_descriptor (&arg1se, arg1->expr);
+	  gfc_conv_expr_descriptor (&arg1se, e);
 	  tmp = gfc_conv_descriptor_data_get (arg1se.expr);
 	}
 

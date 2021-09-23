@@ -1826,7 +1826,8 @@ Optional Packages:
                           Root for documentation URLs
   --with-changes-root-url=URL
                           Root for GCC changes URLs
-  --with-multilib-list    select multilibs (AArch64, SH and x86-64 only)
+  --with-multilib-list    select multilibs (AArch64, ARM, OR1K, RISC-V, SH and
+                          x86-64 only)
   --with-multilib-generator
                           Multi-libs configuration string (RISC-V only)
   --with-zstd=PATH        specify prefix directory for installed zstd library.
@@ -19456,7 +19457,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19457 "configure"
+#line 19458 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19562,7 +19563,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19563 "configure"
+#line 19564 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

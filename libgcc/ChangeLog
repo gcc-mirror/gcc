@@ -1,3 +1,8 @@
+2021-09-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/sfp-machine.h: Guard Mach-O-specific code
+	using __APPLE__.
+
 2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/t-slibgcc-darwin: Delete unused code.

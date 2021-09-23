@@ -6254,7 +6254,7 @@ package body Sem_Ch3 is
 
          --  Move to next index
 
-         Next_Index (Index);
+         Next (Index);
          Nb_Index := Nb_Index + 1;
       end loop;
 
@@ -6767,6 +6767,7 @@ package body Sem_Ch3 is
            Make_Procedure_Specification (Loc,
              Defining_Unit_Name       => Subp,
              Parameter_Specifications => Profile);
+         Mutate_Ekind (Subp, E_Procedure);
       else
          Spec :=
            Make_Function_Specification (Loc,
@@ -6775,13 +6776,32 @@ package body Sem_Ch3 is
              Result_Definition        =>
                New_Copy_Tree
                  (Result_Definition (Type_Definition (Decl))));
+         Mutate_Ekind (Subp, E_Function);
       end if;
 
       New_Decl :=
         Make_Subprogram_Declaration (Loc, Specification => Spec);
       Set_Aspect_Specifications (New_Decl, Contracts);
+      Set_Is_Wrapper (Subp);
 
-      Insert_After (Decl, New_Decl);
+      --  The wrapper is declared in the freezing actions to facilitate its
+      --  identification and thus avoid handling it as a primitive operation
+      --  of a tagged type (see Is_Access_To_Subprogram_Wrapper); otherwise it
+      --  may be handled as a dispatching operation and erroneously registered
+      --  in a dispatch table.
+
+      if not GNATprove_Mode then
+         Ensure_Freeze_Node (Id);
+         Append_Freeze_Actions (Id, New_List (New_Decl));
+
+      --  Under GNATprove mode there is no such problem but we do not declare
+      --  it in the freezing actions since they are not analyzed under this
+      --  mode.
+
+      else
+         Insert_After (Decl, New_Decl);
+      end if;
+
       Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
       Build_Access_Subprogram_Wrapper_Body (Decl, New_Decl);
    end Build_Access_Subprogram_Wrapper;
@@ -19794,6 +19814,8 @@ package body Sem_Ch3 is
                Set_Is_Non_Static_Subtype (Def_Id);
             end if;
          end if;
+
+         Set_Parent (Def_Id, N);
       end if;
 
       --  Final step is to label the index with this constructed type

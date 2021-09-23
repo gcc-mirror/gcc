@@ -307,9 +307,9 @@ gfc_do_check_include_dir (const char *path, bool warn)
       if (errno != ENOENT)
 	gfc_warning_now (0, "Include directory %qs: %s",
 			 path, xstrerror(errno));
-      else if (warn && !gfc_cpp_enabled ())
+      else if (warn)
 	  gfc_warning_now (OPT_Wmissing_include_dirs,
-			     "Nonexistent include directory %qs", path);
+			   "Nonexistent include directory %qs", path);
       return false;
     }
   else if (!S_ISDIR (st.st_mode))
@@ -323,7 +323,7 @@ gfc_do_check_include_dir (const char *path, bool warn)
 /* In order that -W(no-)missing-include-dirs works, the diagnostic can only be
    run after processing the commandline.  */
 static void
-gfc_do_check_include_dirs (gfc_directorylist **list)
+gfc_do_check_include_dirs (gfc_directorylist **list, bool do_warn)
 {
   gfc_directorylist *prev, *q, *n;
   prev = NULL;
@@ -331,7 +331,7 @@ gfc_do_check_include_dirs (gfc_directorylist **list)
   while (n)
     {
       q = n; n = n->next;
-      if (gfc_do_check_include_dir (q->path, q->warn))
+      if (gfc_do_check_include_dir (q->path, q->warn && do_warn))
 	{
 	  prev = q;
 	  continue;
@@ -346,10 +346,16 @@ gfc_do_check_include_dirs (gfc_directorylist **list)
 }
 
 void
-gfc_check_include_dirs ()
+gfc_check_include_dirs (bool verbose_missing_dir_warn)
 {
-  gfc_do_check_include_dirs (&include_dirs);
-  gfc_do_check_include_dirs (&intrinsic_modules_dirs);
+  /* This is a bit convoluted: If gfc_cpp_enabled () and
+     verbose_missing_dir_warn, the warning is shown by libcpp. Otherwise,
+     it is shown here, still conditional on OPT_Wmissing_include_dirs.  */
+  bool warn = !gfc_cpp_enabled () || !verbose_missing_dir_warn;
+  gfc_do_check_include_dirs (&include_dirs, warn);
+  gfc_do_check_include_dirs (&intrinsic_modules_dirs, verbose_missing_dir_warn);
+  if (gfc_option.module_dir && gfc_cpp_enabled ())
+    gfc_do_check_include_dirs (&include_dirs, true);
 }
 
 /* Adds path to the list pointed to by list.  */
@@ -2771,7 +2777,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
    it tries to determine the source form from the filename, defaulting
    to free form.  */
 
-bool
+void
 gfc_new_file (void)
 {
   bool result;
@@ -2789,6 +2795,9 @@ gfc_new_file (void)
   else
     result = load_file (gfc_source_file, NULL, true);
 
+  if (!result)
+    exit (FATAL_EXIT_CODE);
+
   gfc_current_locus.lb = line_head;
   gfc_current_locus.nextc = (line_head == NULL) ? NULL : line_head->line;
 
@@ -2799,8 +2808,6 @@ gfc_new_file (void)
 
   exit (SUCCESS_EXIT_CODE);
 #endif
-
-  return result;
 }
 
 static char *

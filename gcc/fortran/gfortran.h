@@ -3032,7 +3032,7 @@ void gfc_scanner_init_1 (void);
 void gfc_add_include_path (const char *, bool, bool, bool, bool);
 void gfc_add_intrinsic_modules_path (const char *);
 void gfc_release_include_path (void);
-void gfc_check_include_dirs (void);
+void gfc_check_include_dirs (bool);
 FILE *gfc_open_included_file (const char *, bool, bool);
 
 int gfc_at_end (void);
@@ -3064,7 +3064,7 @@ gfc_char_t gfc_peek_char (void);
 char gfc_peek_ascii_char (void);
 void gfc_error_recovery (void);
 void gfc_gobble_whitespace (void);
-bool gfc_new_file (void);
+void gfc_new_file (void);
 const char * gfc_read_orig_filename (const char *, const char **);
 
 extern gfc_source_form gfc_current_form;

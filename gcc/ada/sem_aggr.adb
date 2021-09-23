@@ -545,6 +545,14 @@ package body Sem_Aggr is
       --  Make sure that the list of index constraints is properly attached to
       --  the tree, and then collect the aggregate bounds.
 
+      --  If no aggregaate bounds have been set, this is an aggregate with
+      --  iterator specifications and a dynamic size to be determined by
+      --  first pass of expanded code.
+
+      if No (Aggregate_Bounds (N)) then
+         return Typ;
+      end if;
+
       Set_Parent (Index_Constraints, N);
       Collect_Aggr_Bounds (N, 1);
 
@@ -1597,6 +1605,8 @@ package body Sem_Aggr is
          Loc : constant Source_Ptr := Sloc (N);
          Id  : constant Entity_Id  := Defining_Identifier (N);
 
+         Id_Typ : Entity_Id;
+
          -----------------------
          -- Remove_References --
          -----------------------
@@ -1630,42 +1640,63 @@ package body Sem_Aggr is
       --  Start of processing for Resolve_Iterated_Component_Association
 
       begin
-         --  An element iterator specification cannot appear in
-         --  an array aggregate because it does not provide index
-         --  values for the association. This must be a semantic
-         --  check because the parser cannot tell whether this is
-         --  an array aggregate or a container aggregate.
-
          if Present (Iterator_Specification (N)) then
-            Error_Msg_N ("container element Iterator cannot appear "
-              & "in an array aggregate", N);
-            return;
-         end if;
+            Analyze (Name (Iterator_Specification (N)));
 
-         Choice := First (Discrete_Choices (N));
+            --  We assume that the domain of iteration cannot be overloaded.
 
-         while Present (Choice) loop
-            if Nkind (Choice) = N_Others_Choice then
-               Others_Present := True;
-
-            else
-               Analyze (Choice);
-
-               --  Choice can be a subtype name, a range, or an expression
-
-               if Is_Entity_Name (Choice)
-                 and then Is_Type (Entity (Choice))
-                 and then Base_Type (Entity (Choice)) = Base_Type (Index_Typ)
-               then
-                  null;
+            declare
+               Domain : constant Node_Id := Name (Iterator_Specification (N));
+               D_Type : constant Entity_Id := Etype (Domain);
+               Elt    : Entity_Id;
+            begin
+               if Is_Array_Type (D_Type) then
+                  Id_Typ := Component_Type (D_Type);
 
                else
-                  Analyze_And_Resolve (Choice, Index_Typ);
+                  if Has_Aspect (D_Type, Aspect_Iterable) then
+                     Elt :=
+                       Get_Iterable_Type_Primitive (D_Type, Name_Element);
+                     if No (Elt) then
+                        Error_Msg_N
+                          ("missing Element primitive for iteration", Domain);
+                     else
+                        Id_Typ := Etype (Elt);
+                     end if;
+                  else
+                     Error_Msg_N ("cannot iterate over", Domain);
+                  end if;
                end if;
-            end if;
+            end;
 
-            Next (Choice);
-         end loop;
+         else
+            Id_Typ := Index_Typ;
+            Choice := First (Discrete_Choices (N));
+
+            while Present (Choice) loop
+               if Nkind (Choice) = N_Others_Choice then
+                  Others_Present := True;
+
+               else
+                  Analyze (Choice);
+
+                  --  Choice can be a subtype name, a range, or an expression
+
+                  if Is_Entity_Name (Choice)
+                    and then Is_Type (Entity (Choice))
+                    and then
+                      Base_Type (Entity (Choice)) = Base_Type (Index_Typ)
+                  then
+                     null;
+
+                  else
+                     Analyze_And_Resolve (Choice, Index_Typ);
+                  end if;
+               end if;
+
+               Next (Choice);
+            end loop;
+         end if;
 
          --  Create a scope in which to introduce an index, which is usually
          --  visible in the expression for the component, and needed for its
@@ -1681,7 +1712,7 @@ package body Sem_Aggr is
          --  directly visible.
 
          Enter_Name (Id);
-         Set_Etype (Id, Index_Typ);
+         Set_Etype (Id, Id_Typ);
          Mutate_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
 
@@ -1735,6 +1766,12 @@ package body Sem_Aggr is
       Delete_Choice : Boolean;
       --  Used when replacing a subtype choice with predicate by a list
 
+      Has_Iterator_Specifications : Boolean := False;
+      --  Flag to indicate that all named associations are iterated component
+      --  associations with iterator specifications, in which case the
+      --  expansion will create two loops: one to evaluate the size and one
+      --  to generate the elements (4.3.3 (20.2/5)).
+
       Nb_Elements : Uint := Uint_0;
       --  The number of elements in a positional aggregate
 
@@ -1756,6 +1793,54 @@ package body Sem_Aggr is
       --  STEP 1: make sure the aggregate is correctly formatted
 
       if Present (Component_Associations (N)) then
+
+         --  Verify that all or none of the component associations
+         --  include an iterator specification.
+
+         Assoc := First (Component_Associations (N));
+         if Nkind (Assoc) = N_Iterated_Component_Association
+           and then Present (Iterator_Specification (Assoc))
+         then
+            --  All other component associations must have an iterator spec.
+
+            Next (Assoc);
+            while Present (Assoc) loop
+               if Nkind (Assoc) /= N_Iterated_Component_Association
+                 or else No (Iterator_Specification (Assoc))
+               then
+                  Error_Msg_N ("mixed iterated component association"
+                   & " (RM 4.4.3 (17.1/5))",
+                      Assoc);
+                  return False;
+               end if;
+
+               Next (Assoc);
+            end loop;
+
+            Has_Iterator_Specifications := True;
+
+         else
+            --  or none of them do.
+
+            Next (Assoc);
+            while Present (Assoc) loop
+               if Nkind (Assoc) = N_Iterated_Component_Association
+                 and then Present (Iterator_Specification (Assoc))
+               then
+                  Error_Msg_N ("mixed iterated component association"
+                    & " (RM 4.4.3 (17.1/5))",
+                      Assoc);
+                  return False;
+               end if;
+
+               Next (Assoc);
+            end loop;
+
+            while Present (Assoc) loop
+               Next (Assoc);
+            end loop;
+         end if;
+
          Assoc := First (Component_Associations (N));
          while Present (Assoc) loop
             if Nkind (Assoc) = N_Iterated_Component_Association then
@@ -1948,9 +2033,12 @@ package body Sem_Aggr is
 
          begin
             --  STEP 2 (A): Check discrete choices validity
+            --  No need if this is an element iteration.
 
             Assoc := First (Component_Associations (N));
-            while Present (Assoc) loop
+            while Present (Assoc)
+              and then Present (Choice_List (Assoc))
+            loop
                Prev_Nb_Discrete_Choices := Nb_Discrete_Choices;
                Choice := First (Choice_List (Assoc));
 
@@ -2391,6 +2479,12 @@ package body Sem_Aggr is
                end Check_Choices;
             end if;
 
+            if Has_Iterator_Specifications then
+               --  Bounds will be determined dynamically.
+
+               return Success;
+            end if;
+
             --  STEP 2 (B): Compute aggregate bounds and min/max choices values
 
             if Nb_Discrete_Choices > 0 then
@@ -2706,7 +2800,10 @@ package body Sem_Aggr is
       --  Exp_Aggr.Convert_To_Positional, so we don't want to change those
       --  bounds.
 
-      if Present (Aggregate_Bounds (N)) and then not Others_Allowed then
+      if Present (Aggregate_Bounds (N))
+        and then not Others_Allowed
+        and then not Comes_From_Source (N)
+      then
          Aggr_Low  := Low_Bound  (Aggregate_Bounds (N));
          Aggr_High := High_Bound (Aggregate_Bounds (N));
       end if;

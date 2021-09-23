@@ -40,6 +40,7 @@
 #include "types.h"
 #include "uintp.h"
 #include "ada-tree.h"
+#include "sinfo.h"
 #include "gigi.h"
 
 /* Universal integers are represented by the Uint type which is an index into

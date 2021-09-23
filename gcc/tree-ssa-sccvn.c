@@ -2321,11 +2321,13 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
 }
 
 /* Return a value-number for RCODE OPS... either by looking up an existing
-   value-number for the simplified result or by inserting the operation if
-   INSERT is true.  */
+   value-number for the possibly simplified result or by inserting the
+   operation if INSERT is true.  If SIMPLIFY is false, return a value
+   number for the unsimplified expression.  */
 
 static tree
-vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
+vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert,
+			   bool simplify)
 {
   tree result = NULL_TREE;
   /* We will be creating a value number for
@@ -2333,15 +2335,16 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
      So first simplify and lookup this expression to see if it
      is already available.  */
   /* For simplification valueize.  */
-  unsigned i;
-  for (i = 0; i < res_op->num_ops; ++i)
-    if (TREE_CODE (res_op->ops[i]) == SSA_NAME)
-      {
-	tree tem = vn_valueize (res_op->ops[i]);
-	if (!tem)
-	  break;
-	res_op->ops[i] = tem;
-      }
+  unsigned i = 0;
+  if (simplify)
+    for (i = 0; i < res_op->num_ops; ++i)
+      if (TREE_CODE (res_op->ops[i]) == SSA_NAME)
+	{
+	  tree tem = vn_valueize (res_op->ops[i]);
+	  if (!tem)
+	    break;
+	  res_op->ops[i] = tem;
+	}
   /* If valueization of an operand fails (it is not available), skip
      simplification.  */
   bool res = false;
@@ -2440,7 +2443,7 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
 static tree
 vn_nary_build_or_lookup (gimple_match_op *res_op)
 {
-  return vn_nary_build_or_lookup_1 (res_op, true);
+  return vn_nary_build_or_lookup_1 (res_op, true, true);
 }
 
 /* Try to simplify the expression RCODE OPS... of type TYPE and return
@@ -2454,7 +2457,7 @@ vn_nary_simplify (vn_nary_op_t nary)
   gimple_match_op op (gimple_match_cond::UNCOND, nary->opcode,
 		      nary->type, nary->length);
   memcpy (op.ops, nary->op, sizeof (tree) * nary->length);
-  return vn_nary_build_or_lookup_1 (&op, false);
+  return vn_nary_build_or_lookup_1 (&op, false, true);
 }
 
 /* Elimination engine.  */
@@ -5006,7 +5009,7 @@ visit_nary_op (tree lhs, gassign *stmt)
 	      tree ops[2];
 	      gimple_match_op match_op (gimple_match_cond::UNCOND,
 					NEGATE_EXPR, type, rhs[i]);
-	      ops[i] = vn_nary_build_or_lookup_1 (&match_op, false);
+	      ops[i] = vn_nary_build_or_lookup_1 (&match_op, false, true);
 	      ops[j] = rhs[j];
 	      if (ops[i]
 		  && (ops[0] = vn_nary_op_lookup_pieces (2, code,
@@ -5014,7 +5017,7 @@ visit_nary_op (tree lhs, gassign *stmt)
 		{
 		  gimple_match_op match_op (gimple_match_cond::UNCOND,
 					    NEGATE_EXPR, type, ops[0]);
-		  result = vn_nary_build_or_lookup (&match_op);
+		  result = vn_nary_build_or_lookup_1 (&match_op, true, false);
 		  if (result)
 		    {
 		      bool changed = set_ssa_val_to (lhs, result);

@@ -1408,4 +1408,10 @@ begin -- Gen_IL.Gen.Gen_Entities
              E_Record_Type_With_Private,
              E_Record_Subtype_With_Private));
 
+   Union (Subprogram_Type_Or_Kind,
+          Children =>
+            (Subprogram_Kind,
+             E_Subprogram_Body,
+             E_Subprogram_Type));
+
 end Gen_IL.Gen.Gen_Entities;

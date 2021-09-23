@@ -41,7 +41,7 @@ void gfc_cpp_init_options (unsigned int decoded_options_count,
 
 int gfc_cpp_handle_option(size_t scode, const char *arg, int value);
 
-void gfc_cpp_post_options (void);
+void gfc_cpp_post_options (bool);
 
 bool gfc_cpp_preprocess (const char *source_file);
 
