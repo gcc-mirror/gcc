@@ -807,6 +807,7 @@ package body Sem_Ch6 is
          Assoc_Expr    : Node_Id;
          Assoc_Present : Boolean := False;
 
+         Check_Cond        : Node_Id;
          Unseen_Disc_Count : Nat := 0;
          Seen_Discs        : Elist_Id;
          Disc              : Entity_Id;
@@ -1180,36 +1181,39 @@ package body Sem_Ch6 is
               and then Present (Disc)
               and then Ekind (Etype (Disc)) = E_Anonymous_Access_Type
             then
-               --  Perform a static check first, if possible
+               --  Generate a dynamic check based on the extra accessibility of
+               --  the result or the scope.
 
-               if Static_Accessibility_Level
-                    (Expr              => Assoc_Expr,
-                     Level             => Zero_On_Dynamic_Level,
-                     In_Return_Context => True)
-                      > Scope_Depth (Scope (Scope_Id))
+               Check_Cond :=
+                 Make_Op_Gt (Loc,
+                   Left_Opnd  => Accessibility_Level
+                                   (Expr              => Assoc_Expr,
+                                    Level             => Dynamic_Level,
+                                    In_Return_Context => True),
+                   Right_Opnd => (if Present
+                                       (Extra_Accessibility_Of_Result
+                                         (Scope_Id))
+                                  then
+                                     Extra_Accessibility_Of_Result (Scope_Id)
+                                  else
+                                     Make_Integer_Literal
+                                       (Loc, Scope_Depth (Scope (Scope_Id)))));
+
+               Insert_Before_And_Analyze (Return_Stmt,
+                 Make_Raise_Program_Error (Loc,
+                   Condition => Check_Cond,
+                   Reason    => PE_Accessibility_Check_Failed));
+
+               --  If constant folding has happened on the condition for the
+               --  generated error, then warn about it being unconditional when
+               --  we know an error will be raised.
+
+               if Nkind (Check_Cond) = N_Identifier
+                 and then Entity (Check_Cond) = Standard_True
                then
                   Error_Msg_N
                     ("access discriminant in return object would be a dangling"
                      & " reference", Return_Stmt);
-
-                  exit;
-               end if;
-
-               --  Otherwise, generate a dynamic check based on the extra
-               --  accessibility of the result.
-
-               if Present (Extra_Accessibility_Of_Result (Scope_Id)) then
-                  Insert_Before_And_Analyze (Return_Stmt,
-                    Make_Raise_Program_Error (Loc,
-                      Condition =>
-                        Make_Op_Gt (Loc,
-                          Left_Opnd  => Accessibility_Level
-                                          (Expr              => Assoc_Expr,
-                                           Level             => Dynamic_Level,
-                                           In_Return_Context => True),
-                          Right_Opnd => Extra_Accessibility_Of_Result
-                                          (Scope_Id)),
-                      Reason    => PE_Accessibility_Check_Failed));
                end if;
             end if;
 

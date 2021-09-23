@@ -628,9 +628,9 @@ package body Sem_Util is
             --  caller.
 
             if Is_Explicitly_Aliased (E)
-              and then Level /= Dynamic_Level
-              and then (In_Return_Value (Expr)
-                         or else In_Return_Context)
+              and then (In_Return_Context
+                         or else (Level /= Dynamic_Level
+                                   and then In_Return_Value (Expr)))
             then
                return Make_Level_Literal (Scope_Depth (Standard_Standard));
 
