@@ -2,4 +2,4 @@
 // { dg-do compile { target c++11 } }
 
 namespace N { int i; }
-using namespace N alignas(int); // { dg-warning "ignored" }
+alignas(int) using namespace N; // { dg-warning "ignored" }

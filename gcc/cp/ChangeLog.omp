@@ -1,3 +1,15 @@
+2021-09-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_block_declaration): Call
+	cp_parser_using_directive for C++11 attributes followed by
+	using namespace tokens.
+	(cp_parser_using_directive): Parse C++11 attributes at the start
+	of the directive rather than at the end, only parse GNU attributes
+	at the end.
+
 2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

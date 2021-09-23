@@ -1,3 +1,18 @@
+2021-09-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/lookup/strong-using.C: Add test using [[gnu::strong]]
+	as well.
+	* g++.dg/lookup/strong-using2.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-58.C: Move alignas(int) before
+	using namespace.
+	* g++.dg/cpp0x/gen-attrs-59.C: Move alignas(X) before
+	using namespace, add tests for alignas before semicolon.
+	* g++.dg/cpp0x/gen-attrs-76.C: Remove xfails.  Add test for
+	C++11 attributes on using directive before semicolon.
+
 2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
