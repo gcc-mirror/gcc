@@ -643,16 +643,16 @@ path_range_query::precompute_relations (const vec<basic_block> &path)
 	  basic_block next = path[i - 2];
 	  int_range<2> r;
 	  gcond *cond = as_a<gcond *> (stmt);
+	  edge e0 = EDGE_SUCC (bb, 0);
+	  edge e1 = EDGE_SUCC (bb, 1);
 
-	  if (EDGE_SUCC (bb, 0)->dest == next)
-	    gcond_edge_range (r, EDGE_SUCC (bb, 0));
-	  else if (EDGE_SUCC (bb, 1)->dest == next)
-	    gcond_edge_range (r, EDGE_SUCC (bb, 1));
+	  if (e0->dest == next)
+	    gcond_edge_range (r, e0);
+	  else if (e1->dest == next)
+	    gcond_edge_range (r, e1);
 	  else
 	    gcc_unreachable ();
 
-	  edge e0 = EDGE_SUCC (bb, 0);
-	  edge e1 = EDGE_SUCC (bb, 1);
 	  src.register_outgoing_edges (cond, r, e0, e1);
 	}
       prev = bb;
