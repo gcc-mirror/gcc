@@ -182,6 +182,10 @@ static enum aarch64_type_qualifiers
 aarch64_types_binopp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_poly, qualifier_poly, qualifier_poly };
 #define TYPES_BINOPP (aarch64_types_binopp_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_binop_ppu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_poly, qualifier_unsigned };
+#define TYPES_BINOP_PPU (aarch64_types_binop_ppu_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_ternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -207,6 +211,10 @@ aarch64_types_ternopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_unsigned, qualifier_immediate };
 #define TYPES_TERNOPUI (aarch64_types_ternopu_imm_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_ternop_sssu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_unsigned };
+#define TYPES_TERNOP_SSSU (aarch64_types_ternop_sssu_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_ternop_ssus_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_none };
 #define TYPES_TERNOP_SSUS (aarch64_types_ternop_ssus_qualifiers)
@@ -214,6 +222,10 @@ static enum aarch64_type_qualifiers
 aarch64_types_ternop_suss_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_unsigned, qualifier_none, qualifier_none };
 #define TYPES_TERNOP_SUSS (aarch64_types_ternop_suss_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_binop_pppu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_poly, qualifier_poly, qualifier_unsigned };
+#define TYPES_TERNOP_PPPU (aarch64_types_binop_pppu_qualifiers)
 
 
 static enum aarch64_type_qualifiers
