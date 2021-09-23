@@ -188,7 +188,7 @@ rust_inform (const Location location, const char *fmt, ...)
 
 // Rich Locations
 void
-rust_error_at (const RichLocation location, const char *fmt, ...)
+rust_error_at (const RichLocation &location, const char *fmt, ...)
 {
   va_list ap;
 

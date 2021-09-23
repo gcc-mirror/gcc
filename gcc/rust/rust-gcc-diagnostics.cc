@@ -53,9 +53,10 @@ rust_be_inform (const Location location, const std::string &infomsg)
 }
 
 void
-rust_be_error_at (const RichLocation location, const std::string &errmsg)
+rust_be_error_at (const RichLocation &location, const std::string &errmsg)
 {
-  rich_location gcc_loc = location.get ();
+  /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
+  rich_location &gcc_loc = const_cast<rich_location &> (location.get ());
   error_at (&gcc_loc, "%s", errmsg.c_str ());
 }
 
