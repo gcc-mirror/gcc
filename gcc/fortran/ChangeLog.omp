@@ -1,3 +1,11 @@
+2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2021-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* trans-stmt.c (trans_associate_var): Check that result of
+	GFC_DECL_SAVED_DESCRIPTOR is not null before using it.
+
 2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

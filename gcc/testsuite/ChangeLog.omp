@@ -1,3 +1,14 @@
+2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2021-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.dg/assumed_rank_18.f90 (g): Wrap call to h in
+	select rank.
+	* gfortran.dg/assumed_type_10.f90 (test_array): Likewise for
+	call to test_lib.
+	* gfortran.dg/assumed_type_11.f90 (test_array): Likewise.
+
 2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

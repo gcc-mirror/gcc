@@ -1788,9 +1788,10 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  /* Go straight to the class data.  */
 	  if (sym2->attr.dummy && !sym2->attr.optional)
 	    {
-	      class_decl = DECL_LANG_SPECIFIC (sym2->backend_decl) ?
-			   GFC_DECL_SAVED_DESCRIPTOR (sym2->backend_decl) :
-			   sym2->backend_decl;
+	      class_decl = sym2->backend_decl;
+	      if (DECL_LANG_SPECIFIC (class_decl)
+		  && GFC_DECL_SAVED_DESCRIPTOR (class_decl))
+		class_decl = GFC_DECL_SAVED_DESCRIPTOR (class_decl);
 	      if (POINTER_TYPE_P (TREE_TYPE (class_decl)))
 		class_decl = build_fold_indirect_ref_loc (input_location,
 							  class_decl);
