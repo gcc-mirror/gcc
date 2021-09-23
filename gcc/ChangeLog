@@ -1,3 +1,11 @@
+2021-09-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2021-09-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	* ipa-fnsummary.c (inline_read_section): Unpack a dummy bit
+	to keep consistent with the side of streaming out.
+
 2021-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backported from master:
