@@ -875,7 +875,7 @@ dlang_type (string *decl, const char *mangled, struct dlang_info *info)
       szmods = string_length (&mods);
 
       /* Back referenced function type.  */
-      if (*mangled == 'Q')
+      if (mangled && *mangled == 'Q')
 	mangled = dlang_type_backref (decl, mangled, info, 1);
       else
 	mangled = dlang_function_type (decl, mangled, info);
