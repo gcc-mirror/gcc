@@ -10887,7 +10887,27 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 
 	  /* If there is no rounding use normal version of the pattern.  */
 	  if (INTVAL (op) == NO_ROUND)
-	    redundant_embed_rnd = 1;
+	    {
+	      /* Skip erasing embedded rounding for below expanders who
+		 generates multiple insns.  In ix86_erase_embedded_rounding
+		 the pattern will be transformed to a single set, and emit_insn
+		 appends the set insead of insert it to chain.  So the insns
+		 emitted inside define_expander would be ignored.  */
+	      switch (icode)
+		{
+		case CODE_FOR_avx512bw_fmaddc_v32hf_mask1_round:
+		case CODE_FOR_avx512bw_fcmaddc_v32hf_mask1_round:
+		case CODE_FOR_avx512fp16_fmaddcsh_v8hf_mask1_round:
+		case CODE_FOR_avx512fp16_fcmaddcsh_v8hf_mask1_round:
+		case CODE_FOR_avx512fp16_fmaddcsh_v8hf_mask3_round:
+		case CODE_FOR_avx512fp16_fcmaddcsh_v8hf_mask3_round:
+		  redundant_embed_rnd = 0;
+		  break;
+		default:
+		  redundant_embed_rnd = 1;
+		  break;
+		}
+	    }
 	}
       else
 	{
