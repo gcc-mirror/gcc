@@ -2757,6 +2757,58 @@ fwd_jt_path_registry::update_cfg (bool may_peel_loop_headers)
   return retval;
 }
 
+bool
+jt_path_registry::cancel_invalid_paths (vec<jump_thread_edge *> &path)
+{
+  gcc_checking_assert (!path.is_empty ());
+  edge taken_edge = path[path.length () - 1]->e;
+  loop_p loop = taken_edge->src->loop_father;
+  bool seen_latch = false;
+  bool path_crosses_loops = false;
+
+  for (unsigned int i = 0; i < path.length (); i++)
+    {
+      edge e = path[i]->e;
+
+      if (e == NULL)
+	{
+	  // NULL outgoing edges on a path can happen for jumping to a
+	  // constant address.
+	  cancel_thread (&path, "Found NULL edge in jump threading path");
+	  return true;
+	}
+
+      if (loop->latch == e->src || loop->latch == e->dest)
+	seen_latch = true;
+
+      // The first entry represents the block with an outgoing edge
+      // that we will redirect to the jump threading path.  Thus we
+      // don't care about that block's loop father.
+      if ((i > 0 && e->src->loop_father != loop)
+	  || e->dest->loop_father != loop)
+	path_crosses_loops = true;
+
+      if (flag_checking && !m_backedge_threads)
+	gcc_assert ((path[i]->e->flags & EDGE_DFS_BACK) == 0);
+    }
+
+  if (cfun->curr_properties & PROP_loop_opts_done)
+    return false;
+
+  if (seen_latch && empty_block_p (loop->latch))
+    {
+      cancel_thread (&path, "Threading through latch before loop opts "
+		     "would create non-empty latch");
+      return true;
+    }
+  if (path_crosses_loops)
+    {
+      cancel_thread (&path, "Path crosses loops");
+      return true;
+    }
+  return false;
+}
+
 /* Register a jump threading opportunity.  We queue up all the jump
    threading opportunities discovered by a pass and update the CFG
    and SSA form all at once.
@@ -2776,19 +2828,8 @@ jt_path_registry::register_jump_thread (vec<jump_thread_edge *> *path)
       return false;
     }
 
-  /* First make sure there are no NULL outgoing edges on the jump threading
-     path.  That can happen for jumping to a constant address.  */
-  for (unsigned int i = 0; i < path->length (); i++)
-    {
-      if ((*path)[i]->e == NULL)
-	{
-	  cancel_thread (path, "Found NULL edge in jump threading path");
-	  return false;
-	}
-
-      if (flag_checking && !m_backedge_threads)
-	gcc_assert (((*path)[i]->e->flags & EDGE_DFS_BACK) == 0);
-    }
+  if (cancel_invalid_paths (*path))
+    return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_jump_thread_path (dump_file, *path, true);
