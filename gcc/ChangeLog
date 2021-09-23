@@ -1,3 +1,327 @@
+2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* doc/invoke.texi (-Wno-missing-include-dirs.): Document Fortran
+	behavior.
+
+2021-09-22  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* match.pd (negation simplifications): Implement some negation
+	folding transformations from fold-const.c's fold_negate_expr.
+	* tree-ssa-sccvn.c (vn_nary_build_or_lookup_1): Add a SIMPLIFY
+	argument, to control whether the op should be simplified prior
+	to looking up/assigning a value number.
+	(vn_nary_build_or_lookup): Update call to vn_nary_build_or_lookup_1.
+	(vn_nary_simplify): Likewise.
+	(visit_nary_op): Likewise, but when constructing a NEGATE_EXPR
+	now call vn_nary_build_or_lookup_1 disabling simplification.
+
+2021-09-22  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/102087
+	* tree-ssa-loop-niter.c (number_of_iterations_until_wrap):
+	Update bound/cmp/control for niter.
+
+2021-09-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op):
+	Move check for non-empty BB here.
+	(fur_source::register_outgoing_edges): ...from here.
+
+2021-09-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::internal_range_of_expr):
+	Remove call to improve_range_with_equivs.
+	(path_range_query::improve_range_with_equivs): Remove
+	* gimple-range-path.h: Remove improve_range_with_equivs.
+
+2021-09-22  dianhong xu  <dianhong.xu@intel.com>
+
+	* config/i386/avx512fp16intrin.h:
+	(_mm512_mask_blend_ph): New intrinsic.
+	(_mm512_permutex2var_ph): Ditto.
+	(_mm512_permutexvar_ph): Ditto.
+	* config/i386/avx512fp16vlintrin.h:
+	(_mm256_mask_blend_ph): New intrinsic.
+	(_mm256_permutex2var_ph): Ditto.
+	(_mm256_permutexvar_ph): Ditto.
+	(_mm_mask_blend_ph): Ditto.
+	(_mm_permutex2var_ph): Ditto.
+	(_mm_permutexvar_ph): Ditto.
+
+2021-09-22  dianhong xu  <dianhong.xu@intel.com>
+
+	* config/i386/avx512fp16intrin.h: Add new intrinsics.
+	(_mm512_conj_pch): New intrinsic.
+	(_mm512_mask_conj_pch): Ditto.
+	(_mm512_maskz_conj_pch): Ditto.
+	* config/i386/avx512fp16vlintrin.h: Add new intrinsics.
+	(_mm256_conj_pch): New intrinsic.
+	(_mm256_mask_conj_pch): Ditto.
+	(_mm256_maskz_conj_pch): Ditto.
+	(_mm_conj_pch): Ditto.
+	(_mm_mask_conj_pch): Ditto.
+	(_mm_maskz_conj_pch): Ditto.
+
+2021-09-22  dianhong xu  <dianhong.xu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_MM512_REDUCE_OP): New macro
+	(_mm512_reduce_add_ph): New intrinsic.
+	(_mm512_reduce_mul_ph): Ditto.
+	(_mm512_reduce_min_ph): Ditto.
+	(_mm512_reduce_max_ph): Ditto.
+	* config/i386/avx512fp16vlintrin.h
+	(_MM256_REDUCE_OP/_MM_REDUCE_OP): New macro.
+	(_mm256_reduce_add_ph): New intrinsic.
+	(_mm256_reduce_mul_ph): Ditto.
+	(_mm256_reduce_min_ph): Ditto.
+	(_mm256_reduce_max_ph): Ditto.
+	(_mm_reduce_add_ph): Ditto.
+	(_mm_reduce_mul_ph): Ditto.
+	(_mm_reduce_min_ph): Ditto.
+	(_mm_reduce_max_ph): Ditto.
+
+2021-09-22  dianhong xu  <dianhong.xu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (__m512h_u, __m256h_u,
+	__m128h_u): New typedef.
+	(_mm512_load_ph): New intrinsic.
+	(_mm256_load_ph): Ditto.
+	(_mm_load_ph): Ditto.
+	(_mm512_loadu_ph): Ditto.
+	(_mm256_loadu_ph): Ditto.
+	(_mm_loadu_ph): Ditto.
+	(_mm512_store_ph): Ditto.
+	(_mm256_store_ph): Ditto.
+	(_mm_store_ph): Ditto.
+	(_mm512_storeu_ph): Ditto.
+	(_mm256_storeu_ph): Ditto.
+	(_mm_storeu_ph): Ditto.
+	(_mm512_abs_ph): Ditto.
+	* config/i386/avx512fp16vlintrin.h
+	(_mm_abs_ph): Ditto.
+	(_mm256_abs_ph): Ditto.
+
+2021-09-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/tpf.md (prologue_tpf, epilogue_tpf): Add cc clobber.
+
+2021-09-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/102222
+	* config/s390/s390.c (s390_expand_insv): Emit a normal move if it
+	is actually a full copy of the source operand into the target.
+	Don't emit a strict low part move if source and target mode match.
+
+2021-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102415
+	* omp-expand.c (expand_omp_single): If region->exit is NULL,
+	assert region->entry is GIMPLE_OMP_SCOPE region and return.
+
+2021-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_ALLOCATE_ALIGN): Define.
+	* tree.c (omp_clause_num_ops): Change number of OMP_CLAUSE_ALLOCATE
+	arguments from 2 to 3.
+	* tree-pretty-print.c (dump_omp_clause): Print allocator() around
+	allocate clause allocator and print align if present.
+	* omp-low.c (scan_sharing_clauses): Force allocate_map entry even
+	for omp_default_mem_alloc if align modifier is present.  If align
+	modifier is present, use TREE_LIST to encode both allocator and
+	align.
+	(lower_private_allocate, lower_rec_input_clauses, create_task_copyfn):
+	Handle align modifier on allocator clause if present.
+
+2021-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md (define_attr "isa"): Add
+	fma_or_avx512vl.
+	(define_attr "enabled"): Correspond fma_or_avx512vl to
+	TARGET_FMA || TARGET_AVX512VL.
+	* config/i386/mmx.md (fmav2sf4): Extend to AVX512 fma.
+	(fmsv2sf4): Ditto.
+	(fnmav2sf4): Ditto.
+	(fnmsv2sf4): Ditto.
+
+2021-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md (cstorehf3): New define_expand.
+
+2021-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md (<rounding_insn>hf2): New expander.
+	(sse4_1_round<mode>2): Extend from MODEF to MODEFH.
+	* config/i386/sse.md (*sse4_1_round<ssescalarmodesuffix>):
+	Extend from VF_128 to VFH_128.
+
+2021-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-features.c (i386-features.c): Handle
+	E_HFmode.
+	* config/i386/i386.md (sqrthf2): New expander.
+	(*sqrthf2): New define_insn.
+	* config/i386/sse.md
+	(*<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>):
+	Extend to VFH_128.
+
+2021-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm_mask_fcmadd_sch):
+	New intrinsic.
+	(_mm_mask3_fcmadd_sch): Likewise.
+	(_mm_maskz_fcmadd_sch): Likewise.
+	(_mm_fcmadd_sch): Likewise.
+	(_mm_mask_fmadd_sch): Likewise.
+	(_mm_mask3_fmadd_sch): Likewise.
+	(_mm_maskz_fmadd_sch): Likewise.
+	(_mm_fmadd_sch): Likewise.
+	(_mm_mask_fcmadd_round_sch): Likewise.
+	(_mm_mask3_fcmadd_round_sch): Likewise.
+	(_mm_maskz_fcmadd_round_sch): Likewise.
+	(_mm_fcmadd_round_sch): Likewise.
+	(_mm_mask_fmadd_round_sch): Likewise.
+	(_mm_mask3_fmadd_round_sch): Likewise.
+	(_mm_maskz_fmadd_round_sch): Likewise.
+	(_mm_fmadd_round_sch): Likewise.
+	(_mm_fcmul_sch): Likewise.
+	(_mm_mask_fcmul_sch): Likewise.
+	(_mm_maskz_fcmul_sch): Likewise.
+	(_mm_fmul_sch): Likewise.
+	(_mm_mask_fmul_sch): Likewise.
+	(_mm_maskz_fmul_sch): Likewise.
+	(_mm_fcmul_round_sch): Likewise.
+	(_mm_mask_fcmul_round_sch): Likewise.
+	(_mm_maskz_fcmul_round_sch): Likewise.
+	(_mm_fmul_round_sch): Likewise.
+	(_mm_mask_fmul_round_sch): Likewise.
+	(_mm_maskz_fmul_round_sch): Likewise.
+	* config/i386/i386-builtin.def: Add corresponding new builtins.
+	* config/i386/sse.md
+	(avx512fp16_fmaddcsh_v8hf_maskz<round_expand_name>): New expander.
+	(avx512fp16_fcmaddcsh_v8hf_maskz<round_expand_name>): Ditto.
+	(avx512fp16_fma_<complexopname>sh_v8hf<mask_scalarcz_name><round_scalarcz_name>):
+	New define insn.
+	(avx512fp16_<complexopname>sh_v8hf_mask<round_name>): Ditto.
+	(avx512fp16_<complexopname>sh_v8hf<mask_scalarc_name><round_scalarcz_name>):
+	Ditto.
+	* config/i386/subst.md (mask_scalarcz_name): New.
+	(mask_scalarc_name): Ditto.
+	(mask_scalarc_operand3): Ditto.
+	(mask_scalarcz_operand4): Ditto.
+	(round_scalarcz_name): Ditto.
+	(round_scalarc_mask_operand3): Ditto.
+	(round_scalarcz_mask_operand4): Ditto.
+	(round_scalarc_mask_op3): Ditto.
+	(round_scalarcz_mask_op4): Ditto.
+	(round_scalarcz_constraint): Ditto.
+	(round_scalarcz_nimm_predicate): Ditto.
+	(mask_scalarcz): Ditto.
+	(mask_scalarc): Ditto.
+	(round_scalarcz): Ditto.
+
+2021-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_fcmadd_pch):
+	New intrinsic.
+	(_mm512_mask_fcmadd_pch): Likewise.
+	(_mm512_mask3_fcmadd_pch): Likewise.
+	(_mm512_maskz_fcmadd_pch): Likewise.
+	(_mm512_fmadd_pch): Likewise.
+	(_mm512_mask_fmadd_pch): Likewise.
+	(_mm512_mask3_fmadd_pch): Likewise.
+	(_mm512_maskz_fmadd_pch): Likewise.
+	(_mm512_fcmadd_round_pch): Likewise.
+	(_mm512_mask_fcmadd_round_pch): Likewise.
+	(_mm512_mask3_fcmadd_round_pch): Likewise.
+	(_mm512_maskz_fcmadd_round_pch): Likewise.
+	(_mm512_fmadd_round_pch): Likewise.
+	(_mm512_mask_fmadd_round_pch): Likewise.
+	(_mm512_mask3_fmadd_round_pch): Likewise.
+	(_mm512_maskz_fmadd_round_pch): Likewise.
+	(_mm512_fcmul_pch): Likewise.
+	(_mm512_mask_fcmul_pch): Likewise.
+	(_mm512_maskz_fcmul_pch): Likewise.
+	(_mm512_fmul_pch): Likewise.
+	(_mm512_mask_fmul_pch): Likewise.
+	(_mm512_maskz_fmul_pch): Likewise.
+	(_mm512_fcmul_round_pch): Likewise.
+	(_mm512_mask_fcmul_round_pch): Likewise.
+	(_mm512_maskz_fcmul_round_pch): Likewise.
+	(_mm512_fmul_round_pch): Likewise.
+	(_mm512_mask_fmul_round_pch): Likewise.
+	(_mm512_maskz_fmul_round_pch): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_fmadd_pch):
+	New intrinsic.
+	(_mm_mask_fmadd_pch): Likewise.
+	(_mm_mask3_fmadd_pch): Likewise.
+	(_mm_maskz_fmadd_pch): Likewise.
+	(_mm256_fmadd_pch): Likewise.
+	(_mm256_mask_fmadd_pch): Likewise.
+	(_mm256_mask3_fmadd_pch): Likewise.
+	(_mm256_maskz_fmadd_pch): Likewise.
+	(_mm_fcmadd_pch): Likewise.
+	(_mm_mask_fcmadd_pch): Likewise.
+	(_mm_mask3_fcmadd_pch): Likewise.
+	(_mm_maskz_fcmadd_pch): Likewise.
+	(_mm256_fcmadd_pch): Likewise.
+	(_mm256_mask_fcmadd_pch): Likewise.
+	(_mm256_mask3_fcmadd_pch): Likewise.
+	(_mm256_maskz_fcmadd_pch): Likewise.
+	(_mm_fmul_pch): Likewise.
+	(_mm_mask_fmul_pch): Likewise.
+	(_mm_maskz_fmul_pch): Likewise.
+	(_mm256_fmul_pch): Likewise.
+	(_mm256_mask_fmul_pch): Likewise.
+	(_mm256_maskz_fmul_pch): Likewise.
+	(_mm_fcmul_pch): Likewise.
+	(_mm_mask_fcmul_pch): Likewise.
+	(_mm_maskz_fcmul_pch): Likewise.
+	(_mm256_fcmul_pch): Likewise.
+	(_mm256_mask_fcmul_pch): Likewise.
+	(_mm256_maskz_fcmul_pch): Likewise.
+	* config/i386/i386-builtin-types.def (V8HF_FTYPE_V8HF_V8HF_V8HF,
+	V8HF_FTYPE_V16HF_V16HF_V16HF, V16HF_FTYPE_V16HF_V16HF_V16HF_UQI,
+	V32HF_FTYPE_V32HF_V32HF_V32HF_INT,
+	V32HF_FTYPE_V32HF_V32HF_V32HF_UHI_INT): Add new builtin types.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-expand.c: Handle new builtin types.
+	* config/i386/subst.md (SUBST_CV): New.
+	(maskc_name): Ditto.
+	(maskc_operand3): Ditto.
+	(maskc): Ditto.
+	(sdc_maskz_name): Ditto.
+	(sdc_mask_op4): Ditto.
+	(sdc_mask_op5): Ditto.
+	(sdc_mask_mode512bit_condition): Ditto.
+	(sdc): Ditto.
+	(round_maskc_operand3): Ditto.
+	(round_sdc_mask_operand4): Ditto.
+	(round_maskc_op3): Ditto.
+	(round_sdc_mask_op4): Ditto.
+	(round_saeonly_sdc_mask_operand5): Ditto.
+	* config/i386/sse.md (unspec): Add complex fma unspecs.
+	(avx512fmaskcmode): New.
+	(UNSPEC_COMPLEX_F_C_MA): Ditto.
+	(UNSPEC_COMPLEX_F_C_MUL): Ditto.
+	(complexopname): Ditto.
+	(<avx512>_fmaddc_<mode>_maskz<round_expand_name>): New expander.
+	(<avx512>_fcmaddc_<mode>_maskz<round_expand_name>): Ditto.
+	(fma_<complexopname>_<mode><sdc_maskz_name><round_name>): New
+	define insn.
+	(<avx512>_<complexopname>_<mode>_mask<round_name>): Ditto.
+	(<avx512>_<complexopname>_<mode><maskc_name><round_name>): Ditto.
+
+2021-09-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.opt (rs6000-density-pct-threshold,
+	rs6000-density-size-threshold, rs6000-density-penalty,
+	rs6000-density-load-pct-threshold,
+	rs6000-density-load-num-threshold): New parameter.
+	* config/rs6000/rs6000.c (rs6000_density_test): Adjust with
+	corresponding parameters.
+
 2021-09-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-range-path.cc (path_range_query::defined_outside_path):

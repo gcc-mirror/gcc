@@ -1,3 +1,7 @@
+2021-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses): Copy over OMP_CLAUSE_ALLOCATE_ALIGN.
+
 2021-09-20  Matthias Kretz  <m.kretz@gsi.de>
 
 	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Define or

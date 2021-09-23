@@ -1,3 +1,31 @@
+2021-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2446
+	PR c++/102412
+	* constexpr.c (cxx_eval_constant_expression)
+	<case TEMPLATE_ID_EXPR>: Check value_dependent_expression_p
+	instead of processing_template_decl.
+	* pt.c (value_dependent_expression_p) <case TEMPLATE_ID_EXPR>:
+	Return true only if any_dependent_template_arguments_p.
+	(instantiation_dependent_r) <case CALL_EXPR>: Remove this case.
+	<case TEMPLATE_ID_EXPR>: Likewise.
+
+2021-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_allocate): Parse allocate clause
+	modifiers.
+	* semantics.c (finish_omp_clauses) <OMP_CLAUSE_ALLOCATE>: Perform
+	semantic analysis of OMP_CLAUSE_ALLOCATE_ALIGN.
+	* pt.c (tsubst_omp_clauses) <case OMP_CLAUSE_ALLOCATE>: Handle
+	also OMP_CLAUSE_ALLOCATE_ALIGN.
+
+2021-09-22  Barrett Adair  <barrettellisadair@gmail.com>
+
+	* pt.c (find_parm_usage_r): New walk_tree callback to find func
+	parms.
+	(any_template_arguments_need_structural_equality_p): New special
+	case.
+
 2021-09-21  wangpc  <pc.wang@linux.alibaba.com>
 
 	* decl.c (start_decl_1): Move verify_type_context to ...
