@@ -51,6 +51,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
     }
   else if (TREE_CODE (node) == TEMPLATE_DECL)
     {
+      print_node (file, "result", DECL_TEMPLATE_RESULT (node), indent + 4);
       print_node (file, "parms", DECL_TEMPLATE_PARMS (node), indent + 4);
       indent_to (file, indent + 3);
       fprintf (file, " full-name \"%s\"",
@@ -115,13 +116,8 @@ cxx_print_decl (FILE *file, tree node, int indent)
   
   if (VAR_OR_FUNCTION_DECL_P (node)
       && DECL_TEMPLATE_INFO (node))
-    {
-      if (need_indent)
-	indent_to (file, indent + 3);
-      fprintf (file, " template-info %p",
-	       (void *) DECL_TEMPLATE_INFO (node));
-      need_indent = false;
-    }
+    print_node (file, "template-info", DECL_TEMPLATE_INFO (node),
+		indent + 4);
 }
 
 void
