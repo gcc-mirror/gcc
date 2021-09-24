@@ -1,6 +1,14 @@
 2021-09-24  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
+	2021-09-24  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/101333
+	* gfortran.dg/c-interop/c407c-1.f90: Remove xfails.
+
+2021-09-24  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
 	2021-09-23  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR fortran/101320
