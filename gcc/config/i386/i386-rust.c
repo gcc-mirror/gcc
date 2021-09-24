@@ -49,87 +49,87 @@ ix86_rust_target_cpu_info (void)
     }
 
   // features officially "stabilised" in rustc
-  if (TARGET_ISA_MMX)
+  if (TARGET_MMX)
     rust_add_target_info("target_feature", "mmx");
-  if (TARGET_ISA_SSE)
+  if (TARGET_SSE)
     rust_add_target_info("target_feature", "sse");
-  if (TARGET_ISA_SSE2)
+  if (TARGET_SSE2)
     rust_add_target_info("target_feature", "sse2");
-  if (TARGET_ISA_SSE3)
+  if (TARGET_SSE3)
     rust_add_target_info("target_feature", "sse3");
-  if (TARGET_ISA_SSSE3)
+  if (TARGET_SSSE3)
     rust_add_target_info("target_feature", "ssse3");
-  if (TARGET_ISA_SSE4_1)
+  if (TARGET_SSE4_1)
     rust_add_target_info("target_feature", "sse4.1");
-  if (TARGET_ISA_SSE4_2)
+  if (TARGET_SSE4_2)
     rust_add_target_info("target_feature", "sse4.2");
-  if (TARGET_ISA_AES)
+  if (TARGET_AES)
     rust_add_target_info("target_feature", "aes");
-  if (TARGET_ISA_SHA)
+  if (TARGET_SHA)
     rust_add_target_info("target_feature", "sha");
-  if (TARGET_ISA_AVX)
+  if (TARGET_AVX)
     rust_add_target_info("target_feature", "avx");
-  if (TARGET_ISA_AVX2)
+  if (TARGET_AVX2)
     rust_add_target_info("target_feature", "avx2");
-  if (TARGET_ISA_AVX512F)
+  if (TARGET_AVX512F)
     rust_add_target_info("target_feature", "avx512f");
-  if (TARGET_ISA_AVX512ER)
+  if (TARGET_AVX512ER)
     rust_add_target_info("target_feature", "avx512er");
-  if (TARGET_ISA_AVX512CD)
+  if (TARGET_AVX512CD)
     rust_add_target_info("target_feature", "avx512cd");
-  if (TARGET_ISA_AVX512PF)
+  if (TARGET_AVX512PF)
     rust_add_target_info("target_feature", "avx512pf");
-  if (TARGET_ISA_AVX512DQ)
+  if (TARGET_AVX512DQ)
     rust_add_target_info("target_feature", "avx512dq");
-  if (TARGET_ISA_AVX512BW)
+  if (TARGET_AVX512BW)
     rust_add_target_info("target_feature", "avx512bw");
-  if (TARGET_ISA_AVX512VL)
+  if (TARGET_AVX512VL)
     rust_add_target_info("target_feature", "avx512vl");
-  if (TARGET_ISA_AVX512VBMI)
+  if (TARGET_AVX512VBMI)
     rust_add_target_info("target_feature", "avx512vbmi");
-  if (TARGET_ISA_AVX512IFMA)
+  if (TARGET_AVX512IFMA)
     rust_add_target_info("target_feature", "avx512ifma");
-  if (TARGET_ISA_AVX512VPOPCNTDQ)
+  if (TARGET_AVX512VPOPCNTDQ)
     rust_add_target_info("target_feature", "avx512vpopcntdq");
-  if (TARGET_ISA_FMA)
+  if (TARGET_FMA)
     rust_add_target_info("target_feature", "fma");
-  if (TARGET_ISA_RTM)
+  if (TARGET_RTM)
     rust_add_target_info("target_feature", "rtm");
-  if (TARGET_ISA_SSE4A)
+  if (TARGET_SSE4A)
     rust_add_target_info("target_feature", "sse4a");
-  if (TARGET_ISA_BMI) {
+  if (TARGET_BMI) {
     rust_add_target_info("target_feature", "bmi1");
     rust_add_target_info("target_feature", "bmi");
   }
-  if (TARGET_ISA_BMI2)
+  if (TARGET_BMI2)
     rust_add_target_info("target_feature", "bmi2");
-  if (TARGET_ISA_LZCNT)
+  if (TARGET_LZCNT)
     rust_add_target_info("target_feature", "lzcnt");
-  if (TARGET_ISA_TBM)
+  if (TARGET_TBM)
     rust_add_target_info("target_feature", "tbm");
-  if (TARGET_ISA_POPCNT)
+  if (TARGET_POPCNT)
     rust_add_target_info("target_feature", "popcnt");
-  if (TARGET_ISA_RDRND) {
+  if (TARGET_RDRND) {
     rust_add_target_info("target_feature", "rdrand");
     rust_add_target_info("target_feature", "rdrnd");
   }
-  if (TARGET_ISA_F16C)
+  if (TARGET_F16C)
     rust_add_target_info("target_feature", "f16c");
-  if (TARGET_ISA_RDSEED)
+  if (TARGET_RDSEED)
     rust_add_target_info("target_feature", "rdseed");
-  if (TARGET_ISA_ADX)
+  if (TARGET_ADX)
     rust_add_target_info("target_feature", "adx");
-  if (TARGET_ISA_FXSR)
+  if (TARGET_FXSR)
     rust_add_target_info("target_feature", "fxsr");
-  if (TARGET_ISA_XSAVE)
+  if (TARGET_XSAVE)
     rust_add_target_info("target_feature", "xsave");
-  if (TARGET_ISA_XSAVEOPT)
+  if (TARGET_XSAVEOPT)
     rust_add_target_info("target_feature", "xsaveopt");
-  if (TARGET_ISA_XSAVEC)
+  if (TARGET_XSAVEC)
     rust_add_target_info("target_feature", "xsavec");
-  if (TARGET_ISA_XSAVES)
+  if (TARGET_XSAVES)
     rust_add_target_info("target_feature", "xsaves");
-  if (TARGET_ISA_VPCLMULQDQ) {
+  if (TARGET_VPCLMULQDQ) {
     rust_add_target_info("target_feature", "pclmulqdq");
     rust_add_target_info("target_feature", "vpclmulqdq");
   }
@@ -139,7 +139,7 @@ ix86_rust_target_cpu_info (void)
     rust_add_target_info("target_feature", "movbe");
 
   // features derived from llvm not yet in rustc:
-  if (TARGET_ISA_64BIT)
+  if (TARGET_64BIT)
     rust_add_target_info("target_feature", "64bit-mode");
   else if (TARGET_CODE16)
     rust_add_target_info("target_feature", "16bit-mode");
@@ -173,9 +173,9 @@ ix86_rust_target_cpu_info (void)
     rust_add_target_info("target_feature", "cmov");
   if (TARGET_CMPXCHG8B)
     rust_add_target_info("target_feature", "cx8");
-  if (TARGET_ISA_3DNOW)
+  if (TARGET_3DNOW)
     rust_add_target_info("target_feature", "3dnow");
-  if (TARGET_ISA_3DNOW_A)
+  if (TARGET_3DNOW_A)
     rust_add_target_info("target_feature", "3dnowa");
   if (TARGET_64BIT)
     rust_add_target_info("target_feature", "64bit");
@@ -203,51 +203,51 @@ ix86_rust_target_cpu_info (void)
     rust_add_target_info("target_feature", "slow-unaligned-mem-16");
   if (ix86_arch == PROCESSOR_SANDYBRIDGE)
     rust_add_target_info("target_feature", "slow-unaligned-mem-32");
-  if (TARGET_ISA_PREFETCHWT1)
+  if (TARGET_PREFETCHWT1)
     rust_add_target_info("target_feature", "prefetchwt1");
-  if (TARGET_ISA_AVX512VBMI2)
+  if (TARGET_AVX512VBMI2)
     rust_add_target_info("target_feature", "avx512vbmi2");
-  if (TARGET_ISA_PKU)
+  if (TARGET_PKU)
     rust_add_target_info("target_feature", "pku");
-  if (TARGET_ISA_AVX512VNNI)
+  if (TARGET_AVX512VNNI)
     rust_add_target_info("target_feature", "avx512vnni");
-  if (TARGET_ISA2_AVX512BF16)
+  if (TARGET_AVX512BF16)
     rust_add_target_info("target_feature", "avx512bf16");
-  if (TARGET_ISA_AVX512BITALG)
+  if (TARGET_AVX512BITALG)
     rust_add_target_info("target_feature", "avx512bitalg");
-  if (TARGET_ISA2_AVX512VP2INTERSECT)
+  if (TARGET_AVX512VP2INTERSECT)
     rust_add_target_info("target_feature", "avx512vp2intersect");
-  if (TARGET_ISA_PCLMUL)
+  if (TARGET_PCLMUL)
     rust_add_target_info("target_feature", "pclmul");
-  if (TARGET_ISA_GFNI)
+  if (TARGET_GFNI)
     rust_add_target_info("target_feature", "gfni");
-  if (TARGET_ISA_FMA4)
+  if (TARGET_FMA4)
     rust_add_target_info("target_feature", "fma4");
-  if (TARGET_ISA_XOP)
+  if (TARGET_XOP)
     rust_add_target_info("target_feature", "xop");
 
   // this is only enabled by choice in llvm, never by default - TODO determine if gcc enables it
   // rust_add_target_info("target_feature", "sse-unaligned-mem");
 
-  if (TARGET_ISA2_VAES)
+  if (TARGET_VAES)
     rust_add_target_info("target_feature", "vaes");
-  if (TARGET_ISA_LWP)
+  if (TARGET_LWP)
     rust_add_target_info("target_feature", "lwp");
-  if (TARGET_ISA_FSGSBASE)
+  if (TARGET_FSGSBASE)
     rust_add_target_info("target_feature", "fsgsbase");
-  if (TARGET_ISA_SHSTK)
+  if (TARGET_SHSTK)
     rust_add_target_info("target_feature", "shstk");
-  if (TARGET_ISA_PRFCHW)
+  if (TARGET_PRFCHW)
     rust_add_target_info("target_feature", "prfchw");
-  if (TARGET_ISA_SAHF) // would this be better as TARGET_USE_SAHF?
+  if (TARGET_SAHF) // would this be better as TARGET_USE_SAHF?
     rust_add_target_info("target_feature", "sahf");
-  if (TARGET_ISA2_MWAITX)
+  if (TARGET_MWAITX)
     rust_add_target_info("target_feature", "mwaitx");
-  if (TARGET_ISA2_CLZERO)
+  if (TARGET_CLZERO)
     rust_add_target_info("target_feature", "clzero");
-  if (TARGET_ISA2_CLDEMOTE)
+  if (TARGET_CLDEMOTE)
     rust_add_target_info("target_feature", "cldemote");
-  if (TARGET_ISA2_PTWRITE)
+  if (TARGET_PTWRITE)
     rust_add_target_info("target_feature", "ptwrite");
   // TODO: add amx-tile, amx-int8, amx-bf16 features when gcc supports them 
 
@@ -280,19 +280,19 @@ ix86_rust_target_cpu_info (void)
     || ix86_arch == PROCESSOR_COOPERLAKE; 
   if (hasINVPCID)
     rust_add_target_info("target_feature", "invpcid");
-  if (TARGET_ISA2_SGX)
+  if (TARGET_SGX)
     rust_add_target_info("target_feature", "sgx");
-  if (TARGET_ISA_CLFLUSHOPT)
+  if (TARGET_CLFLUSHOPT)
     rust_add_target_info("target_feature", "clflushopt");
-  if (TARGET_ISA_CLWB)
+  if (TARGET_CLWB)
     rust_add_target_info("target_feature", "clwb");
-  if (TARGET_ISA2_WBNOINVD)
+  if (TARGET_WBNOINVD)
     rust_add_target_info("target_feature", "wbnoinvd");
-  if (TARGET_ISA2_RDPID)
+  if (TARGET_RDPID)
     rust_add_target_info("target_feature", "rdpid");
-  if (TARGET_ISA2_WAITPKG)
+  if (TARGET_WAITPKG)
     rust_add_target_info("target_feature", "waitpkg");
-  if (TARGET_ISA2_ENQCMD)
+  if (TARGET_ENQCMD)
     rust_add_target_info("target_feature", "enqcmd");
 
   // these are only enabled by choice in llvm, never by default - TODO determine if gcc supports them
@@ -340,7 +340,7 @@ ix86_rust_target_cpu_info (void)
   if (ix86_arch == PROCESSOR_HASWELL)
     rust_add_target_info("target_feature", "false-deps-lzcnt-tzcnt");
 
-  if (TARGET_ISA2_PCONFIG)
+  if (TARGET_PCONFIG)
     rust_add_target_info("target_feature", "pconfig");
 
   // TODO: gcc seems to not record if variable-mask shuffles are fast, so basing it on llvm
@@ -451,9 +451,9 @@ ix86_rust_target_cpu_info (void)
    * lvi-cfi (LVI control flow integrity), seses (speculative execution side-effect suppression)
    * lvi-load-hardening if gcc gets support */
 
-  if (TARGET_ISA_MOVDIRI)
+  if (TARGET_MOVDIRI)
     rust_add_target_info("target_feature", "movdiri");
-  if (TARGET_ISA2_MOVDIR64B)
+  if (TARGET_MOVDIR64B)
     rust_add_target_info("target_feature", "movdir64b");
 
   bool hasFastBEXTR = ix86_arch == PROCESSOR_BTVER2 || ix86_arch == PROCESSOR_BDVER2 
@@ -484,15 +484,15 @@ ix86_rust_target_cpu_info (void)
   // TODO: determine if gcc supports alias analysis (in which case "use-aa" is defined)
 
   // features not supported by llvm but important enough for c frontend to define macros for
-  /*if (TARGET_ISA_AVX5124VNNIW)
+  /*if (TARGET_AVX5124VNNIW)
     rust_add_target_info("target_feature", "avx5124vnniw");
-  if (TARGET_ISA_AVX5124FMAPS)
+  if (TARGET_AVX5124FMAPS)
     rust_add_target_info("target_feature", "avx5124fmaps");
-  if (TARGET_ISA_ABM)
+  if (TARGET_ABM)
     rust_add_target_info("target_feature", "abm");
-  if ((ix86_fpmath & FPMATH_SSE) && TARGET_ISA_SSE)
+  if ((ix86_fpmath & FPMATH_SSE) && TARGET_SSE)
     ; //def_or_undef (parse_in, "__SSE_MATH__");
-  if ((ix86_fpmath & FPMATH_SSE) && TARGET_ISA_SSE2)
+  if ((ix86_fpmath & FPMATH_SSE) && TARGET_SSE2)
     ; //def_or_undef (parse_in, "__SSE2_MATH__");
   if (TARGET_MMX_WITH_SSE)
     ; //def_or_undef (parse_in, "__MMX_WITH_SSE__");

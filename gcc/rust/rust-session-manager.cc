@@ -156,117 +156,117 @@ Session::enable_features ()
 
   /*
   if (target == "x86" || target == "x86_64") {
-      if (TARGET_ISA_AES) {
+      if (TARGET_AES) {
 	  // enable aes, implicitly enable sse2
 	  implicitly_enable_feature("aes");
       }
 
-      if (TARGET_ISA_AVX) {
+      if (TARGET_AVX) {
 	  // enable avx, implicitly enable sse4.2
 	  implicitly_enable_feature("sse4.2");
       }
 
-      if (TARGET_ISA_AVX2) {
+      if (TARGET_AVX2) {
 	  // enable avx2, implicitly enable avx
 	  implicitly_enable_feature("avx");
       }
 
-      if (TARGET_ISA_BMI) {
+      if (TARGET_BMI) {
 	  // enable bmi1
 	  implicitly_enable_feature("bmi1");
       }
 
-      if (TARGET_ISA_BMI2) {
+      if (TARGET_BMI2) {
 	  // enable bmi2
 	  implicitly_enable_feature("bmi2");
       }
 
-      if (TARGET_ISA_FMA) {
+      if (TARGET_FMA) {
 	  // enable fma, implicitly enable avx
 	  implicitly_enable_feature("fma");
       }
 
-      if (TARGET_ISA_FXSR) {
+      if (TARGET_FXSR) {
 	  // enable fxsr
 	  implicitly_enable_feature("fxsr");
       }
 
-      if (TARGET_ISA_LZCNT) {
+      if (TARGET_LZCNT) {
 	  // enable lzcnt
 	  implicitly_enable_feature("lzcnt");
       }
 
-      if (TARGET_ISA_VPCLMULQDQ) {
+      if (TARGET_VPCLMULQDQ) {
 	  // enable pclmulqdq, implicitly enable sse2
 	  implicitly_enable_feature("pclmulqdq");
       }
 
-      if (TARGET_ISA_POPCNT) {
+      if (TARGET_POPCNT) {
 	  // enable popcnt
 	  implicitly_enable_feature("popcnt");
       }
 
-      if (TARGET_ISA_RDRND) {
+      if (TARGET_RDRND) {
 	  // enable rdrand
 	  implicitly_enable_feature("rdrand");
       }
 
-      if (TARGET_ISA_RDSEED) {
+      if (TARGET_RDSEED) {
 	  // enable rdseed
 	  implicitly_enable_feature("rdseed");
       }
 
-      if (TARGET_ISA_SHA) {
+      if (TARGET_SHA) {
 	  // enable sha, implicitly enable sse2
 	  implicitly_enable_feature("sha");
       }
 
-      if (TARGET_ISA_SSE) {
+      if (TARGET_SSE) {
 	  // enable sse
 	  implicitly_enable_feature("sse");
       }
 
-      if (TARGET_ISA_SSE2) {
+      if (TARGET_SSE2) {
 	  // enable sse2, implicitly enable sse
 	  implicitly_enable_feature("sse2");
       }
 
-      if (TARGET_ISA_SSE3) {
+      if (TARGET_SSE3) {
 	  // enable sse3, implicitly enable sse2
 	  implicitly_enable_feature("sse3");
       }
 
-      if (TARGET_ISA_SSE4_1) {
+      if (TARGET_SSE4_1) {
 	  // enable sse4.1, implicitly enable sse3
 	  implicitly_enable_feature("sse4.1");
       }
 
-      if (TARGET_ISA_SSE4_2) {
+      if (TARGET_SSE4_2) {
 	  // enable sse4.2, implicitly enable sse4.1
 	  implicitly_enable_feature("sse4.2");
       }
 
-      if (TARGET_ISA_SSSE3) {
+      if (TARGET_SSSE3) {
 	  // enable ssse3, implicitly enable sse3
 	  implicitly_enable_feature("ssse3");
       }
 
-      if (TARGET_ISA_XSAVE) {
+      if (TARGET_XSAVE) {
 	  // enable xsave
 	  implicitly_enable_feature("xsave");
       }
 
-      if (TARGET_ISA_XSAVEC) {
+      if (TARGET_XSAVEC) {
 	  // enable xsavec
 	  implicitly_enable_feature("xsavec");
       }
 
-      if (TARGET_ISA_XSAVEOPT) {
+      if (TARGET_XSAVEOPT) {
 	  // enable xsaveopt
 	  implicitly_enable_feature("xsaveopt");
       }
 
-      if (TARGET_ISA_XSAVES) {
+      if (TARGET_XSAVES) {
 	  // enable xsaves
 	  implicitly_enable_feature("xsaves");
       }
