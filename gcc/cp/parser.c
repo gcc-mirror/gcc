@@ -1051,8 +1051,17 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
     case RID_FLOAT:
     case RID_DOUBLE:
     case RID_VOID:
+      /* CV qualifiers.  */
+    case RID_CONST:
+    case RID_VOLATILE:
+      /* Function specifiers.  */
+    case RID_EXPLICIT:
+    case RID_VIRTUAL:
+      /* friend/typdef/inline specifiers.  */
+    case RID_FRIEND:
+    case RID_TYPEDEF:
+    case RID_INLINE:
       /* GNU extensions.  */
-    case RID_ATTRIBUTE:
     case RID_TYPEOF:
       /* C++11 extensions.  */
     case RID_DECLTYPE:
@@ -11456,8 +11465,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   /* In the decl-specifier-seq of the lambda-declarator, each
      decl-specifier shall either be mutable or constexpr.  */
   int declares_class_or_enum;
-  if (cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer)
-      && !cp_next_tokens_can_be_gnu_attribute_p (parser))
+  if (cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer))
     cp_parser_decl_specifier_seq (parser,
 				  CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR,
 				  &lambda_specs, &declares_class_or_enum);
@@ -30834,23 +30842,22 @@ cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
 	  /* A parameter declaration begins with a decl-specifier,
 	     which is either the "attribute" keyword, a storage class
 	     specifier, or (usually) a type-specifier.  */
-	  && (!cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer)
-	      /* GNU attributes can actually appear both at the start of
-		 a parameter and parenthesized declarator.
-		 S (__attribute__((unused)) int);
-		 is a constructor, but
-		 S (__attribute__((unused)) foo) (int);
-		 is a function declaration.  */
-	      || (cp_parser_allow_gnu_extensions_p (parser)
-		  && cp_next_tokens_can_be_gnu_attribute_p (parser)))
-	  /* A parameter declaration can also begin with [[attribute]].  */
+	  && !cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer)
+	  /* GNU attributes can actually appear both at the start of
+	     a parameter and parenthesized declarator.
+	     S (__attribute__((unused)) int);
+	     is a constructor, but
+	     S (__attribute__((unused)) foo) (int);
+	     is a function declaration. [[attribute]] can appear in the
+	     first form too, but not in the second form.  */
 	  && !cp_next_tokens_can_be_std_attribute_p (parser))
 	{
 	  tree type;
 	  tree pushed_scope = NULL_TREE;
 	  unsigned saved_num_template_parameter_lists;
 
-	  if (cp_next_tokens_can_be_gnu_attribute_p (parser))
+	  if (cp_parser_allow_gnu_extensions_p (parser)
+	      && cp_next_tokens_can_be_gnu_attribute_p (parser))
 	    {
 	      unsigned int n = cp_parser_skip_gnu_attributes_opt (parser, 1);
 	      while (--n)

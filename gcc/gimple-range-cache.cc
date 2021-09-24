@@ -750,7 +750,8 @@ temporal_cache::set_always_current (tree name)
 
 // --------------------------------------------------------------------------
 
-ranger_cache::ranger_cache ()
+ranger_cache::ranger_cache (int not_executable_flag)
+						: m_gori (not_executable_flag)
 {
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));

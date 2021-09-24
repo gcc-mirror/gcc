@@ -1,3 +1,143 @@
+2021-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Fix comment.
+
+2021-09-23  Richard Kenner  <kenner@adacore.com>
+
+	* gen_il-gen-gen_entities.adb (Subprogram_Body_Or_Type): Add.
+	* gen_il-types.ads (Subprogram_Body_Or_Type): Likewise.
+
+2021-09-23  Richard Kenner  <kenner@adacore.com>
+
+	* einfo-utils.adb (Next_Index): Verify input and output are
+	N_Is_Index.
+	* gen_il-gen-gen_nodes.adb (N_Has_Bounds, N_Is_Index): Add.
+	* gen_il-types.ads (N_Has_Bounds, N_Is_Index): Likewise.
+	* sem_ch3.adb (Array_Type_Declaration): Use Next, not
+	Next_Index.
+	* sem_ch12.adb (Formal_Dimensions): Likewise.
+	* sem_util.adb (Is_Valid_Renaming): Likewise.
+
+2021-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst (gnatsymbolize):
+	Document new --load option and -g1 as minimal compilation
+	requirement.
+
+2021-09-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Only keep the bounds
+	for internally generated attributes; otherwise, compute them
+		anew.
+
+2021-09-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Build_Access_Subprogram_Wrapper): Decorate the
+	wrapper with attribute Is_Wrapper, and move its declaration to
+	the freezing actions of its type declaration; done to facilitate
+	identifying it at later stages to avoid handling it as a
+	primitive operation of a tagged type; otherwise it may be
+	handled as a dispatching operation and erroneously registered in
+	a dispatch table.
+	(Make_Index): Add missing decoration of field Parent.
+	* sem_disp.adb (Check_Dispatching_Operation): Complete
+	decoration of late-overriding dispatching primitives.
+	(Is_Access_To_Subprogram_Wrapper): New subprogram.
+	(Inherited_Subprograms): Prevent cascaded errors; adding missing
+	support for private types.
+	* sem_type.adb (Add_One_Interp): Add missing support for the
+	first interpretation of a primitive of an inmediate ancestor
+	interface.
+	* sem_util.adb (Check_Result_And_Post_State_In_Pragma): Do not
+	report missing reference in postcondition placed in internally
+	built wrappers.
+	* exp_disp.adb (Expand_Dispatching_Call): Adding assertion.
+
+2021-09-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Check the validity of
+	an array aggregate all of whose components are iterated
+	component associations.
+	* exp_aggr.adb (Expand_Array_Aggregate,
+	Two_Pass_Aggregate_Expansion): implement two-pass algorithm and
+	replace original aggregate with resulting temporary, to ensure
+	that a proper length check is performed if context is
+	constrained. Use attributes Pos and Val to handle index types of
+	any discrete type.
+
+2021-09-23  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen.adb: Set the number of concrete nodes that have the
+	Homonym field to a higher number than any other field. This
+	isn't true, but it forces Homonym's offset to be chosen first,
+	so it will be at offset zero and hence slot zero.
+
+2021-09-23  Richard Kenner  <kenner@adacore.com>
+
+	* atree.adb (Relocate_Node): If relocating a subprgram call and
+	we're doing unnesting, make a new Parameter_Associations, if
+	any.
+
+2021-09-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-strbou.ads (Generic_Bounded_Length): Remove explicit
+	Initializes contract.
+
+2021-09-23  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen.adb: Generate getters and setters with much of the
+	code inlined. Generate code for storing a few fields in the node
+	header, to avoid the extra level of indirection for those
+	fields. We generate the header type, so we don't have to
+	duplicate hand-written Ada and C code to depend on the number of
+	header fields.  Declare constants for slot size. Use short names
+	because these are used all over.  Remove
+	Put_Low_Level_Accessor_Instantiations, Put_Low_Level_C_Getter,
+	which are no longer needed.  Rename
+	Put_High_Level_C_Getter-->Put_C_Getter.
+	* atree.ads, atree.adb: Take into account the header slots.
+	Take into account the single Node_Or_Entity_Field type.  Remove
+	"pragma Assertion_Policy (Ignore);", because the routines in
+	this package are no longer efficiency critical.
+	* atree.h: Remove low-level getters, which are no longer used by
+	sinfo.h and einfo.h.
+	* einfo-utils.adb: Avoid crash in Known_Alignment.
+	* live.adb, sem_eval.adb: Remove code that prevents Node_Id from
+	having a predicate.  We don't actually add a predicate to
+	Node_Id, but we want to be able to for temporary debugging.
+	* sinfo-utils.adb: Remove code that prevents Node_Id from having
+	a predicate.  Take into account the single Node_Or_Entity_Field
+	type.
+	* sinfo-utils.ads: Minor.
+	* table.ads (Table_Type): Make the components aliased, because
+	low-level setters in Atree need to take 'Access.
+	* treepr.adb: Take into account the single Node_Or_Entity_Field
+	type.  Make some code more robust, so we can print out
+	half-baked nodes.
+	* types.ads: Move types here for visibility purposes.
+	* gcc-interface/gigi.h, gcc-interface/trans.c: Take into account
+	the Node_Header change in the GNAT front end.
+	* gcc-interface/cuintp.c, gcc-interface/targtyps.c: Add because
+	gigi.h now refers to type Node_Header, which is in sinfo.h.
+
+2021-09-23  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strfix.adb (Delete, Insert, Overwrite,
+	Replace_Slice): Remove SPARK_Mode Off.
+	* libgnat/a-strfix.ads (Insert, Overwrite, Replace_Slice):
+	Strengthen precondition.
+
+2021-09-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-strbou.ads (Generic_Bounded_Length): Remove non-null
+	Global contracts.
+
+2021-09-23  Steve Baird  <baird@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_characteristics.rst: Update
+	this section to reflect the current version of Ada RM M.2.
+	* gnat_rm.texi: Regenerate.
+
 2021-09-22  Yannick Moy  <moy@adacore.com>
 
 	* libgnat/a-strfix.ads (Trim): Simplify contracts.

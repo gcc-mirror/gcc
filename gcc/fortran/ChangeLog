@@ -1,5 +1,18 @@
 2021-09-23  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR fortran/101320
+	* decl.c (gfc_verify_c_interop_param): Handle F2018 C1557,
+	aka TS29113 C516.
+
+2021-09-23  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93834
+	* trans-intrinsic.c (gfc_conv_allocated): Cleanup. Handle
+	coindexed scalar coarrays.
+
+2021-09-23  Sandra Loosemore  <sandra@codesourcery.com>
+
 	PR fortran/101319
 	* interface.c (gfc_compare_actual_formal): Extend existing
 	assumed-type diagnostic to also check for argument with type

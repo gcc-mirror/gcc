@@ -1,3 +1,42 @@
+2021-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/destroy_neg.cc:
+	Remove dg-error lines for C++20-only errors.
+
+2021-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/19_diagnostics/headers/system_error/93151.cc:
+	Disable PCH.
+
+2021-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/system_error.cc (system_error_category) [_WIN32]:
+	Map Windows error codes to generic POSIX error numbers. Use
+	FormatMessage instead of strerror.
+	* testsuite/19_diagnostics/error_category/system_category.cc:
+	Adjust for new behaviour on Windows.
+
+2021-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/system_error.cc (generic_error_category): Define
+	class and virtual functions as 'final'.
+	(generic_error_category::equivalent(int, const error_condition&)):
+	Override.
+	(system_error_category): Define class and virtual functions as
+	'final'.
+	(system_error_category::equivalent(int, const error_condition&)):
+	Override.
+	(generic_category_instance, system_category_instance): Use
+	constinit union to make the objects immortal.
+
+2021-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102425
+	* src/c++11/system_error.cc
+	(system_error_category::default_error_condition): Add 0 to
+	switch.
+	* testsuite/19_diagnostics/error_category/102425.cc: New test.
+
 2021-09-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_path.h (path::iterator): Add noexcept to all

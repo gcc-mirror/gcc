@@ -39,9 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
   : m_ranger (ranger)
 {
-  if (DEBUG_SOLVER)
-    fprintf (dump_file, "\n*********** path_range_query ******************\n");
-
   m_cache = new ssa_global_cache;
   m_has_cache_entry = BITMAP_ALLOC (NULL);
   m_path = NULL;
@@ -172,9 +169,6 @@ path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
     {
       if (TREE_CODE (name) == SSA_NAME)
 	r.intersect (gimple_range_global (name));
-
-      if (m_resolve && r.varying_p ())
-	range_on_path_entry (r, name);
 
       set_cache (r, name);
       return true;
@@ -467,6 +461,9 @@ void
 path_range_query::precompute_ranges (const vec<basic_block> &path,
 				     const bitmap_head *imports)
 {
+  if (DEBUG_SOLVER)
+    fprintf (dump_file, "\n*********** path_range_query ******************\n");
+
   set_path (path);
   bitmap_copy (m_imports, imports);
   m_undefined_path = false;

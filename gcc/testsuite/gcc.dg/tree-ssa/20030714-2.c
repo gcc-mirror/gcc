@@ -32,7 +32,8 @@ get_alias_set (t)
     }
 }
 
-/* There should be exactly three IF conditionals if we thread jumps
-   properly.  */
-/* { dg-final { scan-tree-dump-times "if " 3 "dom2"} } */
+/* There should be exactly 4 IF conditionals if we thread jumps
+   properly.  There used to be 3, but one thread was crossing
+   loops.  */
+/* { dg-final { scan-tree-dump-times "if " 4 "dom2"} } */
  

@@ -122,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Container>
     [[__nodiscard__]]
-    inline constexpr auto
+    constexpr auto
     cbegin(const _Container& __cont) noexcept(noexcept(std::begin(__cont)))
       -> decltype(std::begin(__cont))
     { return std::begin(__cont); }
@@ -134,7 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Container>
     [[__nodiscard__]]
-    inline constexpr auto
+    constexpr auto
     cend(const _Container& __cont) noexcept(noexcept(std::end(__cont)))
       -> decltype(std::end(__cont))
     { return std::end(__cont); }

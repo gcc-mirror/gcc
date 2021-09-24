@@ -2125,12 +2125,12 @@
   [(set_attr "isa" "noavx,noavx,avx,avx")])
 
 (define_expand "cond_<insn><mode>"
-  [(set (match_operand:VF 0 "register_operand")
-	(vec_merge:VF
-	  (plusminus:VF
-	    (match_operand:VF 2 "vector_operand")
-	    (match_operand:VF 3 "vector_operand"))
-	  (match_operand:VF 4 "nonimm_or_0_operand")
+  [(set (match_operand:VFH 0 "register_operand")
+	(vec_merge:VFH
+	  (plusminus:VFH
+	    (match_operand:VFH 2 "vector_operand")
+	    (match_operand:VFH 3 "vector_operand"))
+	  (match_operand:VFH 4 "nonimm_or_0_operand")
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "<MODE_SIZE> == 64 || TARGET_AVX512VL"
 {
@@ -2214,12 +2214,12 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_expand "cond_mul<mode>"
-  [(set (match_operand:VF 0 "register_operand")
-	(vec_merge:VF
-	  (mult:VF
-	    (match_operand:VF 2 "vector_operand")
-	    (match_operand:VF 3 "vector_operand"))
-	  (match_operand:VF 4 "nonimm_or_0_operand")
+  [(set (match_operand:VFH 0 "register_operand")
+	(vec_merge:VFH
+	  (mult:VFH
+	    (match_operand:VFH 2 "vector_operand")
+	    (match_operand:VFH 3 "vector_operand"))
+	  (match_operand:VFH 4 "nonimm_or_0_operand")
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "<MODE_SIZE> == 64 || TARGET_AVX512VL"
 {
@@ -2329,12 +2329,12 @@
 })
 
 (define_expand "cond_div<mode>"
-  [(set (match_operand:VF 0 "register_operand")
-	(vec_merge:VF
-	  (div:VF
-	    (match_operand:VF 2 "register_operand")
-	    (match_operand:VF 3 "vector_operand"))
-	  (match_operand:VF 4 "nonimm_or_0_operand")
+  [(set (match_operand:VFH 0 "register_operand")
+	(vec_merge:VFH
+	  (div:VFH
+	    (match_operand:VFH 2 "register_operand")
+	    (match_operand:VFH 3 "vector_operand"))
+	  (match_operand:VFH 4 "nonimm_or_0_operand")
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "<MODE_SIZE> == 64 || TARGET_AVX512VL"
 {
@@ -2667,12 +2667,12 @@
    (set_attr "mode" "HF")])
 
 (define_expand "cond_<code><mode>"
-  [(set (match_operand:VF 0 "register_operand")
-	(vec_merge:VF
-	  (smaxmin:VF
-	    (match_operand:VF 2 "vector_operand")
-	    (match_operand:VF 3 "vector_operand"))
-	  (match_operand:VF 4 "nonimm_or_0_operand")
+  [(set (match_operand:VFH 0 "register_operand")
+	(vec_merge:VFH
+	  (smaxmin:VFH
+	    (match_operand:VFH 2 "vector_operand")
+	    (match_operand:VFH 3 "vector_operand"))
+	  (match_operand:VFH 4 "nonimm_or_0_operand")
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "<MODE_SIZE> == 64 || TARGET_AVX512VL"
 {
@@ -4837,13 +4837,13 @@
    (set_attr "mode" "<MODE>")])
 
 (define_expand "cond_fma<mode>"
-  [(set (match_operand:VF_AVX512VL 0 "register_operand")
-	(vec_merge:VF_AVX512VL
-	  (fma:VF_AVX512VL
-	    (match_operand:VF_AVX512VL 2 "vector_operand")
-	    (match_operand:VF_AVX512VL 3 "vector_operand")
-	    (match_operand:VF_AVX512VL 4 "vector_operand"))
-	  (match_operand:VF_AVX512VL 5 "nonimm_or_0_operand")
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand")
+	(vec_merge:VFH_AVX512VL
+	  (fma:VFH_AVX512VL
+	    (match_operand:VFH_AVX512VL 2 "vector_operand")
+	    (match_operand:VFH_AVX512VL 3 "vector_operand")
+	    (match_operand:VFH_AVX512VL 4 "vector_operand"))
+	  (match_operand:VFH_AVX512VL 5 "nonimm_or_0_operand")
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "TARGET_AVX512F"
 {
@@ -4937,14 +4937,14 @@
    (set_attr "mode" "<MODE>")])
 
 (define_expand "cond_fms<mode>"
-  [(set (match_operand:VF_AVX512VL 0 "register_operand")
-	(vec_merge:VF_AVX512VL
-	  (fma:VF_AVX512VL
-	    (match_operand:VF_AVX512VL 2 "vector_operand")
-	    (match_operand:VF_AVX512VL 3 "vector_operand")
-	    (neg:VF_AVX512VL
-	      (match_operand:VF_AVX512VL 4 "vector_operand")))
-	  (match_operand:VF_AVX512VL 5 "nonimm_or_0_operand")
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand")
+	(vec_merge:VFH_AVX512VL
+	  (fma:VFH_AVX512VL
+	    (match_operand:VFH_AVX512VL 2 "vector_operand")
+	    (match_operand:VFH_AVX512VL 3 "vector_operand")
+	    (neg:VFH_AVX512VL
+	      (match_operand:VFH_AVX512VL 4 "vector_operand")))
+	  (match_operand:VFH_AVX512VL 5 "nonimm_or_0_operand")
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "TARGET_AVX512F"
 {
@@ -5040,14 +5040,14 @@
    (set_attr "mode" "<MODE>")])
 
 (define_expand "cond_fnma<mode>"
-  [(set (match_operand:VF_AVX512VL 0 "register_operand")
-	(vec_merge:VF_AVX512VL
-	  (fma:VF_AVX512VL
-	    (neg:VF_AVX512VL
-	      (match_operand:VF_AVX512VL 2 "vector_operand"))
-	    (match_operand:VF_AVX512VL 3 "vector_operand")
-	    (match_operand:VF_AVX512VL 4 "vector_operand"))
-	  (match_operand:VF_AVX512VL 5 "nonimm_or_0_operand")
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand")
+	(vec_merge:VFH_AVX512VL
+	  (fma:VFH_AVX512VL
+	    (neg:VFH_AVX512VL
+	      (match_operand:VFH_AVX512VL 2 "vector_operand"))
+	    (match_operand:VFH_AVX512VL 3 "vector_operand")
+	    (match_operand:VFH_AVX512VL 4 "vector_operand"))
+	  (match_operand:VFH_AVX512VL 5 "nonimm_or_0_operand")
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "TARGET_AVX512F"
 {
@@ -5145,15 +5145,15 @@
    (set_attr "mode" "<MODE>")])
 
 (define_expand "cond_fnms<mode>"
-  [(set (match_operand:VF_AVX512VL 0 "register_operand")
-	(vec_merge:VF_AVX512VL
-	  (fma:VF_AVX512VL
-	    (neg:VF_AVX512VL
-	      (match_operand:VF_AVX512VL 2 "vector_operand"))
-	    (match_operand:VF_AVX512VL 3 "vector_operand")
-	    (neg:VF_AVX512VL
-	      (match_operand:VF_AVX512VL 4 "vector_operand")))
-	  (match_operand:VF_AVX512VL 5 "nonimm_or_0_operand")
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand")
+	(vec_merge:VFH_AVX512VL
+	  (fma:VFH_AVX512VL
+	    (neg:VFH_AVX512VL
+	      (match_operand:VFH_AVX512VL 2 "vector_operand"))
+	    (match_operand:VFH_AVX512VL 3 "vector_operand")
+	    (neg:VFH_AVX512VL
+	      (match_operand:VFH_AVX512VL 4 "vector_operand")))
+	  (match_operand:VFH_AVX512VL 5 "nonimm_or_0_operand")
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "TARGET_AVX512F"
 {

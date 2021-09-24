@@ -21,5 +21,7 @@
 	 condition.
 
    All the cases are picked up by VRP1 as jump threads.  */
-/* { dg-final { scan-tree-dump-times "Registering jump" 6 "thread1" } } */
+
+/* There used to be 6 jump threads found by thread1, but they all
+   depended on threading through distinct loops in ethread.  */
 /* { dg-final { scan-tree-dump-times "Threaded" 2 "vrp1" } } */

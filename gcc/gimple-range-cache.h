@@ -92,7 +92,7 @@ private:
 class ranger_cache : public range_query
 {
 public:
-  ranger_cache ();
+  ranger_cache (int not_executable_flag);
   ~ranger_cache ();
 
   virtual bool range_of_expr (irange &r, tree name, gimple *stmt);

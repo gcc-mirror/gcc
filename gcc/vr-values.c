@@ -3460,19 +3460,21 @@ range_fits_type_p (const value_range *vr,
 void
 simplify_using_ranges::set_and_propagate_unexecutable (edge e)
 {
-  // If EXECUUTABLE is already clear, we're done.
-  if ((e->flags & EDGE_EXECUTABLE) == 0)
+  // If not_executable is already set, we're done.
+  // This works in the absence of a flag as well.
+  if ((e->flags & m_not_executable_flag) == m_not_executable_flag)
     return;
 
-  e->flags &= ~EDGE_EXECUTABLE;
+  e->flags |= m_not_executable_flag;
+  m_flag_set_edges.safe_push (e);
 
   // Check if the destination block needs to propagate the property.
   basic_block bb = e->dest;
 
-  // If any entry edge is marked EXECUTABLE, we are done.
+  // If any incoming edge is executable, we are done.
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, bb->preds)
-    if (e->flags & EDGE_EXECUTABLE)
+    if ((e->flags & m_not_executable_flag) == 0)
       return;
 
   // This block is also unexecutable, propagate to all exit edges as well.
@@ -3805,6 +3807,7 @@ simplify_using_ranges::simplify_switch_using_ranges (gswitch *stmt)
 	}
       to_remove_edges.safe_push (e);
       set_and_propagate_unexecutable (e);
+      e->flags &= ~EDGE_EXECUTABLE;
       e->flags |= EDGE_IGNORE;
     }
 
@@ -3822,6 +3825,12 @@ simplify_using_ranges::cleanup_edges_and_switches (void)
   edge e;
   switch_update *su;
 
+  /* Clear any edges marked as not executable.  */
+  if (m_not_executable_flag)
+    {
+      FOR_EACH_VEC_ELT (m_flag_set_edges, i, e)
+	e->flags &= ~m_not_executable_flag;
+    }
   /* Remove dead edges from SWITCH_EXPR optimization.  This leaves the
      CFG in a broken state and requires a cfg_cleanup run.  */
   FOR_EACH_VEC_ELT (to_remove_edges, i, e)
@@ -4124,11 +4133,14 @@ simplify_using_ranges::two_valued_val_range_p (tree var, tree *a, tree *b,
   return false;
 }
 
-simplify_using_ranges::simplify_using_ranges (range_query *query)
+simplify_using_ranges::simplify_using_ranges (range_query *query,
+					      int not_executable_flag)
   : query (query)
 {
   to_remove_edges = vNULL;
   to_update_switch_stmts = vNULL;
+  m_not_executable_flag = not_executable_flag;
+  m_flag_set_edges = vNULL;
 }
 
 simplify_using_ranges::~simplify_using_ranges ()

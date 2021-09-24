@@ -56,6 +56,7 @@ public:
   inline gori_compute &gori ()  { return m_cache.m_gori; }
   virtual void dump (FILE *f) OVERRIDE;
   void dump_bb (FILE *f, basic_block bb);
+  auto_edge_flag non_executable_edge_flag;
 protected:
   bool fold_range_internal (irange &r, gimple *s, tree name);
   ranger_cache m_cache;
