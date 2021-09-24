@@ -629,7 +629,7 @@ ior_hard_reg_conflicts (ira_allocno_t a, const_hard_reg_set set)
 bool
 ira_conflict_vector_profitable_p (ira_object_t obj, int num)
 {
-  int nw;
+  int nbytes;
   int max = OBJECT_MAX (obj);
   int min = OBJECT_MIN (obj);
 
@@ -638,9 +638,14 @@ ira_conflict_vector_profitable_p (ira_object_t obj, int num)
        in allocation.  */
     return false;
 
-  nw = (max - min + IRA_INT_BITS) / IRA_INT_BITS;
-  return (2 * sizeof (ira_object_t) * (num + 1)
-	  < 3 * nw * sizeof (IRA_INT_TYPE));
+  nbytes = (max - min) / 8 + 1;
+  STATIC_ASSERT (sizeof (ira_object_t) <= 8);
+  /* Don't use sizeof (ira_object_t), use constant 8.  Size of ira_object_t (a
+     pointer) is different on 32-bit and 64-bit targets.  Usage sizeof
+     (ira_object_t) can result in different code generation by GCC built as 32-
+     and 64-bit program.  In any case the profitability is just an estimation
+     and border cases are rare.  */
+  return (2 * 8 /* sizeof (ira_object_t) */ * (num + 1) < 3 * nbytes);
 }
 
 /* Allocates and initialize the conflict vector of OBJ for NUM
