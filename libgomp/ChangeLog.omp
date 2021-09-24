@@ -1,3 +1,31 @@
+2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
+
+	Backported from master:
+	2022-02-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.f90: Remove spurious
+	STOP of previous commit.
+
+2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
+
+	Backported from master:
+	2022-02-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.c (is_64bit_aligned): Renamed
+	from is_64bit_aligned_.
+	* testsuite/libgomp.fortran/allocate-1.f90: Fix interface decl
+	and use it, more implicit none, remove unused argument.
+
+2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
+
+	Backported from master:
+	2022-01-13  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.c: New test.
+	* testsuite/libgomp.fortran/allocate-1.f90: New test.
+	* libgomp.texi: Remove string that says that allocate clause
+	support is for C/C++ only.
+
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

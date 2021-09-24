@@ -1,3 +1,13 @@
+2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
+
+	Backported from master:
+	* gfortran.dg/gomp/allocate-1.f90: New test.
+	* gfortran.dg/gomp/allocate-2.f90: New test.
+	* gfortran.dg/gomp/allocate-3.f90: New test.
+	* gfortran.dg/gomp/collapse1.f90: Update error message.
+	* gfortran.dg/gomp/openmp-simd-4.f90: Likewise.
+	* gfortran.dg/gomp/clauses-1.f90: Uncomment allocate clause.
+
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
