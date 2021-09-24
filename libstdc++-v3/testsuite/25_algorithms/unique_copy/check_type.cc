@@ -25,27 +25,35 @@
 using __gnu_test::input_iterator_wrapper;
 using __gnu_test::output_iterator_wrapper;
 
-struct S1 { };
+template<typename T>
+struct iter_facade
+{
+  T& operator++();
+  T operator++(int);
+  T& operator*() const;
+};
 
-struct S2
+struct S1 : iter_facade<S1> { };
+
+struct S2 : iter_facade<S2>
 {
   S2(const S1&) {}
 };
 
-bool 
+bool
 operator==(const S1&, const S1&) {return true;}
 
-struct X1 { };
+struct X1 : iter_facade<X1>  { };
 
-struct X2
+struct X2 : iter_facade<X2>
 {
   X2(const X1&) {}
 };
 
-bool 
+bool
 predicate(const X1&, const X1&) {return true;}
 
-output_iterator_wrapper<S2> 
+output_iterator_wrapper<S2>
 test1(input_iterator_wrapper<S1>& s1, output_iterator_wrapper<S2>& s2)
 { return std::unique_copy(s1, s1, s2); }
 
