@@ -637,6 +637,7 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 get_gcc_base_ver
+COARRAY_LIBS
 LIBGFOR_NATIVE_COARRAY_FALSE
 LIBGFOR_NATIVE_COARRAY_TRUE
 RT_LIBS
@@ -12733,7 +12734,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12736 "configure"
+#line 12737 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12839,7 +12840,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12842 "configure"
+#line 12843 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -27430,6 +27431,13 @@ fi
 done
 
 
+if test -z "$LIBGFOR_NATIVE_COARRAY_TRUE"; then :
+  COARRAY_LIBS="-lcaf_shared $PTHREAD_LIBS $RT_LIBS"
+else
+  COARRAY_LIBS=""
+fi
+
+
 CFLAGS="$CFLAGS_hold"
 LIBS="$LIBS_hold"
 
@@ -30641,3 +30649,4 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
+echo HUHU $LIBGFOR_NATIVE_COARRAY

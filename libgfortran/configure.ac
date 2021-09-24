@@ -714,6 +714,9 @@ LIBS="$LIBS $PTHREAD_LIBS $RT_LIBS"
 # Find the functions that we need
 AC_CHECK_FUNCS([pthread_condattr_setpshared pthread_mutexattr_setpshared pthread_barrierattr_setpshared shm_open shm_unlink],[AM_CONDITIONAL(LIBGFOR_NATIVE_COARRAY,true)],[AM_CONDITIONAL(LIBGFOR_NATIVE_COARRAY,false)])
 
+AM_COND_IF(LIBGFOR_NATIVE_COARRAY,[COARRAY_LIBS="-lcaf_shared $PTHREAD_LIBS $RT_LIBS"],[COARRAY_LIBS=""])
+AC_SUBST(COARRAY_LIBS)
+
 CFLAGS="$CFLAGS_hold"
 LIBS="$LIBS_hold"
 

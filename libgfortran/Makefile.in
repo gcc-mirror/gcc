@@ -215,10 +215,11 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(mylibdir)" \
-	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(gfor_cdir)" "$(DESTDIR)$(fincludedir)"
-LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(mylib_LTLIBRARIES) \
+am__installdirs = "$(DESTDIR)$(caf_shareddir)" \
+	"$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(gfor_cdir)" \
+	"$(DESTDIR)$(fincludedir)"
+LTLIBRARIES = $(caf_shared_LTLIBRARIES) $(cafexeclib_LTLIBRARIES) \
 	$(toolexeclib_LTLIBRARIES)
 libcaf_shared_la_LIBADD =
 am__objects_1 = cas_collsub_i1.lo cas_collsub_i2.lo cas_collsub_i4.lo \
@@ -235,7 +236,7 @@ am__objects_2 = cas_collsub_s1.lo cas_collsub_s4.lo
 @LIBGFOR_NATIVE_COARRAY_TRUE@	$(am__objects_1) $(am__objects_2)
 libcaf_shared_la_OBJECTS = $(am_libcaf_shared_la_OBJECTS)
 @LIBGFOR_NATIVE_COARRAY_TRUE@am_libcaf_shared_la_rpath = -rpath \
-@LIBGFOR_NATIVE_COARRAY_TRUE@	$(mylibdir)
+@LIBGFOR_NATIVE_COARRAY_TRUE@	$(caf_shareddir)
 libcaf_single_la_LIBADD =
 am_libcaf_single_la_OBJECTS = single.lo
 libcaf_single_la_OBJECTS = $(am_libcaf_single_la_OBJECTS)
@@ -600,6 +601,9 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+@LIBGFOR_NATIVE_COARRAY_FALSE@COARRAY_LIBS = ""
+@LIBGFOR_NATIVE_COARRAY_TRUE@COARRAY_LIBS = $(PTHREAD_LIBS) $(RT_LIBS)
+COARRAY_LIBS = @COARRAY_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -751,8 +755,6 @@ gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
 
-@LIBGFOR_NATIVE_COARRAY_FALSE@COARRAY_LIBS = ""
-@LIBGFOR_NATIVE_COARRAY_TRUE@COARRAY_LIBS = $(PTHREAD_LIBS) $(RT_LIBS)
 toolexeclib_LTLIBRARIES = libgfortran.la
 toolexeclib_DATA = libgfortran.spec
 libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
@@ -785,8 +787,8 @@ i_cas_collsub_s_c = \
 	$(srcdir)/generated/cas_collsub_s1.c \
 	$(srcdir)/generated/cas_collsub_s4.c
 
-@LIBGFOR_NATIVE_COARRAY_TRUE@mylib_LTLIBRARIES = libcaf_shared.la
-@LIBGFOR_NATIVE_COARRAY_TRUE@mylibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
+@LIBGFOR_NATIVE_COARRAY_TRUE@caf_shared_LTLIBRARIES = libcaf_shared.la
+@LIBGFOR_NATIVE_COARRAY_TRUE@caf_shareddir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 @LIBGFOR_NATIVE_COARRAY_TRUE@libcaf_shared_la_SOURCES = caf_shared/alloc.c caf_shared/allocator.c caf_shared/coarraynative.c \
 @LIBGFOR_NATIVE_COARRAY_TRUE@	caf_shared/hashmap.c  \
 @LIBGFOR_NATIVE_COARRAY_TRUE@	caf_shared/sync.c caf_shared/util.c caf_shared/wrapper.c caf_shared/collective_subroutine.c \
@@ -1685,6 +1687,41 @@ distclean-hdr:
 libgfortran.spec: $(top_builddir)/config.status $(srcdir)/libgfortran.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
+install-caf_sharedLTLIBRARIES: $(caf_shared_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	@list='$(caf_shared_LTLIBRARIES)'; test -n "$(caf_shareddir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(caf_shareddir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(caf_shareddir)" || exit 1; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(caf_shareddir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(caf_shareddir)"; \
+	}
+
+uninstall-caf_sharedLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(caf_shared_LTLIBRARIES)'; test -n "$(caf_shareddir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(caf_shareddir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(caf_shareddir)/$$f"; \
+	done
+
+clean-caf_sharedLTLIBRARIES:
+	-test -z "$(caf_shared_LTLIBRARIES)" || rm -f $(caf_shared_LTLIBRARIES)
+	@list='$(caf_shared_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
 install-cafexeclibLTLIBRARIES: $(cafexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	@list='$(cafexeclib_LTLIBRARIES)'; test -n "$(cafexeclibdir)" || list=; \
@@ -1712,41 +1749,6 @@ uninstall-cafexeclibLTLIBRARIES:
 clean-cafexeclibLTLIBRARIES:
 	-test -z "$(cafexeclib_LTLIBRARIES)" || rm -f $(cafexeclib_LTLIBRARIES)
 	@list='$(cafexeclib_LTLIBRARIES)'; \
-	locs=`for p in $$list; do echo $$p; done | \
-	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
-	      sort -u`; \
-	test -z "$$locs" || { \
-	  echo rm -f $${locs}; \
-	  rm -f $${locs}; \
-	}
-
-install-mylibLTLIBRARIES: $(mylib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	@list='$(mylib_LTLIBRARIES)'; test -n "$(mylibdir)" || list=; \
-	list2=; for p in $$list; do \
-	  if test -f $$p; then \
-	    list2="$$list2 $$p"; \
-	  else :; fi; \
-	done; \
-	test -z "$$list2" || { \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(mylibdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(mylibdir)" || exit 1; \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(mylibdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(mylibdir)"; \
-	}
-
-uninstall-mylibLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@list='$(mylib_LTLIBRARIES)'; test -n "$(mylibdir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(mylibdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(mylibdir)/$$f"; \
-	done
-
-clean-mylibLTLIBRARIES:
-	-test -z "$(mylib_LTLIBRARIES)" || rm -f $(mylib_LTLIBRARIES)
-	@list='$(mylib_LTLIBRARIES)'; \
 	locs=`for p in $$list; do echo $$p; done | \
 	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
 	      sort -u`; \
@@ -7093,7 +7095,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS) config.h all-local
 installdirs:
-	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(mylibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(gfor_cdir)" "$(DESTDIR)$(fincludedir)"; do \
+	for dir in "$(DESTDIR)$(caf_shareddir)" "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(gfor_cdir)" "$(DESTDIR)$(fincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -7130,8 +7132,8 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-cafexeclibLTLIBRARIES clean-generic clean-libtool \
-	clean-local clean-mylibLTLIBRARIES \
+clean-am: clean-caf_sharedLTLIBRARIES clean-cafexeclibLTLIBRARIES \
+	clean-generic clean-libtool clean-local \
 	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
@@ -7153,7 +7155,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-gfor_cHEADERS install-mylibLTLIBRARIES \
+install-data-am: install-caf_sharedLTLIBRARIES install-gfor_cHEADERS \
 	install-nodist_fincludeHEADERS
 
 install-dvi: install-dvi-am
@@ -7204,34 +7206,36 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
-	uninstall-mylibLTLIBRARIES uninstall-nodist_fincludeHEADERS \
-	uninstall-toolexeclibDATA uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-caf_sharedLTLIBRARIES \
+	uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
+	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
+	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am all-local am--refresh check \
-	check-am clean clean-cafexeclibLTLIBRARIES clean-cscope \
-	clean-generic clean-libtool clean-local clean-mylibLTLIBRARIES \
-	clean-toolexeclibLTLIBRARIES cscope cscopelist-am ctags \
-	ctags-am distclean distclean-compile distclean-generic \
-	distclean-hdr distclean-libtool distclean-local distclean-tags \
-	dvi dvi-am html html-am info info-am install install-am \
+	check-am clean clean-caf_sharedLTLIBRARIES \
+	clean-cafexeclibLTLIBRARIES clean-cscope clean-generic \
+	clean-libtool clean-local clean-toolexeclibLTLIBRARIES cscope \
+	cscopelist-am ctags ctags-am distclean distclean-compile \
+	distclean-generic distclean-hdr distclean-libtool \
+	distclean-local distclean-tags dvi dvi-am html html-am info \
+	info-am install install-am install-caf_sharedLTLIBRARIES \
 	install-cafexeclibLTLIBRARIES install-data install-data-am \
 	install-dvi install-dvi-am install-exec install-exec-am \
 	install-exec-local install-gfor_cHEADERS install-html \
 	install-html-am install-info install-info-am install-man \
-	install-mylibLTLIBRARIES install-nodist_fincludeHEADERS \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip install-toolexeclibDATA \
+	install-nodist_fincludeHEADERS install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip install-toolexeclibDATA \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	maintainer-clean-local mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-local pdf \
 	pdf-am ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-caf_sharedLTLIBRARIES \
 	uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
-	uninstall-mylibLTLIBRARIES uninstall-nodist_fincludeHEADERS \
-	uninstall-toolexeclibDATA uninstall-toolexeclibLTLIBRARIES
+	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
+	uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
 

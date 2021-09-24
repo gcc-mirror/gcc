@@ -78,8 +78,8 @@ i_cas_collsub_s_c = \
 
 if LIBGFOR_NATIVE_COARRAY
 
-mylib_LTLIBRARIES = libcaf_shared.la
-mylibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
+caf_shared_LTLIBRARIES = libcaf_shared.la
+caf_shareddir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libcaf_shared_la_SOURCES = caf_shared/alloc.c caf_shared/allocator.c caf_shared/coarraynative.c \
 	caf_shared/hashmap.c  \
 	caf_shared/sync.c caf_shared/util.c caf_shared/wrapper.c caf_shared/collective_subroutine.c \
