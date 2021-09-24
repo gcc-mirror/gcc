@@ -8261,6 +8261,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE
       && Nkind (Parent (gnat_node)) != N_Attribute_Reference
+      && Nkind (Parent (gnat_node)) != N_Pragma_Argument_Association
       && Nkind (Parent (gnat_node)) != N_Variant_Part
       && !lvalue_required_p (gnat_node, gnu_result_type, false, false))
     {
