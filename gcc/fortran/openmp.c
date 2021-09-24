@@ -912,6 +912,7 @@ enum omp_mask1
   OMP_CLAUSE_MEMORDER,  /* OpenMP 5.0.  */
   OMP_CLAUSE_DETACH,  /* OpenMP 5.0.  */
   OMP_CLAUSE_AFFINITY,  /* OpenMP 5.0.  */
+  OMP_CLAUSE_ALLOCATE,  /* OpenMP 5.0.  */
   OMP_CLAUSE_BIND,  /* OpenMP 5.0.  */
   OMP_CLAUSE_FILTER,  /* OpenMP 5.1.  */
   OMP_CLAUSE_AT,  /* OpenMP 5.1.  */
@@ -1547,6 +1548,40 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      ns_iter->refs++;
 		    }
 		}
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_ALLOCATE)
+	      && gfc_match ("allocate ( ") == MATCH_YES)
+	    {
+	      gfc_expr *allocator = NULL;
+	      old_loc = gfc_current_locus;
+	      m = gfc_match_expr (&allocator);
+	      if (m == MATCH_YES && gfc_match (" : ") != MATCH_YES)
+		{
+		  /* If no ":" then there is no allocator, we backtrack
+		     and read the variable list.  */
+		  gfc_free_expr (allocator);
+		  allocator = NULL;
+		  gfc_current_locus = old_loc;
+		}
+
+	      gfc_omp_namelist **head = NULL;
+	      m = gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_ALLOCATE],
+					       true, NULL, &head);
+
+	      if (m != MATCH_YES)
+		{
+		  gfc_free_expr (allocator);
+		  gfc_error ("Expected variable list at %C");
+		  goto error;
+		}
+
+	      for (gfc_omp_namelist *n = *head; n; n = n->next)
+		if (allocator)
+		  n->expr = gfc_copy_expr (allocator);
+		else
+		  n->expr = NULL;
+	      gfc_free_expr (allocator);
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_AT)
@@ -3572,7 +3607,7 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_COPYIN | OMP_CLAUSE_REDUCTION	\
    | OMP_CLAUSE_IF | OMP_CLAUSE_NUM_THREADS | OMP_CLAUSE_DEFAULT	\
-   | OMP_CLAUSE_PROC_BIND)
+   | OMP_CLAUSE_PROC_BIND | OMP_CLAUSE_ALLOCATE)
 #define OMP_DECLARE_SIMD_CLAUSES \
   (omp_mask (OMP_CLAUSE_SIMDLEN) | OMP_CLAUSE_LINEAR			\
    | OMP_CLAUSE_UNIFORM	| OMP_CLAUSE_ALIGNED | OMP_CLAUSE_INBRANCH	\
@@ -3581,15 +3616,16 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION			\
    | OMP_CLAUSE_SCHEDULE | OMP_CLAUSE_ORDERED | OMP_CLAUSE_COLLAPSE	\
-   | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ORDER)
+   | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ORDER | OMP_CLAUSE_ALLOCATE)
 #define OMP_LOOP_CLAUSES \
   (omp_mask (OMP_CLAUSE_BIND) | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_ORDER	\
    | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
+
 #define OMP_SCOPE_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_REDUCTION)
 #define OMP_SECTIONS_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
-   | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
+   | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_ALLOCATE)
 #define OMP_SIMD_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_LASTPRIVATE		\
    | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_SAFELEN	\
@@ -3600,20 +3636,22 @@ cleanup:
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF | OMP_CLAUSE_DEFAULT		\
    | OMP_CLAUSE_UNTIED | OMP_CLAUSE_FINAL | OMP_CLAUSE_MERGEABLE	\
    | OMP_CLAUSE_DEPEND | OMP_CLAUSE_PRIORITY | OMP_CLAUSE_IN_REDUCTION	\
-   | OMP_CLAUSE_DETACH | OMP_CLAUSE_AFFINITY)
+   | OMP_CLAUSE_DETACH | OMP_CLAUSE_AFFINITY | OMP_CLAUSE_ALLOCATE)
 #define OMP_TASKLOOP_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF		\
    | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_UNTIED | OMP_CLAUSE_FINAL		\
    | OMP_CLAUSE_MERGEABLE | OMP_CLAUSE_PRIORITY | OMP_CLAUSE_GRAINSIZE	\
    | OMP_CLAUSE_NUM_TASKS | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_NOGROUP	\
-   | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_IN_REDUCTION)
+   | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_IN_REDUCTION | OMP_CLAUSE_ALLOCATE)
+#define OMP_TASKGROUP_CLAUSES \
+  (omp_mask (OMP_CLAUSE_TASK_REDUCTION) | OMP_CLAUSE_ALLOCATE)
 #define OMP_TARGET_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_DEPEND | OMP_CLAUSE_NOWAIT | OMP_CLAUSE_PRIVATE		\
    | OMP_CLAUSE_FIRSTPRIVATE | OMP_CLAUSE_DEFAULTMAP			\
    | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION			\
-   | OMP_CLAUSE_THREAD_LIMIT)
+   | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)
@@ -3629,13 +3667,14 @@ cleanup:
 #define OMP_TEAMS_CLAUSES \
   (omp_mask (OMP_CLAUSE_NUM_TEAMS) | OMP_CLAUSE_THREAD_LIMIT		\
    | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_FIRSTPRIVATE	\
-   | OMP_CLAUSE_SHARED | OMP_CLAUSE_REDUCTION)
+   | OMP_CLAUSE_SHARED | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_ALLOCATE)
 #define OMP_DISTRIBUTE_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_DIST_SCHEDULE \
-   | OMP_CLAUSE_ORDER)
+   | OMP_CLAUSE_ORDER | OMP_CLAUSE_ALLOCATE)
 #define OMP_SINGLE_CLAUSES \
-  (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE)
+  (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
+   | OMP_CLAUSE_ALLOCATE)
 #define OMP_ORDERED_CLAUSES \
   (omp_mask (OMP_CLAUSE_THREADS) | OMP_CLAUSE_SIMD)
 #define OMP_DECLARE_TARGET_CLAUSES \
@@ -5905,7 +5944,7 @@ gfc_match_omp_barrier (void)
 match
 gfc_match_omp_taskgroup (void)
 {
-  return match_omp (EXEC_OMP_TASKGROUP, OMP_CLAUSE_TASK_REDUCTION);
+  return match_omp (EXEC_OMP_TASKGROUP, OMP_TASKGROUP_CLAUSES);
 }
 
 
@@ -6243,7 +6282,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	"IN_REDUCTION", "TASK_REDUCTION",
 	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
-	"NONTEMPORAL" };
+	"NONTEMPORAL", "ALLOCATE" };
   STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
   if (omp_clauses == NULL)
@@ -6529,7 +6568,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	&& list != OMP_LIST_REDUCTION_INSCAN
 	&& list != OMP_LIST_REDUCTION_TASK
 	&& list != OMP_LIST_IN_REDUCTION
-	&& list != OMP_LIST_TASK_REDUCTION)
+	&& list != OMP_LIST_TASK_REDUCTION
+	&& list != OMP_LIST_ALLOCATE)
       for (n = omp_clauses->lists[list]; n; n = n->next)
 	{
 	  bool component_ref_p = false;
@@ -6596,6 +6636,78 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		   n->sym->name, &n->where);
       else
 	n->sym->mark = 1;
+    }
+
+  if (omp_clauses->lists[OMP_LIST_ALLOCATE])
+    {
+      for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
+	if (n->expr && (n->expr->ts.type != BT_INTEGER
+	    || n->expr->ts.kind != gfc_c_intptr_kind))
+	  {
+	    gfc_error ("Expected integer expression of the "
+		       "'omp_allocator_handle_kind' kind at %L",
+		       &n->expr->where);
+	    break;
+	  }
+
+      /* Check for 2 things here.
+     1.  There is no duplication of variable in allocate clause.
+     2.  Variable in allocate clause are also present in some
+	 privatization clase (non-composite case).  */
+      for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
+	n->sym->mark = 0;
+
+      gfc_omp_namelist *prev = NULL;
+      for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n;)
+	{
+	  if (n->sym->mark == 1)
+	    {
+	      gfc_warning (0, "%qs appears more than once in %<allocate%> "
+			   "clauses at %L" , n->sym->name, &n->where);
+	      /* We have already seen this variable so it is a duplicate.
+		 Remove it.  */
+	      if (prev != NULL && prev->next == n)
+		{
+		  prev->next = n->next;
+		  n->next = NULL;
+		  gfc_free_omp_namelist (n, 0);
+		  n = prev->next;
+		}
+	      continue;
+	    }
+	  n->sym->mark = 1;
+	  prev = n;
+	  n = n->next;
+	}
+
+      /* Non-composite constructs.  */
+      if (code && code->op < EXEC_OMP_DO_SIMD)
+	{
+	  for (list = 0; list < OMP_LIST_NUM; list++)
+	    switch (list)
+	    {
+	      case OMP_LIST_PRIVATE:
+	      case OMP_LIST_FIRSTPRIVATE:
+	      case OMP_LIST_LASTPRIVATE:
+	      case OMP_LIST_REDUCTION:
+	      case OMP_LIST_REDUCTION_INSCAN:
+	      case OMP_LIST_REDUCTION_TASK:
+	      case OMP_LIST_IN_REDUCTION:
+	      case OMP_LIST_TASK_REDUCTION:
+	      case OMP_LIST_LINEAR:
+		for (n = omp_clauses->lists[list]; n; n = n->next)
+		  n->sym->mark = 0;
+		break;
+	      default:
+		break;
+	    }
+
+	  for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
+	    if (n->sym->mark == 1)
+	      gfc_error ("%qs specified in 'allocate' clause at %L but not "
+			 "in an explicit privatization clause",
+			 n->sym->name, &n->where);
+	}
     }
 
   /* OpenACC reductions.  */
@@ -8438,19 +8550,20 @@ resolve_omp_do (gfc_code *code)
       if (code->ext.omp_clauses)
 	for (list = 0; list < OMP_LIST_NUM; list++)
 	  if (!is_simd || code->ext.omp_clauses->collapse > 1
-	      ? (list != OMP_LIST_PRIVATE && list != OMP_LIST_LASTPRIVATE)
+	      ? (list != OMP_LIST_PRIVATE && list != OMP_LIST_LASTPRIVATE
+		  && list != OMP_LIST_ALLOCATE)
 	      : (list != OMP_LIST_PRIVATE && list != OMP_LIST_LASTPRIVATE
-		 && list != OMP_LIST_LINEAR))
+		 && list != OMP_LIST_ALLOCATE && list != OMP_LIST_LINEAR))
 	    for (n = code->ext.omp_clauses->lists[list]; n; n = n->next)
 	      if (dovar == n->sym)
 		{
 		  if (!is_simd || code->ext.omp_clauses->collapse > 1)
 		    gfc_error ("%s iteration variable present on clause "
-			       "other than PRIVATE or LASTPRIVATE at %L",
-			       name, &do_code->loc);
+			       "other than PRIVATE, LASTPRIVATE or "
+			       "ALLOCATE at %L", name, &do_code->loc);
 		  else
 		    gfc_error ("%s iteration variable present on clause "
-			       "other than PRIVATE, LASTPRIVATE or "
+			       "other than PRIVATE, LASTPRIVATE, ALLOCATE or "
 			       "LINEAR at %L", name, &do_code->loc);
 		  break;
 		}
