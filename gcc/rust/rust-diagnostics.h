@@ -64,7 +64,7 @@ rust_inform (const Location, const char *fmt, ...)
 
 // rich locations
 extern void
-rust_error_at (const RichLocation, const char *fmt, ...)
+rust_error_at (const RichLocation &, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 
 // These interfaces provide a way for the front end to ask for
@@ -84,7 +84,7 @@ rust_close_quote ();
 extern void
 rust_be_error_at (const Location, const std::string &errmsg);
 extern void
-rust_be_error_at (const RichLocation, const std::string &errmsg);
+rust_be_error_at (const RichLocation &, const std::string &errmsg);
 extern void
 rust_be_warning_at (const Location, int opt, const std::string &warningmsg);
 extern void

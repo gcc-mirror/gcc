@@ -96,7 +96,7 @@ public:
 
   void add_fixit_insert_after (Location where, const std::string &new_parent);
 
-  rich_location get () const { return gcc_rich_loc; }
+  const rich_location &get () const { return gcc_rich_loc; }
 
 private:
   rich_location gcc_rich_loc;
