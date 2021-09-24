@@ -1,3 +1,13 @@
+2021-09-23  Luís Ferreira  <contact@lsferreira.net>
+
+	* d-demangle.c (dlang_Type): Validate MANGLED is nonnull.
+	* testsuite/d-demangle-expected: New test.
+
+2021-09-23  Luís Ferreira  <contact@lsferreira.net>
+
+	* d-demangle.c (dlang_symbol_backref): Ensure strlen of
+	string is less than length computed by dlang_number.
+
 2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.

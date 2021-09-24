@@ -1,3 +1,29 @@
+2021-09-23  Michel Morin  <mimomorin@gmail.com>
+
+	* parser.c (cp_keyword_starts_decl_specifier_p): Do not
+	handle RID_ATTRIBUTE.
+	(cp_parser_constructor_declarator_p): Remove now-redundant
+	checks.
+	(cp_parser_lambda_declarator_opt): Likewise.
+
+2021-09-23  Michel Morin  <mimomorin@gmail.com>
+
+	PR c++/77565
+	* parser.c (cp_keyword_starts_decl_specifier_p): Handle more
+	decl-specifiers (typedef/inline/cv/explicit/virtual/friend).
+
+2021-09-23  Patrick Palka  <ppalka@redhat.com>
+
+	* ptree.c (cxx_print_decl): Dump the DECL_TEMPLATE_RESULT of
+	a TEMPLATE_DECL.  Dump the DECL_TEMPLATE_INFO rather than just
+	printing its pointer value.
+
+2021-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102413
+	* parser.c (cp_parser_omp_directive_args): Diagnose if omp::directive
+	is not followed by a balanced token sequence starting with open paren.
+
 2021-09-22  Patrick Palka  <ppalka@redhat.com>
 
 	DR 2446

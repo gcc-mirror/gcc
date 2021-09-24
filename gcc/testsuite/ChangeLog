@@ -1,5 +1,71 @@
 2021-09-23  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR fortran/101320
+	* gfortran.dg/c-interop/c516.f90: Remove xfails.  Add more
+	tests.
+
+2021-09-23  Michel Morin  <mimomorin@gmail.com>
+
+	PR c++/77565
+	* g++.dg/spellcheck-pr77565.C: New test.
+
+2021-09-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr102463.c: New.
+
+2021-09-23  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93834
+	* gfortran.dg/coarray/coarray_allocated.f90: New test.
+
+2021-09-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/102024
+	* g++.target/powerpc/pr102024.C: New.
+
+2021-09-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* g++.target/i386/avx512fp16-vcondmn-vec.C: New test.
+	* g++.target/i386/avx512fp16-vcondmn-minmax.C: Ditto.
+	* gcc.target/i386/avx512fp16-vcondmn-loop-1.c: Ditto.
+	* gcc.target/i386/avx512fp16-vcondmn-loop-2.c: Ditto.
+	* gcc.target/i386/avx512fp16-vec_cmpmn.c: Ditto.
+
+2021-09-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-trunc-extendvnhf.c: New test.
+
+2021-09-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-floatvnhf.c: New test.
+
+2021-09-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-trunchf.c: New test.
+	* gcc.target/i386/avx512fp16-truncvnhf.c: Ditto.
+
+2021-09-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-builtin-minmax-1.c: New test.
+
+2021-09-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-fma-1.c: New test.
+	* gcc.target/i386/avx512fp16vl-fma-1.c: New test.
+	* gcc.target/i386/avx512fp16vl-fma-vectorize-1.c: New test.
+
+2021-09-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-builtin-round-1.c: Add new testcase.
+
+2021-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102413
+	* g++.dg/gomp/attrs-14.C: New test.
+
+2021-09-23  Sandra Loosemore  <sandra@codesourcery.com>
+
 	PR fortran/101319
 	* gfortran.dg/c-interop/assumed-type-dummy.f90: Remove xfail.
 

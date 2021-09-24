@@ -1,3 +1,172 @@
+2021-09-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102463
+	* gimple-range-fold.cc (fold_using_range::relation_fold_and_or): If
+	there is no range-ops handler, don't look for a relation.
+
+2021-09-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Take
+	non-executable_edge flag as parameter.
+	* gimple-range-cache.h (ranger_cache): Adjust prototype.
+	* gimple-range-gori.cc (gori_compute::gori_compute): Take
+	non-executable_edge flag as parameter.
+	(gori_compute::outgoing_edge_range_p): Check new flag.
+	* gimple-range-gori.h (gori_compute): Adjust prototype.
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Create new flag.
+	(gimple_ranger::range_on_edge): Check new flag.
+	* gimple-range.h (gimple_ranger::non_executable_edge_flag): New.
+	* gimple-ssa-evrp.c (rvrp_folder): Pass ranger flag to simplifer.
+	(hybrid_folder::hybrid_folder): Set ranger non-executable flag value.
+	(hybrid_folder::fold_stmt): Set flag value in the simplifer.
+	* vr-values.c (simplify_using_ranges::set_and_propagate_unexecutable):
+	Use not_executable flag if provided inmstead of EDGE_EXECUTABLE.
+	(simplify_using_ranges::simplify_switch_using_ranges): Clear
+	EDGE_EXECUTABLE like it originally did.
+	(simplify_using_ranges::cleanup_edges_and_switches): Clear any
+	NON_EXECUTABLE flags.
+	(simplify_using_ranges::simplify_using_ranges): Adjust.
+	* vr-values.h (class simplify_using_ranges): Adjust.
+	(simplify_using_ranges::set_range_query): Add non-executable flag param.
+
+2021-09-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/102024
+	* config/rs6000/rs6000-call.c (rs6000_aggregate_candidate): Detect
+	zero-width bit fields and return indicator.
+	(rs6000_discover_homogeneous_aggregate): Diagnose when the
+	presence of a zero-width bit field changes parameter passing in
+	GCC 12.
+
+2021-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi):
+	Remove dominator check.
+
+2021-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::precompute_relations):
+	Hoist edge calculations before using EDGE_SUCC.
+
+2021-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Fix --with-multilib-list description.
+	* configure: Regenerate.
+
+2021-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102448
+	* tree-vect-data-refs.c (vect_duplicate_ssa_name_ptr_info):
+	Clear alignment info copied from DR_PTR_INFO.
+
+2021-09-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-expand.c (ix86_use_mask_cmp_p): Enable
+	HFmode mask_cmp.
+	* config/i386/sse.md (sseintvecmodelower): Add HF vector modes.
+	(<avx512>_store<mode>_mask): Extend to support HF vector modes.
+	(vec_cmp<mode><avx512fmaskmodelower>): Likewise.
+	(vcond_mask_<mode><avx512fmaskmodelower>): Likewise.
+	(vcond<mode><mode>): New expander.
+	(vcond<mode><sseintvecmodelower>): Likewise.
+	(vcond<sseintvecmodelower><mode>): Likewise.
+	(vcondu<mode><sseintvecmodelower>): Likewise.
+
+2021-09-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/sse.md (extend<ssePHmodelower><mode>2):
+	New expander.
+	(extendv4hf<mode>2): Likewise.
+	(extendv2hfv2df2): Likewise.
+	(trunc<mode><ssePHmodelower>2): Likewise.
+	(avx512fp16_vcvt<castmode>2ph_<mode>): Rename to ...
+	(trunc<mode>v4hf2): ... this, and drop constraints.
+	(avx512fp16_vcvtpd2ph_v2df): Rename to ...
+	(truncv2dfv2hf2): ... this, and likewise.
+
+2021-09-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/sse.md (float<floatunssuffix><mode><ssePHmodelower>2):
+	New expander.
+	(avx512fp16_vcvt<floatsuffix><sseintconvert>2ph_<mode>):
+	Rename to ...
+	(float<floatunssuffix><mode>v4hf2): ... this, and drop constraints.
+	(avx512fp16_vcvt<floatsuffix>qq2ph_v2di): Rename to ...
+	(float<floatunssuffix>v2div2hf2): ... this, and likewise.
+
+2021-09-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (fix<fixunssuffix>_trunchf<mode>2): New expander.
+	(fixuns_trunchfhi2): Likewise.
+	(*fixuns_trunchfsi2zext): New define_insn.
+	* config/i386/sse.md (ssePHmodelower): New mode_attr.
+	(fix<fixunssuffix>_trunc<ssePHmodelower><mode>2):
+	New expander for same element vector fix_truncate.
+	(fix<fixunssuffix>_trunc<ssePHmodelower><mode>2):
+	Likewise for V4HF to V4SI/V4DI fix_truncate.
+	(fix<fixunssuffix>_truncv2hfv2di2):
+	Likeise for V2HF to V2DI fix_truncate.
+
+2021-09-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (<code>hf3): New expander.
+
+2021-09-23  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (FMAMODEM): extend to handle FP16.
+	(VFH_SF_AVX512VL): Extend to handle HFmode.
+	(VF_SF_AVX512VL): Deleted.
+
+2021-09-23  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md (rinthf2): New expander.
+	(nearbyinthf2): New expander.
+
+2021-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-dom.c (class dom_jump_threader_simplifier): Rename...
+	(class dom_jt_state): ...this and provide virtual overrides.
+	(dom_jt_state::register_equiv): New.
+	(class dom_jt_simplifier): Rename from
+	dom_jump_threader_simplifier.
+	(dom_jump_threader_simplifier::simplify): Rename...
+	(dom_jt_simplifier::simplify): ...to this.
+	(pass_dominator::execute): Use dom_jt_simplifier and
+	dom_jt_state.
+	* tree-ssa-threadedge.c (jump_threader::jump_threader):
+	Clean-up.
+	(jt_state::register_equivs_stmt): Abstract out...
+	(jump_threader::record_temporary_equivalences_from_stmts_at_dest):
+	...from here.
+	(jump_threader::thread_around_empty_blocks): Update state.
+	(jump_threader::thread_through_normal_block): Same.
+	(jt_state::jt_state): Remove.
+	(jt_state::push): Remove pass specific bits.  Keep block vector
+	updated.
+	(jt_state::append_path): New.
+	(jt_state::pop): Remove pass specific bits.
+	(jt_state::register_equiv): Same.
+	(jt_state::record_ranges_from_stmt): Same.
+	(jt_state::register_equivs_on_edge): Same.  Rename...
+	(jt_state::register_equivs_edge):  ...to this.
+	(jt_state::dump): New.
+	(jt_state::debug): New.
+	(jump_threader_simplifier::simplify): Remove.
+	(jt_state::get_path): New.
+	* tree-ssa-threadedge.h (class jt_simplifier): Make into a base
+	class.  Expose common functionality as virtual methods.
+	(class jump_threader_simplifier): Same.  Rename...
+	(class jt_simplifier): ...to this.
+	* tree-vrp.c (class vrp_jump_threader_simplifier): Rename...
+	(class vrp_jt_simplifier): ...to this. Provide pass specific
+	overrides.
+	(class vrp_jt_state): New.
+	(vrp_jump_threader_simplifier::simplify): Rename...
+	(vrp_jt_simplifier::simplify): ...to this.  Inline code from
+	what used to be the base class.
+	(vrp_jump_threader::vrp_jump_threader): Use vrp_jt_state and
+	vrp_jt_simplifier.
+
 2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/55534
