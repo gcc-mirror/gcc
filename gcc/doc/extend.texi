@@ -1156,12 +1156,11 @@ It is recommended that portable code use the @code{_Float16} type defined
 by ISO/IEC TS 18661-3:2015.  @xref{Floating Types}.
 
 On x86 targets with SSE2 enabled, without @option{-mavx512fp16},
-@code{_Float16} type is storage only, all operations will be emulated by
-software emulation and the @code{float} instructions. The default behavior
-for @code{FLT_EVAL_METHOD} is to keep the intermediate result of the operation
-as 32-bit precision. This may lead to inconsistent behavior between software
-emulation and AVX512-FP16 instructions. Using @option{-fexcess-precision=16}
-will force round back after each operation.
+all operations will be emulated by software emulation and the @code{float}
+instructions. The default behavior for @code{FLT_EVAL_METHOD} is to keep the
+intermediate result of the operation as 32-bit precision. This may lead to
+inconsistent behavior between software emulation and AVX512-FP16 instructions.
+Using @option{-fexcess-precision=16} will force round back after each operation.
 
 Using @option{-mavx512fp16} will generate AVX512-FP16 instructions instead of
 software emulation. The default behavior of @code{FLT_EVAL_METHOD} is to round
