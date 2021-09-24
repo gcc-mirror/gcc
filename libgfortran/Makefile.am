@@ -38,11 +38,13 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 
 if LIBGFOR_NATIVE_COARRAY
 COARRAY_LIBS=$(PTHREAD_LIBS) $(RT_LIBS)
+toolexeclib_LTLIBRARIES = libgfortran.la libcaf_shared.la
 else
 COARRAY_LIBS=""
+toolexeclib_LTLIBRARIES = libgfortran.la
 endif
 
-toolexeclib_LTLIBRARIES = libgfortran.la
+
 toolexeclib_DATA = libgfortran.spec
 libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
@@ -78,8 +80,6 @@ i_cas_collsub_s_c = \
 
 if LIBGFOR_NATIVE_COARRAY
 
-caf_shared_LTLIBRARIES = libcaf_shared.la
-caf_shareddir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libcaf_shared_la_SOURCES = caf_shared/alloc.c caf_shared/allocator.c caf_shared/coarraynative.c \
 	caf_shared/hashmap.c  \
 	caf_shared/sync.c caf_shared/util.c caf_shared/wrapper.c caf_shared/collective_subroutine.c \
