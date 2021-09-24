@@ -161,6 +161,12 @@ verify_flow_info (void)
 	  err = 1;
 	}
 
+      if (bb->flags & ~cfun->cfg->bb_flags_allocated)
+	{
+	  error ("verify_flow_info: unallocated flag set on BB %d", bb->index);
+	  err = 1;
+	}
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  if (last_visited [e->dest->index] == bb)
@@ -199,6 +205,13 @@ verify_flow_info (void)
 	      fprintf (stderr, "\nSuccessor: ");
 	      dump_edge_info (stderr, e, TDF_DETAILS, 1);
 	      fprintf (stderr, "\n");
+	      err = 1;
+	    }
+
+	  if (e->flags & ~cfun->cfg->edge_flags_allocated)
+	    {
+	      error ("verify_flow_info: unallocated edge flag set on %d -> %d",
+		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
 
