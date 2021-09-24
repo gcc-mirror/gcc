@@ -4,7 +4,7 @@
   /* Test to ensure that device-modifier 'ancestor' is parsed correctly in
      device clauses. */
 
-#pragma omp requires reverse_offload /* { dg-message "sorry, unimplemented: 'reverse_offload' clause on 'requires' directive not supported yet" } */
+#pragma omp requires reverse_offload
 
 void
 foo (void)

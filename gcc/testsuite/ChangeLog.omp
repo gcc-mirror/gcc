@@ -1,3 +1,16 @@
+2021-09-24  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	This patch removes the expectation that 'requires reverse_offload' is
+	unsupported from some 'target device ancester' tests which were introduced in
+	commit 03be3cfeef7b3811acb6c4a8da2fc5c1e25d3e4c. This is necessary since
+	commit f5bfc65f9a6e1f69b17d3740d043d2fbda339e05 changed the behaviour for
+	reverse_offload.
+
+	* c-c++-common/gomp/target-device-ancestor-2.c: Remove message for unsupported
+	reverse offload.
+	* c-c++-common/gomp/target-device-ancestor-3.c: Likewise.
+	* c-c++-common/gomp/target-device-ancestor-4.c: Likewise.
+
 2021-06-02  Julian Brown  <julian@codesourcery.com>
 
 	* g++.dg/goacc/member-array-acc.C: New test.
