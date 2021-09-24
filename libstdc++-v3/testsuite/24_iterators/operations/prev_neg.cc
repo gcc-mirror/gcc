@@ -38,5 +38,5 @@ test02()
 {
   const Y array[1] = { };
   (void) std::prev(array + 1);
-  // { dg-error "forward_iterator" "" { target *-*-* } 223 }
+  // { dg-error "forward_iterator" "" { target *-*-* } 231 }
 }
