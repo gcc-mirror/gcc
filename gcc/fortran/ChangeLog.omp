@@ -1,3 +1,12 @@
+2021-09-24  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2021-09-23  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/101320
+	* decl.c (gfc_verify_c_interop_param): Handle F2018 C1557,
+	aka TS29113 C516.
+
 2021-09-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
