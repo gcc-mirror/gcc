@@ -613,7 +613,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_II>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OI,
-	    typename iterator_traits<_II>::value_type>)
+	    typename iterator_traits<_II>::reference>)
       __glibcxx_requires_can_increment_range(__first, __last, __result);
 
       return std::__copy_move_a<__is_move_iterator<_II>::__value>
@@ -646,7 +646,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_II>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OI,
-	    typename iterator_traits<_II>::value_type>)
+	    typename iterator_traits<_II>::value_type&&>)
       __glibcxx_requires_can_increment_range(__first, __last, __result);
 
       return std::__copy_move_a<true>(std::__miter_base(__first),
@@ -850,9 +850,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       // concept requirements
       __glibcxx_function_requires(_BidirectionalIteratorConcept<_BI1>)
       __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<_BI2>)
-      __glibcxx_function_requires(_ConvertibleConcept<
-	    typename iterator_traits<_BI1>::value_type,
-	    typename iterator_traits<_BI2>::value_type>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_BI2,
+	    typename iterator_traits<_BI1>::reference>)
       __glibcxx_requires_can_decrement_range(__first, __last, __result);
 
       return std::__copy_move_backward_a<__is_move_iterator<_BI1>::__value>
@@ -886,9 +885,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       // concept requirements
       __glibcxx_function_requires(_BidirectionalIteratorConcept<_BI1>)
       __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<_BI2>)
-      __glibcxx_function_requires(_ConvertibleConcept<
-	    typename iterator_traits<_BI1>::value_type,
-	    typename iterator_traits<_BI2>::value_type>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_BI2,
+	    typename iterator_traits<_BI1>::value_type&&>)
       __glibcxx_requires_can_decrement_range(__first, __last, __result);
 
       return std::__copy_move_backward_a<true>(std::__miter_base(__first),
@@ -1144,7 +1142,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     fill_n(_OI __first, _Size __n, const _Tp& __value)
     {
       // concept requirements
-      __glibcxx_function_requires(_OutputIteratorConcept<_OI, _Tp>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OI, const _Tp&>)
 
       return std::__fill_n_a(__first, std::__size_to_integer(__n), __value,
 			       std::__iterator_category(__first));

@@ -464,10 +464,10 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _AssignableConcept<_Tp> >();
       ++__i;                            // require preincrement operator
       __i++;                            // require postincrement operator
-      *__i++ = __t;                     // require postincrement and assignment
+      *__i++ = __val();                 // require postincrement and assignment
     }
     _Tp __i;
-    _ValueT __t;
+    _ValueT __val() const;
   };
 
   template <class _Tp>
