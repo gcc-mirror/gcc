@@ -1,3 +1,15 @@
+2021-09-24  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/102400
+	* tree-ssa-sccvn.c (vn_reference_insert_pieces): Initialize
+	result_vdef to zero value.
+
+2021-09-24  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/102451
+	* tree-ssa-dse.c (delete_dead_or_redundant_call): Record bb of stmt
+	before removal.
+
 2021-09-22  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backported from master:
