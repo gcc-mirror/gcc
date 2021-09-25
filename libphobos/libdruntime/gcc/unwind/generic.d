@@ -123,7 +123,27 @@ enum : _Unwind_Reason_Code
 // @@@ The IA-64 ABI says that this structure must be double-word aligned.
 // Taking that literally does not make much sense generically.  Instead we
 // provide the maximum alignment required by any type for the machine.
-struct _Unwind_Exception
+     version (ARM)      private enum __aligned__ = 8;
+else version (AArch64)  private enum __aligned__ = 16;
+else version (HPPA)     private enum __aligned__ = 8;
+else version (HPPA64)   private enum __aligned__ = 16;
+else version (MIPS_N32) private enum __aligned__ = 16;
+else version (MIPS_N64) private enum __aligned__ = 16;
+else version (MIPS32)   private enum __aligned__ = 8;
+else version (MIPS64)   private enum __aligned__ = 8;
+else version (PPC)      private enum __aligned__ = 16;
+else version (PPC64)    private enum __aligned__ = 16;
+else version (RISCV32)  private enum __aligned__ = 16;
+else version (RISCV64)  private enum __aligned__ = 16;
+else version (S390)     private enum __aligned__ = 8;
+else version (SPARC)    private enum __aligned__ = 8;
+else version (SPARC64)  private enum __aligned__ = 16;
+else version (SystemZ)  private enum __aligned__ = 8;
+else version (X86)      private enum __aligned__ = 16;
+else version (X86_64)   private enum __aligned__ = 16;
+else static assert( false, "Platform not supported.");
+
+align(__aligned__) struct _Unwind_Exception
 {
     _Unwind_Exception_Class exception_class;
     _Unwind_Exception_Cleanup_Fn exception_cleanup;
