@@ -1402,12 +1402,6 @@ jt_state::register_equivs_stmt (gimple *stmt, basic_block bb,
 // Hybrid threader implementation.
 
 
-void
-hybrid_jt_state::register_equivs_stmt (gimple *, basic_block, jt_simplifier *)
-{
-  // Ranger has no need to simplify anything to improve equivalences.
-}
-
 hybrid_jt_simplifier::hybrid_jt_simplifier (gimple_ranger *r,
 					    path_range_query *q)
 {
@@ -1466,5 +1460,5 @@ hybrid_jt_simplifier::compute_ranges_from_state (gimple *stmt, jt_state *state)
 	    bitmap_set_bit (imports, SSA_NAME_VERSION (op));
 	}
     }
-  m_query->precompute_ranges (m_path, imports);
+  m_query->compute_ranges (m_path, imports);
 }

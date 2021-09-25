@@ -56,16 +56,19 @@ public:
 class hybrid_jt_state : public jt_state
 {
 private:
-  void register_equivs_stmt (gimple *, basic_block, jt_simplifier *) override;
+  void register_equivs_stmt (gimple *, basic_block, jt_simplifier *) override
+  {
+    // Ranger has no need to simplify anything.
+  }
 };
 
 class hybrid_jt_simplifier : public jt_simplifier
 {
 public:
   hybrid_jt_simplifier (class gimple_ranger *r, class path_range_query *q);
+  tree simplify (gimple *stmt, gimple *, basic_block, jt_state *) override;
 
 private:
-  tree simplify (gimple *stmt, gimple *, basic_block, jt_state *) override;
   void compute_ranges_from_state (gimple *stmt, jt_state *);
 
   gimple_ranger *m_ranger;

@@ -293,11 +293,11 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
   return true;
 }
 
-// Precompute ranges defined in the current block, or ranges
-// that are exported on an edge to the next block.
+// Compute ranges defined in the current block, or exported to the
+// next block.
 
 void
-path_range_query::precompute_ranges_in_block (basic_block bb)
+path_range_query::compute_ranges_in_block (basic_block bb)
 {
   bitmap_iterator bi;
   int_range_max r, cached_range;
@@ -452,14 +452,14 @@ path_range_query::add_copies_to_imports ()
     }
 }
 
-// Precompute the ranges for IMPORTS along PATH.
+// Compute the ranges for IMPORTS along PATH.
 //
 // IMPORTS are the set of SSA names, any of which could potentially
 // change the value of the final conditional in PATH.
 
 void
-path_range_query::precompute_ranges (const vec<basic_block> &path,
-				     const bitmap_head *imports)
+path_range_query::compute_ranges (const vec<basic_block> &path,
+				  const bitmap_head *imports)
 {
   if (DEBUG_SOLVER)
     fprintf (dump_file, "\n*********** path_range_query ******************\n");
@@ -472,12 +472,12 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
     {
       add_copies_to_imports ();
       m_oracle->reset_path ();
-      precompute_relations (path);
+      compute_relations (path);
     }
 
   if (DEBUG_SOLVER)
     {
-      fprintf (dump_file, "\npath_range_query: precompute_ranges for path: ");
+      fprintf (dump_file, "\npath_range_query: compute_ranges for path: ");
       for (unsigned i = path.length (); i > 0; --i)
 	{
 	  basic_block bb = path[i - 1];
@@ -504,7 +504,7 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
 	      bitmap_set_bit (m_imports, SSA_NAME_VERSION (name));
 	}
 
-      precompute_ranges_in_block (bb);
+      compute_ranges_in_block (bb);
       adjust_for_non_null_uses (bb);
 
       if (at_exit ())
@@ -611,12 +611,12 @@ path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
   return true;
 }
 
-// Precompute relations on a path.  This involves two parts: relations
+// Compute relations on a path.  This involves two parts: relations
 // along the conditionals joining a path, and relations determined by
 // examining PHIs.
 
 void
-path_range_query::precompute_relations (const vec<basic_block> &path)
+path_range_query::compute_relations (const vec<basic_block> &path)
 {
   if (!dom_info_available_p (CDI_DOMINATORS))
     return;
@@ -628,7 +628,7 @@ path_range_query::precompute_relations (const vec<basic_block> &path)
       basic_block bb = path[i - 1];
       gimple *stmt = last_stmt (bb);
 
-      precompute_phi_relations (bb, prev);
+      compute_phi_relations (bb, prev);
 
       // Compute relations in outgoing edges along the path.  Skip the
       // final conditional which we don't know yet.
@@ -656,14 +656,14 @@ path_range_query::precompute_relations (const vec<basic_block> &path)
     }
 }
 
-// Precompute relations for each PHI in BB.  For example:
+// Compute relations for each PHI in BB.  For example:
 //
 //   x_5 = PHI<y_9(5),...>
 //
 // If the path flows through BB5, we can register that x_5 == y_9.
 
 void
-path_range_query::precompute_phi_relations (basic_block bb, basic_block prev)
+path_range_query::compute_phi_relations (basic_block bb, basic_block prev)
 {
   if (prev == NULL)
     return;
