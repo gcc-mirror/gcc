@@ -34,6 +34,7 @@ extern(C)
 {
     int _d_isbaseof(ClassInfo, ClassInfo);
     void _d_createTrace(Object, void*);
+    void _d_print_throwable(Throwable t);
 }
 
 /**
@@ -510,7 +511,11 @@ extern(C) void _d_throw(Throwable object)
     // things, almost certainly we will have crashed before now, rather than
     // actually being able to diagnose the problem.
     if (r == _URC_END_OF_STACK)
+    {
+        __gdc_begin_catch(&eh.unwindHeader);
+        _d_print_throwable(object);
         terminate("uncaught exception", __LINE__);
+    }
 
     terminate("unwind error", __LINE__);
 }
