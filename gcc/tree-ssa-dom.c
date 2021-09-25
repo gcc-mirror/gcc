@@ -1810,7 +1810,7 @@ record_equivalences_from_stmt (gimple *stmt, int may_optimize_p,
    CONST_AND_COPIES.  */
 
 static void
-cprop_operand (gimple *stmt, use_operand_p op_p, vr_values *vr_values)
+cprop_operand (gimple *stmt, use_operand_p op_p, range_query *query)
 {
   tree val;
   tree op = USE_FROM_PTR (op_p);
@@ -1820,7 +1820,12 @@ cprop_operand (gimple *stmt, use_operand_p op_p, vr_values *vr_values)
      CONST_AND_COPIES.  */
   val = SSA_NAME_VALUE (op);
   if (!val)
-    val = vr_values->op_with_constant_singleton_value_range (op);
+    {
+      value_range r;
+      tree single;
+      if (query->range_of_expr (r, op, stmt) && r.singleton_p (&single))
+	val = single;
+    }
 
   if (val && val != op)
     {
@@ -1878,7 +1883,7 @@ cprop_operand (gimple *stmt, use_operand_p op_p, vr_values *vr_values)
    vdef_ops of STMT.  */
 
 static void
-cprop_into_stmt (gimple *stmt, vr_values *vr_values)
+cprop_into_stmt (gimple *stmt, range_query *query)
 {
   use_operand_p op_p;
   ssa_op_iter iter;
@@ -1895,7 +1900,7 @@ cprop_into_stmt (gimple *stmt, vr_values *vr_values)
 	 operands.  */
       if (old_op != last_copy_propagated_op)
 	{
-	  cprop_operand (stmt, op_p, vr_values);
+	  cprop_operand (stmt, op_p, query);
 
 	  tree new_op = USE_FROM_PTR (op_p);
 	  if (new_op != old_op && TREE_CODE (new_op) == SSA_NAME)
@@ -2203,8 +2208,8 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
 		 SSA_NAMES.  */
 	      update_stmt_if_modified (stmt);
 	      edge taken_edge = NULL;
-	      m_evrp_range_analyzer->vrp_visit_cond_stmt
-		(as_a <gcond *> (stmt), &taken_edge);
+	      simplify_using_ranges simpl (m_evrp_range_analyzer);
+	      simpl.vrp_visit_cond_stmt (as_a <gcond *> (stmt), &taken_edge);
 	      if (taken_edge)
 		{
 		  if (taken_edge->flags & EDGE_TRUE_VALUE)
