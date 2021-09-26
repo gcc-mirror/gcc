@@ -1,3 +1,27 @@
+2021-09-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/constraints.md (Rrio): New constraint.
+	* config/pru/predicates.md (regio_operand): New predicate.
+	* config/pru/pru-pragma.c (pru_register_pragmas): Register
+	the __regio_symbol address space.
+	* config/pru/pru-protos.h (pru_symref2ioregno): Declaration.
+	* config/pru/pru.c (pru_symref2ioregno): New helper function.
+	(pru_legitimate_address_p): Remove.
+	(pru_addr_space_legitimate_address_p): Use the address space
+	aware hook variant.
+	(pru_nongeneric_pointer_addrspace): New helper function.
+	(pru_insert_attributes): New function to validate __regio_symbol
+	usage.
+	(TARGET_INSERT_ATTRIBUTES): New macro.
+	(TARGET_LEGITIMATE_ADDRESS_P): Remove.
+	(TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): New macro.
+	* config/pru/pru.h (enum reg_class): Add REGIO_REGS class.
+	* config/pru/pru.md (*regio_readsi): New pattern to read I/O
+	registers.
+	(*regio_nozext_writesi): New pattern to write to I/O registers.
+	(*regio_zext_write_r30<EQS0:mode>): Ditto.
+	* doc/extend.texi: Document the new PRU Named Address Space.
+
 2021-09-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/98216

@@ -1,3 +1,17 @@
+2021-09-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/regio-as-pointer.c: New negative test.
+	* gcc.target/pru/regio-as-pointer-2.c: New negative test.
+	* gcc.target/pru/regio-decl-2.c: New negative test.
+	* gcc.target/pru/regio-decl-3.c: New negative test.
+	* gcc.target/pru/regio-decl-4.c: New negative test.
+	* gcc.target/pru/regio-decl.c: New negative test.
+	* gcc.target/pru/regio-di.c: New negative test.
+	* gcc.target/pru/regio-hi.c: New negative test.
+	* gcc.target/pru/regio-qi.c: New negative test.
+	* gcc.target/pru/regio.c: New test.
+	* gcc.target/pru/regio.h: New helper header.
+
 2021-09-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102458
