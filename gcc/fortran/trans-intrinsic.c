@@ -8974,7 +8974,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   gfc_se arg2se;
   tree tmp2;
   tree tmp;
-  tree nonzero_arraylen;
+  tree nonzero_arraylen = NULL_TREE;
   gfc_ss *ss;
   bool scalar;
 
@@ -9074,14 +9074,16 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	    {
 	      tmp = gfc_conv_descriptor_rank (arg1se.expr);
 	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				     TREE_TYPE (tmp), tmp, gfc_index_one_node);
+				     TREE_TYPE (tmp), tmp,
+				     build_int_cst (TREE_TYPE (tmp), 1));
 	    }
 	  else
 	    tmp = gfc_rank_cst[arg1->expr->rank - 1];
 	  tmp = gfc_conv_descriptor_stride_get (arg1se.expr, tmp);
-	  nonzero_arraylen = fold_build2_loc (input_location, NE_EXPR,
-					      logical_type_node, tmp,
-					      build_int_cst (TREE_TYPE (tmp), 0));
+	  if (arg2->expr->rank != 0)
+	    nonzero_arraylen = fold_build2_loc (input_location, NE_EXPR,
+						logical_type_node, tmp,
+						build_int_cst (TREE_TYPE (tmp), 0));
 
 	  /* A pointer to an array, call library function _gfor_associated.  */
 	  arg1se.want_pointer = 1;
@@ -9091,16 +9093,26 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 
 	  arg2se.want_pointer = 1;
 	  arg2se.force_no_tmp = 1;
-	  gfc_conv_expr_descriptor (&arg2se, arg2->expr);
+	  if (arg2->expr->rank != 0)
+	    gfc_conv_expr_descriptor (&arg2se, arg2->expr);
+	  else
+	    {
+	      gfc_conv_expr (&arg2se, arg2->expr);
+	      arg2se.expr
+		= gfc_conv_scalar_to_descriptor (&arg2se, arg2se.expr,
+						 gfc_expr_attr (arg2->expr));
+	      arg2se.expr = gfc_build_addr_expr (NULL_TREE, arg2se.expr);
+	    }
 	  gfc_add_block_to_block (&se->pre, &arg2se.pre);
 	  gfc_add_block_to_block (&se->post, &arg2se.post);
 	  se->expr = build_call_expr_loc (input_location,
 				      gfor_fndecl_associated, 2,
 				      arg1se.expr, arg2se.expr);
 	  se->expr = convert (logical_type_node, se->expr);
-	  se->expr = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-				      logical_type_node, se->expr,
-				      nonzero_arraylen);
+	  if (arg2->expr->rank != 0)
+	    se->expr = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+					logical_type_node, se->expr,
+					nonzero_arraylen);
         }
 
       /* If target is present zero character length pointers cannot
