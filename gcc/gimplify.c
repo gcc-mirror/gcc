@@ -6232,6 +6232,9 @@ gimplify_save_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   gcc_assert (TREE_CODE (*expr_p) == SAVE_EXPR);
   val = TREE_OPERAND (*expr_p, 0);
 
+  if (TREE_TYPE (val) == error_mark_node)
+    return GS_ERROR;
+
   /* If the SAVE_EXPR has not been resolved, then evaluate it once.  */
   if (!SAVE_EXPR_RESOLVED_P (*expr_p))
     {
