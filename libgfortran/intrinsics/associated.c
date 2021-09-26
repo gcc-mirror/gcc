@@ -41,8 +41,9 @@ associated (const gfc_array_void *pointer, const gfc_array_void *target)
     return 0;
   if (GFC_DESCRIPTOR_DTYPE (pointer).type != GFC_DESCRIPTOR_DTYPE (target).type)
     return 0;
-
   rank = GFC_DESCRIPTOR_RANK (pointer);
+  if (rank != GFC_DESCRIPTOR_RANK (target))
+    return 0;
   for (n = 0; n < rank; n++)
     {
       long extent;
