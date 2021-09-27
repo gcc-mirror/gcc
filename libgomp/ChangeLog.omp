@@ -1,3 +1,12 @@
+2021-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94070
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Update
+	expected dg-note output.
+
 2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

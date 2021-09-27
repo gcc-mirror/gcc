@@ -1,3 +1,17 @@
+2021-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94070
+	* gfortran.dg/c-interop/cf-out-descriptor-6.f90: Remove xfail.
+	* gfortran.dg/c-interop/size.f90: Remove xfail.
+	* gfortran.dg/intrinsic_size_3.f90: Update scan-tree-dump-times.
+	* gfortran.dg/transpose_optimization_2.f90: Likewise.
+	* gfortran.dg/size_optional_dim_1.f90: Add scan-tree-dump-not.
+	* gfortran.dg/assumed_rank_22.f90: New test.
+	* gfortran.dg/assumed_rank_22_aux.c: New test.
+
 2021-09-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

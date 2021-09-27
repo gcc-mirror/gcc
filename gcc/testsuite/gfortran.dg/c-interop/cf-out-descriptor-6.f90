@@ -1,5 +1,5 @@
 ! Reported as pr94070.
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 ! { dg-additional-sources "cf-out-descriptor-6-c.c dump-descriptors.c" }
 ! { dg-additional-options "-g" }
 !
