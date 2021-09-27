@@ -420,7 +420,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * Constructs a basic regular expression that does not match any
        * character sequence.
        */
-      basic_regex()
+      basic_regex() noexcept
       : _M_flags(ECMAScript), _M_loc(), _M_automaton(nullptr)
       { }
 
@@ -696,7 +696,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * expression.
        */
       unsigned int
-      mark_count() const
+      mark_count() const noexcept
       {
 	if (_M_automaton)
 	  return _M_automaton->_M_sub_count() - 1;
@@ -708,7 +708,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * or in the last call to assign().
        */
       flag_type
-      flags() const
+      flags() const noexcept
       { return _M_flags; }
 
       // [7.8.5] locale
@@ -730,7 +730,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *        object.
        */
       locale_type
-      getloc() const
+      getloc() const noexcept
       { return _M_loc; }
 
       // [7.8.6] swap
@@ -740,7 +740,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @param __rhs Another regular expression object.
        */
       void
-      swap(basic_regex& __rhs)
+      swap(basic_regex& __rhs) noexcept
       {
 	std::swap(_M_flags, __rhs._M_flags);
 	std::swap(_M_loc, __rhs._M_loc);
@@ -847,7 +847,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Ch_type, typename _Rx_traits>
     inline void
     swap(basic_regex<_Ch_type, _Rx_traits>& __lhs,
-	 basic_regex<_Ch_type, _Rx_traits>& __rhs)
+	 basic_regex<_Ch_type, _Rx_traits>& __rhs) noexcept
     { __lhs.swap(__rhs); }
 
 

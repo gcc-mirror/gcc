@@ -66,7 +66,7 @@ namespace __detail
 		const typename _TraitsT::locale_type& __traits, _FlagT __flags);
 
       shared_ptr<const _RegexT>
-      _M_get_nfa()
+      _M_get_nfa() noexcept
       { return std::move(_M_nfa); }
 
     private:
