@@ -25,6 +25,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
+/* Note: This function is only used internally in libgfortran and old FE code,
+   new code generates the code inline.  */
 index_type
 size0 (const array_t * array)
 {
@@ -47,6 +49,8 @@ iexport(size0);
 extern index_type size1 (const array_t * array, index_type dim);
 export_proto(size1);
 
+/* Note: This function it is unused in libgfortran itself and the FE no longer
+   call it; however, old code might still call it. */
 index_type
 size1 (const array_t * array, index_type dim)
 {

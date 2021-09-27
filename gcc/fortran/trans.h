@@ -960,8 +960,6 @@ extern GTY(()) tree gfor_fndecl_convert_char1_to_char4;
 extern GTY(()) tree gfor_fndecl_convert_char4_to_char1;
 
 /* Other misc. runtime library functions.  */
-extern GTY(()) tree gfor_fndecl_size0;
-extern GTY(()) tree gfor_fndecl_size1;
 extern GTY(()) tree gfor_fndecl_iargc;
 extern GTY(()) tree gfor_fndecl_kill;
 extern GTY(()) tree gfor_fndecl_kill_sub;
