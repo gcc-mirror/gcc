@@ -1,3 +1,9 @@
+2021-09-24  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* Makefile.def: Back-port commits ba4d88ad892f and
+	755ba58ebef0 from binutils-gdb repository.
+	* Makefile.in: Regenerated.
+
 2021-09-20  Harald Anlauf  <anlauf@gmx.de>
 
 	* MAINTAINERS (Reviewers): Add myself as Fortran reviewer.

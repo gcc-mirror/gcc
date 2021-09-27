@@ -1156,12 +1156,11 @@ It is recommended that portable code use the @code{_Float16} type defined
 by ISO/IEC TS 18661-3:2015.  @xref{Floating Types}.
 
 On x86 targets with SSE2 enabled, without @option{-mavx512fp16},
-@code{_Float16} type is storage only, all operations will be emulated by
-software emulation and the @code{float} instructions. The default behavior
-for @code{FLT_EVAL_METHOD} is to keep the intermediate result of the operation
-as 32-bit precision. This may lead to inconsistent behavior between software
-emulation and AVX512-FP16 instructions. Using @option{-fexcess-precision=16}
-will force round back after each operation.
+all operations will be emulated by software emulation and the @code{float}
+instructions. The default behavior for @code{FLT_EVAL_METHOD} is to keep the
+intermediate result of the operation as 32-bit precision. This may lead to
+inconsistent behavior between software emulation and AVX512-FP16 instructions.
+Using @option{-fexcess-precision=16} will force round back after each operation.
 
 Using @option{-mavx512fp16} will generate AVX512-FP16 instructions instead of
 software emulation. The default behavior of @code{FLT_EVAL_METHOD} is to round
@@ -1406,7 +1405,7 @@ As an extension, GNU C supports named address spaces as
 defined in the N1275 draft of ISO/IEC DTR 18037.  Support for named
 address spaces in GCC will evolve as the draft technical report
 changes.  Calling conventions for any target might also change.  At
-present, only the AVR, M32C, RL78, and x86 targets support
+present, only the AVR, M32C, PRU, RL78, and x86 targets support
 address spaces other than the generic address space.
 
 Address space identifiers may be used exactly like any other C type
@@ -1585,6 +1584,23 @@ qualified with @code{__far} are accessed using 32-bit addresses in
 order to access memory beyond the first 64@tie{}Ki bytes.  If
 @code{__far} is used with the M32CM or M32C CPU variants, it has no
 effect.
+
+@subsection PRU Named Address Spaces
+@cindex @code{__regio_symbol} PRU Named Address Spaces
+
+On the PRU target, variables qualified with @code{__regio_symbol} are
+aliases used to access the special I/O CPU registers.  They must be
+declared as @code{extern} because such variables will not be allocated in
+any data memory.  They must also be marked as @code{volatile}, and can
+only be 32-bit integer types.  The only names those variables can have
+are @code{__R30} and @code{__R31}, representing respectively the
+@code{R30} and @code{R31} special I/O CPU registers.  Hence the following
+example is the only valid usage of @code{__regio_symbol}:
+
+@smallexample
+extern volatile __regio_symbol uint32_t __R30;
+extern volatile __regio_symbol uint32_t __R31;
+@end smallexample
 
 @subsection RL78 Named Address Spaces
 @cindex @code{__far} RL78 Named Address Spaces

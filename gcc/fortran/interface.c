@@ -2448,6 +2448,21 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       return false;
     }
 
+  /* TS29113 C407c; F2018 C711.  */
+  if (actual->ts.type == BT_ASSUMED
+      && symbol_rank (formal) == -1
+      && actual->rank != -1
+      && !(actual->symtree->n.sym->as
+	   && actual->symtree->n.sym->as->type == AS_ASSUMED_SHAPE))
+    {
+      if (where)
+	gfc_error ("Assumed-type actual argument at %L corresponding to "
+		   "assumed-rank dummy argument %qs must be "
+		   "assumed-shape or assumed-rank",
+		   &actual->where, formal->name);
+      return false;
+    }
+
   /* F2008, 12.5.2.5; IR F08/0073.  */
   if (formal->ts.type == BT_CLASS && formal->attr.class_ok
       && actual->expr_type != EXPR_NULL

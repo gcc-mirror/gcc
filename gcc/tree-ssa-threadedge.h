@@ -53,6 +53,29 @@ public:
   virtual tree simplify (gimple *, gimple *, basic_block, jt_state *) = 0;
 };
 
+class hybrid_jt_state : public jt_state
+{
+private:
+  void register_equivs_stmt (gimple *, basic_block, jt_simplifier *) override
+  {
+    // Ranger has no need to simplify anything.
+  }
+};
+
+class hybrid_jt_simplifier : public jt_simplifier
+{
+public:
+  hybrid_jt_simplifier (class gimple_ranger *r, class path_range_query *q);
+  tree simplify (gimple *stmt, gimple *, basic_block, jt_state *) override;
+
+private:
+  void compute_ranges_from_state (gimple *stmt, jt_state *);
+
+  gimple_ranger *m_ranger;
+  path_range_query *m_query;
+  auto_vec<basic_block> m_path;
+};
+
 // This is the high level threader.  The entry point is
 // thread_outgoing_edges(), which calculates and registers paths to be
 // threaded.  When all candidates have been registered,

@@ -1026,8 +1026,9 @@ vect_get_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 		     stmt_vector_for_cost *body_cost_vec)
 {
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int alignment_support_scheme
-    = vect_supportable_dr_alignment (vinfo, dr_info, false);
+    = vect_supportable_dr_alignment (vinfo, dr_info, vectype, false);
 
   switch (alignment_support_scheme)
     {
@@ -1048,7 +1049,7 @@ vect_get_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
         /* Here, we assign an additional cost for the unaligned store.  */
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies,
 					  unaligned_store, stmt_info,
-					  DR_MISALIGNMENT (dr_info),
+					  dr_misalignment (dr_info, vectype),
 					  vect_body);
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
@@ -1216,8 +1217,9 @@ vect_get_load_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 		    bool record_prologue_costs)
 {
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int alignment_support_scheme
-    = vect_supportable_dr_alignment (vinfo, dr_info, false);
+    = vect_supportable_dr_alignment (vinfo, dr_info, vectype, false);
 
   switch (alignment_support_scheme)
     {
@@ -1237,7 +1239,7 @@ vect_get_load_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
         /* Here, we assign an additional cost for the unaligned load.  */
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies,
 					  unaligned_load, stmt_info,
-					  DR_MISALIGNMENT (dr_info),
+					  dr_misalignment (dr_info, vectype),
 					  vect_body);
 
         if (dump_enabled_p ())
@@ -1984,8 +1986,8 @@ get_negative_load_store_type (vec_info *vinfo,
       return VMAT_ELEMENTWISE;
     }
 
-  alignment_support_scheme = vect_supportable_dr_alignment (vinfo,
-							    dr_info, false);
+  alignment_support_scheme = vect_supportable_dr_alignment (vinfo, dr_info,
+							    vectype, false);
   if (alignment_support_scheme != dr_aligned
       && alignment_support_scheme != dr_unaligned_supported)
     {
@@ -2169,7 +2171,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	     be a multiple of B and so we are guaranteed to access a
 	     non-gap element in the same B-sized block.  */
 	  if (overrun_p
-	      && gap < (vect_known_alignment_in_bytes (first_dr_info)
+	      && gap < (vect_known_alignment_in_bytes (first_dr_info,
+						       vectype)
 			/ vect_get_scalar_dr_size (first_dr_info)))
 	    overrun_p = false;
 
@@ -2182,8 +2185,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	  if (overrun_p
 	      && !masked_p
 	      && (((alignment_support_scheme
-		      = vect_supportable_dr_alignment (vinfo,
-						       first_dr_info, false)))
+		      = vect_supportable_dr_alignment (vinfo, first_dr_info,
+						       vectype, false)))
 		   == dr_aligned
 		  || alignment_support_scheme == dr_unaligned_supported)
 	      && known_eq (nunits, (group_size - gap) * 2)
@@ -2240,7 +2243,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	 same B-sized block.  */
       if (would_overrun_p
 	  && !masked_p
-	  && gap < (vect_known_alignment_in_bytes (first_dr_info)
+	  && gap < (vect_known_alignment_in_bytes (first_dr_info, vectype)
 		    / vect_get_scalar_dr_size (first_dr_info)))
 	would_overrun_p = false;
 
@@ -2294,7 +2297,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
     *alignment_support_scheme = dr_unaligned_supported;
   else
     *alignment_support_scheme
-      = vect_supportable_dr_alignment (vinfo, first_dr_info, false);
+      = vect_supportable_dr_alignment (vinfo, first_dr_info, vectype, false);
 
   if (vls_type != VLS_LOAD && first_stmt_info == stmt_info)
     {
@@ -2435,7 +2438,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	  *alignment_support_scheme
 	    = vect_supportable_dr_alignment (vinfo,
 					     STMT_VINFO_DR_INFO (stmt_info),
-					     false);
+					     vectype, false);
 	}
     }
 
@@ -7907,7 +7910,7 @@ vectorizable_store (vec_info *vinfo,
     alignment_support_scheme = dr_unaligned_supported;
   else
     alignment_support_scheme
-      = vect_supportable_dr_alignment (vinfo, first_dr_info, false);
+      = vect_supportable_dr_alignment (vinfo, first_dr_info, vectype, false);
 
   gcc_assert (alignment_support_scheme);
   vec_loop_masks *loop_masks
@@ -8218,15 +8221,16 @@ vectorizable_store (vec_info *vinfo,
 		vec_oprnd = result_chain[i];
 
 	      align = known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
-	      if (aligned_access_p (first_dr_info))
+	      if (aligned_access_p (first_dr_info, vectype))
 		misalign = 0;
-	      else if (DR_MISALIGNMENT (first_dr_info) == -1)
+	      else if (dr_misalignment (first_dr_info, vectype)
+		       == DR_MISALIGNMENT_UNKNOWN)
 		{
 		  align = dr_alignment (vect_dr_behavior (vinfo, first_dr_info));
 		  misalign = 0;
 		}
 	      else
-		misalign = DR_MISALIGNMENT (first_dr_info);
+		misalign = dr_misalignment (first_dr_info, vectype);
 	      if (dataref_offset == NULL_TREE
 		  && TREE_CODE (dataref_ptr) == SSA_NAME)
 		set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
@@ -8303,7 +8307,7 @@ vectorizable_store (vec_info *vinfo,
 					  dataref_offset
 					  ? dataref_offset
 					  : build_int_cst (ref_type, 0));
-		  if (aligned_access_p (first_dr_info))
+		  if (aligned_access_p (first_dr_info, vectype))
 		    ;
 		  else
 		    TREE_TYPE (data_ref)
@@ -9551,17 +9555,17 @@ vectorizable_load (vec_info *vinfo,
 		      known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
 		    if (alignment_support_scheme == dr_aligned)
 		      {
-			gcc_assert (aligned_access_p (first_dr_info));
+			gcc_assert (aligned_access_p (first_dr_info, vectype));
 			misalign = 0;
 		      }
-		    else if (DR_MISALIGNMENT (first_dr_info) == -1)
+		    else if (dr_misalignment (first_dr_info, vectype) == -1)
 		      {
 			align = dr_alignment
 			  (vect_dr_behavior (vinfo, first_dr_info));
 			misalign = 0;
 		      }
 		    else
-		      misalign = DR_MISALIGNMENT (first_dr_info);
+		      misalign = dr_misalignment (first_dr_info, vectype);
 		    if (dataref_offset == NULL_TREE
 			&& TREE_CODE (dataref_ptr) == SSA_NAME)
 		      set_ptr_info_alignment (get_ptr_info (dataref_ptr),
@@ -9624,7 +9628,8 @@ vectorizable_load (vec_info *vinfo,
 			unsigned HOST_WIDE_INT gap
 			  = DR_GROUP_GAP (first_stmt_info);
 			unsigned int vect_align
-			  = vect_known_alignment_in_bytes (first_dr_info);
+			  = vect_known_alignment_in_bytes (first_dr_info,
+							   vectype);
 			unsigned int scalar_dr_size
 			  = vect_get_scalar_dr_size (first_dr_info);
 			/* If there's no peeling for gaps but we have a gap
@@ -10897,6 +10902,10 @@ vect_analyze_stmt (vec_info *vinfo,
         gcc_unreachable ();
     }
 
+  tree saved_vectype = STMT_VINFO_VECTYPE (stmt_info);
+  if (node)
+    STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (node);
+
   if (STMT_VINFO_RELEVANT_P (stmt_info))
     {
       gcall *call = dyn_cast <gcall *> (stmt_info->stmt);
@@ -10967,6 +10976,9 @@ vect_analyze_stmt (vec_info *vinfo,
 	      || vectorizable_phi (vinfo, stmt_info, NULL, node, cost_vec));
     }
 
+  if (node)
+    STMT_VINFO_VECTYPE (stmt_info) = saved_vectype;
+
   if (!ok)
     return opt_result::failure_at (stmt_info->stmt,
 				   "not vectorized:"
@@ -11004,6 +11016,10 @@ vect_transform_stmt (vec_info *vinfo,
   bool done;
 
   gcc_assert (slp_node || !PURE_SLP_STMT (stmt_info));
+
+  tree saved_vectype = STMT_VINFO_VECTYPE (stmt_info);
+  if (slp_node)
+    STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (slp_node);
 
   switch (STMT_VINFO_TYPE (stmt_info))
     {
@@ -11123,16 +11139,19 @@ vect_transform_stmt (vec_info *vinfo,
   if (!slp_node && vec_stmt)
     gcc_assert (STMT_VINFO_VEC_STMTS (stmt_info).exists ());
 
-  if (STMT_VINFO_TYPE (stmt_info) == store_vec_info_type)
-    return is_store;
+  if (STMT_VINFO_TYPE (stmt_info) != store_vec_info_type)
+    {
+      /* Handle stmts whose DEF is used outside the loop-nest that is
+	 being vectorized.  */
+      done = can_vectorize_live_stmts (vinfo, stmt_info, gsi, slp_node,
+				       slp_node_instance, true, NULL);
+      gcc_assert (done);
+    }
 
-  /* Handle stmts whose DEF is used outside the loop-nest that is
-     being vectorized.  */
-  done = can_vectorize_live_stmts (vinfo, stmt_info, gsi, slp_node,
-				   slp_node_instance, true, NULL);
-  gcc_assert (done);
+  if (slp_node)
+    STMT_VINFO_VECTYPE (stmt_info) = saved_vectype;
 
-  return false;
+  return is_store;
 }
 
 

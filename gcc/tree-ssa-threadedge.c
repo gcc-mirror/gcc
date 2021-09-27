@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
 #include "gimple-range.h"
+#include "gimple-range-path.h"
 
 /* To avoid code explosion due to jump threading, we limit the
    number of statements we are going to copy.  This variable
@@ -1396,4 +1397,68 @@ jt_state::register_equivs_stmt (gimple *stmt, basic_block bb,
 	  || is_gimple_min_invariant (cached_lhs)))
     register_equiv (gimple_get_lhs (stmt), cached_lhs,
 		    /*update_range=*/false);
+}
+
+// Hybrid threader implementation.
+
+
+hybrid_jt_simplifier::hybrid_jt_simplifier (gimple_ranger *r,
+					    path_range_query *q)
+{
+  m_ranger = r;
+  m_query = q;
+}
+
+tree
+hybrid_jt_simplifier::simplify (gimple *stmt, gimple *, basic_block,
+				jt_state *state)
+{
+  int_range_max r;
+
+  compute_ranges_from_state (stmt, state);
+
+  if (gimple_code (stmt) == GIMPLE_COND
+      || gimple_code (stmt) == GIMPLE_ASSIGN)
+    {
+      tree ret;
+      if (m_query->range_of_stmt (r, stmt) && r.singleton_p (&ret))
+	return ret;
+    }
+  else if (gimple_code (stmt) == GIMPLE_SWITCH)
+    {
+      gswitch *switch_stmt = dyn_cast <gswitch *> (stmt);
+      tree index = gimple_switch_index (switch_stmt);
+      if (m_query->range_of_expr (r, index, stmt))
+	return find_case_label_range (switch_stmt, &r);
+    }
+  return NULL;
+}
+
+// Use STATE to generate the list of imports needed for the solver,
+// and calculate the ranges along the path.
+
+void
+hybrid_jt_simplifier::compute_ranges_from_state (gimple *stmt, jt_state *state)
+{
+  auto_bitmap imports;
+  gori_compute &gori = m_ranger->gori ();
+
+  state->get_path (m_path);
+
+  // Start with the imports to the final conditional.
+  bitmap_copy (imports, gori.imports (m_path[0]));
+
+  // Add any other interesting operands we may have missed.
+  if (gimple_bb (stmt) != m_path[0])
+    {
+      for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
+	{
+	  tree op = gimple_op (stmt, i);
+	  if (op
+	      && TREE_CODE (op) == SSA_NAME
+	      && irange::supports_type_p (TREE_TYPE (op)))
+	    bitmap_set_bit (imports, SSA_NAME_VERSION (op));
+	}
+    }
+  m_query->compute_ranges (m_path, imports);
 }

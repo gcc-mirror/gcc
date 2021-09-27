@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-vrp1" } */
+/* { dg-options "-Ofast -fdump-tree-vrp-thread1" } */
 
 void g (int);
 void g1 (int);
@@ -27,4 +27,4 @@ f (long a, long b, long c, long d, long x)
   g (a);
 }
 
-/* { dg-final { scan-tree-dump-times "Removing basic block" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Removing basic block" 1 "vrp-thread1" } } */

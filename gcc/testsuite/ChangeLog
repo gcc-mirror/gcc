@@ -1,3 +1,63 @@
+2021-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/101334
+	* gfortran.dg/associated_assumed_rank.f90: New test.
+
+2021-09-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/regio-as-pointer.c: New negative test.
+	* gcc.target/pru/regio-as-pointer-2.c: New negative test.
+	* gcc.target/pru/regio-decl-2.c: New negative test.
+	* gcc.target/pru/regio-decl-3.c: New negative test.
+	* gcc.target/pru/regio-decl-4.c: New negative test.
+	* gcc.target/pru/regio-decl.c: New negative test.
+	* gcc.target/pru/regio-di.c: New negative test.
+	* gcc.target/pru/regio-hi.c: New negative test.
+	* gcc.target/pru/regio-qi.c: New negative test.
+	* gcc.target/pru/regio.c: New test.
+	* gcc.target/pru/regio.h: New helper header.
+
+2021-09-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102458
+	* gfortran.dg/pr102458.f90: New test.
+
+2021-09-24  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/101333
+	* gfortran.dg/c-interop/c407c-1.f90: Remove xfails.
+
+2021-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98216
+	PR c++/91292
+	* g++.dg/cpp2a/nontype-float2.C: New test.
+
+2021-09-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* gfortran.dg/include_9.f90: Add dg-prune-output.
+	* gfortran.dg/include_23.f90: New test.
+	* gfortran.dg/include_24.f90: New test.
+
+2021-09-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/20030714-2.c: Adjust.
+	* gcc.dg/tree-ssa/pr66752-3.c: Adjust.
+	* gcc.dg/tree-ssa/pr77445-2.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-dom-thread-18.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust.
+	* gcc.dg/vect/bb-slp-16.c: Adjust.
+
+2021-09-24  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/cond_op_addsubmuldiv__Float16-1.c: New test.
+	* gcc.target/i386/cond_op_addsubmuldiv__Float16-2.c: Ditto.
+	* gcc.target/i386/cond_op_fma__Float16-1.c: Ditto.
+	* gcc.target/i386/cond_op_fma__Float16-2.c: Ditto.
+	* gcc.target/i386/cond_op_maxmin__Float16-1.c: Ditto.
+	* gcc.target/i386/cond_op_maxmin__Float16-2.c: Ditto.
+
 2021-09-23  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR fortran/101320

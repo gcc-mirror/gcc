@@ -990,6 +990,34 @@ done:
 }
 
 
+/* Standard intrinsics listed under F2018:10.1.2 (6), which are excluded in
+   constant expressions, except TRANSFER (c.f. item (8)), which would need
+   separate treatment.  */
+
+static bool
+is_non_constant_intrinsic (gfc_expr *e)
+{
+  if (e->expr_type == EXPR_FUNCTION
+      && e->value.function.isym)
+    {
+      switch (e->value.function.isym->id)
+	{
+	  case GFC_ISYM_COMMAND_ARGUMENT_COUNT:
+	  case GFC_ISYM_GET_TEAM:
+	  case GFC_ISYM_NULL:
+	  case GFC_ISYM_NUM_IMAGES:
+	  case GFC_ISYM_TEAM_NUMBER:
+	  case GFC_ISYM_THIS_IMAGE:
+	    return true;
+
+	default:
+	  return false;
+	}
+    }
+  return false;
+}
+
+
 /* Determine if an expression is constant in the sense of F08:7.1.12.
  * This function expects that the expression has already been simplified.  */
 
@@ -1022,6 +1050,10 @@ gfc_is_constant_expr (gfc_expr *e)
     case EXPR_COMPCALL:
       gcc_assert (e->symtree || e->value.function.esym
 		  || e->value.function.isym);
+
+      /* Check for intrinsics excluded in constant expressions.  */
+      if (e->value.function.isym && is_non_constant_intrinsic (e))
+	return false;
 
       /* Call to intrinsic with at least one argument.  */
       if (e->value.function.isym && e->value.function.actual)

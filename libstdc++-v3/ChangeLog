@@ -1,3 +1,8 @@
+2021-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (cbegin, cend): Remove redundant
+	'inline' specifier.
+
 2021-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/specialized_algorithms/memory_management_tools/destroy_neg.cc:

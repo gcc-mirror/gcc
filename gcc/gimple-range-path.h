@@ -26,9 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 // will calculate the range of an SSA or STMT as if the BBs in the
 // path would have been executed in order.
 //
-// Only SSA names passed in IMPORTS are precomputed, and can be
-// queried.
-//
 // Note that the blocks are in reverse order, thus the exit block is
 // path[0].
 
@@ -37,8 +34,7 @@ class path_range_query : public range_query
 public:
   path_range_query (class gimple_ranger &ranger, bool resolve);
   virtual ~path_range_query ();
-  void precompute_ranges (const vec<basic_block> &path,
-			  const bitmap_head *imports);
+  void compute_ranges (const vec<basic_block> &, const bitmap_head *imports);
   bool range_of_expr (irange &r, tree name, gimple * = NULL) override;
   bool range_of_stmt (irange &r, gimple *, tree name = NULL) override;
   bool unreachable_path_p ();
@@ -56,13 +52,13 @@ private:
   bool get_cache (irange &r, tree name);
   void clear_cache (tree name);
 
-  // Methods to precompute ranges for the given path.
+  // Methods to compute ranges for the given path.
   bool range_defined_in_block (irange &, tree name, basic_block bb);
-  void precompute_ranges_in_block (basic_block bb);
+  void compute_ranges_in_block (basic_block bb);
   void adjust_for_non_null_uses (basic_block bb);
   void ssa_range_in_phi (irange &r, gphi *phi);
-  void precompute_relations (const vec<basic_block> &);
-  void precompute_phi_relations (basic_block bb, basic_block prev);
+  void compute_relations (const vec<basic_block> &);
+  void compute_phi_relations (basic_block bb, basic_block prev);
   void add_copies_to_imports ();
   bool add_to_imports (tree name, bitmap imports);
 

@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
+#include "value-query.h"
 
 /* Rewriting a function into SSA form can create a huge number of SSA_NAMEs,
    many of which may be thrown away shortly after their creation if jumps
@@ -484,7 +485,7 @@ get_nonzero_bits (const_tree name)
 
    This can be because it is a boolean type, any unsigned integral
    type with a single bit of precision, or has known range of [0..1]
-   via VRP analysis.  */
+   via range analysis.  */
 
 bool
 ssa_name_has_boolean_range (tree op)
@@ -502,12 +503,20 @@ ssa_name_has_boolean_range (tree op)
     return true;
 
   /* An integral type with more precision, but the object
-     only takes on values [0..1] as determined by VRP
+     only takes on values [0..1] as determined by range
      analysis.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (op))
-      && (TYPE_PRECISION (TREE_TYPE (op)) > 1)
-      && wi::eq_p (get_nonzero_bits (op), 1))
-    return true;
+      && (TYPE_PRECISION (TREE_TYPE (op)) > 1))
+    {
+      int_range<2> onezero (build_zero_cst (TREE_TYPE (op)),
+			    build_one_cst (TREE_TYPE (op)));
+      int_range<2> r;
+      if (get_range_query (cfun)->range_of_expr (r, op) && r == onezero)
+	return true;
+
+      if (wi::eq_p (get_nonzero_bits (op), 1))
+	return true;
+    }
 
   return false;
 }

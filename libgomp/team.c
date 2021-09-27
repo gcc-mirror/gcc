@@ -312,7 +312,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 		 unsigned flags, struct gomp_team *team,
 		 struct gomp_taskgroup *taskgroup)
 {
-  struct gomp_thread_start_data *start_data;
+  struct gomp_thread_start_data *start_data = NULL;
   struct gomp_thread *thr, *nthr;
   struct gomp_task *task;
   struct gomp_task_icv *icv;

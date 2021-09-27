@@ -44,7 +44,7 @@ subroutine s2 (x)
   implicit none
   type(*) :: x(*)
 
-  call g (x, 1)  ! { dg-error "Assumed.type" "pr101333" { xfail *-*-* } }
+  call g (x, 1)  ! { dg-error "Assumed.type" }
 end subroutine
 
 ! Check that a scalar gives an error.
@@ -53,7 +53,7 @@ subroutine s3 (x)
   implicit none
   type(*) :: x
 
-  call g (x, 1)  ! { dg-error "Assumed.type" "pr101333" { xfail *-*-* } }
+  call g (x, 1)  ! { dg-error "Assumed.type" }
 end subroutine
 
 ! Explicit-shape assumed-type actual arguments are forbidden implicitly

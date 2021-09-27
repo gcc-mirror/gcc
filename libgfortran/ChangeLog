@@ -1,3 +1,8 @@
+2021-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/101334
+	* intrinsics/associated.c (associated): Also check for same rank.
+
 2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/55534

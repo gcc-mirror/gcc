@@ -1,3 +1,92 @@
+2021-09-26  liuhongt  <hongtao.liu@intel.com>
+
+	* doc/extend.texi (Half-Precision): Remove storage only
+	description for _Float16 w/o avx512fp16.
+
+2021-09-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/constraints.md (Rrio): New constraint.
+	* config/pru/predicates.md (regio_operand): New predicate.
+	* config/pru/pru-pragma.c (pru_register_pragmas): Register
+	the __regio_symbol address space.
+	* config/pru/pru-protos.h (pru_symref2ioregno): Declaration.
+	* config/pru/pru.c (pru_symref2ioregno): New helper function.
+	(pru_legitimate_address_p): Remove.
+	(pru_addr_space_legitimate_address_p): Use the address space
+	aware hook variant.
+	(pru_nongeneric_pointer_addrspace): New helper function.
+	(pru_insert_attributes): New function to validate __regio_symbol
+	usage.
+	(TARGET_INSERT_ATTRIBUTES): New macro.
+	(TARGET_LEGITIMATE_ADDRESS_P): Remove.
+	(TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): New macro.
+	* config/pru/pru.h (enum reg_class): Add REGIO_REGS class.
+	* config/pru/pru.md (*regio_readsi): New pattern to read I/O
+	registers.
+	(*regio_nozext_writesi): New pattern to write to I/O registers.
+	(*regio_zext_write_r30<EQS0:mode>): Ditto.
+	* doc/extend.texi: Document the new PRU Named Address Space.
+
+2021-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98216
+	PR c++/91292
+	* real.c (encode_ieee_double): Avoid unwanted sign extension.
+	(encode_ieee_quad): Likewise.
+
+2021-09-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102147
+	* ira-build.c (ira_conflict_vector_profitable_p): Make
+	profitability calculation independent of host compiler pointer and
+	IRA_INT_BITS sizes.
+
+2021-09-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::path_range_query):
+	Move debugging header...
+	(path_range_query::precompute_ranges): ...here.
+	(path_range_query::internal_range_of_expr): Do not call
+	range_on_path_entry if NAME is defined in the current block.
+
+2021-09-24  Richard Biener  <rguenther@suse.de>
+
+	* cfghooks.c (verify_flow_info): Verify unallocated BB and
+	edge flags are not set.
+
+2021-09-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadupdate.c (jt_path_registry::cancel_invalid_paths):
+	New.
+	(jt_path_registry::register_jump_thread): Call
+	cancel_invalid_paths.
+	* tree-ssa-threadupdate.h (class jt_path_registry): Add
+	cancel_invalid_paths.
+
+2021-09-24  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/102400
+	* tree-ssa-sccvn.c (vn_reference_insert_pieces): Initialize
+	result_vdef to zero value.
+
+2021-09-24  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/102451
+	* tree-ssa-dse.c (delete_dead_or_redundant_call): Record bb of stmt
+	before removal.
+
+2021-09-24  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/sse.md (cond_<insn><mode>): Extend to support
+	vector HFmodes.
+	(cond_mul<mode>): Likewise.
+	(cond_div<mode>): Likewise.
+	(cond_<code><mode>): Likewise.
+	(cond_fma<mode>): Likewise.
+	(cond_fms<mode>): Likewise.
+	(cond_fnma<mode>): Likewise.
+	(cond_fnms<mode>): Likewise.
+
 2021-09-23  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/102463

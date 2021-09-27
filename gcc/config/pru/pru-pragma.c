@@ -83,4 +83,6 @@ pru_register_pragmas (void)
 {
   c_register_pragma (NULL, "ctable_entry", pru_pragma_ctable_entry);
   c_register_pragma (NULL, "CTABLE_ENTRY", pru_pragma_ctable_entry);
+
+  c_register_addr_space ("__regio_symbol", ADDR_SPACE_REGIO);
 }

@@ -192,7 +192,7 @@ back_threader::find_taken_edge_switch (const vec<basic_block> &path,
   tree name = gimple_switch_index (sw);
   int_range_max r;
 
-  m_solver.precompute_ranges (path, m_imports);
+  m_solver.compute_ranges (path, m_imports);
   m_solver.range_of_expr (r, name, sw);
 
   if (r.undefined_p ())
@@ -216,7 +216,7 @@ back_threader::find_taken_edge_cond (const vec<basic_block> &path,
 {
   int_range_max r;
 
-  m_solver.precompute_ranges (path, m_imports);
+  m_solver.compute_ranges (path, m_imports);
   m_solver.range_of_stmt (r, cond);
 
   if (m_solver.unreachable_path_p ())

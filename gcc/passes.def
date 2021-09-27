@@ -212,6 +212,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, true /* warn_array_bounds_p */);
+      NEXT_PASS (pass_vrp_threader);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_dce);
       /* pass_stdarg is always run and at this point we execute
@@ -337,6 +338,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
+      NEXT_PASS (pass_vrp_threader);
       /* Threading can leave many const/copy propagations in the IL.
 	 Clean them up.  Instead of just copy_prop, we use ccp to
 	 compute alignment and nonzero bits.  */
