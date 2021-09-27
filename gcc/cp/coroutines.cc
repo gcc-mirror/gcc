@@ -3829,13 +3829,13 @@ analyze_fn_parms (tree orig)
 
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (parm.frame_type))
 	{
-	  char *buf = xasprintf ("_Coro_%s_live", IDENTIFIER_POINTER (name));
-	  parm.guard_var = build_lang_decl (VAR_DECL, get_identifier (buf),
-					    boolean_type_node);
+	  char *buf = xasprintf ("%s%s_live", DECL_NAME (arg) ? "_Coro_" : "",
+				 IDENTIFIER_POINTER (name));
+	  parm.guard_var
+	    = coro_build_artificial_var (UNKNOWN_LOCATION, get_identifier (buf),
+					 boolean_type_node, orig,
+					 boolean_false_node);
 	  free (buf);
-	  DECL_ARTIFICIAL (parm.guard_var) = true;
-	  DECL_CONTEXT (parm.guard_var) = orig;
-	  DECL_INITIAL (parm.guard_var) = boolean_false_node;
 	  parm.trivial_dtor = false;
 	}
       else
@@ -4843,11 +4843,14 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 					     NULL, parm.frame_type,
 					     LOOKUP_NORMAL,
 					     tf_warning_or_error);
-	      /* This var is now live.  */
-	      r = build_modify_expr (fn_start, parm.guard_var,
-				     boolean_type_node, INIT_EXPR, fn_start,
-				     boolean_true_node, boolean_type_node);
-	      finish_expr_stmt (r);
+	      if (flag_exceptions)
+		{
+		  /* This var is now live.  */
+		  r = build_modify_expr (fn_start, parm.guard_var,
+					 boolean_type_node, INIT_EXPR, fn_start,
+					 boolean_true_node, boolean_type_node);
+		  finish_expr_stmt (r);
+		}
 	    }
 	}
     }
