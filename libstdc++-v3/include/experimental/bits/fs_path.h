@@ -425,8 +425,8 @@ namespace __detail
     class iterator;
     typedef iterator const_iterator;
 
-    iterator begin() const;
-    iterator end() const;
+    iterator begin() const noexcept;
+    iterator end() const noexcept;
 
     /// @cond undocumented
     // Create a basic_string by reading until a null character.
