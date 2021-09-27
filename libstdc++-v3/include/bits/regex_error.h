@@ -152,7 +152,7 @@ namespace regex_constants
      * @returns the regex error code.
      */
     regex_constants::error_type
-    code() const
+    code() const noexcept
     { return _M_code; }
 
   private:
