@@ -259,10 +259,8 @@ public:
   {
     CHAR,
     STRING,
-    RAW_STRING,
     BYTE,
     BYTE_STRING,
-    RAW_BYTE_STRING,
     INT,
     FLOAT,
     BOOL

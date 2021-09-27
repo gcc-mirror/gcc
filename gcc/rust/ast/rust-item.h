@@ -32,7 +32,7 @@ class MacroInvocationSemi;
 // TODO: inline?
 /*struct AbiName {
     std::string abi_name;
-    // Technically is meant to be STRING_LITERAL or RAW_STRING_LITERAL
+    // Technically is meant to be STRING_LITERAL
 
   public:
     // Returns whether abi name is empty, i.e. doesn't exist.
