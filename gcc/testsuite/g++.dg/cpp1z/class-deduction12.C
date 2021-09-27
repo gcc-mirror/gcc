@@ -15,3 +15,9 @@ A a(&i,2,B<42>());
 template <class,class> class same;
 template <class T> class same<T,T> {};
 same<decltype(a), A<int*>> s;
+
+#if __cpp_deduction_guides >= 201907
+template <class T> using C = A<const T*>;
+
+same<decltype(C(&i, 2, B<42>())), A<const int*>> t;
+#endif
