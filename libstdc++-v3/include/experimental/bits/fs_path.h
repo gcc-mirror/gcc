@@ -398,8 +398,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     class iterator;
     typedef iterator const_iterator;
 
-    iterator begin() const;
-    iterator end() const;
+    iterator begin() const noexcept;
+    iterator end() const noexcept;
 
     // Create a basic_string by reading until a null character.
     template<typename _InputIterator,
