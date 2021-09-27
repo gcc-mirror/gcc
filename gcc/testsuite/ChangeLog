@@ -1,3 +1,10 @@
+2021-09-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2021-09-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/pr102222.c: New test.
+
 2021-09-21  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
