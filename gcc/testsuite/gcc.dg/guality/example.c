@@ -1,4 +1,3 @@
-/* { dg-do run { xfail { ! aarch64*-*-* } } } */
 /* { dg-options "-g" } */
 /* { dg-xfail-run-if "" aarch64*-*-* "*" { "-O[01g]" } } */
 

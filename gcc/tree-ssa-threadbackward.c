@@ -943,7 +943,7 @@ public:
 bool
 pass_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
 {
-  return flag_expensive_optimizations;
+  return flag_thread_jumps && flag_expensive_optimizations;
 }
 
 // Try to thread blocks in FUN.  Return TRUE if any jump thread paths were
@@ -1013,7 +1013,7 @@ public:
 bool
 pass_early_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
 {
-  return true;
+  return flag_thread_jumps;
 }
 
 unsigned int

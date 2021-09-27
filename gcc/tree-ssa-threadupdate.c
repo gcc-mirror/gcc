@@ -2822,6 +2822,8 @@ jt_path_registry::cancel_invalid_paths (vec<jump_thread_edge *> &path)
 bool
 jt_path_registry::register_jump_thread (vec<jump_thread_edge *> *path)
 {
+  gcc_checking_assert (flag_thread_jumps);
+
   if (!dbg_cnt (registered_jump_thread))
     {
       path->release ();

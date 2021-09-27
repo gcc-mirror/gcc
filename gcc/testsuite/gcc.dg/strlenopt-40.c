@@ -1,7 +1,7 @@
 /* PR tree-optimization/83671 - fix for false positive reported by
    -Wstringop-overflow does not work with inlining
    { dg-do compile }
-   { dg-options "-O1 -fdump-tree-optimized" } */
+   { dg-options "-O1 -fthread-jumps -fdump-tree-optimized" } */
 
 #include "strlenopt.h"
 

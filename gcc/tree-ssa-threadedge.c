@@ -1196,6 +1196,9 @@ jump_threader::thread_outgoing_edges (basic_block bb)
   int flags = (EDGE_IGNORE | EDGE_COMPLEX | EDGE_ABNORMAL);
   gimple *last;
 
+  if (!flag_thread_jumps)
+    return;
+
   /* If we have an outgoing edge to a block with multiple incoming and
      outgoing edges, then we may be able to thread the edge, i.e., we
      may be able to statically determine which of the outgoing edges

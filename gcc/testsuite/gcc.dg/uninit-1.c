@@ -1,7 +1,7 @@
 /* Spurious uninitialized variable warnings, case 1.
    Taken from cppfiles.c (merge_include_chains) */
 /* { dg-do compile } */
-/* { dg-options "-O -Wuninitialized" } */
+/* { dg-options "-O -Wuninitialized -fthread-jumps" } */
 
 struct list
 {

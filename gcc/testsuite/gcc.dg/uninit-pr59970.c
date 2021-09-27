@@ -41,7 +41,7 @@ d_demangle_callback_O1 (const char *mangled)
 #pragma GCC pop_options
 
 
-#pragma GCC optimize ("Og")
+#pragma GCC optimize ("Og,thread-jumps")
 
 __attribute__ ((noipa)) int
 d_demangle_callback_Og (const char *mangled)
