@@ -423,7 +423,7 @@ namespace __detail
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
 	   bool __dfs_mode>
     void _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_handle_accept(_Match_mode __match_mode, _StateIdT __i)
+    _M_handle_accept(_Match_mode __match_mode, _StateIdT)
     {
       if (__dfs_mode)
 	{
