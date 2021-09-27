@@ -140,7 +140,8 @@ namespace __detail
 	return true;
       if (this->_M_atom())
 	{
-	  while (this->_M_quantifier());
+	  while (this->_M_quantifier())
+	    ;
 	  return true;
 	}
       return false;
@@ -440,7 +441,8 @@ namespace __detail
 	      __last_char.second = '-';
 	    }
 	}
-      while (_M_expression_term(__last_char, __matcher));
+      while (_M_expression_term(__last_char, __matcher))
+	;
       if (__last_char.first)
 	__matcher._M_add_char(__last_char.second);
       __matcher._M_ready();
