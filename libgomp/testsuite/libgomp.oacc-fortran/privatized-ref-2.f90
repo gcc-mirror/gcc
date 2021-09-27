@@ -75,9 +75,9 @@ contains
     ! { dg-note {variable 'A\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: static} "" { target *-*-* } l_compute$c_compute }
     array = [(-2*i, i = 1, size(array))]
     !$acc loop gang private(array) ! { dg-line l_loop[incr c_loop] }
-    ! { dg-message {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
-    ! { dg-message {variable 'array\.[0-9]+' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
-    ! { dg-message {variable 'array\.[0-9]+' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } l_loop$c_loop }
+    ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+    ! { dg-note {variable 'array\.[0-9]+' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
+    ! { dg-note {variable 'array\.[0-9]+' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } l_loop$c_loop }
 
     ! { dg-message {sorry, unimplemented: target cannot support alloca} PR65181 { target openacc_nvidia_accel_selected } l_loop$c_loop }
 
