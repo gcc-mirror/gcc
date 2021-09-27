@@ -151,9 +151,9 @@ am__objects_1 = hwasan_allocation_functions.lo hwasan_allocator.lo \
 	hwasan_fuchsia.lo hwasan_globals.lo hwasan_interceptors.lo \
 	hwasan_interceptors_vfork.lo hwasan_linux.lo \
 	hwasan_memintrinsics.lo hwasan_new_delete.lo \
-	hwasan_poisoning.lo hwasan_report.lo hwasan_setjmp.lo \
-	hwasan_tag_mismatch_aarch64.lo hwasan_thread.lo \
-	hwasan_thread_list.lo hwasan_type_test.lo
+	hwasan_poisoning.lo hwasan_report.lo hwasan_setjmp_aarch64.lo \
+	hwasan_setjmp_x86_64.lo hwasan_tag_mismatch_aarch64.lo \
+	hwasan_thread.lo hwasan_thread_list.lo hwasan_type_test.lo
 am_libhwasan_la_OBJECTS = $(am__objects_1)
 libhwasan_la_OBJECTS = $(am_libhwasan_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -427,7 +427,8 @@ hwasan_files = \
 	hwasan_new_delete.cpp \
 	hwasan_poisoning.cpp \
 	hwasan_report.cpp \
-	hwasan_setjmp.S \
+	hwasan_setjmp_aarch64.S \
+	hwasan_setjmp_x86_64.S \
 	hwasan_tag_mismatch_aarch64.S \
 	hwasan_thread.cpp \
 	hwasan_thread_list.cpp \
@@ -570,7 +571,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_new_delete.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_poisoning.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_report.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_setjmp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_setjmp_aarch64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_setjmp_x86_64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_tag_mismatch_aarch64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_thread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_thread_list.Plo@am__quote@

@@ -22,7 +22,8 @@ namespace __sanitizer {
 uptr StackTrace::GetNextInstructionPc(uptr pc) {
 #if defined(__sparc__) || defined(__mips__)
   return pc + 8;
-#elif defined(__powerpc__) || defined(__arm__) || defined(__aarch64__)
+#elif defined(__powerpc__) || defined(__arm__) || defined(__aarch64__) || \
+    defined(__hexagon__)
   return pc + 4;
 #elif SANITIZER_RISCV64
   // Current check order is 4 -> 2 -> 6 -> 8
@@ -64,7 +65,7 @@ void BufferedStackTrace::Init(const uptr *pcs, uptr cnt, uptr extra_top_pc) {
   top_frame_bp = 0;
 }
 
-// Sparc implemention is in its own file.
+// Sparc implementation is in its own file.
 #if !defined(__sparc__)
 
 // In GCC on ARM bp points to saved lr, not fp, so we should check the next
@@ -85,8 +86,8 @@ static inline uhwptr *GetCanonicFrame(uptr bp,
   // Nope, this does not look right either. This means the frame after next does
   // not have a valid frame pointer, but we can still extract the caller PC.
   // Unfortunately, there is no way to decide between GCC and LLVM frame
-  // layouts. Assume GCC.
-  return bp_prev - 1;
+  // layouts. Assume LLVM.
+  return bp_prev;
 #else
   return (uhwptr*)bp;
 #endif
@@ -109,21 +110,14 @@ void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
          IsAligned((uptr)frame, sizeof(*frame)) &&
          size < max_depth) {
 #ifdef __powerpc__
-    // PowerPC ABIs specify that the return address is saved on the
-    // *caller's* stack frame.  Thus we must dereference the back chain
-    // to find the caller frame before extracting it.
+    // PowerPC ABIs specify that the return address is saved at offset
+    // 16 of the *caller's* stack frame.  Thus we must dereference the
+    // back chain to find the caller frame before extracting it.
     uhwptr *caller_frame = (uhwptr*)frame[0];
     if (!IsValidFrame((uptr)caller_frame, stack_top, bottom) ||
         !IsAligned((uptr)caller_frame, sizeof(uhwptr)))
       break;
-    // For most ABIs the offset where the return address is saved is two
-    // register sizes.  The exception is the SVR4 ABI, which uses an
-    // offset of only one register size.
-#ifdef _CALL_SYSV
-    uhwptr pc1 = caller_frame[1];
-#else
     uhwptr pc1 = caller_frame[2];
-#endif
 #elif defined(__s390__)
     uhwptr pc1 = frame[14];
 #elif defined(__riscv)

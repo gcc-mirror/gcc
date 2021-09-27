@@ -35,7 +35,7 @@ struct ListOfGlobals {
   ListOfGlobals *next;
 };
 
-static BlockingMutex mu_for_globals(LINKER_INITIALIZED);
+static Mutex mu_for_globals;
 static LowLevelAllocator allocator_for_globals;
 static ListOfGlobals *list_of_all_globals;
 
@@ -108,7 +108,7 @@ static u32 FindRegistrationSite(const Global *g) {
 int GetGlobalsForAddress(uptr addr, Global *globals, u32 *reg_sites,
                          int max_globals) {
   if (!flags()->report_globals) return 0;
-  BlockingMutexLock lock(&mu_for_globals);
+  Lock lock(&mu_for_globals);
   int res = 0;
   for (ListOfGlobals *l = list_of_all_globals; l; l = l->next) {
     const Global &g = *l->g;
@@ -151,6 +151,23 @@ static void CheckODRViolationViaIndicator(const Global *g) {
         !IsODRViolationSuppressed(g->name))
       ReportODRViolation(g, FindRegistrationSite(g),
                          l->g, FindRegistrationSite(l->g));
+  }
+}
+
+// Check ODR violation for given global G by checking if it's already poisoned.
+// We use this method in case compiler doesn't use private aliases for global
+// variables.
+static void CheckODRViolationViaPoisoning(const Global *g) {
+  if (__asan_region_is_poisoned(g->beg, g->size_with_redzone)) {
+    // This check may not be enough: if the first global is much larger
+    // the entire redzone of the second global may be within the first global.
+    for (ListOfGlobals *l = list_of_all_globals; l; l = l->next) {
+      if (g->beg == l->g->beg &&
+          (flags()->detect_odr_violation >= 2 || g->size != l->g->size) &&
+          !IsODRViolationSuppressed(g->name))
+        ReportODRViolation(g, FindRegistrationSite(g),
+                           l->g, FindRegistrationSite(l->g));
+    }
   }
 }
 
@@ -199,6 +216,8 @@ static void RegisterGlobal(const Global *g) {
     // where two globals with the same name are defined in different modules.
     if (UseODRIndicator(g))
       CheckODRViolationViaIndicator(g);
+    else
+      CheckODRViolationViaPoisoning(g);
   }
   if (CanPoisonMemory())
     PoisonRedZones(*g);
@@ -238,7 +257,7 @@ static void UnregisterGlobal(const Global *g) {
 }
 
 void StopInitOrderChecking() {
-  BlockingMutexLock lock(&mu_for_globals);
+  Lock lock(&mu_for_globals);
   if (!flags()->check_initialization_order || !dynamic_init_globals)
     return;
   flags()->check_initialization_order = false;
@@ -340,7 +359,7 @@ void __asan_register_globals(__asan_global *globals, uptr n) {
   if (!flags()->report_globals) return;
   GET_STACK_TRACE_MALLOC;
   u32 stack_id = StackDepotPut(stack);
-  BlockingMutexLock lock(&mu_for_globals);
+  Lock lock(&mu_for_globals);
   if (!global_registration_site_vector) {
     global_registration_site_vector =
         new (allocator_for_globals) GlobalRegistrationSiteVector;
@@ -379,7 +398,7 @@ void __asan_register_globals(__asan_global *globals, uptr n) {
 // We must do this when a shared objects gets dlclosed.
 void __asan_unregister_globals(__asan_global *globals, uptr n) {
   if (!flags()->report_globals) return;
-  BlockingMutexLock lock(&mu_for_globals);
+  Lock lock(&mu_for_globals);
   for (uptr i = 0; i < n; i++) {
     if (SANITIZER_WINDOWS && globals[i].beg == 0) {
       // Skip globals that look like padding from the MSVC incremental linker.
@@ -405,7 +424,7 @@ void __asan_before_dynamic_init(const char *module_name) {
   bool strict_init_order = flags()->strict_init_order;
   CHECK(module_name);
   CHECK(asan_inited);
-  BlockingMutexLock lock(&mu_for_globals);
+  Lock lock(&mu_for_globals);
   if (flags()->report_globals >= 3)
     Printf("DynInitPoison module: %s\n", module_name);
   for (uptr i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
@@ -429,7 +448,7 @@ void __asan_after_dynamic_init() {
       !dynamic_init_globals)
     return;
   CHECK(asan_inited);
-  BlockingMutexLock lock(&mu_for_globals);
+  Lock lock(&mu_for_globals);
   // FIXME: Optionally report that we're unpoisoning globals from a module.
   for (uptr i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
     DynInitGlobal &dyn_g = (*dynamic_init_globals)[i];

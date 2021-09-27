@@ -222,8 +222,8 @@ void CatastrophicErrorWrite(const char *buffer, uptr length);
 void RawWrite(const char *buffer);
 bool ColorizeReports();
 void RemoveANSIEscapeSequencesFromString(char *buffer);
-void Printf(const char *format, ...);
-void Report(const char *format, ...);
+void Printf(const char *format, ...) FORMAT(1, 2);
+void Report(const char *format, ...) FORMAT(1, 2);
 void SetPrintfAndReportCallback(void (*callback)(const char *));
 #define VReport(level, ...)                                              \
   do {                                                                   \
@@ -618,7 +618,7 @@ class InternalScopedString {
     buffer_.resize(1);
     buffer_[0] = '\0';
   }
-  void append(const char *format, ...);
+  void append(const char *format, ...) FORMAT(2, 3);
   const char *data() const { return buffer_.data(); }
   char *data() { return buffer_.data(); }
 
@@ -697,7 +697,8 @@ enum ModuleArch {
   kModuleArchARMV7S,
   kModuleArchARMV7K,
   kModuleArchARM64,
-  kModuleArchRISCV64
+  kModuleArchRISCV64,
+  kModuleArchHexagon
 };
 
 // Sorts and removes duplicates from the container.
@@ -764,6 +765,8 @@ inline const char *ModuleArchToString(ModuleArch arch) {
       return "arm64";
     case kModuleArchRISCV64:
       return "riscv64";
+    case kModuleArchHexagon:
+      return "hexagon";
   }
   CHECK(0 && "Invalid module arch");
   return "";
@@ -1063,17 +1066,10 @@ class ArrayRef {
   T *end_ = nullptr;
 };
 
-#define PRINTF_128(v)                                                         \
-  (*((u8 *)&v + 0)), (*((u8 *)&v + 1)), (*((u8 *)&v + 2)), (*((u8 *)&v + 3)), \
-      (*((u8 *)&v + 4)), (*((u8 *)&v + 5)), (*((u8 *)&v + 6)),                \
-      (*((u8 *)&v + 7)), (*((u8 *)&v + 8)), (*((u8 *)&v + 9)),                \
-      (*((u8 *)&v + 10)), (*((u8 *)&v + 11)), (*((u8 *)&v + 12)),             \
-      (*((u8 *)&v + 13)), (*((u8 *)&v + 14)), (*((u8 *)&v + 15))
-
 }  // namespace __sanitizer
 
 inline void *operator new(__sanitizer::operator_new_size_type size,
-                          __sanitizer::LowLevelAllocator &alloc) {  // NOLINT
+                          __sanitizer::LowLevelAllocator &alloc) {
   return alloc.Allocate(size);
 }
 
