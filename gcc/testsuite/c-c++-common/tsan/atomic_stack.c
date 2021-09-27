@@ -31,5 +31,4 @@ int main() {
 
 /* { dg-output "WARNING: ThreadSanitizer: data race.*(\n|\r\n|\r)" } */
 /* { dg-output "  Atomic write of size 4.*" } */
-/* { dg-output "    #0 __tsan_atomic32_fetch_add.*" } */
-/* { dg-output "    #1 Thread1.*" } */
+/* { dg-output "    #0 Thread1.*" } */
