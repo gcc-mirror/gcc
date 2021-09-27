@@ -5403,19 +5403,21 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
       mech = Default;
     }
 
-  /* If this is either a foreign function or if the underlying type won't
-     be passed by reference and is as aligned as the original type, strip
-     off possible padding type.  */
+  /* Either for foreign conventions, or if the underlying type is not passed
+     by reference and is as large and aligned as the original type, strip off
+     a possible padding type.  */
   if (TYPE_IS_PADDING_P (gnu_param_type))
     {
-      tree unpadded_type = TREE_TYPE (TYPE_FIELDS (gnu_param_type));
+      tree inner_type = TREE_TYPE (TYPE_FIELDS (gnu_param_type));
 
       if (foreign
 	  || (mech != By_Reference
-	      && !must_pass_by_ref (unpadded_type)
-	      && (mech == By_Copy || !default_pass_by_ref (unpadded_type))
-	      && TYPE_ALIGN (unpadded_type) >= TYPE_ALIGN (gnu_param_type)))
-	gnu_param_type = unpadded_type;
+	      && !must_pass_by_ref (inner_type)
+	      && (mech == By_Copy || !default_pass_by_ref (inner_type))
+	      && ((TYPE_SIZE (inner_type) == TYPE_SIZE (gnu_param_type)
+		   && TYPE_ALIGN (inner_type) >= TYPE_ALIGN (gnu_param_type))
+		  || Is_Init_Proc (gnat_subprog))))
+	gnu_param_type = inner_type;
     }
 
   /* For foreign conventions, pass arrays as pointers to the element type.
