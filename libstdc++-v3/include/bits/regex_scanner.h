@@ -223,11 +223,11 @@ namespace __detail
       _M_advance();
 
       _TokenT
-      _M_get_token() const
+      _M_get_token() const noexcept
       { return _M_token; }
 
       const _StringT&
-      _M_get_value() const
+      _M_get_value() const noexcept
       { return _M_value; }
 
 #ifdef _GLIBCXX_DEBUG
