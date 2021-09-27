@@ -7994,10 +7994,8 @@ package body Exp_Util is
    ----------------------
 
    function Inside_Init_Proc return Boolean is
-      Proc : constant Entity_Id := Enclosing_Init_Proc;
-
    begin
-      return Proc /= Empty;
+      return Present (Enclosing_Init_Proc);
    end Inside_Init_Proc;
 
    ----------------------

@@ -5307,8 +5307,8 @@ package body Sem_Aggr is
 
                   Add_Association
                    (Component      => Component,
-                    Expr       => Empty,
-                    Assoc_List => New_Assoc_List,
+                    Expr           => Empty,
+                    Assoc_List     => New_Assoc_List,
                     Is_Box_Present => True);
 
                elsif Present (Parent (Component))

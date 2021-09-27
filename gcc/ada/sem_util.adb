@@ -6589,11 +6589,16 @@ package body Sem_Util is
 
                if Inside_Init_Proc then
                   declare
+                     Init_Proc_Type : constant Entity_Id :=
+                       Entity (Parameter_Type (First
+                                 (Parameter_Specifications
+                                    (Parent (Current_Scope_No_Loops)))));
+
                      Conc_Typ : constant Entity_Id :=
-                                  Corresponding_Concurrent_Type
-                                    (Entity (Parameter_Type (First
-                                      (Parameter_Specifications
-                                        (Parent (Current_Scope))))));
+                       (if Present (Init_Proc_Type)
+                          and then Init_Proc_Type in E_Record_Type_Id
+                        then Corresponding_Concurrent_Type (Init_Proc_Type)
+                        else Empty);
 
                   begin
                      --  Don't complain if the corresponding concurrent type
