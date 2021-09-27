@@ -6590,9 +6590,7 @@ package body Sem_Util is
                if Inside_Init_Proc then
                   declare
                      Init_Proc_Type : constant Entity_Id :=
-                       Entity (Parameter_Type (First
-                                 (Parameter_Specifications
-                                    (Parent (Current_Scope_No_Loops)))));
+                       Etype (First_Formal (Current_Scope_No_Loops));
 
                      Conc_Typ : constant Entity_Id :=
                        (if Present (Init_Proc_Type)
