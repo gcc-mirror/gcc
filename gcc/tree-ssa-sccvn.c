@@ -5125,13 +5125,12 @@ static bool
 visit_reference_op_load (tree lhs, tree op, gimple *stmt)
 {
   bool changed = false;
-  tree last_vuse;
   tree result;
   vn_reference_t res;
 
-  last_vuse = gimple_vuse (stmt);
-  result = vn_reference_lookup (op, gimple_vuse (stmt),
-				default_vn_walk_kind, &res, true, &last_vuse);
+  tree vuse = gimple_vuse (stmt);
+  tree last_vuse = vuse;
+  result = vn_reference_lookup (op, vuse, default_vn_walk_kind, &res, true, &last_vuse);
 
   /* We handle type-punning through unions by value-numbering based
      on offset and size of the access.  Be prepared to handle a
@@ -5174,6 +5173,16 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
     {
       changed = set_ssa_val_to (lhs, lhs);
       vn_reference_insert (op, lhs, last_vuse, NULL_TREE);
+      if (vuse && SSA_VAL (last_vuse) != SSA_VAL (vuse))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Using extra use virtual operand ");
+	      print_generic_expr (dump_file, last_vuse);
+	      fprintf (dump_file, "\n");
+	    }
+	  vn_reference_insert (op, lhs, vuse, NULL_TREE);
+	}
     }
 
   return changed;
