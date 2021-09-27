@@ -1,3 +1,8 @@
+2021-09-26  liuhongt  <hongtao.liu@intel.com>
+
+	* doc/extend.texi (Half-Precision): Remove storage only
+	description for _Float16 w/o avx512fp16.
+
 2021-09-25  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* config/pru/constraints.md (Rrio): New constraint.
