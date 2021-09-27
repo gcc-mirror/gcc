@@ -98,9 +98,10 @@ non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
     return false;
 
   // We only care about the null / non-null property of pointers.
-  if (!POINTER_TYPE_P (TREE_TYPE (name)) || r.zero_p () || r.nonzero_p ())
+  if (!POINTER_TYPE_P (TREE_TYPE (name)))
     return false;
-
+  if (r.undefined_p () || r.lower_bound () != 0 || r.upper_bound () == 0)
+    return false;
   // Check if pointers have any non-null dereferences.
   if (non_null_deref_p (name, bb, search_dom))
     {
