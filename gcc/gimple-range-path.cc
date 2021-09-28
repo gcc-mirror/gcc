@@ -136,14 +136,23 @@ path_range_query::range_on_path_entry (irange &r, tree name)
 {
   int_range_max tmp;
   basic_block entry = entry_bb ();
+  bool changed = false;
+
   r.set_undefined ();
   for (unsigned i = 0; i < EDGE_COUNT (entry->preds); ++i)
     {
       edge e = EDGE_PRED (entry, i);
       if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  && m_ranger.range_on_edge (tmp, e, name))
-	r.union_ (tmp);
+	{
+	  r.union_ (tmp);
+	  changed = true;
+	}
     }
+
+  // Make sure we don't return UNDEFINED by mistake.
+  if (!changed)
+    r.set_varying (TREE_TYPE (name));
 }
 
 // Return the range of NAME at the end of the path being analyzed.
