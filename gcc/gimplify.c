@@ -10917,8 +10917,12 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   *list_p = clause;
   struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
   gimplify_omp_ctxp = ctx->outer_context;
-  lang_hooks.decls.omp_finish_clause (clause, pre_p,
-				      (ctx->region_type & ORT_ACC) != 0);
+  /* Don't call omp_finish_clause on implicitly added OMP_CLAUSE_PRIVATE
+     in simd.  Those are only added for the local vars inside of simd body
+     and they don't need to be e.g. default constructible.  */
+  if (code != OMP_CLAUSE_PRIVATE || ctx->region_type != ORT_SIMD) 
+    lang_hooks.decls.omp_finish_clause (clause, pre_p,
+					(ctx->region_type & ORT_ACC) != 0);
   if (gimplify_omp_ctxp)
     for (; clause != chain; clause = OMP_CLAUSE_CHAIN (clause))
       if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
