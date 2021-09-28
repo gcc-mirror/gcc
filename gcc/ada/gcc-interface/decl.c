@@ -239,7 +239,7 @@ static tree validate_size (Uint, tree, Entity_Id, enum tree_code, bool, bool,
 			   const char *, const char *);
 static void set_rm_size (Uint, tree, Entity_Id);
 static unsigned int validate_alignment (Uint, Entity_Id, unsigned int);
-static unsigned int promote_object_alignment (tree, Entity_Id);
+static unsigned int promote_object_alignment (tree, tree, Entity_Id);
 static void check_ok_for_atomic_type (tree, Entity_Id, bool);
 static tree create_field_decl_from (tree, tree, tree, tree, tree,
 				    vec<subst_pair>);
@@ -897,7 +897,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   or a reference to another object, and the size of its type is a
 	   constant, set the alignment to the smallest one which is not
 	   smaller than the size, with an appropriate cap.  */
-	if (!gnu_size && align == 0
+	if (!Known_Esize (gnat_entity)
+	    && !Known_Alignment (gnat_entity)
 	    && (Is_Full_Access (gnat_entity)
 		|| (!Optimize_Alignment_Space (gnat_entity)
 		    && kind != E_Exception
@@ -908,8 +909,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    && !imported_p
 		    && No (gnat_renamed_obj)
 		    && No (Address_Clause (gnat_entity))))
-	    && TREE_CODE (TYPE_SIZE (gnu_type)) == INTEGER_CST)
-	  align = promote_object_alignment (gnu_type, gnat_entity);
+	    && (TREE_CODE (TYPE_SIZE (gnu_type)) == INTEGER_CST || gnu_size))
+	  align = promote_object_alignment (gnu_type, gnu_size, gnat_entity);
 
 	/* If the object is set to have atomic components, find the component
 	   type and validate it.
@@ -7322,7 +7323,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   if (Is_Full_Access (gnat_field))
     {
       const unsigned int align
-	= promote_object_alignment (gnu_field_type, gnat_field);
+	= promote_object_alignment (gnu_field_type, NULL_TREE, gnat_field);
       if (align > 0)
 	gnu_field_type
 	  = maybe_pad_type (gnu_field_type, NULL_TREE, align, gnat_field,
@@ -9393,11 +9394,11 @@ validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
   return align;
 }
 
-/* Promote the alignment of GNU_TYPE corresponding to GNAT_ENTITY.  Return
-   a positive value on success or zero on failure.  */
+/* Promote the alignment of GNU_TYPE for an object with GNU_SIZE corresponding
+   to GNAT_ENTITY.  Return a positive value on success or zero on failure.  */
 
 static unsigned int
-promote_object_alignment (tree gnu_type, Entity_Id gnat_entity)
+promote_object_alignment (tree gnu_type, tree gnu_size, Entity_Id gnat_entity)
 {
   unsigned int align, size_cap, align_cap;
 
@@ -9418,14 +9419,17 @@ promote_object_alignment (tree gnu_type, Entity_Id gnat_entity)
       align_cap = get_mode_alignment (ptr_mode);
     }
 
+  if (!gnu_size)
+    gnu_size = TYPE_SIZE (gnu_type);
+
   /* Do the promotion within the above limits.  */
-  if (!tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
-      || compare_tree_int (TYPE_SIZE (gnu_type), size_cap) > 0)
+  if (!tree_fits_uhwi_p (gnu_size)
+      || compare_tree_int (gnu_size, size_cap) > 0)
     align = 0;
-  else if (compare_tree_int (TYPE_SIZE (gnu_type), align_cap) > 0)
+  else if (compare_tree_int (gnu_size, align_cap) > 0)
     align = align_cap;
   else
-    align = ceil_pow2 (tree_to_uhwi (TYPE_SIZE (gnu_type)));
+    align = ceil_pow2 (tree_to_uhwi (gnu_size));
 
   /* But make sure not to under-align the object.  */
   if (align <= TYPE_ALIGN (gnu_type))
