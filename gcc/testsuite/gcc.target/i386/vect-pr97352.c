@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mavx" } */
+/* { dg-options "-O3 -mavx -mno-avx2 -mno-avx512f" } */
 
 double x[2], a[4], b[4], c[5];
 
