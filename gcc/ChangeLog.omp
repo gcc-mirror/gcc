@@ -1,3 +1,14 @@
+2021-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102492
+	* gimplify.c (gimplify_adjust_omp_clauses_1): Don't call the
+	omp_finish_clause langhook on implicitly added OMP_CLAUSE_PRIVATE
+	clauses on SIMD constructs.
+	* g++.dg/gomp/simd-3.C: New test.
+
 2021-09-24  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	This patch removes the expectation that 'requires reverse_offload' is
