@@ -54,8 +54,7 @@ namespace __detail
 {
   template<typename _CharT>
     _Scanner<_CharT>::
-    _Scanner(typename _Scanner::_IterT __begin,
-	     typename _Scanner::_IterT __end,
+    _Scanner(const _CharT* __begin, const _CharT* __end,
 	     _FlagT __flags, std::locale __loc)
     : _ScannerBase(__flags),
       _M_current(__begin), _M_end(__end),

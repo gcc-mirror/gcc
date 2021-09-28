@@ -63,7 +63,7 @@ namespace __detail
 {
   template<typename _TraitsT>
     _Compiler<_TraitsT>::
-    _Compiler(_IterT __b, _IterT __e,
+    _Compiler(const _CharT* __b, const _CharT* __e,
 	      const typename _TraitsT::locale_type& __loc, _FlagT __flags)
     : _M_flags((__flags
 		& (regex_constants::ECMAScript

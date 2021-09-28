@@ -211,12 +211,11 @@ namespace __detail
     : public _ScannerBase
     {
     public:
-      typedef const _CharT*                                       _IterT;
       typedef std::basic_string<_CharT>                           _StringT;
       typedef regex_constants::syntax_option_type                 _FlagT;
       typedef const std::ctype<_CharT>                            _CtypeT;
 
-      _Scanner(_IterT __begin, _IterT __end,
+      _Scanner(const _CharT* __begin, const _CharT* __end,
 	       _FlagT __flags, std::locale __loc);
 
       void
@@ -257,8 +256,8 @@ namespace __detail
       void
       _M_eat_class(char);
 
-      _IterT                        _M_current;
-      _IterT                        _M_end;
+      const _CharT*                 _M_current;
+      const _CharT*                 _M_end;
       _CtypeT&                      _M_ctype;
       _StringT                      _M_value;
       void (_Scanner::* _M_eat_escape)();
