@@ -10781,7 +10781,7 @@ so, the first branch is redirected to either the destination of the
 second branch or a point immediately following it, depending on whether
 the condition is known to be true or false.
 
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fsplit-wide-types
 @opindex fsplit-wide-types

@@ -2570,7 +2570,7 @@ valid_jump_thread_path (vec<jump_thread_edge *> *path)
 void
 fwd_jt_path_registry::remove_jump_threads_including (edge_def *e)
 {
-  if (!m_paths.exists ())
+  if (!m_paths.exists () || !flag_thread_jumps)
     return;
 
   edge *slot = m_removed_edges->find_slot (e, INSERT);

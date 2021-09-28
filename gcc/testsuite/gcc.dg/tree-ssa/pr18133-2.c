@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fthread-jumps -fdump-tree-optimized-blocks" } */
+/* { dg-options "-O1 -fdump-tree-optimized-blocks" } */
 
 int c, d;
 

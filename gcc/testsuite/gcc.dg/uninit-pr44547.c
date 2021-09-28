@@ -1,7 +1,7 @@
 /* PR tree-optimization/44547 - -Wuninitialized reports false warning
    in nested switch statements
    { dg-do compile }
-   { dg-options "-O1 -Wall -fthread-jumps" } */
+   { dg-options "-O1 -Wall" } */
 
 __attribute__ ((noipa)) int test_O1 (int argc)
 {
