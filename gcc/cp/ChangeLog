@@ -1,3 +1,11 @@
+2021-09-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102479
+	* pt.c (rewrite_template_parm): Handle single-level tsubst_args.
+	Avoid a tree cycle when assigning the DECL_TEMPLATE_PARMS for a
+	rewritten ttp.
+	(alias_ctad_tweaks): Set current_template_parms accordingly.
+
 2021-09-23  Michel Morin  <mimomorin@gmail.com>
 
 	* parser.c (cp_keyword_starts_decl_specifier_p): Do not

@@ -1,3 +1,8 @@
+2021-09-27  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_init_options_struct): Set also
+	  x_flag_default_complex_method.
+
 2021-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_omp_split_clauses): Copy over OMP_CLAUSE_ALLOCATE_ALIGN.

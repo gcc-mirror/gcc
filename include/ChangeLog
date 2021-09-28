@@ -1,3 +1,7 @@
+2021-09-27  Vincent Lefevre  <vincent@vinc17.net>
+
+	* floatformat.h: Update pathname for IBM long double description.
+
 2021-09-22  Alan Modra  <amodra@gmail.com>
 
 	* obstack.h (__PTR_ALIGN): Expand and simplify __BPTR_ALIGN

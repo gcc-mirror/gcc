@@ -1,3 +1,9 @@
+2021-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94070
+	* intrinsics/size.c (size0, size1): Comment that now not
+	used by newer compiler code.
+
 2021-09-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/101334
