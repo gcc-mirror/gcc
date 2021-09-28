@@ -28,6 +28,7 @@
 #define bit_AVXVNNI	(1 << 4)
 #define bit_AVX512BF16	(1 << 5)
 #define bit_HRESET	(1 << 22)
+#define bit_AVXIFMA	(1 << 23)
 
 /* %ecx */
 #define bit_SSE3	(1 << 0)

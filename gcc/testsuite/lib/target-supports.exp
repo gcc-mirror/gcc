@@ -9522,6 +9522,18 @@ proc check_effective_target_avxvnni { } {
     } "-mavxvnni" ]
 }
 
+# Return 1 if avxifma instructions can be compiled.
+proc check_effective_target_avxifma { } {
+    return [check_no_compiler_messages avxifma object {
+	typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+	__v4di
+	_mm256_maddlo_epu64  (__v4di __A, __v4di __B, __v4di __C)
+        {
+	   return __builtin_ia32_vpmadd52luq256 (__A, __B, __C);
+	}
+    } "-O0 -mavxifma" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

@@ -7060,6 +7060,11 @@ Enable/disable the generation of the WIDEKL instructions.
 @cindex @code{target("avxvnni")} function attribute, x86
 Enable/disable the generation of the AVXVNNI instructions.
 
+@item avxifma
+@itemx no-avxifma
+@cindex @code{target("avxifma")} function attribute, x86
+Enable/disable the generation of the AVXIFMA instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86

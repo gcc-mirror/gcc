@@ -240,6 +240,7 @@ enum processor_features
   FEATURE_X86_64_V2,
   FEATURE_X86_64_V3,
   FEATURE_X86_64_V4,
+  FEATURE_AVXIFMA,
   CPU_FEATURE_MAX
 };
 

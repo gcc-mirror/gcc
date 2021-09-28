@@ -27867,7 +27867,7 @@
 (define_int_attr vpmadd52type
   [(UNSPEC_VPMADD52LUQ "luq") (UNSPEC_VPMADD52HUQ "huq")])
 
-(define_expand "vpamdd52huq<mode>_maskz"
+(define_expand "vpmadd52huq<mode>_maskz"
   [(match_operand:VI8_AVX512VL 0 "register_operand")
    (match_operand:VI8_AVX512VL 1 "register_operand")
    (match_operand:VI8_AVX512VL 2 "register_operand")
@@ -27875,13 +27875,13 @@
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX512IFMA"
 {
-  emit_insn (gen_vpamdd52huq<mode>_maskz_1 (
+  emit_insn (gen_vpmadd52huq<mode>_maskz_1 (
     operands[0], operands[1], operands[2], operands[3],
     CONST0_RTX (<MODE>mode), operands[4]));
   DONE;
 })
 
-(define_expand "vpamdd52luq<mode>_maskz"
+(define_expand "vpmadd52luq<mode>_maskz"
   [(match_operand:VI8_AVX512VL 0 "register_operand")
    (match_operand:VI8_AVX512VL 1 "register_operand")
    (match_operand:VI8_AVX512VL 2 "register_operand")
@@ -27889,26 +27889,58 @@
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX512IFMA"
 {
-  emit_insn (gen_vpamdd52luq<mode>_maskz_1 (
+  emit_insn (gen_vpmadd52luq<mode>_maskz_1 (
     operands[0], operands[1], operands[2], operands[3],
     CONST0_RTX (<MODE>mode), operands[4]));
   DONE;
 })
 
-(define_insn "vpamdd52<vpmadd52type><mode><sd_maskz_name>"
-  [(set (match_operand:VI8_AVX512VL 0 "register_operand" "=v")
-	(unspec:VI8_AVX512VL
-	  [(match_operand:VI8_AVX512VL 1 "register_operand" "0")
-	   (match_operand:VI8_AVX512VL 2 "register_operand" "v")
-	   (match_operand:VI8_AVX512VL 3 "nonimmediate_operand" "vm")]
+(define_insn "vpmadd52<vpmadd52type>v8di"
+  [(set (match_operand:V8DI 0 "register_operand" "=v")
+	(unspec:V8DI
+	  [(match_operand:V8DI 1 "register_operand" "0")
+	   (match_operand:V8DI 2 "register_operand" "v")
+	   (match_operand:V8DI 3 "nonimmediate_operand" "vm")]
 	  VPMADD52))]
   "TARGET_AVX512IFMA"
-  "vpmadd52<vpmadd52type>\t{%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3}"
+  "vpmadd52<vpmadd52type>\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_insn "vpmadd52<vpmadd52type><mode>"
+  [(set (match_operand:VI8_AVX2 0 "register_operand" "=x,v")
+	(unspec:VI8_AVX2
+	  [(match_operand:VI8_AVX2 1 "register_operand" "0,0")
+	   (match_operand:VI8_AVX2 2 "register_operand" "x,v")
+	   (match_operand:VI8_AVX2 3 "nonimmediate_operand" "xm,vm")]
+	  VPMADD52))]
+  "TARGET_AVXIFMA || (TARGET_AVX512IFMA && TARGET_AVX512VL)"
+  "@
+  %{vex%} vpmadd52<vpmadd52type>\t{%3, %2, %0|%0, %2, %3}
+  vpmadd52<vpmadd52type>\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "isa" "avxifma,avx512ifmavl")
+   (set_attr "type" "ssemuladd")
+   (set_attr "prefix" "vex,evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vpmadd52<vpmadd52type><mode>_maskz_1"
+  [(set (match_operand:VI8_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI8_AVX512VL
+	  (unspec:VI8_AVX512VL
+	    [(match_operand:VI8_AVX512VL 1 "register_operand" "0")
+	     (match_operand:VI8_AVX512VL 2 "register_operand" "v")
+	     (match_operand:VI8_AVX512VL 3 "nonimmediate_operand" "vm")]
+	    VPMADD52)
+	  (match_operand:VI8_AVX512VL 4 "const0_operand" "C")
+	  (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk")))]
+  "TARGET_AVX512IFMA"
+  "vpmadd52<vpmadd52type>\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "vpamdd52<vpmadd52type><mode>_mask"
+(define_insn "vpmadd52<vpmadd52type><mode>_mask"
   [(set (match_operand:VI8_AVX512VL 0 "register_operand" "=v")
 	(vec_merge:VI8_AVX512VL
 	  (unspec:VI8_AVX512VL

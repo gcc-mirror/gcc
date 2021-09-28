@@ -1214,3 +1214,8 @@ Do not use GOT to access external symbols.
 -param=x86-stlf-window-ninsns=
 Target Joined UInteger Var(x86_stlf_window_ninsns) Init(64) Param
 Instructions number above which STFL stall penalty can be compensated.
+
+mavxifma
+Target Mask(ISA2_AVXIFMA) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and
+AVXIFMA built-in functions and code generation.

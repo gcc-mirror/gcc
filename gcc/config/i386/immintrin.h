@@ -44,6 +44,8 @@
 
 #include <avxvnniintrin.h>
 
+#include <avxifmaintrin.h>
+
 #include <avx2intrin.h>
 
 #include <avx512fintrin.h>
