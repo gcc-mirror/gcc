@@ -1,3 +1,70 @@
+2021-09-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102479
+	* g++.dg/cpp1z/class-deduction12.C: Also test alias CTAD in the
+	same way.
+	* g++.dg/cpp1z/class-deduction99.C: New test.
+
+2021-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/torture/pr55107.c: Adjust.
+	* gcc.dg/tree-ssa/phi_on_compare-1.c: Adjust.
+	* gcc.dg/tree-ssa/phi_on_compare-2.c: Adjust.
+	* gcc.dg/tree-ssa/phi_on_compare-3.c: Adjust.
+	* gcc.dg/tree-ssa/phi_on_compare-4.c: Adjust.
+	* gcc.dg/tree-ssa/pr21559.c: Adjust.
+	* gcc.dg/tree-ssa/pr59597.c: Adjust.
+	* gcc.dg/tree-ssa/pr61839_1.c: Adjust.
+	* gcc.dg/tree-ssa/pr61839_3.c: Adjust.
+	* gcc.dg/tree-ssa/pr71437.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-dom-thread-11.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-dom-thread-16.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-dom-thread-18.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2a.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-thread-14.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Adjust.
+	* gcc.dg/tree-ssa/vrp106.c: Adjust.
+	* gcc.dg/tree-ssa/vrp55.c: Adjust.
+
+2021-09-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc.c-torture/compile/attr-complex-method-2.c: New test.
+	* gcc.c-torture/compile/attr-complex-method.c: New test.
+
+2021-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94070
+	* gfortran.dg/c-interop/cf-out-descriptor-6.f90: Remove xfail.
+	* gfortran.dg/c-interop/size.f90: Remove xfail.
+	* gfortran.dg/intrinsic_size_3.f90: Update scan-tree-dump-times.
+	* gfortran.dg/transpose_optimization_2.f90: Likewise.
+	* gfortran.dg/size_optional_dim_1.f90: Add scan-tree-dump-not.
+	* gfortran.dg/assumed_rank_22.f90: New test.
+	* gfortran.dg/assumed_rank_22_aux.c: New test.
+
+2021-09-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/94726
+	* gcc.dg/pr94726.c: New test.
+
+2021-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97351
+	PR tree-optimization/97352
+	PR tree-optimization/82426
+	* gcc.target/i386/vect-pr82426.c: New testcase.
+	* gcc.target/i386/vect-pr97352.c: Likewise.
+
+2021-09-27  liuhongt  <hongtao.liu@intel.com>
+
+	Revert:
+	2021-09-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101059
+	* gcc.target/i386/sse2-pr101059.c: New test.
+	* gcc.target/i386/sse3-pr101059.c: New test.
+
 2021-09-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/101334

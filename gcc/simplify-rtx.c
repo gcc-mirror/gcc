@@ -4587,7 +4587,8 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	if (GET_CODE (trueop0) == VEC_SELECT
 	    && GET_CODE (trueop1) == VEC_SELECT
 	    && rtx_equal_p (XEXP (trueop0, 0), XEXP (trueop1, 0))
-	    && GET_MODE (XEXP (trueop0, 0)) == mode)
+	    && GET_MODE_INNER (GET_MODE (XEXP (trueop0, 0)))
+	       == GET_MODE_INNER(mode))
 	  {
 	    rtx par0 = XEXP (trueop0, 1);
 	    rtx par1 = XEXP (trueop1, 1);

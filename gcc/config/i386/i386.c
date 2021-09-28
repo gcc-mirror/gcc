@@ -2462,6 +2462,8 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V2SFmode:
     case E_V2SImode:
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V2HFmode:
     case E_V8QImode:
       classes[0] = X86_64_SSE_CLASS;
       return 1;
@@ -2902,6 +2904,7 @@ pass_in_reg:
 
     case E_V8QImode:
     case E_V4HImode:
+    case E_V4HFmode:
     case E_V2SImode:
     case E_V2SFmode:
     case E_V1TImode:
@@ -3149,6 +3152,7 @@ pass_in_reg:
 
     case E_V8QImode:
     case E_V4HImode:
+    case E_V4HFmode:
     case E_V2SImode:
     case E_V2SFmode:
     case E_V1TImode:
@@ -5035,7 +5039,8 @@ standard_80387_constant_p (rtx x)
   /* For XFmode constants, try to find a special 80387 instruction when
      optimizing for size or on those CPUs that benefit from them.  */
   if (mode == XFmode
-      && (optimize_function_for_size_p (cfun) || TARGET_EXT_80387_CONSTANTS))
+      && (optimize_function_for_size_p (cfun) || TARGET_EXT_80387_CONSTANTS)
+      && !flag_rounding_math)
     {
       int i;
 

@@ -41,15 +41,15 @@ EXTENDHFVV(8, sf)
 EXTENDHFVV(4, sf)
 
 /* { dg-final { scan-assembler-times "vcvtpd2phz\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vcvtpd2phy\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "vcvtpd2phx\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vcvtpd2phy\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcvtpd2phx\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtps2phx\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtps2phxy\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vcvtps2phxx\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vcvtps2phxx\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtph2pd\[ \\t\]+\[^\{\n\]*\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vcvtph2pd\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "vcvtph2pd\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vcvtph2pd\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcvtph2pd\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtph2psx\[ \\t\]+\[^\{\n\]*\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtph2psx\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vcvtph2psx\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vcvtph2psx\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 

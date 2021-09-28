@@ -29,7 +29,7 @@ c_assumed (CFI_cdesc_t *x, int num)
       if (x->dim[2].extent == 0)
 	__builtin_printf ("c_assumed - 40 - OK\n");
       else
-	__builtin_printf ("ERROR: c_assumed num=%d: "
+	__builtin_printf ("error: c_assumed num=%d: "
 		      "x->dim[2].extent = %d != 0\n",
 		      num, x->dim[2].extent);
     }
@@ -44,7 +44,7 @@ c_assumed (CFI_cdesc_t *x, int num)
       if (x->dim[2].extent == 0)
 	__builtin_printf ("c_assumed - 100 - OK\n");
       else
-	__builtin_printf ("ERROR: c_assumed num=%d: "
+	__builtin_printf ("error: c_assumed num=%d: "
 		      "x->dim[2].extent = %d != 0\n",
 		      num, x->dim[2].extent);
     }

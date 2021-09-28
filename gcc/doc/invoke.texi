@@ -10781,7 +10781,7 @@ so, the first branch is redirected to either the destination of the
 second branch or a point immediately following it, depending on whether
 the condition is known to be true or false.
 
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fsplit-wide-types
 @opindex fsplit-wide-types
@@ -18570,6 +18570,7 @@ and the features that they enable by default:
 @item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+flagm}, @samp{+fp16fml}, @samp{+dotprod}
 @item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
 @item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
+@item @samp{armv8.7-a} @tab Armv8.7-a @tab @samp{armv8.6-a}, @samp{+ls64}
 @item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
 @end multitable
 
@@ -18856,6 +18857,9 @@ Enable brain half-precision floating-point instructions.  This also enables
 Advanced SIMD and floating-point instructions.  This option is enabled by
 default for @option{-march=armv8.6-a}.  Use of this option with architectures
 prior to Armv8.2-A is not supported.
+@item ls64
+Enable the 64-byte atomic load and store instructions for accelerators.
+This option is enabled by default for @option{-march=armv8.7-a}.
 @item flagm
 Enable the Flag Manipulation instructions Extension.
 @item pauth

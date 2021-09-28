@@ -1,3 +1,139 @@
+2021-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc
+	(path_range_query::precompute_ranges_in_block): Rename to...
+	(path_range_query::compute_ranges_in_block): ...this.
+	(path_range_query::precompute_ranges): Rename to...
+	(path_range_query::compute_ranges): ...this.
+	(path_range_query::precompute_relations): Rename to...
+	(path_range_query::compute_relations): ...this.
+	(path_range_query::precompute_phi_relations): Rename to...
+	(path_range_query::compute_phi_relations): ...this.
+	* gimple-range-path.h: Rename precompute* to compute*.
+	* tree-ssa-threadbackward.c
+	(back_threader::find_taken_edge_switch): Same.
+	(back_threader::find_taken_edge_cond): Same.
+	* tree-ssa-threadedge.c
+	(hybrid_jt_simplifier::compute_ranges_from_state): Same.
+	(hybrid_jt_state::register_equivs_stmt): Inline...
+	* tree-ssa-threadedge.h: ...here.
+
+2021-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (lhs_of_dominating_assert): Remove.
+	(class vrp_jt_state): Remove.
+	(class vrp_jt_simplifier): Remove.
+	(vrp_jt_simplifier::simplify): Remove.
+	(class vrp_jump_threader): Remove.
+	(vrp_jump_threader::vrp_jump_threader): Remove.
+	(vrp_jump_threader::~vrp_jump_threader): Remove.
+	(vrp_jump_threader::before_dom_children): Remove.
+	(vrp_jump_threader::after_dom_children): Remove.
+
+2021-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* passes.def (pass_vrp_threader): New.
+	* tree-pass.h (make_pass_vrp_threader): Add make_pass_vrp_threader.
+	* tree-ssa-threadedge.c (hybrid_jt_state::register_equivs_stmt): New.
+	(hybrid_jt_simplifier::hybrid_jt_simplifier): New.
+	(hybrid_jt_simplifier::simplify): New.
+	(hybrid_jt_simplifier::compute_ranges_from_state): New.
+	* tree-ssa-threadedge.h (class hybrid_jt_state): New.
+	(class hybrid_jt_simplifier): New.
+	* tree-vrp.c (execute_vrp): Remove ASSERT_EXPR based jump
+	threader.
+	(class hybrid_threader): New.
+	(hybrid_threader::hybrid_threader): New.
+	(hybrid_threader::~hybrid_threader): New.
+	(hybrid_threader::before_dom_children): New.
+	(hybrid_threader::after_dom_children): New.
+	(execute_vrp_threader): New.
+	(class pass_vrp_threader): New.
+	(make_pass_vrp_threader): New.
+
+2021-09-27  Martin Liska  <mliska@suse.cz>
+
+	* output.h (enum section_flag): New.
+	(SECTION_FORGET): Remove.
+	(SECTION_ENTSIZE): Make it (1UL << 8) - 1.
+	(SECTION_STYLE_MASK): Define it based on other enum
+	values.
+	* varasm.c (switch_to_section): Remove unused handling of
+	SECTION_FORGET.
+
+2021-09-27  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Add new variable flag_default_complex_method.
+	* opts.c (finish_options): Handle flags related to
+	  x_flag_complex_method.
+	* toplev.c (process_options): Remove option handling related
+	to flag_complex_method.
+
+2021-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102450
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Avoid using
+	type_for_size, instead use int_mode_for_size.
+
+2021-09-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/94726
+	* gimplify.c (gimplify_save_expr): Return early
+	if the type of val is error_mark_node.
+
+2021-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssanames.c (ssa_name_has_boolean_range): Use
+	get_range_query.
+
+2021-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp-analyze.h (class evrp_range_analyzer): Remove
+	vrp_visit_cond_stmt.
+	* tree-ssa-dom.c (cprop_operand): Convert to range_query API.
+	(cprop_into_stmt): Same.
+	(dom_opt_dom_walker::optimize_stmt): Same.
+
+2021-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97351
+	PR tree-optimization/97352
+	PR tree-optimization/82426
+	* tree-vectorizer.h (dr_misalignment): Add vector type
+	argument.
+	(aligned_access_p): Likewise.
+	(known_alignment_for_access_p): Likewise.
+	(vect_supportable_dr_alignment): Likewise.
+	(vect_known_alignment_in_bytes): Likewise.  Refactor.
+	(DR_MISALIGNMENT): Remove.
+	(vect_update_shared_vectype): Likewise.
+	* tree-vect-data-refs.c (dr_misalignment): Refactor, handle
+	a vector type with larger alignment requirement and apply
+	the negative step adjustment here.
+	(vect_calculate_target_alignment): Remove.
+	(vect_compute_data_ref_alignment): Get explicit vector type
+	argument, do not apply a negative step alignment adjustment
+	here.
+	(vect_slp_analyze_node_alignment): Re-analyze alignment
+	when we re-visit the DR with a bigger desired alignment but
+	keep more precise results from smaller alignments.
+	* tree-vect-slp.c (vect_update_shared_vectype): Remove.
+	(vect_slp_analyze_node_operations_1): Do not update the
+	shared vector type on stmts.
+	* tree-vect-stmts.c (vect_analyze_stmt): Push/pop the
+	vector type of an SLP node to the representative stmt-info.
+	(vect_transform_stmt): Likewise.
+
+2021-09-27  liuhongt  <hongtao.liu@intel.com>
+
+	Revert:
+	2021-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101059
+	* config/i386/sse.md (reduc_plus_scal_<mode>): Split to ..
+	(reduc_plus_scal_v4sf): .. this, New define_expand.
+	(reduc_plus_scal_v2df): .. and this, New define_expand.
+
 2021-09-26  liuhongt  <hongtao.liu@intel.com>
 
 	* doc/extend.texi (Half-Precision): Remove storage only

@@ -231,6 +231,12 @@ extern unsigned aarch64_architecture_version;
 /* Pointer Authentication (PAUTH) extension.  */
 #define AARCH64_FL_PAUTH      (1ULL << 40)
 
+/* 64-byte atomic load/store extensions.  */
+#define AARCH64_FL_LS64      (1ULL << 41)
+
+/* Armv8.7-a architecture extensions.  */
+#define AARCH64_FL_V8_7       (1ULL << 42)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -255,6 +261,9 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FOR_ARCH8_6			\
   (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_V8_6 | AARCH64_FL_FPSIMD \
    | AARCH64_FL_I8MM | AARCH64_FL_BF16)
+#define AARCH64_FL_FOR_ARCH8_7			\
+  (AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_V8_7 | AARCH64_FL_LS64)
+
 #define AARCH64_FL_FOR_ARCH8_R     \
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_R)
 

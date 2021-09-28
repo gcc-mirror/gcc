@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 
 // Internal construct to help facilitate debugging of solver.
-#define DEBUG_SOLVER (0 && dump_file)
+#define DEBUG_SOLVER (dump_file && dump_flags & TDF_THREADING)
 
 path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
   : m_ranger (ranger)
@@ -136,14 +136,23 @@ path_range_query::range_on_path_entry (irange &r, tree name)
 {
   int_range_max tmp;
   basic_block entry = entry_bb ();
+  bool changed = false;
+
   r.set_undefined ();
   for (unsigned i = 0; i < EDGE_COUNT (entry->preds); ++i)
     {
       edge e = EDGE_PRED (entry, i);
       if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  && m_ranger.range_on_edge (tmp, e, name))
-	r.union_ (tmp);
+	{
+	  r.union_ (tmp);
+	  changed = true;
+	}
     }
+
+  // Make sure we don't return UNDEFINED by mistake.
+  if (!changed)
+    r.set_varying (TREE_TYPE (name));
 }
 
 // Return the range of NAME at the end of the path being analyzed.

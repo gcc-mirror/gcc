@@ -438,13 +438,15 @@ fi
 if test $OMP_NEST_LOCK_25_SIZE -gt 8 || test $OMP_NEST_LOCK_25_ALIGN -gt $OMP_NEST_LOCK_25_SIZE; then
   OMP_NEST_LOCK_25_KIND=8
 fi
-if test $OMP_DEPEND_KIND -eq 16; then
-  if test $OMP_INT128_SIZE -ne 16; then
-    AC_MSG_ERROR([unsupported system, cannot find Fortran int kind=16, needed for omp_depend_kind])
-  fi
-else
-  if test $OMP_DEPEND_KIND -ne 8; then
-    AC_MSG_ERROR([unsupported system, cannot find Fortran integer kind for omp_depend_kind])
+if test "$ac_cv_fc_compiler_gnu" = yes; then
+  if test $OMP_DEPEND_KIND -eq 16; then
+    if test $OMP_INT128_SIZE -ne 16; then
+      AC_MSG_ERROR([unsupported system, cannot find Fortran int kind=16, needed for omp_depend_kind])
+    fi
+  else
+    if test $OMP_DEPEND_KIND -ne 8; then
+      AC_MSG_ERROR([unsupported system, cannot find Fortran integer kind for omp_depend_kind])
+    fi
   fi
 fi
 

@@ -1,3 +1,22 @@
+2021-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94070
+	* trans-array.c (gfc_tree_array_size): New function to
+	find size inline (whole array or one dimension).
+	(array_parameter_size): Use it, take stmt_block as arg.
+	(gfc_conv_array_parameter): Update call.
+	* trans-array.h (gfc_tree_array_size): Add prototype.
+	* trans-decl.c (gfor_fndecl_size0, gfor_fndecl_size1): Remove
+	these global vars.
+	(gfc_build_intrinsic_function_decls): Remove their initialization.
+	* trans-expr.c (gfc_conv_procedure_call): Update
+	bounds of pointer/allocatable actual args to nonallocatable/nonpointer
+	dummies to be one based.
+	* trans-intrinsic.c (gfc_conv_intrinsic_shape): Fix case for
+	assumed rank with allocatable/pointer dummy.
+	(gfc_conv_intrinsic_size): Update to use inline function.
+	* trans.h (gfor_fndecl_size0, gfor_fndecl_size1): Remove var decl.
+
 2021-09-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/101334

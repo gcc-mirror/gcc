@@ -197,6 +197,9 @@ enum dump_flag
   /* For error.  */
   TDF_ERROR = (1 << 26),
 
+  /* Dumping for range path solver.  */
+  TDF_THREADING = (1 << 27),
+
   /* All values.  */
   TDF_ALL_VALUES = (1 << 29) - 1
 };
