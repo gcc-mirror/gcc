@@ -1983,7 +1983,9 @@ cont:
 	  output_name = XOBFINISH (&env_obstack, char *);
 
 	  /* Adjust the dumpbase if the linker output file was seen.  */
-	  int dumpbase_len = (strlen (dumppfx) + sizeof (DUMPBASE_SUFFIX));
+	  int dumpbase_len = (strlen (dumppfx)
+			      + sizeof (DUMPBASE_SUFFIX)
+			      + sizeof (".ltrans"));
 	  char *dumpbase = (char *) xmalloc (dumpbase_len + 1);
 	  snprintf (dumpbase, dumpbase_len, "%sltrans%u.ltrans", dumppfx, i);
 	  argv_ptr[0] = dumpbase;
@@ -2009,9 +2011,11 @@ cont:
 	    }
 	  else
 	    {
-	      char argsuffix[sizeof (DUMPBASE_SUFFIX) + 1];
+	      char argsuffix[sizeof (DUMPBASE_SUFFIX)
+			     + sizeof (".ltrans_args") + 1];
 	      if (save_temps)
-		snprintf (argsuffix, sizeof (DUMPBASE_SUFFIX),
+		snprintf (argsuffix,
+			  sizeof (DUMPBASE_SUFFIX) + sizeof (".ltrans_args"),
 			  "ltrans%u.ltrans_args", i);
 	      fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
 			    true, save_temps ? argsuffix : NULL);
