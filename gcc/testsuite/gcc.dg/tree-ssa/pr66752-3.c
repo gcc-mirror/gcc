@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread1-details -fdump-tree-thread3" } */
+/* { dg-options "-O2 -fdump-tree-thread1-details -fdump-tree-thread4" } */
 
 extern int status, pt;
 extern int count;
@@ -43,4 +43,4 @@ foo (int N, int c, int b, int *a)
    run after loop optimizations , can successfully eliminate the
    references to FLAG.  Verify that ther are no references by the late
    threading passes.  */
-/* { dg-final { scan-tree-dump-not "if .flag" "thread3"} } */
+/* { dg-final { scan-tree-dump-not "if .flag" "thread4"} } */

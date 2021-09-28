@@ -123,7 +123,7 @@ enum STATES FMS( u8 **in , u32 *transitions) {
    aarch64 has the highest CASE_VALUES_THRESHOLD in GCC.  It's high enough
    to change decisions in switch expansion which in turn can expose new
    jump threading opportunities.  Skip the later tests on aarch64.  */
-/* { dg-final { scan-tree-dump "Jumps threaded: 9" "thread1" } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: \[7-9\]" "thread1" } } */
 /* { dg-final { scan-tree-dump-times "Invalid sum" 1 "thread1" } } */
 /* { dg-final { scan-tree-dump-not "optimizing for size" "thread1" } } */
 /* { dg-final { scan-tree-dump-not "optimizing for size" "thread2" } } */
