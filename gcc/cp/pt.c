@@ -7994,12 +7994,12 @@ coerce_template_template_parms (tree parm_parms,
       /* So coerce P's args to apply to A's parms, and then deduce between A's
 	 args and the converted args.  If that succeeds, A is at least as
 	 specialized as P, so they match.*/
+      processing_template_decl_sentinel ptds (/*reset*/false);
+      ++processing_template_decl;
       tree pargs = template_parms_level_to_args (parm_parms);
       pargs = add_outermost_template_args (outer_args, pargs);
-      ++processing_template_decl;
       pargs = coerce_template_parms (arg_parms, pargs, NULL_TREE, tf_none,
 				     /*require_all*/true, /*use_default*/true);
-      --processing_template_decl;
       if (pargs != error_mark_node)
 	{
 	  tree targs = make_tree_vec (nargs);
