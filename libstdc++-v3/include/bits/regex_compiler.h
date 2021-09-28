@@ -58,11 +58,10 @@ namespace __detail
     {
     public:
       typedef typename _TraitsT::char_type        _CharT;
-      typedef const _CharT*                       _IterT;
       typedef _NFA<_TraitsT>              	  _RegexT;
       typedef regex_constants::syntax_option_type _FlagT;
 
-      _Compiler(_IterT __b, _IterT __e,
+      _Compiler(const _CharT* __b, const _CharT* __e,
 		const typename _TraitsT::locale_type& __traits, _FlagT __flags);
 
       shared_ptr<const _RegexT>
