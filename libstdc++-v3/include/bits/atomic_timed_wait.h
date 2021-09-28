@@ -101,12 +101,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	if (__e)
 	  {
-	    if ((errno != ETIMEDOUT) && (errno != EINTR)
-		&& (errno != EAGAIN))
+	    if (errno == ETIMEDOUT)
+	      return false;
+	    if (errno != EINTR && errno != EAGAIN)
 	      __throw_system_error(errno);
-	    return true;
 	  }
-	return false;
+	return true;
       }
 
     // returns true if wait ended before timeout
