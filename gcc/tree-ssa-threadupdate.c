@@ -218,10 +218,15 @@ dump_jump_thread_path (FILE *dump_file,
 		       const vec<jump_thread_edge *> &path,
 		       bool registering)
 {
-  fprintf (dump_file,
-	   "  %s jump thread: (%d, %d) incoming edge; ",
-	   (registering ? "Registering" : "Cancelling"),
-	   path[0]->e->src->index, path[0]->e->dest->index);
+  if (registering)
+    fprintf (dump_file,
+	     "  [%u] Registering jump thread: (%d, %d) incoming edge; ",
+	     dbg_cnt_counter (registered_jump_thread),
+	     path[0]->e->src->index, path[0]->e->dest->index);
+  else
+    fprintf (dump_file,
+	     "  Cancelling jump thread: (%d, %d) incoming edge; ",
+	     path[0]->e->src->index, path[0]->e->dest->index);
 
   for (unsigned int i = 1; i < path.length (); i++)
     {
