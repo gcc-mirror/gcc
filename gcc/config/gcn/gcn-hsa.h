@@ -118,10 +118,12 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 #endif
 
 #ifdef HAVE_GCN_ASM_V3_SYNTAX
-#define SRAMOPT "sram-ecc"
+#define SRAMOPT "!msram-ecc=off:-mattr=+sram-ecc;:-mattr=-sram-ecc"
 #endif
 #ifdef HAVE_GCN_ASM_V4_SYNTAX
-#define SRAMOPT "sramecc"
+/* In HSACOv4 no attribute setting means the binary supports "any" hardware
+   configuration.  The name of the attribute also changed.  */
+#define SRAMOPT "msram-ecc=on:-mattr=+sramecc;msram-ecc=off:-mattr=-sramecc"
 #endif
 #if !defined(SRAMOPT) && !defined(IN_LIBGCC2)
 #error "No assembler syntax configured"
@@ -143,11 +145,9 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 #define ASM_SPEC  "-triple=amdgcn--amdhsa "  \
 		  "%:last_arg(%{march=*:-mcpu=%*}) " \
 		  HSACO3_SELECT_OPT \
-		  "-mattr=%{" X_FIJI X_900 X_906 X_908 \
-			    "mxnack:+xnack;:-xnack} " \
-		  /* FIXME: support "any" when we move to HSACOv4.  */ \
-		  "-mattr=%{" S_FIJI S_900 S_906 S_908 \
-			    "!msram-ecc=off:+" SRAMOPT ";:-" SRAMOPT "} " \
+		  "%{" X_FIJI X_900 X_906 X_908 \
+		     "mxnack:-mattr=+xnack;:-mattr=-xnack} " \
+		  "%{" S_FIJI S_900 S_906 S_908 SRAMOPT "} " \
 		  "-filetype=obj"
 #define LINK_SPEC "--pie --export-dynamic"
 #define LIB_SPEC  "-lc"

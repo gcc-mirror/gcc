@@ -5265,9 +5265,13 @@ output_file_start (void)
   const char *sram_ecc = (flag_sram_ecc ? "+sram-ecc" : "");
 #endif
 #if HAVE_GCN_ASM_V4_SYNTAX
+  /* In HSACOv4 no attribute setting means the binary supports "any" hardware
+     configuration.  In GCC binaries, this is true for SRAM ECC, but not
+     XNACK.  */
   const char *xnack = (flag_xnack ? ":xnack+" : ":xnack-");
-  /* FIXME: support "any" when we move to HSACOv4.  */
-  const char *sram_ecc = (flag_sram_ecc ? ":sramecc+" : ":sramecc-");
+  const char *sram_ecc = (flag_sram_ecc == SRAM_ECC_ON ? ":sramecc+"
+			  : flag_sram_ecc == SRAM_ECC_OFF ? ":sramecc-"
+			  : "");
 #endif
   if (!use_xnack_attr)
     xnack = "";
