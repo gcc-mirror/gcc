@@ -86,8 +86,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _Tp&&
     forward(typename std::remove_reference<_Tp>::type&& __t) noexcept
     {
-      static_assert(!std::is_lvalue_reference<_Tp>::value, "template argument"
-		    " substituting _Tp is an lvalue reference type");
+      static_assert(!std::is_lvalue_reference<_Tp>::value,
+	  "std::forward must not be used to convert an rvalue to an lvalue");
       return static_cast<_Tp&&>(__t);
     }
 
