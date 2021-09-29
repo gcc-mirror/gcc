@@ -54,8 +54,7 @@ namespace __detail
 {
   template<typename _CharT>
     _Scanner<_CharT>::
-    _Scanner(typename _Scanner::_IterT __begin,
-	     typename _Scanner::_IterT __end,
+    _Scanner(const _CharT* __begin, const _CharT* __end,
 	     _FlagT __flags, std::locale __loc)
     : _ScannerBase(__flags),
       _M_current(__begin), _M_end(__end),
@@ -175,6 +174,16 @@ namespace __detail
 	{
 	  _M_state = _S_state_in_brace;
 	  _M_token = _S_token_interval_begin;
+	}
+      else if (__builtin_expect(__c == _CharT(0), false))
+	{
+	  if (!_M_is_ecma())
+	    {
+	      __throw_regex_error(regex_constants::_S_null,
+		  "Unexpected null character in regular expression");
+	    }
+	  _M_token = _S_token_ord_char;
+	  _M_value.assign(1, __c);
 	}
       else if (__c != ']' && __c != '}')
 	{

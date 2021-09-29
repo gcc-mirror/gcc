@@ -27,11 +27,12 @@ class Counting_output_iterator
 public:
   Counting_output_iterator() : c(0) {}
   Counting_output_iterator& operator++() { return *this; }
+  Counting_output_iterator operator++(int) { return *this; }
   Counting_output_iterator& operator*() { return *this; }
-  
+
   template <typename T>
   void operator=(const T&) { ++c; }
-  
+
   std::size_t current_counter() const { return c; }
 };
 

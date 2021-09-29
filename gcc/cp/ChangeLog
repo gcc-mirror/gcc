@@ -1,3 +1,17 @@
+2021-09-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99909
+	* pt.c (coerce_template_template_parms): Keep
+	processing_template_decl set around the call to unify as well.
+
+2021-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/102454
+	* coroutines.cc (analyze_fn_parms): Clean up synthetic names for
+	unnamed function params.
+	(morph_fn_to_coro): Do not try to set a guard variable for param
+	DTORs in the ramp, unless we have exceptions active.
+
 2021-09-27  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/102479

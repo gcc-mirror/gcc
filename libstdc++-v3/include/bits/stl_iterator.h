@@ -1285,6 +1285,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __it.base(); }
 
 #if __cplusplus >= 201103L
+
+  // Need to specialize pointer_traits because the primary template will
+  // deduce element_type of __normal_iterator<T*, C> as T* rather than T.
+  template<typename _Iterator, typename _Container>
+    struct pointer_traits<__gnu_cxx::__normal_iterator<_Iterator, _Container>>
+    {
+    private:
+      using _Base = pointer_traits<_Iterator>;
+
+    public:
+      using element_type = typename _Base::element_type;
+      using pointer = __gnu_cxx::__normal_iterator<_Iterator, _Container>;
+      using difference_type = typename _Base::difference_type;
+
+      template<typename _Tp>
+	using rebind = __gnu_cxx::__normal_iterator<_Tp, _Container>;
+
+      static pointer
+      pointer_to(element_type& __e) noexcept
+      { return pointer(_Base::pointer_to(__e)); }
+
+#if __cplusplus >= 202002L
+      static element_type*
+      to_address(pointer __p) noexcept
+      { return __p.base(); }
+#endif
+    };
+
   /**
    * @addtogroup iterators
    * @{

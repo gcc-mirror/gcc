@@ -26,4 +26,4 @@ struct D : B { };
 D d;
 std::default_delete<B[]> db;
 typedef decltype(db(&d)) type; // { dg-error "no match" }
-// { dg-prune-output "no type named 'type' in 'struct std::enable_if" }
+// { dg-prune-output "enable_if" }

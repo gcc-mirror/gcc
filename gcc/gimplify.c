@@ -10195,7 +10195,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  if (outer_ctx)
 	    omp_notice_variable (outer_ctx, decl, true);
 	  if (check_non_private
-	      && region_type == ORT_WORKSHARE
+	      && (region_type == ORT_WORKSHARE || code == OMP_SCOPE)
 	      && (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION
 		  || decl == OMP_CLAUSE_DECL (c)
 		  || (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF

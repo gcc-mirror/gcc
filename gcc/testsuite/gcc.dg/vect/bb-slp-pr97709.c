@@ -12,7 +12,7 @@ e()
   void *f[] = {&&g, &&h, &&i, &&j};
   int d, c;
 j:
-  goto *a;
+  goto *(void*)(__INTPTR_TYPE__)a;
 g:
   d = 0;
 h:

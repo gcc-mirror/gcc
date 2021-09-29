@@ -10416,15 +10416,14 @@ __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl1_p8 (poly8x16_t __tab, uint8x8_t __idx)
 {
-  return (poly8x8_t) __builtin_aarch64_qtbl1v8qi ((int8x16_t) __tab,
-						  (int8x8_t) __idx);
+  return __builtin_aarch64_qtbl1v8qi_ppu (__tab, __idx);
 }
 
 __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl1_s8 (int8x16_t __tab, uint8x8_t __idx)
 {
-  return __builtin_aarch64_qtbl1v8qi (__tab, (int8x8_t) __idx);
+  return __builtin_aarch64_qtbl1v8qi_ssu (__tab, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
@@ -10438,15 +10437,14 @@ __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl1q_p8 (poly8x16_t __tab, uint8x16_t __idx)
 {
-  return (poly8x16_t) __builtin_aarch64_qtbl1v16qi ((int8x16_t) __tab,
-						    (int8x16_t) __idx);
+  return __builtin_aarch64_qtbl1v16qi_ppu (__tab, __idx);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl1q_s8 (int8x16_t __tab, uint8x16_t __idx)
 {
-  return __builtin_aarch64_qtbl1v16qi (__tab, (int8x16_t) __idx);
+  return __builtin_aarch64_qtbl1v16qi_ssu (__tab, __idx);
 }
 
 __extension__ extern __inline uint8x16_t
@@ -10460,7 +10458,7 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx1_s8 (int8x8_t __r, int8x16_t __tab, uint8x8_t __idx)
 {
-  return __builtin_aarch64_qtbx1v8qi (__r, __tab, (int8x8_t) __idx);
+  return __builtin_aarch64_qtbx1v8qi_sssu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
@@ -10474,16 +10472,14 @@ __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx1_p8 (poly8x8_t __r, poly8x16_t __tab, uint8x8_t __idx)
 {
-  return (poly8x8_t) __builtin_aarch64_qtbx1v8qi ((int8x8_t) __r,
-						  (int8x16_t) __tab,
-						  (int8x8_t) __idx);
+  return __builtin_aarch64_qtbx1v8qi_pppu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx1q_s8 (int8x16_t __r, int8x16_t __tab, uint8x16_t __idx)
 {
-  return __builtin_aarch64_qtbx1v16qi (__r, __tab, (int8x16_t) __idx);
+  return __builtin_aarch64_qtbx1v16qi_sssu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline uint8x16_t
@@ -10497,9 +10493,7 @@ __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx1q_p8 (poly8x16_t __r, poly8x16_t __tab, uint8x16_t __idx)
 {
-  return (poly8x16_t) __builtin_aarch64_qtbx1v16qi ((int8x16_t) __r,
-						    (int8x16_t) __tab,
-						    (int8x16_t) __idx);
+  return __builtin_aarch64_qtbx1v16qi_pppu (__r, __tab, __idx);
 }
 
 /* V7 legacy table intrinsics.  */
@@ -10528,8 +10522,7 @@ vtbl1_p8 (poly8x8_t __tab, uint8x8_t __idx)
 {
   poly8x16_t __temp = vcombine_p8 (__tab,
 				   vcreate_p8 (__AARCH64_UINT64_C (0x0)));
-  return (poly8x8_t) __builtin_aarch64_qtbl1v8qi ((int8x16_t) __temp,
-						  (int8x8_t) __idx);
+  return __builtin_aarch64_qtbl1v8qi_ppu (__temp, __idx);
 }
 
 __extension__ extern __inline int8x8_t
@@ -10553,8 +10546,7 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl2_p8 (poly8x8x2_t __tab, uint8x8_t __idx)
 {
   poly8x16_t __temp = vcombine_p8 (__tab.val[0], __tab.val[1]);
-  return (poly8x8_t) __builtin_aarch64_qtbl1v8qi ((int8x16_t) __temp,
-						  (int8x8_t) __idx);
+  return __builtin_aarch64_qtbl1v8qi_ppu (__temp, __idx);
 }
 
 __extension__ extern __inline int8x8_t
@@ -10653,9 +10645,7 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbx2_p8 (poly8x8_t __r, poly8x8x2_t __tab, uint8x8_t __idx)
 {
   poly8x16_t __temp = vcombine_p8 (__tab.val[0], __tab.val[1]);
-  return (poly8x8_t) __builtin_aarch64_qtbx1v8qi ((int8x8_t) __r,
-						  (int8x16_t) __temp,
-						  (int8x8_t) __idx);
+  return __builtin_aarch64_qtbx1v8qi_pppu (__r, __temp, __idx);
 }
 
 /* End of temporary inline asm.  */

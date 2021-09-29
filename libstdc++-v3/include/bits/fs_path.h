@@ -489,8 +489,8 @@ namespace __detail
     class iterator;
     using const_iterator = iterator;
 
-    iterator begin() const;
-    iterator end() const;
+    iterator begin() const noexcept;
+    iterator end() const noexcept;
 
     /// Write a path to a stream
     template<typename _CharT, typename _Traits>

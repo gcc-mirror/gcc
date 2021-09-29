@@ -55,6 +55,13 @@ namespace funny {
   {
     friend void swap(F3&, F3) {}
   };
+
+  struct DummyCmp
+  {
+    template<class T>
+      bool operator()(const T&, const T&) const
+      { return false; }
+  };
 }
 void test01()
 {
@@ -152,7 +159,9 @@ void test01()
   static_assert(test_property<is_swappable,
 		std::priority_queue<int>[1][2][3]>(true), "");
   static_assert(test_property<is_swappable,
-		std::priority_queue<construct::Nontrivial>>(true), "");
+		std::priority_queue<construct::Nontrivial,
+				    std::vector<construct::Nontrivial>,
+				    funny::DummyCmp>>(true), "");
   static_assert(test_property<is_swappable,
 		std::stack<int>>(true), "");
   static_assert(test_property<is_swappable,

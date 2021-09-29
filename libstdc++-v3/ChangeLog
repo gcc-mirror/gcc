@@ -1,3 +1,155 @@
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__platform_wait_until_impl):
+	Return false for ETIMEDOUT and true otherwise.
+
+2021-09-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/20_util/default_delete/48631_neg.cc: Adapt dg-prune-output message
+	to also match message with '__8' in it.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_automaton.h (_NFA_base::_SizeT): Remove.
+	* include/bits/regex_compiler.h (_Compiler::_IterT): Remove.
+	* include/bits/regex_compiler.tcc: Likewise.
+	* include/bits/regex_scanner.h (_Scanner::_IterT): Remove.
+	* include/bits/regex_scanner.tcc: Likewise.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.tcc: Add line break in empty while
+	statement.
+	* include/bits/regex_executor.tcc: Avoid unused parameter
+	warning.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex, swap): Add noexcept to
+	non-throwing functions.
+	* include/bits/regex_automaton.h (_State_base, _State)
+	(_NFA_base): Likewise.
+	* include/bits/regex_compiler.h (_Compiler): Likewise.
+	* include/bits/regex_error.h (regex_error::code()): Likewise.
+	* include/bits/regex_scanner.h (_Scanner): Likewise.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (_GLIBCXX_HAVE_PLATFORM_WAIT):
+	Define before first attempt to check it.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/priority_queue/requirements/explicit_instantiation/1.cc:
+	Do not check non-default constructible sequences when
+	_GLIBCXX_CONCEPT_CHECKS is defined.
+	* testsuite/23_containers/priority_queue/requirements/explicit_instantiation/1_c++98.cc:
+	Likewise.
+	* testsuite/23_containers/queue/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/23_containers/queue/requirements/explicit_instantiation/1_c++98.cc:
+	Likewise.
+	* testsuite/23_containers/stack/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/23_containers/stack/requirements/explicit_instantiation/1_c++98.cc:
+	Likewise.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/3.cc:
+	Do not test implicit allocator rebinding when _GLIBCXX_CONCEPT_CHECKS
+	is defined.
+	* testsuite/23_containers/forward_list/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/5.cc:
+	Likewise.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/5.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/5.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/5.cc:
+	Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/5.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/vector/ext_pointer/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/explicit_instantiation/3.cc:
+	Likewise.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/boost_concept_check.h (_ForwardIteratorConcept)
+	(_BidirectionalIteratorConcept, _RandomAccessIteratorConcept):
+	Check result types of iterator operations.
+	(_Mutable_ForwardIteratorConcept): Check that iterator's
+	reference type is a reference to its value type.
+	(_Mutable_BidirectionalIteratorConcept): Do not require the
+	value type to be assignable.
+	(_Mutable_RandomAccessIteratorConcept): Likewise.
+	* testsuite/24_iterators/operations/prev_neg.cc: Adjust dg-error
+	line number.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/copy/34595.cc: Add missing operation
+	for type used as an iterator.
+	* testsuite/25_algorithms/unique_copy/check_type.cc: Likewise.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/is_nothrow_swappable/value.h: Use custom
+	comparison function for priority_queue of type with no
+	relational operators.
+	* testsuite/20_util/is_swappable/value.h: Likewise.
+	* testsuite/24_iterators/output/concept.cc: Add operator< to
+	type used in set.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/boost_concept_check.h (_OutputIteratorConcept):
+	Use a function to preserve value category of the type.
+	* include/bits/stl_algobase.h (copy, move, fill_n): Use a
+	reference as the second argument for _OutputIteratorConcept.
+	(copy_backward, move_backward): Use _OutputIteratorConcept
+	instead of _ConvertibleConcept.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (pointer_traits): Define partial
+	specialization for __normal_iterator.
+	* testsuite/24_iterators/normal_iterator/to_address.cc: New test.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h (forward(remove_reference_t<T>&&)):
+	Improve text of static_assert.
+	* testsuite/20_util/forward/c_neg.cc: Adjust dg-error.
+	* testsuite/20_util/forward/f_neg.cc: Likewise.
+
+2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102499
+	* include/bits/fs_path.h (path::begin, path::end): Add noexcept
+	to declarations, to match definitions.
+
 2021-09-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/range_access.h (cbegin, cend): Remove redundant

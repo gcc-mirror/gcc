@@ -1214,6 +1214,29 @@ vect_dr_aligned_if_peeled_dr_is (dr_vec_info *dr_info,
   return vect_dr_aligned_if_related_peeled_dr_is (dr_info, dr_peel_info);
 }
 
+/* Compute the value for dr_info->misalign so that the access appears
+   aligned.  This is used by peeling to compensate for dr_misalignment
+   applying the offset for negative step.  */
+
+int
+vect_dr_misalign_for_aligned_access (dr_vec_info *dr_info)
+{
+  if (tree_int_cst_sgn (DR_STEP (dr_info->dr)) >= 0)
+    return 0;
+
+  tree vectype = STMT_VINFO_VECTYPE (dr_info->stmt);
+  poly_int64 misalignment
+    = ((TYPE_VECTOR_SUBPARTS (vectype) - 1)
+       * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))));
+
+  unsigned HOST_WIDE_INT target_alignment_c;
+  int misalign;
+  if (!dr_info->target_alignment.is_constant (&target_alignment_c)
+      || !known_misalignment (misalignment, target_alignment_c, &misalign))
+    return DR_MISALIGNMENT_UNKNOWN;
+  return misalign;
+}
+
 /* Function vect_update_misalignment_for_peel.
    Sets DR_INFO's misalignment
    - to 0 if it has the same alignment as DR_PEEL_INFO,
@@ -1233,7 +1256,8 @@ vect_update_misalignment_for_peel (dr_vec_info *dr_info,
   /* If dr_info is aligned of dr_peel_info is, then mark it so.  */
   if (vect_dr_aligned_if_peeled_dr_is (dr_info, dr_peel_info))
     {
-      SET_DR_MISALIGNMENT (dr_info, 0);
+      SET_DR_MISALIGNMENT (dr_info,
+			   vect_dr_misalign_for_aligned_access (dr_peel_info));
       return;
     }
 
@@ -1241,9 +1265,9 @@ vect_update_misalignment_for_peel (dr_vec_info *dr_info,
   tree vectype = STMT_VINFO_VECTYPE (dr_info->stmt);
   if (DR_TARGET_ALIGNMENT (dr_info).is_constant (&alignment)
       && known_alignment_for_access_p (dr_info, vectype)
-      && known_alignment_for_access_p (dr_peel_info, vectype))
+      && npeel != -1)
     {
-      int misal = dr_misalignment (dr_info, vectype);
+      int misal = dr_info->misalignment;
       misal += npeel * TREE_INT_CST_LOW (DR_STEP (dr_info->dr));
       misal &= alignment - 1;
       set_dr_misalignment (dr_info, misal);
@@ -1516,7 +1540,8 @@ vect_get_peeling_costs_all_drs (loop_vec_info loop_vinfo,
       if (npeel == 0)
 	;
       else if (unknown_misalignment && dr_info == dr0_info)
-	SET_DR_MISALIGNMENT (dr_info, 0);
+	SET_DR_MISALIGNMENT (dr_info,
+			     vect_dr_misalign_for_aligned_access (dr0_info));
       else
 	vect_update_misalignment_for_peel (dr_info, dr0_info, npeel);
       vect_get_data_access_cost (loop_vinfo, dr_info, inside_cost, outside_cost,
@@ -2278,7 +2303,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
             LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) = npeel;
           else
 	    LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) = -1;
-	  SET_DR_MISALIGNMENT (dr0_info, 0);
+	  SET_DR_MISALIGNMENT (dr0_info,
+			       vect_dr_misalign_for_aligned_access (dr0_info));
 	  if (dump_enabled_p ())
             {
               dump_printf_loc (MSG_NOTE, vect_location,
@@ -2402,7 +2428,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       FOR_EACH_VEC_ELT (may_misalign_stmts, i, stmt_info)
         {
 	  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
-	  SET_DR_MISALIGNMENT (dr_info, 0);
+	  SET_DR_MISALIGNMENT (dr_info,
+			       vect_dr_misalign_for_aligned_access (dr_info));
 	  if (dump_enabled_p ())
             dump_printf_loc (MSG_NOTE, vect_location,
                              "Alignment of access forced using versioning.\n");

@@ -1,3 +1,8 @@
+2021-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/libgcc-darwin.ver: Add Symbols for
+	__cpu_model, __cpu_indicator_init.
+
 2021-09-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/sfp-machine.h: Guard Mach-O-specific code

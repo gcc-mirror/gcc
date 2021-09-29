@@ -1,3 +1,153 @@
+2021-09-28  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* config/riscv/riscv.md	(mulv<mode>4): Call gen_smul<mode>3_highpart.
+	(<u>mulditi3): Call <su>muldi3_highpart.
+	(<u>muldi3_highpart): Rename to <su>muldi3_highpart.
+	(<u>mulsidi3): Call <su>mulsi3_highpart.
+	(<u>mulsi3_highpart): Rename to <su>mulsi3_highpart.
+
+2021-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DSYMUTIL_SPEC): Recognize D sources.
+
+2021-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (FIXED_R13): Add for PPC64.
+	(FIRST_SAVED_GP_REGNO): Save from R13 even when it is one
+	of the fixed regs.
+
+2021-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_FL_LS64): Define
+	(AARCH64_FL_V8_7): Likewise.
+	(AARCH64_FL_FOR_ARCH8_7): Likewise.
+	* config/aarch64/aarch64-arches.def (armv8.7-a): Define.
+	* config/aarch64/aarch64-option-extensions.def (ls64): Define.
+	* doc/invoke.texi: Document the above.
+
+2021-09-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dbgcnt.c (dbg_cnt_counter): New.
+	* dbgcnt.h (dbg_cnt_counter): New.
+	* dumpfile.c (dump_options): Add entry for TDF_THREADING.
+	* dumpfile.h (enum dump_flag): Add TDF_THREADING.
+	* gimple-range-path.cc (DEBUG_SOLVER): Use TDF_THREADING.
+	* tree-ssa-threadupdate.c (dump_jump_thread_path): Dump out
+	debug counter.
+
+2021-09-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cfgcleanup.c (pass_jump::execute): Check
+	flag_expensive_optimizations.
+	(pass_jump_after_combine::gate): Same.
+	* doc/invoke.texi (-fthread-jumps): Enable for -O1.
+	* opts.c (default_options_table): Enable -fthread-jumps at -O1.
+	* tree-ssa-threadupdate.c
+	(fwd_jt_path_registry::remove_jump_threads_including): Bail unless
+	flag_thread_jumps.
+
+2021-09-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* tree-ssa-reassoc.c (biased_names): New global.
+	(propagate_bias_p): New function.
+	(loop_carried_phi): Remove.
+	(propagate_rank): Propagate bias along single uses.
+	(get_rank): Update biased_names when needed.
+
+2021-09-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* passes.def (pass_reassoc): Rename parameter to early_p.
+	* tree-ssa-reassoc.c (reassoc_bias_loop_carried_phi_ranks_p):
+	New variable.
+	(phi_rank): Don't bias loop-carried phi ranks
+	before vectorization pass.
+	(execute_reassoc): Add bias_loop_carried_phi_ranks_p parameter.
+	(pass_reassoc::pass_reassoc): Add bias_loop_carried_phi_ranks_p
+	initializer.
+	(pass_reassoc::set_param): Set bias_loop_carried_phi_ranks_p
+	value.
+	(pass_reassoc::execute): Pass bias_loop_carried_phi_ranks_p to
+	execute_reassoc.
+	(pass_reassoc::bias_loop_carried_phi_ranks_p): New member.
+
+2021-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102498
+	* config/i386/i386.c (standard_80387_constant_p): Don't recognize
+	special 80387 instruction XFmode constants if flag_rounding_math.
+
+2021-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100112
+	* tree-ssa-sccvn.c (visit_reference_op_load): Record the
+	referece into the hashtable twice in case last_vuse is
+	different from the original vuse on the stmt.
+
+2021-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102492
+	* gimplify.c (gimplify_adjust_omp_clauses_1): Don't call the
+	omp_finish_clause langhook on implicitly added OMP_CLAUSE_PRIVATE
+	clauses on SIMD constructs.
+
+2021-09-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102511
+	* gimple-range-path.cc (path_range_query::range_on_path_entry):
+	Return VARYING when nothing found.
+
+2021-09-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/102230
+	* config/i386/i386.h (VALID_AVX512FP16_REG_MODE): Add
+	V2HF mode check.
+	(VALID_SSE2_REG_VHF_MODE): Add V4HFmode and V2HFmode.
+	(VALID_MMX_REG_MODE): Add V4HFmode.
+	(SSE_REG_MODE_P): Replace VALID_AVX512FP16_REG_MODE with
+	vector mode condition.
+	* config/i386/i386.c (classify_argument): Parse V4HF/V2HF
+	via sse regs.
+	(function_arg_32): Add V4HFmode.
+	(function_arg_advance_32): Likewise.
+	* config/i386/i386.md (mode): Add V4HF/V2HF.
+	(MODE_SIZE): Likewise.
+	* config/i386/mmx.md (MMXMODE): Add V4HF mode.
+	(V_32): Add V2HF mode.
+	(VHF_32_64): New mode iterator.
+	(*mov<mode>_internal): Adjust sse alternatives to support
+	V4HF mode move.
+	(*mov<mode>_internal): Adjust sse alternatives to support
+	V2HF mode move.
+	(<insn><mode>3): New define_insn for add/sub/mul/div.
+
+2021-09-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (pass_thread_jumps::gate): Check
+	flag_thread_jumps.
+	(pass_early_thread_jumps::gate): Same.
+	* tree-ssa-threadedge.c (jump_threader::thread_outgoing_edges):
+	Return if !flag_thread_jumps.
+	* tree-ssa-threadupdate.c
+	(jt_path_registry::register_jump_thread): Assert that
+	flag_thread_jumps is true.
+
+2021-09-28  liuhongt  <hongtao.liu@intel.com>
+
+	* simplify-rtx.c
+	(simplify_context::simplify_binary_operation_1): Relax
+	condition of simplifying (vec_concat:M (vec_select op0
+	index0)(vec_select op1 index1)) to allow different modes
+	between op0 and M, but have same inner mode.
+
+2021-09-28  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.c (emit_reduc_half): Handle
+	V8HF/V16HF/V32HFmode.
+	* config/i386/sse.md (REDUC_SSE_PLUS_MODE): Add V8HF.
+	(REDUC_SSE_SMINMAX_MODE): Ditto.
+	(REDUC_PLUS_MODE): Add V16HF and V32HF.
+	(REDUC_SMINMAX_MODE): Ditto.
+
 2021-09-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-range-path.cc

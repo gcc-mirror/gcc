@@ -285,7 +285,9 @@ void test01()
   static_assert(test_property<is_nothrow_swappable,
 		std::queue<ThrowCopyConsClass>>(true), "");
   static_assert(test_property<is_nothrow_swappable,
-		std::priority_queue<ThrowCopyConsClass>>(true), "");
+		std::priority_queue<ThrowCopyConsClass,
+				    std::vector<ThrowCopyConsClass>,
+				    comps::CompareNoThrowCopyable>>(true), "");
   static_assert(test_property<is_nothrow_swappable,
 		std::stack<ThrowCopyConsClass>>(true), "");
   static_assert(test_property<is_nothrow_swappable,
