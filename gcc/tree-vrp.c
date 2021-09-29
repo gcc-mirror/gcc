@@ -4449,7 +4449,7 @@ const pass_data pass_data_vrp_threader =
   GIMPLE_PASS, /* type */
   "vrp-thread", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_TREE_VRP, /* tv_id */
+  TV_TREE_VRP_THREADER, /* tv_id */
   PROP_ssa, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */
