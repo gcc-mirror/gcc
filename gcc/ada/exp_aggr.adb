@@ -8978,11 +8978,8 @@ package body Exp_Aggr is
          Kind := Nkind (Node);
       end if;
 
-      if Kind not in N_Aggregate | N_Extension_Aggregate then
-         return False;
-      else
-         return Expansion_Delayed (Node);
-      end if;
+      return Kind in N_Aggregate | N_Extension_Aggregate
+        and then Expansion_Delayed (Node);
    end Is_Delayed_Aggregate;
 
    --------------------------------
