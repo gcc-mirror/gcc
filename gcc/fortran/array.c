@@ -1798,6 +1798,9 @@ expand_constructor (gfc_constructor_base base)
 
       e = c->expr;
 
+      if (e == NULL)
+	return false;
+
       if (empty_constructor)
 	empty_ts = e->ts;
 
