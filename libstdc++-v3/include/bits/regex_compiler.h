@@ -152,47 +152,6 @@ namespace __detail
       const _CtypeT&      _M_ctype;
     };
 
-  template<typename _Tp>
-    struct __is_contiguous_iter : is_pointer<_Tp>::type { };
-
-  template<typename _Tp, typename _Cont>
-    struct
-    __is_contiguous_iter<__gnu_cxx::__normal_iterator<_Tp*, _Cont>>
-    : true_type { };
-
-  template<typename _Iter, typename _TraitsT>
-    using __enable_if_contiguous_iter
-      = __enable_if_t< __is_contiguous_iter<_Iter>::value,
-                       std::shared_ptr<const _NFA<_TraitsT>> >;
-
-  template<typename _Iter, typename _TraitsT>
-    using __disable_if_contiguous_iter
-      = __enable_if_t< !__is_contiguous_iter<_Iter>::value,
-                       std::shared_ptr<const _NFA<_TraitsT>> >;
-
-  template<typename _TraitsT, typename _FwdIter>
-    inline __enable_if_contiguous_iter<_FwdIter, _TraitsT>
-    __compile_nfa(_FwdIter __first, _FwdIter __last,
-		  const typename _TraitsT::locale_type& __loc,
-		  regex_constants::syntax_option_type __flags)
-    {
-      size_t __len = __last - __first;
-      const auto* __cfirst = __len ? std::__addressof(*__first) : nullptr;
-      using _Cmplr = _Compiler<_TraitsT>;
-      return _Cmplr(__cfirst, __cfirst + __len, __loc, __flags)._M_get_nfa();
-    }
-
-  template<typename _TraitsT, typename _FwdIter>
-    inline __disable_if_contiguous_iter<_FwdIter, _TraitsT>
-    __compile_nfa(_FwdIter __first, _FwdIter __last,
-		  const typename _TraitsT::locale_type& __loc,
-		  regex_constants::syntax_option_type __flags)
-    {
-      const basic_string<typename _TraitsT::char_type> __str(__first, __last);
-      return __compile_nfa<_TraitsT>(__str.data(), __str.data() + __str.size(),
-				     __loc, __flags);
-    }
-
   // [28.13.14]
   template<typename _TraitsT, bool __icase, bool __collate>
     class _RegexTranslatorBase
