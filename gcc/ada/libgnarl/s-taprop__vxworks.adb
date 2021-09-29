@@ -88,13 +88,13 @@ package body System.Task_Primitives.Operations is
 
    --  The followings are internal configuration constants needed
 
-   Dispatching_Policy : Character;
+   Dispatching_Policy : constant Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
    Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads)
 
-   Locking_Policy : Character;
+   Locking_Policy : constant Character;
    pragma Import (C, Locking_Policy, "__gl_locking_policy");
 
    Mutex_Protocol : Priority_Type;
@@ -104,7 +104,7 @@ package body System.Task_Primitives.Operations is
    --  time; it is used to execute in mutual exclusion from all other tasks.
    --  Used to protect All_Tasks_List
 
-   Time_Slice_Val : Integer;
+   Time_Slice_Val : constant Integer;
    pragma Import (C, Time_Slice_Val, "__gl_time_slice_val");
 
    Null_Thread_Id : constant Thread_Id := 0;

@@ -149,7 +149,7 @@ is
    -- Leap seconds control --
    --------------------------
 
-   Flag : Integer;
+   Flag : constant Integer;
    pragma Import (C, Flag, "__gl_leap_seconds_support");
    --  This imported value is used to determine whether the compilation had
    --  binder flag "-y" present which enables leap seconds. A value of zero

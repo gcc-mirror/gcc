@@ -56,7 +56,7 @@ package body System.Interrupt_Management is
    use Interfaces.C;
    use System.OS_Interface;
 
-   Unreserve_All_Interrupts : Interfaces.C.int;
+   Unreserve_All_Interrupts : constant Interfaces.C.int;
    pragma Import
      (C, Unreserve_All_Interrupts, "__gl_unreserve_all_interrupts");
 
