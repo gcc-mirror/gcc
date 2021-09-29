@@ -81,6 +81,7 @@ extern void test_widekl (void)			__attribute__((__target__("widekl")));
 extern void test_avxvnni (void)			__attribute__((__target__("avxvnni")));
 extern void test_avx512fp16 (void)		__attribute__((__target__("avx512fp16")));
 extern void test_avxifma (void)			__attribute__((__target__("avxifma")));
+extern void test_avxvnniint8 (void)		__attribute__((__target__("avxvnniint8")));
 
 extern void test_no_sgx (void)			__attribute__((__target__("no-sgx")));
 extern void test_no_avx5124fmaps(void)		__attribute__((__target__("no-avx5124fmaps")));
@@ -163,6 +164,7 @@ extern void test_no_widekl (void)		__attribute__((__target__("no-widekl")));
 extern void test_no_avxvnni (void)		__attribute__((__target__("no-avxvnni")));
 extern void test_no_avx512fp16 (void)		__attribute__((__target__("no-avx512fp16")));
 extern void test_no_avxifma (void)		__attribute__((__target__("no-avxifma")));
+extern void test_no_avxvnniint8 (void)		__attribute__((__target__("no-avxvnniint8")));
 
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));

@@ -49,6 +49,7 @@
 #define bit_RDRND	(1 << 30)
 
 /* %edx */
+#define bit_AVXVNNIINT8 (1 << 4)
 #define bit_CMPXCHG8B	(1 << 8)
 #define bit_CMOV	(1 << 15)
 #define bit_MMX		(1 << 23)

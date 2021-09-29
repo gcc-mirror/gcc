@@ -9534,6 +9534,18 @@ proc check_effective_target_avxifma { } {
     } "-O0 -mavxifma" ]
 }
 
+# Return 1 if avxvnniint8 instructions can be compiled.
+proc check_effective_target_avxvnniint8 { } {
+    return [check_no_compiler_messages avxvnniint8 object {
+	typedef int __v8si __attribute__ ((__vector_size__ (32)));
+	__v8si
+	_mm256_dpbssd_epi32  (__v8si __A, __v8si __B, __v8si __C)
+        {
+	   return __builtin_ia32_vpdpbssd256 (__A, __B, __C);
+	}
+    } "-O0 -mavxvnniint8" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

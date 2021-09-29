@@ -7065,6 +7065,11 @@ Enable/disable the generation of the AVXVNNI instructions.
 @cindex @code{target("avxifma")} function attribute, x86
 Enable/disable the generation of the AVXIFMA instructions.
 
+@item avxvnniint8
+@itemx no-avxvnniint8
+@cindex @code{target("avxvnniint8")} function attribute, x86
+Enable/disable the generation of the AVXVNNIINT8 instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86

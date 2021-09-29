@@ -26,6 +26,9 @@ main ()
 #ifdef AVXIFMA
       && __builtin_cpu_supports ("avxifma")
 #endif
+#ifdef AVXVNNIINT8
+      && __builtin_cpu_supports ("avxvnniint8")
+#endif
       )
     {
       do_test ();
