@@ -1,14 +1,14 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -mstrict-align" } */
+/* { dg-options "-O2 -mstrict-align" } */
 
-struct s { char x[95]; };
+struct s { char x[255]; };
 void foo (struct s *);
 void bar (void) { struct s s1 = {}; foo (&s1); }
 
-/* memset (s1 = {}, sizeof = 95) should be expanded out
+/* memset (s1 = {}, sizeof = 255) should be expanded out
    such that there are no overlap stores when -mstrict-align
    is in use.
-   so 2 pair 16 bytes stores (64 bytes).
+   so 7 pairs of 16 bytes stores (224 bytes).
    1 16 byte stores
    1 8 byte store
    1 4 byte store
@@ -16,7 +16,7 @@ void bar (void) { struct s s1 = {}; foo (&s1); }
    1 1 byte store
    */
 
-/* { dg-final { scan-assembler-times "stp\tq" 2 } } */
+/* { dg-final { scan-assembler-times "stp\tq" 7 } } */
 /* { dg-final { scan-assembler-times "str\tq" 1 } } */
 /* { dg-final { scan-assembler-times "str\txzr" 1 } } */
 /* { dg-final { scan-assembler-times "str\twzr" 1 } } */

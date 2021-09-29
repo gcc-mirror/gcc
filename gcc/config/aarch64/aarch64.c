@@ -23534,17 +23534,10 @@ aarch64_expand_setmem (rtx *operands)
   if (!CONST_INT_P (operands[1]))
     return false;
 
-  bool speed_p = !optimize_function_for_size_p (cfun);
+  bool size_p = optimize_function_for_size_p (cfun);
 
   /* Default the maximum to 256-bytes.  */
   unsigned max_set_size = 256;
-
-  /* In case we are optimizing for size or if the core does not
-     want to use STP Q regs, lower the max_set_size.  */
-  max_set_size = (!speed_p
-		  || (aarch64_tune_params.extra_tuning_flags
-		      & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
-		  ? max_set_size / 2 : max_set_size;
 
   len = INTVAL (operands[1]);
 
@@ -23552,22 +23545,26 @@ aarch64_expand_setmem (rtx *operands)
   if (len > max_set_size)
     return false;
 
+  /* Attempt a sequence with a vector broadcast followed by stores.
+     Count the number of operations involved to see if it's worth it for
+     code size.  */
+  start_sequence ();
+  unsigned nops = 0;
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   dst = adjust_automodify_address (dst, VOIDmode, base, 0);
 
   /* Prepare the val using a DUP/MOVI v0.16B, val.  */
   src = expand_vector_broadcast (V16QImode, val);
   src = force_reg (V16QImode, src);
-
+  nops++;
   /* Convert len to bits to make the rest of the code simpler.  */
   n = len * BITS_PER_UNIT;
 
   /* Maximum amount to copy in one go.  We allow 256-bit chunks based on the
      AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS tuning parameter.  setmem expand
      pattern is only turned on for TARGET_SIMD.  */
-  const int copy_limit = (speed_p
-			  && (aarch64_tune_params.extra_tuning_flags
-			      & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
+  const int copy_limit = (aarch64_tune_params.extra_tuning_flags
+			  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
 			  ? GET_MODE_BITSIZE (TImode) : 256;
 
   while (n > 0)
@@ -23583,7 +23580,7 @@ aarch64_expand_setmem (rtx *operands)
 
       mode_bits = GET_MODE_BITSIZE (cur_mode).to_constant ();
       aarch64_set_one_block_and_progress_pointer (src, &dst, cur_mode);
-
+      nops++;
       n -= mode_bits;
 
       /* Do certain trailing copies as overlapping if it's going to be
@@ -23599,7 +23596,15 @@ aarch64_expand_setmem (rtx *operands)
 	  n = n_bits;
 	}
     }
+  rtx_insn *seq = get_insns ();
+  end_sequence ();
+  /* A call to memset in the worst case requires 3 instructions to prepare
+     the arguments + 1 for the call.  Prefer the inline sequence for size if
+     it is no longer than that.  */
+  if (size_p && nops > 4)
+    return false;
 
+  emit_insn (seq);
   return true;
 }
 
