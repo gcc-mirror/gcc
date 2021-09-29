@@ -673,10 +673,13 @@ PERSONALITY_FUNCTION (int version,
 	std::terminate ();
       else if (handler_switch_value < 0)
 	{
-	  __try 
-	    { std::unexpected (); } 
-	  __catch(...) 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	  __try
+	    { std::unexpected (); }
+	  __catch(...)
 	    { std::terminate (); }
+#pragma GCC diagnostic pop
 	}
     }
   else

@@ -58,6 +58,7 @@ std::terminate () throw()
   __cxxabiv1::__terminate (get_terminate ());
 }
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 void
 __cxxabiv1::__unexpected (std::unexpected_handler handler)
 {

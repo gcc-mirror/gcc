@@ -17,7 +17,7 @@ f () throw (std::bad_exception)		// { dg-warning "deprecated" "" { target c++11 
 int main ()
 {
   std::set_terminate (my_term);
-  std::set_unexpected (my_unexp);
+  std::set_unexpected (my_unexp); // { dg-warning "deprecated" "" { target c++11 } }
 
   try
     {
