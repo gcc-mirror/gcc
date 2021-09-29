@@ -23121,7 +23121,7 @@ package body Sem_Util is
       --  types.
 
       elsif Is_Access_Type (Typ)
-        or else (Consider_IS_NS and then (Is_Scalar_Type (Typ)))
+        or else (Consider_IS_NS and then Is_Scalar_Type (Typ))
       then
          return True;
 

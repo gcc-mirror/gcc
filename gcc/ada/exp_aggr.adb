@@ -3209,6 +3209,8 @@ package body Exp_Aggr is
          Init_Stmt : Node_Id;
 
       begin
+         pragma Assert (Nkind (Init_Expr) in N_Subexpr);
+
          --  Protect the initialization statements from aborts. Generate:
 
          --    Abort_Defer;
@@ -3792,6 +3794,26 @@ package body Exp_Aggr is
                 Enclos_Type       => Typ,
                 With_Default_Init => True,
                 Constructor_Ref   => Expression (Comp)));
+
+         elsif Box_Present (Comp)
+           and then Needs_Simple_Initialization (Etype (Selector))
+         then
+            Comp_Expr :=
+              Make_Selected_Component (Loc,
+                Prefix        => New_Copy_Tree (Target),
+                Selector_Name => New_Occurrence_Of (Selector, Loc));
+
+            Initialize_Record_Component
+              (Rec_Comp  => Comp_Expr,
+               Comp_Typ  => Etype (Selector),
+               Init_Expr => Get_Simple_Init_Val
+                              (Typ  => Etype (Selector),
+                               N    => Comp,
+                               Size =>
+                                 (if Known_Esize (Selector)
+                                  then Esize (Selector)
+                                  else Uint_0)),
+               Stmts     => L);
 
          --  Ada 2005 (AI-287): For each default-initialized component generate
          --  a call to the corresponding IP subprogram if available.
