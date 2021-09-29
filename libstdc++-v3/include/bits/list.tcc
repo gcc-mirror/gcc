@@ -406,8 +406,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  iterator __last1 = end();
 	  iterator __first2 = __x.begin();
 	  iterator __last2 = __x.end();
+#if _GLIBCXX_USE_CXX11_ABI
 	  const size_t __orig_size = __x.size();
 	  __try {
+#endif
 	    while (__first1 != __last1 && __first2 != __last2)
 	      if (*__first2 < *__first1)
 		{
@@ -422,6 +424,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	    this->_M_inc_size(__x._M_get_size());
 	    __x._M_set_size(0);
+#if _GLIBCXX_USE_CXX11_ABI
 	  }
 	  __catch(...)
 	    {
@@ -430,6 +433,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      __x._M_set_size(__dist);
 	      __throw_exception_again;
 	    }
+#endif
 	}
     }
 
