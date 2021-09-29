@@ -1,3 +1,11 @@
+2021-09-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102504
+	* c-c++-common/gomp/scope-4.c: New test.
+
 2021-09-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

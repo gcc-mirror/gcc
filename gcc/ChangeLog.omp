@@ -1,3 +1,12 @@
+2021-09-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102504
+	* gimplify.c (gimplify_scan_omp_clauses): Use omp_check_private even
+	in OMP_SCOPE clauses, not just on worksharing construct clauses.
+
 2021-09-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
