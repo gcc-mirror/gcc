@@ -2276,6 +2276,10 @@ package Sem_Util is
    --  Is_Non_Preelaborable_Construct takes into account the syntactic
    --  and semantic properties of N for a more accurate diagnostic.
 
+   function Is_Private_Library_Unit (Unit : Entity_Id) return Boolean;
+   --  Returns True if and only if the library unit is declared with an
+   --  explicit designation of private.
+
    function Is_Protected_Self_Reference (N : Node_Id) return Boolean;
    --  Return True if node N denotes a protected type name which represents
    --  the current instance of a protected object according to RM 9.4(21/2).

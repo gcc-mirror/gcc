@@ -5246,6 +5246,8 @@ package body Sem_Util is
                     and then not Has_Non_Null_Refinement (State_Id)
                   then
                      Error_Msg_N ("state & requires refinement", State_Id);
+                     Error_Msg_N ("\package body should have Refined_State "
+                                  & "for state & with constituents", State_Id);
                   end if;
 
                   Next_Elmt (State_Elmt);
@@ -9586,35 +9588,88 @@ package body Sem_Util is
       Placement : out State_Space_Kind;
       Pack_Id   : out Entity_Id)
    is
+      function Inside_Package_Body (Id : Entity_Id) return Boolean;
+      function Inside_Private_Part (Id : Entity_Id) return Boolean;
+      --  Return True if Id is declared directly within the package body
+      --  and the package private parts, respectively. We cannot use
+      --  In_Private_Part/In_Body_Part flags, as these are only set during the
+      --  analysis of the package itself, while Find_Placement_In_State_Space
+      --  can be called on an entity of another package.
+
+      ------------------------
+      -- Inside_Package_Body --
+      ------------------------
+
+      function Inside_Package_Body (Id : Entity_Id) return Boolean is
+         Spec_Id   : constant Entity_Id := Scope (Id);
+         Body_Decl : constant Opt_N_Package_Body_Id := Package_Body (Spec_Id);
+         Decl      : constant Node_Id := Enclosing_Declaration (Id);
+      begin
+         if Present (Body_Decl)
+           and then Is_List_Member (Decl)
+           and then List_Containing (Decl) = Declarations (Body_Decl)
+         then
+            return True;
+         else
+            return False;
+         end if;
+      end Inside_Package_Body;
+
+      -------------------------
+      -- Inside_Private_Part --
+      -------------------------
+
+      function Inside_Private_Part (Id : Entity_Id) return Boolean is
+         Spec_Id       : constant Entity_Id := Scope (Id);
+         Private_Decls : constant List_Id :=
+           Private_Declarations (Package_Specification (Spec_Id));
+         Decl          : constant Node_Id := Enclosing_Declaration (Id);
+      begin
+         if Is_List_Member (Decl)
+           and then List_Containing (Decl) = Private_Decls
+         then
+            return True;
+
+         elsif Ekind (Id) = E_Package
+           and then Is_Private_Library_Unit (Id)
+         then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Inside_Private_Part;
+
+      --  Local variables
+
       Context : Entity_Id;
+
+   --  Start of processing for Find_Placement_In_State_Space
 
    begin
       --  Assume that the item does not appear in the state space of a package
 
       Placement := Not_In_Package;
-      Pack_Id   := Empty;
 
       --  Climb the scope stack and examine the enclosing context
 
-      Context := Scope (Item_Id);
-      while Present (Context) and then Context /= Standard_Standard loop
-         if Is_Package_Or_Generic_Package (Context) then
-            Pack_Id := Context;
+      Context := Item_Id;
+      Pack_Id := Scope (Context);
+      while Present (Pack_Id) and then Pack_Id /= Standard_Standard loop
+         if Is_Package_Or_Generic_Package (Pack_Id) then
 
-            --  A package body is a cut off point for the traversal as the item
-            --  cannot be visible to the outside from this point on. Note that
-            --  this test must be done first as a body is also classified as a
-            --  private part.
+            --  A package body is a cut off point for the traversal as the
+            --  item cannot be visible to the outside from this point on.
 
-            if In_Package_Body (Context) then
+            if Inside_Package_Body (Context) then
                Placement := Body_State_Space;
                return;
 
             --  The private part of a package is a cut off point for the
-            --  traversal as the item cannot be visible to the outside from
-            --  this point on.
+            --  traversal as the item cannot be visible to the outside
+            --  from this point on.
 
-            elsif In_Private_Part (Context) then
+            elsif Inside_Private_Part (Context) then
                Placement := Private_State_Space;
                return;
 
@@ -9626,9 +9681,11 @@ package body Sem_Util is
                Placement := Visible_State_Space;
 
                --  The visible state space of a child unit acts as the proper
-               --  placement of an item.
+               --  placement of an item, unless this is a private child unit.
 
-               if Is_Child_Unit (Context) then
+               if Is_Child_Unit (Pack_Id)
+                 and then not Is_Private_Library_Unit (Pack_Id)
+               then
                   return;
                end if;
             end if;
@@ -9638,10 +9695,12 @@ package body Sem_Util is
 
          else
             Placement := Not_In_Package;
+            Pack_Id := Empty;
             return;
          end if;
 
          Context := Scope (Context);
+         Pack_Id := Scope (Context);
       end loop;
    end Find_Placement_In_State_Space;
 
@@ -20307,6 +20366,17 @@ package body Sem_Util is
 
       return False;
    end Is_Preelaborable_Function;
+
+   -----------------------------
+   -- Is_Private_Library_Unit --
+   -----------------------------
+
+   function Is_Private_Library_Unit (Unit : Entity_Id) return Boolean is
+      Comp_Unit : constant Node_Id := Parent (Unit_Declaration_Node (Unit));
+   begin
+      return Nkind (Comp_Unit) = N_Compilation_Unit
+        and then Private_Present (Comp_Unit);
+   end Is_Private_Library_Unit;
 
    ---------------------------------
    -- Is_Protected_Self_Reference --

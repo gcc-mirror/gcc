@@ -2952,23 +2952,6 @@ package body Sem_Ch10 is
       Par_Lib    : Entity_Id;
       Par_Spec   : Node_Id;
 
-      function Is_Private_Library_Unit (Unit : Entity_Id) return Boolean;
-      --  Returns true if and only if the library unit is declared with
-      --  an explicit designation of private.
-
-      -----------------------------
-      -- Is_Private_Library_Unit --
-      -----------------------------
-
-      function Is_Private_Library_Unit (Unit : Entity_Id) return Boolean is
-         Comp_Unit : constant Node_Id := Parent (Unit_Declaration_Node (Unit));
-
-      begin
-         return Private_Present (Comp_Unit);
-      end Is_Private_Library_Unit;
-
-   --  Start of processing for Check_Private_Child_Unit
-
    begin
       if Nkind (Lib_Unit) in N_Package_Body | N_Subprogram_Body then
          Curr_Unit := Defining_Entity (Unit (Library_Unit (N)));
