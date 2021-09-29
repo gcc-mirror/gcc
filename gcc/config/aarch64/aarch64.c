@@ -23390,7 +23390,8 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 }
 
 /* Expand cpymem, as if from a __builtin_memcpy.  Return true if
-   we succeed, otherwise return false.  */
+   we succeed, otherwise return false, indicating that a libcall to
+   memcpy should be emitted.  */
 
 bool
 aarch64_expand_cpymem (rtx *operands)
@@ -23407,11 +23408,13 @@ aarch64_expand_cpymem (rtx *operands)
 
   unsigned HOST_WIDE_INT size = INTVAL (operands[2]);
 
-  /* Inline up to 256 bytes when optimizing for speed.  */
+  /* Try to inline up to 256 bytes.  */
   unsigned HOST_WIDE_INT max_copy_size = 256;
 
-  if (optimize_function_for_size_p (cfun))
-    max_copy_size = 128;
+  bool size_p = optimize_function_for_size_p (cfun);
+
+  if (size > max_copy_size)
+    return false;
 
   int copy_bits = 256;
 
@@ -23421,13 +23424,14 @@ aarch64_expand_cpymem (rtx *operands)
       || !TARGET_SIMD
       || (aarch64_tune_params.extra_tuning_flags
 	  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
-    {
-      copy_bits = 128;
-      max_copy_size = max_copy_size / 2;
-    }
+    copy_bits = 128;
 
-  if (size > max_copy_size)
-    return false;
+  /* Emit an inline load+store sequence and count the number of operations
+     involved.  We use a simple count of just the loads and stores emitted
+     rather than rtx_insn count as all the pointer adjustments and reg copying
+     in this function will get optimized away later in the pipeline.  */
+  start_sequence ();
+  unsigned nops = 0;
 
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   dst = adjust_automodify_address (dst, VOIDmode, base, 0);
@@ -23456,7 +23460,8 @@ aarch64_expand_cpymem (rtx *operands)
 	cur_mode = V4SImode;
 
       aarch64_copy_one_block_and_progress_pointers (&src, &dst, cur_mode);
-
+      /* A single block copy is 1 load + 1 store.  */
+      nops += 2;
       n -= mode_bits;
 
       /* Emit trailing copies using overlapping unaligned accesses - this is
@@ -23471,7 +23476,16 @@ aarch64_expand_cpymem (rtx *operands)
 	  n = n_bits;
 	}
     }
+  rtx_insn *seq = get_insns ();
+  end_sequence ();
 
+  /* A memcpy libcall in the worst case takes 3 instructions to prepare the
+     arguments + 1 for the call.  */
+  unsigned libcall_cost = 4;
+  if (size_p && libcall_cost < nops)
+    return false;
+
+  emit_insn (seq);
   return true;
 }
 
