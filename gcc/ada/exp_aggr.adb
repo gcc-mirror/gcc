@@ -8547,10 +8547,6 @@ package body Exp_Aggr is
          Expr_Q : Node_Id;
 
       begin
-         if No (Comps) then
-            return True;
-         end if;
-
          C := First (Comps);
          while Present (C) loop
 
