@@ -27,5 +27,5 @@ _loc66:;
 *++esp=(long)&&_loc119;
  _loc119:;
 SetTermStruc:
- goto *(*esp--);
+ goto *(void*)(__INTPTR_TYPE__)(*esp--);
 }
