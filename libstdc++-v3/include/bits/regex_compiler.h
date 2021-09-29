@@ -144,6 +144,26 @@ namespace __detail
 	return ret;
       }
 
+      static _FlagT
+      _S_validate(_FlagT __f)
+      {
+	using namespace regex_constants;
+	switch (__f & (ECMAScript|basic|extended|awk|grep|egrep))
+	  {
+	  case ECMAScript:
+	  case basic:
+	  case extended:
+	  case awk:
+	  case grep:
+	  case egrep:
+	    return __f;
+	  case _FlagT(0):
+	    return __f | ECMAScript;
+	  default:
+	    std::__throw_regex_error(_S_grammar, "conflicting grammar options");
+	  }
+      }
+
       _FlagT              _M_flags;
       _ScannerT           _M_scanner;
       shared_ptr<_RegexT> _M_nfa;

@@ -61,7 +61,8 @@ namespace regex_constants
       _S_error_badrepeat,
       _S_error_complexity,
       _S_error_stack,
-      _S_null
+      _S_null,
+      _S_grammar
     };
 
   /** The expression contained an invalid collating element name. */
