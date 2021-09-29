@@ -1,3 +1,12 @@
+2021-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102498
+	* config/i386/i386.c (standard_80387_constant_p): Don't recognize
+	special 80387 instruction XFmode constants if flag_rounding_math.
+
 2021-09-24  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR tree-optimization/102400

@@ -1,3 +1,13 @@
+2021-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/96661
+	* configure.ac: Only check for int-type = 2*size_t support when
+	building with Fortran support.
+	* configure: Regenerate.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.
