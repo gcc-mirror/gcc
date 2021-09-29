@@ -1423,8 +1423,7 @@ Lexer::parse_partial_hex_escape ()
   char hexNum[3] = {0, 0, 0};
 
   // first hex char
-  skip_input ();
-  current_char = peek_input ();
+  current_char = peek_input (1);
   int additional_length_offset = 1;
 
   if (!is_x_digit (current_char))
@@ -1432,20 +1431,23 @@ Lexer::parse_partial_hex_escape ()
       rust_error_at (get_current_location (),
 		     "invalid character %<\\x%c%> in \\x sequence",
 		     current_char);
+      return std::make_pair (0, 0);
     }
   hexNum[0] = current_char;
 
   // second hex char
   skip_input ();
-  current_char = peek_input ();
+  current_char = peek_input (1);
   additional_length_offset++;
 
   if (!is_x_digit (current_char))
     {
       rust_error_at (get_current_location (),
-		     "invalid character %<\\x%c%> in \\x sequence",
+		     "invalid character %<\\x%c%c%> in \\x sequence", hexNum[0],
 		     current_char);
+      return std::make_pair (0, 1);
     }
+  skip_input ();
   hexNum[1] = current_char;
 
   long hexLong = std::strtol (hexNum, nullptr, 16);
@@ -1627,7 +1629,7 @@ Lexer::parse_byte_string (Location loc)
 	  else
 	    length += std::get<1> (escape_length_pair);
 
-	  if (output_char != 0)
+	  if (output_char != 0 || !std::get<2> (escape_length_pair))
 	    str += output_char;
 
 	  continue;
@@ -1720,6 +1722,14 @@ Lexer::parse_raw_byte_string (Location loc)
 	      length += hash_count + 1;
 	      break;
 	    }
+	}
+
+      if ((unsigned char) current_char > 127)
+	{
+	  rust_error_at (get_current_location (),
+			 "character %<%c%> in raw byte string out of range",
+			 current_char);
+	  current_char = 0;
 	}
 
       length++;
