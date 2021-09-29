@@ -588,7 +588,7 @@
 			 (lt "slt")
 			 (le "sle")
 			 (ordered "cor")
-			 (ltgt "cne")
+			 (ltgt "sne")
 			 (ne "cune")
 			 (ge "sge")
 			 (gt "sgt")
