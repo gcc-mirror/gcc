@@ -1,3 +1,9 @@
+2021-09-28  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+	* configure.ac (skipdirs): Add the contents of target_configdirs if
+	we are not building gcc.
+
 2021-09-24  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* Makefile.def: Back-port commits ba4d88ad892f and

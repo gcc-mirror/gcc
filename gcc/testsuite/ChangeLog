@@ -1,3 +1,121 @@
+2021-09-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99909
+	* g++.dg/cpp2a/concepts-ttp3.C: New test.
+
+2021-09-28  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/32122
+	* gcc.dg/comp-goto-5.c: New test.
+	* gcc.dg/comp-goto-6.c: New test.
+
+2021-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/102454
+	* g++.dg/coroutines/pr102454.C: New test.
+
+2021-09-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/reassoc-46.c: New test.
+	* gcc.dg/tree-ssa/reassoc-46.h: Common code for new tests.
+	* gcc.dg/tree-ssa/reassoc-47.c: New test.
+	* gcc.dg/tree-ssa/reassoc-48.c: New test.
+	* gcc.dg/tree-ssa/reassoc-49.c: New test.
+	* gcc.dg/tree-ssa/reassoc-50.c: New test.
+	* gcc.dg/tree-ssa/reassoc-51.c: New test.
+
+2021-09-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/auto-init-uninit-1.c: Adjust.
+	* gcc.dg/auto-init-uninit-15.c: Same.
+	* gcc.dg/guality/example.c: Same.
+	* gcc.dg/loop-8.c: Same.
+	* gcc.dg/strlenopt-40.c: Same.
+	* gcc.dg/tree-ssa/pr18133-2.c: Same.
+	* gcc.dg/tree-ssa/pr18134.c: Same.
+	* gcc.dg/uninit-1.c: Same.
+	* gcc.dg/uninit-pr44547.c: Same.
+	* gcc.dg/uninit-pr59970.c: Same.
+
+2021-09-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/assumed_rank_22_aux.c: Adjust messages printed.
+
+2021-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102498
+	* gcc.target/i386/pr102498.c: New test.
+
+2021-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99793
+	* gcc.dg/tree-ssa/pr99793.c: New testcase.
+
+2021-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100112
+	* gcc.dg/tree-ssa/ssa-fre-95.c: New testcase.
+
+2021-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102492
+	* g++.dg/gomp/simd-3.C: New test.
+
+2021-09-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102511
+	* gcc.dg/pr102511.c: New test.
+	* gcc.dg/tree-ssa/ssa-dom-thread-14.c: Adjust.
+
+2021-09-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/102230
+	* gcc.target/i386/avx512fp16-floatvnhf.c: Remove xfail.
+	* gcc.target/i386/avx512fp16-trunc-extendvnhf.c: Ditto.
+	* gcc.target/i386/avx512fp16-truncvnhf.c: Ditto.
+	* gcc.target/i386/avx512fp16-64-32-vecop-1.c: New test.
+	* gcc.target/i386/avx512fp16-64-32-vecop-2.c: Ditto.
+	* gcc.target/i386/pr102230.c: Ditto.
+
+2021-09-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-pr97352.c: Pass -mno-avx2 -mno-avx512f.
+
+2021-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102500
+	* gfortran.dg/include_15.f90: Add 'dg-prune-output' to prune
+	-Wmissing-include-dirs output printed or not depending on
+	how the testsuite is run.
+
+2021-09-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-pr65935.c: Prefer 128bit vectorization
+	on x86.
+
+2021-09-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/auto-init-uninit-1.c: Add -fthread-jumps.
+	* gcc.dg/auto-init-uninit-15.c: Same.
+	* gcc.dg/guality/example.c: Same.
+	* gcc.dg/loop-8.c: Same.
+	* gcc.dg/strlenopt-40.c: Same.
+	* gcc.dg/tree-ssa/pr18133-2.c: Same.
+	* gcc.dg/tree-ssa/pr18134.c: Same.
+	* gcc.dg/uninit-1.c: Same.
+	* gcc.dg/uninit-pr44547.c: Same.
+	* gcc.dg/uninit-pr59970.c: Same.
+
+2021-09-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/vect-rebuild.c: Adjust testcases.
+	* gcc.target/i386/avx512f-vect-rebuild.c: New test.
+
+2021-09-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-reduce-op-2.c: New test.
+	* gcc.target/i386/avx512fp16-reduce-op-3.c: New test.
+
 2021-09-27  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/102479

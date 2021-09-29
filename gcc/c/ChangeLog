@@ -1,3 +1,13 @@
+2021-09-28  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/32122
+	* c-parser.c (c_parser_statement_after_labels): Pass
+	the c_expr instead of the tree to c_finish_goto_ptr.
+	* c-typeck.c (c_finish_goto_ptr): Change the second
+	argument type to c_expr.
+	* c-tree.h (c_finish_goto_ptr): Likewise.
+	Error out if the expression was not of a pointer type.
+
 2021-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_allocate): Parse allocate clause
