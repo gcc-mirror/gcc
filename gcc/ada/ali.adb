@@ -963,19 +963,18 @@ package body ALI is
       --  special characters are included in the returned name.
 
       function Get_Name
-        (Ignore_Spaces  : Boolean := False;
-         Ignore_Special : Boolean := False;
+        (Ignore_Special : Boolean := False;
          May_Be_Quoted  : Boolean := False) return Name_Id;
       --  Skip blanks, then scan out a name (name is left in Name_Buffer with
       --  length in Name_Len, as well as being returned in Name_Id form).
       --  If Lower is set to True then the Name_Buffer will be converted to
       --  all lower case, for systems where file names are not case sensitive.
       --  This ensures that gnatbind works correctly regardless of the case
-      --  of the file name on all systems. The termination condition depends
-      --  on the settings of Ignore_Spaces and Ignore_Special:
+      --  of the file name on all systems.
       --
-      --    If Ignore_Spaces is False (normal case), then scan is terminated
-      --    by the normal end of field condition (EOL, space, horizontal tab)
+      --  The scan is terminated by the normal end of field condition
+      --  (EOL, space, horizontal tab). Furthermore, the termination condition
+      --  depends on the setting of Ignore_Special:
       --
       --    If Ignore_Special is False (normal case), the scan is terminated by
       --    a typeref bracket or an equal sign except for the special case of
@@ -986,7 +985,6 @@ package body ALI is
       --    the name is 'unquoted'. In this case Ignore_Special is ignored and
       --    assumed to be True.
       --
-      --  It is an error to set both Ignore_Spaces and Ignore_Special to True.
       --  This function handles wide characters properly.
 
       function Get_Nat return Nat;
@@ -1240,8 +1238,7 @@ package body ALI is
       --------------
 
       function Get_Name
-        (Ignore_Spaces  : Boolean := False;
-         Ignore_Special : Boolean := False;
+        (Ignore_Special : Boolean := False;
          May_Be_Quoted  : Boolean := False) return Name_Id
       is
          Char : Character;
@@ -1298,7 +1295,7 @@ package body ALI is
             loop
                Add_Char_To_Name_Buffer (Getc);
 
-               exit when At_End_Of_Field and then not Ignore_Spaces;
+               exit when At_End_Of_Field;
 
                if not Ignore_Special then
                   if Name_Buffer (1) = '"' then

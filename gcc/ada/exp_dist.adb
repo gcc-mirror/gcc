@@ -300,12 +300,9 @@ package body Exp_Dist is
       NVList      : Entity_Id;
       Parameter   : Entity_Id;
       Constrained : Boolean;
-      RACW_Ctrl   : Boolean := False;
       Any         : Entity_Id) return Node_Id;
    --  Return a call to Add_Item to add the Any corresponding to the designated
    --  formal Parameter (with the indicated Constrained status) to NVList.
-   --  RACW_Ctrl must be set to True for controlling formals of distributed
-   --  object primitive operations.
 
    --------------------
    -- Stub_Structure --
@@ -1089,7 +1086,6 @@ package body Exp_Dist is
       NVList      : Entity_Id;
       Parameter   : Entity_Id;
       Constrained : Boolean;
-      RACW_Ctrl   : Boolean := False;
       Any         : Entity_Id) return Node_Id
    is
       Parameter_Name_String : String_Id;
@@ -1146,7 +1142,7 @@ package body Exp_Dist is
 
       Parameter_Name_String := String_From_Name_Buffer;
 
-      if RACW_Ctrl or else Nkind (Parameter) = N_Defining_Identifier then
+      if Nkind (Parameter) = N_Defining_Identifier then
 
          --  When the parameter passed to Add_Parameter_To_NVList is an
          --  Extra_Constrained parameter, Parameter is an N_Defining_

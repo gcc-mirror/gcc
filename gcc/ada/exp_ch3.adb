@@ -332,10 +332,9 @@ package body Exp_Ch3 is
    --  no declarations and no statements.
 
    function Predef_Stream_Attr_Spec
-     (Loc      : Source_Ptr;
-      Tag_Typ  : Entity_Id;
-      Name     : TSS_Name_Type;
-      For_Body : Boolean := False) return Node_Id;
+     (Loc     : Source_Ptr;
+      Tag_Typ : Entity_Id;
+      Name    : TSS_Name_Type) return Node_Id;
    --  Specialized version of Predef_Spec_Or_Body that apply to read, write,
    --  input and output attribute whose specs are constructed in Exp_Strm.
 
@@ -10907,10 +10906,9 @@ package body Exp_Ch3 is
    -----------------------------
 
    function Predef_Stream_Attr_Spec
-     (Loc      : Source_Ptr;
-      Tag_Typ  : Entity_Id;
-      Name     : TSS_Name_Type;
-      For_Body : Boolean := False) return Node_Id
+     (Loc     : Source_Ptr;
+      Tag_Typ : Entity_Id;
+      Name    : TSS_Name_Type) return Node_Id
    is
       Ret_Type : Entity_Id;
 
@@ -10928,7 +10926,7 @@ package body Exp_Ch3 is
            Tag_Typ  => Tag_Typ,
            Profile  => Build_Stream_Attr_Profile (Loc, Tag_Typ, Name),
            Ret_Type => Ret_Type,
-           For_Body => For_Body);
+           For_Body => False);
    end Predef_Stream_Attr_Spec;
 
    ---------------------------------

@@ -59,16 +59,13 @@ package Sem_Ch10 is
    --  reported on Error_Node (if present); otherwise no error is reported.
 
    procedure Load_Needed_Body
-     (N          : Node_Id;
-      OK         : out Boolean;
-      Do_Analyze : Boolean := True);
+     (N  : Node_Id;
+      OK : out Boolean);
    --  Load and analyze the body of a context unit that is generic, or that
    --  contains generic units or inlined units. The body becomes part of the
    --  semantic dependency set of the unit that needs it. The returned result
    --  in OK is True if the load is successful, and False if the requested file
-   --  cannot be found. If the flag Do_Analyze is false, the unit is loaded and
-   --  parsed only. This allows a selective analysis in some inlining cases
-   --  where a full analysis would lead so circularities in the back-end.
+   --  cannot be found.
 
    procedure Remove_Context (N : Node_Id);
    --  Removes the entities from the context clause of the given compilation

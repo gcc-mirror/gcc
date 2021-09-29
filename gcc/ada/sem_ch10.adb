@@ -5610,9 +5610,8 @@ package body Sem_Ch10 is
    --  demand, at the point of instantiation (see ch12).
 
    procedure Load_Needed_Body
-     (N          : Node_Id;
-      OK         : out Boolean;
-      Do_Analyze : Boolean := True)
+     (N  : Node_Id;
+      OK : out Boolean)
    is
       Body_Name : Unit_Name_Type;
       Unum      : Unit_Number_Type;
@@ -5646,9 +5645,8 @@ package body Sem_Ch10 is
                Write_Eol;
             end if;
 
-            if Do_Analyze then
-               Semantics (Cunit (Unum));
-            end if;
+            --  We always perform analyses
+            Semantics (Cunit (Unum));
          end if;
 
          OK := True;
