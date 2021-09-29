@@ -424,6 +424,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       static constexpr flag_type awk = regex_constants::awk;
       static constexpr flag_type grep = regex_constants::grep;
       static constexpr flag_type egrep = regex_constants::egrep;
+#if __cplusplus >= 2017
+      static constexpr flag_type multiline = regex_constants::multiline;
+#endif
       ///@}
 
       // [7.8.2] construct/copy/destroy

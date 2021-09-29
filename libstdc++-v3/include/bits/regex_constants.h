@@ -64,7 +64,7 @@ namespace regex_constants
     _S_grep,
     _S_egrep,
     _S_polynomial,
-    _S_syntax_last
+    _S_multiline
   };
 
   /**
@@ -169,6 +169,22 @@ namespace regex_constants
    */
   _GLIBCXX17_INLINE constexpr syntax_option_type egrep =
     static_cast<syntax_option_type>(1 << _S_egrep);
+
+#if __cplusplus >= 201703L || !defined __STRICT_ANSI__
+  /**
+   * Specifies that the `^` anchor matches at the beginning of a line,
+   * and the `$` anchor matches at the end of a line, not only at the
+   * beginning/end of the input.
+   * Valid for the ECMAScript syntax, ignored otherwise.
+   * @since C++17
+   */
+  _GLIBCXX17_INLINE constexpr syntax_option_type multiline =
+    static_cast<syntax_option_type>(1 << _S_multiline);
+#endif
+
+  /// Extension: Equivalent to regex_constants::multiline for C++11 and C++14.
+  _GLIBCXX17_INLINE constexpr syntax_option_type __multiline =
+    static_cast<syntax_option_type>(1 << _S_multiline);
 
   /**
    * Extension: Ensure both space complexity of compiled regex and
@@ -310,9 +326,10 @@ namespace regex_constants
     static_cast<match_flag_type>(1 << _S_continuous);
 
   /**
-   * --first is a valid iterator position.  When this flag is set then the
-   * flags match_not_bol and match_not_bow are ignored by the regular
-   * expression algorithms 28.11 and iterators 28.12.
+   * `--first` is a valid iterator position.  When this flag is set then the
+   * flags `match_not_bol` and `match_not_bow` are ignored by the algorithms
+   * `regex_match`, `regex_search`, and `regex_replace`, and by the iterators
+   * `regex_iterator` and `regex_token_iterator`.
    */
   _GLIBCXX17_INLINE constexpr match_flag_type match_prev_avail =
     static_cast<match_flag_type>(1 << _S_prev_avail);
