@@ -176,6 +176,16 @@ namespace __detail
 	  _M_state = _S_state_in_brace;
 	  _M_token = _S_token_interval_begin;
 	}
+      else if (__builtin_expect(__c == _CharT(0), false))
+	{
+	  if (!_M_is_ecma())
+	    {
+	      __throw_regex_error(regex_constants::_S_null,
+		  "Unexpected null character in regular expression");
+	    }
+	  _M_token = _S_token_ord_char;
+	  _M_value.assign(1, __c);
+	}
       else if (__c != ']' && __c != '}')
 	{
 	  auto __it = _M_token_tbl;
