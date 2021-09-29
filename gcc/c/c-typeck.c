@@ -3940,7 +3940,14 @@ parser_build_binary_op (location_t location, enum tree_code code,
   else if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && (code1 == STRING_CST || code2 == STRING_CST))
     warning_at (location, OPT_Waddress,
-		"comparison with string literal results in unspecified behavior");
+		"comparison with string literal results in unspecified "
+		"behavior");
+
+  if (warn_array_compare
+      && TREE_CODE_CLASS (code) == tcc_comparison
+      && TREE_CODE (type1) == ARRAY_TYPE
+      && TREE_CODE (type2) == ARRAY_TYPE)
+    do_warn_array_compare (location, code, arg1.value, arg2.value);
 
   if (TREE_OVERFLOW_P (result.value)
       && !TREE_OVERFLOW_P (arg1.value)

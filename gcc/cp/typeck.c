@@ -5357,6 +5357,11 @@ cp_build_binary_op (const op_location_t &location,
 	    warning_at (location, OPT_Waddress,
 			"comparison with string literal results in "
 			"unspecified behavior");
+	  else if (warn_array_compare
+		   && TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
+		   && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE)
+	    do_warn_array_compare (location, code, stripped_orig_op0,
+				   stripped_orig_op1);
 	}
 
       build_type = boolean_type_node;
@@ -5629,6 +5634,14 @@ cp_build_binary_op (const op_location_t &location,
 			"comparison with string literal results "
 			"in unspecified behavior");
 	}
+      else if (warn_array_compare
+	       && TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
+	       && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE
+	       && code != SPACESHIP_EXPR
+	       && (complain & tf_warning))
+	do_warn_array_compare (location, code,
+			       tree_strip_any_location_wrapper (orig_op0),
+			       tree_strip_any_location_wrapper (orig_op1));
 
       if (gnu_vector_type_p (type0) && gnu_vector_type_p (type1))
 	{

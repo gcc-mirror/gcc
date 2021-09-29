@@ -249,7 +249,8 @@ in the following sections.
 -Wcomma-subscript  -Wconditionally-supported @gol
 -Wno-conversion-null  -Wctad-maybe-unsupported @gol
 -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
--Wdelete-non-virtual-dtor  -Wdeprecated-copy -Wdeprecated-copy-dtor @gol
+-Wdelete-non-virtual-dtor  -Wno-deprecated-array-compare @gol
+-Wdeprecated-copy -Wdeprecated-copy-dtor @gol
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
 -Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
@@ -323,7 +324,7 @@ Objective-C and Objective-C++ Dialects}.
 -Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations @gol
 -Warith-conversion @gol
--Warray-bounds  -Warray-bounds=@var{n} @gol
+-Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare @gol
 -Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias @gol
 -Wno-attribute-warning  -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
@@ -5562,6 +5563,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @gccoptlist{-Waddress   @gol
 -Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
+-Warray-compare @gol
 -Warray-parameter=2 @r{(C and Objective-C only)} @gol
 -Wbool-compare  @gol
 -Wbool-operation  @gol
@@ -7532,6 +7534,20 @@ arrays at the end of a struct and for arrays accessed through
 pointers. This warning level may give a larger number of
 false positives and is deactivated by default.
 @end table
+
+@item -Warray-compare
+@opindex Warray-compare
+@opindex Wno-array-compare
+Warn about equality and relational comparisons between two operands of array
+type.  This comparison was deprecated in C++20.  For example:
+
+@smallexample
+int arr1[5];
+int arr2[5];
+bool same = arr1 == arr2;
+@end smallexample
+
+@option{-Warray-compare} is enabled by @option{-Wall}.
 
 @item -Warray-parameter
 @itemx -Warray-parameter=@var{n}
