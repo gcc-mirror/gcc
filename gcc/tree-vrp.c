@@ -4372,9 +4372,9 @@ public:
   {
     walk (fun->cfg->x_entry_block_ptr);
   }
-  void thread_through_all_blocks ()
+  bool thread_through_all_blocks ()
   {
-    m_threader->thread_through_all_blocks (false);
+    return m_threader->thread_through_all_blocks (false);
   }
 
 private:
@@ -4438,7 +4438,8 @@ execute_vrp_threader (function *fun)
 {
   hybrid_threader threader;
   threader.thread_jumps (fun);
-  threader.thread_through_all_blocks ();
+  if (threader.thread_through_all_blocks ())
+    return (TODO_cleanup_cfg | TODO_update_ssa);
   return 0;
 }
 
@@ -4454,7 +4455,7 @@ const pass_data pass_data_vrp_threader =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_cleanup_cfg | TODO_update_ssa ), /* todo_flags_finish */
+  0 /* todo_flags_finish */
 };
 
 class pass_vrp_threader : public gimple_opt_pass
