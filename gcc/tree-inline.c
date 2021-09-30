@@ -3476,7 +3476,11 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	 invalid sharing when operand is not really constant.
 	 It is not big deal to prohibit constant propagation here as
 	 we will constant propagate in DOM1 pass anyway.  */
-      if (is_gimple_min_invariant (value)
+      if ((is_gimple_min_invariant (value)
+	   /* When the parameter is used in a context that forces it to
+	      not be a GIMPLE register avoid substituting something that
+	      is not a decl there.  */
+	   && ! DECL_NOT_GIMPLE_REG_P (p))
 	  && useless_type_conversion_p (TREE_TYPE (p),
 						 TREE_TYPE (value))
 	  /* We have to be very careful about ADDR_EXPR.  Make sure
