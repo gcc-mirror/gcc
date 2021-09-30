@@ -3,6 +3,16 @@
 	Backported from master:
 	2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.fortran/alloc-7.f90: Add dg-prune-output
+	for -fintrinsic-modules-path= warning of the C compiler.
+	* testsuite/libgomp.fortran/alloc-9.f90: Likewise.
+	* testsuite/libgomp.fortran/alloc-10.f90: Likewise.
+
+2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
 	* libgomp.texi (OpenMP 5.1): Set implementation status to Y for
 	omp_aligned_{,c}alloc and omp_{c,re}alloc routines.
 	* omp_lib.f90.in (omp_aligned_alloc, omp_aligned_calloc, omp_calloc,
