@@ -1265,7 +1265,7 @@ vect_update_misalignment_for_peel (dr_vec_info *dr_info,
   tree vectype = STMT_VINFO_VECTYPE (dr_info->stmt);
   if (DR_TARGET_ALIGNMENT (dr_info).is_constant (&alignment)
       && known_alignment_for_access_p (dr_info, vectype)
-      && npeel != -1)
+      && npeel != 0)
     {
       int misal = dr_info->misalignment;
       misal += npeel * TREE_INT_CST_LOW (DR_STEP (dr_info->dr));
