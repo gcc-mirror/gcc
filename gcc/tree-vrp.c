@@ -4408,6 +4408,7 @@ hybrid_threader::~hybrid_threader ()
   delete m_threader;
   delete m_state;
   delete m_ranger;
+  delete m_query;
 
   scev_finalize ();
   loop_optimizer_finalize ();
