@@ -3921,8 +3921,12 @@ omp_runtime_api_call (const_tree fndecl)
     {
       /* This array has 3 sections.  First omp_* calls that don't
 	 have any suffixes.  */
-      "omp_alloc",
-      "omp_free",
+      "aligned_alloc",
+      "aligned_calloc",
+      "alloc",
+      "calloc",
+      "free",
+      "realloc",
       "target_alloc",
       "target_associate_ptr",
       "target_disassociate_ptr",
