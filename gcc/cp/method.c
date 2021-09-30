@@ -1426,6 +1426,10 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	   field;
 	   field = next_initializable_field (DECL_CHAIN (field)))
 	{
+	  if (DECL_VIRTUAL_P (field))
+	    /* Don't compare vptr fields.  */
+	    continue;
+
 	  tree expr_type = TREE_TYPE (field);
 
 	  location_t field_loc = DECL_SOURCE_LOCATION (field);
