@@ -1,6 +1,24 @@
 2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Set implementation status to Y for
+	omp_aligned_{,c}alloc and omp_{c,re}alloc routines.
+	* omp_lib.f90.in (omp_aligned_alloc, omp_aligned_calloc, omp_calloc,
+	omp_realloc): Add.
+	* omp_lib.h.in (omp_aligned_alloc, omp_aligned_calloc, omp_calloc,
+	omp_realloc): Add.
+	* testsuite/libgomp.fortran/alloc-10.f90: New test.
+	* testsuite/libgomp.fortran/alloc-6.f90: New test.
+	* testsuite/libgomp.fortran/alloc-7.c: New test.
+	* testsuite/libgomp.fortran/alloc-7.f90: New test.
+	* testsuite/libgomp.fortran/alloc-8.f90: New test.
+	* testsuite/libgomp.fortran/alloc-9.f90: New test.
+
+2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp.h.in (omp_aligned_alloc, omp_calloc, omp_aligned_calloc,

@@ -681,12 +681,53 @@
         end interface
 
         interface
+          function omp_aligned_alloc (alignment, size, allocator) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t
+            import :: omp_allocator_handle_kind
+            type(c_ptr) :: omp_aligned_alloc
+            integer(c_size_t), value :: alignment, size
+            integer(omp_allocator_handle_kind), value :: allocator
+          end function omp_aligned_alloc
+        end interface
+
+        interface
           subroutine omp_free(ptr, allocator) bind(c)
             use, intrinsic :: iso_c_binding, only : c_ptr
             import :: omp_allocator_handle_kind
             type(c_ptr), value :: ptr
             integer(omp_allocator_handle_kind), value :: allocator
-          end subroutine
+          end subroutine omp_free
+        end interface
+
+        interface
+          function omp_calloc (nmemb, size, allocator) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t
+            import :: omp_allocator_handle_kind
+            type(c_ptr) :: omp_calloc
+            integer(c_size_t), value :: nmemb, size
+            integer(omp_allocator_handle_kind), value :: allocator
+          end function omp_calloc
+        end interface
+
+        interface
+          function omp_aligned_calloc (alignment, nmemb, size, allocator) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t
+            import :: omp_allocator_handle_kind
+            type(c_ptr) :: omp_aligned_calloc
+            integer(c_size_t), value :: alignment, nmemb, size
+            integer(omp_allocator_handle_kind), value :: allocator
+          end function omp_aligned_calloc
+        end interface
+
+        interface
+          function omp_realloc (ptr, size, allocator, free_allocator) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t
+            import :: omp_allocator_handle_kind
+            type(c_ptr) :: omp_realloc
+            type(c_ptr), value :: ptr
+            integer(c_size_t), value :: size
+            integer(omp_allocator_handle_kind), value :: allocator, free_allocator
+          end function omp_realloc
         end interface
 
         interface
