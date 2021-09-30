@@ -11789,8 +11789,9 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 	{
 	  stub = gogo->start_function(stub_name, stub_type, false,
 				      fntype->location());
-	  Type::build_one_stub_method(gogo, m, buf, stub_params,
-				      fntype->is_varargs(), location);
+	  Type::build_one_stub_method(gogo, m, buf, receiver_type, stub_params,
+				      fntype->is_varargs(), stub_results,
+				      location);
 	  gogo->finish_function(fntype->location());
 
 	  if (type->named_type() == NULL && stub->is_function())
@@ -11810,16 +11811,20 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 void
 Type::build_one_stub_method(Gogo* gogo, Method* method,
 			    const char* receiver_name,
+			    const Type* receiver_type,
 			    const Typed_identifier_list* params,
 			    bool is_varargs,
+			    const Typed_identifier_list* results,
 			    Location location)
 {
   Named_object* receiver_object = gogo->lookup(receiver_name, NULL);
   go_assert(receiver_object != NULL);
 
   Expression* expr = Expression::make_var_reference(receiver_object, location);
-  expr = Type::apply_field_indexes(expr, method->field_indexes(), location);
-  if (expr->type()->points_to() == NULL)
+  const Type* expr_type = receiver_type;
+  expr = Type::apply_field_indexes(expr, method->field_indexes(), location,
+				   &expr_type);
+  if (expr_type->points_to() == NULL)
     expr = Expression::make_unary(OPERATOR_AND, expr, location);
 
   Expression_list* arguments;
@@ -11844,8 +11849,7 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
   go_assert(func != NULL);
   Call_expression* call = Expression::make_call(func, arguments, is_varargs,
 						location);
-
-  gogo->add_statement(Statement::make_return_from_call(call, location));
+  Type::add_return_from_results(gogo, call, results, location);
 }
 
 // Build direct interface stub methods for TYPE as needed.  METHODS
@@ -11954,8 +11958,9 @@ Type::build_direct_iface_stub_methods(Gogo* gogo, const Type* type,
         {
           stub = gogo->start_function(stub_name, stub_type, false,
                                       fntype->location());
-          Type::build_one_iface_stub_method(gogo, m, buf, stub_params,
-                                            fntype->is_varargs(), loc);
+	  Type::build_one_iface_stub_method(gogo, m, buf, stub_params,
+					    fntype->is_varargs(), stub_results,
+					    loc);
           gogo->finish_function(fntype->location());
 
           if (type->named_type() == NULL && stub->is_function())
@@ -11982,7 +11987,9 @@ void
 Type::build_one_iface_stub_method(Gogo* gogo, Method* method,
                                   const char* receiver_name,
                                   const Typed_identifier_list* params,
-                                  bool is_varargs, Location loc)
+				  bool is_varargs,
+				  const Typed_identifier_list* results,
+				  Location loc)
 {
   Named_object* receiver_object = gogo->lookup(receiver_name, NULL);
   go_assert(receiver_object != NULL);
@@ -12014,31 +12021,63 @@ Type::build_one_iface_stub_method(Gogo* gogo, Method* method,
   go_assert(func != NULL);
   Call_expression* call = Expression::make_call(func, arguments, is_varargs,
                                                 loc);
+  Type::add_return_from_results(gogo, call, results, loc);
+}
 
-  gogo->add_statement(Statement::make_return_from_call(call, loc));
+// Build and add a return statement from a call expression and a list
+// of result parameters.  All we need to know is the number of
+// results.
+
+void
+Type::add_return_from_results(Gogo* gogo, Call_expression* call,
+				const Typed_identifier_list* results,
+				Location loc)
+{
+  Statement* s;
+  if (results == NULL || results->empty())
+    s = Statement::make_statement(call, true);
+  else
+    {
+      Expression_list* vals = new Expression_list();
+      size_t rc = results->size();
+      if (rc == 1)
+	vals->push_back(call);
+      else
+	{
+	  for (size_t i = 0; i < rc; ++i)
+	    vals->push_back(Expression::make_call_result(call, i));
+	}
+      s = Statement::make_return_statement(vals, loc);
+    }
+
+  gogo->add_statement(s);
 }
 
 // Apply FIELD_INDEXES to EXPR.  The field indexes have to be applied
-// in reverse order.
+// in reverse order.  *PEXPR_TYPE maintains the type of EXPR; we use
+// this to avoid calling EXPR->type() before the lowering pass.
 
 Expression*
 Type::apply_field_indexes(Expression* expr,
 			  const Method::Field_indexes* field_indexes,
-			  Location location)
+			  Location location,
+			  const Type** pexpr_type)
 {
   if (field_indexes == NULL)
     return expr;
-  expr = Type::apply_field_indexes(expr, field_indexes->next, location);
-  Struct_type* stype = expr->type()->deref()->struct_type();
+  expr = Type::apply_field_indexes(expr, field_indexes->next, location,
+				   pexpr_type);
+  const Type* expr_type = *pexpr_type;
+  const Struct_type* stype = expr_type->deref()->struct_type();
   go_assert(stype != NULL
 	     && field_indexes->field_index < stype->field_count());
-  if (expr->type()->struct_type() == NULL)
+  if (expr_type->struct_type() == NULL)
     {
-      go_assert(expr->type()->points_to() != NULL);
+      go_assert(expr_type->points_to()->struct_type() == stype);
       expr = Expression::make_dereference(expr, Expression::NIL_CHECK_DEFAULT,
                                           location);
-      go_assert(expr->type()->struct_type() == stype);
     }
+  *pexpr_type = stype->field(field_indexes->field_index)->type();
   return Expression::make_field_reference(expr, field_indexes->field_index,
 					  location);
 }
