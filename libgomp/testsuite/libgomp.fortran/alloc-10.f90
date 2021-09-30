@@ -1,4 +1,5 @@
 ! { dg-additional-sources alloc-7.c }
+! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
 module m
   use omp_lib
   use iso_c_binding
