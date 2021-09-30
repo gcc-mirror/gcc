@@ -304,12 +304,51 @@ public:
 	}
 	return;
 
-      case HIR::Literal::STRING:
-	case HIR::Literal::BYTE_STRING: {
+	case HIR::Literal::STRING: {
 	  auto base = ctx->get_backend ()->string_constant_expression (
 	    literal_value->as_string ());
 	  translated
 	    = ctx->get_backend ()->address_expression (base, expr.get_locus ());
+	}
+	return;
+
+	case HIR::Literal::BYTE_STRING: {
+	  TyTy::BaseType *tyty = nullptr;
+	  if (!ctx->get_tyctx ()->lookup_type (
+		expr.get_mappings ().get_hirid (), &tyty))
+	    {
+	      rust_fatal_error (expr.get_locus (),
+				"did not resolve type for this array expr");
+	      return;
+	    }
+
+	  // the type here is &[ty; capacity]
+	  rust_assert (tyty->get_kind () == TyTy::TypeKind::REF);
+	  auto ref_tyty = static_cast<TyTy::ReferenceType *> (tyty);
+	  auto base_tyty = ref_tyty->get_base ();
+	  rust_assert (base_tyty->get_kind () == TyTy::TypeKind::ARRAY);
+	  auto array_tyty = static_cast<TyTy::ArrayType *> (base_tyty);
+
+	  std::string value_str = expr.get_literal ()->as_string ();
+	  std::vector<Bexpression *> vals;
+	  std::vector<unsigned long> indexes;
+	  for (size_t i = 0; i < value_str.size (); i++)
+	    {
+	      char b = value_str.at (i);
+	      Bexpression *bb
+		= ctx->get_backend ()->char_constant_expression (b);
+	      vals.push_back (bb);
+	      indexes.push_back (i);
+	    }
+
+	  Btype *array_type = TyTyResolveCompile::compile (ctx, array_tyty);
+	  Bexpression *constructed
+	    = ctx->get_backend ()->array_constructor_expression (
+	      array_type, indexes, vals, expr.get_locus ());
+
+	  translated
+	    = ctx->get_backend ()->address_expression (constructed,
+						       expr.get_locus ());
 	}
 	return;
 
