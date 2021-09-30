@@ -1,3 +1,66 @@
+2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex::multiline): Define constant
+	for C++17.
+	* include/bits/regex_constants.h (regex_constants::multiline):
+	Define constant for C++17.
+	(regex_constants::__multiline): Define duplicate constant for
+	internal use in C++11 and C++14.
+	* include/bits/regex_executor.h (_Executor::_M_match_multiline()):
+	New member function.
+	(_Executor::_M_is_line_terminator(_CharT)): New member function.
+	(_Executor::_M_at_begin(), _Executor::_M_at_end()): Use new
+	member functions to support multiline matches.
+	* testsuite/28_regex/algorithms/regex_match/multiline.cc: New test.
+
+2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.h (_Compiler::_S_validate): New
+	function.
+	* include/bits/regex_compiler.tcc (_Compiler::_Compiler): Use
+	_S_validate to check flags.
+	* include/bits/regex_error.h (_S_grammar): New error code for
+	internal use.
+	* testsuite/28_regex/basic_regex/ctors/grammar.cc: New test.
+
+2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84110
+	* include/bits/regex_error.h (regex_constants::_S_null): New
+	error code for internal use.
+	* include/bits/regex_scanner.tcc (_Scanner::_M_scan_normal()):
+	Check for null character.
+	* testsuite/28_regex/basic_regex/84110.cc: New test.
+
+2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (__detail::__is_contiguous_iter): Move
+	here from <bits/regex_compiler.h>.
+	(basic_regex::_M_compile): New function to compile an NFA from
+	a regular expression string.
+	(basic_regex::basic_regex): Use _M_compile instead of delegating
+	to other constructors.
+	(basic_regex::operator=(const basic_regex&)): Define as
+	defaulted.
+	(basic_regex::operator=(initializer_list<C>)): Use _M_compile.
+	(basic_regex::assign(const basic_regex&)): Use copy assignment.
+	(basic_regex::assign(basic_regex&&)): Use move assignment.
+	(basic_regex::assign(const C*, flag_type)): Use _M_compile
+	instead of constructing a temporary string.
+	(basic_regex::assign(const C*, size_t, flag_type)): Likewise.
+	(basic_regex::assign(const basic_string<C,T,A>&, flag_type)):
+	Use _M_compile instead of constructing a temporary basic_regex.
+	(basic_regex::assign(InputIter, InputIter, flag_type)): Avoid
+	constructing a temporary string for contiguous iterators of the
+	right value type.
+	* include/bits/regex_compiler.h (__is_contiguous_iter): Move to
+	<bits/regex.h>.
+	(__enable_if_contiguous_iter, __disable_if_contiguous_iter)
+	(__compile_nfa): Remove.
+	* testsuite/28_regex/basic_regex/assign/exception_safety.cc: New
+	test.
+	* testsuite/28_regex/basic_regex/ctors/char/other.cc: New test.
+
 2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_timed_wait.h (__platform_wait_until_impl):

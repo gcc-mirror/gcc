@@ -412,6 +412,12 @@ gimple_ranger::dump (FILE *f)
   m_cache.dump (f);
 }
 
+void
+gimple_ranger::debug ()
+{
+  dump (stderr);
+}
+
 /* Create a new ranger instance and associate it with function FUN.
    Each call must be paired with a call to disable_ranger to release
    resources.  */

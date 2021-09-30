@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fdump-tree-optimized" } */
+/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 
 #pragma GCC optimize "-fcx-limited-range"
 

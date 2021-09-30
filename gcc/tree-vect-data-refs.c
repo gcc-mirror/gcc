@@ -1262,10 +1262,11 @@ vect_update_misalignment_for_peel (dr_vec_info *dr_info,
     }
 
   unsigned HOST_WIDE_INT alignment;
-  tree vectype = STMT_VINFO_VECTYPE (dr_info->stmt);
   if (DR_TARGET_ALIGNMENT (dr_info).is_constant (&alignment)
-      && known_alignment_for_access_p (dr_info, vectype)
-      && npeel != -1)
+      && known_alignment_for_access_p (dr_info,
+				       STMT_VINFO_VECTYPE (dr_info->stmt))
+      && known_alignment_for_access_p (dr_peel_info,
+				       STMT_VINFO_VECTYPE (dr_peel_info->stmt)))
     {
       int misal = dr_info->misalignment;
       misal += npeel * TREE_INT_CST_LOW (DR_STEP (dr_info->dr));
@@ -1515,7 +1516,8 @@ vect_peeling_hash_get_most_frequent (_vect_peel_info **slot,
 
 /* Get the costs of peeling NPEEL iterations for LOOP_VINFO, checking
    data access costs for all data refs.  If UNKNOWN_MISALIGNMENT is true,
-   we assume DR0_INFO's misalignment will be zero after peeling.  */
+   npeel is computed at runtime but DR0_INFO's misalignment will be zero
+   after peeling.  */
 
 static void
 vect_get_peeling_costs_all_drs (loop_vec_info loop_vinfo,
