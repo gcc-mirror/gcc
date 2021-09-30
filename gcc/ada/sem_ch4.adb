@@ -2956,46 +2956,15 @@ package body Sem_Ch4 is
       I_F   : Interp_Index;
       T_F   : Entity_Id;
 
+      procedure Analyze_Set_Membership;
+      --  If a set of alternatives is present, analyze each and find the
+      --  common type to which they must all resolve.
+
       procedure Try_One_Interp (T1 : Entity_Id);
       --  Routine to try one proposed interpretation. Note that the context
       --  of the operation plays no role in resolving the arguments, so that
       --  if there is more than one interpretation of the operands that is
       --  compatible with a membership test, the operation is ambiguous.
-
-      --------------------
-      -- Try_One_Interp --
-      --------------------
-
-      procedure Try_One_Interp (T1 : Entity_Id) is
-      begin
-         if Has_Compatible_Type (R, T1) then
-            if Found
-              and then Base_Type (T1) /= Base_Type (T_F)
-            then
-               It := Disambiguate (L, I_F, Index, Any_Type);
-
-               if It = No_Interp then
-                  Ambiguous_Operands (N);
-                  Set_Etype (L, Any_Type);
-                  return;
-
-               else
-                  T_F := It.Typ;
-               end if;
-
-            else
-               Found := True;
-               T_F   := T1;
-               I_F   := Index;
-            end if;
-
-            Set_Etype (L, T_F);
-         end if;
-      end Try_One_Interp;
-
-      procedure Analyze_Set_Membership;
-      --  If a set of alternatives is present, analyze each and find the
-      --  common type to which they must all resolve.
 
       ----------------------------
       -- Analyze_Set_Membership --
@@ -3094,6 +3063,37 @@ package body Sem_Ch4 is
             Error_Msg_N ("cannot resolve membership operation", N);
          end if;
       end Analyze_Set_Membership;
+
+      --------------------
+      -- Try_One_Interp --
+      --------------------
+
+      procedure Try_One_Interp (T1 : Entity_Id) is
+      begin
+         if Has_Compatible_Type (R, T1) then
+            if Found
+              and then Base_Type (T1) /= Base_Type (T_F)
+            then
+               It := Disambiguate (L, I_F, Index, Any_Type);
+
+               if It = No_Interp then
+                  Ambiguous_Operands (N);
+                  Set_Etype (L, Any_Type);
+                  return;
+
+               else
+                  T_F := It.Typ;
+               end if;
+
+            else
+               Found := True;
+               T_F   := T1;
+               I_F   := Index;
+            end if;
+
+            Set_Etype (L, T_F);
+         end if;
+      end Try_One_Interp;
 
       Op : Node_Id;
 
