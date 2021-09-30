@@ -203,6 +203,10 @@ OMP_5.0.2 {
   global:
 	omp_get_device_num;
 	omp_get_device_num_;
+	omp_aligned_alloc;
+	omp_calloc;
+	omp_aligned_calloc;
+	omp_realloc;
 } OMP_5.0.1;
 
 OMP_5.1 {
