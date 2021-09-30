@@ -10832,6 +10832,7 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 	    return error_mark_node;
 	  type2 = tree_cons (NULL_TREE, elt, type2);
 	}
+      type2 = nreverse (type2);
     }
 
   location_t finish_loc = cp_lexer_peek_token (parser->lexer)->location;
