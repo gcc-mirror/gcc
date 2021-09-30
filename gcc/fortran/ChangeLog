@@ -1,3 +1,8 @@
+2021-09-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102520
+	* array.c (expand_constructor): Do not dereference NULL pointer.
+
 2021-09-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/94070

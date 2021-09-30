@@ -1,3 +1,58 @@
+2021-09-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR testsuite/102501
+	* gcc.dg/tree-ssa/pr66752-3.c: Adjust.
+	* gcc.dg/tree-ssa/pr77445-2.c: Adjust.
+
+2021-09-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102520
+	* gfortran.dg/pr102520.f90: New test.
+
+2021-09-29  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.c-torture/compile/920831-1.c: Fix computed goto types.
+	* gcc.c-torture/compile/pr27863.c: Likewise.
+
+2021-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/102517
+	* gcc.dg/pr78408-1.c: Make S not power-of-two size.
+
+2021-09-29  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-alignment-peeling-1.c: New testcase.
+	* gcc.target/i386/vect-alignment-peeling-2.c: Likewise.
+
+2021-09-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/cpymem-size.c: New test.
+
+2021-09-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/memset-corner-cases-2.c: New test.
+	* gcc.target/aarch64/memset-strict-align-1.c: Adjust.
+
+2021-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102504
+	* c-c++-common/gomp/scope-4.c: New test.
+
+2021-09-29  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/compile/920826-1.c: Fix computed goto.
+	* gcc.c-torture/compile/pr27863.c: Likewise.
+	* gcc.c-torture/compile/pr70190.c: Likewise.
+	* gcc.dg/torture/pr89135.c: Likewise.
+	* gcc.dg/torture/pr90071.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr97709.c: Likewise.
+
+2021-09-29  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/out-of-bounds-1.c: Make memcpied size not power-of-two.
+
 2021-09-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/99909

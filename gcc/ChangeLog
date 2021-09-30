@@ -1,3 +1,71 @@
+2021-09-29  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/102507
+	* btfout.c (GTY): Add GTY (()) albeit for cosmetic only purpose.
+	(btf_finalize): Empty the hash_map btf_var_ids.
+
+2021-09-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (thread_through_all_blocks): Return bool.
+	(execute_vrp_threader): Return TODO_* flags.
+	(pass_data_vrp_threader): Set todo_flags_finish to 0.
+
+2021-09-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* timevar.def (TV_TREE_VRP_THREADER): New.
+	* tree-vrp.c: Use TV_TREE_VRP_THREADER for VRP threader pass.
+
+2021-09-29  David Faust  <david.faust@oracle.com>
+
+	* config.gcc (bpf-*-*): Do not overwrite extra_headers.
+
+2021-09-29  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (TYPES_BINOP_PPU): Define
+	new type qualifier enum.
+	(TYPES_TERNOP_SSSU): Likewise.
+	(TYPES_TERNOP_PPPU): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def: Define PPU, SSU,
+	PPPU and SSSU builtin generator macros for qtbl1 and qtbx1
+	Neon builtins.
+	* config/aarch64/arm_neon.h (vqtbl1_p8): Use type-qualified
+	builtin and remove casts.
+	(vqtbl1_s8): Likewise.
+	(vqtbl1q_p8): Likewise.
+	(vqtbl1q_s8): Likewise.
+	(vqtbx1_s8): Likewise.
+	(vqtbx1_p8): Likewise.
+	(vqtbx1q_s8): Likewise.
+	(vqtbx1q_p8): Likewise.
+	(vtbl1_p8): Likewise.
+	(vtbl2_p8): Likewise.
+	(vtbx2_p8): Likewise.
+
+2021-09-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_dr_misalign_for_aligned_access):
+	New helper.
+	(vect_update_misalignment_for_peel): Use it to update
+	misaligned to the value necessary for an aligned access.
+	(vect_get_peeling_costs_all_drs): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+
+2021-09-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_cpymem): Count number of
+	emitted operations and adjust heuristic for code size.
+
+2021-09-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_setmem): Count number of
+	emitted operations and adjust heuristic for code size.
+
+2021-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102504
+	* gimplify.c (gimplify_scan_omp_clauses): Use omp_check_private even
+	in OMP_SCOPE clauses, not just on worksharing construct clauses.
+
 2021-09-28  Geng Qi  <gengqi@linux.alibaba.com>
 
 	* config/riscv/riscv.md	(mulv<mode>4): Call gen_smul<mode>3_highpart.
