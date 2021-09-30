@@ -438,7 +438,7 @@ tree gfc_class_vtab_def_init_get (tree);
 tree gfc_class_vtab_copy_get (tree);
 tree gfc_class_vtab_final_get (tree);
 /* Get an accessor to the vtab's * field, when a vptr handle is present.  */
-tree gfc_vtpr_hash_get (tree);
+tree gfc_vptr_hash_get (tree);
 tree gfc_vptr_size_get (tree);
 tree gfc_vptr_extends_get (tree);
 tree gfc_vptr_def_init_get (tree);

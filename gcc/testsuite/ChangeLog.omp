@@ -1,3 +1,14 @@
+2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/71703
+	PR fortran/84007
+	* gfortran.dg/c-interop/c535b-1.f90: Remove wrong comment.
+	* gfortran.dg/unlimited_polymorphic_1.f03: Extend.
+	* gfortran.dg/unlimited_polymorphic_32.f90: New test.
+
 2021-09-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
