@@ -17258,10 +17258,46 @@ package body Sem_Ch3 is
         and then Is_Interface (Parent_Type)
       then
          declare
-            Iface               : Node_Id;
             Partial_View        : Entity_Id;
             Partial_View_Parent : Entity_Id;
-            New_Iface           : Node_Id;
+
+            function Reorder_Interfaces return Boolean;
+            --  Look for an interface in the full view's interface list that
+            --  matches the parent type of the partial view, and when found,
+            --  rewrite the full view's parent with the partial view's parent,
+            --  append the full view's original parent to the interface list,
+            --  recursively call Derived_Type_Definition on the full type, and
+            --  return True. If a match is not found, return False.
+            --  ??? This seems broken in the case of generic packages.
+
+            ------------------------
+            -- Reorder_Interfaces --
+            ------------------------
+
+            function Reorder_Interfaces return Boolean is
+               Iface     : Node_Id;
+               New_Iface : Node_Id;
+            begin
+               Iface := First (Interface_List (Def));
+               while Present (Iface) loop
+                  if Etype (Iface) = Etype (Partial_View) then
+                     Rewrite (Subtype_Indication (Def),
+                       New_Copy (Subtype_Indication (Parent (Partial_View))));
+
+                     New_Iface :=
+                       Make_Identifier (Sloc (N), Chars (Parent_Type));
+                     Append (New_Iface, Interface_List (Def));
+
+                     --  Analyze the transformed code
+
+                     Derived_Type_Declaration (T, N, Is_Completion);
+                     return True;
+                  end if;
+
+                  Next (Iface);
+               end loop;
+               return False;
+            end Reorder_Interfaces;
 
          begin
             --  Look for the associated private type declaration
@@ -17282,30 +17318,26 @@ package body Sem_Ch3 is
                then
                   null;
 
-               --  Traverse the list of interfaces of the full-view to look
-               --  for the parent of the partial-view and perform the tree
-               --  transformation.
+               --  Traverse the list of interfaces of the full view to look
+               --  for the parent of the partial view and reorder the
+               --  interfaces to match the order in the partial view,
+               --  if needed.
 
                else
-                  Iface := First (Interface_List (Def));
-                  while Present (Iface) loop
-                     if Etype (Iface) = Etype (Partial_View) then
-                        Rewrite (Subtype_Indication (Def),
-                          New_Copy (Subtype_Indication
-                                     (Parent (Partial_View))));
 
-                        New_Iface :=
-                          Make_Identifier (Sloc (N), Chars (Parent_Type));
-                        Append (New_Iface, Interface_List (Def));
+                  if Reorder_Interfaces then
+                     --  Having the interfaces listed in any order is legal.
+                     --  However, the compiler does not properly handle
+                     --  different orders between partial and full views in
+                     --  generic units. We give a warning about the order
+                     --  mismatch, so the user can work around this problem.
 
-                        --  Analyze the transformed code
+                     Error_Msg_N ("??full declaration does not respect " &
+                                  "partial declaration order", T);
+                     Error_Msg_N ("\??consider reordering", T);
 
-                        Derived_Type_Declaration (T, N, Is_Completion);
-                        return;
-                     end if;
-
-                     Next (Iface);
-                  end loop;
+                     return;
+                  end if;
                end if;
             end if;
          end;
