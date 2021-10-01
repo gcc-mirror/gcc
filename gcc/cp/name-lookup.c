@@ -3375,7 +3375,10 @@ set_decl_context_in_fn (tree ctx, tree decl)
 void
 push_local_extern_decl_alias (tree decl)
 {
-  if (dependent_type_p (TREE_TYPE (decl)))
+  if (dependent_type_p (TREE_TYPE (decl))
+      || (processing_template_decl
+	  && VAR_P (decl)
+	  && CP_DECL_THREAD_LOCAL_P (decl)))
     return;
   /* EH specs were not part of the function type prior to c++17, but
      we still can't go pushing dependent eh specs into the namespace.  */
@@ -3471,6 +3474,8 @@ push_local_extern_decl_alias (tree decl)
 	  push_nested_namespace (ns);
 	  alias = do_pushdecl (alias, /* hiding= */true);
 	  pop_nested_namespace (ns);
+	  if (VAR_P (decl) && CP_DECL_THREAD_LOCAL_P (decl))
+	    set_decl_tls_model (alias, DECL_TLS_MODEL (decl));
 	}
     }
 
