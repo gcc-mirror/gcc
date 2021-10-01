@@ -8551,17 +8551,43 @@ by @option{-Wall}.
 @item -Waddress
 @opindex Waddress
 @opindex Wno-address
-Warn about suspicious uses of memory addresses. These include using
-the address of a function in a conditional expression, such as
-@code{void func(void); if (func)}, and comparisons against the memory
-address of a string literal, such as @code{if (x == "abc")}.  Such
-uses typically indicate a programmer error: the address of a function
-always evaluates to true, so their use in a conditional usually
-indicate that the programmer forgot the parentheses in a function
-call; and comparisons against string literals result in unspecified
-behavior and are not portable in C, so they usually indicate that the
-programmer intended to use @code{strcmp}.  This warning is enabled by
-@option{-Wall}.
+Warn about suspicious uses of address expressions. These include comparing
+the address of a function or a declared object to the null pointer constant
+such as in
+@smallexample
+void f (void);
+void g (void)
+@{
+  if (!func)   // warning: expression evaluates to false
+    abort ();
+@}
+@end smallexample
+comparisons of a pointer to a string literal, such as in
+@smallexample
+void f (const char *x)
+@{
+  if (x == "abc")   // warning: expression evaluates to false
+    puts ("equal");
+@}
+@end smallexample
+and tests of the results of pointer addition or subtraction for equality
+to null, such as in
+@smallexample
+void f (const int *p, int i)
+@{
+  return p + i == NULL;
+@}
+@end smallexample
+Such uses typically indicate a programmer error: the address of most
+functions and objects necessarily evaluates to true (the exception are
+weak symbols), so their use in a conditional might indicate missing
+parentheses in a function call or a missing dereference in an array
+expression.  The subset of the warning for object pointers can be
+suppressed by casting the pointer operand to an integer type such
+as @code{inptr_t} or @code{uinptr_t}.
+Comparisons against string literals result in unspecified behavior
+and are not portable, and suggest the intent was to call @code{strcmp}.
+@option{-Waddress} warning is enabled by @option{-Wall}.
 
 @item -Wno-address-of-packed-member
 @opindex Waddress-of-packed-member

@@ -7,5 +7,7 @@ struct S { void m(); };
 template <int> bool f() {
   void (S::*mp)();
 
-  return &S::m == mp; // no warning emitted here (no instantiation)
+  /* The expression below isn't type-dependent so also verify
+     it's diagnosed even though the template isn't instantiated.  */
+  return &S::m == mp; // { dg-warning "\\\[-Waddress" }
 }

@@ -3393,14 +3393,16 @@ c_wrap_maybe_const (tree expr, bool non_const)
   return expr;
 }
 
-/* Return whether EXPR is a declaration whose address can never be
-   NULL.  */
+/* Return whether EXPR is a declaration whose address can never be NULL.
+   The address of the first struct member could be NULL only if it were
+   accessed through a NULL pointer, and such an access would be invalid.  */
 
 bool
 decl_with_nonnull_addr_p (const_tree expr)
 {
   return (DECL_P (expr)
-	  && (TREE_CODE (expr) == PARM_DECL
+	  && (TREE_CODE (expr) == FIELD_DECL
+	      || TREE_CODE (expr) == PARM_DECL
 	      || TREE_CODE (expr) == LABEL_DECL
 	      || !DECL_WEAK (expr)));
 }
@@ -3488,13 +3490,17 @@ c_common_truthvalue_conversion (location_t location, tree expr)
     case ADDR_EXPR:
       {
  	tree inner = TREE_OPERAND (expr, 0);
-	if (decl_with_nonnull_addr_p (inner))
+	if (decl_with_nonnull_addr_p (inner)
+	    /* Check both EXPR and INNER for suppression.  */
+	    && !warning_suppressed_p (expr, OPT_Waddress)
+	    && !warning_suppressed_p (inner, OPT_Waddress))
 	  {
-	    /* Common Ada programmer's mistake.  */
+	    /* Common Ada programmer's mistake.	 */
 	    warning_at (location,
 			OPT_Waddress,
 			"the address of %qD will always evaluate as %<true%>",
 			inner);
+	    suppress_warning (inner, OPT_Waddress);
 	    return truthvalue_true_node;
 	  }
 	break;
@@ -3627,8 +3633,17 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	  break;
 	/* If this isn't narrowing the argument, we can ignore it.  */
 	if (TYPE_PRECISION (totype) >= TYPE_PRECISION (fromtype))
-	  return c_common_truthvalue_conversion (location,
-						 TREE_OPERAND (expr, 0));
+	  {
+	    tree op0 = TREE_OPERAND (expr, 0);
+	    if ((TREE_CODE (fromtype) == POINTER_TYPE
+		 && TREE_CODE (totype) == INTEGER_TYPE)
+		|| warning_suppressed_p (expr, OPT_Waddress))
+	      /* Suppress -Waddress for casts to intptr_t, propagating
+		 any suppression from the enclosing expression to its
+		 operand.  */
+	      suppress_warning (op0, OPT_Waddress);
+	    return c_common_truthvalue_conversion (location, op0);
+	  }
       }
       break;
 

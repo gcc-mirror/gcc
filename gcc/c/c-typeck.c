@@ -11554,6 +11554,110 @@ build_vec_cmp (tree_code code, tree type,
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }
 
+/* Possibly warn about an address of OP never being NULL in a comparison
+   operation CODE involving null.  */
+
+static void
+maybe_warn_for_null_address (location_t loc, tree op, tree_code code)
+{
+  if (!warn_address || warning_suppressed_p (op, OPT_Waddress))
+    return;
+
+  if (TREE_CODE (op) == NOP_EXPR)
+    {
+      /* Allow casts to intptr_t to suppress the warning.  */
+      tree type = TREE_TYPE (op);
+      if (TREE_CODE (type) == INTEGER_TYPE)
+	return;
+      op = TREE_OPERAND (op, 0);
+    }
+
+  if (TREE_CODE (op) == POINTER_PLUS_EXPR)
+    {
+      /* Allow a cast to void* to suppress the warning.  */
+      tree type = TREE_TYPE (TREE_TYPE (op));
+      if (VOID_TYPE_P (type))
+	return;
+
+      /* Adding any value to a null pointer, including zero, is undefined
+	 in C.  This includes the expression &p[0] where p is the null
+	 pointer, although &p[0] will have been folded to p by this point
+	 and so not diagnosed.  */
+      if (code == EQ_EXPR)
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<false%> "
+		    "for the pointer operand in %qE must not be NULL",
+		    op);
+      else
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<true%> "
+		    "for the pointer operand in %qE must not be NULL",
+		    op);
+
+      return;
+    }
+
+  if (TREE_CODE (op) != ADDR_EXPR)
+    return;
+
+  op = TREE_OPERAND (op, 0);
+
+  if (TREE_CODE (op) == IMAGPART_EXPR
+      || TREE_CODE (op) == REALPART_EXPR)
+    {
+      /* The address of either complex part may not be null.  */
+      if (code == EQ_EXPR)
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<false%> "
+		    "for the address of %qE will never be NULL",
+		    op);
+      else
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<true%> "
+		    "for the address of %qE will never be NULL",
+		    op);
+      return;
+    }
+
+  /* Set to true in the loop below if OP dereferences is operand.
+     In such a case the ultimate target need not be a decl for
+     the null [in]equality test to be constant.  */
+  bool deref = false;
+
+  /* Get the outermost array or object, or member.  */
+  while (handled_component_p (op))
+    {
+      if (TREE_CODE (op) == COMPONENT_REF)
+	{
+	  /* Get the member (its address is never null).  */
+	  op = TREE_OPERAND (op, 1);
+	  break;
+	}
+
+      /* Get the outer array/object to refer to in the warning.  */
+      op = TREE_OPERAND (op, 0);
+      deref = true;
+    }
+
+  if ((!deref && !decl_with_nonnull_addr_p (op))
+      || from_macro_expansion_at (loc))
+    return;
+
+  if (code == EQ_EXPR)
+    warning_at (loc, OPT_Waddress,
+		"the comparison will always evaluate as %<false%> "
+		"for the address of %qE will never be NULL",
+		op);
+  else
+    warning_at (loc, OPT_Waddress,
+		"the comparison will always evaluate as %<true%> "
+		"for the address of %qE will never be NULL",
+		op);
+
+  if (DECL_P (op))
+    inform (DECL_SOURCE_LOCATION (op), "%qD declared here", op);
+}
+
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    LOCATION is the operator's location.
@@ -12189,44 +12293,12 @@ build_binary_op (location_t location, enum tree_code code,
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && null_pointer_constant_p (orig_op1))
 	{
-	  if (TREE_CODE (op0) == ADDR_EXPR
-	      && decl_with_nonnull_addr_p (TREE_OPERAND (op0, 0))
-	      && !from_macro_expansion_at (location))
-	    {
-	      if (code == EQ_EXPR)
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<false%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op0, 0));
-	      else
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<true%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op0, 0));
-	    }
+	  maybe_warn_for_null_address (location, op0, code);
 	  result_type = type0;
 	}
       else if (code1 == POINTER_TYPE && null_pointer_constant_p (orig_op0))
 	{
-	  if (TREE_CODE (op1) == ADDR_EXPR
-	      && decl_with_nonnull_addr_p (TREE_OPERAND (op1, 0))
-	      && !from_macro_expansion_at (location))
-	    {
-	      if (code == EQ_EXPR)
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<false%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op1, 0));
-	      else
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<true%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op1, 0));
-	    }
+	  maybe_warn_for_null_address (location, op1, code);
 	  result_type = type1;
 	}
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
