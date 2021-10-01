@@ -35,6 +35,8 @@ omp_set_default_device (int device_num)
   icv->default_device_var = device_num >= 0 ? device_num : 0;
 }
 
+ialias (omp_set_default_device)
+
 int
 omp_get_default_device (void)
 {
@@ -42,17 +44,23 @@ omp_get_default_device (void)
   return icv->default_device_var;
 }
 
+ialias (omp_get_default_device)
+
 int
 omp_get_initial_device (void)
 {
   return gomp_get_num_devices ();
 }
 
+ialias (omp_get_initial_device)
+
 int
 omp_get_num_devices (void)
 {
   return gomp_get_num_devices ();
 }
+
+ialias (omp_get_num_devices)
 
 int
 omp_is_initial_device (void)
@@ -61,17 +69,14 @@ omp_is_initial_device (void)
   return 1;
 }
 
+ialias (omp_is_initial_device)
+
 int
 omp_get_device_num (void)
 {
   /* By specification, this is equivalent to omp_get_initial_device
      on the host.  */
-  return omp_get_initial_device ();
+  return ialias_call (omp_get_initial_device) ();
 }
 
-ialias (omp_set_default_device)
-ialias (omp_get_default_device)
-ialias (omp_get_initial_device)
-ialias (omp_get_num_devices)
-ialias (omp_is_initial_device)
 ialias (omp_get_device_num)

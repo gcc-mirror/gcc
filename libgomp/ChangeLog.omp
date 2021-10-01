@@ -1,5 +1,19 @@
 2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backported from master:
+	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* affinity-fmt.c (omp_get_team_num, omp_get_num_teams): Add
+	ialias_redirect.
+	* env.c (handle_omp_display_env): Use ialias_call.
+	* icv-device.c: Move ialias right below each function.
+	(omp_get_device_num): Use ialias_call.
+	* fortran.c (omp_fulfill_event): Add ialias_redirect.
+	* icv.c (omp_get_active_level): Add ialias_redirect.
+
+2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp.h.in (omp_aligned_alloc, omp_aligned_calloc): Add
