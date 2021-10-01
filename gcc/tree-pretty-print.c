@@ -1165,6 +1165,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "order(");
       if (OMP_CLAUSE_ORDER_UNCONSTRAINED (clause))
 	pp_string (pp, "unconstrained:");
+      else if (OMP_CLAUSE_ORDER_REPRODUCIBLE (clause))
+	pp_string (pp, "reproducible:");
       pp_string (pp, "concurrent)");
       break;
 

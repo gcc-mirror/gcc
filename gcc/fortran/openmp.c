@@ -2374,8 +2374,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    {
 	      if (m == MATCH_ERROR)
 		goto error;
-	      if (gfc_match (" reproducible : concurrent )") == MATCH_YES
-		  || gfc_match (" concurrent )") == MATCH_YES)
+	      if (gfc_match (" reproducible : concurrent )") == MATCH_YES)
+		c->order_reproducible = true;
+	      else if (gfc_match (" concurrent )") == MATCH_YES)
 		;
 	      else if (gfc_match (" unconstrained : concurrent )") == MATCH_YES)
 		c->order_unconstrained = true;

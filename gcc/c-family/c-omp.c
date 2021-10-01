@@ -2128,6 +2128,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 				    OMP_CLAUSE_ORDER);
 	      OMP_CLAUSE_ORDER_UNCONSTRAINED (c)
 		= OMP_CLAUSE_ORDER_UNCONSTRAINED (clauses);
+	      OMP_CLAUSE_ORDER_REPRODUCIBLE (c)
+		= OMP_CLAUSE_ORDER_REPRODUCIBLE (clauses);
 	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE];
 	      cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE] = c;
 	    }
@@ -2139,6 +2141,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 					OMP_CLAUSE_ORDER);
 		  OMP_CLAUSE_ORDER_UNCONSTRAINED (c)
 		    = OMP_CLAUSE_ORDER_UNCONSTRAINED (clauses);
+		  OMP_CLAUSE_ORDER_REPRODUCIBLE (c)
+		    = OMP_CLAUSE_ORDER_REPRODUCIBLE (clauses);
 		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
 		  cclauses[C_OMP_CLAUSE_SPLIT_FOR] = c;
 		  s = C_OMP_CLAUSE_SPLIT_SIMD;
