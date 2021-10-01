@@ -306,7 +306,7 @@ extern void *omp_aligned_alloc (__SIZE_TYPE__, __SIZE_TYPE__,
 				omp_allocator_handle_t
 				__GOMP_DEFAULT_NULL_ALLOCATOR)
   __GOMP_NOTHROW __attribute__((__malloc__, __malloc__ (omp_free),
-				__alloc_size__ (2)));
+				__alloc_size__ (2), __alloc_align__ (1)));
 extern void *omp_calloc (__SIZE_TYPE__, __SIZE_TYPE__,
 			 omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
   __GOMP_NOTHROW __attribute__((__malloc__, __malloc__ (omp_free),
@@ -315,7 +315,7 @@ extern void *omp_aligned_calloc (__SIZE_TYPE__, __SIZE_TYPE__, __SIZE_TYPE__,
 				 omp_allocator_handle_t
 				 __GOMP_DEFAULT_NULL_ALLOCATOR)
   __GOMP_NOTHROW __attribute__((__malloc__, __malloc__ (omp_free),
-				__alloc_size__ (2, 3)));
+				__alloc_size__ (2, 3), __alloc_align__ (1)));
 extern void *omp_realloc (void *, __SIZE_TYPE__,
 			  omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR,
 			  omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
