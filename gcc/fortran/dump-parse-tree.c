@@ -1632,6 +1632,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       fputs (" ORDER(", dumpfile);
       if (omp_clauses->order_unconstrained)
 	fputs ("UNCONSTRAINED:", dumpfile);
+      else if (omp_clauses->order_reproducible)
+	fputs ("REPRODUCIBLE:", dumpfile);
       fputs ("CONCURRENT)", dumpfile);
     }
   if (omp_clauses->ordered)

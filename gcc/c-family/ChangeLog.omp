@@ -1,3 +1,11 @@
+2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses): Also copy
+	OMP_CLAUSE_ORDER_REPRODUCIBLE.
+
 2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

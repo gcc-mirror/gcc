@@ -3,6 +3,14 @@
 	Backported from master:
 	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c-c++-common/order-reproducible-1.c: New test.
+	* testsuite/libgomp.c-c++-common/order-reproducible-2.c: New test.
+
+2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
 	* affinity-fmt.c (omp_get_team_num, omp_get_num_teams): Add
 	ialias_redirect.
 	* env.c (handle_omp_display_env): Use ialias_call.

@@ -1,3 +1,10 @@
+2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/order-5.f90: Adjust scan-tree-dump-times regexps.
+
 2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

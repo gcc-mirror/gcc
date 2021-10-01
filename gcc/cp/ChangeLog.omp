@@ -1,3 +1,11 @@
+2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_order): Set
+	OMP_CLAUSE_ORDER_REPRODUCIBLE for explicit reproducible: modifier.
+
 2021-09-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	2021-09-23  Jakub Jelinek  <jakub@redhat.com>
