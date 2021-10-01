@@ -50,17 +50,17 @@ program main
   call c_f_pointer (p, ip, [3])
   if (mod (TRANSFER (p, iptr), get__alignof_int ()) /= 0) &
     stop 1
-  ip(0) = 1
-  ip(1) = 2
-  ip(2) = 3
+  ip(1) = 1
+  ip(2) = 2
+  ip(3) = 3
   call omp_free (p, omp_default_mem_alloc)
 
   p = omp_aligned_alloc (2 * c_sizeof (0), 2 * c_sizeof (0), omp_default_mem_alloc)
   call c_f_pointer (p, ip, [2])
   if (mod (TRANSFER (p, iptr), 2 * c_sizeof (0)) /= 0) &
     stop 2
-  ip(0) = 1
-  ip(1) = 2
+  ip(1) = 1
+  ip(2) = 2
   call omp_free (p, omp_null_allocator)
 
   call omp_set_default_allocator (omp_default_mem_alloc)
@@ -68,7 +68,7 @@ program main
   call c_f_pointer (p, ip, [2])
   if (mod (TRANSFER (p, iptr), get__alignof_int ()) /= 0) &
     stop 3
-  ip(0) = 3
+  ip(1) = 3
   call omp_free (p, omp_get_default_allocator ())
 
   a = omp_init_allocator (omp_default_mem_space, 3, traits)
@@ -155,7 +155,7 @@ program main
   call c_f_pointer (p, ip, [420/c_sizeof (0)])
   if (mod (TRANSFER (p, iptr), 32) /= 0) &
     stop 18
-  ip(0) = 5
+  ip(1) = 5
   ip(420 / c_sizeof (0)) = 6
 
   q = omp_aligned_alloc (64_c_size_t, 768_c_size_t, omp_null_allocator)

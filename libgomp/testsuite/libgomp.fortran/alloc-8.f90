@@ -41,7 +41,7 @@ program main
   call omp_free (p, a)
   large_sz = NOT (0_c_size_t)
   large_sz = ISHFT (large_sz, -1)
-  large_sz = large_sz + 1
+  large_sz = large_sz + 1  ! signed integer overflow
   if (c_associated (omp_calloc (2_c_size_t, large_sz, a))) &
     stop 7
   if (c_associated (omp_calloc (large_sz, 1024_c_size_t, a))) &
