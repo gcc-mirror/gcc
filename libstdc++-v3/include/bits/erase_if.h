@@ -51,7 +51,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __erase_nodes_if(_Container& __cont, _Predicate __pred)
       {
 	typename _Container::size_type __num = 0;
-	for (auto __iter = __cont.begin(), __last = __cont.end();
+	for (auto __iter = std::__niter_base(__cont.begin()),
+	     __last = std::__niter_base(__cont.end());
 	     __iter != __last;)
 	  {
 	    if (__pred(*__iter))

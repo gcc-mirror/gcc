@@ -810,26 +810,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif // C++11
 
-  template<typename _ForwardIterator, typename _Predicate>
-    _GLIBCXX20_CONSTEXPR
-    _ForwardIterator
-    __remove_if(_ForwardIterator __first, _ForwardIterator __last,
-		_Predicate __pred)
-    {
-      __first = std::__find_if(__first, __last, __pred);
-      if (__first == __last)
-	return __first;
-      _ForwardIterator __result = __first;
-      ++__first;
-      for (; __first != __last; ++__first)
-	if (!__pred(__first))
-	  {
-	    *__result = _GLIBCXX_MOVE(*__first);
-	    ++__result;
-	  }
-      return __result;
-    }
-
   /**
    *  @brief Remove elements from a sequence.
    *  @ingroup mutating_algorithms

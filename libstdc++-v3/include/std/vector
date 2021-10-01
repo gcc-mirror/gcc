@@ -58,14 +58,12 @@
 #pragma GCC system_header
 
 #include <bits/stl_algobase.h>
-#if __cplusplus > 201703L
-#  include <bits/stl_algo.h> // For remove and remove_if
-#endif // C++20
 #include <bits/allocator.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_vector.h>
 #include <bits/stl_bvector.h>
+#include <bits/refwrap.h>
 #include <bits/range_access.h>
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
@@ -107,9 +105,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline typename vector<_Tp, _Alloc>::size_type
     erase_if(vector<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
+      using namespace __gnu_cxx;
       const auto __osz = __cont.size();
-      __cont.erase(std::remove_if(__cont.begin(), __cont.end(), __pred),
-		   __cont.end());
+      const auto __end = __cont.end();
+      auto __removed(std::__remove_if(std::__niter_base(__cont.begin()),
+				      std::__niter_base(__end),
+				      __ops::__pred_iter(std::ref(__pred))));
+      __cont.erase(std::__niter_wrap(__end, __removed), __end);
       return __osz - __cont.size();
     }
 
@@ -117,9 +119,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline typename vector<_Tp, _Alloc>::size_type
     erase(vector<_Tp, _Alloc>& __cont, const _Up& __value)
     {
+      using namespace __gnu_cxx;
       const auto __osz = __cont.size();
-      __cont.erase(std::remove(__cont.begin(), __cont.end(), __value),
-		   __cont.end());
+      const auto __end = __cont.end();
+      auto __removed(std::__remove_if(std::__niter_base(__cont.begin()),
+				      std::__niter_base(__end),
+				      __ops::__iter_equals_val(__value)));
+      __cont.erase(std::__niter_wrap(__end, __removed), __end);
       return __osz - __cont.size();
     }
 _GLIBCXX_END_NAMESPACE_VERSION
