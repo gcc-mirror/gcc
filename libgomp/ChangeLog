@@ -1,3 +1,47 @@
+2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/alloc-7.f90: Add dg-prune-output
+	for -fintrinsic-modules-path= warning of the C compiler.
+	* testsuite/libgomp.fortran/alloc-9.f90: Likewise.
+	* testsuite/libgomp.fortran/alloc-10.f90: Likewise.
+
+2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Set implementation status to Y for
+	omp_aligned_{,c}alloc and omp_{c,re}alloc routines.
+	* omp_lib.f90.in (omp_aligned_alloc, omp_aligned_calloc, omp_calloc,
+	omp_realloc): Add.
+	* omp_lib.h.in (omp_aligned_alloc, omp_aligned_calloc, omp_calloc,
+	omp_realloc): Add.
+	* testsuite/libgomp.fortran/alloc-10.f90: New test.
+	* testsuite/libgomp.fortran/alloc-6.f90: New test.
+	* testsuite/libgomp.fortran/alloc-7.c: New test.
+	* testsuite/libgomp.fortran/alloc-7.f90: New test.
+	* testsuite/libgomp.fortran/alloc-8.f90: New test.
+	* testsuite/libgomp.fortran/alloc-9.f90: New test.
+
+2021-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_aligned_alloc, omp_calloc, omp_aligned_calloc,
+	omp_realloc): New prototypes.
+	(omp_alloc): Move after omp_free prototype, add __malloc__ (omp_free)
+	attribute.
+	* allocator.c: Include string.h.
+	(omp_aligned_alloc): No longer static, add ialias.  Add new_alignment
+	variable and use it instead of alignment so that when retrying the old
+	alignment is used again.  Don't retry if new alignment is the same
+	as old alignment, unless allocator had pool size.
+	(omp_alloc, GOMP_alloc, GOMP_free): Use ialias_call.
+	(omp_aligned_calloc, omp_calloc, omp_realloc): New functions.
+	* libgomp.map (OMP_5.0.2): Export omp_aligned_alloc, omp_calloc,
+	omp_aligned_calloc and omp_realloc.
+	* testsuite/libgomp.c-c++-common/alloc-4.c (main): Add
+	omp_aligned_alloc, omp_calloc and omp_aligned_calloc tests.
+	* testsuite/libgomp.c-c++-common/alloc-5.c: New test.
+	* testsuite/libgomp.c-c++-common/alloc-6.c: New test.
+	* testsuite/libgomp.c-c++-common/alloc-7.c: New test.
+	* testsuite/libgomp.c-c++-common/alloc-8.c: New test.
+
 2021-09-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR libgomp/96661

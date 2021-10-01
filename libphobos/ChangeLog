@@ -1,3 +1,37 @@
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/deh.d (ExceptionHeader.getClassInfo): Move to...
+	(getClassInfo): ...here as free function.  Add lsda parameter.
+	(scanLSDA): Pass lsda to actionTableLookup.
+	(actionTableLookup): Add lsda parameter, pass to getClassInfo.
+	(__gdc_personality): Remove currentCfa variable.
+
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/deh.d (_d_print_throwable): Declare.
+	(_d_throw): Print stacktrace before terminating program due to
+	uncaught exception.
+
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/runtime.d (runModuleUnitTests): Use scope to new
+	LibBacktrace on the stack.
+	* libdruntime/gcc/backtrace.d (FIRSTFRAME): Remove.
+	(LibBacktrace.MaxAlignment): Remove.
+	(LibBacktrace.this): Remove default initialization of firstFrame.
+	(UnwindBacktrace.this): Likewise.
+
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/unwind/generic.d (__aligned__): Define.
+	(_Unwind_Exception): Align struct to __aligned__.
+
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102476
+	* libdruntime/__main.di: Define main function as extern(C) when
+	compiling without D runtime.
+
 2021-09-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* m4/druntime/os.m4: Update comment for DRUNTIME_OS_SOURCES.
