@@ -10832,6 +10832,7 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 	    return error_mark_node;
 	  type2 = tree_cons (NULL_TREE, elt, type2);
 	}
+      type2 = nreverse (type2);
     }
 
   location_t finish_loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -37734,6 +37735,7 @@ cp_parser_omp_clause_order (cp_parser *parser, tree list, location_t location)
   tree c, id;
   const char *p;
   bool unconstrained = false;
+  bool reproducible = false;
 
   matching_parens parens;
   if (!parens.require_open (parser))
@@ -37746,7 +37748,9 @@ cp_parser_omp_clause_order (cp_parser *parser, tree list, location_t location)
       p = IDENTIFIER_POINTER (id);
       if (strcmp (p, "unconstrained") == 0)
 	unconstrained = true;
-      else if (strcmp (p, "reproducible") != 0)
+      else if (strcmp (p, "reproducible") == 0)
+	reproducible = true;
+      else
 	{
 	  cp_parser_error (parser, "expected %<reproducible%> or "
 				   "%<unconstrained%>");
@@ -37777,6 +37781,7 @@ cp_parser_omp_clause_order (cp_parser *parser, tree list, location_t location)
   check_no_duplicate_clause (list, OMP_CLAUSE_ORDER, "order", location);
   c = build_omp_clause (location, OMP_CLAUSE_ORDER);
   OMP_CLAUSE_ORDER_UNCONSTRAINED (c) = unconstrained;
+  OMP_CLAUSE_ORDER_REPRODUCIBLE (c) = reproducible;
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 

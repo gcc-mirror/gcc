@@ -121,6 +121,9 @@ static bool no_backend;
 struct cl_decoded_option *save_decoded_options;
 unsigned int save_decoded_options_count;
 
+/* Vector of saved Optimization decoded command line options.  */
+auto_vec<cl_decoded_option> save_opt_decoded_options;
+
 /* Used to enable -fvar-tracking, -fweb and -frename-registers according
    to optimize in process_options ().  */
 #define AUTODETECT_VALUE 2
@@ -2333,6 +2336,11 @@ toplev::main (int argc, char **argv)
 							     char **, argv),
 						&save_decoded_options,
 						&save_decoded_options_count);
+
+  /* Save Optimization decoded options.  */
+  for (unsigned i = 0; i < save_decoded_options_count; ++i)
+    if (cl_options[save_decoded_options[i].opt_index].flags & CL_OPTIMIZATION)
+      save_opt_decoded_options.safe_push (save_decoded_options[i]);
 
   /* Perform language-specific options initialization.  */
   lang_hooks.init_options (save_decoded_options_count, save_decoded_options);

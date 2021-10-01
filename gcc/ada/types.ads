@@ -61,6 +61,13 @@ package Types is
 
    subtype Nonzero_Int is Int with Predicate => Nonzero_Int /= 0;
 
+   type Int_64 is range -2 ** 63 .. +2 ** 63 - 1;
+   --  Signed 64-bit integer
+
+   subtype Nat_64 is Int_64 range 0 .. Int_64'Last;
+   subtype Pos_64 is Int_64 range 1 .. Int_64'Last;
+   subtype Nonzero_Int_64 is Int_64 with Predicate => Nonzero_Int_64 /= 0;
+
    type Word is mod 2 ** 32;
    --  Unsigned 32-bit integer
 
@@ -1006,9 +1013,5 @@ package Types is
    type Offset_Array_Index is new Nat;
    type Offset_Array is
      array (Offset_Array_Index range <>) of Opt_Field_Offset;
-
-   Slot_Size : constant := 32;
-   type Slot is mod 2**Slot_Size;
-   for Slot'Size use Slot_Size;
 
 end Types;

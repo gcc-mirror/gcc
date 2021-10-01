@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
 with Debug;          use Debug;
@@ -7087,10 +7088,122 @@ package body Exp_Ch4 is
    --------------------------------
 
    procedure Expand_N_Indexed_Component (N : Node_Id) is
+
+      Wild_Reads_May_Have_Bad_Side_Effects : Boolean
+        renames Validity_Check_Subscripts;
+      --  This Boolean needs to be True if reading from a bad address can
+      --  have a bad side effect (e.g., a segmentation fault that is not
+      --  transformed into a Storage_Error exception, or interactions with
+      --  memory-mapped I/O) that needs to be prevented. This refers to the
+      --  act of reading itself, not to any damage that might be caused later
+      --  by making use of whatever value was read. We assume here that
+      --  Validity_Check_Subscripts meets this requirement, but introduce
+      --  this declaration in order to document this assumption.
+
+      function Is_Renamed_Variable_Name (N : Node_Id) return Boolean;
+      --  Returns True if the given name occurs as part of the renaming
+      --  of a variable. In this case, the indexing operation should be
+      --  treated as a write, rather than a read, with respect to validity
+      --  checking. This is because the renamed variable can later be
+      --  written to.
+
+      function Type_Requires_Subscript_Validity_Checks_For_Reads
+        (Typ : Entity_Id) return Boolean;
+      --  If Wild_Reads_May_Have_Bad_Side_Effects is False and we are indexing
+      --  into an array of characters in order to read an element, it is ok
+      --  if an invalid index value goes undetected. But if it is an array of
+      --  pointers or an array of tasks, the consequences of such a read are
+      --  potentially more severe and so we want to detect an invalid index
+      --  value. This function captures that distinction; this is intended to
+      --  be consistent with the "but does not by itself lead to erroneous
+      --  ... execution" rule of RM 13.9.1(11).
+
+      ------------------------------
+      -- Is_Renamed_Variable_Name --
+      ------------------------------
+
+      function Is_Renamed_Variable_Name (N : Node_Id) return Boolean is
+         Rover : Node_Id := N;
+      begin
+         if Is_Variable (N) then
+            loop
+               declare
+                  Rover_Parent : constant Node_Id := Parent (Rover);
+               begin
+                  case Nkind (Rover_Parent) is
+                     when N_Object_Renaming_Declaration =>
+                        return Rover = Name (Rover_Parent);
+
+                     when N_Indexed_Component
+                        | N_Slice
+                        | N_Selected_Component
+                     =>
+                        exit when Rover /= Prefix (Rover_Parent);
+                        Rover := Rover_Parent;
+
+                     --  No need to check for qualified expressions or type
+                     --  conversions here, mostly because of the Is_Variable
+                     --  test. It is possible to have a view conversion for
+                     --  which Is_Variable yields True and which occurs as
+                     --  part of an object renaming, but only if the type is
+                     --  tagged; in that case this function will not be called.
+
+                     when others =>
+                        exit;
+                  end case;
+               end;
+            end loop;
+         end if;
+         return False;
+      end Is_Renamed_Variable_Name;
+
+      -------------------------------------------------------
+      -- Type_Requires_Subscript_Validity_Checks_For_Reads --
+      -------------------------------------------------------
+
+      function Type_Requires_Subscript_Validity_Checks_For_Reads
+        (Typ : Entity_Id) return Boolean
+      is
+         --  a shorter name for recursive calls
+         function Needs_Check (Typ : Entity_Id) return Boolean renames
+           Type_Requires_Subscript_Validity_Checks_For_Reads;
+      begin
+         if Is_Access_Type (Typ)
+           or else Is_Tagged_Type (Typ)
+           or else Is_Concurrent_Type (Typ)
+           or else (Is_Array_Type (Typ)
+                     and then Needs_Check (Component_Type (Typ)))
+           or else (Is_Scalar_Type (Typ)
+                     and then Has_Aspect (Typ, Aspect_Default_Value))
+         then
+            return True;
+         end if;
+
+         if Is_Record_Type (Typ) then
+            declare
+               Comp : Entity_Id := First_Component_Or_Discriminant (Typ);
+            begin
+               while Present (Comp) loop
+                  if Needs_Check (Etype (Comp)) then
+                     return True;
+                  end if;
+
+                  Next_Component_Or_Discriminant (Comp);
+               end loop;
+            end;
+         end if;
+
+         return False;
+      end Type_Requires_Subscript_Validity_Checks_For_Reads;
+
+      --  Local constants
+
       Loc : constant Source_Ptr := Sloc (N);
       Typ : constant Entity_Id  := Etype (N);
       P   : constant Node_Id    := Prefix (N);
       T   : constant Entity_Id  := Etype (P);
+
+   --  Start of processing for Expand_N_Indexed_Component
 
    begin
       --  A special optimization, if we have an indexed component that is
@@ -7141,11 +7254,42 @@ package body Exp_Ch4 is
 
       --  Generate index and validity checks
 
-      Generate_Index_Checks (N);
+      declare
+         Dims_Checked : Dimension_Set (Dimensions => Number_Dimensions (T));
+         --  Dims_Checked is used to avoid generating two checks (one in
+         --  Generate_Index_Checks, one in Apply_Subscript_Validity_Checks)
+         --  for the same index value in cases where the index check eliminates
+         --  the need for the validity check.
 
-      if Validity_Checks_On and then Validity_Check_Subscripts then
-         Apply_Subscript_Validity_Checks (N);
-      end if;
+      begin
+         Generate_Index_Checks (N, Checks_Generated => Dims_Checked);
+
+         if Validity_Checks_On
+           and then (Validity_Check_Subscripts
+                      or else Wild_Reads_May_Have_Bad_Side_Effects
+                      or else Type_Requires_Subscript_Validity_Checks_For_Reads
+                                (Typ)
+                      or else Is_Renamed_Variable_Name (N))
+         then
+            if Validity_Check_Subscripts then
+               --  If we index into an array with an uninitialized variable
+               --  and we generate an index check that passes at run time,
+               --  passing that check does not ensure that the variable is
+               --  valid (although it does in the common case where the
+               --  object's subtype matches the index subtype).
+               --  Consider an uninitialized variable with subtype 1 .. 10
+               --  used to index into an array with bounds 1 .. 20 when the
+               --  value of the uninitialized variable happens to be 15.
+               --  The index check will succeed but the variable is invalid.
+               --  If Validity_Check_Subscripts is True then we need to
+               --  ensure validity, so we adjust Dims_Checked accordingly.
+               Dims_Checked.Elements := (others => False);
+            end if;
+
+            Apply_Subscript_Validity_Checks
+              (N, No_Check_Needed => Dims_Checked);
+         end if;
+      end;
 
       --  If selecting from an array with atomic components, and atomic sync
       --  is not suppressed for this array type, set atomic sync flag.

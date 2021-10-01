@@ -1,3 +1,22 @@
+2021-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102458
+	* simplify.c (simplify_size): Resolve expressions used in array
+	specifications so that SIZE can be simplified.
+
+2021-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	* expr.c: The correct reference to Fortran standard is: F2018:10.1.12.
+
+2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/71703
+	PR fortran/84007
+	* trans-intrinsic.c (gfc_conv_same_type_as): Fix handling
+	of UNLIMITED_POLY.
+	* trans.h (gfc_vtpr_hash_get): Renamed prototype to ...
+	(gfc_vptr_hash_get): ... this to match function name.
+
 2021-09-29  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102520

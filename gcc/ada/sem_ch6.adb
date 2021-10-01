@@ -4498,29 +4498,6 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  If the subprogram has a class-wide clone, build its body as a copy
-      --  of the original body, and rewrite body of original subprogram as a
-      --  wrapper that calls the clone. If N is a stub, this construction will
-      --  take place when the proper body is analyzed. No action needed if this
-      --  subprogram has been eliminated.
-
-      if Present (Spec_Id)
-        and then Present (Class_Wide_Clone (Spec_Id))
-        and then (Comes_From_Source (N) or else Was_Expression_Function (N))
-        and then Nkind (N) /= N_Subprogram_Body_Stub
-        and then not (Expander_Active and then Is_Eliminated (Spec_Id))
-      then
-         Build_Class_Wide_Clone_Body (Spec_Id, N);
-
-         --  This is the new body for the existing primitive operation
-
-         Rewrite (N, Build_Class_Wide_Clone_Call
-           (Sloc (N), New_List, Spec_Id, Parent (Spec_Id)));
-         Set_Has_Completion (Spec_Id, False);
-         Analyze (N);
-         return;
-      end if;
-
       --  Place subprogram on scope stack, and make formals visible. If there
       --  is a spec, the visible entity remains that of the spec.
 
@@ -10413,6 +10390,7 @@ package body Sem_Ch6 is
    begin
       Set_Is_Immediately_Visible (E);
       Set_Current_Entity (E);
+      pragma Assert (Prev /= E);
       Set_Homonym (E, Prev);
    end Install_Entity;
 

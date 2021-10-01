@@ -174,6 +174,15 @@ package Freeze is
    --  do not allow a size clause if the size would not otherwise be known at
    --  compile time in any case.
 
+   procedure Check_Inherited_Conditions
+    (R               : Entity_Id;
+     Late_Overriding : Boolean := False);
+   --  For a tagged derived type R, create wrappers for inherited operations
+   --  that have class-wide conditions, so it can be properly rewritten if
+   --  it involves calls to other overriding primitives. Late_Overriding is
+   --  True when we are processing the body of a primitive with no previous
+   --  spec defined after R is frozen (see Check_Dispatching_Operation).
+
    function Is_Full_Access_Aggregate (N : Node_Id) return Boolean;
    --  If a full access object is initialized with an aggregate or is assigned
    --  an aggregate, we have to prevent a piecemeal access or assignment to the

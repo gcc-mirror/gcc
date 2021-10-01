@@ -38,7 +38,6 @@ public:
   bool range_of_expr (irange &r, tree name, gimple * = NULL) override;
   bool range_of_stmt (irange &r, gimple *, tree name = NULL) override;
   bool unreachable_path_p ();
-  path_oracle *oracle () { return m_oracle; }
   void dump (FILE *) override;
   void debug ();
 
@@ -46,6 +45,7 @@ private:
   bool internal_range_of_expr (irange &r, tree name, gimple *);
   bool defined_outside_path (tree name);
   void range_on_path_entry (irange &r, tree name);
+  path_oracle *get_path_oracle () { return (path_oracle *)m_oracle; }
 
   // Cache manipulation.
   void set_cache (const irange &r, tree name);
@@ -85,7 +85,6 @@ private:
   auto_bitmap m_imports;
   gimple_ranger &m_ranger;
   non_null_ref m_non_null;
-  path_oracle *m_oracle;
 
   // Current path position.
   unsigned m_pos;

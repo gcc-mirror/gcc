@@ -237,6 +237,9 @@ extern unsigned aarch64_architecture_version;
 /* Armv8.7-a architecture extensions.  */
 #define AARCH64_FL_V8_7       (1ULL << 42)
 
+/* Armv9.0-A.  */
+#define AARCH64_FL_V9         (1ULL << 43)  /* Armv9.0-A Architecture.  */
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -266,6 +269,8 @@ extern unsigned aarch64_architecture_version;
 
 #define AARCH64_FL_FOR_ARCH8_R     \
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_R)
+#define AARCH64_FL_FOR_ARCH9       \
+  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9)
 
 /* Macros to test ISA flags.  */
 
@@ -304,6 +309,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_SB		   (aarch64_isa_flags & AARCH64_FL_SB)
 #define AARCH64_ISA_V8_R	   (aarch64_isa_flags & AARCH64_FL_V8_R)
 #define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
+#define AARCH64_ISA_V9		   (aarch64_isa_flags & AARCH64_FL_V9)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)

@@ -1339,6 +1339,16 @@ package body Sem_Attr is
          Legal   := False;
          Spec_Id := Empty;
 
+         --  Skip processing during preanalysis of class-wide preconditions and
+         --  postconditions since at this stage the expression is not installed
+         --  yet on its definite context.
+
+         if Inside_Class_Condition_Preanalysis then
+            Legal   := True;
+            Spec_Id := Current_Scope;
+            return;
+         end if;
+
          --  Traverse the parent chain to find the aspect or pragma where the
          --  attribute resides.
 
@@ -6633,7 +6643,9 @@ package body Sem_Attr is
          Initialize (CRC);
          Compute_Type_Key (Entity (P));
 
-         if not Is_Frozen (Entity (P)) then
+         if not Is_Frozen (Entity (P))
+           and then not Is_Generic_Type (Entity (P))
+         then
             Error_Msg_N ("premature usage of Type_Key?", N);
          end if;
 

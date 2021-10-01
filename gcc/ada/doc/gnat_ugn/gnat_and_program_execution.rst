@@ -3680,8 +3680,9 @@ execution of this erroneous program:
   The ``gnatmem`` utility monitors dynamic allocation and
   deallocation activity in a program, and displays information about
   incorrect deallocations and possible sources of memory leaks.
-  It is designed to work in association with a static runtime library
-  only and in this context provides three types of information:
+  It is designed to work for fixed-position executables in association
+  with a static runtime library only and in this context provides three
+  types of information:
 
   * General information concerning memory management, such as the total
     number of allocations and deallocations, the amount of allocated
@@ -3711,15 +3712,16 @@ execution of this erroneous program:
 
        $ gnatmem [ switches ] [ DEPTH ] user_program
 
-  The program must have been linked with the instrumented version of the
+  The user program must be linked with the instrumented version of the
   allocation and deallocation routines. This is done by linking with the
   :file:`libgmem.a` library. For correct symbolic backtrace information,
-  the user program should be compiled with debugging options
-  (see :ref:`Switches_for_gcc`). For example to build :file:`my_program`:
+  the user program should also both be compiled with debugging options
+  (see :ref:`Switches_for_gcc`) and be linked at a fixed position. For
+  example to build :file:`my_program` with ``gnatmake``:
 
     ::
 
-       $ gnatmake -g my_program -largs -lgmem
+       $ gnatmake -g my_program -largs -lgmem -no-pie
 
   As library :file:`libgmem.a` contains an alternate body for package
   ``System.Memory``, :file:`s-memory.adb` should not be compiled and linked

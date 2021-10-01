@@ -1,3 +1,51 @@
+2021-09-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/c-interop/cf-descriptor-5-c.c: Include alloca.h.
+
+2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102535
+	* g++.dg/ext/is_trivially_constructible7.C: New test.
+
+2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/ext/is_constructible6.C: New test.
+
+2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95567
+	* g++.dg/cpp2a/spaceship-virtual1.C: New test.
+
+2021-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102458
+	* gfortran.dg/pr102458b.f90: New test.
+
+2021-09-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89954
+	* gcc.target/i386/pr89954.c: New test.
+
+2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/71703
+	PR fortran/84007
+	* gfortran.dg/c-interop/c535b-1.f90: Remove wrong comment.
+	* gfortran.dg/unlimited_polymorphic_1.f03: Extend.
+	* gfortran.dg/unlimited_polymorphic_32.f90: New test.
+
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102476
+	* gdc.dg/pr102476.d: New test.
+
+2021-09-30  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/102509
+	* gcc.c-torture/compile/attr-complex-method.c: Skip if LTO is
+	  used.
+	* gcc.c-torture/compile/attr-complex-method-2.c: Likewise.
+
 2021-09-29  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR testsuite/102501

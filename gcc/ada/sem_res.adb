@@ -2920,6 +2920,16 @@ package body Sem_Res is
                   Expr   : Node_Id;
 
                begin
+                  if Is_Derived_Type (Typ)
+                    and then Is_Tagged_Type (Typ)
+                    and then Base_Type (Etype (Callee)) /= Base_Type (Typ)
+                  then
+                     Callee :=
+                       Corresponding_Primitive_Op
+                         (Ancestor_Op     => Callee,
+                          Descendant_Type => Base_Type (Typ));
+                  end if;
+
                   if Nkind (N) = N_Identifier then
                      Expr := Expression (Declaration_Node (Entity (N)));
 
@@ -2990,16 +3000,23 @@ package body Sem_Res is
 
                   Set_Etype (Call, Etype (Callee));
 
-                  --  Conversion needed in case of an inherited aspect
-                  --  of a derived type.
-                  --
-                  --  ??? Need to do something different here for downward
-                  --  tagged conversion case (which is only possible in the
-                  --  case of a null extension); the current call to
-                  --  Convert_To results in an error message about an illegal
-                  --  downward conversion.
+                  if Base_Type (Etype (Call)) /= Base_Type (Typ) then
+                     --  Conversion may be needed in case of an inherited
+                     --  aspect of a derived type. For a null extension, we
+                     --  use a null extension aggregate instead because the
+                     --  downward type conversion would be illegal.
 
-                  Call := Convert_To (Typ, Call);
+                     if Is_Null_Extension_Of
+                          (Descendant => Typ,
+                           Ancestor   => Etype (Call))
+                     then
+                        Call := Make_Extension_Aggregate (Loc,
+                                  Ancestor_Part       => Call,
+                                  Null_Record_Present => True);
+                     else
+                        Call := Convert_To (Typ, Call);
+                     end if;
+                  end if;
 
                   Rewrite (N, Call);
                end;
@@ -4874,10 +4891,15 @@ package body Sem_Res is
 
             --  Apply legality rule 3.9.2  (9/1)
 
+            --  Skip this check on helpers and indirect-call wrappers built to
+            --  support class-wide preconditions.
+
             if (Is_Class_Wide_Type (A_Typ) or else Is_Dynamically_Tagged (A))
               and then not Is_Class_Wide_Type (F_Typ)
               and then not Is_Controlling_Formal (F)
               and then not In_Instance
+              and then (not Is_Subprogram (Nam)
+                         or else No (Class_Preconditions_Subprogram (Nam)))
             then
                Error_Msg_N ("class-wide argument not allowed here!", A);
 
@@ -4975,9 +4997,13 @@ package body Sem_Res is
             --  "False" cannot act as an actual in a subprogram with value
             --  "True" (SPARK RM 6.1.7(3)).
 
+            --  No check needed for helpers and indirect-call wrappers built to
+            --  support class-wide preconditions.
+
             if Is_EVF_Expression (A)
               and then Extensions_Visible_Status (Nam) =
                        Extensions_Visible_True
+              and then No (Class_Preconditions_Subprogram (Current_Scope))
             then
                Error_Msg_N
                  ("formal parameter cannot act as actual parameter when "

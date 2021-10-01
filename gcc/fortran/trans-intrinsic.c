@@ -9126,21 +9126,14 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
   a = expr->value.function.actual->expr;
   b = expr->value.function.actual->next->expr;
 
-  if (UNLIMITED_POLY (a))
+  bool unlimited_poly_a = UNLIMITED_POLY (a);
+  bool unlimited_poly_b = UNLIMITED_POLY (b);
+  if (unlimited_poly_a)
     {
-      tmp = gfc_class_vptr_get (a->symtree->n.sym->backend_decl);
-      conda = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
-			       tmp, build_int_cst (TREE_TYPE (tmp), 0));
+      se1.want_pointer = 1;
+      gfc_add_vptr_component (a);
     }
-
-  if (UNLIMITED_POLY (b))
-    {
-      tmp = gfc_class_vptr_get (b->symtree->n.sym->backend_decl);
-      condb = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
-			       tmp, build_int_cst (TREE_TYPE (tmp), 0));
-    }
-
-  if (a->ts.type == BT_CLASS)
+  else if (a->ts.type == BT_CLASS)
     {
       gfc_add_vptr_component (a);
       gfc_add_hash_component (a);
@@ -9149,7 +9142,12 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
     a = gfc_get_int_expr (gfc_default_integer_kind, NULL,
 			  a->ts.u.derived->hash_value);
 
-  if (b->ts.type == BT_CLASS)
+  if (unlimited_poly_b)
+    {
+      se2.want_pointer = 1;
+      gfc_add_vptr_component (b);
+    }
+  else if (b->ts.type == BT_CLASS)
     {
       gfc_add_vptr_component (b);
       gfc_add_hash_component (b);
@@ -9160,6 +9158,22 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
 
   gfc_conv_expr (&se1, a);
   gfc_conv_expr (&se2, b);
+
+  if (unlimited_poly_a)
+    {
+      conda = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+			       se1.expr,
+			       build_int_cst (TREE_TYPE (se1.expr), 0));
+      se1.expr = gfc_vptr_hash_get (se1.expr);
+    }
+
+  if (unlimited_poly_b)
+    {
+      condb = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+			       se2.expr,
+			       build_int_cst (TREE_TYPE (se2.expr), 0));
+      se2.expr = gfc_vptr_hash_get (se2.expr);
+    }
 
   tmp = fold_build2_loc (input_location, EQ_EXPR,
 			 logical_type_node, se1.expr,

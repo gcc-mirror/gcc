@@ -1,3 +1,52 @@
+2021-09-30  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/arm/arm-cpus.in: Add Cortex-R52+ CPU.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2021-09-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89954
+	* config/i386/i386.md
+	(sign_extend:WIDE (any_logic:NARROW (memory, immediate)) splitters):
+	New splitters.
+
+2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (omp_runtime_api_call): Add omp_aligned_{,c}alloc and
+	omp_{c,re}alloc, fix omp_alloc/omp_free.
+
+2021-09-30  Martin Liska  <mliska@suse.cz>
+
+	* defaults.h (ASM_OUTPUT_ASCII): Do not hide global variable
+	asm_out_file and stream directly to MYFILE.
+
+2021-09-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel):
+	Restore and fix condition under which we apply npeel to
+	the DRs misalignment value.
+
+2021-09-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel):
+	Fix npeel check for variable amount of peeling.
+
+2021-09-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lto-wrapper.c (run_gcc): Plug snprintf overflow.
+
+2021-09-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::debug): New.
+	* gimple-range.h (class gimple_ranger): Add debug.
+
+2021-09-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/102519
+	* tree-vrp.c (hybrid_threader::~hybrid_threader): Free m_query.
+
 2021-09-29  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	PR debug/102507

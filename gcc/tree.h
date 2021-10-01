@@ -1718,6 +1718,9 @@ class auto_suppress_location_wrappers
 /* True for unconstrained modifier on order(concurrent) clause.  */
 #define OMP_CLAUSE_ORDER_UNCONSTRAINED(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDER)->base.public_flag)
+/* True for reproducible modifier on order(concurrent) clause.  */
+#define OMP_CLAUSE_ORDER_REPRODUCIBLE(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDER))
 
 #define OMP_CLAUSE_REDUCTION_CODE(NODE)	\
   (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_REDUCTION, \

@@ -1426,6 +1426,10 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	   field;
 	   field = next_initializable_field (DECL_CHAIN (field)))
 	{
+	  if (DECL_VIRTUAL_P (field))
+	    /* Don't compare vptr fields.  */
+	    continue;
+
 	  tree expr_type = TREE_TYPE (field);
 
 	  location_t field_loc = DECL_SOURCE_LOCATION (field);
@@ -2090,8 +2094,10 @@ is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
   tree expr;
   if (code == MODIFY_EXPR)
     expr = assignable_expr (to, from);
-  else if (trivial && from && TREE_CHAIN (from))
+  else if (trivial && from && TREE_CHAIN (from)
+	   && cxx_dialect < cxx20)
     return error_mark_node; // only 0- and 1-argument ctors can be trivial
+			    // before C++20 aggregate paren init
   else if (TREE_CODE (to) == ARRAY_TYPE && !TYPE_DOMAIN (to))
     return error_mark_node; // can't construct an array of unknown bound
   else

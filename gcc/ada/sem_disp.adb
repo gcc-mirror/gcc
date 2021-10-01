@@ -32,9 +32,11 @@ with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Exp_Disp;       use Exp_Disp;
 with Exp_Util;       use Exp_Util;
+with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Tss;        use Exp_Tss;
 with Errout;         use Errout;
+with Freeze;         use Freeze;
 with Lib.Xref;       use Lib.Xref;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -196,6 +198,91 @@ package body Sem_Disp is
 
       return Empty;
    end Covered_Interface_Op;
+
+   ----------------------------------
+   -- Covered_Interface_Primitives --
+   ----------------------------------
+
+   function Covered_Interface_Primitives (Prim : Entity_Id) return Elist_Id is
+      Tagged_Type : constant Entity_Id := Find_Dispatching_Type (Prim);
+      Elmt        : Elmt_Id;
+      E           : Entity_Id;
+      Result      : Elist_Id := No_Elist;
+
+   begin
+      pragma Assert (Is_Dispatching_Operation (Prim));
+
+      --  Although this is a dispatching primitive we must check if its
+      --  dispatching type is available because it may be the primitive
+      --  of a private type not defined as tagged in its partial view.
+
+      if Present (Tagged_Type) and then Has_Interfaces (Tagged_Type) then
+
+         --  If the tagged type is frozen then the internal entities associated
+         --  with interfaces are available in the list of primitives of the
+         --  tagged type and can be used to speed up this search.
+
+         if Is_Frozen (Tagged_Type) then
+            Elmt := First_Elmt (Primitive_Operations (Tagged_Type));
+            while Present (Elmt) loop
+               E := Node (Elmt);
+
+               if Present (Interface_Alias (E))
+                 and then Alias (E) = Prim
+               then
+                  if No (Result) then
+                     Result := New_Elmt_List;
+                  end if;
+
+                  Append_Elmt (Interface_Alias (E), Result);
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+
+         --  Otherwise we must collect all the interface primitives and check
+         --  whether the Prim overrides (implements) some interface primitive.
+
+         else
+            declare
+               Ifaces_List : Elist_Id;
+               Iface_Elmt  : Elmt_Id;
+               Iface       : Entity_Id;
+               Iface_Prim  : Entity_Id;
+
+            begin
+               Collect_Interfaces (Tagged_Type, Ifaces_List);
+
+               Iface_Elmt := First_Elmt (Ifaces_List);
+               while Present (Iface_Elmt) loop
+                  Iface := Node (Iface_Elmt);
+
+                  Elmt := First_Elmt (Primitive_Operations (Iface));
+                  while Present (Elmt) loop
+                     Iface_Prim := Node (Elmt);
+
+                     if Chars (Iface_Prim) = Chars (Prim)
+                       and then Is_Interface_Conformant
+                                  (Tagged_Type, Iface_Prim, Prim)
+                     then
+                        if No (Result) then
+                           Result := New_Elmt_List;
+                        end if;
+
+                        Append_Elmt (Iface_Prim, Result);
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+
+                  Next_Elmt (Iface_Elmt);
+               end loop;
+            end;
+         end if;
+      end if;
+
+      return Result;
+   end Covered_Interface_Primitives;
 
    -------------------------------
    -- Check_Controlling_Formals --
@@ -592,6 +679,14 @@ package body Sem_Disp is
       --  Start of processing for Check_Dispatching_Context
 
       begin
+         --  Skip checking context of dispatching calls during preanalysis of
+         --  class-wide conditions since at that stage the expression is not
+         --  installed yet on its definite context.
+
+         if Inside_Class_Condition_Preanalysis then
+            return;
+         end if;
+
          --  If the called subprogram is a private overriding, replace it
          --  with its alias, which has the correct body. Verify that the
          --  two subprograms have the same controlling type (this is not the
@@ -992,10 +1087,17 @@ package body Sem_Disp is
          --  nonstatic values, then report an error. This is specified by
          --  RM 6.1.1(18.2/5) (by AI12-0412).
 
+         --  Skip reporting this error on helpers and indirect-call wrappers
+         --  built to support class-wide preconditions.
+
          if No (Control)
            and then not Is_Abstract_Subprogram (Subp_Entity)
            and then
              Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post (Subp_Entity)
+           and then not
+             (Is_Subprogram (Current_Scope)
+                and then
+              Present (Class_Preconditions_Subprogram (Current_Scope)))
          then
             Error_Msg_N
               ("nondispatching call to nonabstract subprogram of "
@@ -1463,6 +1565,9 @@ package body Sem_Disp is
                               end;
                            end if;
                         end if;
+
+                        Check_Inherited_Conditions (Tagged_Type,
+                          Late_Overriding => True);
                      end if;
                   end if;
                end;
@@ -2924,6 +3029,11 @@ package body Sem_Disp is
 
          Next_Actual (Arg);
       end loop;
+
+      --  Add class-wide precondition check if the target of this dispatching
+      --  call has or inherits class-wide preconditions.
+
+      Install_Class_Preconditions_Check (Call_Node);
 
       --  Expansion of dispatching calls is suppressed on VM targets, because
       --  the VM back-ends directly handle the generation of dispatching calls

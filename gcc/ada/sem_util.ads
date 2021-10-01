@@ -283,30 +283,6 @@ package Sem_Util is
    --  take care of constructing declaration and body of the clone, and
    --  building the calls to it within the appropriate wrappers.
 
-   procedure Build_Class_Wide_Clone_Body
-     (Spec_Id  : Entity_Id;
-      Bod      : Node_Id);
-   --  Build body of subprogram that has a class-wide condition that contains
-   --  calls to other primitives. Spec_Id is the Id of the subprogram, and B
-   --  is its source body, which becomes the body of the clone.
-
-   function Build_Class_Wide_Clone_Call
-    (Loc      : Source_Ptr;
-     Decls    : List_Id;
-     Spec_Id  : Entity_Id;
-     Spec     : Node_Id) return Node_Id;
-   --  Build a call to the common class-wide clone of a subprogram with
-   --  class-wide conditions. The body of the subprogram becomes a wrapper
-   --  for a call to the clone. The inherited operation becomes a similar
-   --  wrapper to which modified conditions apply, and the call to the
-   --  clone includes the proper conversion in a call the parent operation.
-
-   procedure Build_Class_Wide_Clone_Decl (Spec_Id : Entity_Id);
-   --  For a subprogram that has a class-wide condition that contains calls
-   --  to other primitives, build an internal subprogram that is invoked
-   --  through a type-specific wrapper for all inherited subprograms that
-   --  may have a modified condition.
-
    procedure Build_Constrained_Itype
      (N              : Node_Id;
       Typ            : Entity_Id;
@@ -527,6 +503,18 @@ package Sem_Util is
    --  reasons these nodes have a different structure even though they play
    --  similar roles in array aggregates.
 
+   type Condition_Kind is
+     (Ignored_Class_Precondition,
+      Ignored_Class_Postcondition,
+      Class_Precondition,
+      Class_Postcondition);
+   --  Kind of class-wide conditions
+
+   function Class_Condition
+     (Kind : Condition_Kind;
+      Subp : Entity_Id) return Node_Id;
+   --  Class-wide Kind condition of Subp
+
    function Collect_Body_States (Body_Id : Entity_Id) return Elist_Id;
    --  Gather the entities of all abstract states and objects declared in the
    --  body state space of package body Body_Id.
@@ -637,6 +625,13 @@ package Sem_Util is
    --  the generic parent unit. There is no direct link in the tree for this
    --  attribute, except in the case of formal private and derived types.
    --  Possible optimization???
+
+   function Corresponding_Primitive_Op
+       (Ancestor_Op     : Entity_Id;
+        Descendant_Type : Entity_Id) return Entity_Id;
+   --  Given a primitive subprogram of a tagged type and a (distinct)
+   --  descendant type of that type, find the corresponding primitive
+   --  subprogram of the descendant type.
 
    function Current_Entity (N : Node_Id) return Entity_Id;
    pragma Inline (Current_Entity);
@@ -2613,6 +2608,12 @@ package Sem_Util is
    --  True if evaluation of N might raise an exception. This is conservative;
    --  if we're not sure, we return True. If N is a subprogram body, this is
    --  about whether execution of that body can raise.
+
+   function Nearest_Class_Condition_Subprogram
+     (Kind    : Condition_Kind;
+      Spec_Id : Entity_Id) return Entity_Id;
+   --  Return the nearest ancestor containing the merged class-wide conditions
+   --  that statically apply to Spec_Id; return Empty otherwise.
 
    function Nearest_Enclosing_Instance (E : Entity_Id) return Entity_Id;
    --  Return the entity of the nearest enclosing instance which encapsulates

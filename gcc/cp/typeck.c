@@ -6038,7 +6038,9 @@ cp_build_binary_op (const op_location_t &location,
     }
 
   if (sanitize_flags_p ((SANITIZE_SHIFT
-			 | SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
+			 | SANITIZE_DIVIDE
+			 | SANITIZE_FLOAT_DIVIDE
+			 | SANITIZE_SI_OVERFLOW))
       && current_function_decl != NULL_TREE
       && !processing_template_decl
       && (doing_div_or_mod || doing_shift))
@@ -6050,7 +6052,9 @@ cp_build_binary_op (const op_location_t &location,
       op1 = fold_non_dependent_expr (op1, complain);
       tree instrument_expr1 = NULL_TREE;
       if (doing_div_or_mod
-	  && sanitize_flags_p (SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
+	  && sanitize_flags_p (SANITIZE_DIVIDE
+			       | SANITIZE_FLOAT_DIVIDE
+			       | SANITIZE_SI_OVERFLOW))
 	{
 	  /* For diagnostics we want to use the promoted types without
 	     shorten_binary_op.  So convert the arguments to the

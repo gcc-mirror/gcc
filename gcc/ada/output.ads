@@ -124,6 +124,7 @@ package Output is
    --  Similar as Write_Eol, except that trailing spaces are not removed
 
    procedure Write_Int (Val : Int);
+   procedure Write_Int_64 (Val : Int_64);
    --  Write an integer value with no leading blanks or zeroes. Negative values
    --  are preceded by a minus sign).
 

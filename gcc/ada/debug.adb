@@ -112,7 +112,7 @@ package body Debug is
    --  d.y  Disable implicit pragma Elaborate_All on task bodies
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
-   --  d.A
+   --  d.A  Enable statistics printing in Atree
    --  d.B  Generate a bug box on abort_statement
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D  Disable errors on use of overriding keyword in Ada 95 mode
@@ -210,7 +210,7 @@ package body Debug is
    --  d.5  Do not generate imported subprogram definitions in C code
    --  d.6  Do not avoid declaring unreferenced types in C code
    --  d.7  Disable unsound heuristics in gnat2scil (for CP as SPARK prover)
-   --  d.8
+   --  d.8  Disable unconditional inlining of expression functions
    --  d.9  Disable build-in-place for nonlimited types
 
    --  d_1
@@ -830,6 +830,11 @@ package body Debug is
    --       handling of Inline_Always by the front end on such targets. For the
    --       targets that do not use the GCC back end, this switch is ignored.
 
+   --  d.A  Enable statistics printing in Atree. First set Statistics_Enabled
+   --       in gen_il-gen.adb to True, then rebuild, then run the compiler
+   --       with -gnatd.A. You might want to apply "sort -nr" to parts of the
+   --       output.
+
    --  d.B  Generate a bug box when we see an abort_statement, even though
    --       there is no bug. Useful for testing Comperr.Compiler_Abort: write
    --       some code containing an abort_statement, and compile it with
@@ -1100,6 +1105,10 @@ package body Debug is
    --       avoid SCIL generation strategies which can introduce soundness
    --       issues (e.g., assuming that a low bound of an array parameter
    --       of an unconstrained subtype belongs to the index subtype).
+
+   --  d.8  By default calls to expression functions are always inlined.
+   --       This debug flag turns off this behavior, making them subject
+   --       to the usual inlining heuristics of the code generator.
 
    --  d.9  Disable build-in-place for function calls returning nonlimited
    --       types.

@@ -48,7 +48,7 @@ with Alloc;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Einfo.Entities; use Einfo.Entities;
 with Types;          use Types;
-with Seinfo;
+with Seinfo;         use Seinfo;
 with System;         use System;
 with Table;
 with Unchecked_Conversion;
@@ -653,11 +653,30 @@ package Atree is
       --  table. We use zero-origin addressing, so the Offset into the Slots
       --  table will point 3 slots before slot 3.
 
-      pragma Assert (Seinfo.N_Head <= Min_Node_Size);
-      pragma Assert (Seinfo.N_Head <= Min_Entity_Size);
+      pragma Assert (N_Head <= Min_Node_Size);
+      pragma Assert (N_Head <= Min_Entity_Size);
+
+      Slot_Size : constant := 32;
+      type Slot is mod 2**Slot_Size;
+      for Slot'Size use Slot_Size;
+
+      --  The type Slot is defined in Types as a 32-bit modular integer. It
+      --  is logically split into the appropriate numbers of components of
+      --  appropriate size, but this splitting is not explicit because packed
+      --  arrays cannot be properly interfaced in C/C++ and packed records are
+      --  way too slow.
+
+      type Node_Header_Slots is
+        array (Field_Offset range 0 .. N_Head - 1) of Slot;
+      type Node_Header is record
+         Slots : Node_Header_Slots;
+         Offset : Node_Offset'Base;
+      end record;
+      pragma Assert (Node_Header'Size = (N_Head + 1) * Slot_Size);
+      pragma Assert (Node_Header'Size = 16 * 8);
 
       package Node_Offsets is new Table.Table
-        (Table_Component_Type => Seinfo.Node_Header,
+        (Table_Component_Type => Node_Header,
          Table_Index_Type     => Node_Id'Base,
          Table_Low_Bound      => First_Node_Id,
          Table_Initial        => Alloc.Node_Offsets_Initial,
@@ -670,12 +689,6 @@ package Atree is
         Unreferenced;
       --  Short names for use in gdb, not used in real code. Note that gdb
       --  can't find Node_Offsets.Table without a full expanded name.
-
-      --  The type Slot is defined in Types as a 32-bit modular integer. It
-      --  is logically split into the appropriate numbers of components of
-      --  appropriate size, but this splitting is not explicit because packed
-      --  arrays cannot be properly interfaced in C/C++ and packed records are
-      --  way too slow.
 
       function Shift_Left (S : Slot; V : Natural) return Slot;
       pragma Import (Intrinsic, Shift_Left);
@@ -861,5 +874,17 @@ package Atree is
       --  to Atree.
 
    end Atree_Private_Part;
+
+   --  Statistics:
+
+   subtype Call_Count is Nat_64;
+   Get_Count, Set_Count : array (Node_Or_Entity_Field) of Call_Count :=
+     (others => 0);
+   --  Number of calls to each getter and setter. See documentaton for
+   --  -gnatd.A.
+
+   Get_Original_Node_Count, Set_Original_Node_Count : Call_Count := 0;
+
+   procedure Print_Statistics;
 
 end Atree;

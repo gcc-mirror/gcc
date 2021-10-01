@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;
+with Atree;  use Atree;
 with Debug;  use Debug;
 with Output; use Output;
 with Seinfo;

@@ -49,6 +49,7 @@ package Sem_Prag is
       Pragma_Contract_Cases               => True,
       Pragma_Convention                   => True,
       Pragma_CPU                          => True,
+      Pragma_CUDA_Device                  => True,
       Pragma_CUDA_Global                  => True,
       Pragma_Default_Initial_Condition    => True,
       Pragma_Default_Storage_Pool         => True,

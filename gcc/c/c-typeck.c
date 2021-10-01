@@ -12733,7 +12733,9 @@ build_binary_op (location_t location, enum tree_code code,
     }
 
   if (sanitize_flags_p ((SANITIZE_SHIFT
-			 | SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
+			 | SANITIZE_DIVIDE
+			 | SANITIZE_FLOAT_DIVIDE
+			 | SANITIZE_SI_OVERFLOW))
       && current_function_decl != NULL_TREE
       && (doing_div_or_mod || doing_shift)
       && !require_constant_value)
@@ -12744,7 +12746,8 @@ build_binary_op (location_t location, enum tree_code code,
       op0 = c_fully_fold (op0, false, NULL);
       op1 = c_fully_fold (op1, false, NULL);
       if (doing_div_or_mod && (sanitize_flags_p ((SANITIZE_DIVIDE
-						  | SANITIZE_FLOAT_DIVIDE))))
+						  | SANITIZE_FLOAT_DIVIDE
+						  | SANITIZE_SI_OVERFLOW))))
 	instrument_expr = ubsan_instrument_division (location, op0, op1);
       else if (doing_shift && sanitize_flags_p (SANITIZE_SHIFT))
 	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);

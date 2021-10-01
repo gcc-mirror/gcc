@@ -990,7 +990,7 @@ done:
 }
 
 
-/* Standard intrinsics listed under F2018:10.1.2 (6), which are excluded in
+/* Standard intrinsics listed under F2018:10.1.12 (6), which are excluded in
    constant expressions, except TRANSFER (c.f. item (8)), which would need
    separate treatment.  */
 

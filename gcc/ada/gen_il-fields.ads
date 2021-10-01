@@ -23,8 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Gen_IL.Types;
-
 package Gen_IL.Fields is
 
    --  The following is "optional field enumeration" -- i.e. it is Field_Enum
@@ -36,8 +34,7 @@ package Gen_IL.Fields is
    --  which might need to be kept in sync when modifying this.
 
    --  Be sure to put new fields in the appropriate subrange (Field_Enum,
-   --  Node_Header_Field, Node_Field, Entity_Field -- search for comments
-   --  below).
+   --  Node_Field, Entity_Field -- search for comments below).
 
    type Opt_Field_Enum is
      (No_Field,
@@ -461,7 +458,9 @@ package Gen_IL.Fields is
       Can_Never_Be_Null,
       Can_Use_Internal_Rep,
       Checks_May_Be_Suppressed,
-      Class_Wide_Clone,
+      Class_Postconditions,
+      Class_Preconditions,
+      Class_Preconditions_Subprogram,
       Class_Wide_Type,
       Cloned_Subtype,
       Component_Alignment,
@@ -509,6 +508,7 @@ package Gen_IL.Fields is
       Discriminant_Default_Value,
       Discriminant_Number,
       Dispatch_Table_Wrappers,
+      Dynamic_Call_Helper,
       DT_Entry_Count,
       DT_Offset_To_Top_Func,
       DT_Position,
@@ -649,9 +649,12 @@ package Gen_IL.Fields is
       Hiding_Loop_Variable,
       Hidden_In_Formal_Instance,
       Homonym,
+      Ignored_Class_Postconditions,
+      Ignored_Class_Preconditions,
       Ignore_SPARK_Mode_Pragmas,
       Import_Pragma,
       Incomplete_Actuals,
+      Indirect_Call_Wrapper,
       In_Package_Body,
       In_Private_Part,
       In_Use,
@@ -693,6 +696,7 @@ package Gen_IL.Fields is
       Is_Discrim_SO_Function,
       Is_Discriminant_Check_Function,
       Is_Dispatch_Table_Entity,
+      Is_Dispatch_Table_Wrapper,
       Is_Dispatching_Operation,
       Is_Elaboration_Checks_OK_Id,
       Is_Elaboration_Warnings_OK_Id,
@@ -892,6 +896,7 @@ package Gen_IL.Fields is
       Spec_Entity,
       SSO_Set_High_By_Default,
       SSO_Set_Low_By_Default,
+      Static_Call_Helper,
       Static_Discrete_Predicate,
       Static_Elaboration_Desired,
       Static_Initialization,
@@ -934,14 +939,5 @@ package Gen_IL.Fields is
      range Opt_Field_Enum'Succ (No_Field) .. Opt_Field_Enum'Last;
    --  Enumeration of fields -- Opt_Field_Enum without the special null value
    --  No_Field.
-
-   subtype Node_Header_Field is Field_Enum with Predicate =>
-     Node_Header_Field in Nkind .. Link | Ekind;
-
-   use Gen_IL.Types;
-
-   subtype Node_Header_Type is Type_Enum range
-     Node_Kind_Type .. Union_Id;
-   --  Types of node header fields
 
 end Gen_IL.Fields;

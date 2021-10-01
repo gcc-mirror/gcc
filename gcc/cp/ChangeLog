@@ -1,3 +1,19 @@
+2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102535
+	* method.c (is_xible_helper): Don't exit early for multi-arg
+	ctors in C++20.
+
+2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.c (cp_parser_trait_expr): Call nreverse on the reversed
+	list of trailing arguments.
+
+2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95567
+	* method.c (build_comparison_op): Skip DECL_VIRTUAL_P fields.
+
 2021-09-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/99909

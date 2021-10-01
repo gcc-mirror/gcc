@@ -139,6 +139,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Discrim_SO_Function, Flag),
         Sm (Is_Discriminant_Check_Function, Flag),
         Sm (Is_Dispatch_Table_Entity, Flag),
+        Sm (Is_Dispatch_Table_Wrapper, Flag),
         Sm (Is_Dispatching_Operation, Flag),
         Sm (Is_Eliminated, Flag),
         Sm (Is_Entry_Formal, Flag),
@@ -977,8 +978,11 @@ begin -- Gen_IL.Gen.Gen_Entities
 
    Ab (Subprogram_Kind, Overloadable_Kind,
        (Sm (Body_Needed_For_SAL, Flag),
-        Sm (Class_Wide_Clone, Node_Id),
+        Sm (Class_Postconditions, Node_Id),
+        Sm (Class_Preconditions, Node_Id),
+        Sm (Class_Preconditions_Subprogram, Node_Id),
         Sm (Contract, Node_Id),
+        Sm (Dynamic_Call_Helper, Node_Id),
         Sm (Elaboration_Entity, Node_Id),
         Sm (Elaboration_Entity_Required, Flag),
         Sm (First_Entity, Node_Id),
@@ -986,8 +990,11 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Has_Nested_Subprogram, Flag),
         Sm (Has_Out_Or_In_Out_Parameter, Flag),
         Sm (Has_Recursive_Call, Flag),
+        Sm (Ignored_Class_Postconditions, Node_Id),
+        Sm (Ignored_Class_Preconditions, Node_Id),
         Sm (Ignore_SPARK_Mode_Pragmas, Flag),
         Sm (Import_Pragma, Node_Id),
+        Sm (Indirect_Call_Wrapper, Node_Id),
         Sm (Interface_Alias, Node_Id),
         Sm (Interface_Name, Node_Id),
         Sm (Is_Elaboration_Checks_OK_Id, Flag),
@@ -998,6 +1005,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Overridden_Operation, Node_Id),
         Sm (Protected_Body_Subprogram, Node_Id),
         Sm (Scope_Depth_Value, Uint),
+        Sm (Static_Call_Helper, Node_Id),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag),
         Sm (Subps_Index, Uint)));
@@ -1382,6 +1390,23 @@ begin -- Gen_IL.Gen.Gen_Entities
           Children =>
             (E_Entry,
              E_Entry_Family));
+
+   Union (Evaluable_Kind,
+          Children =>
+            (Exception_Or_Object_Kind,
+             E_Enumeration_Literal,
+             E_Label,
+             Subprogram_Kind));
+   --  Kinds that represent values that can be evaluated
+
+   Union (Global_Name_Kind,
+          Children =>
+            (Constant_Or_Variable_Kind,
+             E_Exception,
+             E_Package,
+             Subprogram_Kind));
+   --  Kinds that can have an Interface_Name that corresponds to a global
+   --  (linker) name.
 
    Union (Named_Access_Kind,
           Children =>

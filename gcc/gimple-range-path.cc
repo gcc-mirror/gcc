@@ -480,7 +480,7 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
   if (m_resolve)
     {
       add_copies_to_imports ();
-      m_oracle->reset_path ();
+      get_path_oracle ()->reset_path ();
       compute_relations (path);
     }
 

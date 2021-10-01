@@ -1,6 +1,7 @@
 // List implementation -*- C++ -*-
 
 // Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright The GNU Toolchain Authors.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1992,6 +1993,40 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 			     __false_type{});
       }
 #endif
+
+#if _GLIBCXX_USE_CXX11_ABI
+      // Update _M_size members after merging (some of) __src into __dest.
+      struct _Finalize_merge
+      {
+	explicit
+	_Finalize_merge(list& __dest, list& __src, const iterator& __src_next)
+	: _M_dest(__dest), _M_src(__src), _M_next(__src_next)
+	{ }
+
+	~_Finalize_merge()
+	{
+	  // For the common case, _M_next == _M_sec.end() and the std::distance
+	  // call is fast. But if any *iter1 < *iter2 comparison throws then we
+	  // have to count how many elements remain in _M_src.
+	  const size_t __num_unmerged = std::distance(_M_next, _M_src.end());
+	  const size_t __orig_size = _M_src._M_get_size();
+	  _M_dest._M_inc_size(__orig_size - __num_unmerged);
+	  _M_src._M_set_size(__num_unmerged);
+	}
+
+	list& _M_dest;
+	list& _M_src;
+	const iterator& _M_next;
+
+#if __cplusplus >= 201103L
+	_Finalize_merge(const _Finalize_merge&) = delete;
+#endif
+      };
+#else
+      struct _Finalize_merge
+      { explicit _Finalize_merge(list&, list&, const iterator&) { } };
+#endif
+
     };
 
 #if __cpp_deduction_guides >= 201606

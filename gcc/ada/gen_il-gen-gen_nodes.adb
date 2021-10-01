@@ -577,7 +577,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Ab (N_Declaration, Node_Kind);
    --  Note: this includes all constructs normally thought of as declarations
-   --  except those that are separately grouped in N_Later_Decl_Item.
+   --  except those that are separately grouped in N_Later_Decl_Item. But
+   --  Declaration_Node may return yet more node types; see N_Is_Decl below.
 
    Cc (N_Component_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
@@ -1662,4 +1663,54 @@ begin -- Gen_IL.Gen.Gen_Nodes
              N_Has_Entity,
              N_Subtype_Indication));
    --  Nodes that can be an index of an array
+
+   Union (N_Entity_Name,
+          Children =>
+            (N_Expanded_Name,
+             N_Identifier,
+             N_Operator_Symbol));
+   --  Nodes that are definitely representing an entity.
+   --  Some N_Attribute_Reference nodes may also represent an entity. See
+   --  Is_Entity_Name.
+
+   Union (N_Is_Decl,
+          Children =>
+            (N_Declaration,
+             N_Discriminant_Specification,
+             N_Enumeration_Type_Definition,
+             N_Exception_Handler,
+             N_Later_Decl_Item,
+             N_Package_Specification,
+             N_Parameter_Specification,
+             N_Renaming_Declaration,
+             N_Subprogram_Specification));
+   --  Nodes that can be returned by Declaration_Node
+
+   Union (N_Is_Range,
+          Children =>
+            (N_Character_Literal,
+             N_Entity_Name,
+             N_Has_Bounds,
+             N_Integer_Literal,
+             N_Subtype_Indication));
+   --  Nodes that can be used to specify a range
+
+   Union (N_Is_Case_Choice,
+          Children =>
+            (N_Is_Range,
+             N_Others_Choice));
+   --  Nodes that can be in the choices of a case statement
+
+   Union (N_Is_Exception_Choice,
+          Children =>
+            (N_Entity_Name,
+             N_Others_Choice));
+   --  Nodes that can be in the choices of an exception handler
+
+   Union (N_Alternative,
+          Children =>
+            (N_Case_Statement_Alternative,
+             N_Variant));
+   --  Nodes that can be alternatives in case contructs
+
 end Gen_IL.Gen.Gen_Nodes;

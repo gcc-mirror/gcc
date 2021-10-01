@@ -3490,7 +3490,11 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
       /* We may produce non-gimple trees by adding NOPs or introduce invalid
 	 sharing when the value is not constant or DECL.  And we need to make
 	 sure that it cannot be modified from another path in the callee.  */
-      if ((is_gimple_min_invariant (value)
+      if (((is_gimple_min_invariant (value)
+	    /* When the parameter is used in a context that forces it to
+	       not be a GIMPLE register avoid substituting something that
+	       is not a decl there.  */
+	    && ! DECL_NOT_GIMPLE_REG_P (p))
 	   || (DECL_P (value) && TREE_READONLY (value))
 	   || (auto_var_in_fn_p (value, id->dst_fn)
 	       && !TREE_ADDRESSABLE (value)))

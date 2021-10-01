@@ -139,7 +139,7 @@ static void RegionMemUsage(uptr start, uptr end, uptr *res, uptr *dirty) {
   *dirty = dirty_pages * GetPageSizeCached();
 }
 
-void WriteMemoryProfile(char *buf, uptr buf_size, uptr nthread, uptr nlive) {
+void WriteMemoryProfile(char *buf, uptr buf_size, u64 uptime_ns) {
   uptr shadow_res, shadow_dirty;
   uptr meta_res, meta_dirty;
   uptr trace_res, trace_dirty;
@@ -156,10 +156,12 @@ void WriteMemoryProfile(char *buf, uptr buf_size, uptr nthread, uptr nlive) {
   RegionMemUsage(HeapMemBeg(), HeapMemEnd(), &heap_res, &heap_dirty);
 #else  // !SANITIZER_GO
   uptr app_res, app_dirty;
-  RegionMemUsage(AppMemBeg(), AppMemEnd(), &app_res, &app_dirty);
+  RegionMemUsage(LoAppMemBeg(), LoAppMemEnd(), &app_res, &app_dirty);
 #endif
 
   StackDepotStats *stacks = StackDepotGetStats();
+  uptr nthread, nlive;
+  ctx->thread_registry.GetNumberOfThreads(&nthread, &nlive);
   internal_snprintf(buf, buf_size,
     "shadow   (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
     "meta     (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
@@ -169,7 +171,7 @@ void WriteMemoryProfile(char *buf, uptr buf_size, uptr nthread, uptr nlive) {
     "high app (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
     "heap     (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
 #else  // !SANITIZER_GO
-    "app      (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
+      "app      (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
 #endif
     "stacks: %zd unique IDs, %zd kB allocated\n"
     "threads: %zd total, %zd live\n"
@@ -182,13 +184,13 @@ void WriteMemoryProfile(char *buf, uptr buf_size, uptr nthread, uptr nlive) {
     HiAppMemBeg(), HiAppMemEnd(), high_res / 1024, high_dirty / 1024,
     HeapMemBeg(), HeapMemEnd(), heap_res / 1024, heap_dirty / 1024,
 #else  // !SANITIZER_GO
-    AppMemBeg(), AppMemEnd(), app_res / 1024, app_dirty / 1024,
+      LoAppMemBeg(), LoAppMemEnd(), app_res / 1024, app_dirty / 1024,
 #endif
     stacks->n_uniq_ids, stacks->allocated / 1024,
     nthread, nlive);
 }
 
-#if !SANITIZER_GO
+#  if !SANITIZER_GO
 void InitializeShadowMemoryPlatform() { }
 
 // On OS X, GCD worker threads are created without a call to pthread_create. We
@@ -215,8 +217,8 @@ static void my_pthread_introspection_hook(unsigned int event, pthread_t thread,
       Processor *proc = ProcCreate();
       ProcWire(proc, thr);
       ThreadState *parent_thread_state = nullptr;  // No parent.
-      int tid = ThreadCreate(parent_thread_state, 0, (uptr)thread, true);
-      CHECK_NE(tid, 0);
+      Tid tid = ThreadCreate(parent_thread_state, 0, (uptr)thread, true);
+      CHECK_NE(tid, kMainTid);
       ThreadStart(thr, tid, GetTid(), ThreadType::Worker);
     }
   } else if (event == PTHREAD_INTROSPECTION_THREAD_TERMINATE) {
@@ -234,11 +236,11 @@ static void my_pthread_introspection_hook(unsigned int event, pthread_t thread,
 #endif
 
 void InitializePlatformEarly() {
-#if !SANITIZER_GO && !HAS_48_BIT_ADDRESS_SPACE
+#  if !SANITIZER_GO && SANITIZER_IOS
   uptr max_vm = GetMaxUserVirtualAddress() + 1;
-  if (max_vm != Mapping::kHiAppMemEnd) {
+  if (max_vm != HiAppMemEnd()) {
     Printf("ThreadSanitizer: unsupported vm address limit %p, expected %p.\n",
-           max_vm, Mapping::kHiAppMemEnd);
+           max_vm, HiAppMemEnd());
     Die();
   }
 #endif

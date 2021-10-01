@@ -1612,6 +1612,16 @@ begin cpu cortex-r52
  part d13
 end cpu cortex-r52
 
+begin cpu cortex-r52plus
+ cname cortexr52plus
+ tune flags LDSCHED
+ architecture armv8-r+crc+simd
+ option nofp.dp remove FP_DBL ALL_SIMD
+ costs cortex
+ vendor 41
+ part d16
+end cpu cortex-r52plus
+
 # FPU entries
 # format:
 # begin fpu <name>

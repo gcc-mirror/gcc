@@ -1270,11 +1270,10 @@ package body Exp_Util is
    ---------------------------------
 
    procedure Build_Class_Wide_Expression
-     (Prag          : Node_Id;
-      Subp          : Entity_Id;
-      Par_Subp      : Entity_Id;
-      Adjust_Sloc   : Boolean;
-      Needs_Wrapper : out Boolean)
+     (Pragma_Or_Expr : Node_Id;
+      Subp           : Entity_Id;
+      Par_Subp       : Entity_Id;
+      Adjust_Sloc    : Boolean)
    is
       function Replace_Entity (N : Node_Id) return Traverse_Result;
       --  Replace reference to formal of inherited operation or to primitive
@@ -1319,84 +1318,6 @@ package body Exp_Util is
 
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
-
-               --  AI12-0166: a precondition for a protected operation
-               --  cannot include an internal call to a protected function
-               --  of the type. In the case of an inherited condition for an
-               --  overriding operation, both the operation and the function
-               --  are given by primitive wrappers.
-               --  Move this check to sem???
-
-               if Ekind (New_E) = E_Function
-                 and then Is_Primitive_Wrapper (New_E)
-                 and then Is_Primitive_Wrapper (Subp)
-                 and then Scope (Subp) = Scope (New_E)
-                 and then Chars (Pragma_Identifier (Prag)) = Name_Precondition
-               then
-                  Error_Msg_Node_2 := Wrapped_Entity (Subp);
-                  Error_Msg_NE
-                    ("internal call to& cannot appear in inherited "
-                     & "precondition of protected operation&",
-                     N, Wrapped_Entity (New_E));
-               end if;
-
-               --  If the entity is an overridden primitive and we are not
-               --  in GNATprove mode, we must build a wrapper for the current
-               --  inherited operation. If the reference is the prefix of an
-               --  attribute such as 'Result (or others ???) there is no need
-               --  for a wrapper: the condition is just rewritten in terms of
-               --  the inherited subprogram.
-
-               if Is_Subprogram (New_E)
-                  and then Nkind (Parent (N)) /= N_Attribute_Reference
-                  and then not GNATprove_Mode
-               then
-                  Needs_Wrapper := True;
-               end if;
-            end if;
-
-            --  Check that there are no calls left to abstract operations if
-            --  the current subprogram is not abstract.
-            --  Move this check to sem???
-
-            if Nkind (Parent (N)) = N_Function_Call
-              and then N = Name (Parent (N))
-            then
-               if not Is_Abstract_Subprogram (Subp)
-                 and then Is_Abstract_Subprogram (Entity (N))
-               then
-                  Error_Msg_Sloc   := Sloc (Current_Scope);
-                  Error_Msg_Node_2 := Subp;
-                  if Comes_From_Source (Subp) then
-                     Error_Msg_NE
-                       ("cannot call abstract subprogram & in inherited "
-                        & "condition for&#", Subp, Entity (N));
-                  else
-                     Error_Msg_NE
-                       ("cannot call abstract subprogram & in inherited "
-                        & "condition for inherited&#", Subp, Entity (N));
-                  end if;
-
-               --  In SPARK mode, reject an inherited condition for an
-               --  inherited operation if it contains a call to an overriding
-               --  operation, because this implies that the pre/postconditions
-               --  of the inherited operation have changed silently.
-
-               elsif SPARK_Mode = On
-                 and then Warn_On_Suspicious_Contract
-                 and then Present (Alias (Subp))
-                 and then Present (New_E)
-                 and then Comes_From_Source (New_E)
-               then
-                  Error_Msg_N
-                    ("cannot modify inherited condition (SPARK RM 6.1.1(1))",
-                     Parent (Subp));
-                  Error_Msg_Sloc   := Sloc (New_E);
-                  Error_Msg_Node_2 := Subp;
-                  Error_Msg_NE
-                    ("\overriding of&# forces overriding of&",
-                     Parent (Subp), New_E);
-               end if;
             end if;
 
             --  Update type of function call node, which should be the same as
@@ -1422,26 +1343,17 @@ package body Exp_Util is
 
       --  Local variables
 
-      Par_Formal  : Entity_Id;
-      Subp_Formal : Entity_Id;
+      Par_Typ  : constant Entity_Id := Find_Dispatching_Type (Par_Subp);
+      Subp_Typ : constant Entity_Id := Find_Dispatching_Type (Subp);
 
    --  Start of processing for Build_Class_Wide_Expression
 
    begin
-      Needs_Wrapper := False;
+      pragma Assert (Par_Typ /= Subp_Typ);
 
-      --  Add mapping from old formals to new formals
-
-      Par_Formal  := First_Formal (Par_Subp);
-      Subp_Formal := First_Formal (Subp);
-
-      while Present (Par_Formal) and then Present (Subp_Formal) loop
-         Type_Map.Set (Par_Formal, Subp_Formal);
-         Next_Formal (Par_Formal);
-         Next_Formal (Subp_Formal);
-      end loop;
-
-      Replace_Condition_Entities (Prag);
+      Update_Primitives_Mapping (Par_Subp, Subp);
+      Map_Formals (Par_Subp, Subp);
+      Replace_Condition_Entities (Pragma_Or_Expr);
    end Build_Class_Wide_Expression;
 
    --------------------
@@ -1895,7 +1807,33 @@ package body Exp_Util is
          Priv_Typ : Entity_Id;
          --  The partial view of Par_Typ
 
+         Op_Node  : Elmt_Id;
+         Par_Prim : Entity_Id;
+         Prim     : Entity_Id;
+
       begin
+         --  Map the overridden primitive to the overriding one; required by
+         --  Replace_References (called by Add_Inherited_DICs) to handle calls
+         --  to parent primitives.
+
+         Op_Node := First_Elmt (Primitive_Operations (T));
+         while Present (Op_Node) loop
+            Prim := Node (Op_Node);
+
+            if Present (Overridden_Operation (Prim))
+              and then Comes_From_Source (Prim)
+            then
+               Par_Prim := Overridden_Operation (Prim);
+
+               --  Create a mapping of the form:
+               --    parent type primitive -> derived type primitive
+
+               Type_Map.Set (Par_Prim, Prim);
+            end if;
+
+            Next_Elmt (Op_Node);
+         end loop;
+
          --  Climb the parent type chain
 
          Curr_Typ := T;
@@ -2097,14 +2035,11 @@ package body Exp_Util is
                Stmts    => Stmts);
          end if;
 
-      --  Otherwise the "full" DIC procedure verifies the DICs of the full
-      --  view, well as DICs inherited from parent types. In addition, it
-      --  indirectly verifies the DICs of the partial view by calling the
-      --  "partial" DIC procedure.
+      --  Otherwise, the "full" DIC procedure verifies the DICs inherited from
+      --  parent types, as well as indirectly verifying the DICs of the partial
+      --  view by calling the "partial" DIC procedure.
 
       else
-         pragma Assert (Present (Full_Typ));
-
          --  Check the DIC of the partial view by calling the "partial" DIC
          --  procedure, unless the partial DIC body is empty. Generate:
 
@@ -2116,44 +2051,6 @@ package body Exp_Util is
                 Name                   => New_Occurrence_Of (Part_Proc, Loc),
                 Parameter_Associations => New_List (
                   New_Occurrence_Of (Obj_Id, Loc))));
-         end if;
-
-         --  Derived subtypes do not have a partial view
-
-         if Present (Priv_Typ) then
-
-            --  The processing of the "full" DIC procedure intentionally
-            --  skips the partial view because a) this may result in changes of
-            --  visibility and b) lead to duplicate checks. However, when the
-            --  full view is the underlying full view of an untagged derived
-            --  type whose parent type is private, partial DICs appear on
-            --  the rep item chain of the partial view only.
-
-            --    package Pack_1 is
-            --       type Root ... is private;
-            --    private
-            --       <full view of Root>
-            --    end Pack_1;
-
-            --    with Pack_1;
-            --    package Pack_2 is
-            --       type Child is new Pack_1.Root with Type_DIC => ...;
-            --       <underlying full view of Child>
-            --    end Pack_2;
-
-            --  As a result, the processing of the full view must also consider
-            --  all DICs of the partial view.
-
-            if Is_Untagged_Private_Derivation (Priv_Typ, Full_Typ) then
-               null;
-
-            --  Otherwise the DICs of the partial view are ignored
-
-            else
-               --  Ignore the DICs of the partial view by eliminating the view
-
-               Priv_Typ := Empty;
-            end if;
          end if;
 
          --  Process inherited Default_Initial_Conditions for all parent types
@@ -7073,6 +6970,15 @@ package body Exp_Util is
       return Etype (Indx);
    end Get_Index_Subtype;
 
+   -----------------------
+   -- Get_Mapped_Entity --
+   -----------------------
+
+   function Get_Mapped_Entity (E : Entity_Id) return Entity_Id is
+   begin
+      return Type_Map.Get (E);
+   end Get_Mapped_Entity;
+
    ---------------------
    -- Get_Stream_Size --
    ---------------------
@@ -10350,6 +10256,36 @@ package body Exp_Util is
       end if;
    end Make_Variant_Comparison;
 
+   -----------------
+   -- Map_Formals --
+   -----------------
+
+   procedure Map_Formals
+     (Parent_Subp  : Entity_Id;
+      Derived_Subp : Entity_Id;
+      Force_Update : Boolean := False)
+   is
+      Par_Formal  : Entity_Id := First_Formal (Parent_Subp);
+      Subp_Formal : Entity_Id := First_Formal (Derived_Subp);
+
+   begin
+      if Force_Update then
+         Type_Map.Set (Parent_Subp, Derived_Subp);
+      end if;
+
+      --  At this stage either we are under regular processing and the caller
+      --  has previously ensured that these primitives are already mapped (by
+      --  means of calling previously to Update_Primitives_Mapping), or we are
+      --  processing a late-overriding primitive and Force_Update updated above
+      --  the mapping of these primitives.
+
+      while Present (Par_Formal) and then Present (Subp_Formal) loop
+         Type_Map.Set (Par_Formal, Subp_Formal);
+         Next_Formal (Par_Formal);
+         Next_Formal (Subp_Formal);
+      end loop;
+   end Map_Formals;
+
    ---------------
    -- Map_Types --
    ---------------
@@ -10861,7 +10797,7 @@ package body Exp_Util is
          --  they relate to the primitives of the parent type. If there is a
          --  meaningful relation, create a mapping of the form:
 
-         --    parent type primitive -> perived type primitive
+         --    parent type primitive -> derived type primitive
 
          if Present (Direct_Primitive_Operations (Deriv_Typ)) then
             Prim_Elmt := First_Elmt (Direct_Primitive_Operations (Deriv_Typ));
@@ -14123,10 +14059,12 @@ package body Exp_Util is
      (Inher_Id : Entity_Id;
       Subp_Id  : Entity_Id)
    is
+      Parent_Type  : constant Entity_Id := Find_Dispatching_Type (Inher_Id);
+      Derived_Type : constant Entity_Id := Find_Dispatching_Type (Subp_Id);
+
    begin
-      Map_Types
-        (Parent_Type  => Find_Dispatching_Type (Inher_Id),
-         Derived_Type => Find_Dispatching_Type (Subp_Id));
+      pragma Assert (Parent_Type /= Derived_Type);
+      Map_Types (Parent_Type, Derived_Type);
    end Update_Primitives_Mapping;
 
    ----------------------------------

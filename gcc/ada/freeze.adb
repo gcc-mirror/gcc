@@ -35,6 +35,7 @@ with Elists;         use Elists;
 with Errout;         use Errout;
 with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch7;        use Exp_Ch7;
+with Exp_Disp;       use Exp_Disp;
 with Exp_Pakd;       use Exp_Pakd;
 with Exp_Util;       use Exp_Util;
 with Exp_Tss;        use Exp_Tss;
@@ -56,6 +57,7 @@ with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch7;        use Sem_Ch7;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch13;       use Sem_Ch13;
+with Sem_Disp;       use Sem_Disp;
 with Sem_Eval;       use Sem_Eval;
 with Sem_Mech;       use Sem_Mech;
 with Sem_Prag;       use Sem_Prag;
@@ -132,11 +134,6 @@ package body Freeze is
    --  Attribute references to outer types are freeze points for those types;
    --  this routine generates the required freeze nodes for them.
 
-   procedure Check_Inherited_Conditions (R : Entity_Id);
-   --  For a tagged derived type, create wrappers for inherited operations
-   --  that have a class-wide condition, so it can be properly rewritten if
-   --  it involves calls to other overriding primitives.
-
    procedure Check_Strict_Alignment (E : Entity_Id);
    --  E is a base type. If E is tagged or has a component that is aliased
    --  or tagged or contains something this is aliased or tagged, set
@@ -160,7 +157,7 @@ package body Freeze is
    procedure Freeze_Enumeration_Type (Typ : Entity_Id);
    --  Freeze enumeration type. The Esize field is set as processing
    --  proceeds (i.e. set by default when the type is declared and then
-   --  adjusted by rep clauses. What this procedure does is to make sure
+   --  adjusted by rep clauses). What this procedure does is to make sure
    --  that if a foreign convention is specified, and no specific size
    --  is given, then the size must be at least Integer'Size.
 
@@ -1483,90 +1480,322 @@ package body Freeze is
    -- Check_Inherited_Conditions --
    --------------------------------
 
-   procedure Check_Inherited_Conditions (R : Entity_Id) is
-      Prim_Ops      : constant Elist_Id := Primitive_Operations (R);
-      Decls         : List_Id;
-      Needs_Wrapper : Boolean;
-      Op_Node       : Elmt_Id;
-      Par_Prim      : Entity_Id;
-      Prim          : Entity_Id;
+   procedure Check_Inherited_Conditions
+     (R               : Entity_Id;
+      Late_Overriding : Boolean := False)
+   is
+      Prim_Ops       : constant Elist_Id := Primitive_Operations (R);
+      Decls          : List_Id;
+      Op_Node        : Elmt_Id;
+      Par_Prim       : Entity_Id;
+      Prim           : Entity_Id;
+      Wrapper_Needed : Boolean;
 
-      procedure Build_Inherited_Condition_Pragmas (Subp : Entity_Id);
+      function Build_DTW_Body
+        (Loc          : Source_Ptr;
+         DTW_Spec     : Node_Id;
+         DTW_Decls    : List_Id;
+         Par_Prim     : Entity_Id;
+         Wrapped_Subp : Entity_Id) return Node_Id;
+      --  Build the body of the dispatch table wrapper containing the given
+      --  spec and declarations; the call to the wrapped subprogram includes
+      --  the proper type conversion.
+
+      function Build_DTW_Spec (Par_Prim : Entity_Id) return Node_Id;
+      --  Build the spec of the dispatch table wrapper
+
+      procedure Build_Inherited_Condition_Pragmas
+        (Subp           : Entity_Id;
+         Wrapper_Needed : out Boolean);
       --  Build corresponding pragmas for an operation whose ancestor has
-      --  class-wide pre/postconditions. If the operation is inherited, the
-      --  pragmas force the creation of a wrapper for the inherited operation.
-      --  If the ancestor is being overridden, the pragmas are constructed only
-      --  to verify their legality, in case they contain calls to other
-      --  primitives that may have been overridden.
+      --  class-wide pre/postconditions. If the operation is inherited then
+      --  Wrapper_Needed is returned True to force the creation of a wrapper
+      --  for the inherited operation. If the ancestor is being overridden,
+      --  the pragmas are constructed only to verify their legality, in case
+      --  they contain calls to other primitives that may have been overridden.
+
+      function Needs_Wrapper
+        (Class_Cond : Node_Id;
+         Subp       : Entity_Id;
+         Par_Subp   : Entity_Id) return Boolean;
+      --  Checks whether the dispatch-table wrapper (DTW) for Subp must be
+      --  built to evaluate the given class-wide condition.
+
+      --------------------
+      -- Build_DTW_Body --
+      --------------------
+
+      function Build_DTW_Body
+        (Loc          : Source_Ptr;
+         DTW_Spec     : Node_Id;
+         DTW_Decls    : List_Id;
+         Par_Prim     : Entity_Id;
+         Wrapped_Subp : Entity_Id) return Node_Id
+      is
+         Par_Typ    : constant Entity_Id := Find_Dispatching_Type (Par_Prim);
+         Actuals    : constant List_Id   := Empty_List;
+         Call       : Node_Id;
+         Formal     : Entity_Id := First_Formal (Par_Prim);
+         New_F_Spec : Entity_Id := First (Parameter_Specifications (DTW_Spec));
+         New_Formal : Entity_Id;
+
+      begin
+         --  Build parameter association for call to wrapped subprogram
+
+         while Present (Formal) loop
+            New_Formal := Defining_Identifier (New_F_Spec);
+
+            --  If the controlling argument is inherited, add conversion to
+            --  parent type for the call.
+
+            if Etype (Formal) = Par_Typ
+              and then Is_Controlling_Formal (Formal)
+            then
+               Append_To (Actuals,
+                 Make_Type_Conversion (Loc,
+                   New_Occurrence_Of (Par_Typ, Loc),
+                   New_Occurrence_Of (New_Formal, Loc)));
+            else
+               Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
+            end if;
+
+            Next_Formal (Formal);
+            Next (New_F_Spec);
+         end loop;
+
+         if Ekind (Wrapped_Subp) = E_Procedure then
+            Call :=
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (Wrapped_Subp, Loc),
+                Parameter_Associations => Actuals);
+         else
+            Call :=
+              Make_Simple_Return_Statement (Loc,
+                Expression =>
+                  Make_Function_Call (Loc,
+                    Name => New_Occurrence_Of (Wrapped_Subp, Loc),
+                    Parameter_Associations => Actuals));
+         end if;
+
+         return
+           Make_Subprogram_Body (Loc,
+             Specification              => Copy_Subprogram_Spec (DTW_Spec),
+             Declarations               => DTW_Decls,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Call),
+                 End_Label  => Make_Identifier (Loc,
+                                 Chars (Defining_Entity (DTW_Spec)))));
+      end Build_DTW_Body;
+
+      --------------------
+      -- Build_DTW_Spec --
+      --------------------
+
+      function Build_DTW_Spec (Par_Prim : Entity_Id) return Node_Id is
+         DTW_Id   : Entity_Id;
+         DTW_Spec : Node_Id;
+
+      begin
+         DTW_Spec := Build_Overriding_Spec (Par_Prim, R);
+         DTW_Id   := Defining_Entity (DTW_Spec);
+
+         --  Add minimal decoration of fields
+
+         Mutate_Ekind (DTW_Id, Ekind (Par_Prim));
+         Set_LSP_Subprogram (DTW_Id, Par_Prim);
+         Set_Is_Dispatch_Table_Wrapper (DTW_Id);
+         Set_Is_Wrapper (DTW_Id);
+
+         --  The DTW wrapper is never a null procedure
+
+         if Nkind (DTW_Spec) = N_Procedure_Specification then
+            Set_Null_Present (DTW_Spec, False);
+         end if;
+
+         return DTW_Spec;
+      end Build_DTW_Spec;
 
       ---------------------------------------
       -- Build_Inherited_Condition_Pragmas --
       ---------------------------------------
 
-      procedure Build_Inherited_Condition_Pragmas (Subp : Entity_Id) is
-         A_Post   : Node_Id;
-         A_Pre    : Node_Id;
-         New_Prag : Node_Id;
+      procedure Build_Inherited_Condition_Pragmas
+        (Subp           : Entity_Id;
+         Wrapper_Needed : out Boolean)
+      is
+         Class_Pre  : constant Node_Id :=
+                        Class_Preconditions (Ultimate_Alias (Subp));
+         Class_Post : Node_Id := Class_Postconditions (Par_Prim);
+         A_Post     : Node_Id;
+         New_Prag   : Node_Id;
 
       begin
-         A_Pre := Get_Class_Wide_Pragma (Par_Prim, Pragma_Precondition);
+         Wrapper_Needed := False;
 
-         if Present (A_Pre) then
-            New_Prag := New_Copy_Tree (A_Pre);
-            Build_Class_Wide_Expression
-              (Prag          => New_Prag,
-               Subp          => Prim,
-               Par_Subp      => Par_Prim,
-               Adjust_Sloc   => False,
-               Needs_Wrapper => Needs_Wrapper);
-
-            if Needs_Wrapper
-              and then not Comes_From_Source (Subp)
-              and then Expander_Active
-            then
-               Append (New_Prag, Decls);
-            end if;
+         if No (Class_Pre) and then No (Class_Post) then
+            return;
          end if;
 
-         A_Post := Get_Class_Wide_Pragma (Par_Prim, Pragma_Postcondition);
+         --  For class-wide preconditions we just evaluate whether the wrapper
+         --  is needed; there is no need to build the pragma since the check
+         --  is performed on the caller side.
 
-         if Present (A_Post) then
-            New_Prag := New_Copy_Tree (A_Post);
+         if Present (Class_Pre)
+           and then Needs_Wrapper (Class_Pre, Subp, Par_Prim)
+         then
+            Wrapper_Needed := True;
+         end if;
+
+         --  For class-wide postconditions we evaluate whether the wrapper is
+         --  needed and we build the class-wide postcondition pragma to install
+         --  it in the wrapper.
+
+         if Present (Class_Post)
+           and then Needs_Wrapper (Class_Post, Subp, Par_Prim)
+         then
+            Wrapper_Needed := True;
+
+            --  Update the class-wide postcondition
+
+            Class_Post := New_Copy_Tree (Class_Post);
             Build_Class_Wide_Expression
-              (Prag           => New_Prag,
-               Subp           => Prim,
+              (Pragma_Or_Expr => Class_Post,
+               Subp           => Subp,
                Par_Subp       => Par_Prim,
-               Adjust_Sloc    => False,
-               Needs_Wrapper  => Needs_Wrapper);
+               Adjust_Sloc    => False);
 
-            if Needs_Wrapper
-              and then not Comes_From_Source (Subp)
-              and then Expander_Active
-            then
-               Append (New_Prag, Decls);
+            --  Install the updated class-wide postcondition in a copy of the
+            --  pragma postcondition defined for the nearest ancestor.
+
+            A_Post := Get_Class_Wide_Pragma (Par_Prim,
+                        Pragma_Postcondition);
+
+            if No (A_Post) then
+               declare
+                  Subps : constant Subprogram_List :=
+                            Inherited_Subprograms (Subp);
+               begin
+                  for Index in Subps'Range loop
+                     A_Post := Get_Class_Wide_Pragma (Subps (Index),
+                                 Pragma_Postcondition);
+                     exit when Present (A_Post);
+                  end loop;
+               end;
             end if;
+
+            New_Prag := New_Copy_Tree (A_Post);
+            Rewrite
+              (Expression (First (Pragma_Argument_Associations (New_Prag))),
+               Class_Post);
+            Append (New_Prag, Decls);
          end if;
       end Build_Inherited_Condition_Pragmas;
+
+      -------------------
+      -- Needs_Wrapper --
+      -------------------
+
+      function Needs_Wrapper
+        (Class_Cond : Node_Id;
+         Subp       : Entity_Id;
+         Par_Subp   : Entity_Id) return Boolean
+      is
+         Result : Boolean := False;
+
+         function Check_Entity (N : Node_Id) return Traverse_Result;
+         --  Check calls to overridden primitives
+
+         --------------------
+         -- Replace_Entity --
+         --------------------
+
+         function Check_Entity (N : Node_Id) return Traverse_Result is
+            New_E : Entity_Id;
+
+         begin
+            if Nkind (N) = N_Identifier
+              and then Present (Entity (N))
+              and then
+                (Is_Formal (Entity (N)) or else Is_Subprogram (Entity (N)))
+              and then
+                (Nkind (Parent (N)) /= N_Attribute_Reference
+                  or else Attribute_Name (Parent (N)) /= Name_Class)
+            then
+               --  The check does not apply to dispatching calls within the
+               --  condition, but only to calls whose static tag is that of
+               --  the parent type.
+
+               if Is_Subprogram (Entity (N))
+                 and then Nkind (Parent (N)) = N_Function_Call
+                 and then Present (Controlling_Argument (Parent (N)))
+               then
+                  return OK;
+               end if;
+
+               --  Determine whether entity has a renaming
+
+               New_E := Get_Mapped_Entity (Entity (N));
+
+               --  If the entity is an overridden primitive and we are not
+               --  in GNATprove mode, we must build a wrapper for the current
+               --  inherited operation. If the reference is the prefix of an
+               --  attribute such as 'Result (or others ???) there is no need
+               --  for a wrapper: the condition is just rewritten in terms of
+               --  the inherited subprogram.
+
+               if Present (New_E)
+                 and then Comes_From_Source (New_E)
+                 and then Is_Subprogram (New_E)
+                 and then Nkind (Parent (N)) /= N_Attribute_Reference
+                 and then not GNATprove_Mode
+               then
+                  Result := True;
+                  return Abandon;
+               end if;
+            end if;
+
+            return OK;
+         end Check_Entity;
+
+         procedure Check_Condition_Entities is
+           new Traverse_Proc (Check_Entity);
+
+      --  Start of processing for Needs_Wrapper
+
+      begin
+         Update_Primitives_Mapping (Par_Subp, Subp);
+
+         Map_Formals (Par_Subp, Subp);
+         Check_Condition_Entities (Class_Cond);
+
+         return Result;
+      end Needs_Wrapper;
 
    --  Start of processing for Check_Inherited_Conditions
 
    begin
-      Op_Node := First_Elmt (Prim_Ops);
-      while Present (Op_Node) loop
-         Prim := Node (Op_Node);
+      if Late_Overriding then
+         Op_Node := First_Elmt (Prim_Ops);
+         while Present (Op_Node) loop
+            Prim := Node (Op_Node);
 
-         --  Map the overridden primitive to the overriding one. This takes
-         --  care of all overridings and is done only once.
+            --  Map the overridden primitive to the overriding one
 
-         if Present (Overridden_Operation (Prim))
-           and then Comes_From_Source (Prim)
-         then
-            Par_Prim := Overridden_Operation (Prim);
-            Update_Primitives_Mapping (Par_Prim, Prim);
-         end if;
+            if Present (Overridden_Operation (Prim))
+              and then Comes_From_Source (Prim)
+            then
+               Par_Prim := Overridden_Operation (Prim);
+               Update_Primitives_Mapping (Par_Prim, Prim);
 
-         Next_Elmt (Op_Node);
-      end loop;
+               --  Force discarding previous mappings of its formals
+
+               Map_Formals (Par_Prim, Prim, Force_Update => True);
+            end if;
+
+            Next_Elmt (Op_Node);
+         end loop;
+      end if;
 
       --  Perform validity checks on the inherited conditions of overriding
       --  operations, for conformance with LSP, and apply SPARK-specific
@@ -1602,12 +1831,6 @@ package body Freeze is
 
             if GNATprove_Mode then
                Collect_Inherited_Class_Wide_Conditions (Prim);
-
-            --  Otherwise build the corresponding pragmas to check for legality
-            --  of the inherited condition.
-
-            else
-               Build_Inherited_Condition_Pragmas (Prim);
             end if;
          end if;
 
@@ -1621,12 +1844,17 @@ package body Freeze is
       Op_Node := First_Elmt (Prim_Ops);
 
       while Present (Op_Node) loop
-         Decls         := Empty_List;
-         Prim          := Node (Op_Node);
-         Needs_Wrapper := False;
+         Decls          := Empty_List;
+         Prim           := Node (Op_Node);
+         Wrapper_Needed := False;
 
-         if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
-            Par_Prim := Alias (Prim);
+         --  Skip internal entities built for mapping interface primitives
+
+         if not Comes_From_Source (Prim)
+           and then Present (Alias (Prim))
+           and then No (Interface_Alias (Prim))
+         then
+            Par_Prim := Ultimate_Alias (Prim);
 
             --  When the primitive is an LSP wrapper we climb to the parent
             --  primitive that has the inherited contract.
@@ -1644,39 +1872,39 @@ package body Freeze is
             --  in the loop above.
 
             Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
-            Build_Inherited_Condition_Pragmas (Prim);
+            Build_Inherited_Condition_Pragmas (Prim, Wrapper_Needed);
          end if;
 
-         if Needs_Wrapper
+         if Wrapper_Needed
            and then not Is_Abstract_Subprogram (Par_Prim)
            and then Expander_Active
          then
-            --  We need to build a new primitive that overrides the inherited
-            --  one, and whose inherited expression has been updated above.
-            --  These expressions are the arguments of pragmas that are part
-            --  of the declarations of the wrapper. The wrapper holds a single
-            --  statement that is a call to the class-wide clone, where the
-            --  controlling actuals are conversions to the corresponding type
-            --  in the parent primitive:
-
-            --    procedure New_Prim (F1 : T1; ...);
-            --    procedure New_Prim (F1 : T1; ...) is
-            --       pragma Check (Precondition, Expr);
-            --    begin
-            --       Par_Prim_Clone (Par_Type (F1), ...);
-            --    end;
-
-            --  If the primitive is a function the statement is a return
-            --  statement with a call.
+            --  Build the dispatch-table wrapper (DTW). The support for
+            --  AI12-0195 relies on two kind of wrappers: one for indirect
+            --  calls (also used for AI12-0220), and one for putting in the
+            --  dispatch table:
+            --
+            --    1) "indirect-call wrapper" (ICW) is needed anytime there are
+            --       class-wide preconditions. Prim'Access will point directly
+            --       at the ICW if any, or at the "pristine" body if Prim has
+            --       no class-wide preconditions.
+            --
+            --    2) "dispatch-table wrapper" (DTW) is needed anytime the class
+            --       wide preconditions *or* the class-wide postconditions are
+            --       affected by overriding.
+            --
+            --  The DTW holds a single statement that is a single call where
+            --  the controlling actuals are conversions to the corresponding
+            --  type in the parent primitive. If the primitive is a function
+            --  the statement is a return statement with a call.
 
             declare
                Alias_Id : constant Entity_Id  := Ultimate_Alias (Prim);
                Loc      : constant Source_Ptr := Sloc (R);
-               Par_R    : constant Node_Id    := Parent (R);
-               New_Body : Node_Id;
-               New_Decl : Node_Id;
-               New_Id   : Entity_Id;
-               New_Spec : Node_Id;
+               DTW_Body : Node_Id;
+               DTW_Decl : Node_Id;
+               DTW_Id   : Entity_Id;
+               DTW_Spec : Node_Id;
 
             begin
                --  The wrapper must be analyzed in the scope of its wrapped
@@ -1684,47 +1912,130 @@ package body Freeze is
 
                Push_Scope (Scope (Prim));
 
-               New_Spec := Build_Overriding_Spec (Par_Prim, R);
-               New_Id   := Defining_Entity (New_Spec);
-               New_Decl :=
-                 Make_Subprogram_Declaration (Loc,
-                   Specification => New_Spec);
+               DTW_Spec := Build_DTW_Spec (Par_Prim);
+               DTW_Id   := Defining_Entity (DTW_Spec);
+               DTW_Decl := Make_Subprogram_Declaration (Loc,
+                             Specification => DTW_Spec);
 
-               --  Insert the declaration and the body of the wrapper after
-               --  type declaration that generates inherited operation. For
-               --  a null procedure, the declaration implies a null body.
+               --  For inherited class-wide preconditions the DTW wrapper
+               --  reuses the ICW of the parent (which checks the parent
+               --  interpretation of the class-wide preconditions); the
+               --  interpretation of the class-wide preconditions for the
+               --  inherited subprogram is checked at the caller side.
 
-               --  Before insertion, do some minimal decoration of fields
+               --  When the subprogram inherits class-wide postconditions
+               --  the DTW also checks the interpretation of the class-wide
+               --  postconditions for the inherited subprogram, and the body
+               --  of the parent checks its interpretation of the parent for
+               --  the class-wide postconditions.
 
-               Mutate_Ekind (New_Id, Ekind (Par_Prim));
-               Set_LSP_Subprogram (New_Id, Par_Prim);
-               Set_Is_Wrapper (New_Id);
+               --      procedure Prim (F1 : T1; ...) is
+               --         [ pragma Check (Postcondition, Expr); ]
+               --      begin
+               --         Par_Prim_ICW (Par_Type (F1), ...);
+               --      end;
 
-               if Nkind (New_Spec) = N_Procedure_Specification
-                 and then Null_Present (New_Spec)
-               then
-                  Insert_After_And_Analyze (Par_R, New_Decl);
+               if Present (Indirect_Call_Wrapper (Par_Prim)) then
+                  DTW_Body :=
+                    Build_DTW_Body (Loc,
+                      DTW_Spec     => DTW_Spec,
+                      DTW_Decls    => Decls,
+                      Par_Prim     => Par_Prim,
+                      Wrapped_Subp => Indirect_Call_Wrapper (Par_Prim));
+
+               --  For subprograms that only inherit class-wide postconditions
+               --  the DTW wrapper calls the parent primitive (which on its
+               --  body checks the interpretation of the class-wide post-
+               --  conditions for the parent subprogram), and the DTW checks
+               --  the interpretation of the class-wide postconditions for the
+               --  inherited subprogram.
+
+               --      procedure Prim (F1 : T1; ...) is
+               --         pragma Check (Postcondition, Expr);
+               --      begin
+               --         Par_Prim (Par_Type (F1), ...);
+               --      end;
 
                else
-                  --  Build body as wrapper to a call to the already built
-                  --  class-wide clone.
-
-                  New_Body :=
-                    Build_Class_Wide_Clone_Call
-                      (Loc, Decls, Par_Prim, New_Spec);
-
-                  Insert_List_After_And_Analyze
-                    (Par_R, New_List (New_Decl, New_Body));
-
-                  --  Ensure correct decoration
-
-                  pragma Assert (Present (Alias (Prim)));
-                  pragma Assert (Present (Overridden_Operation (New_Id)));
-                  pragma Assert (Overridden_Operation (New_Id) = Alias_Id);
+                  DTW_Body :=
+                    Build_DTW_Body (Loc,
+                      DTW_Spec     => DTW_Spec,
+                      DTW_Decls    => Decls,
+                      Par_Prim     => Par_Prim,
+                      Wrapped_Subp => Par_Prim);
                end if;
 
-               pragma Assert (Is_Dispatching_Operation (Prim));
-               pragma Assert (Is_Dispatching_Operation (New_Id));
+               --  Insert the declaration of the wrapper before the freezing
+               --  node of the record type declaration to ensure that it will
+               --  override the internal primitive built by Derive_Subprogram.
+
+               Ensure_Freeze_Node (R);
+
+               if Late_Overriding then
+                  Insert_Before_And_Analyze (Freeze_Node (R), DTW_Decl);
+               else
+                  Append_Freeze_Action (R, DTW_Decl);
+               end if;
+
+               Analyze (DTW_Decl);
+
+               --  Insert the body of the wrapper in the freeze actions of
+               --  its record type declaration to ensure that it is placed
+               --  in the scope of its declaration but not too early to cause
+               --  premature freezing of other entities.
+
+               Append_Freeze_Action (R, DTW_Body);
+               Analyze (DTW_Body);
+
+               --  Ensure correct decoration
+
+               pragma Assert (Is_Dispatching_Operation (DTW_Id));
+               pragma Assert (Present (Overridden_Operation (DTW_Id)));
+               pragma Assert (Overridden_Operation (DTW_Id) = Alias_Id);
+
+               --  Inherit dispatch table slot
+
+               Set_DTC_Entity_Value (R, DTW_Id);
+               Set_DT_Position (DTW_Id, DT_Position (Alias_Id));
+
+               --  Register the wrapper in the dispatch table
+
+               if Late_Overriding
+                 and then not Building_Static_DT (R)
+               then
+                  Insert_List_After_And_Analyze (Freeze_Node (R),
+                    Register_Primitive (Loc, DTW_Id));
+               end if;
+
+               --  Build the helper and ICW for the DTW
+
+               if Present (Indirect_Call_Wrapper (Par_Prim)) then
+                  declare
+                     CW_Subp : Entity_Id;
+                     Decl_N  : Node_Id;
+                     Body_N  : Node_Id;
+
+                  begin
+                     Merge_Class_Conditions (DTW_Id);
+                     Make_Class_Precondition_Subps (DTW_Id,
+                       Late_Overriding => Late_Overriding);
+
+                     CW_Subp := Static_Call_Helper (DTW_Id);
+                     Decl_N  := Unit_Declaration_Node (CW_Subp);
+                     Analyze (Decl_N);
+
+                     --  If the DTW was built for a late-overriding primitive
+                     --  its body must be analyzed now (since the tagged type
+                     --  is already frozen).
+
+                     if Late_Overriding then
+                        Body_N :=
+                          Unit_Declaration_Node
+                            (Corresponding_Body (Decl_N));
+                        Analyze (Body_N);
+                     end if;
+                  end;
+               end if;
 
                Pop_Scope;
             end;
@@ -7417,7 +7728,7 @@ package body Freeze is
       if Is_Type (E) then
          Freeze_And_Append (First_Subtype (E), N, Result);
 
-         --  If we just froze a tagged non-class wide record, then freeze the
+         --  If we just froze a tagged non-class-wide record, then freeze the
          --  corresponding class-wide type. This must be done after the tagged
          --  type itself is frozen, because the class-wide type refers to the
          --  tagged type which generates the class.
