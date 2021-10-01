@@ -5912,9 +5912,10 @@ parse_optimize_options (tree args, bool attr_p)
   cl_decoded_option *merged_decoded_options
     = XNEWVEC (cl_decoded_option, merged_decoded_options_count);
 
+  /* Note the first decoded_options is used for the program name.  */
   for (unsigned i = 0; i < save_opt_count; ++i)
-    merged_decoded_options[i] = save_opt_decoded_options[i];
-  for (unsigned i = 0; i < decoded_options_count; ++i)
+    merged_decoded_options[i + 1] = save_opt_decoded_options[i];
+  for (unsigned i = 1; i < decoded_options_count; ++i)
     merged_decoded_options[save_opt_count + i] = decoded_options[i];
 
    /* And apply them.  */
