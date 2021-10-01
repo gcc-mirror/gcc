@@ -2078,6 +2078,12 @@ operator_lshift::op1_range (irange &r,
 			    relation_kind rel ATTRIBUTE_UNUSED) const
 {
   tree shift_amount;
+
+  if (!lhs.contains_p (build_zero_cst (type)))
+    r.set_nonzero (type);
+  else
+    r.set_varying (type);
+
   if (op2.singleton_p (&shift_amount))
     {
       wide_int shift = wi::to_wide (shift_amount);
@@ -2089,21 +2095,24 @@ operator_lshift::op1_range (irange &r,
 	return false;
       if (shift == 0)
 	{
-	  r = lhs;
+	  r.intersect (lhs);
 	  return true;
 	}
 
       // Work completely in unsigned mode to start.
       tree utype = type;
+      int_range_max tmp_range;
       if (TYPE_SIGN (type) == SIGNED)
 	{
 	  int_range_max tmp = lhs;
 	  utype = unsigned_type_for (type);
 	  range_cast (tmp, utype);
-	  op_rshift.fold_range (r, utype, tmp, op2);
+	  op_rshift.fold_range (tmp_range, utype, tmp, op2);
 	}
       else
-	op_rshift.fold_range (r, utype, lhs, op2);
+	op_rshift.fold_range (tmp_range, utype, lhs, op2);
+
+      r.intersect (tmp_range);
 
       // Start with ranges which can produce the LHS by right shifting the
       // result by the shift amount.
@@ -2128,7 +2137,8 @@ operator_lshift::op1_range (irange &r,
 	range_cast (r, type);
       return true;
     }
-  return false;
+
+  return !r.varying_p ();
 }
 
 bool
