@@ -15229,7 +15229,7 @@ ISO C90 and C99, etc.
 
 @item -fsanitize=integer-divide-by-zero
 @opindex fsanitize=integer-divide-by-zero
-Detect integer division by zero as well as @code{INT_MIN / -1} division.
+Detect integer division by zero.
 
 @item -fsanitize=unreachable
 @opindex fsanitize=unreachable
@@ -15261,7 +15261,8 @@ returning a value.  This option works in C++ only.
 @opindex fsanitize=signed-integer-overflow
 This option enables signed integer overflow checking.  We check that
 the result of @code{+}, @code{*}, and both unary and binary @code{-}
-does not overflow in the signed arithmetics.  Note, integer promotion
+does not overflow in the signed arithmetics.  This also detects
+@code{INT_MIN / -1} signed division.  Note, integer promotion
 rules must be taken into account.  That is, the following is not an
 overflow:
 @smallexample
