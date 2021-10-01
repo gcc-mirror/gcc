@@ -6119,6 +6119,10 @@ check_bases_and_members (tree t)
 	&& !DECL_ARTIFICIAL (fn)
 	&& DECL_DEFAULTED_IN_CLASS_P (fn))
       {
+	/* ...except handle comparisons later, in finish_struct_1.  */
+	if (special_function_p (fn) == sfk_comparison)
+	  continue;
+
 	int copy = copy_fn_p (fn);
 	if (copy > 0)
 	  {
@@ -7467,7 +7471,14 @@ finish_struct_1 (tree t)
      for any static member objects of the type we're working on.  */
   for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
     if (DECL_DECLARES_FUNCTION_P (x))
-      DECL_IN_AGGR_P (x) = false;
+      {
+	/* Synthesize constexpr defaulted comparisons.  */
+	if (!DECL_ARTIFICIAL (x)
+	    && DECL_DEFAULTED_IN_CLASS_P (x)
+	    && special_function_p (x) == sfk_comparison)
+	  defaulted_late_check (x);
+	DECL_IN_AGGR_P (x) = false;
+      }
     else if (VAR_P (x) && TREE_STATIC (x)
 	     && TREE_TYPE (x) != error_mark_node
 	     && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
