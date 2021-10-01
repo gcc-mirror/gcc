@@ -1,3 +1,11 @@
+2021-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102520
+	* array.c (expand_constructor): Do not dereference NULL pointer.
+
 2021-09-21  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
