@@ -623,6 +623,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  _M_construct(__str.begin(), __str.end());
       }
 
+      basic_string(nullptr_t) = delete;
+      basic_string& operator=(nullptr_t) = delete;
 #endif // C++11
 
       /**
