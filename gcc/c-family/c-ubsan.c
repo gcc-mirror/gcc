@@ -41,6 +41,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
 {
   tree t, tt;
   tree type = TREE_TYPE (op0);
+  enum sanitize_code flag = SANITIZE_DIVIDE;
 
   /* At this point both operands should have the same type,
      because they are already converted to RESULT_TYPE.
@@ -58,8 +59,11 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
 		     op1, build_int_cst (type, 0));
   else if (TREE_CODE (type) == REAL_TYPE
 	   && sanitize_flags_p (SANITIZE_FLOAT_DIVIDE))
-    t = fold_build2 (EQ_EXPR, boolean_type_node,
-		     op1, build_real (type, dconst0));
+    {
+      t = fold_build2 (EQ_EXPR, boolean_type_node,
+		       op1, build_real (type, dconst0));
+      flag = SANITIZE_FLOAT_DIVIDE;
+    }
   else
     return NULL_TREE;
 
@@ -95,7 +99,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
 				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       enum built_in_function bcode
-	= (flag_sanitize_recover & SANITIZE_DIVIDE)
+	= (flag_sanitize_recover & flag)
 	  ? BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW
 	  : BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW_ABORT;
       tt = builtin_decl_explicit (bcode);
