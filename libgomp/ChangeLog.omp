@@ -1,3 +1,11 @@
+2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_aligned_alloc, omp_aligned_calloc): Add
+	__alloc_align__ (1) attribute.
+	* testsuite/libgomp.c-c++-common/alloc-9.c: New test.
+
 2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
