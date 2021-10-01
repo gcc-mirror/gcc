@@ -171,6 +171,8 @@ namespace regex_constants
     static_cast<syntax_option_type>(1 << _S_egrep);
 
 #if __cplusplus >= 201703L || !defined __STRICT_ANSI__
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2503. multiline option should be added to syntax_option_type
   /**
    * Specifies that the `^` anchor matches at the beginning of a line,
    * and the `$` anchor matches at the end of a line, not only at the
