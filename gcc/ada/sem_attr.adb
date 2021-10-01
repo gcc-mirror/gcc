@@ -1413,6 +1413,15 @@ package body Sem_Attr is
                return;
             end if;
 
+         --  'Old attribute reference ok in a _Postconditions procedure
+
+         elsif Nkind (Prag) = N_Subprogram_Body
+           and then not Comes_From_Source (Prag)
+           and then Nkind (Corresponding_Spec (Prag)) = N_Defining_Identifier
+           and then Chars (Corresponding_Spec (Prag)) = Name_uPostconditions
+         then
+            null;
+
          --  Otherwise the placement of the attribute is illegal
 
          else
@@ -1424,6 +1433,15 @@ package body Sem_Attr is
 
          if Nkind (Prag) = N_Aspect_Specification then
             Subp_Decl := Parent (Prag);
+         elsif Nkind (Prag) = N_Subprogram_Body then
+            declare
+               Enclosing_Scope : constant Node_Id :=
+                 Scope (Corresponding_Spec (Prag));
+            begin
+               pragma Assert (Postconditions_Proc (Enclosing_Scope)
+                               = Corresponding_Spec (Prag));
+               Subp_Decl := Parent (Parent (Enclosing_Scope));
+            end;
          else
             Subp_Decl := Find_Related_Declaration_Or_Body (Prag);
          end if;
