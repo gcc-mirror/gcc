@@ -5,7 +5,7 @@
 
 /*
 ** cpy_127:
-**      mov	x2, 127
+**      mov	(w|x)2, 127
 **      b	memcpy
 */
 void
@@ -16,7 +16,7 @@ cpy_127 (char *out, char *in)
 
 /*
 ** cpy_128:
-**      mov	x2, 128
+**      mov	(w|x)2, 128
 **      b	memcpy
 */
 void
