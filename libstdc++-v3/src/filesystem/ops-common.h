@@ -63,7 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __last_system_error() noexcept
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    return {::GetLastError(), std::system_category()};
+    return {(int)::GetLastError(), std::system_category()};
 #else
     return {errno, std::generic_category()};
 #endif
@@ -597,7 +597,7 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 	ec.clear();
       }
     else
-      ec = std::last_system_error();
+      ec = std::__last_system_error();
 #else
     ec = std::make_error_code(std::errc::function_not_supported);
 #endif
