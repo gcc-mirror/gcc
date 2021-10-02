@@ -1,3 +1,14 @@
+2021-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* explow.c: Include langhooks.h.
+	(set_stack_check_libfunc): Build a proper function type.
+
+2021-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/64697
+	* config/i386/i386.c (legitimate_pic_address_disp_p): For PE-COFF do
+	not return true for external weak function symbols in medium model.
+
 2021-09-22  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
