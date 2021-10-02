@@ -47,6 +47,7 @@ def skip_warning(filename, message):
             'i386.md': ['-Wparentheses-equality', '-Wtautological-compare',
                         '-Wtautological-overlap-compare'],
             'sse.md': ['-Wparentheses-equality', '-Wtautological-compare'],
+            'mmx.md': ['-Wtautological-compare'],
             'genautomata.c': ['-Wstring-plus-int'],
             'gfortran.texi': [''],
             'libtool': ['']
