@@ -1008,6 +1008,7 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
     }
 
   /* Only build a temporary if we need it.  */
+  STRIP_NOPS (e_proxy);
   if (TREE_CODE (e_proxy) == PARM_DECL
       || (VAR_P (e_proxy) && !is_local_temp (e_proxy)))
     {
