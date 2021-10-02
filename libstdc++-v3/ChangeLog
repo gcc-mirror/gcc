@@ -1,3 +1,295 @@
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102100
+	* include/Makefile.am (c++config.h): Define
+	_GLIBCXX_VERBOSE_ASSERT based on configure output.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config: Fix condition for verbose assertions.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92546
+	* include/bits/erase_if.h (__erase_nodes_if): Use __niter_base to
+	unwrap debug iterators.
+	* include/bits/refwrap.h: Do not error if included in C++03.
+	* include/bits/stl_algo.h (__remove_if): Move to ...
+	* include/bits/stl_algobase.h (__remove_if): ... here.
+	* include/std/deque (erase, erase_if): Use __remove_if instead of
+	remove and remove_if.
+	* include/std/string (erase, erase_if): Likewise.
+	* include/std/vector (erase, erase_if): Likewise.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66742
+	* include/bits/list.tcc (list::sort()): Use _Scratch_list
+	objects for splicing and merging.
+	(list::sort(StrictWeakOrdering)): Likewise.
+	* include/bits/stl_list.h (__detail::_Scratch_list): New type.
+	* src/c++98/list.cc (_List_node_base::_M_transfer): Add
+	assertion for --enable-libstdcxx-debug library.
+	* testsuite/23_containers/list/operations/66742.cc: New test.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100612
+	* include/std/thread (__pmf_expects_stop_token): New variable
+	template to detect a pointer to member function that needs a
+	stop_token to be added to the arguments.
+	(jthread::__S_create): Use __pmf_expects_stop_token.
+	(jthread::__S_create_pmf): New function.
+	* testsuite/30_threads/jthread/100612.cc: New test.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_queue.h
+	(__cpp_lib_adaptor_iterator_pair_constructor): Define for C++23, as
+	per P1425R4.
+	(queue(InputIterator, InputIterator)): Likewise.
+	(queue(InputIterator, InputIterator, const Alloc&)): Likewise.
+	* include/bits/stl_stack.h
+	(__cpp_lib_adaptor_iterator_pair_constructor): Likewise.
+	(stack(InputIterator, InputIterator)): Likewise.
+	(stack(InputIterator, InputIterator, const Alloc&)): Likewise.
+	* include/std/version (__cpp_lib_adaptor_iterator_pair_constructor):
+	Define.
+	* testsuite/23_containers/queue/cons_from_iters.cc: New test.
+	* testsuite/23_containers/stack/cons_from_iters.cc: New test.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_queue.h (priority_queue): Add
+	allocator-extended overloads for constructors taking iterator.
+	* testsuite/23_containers/priority_queue/lwg3506.cc: New test.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_queue.h (priority_queue): Construct sequence
+	from iterators when no sequence argument is present (LWG 3529).
+	* testsuite/23_containers/priority_queue/lwg3529.cc: New test.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_queue.h (priority_queue): Constrain
+	constructors with InputIterator parameters (LWG 3522).
+	* testsuite/23_containers/priority_queue/lwg3522.cc: New test.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::distance): Split overload
+	into two (LWG 3392).
+	* testsuite/24_iterators/range_operations/lwg3392.cc: New test.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/thread/cons/3.cc: Remove derivation from
+	std::unary_function.
+	* testsuite/30_threads/thread/cons/4.cc: Likewise.
+	* testsuite/30_threads/thread/cons/5.cc: Likewise.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/ext/pb_ds/example/basic_multimap.cc: Remove
+	unnecesary derivation from std::unary_function.
+	* testsuite/ext/pb_ds/example/erase_if.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_illegal_resize.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_initial_size.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_load_set_change.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_mod.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_resize.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_shift_mask.cc: Likewise.
+	* testsuite/ext/pb_ds/example/priority_queue_dijkstra.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/example/ranged_hash.cc: Likewise.
+	* testsuite/ext/pb_ds/example/store_hash.cc: Likewise.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/functexcept.cc (__throw_out_of_range_fmt): Do not
+	expand the format string for freestanding, or non-vebose, or if
+	we're just going to abort anyway.
+	* src/c++11/snprintf_lite.cc: Remove unused header and
+	declaration.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__do_visit): Use variant_npos instead of
+	literal -1 that requires a narrowing conversion.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99327
+	* src/filesystem/ops-common.h (__unsupported): New function to
+	return a suitable error code for missing functionality.
+	(posix::off_t): New typedef.
+	(posix::*): Set errno to ENOSYS instead of ENOTSUP for no-op
+	fallback implementations.
+	(do_copy_file): Replace uses of errc::not_supported.
+	* src/c++17/fs_ops.cc (fs::copy, fs::copy_file, create_dir)
+	(fs::create_directory, fs::create_directory_symlink)
+	(fs::create_hard_link, fs::create_symlink, fs::current_path)
+	(fs::equivalent, do_stat, fs::file_size, fs::hard_link_count)
+	(fs::last_write_time, fs::permissions, fs::read_symlink):
+	Replace uses of errc::not_supported.
+	(fs::resize_file): Qualify off_t.
+	* src/filesystem/ops.cc (fs::copy, fs::copy_file, create_dir)
+	(fs::create_directory, fs::create_directory_symlink)
+	(fs::create_hard_link, fs::create_symlink, fs::current_path)
+	(fs::equivalent, do_stat, fs::file_size, fs::last_write_time)
+	(fs::permissions, fs::read_symlink, fs::system_complete):
+	Replace uses of errc::not_supported.
+	(fs::resize_file): Qualify off_t and enable unconditionally.
+	* testsuite/19_diagnostics/system_error/cons-1.cc: Likewise.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops-common.h (last_error): New helper function.
+	(filesystem::do_space): Use last_error().
+	* src/c++17/fs_ops.cc (fs::absolute, fs::create_hard_link)
+	(fs::equivalent, fs::remove, fs::temp_directory_path): Use
+	last_error().
+	* src/filesystem/ops.cc (fs::create_hard_link)
+	(fs::remove, fs::temp_directory_path): Likewise.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__conditional): New class template
+	for internal uses of std::conditional.
+	(__conditional_t): New alias template to replace conditional_t.
+	(__and_, __or_, __result_of_memfun, __result_of_memobj): Use
+	__conditional_t instead of conditional::type.
+	* include/bits/atomic_base.h (__atomic_impl::_Diff): Likewise.
+	* include/bits/hashtable.h (_Hashtable): Likewise.
+	* include/bits/hashtable_policy.h (_Node_iterator, _Insert_base)
+	(_Local_iterator): Likewise. Replace typedefs with
+	using-declarations.
+	* include/bits/move.h (move_if_noexcept): Use __conditional_t.
+	* include/bits/parse_numbers.h (_Select_int_base): Likewise.
+	* include/bits/ptr_traits.h (__make_not_void): Likewise.
+	* include/bits/ranges_algobase.h (__copy_or_move_backward)
+	(__copy_or_move): Likewise.
+	* include/bits/ranges_base.h (borrowed_iterator_t): Likewise.
+	* include/bits/ranges_util.h (borrowed_subrange_t): Likewise.
+	* include/bits/regex_compiler.h (_BracketMatcher): Use
+	__conditional_t. Replace typedefs with using-declarations.
+	* include/bits/shared_ptr_base.h (__shared_count): Use
+	__conditional_t.
+	* include/bits/stl_algobase.h (__copy_move, __copy_move_backward):
+	Likewise.
+	* include/bits/stl_iterator.h (__detail::__clamp_iter_cat)
+	(reverse_iterator::iterator_concept)
+	(__make_move_if_noexcept_iterator)
+	(iterator_traits<common_iterator<_It, _Sent>>)
+	(iterator_traits<counted_iterator<_It>>): Likewise.
+	* include/bits/stl_pair.h (_PCC, pair::operator=): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::insert_return_type)
+	(_Rb_tree::_M_clone_node): Likewise.
+	* include/bits/unique_ptr.h (unique_ptr(unique_ptr<U,E>&&)):
+	Likewise.
+	* include/bits/uses_allocator.h (__uses_alloc): Likewise.
+	(__is_uses_allocator_predicate): Likewise.
+	* include/debug/functions.h (__foreign_iterator_aux2): Likewise.
+	* include/experimental/any (any::_Manager, __any_caster):
+	Likewise.
+	* include/experimental/executor (async_completion): Likewise.
+	* include/experimental/functional (__boyer_moore_base_t):
+	Likewise.
+	* include/std/any (any::_Manager): Likewise.
+	* include/std/functional (__boyer_moore_base_t): Likewise.
+	* include/std/ranges (borrowed_iterator_t)
+	(borrowed_subrange_t, __detail::__maybe_present_t)
+	(__detail::__maybe_const_t, split_view): Likewise.
+	* include/std/tuple (__empty_not_final, tuple::operator=):
+	Likewise.
+	* include/std/variant (__detail::__variant::__get_t): Likewise.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78113
+	* include/std/variant (__do_visit): Use a switch when we have a
+	single variant with a small number of alternatives.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90943
+	* include/std/variant (__cpp_lib_variant): Update value.
+	(__detail::__variant::__as): New helpers implementing the
+	as-variant exposition-only function templates.
+	(visit, visit<R>): Use __as to upcast the variant parameters.
+	* include/std/version (__cpp_lib_variant): Update value.
+	* testsuite/20_util/variant/visit_inherited.cc: New test.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (__normal_iterator): Simplify
+	converting constructor and do not require _Container::pointer.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h [_GLIBCXX_FULLY_DYNAMIC_STRING]
+	(basic_string(basic_string&&)): Add noexcept and avoid
+	allocation, by sharing rep with the rvalue string.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (common_iterator::__arrow_proxy)
+	(common_iterator::__postfix_proxy): Add noexcept.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94418
+	* include/bits/stl_iterator.h (reverse_iterator): Use
+	conditional noexcept on constructors and assignment operators.
+	* testsuite/24_iterators/reverse_iterator/noexcept.cc: New test.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100153
+	* include/bits/vector.tcc (vector<bool>::_M_shrink_to_fit()):
+	When size() is zero just deallocate and reset.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96733
+	* include/bits/stl_algo.h (clamp): Use std::min and std::max.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex::multiline): Define for
+	non-strict C++11 and C++14 modes.
+	* include/bits/regex_constants.h (regex_constants::multiline):
+	Add _GLIBCXX_RESOLVE_LIB_DEFECTS comment.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/is_permutation/2.cc: Include <iterator>.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stream_iterator.h (istream_iterator): Add
+	noexcept to constructors and non-throwing member functions and
+	friend functions.
+	(ostream_iterator): Likewise.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/boost_concept_check.h (_Is_vector_bool_iterator):
+	New trait to identify vector<bool> iterators, including debug
+	ones.
+	(_ForwardIteratorReferenceConcept): Add default template
+	argument using _Is_vector_bool_iterator and use it in partial
+	specialization for the vector<bool> cases.
+	(_Mutable_ForwardIteratorReferenceConcept): Likewise.
+	* testsuite/24_iterators/operations/prev_neg.cc: Adjust dg-error
+	line number.
+
+2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/list.tcc (list::merge): Remove call to size() and
+	try-catch block. Use _Finalize_merge instead.
+	* include/bits/stl_list.h (list::_Finalize_merge): New
+	scope guard type to update _M_size members after a merge.
+
 2021-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.h (basic_regex::multiline): Fix #if
