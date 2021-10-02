@@ -3688,7 +3688,22 @@ await_statement_walker (tree *stmt, int *do_subtree, void *d)
 	    *do_subtree = 0;
 	    return res;
 	  }
-	break;
+	  break;
+	case HANDLER:
+	  {
+	    /* [expr.await] An await-expression shall appear only in a
+	       potentially-evaluated expression within the compound-statement
+	       of a function-body outside of a handler.  */
+	    tree *await_ptr;
+	    hash_set<tree> visited;
+	    if (!(cp_walk_tree (&HANDLER_BODY (expr), find_any_await,
+		  &await_ptr, &visited)))
+	      return NULL_TREE; /* All OK.  */
+	    location_t loc = EXPR_LOCATION (*await_ptr);
+	    error_at (loc, "await expressions are not permitted in handlers");
+	    return NULL_TREE; /* This is going to fail later anyway.  */
+	  }
+	  break;
       }
   else if (EXPR_P (expr))
     {
