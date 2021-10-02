@@ -2112,8 +2112,6 @@ operator_lshift::op1_range (irange &r,
       else
 	op_rshift.fold_range (tmp_range, utype, lhs, op2);
 
-      r.intersect (tmp_range);
-
       // Start with ranges which can produce the LHS by right shifting the
       // result by the shift amount.
       // ie   [0x08, 0xF0] = op1 << 2 will start with
@@ -2128,13 +2126,15 @@ operator_lshift::op1_range (irange &r,
       unsigned low_bits = TYPE_PRECISION (utype)
 			  - TREE_INT_CST_LOW (shift_amount);
       wide_int up_mask = wi::mask (low_bits, true, TYPE_PRECISION (utype));
-      wide_int new_ub = wi::bit_or (up_mask, r.upper_bound ());
-      wide_int new_lb = wi::set_bit (r.lower_bound (), low_bits);
+      wide_int new_ub = wi::bit_or (up_mask, tmp_range.upper_bound ());
+      wide_int new_lb = wi::set_bit (tmp_range.lower_bound (), low_bits);
       int_range<2> fill_range (utype, new_lb, new_ub);
-      r.union_ (fill_range);
+      tmp_range.union_ (fill_range);
 
       if (utype != type)
-	range_cast (r, type);
+	range_cast (tmp_range, type);
+
+      r.intersect (tmp_range);
       return true;
     }
 
