@@ -3927,6 +3927,16 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  if (local_var.is_static)
 	    continue;
 
+	  poly_uint64 size;
+	  if (TREE_CODE (lvtype) == ARRAY_TYPE
+	      && !poly_int_tree_p (DECL_SIZE_UNIT (lvar), &size))
+	    {
+	      sorry_at (local_var.def_loc, "variable length arrays are not"
+			" yet supported in coroutines");
+	      /* Ignore it, this is broken anyway.  */
+	      continue;
+	    }
+
 	  lvd->local_var_seen = true;
 	  /* If this var is a lambda capture proxy, we want to leave it alone,
 	     and later rewrite the DECL_VALUE_EXPR to indirect through the
