@@ -2338,7 +2338,7 @@ toplev::main (int argc, char **argv)
 						&save_decoded_options_count);
 
   /* Save Optimization decoded options.  */
-  for (unsigned i = 0; i < save_decoded_options_count; ++i)
+  for (unsigned i = 1; i < save_decoded_options_count; ++i)
     if (cl_options[save_decoded_options[i].opt_index].flags & CL_OPTIMIZATION)
       save_opt_decoded_options.safe_push (save_decoded_options[i]);
 
