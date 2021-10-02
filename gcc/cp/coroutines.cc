@@ -1117,13 +1117,15 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
 				a, e_proxy, o, awaiter_calls,
 				build_int_cst (integer_type_node,
 					       (int) suspend_kind));
+  TREE_SIDE_EFFECTS (await_expr) = true;
   if (te)
     {
       TREE_OPERAND (te, 1) = await_expr;
+      TREE_SIDE_EFFECTS (te) = true;
       await_expr = te;
     }
-  tree t = convert_from_reference (await_expr);
-  return t;
+  SET_EXPR_LOCATION (await_expr, loc);
+  return convert_from_reference (await_expr);
 }
 
 tree
@@ -1149,8 +1151,13 @@ finish_co_await_expr (location_t kw, tree expr)
      co_await with the expression unchanged.  */
   tree functype = TREE_TYPE (current_function_decl);
   if (dependent_type_p (functype) || type_dependent_expression_p (expr))
-    return build5_loc (kw, CO_AWAIT_EXPR, unknown_type_node, expr,
-		       NULL_TREE, NULL_TREE, NULL_TREE, integer_zero_node);
+    {
+      tree aw_expr = build5_loc (kw, CO_AWAIT_EXPR, unknown_type_node, expr,
+				 NULL_TREE, NULL_TREE, NULL_TREE,
+				 integer_zero_node);
+      TREE_SIDE_EFFECTS (aw_expr) = true;
+      return aw_expr;
+    }
 
   /* We must be able to look up the "await_transform" method in the scope of
      the promise type, and obtain its return type.  */
@@ -1187,14 +1194,7 @@ finish_co_await_expr (location_t kw, tree expr)
     }
 
   /* Now we want to build co_await a.  */
-  tree op = build_co_await (kw, a, CO_AWAIT_SUSPEND_POINT);
-  if (op != error_mark_node)
-    {
-      TREE_SIDE_EFFECTS (op) = 1;
-      SET_EXPR_LOCATION (op, kw);
-    }
-
-  return op;
+  return build_co_await (kw, a, CO_AWAIT_SUSPEND_POINT);
 }
 
 /* Take the EXPR given and attempt to build:
