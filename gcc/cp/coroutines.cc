@@ -4211,9 +4211,15 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
 	{
 	  /* Build a compound expression that sets the
 	     initial-await-resume-called variable true and then calls the
-	     initial suspend expression await resume.  */
+	     initial suspend expression await resume.
+	     In the case that the user decides to make the initial await
+	     await_resume() return a value, we need to discard it and, it is
+	     a reference type, look past the indirection.  */
+	  if (INDIRECT_REF_P (initial_await))
+	    initial_await = TREE_OPERAND (initial_await, 0);
 	  tree vec = TREE_OPERAND (initial_await, 3);
 	  tree aw_r = TREE_VEC_ELT (vec, 2);
+	  aw_r = convert_to_void (aw_r, ICV_STATEMENT, tf_warning_or_error);
 	  tree update = build2 (MODIFY_EXPR, boolean_type_node, i_a_r_c,
 				boolean_true_node);
 	  aw_r = cp_build_compound_expr (update, aw_r, tf_warning_or_error);
