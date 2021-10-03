@@ -1,3 +1,12 @@
+2021-10-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/pr102563.c: New test.
+
+2021-10-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.dg/analyzer/torture/asm-x86-linux-rdmsr.c (DECLARE_ARGS):
+	Use unsigned long long for x86-64.
+
 2021-10-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/102546

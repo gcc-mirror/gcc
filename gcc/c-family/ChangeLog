@@ -1,3 +1,8 @@
+2021-10-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-format.c: Remove a test of TARGET_FORMAT_TYPES with
+	NULL, this is not needed.
+
 2021-10-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c/102103

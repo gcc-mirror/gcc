@@ -1,3 +1,10 @@
+2021-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (create_directory): Fix typo in enum name.
+	* src/filesystem/ops-common.h (__last_system_error): Add
+	explicit cast to avoid narrowing conversion.
+	(do_space): Fix type in function name.
+
 2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/102100

@@ -1,3 +1,14 @@
+2021-10-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102563
+	* range-op.cc (operator_lshift::op1_range): Do not clobber
+	range.
+
+2021-10-02  Martin Liska  <mliska@suse.cz>
+
+	* toplev.c (toplev::main): save_decoded_options[0] is program
+	name and so it should be skipped.
+
 2021-10-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/102546
