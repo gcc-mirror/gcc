@@ -4595,8 +4595,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	If the lookup finds an allocation function in the scope of the promise
 	type, overload resolution is performed on a function call created by
 	assembling an argument list.  The first argument is the amount of space
-	requested, and has type std::size_t.  The succeeding arguments are
-	those of the original function.  */
+	requested, and has type std::size_t.  The lvalues p1...pn are the
+	succeeding arguments..  */
       vec<tree, va_gc> *args = make_tree_vector ();
       vec_safe_push (args, resizeable); /* Space needed.  */
 
@@ -4614,10 +4614,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	      this_ref = convert_to_reference (tt, this_ref, CONV_STATIC,
 					       LOOKUP_NORMAL , NULL_TREE,
 					       tf_warning_or_error);
-	      vec_safe_push (args, this_ref);
+	      vec_safe_push (args, convert_from_reference (this_ref));
 	    }
 	  else
-	    vec_safe_push (args, arg);
+	    vec_safe_push (args, convert_from_reference (arg));
 	}
 
       /* Note the function selected; we test to see if it's NOTHROW.  */
