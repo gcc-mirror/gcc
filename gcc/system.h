@@ -1305,4 +1305,25 @@ startswith (const char *str, const char *prefix)
   return strncmp (str, prefix, strlen (prefix)) == 0;
 }
 
+/* Strip white spaces from STRING with LEN length.
+   A stripped string is returned and LEN is updated accordingly.  */
+
+static inline char *
+strip_whitespaces (char *string, size_t *len)
+{
+  while (string[0] == ' ' || string[0] == '\t')
+    {
+      --(*len);
+      ++string;
+    }
+
+  while (string[*len - 1] == ' ' || string[*len - 1] == '\t')
+    {
+      string[*len - 1] = '\0';
+      --(*len);
+    }
+
+  return string;
+}
+
 #endif /* ! GCC_SYSTEM_H */
