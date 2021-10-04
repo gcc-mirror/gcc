@@ -3035,7 +3035,8 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
       /* Expand this memset call.  */
       expand_builtin_memset (m_call, NULL_RTX, TYPE_MODE (var_type));
     }
-  else
+  /* ???  Deal with poly-int sized registers.  */
+  else if (tree_fits_uhwi_p (TYPE_SIZE_UNIT (var_type)))
     {
       /* If this variable is in a register, use expand_assignment might
 	 generate better code.  */
