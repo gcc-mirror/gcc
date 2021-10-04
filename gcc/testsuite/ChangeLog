@@ -1,3 +1,11 @@
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95520
+	* g++.dg/coroutines/pr95520.C: New test.
+
 2021-09-30  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
