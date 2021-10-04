@@ -1,3 +1,28 @@
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101765
+	* g++.dg/coroutines/pr101765.C: New test.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99710
+	* g++.dg/coroutines/pr99710.C: New test.
+
+2021-10-03  John Eivind Helset  <jehelset@gmail.com>
+
+	PR c++/100673
+	* g++.dg/coroutines/pr100673.C: New test.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101133
+	* g++.dg/coroutines/pr101133.C: New test.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99575
+	* g++.dg/coroutines/pr99575.C: New test.
+
 2021-10-02  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/tree-ssa/pr102563.c: New test.

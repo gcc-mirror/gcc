@@ -1,3 +1,8 @@
+2021-10-03  Martin Liska  <mliska@suse.cz>
+
+	* toplev.c (toplev::main): Check opt_index if it is a part
+	of cl_options.
+
 2021-10-02  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/102563

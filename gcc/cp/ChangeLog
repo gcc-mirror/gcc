@@ -1,3 +1,36 @@
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101765
+	* coroutines.cc (register_local_var_uses): Emit a sorry if
+	we encounter a VLA in the coroutine local variables.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99710
+	* coroutines.cc (await_statement_walker): Report an error if
+	an await expression is found in a handler body.
+
+2021-10-03  John Eivind Helset  <jehelset@gmail.com>
+
+	PR c++/100673
+	* coroutines.cc (build_co_await): Guard against NULL
+	await_suspend types.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101133
+	* coroutines.cc (build_co_await): Mark co_await_expr trees
+	with TREE_SIDE_EFFECTS, also mark any containing expression.
+	(finish_co_await_expr): Mark type-dependent co_await_expr
+	trees with TREE_SIDE_EFFECTS.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99575
+	* coroutines.cc (build_co_await): Strip NOPs from
+	candidate awaiter expressions before testing to see
+	if they need a temporary.
+
 2021-10-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c/102103
