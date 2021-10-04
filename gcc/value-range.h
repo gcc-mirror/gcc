@@ -73,6 +73,7 @@ public:
   // In-place operators.
   void union_ (const irange &);
   void intersect (const irange &);
+  void intersect (const wide_int& lb, const wide_int& ub);
   void invert ();
 
   // Operator overloads.
