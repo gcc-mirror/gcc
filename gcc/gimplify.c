@@ -1825,6 +1825,8 @@ static bool
 is_var_need_auto_init (tree decl)
 {
   if (auto_var_p (decl)
+      && (TREE_CODE (decl) != VAR_DECL
+	  || !DECL_HARD_REGISTER (decl))
       && (flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
       && (!lookup_attribute ("uninitialized", DECL_ATTRIBUTES (decl)))
       && !is_empty_type (TREE_TYPE (decl)))
