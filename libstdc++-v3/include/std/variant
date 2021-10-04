@@ -206,7 +206,7 @@ namespace __variant
 
   template<typename... _Types>
     constexpr std::variant<_Types...>&
-    __as(std::variant<_Types...>& __v)
+    __as(std::variant<_Types...>& __v) noexcept
     { return __v; }
 
   template<typename... _Types>
