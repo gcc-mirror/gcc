@@ -212,10 +212,10 @@ namespace __debug
       vector(const vector&) = default;
       vector(vector&&) = default;
 
-      vector(const vector& __x, const allocator_type& __a)
+      vector(const vector& __x, const __type_identity_t<allocator_type>& __a)
       : _Base(__x, __a) { }
 
-      vector(vector&& __x, const allocator_type& __a)
+      vector(vector&& __x, const __type_identity_t<allocator_type>& __a)
       noexcept(
 	std::is_nothrow_constructible<_Base,
 	  _Base, const allocator_type&>::value )

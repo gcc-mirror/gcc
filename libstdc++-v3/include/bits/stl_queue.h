@@ -342,8 +342,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     queue(_Container) -> queue<typename _Container::value_type, _Container>;
 
   template<typename _Container, typename _Allocator,
-	   typename = _RequireNotAllocator<_Container>,
-	   typename = _RequireAllocator<_Allocator>>
+	   typename = _RequireNotAllocator<_Container>>
     queue(_Container, _Allocator)
     -> queue<typename _Container::value_type, _Container>;
 
@@ -817,8 +816,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Compare, typename _Container, typename _Allocator,
 	   typename = _RequireNotAllocator<_Compare>,
-	   typename = _RequireNotAllocator<_Container>,
-	   typename = _RequireAllocator<_Allocator>>
+	   typename = _RequireNotAllocator<_Container>>
     priority_queue(_Compare, _Container, _Allocator)
     -> priority_queue<typename _Container::value_type, _Container, _Compare>;
 #endif

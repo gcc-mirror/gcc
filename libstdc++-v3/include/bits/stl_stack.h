@@ -317,8 +317,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     stack(_Container) -> stack<typename _Container::value_type, _Container>;
 
   template<typename _Container, typename _Allocator,
-	   typename = _RequireNotAllocator<_Container>,
-	   typename = _RequireAllocator<_Allocator>>
+	   typename = _RequireNotAllocator<_Container>>
     stack(_Container, _Allocator)
     -> stack<typename _Container::value_type, _Container>;
 

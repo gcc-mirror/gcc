@@ -114,10 +114,10 @@ namespace __debug
       map(const allocator_type& __a)
       : _Base(__a) { }
 
-      map(const map& __m, const allocator_type& __a)
+      map(const map& __m, const __type_identity_t<allocator_type>& __a)
       : _Base(__m, __a) { }
 
-      map(map&& __m, const allocator_type& __a)
+      map(map&& __m, const __type_identity_t<allocator_type>& __a)
       noexcept( noexcept(_Base(std::move(__m._M_base()), __a)) )
       : _Safe(std::move(__m._M_safe()), __a),
 	_Base(std::move(__m._M_base()), __a) { }

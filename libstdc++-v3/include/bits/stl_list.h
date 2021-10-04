@@ -836,7 +836,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       : _Base(_Node_alloc_type(__a))
       { _M_initialize_dispatch(__l.begin(), __l.end(), __false_type()); }
 
-      list(const list& __x, const allocator_type& __a)
+      list(const list& __x, const __type_identity_t<allocator_type>& __a)
       : _Base(_Node_alloc_type(__a))
       { _M_initialize_dispatch(__x.begin(), __x.end(), __false_type()); }
 
@@ -856,7 +856,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 
     public:
-      list(list&& __x, const allocator_type& __a)
+      list(list&& __x, const __type_identity_t<allocator_type>& __a)
       noexcept(_Node_alloc_traits::_S_always_equal())
       : list(std::move(__x), __a,
 	     typename _Node_alloc_traits::is_always_equal{})

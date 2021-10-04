@@ -572,7 +572,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       vector(vector&&) noexcept = default;
 
       /// Copy constructor with alternative allocator
-      vector(const vector& __x, const allocator_type& __a)
+      vector(const vector& __x, const __type_identity_t<allocator_type>& __a)
       : _Base(__x.size(), __a)
       {
 	this->_M_impl._M_finish =
@@ -604,7 +604,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     public:
       /// Move constructor with alternative allocator
-      vector(vector&& __rv, const allocator_type& __m)
+      vector(vector&& __rv, const __type_identity_t<allocator_type>& __m)
       noexcept( noexcept(
 	vector(std::declval<vector&&>(), std::declval<const allocator_type&>(),
 	       std::declval<typename _Alloc_traits::is_always_equal>())) )
