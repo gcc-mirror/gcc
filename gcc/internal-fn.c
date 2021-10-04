@@ -3015,8 +3015,11 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
     reg_lhs = true;
   else
     {
-      rtx tem = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-      reg_lhs = !MEM_P (tem);
+      tree lhs_base = lhs;
+      while (handled_component_p (lhs_base))
+	lhs_base = TREE_OPERAND (lhs_base, 0);
+      reg_lhs = (mem_ref_refers_to_non_mem_p (lhs_base)
+		 || non_mem_decl_p (lhs_base));
     }
 
   if (!reg_lhs)
