@@ -609,15 +609,49 @@ public:
 	break;
 
 	case HIR::Literal::LitType::BYTE_STRING: {
-	  /* We just treat this as a string, but it really is an arraytype of
-	     u8. It isn't in UTF-8, but really just a byte array.  */
-	  TyTy::BaseType *base = nullptr;
-	  auto ok = context->lookup_builtin ("str", &base);
+	  /* This is an arraytype of u8 reference (&[u8;size]). It isn't in
+	     UTF-8, but really just a byte array. Code to construct the array
+	     reference copied from ArrayElemsValues and ArrayType. */
+	  TyTy::BaseType *u8;
+	  auto ok = context->lookup_builtin ("u8", &u8);
 	  rust_assert (ok);
+
+	  auto crate_num = mappings->get_current_crate ();
+	  Analysis::NodeMapping capacity_mapping (crate_num, UNKNOWN_NODEID,
+						  mappings->get_next_hir_id (
+						    crate_num),
+						  UNKNOWN_LOCAL_DEFID);
+
+	  /* Capacity is the size of the string (number of chars).
+	     It is a constant, but for fold it to get a Bexpression.  */
+	  std::string capacity_str
+	    = std::to_string (expr.get_literal ()->as_string ().size ());
+	  HIR::LiteralExpr literal_capacity (capacity_mapping, capacity_str,
+					     HIR::Literal::LitType::INT,
+					     PrimitiveCoreType::CORETYPE_USIZE,
+					     expr.get_locus ());
+
+	  // mark the type for this implicit node
+	  context->insert_type (capacity_mapping,
+				new TyTy::USizeType (
+				  capacity_mapping.get_hirid ()));
+
+	  Bexpression *capacity
+	    = ConstFold::ConstFoldExpr::fold (&literal_capacity);
+
+	  Analysis::NodeMapping array_mapping (crate_num, UNKNOWN_NODEID,
+					       mappings->get_next_hir_id (
+						 crate_num),
+					       UNKNOWN_LOCAL_DEFID);
+
+	  TyTy::ArrayType *array
+	    = new TyTy::ArrayType (array_mapping.get_hirid (), capacity,
+				   TyTy::TyVar (u8->get_ref ()));
+	  context->insert_type (array_mapping, array);
 
 	  infered
 	    = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
-				       TyTy::TyVar (base->get_ref ()), false);
+				       TyTy::TyVar (array->get_ref ()), false);
 	}
 	break;
 

@@ -1273,6 +1273,8 @@ Lexer::parse_escape (char opening_char)
       rust_error_at (get_current_location (),
 		     "cannot have a unicode escape \\u in a byte %s",
 		     opening_char == '\'' ? "character" : "string");
+      // Try to parse it anyway, just to skip it
+      parse_partial_unicode_escape ();
       return std::make_tuple (output_char, additional_length_offset, false);
     case '\r':
     case '\n':
@@ -1461,16 +1463,34 @@ Lexer::parse_partial_unicode_escape ()
 {
   skip_input ();
   current_char = peek_input ();
-  int additional_length_offset = 1;
+  int additional_length_offset = 0;
 
-  bool need_close_brace = false;
-  if (current_char == '{')
+  if (current_char != '{')
     {
-      need_close_brace = true;
+      rust_error_at (get_current_location (),
+		     "unicode escape should start with %<{%>");
+      /* Skip what should probaby have been between brackets.  */
+      while (is_x_digit (current_char) || current_char == '_')
+	{
+	  skip_input ();
+	  current_char = peek_input ();
+	  additional_length_offset++;
+	}
+      return std::make_pair (Codepoint (0), additional_length_offset);
+    }
 
+  skip_input ();
+  current_char = peek_input ();
+  additional_length_offset++;
+
+  if (current_char == '_')
+    {
+      rust_error_at (get_current_location (),
+		     "unicode escape cannot start with %<_%>");
       skip_input ();
       current_char = peek_input ();
       additional_length_offset++;
+      // fallthrough and try to parse the rest anyway
     }
 
   // parse unicode escape - 1-6 hex digits
@@ -1500,21 +1520,45 @@ Lexer::parse_partial_unicode_escape ()
       current_char = peek_input ();
     }
 
-  // ensure closing brace if required
-  if (need_close_brace)
+  if (current_char == '}')
     {
-      if (current_char == '}')
+      skip_input ();
+      current_char = peek_input ();
+      additional_length_offset++;
+    }
+  else
+    {
+      // actually an error, but allow propagation anyway Assume that
+      // wrong bracketm whitespace or single/double quotes are wrong
+      // termination, otherwise it is a wrong character, then skip to the actual
+      // terminator.
+      if (current_char == '{' || is_whitespace (current_char)
+	  || current_char == '\'' || current_char == '"')
 	{
-	  skip_input ();
-	  current_char = peek_input ();
-	  additional_length_offset++;
+	  rust_error_at (get_current_location (),
+			 "expected terminating %<}%> in unicode escape");
+	  return std::make_pair (Codepoint (0), additional_length_offset);
 	}
       else
 	{
-	  // actually an error, but allow propagation anyway
 	  rust_error_at (get_current_location (),
-			 "expected terminating %<}%> in unicode escape");
-	  // return false;
+			 "invalid character %<%c%> in unicode escape",
+			 current_char);
+	  while (current_char != '}' && current_char != '{'
+		 && !is_whitespace (current_char) && current_char != '\''
+		 && current_char != '"')
+	    {
+	      skip_input ();
+	      current_char = peek_input ();
+	      additional_length_offset++;
+	    }
+	  // Consume the actual closing bracket if found
+	  if (current_char == '}')
+	    {
+	      skip_input ();
+	      current_char = peek_input ();
+	      additional_length_offset++;
+	    }
 	  return std::make_pair (Codepoint (0), additional_length_offset);
 	}
     }
@@ -1530,10 +1574,22 @@ Lexer::parse_partial_unicode_escape ()
       return std::make_pair (Codepoint (0), additional_length_offset);
     }
 
-  long hex_num = std::strtol (num_str.c_str (), nullptr, 16);
+  unsigned long hex_num = std::strtoul (num_str.c_str (), nullptr, 16);
 
-  // assert fits a uint32_t
-  gcc_assert (hex_num < 4294967296);
+  if (hex_num > 0xd7ff && hex_num < 0xe000)
+    {
+      rust_error_at (
+	get_current_location (),
+	"unicode escape cannot be a surrogate value (D800 to DFFF)");
+      return std::make_pair (Codepoint (0), additional_length_offset);
+    }
+
+  if (hex_num > 0x10ffff)
+    {
+      rust_error_at (get_current_location (),
+		     "unicode escape cannot be larger than 10FFFF");
+      return std::make_pair (Codepoint (0), additional_length_offset);
+    }
 
   // return true;
   return std::make_pair (Codepoint (static_cast<uint32_t> (hex_num)),
