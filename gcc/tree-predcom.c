@@ -3398,8 +3398,7 @@ pcom_worker::tree_predictive_commoning_loop (bool allow_unroll_p)
 	 the phi nodes in execute_pred_commoning_cbck.  A bit hacky.  */
       replace_phis_by_defined_names (m_chains);
 
-      edge exit = single_dom_exit (m_loop);
-      tree_transform_and_unroll_loop (m_loop, unroll_factor, exit, &desc,
+      tree_transform_and_unroll_loop (m_loop, unroll_factor, &desc,
 				      execute_pred_commoning_cbck, &dta);
       eliminate_temp_copies (m_loop, tmp_vars);
     }

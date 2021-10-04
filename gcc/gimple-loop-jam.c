@@ -587,8 +587,7 @@ tree_loop_unroll_and_jam (void)
 			     "applying unroll and jam with factor %d\n",
 			     unroll_factor);
 	  initialize_original_copy_tables ();
-	  tree_unroll_loop (outer, unroll_factor, single_dom_exit (outer),
-			    &desc);
+	  tree_unroll_loop (outer, unroll_factor, &desc);
 	  free_original_copy_tables ();
 	  fuse_loops (outer->inner);
 	  todo |= TODO_cleanup_cfg;
