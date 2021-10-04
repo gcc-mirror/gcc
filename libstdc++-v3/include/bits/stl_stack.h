@@ -171,7 +171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : c(std::move(__c)) { }
 
 #if __cplusplus > 202002L
-#define __cpp_lib_adaptor_iterator_pair_constructor 202100L
+#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
 
       template<typename _InputIterator,
 	       typename = _RequireInputIter<_InputIterator>>
