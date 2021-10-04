@@ -332,17 +332,11 @@ public:
       case AST::Literal::LitType::STRING:
 	type = HIR::Literal::LitType::STRING;
 	break;
-      case AST::Literal::LitType::RAW_STRING:
-	type = HIR::Literal::LitType::RAW_STRING;
-	break;
       case AST::Literal::LitType::BYTE:
 	type = HIR::Literal::LitType::BYTE;
 	break;
       case AST::Literal::LitType::BYTE_STRING:
 	type = HIR::Literal::LitType::BYTE_STRING;
-	break;
-      case AST::Literal::LitType::RAW_BYTE_STRING:
-	type = HIR::Literal::LitType::RAW_BYTE_STRING;
 	break;
       case AST::Literal::LitType::INT:
 	type = HIR::Literal::LitType::INT;

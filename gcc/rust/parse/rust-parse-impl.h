@@ -7556,8 +7556,6 @@ Parser<ManagedTokenSource>::parse_literal_expr (AST::AttrVec outer_attrs)
       literal_value = t->get_str ();
       lexer.skip_token ();
       break;
-    // case RAW_STRING_LITERAL:
-    // put here if lexer changes to have these
     case BYTE_CHAR_LITERAL:
       type = AST::Literal::BYTE;
       literal_value = t->get_str ();
@@ -7568,7 +7566,6 @@ Parser<ManagedTokenSource>::parse_literal_expr (AST::AttrVec outer_attrs)
       literal_value = t->get_str ();
       lexer.skip_token ();
       break;
-    // case RAW_BYTE_STRING_LITERAL:
     case INT_LITERAL:
       type = AST::Literal::INT;
       literal_value = t->get_str ();
