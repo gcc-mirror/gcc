@@ -186,20 +186,10 @@ shared_memory_prepare (shared_memory_act **pmem)
    shared memory is stored at the beginning.  */
 
 void
-shared_memory_init (shared_memory_act **pmem)
+shared_memory_init (shared_memory_act **pmem, size_t initial_size)
 {
   shared_memory_act *mem;
   int fd;
-
-  /* Darwin does not appear to be able to grow shared memory segments.  Choose
-     256 GB; that will likely be enough.  If not, the ftruncate will fail
-     noisily.  */
-
-#ifdef __APPLE__
-  size_t initial_size = ((size_t) 1) << 38;
-#else
-  size_t initial_size = round_to_pagesize (sizeof (global_shared_memory_meta));
-#endif
 
   mem = malloc (get_shared_memory_act_size (1));
   fd = get_shmem_fd ();

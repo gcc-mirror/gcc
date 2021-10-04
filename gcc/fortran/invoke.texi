@@ -188,7 +188,7 @@ and warnings}.
 -fbounds-check -ftail-call-workaround -ftail-call-workaround=@var{n} @gol
 -fcheck-array-temporaries @gol
 -fcheck=@var{<all|array-temps|bits|bounds|do|mem|pointer|recursion>} @gol
--fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c @gol
+-fcoarray=@var{<none|single|lib|shared>} -fexternal-blas -ff2c @gol
 -ffrontend-loop-interchange -ffrontend-optimize @gol
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero @gol
 -finit-derived -finit-logical=@var{<true|false>} @gol
@@ -1607,6 +1607,13 @@ Single-image mode, i.e. @code{num_images()} is always one.
 @item @samp{lib}
 Library-based coarray parallelization; a suitable GNU Fortran coarray
 library needs to be linked.
+
+@item @samp{shared}
+This enables an experimental shared-memory implementation of
+coarrays. Expect bugs and incomplete implementation.  Currently,
+this depends on POSIX shared mutexes, so this option is not supported
+on systems which do not have them. There is no Windows implementation
+at the moment.
 @end table
 
 

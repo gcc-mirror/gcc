@@ -35,6 +35,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 
 #define GFORTRAN_ENV_NUM_IMAGES "GFORTRAN_NUM_IMAGES"
+#define GFORTRAN_ENV_SHARED_MEMORY_SIZE "GFORTRAN_SHARED_MEMORY_SIZE"
 
 nca_local_data *local = NULL;
 
@@ -53,6 +54,54 @@ get_environ_image_num (void)
   /* TODO: Error checking.  */
   nimages = atoi (num_images_char);
   return nimages;
+}
+
+/* Get the amount of memory for the shared memory block.  This is picked from
+   an environment variable.  If that is not there, pick a reasonable default.
+   Note that on a 64-bit system which allows overcommit, there is no penalty in
+   reserving a large space and then not using it.  */
+
+static size_t
+get_memory_size (void)
+{
+  char *e;
+  size_t sz = 0;
+  e = getenv (GFORTRAN_ENV_SHARED_MEMORY_SIZE);
+  if (e)
+    {
+      char *num, suffix;
+      int rv;
+      rv = sscanf (e, "%zu%1s",&sz, &suffix);
+      if (rv == 2)
+	{
+	  switch (suffix)
+	    {
+	    case 'k':
+	    case 'K':
+	      sz *= ((size_t) 1) << 10;
+	      break;
+	    case 'm':
+	    case 'M':
+	      sz *= ((size_t) 1) << 20;
+	      break;
+	    case 'g':
+	    case 'G':
+	      sz *= ((size_t) 1) << 30;
+	      break;
+	    default:
+	      sz = 0;
+	    }
+	}
+    }
+  if (sz == 0)
+    {
+      /* Use 256 MB for 32-bit systems and 256 GB for 64-bit systems.  */
+      if (sizeof (size_t) == 4)
+	sz = ((size_t) 1) << 28;
+      else
+	sz = ((size_t) 1) << 38;
+    }
+  return sz;
 }
 
 /* Get a master.  */
@@ -79,6 +128,8 @@ get_master (void)
 void
 ensure_initialization (void)
 {
+  size_t shmem_size;
+
   if (local)
     return;
 
@@ -86,8 +137,9 @@ ensure_initialization (void)
 					    // that point? Maybe use
 					    // mmap(MAP_ANON) instead
   pagesize = sysconf (_SC_PAGE_SIZE);
+  shmem_size = round_to_pagesize (get_memory_size());
   local->total_num_images = get_environ_image_num ();
-  shared_memory_init (&local->sm);
+  shared_memory_init (&local->sm, shmem_size);
   shared_memory_prepare (&local->sm);
   if (this_image.m == NULL) /* A bit of a hack, but we
 			       need the master early.  */

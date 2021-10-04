@@ -53,7 +53,7 @@ typedef struct shared_mem_ptr
   ssize_t offset;
 } shared_mem_ptr;
 
-void shared_memory_init (shared_memory *);
+void shared_memory_init (shared_memory *, size_t);
 internal_proto (shared_memory_init);
 
 void shared_memory_prepare (shared_memory *);

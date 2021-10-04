@@ -608,6 +608,8 @@ Malformed environment variables are silently ignored.
 * GFORTRAN_ERROR_BACKTRACE:: Show backtrace on run-time errors
 * GFORTRAN_FORMATTED_BUFFER_SIZE:: Buffer size for formatted files
 * GFORTRAN_UNFORMATTED_BUFFER_SIZE:: Buffer size for unformatted files
+* GFORTRAN_NUM_IMAGES:: Number of images to for -fcoarray=shared
+* GFORTRAN_SHARED_MEMORY_SIZE::  Memory for shared-memory coarrays
 @end menu
 
 @node TMPDIR
@@ -792,6 +794,35 @@ The default value is 8192.
 The @env{GFORTRAN_UNFORMATTED_BUFFER_SIZE} environment variable
 specifies buffer size in bytes to be used for unformatted output.
 The default value is 131072.
+
+@node GFORTRAN_NUM_IMAGES
+@section @env{GFORTRAN_NUM_IMAGES}---Set number of images for shared-memory coarrays
+
+The @env{GFORTRAN_NUM_IMAGES} environment variable specifies the number
+of images to be run for shared-memory coarrays, as an integer.  The default
+value is the number of CPUs on the system.
+
+@node GFORTRAN_SHARED_MEMORY_SIZE
+@section @env{GFORTRAN_SHARED_MEMORY_SIZE}---Set size for shared-memory coarrays
+
+The @env{GFORTRAN_SHARED_MEMORY_SIZE} environment variable specifies
+the size of the shared memory block to be allocated for shared
+coarrays. It is safe on Linux and Darwin to make this larger than
+needed.  When specifying this value, keep in mind that part of the space
+will not be available to the user program because of overhead.
+
+The format is an integer, optionally followed by @code{k} or @code{K}
+for a unit of kilobytes, @code{m} or @code{M} for a unit of megabytes
+and @code{g} or @code{G} for a unit of gitabytes.
+
+For example, if the size of all coarrays is known to be smaller than
+50 megabyte, the syntax could be
+@smallexample
+$ GFORTRAN_SHARED_MEMORY_SIZE=80M ./a.out
+@end smallexample
+
+The default is 256 kilobyte for 32-bit systems and 256 gigabyte for
+64-bit systems.
 
 @c =====================================================================
 @c PART II: LANGUAGE REFERENCE
