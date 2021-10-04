@@ -12677,7 +12677,8 @@ can_generate_init (gfc_symbol *sym)
     || a->cray_pointer
     || sym->assoc
     || (!a->referenced && !a->result)
-    || (a->dummy && a->intent != INTENT_OUT)
+    || (a->dummy && (a->intent != INTENT_OUT
+		     || sym->ns->proc_name->attr.if_source == IFSRC_IFBODY))
     || (a->function && sym != sym->result)
   );
 }
@@ -12914,7 +12915,9 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
 
   /* Assign default initializer.  */
   if (!(sym->value || sym->attr.pointer || sym->attr.allocatable)
-      && (!no_init_flag || sym->attr.intent == INTENT_OUT))
+      && (!no_init_flag
+	  || (sym->attr.intent == INTENT_OUT
+	      && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY)))
     sym->value = gfc_generate_initializer (&sym->ts, can_generate_init (sym));
 
   return true;
@@ -16155,7 +16158,8 @@ resolve_symbol (gfc_symbol *sym)
 		    || sym->ts.u.derived->attr.alloc_comp
 		    || sym->ts.u.derived->attr.pointer_comp))
 	   && !(a->function && sym != sym->result))
-	  || (a->dummy && a->intent == INTENT_OUT && !a->pointer))
+	  || (a->dummy && !a->pointer && a->intent == INTENT_OUT
+	      && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY))
 	apply_default_init (sym);
       else if (a->function && sym->result && a->access != ACCESS_PRIVATE
 	       && (sym->ts.u.derived->attr.alloc_comp
@@ -16167,6 +16171,7 @@ resolve_symbol (gfc_symbol *sym)
 
   if (sym->ts.type == BT_CLASS && sym->ns == gfc_current_ns
       && sym->attr.dummy && sym->attr.intent == INTENT_OUT
+      && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY
       && !CLASS_DATA (sym)->attr.class_pointer
       && !CLASS_DATA (sym)->attr.allocatable)
     apply_default_init (sym);
