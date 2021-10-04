@@ -16,41 +16,52 @@ main1 (int dummy)
   unsigned int *pin = &in[0];
   unsigned int *pout = &out[0];
   unsigned int a = 0;
-  
-  for (i = 0; i < N; i++)
+
+  i = N;
+  if (i > 0)
     {
-      *pout++ = *pin++ + a;
-      *pout++ = *pin++ + a;
-      *pout++ = *pin++ + a;
-      *pout++ = *pin++ + a;
-      *pout++ = *pin++ + a;
-      *pout++ = *pin++ + a;
-      *pout++ = *pin++ + a;
-      *pout++ = *pin++ + a;
-      if (arr[i] = i)
-        a = i;
-      else
-        a = 2;
+      do
+	{
+	  *pout++ = *pin++ + a;
+	  *pout++ = *pin++ + a;
+	  *pout++ = *pin++ + a;
+	  *pout++ = *pin++ + a;
+	  *pout++ = *pin++ + a;
+	  *pout++ = *pin++ + a;
+	  *pout++ = *pin++ + a;
+	  *pout++ = *pin++ + a;
+	  if (arr[i] = i)
+	    a = i;
+	  else
+	    a = 2;
+	}
+      while (i < N);
     }
 
   a = 0;
-  /* check results: */ 
-  for (i = 0; i < N; i++)
+  /* check results: */
+  i = N;
+  if (i > 0)
     {
-      if (out[i*8] !=  in[i*8] + a
-         || out[i*8 + 1] != in[i*8 + 1] + a
-         || out[i*8 + 2] != in[i*8 + 2] + a
-         || out[i*8 + 3] != in[i*8 + 3] + a
-         || out[i*8 + 4] != in[i*8 + 4] + a
-         || out[i*8 + 5] != in[i*8 + 5] + a
-         || out[i*8 + 6] != in[i*8 + 6] + a
-         || out[i*8 + 7] != in[i*8 + 7] + a)
-	abort ();
+      do
+	{
+	  if (out[i*8] !=  in[i*8] + a
+	      || out[i*8 + 1] != in[i*8 + 1] + a
+	      || out[i*8 + 2] != in[i*8 + 2] + a
+	      || out[i*8 + 3] != in[i*8 + 3] + a
+	      || out[i*8 + 4] != in[i*8 + 4] + a
+	      || out[i*8 + 5] != in[i*8 + 5] + a
+	      || out[i*8 + 6] != in[i*8 + 6] + a
+	      || out[i*8 + 7] != in[i*8 + 7] + a)
+	    abort ();
 
-      if (arr[i] = i)
-        a = i;
-      else
-        a = 2;
+	  if (arr[i] = i)
+	    a = i;
+	  else
+	    a = 2;
+	  i++;
+	}
+      while (i < N);
     }
 
   return 0;
@@ -66,4 +77,3 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1" } } */
-  

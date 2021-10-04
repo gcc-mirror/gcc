@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-vrp-thread1-details -fdump-tree-dom2-details -std=gnu89 --param logical-op-non-short-circuit=1" } */
+/* { dg-options "-O2 -fdump-tree-vrp-thread2-details -fdump-tree-dom2-details -std=gnu89 --param logical-op-non-short-circuit=1" } */
 struct bitmap_head_def;
 typedef struct bitmap_head_def *bitmap;
 typedef const struct bitmap_head_def *const_bitmap;
@@ -53,10 +53,8 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b,
 
   return changed;
 }
-/* The block starting the second conditional has  3 incoming edges,
-   we should thread all three, but due to a bug in the threading
-   code we missed the edge when the first conditional is false
-   (b_elt is zero, which means the second conditional is always
-   zero.  VRP1 catches all three.  */
-/* { dg-final { scan-tree-dump-times "Registering jump thread" 2 "vrp-thread1" } } */
-/* { dg-final { scan-tree-dump-times "Path crosses loops" 1 "vrp-thread1" } } */
+/* We used to catch 3 jump threads in vrp-thread1, but they all
+   rotated the loop, so they were disallowed.  This in turn created
+   other opportunities for the other threaders which result in the the
+   post-loop threader (vrp-thread2) catching more.  */
+/* { dg-final { scan-tree-dump-times "Registering jump thread" 5 "vrp-thread2" } } */
