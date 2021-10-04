@@ -251,6 +251,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return *this << "nullptr"; }
 #endif
 
+#if __cplusplus > 202002L
+      __attribute__((__always_inline__))
+      __ostream_type&
+      operator<<(const volatile void* __p)
+      { return _M_insert(const_cast<const void*>(__p)); }
+#endif
+
       /**
        *  @brief  Extracting from another streambuf.
        *  @param  __sb  A pointer to a streambuf
