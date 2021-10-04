@@ -827,6 +827,14 @@ package body Par_SCO is
                   return Skip;
                end;
 
+            when N_Quantified_Expression =>
+               declare
+                  Cond : constant Node_Id := Condition (N);
+               begin
+                  Process_Decisions (Cond, 'W', Pragma_Sloc);
+                  return Skip;
+               end;
+
             --  All other cases, continue scan
 
             when others =>

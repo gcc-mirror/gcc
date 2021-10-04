@@ -249,7 +249,8 @@ in the following sections.
 -Wcomma-subscript  -Wconditionally-supported @gol
 -Wno-conversion-null  -Wctad-maybe-unsupported @gol
 -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
--Wdelete-non-virtual-dtor  -Wdeprecated-copy -Wdeprecated-copy-dtor @gol
+-Wdelete-non-virtual-dtor  -Wno-deprecated-array-compare @gol
+-Wdeprecated-copy -Wdeprecated-copy-dtor @gol
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
 -Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
@@ -323,7 +324,7 @@ Objective-C and Objective-C++ Dialects}.
 -Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations @gol
 -Warith-conversion @gol
--Warray-bounds  -Warray-bounds=@var{n} @gol
+-Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare @gol
 -Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias @gol
 -Wno-attribute-warning  -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
@@ -5562,6 +5563,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @gccoptlist{-Waddress   @gol
 -Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
+-Warray-compare @gol
 -Warray-parameter=2 @r{(C and Objective-C only)} @gol
 -Wbool-compare  @gol
 -Wbool-operation  @gol
@@ -7533,6 +7535,20 @@ pointers. This warning level may give a larger number of
 false positives and is deactivated by default.
 @end table
 
+@item -Warray-compare
+@opindex Warray-compare
+@opindex Wno-array-compare
+Warn about equality and relational comparisons between two operands of array
+type.  This comparison was deprecated in C++20.  For example:
+
+@smallexample
+int arr1[5];
+int arr2[5];
+bool same = arr1 == arr2;
+@end smallexample
+
+@option{-Warray-compare} is enabled by @option{-Wall}.
+
 @item -Warray-parameter
 @itemx -Warray-parameter=@var{n}
 @opindex Wno-array-parameter
@@ -8551,17 +8567,43 @@ by @option{-Wall}.
 @item -Waddress
 @opindex Waddress
 @opindex Wno-address
-Warn about suspicious uses of memory addresses. These include using
-the address of a function in a conditional expression, such as
-@code{void func(void); if (func)}, and comparisons against the memory
-address of a string literal, such as @code{if (x == "abc")}.  Such
-uses typically indicate a programmer error: the address of a function
-always evaluates to true, so their use in a conditional usually
-indicate that the programmer forgot the parentheses in a function
-call; and comparisons against string literals result in unspecified
-behavior and are not portable in C, so they usually indicate that the
-programmer intended to use @code{strcmp}.  This warning is enabled by
-@option{-Wall}.
+Warn about suspicious uses of address expressions. These include comparing
+the address of a function or a declared object to the null pointer constant
+such as in
+@smallexample
+void f (void);
+void g (void)
+@{
+  if (!func)   // warning: expression evaluates to false
+    abort ();
+@}
+@end smallexample
+comparisons of a pointer to a string literal, such as in
+@smallexample
+void f (const char *x)
+@{
+  if (x == "abc")   // warning: expression evaluates to false
+    puts ("equal");
+@}
+@end smallexample
+and tests of the results of pointer addition or subtraction for equality
+to null, such as in
+@smallexample
+void f (const int *p, int i)
+@{
+  return p + i == NULL;
+@}
+@end smallexample
+Such uses typically indicate a programmer error: the address of most
+functions and objects necessarily evaluates to true (the exception are
+weak symbols), so their use in a conditional might indicate missing
+parentheses in a function call or a missing dereference in an array
+expression.  The subset of the warning for object pointers can be
+suppressed by casting the pointer operand to an integer type such
+as @code{inptr_t} or @code{uinptr_t}.
+Comparisons against string literals result in unspecified behavior
+and are not portable, and suggest the intent was to call @code{strcmp}.
+@option{-Waddress} warning is enabled by @option{-Wall}.
 
 @item -Wno-address-of-packed-member
 @opindex Waddress-of-packed-member
@@ -18616,7 +18658,8 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
-@samp{cortex-r82}, @samp{cortex-x1}, @samp{native}.
+@samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x2},
+@samp{cortex-a510}, @samp{cortex-a710}, @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},

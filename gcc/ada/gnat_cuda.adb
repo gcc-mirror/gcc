@@ -25,22 +25,25 @@
 
 --  This package defines CUDA-specific datastructures and functions.
 
-with Atree;       use Atree;
-with Debug;       use Debug;
-with Elists;      use Elists;
-with Namet;       use Namet;
-with Nlists;      use Nlists;
-with Nmake;       use Nmake;
-with Rtsfind;     use Rtsfind;
-with Sinfo;       use Sinfo;
-with Sinfo.Nodes; use Sinfo.Nodes;
-with Stringt;     use Stringt;
-with Tbuild;      use Tbuild;
-with Uintp;       use Uintp;
-with Sem;         use Sem;
-with Sem_Aux;     use Sem_Aux;
-with Sem_Util;    use Sem_Util;
-with Snames;      use Snames;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Util;       use Sem_Util;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo;          use Sinfo;
+with Snames;         use Snames;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 with GNAT.HTable;
 
@@ -119,6 +122,10 @@ package body GNAT_CUDA is
    --  Returns an Elist of all procedures marked with pragma CUDA_Global that
    --  are declared within package body Pack_Body. Returns No_Elist if Pack_Id
    --  does not contain such procedures.
+
+   procedure Remove_CUDA_Device_Entities (Pack_Id : Entity_Id);
+   --  Removes all entities marked with the CUDA_Device pragma from package
+   --  Pack_Id. Must only be called when compiling for the host.
 
    procedure Set_CUDA_Device_Entities
      (Pack_Id : Entity_Id;
@@ -225,6 +232,13 @@ package body GNAT_CUDA is
       --  in unknown symbol errors at link time.
 
       Empty_CUDA_Global_Subprograms (N);
+
+      --  Remove CUDA_Device entities (except if they are also CUDA_Host), as
+      --  they can only be referenced from the device and might reference
+      --  device-only symbols.
+
+      Remove_CUDA_Device_Entities
+        (Package_Specification (Corresponding_Spec (N)));
 
       --  If procedures marked with CUDA_Global have been defined within N,
       --  we need to register them with the CUDA runtime at program startup.
@@ -717,6 +731,54 @@ package body GNAT_CUDA is
       Append_To (Pack_Decls, New_Stmt);
       Analyze (New_Stmt);
    end Build_And_Insert_CUDA_Initialization;
+
+   ---------------------------------
+   -- Remove_CUDA_Device_Entities --
+   ---------------------------------
+
+   procedure Remove_CUDA_Device_Entities (Pack_Id : Entity_Id) is
+      Device_Entities : constant Elist_Id :=
+        Get_CUDA_Device_Entities (Pack_Id);
+      Device_Elmt     : Elmt_Id;
+      Device_Entity   : Entity_Id;
+      Bod             : Node_Id;
+   begin
+      pragma Assert (Debug_Flag_Underscore_C);
+
+      if Device_Entities = No_Elist then
+         return;
+      end if;
+
+      Device_Elmt := First_Elmt (Device_Entities);
+      while Present (Device_Elmt) loop
+         Device_Entity := Node (Device_Elmt);
+         Next_Elmt (Device_Elmt);
+
+         case Ekind (Device_Entity) is
+            when E_Function | E_Procedure =>
+               Bod := Subprogram_Body (Device_Entity);
+
+               if Nkind (Parent (Bod)) = N_Subunit
+                 and then Present (Corresponding_Stub (Parent (Bod)))
+               then
+                  Error_Msg_N
+                    ("Cuda_Device not suported on separate subprograms",
+                     Corresponding_Stub (Parent (Bod)));
+               else
+                  Remove (Bod);
+                  Remove (Subprogram_Spec (Device_Entity));
+               end if;
+
+            when E_Variable | E_Constant =>
+               Remove (Declaration_Node (Device_Entity));
+
+            when others =>
+               pragma Assert (False);
+         end case;
+
+         Remove_Entity_And_Homonym (Device_Entity);
+      end loop;
+   end Remove_CUDA_Device_Entities;
 
    ------------------------------
    -- Set_CUDA_Device_Entities --

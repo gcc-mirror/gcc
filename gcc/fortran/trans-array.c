@@ -5104,7 +5104,6 @@ set_loop_bounds (gfc_loopinfo *loop)
 
 	  if (info->shape)
 	    {
-	      gcc_assert (info->shape[dim]);
 	      /* The frontend has worked out the size for us.  */
 	      if (!loopspec[n]
 		  || !specinfo->shape

@@ -541,6 +541,16 @@ pa_option_override (void)
       write_symbols = NO_DEBUG;
     }
 
+  if (TARGET_64BIT && TARGET_HPUX)
+    {
+      /* DWARF5 is not supported by gdb.  Don't emit DWARF5 unless
+	 specifically selected.  */
+      if (!global_options_set.x_dwarf_strict)
+	dwarf_strict = 1;
+      if (!global_options_set.x_dwarf_version)
+	dwarf_version = 4;
+    }
+
   /* We only support the "big PIC" model now.  And we always generate PIC
      code when in 64bit mode.  */
   if (flag_pic == 1 || TARGET_64BIT)

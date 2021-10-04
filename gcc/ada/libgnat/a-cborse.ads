@@ -59,12 +59,11 @@ is
         Default_Iterator  => Iterate,
         Iterator_Element  => Element_Type,
         Aggregate         => (Empty       => Empty,
-                              Add_Unnamed => Include);
+                              Add_Unnamed => Include),
+        Preelaborable_Initialization
+                          => Element_Type'Preelaborable_Initialization;
 
-   pragma Preelaborable_Initialization (Set);
-
-   type Cursor is private;
-   pragma Preelaborable_Initialization (Cursor);
+   type Cursor is private with Preelaborable_Initialization;
 
    Empty_Set : constant Set;
 

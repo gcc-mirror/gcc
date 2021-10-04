@@ -133,3 +133,41 @@ void f()
 		std::equal_to<int>,
 		SimpleAllocator<std::pair<const int, double>>>>);
 }
+
+template<typename T, typename U> struct require_same;
+template<typename T> struct require_same<T, T> { using type = void; };
+
+template<typename T, typename U>
+  typename require_same<T, U>::type
+  check_type(U&) { }
+
+struct Pool;
+
+template<typename T>
+struct Alloc : __gnu_test::SimpleAllocator<T>
+{
+  Alloc(Pool*) { }
+
+  template<typename U>
+    Alloc(const Alloc<U>&) { }
+};
+
+void
+test_p1518r2()
+{
+  // P1518R2 - Stop overconstraining allocators in container deduction guides.
+  // This is a C++23 feature but we support it for C++17 too.
+
+  using PairAlloc = Alloc<std::pair<const unsigned, void*>>;
+  using Hash = std::hash<unsigned long>;
+  using Eq = std::equal_to<>;
+  using UMMap = std::unordered_multimap<unsigned, void*, Hash, Eq, PairAlloc>;
+  Pool* p = nullptr;
+  UMMap m(p);
+
+  std::unordered_multimap s1(m, p);
+  check_type<UMMap>(s1);
+
+  std::unordered_multimap s2(std::move(m), p);
+  check_type<UMMap>(s2);
+}

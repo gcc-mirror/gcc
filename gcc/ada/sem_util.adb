@@ -391,8 +391,7 @@ package body Sem_Util is
            and then (Is_Static_Coextension (N)
                       or else Is_Dynamic_Coextension (N))
          then
-            return Make_Level_Literal
-                     (Scope_Depth (Standard_Standard));
+            return Make_Level_Literal (Scope_Depth (Standard_Standard));
          end if;
 
          --  Named access types have a designated level
@@ -416,11 +415,14 @@ package body Sem_Util is
                if Debug_Flag_Underscore_B then
                   return Make_Level_Literal (Typ_Access_Level (Etype (N)));
 
-               --  Otherwise the level is that of the subprogram
+               --  For function calls the level is that of the innermost
+               --  master, otherwise (for allocators etc.) we get the level
+               --  of the corresponding anonymous access type, which is
+               --  calculated through the normal path of execution.
 
-               else
+               elsif Nkind (N) = N_Function_Call then
                   return Make_Level_Literal
-                           (Subprogram_Access_Level (Entity (Name (N))));
+                           (Innermost_Master_Scope_Depth (Expr));
                end if;
             end if;
 
@@ -713,14 +715,24 @@ package body Sem_Util is
 
                return Make_Level_Literal (Typ_Access_Level (E) + 1);
 
-            --  Move up the renamed entity if it came from source since
-            --  expansion may have created a dummy renaming under certain
-            --  circumstances.
+            --  Move up the renamed entity or object if it came from source
+            --  since expansion may have created a dummy renaming under
+            --  certain circumstances.
+
+            --  Note: We check if the original node of the renaming comes
+            --  from source because the node may have been rewritten.
 
             elsif Present (Renamed_Object (E))
-              and then Comes_From_Source (Renamed_Object (E))
+              and then Comes_From_Source (Original_Node (Renamed_Object (E)))
             then
                return Accessibility_Level (Renamed_Object (E));
+
+            --  Move up renamed entities
+
+            elsif Present (Renamed_Entity (E))
+              and then Comes_From_Source (Original_Node (Renamed_Entity (E)))
+            then
+               return Accessibility_Level (Renamed_Entity (E));
 
             --  Named access types get their level from their associated type
 
@@ -13317,14 +13329,20 @@ package body Sem_Util is
    --------------------------------------
 
    function Has_Preelaborable_Initialization
-     (E                              : Entity_Id;
-      Formal_Types_Have_Preelab_Init : Boolean := False) return Boolean
+     (E                 : Entity_Id;
+      Preelab_Init_Expr : Node_Id := Empty) return Boolean
    is
       Has_PE : Boolean;
 
       procedure Check_Components (E : Entity_Id);
       --  Check component/discriminant chain, sets Has_PE False if a component
       --  or discriminant does not meet the preelaborable initialization rules.
+
+      function Type_Named_In_Preelab_Init_Expression
+        (Typ  : Entity_Id;
+         Expr : Node_Id) return Boolean;
+      --  Returns True iff Typ'Preelaborable_Initialization occurs in Expr
+      --  (where Expr may be a conjunction of one or more P_I attributes).
 
       ----------------------
       -- Check_Components --
@@ -13374,7 +13392,7 @@ package body Sem_Util is
 
             if No (Exp) then
                if not Has_Preelaborable_Initialization
-                        (Etype (Ent), Formal_Types_Have_Preelab_Init)
+                        (Etype (Ent), Preelab_Init_Expr)
                then
                   Has_PE := False;
                   exit;
@@ -13391,6 +13409,44 @@ package body Sem_Util is
             Next_Entity (Ent);
          end loop;
       end Check_Components;
+
+      --------------------------------------
+      -- Type_Named_In_Preelab_Expression --
+      --------------------------------------
+
+      function Type_Named_In_Preelab_Init_Expression
+        (Typ  : Entity_Id;
+         Expr : Node_Id) return Boolean
+      is
+      begin
+         --  Return True if Expr is a Preelaborable_Initialization attribute
+         --  and the prefix is a subtype that has the same type as Typ.
+
+         if Nkind (Expr) = N_Attribute_Reference
+           and then Attribute_Name (Expr) = Name_Preelaborable_Initialization
+           and then Is_Entity_Name (Prefix (Expr))
+           and then Base_Type (Entity (Prefix (Expr))) = Base_Type (Typ)
+         then
+            return True;
+
+         --  In the case where Expr is a conjunction, test whether either
+         --  operand is a Preelaborable_Initialization attribute whose prefix
+         --  has the same type as Typ, and return True if so.
+
+         elsif Nkind (Expr) = N_Op_And
+           and then
+            (Type_Named_In_Preelab_Init_Expression (Typ, Left_Opnd (Expr))
+              or else
+             Type_Named_In_Preelab_Init_Expression (Typ, Right_Opnd (Expr)))
+         then
+            return True;
+
+         --  Typ not named in a Preelaborable_Initialization attribute of Expr
+
+         else
+            return False;
+         end if;
+      end Type_Named_In_Preelab_Init_Expression;
 
    --  Start of processing for Has_Preelaborable_Initialization
 
@@ -13422,7 +13478,7 @@ package body Sem_Util is
 
       elsif Is_Array_Type (E) then
          Has_PE := Has_Preelaborable_Initialization
-                     (Component_Type (E), Formal_Types_Have_Preelab_Init);
+                     (Component_Type (E), Preelab_Init_Expr);
 
       --  A derived type has preelaborable initialization if its parent type
       --  has preelaborable initialization and (in the case of a derived record
@@ -13437,7 +13493,11 @@ package body Sem_Util is
          --  of a generic formal derived type has preelaborable initialization.
          --  (See comment on spec of Has_Preelaborable_Initialization.)
 
-         if Is_Generic_Type (E) and then Formal_Types_Have_Preelab_Init then
+         if Is_Generic_Type (E)
+           and then Present (Preelab_Init_Expr)
+           and then
+             Type_Named_In_Preelab_Init_Expression (E, Preelab_Init_Expr)
+         then
             return True;
          end if;
 
@@ -13450,7 +13510,8 @@ package body Sem_Util is
 
          --  First check whether ancestor type has preelaborable initialization
 
-         Has_PE := Has_Preelaborable_Initialization (Etype (Base_Type (E)));
+         Has_PE := Has_Preelaborable_Initialization
+                     (Etype (Base_Type (E)), Preelab_Init_Expr);
 
          --  If OK, check extension components (if any)
 
@@ -13481,7 +13542,11 @@ package body Sem_Util is
          --  of a generic formal private type has preelaborable initialization.
          --  (See comment on spec of Has_Preelaborable_Initialization.)
 
-         if Is_Generic_Type (E) and then Formal_Types_Have_Preelab_Init then
+         if Is_Generic_Type (E)
+           and then Present (Preelab_Init_Expr)
+           and then
+             Type_Named_In_Preelab_Init_Expression (E, Preelab_Init_Expr)
+         then
             return True;
          else
             return False;
@@ -16854,6 +16919,15 @@ package body Sem_Util is
             end if;
 
             if Is_Entity_Name (P) then
+               --  The Etype may not be set on P (which is wrong) in certain
+               --  corner cases involving the deprecated front-end inlining of
+               --  subprograms (via -gnatN), so use the Etype set on the
+               --  the entity for these instances since we know it is present.
+
+               if No (Prefix_Type) then
+                  Prefix_Type := Etype (Entity (P));
+               end if;
+
                if Ekind (Entity (P)) = E_Generic_In_Out_Parameter then
                   Prefix_Type := Base_Type (Prefix_Type);
                end if;
@@ -18096,6 +18170,19 @@ package body Sem_Util is
       --  not have an assigned scope.
 
       if Is_Formal (E) then
+         return False;
+
+      --  If we somehow got an empty value for Scope, the tree must be
+      --  malformed. Rather than blow up we return True in this case.
+
+      elsif No (Scope (E)) then
+         return True;
+
+      --  Handle loops since Enclosing_Dynamic_Scope skips them; required to
+      --  properly handle entities local to quantified expressions in library
+      --  level specifications.
+
+      elsif Ekind (Scope (E)) = E_Loop then
          return False;
       end if;
 
@@ -21118,6 +21205,9 @@ package body Sem_Util is
    -- Is_Variable --
    -----------------
 
+   --  Should Is_Variable be refactored to better handle dereferences and
+   --  technical debt ???
+
    function Is_Variable
      (N                 : Node_Id;
       Use_Original_Node : Boolean := True) return Boolean
@@ -21286,6 +21376,10 @@ package body Sem_Util is
                         and then Nkind (Parent (E)) /= N_Exception_Handler)
               or else (K = E_Component
                         and then not In_Protected_Function (E))
+              or else (Present (Etype (E))
+                        and then Is_Access_Object_Type (Etype (E))
+                        and then Is_Access_Variable (Etype (E))
+                        and then Is_Dereferenced (N))
               or else K = E_Out_Parameter
               or else K = E_In_Out_Parameter
               or else K = E_Generic_In_Out_Parameter
@@ -29264,7 +29358,7 @@ package body Sem_Util is
                            (Designated_Type (Btyp), Allow_Alt_Model);
                end if;
 
-               --  When an anonymous access type's Assoc_Ent is specifiedi,
+               --  When an anonymous access type's Assoc_Ent is specified,
                --  calculate the result based on the general accessibility
                --  level routine.
 
@@ -29286,10 +29380,22 @@ package body Sem_Util is
                             (Associated_Node_For_Itype (Typ));
 
                if Present (Def_Ent) then
-                  --  When the type comes from an anonymous access parameter,
-                  --  the level is that of the subprogram declaration.
+                  --  When the defining entity is a subprogram then we know the
+                  --  anonymous access type Typ has been generated to either
+                  --  describe an anonymous access type formal or an anonymous
+                  --  access result type.
 
-                  if Ekind (Def_Ent) in Subprogram_Kind then
+                  --  Since we are only interested in the formal case, avoid
+                  --  the anonymous access result type.
+
+                  if Ekind (Def_Ent) in Subprogram_Kind
+                    and then not (Ekind (Def_Ent) = E_Function
+                                   and then Etype (Def_Ent) = Typ)
+                  then
+                     --  When the type comes from an anonymous access
+                     --  parameter, the level is that of the subprogram
+                     --  declaration.
+
                      return Scope_Depth (Def_Ent);
 
                   --  When the type is an access discriminant, the level is
@@ -31510,7 +31616,12 @@ package body Sem_Util is
                   --    quantified_expression.
 
                   if Nkind (Par) = N_Quantified_Expression
-                     and then Trailer = Condition (Par)
+                    and then Trailer = Condition (Par)
+                  then
+                     return True;
+                  elsif Nkind (Par) = N_Expression_With_Actions
+                    and then
+                      Nkind (Original_Node (Par)) = N_Quantified_Expression
                   then
                      return True;
                   end if;

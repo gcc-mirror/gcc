@@ -21,12 +21,12 @@
 // <http://www.gnu.org/licenses/>.
 
 
-#include <functional> // std::unary_function, std::ref, std::cref
+#include <functional> // std::ref, std::cref
 #include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>
 
-struct noncopyable : std::unary_function<std::thread::id&, void>
+struct noncopyable
 {
   noncopyable() = default;
   ~noncopyable() = default;

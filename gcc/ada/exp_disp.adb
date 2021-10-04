@@ -5703,6 +5703,11 @@ package body Exp_Disp is
 
       Set_Is_True_Constant (TSD, Building_Static_DT (Typ));
 
+      --  The debugging information for type Ada.Tags.Type_Specific_Data is
+      --  needed by the debugger in order to display values of tagged types.
+
+      Set_Needs_Debug_Info (TSD, Needs_Debug_Info (Typ));
+
       --  Initialize or declare the dispatch table object
 
       if not Has_DT (Typ) then

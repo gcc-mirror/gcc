@@ -1,3 +1,67 @@
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101765
+	* coroutines.cc (register_local_var_uses): Emit a sorry if
+	we encounter a VLA in the coroutine local variables.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99710
+	* coroutines.cc (await_statement_walker): Report an error if
+	an await expression is found in a handler body.
+
+2021-10-03  John Eivind Helset  <jehelset@gmail.com>
+
+	PR c++/100673
+	* coroutines.cc (build_co_await): Guard against NULL
+	await_suspend types.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101133
+	* coroutines.cc (build_co_await): Mark co_await_expr trees
+	with TREE_SIDE_EFFECTS, also mark any containing expression.
+	(finish_co_await_expr): Mark type-dependent co_await_expr
+	trees with TREE_SIDE_EFFECTS.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99575
+	* coroutines.cc (build_co_await): Strip NOPs from
+	candidate awaiter expressions before testing to see
+	if they need a temporary.
+
+2021-10-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/102103
+	* typeck.c (warn_for_null_address): Enhance.
+	(cp_build_binary_op): Call it also for member pointers.
+
+2021-10-01  qingzhe huang  <nickhuang99@hotmail.com>
+
+	PR c++/101783
+	* tree.c (cp_build_qualified_type_real): Exclude typedef from
+	error.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* typeck.c (cp_build_binary_op): Call ubsan_instrument_division
+	for division even for SANITIZE_SI_OVERFLOW.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_order): Set
+	OMP_CLAUSE_ORDER_REPRODUCIBLE for explicit reproducible: modifier.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102496
+	* name-lookup.c (push_local_extern_decl_alias): Return early even for
+	tls vars with non-dependent type when processing_template_decl.  For
+	CP_DECL_THREAD_LOCAL_P vars call set_decl_tls_model on alias.
+
 2021-09-30  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/102535

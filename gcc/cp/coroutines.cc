@@ -1008,6 +1008,7 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
     }
 
   /* Only build a temporary if we need it.  */
+  STRIP_NOPS (e_proxy);
   if (TREE_CODE (e_proxy) == PARM_DECL
       || (VAR_P (e_proxy) && !is_local_temp (e_proxy)))
     {
@@ -1052,7 +1053,8 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   else if (same_type_p (susp_return_type, boolean_type_node))
     ok = true;
   else if (TREE_CODE (susp_return_type) == RECORD_TYPE
-	   && CLASS_TYPE_P (susp_return_type))
+	   && CLASS_TYPE_P (susp_return_type)
+	   && CLASSTYPE_TEMPLATE_INFO (susp_return_type))
     {
       tree tt = CLASSTYPE_TI_TEMPLATE (susp_return_type);
       if (tt == coro_handle_templ)
@@ -1116,13 +1118,15 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
 				a, e_proxy, o, awaiter_calls,
 				build_int_cst (integer_type_node,
 					       (int) suspend_kind));
+  TREE_SIDE_EFFECTS (await_expr) = true;
   if (te)
     {
       TREE_OPERAND (te, 1) = await_expr;
+      TREE_SIDE_EFFECTS (te) = true;
       await_expr = te;
     }
-  tree t = convert_from_reference (await_expr);
-  return t;
+  SET_EXPR_LOCATION (await_expr, loc);
+  return convert_from_reference (await_expr);
 }
 
 tree
@@ -1148,8 +1152,13 @@ finish_co_await_expr (location_t kw, tree expr)
      co_await with the expression unchanged.  */
   tree functype = TREE_TYPE (current_function_decl);
   if (dependent_type_p (functype) || type_dependent_expression_p (expr))
-    return build5_loc (kw, CO_AWAIT_EXPR, unknown_type_node, expr,
-		       NULL_TREE, NULL_TREE, NULL_TREE, integer_zero_node);
+    {
+      tree aw_expr = build5_loc (kw, CO_AWAIT_EXPR, unknown_type_node, expr,
+				 NULL_TREE, NULL_TREE, NULL_TREE,
+				 integer_zero_node);
+      TREE_SIDE_EFFECTS (aw_expr) = true;
+      return aw_expr;
+    }
 
   /* We must be able to look up the "await_transform" method in the scope of
      the promise type, and obtain its return type.  */
@@ -1186,14 +1195,7 @@ finish_co_await_expr (location_t kw, tree expr)
     }
 
   /* Now we want to build co_await a.  */
-  tree op = build_co_await (kw, a, CO_AWAIT_SUSPEND_POINT);
-  if (op != error_mark_node)
-    {
-      TREE_SIDE_EFFECTS (op) = 1;
-      SET_EXPR_LOCATION (op, kw);
-    }
-
-  return op;
+  return build_co_await (kw, a, CO_AWAIT_SUSPEND_POINT);
 }
 
 /* Take the EXPR given and attempt to build:
@@ -3686,7 +3688,22 @@ await_statement_walker (tree *stmt, int *do_subtree, void *d)
 	    *do_subtree = 0;
 	    return res;
 	  }
-	break;
+	  break;
+	case HANDLER:
+	  {
+	    /* [expr.await] An await-expression shall appear only in a
+	       potentially-evaluated expression within the compound-statement
+	       of a function-body outside of a handler.  */
+	    tree *await_ptr;
+	    hash_set<tree> visited;
+	    if (!(cp_walk_tree (&HANDLER_BODY (expr), find_any_await,
+		  &await_ptr, &visited)))
+	      return NULL_TREE; /* All OK.  */
+	    location_t loc = EXPR_LOCATION (*await_ptr);
+	    error_at (loc, "await expressions are not permitted in handlers");
+	    return NULL_TREE; /* This is going to fail later anyway.  */
+	  }
+	  break;
       }
   else if (EXPR_P (expr))
     {
@@ -3909,6 +3926,16 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  local_var.is_static = TREE_STATIC (lvar);
 	  if (local_var.is_static)
 	    continue;
+
+	  poly_uint64 size;
+	  if (TREE_CODE (lvtype) == ARRAY_TYPE
+	      && !poly_int_tree_p (DECL_SIZE_UNIT (lvar), &size))
+	    {
+	      sorry_at (local_var.def_loc, "variable length arrays are not"
+			" yet supported in coroutines");
+	      /* Ignore it, this is broken anyway.  */
+	      continue;
+	    }
 
 	  lvd->local_var_seen = true;
 	  /* If this var is a lambda capture proxy, we want to leave it alone,

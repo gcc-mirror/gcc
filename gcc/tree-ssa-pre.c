@@ -2855,9 +2855,13 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	  unsigned int operand = 1;
 	  vn_reference_op_t currop = &ref->operands[0];
 	  tree sc = NULL_TREE;
-	  tree fn  = find_or_generate_expression (block, currop->op0, stmts);
-	  if (!fn)
-	    return NULL_TREE;
+	  tree fn = NULL_TREE;
+	  if (currop->op0)
+	    {
+	      fn = find_or_generate_expression (block, currop->op0, stmts);
+	      if (!fn)
+		return NULL_TREE;
+	    }
 	  if (currop->op1)
 	    {
 	      sc = find_or_generate_expression (block, currop->op1, stmts);
@@ -2873,12 +2877,19 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 		return NULL_TREE;
 	      args.quick_push (arg);
 	    }
-	  gcall *call = gimple_build_call_vec (fn, args);
+	  gcall *call;
+	  if (currop->op0)
+	    {
+	      call = gimple_build_call_vec (fn, args);
+	      gimple_call_set_fntype (call, currop->type);
+	    }
+	  else
+	    call = gimple_build_call_internal_vec ((internal_fn)currop->clique,
+						   args);
 	  gimple_set_location (call, expr->loc);
-	  gimple_call_set_fntype (call, currop->type);
 	  if (sc)
 	    gimple_call_set_chain (call, sc);
-	  tree forcedname = make_ssa_name (TREE_TYPE (currop->type));
+	  tree forcedname = make_ssa_name (ref->type);
 	  gimple_call_set_lhs (call, forcedname);
 	  /* There's no CCP pass after PRE which would re-compute alignment
 	     information so make sure we re-materialize this here.  */
@@ -4003,10 +4014,6 @@ compute_avail (function *fun)
 		vn_reference_t ref;
 		vn_reference_s ref1;
 		pre_expr result = NULL;
-
-		/* We can value number only calls to real functions.  */
-		if (gimple_call_internal_p (stmt))
-		  continue;
 
 		vn_reference_lookup_call (as_a <gcall *> (stmt), &ref, &ref1);
 		/* There is no point to PRE a call without a value.  */

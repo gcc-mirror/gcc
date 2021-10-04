@@ -1526,17 +1526,15 @@ package Sem_Util is
    --  initialization.
 
    function Has_Preelaborable_Initialization
-     (E                              : Entity_Id;
-      Formal_Types_Have_Preelab_Init : Boolean := False) return Boolean;
+     (E                 : Entity_Id;
+      Preelab_Init_Expr : Node_Id := Empty) return Boolean;
    --  Return True iff type E has preelaborable initialization as defined in
    --  Ada 2005 (see AI-161 for details of the definition of this attribute).
-   --  If Formal_Types_Have_Preelab_Init is True, indicates that the function
-   --  should presume that for any subcomponents of formal private or derived
-   --  types, the types have preelaborable initialization (RM 10.2.1(11.8/5)).
-   --  NOTE: The treatment of subcomponents of formal types should only apply
-   --  for types actually specified in the P_I aspect of the outer type, but
-   --  for now we take a more liberal interpretation. This needs addressing,
-   --  perhaps by passing the outermost type instead of the simple flag. ???
+   --  If Preelab_Init_Expr is present, indicates that the function should
+   --  presume that for any subcomponent of E that is of a formal private or
+   --  derived type that is referenced by a Preelaborable_Initialization
+   --  attribute within the expression Preelab_Init_Expr, the formal type has
+   --  preelaborable initialization (RM 10.2.1(11.8/5) and AI12-0409).
 
    function Has_Prefix (N : Node_Id) return Boolean;
    --  Return True if N has attribute Prefix

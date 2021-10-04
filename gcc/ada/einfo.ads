@@ -829,7 +829,9 @@ package Einfo is
 --       a private type, then we obtain the declaration node denoted by the
 --       full type, i.e. the full type declaration node. Also note that for
 --       subprograms, this returns the {function,procedure}_specification, not
---       the subprogram_declaration.
+--       the subprogram_declaration. If the parent of an Itype is a type or
+--       subtype declaration, we return the declaration node as for any other
+--       type. For other Itypes, we return Empty.
 
 --    Default_Aspect_Component_Value [base type only]
 --       Defined in array types. Holds the static value specified in a
@@ -2426,6 +2428,11 @@ package Einfo is
 
 --    Is_Class_Wide_Type (synthesized)
 --       Applies to all entities, true for class wide types and subtypes
+
+--    Is_Class_Wide_Wrapper
+--       Defined in subprogram entities. Indicates that it has been created as
+--       a wrapper in a generic/instance scenario involving a formal type and
+--       a generic primitive operation when the actual is a class-wide type.
 
 --    Is_Compilation_Unit
 --       Defined in all entities. Set if the entity is a package or subprogram
@@ -5560,6 +5567,7 @@ package Einfo is
    --    Ignore_SPARK_Mode_Pragmas
    --    Is_Abstract_Subprogram               (non-generic case only)
    --    Is_Called                            (non-generic case only)
+   --    Is_Class_Wide_Wrapper
    --    Is_Constructor
    --    Is_CUDA_Kernel                       (non-generic case only)
    --    Is_DIC_Procedure                     (non-generic case only)
@@ -5732,6 +5740,7 @@ package Einfo is
    --    Default_Expressions_Processed
    --    Has_Nested_Subprogram
    --    Ignore_SPARK_Mode_Pragmas
+   --    Is_Class_Wide_Wrapper
    --    Is_Elaboration_Checks_OK_Id
    --    Is_Elaboration_Warnings_OK_Id
    --    Is_Intrinsic_Subprogram
@@ -5922,6 +5931,7 @@ package Einfo is
    --    Is_Abstract_Subprogram               (non-generic case only)
    --    Is_Asynchronous
    --    Is_Called                            (non-generic case only)
+   --    Is_Class_Wide_Wrapper
    --    Is_Constructor
    --    Is_CUDA_Kernel
    --    Is_DIC_Procedure                     (non-generic case only)

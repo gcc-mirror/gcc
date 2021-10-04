@@ -21,6 +21,7 @@
 #include <deque>
 #include <vector>
 #include <testsuite_iterators.h>
+#include <testsuite_allocator.h>
 
 template<typename T, typename U> struct require_same;
 template<typename T> struct require_same<T, T> { using type = void; };
@@ -115,4 +116,40 @@ test02()
 
   std::priority_queue s14(seq.begin(), seq.end(), cmp, std::deque<short>{});
   check_type<std::priority_queue<short, std::deque<short>, Cmp>>(s14);
+}
+
+struct Pool;
+
+template<typename T>
+struct Alloc : __gnu_test::SimpleAllocator<T>
+{
+  Alloc(Pool*) { }
+
+  template<typename U>
+    Alloc(const Alloc<U>&) { }
+};
+
+void
+test_p1518r2()
+{
+  // P1518R2 - Stop overconstraining allocators in container deduction guides.
+  // This is a C++23 feature but we support it for C++17 too.
+
+  using Vector = std::vector<short, Alloc<short>>;
+  using Cmp = std::greater<long>;
+  Pool* p = nullptr;
+  Vector v(p);
+  Cmp cmp;
+
+  std::priority_queue q1(cmp, v, p);
+  check_type<std::priority_queue<short, Vector, Cmp>>(q1);
+
+  std::priority_queue q2(cmp, std::move(v), p);
+  check_type<std::priority_queue<short, Vector, Cmp>>(q2);
+
+  std::priority_queue q3(q1, p);
+  check_type<std::priority_queue<short, Vector, Cmp>>(q3);
+
+  std::priority_queue q4(std::move(q1), p);
+  check_type<std::priority_queue<short, Vector, Cmp>>(q4);
 }

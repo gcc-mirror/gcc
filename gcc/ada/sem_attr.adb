@@ -9135,12 +9135,26 @@ package body Sem_Attr is
       -- Leading_Part --
       ------------------
 
-      when Attribute_Leading_Part =>
+      when Attribute_Leading_Part => Leading_Part : declare
+         Radix_Digits : constant Uint := Expr_Value (E2);
+
+      begin
+         if UI_Le (Radix_Digits, Uint_0) then
+            Apply_Compile_Time_Constraint_Error
+              (N, "Radix_Digits in Leading_Part is zero or negative",
+               CE_Explicit_Raise,
+               Warn => not Static);
+
+            Check_Expressions;
+            return;
+         end if;
+
          Fold_Ureal
            (N,
             Eval_Fat.Leading_Part
-              (P_Base_Type, Expr_Value_R (E1), Expr_Value (E2)),
+              (P_Base_Type, Expr_Value_R (E1), Radix_Digits),
             Static);
+      end Leading_Part;
 
       ------------
       -- Length --
@@ -11492,28 +11506,45 @@ package body Sem_Attr is
                --  in such a context - unless the restriction
                --  No_Dynamic_Accessibility_Checks is active.
 
-               if Attr_Id /= Attribute_Unchecked_Access
-                 and then
-                   (Ekind (Btyp) = E_General_Access_Type
-                      or else No_Dynamic_Accessibility_Checks_Enabled (Btyp))
+               declare
+                  No_Dynamic_Acc_Checks : constant Boolean :=
+                    No_Dynamic_Accessibility_Checks_Enabled (Btyp);
 
-                 --  Call Accessibility_Level directly to avoid returning zero
-                 --  on cases where the prefix is an explicitly aliased
-                 --  parameter in a return statement, instead of using the
-                 --  normal Static_Accessibility_Level function.
+                  Compatible_Alt_Checks : constant Boolean :=
+                    No_Dynamic_Acc_Checks and then not Debug_Flag_Underscore_B;
+               begin
+                  if Attr_Id /= Attribute_Unchecked_Access
+                    and then (Ekind (Btyp) = E_General_Access_Type
+                               or else No_Dynamic_Acc_Checks)
 
-                 --  Shouldn't this be handled somehow in
-                 --  Static_Accessibility_Level ???
+                    --  In the case of the alternate "compatibility"
+                    --  accessibility model we do not perform a static
+                    --  accessibility check on actuals for anonymous access
+                    --  types - so exclude them here.
 
-                 and then Nkind (Accessibility_Level (P, Dynamic_Level))
-                            = N_Integer_Literal
-                 and then
-                   Intval (Accessibility_Level (P, Dynamic_Level))
-                     > Deepest_Type_Access_Level (Btyp)
-               then
-                  Accessibility_Message;
-                  return;
-               end if;
+                    and then not (Compatible_Alt_Checks
+                                   and then Is_Actual_Parameter (N)
+                                   and then Ekind (Btyp)
+                                              = E_Anonymous_Access_Type)
+
+                    --  Call Accessibility_Level directly to avoid returning
+                    --  zero on cases where the prefix is an explicitly aliased
+                    --  parameter in a return statement, instead of using the
+                    --  normal Static_Accessibility_Level function.
+
+                    --  Shouldn't this be handled somehow in
+                    --  Static_Accessibility_Level ???
+
+                    and then Nkind (Accessibility_Level (P, Dynamic_Level))
+                               = N_Integer_Literal
+                    and then
+                      Intval (Accessibility_Level (P, Dynamic_Level))
+                        > Deepest_Type_Access_Level (Btyp)
+                  then
+                     Accessibility_Message;
+                     return;
+                  end if;
+               end;
             end if;
 
             if Ekind (Btyp) in E_Access_Protected_Subprogram_Type

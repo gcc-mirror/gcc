@@ -33,6 +33,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  The language-defined package Strings.Bounded provides a generic package
+--  each of whose instances yields a private type Bounded_String and a set
+--  of operations. An object of a particular Bounded_String type represents
+--  a String whose low bound is 1 and whose length can vary conceptually
+--  between 0 and a maximum size established at the generic instantiation. The
+--  subprograms for fixed-length string handling are either overloaded directly
+--  for Bounded_String, or are modified as needed to reflect the variability in
+--  length. Additionally, since the Bounded_String type is private, appropriate
+--  constructor and selector operations are provided.
+
 with Ada.Strings.Maps; use type Ada.Strings.Maps.Character_Mapping_Function;
 with Ada.Strings.Superbounded;
 with Ada.Strings.Search;
@@ -65,11 +75,16 @@ package Ada.Strings.Bounded with SPARK_Mode is
       pragma Preelaborable_Initialization (Bounded_String);
 
       Null_Bounded_String : constant Bounded_String;
+      --  Null_Bounded_String represents the null string. If an object of type
+      --  Bounded_String is not otherwise initialized, it will be initialized
+      --  to the same value as Null_Bounded_String.
 
       subtype Length_Range is Natural range 0 .. Max_Length;
 
       function Length (Source : Bounded_String) return Length_Range with
         Global => null;
+      --  The Length function returns the length of the string represented by
+      --  Source.
 
       --------------------------------------------------------
       -- Conversion, Concatenation, and Selection Functions --
@@ -94,9 +109,24 @@ package Ada.Strings.Bounded with SPARK_Mode is
            =>
              To_String (To_Bounded_String'Result) =
                Source (Source'First .. Source'First - 1 + Max_Length));
+      --  If Source'Length <= Max_Length, then this function returns a
+      --  Bounded_String that represents Source. Otherwise, the effect
+      --  depends on the value of Drop:
+      --
+      --  * If Drop=Left, then the result is a Bounded_String that represents
+      --    the string comprising the rightmost Max_Length characters of
+      --    Source.
+      --
+      --  * If Drop=Right, then the result is a Bounded_String that represents
+      --    the string comprising the leftmost Max_Length characters of Source.
+      --
+      --  * If Drop=Error, then Strings.Length_Error is propagated.
 
       function To_String (Source : Bounded_String) return String with
         Global => null;
+      --  To_String returns the String value with lower bound 1
+      --  represented by Source. If B is a Bounded_String, then
+      --  B = To_Bounded_String(To_String(B)).
 
       procedure Set_Bounded_String
         (Target : out Bounded_String;
@@ -119,6 +149,14 @@ package Ada.Strings.Bounded with SPARK_Mode is
              To_String (Target) =
                Source (Source'First .. Source'First - 1 + Max_Length));
       pragma Ada_05 (Set_Bounded_String);
+      --  Equivalent to Target := To_Bounded_String (Source, Drop);
+
+      --  Each of the Append functions returns a Bounded_String obtained by
+      --  concatenating the string or character given or represented by one
+      --  of the parameters, with the string or character given or represented
+      --  by the other parameter, and applying To_Bounded_String to the
+      --  concatenation result string, with Drop as provided to the Append
+      --  function.
 
       function Append
         (Left  : Bounded_String;
@@ -324,6 +362,10 @@ package Ada.Strings.Bounded with SPARK_Mode is
                    Slice (Right, 1, Max_Length - 1)
                and then Element (Append'Result, 1) = Left);
 
+      --  Each of the procedures Append(Source, New_Item, Drop) has the same
+      --  effect as the corresponding assignment
+      --  Source := Append(Source, New_Item, Drop).
+
       procedure Append
         (Source   : in out Bounded_String;
          New_Item : Bounded_String;
@@ -455,6 +497,9 @@ package Ada.Strings.Bounded with SPARK_Mode is
                    Slice (Source'Old, 2, Max_Length)
                and then Element (Source, Max_Length) = New_Item);
 
+      --  Each of the "&" functions has the same effect as the corresponding
+      --  Append function, with Error as the Drop parameter.
+
       function "&"
         (Left  : Bounded_String;
          Right : Bounded_String) return Bounded_String
@@ -516,6 +561,8 @@ package Ada.Strings.Bounded with SPARK_Mode is
       with
         Pre    => Index <= Length (Source),
         Global => null;
+      --  Returns the character at position Index in the string represented by
+      --  Source; propagates Index_Error if Index > Length(Source).
 
       procedure Replace_Element
         (Source : in out Bounded_String;
@@ -528,6 +575,9 @@ package Ada.Strings.Bounded with SPARK_Mode is
                       Element (Source, K) =
                         (if K = Index then By else Element (Source'Old, K))),
         Global => null;
+      --  Updates Source such that the character at position Index in the
+      --  string represented by Source is By; propagates Index_Error if
+      --  Index > Length(Source).
 
       function Slice
         (Source : Bounded_String;
@@ -536,6 +586,10 @@ package Ada.Strings.Bounded with SPARK_Mode is
       with
         Pre    => Low - 1 <= Length (Source) and then High <= Length (Source),
         Global => null;
+      --  Returns the slice at positions Low through High in the
+      --  string represented by Source; propagates Index_Error if
+      --  Low > Length(Source)+1 or High > Length(Source).
+      --  The bounds of the returned string are Low and High.
 
       function Bounded_Slice
         (Source : Bounded_String;
@@ -546,6 +600,9 @@ package Ada.Strings.Bounded with SPARK_Mode is
         Post   => To_String (Bounded_Slice'Result) = Slice (Source, Low, High),
         Global => null;
       pragma Ada_05 (Bounded_Slice);
+      --  Returns the slice at positions Low through High in the string
+      --  represented by Source as a bounded string; propagates Index_Error
+      --  if Low > Length(Source)+1 or High > Length(Source).
 
       procedure Bounded_Slice
         (Source : Bounded_String;
@@ -557,6 +614,11 @@ package Ada.Strings.Bounded with SPARK_Mode is
         Post   => To_String (Target) = Slice (Source, Low, High),
         Global => null;
       pragma Ada_05 (Bounded_Slice);
+      --  Equivalent to Target := Bounded_Slice (Source, Low, High);
+
+      --  Each of the functions "=", "<", ">", "<=", and ">=" returns the same
+      --  result as the corresponding String operation applied to the String
+      --  values given or represented by the two parameters.
 
       function "="
         (Left  : Bounded_String;
@@ -666,6 +728,11 @@ package Ada.Strings.Bounded with SPARK_Mode is
       ----------------------
       -- Search Functions --
       ----------------------
+
+      --  Each of the search subprograms (Index, Index_Non_Blank, Count,
+      --  Find_Token) has the same effect as the corresponding subprogram in
+      --  Strings.Fixed applied to the string represented by the Bounded_String
+      --  parameter.
 
       function Index
         (Source  : Bounded_String;
@@ -1230,6 +1297,16 @@ package Ada.Strings.Bounded with SPARK_Mode is
       -- String Translation Subprograms --
       ------------------------------------
 
+      --  Each of the Translate subprograms, when applied to a Bounded_String,
+      --  has an analogous effect to the corresponding subprogram in
+      --  Strings.Fixed. For the Translate function, the translation is applied
+      --  to the string represented by the Bounded_String parameter, and the
+      --  result is converted (via To_Bounded_String) to a Bounded_String. For
+      --  the Translate procedure, the string represented by the Bounded_String
+      --  parameter after the translation is given by the Translate function
+      --  for fixed-length strings applied to the string represented by the
+      --  original value of the parameter.
+
       function Translate
         (Source  : Bounded_String;
          Mapping : Maps.Character_Mapping) return Bounded_String
@@ -1277,6 +1354,19 @@ package Ada.Strings.Bounded with SPARK_Mode is
       ---------------------------------------
       -- String Transformation Subprograms --
       ---------------------------------------
+
+      --  Each of the transformation subprograms (Replace_Slice, Insert,
+      --  Overwrite, Delete), selector subprograms (Trim, Head, Tail), and
+      --  constructor functions ("*") has an effect based on its corresponding
+      --  subprogram in Strings.Fixed, and Replicate is based on Fixed."*".
+      --  In the case of a function, the corresponding fixed-length string
+      --  subprogram is applied to the string represented by the Bounded_String
+      --  parameter. To_Bounded_String is applied the result string, with Drop
+      --  (or Error in the case of Generic_Bounded_Length."*") determining
+      --  the effect when the string length exceeds Max_Length. In
+      --  the case of a procedure, the corresponding function in
+      --  Strings.Bounded.Generic_Bounded_Length is applied, with the
+      --  result assigned into the Source parameter.
 
       function Replace_Slice
         (Source : Bounded_String;

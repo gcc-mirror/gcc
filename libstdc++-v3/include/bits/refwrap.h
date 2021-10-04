@@ -32,9 +32,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus < 201103L
-# include <bits/c++0x_warning.h>
-#else
+#if __cplusplus >= 201103L
 
 #include <bits/move.h>
 #include <bits/invoke.h>

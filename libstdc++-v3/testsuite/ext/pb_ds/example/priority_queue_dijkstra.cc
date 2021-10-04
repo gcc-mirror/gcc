@@ -61,9 +61,9 @@ using namespace __gnu_pbds;
 typedef std::pair<size_t, size_t> pq_value;
 
 // Comparison functor used to compare priority-queue value types.
-struct pq_value_cmp : public binary_function<pq_value, pq_value, bool>
+struct pq_value_cmp
 {
-  inline bool
+  bool
   operator()(const pq_value& r_lhs, const pq_value& r_rhs) const
   {
     // Note that a value is considered smaller than a different value

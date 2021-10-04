@@ -88,6 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   __throw_out_of_range_fmt(const char* __fmt, ...)
   {
+#if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE && __cpp_exceptions
     const size_t __len = __builtin_strlen(__fmt);
     // We expect at most 2 numbers, and 1 short string. The additional
     // 512 bytes should provide more than enough space for expansion.
@@ -96,9 +97,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     va_list __ap;
 
     va_start(__ap, __fmt);
-    __gnu_cxx::__snprintf_lite(__s, __alloca_size, __fmt, __ap);
-    _GLIBCXX_THROW_OR_ABORT(out_of_range(_(__s)));
+    __gnu_cxx::__snprintf_lite(__s, __alloca_size, _(__fmt), __ap);
+    throw out_of_range(__s);
     va_end(__ap);  // Not reached.
+#else
+    __throw_out_of_range(__fmt);
+#endif
   }
 
   void

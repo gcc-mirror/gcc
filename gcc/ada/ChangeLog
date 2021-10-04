@@ -1,3 +1,408 @@
+2021-10-01  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Do not call
+	Check_Subprogram_Variant if the subprogram is an ignored ghost
+	entity. Otherwise the compiler crashes (in debug builds) or
+	gives strange error messages (in production builds).
+
+2021-10-01  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* gnat_cuda.adb (Empty_CUDA_Global_Subprograms): New procedure.
+	(Expand_CUDA_Package): Call Empty_CUDA_Global_Subprograms.
+
+2021-10-01  Steve Baird  <baird@adacore.com>
+
+	* checks.ads: Define a type Dimension_Set. Add an out-mode
+	parameter of this new type to Generate_Index_Checks so that
+	callers can know for which dimensions a check was generated. Add
+	an in-mode parameter of this new type to
+	Apply_Subscript_Validity_Checks so that callers can indicate
+	that no check is needed for certain dimensions.
+	* checks.adb (Generate_Index_Checks): Implement new
+	Checks_Generated parameter.
+	(Apply_Subscript_Validity_Checks): Implement new No_Check_Needed
+	parameter.
+	* exp_ch4.adb (Expand_N_Indexed_Component): Call
+	Apply_Subscript_Validity_Checks in more cases than before. This
+	includes declaring two new local functions,
+	(Is_Renamed_Variable_Name,
+	Type_Requires_Subscript_Validity_Checks_For_Reads): To help in
+	deciding whether to call Apply_Subscript_Validity_Checks.
+	Adjust to parameter profile changes in Generate_Index_Checks and
+	Apply_Subscript_Validity_Checks.
+
+2021-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_characteristics.rst: Document
+	the rounding mode assumed for dynamic computations as per 3.5.7(16).
+	* gnat_rm.texi: Regenerate.
+
+2021-10-01  Bob Duff  <duff@adacore.com>
+
+	* table.ads (Table_Type): Remove "aliased"; no longer needed by
+	Atree.  Besides it contradicted the comment a few lines above,
+	"--  Note: We do not make the table components aliased...".
+	* types.ads: Move type Slot to Atree.
+	* atree.ads: Move type Slot fromt Types to here.  Move type
+	Node_Header from Seinfo to here.
+	* atree.adb: Avoid the need for aliased components of the Slots
+	table.  Instead of 'Access, use a getter and setter.  Misc
+	cleanups.
+	(Print_Statistics): Print statistics about node and entity kind
+	frequencies. Give 3 digit fractions instead of percentages.
+	* (Get_Original_Node_Count, Set_Original_Node_Count): Statistics
+	for calls to Original_Node and Set_Original_Node.
+	(Original_Node, Set_Original_Node): Gather statistics by calling
+	the above.
+	(Print_Field_Statistics): Print Original_Node statistics.
+	(Update_Kind_Statistics): Remove, and put all statistics
+	gathering under "if Atree_Statistics_Enabled", which is a flag
+	generated in Seinfo by Gen_IL.
+	* gen_il-gen.adb (Compute_Field_Offsets): Choose offsets of
+	Nkind, Ekind, and Homonym first. This causes a slight efficiency
+	improvement.  Misc cleanups.  Do not generate Node_Header; it is
+	now hand-written in Atree.  When choosing the order in which to
+	assign offsets, weight by the frequency of the node type, so the
+	more common nodes get their field offsets assigned earlier.  Add
+	more special cases.
+	(Compute_Type_Sizes): Remove this and related things.
+	There was a comment: "At some point we can instrument Atree to
+	print out accurate size statistics, and remove this code." We
+	have Atree statistics, so we now remove this code.
+	(Put_Seinfo): Generate Atree_Statistics_Enabled, which is equal
+	to Statistics_Enabled. This allows Atree to say "if
+	Atree_Statistics_Enabled then <gather statistics>" for
+	efficiency. When Atree_Statistics_Enabled is False, the "if ..."
+	will be optimized away.
+	* gen_il-internals.ads (Type_Frequency): New table of kind
+	frequencies.
+	* gen_il-internals.adb: Minor comment improvement.
+	* gen_il-fields.ads: Remove unused subtypes.  Suppress style
+	checks in the Type_Frequency table.  If we regenerate this
+	table (see -gnatd.A) we don't want to have to fiddle with
+	casing.
+	* impunit.adb: Minor.
+	* sinfo-utils.adb: Minor.
+	* debug.adb: Minor comment improvement.
+
+2021-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.adb (Specific_Type): Check that the type is tagged
+	before calling Interface_Present_In_Ancestor on it.
+
+2021-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* debug.adb (d.8): Document usage.
+	* fe.h (Debug_Flag_Dot_8): Declare.
+
+2021-10-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Enter_Name): Suppress hiding warning when in an
+	instance.
+
+2021-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case Type_Key): Attribute can
+	be applied to a formal type.
+	* sem_ch5.adb (Analyze_Case_Statement): If Extensions_Allowed is
+	not enabled, verify that the type of the expression is discrete.
+
+2021-10-01  Justin Squirek  <squirek@adacore.com>
+
+	* exp_dbug.adb (Debug_Renaming_Declaration): Add check for
+	Entity present for Ren to prevent looking at unanalyzed nodes
+
+2021-10-01  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* atree.adb (Print_Statistics): Help CodePeer see Total as
+	greater than zero.
+	* gen_il-gen.adb (One_Comp): Annotate Field_Table as Modified.
+
+2021-10-01  Richard Kenner  <kenner@adacore.com>
+
+	* gen_il-gen-gen_entities.adb (Evaluable_Kind,
+	Global_Name_Kind): Add.
+	* gen_il-types.ads (Evaluable_Kind, Global_Name_Kind): Likewise.
+
+2021-10-01  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* aspects.ads: Add CUDA_Device aspect.
+	* gnat_cuda.ads (Add_CUDA_Device_Entity): New subprogram.
+	* gnat_cuda.adb:
+	(Add_CUDA_Device_Entity): New subprogram.
+	(CUDA_Device_Entities_Table): New hashmap for CUDA_Device
+	entities.
+	(Get_CUDA_Device_Entities): New internal subprogram.
+	(Set_CUDA_Device_Entities): New internal subprogram.
+	* par-prag.adb (Prag): Handle pragma id Pragma_CUDA_Device.
+	* sem_prag.ads (Aspect_Specifying_Pragma): Mark CUDA_Device as
+	being both aspect and pragma.
+	* sem_prag.adb (Analyze_Pragma): Add CUDA_Device entities to
+	list of CUDA_Entities belonging to package N.
+	(Sig_Flags): Signal CUDA_Device entities as referenced.
+	* snames.ads-tmpl: Create CUDA_Device names and pragmas.
+
+2021-10-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Build_DIC_Procedure_Body): Remove inappropriate
+	Assert pragma.  Remove unneeded and dead code related to derived
+	private types.
+
+2021-10-01  Richard Kenner  <kenner@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (N_Alternative, N_Is_Case_Choice):
+	Add.
+	(N_Is_Exception_Choice, N_Is_Range): Likewise.
+	* gen_il-types.ads: Add above names.
+	* gen_il-gen.adb (Put_Union_Membership): Write both declarations
+	and definitions of union functions.
+
+2021-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate,
+	Two_Pass_Aggregate_Expansion): Increment index for element
+	insertion within the loop, only if upper bound has not been
+	reached.
+
+2021-10-01  Javier Miranda  <miranda@adacore.com>
+
+	* contracts.ads (Make_Class_Precondition_Subps): New subprogram.
+	(Merge_Class_Conditions): New subprogram.
+	(Process_Class_Conditions_At_Freeze_Point): New subprogram.
+	* contracts.adb (Check_Class_Condition): New subprogram.
+	(Set_Class_Condition): New subprogram.
+	(Analyze_Contracts): Remove code analyzing class-wide-clone
+	subprogram since it is no longer built.
+	(Process_Spec_Postconditions): Avoid processing twice seen
+	subprograms.
+	(Process_Preconditions): Simplify its functionality to
+	non-class-wide preconditions.
+	(Process_Preconditions_For): No action needed for wrappers and
+	helpers.
+	(Make_Class_Precondition_Subps): New subprogram.
+	(Process_Class_Conditions_At_Freeze_Point): New subprogram.
+	(Merge_Class_Conditions): New subprogram.
+	* exp_ch6.ads (Install_Class_Preconditions_Check): New
+	subprogram.
+	* exp_ch6.adb (Expand_Call_Helper): Install class-wide
+	preconditions check on dispatching primitives that have or
+	inherit class-wide preconditions.
+	(Freeze_Subprogram): Remove code for null procedures with
+	preconditions.
+	(Install_Class_Preconditions_Check): New subprogram.
+	* exp_util.ads (Build_Class_Wide_Expression): Lower the
+	complexity of this subprogram; out-mode formal Needs_Wrapper
+	since this functionality is now provided by a new subprogram.
+	(Get_Mapped_Entity): New subprogram.
+	(Map_Formals): New subprogram.
+	* exp_util.adb (Build_Class_Wide_Expression): Lower the
+	complexity of this subprogram. Its previous functionality is now
+	provided by subprograms Needs_Wrapper and Check_Class_Condition.
+	(Add_Parent_DICs): Map the overridden primitive to the
+	overriding one.
+	(Get_Mapped_Entity): New subprogram.
+	(Map_Formals): New subprogram.
+	(Update_Primitives_Mapping): Adding assertion.
+	* freeze.ads (Check_Inherited_Conditions): Subprogram made
+	public with added formal to support late overriding.
+	* freeze.adb (Check_Inherited_Conditions): New implementation;
+	builds the dispatch table wrapper required for class-wide
+	pre/postconditions; added support for late overriding.
+	(Needs_Wrapper): New subprogram.
+	* sem.ads (Inside_Class_Condition_Preanalysis): New global
+	variable.
+	* sem_disp.ads (Covered_Interface_Primitives): New subprogram.
+	* sem_disp.adb (Covered_Interface_Primitives): New subprogram.
+	(Check_Dispatching_Context): Skip checking context of
+	dispatching calls during preanalysis of class-wide conditions
+	since at that stage the expression is not installed yet on its
+	definite context.
+	(Check_Dispatching_Call): Skip checking 6.1.1(18.2/5) by
+	AI12-0412 on helpers and wrappers internally built for
+	supporting class-wide conditions; for late-overriding
+	subprograms call Check_Inherited_Conditions to build the
+	dispatch-table wrapper (if required).
+	(Propagate_Tag): Adding call to
+	Install_Class_Preconditions_Check.
+	* sem_util.ads (Build_Class_Wide_Clone_Body): Removed.
+	(Build_Class_Wide_Clone_Call): Removed.
+	(Build_Class_Wide_Clone_Decl): Removed.
+	(Class_Condition): New subprogram.
+	(Nearest_Class_Condition_Subprogram): New subprogram.
+	* sem_util.adb (Build_Class_Wide_Clone_Body): Removed.
+	(Build_Class_Wide_Clone_Call): Removed.
+	(Build_Class_Wide_Clone_Decl): Removed.
+	(Class_Condition): New subprogram.
+	(Nearest_Class_Condition_Subprogram): New subprogram.
+	(Eligible_For_Conditional_Evaluation): No need to evaluate
+	class-wide conditions during preanalysis since the expression is
+	not installed on its definite context.
+	* einfo.ads (Class_Wide_Clone): Removed.
+	(Class_Postconditions): New attribute.
+	(Class_Preconditions): New attribute.
+	(Class_Preconditions_Subprogram): New attribute.
+	(Dynamic_Call_Helper): New attribute.
+	(Ignored_Class_Postconditions): New attribute.
+	(Ignored_Class_Preconditions): New attribute.
+	(Indirect_Call_Wrapper): New attribute.
+	(Is_Dispatch_Table_Wrapper): New attribute.
+	(Static_Call_Helper): New attribute.
+	* exp_attr.adb (Expand_N_Attribute_Reference): When the prefix
+	is of an access-to-subprogram type that has class-wide
+	preconditions and an indirect-call wrapper of such subprogram is
+	available, replace the prefix by the wrapper.
+	* exp_ch3.adb (Build_Class_Condition_Subprograms): New
+	subprogram.
+	(Register_Dispatch_Table_Wrappers): New subprogram.
+	* exp_disp.adb (Build_Class_Wide_Check): Removed; class-wide
+	precondition checks now rely on internally built helpers.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Set initial
+	value of attributes Class_Preconditions, Class_Postconditions,
+	Ignored_Class_Preconditions and Ignored_Class_Postconditions.
+	These values are later updated with the full pre/postcondition
+	by Merge_Class_Conditions.
+	(Freeze_Entity_Checks): Call
+	Process_Class_Conditions_At_Freeze_Point.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Remove code
+	building the body of the class-wide clone subprogram since it is
+	no longer required.
+	(Install_Entity): Adding assertion.
+	* sem_prag.adb (Analyze_Pre_Post_Condition_In_Decl_Part): Remove
+	code building and analyzing the class-wide clone subprogram; no
+	longer required.
+	(Build_Pragma_Check_Equivalent): Adjust call to
+	Build_Class_Wide_Expression since the formal named Needs_Wrapper
+	has been removed.
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Skip processing
+	these attributes during preanalysis of class-wide conditions
+	since at that stage the expression is not installed yet on its
+	definite context.
+	* sem_res.adb (Resolve_Actuals): Skip applying RM 3.9.2(9/1) and
+	SPARK RM 6.1.7(3) on actuals of internal helpers and wrappers
+	built to support class-wide preconditions.
+	* sem_ch5.adb (Process_Bounds): Do not generate a constant
+	declaration for the bounds when we are preanalyzing a class-wide
+	condition.
+	(Analyze_Loop_Parameter_Specification): Handle preanalysis of
+	quantified expression placed in the outermost expression of a
+	class-wide condition.
+	* ghost.adb (Check_Ghost_Context): No check required during
+	preanalysis of class-wide conditions.
+	* gen_il-fields.ads (Opt_Field_Enum): Adding
+	Class_Postconditions, Class_Preconditions,
+	Class_Preconditions_Subprogram, Dynamic_Call_Helper,
+	Ignored_Class_Postconditions, Ignored_Class_Preconditions,
+	Indirect_Call_Wrapper, Is_Dispatch_Table_Wrapper,
+	Static_Call_Helper.
+	* gen_il-gen-gen_entities.adb (Is_Dispatch_Table_Wrapper):
+	Adding semantic flag Is_Dispatch_Table_Wrapper; removing
+	semantic field Class_Wide_Clone; adding semantic fields for
+	Class_Postconditions, Class_Preconditions,
+	Class_Preconditions_Subprogram, Dynamic_Call_Helper,
+	Ignored_Class_Postconditions, Indirect_Call_Wrapper,
+	Ignored_Class_Preconditions, and Static_Call_Helper.
+
+2021-10-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* comperr.adb (Delete_SCIL_Files): Handle generic subprogram
+	declarations and renaming just like generic package declarations
+	and renamings, respectively; handle
+	N_Subprogram_Renaming_Declaration.
+
+2021-10-01  Steve Baird  <baird@adacore.com>
+
+	* bcheck.adb (Check_Versions): Add support for the case where
+	the .ali file contains both a primary and a secondary version
+	number, as in "GNAT Lib v22.20210809".
+
+2021-10-01  Steve Baird  <baird@adacore.com>
+
+	* sem_res.adb (Resolve): Two separate fixes. In the case where
+	Find_Aspect for a literal aspect returns the aspect for a
+	different (ancestor) type, call Corresponding_Primitive_Op to
+	get the right callee. In the case where a downward tagged type
+	conversion appears to be needed, generate a null extension
+	aggregate instead, as per Ada RM 3.4(27).
+	* sem_util.ads, sem_util.adb: Add new Corresponding_Primitive_Op
+	function. It maps a primitive op of a tagged type and a
+	descendant type of that tagged type to the corresponding
+	primitive op of the descendant type. The body of this function
+	was written by Javier Miranda.
+
+2021-10-01  Bob Duff  <duff@adacore.com>
+
+	* atree.adb: Gather and print statistics about frequency of
+	getter and setter calls.
+	* atree.ads (Print_Statistics): New procedure for printing
+	statistics.
+	* debug.adb: Document -gnatd.A switch.
+	* gen_il-gen.adb: Generate code for statistics gathering.
+	Choose the offset of Homonym early.  Misc cleanup.  Put more
+	comments in the generated code.
+	* gen_il-internals.ads (Unknown_Offset): New value to indicate
+	that the offset has not yet been chosen.
+	* gnat1drv.adb: Call Print_Statistics.
+	* libgnat/s-imglli.ads: Minor comment fix.
+	* output.ads (Write_Int_64): New procedure to write a 64-bit
+	value.  Needed for new statistics, and could come in handy
+	elsewhere.
+	* output.adb (Write_Int_64): Likewise.
+	* sinfo.ads: Remove obsolete comment. The xtreeprs program no
+	longer exists.
+	* types.ads: New 64-bit types needed for new statistics.
+
+2021-10-01  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/memtrack.adb (Putc): New routine wrapped around fputc
+	with error check.
+	(Write): New routine wrapped around fwrite with error check.
+	Remove bound functions fopen, fwrite, fputs, fclose, OS_Exit.
+	Use the similar routines from System.CRTL and System.OS_Lib.
+
+2021-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Must_Slide): If the aggregate only contains an
+	others_clause no sliding id involved. Otherwise sliding is
+	required if any bound of the aggregate or the context subtype is
+	non-static.
+
+2021-10-01  Richard Kenner  <kenner@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (N_Is_Decl): Add.
+	* gen_il-types.ads (N_Is_Decl): Likewise.
+
+2021-10-01  Richard Kenner  <kenner@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (N_Entity_Name): Add.
+	* gen_il-types.ads (N_Entity_Name): Likewise.
+
+2021-10-01  Steve Baird  <baird@adacore.com>
+
+	* bcheck.adb (Check_Versions): In the case of an ali file
+	version mismatch, if distinct integer values can be extracted
+	from the two version strings then include those values in the
+	generated error message.
+
+2021-10-01  Steve Baird  <baird@adacore.com>
+
+	* sem_elab.adb (Is_Safe_Call): Return True in the case of a
+	(possibly rewritten) call to an expression function.
+
+2021-10-01  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association):
+	Initialize Id_Typ to Any_Type by default.
+
+2021-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst (gnatmem): Document
+	that it works only with fixed-position executables.
+
+2021-10-01  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/s-parame__vxworks.ads (time_t_bits): Change to
+	Long_Long_Integer'Size.
+
 2021-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Fix comment.

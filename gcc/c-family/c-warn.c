@@ -3726,3 +3726,35 @@ maybe_warn_sizeof_array_div (location_t loc, tree arr, tree arr_type,
 	}
     }
 }
+
+/* Warn about C++20 [depr.array.comp] array comparisons: "Equality
+   and relational comparisons between two operands of array type are
+   deprecated."  We also warn in C and earlier C++ standards.  CODE is
+   the code for this comparison, OP0 and OP1 are the operands.  */
+
+void
+do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
+{
+  STRIP_NOPS (op0);
+  STRIP_NOPS (op1);
+  if (TREE_CODE (op0) == ADDR_EXPR)
+    op0 = TREE_OPERAND (op0, 0);
+  if (TREE_CODE (op1) == ADDR_EXPR)
+    op1 = TREE_OPERAND (op1, 0);
+
+  auto_diagnostic_group d;
+  if (warning_at (location, OPT_Warray_compare,
+		  (c_dialect_cxx () && cxx_dialect >= cxx20)
+		  ? G_("comparison between two arrays is deprecated in C++20")
+		  : G_("comparison between two arrays")))
+    {
+      /* C doesn't allow +arr.  */
+      if (c_dialect_cxx ())
+	inform (location, "use unary %<+%> which decays operands to pointers "
+		"or %<&%D[0] %s &%D[0]%> to compare the addresses",
+		op0, op_symbol_code (code), op1);
+      else
+	inform (location, "use %<&%D[0] %s &%D[0]%> to compare the addresses",
+		op0, op_symbol_code (code), op1);
+    }
+}

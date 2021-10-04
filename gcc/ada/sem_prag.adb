@@ -14849,9 +14849,9 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_Arg_Count (1);
-            Arg_Node := Get_Pragma_Arg (Arg1);
+            Check_Arg_Is_Library_Level_Local_Name (Arg1);
 
-            Check_Arg_Is_Library_Level_Local_Name (Arg_Node);
+            Arg_Node := Get_Pragma_Arg (Arg1);
             Device_Entity := Entity (Arg_Node);
 
             if Ekind (Device_Entity) in E_Variable
@@ -14859,8 +14859,9 @@ package body Sem_Prag is
                                       | E_Procedure
                                       | E_Function
             then
-               Add_CUDA_Device_Entity (Scope (Device_Entity), Device_Entity);
-               Error_Msg_N ("??& not implemented yet", N);
+               Add_CUDA_Device_Entity
+                 (Package_Specification_Of_Scope (Scope (Device_Entity)),
+                  Device_Entity);
 
             else
                Error_Msg_NE ("& must be constant, variable or subprogram",

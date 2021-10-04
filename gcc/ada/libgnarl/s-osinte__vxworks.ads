@@ -340,7 +340,7 @@ package System.OS_Interface is
    --  Can only be called from the VxWorks 6 run-time libary that supports
    --  tlsLib, and not by the VxWorks 6.6 SMP library
 
-   function tlsKeyCreate return STATUS;
+   function tlsKeyCreate return int;
    pragma Import (C, tlsKeyCreate, "tlsKeyCreate");
 
    function tlsValueGet (key : int) return System.Address;

@@ -11737,10 +11737,15 @@ package body Exp_Util is
       --  case and it is better not to make an additional one for the attribute
       --  itself, because the return type of many of them is universal integer,
       --  which is a very large type for a temporary.
+      --  The prefix of an attribute reference Reduce may be syntactically an
+      --  aggregate, but will be expanded into a loop, so no need to remove
+      --  side-effects.
 
       if Nkind (Exp) = N_Attribute_Reference
         and then Side_Effect_Free_Attribute (Attribute_Name (Exp))
         and then Side_Effect_Free (Expressions (Exp), Name_Req, Variable_Ref)
+        and then (Attribute_Name (Exp) /= Name_Reduce
+                   or else Nkind (Prefix (Exp)) /= N_Aggregate)
         and then not Is_Name_Reference (Prefix (Exp))
       then
          Remove_Side_Effects (Prefix (Exp), Name_Req, Variable_Ref);

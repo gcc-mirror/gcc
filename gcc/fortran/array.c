@@ -2581,7 +2581,7 @@ gfc_array_dimen_size (gfc_expr *array, int dimen, mpz_t *result)
 	    }
 	}
 
-      if (array->shape && array->shape[dimen])
+      if (array->shape)
 	{
 	  mpz_init_set (*result, array->shape[dimen]);
 	  return true;

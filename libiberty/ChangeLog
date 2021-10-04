@@ -1,3 +1,7 @@
+2021-10-01  Luís Ferreira  <contact@lsferreira.net>
+
+	* testsuite/d-demangle-expected: Add missing format for new test
+
 2021-09-23  Luís Ferreira  <contact@lsferreira.net>
 
 	* d-demangle.c (dlang_Type): Validate MANGLED is nonnull.

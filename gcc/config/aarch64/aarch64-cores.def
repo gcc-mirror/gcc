@@ -162,4 +162,13 @@ AARCH64_CORE("cortex-a76.cortex-a55",  cortexa76cortexa55, cortexa53, 8_2A,  AAR
 /* Armv8-R Architecture Processors.  */
 AARCH64_CORE("cortex-r82", cortexr82, cortexa53, 8R, AARCH64_FL_FOR_ARCH8_R, cortexa53, 0x41, 0xd15, -1)
 
+/* Armv9.0-A Architecture Processors.  */
+
+/* Arm ('A') cores. */
+AARCH64_CORE("cortex-a510",  cortexa510, cortexa55, 9A,  AARCH64_FL_FOR_ARCH9 | AARCH64_FL_SVE2_BITPERM | AARCH64_FL_MEMTAG | AARCH64_FL_I8MM | AARCH64_FL_BF16, cortexa53, 0x41, 0xd46, -1)
+
+AARCH64_CORE("cortex-a710",  cortexa710, cortexa57, 9A,  AARCH64_FL_FOR_ARCH9 | AARCH64_FL_SVE2_BITPERM | AARCH64_FL_MEMTAG | AARCH64_FL_I8MM | AARCH64_FL_BF16, neoversen2, 0x41, 0xd47, -1)
+
+AARCH64_CORE("cortex-x2",  cortexx2, cortexa57, 9A,  AARCH64_FL_FOR_ARCH9 | AARCH64_FL_SVE2_BITPERM | AARCH64_FL_MEMTAG | AARCH64_FL_I8MM | AARCH64_FL_BF16, neoversen2, 0x41, 0xd48, -1)
+
 #undef AARCH64_CORE

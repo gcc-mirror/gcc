@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-loop-niter.h"
 #include "builtins.h"
+#include "fold-const-call.h"
 #include "tree-ssa-sccvn.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
@@ -212,7 +213,8 @@ vn_reference_op_eq (const void *p1, const void *p2)
 					 TYPE_MAIN_VARIANT (vro2->type))))
 	  && expressions_equal_p (vro1->op0, vro2->op0)
 	  && expressions_equal_p (vro1->op1, vro2->op1)
-	  && expressions_equal_p (vro1->op2, vro2->op2));
+	  && expressions_equal_p (vro1->op2, vro2->op2)
+	  && (vro1->opcode != CALL_EXPR || vro1->clique == vro2->clique));
 }
 
 /* Free a reference operation structure VP.  */
@@ -264,15 +266,18 @@ print_vn_reference_ops (FILE *outfile, const vec<vn_reference_op_s> ops)
 	  && TREE_CODE_CLASS (vro->opcode) != tcc_declaration)
 	{
 	  fprintf (outfile, "%s", get_tree_code_name (vro->opcode));
-	  if (vro->op0)
+	  if (vro->op0 || vro->opcode == CALL_EXPR)
 	    {
 	      fprintf (outfile, "<");
 	      closebrace = true;
 	    }
 	}
-      if (vro->op0)
+      if (vro->op0 || vro->opcode == CALL_EXPR)
 	{
-	  print_generic_expr (outfile, vro->op0);
+	  if (!vro->op0)
+	    fprintf (outfile, internal_fn_name ((internal_fn)vro->clique));
+	  else
+	    print_generic_expr (outfile, vro->op0);
 	  if (vro->op1)
 	    {
 	      fprintf (outfile, ",");
@@ -684,6 +689,8 @@ static void
 vn_reference_op_compute_hash (const vn_reference_op_t vro1, inchash::hash &hstate)
 {
   hstate.add_int (vro1->opcode);
+  if (vro1->opcode == CALL_EXPR && !vro1->op0)
+    hstate.add_int (vro1->clique);
   if (vro1->op0)
     inchash::add_expr (vro1->op0, hstate);
   if (vro1->op1)
@@ -769,10 +776,15 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
       if (vr1->type != vr2->type)
 	return false;
     }
+  else if (vr1->type == vr2->type)
+    ;
   else if (COMPLETE_TYPE_P (vr1->type) != COMPLETE_TYPE_P (vr2->type)
 	   || (COMPLETE_TYPE_P (vr1->type)
 	       && !expressions_equal_p (TYPE_SIZE (vr1->type),
 					TYPE_SIZE (vr2->type))))
+    return false;
+  else if (vr1->operands[0].opcode == CALL_EXPR
+	   && !types_compatible_p (vr1->type, vr2->type))
     return false;
   else if (INTEGRAL_TYPE_P (vr1->type)
 	   && INTEGRAL_TYPE_P (vr2->type))
@@ -1270,6 +1282,8 @@ copy_reference_ops_from_call (gcall *call,
   temp.type = gimple_call_fntype (call);
   temp.opcode = CALL_EXPR;
   temp.op0 = gimple_call_fn (call);
+  if (gimple_call_internal_p (call))
+    temp.clique = gimple_call_internal_fn (call);
   temp.op1 = gimple_call_chain (call);
   if (stmt_could_throw_p (cfun, call) && (lr = lookup_stmt_eh_lp (call)) > 0)
     temp.op2 = size_int (lr);
@@ -1459,9 +1473,11 @@ fully_constant_vn_reference_p (vn_reference_t ref)
      a call to a builtin function with at most two arguments.  */
   op = &operands[0];
   if (op->opcode == CALL_EXPR
-      && TREE_CODE (op->op0) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (op->op0, 0)) == FUNCTION_DECL
-      && fndecl_built_in_p (TREE_OPERAND (op->op0, 0))
+      && (!op->op0
+	  || (TREE_CODE (op->op0) == ADDR_EXPR
+	      && TREE_CODE (TREE_OPERAND (op->op0, 0)) == FUNCTION_DECL
+	      && fndecl_built_in_p (TREE_OPERAND (op->op0, 0),
+				    BUILT_IN_NORMAL)))
       && operands.length () >= 2
       && operands.length () <= 3)
     {
@@ -1481,13 +1497,17 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	anyconst = true;
       if (anyconst)
 	{
-	  tree folded = build_call_expr (TREE_OPERAND (op->op0, 0),
-					 arg1 ? 2 : 1,
-					 arg0->op0,
-					 arg1 ? arg1->op0 : NULL);
-	  if (folded
-	      && TREE_CODE (folded) == NOP_EXPR)
-	    folded = TREE_OPERAND (folded, 0);
+	  combined_fn fn;
+	  if (op->op0)
+	    fn = as_combined_fn (DECL_FUNCTION_CODE
+					(TREE_OPERAND (op->op0, 0)));
+	  else
+	    fn = as_combined_fn ((internal_fn) op->clique);
+	  tree folded;
+	  if (arg1)
+	    folded = fold_const_call (fn, ref->type, arg0->op0, arg1->op0);
+	  else
+	    folded = fold_const_call (fn, ref->type, arg0->op0);
 	  if (folded
 	      && is_gimple_min_invariant (folded))
 	    return folded;
@@ -5648,28 +5668,27 @@ visit_stmt (gimple *stmt, bool backedges_varying_p = false)
 	      && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL)
 	    extra_fnflags = flags_from_decl_or_type (TREE_OPERAND (fn, 0));
 	}
-      if (!gimple_call_internal_p (call_stmt)
-	  && (/* Calls to the same function with the same vuse
-		 and the same operands do not necessarily return the same
-		 value, unless they're pure or const.  */
-	      ((gimple_call_flags (call_stmt) | extra_fnflags)
-	       & (ECF_PURE | ECF_CONST))
-	      /* If calls have a vdef, subsequent calls won't have
-		 the same incoming vuse.  So, if 2 calls with vdef have the
-		 same vuse, we know they're not subsequent.
-		 We can value number 2 calls to the same function with the
-		 same vuse and the same operands which are not subsequent
-		 the same, because there is no code in the program that can
-		 compare the 2 values...  */
-	      || (gimple_vdef (call_stmt)
-		  /* ... unless the call returns a pointer which does
-		     not alias with anything else.  In which case the
-		     information that the values are distinct are encoded
-		     in the IL.  */
-		  && !(gimple_call_return_flags (call_stmt) & ERF_NOALIAS)
-		  /* Only perform the following when being called from PRE
-		     which embeds tail merging.  */
-		  && default_vn_walk_kind == VN_WALK)))
+      if (/* Calls to the same function with the same vuse
+	     and the same operands do not necessarily return the same
+	     value, unless they're pure or const.  */
+	  ((gimple_call_flags (call_stmt) | extra_fnflags)
+	   & (ECF_PURE | ECF_CONST))
+	  /* If calls have a vdef, subsequent calls won't have
+	     the same incoming vuse.  So, if 2 calls with vdef have the
+	     same vuse, we know they're not subsequent.
+	     We can value number 2 calls to the same function with the
+	     same vuse and the same operands which are not subsequent
+	     the same, because there is no code in the program that can
+	     compare the 2 values...  */
+	  || (gimple_vdef (call_stmt)
+	      /* ... unless the call returns a pointer which does
+		 not alias with anything else.  In which case the
+		 information that the values are distinct are encoded
+		 in the IL.  */
+	      && !(gimple_call_return_flags (call_stmt) & ERF_NOALIAS)
+	      /* Only perform the following when being called from PRE
+		 which embeds tail merging.  */
+	      && default_vn_walk_kind == VN_WALK))
 	changed = visit_reference_op_call (lhs, call_stmt);
       else
 	changed = defs_to_varying (call_stmt);

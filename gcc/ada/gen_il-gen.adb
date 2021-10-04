@@ -710,6 +710,8 @@ package body Gen_IL.Gen is
                   Type_Table (T).Last  := T;
                   Add_Concrete_Descendant_To_Ancestors
                     (Type_Table (T).Parent, T);
+                  --  Parent cannot be No_Type here, because T is a concrete
+                  --  type, and therefore not a root type.
 
                when Abstract_Type =>
                   declare
@@ -2421,7 +2423,8 @@ package body Gen_IL.Gen is
             end if;
          end loop;
 
-         Put (S, ")" & LF & "return " & Node_Or_Entity (Root) & "_Id");
+         Put (S, ")" & LF);
+         Put (S, "return " & Node_Or_Entity (Root) & "_Id");
          Decrease_Indent (S, 2);
          Decrease_Indent (S, 1);
       end Put_Make_Spec;

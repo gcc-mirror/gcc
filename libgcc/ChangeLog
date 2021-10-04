@@ -1,3 +1,9 @@
+2021-10-03  Patrick McGehearty  <patrick.mcgehearty@oracle.com>
+
+	PR target/101104
+	* libgcc2.c (RMIN2, RMINSCAL, RMAX2):
+	Use more correct values for native IBM 128-bit.
+
 2021-09-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/libgcc-darwin.ver: Add Symbols for

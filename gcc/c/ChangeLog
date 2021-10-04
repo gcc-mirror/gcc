@@ -1,3 +1,21 @@
+2021-10-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/102103
+	* c-typeck.c (maybe_warn_for_null_address): New function.
+	(build_binary_op): Call it.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* c-typeck.c (build_binary_op): Call ubsan_instrument_division
+	for division even for SANITIZE_SI_OVERFLOW.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_order): Set
+	OMP_CLAUSE_ORDER_REPRODUCIBLE for explicit reproducible: modifier.
+
 2021-09-28  Andrew Pinski  <apinski@marvell.com>
 
 	PR c/32122

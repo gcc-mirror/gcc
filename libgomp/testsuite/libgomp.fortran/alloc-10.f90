@@ -134,7 +134,7 @@ program main
   ip(420 / c_sizeof (0)) = 6
   q = omp_aligned_calloc (8_c_size_t, 24_c_size_t, 32_c_size_t, a2)
   call c_f_pointer (q, iq, [768 / c_sizeof (0)])
-  if (mod (TRANSFER (p, iptr), 16) /= 0) &
+  if (mod (TRANSFER (q, iptr), 16) /= 0) &
     stop 18
   do i = 1, 768 / c_sizeof (0)
     if (iq(i) /= 0) &
@@ -144,7 +144,7 @@ program main
   iq(768 / c_sizeof (0)) = 8
   r = omp_aligned_calloc (8_c_size_t, 64_c_size_t, 8_c_size_t, a2)
   call c_f_pointer (r, ir, [512 / c_sizeof (0)])
-  if (mod (TRANSFER (p, iptr), 8) /= 0) &
+  if (mod (TRANSFER (r, iptr), 8) /= 0) &
     stop 20
   do i = 1, 512 / c_sizeof (0)
     if (ir(i) /= 0) &

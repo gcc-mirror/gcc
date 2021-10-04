@@ -932,14 +932,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       deque(deque&&) = default;
 
       /// Copy constructor with alternative allocator
-      deque(const deque& __x, const allocator_type& __a)
+      deque(const deque& __x, const __type_identity_t<allocator_type>& __a)
       : _Base(__a, __x.size())
       { std::__uninitialized_copy_a(__x.begin(), __x.end(),
 				    this->_M_impl._M_start,
 				    _M_get_Tp_allocator()); }
 
       /// Move constructor with alternative allocator
-      deque(deque&& __x, const allocator_type& __a)
+      deque(deque&& __x, const __type_identity_t<allocator_type>& __a)
       : deque(std::move(__x), __a, typename _Alloc_traits::is_always_equal{})
       { }
 

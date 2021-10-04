@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Aug 03, 2021
+GNAT User's Guide for Native Platforms , Sep 28, 2021
 
 AdaCore
 
@@ -6421,10 +6421,10 @@ as comments, to be completed manually if needed.
 some extensions (e.g. vector types) are not supported
 
 @item 
-pointers to pointers or complex structures are mapped to System.Address
+pointers to pointers are mapped to System.Address
 
 @item 
-identifiers with identical name (except casing) will generate compilation
+identifiers with identical name (except casing) may generate compilation
 errors (e.g. @code{shm_get} vs @code{SHM_GET}).
 @end itemize
 
@@ -6450,15 +6450,18 @@ spec files for the header files specified on the command line, and all
 header files needed by these files transitively. For example:
 
 @example
-$ g++ -c -fdump-ada-spec -C /usr/include/time.h
+$ gcc -c -fdump-ada-spec -C /usr/include/time.h
 $ gcc -c *.ads
 @end example
 
 will generate, under GNU/Linux, the following files: @code{time_h.ads},
 @code{bits_time_h.ads}, @code{stddef_h.ads}, @code{bits_types_h.ads} which
 correspond to the files @code{/usr/include/time.h},
-@code{/usr/include/bits/time.h}, etc…, and will then compile these Ada specs
-in Ada 2005 mode.
+@code{/usr/include/bits/time.h}, etc…, and then compile these Ada specs.
+That is to say, the name of the Ada specs is in keeping with the relative path
+under @code{/usr/include/} of the header files. This behavior is specific to
+paths ending with @code{/include/}; in all the other cases, the name of the
+Ada specs is derived from the simple name of the header files instead.
 
 The @code{-C} switch tells @code{gcc} to extract comments from headers,
 and will attempt to generate corresponding Ada comments.
@@ -6469,46 +6472,15 @@ can use instead the @code{-fdump-ada-spec-slim} switch.
 You can optionally specify a parent unit, of which all generated units will
 be children, using @code{-fada-spec-parent=@emph{unit}}.
 
-Note that we recommend when possible to use the @emph{g++} driver to
-generate bindings, even for most C headers, since this will in general
-generate better Ada specs. For generating bindings for C++ headers, it is
-mandatory to use the @emph{g++} command, or @emph{gcc -x c++} which
-is equivalent in this case. If @emph{g++} cannot work on your C headers
-because of incompatibilities between C and C++, then you can fallback to
-@code{gcc} instead.
-
-For an example of better bindings generated from the C++ front-end,
-the name of the parameters (when available) are actually ignored by the C
-front-end. Consider the following C header:
-
-@example
-extern void foo (int variable);
-@end example
-
-with the C front-end, @code{variable} is ignored, and the above is handled as:
-
-@example
-extern void foo (int);
-@end example
-
-generating a generic:
-
-@example
-procedure foo (param1 : int);
-@end example
-
-with the C++ front-end, the name is available, and we generate:
-
-@example
-procedure foo (variable : int);
-@end example
+The simple @code{gcc`}-based command works only for C headers. For C++ headers
+you need to use either the @code{g++} command or the combination @code{gcc -x c++`}.
 
 In some cases, the generated bindings will be more complete or more meaningful
 when defining some macros, which you can do via the @code{-D} switch. This
 is for example the case with @code{Xlib.h} under GNU/Linux:
 
 @example
-$ g++ -c -fdump-ada-spec -DXLIB_ILLEGAL_ACCESS -C /usr/include/X11/Xlib.h
+$ gcc -c -fdump-ada-spec -DXLIB_ILLEGAL_ACCESS -C /usr/include/X11/Xlib.h
 @end example
 
 The above will generate more complete bindings than a straight call without
@@ -6530,7 +6502,7 @@ lines in e.g. @code{readline1.h}:
 and then generate Ada bindings from this file:
 
 @example
-$ g++ -c -fdump-ada-spec readline1.h
+$ gcc -c -fdump-ada-spec readline1.h
 @end example
 
 @node Generating Bindings for C++ Headers,Switches,Running the Binding Generator,Generating Ada Bindings for C and C++ headers
@@ -8961,9 +8933,10 @@ also suppresses generation of cross-reference information
 @item @code{-gnateA}
 
 Check that the actual parameters of a subprogram call are not aliases of one
-another. To qualify as aliasing, the actuals must denote objects of a composite
-type, their memory locations must be identical or overlapping, and at least one
-of the corresponding formal parameters must be of mode OUT or IN OUT.
+another. To qualify as aliasing, their memory locations must be identical or
+overlapping, at least one of the corresponding formal parameters must be of
+mode OUT or IN OUT, and at least one of the corresponding formal parameters
+must have its parameter passing mechanism not specified.
 
 @example
 type Rec_Typ is record

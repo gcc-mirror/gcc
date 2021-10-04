@@ -1,3 +1,19 @@
+2021-10-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/102103
+	* array.c: Remove an unnecessary test.
+	* trans-array.c: Same.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_omp_clauses): Add order_reproducible bitfield.
+	* dump-parse-tree.c (show_omp_clauses): Print REPRODUCIBLE: for it.
+	* openmp.c (gfc_match_omp_clauses): Set order_reproducible for
+	explicit reproducible: modifier.
+	* trans-openmp.c (gfc_trans_omp_clauses): Set
+	OMP_CLAUSE_ORDER_REPRODUCIBLE for order_reproducible.
+	(gfc_split_omp_clauses): Also copy order_reproducible.
+
 2021-09-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102458

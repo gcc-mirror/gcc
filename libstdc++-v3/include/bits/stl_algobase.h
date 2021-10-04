@@ -420,11 +420,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__copy_m(const _Tp* __first, const _Tp* __last, _Tp* __result)
 	{
 #if __cplusplus >= 201103L
-	  using __assignable = conditional<_IsMove,
-					   is_move_assignable<_Tp>,
-					   is_copy_assignable<_Tp>>;
+	  using __assignable = __conditional_t<_IsMove,
+					       is_move_assignable<_Tp>,
+					       is_copy_assignable<_Tp>>;
 	  // trivial types can have deleted assignment
-	  static_assert( __assignable::type::value, "type must be assignable" );
+	  static_assert( __assignable::value, "type must be assignable" );
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
@@ -731,11 +731,11 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	__copy_move_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
 	{
 #if __cplusplus >= 201103L
-	  using __assignable = conditional<_IsMove,
-					   is_move_assignable<_Tp>,
-					   is_copy_assignable<_Tp>>;
+	  using __assignable = __conditional_t<_IsMove,
+					       is_move_assignable<_Tp>,
+					       is_copy_assignable<_Tp>>;
 	  // trivial types can have deleted assignment
-	  static_assert( __assignable::type::value, "type must be assignable" );
+	  static_assert( __assignable::value, "type must be assignable" );
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
@@ -2123,6 +2123,26 @@ _GLIBCXX_END_NAMESPACE_ALGO
 	if (__pred(__first))
 	  ++__n;
       return __n;
+    }
+
+  template<typename _ForwardIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
+    _ForwardIterator
+    __remove_if(_ForwardIterator __first, _ForwardIterator __last,
+		_Predicate __pred)
+    {
+      __first = std::__find_if(__first, __last, __pred);
+      if (__first == __last)
+	return __first;
+      _ForwardIterator __result = __first;
+      ++__first;
+      for (; __first != __last; ++__first)
+	if (!__pred(__first))
+	  {
+	    *__result = _GLIBCXX_MOVE(*__first);
+	    ++__result;
+	  }
+      return __result;
     }
 
 #if __cplusplus >= 201103L

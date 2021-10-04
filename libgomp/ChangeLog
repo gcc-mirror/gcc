@@ -1,3 +1,39 @@
+2021-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/order-reproducible-1.f90: New test
+	based on libgomp.c-c++-common/order-reproducible-1.c.
+	* testsuite/libgomp.fortran/order-reproducible-2.f90: Likewise.
+	* testsuite/libgomp.fortran/my-usleep.c: New test.
+
+2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/alloc-10.f90: Fix alignment check.
+	* testsuite/libgomp.fortran/alloc-7.f90: Fix array access.
+	* testsuite/libgomp.fortran/alloc-8.f90: Likewise.
+	* testsuite/libgomp.fortran/alloc-11.f90: New test for omp_realloc,
+	based on libgomp.c-c++-common/alloc-9.c.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/order-reproducible-1.c: New test.
+	* testsuite/libgomp.c-c++-common/order-reproducible-2.c: New test.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* affinity-fmt.c (omp_get_team_num, omp_get_num_teams): Add
+	ialias_redirect.
+	* env.c (handle_omp_display_env): Use ialias_call.
+	* icv-device.c: Move ialias right below each function.
+	(omp_get_device_num): Use ialias_call.
+	* fortran.c (omp_fulfill_event): Add ialias_redirect.
+	* icv.c (omp_get_active_level): Add ialias_redirect.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_aligned_alloc, omp_aligned_calloc): Add
+	__alloc_align__ (1) attribute.
+	* testsuite/libgomp.c-c++-common/alloc-9.c: New test.
+
 2021-09-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/alloc-7.f90: Add dg-prune-output

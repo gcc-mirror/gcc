@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // otherwise use _Otherwise.
     template<typename _Cat, typename _Limit, typename _Otherwise = _Cat>
       using __clamp_iter_cat
-	= conditional_t<derived_from<_Cat, _Limit>, _Limit, _Otherwise>;
+	= __conditional_t<derived_from<_Cat, _Limit>, _Limit, _Otherwise>;
   }
 #endif
 
@@ -155,9 +155,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __traits_type::reference		reference;
 #else
       using iterator_concept
-	= conditional_t<random_access_iterator<_Iterator>,
-			random_access_iterator_tag,
-			bidirectional_iterator_tag>;
+	= __conditional_t<random_access_iterator<_Iterator>,
+			  random_access_iterator_tag,
+			  bidirectional_iterator_tag>;
       using iterator_category
 	= __detail::__clamp_iter_cat<typename __traits_type::iterator_category,
 				     random_access_iterator_tag>;
@@ -174,20 +174,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 235 No specification of default ctor for reverse_iterator
       // 1012. reverse_iterator default ctor should value initialize
       _GLIBCXX17_CONSTEXPR
-      reverse_iterator() : current() { }
+      reverse_iterator()
+      _GLIBCXX_NOEXCEPT_IF(noexcept(_Iterator()))
+      : current()
+      { }
 
       /**
        *  This %iterator will move in the opposite direction that @p x does.
       */
       explicit _GLIBCXX17_CONSTEXPR
-      reverse_iterator(iterator_type __x) : current(__x) { }
+      reverse_iterator(iterator_type __x)
+      _GLIBCXX_NOEXCEPT_IF(noexcept(_Iterator(__x)))
+      : current(__x)
+      { }
 
       /**
        *  The copy constructor is normal.
       */
       _GLIBCXX17_CONSTEXPR
       reverse_iterator(const reverse_iterator& __x)
-      : current(__x.current) { }
+      _GLIBCXX_NOEXCEPT_IF(noexcept(_Iterator(__x.current)))
+      : current(__x.current)
+      { }
 
 #if __cplusplus >= 201103L
       reverse_iterator& operator=(const reverse_iterator&) = default;
@@ -203,7 +211,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	_GLIBCXX17_CONSTEXPR
         reverse_iterator(const reverse_iterator<_Iter>& __x)
-	: current(__x.current) { }
+	_GLIBCXX_NOEXCEPT_IF(noexcept(_Iterator(__x.current)))
+	: current(__x.current)
+	{ }
 
 #if __cplusplus >= 201103L
       template<typename _Iter>
@@ -214,6 +224,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX17_CONSTEXPR
 	reverse_iterator&
 	operator=(const reverse_iterator<_Iter>& __x)
+	_GLIBCXX_NOEXCEPT_IF(noexcept(current = __x.current))
 	{
 	  current = __x.current;
 	  return *this;
@@ -226,6 +237,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_NODISCARD
       _GLIBCXX17_CONSTEXPR iterator_type
       base() const
+      _GLIBCXX_NOEXCEPT_IF(noexcept(_Iterator(current)))
       { return current; }
 
       /**
@@ -1010,6 +1022,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       typedef std::iterator_traits<_Iterator>		__traits_type;
 
+#if __cplusplus >= 201103L
+      template<typename _Iter>
+	using __convertible_from
+	  = std::__enable_if_t<std::is_convertible<_Iter, _Iterator>::value>;
+#endif
+
     public:
       typedef _Iterator					iterator_type;
       typedef typename __traits_type::iterator_category iterator_category;
@@ -1030,12 +1048,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_current(__i) { }
 
       // Allow iterator to const_iterator conversion
+#if __cplusplus >= 201103L
+      template<typename _Iter, typename = __convertible_from<_Iter>>
+	_GLIBCXX20_CONSTEXPR
+	__normal_iterator(const __normal_iterator<_Iter, _Container>& __i)
+	noexcept
+#else
+      // N.B. _Container::pointer is not actually in container requirements,
+      // but is present in std::vector and std::basic_string.
       template<typename _Iter>
-        _GLIBCXX20_CONSTEXPR
         __normal_iterator(const __normal_iterator<_Iter,
 			  typename __enable_if<
-      	       (std::__are_same<_Iter, typename _Container::pointer>::__value),
-		      _Container>::__type>& __i) _GLIBCXX_NOEXCEPT
+	       (std::__are_same<_Iter, typename _Container::pointer>::__value),
+		      _Container>::__type>& __i)
+#endif
         : _M_current(__i.base()) { }
 
       // Forward iterator requirements
@@ -1429,9 +1455,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Iterator					pointer;
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2106. move_iterator wrapping iterators returning prvalues
-      typedef typename conditional<is_reference<__base_ref>::value,
-			 typename remove_reference<__base_ref>::type&&,
-			 __base_ref>::type		reference;
+      using reference
+	= __conditional_t<is_reference<__base_ref>::value,
+			  typename remove_reference<__base_ref>::type&&,
+			  __base_ref>;
 #endif
 
       _GLIBCXX17_CONSTEXPR
@@ -1736,9 +1763,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return move_iterator<_Iterator>(std::move(__i)); }
 
   template<typename _Iterator, typename _ReturnType
-    = typename conditional<__move_if_noexcept_cond
+    = __conditional_t<__move_if_noexcept_cond
       <typename iterator_traits<_Iterator>::value_type>::value,
-                _Iterator, move_iterator<_Iterator>>::type>
+		_Iterator, move_iterator<_Iterator>>>
     inline _GLIBCXX17_CONSTEXPR _ReturnType
     __make_move_if_noexcept_iterator(_Iterator __i)
     { return _ReturnType(__i); }
@@ -1746,8 +1773,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Overload for pointers that matches std::move_if_noexcept more closely,
   // returning a constant iterator when we don't want to move.
   template<typename _Tp, typename _ReturnType
-    = typename conditional<__move_if_noexcept_cond<_Tp>::value,
-			   const _Tp*, move_iterator<_Tp*>>::type>
+    = __conditional_t<__move_if_noexcept_cond<_Tp>::value,
+		      const _Tp*, move_iterator<_Tp*>>>
     inline _GLIBCXX17_CONSTEXPR _ReturnType
     __make_move_if_noexcept_iterator(_Tp* __i)
     { return _ReturnType(__i); }
@@ -1801,7 +1828,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       const iter_value_t<_It>*
-      operator->() const
+      operator->() const noexcept
       { return std::__addressof(_M_keep); }
     };
 
@@ -1816,7 +1843,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       const iter_value_t<_It>&
-      operator*() const
+      operator*() const noexcept
       { return _M_keep; }
     };
 
@@ -2152,8 +2179,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     public:
-      using iterator_concept = conditional_t<forward_iterator<_It>,
-	    forward_iterator_tag, input_iterator_tag>;
+      using iterator_concept = __conditional_t<forward_iterator<_It>,
+					       forward_iterator_tag,
+					       input_iterator_tag>;
       using iterator_category = decltype(_S_iter_cat());
       using value_type = iter_value_t<_It>;
       using difference_type = iter_difference_t<_It>;
@@ -2433,9 +2461,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     requires same_as<__detail::__iter_traits<_It>, iterator_traits<_It>>
     struct iterator_traits<counted_iterator<_It>> : iterator_traits<_It>
     {
-      using pointer = conditional_t<contiguous_iterator<_It>,
-				    add_pointer_t<iter_reference_t<_It>>,
-				    void>;
+      using pointer = __conditional_t<contiguous_iterator<_It>,
+				      add_pointer_t<iter_reference_t<_It>>,
+				      void>;
     };
 #endif // C++20
 

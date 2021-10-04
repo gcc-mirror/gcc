@@ -5305,7 +5305,7 @@ get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
    has non-BLKmode.  DECL_RTL must not be a MEM; if
    DECL_RTL was not set yet, return false.  */
 
-static inline bool
+bool
 non_mem_decl_p (tree base)
 {
   if (!DECL_P (base)
@@ -5322,7 +5322,7 @@ non_mem_decl_p (tree base)
 /* Returns true if REF refers to an object that does not
    reside in memory and has non-BLKmode.  */
 
-static inline bool
+bool
 mem_ref_refers_to_non_mem_p (tree ref)
 {
   tree base;

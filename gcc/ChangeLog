@@ -1,3 +1,121 @@
+2021-10-03  Martin Liska  <mliska@suse.cz>
+
+	* toplev.c (toplev::main): Check opt_index if it is a part
+	of cl_options.
+
+2021-10-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102563
+	* range-op.cc (operator_lshift::op1_range): Do not clobber
+	range.
+
+2021-10-02  Martin Liska  <mliska@suse.cz>
+
+	* toplev.c (toplev::main): save_decoded_options[0] is program
+	name and so it should be skipped.
+
+2021-10-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102546
+	* range-op.cc (operator_lshift::op1_range): Teach range-ops that
+	X << Y is non-zero implies X is also non-zero.
+
+2021-10-01  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New
+	Cortex-X2 core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2021-10-01  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New
+	Cortex-A710 core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2021-10-01  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New
+	Cortex-A510 core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2021-10-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/102103
+	* doc/invoke.texi (-Waddress): Update.
+	* gengtype.c (write_types): Avoid -Waddress.
+	* poly-int.h (POLY_SET_COEFF): Avoid using null.
+
+2021-10-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR debug/102373
+	* config/pa/pa.c (pa_option_override): Default to dwarf version 4
+	on hppa64-hpux.
+
+2021-10-01  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_FL_V9): Update value.
+
+2021-10-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::compute_ranges): Use
+	get_path_oracle.
+	* gimple-range-path.h (class path_range_query): Remove shadowed
+	m_oracle field.
+	(path_range_query::get_path_oracle): New.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* doc/invoke.texi (-fsanitize=integer-divide-by-zero): Remove
+	INT_MIN / -1 division detection from here ...
+	(-fsanitize=signed-integer-overflow): ... and add it here.
+
+2021-10-01  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-arches.def (AARCH64_ARCH): Added
+	armv9-a.
+	* config/aarch64/aarch64.h (AARCH64_FL_V9): New.
+	(AARCH64_FL_FOR_ARCH9): New flags for Armv9-A.
+	(AARCH64_ISA_V9): New ISA flag.
+	* doc/invoke.texi: Update docs.
+
+2021-10-01  Martin Liska  <mliska@suse.cz>
+
+	* toplev.c (toplev::main): Save decoded optimization options.
+	* toplev.h (save_opt_decoded_options): New.
+	* doc/extend.texi: Be more clear about optimize and target
+	attributes.
+
+2021-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* explow.c: Include langhooks.h.
+	(set_stack_check_libfunc): Build a proper function type.
+
+2021-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/64697
+	* config/i386/i386.c (legitimate_pic_address_disp_p): For PE-COFF do
+	not return true for external weak function symbols in medium model.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_ORDER_REPRODUCIBLE): Define.
+	* tree-pretty-print.c (dump_omp_clause) <case OMP_CLAUSE_ORDER>: Print
+	reproducible: for OMP_CLAUSE_ORDER_REPRODUCIBLE.
+	* omp-general.c (omp_extract_for_data): If OMP_CLAUSE_ORDER is seen
+	without OMP_CLAUSE_ORDER_UNCONSTRAINED, overwrite sched_kind to
+	OMP_CLAUSE_SCHEDULE_STATIC.
+
+2021-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102518
+	* tree-inline.c (setup_one_parameter): Avoid substituting
+	an invariant into contexts where a GIMPLE register is not valid.
+
 2021-09-30  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
 	* config/arm/arm-cpus.in: Add Cortex-R52+ CPU.

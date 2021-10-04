@@ -2075,7 +2075,7 @@ package body Sprint is
             Sprint_Node (Name (Node));
             Write_Char (';');
 
-         when N_Generic_Package_Declaration =>
+         when N_Generic_Declaration =>
             Extra_Blank_Line;
             Write_Indent_Str_Sloc ("generic ");
             Sprint_Indented_List (Generic_Formal_Declarations (Node));
@@ -2095,14 +2095,6 @@ package body Sprint is
             Sprint_Node (Defining_Unit_Name (Node));
             Write_Str_With_Col_Check (" renames ");
             Sprint_Node (Name (Node));
-            Write_Char (';');
-
-         when N_Generic_Subprogram_Declaration =>
-            Extra_Blank_Line;
-            Write_Indent_Str_Sloc ("generic ");
-            Sprint_Indented_List (Generic_Formal_Declarations (Node));
-            Write_Indent;
-            Sprint_Node (Specification (Node));
             Write_Char (';');
 
          when N_Goto_Statement =>

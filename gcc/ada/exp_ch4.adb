@@ -6911,7 +6911,6 @@ package body Exp_Ch4 is
             if Ada_Version >= Ada_2012
               and then Is_Acc
               and then Ekind (Ltyp) = E_Anonymous_Access_Type
-              and then not No_Dynamic_Accessibility_Checks_Enabled (Lop)
             then
                declare
                   Expr_Entity : Entity_Id := Empty;
@@ -6928,11 +6927,26 @@ package body Exp_Ch4 is
                      end if;
                   end if;
 
+                  --  When restriction No_Dynamic_Accessibility_Checks is in
+                  --  effect, expand the membership test to a static value
+                  --  since we cannot rely on dynamic levels.
+
+                  if No_Dynamic_Accessibility_Checks_Enabled (Lop) then
+                     if Static_Accessibility_Level
+                          (Lop, Object_Decl_Level)
+                            > Type_Access_Level (Rtyp)
+                     then
+                        Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+                     else
+                        Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+                     end if;
+                     Analyze_And_Resolve (N, Restyp);
+
                   --  If a conversion of the anonymous access value to the
                   --  tested type would be illegal, then the result is False.
 
-                  if not Valid_Conversion
-                           (Lop, Rtyp, Lop, Report_Errs => False)
+                  elsif not Valid_Conversion
+                              (Lop, Rtyp, Lop, Report_Errs => False)
                   then
                      Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
                      Analyze_And_Resolve (N, Restyp);
@@ -7255,11 +7269,15 @@ package body Exp_Ch4 is
       --  Generate index and validity checks
 
       declare
-         Dims_Checked : Dimension_Set (Dimensions => Number_Dimensions (T));
+         Dims_Checked : Dimension_Set (Dimensions =>
+                                         (if Is_Array_Type (T)
+                                          then Number_Dimensions (T)
+                                          else 1));
          --  Dims_Checked is used to avoid generating two checks (one in
          --  Generate_Index_Checks, one in Apply_Subscript_Validity_Checks)
          --  for the same index value in cases where the index check eliminates
-         --  the need for the validity check.
+         --  the need for the validity check. The Is_Array_Type test avoids
+         --  cascading errors.
 
       begin
          Generate_Index_Checks (N, Checks_Generated => Dims_Checked);
@@ -7284,6 +7302,27 @@ package body Exp_Ch4 is
                --  If Validity_Check_Subscripts is True then we need to
                --  ensure validity, so we adjust Dims_Checked accordingly.
                Dims_Checked.Elements := (others => False);
+
+            elsif Is_Array_Type (T) then
+               --  We are only adding extra validity checks here to
+               --  deal with uninitialized variables (but this includes
+               --  assigning one uninitialized variable to another). Other
+               --  ways of producing invalid objects imply erroneousness, so
+               --  the compiler can do whatever it wants for those cases.
+               --  If an index type has the Default_Value aspect specified,
+               --  then we don't have to worry about the possibility of an
+               --  uninitialized variable, so no need for these extra
+               --  validity checks.
+
+               declare
+                  Idx : Node_Id := First_Index (T);
+               begin
+                  for No_Check_Needed of Dims_Checked.Elements loop
+                     No_Check_Needed := No_Check_Needed
+                       or else Has_Aspect (Etype (Idx), Aspect_Default_Value);
+                     Next_Index (Idx);
+                  end loop;
+               end;
             end if;
 
             Apply_Subscript_Validity_Checks
@@ -11521,7 +11560,7 @@ package body Exp_Ch4 is
             then
                Par := Parent (Par);
 
-               --  Any other case is not what we are looking for
+            --  Any other case is not what we are looking for
 
             else
                return False;
@@ -11557,7 +11596,7 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Pref     : constant Node_Id := Prefix (N);
+      Pref : constant Node_Id := Prefix (N);
 
    --  Start of processing for Expand_N_Slice
 
@@ -11583,7 +11622,7 @@ package body Exp_Ch4 is
       --       situation correctly in the assignment statement expansion).
 
       --    2. Prefix of indexed component (the slide is optimized away in this
-      --       case, see the start of Expand_N_Slice.)
+      --       case, see the start of Expand_N_Indexed_Component.)
 
       --    3. Object renaming declaration, since we want the name of the
       --       slice, not the value.

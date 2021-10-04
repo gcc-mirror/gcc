@@ -1,3 +1,110 @@
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101765
+	* g++.dg/coroutines/pr101765.C: New test.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99710
+	* g++.dg/coroutines/pr99710.C: New test.
+
+2021-10-03  John Eivind Helset  <jehelset@gmail.com>
+
+	PR c++/100673
+	* g++.dg/coroutines/pr100673.C: New test.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101133
+	* g++.dg/coroutines/pr101133.C: New test.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99575
+	* g++.dg/coroutines/pr99575.C: New test.
+
+2021-10-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/pr102563.c: New test.
+
+2021-10-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.dg/analyzer/torture/asm-x86-linux-rdmsr.c (DECLARE_ARGS):
+	Use unsigned long long for x86-64.
+
+2021-10-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102546
+	* gcc.dg/tree-ssa/pr102546.c: New file.
+
+2021-10-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/102103
+	* g++.dg/cpp0x/constexpr-array-ptr10.C: Suppress a valid warning.
+	* g++.dg/warn/Wreturn-local-addr-6.C: Correct a cast.
+	* gcc.dg/Waddress.c: Expect a warning.
+	* c-c++-common/Waddress-3.c: New test.
+	* c-c++-common/Waddress-4.c: New test.
+	* g++.dg/warn/Waddress-5.C: New test.
+	* g++.dg/warn/Waddress-6.C: New test.
+	* g++.dg/warn/pr101219.C: Expect a warning.
+	* gcc.dg/Waddress-3.c: New test.
+
+2021-10-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	* c-c++-common/tsan/atomic_stack.c: Don't expect print out from
+	__tsan_atomic32_fetch_add.
+
+2021-10-01  qingzhe huang  <nickhuang99@hotmail.com>
+
+	PR c++/101783
+	* g++.dg/parse/pr101783.C: New test.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* c-c++-common/ubsan/div-by-zero-3.c: Use
+	-fsanitize=signed-integer-overflow instead of
+	-fsanitize=integer-divide-by-zero.
+	* c-c++-common/ubsan/div-by-zero-5.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-4.c: Likewise.  Add
+	-fsanitize-undefined-trap-on-error.
+	* c-c++-common/ubsan/float-div-by-zero-2.c: New test.
+	* c-c++-common/ubsan/overflow-div-1.c: New test.
+	* c-c++-common/ubsan/overflow-div-2.c: New test.
+	* c-c++-common/ubsan/overflow-div-3.c: New test.
+
+2021-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/cpymem-size.c: Adjust scan for ilp32.
+
+2021-10-01  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/vect/bb-slp-pr97709.c: Fix for computed goto
+	pointers.
+
+2021-10-01  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/avx512er-vrsqrt28ps-3.c: Disable fast math.
+	* gcc.target/i386/avx512er-vrsqrt28ps-5.c: Likewise.
+	* gcc.target/i386/attr-optimize.c: New test.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/order-5.f90: Adjust scan-tree-dump-times regexps.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102496
+	* g++.dg/tls/pr102496-1.C: New test.
+	* g++.dg/tls/pr102496-2.C: New test.
+
+2021-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102518
+	* gcc.dg/torture/pr102518.c: New testcase.
+
 2021-09-30  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/c-interop/cf-descriptor-5-c.c: Include alloca.h.

@@ -1,3 +1,45 @@
+2021-10-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-format.c: Remove a test of TARGET_FORMAT_TYPES with
+	NULL, this is not needed.
+
+2021-10-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/102103
+	* c-common.c (decl_with_nonnull_addr_p): Handle members.
+	Check and perform warning suppression.
+	(c_common_truthvalue_conversion): Enhance warning suppression.
+
+2021-10-01  Martin Liska  <mliska@suse.cz>
+
+	PR target/102552
+	* c-common.c (parse_optimize_options): decoded_options[0] is
+	  used for program name, so merged_decoded_options should also
+	  respect that.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* c-ubsan.c (ubsan_instrument_division): Check the right
+	flag_sanitize_recover bit, depending on which sanitization
+	is done.  Sanitize INT_MIN / -1 under SANITIZE_SI_OVERFLOW
+	rather than SANITIZE_DIVIDE.  If both SANITIZE_SI_OVERFLOW
+	and SANITIZE_DIVIDE is enabled, neither check is known
+	to be false and flag_sanitize_recover bits for those two
+	aren't the same, emit both __ubsan_handle_divrem_overflow
+	and __ubsan_handle_divrem_overflow_abort calls.
+
+2021-10-01  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (parse_optimize_options): Combine optimize
+	options with what was provided on the command line.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses): Also copy
+	OMP_CLAUSE_ORDER_REPRODUCIBLE.
+
 2021-09-27  Martin Liska  <mliska@suse.cz>
 
 	* c-opts.c (c_common_init_options_struct): Set also

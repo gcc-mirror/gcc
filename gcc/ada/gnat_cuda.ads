@@ -86,7 +86,10 @@ package GNAT_CUDA is
    --  entity of its parent package body.
 
    procedure Expand_CUDA_Package (N : Node_Id);
-   --  When compiling for the host, generate code to register kernels with the
-   --  CUDA runtime and post-process kernels.
+   --  When compiling for the host:
+   --  - Generate code to register kernels with the CUDA runtime and
+   --    post-process kernels.
+   --  - Empty content of CUDA_Global procedures.
+   --  - Remove declarations of CUDA_Device entities.
 
 end GNAT_CUDA;
