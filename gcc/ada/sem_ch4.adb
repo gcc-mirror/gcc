@@ -2534,6 +2534,7 @@ package body Sem_Ch4 is
               and then Is_Entity_Name (Actual)
               and then Is_Type (Entity (Actual))
               and then Is_Discrete_Type (Entity (Actual))
+              and then not Is_Current_Instance (Actual)
             then
                Replace (N,
                  Make_Slice (Loc,

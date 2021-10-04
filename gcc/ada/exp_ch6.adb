@@ -3143,12 +3143,49 @@ package body Exp_Ch6 is
       function Can_Fold_Predicate_Call (P : Entity_Id) return Boolean is
          Actual : Node_Id;
 
+         function Augments_Other_Dynamic_Predicate (DP_Aspect_Spec : Node_Id)
+           return Boolean;
+         --  Given a Dynamic_Predicate aspect aspecification for a
+         --  discrete type, returns True iff another DP specification
+         --  applies (indirectly, via a subtype type or a derived type)
+         --  to the same entity that this aspect spec applies to.
+
          function May_Fold (N : Node_Id) return Traverse_Result;
          --  The predicate expression is foldable if it only contains operators
          --  and literals. During this check, we also replace occurrences of
          --  the formal of the constructed predicate function with the static
          --  value of the actual. This is done on a copy of the analyzed
          --  expression for the predicate.
+
+         --------------------------------------
+         -- Augments_Other_Dynamic_Predicate --
+         --------------------------------------
+
+         function Augments_Other_Dynamic_Predicate (DP_Aspect_Spec : Node_Id)
+           return Boolean
+         is
+            Aspect_Bearer : Entity_Id := Entity (DP_Aspect_Spec);
+         begin
+            loop
+               Aspect_Bearer := Nearest_Ancestor (Aspect_Bearer);
+
+               if not Present (Aspect_Bearer) then
+                  return False;
+               end if;
+
+               declare
+                  Aspect_Spec : constant Node_Id :=
+                    Find_Aspect (Aspect_Bearer, Aspect_Dynamic_Predicate);
+               begin
+                  if Present (Aspect_Spec)
+                    and then Aspect_Spec /= DP_Aspect_Spec
+                  then
+                     --  Found another Dynamic_Predicate aspect spec
+                     return True;
+                  end if;
+               end;
+            end loop;
+         end Augments_Other_Dynamic_Predicate;
 
          --------------
          -- May_Fold --
@@ -3192,7 +3229,7 @@ package body Exp_Ch6 is
 
          function Try_Fold is new Traverse_Func (May_Fold);
 
-         --  Other lLocal variables
+         --  Other Local variables
 
          Subt   : constant Entity_Id := Etype (First_Entity (P));
          Aspect : Node_Id;
@@ -3220,6 +3257,11 @@ package body Exp_Ch6 is
            or else Nkind (Actual) /= N_Integer_Literal
            or else not Has_Dynamic_Predicate_Aspect (Subt)
            or else No (Aspect)
+
+           --  Do not fold if multiple applicable predicate aspects
+           or else Present (Find_Aspect (Subt, Aspect_Static_Predicate))
+           or else Present (Find_Aspect (Subt, Aspect_Predicate))
+           or else Augments_Other_Dynamic_Predicate (Aspect)
            or else CodePeer_Mode
          then
             return False;
