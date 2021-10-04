@@ -1,3 +1,35 @@
+2021-10-03  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102458
+	* gfortran.dg/pr102458b.f90: New test.
+
+2021-10-03  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102458
+	* gfortran.dg/pr102458.f90: New test.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/102454
+	* g++.dg/coroutines/pr102454.C: New test.
+
+2021-10-03  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2021-05-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/coroutines/coro-bad-gro-00-class-gro-scalar-return.C:
+	Adjust diagnostic.
+
 2021-09-30  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
