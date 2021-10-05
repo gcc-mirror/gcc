@@ -1,3 +1,7 @@
+2021-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/rs6000/vxworks.h (TARGET_INIT_LIBFUNCS): Delete.
+
 2021-10-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR debug/102373

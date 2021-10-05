@@ -1,3 +1,7 @@
+2021-10-04  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-ldcmpi.c: Update counts.
+
 2021-10-03  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
