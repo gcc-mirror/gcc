@@ -31650,7 +31650,9 @@ package body Sem_Prag is
       --  to save the global references in the generic context.
 
       if From_Aspect_Specification (Prag)
-        and then (Present (Context_Id) and then Is_Generic_Unit (Context_Id))
+        and then Present (Context_Id)
+        and then
+          Is_Generic_Declaration_Or_Body (Unit_Declaration_Node (Context_Id))
       then
          return Corresponding_Aspect (Prag);
 
