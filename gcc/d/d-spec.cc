@@ -468,6 +468,12 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 	  generate_option (OPT_Wl_, LD_STATIC_OPTION, 1, CL_DRIVER,
 			   &new_decoded_options[j++]);
 	}
+#else
+      /* Push the -static-libstdc++ option back onto the command so that
+	 a target without LD_STATIC_DYNAMIC can use outfile substitution.  */
+      if (saw_static_libcxx && !static_link)
+	generate_option (OPT_static_libstdc__, NULL, 1, CL_DRIVER,
+			 &new_decoded_options[j++]);
 #endif
       if (saw_libcxx)
 	new_decoded_options[j++] = *saw_libcxx;
