@@ -165,10 +165,8 @@ public:
   void visit (HIR::CallExpr &expr) override
   {
     expr.get_fnexpr ()->accept_vis (*this);
-    expr.iterate_params ([&] (HIR::Expr *expr) -> bool {
-      expr->accept_vis (*this);
-      return true;
-    });
+    for (auto &argument : expr.get_arguments ())
+      argument->accept_vis (*this);
   }
 
   void visit (HIR::ArithmeticOrLogicalExpr &expr) override

@@ -1578,14 +1578,10 @@ protected:
   }
 };
 
-// Forward decl for Function - used in CallExpr
-class Function;
-
 // Function call expression HIR node
 class CallExpr : public ExprWithoutBlock
 {
   std::unique_ptr<Expr> function;
-  // inlined form of CallParams
   std::vector<std::unique_ptr<Expr> > params;
 
   Location locus;
@@ -1642,13 +1638,11 @@ public:
 
   size_t num_params () const { return params.size (); }
 
-  void iterate_params (std::function<bool (Expr *)> cb)
+  std::vector<std::unique_ptr<Expr> > &get_arguments () { return params; }
+
+  const std::vector<std::unique_ptr<Expr> > &get_arguments () const
   {
-    for (auto &param : params)
-      {
-	if (!cb (param.get ()))
-	  return;
-      }
+    return params;
   }
 
 protected:

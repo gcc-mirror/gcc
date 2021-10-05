@@ -74,11 +74,11 @@ CompileExpr::visit (HIR::CallExpr &expr)
       // this assumes all fields are in order from type resolution and if a
       // base struct was specified those fields are filed via accesors
       std::vector<Bexpression *> vals;
-      expr.iterate_params ([&] (HIR::Expr *argument) mutable -> bool {
-	Bexpression *e = CompileExpr::Compile (argument, ctx);
-	vals.push_back (e);
-	return true;
-      });
+      for (auto &argument : expr.get_arguments ())
+	{
+	  Bexpression *e = CompileExpr::Compile (argument.get (), ctx);
+	  vals.push_back (e);
+	}
 
       translated
 	= ctx->get_backend ()->constructor_expression (type, vals, -1,
@@ -91,12 +91,12 @@ CompileExpr::visit (HIR::CallExpr &expr)
       rust_assert (fn != nullptr);
 
       std::vector<Bexpression *> args;
-      expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-	Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
-	rust_assert (compiled_expr != nullptr);
-	args.push_back (compiled_expr);
-	return true;
-      });
+      for (auto &argument : expr.get_arguments ())
+	{
+	  Bexpression *compiled_expr
+	    = CompileExpr::Compile (argument.get (), ctx);
+	  args.push_back (compiled_expr);
+	}
 
       auto fncontext = ctx->peek_fn ();
       translated
