@@ -74,7 +74,7 @@ enum dump_kind
    the DUMP_OPTIONS array in dumpfile.c. The TDF_* flags coexist with
    MSG_* flags (for -fopt-info) and the bit values must be chosen to
    allow that.  */
-enum dump_flag
+enum dump_flag : uint32_t
 {
   /* Value of TDF_NONE is used just for bits filtered by TDF_KIND_MASK.  */
   TDF_NONE  = 0,
@@ -140,23 +140,26 @@ enum dump_flag
   /* Dump SCEV details.  */
   TDF_SCEV = (1 << 19),
 
-  /* Dump in GIMPLE FE syntax  */
+  /* Dump in GIMPLE FE syntax.  */
   TDF_GIMPLE = (1 << 20),
 
   /* Dump folding details.  */
   TDF_FOLDING = (1 << 21),
 
+  /* Dumping for range path solver.  */
+  TDF_THREADING = (1 << 22),
+
   /* MSG_* flags for expressing the kinds of message to
      be emitted by -fopt-info.  */
 
   /* -fopt-info optimized sources.  */
-  MSG_OPTIMIZED_LOCATIONS = (1 << 22),
+  MSG_OPTIMIZED_LOCATIONS = (1 << 23),
 
   /* Missed opportunities.  */
-  MSG_MISSED_OPTIMIZATION = (1 << 23),
+  MSG_MISSED_OPTIMIZATION = (1 << 24),
 
   /* General optimization info.  */
-  MSG_NOTE = (1 << 24),
+  MSG_NOTE = (1 << 25),
 
   /* Mask for selecting MSG_-kind flags.  */
   MSG_ALL_KINDS = (MSG_OPTIMIZED_LOCATIONS
@@ -175,33 +178,33 @@ enum dump_flag
      sub-option of -fopt-info to show the internal messages.  */
 
   /* Implicitly supplied for messages at the top-level dump scope.  */
-  MSG_PRIORITY_USER_FACING = (1 << 25),
+  MSG_PRIORITY_USER_FACING = (1 << 26),
 
   /* Implicitly supplied for messages within nested dump scopes.  */
-  MSG_PRIORITY_INTERNALS = (1 << 26),
+  MSG_PRIORITY_INTERNALS = (1 << 27),
 
   /* Supplied when an opt_problem generated in a nested scope is re-emitted
      at the top-level.   We want to default to showing these in -fopt-info
      output, but to *not* show them in dump files, as the message would be
      shown twice, messing up "scan-tree-dump-times" in DejaGnu tests.  */
-  MSG_PRIORITY_REEMITTED = (1 << 27),
+  MSG_PRIORITY_REEMITTED = (1 << 28),
 
   /* Mask for selecting MSG_PRIORITY_* flags.  */
   MSG_ALL_PRIORITIES = (MSG_PRIORITY_USER_FACING
 			| MSG_PRIORITY_INTERNALS
 			| MSG_PRIORITY_REEMITTED),
 
+  /* All -fdump- flags.  */
+  TDF_ALL_VALUES = (1 << 29) - 1,
+
   /* Dumping for -fcompare-debug.  */
-  TDF_COMPARE_DEBUG = (1 << 28),
+  TDF_COMPARE_DEBUG = (1 << 29),
+
+  /* Dump a GIMPLE value which means wrapping certain things with _Literal.  */
+  TDF_GIMPLE_VAL = (1 << 30),
 
   /* For error.  */
-  TDF_ERROR = (1 << 26),
-
-  /* Dumping for range path solver.  */
-  TDF_THREADING = (1 << 27),
-
-  /* All values.  */
-  TDF_ALL_VALUES = (1 << 29) - 1
+  TDF_ERROR = ((uint32_t)1 << 31),
 };
 
 /* Dump flags type.  */
@@ -211,32 +214,36 @@ typedef enum dump_flag dump_flags_t;
 static inline dump_flags_t
 operator| (dump_flags_t lhs, dump_flags_t rhs)
 {
-  return (dump_flags_t)((int)lhs | (int)rhs);
+  return (dump_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+			| (std::underlying_type<dump_flags_t>::type)rhs);
 }
 
 static inline dump_flags_t
 operator& (dump_flags_t lhs, dump_flags_t rhs)
 {
-  return (dump_flags_t)((int)lhs & (int)rhs);
+  return (dump_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+			& (std::underlying_type<dump_flags_t>::type)rhs);
 }
 
 static inline dump_flags_t
 operator~ (dump_flags_t flags)
 {
-  return (dump_flags_t)~((int)flags);
+  return (dump_flags_t)~((std::underlying_type<dump_flags_t>::type)flags);
 }
 
 static inline dump_flags_t &
 operator|= (dump_flags_t &lhs, dump_flags_t rhs)
 {
-  lhs = (dump_flags_t)((int)lhs | (int)rhs);
+  lhs = (dump_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+		       | (std::underlying_type<dump_flags_t>::type)rhs);
   return lhs;
 }
 
 static inline dump_flags_t &
 operator&= (dump_flags_t &lhs, dump_flags_t rhs)
 {
-  lhs = (dump_flags_t)((int)lhs & (int)rhs);
+  lhs = (dump_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+		       & (std::underlying_type<dump_flags_t>::type)rhs);
   return lhs;
 }
 
@@ -275,13 +282,15 @@ typedef enum optgroup_flag optgroup_flags_t;
 static inline optgroup_flags_t
 operator| (optgroup_flags_t lhs, optgroup_flags_t rhs)
 {
-  return (optgroup_flags_t)((int)lhs | (int)rhs);
+  return (optgroup_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+			    | (std::underlying_type<dump_flags_t>::type)rhs);
 }
 
 static inline optgroup_flags_t &
 operator|= (optgroup_flags_t &lhs, optgroup_flags_t rhs)
 {
-  lhs = (optgroup_flags_t)((int)lhs | (int)rhs);
+  lhs = (optgroup_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+			   | (std::underlying_type<dump_flags_t>::type)rhs);
   return lhs;
 }
 
