@@ -363,12 +363,28 @@ public:
   void visit (HIR::AssignmentExpr &expr) override
   {
     fncontext fn = ctx->peek_fn ();
-    auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
-    auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
+    auto lvalue = CompileExpr::Compile (expr.get_lhs (), ctx);
+    auto rvalue = CompileExpr::Compile (expr.get_rhs (), ctx);
+
+    // assignments are coercion sites so lets convert the rvalue if necessary
+    TyTy::BaseType *expected = nullptr;
+    TyTy::BaseType *actual = nullptr;
+
+    bool ok;
+    ok = ctx->get_tyctx ()->lookup_type (
+      expr.get_lhs ()->get_mappings ().get_hirid (), &expected);
+    rust_assert (ok);
+
+    ok = ctx->get_tyctx ()->lookup_type (
+      expr.get_rhs ()->get_mappings ().get_hirid (), &actual);
+    rust_assert (ok);
+
+    rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
 
     Bstatement *assignment
-      = ctx->get_backend ()->assignment_statement (fn.fndecl, lhs, rhs,
+      = ctx->get_backend ()->assignment_statement (fn.fndecl, lvalue, rvalue,
 						   expr.get_locus ());
+
     ctx->add_statement (assignment);
   }
 
