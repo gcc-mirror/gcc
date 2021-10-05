@@ -104,8 +104,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 static void general_init (const char *, bool);
-static void do_compile ();
-static void process_options (void);
 static void backend_init (void);
 static int lang_dependent_init (const char *);
 static void init_asm_output (const char *);
@@ -113,9 +111,6 @@ static void finalize (bool);
 
 static void crash_signal (int) ATTRIBUTE_NORETURN;
 static void compile_file (void);
-
-/* True if we don't need a backend (e.g. preprocessing only).  */
-static bool no_backend;
 
 /* Decoded options, and number of such options.  */
 struct cl_decoded_option *save_decoded_options;
@@ -1233,7 +1228,7 @@ parse_alignment_opts (void)
 
 /* Process the options that have been parsed.  */
 static void
-process_options (void)
+process_options (bool no_backend)
 {
   const char *language_string = lang_hooks.name;
   /* Just in case lang_hooks.post_options ends up calling a debug_hook.
@@ -1241,12 +1236,6 @@ process_options (void)
   debug_hooks = &do_nothing_debug_hooks;
 
   maximum_field_alignment = initial_max_fld_align * BITS_PER_UNIT;
-
-  /* Allow the front end to perform consistency checks and do further
-     initialization based on the command line options.  This hook also
-     sets the original filename if appropriate (e.g. foo.i -> foo.c)
-     so we can correctly initialize debug output.  */
-  no_backend = lang_hooks.post_options (&main_input_filename);
 
   /* Some machines may reject certain combinations of options.  */
   location_t saved_location = input_location;
@@ -2145,10 +2134,8 @@ standard_type_bitsize (int bitsize)
 
 /* Initialize the compiler, and compile the input file.  */
 static void
-do_compile ()
+do_compile (bool no_backend)
 {
-  process_options ();
-
   /* Don't do any more if an error has already occurred.  */
   if (!seen_error ())
     {
@@ -2277,11 +2264,6 @@ toplev::start_timevars ()
 void
 toplev::run_self_tests ()
 {
-  if (no_backend)
-    {
-      error_at (UNKNOWN_LOCATION, "self-tests incompatible with %<-E%>");
-      return;
-    }
 #if CHECKING_P
   /* Reset some state.  */
   input_location = UNKNOWN_LOCATION;
@@ -2368,16 +2350,29 @@ toplev::main (int argc, char **argv)
   /* Exit early if we can (e.g. -help).  */
   if (!exit_after_options)
     {
+      /* Allow the front end to perform consistency checks and do further
+	 initialization based on the command line options.  This hook also
+	 sets the original filename if appropriate (e.g. foo.i -> foo.c)
+	 so we can correctly initialize debug output.  */
+      bool no_backend = lang_hooks.post_options (&main_input_filename);
+
+      process_options (no_backend);
+
       if (m_use_TV_TOTAL)
 	start_timevars ();
-      do_compile ();
+      do_compile (no_backend);
+
+      if (flag_self_test)
+	{
+	  if (no_backend)
+	    error_at (UNKNOWN_LOCATION, "self-tests incompatible with %<-E%>");
+	  else
+	    run_self_tests ();
+	}
     }
 
   if (warningcount || errorcount || werrorcount)
     print_ignored_options ();
-
-  if (flag_self_test)
-    run_self_tests ();
 
   /* Invoke registered plugin callbacks if any.  Some plugins could
      emit some diagnostics here.  */
