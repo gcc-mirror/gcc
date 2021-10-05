@@ -1725,21 +1725,13 @@ public:
 
   PathExprSegment get_method_name () const { return method_name; };
 
-  std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
-  const std::vector<std::unique_ptr<Expr> > &get_params () const
-  {
-    return params;
-  }
-
   size_t num_params () const { return params.size (); }
 
-  void iterate_params (std::function<bool (Expr *)> cb)
+  std::vector<std::unique_ptr<Expr> > &get_arguments () { return params; }
+
+  const std::vector<std::unique_ptr<Expr> > &get_arguments () const
   {
-    for (auto &param : params)
-      {
-	if (!cb (param.get ()))
-	  return;
-      }
+    return params;
   }
 
 protected:

@@ -224,12 +224,12 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 
       std::vector<Bexpression *> args;
       args.push_back (self_argument);
-      expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-	Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
-	rust_assert (compiled_expr != nullptr);
-	args.push_back (compiled_expr);
-	return true;
-      });
+      for (auto &argument : expr.get_arguments ())
+	{
+	  Bexpression *compiled_expr
+	    = CompileExpr::Compile (argument.get (), ctx);
+	  args.push_back (compiled_expr);
+	}
 
       Bexpression *fn_expr
 	= ctx->get_backend ()->var_expression (fn_convert_expr_tmp,
@@ -414,12 +414,11 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   args.push_back (self);
 
   // normal args
-  expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-    Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
-    rust_assert (compiled_expr != nullptr);
-    args.push_back (compiled_expr);
-    return true;
-  });
+  for (auto &argument : expr.get_arguments ())
+    {
+      Bexpression *compiled_expr = CompileExpr::Compile (argument.get (), ctx);
+      args.push_back (compiled_expr);
+    }
 
   auto fncontext = ctx->peek_fn ();
   translated

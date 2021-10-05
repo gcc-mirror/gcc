@@ -2561,29 +2561,31 @@ TypeCheckMethodCallExpr::visit (FnType &type)
     }
 
   size_t i = 1;
-  call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
-    auto fnparam = type.param_at (i);
-    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
-    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (param->get_locus (),
-		       "failed to resolve type for argument expr in CallExpr");
-	return false;
-      }
+  for (auto &argument : call.get_arguments ())
+    {
+      auto fnparam = type.param_at (i);
+      auto argument_expr_tyty
+	= Resolver::TypeCheckExpr::Resolve (argument.get (), false);
+      if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (
+	    argument->get_locus (),
+	    "failed to resolve type for argument expr in CallExpr");
+	  return;
+	}
 
-    auto resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
-    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (param->get_locus (),
-		       "Type Resolution failure on parameter");
-	return false;
-      }
+      auto resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
+      if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (argument->get_locus (),
+			 "Type Resolution failure on parameter");
+	  return;
+	}
 
-    context->insert_type (param->get_mappings (), resolved_argument_type);
+      context->insert_type (argument->get_mappings (), resolved_argument_type);
 
-    i++;
-    return true;
-  });
+      i++;
+    }
 
   if (i != num_args_to_call)
     {
