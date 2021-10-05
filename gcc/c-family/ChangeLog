@@ -1,3 +1,10 @@
+2021-10-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* c-common.h (do_warn_array_compare): Declare.
+	* c-warn.c (do_warn_array_compare): New.
+	* c.opt (Warray-compare): New option.
+
 2021-10-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-format.c: Remove a test of TARGET_FORMAT_TYPES with

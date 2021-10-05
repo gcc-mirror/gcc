@@ -1,3 +1,60 @@
+2021-10-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* doc/invoke.texi: Document -Warray-compare.
+
+2021-10-04  Richard Biener  <rguenther@suse.de>
+
+	* gimplify.c (is_var_need_auto_init): DECL_HARD_REGISTER
+	variables are not to be initialized.
+
+2021-10-04  Richard Biener  <rguenther@suse.de>
+
+	* expr.h (non_mem_decl_p): Declare.
+	(mem_ref_refers_to_non_mem_p): Likewise.
+	* expr.c (non_mem_decl_p): Export.
+	(mem_ref_refers_to_non_mem_p): Likewise.
+	* internal-fn.c (expand_DEFERRED_INIT): Do not expand the LHS
+	but check the base with mem_ref_refers_to_non_mem_p
+	and non_mem_decl_p.
+
+2021-10-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102570
+	* tree-ssa-sccvn.h (vn_reference_op_struct): Document
+	we are using clique for the internal function code.
+	* tree-ssa-sccvn.c (vn_reference_op_eq): Compare the
+	internal function code.
+	(print_vn_reference_ops): Print the internal function code.
+	(vn_reference_op_compute_hash): Hash it.
+	(copy_reference_ops_from_call): Record it.
+	(visit_stmt): Remove the restriction around internal function
+	calls.
+	(fully_constant_vn_reference_p): Use fold_const_call and handle
+	internal functions.
+	(vn_reference_eq): Compare call return types.
+	* tree-ssa-pre.c (create_expression_by_pieces): Handle
+	generating calls to internal functions.
+	(compute_avail): Remove the restriction around internal function
+	calls.
+
+2021-10-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102560
+	* gimple-ssa-warn-alloca.c (alloca_call_type): Remove static
+	marker for invalid_range.
+
+2021-10-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102587
+	* internal-fn.c (expand_DEFERRED_INIT): Guard register
+	initialization path an avoid initializing VLA registers
+	with it.
+
+2021-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/rs6000/vxworks.h (TARGET_INIT_LIBFUNCS): Delete.
+
 2021-10-03  Martin Liska  <mliska@suse.cz>
 
 	* toplev.c (toplev::main): Check opt_index if it is a part

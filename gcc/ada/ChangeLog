@@ -1,3 +1,281 @@
+2021-10-04  Justin Squirek  <squirek@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	Add new entry for No_Dynamic_Accessibility_Checks documenting
+	behavior.
+	* gnat_rm.texi: Regenerate.
+	* exp_ch4.adb (Expand_N_In): Perform special expansion for
+	membership tests when No_Dynamic_Accessibility_Checks is active.
+	* sem_attr.adb (Resolve_Attribute): Skip static accessibility
+	check on actuals for anonymous access type formal parameters,
+	and add constants for readability.
+	* sem_util.adb (Function_Call_Or_Allocator_Level): Use the
+	innermost master for determining the level for function calls
+	within the alternative accessibility model.
+	(Type_Access_Level): Properly get the level for anonymous access
+	function result types.
+
+2021-10-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(gnateA): This switch no longer looks at the formal parameter
+	type being composite (as originally mandated by SPARK), but in
+	the parameter passing mechanism being not specified (as
+	currently mandated by Ada).
+	* gnat_ugn.texi: Regenerate.
+
+2021-10-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Operator_Symbol): Recognize strings as
+	operator names when they are the value of one of the Ada2022
+	aspects for User_Defined_Literals.
+	* sem_ch13.adb (Analyze_One_Aspect): Handle an aspect value
+	given by an Operator_Name.
+	(Validate_Literal_Aspect): Call Analyze_Operator_Symbol when
+	needed.
+
+2021-10-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gen_il-gen.adb (Put_Make_Spec): Don't emit the LF character in
+	the middle of a string, because the Put routine won't indent it
+	properly.
+
+2021-10-04  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* gnat_cuda.adb (Remove_CUDA_Device_Entities): New function.
+	(Expand_CUDA_Package): Call Remove_CUDA_Device_Entities.
+	* gnat_cuda.ads (Expand_CUDA_Package): Expand documentation.
+	* sem_prag.adb (Analyze_Pragma): Remove warning about
+	CUDA_Device not being implemented.
+
+2021-10-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch7.adb (Analyze_Package_Specification): For types marked
+	as Must_Have_Preelab_Init, we now check for the presence of a
+	Preelaborable_Initialization aspect on the type, and pass the
+	aspect's expression (if any) on the call to
+	Has_Preelaborable_Initialization (or pass Empty if the type has
+	no such aspect or the aspect has no associated expression).
+	* sem_util.ads (Has_Preelaborable_Initialization): Change
+	Boolean formal parameter Formal_Types_Have_Preelab_Init to
+	instead be a formal of type Node_Id (named Preelab_Init_Expr),
+	to allow passing an expression that may be a conjunction of
+	Preelaborable_Initialization aspects. Revise spec comment
+	accordingly (and remove ??? comment).
+	* sem_util.adb (Type_Named_In_Preelab_Init_Expression): New
+	nested function with a result indicating whether a given type is
+	named as the prefix of a Preelaborable_Initialization attribute
+	in the expression of a corresponding P_I aspect.
+	(Has_Preelaborable_Initialization): For generic formal derived
+	and private types, test whether the type is named in the
+	expression Preelab_Init_Expr (by calling
+	Type_Named_In_Preelab_Init_Expression), and if so, treat the
+	formal type as having preelaborable initialization (returning
+	True).
+	* libgnat/a-cobove.ads (Vector): Replace pragma
+	Preelaborable_Initialization with the aspect, specifying its
+	value as Element_Type'Preelaborable_Initialization.
+	(Cursor): Replace pragma P_I with the aspect (defaulting to
+	True).
+	* libgnat/a-cbdlli.ads (List): Replace pragma
+	Preelaborable_Initialization with the aspect, specifying its
+	value as Element_Type'Preelaborable_Initialization.
+	(Cursor): Replace pragma P_I with the aspect (defaulting to
+	True).
+	* libgnat/a-cbhama.ads (Map): Replace pragma
+	Preelaborable_Initialization with the aspect, specifying its
+	value as (Element_Type'Preelaborable_Initialization and
+	Key_Type'Preelaborable_Initialization).
+	(Cursor): Replace pragma P_I with the aspect (defaulting to
+	True).
+	* libgnat/a-cborma.ads (Map): Replace pragma
+	Preelaborable_Initialization with the aspect, specifying its
+	value as (Element_Type'Preelaborable_Initialization and
+	Key_Type'Preelaborable_Initialization).
+	(Cursor): Replace pragma P_I with the aspect (defaulting to
+	True).
+	* libgnat/a-cbhase.ads (Set): Replace pragma
+	Preelaborable_Initialization with the aspect, specifying its
+	value as Element_Type'Preelaborable_Initialization.
+	(Cursor): Replace pragma P_I with the aspect (defaulting to
+	True).
+	* libgnat/a-cborse.ads (Set): Replace pragma
+	Preelaborable_Initialization with the aspect, specifying its
+	value as Element_Type'Preelaborable_Initialization.
+	(Cursor): Replace pragma P_I with the aspect (defaulting to
+	True).
+	* libgnat/a-cbmutr.ads (Tree): Replace pragma
+	Preelaborable_Initialization with the aspect, specifying its
+	value as Element_Type'Preelaborable_Initialization.
+	(Cursor): Replace pragma P_I with the aspect (defaulting to
+	True).
+	* libgnat/a-coboho.ads (Holder): Replace pragma
+	Preelaborable_Initialization with the aspect, specifying its
+	value as Element_Type'Preelaborable_Initialization.
+	(Cursor): Replace pragma P_I with the aspect (defaulting to
+	True).
+
+2021-10-04  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-textio.adb: Mark body out of SPARK.
+	* libgnat/a-textio.ads: Mark spec in SPARK and private part out
+	of SPARK.
+	* sem.adb (Semantics.Do_Analyze): Similar to ghost code
+	attributes, save and restore value of
+	Ignore_SPARK_Mode_Pragmas_In_Instance.
+
+2021-10-04  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-regpat.ads: Change Data_First to Data'First. Change
+	"still" to "always".  Similar changes for Data_Last.
+
+2021-10-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sprint.adb (Sprint_Node_Actual): Refactor code for generic
+	package and subprogram declarations.
+
+2021-10-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Indexed_Component, Resolve_Slice): Rename
+	the local constant Name to Pref; remove repeated calls to
+	Prefix.
+
+2021-10-04  Matthieu Eyraud  <eyraud@adacore.com>
+
+	* scos.ads: Extend the documentation.
+	* par_sco.adb (Process_Decisions): Emit specific SCOs for
+	quantified expressions.
+
+2021-10-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Selected_Range_Checks): Fix style.
+	* exp_ch4.adb (Expand_N_Slice): Fix style and comment.
+	* sem_res.adb (Resolve_Indexed_Component): Fix style.
+
+2021-10-04  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strbou.ads: Add comments.
+
+2021-10-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Evaluation of attribute
+	Leading_Part with illegal second parameter is now similar to
+	evaluation of Remainder with its second parameter being zero.
+
+2021-10-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Declare_Expression): Use tree traversals
+	to perform name capture of local entities in the expression of
+	the construct.
+	* exp_util.adb (Possible_Side_Effects_In_SPARK): Do not apply to
+	the prefix of an attribute reference Reduce when that prefix is
+	an aggregate, because it will be expanded into a loop, and has
+	no identifiable type.
+
+2021-10-04  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.adb (Build_Class_Wide_Wrapper): Fix handling of
+	class-wide subtypes; required to handle chains of
+	instantiations. Adding also code to identify these wrappers and
+	properly resolve instantiations where the wrapper and a tagged
+	type primitive are visible.
+	* einfo.ads (Is_Class_Wide_Wrapper): Adding documentation.
+	* gen_il-fields.ads (Opt_Field_Enum): Adding
+	Is_Class_Wide_Wrapper.
+	* gen_il-gen-gen_entities.adb (Root_Entity_Type): Adding
+	semantic flag Is_Class_Wide_Wrapper.
+
+2021-10-04  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads (Declaration_Node): Document that Declaration_Node
+	for Itypes.
+	* einfo-utils.adb (Declaration_Node): Make it return Empty for
+	Itypes, or a proper type or subtype declaration.
+	* gen_il-gen.adb: Minor comment improvement.
+
+2021-10-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Slice): Fix application of range checks
+	to slice range given as a subtype name.
+
+2021-10-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Slice): Handle range given as a subtype
+	indication.
+
+2021-10-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Slice): Add custom handling of attribute
+	Image and similar in CodePeer mode. This complements the
+	existing custom handling of these attributes in
+	Expand_N_Attribute_Reference.
+
+2021-10-04  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb (Is_Variable): Add check for implicitly
+	dereferenced access types
+	(Is_Dependent_Component_Of_Mutable_Object): Set Prefix_Type when
+	not specified.
+
+2021-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/the_gnat_compilation_model.rst (Binding generation):
+	Document specific behavior for /include/-ending paths and update.
+	* gnat_ugn.texi: Regenerate.
+
+2021-10-04  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/102073
+	* socket.c (__gnat_gethostbyaddr, __gnat_inet_pton): Add missing
+	return statements.
+
+2021-10-04  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb (Function_Or_Allocator_Level): Properly handle
+	direct function calls in the default alternative accessibility
+	checking mode.
+
+2021-10-04  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Is_Library_Level_Entity): Return False for
+	entities defined in E_Loop scopes. This change is not required
+	by the frontend; it is required by tools that depend on the
+	frontend sources.
+	* einfo-utils.adb (Is_Dynamic_Scope): Code cleanup.
+
+2021-10-04  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb (Accessibility_Level): Add a case to handle
+	renamed subprograms in addition to renamed objects.
+
+2021-10-04  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-osinte__vxworks.ads (tlsKeyCreate): Return int.
+	* libgnarl/s-tpopsp__vxworks-rtp.adb (ERROR): Declare from
+	System.VxWorks.Ext.ERROR.
+	(Initialize): Declare IERR. Assert it.
+	* libgnarl/s-tpopsp__vxworks.adb (ERROR): Declare from
+	System.VxWorks.Ext.ERROR.
+	(Is_Valid_Task): Declare IERR. Test return.
+	* libgnarl/s-vxwext__kernel.adb (semDelete): Return STATUS.
+
+2021-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_disp.adb (Make_DT): Copy the Needs_Debug_Info flag from the
+	type onto the TSD object.
+
+2021-10-04  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Is_Repeatedly_Evaluated): Handle the case of an
+	Old attribute reference that occurs within what was originally a
+	quantified expression but which expansion has transformed into
+	an Expression_With_Actions.
+
+2021-10-04  Steve Baird  <baird@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Indexed_Component): The two improvements
+	described above.
+
 2021-10-01  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Expand_Call_Helper): Do not call

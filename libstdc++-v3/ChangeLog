@@ -1,3 +1,72 @@
+2021-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/forward_list.h (forward_list): Use non-deduced
+	context for allocator parameter of allocator-extended copy and
+	move constructors.
+	* include/bits/stl_bvector.h (vector<bool>): Likewise.
+	* include/bits/stl_deque.h (deque): Likewise.
+	* include/bits/stl_list.h (list): Likewise.
+	* include/bits/stl_map.h (map): Likewise.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+	* include/bits/stl_multiset.h (multiset): Likewise.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/stl_vector.h (vector): Likewise.
+	* include/bits/stl_queue.h (queue, priority_queue): Do not
+	constrain Allocator template parameter of deduction guides that
+	have a Container parameter.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* include/debug/deque (__gnu_debug::deque): Use non-deduced
+	context for allocator parameter of allocator-extended copy and
+	move constructors.
+	* include/debug/list (__gnu_debug::list): Likewise.
+	* include/debug/map.h (__gnu_debug::map): Likewise.
+	* include/debug/multimap.h (__gnu_debug::multimap): Likewise.
+	* include/debug/multiset.h (__gnu_debug::multiset): Likewise.
+	* include/debug/set.h (__gnu_debug::set): Likewise.
+	* include/debug/vector (__gnu_debug::vector): Likewise.
+	* testsuite/23_containers/deque/cons/deduction.cc: Test class
+	template argument deduction with non-deduced allocator
+	arguments.
+	* testsuite/23_containers/forward_list/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/list/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/map/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/multimap/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/multiset/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/priority_queue/deduction.cc: Likewise.
+	* testsuite/23_containers/queue/deduction.cc: Likewise.
+	* testsuite/23_containers/set/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/stack/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_map/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/deduction.cc: Likewise.
+
+2021-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__detail::__variant::__as): Add missing
+	noexcept to first overload.
+
+2021-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string(nullptr_t)): Define
+	as deleted.
+	(operator=(nullptr_t)): Likewise.
+	* include/bits/cow_string.h (basic_string(nullptr_t)): Likewise.
+	(operator=(nullptr_t)): Likewise.
+	* include/std/string_view (basic_string_view(nullptr_t)):
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/nullptr.cc: New test.
+	* testsuite/21_strings/basic_string_view/cons/char/nonnull.cc:
+	Change dg-warning to dg-error.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/nonnull.cc:
+	Likewise.
+
 2021-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/fs_ops.cc (create_directory): Fix typo in enum name.
