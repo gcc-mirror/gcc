@@ -67,6 +67,7 @@
 
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
+#undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
   "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
    %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"
