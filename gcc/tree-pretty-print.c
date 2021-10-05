@@ -344,7 +344,16 @@ dump_function_name (pretty_printer *pp, tree node, dump_flags_t flags)
   if (CONVERT_EXPR_P (node))
     node = TREE_OPERAND (node, 0);
   if (DECL_NAME (node) && (flags & TDF_ASMNAME) == 0)
-    pp_string (pp, lang_hooks.decl_printable_name (node, 1));
+    {
+      pp_string (pp, lang_hooks.decl_printable_name (node, 1));
+      if (flags & TDF_UID)
+	{
+	  char uid_sep = (flags & TDF_GIMPLE) ? '_' : '.';
+	  pp_character (pp, 'D');
+	  pp_character (pp, uid_sep);
+	  pp_scalar (pp, "%u", DECL_UID (node));
+	}
+    }
   else
     dump_decl_name (pp, node, flags);
 }
