@@ -1409,16 +1409,12 @@ recognized by GNAT::
      Check_Float_Overflow
      Check_Name
      Check_Policy
-     Compile_Time_Error
-     Compile_Time_Warning
-     Compiler_Unit
-     Compiler_Unit_Warning
      Component_Alignment
      Convention_Identifier
      Debug_Policy
-     Detect_Blocking
      Default_Scalar_Storage_Order
      Default_Storage_Pool
+     Detect_Blocking
      Disable_Atomic_Synchronization
      Discard_Names
      Elaboration_Checks
@@ -1437,7 +1433,6 @@ recognized by GNAT::
      Locking_Policy
      No_Component_Reordering
      No_Heap_Finalization
-     No_Run_Time
      No_Strict_Aliasing
      Normalize_Scalars
      Optimize_Alignment
@@ -1449,17 +1444,12 @@ recognized by GNAT::
      Priority_Specific_Dispatching
      Profile
      Profile_Warnings
-     Propagate_Exceptions
      Queuing_Policy
-     Rational
-     Ravenscar
      Rename_Pragma
-     Restricted_Run_Time
      Restrictions
-     Restrictions_Warnings
+     Restriction_Warnings
      Reviewable
      Short_Circuit_And_Or
-     Short_Descriptors
      Source_File_Name
      Source_File_Name_Project
      SPARK_Mode
@@ -1468,7 +1458,6 @@ recognized by GNAT::
      Suppress_Exception_Locations
      Task_Dispatching_Policy
      Unevaluated_Use_Of_Old
-     Universal_Data
      Unsuppress
      Use_VADS_Size
      Validity_Checks
@@ -1514,7 +1503,7 @@ only to the unit in which the pragma appears, and not to any other units.
 The exception is No_Elaboration_Code which always applies to the entire
 object file from a compilation, i.e. to the body, spec, and all subunits.
 This restriction can be specified in a configuration pragma file, or it
-can be on the body and/or the spec (in eithe case it applies to all the
+can be on the body and/or the spec (in either case it applies to all the
 relevant units). It can appear on a subunit only if it has previously
 appeared in the body of spec.
 
@@ -4823,7 +4812,7 @@ GNAT and Other Compilation Models
 =================================
 
 This section compares the GNAT model with the approaches taken in
-other environents, first the C/C++ model and then the mechanism that
+other environments, first the C/C++ model and then the mechanism that
 has been used in other Ada systems, in particular those traditionally
 used for Ada 83.
 

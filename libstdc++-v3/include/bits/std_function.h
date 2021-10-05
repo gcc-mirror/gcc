@@ -82,17 +82,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   union [[gnu::may_alias]] _Any_data
   {
-    void*       _M_access()       { return &_M_pod_data[0]; }
-    const void* _M_access() const { return &_M_pod_data[0]; }
+    void*       _M_access()       noexcept { return &_M_pod_data[0]; }
+    const void* _M_access() const noexcept { return &_M_pod_data[0]; }
 
     template<typename _Tp>
       _Tp&
-      _M_access()
+      _M_access() noexcept
       { return *static_cast<_Tp*>(_M_access()); }
 
     template<typename _Tp>
       const _Tp&
-      _M_access() const
+      _M_access() const noexcept
       { return *static_cast<const _Tp*>(_M_access()); }
 
     _Nocopy_types _M_unused;
@@ -131,7 +131,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// Retrieve a pointer to the function object
 	static _Functor*
-	_M_get_pointer(const _Any_data& __source)
+	_M_get_pointer(const _Any_data& __source) noexcept
 	{
 	  if _GLIBCXX17_CONSTEXPR (__stored_locally)
 	    {
@@ -217,22 +217,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	template<typename _Signature>
 	  static bool
-	  _M_not_empty_function(const function<_Signature>& __f)
+	  _M_not_empty_function(const function<_Signature>& __f) noexcept
 	  { return static_cast<bool>(__f); }
 
 	template<typename _Tp>
 	  static bool
-	  _M_not_empty_function(_Tp* __fp)
+	  _M_not_empty_function(_Tp* __fp) noexcept
 	  { return __fp != nullptr; }
 
 	template<typename _Class, typename _Tp>
 	  static bool
-	  _M_not_empty_function(_Tp _Class::* __mp)
+	  _M_not_empty_function(_Tp _Class::* __mp) noexcept
 	  { return __mp != nullptr; }
 
 	template<typename _Tp>
 	  static bool
-	  _M_not_empty_function(const _Tp&)
+	  _M_not_empty_function(const _Tp&) noexcept
 	  { return true; }
       };
 

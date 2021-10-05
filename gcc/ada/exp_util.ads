@@ -628,6 +628,16 @@ package Exp_Util is
    --  Given a protected type or its corresponding record, find the type of
    --  field _object.
 
+   function Find_Storage_Op
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Entity_Id;
+   --  Given type Typ that's either a descendant of Root_Storage_Pool or else
+   --  specifies aspect Storage_Model_Type, returns the Entity_Id of the
+   --  subprogram associated with Nam, which must either be a primitive op of
+   --  the type in the case of a storage pool, or the operation corresponding
+   --  to Nam as specified in the aspect Storage_Model_Type. It is an error if
+   --  no operation corresponding to the given name is found.
+
    function Find_Hook_Context (N : Node_Id) return Node_Id;
    --  Determine a suitable node on which to attach actions related to N that
    --  need to be elaborated unconditionally. In general this is the topmost

@@ -1,3 +1,8 @@
+2021-10-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* typeck.c (cp_build_binary_op): Call do_warn_array_compare.
+
 2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/101765

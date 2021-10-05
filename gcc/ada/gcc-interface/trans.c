@@ -3893,7 +3893,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* If the body comes from an expression function, arrange it to be inlined
      in almost all cases.  */
-  if (Was_Expression_Function (gnat_node))
+  if (Was_Expression_Function (gnat_node) && !Debug_Flag_Dot_8)
     DECL_DISREGARD_INLINE_LIMITS (gnu_subprog_decl) = 1;
 
   /* Try to create a bona-fide thunk and hand it over to the middle-end.  */
@@ -8261,6 +8261,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE
       && Nkind (Parent (gnat_node)) != N_Attribute_Reference
+      && Nkind (Parent (gnat_node)) != N_Pragma_Argument_Association
       && Nkind (Parent (gnat_node)) != N_Variant_Part
       && !lvalue_required_p (gnat_node, gnu_result_type, false, false))
     {
@@ -10507,10 +10508,15 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
     case N_Package_Body:
     case N_Subprogram_Body:
     case N_Block_Statement:
-      gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+      if (Present (Handled_Statement_Sequence (gnat_node)))
+	gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+      else
+	gnat_end_label = Empty;
+
       break;
 
     case N_Package_Declaration:
+      gcc_checking_assert (Present (Specification (gnat_node)));
       gnat_end_label = End_Label (Specification (gnat_node));
       break;
 

@@ -149,6 +149,7 @@ package Snames is
 
    Name_Default_Value                  : constant Name_Id := N + $;
    Name_Default_Component_Value        : constant Name_Id := N + $;
+   Name_Designated_Storage_Model       : constant Name_Id := N + $;
    Name_Dimension                      : constant Name_Id := N + $;
    Name_Dimension_System               : constant Name_Id := N + $;
    Name_Disable_Controlled             : constant Name_Id := N + $;
@@ -162,6 +163,8 @@ package Snames is
    Name_Relaxed_Initialization         : constant Name_Id := N + $;
    Name_Stable_Properties              : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;
+   Name_Storage_Model                  : constant Name_Id := N + $;
+   Name_Storage_Model_Type             : constant Name_Id := N + $;
    Name_String_Literal                 : constant Name_Id := N + $;
    Name_Synchronization                : constant Name_Id := N + $;
    Name_Unimplemented                  : constant Name_Id := N + $;
@@ -779,6 +782,7 @@ package Snames is
 
    --  Other special names used in processing attributes, aspects, and pragmas
 
+   Name_Address_Type                   : constant Name_Id := N + $;
    Name_Aggregate                      : constant Name_Id := N + $;
    Name_Allow                          : constant Name_Id := N + $;
    Name_Amount                         : constant Name_Id := N + $;
@@ -798,6 +802,8 @@ package Snames is
    Name_Component                      : constant Name_Id := N + $;
    Name_Component_Size_4               : constant Name_Id := N + $;
    Name_Copy                           : constant Name_Id := N + $;
+   Name_Copy_From                      : constant Name_Id := N + $;
+   Name_Copy_To                        : constant Name_Id := N + $;
    Name_D_Float                        : constant Name_Id := N + $;
    Name_Decreases                      : constant Name_Id := N + $;
    Name_Disable                        : constant Name_Id := N + $;
@@ -867,6 +873,7 @@ package Snames is
    Name_Nominal                        : constant Name_Id := N + $;
    Name_Non_Volatile                   : constant Name_Id := N + $;
    Name_None                           : constant Name_Id := N + $;
+   Name_Null_Address                   : constant Name_Id := N + $;
    Name_On                             : constant Name_Id := N + $;
    Name_Optional                       : constant Name_Id := N + $;
    Name_Policy                         : constant Name_Id := N + $;
@@ -1393,7 +1400,6 @@ package Snames is
    --  Note that the UP_ prefix means use the rest of the name in uppercase,
    --  e.g. Name_UP_RESULT corresponds to the name "RESULT".
 
-   Name_Unaligned_Valid                  : constant Name_Id := N + $;
    Name_UP_RESULT                        : constant Name_Id := N + $;
    Name_Suspension_Object                : constant Name_Id := N + $;
    Name_Synchronous_Task_Control         : constant Name_Id := N + $;

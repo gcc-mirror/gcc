@@ -93,4 +93,11 @@ package System.Arith_64 is
       Round   : Boolean) renames Double_Divide64;
    --  Renamed procedure to preserve compatibility with earlier versions
 
+private
+   --  Make it callable from strub contexts.
+   --  There is a matching setting in trans.c,
+   --  for calls issued by Gigi.
+   pragma Machine_Attribute (Multiply_With_Ovflo_Check64,
+                             "strub", "callable");
+
 end System.Arith_64;

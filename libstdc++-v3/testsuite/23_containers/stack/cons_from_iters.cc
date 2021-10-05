@@ -22,7 +22,7 @@
 
 #ifndef __cpp_lib_adaptor_iterator_pair_constructor
 #error Feature test macro for iterator pair constructors is missing in <stack>
-#elif __cpp_lib_adaptor_iterator_pair_constructor != 202100L
+#elif __cpp_lib_adaptor_iterator_pair_constructor != 202106L
 #error Feature test macro for iterator pair constructors has wrong value in <stack>
 #endif
 

@@ -158,7 +158,7 @@ package body Debug is
    --  d_q
    --  d_r
    --  d_s  Stop elaboration checks on synchronous suspension
-   --  d_t
+   --  d_t  In LLVM-based CCG, dump LLVM IR after transformations are done
    --  d_u
    --  d_v  Enable additional checks and debug printouts in Atree
    --  d_w
@@ -996,6 +996,10 @@ package body Debug is
    --  d_s  The compiler stops the examination of a task body once it reaches
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
+
+   --  d_t  In the LLVM-based CCG, do an additional dump of the LLVM IR
+   --       after the pass that does transformations to the IR into a
+   --       filename ending with .trans.ll.
 
    --  d_v  Enable additional checks and debug printouts in Atree
 

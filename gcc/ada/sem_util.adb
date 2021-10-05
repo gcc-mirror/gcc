@@ -32153,6 +32153,166 @@ package body Sem_Util is
 
       end Indirect_Temps;
    end Old_Attr_Util;
+
+   package body Storage_Model_Support is
+
+      -----------------------------------
+      -- Get_Storage_Model_Type_Entity --
+      -----------------------------------
+
+      function Get_Storage_Model_Type_Entity
+        (Typ : Entity_Id;
+         Nam : Name_Id) return Entity_Id
+      is
+         pragma Assert
+           (Is_Type (Typ)
+            and then
+              Nam in Name_Address_Type
+                   | Name_Null_Address
+                   | Name_Allocate
+                   | Name_Deallocate
+                   | Name_Copy_From
+                   | Name_Copy_To
+                   | Name_Storage_Size);
+
+         SMT_Aspect_Value : constant Node_Id :=
+           Find_Value_Of_Aspect (Typ, Aspect_Storage_Model_Type);
+         Assoc            : Node_Id;
+
+      begin
+         if No (SMT_Aspect_Value) then
+            return Empty;
+
+         else
+            Assoc := First (Component_Associations (SMT_Aspect_Value));
+            while Present (Assoc) loop
+               if Chars (First (Choices (Assoc))) = Nam then
+                  return Entity (Expression (Assoc));
+               end if;
+
+               Next (Assoc);
+            end loop;
+
+            return Empty;
+         end if;
+      end Get_Storage_Model_Type_Entity;
+
+      -----------------------------------------
+      -- Has_Designated_Storage_Model_Aspect --
+      -----------------------------------------
+
+      function Has_Designated_Storage_Model_Aspect
+        (Typ : Entity_Id) return Boolean
+      is
+      begin
+         return Present (Find_Aspect (Typ, Aspect_Designated_Storage_Model));
+      end Has_Designated_Storage_Model_Aspect;
+
+      -----------------------------------
+      -- Has_Storage_Model_Type_Aspect --
+      -----------------------------------
+
+      function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean
+      is
+      begin
+         return Present (Find_Aspect (Typ, Aspect_Storage_Model_Type));
+      end Has_Storage_Model_Type_Aspect;
+
+      --------------------------
+      -- Storage_Model_Object --
+      --------------------------
+
+      function Storage_Model_Object (Typ : Entity_Id) return Entity_Id is
+      begin
+         if Has_Designated_Storage_Model_Aspect (Typ) then
+            return
+              Entity
+                (Find_Value_Of_Aspect (Typ, Aspect_Designated_Storage_Model));
+         else
+            return Empty;
+         end if;
+      end Storage_Model_Object;
+
+      ------------------------
+      -- Storage_Model_Type --
+      ------------------------
+
+      function Storage_Model_Type (Obj : Entity_Id) return Entity_Id is
+      begin
+         if Present
+              (Find_Value_Of_Aspect (Etype (Obj), Aspect_Storage_Model_Type))
+         then
+            return Etype (Obj);
+         else
+            return Empty;
+         end if;
+      end Storage_Model_Type;
+
+      --------------------------------
+      -- Storage_Model_Address_Type --
+      --------------------------------
+
+      function Storage_Model_Address_Type (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Address_Type);
+      end Storage_Model_Address_Type;
+
+      --------------------------------
+      -- Storage_Model_Null_Address --
+      --------------------------------
+
+      function Storage_Model_Null_Address (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Null_Address);
+      end Storage_Model_Null_Address;
+
+      ----------------------------
+      -- Storage_Model_Allocate --
+      ----------------------------
+
+      function Storage_Model_Allocate (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Allocate);
+      end Storage_Model_Allocate;
+
+      ------------------------------
+      -- Storage_Model_Deallocate --
+      ------------------------------
+
+      function Storage_Model_Deallocate (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Deallocate);
+      end Storage_Model_Deallocate;
+
+      -----------------------------
+      -- Storage_Model_Copy_From --
+      -----------------------------
+
+      function Storage_Model_Copy_From (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Copy_From);
+      end Storage_Model_Copy_From;
+
+      ---------------------------
+      -- Storage_Model_Copy_To --
+      ---------------------------
+
+      function Storage_Model_Copy_To (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Copy_To);
+      end Storage_Model_Copy_To;
+
+      --------------------------------
+      -- Storage_Model_Storage_Size --
+      --------------------------------
+
+      function Storage_Model_Storage_Size (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Storage_Size);
+      end Storage_Model_Storage_Size;
+
+   end Storage_Model_Support;
+
 begin
    Erroutc.Subprogram_Name_Ptr := Subprogram_Name'Access;
 end Sem_Util;

@@ -907,6 +907,10 @@ __gnat_is_file_not_found_error (int errno_val)
     if (errno_val == ENOENT)
       return 1;
 #ifdef __vxworks
+    /* Starting with VxWorks 21.03, the fopen() function can set errno to
+     * ENODEV when the prefix of the path does not match any known device. */
+    else if (errno_val == ENODEV)
+      return 1;
     /* In the case of VxWorks, we also have to take into account various
      * filesystem-specific variants of this error.
      */

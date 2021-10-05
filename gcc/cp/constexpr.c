@@ -9043,6 +9043,16 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case CO_RETURN_EXPR:
       return false;
 
+    case NONTYPE_ARGUMENT_PACK:
+      {
+	tree args = ARGUMENT_PACK_ARGS (t);
+	int len = TREE_VEC_LENGTH (args);
+	for (int i = 0; i < len; ++i)
+	  if (!RECUR (TREE_VEC_ELT (args, i), any))
+	    return false;
+	return true;
+      }
+
     default:
       if (objc_non_constant_expr_p (t))
 	return false;

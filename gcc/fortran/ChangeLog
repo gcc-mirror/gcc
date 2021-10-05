@@ -1,3 +1,10 @@
+2021-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/54753
+	* resolve.c (can_generate_init, resolve_fl_variable_derived,
+	resolve_symbol): Only do initialization with intent(out) if not
+	inside of an interface block.
+
 2021-10-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c/102103

@@ -1640,6 +1640,8 @@ package body Sem_Aggr is
       --  Start of processing for Resolve_Iterated_Component_Association
 
       begin
+         Error_Msg_Ada_2022_Feature ("iterated component", Loc);
+
          if Present (Iterator_Specification (N)) then
             Analyze (Name (Iterator_Specification (N)));
 
@@ -1952,7 +1954,7 @@ package body Sem_Aggr is
                    or else (Nb_Choices = 1 and then not Others_Present))
       then
          Error_Msg_N
-           ("named association cannot follow positional association",
+           ("cannot mix named and positional associations in array aggregate",
             First (Choice_List (First (Component_Associations (N)))));
          return Failure;
       end if;
@@ -2867,6 +2869,7 @@ package body Sem_Aggr is
         Key_Type  : Entity_Id;
         Elmt_Type : Entity_Id)
       is
+         Loc      : constant Source_Ptr := Sloc (N);
          Choice   : Node_Id;
          Ent      : Entity_Id;
          Expr     : Node_Id;
@@ -2877,6 +2880,8 @@ package body Sem_Aggr is
          Typ      : Entity_Id := Empty;
 
       begin
+         Error_Msg_Ada_2022_Feature ("iterated component", Loc);
+
          --  If this is an Iterated_Element_Association then either a
          --  an Iterator_Specification or a Loop_Parameter specification
          --  is present. In both cases a Key_Expression is present.

@@ -3038,19 +3038,18 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
       /* Expand this memset call.  */
       expand_builtin_memset (m_call, NULL_RTX, TYPE_MODE (var_type));
     }
-  /* ???  Deal with poly-int sized registers.  */
-  else if (tree_fits_uhwi_p (TYPE_SIZE_UNIT (var_type)))
+  else
     {
-      /* If this variable is in a register, use expand_assignment might
-	 generate better code.  */
-      tree init = build_zero_cst (var_type);
-      unsigned HOST_WIDE_INT total_bytes
-	= tree_to_uhwi (TYPE_SIZE_UNIT (var_type));
-
-      if (init_type == AUTO_INIT_PATTERN)
+      /* If this variable is in a register use expand_assignment.  */
+      tree init;
+      if (tree_fits_uhwi_p (var_size)
+	  && (init_type == AUTO_INIT_PATTERN
+	      || !is_gimple_reg_type (var_type)))
 	{
+	  unsigned HOST_WIDE_INT total_bytes = tree_to_uhwi (var_size);
 	  unsigned char *buf = (unsigned char *) xmalloc (total_bytes);
-	  memset (buf, INIT_PATTERN_VALUE, total_bytes);
+	  memset (buf, (init_type == AUTO_INIT_PATTERN
+			? INIT_PATTERN_VALUE : 0), total_bytes);
 	  if (can_native_interpret_type_p (var_type))
 	    init = native_interpret_expr (var_type, buf, total_bytes);
 	  else
@@ -3058,10 +3057,14 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
 	      tree itype = build_nonstandard_integer_type
 			     (total_bytes * BITS_PER_UNIT, 1);
 	      wide_int w = wi::from_buffer (buf, total_bytes);
-	      init = build1 (VIEW_CONVERT_EXPR, var_type,
-			     wide_int_to_tree (itype, w));
+	      init = wide_int_to_tree (itype, w);
+	      /* Pun the LHS to make sure its type has constant size.  */
+	      lhs = build1 (VIEW_CONVERT_EXPR, itype, lhs);
 	    }
 	}
+      else
+	/* Use zero-init also for variable-length sizes.  */
+	init = build_zero_cst (var_type);
 
       expand_assignment (lhs, init, false);
     }

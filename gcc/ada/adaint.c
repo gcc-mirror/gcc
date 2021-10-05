@@ -98,6 +98,7 @@
 
 #ifdef __QNX__
 #include <sys/syspage.h>
+#include <sys/time.h>
 #endif
 
 #ifdef IN_RTS
