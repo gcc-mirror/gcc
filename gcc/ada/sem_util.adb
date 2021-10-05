@@ -8030,8 +8030,7 @@ package body Sem_Util is
 
             if Present (Spec_Id)
               and then Nkind (Unit_Declaration_Node (Spec_Id)) in
-                         N_Generic_Package_Declaration |
-                         N_Generic_Subprogram_Declaration
+                         N_Generic_Declaration
             then
                return Par;
             end if;
@@ -8055,9 +8054,7 @@ package body Sem_Util is
    begin
       Par := Parent (N);
       while Present (Par) loop
-         if Nkind (Par) in N_Generic_Package_Declaration
-                         | N_Generic_Subprogram_Declaration
-         then
+         if Nkind (Par) in N_Generic_Declaration then
             return Par;
 
          elsif Nkind (Par) in N_Package_Body | N_Subprogram_Body then
@@ -8066,9 +8063,7 @@ package body Sem_Util is
             if Present (Spec_Id) then
                Spec_Decl := Unit_Declaration_Node (Spec_Id);
 
-               if Nkind (Spec_Decl) in N_Generic_Package_Declaration
-                                     | N_Generic_Subprogram_Declaration
-               then
+               if Nkind (Spec_Decl) in N_Generic_Declaration then
                   return Spec_Decl;
                end if;
             end if;
@@ -17891,9 +17886,7 @@ package body Sem_Util is
       --  a generic body modifies the Ekind of its spec to allow for recursive
       --  calls.
 
-      return
-        Nkind (Spec_Decl) in N_Generic_Package_Declaration
-                           | N_Generic_Subprogram_Declaration;
+      return Nkind (Spec_Decl) in N_Generic_Declaration;
    end Is_Generic_Declaration_Or_Body;
 
    ---------------------------

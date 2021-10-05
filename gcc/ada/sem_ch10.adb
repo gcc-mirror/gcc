@@ -4162,8 +4162,7 @@ package body Sem_Ch10 is
       end if;
 
       if Ekind (P_Name) = E_Generic_Package
-        and then Nkind (Lib_Unit) not in N_Generic_Subprogram_Declaration
-                                       | N_Generic_Package_Declaration
+        and then Nkind (Lib_Unit) not in N_Generic_Declaration
                                        | N_Generic_Renaming_Declaration
       then
          Error_Msg_N
@@ -6193,9 +6192,7 @@ package body Sem_Ch10 is
               ("subprogram not allowed in `LIMITED WITH` clause", N);
             return;
 
-         when N_Generic_Package_Declaration
-            | N_Generic_Subprogram_Declaration
-         =>
+         when N_Generic_Declaration =>
             Error_Msg_N ("generic not allowed in `LIMITED WITH` clause", N);
             return;
 
