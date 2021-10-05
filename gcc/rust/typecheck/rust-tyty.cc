@@ -2454,14 +2454,13 @@ TypeCheckCallExpr::visit (FnType &type)
 	  return;
 	}
 
-      auto resolved_argument_type = argument_expr_tyty;
-
       // it might be a varadic function
       if (i < type.num_params ())
 	{
 	  auto fnparam = type.param_at (i);
-	  resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
-	  if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
+	  auto resolved_argument_type
+	    = fnparam.second->coerce (argument_expr_tyty);
+	  if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	    {
 	      rust_error_at (argument->get_locus (),
 			     "Type Resolution failure on parameter");
@@ -2469,7 +2468,7 @@ TypeCheckCallExpr::visit (FnType &type)
 	    }
 	}
 
-      context->insert_type (argument->get_mappings (), resolved_argument_type);
+      context->insert_type (argument->get_mappings (), argument_expr_tyty);
 
       i++;
     }
@@ -2522,14 +2521,14 @@ TypeCheckCallExpr::visit (FnPtr &type)
 	}
 
       auto resolved_argument_type = fnparam->coerce (argument_expr_tyty);
-      if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
+      if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (argument->get_locus (),
 			 "Type Resolution failure on parameter");
 	  return;
 	}
 
-      context->insert_type (argument->get_mappings (), resolved_argument_type);
+      context->insert_type (argument->get_mappings (), argument_expr_tyty);
 
       i++;
     }
@@ -2575,14 +2574,14 @@ TypeCheckMethodCallExpr::visit (FnType &type)
 	}
 
       auto resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
-      if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
+      if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (argument->get_locus (),
 			 "Type Resolution failure on parameter");
 	  return;
 	}
 
-      context->insert_type (argument->get_mappings (), resolved_argument_type);
+      context->insert_type (argument->get_mappings (), argument_expr_tyty);
 
       i++;
     }
