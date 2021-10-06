@@ -12351,7 +12351,7 @@ resolve_values (gfc_symbol *sym)
   if (sym->value == NULL)
     return;
 
-  if (sym->attr.ext_attr & (1 << EXT_ATTR_DEPRECATED))
+  if (sym->attr.ext_attr & (1 << EXT_ATTR_DEPRECATED) && sym->attr.referenced)
     gfc_warning (OPT_Wdeprecated_declarations,
 		 "Using parameter %qs declared at %L is deprecated",
 		 sym->name, &sym->declared_at);
