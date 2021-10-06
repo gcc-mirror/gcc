@@ -109,14 +109,15 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	      explain_non_literal_class (type);
 	      decl = error_mark_node;
 	    }
-	  else
+	  else if (cxx_dialect < cxx23)
 	    {
 	      if (!is_instantiation_of_constexpr (current_function_decl))
 		{
 		  auto_diagnostic_group d;
 		  error_at (DECL_SOURCE_LOCATION (decl),
 			    "variable %qD of non-literal type %qT in "
-			    "%<constexpr%> function", decl, type);
+			    "%<constexpr%> function only available with "
+			    "%<-std=c++2b%> or %<-std=gnu++2b%>", decl, type);
 		  explain_non_literal_class (type);
 		  decl = error_mark_node;
 		}
@@ -6345,6 +6346,26 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    r = void_node;
 	    break;
 	  }
+
+	if (VAR_P (r)
+	    && (TREE_STATIC (r) || CP_DECL_THREAD_LOCAL_P (r))
+	    /* Allow __FUNCTION__ etc.  */
+	    && !DECL_ARTIFICIAL (r))
+	  {
+	    gcc_assert (cxx_dialect >= cxx23);
+	    if (!ctx->quiet)
+	      {
+		if (CP_DECL_THREAD_LOCAL_P (r))
+		  error_at (loc, "control passes through declaration of %qD "
+				 "with thread storage duration", r);
+		else
+		  error_at (loc, "control passes through declaration of %qD "
+				 "with static storage duration", r);
+	      }
+	    *non_constant_p = true;
+	    break;
+	  }
+
 	if (AGGREGATE_TYPE_P (TREE_TYPE (r))
 	    || VECTOR_TYPE_P (TREE_TYPE (r)))
 	  {
@@ -7049,10 +7070,18 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case GOTO_EXPR:
-      *jump_target = TREE_OPERAND (t, 0);
-      gcc_assert (breaks (jump_target) || continues (jump_target)
-		  /* Allow for jumping to a cdtor_label.  */
-		  || returns (jump_target));
+      if (breaks (&TREE_OPERAND (t, 0))
+	  || continues (&TREE_OPERAND (t, 0))
+	  /* Allow for jumping to a cdtor_label.  */
+	  || returns (&TREE_OPERAND (t, 0)))
+	*jump_target = TREE_OPERAND (t, 0);
+      else
+	{
+	  gcc_assert (cxx_dialect >= cxx23);
+	  if (!ctx->quiet)
+	    error_at (loc, "%<goto%> is not a constant expression");
+	  *non_constant_p = true;
+	}
       break;
 
     case LOOP_EXPR:
@@ -8736,18 +8765,18 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       tmp = DECL_EXPR_DECL (t);
       if (VAR_P (tmp) && !DECL_ARTIFICIAL (tmp))
 	{
-	  if (TREE_STATIC (tmp))
-	    {
-	      if (flags & tf_error)
-		error_at (DECL_SOURCE_LOCATION (tmp), "%qD declared "
-			  "%<static%> in %<constexpr%> context", tmp);
-	      return false;
-	    }
-	  else if (CP_DECL_THREAD_LOCAL_P (tmp))
+	  if (CP_DECL_THREAD_LOCAL_P (tmp))
 	    {
 	      if (flags & tf_error)
 		error_at (DECL_SOURCE_LOCATION (tmp), "%qD declared "
 			  "%<thread_local%> in %<constexpr%> context", tmp);
+	      return false;
+	    }
+	  else if (TREE_STATIC (tmp))
+	    {
+	      if (flags & tf_error)
+		error_at (DECL_SOURCE_LOCATION (tmp), "%qD declared "
+			  "%<static%> in %<constexpr%> context", tmp);
 	      return false;
 	    }
 	  else if (!check_for_uninitialized_const_var
@@ -9025,10 +9054,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 
     case LABEL_EXPR:
       t = LABEL_EXPR_LABEL (t);
-      if (DECL_ARTIFICIAL (t))
+      if (DECL_ARTIFICIAL (t) || cxx_dialect >= cxx23)
 	return true;
       else if (flags & tf_error)
-	error_at (loc, "label definition is not a constant expression");
+	error_at (loc, "label definition in %<constexpr%> function only "
+		       "available with %<-std=c++2b%> or %<-std=gnu++2b%>");
       return false;
 
     case ANNOTATE_EXPR:

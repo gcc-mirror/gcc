@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=c++2a" }
+// { dg-do compile { target c++20 } }
 
 struct S { S () : a (0), b (1) {} int a, b; };
 int f1 ();		// { dg-message "previous declaration 'int f1\\(\\)'" }
@@ -57,7 +56,8 @@ template consteval float f12 (float x); // { dg-error "explicit instantiation sh
 consteval int
 f13 (int x)
 {
-  static int a = 5;		// { dg-error "'a' declared 'static' in 'consteval' function" }
-  thread_local int b = 6;	// { dg-error "'b' declared 'thread_local' in 'consteval' function" }
+  static int a = 5;		// { dg-error "'a' declared 'static' in 'consteval' function only available with" "" { target c++20_only } }
+				// { dg-error "'a' declared 'static' in 'constexpr' context" "" { target c++23 } .-1 }
+  thread_local int b = 6;	// { dg-error "'b' declared 'thread_local' in 'consteval' function only available with" "" { target c++20_only } }
   return x;
 }

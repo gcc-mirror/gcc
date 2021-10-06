@@ -14176,9 +14176,11 @@ cp_parser_jump_statement (cp_parser* parser)
 
     case RID_GOTO:
       if (parser->in_function_body
-	  && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+	  && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+	  && cxx_dialect < cxx23)
 	{
-	  error ("%<goto%> in %<constexpr%> function");
+	  error ("%<goto%> in %<constexpr%> function only available with "
+		 "%<-std=c++2b%> or %<-std=gnu++2b%>");
 	  cp_function_chain->invalid_constexpr = true;
 	}
 
