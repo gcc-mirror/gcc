@@ -1,3 +1,22 @@
+2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102548
+	* tree.c (apply_identity_attributes): Fix handling of the
+	case where an attribute in the list doesn't affect type
+	identity but some attribute before it does.
+
+2021-10-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102547
+	* constexpr.c (potential_constant_expression_1): Handle
+	NONTYPE_ARGUMENT_PACK.
+
+2021-10-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98930
+	* pt.c (has_value_dependent_address): Return true for a static
+	local variable from a function template.
+
 2021-10-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97573

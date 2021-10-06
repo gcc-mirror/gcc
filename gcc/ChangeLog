@@ -1,3 +1,52 @@
+2021-10-05  qing zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/102359
+	* gimplify.c (gimplify_decl_expr): Not add initialization for an
+	auto variable when it has been initialized by frontend.
+
+2021-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadupdate.c (jt_path_registry::cancel_invalid_paths):
+	Loosen restrictions
+
+2021-10-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* common/config/avr/avr-common.c (avr_handle_option): Mark
+	argument as ATTRIBUTE_UNUSED.
+
+2021-10-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/lm32/uclinux-elf.h (LINK_GCC_C_SEQUENCE_SPEC):
+	Undefine before redefinition.
+
+2021-10-05  Richard Biener  <rguenther@suse.de>
+
+	* toplev.c (no_backend): Remove global var.
+	(process_options): Pass in no_backend, move post_options
+	langhook call to toplev::main.
+	(do_compile): Pass in no_backend, move process_options call
+	to toplev::main.
+	(toplev::run_self_tests): Check no_backend at the caller.
+	(toplev::main): Call post_options and process_options
+	split out from do_compile, do self-tests only if
+	no_backend is initialized.
+
+2021-10-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (dump_function_to_file): Dump the UID of the
+	function as part of the name when requested.
+	* tree-pretty-print.c (dump_function_name): Dump the UID when
+	requested and the langhook produced the actual name.
+
+2021-10-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102587
+	PR middle-end/102285
+	* internal-fn.c (expand_DEFERRED_INIT): Fall back to
+	zero-initialization as last resort, use the constant
+	size as given by the DEFERRED_INIT argument to build
+	the initializer.
+
 2021-10-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97573

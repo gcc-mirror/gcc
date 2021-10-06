@@ -1,3 +1,9 @@
+2021-10-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* d-spec.cc (lang_specific_driver): Push the -static-libstdc++
+	option back onto the command line for targets without support
+	for -Bstatic/dynamic.
+
 2021-10-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/102574

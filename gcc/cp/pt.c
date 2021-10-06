@@ -25773,7 +25773,7 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	return true;
 
       ++function_depth;
-      synthesize_method (fn);
+      maybe_synthesize_method (fn);
       --function_depth;
       return !DECL_MAYBE_DELETED (fn);
     }

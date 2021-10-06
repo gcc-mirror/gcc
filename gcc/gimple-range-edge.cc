@@ -65,9 +65,10 @@ gcond_edge_range (irange &r, edge e)
 }
 
 
-gimple_outgoing_range::gimple_outgoing_range ()
+gimple_outgoing_range::gimple_outgoing_range (int max_sw_edges)
 {
   m_edge_table = NULL;
+  m_max_edges = max_sw_edges;
 }
 
 
@@ -191,6 +192,10 @@ gimple_outgoing_range::edge_range_p (irange &r, edge e)
       gcond_edge_range (r, e);
       return s;
     }
+
+  // Only process switches if it within the size limit.
+  if (EDGE_COUNT (e->src->succs) > (unsigned)m_max_edges)
+    return NULL;
 
   gcc_checking_assert (is_a<gswitch *> (s));
   gswitch *sw = as_a<gswitch *> (s);

@@ -73,6 +73,7 @@ public:
   // In-place operators.
   void union_ (const irange &);
   void intersect (const irange &);
+  void intersect (const wide_int& lb, const wide_int& ub);
   void invert ();
 
   // Operator overloads.
@@ -476,10 +477,21 @@ irange::set_varying (tree type)
 
   if (INTEGRAL_TYPE_P (type))
     {
+      // Strict enum's require varying to be not TYPE_MIN/MAX, but rather
+      // min_value and max_value.
       wide_int min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
       wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-      m_base[0] = wide_int_to_tree (type, min);
-      m_base[1] = wide_int_to_tree (type, max);
+      if (wi::eq_p (max, wi::to_wide (TYPE_MAX_VALUE (type)))
+	  && wi::eq_p (min, wi::to_wide (TYPE_MIN_VALUE (type))))
+	{
+	  m_base[0] = TYPE_MIN_VALUE (type);
+	  m_base[1] = TYPE_MAX_VALUE (type);
+	}
+      else
+	{
+	  m_base[0] = wide_int_to_tree (type, min);
+	  m_base[1] = wide_int_to_tree (type, max);
+	}
     }
   else if (POINTER_TYPE_P (type))
     {

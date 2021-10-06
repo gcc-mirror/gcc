@@ -14505,6 +14505,9 @@ Maximum number of basic blocks before EVRP uses a sparse cache.
 @item evrp-mode
 Specifies the mode Early VRP should operate in.
 
+@item evrp-switch-limit
+Specifies the maximum number of switch cases before EVRP ignores a switch.
+
 @item unroll-jam-min-percent
 The minimum percentage of memory references that must be optimized
 away for the unroll-and-jam transformation to be considered profitable.

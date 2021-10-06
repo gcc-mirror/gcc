@@ -130,6 +130,10 @@ Maximal estimated growth of function body caused by early inlining of single cal
 Common Joined UInteger Var(param_evrp_sparse_threshold) Init(800) Optimization Param
 Maximum number of basic blocks before EVRP uses a sparse cache.
 
+-param=evrp-switch-limit=
+Common Joined UInteger Var(param_evrp_switch_limit) Init(50) Optimization Param
+Maximum number of outgoing edges in a switch before EVRP will not process it.
+
 -param=evrp-mode=
 Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_RVRP_ONLY) Param Optimization
 --param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|trace|gori|cache|tracegori|debug] Specifies the mode Early VRP should operate in.

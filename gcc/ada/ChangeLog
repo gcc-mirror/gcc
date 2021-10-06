@@ -1,3 +1,265 @@
+2021-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu): Do not wrap boolean values
+	referenced in pragmas.
+
+2021-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Do not set the
+	DECL_DISREGARD_INLINE_LIMITS flag if -gnatd.8 is specified.
+
+2021-10-05  Bob Duff  <duff@adacore.com>
+
+	* gcc-interface/trans.c (set_end_locus_from_node): Check that
+	Handled_Statement_Sequence is not Empty before calling
+	End_Label, because the Empty node has no End_Label, and
+	depending on the exact node layout chosen by gen_il, calling
+	End_Label might crash, or might work OK by accident.
+
+2021-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/cuintp.c: Adjust placement of include directive.
+	* gcc-interface/targtyps.c: Likewise.
+
+2021-10-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm.rst: Add...
+	* doc/gnat_rm/security_hardening_features.rst: New.
+	* doc/gnat_rm/about_this_guide.rst: Link to new chapter.
+	* gnat_rm.texi: Regenerate.
+	* gcc-interface/utils.c (handle_strub_attribute): New.
+	(gnat_internal_attribute_table): Add strub.
+	* libgnat/a-except.adb: Make Rcheck_CE_* strub-callable.
+	* libgnat/a-except.ads (Raise_Exception): Likewise.
+	(Raise_Exception_Always): Likewise.
+	* libgnat/s-arit128.ads (Multiply_With_Ovflo_Check128):
+	Likewise.
+	* libgnat/s-arit64.ads (Multiply_With_Ovflo_Check64):
+	Likewise.
+	* libgnat/s-secsta.ads (SS_Allocate, SS_Mark, SS_Release):
+	Likewise.
+
+2021-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch9.adb (Install_Private_Data_Declarations): Copy the Sloc of
+	components for the local renamings as well as the Comes_From_Source
+	flag, and also set Warnings_Off on them.  Use Nam local variable.
+
+2021-10-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/a-tasini.ads (Set_Initialization_Handler): Update
+	comments.
+
+2021-10-05  Corentin Gay  <gay@adacore.com>
+
+	* init.c (QNX): Add #include errno.h.
+
+2021-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_Fpt_Attribute): Likewise.
+	* snames.ads-tmpl (Name_Unaligned_Valid): Delete.
+
+2021-10-05  Etienne Servais  <servais@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Forbid use of
+	Compile_Time_(Error|Warning) as configuration pragma.
+	* doc/gnat_ugn/the_gnat_compilation_model.rst:
+	Compile_Time_(Error|Warning) and Compiler_Unit(_Warning) are not
+	configuration pragmas and shall not be listed as such.  The
+	following pragmas are either obsolete or undocumented:
+	No_Run_Time, Propagate_Exceptions, Rational, Ravenscar,
+	Restricted_Run_Time, Short_Descriptors, Universal_Data.  Fix
+	some typos (notably on Restriction_Warnings).
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Move
+	Rename_Pragma documentation to alphabetical order.
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2021-10-05  Corentin Gay  <gay@adacore.com>
+
+	* adaint.c (QNX): Add #include for sys/time.h.
+
+2021-10-05  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-forstr.adb (Next_Format): When there is no more
+	format specifier found issue a proper error message instead of
+	raising a contraint error.
+
+2021-10-05  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-forstr.adb (Get_Formatted): Fix computation of the
+	number of zero to use in the formatted string. This was a wrong
+	copy/paste.
+
+2021-10-05  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-forstr.adb (Get_Formatted): Minor code clean-up.
+
+2021-10-05  Etienne Servais  <servais@adacore.com>
+
+	* libgnat/a-zchhan.ads, libgnat/a-zchhan.adb
+	(Character_Set_Version, Is_Basic, To_Basic): New.
+	* libgnat/a-zchuni.ads, libgnat/a-zchuni.adb (Is_Basic,
+	To_Basic): New.
+
+2021-10-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Improve error message.
+
+2021-10-05  Gary Dismukes  <dismukes@adacore.com>
+
+	* aspects.ads (type Aspect_Id): Add
+	Aspect_Designated_Storage_Model and Aspect_Storage_Model_Type.
+	(Aspect_Argument): Add associations for the above new aspects.
+	(Is_Representation_Aspect): Likewise.
+	(Aspect_Names, Aspect_Delay): Likewise.
+	* exp_ch4.adb (Expand_N_Allocator): Call Find_Storage_Op rather
+	than Find_Prim_Op.
+	* exp_intr.adb (Expand_Unc_Deallocation): Likewise.
+	* exp_util.ads (Find_Storage_Op): New function that locates
+	either a primitive operation of a storage pool or an operation
+	of a storage-model type specified in its Storage_Model_Type
+	aspect.
+	* exp_util.adb (Find_Storage_Op): New function that calls either
+	Find_Prim_Op or Get_Storage_Model_Type_Entity to locate a
+	storage-related operation that is associated with a type.
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Analyzes,
+	resolves, and validates the arguments of aspect
+	Designated_Storage_Model_Type.
+	(Analyze_Aspect_Specifications): Sets delay-related flags on
+	storage-model aspects when Delay_Required. Checks that aspect
+	Designated_Storage_Model is only specified for an access type
+	and that aspect Storage_Model_Type is only specified on an
+	immutably limited type. Also records such aspects for their
+	associated types.
+	(Check_Aspect_At_Freeze_Point): Resolve each of the argument
+	associations given for a Storage_Model_Type aspect.
+	(Resolve_Storage_Model_Type_Argument): New procedure that
+	resolves an argument given in the association for a given entity
+	name associated with a type with aspect Storage_Model_Type,
+	ensuring that it has the proper kind or profile.
+	(Validate_Storage_Model_Type_Aspect): New procedure that checks
+	the legality and completeness of the entity associations given
+	in a Storage_Model_Type aspect.
+	* sem_util.ads (package Storage_Model_Support): New nested
+	package that encapsulates a set of convenient utility functions
+	for retrieving entities, etc. associated with
+	storage-model-related types and objects.
+	(Get_Storage_Model_Type_Entity): New function to return a
+	specified entity associated with a type that has aspect
+	Storage_Model_Type.
+	(Has_Designated_Storage_Model_Aspect): New function that returns
+	whether a type has aspect Designated_Storage_Model.
+	(Has_Storage_Model_Type_Aspect): New function that returns
+	whether a type has aspect Storage_Model_Type.
+	(Storage_Model_Object): New function that returns the object
+	Entity_Id associated with a type's Designated_Storage_Model
+	aspect.
+	(Storage_Model_Type): New function that returns the type
+	associated with a storage-model object (when the object's type
+	specifies Storage_Model_Type).
+	(Storage_Model_Address_Type): New function that returns the
+	Address_Type associated with a type that has aspect
+	Storage_Model_Type.
+	(Storage_Model_Null_Address): New function that returns the
+	Null_Address constant associated with a type that has aspect
+	Storage_Model_Type.
+	(Storage_Model_Allocate): New function that returns the Allocate
+	procedure associated with a type that has aspect
+	Storage_Model_Type.
+	(Storage_Model_Deallocate): New function that returns the
+	Deallocate procedure associated with a type that has aspect
+	Storage_Model_Type.
+	(Storage_Model_Copy_From): New function that returns the
+	Copy_From procedure associated with a type that has aspect
+	Storage_Model_Type.
+	(Storage_Model_Copy_To): New function that returns the Copy_To
+	procedure associated with a type that has aspect
+	Storage_Model_Type.
+	(Storage_Model_Storage_Size): New function that returns the
+	Storage_Size function associated with a type that has aspect
+	Storage_Model_Type.
+	* sem_util.adb (package Storage_Model_Support): Body of new
+	nested package that contains the implementations the utility
+	functions declared in the spec of this package.
+	* snames.ads-tmpl: Add new names Name_Designated_Storage_Pool,
+	Name_Storage_Model, Name_Storage_Model_Type, Name_Address_Type,
+	Name_Copy_From, Name_Copy_To, and Name_Null_Address for the new
+	aspects and associated aspect arguments.
+
+2021-10-05  Richard Kenner  <kenner@adacore.com>
+
+	* debug.adb: Add documentation for -gnatd_t.
+
+2021-10-05  Corentin Gay  <gay@adacore.com>
+
+	* sysdep.c (__gnat_is_file_not_found_error): Add else if case.
+
+2021-10-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Build_Class_Wide_Expression): Replace entities
+	of both identifiers and operator symbols.
+
+2021-10-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Derive_Subprogram): Copy ghost status from parent
+	to derived subprogram.
+
+2021-10-05  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-strunb.ads, libgnat/a-strunb__shared.ads: Add
+	Default_Initial_Condition to Unbounded_String.
+
+2021-10-05  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cfdlli.ads: Use pragma Assertion_Policy to disable
+	contract cases at execution.
+	* libgnat/a-cfinve.ads: Idem.
+	* libgnat/a-cofove.ads: Idem.
+	* libgnat/a-cfhase.ads: Idem.
+	* libgnat/a-cfhama.ads: Idem.
+	* libgnat/a-cforse.ads: Idem.
+	* libgnat/a-cforma.ads: Idem.
+
+2021-10-05  Bob Duff  <duff@adacore.com>
+
+	* par-ch4.adb (P_Iterated_Component_Association): Parse these
+	features the same way in all language versions.  Move the call
+	to Error_Msg_Ada_2022_Feature into semantic analysis.
+	* sem_aggr.adb (Resolve_Iterated_Component_Association,
+	Resolve_Iterated_Association): Move the call to
+	Error_Msg_Ada_2022_Feature here from par-ch4.adb.
+
+2021-10-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve): Recognize specially that case.
+
+2021-10-05  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strmap.adb: Add ghost code for proof.
+	(To_Range): This is the most involved proof, as it requires
+	creating the result of the call to To_Domain as a ghost
+	variable, and show the unicity of this result in order to prove
+	the postcondition.
+	* libgnat/a-strmap.ads: (SPARK_Proof_Sorted_Character_Sequence):
+	New ghost function.
+	(To_Domain): Add postcondition regarding sorting of result.
+	(To_Range): Fix postcondition that should compare Length instead
+	of Last for the results of To_Domain and To_Range, as the value
+	of Last for an empty result is not specified in the Ada RM.
+
+2021-10-05  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-chahan.adb: Add loop invariants as needed to prove
+	subprograms.  Also use extended return statements where
+	appropriate and not done already.  Mark data with
+	Relaxed_Initialization where needed for initialization by parts.
+	Convert regular functions to expression functions where needed
+	for proof.
+	* libgnat/a-chahan.ads: Add postconditions.
+	* libgnat/a-strmap.ads (Model): New ghost function to create a
+	publicly visible model of the private data Character_Mapping,
+	needed in order to prove subprograms in Ada.Characters.Handling.
+
 2021-10-04  Justin Squirek  <squirek@adacore.com>
 
 	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:

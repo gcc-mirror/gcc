@@ -1288,20 +1288,18 @@ struct comp_info
 {
   tree fndecl;
   location_t loc;
-  bool defining;
+  tsubst_flags_t complain;
+  tree_code code;
+  comp_cat_tag retcat;
   bool first_time;
   bool constexp;
   bool was_constexp;
   bool noex;
 
-  comp_info (tree fndecl, tsubst_flags_t &complain)
-    : fndecl (fndecl)
+  comp_info (tree fndecl, tsubst_flags_t complain)
+    : fndecl (fndecl), complain (complain)
   {
     loc = DECL_SOURCE_LOCATION (fndecl);
-
-    /* We only have tf_error set when we're called from
-       explain_invalid_constexpr_fn or maybe_explain_implicit_delete.  */
-    defining = !(complain & tf_error);
 
     first_time = DECL_MAYBE_DELETED (fndecl);
     DECL_MAYBE_DELETED (fndecl) = false;
@@ -1358,23 +1356,99 @@ struct comp_info
   }
 };
 
+/* Subroutine of build_comparison_op, to compare a single subobject.  */
+
+static tree
+do_one_comp (location_t loc, const comp_info &info, tree sub, tree lhs, tree rhs)
+{
+  const tree_code code = info.code;
+  const tree fndecl = info.fndecl;
+  const comp_cat_tag retcat = info.retcat;
+  const tsubst_flags_t complain = info.complain;
+
+  tree overload = NULL_TREE;
+  int flags = LOOKUP_NORMAL | LOOKUP_NONVIRTUAL | LOOKUP_DEFAULTED;
+  /* If we have an explicit comparison category return type we can fall back
+     to </=, so don't give an error yet if <=> lookup fails.  */
+  bool tentative = retcat != cc_last;
+  tree comp = build_new_op (loc, code, flags, lhs, rhs,
+			    NULL_TREE, &overload,
+			    tentative ? tf_none : complain);
+
+  if (code != SPACESHIP_EXPR)
+    return comp;
+
+  tree rettype = TREE_TYPE (TREE_TYPE (fndecl));
+
+  if (comp == error_mark_node)
+    {
+      if (overload == NULL_TREE && (tentative || complain))
+	{
+	  /* No viable <=>, try using op< and op==.  */
+	  tree lteq = genericize_spaceship (loc, rettype, lhs, rhs);
+	  if (lteq != error_mark_node)
+	    {
+	      /* We found usable < and ==.  */
+	      if (retcat != cc_last)
+		/* Return type is a comparison category, use them.  */
+		comp = lteq;
+	      else if (complain & tf_error)
+		/* Return type is auto, suggest changing it.  */
+		inform (info.loc, "changing the return type from %qs "
+			"to a comparison category type will allow the "
+			"comparison to use %qs and %qs", "auto",
+			"operator<", "operator==");
+	    }
+	  else if (tentative && complain)
+	    /* No usable < and ==, give an error for op<=>.  */
+	    build_new_op (loc, code, flags, lhs, rhs, complain);
+	}
+      if (comp == error_mark_node)
+	return error_mark_node;
+    }
+
+  if (FNDECL_USED_AUTO (fndecl)
+      && cat_tag_for (TREE_TYPE (comp)) == cc_last)
+    {
+      /* The operator function is defined as deleted if ... Ri is not a
+	 comparison category type.  */
+      if (complain & tf_error)
+	inform (loc,
+		"three-way comparison of %qD has type %qT, not a "
+		"comparison category type", sub, TREE_TYPE (comp));
+      return error_mark_node;
+    }
+  else if (!FNDECL_USED_AUTO (fndecl)
+	   && !can_convert (rettype, TREE_TYPE (comp), complain))
+    {
+      if (complain & tf_error)
+	error_at (loc,
+		  "three-way comparison of %qD has type %qT, which "
+		  "does not convert to %qT",
+		  sub, TREE_TYPE (comp), rettype);
+      return error_mark_node;
+    }
+
+  return comp;
+}
+
 /* Build up the definition of a defaulted comparison operator.  Unlike other
    defaulted functions that use synthesized_method_walk to determine whether
    the function is e.g. deleted, for comparisons we use the same code.  We try
    to use synthesize_method at the earliest opportunity and bail out if the
    function ends up being deleted.  */
 
-static void
-build_comparison_op (tree fndecl, tsubst_flags_t complain)
+void
+build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
 {
   comp_info info (fndecl, complain);
 
-  if (!info.defining && !(complain & tf_error) && !DECL_MAYBE_DELETED (fndecl))
+  if (!defining && !(complain & tf_error) && !DECL_MAYBE_DELETED (fndecl))
     return;
 
   int flags = LOOKUP_NORMAL;
   const ovl_op_info_t *op = IDENTIFIER_OVL_OP_INFO (DECL_NAME (fndecl));
-  tree_code code = op->tree_code;
+  tree_code code = info.code = op->tree_code;
 
   tree lhs = DECL_ARGUMENTS (fndecl);
   tree rhs = DECL_CHAIN (lhs);
@@ -1384,6 +1458,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
     lhs = convert_from_reference (lhs);
   rhs = convert_from_reference (rhs);
   tree ctype = TYPE_MAIN_VARIANT (TREE_TYPE (lhs));
+  gcc_assert (!defining || COMPLETE_TYPE_P (ctype));
 
   iloc_sentinel ils (info.loc);
 
@@ -1399,7 +1474,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
     }
 
   tree compound_stmt = NULL_TREE;
-  if (info.defining)
+  if (defining)
     compound_stmt = begin_compound_stmt (0);
   else
     ++cp_unevaluated_operand;
@@ -1413,21 +1488,42 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 
   if (code == EQ_EXPR || code == SPACESHIP_EXPR)
     {
-      comp_cat_tag retcat = cc_last;
+      comp_cat_tag &retcat = (info.retcat = cc_last);
       if (code == SPACESHIP_EXPR && !FNDECL_USED_AUTO (fndecl))
 	retcat = cat_tag_for (rettype);
 
       bool bad = false;
       auto_vec<tree> comps;
 
-      /* Compare each of the subobjects.  Note that we get bases from
-	 next_initializable_field because we're past C++17.  */
+      /* Compare the base subobjects.  We handle them this way, rather than in
+	 the field loop below, because maybe_instantiate_noexcept might bring
+	 us here before we've built the base fields.  */
+      for (tree base_binfo : BINFO_BASE_BINFOS (TYPE_BINFO (ctype)))
+	{
+	  tree lhs_base
+	    = build_base_path (PLUS_EXPR, lhs, base_binfo, 0, complain);
+	  tree rhs_base
+	    = build_base_path (PLUS_EXPR, rhs, base_binfo, 0, complain);
+
+	  location_t loc = DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (ctype));
+	  tree comp = do_one_comp (loc, info, BINFO_TYPE (base_binfo),
+				   lhs_base, rhs_base);
+	  if (comp == error_mark_node)
+	    {
+	      bad = true;
+	      continue;
+	    }
+
+	  comps.safe_push (comp);
+	}
+
+      /* Now compare the field subobjects.  */
       for (tree field = next_initializable_field (TYPE_FIELDS (ctype));
 	   field;
 	   field = next_initializable_field (DECL_CHAIN (field)))
 	{
-	  if (DECL_VIRTUAL_P (field))
-	    /* Don't compare vptr fields.  */
+	  if (DECL_VIRTUAL_P (field) || DECL_FIELD_IS_BASE (field))
+	    /* We ignore the vptr, and we already handled bases.  */
 	    continue;
 
 	  tree expr_type = TREE_TYPE (field);
@@ -1478,8 +1574,8 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 		break;
 	      tree idx;
 	      /* [1] array, no loop needed, just add [0] ARRAY_REF.
-		 Similarly if !info.defining.  */
-	      if (integer_zerop (maxval) || !info.defining)
+		 Similarly if !defining.  */
+	      if (integer_zerop (maxval) || !defining)
 		idx = size_zero_node;
 	      /* Some other array, will need runtime loop.  */
 	      else
@@ -1496,69 +1592,13 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	  if (TREE_CODE (expr_type) == ARRAY_TYPE)
 	    continue;
 
-	  tree overload = NULL_TREE;
-	  tree comp = build_new_op (field_loc, code, flags, lhs_mem, rhs_mem,
-				    NULL_TREE, &overload,
-				    retcat != cc_last ? tf_none : complain);
+	  tree comp = do_one_comp (field_loc, info, field, lhs_mem, rhs_mem);
 	  if (comp == error_mark_node)
 	    {
-	      if (overload == NULL_TREE && code == SPACESHIP_EXPR
-		  && (retcat != cc_last || complain))
-		{
-		  tree comptype = (retcat != cc_last ? rettype
-				   : DECL_SAVED_AUTO_RETURN_TYPE (fndecl));
-		  /* No viable <=>, try using op< and op==.  */
-		  tree lteq = genericize_spaceship (field_loc, comptype,
-						    lhs_mem, rhs_mem);
-		  if (lteq != error_mark_node)
-		    {
-		      /* We found usable < and ==.  */
-		      if (retcat != cc_last)
-			/* Return type is a comparison category, use them.  */
-			comp = lteq;
-		      else if (complain & tf_error)
-			/* Return type is auto, suggest changing it.  */
-			inform (info.loc, "changing the return type from %qs "
-				"to a comparison category type will allow the "
-				"comparison to use %qs and %qs", "auto",
-				"operator<", "operator==");
-		    }
-		  else if (retcat != cc_last && complain != tf_none)
-		    /* No usable < and ==, give an error for op<=>.  */
-		    build_new_op (field_loc, code, flags, lhs_mem, rhs_mem,
-				  complain);
-		}
-	      if (comp == error_mark_node)
-		{
-		  bad = true;
-		  continue;
-		}
-	    }
-	  if (code != SPACESHIP_EXPR)
-	    ;
-	  else if (FNDECL_USED_AUTO (fndecl)
-		   && cat_tag_for (TREE_TYPE (comp)) == cc_last)
-	    {
-	      /* The operator function is defined as deleted if ... Ri is not a
-		 comparison category type.  */
-	      if (complain & tf_error)
-		inform (field_loc,
-			"three-way comparison of %qD has type %qT, not a "
-			"comparison category type", field, TREE_TYPE (comp));
 	      bad = true;
 	      continue;
 	    }
-	  else if (!FNDECL_USED_AUTO (fndecl)
-		   && !can_convert (rettype, TREE_TYPE (comp), complain))
-	    {
-	      if (complain & tf_error)
-		error_at (field_loc,
-			  "three-way comparison of %qD has type %qT, which "
-			  "does not convert to %qT",
-			  field, TREE_TYPE (comp), rettype);
-	      bad = true;
-	      continue;
-	    }
+
 	  /* Most of the time, comp is the expression that should be evaluated
 	     to compare the two members.  If the expression needs to be
 	     evaluated more than once in a loop, it will be a TREE_LIST
@@ -1588,7 +1628,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	  tree comp = comps[i];
 	  tree eq, retval = NULL_TREE, if_ = NULL_TREE;
 	  tree loop_indexes = NULL_TREE;
-	  if (info.defining)
+	  if (defining)
 	    {
 	      if (TREE_CODE (comp) == TREE_LIST)
 		{
@@ -1636,7 +1676,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 		comp = build_static_cast (input_location, rettype, comp,
 					  complain);
 	      info.check (comp);
-	      if (info.defining)
+	      if (defining)
 		{
 		  tree var = create_temporary_var (rettype);
 		  pushdecl (var);
@@ -1649,7 +1689,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	    }
 	  tree ceq = contextual_conv_bool (eq, complain);
 	  info.check (ceq);
-	  if (info.defining)
+	  if (defining)
 	    {
 	      finish_if_stmt_cond (ceq, if_);
 	      finish_then_clause (if_);
@@ -1662,7 +1702,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 		finish_for_stmt (TREE_VALUE (loop_index));
 	    }
 	}
-      if (info.defining)
+      if (defining)
 	{
 	  tree val;
 	  if (code == EQ_EXPR)
@@ -1683,7 +1723,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 				NULL_TREE, NULL, complain);
       comp = contextual_conv_bool (comp, complain);
       info.check (comp);
-      if (info.defining)
+      if (defining)
 	{
 	  tree neg = build1 (TRUTH_NOT_EXPR, boolean_type_node, comp);
 	  finish_return_stmt (neg);
@@ -1696,12 +1736,12 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
       tree comp2 = build_new_op (info.loc, code, flags, comp, integer_zero_node,
 				 NULL_TREE, NULL, complain);
       info.check (comp2);
-      if (info.defining)
+      if (defining)
 	finish_return_stmt (comp2);
     }
 
  out:
-  if (info.defining)
+  if (defining)
     finish_compound_stmt (compound_stmt);
   else
     --cp_unevaluated_operand;
@@ -1780,7 +1820,7 @@ synthesize_method (tree fndecl)
   else if (sfk == sfk_comparison)
     {
       /* Pass tf_none so the function is just deleted if there's a problem.  */
-      build_comparison_op (fndecl, tf_none);
+      build_comparison_op (fndecl, true, tf_none);
       need_body = false;
     }
 
@@ -1812,6 +1852,32 @@ synthesize_method (tree fndecl)
     if (DECL_ARTIFICIAL (fndecl))
       inform (input_location, "synthesized method %qD first required here",
 	      fndecl);
+}
+
+/* Like synthesize_method, but don't actually synthesize defaulted comparison
+   methods if their class is still incomplete.  Just deduce the return
+   type in that case.  */
+
+void
+maybe_synthesize_method (tree fndecl)
+{
+  if (special_function_p (fndecl) == sfk_comparison)
+    {
+      tree lhs = DECL_ARGUMENTS (fndecl);
+      if (is_this_parameter (lhs))
+	lhs = cp_build_fold_indirect_ref (lhs);
+      else
+	lhs = convert_from_reference (lhs);
+      tree ctype = TYPE_MAIN_VARIANT (TREE_TYPE (lhs));
+      if (!COMPLETE_TYPE_P (ctype))
+	{
+	  push_deferring_access_checks (dk_no_deferred);
+	  build_comparison_op (fndecl, false, tf_none);
+	  pop_deferring_access_checks ();
+	  return;
+	}
+    }
+  return synthesize_method (fndecl);
 }
 
 /* Build a reference to type TYPE with cv-quals QUALS, which is an
@@ -2753,7 +2819,7 @@ maybe_explain_implicit_delete (tree decl)
 	  inform (DECL_SOURCE_LOCATION (decl),
 		  "%q#D is implicitly deleted because the default "
 		  "definition would be ill-formed:", decl);
-	  build_comparison_op (decl, tf_warning_or_error);
+	  build_comparison_op (decl, false, tf_warning_or_error);
 	}
       else if (!informed)
 	{
@@ -2814,7 +2880,7 @@ explain_implicit_non_constexpr (tree decl)
   if (sfk == sfk_comparison)
     {
       DECL_DECLARED_CONSTEXPR_P (decl) = true;
-      build_comparison_op (decl, tf_warning_or_error);
+      build_comparison_op (decl, false, tf_warning_or_error);
       DECL_DECLARED_CONSTEXPR_P (decl) = false;
     }
   else

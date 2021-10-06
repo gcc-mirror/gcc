@@ -2259,7 +2259,7 @@ Named_object*
 Type::build_equal_function(Gogo* gogo, Named_type* name, int64_t size,
 			   Function_type* equal_fntype)
 {
-  std::pair<Type*, Named_object*> val(name != NULL ? name : this, NULL);
+  std::pair<Type*, Named_object*> val(name != NULL ? name : this, nullptr);
   std::pair<Type_function::iterator, bool> ins =
     Type::type_equal_functions_table.insert(val);
   if (!ins.second)
@@ -6413,7 +6413,7 @@ Struct_type::interface_method_table(Interface_type* interface,
 				    bool is_pointer)
 {
   std::pair<Struct_type*, Struct_type::Struct_method_table_pair*>
-    val(this, NULL);
+    val(this, nullptr);
   std::pair<Struct_type::Struct_method_tables::iterator, bool> ins =
     Struct_type::struct_method_tables.insert(val);
 

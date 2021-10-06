@@ -1,3 +1,61 @@
+2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string_view/requirements/trivially_copyable.cc:
+	New test.
+	* testsuite/23_containers/span/trivially_copyable.cc: New test.
+
+2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/utility.h (__is_in_place_type_v): Define
+	variable template to detect in_place_type_t specializations.
+	(__is_in_place_type): Replace class template with alias
+	template using __is_in_place_type_v.
+	* include/std/any (any(T&&)): Check __is_in_place_type first and
+	avoid instantiating is_copy_constructible unnecessarily.
+
+2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/integer_comparisons/greater.cc: New test.
+
+2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_ostream/inserters_other/char/volatile_ptr.cc:
+	Check result matches non-volatile pointer.
+
+2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/102535
+	* testsuite/20_util/is_trivially_constructible/value.cc: Adjust
+	expected value for C++20.
+
+2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (_Any_data::_M_access): Add
+	noexcept.
+	(_Function_base::_Base_manager::_M_get_pointer): Likewise.
+	(_Function_base::_Base_manager::_M_not_empty_function):
+	Likewise.
+
+2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (operator<<(const volatile void*)):
+	Add new overload, as per P1147R1.
+	* testsuite/27_io/basic_ostream/inserters_other/char/volatile_ptr.cc:
+	New test.
+
+2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_queue.h
+	(__cpp_lib_adaptor_iterator_pair_constructor): Set to correct
+	value.
+	* include/bits/stl_stack.h
+	(__cpp_lib_adaptor_iterator_pair_constructor): Likewise.
+	* include/std/version
+	(__cpp_lib_adaptor_iterator_pair_constructor): Likewise.
+	* testsuite/23_containers/queue/cons_from_iters.cc: Update
+	expected value.
+	* testsuite/23_containers/stack/cons_from_iters.cc: Likewise.
+
 2021-10-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/forward_list.h (forward_list): Use non-deduced

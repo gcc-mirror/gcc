@@ -5709,17 +5709,20 @@ start_decl (const cp_declarator *declarator,
     }
 
   if (current_function_decl && VAR_P (decl)
-      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+      && cxx_dialect < cxx23)
     {
       bool ok = false;
       if (CP_DECL_THREAD_LOCAL_P (decl))
 	error_at (DECL_SOURCE_LOCATION (decl),
-		  "%qD declared %<thread_local%> in %qs function", decl,
+		  "%qD declared %<thread_local%> in %qs function only "
+		  "available with %<-std=c++2b%> or %<-std=gnu++2b%>", decl,
 		  DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
 		  ? "consteval" : "constexpr");
       else if (TREE_STATIC (decl))
 	error_at (DECL_SOURCE_LOCATION (decl),
-		  "%qD declared %<static%> in %qs function", decl,
+		  "%qD declared %<static%> in %qs function only available "
+		  "with %<-std=c++2b%> or %<-std=gnu++2b%>", decl,
 		  DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
 		  ? "consteval" : "constexpr");
       else

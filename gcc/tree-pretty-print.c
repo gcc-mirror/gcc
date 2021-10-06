@@ -2873,10 +2873,18 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
       /* Unary arithmetic and logic expressions.  */
+    case ADDR_EXPR:
+      if (flags & TDF_GIMPLE_VAL)
+	{
+	  pp_string (pp, "_Literal (");
+	  dump_generic_node (pp, TREE_TYPE (node), spc,
+			     flags & ~TDF_GIMPLE_VAL, false);
+	  pp_character (pp, ')');
+	}
+      /* Fallthru.  */
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
-    case ADDR_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case INDIRECT_REF:

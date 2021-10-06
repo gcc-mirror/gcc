@@ -565,6 +565,9 @@ gori_map::calculate_gori (basic_block bb)
     }
   else
     {
+      // Do not process switches if they are too large.
+      if (EDGE_COUNT (bb->succs) > (unsigned)param_evrp_switch_limit)
+	return;
       gswitch *gs = as_a<gswitch *>(stmt);
       name = gimple_range_ssa_p (gimple_switch_index (gs));
       maybe_add_gori (name, gimple_bb (stmt));
@@ -634,7 +637,8 @@ debug (gori_map &g)
 
 // Construct a gori_compute object.
 
-gori_compute::gori_compute (int not_executable_flag) : tracer ("GORI ")
+gori_compute::gori_compute (int not_executable_flag)
+		      : outgoing (param_evrp_switch_limit), tracer ("GORI ")
 {
   m_not_executable_flag = not_executable_flag;
   // Create a boolean_type true and false range.
