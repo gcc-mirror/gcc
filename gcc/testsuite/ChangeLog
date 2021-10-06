@@ -1,3 +1,19 @@
+2021-10-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102458
+	* gfortran.dg/pr102458b.f90: New test.
+
+2021-10-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102458
+	* gfortran.dg/pr102458.f90: New test.
+
 2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
