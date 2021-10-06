@@ -402,6 +402,8 @@ package Restrict is
    --  Test to see if current restrictions settings specify that no
    --  exception propagation is activated.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Process_Restriction_Synonyms (N : Node_Id) return Name_Id;
    --  Id is a node whose Chars field contains the name of a restriction.
    --  If it is one of synonyms that we allow for historical purposes (for
