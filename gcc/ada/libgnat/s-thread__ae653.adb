@@ -29,21 +29,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks 653 version of this package
+--  This is the VxWorks7r2Cert Light version of this package
 
 pragma Restrictions (No_Tasking);
---  The VxWorks 653 version of this package is intended only for programs
---  which do not use Ada tasking. This restriction ensures that this
---  will be checked by the binder.
+--  The VxWorks7r2Cert Light version of this package is intended only
+--  for programs which do not use Ada tasking. This restriction ensures
+--  that this will be checked by the binder.
 
 with System.Storage_Elements; use System.Storage_Elements;
-with System.OS_Versions; use System.OS_Versions;
 
 package body System.Threads is
 
    use Interfaces.C;
-
-   package SSL renames System.Soft_Links;
 
    Main_ATSD : aliased ATSD;
    --  TSD for environment task
@@ -52,21 +49,7 @@ package body System.Threads is
    pragma Thread_Local_Storage (Current_ATSD);
    --  pragma TLS needed since TaskVarAdd no longer available
 
-   --  Assume guard pages for Helix APEX partitions, but leave
-   --  checking mechanism in for now, in case of surprises. ???
-   Stack_Limit : Address;
-   pragma Import (C, Stack_Limit, "__gnat_stack_limit");
-
-   type Set_Stack_Limit_Proc_Acc is access procedure;
-   pragma Convention (C, Set_Stack_Limit_Proc_Acc);
-
-   Set_Stack_Limit_Hook : Set_Stack_Limit_Proc_Acc;
-   pragma Import (C, Set_Stack_Limit_Hook, "__gnat_set_stack_limit_hook");
-   --  Procedure to be called when a task is created to set stack limit if
-   --  limit checking is used.
-
    --  VxWorks specific API
-
    ERROR : constant STATUS := Interfaces.C.int (-1);
    OK    : constant STATUS := Interfaces.C.int (0);
 
@@ -85,12 +68,7 @@ package body System.Threads is
    --  It installs System.Threads versions of certain operations of the
    --  run-time lib.
 
-   procedure Install_Handler;
-   pragma Import (C, Install_Handler, "__gnat_install_handler");
-
    function  Get_Sec_Stack return SST.SS_Stack_Ptr;
-
-   procedure Set_Sec_Stack (Stack : SST.SS_Stack_Ptr);
 
    -----------------------
    -- Thread_Body_Enter --
@@ -108,27 +86,14 @@ package body System.Threads is
       ATSD.Sec_Stack_Ptr := Sec_Stack_Ptr;
       SST.SS_Init (ATSD.Sec_Stack_Ptr);
       Current_ATSD := Process_ATSD_Address;
-      Install_Handler;
 
-      --  Assume guard pages for Helix/Vx7, but leave in for now ???
-      --  Initialize stack limit if needed.
-
-      if Current_ATSD /= Main_ATSD'Address
-        and then Set_Stack_Limit_Hook /= null
-      then
-         Set_Stack_Limit_Hook.all;
-      end if;
    end Thread_Body_Enter;
 
    ----------------------------------
    -- Thread_Body_Exceptional_Exit --
    ----------------------------------
 
-   procedure Thread_Body_Exceptional_Exit
-     (EO : Ada.Exceptions.Exception_Occurrence)
-   is
-      pragma Unreferenced (EO);
-
+   procedure Thread_Body_Exceptional_Exit is
    begin
       --  No action for this target
 
@@ -156,11 +121,8 @@ package body System.Threads is
       pragma Assert (Result /= ERROR);
 
    begin
-      Main_ATSD.Sec_Stack_Ptr := SSL.Get_Sec_Stack_NT;
+      Main_ATSD.Sec_Stack_Ptr := Get_Sec_Stack;
       Current_ATSD := Main_ATSD'Address;
-      Install_Handler;
-      SSL.Get_Sec_Stack := Get_Sec_Stack'Access;
-      SSL.Set_Sec_Stack := Set_Sec_Stack'Access;
    end Init_RTS;
 
    -------------------
@@ -190,38 +152,12 @@ package body System.Threads is
 
       Current_ATSD := To_Address (Integer_Address (T));
 
-      --  The same issue applies to the task variable that contains the stack
-      --  limit when that overflow checking mechanism is used instead of
-      --  probing. If stack checking is enabled and limit checking is used,
-      --  allocate the limit for this task. The environment task has this
-      --  initialized by the binder-generated main when
-      --  System.Stack_Check_Limits = True.
-
-      pragma Warnings (Off);
-
-      --  OS is a constant
-      if OS /= VxWorks_653 and then Set_Stack_Limit_Hook /= null then
-         --  Check that this is correct if limit checking left in. ???
-         Stack_Limit := To_Address (Integer_Address (T));
-      end if;
-      pragma Warnings (On);
-
       return OK;
    end Register;
-
-   -------------------
-   -- Set_Sec_Stack --
-   -------------------
-
-   procedure Set_Sec_Stack (Stack : SST.SS_Stack_Ptr) is
-      CTSD : constant ATSD_Access := From_Address (Current_ATSD);
-   begin
-      pragma Assert (CTSD /= null);
-      CTSD.Sec_Stack_Ptr := Stack;
-   end Set_Sec_Stack;
 
 begin
    --  Initialize run-time library
 
    Init_RTS;
+
 end System.Threads;

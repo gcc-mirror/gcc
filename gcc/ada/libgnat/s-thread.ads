@@ -34,16 +34,13 @@
 
 --  This package is currently implemented for:
 
---    VxWorks AE653 rts-cert
---    VxWorks AE653 rts-full (not rts-kernel)
+--    VxWorks7r2Cert Light
 
-with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
 
 with System.Secondary_Stack;
-with System.Soft_Links;
 
 package System.Threads is
 
@@ -81,12 +78,15 @@ package System.Threads is
    procedure Thread_Body_Leave;
    --  Leave thread body (normally), see above for details
 
-   procedure Thread_Body_Exceptional_Exit
-     (EO : Ada.Exceptions.Exception_Occurrence);
+   procedure Thread_Body_Exceptional_Exit;
    --  Leave thread body (abnormally on exception), see above for details
 
 private
 
-   type ATSD is new System.Soft_Links.TSD;
+   type ATSD is record
+      Sec_Stack_Ptr : SST.SS_Stack_Ptr;
+      --  Pointer of the allocated secondary stack
+
+   end record;
 
 end System.Threads;
