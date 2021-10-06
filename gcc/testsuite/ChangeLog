@@ -1,3 +1,57 @@
+2021-10-05  qing zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/102359
+	* g++.dg/pr102359_1.C: New test.
+	* g++.dg/pr102359_2.C: New test.
+
+2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102548
+	* g++.target/i386/pr102548.C: New test.
+
+2021-10-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102547
+	* g++.dg/cpp0x/variadic-partial2.C: New test.
+	* g++.dg/cpp0x/variadic-partial2a.C: New test.
+
+2021-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-thread-valid.c: New test.
+
+2021-10-05  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/s390/pr80725.c: Ensure computed goto is used on
+	a pointer type.
+
+2021-10-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/102605
+	* gcc.dg/gimplefe-46.c: New testcase.
+
+2021-10-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98930
+	* g++.dg/cpp1z/nontype4.C: New test.
+	* g++.dg/cpp1z/nontype4a.C: New test.
+
+2021-10-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/pr43711.f90: Add dg-error + dg-prune-output,
+	remove dg-excess-errors to change XFAIL to PASS.
+
+2021-10-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102587
+	PR middle-end/102285
+	* gcc.target/aarch64/sve/pr102587-1.c: Add -march=armv8.3-a+sve.
+	* gcc.target/aarch64/sve/pr102587-2.c: Likewise.
+
+2021-10-05  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/predict-2.f90: Adjust to avoid redundant
+	inner loop preheader checking code.
+
 2021-10-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97573
