@@ -2888,10 +2888,13 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case INDIRECT_REF:
-      if (TREE_CODE (node) == ADDR_EXPR
+      if (!(flags & TDF_GIMPLE)
+	  && TREE_CODE (node) == ADDR_EXPR
 	  && (TREE_CODE (TREE_OPERAND (node, 0)) == STRING_CST
 	      || TREE_CODE (TREE_OPERAND (node, 0)) == FUNCTION_DECL))
-	;	/* Do not output '&' for strings and function pointers.  */
+	/* Do not output '&' for strings and function pointers when not
+	   dumping GIMPLE FE syntax.  */
+	;
       else
 	pp_string (pp, op_symbol (node));
 
