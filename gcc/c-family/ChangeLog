@@ -1,3 +1,14 @@
+2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* c-ubsan.c (ubsan_instrument_division): Check the right
+	flag_sanitize_recover bit, depending on which sanitization
+	is done.
+
 2021-08-06  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

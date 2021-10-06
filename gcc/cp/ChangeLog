@@ -1,3 +1,23 @@
+2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102548
+	* tree.c (apply_identity_attributes): Fix handling of the
+	case where an attribute in the list doesn't affect type
+	identity but some attribute before it does.
+
+2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102496
+	* name-lookup.c (push_local_extern_decl_alias): Return early even for
+	tls vars with non-dependent type when processing_template_decl.  For
+	CP_DECL_THREAD_LOCAL_P vars call set_decl_tls_model on alias.
+
 2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

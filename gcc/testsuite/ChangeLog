@@ -1,3 +1,61 @@
+2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102548
+	* g++.target/i386/pr102548.C: New test.
+
+2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* c-c++-common/ubsan/float-div-by-zero-2.c: New test.
+
+2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102496
+	* g++.dg/tls/pr102496-1.C: New test.
+	* g++.dg/tls/pr102496-2.C: New test.
+
+2021-10-05  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	Backported from master:
+	2021-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* g++.dg/ext/visibility/noPLT.C: Skip on s390x.
+	* g++.target/s390/mi-thunk.C: New test.
+	* gcc.target/s390/nodatarel-1.c: Move foostatic to the new
+	tests.
+	* gcc.target/s390/pr80080-4.c: Allow @PLT suffix.
+	* gcc.target/s390/risbg-ll-3.c: Likewise.
+	* gcc.target/s390/call.h: Common code for the new tests.
+	* gcc.target/s390/call-z10-pic-nodatarel.c: New test.
+	* gcc.target/s390/call-z10-pic.c: New test.
+	* gcc.target/s390/call-z10.c: New test.
+	* gcc.target/s390/call-z9-pic-nodatarel.c: New test.
+	* gcc.target/s390/call-z9-pic.c: New test.
+	* gcc.target/s390/call-z9.c: New test.
+	* gcc.target/s390/mfentry-m64-pic.c: New test.
+	* gcc.target/s390/tls.h: Common code for the new TLS tests.
+	* gcc.target/s390/tls-pic.c: New test.
+	* gcc.target/s390/tls.c: New test.
+
+2021-10-05  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	Backported from master:
+	2021-06-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/mnop-mcount-m31-mzarch.c: Adapt to the new
+	prologue size.
+	* gcc.target/s390/mnop-mcount-m64.c: Likewise.
+
 2021-10-04  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	* gcc.target/powerpc/fusion-p10-ldcmpi.c: Update counts.
