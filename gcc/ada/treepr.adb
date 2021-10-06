@@ -885,14 +885,13 @@ package body Treepr is
                Val : constant Uint := Get_Uint (N, FD.Offset);
                function Cast is new Unchecked_Conversion (Uint, Int);
             begin
-               --  Do this even if Val = No_Uint, because Uint fields default
-               --  to Uint_0.
-
-               Print_Initial;
-               UI_Write (Val, Format);
-               Write_Str (" (Uint = ");
-               Write_Int (Cast (Val));
-               Write_Char (')');
+               if Present (Val) then
+                  Print_Initial;
+                  UI_Write (Val, Format);
+                  Write_Str (" (Uint = ");
+                  Write_Int (Cast (Val));
+                  Write_Char (')');
+               end if;
             end;
 
          when Valid_Uint_Field | Unat_Field | Upos_Field

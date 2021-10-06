@@ -390,34 +390,23 @@ package body Einfo.Utils is
 
    function Known_Static_Component_Bit_Offset (E : Entity_Id) return B is
    begin
-      return Present (Component_Bit_Offset (E))
+      return Known_Component_Bit_Offset (E)
         and then Component_Bit_Offset (E) >= Uint_0;
    end Known_Static_Component_Bit_Offset;
 
    function Known_Component_Size (E : Entity_Id) return B is
    begin
-      return Component_Size (E) /= Uint_0
-        and then Present (Component_Size (E));
+      return Present (Component_Size (E));
    end Known_Component_Size;
 
    function Known_Static_Component_Size (E : Entity_Id) return B is
    begin
-      return Component_Size (E) > Uint_0;
+      return Known_Component_Size (E) and then Component_Size (E) >= Uint_0;
    end Known_Static_Component_Size;
-
-   Use_New_Unknown_Rep : constant Boolean := False;
-   --  If False, we represent "unknown" as Uint_0, which is wrong.
-   --  We intend to make it True (and remove it), and represent
-   --  "unknown" as Field_Is_Initial_Zero. We also need to change
-   --  the type of Esize and RM_Size from Uint to Valid_Uint.
 
    function Known_Esize (E : Entity_Id) return B is
    begin
-      if Use_New_Unknown_Rep then
-         return not Field_Is_Initial_Zero (E, F_Esize);
-      else
-         return Present (Esize (E)) and then Esize (E) /= Uint_0;
-      end if;
+      return Present (Esize (E));
    end Known_Esize;
 
    function Known_Static_Esize (E : Entity_Id) return B is
@@ -429,11 +418,7 @@ package body Einfo.Utils is
 
    procedure Reinit_Esize (Id : E) is
    begin
-      if Use_New_Unknown_Rep then
-         Reinit_Field_To_Zero (Id, F_Esize);
-      else
-         Set_Esize (Id, Uint_0);
-      end if;
+      Reinit_Field_To_Zero (Id, F_Esize);
    end Reinit_Esize;
 
    procedure Copy_Esize (To, From : E) is
@@ -452,7 +437,7 @@ package body Einfo.Utils is
 
    function Known_Static_Normalized_First_Bit (E : Entity_Id) return B is
    begin
-      return Present (Normalized_First_Bit (E))
+      return Known_Normalized_First_Bit (E)
         and then Normalized_First_Bit (E) >= Uint_0;
    end Known_Static_Normalized_First_Bit;
 
@@ -463,43 +448,25 @@ package body Einfo.Utils is
 
    function Known_Static_Normalized_Position (E : Entity_Id) return B is
    begin
-      return Present (Normalized_Position (E))
+      return Known_Normalized_Position (E)
         and then Normalized_Position (E) >= Uint_0;
    end Known_Static_Normalized_Position;
 
    function Known_RM_Size (E : Entity_Id) return B is
    begin
-      if Use_New_Unknown_Rep then
-         return not Field_Is_Initial_Zero (E, F_RM_Size);
-      else
-         return Present (RM_Size (E))
-           and then (RM_Size (E) /= Uint_0
-                       or else Is_Discrete_Type (E)
-                       or else Is_Fixed_Point_Type (E));
-      end if;
+      return Present (RM_Size (E));
    end Known_RM_Size;
 
    function Known_Static_RM_Size (E : Entity_Id) return B is
    begin
-      if Use_New_Unknown_Rep then
-         return Known_RM_Size (E)
-           and then RM_Size (E) >= Uint_0
-           and then not Is_Generic_Type (E);
-      else
-         return (RM_Size (E) > Uint_0
-                   or else Is_Discrete_Type (E)
-                   or else Is_Fixed_Point_Type (E))
-           and then not Is_Generic_Type (E);
-      end if;
+      return Known_RM_Size (E)
+        and then RM_Size (E) >= Uint_0
+        and then not Is_Generic_Type (E);
    end Known_Static_RM_Size;
 
    procedure Reinit_RM_Size (Id : E) is
    begin
-      if Use_New_Unknown_Rep then
-         Reinit_Field_To_Zero (Id, F_RM_Size);
-      else
-         Set_RM_Size (Id, Uint_0);
-      end if;
+      Reinit_Field_To_Zero (Id, F_RM_Size);
    end Reinit_RM_Size;
 
    procedure Copy_RM_Size (To, From : E) is
@@ -541,9 +508,8 @@ package body Einfo.Utils is
    begin
       pragma Assert (Is_Type (Id));
       pragma Assert (not Known_Esize (Id) or else Esize (Id) = V);
-      if Use_New_Unknown_Rep then
-         pragma Assert (not Known_RM_Size (Id) or else RM_Size (Id) = V);
-      end if;
+      pragma Assert (not Known_RM_Size (Id) or else RM_Size (Id) = V);
+
       Set_Esize (Id, UI_From_Int (V));
       Set_RM_Size (Id, UI_From_Int (V));
    end Init_Size;
@@ -2592,6 +2558,16 @@ package body Einfo.Utils is
 
       return Scope_Depth_Value (Scop);
    end Scope_Depth;
+
+   function Scope_Depth_Default_0 (Id : E) return U is
+   begin
+      if Scope_Depth_Set (Id) then
+         return Scope_Depth (Id);
+
+      else
+         return Uint_0;
+      end if;
+   end Scope_Depth_Default_0;
 
    ---------------------
    -- Scope_Depth_Set --

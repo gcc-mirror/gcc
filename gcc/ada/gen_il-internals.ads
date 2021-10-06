@@ -133,7 +133,7 @@ package Gen_IL.Internals is
       Default_Uint_0); -- Uint
    --  Default value for a field in the Nmake functions. No_Default if the
    --  field parameter has no default value. Otherwise this indicates the
-   --  default value used, which must matcht the type of the field.
+   --  default value used, which must match the type of the field.
 
    function Image (Default : Field_Default_Value) return String;
    --  This will be something like "Default_Empty".
@@ -191,7 +191,10 @@ package Gen_IL.Internals is
 
    function Special_Default
      (Field_Type : Type_Enum) return String is
-      (if Field_Type = Elist_Id then "No_Elist" else "Uint_0");
+      (case Field_Type is
+         when Elist_Id => "No_Elist",
+         when Uint => "No_Uint",
+         when others => "can't happen");
 
    ----------------
 

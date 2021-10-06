@@ -252,7 +252,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Contract, Node_Id),
         Sm (Is_Elaboration_Warnings_OK_Id, Flag),
         Sm (Original_Record_Component, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
+        Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag),
         Sm (Current_Value, Node_Id), -- setter only
@@ -607,7 +607,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  this is the first named subtype).
 
    Ab (Decimal_Fixed_Point_Kind, Fixed_Point_Kind,
-       (Sm (Digits_Value, Uint),
+       (Sm (Digits_Value, Upos),
         Sm (Has_Machine_Radix_Clause, Flag),
         Sm (Machine_Radix_10, Flag),
         Sm (Scale_Value, Uint)));
@@ -623,7 +623,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  first named subtype).
 
    Ab (Float_Kind, Real_Kind,
-       (Sm (Digits_Value, Uint)));
+       (Sm (Digits_Value, Upos)));
 
    Cc (E_Floating_Point_Type, Float_Kind);
        --  Floating point type, used for the anonymous base type of the
@@ -866,23 +866,23 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  A private type, created by a private type declaration that has
        --  neither the keyword limited nor the keyword tagged.
        (Sm (Scalar_Range, Node_Id),
-        Sm (Scope_Depth_Value, Uint)));
+        Sm (Scope_Depth_Value, Unat)));
 
    Cc (E_Private_Subtype, Private_Kind,
        --  A subtype of a private type, created by a subtype declaration used
        --  to declare a subtype of a private type.
-       (Sm (Scope_Depth_Value, Uint)));
+       (Sm (Scope_Depth_Value, Unat)));
 
    Cc (E_Limited_Private_Type, Private_Kind,
        --  A limited private type, created by a private type declaration that
        --  has the keyword limited, but not the keyword tagged.
        (Sm (Scalar_Range, Node_Id),
-        Sm (Scope_Depth_Value, Uint)));
+        Sm (Scope_Depth_Value, Unat)));
 
    Cc (E_Limited_Private_Subtype, Private_Kind,
        --  A subtype of a limited private type, created by a subtype declaration
        --  used to declare a subtype of a limited private type.
-       (Sm (Scope_Depth_Value, Uint)));
+       (Sm (Scope_Depth_Value, Unat)));
 
    Ab (Incomplete_Kind, Incomplete_Or_Private_Kind,
        (Sm (Non_Limited_View, Node_Id)));
@@ -900,7 +900,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (First_Entity, Node_Id),
         Sm (First_Private_Entity, Node_Id),
         Sm (Last_Entity, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
+        Sm (Scope_Depth_Value, Unat),
         Sm (Stored_Constraint, Elist_Id)));
 
    Ab (Task_Kind, Concurrent_Kind,
@@ -1005,11 +1005,11 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Linker_Section_Pragma, Node_Id),
         Sm (Overridden_Operation, Node_Id),
         Sm (Protected_Body_Subprogram, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
+        Sm (Scope_Depth_Value, Unat),
         Sm (Static_Call_Helper, Node_Id),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag),
-        Sm (Subps_Index, Uint)));
+        Sm (Subps_Index, Unat)));
 
    Cc (E_Function, Subprogram_Kind,
        --  A function, created by a function declaration or a function body
@@ -1137,7 +1137,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Postconditions_Proc, Node_Id),
         Sm (Protected_Body_Subprogram, Node_Id),
         Sm (Protection_Object, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
+        Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag)));
 
@@ -1164,7 +1164,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Protected_Body_Subprogram, Node_Id),
         Sm (Protection_Object, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
+        Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag)));
 
@@ -1178,7 +1178,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Last_Entity, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id),
         Sm (Return_Applies_To, Node_Id),
-        Sm (Scope_Depth_Value, Uint)));
+        Sm (Scope_Depth_Value, Unat)));
 
    Cc (E_Entry_Index_Parameter, Entity_Kind,
        --  An entry index parameter created by an entry index specification
@@ -1209,7 +1209,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Elaboration_Warnings_OK_Id, Flag),
         Sm (Last_Entity, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
+        Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag)));
 
@@ -1254,7 +1254,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Has_Loop_Entry_Attributes, Flag),
         Sm (Last_Entity, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id),
-        Sm (Scope_Depth_Value, Uint)));
+        Sm (Scope_Depth_Value, Unat)));
 
    Cc (E_Return_Statement, Entity_Kind,
        --  A dummy entity created for each return statement. Used to hold
@@ -1266,7 +1266,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (First_Entity, Node_Id),
         Sm (Last_Entity, Node_Id),
         Sm (Return_Applies_To, Node_Id),
-        Sm (Scope_Depth_Value, Uint)));
+        Sm (Scope_Depth_Value, Unat)));
 
    Cc (E_Package, Entity_Kind,
        --  A package, created by a package declaration
@@ -1303,7 +1303,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Related_Instance, Node_Id),
         Sm (Renamed_In_Spec, Flag),
         Sm (Renamed_Or_Alias, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
+        Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Aux_Pragma, Node_Id),
         Sm (SPARK_Aux_Pragma_Inherited, Flag),
         Sm (SPARK_Pragma, Node_Id),
@@ -1323,7 +1323,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Last_Entity, Node_Id),
         Sm (Related_Instance, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
+        Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Aux_Pragma, Node_Id),
         Sm (SPARK_Aux_Pragma_Inherited, Flag),
         Sm (SPARK_Pragma, Node_Id),
@@ -1358,7 +1358,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Interface_Name, Node_Id),
         Sm (Last_Entity, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
+        Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag)));
 

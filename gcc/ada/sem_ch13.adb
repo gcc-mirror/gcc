@@ -7960,7 +7960,7 @@ package body Sem_Ch13 is
                     ("stream size for elementary type must be 8, 16, 24, " &
                      "32 or 64", N);
 
-               elsif RM_Size (U_Ent) > Size then
+               elsif Known_RM_Size (U_Ent) and then RM_Size (U_Ent) > Size then
                   Error_Msg_Uint_1 := RM_Size (U_Ent);
                   Error_Msg_N
                     ("stream size for elementary type must be 8, 16, 24, " &
@@ -17569,7 +17569,9 @@ package body Sem_Ch13 is
                Source_Siz := RM_Size (Source);
                Target_Siz := RM_Size (Target);
 
-               if Source_Siz /= Target_Siz then
+               if Present (Source_Siz) and then Present (Target_Siz)
+                 and then Source_Siz /= Target_Siz
+               then
                   Error_Msg
                     ("?z?types for unchecked conversion have different sizes!",
                      Eloc, Act_Unit);

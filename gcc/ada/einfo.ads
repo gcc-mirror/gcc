@@ -4323,7 +4323,8 @@ package Einfo is
 --       Indicates the number of scopes that statically enclose the declaration
 --       of the unit or type. Library units have a depth of zero. Note that
 --       record types can act as scopes but do NOT have this field set (see
---       Scope_Depth above).
+--       Scope_Depth above). Queries should normally be via Scope_Depth,
+--       and not call Scope_Depth_Value directly.
 
 --    Scope_Depth_Set (synthesized)
 --       Applies to a special predicate function that returns a Boolean value
@@ -4555,7 +4556,7 @@ package Einfo is
 --       in inheritance of subprograms between views of the same type.
 
 --    Subps_Index
---       Present in subprogram entries. Set if the subprogram contains nested
+--       Present in subprogram entities. Set if the subprogram contains nested
 --       subprograms, or is a subprogram nested within such a subprogram. Holds
 --       the index in the Exp_Unst.Subps table for the subprogram. Note that
 --       for the outer level subprogram, this is the starting index in the Subp

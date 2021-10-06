@@ -984,7 +984,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Case_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Expression, Node_Id, Default_Empty),
         Sy (Alternatives, List_Id, Default_No_List),
-        Sy (End_Span, Uint, Default_Uint_0),
+        Sy (End_Span, Unat, Default_Uint_0),
         Sm (From_Conditional_Expression, Flag)));
 
    Cc (N_Code_Statement, N_Statement_Other_Than_Procedure_Call,
@@ -1094,7 +1094,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Then_Statements, List_Id),
         Sy (Elsif_Parts, List_Id, Default_No_List),
         Sy (Else_Statements, List_Id, Default_No_List),
-        Sy (End_Span, Uint, Default_Uint_0),
+        Sy (End_Span, Unat, Default_Uint_0),
         Sm (From_Conditional_Expression, Flag)));
 
    Cc (N_Accept_Alternative, Node_Kind,
@@ -1594,7 +1594,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Dcheck_Function, Node_Id),
         Sm (Enclosing_Variant, Node_Id),
         Sm (Has_SP_Choice, Flag),
-        Sm (Present_Expr, Uint)));
+        Sm (Present_Expr, Valid_Uint)));
 
    Cc (N_Variant_Part, Node_Kind,
        (Sy (Name, Node_Id, Default_Empty),

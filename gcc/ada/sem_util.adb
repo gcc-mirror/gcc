@@ -315,7 +315,8 @@ package body Sem_Util is
                --  Ignore transient scopes made during expansion
 
                if Comes_From_Source (Node_Par) then
-                  return Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
+                  return
+                    Scope_Depth_Default_0 (Encl_Scop) + Master_Lvl_Modifier;
                end if;
 
             --  For a return statement within a function, return
@@ -1137,6 +1138,10 @@ package body Sem_Util is
 
    function Addressable (V : Uint) return Boolean is
    begin
+      if No (V) then
+         return False;
+      end if;
+
       return V = Uint_8  or else
              V = Uint_16 or else
              V = Uint_32 or else

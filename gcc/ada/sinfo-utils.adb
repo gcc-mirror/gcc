@@ -242,15 +242,28 @@ package body Sinfo.Utils is
    use Seinfo;
 
    function Is_In_Union_Id (F_Kind : Field_Kind) return Boolean is
-     (F_Kind in Node_Id_Field
-              | List_Id_Field
-              | Elist_Id_Field
-              | Name_Id_Field
-              | String_Id_Field
-              | Uint_Field
-              | Ureal_Field
-              | Union_Id_Field);
    --  True if the field type is one that can be converted to Types.Union_Id
+     (case F_Kind is
+       when Node_Id_Field
+          | List_Id_Field
+          | Elist_Id_Field
+          | Name_Id_Field
+          | String_Id_Field
+          | Valid_Uint_Field
+          | Unat_Field
+          | Upos_Field
+          | Nonzero_Uint_Field
+          | Uint_Field
+          | Ureal_Field
+          | Union_Id_Field => True,
+       when Flag_Field
+          | Node_Kind_Type_Field
+          | Entity_Kind_Type_Field
+          | Source_Ptr_Field
+          | Small_Paren_Count_Type_Field
+          | Convention_Id_Field
+          | Component_Alignment_Kind_Field
+          | Mechanism_Type_Field => False);
 
    -----------------------
    -- Walk_Sinfo_Fields --

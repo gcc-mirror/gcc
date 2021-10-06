@@ -3613,11 +3613,10 @@ package body Exp_Ch7 is
         and then
           (not Is_Library_Level_Entity (Spec_Id)
 
-            --  Nested packages are considered to be library level entities,
-            --  but do not need to be processed separately. True library level
-            --  packages have a scope value of 1.
+            --  Nested packages are library level entities, but do not need to
+            --  be processed separately.
 
-            or else Scope_Depth_Value (Spec_Id) /= Uint_1
+            or else Scope_Depth (Spec_Id) /= Uint_1
             or else (Is_Generic_Instance (Spec_Id)
                       and then Package_Instantiation (Spec_Id) /= N))
 

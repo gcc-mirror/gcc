@@ -8090,7 +8090,9 @@ package body Sem_Ch12 is
                 (Scope (Ent) = Current_Instantiated_Parent.Gen_Id
                   and then not Is_Child_Unit (Ent))
               or else
-                (Scope_Depth (Scope (Ent)) >
+                (Scope_Depth_Set (Scope (Ent))
+                  and then
+                 Scope_Depth (Scope (Ent)) >
                              Scope_Depth (Current_Instantiated_Parent.Gen_Id)
                   and then
                     Get_Source_Unit (Ent) =

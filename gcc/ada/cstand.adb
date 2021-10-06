@@ -1233,9 +1233,10 @@ package body CStand is
       Mutate_Ekind          (Any_Composite, E_Array_Type);
       Set_Scope             (Any_Composite, Standard_Standard);
       Set_Etype             (Any_Composite, Any_Composite);
-      Set_Component_Size    (Any_Composite, Uint_0);
       Set_Component_Type    (Any_Composite, Standard_Integer);
       Reinit_Size_Align     (Any_Composite);
+
+      pragma Assert (not Known_Component_Size (Any_Composite));
 
       Any_Discrete := New_Standard_Entity ("a discrete type");
       Mutate_Ekind          (Any_Discrete, E_Signed_Integer_Type);
@@ -1508,9 +1509,10 @@ package body CStand is
          Set_Scope       (Standard_Exception_Type, Standard_Standard);
          Set_Stored_Constraint
                          (Standard_Exception_Type, No_Elist);
-         Set_RM_Size (Standard_Exception_Type, Uint_0);
          Set_Size_Known_At_Compile_Time
                          (Standard_Exception_Type, True);
+
+         pragma Assert (not Known_RM_Size (Standard_Exception_Type));
 
          Make_Aliased_Component (Standard_Exception_Type, Standard_Boolean,
                          "Not_Handled_By_Others");

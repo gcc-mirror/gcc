@@ -373,9 +373,9 @@ package Exp_Disp is
    --  target object in its first argument; such implicit argument is explicit
    --  in the IP procedures built here.
 
-   procedure Set_DT_Position_Value (Prim  : Entity_Id; Value : Uint);
-   --  Set the position of a dispatching primitive its dispatch table. For
-   --  subprogram wrappers propagate the value to the wrapped subprogram.
+   procedure Set_DT_Position_Value (Prim : Entity_Id; Value : Uint);
+   --  Set the position of a dispatching primitive in its dispatch table.
+   --  For subprogram wrappers propagate the value to the wrapped subprogram.
 
    procedure Set_DTC_Entity_Value (Tagged_Type : Entity_Id; Prim : Entity_Id);
    --  Set the definite value of the DTC_Entity value associated with a given
