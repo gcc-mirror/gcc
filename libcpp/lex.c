@@ -1164,6 +1164,324 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
     }
 }
 
+namespace bidi {
+  enum class kind {
+    NONE, LRE, RLE, LRO, RLO, LRI, RLI, FSI, PDF, PDI, LTR, RTL
+  };
+
+  /* All the UTF-8 encodings of bidi characters start with E2.  */
+  constexpr uchar utf8_start = 0xe2;
+
+  /* A vector holding currently open bidi contexts.  We use a char for
+     each context, its LSB is 1 if it represents a PDF context, 0 if it
+     represents a PDI context.  The next bit is 1 if this context was open
+     by a bidi character written as a UCN, and 0 when it was UTF-8.  */
+  semi_embedded_vec <unsigned char, 16> vec;
+
+  /* Close the whole comment/identifier/string literal/character constant
+     context.  */
+  void on_close ()
+  {
+    vec.truncate (0);
+  }
+
+  /* Pop the last element in the vector.  */
+  void pop ()
+  {
+    unsigned int len = vec.count ();
+    gcc_checking_assert (len > 0);
+    vec.truncate (len - 1);
+  }
+
+  /* Return the context of the Ith element.  */
+  kind ctx_at (unsigned int i)
+  {
+    return (vec[i] & 1) ? kind::PDF : kind::PDI;
+  }
+
+  /* Return which context is currently opened.  */
+  kind current_ctx ()
+  {
+    unsigned int len = vec.count ();
+    if (len == 0)
+      return kind::NONE;
+    return ctx_at (len - 1);
+  }
+
+  /* Return true if the current context comes from a UCN origin, that is,
+     the bidi char which started this bidi context was written as a UCN.  */
+  bool current_ctx_ucn_p ()
+  {
+    unsigned int len = vec.count ();
+    gcc_checking_assert (len > 0);
+    return (vec[len - 1] >> 1) & 1;
+  }
+
+  /* We've read a bidi char, update the current vector as necessary.  */
+  void on_char (kind k, bool ucn_p)
+  {
+    switch (k)
+      {
+      case kind::LRE:
+      case kind::RLE:
+      case kind::LRO:
+      case kind::RLO:
+	vec.push (ucn_p ? 3u : 1u);
+	break;
+      case kind::LRI:
+      case kind::RLI:
+      case kind::FSI:
+	vec.push (ucn_p ? 2u : 0u);
+	break;
+      /* PDF terminates the scope of the last LRE, RLE, LRO, or RLO
+	 whose scope has not yet been terminated.  */
+      case kind::PDF:
+	if (current_ctx () == kind::PDF)
+	  pop ();
+	break;
+      /* PDI terminates the scope of the last LRI, RLI, or FSI whose
+	 scope has not yet been terminated, as well as the scopes of
+	 any subsequent LREs, RLEs, LROs, or RLOs whose scopes have not
+	 yet been terminated.  */
+      case kind::PDI:
+	for (int i = vec.count () - 1; i >= 0; --i)
+	  if (ctx_at (i) == kind::PDI)
+	    {
+	      vec.truncate (i);
+	      break;
+	    }
+	break;
+      case kind::LTR:
+      case kind::RTL:
+	/* These aren't popped by a PDF/PDI.  */
+	break;
+      [[likely]] case kind::NONE:
+	break;
+      default:
+	abort ();
+      }
+  }
+
+  /* Return a descriptive string for K.  */
+  const char *to_str (kind k)
+  {
+    switch (k)
+      {
+      case kind::LRE:
+	return "U+202A (LEFT-TO-RIGHT EMBEDDING)";
+      case kind::RLE:
+	return "U+202B (RIGHT-TO-LEFT EMBEDDING)";
+      case kind::LRO:
+	return "U+202D (LEFT-TO-RIGHT OVERRIDE)";
+      case kind::RLO:
+	return "U+202E (RIGHT-TO-LEFT OVERRIDE)";
+      case kind::LRI:
+	return "U+2066 (LEFT-TO-RIGHT ISOLATE)";
+      case kind::RLI:
+	return "U+2067 (RIGHT-TO-LEFT ISOLATE)";
+      case kind::FSI:
+	return "U+2068 (FIRST STRONG ISOLATE)";
+      case kind::PDF:
+	return "U+202C (POP DIRECTIONAL FORMATTING)";
+      case kind::PDI:
+	return "U+2069 (POP DIRECTIONAL ISOLATE)";
+      case kind::LTR:
+	return "U+200E (LEFT-TO-RIGHT MARK)";
+      case kind::RTL:
+	return "U+200F (RIGHT-TO-LEFT MARK)";
+      default:
+	abort ();
+      }
+  }
+}
+
+/* Parse a sequence of 3 bytes starting with P and return its bidi code.  */
+
+static bidi::kind
+get_bidi_utf8 (const unsigned char *const p)
+{
+  gcc_checking_assert (p[0] == bidi::utf8_start);
+
+  if (p[1] == 0x80)
+    switch (p[2])
+      {
+      case 0xaa:
+	return bidi::kind::LRE;
+      case 0xab:
+	return bidi::kind::RLE;
+      case 0xac:
+	return bidi::kind::PDF;
+      case 0xad:
+	return bidi::kind::LRO;
+      case 0xae:
+	return bidi::kind::RLO;
+      case 0x8e:
+	return bidi::kind::LTR;
+      case 0x8f:
+	return bidi::kind::RTL;
+      default:
+	break;
+      }
+  else if (p[1] == 0x81)
+    switch (p[2])
+      {
+      case 0xa6:
+	return bidi::kind::LRI;
+      case 0xa7:
+	return bidi::kind::RLI;
+      case 0xa8:
+	return bidi::kind::FSI;
+      case 0xa9:
+	return bidi::kind::PDI;
+      default:
+	break;
+      }
+
+  return bidi::kind::NONE;
+}
+
+/* Parse a UCN where P points just past \u or \U and return its bidi code.  */
+
+static bidi::kind
+get_bidi_ucn (const unsigned char *p, bool is_U)
+{
+  /* 6.4.3 Universal Character Names
+      \u hex-quad
+      \U hex-quad hex-quad
+     where \unnnn means \U0000nnnn.  */
+
+  if (is_U)
+    {
+      if (p[0] != '0' || p[1] != '0' || p[2] != '0' || p[3] != '0')
+	return bidi::kind::NONE;
+      /* Skip 4B so we can treat \u and \U the same below.  */
+      p += 4;
+    }
+
+  /* All code points we are looking for start with 20xx.  */
+  if (p[0] != '2' || p[1] != '0')
+    return bidi::kind::NONE;
+  else if (p[2] == '2')
+    switch (p[3])
+      {
+      case 'a':
+      case 'A':
+	return bidi::kind::LRE;
+      case 'b':
+      case 'B':
+	return bidi::kind::RLE;
+      case 'c':
+      case 'C':
+	return bidi::kind::PDF;
+      case 'd':
+      case 'D':
+	return bidi::kind::LRO;
+      case 'e':
+      case 'E':
+	return bidi::kind::RLO;
+      default:
+	break;
+      }
+  else if (p[2] == '6')
+    switch (p[3])
+      {
+      case '6':
+	return bidi::kind::LRI;
+      case '7':
+	return bidi::kind::RLI;
+      case '8':
+	return bidi::kind::FSI;
+      case '9':
+	return bidi::kind::PDI;
+      default:
+	break;
+      }
+  else if (p[2] == '0')
+    switch (p[3])
+      {
+      case 'e':
+      case 'E':
+	return bidi::kind::LTR;
+      case 'f':
+      case 'F':
+	return bidi::kind::RTL;
+      default:
+	break;
+      }
+
+  return bidi::kind::NONE;
+}
+
+/* We're closing a bidi context, that is, we've encountered a newline,
+   are closing a C-style comment, or are at the end of a string literal,
+   character constant, or identifier.  Warn if this context was not
+   properly terminated by a PDI or PDF.  P points to the last character
+   in this context.  */
+
+static void
+maybe_warn_bidi_on_close (cpp_reader *pfile, const uchar *p)
+{
+  if (CPP_OPTION (pfile, cpp_warn_bidirectional) == bidirectional_unpaired
+      && bidi::vec.count () > 0)
+    {
+      const location_t loc
+	= linemap_position_for_column (pfile->line_table,
+				       CPP_BUF_COLUMN (pfile->buffer, p));
+      cpp_warning_with_line (pfile, CPP_W_BIDIRECTIONAL, loc, 0,
+			     "unpaired UTF-8 bidirectional control character "
+			     "detected");
+    }
+  /* We're done with this context.  */
+  bidi::on_close ();
+}
+
+/* We're at the beginning or in the middle of an identifier/comment/string
+   literal/character constant.  Warn if we've encountered a bidi character.
+   KIND says which bidi character it was; P points to it in the character
+   stream.  UCN_P is true iff this bidi character was written as a UCN.  */
+
+static void
+maybe_warn_bidi_on_char (cpp_reader *pfile, const uchar *p, bidi::kind kind,
+			 bool ucn_p)
+{
+  if (__builtin_expect (kind == bidi::kind::NONE, 1))
+    return;
+
+  const auto warn_bidi = CPP_OPTION (pfile, cpp_warn_bidirectional);
+
+  if (warn_bidi != bidirectional_none)
+    {
+      const location_t loc
+	= linemap_position_for_column (pfile->line_table,
+				       CPP_BUF_COLUMN (pfile->buffer, p));
+      /* It seems excessive to warn about a PDI/PDF that is closing
+	 an opened context because we've already warned about the
+	 opening character.  Except warn when we have a UCN x UTF-8
+	 mismatch.  */
+      if (kind == bidi::current_ctx ())
+	{
+	  if (warn_bidi == bidirectional_unpaired
+	      && bidi::current_ctx_ucn_p () != ucn_p)
+	    cpp_warning_with_line (pfile, CPP_W_BIDIRECTIONAL, loc, 0,
+				   "UTF-8 vs UCN mismatch when closing "
+				   "a context by \"%s\"", bidi::to_str (kind));
+	}
+      else if (warn_bidi == bidirectional_any)
+	{
+	  if (kind == bidi::kind::PDF || kind == bidi::kind::PDI)
+	    cpp_warning_with_line (pfile, CPP_W_BIDIRECTIONAL, loc, 0,
+				   "\"%s\" is closing an unopened context",
+				   bidi::to_str (kind));
+	  else
+	    cpp_warning_with_line (pfile, CPP_W_BIDIRECTIONAL, loc, 0,
+				   "found problematic Unicode character \"%s\"",
+				   bidi::to_str (kind));
+	}
+    }
+  /* We're done with this context.  */
+  bidi::on_char (kind, ucn_p);
+}
+
 /* Skip a C-style block comment.  We find the end of the comment by
    seeing if an asterisk is before every '/' we encounter.  Returns
    nonzero if comment terminated by EOF, zero otherwise.
@@ -1175,6 +1493,7 @@ _cpp_skip_block_comment (cpp_reader *pfile)
   cpp_buffer *buffer = pfile->buffer;
   const uchar *cur = buffer->cur;
   uchar c;
+  const bool warn_bidi_p = pfile->warn_bidi_p ();
 
   cur++;
   if (*cur == '/')
@@ -1189,7 +1508,11 @@ _cpp_skip_block_comment (cpp_reader *pfile)
       if (c == '/')
 	{
 	  if (cur[-2] == '*')
-	    break;
+	    {
+	      if (warn_bidi_p)
+		maybe_warn_bidi_on_close (pfile, cur);
+	      break;
+	    }
 
 	  /* Warn about potential nested comments, but not if the '/'
 	     comes immediately before the true comment delimiter.
@@ -1208,6 +1531,8 @@ _cpp_skip_block_comment (cpp_reader *pfile)
 	{
 	  unsigned int cols;
 	  buffer->cur = cur - 1;
+	  if (warn_bidi_p)
+	    maybe_warn_bidi_on_close (pfile, cur);
 	  _cpp_process_line_notes (pfile, true);
 	  if (buffer->next_line >= buffer->rlimit)
 	    return true;
@@ -1217,6 +1542,13 @@ _cpp_skip_block_comment (cpp_reader *pfile)
 	  CPP_INCREMENT_LINE (pfile, cols);
 
 	  cur = buffer->cur;
+	}
+      /* If this is a beginning of a UTF-8 encoding, it might be
+	 a bidirectional control character.  */
+      else if (__builtin_expect (c == bidi::utf8_start, 0) && warn_bidi_p)
+	{
+	  bidi::kind kind = get_bidi_utf8 (cur - 1);
+	  maybe_warn_bidi_on_char (pfile, cur, kind, /*ucn_p=*/false);
 	}
     }
 
@@ -1233,9 +1565,31 @@ skip_line_comment (cpp_reader *pfile)
 {
   cpp_buffer *buffer = pfile->buffer;
   location_t orig_line = pfile->line_table->highest_line;
+  const bool warn_bidi_p = pfile->warn_bidi_p ();
 
-  while (*buffer->cur != '\n')
-    buffer->cur++;
+  if (!warn_bidi_p)
+    while (*buffer->cur != '\n')
+      buffer->cur++;
+  else
+    {
+      while (*buffer->cur != '\n'
+	     && *buffer->cur != bidi::utf8_start)
+	buffer->cur++;
+      if (__builtin_expect (*buffer->cur == bidi::utf8_start, 0))
+	{
+	  while (*buffer->cur != '\n')
+	    {
+	      if (__builtin_expect (*buffer->cur == bidi::utf8_start, 0))
+		{
+		  bidi::kind kind = get_bidi_utf8 (buffer->cur);
+		  maybe_warn_bidi_on_char (pfile, buffer->cur, kind,
+					   /*ucn_p=*/false);
+		}
+	      buffer->cur++;
+	    }
+	  maybe_warn_bidi_on_close (pfile, buffer->cur);
+	}
+    }
 
   _cpp_process_line_notes (pfile, true);
   return orig_line != pfile->line_table->highest_line;
@@ -1346,11 +1700,13 @@ static const cppchar_t utf8_signifier = 0xC0;
 
 /* Returns TRUE if the sequence starting at buffer->cur is valid in
    an identifier.  FIRST is TRUE if this starts an identifier.  */
+
 static bool
 forms_identifier_p (cpp_reader *pfile, int first,
 		    struct normalize_state *state)
 {
   cpp_buffer *buffer = pfile->buffer;
+  const bool warn_bidi_p = pfile->warn_bidi_p ();
 
   if (*buffer->cur == '$')
     {
@@ -1373,6 +1729,13 @@ forms_identifier_p (cpp_reader *pfile, int first,
       cppchar_t s;
       if (*buffer->cur >= utf8_signifier)
 	{
+	  if (__builtin_expect (*buffer->cur == bidi::utf8_start, 0)
+	      && warn_bidi_p)
+	    {
+	      bidi::kind kind = get_bidi_utf8 (buffer->cur);
+	      maybe_warn_bidi_on_char (pfile, buffer->cur, kind,
+				       /*ucn_p=*/false);
+	    }
 	  if (_cpp_valid_utf8 (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
 			       state, &s))
 	    return true;
@@ -1381,6 +1744,13 @@ forms_identifier_p (cpp_reader *pfile, int first,
 	       && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
 	{
 	  buffer->cur += 2;
+	  if (warn_bidi_p)
+	    {
+	      bidi::kind kind = get_bidi_ucn (buffer->cur,
+					      buffer->cur[-1] == 'U');
+	      maybe_warn_bidi_on_char (pfile, buffer->cur, kind,
+				       /*ucn_p=*/true);
+	    }
 	  if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
 			      state, &s, NULL, NULL))
 	    return true;
@@ -1489,6 +1859,7 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
   const uchar *cur;
   unsigned int len;
   unsigned int hash = HT_HASHSTEP (0, *base);
+  const bool warn_bidi_p = pfile->warn_bidi_p ();
 
   cur = pfile->buffer->cur;
   if (! starts_ucn)
@@ -1512,6 +1883,8 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
 	    pfile->buffer->cur++;
 	  }
       } while (forms_identifier_p (pfile, false, nst));
+      if (warn_bidi_p)
+	maybe_warn_bidi_on_close (pfile, pfile->buffer->cur);
       result = _cpp_interpret_identifier (pfile, base,
 					  pfile->buffer->cur - base);
       *spelling = cpp_lookup (pfile, base, pfile->buffer->cur - base);
@@ -1758,6 +2131,7 @@ static void
 lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 {
   const uchar *pos = base;
+  const bool warn_bidi_p = pfile->warn_bidi_p ();
 
   /* 'tis a pity this information isn't passed down from the lexer's
      initial categorization of the token.  */
@@ -1994,7 +2368,14 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	  pos = base = pfile->buffer->cur;
 	  note = &pfile->buffer->notes[pfile->buffer->cur_note];
 	}
+      else if (__builtin_expect ((unsigned char) c == bidi::utf8_start, 0)
+	       && warn_bidi_p)
+	maybe_warn_bidi_on_char (pfile, pos - 1, get_bidi_utf8 (pos - 1),
+				 /*ucn_p=*/false);
     }
+
+  if (warn_bidi_p)
+    maybe_warn_bidi_on_close (pfile, pos);
 
   if (CPP_OPTION (pfile, user_literals))
     {
@@ -2090,15 +2471,27 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
   else
     terminator = '>', type = CPP_HEADER_NAME;
 
+  const bool warn_bidi_p = pfile->warn_bidi_p ();
   for (;;)
     {
       cppchar_t c = *cur++;
 
       /* In #include-style directives, terminators are not escapable.  */
       if (c == '\\' && !pfile->state.angled_headers && *cur != '\n')
-	cur++;
+	{
+	  if ((cur[0] == 'u' || cur[0] == 'U') && warn_bidi_p)
+	    {
+	      bidi::kind kind = get_bidi_ucn (cur + 1, cur[0] == 'U');
+	      maybe_warn_bidi_on_char (pfile, cur, kind, /*ucn_p=*/true);
+	    }
+	  cur++;
+	}
       else if (c == terminator)
-	break;
+	{
+	  if (warn_bidi_p)
+	    maybe_warn_bidi_on_close (pfile, cur - 1);
+	  break;
+	}
       else if (c == '\n')
 	{
 	  cur--;
@@ -2115,6 +2508,11 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	}
       else if (c == '\0')
 	saw_NUL = true;
+      else if (__builtin_expect (c == bidi::utf8_start, 0) && warn_bidi_p)
+	{
+	  bidi::kind kind = get_bidi_utf8 (cur - 1);
+	  maybe_warn_bidi_on_char (pfile, cur - 1, kind, /*ucn_p=*/false);
+	}
     }
 
   if (saw_NUL && !pfile->state.skipping)

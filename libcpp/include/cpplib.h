@@ -319,6 +319,17 @@ enum cpp_main_search
   CMS_system,  /* Search the system INCLUDE path.  */
 };
 
+/* The possible bidirectional control characters checking levels, from least
+   restrictive to most.  */
+enum cpp_bidirectional_level {
+  /* No checking.  */
+  bidirectional_none,
+  /* Only detect unpaired uses of bidirectional control characters.  */
+  bidirectional_unpaired,
+  /* Detect any use of bidirectional control characters.  */
+  bidirectional_any
+};
+
 /* This structure is nested inside struct cpp_reader, and
    carries all the options visible to the command line.  */
 struct cpp_options
@@ -539,6 +550,10 @@ struct cpp_options
   /* True if warn about differences between C++98 and C++11.  */
   bool cpp_warn_cxx11_compat;
 
+  /* Nonzero if bidirectional control characters checking is on.  See enum
+     cpp_bidirectional_level.  */
+  unsigned char cpp_warn_bidirectional;
+
   /* Dependency generation.  */
   struct
   {
@@ -643,7 +658,8 @@ enum cpp_warning_reason {
   CPP_W_C90_C99_COMPAT,
   CPP_W_C11_C2X_COMPAT,
   CPP_W_CXX11_COMPAT,
-  CPP_W_EXPANSION_TO_DEFINED
+  CPP_W_EXPANSION_TO_DEFINED,
+  CPP_W_BIDIRECTIONAL
 };
 
 /* Callback for header lookup for HEADER, which is the name of a
