@@ -2301,10 +2301,15 @@ is_lto_object_file (const char *prog_name)
 							LTO_SEGMENT_NAME,
 							&errmsg, &err);
   if (!inobj)
-    return false;
+    {
+      close (infd);
+      return false;
+    }
 
   errmsg = simple_object_find_sections (inobj, has_lto_section,
 					(void *) &found, &err);
+  simple_object_release_read (inobj);
+  close (infd);
   if (! errmsg && found)
     return true;
 
