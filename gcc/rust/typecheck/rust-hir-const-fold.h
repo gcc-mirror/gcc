@@ -41,7 +41,11 @@ public:
 
   void visit (TyTy::ADTType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
+  void visit (TyTy::ArrayType &type) override
+  {
+    Btype *element_ty = ConstFoldType::fold (type.get_element_type (), backend);
+    translated = backend->array_type (element_ty, type.get_capacity ());
+  }
 
   void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
 
@@ -233,6 +237,32 @@ private:
   Bexpression *folded;
 };
 
+class ConstFoldArrayElems : public ConstFoldBase
+{
+  using ConstFoldBase::visit;
+
+public:
+  static Bexpression *fold (HIR::ArrayExpr &expr)
+  {
+    ConstFoldArrayElems folder (expr);
+    HIR::ArrayElems *elems = expr.get_internal_elements ();
+    elems->accept_vis (folder);
+    return folder.folded;
+  }
+
+  void visit (HIR::ArrayElemsValues &elems) override;
+  void visit (HIR::ArrayElemsCopied &elems) override;
+
+private:
+  ConstFoldArrayElems (HIR::ArrayExpr &expr)
+    : ConstFoldBase (), folded (ctx->get_backend ()->error_expression ()),
+      expr (expr)
+  {}
+
+  Bexpression *folded;
+  HIR::ArrayExpr &expr;
+};
+
 class ConstFoldExpr : public ConstFoldBase
 {
   using ConstFoldBase::visit;
@@ -359,6 +389,11 @@ public:
       }
 
     gcc_unreachable ();
+  }
+
+  void visit (HIR::ArrayExpr &expr) override
+  {
+    folded = ConstFoldArrayElems::fold (expr);
   }
 
   void visit (HIR::ArithmeticOrLogicalExpr &expr) override

@@ -70,5 +70,39 @@ ConstFoldItem::visit (HIR::ConstantItem &item)
   folded = folded_expr;
 }
 
+void
+ConstFoldArrayElems::visit (HIR::ArrayElemsValues &elems)
+{
+  unsigned long index = 0;
+  std::vector<unsigned long> indices;
+  std::vector<Bexpression *> values;
+
+  TyTy::BaseType *tyty = nullptr;
+  if (!tyctx->lookup_type (expr.get_mappings ().get_hirid (), &tyty))
+    {
+      rust_fatal_error (expr.get_locus (),
+			"did not resolve type for array elems values");
+      return;
+    }
+
+  Btype *btype = ConstFoldType::fold (tyty, ctx->get_backend ());
+
+  for (auto &value : elems.get_values ())
+    {
+      indices.push_back (index++);
+      values.push_back (ConstFoldExpr::fold (value.get ()));
+    }
+
+  folded
+    = ctx->get_backend ()->array_constructor_expression (btype, indices, values,
+							 expr.get_locus ());
+}
+
+void
+ConstFoldArrayElems::visit (HIR::ArrayElemsCopied &elems)
+{
+  // TODO
+}
+
 } // namespace ConstFold
 } // namespace Rust
