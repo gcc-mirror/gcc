@@ -1,3 +1,83 @@
+2021-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.adb (Parse_Header): Tweak comments.
+	(Read_Entry_Format_Array): Tweak exception message.
+	(Symbolic_Address.Set_Result): Likewise.
+
+2021-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.adb (To_File_Name): Fetch only the last string
+	from the .debug_line_str section.
+	(Symbolic_Address.Set_Result): Likewise.
+
+2021-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.adb (Skip_Form): Fix cases of DW_FORM_addrx
+	and DW_FORM_implicit_const.  Replace Constraint_Error with
+	Dwarf_Error.
+
+2021-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-objrea.adb (Get_Load_Address): Return 0 for ELF.
+
+2021-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.c (__gnat_get_executable_load_address): Add Win32 support.
+	* libgnat/s-objrea.ads (Get_Xcode_Bounds): Fix typo in comment.
+	(Object_File): Minor reformatting.
+	(ELF_Object_File): Uncomment predicate.
+	(PECOFF_Object_File): Likewise.
+	(XCOFF32_Object_File): Likewise.
+	* libgnat/s-objrea.adb: Minor reformatting throughout.
+	(Get_Load_Address): Implement for PE-COFF.
+	* libgnat/s-dwalin.ads: Remove clause for System.Storage_Elements
+	and use consistent wording in comments.
+	(Dwarf_Context): Set type of Low, High and Load_Address to Address.
+	* libgnat/s-dwalin.adb (Get_Load_Displacement): New function.
+	(Is_Inside): Call Get_Load_Displacement.
+	(Low_Address): Likewise.
+	(Open): Adjust to type change.
+	(Aranges_Lookup): Change type of Addr to Address.
+	(Read_Aranges_Entry): Likewise for Start and adjust.
+	(Enable_Cach): Adjust to type change.
+	(Symbolic_Address): Change type of Addr to Address.
+	(Symbolic_Traceback): Call Get_Load_Displacement.
+
+2021-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.ads: Remove clause for Ada.Exceptions.Traceback,
+	add clause for System.Traceback_Entries and alphabetize.
+	(AET): Delete.
+	(STE): New package renaming.
+	(Symbolic_Traceback): Adjust.
+	* libgnat/s-dwalin.adb: Remove clauses for Ada.Exceptions.Traceback
+	and System.Traceback_Entries.
+	(Symbolic_Traceback): Adjust.
+
+2021-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.ads: Adjust a few comments left and right.
+	(Line_Info_Register): Comment out unused components.
+	(Line_Info_Header): Add DWARF 5 support.
+	(Dwarf_Context): Likewise.  Rename "prologue" into "header".
+	* libgnat/s-dwalin.adb: Alphabetize "with" clauses.
+	(DWARF constants): Add DWARF 5 support and reorder.
+	(For_Each_Row): Adjust.
+	(Initialize_Pass): Likewise.
+	(Initialize_State_Machine): Likewise and fix typo.
+	(Open): Add DWARF 5 support.
+	(Parse_Prologue): Rename into...
+	(Parse_Header): ...this and add DWARF 5 support.
+	(Read_And_Execute_Isn): Rename into...
+	(Read_And_Execute_Insn): ...this and adjust.
+	(To_File_Name): Change parameter name and add DWARF 5 support.
+	(Read_Entry_Format_Array): New procedure.
+	(Skip_Form): Add DWARF 5 support and reorder.
+	(Seek_Abbrev): Do not count entries and add DWARF 5 support.
+	(Debug_Info_Lookup): Add DWARF 5 support.
+	(Symbolic_Address.Set_Result): Likewise.
+	(Symbolic_Address): Adjust.
+
 2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/101970

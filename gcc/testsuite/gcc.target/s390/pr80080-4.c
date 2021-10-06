@@ -13,4 +13,4 @@ void foo4(int *mem)
     }
 }
 
-/* { dg-final { scan-assembler {(?n)\n\tlt\t.*\n\tjne\t(\.L\d+)\n(.*\n)*\tcs\t.*\n\tber\t%r14\n\1:\n\tjg\tbar\n} } } */
+/* { dg-final { scan-assembler {(?n)\n\tlt\t.*\n\tjne\t(\.L\d+)\n(.*\n)*\tcs\t.*\n\tber\t%r14\n\1:\n\tjg\tbar(@PLT)?\n} } } */

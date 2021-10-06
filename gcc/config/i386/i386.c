@@ -4963,7 +4963,8 @@ standard_80387_constant_p (rtx x)
   /* For XFmode constants, try to find a special 80387 instruction when
      optimizing for size or on those CPUs that benefit from them.  */
   if (mode == XFmode
-      && (optimize_function_for_size_p (cfun) || TARGET_EXT_80387_CONSTANTS))
+      && (optimize_function_for_size_p (cfun) || TARGET_EXT_80387_CONSTANTS)
+      && !flag_rounding_math)
     {
       int i;
 
@@ -10566,23 +10567,18 @@ legitimate_pic_address_disp_p (rtx disp)
 	      if (is_imported_p (op0))
 		return true;
 
-	      if (SYMBOL_REF_FAR_ADDR_P (op0)
-		  || !SYMBOL_REF_LOCAL_P (op0))
+	      if (SYMBOL_REF_FAR_ADDR_P (op0) || !SYMBOL_REF_LOCAL_P (op0))
 		break;
 
-	      /* Function-symbols need to be resolved only for
-	         large-model.
-	         For the small-model we don't need to resolve anything
-	         here.  */
+	      /* Non-external-weak function symbols need to be resolved only
+		 for the large model.  Non-external symbols don't need to be
+		 resolved for large and medium models.  For the small model,
+		 we don't need to resolve anything here.  */
 	      if ((ix86_cmodel != CM_LARGE_PIC
-	           && SYMBOL_REF_FUNCTION_P (op0))
+		   && SYMBOL_REF_FUNCTION_P (op0)
+		   && !(SYMBOL_REF_EXTERNAL_P (op0) && SYMBOL_REF_WEAK (op0)))
+		  || !SYMBOL_REF_EXTERNAL_P (op0)
 		  || ix86_cmodel == CM_SMALL_PIC)
-		return true;
-	      /* Non-external symbols don't need to be resolved for
-	         large, and medium-model.  */
-	      if ((ix86_cmodel == CM_LARGE_PIC
-		   || ix86_cmodel == CM_MEDIUM_PIC)
-		  && !SYMBOL_REF_EXTERNAL_P (op0))
 		return true;
 	    }
 	  else if (!SYMBOL_REF_FAR_ADDR_P (op0)

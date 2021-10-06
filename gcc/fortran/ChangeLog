@@ -1,3 +1,30 @@
+2021-10-03  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102458
+	* simplify.c (simplify_size): Resolve expressions used in array
+	specifications so that SIZE can be simplified.
+
+2021-10-03  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102458
+	* expr.c (is_non_constant_intrinsic): Check for intrinsics
+	excluded in constant expressions (F2018:10.1.12).
+	(gfc_is_constant_expr): Use that check.
+
+2021-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-09-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102520
+	* array.c (expand_constructor): Do not dereference NULL pointer.
+
 2021-09-21  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
