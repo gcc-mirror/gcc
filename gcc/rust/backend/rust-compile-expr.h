@@ -412,11 +412,11 @@ public:
 
   void visit (HIR::ArrayElemsValues &elems) override
   {
-    elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
-      Bexpression *translated_expr = CompileExpr::Compile (e, ctx);
-      constructor.push_back (translated_expr);
-      return true;
-    });
+    for (auto &elem : elems.get_values ())
+      {
+	Bexpression *translated_expr = CompileExpr::Compile (elem.get (), ctx);
+	constructor.push_back (translated_expr);
+      }
   }
 
   void visit (HIR::ArrayElemsCopied &elems) override
@@ -646,11 +646,11 @@ public:
     // this assumes all fields are in order from type resolution and if a base
     // struct was specified those fields are filed via accesors
     std::vector<Bexpression *> vals;
-    struct_expr.iterate ([&] (HIR::StructExprField *field) mutable -> bool {
-      Bexpression *expr = CompileStructExprField::Compile (field, ctx);
-      vals.push_back (expr);
-      return true;
-    });
+    for (auto &field : struct_expr.get_fields ())
+      {
+	Bexpression *expr = CompileStructExprField::Compile (field.get (), ctx);
+	vals.push_back (expr);
+      }
 
     translated
       = ctx->get_backend ()->constructor_expression (type, vals,

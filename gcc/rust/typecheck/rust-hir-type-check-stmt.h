@@ -144,17 +144,18 @@ public:
     std::vector<TyTy::StructFieldType *> fields;
 
     size_t idx = 0;
-    struct_decl.iterate ([&] (HIR::TupleField &field) mutable -> bool {
-      TyTy::BaseType *field_type
-	= TypeCheckType::Resolve (field.get_field_type ().get ());
-      TyTy::StructFieldType *ty_field
-	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     std::to_string (idx), field_type);
-      fields.push_back (ty_field);
-      context->insert_type (field.get_mappings (), ty_field->get_field_type ());
-      idx++;
-      return true;
-    });
+    for (auto &field : struct_decl.get_fields ())
+      {
+	TyTy::BaseType *field_type
+	  = TypeCheckType::Resolve (field.get_field_type ().get ());
+	TyTy::StructFieldType *ty_field
+	  = new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
+				       std::to_string (idx), field_type);
+	fields.push_back (ty_field);
+	context->insert_type (field.get_mappings (),
+			      ty_field->get_field_type ());
+	idx++;
+      }
 
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
@@ -196,16 +197,17 @@ public:
       }
 
     std::vector<TyTy::StructFieldType *> fields;
-    struct_decl.iterate ([&] (HIR::StructField &field) mutable -> bool {
-      TyTy::BaseType *field_type
-	= TypeCheckType::Resolve (field.get_field_type ().get ());
-      TyTy::StructFieldType *ty_field
-	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     field.get_field_name (), field_type);
-      fields.push_back (ty_field);
-      context->insert_type (field.get_mappings (), ty_field->get_field_type ());
-      return true;
-    });
+    for (auto &field : struct_decl.get_fields ())
+      {
+	TyTy::BaseType *field_type
+	  = TypeCheckType::Resolve (field.get_field_type ().get ());
+	TyTy::StructFieldType *ty_field
+	  = new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
+				       field.get_field_name (), field_type);
+	fields.push_back (ty_field);
+	context->insert_type (field.get_mappings (),
+			      ty_field->get_field_type ());
+      }
 
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
