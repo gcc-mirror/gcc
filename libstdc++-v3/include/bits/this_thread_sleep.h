@@ -33,9 +33,7 @@
 #pragma GCC system_header
 
 #if __cplusplus >= 201103L
-#include <bits/c++config.h>
-
-#include <chrono> // std::chrono::*
+#include <bits/chrono.h> // std::chrono::*
 
 #ifdef _GLIBCXX_USE_NANOSLEEP
 # include <cerrno>  // errno, EINTR

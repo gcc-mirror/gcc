@@ -35,8 +35,7 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <chrono>
-
+#include <bits/chrono.h>
 #include <bits/std_mutex.h>
 #include <bits/unique_lock.h>
 #include <bits/alloc_traits.h>

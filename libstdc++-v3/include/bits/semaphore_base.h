@@ -33,6 +33,7 @@
 #pragma GCC system_header
 
 #include <bits/atomic_base.h>
+#include <bits/chrono.h>
 #if __cpp_lib_atomic_wait
 #include <bits/atomic_timed_wait.h>
 #include <ext/numeric_traits.h>
@@ -44,9 +45,6 @@
 # include <limits.h>	// SEM_VALUE_MAX
 # include <semaphore.h>	// sem_t, sem_init, sem_wait, sem_post etc.
 #endif
-
-#include <chrono>
-#include <type_traits>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

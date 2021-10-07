@@ -34,7 +34,7 @@
 
 #include <system_error>
 #include <cstdint>
-#include <chrono>
+#include <bits/chrono.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

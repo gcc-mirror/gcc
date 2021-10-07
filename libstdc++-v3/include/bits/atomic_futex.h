@@ -32,13 +32,12 @@
 
 #pragma GCC system_header
 
-#include <bits/c++config.h>
 #include <atomic>
-#include <chrono>
 #if ! (defined(_GLIBCXX_HAVE_LINUX_FUTEX) && ATOMIC_INT_LOCK_FREE > 1)
 #include <mutex>
 #include <condition_variable>
 #endif
+#include <bits/chrono.h>
 
 #ifndef _GLIBCXX_ALWAYS_INLINE
 #define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
