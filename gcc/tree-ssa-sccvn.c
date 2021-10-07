@@ -5668,27 +5668,30 @@ visit_stmt (gimple *stmt, bool backedges_varying_p = false)
 	      && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL)
 	    extra_fnflags = flags_from_decl_or_type (TREE_OPERAND (fn, 0));
 	}
-      if (/* Calls to the same function with the same vuse
-	     and the same operands do not necessarily return the same
-	     value, unless they're pure or const.  */
-	  ((gimple_call_flags (call_stmt) | extra_fnflags)
-	   & (ECF_PURE | ECF_CONST))
-	  /* If calls have a vdef, subsequent calls won't have
-	     the same incoming vuse.  So, if 2 calls with vdef have the
-	     same vuse, we know they're not subsequent.
-	     We can value number 2 calls to the same function with the
-	     same vuse and the same operands which are not subsequent
-	     the same, because there is no code in the program that can
-	     compare the 2 values...  */
-	  || (gimple_vdef (call_stmt)
-	      /* ... unless the call returns a pointer which does
-		 not alias with anything else.  In which case the
-		 information that the values are distinct are encoded
-		 in the IL.  */
-	      && !(gimple_call_return_flags (call_stmt) & ERF_NOALIAS)
-	      /* Only perform the following when being called from PRE
-		 which embeds tail merging.  */
-	      && default_vn_walk_kind == VN_WALK))
+      if ((/* Calls to the same function with the same vuse
+	      and the same operands do not necessarily return the same
+	      value, unless they're pure or const.  */
+	   ((gimple_call_flags (call_stmt) | extra_fnflags)
+	    & (ECF_PURE | ECF_CONST))
+	   /* If calls have a vdef, subsequent calls won't have
+	      the same incoming vuse.  So, if 2 calls with vdef have the
+	      same vuse, we know they're not subsequent.
+	      We can value number 2 calls to the same function with the
+	      same vuse and the same operands which are not subsequent
+	      the same, because there is no code in the program that can
+	      compare the 2 values...  */
+	   || (gimple_vdef (call_stmt)
+	       /* ... unless the call returns a pointer which does
+		  not alias with anything else.  In which case the
+		  information that the values are distinct are encoded
+		  in the IL.  */
+	       && !(gimple_call_return_flags (call_stmt) & ERF_NOALIAS)
+	       /* Only perform the following when being called from PRE
+		  which embeds tail merging.  */
+	       && default_vn_walk_kind == VN_WALK))
+	  /* Do not process .DEFERRED_INIT since that confuses uninit
+	     analysis.  */
+	  && !gimple_call_internal_p (call_stmt, IFN_DEFERRED_INIT))
 	changed = visit_reference_op_call (lhs, call_stmt);
       else
 	changed = defs_to_varying (call_stmt);
