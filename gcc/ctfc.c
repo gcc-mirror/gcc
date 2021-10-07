@@ -944,11 +944,14 @@ ctfc_delete_strtab (ctf_strtable_t * strtab)
 void
 ctfc_delete_container (ctf_container_ref ctfc)
 {
-  /* FIXME - CTF container can be cleaned up now.
-     Will the ggc machinery take care of cleaning up the container structure
-     including the hash_map members etc. ?  */
   if (ctfc)
     {
+      ctfc->ctfc_types->empty ();
+      ctfc->ctfc_types = NULL;
+
+      ctfc->ctfc_vars->empty ();
+      ctfc->ctfc_types = NULL;
+
       ctfc_delete_strtab (&ctfc->ctfc_strtable);
       ctfc_delete_strtab (&ctfc->ctfc_aux_strtable);
       if (ctfc->ctfc_vars_list)
