@@ -1,3 +1,52 @@
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102612
+	* parser.c (cp_parser_jump_statement): Implement C++23 P2242R3.
+	Allow goto expressions in constexpr function bodies for C++23.
+	Adjust error message for older standards to mention it.
+	* decl.c (start_decl): Allow static and thread_local declarations
+	in constexpr function bodies for C++23.  Adjust error message for
+	older standards to mention it.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Allow
+	declarations of variables with non-literal type in constexpr function
+	bodies for C++23.  Adjust error message for older standards to mention
+	it.
+	(cxx_eval_constant_expression) <case DECL_EXPR>: Diagnose declarations
+	of initialization of static or thread_local vars.
+	(cxx_eval_constant_expression) <case GOTO_EXPR>: Diagnose goto
+	statements for C++23.
+	(potential_constant_expression_1) <case DECL_EXPR>: Swap the
+	CP_DECL_THREAD_LOCAL_P and TREE_STATIC checks.
+	(potential_constant_expression_1) <case LABEL_EXPR>: Allow labels for
+	C++23.  Adjust error message for older standards to mention it.
+
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/98712
+	PR c++/102490
+	* cp-tree.h (maybe_synthesize_method): Declare.
+	* method.c (genericize_spaceship): Use
+	LOOKUP_NORMAL | LOOKUP_NONVIRTUAL | LOOKUP_DEFAULTED instead of
+	LOOKUP_NORMAL for flags.
+	(comp_info): Remove defining member.  Add complain, code, retcat.
+	(comp_info::comp_info): Adjust.
+	(do_one_comp): Split out from build_comparison_op.   Use
+	LOOKUP_NORMAL | LOOKUP_NONVIRTUAL | LOOKUP_DEFAULTED instead of
+	LOOKUP_NORMAL for flags.
+	(build_comparison_op): Add defining argument. Adjust comp_info
+	construction.  Use defining instead of info.defining.  Assert that
+	if defining, ctype is a complete type.  Walk base binfos.
+	(synthesize_method, maybe_explain_implicit_delete,
+	explain_implicit_non_constexpr): Adjust build_comparison_op callers.
+	(maybe_synthesize_method): New function.
+	* class.c (check_bases_and_members): Don't call defaulted_late_check
+	for sfk_comparison.
+	(finish_struct_1): Call it here instead after class has been
+	completed.
+	* pt.c (maybe_instantiate_noexcept): Call maybe_synthesize_method
+	instead of synthesize_method.
+
 2021-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/102548

@@ -1,3 +1,16 @@
+2021-10-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/std/functional: Include <bits/move_only_function.h>.
+	* include/std/version (__cpp_lib_move_only_function): Define.
+	* include/bits/mofunc_impl.h: New file.
+	* include/bits/move_only_function.h: New file.
+	* testsuite/20_util/move_only_function/call.cc: New test.
+	* testsuite/20_util/move_only_function/cons.cc: New test.
+	* testsuite/20_util/move_only_function/move.cc: New test.
+	* testsuite/20_util/move_only_function/version.cc: New test.
+
 2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string_view/requirements/trivially_copyable.cc:
