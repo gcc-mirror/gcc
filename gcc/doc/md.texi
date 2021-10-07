@@ -5776,11 +5776,13 @@ multiplication.
 @item @samp{smul@var{m}3_highpart}
 Perform a signed multiplication of operands 1 and 2, which have mode
 @var{m}, and store the most significant half of the product in operand 0.
-The least significant half of the product is discarded.
+The least significant half of the product is discarded.  This may be
+represented in RTL using a @code{smul_highpart} RTX expression.
 
 @cindex @code{umul@var{m}3_highpart} instruction pattern
 @item @samp{umul@var{m}3_highpart}
-Similar, but the multiplication is unsigned.
+Similar, but the multiplication is unsigned.  This may be represented
+in RTL using an @code{umul_highpart} RTX expression.
 
 @cindex @code{madd@var{m}@var{n}4} instruction pattern
 @item @samp{madd@var{m}@var{n}4}

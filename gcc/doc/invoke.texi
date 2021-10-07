@@ -3126,7 +3126,7 @@ errors if these functions are not inlined everywhere they are called.
 @itemx -fno-modules-ts
 @opindex fmodules-ts
 @opindex fno-modules-ts
-Enable support for C++20 modules (@xref{C++ Modules}).  The
+Enable support for C++20 modules (@pxref{C++ Modules}).  The
 @option{-fno-modules-ts} is usually not needed, as that is the
 default.  Even though this is a C++20 feature, it is not currently
 implicitly enabled by selecting that standard version.
@@ -33608,7 +33608,7 @@ version selected, although in pre-C++20 versions, it is of course an
 extension.
 
 No new source file suffixes are required or supported.  If you wish to
-use a non-standard suffix (@xref{Overall Options}), you also need
+use a non-standard suffix (@pxref{Overall Options}), you also need
 to provide a @option{-x c++} option too.@footnote{Some users like to
 distinguish module interface files with a new suffix, such as naming
 the source @code{module.cppm}, which involves
@@ -33670,8 +33670,8 @@ to be resolved at the end of compilation.  Without this, imported
 macros are only resolved when expanded or (re)defined.  This option
 detects conflicting import definitions for all macros.
 
-@xref{C++ Module Mapper} for details of the @option{-fmodule-mapper}
-family of options.
+For details of the @option{-fmodule-mapper} family of options,
+@pxref{C++ Module Mapper}.
 
 @menu
 * C++ Module Mapper::       Module Mapper
@@ -33888,8 +33888,8 @@ dialect used and imports of the module.@footnote{The precise contents
 of this output may change.} The timestamp is the same value as that
 provided by the @code{__DATE__} & @code{__TIME__} macros, and may be
 explicitly specified with the environment variable
-@code{SOURCE_DATE_EPOCH}.  @xref{Environment Variables} for further
-details.
+@code{SOURCE_DATE_EPOCH}.  For further details
+@pxref{Environment Variables}.
 
 A set of related CMIs may be copied, provided the relative pathnames
 are preserved.
