@@ -6473,6 +6473,12 @@ aarch64_function_value (const_tree type, const_tree func,
 	  gcc_assert (count == 1 && mode == ag_mode);
 	  return gen_rtx_REG (mode, V0_REGNUM);
 	}
+      else if (aarch64_advsimd_full_struct_mode_p (mode)
+	       && known_eq (GET_MODE_SIZE (ag_mode), 16))
+	return gen_rtx_REG (mode, V0_REGNUM);
+      else if (aarch64_advsimd_partial_struct_mode_p (mode)
+	       && known_eq (GET_MODE_SIZE (ag_mode), 8))
+	return gen_rtx_REG (mode, V0_REGNUM);
       else
 	{
 	  int i;
@@ -6768,6 +6774,12 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 	      gcc_assert (nregs == 1);
 	      pcum->aapcs_reg = gen_rtx_REG (mode, V0_REGNUM + nvrn);
 	    }
+	  else if (aarch64_advsimd_full_struct_mode_p (mode)
+		   && known_eq (GET_MODE_SIZE (pcum->aapcs_vfp_rmode), 16))
+	    pcum->aapcs_reg = gen_rtx_REG (mode, V0_REGNUM + nvrn);
+	  else if (aarch64_advsimd_partial_struct_mode_p (mode)
+		   && known_eq (GET_MODE_SIZE (pcum->aapcs_vfp_rmode), 8))
+	    pcum->aapcs_reg = gen_rtx_REG (mode, V0_REGNUM + nvrn);
 	  else
 	    {
 	      rtx par;
