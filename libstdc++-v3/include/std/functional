@@ -67,6 +67,9 @@
 # include <bits/ranges_cmp.h>
 # include <compare>
 #endif
+#if __cplusplus > 202002L
+# include <bits/move_only_function.h>
+#endif
 
 #endif // C++11
 

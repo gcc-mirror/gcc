@@ -504,7 +504,9 @@ bits_headers = \
 	${bits_srcdir}/mask_array.h \
 	${bits_srcdir}/max_size_type.h \
 	${bits_srcdir}/memoryfwd.h \
+	${bits_srcdir}/mofunc_impl.h \
 	${bits_srcdir}/move.h \
+	${bits_srcdir}/move_only_function.h \
 	${bits_srcdir}/node_handle.h \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/ostream_insert.h \

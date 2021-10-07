@@ -1,3 +1,56 @@
+2021-10-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (non_null_ref::adjust_range): Call new
+	intersect routine.
+	* gimple-range-fold.cc (adjust_pointer_diff_expr): Ditto.
+	(adjust_imagpart_expr): Ditto.
+	* value-range.cc (irange::irange_intersect): Call new routine if
+	RHS is a single pair.
+	(irange::intersect): New wide_int version.
+	* value-range.h (class irange): New prototype.
+
+2021-10-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-edge.cc (gimple_outgoing_range::gimple_outgoing_range):
+	Add parameter to limit size when recognizing switches.
+	(gimple_outgoing_range::edge_range_p): Check size limit.
+	* gimple-range-edge.h (gimple_outgoing_range): Add size field.
+	* gimple-range-gori.cc (gori_map::calculate_gori): Ignore switches
+	that exceed the size limit.
+	(gori_compute::gori_compute): Add initializer.
+	* params.opt (evrp-switch-limit): New.
+	* doc/invoke.texi: Update docs.
+
+2021-10-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.h (irange::set_varying): Use TYPE_MIN_VALUE and
+	TYPE_MAX_VALUE instead of creating new trees when possible.
+
+2021-10-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (non_null_ref::adjust_range): Check for
+	zero and non-zero more efficently.
+
+2021-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR c/102605
+	* dumpfile.h (TDF_GIMPLE_VAL): New.
+	(dump_flag): Re-order and adjust TDF_* flags.  Make
+	the enum uint32_t.  Use std::underlying_type in the
+	operator overloads.
+	(optgroup_flag): Likewise for the operator overloads.
+	* tree-pretty-print.c (dump_generic_node): Wrap ADDR_EXPR
+	in _Literal if TDF_GIMPLE_VAL.
+	* gimple-pretty-print.c (dump_gimple_assign): Add
+	TDF_GIMPLE_VAL to flags when dumping operands where only
+	is_gimple_val are allowed.
+	(dump_gimple_cond): Likewise.
+
+2021-10-06  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Remove redundant if
+	condition.
+
 2021-10-05  qing zhao  <qing.zhao@oracle.com>
 
 	PR middle-end/102359

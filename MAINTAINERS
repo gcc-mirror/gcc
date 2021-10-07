@@ -569,7 +569,7 @@ Nicolas Pitre					<nico@cam.org>
 Michael Ploujnikov				<michael.ploujnikov@oracle.com>
 Paul Pluzhnikov					<ppluzhnikov@google.com>
 Antoniu Pop					<antoniu.pop@gmail.com>
-Siddhesh Poyarekar				<siddhesh@sourceware.org>
+Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Vidya Praveen					<vidyapraveen@arm.com>
 Thomas Preud'homme				<thomas.preudhomme@celest.fr>
 Vladimir Prus					<vladimir@codesourcery.com>
@@ -710,5 +710,6 @@ information.
  Jeff Law					<jlaw@tachyum.com>
  Jonathan Wakely				<jwakely@redhat.com>
  Gaius Mulley					<gaius.mulley@southwales.ac.uk>
+ Siddhesh Poyarekar				<siddhesh@gotplt.org>
  Trevor Saunders				<tbsaunde+gcc@tbsaunde.org>
  Petter Tomner					<tomner@kth.se>

@@ -1,3 +1,62 @@
+2021-10-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-synth8a.C: New test.
+
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102612
+	* g++.dg/cpp23/feat-cxx2b.C: Expect __cpp_constexpr 202110L rather
+	than 201907L.
+	* g++.dg/cpp23/constexpr-nonlit1.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit2.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit3.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit4.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit5.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit6.C: New test.
+	* g++.dg/diagnostic/constexpr1.C: Only expect some diagnostics for
+	c++20_down.
+	* g++.dg/cpp1y/constexpr-label.C: Likewise.
+	* g++.dg/cpp1y/constexpr-neg1.C: Likewise.
+	* g++.dg/cpp2a/constexpr-try5.C: Likewise.  Adjust some expected
+	wording.
+	* g++.dg/cpp2a/constexpr-dtor3.C: Likewise.
+	* g++.dg/cpp2a/consteval3.C: Likewise.  Add effective target c++20
+	and remove dg-options.
+
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/cpp/gnu11-elifdef-1.c: New test.
+	* gcc.dg/cpp/gnu11-elifdef-2.c: New test.
+	* gcc.dg/cpp/gnu11-elifdef-3.c: New test.
+	* gcc.dg/cpp/gnu11-elifdef-4.c: New test.
+	* g++.dg/cpp/elifdef-1.C: New test.
+	* g++.dg/cpp/elifdef-2.C: New test.
+	* g++.dg/cpp/elifdef-3.C: New test.
+	* g++.dg/cpp/elifdef-4.C: New test.
+	* g++.dg/cpp/elifdef-5.C: New test.
+	* g++.dg/cpp/elifdef-6.C: New test.
+	* g++.dg/cpp/elifdef-7.C: New test.
+
+2021-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/attr_deprecated-2.f90: New test.
+
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/98712
+	PR c++/102490
+	* g++.dg/cpp2a/spaceship-synth8.C (std::strong_ordering): Provide
+	more complete definition.
+	(std::strong_ordering::less, std::strong_ordering::equal,
+	std::strong_ordering::greater): Define.
+	* g++.dg/cpp2a/spaceship-synth12.C: New test.
+	* g++.dg/cpp2a/spaceship-synth13.C: New test.
+	* g++.dg/cpp2a/spaceship-synth14.C: New test.
+	* g++.dg/cpp2a/spaceship-eq11.C: New test.
+	* g++.dg/cpp2a/spaceship-eq12.C: New test.
+	* g++.dg/cpp2a/spaceship-eq13.C: New test.
+
 2021-10-05  qing zhao  <qing.zhao@oracle.com>
 
 	PR middle-end/102359

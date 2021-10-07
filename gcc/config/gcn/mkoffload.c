@@ -54,8 +54,51 @@
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX908
 #define EF_AMDGPU_MACH_AMDGCN_GFX908 0x30
 
-#define EF_AMDGPU_XNACK    0x100
-#define EF_AMDGPU_SRAM_ECC 0x200
+#define EF_AMDGPU_XNACK_V3    0x100
+#define EF_AMDGPU_SRAM_ECC_V3 0x200
+
+#define EF_AMDGPU_FEATURE_XNACK_V4	0x300  /* Mask.  */
+#define EF_AMDGPU_FEATURE_XNACK_UNSUPPORTED_V4	0x000
+#define EF_AMDGPU_FEATURE_XNACK_ANY_V4	0x100
+#define EF_AMDGPU_FEATURE_XNACK_OFF_V4	0x200
+#define EF_AMDGPU_FEATURE_XNACK_ON_V4	0x300
+
+#define EF_AMDGPU_FEATURE_SRAMECC_V4	0xc00  /* Mask.  */
+#define EF_AMDGPU_FEATURE_SRAMECC_UNSUPPORTED_V4	0x000
+#define EF_AMDGPU_FEATURE_SRAMECC_ANY_V4	0x400
+#define EF_AMDGPU_FEATURE_SRAMECC_OFF_V4	0x800
+#define EF_AMDGPU_FEATURE_SRAMECC_ON_V4		0xc00
+
+#ifdef HAVE_GCN_ASM_V3_SYNTAX
+#define SET_XNACK_ON(VAR) VAR |= EF_AMDGPU_XNACK_V3
+#define SET_XNACK_OFF(VAR) VAR &= ~EF_AMDGPU_XNACK_V3
+#define TEST_XNACK(VAR) (VAR & EF_AMDGPU_XNACK_V3)
+
+#define SET_SRAM_ECC_ON(VAR) VAR |= EF_AMDGPU_SRAM_ECC_V3
+#define SET_SRAM_ECC_ANY(VAR) SET_SRAM_ECC_ON (VAR)
+#define SET_SRAM_ECC_OFF(VAR) VAR &= ~EF_AMDGPU_SRAM_ECC_V3
+#define TEST_SRAM_ECC_ANY(VAR) 0 /* Not supported.  */
+#define TEST_SRAM_ECC_ON(VAR) (VAR & EF_AMDGPU_SRAM_ECC_V3)
+#endif
+#ifdef HAVE_GCN_ASM_V4_SYNTAX
+#define SET_XNACK_ON(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_XNACK_V4) \
+				 | EF_AMDGPU_FEATURE_XNACK_ON_V4)
+#define SET_XNACK_OFF(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_XNACK_V4) \
+				  | EF_AMDGPU_FEATURE_XNACK_OFF_V4)
+#define TEST_XNACK(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) \
+			 == EF_AMDGPU_FEATURE_XNACK_ON_V4)
+
+#define SET_SRAM_ECC_ON(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_SRAMECC_V4) \
+				    | EF_AMDGPU_FEATURE_SRAMECC_ON_V4)
+#define SET_SRAM_ECC_ANY(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_SRAMECC_V4) \
+				     | EF_AMDGPU_FEATURE_SRAMECC_ANY_V4)
+#define SET_SRAM_ECC_OFF(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_SRAMECC_V4) \
+				     | EF_AMDGPU_FEATURE_SRAMECC_OFF_V4)
+#define TEST_SRAM_ECC_ANY(VAR) ((VAR & EF_AMDGPU_FEATURE_SRAMECC_V4) \
+				== EF_AMDGPU_FEATURE_SRAMECC_ANY_V4)
+#define TEST_SRAM_ECC_ON(VAR) ((VAR & EF_AMDGPU_FEATURE_SRAMECC_V4) \
+			       == EF_AMDGPU_FEATURE_SRAMECC_ON_V4)
+#endif
 
 #ifndef R_AMDGPU_NONE
 #define R_AMDGPU_NONE		0
@@ -80,7 +123,13 @@ static struct obstack files_to_cleanup;
 
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX803;  // Default GPU architecture.
-uint32_t elf_flags = 0;
+uint32_t elf_flags =
+#ifdef HAVE_GCN_ASM_V3_SYNTAX
+    0;
+#endif
+#ifdef HAVE_GCN_ASM_V4_SYNTAX
+    (EF_AMDGPU_FEATURE_XNACK_ANY_V4 | EF_AMDGPU_FEATURE_SRAMECC_ANY_V4);
+#endif
 
 /* Delete tempfiles.  */
 
@@ -851,23 +900,22 @@ main (int argc, char **argv)
       else if (strcmp (argv[i], "-fpic") == 0)
 	fpic = true;
       else if (strcmp (argv[i], "-mxnack") == 0)
-	elf_flags |= EF_AMDGPU_XNACK;
+	SET_XNACK_ON (elf_flags);
       else if (strcmp (argv[i], "-mno-xnack") == 0)
-	elf_flags &= ~EF_AMDGPU_XNACK;
+	SET_XNACK_OFF (elf_flags);
       else if (strcmp (argv[i], "-msram-ecc=on") == 0)
 	{
-	  elf_flags |= EF_AMDGPU_SRAM_ECC;
+	  SET_SRAM_ECC_ON (elf_flags);
 	  sram_seen = true;
 	}
       else if (strcmp (argv[i], "-msram-ecc=any") == 0)
 	{
-	  /* FIXME: change this when we move to HSACOv4.  */
-	  elf_flags |= EF_AMDGPU_SRAM_ECC;
+	  SET_SRAM_ECC_ANY (elf_flags);
 	  sram_seen = true;
 	}
       else if (strcmp (argv[i], "-msram-ecc=off") == 0)
 	{
-	  elf_flags &= ~EF_AMDGPU_SRAM_ECC;
+	  SET_SRAM_ECC_OFF (elf_flags);
 	  sram_seen = true;
 	}
       else if (strcmp (argv[i], "-save-temps") == 0)
@@ -890,23 +938,27 @@ main (int argc, char **argv)
   if (!(fopenacc ^ fopenmp))
     fatal_error (input_location, "either -fopenacc or -fopenmp must be set");
 
-  /* The SRAM-ECC feature defaults to "any" on GPUs where the feature is
-     available.  */
   if (!sram_seen)
-    switch (elf_arch)
-      {
-      case EF_AMDGPU_MACH_AMDGCN_GFX803:
-      case EF_AMDGPU_MACH_AMDGCN_GFX900:
-      case EF_AMDGPU_MACH_AMDGCN_GFX906:
+    {
+#ifdef HAVE_GCN_ASM_V3_SYNTAX
+      /* For HSACOv3, the SRAM-ECC feature defaults to "on" on GPUs where the
+	 feature is available.
+	 (HSACOv4 has elf_flags initialsed to "any" in all cases.)  */
+      switch (elf_arch)
+	{
+	case EF_AMDGPU_MACH_AMDGCN_GFX803:
+	case EF_AMDGPU_MACH_AMDGCN_GFX900:
+	case EF_AMDGPU_MACH_AMDGCN_GFX906:
 #ifndef HAVE_GCN_SRAM_ECC_GFX908
-      case EF_AMDGPU_MACH_AMDGCN_GFX908:
+	case EF_AMDGPU_MACH_AMDGCN_GFX908:
 #endif
-	break;
-      default:
-	/* FIXME: change this when we move to HSACOv4.  */
-	elf_flags |= EF_AMDGPU_SRAM_ECC;
-	break;
-      }
+	  break;
+	default:
+	  SET_SRAM_ECC_ON (elf_flags);
+	  break;
+	}
+#endif
+    }
 
   const char *abi;
   switch (offload_abi)
@@ -936,11 +988,12 @@ main (int argc, char **argv)
   if (fopenmp)
     obstack_ptr_grow (&cc_argv_obstack, "-mgomp");
   obstack_ptr_grow (&cc_argv_obstack,
-		    (elf_flags & EF_AMDGPU_XNACK
+		    (TEST_XNACK (elf_flags)
 		     ? "-mxnack" : "-mno-xnack"));
   obstack_ptr_grow (&cc_argv_obstack,
-		    (elf_flags & EF_AMDGPU_SRAM_ECC
-		     ? "-msram-ecc=on" : "-msram-ecc=off"));
+		    (TEST_SRAM_ECC_ON (elf_flags) ? "-msram-ecc=on"
+		     : TEST_SRAM_ECC_ANY (elf_flags) ? "-msram-ecc=any"
+		     : "-msram-ecc=off"));
 
   for (int ix = 1; ix != argc; ix++)
     {
@@ -1043,11 +1096,12 @@ main (int argc, char **argv)
       obstack_ptr_grow (&ld_argv_obstack, gcn_s2_name);
       obstack_ptr_grow (&ld_argv_obstack, "-lgomp");
       obstack_ptr_grow (&ld_argv_obstack,
-			(elf_flags & EF_AMDGPU_XNACK
+			(TEST_XNACK (elf_flags)
 			 ? "-mxnack" : "-mno-xnack"));
       obstack_ptr_grow (&ld_argv_obstack,
-			(elf_flags & EF_AMDGPU_SRAM_ECC
-			 ? "-msram-ecc=on" : "-msram-ecc=off"));
+			(TEST_SRAM_ECC_ON (elf_flags) ? "-msram-ecc=on"
+			 : TEST_SRAM_ECC_ANY (elf_flags) ? "-msram-ecc=any"
+			 : "-msram-ecc=off"));
       if (verbose)
 	obstack_ptr_grow (&ld_argv_obstack, "-v");
 

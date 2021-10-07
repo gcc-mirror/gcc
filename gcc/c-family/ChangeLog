@@ -1,3 +1,17 @@
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102571
+	* c-omp.c (c_finish_omp_atomic): Optimize the case where type has
+	padding, but the non-padding bits are contiguous set of bytes
+	by adjusting the memcmp call arguments instead of emitting
+	__builtin_clear_padding and then comparing all the type's bytes.
+
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102612
+	* c-cppbuiltin.c (c_cpp_builtins): For -std=c++23 predefine
+	__cpp_constexpr to 202110L rather than 201907L.
+
 2021-10-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97573

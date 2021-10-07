@@ -4968,6 +4968,10 @@ lvalue_p (const_tree ref)
     case STRING_CST:
       return true;
 
+    case MEM_REF:
+    case TARGET_MEM_REF:
+      /* MEM_REFs can appear from -fgimple parsing or folding, so allow them
+	 here as well.  */
     case INDIRECT_REF:
     case ARRAY_REF:
     case VAR_DECL:
