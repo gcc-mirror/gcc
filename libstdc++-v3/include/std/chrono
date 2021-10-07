@@ -37,6 +37,10 @@
 #else
 
 #include <bits/chrono.h>
+#if __cplusplus > 201703L
+# include <sstream> // ostringstream
+# include <bits/charconv.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -2077,6 +2081,101 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// @}
   } // inline namespace chrono_literals
   } // inline namespace literals
+
+  namespace chrono
+  {
+    /// @addtogroup chrono
+    /// @{
+
+    /// @cond undocumented
+    namespace __detail
+    {
+      template<typename _Period>
+	const char*
+	__units_suffix_misc(char* __buf, size_t __n) noexcept
+	{
+	  namespace __tc = std::__detail;
+	  char* __p = __buf;
+	  __p[0] = '[';
+	  unsigned __nlen = __tc::__to_chars_len((uintmax_t)_Period::num);
+	  __tc::__to_chars_10_impl(__p + 1, __nlen, (uintmax_t)_Period::num);
+	  __p += 1 + __nlen;
+	  if constexpr (_Period::den != 1)
+	    {
+	      __p[0] = '/';
+	      unsigned __dlen = __tc::__to_chars_len((uintmax_t)_Period::den);
+	      __tc::__to_chars_10_impl(__p + 1, __dlen, (uintmax_t)_Period::den);
+	      __p += 1 + __dlen;
+	    }
+	  __p[0] = ']';
+	  __p[1] = 's';
+	  __p[2] = '\0';
+	  return __buf;
+	}
+
+      template<typename _Period, typename _CharT>
+	auto
+	__units_suffix(char* __buf, size_t __n) noexcept
+	{
+#define _GLIBCXX_UNITS_SUFFIX(period, suffix) \
+	if constexpr (is_same_v<_Period, period>)	\
+	  {						\
+	    if constexpr (is_same_v<_CharT, wchar_t>)	\
+	      return L##suffix;				\
+	    else					\
+	      return suffix;				\
+	  }						\
+	else
+
+	  _GLIBCXX_UNITS_SUFFIX(atto, "as")
+	  _GLIBCXX_UNITS_SUFFIX(femto, "fs")
+	  _GLIBCXX_UNITS_SUFFIX(pico, "ps")
+	  _GLIBCXX_UNITS_SUFFIX(nano, "ns")
+	  _GLIBCXX_UNITS_SUFFIX(micro, "\u00b5s")
+	  _GLIBCXX_UNITS_SUFFIX(milli, "ms")
+	  _GLIBCXX_UNITS_SUFFIX(centi, "cs")
+	  _GLIBCXX_UNITS_SUFFIX(deci, "ds")
+	  _GLIBCXX_UNITS_SUFFIX(ratio<1>, "s")
+	  _GLIBCXX_UNITS_SUFFIX(deca, "das")
+	  _GLIBCXX_UNITS_SUFFIX(hecto, "hs")
+	  _GLIBCXX_UNITS_SUFFIX(kilo, "ks")
+	  _GLIBCXX_UNITS_SUFFIX(mega, "Ms")
+	  _GLIBCXX_UNITS_SUFFIX(giga, "Gs")
+	  _GLIBCXX_UNITS_SUFFIX(tera, "Ts")
+	  _GLIBCXX_UNITS_SUFFIX(tera, "Ts")
+	  _GLIBCXX_UNITS_SUFFIX(peta, "Ps")
+	  _GLIBCXX_UNITS_SUFFIX(exa, "Es")
+	  _GLIBCXX_UNITS_SUFFIX(ratio<60>, "min")
+	  _GLIBCXX_UNITS_SUFFIX(ratio<3600>, "h")
+	  _GLIBCXX_UNITS_SUFFIX(ratio<86400>, "d")
+#undef _GLIBCXX_UNITS_SUFFIX
+	  return __detail::__units_suffix_misc<_Period>(__buf, __n);
+	}
+    } // namespace __detail
+    /// @endcond
+
+    template<typename _CharT, typename _Traits,
+	     typename _Rep, typename _Period>
+      inline basic_ostream<_CharT, _Traits>&
+      operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		const duration<_Rep, _Period>& __d)
+      {
+	using period = typename _Period::type;
+	char __buf[sizeof("[/]s") + 2 * numeric_limits<intmax_t>::digits10];
+	std::basic_ostringstream<_CharT, _Traits> __s;
+	__s.flags(__os.flags());
+	__s.imbue(__os.getloc());
+	__s.precision(__os.precision());
+	__s << __d.count();
+	__s << __detail::__units_suffix<period, _CharT>(__buf, sizeof(__buf));
+	__os << std::move(__s).str();
+	return __os;
+      }
+
+    // TODO: from_stream for duration
+
+    /// @} group chrono
+  } // namespace chrono
 #endif // C++20
 
 _GLIBCXX_END_NAMESPACE_VERSION
