@@ -585,7 +585,7 @@ package System.OS_Interface is
 
 private
 
-   type sigset_t is new int;
+   type sigset_t is new unsigned_long;
 
    type pid_t is new int;
 
