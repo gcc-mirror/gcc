@@ -1,3 +1,11 @@
+2021-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* resolve.c (resolve_values): Only show
+	deprecated warning if attr.referenced.
+
 2021-10-03  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

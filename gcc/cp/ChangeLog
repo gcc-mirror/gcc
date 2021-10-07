@@ -1,3 +1,88 @@
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102547
+	* constexpr.c (potential_constant_expression_1): Handle
+	NONTYPE_ARGUMENT_PACK.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102535
+	* method.c (is_xible_helper): Don't exit early for multi-arg
+	ctors in C++20.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95567
+	* method.c (build_comparison_op): Skip DECL_VIRTUAL_P fields.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2446
+	PR c++/102412
+	* constexpr.c (cxx_eval_constant_expression)
+	<case TEMPLATE_ID_EXPR>: Check value_dependent_expression_p
+	instead of processing_template_decl.
+	* pt.c (value_dependent_expression_p) <case TEMPLATE_ID_EXPR>:
+	Return true only if any_dependent_template_arguments_p.
+	(instantiation_dependent_r) <case CALL_EXPR>: Remove this case.
+	<case TEMPLATE_ID_EXPR>: Likewise.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98486
+	* constraint.cc (get_normalized_constraints_from_decl): Always
+	look up constraints using the most general template.
+	* decl.c (grokdeclarator): Set constraints on a static data
+	member template.
+	* pt.c (determine_specialization): Check constraints on a
+	variable template.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102163
+	* constexpr.c (cxx_eval_call_expression): After evaluating a
+	subobject constructor call for an empty union member, produce a
+	side effect that makes sure the member gets activated.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-08-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101344
+	PR c++/101803
+	* cp-tree.h (CONSTRUCTOR_BRACES_ELIDED_P): Define.
+	* decl.c (reshape_init_r): Set it.
+	* pt.c (collect_ctor_idx_types): Recurse into a sub-CONSTRUCTOR
+	iff CONSTRUCTOR_BRACES_ELIDED_P.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-08-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101883
+	* pt.c (convert_template_argument): Pass LOOKUP_IMPLICIT to
+	do_auto_deduction.
+
 2021-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
