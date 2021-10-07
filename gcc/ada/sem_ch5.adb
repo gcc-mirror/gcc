@@ -1681,6 +1681,13 @@ package body Sem_Ch5 is
          Error_Msg_N
            ("(Ada 83) case expression cannot be of a generic type", Exp);
          return;
+
+      elsif not Extensions_Allowed
+        and then not Is_Discrete_Type (Exp_Type)
+      then
+         Error_Msg_N
+           ("expression in case statement must be of a discrete_Type", Exp);
+         return;
       end if;
 
       --  If the case expression is a formal object of mode in out, then treat
@@ -3028,6 +3035,10 @@ package body Sem_Ch5 is
             then
                Analyze_And_Resolve (Original_Bound, Typ);
                return Original_Bound;
+
+            elsif Inside_Class_Condition_Preanalysis then
+               Analyze_And_Resolve (Original_Bound, Typ);
+               return Original_Bound;
             end if;
 
             --  Normally, the best approach is simply to generate a constant
@@ -3333,11 +3344,17 @@ package body Sem_Ch5 is
       --  or post-condition has been expanded. Update the type of the loop
       --  variable to reflect the proper itype at each stage of analysis.
 
+      --  Loop_Nod might not be present when we are preanalyzing a class-wide
+      --  pre/postcondition since preanalysis occurs in a place unrelated to
+      --  the actual code and the quantified expression may be the outermost
+      --  expression of the class-wide condition.
+
       if No (Etype (Id))
         or else Etype (Id) = Any_Type
         or else
           (Present (Etype (Id))
             and then Is_Itype (Etype (Id))
+            and then Present (Loop_Nod)
             and then Nkind (Parent (Loop_Nod)) = N_Expression_With_Actions
             and then Nkind (Original_Node (Parent (Loop_Nod))) =
                                                    N_Quantified_Expression)

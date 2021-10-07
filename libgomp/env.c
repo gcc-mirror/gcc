@@ -1416,7 +1416,7 @@ handle_omp_display_env (void)
     gomp_error ("Invalid value for environment variable OMP_DISPLAY_ENV");
 
   if (display)
-    omp_display_env (verbose);
+    ialias_call (omp_display_env) (verbose);
 }
 
 

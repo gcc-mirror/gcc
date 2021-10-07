@@ -52,16 +52,16 @@ inline namespace fundamentals_v2
     inline void
     erase_if(vector<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
-      __cont.erase(std::remove_if(__cont.begin(), __cont.end(), __pred),
-		   __cont.end());
+      _GLIBCXX_STD_C::vector<_Tp, _Alloc>& __c = __cont;
+      __c.erase(std::remove_if(__c.begin(), __c.end(), __pred), __c.end());
     }
 
   template<typename _Tp, typename _Alloc, typename _Up>
     inline void
     erase(vector<_Tp, _Alloc>& __cont, const _Up& __value)
     {
-      __cont.erase(std::remove(__cont.begin(), __cont.end(), __value),
-		   __cont.end());
+      _GLIBCXX_STD_C::vector<_Tp, _Alloc>& __c = __cont;
+      __c.erase(std::remove(__c.begin(), __c.end(), __value), __c.end());
     }
 
   namespace pmr {

@@ -1,3 +1,19 @@
+2021-10-03  Patrick McGehearty  <patrick.mcgehearty@oracle.com>
+
+	PR target/101104
+	* libgcc2.c (RMIN2, RMINSCAL, RMAX2):
+	Use more correct values for native IBM 128-bit.
+
+2021-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/libgcc-darwin.ver: Add Symbols for
+	__cpu_model, __cpu_indicator_init.
+
+2021-09-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/sfp-machine.h: Guard Mach-O-specific code
+	using __APPLE__.
+
 2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/t-slibgcc-darwin: Delete unused code.

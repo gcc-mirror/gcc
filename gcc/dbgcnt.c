@@ -98,6 +98,14 @@ dbg_cnt (enum debug_counter index)
     return false;
 }
 
+/* Return the counter for INDEX.  */
+
+unsigned
+dbg_cnt_counter (enum debug_counter index)
+{
+  return count[index];
+}
+
 /* Compare limit_tuple intervals by first item in descending order.  */
 
 static int

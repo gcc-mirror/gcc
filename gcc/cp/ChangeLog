@@ -1,3 +1,237 @@
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102612
+	* parser.c (cp_parser_jump_statement): Implement C++23 P2242R3.
+	Allow goto expressions in constexpr function bodies for C++23.
+	Adjust error message for older standards to mention it.
+	* decl.c (start_decl): Allow static and thread_local declarations
+	in constexpr function bodies for C++23.  Adjust error message for
+	older standards to mention it.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Allow
+	declarations of variables with non-literal type in constexpr function
+	bodies for C++23.  Adjust error message for older standards to mention
+	it.
+	(cxx_eval_constant_expression) <case DECL_EXPR>: Diagnose declarations
+	of initialization of static or thread_local vars.
+	(cxx_eval_constant_expression) <case GOTO_EXPR>: Diagnose goto
+	statements for C++23.
+	(potential_constant_expression_1) <case DECL_EXPR>: Swap the
+	CP_DECL_THREAD_LOCAL_P and TREE_STATIC checks.
+	(potential_constant_expression_1) <case LABEL_EXPR>: Allow labels for
+	C++23.  Adjust error message for older standards to mention it.
+
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/98712
+	PR c++/102490
+	* cp-tree.h (maybe_synthesize_method): Declare.
+	* method.c (genericize_spaceship): Use
+	LOOKUP_NORMAL | LOOKUP_NONVIRTUAL | LOOKUP_DEFAULTED instead of
+	LOOKUP_NORMAL for flags.
+	(comp_info): Remove defining member.  Add complain, code, retcat.
+	(comp_info::comp_info): Adjust.
+	(do_one_comp): Split out from build_comparison_op.   Use
+	LOOKUP_NORMAL | LOOKUP_NONVIRTUAL | LOOKUP_DEFAULTED instead of
+	LOOKUP_NORMAL for flags.
+	(build_comparison_op): Add defining argument. Adjust comp_info
+	construction.  Use defining instead of info.defining.  Assert that
+	if defining, ctype is a complete type.  Walk base binfos.
+	(synthesize_method, maybe_explain_implicit_delete,
+	explain_implicit_non_constexpr): Adjust build_comparison_op callers.
+	(maybe_synthesize_method): New function.
+	* class.c (check_bases_and_members): Don't call defaulted_late_check
+	for sfk_comparison.
+	(finish_struct_1): Call it here instead after class has been
+	completed.
+	* pt.c (maybe_instantiate_noexcept): Call maybe_synthesize_method
+	instead of synthesize_method.
+
+2021-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102548
+	* tree.c (apply_identity_attributes): Fix handling of the
+	case where an attribute in the list doesn't affect type
+	identity but some attribute before it does.
+
+2021-10-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102547
+	* constexpr.c (potential_constant_expression_1): Handle
+	NONTYPE_ARGUMENT_PACK.
+
+2021-10-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98930
+	* pt.c (has_value_dependent_address): Return true for a static
+	local variable from a function template.
+
+2021-10-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* typeck.c (cp_build_binary_op): Call do_warn_array_compare.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101765
+	* coroutines.cc (register_local_var_uses): Emit a sorry if
+	we encounter a VLA in the coroutine local variables.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99710
+	* coroutines.cc (await_statement_walker): Report an error if
+	an await expression is found in a handler body.
+
+2021-10-03  John Eivind Helset  <jehelset@gmail.com>
+
+	PR c++/100673
+	* coroutines.cc (build_co_await): Guard against NULL
+	await_suspend types.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101133
+	* coroutines.cc (build_co_await): Mark co_await_expr trees
+	with TREE_SIDE_EFFECTS, also mark any containing expression.
+	(finish_co_await_expr): Mark type-dependent co_await_expr
+	trees with TREE_SIDE_EFFECTS.
+
+2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99575
+	* coroutines.cc (build_co_await): Strip NOPs from
+	candidate awaiter expressions before testing to see
+	if they need a temporary.
+
+2021-10-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/102103
+	* typeck.c (warn_for_null_address): Enhance.
+	(cp_build_binary_op): Call it also for member pointers.
+
+2021-10-01  qingzhe huang  <nickhuang99@hotmail.com>
+
+	PR c++/101783
+	* tree.c (cp_build_qualified_type_real): Exclude typedef from
+	error.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* typeck.c (cp_build_binary_op): Call ubsan_instrument_division
+	for division even for SANITIZE_SI_OVERFLOW.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_order): Set
+	OMP_CLAUSE_ORDER_REPRODUCIBLE for explicit reproducible: modifier.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102496
+	* name-lookup.c (push_local_extern_decl_alias): Return early even for
+	tls vars with non-dependent type when processing_template_decl.  For
+	CP_DECL_THREAD_LOCAL_P vars call set_decl_tls_model on alias.
+
+2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102535
+	* method.c (is_xible_helper): Don't exit early for multi-arg
+	ctors in C++20.
+
+2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.c (cp_parser_trait_expr): Call nreverse on the reversed
+	list of trailing arguments.
+
+2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95567
+	* method.c (build_comparison_op): Skip DECL_VIRTUAL_P fields.
+
+2021-09-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99909
+	* pt.c (coerce_template_template_parms): Keep
+	processing_template_decl set around the call to unify as well.
+
+2021-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/102454
+	* coroutines.cc (analyze_fn_parms): Clean up synthetic names for
+	unnamed function params.
+	(morph_fn_to_coro): Do not try to set a guard variable for param
+	DTORs in the ramp, unless we have exceptions active.
+
+2021-09-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102479
+	* pt.c (rewrite_template_parm): Handle single-level tsubst_args.
+	Avoid a tree cycle when assigning the DECL_TEMPLATE_PARMS for a
+	rewritten ttp.
+	(alias_ctad_tweaks): Set current_template_parms accordingly.
+
+2021-09-23  Michel Morin  <mimomorin@gmail.com>
+
+	* parser.c (cp_keyword_starts_decl_specifier_p): Do not
+	handle RID_ATTRIBUTE.
+	(cp_parser_constructor_declarator_p): Remove now-redundant
+	checks.
+	(cp_parser_lambda_declarator_opt): Likewise.
+
+2021-09-23  Michel Morin  <mimomorin@gmail.com>
+
+	PR c++/77565
+	* parser.c (cp_keyword_starts_decl_specifier_p): Handle more
+	decl-specifiers (typedef/inline/cv/explicit/virtual/friend).
+
+2021-09-23  Patrick Palka  <ppalka@redhat.com>
+
+	* ptree.c (cxx_print_decl): Dump the DECL_TEMPLATE_RESULT of
+	a TEMPLATE_DECL.  Dump the DECL_TEMPLATE_INFO rather than just
+	printing its pointer value.
+
+2021-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102413
+	* parser.c (cp_parser_omp_directive_args): Diagnose if omp::directive
+	is not followed by a balanced token sequence starting with open paren.
+
+2021-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2446
+	PR c++/102412
+	* constexpr.c (cxx_eval_constant_expression)
+	<case TEMPLATE_ID_EXPR>: Check value_dependent_expression_p
+	instead of processing_template_decl.
+	* pt.c (value_dependent_expression_p) <case TEMPLATE_ID_EXPR>:
+	Return true only if any_dependent_template_arguments_p.
+	(instantiation_dependent_r) <case CALL_EXPR>: Remove this case.
+	<case TEMPLATE_ID_EXPR>: Likewise.
+
+2021-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_allocate): Parse allocate clause
+	modifiers.
+	* semantics.c (finish_omp_clauses) <OMP_CLAUSE_ALLOCATE>: Perform
+	semantic analysis of OMP_CLAUSE_ALLOCATE_ALIGN.
+	* pt.c (tsubst_omp_clauses) <case OMP_CLAUSE_ALLOCATE>: Handle
+	also OMP_CLAUSE_ALLOCATE_ALIGN.
+
+2021-09-22  Barrett Adair  <barrettellisadair@gmail.com>
+
+	* pt.c (find_parm_usage_r): New walk_tree callback to find func
+	parms.
+	(any_template_arguments_need_structural_equality_p): New special
+	case.
+
+2021-09-21  wangpc  <pc.wang@linux.alibaba.com>
+
+	* decl.c (start_decl_1): Move verify_type_context to ...
+	(cp_finish_decl): ... to here.
+
 2021-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_order): Parse unconstrained

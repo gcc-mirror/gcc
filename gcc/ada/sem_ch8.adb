@@ -426,12 +426,10 @@ package body Sem_Ch8 is
    --  body at the point of freezing will not work. Subp is the subprogram
    --  for which N provides the Renaming_As_Body.
 
-   procedure Check_In_Previous_With_Clause
-     (N   : Node_Id;
-      Nam : Node_Id);
+   procedure Check_In_Previous_With_Clause (N, Nam : Node_Id);
    --  N is a use_package clause and Nam the package name, or N is a use_type
    --  clause and Nam is the prefix of the type name. In either case, verify
-   --  that the package is visible at that point in the context: either  it
+   --  that the package is visible at that point in the context: either it
    --  appears in a previous with_clause, or because it is a fully qualified
    --  name and the root ancestor appears in a previous with_clause.
 
@@ -2541,8 +2539,8 @@ package body Sem_Ch8 is
               and then Is_Class_Wide_Type (Get_Instance_Of (Etype (Formal)))
             then
                Formal_Typ := Etype (Formal);
-               Actual_Typ := Get_Instance_Of (Formal_Typ);
-               Root_Typ   := Etype (Actual_Typ);
+               Actual_Typ := Base_Type (Get_Instance_Of (Formal_Typ));
+               Root_Typ   := Root_Type (Actual_Typ);
                exit;
             end if;
 
@@ -2591,6 +2589,15 @@ package body Sem_Ch8 is
 
             elsif CW_Prim_Op = Root_Prim_Op then
                Prim_Op := Root_Prim_Op;
+
+            --  The two subprograms are legal but the class-wide subprogram is
+            --  a class-wide wrapper built for a previous instantiation; the
+            --  wrapper has precedence.
+
+            elsif Present (Alias (CW_Prim_Op))
+              and then Is_Class_Wide_Wrapper (Ultimate_Alias (CW_Prim_Op))
+            then
+               Prim_Op := CW_Prim_Op;
 
             --  Otherwise both candidate subprograms are user-defined and
             --  ambiguous.
@@ -2689,6 +2696,8 @@ package body Sem_Ch8 is
 
             Set_Corresponding_Body (Spec_Decl, Defining_Entity (Body_Decl));
          end if;
+
+         Set_Is_Class_Wide_Wrapper (Wrap_Id);
 
          --  If the operator carries an Eliminated pragma, indicate that the
          --  wrapper is also to be eliminated, to prevent spurious error when
@@ -4670,10 +4679,7 @@ package body Sem_Ch8 is
    -- Check_In_Previous_With_Clause --
    -----------------------------------
 
-   procedure Check_In_Previous_With_Clause
-     (N   : Node_Id;
-      Nam : Entity_Id)
-   is
+   procedure Check_In_Previous_With_Clause (N, Nam : Node_Id) is
       Pack : constant Entity_Id := Entity (Original_Node (Nam));
       Item : Node_Id;
       Par  : Node_Id;

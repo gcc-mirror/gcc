@@ -116,14 +116,14 @@ subroutine f4 (a)
   end do
 end
 
-! { dg-final { scan-tree-dump-times "#pragma omp distribute order\\(concurrent\\)" 6 "original"} }
+! { dg-final { scan-tree-dump-times "#pragma omp distribute order\\(reproducible:concurrent\\)" 6 "original"} }
 ! { dg-final { scan-tree-dump-times "#pragma omp distribute order\\(unconstrained:concurrent\\)" 6 "original"} }
-! { dg-final { scan-tree-dump-times "#pragma omp for nowait order\\(concurrent\\)" 6 "original"} }
+! { dg-final { scan-tree-dump-times "#pragma omp for nowait order\\(reproducible:concurrent\\)" 6 "original"} }
 ! { dg-final { scan-tree-dump-times "#pragma omp for nowait order\\(unconstrained:concurrent\\)" 6 "original"} }
-! { dg-final { scan-tree-dump-times "#pragma omp for order\\(concurrent\\)" 2 "original"} }
+! { dg-final { scan-tree-dump-times "#pragma omp for order\\(reproducible:concurrent\\)" 2 "original"} }
 ! { dg-final { scan-tree-dump-times "#pragma omp for order\\(unconstrained:concurrent\\)" 2 "original"} }
 ! { dg-final { scan-tree-dump-times "#pragma omp parallel" 12 "original"} }
-! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:1\\) order\\(concurrent\\)" 6 "original"} }
+! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:1\\) order\\(reproducible:concurrent\\)" 6 "original"} }
 ! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:1\\) order\\(unconstrained:concurrent\\)" 6 "original"} }
 ! { dg-final { scan-tree-dump-times "#pragma omp taskloop" 2 "original"} }
 ! { dg-final { scan-tree-dump-times "#pragma omp teams" 8 "original"} }

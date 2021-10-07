@@ -1825,6 +1825,8 @@ static bool
 is_var_need_auto_init (tree decl)
 {
   if (auto_var_p (decl)
+      && (TREE_CODE (decl) != VAR_DECL
+	  || !DECL_HARD_REGISTER (decl))
       && (flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
       && (!lookup_attribute ("uninitialized", DECL_ATTRIBUTES (decl)))
       && !is_empty_type (TREE_TYPE (decl)))
@@ -1870,6 +1872,12 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
     {
       tree init = DECL_INITIAL (decl);
       bool is_vla = false;
+      /* Check whether a decl has FE created VALUE_EXPR here BEFORE
+	 gimplify_vla_decl creates VALUE_EXPR for a vla decl.
+	 If the decl has VALUE_EXPR that was created by FE (usually
+	 C++FE), it's a proxy varaible, and FE already initialized
+	 the VALUE_EXPR of it, we should not initialize it anymore.  */
+      bool decl_had_value_expr_p = DECL_HAS_VALUE_EXPR_P (decl);
 
       poly_uint64 size;
       if (!poly_int_tree_p (DECL_SIZE_UNIT (decl), &size)
@@ -1932,7 +1940,8 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
       /* When there is no explicit initializer, if the user requested,
 	 We should insert an artifical initializer for this automatic
 	 variable.  */
-      else if (is_var_need_auto_init (decl))
+      else if (is_var_need_auto_init (decl)
+	       && !decl_had_value_expr_p)
 	{
 	  gimple_add_init_for_auto_var (decl,
 					flag_auto_var_init,
@@ -6232,6 +6241,9 @@ gimplify_save_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   gcc_assert (TREE_CODE (*expr_p) == SAVE_EXPR);
   val = TREE_OPERAND (*expr_p, 0);
 
+  if (TREE_TYPE (val) == error_mark_node)
+    return GS_ERROR;
+
   /* If the SAVE_EXPR has not been resolved, then evaluate it once.  */
   if (!SAVE_EXPR_RESOLVED_P (*expr_p))
     {
@@ -10192,7 +10204,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  if (outer_ctx)
 	    omp_notice_variable (outer_ctx, decl, true);
 	  if (check_non_private
-	      && region_type == ORT_WORKSHARE
+	      && (region_type == ORT_WORKSHARE || code == OMP_SCOPE)
 	      && (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION
 		  || decl == OMP_CLAUSE_DECL (c)
 		  || (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF
@@ -10914,8 +10926,12 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   *list_p = clause;
   struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
   gimplify_omp_ctxp = ctx->outer_context;
-  lang_hooks.decls.omp_finish_clause (clause, pre_p,
-				      (ctx->region_type & ORT_ACC) != 0);
+  /* Don't call omp_finish_clause on implicitly added OMP_CLAUSE_PRIVATE
+     in simd.  Those are only added for the local vars inside of simd body
+     and they don't need to be e.g. default constructible.  */
+  if (code != OMP_CLAUSE_PRIVATE || ctx->region_type != ORT_SIMD) 
+    lang_hooks.decls.omp_finish_clause (clause, pre_p,
+					(ctx->region_type & ORT_ACC) != 0);
   if (gimplify_omp_ctxp)
     for (; clause != chain; clause = OMP_CLAUSE_CHAIN (clause))
       if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP

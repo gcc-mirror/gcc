@@ -721,6 +721,8 @@
   /* Implemented by aarch64_qtbl1<mode>.  */
   VAR2 (BINOP, qtbl1, 0, NONE, v8qi, v16qi)
   VAR2 (BINOPU, qtbl1, 0, NONE, v8qi, v16qi)
+  VAR2 (BINOP_PPU, qtbl1, 0, NONE, v8qi, v16qi)
+  VAR2 (BINOP_SSU, qtbl1, 0, NONE, v8qi, v16qi)
 
   /* Implemented by aarch64_qtbl2<mode>.  */
   VAR2 (BINOP, qtbl2, 0, NONE, v8qi, v16qi)
@@ -734,6 +736,8 @@
   /* Implemented by aarch64_qtbx1<mode>.  */
   VAR2 (TERNOP, qtbx1, 0, NONE, v8qi, v16qi)
   VAR2 (TERNOPU, qtbx1, 0, NONE, v8qi, v16qi)
+  VAR2 (TERNOP_PPPU, qtbx1, 0, NONE, v8qi, v16qi)
+  VAR2 (TERNOP_SSSU, qtbx1, 0, NONE, v8qi, v16qi)
 
   /* Implemented by aarch64_qtbx2<mode>.  */
   VAR2 (TERNOP, qtbx2, 0, NONE, v8qi, v16qi)

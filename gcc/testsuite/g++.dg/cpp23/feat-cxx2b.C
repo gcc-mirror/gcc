@@ -134,8 +134,8 @@
 
 #ifndef __cpp_constexpr
 #  error "__cpp_constexpr"
-#elif __cpp_constexpr != 201907
-#  error "__cpp_constexpr != 201907"
+#elif __cpp_constexpr != 202110
+#  error "__cpp_constexpr != 202110"
 #endif
 
 #ifndef __cpp_decltype_auto

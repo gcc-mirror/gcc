@@ -478,6 +478,7 @@ package body Comperr is
          when N_Package_Declaration
             | N_Subprogram_Body
             | N_Subprogram_Declaration
+            | N_Subprogram_Renaming_Declaration
          =>
             Unit_Name := Defining_Unit_Name (Specification (Main));
 
@@ -489,10 +490,10 @@ package body Comperr is
          =>
             Unit_Name := Defining_Unit_Name (Main);
 
-         --  No SCIL file generated for generic package declarations
+         --  No SCIL file generated for generic unit declarations
 
-         when N_Generic_Package_Declaration
-            | N_Generic_Package_Renaming_Declaration
+         when N_Generic_Declaration
+            | N_Generic_Renaming_Declaration
          =>
             return;
 

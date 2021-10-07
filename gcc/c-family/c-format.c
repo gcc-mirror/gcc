@@ -5150,7 +5150,7 @@ handle_format_attribute (tree *node, tree atname, tree args,
 #ifdef TARGET_FORMAT_TYPES
   /* If the target provides additional format types, we need to
      add them to FORMAT_TYPES at first use.  */
-  if (TARGET_FORMAT_TYPES != NULL && !dynamic_format_types)
+  if (!dynamic_format_types)
     {
       dynamic_format_types = XNEWVEC (format_kind_info,
 				      n_format_types + TARGET_N_FORMAT_TYPES);

@@ -1481,6 +1481,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (!FIXED_POINT_TYPE_P (type))
  (plus @0 (negate @1))))
 
+/* Other simplifications of negation (c.f. fold_negate_expr_1).  */
+(simplify
+ (negate (mult:c@0 @1 negate_expr_p@2))
+ (if (! TYPE_UNSIGNED (type)
+      && ! HONOR_SIGN_DEPENDENT_ROUNDING (type)
+      && single_use (@0))
+  (mult @1 (negate @2))))
+
+(simplify
+ (negate (rdiv@0 @1 negate_expr_p@2))
+ (if (! HONOR_SIGN_DEPENDENT_ROUNDING (type)
+      && single_use (@0))
+  (rdiv @1 (negate @2))))
+
+(simplify
+ (negate (rdiv@0 negate_expr_p@1 @2))
+ (if (! HONOR_SIGN_DEPENDENT_ROUNDING (type)
+      && single_use (@0))
+  (rdiv (negate @1) @2)))
+
+/* Fold -((int)x >> (prec - 1)) into (unsigned)x >> (prec - 1).  */
+(simplify
+ (negate (convert? (rshift @0 INTEGER_CST@1)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
+      && wi::to_wide (@1) == element_precision (type) - 1)
+  (with { tree stype = TREE_TYPE (@0);
+	  tree ntype = TYPE_UNSIGNED (stype) ? signed_type_for (stype)
+					     : unsigned_type_for (stype); }
+   (convert (rshift:ntype (convert:ntype @0) @1)))))
+
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
    when profitable.
    For bitwise binary operations apply operand conversions to the

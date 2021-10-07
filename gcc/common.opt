@@ -59,6 +59,9 @@ enum incremental_link flag_incremental_link = INCREMENTAL_LINK_NONE
 Variable
 int flag_complex_method = 1
 
+Variable
+int flag_default_complex_method = 1
+
 ; Language specific warning pass for unused results.
 Variable
 bool flag_warn_unused_result = false

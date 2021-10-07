@@ -165,8 +165,7 @@ package body Exp_Attr is
    --  the appropriate instantiation of System.Fat_Gen. Float arguments in Args
    --  have already been converted to the floating-point type for which Pkg was
    --  instantiated. The Nam argument is the relevant attribute processing
-   --  routine to be called. This is the same as the attribute name, except in
-   --  the Unaligned_Valid case.
+   --  routine to be called. This is the same as the attribute name.
 
    procedure Expand_Fpt_Attribute_R (N : Node_Id);
    --  This procedure expands a call to a floating-point attribute function
@@ -2215,6 +2214,20 @@ package body Exp_Attr is
 
             if Is_Access_Protected_Subprogram_Type (Btyp) then
                Expand_Access_To_Protected_Op (N, Pref, Typ);
+
+            --  If prefix is a subprogram that has class-wide preconditions and
+            --  an indirect-call wrapper (ICW) of such subprogram is available
+            --  then replace the prefix by the ICW.
+
+            elsif Is_Access_Subprogram_Type (Btyp)
+              and then Is_Entity_Name (Pref)
+              and then Present (Class_Preconditions (Entity (Pref)))
+              and then Present (Indirect_Call_Wrapper (Entity (Pref)))
+            then
+               Rewrite (Pref,
+                 New_Occurrence_Of
+                   (Indirect_Call_Wrapper (Entity (Pref)), Loc));
+               Analyze_And_Resolve (N, Typ);
 
             --  If prefix is a type name, this is a reference to the current
             --  instance of the type, within its initialization procedure.

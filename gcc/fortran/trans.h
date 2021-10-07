@@ -438,7 +438,7 @@ tree gfc_class_vtab_def_init_get (tree);
 tree gfc_class_vtab_copy_get (tree);
 tree gfc_class_vtab_final_get (tree);
 /* Get an accessor to the vtab's * field, when a vptr handle is present.  */
-tree gfc_vtpr_hash_get (tree);
+tree gfc_vptr_hash_get (tree);
 tree gfc_vptr_size_get (tree);
 tree gfc_vptr_extends_get (tree);
 tree gfc_vptr_def_init_get (tree);
@@ -518,6 +518,8 @@ tree gfc_string_to_single_character (tree len, tree str, int kind);
 tree gfc_get_tree_for_caf_expr (gfc_expr *);
 void gfc_get_caf_token_offset (gfc_se*, tree *, tree *, tree, tree, gfc_expr *);
 tree gfc_caf_get_image_index (stmtblock_t *, gfc_expr *, tree);
+void gfc_simple_for_loop (stmtblock_t *, tree, tree, tree, enum tree_code, tree,
+			  tree);
 
 /* Find the decl containing the auxiliary variables for assigned variables.  */
 void gfc_conv_label_variable (gfc_se * se, gfc_expr * expr);
@@ -958,8 +960,6 @@ extern GTY(()) tree gfor_fndecl_convert_char1_to_char4;
 extern GTY(()) tree gfor_fndecl_convert_char4_to_char1;
 
 /* Other misc. runtime library functions.  */
-extern GTY(()) tree gfor_fndecl_size0;
-extern GTY(()) tree gfor_fndecl_size1;
 extern GTY(()) tree gfor_fndecl_iargc;
 extern GTY(()) tree gfor_fndecl_kill;
 extern GTY(()) tree gfor_fndecl_kill_sub;

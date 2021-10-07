@@ -944,7 +944,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return false;
       __try
 	{
-	  _M_reallocate(size());
+	  if (size_type __n = size())
+	    _M_reallocate(__n);
+	  else
+	    {
+	      this->_M_deallocate();
+	      this->_M_impl._M_reset();
+	    }
 	  return true;
 	}
       __catch(...)

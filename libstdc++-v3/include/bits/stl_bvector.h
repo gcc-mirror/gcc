@@ -706,13 +706,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
     public:
-      vector(vector&& __x, const allocator_type& __a)
+      vector(vector&& __x, const __type_identity_t<allocator_type>& __a)
       noexcept(_Bit_alloc_traits::_S_always_equal())
       : vector(std::move(__x), __a,
 	       typename _Bit_alloc_traits::is_always_equal{})
       { }
 
-      vector(const vector& __x, const allocator_type& __a)
+      vector(const vector& __x, const __type_identity_t<allocator_type>& __a)
       : _Base(__a)
       {
 	_M_initialize(__x.size());

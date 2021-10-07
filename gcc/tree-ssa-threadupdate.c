@@ -218,10 +218,15 @@ dump_jump_thread_path (FILE *dump_file,
 		       const vec<jump_thread_edge *> &path,
 		       bool registering)
 {
-  fprintf (dump_file,
-	   "  %s jump thread: (%d, %d) incoming edge; ",
-	   (registering ? "Registering" : "Cancelling"),
-	   path[0]->e->src->index, path[0]->e->dest->index);
+  if (registering)
+    fprintf (dump_file,
+	     "  [%u] Registering jump thread: (%d, %d) incoming edge; ",
+	     dbg_cnt_counter (registered_jump_thread),
+	     path[0]->e->src->index, path[0]->e->dest->index);
+  else
+    fprintf (dump_file,
+	     "  Cancelling jump thread: (%d, %d) incoming edge; ",
+	     path[0]->e->src->index, path[0]->e->dest->index);
 
   for (unsigned int i = 1; i < path.length (); i++)
     {
@@ -2570,7 +2575,7 @@ valid_jump_thread_path (vec<jump_thread_edge *> *path)
 void
 fwd_jt_path_registry::remove_jump_threads_including (edge_def *e)
 {
-  if (!m_paths.exists ())
+  if (!m_paths.exists () || !flag_thread_jumps)
     return;
 
   edge *slot = m_removed_edges->find_slot (e, INSERT);
@@ -2757,6 +2762,76 @@ fwd_jt_path_registry::update_cfg (bool may_peel_loop_headers)
   return retval;
 }
 
+bool
+jt_path_registry::cancel_invalid_paths (vec<jump_thread_edge *> &path)
+{
+  gcc_checking_assert (!path.is_empty ());
+  edge entry = path[0]->e;
+  edge exit = path[path.length () - 1]->e;
+  bool seen_latch = false;
+  int loops_crossed = 0;
+  bool crossed_latch = false;
+  // Use ->dest here instead of ->src to ignore the first block.  The
+  // first block is allowed to be in a different loop, since it'll be
+  // redirected.  See similar comment in profitable_path_p: "we don't
+  // care about that block...".
+  loop_p loop = entry->dest->loop_father;
+  loop_p curr_loop = loop;
+
+  for (unsigned int i = 0; i < path.length (); i++)
+    {
+      edge e = path[i]->e;
+
+      if (e == NULL)
+	{
+	  // NULL outgoing edges on a path can happen for jumping to a
+	  // constant address.
+	  cancel_thread (&path, "Found NULL edge in jump threading path");
+	  return true;
+	}
+
+      if (loop->latch == e->src || loop->latch == e->dest)
+	{
+	  seen_latch = true;
+	  // Like seen_latch, but excludes the first block.
+	  if (e->src != entry->src)
+	    crossed_latch = true;
+	}
+
+      if (e->dest->loop_father != curr_loop)
+	{
+	  curr_loop = e->dest->loop_father;
+	  ++loops_crossed;
+	}
+
+      if (flag_checking && !m_backedge_threads)
+	gcc_assert ((path[i]->e->flags & EDGE_DFS_BACK) == 0);
+    }
+
+  // If we crossed a loop into an outer loop without crossing the
+  // latch, this is just an early exit from the loop.
+  if (loops_crossed == 1
+      && !crossed_latch
+      && flow_loop_nested_p (exit->dest->loop_father, exit->src->loop_father))
+    return false;
+
+  if (cfun->curr_properties & PROP_loop_opts_done)
+    return false;
+
+  if (seen_latch && empty_block_p (loop->latch))
+    {
+      cancel_thread (&path, "Threading through latch before loop opts "
+		     "would create non-empty latch");
+      return true;
+    }
+  if (loops_crossed)
+    {
+      cancel_thread (&path, "Path crosses loops");
+      return true;
+    }
+  return false;
+}
+
 /* Register a jump threading opportunity.  We queue up all the jump
    threading opportunities discovered by a pass and update the CFG
    and SSA form all at once.
@@ -2770,25 +2845,16 @@ fwd_jt_path_registry::update_cfg (bool may_peel_loop_headers)
 bool
 jt_path_registry::register_jump_thread (vec<jump_thread_edge *> *path)
 {
+  gcc_checking_assert (flag_thread_jumps);
+
   if (!dbg_cnt (registered_jump_thread))
     {
       path->release ();
       return false;
     }
 
-  /* First make sure there are no NULL outgoing edges on the jump threading
-     path.  That can happen for jumping to a constant address.  */
-  for (unsigned int i = 0; i < path->length (); i++)
-    {
-      if ((*path)[i]->e == NULL)
-	{
-	  cancel_thread (path, "Found NULL edge in jump threading path");
-	  return false;
-	}
-
-      if (flag_checking && !m_backedge_threads)
-	gcc_assert (((*path)[i]->e->flags & EDGE_DFS_BACK) == 0);
-    }
+  if (cancel_invalid_paths (*path))
+    return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_jump_thread_path (dump_file, *path, true);

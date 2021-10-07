@@ -13047,7 +13047,7 @@ package body Sem_Ch12 is
 
             while Present (Index) loop
                Num := Num + 1;
-               Next_Index (Index);
+               Next (Index);
             end loop;
 
             return Num;

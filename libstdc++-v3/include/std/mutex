@@ -36,10 +36,10 @@
 #else
 
 #include <tuple>
-#include <chrono>
 #include <exception>
 #include <type_traits>
 #include <system_error>
+#include <bits/chrono.h>
 #include <bits/std_mutex.h>
 #include <bits/unique_lock.h>
 #if ! _GTHREAD_USE_MUTEX_TIMEDLOCK

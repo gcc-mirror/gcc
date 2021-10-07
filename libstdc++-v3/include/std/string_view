@@ -168,6 +168,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++23
 #endif // C++20
 
+      basic_string_view(nullptr_t) = delete;
+
       constexpr basic_string_view&
       operator=(const basic_string_view&) noexcept = default;
 

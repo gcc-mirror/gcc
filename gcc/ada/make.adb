@@ -1168,7 +1168,7 @@ package body Make is
          end if;
 
       else
-         ALI := Scan_ALI (Lib_File, Text, Ignore_ED => False, Err => True);
+         ALI := Scan_ALI (Lib_File, Text, Err => True);
          Free (Text);
 
          if ALI = No_ALI_Id then
@@ -2647,7 +2647,7 @@ package body Make is
                if Text /= null then
                   ALI :=
                     Scan_ALI
-                      (Data.Lib_File, Text, Ignore_ED => False, Err => True);
+                      (Data.Lib_File, Text, Err => True);
 
                   if ALI = No_ALI_Id then
 

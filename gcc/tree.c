@@ -291,7 +291,7 @@ unsigned const char omp_clause_num_ops[] =
   3, /* OMP_CLAUSE_LINEAR  */
   1, /* OMP_CLAUSE_AFFINITY  */
   2, /* OMP_CLAUSE_ALIGNED  */
-  2, /* OMP_CLAUSE_ALLOCATE  */
+  3, /* OMP_CLAUSE_ALLOCATE  */
   1, /* OMP_CLAUSE_DEPEND  */
   1, /* OMP_CLAUSE_NONTEMPORAL  */
   1, /* OMP_CLAUSE_UNIFORM  */

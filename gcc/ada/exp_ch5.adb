@@ -31,7 +31,6 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
-with Errout;         use Errout;
 with Exp_Aggr;       use Exp_Aggr;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
@@ -3365,6 +3364,30 @@ package body Exp_Ch5 is
               renames Pattern_Match;
             --  convenient rename for recursive calls
 
+            function Indexed_Element (Idx : Pos) return Node_Id;
+            --  Returns the Nth (well, ok, the Idxth) element of Object
+
+            ---------------------
+            -- Indexed_Element --
+            ---------------------
+
+            function Indexed_Element (Idx : Pos) return Node_Id is
+               Obj_Index : constant Node_Id :=
+                 Make_Op_Add (Loc,
+                   Left_Opnd =>
+                     Make_Attribute_Reference (Loc,
+                       Attribute_Name => Name_First,
+                       Prefix => New_Copy_Tree (Object)),
+                   Right_Opnd =>
+                     Make_Integer_Literal (Loc, Idx - 1));
+            begin
+               return Make_Indexed_Component (Loc,
+                        Prefix => New_Copy_Tree (Object),
+                        Expressions => New_List (Obj_Index));
+            end Indexed_Element;
+
+         --  Start of processing for Pattern_Match
+
          begin
             if Choice_Index /= 0 and not Suppress_Choice_Index_Update then
                pragma Assert (Present (Choice_Index_Decl));
@@ -3399,16 +3422,51 @@ package body Exp_Ch5 is
 
             case Nkind (Pattern) is
                when N_Aggregate =>
-                  return Result : Node_Id :=
-                    New_Occurrence_Of (Standard_True, Loc)
-                  do
+                  declare
+                     Result : Node_Id;
+                  begin
                      if Is_Array_Type (Etype (Pattern)) then
-                        --  Calling Error_Msg_N during expansion is usually a
-                        --  mistake but is ok for an "unimplemented" message.
-                        Error_Msg_N
-                          ("array-valued case choices unimplemented",
-                          Pattern);
-                        return;
+
+                        --  Nonpositional aggregates currently unimplemented.
+                        --  We flag that case during analysis, so an assertion
+                        --  is ok here.
+                        --
+                        pragma Assert
+                          (not Is_Non_Empty_List
+                                 (Component_Associations (Pattern)));
+
+                        declare
+                           Agg_Length : constant Node_Id :=
+                             Make_Integer_Literal (Loc,
+                               List_Length (Expressions (Pattern)));
+
+                           Obj_Length : constant Node_Id :=
+                             Make_Attribute_Reference (Loc,
+                               Attribute_Name => Name_Length,
+                               Prefix => New_Copy_Tree (Object));
+                        begin
+                           Result := Make_Op_Eq (Loc,
+                                       Left_Opnd  => Obj_Length,
+                                       Right_Opnd => Agg_Length);
+                        end;
+
+                        declare
+                           Expr : Node_Id := First (Expressions (Pattern));
+                           Idx  : Pos := 1;
+                        begin
+                           while Present (Expr) loop
+                              Result :=
+                                Make_And_Then (Loc,
+                                  Left_Opnd  => Result,
+                                  Right_Opnd =>
+                                    PM (Pattern => Expr,
+                                        Object => Indexed_Element (Idx)));
+                              Next (Expr);
+                              Idx := Idx + 1;
+                           end loop;
+                        end;
+
+                        return Result;
                      end if;
 
                      --  positional notation should have been normalized
@@ -3425,6 +3483,8 @@ package body Exp_Ch5 is
                              Selector_Name => New_Occurrence_Of
                                                 (Entity (Choice), Loc)));
                      begin
+                        Result := New_Occurrence_Of (Standard_True, Loc);
+
                         while Present (Component_Assoc) loop
                            Choice := First (Choices (Component_Assoc));
                            while Present (Choice) loop
@@ -3530,27 +3590,82 @@ package body Exp_Ch5 is
                            Next (Component_Assoc);
                         end loop;
                      end;
+                     return Result;
+                  end;
+
+               when N_String_Literal =>
+                  return Result : Node_Id do
+                     declare
+                        Char_Type : constant Entity_Id :=
+                          Root_Type (Component_Type (Etype (Pattern)));
+
+                        --  If the component type is not a standard character
+                        --  type then this string lit should have already been
+                        --  transformed into an aggregate in
+                        --  Resolve_String_Literal.
+                        --
+                        pragma Assert (Is_Standard_Character_Type (Char_Type));
+
+                        Str    : constant String_Id  := Strval (Pattern);
+                        Strlen : constant Nat        := String_Length (Str);
+
+                        Lit_Length : constant Node_Id :=
+                          Make_Integer_Literal (Loc, Strlen);
+
+                        Obj_Length : constant Node_Id :=
+                          Make_Attribute_Reference (Loc,
+                            Attribute_Name => Name_Length,
+                            Prefix => New_Copy_Tree (Object));
+                     begin
+                        Result := Make_Op_Eq (Loc,
+                                    Left_Opnd  => Obj_Length,
+                                    Right_Opnd => Lit_Length);
+
+                        for Idx in 1 .. Strlen loop
+                           declare
+                              C           : constant Char_Code :=
+                                Get_String_Char (Str, Idx);
+                              Obj_Element : constant Node_Id :=
+                                Indexed_Element (Idx);
+                              Char_Lit    : Node_Id;
+                           begin
+                              Set_Character_Literal_Name (C);
+                              Char_Lit :=
+                                Make_Character_Literal (Loc,
+                                  Chars              => Name_Find,
+                                  Char_Literal_Value => UI_From_CC (C));
+
+                              Result :=
+                                Make_And_Then (Loc,
+                                  Left_Opnd  => Result,
+                                  Right_Opnd =>
+                                    Make_Op_Eq (Loc,
+                                      Left_Opnd  => Obj_Element,
+                                      Right_Opnd => Char_Lit));
+                           end;
+                        end loop;
+                     end;
                   end return;
 
                when N_Qualified_Expression =>
-                  --  Make a copy for one of the two uses of Object; the choice
-                  --  of where to use the original and where to use the copy
-                  --  is arbitrary.
-
                   return Make_And_Then (Loc,
                     Left_Opnd  => Make_In (Loc,
                       Left_Opnd  => New_Copy_Tree (Object),
                       Right_Opnd => New_Copy_Tree (Subtype_Mark (Pattern))),
                     Right_Opnd =>
                       PM (Pattern => Expression (Pattern),
-                          Object  => Object));
+                          Object  => New_Copy_Tree (Object)));
 
                when N_Identifier | N_Expanded_Name =>
                   if Is_Type (Entity (Pattern)) then
                      return Make_In (Loc,
-                       Left_Opnd  => Object,
+                       Left_Opnd  => New_Copy_Tree (Object),
                        Right_Opnd => New_Occurrence_Of
                                        (Entity (Pattern), Loc));
+                  elsif Ekind (Entity (Pattern)) = E_Constant then
+                     return PM (Pattern =>
+                                  Expression (Parent (Entity (Pattern))),
+                                Object => Object);
                   end if;
 
                when N_Others_Choice =>

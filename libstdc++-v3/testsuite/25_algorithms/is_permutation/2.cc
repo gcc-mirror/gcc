@@ -20,6 +20,7 @@
 // 25.2.12 [alg.is_permutation] Is permutation
 
 #include <algorithm>
+#include <iterator>
 #include <functional>
 #include <testsuite_hooks.h>
 

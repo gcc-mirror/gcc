@@ -3638,6 +3638,8 @@ ix86_use_mask_cmp_p (machine_mode mode, machine_mode cmp_mode,
     return false;
   else if (vector_size == 64)
     return true;
+  else if (GET_MODE_INNER (cmp_mode) == HFmode)
+    return true;
 
   /* When op_true is NULL, op_false must be NULL, or vice versa.  */
   gcc_assert (!op_true == !op_false);
@@ -9762,6 +9764,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DI_FTYPE_V8HF_V2DI_UQI:
     case V2DI_FTYPE_V4SF_V2DI_UQI:
     case V8HF_FTYPE_V8HF_V8HF_UQI:
+    case V8HF_FTYPE_V8HF_V8HF_V8HF:
     case V8HF_FTYPE_V8HI_V8HF_UQI:
     case V8HF_FTYPE_V8SI_V8HF_UQI:
     case V8HF_FTYPE_V8SF_V8HF_UQI:
@@ -9840,6 +9843,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_V8SF_V16SF_UHI:
     case V16SI_FTYPE_V8SI_V16SI_UHI:
     case V16HF_FTYPE_V16HI_V16HF_UHI:
+    case V16HF_FTYPE_V16HF_V16HF_V16HF:
     case V16HI_FTYPE_V16HF_V16HI_UHI:
     case V16HI_FTYPE_V16HI_V16HI_UHI:
     case V8HI_FTYPE_V16QI_V8HI_UQI:
@@ -9996,6 +10000,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8HI_FTYPE_V8HI_V8HI_V8HI_UQI:
     case V8SI_FTYPE_V8SI_V8SI_V8SI_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI_UQI:
+    case V16HF_FTYPE_V16HF_V16HF_V16HF_UQI:
     case V16HF_FTYPE_V16HF_V16HF_V16HF_UHI:
     case V8SF_FTYPE_V8SF_V8SF_V8SF_UQI:
     case V16QI_FTYPE_V16QI_V16QI_V16QI_UHI:
@@ -10725,6 +10730,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_V16HF_V16SF_UHI_INT:
     case V32HF_FTYPE_V32HI_V32HF_USI_INT:
     case V32HF_FTYPE_V32HF_V32HF_USI_INT:
+    case V32HF_FTYPE_V32HF_V32HF_V32HF_INT:
     case V16SF_FTYPE_V16SF_V16SF_HI_INT:
     case V8DI_FTYPE_V8SF_V8DI_QI_INT:
     case V16SF_FTYPE_V16SI_V16SF_HI_INT:
@@ -10754,6 +10760,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V4SF_FTYPE_V4SF_V4SF_V4SF_UQI_INT:
     case V4SF_FTYPE_V8HF_V4SF_V4SF_UQI_INT:
     case V16SF_FTYPE_V16SF_V16SF_V16SF_HI_INT:
+    case V32HF_FTYPE_V32HF_V32HF_V32HF_UHI_INT:
     case V32HF_FTYPE_V32HF_V32HF_V32HF_USI_INT:
     case V2DF_FTYPE_V8HF_V2DF_V2DF_UQI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_QI_INT:
@@ -16038,6 +16045,7 @@ emit_reduc_half (rtx dest, rtx src, int i)
       break;
     case E_V16QImode:
     case E_V8HImode:
+    case E_V8HFmode:
     case E_V4SImode:
     case E_V2DImode:
       d = gen_reg_rtx (V1TImode);
@@ -16059,6 +16067,7 @@ emit_reduc_half (rtx dest, rtx src, int i)
       break;
     case E_V32QImode:
     case E_V16HImode:
+    case E_V16HFmode:
     case E_V8SImode:
     case E_V4DImode:
       if (i == 256)
@@ -16078,6 +16087,7 @@ emit_reduc_half (rtx dest, rtx src, int i)
       break;
     case E_V64QImode:
     case E_V32HImode:
+    case E_V32HFmode:
       if (i < 64)
 	{
 	  d = gen_reg_rtx (V4TImode);

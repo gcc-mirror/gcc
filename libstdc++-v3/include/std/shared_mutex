@@ -33,7 +33,7 @@
 
 #if __cplusplus >= 201402L
 
-#include <chrono>
+#include <bits/chrono.h>
 #include <bits/functexcept.h>
 #include <bits/move.h>        // move, __exchange
 #include <bits/std_mutex.h>   // defer_lock_t

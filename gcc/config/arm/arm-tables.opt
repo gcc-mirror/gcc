@@ -282,6 +282,9 @@ Enum(processor_type) String(cortex-m55) Value( TARGET_CPU_cortexm55)
 EnumValue
 Enum(processor_type) String(cortex-r52) Value( TARGET_CPU_cortexr52)
 
+EnumValue
+Enum(processor_type) String(cortex-r52plus) Value( TARGET_CPU_cortexr52plus)
+
 Enum
 Name(arm_arch) Type(int)
 Known ARM architectures (for use with the -march= option):

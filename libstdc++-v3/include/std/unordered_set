@@ -83,14 +83,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline typename unordered_set<_Key, _Hash, _CPred, _Alloc>::size_type
     erase_if(unordered_set<_Key, _Hash, _CPred, _Alloc>& __cont,
 	     _Predicate __pred)
-    { return __detail::__erase_nodes_if(__cont, __pred); }
+    {
+      _GLIBCXX_STD_C::unordered_set<_Key, _Hash, _CPred, _Alloc>& __c = __cont;
+      return __detail::__erase_nodes_if(__c, __pred);
+    }
 
   template<typename _Key, typename _Hash, typename _CPred, typename _Alloc,
 	   typename _Predicate>
     inline typename unordered_multiset<_Key, _Hash, _CPred, _Alloc>::size_type
     erase_if(unordered_multiset<_Key, _Hash, _CPred, _Alloc>& __cont,
 	     _Predicate __pred)
-    { return __detail::__erase_nodes_if(__cont, __pred); }
+    {
+      _GLIBCXX_STD_C::unordered_multiset<_Key, _Hash, _CPred, _Alloc>& __c
+	= __cont;
+      return __detail::__erase_nodes_if(__c, __pred);
+    }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++20

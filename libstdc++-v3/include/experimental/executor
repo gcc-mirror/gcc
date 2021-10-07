@@ -389,7 +389,7 @@ inline namespace v1
 	= typename __result_type::completion_handler_type;
 
     private:
-      using __handler_type = conditional_t<
+      using __handler_type = __conditional_t<
 	is_same<_CompletionToken, completion_handler_type>::value,
 	completion_handler_type&,
 	completion_handler_type>;

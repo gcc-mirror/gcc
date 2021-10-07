@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <alloca.h>
 
 #include <ISO_Fortran_binding.h>
 #include "dump-descriptors.h"

@@ -222,6 +222,7 @@ c_common_init_options_struct (struct gcc_options *opts)
 
   /* By default, C99-like requirements for complex multiply and divide.  */
   opts->x_flag_complex_method = 2;
+  opts->x_flag_default_complex_method = opts->x_flag_complex_method;
 }
 
 /* Common initialization before calling option handlers.  */

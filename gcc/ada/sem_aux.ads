@@ -377,6 +377,10 @@ package Sem_Aux is
    --  derived type, and the subtype is not an unconstrained array subtype
    --  (RM 3.3(23.10/3)).
 
+   function Package_Body (E : Entity_Id) return Node_Id;
+   --  Given an entity for a package, return the corresponding package body, if
+   --  any, or else Empty.
+
    function Package_Spec (E : Entity_Id) return Node_Id;
    --  Given an entity for a package spec, return the corresponding package
    --  spec if any, or else Empty.

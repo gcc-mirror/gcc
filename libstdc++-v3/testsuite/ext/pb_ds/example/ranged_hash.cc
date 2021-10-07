@@ -60,7 +60,6 @@ using namespace __gnu_pbds;
  * for larger sizes it uses a more complicated hash function.
  */
 class simple_string_ranged_hash_fn 
-  : public unary_function<string, size_t>
 {
 public:
   typedef size_t size_type;

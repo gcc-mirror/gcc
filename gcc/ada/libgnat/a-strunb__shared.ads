@@ -85,7 +85,8 @@ package Ada.Strings.Unbounded with
 is
    pragma Preelaborate;
 
-   type Unbounded_String is private;
+   type Unbounded_String is private with
+     Default_Initial_Condition => Length (Unbounded_String) = 0;
    pragma Preelaborable_Initialization (Unbounded_String);
 
    Null_Unbounded_String : constant Unbounded_String;

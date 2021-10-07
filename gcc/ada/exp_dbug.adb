@@ -409,7 +409,9 @@ package body Exp_Dbug is
             when N_Expanded_Name
                | N_Identifier
             =>
-               if not Present (Renamed_Object (Entity (Ren))) then
+               if No (Entity (Ren))
+                 or else not Present (Renamed_Object (Entity (Ren)))
+               then
                   exit;
                end if;
 

@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Nodes; use Sinfo.Nodes;
 
 package Sinfo.Utils is
 

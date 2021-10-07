@@ -6760,7 +6760,14 @@ has_value_dependent_address (tree op)
   if (DECL_P (op))
     {
       tree ctx = CP_DECL_CONTEXT (op);
+
       if (TYPE_P (ctx) && dependent_type_p (ctx))
+	return true;
+
+      if (VAR_P (op)
+	  && TREE_STATIC (op)
+	  && TREE_CODE (ctx) == FUNCTION_DECL
+	  && type_dependent_expression_p (ctx))
 	return true;
     }
 
@@ -7994,12 +8001,12 @@ coerce_template_template_parms (tree parm_parms,
       /* So coerce P's args to apply to A's parms, and then deduce between A's
 	 args and the converted args.  If that succeeds, A is at least as
 	 specialized as P, so they match.*/
+      processing_template_decl_sentinel ptds (/*reset*/false);
+      ++processing_template_decl;
       tree pargs = template_parms_level_to_args (parm_parms);
       pargs = add_outermost_template_args (outer_args, pargs);
-      ++processing_template_decl;
       pargs = coerce_template_parms (arg_parms, pargs, NULL_TREE, tf_none,
 				     /*require_all*/true, /*use_default*/true);
-      --processing_template_decl;
       if (pargs != error_mark_node)
 	{
 	  tree targs = make_tree_vec (nargs);
@@ -8223,8 +8230,10 @@ is_compatible_template_arg (tree parm, tree arg)
     {
       tree aparms = DECL_INNERMOST_TEMPLATE_PARMS (arg);
       new_args = template_parms_level_to_args (aparms);
+      ++processing_template_decl;
       parm_cons = tsubst_constraint_info (parm_cons, new_args,
 					  tf_none, NULL_TREE);
+      --processing_template_decl;
       if (parm_cons == error_mark_node)
         return false;
     }
@@ -8520,6 +8529,10 @@ convert_template_argument (tree parm,
 	}
       else
 	t = tsubst (t, args, complain, in_decl);
+
+      /* Perform array-to-pointer and function-to-pointer conversion
+	 as per [temp.param]/10.  */
+      t = type_decays_to (t);
 
       if (invalid_nontype_parm_type_p (t, complain))
 	return error_mark_node;
@@ -17489,12 +17502,22 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	  break;
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_ALIGNED:
+	  OMP_CLAUSE_DECL (nc)
+	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
+				      in_decl, NULL);
+	  OMP_CLAUSE_OPERAND (nc, 1)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 1), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  break;
 	case OMP_CLAUSE_ALLOCATE:
 	  OMP_CLAUSE_DECL (nc)
 	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
 				      in_decl, NULL);
 	  OMP_CLAUSE_OPERAND (nc, 1)
 	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 1), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  OMP_CLAUSE_OPERAND (nc, 2)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 2), args, complain,
 			   in_decl, /*integral_constant_expression_p=*/false);
 	  break;
 	case OMP_CLAUSE_LINEAR:
@@ -25756,7 +25779,7 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	return true;
 
       ++function_depth;
-      synthesize_method (fn);
+      maybe_synthesize_method (fn);
       --function_depth;
       return !DECL_MAYBE_DELETED (fn);
     }
@@ -27237,7 +27260,8 @@ value_dependent_expression_p (tree expression)
       }
 
     case TEMPLATE_ID_EXPR:
-      return concept_definition_p (TREE_OPERAND (expression, 0));
+      return concept_definition_p (TREE_OPERAND (expression, 0))
+	&& any_dependent_template_arguments_p (TREE_OPERAND (expression, 1));
 
     case CONSTRUCTOR:
       {
@@ -27644,18 +27668,6 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
     case REQUIRES_EXPR:
       return *tp;
 
-    case CALL_EXPR:
-      /* Treat concept checks as dependent. */
-      if (concept_check_p (*tp))
-        return *tp;
-      break;
-
-    case TEMPLATE_ID_EXPR:
-      /* Treat concept checks as dependent.  */
-      if (concept_check_p (*tp))
-	return *tp;
-      break;
-
     case CONSTRUCTOR:
       if (CONSTRUCTOR_IS_DEPENDENT (*tp))
 	return *tp;
@@ -27813,6 +27825,20 @@ dependent_template_arg_p (tree arg)
     return value_dependent_expression_p (arg);
 }
 
+/* Identify any expressions that use function parms.  */
+
+static tree
+find_parm_usage_r (tree *tp, int *walk_subtrees, void*)
+{
+  tree t = *tp;
+  if (TREE_CODE (t) == PARM_DECL)
+    {
+      *walk_subtrees = 0;
+      return t;
+    }
+  return NULL_TREE;
+}
+
 /* Returns true if ARGS (a collection of template arguments) contains
    any types that require structural equality testing.  */
 
@@ -27856,6 +27882,13 @@ any_template_arguments_need_structural_equality_p (tree args)
 		return true;
 	      else if (!TYPE_P (arg) && TREE_TYPE (arg)
 		       && TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (arg)))
+		return true;
+	      /* Checking current_function_decl because this structural
+		 comparison is only necessary for redeclaration.  */
+	      else if (!current_function_decl
+		       && dependent_template_arg_p (arg)
+		       && (cp_walk_tree_without_duplicates
+			   (&arg, find_parm_usage_r, NULL)))
 		return true;
 	    }
 	}
@@ -28734,7 +28767,7 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
 	  const int depth = TMPL_ARGS_DEPTH (tsubst_args);
 	  tree ttargs = make_tree_vec (depth + 1);
 	  for (int i = 0; i < depth; ++i)
-	    TREE_VEC_ELT (ttargs, i) = TREE_VEC_ELT (tsubst_args, i);
+	    TREE_VEC_ELT (ttargs, i) = TMPL_ARGS_LEVEL (tsubst_args, i + 1);
 	  TREE_VEC_ELT (ttargs, depth)
 	    = template_parms_level_to_args (ttparms);
 	  // Substitute ttargs into ttparms to fix references to
@@ -28747,8 +28780,17 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
 	  ttparms = tsubst_template_parms_level (ttparms, ttargs,
 						 complain);
 	  // Finally, tack the adjusted parms onto tparms.
-	  ttparms = tree_cons (size_int (depth), ttparms,
-			       current_template_parms);
+	  ttparms = tree_cons (size_int (level + 1), ttparms,
+			       copy_node (current_template_parms));
+	  // As with all template template parms, the parameter list captured
+	  // by this template template parm that corresponds to its own level
+	  // should be empty.  This avoids infinite recursion when structurally
+	  // comparing two such rewritten template template parms (PR102479).
+	  gcc_assert (!TREE_VEC_LENGTH
+		      (TREE_VALUE (TREE_CHAIN (DECL_TEMPLATE_PARMS (olddecl)))));
+	  gcc_assert (TMPL_PARMS_DEPTH (TREE_CHAIN (ttparms)) == level);
+	  TREE_VALUE (TREE_CHAIN (ttparms)) = make_tree_vec (0);
+	  // All done.
 	  DECL_TEMPLATE_PARMS (newdecl) = ttparms;
 	}
     }
@@ -29245,6 +29287,11 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	    if (TREE_VEC_ELT (targs, i) == NULL_TREE)
 	      ++ndlen;
 	  tree gtparms = make_tree_vec (natparms + ndlen);
+
+	  /* Set current_template_parms as in build_deduction_guide.  */
+	  auto ctp = make_temp_override (current_template_parms);
+	  current_template_parms = copy_node (DECL_TEMPLATE_PARMS (tmpl));
+	  TREE_VALUE (current_template_parms) = gtparms;
 
 	  /* First copy over the parms of A.  */
 	  for (j = 0; j < natparms; ++j)

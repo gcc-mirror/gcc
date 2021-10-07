@@ -291,6 +291,10 @@ package Sem is
    --  freezing nodes can modify the status of this flag, any other client
    --  should regard it as read-only.
 
+   Inside_Class_Condition_Preanalysis : Boolean := False;
+   --  Flag indicating whether we are preanalyzing a class-wide precondition
+   --  or postcondition.
+
    Inside_Preanalysis_Without_Freezing : Nat := 0;
    --  Flag indicating whether we are preanalyzing an expression performing no
    --  freezing. Non-zero means we are inside (it is actually a level counter

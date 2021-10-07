@@ -19,6 +19,7 @@
 
 #include <forward_list>
 #include <testsuite_iterators.h>
+#include <testsuite_allocator.h>
 
 template<typename T>
   using input_iterator_seq
@@ -66,4 +67,32 @@ test02()
 
   std::forward_list s4(1U, 2L, std::allocator<long>());
   check_type<std::forward_list<long>>(s4);
+}
+
+struct Pool;
+
+template<typename T>
+struct Alloc : __gnu_test::SimpleAllocator<T>
+{
+  Alloc(Pool*) { }
+
+  template<typename U>
+    Alloc(const Alloc<U>&) { }
+};
+
+void
+test_p1518r2()
+{
+  // P1518R2 - Stop overconstraining allocators in container deduction guides.
+  // This is a C++23 feature but we support it for C++17 too.
+
+  using Flist = std::forward_list<unsigned, Alloc<unsigned>>;
+  Pool* p = nullptr;
+  Flist f(p);
+
+  std::forward_list s1(f, p);
+  check_type<Flist>(s1);
+
+  std::forward_list s2(std::move(f), p);
+  check_type<Flist>(s2);
 }

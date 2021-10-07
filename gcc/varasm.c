@@ -7827,10 +7827,7 @@ switch_to_section (section *new_section, tree decl)
   else if (in_section == new_section)
     return;
 
-  if (new_section->common.flags & SECTION_FORGET)
-    in_section = NULL;
-  else
-    in_section = new_section;
+  in_section = new_section;
 
   switch (SECTION_STYLE (new_section))
     {

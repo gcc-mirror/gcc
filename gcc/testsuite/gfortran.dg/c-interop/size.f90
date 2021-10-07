@@ -1,5 +1,5 @@
 ! Reported as pr94070.
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 !
 ! TS 29113
 ! 6.4.2 SIZE

@@ -557,7 +557,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* If the entity is an inherited component (in the case of extended
 	   tagged record types), just return the original entity, which must
 	   be a FIELD_DECL.  Likewise for discriminants.  If the entity is a
-	   non-girder discriminant (in the case of derived untagged record
+	   non-stored discriminant (in the case of derived untagged record
 	   types), return the stored discriminant it renames.  */
 	if (Present (Original_Record_Component (gnat_entity))
 	    && Original_Record_Component (gnat_entity) != gnat_entity)
@@ -6503,7 +6503,8 @@ range_cannot_be_superflat (Node_Id gnat_range)
   Node_Id gnat_scalar_range;
   tree gnu_lb, gnu_hb, gnu_lb_minus_one;
 
-  /* If the low bound is not constant, try to find an upper bound.  */
+  /* If the low bound is not constant, take the worst case by finding an upper
+     bound for its type, repeatedly if need be.  */
   while (Nkind (gnat_lb) != N_Integer_Literal
 	 && (Ekind (Etype (gnat_lb)) == E_Signed_Integer_Subtype
 	     || Ekind (Etype (gnat_lb)) == E_Modular_Integer_Subtype)
@@ -6512,7 +6513,8 @@ range_cannot_be_superflat (Node_Id gnat_range)
 	     || Nkind (gnat_scalar_range) == N_Range))
     gnat_lb = High_Bound (gnat_scalar_range);
 
-  /* If the high bound is not constant, try to find a lower bound.  */
+  /* If the high bound is not constant, take the worst case by finding a lower
+     bound for its type, repeatedly if need be.  */
   while (Nkind (gnat_hb) != N_Integer_Literal
 	 && (Ekind (Etype (gnat_hb)) == E_Signed_Integer_Subtype
 	     || Ekind (Etype (gnat_hb)) == E_Modular_Integer_Subtype)

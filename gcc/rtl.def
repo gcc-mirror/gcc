@@ -467,6 +467,11 @@ DEF_RTL_EXPR(SS_MULT, "ss_mult", "ee", RTX_COMM_ARITH)
 /* Multiplication with unsigned saturation */
 DEF_RTL_EXPR(US_MULT, "us_mult", "ee", RTX_COMM_ARITH)
 
+/* Signed high-part multiplication.  */
+DEF_RTL_EXPR(SMUL_HIGHPART, "smul_highpart", "ee", RTX_COMM_ARITH)
+/* Unsigned high-part multiplication.  */
+DEF_RTL_EXPR(UMUL_HIGHPART, "umul_highpart", "ee", RTX_COMM_ARITH)
+
 /* Operand 0 divided by operand 1.  */
 DEF_RTL_EXPR(DIV, "div", "ee", RTX_BIN_ARITH)
 /* Division with signed saturation */

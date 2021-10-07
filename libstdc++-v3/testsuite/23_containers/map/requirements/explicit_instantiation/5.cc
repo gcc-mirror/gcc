@@ -27,7 +27,8 @@ using __gnu_test::ExplicitConsAlloc;
 // libstdc++/50118
 template class std::map<int, int, std::less<int>,
 			ExplicitConsAlloc<std::pair<const int, int> > >;
-#if !defined __STRICT_ANSI__ && __cplusplus <= 201703L
+#if !defined __STRICT_ANSI__ && __cplusplus <= 201703L \
+    && !defined _GLIBCXX_CONCEPT_CHECKS
 template class std::map<int, int, std::less<int>,
 			ExplicitConsAlloc<char> >;
 #endif

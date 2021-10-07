@@ -19,6 +19,7 @@
 
 #include <list>
 #include <testsuite_iterators.h>
+#include <testsuite_allocator.h>
 
 template<typename T>
   using input_iterator_seq
@@ -66,4 +67,32 @@ test02()
 
   std::list s4(1U, 2L, std::allocator<long>());
   check_type<std::list<long>>(s4);
+}
+
+struct Pool;
+
+template<typename T>
+struct Alloc : __gnu_test::SimpleAllocator<T>
+{
+  Alloc(Pool*) { }
+
+  template<typename U>
+    Alloc(const Alloc<U>&) { }
+};
+
+void
+test_p1518r2()
+{
+  // P1518R2 - Stop overconstraining allocators in container deduction guides.
+  // This is a C++23 feature but we support it for C++17 too.
+
+  using List = std::list<unsigned, Alloc<unsigned>>;
+  Pool* p = nullptr;
+  List l(p);
+
+  std::list s1(l, p);
+  check_type<List>(s1);
+
+  std::list s2(std::move(l), p);
+  check_type<List>(s2);
 }

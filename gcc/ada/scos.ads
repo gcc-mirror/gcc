@@ -257,7 +257,7 @@ package SCOs is
    --      I       decision in IF statement or if expression
    --      P       decision in pragma Assert / Check / Pre/Post_Condition
    --      A[name] decision in aspect Pre/Post (aspect name optional)
-   --      W       decision in WHILE iteration scheme
+   --      W       decision in WHILE iteration scheme or quantified expression
    --      X       decision in some other expression context
 
    --    For E, G, I, P, W, sloc is the source location of the EXIT, ENTRY, IF,

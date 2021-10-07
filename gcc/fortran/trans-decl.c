@@ -214,8 +214,6 @@ tree gfor_fndecl_convert_char4_to_char1;
 
 
 /* Other misc. runtime library functions.  */
-tree gfor_fndecl_size0;
-tree gfor_fndecl_size1;
 tree gfor_fndecl_iargc;
 tree gfor_fndecl_kill;
 tree gfor_fndecl_kill_sub;
@@ -3692,18 +3690,6 @@ gfc_build_intrinsic_function_decls (void)
   }
 
   /* Other functions.  */
-  gfor_fndecl_size0 = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("size0")), ". R ",
-	gfc_array_index_type, 1, pvoid_type_node);
-  DECL_PURE_P (gfor_fndecl_size0) = 1;
-  TREE_NOTHROW (gfor_fndecl_size0) = 1;
-
-  gfor_fndecl_size1 = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("size1")), ". R . ",
-	gfc_array_index_type, 2, pvoid_type_node, gfc_array_index_type);
-  DECL_PURE_P (gfor_fndecl_size1) = 1;
-  TREE_NOTHROW (gfor_fndecl_size1) = 1;
-
   gfor_fndecl_iargc = gfc_build_library_function_decl (
 	get_identifier (PREFIX ("iargc")), gfc_int4_type_node, 0);
   TREE_NOTHROW (gfor_fndecl_iargc) = 1;

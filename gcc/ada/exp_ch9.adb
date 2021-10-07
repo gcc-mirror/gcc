@@ -145,7 +145,7 @@ package body Exp_Ch9 is
 
    function Build_Corresponding_Record
      (N    : Node_Id;
-      Ctyp : Node_Id;
+      Ctyp : Entity_Id;
       Loc  : Source_Ptr) return Node_Id;
    --  Common to tasks and protected types. Copy discriminant specifications,
    --  build record declaration. N is the type declaration, Ctyp is the
@@ -1583,9 +1583,9 @@ package body Exp_Ch9 is
    --------------------------------
 
    function Build_Corresponding_Record
-    (N    : Node_Id;
-     Ctyp : Entity_Id;
-     Loc  : Source_Ptr) return Node_Id
+     (N    : Node_Id;
+      Ctyp : Entity_Id;
+      Loc  : Source_Ptr) return Node_Id
    is
       Rec_Ent  : constant Entity_Id :=
                    Make_Defining_Identifier
@@ -13796,14 +13796,15 @@ package body Exp_Ch9 is
                Comp    : Node_Id;
                Comp_Id : Entity_Id;
                Decl_Id : Entity_Id;
+               Nam     : Name_Id;
 
             begin
                Comp := First (Private_Declarations (Def));
                while Present (Comp) loop
                   if Nkind (Comp) = N_Component_Declaration then
                      Comp_Id := Defining_Identifier (Comp);
-                     Decl_Id :=
-                       Make_Defining_Identifier (Loc, Chars (Comp_Id));
+                     Nam     := Chars (Comp_Id);
+                     Decl_Id := Make_Defining_Identifier (Sloc (Comp_Id), Nam);
 
                      --  Minimal decoration
 
@@ -13818,6 +13819,14 @@ package body Exp_Ch9 is
                      Set_Is_Aliased     (Decl_Id, Is_Aliased     (Comp_Id));
                      Set_Is_Independent (Decl_Id, Is_Independent (Comp_Id));
 
+                     --  Copy the Comes_From_Source flag of the component, as
+                     --  the renaming may be the only entity directly seen by
+                     --  the user in the context, but do not warn for it.
+
+                     Set_Comes_From_Source
+                       (Decl_Id, Comes_From_Source (Comp_Id));
+                     Set_Warnings_Off (Decl_Id);
+
                      --  Generate:
                      --    comp_name : comp_typ renames _object.comp_name;
 
@@ -13828,10 +13837,8 @@ package body Exp_Ch9 is
                            New_Occurrence_Of (Etype (Comp_Id), Loc),
                          Name =>
                            Make_Selected_Component (Loc,
-                             Prefix =>
-                               New_Occurrence_Of (Obj_Ent, Loc),
-                             Selector_Name =>
-                               Make_Identifier (Loc, Chars (Comp_Id))));
+                             Prefix => New_Occurrence_Of (Obj_Ent, Loc),
+                             Selector_Name => Make_Identifier (Loc, Nam)));
                      Add (Decl);
                   end if;
 
@@ -14867,7 +14874,7 @@ package body Exp_Ch9 is
       Actuals : List_Id;
       Formals : List_Id;
       Decls   : List_Id;
-      Stmts   : List_Id) return Node_Id
+      Stmts   : List_Id) return Entity_Id
    is
       Actual    : Entity_Id;
       Expr      : Node_Id := Empty;

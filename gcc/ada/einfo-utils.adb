@@ -364,7 +364,9 @@ package body Einfo.Utils is
 
    function Known_Alignment (E : Entity_Id) return B is
    begin
-      return not Field_Is_Initial_Zero (E, F_Alignment);
+      --  For some reason, Empty is passed to this sometimes
+
+      return No (E) or else not Field_Is_Initial_Zero (E, F_Alignment);
    end Known_Alignment;
 
    procedure Reinit_Alignment (Id : E) is
@@ -414,8 +416,7 @@ package body Einfo.Utils is
       if Use_New_Unknown_Rep then
          return not Field_Is_Initial_Zero (E, F_Esize);
       else
-         return Esize (E) /= Uint_0
-           and then Present (Esize (E));
+         return Present (Esize (E)) and then Esize (E) /= Uint_0;
       end if;
    end Known_Esize;
 
@@ -654,16 +655,21 @@ package body Einfo.Utils is
          P := Parent (Id);
       end if;
 
+      while Nkind (P) in N_Selected_Component | N_Expanded_Name
+        or else (Nkind (P) = N_Defining_Program_Unit_Name
+                   and then Is_Child_Unit (Id))
       loop
-         if Nkind (P) in N_Selected_Component | N_Expanded_Name
-           or else (Nkind (P) = N_Defining_Program_Unit_Name
-                     and then Is_Child_Unit (Id))
-         then
-            P := Parent (P);
-         else
-            return P;
-         end if;
+         P := Parent (P);
       end loop;
+
+      if Is_Itype (Id)
+        and then Nkind (P) not in
+          N_Full_Type_Declaration | N_Subtype_Declaration
+      then
+         P := Empty;
+      end if;
+
+      return P;
    end Declaration_Node;
 
    ---------------------
@@ -702,7 +708,7 @@ package body Einfo.Utils is
    -- Entry_Index_Type --
    ----------------------
 
-   function Entry_Index_Type (Id : E) return N is
+   function Entry_Index_Type (Id : E) return E is
    begin
       pragma Assert (Ekind (Id) = E_Entry_Family);
       return Etype (Discrete_Subtype_Definition (Parent (Id)));
@@ -1424,26 +1430,19 @@ package body Einfo.Utils is
 
    function Is_Dynamic_Scope (Id : E) return B is
    begin
-      return
-        Ekind (Id) = E_Block
+      return Ekind (Id) in E_Block
+      --  Including an E_Block that came from an N_Expression_With_Actions
+                         | E_Entry
+                         | E_Entry_Family
+                         | E_Function
+                         | E_Procedure
+                         | E_Return_Statement
+                         | E_Subprogram_Body
+                         | E_Task_Type
           or else
-        Ekind (Id) = E_Function
-          or else
-        Ekind (Id) = E_Procedure
-          or else
-        Ekind (Id) = E_Subprogram_Body
-          or else
-        Ekind (Id) = E_Task_Type
-          or else
-       (Ekind (Id) = E_Limited_Private_Type
-         and then Present (Full_View (Id))
-         and then Ekind (Full_View (Id)) = E_Task_Type)
-          or else
-        Ekind (Id) = E_Entry
-          or else
-        Ekind (Id) = E_Entry_Family
-          or else
-        Ekind (Id) = E_Return_Statement;
+        (Ekind (Id) = E_Limited_Private_Type
+          and then Present (Full_View (Id))
+          and then Ekind (Full_View (Id)) = E_Task_Type);
    end Is_Dynamic_Scope;
 
    --------------------
@@ -1746,7 +1745,7 @@ package body Einfo.Utils is
    -- Link_Entities --
    -------------------
 
-   procedure Link_Entities (First : Entity_Id; Second : Node_Id) is
+   procedure Link_Entities (First, Second : Entity_Id) is
    begin
       if Present (Second) then
          Set_Prev_Entity (Second, First);  --  First <-- Second
@@ -1975,6 +1974,8 @@ package body Einfo.Utils is
 
    function Next_Index (Id : Node_Id) return Node_Id is
    begin
+      pragma Assert (Nkind (Id) in N_Is_Index);
+      pragma Assert (No (Next (Id)) or else Nkind (Next (Id)) in N_Is_Index);
       return Next (Id);
    end Next_Index;
 

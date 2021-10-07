@@ -193,6 +193,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 		    == GF_OMP_FOR_KIND_DISTRIBUTE;
   bool taskloop = gimple_omp_for_kind (for_stmt)
 		  == GF_OMP_FOR_KIND_TASKLOOP;
+  bool order_reproducible = false;
   tree iterv, countv;
 
   fd->for_stmt = for_stmt;
@@ -277,10 +278,25 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	    && !OMP_CLAUSE__SCANTEMP__CONTROL (t))
 	  fd->have_nonctrl_scantemp = true;
 	break;
+      case OMP_CLAUSE_ORDER:
+	/* FIXME: For OpenMP 5.2 this should change to
+	   if (OMP_CLAUSE_ORDER_REPRODUCIBLE (t))
+	   (with the exception of loop construct but that lowers to
+	   no schedule/dist_schedule clauses currently).  */
+	if (!OMP_CLAUSE_ORDER_UNCONSTRAINED (t))
+	  order_reproducible = true;
       default:
 	break;
       }
 
+  /* For order(reproducible:concurrent) schedule ({dynamic,guided,runtime})
+     we have either the option to expensively remember at runtime how we've
+     distributed work from first loop and reuse that in following loops with
+     the same number of iterations and schedule, or just force static schedule.
+     OpenMP API calls etc. aren't allowed in order(concurrent) bodies so
+     users can't observe it easily anyway.  */
+  if (order_reproducible)
+    fd->sched_kind = OMP_CLAUSE_SCHEDULE_STATIC;
   if (fd->collapse > 1 || fd->tiling)
     fd->loops = loops;
   else

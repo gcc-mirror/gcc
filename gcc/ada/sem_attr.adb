@@ -1339,6 +1339,16 @@ package body Sem_Attr is
          Legal   := False;
          Spec_Id := Empty;
 
+         --  Skip processing during preanalysis of class-wide preconditions and
+         --  postconditions since at this stage the expression is not installed
+         --  yet on its definite context.
+
+         if Inside_Class_Condition_Preanalysis then
+            Legal   := True;
+            Spec_Id := Current_Scope;
+            return;
+         end if;
+
          --  Traverse the parent chain to find the aspect or pragma where the
          --  attribute resides.
 
@@ -1518,14 +1528,6 @@ package body Sem_Attr is
          else
             Check_E1;
             Set_Etype (N, Str_Typ);
-
-            --  ???It's not clear why 'Img should behave any differently than
-            --  'Image.
-
-            if Attr_Id = Attribute_Img then
-               Error_Attr_P
-                 ("prefix of % attribute must be a scalar object name");
-            end if;
 
             pragma Assert (Is_Entity_Name (P) and then Is_Type (Entity (P)));
 
@@ -6641,7 +6643,9 @@ package body Sem_Attr is
          Initialize (CRC);
          Compute_Type_Key (Entity (P));
 
-         if not Is_Frozen (Entity (P)) then
+         if not Is_Frozen (Entity (P))
+           and then not Is_Generic_Type (Entity (P))
+         then
             Error_Msg_N ("premature usage of Type_Key?", N);
          end if;
 
@@ -9131,12 +9135,26 @@ package body Sem_Attr is
       -- Leading_Part --
       ------------------
 
-      when Attribute_Leading_Part =>
+      when Attribute_Leading_Part => Leading_Part : declare
+         Radix_Digits : constant Uint := Expr_Value (E2);
+
+      begin
+         if UI_Le (Radix_Digits, Uint_0) then
+            Apply_Compile_Time_Constraint_Error
+              (N, "Radix_Digits in Leading_Part is zero or negative",
+               CE_Explicit_Raise,
+               Warn => not Static);
+
+            Check_Expressions;
+            return;
+         end if;
+
          Fold_Ureal
            (N,
             Eval_Fat.Leading_Part
-              (P_Base_Type, Expr_Value_R (E1), Expr_Value (E2)),
+              (P_Base_Type, Expr_Value_R (E1), Radix_Digits),
             Static);
+      end Leading_Part;
 
       ------------
       -- Length --
@@ -11488,28 +11506,45 @@ package body Sem_Attr is
                --  in such a context - unless the restriction
                --  No_Dynamic_Accessibility_Checks is active.
 
-               if Attr_Id /= Attribute_Unchecked_Access
-                 and then
-                   (Ekind (Btyp) = E_General_Access_Type
-                      or else No_Dynamic_Accessibility_Checks_Enabled (Btyp))
+               declare
+                  No_Dynamic_Acc_Checks : constant Boolean :=
+                    No_Dynamic_Accessibility_Checks_Enabled (Btyp);
 
-                 --  Call Accessibility_Level directly to avoid returning zero
-                 --  on cases where the prefix is an explicitly aliased
-                 --  parameter in a return statement, instead of using the
-                 --  normal Static_Accessibility_Level function.
+                  Compatible_Alt_Checks : constant Boolean :=
+                    No_Dynamic_Acc_Checks and then not Debug_Flag_Underscore_B;
+               begin
+                  if Attr_Id /= Attribute_Unchecked_Access
+                    and then (Ekind (Btyp) = E_General_Access_Type
+                               or else No_Dynamic_Acc_Checks)
 
-                 --  Shouldn't this be handled somehow in
-                 --  Static_Accessibility_Level ???
+                    --  In the case of the alternate "compatibility"
+                    --  accessibility model we do not perform a static
+                    --  accessibility check on actuals for anonymous access
+                    --  types - so exclude them here.
 
-                 and then Nkind (Accessibility_Level (P, Dynamic_Level))
-                            = N_Integer_Literal
-                 and then
-                   Intval (Accessibility_Level (P, Dynamic_Level))
-                     > Deepest_Type_Access_Level (Btyp)
-               then
-                  Accessibility_Message;
-                  return;
-               end if;
+                    and then not (Compatible_Alt_Checks
+                                   and then Is_Actual_Parameter (N)
+                                   and then Ekind (Btyp)
+                                              = E_Anonymous_Access_Type)
+
+                    --  Call Accessibility_Level directly to avoid returning
+                    --  zero on cases where the prefix is an explicitly aliased
+                    --  parameter in a return statement, instead of using the
+                    --  normal Static_Accessibility_Level function.
+
+                    --  Shouldn't this be handled somehow in
+                    --  Static_Accessibility_Level ???
+
+                    and then Nkind (Accessibility_Level (P, Dynamic_Level))
+                               = N_Integer_Literal
+                    and then
+                      Intval (Accessibility_Level (P, Dynamic_Level))
+                        > Deepest_Type_Access_Level (Btyp)
+                  then
+                     Accessibility_Message;
+                     return;
+                  end if;
+               end;
             end if;
 
             if Ekind (Btyp) in E_Access_Protected_Subprogram_Type
@@ -12477,7 +12512,7 @@ package body Sem_Attr is
    function Stream_Attribute_Available
      (Typ          : Entity_Id;
       Nam          : TSS_Name_Type;
-      Partial_View : Node_Id := Empty) return Boolean
+      Partial_View : Entity_Id := Empty) return Boolean
    is
       Etyp : Entity_Id := Typ;
 

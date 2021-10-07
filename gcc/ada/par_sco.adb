@@ -216,9 +216,6 @@ package body Par_SCO is
    --  Parameter D, when present, indicates the dominant of the first
    --  declaration or statement within N.
 
-   --  Why is Traverse_Sync_Definition commented specifically, whereas
-   --  the others are not???
-
    procedure Traverse_Generic_Package_Declaration (N : Node_Id);
 
    procedure Traverse_Handled_Statement_Sequence
@@ -235,8 +232,7 @@ package body Par_SCO is
      (N : Node_Id;
       D : Dominant_Info := No_Dominant);
 
-   procedure Traverse_Sync_Definition (N : Node_Id);
-   --  Traverse a protected definition or task definition
+   procedure Traverse_Protected_Or_Task_Definition (N : Node_Id);
 
    --  Note regarding traversals: In a few cases where an Alternatives list is
    --  involved, pragmas such as "pragma Page" may show up before the first
@@ -690,9 +686,6 @@ package body Par_SCO is
                --  fully equivalent to the "To" sloc computed by
                --  Sloc_Range (Guard, To, From).
 
-               --  Doesn't this requirement of using First_Sloc need to be
-               --  documented in the spec ???
-
                if Nkind (Parent (N)) in N_Accept_Alternative
                                       | N_Delay_Alternative
                                       | N_Terminate_Alternative
@@ -831,6 +824,14 @@ package body Par_SCO is
                   Process_Decisions (Cond, 'I', Pragma_Sloc);
                   Process_Decisions (Thnx, 'X', Pragma_Sloc);
                   Process_Decisions (Elsx, 'X', Pragma_Sloc);
+                  return Skip;
+               end;
+
+            when N_Quantified_Expression =>
+               declare
+                  Cond : constant Node_Id := Condition (N);
+               begin
+                  Process_Decisions (Cond, 'W', Pragma_Sloc);
                   return Skip;
                end;
 
@@ -2331,7 +2332,7 @@ package body Par_SCO is
                Process_Decisions_Defer (Discriminant_Specifications (N), 'X');
                Set_Statement_Entry;
 
-               Traverse_Sync_Definition (N);
+               Traverse_Protected_Or_Task_Definition (N);
 
             when N_Single_Protected_Declaration
                | N_Single_Task_Declaration
@@ -2339,7 +2340,7 @@ package body Par_SCO is
                Extend_Statement_Sequence (N, 'o');
                Set_Statement_Entry;
 
-               Traverse_Sync_Definition (N);
+               Traverse_Protected_Or_Task_Definition (N);
 
             when others =>
 
@@ -2517,11 +2518,11 @@ package body Par_SCO is
       Traverse_Declarations_Or_Statements (Private_Declarations (Spec), Dom);
    end Traverse_Package_Declaration;
 
-   ------------------------------
-   -- Traverse_Sync_Definition --
-   ------------------------------
+   -------------------------------------------
+   -- Traverse_Protected_Or_Task_Definition --
+   -------------------------------------------
 
-   procedure Traverse_Sync_Definition (N : Node_Id) is
+   procedure Traverse_Protected_Or_Task_Definition (N : Node_Id) is
       Dom_Info : Dominant_Info := ('S', N);
       --  The first declaration is dominated by the protected or task [type]
       --  declaration.
@@ -2570,7 +2571,7 @@ package body Par_SCO is
       Traverse_Declarations_Or_Statements
         (L => Priv_Decl,
          D => Dom_Info);
-   end Traverse_Sync_Definition;
+   end Traverse_Protected_Or_Task_Definition;
 
    --------------------------------------
    -- Traverse_Subprogram_Or_Task_Body --

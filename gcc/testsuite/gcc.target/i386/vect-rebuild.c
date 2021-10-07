@@ -30,4 +30,4 @@ v2df h (v4df x)
 
 /* { dg-final { scan-assembler-not "unpck" } } */
 /* { dg-final { scan-assembler-times "\tv?permilpd\[ \t\]" 1 } } */
-/* { dg-final { scan-assembler-times "\tv?extractf128\[ \t\]" 1 } } */
+/* { dg-final { scan-assembler-times "\tv?extract(?:f128|f64x2)\[ \t\]" 1 } } */

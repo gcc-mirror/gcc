@@ -70,7 +70,9 @@ package Ada.Containers.Bounded_Holders is
    --  System.Storage_Unit; e.g. creating Holders from 5-bit objects won't
    --  work.
 
-   type Holder is private;
+   type Holder is private
+     with Preelaborable_Initialization
+            => Element_Type'Preelaborable_Initialization;
 
    function "=" (Left, Right : Holder) return Boolean;
 

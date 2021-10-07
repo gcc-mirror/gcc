@@ -110,8 +110,11 @@ struct GTY(()) modref_access_node
 	       if (!a.parm_offset_known)
 		 return false;
 	       /* Accesses are never below parm_offset, so look
-		  for smaller offset.  */
-	       if (!known_le (parm_offset, a.parm_offset))
+		  for smaller offset.
+		  If access ranges are known still allow merging
+		  when bit offsets comparsion passes.  */
+	       if (!known_le (parm_offset, a.parm_offset)
+		   && !range_info_useful_p ())
 		 return false;
 	       aoffset_adj = (a.parm_offset - parm_offset)
 			     << LOG2_BITS_PER_UNIT;
@@ -618,6 +621,7 @@ private:
 	    found = true;
 	  if (!found && n->merge (*a, false))
 	    found = restart = true;
+	  gcc_checking_assert (found || !a->merge (*n, false));
 	  if (found)
 	    {
 	      accesses->unordered_remove (i);

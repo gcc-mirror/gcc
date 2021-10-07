@@ -1,3 +1,8 @@
+2021-09-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-lang.c (lto_init_options_struct): Set also
+	  x_flag_default_complex_method.
+
 2021-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/102024

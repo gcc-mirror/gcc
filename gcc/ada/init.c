@@ -2551,6 +2551,7 @@ __gnat_install_handler (void)
 #include <signal.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include "sigtramp.h"
 
 void

@@ -172,9 +172,9 @@ init_src()
 
     for (i = 0; i < AVX512F_MAX_ELEM; i++) {
 	v1.f32[i] = i + 1;
-	v2.f32[i] = i * 0.5f;
+	v2.f32[i] = (i + 2) * 0.5f;
 	v3.f32[i] = i * 1.5f;
-	v4.f32[i] = i - 0.5f;
+	v4.f32[i] = i - 1.5f;
 
 	src3.u32[i] = (i + 1) * 10;
     }
@@ -234,10 +234,12 @@ init_dest(V512 * res, V512 * exp)
 #undef DF
 #undef H_HF
 #undef NET_MASK 
+#undef NET_CMASK 
 #undef MASK_VALUE
 #undef HALF_MASK
 #undef ZMASK_VALUE 
 #define NET_MASK 0xffff
+#define NET_CMASK 0xff
 #define MASK_VALUE 0xcccc
 #define ZMASK_VALUE 0xfcc1
 #define HALF_MASK 0xcc
@@ -253,10 +255,12 @@ init_dest(V512 * res, V512 * exp)
 #undef SI
 #undef H_HF
 #undef NET_MASK 
+#undef NET_CMASK 
 #undef MASK_VALUE 
 #undef ZMASK_VALUE 
 #undef HALF_MASK
 #define NET_MASK 0xff
+#define NET_CMASK 0xff
 #define MASK_VALUE 0xcc
 #define HALF_MASK MASK_VALUE
 #define ZMASK_VALUE 0xc1
@@ -267,6 +271,7 @@ init_dest(V512 * res, V512 * exp)
 #define H_HF(x) x.xmmh[0]
 #else
 #define NET_MASK 0xffffffff
+#define NET_CMASK 0xffff
 #define MASK_VALUE 0xcccccccc
 #define ZMASK_VALUE 0xfcc1fcc1
 #define HALF_MASK 0xcccc

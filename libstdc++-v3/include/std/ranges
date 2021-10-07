@@ -770,11 +770,11 @@ namespace __detail
   // Data members using this alias should use [[no_unique_address]] so that
   // they take no space when not needed.
   template<bool _Present, typename _Tp>
-    using __maybe_present_t = conditional_t<_Present, _Tp, _Empty>;
+    using __maybe_present_t = __conditional_t<_Present, _Tp, _Empty>;
 
   // Alias for a type that is conditionally const.
   template<bool _Const, typename _Tp>
-    using __maybe_const_t = conditional_t<_Const, const _Tp, _Tp>;
+    using __maybe_const_t = __conditional_t<_Const, const _Tp, _Tp>;
 
 } // namespace __detail
 
@@ -2920,9 +2920,9 @@ namespace views::__adaptor
 	  bool _M_trailing_empty = false;
 
 	public:
-	  using iterator_concept = conditional_t<forward_range<_Base>,
-						 forward_iterator_tag,
-						 input_iterator_tag>;
+	  using iterator_concept = __conditional_t<forward_range<_Base>,
+						   forward_iterator_tag,
+						   input_iterator_tag>;
 	  // iterator_category defined in __lazy_split_view_outer_iter_cat
 	  using difference_type = range_difference_t<_Base>;
 

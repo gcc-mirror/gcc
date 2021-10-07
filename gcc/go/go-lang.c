@@ -174,6 +174,7 @@ go_langhook_init_options_struct (struct gcc_options *opts)
   /* Default to avoiding range issues for complex multiply and
      divide.  */
   opts->x_flag_complex_method = 2;
+  opts->x_flag_default_complex_method = opts->x_flag_complex_method;
 
   /* The builtin math functions should not set errno.  */
   opts->x_flag_errno_math = 0;

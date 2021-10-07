@@ -237,11 +237,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : _M_t(_Pair_alloc_type(__a)) { }
 
       /// Allocator-extended copy constructor.
-      map(const map& __m, const allocator_type& __a)
+      map(const map& __m, const __type_identity_t<allocator_type>& __a)
       : _M_t(__m._M_t, _Pair_alloc_type(__a)) { }
 
       /// Allocator-extended move constructor.
-      map(map&& __m, const allocator_type& __a)
+      map(map&& __m, const __type_identity_t<allocator_type>& __a)
       noexcept(is_nothrow_copy_constructible<_Compare>::value
 	       && _Alloc_traits::_S_always_equal())
       : _M_t(std::move(__m._M_t), _Pair_alloc_type(__a)) { }

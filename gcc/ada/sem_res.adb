@@ -2920,6 +2920,16 @@ package body Sem_Res is
                   Expr   : Node_Id;
 
                begin
+                  if Is_Derived_Type (Typ)
+                    and then Is_Tagged_Type (Typ)
+                    and then Base_Type (Etype (Callee)) /= Base_Type (Typ)
+                  then
+                     Callee :=
+                       Corresponding_Primitive_Op
+                         (Ancestor_Op     => Callee,
+                          Descendant_Type => Base_Type (Typ));
+                  end if;
+
                   if Nkind (N) = N_Identifier then
                      Expr := Expression (Declaration_Node (Entity (N)));
 
@@ -2990,16 +3000,23 @@ package body Sem_Res is
 
                   Set_Etype (Call, Etype (Callee));
 
-                  --  Conversion needed in case of an inherited aspect
-                  --  of a derived type.
-                  --
-                  --  ??? Need to do something different here for downward
-                  --  tagged conversion case (which is only possible in the
-                  --  case of a null extension); the current call to
-                  --  Convert_To results in an error message about an illegal
-                  --  downward conversion.
+                  if Base_Type (Etype (Call)) /= Base_Type (Typ) then
+                     --  Conversion may be needed in case of an inherited
+                     --  aspect of a derived type. For a null extension, we
+                     --  use a null extension aggregate instead because the
+                     --  downward type conversion would be illegal.
 
-                  Call := Convert_To (Typ, Call);
+                     if Is_Null_Extension_Of
+                          (Descendant => Typ,
+                           Ancestor   => Etype (Call))
+                     then
+                        Call := Make_Extension_Aggregate (Loc,
+                                  Ancestor_Part       => Call,
+                                  Null_Record_Present => True);
+                     else
+                        Call := Convert_To (Typ, Call);
+                     end if;
+                  end if;
 
                   Rewrite (N, Call);
                end;
@@ -3080,6 +3097,24 @@ package body Sem_Res is
                   else
                      Error_Msg_N ("\use -gnatf for details", N);
                   end if;
+
+               --  Recognize the case of a quantified expression being mistaken
+               --  for an iterated component association because the user
+               --  forgot the "all" or "some" keyword after "for". Because the
+               --  error message starts with "missing ALL", we automatically
+               --  benefit from the associated CODEFIX, which requires that
+               --  the message is located on the identifier following "for"
+               --  in order for the CODEFIX to insert "all" in the right place.
+
+               elsif Nkind (N) = N_Aggregate
+                 and then List_Length (Component_Associations (N)) = 1
+                 and then Nkind (First (Component_Associations (N)))
+                   = N_Iterated_Component_Association
+                 and then Is_Boolean_Type (Typ)
+               then
+                  Error_Msg_N -- CODEFIX
+                    ("missing ALL or SOME in quantified expression",
+                     Defining_Identifier (First (Component_Associations (N))));
 
                else
                   Wrong_Type (N, Typ);
@@ -4874,10 +4909,15 @@ package body Sem_Res is
 
             --  Apply legality rule 3.9.2  (9/1)
 
+            --  Skip this check on helpers and indirect-call wrappers built to
+            --  support class-wide preconditions.
+
             if (Is_Class_Wide_Type (A_Typ) or else Is_Dynamically_Tagged (A))
               and then not Is_Class_Wide_Type (F_Typ)
               and then not Is_Controlling_Formal (F)
               and then not In_Instance
+              and then (not Is_Subprogram (Nam)
+                         or else No (Class_Preconditions_Subprogram (Nam)))
             then
                Error_Msg_N ("class-wide argument not allowed here!", A);
 
@@ -4975,9 +5015,13 @@ package body Sem_Res is
             --  "False" cannot act as an actual in a subprogram with value
             --  "True" (SPARK RM 6.1.7(3)).
 
+            --  No check needed for helpers and indirect-call wrappers built to
+            --  support class-wide preconditions.
+
             if Is_EVF_Expression (A)
               and then Extensions_Visible_Status (Nam) =
                        Extensions_Visible_True
+              and then No (Class_Preconditions_Subprogram (Current_Scope))
             then
                Error_Msg_N
                  ("formal parameter cannot act as actual parameter when "
@@ -7461,66 +7505,76 @@ package body Sem_Res is
      (N   : Node_Id;
       Typ : Entity_Id)
    is
-      Decl                 : Node_Id;
-      Need_Transient_Scope : Boolean := False;
+      Expr : constant Node_Id := Expression (N);
+
+      Decl  : Node_Id;
+      Local : Entity_Id := Empty;
+
+      function Replace_Local (N  : Node_Id) return Traverse_Result;
+      --  Use a tree traversal to replace each ocurrence of the name of
+      --  a local object declared in the construct, with the corresponding
+      --  entity. This replaces the usual way to perform name capture by
+      --  visibility, because it is not possible to place on the scope
+      --  stack the fake scope created for the analysis of the local
+      --  declarations; such a scope conflicts with the transient scopes
+      --  that may be generated if the expression includes function calls
+      --  requiring finalization.
+
+      -------------------
+      -- Replace_Local --
+      -------------------
+
+      function Replace_Local (N  : Node_Id) return Traverse_Result is
+      begin
+         --  The identifier may be the prefix of a selected component,
+         --  but not a selector name, because the local entities do not
+         --  have a scope that can be named: a selected component whose
+         --  selector is a homonym of a local entity must denote some
+         --  global entity.
+
+         if Nkind (N) = N_Identifier
+           and then Chars (N) = Chars (Local)
+           and then No (Entity (N))
+           and then
+             (Nkind (Parent (N)) /= N_Selected_Component
+               or else N = Prefix (Parent (N)))
+         then
+            Set_Entity (N, Local);
+            Set_Etype (N, Etype (Local));
+         end if;
+
+         return OK;
+      end Replace_Local;
+
+      procedure Replace_Local_Ref is new Traverse_Proc (Replace_Local);
+
+      --  Start of processing for  Resolve_Declare_Expression
+
    begin
-      --  Install the scope created for local declarations, if
-      --  any. The syntax allows a Declare_Expression with no
-      --  declarations, in analogy with block statements.
-      --  Note that that scope has no explicit declaration, but
-      --  appears as the scope of all entities declared therein.
 
       Decl := First (Actions (N));
+
       while Present (Decl) loop
-         exit when Nkind (Decl)
-                     in N_Object_Declaration | N_Object_Renaming_Declaration;
+         if Nkind (Decl) in
+            N_Object_Declaration | N_Object_Renaming_Declaration
+              and then Comes_From_Source (Defining_Identifier (Decl))
+         then
+            Local := Defining_Identifier (Decl);
+            Replace_Local_Ref (Expr);
+         end if;
+
          Next (Decl);
       end loop;
 
-      if Present (Decl) then
+      --  The end of the declarative list is a freeze point for the
+      --  local declarations.
 
-         --  Need to establish a transient scope in case Expression (N)
-         --  requires actions to be wrapped.
-
-         declare
-            Node : Node_Id;
-         begin
-            Node := First (Actions (N));
-            while Present (Node) loop
-               if Nkind (Node) = N_Object_Declaration
-                 and then Requires_Transient_Scope
-                            (Etype (Defining_Identifier (Node)))
-               then
-                  Need_Transient_Scope := True;
-                  exit;
-               end if;
-
-               Next (Node);
-            end loop;
-         end;
-
-         if Need_Transient_Scope then
-            Establish_Transient_Scope (Decl, Manage_Sec_Stack => True);
-         else
-            Push_Scope (Scope (Defining_Identifier (Decl)));
-         end if;
-
-         declare
-            E : Entity_Id := First_Entity (Current_Scope);
-         begin
-            while Present (E) loop
-               Set_Current_Entity (E);
-               Set_Is_Immediately_Visible (E);
-               Next_Entity (E);
-            end loop;
-         end;
-
-         Resolve (Expression (N), Typ);
-         End_Scope;
-
-      else
-         Resolve (Expression (N), Typ);
+      if Present (Local) then
+         Decl := Parent (Local);
+         Freeze_All (First_Entity (Scope (Local)), Decl);
       end if;
+
+      Resolve (Expr, Typ);
    end Resolve_Declare_Expression;
 
    -----------------------------------------
@@ -9217,7 +9271,7 @@ package body Sem_Res is
    -------------------------------
 
    procedure Resolve_Indexed_Component (N : Node_Id; Typ : Entity_Id) is
-      Name       : constant Node_Id := Prefix  (N);
+      Pref       : constant Node_Id := Prefix (N);
       Expr       : Node_Id;
       Array_Type : Entity_Id := Empty; -- to prevent junk warning
       Index      : Node_Id;
@@ -9228,7 +9282,7 @@ package body Sem_Res is
          return;
       end if;
 
-      if Is_Overloaded (Name) then
+      if Is_Overloaded (Pref) then
 
          --  Use the context type to select the prefix that yields the correct
          --  component type.
@@ -9237,11 +9291,10 @@ package body Sem_Res is
             I     : Interp_Index;
             It    : Interp;
             I1    : Interp_Index := 0;
-            P     : constant Node_Id := Prefix (N);
             Found : Boolean := False;
 
          begin
-            Get_First_Interp (P, I, It);
+            Get_First_Interp (Pref, I, It);
             while Present (It.Typ) loop
                if (Is_Array_Type (It.Typ)
                      and then Covers (Typ, Component_Type (It.Typ)))
@@ -9253,7 +9306,7 @@ package body Sem_Res is
                                  Component_Type (Designated_Type (It.Typ))))
                then
                   if Found then
-                     It := Disambiguate (P, I1, I, Any_Type);
+                     It := Disambiguate (Pref, I1, I, Any_Type);
 
                      if It = No_Interp then
                         Error_Msg_N ("ambiguous prefix for indexing",  N);
@@ -9278,11 +9331,11 @@ package body Sem_Res is
          end;
 
       else
-         Array_Type := Etype (Name);
+         Array_Type := Etype (Pref);
       end if;
 
-      Resolve (Name, Array_Type);
-      Array_Type := Get_Actual_Subtype_If_Available (Name);
+      Resolve (Pref, Array_Type);
+      Array_Type := Get_Actual_Subtype_If_Available (Pref);
 
       --  If the prefix's type is an access type, get to the real array type.
       --  Note: we do not apply an access check because an explicit dereference
@@ -9325,19 +9378,18 @@ package body Sem_Res is
          end loop;
       end if;
 
-      Resolve_Implicit_Dereference (Prefix (N));
+      Resolve_Implicit_Dereference (Pref);
       Analyze_Dimension (N);
 
       --  Do not generate the warning on suspicious index if we are analyzing
       --  package Ada.Tags; otherwise we will report the warning with the
       --  Prims_Ptr field of the dispatch table.
 
-      if Scope (Etype (Prefix (N))) = Standard_Standard
+      if Scope (Etype (Pref)) = Standard_Standard
         or else not
-          Is_RTU (Cunit_Entity (Get_Source_Unit (Etype (Prefix (N)))),
-                  Ada_Tags)
+          Is_RTU (Cunit_Entity (Get_Source_Unit (Etype (Pref))), Ada_Tags)
       then
-         Warn_On_Suspicious_Index (Name, First (Expressions (N)));
+         Warn_On_Suspicious_Index (Pref, First (Expressions (N)));
          Eval_Indexed_Component (N);
       end if;
 
@@ -9349,16 +9401,16 @@ package body Sem_Res is
       if Nkind (N) = N_Indexed_Component
         and then Is_Atomic_Ref_With_Address (N)
         and then not (Has_Atomic_Components (Array_Type)
-                       or else (Is_Entity_Name (Prefix (N))
+                       or else (Is_Entity_Name (Pref)
                                  and then Has_Atomic_Components
-                                            (Entity (Prefix (N)))))
+                                            (Entity (Pref))))
         and then not Is_Atomic (Component_Type (Array_Type))
         and then Ada_Version < Ada_2022
       then
          Error_Msg_N
-           ("??access to non-atomic component of atomic array", Prefix (N));
+           ("??access to non-atomic component of atomic array", Pref);
          Error_Msg_N
-           ("??\may cause unexpected accesses to atomic object", Prefix (N));
+           ("??\may cause unexpected accesses to atomic object", Pref);
       end if;
    end Resolve_Indexed_Component;
 
@@ -11166,13 +11218,13 @@ package body Sem_Res is
 
    procedure Resolve_Slice (N : Node_Id; Typ : Entity_Id) is
       Drange     : constant Node_Id := Discrete_Range (N);
-      Name       : constant Node_Id := Prefix (N);
+      Pref       : constant Node_Id := Prefix (N);
       Array_Type : Entity_Id        := Empty;
       Dexpr      : Node_Id          := Empty;
       Index_Type : Entity_Id;
 
    begin
-      if Is_Overloaded (Name) then
+      if Is_Overloaded (Pref) then
 
          --  Use the context type to select the prefix that yields the correct
          --  array type.
@@ -11181,11 +11233,10 @@ package body Sem_Res is
             I      : Interp_Index;
             I1     : Interp_Index := 0;
             It     : Interp;
-            P      : constant Node_Id := Prefix (N);
             Found  : Boolean := False;
 
          begin
-            Get_First_Interp (P, I,  It);
+            Get_First_Interp (Pref, I,  It);
             while Present (It.Typ) loop
                if (Is_Array_Type (It.Typ)
                     and then Covers (Typ,  It.Typ))
@@ -11194,7 +11245,7 @@ package body Sem_Res is
                            and then Covers (Typ, Designated_Type (It.Typ)))
                then
                   if Found then
-                     It := Disambiguate (P, I1, I, Any_Type);
+                     It := Disambiguate (Pref, I1, I, Any_Type);
 
                      if It = No_Interp then
                         Error_Msg_N ("ambiguous prefix for slicing",  N);
@@ -11217,10 +11268,10 @@ package body Sem_Res is
          end;
 
       else
-         Array_Type := Etype (Name);
+         Array_Type := Etype (Pref);
       end if;
 
-      Resolve (Name, Array_Type);
+      Resolve (Pref, Array_Type);
 
       --  If the prefix's type is an access type, get to the real array type.
       --  Note: we do not apply an access check because an explicit dereference
@@ -11236,12 +11287,12 @@ package body Sem_Res is
          --  subtype.
 
          if not Is_Constrained (Array_Type) then
-            Remove_Side_Effects (Prefix (N));
+            Remove_Side_Effects (Pref);
 
             declare
                Obj : constant Node_Id :=
                        Make_Explicit_Dereference (Sloc (N),
-                         Prefix => New_Copy_Tree (Prefix (N)));
+                         Prefix => New_Copy_Tree (Pref));
             begin
                Set_Etype (Obj, Array_Type);
                Set_Parent (Obj, Parent (N));
@@ -11249,25 +11300,35 @@ package body Sem_Res is
             end;
          end if;
 
-      elsif Is_Entity_Name (Name)
-        or else Nkind (Name) = N_Explicit_Dereference
-        or else (Nkind (Name) = N_Function_Call
-                  and then not Is_Constrained (Etype (Name)))
+      --  In CodePeer mode the attribute Image is not expanded, so when it
+      --  acts as a prefix of a slice, we handle it like a call to function
+      --  returning an unconstrained string. Same for the Wide variants of
+      --  attribute Image.
+
+      elsif Is_Entity_Name (Pref)
+        or else Nkind (Pref) = N_Explicit_Dereference
+        or else (Nkind (Pref) = N_Function_Call
+                  and then not Is_Constrained (Etype (Pref)))
+        or else (CodePeer_Mode
+                  and then Nkind (Pref) = N_Attribute_Reference
+                  and then Attribute_Name (Pref) in Name_Image
+                                                  | Name_Wide_Image
+                                                  | Name_Wide_Wide_Image)
       then
-         Array_Type := Get_Actual_Subtype (Name);
+         Array_Type := Get_Actual_Subtype (Pref);
 
       --  If the name is a selected component that depends on discriminants,
       --  build an actual subtype for it. This can happen only when the name
       --  itself is overloaded; otherwise the actual subtype is created when
       --  the selected component is analyzed.
 
-      elsif Nkind (Name) = N_Selected_Component
+      elsif Nkind (Pref) = N_Selected_Component
         and then Full_Analysis
         and then Depends_On_Discriminant (First_Index (Array_Type))
       then
          declare
             Act_Decl : constant Node_Id :=
-                         Build_Actual_Subtype_Of_Component (Array_Type, Name);
+                         Build_Actual_Subtype_Of_Component (Array_Type, Pref);
          begin
             Insert_Action (N, Act_Decl);
             Array_Type := Defining_Identifier (Act_Decl);
@@ -11280,8 +11341,8 @@ package body Sem_Res is
       --  check applied below (the range check won't get done if the
       --  unconstrained subtype of the 'Image is used).
 
-      elsif Nkind (Name) = N_Slice then
-         Array_Type := Etype (Name);
+      elsif Nkind (Pref) = N_Slice then
+         Array_Type := Etype (Pref);
       end if;
 
       --  Obtain the type of the array index
@@ -11304,27 +11365,32 @@ package body Sem_Res is
 
       if Tagged_Type_Expansion
         and then RTU_Loaded (Ada_Tags)
-        and then Nkind (Prefix (N)) = N_Selected_Component
-        and then Present (Entity (Selector_Name (Prefix (N))))
-        and then Entity (Selector_Name (Prefix (N))) =
+        and then Nkind (Pref) = N_Selected_Component
+        and then Present (Entity (Selector_Name (Pref)))
+        and then Entity (Selector_Name (Pref)) =
                    RTE_Record_Component (RE_Prims_Ptr)
       then
          null;
 
-      --  The discrete_range is specified by a subtype indication. Create a
-      --  shallow copy and inherit the type, parent and source location from
-      --  the discrete_range. This ensures that the range check is inserted
-      --  relative to the slice and that the runtime exception points to the
-      --  proper construct.
+      --  The discrete_range is specified by a subtype name. Create an
+      --  equivalent range attribute, apply checks to this attribute, but
+      --  insert them into the range expression of the slice itself.
 
       elsif Is_Entity_Name (Drange) then
-         Dexpr := New_Copy (Scalar_Range (Entity (Drange)));
+         Dexpr :=
+           Make_Attribute_Reference
+             (Sloc (Drange),
+              Prefix         =>
+                New_Occurrence_Of (Entity (Drange), Sloc (Drange)),
+              Attribute_Name => Name_Range);
 
-         Set_Etype  (Dexpr, Etype  (Drange));
-         Set_Parent (Dexpr, Parent (Drange));
-         Set_Sloc   (Dexpr, Sloc   (Drange));
+         Analyze_And_Resolve (Dexpr, Etype  (Drange));
 
-      --  The discrete_range is a regular range. Resolve the bounds and remove
+      elsif Nkind (Drange) = N_Subtype_Indication then
+         Dexpr := Range_Expression (Constraint (Drange));
+
+      --  The discrete_range is a regular range (or a range attribute, which
+      --  will be resolved into a regular range). Resolve the bounds and remove
       --  their side effects.
 
       else
@@ -11339,7 +11405,7 @@ package body Sem_Res is
       end if;
 
       if Present (Dexpr) then
-         Apply_Range_Check (Dexpr, Index_Type);
+         Apply_Range_Check (Dexpr, Index_Type, Insert_Node => Drange);
       end if;
 
       Set_Slice_Subtype (N);
@@ -11367,11 +11433,11 @@ package body Sem_Res is
       --  Otherwise here is where we check suspicious indexes
 
       if Nkind (Drange) = N_Range then
-         Warn_On_Suspicious_Index (Name, Low_Bound  (Drange));
-         Warn_On_Suspicious_Index (Name, High_Bound (Drange));
+         Warn_On_Suspicious_Index (Pref, Low_Bound  (Drange));
+         Warn_On_Suspicious_Index (Pref, High_Bound (Drange));
       end if;
 
-      Resolve_Implicit_Dereference (Prefix (N));
+      Resolve_Implicit_Dereference (Pref);
       Analyze_Dimension (N);
       Eval_Slice (N);
    end Resolve_Slice;

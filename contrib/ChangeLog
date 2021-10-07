@@ -1,3 +1,8 @@
+2021-10-02  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out -Wtautological-compare
+	for the file.
+
 2021-09-20  Richard Biener  <rguenther@suse.de>
 
 	* config-list.mk: --enable-obsolete for hppa2.0-hpux10.1 and

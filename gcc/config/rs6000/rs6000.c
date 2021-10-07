@@ -5289,9 +5289,6 @@ struct rs6000_cost_data
 static void
 rs6000_density_test (rs6000_cost_data *data)
 {
-  const int DENSITY_PCT_THRESHOLD = 85;
-  const int DENSITY_SIZE_THRESHOLD = 70;
-  const int DENSITY_PENALTY = 10;
   struct loop *loop = data->loop_info;
   basic_block *bbs = get_loop_body (loop);
   int nbbs = loop->num_nodes;
@@ -5327,26 +5324,21 @@ rs6000_density_test (rs6000_cost_data *data)
   free (bbs);
   density_pct = (vec_cost * 100) / (vec_cost + not_vec_cost);
 
-  if (density_pct > DENSITY_PCT_THRESHOLD
-      && vec_cost + not_vec_cost > DENSITY_SIZE_THRESHOLD)
+  if (density_pct > rs6000_density_pct_threshold
+      && vec_cost + not_vec_cost > rs6000_density_size_threshold)
     {
-      data->cost[vect_body] = vec_cost * (100 + DENSITY_PENALTY) / 100;
+      data->cost[vect_body] = vec_cost * (100 + rs6000_density_penalty) / 100;
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "density %d%%, cost %d exceeds threshold, penalizing "
-			 "loop body cost by %d%%\n", density_pct,
-			 vec_cost + not_vec_cost, DENSITY_PENALTY);
+			 "loop body cost by %u%%\n", density_pct,
+			 vec_cost + not_vec_cost, rs6000_density_penalty);
     }
 
   /* Check whether we need to penalize the body cost to account
      for excess strided or elementwise loads.  */
   if (data->extra_ctor_cost > 0)
     {
-      /* Threshold for load stmts percentage in all vectorized stmts.  */
-      const int DENSITY_LOAD_PCT_THRESHOLD = 45;
-      /* Threshold for total number of load stmts.  */
-      const int DENSITY_LOAD_NUM_THRESHOLD = 20;
-
       gcc_assert (data->nloads <= data->nstmts);
       unsigned int load_pct = (data->nloads * 100) / data->nstmts;
 
@@ -5360,8 +5352,8 @@ rs6000_density_test (rs6000_cost_data *data)
 	      the loads.
 	 One typical case is the innermost loop of the hotspot of SPEC2017
 	 503.bwaves_r without loop interchange.  */
-      if (data->nloads > DENSITY_LOAD_NUM_THRESHOLD
-	  && load_pct > DENSITY_LOAD_PCT_THRESHOLD)
+      if (data->nloads > (unsigned int) rs6000_density_load_num_threshold
+	  && load_pct > (unsigned int) rs6000_density_load_pct_threshold)
 	{
 	  data->cost[vect_body] += data->extra_ctor_cost;
 	  if (dump_enabled_p ())

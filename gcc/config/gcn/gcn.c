@@ -5217,42 +5217,76 @@ static void
 output_file_start (void)
 {
   const char *cpu;
-  bool use_sram = flag_sram_ecc;
+  bool use_xnack_attr = true;
+  bool use_sram_attr = true;
   switch (gcn_arch)
     {
     case PROCESSOR_FIJI:
       cpu = "gfx803";
+#ifndef HAVE_GCN_XNACK_FIJI
+      use_xnack_attr = false;
+#endif
 #ifndef HAVE_GCN_SRAM_ECC_FIJI
-      use_sram = false;
+      use_sram_attr = false;
 #endif
       break;
     case PROCESSOR_VEGA10:
       cpu = "gfx900";
+#ifndef HAVE_GCN_XNACK_GFX900
+      use_xnack_attr = false;
+#endif
 #ifndef HAVE_GCN_SRAM_ECC_GFX900
-      use_sram = false;
+      use_sram_attr = false;
 #endif
       break;
     case PROCESSOR_VEGA20:
       cpu = "gfx906";
+#ifndef HAVE_GCN_XNACK_GFX906
+      use_xnack_attr = false;
+#endif
 #ifndef HAVE_GCN_SRAM_ECC_GFX906
-      use_sram = false;
+      use_sram_attr = false;
 #endif
       break;
     case PROCESSOR_GFX908:
       cpu = "gfx908";
+#ifndef HAVE_GCN_XNACK_GFX908
+      use_xnack_attr = false;
+#endif
 #ifndef HAVE_GCN_SRAM_ECC_GFX908
-      use_sram = false;
+      use_sram_attr = false;
 #endif
       break;
     default: gcc_unreachable ();
     }
 
+#if HAVE_GCN_ASM_V3_SYNTAX
   const char *xnack = (flag_xnack ? "+xnack" : "");
-  /* FIXME: support "any" when we move to HSACOv4.  */
-  const char *sram_ecc = (use_sram ? "+sram-ecc" : "");
+  const char *sram_ecc = (flag_sram_ecc ? "+sram-ecc" : "");
+#endif
+#if HAVE_GCN_ASM_V4_SYNTAX
+  /* In HSACOv4 no attribute setting means the binary supports "any" hardware
+     configuration.  In GCC binaries, this is true for SRAM ECC, but not
+     XNACK.  */
+  const char *xnack = (flag_xnack ? ":xnack+" : ":xnack-");
+  const char *sram_ecc = (flag_sram_ecc == SRAM_ECC_ON ? ":sramecc+"
+			  : flag_sram_ecc == SRAM_ECC_OFF ? ":sramecc-"
+			  : "");
+#endif
+  if (!use_xnack_attr)
+    xnack = "";
+  if (!use_sram_attr)
+    sram_ecc = "";
 
   fprintf(asm_out_file, "\t.amdgcn_target \"amdgcn-unknown-amdhsa--%s%s%s\"\n",
-	  cpu, xnack, sram_ecc);
+	  cpu,
+#if HAVE_GCN_ASM_V3_SYNTAX
+	  xnack, sram_ecc
+#endif
+#ifdef HAVE_GCN_ASM_V4_SYNTAX
+	  sram_ecc, xnack
+#endif
+	  );
 }
 
 /* Implement ASM_DECLARE_FUNCTION_NAME via gcn-hsa.h.

@@ -234,7 +234,7 @@ extern "C" {
 extern void gigi (Node_Id gnat_root,
 	          int max_gnat_node,
 		  int number_name,
-		  Field_Offset *node_offsets_ptr,
+		  Node_Header *node_offsets_ptr,
 		  any_slot *slots_ptr,
 		  Node_Id *next_node_ptr,
 		  Node_Id *prev_node_ptr,

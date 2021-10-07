@@ -418,9 +418,9 @@ namespace ranges
       enable_borrowed_range<subrange<_It, _Sent, _Kind>> = true;
 
   template<range _Range>
-    using borrowed_subrange_t = conditional_t<borrowed_range<_Range>,
-					      subrange<iterator_t<_Range>>,
-					      dangling>;
+    using borrowed_subrange_t = __conditional_t<borrowed_range<_Range>,
+						subrange<iterator_t<_Range>>,
+						dangling>;
 } // namespace ranges
 
 // The following ranges algorithms are used by <ranges>, and are defined here

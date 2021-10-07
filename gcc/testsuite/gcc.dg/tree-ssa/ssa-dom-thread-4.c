@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-vrp1-details -fdump-tree-dom2-details -std=gnu89 --param logical-op-non-short-circuit=1" } */
+/* { dg-options "-O2 -fdump-tree-vrp-thread1-details -fdump-tree-dom2-details -std=gnu89 --param logical-op-non-short-circuit=1" } */
 struct bitmap_head_def;
 typedef struct bitmap_head_def *bitmap;
 typedef const struct bitmap_head_def *const_bitmap;
@@ -58,4 +58,5 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b,
    code we missed the edge when the first conditional is false
    (b_elt is zero, which means the second conditional is always
    zero.  VRP1 catches all three.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 3 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Registering jump thread" 2 "vrp-thread1" } } */
+/* { dg-final { scan-tree-dump-times "Path crosses loops" 1 "vrp-thread1" } } */

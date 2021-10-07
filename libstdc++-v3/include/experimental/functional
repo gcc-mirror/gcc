@@ -164,9 +164,9 @@ inline namespace fundamentals_v1
            typename _Val = typename iterator_traits<_RAIter>::value_type,
 	   typename _Diff = typename iterator_traits<_RAIter>::difference_type>
     using __boyer_moore_base_t
-      = std::conditional_t<std::__is_byte_like<_Val, _Pred>::value,
-			   __boyer_moore_array_base<_Diff, 256, _Pred>,
-			   __boyer_moore_map_base<_Val, _Diff, _Hash, _Pred>>;
+      = std::__conditional_t<std::__is_byte_like<_Val, _Pred>::value,
+			     __boyer_moore_array_base<_Diff, 256, _Pred>,
+			     __boyer_moore_map_base<_Val, _Diff, _Hash, _Pred>>;
 
   template<typename _RAIter, typename _Hash
 	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,

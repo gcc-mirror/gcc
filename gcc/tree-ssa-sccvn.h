@@ -106,7 +106,8 @@ typedef const struct vn_phi_s *const_vn_phi_t;
 typedef struct vn_reference_op_struct
 {
   ENUM_BITFIELD(tree_code) opcode : 16;
-  /* Dependence info, used for [TARGET_]MEM_REF only.  */
+  /* Dependence info, used for [TARGET_]MEM_REF only.  For internal
+     function calls clique is also used for the internal function code.  */
   unsigned short clique;
   unsigned short base;
   unsigned reverse : 1;

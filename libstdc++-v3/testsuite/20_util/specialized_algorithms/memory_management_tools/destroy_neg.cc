@@ -47,5 +47,3 @@ test02()
 }
 
 // { dg-error "value type is destructible" "" { target *-*-* } 0 }
-// { dg-error "use of deleted function" "" { target c++20 } 0 }
-// { dg-error "is private within this context" "" { target c++20 } 0 }

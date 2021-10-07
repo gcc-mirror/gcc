@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     using __make_not_void
-      = typename conditional<is_void<_Tp>::value, __undefined, _Tp>::type;
+      = __conditional_t<is_void<_Tp>::value, __undefined, _Tp>;
 
   /**
    * @brief  Uniform interface to all pointer-like types

@@ -1718,6 +1718,9 @@ class auto_suppress_location_wrappers
 /* True for unconstrained modifier on order(concurrent) clause.  */
 #define OMP_CLAUSE_ORDER_UNCONSTRAINED(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDER)->base.public_flag)
+/* True for reproducible modifier on order(concurrent) clause.  */
+#define OMP_CLAUSE_ORDER_REPRODUCIBLE(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDER))
 
 #define OMP_CLAUSE_REDUCTION_CODE(NODE)	\
   (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_REDUCTION, \
@@ -1789,6 +1792,9 @@ class auto_suppress_location_wrappers
 
 #define OMP_CLAUSE_ALLOCATE_ALLOCATOR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATE), 1)
+
+#define OMP_CLAUSE_ALLOCATE_ALIGN(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATE), 2)
 
 /* True if an ALLOCATE clause was present on a combined or composite
    construct and the code for splitting the clauses has already performed

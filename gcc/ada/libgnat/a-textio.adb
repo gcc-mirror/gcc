@@ -44,6 +44,7 @@ pragma Elaborate_All (System.File_IO);
 --  Needed because of calls to Chain_File in package body elaboration
 
 package body Ada.Text_IO with
+  SPARK_Mode => Off,
   Refined_State => (File_System => (Standard_In,
                                     Standard_Out,
                                     Standard_Err,

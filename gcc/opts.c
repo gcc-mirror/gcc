@@ -569,6 +569,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS, OPT_freorder_blocks, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fshrink_wrap, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fsplit_wide_types, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fthread_jumps, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_ccp, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_ch, NULL, 1 },
@@ -629,7 +630,6 @@ static const struct default_options default_options_table[] =
 #endif
     { OPT_LEVELS_2_PLUS, OPT_fstrict_aliasing, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fstore_merging, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fthread_jumps, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_pre, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_switch_conversion, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_tail_merge, NULL, 1 },
@@ -1331,6 +1331,18 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       = (opts->x_flag_unroll_loops
          || opts->x_flag_peel_loops
          || opts->x_optimize >= 3);
+
+  /* With -fcx-limited-range, we do cheap and quick complex arithmetic.  */
+  if (opts->x_flag_cx_limited_range)
+    opts->x_flag_complex_method = 0;
+  else if (opts_set->x_flag_cx_limited_range)
+    opts->x_flag_complex_method = opts->x_flag_default_complex_method;
+
+  /* With -fcx-fortran-rules, we do something in-between cheap and C99.  */
+  if (opts->x_flag_cx_fortran_rules)
+    opts->x_flag_complex_method = 1;
+  else if (opts_set->x_flag_cx_fortran_rules)
+    opts->x_flag_complex_method = opts->x_flag_default_complex_method;
 }
 
 #define LEFT_COLUMN	27

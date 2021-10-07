@@ -14,7 +14,7 @@ int main(int argc,char**argv,char **envp)
  _loc1:;
 *++esp=(long)&&_loc35;
  _loc35:;
-goto *(*esp--);
+goto *(void *)(*esp--);
 *++esp=(long)&&_loc36;
  _loc36:;
 *++esp=(long)&&_loc37;
@@ -27,5 +27,5 @@ _loc66:;
 *++esp=(long)&&_loc119;
  _loc119:;
 SetTermStruc:
- goto *(*esp--);
+ goto *(void*)(__INTPTR_TYPE__)(*esp--);
 }

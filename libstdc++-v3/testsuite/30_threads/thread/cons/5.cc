@@ -21,12 +21,12 @@
 // <http://www.gnu.org/licenses/>.
 
 
-#include <functional> // std::unary_function, std::ref
+#include <functional> // std::ref
 #include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>
 
-struct nonconst : public std::unary_function<std::thread::id&, void>
+struct nonconst
 {
   void operator()(std::thread::id& id)
   {

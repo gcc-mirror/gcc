@@ -30,6 +30,8 @@
 #include "gomp-constants.h"
 #include <limits.h>
 
+ialias_redirect (omp_get_active_level)
+
 void
 omp_set_num_threads (int n)
 {

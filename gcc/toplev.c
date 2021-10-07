@@ -104,8 +104,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 static void general_init (const char *, bool);
-static void do_compile ();
-static void process_options (void);
 static void backend_init (void);
 static int lang_dependent_init (const char *);
 static void init_asm_output (const char *);
@@ -114,12 +112,12 @@ static void finalize (bool);
 static void crash_signal (int) ATTRIBUTE_NORETURN;
 static void compile_file (void);
 
-/* True if we don't need a backend (e.g. preprocessing only).  */
-static bool no_backend;
-
 /* Decoded options, and number of such options.  */
 struct cl_decoded_option *save_decoded_options;
 unsigned int save_decoded_options_count;
+
+/* Vector of saved Optimization decoded command line options.  */
+vec<cl_decoded_option> *save_opt_decoded_options;
 
 /* Used to enable -fvar-tracking, -fweb and -frename-registers according
    to optimize in process_options ().  */
@@ -1230,7 +1228,7 @@ parse_alignment_opts (void)
 
 /* Process the options that have been parsed.  */
 static void
-process_options (void)
+process_options (bool no_backend)
 {
   const char *language_string = lang_hooks.name;
   /* Just in case lang_hooks.post_options ends up calling a debug_hook.
@@ -1238,12 +1236,6 @@ process_options (void)
   debug_hooks = &do_nothing_debug_hooks;
 
   maximum_field_alignment = initial_max_fld_align * BITS_PER_UNIT;
-
-  /* Allow the front end to perform consistency checks and do further
-     initialization based on the command line options.  This hook also
-     sets the original filename if appropriate (e.g. foo.i -> foo.c)
-     so we can correctly initialize debug output.  */
-  no_backend = lang_hooks.post_options (&main_input_filename);
 
   /* Some machines may reject certain combinations of options.  */
   location_t saved_location = input_location;
@@ -1416,14 +1408,16 @@ process_options (void)
 	debug_info_level = DINFO_LEVEL_NONE;
     }
 
-  /* CTF is supported for only C at this time.
-     Compiling with -flto results in frontend language of GNU GIMPLE.  */
+  /* CTF is supported for only C at this time.  */
   if (!lang_GNU_C ()
       && ctf_debug_info_level > CTFINFO_LEVEL_NONE)
     {
-      inform (UNKNOWN_LOCATION,
-	      "CTF debug info requested, but not supported for %qs frontend",
-	      language_string);
+      /* Compiling with -flto results in frontend language of GNU GIMPLE.  It
+	 is not useful to warn in that case.  */
+      if (!startswith (lang_hooks.name, "GNU GIMPLE"))
+	inform (UNKNOWN_LOCATION,
+		"CTF debug info requested, but not supported for %qs frontend",
+		language_string);
       ctf_debug_info_level = CTFINFO_LEVEL_NONE;
     }
 
@@ -1694,14 +1688,6 @@ process_options (void)
 		  "mutually exclusive; disabling %<-fstack-check=%>");
       flag_stack_check = NO_STACK_CHECK;
     }
-
-  /* With -fcx-limited-range, we do cheap and quick complex arithmetic.  */
-  if (flag_cx_limited_range)
-    flag_complex_method = 0;
-
-  /* With -fcx-fortran-rules, we do something in-between cheap and C99.  */
-  if (flag_cx_fortran_rules)
-    flag_complex_method = 1;
 
   /* Targets must be able to place spill slots at lower addresses.  If the
      target already uses a soft frame pointer, the transition is trivial.  */
@@ -2150,10 +2136,8 @@ standard_type_bitsize (int bitsize)
 
 /* Initialize the compiler, and compile the input file.  */
 static void
-do_compile ()
+do_compile (bool no_backend)
 {
-  process_options ();
-
   /* Don't do any more if an error has already occurred.  */
   if (!seen_error ())
     {
@@ -2282,11 +2266,6 @@ toplev::start_timevars ()
 void
 toplev::run_self_tests ()
 {
-  if (no_backend)
-    {
-      error_at (UNKNOWN_LOCATION, "self-tests incompatible with %<-E%>");
-      return;
-    }
 #if CHECKING_P
   /* Reset some state.  */
   input_location = UNKNOWN_LOCATION;
@@ -2342,6 +2321,13 @@ toplev::main (int argc, char **argv)
 						&save_decoded_options,
 						&save_decoded_options_count);
 
+  /* Save Optimization decoded options.  */
+  save_opt_decoded_options = new vec<cl_decoded_option> ();
+  for (unsigned i = 1; i < save_decoded_options_count; ++i)
+    if (save_decoded_options[i].opt_index < cl_options_count
+	&& cl_options[save_decoded_options[i].opt_index].flags & CL_OPTIMIZATION)
+      save_opt_decoded_options->safe_push (save_decoded_options[i]);
+
   /* Perform language-specific options initialization.  */
   lang_hooks.init_options (save_decoded_options_count, save_decoded_options);
 
@@ -2367,16 +2353,29 @@ toplev::main (int argc, char **argv)
   /* Exit early if we can (e.g. -help).  */
   if (!exit_after_options)
     {
+      /* Allow the front end to perform consistency checks and do further
+	 initialization based on the command line options.  This hook also
+	 sets the original filename if appropriate (e.g. foo.i -> foo.c)
+	 so we can correctly initialize debug output.  */
+      bool no_backend = lang_hooks.post_options (&main_input_filename);
+
+      process_options (no_backend);
+
       if (m_use_TV_TOTAL)
 	start_timevars ();
-      do_compile ();
+      do_compile (no_backend);
+
+      if (flag_self_test)
+	{
+	  if (no_backend)
+	    error_at (UNKNOWN_LOCATION, "self-tests incompatible with %<-E%>");
+	  else
+	    run_self_tests ();
+	}
     }
 
   if (warningcount || errorcount || werrorcount)
     print_ignored_options ();
-
-  if (flag_self_test)
-    run_self_tests ();
 
   /* Invoke registered plugin callbacks if any.  Some plugins could
      emit some diagnostics here.  */

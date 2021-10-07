@@ -94,6 +94,7 @@ static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_stack_protector_attribute (tree *, tree, tree, int, bool *);
+static tree handle_strub_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
@@ -157,6 +158,8 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "no_stack_protector",0, 0, true,  false, false, false,
     handle_no_stack_protector_attribute,
     attr_stack_protect_exclusions },
+  { "strub",	    0, 1, false, true, false, true,
+    handle_strub_attribute, NULL },
   { "noinline",     0, 0,  true,  false, false, false,
     handle_noinline_attribute, NULL },
   { "noclone",      0, 0,  true,  false, false, false,
@@ -6602,6 +6605,15 @@ handle_no_stack_protector_attribute (tree *node, tree name, tree, int,
   return NULL_TREE;
 }
 
+/* Handle a "strub" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_strub_attribute (tree *, tree, tree, int, bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+  return NULL_TREE;
+}
 
 /* Handle a "noinline" attribute; arguments as in
    struct attribute_spec.handler.  */

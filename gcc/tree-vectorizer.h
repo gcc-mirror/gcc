@@ -1606,11 +1606,8 @@ set_dr_misalignment (dr_vec_info *dr_info, int val)
   dr_info->misalignment = val;
 }
 
-extern int dr_misalignment (dr_vec_info *dr_info);
+extern int dr_misalignment (dr_vec_info *dr_info, tree vectype);
 
-/* Reflects actual alignment of first access in the vectorized loop,
-   taking into account peeling/versioning if applied.  */
-#define DR_MISALIGNMENT(DR) dr_misalignment (DR)
 #define SET_DR_MISALIGNMENT(DR, VAL) set_dr_misalignment (DR, VAL)
 
 /* Only defined once DR_MISALIGNMENT is defined.  */
@@ -1630,35 +1627,37 @@ set_dr_target_alignment (dr_vec_info *dr_info, poly_uint64 val)
 }
 #define SET_DR_TARGET_ALIGNMENT(DR, VAL) set_dr_target_alignment (DR, VAL)
 
-/* Return true if data access DR_INFO is aligned to its target alignment
-   (which may be less than a full vector).  */
+/* Return true if data access DR_INFO is aligned to the targets
+   preferred alignment for VECTYPE (which may be less than a full vector).  */
 
 static inline bool
-aligned_access_p (dr_vec_info *dr_info)
+aligned_access_p (dr_vec_info *dr_info, tree vectype)
 {
-  return (DR_MISALIGNMENT (dr_info) == 0);
+  return (dr_misalignment (dr_info, vectype) == 0);
 }
 
-/* Return TRUE if the alignment of the data access is known, and FALSE
+/* Return TRUE if the (mis-)alignment of the data access is known with
+   respect to the targets preferred alignment for VECTYPE, and FALSE
    otherwise.  */
 
 static inline bool
-known_alignment_for_access_p (dr_vec_info *dr_info)
+known_alignment_for_access_p (dr_vec_info *dr_info, tree vectype)
 {
-  return (DR_MISALIGNMENT (dr_info) != DR_MISALIGNMENT_UNKNOWN);
+  return (dr_misalignment (dr_info, vectype) != DR_MISALIGNMENT_UNKNOWN);
 }
 
 /* Return the minimum alignment in bytes that the vectorized version
    of DR_INFO is guaranteed to have.  */
 
 static inline unsigned int
-vect_known_alignment_in_bytes (dr_vec_info *dr_info)
+vect_known_alignment_in_bytes (dr_vec_info *dr_info, tree vectype)
 {
-  if (DR_MISALIGNMENT (dr_info) == DR_MISALIGNMENT_UNKNOWN)
+  int misalignment = dr_misalignment (dr_info, vectype);
+  if (misalignment == DR_MISALIGNMENT_UNKNOWN)
     return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_info->dr)));
-  if (DR_MISALIGNMENT (dr_info) == 0)
+  else if (misalignment == 0)
     return known_alignment (DR_TARGET_ALIGNMENT (dr_info));
-  return DR_MISALIGNMENT (dr_info) & -DR_MISALIGNMENT (dr_info);
+  return misalignment & -misalignment;
 }
 
 /* Return the behavior of DR_INFO with respect to the vectorization context
@@ -1971,7 +1970,7 @@ extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info, unsigned int = 0);
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
 extern enum dr_alignment_support vect_supportable_dr_alignment
-                                           (vec_info *, dr_vec_info *, bool);
+				   (vec_info *, dr_vec_info *, tree, bool);
 extern tree vect_get_smallest_scalar_type (stmt_vec_info, tree);
 extern opt_result vect_analyze_data_ref_dependences (loop_vec_info, unsigned int *);
 extern bool vect_slp_analyze_instance_dependence (vec_info *, slp_instance);
@@ -2110,7 +2109,6 @@ extern bool can_duplicate_and_interleave_p (vec_info *, unsigned int, tree,
 extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
 				      const vec<tree> &, unsigned int, vec<tree> &);
 extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
-extern bool vect_update_shared_vectype (stmt_vec_info, tree);
 extern slp_tree vect_create_new_slp_node (unsigned, tree_code);
 extern void vect_free_slp_tree (slp_tree);
 

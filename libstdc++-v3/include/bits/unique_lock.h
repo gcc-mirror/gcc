@@ -36,7 +36,7 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <chrono>
+#include <bits/chrono.h>
 #include <bits/move.h> // for std::swap
 #include <bits/std_mutex.h> // for std::defer_lock_t
 
