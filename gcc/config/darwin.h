@@ -349,7 +349,7 @@ extern GTY(()) int darwin_ms_struct;
    linkers, and for positional arguments like libraries.  */
 
 #define LINK_COMMAND_SPEC_A \
-   "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
+   "%{!c:%{!E:%{!S:%{!M:%{!MM:%{!fsyntax-only:%{!fdump=*: \
     %(linker)" \
     LINK_PLUGIN_SPEC \
     "%{flto*:%<fcompare-debug*} \
@@ -358,20 +358,23 @@ extern GTY(()) int darwin_ms_struct;
    "%X %{s} %{t} %{Z} %{u*} \
     %{e*} %{r} \
     %{o*}%{!o:-o a.out} \
-    %{!nostdlib:%{!r:%{!nostartfiles:%S}}} \
-    %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
-    %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1): \
-      %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
-    %{fgnu-tm: \
-      %{static|static-libgcc|static-libstdc++|static-libgfortran: libitm.a%s; : -litm } } \
-    %{!nostdlib:%{!r:%{!nodefaultlibs:\
+    %{!r:%{!nostdlib:%{!nostartfiles:%S}}} \
+    %{L*} %(link_libgcc) %o \
+    %{!r:%{!nostdlib:%{!nodefaultlibs:\
+      %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
+      %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1): \
+	%{static|static-libgcc|static-libstdc++|static-libgfortran: \
+	  libgomp.a%s; : -lgomp }} \
+      %{fgnu-tm: \
+	%{static|static-libgcc|static-libstdc++|static-libgfortran: \
+	  libitm.a%s; : -litm }} \
       %{%:sanitize(address): -lasan } \
       %{%:sanitize(undefined): -lubsan } \
       %(link_ssp) \
       %:version-compare(>< 10.6 10.7 mmacosx-version-min= -ld10-uwfef) \
       %(link_gcc_c_sequence) \
     }}}\
-    %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*} %{F*} "\
+    %{!r:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} "\
     DARWIN_PIE_SPEC \
     DARWIN_NOPIE_SPEC \
     DARWIN_RDYNAMIC \
@@ -384,12 +387,12 @@ extern GTY(()) int darwin_ms_struct;
    enabled).  */
 
 #define DSYMUTIL_SPEC \
-   "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
-    %{v} \
-    %{g*:%{!gctf:%{!gbtf:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}}}\
-    %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s|.f|.f90|\
-      .f95|.f03|.f77|.for|.F|.F90|.F95|.F03|.d: \
-    %{g*:%{!gctf:%{!gbtf:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}}}"
+  "%{!c:%{!E:%{!S:%{!r:%{!M:%{!MM:%{!fsyntax-only:%{!fdump=*:\
+     %{g*:%{!gctf:%{!gbtf:%{!gstabs*:%{%:debug-level-gt(0): -idsym \
+       %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s|.f|.f90|\
+	 .f95|.f03|.f77|.for|.F|.F90|.F95|.F03|.d: -dsym }\
+      }}}}}\
+   }}}}}}}}"
 
 #define LINK_COMMAND_SPEC LINK_COMMAND_SPEC_A DSYMUTIL_SPEC
 
