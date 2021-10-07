@@ -95,19 +95,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Predicate>
     inline typename map<_Key, _Tp, _Compare, _Alloc>::size_type
     erase_if(map<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
-    {
-      _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Alloc>& __c = __cont;
-      return __detail::__erase_nodes_if(__c, __pred);
-    }
+    { return __detail::__erase_nodes_if(__cont, __pred); }
 
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc,
 	   typename _Predicate>
     inline typename multimap<_Key, _Tp, _Compare, _Alloc>::size_type
     erase_if(multimap<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
-    {
-      _GLIBCXX_STD_C::multimap<_Key, _Tp, _Compare, _Alloc>& __c = __cont;
-      return __detail::__erase_nodes_if(__c, __pred);
-    }
+    { return __detail::__erase_nodes_if(__cont, __pred); }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++20

@@ -50,16 +50,16 @@ inline namespace fundamentals_v2
     inline void
     erase_if(deque<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
-      _GLIBCXX_STD_C::deque<_Tp, _Alloc>& __c = __cont;
-      __c.erase(std::remove_if(__c.begin(), __c.end(), __pred), __c.end());
+      __cont.erase(std::remove_if(__cont.begin(), __cont.end(), __pred),
+		   __cont.end());
     }
 
   template<typename _Tp, typename _Alloc, typename _Up>
     inline void
     erase(deque<_Tp, _Alloc>& __cont, const _Up& __value)
     {
-      _GLIBCXX_STD_C::deque<_Tp, _Alloc>& __c = __cont;
-      __c.erase(std::remove(__c.begin(), __c.end(), __value), __c.end());
+      __cont.erase(std::remove(__cont.begin(), __cont.end(), __value),
+		   __cont.end());
     }
 
   namespace pmr {
