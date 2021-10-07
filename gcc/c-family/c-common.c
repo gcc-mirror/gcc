@@ -5921,7 +5921,7 @@ parse_optimize_options (tree args, bool attr_p)
   decoded_options_count = j;
 
   /* Merge the decoded options with save_decoded_options.  */
-  unsigned save_opt_count = save_opt_decoded_options.length ();
+  unsigned save_opt_count = save_opt_decoded_options->length ();
   unsigned merged_decoded_options_count
     = save_opt_count + decoded_options_count;
   cl_decoded_option *merged_decoded_options
@@ -5929,7 +5929,7 @@ parse_optimize_options (tree args, bool attr_p)
 
   /* Note the first decoded_options is used for the program name.  */
   for (unsigned i = 0; i < save_opt_count; ++i)
-    merged_decoded_options[i + 1] = save_opt_decoded_options[i];
+    merged_decoded_options[i + 1] = (*save_opt_decoded_options)[i];
   for (unsigned i = 1; i < decoded_options_count; ++i)
     merged_decoded_options[save_opt_count + i] = decoded_options[i];
 

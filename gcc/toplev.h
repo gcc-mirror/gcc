@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Decoded options, and number of such options.  */
 extern struct cl_decoded_option *save_decoded_options;
 extern unsigned int save_decoded_options_count;
-extern auto_vec<cl_decoded_option> save_opt_decoded_options;
+extern vec<cl_decoded_option> *save_opt_decoded_options;
 
 class timer;
 
