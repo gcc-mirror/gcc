@@ -39,9 +39,15 @@
 #else
 
 #include <bits/chrono.h>
-#if __cplusplus > 201703L
-# include <sstream> // ostringstream
-# include <bits/charconv.h>
+
+#if __cplusplus >= 202002L
+# include <sstream>
+# include <string>
+# include <vector>
+# include <bits/charconv.h> // __to_chars_len, __to_chars_10_impl
+# include <bits/stl_algo.h> // upper_bound TODO: move leap_second_info to .so
+# include <bits/shared_ptr.h>
+# include <bits/unique_ptr.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -101,6 +107,357 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool is_leap_second;
       seconds elapsed;
     };
+
+    template<typename _Duration>
+      leap_second_info
+      get_leap_second_info(const utc_time<_Duration>& __ut);
+
+    /** A clock that measures Universal Coordinated Time (UTC).
+     *
+     * The epoch is 1970-01-01 00:00:00.
+     *
+     * @since C++20
+     */
+    class utc_clock
+    {
+    public:
+      using rep                       = system_clock::rep;
+      using period                    = system_clock::period;
+      using duration                  = chrono::duration<rep, period>;
+      using time_point                = chrono::time_point<utc_clock>;
+      static constexpr bool is_steady = false;
+
+      static time_point
+      now()
+      { return from_sys(system_clock::now()); }
+
+      template<typename _Duration>
+	static sys_time<common_type_t<_Duration, seconds>>
+	to_sys(const utc_time<_Duration>& __t)
+	{
+	  using _CDur = common_type_t<_Duration, seconds>;
+	  const auto __li = chrono::get_leap_second_info(__t);
+	  sys_time<_CDur> __s{__t.time_since_epoch() - seconds{__li.elapsed}};
+	  if (__li.is_leap_second)
+	    __s = chrono::floor<seconds>(__s) + seconds{1} - _CDur{1};
+	  return __s;
+	}
+
+      template<typename _Duration>
+	static utc_time<common_type_t<_Duration, seconds>>
+	from_sys(const sys_time<_Duration>& __t)
+	{
+	  using _CDur = common_type_t<_Duration, seconds>;
+	  utc_time<_Duration> __u(__t.time_since_epoch());
+	  const auto __li = chrono::get_leap_second_info(__u);
+	  return utc_time<_CDur>{__u} + seconds{__li.elapsed};
+	}
+    };
+
+    /** A clock that measures International Atomic Time.
+     *
+     * The epoch is 1958-01-01 00:00:00.
+     *
+     * @since C++20
+     */
+    class tai_clock
+    {
+    public:
+      using rep                       = system_clock::rep;
+      using period                    = system_clock::period;
+      using duration                  = chrono::duration<rep, period>;
+      using time_point                = chrono::time_point<tai_clock>;
+      static constexpr bool is_steady = false; // XXX true for CLOCK_TAI?
+
+      // TODO move into lib, use CLOCK_TAI on linux, add extension point.
+      static time_point
+      now()
+      { return from_utc(utc_clock::now()); }
+
+      template<typename _Duration>
+	static utc_time<common_type_t<_Duration, seconds>>
+	to_utc(const tai_time<_Duration>& __t)
+	{
+	  using _CDur = common_type_t<_Duration, seconds>;
+	  return utc_time<_CDur>{__t.time_since_epoch()} - 378691210s;
+	}
+
+      template<typename _Duration>
+	static tai_time<common_type_t<_Duration, seconds>>
+	from_utc(const utc_time<_Duration>& __t)
+	{
+	  using _CDur = common_type_t<_Duration, seconds>;
+	  return tai_time<_CDur>{__t.time_since_epoch()} + 378691210s;
+	}
+    };
+
+    /** A clock that measures GPS time.
+     *
+     * The epoch is 1980-01-06 00:00:00.
+     *
+     * @since C++20
+     */
+    class gps_clock
+    {
+    public:
+      using rep                       = system_clock::rep;
+      using period                    = system_clock::period;
+      using duration                  = chrono::duration<rep, period>;
+      using time_point                = chrono::time_point<gps_clock>;
+      static constexpr bool is_steady = false; // XXX
+
+      // TODO move into lib, add extension point.
+      static time_point
+      now()
+      { return from_utc(utc_clock::now()); }
+
+      template<typename _Duration>
+	static utc_time<common_type_t<_Duration, seconds>>
+	to_utc(const gps_time<_Duration>& __t)
+	{
+	  using _CDur = common_type_t<_Duration, seconds>;
+	  return utc_time<_CDur>{__t.time_since_epoch()} + 315964809s;
+	}
+
+      template<typename _Duration>
+	static gps_time<common_type_t<_Duration, seconds>>
+	from_utc(const utc_time<_Duration>& __t)
+	{
+	  using _CDur = common_type_t<_Duration, seconds>;
+	  return gps_time<_CDur>{__t.time_since_epoch()} - 315964809s;
+	}
+    };
+
+
+    template<typename _DestClock, typename _SourceClock>
+      struct clock_time_conversion
+      { };
+
+    // Identity conversions
+
+    template<typename _Clock>
+      struct clock_time_conversion<_Clock, _Clock>
+      {
+	template<typename _Duration>
+	  time_point<_Clock, _Duration>
+	  operator()(const time_point<_Clock, _Duration>& __t) const
+	  { return __t; }
+      };
+
+    template<>
+      struct clock_time_conversion<system_clock, system_clock>
+      {
+	template<typename _Duration>
+	  sys_time<_Duration>
+	  operator()(const sys_time<_Duration>& __t) const
+	  { return __t; }
+      };
+
+    template<>
+      struct clock_time_conversion<utc_clock, utc_clock>
+      {
+	template<typename _Duration>
+	  utc_time<_Duration>
+	  operator()(const utc_time<_Duration>& __t) const
+	  { return __t; }
+      };
+
+    // Conversions between system_clock and utc_clock
+
+    template<>
+      struct clock_time_conversion<utc_clock, system_clock>
+      {
+	template<typename _Duration>
+	  utc_time<common_type_t<_Duration, seconds>>
+	  operator()(const sys_time<_Duration>& __t) const
+	  { return utc_clock::from_sys(__t); }
+      };
+
+    template<>
+      struct clock_time_conversion<system_clock, utc_clock>
+      {
+	template<typename _Duration>
+	  sys_time<common_type_t<_Duration, seconds>>
+	  operator()(const utc_time<_Duration>& __t) const
+	  { return utc_clock::to_sys(__t); }
+      };
+
+    template<typename _Tp, typename _Clock>
+      inline constexpr bool __is_time_point_for_v = false;
+
+    template<typename _Clock, typename _Duration>
+      inline constexpr bool
+       __is_time_point_for_v<time_point<_Clock, _Duration>, _Clock> = true;
+
+    // Conversions between system_clock and other clocks
+
+    template<typename _SourceClock>
+      struct clock_time_conversion<system_clock, _SourceClock>
+      {
+	template<typename _Duration, typename _Src = _SourceClock>
+	  auto
+	  operator()(const time_point<_SourceClock, _Duration>& __t) const
+	  -> decltype(_Src::to_sys(__t))
+	  {
+	    using _Ret = decltype(_SourceClock::to_sys(__t));
+	    static_assert(__is_time_point_for_v<_Ret, system_clock>);
+	    return _SourceClock::to_sys(__t);
+	  }
+      };
+
+    template<typename _DestClock>
+      struct clock_time_conversion<_DestClock, system_clock>
+      {
+	template<typename _Duration, typename _Dest = _DestClock>
+	  auto
+	  operator()(const sys_time<_Duration>& __t) const
+	  -> decltype(_Dest::from_sys(__t))
+	  {
+	    using _Ret = decltype(_DestClock::from_sys(__t));
+	    static_assert(__is_time_point_for_v<_Ret, _DestClock>);
+	    return _DestClock::from_sys(__t);
+	  }
+      };
+
+    // Conversions between utc_clock and other clocks
+
+    template<typename _SourceClock>
+      struct clock_time_conversion<utc_clock, _SourceClock>
+      {
+	template<typename _Duration, typename _Src = _SourceClock>
+	  auto
+	  operator()(const time_point<_SourceClock, _Duration>& __t) const
+	  -> decltype(_Src::to_utc(__t))
+	  {
+	    using _Ret = decltype(_SourceClock::to_utc(__t));
+	    static_assert(__is_time_point_for_v<_Ret, utc_clock>);
+	    return _SourceClock::to_utc(__t);
+	  }
+      };
+
+    template<typename _DestClock>
+      struct clock_time_conversion<_DestClock, utc_clock>
+      {
+	template<typename _Duration, typename _Dest = _DestClock>
+	  auto
+	  operator()(const utc_time<_Duration>& __t) const
+	  -> decltype(_Dest::from_utc(__t))
+	  {
+	    using _Ret = decltype(_DestClock::from_utc(__t));
+	    static_assert(__is_time_point_for_v<_Ret, _DestClock>);
+	    return _DestClock::from_utc(__t);
+	  }
+      };
+
+    /// @cond undocumented
+    namespace __detail
+    {
+      template<typename _DestClock, typename _SourceClock, typename _Duration>
+       concept __clock_convs
+	  = requires (const time_point<_SourceClock, _Duration>& __t) {
+	    clock_time_conversion<_DestClock, _SourceClock>{}(__t);
+	  };
+
+      template<typename _DestClock, typename _SourceClock, typename _Duration>
+       concept __clock_convs_sys
+	  = requires (const time_point<_SourceClock, _Duration>& __t) {
+	    clock_time_conversion<_DestClock, system_clock>{}(
+	      clock_time_conversion<system_clock, _SourceClock>{}(__t));
+	  };
+
+      template<typename _DestClock, typename _SourceClock, typename _Duration>
+       concept __clock_convs_utc
+	  = requires (const time_point<_SourceClock, _Duration>& __t) {
+	    clock_time_conversion<_DestClock, utc_clock>{}(
+	      clock_time_conversion<utc_clock, _SourceClock>{}(__t));
+	  };
+
+      template<typename _DestClock, typename _SourceClock, typename _Duration>
+	concept __clock_convs_sys_utc
+	  = requires (const time_point<_SourceClock, _Duration>& __t) {
+	    clock_time_conversion<_DestClock, utc_clock>{}(
+	      clock_time_conversion<utc_clock, system_clock>{}(
+		clock_time_conversion<system_clock, _SourceClock>{}(__t)));
+	  };
+
+      template<typename _DestClock, typename _SourceClock, typename _Duration>
+       concept __clock_convs_utc_sys
+	  = requires (const time_point<_SourceClock, _Duration>& __t) {
+	    clock_time_conversion<_DestClock, system_clock>{}(
+	      clock_time_conversion<system_clock, utc_clock>{}(
+		clock_time_conversion<utc_clock, _SourceClock>{}(__t)));
+	  };
+
+    } // namespace __detail
+    /// @endcond
+
+    /// Convert a time point to a different clock.
+    template<typename _DestClock, typename _SourceClock, typename _Duration>
+      inline auto
+      clock_cast(const time_point<_SourceClock, _Duration>& __t)
+      requires __detail::__clock_convs<_DestClock, _SourceClock, _Duration>
+	|| __detail::__clock_convs_sys<_DestClock, _SourceClock, _Duration>
+	|| __detail::__clock_convs_utc<_DestClock, _SourceClock, _Duration>
+	|| __detail::__clock_convs_sys_utc<_DestClock, _SourceClock, _Duration>
+	|| __detail::__clock_convs_utc_sys<_DestClock, _SourceClock, _Duration>
+      {
+       constexpr bool __direct
+	 = __detail::__clock_convs<_DestClock, _SourceClock, _Duration>;
+       if constexpr (__direct)
+	 {
+	   return clock_time_conversion<_DestClock, _SourceClock>{}(__t);
+	 }
+       else
+	 {
+	   constexpr bool __convert_via_sys_clock
+	     = __detail::__clock_convs_sys<_DestClock, _SourceClock, _Duration>;
+	   constexpr bool __convert_via_utc_clock
+	     = __detail::__clock_convs_utc<_DestClock, _SourceClock, _Duration>;
+	   if constexpr (__convert_via_sys_clock)
+	     {
+	       static_assert(!__convert_via_utc_clock,
+		 "clock_cast requires a unique best conversion, but "
+		 "conversion is possible via system_clock and also via"
+		 "utc_clock");
+	       return clock_time_conversion<_DestClock, system_clock>{}(
+			clock_time_conversion<system_clock, _SourceClock>{}(__t));
+	     }
+	   else if constexpr (__convert_via_utc_clock)
+	     {
+	       return clock_time_conversion<_DestClock, utc_clock>{}(
+			clock_time_conversion<utc_clock, _SourceClock>{}(__t));
+	     }
+	   else
+	     {
+	       constexpr bool __convert_via_sys_and_utc_clocks
+		 = __detail::__clock_convs_sys_utc<_DestClock,
+						   _SourceClock,
+						   _Duration>;
+
+	       if constexpr (__convert_via_sys_and_utc_clocks)
+		 {
+		   constexpr bool __convert_via_utc_and_sys_clocks
+		     = __detail::__clock_convs_utc_sys<_DestClock,
+						       _SourceClock,
+						       _Duration>;
+		   static_assert(!__convert_via_utc_and_sys_clocks,
+		     "clock_cast requires a unique best conversion, but "
+		     "conversion is possible via system_clock followed by "
+		     "utc_clock, and also via utc_clock followed by "
+		     "system_clock");
+		   return clock_time_conversion<_DestClock, utc_clock>{}(
+			    clock_time_conversion<utc_clock, system_clock>{}(
+			      clock_time_conversion<system_clock, _SourceClock>{}(__t)));
+		 }
+	       else
+		 {
+		   return clock_time_conversion<_DestClock, system_clock>{}(
+			    clock_time_conversion<system_clock, utc_clock>{}(
+			      clock_time_conversion<utc_clock, _SourceClock>{}(__t)));
+		 }
+	     }
+	 }
+      }
 
     // CALENDRICAL TYPES
 
@@ -2055,6 +2412,387 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return __h + 12h;
 	}
     }
+
+    // C++20 [time.zones] Time zones
+
+    struct sys_info
+    {
+      sys_seconds begin;
+      sys_seconds end;
+      seconds offset;
+      minutes save;
+      string abbrev;
+    };
+
+    struct local_info
+    {
+      static constexpr int unique      = 0;
+      static constexpr int nonexistent = 1;
+      static constexpr int ambiguous   = 2;
+
+      int result;
+      sys_info first;
+      sys_info second;
+    };
+
+    class nonexistent_local_time : public runtime_error
+    {
+    public:
+      template<typename _Duration>
+	nonexistent_local_time(const local_time<_Duration>& __tp,
+			       const local_info& __i)
+	: runtime_error(_S_make_what_str(__tp, __i))
+	{ __glibcxx_assert(__i.result == local_info::nonexistent); }
+
+    private:
+      template<typename _Duration> // TODO
+	static string
+	_S_make_what_str(const local_time<_Duration>&, const local_info&);
+    };
+
+    class ambiguous_local_time : public runtime_error
+    {
+    public:
+      template<typename _Duration>
+	ambiguous_local_time(const local_time<_Duration>& __tp,
+			       const local_info& __i)
+	: runtime_error(_S_make_what_str(__tp, __i))
+	{ __glibcxx_assert(__i.result == local_info::nonexistent); }
+
+    private:
+      template<typename _Duration> // TODO
+	static string
+	_S_make_what_str(const local_time<_Duration>&, const local_info&);
+    };
+
+    enum class choose { earliest, latest };
+
+    class time_zone
+    {
+    public:
+      time_zone(time_zone&&) = default;
+      time_zone& operator=(time_zone&&) = default;
+
+      string_view name() const noexcept { return _M_name; }
+
+      template<typename _Duration>
+	sys_info
+	get_info(const sys_time<_Duration>& __st) const;
+
+      template<typename _Duration>
+	local_info
+	get_info(const local_time<_Duration>& __tp) const;
+
+      template<typename _Duration>
+	sys_time<common_type_t<_Duration, seconds>>
+	to_sys(const local_time<_Duration>& __tp) const;
+
+      template<typename _Duration>
+	sys_time<common_type_t<_Duration, seconds>>
+	to_sys(const local_time<_Duration>& __tp, choose __z) const;
+
+      template<typename _Duration>
+	local_time<common_type_t<_Duration, seconds>>
+	to_local(const sys_time<_Duration>& __tp) const;
+
+      friend bool
+      operator==(const time_zone& __x, const time_zone& __y) noexcept
+      { return __x.name() == __y.name(); }
+
+      friend strong_ordering
+      operator<=>(const time_zone& __x, const time_zone& __y) noexcept
+      { return __x.name() <=> __y.name(); }
+
+    private:
+      string _M_name;
+      struct _Impl;
+      unique_ptr<_Impl> _M_impl;
+    };
+
+    struct tzdb;
+    const time_zone* locate_zone(string_view __tz_name);
+    const time_zone* current_zone();
+
+    class time_zone_link
+    {
+    public:
+      time_zone_link(time_zone_link&&) = default;
+      time_zone_link& operator=(time_zone_link&&) = default;
+
+      string_view name() const noexcept { return _M_name; }
+      string_view target() const noexcept { return _M_target; }
+
+      friend bool
+      operator==(const time_zone_link& __x, const time_zone_link& __y) noexcept
+      { return __x.name() == __y.name(); }
+
+      friend strong_ordering
+      operator<=>(const time_zone_link& __x, const time_zone_link& __y) noexcept
+      { return __x.name() <=> __y.name(); }
+
+    private:
+      friend const tzdb& reload_tzdb();
+      // TODO unspecified additional constructors
+      string _M_name;
+      string _M_target;
+    };
+
+    class leap_second
+    {
+    public:
+      leap_second(const leap_second&) = default;
+      leap_second& operator=(const leap_second&) = default;
+
+      constexpr sys_seconds
+      date() const noexcept
+      {
+	if (_M_s >= _M_s.zero()) [[likely]]
+	  return sys_seconds(_M_s);
+	return sys_seconds(-_M_s);
+      }
+
+      constexpr seconds
+      value() const noexcept
+      {
+	if (_M_s >= _M_s.zero()) [[likely]]
+	  return seconds(1);
+	return seconds(-1);
+      }
+
+      // This can be defaulted because the database will never contain two
+      // leap_second objects with the same date but different signs.
+      friend constexpr bool
+      operator==(const leap_second&, const leap_second&) noexcept = default;
+
+      friend constexpr strong_ordering
+      operator<=>(const leap_second& __x, const leap_second& __y) noexcept
+      { return __x.date() <=> __y.date(); }
+
+      template<typename _Duration>
+	friend constexpr bool
+	operator==(const leap_second& __x,
+		   const sys_time<_Duration>& __y) noexcept
+	{ return __x.date() == __y; }
+
+      template<typename _Duration>
+	friend constexpr bool
+	operator<(const leap_second& __x,
+		  const sys_time<_Duration>& __y) noexcept
+	{ return __x.date() < __y; }
+
+      template<typename _Duration>
+	friend constexpr bool
+	operator<(const sys_time<_Duration>& __x,
+		  const leap_second& __y) noexcept
+	{ return __x < __y.date(); }
+
+      template<typename _Duration>
+	friend constexpr bool
+	operator>(const leap_second& __x,
+		  const sys_time<_Duration>& __y) noexcept
+	{ return __y < __x.date(); }
+
+      template<typename _Duration>
+	friend constexpr bool
+	operator>(const sys_time<_Duration>& __x,
+		  const leap_second& __y) noexcept
+	{ return __y.date() < __x; }
+
+      template<typename _Duration>
+	friend constexpr bool
+	operator<=(const leap_second& __x,
+		  const sys_time<_Duration>& __y) noexcept
+	{ return !(__y < __x.date()); }
+
+      template<typename _Duration>
+	friend constexpr bool
+	operator<=(const sys_time<_Duration>& __x,
+		  const leap_second& __y) noexcept
+	{ return !(__y.date() < __x); }
+
+      template<typename _Duration>
+	friend constexpr bool
+	operator>=(const leap_second& __x,
+		  const sys_time<_Duration>& __y) noexcept
+	{ return !(__x.date() < __y); }
+
+      template<typename _Duration>
+	friend constexpr bool
+	operator>=(const sys_time<_Duration>& __x,
+		  const leap_second& __y) noexcept
+	{ return !(__x < __y.date()); }
+
+      template<three_way_comparable_with<seconds> _Duration>
+	friend constexpr auto
+	operator<=>(const leap_second& __x,
+		   const sys_time<_Duration>& __y) noexcept
+	{ return __x.date() <=> __y; }
+
+    private:
+      explicit leap_second(seconds::rep __s) : _M_s(__s) { }
+
+      friend const tzdb& reload_tzdb();
+      template<typename _Dur>
+	friend leap_second_info
+	get_leap_second_info(const utc_time<_Dur>&);
+
+      seconds _M_s; // == date().time_since_epoch() * value().count()
+    };
+
+    template<class _Tp> struct zoned_traits { };
+
+    template<>
+      struct zoned_traits<const time_zone*>
+      {
+	static const time_zone*
+	default_zone()
+	{ return std::chrono::locate_zone("UTC"); }
+
+	static const time_zone*
+	locate_zone(string_view __name)
+	{ return std::chrono::locate_zone(__name); }
+      };
+
+    struct tzdb
+    {
+      string version;
+      vector<time_zone> zones;
+      vector<time_zone_link> links;
+      vector<leap_second> leap_seconds;
+
+      const time_zone*
+      locate_zone(string_view __tz_name) const;
+
+      const time_zone*
+      current_zone() const;
+
+    private:
+      friend const tzdb& reload_tzdb();
+
+      struct _Rule;
+      vector<_Rule> _M_rules;
+    };
+
+    class tzdb_list
+    {
+      struct _Node;
+    public:
+      tzdb_list(const tzdb_list&) = delete;
+      tzdb_list& operator=(const tzdb_list&) = delete;
+
+      class const_iterator
+      {
+      public:
+	using value_type        = tzdb;
+	using reference         = const tzdb&;
+	using pointer           = const tzdb*;
+	using difference_type   = ptrdiff_t;
+	using iterator_category = forward_iterator_tag;
+
+	constexpr const_iterator() = default;
+	const_iterator(const const_iterator&) = default;
+	const_iterator(const_iterator&&) = default;
+	const_iterator& operator=(const const_iterator&) = default;
+	const_iterator& operator=(const_iterator&&) = default;
+
+	reference operator*() const noexcept;
+	pointer operator->() const noexcept { return &**this; }
+	const_iterator& operator++();
+	const_iterator operator++(int);
+
+	bool operator==(const const_iterator&) const noexcept = default;
+
+      private:
+	explicit const_iterator(const shared_ptr<_Node>&) noexcept;
+
+	shared_ptr<_Node> _M_node;
+	void* _M_reserved = nullptr;
+      };
+
+      // TODO const tzdb& front() const noexcept;
+
+      const_iterator erase_after(const_iterator);
+
+      const_iterator begin() const noexcept;
+      const_iterator end() const noexcept { return {}; }
+      const_iterator cbegin() const noexcept { return begin(); }
+      const_iterator cend() const noexcept { return end(); }
+
+    private:
+      constexpr explicit tzdb_list(nullptr_t);
+
+      friend const tzdb_list& get_tzdb_list();
+      friend const tzdb& get_tzdb();
+      friend const tzdb& reload_tzdb();
+
+      static _Node* _S_head;
+      static shared_ptr<_Node> _S_head_owner;
+    };
+
+    // TODO
+    // const tzdb_list& get_tzdb_list();
+    // const tzdb& get_tzdb();
+
+    // const tzdb& reload_tzdb();
+    // string remove_version();
+
+    template<typename _Duration, typename _TimeZonePtr = const time_zone*>
+      class zoned_time; // TODO
+
+    using zoned_seconds = zoned_time<seconds>;
+
+    template<typename _Duration>
+      leap_second_info
+      get_leap_second_info(const utc_time<_Duration>& __ut)
+      {
+	if constexpr (is_same_v<_Duration, seconds>)
+	  {
+	    // TODO move this function into the library and get leaps from tzdb.
+	    vector<seconds::rep> __leaps
+	    {
+		78796800, // 1 Jul 1972
+		94694400, // 1 Jan 1973
+	       126230400, // 1 Jan 1974
+	       157766400, // 1 Jan 1975
+	       189302400, // 1 Jan 1976
+	       220924800, // 1 Jan 1977
+	       252460800, // 1 Jan 1978
+	       283996800, // 1 Jan 1979
+	       315532800, // 1 Jan 1980
+	       362793600, // 1 Jul 1981
+	       394329600, // 1 Jul 1982
+	       425865600, // 1 Jul 1983
+	       489024000, // 1 Jul 1985
+	       567993600, // 1 Jan 1988
+	       631152000, // 1 Jan 1990
+	       662688000, // 1 Jan 1991
+	       709948800, // 1 Jul 1992
+	       741484800, // 1 Jul 1993
+	       773020800, // 1 Jul 1994
+	       820454400, // 1 Jan 1996
+	       867715200, // 1 Jul 1997
+	       915148800, // 1 Jan 1999
+	      1136073600, // 1 Jan 2006
+	      1230768000, // 1 Jan 2009
+	      1341100800, // 1 Jul 2012
+	      1435708800, // 1 Jul 2015
+	      1483228800, // 1 Jan 2017
+	    };
+
+	    auto __s = __ut.time_since_epoch().count();
+	    auto __pos = std::upper_bound(__leaps.begin(), __leaps.end(), __s);
+	    return {
+	      __pos != __leaps.begin() && __pos[-1] == __s,
+	      seconds{__pos - __leaps.begin()}
+	    };
+	  }
+	else
+	  {
+	    auto __s = chrono::time_point_cast<seconds>(__ut);
+	    return chrono::get_leap_second_info(__s);
+	  }
+      }
+
     /// @} group chrono
 #endif // C++20
   } // namespace chrono
