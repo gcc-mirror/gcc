@@ -180,6 +180,10 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
   int_range_max edge_range;
   gcc_checking_assert (irange::supports_type_p (TREE_TYPE (name)));
 
+  // Do not process values along abnormal or EH edges.
+  if (e->flags & (EDGE_ABNORMAL|EDGE_EH))
+    return false;
+
   unsigned idx;
   if ((idx = tracer.header ("range_on_edge (")))
     {
