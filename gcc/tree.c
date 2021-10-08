@@ -11473,30 +11473,13 @@ hashval_t
 cl_option_hasher::hash (tree x)
 {
   const_tree const t = x;
-  const char *p;
-  size_t i;
-  size_t len = 0;
-  hashval_t hash = 0;
 
   if (TREE_CODE (t) == OPTIMIZATION_NODE)
-    {
-      p = (const char *)TREE_OPTIMIZATION (t);
-      len = sizeof (struct cl_optimization);
-    }
-
+    return cl_optimization_hash (TREE_OPTIMIZATION (t));
   else if (TREE_CODE (t) == TARGET_OPTION_NODE)
     return cl_target_option_hash (TREE_TARGET_OPTION (t));
-
   else
     gcc_unreachable ();
-
-  /* assume most opt flags are just 0/1, some are 2-3, and a few might be
-     something else.  */
-  for (i = 0; i < len; i++)
-    if (p[i])
-      hash = (hash << 4) ^ ((i << 2) | p[i]);
-
-  return hash;
 }
 
 /* Return nonzero if the value represented by *X (an OPTIMIZATION or
