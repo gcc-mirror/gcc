@@ -3965,6 +3965,42 @@
   DONE;
 })
 
+(define_expand "reduc_plus_scal_v4hi"
+ [(plus:V4HI
+    (match_operand:HI 0 "register_operand")
+    (match_operand:V4HI 1 "register_operand"))]
+ "TARGET_MMX_WITH_SSE"
+{
+  rtx tmp = gen_reg_rtx (V4HImode);
+  ix86_expand_reduc (gen_addv4hi3, tmp, operands[1]);
+  emit_insn (gen_vec_extractv4hihi (operands[0], tmp, const0_rtx));
+  DONE;
+})
+
+(define_expand "reduc_<code>_scal_v4hi"
+  [(smaxmin:V4HI
+     (match_operand:HI 0 "register_operand")
+     (match_operand:V4HI 1 "register_operand"))]
+  "TARGET_MMX_WITH_SSE"
+{
+  rtx tmp = gen_reg_rtx (V4HImode);
+  ix86_expand_reduc (gen_<code>v4hi3, tmp, operands[1]);
+  emit_insn (gen_vec_extractv4hihi (operands[0], tmp, const0_rtx));
+  DONE;
+})
+
+(define_expand "reduc_<code>_scal_v4hi"
+  [(umaxmin:V4HI
+     (match_operand:HI 0 "register_operand")
+     (match_operand:V4HI 1 "register_operand"))]
+  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
+{
+  rtx tmp = gen_reg_rtx (V4HImode);
+  ix86_expand_reduc (gen_<code>v4hi3, tmp, operands[1]);
+  emit_insn (gen_vec_extractv4hihi (operands[0], tmp, const0_rtx));
+  DONE;
+})
+
 (define_expand "usadv8qi"
   [(match_operand:V2SI 0 "register_operand")
    (match_operand:V8QI 1 "register_operand")

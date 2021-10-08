@@ -34,7 +34,7 @@
 
 #if __cplusplus >= 201402L
 
-#include <chrono>
+#include <bits/chrono.h>
 #include <system_error>
 #include <thread>
 #include <experimental/netfwd>

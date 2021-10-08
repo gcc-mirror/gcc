@@ -61,6 +61,9 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb, bool search_dom)
     return false;
 
   unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_nn.length ())
+    m_nn.safe_grow_cleared (num_ssa_names + 1);
+
   if (!m_nn[v])
     process_name (name);
 

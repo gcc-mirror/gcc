@@ -28,6 +28,6 @@ char baz()
 }
 
 /* { dg-final { scan-assembler-times "movl\[ \\t\]+\\\$3," 1 } } */
-/* { dg-final { scan-assembler-times "movl\[ \\t\]+\\\$-128," 1 } } */
+/* { dg-final { scan-assembler-times "movl\[ \\t\]+\\\$-?128," 1 } } */
 /* { dg-final { scan-assembler-times "movl\[ \\t\]+\\\$127," 1 } } */
 /* { dg-final { scan-assembler-not "paddsb\[ \\t\]+%xmm\[0-9\]+" } } */

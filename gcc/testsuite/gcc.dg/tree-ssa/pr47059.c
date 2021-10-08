@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -fdump-tree-optimized" } */
+/* { dg-options "-Os -fno-tree-vectorize -fdump-tree-optimized" } */
 
 
 struct struct1

@@ -15746,9 +15746,9 @@ s390_option_override (void)
     {
       /* Don't emit DWARF3/4 unless specifically selected.  The TPF
 	 debuggers do not yet support DWARF 3/4.  */
-      if (!global_options_set.x_dwarf_strict)
+      if (!OPTION_SET_P (dwarf_strict))
 	dwarf_strict = 1;
-      if (!global_options_set.x_dwarf_version)
+      if (!OPTION_SET_P (dwarf_version))
 	dwarf_version = 2;
     }
 }

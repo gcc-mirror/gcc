@@ -4481,6 +4481,43 @@ force_edge_cold (edge e, bool impossible)
     }
 }
 
+/* Change E's probability to NEW_E_PROB, redistributing the probabilities
+   of other outgoing edges proportionally.
+
+   Note that this function does not change the profile counts of any
+   basic blocks.  The caller must do that instead, using whatever
+   information it has about the region that needs updating.  */
+
+void
+change_edge_frequency (edge e, profile_probability new_e_prob)
+{
+  profile_probability old_e_prob = e->probability;
+  profile_probability old_other_prob = old_e_prob.invert ();
+  profile_probability new_other_prob = new_e_prob.invert ();
+
+  e->probability = new_e_prob;
+  profile_probability cumulative_prob = new_e_prob;
+
+  unsigned int num_other = EDGE_COUNT (e->src->succs) - 1;
+  edge other_e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (other_e, ei, e->src->succs)
+    if (other_e != e)
+      {
+	num_other -= 1;
+	if (num_other == 0)
+	  /* Ensure that the probabilities add up to 1 without
+	     rounding error.  */
+	  other_e->probability = cumulative_prob.invert ();
+	else
+	  {
+	    other_e->probability /= old_other_prob;
+	    other_e->probability *= new_other_prob;
+	    cumulative_prob += other_e->probability;
+	  }
+      }
+}
+
 #if CHECKING_P
 
 namespace selftest {

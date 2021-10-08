@@ -126,7 +126,7 @@ along with GCC; see the file COPYING3.  If not see
   do									\
     {									\
       /* Set default atomic model if it hasn't been specified.  */	\
-      if (global_options_set.x_sh_atomic_model_str == 0)		\
+      if (OPTION_SET_P (sh_atomic_model_str) == 0)		\
 	{								\
 	  if (TARGET_SH3)						\
 	    sh_atomic_model_str = "soft-gusa";				\
@@ -134,7 +134,7 @@ along with GCC; see the file COPYING3.  If not see
 	    sh_atomic_model_str = "soft-imask";				\
 	}								\
       /* Set -musermode if it hasn't been specified.  */		\
-      if (global_options_set.x_TARGET_USERMODE == 0)			\
+      if (OPTION_SET_P (TARGET_USERMODE) == 0)			\
 	TARGET_USERMODE = true;						\
     }									\
   while (0)

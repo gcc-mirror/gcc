@@ -33,7 +33,7 @@ do {									\
   if (TARGET_SOFT_FLOAT && TARGET_LONG_DOUBLE_128)			\
     {									\
       rs6000_long_double_type_size = 64;				\
-      if (global_options_set.x_rs6000_long_double_type_size)		\
+      if (OPTION_SET_P (rs6000_long_double_type_size))		\
 	warning (0, "soft-float and long-double-128 are incompatible");	\
     }									\
   if (TARGET_POWERPC64 && ! TARGET_64BIT)				\
@@ -43,7 +43,7 @@ do {									\
   if ((rs6000_isa_flags_explicit					\
        & OPTION_MASK_MINIMAL_TOC) != 0)					\
     {									\
-      if (global_options_set.x_rs6000_current_cmodel			\
+      if (OPTION_SET_P (rs6000_current_cmodel)			\
 	  && rs6000_current_cmodel != CMODEL_SMALL)			\
 	error ("%<-mcmodel%> incompatible with other toc options"); 	\
       SET_CMODEL (CMODEL_SMALL);					\
@@ -63,7 +63,7 @@ do {									\
       /* aix/ppc doesn't support -mvsx and -maltivec with Go */		\
       rs6000_isa_flags &= ~(OPTION_MASK_VSX | OPTION_MASK_ALTIVEC);	\
     }									\
-  if (!global_options_set.x_dwarf_version)				\
+  if (!OPTION_SET_P (dwarf_version))				\
     /* AIX only supports DWARF 4.  */					\
     dwarf_version = 4;							\
 } while (0)

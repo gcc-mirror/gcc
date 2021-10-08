@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fno-inline -fno-tree-loop-distribute-patterns -fpredictive-commoning -fdump-tree-pcom-details" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fno-inline -fno-tree-loop-distribute-patterns -fpredictive-commoning -fdump-tree-pcom-details" } */
 
 int arr1[105] = {2, 3, 5, 7, 11, 13, 0};
 int arr2[105] = {2, 3, 5, 7, 11, 13, 0};

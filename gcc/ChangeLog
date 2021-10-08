@@ -1,3 +1,127 @@
+2021-10-07  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* ctfc.c (ctfc_delete_container): Free hash table contents.
+
+2021-10-07  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* toplev.c (process_options): Do not warn for GNU GIMPLE.
+
+2021-10-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* tree-object-size.c (addr_object_size,
+	compute_builtin_object_size): Drop PDECL and POFF arguments.
+	(addr_object_size): Adjust calls.
+	* tree-object-size.h (compute_builtin_object_size): Drop PDECL
+	and POFF arguments.
+
+2021-10-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* rtl.def (SMUL_HIGHPART, UMUL_HIGHPART): New RTX codes for
+	representing signed and unsigned high-part multiplication resp.
+	* simplify-rtx.c (simplify_binary_operation_1) [SMUL_HIGHPART,
+	UMUL_HIGHPART]: Simplify high-part multiplications by zero.
+	[SS_PLUS, US_PLUS, SS_MINUS, US_MINUS, SS_MULT, US_MULT,
+	SS_DIV, US_DIV]: Similar simplifications for saturating
+	arithmetic.
+	(simplify_const_binary_operation) [SS_PLUS, US_PLUS, SS_MINUS,
+	US_MINUS, SS_MULT, US_MULT, SMUL_HIGHPART, UMUL_HIGHPART]:
+	Implement compile-time evaluation for constant operands.
+	* dwarf2out.c (mem_loc_descriptor): Skip SMUL_HIGHPART and
+	UMUL_HIGHPART.
+	* doc/rtl.texi (smul_highpart, umul_highpart): Document RTX codes.
+	* doc/md.texi (smul@var{m}3_highpart, umul@var{m3}_highpart):
+	Mention the new smul_highpart and umul_highpart RTX codes.
+	* doc/invoke.texi: Silence @xref "compilation" warnings.
+
+2021-10-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/102388
+	* ipa-prop.c (ipa_edge_args_sum_t::duplicate): Also handle the
+	case when the source reference description corresponds to a
+	referance taken in a function src->caller is inlined to.
+
+2021-10-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/102581
+	* ipa-modref-tree.h (modref_access_node::contains_p): Handle offsets
+	better.
+	(modref_access_node::try_merge_with): Add sanity check that there
+	are no redundant entries in the list.
+
+2021-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102608
+	* tree-ssa-sccvn.c (visit_stmt): Drop .DEFERRED_INIT to
+	varying.
+
+2021-10-07  Martin Liska  <mliska@suse.cz>
+
+	* toplev.c (toplev::main): Make
+	save_opt_decoded_options a pointer type
+	* toplev.h: Likewise.
+
+2021-10-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (gather<mode>_insn_2offsets<exec>): Apply
+	HAVE_GCN_ASM_GLOBAL_LOAD_FIXED.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+
+2021-10-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (SRAMOPT): Include the whole option string.
+	Adjust for new -msram-ecc=any behaviour.
+	(ASM_SPEC): Adjust -mxnack and -msram-ecc usage.
+	* config/gcn/gcn.c (output_file_start): Implement -msram-ecc=any.
+	* config/gcn/mkoffload.c (EF_AMDGPU_XNACK): Rename to ...
+	(EF_AMDGPU_XNACK_V3): ... this.
+	(EF_AMDGPU_SRAM_ECC): Rename to ...
+	(EF_AMDGPU_SRAM_ECC_V3): ... this.
+	(EF_AMDGPU_FEATURE_XNACK_V4): New.
+	(EF_AMDGPU_FEATURE_XNACK_UNSUPPORTED_V4): New.
+	(EF_AMDGPU_FEATURE_XNACK_ANY_V4): New.
+	(EF_AMDGPU_FEATURE_XNACK_OFF_V4): New.
+	(EF_AMDGPU_FEATURE_XNACK_ON_V4): New.
+	(EF_AMDGPU_FEATURE_SRAMECC_V4): New.
+	(EF_AMDGPU_FEATURE_SRAMECC_UNSUPPORTED_V4): New.
+	(EF_AMDGPU_FEATURE_SRAMECC_ANY_V4): New.
+	(EF_AMDGPU_FEATURE_SRAMECC_OFF_V4): New.
+	(EF_AMDGPU_FEATURE_SRAMECC_ON_V4): New.
+	(SET_XNACK_ON): New.
+	(SET_XNACK_OFF): New.
+	(TEST_XNACK): New.
+	(SET_SRAM_ECC_ON): New.
+	(SET_SRAM_ECC_ANY): New.
+	(SET_SRAM_ECC_OFF): New.
+	(TEST_SRAM_ECC_ANY): New.
+	(TEST_SRAM_ECC_ON): New.
+	(main): Implement HSACOv4 and -msram-ecc=any.
+
+2021-10-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.in: Regenerate.
+	* config/gcn/gcn-hsa.h (X_FIJI): New macro.
+	(X_900): New macro.
+	(X_906): New macro.
+	(X_908): New macro.
+	(A_FIJI): Rename to ...
+	(S_FIJI): ... this.
+	(A_900): Rename to ...
+	(S_900): ... this.
+	(A_906): Rename to ...
+	(S_906): ... this.
+	(A_908): Rename to ...
+	(S_908): ... this.
+	(SRAMOPT): New macro.
+	(ASM_SPEC): Adjust xnack option usage.
+	* config/gcn/gcn.c (output_file_start): Adjust amdgcn_target usage.
+	* configure: Regenerate.
+	* configure.ac: Detect LLVM assembler dialect.
+
+2021-10-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): Do not elide
+	printing '&' when dumping with -gimple.
+
 2021-10-06  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-cache.cc (non_null_ref::adjust_range): Call new

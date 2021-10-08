@@ -260,7 +260,7 @@ gfc_post_options (const char **pfilename)
      If not enabled explicitly by the user, only warn for -I
      and -J, otherwise warn for all include paths.  */
   verbose_missing_dir_warn
-    = (global_options_set.x_cpp_warn_missing_include_dirs
+    = (OPTION_SET_P (cpp_warn_missing_include_dirs)
        && global_options.x_cpp_warn_missing_include_dirs);
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       cpp_warn_missing_include_dirs, 1);
@@ -309,7 +309,7 @@ gfc_post_options (const char **pfilename)
     flag_dump_fortran_original = 0;
 
   /* Make -fmax-errors visible to gfortran's diagnostic machinery.  */
-  if (global_options_set.x_flag_max_errors)
+  if (OPTION_SET_P (flag_max_errors))
     gfc_option.max_errors = flag_max_errors;
 
   /* Verify the input file name.  */
@@ -388,7 +388,7 @@ gfc_post_options (const char **pfilename)
 
       /* Enable -Werror=line-truncation when -Werror and -Wno-error have
 	 not been set.  */
-      if (warn_line_truncation && !global_options_set.x_warnings_are_errors
+      if (warn_line_truncation && !OPTION_SET_P (warnings_are_errors)
 	  && (global_dc->classify_diagnostic[OPT_Wline_truncation] ==
 	      DK_UNSPECIFIED))
 	diagnostic_classify_diagnostic (global_dc, OPT_Wline_truncation,

@@ -29,6 +29,10 @@
 // 18.2.1
 //
 
+#if __cpp_inline_variables
+# error This file must be compiled as C++11 or C++14
+#endif
+
 #include <limits>
 
 namespace std _GLIBCXX_VISIBILITY(default)

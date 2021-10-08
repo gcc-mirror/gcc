@@ -45505,6 +45505,71 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
   return attrs;
 }
 
+/* Helper for cp_parser_omp_declare_target, handle one to or link clause
+   on #pragma omp declare target.  Return false if errors were reported.  */
+
+static bool
+handle_omp_declare_target_clause (tree c, tree t, int device_type)
+{
+  tree at1 = lookup_attribute ("omp declare target", DECL_ATTRIBUTES (t));
+  tree at2 = lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (t));
+  tree id;
+  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINK)
+    {
+      id = get_identifier ("omp declare target link");
+      std::swap (at1, at2);
+    }
+  else
+    id = get_identifier ("omp declare target");
+  if (at2)
+    {
+      error_at (OMP_CLAUSE_LOCATION (c),
+		"%qD specified both in declare target %<link%> and %<to%>"
+		" clauses", t);
+      return false;
+    }
+  if (!at1)
+    {
+      DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+      if (TREE_CODE (t) != FUNCTION_DECL && !is_global_var (t))
+	return true;
+
+      symtab_node *node = symtab_node::get (t);
+      if (node != NULL)
+	{
+	  node->offloadable = 1;
+	  if (ENABLE_OFFLOADING)
+	    {
+	      g->have_offload = true;
+	      if (is_a <varpool_node *> (node))
+		vec_safe_push (offload_vars, t);
+	    }
+	}
+    }
+  if (TREE_CODE (t) != FUNCTION_DECL)
+    return true;
+  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0)
+    {
+      tree at3 = lookup_attribute ("omp declare target host",
+				   DECL_ATTRIBUTES (t));
+      if (at3 == NULL_TREE)
+	{
+	  id = get_identifier ("omp declare target host");
+	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	}
+    }
+  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0)
+    {
+      tree at3 = lookup_attribute ("omp declare target nohost",
+				   DECL_ATTRIBUTES (t));
+      if (at3 == NULL_TREE)
+	{
+	  id = get_identifier ("omp declare target nohost");
+	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	}
+    }
+  return true;
+}
 
 /* OpenMP 4.0:
    # pragma omp declare target new-line
@@ -45557,67 +45622,16 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
     {
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
 	continue;
-      tree t = OMP_CLAUSE_DECL (c), id;
-      tree at1 = lookup_attribute ("omp declare target", DECL_ATTRIBUTES (t));
-      tree at2 = lookup_attribute ("omp declare target link",
-				   DECL_ATTRIBUTES (t));
+      tree t = OMP_CLAUSE_DECL (c);
       only_device_type = false;
-      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINK)
-	{
-	  id = get_identifier ("omp declare target link");
-	  std::swap (at1, at2);
-	}
-      else
-	id = get_identifier ("omp declare target");
-      if (at2)
-	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "%qD specified both in declare target %<link%> and %<to%>"
-		    " clauses", t);
-	  continue;
-	}
-      if (!at1)
-	{
-	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
-	  if (TREE_CODE (t) != FUNCTION_DECL && !is_global_var (t))
-	    continue;
-
-	  symtab_node *node = symtab_node::get (t);
-	  if (node != NULL)
-	    {
-	      node->offloadable = 1;
-	      if (ENABLE_OFFLOADING)
-		{
-		  g->have_offload = true;
-		  if (is_a <varpool_node *> (node))
-		    vec_safe_push (offload_vars, t);
-		}
-	    }
-	}
-      if (TREE_CODE (t) != FUNCTION_DECL)
+      if (!handle_omp_declare_target_clause (c, t, device_type))
 	continue;
-      if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0)
-	{
-	  tree at3 = lookup_attribute ("omp declare target host",
-				       DECL_ATTRIBUTES (t));
-	  if (at3 == NULL_TREE)
-	    {
-	      id = get_identifier ("omp declare target host");
-	      DECL_ATTRIBUTES (t)
-		= tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
-	    }
-	}
-      if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0)
-	{
-	  tree at3 = lookup_attribute ("omp declare target nohost",
-				       DECL_ATTRIBUTES (t));
-	  if (at3 == NULL_TREE)
-	    {
-	      id = get_identifier ("omp declare target nohost");
-	      DECL_ATTRIBUTES (t)
-		= tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
-	    }
-	}
+      if (VAR_OR_FUNCTION_DECL_P (t)
+	  && DECL_LOCAL_DECL_P (t)
+	  && DECL_LANG_SPECIFIC (t)
+	  && DECL_LOCAL_DECL_ALIAS (t))
+	handle_omp_declare_target_clause (c, DECL_LOCAL_DECL_ALIAS (t),
+					  device_type);
     }
   if (device_type && only_device_type)
     warning_at (OMP_CLAUSE_LOCATION (clauses), 0,

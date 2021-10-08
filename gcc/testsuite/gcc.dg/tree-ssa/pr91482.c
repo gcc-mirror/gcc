@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ccp1 -fdump-tree-store-merging" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-ccp1 -fdump-tree-store-merging" } */
 
 void write64 (void *p)
 {

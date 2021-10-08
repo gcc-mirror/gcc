@@ -3392,7 +3392,7 @@ darwin_rs6000_override_options (void)
       && !flag_apple_kext
       && strverscmp (darwin_macosx_version_min, "10.5") >= 0
       && ! (rs6000_isa_flags_explicit & OPTION_MASK_ALTIVEC)
-      && ! global_options_set.x_rs6000_cpu_index)
+      && ! OPTION_SET_P (rs6000_cpu_index))
     {
       rs6000_isa_flags |= OPTION_MASK_ALTIVEC;
     }
@@ -3471,18 +3471,18 @@ rs6000_override_options_after_change (void)
 {
   /* Explicit -funroll-loops turns -munroll-only-small-loops off, and
      turns -frename-registers on.  */
-  if ((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
-       || (global_options_set.x_flag_unroll_all_loops
+  if ((OPTION_SET_P (flag_unroll_loops) && flag_unroll_loops)
+       || (OPTION_SET_P (flag_unroll_all_loops)
 	   && flag_unroll_all_loops))
     {
-      if (!global_options_set.x_unroll_only_small_loops)
+      if (!OPTION_SET_P (unroll_only_small_loops))
 	unroll_only_small_loops = 0;
-      if (!global_options_set.x_flag_rename_registers)
+      if (!OPTION_SET_P (flag_rename_registers))
 	flag_rename_registers = 1;
-      if (!global_options_set.x_flag_cunroll_grow_size)
+      if (!OPTION_SET_P (flag_cunroll_grow_size))
 	flag_cunroll_grow_size = 1;
     }
-  else if (!global_options_set.x_flag_cunroll_grow_size)
+  else if (!OPTION_SET_P (flag_cunroll_grow_size))
     flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
 }
 
@@ -3490,7 +3490,7 @@ rs6000_override_options_after_change (void)
 static void
 rs6000_linux64_override_options ()
 {
-  if (!global_options_set.x_rs6000_alignment_flags)
+  if (!OPTION_SET_P (rs6000_alignment_flags))
     rs6000_alignment_flags = MASK_ALIGN_NATURAL;
   if (rs6000_isa_flags & OPTION_MASK_64BIT)
     {
@@ -3526,11 +3526,11 @@ rs6000_linux64_override_options ()
 	  rs6000_isa_flags |= OPTION_MASK_POWERPC64;
 	  error ("%<-m64%> requires a PowerPC64 cpu");
 	}
-      if (!global_options_set.x_rs6000_current_cmodel)
+      if (!OPTION_SET_P (rs6000_current_cmodel))
 	SET_CMODEL (CMODEL_MEDIUM);
       if ((rs6000_isa_flags_explicit & OPTION_MASK_MINIMAL_TOC) != 0)
 	{
-	  if (global_options_set.x_rs6000_current_cmodel
+	  if (OPTION_SET_P (rs6000_current_cmodel)
 	      && rs6000_current_cmodel != CMODEL_SMALL)
 	    error ("%<-mcmodel incompatible with other toc options%>");
 	  if (TARGET_MINIMAL_TOC)
@@ -3545,14 +3545,14 @@ rs6000_linux64_override_options ()
 	}
       if (rs6000_current_cmodel != CMODEL_SMALL)
 	{
-	  if (!global_options_set.x_TARGET_NO_FP_IN_TOC)
+	  if (!OPTION_SET_P (TARGET_NO_FP_IN_TOC))
 	    TARGET_NO_FP_IN_TOC = rs6000_current_cmodel == CMODEL_MEDIUM;
-	  if (!global_options_set.x_TARGET_NO_SUM_IN_TOC)
+	  if (!OPTION_SET_P (TARGET_NO_SUM_IN_TOC))
 	    TARGET_NO_SUM_IN_TOC = 0;
 	}
       if (TARGET_PLTSEQ && DEFAULT_ABI != ABI_ELFv2)
 	{
-	  if (global_options_set.x_rs6000_pltseq)
+	  if (OPTION_SET_P (rs6000_pltseq))
 	    warning (0, "%qs unsupported for this ABI",
 		     "-mpltseq");
 	  rs6000_pltseq = false;
@@ -3567,7 +3567,7 @@ rs6000_linux64_override_options ()
 	  profile_kernel = 0;
 	  error (INVALID_32BIT, "profile-kernel");
 	}
-      if (global_options_set.x_rs6000_current_cmodel)
+      if (OPTION_SET_P (rs6000_current_cmodel))
 	{
 	  SET_CMODEL (CMODEL_SMALL);
 	  error (INVALID_32BIT, "cmodel");
@@ -3627,7 +3627,7 @@ glibc_supports_ieee_128bit (void)
      includes OPTION_TARGET_CPU_DEFAULT, representing the name of the
      default CPU specified at build configure time, TARGET_DEFAULT,
      representing the default set of option flags for the default
-     target, and global_options_set.x_rs6000_isa_flags, representing
+     target, and OPTION_SET_P (rs6000_isa_flags), representing
      which options were requested on the command line.
 
    Upon return from this function:
@@ -3676,13 +3676,13 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Remember the explicit arguments.  */
   if (global_init_p)
-    rs6000_isa_flags_explicit = global_options_set.x_rs6000_isa_flags;
+    rs6000_isa_flags_explicit = OPTION_SET_P (rs6000_isa_flags);
 
   /* On 64-bit Darwin, power alignment is ABI-incompatible with some C
      library functions, so warn about it. The flag may be useful for
      performance studies from time to time though, so don't disable it
      entirely.  */
-  if (global_options_set.x_rs6000_alignment_flags
+  if (OPTION_SET_P (rs6000_alignment_flags)
       && rs6000_alignment_flags == MASK_ALIGN_POWER
       && DEFAULT_ABI == ABI_DARWIN
       && TARGET_64BIT)
@@ -3695,20 +3695,20 @@ rs6000_option_override_internal (bool global_init_p)
      with enough (>= 32) registers.  It is an expensive optimization.
      So it is on only for peak performance.  */
   if (optimize >= 3 && global_init_p
-      && !global_options_set.x_flag_ira_loop_pressure)
+      && !OPTION_SET_P (flag_ira_loop_pressure))
     flag_ira_loop_pressure = 1;
 
   /* -fsanitize=address needs to turn on -fasynchronous-unwind-tables in order
      for tracebacks to be complete but not if any -fasynchronous-unwind-tables
      options were already specified.  */
   if (flag_sanitize & SANITIZE_USER_ADDRESS
-      && !global_options_set.x_flag_asynchronous_unwind_tables)
+      && !OPTION_SET_P (flag_asynchronous_unwind_tables))
     flag_asynchronous_unwind_tables = 1;
 
   /* -fvariable-expansion-in-unroller is a win for POWER whenever the
      loop unroller is active.  It is only checked during unrolling, so
      we can just set it on by default.  */
-  if (!global_options_set.x_flag_variable_expansion_in_unroller)
+  if (!OPTION_SET_P (flag_variable_expansion_in_unroller))
     flag_variable_expansion_in_unroller = 1;
 
   /* Set the pointer size.  */
@@ -3905,7 +3905,7 @@ rs6000_option_override_internal (bool global_init_p)
 
 #ifdef XCOFF_DEBUGGING_INFO
   /* For AIX default to 64-bit DWARF.  */
-  if (!global_options_set.x_dwarf_offset_size)
+  if (!OPTION_SET_P (dwarf_offset_size))
     dwarf_offset_size = POINTER_SIZE_UNITS;
 #endif
 
@@ -4129,7 +4129,7 @@ rs6000_option_override_internal (bool global_init_p)
   else if (TARGET_ALLOW_MOVMISALIGN && !TARGET_VSX)
     {
       if (TARGET_ALLOW_MOVMISALIGN > 0
-	  && global_options_set.x_TARGET_ALLOW_MOVMISALIGN)
+	  && OPTION_SET_P (TARGET_ALLOW_MOVMISALIGN))
 	error ("%qs requires %qs", "-mallow-movmisalign", "-mvsx");
 
       TARGET_ALLOW_MOVMISALIGN = 0;
@@ -4184,7 +4184,7 @@ rs6000_option_override_internal (bool global_init_p)
 				  : FLOAT_PRECISION_TFmode);
 
   /* Set long double size before the IEEE 128-bit tests.  */
-  if (!global_options_set.x_rs6000_long_double_type_size)
+  if (!OPTION_SET_P (rs6000_long_double_type_size))
     {
       if (main_target_opt != NULL
 	  && (main_target_opt->x_rs6000_long_double_type_size
@@ -4197,7 +4197,7 @@ rs6000_option_override_internal (bool global_init_p)
     ; /* The option value can be seen when cl_target_option_restore is called.  */
   else if (rs6000_long_double_type_size == 128)
     rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
-  else if (global_options_set.x_rs6000_ieeequad)
+  else if (OPTION_SET_P (rs6000_ieeequad))
     {
       if (global_options.x_rs6000_ieeequad)
 	error ("%qs requires %qs", "-mabi=ieeelongdouble", "-mlong-double-128");
@@ -4210,7 +4210,7 @@ rs6000_option_override_internal (bool global_init_p)
      explicitly redefine TARGET_IEEEQUAD and TARGET_IEEEQUAD_DEFAULT to 0, so
      those systems will not pick up this default.  Warn if the user changes the
      default unless -Wno-psabi.  */
-  if (!global_options_set.x_rs6000_ieeequad)
+  if (!OPTION_SET_P (rs6000_ieeequad))
     rs6000_ieeequad = TARGET_IEEEQUAD_DEFAULT;
 
   else
@@ -4395,7 +4395,7 @@ rs6000_option_override_internal (bool global_init_p)
   /* Enable Altivec ABI for AIX -maltivec.  */
   if (TARGET_XCOFF
       && (TARGET_ALTIVEC || TARGET_VSX)
-      && !global_options_set.x_rs6000_altivec_abi)
+      && !OPTION_SET_P (rs6000_altivec_abi))
     {
       if (main_target_opt != NULL && !main_target_opt->x_rs6000_altivec_abi)
 	error ("target attribute or pragma changes AltiVec ABI");
@@ -4408,7 +4408,7 @@ rs6000_option_override_internal (bool global_init_p)
      be explicitly overridden in either case.  */
   if (TARGET_ELF)
     {
-      if (!global_options_set.x_rs6000_altivec_abi
+      if (!OPTION_SET_P (rs6000_altivec_abi)
 	  && (TARGET_64BIT || TARGET_ALTIVEC || TARGET_VSX))
 	{
 	  if (main_target_opt != NULL &&
@@ -4438,7 +4438,7 @@ rs6000_option_override_internal (bool global_init_p)
   /* Place FP constants in the constant pool instead of TOC
      if section anchors enabled.  */
   if (flag_section_anchors
-      && !global_options_set.x_TARGET_NO_FP_IN_TOC)
+      && !OPTION_SET_P (TARGET_NO_FP_IN_TOC))
     TARGET_NO_FP_IN_TOC = 1;
 
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
@@ -4595,7 +4595,7 @@ rs6000_option_override_internal (bool global_init_p)
     }
 
   /* Handle stack protector */
-  if (!global_options_set.x_rs6000_stack_protector_guard)
+  if (!OPTION_SET_P (rs6000_stack_protector_guard))
 #ifdef TARGET_THREAD_SSP_OFFSET
     rs6000_stack_protector_guard = SSP_TLS;
 #else
@@ -4607,7 +4607,7 @@ rs6000_option_override_internal (bool global_init_p)
   rs6000_stack_protector_guard_reg = TARGET_64BIT ? 13 : 2;
 #endif
 
-  if (global_options_set.x_rs6000_stack_protector_guard_offset_str)
+  if (OPTION_SET_P (rs6000_stack_protector_guard_offset_str))
     {
       char *endp;
       const char *str = rs6000_stack_protector_guard_offset_str;
@@ -4626,7 +4626,7 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_stack_protector_guard_offset = offset;
     }
 
-  if (global_options_set.x_rs6000_stack_protector_guard_reg_str)
+  if (OPTION_SET_P (rs6000_stack_protector_guard_reg_str))
     {
       const char *str = rs6000_stack_protector_guard_reg_str;
       int reg = decode_reg_name (str);
@@ -4654,7 +4654,7 @@ rs6000_option_override_internal (bool global_init_p)
       /* Set aix_struct_return last, after the ABI is determined.
 	 If -maix-struct-return or -msvr4-struct-return was explicitly
 	 used, don't override with the ABI default.  */
-      if (!global_options_set.x_aix_struct_return)
+      if (!OPTION_SET_P (aix_struct_return))
 	aix_struct_return = (DEFAULT_ABI != ABI_V4 || DRAFT_V4_STRUCT_RET);
 
 #if 0
@@ -6272,14 +6272,14 @@ rs6000_file_start (void)
 	  start = "";
 	}
 
-      if (global_options_set.x_rs6000_cpu_index)
+      if (OPTION_SET_P (rs6000_cpu_index))
 	{
 	  fprintf (file, "%s -mcpu=%s", start,
 		   processor_target_table[rs6000_cpu_index].name);
 	  start = "";
 	}
 
-      if (global_options_set.x_rs6000_tune_index)
+      if (OPTION_SET_P (rs6000_tune_index))
 	{
 	  fprintf (file, "%s -mtune=%s", start,
 		   processor_target_table[rs6000_tune_index].name);
@@ -21053,7 +21053,7 @@ rs6000_darwin_file_start (void)
   if (rs6000_default_cpu != 0 && rs6000_default_cpu[0] != '\0')
     cpu_id = rs6000_default_cpu;
 
-  if (global_options_set.x_rs6000_cpu_index)
+  if (OPTION_SET_P (rs6000_cpu_index))
     cpu_id = processor_target_table[rs6000_cpu_index].name;
 
   /* Look through the mapping array.  Pick the first name that either

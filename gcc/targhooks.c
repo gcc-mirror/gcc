@@ -2453,12 +2453,12 @@ default_max_noce_ifcvt_seq_cost (edge e)
 
   if (predictable_p)
     {
-      if (global_options_set.x_param_max_rtl_if_conversion_predictable_cost)
+      if (OPTION_SET_P (param_max_rtl_if_conversion_predictable_cost))
 	return param_max_rtl_if_conversion_predictable_cost;
     }
   else
     {
-      if (global_options_set.x_param_max_rtl_if_conversion_unpredictable_cost)
+      if (OPTION_SET_P (param_max_rtl_if_conversion_unpredictable_cost))
 	return param_max_rtl_if_conversion_unpredictable_cost;
     }
 

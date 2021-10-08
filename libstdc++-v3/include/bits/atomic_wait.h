@@ -190,11 +190,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     struct __waiter_pool_base
     {
-#ifdef __cpp_lib_hardware_interference_size
-    static constexpr auto _S_align = hardware_destructive_interference_size;
-#else
-    static constexpr auto _S_align = 64;
-#endif
+      // Don't use std::hardware_destructive_interference_size here because we
+      // don't want the layout of library types to depend on compiler options.
+      static constexpr auto _S_align = 64;
 
       alignas(_S_align) __platform_wait_t _M_wait = 0;
 

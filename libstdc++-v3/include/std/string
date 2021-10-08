@@ -124,12 +124,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erase_if(basic_string<_CharT, _Traits, _Alloc>& __cont, _Predicate __pred)
     {
       using namespace __gnu_cxx;
-      using _It = typename basic_string<_CharT, _Traits, _Alloc>::iterator;
       const auto __osz = __cont.size();
-      _It __removed(std::__remove_if(std::__niter_base(__cont.begin()),
-				      std::__niter_base(__cont.end()),
-				      __ops::__pred_iter(std::ref(__pred))));
-      __cont.erase(__removed, __cont.end());
+      const auto __end = __cont.end();
+      auto __removed = std::__remove_if(__cont.begin(), __end,
+					__ops::__pred_iter(std::ref(__pred)));
+      __cont.erase(__removed, __end);
       return __osz - __cont.size();
     }
 
@@ -138,12 +137,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erase(basic_string<_CharT, _Traits, _Alloc>& __cont, const _Up& __value)
     {
       using namespace __gnu_cxx;
-      using _It = typename basic_string<_CharT, _Traits, _Alloc>::iterator;
       const auto __osz = __cont.size();
-      _It __removed(std::__remove_if(std::__niter_base(__cont.begin()),
-				      std::__niter_base(__cont.end()),
-				      __ops::__iter_equals_val(__value)));
-      __cont.erase(__removed, __cont.end());
+      const auto __end = __cont.end();
+      auto __removed = std::__remove_if(__cont.begin(), __end,
+					__ops::__iter_equals_val(__value));
+      __cont.erase(__removed, __end);
       return __osz - __cont.size();
     }
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -48,6 +48,7 @@
 #include "expr.h"
 #include "tm-constrs.h"
 #include "builtins.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -412,7 +413,7 @@ static void
 m32c_option_override (void)
 {
   /* We limit memregs to 0..16, and provide a default.  */
-  if (global_options_set.x_target_memregs)
+  if (OPTION_SET_P (target_memregs))
     {
       if (target_memregs < 0 || target_memregs > 16)
 	error ("invalid target memregs value %<%d%>", target_memregs);

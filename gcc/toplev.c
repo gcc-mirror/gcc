@@ -1408,14 +1408,16 @@ process_options (bool no_backend)
 	debug_info_level = DINFO_LEVEL_NONE;
     }
 
-  /* CTF is supported for only C at this time.
-     Compiling with -flto results in frontend language of GNU GIMPLE.  */
+  /* CTF is supported for only C at this time.  */
   if (!lang_GNU_C ()
       && ctf_debug_info_level > CTFINFO_LEVEL_NONE)
     {
-      inform (UNKNOWN_LOCATION,
-	      "CTF debug info requested, but not supported for %qs frontend",
-	      language_string);
+      /* Compiling with -flto results in frontend language of GNU GIMPLE.  It
+	 is not useful to warn in that case.  */
+      if (!startswith (lang_hooks.name, "GNU GIMPLE"))
+	inform (UNKNOWN_LOCATION,
+		"CTF debug info requested, but not supported for %qs frontend",
+		language_string);
       ctf_debug_info_level = CTFINFO_LEVEL_NONE;
     }
 
@@ -1751,7 +1753,7 @@ process_options (bool no_backend)
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error
      have not been set.  */
-  if (!global_options_set.x_warnings_are_errors)
+  if (!OPTION_SET_P (warnings_are_errors))
     {
       if (warn_coverage_mismatch
 	  && (global_dc->classify_diagnostic[OPT_Wcoverage_mismatch] ==

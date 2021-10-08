@@ -2,7 +2,7 @@
    are either big or little endian (not pdp endian).  */
 /* { dg-do run { target { lp64 && { i?86-*-* x86_64-*-* powerpc*-*-* aarch64*-*-* } } } } */
 /* { dg-require-effective-target store_merge } */
-/* { dg-options "-O2 -fdump-tree-store-merging" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-store-merging" } */
 
 __attribute__((noipa)) void
 f1 (unsigned char *p, unsigned long long q)

@@ -8530,6 +8530,10 @@ convert_template_argument (tree parm,
       else
 	t = tsubst (t, args, complain, in_decl);
 
+      /* Perform array-to-pointer and function-to-pointer conversion
+	 as per [temp.param]/10.  */
+      t = type_decays_to (t);
+
       if (invalid_nontype_parm_type_p (t, complain))
 	return error_mark_node;
 

@@ -1441,7 +1441,7 @@ arc_override_options (void)
     target_flags |= MASK_NO_SDATA_SET;
 
   /* Check for small data option */
-  if (!global_options_set.x_g_switch_value && !TARGET_NO_SDATA_SET)
+  if (!OPTION_SET_P (g_switch_value) && !TARGET_NO_SDATA_SET)
     g_switch_value = TARGET_LL64 ? 8 : 4;
 
   /* A7 has an issue with delay slots.  */
@@ -1455,7 +1455,7 @@ arc_override_options (void)
     target_flags &= ~MASK_MILLICODE_THUNK_SET;
 
   /* Set unaligned to all HS cpus.  */
-  if (!global_options_set.x_unaligned_access && TARGET_HS)
+  if (!OPTION_SET_P (unaligned_access) && TARGET_HS)
     unaligned_access = 1;
 
   /* These need to be done at start up.  It's convenient to do them here.  */

@@ -1,7 +1,7 @@
 /* Prefetching used to prefer nonsensical unroll factor of 5 in this testcase.  */
 
 /* { dg-do compile { target { i?86-*-* x86_64-*-* } } } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -march=amdfam10 -fdump-tree-aprefetch-details" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fprefetch-loop-arrays -march=amdfam10 -fdump-tree-aprefetch-details" } */
 
 #define N 1000000
 

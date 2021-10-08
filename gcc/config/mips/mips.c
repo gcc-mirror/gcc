@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "rtl-iter.h"
 #include "flags.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -19883,7 +19884,7 @@ mips_option_override (void)
 {
   int i, start, regno, mode;
 
-  if (global_options_set.x_mips_isa_option)
+  if (OPTION_SET_P (mips_isa_option))
     mips_isa_option_info = &mips_cpu_info_table[mips_isa_option];
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
@@ -19915,7 +19916,7 @@ mips_option_override (void)
     TARGET_INTERLINK_COMPRESSED = 1;
 
   /* Set the small data limit.  */
-  mips_small_data_threshold = (global_options_set.x_g_switch_value
+  mips_small_data_threshold = (OPTION_SET_P (g_switch_value)
 			       ? g_switch_value
 			       : MIPS_DEFAULT_GVALUE);
 
@@ -19923,7 +19924,7 @@ mips_option_override (void)
      Similar code was added to GAS 2.14 (see tc-mips.c:md_after_parse_args()).
      The GAS and GCC code should be kept in sync as much as possible.  */
 
-  if (global_options_set.x_mips_arch_option)
+  if (OPTION_SET_P (mips_arch_option))
     mips_set_architecture (mips_cpu_info_from_opt (mips_arch_option));
 
   if (mips_isa_option_info != 0)
@@ -19945,7 +19946,7 @@ mips_option_override (void)
 	   mips_arch_info->name);
 
   /* Optimize for mips_arch, unless -mtune selects a different processor.  */
-  if (global_options_set.x_mips_tune_option)
+  if (OPTION_SET_P (mips_tune_option))
     mips_set_tune (mips_cpu_info_from_opt (mips_tune_option));
 
   if (mips_tune_info == 0)

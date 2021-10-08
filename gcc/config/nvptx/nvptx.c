@@ -215,7 +215,7 @@ nvptx_option_override (void)
   /* Set toplevel_reorder, unless explicitly disabled.  We need
      reordering so that we emit necessary assembler decls of
      undeclared variables. */
-  if (!global_options_set.x_flag_toplevel_reorder)
+  if (!OPTION_SET_P (flag_toplevel_reorder))
     flag_toplevel_reorder = 1;
 
   debug_nonbind_markers_p = 0;
@@ -223,7 +223,7 @@ nvptx_option_override (void)
   /* Set flag_no_common, unless explicitly disabled.  We fake common
      using .weak, and that's not entirely accurate, so avoid it
      unless forced.  */
-  if (!global_options_set.x_flag_no_common)
+  if (!OPTION_SET_P (flag_no_common))
     flag_no_common = 1;
 
   /* The patch area requires nops, which we don't have.  */

@@ -1962,8 +1962,7 @@ loop_prefetch_arrays (class loop *loop)
      iterations so that we do not issue superfluous prefetches.  */
   if (unroll_factor != 1)
     {
-      tree_unroll_loop (loop, unroll_factor,
-			single_dom_exit (loop), &desc);
+      tree_unroll_loop (loop, unroll_factor, &desc);
       unrolled = true;
     }
 

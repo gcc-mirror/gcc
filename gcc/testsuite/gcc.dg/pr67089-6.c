@@ -1,6 +1,6 @@
 /* PR target/67089 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-loop-if-convert -fdump-tree-widening_mul" } */
+/* { dg-options "-O2 -fno-tree-vectorize -ftree-loop-if-convert -fdump-tree-widening_mul" } */
 
 extern void abort (void);
 
