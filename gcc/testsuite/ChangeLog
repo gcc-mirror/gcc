@@ -1,3 +1,39 @@
+2021-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/61355
+	* g++.old-deja/g++.pt/nontype5.C: Adjust.
+	* g++.dg/template/param6.C: New test.
+
+2021-10-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-mmx-paddsb-2.c: New test case.
+	* gcc.target/i386/sse2-mmx-paddusb-2.c: New test case.
+	* gcc.target/i386/sse2-mmx-psubsb-2.c: New test case.
+	* gcc.target/i386/sse2-mmx-psubusb-2.c: New test case.
+
+2021-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99904
+	* g++.dg/cpp2a/concepts-ttp4.C: New test.
+
+2021-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/102482
+	* g++.dg/warn/Winit-list5.C: New test.
+
+2021-10-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/torture/pr102581.C: New test.
+
+2021-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102615
+	* g++.dg/cpp23/charlit-encoding1.C: New testcase for C++23 P2316R2.
+
+2021-10-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-47.c: New testcase.
+
 2021-10-06  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/spaceship-synth8a.C: New test.

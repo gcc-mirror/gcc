@@ -1,3 +1,8 @@
+2021-10-07  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (parse_optimize_options): Make
+	save_opt_decoded_options a pointer type.
+
 2021-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/102571

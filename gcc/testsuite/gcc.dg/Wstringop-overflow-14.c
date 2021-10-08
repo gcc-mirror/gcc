@@ -35,8 +35,8 @@ void test_memcpy_cond (int i)
 void test_int16 (void)
 {
   char *p = a4 + 1;
-  *(int16_t*)p = 0;
-  *(int16_t*)(p + 2) = 0;   // { dg-warning "writing 2 bytes into a region of size 1" }
+  *(int16_t*)p = 0;    // { dg-warning "writing 4 bytes into a region of size 3" { target { i?86-*-* x86_64-*-* } } }
+  *(int16_t*)(p + 2) = 0;   // { dg-warning "writing 2 bytes into a region of size 1" "" { xfail { i?86-*-* x86_64-*-* } } }
 }
 
 

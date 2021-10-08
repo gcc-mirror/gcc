@@ -3034,7 +3034,7 @@ Perform variable tracking and also tag variables that are uninitialized.
 
 ; Alias to enable both -ftree-loop-vectorize and -ftree-slp-vectorize.
 ftree-vectorize
-Common Optimization
+Common Var(flag_tree_vectorize) Optimization
 Enable vectorization on trees.
 
 ftree-vectorizer-verbose=

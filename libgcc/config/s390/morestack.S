@@ -28,6 +28,8 @@
 # also cover signal frame size.
 #define BACKOFF 0x1000
 
+#include <auto-host.h>
+
 # The __morestack function.
 
 	.global	__morestack
@@ -594,7 +596,11 @@ __morestack_make_guard:
 
 # Make __stack_split_initialize a high priority constructor.
 
+#if HAVE_INITFINI_ARRAY_SUPPORT
+	.section .init_array.00000,"aw",@progbits
+#else
 	.section .ctors.65535,"aw",@progbits
+#endif
 
 #ifndef __LP64__
 	.align	4

@@ -1,6 +1,6 @@
 /* PR middle-end/90676 - default GIMPLE dumps lack information
    { dg-do compile }
-   { dg-options "-O2 -fdump-tree-store-merging" }
+   { dg-options "-O2 -fno-tree-vectorize -fdump-tree-store-merging" }
    { dg-require-effective-target int32plus }
    { dg-require-effective-target store_merge } */
 

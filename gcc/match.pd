@@ -6191,6 +6191,35 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (froms (convert float_value_p@0))
    (convert (tos @0)))))
 
+#if GIMPLE
+(match float16_value_p
+ @0
+ (if (TYPE_MAIN_VARIANT (TREE_TYPE (@0)) == float16_type_node)))
+(for froms (BUILT_IN_TRUNCL BUILT_IN_TRUNC BUILT_IN_TRUNCF
+	    BUILT_IN_FLOORL BUILT_IN_FLOOR BUILT_IN_FLOORF
+	    BUILT_IN_CEILL BUILT_IN_CEIL BUILT_IN_CEILF
+	    BUILT_IN_ROUNDEVENL BUILT_IN_ROUNDEVEN BUILT_IN_ROUNDEVENF
+	    BUILT_IN_ROUNDL BUILT_IN_ROUND BUILT_IN_ROUNDF
+	    BUILT_IN_NEARBYINTL BUILT_IN_NEARBYINT BUILT_IN_NEARBYINTF
+	    BUILT_IN_RINTL BUILT_IN_RINT BUILT_IN_RINTF)
+     tos (IFN_TRUNC IFN_TRUNC IFN_TRUNC
+	  IFN_FLOOR IFN_FLOOR IFN_FLOOR
+	  IFN_CEIL IFN_CEIL IFN_CEIL
+	  IFN_ROUNDEVEN IFN_ROUNDEVEN IFN_ROUNDEVEN
+	  IFN_ROUND IFN_ROUND IFN_ROUND
+	  IFN_NEARBYINT IFN_NEARBYINT IFN_NEARBYINT
+	  IFN_RINT IFN_RINT IFN_RINT)
+ /* (_Float16) round ((doube) x) -> __built_in_roundf16 (x), etc.,
+    if x is a _Float16.  */
+ (simplify
+   (convert (froms (convert float16_value_p@0)))
+     (if (optimize
+	  && types_match (type, TREE_TYPE (@0))
+	  && direct_internal_fn_supported_p (as_internal_fn (tos),
+					     type, OPTIMIZE_FOR_BOTH))
+       (tos @0))))
+#endif
+
 (for froms (XFLOORL XCEILL XROUNDL XRINTL)
      tos (XFLOOR XCEIL XROUND XRINT)
  /* llfloorl(extend(x)) -> llfloor(x), etc., if x is a double.  */

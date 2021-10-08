@@ -10453,9 +10453,12 @@ also turns on the following optimization flags:
 -fstrict-aliasing @gol
 -fthread-jumps @gol
 -ftree-builtin-call-dce @gol
+-ftree-loop-vectorize @gol
 -ftree-pre @gol
+-ftree-slp-vectorize @gol
 -ftree-switch-conversion  -ftree-tail-merge @gol
--ftree-vrp}
+-ftree-vrp @gol
+-fvect-cost-model=very-cheap}
 
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.
@@ -10475,11 +10478,8 @@ by @option{-O2} and also turns on the following optimization flags:
 -fsplit-loops @gol
 -fsplit-paths @gol
 -ftree-loop-distribution @gol
--ftree-loop-vectorize @gol
 -ftree-partial-pre @gol
--ftree-slp-vectorize @gol
 -funswitch-loops @gol
--fvect-cost-model @gol
 -fvect-cost-model=dynamic @gol
 -fversion-loops-for-strides}
 
