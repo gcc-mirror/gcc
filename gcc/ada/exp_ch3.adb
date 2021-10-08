@@ -11102,7 +11102,6 @@ package body Exp_Ch3 is
       --  they may be ancestors of synchronized interface types).
 
       if Ada_Version >= Ada_2005
-        and then not Is_Interface (Tag_Typ)
         and then
           ((Is_Interface (Etype (Tag_Typ))
              and then Is_Limited_Record (Etype (Tag_Typ)))
@@ -11123,7 +11122,7 @@ package body Exp_Ch3 is
          Append_To (Res, Make_Disp_Timed_Select_Body        (Tag_Typ));
       end if;
 
-      if not Is_Limited_Type (Tag_Typ) and then not Is_Interface (Tag_Typ) then
+      if not Is_Limited_Type (Tag_Typ) then
 
          --  Body for equality
 
