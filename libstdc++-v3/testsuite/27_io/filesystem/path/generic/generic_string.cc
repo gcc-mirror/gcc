@@ -69,7 +69,9 @@ test03()
     // A path constructed from the generic format string should compare equal
     // to the original, because they represent the same path.
     VERIFY( path(p.generic_string()) == p );
+#ifdef _GLIBCXX_USE_WCHAR_T
     VERIFY( path(p.generic_wstring()) == p );
+#endif
     VERIFY( path(p.generic_u8string()) == p );
     VERIFY( path(p.generic_u16string()) == p );
     VERIFY( path(p.generic_u32string()) == p );
@@ -80,7 +82,9 @@ test03()
     // A path constructed from the generic format string should compare equal
     // to the original, because they represent the same path.
     VERIFY( path(p.generic_string()) == p );
+#ifdef _GLIBCXX_USE_WCHAR_T
     VERIFY( path(p.generic_wstring()) == p );
+#endif
     VERIFY( path(p.generic_u8string()) == p );
     VERIFY( path(p.generic_u16string()) == p );
     VERIFY( path(p.generic_u32string()) == p );
