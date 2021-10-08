@@ -1840,6 +1840,13 @@ namespace __detail
     {
     private:
       using __ebo_node_alloc = _Hashtable_ebo_helper<0, _NodeAlloc>;
+
+      template<typename>
+	struct __get_value_type;
+      template<typename _Val, bool _Cache_hash_code>
+	struct __get_value_type<_Hash_node<_Val, _Cache_hash_code>>
+	{ using type = _Val; };
+
     public:
       using __node_type = typename _NodeAlloc::value_type;
       using __node_alloc_type = _NodeAlloc;
@@ -1847,7 +1854,7 @@ namespace __detail
       using __node_alloc_traits = __gnu_cxx::__alloc_traits<__node_alloc_type>;
 
       using __value_alloc_traits = typename __node_alloc_traits::template
-	rebind_traits<typename __node_type::value_type>;
+	rebind_traits<typename __get_value_type<__node_type>::type>;
 
       using __node_ptr = __node_type*;
       using __node_base = _Hash_node_base;
