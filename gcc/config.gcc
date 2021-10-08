@@ -2539,6 +2539,11 @@ loongarch64-*-linux*)
 	#	;;
 	esac
 
+	# Setting default value for with_arch.
+	if test x${with_arch} == x; then
+		with_arch=loongarch64
+	fi
+
 	# Setting default --with-multilib-list if multilib is enabled.
 	if test x$enable_multilib == xyes; then
 		if test x"${with_multilib_list}" = xdefault; then
@@ -4951,15 +4956,17 @@ case "${target}" in
 
 		# Perform final sanity checks.
 		case ${with_arch} in
-		"")
-			with_arch=loongarch64
-			;;
 		loongarch64 | gs464v) ;; # OK
 		native)
 			if test x${host} != x${target}; then
-				echo "--with-arch=native is illegal for cross compiler." 1>&2
+				echo "--with-arch=native is illegal for cross-compiler." 1>&2
 				exit 1
 			fi
+			;;
+		"")
+			echo "Please set a default value for \${with_arch}" \
+			     "according to the target triplet \"${target}\"." 1>&2
+			exit 1
 			;;
 		*)
 			echo "Unknown arch in --with-arch=$with_arch" 1>&2
