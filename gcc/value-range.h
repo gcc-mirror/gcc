@@ -84,6 +84,7 @@ public:
   // Misc methods.
   bool fits_p (const irange &r) { return m_max_ranges >= r.num_pairs (); }
   void dump (FILE * = stderr) const;
+  void debug () const;
 
   // Deprecated legacy public methods.
   enum value_range_kind kind () const;		// DEPRECATED
