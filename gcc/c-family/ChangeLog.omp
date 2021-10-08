@@ -1,3 +1,14 @@
+2021-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102571
+	* c-omp.c (c_finish_omp_atomic): Optimize the case where type has
+	padding, but the non-padding bits are contiguous set of bytes
+	by adjusting the memcmp call arguments instead of emitting
+	__builtin_clear_padding and then comparing all the type's bytes.
+
 2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

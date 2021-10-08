@@ -1,3 +1,11 @@
+2021-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102640
+	* c-c++-common/gomp/pr102640.c: New test.
+
 2021-10-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

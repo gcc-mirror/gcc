@@ -1,3 +1,12 @@
+2021-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102640
+	* parser.c (handle_omp_declare_target_clause): New function.
+	(cp_parser_omp_declare_target): Use it.
+
 2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
