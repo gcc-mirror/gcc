@@ -822,7 +822,6 @@ BEGIN
    SizeOp,
    AddrOp,
    RecordFieldOp,
-   OffsetOp,
    ArrayOp,
    LogicalShiftOp,
    LogicalRotateOp,
@@ -1207,7 +1206,6 @@ BEGIN
                           CheckAddVariableWrite(Oper3, TRUE, QuadNo)
                        END |
    RecordFieldOp,
-   OffsetOp,
    ArrayOp,
    LogicalShiftOp,
    LogicalRotateOp,
@@ -1355,7 +1353,6 @@ BEGIN
                           CheckRemoveVariableWrite(Oper3, TRUE, QuadNo)
                        END |
    RecordFieldOp,
-   OffsetOp,
    ArrayOp,
    LogicalShiftOp,
    LogicalRotateOp,
@@ -12730,7 +12727,6 @@ BEGIN
                           WriteOperand(Operand3) |
       SizeOp,
       RecordFieldOp,
-      OffsetOp,
       IndrXOp,
       XIndrOp,
       ArrayOp,
@@ -12815,7 +12811,6 @@ BEGIN
    RecordFieldOp            : printf0('RecordField       ') |
    AddrOp                   : printf0('Addr              ') |
    SizeOp                   : printf0('Size              ') |
-   OffsetOp                 : printf0('Offset            ') |
    IfInOp                   : printf0('If IN             ') |
    IfNotInOp                : printf0('If NOT IN         ') |
    IfNotEquOp               : printf0('If <>             ') |

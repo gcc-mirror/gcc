@@ -147,7 +147,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
 TYPE
    QuadOperator = (BecomesOp, IndrXOp, XIndrOp, ArrayOp, ElementSizeOp,
                    RecordFieldOp,
-                   AddrOp, SizeOp, OffsetOp,
+                   AddrOp, SizeOp,
                    IfEquOp, IfLessEquOp, IfGreEquOp, IfGreOp, IfLessOp,
                    IfNotEquOp, IfInOp, IfNotInOp,
                    CallOp, ParamOp, OptParamOp, ReturnOp, ReturnValueOp, FunctValueOp,

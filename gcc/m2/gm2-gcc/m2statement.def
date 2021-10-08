@@ -127,6 +127,19 @@ PROCEDURE BuildParam (location: location_t; param: Tree) ;
 
 
 (*
+   BuildFunctionCallTree - creates a procedure function call from
+                           a procedure and parameter list and the
+                           return type, rettype.  No tree is returned
+                           as the tree is held in the last_function
+                           global variable.  It is expected the
+                           BuildFunctValue is to be called after
+                           a call to BuildFunctionCallTree.
+*)
+
+PROCEDURE BuildFunctionCallTree (location: location_t; procedure: Tree; rettype: Tree) ;
+
+
+(*
    BuildProcedureCallTree - creates a procedure call from a procedure and
                             parameter list and the return type, rettype.
 *)

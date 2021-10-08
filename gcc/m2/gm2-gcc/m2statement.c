@@ -476,6 +476,19 @@ m2statement_BuildCall3 (location_t location, tree function, tree rettype,
   return m2statement_BuildProcedureCallTree (location, function, rettype);
 }
 
+/* BuildFunctionCallTree - creates a procedure function call from
+   a procedure and parameter list and the return type, rettype.
+   No tree is returned as the tree is held in the last_function global
+   variable.  It is expected the BuildFunctValue is to be called after
+   a call to BuildFunctionCallTree.  */
+
+void
+m2statement_BuildFunctionCallTree (location_t location, tree procedure,
+                                   tree rettype)
+{
+  m2statement_BuildProcedureCallTree (location, procedure, rettype);
+}
+
 /* SetLastFunction - assigns last_function to, t.  */
 
 void

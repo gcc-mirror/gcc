@@ -67,6 +67,8 @@ EXTERN tree m2statement_BuildIndirectProcedureCallTree (location_t location,
                                                         tree rettype);
 EXTERN tree m2statement_BuildProcedureCallTree (location_t location,
                                                 tree procedure, tree rettype);
+EXTERN void m2statement_BuildFunctionCallTree (location_t location,
+					       tree procedure, tree rettype);
 EXTERN void m2statement_BuildParam (location_t location, tree param);
 
 EXTERN tree m2statement_BuildIfThenElseEnd (tree condition, tree then_block,
