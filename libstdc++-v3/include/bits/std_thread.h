@@ -35,7 +35,6 @@
 #if __cplusplus >= 201103L
 #include <bits/c++config.h>
 
-#include <exception>		// std::terminate
 #include <iosfwd>		// std::basic_ostream
 #include <tuple>		// std::tuple
 #include <bits/functional_hash.h> // std::hash
@@ -149,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ~thread()
     {
       if (joinable())
-	std::terminate();
+	std::__terminate();
     }
 
     thread(const thread&) = delete;
@@ -162,7 +161,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     thread& operator=(thread&& __t) noexcept
     {
       if (joinable())
-	std::terminate();
+	std::__terminate();
       swap(__t);
       return *this;
     }
