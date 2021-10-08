@@ -33,9 +33,7 @@ void test01()
   VERIFY( (test_category<is_arithmetic, char>(true)) );
   VERIFY( (test_category<is_arithmetic, signed char>(true)) );
   VERIFY( (test_category<is_arithmetic, unsigned char>(true)) );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( (test_category<is_arithmetic, wchar_t>(true)) );
-#endif
   VERIFY( (test_category<is_arithmetic, short>(true)) );
   VERIFY( (test_category<is_arithmetic, unsigned short>(true)) );
   VERIFY( (test_category<is_arithmetic, int>(true)) );

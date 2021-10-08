@@ -26,16 +26,14 @@ void test01()
 {
   using std::is_signed;
   using namespace __gnu_test;
-  
+
   static_assert(test_category<is_signed, void>(false), "");
-  
+
   static_assert(test_category<is_signed, char>(char(-1) < char(0)), "");
   static_assert(test_category<is_signed, signed char>(true), "");
   static_assert(test_category<is_signed, unsigned char>(false), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_signed, wchar_t>
 		(wchar_t(-1) < wchar_t(0)), "");
-#endif
   static_assert(test_category<is_signed, short>(true), "");
   static_assert(test_category<is_signed, unsigned short>(false), "");
   static_assert(test_category<is_signed, int>(true), "");

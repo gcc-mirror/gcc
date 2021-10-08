@@ -28,14 +28,12 @@ void test01()
   using namespace __gnu_test;
 
   static_assert(test_category<is_unsigned, void>(false), "");
-  
+
   static_assert(test_category<is_unsigned, char>(char(-1) > char(0)), "");
   static_assert(test_category<is_unsigned, signed char>(false), "");
   static_assert(test_category<is_unsigned, unsigned char>(true), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_unsigned, wchar_t>
 		(wchar_t(-1) > wchar_t(0)), "");
-#endif
   static_assert(test_category<is_unsigned, short>(false), "");
   static_assert(test_category<is_unsigned, unsigned short>(true), "");
   static_assert(test_category<is_unsigned, int>(false), "");

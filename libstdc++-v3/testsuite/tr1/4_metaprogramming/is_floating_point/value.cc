@@ -32,9 +32,7 @@ void test01()
   VERIFY( (test_category<is_floating_point, char>(false)) );
   VERIFY( (test_category<is_floating_point, signed char>(false)) );
   VERIFY( (test_category<is_floating_point, unsigned char>(false)) );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( (test_category<is_floating_point, wchar_t>(false)) );
-#endif
   VERIFY( (test_category<is_floating_point, short>(false)) );
   VERIFY( (test_category<is_floating_point, unsigned short>(false)) );
   VERIFY( (test_category<is_floating_point, int>(false)) );

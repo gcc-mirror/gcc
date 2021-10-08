@@ -48,9 +48,7 @@ test01()
 {
   VERIFY( check_to_chars(u'\x21') );
   VERIFY( check_to_chars(U'\x21') );
-#if _GLIBCXX_USE_WCHAR_T
   VERIFY( check_to_chars(L'\x21') );
-#endif
 }
 
 int main()

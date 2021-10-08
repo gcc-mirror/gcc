@@ -37,10 +37,8 @@ test01()
   static_assert(std::is_same<decltype(u8"Hello"sv), u8string_view>::value,
 		"u8\"Hello\"s is std::string_view");
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(std::is_same<decltype(L"Hello"sv), std::wstring_view>::value,
 		"L\"Hello\"s is std::wstring_view");
-#endif
 
   static_assert(std::is_same<decltype(u"Hello"sv), std::u16string_view>::value,
 		"u\"Hello\"s is std::u16string_view");

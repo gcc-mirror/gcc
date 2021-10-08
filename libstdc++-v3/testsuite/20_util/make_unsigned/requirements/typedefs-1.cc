@@ -47,12 +47,10 @@ void test01()
   typedef make_unsigned<const char>::type  	test22_type;
   static_assert(is_same<test22_type, const unsigned char>::value, "");
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   typedef make_unsigned<volatile wchar_t>::type  	test23_type;
   static_assert(is_unsigned<test23_type>::value
                 && is_volatile<test23_type>::value
                 && sizeof(test23_type) == sizeof(volatile wchar_t), "");
-#endif
 
   // Chapter 48, chapter 20. Smallest rank such that new unsigned type
   // same size.

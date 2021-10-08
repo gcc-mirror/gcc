@@ -51,7 +51,6 @@ static_assert(std::is_same<xpmr::u32string,
 		      xpmr::polymorphic_allocator<char32_t>>>::value,
     "pmr::u32string");
 
-#ifdef _GLIBCXX_USE_WCHAR_T
 static_assert(std::is_same<xpmr::basic_string<wchar_t>,
     std::basic_string<wchar_t, std::char_traits<wchar_t>,
 		      xpmr::polymorphic_allocator<wchar_t>>>::value,
@@ -64,4 +63,3 @@ static_assert(std::is_same<xpmr::wstring,
     std::basic_string<wchar_t, std::char_traits<wchar_t>,
 		      xpmr::polymorphic_allocator<wchar_t>>>::value,
     "pmr::wstring");
-#endif

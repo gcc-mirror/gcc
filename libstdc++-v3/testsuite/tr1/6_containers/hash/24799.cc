@@ -58,10 +58,8 @@ void test01()
   do_test<double>();
   do_test<long double>();
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   do_test<wchar_t>();
   do_test<std::wstring>();
-#endif
 }
 
 int main()

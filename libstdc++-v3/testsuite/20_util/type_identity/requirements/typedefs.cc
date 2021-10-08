@@ -38,10 +38,7 @@ void test01()
   static_assert(test<volatile unsigned int>::value, "");
   static_assert(test<const volatile unsigned int>::value, "");
   static_assert(test<const unsigned char>::value, "");
-
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test<volatile wchar_t>::value, "" );
-#endif
 
   // Pointers
   static_assert(test<void*>::value, "");

@@ -89,12 +89,10 @@ static_assert( test_assign<std::char_traits<char>>() );
 static_assert( test_compare<std::char_traits<char>>() );
 static_assert( test_length<std::char_traits<char>>() );
 static_assert( test_find<std::char_traits<char>>() );
-#ifdef _GLIBCXX_USE_WCHAR_T
 static_assert( test_assign<std::char_traits<wchar_t>>() );
 static_assert( test_compare<std::char_traits<wchar_t>>() );
 static_assert( test_length<std::char_traits<wchar_t>>() );
 static_assert( test_find<std::char_traits<wchar_t>>() );
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
 static_assert( test_assign<std::char_traits<char8_t>>() );
 static_assert( test_compare<std::char_traits<char8_t>>() );

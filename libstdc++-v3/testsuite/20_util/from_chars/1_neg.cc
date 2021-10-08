@@ -22,11 +22,7 @@
 void
 test01(const char* first, const char* last)
 {
-#if _GLIBCXX_USE_WCHAR_T
   wchar_t wc;
-#else
-  enum W { } wc;
-#endif
   std::from_chars(first, last, wc); // { dg-error "no matching" }
   std::from_chars(first, last, wc, 10); // { dg-error "no matching" }
 
