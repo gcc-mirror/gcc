@@ -32,7 +32,8 @@ driver_get_normalized_m_opts (int argc, const char **argv);
   { "get_normalized_m_opts", driver_get_normalized_m_opts  },
 
 #define DRIVER_HANDLE_MACHINE_OPTIONS \
-  " %{c|S|E: %:set_m_flag(no_link 1)} " \
+  " %{c|S|E|nostdlib: %:set_m_flag(no_link 1)} " \
+  " %{nostartfiles: %{nodefaultlibs: %:set_m_flag(no_link 1)}} " \
   " %{mabi=*: %:set_m_flag(abi %*)} %<mabi=*" \
   " %{march=*: %:set_m_flag(arch %*)} %<march=*" \
   " %{mtune=*: %:set_m_flag(tune %*)} %<mtune=*" \

@@ -37,7 +37,8 @@ static int
   loongarch_arch_driver = M_OPTION_NOT_SEEN,
   loongarch_tune_driver = M_OPTION_NOT_SEEN;
 
-/* This is a rough equivalent to "have_c" in gcc.c.  */
+/* This flag is set to 1 if we believe that the user might be avoiding
+   linking (implicitly) against something from the startfile search paths.  */
 static int no_link = 0;
 
 #define LARCH_DRIVER_SET_M_FLAG(OPTS_ARRAY, N_OPTS, FLAG, STR)  \
@@ -128,7 +129,7 @@ driver_get_normalized_m_opts (int argc, const char **argv)
     NULL
   );
 
- /* Don't throw these ABI/multilib-related error if not linking.  */
+ /* Don't throw these ABI/multilib-related messages if not linking.  */
   if (!no_link)
     {
       char* abi_str_current = concat
@@ -145,8 +146,10 @@ driver_get_normalized_m_opts (int argc, const char **argv)
 	    (loongarch_abi_int_strings[DEFAULT_ABI_INT], "/",
 	     loongarch_abi_float_strings[DEFAULT_ABI_FLOAT], NULL);
 
-	  error ("ABI change detected (%qs -> %qs) while multilib is disabled",
-		 abi_str_default, abi_str_current);
+	  inform (UNKNOWN_LOCATION,
+	      "ABI change detected (%qs -> %qs) while multilib is disabled",
+	      abi_str_default, abi_str_current
+	  );
 	}
 #else
       char* abi_str_current_s = concat ("@", abi_str_current, "@", NULL);
@@ -171,8 +174,10 @@ driver_get_normalized_m_opts (int argc, const char **argv)
 	    }
 	  multilib_list[j] = '\0';
 
-	  error ("ABI (%qs) is not in the configured ABI list (%qs)",
-		 abi_str_current, multilib_list);
+	  inform (UNKNOWN_LOCATION,
+	      "ABI (%qs) is not in the configured ABI list (%qs)",
+	      abi_str_current, multilib_list
+	  );
 	}
 #endif
     }
