@@ -1332,10 +1332,10 @@ process_options (bool no_backend)
     }
 
   /* web and rename-registers help when run after loop unrolling.  */
-  if (flag_web == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (flag_web))
     flag_web = flag_unroll_loops;
 
-  if (flag_rename_registers == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (flag_rename_registers))
     flag_rename_registers = flag_unroll_loops;
 
   if (flag_non_call_exceptions)
@@ -1598,7 +1598,7 @@ process_options (bool no_backend)
       debug_inline_points = 0;
     }
 
-  if (flag_tree_cselim == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (flag_tree_cselim))
     {
       if (HAVE_conditional_move)
 	flag_tree_cselim = 1;
