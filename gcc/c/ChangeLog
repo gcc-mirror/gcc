@@ -1,3 +1,7 @@
+2021-10-07  Richard Biener  <rguenther@suse.de>
+
+	* c-typeck.c (lvalue_p): Also allow MEM_REF and TARGET_MEM_REF.
+
 2021-10-05  Richard Biener  <rguenther@suse.de>
 
 	PR c/102605

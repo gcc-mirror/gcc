@@ -1,3 +1,54 @@
+2021-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/std/chrono (duration, time_point, system_clock)
+	(steady_clock, high_resolution_clock, chrono_literals, sys_time)
+	(file_clock, file_time): Move to ...
+	* include/bits/chrono.h: New file.
+	* include/bits/atomic_futex.h: Include new header instead of
+	<chrono>.
+	* include/bits/atomic_timed_wait.h: Likewise.
+	* include/bits/fs_fwd.h: Likewise.
+	* include/bits/semaphore_base.h: Likewise.
+	* include/bits/this_thread_sleep.h: Likewise.
+	* include/bits/unique_lock.h: Likewise.
+	* include/experimental/bits/fs_fwd.h: Likewise.
+	* include/experimental/chrono: Likewise.
+	* include/experimental/io_context: Likewise.
+	* include/experimental/netfwd: Likewise.
+	* include/experimental/timer: Likewise.
+	* include/std/condition_variable: Likewise.
+	* include/std/mutex: Likewise.
+	* include/std/shared_mutex: Likewise.
+
+2021-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102377
+	* include/bits/atomic_wait.h (__waiter_pool_base:_S_align):
+	Hardcode to 64 instead of using non-constant constant.
+
+2021-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/erase_if.h (__erase_nodes_if): Remove redundant
+	__niter_base calls.
+	* include/std/string (erase, erase_if): Likewise.
+	* include/std/deque (erase, erase_if): Access non-debug
+	container directly.
+	* include/std/map (erase, erase_if): Likewise.
+	* include/std/set (erase, erase_if): Likewise.
+	* include/std/unordered_map (erase, erase_if): Likewise.
+	* include/std/unordered_set (erase, erase_if): Likewise.
+	* include/std/vector (erase, erase_if): Likewise.
+	* include/experimental/deque (erase, erase_if): Likewise.
+	* include/experimental/map (erase, erase_if): Likewise.
+	* include/experimental/set (erase, erase_if): Likewise.
+	* include/experimental/unordered_map (erase, erase_if):
+	Likewise.
+	* include/experimental/unordered_set (erase, erase_if):
+	Likewise.
+	* include/experimental/vector (erase, erase_if): Likewise.
+
 2021-10-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am: Add new headers.

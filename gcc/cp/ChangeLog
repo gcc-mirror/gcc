@@ -1,3 +1,21 @@
+2021-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/61355
+	* pt.c (convert_template_argument): Perform array/function to
+	pointer conversion on the substituted type of an NTTP.
+
+2021-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99904
+	* pt.c (is_compatible_template_arg): Set processing_template_decl
+	around tsubst_constraint_info.
+
+2021-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/102482
+	* init.c (maybe_warn_list_ctor): Do not warn for a reference to
+	a non-const std::initializer_list.
+
 2021-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/102612
