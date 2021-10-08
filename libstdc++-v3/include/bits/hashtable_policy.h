@@ -87,20 +87,25 @@ namespace __detail
 
   struct _Select1st
   {
-    template<typename _Tp>
-      auto
-      operator()(_Tp&& __x) const noexcept
-      -> decltype(std::get<0>(std::forward<_Tp>(__x)))
-      { return std::get<0>(std::forward<_Tp>(__x)); }
-  };
+    template<typename _Pair>
+      struct __1st_type;
 
-  struct _Select2nd
-  {
+    template<typename _Tp, typename _Up>
+      struct __1st_type<pair<_Tp, _Up>>
+      { using type = _Tp; };
+
+    template<typename _Tp, typename _Up>
+      struct __1st_type<const pair<_Tp, _Up>>
+      { using type = const _Tp; };
+
+    template<typename _Pair>
+      struct __1st_type<_Pair&>
+      { using type = typename __1st_type<_Pair>::type&; };
+
     template<typename _Tp>
-      auto
+      typename __1st_type<_Tp>::type&&
       operator()(_Tp&& __x) const noexcept
-      -> decltype(std::get<1>(std::forward<_Tp>(__x)))
-      { return std::get<1>(std::forward<_Tp>(__x)); }
+      { return std::forward<_Tp>(__x).first; }
   };
 
   template<typename _ExKey>
@@ -112,14 +117,10 @@ namespace __detail
       template<typename _Kt, typename _Arg, typename _NodeGenerator>
 	static auto
 	_S_build(_Kt&& __k, _Arg&& __arg, const _NodeGenerator& __node_gen)
-	-> decltype(__node_gen(std::piecewise_construct,
-			       std::forward_as_tuple(std::forward<_Kt>(__k)),
-			       std::forward_as_tuple(_Select2nd{}(
-						std::forward<_Arg>(__arg)))))
+	-> typename _NodeGenerator::__node_type*
 	{
-	  return __node_gen(std::piecewise_construct,
-	    std::forward_as_tuple(std::forward<_Kt>(__k)),
-	    std::forward_as_tuple(_Select2nd{}(std::forward<_Arg>(__arg))));
+	  return __node_gen(std::forward<_Kt>(__k),
+			    std::forward<_Arg>(__arg).second);
 	}
     };
 
@@ -129,7 +130,7 @@ namespace __detail
       template<typename _Kt, typename _Arg, typename _NodeGenerator>
 	static auto
 	_S_build(_Kt&& __k, _Arg&&, const _NodeGenerator& __node_gen)
-	-> decltype(__node_gen(std::forward<_Kt>(__k)))
+	-> typename _NodeGenerator::__node_type*
 	{ return __node_gen(std::forward<_Kt>(__k)); }
     };
 
@@ -146,9 +147,10 @@ namespace __detail
       using __hashtable_alloc = _Hashtable_alloc<__node_alloc_type>;
       using __node_alloc_traits =
 	typename __hashtable_alloc::__node_alloc_traits;
-      using __node_type = typename __hashtable_alloc::__node_type;
 
     public:
+      using __node_type = typename __hashtable_alloc::__node_type;
+
       _ReuseOrAllocNode(__node_type* __nodes, __hashtable_alloc& __h)
       : _M_nodes(__nodes), _M_h(__h) { }
       _ReuseOrAllocNode(const _ReuseOrAllocNode&) = delete;
@@ -194,9 +196,10 @@ namespace __detail
     {
     private:
       using __hashtable_alloc = _Hashtable_alloc<_NodeAlloc>;
-      using __node_type = typename __hashtable_alloc::__node_type;
 
     public:
+      using __node_type = typename __hashtable_alloc::__node_type;
+
       _AllocNode(__hashtable_alloc& __h)
       : _M_h(__h) { }
 
@@ -667,8 +670,8 @@ namespace __detail
   /**
    *  Primary class template _Map_base.
    *
-   *  If the hashtable has a value type of the form pair<T1, T2> and a
-   *  key extraction policy (_ExtractKey) that returns the first part
+   *  If the hashtable has a value type of the form pair<const T1, T2> and
+   *  a key extraction policy (_ExtractKey) that returns the first part
    *  of the pair, the hashtable gets a mapped_type typedef.  If it
    *  satisfies those criteria and also has unique keys, then it also
    *  gets an operator[].
@@ -680,37 +683,38 @@ namespace __detail
 	   bool _Unique_keys = _Traits::__unique_keys::value>
     struct _Map_base { };
 
-  /// Partial specialization, __unique_keys set to false.
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
+  /// Partial specialization, __unique_keys set to false, std::pair value type.
+  template<typename _Key, typename _Val, typename _Alloc, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    struct _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
+    struct _Map_base<_Key, pair<const _Key, _Val>, _Alloc, _Select1st, _Equal,
 		     _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, false>
     {
-      using mapped_type = typename std::tuple_element<1, _Pair>::type;
+      using mapped_type = _Val;
     };
 
   /// Partial specialization, __unique_keys set to true.
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
+  template<typename _Key, typename _Val, typename _Alloc, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    struct _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
+    struct _Map_base<_Key, pair<const _Key, _Val>, _Alloc, _Select1st, _Equal,
 		     _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>
     {
     private:
-      using __hashtable_base = _Hashtable_base<_Key, _Pair, _Select1st, _Equal,
-					       _Hash, _RangeHash, _Unused,
+      using __hashtable_base = _Hashtable_base<_Key, pair<const _Key, _Val>,
+					       _Select1st, _Equal, _Hash,
+					       _RangeHash, _Unused,
 					       _Traits>;
 
-      using __hashtable = _Hashtable<_Key, _Pair, _Alloc, _Select1st, _Equal,
-				     _Hash, _RangeHash,
+      using __hashtable = _Hashtable<_Key, pair<const _Key, _Val>, _Alloc,
+				     _Select1st, _Equal, _Hash, _RangeHash,
 				     _Unused, _RehashPolicy, _Traits>;
 
       using __hash_code = typename __hashtable_base::__hash_code;
 
     public:
       using key_type = typename __hashtable_base::key_type;
-      using mapped_type = typename std::tuple_element<1, _Pair>::type;
+      using mapped_type = _Val;
 
       mapped_type&
       operator[](const key_type& __k);
@@ -721,17 +725,29 @@ namespace __detail
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 761. unordered_map needs an at() member function.
       mapped_type&
-      at(const key_type& __k);
+      at(const key_type& __k)
+      {
+	auto __ite = static_cast<__hashtable*>(this)->find(__k);
+	if (!__ite._M_cur)
+	  __throw_out_of_range(__N("unordered_map::at"));
+	return __ite->second;
+      }
 
       const mapped_type&
-      at(const key_type& __k) const;
+      at(const key_type& __k) const
+      {
+	auto __ite = static_cast<const __hashtable*>(this)->find(__k);
+	if (!__ite._M_cur)
+	  __throw_out_of_range(__N("unordered_map::at"));
+	return __ite->second;
+      }
     };
 
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
+  template<typename _Key, typename _Val, typename _Alloc, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
     auto
-    _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
+    _Map_base<_Key, pair<const _Key, _Val>, _Alloc, _Select1st, _Equal,
 	      _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>::
     operator[](const key_type& __k)
     -> mapped_type&
@@ -754,11 +770,11 @@ namespace __detail
       return __pos->second;
     }
 
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
+  template<typename _Key, typename _Val, typename _Alloc, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
     auto
-    _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
+    _Map_base<_Key, pair<const _Key, _Val>, _Alloc, _Select1st, _Equal,
 	      _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>::
     operator[](key_type&& __k)
     -> mapped_type&
@@ -779,40 +795,6 @@ namespace __detail
 	= __h->_M_insert_unique_node(__bkt, __code, __node._M_node);
       __node._M_node = nullptr;
       return __pos->second;
-    }
-
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    auto
-    _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
-	      _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>::
-    at(const key_type& __k)
-    -> mapped_type&
-    {
-      __hashtable* __h = static_cast<__hashtable*>(this);
-      auto __ite = __h->find(__k);
-
-      if (!__ite._M_cur)
-	__throw_out_of_range(__N("_Map_base::at"));
-      return __ite->second;
-    }
-
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    auto
-    _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
-	      _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>::
-    at(const key_type& __k) const
-    -> const mapped_type&
-    {
-      const __hashtable* __h = static_cast<const __hashtable*>(this);
-      auto __ite = __h->find(__k);
-
-      if (!__ite._M_cur)
-	__throw_out_of_range(__N("_Map_base::at"));
-      return __ite->second;
     }
 
   /**
