@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "target.h"
 #include "tree-iterator.h"
+#include "opts.h"
 
 #include "objc-runtime-hooks.h"
 #include "objc-runtime-shared-support.h"

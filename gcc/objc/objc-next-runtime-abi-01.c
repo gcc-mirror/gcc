@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "c-family/c-objc.h"
 #include "objc-act.h"
+#include "opts.h"
 
 /* When building Objective-C++, we are not linking against the C
    front-end and so need to replicate the C tree-construction
