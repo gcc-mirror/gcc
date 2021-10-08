@@ -719,7 +719,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return false;
     }
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     inline bool
     __rc_string_base<wchar_t, std::char_traits<wchar_t>,
@@ -730,7 +729,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return true;
       return false;
     }
-#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
