@@ -41,9 +41,11 @@ test01()
   VERIFY( str8.get_allocator() == alloc<char8_t>(1) );
 #endif
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   auto strw = p.string<wchar_t>(alloc<wchar_t>(2));
   VERIFY( strw == L"" );
   VERIFY( strw.get_allocator() == alloc<wchar_t>(2) );
+#endif
 
   auto str16 = p.string<char16_t>(alloc<char16_t>(3));
   VERIFY( str16 == u"" );
@@ -70,9 +72,11 @@ test02()
   VERIFY( str8.get_allocator() == alloc<char8_t>(1) );
 #endif
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   auto strw = p.string<wchar_t>(alloc<wchar_t>(2));
   VERIFY( strw == L"abcdefghijklmnopqrstuvwxyz" );
   VERIFY( strw.get_allocator() == alloc<wchar_t>(2) );
+#endif
 
   auto str16 = p.string<char16_t>(alloc<char16_t>(3));
   VERIFY( str16 == u"abcdefghijklmnopqrstuvwxyz" );

@@ -31,12 +31,11 @@ template<typename Elem>
 using buf_conv = std::wbuffer_convert<cvt<Elem>, Elem>;
 
 using std::string;
-using std::stringstream;
 using std::wstring;
-using std::wstringstream;
 
 void test01()
 {
+#ifdef _GLIBCXX_USE_WCHAR_T
   buf_conv<wchar_t> buf;
   std::stringbuf sbuf;
   VERIFY( buf.rdbuf() == nullptr );
@@ -46,6 +45,7 @@ void test01()
 
   __gnu_test::implicitly_default_constructible test;
   test.operator()<buf_conv<wchar_t>>(); // P0935R0
+#endif
 }
 
 void test02()
@@ -53,7 +53,7 @@ void test02()
   std::stringbuf sbuf;
   buf_conv<char> buf(&sbuf);  // noconv
 
-  stringstream ss;
+  std::stringstream ss;
   ss.std::ios::rdbuf(&buf);
   string input = "King for a day...";
   ss << input << std::flush;
@@ -63,15 +63,17 @@ void test02()
 
 void test03()
 {
+#ifdef _GLIBCXX_USE_WCHAR_T
   std::stringbuf sbuf;
   buf_conv<wchar_t> buf(&sbuf);
 
-  wstringstream ss;
+  std::wstringstream ss;
   ss.std::wios::rdbuf(&buf);
   wstring input = L"Fool for a lifetime";
   ss << input << std::flush;
   string output = sbuf.str();
   VERIFY( output == "Fool for a lifetime" );
+#endif
 }
 
 int main()
