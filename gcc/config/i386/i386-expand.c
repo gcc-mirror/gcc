@@ -3613,6 +3613,10 @@ ix86_valid_mask_cmp_mode (machine_mode mode)
   if (TARGET_XOP && !TARGET_AVX512F)
     return false;
 
+  /* HFmode only supports vcmpsh whose dest is mask register.  */
+  if (TARGET_AVX512FP16 && mode == HFmode)
+    return true;
+
   /* AVX512F is needed for mask operation.  */
   if (!(TARGET_AVX512F && VECTOR_MODE_P (mode)))
     return false;
@@ -3634,7 +3638,9 @@ ix86_use_mask_cmp_p (machine_mode mode, machine_mode cmp_mode,
 {
   int vector_size = GET_MODE_SIZE (mode);
 
-  if (vector_size < 16)
+  if (cmp_mode == HFmode)
+    return true;
+  else if (vector_size < 16)
     return false;
   else if (vector_size == 64)
     return true;
@@ -3750,7 +3756,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       && GET_MODE_CLASS (cmpmode) == MODE_INT)
     {
       gcc_assert (ix86_valid_mask_cmp_mode (mode));
-      /* Using vector move with mask register.  */
+      /* Using scalar/vector move with mask register.  */
       cmp = force_reg (cmpmode, cmp);
       /* Optimize for mask zero.  */
       op_true = (op_true != CONST0_RTX (mode)
@@ -3769,8 +3775,13 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	  std::swap (op_true, op_false);
 	}
 
-      rtx vec_merge = gen_rtx_VEC_MERGE (mode, op_true, op_false, cmp);
-      emit_insn (gen_rtx_SET (dest, vec_merge));
+      if (mode == HFmode)
+	emit_insn (gen_movhf_mask (dest, op_true, op_false, cmp));
+      else
+	{
+	  rtx vec_merge = gen_rtx_VEC_MERGE (mode, op_true, op_false, cmp);
+	  emit_insn (gen_rtx_SET (dest, vec_merge));
+	}
       return;
     }
   else if (vector_all_ones_operand (op_true, mode)
