@@ -241,6 +241,8 @@ static void set_rm_size (Uint, tree, Entity_Id);
 static unsigned int validate_alignment (Uint, Entity_Id, unsigned int);
 static unsigned int promote_object_alignment (tree, tree, Entity_Id);
 static void check_ok_for_atomic_type (tree, Entity_Id, bool);
+static bool type_for_atomic_builtin_p (tree);
+static tree resolve_atomic_builtin (enum built_in_function, tree);
 static tree create_field_decl_from (tree, tree, tree, tree, tree,
 				    vec<subst_pair>);
 static tree create_rep_part (tree, tree, tree);
@@ -6312,14 +6314,106 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     the checker is expected to post diagnostics in this case.  */
 	  if (gnu_builtin_decl)
 	    {
-	      const intrin_binding_t inb
-		= { gnat_subprog, gnu_type, TREE_TYPE (gnu_builtin_decl) };
+	      if (fndecl_built_in_p (gnu_builtin_decl, BUILT_IN_NORMAL))
+		{
+		  const enum built_in_function fncode
+		    = DECL_FUNCTION_CODE (gnu_builtin_decl);
 
-	      if (!intrin_profiles_compatible_p (&inb))
-		post_error
-		  ("??profile of& doesn''t match the builtin it binds!",
-		   gnat_subprog);
-	      return gnu_builtin_decl;
+		  switch (fncode)
+		  {
+		    case BUILT_IN_SYNC_FETCH_AND_ADD_N:
+		    case BUILT_IN_SYNC_FETCH_AND_SUB_N:
+		    case BUILT_IN_SYNC_FETCH_AND_OR_N:
+		    case BUILT_IN_SYNC_FETCH_AND_AND_N:
+		    case BUILT_IN_SYNC_FETCH_AND_XOR_N:
+		    case BUILT_IN_SYNC_FETCH_AND_NAND_N:
+		    case BUILT_IN_SYNC_ADD_AND_FETCH_N:
+		    case BUILT_IN_SYNC_SUB_AND_FETCH_N:
+		    case BUILT_IN_SYNC_OR_AND_FETCH_N:
+		    case BUILT_IN_SYNC_AND_AND_FETCH_N:
+		    case BUILT_IN_SYNC_XOR_AND_FETCH_N:
+		    case BUILT_IN_SYNC_NAND_AND_FETCH_N:
+		    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N:
+		    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_N:
+		    case BUILT_IN_ATOMIC_EXCHANGE_N:
+		    case BUILT_IN_ATOMIC_LOAD_N:
+		    case BUILT_IN_ATOMIC_ADD_FETCH_N:
+		    case BUILT_IN_ATOMIC_SUB_FETCH_N:
+		    case BUILT_IN_ATOMIC_AND_FETCH_N:
+		    case BUILT_IN_ATOMIC_NAND_FETCH_N:
+		    case BUILT_IN_ATOMIC_XOR_FETCH_N:
+		    case BUILT_IN_ATOMIC_OR_FETCH_N:
+		    case BUILT_IN_ATOMIC_FETCH_ADD_N:
+		    case BUILT_IN_ATOMIC_FETCH_SUB_N:
+		    case BUILT_IN_ATOMIC_FETCH_AND_N:
+		    case BUILT_IN_ATOMIC_FETCH_NAND_N:
+		    case BUILT_IN_ATOMIC_FETCH_XOR_N:
+		    case BUILT_IN_ATOMIC_FETCH_OR_N:
+		      /* This is a generic builtin overloaded on its return
+			 type, so do type resolution based on it.  */
+		      if (!VOID_TYPE_P (gnu_return_type)
+			  && type_for_atomic_builtin_p (gnu_return_type))
+			gnu_builtin_decl
+			  = resolve_atomic_builtin (fncode, gnu_return_type);
+		      else
+			{
+			  post_error
+			    ("??cannot import type-generic 'G'C'C builtin!",
+			     gnat_subprog);
+			  post_error
+			    ("\\?use a supported result type",
+			     gnat_subprog);
+			  gnu_builtin_decl = NULL_TREE;
+			}
+		      break;
+
+		    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N:
+		      /* This is a generic builtin overloaded on its third
+			 parameter type, so do type resolution based on it.  */
+		      if (list_length (gnu_param_type_list) >= 4
+			  && type_for_atomic_builtin_p
+			       (list_third (gnu_param_type_list)))
+			gnu_builtin_decl
+			  = resolve_atomic_builtin
+			      (fncode, list_third (gnu_param_type_list));
+		      else
+			{
+			  post_error
+			    ("??cannot import type-generic 'G'C'C builtin!",
+			     gnat_subprog);
+			  post_error
+			    ("\\?use a supported third parameter type",
+			     gnat_subprog);
+			  gnu_builtin_decl = NULL_TREE;
+			}
+		      break;
+
+		    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N:
+		    case BUILT_IN_SYNC_LOCK_RELEASE_N:
+		    case BUILT_IN_ATOMIC_STORE_N:
+		      post_error
+			("??unsupported type-generic 'G'C'C builtin!",
+			 gnat_subprog);
+		      gnu_builtin_decl = NULL_TREE;
+		      break;
+
+		    default:
+		      break;
+		  }
+		}
+
+	      if (gnu_builtin_decl)
+		{
+		  const intrin_binding_t inb
+		    = { gnat_subprog, gnu_type, TREE_TYPE (gnu_builtin_decl) };
+
+		  if (!intrin_profiles_compatible_p (&inb))
+		    post_error
+		      ("??profile of& doesn''t match the builtin it binds!",
+		       gnat_subprog);
+
+		  return gnu_builtin_decl;
+		}
 	    }
 
 	  /* Inability to find the builtin DECL most often indicates a genuine
@@ -6329,7 +6423,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     on demand without risking false positives with common default sets
 	     of options.  */
 	  if (warn_shadow)
-	    post_error ("'G'C'C intrinsic not found for&!??", gnat_subprog);
+	    post_error ("'G'C'C builtin not found for&!??", gnat_subprog);
 	}
     }
 
@@ -9510,6 +9604,33 @@ check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
   else
     post_error_ne ("atomic access to & cannot be guaranteed",
 		   gnat_error_point, gnat_entity);
+}
+
+/* Return true if TYPE is suitable for a type-generic atomic builtin.  */
+
+static bool
+type_for_atomic_builtin_p (tree type)
+{
+  const enum machine_mode mode = TYPE_MODE (type);
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return true;
+
+  scalar_int_mode imode;
+  if (is_a <scalar_int_mode> (mode, &imode) && GET_MODE_SIZE (imode) <= 16)
+    return true;
+
+  return false;
+}
+
+/* Return the GCC atomic builtin based on CODE and sized for TYPE.  */
+
+static tree
+resolve_atomic_builtin (enum built_in_function code, tree type)
+{
+  const unsigned int size = resolve_atomic_size (type);
+  code = (enum built_in_function) ((int) code + exact_log2 (size) + 1);
+
+  return builtin_decl_implicit (code);
 }
 
 /* Helper for intrin_profiles_compatible_p, to perform compatibility checks
