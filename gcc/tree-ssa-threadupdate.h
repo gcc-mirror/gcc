@@ -75,6 +75,7 @@ protected:
   unsigned long m_num_threaded_edges;
 private:
   virtual bool update_cfg (bool peel_loop_headers) = 0;
+  bool cancel_invalid_paths (vec<jump_thread_edge *> &path);
   jump_thread_path_allocator m_allocator;
   // True if threading through back edges is allowed.  This is only
   // allowed in the generic copier in the backward threader.

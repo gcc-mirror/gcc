@@ -83,6 +83,9 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
   /* "-lstdc++" if it appears on the command line.  */
   const cl_decoded_option *saw_libcxx = 0;
 
+  /* True if we saw `-static-libstdc++'.  */
+  bool saw_static_libcxx = false;
+
   /* Whether we need the C++ STD library.  */
   bool need_stdcxx = false;
 
@@ -246,6 +249,11 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 
 	case OPT_static_libgcc:
 	  shared_libgcc = false;
+	  break;
+
+	case OPT_static_libstdc__:
+	  saw_static_libcxx = true;
+	  args[i] |= SKIPOPT;
 	  break;
 
 	case OPT_static_libphobos:
@@ -452,16 +460,39 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 #endif
     }
 
-  if (saw_libcxx)
-    new_decoded_options[j++] = *saw_libcxx;
-  else if (need_stdcxx)
+  if (saw_libcxx || need_stdcxx)
     {
-      generate_option (OPT_l,
-		       (saw_profile_flag
-			? LIBSTDCXX_PROFILE
-			: LIBSTDCXX),
-		       1, CL_DRIVER, &new_decoded_options[j++]);
-      added_libraries++;
+#ifdef HAVE_LD_STATIC_DYNAMIC
+      if (saw_static_libcxx && !static_link)
+	{
+	  generate_option (OPT_Wl_, LD_STATIC_OPTION, 1, CL_DRIVER,
+			   &new_decoded_options[j++]);
+	}
+#else
+      /* Push the -static-libstdc++ option back onto the command so that
+	 a target without LD_STATIC_DYNAMIC can use outfile substitution.  */
+      if (saw_static_libcxx && !static_link)
+	generate_option (OPT_static_libstdc__, NULL, 1, CL_DRIVER,
+			 &new_decoded_options[j++]);
+#endif
+      if (saw_libcxx)
+	new_decoded_options[j++] = *saw_libcxx;
+      else if (need_stdcxx)
+	{
+	  generate_option (OPT_l,
+			   (saw_profile_flag
+			    ? LIBSTDCXX_PROFILE
+			    : LIBSTDCXX),
+			   1, CL_DRIVER, &new_decoded_options[j++]);
+	  added_libraries++;
+	}
+#ifdef HAVE_LD_STATIC_DYNAMIC
+      if (saw_static_libcxx && !static_link)
+	{
+	  generate_option (OPT_Wl_, LD_DYNAMIC_OPTION, 1, CL_DRIVER,
+			   &new_decoded_options[j++]);
+	}
+#endif
     }
 
   if (shared_libgcc && !static_link)

@@ -1648,6 +1648,8 @@ void
 irange::irange_intersect (const irange &r)
 {
   gcc_checking_assert (!legacy_mode_p () && !r.legacy_mode_p ());
+  gcc_checking_assert (undefined_p () || r.undefined_p ()
+		       || range_compatible_p (type (), r.type ()));
 
   if (undefined_p () || r.varying_p ())
     return;
@@ -1661,6 +1663,13 @@ irange::irange_intersect (const irange &r)
       operator= (r);
       return;
     }
+
+  if (r.num_pairs () == 1)
+   {
+     // R cannot be undefined, use more efficent pair routine.
+     intersect (r.lower_bound(), r.upper_bound ());
+     return;
+   }
 
   signop sign = TYPE_SIGN (TREE_TYPE(m_base[0]));
   unsigned bld_pair = 0;
@@ -1737,6 +1746,66 @@ irange::irange_intersect (const irange &r)
     verify_range ();
 }
 
+// Multirange intersect for a specified wide_int [lb, ub] range.
+
+void
+irange::intersect (const wide_int& lb, const wide_int& ub)
+{
+  // Undefined remains undefined.
+  if (undefined_p ())
+    return;
+
+  if (legacy_mode_p ())
+    {
+      intersect (int_range<1> (type (), lb, ub));
+      return;
+    }
+
+  tree range_type = type();
+  signop sign = TYPE_SIGN (range_type);
+
+  gcc_checking_assert (TYPE_PRECISION (range_type) == wi::get_precision (lb));
+  gcc_checking_assert (TYPE_PRECISION (range_type) == wi::get_precision (ub));
+
+  unsigned bld_index = 0;
+  unsigned pair_lim = num_pairs ();
+  for (unsigned i = 0; i < pair_lim; i++)
+    {
+      tree pairl = m_base[i * 2];
+      tree pairu = m_base[i * 2 + 1];
+      // Once UB is less than a pairs lower bound, we're done.
+      if (wi::lt_p (ub, wi::to_wide (pairl), sign))
+	break;
+      // if LB is greater than this pairs upper, this pair is excluded.
+      if (wi::lt_p (wi::to_wide (pairu), lb, sign))
+	continue;
+
+      // Must be some overlap.  Find the highest of the lower bounds,
+      // and set it
+      if (wi::gt_p (lb, wi::to_wide (pairl), sign))
+	m_base[bld_index * 2] = wide_int_to_tree (range_type, lb);
+      else
+	m_base[bld_index * 2] = pairl;
+
+      // ...and choose the lower of the upper bounds and if the base pair
+      // has the lower upper bound, need to check next pair too.
+      if (wi::lt_p (ub, wi::to_wide (pairu), sign))
+	{
+	  m_base[bld_index++ * 2 + 1] = wide_int_to_tree (range_type, ub);
+	  break;
+	}
+      else
+	m_base[bld_index++ * 2 + 1] = pairu;
+    }
+
+  m_num_ranges = bld_index;
+
+  m_kind = VR_RANGE;
+  normalize_kind ();
+
+  if (flag_checking)
+    verify_range ();
+}
 // Signed 1-bits are strange.  You can't subtract 1, because you can't
 // represent the number 1.  This works around that for the invert routine.
 

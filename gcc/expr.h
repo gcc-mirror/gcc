@@ -346,4 +346,7 @@ extern void expand_operands (tree, tree, rtx, rtx*, rtx*,
 /* Return an rtx for the size in bytes of the value of an expr.  */
 extern rtx expr_size (tree);
 
+extern bool mem_ref_refers_to_non_mem_p (tree);
+extern bool non_mem_decl_p (tree);
+
 #endif /* GCC_EXPR_H */

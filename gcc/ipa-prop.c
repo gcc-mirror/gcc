@@ -4428,19 +4428,33 @@ ipa_edge_args_sum_t::duplicate (cgraph_edge *src, cgraph_edge *dst,
 	    dst_jf->value.constant.rdesc = NULL;
 	  else if (src->caller == dst->caller)
 	    {
-	      struct ipa_ref *ref;
-	      symtab_node *n = symtab_node_for_jfunc (src_jf);
-	      gcc_checking_assert (n);
-	      ref = src->caller->find_reference (n, src->call_stmt,
-						 src->lto_stmt_uid);
-	      gcc_checking_assert (ref);
-	      dst->caller->clone_reference (ref, ref->stmt);
+	      /* Creation of a speculative edge.  If the source edge is the one
+		 grabbing a reference, we must create a new (duplicate)
+		 reference description.  Otherwise they refer to the same
+		 description corresponding to a reference taken in a function
+		 src->caller is inlined to.  In that case we just must
+		 increment the refcount.  */
+	      if (src_rdesc->cs == src)
+		{
+		   symtab_node *n = symtab_node_for_jfunc (src_jf);
+		   gcc_checking_assert (n);
+		   ipa_ref *ref
+		     = src->caller->find_reference (n, src->call_stmt,
+						    src->lto_stmt_uid);
+		   gcc_checking_assert (ref);
+		   dst->caller->clone_reference (ref, ref->stmt);
 
-	      struct ipa_cst_ref_desc *dst_rdesc = ipa_refdesc_pool.allocate ();
-	      dst_rdesc->cs = dst;
-	      dst_rdesc->refcount = src_rdesc->refcount;
-	      dst_rdesc->next_duplicate = NULL;
-	      dst_jf->value.constant.rdesc = dst_rdesc;
+		   ipa_cst_ref_desc *dst_rdesc = ipa_refdesc_pool.allocate ();
+		   dst_rdesc->cs = dst;
+		   dst_rdesc->refcount = src_rdesc->refcount;
+		   dst_rdesc->next_duplicate = NULL;
+		   dst_jf->value.constant.rdesc = dst_rdesc;
+		}
+	      else
+		{
+		  src_rdesc->refcount++;
+		  dst_jf->value.constant.rdesc = src_rdesc;
+		}
 	    }
 	  else if (src_rdesc->cs == src)
 	    {

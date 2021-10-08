@@ -70,7 +70,7 @@ static char btf_info_section_label[MAX_BTF_LABEL_BYTES];
    converted to BTF_KIND_VAR type records. Strictly accounts for the index
    from the start of the variable type entries, does not include the number
    of types emitted prior to the variable records.  */
-static hash_map <ctf_dvdef_ref, unsigned int> *btf_var_ids;
+static GTY (()) hash_map <ctf_dvdef_ref, unsigned> *btf_var_ids;
 
 /* Mapping of type IDs from original CTF ID to BTF ID. Types do not map
    1-to-1 from CTF to BTF. To avoid polluting the CTF container when updating
@@ -1119,11 +1119,11 @@ btf_finalize (void)
 
   funcs = NULL;
 
+  btf_var_ids->empty ();
+  btf_var_ids = NULL;
+
   free (btf_id_map);
   btf_id_map = NULL;
-
-  ggc_free (btf_var_ids);
-  btf_var_ids = NULL;
 
   ctf_container_ref tu_ctfc = ctf_get_tu_ctfc ();
   ctfc_delete_container (tu_ctfc);

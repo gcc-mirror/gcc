@@ -381,7 +381,7 @@ dlang_symbol_backref (string *decl, const char *mangled,
 
   /* Must point to a simple identifier.  */
   backref = dlang_number (backref, &len);
-  if (backref == NULL)
+  if (backref == NULL || strlen(backref) < len)
     return NULL;
 
   backref = dlang_lname (decl, backref, len);
@@ -875,7 +875,7 @@ dlang_type (string *decl, const char *mangled, struct dlang_info *info)
       szmods = string_length (&mods);
 
       /* Back referenced function type.  */
-      if (*mangled == 'Q')
+      if (mangled && *mangled == 'Q')
 	mangled = dlang_type_backref (decl, mangled, info, 1);
       else
 	mangled = dlang_function_type (decl, mangled, info);

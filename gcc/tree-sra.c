@@ -99,7 +99,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "builtins.h"
 #include "tree-sra.h"
-
+#include "opts.h"
 
 /* Enumeration of all aggregate reductions we can do.  */
 enum sra_mode { SRA_MODE_EARLY_IPA,   /* early call regularization */
@@ -3427,12 +3427,12 @@ analyze_all_variable_accesses (void)
 
   if (optimize_speed_p)
     {
-      if (global_options_set.x_param_sra_max_scalarization_size_speed)
+      if (OPTION_SET_P (param_sra_max_scalarization_size_speed))
 	max_scalarization_size = param_sra_max_scalarization_size_speed;
     }
   else
     {
-      if (global_options_set.x_param_sra_max_scalarization_size_size)
+      if (OPTION_SET_P (param_sra_max_scalarization_size_size))
 	max_scalarization_size = param_sra_max_scalarization_size_size;
     }
   max_scalarization_size *= BITS_PER_UNIT;

@@ -14,12 +14,14 @@
 #include "sanitizer_common/sanitizer_platform.h"
 #if SANITIZER_POSIX
 
-#include "sanitizer_common/sanitizer_common.h"
-#include "sanitizer_common/sanitizer_errno.h"
-#include "sanitizer_common/sanitizer_libc.h"
-#include "sanitizer_common/sanitizer_procmaps.h"
-#include "tsan_platform.h"
-#include "tsan_rtl.h"
+#  include <dlfcn.h>
+
+#  include "sanitizer_common/sanitizer_common.h"
+#  include "sanitizer_common/sanitizer_errno.h"
+#  include "sanitizer_common/sanitizer_libc.h"
+#  include "sanitizer_common/sanitizer_procmaps.h"
+#  include "tsan_platform.h"
+#  include "tsan_rtl.h"
 
 namespace __tsan {
 
@@ -29,6 +31,7 @@ static const char kShadowMemoryMappingHint[] =
     "HINT: if %s is not supported in your environment, you may set "
     "TSAN_OPTIONS=%s=0\n";
 
+#  if !SANITIZER_GO
 static void DontDumpShadow(uptr addr, uptr size) {
   if (common_flags()->use_madv_dontdump)
     if (!DontDumpShadowMemory(addr, size)) {
@@ -39,7 +42,6 @@ static void DontDumpShadow(uptr addr, uptr size) {
     }
 }
 
-#if !SANITIZER_GO
 void InitializeShadowMemory() {
   // Map memory shadow.
   if (!MmapFixedSuperNoReserve(ShadowBeg(), ShadowEnd() - ShadowBeg(),
@@ -70,6 +72,11 @@ void InitializeShadowMemory() {
       meta, meta + meta_size, meta_size >> 30);
 
   InitializeShadowMemoryPlatform();
+
+  on_initialize = reinterpret_cast<void (*)(void)>(
+      dlsym(RTLD_DEFAULT, "__tsan_on_initialize"));
+  on_finalize =
+      reinterpret_cast<int (*)(int)>(dlsym(RTLD_DEFAULT, "__tsan_on_finalize"));
 }
 
 static bool TryProtectRange(uptr beg, uptr end) {
@@ -98,24 +105,24 @@ void CheckAndProtect() {
       continue;
     if (segment.start >= VdsoBeg())  // vdso
       break;
-    Printf("FATAL: ThreadSanitizer: unexpected memory mapping %p-%p\n",
+    Printf("FATAL: ThreadSanitizer: unexpected memory mapping 0x%zx-0x%zx\n",
            segment.start, segment.end);
     Die();
   }
 
-#if defined(__aarch64__) && defined(__APPLE__) && !HAS_48_BIT_ADDRESS_SPACE
+#    if defined(__aarch64__) && defined(__APPLE__) && SANITIZER_IOS
   ProtectRange(HeapMemEnd(), ShadowBeg());
   ProtectRange(ShadowEnd(), MetaShadowBeg());
   ProtectRange(MetaShadowEnd(), TraceMemBeg());
 #else
   ProtectRange(LoAppMemEnd(), ShadowBeg());
   ProtectRange(ShadowEnd(), MetaShadowBeg());
-#ifdef TSAN_MID_APP_RANGE
-  ProtectRange(MetaShadowEnd(), MidAppMemBeg());
-  ProtectRange(MidAppMemEnd(), TraceMemBeg());
-#else
-  ProtectRange(MetaShadowEnd(), TraceMemBeg());
-#endif
+  if (MidAppMemBeg()) {
+    ProtectRange(MetaShadowEnd(), MidAppMemBeg());
+    ProtectRange(MidAppMemEnd(), TraceMemBeg());
+  } else {
+    ProtectRange(MetaShadowEnd(), TraceMemBeg());
+  }
   // Memory for traces is mapped lazily in MapThreadTrace.
   // Protect the whole range for now, so that user does not map something here.
   ProtectRange(TraceMemBeg(), TraceMemEnd());

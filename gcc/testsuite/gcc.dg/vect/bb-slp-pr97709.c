@@ -12,12 +12,12 @@ e()
   void *f[] = {&&g, &&h, &&i, &&j};
   int d, c;
 j:
-  goto *a;
+  goto *(void*)(__INTPTR_TYPE__)a;
 g:
   d = 0;
 h:
   c = 1;
-  goto *a;
+  goto *(void*)(__INTPTR_TYPE__)a;
 i:
   {
     struct b b = {c, d};

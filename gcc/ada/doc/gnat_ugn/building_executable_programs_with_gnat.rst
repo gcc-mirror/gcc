@@ -1497,9 +1497,10 @@ Alphabetical List of All Switches
 
 :switch:`-gnateA`
   Check that the actual parameters of a subprogram call are not aliases of one
-  another. To qualify as aliasing, the actuals must denote objects of a composite
-  type, their memory locations must be identical or overlapping, and at least one
-  of the corresponding formal parameters must be of mode OUT or IN OUT.
+  another. To qualify as aliasing, their memory locations must be identical or
+  overlapping, at least one of the corresponding formal parameters must be of
+  mode OUT or IN OUT, and at least one of the corresponding formal parameters
+  must have its parameter passing mechanism not specified.
 
 
   .. code-block:: ada

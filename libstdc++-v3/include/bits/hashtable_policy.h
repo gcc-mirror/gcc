@@ -360,15 +360,15 @@ namespace __detail
       using __node_type = typename __base_type::__node_type;
 
     public:
-      typedef _Value					value_type;
-      typedef std::ptrdiff_t				difference_type;
-      typedef std::forward_iterator_tag			iterator_category;
+      using value_type = _Value;
+      using difference_type = std::ptrdiff_t;
+      using iterator_category = std::forward_iterator_tag;
 
-      using pointer = typename std::conditional<__constant_iterators,
-				  const value_type*, value_type*>::type;
+      using pointer = __conditional_t<__constant_iterators,
+				      const value_type*, value_type*>;
 
-      using reference = typename std::conditional<__constant_iterators,
-				  const value_type&, value_type&>::type;
+      using reference = __conditional_t<__constant_iterators,
+					const value_type&, value_type&>;
 
       _Node_iterator() = default;
 
@@ -867,12 +867,13 @@ namespace __detail
       using iterator = _Node_iterator<_Value, __constant_iterators::value,
 				      __hash_cached::value>;
 
-      using const_iterator = _Node_const_iterator<_Value, __constant_iterators::value,
+      using const_iterator = _Node_const_iterator<_Value,
+						  __constant_iterators::value,
 						  __hash_cached::value>;
 
-      using __ireturn_type = typename std::conditional<__unique_keys::value,
-						     std::pair<iterator, bool>,
-						     iterator>::type;
+      using __ireturn_type = __conditional_t<__unique_keys::value,
+					     std::pair<iterator, bool>,
+					     iterator>;
 
       __ireturn_type
       insert(const value_type& __v)
@@ -1482,15 +1483,13 @@ namespace __detail
       using __hash_code_base = typename __base_type::__hash_code_base;
 
     public:
-      typedef _Value					value_type;
-      typedef typename std::conditional<__constant_iterators,
-					const value_type*, value_type*>::type
-							pointer;
-      typedef typename std::conditional<__constant_iterators,
-					const value_type&, value_type&>::type
-							reference;
-      typedef std::ptrdiff_t				difference_type;
-      typedef std::forward_iterator_tag			iterator_category;
+      using value_type = _Value;
+      using pointer = __conditional_t<__constant_iterators,
+				      const value_type*, value_type*>;
+      using reference = __conditional_t<__constant_iterators,
+					const value_type&, value_type&>;
+      using difference_type = ptrdiff_t;
+      using iterator_category = forward_iterator_tag;
 
       _Local_iterator() = default;
 

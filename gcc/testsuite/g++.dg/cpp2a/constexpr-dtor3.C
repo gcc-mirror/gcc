@@ -180,6 +180,6 @@ f7 ()
 constexpr int
 f8 ()
 {
-  T t4;			// { dg-error "variable 't4' of non-literal type 'T' in 'constexpr' function" }
+  T t4;			// { dg-error "variable 't4' of non-literal type 'T' in 'constexpr' function only available with" "" { target c++20_down } }
   return 0;
 }

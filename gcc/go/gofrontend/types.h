@@ -1355,8 +1355,9 @@ class Type
 
   static void
   build_one_stub_method(Gogo*, Method*, const char* receiver_name,
+			const Type* receiver_type,
 			const Typed_identifier_list*, bool is_varargs,
-			Location);
+			const Typed_identifier_list*, Location);
 
   // Build direct interface stub methods for a type.
   static void
@@ -1364,12 +1365,16 @@ class Type
 
   static void
   build_one_iface_stub_method(Gogo*, Method*, const char*,
-                              const Typed_identifier_list*,
-                              bool, Location);
+                              const Typed_identifier_list*, bool,
+			      const Typed_identifier_list*, Location);
+
+  static void
+  add_return_from_results(Gogo*, Call_expression*,
+			  const Typed_identifier_list*, Location);
 
   static Expression*
   apply_field_indexes(Expression*, const Method::Field_indexes*,
-		      Location);
+		      Location, const Type**);
 
   // Look for a field or method named NAME in TYPE.
   static bool

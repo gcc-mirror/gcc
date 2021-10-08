@@ -145,6 +145,7 @@ static const kv_pair<dump_flags_t> dump_options[] =
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
   {"optall", MSG_ALL_KINDS},
+  {"threading", TDF_THREADING},
   {"all", dump_flags_t (TDF_ALL_VALUES
 			& ~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_GRAPH
 			    | TDF_STMTADDR | TDF_RHS_ONLY | TDF_NOUID

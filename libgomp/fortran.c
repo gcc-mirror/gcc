@@ -96,6 +96,7 @@ ialias_redirect (omp_destroy_allocator)
 ialias_redirect (omp_set_default_allocator)
 ialias_redirect (omp_get_default_allocator)
 ialias_redirect (omp_display_env)
+ialias_redirect (omp_fulfill_event)
 #endif
 
 #ifndef LIBGOMP_GNU_SYMBOL_VERSIONING

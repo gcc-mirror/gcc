@@ -195,9 +195,9 @@ namespace ranges
     requires (_IsMove
 	      ? indirectly_movable<_Iter, _Out>
 	      : indirectly_copyable<_Iter, _Out>)
-    constexpr conditional_t<_IsMove,
-			    move_backward_result<_Iter, _Out>,
-			    copy_backward_result<_Iter, _Out>>
+    constexpr __conditional_t<_IsMove,
+			      move_backward_result<_Iter, _Out>,
+			      copy_backward_result<_Iter, _Out>>
     __copy_or_move_backward(_Iter __first, _Sent __last, _Out __result);
 
   template<bool _IsMove,
@@ -206,9 +206,9 @@ namespace ranges
     requires (_IsMove
 	      ? indirectly_movable<_Iter, _Out>
 	      : indirectly_copyable<_Iter, _Out>)
-    constexpr conditional_t<_IsMove,
-			    move_result<_Iter, _Out>,
-			    copy_result<_Iter, _Out>>
+    constexpr __conditional_t<_IsMove,
+			      move_result<_Iter, _Out>,
+			      copy_result<_Iter, _Out>>
     __copy_or_move(_Iter __first, _Sent __last, _Out __result)
     {
       // TODO: implement more specializations to be at least on par with
@@ -349,9 +349,9 @@ namespace ranges
     requires (_IsMove
 	      ? indirectly_movable<_Iter, _Out>
 	      : indirectly_copyable<_Iter, _Out>)
-    constexpr conditional_t<_IsMove,
-			    move_backward_result<_Iter, _Out>,
-			    copy_backward_result<_Iter, _Out>>
+    constexpr __conditional_t<_IsMove,
+			      move_backward_result<_Iter, _Out>,
+			      copy_backward_result<_Iter, _Out>>
     __copy_or_move_backward(_Iter __first, _Sent __last, _Out __result)
     {
       // TODO: implement more specializations to be at least on par with

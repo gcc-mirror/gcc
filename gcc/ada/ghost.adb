@@ -584,6 +584,15 @@ package body Ghost is
    --  Start of processing for Check_Ghost_Context
 
    begin
+      --  Class-wide pre/postconditions of ignored pragmas are preanalyzed
+      --  to report errors on wrong conditions; however, ignored pragmas may
+      --  also have references to ghost entities and we must disable checking
+      --  their context to avoid reporting spurious errors.
+
+      if Inside_Class_Condition_Preanalysis then
+         return;
+      end if;
+
       --  Once it has been established that the reference to the Ghost entity
       --  is within a suitable context, ensure that the policy at the point of
       --  declaration and at the point of use match.

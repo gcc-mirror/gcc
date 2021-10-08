@@ -37,6 +37,9 @@
 #include <sys/utsname.h>
 #endif
 
+ialias_redirect (omp_get_team_num)
+ialias_redirect (omp_get_num_teams)
+
 bool
 gomp_print_string (const char *str, size_t len)
 {

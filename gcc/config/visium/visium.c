@@ -443,7 +443,7 @@ visium_option_override (void)
     }
 
   /* Set -mtune from -mcpu if not specified.  */
-  if (!global_options_set.x_visium_cpu)
+  if (!OPTION_SET_P (visium_cpu))
     visium_cpu = visium_cpu_and_features;
 
   /* Align functions on 256-byte (32-quadword) for GR5 and 64-byte (8-quadword)

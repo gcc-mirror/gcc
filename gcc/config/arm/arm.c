@@ -71,6 +71,7 @@
 #include "gimple.h"
 #include "selftest.h"
 #include "tree-vectorizer.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -3468,7 +3469,7 @@ arm_option_override (void)
 
   arm_active_target.isa = sbitmap_alloc (isa_num_bits);
 
-  if (!global_options_set.x_arm_fpu_index)
+  if (!OPTION_SET_P (arm_fpu_index))
     {
       bool ok;
       int fpu_index;
@@ -3528,7 +3529,7 @@ arm_option_override (void)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
 
   /* Override the default structure alignment for AAPCS ABI.  */
-  if (!global_options_set.x_arm_structure_size_boundary)
+  if (!OPTION_SET_P (arm_structure_size_boundary))
     {
       if (TARGET_AAPCS_BASED)
 	arm_structure_size_boundary = 8;
@@ -3553,12 +3554,12 @@ arm_option_override (void)
 
   if (TARGET_VXWORKS_RTP)
     {
-      if (!global_options_set.x_arm_pic_data_is_text_relative)
+      if (!OPTION_SET_P (arm_pic_data_is_text_relative))
 	arm_pic_data_is_text_relative = 0;
     }
   else if (flag_pic
 	   && !arm_pic_data_is_text_relative
-	   && !(global_options_set.x_target_flags & MASK_SINGLE_PIC_BASE))
+	   && !(OPTION_SET_P (target_flags) & MASK_SINGLE_PIC_BASE))
     /* When text & data segments don't have a fixed displacement, the
        intended use is with a single, read only, pic base register.
        Unless the user explicitly requested not to do that, set

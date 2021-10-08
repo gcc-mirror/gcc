@@ -216,6 +216,31 @@ package Contracts is
    --  subprogram declaration template denoted by Templ. The instantiated
    --  pragmas are added to list L.
 
+   procedure Make_Class_Precondition_Subps
+     (Subp_Id         : Entity_Id;
+      Late_Overriding : Boolean := False);
+   --  Build helpers that at run time evaluate statically and dynamically the
+   --  class-wide preconditions of Subp_Id; build also the indirect-call
+   --  wrapper (ICW) required to check class-wide preconditions when the
+   --  subprogram is invoked through an access-to-subprogram, or when it
+   --  overrides an inherited class-wide precondition (see AI12-0195-1).
+   --  Late_Overriding enables special handling required for late-overriding
+   --  subprograms.
+
+   procedure Merge_Class_Conditions (Spec_Id : Entity_Id);
+   --  Merge and preanalyze all class-wide conditions of Spec_Id (class-wide
+   --  preconditions merged with operator or-else; class-wide postconditions
+   --  merged with operator and-then). Ignored pre/postconditions are also
+   --  merged since, although they are not required to generate code, their
+   --  preanalysis is required to perform semantic checks. Resulting merged
+   --  expressions are later installed by the expander in helper subprograms
+   --  which are invoked from the caller side; they are also used to build
+   --  the dispatch-table wrapper (DTW), if required.
+
+   procedure Process_Class_Conditions_At_Freeze_Point (Typ : Entity_Id);
+   --  Merge, preanalyze, and check class-wide pre/postconditions of Typ
+   --  primitives.
+
    procedure Save_Global_References_In_Contract
      (Templ  : Node_Id;
       Gen_Id : Entity_Id);

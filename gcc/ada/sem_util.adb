@@ -391,8 +391,7 @@ package body Sem_Util is
            and then (Is_Static_Coextension (N)
                       or else Is_Dynamic_Coextension (N))
          then
-            return Make_Level_Literal
-                     (Scope_Depth (Standard_Standard));
+            return Make_Level_Literal (Scope_Depth (Standard_Standard));
          end if;
 
          --  Named access types have a designated level
@@ -416,11 +415,14 @@ package body Sem_Util is
                if Debug_Flag_Underscore_B then
                   return Make_Level_Literal (Typ_Access_Level (Etype (N)));
 
-               --  Otherwise the level is that of the subprogram
+               --  For function calls the level is that of the innermost
+               --  master, otherwise (for allocators etc.) we get the level
+               --  of the corresponding anonymous access type, which is
+               --  calculated through the normal path of execution.
 
-               else
+               elsif Nkind (N) = N_Function_Call then
                   return Make_Level_Literal
-                           (Subprogram_Access_Level (Entity (Name (N))));
+                           (Innermost_Master_Scope_Depth (Expr));
                end if;
             end if;
 
@@ -713,14 +715,24 @@ package body Sem_Util is
 
                return Make_Level_Literal (Typ_Access_Level (E) + 1);
 
-            --  Move up the renamed entity if it came from source since
-            --  expansion may have created a dummy renaming under certain
-            --  circumstances.
+            --  Move up the renamed entity or object if it came from source
+            --  since expansion may have created a dummy renaming under
+            --  certain circumstances.
+
+            --  Note: We check if the original node of the renaming comes
+            --  from source because the node may have been rewritten.
 
             elsif Present (Renamed_Object (E))
-              and then Comes_From_Source (Renamed_Object (E))
+              and then Comes_From_Source (Original_Node (Renamed_Object (E)))
             then
                return Accessibility_Level (Renamed_Object (E));
+
+            --  Move up renamed entities
+
+            elsif Present (Renamed_Entity (E))
+              and then Comes_From_Source (Original_Node (Renamed_Entity (E)))
+            then
+               return Accessibility_Level (Renamed_Entity (E));
 
             --  Named access types get their level from their associated type
 
@@ -2211,180 +2223,6 @@ package body Sem_Util is
 
       return Empty;
    end Build_Actual_Subtype_Of_Component;
-
-   ---------------------------------
-   -- Build_Class_Wide_Clone_Body --
-   ---------------------------------
-
-   procedure Build_Class_Wide_Clone_Body
-     (Spec_Id : Entity_Id;
-      Bod     : Node_Id)
-   is
-      Loc        : constant Source_Ptr := Sloc (Bod);
-      Clone_Id   : constant Entity_Id  := Class_Wide_Clone (Spec_Id);
-      Clone_Body : Node_Id;
-      Assoc_List : constant Elist_Id := New_Elmt_List;
-
-   begin
-      --  The declaration of the class-wide clone was created when the
-      --  corresponding class-wide condition was analyzed.
-
-      --  The body of the original condition may contain references to
-      --  the formals of Spec_Id. In the body of the class-wide clone,
-      --  these must be replaced with the corresponding formals of
-      --  the clone.
-
-      declare
-         Spec_Formal_Id  : Entity_Id := First_Formal (Spec_Id);
-         Clone_Formal_Id : Entity_Id := First_Formal (Clone_Id);
-      begin
-         while Present (Spec_Formal_Id) loop
-            Append_Elmt (Spec_Formal_Id,  Assoc_List);
-            Append_Elmt (Clone_Formal_Id, Assoc_List);
-
-            Next_Formal (Spec_Formal_Id);
-            Next_Formal (Clone_Formal_Id);
-         end loop;
-      end;
-
-      Clone_Body :=
-        Make_Subprogram_Body (Loc,
-          Specification              =>
-            Copy_Subprogram_Spec (Parent (Clone_Id)),
-          Declarations               => Declarations (Bod),
-          Handled_Statement_Sequence =>
-            New_Copy_Tree (Handled_Statement_Sequence (Bod),
-              Map => Assoc_List));
-
-      --  The new operation is internal and overriding indicators do not apply
-      --  (the original primitive may have carried one).
-
-      Set_Must_Override (Specification (Clone_Body), False);
-
-      --  If the subprogram body is the proper body of a stub, insert the
-      --  subprogram after the stub, i.e. the same declarative region as
-      --  the original sugprogram.
-
-      if Nkind (Parent (Bod)) = N_Subunit then
-         Insert_After (Corresponding_Stub (Parent (Bod)), Clone_Body);
-
-      else
-         Insert_Before (Bod, Clone_Body);
-      end if;
-
-      Analyze (Clone_Body);
-   end Build_Class_Wide_Clone_Body;
-
-   ---------------------------------
-   -- Build_Class_Wide_Clone_Call --
-   ---------------------------------
-
-   function Build_Class_Wide_Clone_Call
-     (Loc     : Source_Ptr;
-      Decls   : List_Id;
-      Spec_Id : Entity_Id;
-      Spec    : Node_Id) return Node_Id
-   is
-      Clone_Id : constant Entity_Id := Class_Wide_Clone (Spec_Id);
-      Par_Type : constant Entity_Id := Find_Dispatching_Type (Spec_Id);
-
-      Actuals    : List_Id;
-      Call       : Node_Id;
-      Formal     : Entity_Id;
-      New_Body   : Node_Id;
-      New_F_Spec : Entity_Id;
-      New_Formal : Entity_Id;
-
-   begin
-      Actuals    := Empty_List;
-      Formal     := First_Formal (Spec_Id);
-      New_F_Spec := First (Parameter_Specifications (Spec));
-
-      --  Build parameter association for call to class-wide clone.
-
-      while Present (Formal) loop
-         New_Formal := Defining_Identifier (New_F_Spec);
-
-         --  If controlling argument and operation is inherited, add conversion
-         --  to parent type for the call.
-
-         if Etype (Formal) = Par_Type
-           and then not Is_Empty_List (Decls)
-         then
-            Append_To (Actuals,
-              Make_Type_Conversion (Loc,
-                New_Occurrence_Of (Par_Type, Loc),
-                New_Occurrence_Of (New_Formal, Loc)));
-
-         else
-            Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
-         end if;
-
-         Next_Formal (Formal);
-         Next (New_F_Spec);
-      end loop;
-
-      if Ekind (Spec_Id) = E_Procedure then
-         Call :=
-           Make_Procedure_Call_Statement (Loc,
-             Name                   => New_Occurrence_Of (Clone_Id, Loc),
-             Parameter_Associations => Actuals);
-      else
-         Call :=
-           Make_Simple_Return_Statement (Loc,
-            Expression =>
-              Make_Function_Call (Loc,
-                Name                   => New_Occurrence_Of (Clone_Id, Loc),
-                Parameter_Associations => Actuals));
-      end if;
-
-      New_Body :=
-        Make_Subprogram_Body (Loc,
-          Specification              =>
-            Copy_Subprogram_Spec (Spec),
-          Declarations               => Decls,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (Call),
-              End_Label  => Make_Identifier (Loc, Chars (Spec_Id))));
-
-      return New_Body;
-   end Build_Class_Wide_Clone_Call;
-
-   ---------------------------------
-   -- Build_Class_Wide_Clone_Decl --
-   ---------------------------------
-
-   procedure Build_Class_Wide_Clone_Decl (Spec_Id : Entity_Id) is
-      Loc      : constant Source_Ptr := Sloc (Spec_Id);
-      Clone_Id : constant Entity_Id  :=
-                   Make_Defining_Identifier (Loc,
-                     New_External_Name (Chars (Spec_Id), Suffix => "CL"));
-
-      Decl : Node_Id;
-      Spec : Node_Id;
-
-   begin
-      Spec := Copy_Subprogram_Spec (Parent (Spec_Id));
-      Set_Must_Override      (Spec, False);
-      Set_Must_Not_Override  (Spec, False);
-      Set_Defining_Unit_Name (Spec, Clone_Id);
-
-      Decl := Make_Subprogram_Declaration (Loc, Spec);
-      Append (Decl, List_Containing (Unit_Declaration_Node (Spec_Id)));
-
-      --  Link clone to original subprogram, for use when building body and
-      --  wrapper call to inherited operation.
-
-      Set_Class_Wide_Clone (Spec_Id, Clone_Id);
-
-      --  Inherit debug info flag from Spec_Id to Clone_Id to allow debugging
-      --  of the class-wide clone subprogram.
-
-      if Needs_Debug_Info (Spec_Id) then
-         Set_Debug_Info_Needed (Clone_Id);
-      end if;
-   end Build_Class_Wide_Clone_Decl;
 
    -----------------------------
    -- Build_Component_Subtype --
@@ -5012,6 +4850,7 @@ package body Sem_Util is
               and then not Mentions_Post_State (Expr)
               and then not (Is_Ghost_Entity (Subp_Id)
                              and then Has_No_Output (Subp_Id))
+              and then not Is_Wrapper (Subp_Id)
             then
                if Pragma_Name (Prag) = Name_Contract_Cases then
                   Error_Msg_NE (Adjust_Message
@@ -5876,6 +5715,30 @@ package body Sem_Util is
          return Choices (N);
       end if;
    end Choice_List;
+
+   ---------------------
+   -- Class_Condition --
+   ---------------------
+
+   function Class_Condition
+     (Kind : Condition_Kind;
+      Subp : Entity_Id) return Node_Id is
+
+   begin
+      case Kind is
+         when Class_Postcondition =>
+            return Class_Postconditions (Subp);
+
+         when Class_Precondition =>
+            return Class_Preconditions (Subp);
+
+         when Ignored_Class_Postcondition =>
+            return Ignored_Class_Postconditions (Subp);
+
+         when Ignored_Class_Precondition =>
+            return Ignored_Class_Preconditions (Subp);
+      end case;
+   end Class_Condition;
 
    -------------------------
    -- Collect_Body_States --
@@ -7072,6 +6935,79 @@ package body Sem_Util is
       end if;
    end Corresponding_Generic_Type;
 
+   --------------------------------
+   -- Corresponding_Primitive_Op --
+   --------------------------------
+
+   function Corresponding_Primitive_Op
+     (Ancestor_Op     : Entity_Id;
+      Descendant_Type : Entity_Id) return Entity_Id
+   is
+      Typ  : constant Entity_Id := Find_Dispatching_Type (Ancestor_Op);
+      Elmt : Elmt_Id;
+      Subp : Entity_Id;
+      Prim : Entity_Id;
+   begin
+      pragma Assert (Is_Dispatching_Operation (Ancestor_Op));
+      pragma Assert (Is_Ancestor (Typ, Descendant_Type)
+                      or else Is_Progenitor (Typ, Descendant_Type));
+
+      Elmt := First_Elmt (Primitive_Operations (Descendant_Type));
+
+      while Present (Elmt) loop
+         Subp := Node (Elmt);
+
+         --  For regular primitives we only need to traverse the chain of
+         --  ancestors when the name matches the name of Ancestor_Op, but
+         --  for predefined dispatching operations we cannot rely on the
+         --  name of the primitive to identify a candidate since their name
+         --  is internally built adding a suffix to the name of the tagged
+         --  type.
+
+         if Chars (Subp) = Chars (Ancestor_Op)
+           or else Is_Predefined_Dispatching_Operation (Subp)
+         then
+            --  Handle case where Ancestor_Op is a primitive of a progenitor.
+            --  We rely on internal entities that map interface primitives:
+            --  their attribute Interface_Alias references the interface
+            --  primitive, and their Alias attribute references the primitive
+            --  of Descendant_Type implementing that interface primitive.
+
+            if Present (Interface_Alias (Subp)) then
+               if Interface_Alias (Subp) = Ancestor_Op then
+                  return Alias (Subp);
+               end if;
+
+            --  Traverse the chain of ancestors searching for Ancestor_Op.
+            --  Overridden primitives have attribute Overridden_Operation;
+            --  inherited primitives have attribute Alias.
+
+            else
+               Prim := Subp;
+
+               while Present (Overridden_Operation (Prim))
+                 or else Present (Alias (Prim))
+               loop
+                  if Present (Overridden_Operation (Prim)) then
+                     Prim := Overridden_Operation (Prim);
+                  else
+                     Prim := Alias (Prim);
+                  end if;
+
+                  if Prim = Ancestor_Op then
+                     return Subp;
+                  end if;
+               end loop;
+            end if;
+         end if;
+
+         Next_Elmt (Elmt);
+      end loop;
+
+      pragma Assert (False);
+      return Empty;
+   end Corresponding_Primitive_Op;
+
    --------------------
    -- Current_Entity --
    --------------------
@@ -7444,7 +7380,7 @@ package body Sem_Util is
                      return False;
                   end if;
 
-                  Next_Index (Indx);
+                  Next (Indx);
                end loop;
             end;
 
@@ -8731,6 +8667,10 @@ package body Sem_Util is
 
         and then Comes_From_Source (C)
         and then Comes_From_Source (Def_Id)
+
+        --  Don't warn within a generic instantiation
+
+        and then not In_Instance
 
         --  Don't warn unless entity in question is in extended main source
 
@@ -13389,14 +13329,20 @@ package body Sem_Util is
    --------------------------------------
 
    function Has_Preelaborable_Initialization
-     (E                              : Entity_Id;
-      Formal_Types_Have_Preelab_Init : Boolean := False) return Boolean
+     (E                 : Entity_Id;
+      Preelab_Init_Expr : Node_Id := Empty) return Boolean
    is
       Has_PE : Boolean;
 
       procedure Check_Components (E : Entity_Id);
       --  Check component/discriminant chain, sets Has_PE False if a component
       --  or discriminant does not meet the preelaborable initialization rules.
+
+      function Type_Named_In_Preelab_Init_Expression
+        (Typ  : Entity_Id;
+         Expr : Node_Id) return Boolean;
+      --  Returns True iff Typ'Preelaborable_Initialization occurs in Expr
+      --  (where Expr may be a conjunction of one or more P_I attributes).
 
       ----------------------
       -- Check_Components --
@@ -13446,7 +13392,7 @@ package body Sem_Util is
 
             if No (Exp) then
                if not Has_Preelaborable_Initialization
-                        (Etype (Ent), Formal_Types_Have_Preelab_Init)
+                        (Etype (Ent), Preelab_Init_Expr)
                then
                   Has_PE := False;
                   exit;
@@ -13463,6 +13409,44 @@ package body Sem_Util is
             Next_Entity (Ent);
          end loop;
       end Check_Components;
+
+      --------------------------------------
+      -- Type_Named_In_Preelab_Expression --
+      --------------------------------------
+
+      function Type_Named_In_Preelab_Init_Expression
+        (Typ  : Entity_Id;
+         Expr : Node_Id) return Boolean
+      is
+      begin
+         --  Return True if Expr is a Preelaborable_Initialization attribute
+         --  and the prefix is a subtype that has the same type as Typ.
+
+         if Nkind (Expr) = N_Attribute_Reference
+           and then Attribute_Name (Expr) = Name_Preelaborable_Initialization
+           and then Is_Entity_Name (Prefix (Expr))
+           and then Base_Type (Entity (Prefix (Expr))) = Base_Type (Typ)
+         then
+            return True;
+
+         --  In the case where Expr is a conjunction, test whether either
+         --  operand is a Preelaborable_Initialization attribute whose prefix
+         --  has the same type as Typ, and return True if so.
+
+         elsif Nkind (Expr) = N_Op_And
+           and then
+            (Type_Named_In_Preelab_Init_Expression (Typ, Left_Opnd (Expr))
+              or else
+             Type_Named_In_Preelab_Init_Expression (Typ, Right_Opnd (Expr)))
+         then
+            return True;
+
+         --  Typ not named in a Preelaborable_Initialization attribute of Expr
+
+         else
+            return False;
+         end if;
+      end Type_Named_In_Preelab_Init_Expression;
 
    --  Start of processing for Has_Preelaborable_Initialization
 
@@ -13494,7 +13478,7 @@ package body Sem_Util is
 
       elsif Is_Array_Type (E) then
          Has_PE := Has_Preelaborable_Initialization
-                     (Component_Type (E), Formal_Types_Have_Preelab_Init);
+                     (Component_Type (E), Preelab_Init_Expr);
 
       --  A derived type has preelaborable initialization if its parent type
       --  has preelaborable initialization and (in the case of a derived record
@@ -13509,7 +13493,11 @@ package body Sem_Util is
          --  of a generic formal derived type has preelaborable initialization.
          --  (See comment on spec of Has_Preelaborable_Initialization.)
 
-         if Is_Generic_Type (E) and then Formal_Types_Have_Preelab_Init then
+         if Is_Generic_Type (E)
+           and then Present (Preelab_Init_Expr)
+           and then
+             Type_Named_In_Preelab_Init_Expression (E, Preelab_Init_Expr)
+         then
             return True;
          end if;
 
@@ -13522,7 +13510,8 @@ package body Sem_Util is
 
          --  First check whether ancestor type has preelaborable initialization
 
-         Has_PE := Has_Preelaborable_Initialization (Etype (Base_Type (E)));
+         Has_PE := Has_Preelaborable_Initialization
+                     (Etype (Base_Type (E)), Preelab_Init_Expr);
 
          --  If OK, check extension components (if any)
 
@@ -13553,7 +13542,11 @@ package body Sem_Util is
          --  of a generic formal private type has preelaborable initialization.
          --  (See comment on spec of Has_Preelaborable_Initialization.)
 
-         if Is_Generic_Type (E) and then Formal_Types_Have_Preelab_Init then
+         if Is_Generic_Type (E)
+           and then Present (Preelab_Init_Expr)
+           and then
+             Type_Named_In_Preelab_Init_Expression (E, Preelab_Init_Expr)
+         then
             return True;
          else
             return False;
@@ -16926,6 +16919,15 @@ package body Sem_Util is
             end if;
 
             if Is_Entity_Name (P) then
+               --  The Etype may not be set on P (which is wrong) in certain
+               --  corner cases involving the deprecated front-end inlining of
+               --  subprograms (via -gnatN), so use the Etype set on the
+               --  the entity for these instances since we know it is present.
+
+               if No (Prefix_Type) then
+                  Prefix_Type := Etype (Entity (P));
+               end if;
+
                if Ekind (Entity (P)) = E_Generic_In_Out_Parameter then
                   Prefix_Type := Base_Type (Prefix_Type);
                end if;
@@ -18168,6 +18170,19 @@ package body Sem_Util is
       --  not have an assigned scope.
 
       if Is_Formal (E) then
+         return False;
+
+      --  If we somehow got an empty value for Scope, the tree must be
+      --  malformed. Rather than blow up we return True in this case.
+
+      elsif No (Scope (E)) then
+         return True;
+
+      --  Handle loops since Enclosing_Dynamic_Scope skips them; required to
+      --  properly handle entities local to quantified expressions in library
+      --  level specifications.
+
+      elsif Ekind (Scope (E)) = E_Loop then
          return False;
       end if;
 
@@ -21190,6 +21205,9 @@ package body Sem_Util is
    -- Is_Variable --
    -----------------
 
+   --  Should Is_Variable be refactored to better handle dereferences and
+   --  technical debt ???
+
    function Is_Variable
      (N                 : Node_Id;
       Use_Original_Node : Boolean := True) return Boolean
@@ -21358,6 +21376,10 @@ package body Sem_Util is
                         and then Nkind (Parent (E)) /= N_Exception_Handler)
               or else (K = E_Component
                         and then not In_Protected_Function (E))
+              or else (Present (Etype (E))
+                        and then Is_Access_Object_Type (Etype (E))
+                        and then Is_Access_Variable (Etype (E))
+                        and then Is_Dereferenced (N))
               or else K = E_Out_Parameter
               or else K = E_In_Out_Parameter
               or else K = E_Generic_In_Out_Parameter
@@ -22714,6 +22736,61 @@ package body Sem_Util is
       Set_Result (N);
       return Result;
    end Might_Raise;
+
+   ----------------------------------------
+   -- Nearest_Class_Condition_Subprogram --
+   ----------------------------------------
+
+   function Nearest_Class_Condition_Subprogram
+     (Kind    : Condition_Kind;
+      Spec_Id : Entity_Id) return Entity_Id
+   is
+      Subp_Id : constant Entity_Id := Ultimate_Alias (Spec_Id);
+
+   begin
+      --  Prevent cascaded errors
+
+      if not Is_Dispatching_Operation (Subp_Id) then
+         return Empty;
+
+      --  No need to search if this subprogram has class-wide postconditions
+
+      elsif Present (Class_Condition (Kind, Subp_Id)) then
+         return Subp_Id;
+      end if;
+
+      --  Process the contracts of inherited subprograms, looking for
+      --  class-wide pre/postconditions.
+
+      declare
+         Subps   : constant Subprogram_List := Inherited_Subprograms (Subp_Id);
+         Subp_Id : Entity_Id;
+
+      begin
+         for Index in Subps'Range loop
+            Subp_Id := Subps (Index);
+
+            if Present (Alias (Subp_Id)) then
+               Subp_Id := Ultimate_Alias (Subp_Id);
+            end if;
+
+            --  Wrappers of class-wide pre/postconditions reference the
+            --  parent primitive that has the inherited contract.
+
+            if Is_Wrapper (Subp_Id)
+              and then Present (LSP_Subprogram (Subp_Id))
+            then
+               Subp_Id := LSP_Subprogram (Subp_Id);
+            end if;
+
+            if Present (Class_Condition (Kind, Subp_Id)) then
+               return Subp_Id;
+            end if;
+         end loop;
+      end;
+
+      return Empty;
+   end Nearest_Class_Condition_Subprogram;
 
    --------------------------------
    -- Nearest_Enclosing_Instance --
@@ -29281,7 +29358,7 @@ package body Sem_Util is
                            (Designated_Type (Btyp), Allow_Alt_Model);
                end if;
 
-               --  When an anonymous access type's Assoc_Ent is specifiedi,
+               --  When an anonymous access type's Assoc_Ent is specified,
                --  calculate the result based on the general accessibility
                --  level routine.
 
@@ -29303,10 +29380,22 @@ package body Sem_Util is
                             (Associated_Node_For_Itype (Typ));
 
                if Present (Def_Ent) then
-                  --  When the type comes from an anonymous access parameter,
-                  --  the level is that of the subprogram declaration.
+                  --  When the defining entity is a subprogram then we know the
+                  --  anonymous access type Typ has been generated to either
+                  --  describe an anonymous access type formal or an anonymous
+                  --  access result type.
 
-                  if Ekind (Def_Ent) in Subprogram_Kind then
+                  --  Since we are only interested in the formal case, avoid
+                  --  the anonymous access result type.
+
+                  if Ekind (Def_Ent) in Subprogram_Kind
+                    and then not (Ekind (Def_Ent) = E_Function
+                                   and then Etype (Def_Ent) = Typ)
+                  then
+                     --  When the type comes from an anonymous access
+                     --  parameter, the level is that of the subprogram
+                     --  declaration.
+
                      return Scope_Depth (Def_Ent);
 
                   --  When the type is an access discriminant, the level is
@@ -31461,8 +31550,16 @@ package body Sem_Util is
                --  type case correctly, so we avoid that problem by
                --  returning True here.
                return True;
+
             elsif Ada_Version < Ada_2022 then
                return False;
+
+            elsif Inside_Class_Condition_Preanalysis then
+               --  No need to evaluate it during preanalysis of a class-wide
+               --  pre/postcondition since the expression is not installed yet
+               --  on its definite context.
+               return False;
+
             elsif not Is_Conditionally_Evaluated (Expr) then
                return False;
             else
@@ -31519,7 +31616,12 @@ package body Sem_Util is
                   --    quantified_expression.
 
                   if Nkind (Par) = N_Quantified_Expression
-                     and then Trailer = Condition (Par)
+                    and then Trailer = Condition (Par)
+                  then
+                     return True;
+                  elsif Nkind (Par) = N_Expression_With_Actions
+                    and then
+                      Nkind (Original_Node (Par)) = N_Quantified_Expression
                   then
                      return True;
                   end if;
@@ -32045,11 +32147,172 @@ package body Sem_Util is
                   end if;
                end;
             end if;
+
             return False;
          end Is_Access_Type_For_Indirect_Temp;
 
       end Indirect_Temps;
    end Old_Attr_Util;
+
+   package body Storage_Model_Support is
+
+      -----------------------------------
+      -- Get_Storage_Model_Type_Entity --
+      -----------------------------------
+
+      function Get_Storage_Model_Type_Entity
+        (Typ : Entity_Id;
+         Nam : Name_Id) return Entity_Id
+      is
+         pragma Assert
+           (Is_Type (Typ)
+            and then
+              Nam in Name_Address_Type
+                   | Name_Null_Address
+                   | Name_Allocate
+                   | Name_Deallocate
+                   | Name_Copy_From
+                   | Name_Copy_To
+                   | Name_Storage_Size);
+
+         SMT_Aspect_Value : constant Node_Id :=
+           Find_Value_Of_Aspect (Typ, Aspect_Storage_Model_Type);
+         Assoc            : Node_Id;
+
+      begin
+         if No (SMT_Aspect_Value) then
+            return Empty;
+
+         else
+            Assoc := First (Component_Associations (SMT_Aspect_Value));
+            while Present (Assoc) loop
+               if Chars (First (Choices (Assoc))) = Nam then
+                  return Entity (Expression (Assoc));
+               end if;
+
+               Next (Assoc);
+            end loop;
+
+            return Empty;
+         end if;
+      end Get_Storage_Model_Type_Entity;
+
+      -----------------------------------------
+      -- Has_Designated_Storage_Model_Aspect --
+      -----------------------------------------
+
+      function Has_Designated_Storage_Model_Aspect
+        (Typ : Entity_Id) return Boolean
+      is
+      begin
+         return Present (Find_Aspect (Typ, Aspect_Designated_Storage_Model));
+      end Has_Designated_Storage_Model_Aspect;
+
+      -----------------------------------
+      -- Has_Storage_Model_Type_Aspect --
+      -----------------------------------
+
+      function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean
+      is
+      begin
+         return Present (Find_Aspect (Typ, Aspect_Storage_Model_Type));
+      end Has_Storage_Model_Type_Aspect;
+
+      --------------------------
+      -- Storage_Model_Object --
+      --------------------------
+
+      function Storage_Model_Object (Typ : Entity_Id) return Entity_Id is
+      begin
+         if Has_Designated_Storage_Model_Aspect (Typ) then
+            return
+              Entity
+                (Find_Value_Of_Aspect (Typ, Aspect_Designated_Storage_Model));
+         else
+            return Empty;
+         end if;
+      end Storage_Model_Object;
+
+      ------------------------
+      -- Storage_Model_Type --
+      ------------------------
+
+      function Storage_Model_Type (Obj : Entity_Id) return Entity_Id is
+      begin
+         if Present
+              (Find_Value_Of_Aspect (Etype (Obj), Aspect_Storage_Model_Type))
+         then
+            return Etype (Obj);
+         else
+            return Empty;
+         end if;
+      end Storage_Model_Type;
+
+      --------------------------------
+      -- Storage_Model_Address_Type --
+      --------------------------------
+
+      function Storage_Model_Address_Type (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Address_Type);
+      end Storage_Model_Address_Type;
+
+      --------------------------------
+      -- Storage_Model_Null_Address --
+      --------------------------------
+
+      function Storage_Model_Null_Address (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Null_Address);
+      end Storage_Model_Null_Address;
+
+      ----------------------------
+      -- Storage_Model_Allocate --
+      ----------------------------
+
+      function Storage_Model_Allocate (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Allocate);
+      end Storage_Model_Allocate;
+
+      ------------------------------
+      -- Storage_Model_Deallocate --
+      ------------------------------
+
+      function Storage_Model_Deallocate (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Deallocate);
+      end Storage_Model_Deallocate;
+
+      -----------------------------
+      -- Storage_Model_Copy_From --
+      -----------------------------
+
+      function Storage_Model_Copy_From (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Copy_From);
+      end Storage_Model_Copy_From;
+
+      ---------------------------
+      -- Storage_Model_Copy_To --
+      ---------------------------
+
+      function Storage_Model_Copy_To (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Copy_To);
+      end Storage_Model_Copy_To;
+
+      --------------------------------
+      -- Storage_Model_Storage_Size --
+      --------------------------------
+
+      function Storage_Model_Storage_Size (Typ : Entity_Id) return Entity_Id is
+      begin
+         return Get_Storage_Model_Type_Entity (Typ, Name_Storage_Size);
+      end Storage_Model_Storage_Size;
+
+   end Storage_Model_Support;
+
 begin
    Erroutc.Subprogram_Name_Ptr := Subprogram_Name'Access;
 end Sem_Util;

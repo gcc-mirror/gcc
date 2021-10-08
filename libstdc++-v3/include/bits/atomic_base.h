@@ -946,7 +946,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // As above, but for difference_type arguments.
     template<typename _Tp>
-      using _Diff = conditional_t<is_pointer_v<_Tp>, ptrdiff_t, _Val<_Tp>>;
+      using _Diff = __conditional_t<is_pointer_v<_Tp>, ptrdiff_t, _Val<_Tp>>;
 
     template<size_t _Size, size_t _Align>
       _GLIBCXX_ALWAYS_INLINE bool

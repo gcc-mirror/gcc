@@ -24,7 +24,9 @@
 
 template class std::stack<int>;
 
+#ifndef _GLIBCXX_CONCEPT_CHECKS
 struct NonDefaultConstructible : std::deque<int> {
   NonDefaultConstructible(int) { }
 };
 template class std::stack<int, NonDefaultConstructible>;
+#endif

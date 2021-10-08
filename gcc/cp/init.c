@@ -749,8 +749,15 @@ maybe_warn_list_ctor (tree member, tree init)
       || !is_list_ctor (current_function_decl))
     return;
 
-  tree parms = FUNCTION_FIRST_USER_PARMTYPE (current_function_decl);
-  tree initlist = non_reference (TREE_VALUE (parms));
+  tree parm = FUNCTION_FIRST_USER_PARMTYPE (current_function_decl);
+  parm = TREE_VALUE (parm);
+  tree initlist = non_reference (parm);
+
+  /* Do not warn if the parameter is an lvalue reference to non-const.  */
+  if (TYPE_REF_P (parm) && !TYPE_REF_IS_RVALUE (parm)
+      && !CP_TYPE_CONST_P (initlist))
+    return;
+
   tree targs = CLASSTYPE_TI_ARGS (initlist);
   tree elttype = TREE_VEC_ELT (targs, 0);
 

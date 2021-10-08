@@ -1622,16 +1622,20 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 		  tree val = c_parser_gimple_postfix_expression (parser).value;
 		  if (! val
 		      || val == error_mark_node
-		      || (!CONSTANT_CLASS_P (val)
-			  && !(addr_p
-			       && (TREE_CODE (val) == STRING_CST
-				   || DECL_P (val)))))
+		      || (!CONSTANT_CLASS_P (val) && !addr_p))
 		    {
 		      c_parser_error (parser, "invalid _Literal");
 		      return expr;
 		    }
 		  if (addr_p)
-		    val = build1 (ADDR_EXPR, type, val);
+		    {
+		      val = build1 (ADDR_EXPR, type, val);
+		      if (!is_gimple_invariant_address (val))
+			{
+			  c_parser_error (parser, "invalid _Literal");
+			  return expr;
+			}
+		    }
 		  if (neg_p)
 		    {
 		      val = const_unop (NEGATE_EXPR, TREE_TYPE (val), val);

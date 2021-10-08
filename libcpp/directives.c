@@ -447,7 +447,11 @@ _cpp_handle_directive (cpp_reader *pfile, bool indented)
       if (dname->val.node.node->is_directive)
 	{
 	  dir = &dtable[dname->val.node.node->directive_index];
-	  if ((dir->flags & ELIFDEF) && !CPP_OPTION (pfile, elifdef))
+	  if ((dir->flags & ELIFDEF)
+	      && !CPP_OPTION (pfile, elifdef)
+	      /* For -std=gnu* modes elifdef is supported with
+		 a pedwarn if pedantic.  */
+	      && CPP_OPTION (pfile, std))
 	    dir = 0;
 	}
     }
@@ -2117,7 +2121,26 @@ do_elif (cpp_reader *pfile)
 	 are skipped and their controlling directives are processed as
 	 if they were in a group that is skipped."  */
       if (ifs->skip_elses)
-	pfile->state.skipping = 1;
+	{
+	  /* In older GNU standards, #elifdef/#elifndef is supported
+	     as an extension, but pedwarn if -pedantic if the presence
+	     of the directive would be rejected.  */
+	  if (pfile->directive != &dtable[T_ELIF]
+	      && ! CPP_OPTION (pfile, elifdef)
+	      && CPP_PEDANTIC (pfile)
+	      && !pfile->state.skipping)
+	    {
+	      if (CPP_OPTION (pfile, cplusplus))
+		cpp_error (pfile, CPP_DL_PEDWARN,
+			   "#%s before C++23 is a GCC extension",
+			   pfile->directive->name);
+	      else
+		cpp_error (pfile, CPP_DL_PEDWARN,
+			   "#%s before C2X is a GCC extension",
+			   pfile->directive->name);
+	    }
+	  pfile->state.skipping = 1;
+	}
       else
 	{
 	  if (pfile->directive == &dtable[T_ELIF])
@@ -2139,6 +2162,22 @@ do_elif (cpp_reader *pfile)
 		  if (pfile->cb.used)
 		    pfile->cb.used (pfile, pfile->directive_line, node);
 		  check_eol (pfile, false);
+		  /* In older GNU standards, #elifdef/#elifndef is supported
+		     as an extension, but pedwarn if -pedantic if the presence
+		     of the directive would change behavior.  */
+		  if (! CPP_OPTION (pfile, elifdef)
+		      && CPP_PEDANTIC (pfile)
+		      && pfile->state.skipping != skip)
+		    {
+		      if (CPP_OPTION (pfile, cplusplus))
+			cpp_error (pfile, CPP_DL_PEDWARN,
+				   "#%s before C++23 is a GCC extension",
+				   pfile->directive->name);
+		      else
+			cpp_error (pfile, CPP_DL_PEDWARN,
+				   "#%s before C2X is a GCC extension",
+				   pfile->directive->name);
+		    }
 		  pfile->state.skipping = skip;
 		}
 	    }

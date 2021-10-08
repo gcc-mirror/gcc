@@ -3638,6 +3638,8 @@ ix86_use_mask_cmp_p (machine_mode mode, machine_mode cmp_mode,
     return false;
   else if (vector_size == 64)
     return true;
+  else if (GET_MODE_INNER (cmp_mode) == HFmode)
+    return true;
 
   /* When op_true is NULL, op_false must be NULL, or vice versa.  */
   gcc_assert (!op_true == !op_false);
@@ -16041,8 +16043,14 @@ emit_reduc_half (rtx dest, rtx src, int i)
     case E_V2DFmode:
       tem = gen_vec_interleave_highv2df (dest, src, src);
       break;
+    case E_V4HImode:
+      d = gen_reg_rtx (V1DImode);
+      tem = gen_mmx_lshrv1di3 (d, gen_lowpart (V1DImode, src),
+			       GEN_INT (i / 2));
+      break;
     case E_V16QImode:
     case E_V8HImode:
+    case E_V8HFmode:
     case E_V4SImode:
     case E_V2DImode:
       d = gen_reg_rtx (V1TImode);
@@ -16064,6 +16072,7 @@ emit_reduc_half (rtx dest, rtx src, int i)
       break;
     case E_V32QImode:
     case E_V16HImode:
+    case E_V16HFmode:
     case E_V8SImode:
     case E_V4DImode:
       if (i == 256)
@@ -16083,6 +16092,7 @@ emit_reduc_half (rtx dest, rtx src, int i)
       break;
     case E_V64QImode:
     case E_V32HImode:
+    case E_V32HFmode:
       if (i < 64)
 	{
 	  d = gen_reg_rtx (V4TImode);

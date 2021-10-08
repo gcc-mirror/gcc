@@ -444,6 +444,12 @@ package body Sem_Type is
                    Find_Dispatching_Type (E))
          then
             Add_One_Interp (N, Interface_Alias (E), T);
+
+         --  Otherwise this is the first interpretation, N has type Any_Type
+         --  and we must place the new type on the node.
+
+         else
+            Set_Etype (N, T);
          end if;
 
          return;
@@ -3418,7 +3424,8 @@ package body Sem_Type is
       --  Ada 2005 (AI-251): T1 is a concrete type that implements the
       --  class-wide interface T2
 
-      elsif Is_Class_Wide_Type (T2)
+      elsif Is_Tagged_Type (T1)
+        and then Is_Class_Wide_Type (T2)
         and then Is_Interface (Etype (T2))
         and then Interface_Present_In_Ancestor (Typ   => T1,
                                                 Iface => Etype (T2))

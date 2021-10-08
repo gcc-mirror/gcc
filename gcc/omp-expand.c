@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree-eh.h"
+#include "opts.h"
 
 /* OMP region information.  Every parallel and workshare
    directive is enclosed between two markers, the OMP_* directive
@@ -6960,7 +6961,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       /* If not -fno-tree-loop-vectorize, hint that we want to vectorize
 	 the loop.  */
       if ((flag_tree_loop_vectorize
-	   || !global_options_set.x_flag_tree_loop_vectorize)
+	   || !OPTION_SET_P (flag_tree_loop_vectorize))
 	  && flag_tree_loop_optimize
 	  && loop->safelen > 1)
 	{

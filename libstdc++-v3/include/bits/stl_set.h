@@ -252,11 +252,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : _M_t(_Key_alloc_type(__a)) { }
 
       /// Allocator-extended copy constructor.
-      set(const set& __x, const allocator_type& __a)
+      set(const set& __x, const __type_identity_t<allocator_type>& __a)
       : _M_t(__x._M_t, _Key_alloc_type(__a)) { }
 
       /// Allocator-extended move constructor.
-      set(set&& __x, const allocator_type& __a)
+      set(set&& __x, const __type_identity_t<allocator_type>& __a)
       noexcept(is_nothrow_copy_constructible<_Compare>::value
 	       && _Alloc_traits::_S_always_equal())
       : _M_t(std::move(__x._M_t), _Key_alloc_type(__a)) { }

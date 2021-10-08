@@ -26,19 +26,54 @@ along with GCC; see the file COPYING3.  If not see
 class jt_state
 {
 public:
-  jt_state (class const_and_copies *,
-	    class avail_exprs_stack *,
-	    class evrp_range_analyzer *);
-  void push (edge);
-  void pop ();
-  void register_equiv (tree dest, tree src, bool update_range = false);
-  void register_equivs_on_edge (edge e);
-  void record_ranges_from_stmt (gimple *stmt, bool temporary);
+  virtual ~jt_state () { }
+  virtual void push (edge);
+  virtual void pop ();
+  virtual void register_equiv (tree dest, tree src, bool update_range);
+  virtual void register_equivs_edge (edge e);
+  virtual void register_equivs_stmt (gimple *, basic_block,
+				     class jt_simplifier *);
+  virtual void record_ranges_from_stmt (gimple *stmt, bool temporary);
+  void get_path (vec<basic_block> &);
+  void append_path (basic_block);
+  void dump (FILE *);
+  void debug ();
 
 private:
-  const_and_copies *m_copies;
-  avail_exprs_stack *m_exprs;
-  evrp_range_analyzer *m_evrp;
+  auto_vec<basic_block> m_blocks;
+  static const basic_block BB_MARKER;
+};
+
+// Statement simplifier callback for the jump threader.
+
+class jt_simplifier
+{
+public:
+  virtual ~jt_simplifier () { }
+  virtual tree simplify (gimple *, gimple *, basic_block, jt_state *) = 0;
+};
+
+class hybrid_jt_state : public jt_state
+{
+private:
+  void register_equivs_stmt (gimple *, basic_block, jt_simplifier *) override
+  {
+    // Ranger has no need to simplify anything.
+  }
+};
+
+class hybrid_jt_simplifier : public jt_simplifier
+{
+public:
+  hybrid_jt_simplifier (class gimple_ranger *r, class path_range_query *q);
+  tree simplify (gimple *stmt, gimple *, basic_block, jt_state *) override;
+
+private:
+  void compute_ranges_from_state (gimple *stmt, jt_state *);
+
+  gimple_ranger *m_ranger;
+  path_range_query *m_query;
+  auto_vec<basic_block> m_path;
 };
 
 // This is the high level threader.  The entry point is
@@ -49,7 +84,7 @@ private:
 class jump_threader
 {
 public:
-  jump_threader (class jump_threader_simplifier *, class jt_state *);
+  jump_threader (jt_simplifier *, class jt_state *);
   ~jump_threader ();
   void thread_outgoing_edges (basic_block);
   void remove_jump_threads_including (edge_def *);
@@ -76,21 +111,8 @@ private:
   gcond *dummy_cond;
 
   class fwd_jt_path_registry *m_registry;
-  jump_threader_simplifier *m_simplifier;
+  jt_simplifier *m_simplifier;
   jt_state *m_state;
-};
-
-// Statement simplifier callback for the jump threader.
-
-class jump_threader_simplifier
-{
-public:
-  jump_threader_simplifier (class vr_values *v);
-  virtual ~jump_threader_simplifier () { }
-  virtual tree simplify (gimple *, gimple *, basic_block, jt_state *);
-
-protected:
-  vr_values *m_vr_values;
 };
 
 extern void propagate_threaded_block_debug_into (basic_block, basic_block);

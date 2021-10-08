@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ifcvt.h"
 #include "rtl-iter.h"
 #include "calls.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -664,7 +665,7 @@ frv_option_override (void)
       if (!flag_pic)		/* -fPIC */
 	flag_pic = 2;
 
-      if (!global_options_set.x_g_switch_value)	/* -G0 */
+      if (!OPTION_SET_P (g_switch_value))	/* -G0 */
 	{
 	  g_switch_value = 0;
 	}
@@ -757,7 +758,7 @@ frv_option_override (void)
     }
 
   /* Check for small data option */
-  if (!global_options_set.x_g_switch_value && !TARGET_LIBPIC)
+  if (!OPTION_SET_P (g_switch_value) && !TARGET_LIBPIC)
     g_switch_value = SDATA_DEFAULT_SIZE;
 
   /* There is no single unaligned SI op for PIC code.  Sometimes we

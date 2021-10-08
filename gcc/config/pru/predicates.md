@@ -121,6 +121,25 @@
   return 0;
 })
 
+(define_predicate "regio_operand"
+  (match_code "subreg,reg")
+{
+  if (register_operand (op, mode))
+    {
+      int regno;
+
+      if (REG_P (op))
+	regno = REGNO (op);
+      else if (GET_CODE (op) == SUBREG && REG_P (SUBREG_REG (op)))
+	regno = REGNO (SUBREG_REG (op));
+      else
+	return 0;
+
+      return REGNO_REG_CLASS (regno) == REGIO_REGS;
+    }
+  return 0;
+})
+
 (define_predicate "reg_or_const_int_operand"
   (ior (match_operand 0 "const_int_operand")
        (match_operand 0 "register_operand")))

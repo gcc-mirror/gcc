@@ -105,7 +105,7 @@ void test01()
   static_assert(test_property<is_trivially_constructible,
 		PODType, const PODType&>(true), "");
   static_assert(test_property<is_trivially_constructible,
-		PODType, int, int>(false), "");
+		PODType, int, int>(__cplusplus >= 202002L), "");
   static_assert(test_property<is_trivially_constructible,
 		NType>(false), "");
   static_assert(test_property<is_trivially_constructible,

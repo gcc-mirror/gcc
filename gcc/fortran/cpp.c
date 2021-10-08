@@ -245,11 +245,12 @@ gfc_cpp_temporary_file (void)
 }
 
 static void
-gfc_cpp_register_include_paths (void)
+gfc_cpp_register_include_paths (bool verbose_missing_dir_warn)
 {
   int cxx_stdinc = 0;
   cpp_get_options (cpp_in)->warn_missing_include_dirs
-    = global_options.x_cpp_warn_missing_include_dirs;
+    = (global_options.x_cpp_warn_missing_include_dirs
+       && verbose_missing_dir_warn);
   register_include_chains (cpp_in, gfc_cpp_option.sysroot,
 			   gfc_cpp_option.prefix, gfc_cpp_option.multilib,
 			   gfc_cpp_option.standard_include_paths, cxx_stdinc,
@@ -484,7 +485,7 @@ gfc_cpp_init_cb (void)
 }
 
 void
-gfc_cpp_post_options (void)
+gfc_cpp_post_options (bool verbose_missing_dir_warn)
 {
   /* Any preprocessing-related option without '-cpp' is considered
      an error.  */
@@ -547,7 +548,7 @@ gfc_cpp_post_options (void)
   diagnostic_initialize_input_context (global_dc, nullptr, true);
   gfc_cpp_init_cb ();
 
-  gfc_cpp_register_include_paths ();
+  gfc_cpp_register_include_paths (verbose_missing_dir_warn);
 }
 
 

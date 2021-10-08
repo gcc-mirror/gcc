@@ -1,3 +1,24 @@
+2021-10-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* MAINTAINERS: Add myself to DCO section and update email
+	address.
+
+2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* MAINTAINERS: Add myself to DCO section.
+
+2021-09-28  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+	* configure.ac (skipdirs): Add the contents of target_configdirs if
+	we are not building gcc.
+
+2021-09-24  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* Makefile.def: Back-port commits ba4d88ad892f and
+	755ba58ebef0 from binutils-gdb repository.
+	* Makefile.in: Regenerated.
+
 2021-09-20  Harald Anlauf  <anlauf@gmx.de>
 
 	* MAINTAINERS (Reviewers): Add myself as Fortran reviewer.

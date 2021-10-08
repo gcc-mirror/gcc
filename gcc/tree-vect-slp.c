@@ -779,56 +779,6 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
   return 0;
 }
 
-/* Try to assign vector type VECTYPE to STMT_INFO for BB vectorization.
-   Return true if we can, meaning that this choice doesn't conflict with
-   existing SLP nodes that use STMT_INFO.  */
-
-bool
-vect_update_shared_vectype (stmt_vec_info stmt_info, tree vectype)
-{
-  tree old_vectype = STMT_VINFO_VECTYPE (stmt_info);
-  if (old_vectype)
-    return useless_type_conversion_p (vectype, old_vectype);
-
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    {
-      /* We maintain the invariant that if any statement in the group is
-	 used, all other members of the group have the same vector type.  */
-      stmt_vec_info first_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-      stmt_vec_info member_info = first_info;
-      for (; member_info; member_info = DR_GROUP_NEXT_ELEMENT (member_info))
-	if (is_pattern_stmt_p (member_info)
-	    && !useless_type_conversion_p (vectype,
-					   STMT_VINFO_VECTYPE (member_info)))
-	  break;
-
-      if (!member_info)
-	{
-	  for (member_info = first_info; member_info;
-	       member_info = DR_GROUP_NEXT_ELEMENT (member_info))
-	    STMT_VINFO_VECTYPE (member_info) = vectype;
-	  return true;
-	}
-    }
-  else if (!is_pattern_stmt_p (stmt_info))
-    {
-      STMT_VINFO_VECTYPE (stmt_info) = vectype;
-      return true;
-    }
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-		       "Build SLP failed: incompatible vector"
-		       " types for: %G", stmt_info->stmt);
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "    old vector type: %T\n", old_vectype);
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "    new vector type: %T\n", vectype);
-    }
-  return false;
-}
-
 /* Return true if call statements CALL1 and CALL2 are similar enough
    to be combined into the same SLP group.  */
 
@@ -4508,15 +4458,6 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
     return vectorizable_slp_permutation (vinfo, NULL, node, cost_vec);
 
   gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
-  if (is_a <bb_vec_info> (vinfo)
-      && !vect_update_shared_vectype (stmt_info, SLP_TREE_VECTYPE (node)))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "desired vector type conflicts with earlier one "
-			 "for %G", stmt_info->stmt);
-      return false;
-    }
 
   bool dummy;
   return vect_analyze_stmt (vinfo, stmt_info, &dummy,

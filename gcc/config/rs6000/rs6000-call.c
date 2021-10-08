@@ -6223,11 +6223,19 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
    or vector type.  If a non-floating point or vector type is found, or
    if a floating point or vector type that doesn't match a non-VOIDmode
    *MODEP is found, then return -1, otherwise return the count in the
-   sub-tree.  */
+   sub-tree.
+
+   There have been some ABI snafus along the way with C++.  Modify
+   EMPTY_BASE_SEEN to a nonzero value iff a C++ empty base class makes
+   an appearance; separate flag bits indicate whether or not such a
+   field is marked "no unique address".  Modify ZERO_WIDTH_BF_SEEN
+   to 1 iff a C++ zero-length bitfield makes an appearance, but
+   in this case otherwise treat this as still being a homogeneous
+   aggregate.  */
 
 static int
 rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
-			    int *empty_base_seen)
+			    int *empty_base_seen, int *zero_width_bf_seen)
 {
   machine_mode mode;
   HOST_WIDE_INT size;
@@ -6298,7 +6306,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
 	  return -1;
 
 	count = rs6000_aggregate_candidate (TREE_TYPE (type), modep,
-					    empty_base_seen);
+					    empty_base_seen,
+					    zero_width_bf_seen);
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
@@ -6336,6 +6345,26 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
 
+	    if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+	      {
+		/* GCC 11 and earlier generated incorrect code in a rare
+		   corner case for C++.  When a RECORD_TYPE looks like a
+		   homogeneous aggregate, except that it also contains
+		   one or more zero-width bit fields, these earlier
+		   compilers would incorrectly pass the fields in FPRs
+		   or VSRs.  This occurred because the front end wrongly
+		   removed these bitfields from the RECORD_TYPE.  In
+		   GCC 12 and later, the front end flaw was corrected.
+		   We want to diagnose this case.  To do this, we pretend
+		   that we don't see the zero-width bit fields (hence
+		   the continue statement here), but pass back a flag
+		   indicating what happened.  The caller then diagnoses
+		   the issue and rejects the RECORD_TYPE as a homogeneous
+		   aggregate.  */
+		*zero_width_bf_seen = 1;
+		continue;
+	      }
+
 	    if (DECL_FIELD_ABI_IGNORED (field))
 	      {
 		if (lookup_attribute ("no_unique_address",
@@ -6347,7 +6376,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
 	      }
 
 	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep,
-						    empty_base_seen);
+						    empty_base_seen,
+						    zero_width_bf_seen);
 	    if (sub_count < 0)
 	      return -1;
 	    count += sub_count;
@@ -6381,7 +6411,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
 	      continue;
 
 	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep,
-						    empty_base_seen);
+						    empty_base_seen,
+						    zero_width_bf_seen);
 	    if (sub_count < 0)
 	      return -1;
 	    count = count > sub_count ? count : sub_count;
@@ -6423,8 +6454,10 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
     {
       machine_mode field_mode = VOIDmode;
       int empty_base_seen = 0;
+      int zero_width_bf_seen = 0;
       int field_count = rs6000_aggregate_candidate (type, &field_mode,
-						    &empty_base_seen);
+						    &empty_base_seen,
+						    &zero_width_bf_seen);
 
       if (field_count > 0)
 	{
@@ -6459,6 +6492,25 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 				"changed %{in GCC 10.1%}", type, url);
 		      last_reported_type_uid = uid;
 		    }
+		}
+	      if (zero_width_bf_seen && warn_psabi)
+		{
+		  static unsigned last_reported_type_uid;
+		  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
+		  if (uid != last_reported_type_uid)
+		    {
+		      inform (input_location,
+			      "ELFv2 parameter passing for an argument "
+			      "containing zero-width bit fields but that is "
+			      "otherwise a homogeneous aggregate was "
+			      "corrected in GCC 12");
+		      last_reported_type_uid = uid;
+		    }
+		  if (elt_mode)
+		    *elt_mode = mode;
+		  if (n_elts)
+		    *n_elts = 1;
+		  return false;
 		}
 	      return true;
 	    }

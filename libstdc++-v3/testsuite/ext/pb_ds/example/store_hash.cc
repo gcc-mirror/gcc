@@ -53,9 +53,9 @@ using namespace std;
 using namespace __gnu_pbds;
 
 // A string hash functor.
-struct string_hash : public unary_function<string, size_t>
+struct string_hash
 {
-  inline size_t
+  size_t
   operator()(string str) const
   {
     string::const_iterator b = str.begin();

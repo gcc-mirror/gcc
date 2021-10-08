@@ -3150,9 +3150,10 @@ encode_ieee_double (const struct real_format *fmt, long *buf,
 		    const REAL_VALUE_TYPE *r)
 {
   unsigned long image_lo, image_hi, sig_lo, sig_hi, exp;
+  unsigned long sign = r->sign;
   bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
 
-  image_hi = r->sign << 31;
+  image_hi = sign << 31;
   image_lo = 0;
 
   if (HOST_BITS_PER_LONG == 64)
@@ -3938,10 +3939,11 @@ encode_ieee_quad (const struct real_format *fmt, long *buf,
 		  const REAL_VALUE_TYPE *r)
 {
   unsigned long image3, image2, image1, image0, exp;
+  unsigned long sign = r->sign;
   bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
   REAL_VALUE_TYPE u;
 
-  image3 = r->sign << 31;
+  image3 = sign << 31;
   image2 = 0;
   image1 = 0;
   image0 = 0;

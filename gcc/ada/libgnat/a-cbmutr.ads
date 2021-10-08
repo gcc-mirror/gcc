@@ -53,11 +53,11 @@ is
      with Constant_Indexing => Constant_Reference,
           Variable_Indexing => Reference,
           Default_Iterator  => Iterate,
-          Iterator_Element  => Element_Type;
-   pragma Preelaborable_Initialization (Tree);
+          Iterator_Element  => Element_Type,
+          Preelaborable_Initialization
+                            => Element_Type'Preelaborable_Initialization;
 
-   type Cursor is private;
-   pragma Preelaborable_Initialization (Cursor);
+   type Cursor is private with Preelaborable_Initialization;
 
    Empty_Tree : constant Tree;
 

@@ -6450,6 +6450,29 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		    parmse.force_tmp = 1;
 		}
 
+	      /* Special case for assumed-rank arrays: when passing an
+		 argument to a nonallocatable/nonpointer dummy, the bounds have
+		 to be reset as otherwise a last-dim ubound of -1 is
+		 indistinguishable from an assumed-size array in the callee.  */
+	      if (!sym->attr.is_bind_c && e && fsym && fsym->as
+		  && fsym->as->type == AS_ASSUMED_RANK
+		  && e->rank != -1
+		  && e->expr_type == EXPR_VARIABLE
+		  && ((fsym->ts.type == BT_CLASS
+		       && !CLASS_DATA (fsym)->attr.class_pointer
+		       && !CLASS_DATA (fsym)->attr.allocatable)
+		      || (fsym->ts.type != BT_CLASS
+			  && !fsym->attr.pointer && !fsym->attr.allocatable)))
+		{
+		  /* Change AR_FULL to a (:,:,:) ref to force bounds update. */
+		  gfc_ref *ref;
+		  for (ref = e->ref; ref->next; ref = ref->next)
+		    ;
+		  if (ref->u.ar.type == AR_FULL
+		      && ref->u.ar.as->type != AS_ASSUMED_SIZE)
+		    ref->u.ar.type = AR_SECTION;
+		}
+
 	      if (sym->attr.is_bind_c && e
 		  && (is_CFI_desc (fsym, NULL) || assumed_length_string))
 		/* Implement F2018, 18.3.6, list item (5), bullet point 2.  */
@@ -6510,16 +6533,26 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		gfc_conv_array_parameter (&parmse, e, nodesc_arg, fsym,
 					  sym->name, NULL);
 
-	      /* Unallocated allocatable arrays and unassociated pointer arrays
-		 need their dtype setting if they are argument associated with
-		 assumed rank dummies, unless already assumed rank.  */
+	      /* Special case for assumed-rank arrays. */
 	      if (!sym->attr.is_bind_c && e && fsym && fsym->as
 		  && fsym->as->type == AS_ASSUMED_RANK
 		  && e->rank != -1)
 		{
-		  if (gfc_expr_attr (e).pointer
+		  if ((gfc_expr_attr (e).pointer
 		      || gfc_expr_attr (e).allocatable)
-		    set_dtype_for_unallocated (&parmse, e);
+		      && ((fsym->ts.type == BT_CLASS
+			   && (CLASS_DATA (fsym)->attr.class_pointer
+			       || CLASS_DATA (fsym)->attr.allocatable))
+			  || (fsym->ts.type != BT_CLASS
+			      && (fsym->attr.pointer || fsym->attr.allocatable))))
+		    {
+		      /* Unallocated allocatable arrays and unassociated pointer
+			 arrays need their dtype setting if they are argument
+			 associated with assumed rank dummies. However, if the
+			 dummy is nonallocate/nonpointer, the user may not
+			 pass those. Hence, it can be skipped.  */
+		      set_dtype_for_unallocated (&parmse, e);
+		    }
 		  else if (e->expr_type == EXPR_VARIABLE
 			   && e->ref
 			   && e->ref->u.ar.type == AR_FULL

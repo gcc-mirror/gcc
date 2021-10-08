@@ -130,9 +130,7 @@ package body Treepr is
    procedure Capitalize (S : in out String);
    --  Turns an identifier into Mixed_Case
 
-   function Image (F : Node_Field) return String;
-
-   function Image (F : Entity_Field) return String;
+   function Image (F : Node_Or_Entity_Field) return String;
 
    procedure Print_Init;
    --  Initialize for printing of tree with descendants
@@ -281,7 +279,7 @@ package body Treepr is
    -- Image --
    -----------
 
-   function Image (F : Node_Field) return String is
+   function Image (F : Node_Or_Entity_Field) return String is
    begin
       case F is
          when F_Alloc_For_BIP_Return =>
@@ -321,18 +319,6 @@ package body Treepr is
          when F_TSS_Elist =>
             return "TSS_Elist";
 
-         when others =>
-            declare
-               Result : constant String := Capitalize (F'Img);
-            begin
-               return Result (3 .. Result'Last); -- Remove "F_"
-            end;
-      end case;
-   end Image;
-
-   function Image (F : Entity_Field) return String is
-   begin
-      case F is
          when F_BIP_Initialization_Call =>
             return "BIP_Initialization_Call";
          when F_Body_Needed_For_SAL =>
@@ -666,7 +652,7 @@ package body Treepr is
             for Field_Index in Fields'Range loop
                declare
                   FD : Field_Descriptor renames
-                    Entity_Field_Descriptors (Fields (Field_Index));
+                    Field_Descriptors (Fields (Field_Index));
                begin
                   if Should_Print (Fields (Field_Index))
                     and then (FD.Kind = Flag_Field) = Print_Flags
@@ -1266,14 +1252,21 @@ package body Treepr is
 
       --  Print Chars field if present
 
-      if Nkind (N) in N_Has_Chars and then Chars (N) /= No_Name then
-         Print_Str (Prefix);
-         Print_Str ("Chars = ");
-         Print_Name (Chars (N));
-         Write_Str (" (Name_Id=");
-         Write_Int (Int (Chars (N)));
-         Write_Char (')');
-         Print_Eol;
+      if Nkind (N) in N_Has_Chars then
+         if Field_Is_Initial_Zero (N, F_Chars) then
+            Print_Str (Prefix);
+            Print_Str ("Chars = initial zero");
+            Print_Eol;
+
+         elsif Chars (N) /= No_Name then
+            Print_Str (Prefix);
+            Print_Str ("Chars = ");
+            Print_Name (Chars (N));
+            Write_Str (" (Name_Id=");
+            Write_Int (Int (Chars (N)));
+            Write_Char (')');
+            Print_Eol;
+         end if;
       end if;
 
       --  Special field print operations for non-entity nodes
@@ -1454,7 +1447,7 @@ package body Treepr is
             for Field_Index in Fields'Range loop
                declare
                   FD : Field_Descriptor renames
-                    Node_Field_Descriptors (Fields (Field_Index));
+                    Field_Descriptors (Fields (Field_Index));
                begin
                   if Should_Print (Fields (Field_Index))
                     and then (FD.Kind = Flag_Field) = Print_Flags
@@ -1624,7 +1617,14 @@ package body Treepr is
 
          if Nkind (N) in N_Has_Chars then
             Write_Char (' ');
-            Print_Name (Chars (N));
+
+            if Field_Is_Initial_Zero (N, F_Chars) then
+               Print_Str ("Chars = initial zero");
+               Print_Eol;
+
+            else
+               Print_Name (Chars (N));
+            end if;
          end if;
 
          if Nkind (N) in N_Entity then
@@ -2265,7 +2265,7 @@ package body Treepr is
          for Field_Index in A'Range loop
             declare
                F : constant Node_Field := A (Field_Index);
-               FD : Field_Descriptor renames Node_Field_Descriptors (F);
+               FD : Field_Descriptor renames Field_Descriptors (F);
             begin
                if FD.Kind in Node_Id_Field | List_Id_Field | Elist_Id_Field
                   --  For all other kinds of descendants (strings, names, uints
@@ -2293,7 +2293,7 @@ package body Treepr is
             for Field_Index in A'Range loop
                declare
                   F : constant Entity_Field := A (Field_Index);
-                  FD : Field_Descriptor renames Entity_Field_Descriptors (F);
+                  FD : Field_Descriptor renames Field_Descriptors (F);
                begin
                   if FD.Kind in Node_Id_Field | List_Id_Field | Elist_Id_Field
                   then

@@ -1491,8 +1491,8 @@ typedef struct gfc_omp_clauses
   unsigned inbranch:1, notinbranch:1, nogroup:1;
   unsigned sched_simd:1, sched_monotonic:1, sched_nonmonotonic:1;
   unsigned simd:1, threads:1, depend_source:1, destroy:1, order_concurrent:1;
-  unsigned order_unconstrained:1, capture:1, grainsize_strict:1;
-  unsigned num_tasks_strict:1;
+  unsigned order_unconstrained:1, order_reproducible:1, capture:1;
+  unsigned grainsize_strict:1, num_tasks_strict:1;
   ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
   ENUM_BITFIELD (gfc_omp_device_type) device_type:2;
   ENUM_BITFIELD (gfc_omp_memorder) memorder:3;
@@ -3032,7 +3032,7 @@ void gfc_scanner_init_1 (void);
 void gfc_add_include_path (const char *, bool, bool, bool, bool);
 void gfc_add_intrinsic_modules_path (const char *);
 void gfc_release_include_path (void);
-void gfc_check_include_dirs (void);
+void gfc_check_include_dirs (bool);
 FILE *gfc_open_included_file (const char *, bool, bool);
 
 int gfc_at_end (void);
@@ -3064,7 +3064,7 @@ gfc_char_t gfc_peek_char (void);
 char gfc_peek_ascii_char (void);
 void gfc_error_recovery (void);
 void gfc_gobble_whitespace (void);
-bool gfc_new_file (void);
+void gfc_new_file (void);
 const char * gfc_read_orig_filename (const char *, const char **);
 
 extern gfc_source_form gfc_current_form;

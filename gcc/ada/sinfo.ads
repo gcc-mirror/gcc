@@ -411,10 +411,6 @@ package Sinfo is
    --       Assignment_OK             set if modification is OK
    --       Is_Controlling_Actual     set for controlling argument
 
-   --  Note: the utility program that creates the Treeprs spec (in the file
-   --  xtreeprs.adb) knows about the special fields here, so it must be
-   --  modified if any change is made to these fields.
-
    --  Note: see under (EXPRESSION) for further details on the use of
    --  the Paren_Count field to record the number of parentheses levels.
 

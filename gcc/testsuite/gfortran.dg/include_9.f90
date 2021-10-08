@@ -4,3 +4,4 @@
       program main
       end program
 ! { dg-error "is not a regular file" " " { target *-*-* } 3 }
+! { dg-prune-output "compilation terminated." }

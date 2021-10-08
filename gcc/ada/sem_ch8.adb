@@ -2539,8 +2539,8 @@ package body Sem_Ch8 is
               and then Is_Class_Wide_Type (Get_Instance_Of (Etype (Formal)))
             then
                Formal_Typ := Etype (Formal);
-               Actual_Typ := Get_Instance_Of (Formal_Typ);
-               Root_Typ   := Etype (Actual_Typ);
+               Actual_Typ := Base_Type (Get_Instance_Of (Formal_Typ));
+               Root_Typ   := Root_Type (Actual_Typ);
                exit;
             end if;
 
@@ -2589,6 +2589,15 @@ package body Sem_Ch8 is
 
             elsif CW_Prim_Op = Root_Prim_Op then
                Prim_Op := Root_Prim_Op;
+
+            --  The two subprograms are legal but the class-wide subprogram is
+            --  a class-wide wrapper built for a previous instantiation; the
+            --  wrapper has precedence.
+
+            elsif Present (Alias (CW_Prim_Op))
+              and then Is_Class_Wide_Wrapper (Ultimate_Alias (CW_Prim_Op))
+            then
+               Prim_Op := CW_Prim_Op;
 
             --  Otherwise both candidate subprograms are user-defined and
             --  ambiguous.
@@ -2687,6 +2696,8 @@ package body Sem_Ch8 is
 
             Set_Corresponding_Body (Spec_Decl, Defining_Entity (Body_Decl));
          end if;
+
+         Set_Is_Class_Wide_Wrapper (Wrap_Id);
 
          --  If the operator carries an Eliminated pragma, indicate that the
          --  wrapper is also to be eliminated, to prevent spurious error when

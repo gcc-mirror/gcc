@@ -3685,8 +3685,8 @@ write_types (outf_p output_header, type_p structures,
 	output_mangled_typename (output_header, s);
 	oprintf (output_header, "(X) do { \\\n");
 	oprintf (output_header,
-		 "  if (X != NULL) gt_%sx_%s (X);\\\n", wtd->prefix,
-		 s_id_for_tag);
+		 "  if ((intptr_t)(X) != 0) gt_%sx_%s (X);\\\n",
+		 wtd->prefix, s_id_for_tag);
 	oprintf (output_header, "  } while (0)\n");
 
 	for (opt = s->u.s.opt; opt; opt = opt->next)

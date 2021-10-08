@@ -787,22 +787,25 @@ namespace ranges
   struct __distance_fn final
   {
     template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+      requires (!sized_sentinel_for<_Sent, _It>)
+      constexpr iter_difference_t<_It>
+      operator()[[nodiscard]](_It __first, _Sent __last) const
+      {
+	iter_difference_t<_It> __n = 0;
+	while (__first != __last)
+	  {
+	    ++__first;
+	    ++__n;
+	  }
+	return __n;
+      }
+
+    template<input_or_output_iterator _It, sized_sentinel_for<_It> _Sent>
       [[nodiscard]]
       constexpr iter_difference_t<_It>
-      operator()(_It __first, _Sent __last) const
+      operator()(const _It& __first, const _Sent& __last) const
       {
-	if constexpr (sized_sentinel_for<_Sent, _It>)
-	  return __last - __first;
-	else
-	  {
-	    iter_difference_t<_It> __n = 0;
-	    while (__first != __last)
-	      {
-		++__first;
-		++__n;
-	      }
-	    return __n;
-	  }
+	return __last - __first;
       }
 
     template<range _Range>
@@ -907,9 +910,9 @@ namespace ranges
   };
 
   template<range _Range>
-    using borrowed_iterator_t = conditional_t<borrowed_range<_Range>,
-					     iterator_t<_Range>,
-					     dangling>;
+    using borrowed_iterator_t = __conditional_t<borrowed_range<_Range>,
+						iterator_t<_Range>,
+						dangling>;
 
 } // namespace ranges
 _GLIBCXX_END_NAMESPACE_VERSION

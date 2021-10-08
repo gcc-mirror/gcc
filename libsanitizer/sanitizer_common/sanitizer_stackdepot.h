@@ -33,7 +33,7 @@ struct StackDepotHandle {
 
 const int kStackDepotMaxUseCount = 1U << (SANITIZER_ANDROID ? 16 : 20);
 
-StackDepotStats *StackDepotGetStats();
+StackDepotStats StackDepotGetStats();
 u32 StackDepotPut(StackTrace stack);
 StackDepotHandle StackDepotPut_WithHandle(StackTrace stack);
 // Retrieves a stored stack trace by the id.
@@ -49,8 +49,8 @@ void StackDepotPrintAll();
 // which were stored before it was instantiated.
 class StackDepotReverseMap {
  public:
-  StackDepotReverseMap();
-  StackTrace Get(u32 id);
+  StackDepotReverseMap() = default;
+  StackTrace Get(u32 id) const;
 
  private:
   struct IdDescPair {
@@ -60,7 +60,9 @@ class StackDepotReverseMap {
     static bool IdComparator(const IdDescPair &a, const IdDescPair &b);
   };
 
-  InternalMmapVector<IdDescPair> map_;
+  void Init() const;
+
+  mutable InternalMmapVector<IdDescPair> map_;
 
   // Disallow evil constructors.
   StackDepotReverseMap(const StackDepotReverseMap&);

@@ -365,44 +365,53 @@ extern void default_function_switched_text_sections (FILE *, tree, bool);
 extern void no_asm_to_stream (FILE *);
 
 /* Flags controlling properties of a section.  */
-#define SECTION_ENTSIZE	 0x000ff	/* entity size in section */
-#define SECTION_CODE	 0x00100	/* contains code */
-#define SECTION_WRITE	 0x00200	/* data is writable */
-#define SECTION_DEBUG	 0x00400	/* contains debug data */
-#define SECTION_LINKONCE 0x00800	/* is linkonce */
-#define SECTION_SMALL	 0x01000	/* contains "small data" */
-#define SECTION_BSS	 0x02000	/* contains zeros only */
-#define SECTION_FORGET	 0x04000	/* forget that we've entered the section */
-#define SECTION_MERGE	 0x08000	/* contains mergeable data */
-#define SECTION_STRINGS  0x10000	/* contains zero terminated strings without
-					   embedded zeros */
-#define SECTION_OVERRIDE 0x20000	/* allow override of default flags */
-#define SECTION_TLS	 0x40000	/* contains thread-local storage */
-#define SECTION_NOTYPE	 0x80000	/* don't output @progbits */
-#define SECTION_DECLARED 0x100000	/* section has been used */
-#define SECTION_STYLE_MASK 0x600000	/* bits used for SECTION_STYLE */
-#define SECTION_COMMON   0x800000	/* contains common data */
-#define SECTION_RELRO	 0x1000000	/* data is readonly after relocation processing */
-#define SECTION_EXCLUDE  0x2000000	/* discarded by the linker */
-#define SECTION_RETAIN	 0x4000000	/* retained by the linker.  */
-#define SECTION_LINK_ORDER 0x8000000	/* section needs link-order.  */
+enum section_flag
+{
+  /* This SECTION_STYLE is used for unnamed sections that we can switch
+     to using a special assembler directive.  */
+  SECTION_UNNAMED = 0,
 
-/* NB: The maximum SECTION_MACH_DEP is 0x10000000 since AVR needs 4 bits
-   in SECTION_MACH_DEP.  */
-#define SECTION_MACH_DEP 0x10000000	/* subsequent bits reserved for target */
+  SECTION_ENTSIZE = (1UL << 8) - 1,	/* entity size in section */
+  SECTION_CODE = 1UL << 8,		/* contains code */
+  SECTION_WRITE = 1UL << 9,		/* data is writable */
 
-/* This SECTION_STYLE is used for unnamed sections that we can switch
-   to using a special assembler directive.  */
-#define SECTION_UNNAMED	 0x000000
+  SECTION_DEBUG = 1UL << 10,		/* contains debug data */
+  SECTION_LINKONCE = 1UL << 11,		/* is linkonce */
+  SECTION_SMALL = 1UL << 12,		/* contains "small data" */
+  SECTION_BSS = 1UL << 13,		/* contains zeros only */
+  SECTION_MERGE = 1UL << 14,		/* contains mergeable data */
+  SECTION_STRINGS = 1UL << 15,		/* contains zero terminated strings
+					   without embedded zeros */
+  SECTION_OVERRIDE = 1UL << 16,		/* allow override of default flags */
+  SECTION_TLS = 1UL << 17,		/* contains thread-local storage */
+  SECTION_NOTYPE = 1UL << 18,		/* don't output @progbits */
+  SECTION_DECLARED = 1UL << 19,		/* section has been used */
 
-/* This SECTION_STYLE is used for named sections that we can switch
-   to using a general section directive.  */
-#define SECTION_NAMED	 0x200000
+  /* This SECTION_STYLE is used for named sections that we can switch
+     to using a general section directive.  */
+  SECTION_NAMED = 1UL << 20,
 
-/* This SECTION_STYLE is used for sections that we cannot switch to at
-   all.  The choice of section is implied by the directive that we use
-   to declare the object.  */
-#define SECTION_NOSWITCH 0x400000
+  /* This SECTION_STYLE is used for sections that we cannot switch to at
+     all.  The choice of section is implied by the directive that we use
+     to declare the object.  */
+  SECTION_NOSWITCH = 1UL << 21,
+
+  /* bits used for SECTION_STYLE */
+  SECTION_STYLE_MASK = SECTION_NAMED | SECTION_NOSWITCH,
+
+  SECTION_COMMON = 1UL << 22,		/* contains common data */
+  SECTION_RELRO = 1UL << 23,		/* data is readonly after
+					   relocation processing */
+  SECTION_EXCLUDE = 1UL << 24,		/* discarded by the linker */
+  SECTION_RETAIN = 1UL << 25,		/* retained by the linker.  */
+  SECTION_LINK_ORDER = 1UL << 26,	/* section needs link-order.  */
+
+  /* NB: The maximum SECTION_MACH_DEP is (1UL << 28) since AVR needs 4 bits
+     in SECTION_MACH_DEP.  */
+  SECTION_MACH_DEP = 1UL << 27,
+
+  /* subsequent bits reserved for target */
+};
 
 /* A helper function for default_elf_select_section and
    default_elf_unique_section.  Categorizes the DECL.  */

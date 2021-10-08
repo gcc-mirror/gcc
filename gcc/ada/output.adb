@@ -467,6 +467,32 @@ package body Output is
       end if;
    end Write_Int;
 
+   ------------------
+   -- Write_Int_64 --
+   ------------------
+
+   procedure Write_Int_64 (Val : Int_64) is
+      subtype Nonpositive is Int_64 range Int_64'First .. 0;
+      procedure Write_Abs (Val : Nonpositive);
+
+      procedure Write_Abs (Val : Nonpositive) is
+      begin
+         if Val < -9 then
+            Write_Abs (Val / 10);
+         end if;
+
+         Write_Char (Character'Val (-(Val rem 10) + Character'Pos ('0')));
+      end Write_Abs;
+
+   begin
+      if Val < 0 then
+         Write_Char ('-');
+         Write_Abs (Val);
+      else
+         Write_Abs (-Val);
+      end if;
+   end Write_Int_64;
+
    ----------------
    -- Write_Line --
    ----------------

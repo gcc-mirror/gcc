@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "target.h"
 #include "tree-iterator.h"
+#include "opts.h"
 
 #include "objc-runtime-hooks.h"
 #include "objc-runtime-shared-support.h"
@@ -255,7 +256,7 @@ objc_next_runtime_abi_02_init (objc_runtime_hooks *rthooks)
     }
 
   /* NeXT ABI 2 is intended to default to checking for nil receivers.  */
-  if (! global_options_set.x_flag_objc_nilcheck)
+  if (! OPTION_SET_P (flag_objc_nilcheck))
     flag_objc_nilcheck = 1;
 
   rthooks->initialize = next_runtime_02_initialize;
@@ -366,7 +367,7 @@ static void next_runtime_02_initialize (void)
 #ifdef OBJCPLUS
   /* For all NeXT objc ABIs -fobjc-call-cxx-cdtors is on by
      default.  */
-  if (!global_options_set.x_flag_objc_call_cxx_cdtors)
+  if (!OPTION_SET_P (flag_objc_call_cxx_cdtors))
     global_options.x_flag_objc_call_cxx_cdtors = 1;
 #endif
 

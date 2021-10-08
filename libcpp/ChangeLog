@@ -1,3 +1,12 @@
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* init.c (lang_defaults): Implement P2334R1, enable elifdef for
+	-std=c++23 and -std=gnu++23.
+	* directives.c (_cpp_handle_directive): Support elifdef/elifndef if
+	either CPP_OPTION (pfile, elifdef) or !CPP_OPTION (pfile, std).
+	(do_elif): For older non-std modes if pedantic pedwarn about
+	#elifdef/#elifndef directives that change behavior.
+
 2021-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/100977

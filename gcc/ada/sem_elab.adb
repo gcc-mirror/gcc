@@ -13621,6 +13621,13 @@ package body Sem_Elab is
       then
          return True;
 
+      --  A call to an expression function that is not a completion cannot
+      --  cause an ABE because it has no prior declaration; this remains
+      --  true even if the FE transforms the callee into something else.
+
+      elsif Nkind (Original_Node (Spec_Decl)) = N_Expression_Function then
+         return True;
+
       --  Subprogram bodies which wrap attribute references used as actuals
       --  in instantiations are always ABE-safe. These bodies are artifacts
       --  of expansion.

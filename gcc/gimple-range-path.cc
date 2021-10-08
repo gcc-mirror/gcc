@@ -34,14 +34,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 
 // Internal construct to help facilitate debugging of solver.
-#define DEBUG_SOLVER (0 && dump_file)
+#define DEBUG_SOLVER (dump_file && dump_flags & TDF_THREADING)
 
 path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
   : m_ranger (ranger)
 {
-  if (DEBUG_SOLVER)
-    fprintf (dump_file, "\n*********** path_range_query ******************\n");
-
   m_cache = new ssa_global_cache;
   m_has_cache_entry = BITMAP_ALLOC (NULL);
   m_path = NULL;
@@ -139,14 +136,23 @@ path_range_query::range_on_path_entry (irange &r, tree name)
 {
   int_range_max tmp;
   basic_block entry = entry_bb ();
+  bool changed = false;
+
   r.set_undefined ();
   for (unsigned i = 0; i < EDGE_COUNT (entry->preds); ++i)
     {
       edge e = EDGE_PRED (entry, i);
       if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  && m_ranger.range_on_edge (tmp, e, name))
-	r.union_ (tmp);
+	{
+	  r.union_ (tmp);
+	  changed = true;
+	}
     }
+
+  // Make sure we don't return UNDEFINED by mistake.
+  if (!changed)
+    r.set_varying (TREE_TYPE (name));
 }
 
 // Return the range of NAME at the end of the path being analyzed.
@@ -172,9 +178,6 @@ path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
     {
       if (TREE_CODE (name) == SSA_NAME)
 	r.intersect (gimple_range_global (name));
-
-      if (m_resolve && r.varying_p ())
-	range_on_path_entry (r, name);
 
       set_cache (r, name);
       return true;
@@ -299,11 +302,11 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
   return true;
 }
 
-// Precompute ranges defined in the current block, or ranges
-// that are exported on an edge to the next block.
+// Compute ranges defined in the current block, or exported to the
+// next block.
 
 void
-path_range_query::precompute_ranges_in_block (basic_block bb)
+path_range_query::compute_ranges_in_block (basic_block bb)
 {
   bitmap_iterator bi;
   int_range_max r, cached_range;
@@ -458,15 +461,18 @@ path_range_query::add_copies_to_imports ()
     }
 }
 
-// Precompute the ranges for IMPORTS along PATH.
+// Compute the ranges for IMPORTS along PATH.
 //
 // IMPORTS are the set of SSA names, any of which could potentially
 // change the value of the final conditional in PATH.
 
 void
-path_range_query::precompute_ranges (const vec<basic_block> &path,
-				     const bitmap_head *imports)
+path_range_query::compute_ranges (const vec<basic_block> &path,
+				  const bitmap_head *imports)
 {
+  if (DEBUG_SOLVER)
+    fprintf (dump_file, "\n*********** path_range_query ******************\n");
+
   set_path (path);
   bitmap_copy (m_imports, imports);
   m_undefined_path = false;
@@ -474,13 +480,13 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
   if (m_resolve)
     {
       add_copies_to_imports ();
-      m_oracle->reset_path ();
-      precompute_relations (path);
+      get_path_oracle ()->reset_path ();
+      compute_relations (path);
     }
 
   if (DEBUG_SOLVER)
     {
-      fprintf (dump_file, "\npath_range_query: precompute_ranges for path: ");
+      fprintf (dump_file, "\npath_range_query: compute_ranges for path: ");
       for (unsigned i = path.length (); i > 0; --i)
 	{
 	  basic_block bb = path[i - 1];
@@ -507,7 +513,7 @@ path_range_query::precompute_ranges (const vec<basic_block> &path,
 	      bitmap_set_bit (m_imports, SSA_NAME_VERSION (name));
 	}
 
-      precompute_ranges_in_block (bb);
+      compute_ranges_in_block (bb);
       adjust_for_non_null_uses (bb);
 
       if (at_exit ())
@@ -614,12 +620,12 @@ path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
   return true;
 }
 
-// Precompute relations on a path.  This involves two parts: relations
+// Compute relations on a path.  This involves two parts: relations
 // along the conditionals joining a path, and relations determined by
 // examining PHIs.
 
 void
-path_range_query::precompute_relations (const vec<basic_block> &path)
+path_range_query::compute_relations (const vec<basic_block> &path)
 {
   if (!dom_info_available_p (CDI_DOMINATORS))
     return;
@@ -631,7 +637,7 @@ path_range_query::precompute_relations (const vec<basic_block> &path)
       basic_block bb = path[i - 1];
       gimple *stmt = last_stmt (bb);
 
-      precompute_phi_relations (bb, prev);
+      compute_phi_relations (bb, prev);
 
       // Compute relations in outgoing edges along the path.  Skip the
       // final conditional which we don't know yet.
@@ -643,30 +649,30 @@ path_range_query::precompute_relations (const vec<basic_block> &path)
 	  basic_block next = path[i - 2];
 	  int_range<2> r;
 	  gcond *cond = as_a<gcond *> (stmt);
+	  edge e0 = EDGE_SUCC (bb, 0);
+	  edge e1 = EDGE_SUCC (bb, 1);
 
-	  if (EDGE_SUCC (bb, 0)->dest == next)
-	    gcond_edge_range (r, EDGE_SUCC (bb, 0));
-	  else if (EDGE_SUCC (bb, 1)->dest == next)
-	    gcond_edge_range (r, EDGE_SUCC (bb, 1));
+	  if (e0->dest == next)
+	    gcond_edge_range (r, e0);
+	  else if (e1->dest == next)
+	    gcond_edge_range (r, e1);
 	  else
 	    gcc_unreachable ();
 
-	  edge e0 = EDGE_SUCC (bb, 0);
-	  edge e1 = EDGE_SUCC (bb, 1);
 	  src.register_outgoing_edges (cond, r, e0, e1);
 	}
       prev = bb;
     }
 }
 
-// Precompute relations for each PHI in BB.  For example:
+// Compute relations for each PHI in BB.  For example:
 //
 //   x_5 = PHI<y_9(5),...>
 //
 // If the path flows through BB5, we can register that x_5 == y_9.
 
 void
-path_range_query::precompute_phi_relations (basic_block bb, basic_block prev)
+path_range_query::compute_phi_relations (basic_block bb, basic_block prev)
 {
   if (prev == NULL)
     return;

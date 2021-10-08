@@ -1001,9 +1001,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 		  return false;
 
 	      scalar_int_mode mode;
-	      tree type = lang_hooks.types.type_for_size (ilen * 8, 1);
-	      if (type
-		  && is_a <scalar_int_mode> (TYPE_MODE (type), &mode)
+	      if (int_mode_for_size (ilen * 8, 0).exists (&mode)
 		  && GET_MODE_SIZE (mode) * BITS_PER_UNIT == ilen * 8
 		  && have_insn_for (SET, mode)
 		  /* If the destination pointer is not aligned we must be able
@@ -1013,6 +1011,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 		      || (optab_handler (movmisalign_optab, mode)
 			  != CODE_FOR_nothing)))
 		{
+		  tree type = build_nonstandard_integer_type (ilen * 8, 1);
 		  tree srctype = type;
 		  tree desttype = type;
 		  if (src_align < GET_MODE_ALIGNMENT (mode))

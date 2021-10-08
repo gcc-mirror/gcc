@@ -129,15 +129,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      is_convertible<_U2&&, _T2>>::value;
       }
 
-
       template <bool __implicit, typename _U1, typename _U2>
       static constexpr bool _DeprConsPair()
       {
 	using __do_converts = __and_<is_convertible<_U1&&, _T1>,
 				     is_convertible<_U2&&, _T2>>;
-	using __converts = typename conditional<__implicit,
-						__do_converts,
-						__not_<__do_converts>>::type;
+	using __converts = __conditional_t<__implicit,
+					   __do_converts,
+					   __not_<__do_converts>>;
 	return __and_<is_constructible<_T1, _U1&&>,
 		      is_constructible<_T2, _U2&&>,
 		      __converts
@@ -561,10 +560,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  second(std::forward<_U2>(__p.second)) { }
 
       pair&
-      operator=(typename conditional<
-		__and_<is_copy_assignable<_T1>,
-		       is_copy_assignable<_T2>>::value,
-		const pair&, const __nonesuch&>::type __p)
+      operator=(__conditional_t<__and_<is_copy_assignable<_T1>,
+				       is_copy_assignable<_T2>>::value,
+				const pair&, const __nonesuch&> __p)
       {
 	first = __p.first;
 	second = __p.second;
@@ -572,10 +570,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       pair&
-      operator=(typename conditional<
-		__and_<is_move_assignable<_T1>,
-		       is_move_assignable<_T2>>::value,
-		pair&&, __nonesuch&&>::type __p)
+      operator=(__conditional_t<__and_<is_move_assignable<_T1>,
+				       is_move_assignable<_T2>>::value,
+				pair&&, __nonesuch&&> __p)
       noexcept(__and_<is_nothrow_move_assignable<_T1>,
 		      is_nothrow_move_assignable<_T2>>::value)
       {

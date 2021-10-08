@@ -4,6 +4,6 @@
 constexpr int
 f ()
 {
-x: // { dg-error "label definition is not a constant expression" }
+x: // { dg-error "label definition in 'constexpr' function only available with" "" { target c++20_down } }
   return 42;
 }

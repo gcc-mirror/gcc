@@ -1,6 +1,6 @@
 /* PR tree-optimization/87859 */
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-store-merging-details" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-store-merging-details" } */
 /* { dg-final { scan-tree-dump "New sequence of \[23] stores to replace old one of 14 stores" "store-merging" { target i?86-*-* x86_64-*-* } } } */
 /* { dg-final { scan-tree-dump "New sequence of 1 stores to replace old one of 6 stores" "store-merging" { target i?86-*-* x86_64-*-* } } } */
 

@@ -8127,14 +8127,22 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	    fprintf (file, ",%s(%" PRIu64 ")",
 		     profile_quality_as_string (bb->count.quality ()),
 		     bb->count.value ());
-	  fprintf (file, ")\n%s (", function_name (fun));
+	  if (dump_flags & TDF_UID)
+	    fprintf (file, ")\n%sD_%u (", function_name (fun),
+		     DECL_UID (fndecl));
+	  else
+	    fprintf (file, ")\n%s (", function_name (fun));
 	}
     }
   else
     {
       print_generic_expr (file, TREE_TYPE (fntype), dump_flags);
-      fprintf (file, " %s %s(", function_name (fun),
-	       tmclone ? "[tm-clone] " : "");
+      if (dump_flags & TDF_UID)
+	fprintf (file, " %sD.%u %s(", function_name (fun), DECL_UID (fndecl),
+		 tmclone ? "[tm-clone] " : "");
+      else
+	fprintf (file, " %s %s(", function_name (fun),
+		 tmclone ? "[tm-clone] " : "");
     }
 
   arg = DECL_ARGUMENTS (fndecl);

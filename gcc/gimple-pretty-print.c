@@ -677,11 +677,18 @@ dump_gimple_assign (pretty_printer *buffer, const gassign *gs, int spc,
 	}
 
       if (gimple_num_ops (gs) == 2)
-        dump_unary_rhs (buffer, gs, spc, flags);
+	dump_unary_rhs (buffer, gs, spc,
+			((flags & TDF_GIMPLE)
+			 && gimple_assign_rhs_class (gs) != GIMPLE_SINGLE_RHS)
+			? (flags | TDF_GIMPLE_VAL) : flags);
       else if (gimple_num_ops (gs) == 3)
-        dump_binary_rhs (buffer, gs, spc, flags);
+	dump_binary_rhs (buffer, gs, spc,
+			 (flags & TDF_GIMPLE)
+			 ? (flags | TDF_GIMPLE_VAL) : flags);
       else if (gimple_num_ops (gs) == 4)
-        dump_ternary_rhs (buffer, gs, spc, flags);
+	dump_ternary_rhs (buffer, gs, spc,
+			  (flags & TDF_GIMPLE)
+			  ? (flags | TDF_GIMPLE_VAL) : flags);
       else
         gcc_unreachable ();
       if (!(flags & TDF_RHS_ONLY))
@@ -1085,11 +1092,15 @@ dump_gimple_cond (pretty_printer *buffer, const gcond *gs, int spc,
     {
       if (!(flags & TDF_RHS_ONLY))
 	pp_string (buffer, "if (");
-      dump_generic_node (buffer, gimple_cond_lhs (gs), spc, flags, false);
+      dump_generic_node (buffer, gimple_cond_lhs (gs), spc,
+			 flags | ((flags & TDF_GIMPLE) ? TDF_GIMPLE_VAL : TDF_NONE),
+			 false);
       pp_space (buffer);
       pp_string (buffer, op_symbol_code (gimple_cond_code (gs)));
       pp_space (buffer);
-      dump_generic_node (buffer, gimple_cond_rhs (gs), spc, flags, false);
+      dump_generic_node (buffer, gimple_cond_rhs (gs), spc,
+			 flags | ((flags & TDF_GIMPLE) ? TDF_GIMPLE_VAL : TDF_NONE),
+			 false);
       if (!(flags & TDF_RHS_ONLY))
 	{
 	  edge_iterator ei;

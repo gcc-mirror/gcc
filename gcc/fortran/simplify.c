@@ -7471,6 +7471,7 @@ simplify_size (gfc_expr *array, gfc_expr *dim, int k)
   mpz_t size;
   gfc_expr *return_value;
   int d;
+  gfc_ref *ref;
 
   /* For unary operations, the size of the result is given by the size
      of the operand.  For binary ones, it's the size of the first operand
@@ -7526,6 +7527,10 @@ simplify_size (gfc_expr *array, gfc_expr *dim, int k)
 	}
       return simplified;
     }
+
+  for (ref = array->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.as)
+      gfc_resolve_array_spec (ref->u.ar.as, 0);
 
   if (dim == NULL)
     {

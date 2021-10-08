@@ -33,6 +33,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  The language-defined package Strings.Bounded provides a generic package
+--  each of whose instances yields a private type Bounded_String and a set
+--  of operations. An object of a particular Bounded_String type represents
+--  a String whose low bound is 1 and whose length can vary conceptually
+--  between 0 and a maximum size established at the generic instantiation. The
+--  subprograms for fixed-length string handling are either overloaded directly
+--  for Bounded_String, or are modified as needed to reflect the variability in
+--  length. Additionally, since the Bounded_String type is private, appropriate
+--  constructor and selector operations are provided.
+
 with Ada.Strings.Maps; use type Ada.Strings.Maps.Character_Mapping_Function;
 with Ada.Strings.Superbounded;
 with Ada.Strings.Search;
@@ -45,8 +55,6 @@ package Ada.Strings.Bounded with SPARK_Mode is
       --  Maximum length of a Bounded_String
 
    package Generic_Bounded_Length with SPARK_Mode,
-     Initializes       => (Null_Bounded_String => Max,
-                           Max_Length          => Max),
      Initial_Condition => Length (Null_Bounded_String) = 0,
      Abstract_State    => null
    is
@@ -67,11 +75,16 @@ package Ada.Strings.Bounded with SPARK_Mode is
       pragma Preelaborable_Initialization (Bounded_String);
 
       Null_Bounded_String : constant Bounded_String;
+      --  Null_Bounded_String represents the null string. If an object of type
+      --  Bounded_String is not otherwise initialized, it will be initialized
+      --  to the same value as Null_Bounded_String.
 
       subtype Length_Range is Natural range 0 .. Max_Length;
 
       function Length (Source : Bounded_String) return Length_Range with
         Global => null;
+      --  The Length function returns the length of the string represented by
+      --  Source.
 
       --------------------------------------------------------
       -- Conversion, Concatenation, and Selection Functions --
@@ -95,11 +108,25 @@ package Ada.Strings.Bounded with SPARK_Mode is
            others  --  Drop = Right
            =>
              To_String (To_Bounded_String'Result) =
-               Source (Source'First .. Source'First - 1 + Max_Length)),
-        Global         => Max_Length;
+               Source (Source'First .. Source'First - 1 + Max_Length));
+      --  If Source'Length <= Max_Length, then this function returns a
+      --  Bounded_String that represents Source. Otherwise, the effect
+      --  depends on the value of Drop:
+      --
+      --  * If Drop=Left, then the result is a Bounded_String that represents
+      --    the string comprising the rightmost Max_Length characters of
+      --    Source.
+      --
+      --  * If Drop=Right, then the result is a Bounded_String that represents
+      --    the string comprising the leftmost Max_Length characters of Source.
+      --
+      --  * If Drop=Error, then Strings.Length_Error is propagated.
 
       function To_String (Source : Bounded_String) return String with
         Global => null;
+      --  To_String returns the String value with lower bound 1
+      --  represented by Source. If B is a Bounded_String, then
+      --  B = To_Bounded_String(To_String(B)).
 
       procedure Set_Bounded_String
         (Target : out Bounded_String;
@@ -120,9 +147,16 @@ package Ada.Strings.Bounded with SPARK_Mode is
            others  --  Drop = Right
            =>
              To_String (Target) =
-               Source (Source'First .. Source'First - 1 + Max_Length)),
-        Global         => (Proof_In => Max_Length);
+               Source (Source'First .. Source'First - 1 + Max_Length));
       pragma Ada_05 (Set_Bounded_String);
+      --  Equivalent to Target := To_Bounded_String (Source, Drop);
+
+      --  Each of the Append functions returns a Bounded_String obtained by
+      --  concatenating the string or character given or represented by one
+      --  of the parameters, with the string or character given or represented
+      --  by the other parameter, and applying To_Bounded_String to the
+      --  concatenation result string, with Drop as provided to the Append
+      --  function.
 
       function Append
         (Left  : Bounded_String;
@@ -167,8 +201,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                and then
                  (if Length (Left) < Max_Length then
                     Slice (Append'Result, Length (Left) + 1, Max_Length) =
-                      Slice (Right, 1, Max_Length - Length (Left)))),
-        Global         => (Proof_In => Max_Length);
+                      Slice (Right, 1, Max_Length - Length (Left))));
 
       function Append
         (Left  : Bounded_String;
@@ -222,9 +255,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                  (if Length (Left) < Max_Length then
                     Slice (Append'Result, Length (Left) + 1, Max_Length) =
                       Right (Right'First
-                        .. Max_Length - Length (Left) - 1 + Right'First))),
-        Global         => (Proof_In => Max_Length);
-
+                        .. Max_Length - Length (Left) - 1 + Right'First)));
       function Append
         (Left  : String;
          Right : Bounded_String;
@@ -274,8 +305,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                     --  The result is the first Max_Length characters of Left
 
                     To_String (Append'Result) =
-                      Left (Left'First .. Max_Length - 1 + Left'First))),
-        Global         => (Proof_In => Max_Length);
+                      Left (Left'First .. Max_Length - 1 + Left'First)));
 
       function Append
         (Left  : Bounded_String;
@@ -302,8 +332,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                and then
                  Slice (Append'Result, 1, Max_Length - 1) =
                    Slice (Left, 2, Max_Length)
-               and then Element (Append'Result, Max_Length) = Right),
-        Global         => (Proof_In => Max_Length);
+               and then Element (Append'Result, Max_Length) = Right);
 
       function Append
         (Left  : Character;
@@ -331,8 +360,11 @@ package Ada.Strings.Bounded with SPARK_Mode is
                and then
                  Slice (Append'Result, 2, Max_Length) =
                    Slice (Right, 1, Max_Length - 1)
-               and then Element (Append'Result, 1) = Left),
-        Global         => (Proof_In => Max_Length);
+               and then Element (Append'Result, 1) = Left);
+
+      --  Each of the procedures Append(Source, New_Item, Drop) has the same
+      --  effect as the corresponding assignment
+      --  Source := Append(Source, New_Item, Drop).
 
       procedure Append
         (Source   : in out Bounded_String;
@@ -378,8 +410,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                and then
                  (if Length (Source'Old) < Max_Length then
                     Slice (Source, Length (Source'Old) + 1, Max_Length) =
-                      Slice (New_Item, 1, Max_Length - Length (Source'Old)))),
-        Global         => (Proof_In => Max_Length);
+                      Slice (New_Item, 1, Max_Length - Length (Source'Old))));
 
       procedure Append
         (Source   : in out Bounded_String;
@@ -436,8 +467,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                     Slice (Source, Length (Source'Old) + 1, Max_Length) =
                       New_Item (New_Item'First
                         .. Max_Length - Length (Source'Old) - 1
-                          + New_Item'First))),
-        Global         => (Proof_In => Max_Length);
+                          + New_Item'First)));
 
       procedure Append
         (Source   : in out Bounded_String;
@@ -465,68 +495,65 @@ package Ada.Strings.Bounded with SPARK_Mode is
                and then
                  Slice (Source, 1, Max_Length - 1) =
                    Slice (Source'Old, 2, Max_Length)
-               and then Element (Source, Max_Length) = New_Item),
-        Global         => (Proof_In => Max_Length);
+               and then Element (Source, Max_Length) = New_Item);
+
+      --  Each of the "&" functions has the same effect as the corresponding
+      --  Append function, with Error as the Drop parameter.
 
       function "&"
         (Left  : Bounded_String;
          Right : Bounded_String) return Bounded_String
       with
-        Pre    => Length (Left) <= Max_Length - Length (Right),
-        Post   => Length ("&"'Result) = Length (Left) + Length (Right)
+        Pre  => Length (Left) <= Max_Length - Length (Right),
+        Post => Length ("&"'Result) = Length (Left) + Length (Right)
           and then Slice ("&"'Result, 1, Length (Left)) = To_String (Left)
           and then
             (if Length (Right) > 0 then
                Slice ("&"'Result, Length (Left) + 1, Length ("&"'Result)) =
-                 To_String (Right)),
-        Global => (Proof_In => Max_Length);
+                 To_String (Right));
 
       function "&"
         (Left  : Bounded_String;
          Right : String) return Bounded_String
       with
-        Pre    => Right'Length <= Max_Length - Length (Left),
-        Post   => Length ("&"'Result) = Length (Left) + Right'Length
+        Pre  => Right'Length <= Max_Length - Length (Left),
+        Post => Length ("&"'Result) = Length (Left) + Right'Length
           and then Slice ("&"'Result, 1, Length (Left)) = To_String (Left)
           and then
             (if Right'Length > 0 then
                Slice ("&"'Result, Length (Left) + 1, Length ("&"'Result)) =
-                 Right),
-        Global => (Proof_In => Max_Length);
+                 Right);
 
       function "&"
         (Left  : String;
          Right : Bounded_String) return Bounded_String
       with
-        Pre    => Left'Length <= Max_Length - Length (Right),
-        Post   => Length ("&"'Result) = Left'Length + Length (Right)
+        Pre  => Left'Length <= Max_Length - Length (Right),
+        Post => Length ("&"'Result) = Left'Length + Length (Right)
           and then Slice ("&"'Result, 1, Left'Length) = Left
           and then
             (if Length (Right) > 0 then
                Slice ("&"'Result, Left'Length + 1, Length ("&"'Result)) =
-                 To_String (Right)),
-        Global => (Proof_In => Max_Length);
+                 To_String (Right));
 
       function "&"
         (Left  : Bounded_String;
          Right : Character) return Bounded_String
       with
-        Pre    => Length (Left) < Max_Length,
-        Post   => Length ("&"'Result) = Length (Left) + 1
+        Pre  => Length (Left) < Max_Length,
+        Post => Length ("&"'Result) = Length (Left) + 1
           and then Slice ("&"'Result, 1, Length (Left)) = To_String (Left)
-          and then Element ("&"'Result, Length (Left) + 1) = Right,
-        Global => (Proof_In => Max_Length);
+          and then Element ("&"'Result, Length (Left) + 1) = Right;
 
       function "&"
         (Left  : Character;
          Right : Bounded_String) return Bounded_String
       with
-        Pre    => Length (Right) < Max_Length,
-        Post   => Length ("&"'Result) = 1 + Length (Right)
+        Pre  => Length (Right) < Max_Length,
+        Post => Length ("&"'Result) = 1 + Length (Right)
           and then Element ("&"'Result, 1) = Left
           and then
-            Slice ("&"'Result, 2, Length ("&"'Result)) = To_String (Right),
-        Global => (Proof_In => Max_Length);
+            Slice ("&"'Result, 2, Length ("&"'Result)) = To_String (Right);
 
       function Element
         (Source : Bounded_String;
@@ -534,6 +561,8 @@ package Ada.Strings.Bounded with SPARK_Mode is
       with
         Pre    => Index <= Length (Source),
         Global => null;
+      --  Returns the character at position Index in the string represented by
+      --  Source; propagates Index_Error if Index > Length(Source).
 
       procedure Replace_Element
         (Source : in out Bounded_String;
@@ -546,6 +575,9 @@ package Ada.Strings.Bounded with SPARK_Mode is
                       Element (Source, K) =
                         (if K = Index then By else Element (Source'Old, K))),
         Global => null;
+      --  Updates Source such that the character at position Index in the
+      --  string represented by Source is By; propagates Index_Error if
+      --  Index > Length(Source).
 
       function Slice
         (Source : Bounded_String;
@@ -554,6 +586,10 @@ package Ada.Strings.Bounded with SPARK_Mode is
       with
         Pre    => Low - 1 <= Length (Source) and then High <= Length (Source),
         Global => null;
+      --  Returns the slice at positions Low through High in the
+      --  string represented by Source; propagates Index_Error if
+      --  Low > Length(Source)+1 or High > Length(Source).
+      --  The bounds of the returned string are Low and High.
 
       function Bounded_Slice
         (Source : Bounded_String;
@@ -564,6 +600,9 @@ package Ada.Strings.Bounded with SPARK_Mode is
         Post   => To_String (Bounded_Slice'Result) = Slice (Source, Low, High),
         Global => null;
       pragma Ada_05 (Bounded_Slice);
+      --  Returns the slice at positions Low through High in the string
+      --  represented by Source as a bounded string; propagates Index_Error
+      --  if Low > Length(Source)+1 or High > Length(Source).
 
       procedure Bounded_Slice
         (Source : Bounded_String;
@@ -575,6 +614,11 @@ package Ada.Strings.Bounded with SPARK_Mode is
         Post   => To_String (Target) = Slice (Source, Low, High),
         Global => null;
       pragma Ada_05 (Bounded_Slice);
+      --  Equivalent to Target := Bounded_Slice (Source, Low, High);
+
+      --  Each of the functions "=", "<", ">", "<=", and ">=" returns the same
+      --  result as the corresponding String operation applied to the String
+      --  values given or represented by the two parameters.
 
       function "="
         (Left  : Bounded_String;
@@ -684,6 +728,11 @@ package Ada.Strings.Bounded with SPARK_Mode is
       ----------------------
       -- Search Functions --
       ----------------------
+
+      --  Each of the search subprograms (Index, Index_Non_Blank, Count,
+      --  Find_Token) has the same effect as the corresponding subprogram in
+      --  Strings.Fixed applied to the string represented by the Bounded_String
+      --  parameter.
 
       function Index
         (Source  : Bounded_String;
@@ -1248,6 +1297,16 @@ package Ada.Strings.Bounded with SPARK_Mode is
       -- String Translation Subprograms --
       ------------------------------------
 
+      --  Each of the Translate subprograms, when applied to a Bounded_String,
+      --  has an analogous effect to the corresponding subprogram in
+      --  Strings.Fixed. For the Translate function, the translation is applied
+      --  to the string represented by the Bounded_String parameter, and the
+      --  result is converted (via To_Bounded_String) to a Bounded_String. For
+      --  the Translate procedure, the string represented by the Bounded_String
+      --  parameter after the translation is given by the Translate function
+      --  for fixed-length strings applied to the string represented by the
+      --  original value of the parameter.
+
       function Translate
         (Source  : Bounded_String;
          Mapping : Maps.Character_Mapping) return Bounded_String
@@ -1295,6 +1354,19 @@ package Ada.Strings.Bounded with SPARK_Mode is
       ---------------------------------------
       -- String Transformation Subprograms --
       ---------------------------------------
+
+      --  Each of the transformation subprograms (Replace_Slice, Insert,
+      --  Overwrite, Delete), selector subprograms (Trim, Head, Tail), and
+      --  constructor functions ("*") has an effect based on its corresponding
+      --  subprogram in Strings.Fixed, and Replicate is based on Fixed."*".
+      --  In the case of a function, the corresponding fixed-length string
+      --  subprogram is applied to the string represented by the Bounded_String
+      --  parameter. To_Bounded_String is applied the result string, with Drop
+      --  (or Error in the case of Generic_Bounded_Length."*") determining
+      --  the effect when the string length exceeds Max_Length. In
+      --  the case of a procedure, the corresponding function in
+      --  Strings.Bounded.Generic_Bounded_Length is applied, with the
+      --  result assigned into the Source parameter.
 
       function Replace_Slice
         (Source : Bounded_String;
@@ -1426,8 +1498,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                         Low + By'Length, Max_Length) =
                           Slice (Source, Integer'Max (High + 1, Low),
                             Integer'Max (High + 1, Low) +
-                              (Max_Length - Low - By'Length)))),
-        Global         => (Proof_In => Max_Length);
+                              (Max_Length - Low - By'Length))));
 
       procedure Replace_Slice
         (Source   : in out Bounded_String;
@@ -1551,8 +1622,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                       and then Slice (Source, Low + By'Length, Max_Length) =
                         Slice (Source'Old, Integer'Max (High + 1, Low),
                           Integer'Max (High + 1, Low) +
-                            (Max_Length - Low - By'Length)))),
-        Global         => (Proof_In => Max_Length);
+                            (Max_Length - Low - By'Length))));
 
       function Insert
         (Source   : Bounded_String;
@@ -1666,8 +1736,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                       and then Slice (Insert'Result,
                         Before + New_Item'Length, Max_Length) =
                           Slice (Source,
-                            Before, Max_Length - New_Item'Length))),
-        Global         => (Proof_In => Max_Length);
+                            Before, Max_Length - New_Item'Length)));
 
       procedure Insert
         (Source   : in out Bounded_String;
@@ -1780,8 +1849,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                       and then
                         Slice (Source, Before + New_Item'Length, Max_Length) =
                           Slice (Source'Old,
-                            Before, Max_Length - New_Item'Length))),
-        Global         => (Proof_In => Max_Length);
+                            Before, Max_Length - New_Item'Length)));
 
       function Overwrite
         (Source   : Bounded_String;
@@ -1867,8 +1935,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
 
                and then Slice (Overwrite'Result, Position, Max_Length) =
                  New_Item
-                   (New_Item'First .. Max_Length - Position + New_Item'First)),
-        Global         => (Proof_In => Max_Length);
+                   (New_Item'First .. Max_Length - Position + New_Item'First));
 
       procedure Overwrite
         (Source    : in out Bounded_String;
@@ -1953,8 +2020,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
 
                and then Slice (Source, Position, Max_Length) =
                  New_Item
-                   (New_Item'First .. Max_Length - Position + New_Item'First)),
-        Global         => (Proof_In => Max_Length);
+                   (New_Item'First .. Max_Length - Position + New_Item'First));
 
       function Delete
         (Source  : Bounded_String;
@@ -2166,8 +2232,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                and then
                  Slice (Head'Result,
                    Max_Length - Count + Length (Source) + 1, Max_Length) =
-                     (1 .. Count - Length (Source) => Pad)),
-        Global         => (Proof_In => Max_Length);
+                     (1 .. Count - Length (Source) => Pad));
 
       procedure Head
         (Source : in out Bounded_String;
@@ -2225,8 +2290,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                and then
                  Slice (Source,
                    Max_Length - Count + Length (Source'Old) + 1, Max_Length) =
-                     (1 .. Count - Length (Source'Old) => Pad)),
-        Global         => (Proof_In => Max_Length);
+                     (1 .. Count - Length (Source'Old) => Pad));
 
       function Tail
         (Source : Bounded_String;
@@ -2287,8 +2351,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                    (1 .. Count - Length (Source) => Pad)
                and then
                  Slice (Tail'Result, Count - Length (Source) + 1, Max_Length) =
-                   Slice (Source, 1, Max_Length - Count + Length (Source))),
-        Global         => (Proof_In => Max_Length);
+                   Slice (Source, 1, Max_Length - Count + Length (Source)));
 
       procedure Tail
         (Source : in out Bounded_String;
@@ -2351,8 +2414,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                and then
                  Slice (Source, Count - Length (Source'Old) + 1, Max_Length) =
                    Slice (Source'Old,
-                     1, Max_Length - Count + Length (Source'Old))),
-        Global         => (Proof_In => Max_Length);
+                     1, Max_Length - Count + Length (Source'Old)));
 
       ------------------------------------
       -- String Constructor Subprograms --
@@ -2362,48 +2424,44 @@ package Ada.Strings.Bounded with SPARK_Mode is
         (Left  : Natural;
          Right : Character) return Bounded_String
       with
-        Pre    => Left <= Max_Length,
-        Post   => To_String ("*"'Result) = (1 .. Left => Right),
-        Global => Max_Length;
+        Pre  => Left <= Max_Length,
+        Post => To_String ("*"'Result) = (1 .. Left => Right);
 
       function "*"
         (Left  : Natural;
          Right : String) return Bounded_String
       with
-        Pre    => (if Left /= 0 then Right'Length <= Max_Length / Left),
-        Post   =>
+        Pre  => (if Left /= 0 then Right'Length <= Max_Length / Left),
+        Post =>
           Length ("*"'Result) = Left * Right'Length
             and then
               (if Right'Length > 0 then
                  (for all K in 1 .. Left * Right'Length =>
                     Element ("*"'Result, K) =
-                      Right (Right'First + (K - 1) mod Right'Length))),
-        Global => Max_Length;
+                      Right (Right'First + (K - 1) mod Right'Length)));
 
       function "*"
         (Left  : Natural;
          Right : Bounded_String) return Bounded_String
       with
-        Pre    => (if Left /= 0 then Length (Right) <= Max_Length / Left),
-        Post   =>
+        Pre  => (if Left /= 0 then Length (Right) <= Max_Length / Left),
+        Post =>
           Length ("*"'Result) = Left * Length (Right)
             and then
               (if Length (Right) > 0 then
                  (for all K in 1 .. Left * Length (Right) =>
                     Element ("*"'Result, K) =
-                      Element (Right, 1 + (K - 1) mod Length (Right)))),
-        Global => (Proof_In => Max_Length);
+                      Element (Right, 1 + (K - 1) mod Length (Right))));
 
       function Replicate
         (Count : Natural;
          Item  : Character;
          Drop  : Truncation := Error) return Bounded_String
       with
-        Pre    => (if Count > Max_Length then Drop /= Error),
-        Post   =>
+        Pre  => (if Count > Max_Length then Drop /= Error),
+        Post =>
           To_String (Replicate'Result) =
-            (1 .. Natural'Min (Max_Length, Count) => Item),
-        Global => Max_Length;
+            (1 .. Natural'Min (Max_Length, Count) => Item);
 
       function Replicate
         (Count : Natural;
@@ -2437,8 +2495,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                and then
                  (for all K in 1 .. Max_Length =>
                     Element (Replicate'Result, K) =
-                      Item (Item'Last - (Max_Length - K) mod Item'Length))),
-        Global         => Max_Length;
+                      Item (Item'Last - (Max_Length - K) mod Item'Length)));
 
       function Replicate
         (Count : Natural;
@@ -2473,8 +2530,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                  (for all K in 1 .. Max_Length =>
                     Element (Replicate'Result, K) =
                       Element (Item,
-                        Length (Item) - (Max_Length - K) mod Length (Item)))),
-        Global         => (Proof_In => Max_Length);
+                        Length (Item) - (Max_Length - K) mod Length (Item))));
 
    private
       --  Most of the implementation is in the separate non generic package

@@ -1695,6 +1695,10 @@ begin
 
    <<End_Of_Program>>
 
+   if Debug_Flag_Dot_AA then
+      Atree.Print_Statistics;
+   end if;
+
 --  The outer exception handler handles an unrecoverable error
 
 exception

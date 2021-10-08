@@ -51,9 +51,9 @@ using namespace __gnu_pbds;
 // A simple hash functor.
 // hash could serve instead of this functor, but it is not yet
 // standard everywhere.
-struct string_hash : public unary_function<string, size_t>
+struct string_hash
 {
-  inline size_t
+  size_t
   operator()(const string& r_s) const
   {
     size_t ret = 0;

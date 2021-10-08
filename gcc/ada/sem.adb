@@ -1402,7 +1402,9 @@ package body Sem is
       procedure Do_Analyze is
          Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
          Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
-         --  Save the Ghost-related attributes to restore on exit
+         Saved_ISMP : constant Boolean        :=
+                        Ignore_SPARK_Mode_Pragmas_In_Instance;
+         --  Save Ghost and SPARK mode-related data to restore on exit
 
          --  Generally style checks are preserved across compilations, with
          --  one exception: s-oscons.ads, which allows arbitrary long lines
@@ -1421,6 +1423,7 @@ package body Sem is
          --  Set up a clean environment before analyzing
 
          Install_Ghost_Region (None, Empty);
+         Ignore_SPARK_Mode_Pragmas_In_Instance := False;
 
          Outer_Generic_Scope := Empty;
          Scope_Suppress      := Suppress_Options;
@@ -1443,9 +1446,11 @@ package body Sem is
 
          Pop_Scope;
          Restore_Scope_Stack  (List);
-         Restore_Ghost_Region (Saved_GM, Saved_IGR);
          Style_Max_Line_Length := Saved_ML;
          Style_Check_Max_Line_Length := Saved_CML;
+
+         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
       end Do_Analyze;
 
       --  Local variables

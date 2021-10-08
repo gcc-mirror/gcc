@@ -147,10 +147,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE,LABELNO) VXWORKS_FUNCTION_PROFILER(FILE,LABELNO)
 
-/* Initialize library function table.  */
-#undef TARGET_INIT_LIBFUNCS
-#define TARGET_INIT_LIBFUNCS rs6000_vxworks_init_libfuncs
-
 /* Nor sdata, for kernel mode.  We use this in
    SUBSUBTARGET_INITIALIZE_OPTIONS, after rs6000_rtp has been initialized.  */
 #undef SDATA_DEFAULT_SIZE
@@ -159,7 +155,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUB3TARGET_OVERRIDE_OPTIONS
 #define SUB3TARGET_OVERRIDE_OPTIONS           \
   do {                                          \
-  if (!global_options_set.x_g_switch_value)     \
+  if (!OPTION_SET_P (g_switch_value))     \
     g_switch_value = SDATA_DEFAULT_SIZE;        \
   VXWORKS_OVERRIDE_OPTIONS;                     \
   } while (0)

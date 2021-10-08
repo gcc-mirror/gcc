@@ -251,14 +251,20 @@ gfc_post_options (const char **pfilename)
 {
   const char *filename = *pfilename, *canon_source_file = NULL;
   char *source_path;
+  bool verbose_missing_dir_warn;
   int i;
 
   /* This needs to be after the commandline has been processed.
      In Fortran, the options is by default enabled, in C/C++
-     by default disabled.  */
+     by default disabled.
+     If not enabled explicitly by the user, only warn for -I
+     and -J, otherwise warn for all include paths.  */
+  verbose_missing_dir_warn
+    = (OPTION_SET_P (cpp_warn_missing_include_dirs)
+       && global_options.x_cpp_warn_missing_include_dirs);
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       cpp_warn_missing_include_dirs, 1);
-  gfc_check_include_dirs ();
+  gfc_check_include_dirs (verbose_missing_dir_warn);
 
   /* Finalize DEC flags.  */
   post_dec_flags (flag_dec);
@@ -303,7 +309,7 @@ gfc_post_options (const char **pfilename)
     flag_dump_fortran_original = 0;
 
   /* Make -fmax-errors visible to gfortran's diagnostic machinery.  */
-  if (global_options_set.x_flag_max_errors)
+  if (OPTION_SET_P (flag_max_errors))
     gfc_option.max_errors = flag_max_errors;
 
   /* Verify the input file name.  */
@@ -339,10 +345,13 @@ gfc_post_options (const char **pfilename)
       source_path = (char *) alloca (i + 1);
       memcpy (source_path, canon_source_file, i);
       source_path[i] = 0;
-      gfc_add_include_path (source_path, true, true, true, false);
+      /* Only warn if the directory is different from the input file as
+	 if that one is not found, already an error is shown.  */
+      bool warn = gfc_option.flag_preprocessed && gfc_source_file != filename;
+      gfc_add_include_path (source_path, true, true, warn, false);
     }
   else
-    gfc_add_include_path (".", true, true, true, false);
+    gfc_add_include_path (".", true, true, false, false);
 
   if (canon_source_file != gfc_source_file)
     free (CONST_CAST (char *, canon_source_file));
@@ -379,7 +388,7 @@ gfc_post_options (const char **pfilename)
 
       /* Enable -Werror=line-truncation when -Werror and -Wno-error have
 	 not been set.  */
-      if (warn_line_truncation && !global_options_set.x_warnings_are_errors
+      if (warn_line_truncation && !OPTION_SET_P (warnings_are_errors)
 	  && (global_dc->classify_diagnostic[OPT_Wline_truncation] ==
 	      DK_UNSPECIFIED))
 	diagnostic_classify_diagnostic (global_dc, OPT_Wline_truncation,
@@ -490,7 +499,7 @@ gfc_post_options (const char **pfilename)
     gfc_fatal_error ("Maximum subrecord length cannot exceed %d",
 		     MAX_SUBRECORD_LENGTH);
 
-  gfc_cpp_post_options ();
+  gfc_cpp_post_options (verbose_missing_dir_warn);
 
   if (gfc_option.allow_std & GFC_STD_F2008)
     lang_hooks.name = "GNU Fortran2008";

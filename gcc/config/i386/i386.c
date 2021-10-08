@@ -2462,6 +2462,8 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V2SFmode:
     case E_V2SImode:
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V2HFmode:
     case E_V8QImode:
       classes[0] = X86_64_SSE_CLASS;
       return 1;
@@ -2902,6 +2904,7 @@ pass_in_reg:
 
     case E_V8QImode:
     case E_V4HImode:
+    case E_V4HFmode:
     case E_V2SImode:
     case E_V2SFmode:
     case E_V1TImode:
@@ -3149,6 +3152,7 @@ pass_in_reg:
 
     case E_V8QImode:
     case E_V4HImode:
+    case E_V4HFmode:
     case E_V2SImode:
     case E_V2SFmode:
     case E_V1TImode:
@@ -5035,7 +5039,8 @@ standard_80387_constant_p (rtx x)
   /* For XFmode constants, try to find a special 80387 instruction when
      optimizing for size or on those CPUs that benefit from them.  */
   if (mode == XFmode
-      && (optimize_function_for_size_p (cfun) || TARGET_EXT_80387_CONSTANTS))
+      && (optimize_function_for_size_p (cfun) || TARGET_EXT_80387_CONSTANTS)
+      && !flag_rounding_math)
     {
       int i;
 
@@ -10703,23 +10708,18 @@ legitimate_pic_address_disp_p (rtx disp)
 	      if (is_imported_p (op0))
 		return true;
 
-	      if (SYMBOL_REF_FAR_ADDR_P (op0)
-		  || !SYMBOL_REF_LOCAL_P (op0))
+	      if (SYMBOL_REF_FAR_ADDR_P (op0) || !SYMBOL_REF_LOCAL_P (op0))
 		break;
 
-	      /* Function-symbols need to be resolved only for
-	         large-model.
-	         For the small-model we don't need to resolve anything
-	         here.  */
+	      /* Non-external-weak function symbols need to be resolved only
+		 for the large model.  Non-external symbols don't need to be
+		 resolved for large and medium models.  For the small model,
+		 we don't need to resolve anything here.  */
 	      if ((ix86_cmodel != CM_LARGE_PIC
-	           && SYMBOL_REF_FUNCTION_P (op0))
+		   && SYMBOL_REF_FUNCTION_P (op0)
+		   && !(SYMBOL_REF_EXTERNAL_P (op0) && SYMBOL_REF_WEAK (op0)))
+		  || !SYMBOL_REF_EXTERNAL_P (op0)
 		  || ix86_cmodel == CM_SMALL_PIC)
-		return true;
-	      /* Non-external symbols don't need to be resolved for
-	         large, and medium-model.  */
-	      if ((ix86_cmodel == CM_LARGE_PIC
-		   || ix86_cmodel == CM_MEDIUM_PIC)
-		  && !SYMBOL_REF_EXTERNAL_P (op0))
 		return true;
 	    }
 	  else if (!SYMBOL_REF_FAR_ADDR_P (op0)
@@ -22280,7 +22280,7 @@ ix86_stack_protect_guard (void)
       tree type = build_qualified_type (type_node, qual);
       tree t;
 
-      if (global_options_set.x_ix86_stack_protector_guard_symbol_str)
+      if (OPTION_SET_P (ix86_stack_protector_guard_symbol_str))
 	{
 	  t = ix86_tls_stack_chk_guard_decl;
 
@@ -22794,12 +22794,12 @@ ix86_max_noce_ifcvt_seq_cost (edge e)
   bool predictable_p = predictable_edge_p (e);
   if (predictable_p)
     {
-      if (global_options_set.x_param_max_rtl_if_conversion_predictable_cost)
+      if (OPTION_SET_P (param_max_rtl_if_conversion_predictable_cost))
 	return param_max_rtl_if_conversion_predictable_cost;
     }
   else
     {
-      if (global_options_set.x_param_max_rtl_if_conversion_unpredictable_cost)
+      if (OPTION_SET_P (param_max_rtl_if_conversion_unpredictable_cost))
 	return param_max_rtl_if_conversion_unpredictable_cost;
     }
 
@@ -23582,20 +23582,24 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
       return opt_type == OPTIMIZE_FOR_SPEED;
 
     case rint_optab:
-      if (SSE_FLOAT_MODE_P (mode1)
-	  && TARGET_SSE_MATH
-	  && !flag_trapping_math
-	  && !TARGET_SSE4_1)
+      if (mode1 == HFmode)
+	return true;
+      else if (SSE_FLOAT_MODE_P (mode1)
+	       && TARGET_SSE_MATH
+	       && !flag_trapping_math
+	       && !TARGET_SSE4_1)
 	return opt_type == OPTIMIZE_FOR_SPEED;
       return true;
 
     case floor_optab:
     case ceil_optab:
     case btrunc_optab:
-      if (SSE_FLOAT_MODE_P (mode1)
-	  && TARGET_SSE_MATH
-	  && !flag_trapping_math
-	  && TARGET_SSE4_1)
+      if (mode1 == HFmode)
+	return true;
+      else if (SSE_FLOAT_MODE_P (mode1)
+	       && TARGET_SSE_MATH
+	       && !flag_trapping_math
+	       && TARGET_SSE4_1)
 	return true;
       return opt_type == OPTIMIZE_FOR_SPEED;
 

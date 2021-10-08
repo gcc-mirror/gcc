@@ -1051,8 +1051,17 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
     case RID_FLOAT:
     case RID_DOUBLE:
     case RID_VOID:
+      /* CV qualifiers.  */
+    case RID_CONST:
+    case RID_VOLATILE:
+      /* Function specifiers.  */
+    case RID_EXPLICIT:
+    case RID_VIRTUAL:
+      /* friend/typdef/inline specifiers.  */
+    case RID_FRIEND:
+    case RID_TYPEDEF:
+    case RID_INLINE:
       /* GNU extensions.  */
-    case RID_ATTRIBUTE:
     case RID_TYPEOF:
       /* C++11 extensions.  */
     case RID_DECLTYPE:
@@ -10823,6 +10832,7 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 	    return error_mark_node;
 	  type2 = tree_cons (NULL_TREE, elt, type2);
 	}
+      type2 = nreverse (type2);
     }
 
   location_t finish_loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -11456,8 +11466,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   /* In the decl-specifier-seq of the lambda-declarator, each
      decl-specifier shall either be mutable or constexpr.  */
   int declares_class_or_enum;
-  if (cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer)
-      && !cp_next_tokens_can_be_gnu_attribute_p (parser))
+  if (cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer))
     cp_parser_decl_specifier_seq (parser,
 				  CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR,
 				  &lambda_specs, &declares_class_or_enum);
@@ -14167,9 +14176,11 @@ cp_parser_jump_statement (cp_parser* parser)
 
     case RID_GOTO:
       if (parser->in_function_body
-	  && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+	  && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+	  && cxx_dialect < cxx23)
 	{
-	  error ("%<goto%> in %<constexpr%> function");
+	  error ("%<goto%> in %<constexpr%> function only available with "
+		 "%<-std=c++2b%> or %<-std=gnu++2b%>");
 	  cp_function_chain->invalid_constexpr = true;
 	}
 
@@ -28628,7 +28639,16 @@ cp_parser_omp_directive_args (cp_parser *parser, tree attribute)
       TREE_VALUE (attribute) = NULL_TREE;
       return;
     }
-  for (size_t n = cp_parser_skip_balanced_tokens (parser, 1) - 2; n; --n)
+  size_t n = cp_parser_skip_balanced_tokens (parser, 1);
+  if (n == 1)
+    {
+      cp_lexer_consume_token (parser->lexer);
+      error_at (first->location, "expected attribute argument as balanced "
+				 "token sequence");
+      TREE_VALUE (attribute) = NULL_TREE;
+      return;
+    }
+  for (n = n - 2; n; --n)
     cp_lexer_consume_token (parser->lexer);
   cp_token *last = cp_lexer_peek_token (parser->lexer);
   cp_lexer_consume_token (parser->lexer);
@@ -30825,23 +30845,22 @@ cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
 	  /* A parameter declaration begins with a decl-specifier,
 	     which is either the "attribute" keyword, a storage class
 	     specifier, or (usually) a type-specifier.  */
-	  && (!cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer)
-	      /* GNU attributes can actually appear both at the start of
-		 a parameter and parenthesized declarator.
-		 S (__attribute__((unused)) int);
-		 is a constructor, but
-		 S (__attribute__((unused)) foo) (int);
-		 is a function declaration.  */
-	      || (cp_parser_allow_gnu_extensions_p (parser)
-		  && cp_next_tokens_can_be_gnu_attribute_p (parser)))
-	  /* A parameter declaration can also begin with [[attribute]].  */
+	  && !cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer)
+	  /* GNU attributes can actually appear both at the start of
+	     a parameter and parenthesized declarator.
+	     S (__attribute__((unused)) int);
+	     is a constructor, but
+	     S (__attribute__((unused)) foo) (int);
+	     is a function declaration. [[attribute]] can appear in the
+	     first form too, but not in the second form.  */
 	  && !cp_next_tokens_can_be_std_attribute_p (parser))
 	{
 	  tree type;
 	  tree pushed_scope = NULL_TREE;
 	  unsigned saved_num_template_parameter_lists;
 
-	  if (cp_next_tokens_can_be_gnu_attribute_p (parser))
+	  if (cp_parser_allow_gnu_extensions_p (parser)
+	      && cp_next_tokens_can_be_gnu_attribute_p (parser))
 	    {
 	      unsigned int n = cp_parser_skip_gnu_attributes_opt (parser, 1);
 	      while (--n)
@@ -37718,6 +37737,7 @@ cp_parser_omp_clause_order (cp_parser *parser, tree list, location_t location)
   tree c, id;
   const char *p;
   bool unconstrained = false;
+  bool reproducible = false;
 
   matching_parens parens;
   if (!parens.require_open (parser))
@@ -37730,7 +37750,9 @@ cp_parser_omp_clause_order (cp_parser *parser, tree list, location_t location)
       p = IDENTIFIER_POINTER (id);
       if (strcmp (p, "unconstrained") == 0)
 	unconstrained = true;
-      else if (strcmp (p, "reproducible") != 0)
+      else if (strcmp (p, "reproducible") == 0)
+	reproducible = true;
+      else
 	{
 	  cp_parser_error (parser, "expected %<reproducible%> or "
 				   "%<unconstrained%>");
@@ -37761,6 +37783,7 @@ cp_parser_omp_clause_order (cp_parser *parser, tree list, location_t location)
   check_no_duplicate_clause (list, OMP_CLAUSE_ORDER, "order", location);
   c = build_omp_clause (location, OMP_CLAUSE_ORDER);
   OMP_CLAUSE_ORDER_UNCONSTRAINED (c) = unconstrained;
+  OMP_CLAUSE_ORDER_REPRODUCIBLE (c) = reproducible;
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 
@@ -45482,6 +45505,71 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
   return attrs;
 }
 
+/* Helper for cp_parser_omp_declare_target, handle one to or link clause
+   on #pragma omp declare target.  Return false if errors were reported.  */
+
+static bool
+handle_omp_declare_target_clause (tree c, tree t, int device_type)
+{
+  tree at1 = lookup_attribute ("omp declare target", DECL_ATTRIBUTES (t));
+  tree at2 = lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (t));
+  tree id;
+  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINK)
+    {
+      id = get_identifier ("omp declare target link");
+      std::swap (at1, at2);
+    }
+  else
+    id = get_identifier ("omp declare target");
+  if (at2)
+    {
+      error_at (OMP_CLAUSE_LOCATION (c),
+		"%qD specified both in declare target %<link%> and %<to%>"
+		" clauses", t);
+      return false;
+    }
+  if (!at1)
+    {
+      DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+      if (TREE_CODE (t) != FUNCTION_DECL && !is_global_var (t))
+	return true;
+
+      symtab_node *node = symtab_node::get (t);
+      if (node != NULL)
+	{
+	  node->offloadable = 1;
+	  if (ENABLE_OFFLOADING)
+	    {
+	      g->have_offload = true;
+	      if (is_a <varpool_node *> (node))
+		vec_safe_push (offload_vars, t);
+	    }
+	}
+    }
+  if (TREE_CODE (t) != FUNCTION_DECL)
+    return true;
+  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0)
+    {
+      tree at3 = lookup_attribute ("omp declare target host",
+				   DECL_ATTRIBUTES (t));
+      if (at3 == NULL_TREE)
+	{
+	  id = get_identifier ("omp declare target host");
+	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	}
+    }
+  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0)
+    {
+      tree at3 = lookup_attribute ("omp declare target nohost",
+				   DECL_ATTRIBUTES (t));
+      if (at3 == NULL_TREE)
+	{
+	  id = get_identifier ("omp declare target nohost");
+	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	}
+    }
+  return true;
+}
 
 /* OpenMP 4.0:
    # pragma omp declare target new-line
@@ -45534,67 +45622,16 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
     {
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
 	continue;
-      tree t = OMP_CLAUSE_DECL (c), id;
-      tree at1 = lookup_attribute ("omp declare target", DECL_ATTRIBUTES (t));
-      tree at2 = lookup_attribute ("omp declare target link",
-				   DECL_ATTRIBUTES (t));
+      tree t = OMP_CLAUSE_DECL (c);
       only_device_type = false;
-      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINK)
-	{
-	  id = get_identifier ("omp declare target link");
-	  std::swap (at1, at2);
-	}
-      else
-	id = get_identifier ("omp declare target");
-      if (at2)
-	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "%qD specified both in declare target %<link%> and %<to%>"
-		    " clauses", t);
-	  continue;
-	}
-      if (!at1)
-	{
-	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
-	  if (TREE_CODE (t) != FUNCTION_DECL && !is_global_var (t))
-	    continue;
-
-	  symtab_node *node = symtab_node::get (t);
-	  if (node != NULL)
-	    {
-	      node->offloadable = 1;
-	      if (ENABLE_OFFLOADING)
-		{
-		  g->have_offload = true;
-		  if (is_a <varpool_node *> (node))
-		    vec_safe_push (offload_vars, t);
-		}
-	    }
-	}
-      if (TREE_CODE (t) != FUNCTION_DECL)
+      if (!handle_omp_declare_target_clause (c, t, device_type))
 	continue;
-      if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0)
-	{
-	  tree at3 = lookup_attribute ("omp declare target host",
-				       DECL_ATTRIBUTES (t));
-	  if (at3 == NULL_TREE)
-	    {
-	      id = get_identifier ("omp declare target host");
-	      DECL_ATTRIBUTES (t)
-		= tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
-	    }
-	}
-      if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0)
-	{
-	  tree at3 = lookup_attribute ("omp declare target nohost",
-				       DECL_ATTRIBUTES (t));
-	  if (at3 == NULL_TREE)
-	    {
-	      id = get_identifier ("omp declare target nohost");
-	      DECL_ATTRIBUTES (t)
-		= tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
-	    }
-	}
+      if (VAR_OR_FUNCTION_DECL_P (t)
+	  && DECL_LOCAL_DECL_P (t)
+	  && DECL_LANG_SPECIFIC (t)
+	  && DECL_LOCAL_DECL_ALIAS (t))
+	handle_omp_declare_target_clause (c, DECL_LOCAL_DECL_ALIAS (t),
+					  device_type);
     }
   if (device_type && only_device_type)
     warning_at (OMP_CLAUSE_LOCATION (clauses), 0,

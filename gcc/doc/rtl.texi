@@ -2524,7 +2524,19 @@ not be the same.
 For unsigned widening multiplication, use the same idiom, but with
 @code{zero_extend} instead of @code{sign_extend}.
 
+@findex smul_highpart
+@findex umul_highpart
+@cindex high-part multiplication
+@cindex multiplication high part
+@item (smul_highpart:@var{m} @var{x} @var{y})
+@itemx (umul_highpart:@var{m} @var{x} @var{y})
+Represents the high-part multiplication of @var{x} and @var{y} carried
+out in machine mode @var{m}.  @code{smul_highpart} returns the high part
+of a signed multiplication, @code{umul_highpart} returns the high part
+of an unsigned multiplication.
+
 @findex fma
+@cindex fused multiply-add
 @item (fma:@var{m} @var{x} @var{y} @var{z})
 Represents the @code{fma}, @code{fmaf}, and @code{fmal} builtin
 functions, which compute @samp{@var{x} * @var{y} + @var{z}}

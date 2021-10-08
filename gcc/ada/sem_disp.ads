@@ -74,6 +74,10 @@ package Sem_Disp is
    --  The Alias of Old_Subp is adjusted to point to the inherited procedure
    --  of the full view because it is always this one which has to be called.
 
+   function Covered_Interface_Primitives (Prim : Entity_Id) return Elist_Id;
+   --  Returns all the interface primitives covered by Prim, when its
+   --  controlling type has progenitors.
+
    function Covered_Interface_Op (Prim : Entity_Id) return Entity_Id;
    --  Returns the interface primitive that Prim covers, when its controlling
    --  type has progenitors.

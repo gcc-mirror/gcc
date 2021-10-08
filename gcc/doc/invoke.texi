@@ -249,7 +249,8 @@ in the following sections.
 -Wcomma-subscript  -Wconditionally-supported @gol
 -Wno-conversion-null  -Wctad-maybe-unsupported @gol
 -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
--Wdelete-non-virtual-dtor  -Wdeprecated-copy -Wdeprecated-copy-dtor @gol
+-Wdelete-non-virtual-dtor  -Wno-deprecated-array-compare @gol
+-Wdeprecated-copy -Wdeprecated-copy-dtor @gol
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
 -Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
@@ -323,7 +324,7 @@ Objective-C and Objective-C++ Dialects}.
 -Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations @gol
 -Warith-conversion @gol
--Warray-bounds  -Warray-bounds=@var{n} @gol
+-Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare @gol
 -Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias @gol
 -Wno-attribute-warning  -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
@@ -3125,7 +3126,7 @@ errors if these functions are not inlined everywhere they are called.
 @itemx -fno-modules-ts
 @opindex fmodules-ts
 @opindex fno-modules-ts
-Enable support for C++20 modules (@xref{C++ Modules}).  The
+Enable support for C++20 modules (@pxref{C++ Modules}).  The
 @option{-fno-modules-ts} is usually not needed, as that is the
 default.  Even though this is a C++20 feature, it is not currently
 implicitly enabled by selecting that standard version.
@@ -5562,6 +5563,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @gccoptlist{-Waddress   @gol
 -Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
+-Warray-compare @gol
 -Warray-parameter=2 @r{(C and Objective-C only)} @gol
 -Wbool-compare  @gol
 -Wbool-operation  @gol
@@ -6459,10 +6461,12 @@ int b[2][2] = @{ @{ 0, 1 @}, @{ 2, 3 @} @};
 
 This warning is enabled by @option{-Wall}.
 
-@item -Wmissing-include-dirs @r{(C, C++, Objective-C and Objective-C++ only)}
+@item -Wmissing-include-dirs @r{(C, C++, Objective-C, Objective-C++ and Fortran only)}
 @opindex Wmissing-include-dirs
 @opindex Wno-missing-include-dirs
-Warn if a user-supplied include directory does not exist.
+Warn if a user-supplied include directory does not exist. This opions is disabled
+by default for C, C++, Objective-C and Objective-C++. For Fortran, it is partially
+enabled by default by warning for -I and -J, only.
 
 @item -Wno-missing-profile
 @opindex Wmissing-profile
@@ -7531,6 +7535,20 @@ pointers. This warning level may give a larger number of
 false positives and is deactivated by default.
 @end table
 
+@item -Warray-compare
+@opindex Warray-compare
+@opindex Wno-array-compare
+Warn about equality and relational comparisons between two operands of array
+type.  This comparison was deprecated in C++20.  For example:
+
+@smallexample
+int arr1[5];
+int arr2[5];
+bool same = arr1 == arr2;
+@end smallexample
+
+@option{-Warray-compare} is enabled by @option{-Wall}.
+
 @item -Warray-parameter
 @itemx -Warray-parameter=@var{n}
 @opindex Wno-array-parameter
@@ -8549,17 +8567,43 @@ by @option{-Wall}.
 @item -Waddress
 @opindex Waddress
 @opindex Wno-address
-Warn about suspicious uses of memory addresses. These include using
-the address of a function in a conditional expression, such as
-@code{void func(void); if (func)}, and comparisons against the memory
-address of a string literal, such as @code{if (x == "abc")}.  Such
-uses typically indicate a programmer error: the address of a function
-always evaluates to true, so their use in a conditional usually
-indicate that the programmer forgot the parentheses in a function
-call; and comparisons against string literals result in unspecified
-behavior and are not portable in C, so they usually indicate that the
-programmer intended to use @code{strcmp}.  This warning is enabled by
-@option{-Wall}.
+Warn about suspicious uses of address expressions. These include comparing
+the address of a function or a declared object to the null pointer constant
+such as in
+@smallexample
+void f (void);
+void g (void)
+@{
+  if (!func)   // warning: expression evaluates to false
+    abort ();
+@}
+@end smallexample
+comparisons of a pointer to a string literal, such as in
+@smallexample
+void f (const char *x)
+@{
+  if (x == "abc")   // warning: expression evaluates to false
+    puts ("equal");
+@}
+@end smallexample
+and tests of the results of pointer addition or subtraction for equality
+to null, such as in
+@smallexample
+void f (const int *p, int i)
+@{
+  return p + i == NULL;
+@}
+@end smallexample
+Such uses typically indicate a programmer error: the address of most
+functions and objects necessarily evaluates to true (the exception are
+weak symbols), so their use in a conditional might indicate missing
+parentheses in a function call or a missing dereference in an array
+expression.  The subset of the warning for object pointers can be
+suppressed by casting the pointer operand to an integer type such
+as @code{inptr_t} or @code{uinptr_t}.
+Comparisons against string literals result in unspecified behavior
+and are not portable, and suggest the intent was to call @code{strcmp}.
+@option{-Waddress} warning is enabled by @option{-Wall}.
 
 @item -Wno-address-of-packed-member
 @opindex Waddress-of-packed-member
@@ -10409,9 +10453,12 @@ also turns on the following optimization flags:
 -fstrict-aliasing @gol
 -fthread-jumps @gol
 -ftree-builtin-call-dce @gol
+-ftree-loop-vectorize @gol
 -ftree-pre @gol
+-ftree-slp-vectorize @gol
 -ftree-switch-conversion  -ftree-tail-merge @gol
--ftree-vrp}
+-ftree-vrp @gol
+-fvect-cost-model=very-cheap}
 
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.
@@ -10431,11 +10478,8 @@ by @option{-O2} and also turns on the following optimization flags:
 -fsplit-loops @gol
 -fsplit-paths @gol
 -ftree-loop-distribution @gol
--ftree-loop-vectorize @gol
 -ftree-partial-pre @gol
--ftree-slp-vectorize @gol
 -funswitch-loops @gol
--fvect-cost-model @gol
 -fvect-cost-model=dynamic @gol
 -fversion-loops-for-strides}
 
@@ -10779,7 +10823,7 @@ so, the first branch is redirected to either the destination of the
 second branch or a point immediately following it, depending on whether
 the condition is known to be true or false.
 
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fsplit-wide-types
 @opindex fsplit-wide-types
@@ -14461,6 +14505,9 @@ Maximum number of basic blocks before EVRP uses a sparse cache.
 @item evrp-mode
 Specifies the mode Early VRP should operate in.
 
+@item evrp-switch-limit
+Specifies the maximum number of switch cases before EVRP ignores a switch.
+
 @item unroll-jam-min-percent
 The minimum percentage of memory references that must be optimized
 away for the unroll-and-jam transformation to be considered profitable.
@@ -15227,7 +15274,7 @@ ISO C90 and C99, etc.
 
 @item -fsanitize=integer-divide-by-zero
 @opindex fsanitize=integer-divide-by-zero
-Detect integer division by zero as well as @code{INT_MIN / -1} division.
+Detect integer division by zero.
 
 @item -fsanitize=unreachable
 @opindex fsanitize=unreachable
@@ -15259,7 +15306,8 @@ returning a value.  This option works in C++ only.
 @opindex fsanitize=signed-integer-overflow
 This option enables signed integer overflow checking.  We check that
 the result of @code{+}, @code{*}, and both unary and binary @code{-}
-does not overflow in the signed arithmetics.  Note, integer promotion
+does not overflow in the signed arithmetics.  This also detects
+@code{INT_MIN / -1} signed division.  Note, integer promotion
 rules must be taken into account.  That is, the following is not an
 overflow:
 @smallexample
@@ -18568,6 +18616,8 @@ and the features that they enable by default:
 @item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+flagm}, @samp{+fp16fml}, @samp{+dotprod}
 @item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
 @item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
+@item @samp{armv8.7-a} @tab Armv8.7-A @tab @samp{armv8.6-a}, @samp{+ls64}
+@item @samp{armv9-a} @tab Armv9-A @tab @samp{armv8.5-a}, @samp{+sve}, @samp{+sve2}
 @item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
 @end multitable
 
@@ -18611,7 +18661,8 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
-@samp{cortex-r82}, @samp{cortex-x1}, @samp{native}.
+@samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x2},
+@samp{cortex-a510}, @samp{cortex-a710}, @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
@@ -18854,6 +18905,9 @@ Enable brain half-precision floating-point instructions.  This also enables
 Advanced SIMD and floating-point instructions.  This option is enabled by
 default for @option{-march=armv8.6-a}.  Use of this option with architectures
 prior to Armv8.2-A is not supported.
+@item ls64
+Enable the 64-byte atomic load and store instructions for accelerators.
+This option is enabled by default for @option{-march=armv8.7-a}.
 @item flagm
 Enable the Flag Manipulation instructions Extension.
 @item pauth
@@ -19983,6 +20037,7 @@ Permissible names are:
 @samp{armv8.4-a},
 @samp{armv8.5-a},
 @samp{armv8.6-a},
+@samp{armv9-a},
 @samp{armv7-r},
 @samp{armv8-r},
 @samp{armv6-m}, @samp{armv6s-m},
@@ -20472,8 +20527,8 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
 @samp{cortex-a78}, @samp{cortex-a78ae}, @samp{cortex-a78c},
-@samp{ares}, @samp{cortex-r4}, @samp{cortex-r4f},
-@samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
+@samp{ares}, @samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-r5},
+@samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52}, @samp{cortex-r52plus},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
 @samp{cortex-m35p}, @samp{cortex-m55}, @samp{cortex-x1},
@@ -20557,8 +20612,8 @@ Disables the floating-point and SIMD instructions on
 
 @item +nofp.dp
 Disables the double-precision component of the floating-point instructions
-on @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52} and
-@samp{cortex-m7}.
+on @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
+@samp{cortex-r52plus} and @samp{cortex-m7}.
 
 @item +nosimd
 Disables the SIMD (but not floating-point) instructions on
@@ -33553,7 +33608,7 @@ version selected, although in pre-C++20 versions, it is of course an
 extension.
 
 No new source file suffixes are required or supported.  If you wish to
-use a non-standard suffix (@xref{Overall Options}), you also need
+use a non-standard suffix (@pxref{Overall Options}), you also need
 to provide a @option{-x c++} option too.@footnote{Some users like to
 distinguish module interface files with a new suffix, such as naming
 the source @code{module.cppm}, which involves
@@ -33615,8 +33670,8 @@ to be resolved at the end of compilation.  Without this, imported
 macros are only resolved when expanded or (re)defined.  This option
 detects conflicting import definitions for all macros.
 
-@xref{C++ Module Mapper} for details of the @option{-fmodule-mapper}
-family of options.
+For details of the @option{-fmodule-mapper} family of options,
+@pxref{C++ Module Mapper}.
 
 @menu
 * C++ Module Mapper::       Module Mapper
@@ -33833,8 +33888,8 @@ dialect used and imports of the module.@footnote{The precise contents
 of this output may change.} The timestamp is the same value as that
 provided by the @code{__DATE__} & @code{__TIME__} macros, and may be
 explicitly specified with the environment variable
-@code{SOURCE_DATE_EPOCH}.  @xref{Environment Variables} for further
-details.
+@code{SOURCE_DATE_EPOCH}.  For further details
+@pxref{Environment Variables}.
 
 A set of related CMIs may be copied, provided the relative pathnames
 are preserved.
