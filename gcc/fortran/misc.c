@@ -284,7 +284,7 @@ gfc_dummy_typename (gfc_typespec *ts)
 	{
 	  if (ts->kind == gfc_default_character_kind)
 	    sprintf(buffer, "CHARACTER(*)");
-	  else if (ts->kind < 10)
+	  else if (ts->kind >= 0 && ts->kind < 10)
 	    sprintf(buffer, "CHARACTER(*,%d)", ts->kind);
 	  else
 	    sprintf(buffer, "CHARACTER(*,?)");

@@ -3012,7 +3012,7 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	      char *s1 = print_generic_expr_to_str (sizrng[1]);
 	      gcc_checking_assert (strlen (s0) + strlen (s1)
 				   < sizeof sizstr - 4);
-	      sprintf (sizstr, "[%s, %s]", s0, s1);
+	      sprintf (sizstr, "[%.37s, %.37s]", s0, s1);
 	      free (s1);
 	    }
 	  free (s0);
