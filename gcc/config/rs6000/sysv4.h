@@ -70,7 +70,7 @@
 
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  if (!global_options_set.x_g_switch_value)				\
+  if (!OPTION_SET_P (g_switch_value))				\
     g_switch_value = SDATA_DEFAULT_SIZE;				\
 									\
   if (rs6000_abi_name == NULL)						\
@@ -197,16 +197,16 @@ do {									\
     }									\
 									\
   if (TARGET_PLTSEQ != rs6000_pltseq					\
-      && global_options_set.x_rs6000_pltseq)				\
+      && OPTION_SET_P (rs6000_pltseq))				\
     {									\
       error ("%qs not supported by your assembler", "-mpltseq");	\
     }									\
 									\
   if (DEFAULT_ABI == ABI_V4 && TARGET_PLTSEQ && !TARGET_SECURE_PLT)	\
     {									\
-      if (global_options_set.x_rs6000_pltseq)				\
+      if (OPTION_SET_P (rs6000_pltseq))				\
 	{								\
-	  if (global_options_set.x_secure_plt)				\
+	  if (OPTION_SET_P (secure_plt))				\
 	    error ("%qs and %qs are incompatible",			\
 		   "-mpltseq", "-mbss-plt");				\
 	  else								\

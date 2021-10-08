@@ -545,9 +545,9 @@ pa_option_override (void)
     {
       /* DWARF5 is not supported by gdb.  Don't emit DWARF5 unless
 	 specifically selected.  */
-      if (!global_options_set.x_dwarf_strict)
+      if (!OPTION_SET_P (dwarf_strict))
 	dwarf_strict = 1;
-      if (!global_options_set.x_dwarf_version)
+      if (!OPTION_SET_P (dwarf_version))
 	dwarf_version = 4;
     }
 

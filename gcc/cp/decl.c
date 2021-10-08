@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"  /* For 'g'.  */
 #include "omp-general.h"
 #include "omp-offload.h"  /* For offload_vars.  */
+#include "opts.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -3228,7 +3229,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	{
 	  DECL_EXTERNAL (newdecl) = 1;
 	  /* For now, only warn with explicit -Wdeprecated.  */
-	  if (global_options_set.x_warn_deprecated)
+	  if (OPTION_SET_P (warn_deprecated))
 	    {
 	      auto_diagnostic_group d;
 	      if (warning_at (DECL_SOURCE_LOCATION (newdecl), OPT_Wdeprecated,
@@ -4756,7 +4757,7 @@ cxx_init_decl_processing (void)
   /* Check that the hardware interference sizes are at least
      alignof(max_align_t), as required by the standard.  */
   const int max_align = max_align_t_align () / BITS_PER_UNIT;
-  if (global_options_set.x_param_destruct_interfere_size)
+  if (OPTION_SET_P (param_destruct_interfere_size))
     {
       if (param_destruct_interfere_size < max_align)
 	error ("%<--param destructive-interference-size=%d%> is less than "
@@ -4773,7 +4774,7 @@ cxx_init_decl_processing (void)
     param_destruct_interfere_size = param_l1_cache_line_size;
   /* else leave it unset.  */
 
-  if (global_options_set.x_param_construct_interfere_size)
+  if (OPTION_SET_P (param_construct_interfere_size))
     {
       if (param_construct_interfere_size < max_align)
 	error ("%<--param constructive-interference-size=%d%> is less than "

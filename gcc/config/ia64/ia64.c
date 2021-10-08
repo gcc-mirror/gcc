@@ -6098,7 +6098,7 @@ ia64_option_override (void)
     flag_ira_loop_pressure = 1;
 
 
-  ia64_section_threshold = (global_options_set.x_g_switch_value
+  ia64_section_threshold = (OPTION_SET_P (g_switch_value)
 			    ? g_switch_value
 			    : IA64_DEFAULT_GVALUE);
 
@@ -6120,8 +6120,8 @@ static void
 ia64_override_options_after_change (void)
 {
   if (optimize >= 3
-      && !global_options_set.x_flag_selective_scheduling
-      && !global_options_set.x_flag_selective_scheduling2)
+      && !OPTION_SET_P (flag_selective_scheduling)
+      && !OPTION_SET_P (flag_selective_scheduling2))
     {
       flag_selective_scheduling2 = 1;
       flag_sel_sched_pipelining = 1;

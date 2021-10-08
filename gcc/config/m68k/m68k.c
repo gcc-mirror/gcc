@@ -500,13 +500,13 @@ m68k_option_override (void)
   const struct m68k_target_selection *entry;
   unsigned long target_mask;
 
-  if (global_options_set.x_m68k_arch_option)
+  if (OPTION_SET_P (m68k_arch_option))
     m68k_arch_entry = &all_isas[m68k_arch_option];
 
-  if (global_options_set.x_m68k_cpu_option)
+  if (OPTION_SET_P (m68k_cpu_option))
     m68k_cpu_entry = &all_devices[(int) m68k_cpu_option];
 
-  if (global_options_set.x_m68k_tune_option)
+  if (OPTION_SET_P (m68k_tune_option))
     m68k_tune_entry = &all_microarchs[(int) m68k_tune_option];
 
   /* User can choose:

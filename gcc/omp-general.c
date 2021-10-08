@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "data-streamer.h"
 #include "streamer-hooks.h"
+#include "opts.h"
 
 enum omp_requires omp_requires_mask;
 
@@ -952,7 +953,7 @@ omp_max_vf (void)
       || optimize_debug
       || !flag_tree_loop_optimize
       || (!flag_tree_loop_vectorize
-	  && global_options_set.x_flag_tree_loop_vectorize))
+	  && OPTION_SET_P (flag_tree_loop_vectorize)))
     return 1;
 
   auto_vector_modes modes;

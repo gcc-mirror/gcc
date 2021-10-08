@@ -259,7 +259,7 @@ static void next_runtime_01_initialize (void)
 #ifdef OBJCPLUS
   /* For all NeXT objc ABIs -fobjc-call-cxx-cdtors is on by
      default.  */
-  if (!global_options_set.x_flag_objc_call_cxx_cdtors)
+  if (!OPTION_SET_P (flag_objc_call_cxx_cdtors))
     global_options.x_flag_objc_call_cxx_cdtors = 1;
 #endif
 

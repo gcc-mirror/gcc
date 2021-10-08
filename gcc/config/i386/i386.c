@@ -22280,7 +22280,7 @@ ix86_stack_protect_guard (void)
       tree type = build_qualified_type (type_node, qual);
       tree t;
 
-      if (global_options_set.x_ix86_stack_protector_guard_symbol_str)
+      if (OPTION_SET_P (ix86_stack_protector_guard_symbol_str))
 	{
 	  t = ix86_tls_stack_chk_guard_decl;
 
@@ -22794,12 +22794,12 @@ ix86_max_noce_ifcvt_seq_cost (edge e)
   bool predictable_p = predictable_edge_p (e);
   if (predictable_p)
     {
-      if (global_options_set.x_param_max_rtl_if_conversion_predictable_cost)
+      if (OPTION_SET_P (param_max_rtl_if_conversion_predictable_cost))
 	return param_max_rtl_if_conversion_predictable_cost;
     }
   else
     {
-      if (global_options_set.x_param_max_rtl_if_conversion_unpredictable_cost)
+      if (OPTION_SET_P (param_max_rtl_if_conversion_unpredictable_cost))
 	return param_max_rtl_if_conversion_unpredictable_cost;
     }
 

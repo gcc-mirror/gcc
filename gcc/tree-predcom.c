@@ -233,6 +233,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-affine.h"
 #include "builtins.h"
+#include "opts.h"
 
 /* The maximum number of iterations between the considered memory
    references.  */
@@ -3492,7 +3493,7 @@ public:
        only if predictive commoning isn't set explicitly, and it
        doesn't allow unrolling.  */
     if (flag_tree_loop_vectorize
-	&& !global_options_set.x_flag_predictive_commoning)
+	&& !OPTION_SET_P (flag_predictive_commoning))
       return true;
 
     return false;

@@ -1753,7 +1753,7 @@ process_options (bool no_backend)
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error
      have not been set.  */
-  if (!global_options_set.x_warnings_are_errors)
+  if (!OPTION_SET_P (warnings_are_errors))
     {
       if (warn_coverage_mismatch
 	  && (global_dc->classify_diagnostic[OPT_Wcoverage_mismatch] ==

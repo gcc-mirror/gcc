@@ -155,7 +155,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUB3TARGET_OVERRIDE_OPTIONS
 #define SUB3TARGET_OVERRIDE_OPTIONS           \
   do {                                          \
-  if (!global_options_set.x_g_switch_value)     \
+  if (!OPTION_SET_P (g_switch_value))     \
     g_switch_value = SDATA_DEFAULT_SIZE;        \
   VXWORKS_OVERRIDE_OPTIONS;                     \
   } while (0)

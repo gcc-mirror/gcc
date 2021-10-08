@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const-call.h"
 #include "stor-layout.h"
 #include "cgraph.h"
+#include "opts.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -6107,7 +6108,7 @@ maybe_warn_about_constant_value (location_t loc, tree decl)
   static bool explained = false;
   if (cxx_dialect >= cxx17
       && warn_interference_size
-      && !global_options_set.x_param_destruct_interfere_size
+      && !OPTION_SET_P (param_destruct_interfere_size)
       && DECL_CONTEXT (decl) == std_node
       && id_equal (DECL_NAME (decl), "hardware_destructive_interference_size")
       && (LOCATION_FILE (input_location) != main_input_filename

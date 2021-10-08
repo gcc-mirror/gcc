@@ -831,7 +831,7 @@ c_common_post_options (const char **pfilename)
      for -ffp-contract=off).  */
   if (flag_iso
       && !c_dialect_cxx ()
-      && (global_options_set.x_flag_fp_contract_mode
+      && (OPTION_SET_P (flag_fp_contract_mode)
 	  == (enum fp_contract_mode) 0)
       && flag_unsafe_math_optimizations == 0)
     flag_fp_contract_mode = FP_CONTRACT_OFF;
@@ -842,7 +842,7 @@ c_common_post_options (const char **pfilename)
      the set specified in ISO C99/C11.  */
   if (!flag_iso
       && !c_dialect_cxx ()
-      && (global_options_set.x_flag_permitted_flt_eval_methods
+      && (OPTION_SET_P (flag_permitted_flt_eval_methods)
 	  == PERMITTED_FLT_EVAL_METHODS_DEFAULT))
     flag_permitted_flt_eval_methods = PERMITTED_FLT_EVAL_METHODS_TS_18661;
   else
@@ -1040,7 +1040,7 @@ c_common_post_options (const char **pfilename)
 
       /* Unless -f{,no-}ext-numeric-literals has been used explicitly,
 	 for -std=c++{11,14,17,20,23} default to -fno-ext-numeric-literals.  */
-      if (flag_iso && !global_options_set.x_flag_ext_numeric_literals)
+      if (flag_iso && !OPTION_SET_P (flag_ext_numeric_literals))
 	cpp_opts->ext_numeric_literals = 0;
     }
   else if (warn_narrowing == -1)
