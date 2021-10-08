@@ -74,7 +74,7 @@ void test01()
   do_test<unsigned long long>();
 
   // GNU Extensions.
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   do_test<__int128>();
   do_test<unsigned __int128>();
 #endif

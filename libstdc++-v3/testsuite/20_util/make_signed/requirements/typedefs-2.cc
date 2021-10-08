@@ -61,7 +61,7 @@ void test01()
 
 #ifndef __STRICT_ANSI__
   // GNU Extensions.
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   typedef make_signed<unsigned __int128>::type  test25_type;
   static_assert(is_same<test25_type, __int128>::value, "");
 

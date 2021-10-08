@@ -55,7 +55,7 @@ void test01()
 
 #ifndef __STRICT_ANSI__
   // GNU Extensions.
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   static_assert(test_category<is_integral, __int128>(true), "");
   static_assert(test_category<is_integral, unsigned __int128>(true), "");
 #endif

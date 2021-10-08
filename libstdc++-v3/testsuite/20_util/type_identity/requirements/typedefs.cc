@@ -86,7 +86,7 @@ void test01()
 
 #ifndef __STRICT_ANSI__
   // GNU Extensions.
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   static_assert(test<unsigned __int128>::value, "");
   static_assert(test<unsigned __int128>::value, "");
 #endif
