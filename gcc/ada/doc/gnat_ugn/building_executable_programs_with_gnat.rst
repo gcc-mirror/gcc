@@ -3582,6 +3582,25 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   ordering.
 
 
+.. index:: -gnatw_p  (gcc)
+
+:switch:`-gnatw_p`
+  *Activate warnings for pedantic checks.*
+
+  This switch activates warnings for the failure of certain pedantic checks.
+  The only case currently supported is a check that the subtype_marks given
+  for corresponding formal parameter and function results in a subprogram
+  declaration and its body denote the same subtype declaration. The default
+  is that such warnings are not given.
+
+.. index:: -gnatw_P  (gcc)
+
+:switch:`-gnatw_P`
+  *Suppress warnings for pedantic checks.*
+
+  This switch suppresses warnings on violations of pedantic checks.
+
+
 .. index:: -gnatwq  (gcc)
 .. index:: Parentheses, warnings
 
