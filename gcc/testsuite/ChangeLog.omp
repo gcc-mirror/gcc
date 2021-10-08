@@ -1,3 +1,15 @@
+2021-10-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backport from master:
+	2021-10-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/54753
+	* gfortran.dg/c-interop/c535c-1.f90: Rewrite and expand.
+	* gfortran.dg/c-interop/c535c-2.f90: Remove xfails.
+	* gfortran.dg/c-interop/c535c-3.f90: Likewise.
+	* gfortran.dg/c-interop/c535c-4.f90: Likewise.
+	* gfortran.dg/PR94110.f90: Extend to cover class types.
+
 2021-10-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
