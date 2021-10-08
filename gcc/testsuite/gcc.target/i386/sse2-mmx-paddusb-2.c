@@ -20,6 +20,6 @@ char bar()
 }
 
 /* { dg-final { scan-assembler-times "movl\[ \\t\]+\\\$3," 1 } } */
-/* { dg-final { scan-assembler-times "movl\[ \\t\]+\\\$-1," 1 } } */
+/* { dg-final { scan-assembler-times "movl\[ \\t\]+\\\$(?:255|-1)," 1 } } */
 /* { dg-final { scan-assembler-not "paddusb\[ \\t\]+%xmm\[0-9\]+" } } */
 
