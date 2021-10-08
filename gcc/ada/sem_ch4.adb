@@ -9032,7 +9032,9 @@ package body Sem_Ch4 is
    --------------------------
 
    function Try_Object_Operation
-     (N : Node_Id; CW_Test_Only : Boolean := False) return Boolean
+     (N                : Node_Id;
+      CW_Test_Only     : Boolean := False;
+      Allow_Extensions : Boolean := False) return Boolean
    is
       K              : constant Node_Kind  := Nkind (Parent (N));
       Is_Subprg_Call : constant Boolean    := K in N_Subprogram_Call;
@@ -9719,7 +9721,7 @@ package body Sem_Ch4 is
 
          if (not Is_Tagged_Type (Obj_Type)
               and then
-                (not Extensions_Allowed
+                (not (Extensions_Allowed or Allow_Extensions)
                   or else not Present (Primitive_Operations (Obj_Type))))
            or else Is_Incomplete_Type (Obj_Type)
          then
@@ -9748,7 +9750,7 @@ package body Sem_Ch4 is
                --  have homographic prefixed-view operations that could result
                --  in an ambiguity, but handling properly may be tricky. ???)
 
-               if Extensions_Allowed
+               if (Extensions_Allowed or Allow_Extensions)
                  and then not Prim_Result
                  and then Is_Named_Access_Type (Prev_Obj_Type)
                  and then Present (Direct_Primitive_Operations (Prev_Obj_Type))

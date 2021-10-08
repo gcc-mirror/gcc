@@ -7805,9 +7805,9 @@ package body Sem_Ch8 is
 
          --  First check for components of a record object (not the result of
          --  a call, which is handled below). This also covers the case where
-         --  where the extension feature that supports the prefixed form of
-         --  calls for primitives of untagged types is enabled (excluding
-         --  concurrent cases, which are handled further below).
+         --  the extension feature that supports the prefixed form of calls
+         --  for primitives of untagged types is enabled (excluding concurrent
+         --  cases, which are handled further below).
 
          if Is_Type (P_Type)
            and then (Has_Components (P_Type)
@@ -8043,6 +8043,10 @@ package body Sem_Ch8 is
             elsif Ekind (P_Name) = E_Void then
                Premature_Usage (P);
 
+            elsif Ekind (P_Name) = E_Generic_Package then
+               Error_Msg_N ("prefix must not be a generic package", N);
+               Error_Msg_N ("\use package instantiation as prefix instead", N);
+
             elsif Nkind (P) /= N_Attribute_Reference then
 
                --  This may have been meant as a prefixed call to a primitive
@@ -8060,7 +8064,16 @@ package body Sem_Ch8 is
                   then
                      Error_Msg_N
                        ("prefixed call is only allowed for objects of a "
-                        & "tagged type", N);
+                        & "tagged type unless -gnatX is used", N);
+
+                     if not Extensions_Allowed
+                       and then
+                         Try_Object_Operation (N, Allow_Extensions => True)
+                     then
+                        Error_Msg_N
+                          ("\using -gnatX would make the prefixed call legal",
+                           N);
+                     end if;
                   end if;
                end;
 
