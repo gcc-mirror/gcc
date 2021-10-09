@@ -1,3 +1,301 @@
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98725
+	* testsuite/18_support/numeric_limits/lowest.cc: Remove use of
+	_GLIBCXX_USE_WCHAR_T.
+	* testsuite/18_support/numeric_limits/min_max.cc: Replace use of
+	_GLIBCXX_USE_WCHAR_T with checks for WCHAR_MIN and WCHAR_MAX.
+	* testsuite/20_util/from_chars/1_neg.cc: Remove use of
+	_GLIBCXX_USE_WCHAR_T.
+	* testsuite/20_util/function_objects/searchers.cc: Likewise. Use
+	char_traits<wchar_t>::length instead of wcslen.
+	* testsuite/20_util/hash/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_arithmetic/value.cc: Likewise.
+	* testsuite/20_util/is_compound/value.cc: Likewise.
+	* testsuite/20_util/is_floating_point/value.cc: Likewise.
+	* testsuite/20_util/is_fundamental/value.cc: Likewise.
+	* testsuite/20_util/is_integral/value.cc: Likewise.
+	* testsuite/20_util/is_signed/value.cc: Likewise.
+	* testsuite/20_util/is_unsigned/value.cc: Likewise.
+	* testsuite/20_util/is_void/value.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-1.cc:
+	Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc:
+	Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-3.cc:
+	Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-4.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-3.cc:
+	Likewise.
+	* testsuite/20_util/to_chars/3.cc: Likewise.
+	* testsuite/20_util/type_identity/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/hash/debug.cc: Likewise.
+	* testsuite/21_strings/basic_string/hash/hash.cc: Likewise.
+	* testsuite/21_strings/basic_string/literals/types-char8_t.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/literals/types.cc: Likewise.
+	* testsuite/21_strings/basic_string/literals/values-char8_t.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/literals/values.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/64422.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/range_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/citerators.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/types/pmr_typedefs.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/literals/types-char8_t.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/literals/types.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/literals/values-char8_t.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/literals/values.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/typedefs.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions.cc:
+	Likewise.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++17.cc:
+	Likewise.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++20.cc:
+	Likewise.
+	* testsuite/22_locale/ctype/is/string/89728_neg.cc: Likewise.
+	* testsuite/25_algorithms/fill/4.cc: Likewise.
+	* testsuite/25_algorithms/fill_n/1.cc: Likewise.
+	* testsuite/experimental/functional/searchers.cc: Likewise. Use
+	char_traits<wchar_t>::length instead of wcslen.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_string.cc:
+	Likewise.
+	* testsuite/experimental/string_view/literals/types-char8_t.cc:
+	Likewise.
+	* testsuite/experimental/string_view/literals/types.cc:
+	Likewise.
+	* testsuite/experimental/string_view/literals/values-char8_t.cc:
+	Likewise.
+	* testsuite/experimental/string_view/literals/values.cc:
+	Likewise.
+	* testsuite/experimental/string_view/range_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/experimental/string_view/typedefs.cc: Likewise.
+	* testsuite/ext/vstring/range_access.cc: Likewise.
+	* testsuite/std/concepts/concepts.lang/concept.arithmetic/integral.cc:
+	Likewise.
+	* testsuite/std/concepts/concepts.lang/concept.arithmetic/signed_integral.cc:
+	Likewise.
+	* testsuite/std/concepts/concepts.lang/concept.arithmetic/unsigned_integral.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/is_arithmetic/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/is_compound/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/is_floating_point/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/is_fundamental/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/is_integral/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/is_signed/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_unsigned/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/is_void/value.cc: Likewise.
+	* testsuite/tr1/6_containers/hash/24799.cc: Likewise.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98725
+	* include/std/ostream (operator<<(basic_ostream<char, Tr>&, wchar_t))
+	(operator<<(basic_ostream<char, Tr>&, const wchar_t*)): Always
+	define as deleted. Do not check _GLIBCXX_USE_WCHAR_T.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98725
+	* include/bits/locale_conv.h (wstring_convert, wbuffer_convert):
+	Define unconditionally. Do not check _GLIBCXX_USE_WCHAR_T.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98725
+	* include/c_global/cstddef [!_GLIBCXX_USE_WCHAR_T]
+	(__byte_operand<wchar_t>): Define specialization.
+	* include/std/type_traits (__make_signed<wchar_t>)
+	(__make_unsigned<wchar_t>): Remove redundant check for
+	__WCHAR_TYPE__ being defined.
+	* include/tr1/type_traits [!_GLIBCXX_USE_WCHAR_T]
+	(__is_integral_helper<wchar_t>): Likewise.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98725
+	* include/ext/rc_string_base.h [!_GLIBCXX_USE_WCHAR_T]
+	(__rc_string_base<wchar_t>): Define member function.
+	* include/ext/vstring.h [!_GLIBCXX_USE_WCHAR_T]
+	(hash<__gnu_cxx::__wvstring>): Define specialization.
+	* include/ext/vstring_fwd.h [!_GLIBCXX_USE_WCHAR_T] (__wvstring)
+	(__wsso_string, __wrc_string): Declare typedefs.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98725
+	* include/bits/char_traits.h (char_traits<wchar_t>): Define
+	explicit specialization unconditionally.
+	* include/bits/basic_string.h (hash<wstring>): Define
+	unconditionally. Do not check _GLIBCXX_USE_WCHAR_T.
+	* include/bits/stringfwd.h (wstring): Likewise.
+	* include/debug/string (wstring): Likewise.
+	* include/experimental/string_view (experimental::wstring_view)
+	(hash<experimental::wstring_view>): Likewise.
+	* include/std/string (pmr::wstring, hash<pmr::wstring>):
+	Likewise.
+	* include/std/string_view (wstring_view, hash<wstring_view>):
+	Likewise.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_filebuf/close/81256.cc: Moved to...
+	* testsuite/27_io/basic_filebuf/close/wchar_t/81256.cc: ...here.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/conversions/buffer/1.cc: Check
+	_GLIBCXX_USE_WCHAR_T.
+	* testsuite/22_locale/conversions/buffer/3.cc: Likewise. Add
+	test using char16_t.
+	* testsuite/22_locale/conversions/string/1.cc: Check
+	_GLIBCXX_USE_WCHAR_T.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/make_preferred.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/native/alloc.cc: Likewise.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/native/string.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/wstring_locale.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/generic/generic_string.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/native/alloc.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/native/string-char8_t.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/native/string.cc:
+	Likewise.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/bit/bit.rotate/rotr.cc:
+	* testsuite/util/testsuite_common_types.h:
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/numeric_limits/40856.cc: Replace use of
+	_GLIBCXX_USE_INT128.
+	* testsuite/18_support/numeric_limits/dr559.cc: Likewise.
+	* testsuite/18_support/numeric_limits/lowest.cc: Likewise.
+	* testsuite/18_support/numeric_limits/max_digits10.cc: Likewise.
+	* testsuite/20_util/is_floating_point/value.cc: Likewise.
+	* testsuite/20_util/is_integral/value.cc: Likewise.
+	* testsuite/20_util/is_signed/value.cc: Likewise.
+	* testsuite/20_util/is_unsigned/value.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-1.cc:
+	Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Likewise.
+	* testsuite/20_util/type_identity/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/26_numerics/bit/bit.count/countl_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/countl_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/countr_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/countr_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/popcount.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/bit_ceil.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/bit_floor.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/bit_width.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/has_single_bit.cc:
+	Likewise.
+	* testsuite/26_numerics/bit/bit.rotate/rotl.cc: Likewise.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Select1st): Replace use of
+	std::get.
+	(_Select2nd): Remove.
+	(_NodeBuilder::_S_build): Use _NodeGenerator::__node_type
+	typedef instead of deducing it. Remove unnecessary piecewise
+	construction.
+	(_ReuseOrAllocNode): Make __node_type public.
+	(_Map_base): Adjust partial specialization to be able to extract
+	the mapped_type without using tuple_element.
+	(_Map_base::at): Define inline
+	* testsuite/23_containers/unordered_map/requirements/53339.cc:
+	Remove XFAIL.
+	* testsuite/23_containers/unordered_multimap/requirements/53339.cc:
+	Likewise.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h: Move static assertion to destructor.
+	* include/bits/hashtable_policy.h: Deduce value type from node
+	type without instantiating it.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98725
+	* src/c++11/limits.cc: Fail if __cpp_inline_variables is
+	defined.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92546
+	* include/bits/ranges_algobase.h: Replace <iterator> with a
+	subset of the headers it includes.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/deque (erase, erase_if): Revert changes
+	to avoid debug mode overhead.
+	* include/experimental/map (erase, erase_if): Likewise.
+	* include/experimental/set (erase, erase_if): Likewise.
+	* include/experimental/unordered_map (erase, erase_if):
+	Likewise.
+	* include/experimental/unordered_set (erase, erase_if):
+	Likewise.
+	* include/experimental/vector (erase, erase_if): Likewise.
+	* include/std/deque (erase, erase_if): Likewise.
+	* include/std/map (erase, erase_if): Likewise.
+	* include/std/set (erase, erase_if): Likewise.
+	* include/std/unordered_map (erase, erase_if): Likewise.
+	* include/std/unordered_set (erase, erase_if): Likewise.
+	* include/std/vector (erase, erase_if): Likewise.
+
+2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (__detail::__units_suffix_misc): New
+	helper function.
+	(__detail::__units_suffix): Likewise.
+	(chrono::operator<<(basic_ostream&, const duration&)): Define.
+	* testsuite/20_util/duration/io.cc: New test.
+
 2021-10-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am: Add new header.
