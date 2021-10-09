@@ -129,6 +129,7 @@ obj-c++.install-pdf:
 obj-c++.html:
 obj-c++.install-html:
 obj-c++.srcinfo:
+obj-c++.srcman:
 obj-c++.srcextra:
 obj-c++.man:
 obj-c++.install-plugin:
