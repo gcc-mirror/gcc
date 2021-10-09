@@ -3311,6 +3311,32 @@ _mm_permutexvar_ph (__m128i __A, __m128h __B)
 						     (__mmask8)-1);
 }
 
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_set1_pch (_Float16 _Complex __A)
+{
+  union
+  {
+    _Float16 _Complex a;
+    float b;
+  } u = { .a = __A };
+
+  return (__m256h) _mm256_set1_ps (u.b);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_set1_pch (_Float16 _Complex __A)
+{
+  union
+  {
+    _Float16 _Complex a;
+    float b;
+  } u = { .a = __A };
+
+  return (__m128h) _mm_set1_ps (u.b);
+}
+
 #ifdef __DISABLE_AVX512FP16VL__
 #undef __DISABLE_AVX512FP16VL__
 #pragma GCC pop_options
