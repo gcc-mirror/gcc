@@ -2,7 +2,8 @@
    types than char are diagnosed.
    { dg-do compile }
    { dg-require-effective-target int32plus }
-   { dg-options "-O2 -Wall -Wno-array-bounds" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds" }
+   { dg-additional-options "-mtune=generic" { target { i?86-*-* x86_64-*-* } } } */
 
 typedef __INT16_TYPE__  int16_t;
 typedef __INT32_TYPE__  int32_t;
