@@ -1903,7 +1903,7 @@ struct processor_costs skylake_cost = {
   {6, 6, 6},				/* cost of storing integer registers */
   {6, 6, 6, 10, 20},			/* cost of loading SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {8, 8, 8, 12, 24},			/* cost of storing SSE register
+  {8, 8, 8, 8, 16},			/* cost of storing SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
   {6, 6, 6, 10, 20},			/* cost of unaligned loads.  */
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
@@ -2029,7 +2029,7 @@ struct processor_costs icelake_cost = {
   {6, 6, 6},				/* cost of storing integer registers */
   {6, 6, 6, 10, 20},			/* cost of loading SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {8, 8, 8, 12, 24},			/* cost of storing SSE register
+  {8, 8, 8, 8, 16},			/* cost of storing SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
   {6, 6, 6, 10, 20},			/* cost of unaligned loads.  */
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
