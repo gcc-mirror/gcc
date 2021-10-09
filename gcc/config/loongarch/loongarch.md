@@ -3070,10 +3070,11 @@
 (define_insn "probe_stack_range_<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(unspec_volatile:P [(match_operand:P 1 "register_operand" "0")
-			    (match_operand:P 2 "register_operand" "r")]
+			    (match_operand:P 2 "register_operand" "r")
+			    (match_operand:P 3 "register_operand" "r")]
 			    UNSPEC_PROBE_STACK_RANGE))]
   ""
- { return loongarch_output_probe_stack_range (operands[0], operands[2]); }
+ { return loongarch_output_probe_stack_range (operands[0], operands[2], operands[3]); }
   [(set_attr "type" "unknown")
    (set_attr "can_delay" "no")
    (set_attr "mode" "<MODE>")])

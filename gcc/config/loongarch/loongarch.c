@@ -1089,7 +1089,8 @@ loongarch_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 {
   /* See if we have a constant small number of probes to generate.  If so,
      that's the easy case.  */
-  if (first + size <= 2048)
+  if ((TARGET_64BIT && (first + size <= 32768))
+      || (!TARGET_64BIT && (first + size <= 2048)))
     {
       HOST_WIDE_INT i;
 
@@ -1114,56 +1115,68 @@ loongarch_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
       HOST_WIDE_INT rounded_size;
       rtx r13 = LARCH_PROLOGUE_TEMP (Pmode);
       rtx r12 = LARCH_PROLOGUE_TEMP2 (Pmode);
+      rtx r14 = LARCH_PROLOGUE_TEMP3 (Pmode);
 
       /* Sanity check for the addressing mode we're going to use.  */
       gcc_assert (first <= 16384);
+
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */
 
       rounded_size = ROUND_DOWN (size, PROBE_INTERVAL);
 
-      /* Step 2: compute initial and final value of the loop counter.  */
-
-      /* TEST_ADDR = SP + FIRST.  */
-      if (first > 2048)
+      /* TEST_ADDR = SP + FIRST */
+      if (first != 0)
 	{
-	  emit_move_insn (r12, GEN_INT (first));
-	  emit_insn (gen_rtx_SET (r13, gen_rtx_MINUS (Pmode, stack_pointer_rtx,
-						      r12)));
+	  emit_move_insn (r14, GEN_INT (first));
+	  emit_insn (gen_rtx_SET (r13, gen_rtx_MINUS (Pmode, stack_pointer_rtx, r14)));
 	}
       else
-	emit_insn (gen_rtx_SET (r13, plus_constant (Pmode, stack_pointer_rtx,
-						    -first)));
+	emit_move_insn (r13, stack_pointer_rtx);
 
+      /* Step 2: compute initial and final value of the loop counter.  */
+
+      emit_move_insn (r14, GEN_INT (PROBE_INTERVAL));
       /* LAST_ADDR = SP + FIRST + ROUNDED_SIZE.  */
-      if (rounded_size > 2048)
+      if (rounded_size == 0)
+	emit_move_insn (r12, r13);
+      else
 	{
 	  emit_move_insn (r12, GEN_INT (rounded_size));
 	  emit_insn (gen_rtx_SET (r12, gen_rtx_MINUS (Pmode, r13, r12)));
+	  /* Step 3: the loop
+
+	     do
+	     {
+	     TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
+	     probe at TEST_ADDR
+	     }
+	     while (TEST_ADDR != LAST_ADDR)
+
+	     probes at FIRST + N * PROBE_INTERVAL for values of N from 1
+	     until it is equal to ROUNDED_SIZE.  */
+
+	  emit_insn (PMODE_INSN (gen_probe_stack_range, (r13, r13, r12, r14)));
 	}
-      else
-	emit_insn (gen_rtx_SET (r12, plus_constant (Pmode, r13,
-						    -rounded_size)));
-
-      /* Step 3: the loop
-
-	 do
-	 {
-	 TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
-	 probe at TEST_ADDR
-	 }
-	 while (TEST_ADDR != LAST_ADDR)
-
-	 probes at FIRST + N * PROBE_INTERVAL for values of N from 1
-	 until it is equal to ROUNDED_SIZE.  */
-
-      emit_insn (PMODE_INSN (gen_probe_stack_range, (r13, r13, r12)));
 
       /* Step 4: probe at FIRST + SIZE if we cannot assert at compile-time
 	 that SIZE is equal to ROUNDED_SIZE.  */
 
       if (size != rounded_size)
-	emit_stack_probe (plus_constant (Pmode, r12, rounded_size - size));
+	{
+	  if (TARGET_64BIT)
+	    emit_stack_probe (plus_constant (Pmode, r12, rounded_size - size));
+	  else
+	    {
+	      HOST_WIDE_INT i;
+	      for (i = 2048; i < (size - rounded_size); i += 2048 )
+		{
+		  emit_stack_probe (plus_constant (Pmode, r12, -i));
+		  emit_insn (gen_rtx_SET (r12, plus_constant (Pmode, r12, -2048)));
+		}
+	      emit_stack_probe (plus_constant (Pmode, r12, -(size - rounded_size - i + 2048)));
+	    }
+	}
     }
 
   /* Make sure nothing is scheduled before we are done.  */
@@ -1172,13 +1185,12 @@ loongarch_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 
 /* Probe a range of stack addresses from REG1 to REG2 inclusive.  These are
    absolute addresses.  */
-
 const char *
-loongarch_output_probe_stack_range (rtx reg1, rtx reg2)
+loongarch_output_probe_stack_range (rtx reg1, rtx reg2, rtx reg3)
 {
   static int labelno = 0;
   char loop_lab[32], tmp[64];
-  rtx xops[2];
+  rtx xops[3];
 
   ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno++);
 
@@ -1187,12 +1199,12 @@ loongarch_output_probe_stack_range (rtx reg1, rtx reg2)
 
   /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
   xops[0] = reg1;
-  xops[1] = GEN_INT (-PROBE_INTERVAL / (PROBE_INTERVAL / 2048));
-  for (int i = 0; i < PROBE_INTERVAL / 2048; i++)
-    if (TARGET_64BIT)
-      output_asm_insn ("addi.d\t%0,%0,%1", xops);
-    else
-      output_asm_insn ("addi.w\t%0,%0,%1", xops);
+  xops[1] = GEN_INT (-PROBE_INTERVAL);
+  xops[2] = reg3;
+  if (TARGET_64BIT)
+    output_asm_insn ("sub.d\t%0,%0,%2", xops);
+  else
+    output_asm_insn ("sub.w\t%0,%0,%2", xops);
 
   /* Probe at TEST_ADDR, test if TEST_ADDR == LAST_ADDR and branch.  */
   xops[1] = reg2;
