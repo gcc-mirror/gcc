@@ -1,3 +1,15 @@
+2021-10-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1): Mention implemented support for
+	structured block sequences in C/C++.  Mention support for
+	unconstrained/reproducible modifiers on order clause.
+	Mention partial (C/C++ only) support of extentensions to atomics
+	construct.  Mention partial (C/C++ on clause only) support of
+	align/allocator modifiers on allocate clause.
+
 2021-10-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

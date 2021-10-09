@@ -291,7 +291,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
       clauses of the taskloop construct @tab Y @tab
 @item @code{align} clause/modifier in @code{allocate} directive/clause
-      and @code{allocator} directive @tab N @tab
+      and @code{allocator} directive @tab P @tab C/C++ on clause only
 @item @code{thread_limit} clause to @code{target} construct @tab N @tab
 @item @code{has_device_addr} clause to @code{target} construct @tab N @tab
 @item iterators in @code{target update} motion clauses and @code{map}
@@ -301,7 +301,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{interop} directive @tab N @tab
 @item @code{omp_interop_t} object support in runtime routines @tab N @tab
 @item @code{nowait} clause in @code{taskwait} directive @tab N @tab
-@item Extensions to the @code{atomic} directive @tab N @tab
+@item Extensions to the @code{atomic} directive @tab P @tab C/C++ only
 @item @code{seq_cst} clause on a @code{flush} construct @tab Y @tab
 @item @code{inoutset} argument to the @code{depend} clause @tab N @tab
 @item @code{private} and @code{firstprivate} argument to @code{default}
@@ -337,7 +337,10 @@ The OpenMP 4.5 specification is fully supported.
 
 @multitable @columnfractions .60 .10 .25
 @headitem Description @tab Status @tab Comments
-@item Suppport of strictly structured blocks in Fortran @tab N @tab
+@item Support of strictly structured blocks in Fortran @tab N @tab
+@item Support of structured block sequences in C/C++ @tab Y @tab
+@item @code{unconstrained} and @code{reproducible} modifiers on @code{order}
+      clause @tab Y @tab
 @end multitable
 
 

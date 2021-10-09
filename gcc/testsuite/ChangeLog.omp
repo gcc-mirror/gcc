@@ -1,3 +1,20 @@
+2021-10-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/sections1.c (foo): Don't expect errors on
+	multiple statements in between section directive(s).  Add testcases
+	for invalid no statements in between section directive(s).
+	* gcc.dg/gomp/sections-2.c (foo): Don't expect errors on
+	multiple statements in between section directive(s).
+	* g++.dg/gomp/sections-2.C (foo): Likewise.
+	* g++.dg/gomp/attrs-6.C (foo): Add testcases for multiple
+	statements in between section directive(s).
+	(bar): Add testcases for multiple statements in between scan
+	directive.
+	* g++.dg/gomp/attrs-7.C (bar): Adjust expected error recovery.
+
 2021-10-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backport from master:
