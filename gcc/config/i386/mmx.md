@@ -3989,6 +3989,18 @@
   DONE;
 })
 
+(define_expand "reduc_<code>_scal_v4qi"
+  [(smaxmin:V4QI
+     (match_operand:QI 0 "register_operand")
+     (match_operand:V4QI 1 "register_operand"))]
+  "TARGET_SSE4_1"
+{
+  rtx tmp = gen_reg_rtx (V4QImode);
+  ix86_expand_reduc (gen_<code>v4qi3, tmp, operands[1]);
+  emit_insn (gen_vec_extractv4qiqi (operands[0], tmp, const0_rtx));
+  DONE;
+})
+
 (define_expand "reduc_<code>_scal_v4hi"
   [(umaxmin:V4HI
      (match_operand:HI 0 "register_operand")
@@ -3998,6 +4010,39 @@
   rtx tmp = gen_reg_rtx (V4HImode);
   ix86_expand_reduc (gen_<code>v4hi3, tmp, operands[1]);
   emit_insn (gen_vec_extractv4hihi (operands[0], tmp, const0_rtx));
+  DONE;
+})
+
+(define_expand "reduc_<code>_scal_v4qi"
+  [(umaxmin:V4QI
+     (match_operand:QI 0 "register_operand")
+     (match_operand:V4QI 1 "register_operand"))]
+  "TARGET_SSE4_1"
+{
+  rtx tmp = gen_reg_rtx (V4QImode);
+  ix86_expand_reduc (gen_<code>v4qi3, tmp, operands[1]);
+  emit_insn (gen_vec_extractv4qiqi (operands[0], tmp, const0_rtx));
+  DONE;
+})
+
+(define_expand "reduc_plus_scal_v4qi"
+ [(plus:V4QI
+    (match_operand:QI 0 "register_operand")
+    (match_operand:V4QI 1 "register_operand"))]
+ "TARGET_SSE2"
+{
+  rtx op1 = gen_reg_rtx (V16QImode);
+  emit_insn (gen_vec_setv4si_0 (lowpart_subreg (V4SImode, op1, V16QImode),
+				CONST0_RTX (V4SImode),
+				lowpart_subreg (SImode,
+						operands[1],
+						V4QImode)));
+  rtx tmp = gen_reg_rtx (V16QImode);
+  emit_move_insn (tmp, CONST0_RTX (V16QImode));
+  rtx tmp2 = gen_reg_rtx (V2DImode);
+  emit_insn (gen_sse2_psadbw (tmp2, op1, tmp));
+  tmp2 = gen_lowpart (V16QImode, tmp2);
+  emit_insn (gen_vec_extractv16qiqi (operands[0], tmp2, const0_rtx));
   DONE;
 })
 

@@ -16054,6 +16054,11 @@ emit_reduc_half (rtx dest, rtx src, int i)
     case E_V2DFmode:
       tem = gen_vec_interleave_highv2df (dest, src, src);
       break;
+    case E_V4QImode:
+      d = gen_reg_rtx (V1SImode);
+      tem = gen_mmx_lshrv1si3 (d, gen_lowpart (V1SImode, src),
+			       GEN_INT (i / 2));
+      break;
     case E_V4HImode:
       d = gen_reg_rtx (V1DImode);
       tem = gen_mmx_lshrv1di3 (d, gen_lowpart (V1DImode, src),
