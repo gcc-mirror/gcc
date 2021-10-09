@@ -221,7 +221,7 @@ void ga1_1 (void)
   a1_1.a[1] = 1;                // { dg-warning "\\\[-Wstringop-overflow" }
   a1_1.a[2] = 2;                // { dg-warning "\\\[-Wstringop-overflow" }
 
-  struct A1 a = { 0, { 1 } };   // { dg-warning "\\\[-Wstringop-overflow" { target { i?86-*-* x86_64-*-* } } }
+  struct A1 a = { 0, { 1 } };   // { dg-warning "\\\[-Wstringop-overflow" "" { target { i?86-*-* x86_64-*-* } } }
   a.a[0] = 0;
   a.a[1] = 1;                   // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { i?86-*-* x86_64-*-* } } }
   a.a[2] = 2;                   // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { i?86-*-* x86_64-*-* } } }
@@ -320,7 +320,7 @@ void ga1i_1 (void)
   a1i_1.a[1] = 1;               // { dg-warning "\\\[-Wstringop-overflow" }
   a1i_1.a[2] = 2;               // { dg-warning "\\\[-Wstringop-overflow" }
 
-  struct A1 a = { 0, { 1 } };   // { dg-warning "\\\[-Wstringop-overflow" { target { i?86-*-* x86_64-*-* } } }
+  struct A1 a = { 0, { 1 } };   // { dg-warning "\\\[-Wstringop-overflow" "" { target { i?86-*-* x86_64-*-* } } }
   a.a[0] = 1;
   a.a[1] = 2;                   // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { i?86-*-* x86_64-*-* } } }
   a.a[2] = 3;                   // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { i?86-*-* x86_64-*-* } } }
