@@ -365,6 +365,9 @@ private:
   auto_vec<top_level_asm *> m_top_level_asms;
 
   type *m_basic_types[NUM_GCC_JIT_TYPES];
+  /* Map from num_bits to integer types. */
+  tree m_signed_int_types[128];
+  tree m_unsigned_int_types[128];
   type *m_FILE_type;
 
   builtins_manager *m_builtins_manager; // lazily created
@@ -636,6 +639,46 @@ private:
 private:
   enum gcc_jit_types m_kind;
 };
+
+/* Result of "gcc_jit_context_get_type" for non power of 2 integers.  */
+class memento_of_make_type : public type
+{
+public:
+  memento_of_make_type (context *ctxt,
+			tree int_type,
+			size_t num_bits)
+  : type (ctxt),
+    m_type (int_type),
+    m_num_bits (num_bits) {}
+
+  type *dereference () FINAL OVERRIDE { return NULL; };
+
+  size_t get_size () FINAL OVERRIDE { return m_num_bits; };
+
+  bool accepts_writes_from (type *rtype) FINAL OVERRIDE
+  {
+    return type::accepts_writes_from (rtype);
+  }
+
+  bool is_int () const FINAL OVERRIDE { return true; };
+  bool is_float () const FINAL OVERRIDE { return false; };
+  bool is_bool () const FINAL OVERRIDE { return false; };
+  type *is_pointer () FINAL OVERRIDE { return NULL; }
+  type *is_array () FINAL OVERRIDE { return NULL; }
+  bool is_void () const FINAL OVERRIDE { return false; }
+
+public:
+  void replay_into (replayer *r) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+
+private:
+  tree m_type;
+  size_t m_num_bits;
+};
+
 
 /* Result of "gcc_jit_type_get_pointer".  */
 class memento_of_get_pointer : public type

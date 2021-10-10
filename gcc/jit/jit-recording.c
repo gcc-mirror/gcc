@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "pretty-print.h"
+#include "tree.h"
+#include "stor-layout.h"
 #include "toplev.h"
 
 #include <pthread.h>
@@ -562,6 +564,8 @@ recording::context::context (context *parent_ctxt)
     m_compound_types (),
     m_globals (),
     m_functions (),
+    m_signed_int_types(),
+    m_unsigned_int_types(),
     m_FILE_type (NULL),
     m_builtins_manager(NULL)
 {
@@ -827,10 +831,47 @@ recording::context::get_int_type (int num_bytes, int is_signed)
 		     ? GCC_JIT_TYPE_INT128_T
 		     : GCC_JIT_TYPE_UINT128_T);
 
-  /* Some other size, not corresponding to the C int types.  */
-  /* To be written: support arbitrary other sizes, sharing by
-     memoizing at the recording::context level?  */
-  gcc_unreachable ();
+  // TODO: check in num_bits > 0?
+  tree int_type;
+  if (is_signed)
+  {
+    if (tree type = m_signed_int_types[num_bits])
+    {
+      int_type = type;
+    }
+    else
+    {
+      int_type = make_signed_type(num_bits);
+      m_signed_int_types[num_bits] = int_type;
+    }
+  }
+  else
+  {
+    if (tree type = m_unsigned_int_types[num_bits])
+    {
+      int_type = type;
+    }
+    else
+    {
+      int_type = make_unsigned_type(num_bits);
+      m_unsigned_int_types[num_bits] = int_type;
+    }
+  }
+
+  recording::type *result = new memento_of_make_type (this, int_type, num_bits);
+  record (result);
+  return result;
+}
+
+void
+recording::memento_of_make_type::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "type");
+  r.write ("  gcc_jit_type *%s = gcc_jit_context_get_int_type (%s, %ld, %d);\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   m_num_bits,
+	   true); // TODO
 }
 
 /* Create a recording::type instance and add it to this context's list
@@ -2741,6 +2782,24 @@ recording::memento_of_get_type::write_reproducer (reproducer &r)
 	   id,
 	   r.get_identifier (get_context ()),
 	   get_type_enum_strings[m_kind]);
+}
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::memento_of_make_type.  */
+
+void
+recording::memento_of_make_type::replay_into (replayer *r)
+{
+  set_playback_obj (this);
+}
+
+recording::string *
+recording::memento_of_make_type::make_debug_string ()
+{
+  char buf[256] = {0};
+  buf[0] = 'i';
+  sprintf(&buf[1], "%ld", m_num_bits);
+  return m_ctxt->new_string (buf);
 }
 
 /* The implementation of class gcc::jit::recording::memento_of_get_pointer.  */
