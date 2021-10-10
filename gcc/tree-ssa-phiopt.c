@@ -753,9 +753,12 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
   if ((integer_zerop (arg0) && integer_onep (arg1))
       || (integer_zerop (arg1) && integer_onep (arg0)))
     neg = false;
+  /* For signed one bit types, the negation is not needed and
+     should be avoided and is the same as 1 case for non-signed
+     one bit types.  */
   else if ((integer_zerop (arg0) && integer_all_onesp (arg1))
 	   || (integer_zerop (arg1) && integer_all_onesp (arg0)))
-    neg = true;
+    neg = TYPE_PRECISION (TREE_TYPE (arg0)) != 1;
   else
     return false;
 
