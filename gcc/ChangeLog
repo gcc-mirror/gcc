@@ -1,3 +1,15 @@
+2021-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102639
+	* config/i386/i386-expand.c (ix86_valid_mask_cmp_mode): Handle
+	HFmode.
+	(ix86_use_mask_cmp_p): Ditto.
+	(ix86_expand_sse_movcc): Ditto.
+	* config/i386/i386.md (setcc_hf_mask): New define_insn.
+	(movhf_mask): Ditto.
+	(UNSPEC_MOVCC_MASK): New unspec.
+	* config/i386/sse.md (UNSPEC_PCMP): Move to i386.md.
+
 2021-10-08  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/102627

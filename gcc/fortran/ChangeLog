@@ -1,3 +1,9 @@
+2021-10-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/65454
+	* module.c (read_module): Handle old and new-style relational
+	operators when used in USE module, ONLY: OPERATOR(op).
+
 2021-10-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR fortran/54753

@@ -1,3 +1,44 @@
+2021-10-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/65454
+	* gfortran.dg/interface_operator_3.f90: New test.
+
+2021-10-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	* c-c++-common/Wstringop-overflow-2.c: Add missing comment.
+	* gcc.dg/Warray-bounds-51.c: Likewise.
+	* gcc.dg/Warray-parameter-3.c: Likewise.
+	* gcc.dg/Wstringop-overflow-14.c: Likewise.
+	* gcc.dg/Wstringop-overflow-21.c: Likewise.
+	* gcc.dg/Wstringop-overflow-76.c: Likewise.
+
+2021-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.dg/tree-ssa/pr94403.C: Add -fno-tree-vectorize
+	* gcc.dg/optimize-bswapsi-5.c: Ditto.
+	* gcc.dg/optimize-bswapsi-6.c: Ditto.
+	* gcc.dg/Warray-bounds-51.c: Add additional option
+	-mtune=generic for target x86/i?86
+	* gcc.dg/Wstringop-overflow-14.c: Ditto.
+
+2021-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/sections1.c (foo): Don't expect errors on
+	multiple statements in between section directive(s).  Add testcases
+	for invalid no statements in between section directive(s).
+	* gcc.dg/gomp/sections-2.c (foo): Don't expect errors on
+	multiple statements in between section directive(s).
+	* g++.dg/gomp/sections-2.C (foo): Likewise.
+	* g++.dg/gomp/attrs-6.C (foo): Add testcases for multiple
+	statements in between section directive(s).
+	(bar): Add testcases for multiple statements in between scan
+	directive.
+	* g++.dg/gomp/attrs-7.C (bar): Adjust expected error recovery.
+
+2021-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr102639.C: New test.
+
 2021-10-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR fortran/54753
