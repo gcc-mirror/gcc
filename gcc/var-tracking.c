@@ -6123,7 +6123,8 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
      on which register holds that VALUE in some instruction.  */
   if (!frame_pointer_needed
       && cfa_base_rtx
-      && cselib_sp_derived_value_p (v))
+      && cselib_sp_derived_value_p (v)
+      && loc == stack_pointer_rtx)
     {
       if (preserve)
 	preserve_value (v);
