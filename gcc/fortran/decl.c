@@ -2228,12 +2228,16 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  gfc_expr *array;
 	  int n;
 	  if (sym->attr.flavor == FL_PARAMETER
-		&& init->expr_type == EXPR_CONSTANT
-		&& spec_size (sym->as, &size)
-		&& mpz_cmp_si (size, 0) > 0)
+	      && gfc_is_constant_expr (init)
+	      && (init->expr_type == EXPR_CONSTANT
+		  || init->expr_type == EXPR_STRUCTURE)
+	      && spec_size (sym->as, &size)
+	      && mpz_cmp_si (size, 0) > 0)
 	    {
 	      array = gfc_get_array_expr (init->ts.type, init->ts.kind,
 					  &init->where);
+	      if (init->ts.type == BT_DERIVED)
+		array->ts.u.derived = init->ts.u.derived;
 	      for (n = 0; n < (int)mpz_get_si (size); n++)
 		gfc_constructor_append_expr (&array->value.constructor,
 					     n == 0
