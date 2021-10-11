@@ -1735,7 +1735,8 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
       FOR_EACH_MODE_FROM (new_mode, new_mode)
 	if (known_eq (GET_MODE_SIZE (new_mode), GET_MODE_SIZE (GET_MODE (op0)))
 	    && known_eq (GET_MODE_UNIT_SIZE (new_mode), GET_MODE_SIZE (tmode))
-	    && targetm.vector_mode_supported_p (new_mode))
+	    && targetm.vector_mode_supported_p (new_mode)
+	    && targetm.modes_tieable_p (GET_MODE (op0), new_mode))
 	  break;
       if (new_mode != VOIDmode)
 	op0 = gen_lowpart (new_mode, op0);
