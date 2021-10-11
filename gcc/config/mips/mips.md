@@ -4459,6 +4459,16 @@
   [(set_attr "move_type" "store")
    (set_attr "mode" "<MODE>")])
 
+;; Unaligned direct access
+(define_expand "movmisalign<mode>"
+  [(set (match_operand:JOIN_MODE 0)
+	(match_operand:JOIN_MODE 1))]
+  "ISA_HAS_UNALIGNED_ACCESS"
+{
+  if (mips_legitimize_move (<MODE>mode, operands[0], operands[1]))
+    DONE;
+})
+
 ;; An instruction to calculate the high part of a 64-bit SYMBOL_ABSOLUTE.
 ;; The required value is:
 ;;

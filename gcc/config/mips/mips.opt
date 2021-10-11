@@ -404,6 +404,10 @@ mtune=
 Target RejectNegative Joined Var(mips_tune_option) ToLower Enum(mips_arch_opt_value)
 -mtune=PROCESSOR	Optimize the output for PROCESSOR.
 
+munaligned-access
+Target Var(TARGET_UNALIGNED_ACCESS) Init(1)
+Generate code with unaligned load store, valid for MIPS R6.
+
 muninit-const-in-rodata
 Target Var(TARGET_UNINIT_CONST_IN_RODATA)
 Put uninitialized constants in ROM (needs -membedded-data).
