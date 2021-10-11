@@ -840,7 +840,7 @@
 #endif
 
 #if _OPENMP >= 202011
-!GCC$ ATTRIBUTES DEPRECATED :: omp_proc_bind_master
+!GCC$ ATTRIBUTES DEPRECATED :: omp_proc_bind_master, omp_atv_sequential
 #endif
 
       end module omp_lib

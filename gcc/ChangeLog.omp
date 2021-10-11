@@ -1,3 +1,15 @@
+2021-10-11  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	Backported from master:
+	2021-10-11  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* allocator.c (omp_init_allocator): Replace omp_atv_sequential with
+	omp_atv_serialized.
+	* omp.h.in: Add deprecated flag for omp_atv_sequential.
+	* omp_lib.f90.in: Add deprecated flag for omp_atv_sequential.
+	* testsuite/libgomp.c-c++-common/alloc-10.c: New test.
+	* testsuite/libgomp.fortran/alloc-12.f90: New test.
+
 2021-10-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

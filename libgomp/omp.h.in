@@ -157,7 +157,7 @@ typedef enum omp_alloctrait_value_t
   omp_atv_contended = 3,
   omp_atv_uncontended = 4,
   omp_atv_serialized = 5,
-  omp_atv_sequential = omp_atv_serialized,
+  omp_atv_sequential __GOMP_DEPRECATED_5_1 = omp_atv_serialized,
   omp_atv_private = 6,
   omp_atv_all = 7,
   omp_atv_thread = 8,
