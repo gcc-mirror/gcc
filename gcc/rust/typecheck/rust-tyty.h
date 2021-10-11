@@ -35,6 +35,12 @@ class AssociatedImplTrait;
 
 namespace TyTy {
 
+enum TypeMutability
+{
+  IMMUT,
+  MUT
+};
+
 // https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/enum.TyKind.html#variants
 enum TypeKind
@@ -1552,14 +1558,14 @@ public:
 class ReferenceType : public BaseType
 {
 public:
-  ReferenceType (HirId ref, TyVar base, bool is_mut,
+  ReferenceType (HirId ref, TyVar base, TypeMutability mut,
 		 std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::REF, refs), base (base), is_mut (is_mut)
+    : BaseType (ref, ref, TypeKind::REF, refs), base (base), mut (mut)
   {}
 
-  ReferenceType (HirId ref, HirId ty_ref, TyVar base, bool is_mut,
+  ReferenceType (HirId ref, HirId ty_ref, TyVar base, TypeMutability mut,
 		 std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::REF, refs), base (base), is_mut (is_mut)
+    : BaseType (ref, ty_ref, TypeKind::REF, refs), base (base), mut (mut)
   {}
 
   BaseType *get_base () const;
@@ -1587,25 +1593,26 @@ public:
 
   ReferenceType *handle_substitions (SubstitutionArgumentMappings mappings);
 
-  bool is_mutable () const { return is_mut; }
+  TypeMutability mutability () const { return mut; }
+
+  bool is_mutable () const { return mut == TypeMutability::MUT; }
 
 private:
   TyVar base;
-  bool is_mut;
+  TypeMutability mut;
 };
 
 class PointerType : public BaseType
 {
 public:
-  PointerType (HirId ref, TyVar base, bool is_mut,
+  PointerType (HirId ref, TyVar base, TypeMutability mut,
 	       std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::POINTER, refs), base (base), is_mut (is_mut)
+    : BaseType (ref, ref, TypeKind::POINTER, refs), base (base), mut (mut)
   {}
 
-  PointerType (HirId ref, HirId ty_ref, TyVar base, bool is_mut,
+  PointerType (HirId ref, HirId ty_ref, TyVar base, TypeMutability mut,
 	       std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::POINTER, refs), base (base),
-      is_mut (is_mut)
+    : BaseType (ref, ty_ref, TypeKind::POINTER, refs), base (base), mut (mut)
   {}
 
   BaseType *get_base () const;
@@ -1633,13 +1640,15 @@ public:
 
   PointerType *handle_substitions (SubstitutionArgumentMappings mappings);
 
-  bool is_mutable () const { return is_mut; }
+  TypeMutability mutability () const { return mut; }
 
-  bool is_const () const { return !is_mut; }
+  bool is_mutable () const { return mut == TypeMutability::MUT; }
+
+  bool is_const () const { return mut == TypeMutability::IMMUT; }
 
 private:
   TyVar base;
-  bool is_mut;
+  TypeMutability mut;
 };
 
 class StrType : public BaseType

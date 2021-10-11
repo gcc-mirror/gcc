@@ -602,9 +602,9 @@ public:
 	  auto ok = context->lookup_builtin ("str", &base);
 	  rust_assert (ok);
 
-	  infered
-	    = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
-				       TyTy::TyVar (base->get_ref ()), false);
+	  infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
+					     TyTy::TyVar (base->get_ref ()),
+					     TyTy::TypeMutability::IMMUT);
 	}
 	break;
 
@@ -649,9 +649,9 @@ public:
 				   TyTy::TyVar (u8->get_ref ()));
 	  context->insert_type (array_mapping, array);
 
-	  infered
-	    = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
-				       TyTy::TyVar (array->get_ref ()), false);
+	  infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
+					     TyTy::TyVar (array->get_ref ()),
+					     TyTy::TypeMutability::IMMUT);
 	}
 	break;
 
@@ -1093,7 +1093,9 @@ public:
 
     infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
 				       TyTy::TyVar (resolved_base->get_ref ()),
-				       expr.get_is_mut ());
+				       expr.get_is_mut ()
+					 ? TyTy::TypeMutability::MUT
+					 : TyTy::TypeMutability::IMMUT);
   }
 
   void visit (HIR::DereferenceExpr &expr) override

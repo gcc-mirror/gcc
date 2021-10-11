@@ -1160,7 +1160,7 @@ public:
 
     resolved = new ReferenceType (base->get_ref (), base->get_ty_ref (),
 				  TyVar (base_resolved->get_ref ()),
-				  base->is_mutable ());
+				  base->mutability ());
   }
 
 private:
@@ -1197,7 +1197,7 @@ public:
 
     resolved = new PointerType (base->get_ref (), base->get_ty_ref (),
 				TyVar (base_resolved->get_ref ()),
-				base->is_mutable ());
+				base->mutability ());
   }
 
 private:
