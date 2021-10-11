@@ -148,7 +148,8 @@ struct GTY(()) modref_access_node
 	       poly_int64 offset1, poly_int64 size1, poly_int64 max_size1,
 	       bool record_adjustments)
     {
-      if (known_eq (offset, offset1)
+      if (known_eq (parm_offset, parm_offset1)
+	  && known_eq (offset, offset1)
 	  && known_eq (size, size1)
 	  && known_eq (max_size, max_size1))
 	return;
@@ -577,6 +578,10 @@ struct GTY((user)) modref_ref_node
 	  }
 	(*accesses)[best1].forced_merge (best2 < 0 ? a : (*accesses)[best2],
 					 record_adjustments);
+	/* CHeck that merging indeed merged ranges.  */
+	gcc_checking_assert ((*accesses)[best1].contains (best2 < 0 ? a : (*accesses)[best2]));
+	/*if (best2 >= 0)
+	  accesses->unordered_remove (best2);*/
 	if (!(*accesses)[best1].useful_p ())
 	  {
 	    collapse ();
@@ -1010,6 +1015,31 @@ struct GTY((user)) modref_tree
       if (n->base == base)
 	return n;
     return NULL;
+  }
+
+  /* Return true if tree contains access to global memory.  */
+  bool global_access_p ()
+  {
+    size_t i, j, k;
+    modref_base_node <T> *base_node;
+    modref_ref_node <T> *ref_node;
+    modref_access_node *access_node;
+    if (every_base)
+      return true;
+    FOR_EACH_VEC_SAFE_ELT (bases, i, base_node)
+      {
+	if (base_node->every_ref)
+	  return true;
+	FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+	  {
+	    if (ref_node->every_access)
+	      return true;
+	    FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+	      if (access_node->parm_index < 0)
+		return true;
+	  }
+      }
+    return false;
   }
 
   /* Return ggc allocated instance.  We explicitly call destructors via

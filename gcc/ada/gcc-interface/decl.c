@@ -239,8 +239,10 @@ static tree validate_size (Uint, tree, Entity_Id, enum tree_code, bool, bool,
 			   const char *, const char *);
 static void set_rm_size (Uint, tree, Entity_Id);
 static unsigned int validate_alignment (Uint, Entity_Id, unsigned int);
-static unsigned int promote_object_alignment (tree, Entity_Id);
+static unsigned int promote_object_alignment (tree, tree, Entity_Id);
 static void check_ok_for_atomic_type (tree, Entity_Id, bool);
+static bool type_for_atomic_builtin_p (tree);
+static tree resolve_atomic_builtin (enum built_in_function, tree);
 static tree create_field_decl_from (tree, tree, tree, tree, tree,
 				    vec<subst_pair>);
 static tree create_rep_part (tree, tree, tree);
@@ -897,7 +899,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   or a reference to another object, and the size of its type is a
 	   constant, set the alignment to the smallest one which is not
 	   smaller than the size, with an appropriate cap.  */
-	if (!gnu_size && align == 0
+	if (!Known_Esize (gnat_entity)
+	    && !Known_Alignment (gnat_entity)
 	    && (Is_Full_Access (gnat_entity)
 		|| (!Optimize_Alignment_Space (gnat_entity)
 		    && kind != E_Exception
@@ -908,8 +911,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    && !imported_p
 		    && No (gnat_renamed_obj)
 		    && No (Address_Clause (gnat_entity))))
-	    && TREE_CODE (TYPE_SIZE (gnu_type)) == INTEGER_CST)
-	  align = promote_object_alignment (gnu_type, gnat_entity);
+	    && (TREE_CODE (TYPE_SIZE (gnu_type)) == INTEGER_CST || gnu_size))
+	  align = promote_object_alignment (gnu_type, gnu_size, gnat_entity);
 
 	/* If the object is set to have atomic components, find the component
 	   type and validate it.
@@ -5403,19 +5406,21 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
       mech = Default;
     }
 
-  /* If this is either a foreign function or if the underlying type won't
-     be passed by reference and is as aligned as the original type, strip
-     off possible padding type.  */
+  /* Either for foreign conventions, or if the underlying type is not passed
+     by reference and is as large and aligned as the original type, strip off
+     a possible padding type.  */
   if (TYPE_IS_PADDING_P (gnu_param_type))
     {
-      tree unpadded_type = TREE_TYPE (TYPE_FIELDS (gnu_param_type));
+      tree inner_type = TREE_TYPE (TYPE_FIELDS (gnu_param_type));
 
       if (foreign
 	  || (mech != By_Reference
-	      && !must_pass_by_ref (unpadded_type)
-	      && (mech == By_Copy || !default_pass_by_ref (unpadded_type))
-	      && TYPE_ALIGN (unpadded_type) >= TYPE_ALIGN (gnu_param_type)))
-	gnu_param_type = unpadded_type;
+	      && !must_pass_by_ref (inner_type)
+	      && (mech == By_Copy || !default_pass_by_ref (inner_type))
+	      && ((TYPE_SIZE (inner_type) == TYPE_SIZE (gnu_param_type)
+		   && TYPE_ALIGN (inner_type) >= TYPE_ALIGN (gnu_param_type))
+		  || Is_Init_Proc (gnat_subprog))))
+	gnu_param_type = inner_type;
     }
 
   /* For foreign conventions, pass arrays as pointers to the element type.
@@ -6309,14 +6314,106 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     the checker is expected to post diagnostics in this case.  */
 	  if (gnu_builtin_decl)
 	    {
-	      const intrin_binding_t inb
-		= { gnat_subprog, gnu_type, TREE_TYPE (gnu_builtin_decl) };
+	      if (fndecl_built_in_p (gnu_builtin_decl, BUILT_IN_NORMAL))
+		{
+		  const enum built_in_function fncode
+		    = DECL_FUNCTION_CODE (gnu_builtin_decl);
 
-	      if (!intrin_profiles_compatible_p (&inb))
-		post_error
-		  ("??profile of& doesn''t match the builtin it binds!",
-		   gnat_subprog);
-	      return gnu_builtin_decl;
+		  switch (fncode)
+		  {
+		    case BUILT_IN_SYNC_FETCH_AND_ADD_N:
+		    case BUILT_IN_SYNC_FETCH_AND_SUB_N:
+		    case BUILT_IN_SYNC_FETCH_AND_OR_N:
+		    case BUILT_IN_SYNC_FETCH_AND_AND_N:
+		    case BUILT_IN_SYNC_FETCH_AND_XOR_N:
+		    case BUILT_IN_SYNC_FETCH_AND_NAND_N:
+		    case BUILT_IN_SYNC_ADD_AND_FETCH_N:
+		    case BUILT_IN_SYNC_SUB_AND_FETCH_N:
+		    case BUILT_IN_SYNC_OR_AND_FETCH_N:
+		    case BUILT_IN_SYNC_AND_AND_FETCH_N:
+		    case BUILT_IN_SYNC_XOR_AND_FETCH_N:
+		    case BUILT_IN_SYNC_NAND_AND_FETCH_N:
+		    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N:
+		    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_N:
+		    case BUILT_IN_ATOMIC_EXCHANGE_N:
+		    case BUILT_IN_ATOMIC_LOAD_N:
+		    case BUILT_IN_ATOMIC_ADD_FETCH_N:
+		    case BUILT_IN_ATOMIC_SUB_FETCH_N:
+		    case BUILT_IN_ATOMIC_AND_FETCH_N:
+		    case BUILT_IN_ATOMIC_NAND_FETCH_N:
+		    case BUILT_IN_ATOMIC_XOR_FETCH_N:
+		    case BUILT_IN_ATOMIC_OR_FETCH_N:
+		    case BUILT_IN_ATOMIC_FETCH_ADD_N:
+		    case BUILT_IN_ATOMIC_FETCH_SUB_N:
+		    case BUILT_IN_ATOMIC_FETCH_AND_N:
+		    case BUILT_IN_ATOMIC_FETCH_NAND_N:
+		    case BUILT_IN_ATOMIC_FETCH_XOR_N:
+		    case BUILT_IN_ATOMIC_FETCH_OR_N:
+		      /* This is a generic builtin overloaded on its return
+			 type, so do type resolution based on it.  */
+		      if (!VOID_TYPE_P (gnu_return_type)
+			  && type_for_atomic_builtin_p (gnu_return_type))
+			gnu_builtin_decl
+			  = resolve_atomic_builtin (fncode, gnu_return_type);
+		      else
+			{
+			  post_error
+			    ("??cannot import type-generic 'G'C'C builtin!",
+			     gnat_subprog);
+			  post_error
+			    ("\\?use a supported result type",
+			     gnat_subprog);
+			  gnu_builtin_decl = NULL_TREE;
+			}
+		      break;
+
+		    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N:
+		      /* This is a generic builtin overloaded on its third
+			 parameter type, so do type resolution based on it.  */
+		      if (list_length (gnu_param_type_list) >= 4
+			  && type_for_atomic_builtin_p
+			       (list_third (gnu_param_type_list)))
+			gnu_builtin_decl
+			  = resolve_atomic_builtin
+			      (fncode, list_third (gnu_param_type_list));
+		      else
+			{
+			  post_error
+			    ("??cannot import type-generic 'G'C'C builtin!",
+			     gnat_subprog);
+			  post_error
+			    ("\\?use a supported third parameter type",
+			     gnat_subprog);
+			  gnu_builtin_decl = NULL_TREE;
+			}
+		      break;
+
+		    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N:
+		    case BUILT_IN_SYNC_LOCK_RELEASE_N:
+		    case BUILT_IN_ATOMIC_STORE_N:
+		      post_error
+			("??unsupported type-generic 'G'C'C builtin!",
+			 gnat_subprog);
+		      gnu_builtin_decl = NULL_TREE;
+		      break;
+
+		    default:
+		      break;
+		  }
+		}
+
+	      if (gnu_builtin_decl)
+		{
+		  const intrin_binding_t inb
+		    = { gnat_subprog, gnu_type, TREE_TYPE (gnu_builtin_decl) };
+
+		  if (!intrin_profiles_compatible_p (&inb))
+		    post_error
+		      ("??profile of& doesn''t match the builtin it binds!",
+		       gnat_subprog);
+
+		  return gnu_builtin_decl;
+		}
 	    }
 
 	  /* Inability to find the builtin DECL most often indicates a genuine
@@ -6326,7 +6423,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     on demand without risking false positives with common default sets
 	     of options.  */
 	  if (warn_shadow)
-	    post_error ("'G'C'C intrinsic not found for&!??", gnat_subprog);
+	    post_error ("'G'C'C builtin not found for&!??", gnat_subprog);
 	}
     }
 
@@ -7320,7 +7417,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   if (Is_Full_Access (gnat_field))
     {
       const unsigned int align
-	= promote_object_alignment (gnu_field_type, gnat_field);
+	= promote_object_alignment (gnu_field_type, NULL_TREE, gnat_field);
       if (align > 0)
 	gnu_field_type
 	  = maybe_pad_type (gnu_field_type, NULL_TREE, align, gnat_field,
@@ -9391,11 +9488,11 @@ validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
   return align;
 }
 
-/* Promote the alignment of GNU_TYPE corresponding to GNAT_ENTITY.  Return
-   a positive value on success or zero on failure.  */
+/* Promote the alignment of GNU_TYPE for an object with GNU_SIZE corresponding
+   to GNAT_ENTITY.  Return a positive value on success or zero on failure.  */
 
 static unsigned int
-promote_object_alignment (tree gnu_type, Entity_Id gnat_entity)
+promote_object_alignment (tree gnu_type, tree gnu_size, Entity_Id gnat_entity)
 {
   unsigned int align, size_cap, align_cap;
 
@@ -9416,14 +9513,17 @@ promote_object_alignment (tree gnu_type, Entity_Id gnat_entity)
       align_cap = get_mode_alignment (ptr_mode);
     }
 
+  if (!gnu_size)
+    gnu_size = TYPE_SIZE (gnu_type);
+
   /* Do the promotion within the above limits.  */
-  if (!tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
-      || compare_tree_int (TYPE_SIZE (gnu_type), size_cap) > 0)
+  if (!tree_fits_uhwi_p (gnu_size)
+      || compare_tree_int (gnu_size, size_cap) > 0)
     align = 0;
-  else if (compare_tree_int (TYPE_SIZE (gnu_type), align_cap) > 0)
+  else if (compare_tree_int (gnu_size, align_cap) > 0)
     align = align_cap;
   else
-    align = ceil_pow2 (tree_to_uhwi (TYPE_SIZE (gnu_type)));
+    align = ceil_pow2 (tree_to_uhwi (gnu_size));
 
   /* But make sure not to under-align the object.  */
   if (align <= TYPE_ALIGN (gnu_type))
@@ -9504,6 +9604,33 @@ check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
   else
     post_error_ne ("atomic access to & cannot be guaranteed",
 		   gnat_error_point, gnat_entity);
+}
+
+/* Return true if TYPE is suitable for a type-generic atomic builtin.  */
+
+static bool
+type_for_atomic_builtin_p (tree type)
+{
+  const enum machine_mode mode = TYPE_MODE (type);
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return true;
+
+  scalar_int_mode imode;
+  if (is_a <scalar_int_mode> (mode, &imode) && GET_MODE_SIZE (imode) <= 16)
+    return true;
+
+  return false;
+}
+
+/* Return the GCC atomic builtin based on CODE and sized for TYPE.  */
+
+static tree
+resolve_atomic_builtin (enum built_in_function code, tree type)
+{
+  const unsigned int size = resolve_atomic_size (type);
+  code = (enum built_in_function) ((int) code + exact_log2 (size) + 1);
+
+  return builtin_decl_implicit (code);
 }
 
 /* Helper for intrin_profiles_compatible_p, to perform compatibility checks

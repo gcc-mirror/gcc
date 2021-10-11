@@ -1,3 +1,10 @@
+2021-10-08  Ian Lance Taylor  <iant@golang.org>
+
+	* config/i386/morestack.S: Use .init_array for constructor if
+	available.
+	* config/rs6000/morestack.S: Likewise.
+	* config/s390/morestack.S: Likewise.
+
 2021-10-03  Patrick McGehearty  <patrick.mcgehearty@oracle.com>
 
 	PR target/101104

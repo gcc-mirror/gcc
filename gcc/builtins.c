@@ -105,7 +105,6 @@ builtin_info_type builtin_info[(int)END_BUILTINS];
 bool force_folding_builtin_constant_p;
 
 static int target_char_cast (tree, char *);
-static rtx get_memory_rtx (tree, tree);
 static int apply_args_size (void);
 static int apply_result_size (void);
 static rtx result_vector (int, rtx);
@@ -1355,7 +1354,7 @@ expand_builtin_prefetch (tree exp)
    the maximum length of the block of memory that might be accessed or
    NULL if unknown.  */
 
-static rtx
+rtx
 get_memory_rtx (tree exp, tree len)
 {
   tree orig_exp = exp;
@@ -5163,12 +5162,10 @@ default_emit_call_builtin___clear_cache (rtx begin, rtx end)
 void
 maybe_emit_call_builtin___clear_cache (rtx begin, rtx end)
 {
-  if ((GET_MODE (begin) != ptr_mode && GET_MODE (begin) != Pmode)
-      || (GET_MODE (end) != ptr_mode && GET_MODE (end) != Pmode))
-    {
-      error ("both arguments to %<__builtin___clear_cache%> must be pointers");
-      return;
-    }
+  gcc_assert ((GET_MODE (begin) == ptr_mode || GET_MODE (begin) == Pmode
+	       || CONST_INT_P (begin))
+	      && (GET_MODE (end) == ptr_mode || GET_MODE (end) == Pmode
+		  || CONST_INT_P (end)));
 
   if (targetm.have_clear_cache ())
     {

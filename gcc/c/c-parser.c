@@ -18976,6 +18976,31 @@ c_parser_omp_flush (c_parser *parser)
   c_finish_omp_flush (loc, mo);
 }
 
+/* Parse an OpenMP structured block sequence.  KIND is the corresponding
+   separating directive.  */
+
+static tree
+c_parser_omp_structured_block_sequence (c_parser *parser,
+					enum pragma_kind kind)
+{
+  tree stmt = push_stmt_list ();
+  c_parser_statement (parser, NULL);
+  do
+    {
+      if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
+	break;
+      if (c_parser_next_token_is (parser, CPP_EOF))
+	break;
+
+      if (kind != PRAGMA_NONE
+	  && c_parser_peek_token (parser)->pragma_kind == kind)
+	break;
+      c_parser_statement (parser, NULL);
+    }
+  while (1);
+  return pop_stmt_list (stmt);
+}
+
 /* OpenMP 5.0:
 
    scan-loop-body:
@@ -18997,7 +19022,7 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
       return;
     }
 
-  substmt = c_parser_omp_structured_block (parser, NULL);
+  substmt = c_parser_omp_structured_block_sequence (parser, PRAGMA_OMP_SCAN);
   substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
   SET_EXPR_LOCATION (substmt, loc);
   add_stmt (substmt);
@@ -19032,7 +19057,7 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
     error ("expected %<#pragma omp scan%>");
 
   clauses = c_finish_omp_clauses (clauses, C_ORT_OMP);
-  substmt = c_parser_omp_structured_block (parser, NULL);
+  substmt = c_parser_omp_structured_block_sequence (parser, PRAGMA_NONE);
   substmt = build2 (OMP_SCAN, void_type_node, substmt, clauses);
   SET_EXPR_LOCATION (substmt, loc);
   add_stmt (substmt);
@@ -19860,6 +19885,8 @@ c_parser_omp_ordered (c_parser *parser, enum pragma_context context,
      section-directive[opt] structured-block
      section-sequence section-directive structured-block
 
+   OpenMP 5.1 allows structured-block-sequence instead of structured-block.
+
     SECTIONS_LOC is the location of the #pragma omp sections.  */
 
 static tree
@@ -19881,7 +19908,8 @@ c_parser_omp_sections_scope (location_t sections_loc, c_parser *parser)
 
   if (c_parser_peek_token (parser)->pragma_kind != PRAGMA_OMP_SECTION)
     {
-      substmt = c_parser_omp_structured_block (parser, NULL);
+      substmt = c_parser_omp_structured_block_sequence (parser,
+							PRAGMA_OMP_SECTION);
       substmt = build1 (OMP_SECTION, void_type_node, substmt);
       SET_EXPR_LOCATION (substmt, loc);
       add_stmt (substmt);
@@ -19907,7 +19935,8 @@ c_parser_omp_sections_scope (location_t sections_loc, c_parser *parser)
 	  error_suppress = true;
 	}
 
-      substmt = c_parser_omp_structured_block (parser, NULL);
+      substmt = c_parser_omp_structured_block_sequence (parser,
+							PRAGMA_OMP_SECTION);
       substmt = build1 (OMP_SECTION, void_type_node, substmt);
       SET_EXPR_LOCATION (substmt, loc);
       add_stmt (substmt);

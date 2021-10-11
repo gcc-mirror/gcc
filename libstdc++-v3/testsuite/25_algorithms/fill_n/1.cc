@@ -44,7 +44,7 @@ test01()
 
   const int A1[] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
   const int N1 = sizeof(A1) / sizeof(int);
-  
+
   int i1[N1];
   test_container<int, output_iterator_wrapper> c1(i1, i1 + N1);
   fill_n(c1.begin(), N1, 3);
@@ -66,7 +66,6 @@ test01()
   fill_n(v2.begin(), N2, '\3');
   VERIFY( equal(v2.begin(), v2.end(), A2) );
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   const wchar_t A3[] = {L'\3', L'\3', L'\3', L'\3', L'\3',
 			L'\3', L'\3', L'\3', L'\3', L'\3'};
   const int N3 = sizeof(A3) / sizeof(wchar_t);
@@ -78,7 +77,6 @@ test01()
   vector<wchar_t> v3(N3);
   fill_n(v3.begin(), N3, L'\3');
   VERIFY( equal(v3.begin(), v3.end(), A3) );
-#endif
 }
 
 int

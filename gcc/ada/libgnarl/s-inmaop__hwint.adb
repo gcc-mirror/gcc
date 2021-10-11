@@ -30,9 +30,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a VxWorks version of this package. Many operations are null as this
---  package supports the use of Ada interrupt handling facilities for signals,
---  while those facilities are used for hardware interrupts on these targets.
+--  This is a hardware interrupt version of this package. Many operations are
+--  null as this package supports the use of Ada interrupt handling facilities
+--  for signals, while those facilities are used for hardware interrupts on
+--  these targets.
 
 with Ada.Exceptions;
 

@@ -1,3 +1,24 @@
+2021-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_structured_block): Remove disallow_omp_attrs
+	argument.
+	(cp_parser_omp_structured_block_sequence): New function.
+	(cp_parser_omp_scan_loop_body): Use it.
+	(cp_parser_omp_sections_scope): Likewise.
+
+2021-10-08  Martin Liska  <mliska@suse.cz>
+
+	* constexpr.c (maybe_warn_about_constant_value): Use new macro
+	OPTION_SET_P.
+	* decl.c (redeclaration_error_message): Likewise.
+	(cxx_init_decl_processing): Likewise.
+
+2021-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102640
+	* parser.c (handle_omp_declare_target_clause): New function.
+	(cp_parser_omp_declare_target): Use it.
+
 2021-10-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/61355

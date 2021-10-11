@@ -43,9 +43,7 @@ test01()
 #endif
   VERIFY( test(__gnu_debug::u16string(u"a utf-16 string")) );
   VERIFY( test(__gnu_debug::u32string(U"a utf-32 string")) );
-#if _GLIBCXX_USE_WCHAR_T
   VERIFY( test(__gnu_debug::wstring(L"a wide string")) );
-#endif
 }
 
 #if _GLIBCXX_USE_CHAR8_T

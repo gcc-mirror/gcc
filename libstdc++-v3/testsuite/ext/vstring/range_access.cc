@@ -28,9 +28,7 @@ test01()
   (void) std::begin(s);
   (void) std::end(s);
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   __gnu_cxx::__wvstring ws(L"Hello, World!");
   (void) std::begin(ws);
   (void) std::end(ws);
-#endif
 }

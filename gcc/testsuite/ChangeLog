@@ -1,3 +1,149 @@
+2021-10-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99348
+	PR fortran/102521
+	* gfortran.dg/parameter_array_init_8.f90: New test.
+
+2021-10-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/102622
+	* gcc.c-torture/execute/bitfld-10.c: New test.
+
+2021-10-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/65454
+	* gfortran.dg/interface_operator_3.f90: New test.
+
+2021-10-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	* c-c++-common/Wstringop-overflow-2.c: Add missing comment.
+	* gcc.dg/Warray-bounds-51.c: Likewise.
+	* gcc.dg/Warray-parameter-3.c: Likewise.
+	* gcc.dg/Wstringop-overflow-14.c: Likewise.
+	* gcc.dg/Wstringop-overflow-21.c: Likewise.
+	* gcc.dg/Wstringop-overflow-76.c: Likewise.
+
+2021-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.dg/tree-ssa/pr94403.C: Add -fno-tree-vectorize
+	* gcc.dg/optimize-bswapsi-5.c: Ditto.
+	* gcc.dg/optimize-bswapsi-6.c: Ditto.
+	* gcc.dg/Warray-bounds-51.c: Add additional option
+	-mtune=generic for target x86/i?86
+	* gcc.dg/Wstringop-overflow-14.c: Ditto.
+
+2021-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/sections1.c (foo): Don't expect errors on
+	multiple statements in between section directive(s).  Add testcases
+	for invalid no statements in between section directive(s).
+	* gcc.dg/gomp/sections-2.c (foo): Don't expect errors on
+	multiple statements in between section directive(s).
+	* g++.dg/gomp/sections-2.C (foo): Likewise.
+	* g++.dg/gomp/attrs-6.C (foo): Add testcases for multiple
+	statements in between section directive(s).
+	(bar): Add testcases for multiple statements in between scan
+	directive.
+	* g++.dg/gomp/attrs-7.C (bar): Adjust expected error recovery.
+
+2021-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr102639.C: New test.
+
+2021-10-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/54753
+	* gfortran.dg/c-interop/c535c-1.f90: Rewrite and expand.
+	* gfortran.dg/c-interop/c535c-2.f90: Remove xfails.
+	* gfortran.dg/c-interop/c535c-3.f90: Likewise.
+	* gfortran.dg/c-interop/c535c-4.f90: Likewise.
+	* gfortran.dg/PR94110.f90: Extend to cover class types.
+
+2021-10-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102627
+	* gcc.target/i386/pr102627.c: New test.
+
+2021-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/pr102385.c: New test.
+
+2021-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102640
+	* c-c++-common/gomp/pr102640.c: New test.
+
+2021-10-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-mmx-paddsb-2.c: Test for -128 or 128.
+	* gcc.target/i386/sse2-mmx-paddusb-2.c: Test for -1 or 255.
+	* gcc.target/i386/sse2-mmx-psubsb-2.c: Test for -128 or 128.
+
+2021-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102464.c: New test.
+
+2021-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/mmx-reduce-op-1.c: New test.
+	* gcc.target/i386/mmx-reduce-op-2.c: New test.
+
+2021-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* c-c++-common/Wstringop-overflow-2.c: Adjust testcase.
+	* g++.dg/tree-ssa/pr81408.C: Ditto.
+	* g++.dg/warn/Wuninitialized-13.C: Ditto.
+	* gcc.dg/Warray-bounds-51.c: Ditto.
+	* gcc.dg/Warray-parameter-3.c: Ditto.
+	* gcc.dg/Wstringop-overflow-14.c: Ditto.
+	* gcc.dg/Wstringop-overflow-21.c: Ditto.
+	* gcc.dg/Wstringop-overflow-68.c: Ditto.
+	* gcc.dg/Wstringop-overflow-76.c: Ditto.
+	* gcc.dg/gomp/pr46032-2.c: Ditto.
+	* gcc.dg/gomp/pr46032-3.c: Ditto.
+	* gcc.dg/gomp/simd-2.c: Ditto.
+	* gcc.dg/gomp/simd-3.c: Ditto.
+	* gcc.dg/graphite/fuse-1.c: Ditto.
+	* gcc.dg/pr67089-6.c: Ditto.
+	* gcc.dg/pr82929-2.c: Ditto.
+	* gcc.dg/pr82929.c: Ditto.
+	* gcc.dg/store_merging_1.c: Ditto.
+	* gcc.dg/store_merging_11.c: Ditto.
+	* gcc.dg/store_merging_13.c: Ditto.
+	* gcc.dg/store_merging_15.c: Ditto.
+	* gcc.dg/store_merging_16.c: Ditto.
+	* gcc.dg/store_merging_19.c: Ditto.
+	* gcc.dg/store_merging_24.c: Ditto.
+	* gcc.dg/store_merging_25.c: Ditto.
+	* gcc.dg/store_merging_28.c: Ditto.
+	* gcc.dg/store_merging_30.c: Ditto.
+	* gcc.dg/store_merging_5.c: Ditto.
+	* gcc.dg/store_merging_7.c: Ditto.
+	* gcc.dg/store_merging_8.c: Ditto.
+	* gcc.dg/strlenopt-85.c: Ditto.
+	* gcc.dg/tree-ssa/dump-6.c: Ditto.
+	* gcc.dg/tree-ssa/pr19210-1.c: Ditto.
+	* gcc.dg/tree-ssa/pr47059.c: Ditto.
+	* gcc.dg/tree-ssa/pr86017.c: Ditto.
+	* gcc.dg/tree-ssa/pr91482.c: Ditto.
+	* gcc.dg/tree-ssa/predcom-1.c: Ditto.
+	* gcc.dg/tree-ssa/predcom-dse-3.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-3.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-6.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-8.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-9.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-dse-18.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-dse-19.c: Ditto.
+	* gcc.dg/uninit-40.c: Ditto.
+	* gcc.dg/unroll-7.c: Ditto.
+	* gcc.misc-tests/help.exp: Ditto.
+	* gcc.target/i386/avx512vpopcntdqvl-vpopcntd-1.c: Ditto.
+	* gcc.target/i386/pr34012.c: Ditto.
+	* gcc.target/i386/pr49781-1.c: Ditto.
+	* gcc.target/i386/pr95798-1.c: Ditto.
+	* gcc.target/i386/pr95798-2.c: Ditto.
+	* gfortran.dg/pr77498.f: Ditto.
+
 2021-10-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/61355

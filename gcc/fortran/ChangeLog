@@ -1,3 +1,29 @@
+2021-10-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99348
+	PR fortran/102521
+	* decl.c (add_init_expr_to_sym): Extend initialization of
+	parameter arrays from scalars to handle derived types.
+
+2021-10-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/65454
+	* module.c (read_module): Handle old and new-style relational
+	operators when used in USE module, ONLY: OPERATOR(op).
+
+2021-10-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/54753
+	* interface.c (gfc_compare_actual_formal): Add diagnostic
+	for F2018:C839.  Refactor shared code and fix bugs with class
+	array info lookup, and extend similar diagnostic from PR94110
+	to also cover class types.
+
+2021-10-08  Martin Liska  <mliska@suse.cz>
+
+	* options.c (gfc_post_options): Use new macro
+	OPTION_SET_P.
+
 2021-10-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* resolve.c (resolve_values): Only show

@@ -21641,11 +21641,10 @@ package body Sem_Ch3 is
    --------------------------------
 
    procedure Process_Range_Expr_In_Decl
-     (R            : Node_Id;
-      T            : Entity_Id;
-      Subtyp       : Entity_Id := Empty;
-      Check_List   : List_Id   := No_List;
-      R_Check_Off  : Boolean   := False)
+     (R          : Node_Id;
+      T          : Entity_Id;
+      Subtyp     : Entity_Id := Empty;
+      Check_List : List_Id   := No_List)
    is
       Lo, Hi      : Node_Id;
       R_Checks    : Check_Result;
@@ -21748,13 +21747,8 @@ package body Sem_Ch3 is
          --  represent the null range the Constraint_Error exception should
          --  not be raised.
 
-         --  ??? The following code should be cleaned up as follows
-
-         --  1. The Is_Null_Range (Lo, Hi) test should disappear since it
-         --     is done in the call to Range_Check (R, T); below
-
-         --  2. The use of R_Check_Off should be investigated and possibly
-         --     removed, this would clean up things a bit.
+         --  ??? The Is_Null_Range (Lo, Hi) test should disappear since it
+         --  is done in the call to Range_Check (R, T); below.
 
          if Is_Null_Range (Lo, Hi) then
             null;
@@ -21771,8 +21765,8 @@ package body Sem_Ch3 is
 
             if Expander_Active or GNATprove_Mode then
 
-               --  Call Force_Evaluation to create declarations as needed to
-               --  deal with side effects, and also create typ_FIRST/LAST
+               --  Call Force_Evaluation to create declarations as needed
+               --  to deal with side effects, and also create typ_FIRST/LAST
                --  entities for bounds if we have a subtype name.
 
                --  Note: we do this transformation even if expansion is not
@@ -21790,106 +21784,103 @@ package body Sem_Ch3 is
             --  because the type we check against isn't necessarily the place
             --  where we put the check.
 
-            if not R_Check_Off then
-               R_Checks := Get_Range_Checks (R, T);
+            R_Checks := Get_Range_Checks (R, T);
 
-               --  Look up tree to find an appropriate insertion point. We
-               --  can't just use insert_actions because later processing
-               --  depends on the insertion node. Prior to Ada 2012 the
-               --  insertion point could only be a declaration or a loop, but
-               --  quantified expressions can appear within any context in an
-               --  expression, and the insertion point can be any statement,
-               --  pragma, or declaration.
+            --  Look up tree to find an appropriate insertion point. We can't
+            --  just use insert_actions because later processing depends on
+            --  the insertion node. Prior to Ada 2012 the insertion point could
+            --  only be a declaration or a loop, but quantified expressions can
+            --  appear within any context in an expression, and the insertion
+            --  point can be any statement, pragma, or declaration.
 
-               Insert_Node := Parent (R);
-               while Present (Insert_Node) loop
-                  exit when
-                    Nkind (Insert_Node) in N_Declaration
-                    and then
-                      Nkind (Insert_Node) not in N_Component_Declaration
-                                               | N_Loop_Parameter_Specification
-                                               | N_Function_Specification
-                                               | N_Procedure_Specification;
+            Insert_Node := Parent (R);
+            while Present (Insert_Node) loop
+               exit when
+                 Nkind (Insert_Node) in N_Declaration
+                 and then
+                   Nkind (Insert_Node) not in N_Component_Declaration
+                                            | N_Loop_Parameter_Specification
+                                            | N_Function_Specification
+                                            | N_Procedure_Specification;
 
-                  exit when Nkind (Insert_Node) in
-                              N_Later_Decl_Item                     |
-                              N_Statement_Other_Than_Procedure_Call |
-                              N_Procedure_Call_Statement            |
-                              N_Pragma;
+               exit when Nkind (Insert_Node) in
+                           N_Later_Decl_Item                     |
+                           N_Statement_Other_Than_Procedure_Call |
+                           N_Procedure_Call_Statement            |
+                           N_Pragma;
 
-                  Insert_Node := Parent (Insert_Node);
-               end loop;
+               Insert_Node := Parent (Insert_Node);
+            end loop;
 
-               --  Why would Type_Decl not be present???  Without this test,
-               --  short regression tests fail.
+            --  Why would Type_Decl not be present???  Without this test,
+            --  short regression tests fail.
 
-               if Present (Insert_Node) then
+            if Present (Insert_Node) then
 
-                  --  Case of loop statement. Verify that the range is part
-                  --  of the subtype indication of the iteration scheme.
+               --  Case of loop statement. Verify that the range is part of the
+               --  subtype indication of the iteration scheme.
 
-                  if Nkind (Insert_Node) = N_Loop_Statement then
-                     declare
-                        Indic : Node_Id;
+               if Nkind (Insert_Node) = N_Loop_Statement then
+                  declare
+                     Indic : Node_Id;
 
-                     begin
-                        Indic := Parent (R);
-                        while Present (Indic)
-                          and then Nkind (Indic) /= N_Subtype_Indication
-                        loop
-                           Indic := Parent (Indic);
-                        end loop;
+                  begin
+                     Indic := Parent (R);
+                     while Present (Indic)
+                       and then Nkind (Indic) /= N_Subtype_Indication
+                     loop
+                        Indic := Parent (Indic);
+                     end loop;
 
-                        if Present (Indic) then
-                           Def_Id := Etype (Subtype_Mark (Indic));
+                     if Present (Indic) then
+                        Def_Id := Etype (Subtype_Mark (Indic));
 
-                           Insert_Range_Checks
-                             (R_Checks,
-                              Insert_Node,
-                              Def_Id,
-                              Sloc (Insert_Node),
-                              Do_Before => True);
-                        end if;
-                     end;
+                        Insert_Range_Checks
+                          (R_Checks,
+                           Insert_Node,
+                           Def_Id,
+                           Sloc (Insert_Node),
+                           Do_Before => True);
+                     end if;
+                  end;
 
-                  --  Case of declarations. If the declaration is for a type
-                  --  and involves discriminants, the checks are premature at
-                  --  the declaration point and need to wait for the expansion
-                  --  of the initialization procedure, which will pass in the
-                  --  list to put them on; otherwise, the checks are done at
-                  --  the declaration point and there is no need to do them
-                  --  again in the initialization procedure.
+               --  Case of declarations. If the declaration is for a type and
+               --  involves discriminants, the checks are premature at the
+               --  declaration point and need to wait for the expansion of the
+               --  initialization procedure, which will pass in the list to put
+               --  them on; otherwise, the checks are done at the declaration
+               --  point and there is no need to do them again in the
+               --  initialization procedure.
 
-                  elsif Nkind (Insert_Node) in N_Declaration then
-                     Def_Id := Defining_Identifier (Insert_Node);
+               elsif Nkind (Insert_Node) in N_Declaration then
+                  Def_Id := Defining_Identifier (Insert_Node);
 
-                     if (Ekind (Def_Id) = E_Record_Type
-                          and then Depends_On_Discriminant (R))
-                       or else
-                        (Ekind (Def_Id) = E_Protected_Type
-                          and then Has_Discriminants (Def_Id))
-                     then
-                        if Present (Check_List) then
-                           Append_Range_Checks
-                             (R_Checks,
-                               Check_List, Def_Id, Sloc (Insert_Node));
-                        end if;
-
-                     else
-                        if No (Check_List) then
-                           Insert_Range_Checks
-                             (R_Checks,
-                               Insert_Node, Def_Id, Sloc (Insert_Node));
-                        end if;
+                  if (Ekind (Def_Id) = E_Record_Type
+                       and then Depends_On_Discriminant (R))
+                    or else
+                     (Ekind (Def_Id) = E_Protected_Type
+                       and then Has_Discriminants (Def_Id))
+                  then
+                     if Present (Check_List) then
+                        Append_Range_Checks
+                          (R_Checks,
+                            Check_List, Def_Id, Sloc (Insert_Node));
                      end if;
 
-                  --  Case of statements. Drop the checks, as the range appears
-                  --  in the context of a quantified expression. Insertion will
-                  --  take place when expression is expanded.
-
                   else
-                     null;
+                     if No (Check_List) then
+                        Insert_Range_Checks
+                          (R_Checks,
+                            Insert_Node, Def_Id, Sloc (Insert_Node));
+                     end if;
                   end if;
+
+               --  Case of statements. Drop the checks, as the range appears in
+               --  the context of a quantified expression. Insertion will take
+               --  place when expression is expanded.
+
+               else
+                  null;
                end if;
             end if;
          end if;

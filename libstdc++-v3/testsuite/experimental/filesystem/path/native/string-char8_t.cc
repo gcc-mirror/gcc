@@ -50,9 +50,11 @@ test02()
   VERIFY( str == u"abc" );
   VERIFY( str == p.string() );
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   auto strw = p.string<wchar_t>();
   VERIFY( strw == L"abc" );
   VERIFY( strw == p.wstring() );
+#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   auto str8 = p.string<char8_t>();

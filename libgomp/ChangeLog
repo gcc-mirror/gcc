@@ -1,3 +1,37 @@
+2021-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	* testsuite/libgomp.c++/scan-10.C: Add option -fvect-cost-model=cheap.
+	* testsuite/libgomp.c++/scan-11.C: Ditto.
+	* testsuite/libgomp.c++/scan-12.C: Ditto.
+	* testsuite/libgomp.c++/scan-13.C: Ditto.
+	* testsuite/libgomp.c++/scan-14.C: Ditto.
+	* testsuite/libgomp.c++/scan-15.C: Ditto.
+	* testsuite/libgomp.c++/scan-16.C: Ditto.
+	* testsuite/libgomp.c++/scan-9.C: Ditto.
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-7.c: Ditto.
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-8.c: Ditto.
+	* testsuite/libgomp.c/scan-11.c: Ditto.
+	* testsuite/libgomp.c/scan-12.c: Ditto.
+	* testsuite/libgomp.c/scan-13.c: Ditto.
+	* testsuite/libgomp.c/scan-14.c: Ditto.
+	* testsuite/libgomp.c/scan-15.c: Ditto.
+	* testsuite/libgomp.c/scan-16.c: Ditto.
+	* testsuite/libgomp.c/scan-17.c: Ditto.
+	* testsuite/libgomp.c/scan-18.c: Ditto.
+	* testsuite/libgomp.c/scan-19.c: Ditto.
+	* testsuite/libgomp.c/scan-20.c: Ditto.
+	* testsuite/libgomp.c/scan-21.c: Ditto.
+	* testsuite/libgomp.c/scan-22.c: Ditto.
+
+2021-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1): Mention implemented support for
+	structured block sequences in C/C++.  Mention support for
+	unconstrained/reproducible modifiers on order clause.
+	Mention partial (C/C++ only) support of extentensions to atomics
+	construct.  Mention partial (C/C++ on clause only) support of
+	align/allocator modifiers on allocate clause.
+
 2021-10-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/order-reproducible-1.f90: New test

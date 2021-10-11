@@ -17335,7 +17335,31 @@ package body Sem_Ch13 is
    is
       Source : Entity_Id;
       Target : Entity_Id;
+
+      procedure Warn_Nonportable (RE : RE_Id);
+      --  Warn if either source or target of the conversion is a predefined
+      --  private type, whose representation might differ between releases and
+      --  targets of the compiler.
+
+      ----------------------
+      -- Warn_Nonportable --
+      ----------------------
+
+      procedure Warn_Nonportable (RE : RE_Id) is
+      begin
+         if Is_RTE (Source, RE) or else Is_RTE (Target, RE) then
+            pragma Assert (Is_Private_Type (RTE (RE)));
+            Error_Msg_NE
+              ("?z?representation of & values may change between "
+               & "'G'N'A'T versions", N, RTE (RE));
+         end if;
+      end Warn_Nonportable;
+
+      --  Local variables
+
       Vnode  : Node_Id;
+
+   --  Start of processing for Validate_Unchecked_Conversion
 
    begin
       --  Obtain source and target types. Note that we call Ancestor_Subtype
@@ -17351,6 +17375,18 @@ package body Sem_Ch13 is
 
       if Is_Generic_Type (Source) or else Is_Generic_Type (Target) then
          return;
+      end if;
+
+      --  Warn if one of the operands is a private type declared in
+      --  Ada.Calendar or Ada.Real_Time. Do not emit a warning when compiling
+      --  GNAT-related sources.
+
+      if Warn_On_Unchecked_Conversion
+        and then not In_Predefined_Unit (N)
+      then
+         Warn_Nonportable (RO_CA_Time);
+         Warn_Nonportable (RO_RT_Time);
+         Warn_Nonportable (RE_Time_Span);
       end if;
 
       --  If we are dealing with private types, then do the check on their
@@ -17397,32 +17433,6 @@ package body Sem_Ch13 is
               ("?z?conversion between pointers with different conventions!",
                N);
          end if;
-      end if;
-
-      --  Warn if one of the operands is Ada.Calendar.Time. Do not emit a
-      --  warning when compiling GNAT-related sources.
-
-      if Warn_On_Unchecked_Conversion
-        and then not In_Predefined_Unit (N)
-        and then RTU_Loaded (Ada_Calendar)
-        and then (Chars (Source) = Name_Time
-                    or else
-                  Chars (Target) = Name_Time)
-      then
-         --  If Ada.Calendar is loaded and the name of one of the operands is
-         --  Time, there is a good chance that this is Ada.Calendar.Time.
-
-         declare
-            Calendar_Time : constant Entity_Id := Full_View (RTE (RO_CA_Time));
-         begin
-            pragma Assert (Present (Calendar_Time));
-
-            if Source = Calendar_Time or else Target = Calendar_Time then
-               Error_Msg_N
-                 ("?z?representation of 'Time values may change between "
-                  & "'G'N'A'T versions", N);
-            end if;
-         end;
       end if;
 
       --  Make entry in unchecked conversion table for later processing by

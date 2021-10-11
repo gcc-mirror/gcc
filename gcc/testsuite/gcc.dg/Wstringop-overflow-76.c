@@ -27,7 +27,7 @@ void max_a3_a5 (int i)
      by its own warning independently of -Wstringop-overflow.  */
   char *d = MAX (p, q);
 
-  d[2] = 0;         // { dg-warning "writing 4 bytes into a region of size 3" { target { i?86-*-* x86_64-*-* } } }
+  d[2] = 0;         // { dg-warning "writing 4 bytes into a region of size 3" "" { target { i?86-*-* x86_64-*-* } } }
   d[3] = 0;
   d[4] = 0;
   d[5] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { i?86-*-* x86_64-*-* } } }
@@ -44,7 +44,7 @@ void max_b6_b4 (int i)
   char *q = b4 + i;
   char *d = MAX (p, q);
 
-  d[3] = 0;         // { dg-warning "writing 4 bytes into a region of size 3" { target { i?86-*-* x86_64-*-* } } }
+  d[3] = 0;         // { dg-warning "writing 4 bytes into a region of size 3" "" { target { i?86-*-* x86_64-*-* } } }
   d[4] = 0;
   d[5] = 0;
   d[6] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { i?86-*-* x86_64-*-* } } }

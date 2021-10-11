@@ -5592,6 +5592,9 @@ read_module (void)
 
   for (i = GFC_INTRINSIC_BEGIN; i != GFC_INTRINSIC_END; i++)
     {
+      gfc_use_rename *u = NULL, *v = NULL;
+      int j = i;
+
       if (i == INTRINSIC_USER)
 	continue;
 
@@ -5599,18 +5602,73 @@ read_module (void)
 	{
 	  u = find_use_operator ((gfc_intrinsic_op) i);
 
-	  if (u == NULL)
+	  /* F2018:10.1.5.5.1 requires same interpretation of old and new-style
+	     relational operators.  Special handling for USE, ONLY.  */
+	  switch (i)
+	    {
+	    case INTRINSIC_EQ:
+	      j = INTRINSIC_EQ_OS;
+	      break;
+	    case INTRINSIC_EQ_OS:
+	      j = INTRINSIC_EQ;
+	      break;
+	    case INTRINSIC_NE:
+	      j = INTRINSIC_NE_OS;
+	      break;
+	    case INTRINSIC_NE_OS:
+	      j = INTRINSIC_NE;
+	      break;
+	    case INTRINSIC_GT:
+	      j = INTRINSIC_GT_OS;
+	      break;
+	    case INTRINSIC_GT_OS:
+	      j = INTRINSIC_GT;
+	      break;
+	    case INTRINSIC_GE:
+	      j = INTRINSIC_GE_OS;
+	      break;
+	    case INTRINSIC_GE_OS:
+	      j = INTRINSIC_GE;
+	      break;
+	    case INTRINSIC_LT:
+	      j = INTRINSIC_LT_OS;
+	      break;
+	    case INTRINSIC_LT_OS:
+	      j = INTRINSIC_LT;
+	      break;
+	    case INTRINSIC_LE:
+	      j = INTRINSIC_LE_OS;
+	      break;
+	    case INTRINSIC_LE_OS:
+	      j = INTRINSIC_LE;
+	      break;
+	    default:
+	      break;
+	    }
+
+	  if (j != i)
+	    v = find_use_operator ((gfc_intrinsic_op) j);
+
+	  if (u == NULL && v == NULL)
 	    {
 	      skip_list ();
 	      continue;
 	    }
 
-	  u->found = 1;
+	  if (u)
+	    u->found = 1;
+	  if (v)
+	    v->found = 1;
 	}
 
       mio_interface (&gfc_current_ns->op[i]);
-      if (u && !gfc_current_ns->op[i])
-	u->found = 0;
+      if (!gfc_current_ns->op[i] && !gfc_current_ns->op[j])
+	{
+	  if (u)
+	    u->found = 0;
+	  if (v)
+	    v->found = 0;
+	}
     }
 
   mio_rparen ();

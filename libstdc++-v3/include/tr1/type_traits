@@ -109,9 +109,7 @@ namespace tr1
   _DEFINE_SPEC(0, __is_integral_helper, char, true)
   _DEFINE_SPEC(0, __is_integral_helper, signed char, true)
   _DEFINE_SPEC(0, __is_integral_helper, unsigned char, true)
-#ifdef _GLIBCXX_USE_WCHAR_T
   _DEFINE_SPEC(0, __is_integral_helper, wchar_t, true)
-#endif
   _DEFINE_SPEC(0, __is_integral_helper, short, true)
   _DEFINE_SPEC(0, __is_integral_helper, unsigned short, true)
   _DEFINE_SPEC(0, __is_integral_helper, int, true)

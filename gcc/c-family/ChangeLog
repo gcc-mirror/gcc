@@ -1,3 +1,8 @@
+2021-10-08  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_post_options): Use new macro
+	OPTION_SET_P.
+
 2021-10-07  Martin Liska  <mliska@suse.cz>
 
 	* c-common.c (parse_optimize_options): Make

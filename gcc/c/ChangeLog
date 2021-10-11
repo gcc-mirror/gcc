@@ -1,3 +1,9 @@
+2021-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_structured_block_sequence): New function.
+	(c_parser_omp_scan_loop_body): Use it.
+	(c_parser_omp_sections_scope): Likewise.
+
 2021-10-07  Richard Biener  <rguenther@suse.de>
 
 	* c-typeck.c (lvalue_p): Also allow MEM_REF and TARGET_MEM_REF.

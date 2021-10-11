@@ -327,7 +327,7 @@ namespace __gnu_test
 #else
     typedef node<null_type> char8_typelist;
 #endif
-# if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+# if !defined(__STRICT_ANSI__) && defined(__SIZEOF_INT128__)
     __extension__ typedef __int128            a17;
     __extension__ typedef unsigned __int128   a18;
     typedef node<_GLIBCXX_TYPELIST_CHAIN2(a17, a18)> int128_typelist;

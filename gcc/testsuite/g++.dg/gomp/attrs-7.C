@@ -29,29 +29,33 @@ bar (int a, int *c, int *d, int *e, int *f)
     {
       d[i] = a;
       [[omp::sequence (omp::directive (parallel), omp::directive (scan, exclusive (a)))]]	// { dg-error "must be the only specified attribute on a statement" }
-      a += c[i];									// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
-    }
+											// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
+      a += c[i];									// { dg-error "expected" }
+    }											// { dg-error "expected" }
   [[omp::directive (parallel for reduction (inscan, +: a))]]				// { dg-error "'a' specified in 'inscan' 'reduction' clause but not in 'scan' directive clause" }
   for (i = 0; i < 64; i++)
     {
       a += c[i];
       [[omp::sequence (directive (scan inclusive (a)), directive (critical))]]		// { dg-error "must be the only specified attribute on a statement" }
-      d[i] = a;										// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
-    }
+											// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
+      d[i] = a;										// { dg-error "expected" }
+    }											// { dg-error "expected" }
   [[omp::directive (parallel for reduction (inscan, +: a))]]				// { dg-error "'a' specified in 'inscan' 'reduction' clause but not in 'scan' directive clause" }
   for (i = 0; i < 64; i++)
     {
       d[i] = a;
       [[gnu::cold]] [[omp::directive (scan, exclusive (a))]]				// { dg-error "must be the only specified attribute on a statement" }
-      a += c[i];									// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
-    }
+											// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
+      a += c[i];									// { dg-error "expected" }
+    }											// { dg-error "expected" }
   [[omp::directive (parallel for reduction (inscan, +: a))]]				// { dg-error "'a' specified in 'inscan' 'reduction' clause but not in 'scan' directive clause" }
   for (i = 0; i < 64; i++)
     {
       d[i] = a;
       [[omp::directive (scan, exclusive (a)), gnu::cold]]				// { dg-error "must be the only specified attribute on a statement" }
-      a += c[i];									// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
-    }
+											// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
+      a += c[i];									// { dg-error "expected" }
+    }											// { dg-error "expected" }
   [[omp::directive (parallel for reduction (inscan, +: a))]]				// { dg-error "'a' specified in 'inscan' 'reduction' clause but not in 'scan' directive clause" }
   for (i = 0; i < 64; i++)
     {

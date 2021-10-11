@@ -1,3 +1,143 @@
+2021-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/102441
+	* var-tracking.c (add_stores): For cselib_sp_derived_value_p values
+	use MO_VAL_SET if loc is not sp.
+
+2021-10-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/102622
+	* match.pd: Swap the order of a?pow2cst:0 and a?-1:0 transformations.
+	Swap the order of a?0:pow2cst and a?0:-1 transformations.
+
+2021-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102639
+	* config/i386/i386-expand.c (ix86_valid_mask_cmp_mode): Handle
+	HFmode.
+	(ix86_use_mask_cmp_p): Ditto.
+	(ix86_expand_sse_movcc): Ditto.
+	* config/i386/i386.md (setcc_hf_mask): New define_insn.
+	(movhf_mask): Ditto.
+	(UNSPEC_MOVCC_MASK): New unspec.
+	* config/i386/sse.md (UNSPEC_PCMP): Move to i386.md.
+
+2021-10-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102627
+	* lra-constraints.c (split_reg): Use at least natural mode of hard reg.
+
+2021-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (non_null_ref::non_null_deref_p): Grow
+	bitmap if needed.
+
+2021-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::debug): New.
+	* value-range.h (irange::debug): New.
+
+2021-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/102385
+	* predict.h (change_edge_frequency): Declare.
+	* predict.c (change_edge_frequency): New function.
+	* tree-ssa-loop-manip.h (tree_transform_and_unroll_loop): Remove
+	edge argument.
+	(tree_unroll_loop): Likewise.
+	* gimple-loop-jam.c (tree_loop_unroll_and_jam): Update accordingly.
+	* tree-predcom.c (pcom_worker::tree_predictive_commoning_loop):
+	Likewise.
+	* tree-ssa-loop-prefetch.c (loop_prefetch_arrays): Likewise.
+	* tree-ssa-loop-manip.c (tree_unroll_loop): Likewise.
+	(tree_transform_and_unroll_loop): Likewise.  Use single_dom_exit
+	to retrieve the exit edges.  Make all the old profile update code
+	conditional on !single_loop_p -- the case it was written for --
+	and use a different approach for the single-loop case.
+
+2021-10-08  Martin Liska  <mliska@suse.cz>
+
+	* config/alpha/alpha.c (alpha_option_override): Use new macro
+	OPTION_SET_P.
+	* config/arc/arc.c (arc_override_options): Likewise.
+	* config/arm/arm.c (arm_option_override): Likewise.
+	* config/bfin/bfin.c (bfin_load_pic_reg): Likewise.
+	* config/c6x/c6x.c (c6x_option_override): Likewise.
+	* config/csky/csky.c: Likewise.
+	* config/darwin.c (darwin_override_options): Likewise.
+	* config/frv/frv.c (frv_option_override): Likewise.
+	* config/i386/djgpp.h: Likewise.
+	* config/i386/i386.c (ix86_stack_protect_guard): Likewise.
+	(ix86_max_noce_ifcvt_seq_cost): Likewise.
+	* config/ia64/ia64.c (ia64_option_override): Likewise.
+	(ia64_override_options_after_change): Likewise.
+	* config/m32c/m32c.c (m32c_option_override): Likewise.
+	* config/m32r/m32r.c (m32r_init): Likewise.
+	* config/m68k/m68k.c (m68k_option_override): Likewise.
+	* config/microblaze/microblaze.c (microblaze_option_override): Likewise.
+	* config/mips/mips.c (mips_option_override): Likewise.
+	* config/nios2/nios2.c (nios2_option_override): Likewise.
+	* config/nvptx/nvptx.c (nvptx_option_override): Likewise.
+	* config/pa/pa.c (pa_option_override): Likewise.
+	* config/riscv/riscv.c (riscv_option_override): Likewise.
+	* config/rs6000/aix71.h: Likewise.
+	* config/rs6000/aix72.h: Likewise.
+	* config/rs6000/aix73.h: Likewise.
+	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Likewise.
+	(rs6000_override_options_after_change): Likewise.
+	(rs6000_linux64_override_options): Likewise.
+	(glibc_supports_ieee_128bit): Likewise.
+	(rs6000_option_override_internal): Likewise.
+	(rs6000_file_start): Likewise.
+	(rs6000_darwin_file_start): Likewise.
+	* config/rs6000/rtems.h: Likewise.
+	* config/rs6000/sysv4.h: Likewise.
+	* config/rs6000/vxworks.h (SUB3TARGET_OVERRIDE_OPTIONS): Likewise.
+	* config/s390/s390.c (s390_option_override): Likewise.
+	* config/sh/linux.h: Likewise.
+	* config/sh/netbsd-elf.h (while): Likewise.
+	* config/sh/sh.c (sh_option_override): Likewise.
+	* config/sol2.c (solaris_override_options): Likewise.
+	* config/sparc/sparc.c (sparc_option_override): Likewise.
+	* config/tilegx/tilegx.c (tilegx_option_override): Likewise.
+	* config/visium/visium.c (visium_option_override): Likewise.
+	* config/vxworks.c (vxworks_override_options): Likewise.
+	* lto-opts.c (lto_write_options): Likewise.
+	* omp-expand.c (expand_omp_simd): Likewise.
+	* omp-general.c (omp_max_vf): Likewise.
+	* omp-offload.c (oacc_xform_loop): Likewise.
+	* opts.h (OPTION_SET_P): Likewise.
+	* targhooks.c (default_max_noce_ifcvt_seq_cost): Likewise.
+	* toplev.c (process_options): Likewise.
+	* tree-predcom.c: Likewise.
+	* tree-sra.c (analyze_all_variable_accesses): Likewise.
+
+2021-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102464
+	* config/i386/i386.c (ix86_optab_supported_p):
+	Return true for HFmode.
+	* match.pd: Simplify (_Float16) ceil ((double) x) to
+	__builtin_ceilf16 (a) when a is _Float16 type and
+	direct_internal_fn_supported_p.
+
+2021-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102494
+	* config/i386/i386-expand.c (emit_reduc_half): Hanlde V4HImode.
+	* config/i386/mmx.md (reduc_plus_scal_v4hi): New.
+	(reduc_<code>_scal_v4hi): New.
+
+2021-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* common.opt (ftree-vectorize): Add Var(flag_tree_vectorize).
+	* doc/invoke.texi (Options That Control Optimization): Update
+	documents.
+	* opts.c (default_options_table): Enable auto-vectorization at
+	O2 with very-cheap cost model.
+	(finish_options): Use cheap cost model for
+	explicit -ftree{,-loop}-vectorize.
+
 2021-10-07  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* ctfc.c (ctfc_delete_container): Free hash table contents.

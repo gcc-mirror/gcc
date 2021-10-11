@@ -1,3 +1,10 @@
+2021-10-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/misc.c (gnat_post_options): Use new macro
+	OPTION_SET_P.
+	(gnat_init_gcc_eh): Likewise.
+	(gnat_init_gcc_fp): Likewise.
+
 2021-10-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu): Do not wrap boolean values

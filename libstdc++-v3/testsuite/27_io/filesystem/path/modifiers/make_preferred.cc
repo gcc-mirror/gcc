@@ -45,7 +45,11 @@ struct checker<wchar_t, L'\\'>
 {
   static void check()
   {
+#ifdef _GLIBCXX_USE_WCHAR_T
     VERIFY( path("foo/bar").make_preferred() == L"foo\\bar" );
+#else
+    VERIFY( ! "filesystem::path needs --enable-wchar_t on this target" );
+#endif
   }
 };
 

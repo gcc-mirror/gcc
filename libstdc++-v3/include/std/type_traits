@@ -309,12 +309,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // We want is_integral<wchar_t> to be true (and make_signed/unsigned to work)
   // even when libc doesn't provide working <wchar.h> and related functions,
-  // so check __WCHAR_TYPE__ instead of _GLIBCXX_USE_WCHAR_T.
-#ifdef __WCHAR_TYPE__
+  // so don't check _GLIBCXX_USE_WCHAR_T here.
   template<>
     struct __is_integral_helper<wchar_t>
     : public true_type { };
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   template<>
@@ -1828,14 +1826,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // neither signed integer types nor unsigned integer types, so must be
   // transformed to the unsigned integer type with the smallest rank.
   // Use the partial specialization for enumeration types to do that.
-#ifdef __WCHAR_TYPE__
   template<>
     struct __make_unsigned<wchar_t>
     {
       using __type
 	= typename __make_unsigned_selector<wchar_t, false, true>::__type;
     };
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   template<>
@@ -1960,14 +1956,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // signed integer types nor unsigned integer types, so must be
   // transformed to the signed integer type with the smallest rank.
   // Use the partial specialization for enumeration types to do that.
-#if defined(__WCHAR_TYPE__)
   template<>
     struct __make_signed<wchar_t>
     {
       using __type
 	= typename __make_signed_selector<wchar_t, false, true>::__type;
     };
-#endif
 
 #if defined(_GLIBCXX_USE_CHAR8_T)
   template<>

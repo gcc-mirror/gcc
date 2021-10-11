@@ -18,11 +18,9 @@
 // { dg-do run { target c++17 } }
 
 #include <functional>
+#include <string_view>
 #include <cstring>
 #include <cctype>
-#ifdef _GLIBCXX_USE_WCHAR_T
-# include <cwchar>
-#endif
 #include <algorithm>
 #include <testsuite_hooks.h>
 
@@ -84,7 +82,6 @@ test01()
 void
 test02()
 {
-#ifdef _GLIBCXX_USE_WCHAR_T
   const wchar_t s[] = { L'a', (wchar_t)-97, L'a', L'\0' };
   const wchar_t* needles[] = {
     s, L"", L"a", L"aa", L"aaa", L"ab", L"cd", L"abcd", L"abcdabcd", L"abcabcd"
@@ -96,14 +93,14 @@ test02()
 
   for (auto n : needles)
   {
-    auto nlen = std::wcslen(n);
+    auto nlen = std::char_traits<wchar_t>::length(n);
     auto ne = n + nlen;
     default_searcher d(n, ne);
     boyer_moore_searcher bm(n, ne);
     boyer_moore_horspool_searcher bmh(n, ne);
     for (auto h : haystacks)
     {
-      auto he = h + std::wcslen(h);
+      auto he = h + std::char_traits<wchar_t>::length(h);
       auto res = std::search(h, he, n, ne);
       auto d_res = d(h, he);
       VERIFY( d_res.first == res );
@@ -125,7 +122,6 @@ test02()
 	VERIFY( bmh_res.second == (bmh_res.first + nlen) );
     }
   }
-#endif
 }
 
 void

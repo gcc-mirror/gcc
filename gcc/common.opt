@@ -1923,7 +1923,7 @@ EnumValue
 Enum(ira_algorithm) String(priority) Value(IRA_ALGORITHM_PRIORITY)
 
 fira-region=
-Common Joined RejectNegative Enum(ira_region) Var(flag_ira_region) Init(IRA_REGION_AUTODETECT) Optimization
+Common Joined RejectNegative Enum(ira_region) Var(flag_ira_region) Init(IRA_REGION_ONE) Optimization
 -fira-region=[one|all|mixed]	Set regions for IRA.
 
 Enum
@@ -2399,7 +2399,7 @@ Common Var(flag_live_range_shrinkage) Init(0) Optimization
 Relief of register pressure through live range shrinkage.
 
 frename-registers
-Common Var(flag_rename_registers) Init(2) Optimization
+Common Var(flag_rename_registers) Optimization
 Perform a register renaming optimization pass.
 
 fschedule-fusion
@@ -2797,7 +2797,7 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 ftree-cselim
-Common Var(flag_tree_cselim) Init(2) Optimization
+Common Var(flag_tree_cselim) Optimization
 Transform condition stores into unconditional ones.
 
 ftree-switch-conversion
@@ -3158,7 +3158,7 @@ Common Var(flag_value_profile_transformations) Optimization
 Use expression value profiles in optimizations.
 
 fweb
-Common Var(flag_web) Init(2) Optimization
+Common Var(flag_web) Optimization
 Construct webs and split unrelated uses of single variable.
 
 ftree-builtin-call-dce

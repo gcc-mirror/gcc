@@ -58,7 +58,7 @@ package body System.Tasking.Protected_Objects.Entries is
    -- Local Data --
    ----------------
 
-   Locking_Policy : Character;
+   Locking_Policy : constant Character;
    pragma Import (C, Locking_Policy, "__gl_locking_policy");
 
    --------------

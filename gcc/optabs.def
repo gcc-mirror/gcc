@@ -267,6 +267,7 @@ OPTAB_D (cpymem_optab, "cpymem$a")
 OPTAB_D (movmem_optab, "movmem$a")
 OPTAB_D (setmem_optab, "setmem$a")
 OPTAB_D (strlen_optab, "strlen$a")
+OPTAB_D (rawmemchr_optab, "rawmemchr$a")
 
 OPTAB_DC(fma_optab, "fma$a4", FMA)
 OPTAB_D (fms_optab, "fms$a4")

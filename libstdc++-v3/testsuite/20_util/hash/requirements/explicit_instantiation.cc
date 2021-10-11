@@ -47,8 +47,5 @@ template class std::hash<std::error_code>;
 template class std::hash<std::error_condition>;
 #endif
 
-#ifdef _GLIBCXX_USE_WCHAR_T
 template class std::hash<wchar_t>;
 template class std::hash<std::wstring>;
-#endif
-

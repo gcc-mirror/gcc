@@ -52,7 +52,6 @@ void test01()
   std::tolower(make_str<char, 12>(), loc);	// { dg-error "required from here" }
 }
 
-#ifdef _GLIBCXX_USE_WCHAR_T
 void test02()
 {
   const std::locale& loc = std::locale::classic();
@@ -74,4 +73,3 @@ void test02()
   std::toupper(make_str<wchar_t, 11>(), loc);	// { dg-error "required from here" }
   std::tolower(make_str<wchar_t, 12>(), loc);	// { dg-error "required from here" }
 }
-#endif

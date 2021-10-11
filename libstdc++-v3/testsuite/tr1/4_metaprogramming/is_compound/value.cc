@@ -32,9 +32,7 @@ void test01()
   VERIFY( (test_category<is_compound, char>(false)) );
   VERIFY( (test_category<is_compound, signed char>(false)) );
   VERIFY( (test_category<is_compound, unsigned char>(false)) );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( (test_category<is_compound, wchar_t>(false)) );
-#endif
   VERIFY( (test_category<is_compound, short>(false)) );
   VERIFY( (test_category<is_compound, unsigned short>(false)) );
   VERIFY( (test_category<is_compound, int>(false)) );
