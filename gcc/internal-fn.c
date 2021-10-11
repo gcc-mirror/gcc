@@ -3074,7 +3074,9 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
       tree init;
       if (tree_fits_uhwi_p (var_size)
 	  && (init_type == AUTO_INIT_PATTERN
-	      || !is_gimple_reg_type (var_type)))
+	      || !is_gimple_reg_type (var_type))
+	  && int_mode_for_size (tree_to_uhwi (var_size) * BITS_PER_UNIT,
+				0).exists ())
 	{
 	  unsigned HOST_WIDE_INT total_bytes = tree_to_uhwi (var_size);
 	  unsigned char *buf = (unsigned char *) xmalloc (total_bytes);
