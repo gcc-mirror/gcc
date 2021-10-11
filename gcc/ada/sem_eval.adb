@@ -2845,7 +2845,7 @@ package body Sem_Eval is
    --  the expander that do not correspond to static expressions.
 
    procedure Eval_Integer_Literal (N : Node_Id) is
-      function In_Any_Integer_Context (Context : Node_Id) return Boolean;
+      function In_Any_Integer_Context (K : Node_Kind) return Boolean;
       --  If the literal is resolved with a specific type in a context where
       --  the expected type is Any_Integer, there are no range checks on the
       --  literal. By the time the literal is evaluated, it carries the type
@@ -2856,23 +2856,21 @@ package body Sem_Eval is
       -- In_Any_Integer_Context --
       ----------------------------
 
-      function In_Any_Integer_Context (Context : Node_Id) return Boolean is
+      function In_Any_Integer_Context (K : Node_Kind) return Boolean is
       begin
          --  Any_Integer also appears in digits specifications for real types,
          --  but those have bounds smaller that those of any integer base type,
          --  so we can safely ignore these cases.
 
-         return
-           Nkind (Context) in N_Attribute_Definition_Clause
-                            | N_Attribute_Reference
-                            | N_Modular_Type_Definition
-                            | N_Number_Declaration
-                            | N_Signed_Integer_Type_Definition;
+         return K in N_Attribute_Definition_Clause
+                   | N_Modular_Type_Definition
+                   | N_Number_Declaration
+                   | N_Signed_Integer_Type_Definition;
       end In_Any_Integer_Context;
 
       --  Local variables
 
-      Par : constant Node_Id   := Parent (N);
+      PK  : constant Node_Kind := Nkind (Parent (N));
       Typ : constant Entity_Id := Etype (N);
 
    --  Start of processing for Eval_Integer_Literal
@@ -2890,12 +2888,11 @@ package body Sem_Eval is
       --  Check_Non_Static_Context on an expanded literal may lead to spurious
       --  and misleading warnings.
 
-      if (Nkind (Par) in N_Case_Expression_Alternative | N_If_Expression
-           or else Nkind (Par) not in N_Subexpr)
-        and then (Nkind (Par) not in N_Case_Expression_Alternative
-                                   | N_If_Expression
-                   or else Comes_From_Source (N))
-        and then not In_Any_Integer_Context (Par)
+      if (PK not in N_Subexpr
+           or else (PK in N_Case_Expression_Alternative | N_If_Expression
+                     and then
+                    Comes_From_Source (N)))
+        and then not In_Any_Integer_Context (PK)
       then
          Check_Non_Static_Context (N);
       end if;

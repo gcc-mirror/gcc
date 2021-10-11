@@ -149,10 +149,9 @@ package Sem_Eval is
    --
    --  Note: most cases of non-static context checks are handled within
    --  Sem_Eval itself, including all cases of expressions at the outer level
-   --  (i.e. those that are not a subexpression). Currently the only outside
-   --  customer for this procedure is Sem_Attr (because Eval_Attribute is
-   --  there). There is also one special case arising from ranges (see body of
-   --  Resolve_Range).
+   --  (i.e. those that are not a subexpression). The outside customers for
+   --  this procedure are Sem_Aggr, Sem_Attr (because Eval_Attribute is there)
+   --  and Sem_Res (for a special case arising from ranges, see Resolve_Range).
    --
    --  Note: this procedure is also called by GNATprove on real literals
    --  that are not sub-expressions of static expressions, to convert them to
