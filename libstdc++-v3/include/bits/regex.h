@@ -1828,7 +1828,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       _GLIBCXX_NODISCARD bool
       empty() const noexcept
-      { return size() == 0; }
+      { return _Unchecked::size() <= 3; }
 
       ///@}
 
@@ -1946,7 +1946,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       const_iterator
       end() const noexcept
-      { return _Base_type::end() - (empty() ? 0 : 3); }
+      { return _Base_type::end() - (_Base_type::empty() ? 0 : 3); }
 
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
