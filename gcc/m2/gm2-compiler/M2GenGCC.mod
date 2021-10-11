@@ -677,41 +677,43 @@ END FindType ;
    BuildTreeFromInterface - generates a GCC tree from an interface definition.
 *)
 
-PROCEDURE BuildTreeFromInterface (sym: CARDINAL) : Tree ;
+PROCEDURE BuildTreeFromInterface (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
 VAR
-   i      : CARDINAL ;
-   name   : Name ;
+   i       : CARDINAL ;
+   name    : Name ;
    str,
-   obj    : CARDINAL ;
+   obj     : CARDINAL ;
    gccName,
-   tree   : Tree ;
+   tree    : Tree ;
+   location: location_t;
 BEGIN
-   tree := Tree(NIL) ;
+   tree := Tree (NIL) ;
    IF sym#NulSym
    THEN
+      location := TokenToLocation (tokenno) ;
       i := 1 ;
       REPEAT
-         GetRegInterface(sym, i, name, str, obj) ;
+         GetRegInterface (sym, i, name, str, obj) ;
          IF str#NulSym
          THEN
-            IF IsConstString(str)
+            IF IsConstString (str)
             THEN
-               DeclareConstant(GetDeclaredMod(obj), obj) ;
-               IF name=NulName
+               DeclareConstant (tokenno, obj) ;
+               IF name = NulName
                THEN
                   gccName := NIL
                ELSE
-                  gccName := BuildStringConstant(KeyToCharStar(name), LengthKey(name))
+                  gccName := BuildStringConstant (location, KeyToCharStar (name), LengthKey (name))
                END ;
-               tree := ChainOnParamValue(tree, gccName, PromoteToString(GetDeclaredMod(str), str), Mod2Gcc(obj))
+               tree := ChainOnParamValue (tree, gccName, PromoteToString (tokenno, str), Mod2Gcc (obj))
             ELSE
-               WriteFormat0('a constraint to the GNU ASM statement must be a constant string')
+               WriteFormat0 ('a constraint to the GNU ASM statement must be a constant string')
             END
          END ;
          INC(i)
-      UNTIL (str=NulSym) AND (obj=NulSym) ;
+      UNTIL (str = NulSym) AND (obj = NulSym) ;
    END ;
-   RETURN( tree )
+   RETURN tree
 END BuildTreeFromInterface ;
 
 
@@ -777,8 +779,8 @@ BEGIN
       can handle the register dependency providing the user
       specifies VOLATILE and input/output/trash sets correctly.
    *)
-   inputs  := BuildTreeFromInterface (GetGnuAsmInput(GnuAsm)) ;
-   outputs := BuildTreeFromInterface (GetGnuAsmOutput(GnuAsm)) ;
+   inputs  := BuildTreeFromInterface (tokenno, GetGnuAsmInput(GnuAsm)) ;
+   outputs := BuildTreeFromInterface (tokenno, GetGnuAsmOutput(GnuAsm)) ;
    trash   := BuildTrashTreeFromInterface (GetGnuAsmTrash(GnuAsm)) ;
    labels  := NIL ;  (* at present it makes no sence for Modula-2 to jump to a label,
                         given that labels are not allowed in Modula-2.  *)
@@ -2634,7 +2636,7 @@ BEGIN
       DeclareConstructor (CurrentQuadToken, quad, op3) ;
       IF (IsConst (op3) AND (type=Char)) OR IsConstString (op3)
       THEN
-         value := BuildStringConstant (KeyToCharStar (GetString (op3)), GetStringLength (op3))
+         value := BuildStringConstant (location, KeyToCharStar (GetString (op3)), GetStringLength (op3))
       ELSE
          value := Mod2Gcc (op3)
       END ;
@@ -2945,17 +2947,17 @@ BEGIN
 
          str := 'abcde' but not ch := 'a'
    *)
-   IF GetType(op3)=Char
+   IF GetType (op3) = Char
    THEN
       (*
        *  create string from char and add nul to the end, nul is
        *  added by BuildStringConstant
        *)
-      op3t := BuildStringConstant(KeyToCharStar(GetString(op3)), 1)
+      op3t := BuildStringConstant (location, KeyToCharStar (GetString (op3)), 1)
    ELSE
-      op3t := Mod2Gcc(op3)
+      op3t := Mod2Gcc (op3)
    END ;
-   op3t := ConvertString(Mod2Gcc(op1t), op3t) ;
+   op3t := ConvertString (Mod2Gcc (op1t), op3t) ;
 
    PushIntegerTree(FindSize(tokenno, op3)) ;
    PushIntegerTree(FindSize(tokenno, op1t)) ;

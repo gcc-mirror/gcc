@@ -301,7 +301,7 @@ m2decl_BuildCStringConstant (const char *string, int length)
    and, length.  */
 
 tree
-m2decl_BuildStringConstant (const char *string, int length)
+m2decl_BuildStringConstant (location_t location, const char *string, int length)
 {
   tree elem, index, type;
 
@@ -309,6 +309,7 @@ m2decl_BuildStringConstant (const char *string, int length)
   index = build_index_type (build_int_cst (integer_type_node, length));
   type = build_array_type (elem, index);
   return m2decl_BuildStringConstantType (length, string, type);
+  // maybe_wrap_with_location
 }
 
 /* BuildIntegerConstant - return a tree containing the integer value.  */

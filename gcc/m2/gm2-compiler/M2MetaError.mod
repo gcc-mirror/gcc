@@ -488,6 +488,7 @@ END killErrorBlock ;
 
 PROCEDURE InternalFormat (eb: errorBlock; m: ARRAY OF CHAR; line: CARDINAL) ;
 BEGIN
+   printf1 ("M2MetaError.mod:%d:internalformat error detected\n", line) ;
    dump (eb) ;
    InternalError (m)
 END InternalFormat ;
@@ -707,11 +708,13 @@ END OutGlyphS ;
    OutColorS - outputs a string of color requests.
 *)
 
+(*
 PROCEDURE OutColorS (VAR eb: errorBlock; s: String) ;
 BEGIN
    flushColor (eb) ;
    eb.out := ConCat (eb.out, s)
 END OutColorS ;
+*)
 
 
 (*
@@ -828,7 +831,7 @@ END doSkipType ;
 PROCEDURE doGetType (VAR eb: errorBlock;
                      VAR sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
 BEGIN
-   IF (NOT empty (eb)) OR (sym[bol] = NulSym)
+   IF (bol > HIGH (sym)) OR (NOT empty (eb)) OR (sym[bol] = NulSym)
    THEN
       RETURN
    ELSE
@@ -846,7 +849,7 @@ PROCEDURE doGetSkipType (VAR eb: errorBlock; VAR sym: ARRAY OF CARDINAL; bol: CA
 VAR
    prev: CARDINAL ;
 BEGIN
-   IF (NOT empty (eb)) OR (sym[bol] = NulSym)
+   IF (bol > HIGH (sym)) OR (NOT empty (eb)) OR (sym[bol] = NulSym)
    THEN
       RETURN
    ELSE
@@ -997,6 +1000,7 @@ END used ;
    ConCatWord - joins sentances, a, b, together.
 *)
 
+(*
 PROCEDURE ConCatWord (a, b: String) : String ;
 BEGIN
    IF (Length (a) = 1) AND (char(a, 0) = 'a')
@@ -1012,6 +1016,7 @@ BEGIN
    END ;
    RETURN x (a, ConCat(a, b))
 END ConCatWord ;
+*)
 
 
 (*
@@ -1124,6 +1129,7 @@ END doDesc ;
    copySym - copies, n+1, symbols, from, ->, to.
 *)
 
+(*
 PROCEDURE copySym (from: ARRAY OF CARDINAL; VAR to: ARRAY OF CARDINAL; n: CARDINAL) ;
 VAR
    i: CARDINAL ;
@@ -1139,6 +1145,7 @@ BEGIN
       END
    END
 END copySym ;
+*)
 
 
 (*

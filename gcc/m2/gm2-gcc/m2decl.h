@@ -37,7 +37,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !m2decl_c.  */
 
 EXTERN tree m2decl_GetDeclContext (tree t);
-EXTERN tree m2decl_BuildStringConstant (const char *string, int length);
+EXTERN tree m2decl_BuildStringConstant (location_t location, const char *string, int length);
 EXTERN tree m2decl_BuildCStringConstant (const char *string, int length);
 EXTERN tree m2decl_BuildConstLiteralNumber (const char *str,
                                             unsigned int base);

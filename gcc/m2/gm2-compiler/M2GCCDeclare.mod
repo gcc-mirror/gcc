@@ -233,9 +233,7 @@ VAR
 
 PROCEDURE mystop ; BEGIN END mystop ;
 
-PROCEDURE stop ; BEGIN END stop ;
-
-
+(* ***************************************************
 (*
    PrintNum -
 *)
@@ -273,6 +271,7 @@ BEGIN
    DebugSet('NilTypedArrays', NilTypedArrays) ;
    DebugSet('ToBeSolvedByQuads', ToBeSolvedByQuads)
 END DebugSets ;
+************************************************ *)
 
 
 (*
@@ -352,6 +351,7 @@ END AddSymToWatch ;
    TryFindSymbol -
 *)
 
+(*
 PROCEDURE TryFindSymbol (module, symname: ARRAY OF CHAR) : CARDINAL ;
 VAR
    mn, sn: Name ;
@@ -367,6 +367,7 @@ BEGIN
       RETURN( NulSym )
    END
 END TryFindSymbol ;
+*)
 
 
 (*
@@ -704,7 +705,6 @@ END CanDeclareTypePartially ;
 
 PROCEDURE DeclareTypePartially (sym: CARDINAL) ;
 VAR
-   t       : Tree ;
    location: location_t ;
 BEGIN
    (* check to see if we have already partially declared the symbol *)
@@ -712,22 +712,22 @@ BEGIN
    THEN
       IF IsRecord(sym)
       THEN
-         Assert(NOT IsElementInSet(HeldByAlignment, sym)) ;
-         t := DoStartDeclaration(sym, BuildStartRecord) ;
-         WatchIncludeList(sym, heldbyalignment)
-      ELSIF IsVarient(sym)
+         Assert (NOT IsElementInSet (HeldByAlignment, sym)) ;
+         Assert (DoStartDeclaration (sym, BuildStartRecord) # NIL) ;
+         WatchIncludeList (sym, heldbyalignment)
+      ELSIF IsVarient (sym)
       THEN
          Assert(NOT IsElementInSet(HeldByAlignment, sym)) ;
-         t := DoStartDeclaration(sym, BuildStartVarient) ;
+         Assert (DoStartDeclaration(sym, BuildStartVarient) # NIL) ;
          WatchIncludeList(sym, heldbyalignment)
       ELSIF IsFieldVarient(sym)
       THEN
          Assert(NOT IsElementInSet(HeldByAlignment, sym)) ;
-         t := DoStartDeclaration(sym, BuildStartFieldVarient) ;
+         Assert (DoStartDeclaration(sym, BuildStartFieldVarient) # NIL) ;
          WatchIncludeList(sym, heldbyalignment)
       ELSIF IsProcType(sym)
       THEN
-         t := DoStartDeclaration(sym, BuildStartFunctionType)
+         Assert (DoStartDeclaration(sym, BuildStartFunctionType) # NIL) ;
       ELSIF IsType(sym)
       THEN
          IF NOT GccKnowsAbout(sym)
@@ -1024,10 +1024,12 @@ END AllDependantsPartiallyOrFullyDeclared ;
                                               declared.
 *)
 
+(*
 PROCEDURE NotAllDependantsPartiallyOrFullyDeclared (sym: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN( IsTypeQ(sym, IsPartiallyOrFullyDeclared) )
 END NotAllDependantsPartiallyOrFullyDeclared ;
+*)
 
 
 (*
@@ -1152,6 +1154,7 @@ END DeclareTypeFromPartial ;
                              declare it.
 *)
 
+(*
 PROCEDURE DeclarePointerTypeFully (sym: CARDINAL) ;
 BEGIN
    IF IsPointer(sym)
@@ -1167,6 +1170,7 @@ BEGIN
       TraverseDependants(sym)
    END
 END DeclarePointerTypeFully ;
+*)
 
 
 (*
@@ -1273,8 +1277,7 @@ END Body ;
                        end
 *)
 
-PROCEDURE ForeachTryDeclare (start, end: CARDINAL;
-                             t: ListType; l: Set; r: Rule;
+PROCEDURE ForeachTryDeclare (t: ListType; l: Set; r: Rule;
                              q: IsAction; p: WalkAction) : BOOLEAN ;
 BEGIN
    IF recursionCaught
@@ -1299,55 +1302,12 @@ END ForeachTryDeclare ;
 
 
 (*
-   testThis -
-*)
-
-PROCEDURE testThis ;
-VAR
-   t       : Tree ;
-   type,
-   pointer,
-   array   : CARDINAL ;
-   location: location_t ;
-BEGIN
-   array := 628 ;
-   IF NOT GccKnowsAbout(array)
-   THEN
-      PreAddModGcc(array, BuildStartArrayType(BuildIndex(GetDeclaredMod(array), array), NIL, GetDType(array)))
-   END ;
-   pointer := 626 ;
-   IF NOT GccKnowsAbout(pointer)
-   THEN
-      PreAddModGcc(pointer, BuildPointerType(Mod2Gcc(array)))
-   END ;
-   type := 627 ;
-   IF NOT GccKnowsAbout(type)
-   THEN
-      location := TokenToLocation(GetDeclaredMod(type)) ;
-      PreAddModGcc(type, BuildStartType(location,
-                                        KeyToCharStar(GetFullSymName(type)),
-                                        Mod2Gcc(pointer))) ;
-      PutArrayType(Mod2Gcc(array), Mod2Gcc(type)) ;
-      t := BuildEndType(location, Mod2Gcc(type)) ;
-      WatchRemoveList(type, todolist) ;
-      WatchIncludeList(type, fullydeclared) ;
-      WatchRemoveList(pointer, todolist) ;
-      WatchIncludeList(pointer, fullydeclared) ;
-      t := DeclareArray(array) ;
-      WatchIncludeList(array, fullydeclared) ;
-      WatchRemoveList(array, todolist)
-   END
-END testThis ;
-
-
-(*
    DeclaredOutandingTypes - writes out any types that have their
                             dependants solved.  It returns TRUE if
                             all outstanding types have been written.
 *)
 
-PROCEDURE DeclaredOutstandingTypes (MustHaveCompleted: BOOLEAN;
-                                    start, end: CARDINAL) : BOOLEAN ;
+PROCEDURE DeclaredOutstandingTypes (MustHaveCompleted: BOOLEAN) : BOOLEAN ;
 VAR
    finished        : BOOLEAN ;
    d, a, p, f, n, b: CARDINAL ;
@@ -1360,86 +1320,75 @@ BEGIN
    b := 0 ;
    finished := FALSE ;
    REPEAT
-      IF FindSetNumbers(d, a, p, f, n, b) OR Progress
+      IF FindSetNumbers (d, a, p, f, n, b) OR Progress
       THEN
          DebugSetNumbers
       END ;
-      IF ForeachTryDeclare(start, end,
-                           todolist, ToDoList,
-                           partialtype,
-                           CanDeclareTypePartially,
-                           DeclareTypePartially)
+      IF ForeachTryDeclare (todolist, ToDoList,
+                            partialtype,
+                            CanDeclareTypePartially,
+                            DeclareTypePartially)
       THEN
          (* continue looping *)
-      ELSIF ForeachTryDeclare(start, end,
-                              todolist, ToDoList,
-                              arraynil,
-                              CanDeclareArrayAsNil,
-                              DeclareArrayAsNil)
+      ELSIF ForeachTryDeclare (todolist, ToDoList,
+                               arraynil,
+                               CanDeclareArrayAsNil,
+                               DeclareArrayAsNil)
       THEN
          (* continue looping *)
-      ELSIF ForeachTryDeclare(start, end,
-                              todolist, ToDoList,
-                              pointernilarray,
-                              CanDeclarePointerToNilArray,
-                              DeclarePointerToNilArray)
+      ELSIF ForeachTryDeclare (todolist, ToDoList,
+                               pointernilarray,
+                               CanDeclarePointerToNilArray,
+                               DeclarePointerToNilArray)
       THEN
          (* continue looping *)
-      ELSIF ForeachTryDeclare(start, end,
-                              niltypedarrays, NilTypedArrays,
-                              arraypartial,
-                              CanDeclareArrayPartially,
-                              DeclareArrayPartially)
+      ELSIF ForeachTryDeclare (niltypedarrays, NilTypedArrays,
+                               arraypartial,
+                               CanDeclareArrayPartially,
+                               DeclareArrayPartially)
       THEN
          (* continue looping *)
-      ELSIF ForeachTryDeclare(start, end,
-                              niltypedarrays, NilTypedArrays,
-                              pointerfully,
-                              CanPromotePointerFully,
-                              PromotePointerFully)
+      ELSIF ForeachTryDeclare (niltypedarrays, NilTypedArrays,
+                               pointerfully,
+                               CanPromotePointerFully,
+                               PromotePointerFully)
       THEN
          (* continue looping *)
-      ELSIF ForeachTryDeclare(start, end,
-                              heldbyalignment, HeldByAlignment,
-                              recordkind,
-                              CanDeclareRecordKind,
-                              DeclareRecordKind)
+      ELSIF ForeachTryDeclare (heldbyalignment, HeldByAlignment,
+                               recordkind,
+                               CanDeclareRecordKind,
+                               DeclareRecordKind)
       THEN
          (* continue looping *)
-      ELSIF ForeachTryDeclare(start, end,
-                              finishedalignment, FinishedAlignment,
-                              recordfully,
-                              CanDeclareRecord,
-                              FinishDeclareRecord)
+      ELSIF ForeachTryDeclare (finishedalignment, FinishedAlignment,
+                               recordfully,
+                               CanDeclareRecord,
+                               FinishDeclareRecord)
       THEN
          (* continue looping *)
-      ELSIF ForeachTryDeclare(start, end,
-                              todolist, ToDoList,
-                              typeconstfully,
-                              TypeConstDependantsFullyDeclared,
-                              DeclareTypeConstFully)
+      ELSIF ForeachTryDeclare (todolist, ToDoList,
+                               typeconstfully,
+                               TypeConstDependantsFullyDeclared,
+                               DeclareTypeConstFully)
       THEN
          (* continue looping *)
-      ELSIF ForeachTryDeclare(start, end,
-                              todolist, ToDoList,
-                              (* partiallydeclared, PartiallyDeclared, *)
-                              typefrompartial,
-                              CanBeDeclaredViaPartialDependants,
-                              DeclareTypeFromPartial)
+      ELSIF ForeachTryDeclare (todolist, ToDoList,
+                               (* partiallydeclared, PartiallyDeclared, *)
+                               typefrompartial,
+                               CanBeDeclaredViaPartialDependants,
+                               DeclareTypeFromPartial)
       THEN
          (* continue looping *)
-      ELSIF ForeachTryDeclare(start, end,
-                              partiallydeclared, PartiallyDeclared,
-                              partialfrompartial,
-                              CanBeDeclaredPartiallyViaPartialDependants,
-                              DeclareTypePartially)
+      ELSIF ForeachTryDeclare (partiallydeclared, PartiallyDeclared,
+                               partialfrompartial,
+                               CanBeDeclaredPartiallyViaPartialDependants,
+                               DeclareTypePartially)
       THEN
          (* continue looping *)
-      ELSIF ForeachTryDeclare(start, end,
-                              partiallydeclared, PartiallyDeclared,
-                              partialtofully,
-                              TypeConstDependantsFullyDeclared,
-                              DeclareTypeConstFully)
+      ELSIF ForeachTryDeclare (partiallydeclared, PartiallyDeclared,
+                               partialtofully,
+                               TypeConstDependantsFullyDeclared,
+                               DeclareTypeConstFully)
       THEN
          (* continue looping *)
       ELSE
@@ -1449,27 +1398,24 @@ BEGIN
    UNTIL finished ;
    IF MustHaveCompleted
    THEN
-      IF ForeachTryDeclare(start, end,
-                           todolist, ToDoList,
-                           circulartodo,
-                           NotAllDependantsFullyDeclared,
-                           EmitCircularDependancyError)
+      IF ForeachTryDeclare (todolist, ToDoList,
+                            circulartodo,
+                            NotAllDependantsFullyDeclared,
+                            EmitCircularDependancyError)
       THEN
-      ELSIF ForeachTryDeclare(start, end,
-                              partiallydeclared, PartiallyDeclared,
-                              circularpartial,
-                              NotAllDependantsPartiallyDeclared,
-                              EmitCircularDependancyError)
+      ELSIF ForeachTryDeclare (partiallydeclared, PartiallyDeclared,
+                               circularpartial,
+                               NotAllDependantsPartiallyDeclared,
+                               EmitCircularDependancyError)
       THEN
-      ELSIF ForeachTryDeclare(start, end,
-                              niltypedarrays, NilTypedArrays,
-                              circularniltyped,
-                              NotAllDependantsPartiallyDeclared,
-                              EmitCircularDependancyError)
+      ELSIF ForeachTryDeclare (niltypedarrays, NilTypedArrays,
+                               circularniltyped,
+                               NotAllDependantsPartiallyDeclared,
+                               EmitCircularDependancyError)
       THEN
       END
    END ;
-   RETURN( NoOfElementsInSet(ToDoList)=0 )
+   RETURN NoOfElementsInSet (ToDoList) = 0
 END DeclaredOutstandingTypes ;
 
 
@@ -1538,12 +1484,14 @@ END DeclareType ;
    DeclareIntegerConstant - declares an integer constant.
 *)
 
+(*
 PROCEDURE DeclareIntegerConstant (sym: CARDINAL; value: INTEGER) ;
 BEGIN
    PreAddModGcc(sym, BuildIntegerConstant(value)) ;
    WatchRemoveList(sym, todolist) ;
    WatchIncludeList(sym, fullydeclared)
 END DeclareIntegerConstant ;
+*)
 
 
 (*
@@ -1577,16 +1525,12 @@ END DeclareCharConstant ;
    DeclareStringConstant - declares a string constant.
 *)
 
-PROCEDURE DeclareStringConstant (sym: CARDINAL) ;
+PROCEDURE DeclareStringConstant (tokenno: CARDINAL; sym: CARDINAL) ;
 VAR
-   location: location_t ;
    symtree : Tree ;
+   location: location_t ;
 BEGIN
-   IF sym = 12066
-   THEN
-      stop
-   END ;
-   location := TokenToLocation(GetDeclaredMod(sym)) ;
+   location := TokenToLocation (tokenno) ;
    IF IsConstStringM2nul (sym) OR IsConstStringCnul (sym)
    THEN
       (* in either case the string needs a nul terminator.  If the string
@@ -1595,12 +1539,13 @@ BEGIN
       symtree := BuildCStringConstant (KeyToCharStar (GetString (sym)),
                                        GetStringLength (sym))
    ELSE
-      symtree := BuildStringConstant (KeyToCharStar (GetString (sym)),
+      symtree := BuildStringConstant (location,
+                                      KeyToCharStar (GetString (sym)),
                                       GetStringLength (sym))
    END ;
-   PreAddModGcc(sym, symtree) ;
-   WatchRemoveList(sym, todolist) ;
-   WatchIncludeList(sym, fullydeclared)
+   PreAddModGcc (sym, symtree) ;
+   WatchRemoveList (sym, todolist) ;
+   WatchIncludeList (sym, fullydeclared)
 END DeclareStringConstant ;
 
 
@@ -1614,21 +1559,20 @@ END DeclareStringConstant ;
 
 PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
 VAR
-   size: CARDINAL ;
+   size    : CARDINAL ;
    location: location_t ;
 BEGIN
-   location := TokenToLocation(GetDeclaredMod(sym)) ;
-   DeclareConstant(tokenno, sym) ;
-   size := GetStringLength(sym) ;
-   IF size>1
+   location := TokenToLocation (tokenno) ;
+   DeclareConstant (tokenno, sym) ;
+   size := GetStringLength (sym) ;
+   IF size > 1
    THEN
       (* will be a string anyway *)
-      RETURN( Tree(Mod2Gcc(sym)) )
+      RETURN Tree (Mod2Gcc (sym))
    ELSE
-      RETURN(
-             BuildStringConstant(KeyToCharStar(GetString(sym)),
-                                 GetStringLength(sym))
-            )
+      RETURN BuildStringConstant (location,
+                                  KeyToCharStar (GetString (sym)),
+                                  GetStringLength (sym))
    END
 END PromoteToString ;
 
@@ -1706,19 +1650,17 @@ END TryDeclareConstructor ;
 PROCEDURE WalkConst (sym: CARDINAL; p: WalkAction) ;
 VAR
    type: CARDINAL ;
-   tok : CARDINAL ;
 BEGIN
-   Assert(IsConst(sym)) ;
-   type := GetSType(sym) ;
-   IF type#NulSym
+   Assert (IsConst (sym)) ;
+   type := GetSType (sym) ;
+   IF type # NulSym
    THEN
-      p(type)
+      p (type)
    END ;
-   IF IsConstSet(sym) OR IsConstructor(sym)
+   IF IsConstSet (sym) OR IsConstructor (sym)
    THEN
-      WalkConstructor(sym, p)
-   END ;
-   tok := GetDeclaredMod (sym)
+      WalkConstructor (sym, p)
+   END
 END WalkConst ;
 
 
@@ -1871,7 +1813,7 @@ BEGIN
          THEN
             DeclareCharConstant(sym)
          ELSE
-            DeclareStringConstant(sym)
+            DeclareStringConstant (tokenno, sym)
          END
       ELSIF IsValueSolved(sym)
       THEN
@@ -1930,7 +1872,7 @@ BEGIN
       THEN
          DeclareCharConstant(sym)
       ELSE
-         DeclareStringConstant(sym)
+         DeclareStringConstant (tokenno, sym)
       END
    ELSIF IsValueSolved(sym)
    THEN
@@ -2007,7 +1949,7 @@ BEGIN
    oaf := GetOAFamily(sym) ;
    o := unboundedp ;
    unboundedp := p ;
-   ForeachOAFamily(oaf, WalkFamilyOfUnbounded) ;
+   ForeachOAFamily (oaf, WalkFamilyOfUnbounded) ;
    unboundedp := o
 END WalkAssociatedUnbounded ;
 
@@ -2016,6 +1958,7 @@ END WalkAssociatedUnbounded ;
    WalkProcedureParameterDependants -
 *)
 
+(*
 PROCEDURE WalkProcedureParameterDependants (sym: CARDINAL; p: WalkAction) ;
 VAR
    son,
@@ -2040,6 +1983,7 @@ BEGIN
       END
    END
 END WalkProcedureParameterDependants ;
+*)
 
 
 (*
@@ -2599,7 +2543,7 @@ BEGIN
       WHILE ResolveConstantExpressions(DeclareConstFully, start, end) DO
       END ;
       (* we need to evaluate some constant expressions to resolve these types *)
-      IF DeclaredOutstandingTypes(FALSE, start, end)
+      IF DeclaredOutstandingTypes (FALSE)
       THEN
       END ;
       m := NoOfElementsInSet(ToDoList)
@@ -2645,8 +2589,6 @@ END PushBinding ;
 *)
 
 PROCEDURE PopBinding (scope: CARDINAL) ;
-VAR
-   t: Tree ;
 BEGIN
    scope := SkipModuleScope(scope) ;
    IF scope=NulSym
@@ -2655,7 +2597,7 @@ BEGIN
    ELSE
       Assert(IsProcedure(scope)) ;
       finishFunctionDecl(TokenToLocation(GetDeclaredMod(scope)), Mod2Gcc(scope)) ;
-      t := popFunctionScope()
+      Assert (popFunctionScope () # NIL)
    END
 END PopBinding ;
 
@@ -2688,14 +2630,12 @@ END DeclareTypesConstantsProcedures ;
 
 PROCEDURE AssertAllTypesDeclared (scope: CARDINAL) ;
 VAR
-   o,
    n, Var: CARDINAL ;
    failed: BOOLEAN ;
 BEGIN
    failed := FALSE ;
    n := 1 ;
    Var := GetNth(scope, n) ;
-   o := 0 ;
    WHILE Var#NulSym DO
       IF NOT AllDependantsFullyDeclared(GetSType(Var))
       THEN
@@ -3007,27 +2947,6 @@ END DeclareBoolean ;
 
 
 (*
-   DeclareFileName - declares the filename to the back end.
-*)
-
-PROCEDURE DeclareFileName ;
-VAR
-   ModuleName,
-   FileName  : String ;
-BEGIN
-   ModuleName := InitStringCharStar(KeyToCharStar(GetSymName(GetMainModule()))) ;
-   FileName   := CalculateFileName(ModuleName, Mark(InitString('mod'))) ;
-
-(* --fixme--
-   SetFileNameAndLineNo(string(FileName), 1) ;
-*)
-
-   ModuleName := KillString(ModuleName) ;
-   FileName   := KillString(FileName)
-END DeclareFileName ;
-
-
-(*
    DeclareFixedSizedType - declares the GNU Modula-2 fixed types
                            (if the back end support such a type).
 *)
@@ -3184,24 +3103,6 @@ END DeclareDefaultConstants ;
 
 
 (*
-   AlignDeclarationWithSource - given a symbol, sym, set the source file and line
-                                number with the declaration position of sym.
-*)
-
-PROCEDURE AlignDeclarationWithSource (sym: CARDINAL) ;
-VAR
-   s: String ;
-   t: CARDINAL ;
-BEGIN
-   t := GetDeclaredMod(sym) ;
-   s := FindFileNameFromToken(t, 0) ;
-(* --fixme--
-   SetFileNameAndLineNo(string(s), TokenToLineNo(t, 0))
-*)
-END AlignDeclarationWithSource ;
-
-
-(*
    FindContext - returns the scope where the symbol
                  should be created.
 
@@ -3353,7 +3254,6 @@ VAR
 BEGIN
    IF NOT GccKnowsAbout (variable)
    THEN
-      AlignDeclarationWithSource (variable) ;
       scope := FindContext (ModSym) ;
       decl := FindOuterModule (variable) ;
       Assert (AllDependantsFullyDeclared (GetSType (variable))) ;
@@ -3382,7 +3282,6 @@ VAR
 BEGIN
    IF NOT GccKnowsAbout(var)
    THEN
-      AlignDeclarationWithSource(var) ;
       scope := FindContext(mainModule) ;
       decl := FindOuterModule(var) ;
       Assert(AllDependantsFullyDeclared(GetSType(var))) ;
@@ -3482,7 +3381,6 @@ END DeclareImportedVariablesWholeProgram ;
 
 PROCEDURE DeclareLocalVariable (var: CARDINAL) ;
 BEGIN
-   AlignDeclarationWithSource (var) ;
    Assert (AllDependantsFullyDeclared (var)) ;
    DoVariableDeclaration (var,
                           KeyToCharStar (GetFullSymName (var)),
@@ -3527,7 +3425,6 @@ BEGIN
    scope := Mod2Gcc (GetProcedureScope (sym)) ;
    Var := GetNth (sym, i) ;
    WHILE Var # NulSym DO
-      AlignDeclarationWithSource (Var) ;
       Assert (AllDependantsFullyDeclared (GetSType (Var))) ;
       DoVariableDeclaration (Var,
                              KeyToCharStar (GetFullSymName (Var)),
@@ -4305,21 +4202,18 @@ END CheckAlignment ;
 *)
 
 PROCEDURE CheckPragma (type: Tree; sym: CARDINAL) : Tree ;
-VAR
-   align: CARDINAL ;
 BEGIN
-   align := GetAlignment(sym) ;
-   IF IsDeclaredPacked(sym)
+   IF IsDeclaredPacked (sym)
    THEN
-      IF IsRecordField(sym) OR IsFieldVarient(sym)
+      IF IsRecordField (sym) OR IsFieldVarient (sym)
       THEN
-         type := SetDeclPacked(type)
-      ELSIF IsRecord(sym) OR IsVarient(sym)
+         type := SetDeclPacked (type)
+      ELSIF IsRecord (sym) OR IsVarient (sym)
       THEN
-         type := SetTypePacked(type)
+         type := SetTypePacked (type)
       END
    END ;
-   RETURN( CheckAlignment(type, sym) )
+   RETURN CheckAlignment (type, sym)
 END CheckPragma ;
 
 
@@ -4465,12 +4359,13 @@ VAR
    enumlist: Tree ;
 BEGIN
    (* add relationship between gccSym and sym *)
-   type := GetSType(sym) ;
-   equiv := GetPackedEquivalent(type) ;
-   enumlist := GetEnumList(equiv) ;
-   PushValue(sym) ;
-   field := DeclareFieldValue(sym, PopIntegerTree(), enumlist) ;
-   PutEnumList(equiv, enumlist)
+   type := GetSType (sym) ;
+   equiv := GetPackedEquivalent (type) ;
+   enumlist := GetEnumList (equiv) ;
+   PushValue (sym) ;
+   field := DeclareFieldValue (sym, PopIntegerTree(), enumlist) ;
+   Assert (field # NIL) ;
+   PutEnumList (equiv, enumlist)
 END DeclarePackedFieldEnumeration ;
 
 
@@ -5675,6 +5570,7 @@ END WalkRecordFieldDependants ;
    WalkVarient -
 *)
 
+(*
 PROCEDURE WalkVarient (sym: CARDINAL; p: WalkAction) ;
 VAR
    v    : CARDINAL ;
@@ -5694,6 +5590,7 @@ BEGIN
       p(align)
    END
 END WalkVarient ;
+*)
 
 
 (*
@@ -6230,7 +6127,6 @@ END ConstantKnownAndUsed ;
 
 PROCEDURE InitDeclarations ;
 BEGIN
-   DeclareFileName ;
    DeclareDefaultTypes ;
    DeclareDefaultConstants
 END InitDeclarations ;

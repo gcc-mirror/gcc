@@ -70,8 +70,8 @@ EXPORT QUALIFIED InitAssignmentRangeCheck,
                  InitWholeZeroDivisionCheck,
                  InitWholeZeroRemainderCheck,
                  CodeRangeCheck, FoldRangeCheck, CodeErrorCheck,
-                 CheckRangeAddVariableRead,
-                 CheckRangeRemoveVariableRead,
+                 (* CheckRangeAddVariableRead,  *)
+                 (* CheckRangeRemoveVariableRead,  *)
                  WriteRangeCheck,
                  OverlapsRange,
                  IsEqual, IsGreaterOrEqual, IsGreater,
@@ -344,7 +344,7 @@ PROCEDURE CodeErrorCheck (r: CARDINAL; function, message: String) : Tree ;
                                symbol table.
 *)
 
-PROCEDURE CheckRangeAddVariableRead (r: CARDINAL; quadNo: CARDINAL) ;
+(* PROCEDURE CheckRangeAddVariableRead (r: CARDINAL; quadNo: CARDINAL) ; *)
 
 
 (*
@@ -353,7 +353,7 @@ PROCEDURE CheckRangeAddVariableRead (r: CARDINAL; quadNo: CARDINAL) ;
                                   the symbol table.
 *)
 
-PROCEDURE CheckRangeRemoveVariableRead (r: CARDINAL; quadNo: CARDINAL) ;
+(* PROCEDURE CheckRangeRemoveVariableRead (r: CARDINAL; quadNo: CARDINAL) ; *)
 
 
 (*

@@ -233,8 +233,8 @@ FROM M2Range IMPORT InitAssignmentRangeCheck,
                     InitWholeZeroDivisionCheck,
                     InitWholeZeroRemainderCheck,
                     InitParameterRangeCheck,
-                    CheckRangeAddVariableRead,
-                    CheckRangeRemoveVariableRead,
+                    (* CheckRangeAddVariableRead,  *)
+                    (* CheckRangeRemoveVariableRead,  *)
                     WriteRangeCheck ;
 
 FROM M2CaseList IMPORT PushCase, PopCase, AddRange, BeginCaseList, EndCaseList, ElseCase ;

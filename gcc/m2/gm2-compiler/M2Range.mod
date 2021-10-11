@@ -514,11 +514,10 @@ END PutRangeArraySubscript ;
 
 PROCEDURE InitAssignmentRangeCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRange (tokno, GetIndice (RangeIndex, r), assignment, d, e) ;
+   Assert (PutRange (tokno, GetIndice (RangeIndex, r), assignment, d, e) # NIL) ;
    RETURN r
 END InitAssignmentRangeCheck ;
 
@@ -532,11 +531,10 @@ END InitAssignmentRangeCheck ;
 
 PROCEDURE InitReturnRangeCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRange (tokno, GetIndice (RangeIndex, r), returnassignment, d, e) ;
+   Assert (PutRange (tokno, GetIndice (RangeIndex, r), returnassignment, d, e) # NIL) ;
    RETURN r
 END InitReturnRangeCheck ;
 
@@ -550,11 +548,10 @@ END InitReturnRangeCheck ;
 
 PROCEDURE InitSubrangeRangeCheck (d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRange (GetTokenNo (), GetIndice (RangeIndex, r), subrangeassignment, d, e) ;
+   Assert (PutRange (GetTokenNo (), GetIndice (RangeIndex, r), subrangeassignment, d, e) # NIL) ;
    RETURN r
 END InitSubrangeRangeCheck ;
 
@@ -568,11 +565,10 @@ END InitSubrangeRangeCheck ;
 
 PROCEDURE InitStaticArraySubscriptRangeCheck (d, e, dim: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeArraySubscript (GetIndice (RangeIndex, r), staticarraysubscript, d, e, dim) ;
+   Assert (PutRangeArraySubscript (GetIndice (RangeIndex, r), staticarraysubscript, d, e, dim) # NIL) ;
    RETURN r
 END InitStaticArraySubscriptRangeCheck ;
 
@@ -586,11 +582,10 @@ END InitStaticArraySubscriptRangeCheck ;
 
 PROCEDURE InitDynamicArraySubscriptRangeCheck (d, e, dim: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeArraySubscript (GetIndice (RangeIndex, r), dynamicarraysubscript, d, e, dim) ;
+   Assert (PutRangeArraySubscript (GetIndice (RangeIndex, r), dynamicarraysubscript, d, e, dim) # NIL) ;
    RETURN r
 END InitDynamicArraySubscriptRangeCheck ;
 
@@ -604,11 +599,10 @@ END InitDynamicArraySubscriptRangeCheck ;
 
 PROCEDURE InitIncRangeCheck (d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRange (GetTokenNo (), GetIndice (RangeIndex, r), inc, d, e) ;
+   Assert (PutRange (GetTokenNo (), GetIndice (RangeIndex, r), inc, d, e) # NIL) ;
    RETURN r
 END InitIncRangeCheck ;
 
@@ -622,11 +616,10 @@ END InitIncRangeCheck ;
 
 PROCEDURE InitDecRangeCheck (d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRange (GetTokenNo (), GetIndice (RangeIndex, r), dec, d, e) ;
+   Assert (PutRange (GetTokenNo (), GetIndice (RangeIndex, r), dec, d, e) # NIL) ;
    RETURN r
 END InitDecRangeCheck ;
 
@@ -638,11 +631,10 @@ END InitDecRangeCheck ;
 
 PROCEDURE InitInclCheck (d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeNoLow (GetTokenNo (), GetIndice (RangeIndex, r), incl, d, e) ;
+   Assert (PutRangeNoLow (GetTokenNo (), GetIndice (RangeIndex, r), incl, d, e) # NIL) ;
    RETURN r
 END InitInclCheck ;
 
@@ -654,11 +646,10 @@ END InitInclCheck ;
 
 PROCEDURE InitExclCheck (d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeNoLow (GetTokenNo (), GetIndice (RangeIndex, r), excl, d, e) ;
+   Assert (PutRangeNoLow (GetTokenNo (), GetIndice (RangeIndex, r), excl, d, e) # NIL) ;
    RETURN r
 END InitExclCheck ;
 
@@ -670,11 +661,10 @@ END InitExclCheck ;
 
 PROCEDURE InitShiftCheck (d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeNoLow (GetTokenNo (), GetIndice (RangeIndex, r), shift, d, e) ;
+   Assert (PutRangeNoLow (GetTokenNo (), GetIndice (RangeIndex, r), shift, d, e) # NIL) ;
    RETURN r
 END InitShiftCheck ;
 
@@ -686,11 +676,10 @@ END InitShiftCheck ;
 
 PROCEDURE InitRotateCheck (d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeNoLow (GetTokenNo (), GetIndice (RangeIndex, r), rotate, d, e) ;
+   Assert (PutRangeNoLow (GetTokenNo (), GetIndice (RangeIndex, r), rotate, d, e) # NIL) ;
    RETURN r
 END InitRotateCheck ;
 
@@ -702,11 +691,10 @@ END InitRotateCheck ;
 
 PROCEDURE InitTypesAssignmentCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeNoLow (tokno, GetIndice (RangeIndex, r), typeassign, d, e) ;
+   Assert (PutRangeNoLow (tokno, GetIndice (RangeIndex, r), typeassign, d, e) # NIL) ;
    RETURN r
 END InitTypesAssignmentCheck ;
 
@@ -719,11 +707,10 @@ END InitTypesAssignmentCheck ;
 PROCEDURE InitTypesParameterCheck (proc: CARDINAL; i: CARDINAL;
                                    formal, actual: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeParam (GetIndice (RangeIndex, r), typeparam, proc, i, formal, actual) ;
+   Assert (PutRangeParam (GetIndice (RangeIndex, r), typeparam, proc, i, formal, actual) # NIL) ;
    RETURN r
 END InitTypesParameterCheck ;
 
@@ -762,11 +749,10 @@ END PutRangeParamAssign ;
 PROCEDURE InitParameterRangeCheck (proc: CARDINAL; i: CARDINAL;
                                    formal, actual: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeParamAssign (GetIndice (RangeIndex, r), paramassign, proc, i, formal, actual) ;
+   Assert (PutRangeParamAssign (GetIndice (RangeIndex, r), paramassign, proc, i, formal, actual) # NIL) ;
    RETURN r
 END InitParameterRangeCheck ;
 
@@ -778,11 +764,10 @@ END InitParameterRangeCheck ;
 
 PROCEDURE InitTypesExpressionCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange() ;
-   p := PutRangeNoLow (tokno, GetIndice (RangeIndex, r), typeexpr, d, e) ;
+   Assert (PutRangeNoLow (tokno, GetIndice (RangeIndex, r), typeexpr, d, e) # NIL) ;
    RETURN r
 END InitTypesExpressionCheck ;
 
@@ -796,11 +781,10 @@ END InitTypesExpressionCheck ;
 
 PROCEDURE InitForLoopBeginRangeCheck (d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRange (GetTokenNo (), GetIndice (RangeIndex, r), forloopbegin, d, e) ;
+   Assert (PutRange (GetTokenNo (), GetIndice (RangeIndex, r), forloopbegin, d, e) # NIL) ;
    RETURN r
 END InitForLoopBeginRangeCheck ;
 
@@ -814,11 +798,10 @@ END InitForLoopBeginRangeCheck ;
 
 PROCEDURE InitForLoopToRangeCheck (d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRange (GetTokenNo (), GetIndice (RangeIndex, r), forloopto, d, e) ;
+   Assert (PutRange (GetTokenNo (), GetIndice (RangeIndex, r), forloopto, d, e) # NIL) ;
    RETURN r
 END InitForLoopToRangeCheck ;
 
@@ -833,11 +816,10 @@ END InitForLoopToRangeCheck ;
 
 PROCEDURE InitForLoopEndRangeCheck (d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRange (GetTokenNo (), GetIndice (RangeIndex, r), forloopend, d, e) ;
+   Assert (PutRange (GetTokenNo (), GetIndice (RangeIndex, r), forloopend, d, e) # NIL) ;
    RETURN r
 END InitForLoopEndRangeCheck ;
 
@@ -849,11 +831,10 @@ END InitForLoopEndRangeCheck ;
 PROCEDURE InitPointerRangeCheck (tokno: CARDINAL;
                                  d: CARDINAL; isLeft: BOOLEAN) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangePointer (tokno, GetIndice (RangeIndex, r), d, isLeft) ;
+   Assert (PutRangePointer (tokno, GetIndice (RangeIndex, r), d, isLeft) # NIL) ;
    RETURN r
 END InitPointerRangeCheck ;
 
@@ -866,11 +847,10 @@ END InitPointerRangeCheck ;
 
 PROCEDURE InitNoReturnRangeCheck () : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeNoEval (GetIndice(RangeIndex, r), noreturn) ;
+   Assert (PutRangeNoEval (GetIndice(RangeIndex, r), noreturn) # NIL) ;
    RETURN r
 END InitNoReturnRangeCheck ;
 
@@ -884,11 +864,10 @@ END InitNoReturnRangeCheck ;
 
 PROCEDURE InitNoElseRangeCheck () : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeNoEval (GetIndice (RangeIndex, r), noelse) ;
+   Assert (PutRangeNoEval (GetIndice (RangeIndex, r), noelse) # NIL) ;
    RETURN r
 END InitNoElseRangeCheck ;
 
@@ -900,11 +879,10 @@ END InitNoElseRangeCheck ;
 
 PROCEDURE InitWholeNonPosDivCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeUnary (tokno, GetIndice (RangeIndex, r), wholenonposdiv, d, e) ;
+   Assert (PutRangeUnary (tokno, GetIndice (RangeIndex, r), wholenonposdiv, d, e) # NIL) ;
    RETURN r
 END InitWholeNonPosDivCheck ;
 
@@ -916,11 +894,10 @@ END InitWholeNonPosDivCheck ;
 
 PROCEDURE InitWholeNonPosModCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeUnary (tokno, GetIndice (RangeIndex, r), wholenonposmod, d, e) ;
+   Assert (PutRangeUnary (tokno, GetIndice (RangeIndex, r), wholenonposmod, d, e) # NIL) ;
    RETURN r
 END InitWholeNonPosModCheck ;
 
@@ -932,11 +909,10 @@ END InitWholeNonPosModCheck ;
 
 PROCEDURE InitWholeZeroDivisionCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeUnary (tokno, GetIndice (RangeIndex, r), wholezerodiv, d, e) ;
+   Assert (PutRangeUnary (tokno, GetIndice (RangeIndex, r), wholezerodiv, d, e) # NIL) ;
    RETURN r
 END InitWholeZeroDivisionCheck ;
 
@@ -948,11 +924,10 @@ END InitWholeZeroDivisionCheck ;
 
 PROCEDURE InitWholeZeroRemainderCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
 VAR
-   p: Range ;
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   p := PutRangeUnary (tokno, GetIndice (RangeIndex, r), wholezerorem, d, e) ;
+   Assert (PutRangeUnary (tokno, GetIndice (RangeIndex, r), wholezerorem, d, e) # NIL) ;
    RETURN r
 END InitWholeZeroRemainderCheck ;
 
@@ -1607,7 +1582,7 @@ END FoldTypeAssign ;
    FoldTypeParam -
 *)
 
-PROCEDURE FoldTypeParam (q: CARDINAL; tokenNo: CARDINAL; formal, actual, procedure: CARDINAL; paramNo: CARDINAL; r: CARDINAL) ;
+PROCEDURE FoldTypeParam (q: CARDINAL; tokenNo: CARDINAL; formal, actual, procedure: CARDINAL; paramNo: CARDINAL) ;
 BEGIN
    IF ParameterTypeCompatible (tokenNo,
                                '{%4EN} type failure between actual {%3ad} and the {%2ad}',
@@ -1695,7 +1670,7 @@ END CodeTypeAssign ;
    CodeTypeParam -
 *)
 
-PROCEDURE CodeTypeParam (tokenNo: CARDINAL; formal, actual, procedure: CARDINAL; paramNo: CARDINAL; r: CARDINAL) ;
+PROCEDURE CodeTypeParam (tokenNo: CARDINAL; formal, actual, procedure: CARDINAL; paramNo: CARDINAL) ;
 BEGIN
    IF NOT ParameterTypeCompatible (tokenNo,
                                    '{%4EN} type failure between actual {%3ad} and the formal {%2ad}',
@@ -1760,7 +1735,7 @@ BEGIN
          CASE type OF
 
          typeassign:  FoldTypeAssign(q, tokenNo, des, expr, r) |
-         typeparam:   FoldTypeParam(q, tokenNo, des, expr, procedure, paramNo, r) |
+         typeparam:   FoldTypeParam(q, tokenNo, des, expr, procedure, paramNo) |
          typeexpr:    FoldTypeExpr(q, tokenNo, des, expr, r)
 
          ELSE
@@ -1793,7 +1768,7 @@ BEGIN
          CASE type OF
 
          typeassign:  CodeTypeAssign(tokenNo, des, expr, r) |
-         typeparam:   CodeTypeParam(tokenNo, des, expr, procedure, paramNo, r) |
+         typeparam:   CodeTypeParam(tokenNo, des, expr, procedure, paramNo) |
          typeexpr:    CodeTypeExpr(tokenNo, des, expr, r)
 
          ELSE
@@ -1978,9 +1953,9 @@ END FoldCaseBounds ;
                     during the code generation of this function.
 *)
 
-PROCEDURE CodeCaseBounds (tokenno: CARDINAL; caseList: CARDINAL; function, message: String) ;
+PROCEDURE CodeCaseBounds (tokenno: CARDINAL; caseList: CARDINAL) ;
 BEGIN
-   IF CaseBoundsResolved(tokenno, caseList)
+   IF CaseBoundsResolved (tokenno, caseList)
    THEN
       IF TypeCaseBounds (caseList)
       THEN
@@ -1990,25 +1965,25 @@ BEGIN
       THEN
          (* nothing to do *)
       END ;
-      IF MissingCaseBounds(tokenno, caseList)
+      IF MissingCaseBounds (tokenno, caseList)
       THEN
          (* nothing to do *)
       END
    ELSE
-      MetaErrorT0(tokenno, '{%E}the CASE statement ranges must be constants')
+      MetaErrorT0 (tokenno, '{%E}the CASE statement ranges must be constants')
    END
 END CodeCaseBounds ;
 
 
 (*
-   MakeAndDeclareConstLit -
+   MakeAndDeclareConstLit - creates a constant of value and declares it to GCC.
 *)
 
-PROCEDURE MakeAndDeclareConstLit (tokenno: CARDINAL; n: Name; type: CARDINAL) : CARDINAL ;
+PROCEDURE MakeAndDeclareConstLit (tokenno: CARDINAL; value: Name; type: CARDINAL) : CARDINAL ;
 VAR
    constant: CARDINAL ;
 BEGIN
-   constant := MakeConstLit (tokenno, MakeKey('0'), ZType) ;
+   constant := MakeConstLit (tokenno, value, type) ;
    TryDeclareConstant (tokenno, constant) ;  (* use quad tokenno, rather than the range tokenNo *)
    Assert (GccKnowsAbout (constant)) ;
    RETURN constant
@@ -2029,13 +2004,13 @@ BEGIN
       TryDeclareConstant(tokenno, expr) ;  (* use quad tokenno, rather than the range tokenNo *)
       IF GccKnowsAbout(expr) AND IsConst(expr)
       THEN
-         zero := MakeAndDeclareConstLit(tokenno, MakeKey('0'), ZType) ;
-         IF IsGreaterOrEqualConversion(TokenToLocation(tokenno), zero, des, expr)
+         zero := MakeAndDeclareConstLit (tokenno, MakeKey ('0'), ZType) ;
+         IF IsGreaterOrEqualConversion (TokenToLocation (tokenno), zero, des, expr)
          THEN
-            MetaErrorT2(tokenNo,
-                        'the divisor {%2Wa} in this division expression is less than or equal to zero, this will cause an exception to be raised before the result is assigned to the designator {%1a}',
-                        des, expr) ;
-            PutQuad(q, ErrorOp, NulSym, NulSym, r)
+            MetaErrorT2 (tokenNo,
+                         'the divisor {%2Wa} in this division expression is less than or equal to zero, this will cause an exception to be raised before the result is assigned to the designator {%1a}',
+                         des, expr) ;
+            PutQuad (q, ErrorOp, NulSym, NulSym, r)
          END
       END
    END
@@ -2056,13 +2031,13 @@ BEGIN
       TryDeclareConstant(tokenno, expr) ;  (* use quad tokenno, rather than the range tokenNo *)
       IF GccKnowsAbout(expr) AND IsConst(expr)
       THEN
-         zero := MakeAndDeclareConstLit(tokenno, MakeKey('0'), ZType) ;
-         IF IsGreaterOrEqualConversion(TokenToLocation(tokenno), zero, des, expr)
+         zero := MakeAndDeclareConstLit (tokenno, MakeKey('0'), ZType) ;
+         IF IsGreaterOrEqualConversion (TokenToLocation(tokenno), zero, des, expr)
          THEN
-            MetaErrorT2(tokenNo,
-                        'the divisor {%2Wa} in this modulus expression is less than or equal to zero, this will cause an exception to be raised before the result is assigned to the designator {%1a}',
-                        des, expr) ;
-            PutQuad(q, ErrorOp, NulSym, NulSym, r)
+            MetaErrorT2 (tokenNo,
+                         'the divisor {%2Wa} in this modulus expression is less than or equal to zero, this will cause an exception to be raised before the result is assigned to the designator {%1a}',
+                         des, expr) ;
+            PutQuad (q, ErrorOp, NulSym, NulSym, r)
          END
       END
    END
@@ -2083,13 +2058,13 @@ BEGIN
       TryDeclareConstant(tokenno, expr) ;  (* use quad tokenno, rather than the range tokenNo *)
       IF GccKnowsAbout(expr) AND IsConst(expr)
       THEN
-         zero := MakeAndDeclareConstLit(tokenno, MakeKey('0'), ZType) ;
-         IF IsEqualConversion(zero, des, expr)
+         zero := MakeAndDeclareConstLit (tokenno, MakeKey ('0'), ZType) ;
+         IF IsEqualConversion (zero, des, expr)
          THEN
-            MetaErrorT2(tokenNo,
+            MetaErrorT2 (tokenNo,
                         'the divisor {%2Wa} in this division expression is equal to zero, this will cause an exception to be raised before the result is assigned to the designator {%1a}',
-                        des, expr) ;
-            PutQuad(q, ErrorOp, NulSym, NulSym, r)
+                         des, expr) ;
+            PutQuad (q, ErrorOp, NulSym, NulSym, r)
          END
       END
    END
@@ -2110,13 +2085,13 @@ BEGIN
       TryDeclareConstant(tokenno, expr) ;  (* use quad tokenno, rather than the range tokenNo *)
       IF GccKnowsAbout(expr) AND IsConst(expr)
       THEN
-         zero := MakeAndDeclareConstLit(tokenno, MakeKey('0'), ZType) ;
-         IF IsEqualConversion(zero, des, expr)
+         zero := MakeAndDeclareConstLit (tokenno, MakeKey ('0'), ZType) ;
+         IF IsEqualConversion (zero, des, expr)
          THEN
-            MetaErrorT2(tokenNo,
+            MetaErrorT2 (tokenNo,
                         'the divisor {%2Wa} in this remainder expression is equal to zero, this will cause an exception to be raised before the result is assigned to the designator {%1a}',
-                        des, expr) ;
-            PutQuad(q, ErrorOp, NulSym, NulSym, r)
+                         des, expr) ;
+            PutQuad (q, ErrorOp, NulSym, NulSym, r)
          END
       END
    END
@@ -2215,10 +2190,10 @@ END BuildStringParam ;
 
 PROCEDURE BuildStringParamLoc (location: location_t; s: String) ;
 BEGIN
-   BuildParam(location,
-              BuildConvert(location, Mod2Gcc(Address),
-                           BuildAddr(location, BuildStringConstant(string(s), Length(s)),
-                                     FALSE), FALSE))
+   BuildParam (location,
+               BuildConvert (location, Mod2Gcc (Address),
+                             BuildAddr (location, BuildStringConstant (location, string(s), Length(s)),
+                                        FALSE), FALSE))
 END BuildStringParamLoc ;
 
 
@@ -2720,7 +2695,7 @@ PROCEDURE CodeInclExcl (tokenno: CARDINAL;
                         r: CARDINAL; function, message: String) ;
 VAR
    p             : Range ;
-   t, e,
+   e,
    desMin, desMax: Tree ;
    location      : location_t ;
 BEGIN
@@ -2957,7 +2932,7 @@ END CodeForLoopTo ;
 *)
 
 PROCEDURE SameTypesCodeForLoopEnd (tokenNo: CARDINAL; r: CARDINAL; function, message: String;
-                                   p: Range; dmin, dmax, emin, emax: Tree) ;
+                                   p: Range; dmax: Tree) ;
 VAR
    inc,
    room,
@@ -2982,7 +2957,7 @@ END SameTypesCodeForLoopEnd ;
 *)
 
 PROCEDURE DiffTypesCodeForLoopEnd (tokenNo: CARDINAL; r: CARDINAL; function, message: String;
-                                   p: Range; dmin, dmax, emin, emax: Tree) ;
+                                   p: Range; dmax, emin, emax: Tree) ;
 VAR
    location  : location_t ;
    desoftypee,
@@ -3086,9 +3061,9 @@ BEGIN
             isCard := GreEqu(tokenno) ;
             IF (desLowestType=exprLowestType) AND isCard
             THEN
-               SameTypesCodeForLoopEnd(tokenno, r, function, message, p, dmin, dmax, emin, emax)
+               SameTypesCodeForLoopEnd(tokenno, r, function, message, p, dmax)
             ELSE
-               DiffTypesCodeForLoopEnd(tokenno, r, function, message, p, dmin, dmax, emin, emax)
+               DiffTypesCodeForLoopEnd(tokenno, r, function, message, p, dmax, emin, emax)
             END
          END
       END
@@ -3100,8 +3075,7 @@ END CodeForLoopEnd ;
    CodeNil -
 *)
 
-PROCEDURE CodeNil (tokenno: CARDINAL;
-                   r: CARDINAL; function, message: String) ;
+PROCEDURE CodeNil (r: CARDINAL; function, message: String) ;
 VAR
    p           : Range ;
    condition, t: Tree ;
@@ -3141,14 +3115,14 @@ VAR
 BEGIN
    p := GetIndice(RangeIndex, r) ;
    WITH p^ DO
-      TryDeclareConstant(tokenNo, expr) ;
-      IF GccKnowsAbout(expr)
+      TryDeclareConstant (tokenNo, expr) ;
+      IF GccKnowsAbout (expr)
       THEN
-         location := TokenToLocation(tokenno) ;
-         e := ZConstToTypedConst(LValueToGenericPtr(location, expr), expr, des) ;
-         zero := MakeAndDeclareConstLit(tokenno, MakeKey('0'), SkipType(GetType(des))) ;
-         condition := BuildLessThanOrEqual(location, e, Mod2Gcc(zero)) ;
-         AddStatement(location, BuildIfThenDoEnd(condition, CodeErrorCheck(r, function, message)))
+         location := TokenToLocation (tokenno) ;
+         e := ZConstToTypedConst (LValueToGenericPtr(location, expr), expr, des) ;
+         zero := MakeAndDeclareConstLit (tokenno, MakeKey('0'), ZType) ;
+         condition := BuildLessThanOrEqual (location, e, Mod2Gcc (zero)) ;
+         AddStatement (location, BuildIfThenDoEnd (condition, CodeErrorCheck (r, function, message)))
       ELSE
          InternalError ('should have resolved expr')
       END
@@ -3176,7 +3150,7 @@ BEGIN
       THEN
          location := TokenToLocation(tokenno) ;
          e := ZConstToTypedConst(LValueToGenericPtr(location, expr), expr, des) ;
-         zero := MakeAndDeclareConstLit(tokenno, MakeKey('0'), ZType) ;
+         zero := MakeAndDeclareConstLit (tokenno, MakeKey('0'), ZType) ;
          condition := BuildEqualTo(location,
                                    e, BuildConvert(location, GetTreeType(e), Mod2Gcc(zero), FALSE)) ;
          AddStatement(location, BuildIfThenDoEnd(condition, CodeErrorCheck(r, function, message)))
@@ -3338,10 +3312,10 @@ BEGIN
       forloopbegin         :  CodeForLoopBegin (tokenNo, r, function, message) |
       forloopto            :  CodeForLoopTo (tokenNo, r, function, message) |
       forloopend           :  CodeForLoopEnd (tokenNo, r, function, message) |
-      pointernil           :  CodeNil (tokenNo, r, function, message) |
+      pointernil           :  CodeNil (r, function, message) |
       noreturn             :  AddStatement (TokenToLocation (tokenNo), CodeErrorCheck (r, function, message)) |
       noelse               :  AddStatement (TokenToLocation (tokenNo), CodeErrorCheck (r, function, message)) |
-      casebounds           :  CodeCaseBounds (tokenNo, caseList, function, message) |
+      casebounds           :  CodeCaseBounds (tokenNo, caseList) |
       wholenonposdiv       :  CodeWholeNonPos (tokenNo, r, function, message) |
       wholenonposmod       :  CodeWholeNonPos (tokenNo, r, function, message) |
       wholezerodiv         :  CodeWholeZero (tokenNo, r, function, message) |
@@ -3362,7 +3336,7 @@ END CodeRangeCheck ;
                 then adds this quadruple to the variable
                 list.
 *)
-
+(*
 PROCEDURE AddVarRead (sym: CARDINAL; quadNo: CARDINAL) ;
 BEGIN
    IF (sym#NulSym) AND IsVar(sym)
@@ -3370,6 +3344,7 @@ BEGIN
       PutReadQuad(sym, GetMode(sym), quadNo)
    END
 END AddVarRead ;
+*)
 
 
 (*
@@ -3379,6 +3354,7 @@ END AddVarRead ;
                 variable list.
 *)
 
+(*
 PROCEDURE SubVarRead (sym: CARDINAL; quadNo: CARDINAL) ;
 BEGIN
    IF (sym#NulSym) AND IsVar(sym)
@@ -3386,6 +3362,7 @@ BEGIN
       RemoveReadQuad(sym, GetMode(sym), quadNo)
    END
 END SubVarRead ;
+*)
 
 
 (*
@@ -3395,6 +3372,7 @@ END SubVarRead ;
                                symbol table.
 *)
 
+(*
 PROCEDURE CheckRangeAddVariableRead (r: CARDINAL; quadNo: CARDINAL) ;
 VAR
    p: Range ;
@@ -3405,6 +3383,7 @@ BEGIN
       (* AddVarRead(expr, quadNo) *)
    END
 END CheckRangeAddVariableRead ;
+*)
 
 
 (*
@@ -3413,6 +3392,7 @@ END CheckRangeAddVariableRead ;
                                   the symbol table.
 *)
 
+(*
 PROCEDURE CheckRangeRemoveVariableRead (r: CARDINAL; quadNo: CARDINAL) ;
 VAR
    p: Range ;
@@ -3423,6 +3403,7 @@ BEGIN
       (* SubVarRead(expr, quadNo) *)
    END
 END CheckRangeRemoveVariableRead ;
+*)
 
 
 (*
