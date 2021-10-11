@@ -1,3 +1,15 @@
+2021-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/102441
+	* var-tracking.c (add_stores): For cselib_sp_derived_value_p values
+	use MO_VAL_SET if loc is not sp.
+
+2021-10-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/102622
+	* match.pd: Swap the order of a?pow2cst:0 and a?-1:0 transformations.
+	Swap the order of a?0:pow2cst and a?0:-1 transformations.
+
 2021-10-09  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/102639

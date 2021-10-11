@@ -1,3 +1,10 @@
+2021-10-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99348
+	PR fortran/102521
+	* decl.c (add_init_expr_to_sym): Extend initialization of
+	parameter arrays from scalars to handle derived types.
+
 2021-10-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/65454
