@@ -1,3 +1,22 @@
+2021-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/102441
+	* var-tracking.c (add_stores): For cselib_sp_derived_value_p values
+	use MO_VAL_SET if loc is not sp.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98216
+	PR c++/91292
+	* real.c (encode_ieee_double): Avoid unwanted sign extension.
+	(encode_ieee_quad): Likewise.
+
 2021-10-05  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	Backported from master:

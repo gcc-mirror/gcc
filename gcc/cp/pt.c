@@ -2207,7 +2207,8 @@ determine_specialization (tree template_id,
       targs = coerce_template_parms (parms, explicit_targs, fns,
 				     tf_warning_or_error,
 				     /*req_all*/true, /*use_defarg*/true);
-      if (targs != error_mark_node)
+      if (targs != error_mark_node
+	  && constraints_satisfied_p (fns, targs))
         templates = tree_cons (targs, fns, templates);
     }
   else for (lkp_iterator iter (fns); iter; ++iter)
@@ -8224,8 +8225,10 @@ is_compatible_template_arg (tree parm, tree arg)
     {
       tree aparms = DECL_INNERMOST_TEMPLATE_PARMS (arg);
       new_args = template_parms_level_to_args (aparms);
+      ++processing_template_decl;
       parm_cons = tsubst_constraint_info (parm_cons, new_args,
 					  tf_none, NULL_TREE);
+      --processing_template_decl;
       if (parm_cons == error_mark_node)
         return false;
     }
@@ -8514,7 +8517,8 @@ convert_template_argument (tree parm,
 	   can happen in the context of -fnew-ttp-matching.  */;
       else if (tree a = type_uses_auto (t))
 	{
-	  t = do_auto_deduction (t, arg, a, complain, adc_unify, args);
+	  t = do_auto_deduction (t, arg, a, complain, adc_unify, args,
+				 LOOKUP_IMPLICIT);
 	  if (t == error_mark_node)
 	    return error_mark_node;
 	}
@@ -27119,7 +27123,8 @@ value_dependent_expression_p (tree expression)
       }
 
     case TEMPLATE_ID_EXPR:
-      return concept_definition_p (TREE_OPERAND (expression, 0));
+      return concept_definition_p (TREE_OPERAND (expression, 0))
+	&& any_dependent_template_arguments_p (TREE_OPERAND (expression, 1));
 
     case CONSTRUCTOR:
       {
@@ -27525,18 +27530,6 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
       /* Treat requires-expressions as dependent. */
     case REQUIRES_EXPR:
       return *tp;
-
-    case CALL_EXPR:
-      /* Treat concept checks as dependent. */
-      if (concept_check_p (*tp))
-        return *tp;
-      break;
-
-    case TEMPLATE_ID_EXPR:
-      /* Treat concept checks as dependent.  */
-      if (concept_check_p (*tp))
-	return *tp;
-      break;
 
     case CONSTRUCTOR:
       if (CONSTRUCTOR_IS_DEPENDENT (*tp))
@@ -28886,12 +28879,7 @@ collect_ctor_idx_types (tree ctor, tree list, tree elt = NULL_TREE)
     {
       tree ftype = elt ? elt : TREE_TYPE (idx);
       if (BRACE_ENCLOSED_INITIALIZER_P (val)
-	  && CONSTRUCTOR_NELTS (val)
-	  /* As in reshape_init_r, a non-aggregate or array-of-dependent-bound
-	     type gets a single initializer.  */
-	  && CP_AGGREGATE_TYPE_P (ftype)
-	  && !(TREE_CODE (ftype) == ARRAY_TYPE
-	       && uses_template_parms (TYPE_DOMAIN (ftype))))
+	  && CONSTRUCTOR_BRACES_ELIDED_P (val))
 	{
 	  tree subelt = NULL_TREE;
 	  if (TREE_CODE (ftype) == ARRAY_TYPE)

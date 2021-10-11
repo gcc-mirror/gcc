@@ -2766,12 +2766,34 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 					&jump_target);
 
 	  if (DECL_CONSTRUCTOR_P (fun))
-	    /* This can be null for a subobject constructor call, in
-	       which case what we care about is the initialization
-	       side-effects rather than the value.  We could get at the
-	       value by evaluating *this, but we don't bother; there's
-	       no need to put such a call in the hash table.  */
-	    result = lval ? ctx->object : ctx->ctor;
+	    {
+	      /* This can be null for a subobject constructor call, in
+		 which case what we care about is the initialization
+		 side-effects rather than the value.  We could get at the
+		 value by evaluating *this, but we don't bother; there's
+		 no need to put such a call in the hash table.  */
+	      result = lval ? ctx->object : ctx->ctor;
+
+	      /* If we've just evaluated a subobject constructor call for an
+		 empty union member, it might not have produced a side effect
+		 that actually activated the union member.  So produce such a
+		 side effect now to ensure the union appears initialized.  */
+	      if (!result && new_obj
+		  && TREE_CODE (new_obj) == COMPONENT_REF
+		  && TREE_CODE (TREE_TYPE
+				(TREE_OPERAND (new_obj, 0))) == UNION_TYPE
+		  && is_really_empty_class (TREE_TYPE (new_obj),
+					    /*ignore_vptr*/false))
+		{
+		  tree activate = build2 (MODIFY_EXPR, TREE_TYPE (new_obj),
+					  new_obj,
+					  build_constructor (TREE_TYPE (new_obj),
+							     NULL));
+		  cxx_eval_constant_expression (ctx, activate, lval,
+						non_constant_p, overflow_p);
+		  ggc_free (activate);
+		}
+	    }
 	  else if (VOID_TYPE_P (TREE_TYPE (res)))
 	    result = void_node;
 	  else
@@ -7009,7 +7031,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    break;
 	  }
 
-	if (!processing_template_decl
+	if (!value_dependent_expression_p (t)
 	    && !uid_sensitive_constexpr_evaluation_p ())
 	  r = evaluate_concept_check (t);
 	else
@@ -8917,6 +8939,16 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case CO_YIELD_EXPR:
     case CO_RETURN_EXPR:
       return false;
+
+    case NONTYPE_ARGUMENT_PACK:
+      {
+	tree args = ARGUMENT_PACK_ARGS (t);
+	int len = TREE_VEC_LENGTH (args);
+	for (int i = 0; i < len; ++i)
+	  if (!RECUR (TREE_VEC_ELT (args, i), any))
+	    return false;
+	return true;
+      }
 
     default:
       if (objc_non_constant_expr_p (t))

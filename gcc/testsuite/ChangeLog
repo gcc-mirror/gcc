@@ -1,3 +1,106 @@
+2021-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102640
+	* c-c++-common/gomp/pr102640.c: New test.
+
+2021-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99904
+	* g++.dg/cpp2a/concepts-ttp4.C: New test.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102547
+	* g++.dg/cpp0x/variadic-partial2.C: New test.
+	* g++.dg/cpp0x/variadic-partial2a.C: New test.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102535
+	* g++.dg/ext/is_trivially_constructible7.C: New test.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95567
+	* g++.dg/cpp2a/spaceship-virtual1.C: New test.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98216
+	PR c++/91292
+	* g++.dg/cpp2a/nontype-float2.C: New test.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2446
+	PR c++/102412
+	* g++.dg/cpp2a/concepts-nondep2.C: New test.
+	* g++.dg/cpp2a/concepts-nondep3.C: New test.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98486
+	* g++.dg/cpp2a/concepts-var-templ1.C: New test.
+	* g++.dg/cpp2a/concepts-var-templ1a.C: New test.
+	* g++.dg/cpp2a/concepts-var-templ1b.C: New test.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102163
+	* g++.dg/cpp0x/constexpr-empty17.C: New test.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-08-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101344
+	PR c++/101803
+	* g++.dg/cpp2a/class-deduction-aggr11.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr12.C: New test.
+
+2021-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-08-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101883
+	* g++.dg/cpp2a/nontype-class49.C: New test.
+
+2021-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/attr_deprecated-2.f90: New test.
+
 2021-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
