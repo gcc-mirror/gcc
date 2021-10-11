@@ -23,29 +23,19 @@
 // 18.2.1.1 template class numeric_limits
 
 #include <limits>
-#include <type_traits>
 #include <testsuite_hooks.h>
 
 template<typename T>
   void
-  do_test(std::true_type)
+  do_test()
   {
     T limits_min = std::numeric_limits<T>::min();
-    VERIFY( std::numeric_limits<T>::lowest() == limits_min );
-  }
-
-template<typename T>
-  void
-  do_test(std::false_type)
-  {
     T limits_max = std::numeric_limits<T>::max();
-    VERIFY( std::numeric_limits<T>::lowest() == -limits_max );
+    if (std::numeric_limits<T>::is_integer)
+      VERIFY( std::numeric_limits<T>::lowest() == limits_min );
+    else
+      VERIFY( std::numeric_limits<T>::lowest() == -limits_max );
   }
-
-template<typename Tp>
-  void
-  do_test()
-  { do_test<Tp>(typename std::is_integral<Tp>::type()); }
 
 void test01()
 {
