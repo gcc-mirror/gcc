@@ -260,7 +260,6 @@
 
 2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
-	PR libstdc++/98725
 	* src/c++11/limits.cc: Fail if __cpp_inline_variables is
 	defined.
 
