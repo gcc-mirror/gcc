@@ -252,6 +252,10 @@
       external omp_get_max_task_priority
       integer(4) omp_get_max_task_priority
 
+      external omp_set_num_teams, omp_set_teams_thread_limit
+      external omp_get_max_teams, omp_get_teams_thread_limit
+      integer(4) omp_get_max_teams, omp_get_teams_thread_limit
+
       external omp_fulfill_event
 
       external omp_set_affinity_format, omp_get_affinity_format

@@ -3953,6 +3953,7 @@ omp_runtime_api_call (const_tree fndecl)
       "get_level",
       "get_max_active_levels",
       "get_max_task_priority",
+      "get_max_teams",
       "get_max_threads",
       "get_nested",
       "get_num_devices",
@@ -3965,6 +3966,7 @@ omp_runtime_api_call (const_tree fndecl)
       "get_proc_bind",
       "get_supported_active_levels",
       "get_team_num",
+      "get_teams_thread_limit",
       "get_thread_limit",
       "get_thread_num",
       "get_wtick",
@@ -3998,8 +4000,10 @@ omp_runtime_api_call (const_tree fndecl)
       "set_dynamic",
       "set_max_active_levels",
       "set_nested",
+      "set_num_teams",
       "set_num_threads",
-      "set_schedule"
+      "set_schedule",
+      "set_teams_thread_limit"
     };
 
   int mode = 0;
