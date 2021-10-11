@@ -467,7 +467,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       basic_regex(const _Ch_type* __p, std::size_t __len,
 		  flag_type __f = ECMAScript)
-      { _M_compile(__p, __p + __len, __f); }
+      {
+	__glibcxx_requires_string_len(__p, __len);
+	_M_compile(__p, __p + __len, __f);
+      }
 
       /**
        * @brief Copy-constructs a basic regular expression.
@@ -684,6 +687,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  if constexpr (__detail::__is_contiguous_iter<_InputIterator>::value
 			&& is_same_v<_ValT, value_type>)
 	    {
+	      __glibcxx_requires_valid_range(__first, __last);
 	      const auto __len = __last - __first;
 	      const _Ch_type* __p = std::__to_address(__first);
 	      _M_compile(__p, __p + __len, __flags);
