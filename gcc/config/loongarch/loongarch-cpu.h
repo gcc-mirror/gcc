@@ -59,6 +59,7 @@ extern struct loongarch_rtx_cost_data loongarch_cpu_rtx_cost_data[];
 void cache_cpucfg ();
 int fill_native_cpu_config();
 
+#include "system.h"
 uint32_t get_native_prid();
 #endif
 
