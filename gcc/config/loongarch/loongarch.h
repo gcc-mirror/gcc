@@ -95,7 +95,7 @@
 #endif
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{mabi=*} %{subtarget_asm_spec}"
+#define ASM_SPEC "%{mabi=*} %{mfloat-abi=*} %{subtarget_asm_spec}"
 
 /* Extra switches sometimes passed to the linker.  */
 
