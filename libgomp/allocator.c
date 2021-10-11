@@ -82,7 +82,7 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
 	    break;
 	  case omp_atv_contended:
 	  case omp_atv_uncontended:
-	  case omp_atv_sequential:
+	  case omp_atv_serialized:
 	  case omp_atv_private:
 	    data.sync_hint = traits[i].value;
 	    break;
