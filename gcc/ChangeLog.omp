@@ -1,3 +1,11 @@
+2021-10-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (omp_runtime_api_call): Handle omp_get_max_teams,
+	omp_[sg]et_teams_thread_limit and omp_set_num_teams.
+
 2021-10-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

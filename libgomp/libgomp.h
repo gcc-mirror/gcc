@@ -458,6 +458,8 @@ extern unsigned long gomp_bind_var_list_len;
 extern void **gomp_places_list;
 extern unsigned long gomp_places_list_len;
 extern unsigned int gomp_num_teams_var;
+extern int gomp_nteams_var;
+extern int gomp_teams_thread_limit_var;
 extern int gomp_debug_var;
 extern bool gomp_display_affinity_var;
 extern char *gomp_affinity_format_var;

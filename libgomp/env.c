@@ -90,6 +90,8 @@ unsigned long gomp_places_list_len;
 uintptr_t gomp_def_allocator = omp_default_mem_alloc;
 int gomp_debug_var;
 unsigned int gomp_num_teams_var;
+int gomp_nteams_var;
+int gomp_teams_thread_limit_var;
 bool gomp_display_affinity_var;
 char *gomp_affinity_format_var = "level %L thread %i affinity %A";
 size_t gomp_affinity_format_len;
@@ -1319,6 +1321,9 @@ omp_display_env (int verbose)
 	   gomp_global_icv.thread_limit_var);
   fprintf (stderr, "  OMP_MAX_ACTIVE_LEVELS = '%u'\n",
 	   gomp_global_icv.max_active_levels_var);
+  fprintf (stderr, "  OMP_NUM_TEAMS = '%u'\n", gomp_nteams_var);
+  fprintf (stderr, "  OMP_TEAMS_THREAD_LIMIT = '%u'\n",
+	   gomp_teams_thread_limit_var);
 
   fprintf (stderr, "  OMP_CANCELLATION = '%s'\n",
 	   gomp_cancel_var ? "TRUE" : "FALSE");
@@ -1453,6 +1458,8 @@ initialize_env (void)
 				 &gomp_nthreads_var_list,
 				 &gomp_nthreads_var_list_len))
     gomp_global_icv.nthreads_var = gomp_available_cpus;
+  parse_int ("OMP_NUM_TEAMS", &gomp_nteams_var, false);
+  parse_int ("OMP_TEAMS_THREAD_LIMIT", &gomp_teams_thread_limit_var, false);
   bool ignore = false;
   if (parse_bind_var ("OMP_PROC_BIND",
 		      &gomp_global_icv.bind_var,
