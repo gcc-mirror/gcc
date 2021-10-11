@@ -682,15 +682,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	assign(_InputIterator __first, _InputIterator __last,
 	       flag_type __flags = ECMAScript)
 	{
-#if __cplusplus >= 201703L
+#if __cpp_if_constexpr >= 201606L
 	  using _ValT = typename iterator_traits<_InputIterator>::value_type;
 	  if constexpr (__detail::__is_contiguous_iter<_InputIterator>::value
 			&& is_same_v<_ValT, value_type>)
 	    {
 	      __glibcxx_requires_valid_range(__first, __last);
-	      const auto __len = __last - __first;
-	      const _Ch_type* __p = std::__to_address(__first);
-	      _M_compile(__p, __p + __len, __flags);
+	      if constexpr (is_pointer_v<_InputIterator>)
+		_M_compile(__first, __last, __flags);
+	      else // __normal_iterator<_T*, C>
+		_M_compile(__first.base(), __last.base(), __flags);
 	    }
 	  else
 #endif
