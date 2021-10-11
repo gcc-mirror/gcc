@@ -101,7 +101,39 @@ ConstFoldArrayElems::visit (HIR::ArrayElemsValues &elems)
 void
 ConstFoldArrayElems::visit (HIR::ArrayElemsCopied &elems)
 {
-  // TODO
+  std::vector<unsigned long> indices;
+  std::vector<Bexpression *> values;
+
+  TyTy::BaseType *tyty = nullptr;
+  if (!tyctx->lookup_type (expr.get_mappings ().get_hirid (), &tyty))
+    {
+      rust_fatal_error (expr.get_locus (),
+			"did not resolve type for array elems");
+      return;
+    }
+
+  Btype *btype = ConstFoldType::fold (tyty, ctx->get_backend ());
+  Bexpression *elem = ConstFoldExpr::fold (elems.get_elem_to_copy ());
+
+  // num copies expr was already folded in rust-hir-type-check-expr; lookup the
+  // earlier result
+  Bexpression *num_copies_expr = ctx->get_backend ()->error_expression ();
+  ctx->lookup_const (elems.get_num_copies_expr ()->get_mappings ().get_hirid (),
+		     &num_copies_expr);
+
+  size_t copies;
+  bool ok = ctx->get_backend ()->const_size_cast (num_copies_expr, &copies);
+  rust_assert (ok);
+
+  for (size_t i = 0; i < copies; i++)
+    {
+      indices.push_back (i);
+      values.push_back (elem);
+    }
+
+  folded
+    = ctx->get_backend ()->array_constructor_expression (btype, indices, values,
+							 expr.get_locus ());
 }
 
 } // namespace ConstFold
