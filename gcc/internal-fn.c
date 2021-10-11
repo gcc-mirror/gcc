@@ -2934,6 +2934,36 @@ expand_VEC_CONVERT (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* Expand IFN_RAWMEMCHAR internal function.  */
+
+void
+expand_RAWMEMCHR (internal_fn, gcall *stmt)
+{
+  expand_operand ops[3];
+
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+  machine_mode lhs_mode = TYPE_MODE (TREE_TYPE (lhs));
+  rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  create_output_operand (&ops[0], lhs_rtx, lhs_mode);
+
+  tree mem = gimple_call_arg (stmt, 0);
+  rtx mem_rtx = get_memory_rtx (mem, NULL);
+  create_fixed_operand (&ops[1], mem_rtx);
+
+  tree pattern = gimple_call_arg (stmt, 1);
+  machine_mode mode = TYPE_MODE (TREE_TYPE (pattern));
+  rtx pattern_rtx = expand_normal (pattern);
+  create_input_operand (&ops[2], pattern_rtx, mode);
+
+  insn_code icode = direct_optab_handler (rawmemchr_optab, mode);
+
+  expand_insn (icode, 3, ops);
+  if (!rtx_equal_p (lhs_rtx, ops[0].value))
+    emit_move_insn (lhs_rtx, ops[0].value);
+}
+
 /* Expand the IFN_UNIQUE function according to its first argument.  */
 
 static void

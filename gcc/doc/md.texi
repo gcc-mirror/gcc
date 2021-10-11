@@ -6697,6 +6697,13 @@ operand 2 is the character to search for (normally zero),
 and operand 3 is a constant describing the known alignment
 of the beginning of the string.
 
+@cindex @code{rawmemchr@var{m}} instruction pattern
+@item @samp{rawmemchr@var{m}}
+Scan memory referred to by operand 1 for the first occurrence of operand 2.
+Operand 1 is a @code{mem} and operand 2 a @code{const_int} of mode @var{m}.
+Operand 0 is the result, i.e., a pointer to the first occurrence of operand 2
+in the memory block given by operand 1.
+
 @cindex @code{float@var{m}@var{n}2} instruction pattern
 @item @samp{float@var{m}@var{n}2}
 Convert signed integer operand 1 (valid for fixed point mode @var{m}) to

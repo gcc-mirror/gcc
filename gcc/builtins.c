@@ -105,7 +105,6 @@ builtin_info_type builtin_info[(int)END_BUILTINS];
 bool force_folding_builtin_constant_p;
 
 static int target_char_cast (tree, char *);
-static rtx get_memory_rtx (tree, tree);
 static int apply_args_size (void);
 static int apply_result_size (void);
 static rtx result_vector (int, rtx);
@@ -1355,7 +1354,7 @@ expand_builtin_prefetch (tree exp)
    the maximum length of the block of memory that might be accessed or
    NULL if unknown.  */
 
-static rtx
+rtx
 get_memory_rtx (tree exp, tree len)
 {
   tree orig_exp = exp;
