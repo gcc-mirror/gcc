@@ -1,6 +1,14 @@
 2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/icv-3.f90: New.
+	* testsuite/libgomp.fortran/icv-4.f90: New.
+
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi (omp_get_max_teams, omp_get_teams_thread_limit,
