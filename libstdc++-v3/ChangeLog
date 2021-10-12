@@ -1,3 +1,42 @@
+2021-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h: Remove unused header.
+	* include/bits/c++config (std:__terminate): Define.
+	* include/bits/semaphore_base.h: Remove <exception> and use
+	__terminate instead of terminate.
+	* include/bits/std_thread.h: Likewise.
+	* libsupc++/eh_terminate.cc (std::terminate): Use qualified-id
+	to call __cxxabiv1::__terminate.
+
+2021-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex::assign(Iter, Iter)): Avoid
+	std::__to_address by using poitner directly or using base()
+	member of __normal_iterator.
+
+2021-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/numeric_limits/lowest.cc: Use
+	numeric_limits<T>::is_integer instead of is_integral<T>::value.
+
+2021-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89927
+	* include/bits/regex.h (basic_regex(const _Ch_type*, size_t)):
+	Add __glibcxx_requires_string_len assertion.
+	(basic_regex::assign(InputIterator, InputIterator)): Add
+	__glibcxx_requires_valid_range assertion.
+	* include/bits/regex_scanner.tcc (_Scanner::_M_advance())
+	(_Scanner::_M_scan_normal()): Use string literal in assertions.
+
+2021-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102667
+	* include/bits/regex.h (match_result::empty()): Optimize by
+	calling the base function directly.
+	(match_results::end()): Check _Base_type::empty() not empty().
+	* testsuite/28_regex/match_results/102667.C: New test.
+
 2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/98725

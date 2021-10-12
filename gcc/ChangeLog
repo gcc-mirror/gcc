@@ -1,3 +1,118 @@
+2021-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.h (struct modref_access_node): Revert
+	accidental change.
+	(struct modref_ref_node): Likewise.
+
+2021-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.h (modref_tree::global_access_p): New member
+	function.
+	* ipa-modref.c:
+	(implicint_const_eaf_flags,implicit_pure_eaf_flags,
+	ignore_stores_eaf_flags): Move to ipa-modref.h
+	(remove_useless_eaf_flags): Remove early exit on NOCLOBBER.
+	(modref_summary::global_memory_read_p): New member function.
+	(modref_summary::global_memory_written_p): New member function.
+	* ipa-modref.h (modref_summary::global_memory_read_p,
+	modref_summary::global_memory_written_p): Declare.
+	(implicint_const_eaf_flags,implicit_pure_eaf_flags,
+	ignore_stores_eaf_flags): move here.
+	* tree-ssa-structalias.c: Include ipa-modref-tree.h, ipa-modref.h
+	and attr-fnspec.h.
+	(handle_rhs_call): Rewrite.
+	(handle_call_arg): New function.
+	(determine_global_memory_access): New function.
+	(handle_const_call): Remove
+	(handle_pure_call): Remove
+	(find_func_aliases_for_call): Update use of handle_rhs_call.
+	(compute_points_to_sets): Handle global memory acccesses
+	selectively
+
+2021-10-11  Diane Meirowitz  <diane.meirowitz@oracle.com>
+
+	* doc/invoke.texi: Add link to UndefinedBehaviorSanitizer
+	documentation, mention UBSAN_OPTIONS, similar to what is done
+	for AddressSanitizer.
+
+2021-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102683
+	* internal-fn.c (expand_DEFERRED_INIT): Check for mode
+	availability before building an integer type for storage
+	purposes.
+
+2021-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101480
+	* gimple.c (gimple_call_fnspec): Do not mark operator new/delete
+	as const.
+
+2021-10-11  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Remove Init(2) for some options.
+	* toplev.c (process_options): Do not use AUTODETECT_VALUE, but
+	use rather OPTION_SET_P.
+
+2021-10-11  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Remove usage of IRA_REGION_AUTODETECT.
+	* flag-types.h (enum ira_region): Likewise.
+	* toplev.c (process_options): Use OPTION_SET_P instead of
+	IRA_REGION_AUTODETECT.
+
+2021-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (omp_runtime_api_call): Handle omp_get_max_teams,
+	omp_[sg]et_teams_thread_limit and omp_set_num_teams.
+
+2021-10-11  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-protos.h (s390_rawmemchr): Add prototype.
+	* config/s390/s390.c (s390_rawmemchr): New function.
+	* config/s390/s390.md (rawmemchr<SINT:mode>): New expander.
+	* config/s390/vector.md (@vec_vfees<mode>): Basically a copy of
+	the pattern vfees<mode> from vx-builtins.md.
+	* config/s390/vx-builtins.md (*vfees<mode>): Remove.
+
+2021-10-11  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* builtins.c (get_memory_rtx): Change to external linkage.
+	* builtins.h (get_memory_rtx): Add function prototype.
+	* doc/md.texi (rawmemchr<mode>): Document.
+	* internal-fn.c (expand_RAWMEMCHR): Define.
+	* internal-fn.def (RAWMEMCHR): Add.
+	* optabs.def (rawmemchr_optab): Add.
+	* tree-loop-distribution.c (find_single_drs): Change return code
+	behaviour by also returning true if no single store was found
+	but a single load.
+	(loop_distribution::classify_partition): Respect the new return
+	code behaviour of function find_single_drs.
+	(loop_distribution::execute): Call new function
+	transform_reduction_loop in order to replace rawmemchr or strlen
+	like loops by calls into builtins.
+	(generate_reduction_builtin_1): New function.
+	(generate_rawmemchr_builtin): New function.
+	(generate_strlen_builtin_1): New function.
+	(generate_strlen_builtin): New function.
+	(generate_strlen_builtin_using_rawmemchr): New function.
+	(reduction_var_overflows_first): New function.
+	(determine_reduction_stmt_1): New function.
+	(determine_reduction_stmt): New function.
+	(loop_distribution::transform_reduction_loop): New function.
+
+2021-10-11  Martin Liska  <mliska@suse.cz>
+
+	* tree.c (cl_option_hasher::hash): Use cl_optimization_hash
+	and remove legacy hashing code.
+
+2021-10-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/100316
+	* builtins.c (maybe_emit_call_builtin___clear_cache): Allow
+	CONST_INT for BEGIN and END, and use gcc_assert rather than
+	error.
+
 2021-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/102441
