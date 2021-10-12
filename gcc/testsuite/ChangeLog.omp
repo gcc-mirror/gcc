@@ -1,5 +1,13 @@
 2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backported from master:
+	2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102541
+	* gfortran.dg/assumed_rank_24.f90: New test.
+
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/gomp/defaultmap-2.f90: Replace unsupported
 	dg-note by generic dg-message.
 

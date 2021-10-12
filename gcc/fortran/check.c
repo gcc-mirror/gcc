@@ -4530,7 +4530,9 @@ gfc_check_present (gfc_expr *a)
       return false;
     }
 
-  if (!sym->attr.optional)
+  /* For CLASS, the optional attribute might be set at either location. */
+  if ((sym->ts.type != BT_CLASS || !CLASS_DATA (sym)->attr.optional)
+      && !sym->attr.optional)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be of "
 		 "an OPTIONAL dummy variable",
