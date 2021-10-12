@@ -9079,7 +9079,7 @@ elaborate_all_entities_for_package (Entity_Id gnat_package)
 	continue;
 
       /* Skip stuff internal to the compiler.  */
-      if (Convention (gnat_entity) == Convention_Intrinsic)
+      if (Is_Intrinsic_Subprogram (gnat_entity))
 	continue;
       if (kind == E_Operator)
 	continue;
