@@ -23,6 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 /* 128-bit floating point */
 FLOAT_MODE (TF, 16, ieee_quad_format);
 
+/* We need a 32-byte mode to return structures in the 64-bit ABI.  */
+INT_MODE (OI, 32);
+
 /* Add any extra modes needed to represent the condition code.
 
    We have a CCNZ mode which is used for implicit comparisons with zero when
