@@ -8126,6 +8126,160 @@
 	  UNSPEC_COND_FCMUO))]
 )
 
+;; Similar to *fcm<cmp_op><mode>_and_combine, but for BIC rather than AND.
+;; In this case, we still need a separate NOT/BIC operation, but predicating
+;; the comparison on the BIC operand removes the need for a PTRUE.
+(define_insn_and_split "*fcm<cmp_op><mode>_bic_combine"
+  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
+	(and:<VPRED>
+	  (and:<VPRED>
+	    (not:<VPRED>
+	      (unspec:<VPRED>
+	        [(match_operand:<VPRED> 1)
+	         (const_int SVE_KNOWN_PTRUE)
+	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
+	         (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "wDz")]
+	        SVE_COND_FP_CMP_I0))
+	    (match_operand:<VPRED> 4 "register_operand" "Upa"))
+	  (match_dup:<VPRED> 1)))
+   (clobber (match_scratch:<VPRED> 5 "=&Upl"))]
+  "TARGET_SVE"
+  "#"
+  "&& 1"
+  [(set (match_dup 5)
+	(unspec:<VPRED>
+	  [(match_dup 4)
+	   (const_int SVE_MAYBE_NOT_PTRUE)
+	   (match_dup 2)
+	   (match_dup 3)]
+	  SVE_COND_FP_CMP_I0))
+   (set (match_dup 0)
+	(and:<VPRED>
+	  (not:<VPRED>
+	    (match_dup 5))
+	  (match_dup 4)))]
+{
+  if (can_create_pseudo_p ())
+    operands[5] = gen_reg_rtx (<VPRED>mode);
+}
+)
+
+;; Make sure that we expand to a nor when the operand 4 of
+;; *fcm<cmp_op><mode>_bic_combine is a not.
+(define_insn_and_split "*fcm<cmp_op><mode>_nor_combine"
+  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
+	(and:<VPRED>
+	  (and:<VPRED>
+	    (not:<VPRED>
+	      (unspec:<VPRED>
+	        [(match_operand:<VPRED> 1)
+	         (const_int SVE_KNOWN_PTRUE)
+	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
+	         (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "wDz")]
+	        SVE_COND_FP_CMP_I0))
+	    (not:<VPRED>
+	      (match_operand:<VPRED> 4 "register_operand" "Upa")))
+	  (match_dup:<VPRED> 1)))
+   (clobber (match_scratch:<VPRED> 5 "=&Upl"))]
+  "TARGET_SVE"
+  "#"
+  "&& 1"
+  [(set (match_dup 5)
+	(unspec:<VPRED>
+	  [(match_dup 1)
+	   (const_int SVE_KNOWN_PTRUE)
+	   (match_dup 2)
+	   (match_dup 3)]
+	  SVE_COND_FP_CMP_I0))
+   (set (match_dup 0)
+	(and:<VPRED>
+	  (and:<VPRED>
+	    (not:<VPRED>
+	      (match_dup 5))
+	    (not:<VPRED>
+	      (match_dup 4)))
+	  (match_dup 1)))]
+{
+  if (can_create_pseudo_p ())
+    operands[5] = gen_reg_rtx (<VPRED>mode);
+}
+)
+
+(define_insn_and_split "*fcmuo<mode>_bic_combine"
+  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
+	(and:<VPRED>
+	  (and:<VPRED>
+	    (not:<VPRED>
+	      (unspec:<VPRED>
+	        [(match_operand:<VPRED> 1)
+	         (const_int SVE_KNOWN_PTRUE)
+	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
+	         (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "wDz")]
+	        UNSPEC_COND_FCMUO))
+	    (match_operand:<VPRED> 4 "register_operand" "Upa"))
+	  (match_dup:<VPRED> 1)))
+   (clobber (match_scratch:<VPRED> 5 "=&Upl"))]
+  "TARGET_SVE"
+  "#"
+  "&& 1"
+  [(set (match_dup 5)
+	(unspec:<VPRED>
+	  [(match_dup 4)
+	   (const_int SVE_MAYBE_NOT_PTRUE)
+	   (match_dup 2)
+	   (match_dup 3)]
+	  UNSPEC_COND_FCMUO))
+   (set (match_dup 0)
+	(and:<VPRED>
+	  (not:<VPRED>
+	    (match_dup 5))
+	  (match_dup 4)))]
+{
+  if (can_create_pseudo_p ())
+    operands[5] = gen_reg_rtx (<VPRED>mode);
+}
+)
+
+;; Same for unordered comparisons.
+(define_insn_and_split "*fcmuo<mode>_nor_combine"
+  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
+	(and:<VPRED>
+	  (and:<VPRED>
+	    (not:<VPRED>
+	      (unspec:<VPRED>
+	        [(match_operand:<VPRED> 1)
+	         (const_int SVE_KNOWN_PTRUE)
+	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
+	         (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "wDz")]
+	        UNSPEC_COND_FCMUO))
+	    (not:<VPRED>
+	      (match_operand:<VPRED> 4 "register_operand" "Upa")))
+	  (match_dup:<VPRED> 1)))
+   (clobber (match_scratch:<VPRED> 5 "=&Upl"))]
+  "TARGET_SVE"
+  "#"
+  "&& 1"
+  [(set (match_dup 5)
+	(unspec:<VPRED>
+	  [(match_dup 1)
+	   (const_int SVE_KNOWN_PTRUE)
+	   (match_dup 2)
+	   (match_dup 3)]
+	  UNSPEC_COND_FCMUO))
+   (set (match_dup 0)
+	(and:<VPRED>
+	  (and:<VPRED>
+	    (not:<VPRED>
+	      (match_dup 5))
+	    (not:<VPRED>
+	      (match_dup 4)))
+	  (match_dup 1)))]
+{
+  if (can_create_pseudo_p ())
+    operands[5] = gen_reg_rtx (<VPRED>mode);
+}
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] Absolute comparisons
 ;; -------------------------------------------------------------------------
