@@ -25921,23 +25921,8 @@ maybe-TAGS-libcody:
 @if libcody
 maybe-TAGS-libcody: TAGS-libcody
 
-TAGS-libcody: \
-    configure-libcody 
-	@[ -f ./libcody/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing TAGS in libcody"; \
-	(cd $(HOST_SUBDIR)/libcody && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          TAGS) \
-	  || exit 1
+# libcody doesn't support TAGS.
+TAGS-libcody:
 
 @endif libcody
 
@@ -26987,23 +26972,8 @@ maybe-TAGS-libdecnumber:
 @if libdecnumber
 maybe-TAGS-libdecnumber: TAGS-libdecnumber
 
-TAGS-libdecnumber: \
-    configure-libdecnumber 
-	@[ -f ./libdecnumber/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing TAGS in libdecnumber"; \
-	(cd $(HOST_SUBDIR)/libdecnumber && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          TAGS) \
-	  || exit 1
+# libdecnumber doesn't support TAGS.
+TAGS-libdecnumber:
 
 @endif libdecnumber
 
@@ -38319,24 +38289,8 @@ maybe-TAGS-c++tools:
 @if c++tools
 maybe-TAGS-c++tools: TAGS-c++tools
 
-TAGS-c++tools: \
-    configure-c++tools 
-	@: $(MAKE); $(unstage)
-	@[ -f ./c++tools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing TAGS in c++tools"; \
-	(cd $(HOST_SUBDIR)/c++tools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          TAGS) \
-	  || exit 1
+# c++tools doesn't support TAGS.
+TAGS-c++tools:
 
 @endif c++tools
 
@@ -48225,24 +48179,8 @@ maybe-TAGS-target-libgcc:
 @if target-libgcc
 maybe-TAGS-target-libgcc: TAGS-target-libgcc
 
-TAGS-target-libgcc: \
-    configure-target-libgcc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/libgcc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           TAGS) \
-	  || exit 1
+# libgcc doesn't support TAGS.
+TAGS-target-libgcc:
 
 @endif target-libgcc
 
@@ -50057,24 +49995,8 @@ maybe-TAGS-target-libobjc:
 @if target-libobjc
 maybe-TAGS-target-libobjc: TAGS-target-libobjc
 
-TAGS-target-libobjc: \
-    configure-target-libobjc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libobjc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/libobjc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libobjc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           TAGS) \
-	  || exit 1
+# libobjc doesn't support TAGS.
+TAGS-target-libobjc:
 
 @endif target-libobjc
 
