@@ -3003,19 +3003,16 @@ Common Undocumented Var(flag_use_linker_plugin)
 
 ; Positive if we should track variables, negative if we should run
 ; the var-tracking pass only to discard debug annotations, zero if
-; we're not to run it.  When flag_var_tracking == 2 (AUTODETECT_VALUE) it
-; will be set according to optimize, debug_info_level and debug_hooks
-; in process_options ().
+; we're not to run it.
 fvar-tracking
-Common Var(flag_var_tracking) Init(2) PerFunction
+Common Var(flag_var_tracking) PerFunction EnabledBy(fvar-tracking-uninit)
 Perform variable tracking.
 
 ; Positive if we should track variables at assignments, negative if
 ; we should run the var-tracking pass only to discard debug
-; annotations.  When flag_var_tracking_assignments ==
-; AUTODETECT_VALUE it will be set according to flag_var_tracking.
+; annotations.
 fvar-tracking-assignments
-Common Var(flag_var_tracking_assignments) Init(2) PerFunction
+Common Var(flag_var_tracking_assignments) PerFunction
 Perform variable tracking by annotating assignments.
 
 ; Nonzero if we should toggle flag_var_tracking_assignments after
@@ -3026,8 +3023,7 @@ Toggle -fvar-tracking-assignments.
 
 ; Positive if we should track uninitialized variables, negative if
 ; we should run the var-tracking pass only to discard debug
-; annotations.  When flag_var_tracking_uninit == AUTODETECT_VALUE it
-; will be set according to flag_var_tracking.
+; annotations.
 fvar-tracking-uninit
 Common Var(flag_var_tracking_uninit) PerFunction
 Perform variable tracking and also tag variables that are uninitialized.
@@ -3190,11 +3186,11 @@ Common Driver RejectNegative JoinedOrMissing
 Generate debug information in default format.
 
 gas-loc-support
-Common Driver Var(dwarf2out_as_loc_support) Init(2)
+Common Driver Var(dwarf2out_as_loc_support)
 Assume assembler support for (DWARF2+) .loc directives.
 
 gas-locview-support
-Common Driver Var(dwarf2out_as_locview_support) Init(2)
+Common Driver Var(dwarf2out_as_locview_support)
 Assume assembler support for view in (DWARF2+) .loc directives.
 
 gcoff
@@ -3248,7 +3244,7 @@ Common Driver JoinedOrMissing
 Generate debug information in default extended format.
 
 ginline-points
-Common Driver Var(debug_inline_points) Init(2)
+Common Driver Var(debug_inline_points)
 Generate extended entry point information for inlined functions.
 
 ginternal-reset-location-views
@@ -3288,7 +3284,7 @@ Common Driver JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format.
 
 gstatement-frontiers
-Common Driver Var(debug_nonbind_markers_p) Init(2)
+Common Driver Var(debug_nonbind_markers_p)
 Emit progressive recommended breakpoint locations.
 
 gstrict-dwarf
@@ -3304,7 +3300,7 @@ Common Driver Var(flag_gtoggle)
 Toggle debug information generation.
 
 gvariable-location-views
-Common Driver Var(debug_variable_location_views, 1) Init(2)
+Common Driver Var(debug_variable_location_views, 1)
 Augment variable location lists with progressive views.
 
 gvariable-location-views=incompat5
