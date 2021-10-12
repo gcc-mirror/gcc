@@ -3624,8 +3624,13 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "at %L", where);
 	  return false;
 	}
-      if (!f->sym->attr.optional
-	  || (in_statement_function && f->sym->attr.optional))
+      /* For CLASS, the optional attribute might be set at either location. */
+      if (((f->sym->ts.type != BT_CLASS || !CLASS_DATA (f->sym)->attr.optional)
+	   && !f->sym->attr.optional)
+	  || (in_statement_function
+	      && (f->sym->attr.optional
+		  || (f->sym->ts.type == BT_CLASS
+		      && CLASS_DATA (f->sym)->attr.optional))))
 	{
 	  if (where)
 	    gfc_error ("Missing actual argument for argument %qs at %L",

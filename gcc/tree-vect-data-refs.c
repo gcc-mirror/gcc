@@ -2236,7 +2236,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         {
           unsigned max_allowed_peel
 	    = param_vect_max_peeling_for_alignment;
-	  if (flag_vect_cost_model <= VECT_COST_MODEL_CHEAP)
+	  if (loop_cost_model (loop) <= VECT_COST_MODEL_CHEAP)
 	    max_allowed_peel = 0;
           if (max_allowed_peel != (unsigned)-1)
             {
@@ -2334,7 +2334,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   do_versioning
     = (optimize_loop_nest_for_speed_p (loop)
        && !loop->inner /* FORNOW */
-       && flag_vect_cost_model > VECT_COST_MODEL_CHEAP);
+       && loop_cost_model (loop) > VECT_COST_MODEL_CHEAP);
 
   if (do_versioning)
     {
@@ -3751,7 +3751,9 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   unsigned int count = (comp_alias_ddrs.length ()
 			+ check_unequal_addrs.length ());
 
-  if (count && flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP)
+  if (count
+      && (loop_cost_model (LOOP_VINFO_LOOP (loop_vinfo))
+	  == VECT_COST_MODEL_VERY_CHEAP))
     return opt_result::failure_at
       (vect_location, "would need a runtime alias check\n");
 
@@ -3760,7 +3762,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 		     "improved number of alias checks from %d to %d\n",
 		     may_alias_ddrs.length (), count);
   unsigned limit = param_vect_max_version_for_alias_checks;
-  if (flag_simd_cost_model == VECT_COST_MODEL_CHEAP)
+  if (loop_cost_model (LOOP_VINFO_LOOP (loop_vinfo)) == VECT_COST_MODEL_CHEAP)
     limit = param_vect_max_version_for_alias_checks * 6 / 10;
   if (count > limit)
     return opt_result::failure_at

@@ -1,3 +1,41 @@
+2021-10-11  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* allocator.c (omp_init_allocator): Replace omp_atv_sequential with
+	omp_atv_serialized.
+	* omp.h.in: Add deprecated flag for omp_atv_sequential.
+	* omp_lib.f90.in: Add deprecated flag for omp_atv_sequential.
+	* testsuite/libgomp.c-c++-common/alloc-10.c: New test.
+	* testsuite/libgomp.fortran/alloc-12.f90: New test.
+
+2021-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_set_num_teams, omp_get_max_teams,
+	omp_set_teams_thread_limit, omp_get_teams_thread_limit): Declare.
+	* omp_lib.f90.in (omp_set_num_teams, omp_get_max_teams,
+	omp_set_teams_thread_limit, omp_get_teams_thread_limit): Declare.
+	* omp_lib.h.in (omp_set_num_teams, omp_get_max_teams,
+	omp_set_teams_thread_limit, omp_get_teams_thread_limit): Declare.
+	* libgomp.h (gomp_nteams_var, gomp_teams_thread_limit_var): Declare.
+	* libgomp.map (OMP_5.1): Export omp_get_max_teams{,_},
+	omp_get_teams_thread_limit{,_}, omp_set_num_teams{,_,_8_} and
+	omp_set_teams_thread_limit{,_,_8_}.
+	* icv.c (omp_set_num_teams, omp_get_max_teams,
+	omp_set_teams_thread_limit, omp_get_teams_thread_limit): New
+	functions.
+	* env.c (gomp_nteams_var, gomp_teams_thread_limit_var): Define.
+	(omp_display_env): Print OMP_NUM_TEAMS and OMP_TEAMS_THREAD_LIMIT.
+	(initialize_env): Handle OMP_NUM_TEAMS and OMP_TEAMS_THREAD_LIMIT env
+	vars.
+	* teams.c (GOMP_teams_reg): If thread_limit is not specified, use
+	gomp_teams_thread_limit_var as fallback if not zero.  If num_teams
+	is not specified, use gomp_nteams_var.
+	* fortran.c (omp_set_num_teams, omp_get_max_teams,
+	omp_set_teams_thread_limit, omp_get_teams_thread_limit): Add
+	ialias_redirect.
+	(omp_set_num_teams_, omp_set_num_teams_8_, omp_get_max_teams_,
+	omp_set_teams_thread_limit_, omp_set_teams_thread_limit_8_,
+	omp_get_teams_thread_limit_): New functions.
+
 2021-10-09  liuhongt  <hongtao.liu@intel.com>
 
 	* testsuite/libgomp.c++/scan-10.C: Add option -fvect-cost-model=cheap.

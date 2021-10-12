@@ -40,7 +40,6 @@
 #endif // __cpp_lib_atomic_wait
 
 #ifdef _GLIBCXX_HAVE_POSIX_SEMAPHORE
-# include <exception>	// std::terminate
 # include <cerrno>	// errno, EINTR, EAGAIN etc.
 # include <limits.h>	// SEM_VALUE_MAX
 # include <semaphore.h>	// sem_t, sem_init, sem_wait, sem_post etc.
@@ -80,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__err && (errno == EINTR))
 	    continue;
 	  else if (__err)
-	    std::terminate();
+	    std::__terminate();
 	  else
 	    break;
 	}
@@ -97,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  else if (__err && (errno == EAGAIN))
 	    return false;
 	  else if (__err)
-	    std::terminate();
+	    std::__terminate();
 	  else
 	    break;
 	}
@@ -111,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	   auto __err = sem_post(&_M_semaphore);
 	   if (__err)
-	     std::terminate();
+	     std::__terminate();
 	}
     }
 
@@ -138,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      else if (errno == ETIMEDOUT || errno == EINVAL)
 		return false;
 	      else
-		std::terminate();
+		std::__terminate();
 	    }
 	  else
 	    break;

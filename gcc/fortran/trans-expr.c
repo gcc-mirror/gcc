@@ -5454,7 +5454,8 @@ set_dtype_for_unallocated (gfc_se *parmse, gfc_expr *e)
 
   if (POINTER_TYPE_P (TREE_TYPE (desc)))
     desc = build_fold_indirect_ref_loc (input_location, desc);
-
+  if (GFC_CLASS_TYPE_P (TREE_TYPE (desc)))
+    desc = gfc_class_data_get (desc);
   if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
     return;
 
@@ -6533,43 +6534,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		gfc_conv_array_parameter (&parmse, e, nodesc_arg, fsym,
 					  sym->name, NULL);
 
-	      /* Special case for assumed-rank arrays. */
-	      if (!sym->attr.is_bind_c && e && fsym && fsym->as
-		  && fsym->as->type == AS_ASSUMED_RANK
-		  && e->rank != -1)
-		{
-		  if ((gfc_expr_attr (e).pointer
-		      || gfc_expr_attr (e).allocatable)
-		      && ((fsym->ts.type == BT_CLASS
-			   && (CLASS_DATA (fsym)->attr.class_pointer
-			       || CLASS_DATA (fsym)->attr.allocatable))
-			  || (fsym->ts.type != BT_CLASS
-			      && (fsym->attr.pointer || fsym->attr.allocatable))))
-		    {
-		      /* Unallocated allocatable arrays and unassociated pointer
-			 arrays need their dtype setting if they are argument
-			 associated with assumed rank dummies. However, if the
-			 dummy is nonallocate/nonpointer, the user may not
-			 pass those. Hence, it can be skipped.  */
-		      set_dtype_for_unallocated (&parmse, e);
-		    }
-		  else if (e->expr_type == EXPR_VARIABLE
-			   && e->ref
-			   && e->ref->u.ar.type == AR_FULL
-			   && e->symtree->n.sym->attr.dummy
-			   && e->symtree->n.sym->as
-			   && e->symtree->n.sym->as->type == AS_ASSUMED_SIZE)
-		    {
-		      tree minus_one;
-		      tmp = build_fold_indirect_ref_loc (input_location,
-							 parmse.expr);
-		      minus_one = build_int_cst (gfc_array_index_type, -1);
-		      gfc_conv_descriptor_ubound_set (&parmse.pre, tmp,
-						      gfc_rank_cst[e->rank - 1],
-						      minus_one);
- 		    }
-		}
-
 	      /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is
 		 allocated on entry, it must be deallocated.  */
 	      if (fsym && fsym->attr.allocatable
@@ -6619,6 +6583,46 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				       tmp, build_empty_stmt (input_location));
 		  gfc_add_expr_to_block (&se->pre, tmp);
 		}
+	    }
+	}
+      /* Special case for an assumed-rank dummy argument. */
+      if (!sym->attr.is_bind_c && e && fsym && e->rank > 0
+	  && (fsym->ts.type == BT_CLASS
+	      ? (CLASS_DATA (fsym)->as
+		 && CLASS_DATA (fsym)->as->type == AS_ASSUMED_RANK)
+	      : (fsym->as && fsym->as->type == AS_ASSUMED_RANK)))
+	{
+	  if (fsym->ts.type == BT_CLASS
+	      ? (CLASS_DATA (fsym)->attr.class_pointer
+		 || CLASS_DATA (fsym)->attr.allocatable)
+	      : (fsym->attr.pointer || fsym->attr.allocatable))
+	    {
+	      /* Unallocated allocatable arrays and unassociated pointer
+		 arrays need their dtype setting if they are argument
+		 associated with assumed rank dummies to set the rank.  */
+	      set_dtype_for_unallocated (&parmse, e);
+	    }
+	  else if (e->expr_type == EXPR_VARIABLE
+		   && e->symtree->n.sym->attr.dummy
+		   && (e->ts.type == BT_CLASS
+		       ? (e->ref && e->ref->next
+			  && e->ref->next->type == REF_ARRAY
+			  && e->ref->next->u.ar.type == AR_FULL
+			  && e->ref->next->u.ar.as->type == AS_ASSUMED_SIZE)
+		       : (e->ref && e->ref->type == REF_ARRAY
+			  && e->ref->u.ar.type == AR_FULL
+			  && e->ref->u.ar.as->type == AS_ASSUMED_SIZE)))
+	    {
+	      /* Assumed-size actual to assumed-rank dummy requires
+		 dim[rank-1].ubound = -1. */
+	      tree minus_one;
+	      tmp = build_fold_indirect_ref_loc (input_location, parmse.expr);
+	      if (fsym->ts.type == BT_CLASS)
+		tmp = gfc_class_data_get (tmp);
+	      minus_one = build_int_cst (gfc_array_index_type, -1);
+	      gfc_conv_descriptor_ubound_set (&parmse.pre, tmp,
+					      gfc_rank_cst[e->rank - 1],
+					      minus_one);
 	    }
 	}
 

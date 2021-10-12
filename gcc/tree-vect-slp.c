@@ -1761,6 +1761,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 				       bit_field_size (bfref), &lane))
 	    {
 	      lperm.release ();
+	      matches[0] = false;
 	      return NULL;
 	    }
 	  lperm.safe_push (std::make_pair (0, (unsigned)lane));

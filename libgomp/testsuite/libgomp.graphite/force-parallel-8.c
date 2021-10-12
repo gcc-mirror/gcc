@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fdisable-tree-thread1 -fdisable-tree-vrp-thread1" } */
+/* { dg-additional-options "-fdisable-tree-thread1 -fdisable-tree-vrp-thread1 --param max-stores-to-sink=0" } */
 
 #define N 1500
 

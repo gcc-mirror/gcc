@@ -1701,14 +1701,22 @@ get_dr_vinfo_offset (vec_info *vinfo,
 }
 
 
+/* Return the vect cost model for LOOP.  */
+static inline enum vect_cost_model
+loop_cost_model (loop_p loop)
+{
+  if (loop != NULL
+      && loop->force_vectorize
+      && flag_simd_cost_model != VECT_COST_MODEL_DEFAULT)
+    return flag_simd_cost_model;
+  return flag_vect_cost_model;
+}
+
 /* Return true if the vect cost model is unlimited.  */
 static inline bool
 unlimited_cost_model (loop_p loop)
 {
-  if (loop != NULL && loop->force_vectorize
-      && flag_simd_cost_model != VECT_COST_MODEL_DEFAULT)
-    return flag_simd_cost_model == VECT_COST_MODEL_UNLIMITED;
-  return (flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED);
+  return loop_cost_model (loop) == VECT_COST_MODEL_UNLIMITED;
 }
 
 /* Return true if the loop described by LOOP_VINFO is fully-masked and

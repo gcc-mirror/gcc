@@ -1,3 +1,40 @@
+2021-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/torture/ssa-pta-fn-1.c: Fix template; add noipa.
+	* gcc.dg/tree-ssa/pta-callused.c: Fix template.
+
+2021-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102643
+	* g++.dg/cpp2a/class-deduction-alias11.C: New test.
+
+2021-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101480
+	* g++.dg/torture/pr10148.C: New testcase.
+
+2021-10-11  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/rawmemchr-1.c: New test.
+
+2021-10-11  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/ldist-rawmemchr-1.c: New test.
+	* gcc.dg/tree-ssa/ldist-rawmemchr-2.c: New test.
+	* gcc.dg/tree-ssa/ldist-strlen-1.c: New test.
+	* gcc.dg/tree-ssa/ldist-strlen-2.c: New test.
+	* gcc.dg/tree-ssa/ldist-strlen-3.c: New test.
+
+2021-10-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/100316
+	* gcc.c-torture/compile/pr100316.c: New.
+
+2021-10-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/102669
+	* gnat.dg/unroll1.adb: Add -fno-tree-vectorize.
+
 2021-10-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/99348

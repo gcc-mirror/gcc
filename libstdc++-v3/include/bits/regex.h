@@ -467,7 +467,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       basic_regex(const _Ch_type* __p, std::size_t __len,
 		  flag_type __f = ECMAScript)
-      { _M_compile(__p, __p + __len, __f); }
+      {
+	__glibcxx_requires_string_len(__p, __len);
+	_M_compile(__p, __p + __len, __f);
+      }
 
       /**
        * @brief Copy-constructs a basic regular expression.
@@ -679,14 +682,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	assign(_InputIterator __first, _InputIterator __last,
 	       flag_type __flags = ECMAScript)
 	{
-#if __cplusplus >= 201703L
+#if __cpp_if_constexpr >= 201606L
 	  using _ValT = typename iterator_traits<_InputIterator>::value_type;
 	  if constexpr (__detail::__is_contiguous_iter<_InputIterator>::value
 			&& is_same_v<_ValT, value_type>)
 	    {
-	      const auto __len = __last - __first;
-	      const _Ch_type* __p = std::__to_address(__first);
-	      _M_compile(__p, __p + __len, __flags);
+	      __glibcxx_requires_valid_range(__first, __last);
+	      if constexpr (is_pointer_v<_InputIterator>)
+		_M_compile(__first, __last, __flags);
+	      else // __normal_iterator<_T*, C>
+		_M_compile(__first.base(), __last.base(), __flags);
 	    }
 	  else
 #endif
@@ -1828,7 +1833,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       _GLIBCXX_NODISCARD bool
       empty() const noexcept
-      { return size() == 0; }
+      { return _Unchecked::size() <= 3; }
 
       ///@}
 
@@ -1946,7 +1951,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       const_iterator
       end() const noexcept
-      { return _Base_type::end() - (empty() ? 0 : 3); }
+      { return _Base_type::end() - (_Base_type::empty() ? 0 : 3); }
 
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.

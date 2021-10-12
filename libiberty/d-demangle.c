@@ -253,15 +253,15 @@ dlang_hexdigit (const char *mangled, char *ret)
 
   c = mangled[0];
   if (!ISDIGIT (c))
-    (*ret) = (c - (ISUPPER (c) ? 'A' : 'a') + 10);
+    *ret = c - (ISUPPER (c) ? 'A' : 'a') + 10;
   else
-    (*ret) = (c - '0');
+    *ret = c - '0';
 
   c = mangled[1];
   if (!ISDIGIT (c))
-    (*ret) = (*ret << 4) | (c - (ISUPPER (c) ? 'A' : 'a') + 10);
+    *ret = (*ret << 4) | (c - (ISUPPER (c) ? 'A' : 'a') + 10);
   else
-    (*ret) = (*ret << 4) | (c - '0');
+    *ret = (*ret << 4) | (c - '0');
 
   mangled += 2;
 
@@ -338,7 +338,7 @@ dlang_decode_backref (const char *mangled, long *ret)
 static const char *
 dlang_backref (const char *mangled, const char **ret, struct dlang_info *info)
 {
-  (*ret) = NULL;
+  *ret = NULL;
 
   if (mangled == NULL || *mangled != 'Q')
     return NULL;
@@ -356,7 +356,7 @@ dlang_backref (const char *mangled, const char **ret, struct dlang_info *info)
     return NULL;
 
   /* Set the position of the back reference.  */
-  (*ret) = qpos - refpos;
+  *ret = qpos - refpos;
 
   return mangled;
 }

@@ -203,34 +203,12 @@ _mm_testnzc_si128 (__m128i __A, __m128i __B)
   return _mm_testz_si128 (__A, __B) == 0 && _mm_testc_si128 (__A, __B) == 0;
 }
 
-__inline int
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_test_all_zeros (__m128i __A, __m128i __mask)
-{
-  const __v16qu __zero = {0};
-  return vec_all_eq (vec_and ((__v16qu) __A, (__v16qu) __mask), __zero);
-}
+#define _mm_test_all_zeros(M, V) _mm_testz_si128 ((M), (V))
 
-__inline int
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_test_all_ones (__m128i __A)
-{
-  const __v16qu __ones = vec_splats ((unsigned char) 0xff);
-  return vec_all_eq ((__v16qu) __A, __ones);
-}
+#define _mm_test_all_ones(V) \
+  _mm_testc_si128 ((V), _mm_cmpeq_epi32 ((V), (V)))
 
-__inline int
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_test_mix_ones_zeros (__m128i __A, __m128i __mask)
-{
-  const __v16qu __zero = {0};
-  const __v16qu __Amasked = vec_and ((__v16qu) __A, (__v16qu) __mask);
-  const int any_ones = vec_any_ne (__Amasked, __zero);
-  const __v16qu __notA = vec_nor ((__v16qu) __A, (__v16qu) __A);
-  const __v16qu __notAmasked = vec_and ((__v16qu) __notA, (__v16qu) __mask);
-  const int any_zeros = vec_any_ne (__notAmasked, __zero);
-  return any_ones * any_zeros;
-}
+#define _mm_test_mix_ones_zeros(M, V) _mm_testnzc_si128 ((M), (V))
 
 __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -296,6 +274,225 @@ _mm_floor_ss (__m128 __A, __m128 __B)
   return __r;
 }
 
+#ifdef _ARCH_PWR8
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmpeq_epi64 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_cmpeq ((__v2di) __X, (__v2di) __Y);
+}
+#endif
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_min_epi8 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_min ((__v16qi)__X, (__v16qi)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_min_epu16 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_min ((__v8hu)__X, (__v8hu)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_min_epi32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_min ((__v4si)__X, (__v4si)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_min_epu32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_min ((__v4su)__X, (__v4su)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_max_epi8 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_max ((__v16qi)__X, (__v16qi)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_max_epu16 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_max ((__v8hu)__X, (__v8hu)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_max_epi32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_max ((__v4si)__X, (__v4si)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_max_epu32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_max ((__v4su)__X, (__v4su)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mullo_epi32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_mul ((__v4su) __X, (__v4su) __Y);
+}
+
+#ifdef _ARCH_PWR8
+__inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mul_epi32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_mule ((__v4si) __X, (__v4si) __Y);
+}
+#endif
+
+__inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi8_epi16 (__m128i __A)
+{
+  return (__m128i) vec_unpackh ((__v16qi) __A);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi8_epi32 (__m128i __A)
+{
+  __A = (__m128i) vec_unpackh ((__v16qi) __A);
+  return (__m128i) vec_unpackh ((__v8hi) __A);
+}
+
+#ifdef _ARCH_PWR8
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi8_epi64 (__m128i __A)
+{
+  __A = (__m128i) vec_unpackh ((__v16qi) __A);
+  __A = (__m128i) vec_unpackh ((__v8hi) __A);
+  return (__m128i) vec_unpackh ((__v4si) __A);
+}
+#endif
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi16_epi32 (__m128i __A)
+{
+  return (__m128i) vec_unpackh ((__v8hi) __A);
+}
+
+#ifdef _ARCH_PWR8
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi16_epi64 (__m128i __A)
+{
+  __A = (__m128i) vec_unpackh ((__v8hi) __A);
+  return (__m128i) vec_unpackh ((__v4si) __A);
+}
+#endif
+
+#ifdef _ARCH_PWR8
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi32_epi64 (__m128i __A)
+{
+  return (__m128i) vec_unpackh ((__v4si) __A);
+}
+#endif
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu8_epi16 (__m128i __A)
+{
+  const __v16qu __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v16qu) __A, __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v16qu) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu8_epi32 (__m128i __A)
+{
+  const __v16qu __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v16qu) __A, __zero);
+  __A = (__m128i) vec_mergeh ((__v8hu) __A, (__v8hu) __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v16qu) __A);
+  __A = (__m128i) vec_mergeh ((__v8hu) __zero, (__v8hu) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu8_epi64 (__m128i __A)
+{
+  const __v16qu __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v16qu) __A, __zero);
+  __A = (__m128i) vec_mergeh ((__v8hu) __A, (__v8hu) __zero);
+  __A = (__m128i) vec_mergeh ((__v4su) __A, (__v4su) __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v16qu) __A);
+  __A = (__m128i) vec_mergeh ((__v8hu) __zero, (__v8hu) __A);
+  __A = (__m128i) vec_mergeh ((__v4su) __zero, (__v4su) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu16_epi32 (__m128i __A)
+{
+  const __v8hu __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v8hu) __A, __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v8hu) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu16_epi64 (__m128i __A)
+{
+  const __v8hu __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v8hu) __A, __zero);
+  __A = (__m128i) vec_mergeh ((__v4su) __A, (__v4su) __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v8hu) __A);
+  __A = (__m128i) vec_mergeh ((__v4su) __zero, (__v4su) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu32_epi64 (__m128i __A)
+{
+  const __v4su __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v4su) __A, __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v4su) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
 /* Return horizontal packed word minimum and its index in bits [15:0]
    and bits [18:16] respectively.  */
 __inline __m128i
@@ -322,5 +519,21 @@ _mm_minpos_epu16 (__m128i __A)
   __r.__uh[1] = __ridx;
   return __r.__m;
 }
+
+__inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_packus_epi32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_packsu ((__v4si) __X, (__v4si) __Y);
+}
+
+#ifdef _ARCH_PWR8
+__inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmpgt_epi64 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_cmpgt ((__v2di) __X, (__v2di) __Y);
+}
+#endif
 
 #endif

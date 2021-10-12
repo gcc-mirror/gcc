@@ -1303,7 +1303,8 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
   DECL_EXTERNAL (decl) = 0;
 
   /* Avoid uninitialized warnings for optional dummy arguments.  */
-  if (sym->attr.optional)
+  if ((sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.optional)
+      || sym->attr.optional)
     suppress_warning (decl);
 
   /* We should never get deferred shape arrays here.  We used to because of

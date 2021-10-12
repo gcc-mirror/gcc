@@ -6549,7 +6549,9 @@ gfc_trans_g77_array (gfc_symbol * sym, gfc_wrapped_block * block)
 
   /* Add the initialization code to the start of the function.  */
 
-  if (sym->attr.optional || sym->attr.not_always_present)
+  if ((sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.optional)
+      || sym->attr.optional
+      || sym->attr.not_always_present)
     {
       tree nullify;
       if (TREE_CODE (parm) != PARM_DECL)

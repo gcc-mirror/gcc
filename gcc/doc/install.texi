@@ -3478,8 +3478,8 @@ Microsoft Windows:
 @item
 The @uref{https://sourceware.org/cygwin/,,Cygwin} project;
 @item
-The @uref{http://www.mingw.org/,,MinGW} and
-@uref{http://mingw-w64.org/doku.php,,mingw-w64} projects.
+The @uref{https://osdn.net/projects/mingw/,,MinGW} and
+@uref{http://www.mingw-w64.org/,,mingw-w64} projects.
 @end itemize
 
 @item
