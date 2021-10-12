@@ -3,6 +3,15 @@
 	Backported from master:
 	2021-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* libgomp.texi (omp_get_max_teams, omp_get_teams_thread_limit,
+	omp_set_num_teams, omp_set_teams_thread_limit, OMP_NUM_TEAMS,
+	OMP_TEAMS_THREAD_LIMIT): Document.
+
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
 	* libgomp.texi (omp_get_device_num): Move @node before omp_get_dynamic
 	to avoid makeinfo warnings.
 
