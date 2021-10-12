@@ -3,6 +3,14 @@
 	Backported from master:
 	2021-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* libgomp.texi (omp_get_device_num): Move @node before omp_get_dynamic
+	to avoid makeinfo warnings.
+
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
 	* testsuite/libgomp.c-c++-common/icv-3.c: New test.
 	* testsuite/libgomp.c-c++-common/icv-4.c: New test.
 
