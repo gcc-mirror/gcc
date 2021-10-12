@@ -8953,11 +8953,12 @@ package body Exp_Ch7 is
       Typ       : Entity_Id;
       Skip_Self : Boolean := False) return Node_Id
    is
-      Loc    : constant Source_Ptr := Sloc (Obj_Ref);
-      Atyp   : Entity_Id;
-      Fin_Id : Entity_Id := Empty;
-      Ref    : Node_Id;
-      Utyp   : Entity_Id;
+      Loc      : constant Source_Ptr := Sloc (Obj_Ref);
+      Atyp     : Entity_Id;
+      Prot_Typ : Entity_Id := Empty;
+      Fin_Id   : Entity_Id := Empty;
+      Ref      : Node_Id;
+      Utyp     : Entity_Id;
 
    begin
       Ref := Obj_Ref;
@@ -9035,6 +9036,19 @@ package body Exp_Ch7 is
          Set_Assignment_OK (Ref);
       end if;
 
+      --  Detect if Typ is a protected type or an expanded protected type and
+      --  store the relevant type within Prot_Typ for later processing.
+
+      if Is_Protected_Type (Typ) then
+         Prot_Typ := Typ;
+
+      elsif Ekind (Typ) = E_Record_Type
+        and then Present (Corresponding_Concurrent_Type (Typ))
+        and then Is_Protected_Type (Corresponding_Concurrent_Type (Typ))
+      then
+         Prot_Typ := Corresponding_Concurrent_Type (Typ);
+      end if;
+
       --  The underlying type may not be present due to a missing full view. In
       --  this case freezing did not take place and there is no [Deep_]Finalize
       --  primitive to call.
@@ -9080,7 +9094,7 @@ package body Exp_Ch7 is
       --  Protected types: these also require finalization even though they
       --  are not marked controlled explicitly.
 
-      elsif Is_Protected_Type (Typ) then
+      elsif Present (Prot_Typ) then
          --  Protected objects do not need to be finalized on restricted
          --  runtimes.
 
@@ -9090,7 +9104,7 @@ package body Exp_Ch7 is
          --  ??? Only handle the simple case for now. Will not support a record
          --  or array containing protected objects.
 
-         elsif Is_Simple_Protected_Type (Typ) then
+         elsif Is_Simple_Protected_Type (Prot_Typ) then
             Fin_Id := RTE (RE_Finalize_Protection);
          else
             raise Program_Error;
