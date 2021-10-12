@@ -381,7 +381,9 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 	  bool clear_padding = false;
 	  HOST_WIDE_INT non_padding_start = 0;
 	  HOST_WIDE_INT non_padding_end = 0;
-	  if (BITS_PER_UNIT == 8 && CHAR_BIT == 8)
+	  if (BITS_PER_UNIT == 8
+	      && CHAR_BIT == 8
+	      && clear_padding_type_may_have_padding_p (cmptype))
 	    {
 	      HOST_WIDE_INT sz = int_size_in_bytes (cmptype), i;
 	      gcc_assert (sz > 0);
