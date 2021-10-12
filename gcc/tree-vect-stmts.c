@@ -2791,7 +2791,7 @@ vect_build_gather_load_calls (vec_info *vinfo, stmt_vec_info stmt_info,
   if (mask)
     vect_get_vec_defs_for_operand (vinfo, stmt_info,
 				   modifier == NARROW ? ncopies / 2 : ncopies,
-				   mask, &vec_masks);
+				   mask, &vec_masks, masktype);
   for (int j = 0; j < ncopies; ++j)
     {
       tree op, var;
