@@ -1,3 +1,16 @@
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102628
+	PR libgomp/102668
+	* testsuite/libgomp.c-c++-common/alloc-9.c (main): Decrease
+	allocation sizes from 420 to 320 and from 768 to 568.
+	* testsuite/libgomp.fortran/alloc-11.f90: Likewise.
+	* testsuite/libgomp.fortran/alloc-1.F90: Change expected alignment
+	for cr from 16 to 4.
+
 2021-10-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
