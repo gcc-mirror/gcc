@@ -1321,11 +1321,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 				       opts->x_flag_live_patching,
 				       loc);
 
-  /* Unrolling all loops implies that standard loop unrolling must also
-     be done.  */
-  if (opts->x_flag_unroll_all_loops)
-    opts->x_flag_unroll_loops = 1;
-
   /* Allow cunroll to grow size accordingly.  */
   if (!opts_set->x_flag_cunroll_grow_size)
     opts->x_flag_cunroll_grow_size
