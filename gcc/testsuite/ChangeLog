@@ -1,3 +1,11 @@
+2021-10-11  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2021-10-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/102622
+	* gcc.c-torture/execute/bitfld-10.c: New test.
+
 2021-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

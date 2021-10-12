@@ -1,3 +1,12 @@
+2021-10-11  Diane Meirowitz  <diane.meirowitz@oracle.com>
+
+	Backported from master:
+	2021-10-11  Diane Meirowitz  <diane.meirowitz@oracle.com>
+
+	* doc/invoke.texi: Add link to UndefinedBehaviorSanitizer
+	documentation, mention UBSAN_OPTIONS, similar to what is done
+	for AddressSanitizer.
+
 2021-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
