@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mvsx" } */
-/* { dg-require-effective-target powerpc_vsx_hw } */
+/* { dg-require-effective-target vsx_hw } */
 
 #include <x86intrin.h>
 

@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -mvsx" } */
-/* { dg-require-effective-target powerpc_vsx_hw } */
+/* { dg-require-effective-target vsx_hw } */
 
 #ifndef CHECK_H
 #define CHECK_H "sse4_2-check.h"
