@@ -1850,7 +1850,7 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
 
   /* If using the "very cheap" model. reject cases in which we'd keep
      a copy of the scalar code (even if we might be able to vectorize it).  */
-  if (flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP
+  if (loop_cost_model (loop) == VECT_COST_MODEL_VERY_CHEAP
       && (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
 	  || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
 	  || LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)))
@@ -1922,7 +1922,7 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
   /* If the vector loop needs multiple iterations to be beneficial then
      things are probably too close to call, and the conservative thing
      would be to stick with the scalar code.  */
-  if (flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP
+  if (loop_cost_model (loop) == VECT_COST_MODEL_VERY_CHEAP
       && min_profitable_estimate > (int) vect_vf_for_cost (loop_vinfo))
     {
       if (dump_enabled_p ())
