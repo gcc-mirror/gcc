@@ -24,7 +24,7 @@ implicit none
   allocate(character(len=7) :: strXa, strXaarr(5), strXp, strXparr(5))
 
 
-  !$omp target defaultmap ( none )  ! { dg-note "enclosing 'target'" }
+  !$omp target defaultmap ( none )  ! { dg-message "enclosing 'target'" }
     ii = 42; arr = 42; aii = 42; aarr = 42; pii = 42; parr = 42
     ! { dg-error "'ii' not specified in enclosing 'target'" "" { target *-*-* } .-1 }
     ! { dg-error "'arr' not specified in enclosing 'target'" "" { target *-*-* } .-2 }
@@ -66,7 +66,7 @@ implicit none
 
 
   !$omp target defaultmap(none : scalar)  defaultmap(none : aggregate)  &
-  !$omp&       defaultmap(none : allocatable) defaultmap(none : pointer)   ! { dg-note "enclosing 'target'" }
+  !$omp&       defaultmap(none : allocatable) defaultmap(none : pointer)   ! { dg-message "enclosing 'target'" }
     ii = 42; arr = 42; aii = 42; aarr = 42; pii = 42; parr = 42
     ! { dg-error "'ii' not specified in enclosing 'target'" "" { target *-*-* } .-1 }
     ! { dg-error "'arr' not specified in enclosing 'target'" "" { target *-*-* } .-2 }

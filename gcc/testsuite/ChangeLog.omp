@@ -1,3 +1,8 @@
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/defaultmap-2.f90: Replace unsupported
+	dg-note by generic dg-message.
+
 2021-10-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
