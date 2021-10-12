@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2251r1.pdf
