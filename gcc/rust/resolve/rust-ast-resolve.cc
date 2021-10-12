@@ -348,10 +348,8 @@ ResolveExpr::visit (AST::BlockExpr &expr)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
-  expr.iterate_stmts ([&] (AST::Stmt *s) mutable -> bool {
-    ResolveStmt::go (s, s->get_node_id ());
-    return true;
-  });
+  for (auto &s : expr.get_statements ())
+    ResolveStmt::go (s.get (), s->get_node_id ());
 
   if (expr.has_tail_expr ())
     ResolveExpr::go (expr.get_tail_expr ().get (), expr.get_node_id ());
