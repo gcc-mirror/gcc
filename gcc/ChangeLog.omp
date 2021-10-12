@@ -1,3 +1,12 @@
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-fold.h (clear_padding_type_may_have_padding_p): Declare.
+	* gimple-fold.c (clear_padding_type_may_have_padding_p): No longer
+	static.
+
 2021-10-11  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	Backported from master:

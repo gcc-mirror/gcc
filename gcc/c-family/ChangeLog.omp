@@ -1,3 +1,11 @@
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_finish_omp_atomic): Use
+	clear_padding_type_may_have_padding_p.
+
 2021-10-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
