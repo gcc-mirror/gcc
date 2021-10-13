@@ -523,8 +523,8 @@ package body Sem_Eval is
               and then Nkind (Parent (N)) in N_Subexpr
             then
                Rewrite (N, New_Copy (N));
-               Set_Realval
-                 (N, Machine (Base_Type (T), Realval (N), Round_Even, N));
+               Set_Realval (N, Machine_Number (Base_Type (T), Realval (N), N));
+               Set_Is_Machine_Number (N);
             end if;
          end if;
 
@@ -575,18 +575,7 @@ package body Sem_Eval is
               (N, Corresponding_Integer_Value (N) * Small_Value (T));
 
          elsif not UR_Is_Zero (Realval (N)) then
-
-            --  Note: even though RM 4.9(38) specifies biased rounding, this
-            --  has been modified by AI-100 in order to prevent confusing
-            --  differences in rounding between static and non-static
-            --  expressions. AI-100 specifies that the effect of such rounding
-            --  is implementation dependent, and in GNAT we round to nearest
-            --  even to match the run-time behavior. Note that this applies
-            --  to floating point literals, not fixed points ones, even though
-            --  their compiler representation is also as a universal real.
-
-            Set_Realval
-              (N, Machine (Base_Type (T), Realval (N), Round_Even, N));
+            Set_Realval (N, Machine_Number (Base_Type (T), Realval (N), N));
             Set_Is_Machine_Number (N);
          end if;
 
@@ -6044,6 +6033,27 @@ package body Sem_Eval is
 
       return False;
    end Is_Statically_Unevaluated;
+
+   --------------------
+   -- Machine_Number --
+   --------------------
+
+   --  Historical note: RM 4.9(38) originally specified biased rounding but
+   --  this has been modified by AI-268 to prevent confusing differences in
+   --  rounding between static and nonstatic expressions. This AI specifies
+   --  that the effect of such rounding is implementation-dependent instead,
+   --  and in GNAT we round to nearest even to match the run-time behavior.
+   --  Note that this applies to floating-point literals, not fixed-point
+   --  ones, even though their representation is also a universal real.
+
+   function Machine_Number
+     (Typ : Entity_Id;
+      Val : Ureal;
+      N   : Node_Id) return Ureal
+   is
+   begin
+      return Machine (Typ, Val, Round_Even, N);
+   end Machine_Number;
 
    --------------------
    -- Not_Null_Range --

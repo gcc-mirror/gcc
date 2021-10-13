@@ -486,6 +486,13 @@ package Sem_Eval is
    --  it cannot be determined at compile time. Flag Fixed_Int is used as in
    --  routine Is_In_Range above.
 
+   function Machine_Number
+     (Typ : Entity_Id;
+      Val : Ureal;
+      N   : Node_Id) return Ureal;
+   --  Return the machine number of Typ corresponding to the specified Val as
+   --  per RM 4.9(38/2). N is a node only used to post warnings.
+
    function Not_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean;
    --  Returns True if it can guarantee that Lo .. Hi is not a null range. If
    --  it cannot (because the value of Lo or Hi is not known at compile time)
@@ -574,5 +581,6 @@ private
    pragma Inline (Eval_Unchecked_Conversion);
 
    pragma Inline (Is_OK_Static_Expression);
+   pragma Inline (Machine_Number);
 
 end Sem_Eval;

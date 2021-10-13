@@ -9251,14 +9251,12 @@ package body Sem_Attr is
       -- Machine --
       -------------
 
-      --  We use the same rounding mode as the one used for RM 4.9(38)
+      --  We use the same rounding as the one used for RM 4.9(38/2)
 
       when Attribute_Machine =>
          Fold_Ureal
-           (N,
-            Eval_Fat.Machine
-              (P_Base_Type, Expr_Value_R (E1), Eval_Fat.Round_Even, N),
-            Static);
+           (N, Machine_Number (P_Base_Type, Expr_Value_R (E1), N), Static);
+         Set_Is_Machine_Number (N);
 
       ------------------
       -- Machine_Emax --
