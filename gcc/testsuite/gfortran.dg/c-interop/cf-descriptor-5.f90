@@ -7,7 +7,7 @@
 ! in C works and that you can use it to call back into a Fortran function 
 ! with an assumed-length dummy that is declared with C binding.
 
-subroutine ftest (a, n) bind (c, name="ftest")  ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+subroutine ftest (a, n) bind (c, name="ftest")
   use iso_c_binding
   character(kind=C_CHAR, len=*) :: a
   integer(C_INT), value :: n

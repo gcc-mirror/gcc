@@ -2,7 +2,7 @@
 ! PR 100914
 ! PR 100917
 ! Fails on x86 targets where sizeof(long double) == 16 (PR100917).
-! { dg-do run { xfail { { x86_64*-*-* i?86*-*-* } && longdouble128 } } }
+! { dg-do run }
 ! { dg-require-effective-target fortran_real_c_float128 }
 ! { dg-additional-sources "typecodes-array-float128-c.c dump-descriptors.c" }
 ! { dg-additional-options "-g" }

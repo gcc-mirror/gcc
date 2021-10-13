@@ -10,7 +10,7 @@ program testit
   implicit none
 
   interface
-    subroutine ctest (a) bind (c)  ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+    subroutine ctest (a) bind (c)
       use iso_c_binding
       character(len=*,kind=C_CHAR), intent(out) :: a
     end subroutine
@@ -26,7 +26,7 @@ program testit
   call ftest (aa)
 
 contains
-  subroutine ftest (a) bind (c) ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+  subroutine ftest (a) bind (c)
     use iso_c_binding
     character(len=*,kind=C_CHAR), intent(out) :: a
     call ctest (a)

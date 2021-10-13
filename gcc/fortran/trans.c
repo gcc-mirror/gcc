@@ -608,9 +608,9 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
 
   if (once)
     {
-       tmpvar = gfc_create_var (logical_type_node, "print_warning");
+       tmpvar = gfc_create_var (boolean_type_node, "print_warning");
        TREE_STATIC (tmpvar) = 1;
-       DECL_INITIAL (tmpvar) = logical_true_node;
+       DECL_INITIAL (tmpvar) = boolean_true_node;
        gfc_add_expr_to_block (pblock, tmpvar);
     }
 
@@ -631,7 +631,7 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
   va_end (ap);
 
   if (once)
-    gfc_add_modify (&block, tmpvar, logical_false_node);
+    gfc_add_modify (&block, tmpvar, boolean_false_node);
 
   body = gfc_finish_block (&block);
 
@@ -643,9 +643,8 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
     {
       if (once)
 	cond = fold_build2_loc (gfc_get_location (where), TRUTH_AND_EXPR,
-				long_integer_type_node, tmpvar, cond);
-      else
-	cond = fold_convert (long_integer_type_node, cond);
+				boolean_type_node, tmpvar,
+				fold_convert (boolean_type_node, cond));
 
       tmp = fold_build3_loc (gfc_get_location (where), COND_EXPR, void_type_node,
 			     cond, body,

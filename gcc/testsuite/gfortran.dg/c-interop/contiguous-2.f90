@@ -1,5 +1,5 @@
 ! PR 101304
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 ! { dg-additional-sources "contiguous-2-c.c dump-descriptors.c" }
 ! { dg-additional-options "-g" }
 !
