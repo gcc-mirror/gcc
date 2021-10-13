@@ -9,5 +9,5 @@ struct non_literal_class {
   // auto operator<=> (const non_literal_fixed_string&) = default;
 };
 
-template <non_literal_class> // { dg-error "11:is not a valid type for a template non-type parameter because it is not structural" }
-int operator"" _udl();       // { dg-error "5:literal operator template .int operator\"\"_udl\\(\\). has invalid parameter list" }
+template <non_literal_class> // { dg-error "11:is not a valid type for a template non-type parameter because it is not structural" "" { target { ! implicit_constexpr } } }
+int operator"" _udl();       // { dg-error "5:literal operator template .int operator\"\"_udl\\(\\). has invalid parameter list" "" { target { ! implicit_constexpr } } }

@@ -10232,6 +10232,10 @@ proc check_effective_target_concepts { } {
     return [check-flags { "" { } { -fconcepts } }]
 }
 
+proc check_effective_target_implicit_constexpr { } {
+    return [check-flags { "" { } { -fimplicit-constexpr } }]
+}
+
 # Return 1 if expensive testcases should be run.
 
 proc check_effective_target_run_expensive_tests { } {

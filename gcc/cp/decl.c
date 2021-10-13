@@ -1290,6 +1290,12 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
     }
   if (TREE_CODE (old_decl) == FUNCTION_DECL)
     {
+      /* With -fimplicit-constexpr, ignore changes in the constexpr
+	 keyword.  */
+      if (flag_implicit_constexpr
+	  && (DECL_IMMEDIATE_FUNCTION_P (new_decl)
+	      == DECL_IMMEDIATE_FUNCTION_P (old_decl)))
+	return true;
       if (fndecl_built_in_p (old_decl))
 	{
 	  /* Hide a built-in declaration.  */
@@ -14863,7 +14869,7 @@ grok_special_member_properties (tree decl)
       if (is_list_ctor (decl))
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
-      if (DECL_DECLARED_CONSTEXPR_P (decl)
+      if (maybe_constexpr_fn (decl)
 	  && !ctor && !move_fn_p (decl))
 	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }

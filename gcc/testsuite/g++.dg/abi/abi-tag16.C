@@ -1,4 +1,4 @@
-// { dg-options -Wabi=9 }
+// { dg-options "-Wabi=9 -fno-implicit-constexpr" }
 // { dg-final { scan-assembler "_ZGVZN1N1FEvE4NameB5cxx11" } }
 namespace std {
   __extension__ inline namespace __cxx11 __attribute__((abi_tag("cxx11"))) {

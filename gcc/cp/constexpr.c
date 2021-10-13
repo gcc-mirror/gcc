@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "cgraph.h"
 #include "opts.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -219,6 +221,17 @@ is_valid_constexpr_fn (tree fun, bool complain)
       if (complain)
 	inform (DECL_SOURCE_LOCATION (fun),
 		"lambdas are implicitly %<constexpr%> only in C++17 and later");
+    }
+  else if (DECL_DESTRUCTOR_P (fun))
+    {
+      if (cxx_dialect < cxx20)
+	{
+	  ret = false;
+	  if (complain)
+	    error_at (DECL_SOURCE_LOCATION (fun),
+		      "%<constexpr%> destructors only available"
+		      " with %<-std=c++20%> or %<-std=gnu++20%>");
+	}
     }
   else if (!DECL_CONSTRUCTOR_P (fun))
     {
@@ -865,12 +878,31 @@ void
 maybe_save_constexpr_fundef (tree fun)
 {
   if (processing_template_decl
-      || !DECL_DECLARED_CONSTEXPR_P (fun)
       || cp_function_chain->invalid_constexpr
       || (DECL_CLONED_FUNCTION_P (fun) && !DECL_DELETING_DESTRUCTOR_P (fun)))
     return;
 
-  bool complain = !DECL_GENERATED_P (fun);
+  /* With -fimplicit-constexpr, try to make inlines constexpr.  We'll
+     actually set DECL_DECLARED_CONSTEXPR_P below if the checks pass.  */
+  bool implicit = false;
+  if (flag_implicit_constexpr)
+    {
+      if (DECL_DELETING_DESTRUCTOR_P (fun)
+	  && decl_implicit_constexpr_p (DECL_CLONED_FUNCTION (fun)))
+	/* Don't inherit implicit constexpr from the non-deleting
+	   destructor.  */
+	DECL_DECLARED_CONSTEXPR_P (fun) = false;
+
+      if (!DECL_DECLARED_CONSTEXPR_P (fun)
+	  && DECL_DECLARED_INLINE_P (fun)
+	  && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fun)))
+	implicit = true;
+    }
+
+  if (!DECL_DECLARED_CONSTEXPR_P (fun) && !implicit)
+    return;
+
+  bool complain = !DECL_GENERATED_P (fun) && !implicit;
 
   if (!is_valid_constexpr_fn (fun, complain))
     return;
@@ -878,7 +910,7 @@ maybe_save_constexpr_fundef (tree fun)
   tree massaged = massage_constexpr_body (fun, DECL_SAVED_TREE (fun));
   if (massaged == NULL_TREE || massaged == error_mark_node)
     {
-      if (!DECL_CONSTRUCTOR_P (fun))
+      if (!DECL_CONSTRUCTOR_P (fun) && complain)
 	error ("body of %<constexpr%> function %qD not a return-statement",
 	       fun);
       return;
@@ -906,6 +938,21 @@ maybe_save_constexpr_fundef (tree fun)
 
   if (!potential && complain)
     return;
+
+  if (implicit)
+    {
+      if (potential)
+	{
+	  DECL_DECLARED_CONSTEXPR_P (fun) = true;
+	  DECL_LANG_SPECIFIC (fun)->u.fn.implicit_constexpr = true;
+	  if (DECL_CONSTRUCTOR_P (fun))
+	    TYPE_HAS_CONSTEXPR_CTOR (DECL_CONTEXT (fun)) = true;
+	}
+      else
+	/* Don't bother keeping the pre-generic body of unsuitable functions
+	   not explicitly declared constexpr.  */
+	return;
+    }
 
   constexpr_fundef entry = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
   bool clear_ctx = false;
@@ -2404,7 +2451,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 					   lval, non_constant_p, overflow_p);
   if (DECL_THUNK_P (fun))
     return cxx_eval_thunk_call (ctx, t, fun, lval, non_constant_p, overflow_p);
-  if (!DECL_DECLARED_CONSTEXPR_P (fun))
+  if (!maybe_constexpr_fn (fun))
     {
       if (TREE_CODE (t) == CALL_EXPR
 	  && cxx_replaceable_global_alloc_fn (fun)
@@ -5229,7 +5276,9 @@ bool
 maybe_constexpr_fn (tree t)
 {
   return (DECL_DECLARED_CONSTEXPR_P (t)
-	  || (cxx_dialect >= cxx17 && LAMBDA_FUNCTION_P (t)));
+	  || (cxx_dialect >= cxx17 && LAMBDA_FUNCTION_P (t))
+	  || (flag_implicit_constexpr
+	      && DECL_DECLARED_INLINE_P (STRIP_TEMPLATE (t))));
 }
 
 /* True if T was declared in a function that might be constexpr: either a
@@ -5238,11 +5287,8 @@ maybe_constexpr_fn (tree t)
 bool
 var_in_maybe_constexpr_fn (tree t)
 {
-  if (cxx_dialect >= cxx17
-      && DECL_FUNCTION_SCOPE_P (t)
-      && LAMBDA_FUNCTION_P (DECL_CONTEXT (t)))
-    return true;
-  return var_in_constexpr_fn (t);
+  return (DECL_FUNCTION_SCOPE_P (t)
+	  && maybe_constexpr_fn (DECL_CONTEXT (t)));
 }
 
 /* We're assigning INIT to TARGET.  In do_build_copy_constructor and
@@ -8219,7 +8265,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	      {
 		if (builtin_valid_in_constant_expr_p (fun))
 		  return true;
-		if (!DECL_DECLARED_CONSTEXPR_P (fun)
+		if (!maybe_constexpr_fn (fun)
 		    /* Allow any built-in function; if the expansion
 		       isn't constant, we'll deal with that then.  */
 		    && !fndecl_built_in_p (fun)
@@ -9255,6 +9301,23 @@ is_nondependent_static_init_expression (tree t)
   return (!type_unknown_p (t)
 	  && is_static_init_expression (t)
 	  && !instantiation_dependent_expression_p (t));
+}
+
+/* True iff FN is an implicitly constexpr function.  */
+
+bool
+decl_implicit_constexpr_p (tree fn)
+{
+  if (!(flag_implicit_constexpr
+	&& TREE_CODE (fn) == FUNCTION_DECL
+	&& DECL_DECLARED_CONSTEXPR_P (fn)))
+    return false;
+
+  if (DECL_CLONED_FUNCTION_P (fn))
+    fn = DECL_CLONED_FUNCTION (fn);
+
+  return (DECL_LANG_SPECIFIC (fn)
+	  && DECL_LANG_SPECIFIC (fn)->u.fn.implicit_constexpr);
 }
 
 /* Finalize constexpr processing after parsing.  */

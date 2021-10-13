@@ -2868,8 +2868,9 @@ struct GTY(()) lang_decl_fn {
   unsigned immediate_fn_p : 1;
   unsigned maybe_deleted : 1;
   unsigned coroutine_p : 1;
+  unsigned implicit_constexpr : 1;
 
-  unsigned spare : 10;
+  unsigned spare : 9;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -8315,6 +8316,7 @@ extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
 extern void clear_cv_and_fold_caches		(void);
 extern tree unshare_constructor			(tree CXX_MEM_STAT_INFO);
+extern bool decl_implicit_constexpr_p		(tree);
 
 /* An RAII sentinel used to restrict constexpr evaluation so that it
    doesn't do anything that causes extra DECL_UID generation.  */

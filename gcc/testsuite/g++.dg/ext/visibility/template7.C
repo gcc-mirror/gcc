@@ -1,6 +1,6 @@
 // PR c++/35688
 // { dg-require-visibility "" }
-// { dg-options "-fvisibility=hidden" }
+// { dg-options "-fvisibility=hidden -fno-inline" }
 
 // { dg-final { scan-hidden "_ZN1s6vectorI1AEC1Ev" } }
 // { dg-final { scan-hidden "_ZN1s3fooI1AEEvT_" } }
