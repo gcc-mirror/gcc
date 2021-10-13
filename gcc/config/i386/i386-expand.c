@@ -615,6 +615,16 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       return;
     }
 
+  /* If operand0 is a hard register, make operand1 a pseudo.  */
+  if (can_create_pseudo_p ()
+      && !ix86_hardreg_mov_ok (op0, op1))
+    {
+      rtx tmp = gen_reg_rtx (GET_MODE (op0));
+      emit_move_insn (tmp, op1);
+      emit_move_insn (op0, tmp);
+      return;
+    }
+
   /* Make operand1 a register if it isn't already.  */
   if (can_create_pseudo_p ()
       && !register_operand (op0, mode)
@@ -16016,11 +16026,15 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
       /* Let the rtl optimizers know about the zero extension performed.  */
       if (inner_mode == QImode || inner_mode == HImode)
 	{
+	  rtx reg = gen_reg_rtx (SImode);
 	  tmp = gen_rtx_ZERO_EXTEND (SImode, tmp);
-	  target = gen_lowpart (SImode, target);
+	  emit_move_insn (reg, tmp);
+	  tmp = gen_lowpart (inner_mode, reg);
+	  SUBREG_PROMOTED_VAR_P (tmp) = 1;
+	  SUBREG_PROMOTED_SET (tmp, 1);
 	}
 
-      emit_insn (gen_rtx_SET (target, tmp));
+      emit_move_insn (target, tmp);
     }
   else
     {

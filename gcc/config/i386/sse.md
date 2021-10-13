@@ -1269,7 +1269,8 @@
 	 " C,<sseconstm1>,vm,v"))]
   "TARGET_SSE
    && (register_operand (operands[0], <MODE>mode)
-       || register_operand (operands[1], <MODE>mode))"
+       || register_operand (operands[1], <MODE>mode))
+   && ix86_hardreg_mov_ok (operands[0], operands[1])"
 {
   switch (get_attr_type (insn))
     {
