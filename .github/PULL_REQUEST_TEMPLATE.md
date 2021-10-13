@@ -8,7 +8,7 @@ in the git commit message.
 
 Here is a checklist to help you with your PR.
 
-- \[ ] GCC code require copyright assignment: https://gcc.gnu.org/contribute.html
+- \[ ] GCC development requires the DCO or copyright assignment. See: https://gcc.gnu.org/contribute.html or https://gcc.gnu.org/dco.html
 - \[ ] Read contributing guidlines
 - \[ ] `make check-rust` passes locally
 - \[ ] Run `clang-format`
@@ -18,4 +18,5 @@ Note that you can skip the above if you are just opening a WIP PR in
 order to get feedback.
 ---
 
-*Please write a short comment explaining your change.
+*Please write a comment explaining your change. This is the message
+that will be part of the merge commit.
