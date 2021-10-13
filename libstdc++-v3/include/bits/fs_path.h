@@ -153,33 +153,56 @@ namespace __detail
   template<typename _Iter, typename _Tr = __safe_iterator_traits<_Iter>>
     using _Path2 = enable_if_t<__is_path_iter_src<_Tr>::value, path>;
 
+#if __cpp_lib_concepts
+  template<typename _Iter>
+    constexpr bool __is_contiguous = std::contiguous_iterator<_Iter>;
+#else
+  template<typename _Iter>
+    constexpr bool __is_contiguous = is_pointer_v<_Iter>;
+#endif
+
+#if !defined _GLIBCXX_FILESYSTEM_IS_WINDOWS && defined _GLIBCXX_USE_CHAR8_T
+  // For POSIX treat char8_t sequences as char without encoding conversions.
+  template<typename _EcharT>
+    using __unified_u8_t
+      = __conditional_t<is_same_v<_EcharT, char8_t>, char, _EcharT>;
+#else
+  template<typename _EcharT>
+    using __unified_u8_t = _EcharT;
+#endif
+
   // The __effective_range overloads convert a Source parameter into
-  // either a basic_string_view or basic_string containing the
+  // either a basic_string_view<C> or basic_string<C> containing the
   // effective range of the Source, as defined in [fs.path.req].
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    inline basic_string_view<_CharT, _Traits>
+    inline basic_string_view<_CharT>
     __effective_range(const basic_string<_CharT, _Traits, _Alloc>& __source)
+    noexcept
     { return __source; }
 
   template<typename _CharT, typename _Traits>
-    inline const basic_string_view<_CharT, _Traits>&
+    inline basic_string_view<_CharT>
     __effective_range(const basic_string_view<_CharT, _Traits>& __source)
+    noexcept
     { return __source; }
 
+  // Return the effective range of an NTCTS.
   template<typename _Source>
-    inline auto
+    auto
     __effective_range(const _Source& __source)
     {
-      if constexpr (is_pointer_v<decay_t<_Source>>)
-	return basic_string_view{&*__source};
+      // Remove a level of normal/safe iterator indirection, or decay an array.
+      using _Iter = decltype(std::__niter_base(__source));
+      using value_type = typename iterator_traits<_Iter>::value_type;
+
+      if constexpr (__is_contiguous<_Iter>)
+	return basic_string_view<value_type>{&*__source};
       else
 	{
 	  // _Source is an input iterator that iterates over an NTCTS.
 	  // Create a basic_string by reading until the null character.
-	  using value_type
-	    = typename iterator_traits<_Source>::value_type;
-	  basic_string<value_type> __str;
+	  basic_string<__unified_u8_t<value_type>> __str;
 	  _Source __it = __source;
 	  for (value_type __ch = *__it; __ch != value_type(); __ch = *++__it)
 	    __str.push_back(__ch);
@@ -188,20 +211,39 @@ namespace __detail
     }
 
   // The value type of a Source parameter's effective range.
-  template<typename _Tp>
-    using __value_t = typename remove_reference_t<
-      decltype(__detail::__effective_range(std::declval<_Tp>()))>::value_type;
+  template<typename _Source>
+    struct __source_value_type_impl
+    {
+      using type
+	= typename __safe_iterator_traits<decay_t<_Source>>::value_type;
+    };
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    struct __source_value_type_impl<basic_string<_CharT, _Traits, _Alloc>>
+    {
+      using type = _CharT;
+    };
+
+  template<typename _CharT, typename _Traits>
+    struct __source_value_type_impl<basic_string_view<_CharT, _Traits>>
+    {
+      using type = _CharT;
+    };
+
+  // The value type of a Source parameter's effective range.
+  template<typename _Source>
+    using __source_value_t = typename __source_value_type_impl<_Source>::type;
 
   // SFINAE helper to check that an effective range has value_type char,
   // as required by path constructors taking a std::locale parameter.
   // The type _Tp must have already been checked by _Path<Tp> or _Path2<_Tp>.
-  template<typename _Tp, typename _Val = __value_t<_Tp>>
+  template<typename _Tp, typename _Val = __source_value_t<_Tp>>
     using __value_type_is_char
       = std::enable_if_t<std::is_same_v<_Val, char>, _Val>;
 
   // As above, but also allows char8_t, as required by u8path
   // C++20 [depr.fs.path.factory]
-  template<typename _Tp, typename _Val = __value_t<_Tp>>
+  template<typename _Tp, typename _Val = __source_value_t<_Tp>>
     using __value_type_is_char_or_char8_t
       = std::enable_if_t<std::is_same_v<_Val, char>
 #ifdef _GLIBCXX_USE_CHAR8_T
@@ -209,31 +251,27 @@ namespace __detail
 #endif
 			 , _Val>;
 
-  // Create a string or string view from an iterator range.
+  // Create a basic_string<C> or basic_string_view<C> from an iterator range.
   template<typename _InputIterator>
     inline auto
     __string_from_range(_InputIterator __first, _InputIterator __last)
     {
       using _EcharT
 	= typename std::iterator_traits<_InputIterator>::value_type;
-      static_assert(__is_encoded_char<_EcharT>);
+      static_assert(__is_encoded_char<_EcharT>); // C++17 [fs.req]/3
 
-#if __cpp_lib_concepts
-      constexpr bool __contiguous = std::contiguous_iterator<_InputIterator>;
-#else
-      constexpr bool __contiguous
-	= is_pointer_v<decltype(std::__niter_base(__first))>;
-#endif
-      if constexpr (__contiguous)
+      if constexpr (__is_contiguous<_InputIterator>)
 	{
 	  // For contiguous iterators we can just return a string view.
-	  const auto* __f = std::__to_address(std::__niter_base(__first));
-	  const auto* __l = std::__to_address(std::__niter_base(__last));
-	  return basic_string_view<_EcharT>(__f, __l - __f);
+	  if (auto __len = __last - __first) [[__likely__]]
+	    return basic_string_view<_EcharT>(&*__first, __len);
+	  return basic_string_view<_EcharT>();
 	}
       else
-	// Conversion requires contiguous characters, so create a string.
-	return basic_string<_EcharT>(__first, __last);
+	{
+	  // Conversion requires contiguous characters, so create a string.
+	  return basic_string<__unified_u8_t<_EcharT>>(__first, __last);
+	}
     }
 
   /// @} group filesystem
@@ -573,27 +611,22 @@ namespace __detail
     pair<const string_type*, size_t> _M_find_extension() const noexcept;
 
     // path::_S_convert creates a basic_string<value_type> or
-    // basic_string_view<value_type> from a range (either the effective
-    // range of a Source parameter, or a pair of InputIterator parameters),
+    // basic_string_view<value_type> from a basic_string<C> or
+    // basic_string_view<C>, for an encoded character type C,
     // performing the conversions required by [fs.path.type.cvt].
-    // If the value_type of the range value type is path::value_type,
-    // no encoding conversion is performed. If the range is contiguous
-    // a string_view
-
-    static string_type
-    _S_convert(string_type __str)
-    { return __str; }
-
     template<typename _Tp>
       static auto
-      _S_convert(const _Tp& __str)
+      _S_convert(_Tp __str)
       {
-	if constexpr (is_same_v<_Tp, string_type>)
-	  return __str;
-	else if constexpr (is_same_v<_Tp, basic_string_view<value_type>>)
-	  return __str;
-	else if constexpr (is_same_v<typename _Tp::value_type, value_type>)
-	  return basic_string_view<value_type>(__str.data(), __str.size());
+	if constexpr (is_same_v<_Tp, typename _Tp::value_type>)
+	  return __str; // No conversion needed.
+#if !defined _GLIBCXX_FILESYSTEM_IS_WINDOWS && defined _GLIBCXX_USE_CHAR8_T
+	else if constexpr (is_same_v<_Tp, std::u8string>)
+	  // Calling _S_convert<char8_t> will return a u8string_view that
+	  // refers to __str and would dangle after this function returns.
+	  // Return a string_type instead, to avoid dangling.
+	  return string_type(_S_convert(std::u8string_view(__str)));
+#endif
 	else
 	  return _S_convert(__str.data(), __str.data() + __str.size());
       }
@@ -601,6 +634,9 @@ namespace __detail
     template<typename _EcharT>
       static auto
       _S_convert(const _EcharT* __first, const _EcharT* __last);
+
+    // _S_convert_loc converts a range of char to string_type, using the
+    // supplied locale for encoding conversions.
 
     static string_type
     _S_convert_loc(const char* __first, const char* __last,
