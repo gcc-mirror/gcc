@@ -157,7 +157,9 @@
 #define __cpp_lib_node_extract 201606
 #define __cpp_lib_nonmember_container_access 201411
 #define __cpp_lib_not_fn 201603
-#define __cpp_lib_optional 201606L
+#if __cplusplus == 201703L // N.B. updated value in C++20
+# define __cpp_lib_optional 201606L
+#endif
 #define __cpp_lib_parallel_algorithm 201603L
 #define __cpp_lib_raw_memory_algorithms 201606L
 #define __cpp_lib_sample 201603
@@ -255,6 +257,7 @@
 # define __cpp_lib_make_obj_using_allocator 201811L
 #endif
 #define __cpp_lib_math_constants 201907L
+#define __cpp_lib_optional 202106L
 #define __cpp_lib_polymorphic_allocator 201902L
 #if __cpp_lib_concepts
 # define __cpp_lib_ranges 202106L

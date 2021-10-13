@@ -40,6 +40,7 @@
 #include <bits/enable_special_members.h>
 #include <bits/exception_defines.h>
 #include <bits/functional_hash.h>
+#include <bits/stl_construct.h> // _Construct
 #include <bits/utility.h> // in_place_t
 #if __cplusplus > 201703L
 # include <compare>
@@ -54,7 +55,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @{
    */
 
-#define __cpp_lib_optional 201606L
+#if __cplusplus == 201703L
+# define __cpp_lib_optional 201606L
+#else
+# define __cpp_lib_optional 202106L
+#endif
 
   template<typename _Tp>
     class optional;
@@ -228,7 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    { }
 
 	  // User-provided destructor is needed when _Up has non-trivial dtor.
-	  ~_Storage() { }
+	  _GLIBCXX20_CONSTEXPR ~_Storage() { }
 
 	  _Empty_byte _M_empty;
 	  _Up _M_value;
@@ -239,12 +244,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool _M_engaged = false;
 
       template<typename... _Args>
-	void
+	constexpr void
 	_M_construct(_Args&&... __args)
 	noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
 	{
-	  ::new ((void *) std::__addressof(this->_M_payload))
-	    _Stored_type(std::forward<_Args>(__args)...);
+	  std::_Construct(std::__addressof(this->_M_payload._M_value),
+			  std::forward<_Args>(__args)...);
 	  this->_M_engaged = true;
 	}
 
@@ -393,7 +398,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Optional_payload& operator=(_Optional_payload&&) = default;
 
       // Destructor needs to destroy the contained value:
-      ~_Optional_payload() { this->_M_reset(); }
+      _GLIBCXX20_CONSTEXPR ~_Optional_payload() { this->_M_reset(); }
     };
 
   // Common base class for _Optional_base<T> to avoid repeating these
@@ -407,17 +412,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // The _M_construct operation has !_M_engaged as a precondition
       // while _M_destruct has _M_engaged as a precondition.
       template<typename... _Args>
-	void
+	constexpr void
 	_M_construct(_Args&&... __args)
 	noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
 	{
-	  ::new
-	    (std::__addressof(static_cast<_Dp*>(this)->_M_payload._M_payload))
-	    _Stored_type(std::forward<_Args>(__args)...);
-	  static_cast<_Dp*>(this)->_M_payload._M_engaged = true;
+	  static_cast<_Dp*>(this)->_M_payload._M_construct(
+	    std::forward<_Args>(__args)...);
 	}
 
-      void
+      constexpr void
       _M_destruct() noexcept
       { static_cast<_Dp*>(this)->_M_payload._M_destroy(); }
 
@@ -782,7 +785,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
       // Assignment operators.
-      optional&
+      _GLIBCXX20_CONSTEXPR optional&
       operator=(nullopt_t) noexcept
       {
 	this->_M_reset();
@@ -790,6 +793,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Up = _Tp>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<__and_v<__not_self<_Up>,
 			    __not_<__and_<is_scalar<_Tp>,
 					  is_same<_Tp, decay_t<_Up>>>>,
@@ -809,6 +813,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<__and_v<__not_<is_same<_Tp, _Up>>,
 			    is_constructible<_Tp, const _Up&>,
 			    is_assignable<_Tp&, const _Up&>,
@@ -834,6 +839,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<__and_v<__not_<is_same<_Tp, _Up>>,
 			    is_constructible<_Tp, _Up>,
 			    is_assignable<_Tp&, _Up>,
@@ -860,6 +866,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<is_constructible_v<_Tp, _Args...>, _Tp&>
 	emplace(_Args&&... __args)
 	noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
@@ -870,6 +877,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up, typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>,
 		    _Tp&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
@@ -884,7 +892,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Destructor is implicit, implemented in _Optional_base.
 
       // Swap.
-      void
+      _GLIBCXX20_CONSTEXPR void
       swap(optional& __other)
       noexcept(is_nothrow_move_constructible_v<_Tp>
 	       && is_nothrow_swappable_v<_Tp>)
@@ -994,7 +1002,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
-      void reset() noexcept { this->_M_reset(); }
+      _GLIBCXX20_CONSTEXPR void reset() noexcept { this->_M_reset(); }
     };
 
   template<typename _Tp>
@@ -1251,6 +1259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2748. swappable traits for optionals
   template<typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline enable_if_t<is_move_constructible_v<_Tp> && is_swappable_v<_Tp>>
     swap(optional<_Tp>& __lhs, optional<_Tp>& __rhs)
     noexcept(noexcept(__lhs.swap(__rhs)))
