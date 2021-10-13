@@ -96,21 +96,10 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 #define X_908 "march=gfx908:;"
 #endif
 
-#ifdef HAVE_GCN_SRAM_ECC_FIJI
-#define S_FIJI
-#else
+/* These targets can't have SRAM-ECC, even if a broken assembler allows it.  */
 #define S_FIJI "!march=*:;march=fiji:;"
-#endif
-#ifdef HAVE_GCN_SRAM_ECC_GFX900
-#define S_900
-#else
 #define S_900 "march=gfx900:;"
-#endif
-#ifdef HAVE_GCN_SRAM_ECC_GFX906
-#define S_906
-#else
 #define S_906 "march=gfx906:;"
-#endif
 #ifdef HAVE_GCN_SRAM_ECC_GFX908
 #define S_908
 #else
