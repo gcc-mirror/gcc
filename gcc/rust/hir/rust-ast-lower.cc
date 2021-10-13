@@ -64,16 +64,17 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
 {
   std::vector<std::unique_ptr<HIR::Stmt> > block_stmts;
   bool block_did_terminate = false;
-  expr.iterate_stmts ([&] (AST::Stmt *s) mutable -> bool {
-    if (block_did_terminate)
-      rust_warning_at (s->get_locus (), 0, "unreachable statement");
 
-    bool terminated = false;
-    auto translated_stmt = ASTLoweringStmt::translate (s, &terminated);
-    block_stmts.push_back (std::unique_ptr<HIR::Stmt> (translated_stmt));
-    block_did_terminate |= terminated;
-    return true;
-  });
+  for (auto &s : expr.get_statements ())
+    {
+      if (block_did_terminate)
+	rust_warning_at (s->get_locus (), 0, "unreachable statement");
+
+      bool terminated = false;
+      auto translated_stmt = ASTLoweringStmt::translate (s.get (), &terminated);
+      block_stmts.push_back (std::unique_ptr<HIR::Stmt> (translated_stmt));
+      block_did_terminate |= terminated;
+    }
 
   if (expr.has_tail_expr () && block_did_terminate)
     {

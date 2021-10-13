@@ -2438,15 +2438,6 @@ public:
   void mark_for_strip () override { marked_for_strip = true; }
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
-  void iterate_stmts (std::function<bool (Stmt *)> cb)
-  {
-    for (auto it = statements.begin (); it != statements.end (); it++)
-      {
-	if (!cb (it->get ()))
-	  return;
-      }
-  }
-
   size_t num_statements () const { return statements.size (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
