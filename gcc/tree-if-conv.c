@@ -2582,11 +2582,7 @@ predicate_statements (loop_p loop)
 	    {
 	      gsi_remove (&gsi, true);
 	      gsi_insert_seq_before (&gsi, rewrite_to_defined_overflow (stmt),
-				     GSI_SAME_STMT);
-	      if (gsi_end_p (gsi))
-		gsi = gsi_last_bb (gimple_bb (stmt));
-	      else
-		gsi_prev (&gsi);
+				     GSI_LAST_NEW_STMT);
 	    }
 	  else if (gimple_vdef (stmt))
 	    {

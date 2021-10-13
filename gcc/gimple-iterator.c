@@ -162,6 +162,9 @@ gsi_insert_seq_nodes_before (gimple_stmt_iterator *i,
     case GSI_CONTINUE_LINKING:
       i->ptr = first;
       break;
+    case GSI_LAST_NEW_STMT:
+      i->ptr = last;
+      break;
     case GSI_SAME_STMT:
       break;
     default:
@@ -271,6 +274,7 @@ gsi_insert_seq_nodes_after (gimple_stmt_iterator *i,
     case GSI_NEW_STMT:
       i->ptr = first;
       break;
+    case GSI_LAST_NEW_STMT:
     case GSI_CONTINUE_LINKING:
       i->ptr = last;
       break;

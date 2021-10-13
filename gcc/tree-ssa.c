@@ -2079,7 +2079,7 @@ execute_update_addresses_taken (void)
 			    gcall *call
 			      = gimple_build_call_internal (IFN_ASAN_POISON, 0);
 			    gimple_call_set_lhs (call, var);
-			    gsi_replace (&gsi, call, GSI_SAME_STMT);
+			    gsi_replace (&gsi, call, true);
 			  }
 			else
 			  {
@@ -2088,7 +2088,7 @@ execute_update_addresses_taken (void)
 			       previous out of scope value.  */
 			    tree clobber = build_clobber (TREE_TYPE (var));
 			    gimple *g = gimple_build_assign (var, clobber);
-			    gsi_replace (&gsi, g, GSI_SAME_STMT);
+			    gsi_replace (&gsi, g, true);
 			  }
 			continue;
 		      }
