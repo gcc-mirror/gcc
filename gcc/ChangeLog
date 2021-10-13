@@ -1,3 +1,111 @@
+2021-10-12  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101985
+	* config/rs6000/altivec.h (vec_cpsgn): Swap operand order.
+	* config/rs6000/rs6000-overload.def (VEC_COPYSIGN): Use SKIP to
+	avoid generating an automatic #define of vec_cpsgn.  Use the
+	correct built-in for V4SFmode that doesn't depend on VSX.
+
+2021-10-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/85730
+	PR target/82524
+	* config/i386/i386.md (*add<mode>_1_slp): Rewrite as
+	define_insn_and_split pattern.  Add alternative 1 and split it
+	post reload to insert operand 1 into the low part of operand 0.
+	(*sub<mode>_1_slp): Ditto.
+	(*and<mode>_1_slp): Ditto.
+	(*<any_or:code><mode>_1_slp): Ditto.
+	(*ashl<mode>3_1_slp): Ditto.
+	(*<any_shiftrt:insn><mode>3_1_slp): Ditto.
+	(*<any_rotate:insn><mode>3_1_slp): Ditto.
+	(*neg<mode>_1_slp): New insn_and_split pattern.
+	(*one_cmpl<mode>_1_slp): Ditto.
+
+2021-10-12  David Edelsohn  <dje.gcc@gmail.com>
+
+	* doc/install.texi: Update MinGW and mingw-64 Binaries
+	download links.
+
+2021-10-12  Daniel Le Duc Khoi Nguyen  <greenrecyclebin@gmail.com>
+
+	* doc/extend.texi (Common Variable Attributes): Fix typos in
+	alloc_size documentation.
+
+2021-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102696
+	* tree-vect-slp.c (vect_build_slp_tree_2): Properly mark
+	the tree fatally failed when we reject a BIT_FIELD_REF.
+
+2021-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102572
+	* tree-vect-stmts.c (vect_build_gather_load_calls): When
+	gathering the vectorized defs for the mask pass in the
+	desired mask vector type so invariants will be handled
+	correctly.
+
+2021-10-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*fcm<cmp_op><mode>_bic_combine,
+	*fcm<cmp_op><mode>_nor_combine, *fcmuo<mode>_bic_combine,
+	*fcmuo<mode>_nor_combine): New.
+
+2021-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/102588
+	* config/sparc/sparc-modes.def (OI): New integer mode.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-fold.h (clear_padding_type_may_have_padding_p): Declare.
+	* gimple-fold.c (clear_padding_type_may_have_padding_p): No longer
+	static.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vectorizer.h (loop_cost_model): New function.
+	(unlimited_cost_model): Use it.
+	* tree-vect-loop.c (vect_analyze_loop_costing): Use loop_cost_model
+	call instead of flag_vect_cost_model.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Likewise.
+	(vect_prune_runtime_alias_test_list): Likewise.  Also use it instead
+	of flag_simd_cost_model.
+
+2021-10-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102483
+	* config/i386/i386-expand.c (emit_reduc_half): Handle
+	V4QImode.
+	* config/i386/mmx.md (reduc_<code>_scal_v4qi): New expander.
+	(reduc_plus_scal_v4qi): Ditto.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_cmpeq_epi64, _mm_cmpgt_epi64,
+	_mm_mullo_epi32, _mm_mul_epi32, _mm_packus_epi32): New.
+	* config/rs6000/nmmintrin.h: Copy from i386, tweak to suit.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_cvtepi8_epi16, _mm_cvtepi8_epi32,
+	_mm_cvtepi8_epi64, _mm_cvtepi16_epi32, _mm_cvtepi16_epi64,
+	_mm_cvtepi32_epi64, _mm_cvtepu8_epi16, _mm_cvtepu8_epi32,
+	_mm_cvtepu8_epi64, _mm_cvtepu16_epi32, _mm_cvtepu16_epi64,
+	_mm_cvtepu32_epi64): New.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_test_all_zeros,
+	_mm_test_all_ones, _mm_test_mix_ones_zeros): Rewrite as macro.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_min_epi8, _mm_min_epu16,
+	_mm_min_epi32, _mm_min_epu32, _mm_max_epi8, _mm_max_epu16,
+	_mm_max_epi32, _mm_max_epu32): New.
+
 2021-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-modref-tree.h (struct modref_access_node): Revert

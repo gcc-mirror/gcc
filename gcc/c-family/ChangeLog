@@ -1,3 +1,15 @@
+2021-10-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-format.c (print_char_table): Add %b and %B formats.
+	(scan_char_table): Add %b format.
+	* c-format.h (T2X_UI, T2X_UL, T2X_ULL, T2X_US, T2X_UC, T2X_ST)
+	(T2X_UPD, T2X_UIM): New macros.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_finish_omp_atomic): Use
+	clear_padding_type_may_have_padding_p.
+
 2021-10-08  Martin Liska  <mliska@suse.cz>
 
 	* c-opts.c (c_common_post_options): Use new macro
