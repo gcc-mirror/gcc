@@ -1750,6 +1750,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->device)
     {
       fputs (" DEVICE(", dumpfile);
+      if (omp_clauses->ancestor)
+	fputs ("ANCESTOR:", dumpfile);
       show_expr (omp_clauses->device);
       fputc (')', dumpfile);
     }
@@ -1894,7 +1896,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->atomic_op != GFC_OMP_ATOMIC_UNSET)
     {
       const char *atomic_op;
-      switch (omp_clauses->atomic_op)
+      switch (omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
 	{
 	case GFC_OMP_ATOMIC_READ: atomic_op = "READ"; break;
 	case GFC_OMP_ATOMIC_WRITE: atomic_op = "WRITE"; break;

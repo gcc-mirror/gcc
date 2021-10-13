@@ -1482,12 +1482,11 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *dist_chunk_size;
   struct gfc_expr *message;
   const char *critical_name;
-  bool ancestor;
   enum gfc_omp_default_sharing default_sharing;
   enum gfc_omp_atomic_op atomic_op;
   enum gfc_omp_defaultmap defaultmap[OMP_DEFAULTMAP_CAT_NUM];
   int collapse, orderedc;
-  unsigned nowait:1, ordered:1, untied:1, mergeable:1;
+  unsigned nowait:1, ordered:1, untied:1, mergeable:1, ancestor:1;
   unsigned inbranch:1, notinbranch:1, nogroup:1;
   unsigned sched_simd:1, sched_monotonic:1, sched_nonmonotonic:1;
   unsigned simd:1, threads:1, depend_source:1, destroy:1, order_concurrent:1;
