@@ -41,6 +41,7 @@
 #include "pointer-query.h"
 #include "tree-pretty-print.h"
 #include "tree-ssanames.h"
+#include "target.h"
 
 static bool compute_objsize_r (tree, int, access_ref *, ssa_name_limit_t &,
 			       pointer_query *);
@@ -1869,13 +1870,24 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
   if (code == INTEGER_CST)
     {
       /* Pointer constants other than null are most likely the result
-	 of erroneous null pointer addition/subtraction.  Set size to
-	 zero.  For null pointers, set size to the maximum for now
-	 since those may be the result of jump threading.  */
+	 of erroneous null pointer addition/subtraction.  Unless zero
+	 is a valid address set size to zero.  For null pointers, set
+	 size to the maximum for now since those may be the result of
+	 jump threading.  */
       if (integer_zerop (ptr))
 	pref->set_max_size_range ();
+      else if (POINTER_TYPE_P (TREE_TYPE (ptr)))
+	{
+	  tree deref_type = TREE_TYPE (TREE_TYPE (ptr));
+	  addr_space_t as = TYPE_ADDR_SPACE (deref_type);
+	  if (targetm.addr_space.zero_address_valid (as))
+	    pref->set_max_size_range ();
+	  else
+	    pref->sizrng[0] = pref->sizrng[1] = 0;
+	}
       else
 	pref->sizrng[0] = pref->sizrng[1] = 0;
+
       pref->ref = ptr;
 
       return true;
