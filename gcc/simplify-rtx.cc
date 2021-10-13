@@ -6876,12 +6876,13 @@ native_encode_rtx (machine_mode mode, rtx x, vec<target_unit> &bytes,
 	  /* This is the only case in which elements can be smaller than
 	     a byte.  */
 	  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+	  auto mask = GET_MODE_MASK (GET_MODE_INNER (mode));
 	  for (unsigned int i = 0; i < num_bytes; ++i)
 	    {
 	      target_unit value = 0;
 	      for (unsigned int j = 0; j < BITS_PER_UNIT; j += elt_bits)
 		{
-		  value |= (INTVAL (CONST_VECTOR_ELT (x, elt)) & 1) << j;
+		  value |= (INTVAL (CONST_VECTOR_ELT (x, elt)) & mask) << j;
 		  elt += 1;
 		}
 	      bytes.quick_push (value);
@@ -7025,9 +7026,8 @@ native_decode_vector_rtx (machine_mode mode, const vec<target_unit> &bytes,
 	  unsigned int bit_index = first_byte * BITS_PER_UNIT + i * elt_bits;
 	  unsigned int byte_index = bit_index / BITS_PER_UNIT;
 	  unsigned int lsb = bit_index % BITS_PER_UNIT;
-	  builder.quick_push (bytes[byte_index] & (1 << lsb)
-			      ? CONST1_RTX (BImode)
-			      : CONST0_RTX (BImode));
+	  unsigned int value = bytes[byte_index] >> lsb;
+	  builder.quick_push (gen_int_mode (value, GET_MODE_INNER (mode)));
 	}
     }
   else
@@ -7994,17 +7994,23 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
 						    duplicate, last_par));
 
       /* Test a scalar subreg of a VEC_MERGE of a VEC_DUPLICATE.  */
-      rtx vector_reg = make_test_reg (mode);
-      for (unsigned HOST_WIDE_INT i = 0; i < const_nunits; i++)
+      /* Skip this test for vectors of booleans, because offset is in bytes,
+	 while vec_merge indices are in elements (usually bits).  */
+      if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
 	{
-	  if (i >= HOST_BITS_PER_WIDE_INT)
-	    break;
-	  rtx mask = GEN_INT ((HOST_WIDE_INT_1U << i) | (i + 1));
-	  rtx vm = gen_rtx_VEC_MERGE (mode, duplicate, vector_reg, mask);
-	  poly_uint64 offset = i * GET_MODE_SIZE (inner_mode);
-	  ASSERT_RTX_EQ (scalar_reg,
-			 simplify_gen_subreg (inner_mode, vm,
-					      mode, offset));
+	  rtx vector_reg = make_test_reg (mode);
+	  for (unsigned HOST_WIDE_INT i = 0; i < const_nunits; i++)
+	    {
+	      if (i >= HOST_BITS_PER_WIDE_INT)
+		break;
+	      rtx mask = GEN_INT ((HOST_WIDE_INT_1U << i) | (i + 1));
+	      rtx vm = gen_rtx_VEC_MERGE (mode, duplicate, vector_reg, mask);
+	      poly_uint64 offset = i * GET_MODE_SIZE (inner_mode);
+
+	      ASSERT_RTX_EQ (scalar_reg,
+			     simplify_gen_subreg (inner_mode, vm,
+						  mode, offset));
+	    }
 	}
     }
 

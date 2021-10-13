@@ -1553,11 +1553,28 @@ arm_init_simd_builtin_types (void)
       tree eltype = arm_simd_types[i].eltype;
       machine_mode mode = arm_simd_types[i].mode;
 
-      if (eltype == NULL)
+      if (eltype == NULL
+	  /* VECTOR_BOOL is not supported unless MVE is activated,
+	     this would make build_truth_vector_type_for_mode
+	     crash.  */
+	  && ((GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
+	      || !TARGET_HAVE_MVE))
 	continue;
       if (arm_simd_types[i].itype == NULL)
 	{
-	  tree type = build_vector_type (eltype, GET_MODE_NUNITS (mode));
+	  tree type;
+	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	    {
+	      /* Handle MVE predicates: they are internally stored as
+		 16 bits, but are used as vectors of 1, 2 or 4-bit
+		 elements.  */
+	      type = build_truth_vector_type_for_mode (GET_MODE_NUNITS (mode),
+						       mode);
+	      eltype = TREE_TYPE (type);
+	    }
+	  else
+	    type = build_vector_type (eltype, GET_MODE_NUNITS (mode));
+
 	  type = build_distinct_type_copy (type);
 	  SET_TYPE_STRUCTURAL_EQUALITY (type);
 
@@ -1694,6 +1711,11 @@ arm_init_builtin (unsigned int fcode, arm_builtin_datum *d,
 	 for certain arguments, encoded in d->mode.  */
       if (qualifiers & qualifier_map_mode)
 	op_mode = d->mode;
+
+      /* MVE Predicates use HImode as mandated by the ABI: pred16_t is
+	 unsigned short.  */
+      if (qualifiers & qualifier_predicate)
+	op_mode = HImode;
 
       /* For pointers, we want a pointer to the basic type
 	 of the vector.  */
@@ -2939,6 +2961,12 @@ arm_expand_builtin_args (rtx target, machine_mode map_mode, int fcode,
 	    case ARG_BUILTIN_COPY_TO_REG:
 	      if (POINTER_TYPE_P (TREE_TYPE (arg[argc])))
 		op[argc] = convert_memory_address (Pmode, op[argc]);
+
+	      /* MVE uses mve_pred16_t (aka HImode) for vectors of
+		 predicates.  */
+	      if (GET_MODE_CLASS (mode[argc]) == MODE_VECTOR_BOOL)
+		op[argc] = gen_lowpart (mode[argc], op[argc]);
+
 	      /*gcc_assert (GET_MODE (op[argc]) == mode[argc]); */
 	      if (!(*insn_data[icode].operand[opno].predicate)
 		  (op[argc], mode[argc]))
@@ -3143,6 +3171,13 @@ constant_arg:
     error ("this builtin is not supported for this target");
   else
     emit_insn (insn);
+
+  if (GET_MODE_CLASS (tmode) == MODE_VECTOR_BOOL)
+    {
+      rtx HItarget = gen_reg_rtx (HImode);
+      emit_move_insn (HItarget, gen_lowpart (HImode, target));
+      return HItarget;
+    }
 
   return target;
 }

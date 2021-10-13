@@ -90,8 +90,10 @@ rtx_vector_builder::find_cached_value ()
 
   if (GET_MODE_CLASS (m_mode) == MODE_VECTOR_BOOL)
     {
-      if (elt == const1_rtx || elt == constm1_rtx)
+      if (elt == const1_rtx)
 	return CONST1_RTX (m_mode);
+      else if (elt == constm1_rtx)
+	return CONSTM1_RTX (m_mode);
       else if (elt == const0_rtx)
 	return CONST0_RTX (m_mode);
       else
