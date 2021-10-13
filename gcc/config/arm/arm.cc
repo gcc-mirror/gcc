@@ -25339,6 +25339,9 @@ thumb2_asm_output_opcode (FILE * stream)
 static unsigned int
 arm_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
+  if (IS_VPR_REGNUM (regno))
+    return CEIL (GET_MODE_SIZE (mode), 2);
+
   if (TARGET_32BIT
       && regno > PC_REGNUM
       && regno != FRAME_POINTER_REGNUM
