@@ -1,3 +1,24 @@
+2021-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/tuple/comparison_operators/overloaded.cc:
+	Restore test for operator<.
+	* testsuite/20_util/tuple/comparison_operators/overloaded2.cc:
+	Adjust expected errors for C++20.
+
+2021-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101960
+	* include/std/tuple (_Tuple_impl(_Tuple_impl&&)): Define as
+	defauled.
+	* testsuite/20_util/tuple/cons/101960.cc: Check tuples with
+	array elements before the last element.
+
+2021-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator_base_funcs.h (__advance): Add
+	deleted overload to improve diagnostics.
+	(__distance): Likewise.
+
 2021-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_timed_wait.h: Remove unused header.

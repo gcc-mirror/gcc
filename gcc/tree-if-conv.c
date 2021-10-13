@@ -132,6 +132,11 @@ along with GCC; see the file COPYING3.  If not see
    predicate_statements for the kinds of predication we support.  */
 static bool need_to_predicate;
 
+/* True if we have to rewrite stmts that may invoke undefined behavior
+   when a condition C was false so it doesn't if it is always executed.
+   See predicate_statements for the kinds of predication we support.  */
+static bool need_to_rewrite_undefined;
+
 /* Indicate if there are any complicated PHIs that need to be handled in
    if-conversion.  Complicated PHI has more than two arguments and can't
    be degenerated to two arguments PHI.  See more information in comment
@@ -1042,6 +1047,12 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
 	fprintf (dump_file, "tree could trap...\n");
       return false;
     }
+  else if (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs))
+	   && arith_code_with_undefined_signed_overflow
+				(gimple_assign_rhs_code (stmt)))
+    /* We have to rewrite stmts with undefined overflow.  */
+    need_to_rewrite_undefined = true;
 
   /* When if-converting stores force versioning, likewise if we
      ended up generating store data races.  */
@@ -2563,6 +2574,16 @@ predicate_statements (loop_p loop)
 
 	      gsi_replace (&gsi, new_stmt, true);
 	    }
+	  else if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt)))
+		   && TYPE_OVERFLOW_UNDEFINED
+			(TREE_TYPE (gimple_assign_lhs (stmt)))
+		   && arith_code_with_undefined_signed_overflow
+						(gimple_assign_rhs_code (stmt)))
+	    {
+	      gsi_remove (&gsi, true);
+	      gsi_insert_seq_before (&gsi, rewrite_to_defined_overflow (stmt),
+				     GSI_LAST_NEW_STMT);
+	    }
 	  else if (gimple_vdef (stmt))
 	    {
 	      tree lhs = gimple_assign_lhs (stmt);
@@ -2647,7 +2668,7 @@ combine_blocks (class loop *loop)
   insert_gimplified_predicates (loop);
   predicate_all_scalar_phis (loop);
 
-  if (need_to_predicate)
+  if (need_to_predicate || need_to_rewrite_undefined)
     predicate_statements (loop);
 
   /* Merge basic blocks.  */
@@ -3148,6 +3169,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   rloop = NULL;
   ifc_bbs = NULL;
   need_to_predicate = false;
+  need_to_rewrite_undefined = false;
   any_complicated_phi = false;
 
   /* Apply more aggressive if-conversion when loop or its outer loop were

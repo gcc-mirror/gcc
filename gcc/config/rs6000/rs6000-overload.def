@@ -1154,9 +1154,9 @@
   vus __builtin_vec_convert_4f32_8f16 (vf, vf);
     CONVERT_4F32_8F16
 
-[VEC_COPYSIGN, vec_cpsgn, __builtin_vec_copysign]
+[VEC_COPYSIGN, SKIP, __builtin_vec_copysign]
   vf __builtin_vec_copysign (vf, vf);
-    CPSGNSP
+    COPYSIGN_V4SF
   vd __builtin_vec_copysign (vd, vd);
     CPSGNDP
 

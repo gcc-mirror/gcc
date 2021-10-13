@@ -5374,32 +5374,38 @@
   [(set (match_operand:DI 0 "register_operand" "")
         (mult:DI (match_operand:DI 1 "register_operand" "")
 		 (match_operand:DI 2 "register_operand" "")))]
-  "TARGET_64BIT && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
+  "! optimize_size
+   && TARGET_PA_11
+   && ! TARGET_DISABLE_FPREGS
+   && ! TARGET_SOFT_FLOAT"
   "
 {
   rtx low_product = gen_reg_rtx (DImode);
   rtx cross_product1 = gen_reg_rtx (DImode);
   rtx cross_product2 = gen_reg_rtx (DImode);
-  rtx cross_scratch = gen_reg_rtx (DImode);
-  rtx cross_product = gen_reg_rtx (DImode);
   rtx op1l, op1r, op2l, op2r;
-  rtx op1shifted, op2shifted;
 
-  op1shifted = gen_reg_rtx (DImode);
-  op2shifted = gen_reg_rtx (DImode);
-  op1l = gen_reg_rtx (SImode);
-  op1r = gen_reg_rtx (SImode);
-  op2l = gen_reg_rtx (SImode);
-  op2r = gen_reg_rtx (SImode);
+  if (TARGET_64BIT)
+    {
+      rtx op1shifted = gen_reg_rtx (DImode);
+      rtx op2shifted = gen_reg_rtx (DImode);
 
-  emit_move_insn (op1shifted, gen_rtx_LSHIFTRT (DImode, operands[1],
-						GEN_INT (32)));
-  emit_move_insn (op2shifted, gen_rtx_LSHIFTRT (DImode, operands[2],
-						GEN_INT (32)));
-  op1r = force_reg (SImode, gen_rtx_SUBREG (SImode, operands[1], 4));
-  op2r = force_reg (SImode, gen_rtx_SUBREG (SImode, operands[2], 4));
-  op1l = force_reg (SImode, gen_rtx_SUBREG (SImode, op1shifted, 4));
-  op2l = force_reg (SImode, gen_rtx_SUBREG (SImode, op2shifted, 4));
+      emit_move_insn (op1shifted, gen_rtx_LSHIFTRT (DImode, operands[1],
+						    GEN_INT (32)));
+      emit_move_insn (op2shifted, gen_rtx_LSHIFTRT (DImode, operands[2],
+						    GEN_INT (32)));
+      op1r = force_reg (SImode, gen_rtx_SUBREG (SImode, operands[1], 4));
+      op2r = force_reg (SImode, gen_rtx_SUBREG (SImode, operands[2], 4));
+      op1l = force_reg (SImode, gen_rtx_SUBREG (SImode, op1shifted, 4));
+      op2l = force_reg (SImode, gen_rtx_SUBREG (SImode, op2shifted, 4));
+    }
+  else
+    {
+      op1r = force_reg (SImode, gen_lowpart (SImode, operands[1]));
+      op2r = force_reg (SImode, gen_lowpart (SImode, operands[2]));
+      op1l = force_reg (SImode, gen_highpart (SImode, operands[1]));
+      op2l = force_reg (SImode, gen_highpart (SImode, operands[2]));
+    }
 
   /* Emit multiplies for the cross products.  */
   emit_insn (gen_umulsidi3 (cross_product1, op2r, op1l));
@@ -5408,13 +5414,35 @@
   /* Emit a multiply for the low sub-word.  */
   emit_insn (gen_umulsidi3 (low_product, copy_rtx (op2r), copy_rtx (op1r)));
 
-  /* Sum the cross products and shift them into proper position.  */
-  emit_insn (gen_adddi3 (cross_scratch, cross_product1, cross_product2));
-  emit_insn (gen_ashldi3 (cross_product, cross_scratch, GEN_INT (32)));
+  if (TARGET_64BIT)
+    {
+      rtx cross_scratch = gen_reg_rtx (DImode);
+      rtx cross_product = gen_reg_rtx (DImode);
 
-  /* Add the cross product to the low product and store the result
-     into the output operand .  */
-  emit_insn (gen_adddi3 (operands[0], cross_product, low_product));
+      /* Sum the cross products and shift them into proper position.  */
+      emit_insn (gen_adddi3 (cross_scratch, cross_product1, cross_product2));
+      emit_insn (gen_ashldi3 (cross_product, cross_scratch, GEN_INT (32)));
+
+      /* Add the cross product to the low product and store the result
+	 into the output operand .  */
+      emit_insn (gen_adddi3 (operands[0], cross_product, low_product));
+    }
+  else
+    {
+      rtx cross_scratch = gen_reg_rtx (SImode);
+
+      /* Sum cross products.  */
+      emit_move_insn (cross_scratch,
+		      gen_rtx_PLUS (SImode,
+				    gen_lowpart (SImode, cross_product1),
+				    gen_lowpart (SImode, cross_product2)));
+      emit_move_insn (gen_lowpart (SImode, operands[0]),
+		      gen_lowpart (SImode, low_product));
+      emit_move_insn (gen_highpart (SImode, operands[0]),
+		      gen_rtx_PLUS (SImode,
+				    gen_highpart (SImode, low_product),
+				    cross_scratch));
+    }
   DONE;
 }")
 

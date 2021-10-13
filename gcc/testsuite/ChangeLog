@@ -1,3 +1,118 @@
+2021-10-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/format/c11-printf-1.c, gcc.dg/format/c11-scanf-1.c,
+	gcc.dg/format/c2x-printf-1.c, gcc.dg/format/c2x-scanf-1.c,
+	gcc.dg/format/ext-9.c, gcc.dg/format/ext-10.c: New tests.
+
+2021-10-12  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101985
+	* gcc.target/powerpc/pr101985-1.c: New.
+	* gcc.target/powerpc/pr101985-2.c: New.
+
+2021-10-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/85730
+	PR target/82524
+	* gcc.target/i386/pr85730.c: New test.
+
+2021-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102696
+	* g++.dg/vect/pr102696.cc: New testcase.
+
+2021-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102572
+	* g++.dg/vect/pr102572.cc: New testcase.
+
+2021-10-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/pred-not-gen-1.c: New test.
+	* gcc.target/aarch64/sve/pred-not-gen-2.c: New test.
+	* gcc.target/aarch64/sve/pred-not-gen-3.c: New test.
+	* gcc.target/aarch64/sve/pred-not-gen-4.c: New test.
+
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102541
+	* gfortran.dg/assumed_rank_24.f90: New test.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/simd-2.c: Remove option -fvect-cost-model=cheap.
+	* gcc.dg/gomp/simd-3.c: Likewise.
+
+2021-10-12  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102483.c: New test.
+	* gcc.target/i386/pr102483-2.c: New test.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/pr78102.c: Fix dg-require-effective-target.
+	* gcc.target/powerpc/sse4_1-packusdw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmaxsb.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmaxsd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmaxud.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmaxuw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pminsb.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pminsd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pminud.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pminuw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovsxbd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovsxbw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovsxwd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxbd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxbq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxbw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxdq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxwd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxwq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmulld.c: Likewise.
+	* gcc.target/powerpc/sse4_2-pcmpgtq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-phminposuw.c: Use correct
+	dg-require-effective-target.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/pr78102.c: Copy from gcc.target/i386,
+	adjust dg directives to suit.
+	* gcc.target/powerpc/sse4_1-packusdw.c: Same.
+	* gcc.target/powerpc/sse4_1-pcmpeqq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmuldq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmulld.c: Same.
+	* gcc.target/powerpc/sse4_2-pcmpgtq.c: Same.
+	* gcc.target/powerpc/sse4_2-check.h: Copy from gcc.target/i386,
+	tweak to suit.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-pmovsxbd.c: Copy from gcc.target/i386,
+	adjust dg directives to suit.
+	* gcc.target/powerpc/sse4_1-pmovsxbq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovsxbw.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovsxdq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovsxwd.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovsxwq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxbd.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxbq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxbw.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxdq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxwd.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxwq.c: Same.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-pmaxsb.c: Copy from gcc.target/i386.
+	* gcc.target/powerpc/sse4_1-pmaxsd.c: Same.
+	* gcc.target/powerpc/sse4_1-pmaxud.c: Same.
+	* gcc.target/powerpc/sse4_1-pmaxuw.c: Same.
+	* gcc.target/powerpc/sse4_1-pminsb.c: Same.
+	* gcc.target/powerpc/sse4_1-pminsd.c: Same.
+	* gcc.target/powerpc/sse4_1-pminud.c: Same.
+	* gcc.target/powerpc/sse4_1-pminuw.c: Same.
+
 2021-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/torture/ssa-pta-fn-1.c: Fix template; add noipa.

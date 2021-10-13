@@ -8531,8 +8531,7 @@ thumb2_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
   bool use_ldrd;
   enum rtx_code code = GET_CODE (x);
 
-  if (TARGET_HAVE_MVE
-      && (mode == V8QImode || mode == E_V4QImode || mode == V4HImode))
+  if (TARGET_HAVE_MVE && VALID_MVE_MODE (mode))
     return mve_vector_mem_operand (mode, x, strict_p);
 
   if (arm_address_register_rtx_p (x, strict_p))
@@ -13434,53 +13433,49 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
       || code == PRE_INC || code == POST_DEC)
     {
       reg_no = REGNO (XEXP (op, 0));
-      return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
-	       ? reg_no <= LAST_LO_REGNUM
-	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
-	      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+      return ((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
+	      ? reg_no <= LAST_LO_REGNUM
+	      :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
+	|| reg_no >= FIRST_PSEUDO_REGISTER;
     }
-  else if ((code == POST_MODIFY || code == PRE_MODIFY)
-	   && GET_CODE (XEXP (op, 1)) == PLUS && REG_P (XEXP (XEXP (op, 1), 1)))
+  else if (((code == POST_MODIFY || code == PRE_MODIFY)
+	    && GET_CODE (XEXP (op, 1)) == PLUS
+	    && XEXP (op, 0) == XEXP (XEXP (op, 1), 0)
+	    && REG_P (XEXP (op, 0))
+	    && GET_CODE (XEXP (XEXP (op, 1), 1)) == CONST_INT)
+	   /* Make sure to only accept PLUS after reload_completed, otherwise
+	      this will interfere with auto_inc's pattern detection.  */
+	   || (reload_completed && code == PLUS && REG_P (XEXP (op, 0))
+	       && GET_CODE (XEXP (op, 1)) == CONST_INT))
     {
       reg_no = REGNO (XEXP (op, 0));
-      val = INTVAL (XEXP ( XEXP (op, 1), 1));
+      if (code == PLUS)
+	val = INTVAL (XEXP (op, 1));
+      else
+	val = INTVAL (XEXP(XEXP (op, 1), 1));
+
       switch (mode)
 	{
 	  case E_V16QImode:
-	    if (abs (val) <= 127)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
-	    return FALSE;
-	  case E_V8HImode:
-	  case E_V8HFmode:
-	    if (abs (val) <= 255)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
-	    return FALSE;
 	  case E_V8QImode:
 	  case E_V4QImode:
 	    if (abs (val) <= 127)
-	      return (reg_no <= LAST_LO_REGNUM
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	      return (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
+		|| reg_no >= FIRST_PSEUDO_REGISTER;
 	    return FALSE;
+	  case E_V8HImode:
+	  case E_V8HFmode:
 	  case E_V4HImode:
 	  case E_V4HFmode:
 	    if (val % 2 == 0 && abs (val) <= 254)
-	      return (reg_no <= LAST_LO_REGNUM
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	      return reg_no <= LAST_LO_REGNUM
+		|| reg_no >= FIRST_PSEUDO_REGISTER;
 	    return FALSE;
 	  case E_V4SImode:
 	  case E_V4SFmode:
 	    if (val % 4 == 0 && abs (val) <= 508)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
-	    return FALSE;
-	  case E_V2DImode:
-	  case E_V2DFmode:
-	  case E_TImode:
-	    if (val % 4 == 0 && val >= 0 && val <= 1020)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	      return (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
+		|| reg_no >= FIRST_PSEUDO_REGISTER;
 	    return FALSE;
 	  default:
 	    return FALSE;
@@ -24277,7 +24272,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	else if (code == POST_MODIFY || code == PRE_MODIFY)
 	  {
 	    asm_fprintf (stream, "[%r", REGNO (XEXP (addr, 0)));
-	    postinc_reg = XEXP ( XEXP (x, 1), 1);
+	    postinc_reg = XEXP (XEXP (addr, 1), 1);
 	    if (postinc_reg && CONST_INT_P (postinc_reg))
 	      {
 		if (code == POST_MODIFY)

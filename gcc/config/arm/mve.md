@@ -7570,7 +7570,7 @@
 ;;
 (define_insn "mve_vldrwq_fv4sf"
   [(set (match_operand:V4SF 0 "s_register_operand" "=w")
-	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Ux")]
+	(unspec:V4SF [(match_operand:V4SI 1 "mve_memory_operand" "Ux")]
 	 VLDRWQ_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -7589,7 +7589,7 @@
 ;;
 (define_insn "mve_vldrwq_<supf>v4si"
   [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Ux")]
+	(unspec:V4SI [(match_operand:V4SI 1 "mve_memory_operand" "Ux")]
 	 VLDRWQ))
   ]
   "TARGET_HAVE_MVE"
@@ -7608,7 +7608,7 @@
 ;;
 (define_insn "mve_vldrwq_z_fv4sf"
   [(set (match_operand:V4SF 0 "s_register_operand" "=w")
-	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Ux")
+	(unspec:V4SF [(match_operand:V4SI 1 "mve_memory_operand" "Ux")
 	(match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VLDRWQ_F))
   ]
@@ -7628,7 +7628,7 @@
 ;;
 (define_insn "mve_vldrwq_z_<supf>v4si"
   [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Ux")
+	(unspec:V4SI [(match_operand:V4SI 1 "mve_memory_operand" "Ux")
 	(match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VLDRWQ))
   ]
@@ -8282,7 +8282,7 @@
 ;; [vstrwq_f]
 ;;
 (define_insn "mve_vstrwq_fv4sf"
-  [(set (match_operand:V4SI 0 "memory_operand" "=Ux")
+  [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
 	(unspec:V4SI [(match_operand:V4SF 1 "s_register_operand" "w")]
 	 VSTRWQ_F))
   ]
@@ -8301,7 +8301,7 @@
 ;; [vstrwq_p_f]
 ;;
 (define_insn "mve_vstrwq_p_fv4sf"
-  [(set (match_operand:V4SI 0 "memory_operand" "=Ux")
+  [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
 	(unspec:V4SI [(match_operand:V4SF 1 "s_register_operand" "w")
 		      (match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VSTRWQ_F))
@@ -8321,7 +8321,7 @@
 ;; [vstrwq_p_s vstrwq_p_u]
 ;;
 (define_insn "mve_vstrwq_p_<supf>v4si"
-  [(set (match_operand:V4SI 0 "memory_operand" "=Ux")
+  [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
 		      (match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VSTRWQ))
@@ -8341,7 +8341,7 @@
 ;; [vstrwq_s vstrwq_u]
 ;;
 (define_insn "mve_vstrwq_<supf>v4si"
-  [(set (match_operand:V4SI 0 "memory_operand" "=Ux")
+  [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")]
 	 VSTRWQ))
   ]

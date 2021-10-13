@@ -1331,13 +1331,6 @@ process_options (bool no_backend)
       flag_abi_version = 2;
     }
 
-  /* web and rename-registers help when run after loop unrolling.  */
-  if (!OPTION_SET_P (flag_web))
-    flag_web = flag_unroll_loops;
-
-  if (!OPTION_SET_P (flag_rename_registers))
-    flag_rename_registers = flag_unroll_loops;
-
   if (flag_non_call_exceptions)
     flag_asynchronous_unwind_tables = 1;
   if (flag_asynchronous_unwind_tables)

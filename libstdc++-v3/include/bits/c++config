@@ -296,7 +296,7 @@ namespace std
 
   // This allows the library to terminate without including all of <exception>
   // and without making the declaration of std::terminate visible to users.
-  __attribute__ ((__noreturn__, __always_inline__))
+  extern "C++" __attribute__ ((__noreturn__, __always_inline__))
   inline void __terminate() _GLIBCXX_USE_NOEXCEPT
   {
     void terminate() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__noreturn__));

@@ -260,12 +260,15 @@ merge_one_data (const char *filename,
   if (!gcov_version (gi_ptr, length, filename))
     return -1;
 
+  /* Skip timestamp.  */
+  gcov_read_unsigned ();
+
   length = gcov_read_unsigned ();
-  if (length != gi_ptr->stamp)
+  if (length != gi_ptr->checksum)
     {
       /* Read from a different compilation.  Overwrite the file.  */
       gcov_error (GCOV_PROF_PREFIX "overwriting an existing profile data "
-		  "with a different timestamp\n", filename);
+		  "with a different checksum\n", filename);
       return 0;
     }
 
@@ -495,6 +498,7 @@ write_one_data (const struct gcov_info *gi_ptr,
   dump_unsigned (GCOV_DATA_MAGIC, dump_fn, arg);
   dump_unsigned (GCOV_VERSION, dump_fn, arg);
   dump_unsigned (gi_ptr->stamp, dump_fn, arg);
+  dump_unsigned (gi_ptr->checksum, dump_fn, arg);
 
 #ifdef NEED_L_GCOV
   /* Generate whole program statistics.  */

@@ -1,3 +1,66 @@
+2021-10-12  Julian Brown  <julian@codesourcery.com>
+
+	* target.c (gomp_copy_host2dev): Release device lock on cbuf
+	error path.
+
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/icv-3.f90: New.
+	* testsuite/libgomp.fortran/icv-4.f90: New.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (omp_get_max_teams, omp_get_teams_thread_limit,
+	omp_set_num_teams, omp_set_teams_thread_limit, OMP_NUM_TEAMS,
+	OMP_TEAMS_THREAD_LIMIT): Document.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (omp_get_device_num): Move @node before omp_get_dynamic
+	to avoid makeinfo warnings.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/icv-3.c: New test.
+	* testsuite/libgomp.c-c++-common/icv-4.c: New test.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102628
+	PR libgomp/102668
+	* testsuite/libgomp.c-c++-common/alloc-9.c (main): Decrease
+	allocation sizes from 420 to 320 and from 768 to 568.
+	* testsuite/libgomp.fortran/alloc-11.f90: Likewise.
+	* testsuite/libgomp.fortran/alloc-1.F90: Change expected alignment
+	for cr from 16 to 4.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/scan-11.c: Remove option -fvect-cost-model=cheap.
+	* testsuite/libgomp.c/scan-12.c: Likewise.
+	* testsuite/libgomp.c/scan-13.c: Likewise.
+	* testsuite/libgomp.c/scan-14.c: Likewise.
+	* testsuite/libgomp.c/scan-15.c: Likewise.
+	* testsuite/libgomp.c/scan-16.c: Likewise.
+	* testsuite/libgomp.c/scan-17.c: Likewise.
+	* testsuite/libgomp.c/scan-18.c: Likewise.
+	* testsuite/libgomp.c/scan-19.c: Likewise.
+	* testsuite/libgomp.c/scan-20.c: Likewise.
+	* testsuite/libgomp.c/scan-21.c: Likewise.
+	* testsuite/libgomp.c/scan-22.c: Likewise.
+	* testsuite/libgomp.c++/scan-9.C: Likewise.
+	* testsuite/libgomp.c++/scan-10.C: Likewise.
+	* testsuite/libgomp.c++/scan-11.C: Likewise.
+	* testsuite/libgomp.c++/scan-12.C: Likewise.
+	* testsuite/libgomp.c++/scan-13.C: Likewise.
+	* testsuite/libgomp.c++/scan-14.C: Likewise.
+	* testsuite/libgomp.c++/scan-15.C: Likewise.
+	* testsuite/libgomp.c++/scan-16.C: Likewise.
+
+2021-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* testsuite/libgomp.graphite/force-parallel-8.c: Add --param max-stores-to-sink=0.
+
 2021-10-11  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* allocator.c (omp_init_allocator): Replace omp_atv_sequential with

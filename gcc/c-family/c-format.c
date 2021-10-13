@@ -712,11 +712,14 @@ static const format_char_info print_char_table[] =
   /* C99 conversion specifiers.  */
   { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  TEX_D32, TEX_D64, TEX_D128 }, "-wp0 +#'I", "",   NULL },
   { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  TEX_D32, TEX_D64,  TEX_D128 }, "-wp0 +#",   "",   NULL },
+  /* C2X conversion specifiers.  */
+  { "b",   0, STD_C2X, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN }, "-wp0#",     "i",  NULL },
   /* X/Open conversion specifiers.  */
   { "C",   0, STD_EXT, { TEX_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-w",        "",   NULL },
   { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp",       "R",  NULL },
   /* GNU conversion specifiers.  */
   { "m",   0, STD_EXT, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp",       "",   NULL },
+  { "B",   0, STD_EXT, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN }, "-wp0#",     "i",  NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
@@ -876,6 +879,8 @@ static const format_char_info scan_char_table[] =
   /* C99 conversion specifiers.  */
   { "F",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  TEX_D32, TEX_D64, TEX_D128 }, "*w'",  "W",   NULL },
   { "aA",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  TEX_D32,  TEX_D64,  TEX_D128 }, "*w'",  "W",   NULL },
+  /* C2X conversion specifiers.  */
+  { "b",     1, STD_C2X, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN }, "*w",   "W",   NULL },
   /* X/Open conversion specifiers.  */
   { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*mw",   "W",   NULL },
   { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*amw",  "W",   NULL },

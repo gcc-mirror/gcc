@@ -129,16 +129,7 @@ static const char *const ctr_names[GCOV_COUNTERS] = {
 #undef DEF_GCOV_COUNTER
 
 /* Forward declarations.  */
-static void read_counts_file (void);
 static tree build_var (tree, tree, int);
-static void build_fn_info_type (tree, unsigned, tree);
-static void build_info_type (tree, tree);
-static tree build_fn_info (const struct coverage_data *, tree, tree);
-static tree build_info (tree, tree);
-static bool coverage_obj_init (void);
-static vec<constructor_elt, va_gc> *coverage_obj_fn
-(vec<constructor_elt, va_gc> *, tree, struct coverage_data const *);
-static void coverage_obj_finish (vec<constructor_elt, va_gc> *);
 
 /* Return the type node for gcov_type.  */
 
@@ -217,6 +208,9 @@ read_counts_file (void)
   /* Read the stamp, used for creating a generation count.  */
   tag = gcov_read_unsigned ();
   bbg_file_stamp = crc32_unsigned (bbg_file_stamp, tag);
+
+  /* Read checksum.  */
+  gcov_read_unsigned ();
 
   counts_hash = new hash_table<counts_entry> (10);
   while ((tag = gcov_read_unsigned ()))
@@ -935,6 +929,12 @@ build_info_type (tree type, tree fn_info_ptr_type)
   DECL_CHAIN (field) = fields;
   fields = field;
 
+  /* Checksum.  */
+  field = build_decl (BUILTINS_LOCATION, FIELD_DECL, NULL_TREE,
+		      get_gcov_unsigned_t ());
+  DECL_CHAIN (field) = fields;
+  fields = field;
+
   /* Filename */
   field = build_decl (BUILTINS_LOCATION, FIELD_DECL, NULL_TREE,
 		      build_pointer_type (build_qualified_type
@@ -977,7 +977,7 @@ build_info_type (tree type, tree fn_info_ptr_type)
    function info objects.  */
 
 static tree
-build_info (tree info_type, tree fn_ary)
+build_info (tree info_type, tree fn_ary, unsigned object_checksum)
 {
   tree info_fields = TYPE_FIELDS (info_type);
   tree merge_fn_type, n_funcs;
@@ -996,11 +996,17 @@ build_info (tree info_type, tree fn_ary)
   /* next -- NULL */
   CONSTRUCTOR_APPEND_ELT (v1, info_fields, null_pointer_node);
   info_fields = DECL_CHAIN (info_fields);
-  
+
   /* stamp */
   CONSTRUCTOR_APPEND_ELT (v1, info_fields,
 			  build_int_cstu (TREE_TYPE (info_fields),
 					  bbg_file_stamp));
+  info_fields = DECL_CHAIN (info_fields);
+
+  /* Checksum.  */
+  CONSTRUCTOR_APPEND_ELT (v1, info_fields,
+			  build_int_cstu (TREE_TYPE (info_fields),
+					  object_checksum));
   info_fields = DECL_CHAIN (info_fields);
 
   /* Filename */
@@ -1214,7 +1220,8 @@ coverage_obj_fn (vec<constructor_elt, va_gc> *ctor, tree fn,
    function objects from CTOR.  Generate the gcov_info initializer.  */
 
 static void
-coverage_obj_finish (vec<constructor_elt, va_gc> *ctor)
+coverage_obj_finish (vec<constructor_elt, va_gc> *ctor,
+		     unsigned object_checksum)
 {
   unsigned n_functions = vec_safe_length (ctor);
   tree fn_info_ary_type = build_array_type
@@ -1231,7 +1238,7 @@ coverage_obj_finish (vec<constructor_elt, va_gc> *ctor)
   varpool_node::finalize_decl (fn_info_ary);
   
   DECL_INITIAL (gcov_info_var)
-    = build_info (TREE_TYPE (gcov_info_var), fn_info_ary);
+    = build_info (TREE_TYPE (gcov_info_var), fn_info_ary, object_checksum);
   varpool_node::finalize_decl (gcov_info_var);
 }
 
@@ -1300,7 +1307,6 @@ coverage_init (const char *filename)
   strcpy (da_file_name + prefix_len + len, GCOV_DATA_SUFFIX);
 
   bbg_file_stamp = local_tick;
-  
   if (flag_auto_profile)
     read_autofdo_file ();
   else if (flag_branch_probabilities)
@@ -1328,6 +1334,8 @@ coverage_init (const char *filename)
 	  gcov_write_unsigned (GCOV_NOTE_MAGIC);
 	  gcov_write_unsigned (GCOV_VERSION);
 	  gcov_write_unsigned (bbg_file_stamp);
+	  /* Use an arbitrary checksum */
+	  gcov_write_unsigned (0);
 	  gcov_write_string (getpwd ());
 
 	  /* Do not support has_unexecuted_blocks for Ada.  */
@@ -1353,14 +1361,24 @@ coverage_finish (void)
        cannot uniquely stamp it.  If we can stamp it, libgcov will DTRT.  */
     unlink (da_file_name);
 
+  /* Global GCDA checksum that aggregates all functions.  */
+  unsigned object_checksum = 0;
+
   if (coverage_obj_init ())
     {
       vec<constructor_elt, va_gc> *fn_ctor = NULL;
       struct coverage_data *fn;
       
       for (fn = functions_head; fn; fn = fn->next)
-	fn_ctor = coverage_obj_fn (fn_ctor, fn->fn_decl, fn);
-      coverage_obj_finish (fn_ctor);
+	{
+	  fn_ctor = coverage_obj_fn (fn_ctor, fn->fn_decl, fn);
+
+	  object_checksum = crc32_unsigned (object_checksum, fn->ident);
+	  object_checksum = crc32_unsigned (object_checksum,
+					    fn->lineno_checksum);
+	  object_checksum = crc32_unsigned (object_checksum, fn->cfg_checksum);
+	}
+      coverage_obj_finish (fn_ctor, object_checksum);
     }
 
   XDELETEVEC (da_file_name);

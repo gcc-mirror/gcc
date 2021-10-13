@@ -14882,6 +14882,10 @@ supports locking, the data files will be correctly updated.  Unless
 a strict ISO C dialect option is in effect, @code{fork} calls are
 detected and correctly handled without double counting.
 
+Moreover, an object file can be recompiled multiple times
+and the corresponding @file{.gcda} file merges as long as
+the source file and the compiler options are unchanged.
+
 @item
 For profile-directed optimizations, compile the source files again with
 the same optimization and code generation options plus

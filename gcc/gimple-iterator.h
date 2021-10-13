@@ -46,8 +46,8 @@ struct gphi_iterator : public gimple_stmt_iterator
  
 enum gsi_iterator_update
 {
-  GSI_NEW_STMT,		/* Only valid when single statement is added, move
-			   iterator to it.  */
+  GSI_NEW_STMT = 2,	/* Move the iterator to the first statement added.  */
+  GSI_LAST_NEW_STMT,	/* Move the iterator to the last statement added.  */
   GSI_SAME_STMT,	/* Leave the iterator at the same statement.  */
   GSI_CONTINUE_LINKING	/* Move iterator to whatever position is suitable
 			   for linking other statements in the same

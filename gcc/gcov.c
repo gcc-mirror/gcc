@@ -1814,6 +1814,8 @@ read_graph_file (void)
 	       bbg_file_name, v, e);
     }
   bbg_stamp = gcov_read_unsigned ();
+  /* Read checksum.  */
+  gcov_read_unsigned ();
   bbg_cwd = xstrdup (gcov_read_string ());
   bbg_supports_has_unexecuted_blocks = gcov_read_unsigned ();
 
@@ -2030,6 +2032,9 @@ read_count_file (void)
       fnotice (stderr, "%s:stamp mismatch with notes file\n", da_file_name);
       goto cleanup;
     }
+
+  /* Read checksum.  */
+  gcov_read_unsigned ();
 
   while ((tag = gcov_read_unsigned ()))
     {

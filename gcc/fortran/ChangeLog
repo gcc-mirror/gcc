@@ -1,3 +1,17 @@
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102541
+	* check.c (gfc_check_present): Handle optional CLASS.
+	* interface.c (gfc_compare_actual_formal): Likewise.
+	* trans-array.c (gfc_trans_g77_array): Likewise.
+	* trans-decl.c (gfc_build_dummy_array_decl): Likewise.
+	* trans-types.c (gfc_sym_type): Likewise.
+	* primary.c (gfc_variable_attr): Fixes for dummy and
+	pointer when 'class%_data' is passed.
+	* trans-expr.c (set_dtype_for_unallocated, gfc_conv_procedure_call):
+	For assumed-rank dummy, fix setting rank for dealloc/notassoc actual
+	and setting ubound to -1 for assumed-size actuals.
+
 2021-10-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/99348

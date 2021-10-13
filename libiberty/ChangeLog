@@ -1,3 +1,8 @@
+2021-10-12  Luís Ferreira  <contact@lsferreira.net>
+
+	* d-demangle.c (dlang_parse_qualified): Remove redudant parenthesis
+	around lhs and rhs of assignments.
+
 2021-10-01  Luís Ferreira  <contact@lsferreira.net>
 
 	* testsuite/d-demangle-expected: Add missing format for new test
