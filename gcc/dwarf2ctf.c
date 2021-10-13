@@ -368,7 +368,7 @@ gen_ctf_array_type (ctf_container_ref ctfc, dw_die_ref array_type)
 
   /* DWARF array types pretend C supports multi-dimensional arrays.
      So for the type int[N][M], the array type DIE contains two
-     subrange_type children, the first iwth upper bound N-1 and the
+     subrange_type children, the first with upper bound N-1 and the
      second with upper bound M-1.
 
      CTF, on the other hand, just encodes each array type in its own
