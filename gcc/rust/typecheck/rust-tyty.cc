@@ -1692,7 +1692,7 @@ ReferenceType::get_base () const
 BaseType *
 ReferenceType::clone () const
 {
-  return new ReferenceType (get_ref (), get_ty_ref (), base, is_mutable (),
+  return new ReferenceType (get_ref (), get_ty_ref (), base, mutability (),
 			    get_combined_refs ());
 }
 
@@ -1778,7 +1778,7 @@ PointerType::get_base () const
 BaseType *
 PointerType::clone () const
 {
-  return new PointerType (get_ref (), get_ty_ref (), base, is_mutable (),
+  return new PointerType (get_ref (), get_ty_ref (), base, mutability (),
 			  get_combined_refs ());
 }
 

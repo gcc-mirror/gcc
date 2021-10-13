@@ -548,13 +548,13 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	    case HIR::SelfParam::IMM_REF:
 	      self_type = new TyTy::ReferenceType (
 		self_param.get_mappings ().get_hirid (),
-		TyTy::TyVar (self->get_ref ()), false);
+		TyTy::TyVar (self->get_ref ()), TyTy::TypeMutability::IMMUT);
 	      break;
 
 	    case HIR::SelfParam::MUT_REF:
 	      self_type = new TyTy::ReferenceType (
 		self_param.get_mappings ().get_hirid (),
-		TyTy::TyVar (self->get_ref ()), true);
+		TyTy::TyVar (self->get_ref ()), TyTy::TypeMutability::MUT);
 	      break;
 
 	    default:
