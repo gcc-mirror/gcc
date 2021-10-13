@@ -853,8 +853,8 @@
 ;;
 (define_insn "mve_vcmp<mve_cmp_op>q_n_<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(MVE_COMPARISONS:HI (match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(MVE_COMPARISONS:<MVE_VPRED> (match_operand:MVE_2 1 "s_register_operand" "w")
 		    (match_operand:<V_elem> 2 "s_register_operand" "r")))
   ]
   "TARGET_HAVE_MVE"
@@ -1943,8 +1943,8 @@
 ;;
 (define_insn "@mve_vcmp<mve_cmp_op>q_n_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(MVE_FP_COMPARISONS:HI (match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(MVE_FP_COMPARISONS:<MVE_VPRED> (match_operand:MVE_0 1 "s_register_operand" "w")
 			       (match_operand:<V_elem> 2 "s_register_operand" "r")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -2593,10 +2593,10 @@
 ;;
 (define_insn "mve_vcmpeqq_m_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		    (match_operand:MVE_0 2 "s_register_operand" "w")
-		    (match_operand:HI 3 "vpr_register_operand" "Up")]
+		    (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPEQQ_M_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -2809,10 +2809,10 @@
 ;;
 (define_insn "mve_vcmpcsq_m_n_u<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPCSQ_M_N_U))
   ]
   "TARGET_HAVE_MVE"
@@ -2825,10 +2825,10 @@
 ;;
 (define_insn "mve_vcmpcsq_m_u<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPCSQ_M_U))
   ]
   "TARGET_HAVE_MVE"
@@ -2841,10 +2841,10 @@
 ;;
 (define_insn "mve_vcmpeqq_m_n_<supf><mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPEQQ_M_N))
   ]
   "TARGET_HAVE_MVE"
@@ -2857,10 +2857,10 @@
 ;;
 (define_insn "mve_vcmpeqq_m_<supf><mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPEQQ_M))
   ]
   "TARGET_HAVE_MVE"
@@ -2873,10 +2873,10 @@
 ;;
 (define_insn "mve_vcmpgeq_m_n_s<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPGEQ_M_N_S))
   ]
   "TARGET_HAVE_MVE"
@@ -2889,10 +2889,10 @@
 ;;
 (define_insn "mve_vcmpgeq_m_s<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPGEQ_M_S))
   ]
   "TARGET_HAVE_MVE"
@@ -2905,10 +2905,10 @@
 ;;
 (define_insn "mve_vcmpgtq_m_n_s<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPGTQ_M_N_S))
   ]
   "TARGET_HAVE_MVE"
@@ -2921,10 +2921,10 @@
 ;;
 (define_insn "mve_vcmpgtq_m_s<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPGTQ_M_S))
   ]
   "TARGET_HAVE_MVE"
@@ -2937,10 +2937,10 @@
 ;;
 (define_insn "mve_vcmphiq_m_n_u<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPHIQ_M_N_U))
   ]
   "TARGET_HAVE_MVE"
@@ -2953,10 +2953,10 @@
 ;;
 (define_insn "mve_vcmphiq_m_u<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPHIQ_M_U))
   ]
   "TARGET_HAVE_MVE"
@@ -2969,10 +2969,10 @@
 ;;
 (define_insn "mve_vcmpleq_m_n_s<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPLEQ_M_N_S))
   ]
   "TARGET_HAVE_MVE"
@@ -2985,10 +2985,10 @@
 ;;
 (define_insn "mve_vcmpleq_m_s<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPLEQ_M_S))
   ]
   "TARGET_HAVE_MVE"
@@ -3001,10 +3001,10 @@
 ;;
 (define_insn "mve_vcmpltq_m_n_s<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPLTQ_M_N_S))
   ]
   "TARGET_HAVE_MVE"
@@ -3017,10 +3017,10 @@
 ;;
 (define_insn "mve_vcmpltq_m_s<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPLTQ_M_S))
   ]
   "TARGET_HAVE_MVE"
@@ -3033,10 +3033,10 @@
 ;;
 (define_insn "mve_vcmpneq_m_n_<supf><mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPNEQ_M_N))
   ]
   "TARGET_HAVE_MVE"
@@ -3049,10 +3049,10 @@
 ;;
 (define_insn "mve_vcmpneq_m_<supf><mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPNEQ_M))
   ]
   "TARGET_HAVE_MVE"
@@ -3770,10 +3770,10 @@
 ;;
 (define_insn "mve_vcmpeqq_m_n_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPEQQ_M_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3786,10 +3786,10 @@
 ;;
 (define_insn "mve_vcmpgeq_m_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPGEQ_M_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3802,10 +3802,10 @@
 ;;
 (define_insn "mve_vcmpgeq_m_n_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPGEQ_M_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3818,10 +3818,10 @@
 ;;
 (define_insn "mve_vcmpgtq_m_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPGTQ_M_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3834,10 +3834,10 @@
 ;;
 (define_insn "mve_vcmpgtq_m_n_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPGTQ_M_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3850,10 +3850,10 @@
 ;;
 (define_insn "mve_vcmpleq_m_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPLEQ_M_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3866,10 +3866,10 @@
 ;;
 (define_insn "mve_vcmpleq_m_n_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPLEQ_M_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3882,10 +3882,10 @@
 ;;
 (define_insn "mve_vcmpltq_m_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPLTQ_M_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3898,10 +3898,10 @@
 ;;
 (define_insn "mve_vcmpltq_m_n_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPLTQ_M_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3914,10 +3914,10 @@
 ;;
 (define_insn "mve_vcmpneq_m_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPNEQ_M_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3930,10 +3930,10 @@
 ;;
 (define_insn "mve_vcmpneq_m_n_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(unspec:<MVE_VPRED> [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:<V_elem> 2 "s_register_operand" "r")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VCMPNEQ_M_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
