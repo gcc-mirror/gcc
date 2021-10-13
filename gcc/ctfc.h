@@ -212,7 +212,7 @@ enum ctf_dtu_d_union_enum {
   CTF_DTU_D_ARRAY,
   CTF_DTU_D_ENCODING,
   CTF_DTU_D_ARGUMENTS,
-  CTF_DTU_D_SLICE,
+  CTF_DTU_D_SLICE
 };
 
 enum ctf_dtu_d_union_enum
