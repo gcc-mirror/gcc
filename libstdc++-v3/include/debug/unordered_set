@@ -88,6 +88,7 @@ namespace __debug
 
     public:
       typedef typename _Base::size_type			size_type;
+      typedef typename _Base::difference_type		difference_type;
       typedef typename _Base::hasher			hasher;
       typedef typename _Base::key_equal			key_equal;
       typedef typename _Base::allocator_type		allocator_type;
@@ -95,6 +96,10 @@ namespace __debug
       typedef typename _Base::key_type			key_type;
       typedef typename _Base::value_type		value_type;
 
+      typedef typename _Base::pointer			pointer;
+      typedef typename _Base::const_pointer		const_pointer;
+      typedef typename _Base::reference			reference;
+      typedef typename _Base::const_reference		const_reference;
       typedef __gnu_debug::_Safe_iterator<
 	_Base_iterator, unordered_set>			iterator;
       typedef __gnu_debug::_Safe_iterator<
@@ -203,6 +208,11 @@ namespace __debug
 	return *this;
       }
 
+      using _Base::get_allocator;
+      using _Base::empty;
+      using _Base::size;
+      using _Base::max_size;
+
       void
       swap(unordered_set& __x)
 	noexcept( noexcept(declval<_Base&>().swap(__x)) )
@@ -285,12 +295,18 @@ namespace __debug
 	return { _Base::cend(__b), this };
       }
 
+      using _Base::bucket_count;
+      using _Base::max_bucket_count;
+
       size_type
       bucket_size(size_type __b) const
       {
 	__glibcxx_check_bucket_index(__b);
 	return _Base::bucket_size(__b);
       }
+
+      using _Base::bucket;
+      using _Base::load_factor;
 
       float
       max_load_factor() const noexcept
@@ -302,6 +318,9 @@ namespace __debug
 	__glibcxx_check_max_load_factor(__f);
 	_Base::max_load_factor(__f);
       }
+
+      using _Base::rehash;
+      using _Base::reserve;
 
       template<typename... _Args>
 	std::pair<iterator, bool>
@@ -423,8 +442,37 @@ namespace __debug
 	return { _Base::insert(__hint.base(), std::move(__nh)), this };
       }
 
-      using _Base::merge;
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_set<_Value, _H2, _P2, _Alloc>& __source)
+	{
+	  auto __guard
+	    = _Safe::_S_uc_guard(std::__detail::_Identity{}, __source);
+	  _Base::merge(__source._M_base());
+	}
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_set<_Value, _H2, _P2, _Alloc>&& __source)
+	{ merge(__source); }
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_multiset<_Value, _H2, _P2, _Alloc>& __source)
+	{
+	  auto __guard
+	    = _Safe::_S_umc_guard(std::__detail::_Identity{}, __source);
+	  _Base::merge(__source._M_base());
+	}
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_multiset<_Value, _H2, _P2, _Alloc>&& __source)
+	{ merge(__source); }
 #endif // C++17
+
+      using _Base::hash_function;
+      using _Base::key_eq;
 
       iterator
       find(const key_type& __key)
@@ -450,6 +498,12 @@ namespace __debug
 	const_iterator
 	find(const _Kt& __k) const
 	{ return { _Base::find(__k), this }; }
+#endif
+
+      using _Base::count;
+
+#if __cplusplus > 201703L
+      using _Base::contains;
 #endif
 
       std::pair<iterator, iterator>
@@ -707,6 +761,7 @@ namespace __debug
 
     public:
       typedef typename _Base::size_type			size_type;
+      typedef typename _Base::difference_type		difference_type;
       typedef typename _Base::hasher			hasher;
       typedef typename _Base::key_equal			key_equal;
       typedef typename _Base::allocator_type		allocator_type;
@@ -714,6 +769,10 @@ namespace __debug
       typedef typename _Base::key_type			key_type;
       typedef typename _Base::value_type		value_type;
 
+      typedef typename _Base::pointer			pointer;
+      typedef typename _Base::const_pointer		const_pointer;
+      typedef typename _Base::reference			reference;
+      typedef typename _Base::const_reference		const_reference;
       typedef __gnu_debug::_Safe_iterator<
 	_Base_iterator, unordered_multiset>		iterator;
       typedef __gnu_debug::_Safe_iterator<
@@ -822,6 +881,11 @@ namespace __debug
 	return *this;
       }
 
+      using _Base::get_allocator;
+      using _Base::empty;
+      using _Base::size;
+      using _Base::max_size;
+
       void
       swap(unordered_multiset& __x)
 	noexcept( noexcept(declval<_Base&>().swap(__x)) )
@@ -904,12 +968,18 @@ namespace __debug
 	return { _Base::cend(__b), this };
       }
 
+      using _Base::bucket_count;
+      using _Base::max_bucket_count;
+
       size_type
       bucket_size(size_type __b) const
       {
 	__glibcxx_check_bucket_index(__b);
 	return _Base::bucket_size(__b);
       }
+
+      using _Base::bucket;
+      using _Base::load_factor;
 
       float
       max_load_factor() const noexcept
@@ -921,6 +991,9 @@ namespace __debug
 	__glibcxx_check_max_load_factor(__f);
 	_Base::max_load_factor(__f);
       }
+
+      using _Base::rehash;
+      using _Base::reserve;
 
       template<typename... _Args>
 	iterator
@@ -1037,8 +1110,37 @@ namespace __debug
 	return { _Base::insert(__hint.base(), std::move(__nh)), this };
       }
 
-      using _Base::merge;
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_multiset<_Value, _H2, _P2, _Alloc>& __source)
+	{
+	  auto __guard
+	    = _Safe::_S_umc_guard(std::__detail::_Identity{}, __source);
+	  _Base::merge(__source._M_base());
+	}
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_multiset<_Value, _H2, _P2, _Alloc>&& __source)
+	{ merge(__source); }
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_set<_Value, _H2, _P2, _Alloc>& __source)
+	{
+	  auto __guard
+	    = _Safe::_S_uc_guard(std::__detail::_Identity{}, __source);
+	  _Base::merge(__source._M_base());
+	}
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_set<_Value, _H2, _P2, _Alloc>&& __source)
+	{ merge(__source); }
 #endif // C++17
+
+      using _Base::hash_function;
+      using _Base::key_eq;
 
       iterator
       find(const key_type& __key)
@@ -1064,6 +1166,12 @@ namespace __debug
 	const_iterator
 	find(const _Kt& __k) const
 	{ return { _Base::find(__k), this }; }
+#endif
+
+      using _Base::count;
+
+#if __cplusplus > 201703L
+      using _Base::contains;
 #endif
 
       std::pair<iterator, iterator>

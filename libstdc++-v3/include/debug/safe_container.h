@@ -78,7 +78,6 @@ namespace __gnu_debug
       { }
 #endif
 
-    public:
       // Copy assignment invalidate all iterators.
       _Safe_container&
       operator=(const _Safe_container&) _GLIBCXX_NOEXCEPT

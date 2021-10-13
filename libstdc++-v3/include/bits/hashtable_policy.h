@@ -60,19 +60,19 @@ namespace __detail
 
   // Helper function: return distance(first, last) for forward
   // iterators, or 0/1 for input iterators.
-  template<class _Iterator>
+  template<typename _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last,
 		  std::input_iterator_tag)
     { return __first != __last ? 1 : 0; }
 
-  template<class _Iterator>
+  template<typename _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last,
 		  std::forward_iterator_tag)
     { return std::distance(__first, __last); }
 
-  template<class _Iterator>
+  template<typename _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last)
     { return __distance_fw(__first, __last,
