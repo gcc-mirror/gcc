@@ -363,12 +363,28 @@ public:
   void visit (HIR::AssignmentExpr &expr) override
   {
     fncontext fn = ctx->peek_fn ();
-    auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
-    auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
+    auto lvalue = CompileExpr::Compile (expr.get_lhs (), ctx);
+    auto rvalue = CompileExpr::Compile (expr.get_rhs (), ctx);
+
+    // assignments are coercion sites so lets convert the rvalue if necessary
+    TyTy::BaseType *expected = nullptr;
+    TyTy::BaseType *actual = nullptr;
+
+    bool ok;
+    ok = ctx->get_tyctx ()->lookup_type (
+      expr.get_lhs ()->get_mappings ().get_hirid (), &expected);
+    rust_assert (ok);
+
+    ok = ctx->get_tyctx ()->lookup_type (
+      expr.get_rhs ()->get_mappings ().get_hirid (), &actual);
+    rust_assert (ok);
+
+    rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
 
     Bstatement *assignment
-      = ctx->get_backend ()->assignment_statement (fn.fndecl, lhs, rhs,
+      = ctx->get_backend ()->assignment_statement (fn.fndecl, lvalue, rvalue,
 						   expr.get_locus ());
+
     ctx->add_statement (assignment);
   }
 
@@ -412,11 +428,11 @@ public:
 
   void visit (HIR::ArrayElemsValues &elems) override
   {
-    elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
-      Bexpression *translated_expr = CompileExpr::Compile (e, ctx);
-      constructor.push_back (translated_expr);
-      return true;
-    });
+    for (auto &elem : elems.get_values ())
+      {
+	Bexpression *translated_expr = CompileExpr::Compile (elem.get (), ctx);
+	constructor.push_back (translated_expr);
+      }
   }
 
   void visit (HIR::ArrayElemsCopied &elems) override
@@ -646,11 +662,11 @@ public:
     // this assumes all fields are in order from type resolution and if a base
     // struct was specified those fields are filed via accesors
     std::vector<Bexpression *> vals;
-    struct_expr.iterate ([&] (HIR::StructExprField *field) mutable -> bool {
-      Bexpression *expr = CompileStructExprField::Compile (field, ctx);
-      vals.push_back (expr);
-      return true;
-    });
+    for (auto &field : struct_expr.get_fields ())
+      {
+	Bexpression *expr = CompileStructExprField::Compile (field.get (), ctx);
+	vals.push_back (expr);
+      }
 
     translated
       = ctx->get_backend ()->constructor_expression (type, vals,

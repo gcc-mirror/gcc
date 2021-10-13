@@ -88,16 +88,16 @@ public:
     else
       {
 	// only warn the unused fields when in unwarned struct.
-	stct.iterate ([&] (HIR::StructField &field) -> bool {
-	  HirId field_hir_id = field.get_mappings ().get_hirid ();
-	  if (should_warn (field_hir_id))
-	    {
-	      rust_warning_at (field.get_locus (), 0,
-			       "field is never read: %<%s%>",
-			       field.get_field_name ().c_str ());
-	    }
-	  return true;
-	});
+	for (auto &field : stct.get_fields ())
+	  {
+	    HirId field_hir_id = field.get_mappings ().get_hirid ();
+	    if (should_warn (field_hir_id))
+	      {
+		rust_warning_at (field.get_locus (), 0,
+				 "field is never read: %<%s%>",
+				 field.get_field_name ().c_str ());
+	      }
+	  }
       }
   }
 

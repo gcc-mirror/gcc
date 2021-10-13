@@ -81,18 +81,18 @@ public:
 
   void visit (HIR::ArrayElemsValues &expr) override
   {
-    expr.iterate ([&] (HIR::Expr *expr) mutable -> bool {
-      expr->accept_vis (*this);
-      return true;
-    });
+    for (auto &elem : expr.get_values ())
+      {
+	elem->accept_vis (*this);
+      }
   }
 
   void visit (HIR::TupleExpr &expr) override
   {
-    expr.iterate ([&] (HIR::Expr *expr) mutable -> bool {
-      expr->accept_vis (*this);
-      return true;
-    });
+    for (auto &elem : expr.get_tuple_elems ())
+      {
+	elem->accept_vis (*this);
+      }
   }
 
   void visit (HIR::BlockExpr &expr) override
@@ -165,10 +165,8 @@ public:
   void visit (HIR::CallExpr &expr) override
   {
     expr.get_fnexpr ()->accept_vis (*this);
-    expr.iterate_params ([&] (HIR::Expr *expr) -> bool {
-      expr->accept_vis (*this);
-      return true;
-    });
+    for (auto &argument : expr.get_arguments ())
+      argument->accept_vis (*this);
   }
 
   void visit (HIR::ArithmeticOrLogicalExpr &expr) override
@@ -236,10 +234,10 @@ public:
 
   void visit (HIR::StructExprStructFields &stct) override
   {
-    stct.iterate ([&] (HIR::StructExprField *field) -> bool {
-      field->accept_vis (*this);
-      return true;
-    });
+    for (auto &field : stct.get_fields ())
+      {
+	field->accept_vis (*this);
+      }
 
     stct.get_struct_name ().accept_vis (*this);
     if (stct.has_struct_base ())

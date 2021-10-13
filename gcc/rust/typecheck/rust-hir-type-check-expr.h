@@ -880,10 +880,11 @@ public:
   void visit (HIR::ArrayElemsValues &elems) override
   {
     std::vector<TyTy::BaseType *> types;
-    elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
-      types.push_back (TypeCheckExpr::Resolve (e, false));
-      return true;
-    });
+
+    for (auto &elem : elems.get_values ())
+      {
+	types.push_back (TypeCheckExpr::Resolve (elem.get (), false));
+      }
 
     infered_array_elems
       = TyTy::TyVar::get_implicit_infer_var (root_array_expr_locus).get_tyty ();

@@ -149,10 +149,8 @@ MarkLive::visit (HIR::MethodCallExpr &expr)
 {
   expr.get_receiver ()->accept_vis (*this);
   visit_path_segment (expr.get_method_name ());
-  expr.iterate_params ([&] (HIR::Expr *param) -> bool {
-    param->accept_vis (*this);
-    return true;
-  });
+  for (auto &argument : expr.get_arguments ())
+    argument->accept_vis (*this);
 
   // Trying to find the method definition and mark it alive.
   NodeId ast_node_id = expr.get_mappings ().get_nodeid ();

@@ -153,20 +153,21 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 
   std::vector<TyTy::StructFieldType *> infered_fields;
   bool ok = true;
-  struct_expr.iterate ([&] (HIR::StructExprField *field) mutable -> bool {
-    resolved_field_value_expr = nullptr;
-    field->accept_vis (*this);
-    if (resolved_field_value_expr == nullptr)
-      {
-	rust_fatal_error (field->get_locus (),
-			  "failed to resolve type for field");
-	ok = false;
-	return false;
-      }
 
-    context->insert_type (field->get_mappings (), resolved_field_value_expr);
-    return true;
-  });
+  for (auto &field : struct_expr.get_fields ())
+    {
+      resolved_field_value_expr = nullptr;
+      field->accept_vis (*this);
+      if (resolved_field_value_expr == nullptr)
+	{
+	  rust_fatal_error (field->get_locus (),
+			    "failed to resolve type for field");
+	  ok = false;
+	  break;
+	}
+
+      context->insert_type (field->get_mappings (), resolved_field_value_expr);
+    }
 
   // something failed setting up the fields
   if (!ok)
@@ -266,10 +267,8 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
       // correctly. The GIMPLE backend uses a simple algorithm that assumes each
       // assigned field in the constructor is in the same order as the field in
       // the type
-      std::vector<std::unique_ptr<HIR::StructExprField> > expr_fields
-	= struct_expr.get_fields_as_owner ();
-      for (auto &f : expr_fields)
-	f.release ();
+      for (auto &field : struct_expr.get_fields ())
+	field.release ();
 
       std::vector<std::unique_ptr<HIR::StructExprField> > ordered_fields;
       for (size_t i = 0; i < adtFieldIndexToField.size (); i++)

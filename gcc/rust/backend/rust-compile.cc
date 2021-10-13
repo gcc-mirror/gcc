@@ -69,39 +69,120 @@ CompileExpr::visit (HIR::CallExpr &expr)
 	       || tyty->get_kind () == TyTy::TypeKind::FNPTR;
   if (!is_fn)
     {
-      Btype *type = TyTyResolveCompile::compile (ctx, tyty);
+      rust_assert (tyty->get_kind () == TyTy::TypeKind::ADT);
+      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyty);
+      Btype *compiled_adt_type = TyTyResolveCompile::compile (ctx, tyty);
 
       // this assumes all fields are in order from type resolution and if a
       // base struct was specified those fields are filed via accesors
       std::vector<Bexpression *> vals;
-      expr.iterate_params ([&] (HIR::Expr *argument) mutable -> bool {
-	Bexpression *e = CompileExpr::Compile (argument, ctx);
-	vals.push_back (e);
-	return true;
-      });
+      for (size_t i = 0; i < expr.get_arguments ().size (); i++)
+	{
+	  auto &argument = expr.get_arguments ().at (i);
+	  auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+
+	  // assignments are coercion sites so lets convert the rvalue if
+	  // necessary
+	  auto respective_field = adt->get_field (i);
+	  auto expected = respective_field->get_field_type ();
+
+	  TyTy::BaseType *actual = nullptr;
+	  bool ok = ctx->get_tyctx ()->lookup_type (
+	    argument->get_mappings ().get_hirid (), &actual);
+	  rust_assert (ok);
+
+	  // coerce it if required
+	  rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+
+	  // add it to the list
+	  vals.push_back (rvalue);
+	}
 
       translated
-	= ctx->get_backend ()->constructor_expression (type, vals, -1,
-						       expr.get_locus ());
+	= ctx->get_backend ()->constructor_expression (compiled_adt_type, vals,
+						       -1, expr.get_locus ());
     }
   else
     {
-      // must be a call to a function
-      Bexpression *fn = CompileExpr::Compile (expr.get_fnexpr (), ctx);
-      rust_assert (fn != nullptr);
+      auto get_parameter_tyty_at_index
+	= [] (const TyTy::BaseType *base, size_t index,
+	      TyTy::BaseType **result) -> bool {
+	bool is_fn = base->get_kind () == TyTy::TypeKind::FNDEF
+		     || base->get_kind () == TyTy::TypeKind::FNPTR;
+	rust_assert (is_fn);
+
+	if (base->get_kind () == TyTy::TypeKind::FNPTR)
+	  {
+	    const TyTy::FnPtr *fn = static_cast<const TyTy::FnPtr *> (base);
+	    *result = fn->param_at (index);
+
+	    return true;
+	  }
+
+	const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (base);
+	auto param = fn->param_at (index);
+	*result = param.second;
+
+	return true;
+      };
+
+      bool is_varadic = false;
+      if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
+	{
+	  const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
+	  is_varadic = fn->is_varadic ();
+	}
+
+      size_t required_num_args;
+      if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
+	{
+	  const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
+	  required_num_args = fn->num_params ();
+	}
+      else
+	{
+	  const TyTy::FnPtr *fn = static_cast<const TyTy::FnPtr *> (tyty);
+	  required_num_args = fn->num_params ();
+	}
 
       std::vector<Bexpression *> args;
-      expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-	Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
-	rust_assert (compiled_expr != nullptr);
-	args.push_back (compiled_expr);
-	return true;
-      });
+      for (size_t i = 0; i < expr.get_arguments ().size (); i++)
+	{
+	  auto &argument = expr.get_arguments ().at (i);
+	  auto rvalue = CompileExpr::Compile (argument.get (), ctx);
 
+	  if (is_varadic && i >= required_num_args)
+	    {
+	      args.push_back (rvalue);
+	      continue;
+	    }
+
+	  // assignments are coercion sites so lets convert the rvalue if
+	  // necessary
+	  bool ok;
+	  TyTy::BaseType *expected = nullptr;
+	  ok = get_parameter_tyty_at_index (tyty, i, &expected);
+	  rust_assert (ok);
+
+	  TyTy::BaseType *actual = nullptr;
+	  ok = ctx->get_tyctx ()->lookup_type (
+	    argument->get_mappings ().get_hirid (), &actual);
+	  rust_assert (ok);
+
+	  // coerce it if required
+	  rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+
+	  // add it to the list
+	  args.push_back (rvalue);
+	}
+
+      // must be a call to a function
+      auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
       auto fncontext = ctx->peek_fn ();
       translated
-	= ctx->get_backend ()->call_expression (fncontext.fndecl, fn, args,
-						nullptr, expr.get_locus ());
+	= ctx->get_backend ()->call_expression (fncontext.fndecl, fn_address,
+						args, nullptr,
+						expr.get_locus ());
     }
 }
 
@@ -224,12 +305,12 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 
       std::vector<Bexpression *> args;
       args.push_back (self_argument);
-      expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-	Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
-	rust_assert (compiled_expr != nullptr);
-	args.push_back (compiled_expr);
-	return true;
-      });
+      for (auto &argument : expr.get_arguments ())
+	{
+	  Bexpression *compiled_expr
+	    = CompileExpr::Compile (argument.get (), ctx);
+	  args.push_back (compiled_expr);
+	}
 
       Bexpression *fn_expr
 	= ctx->get_backend ()->var_expression (fn_convert_expr_tmp,
@@ -414,12 +495,11 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   args.push_back (self);
 
   // normal args
-  expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-    Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
-    rust_assert (compiled_expr != nullptr);
-    args.push_back (compiled_expr);
-    return true;
-  });
+  for (auto &argument : expr.get_arguments ())
+    {
+      Bexpression *compiled_expr = CompileExpr::Compile (argument.get (), ctx);
+      args.push_back (compiled_expr);
+    }
 
   auto fncontext = ctx->peek_fn ();
   translated

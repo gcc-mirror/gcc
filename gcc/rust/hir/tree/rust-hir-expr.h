@@ -796,14 +796,7 @@ public:
 
   size_t get_num_elements () const { return values.size (); }
 
-  void iterate (std::function<bool (Expr *)> cb)
-  {
-    for (auto it = values.begin (); it != values.end (); it++)
-      {
-	if (!cb ((*it).get ()))
-	  return;
-      }
-  }
+  std::vector<std::unique_ptr<Expr> > &get_values () { return values; }
 
 protected:
   ArrayElemsValues *clone_array_elems_impl () const override
@@ -1069,15 +1062,6 @@ public:
   }
 
   bool is_unit () const { return tuple_elems.size () == 0; }
-
-  void iterate (std::function<bool (Expr *)> cb)
-  {
-    for (auto &tuple_elem : tuple_elems)
-      {
-	if (!cb (tuple_elem.get ()))
-	  return;
-      }
-  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1491,15 +1475,6 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  void iterate (std::function<bool (StructExprField *)> cb)
-  {
-    for (auto &field : fields)
-      {
-	if (!cb (field.get ()))
-	  return;
-      }
-  }
-
   std::vector<std::unique_ptr<StructExprField> > &get_fields ()
   {
     return fields;
@@ -1508,11 +1483,6 @@ public:
   const std::vector<std::unique_ptr<StructExprField> > &get_fields () const
   {
     return fields;
-  };
-
-  std::vector<std::unique_ptr<StructExprField> > get_fields_as_owner ()
-  {
-    return std::move (fields);
   };
 
   void set_fields_as_owner (
@@ -1578,14 +1548,10 @@ protected:
   }
 };
 
-// Forward decl for Function - used in CallExpr
-class Function;
-
 // Function call expression HIR node
 class CallExpr : public ExprWithoutBlock
 {
   std::unique_ptr<Expr> function;
-  // inlined form of CallParams
   std::vector<std::unique_ptr<Expr> > params;
 
   Location locus;
@@ -1642,13 +1608,11 @@ public:
 
   size_t num_params () const { return params.size (); }
 
-  void iterate_params (std::function<bool (Expr *)> cb)
+  std::vector<std::unique_ptr<Expr> > &get_arguments () { return params; }
+
+  const std::vector<std::unique_ptr<Expr> > &get_arguments () const
   {
-    for (auto &param : params)
-      {
-	if (!cb (param.get ()))
-	  return;
-      }
+    return params;
   }
 
 protected:
@@ -1731,21 +1695,13 @@ public:
 
   PathExprSegment get_method_name () const { return method_name; };
 
-  std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
-  const std::vector<std::unique_ptr<Expr> > &get_params () const
-  {
-    return params;
-  }
-
   size_t num_params () const { return params.size (); }
 
-  void iterate_params (std::function<bool (Expr *)> cb)
+  std::vector<std::unique_ptr<Expr> > &get_arguments () { return params; }
+
+  const std::vector<std::unique_ptr<Expr> > &get_arguments () const
   {
-    for (auto &param : params)
-      {
-	if (!cb (param.get ()))
-	  return;
-      }
+    return params;
   }
 
 protected:

@@ -2383,27 +2383,28 @@ TypeCheckCallExpr::visit (ADTType &type)
     }
 
   size_t i = 0;
-  call.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-    StructFieldType *field = type.get_field (i);
-    BaseType *field_tyty = field->get_field_type ();
+  for (auto &argument : call.get_arguments ())
+    {
+      StructFieldType *field = type.get_field (i);
+      BaseType *field_tyty = field->get_field_type ();
 
-    BaseType *arg = Resolver::TypeCheckExpr::Resolve (p, false);
-    if (arg->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (p->get_locus (), "failed to resolve argument type");
-	return false;
-      }
+      BaseType *arg = Resolver::TypeCheckExpr::Resolve (argument.get (), false);
+      if (arg->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (argument->get_locus (),
+			 "failed to resolve argument type");
+	  return;
+	}
 
-    auto res = field_tyty->coerce (arg);
-    if (res->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	return false;
-      }
+      auto res = field_tyty->coerce (arg);
+      if (res->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  return;
+	}
 
-    delete res;
-    i++;
-    return true;
-  });
+      delete res;
+      i++;
+    }
 
   if (i != call.num_params ())
     {
@@ -2441,35 +2442,36 @@ TypeCheckCallExpr::visit (FnType &type)
     }
 
   size_t i = 0;
-  call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
-    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
-    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (param->get_locus (),
-		       "failed to resolve type for argument expr in CallExpr");
-	return false;
-      }
+  for (auto &argument : call.get_arguments ())
+    {
+      auto argument_expr_tyty
+	= Resolver::TypeCheckExpr::Resolve (argument.get (), false);
+      if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (
+	    argument->get_locus (),
+	    "failed to resolve type for argument expr in CallExpr");
+	  return;
+	}
 
-    auto resolved_argument_type = argument_expr_tyty;
+      // it might be a varadic function
+      if (i < type.num_params ())
+	{
+	  auto fnparam = type.param_at (i);
+	  auto resolved_argument_type
+	    = fnparam.second->coerce (argument_expr_tyty);
+	  if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
+	    {
+	      rust_error_at (argument->get_locus (),
+			     "Type Resolution failure on parameter");
+	      return;
+	    }
+	}
 
-    // it might be a varadic function
-    if (i < type.num_params ())
-      {
-	auto fnparam = type.param_at (i);
-	resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
-	if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
-	  {
-	    rust_error_at (param->get_locus (),
-			   "Type Resolution failure on parameter");
-	    return false;
-	  }
-      }
+      context->insert_type (argument->get_mappings (), argument_expr_tyty);
 
-    context->insert_type (param->get_mappings (), resolved_argument_type);
-
-    i++;
-    return true;
-  });
+      i++;
+    }
 
   if (i < call.num_params ())
     {
@@ -2505,29 +2507,31 @@ TypeCheckCallExpr::visit (FnPtr &type)
     }
 
   size_t i = 0;
-  call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
-    auto fnparam = type.param_at (i);
-    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
-    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (param->get_locus (),
-		       "failed to resolve type for argument expr in CallExpr");
-	return false;
-      }
+  for (auto &argument : call.get_arguments ())
+    {
+      auto fnparam = type.param_at (i);
+      auto argument_expr_tyty
+	= Resolver::TypeCheckExpr::Resolve (argument.get (), false);
+      if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (
+	    argument->get_locus (),
+	    "failed to resolve type for argument expr in CallExpr");
+	  return;
+	}
 
-    auto resolved_argument_type = fnparam->coerce (argument_expr_tyty);
-    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (param->get_locus (),
-		       "Type Resolution failure on parameter");
-	return false;
-      }
+      auto resolved_argument_type = fnparam->coerce (argument_expr_tyty);
+      if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (argument->get_locus (),
+			 "Type Resolution failure on parameter");
+	  return;
+	}
 
-    context->insert_type (param->get_mappings (), resolved_argument_type);
+      context->insert_type (argument->get_mappings (), argument_expr_tyty);
 
-    i++;
-    return true;
-  });
+      i++;
+    }
 
   if (i != call.num_params ())
     {
@@ -2556,29 +2560,31 @@ TypeCheckMethodCallExpr::visit (FnType &type)
     }
 
   size_t i = 1;
-  call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
-    auto fnparam = type.param_at (i);
-    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
-    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (param->get_locus (),
-		       "failed to resolve type for argument expr in CallExpr");
-	return false;
-      }
+  for (auto &argument : call.get_arguments ())
+    {
+      auto fnparam = type.param_at (i);
+      auto argument_expr_tyty
+	= Resolver::TypeCheckExpr::Resolve (argument.get (), false);
+      if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (
+	    argument->get_locus (),
+	    "failed to resolve type for argument expr in CallExpr");
+	  return;
+	}
 
-    auto resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
-    if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (param->get_locus (),
-		       "Type Resolution failure on parameter");
-	return false;
-      }
+      auto resolved_argument_type = fnparam.second->coerce (argument_expr_tyty);
+      if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (argument->get_locus (),
+			 "Type Resolution failure on parameter");
+	  return;
+	}
 
-    context->insert_type (param->get_mappings (), resolved_argument_type);
+      context->insert_type (argument->get_mappings (), argument_expr_tyty);
 
-    i++;
-    return true;
-  });
+      i++;
+    }
 
   if (i != num_args_to_call)
     {

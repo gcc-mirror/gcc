@@ -1492,14 +1492,7 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  void iterate (std::function<bool (StructField &)> cb)
-  {
-    for (auto &field : fields)
-      {
-	if (!cb (field))
-	  return;
-      }
-  }
+  std::vector<StructField> &get_fields () { return fields; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1609,15 +1602,6 @@ public:
 
   std::vector<TupleField> &get_fields () { return fields; }
   const std::vector<TupleField> &get_fields () const { return fields; }
-
-  void iterate (std::function<bool (TupleField &)> cb)
-  {
-    for (auto &field : fields)
-      {
-	if (!cb (field))
-	  return;
-      }
-  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

@@ -162,11 +162,11 @@ public:
 
   void visit (HIR::ArrayElemsValues &elems) override
   {
-    elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
-      e->accept_vis (*this);
-      dump += ",";
-      return true;
-    });
+    for (auto &elem : elems.get_values ())
+      {
+	elem->accept_vis (*this);
+	dump += ",";
+      }
   }
 
   void visit (HIR::GroupedExpr &expr) override
