@@ -54,7 +54,7 @@ public:
 
   void visit (HIR::IdentifierPattern &pattern) override
   {
-    if (!pattern.is_mut)
+    if (!pattern.is_mut ())
       translated_type = ctx->get_backend ()->immutable_type (translated_type);
 
     translated

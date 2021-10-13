@@ -649,11 +649,10 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   UNKNOWN_LOCAL_DEFID);
 
-    translated
-      = new HIR::BorrowExpr (mapping,
-			     std::unique_ptr<HIR::Expr> (borrow_lvalue),
-			     expr.get_is_mut (), expr.get_is_double_borrow (),
-			     expr.get_outer_attrs (), expr.get_locus ());
+    translated = new HIR::BorrowExpr (
+      mapping, std::unique_ptr<HIR::Expr> (borrow_lvalue),
+      expr.get_is_mut () ? Mutability::Mut : Mutability::Imm,
+      expr.get_is_double_borrow (), expr.get_outer_attrs (), expr.get_locus ());
   }
 
   void visit (AST::DereferenceExpr &expr) override

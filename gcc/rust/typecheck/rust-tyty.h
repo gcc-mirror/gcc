@@ -24,6 +24,7 @@
 #include "rust-hir-full.h"
 #include "rust-diagnostics.h"
 #include "rust-abi.h"
+#include "rust-common.h"
 
 namespace Rust {
 
@@ -34,12 +35,6 @@ class AssociatedImplTrait;
 } // namespace Resolver
 
 namespace TyTy {
-
-enum TypeMutability
-{
-  IMMUT,
-  MUT
-};
 
 // https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/enum.TyKind.html#variants
@@ -1558,12 +1553,12 @@ public:
 class ReferenceType : public BaseType
 {
 public:
-  ReferenceType (HirId ref, TyVar base, TypeMutability mut,
+  ReferenceType (HirId ref, TyVar base, Mutability mut,
 		 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::REF, refs), base (base), mut (mut)
   {}
 
-  ReferenceType (HirId ref, HirId ty_ref, TyVar base, TypeMutability mut,
+  ReferenceType (HirId ref, HirId ty_ref, TyVar base, Mutability mut,
 		 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::REF, refs), base (base), mut (mut)
   {}
@@ -1593,24 +1588,24 @@ public:
 
   ReferenceType *handle_substitions (SubstitutionArgumentMappings mappings);
 
-  TypeMutability mutability () const { return mut; }
+  Mutability mutability () const { return mut; }
 
-  bool is_mutable () const { return mut == TypeMutability::MUT; }
+  bool is_mutable () const { return mut == Mutability::Mut; }
 
 private:
   TyVar base;
-  TypeMutability mut;
+  Mutability mut;
 };
 
 class PointerType : public BaseType
 {
 public:
-  PointerType (HirId ref, TyVar base, TypeMutability mut,
+  PointerType (HirId ref, TyVar base, Mutability mut,
 	       std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::POINTER, refs), base (base), mut (mut)
   {}
 
-  PointerType (HirId ref, HirId ty_ref, TyVar base, TypeMutability mut,
+  PointerType (HirId ref, HirId ty_ref, TyVar base, Mutability mut,
 	       std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::POINTER, refs), base (base), mut (mut)
   {}
@@ -1640,15 +1635,15 @@ public:
 
   PointerType *handle_substitions (SubstitutionArgumentMappings mappings);
 
-  TypeMutability mutability () const { return mut; }
+  Mutability mutability () const { return mut; }
 
-  bool is_mutable () const { return mut == TypeMutability::MUT; }
+  bool is_mutable () const { return mut == Mutability::Mut; }
 
-  bool is_const () const { return mut == TypeMutability::IMMUT; }
+  bool is_const () const { return mut == Mutability::Imm; }
 
 private:
   TyVar base;
-  TypeMutability mut;
+  Mutability mut;
 };
 
 class StrType : public BaseType

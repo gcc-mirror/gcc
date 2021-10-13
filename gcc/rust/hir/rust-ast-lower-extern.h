@@ -48,12 +48,10 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    HIR::ExternalStaticItem *static_item
-      = new HIR::ExternalStaticItem (mapping, item.get_identifier (),
-				     std::unique_ptr<HIR::Type> (static_type),
-				     item.is_mut (), std::move (vis),
-				     item.get_outer_attrs (),
-				     item.get_locus ());
+    HIR::ExternalStaticItem *static_item = new HIR::ExternalStaticItem (
+      mapping, item.get_identifier (), std::unique_ptr<HIR::Type> (static_type),
+      item.is_mut () ? Mutability::Mut : Mutability::Imm, std::move (vis),
+      item.get_outer_attrs (), item.get_locus ());
 
     translated = static_item;
 

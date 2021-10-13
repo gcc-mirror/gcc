@@ -129,9 +129,7 @@ public:
       = TypeCheckType::Resolve (type.get_base_type ().get ());
     translated = new TyTy::ReferenceType (type.get_mappings ().get_hirid (),
 					  TyTy::TyVar (base->get_ref ()),
-					  type.get_has_mut ()
-					    ? TyTy::TypeMutability::MUT
-					    : TyTy::TypeMutability::IMMUT);
+					  type.get_mut ());
   }
 
   void visit (HIR::RawPointerType &type) override
@@ -140,9 +138,7 @@ public:
       = TypeCheckType::Resolve (type.get_base_type ().get ());
     translated
       = new TyTy::PointerType (type.get_mappings ().get_hirid (),
-			       TyTy::TyVar (base->get_ref ()),
-			       type.is_mut () ? TyTy::TypeMutability::MUT
-					      : TyTy::TypeMutability::IMMUT);
+			       TyTy::TyVar (base->get_ref ()), type.get_mut ());
   }
 
   void visit (HIR::InferredType &type) override

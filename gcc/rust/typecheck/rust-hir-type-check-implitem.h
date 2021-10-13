@@ -101,7 +101,7 @@ public:
 	auto param_tyty = TypeCheckType::Resolve (param.get_type ().get ());
 
 	HIR::IdentifierPattern *param_pattern = new HIR::IdentifierPattern (
-	  param.get_param_name (), Location (), false, false,
+	  param.get_param_name (), Location (), false, Mutability::Imm,
 	  std::unique_ptr<HIR::Pattern> (nullptr));
 
 	params.push_back (
@@ -219,7 +219,7 @@ public:
 	HIR::SelfParam &self_param = function.get_self_param ();
 	HIR::IdentifierPattern *self_pattern = new HIR::IdentifierPattern (
 	  "self", self_param.get_locus (), self_param.is_ref (),
-	  self_param.is_mut (), std::unique_ptr<HIR::Pattern> (nullptr));
+	  self_param.get_mut (), std::unique_ptr<HIR::Pattern> (nullptr));
 
 	// might have a specified type
 	TyTy::BaseType *self_type = nullptr;
@@ -240,13 +240,13 @@ public:
 	      case HIR::SelfParam::IMM_REF:
 		self_type = new TyTy::ReferenceType (
 		  self_param.get_mappings ().get_hirid (),
-		  TyTy::TyVar (self->get_ref ()), TyTy::TypeMutability::IMMUT);
+		  TyTy::TyVar (self->get_ref ()), Mutability::Imm);
 		break;
 
 	      case HIR::SelfParam::MUT_REF:
 		self_type = new TyTy::ReferenceType (
 		  self_param.get_mappings ().get_hirid (),
-		  TyTy::TyVar (self->get_ref ()), TyTy::TypeMutability::MUT);
+		  TyTy::TyVar (self->get_ref ()), Mutability::Mut);
 		break;
 
 	      default:
