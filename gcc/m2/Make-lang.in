@@ -2253,6 +2253,9 @@ check-modula-2: check-gm2
 check_modula-2: check-gm2
 
 lang_checks += check-gm2
+lang_checks_parallelized += check-gm2
+# For description see the check_$lang_parallelize comment in gcc/Makefile.in.
+check_gm2_parallelize = 10000
 
 check-gm2-local: $(GM2TESTSUITEDIR)/site.exp
 	-(rootme=`${PWD_COMMAND}`; export rootme; \
