@@ -1099,54 +1099,6 @@ namespace views::__adaptor
       using all_t = decltype(all(std::declval<_Range>()));
   } // namespace views
 
-  // The following simple algos are transcribed from ranges_algo.h to avoid
-  // having to include that entire header.
-  namespace __detail
-  {
-    template<typename _Iter, typename _Sent, typename _Tp>
-      constexpr _Iter
-      find(_Iter __first, _Sent __last, const _Tp& __value)
-      {
-	while (__first != __last
-	       && !(bool)(*__first == __value))
-	  ++__first;
-	return __first;
-      }
-
-    template<typename _Iter, typename _Sent, typename _Pred>
-      constexpr _Iter
-      find_if(_Iter __first, _Sent __last, _Pred __pred)
-      {
-	while (__first != __last
-	       && !(bool)std::__invoke(__pred, *__first))
-	  ++__first;
-	return __first;
-      }
-
-    template<typename _Iter, typename _Sent, typename _Pred>
-      constexpr _Iter
-      find_if_not(_Iter __first, _Sent __last, _Pred __pred)
-      {
-	while (__first != __last
-	       && (bool)std::__invoke(__pred, *__first))
-	  ++__first;
-	return __first;
-      }
-
-    template<typename _Iter1, typename _Sent1, typename _Iter2, typename _Sent2>
-      constexpr pair<_Iter1, _Iter2>
-      mismatch(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2)
-      {
-	while (__first1 != __last1 && __first2 != __last2
-	       && (bool)ranges::equal_to{}(*__first1, *__first2))
-	  {
-	    ++__first1;
-	    ++__first2;
-	  }
-	return { std::move(__first1), std::move(__first2) };
-      }
-  } // namespace __detail
-
   namespace __detail
   {
     template<typename _Tp>
@@ -1394,9 +1346,9 @@ namespace views::__adaptor
 	constexpr _Iterator&
 	operator++()
 	{
-	  _M_current = __detail::find_if(std::move(++_M_current),
-					 ranges::end(_M_parent->_M_base),
-					 std::ref(*_M_parent->_M_pred));
+	  _M_current = ranges::find_if(std::move(++_M_current),
+				       ranges::end(_M_parent->_M_base),
+				       std::ref(*_M_parent->_M_pred));
 	  return *this;
 	}
 
@@ -1503,9 +1455,9 @@ namespace views::__adaptor
 	  return {this, _M_cached_begin._M_get(_M_base)};
 
 	__glibcxx_assert(_M_pred.has_value());
-	auto __it = __detail::find_if(ranges::begin(_M_base),
-				      ranges::end(_M_base),
-				      std::ref(*_M_pred));
+	auto __it = ranges::find_if(ranges::begin(_M_base),
+				    ranges::end(_M_base),
+				    std::ref(*_M_pred));
 	_M_cached_begin._M_set(_M_base, __it);
 	return {this, std::move(__it)};
       }
@@ -1604,11 +1556,11 @@ namespace views::__adaptor
 	  static auto
 	  _S_iter_concept()
 	  {
-	    if constexpr (random_access_range<_Vp>)
+	    if constexpr (random_access_range<_Base>)
 	      return random_access_iterator_tag{};
-	    else if constexpr (bidirectional_range<_Vp>)
+	    else if constexpr (bidirectional_range<_Base>)
 	      return bidirectional_iterator_tag{};
-	    else if constexpr (forward_range<_Vp>)
+	    else if constexpr (forward_range<_Base>)
 	      return forward_iterator_tag{};
 	    else
 	      return input_iterator_tag{};
@@ -2389,9 +2341,10 @@ namespace views::__adaptor
 	if (_M_cached_begin._M_has_value())
 	  return _M_cached_begin._M_get(_M_base);
 
-	auto __it = __detail::find_if_not(ranges::begin(_M_base),
-					  ranges::end(_M_base),
-					  std::cref(*_M_pred));
+	__glibcxx_assert(_M_pred.has_value());
+	auto __it = ranges::find_if_not(ranges::begin(_M_base),
+					ranges::end(_M_base),
+					std::cref(*_M_pred));
 	_M_cached_begin._M_set(_M_base, __it);
 	return __it;
       }
@@ -2566,7 +2519,7 @@ namespace views::__adaptor
 	    requires _Const
 	      && convertible_to<iterator_t<_Vp>, _Outer_iter>
 	      && convertible_to<iterator_t<_InnerRange>, _Inner_iter>
-	    : _M_outer(std::move(__i._M_outer)), _M_inner(__i._M_inner),
+	    : _M_outer(std::move(__i._M_outer)), _M_inner(std::move(__i._M_inner)),
 	      _M_parent(__i._M_parent)
 	  { }
 
@@ -2914,13 +2867,7 @@ namespace views::__adaptor
 
 	    constexpr _InnerIter<_Const>
 	    begin() const
-	      requires copyable<_OuterIter>
 	    { return _InnerIter<_Const>{_M_i}; }
-
-	    constexpr _InnerIter<_Const>
-	    begin()
-	      requires (!copyable<_OuterIter>)
-	    { return _InnerIter<_Const>{std::move(_M_i)}; }
 
 	    constexpr default_sentinel_t
 	    end() const
@@ -2965,8 +2912,8 @@ namespace views::__adaptor
 	      ++__current();
 	    else if constexpr (__detail::__tiny_range<_Pattern>)
 	      {
-		__current() = __detail::find(std::move(__current()), __end,
-					     *__pbegin);
+		__current() = ranges::find(std::move(__current()), __end,
+					   *__pbegin);
 		if (__current() != __end)
 		  ++__current();
 	      }
@@ -2974,7 +2921,7 @@ namespace views::__adaptor
 	      do
 		{
 		  auto [__b, __p]
-		    = __detail::mismatch(__current(), __end, __pbegin, __pend);
+		    = ranges::mismatch(__current(), __end, __pbegin, __pend);
 		  if (__p == __pend)
 		    {
 		      __current() = __b;
@@ -3073,6 +3020,14 @@ namespace views::__adaptor
 	  _InnerIter(_OuterIter<_Const> __i)
 	    : _M_i(std::move(__i))
 	  { }
+
+	  constexpr const iterator_t<_Base>&
+	  base() const& noexcept
+	  { return _M_i_current(); }
+
+	  constexpr iterator_t<_Base>
+	  base() &&
+	  { return std::move(_M_i_current()); }
 
 	  constexpr decltype(auto)
 	  operator*() const
@@ -3542,8 +3497,8 @@ namespace views::__adaptor
 	: _M_base(std::move(base))
       { }
 
-      constexpr const _Vp&
-      base() const & noexcept
+      constexpr _Vp
+      base() const& requires copy_constructible<_Vp>
       { return _M_base; }
 
       constexpr _Vp
@@ -3637,11 +3592,11 @@ namespace views::__adaptor
 	  static auto
 	  _S_iter_concept()
 	  {
-	    if constexpr (random_access_range<_Vp>)
+	    if constexpr (random_access_range<_Base>)
 	      return random_access_iterator_tag{};
-	    else if constexpr (bidirectional_range<_Vp>)
+	    else if constexpr (bidirectional_range<_Base>)
 	      return bidirectional_iterator_tag{};
-	    else if constexpr (forward_range<_Vp>)
+	    else if constexpr (forward_range<_Base>)
 	      return forward_iterator_tag{};
 	    else
 	      return input_iterator_tag{};
@@ -3669,9 +3624,8 @@ namespace views::__adaptor
 	    : _M_current(std::move(i._M_current))
 	  { }
 
-	  constexpr iterator_t<_Base>
-	  base() const&
-	    requires copyable<iterator_t<_Base>>
+	  constexpr const iterator_t<_Base>&
+	  base() const& noexcept
 	  { return _M_current; }
 
 	  constexpr iterator_t<_Base>

@@ -389,8 +389,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  (if it has one).
        */
       function(function&& __x) noexcept
-      : _Function_base()
-      { __x.swap(*this); }
+      : _Function_base(), _M_invoker(__x._M_invoker)
+      {
+	if (static_cast<bool>(__x))
+	  {
+	    _M_functor = __x._M_functor;
+	    _M_manager = __x._M_manager;
+	    __x._M_manager = nullptr;
+	    __x._M_invoker = nullptr;
+	  }
+      }
 
       /**
        *  @brief Builds a %function that targets a copy of the incoming

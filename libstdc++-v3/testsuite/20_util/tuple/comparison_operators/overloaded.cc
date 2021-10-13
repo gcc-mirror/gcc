@@ -48,4 +48,9 @@ TwistedLogic operator<(const Compares&, const Compares&) { return {false}; }
 
 auto a = std::make_tuple(nullptr, Compares{}, 2, 'U');
 auto b = a == a;
-auto c = a < a;
+
+#if ! __cpp_lib_three_way_comparison
+// Not valid in C++20, because TwistedLogic doesn't model boolean-testable.
+auto c = std::make_tuple("", Compares{}, 2, 'U');
+auto d = c < c;
+#endif
