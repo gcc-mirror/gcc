@@ -158,8 +158,15 @@ namespace __detail
     constexpr bool __is_contiguous = std::contiguous_iterator<_Iter>;
 #else
   template<typename _Iter>
-    constexpr bool __is_contiguous = is_pointer_v<_Iter>;
+    constexpr bool __is_contiguous = false;
 #endif
+
+  template<typename _Tp>
+    constexpr bool __is_contiguous<_Tp*> = true;
+
+  template<typename _Tp, typename _Seq>
+    constexpr bool
+    __is_contiguous<__gnu_cxx::__normal_iterator<_Tp*, _Seq>> = true;
 
 #if !defined _GLIBCXX_FILESYSTEM_IS_WINDOWS && defined _GLIBCXX_USE_CHAR8_T
   // For POSIX treat char8_t sequences as char without encoding conversions.
