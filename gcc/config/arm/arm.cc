@@ -29369,7 +29369,7 @@ arm_class_likely_spilled_p (reg_class_t rclass)
       || rclass  == CC_REG)
     return true;
 
-  return false;
+  return default_class_likely_spilled_p (rclass);
 }
 
 /* Implements target hook small_register_classes_for_mode_p.  */
