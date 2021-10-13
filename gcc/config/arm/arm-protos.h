@@ -101,6 +101,7 @@ extern char *neon_output_shift_immediate (const char *, char, rtx *,
 					  machine_mode, int, bool);
 extern void neon_pairwise_reduce (rtx, rtx, machine_mode,
 				  rtx (*) (rtx, rtx, rtx));
+extern rtx mve_bool_vec_to_const (rtx const_vec);
 extern rtx neon_make_constant (rtx, bool generate = true);
 extern tree arm_builtin_vectorized_function (unsigned int, tree, tree);
 extern void neon_expand_vector_init (rtx, rtx);

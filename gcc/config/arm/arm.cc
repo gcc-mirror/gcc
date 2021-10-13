@@ -12802,7 +12802,10 @@ simd_valid_immediate (rtx op, machine_mode mode, int inverse,
   innersize = GET_MODE_UNIT_SIZE (mode);
 
   /* Only support 128-bit vectors for MVE.  */
-  if (TARGET_HAVE_MVE && (!vector || n_elts * innersize != 16))
+  if (TARGET_HAVE_MVE
+      && (!vector
+	  || (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	  || n_elts * innersize != 16))
     return -1;
 
   /* Vectors of float constants.  */
@@ -13167,6 +13170,29 @@ neon_vdup_constant (rtx vals, bool generate)
   return gen_vec_duplicate (mode, x);
 }
 
+/* Return a HI representation of CONST_VEC suitable for MVE predicates.  */
+rtx
+mve_bool_vec_to_const (rtx const_vec)
+{
+  int n_elts = GET_MODE_NUNITS ( GET_MODE (const_vec));
+  int repeat = 16 / n_elts;
+  int i;
+  int hi_val = 0;
+
+  for (i = 0; i < n_elts; i++)
+    {
+      rtx el = CONST_VECTOR_ELT (const_vec, i);
+      unsigned HOST_WIDE_INT elpart;
+
+      gcc_assert (CONST_INT_P (el));
+      elpart = INTVAL (el);
+
+      for (int j = 0; j < repeat; j++)
+	hi_val |= elpart << (i * repeat + j);
+    }
+  return gen_int_mode (hi_val, HImode);
+}
+
 /* Return a non-NULL RTX iff VALS, which is a PARALLEL containing only
    constants (for vec_init) or CONST_VECTOR, can be effeciently loaded
    into a register.
@@ -13207,6 +13233,8 @@ neon_make_constant (rtx vals, bool generate)
       && simd_immediate_valid_for_move (const_vec, mode, NULL, NULL))
     /* Load using VMOV.  On Cortex-A8 this takes one cycle.  */
     return const_vec;
+  else if (TARGET_HAVE_MVE && (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL))
+    return mve_bool_vec_to_const (const_vec);
   else if ((target = neon_vdup_constant (vals, generate)) != NULL_RTX)
     /* Loaded using VDUP.  On Cortex-A8 the VDUP takes one NEON
        pipeline cycle; creating the constant takes one or two ARM
@@ -25365,7 +25393,10 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return false;
 
   if (IS_VPR_REGNUM (regno))
-    return mode == HImode;
+    return mode == HImode
+      || mode == V16BImode
+      || mode == V8BImode
+      || mode == V4BImode;
 
   if (TARGET_THUMB1)
     /* For the Thumb we only allow values bigger than SImode in
@@ -31053,6 +31084,19 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
     arm_post_atomic_barrier (model);
 }
 
+/* Return the mode for the MVE vector of predicates corresponding to MODE.  */
+machine_mode
+arm_mode_to_pred_mode (machine_mode mode)
+{
+  switch (GET_MODE_NUNITS (mode))
+    {
+    case 16: return V16BImode;
+    case 8: return V8BImode;
+    case 4: return V4BImode;
+    }
+  gcc_unreachable ();
+}
+
 /* Expand code to compare vectors OP0 and OP1 using condition CODE.
    If CAN_INVERT, store either the result or its inverse in TARGET
    and return true if TARGET contains the inverse.  If !CAN_INVERT,
@@ -31136,7 +31180,7 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
 	  if (vcond_mve)
 	    vpr_p0 = target;
 	  else
-	    vpr_p0 = gen_reg_rtx (HImode);
+	    vpr_p0 = gen_reg_rtx (arm_mode_to_pred_mode (cmp_mode));
 
 	  switch (GET_MODE_CLASS (cmp_mode))
 	    {
@@ -31178,7 +31222,7 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
 	  if (vcond_mve)
 	    vpr_p0 = target;
 	  else
-	    vpr_p0 = gen_reg_rtx (HImode);
+	    vpr_p0 = gen_reg_rtx (arm_mode_to_pred_mode (cmp_mode));
 
 	  emit_insn (gen_mve_vcmpq (code, cmp_mode, vpr_p0, op0, force_reg (cmp_mode, op1)));
 	  if (!vcond_mve)
@@ -31205,7 +31249,7 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
 	  if (vcond_mve)
 	    vpr_p0 = target;
 	  else
-	    vpr_p0 = gen_reg_rtx (HImode);
+	    vpr_p0 = gen_reg_rtx (arm_mode_to_pred_mode (cmp_mode));
 
 	  emit_insn (gen_mve_vcmpq (swap_condition (code), cmp_mode, vpr_p0, force_reg (cmp_mode, op1), op0));
 	  if (!vcond_mve)
@@ -31258,7 +31302,7 @@ arm_expand_vcond (rtx *operands, machine_mode cmp_result_mode)
   if (TARGET_HAVE_MVE)
     {
       vcond_mve=true;
-      mask = gen_reg_rtx (HImode);
+      mask = gen_reg_rtx (arm_mode_to_pred_mode (cmp_result_mode));
     }
   else
     mask = gen_reg_rtx (cmp_result_mode);

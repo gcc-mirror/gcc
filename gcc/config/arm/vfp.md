@@ -73,20 +73,25 @@
 
 (define_insn "*thumb2_movhi_vfp"
  [(set
-   (match_operand:HI 0 "nonimmediate_operand"
+   (match_operand:MVE_7_HI 0 "nonimmediate_operand"
     "=rk, r, l, r, m, r, *t, r, *t, Up, r")
-   (match_operand:HI 1 "general_operand"
-    "rk, I, Py, n, r, m, r, *t, *t, r, Up"))]
+   (match_operand:MVE_7_HI 1 "general_operand"
+    "rk, IDB, Py, n, r, m, r, *t, *t, r, Up"))]
  "TARGET_THUMB2 && TARGET_VFP_BASE
   && !TARGET_VFP_FP16INST
-  && (register_operand (operands[0], HImode)
-       || register_operand (operands[1], HImode))"
+  && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
 {
   switch (which_alternative)
     {
     case 0:
-    case 1:
     case 2:
+      return "mov%?\t%0, %1\t%@ movhi";
+    case 1:
+      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_VECTOR_BOOL)
+        operands[1] = mve_const_bool_vec_to_hi (operands[1]);
+      else
+        operands[1] = gen_lowpart (HImode, operands[1]);
       return "mov%?\t%0, %1\t%@ movhi";
     case 3:
       return "movw%?\t%0, %L1\t%@ movhi";
@@ -173,19 +178,24 @@
 
 (define_insn "*thumb2_movhi_fp16"
  [(set
-   (match_operand:HI 0 "nonimmediate_operand"
+   (match_operand:MVE_7_HI 0 "nonimmediate_operand"
     "=rk, r, l, r, m, r, *t, r, *t, Up, r")
-   (match_operand:HI 1 "general_operand"
-    "rk, I, Py, n, r, m, r, *t, *t, r, Up"))]
+   (match_operand:MVE_7_HI 1 "general_operand"
+    "rk, IDB, Py, n, r, m, r, *t, *t, r, Up"))]
  "TARGET_THUMB2 && (TARGET_VFP_FP16INST || TARGET_HAVE_MVE)
-  && (register_operand (operands[0], HImode)
-       || register_operand (operands[1], HImode))"
+  && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
 {
   switch (which_alternative)
     {
     case 0:
-    case 1:
     case 2:
+      return "mov%?\t%0, %1\t%@ movhi";
+    case 1:
+      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_VECTOR_BOOL)
+        operands[1] = mve_const_bool_vec_to_hi (operands[1]);
+      else
+        operands[1] = gen_lowpart (HImode, operands[1]);
       return "mov%?\t%0, %1\t%@ movhi";
     case 3:
       return "movw%?\t%0, %L1\t%@ movhi";

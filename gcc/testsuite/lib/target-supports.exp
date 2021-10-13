@@ -5038,6 +5038,7 @@ proc check_effective_target_arm_cmse_hw { } {
 	}
     } "-mcmse"]
 }
+
 # Return 1 if the target supports executing MVE instructions, 0
 # otherwise.
 
@@ -5053,7 +5054,7 @@ proc check_effective_target_arm_mve_hw {} {
 	       : "0" (a), "r" (b));
 	  return (a != 2);
 	}
-    } ""]
+    } [add_options_for_arm_v8_1m_mve_fp ""]]
 }
 
 # Return 1 if this is an ARM target where ARMv8-M Security Extensions with

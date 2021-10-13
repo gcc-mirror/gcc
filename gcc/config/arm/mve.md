@@ -839,8 +839,8 @@
 ;;
 (define_insn "@mve_vcmp<mve_cmp_op>q_<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(MVE_COMPARISONS:HI (match_operand:MVE_2 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(MVE_COMPARISONS:<MVE_VPRED> (match_operand:MVE_2 1 "s_register_operand" "w")
 		    (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
@@ -1929,8 +1929,8 @@
 ;;
 (define_insn "@mve_vcmp<mve_cmp_op>q_f<mode>"
   [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(MVE_FP_COMPARISONS:HI (match_operand:MVE_0 1 "s_register_operand" "w")
+   (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
+	(MVE_FP_COMPARISONS:<MVE_VPRED> (match_operand:MVE_0 1 "s_register_operand" "w")
 			       (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -3324,7 +3324,7 @@
    (set (match_operand:MVE_1 0 "s_register_operand" "=w")
 	(unspec:MVE_1 [(match_operand:MVE_1 1 "s_register_operand" "w")
 		       (match_operand:MVE_1 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VPSELQ))
   ]
   "TARGET_HAVE_MVE"
@@ -4419,7 +4419,7 @@
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:HI 3 "vpr_register_operand" "Up")]
+		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	 VPSELQ_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -10515,4 +10515,15 @@
    && !BYTES_BIG_ENDIAN && unaligned_access"
   "vldr<V_sz_elem1>.<V_sz_elem>\t%q0, %E1"
   [(set_attr "type" "mve_load")]
+)
+
+;; Expander for VxBI moves
+(define_expand "mov<mode>"
+  [(set (match_operand:MVE_7 0 "nonimmediate_operand")
+        (match_operand:MVE_7 1 "general_operand"))]
+  "TARGET_HAVE_MVE"
+  {
+    if (!register_operand (operands[0], <MODE>mode))
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+  }
 )
