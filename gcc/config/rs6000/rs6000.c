@@ -21626,17 +21626,17 @@ static void
 rs6000_xcoff_file_end (void)
 {
   switch_to_section (text_section);
+  if (xcoff_tls_exec_model_detected)
+    {
+      /* Add a .ref to __tls_get_addr to force libpthread dependency.  */
+      fputs ("\t.extern __tls_get_addr\n\t.ref __tls_get_addr\n", asm_out_file);
+    }
   fputs ("_section_.text:\n", asm_out_file);
   switch_to_section (data_section);
   fputs (TARGET_32BIT
 	 ? "\t.long _section_.text\n" : "\t.llong _section_.text\n",
 	 asm_out_file);
 
-  if (xcoff_tls_exec_model_detected)
-    {
-      /* Add a .ref to __tls_get_addr to force libpthread dependency.  */
-      fputs ("\t.extern __tls_get_addr\n\t.ref __tls_get_addr\n", asm_out_file);
-    }
 }
 
 struct declare_alias_data
