@@ -2830,6 +2830,18 @@ debug (const bitmap_head *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
+DEBUG_FUNCTION void
+debug (const auto_bitmap &ref)
+{
+  debug ((const bitmap_head &) ref);
+}
+
+DEBUG_FUNCTION void
+debug (const auto_bitmap *ptr)
+{
+  debug ((const bitmap_head *) ptr);
+}
+
 void
 bitmap_head::dump ()
 {

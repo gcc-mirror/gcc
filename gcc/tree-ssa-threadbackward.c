@@ -282,6 +282,13 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
 	  continue;
 	}
 
+      // FIXME: We currently stop looking if we find a threadable path
+      // through a PHI.  This is pessimistic, as there can be multiple
+      // paths that can resolve the path.  For example:
+      //
+      // x_5 = PHI <10(4), 20(5), ...>
+      // if (x_5 > 5)
+
       tree arg = gimple_phi_arg_def (phi, i);
       if (TREE_CODE (arg) == SSA_NAME)
 	{

@@ -15487,124 +15487,120 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 		       int misalign, enum vect_cost_model_location where)
 {
   auto *costs = static_cast<aarch64_vector_costs *> (data);
-  unsigned retval = 0;
 
-  if (flag_vect_cost_model)
+  fractional_cost stmt_cost
+    = aarch64_builtin_vectorization_cost (kind, vectype, misalign);
+
+  bool in_inner_loop_p = (where == vect_body
+			  && stmt_info
+			  && stmt_in_inner_loop_p (vinfo, stmt_info));
+
+  /* Do one-time initialization based on the vinfo.  */
+  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
+  bb_vec_info bb_vinfo = dyn_cast<bb_vec_info> (vinfo);
+  if (!costs->analyzed_vinfo && aarch64_use_new_vector_costs_p ())
     {
-      fractional_cost stmt_cost
-	= aarch64_builtin_vectorization_cost (kind, vectype, misalign);
-
-      bool in_inner_loop_p = (where == vect_body
-			      && stmt_info
-			      && stmt_in_inner_loop_p (vinfo, stmt_info));
-
-      /* Do one-time initialization based on the vinfo.  */
-      loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
-      bb_vec_info bb_vinfo = dyn_cast<bb_vec_info> (vinfo);
-      if (!costs->analyzed_vinfo && aarch64_use_new_vector_costs_p ())
-	{
-	  if (loop_vinfo)
-	    aarch64_analyze_loop_vinfo (loop_vinfo, costs);
-	  else
-	    aarch64_analyze_bb_vinfo (bb_vinfo, costs);
-	  costs->analyzed_vinfo = true;
-	}
-
-      /* Try to get a more accurate cost by looking at STMT_INFO instead
-	 of just looking at KIND.  */
-      if (stmt_info && aarch64_use_new_vector_costs_p ())
-	{
-	  if (vectype && aarch64_sve_only_stmt_p (stmt_info, vectype))
-	    costs->saw_sve_only_op = true;
-
-	  /* If we scalarize a strided store, the vectorizer costs one
-	     vec_to_scalar for each element.  However, we can store the first
-	     element using an FP store without a separate extract step.  */
-	  if (vect_is_store_elt_extraction (kind, stmt_info))
-	    count -= 1;
-
-	  stmt_cost = aarch64_detect_scalar_stmt_subtype
-	    (vinfo, kind, stmt_info, stmt_cost);
-
-	  if (vectype && costs->vec_flags)
-	    stmt_cost = aarch64_detect_vector_stmt_subtype (vinfo, kind,
-							    stmt_info, vectype,
-							    where, stmt_cost);
-	}
-
-      /* Do any SVE-specific adjustments to the cost.  */
-      if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
-	stmt_cost = aarch64_sve_adjust_stmt_cost (vinfo, kind, stmt_info,
-						  vectype, stmt_cost);
-
-      if (stmt_info && aarch64_use_new_vector_costs_p ())
-	{
-	  /* Account for any extra "embedded" costs that apply additively
-	     to the base cost calculated above.  */
-	  stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
-						stmt_cost);
-
-	  /* If we're recording a nonzero vector loop body cost for the
-	     innermost loop, also estimate the operations that would need
-	     to be issued by all relevant implementations of the loop.  */
-	  auto *issue_info = aarch64_tune_params.vec_costs->issue_info;
-	  if (loop_vinfo
-	      && issue_info
-	      && costs->vec_flags
-	      && where == vect_body
-	      && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
-	      && vectype
-	      && stmt_cost != 0)
-	    {
-	      /* Record estimates for the scalar code.  */
-	      aarch64_count_ops (vinfo, costs, count, kind, stmt_info, vectype,
-				 0, &costs->scalar_ops, issue_info->scalar,
-				 vect_nunits_for_cost (vectype));
-
-	      if (aarch64_sve_mode_p (vinfo->vector_mode) && issue_info->sve)
-		{
-		  /* Record estimates for a possible Advanced SIMD version
-		     of the SVE code.  */
-		  aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
-				     vectype, VEC_ADVSIMD, &costs->advsimd_ops,
-				     issue_info->advsimd,
-				     aarch64_estimated_sve_vq ());
-
-		  /* Record estimates for the SVE code itself.  */
-		  aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
-				     vectype, VEC_ANY_SVE, &costs->sve_ops,
-				     issue_info->sve, 1);
-		}
-	      else
-		/* Record estimates for the Advanced SIMD code.  Treat SVE like
-		   Advanced SIMD if the CPU has no specific SVE costs.  */
-		aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
-				   vectype, VEC_ADVSIMD, &costs->advsimd_ops,
-				   issue_info->advsimd, 1);
-	    }
-
-	  /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
-	     estimate the number of statements in the unrolled Advanced SIMD
-	     loop.  For simplicitly, we assume that one iteration of the
-	     Advanced SIMD loop would need the same number of statements
-	     as one iteration of the SVE loop.  */
-	  if (where == vect_body && costs->unrolled_advsimd_niters)
-	    costs->unrolled_advsimd_stmts
-	      += count * costs->unrolled_advsimd_niters;
-	}
-
-      /* Statements in an inner loop relative to the loop being
-	 vectorized are weighted more heavily.  The value here is
-	 arbitrary and could potentially be improved with analysis.  */
-      if (in_inner_loop_p)
-	{
-	  gcc_assert (loop_vinfo);
-	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /*  FIXME  */
-	}
-
-      retval = (count * stmt_cost).ceil ();
-      costs->region[where] += retval;
+      if (loop_vinfo)
+	aarch64_analyze_loop_vinfo (loop_vinfo, costs);
+      else
+	aarch64_analyze_bb_vinfo (bb_vinfo, costs);
+      costs->analyzed_vinfo = true;
     }
+
+  /* Try to get a more accurate cost by looking at STMT_INFO instead
+     of just looking at KIND.  */
+  if (stmt_info && aarch64_use_new_vector_costs_p ())
+    {
+      if (vectype && aarch64_sve_only_stmt_p (stmt_info, vectype))
+	costs->saw_sve_only_op = true;
+
+      /* If we scalarize a strided store, the vectorizer costs one
+	 vec_to_scalar for each element.  However, we can store the first
+	 element using an FP store without a separate extract step.  */
+      if (vect_is_store_elt_extraction (kind, stmt_info))
+	count -= 1;
+
+      stmt_cost = aarch64_detect_scalar_stmt_subtype
+	(vinfo, kind, stmt_info, stmt_cost);
+
+      if (vectype && costs->vec_flags)
+	stmt_cost = aarch64_detect_vector_stmt_subtype (vinfo, kind,
+							stmt_info, vectype,
+							where, stmt_cost);
+    }
+
+  /* Do any SVE-specific adjustments to the cost.  */
+  if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
+    stmt_cost = aarch64_sve_adjust_stmt_cost (vinfo, kind, stmt_info,
+					      vectype, stmt_cost);
+
+  if (stmt_info && aarch64_use_new_vector_costs_p ())
+    {
+      /* Account for any extra "embedded" costs that apply additively
+	 to the base cost calculated above.  */
+      stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
+					    stmt_cost);
+
+      /* If we're recording a nonzero vector loop body cost for the
+	 innermost loop, also estimate the operations that would need
+	 to be issued by all relevant implementations of the loop.  */
+      auto *issue_info = aarch64_tune_params.vec_costs->issue_info;
+      if (loop_vinfo
+	  && issue_info
+	  && costs->vec_flags
+	  && where == vect_body
+	  && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
+	  && vectype
+	  && stmt_cost != 0)
+	{
+	  /* Record estimates for the scalar code.  */
+	  aarch64_count_ops (vinfo, costs, count, kind, stmt_info, vectype,
+			     0, &costs->scalar_ops, issue_info->scalar,
+			     vect_nunits_for_cost (vectype));
+
+	  if (aarch64_sve_mode_p (vinfo->vector_mode) && issue_info->sve)
+	    {
+	      /* Record estimates for a possible Advanced SIMD version
+		 of the SVE code.  */
+	      aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
+				 vectype, VEC_ADVSIMD, &costs->advsimd_ops,
+				 issue_info->advsimd,
+				 aarch64_estimated_sve_vq ());
+
+	      /* Record estimates for the SVE code itself.  */
+	      aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
+				 vectype, VEC_ANY_SVE, &costs->sve_ops,
+				 issue_info->sve, 1);
+	    }
+	  else
+	    /* Record estimates for the Advanced SIMD code.  Treat SVE like
+	       Advanced SIMD if the CPU has no specific SVE costs.  */
+	    aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
+			       vectype, VEC_ADVSIMD, &costs->advsimd_ops,
+			       issue_info->advsimd, 1);
+	}
+
+      /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
+	 estimate the number of statements in the unrolled Advanced SIMD
+	 loop.  For simplicitly, we assume that one iteration of the
+	 Advanced SIMD loop would need the same number of statements
+	 as one iteration of the SVE loop.  */
+      if (where == vect_body && costs->unrolled_advsimd_niters)
+	costs->unrolled_advsimd_stmts
+	  += count * costs->unrolled_advsimd_niters;
+    }
+
+  /* Statements in an inner loop relative to the loop being
+     vectorized are weighted more heavily.  The value here is
+     arbitrary and could potentially be improved with analysis.  */
+  if (in_inner_loop_p)
+    {
+      gcc_assert (loop_vinfo);
+      count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /*  FIXME  */
+    }
+
+  unsigned retval = (count * stmt_cost).ceil ();
+  costs->region[where] += retval;
 
   return retval;
 }

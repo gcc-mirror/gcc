@@ -18,6 +18,14 @@ _Dmain
 D main
 #
 --format=dlang
+_D8demangleZ
+demangle
+#
+--format=dlang
+_D8demangle4testZ
+demangle.test
+#
+--format=dlang
 _D8demangle4testPFLAiYi
 demangle.test
 #
@@ -972,6 +980,10 @@ demangle.test(char)
 --format=dlang
 _D8demangle000000004testFaZv
 demangle.test(char)
+#
+--format=dlang
+_D8demangle__T3abcS_DQt10__lambda13FNaNbNiNfZiZQBhFZi
+demangle.abc!(demangle.__lambda13()).abc()
 #
 # Unittests
 #

@@ -1047,7 +1047,8 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
 	fprintf (dump_file, "tree could trap...\n");
       return false;
     }
-  else if (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+  else if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	    || POINTER_TYPE_P (TREE_TYPE (lhs)))
 	   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs))
 	   && arith_code_with_undefined_signed_overflow
 				(gimple_assign_rhs_code (stmt)))
@@ -2520,6 +2521,7 @@ predicate_statements (loop_p loop)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gassign *stmt = dyn_cast <gassign *> (gsi_stmt (gsi));
+	  tree lhs;
 	  if (!stmt)
 	    ;
 	  else if (is_false_predicate (cond)
@@ -2574,15 +2576,36 @@ predicate_statements (loop_p loop)
 
 	      gsi_replace (&gsi, new_stmt, true);
 	    }
-	  else if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt)))
-		   && TYPE_OVERFLOW_UNDEFINED
-			(TREE_TYPE (gimple_assign_lhs (stmt)))
+	  else if (((lhs = gimple_assign_lhs (stmt)), true)
+		   && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+		       || POINTER_TYPE_P (TREE_TYPE (lhs)))
+		   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs))
 		   && arith_code_with_undefined_signed_overflow
 						(gimple_assign_rhs_code (stmt)))
 	    {
 	      gsi_remove (&gsi, true);
-	      gsi_insert_seq_before (&gsi, rewrite_to_defined_overflow (stmt),
-				     GSI_LAST_NEW_STMT);
+	      gimple_seq stmts = rewrite_to_defined_overflow (stmt);
+	      bool first = true;
+	      for (gimple_stmt_iterator gsi2 = gsi_start (stmts);
+		   !gsi_end_p (gsi2);)
+		{
+		  gassign *stmt2 = as_a <gassign *> (gsi_stmt (gsi2));
+		  gsi_remove (&gsi2, false);
+		  /* Make sure to move invariant conversions out of the
+		     loop.  */
+		  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt2))
+		      && expr_invariant_in_loop_p (loop,
+						   gimple_assign_rhs1 (stmt2)))
+		    gsi_insert_on_edge_immediate (loop_preheader_edge (loop),
+						  stmt2);
+		  else if (first)
+		    {
+		      gsi_insert_before (&gsi, stmt2, GSI_NEW_STMT);
+		      first = false;
+		    }
+		  else
+		    gsi_insert_after (&gsi, stmt2, GSI_NEW_STMT);
+		}
 	    }
 	  else if (gimple_vdef (stmt))
 	    {
@@ -2601,7 +2624,7 @@ predicate_statements (loop_p loop)
 	      gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	      update_stmt (stmt);
 	    }
-	  tree lhs = gimple_get_lhs (gsi_stmt (gsi));
+	  lhs = gimple_get_lhs (gsi_stmt (gsi));
 	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	    ssa_names.add (lhs);
 	  gsi_next (&gsi);

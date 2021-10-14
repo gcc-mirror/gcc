@@ -45319,7 +45319,7 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
   tree ctx = cp_parser_omp_context_selector_specification (parser, true);
   if (ctx == error_mark_node)
     goto fail;
-  ctx = c_omp_check_context_selector (match_loc, ctx);
+  ctx = omp_check_context_selector (match_loc, ctx);
   if (ctx != error_mark_node && variant != error_mark_node)
     {
       tree match_loc_node = maybe_wrap_with_location (integer_zero_node,

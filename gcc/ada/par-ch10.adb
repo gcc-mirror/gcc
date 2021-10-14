@@ -532,13 +532,14 @@ package body Ch10 is
                                | N_Subprogram_Body
                                | N_Subprogram_Renaming_Declaration
          then
-            Unit_Node := Specification (Unit_Node);
-
-         elsif Nkind (Unit_Node) = N_Subprogram_Renaming_Declaration then
-            if Ada_Version = Ada_83 then
+            if Nkind (Unit_Node) = N_Subprogram_Renaming_Declaration
+              and then Ada_Version = Ada_83
+            then
                Error_Msg_N
                  ("(Ada 83) library unit renaming not allowed", Unit_Node);
             end if;
+
+            Unit_Node := Specification (Unit_Node);
          end if;
 
          if Nkind (Unit_Node) in N_Task_Body

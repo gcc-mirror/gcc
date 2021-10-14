@@ -1370,6 +1370,7 @@ dr_analyze_indices (struct indices *dri, tree ref, edge nest, loop_p loop)
       tree op = TREE_OPERAND (ref, 0);
       tree access_fn = analyze_scalar_evolution (loop, op);
       access_fn = instantiate_scev (nest, loop, access_fn);
+      STRIP_NOPS (access_fn);
       if (TREE_CODE (access_fn) == POLYNOMIAL_CHREC)
 	{
 	  tree memoff = TREE_OPERAND (ref, 1);

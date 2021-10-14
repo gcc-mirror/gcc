@@ -1,3 +1,102 @@
+2021-10-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.c (ix86_expand_vector_move):  Use a
+	pseudo intermediate when moving a SUBREG into a hard register,
+	by checking ix86_hardreg_mov_ok.
+	(ix86_expand_vector_extract): Store zero-extended SImode
+	intermediate in a pseudo, then set target using a SUBREG_PROMOTED
+	annotated subreg.
+	* config/i386/sse.md (mov<VMOVE>_internal): Prevent CSE creating
+	complex (SUBREG) sets of (vector) hard registers before reload, by
+	checking ix86_hardreg_mov_ok.
+
+2021-10-13  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* ctfc.h (enum ctf_dtu_d_union_enum): Remove redundant comma.
+
+2021-10-13  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* dwarf2ctf.c (gen_ctf_array_type): Fix typo in comment.
+
+2021-10-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102630
+	* pointer-query.cc (compute_objsize_r): Handle named address spaces.
+
+2021-10-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* collect2.c (is_lto_object_file): Release simple-object
+	resources, close files.
+
+2021-10-13  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.c (thumb2_legitimate_address_p): Use VALID_MVE_MODE
+	when checking mve addressing modes.
+	(mve_vector_mem_operand): Fix the way we handle pre, post and offset
+	addressing modes.
+	(arm_print_operand): Fix printing of POST_ and PRE_MODIFY.
+	* config/arm/mve.md: Use mve_memory_operand predicate everywhere where
+	there is a single Ux constraint.
+
+2021-10-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (muldi3): Add support for inlining 64-bit
+	multiplication on 32-bit PA 1.1 and 2.0 targets.
+
+2021-10-13  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/90364
+	* coverage.c (build_info): Emit checksum to the global variable.
+	(build_info_type): Add new field for checksum.
+	(coverage_obj_finish): Pass object_checksum.
+	(coverage_init): Use 0 as checksum for .gcno files.
+	* gcov-dump.c (dump_gcov_file): Dump also new checksum field.
+	* gcov.c (read_graph_file): Read also checksum.
+	* doc/invoke.texi: Document the behaviour change.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	* gimple-iterator.h (gsi_iterator_update): Add GSI_LAST_NEW_STMT,
+	start at integer value 2.
+	* gimple-iterator.c (gsi_insert_seq_nodes_before): Update
+	the iterator for GSI_LAST_NEW_STMT.
+	(gsi_insert_seq_nodes_after): Likewise.
+	* tree-if-conv.c (predicate_statements): Use GSI_LAST_NEW_STMT.
+	* tree-ssa.c (execute_update_addresses_taken): Correct bogus
+	arguments to gsi_replace.
+
+2021-10-13  Martin Liska  <mliska@suse.cz>
+
+	PR target/102688
+	* common.opt: Use EnabledBy instead of detection in
+	finish_options and process_options.
+	* opts.c (finish_options): Remove handling of
+	x_flag_unroll_all_loops.
+	* toplev.c (process_options): Likewise for flag_web and
+	flag_rename_registers.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102659
+	* tree-if-conv.c (need_to_rewrite_undefined): New flag.
+	(if_convertible_gimple_assign_stmt_p): Mark the loop for
+	rewrite when stmts with undefined behavior on integer
+	overflow appear.
+	(combine_blocks): Predicate also when we need to rewrite stmts.
+	(predicate_statements): Rewrite affected stmts to something
+	with well-defined behavior on overflow.
+	(tree_if_conversion): Initialize need_to_rewrite_undefined.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102714
+	* ipa-sra.c (ptr_parm_has_nonarg_uses): Fix volatileness
+	check.
+
+2021-10-13  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* dwarf2ctf.c: Fix typo in comment.
+
 2021-10-12  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/101985

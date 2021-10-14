@@ -18,6 +18,15 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <optional>
+
+#ifndef __cpp_lib_optional
+# error "Feature test macro for optional is missing in <optional>"
+#elif __cpp_lib_optional < 201606L
+# error "Feature test macro for optional has wrong value in <optional>"
+#elif __cplusplus >= 202002L && __cpp_lib_optional < 202106L
+# error "Feature test macro for optional has wrong value for C++20 in <optional>"
+#endif
+
 #include <testsuite_hooks.h>
 
 #include <tuple>

@@ -239,7 +239,7 @@ enum gfc_statement
   ST_OMP_DO_SIMD, ST_OMP_END_DO_SIMD, ST_OMP_PARALLEL_DO_SIMD,
   ST_OMP_END_PARALLEL_DO_SIMD, ST_OMP_DECLARE_SIMD, ST_OMP_DECLARE_REDUCTION,
   ST_OMP_TARGET, ST_OMP_END_TARGET, ST_OMP_TARGET_DATA, ST_OMP_END_TARGET_DATA,
-  ST_OMP_TARGET_UPDATE, ST_OMP_DECLARE_TARGET,
+  ST_OMP_TARGET_UPDATE, ST_OMP_DECLARE_TARGET, ST_OMP_DECLARE_VARIANT,
   ST_OMP_TEAMS, ST_OMP_END_TEAMS, ST_OMP_DISTRIBUTE, ST_OMP_END_DISTRIBUTE,
   ST_OMP_DISTRIBUTE_SIMD, ST_OMP_END_DISTRIBUTE_SIMD,
   ST_OMP_DISTRIBUTE_PARALLEL_DO, ST_OMP_END_DISTRIBUTE_PARALLEL_DO,
@@ -1553,6 +1553,73 @@ typedef struct gfc_omp_declare_simd
 gfc_omp_declare_simd;
 #define gfc_get_omp_declare_simd() XCNEW (gfc_omp_declare_simd)
 
+
+enum gfc_omp_trait_property_kind
+{
+  CTX_PROPERTY_NONE,
+  CTX_PROPERTY_USER,
+  CTX_PROPERTY_NAME_LIST,
+  CTX_PROPERTY_ID,
+  CTX_PROPERTY_EXPR,
+  CTX_PROPERTY_SIMD
+};
+
+typedef struct gfc_omp_trait_property
+{
+  struct gfc_omp_trait_property *next;
+  enum gfc_omp_trait_property_kind property_kind;
+  bool is_name : 1;
+
+  union
+    {
+      gfc_expr *expr;
+      gfc_symbol *sym;
+      gfc_omp_clauses *clauses;
+      char *name;
+    };
+} gfc_omp_trait_property;
+#define gfc_get_omp_trait_property() XCNEW (gfc_omp_trait_property)
+
+typedef struct gfc_omp_selector
+{
+  struct gfc_omp_selector *next;
+
+  char *trait_selector_name;
+  gfc_expr *score;
+  struct gfc_omp_trait_property *properties;
+} gfc_omp_selector;
+#define gfc_get_omp_selector() XCNEW (gfc_omp_selector)
+
+typedef struct gfc_omp_set_selector
+{
+  struct gfc_omp_set_selector *next;
+
+  const char *trait_set_selector_name;
+  struct gfc_omp_selector *trait_selectors;
+} gfc_omp_set_selector;
+#define gfc_get_omp_set_selector() XCNEW (gfc_omp_set_selector)
+
+
+/* Node in the linked list used for storing !$omp declare variant
+   constructs.  */
+
+typedef struct gfc_omp_declare_variant
+{
+  struct gfc_omp_declare_variant *next;
+  locus where; /* Where the !$omp declare variant construct occurred.  */
+
+  struct gfc_symtree *base_proc_symtree;
+  struct gfc_symtree *variant_proc_symtree;
+
+  gfc_omp_set_selector *set_selectors;
+
+  bool checked_p : 1; /* Set if previously checked for errors.  */
+  bool error_p : 1; /* Set if error found in directive.  */
+}
+gfc_omp_declare_variant;
+#define gfc_get_omp_declare_variant() XCNEW (gfc_omp_declare_variant)
+
+
 typedef struct gfc_omp_udr
 {
   struct gfc_omp_udr *next;
@@ -2021,6 +2088,9 @@ typedef struct gfc_namespace
 
   /* Linked list of !$omp declare simd constructs.  */
   struct gfc_omp_declare_simd *omp_declare_simd;
+
+  /* Linked list of !$omp declare variant constructs.  */
+  struct gfc_omp_declare_variant *omp_declare_variant;
 
   /* A hash set for the the gfc expressions that have already
      been finalized in this namespace.  */
@@ -3422,6 +3492,7 @@ bool gfc_omp_requires_add_clause (gfc_omp_requires_kind, const char *,
 void gfc_check_omp_requires (gfc_namespace *, int);
 void gfc_free_omp_clauses (gfc_omp_clauses *);
 void gfc_free_oacc_declare_clauses (struct gfc_oacc_declare *);
+void gfc_free_omp_declare_variant_list (gfc_omp_declare_variant *list);
 void gfc_free_omp_declare_simd (gfc_omp_declare_simd *);
 void gfc_free_omp_declare_simd_list (gfc_omp_declare_simd *);
 void gfc_free_omp_udr (gfc_omp_udr *);

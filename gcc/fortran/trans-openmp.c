@@ -7258,3 +7258,207 @@ gfc_trans_omp_declare_simd (gfc_namespace *ns)
       DECL_ATTRIBUTES (fndecl) = c;
     }
 }
+
+void
+gfc_trans_omp_declare_variant (gfc_namespace *ns)
+{
+  tree base_fn_decl = ns->proc_name->backend_decl;
+  gfc_namespace *search_ns = ns;
+  gfc_omp_declare_variant *next;
+
+  for (gfc_omp_declare_variant *odv = search_ns->omp_declare_variant;
+       search_ns; odv = next)
+    {
+      /* Look in the parent namespace if there are no more directives in the
+	 current namespace.  */
+      if (!odv)
+	{
+	  search_ns = search_ns->parent;
+	  if (search_ns)
+	    next = search_ns->omp_declare_variant;
+	  continue;
+	}
+
+      next = odv->next;
+
+      if (odv->error_p)
+	continue;
+
+      /* Check directive the first time it is encountered.  */
+      bool error_found = true;
+
+      if (odv->checked_p)
+	error_found = false;
+      if (odv->base_proc_symtree == NULL)
+	{
+	  if (!search_ns->proc_name->attr.function
+	      && !search_ns->proc_name->attr.subroutine)
+	    gfc_error ("The base name for 'declare variant' must be "
+		       "specified at %L ", &odv->where);
+	  else
+	    error_found = false;
+	}
+      else
+	{
+	  if (!search_ns->contained
+	      && strcmp (odv->base_proc_symtree->name,
+			 ns->proc_name->name))
+	    gfc_error ("The base name at %L does not match the name of the "
+		       "current procedure", &odv->where);
+	  else if (odv->base_proc_symtree->n.sym->attr.entry)
+	    gfc_error ("The base name at %L must not be an entry name",
+			&odv->where);
+	  else if (odv->base_proc_symtree->n.sym->attr.generic)
+	    gfc_error ("The base name at %L must not be a generic name",
+			&odv->where);
+	  else if (odv->base_proc_symtree->n.sym->attr.proc_pointer)
+	    gfc_error ("The base name at %L must not be a procedure pointer",
+			&odv->where);
+	  else if (odv->base_proc_symtree->n.sym->attr.implicit_type)
+	    gfc_error ("The base procedure at %L must have an explicit "
+			"interface", &odv->where);
+	  else
+	    error_found = false;
+	}
+
+      odv->checked_p = true;
+      if (error_found)
+	{
+	  odv->error_p = true;
+	  continue;
+	}
+
+      /* Ignore directives that do not apply to the current procedure.  */
+      if ((odv->base_proc_symtree == NULL && search_ns != ns)
+	  || (odv->base_proc_symtree != NULL
+	      && strcmp (odv->base_proc_symtree->name, ns->proc_name->name)))
+	continue;
+
+      tree set_selectors = NULL_TREE;
+      gfc_omp_set_selector *oss;
+
+      for (oss = odv->set_selectors; oss; oss = oss->next)
+	{
+	  tree selectors = NULL_TREE;
+	  gfc_omp_selector *os;
+	  for (os = oss->trait_selectors; os; os = os->next)
+	    {
+	      tree properties = NULL_TREE;
+	      gfc_omp_trait_property *otp;
+
+	      for (otp = os->properties; otp; otp = otp->next)
+		{
+		  switch (otp->property_kind)
+		    {
+		    case CTX_PROPERTY_USER:
+		    case CTX_PROPERTY_EXPR:
+		      {
+			gfc_se se;
+			gfc_init_se (&se, NULL);
+			gfc_conv_expr (&se, otp->expr);
+			properties = tree_cons (NULL_TREE, se.expr,
+						properties);
+		      }
+		      break;
+		    case CTX_PROPERTY_ID:
+		      properties = tree_cons (get_identifier (otp->name),
+					      NULL_TREE, properties);
+		      break;
+		    case CTX_PROPERTY_NAME_LIST:
+		      {
+			tree prop = NULL_TREE, value = NULL_TREE;
+			if (otp->is_name)
+			  prop = get_identifier (otp->name);
+			else
+			  value = gfc_conv_constant_to_tree (otp->expr);
+
+			properties = tree_cons (prop, value, properties);
+		      }
+		      break;
+		    case CTX_PROPERTY_SIMD:
+		      properties = gfc_trans_omp_clauses (NULL, otp->clauses,
+							  odv->where, true);
+		      break;
+		    default:
+		      gcc_unreachable ();
+		    }
+		}
+
+	      if (os->score)
+		{
+		  gfc_se se;
+		  gfc_init_se (&se, NULL);
+		  gfc_conv_expr (&se, os->score);
+		  properties = tree_cons (get_identifier (" score"),
+					  se.expr, properties);
+		}
+
+	      selectors = tree_cons (get_identifier (os->trait_selector_name),
+				     properties, selectors);
+	    }
+
+	  set_selectors
+	    = tree_cons (get_identifier (oss->trait_set_selector_name),
+			 selectors, set_selectors);
+	}
+
+      const char *variant_proc_name = odv->variant_proc_symtree->name;
+      gfc_symbol *variant_proc_sym = odv->variant_proc_symtree->n.sym;
+      if (variant_proc_sym == NULL || variant_proc_sym->attr.implicit_type)
+	{
+	  gfc_symtree *proc_st;
+	  gfc_find_sym_tree (variant_proc_name, gfc_current_ns, 1, &proc_st);
+	  variant_proc_sym = proc_st->n.sym;
+	}
+      if (variant_proc_sym == NULL)
+	{
+	  gfc_error ("Cannot find symbol %qs", variant_proc_name);
+	  continue;
+	}
+      set_selectors = omp_check_context_selector
+	  (gfc_get_location (&odv->where), set_selectors);
+      if (set_selectors != error_mark_node)
+	{
+	  if (!variant_proc_sym->attr.implicit_type
+	      && !variant_proc_sym->attr.subroutine
+	      && !variant_proc_sym->attr.function)
+	    {
+	      gfc_error ("variant %qs at %L is not a function or subroutine",
+			 variant_proc_name, &odv->where);
+	      variant_proc_sym = NULL;
+	    }
+	  else if (omp_get_context_selector (set_selectors, "construct",
+					     "simd") == NULL_TREE)
+	    {
+	      char err[256];
+	      if (!gfc_compare_interfaces (ns->proc_name, variant_proc_sym,
+					   variant_proc_sym->name, 0, 1,
+					   err, sizeof (err), NULL, NULL))
+		{
+		  gfc_error ("variant %qs and base %qs at %L have "
+			     "incompatible types: %s",
+			     variant_proc_name, ns->proc_name->name,
+			     &odv->where, err);
+		  variant_proc_sym = NULL;
+		}
+	    }
+	  if (variant_proc_sym != NULL)
+	    {
+	      gfc_set_sym_referenced (variant_proc_sym);
+	      tree construct = omp_get_context_selector (set_selectors,
+							 "construct", NULL);
+	      omp_mark_declare_variant (gfc_get_location (&odv->where),
+					gfc_get_symbol_decl (variant_proc_sym),
+					construct);
+	      if (omp_context_selector_matches (set_selectors))
+		{
+		  tree id = get_identifier ("omp declare variant base");
+		  tree variant = gfc_get_symbol_decl (variant_proc_sym);
+		  DECL_ATTRIBUTES (base_fn_decl)
+		    = tree_cons (id, build_tree_list (variant, set_selectors),
+				 DECL_ATTRIBUTES (base_fn_decl));
+		}
+	    }
+	}
+    }
+}

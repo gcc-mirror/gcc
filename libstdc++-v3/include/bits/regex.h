@@ -807,7 +807,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _AutomatonPtr	_M_automaton;
     };
 
-#if __cplusplus < 201703L
+#if ! __cpp_inline_variables
   template<typename _Ch, typename _Tr>
     constexpr regex_constants::syntax_option_type
     basic_regex<_Ch, _Tr>::icase;

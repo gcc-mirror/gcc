@@ -615,6 +615,16 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       return;
     }
 
+  /* If operand0 is a hard register, make operand1 a pseudo.  */
+  if (can_create_pseudo_p ()
+      && !ix86_hardreg_mov_ok (op0, op1))
+    {
+      rtx tmp = gen_reg_rtx (GET_MODE (op0));
+      emit_move_insn (tmp, op1);
+      emit_move_insn (op0, tmp);
+      return;
+    }
+
   /* Make operand1 a register if it isn't already.  */
   if (can_create_pseudo_p ()
       && !register_operand (op0, mode)
@@ -10877,7 +10887,27 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 
 	  /* If there is no rounding use normal version of the pattern.  */
 	  if (INTVAL (op) == NO_ROUND)
-	    redundant_embed_rnd = 1;
+	    {
+	      /* Skip erasing embedded rounding for below expanders who
+		 generates multiple insns.  In ix86_erase_embedded_rounding
+		 the pattern will be transformed to a single set, and emit_insn
+		 appends the set insead of insert it to chain.  So the insns
+		 emitted inside define_expander would be ignored.  */
+	      switch (icode)
+		{
+		case CODE_FOR_avx512bw_fmaddc_v32hf_mask1_round:
+		case CODE_FOR_avx512bw_fcmaddc_v32hf_mask1_round:
+		case CODE_FOR_avx512fp16_fmaddcsh_v8hf_mask1_round:
+		case CODE_FOR_avx512fp16_fcmaddcsh_v8hf_mask1_round:
+		case CODE_FOR_avx512fp16_fmaddcsh_v8hf_mask3_round:
+		case CODE_FOR_avx512fp16_fcmaddcsh_v8hf_mask3_round:
+		  redundant_embed_rnd = 0;
+		  break;
+		default:
+		  redundant_embed_rnd = 1;
+		  break;
+		}
+	    }
 	}
       else
 	{
@@ -16016,11 +16046,15 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
       /* Let the rtl optimizers know about the zero extension performed.  */
       if (inner_mode == QImode || inner_mode == HImode)
 	{
+	  rtx reg = gen_reg_rtx (SImode);
 	  tmp = gen_rtx_ZERO_EXTEND (SImode, tmp);
-	  target = gen_lowpart (SImode, target);
+	  emit_move_insn (reg, tmp);
+	  tmp = gen_lowpart (inner_mode, reg);
+	  SUBREG_PROMOTED_VAR_P (tmp) = 1;
+	  SUBREG_PROMOTED_SET (tmp, 1);
 	}
 
-      emit_insn (gen_rtx_SET (target, tmp));
+      emit_move_insn (target, tmp);
     }
   else
     {
