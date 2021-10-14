@@ -65,6 +65,7 @@ public:
   // call fns
   void visit (FnType &type) override;
   void visit (FnPtr &type) override;
+  void visit (ClosureType &type) override { gcc_unreachable (); }
 
 private:
   TypeCheckCallExpr (HIR::CallExpr &c, Resolver::TypeCheckContext *context)
@@ -116,6 +117,7 @@ public:
 
   // call fns
   void visit (FnType &type) override;
+  void visit (ClosureType &type) override { gcc_unreachable (); }
 
 private:
   TypeCheckMethodCallExpr (HIR::MethodCallExpr &c,

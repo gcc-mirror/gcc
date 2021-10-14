@@ -343,6 +343,17 @@ public:
 		   type.as_string ().c_str ());
   }
 
+  virtual void visit (ClosureType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
+  }
+
 protected:
   BaseCoercionRules (BaseType *base)
     : mappings (Analysis::Mappings::get ()),
@@ -605,6 +616,19 @@ public:
     BaseCoercionRules::visit (type);
   }
 
+  void visit (ClosureType &type) override
+  {
+    bool is_valid
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
+    if (is_valid)
+      {
+	resolved = type.clone ();
+	return;
+      }
+
+    BaseCoercionRules::visit (type);
+  }
+
 private:
   BaseType *get_base () override { return base; }
 
@@ -762,6 +786,23 @@ private:
   BaseType *get_base () override { return base; }
 
   FnPtr *base;
+};
+
+class ClosureCoercionRules : public BaseCoercionRules
+{
+  using Rust::TyTy::BaseCoercionRules::visit;
+
+public:
+  ClosureCoercionRules (ClosureType *base)
+    : BaseCoercionRules (base), base (base)
+  {}
+
+  // TODO
+
+private:
+  BaseType *get_base () override { return base; }
+
+  ClosureType *base;
 };
 
 class ArrayCoercionRules : public BaseCoercionRules

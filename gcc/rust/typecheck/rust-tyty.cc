@@ -1112,6 +1112,73 @@ FnPtr::clone () const
 }
 
 void
+ClosureType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ClosureType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
+std::string
+ClosureType::as_string () const
+{
+  return "TODO";
+}
+
+BaseType *
+ClosureType::unify (BaseType *other)
+{
+  ClosureRules r (this);
+  return r.unify (other);
+}
+
+bool
+ClosureType::can_eq (const BaseType *other, bool emit_errors) const
+{
+  ClosureCmp r (this, emit_errors);
+  return r.can_eq (other);
+}
+
+BaseType *
+ClosureType::coerce (BaseType *other)
+{
+  ClosureCoercionRules r (this);
+  return r.coerce (other);
+}
+
+BaseType *
+ClosureType::cast (BaseType *other)
+{
+  ClosureCoercionRules r (this);
+  return r.coerce (other);
+}
+
+bool
+ClosureType::is_equal (const BaseType &other) const
+{
+  gcc_unreachable ();
+  return false;
+}
+
+BaseType *
+ClosureType::clone () const
+{
+  return new ClosureType (get_ref (), get_ty_ref (), id, parameter_types,
+			  result_type, clone_substs (), get_combined_refs ());
+}
+
+ClosureType *
+ClosureType::handle_substitions (SubstitutionArgumentMappings mappings)
+{
+  gcc_unreachable ();
+  return nullptr;
+}
+
+void
 ArrayType::accept_vis (TyVisitor &vis)
 {
   vis.visit (*this);

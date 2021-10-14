@@ -391,6 +391,22 @@ public:
       }
   }
 
+  virtual void visit (const ClosureType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
+
 protected:
   BaseCmp (const BaseType *base, bool emit_errors)
     : mappings (Analysis::Mappings::get ()),
@@ -651,6 +667,19 @@ public:
     BaseCmp::visit (type);
   }
 
+  void visit (const ClosureType &type) override
+  {
+    bool is_valid
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
+    if (is_valid)
+      {
+	ok = true;
+	return;
+      }
+
+    BaseCmp::visit (type);
+  }
+
 private:
   const BaseType *get_base () const override { return base; }
   const InferType *base;
@@ -790,6 +819,20 @@ public:
 private:
   const BaseType *get_base () const override { return base; }
   const FnPtr *base;
+};
+
+class ClosureCmp : public BaseCmp
+{
+  using Rust::TyTy::BaseCmp::visit;
+
+public:
+  ClosureCmp (const ClosureType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
+
+private:
+  const BaseType *get_base () const override { return base; }
+  const ClosureType *base;
 };
 
 class ArrayCmp : public BaseCmp
