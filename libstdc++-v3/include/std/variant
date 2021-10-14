@@ -279,27 +279,26 @@ namespace __variant
       __gnu_cxx::__aligned_membuf<_Type> _M_storage;
     };
 
-  template<typename _Union>
-    constexpr decltype(auto)
-    __get(in_place_index_t<0>, _Union&& __u) noexcept
-    { return std::forward<_Union>(__u)._M_first._M_get(); }
-
   template<size_t _Np, typename _Union>
     constexpr decltype(auto)
-    __get(in_place_index_t<_Np>, _Union&& __u) noexcept
+    __get_n(_Union&& __u) noexcept
     {
-      return __variant::__get(in_place_index<_Np-1>,
-			      std::forward<_Union>(__u)._M_rest);
+      if constexpr (_Np == 0)
+	return std::forward<_Union>(__u)._M_first._M_get();
+      else if constexpr (_Np == 1)
+	return std::forward<_Union>(__u)._M_rest._M_first._M_get();
+      else if constexpr (_Np == 2)
+	return std::forward<_Union>(__u)._M_rest._M_rest._M_first._M_get();
+      else
+	return __variant::__get_n<_Np - 3>(
+		 std::forward<_Union>(__u)._M_rest._M_rest._M_rest);
     }
 
   // Returns the typed storage for __v.
   template<size_t _Np, typename _Variant>
     constexpr decltype(auto)
     __get(_Variant&& __v) noexcept
-    {
-      return __variant::__get(std::in_place_index<_Np>,
-			      std::forward<_Variant>(__v)._M_u);
-    }
+    { return __variant::__get_n<_Np>(std::forward<_Variant>(__v)._M_u); }
 
   template<typename... _Types>
     struct _Traits
