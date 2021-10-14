@@ -888,6 +888,7 @@ package body Exp_Unst is
                      if Is_Subprogram (Ent)
                        and then not Is_Generic_Subprogram (Ent)
                        and then not Is_Imported (Ent)
+                       and then not Is_Intrinsic_Subprogram (Ent)
                        and then Scope_Within (Ultimate_Alias (Ent), Subp)
                      then
                         Append_Unique_Call ((N, Current_Subprogram, Ent));
