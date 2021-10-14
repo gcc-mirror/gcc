@@ -852,7 +852,8 @@ vect_loop_vectorized_call (class loop *loop, gcond **cond)
   do
     {
       g = last_stmt (bb);
-      if (g)
+      if ((g && gimple_code (g) == GIMPLE_COND)
+	  || !single_succ_p (bb))
 	break;
       if (!single_pred_p (bb))
 	break;
