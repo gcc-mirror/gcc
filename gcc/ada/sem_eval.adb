@@ -4352,7 +4352,25 @@ package body Sem_Eval is
          Fold_Uint (N, Expr_Value (Operand), Stat);
       end if;
 
-      if Is_Out_Of_Range (N, Etype (N), Assume_Valid => True) then
+      --  If the target is a static floating-point subtype, then its bounds
+      --  are machine numbers so we must consider the machine-rounded value.
+
+      if Is_Floating_Point_Type (Target_Type)
+        and then Nkind (N) = N_Real_Literal
+        and then not Is_Machine_Number (N)
+      then
+         declare
+            Lo   : constant Node_Id := Type_Low_Bound (Target_Type);
+            Hi   : constant Node_Id := Type_High_Bound (Target_Type);
+            Valr : constant Ureal   :=
+                     Machine_Number (Target_Type, Expr_Value_R (N), N);
+         begin
+            if Valr < Expr_Value_R (Lo) or else Valr > Expr_Value_R (Hi) then
+               Out_Of_Range (N);
+            end if;
+         end;
+
+      elsif Is_Out_Of_Range (N, Etype (N), Assume_Valid => True) then
          Out_Of_Range (N);
       end if;
    end Eval_Type_Conversion;
@@ -7342,19 +7360,12 @@ package body Sem_Eval is
 
       elsif Compile_Time_Known_Value (N) then
          declare
-            Lo       : Node_Id;
-            Hi       : Node_Id;
-
-            LB_Known : Boolean;
-            HB_Known : Boolean;
+            Lo       : constant Node_Id := Type_Low_Bound (Typ);
+            Hi       : constant Node_Id := Type_High_Bound (Typ);
+            LB_Known : constant Boolean := Compile_Time_Known_Value (Lo);
+            HB_Known : constant Boolean := Compile_Time_Known_Value (Hi);
 
          begin
-            Lo := Type_Low_Bound  (Typ);
-            Hi := Type_High_Bound (Typ);
-
-            LB_Known := Compile_Time_Known_Value (Lo);
-            HB_Known := Compile_Time_Known_Value (Hi);
-
             --  Fixed point types should be considered as such only if flag
             --  Fixed_Int is set to False.
 
