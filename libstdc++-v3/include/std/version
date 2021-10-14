@@ -173,7 +173,9 @@
 # define __cpp_lib_to_chars 201611L
 #endif
 #define __cpp_lib_unordered_map_try_emplace 201411
-#define __cpp_lib_variant 202102L
+#if __cplusplus == 201703L || ! __cpp_concepts // N.B. updated value in C++20
+# define __cpp_lib_variant 202102L
+#endif
 #endif
 
 #if __cplusplus >= 202002L
@@ -280,6 +282,9 @@
 # endif
 #define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array 201907L
+#if __cpp_concepts
+# define __cpp_lib_variant 202106L
+#endif
 #endif
 
 #if __cplusplus > 202002L

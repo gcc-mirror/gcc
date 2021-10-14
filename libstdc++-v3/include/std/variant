@@ -39,13 +39,14 @@
 #include <bits/exception_defines.h>
 #include <bits/functional_hash.h>
 #include <bits/invoke.h>
-#include <ext/aligned_buffer.h>
 #include <bits/parse_numbers.h>
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_construct.h>
 #include <bits/utility.h> // in_place_index_t
-#if __cplusplus > 201703L
+#if __cplusplus == 201703L
+# include <ext/aligned_buffer.h>
+#else
 # include <compare>
 #endif
 
@@ -71,7 +72,12 @@ namespace __variant
 } // namespace __variant
 } // namespace __detail
 
-#define __cpp_lib_variant 202102L
+#if __cplusplus >= 202002L && __cpp_concepts
+// P2231R1 constexpr needs constexpr unions and constrained destructors.
+# define __cpp_lib_variant 202106L
+#else
+# define __cpp_lib_variant 202102L
+#endif
 
   template<typename... _Types> class tuple;
   template<typename... _Types> class variant;
@@ -146,6 +152,7 @@ namespace __variant
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants);
 
   template <typename... _Types, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     decltype(auto)
     __variant_cast(_Tp&& __rhs)
     {
@@ -224,8 +231,12 @@ namespace __variant
     __as(const std::variant<_Types...>&& __v) noexcept
     { return std::move(__v); }
 
+  // For C++17:
   // _Uninitialized<T> is guaranteed to be a trivially destructible type,
   // even if T is not.
+  // For C++20:
+  // _Uninitialized<T> is trivially destructible iff T is, so _Variant_union
+  // needs a constrained non-trivial destructor.
   template<typename _Type, bool = std::is_trivially_destructible_v<_Type>>
     struct _Uninitialized;
 
@@ -256,6 +267,37 @@ namespace __variant
   template<typename _Type>
     struct _Uninitialized<_Type, false>
     {
+#if __cpp_lib_variant >= 202106L
+      template<typename... _Args>
+	constexpr
+	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
+	: _M_storage(std::forward<_Args>(__args)...)
+	{ }
+
+      constexpr ~_Uninitialized() { }
+
+      _Uninitialized(const _Uninitialized&) = default;
+      _Uninitialized(_Uninitialized&&) = default;
+      _Uninitialized& operator=(const _Uninitialized&) = default;
+      _Uninitialized& operator=(_Uninitialized&&) = default;
+
+      constexpr const _Type& _M_get() const & noexcept
+      { return _M_storage; }
+
+      constexpr _Type& _M_get() & noexcept
+      { return _M_storage; }
+
+      constexpr const _Type&& _M_get() const && noexcept
+      { return std::move(_M_storage); }
+
+      constexpr _Type&& _M_get() && noexcept
+      { return std::move(_M_storage); }
+
+      union {
+	char _M_nope;
+	_Type _M_storage;
+      };
+#else
       template<typename... _Args>
 	constexpr
 	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
@@ -277,6 +319,7 @@ namespace __variant
       { return std::move(*_M_storage._M_ptr()); }
 
       __gnu_cxx::__aligned_membuf<_Type> _M_storage;
+#endif
     };
 
   template<size_t _Np, typename _Union>
@@ -353,14 +396,30 @@ namespace __variant
       constexpr _Variadic_union() : _M_rest() { }
 
       template<typename... _Args>
-	constexpr _Variadic_union(in_place_index_t<0>, _Args&&... __args)
+	constexpr
+	_Variadic_union(in_place_index_t<0>, _Args&&... __args)
 	: _M_first(in_place_index<0>, std::forward<_Args>(__args)...)
 	{ }
 
       template<size_t _Np, typename... _Args>
-	constexpr _Variadic_union(in_place_index_t<_Np>, _Args&&... __args)
+	constexpr
+	_Variadic_union(in_place_index_t<_Np>, _Args&&... __args)
 	: _M_rest(in_place_index<_Np-1>, std::forward<_Args>(__args)...)
 	{ }
+
+#if __cpp_lib_variant >= 202106L
+      _Variadic_union(const _Variadic_union&) = default;
+      _Variadic_union(_Variadic_union&&) = default;
+      _Variadic_union& operator=(const _Variadic_union&) = default;
+      _Variadic_union& operator=(_Variadic_union&&) = default;
+
+      ~_Variadic_union() = default;
+
+      constexpr ~_Variadic_union()
+	requires (!__has_trivial_destructor(_First))
+	      || (!__has_trivial_destructor(_Variadic_union<_Rest...>))
+      { }
+#endif
 
       _Uninitialized<_First> _M_first;
       _Variadic_union<_Rest...> _M_rest;
@@ -406,6 +465,10 @@ namespace __variant
   template<typename... _Types>
     struct _Variant_storage<false, _Types...>
     {
+      template<typename _Tp>
+	static constexpr size_t __index_of
+	  = __detail::__variant::__index_of_v<_Tp, _Types...>;
+
       constexpr
       _Variant_storage()
       : _M_index(static_cast<__index_type>(variant_npos))
@@ -418,7 +481,8 @@ namespace __variant
 	_M_index{_Np}
 	{ }
 
-      void _M_reset()
+      constexpr void
+      _M_reset()
       {
 	if (!_M_valid()) [[unlikely]]
 	  return;
@@ -431,6 +495,7 @@ namespace __variant
 	_M_index = static_cast<__index_type>(variant_npos);
       }
 
+      _GLIBCXX20_CONSTEXPR
       ~_Variant_storage()
       { _M_reset(); }
 
@@ -450,6 +515,10 @@ namespace __variant
   template<typename... _Types>
     struct _Variant_storage<true, _Types...>
     {
+      template<typename _Tp>
+	static constexpr size_t __index_of
+	  = __detail::__variant::__index_of_v<_Tp, _Types...>;
+
       constexpr
       _Variant_storage()
       : _M_index(static_cast<__index_type>(variant_npos))
@@ -462,7 +531,8 @@ namespace __variant
 	_M_index{_Np}
 	{ }
 
-      void _M_reset() noexcept
+      constexpr void
+      _M_reset() noexcept
       { _M_index = static_cast<__index_type>(variant_npos); }
 
       constexpr bool
@@ -489,17 +559,25 @@ namespace __variant
 	_Variant_storage<_Traits<_Types...>::_S_trivial_dtor, _Types...>;
 
   template<typename _Tp, typename _Up>
-    void __variant_construct_single(_Tp&& __lhs, _Up&& __rhs_mem)
+    _GLIBCXX20_CONSTEXPR
+    void
+    __variant_construct_single(_Tp&& __lhs, _Up&& __rhs_mem)
     {
-      void* __storage = std::addressof(__lhs._M_u);
-      using _Type = remove_reference_t<decltype(__rhs_mem)>;
+      using _Type = __remove_cvref_t<_Up>;
+
       if constexpr (!is_same_v<_Type, __variant_cookie>)
-        ::new (__storage)
-	  _Type(std::forward<decltype(__rhs_mem)>(__rhs_mem));
+	{
+	  using _Lhs = remove_reference_t<_Tp>;
+	  std::_Construct(std::__addressof(__lhs._M_u),
+			  in_place_index<_Lhs::template __index_of<_Type>>,
+			  std::forward<_Up>(__rhs_mem));
+	}
     }
 
   template<typename... _Types, typename _Tp, typename _Up>
-    void __variant_construct(_Tp&& __lhs, _Up&& __rhs)
+    _GLIBCXX20_CONSTEXPR
+    void
+    __variant_construct(_Tp&& __lhs, _Up&& __rhs)
     {
       __lhs._M_index = __rhs._M_index;
       __variant::__raw_visit([&__lhs](auto&& __rhs_mem) mutable
@@ -518,6 +596,7 @@ namespace __variant
       using _Base = _Variant_storage_alias<_Types...>;
       using _Base::_Base;
 
+      _GLIBCXX20_CONSTEXPR
       _Copy_ctor_base(const _Copy_ctor_base& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_copy_ctor)
       {
@@ -546,6 +625,7 @@ namespace __variant
       using _Base = _Copy_ctor_alias<_Types...>;
       using _Base::_Base;
 
+      _GLIBCXX20_CONSTEXPR
       _Move_ctor_base(_Move_ctor_base&& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_move_ctor)
       {
@@ -553,6 +633,7 @@ namespace __variant
       }
 
       template<typename _Up>
+	_GLIBCXX20_CONSTEXPR
         void _M_destructive_move(unsigned short __rhs_index, _Up&& __rhs)
         {
 	  this->_M_reset();
@@ -561,6 +642,7 @@ namespace __variant
 	}
 
       template<typename _Up>
+	_GLIBCXX20_CONSTEXPR
         void _M_destructive_copy(unsigned short __rhs_index, const _Up& __rhs)
         {
 	  this->_M_reset();
@@ -580,6 +662,7 @@ namespace __variant
       using _Base::_Base;
 
       template<typename _Up>
+	_GLIBCXX20_CONSTEXPR
         void _M_destructive_move(unsigned short __rhs_index, _Up&& __rhs)
         {
 	  this->_M_reset();
@@ -588,6 +671,7 @@ namespace __variant
 	}
 
       template<typename _Up>
+	_GLIBCXX20_CONSTEXPR
         void _M_destructive_copy(unsigned short __rhs_index, const _Up& __rhs)
         {
 	  this->_M_reset();
@@ -606,6 +690,7 @@ namespace __variant
       using _Base = _Move_ctor_alias<_Types...>;
       using _Base::_Base;
 
+      _GLIBCXX20_CONSTEXPR
       _Copy_assign_base&
       operator=(const _Copy_assign_base& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_copy_assign)
@@ -664,6 +749,7 @@ namespace __variant
       using _Base = _Copy_assign_alias<_Types...>;
       using _Base::_Base;
 
+      _GLIBCXX20_CONSTEXPR
       _Move_assign_base&
       operator=(_Move_assign_base&& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_move_assign)
@@ -707,8 +793,7 @@ namespace __variant
       using _Base = _Move_assign_alias<_Types...>;
 
       constexpr
-      _Variant_base()
-	  noexcept(_Traits<_Types...>::_S_nothrow_default_ctor)
+      _Variant_base() noexcept(_Traits<_Types...>::_S_nothrow_default_ctor)
       : _Variant_base(in_place_index<0>) { }
 
       template<size_t _Np, typename... _Args>
@@ -1095,13 +1180,12 @@ namespace __variant
     }
 
   template<size_t _Np, typename _Variant, typename... _Args>
+    _GLIBCXX20_CONSTEXPR
     inline void
     __construct_by_index(_Variant& __v, _Args&&... __args)
     {
-      auto&& __storage = __detail::__variant::__get<_Np>(__v);
-      ::new ((void*)std::addressof(__storage))
-        remove_reference_t<decltype(__storage)>
-	  (std::forward<_Args>(__args)...);
+      std::_Construct(std::__addressof(__variant::__get<_Np>(__v)),
+		      std::forward<_Args>(__args)...);
       // Construction didn't throw, so can set the new index now:
       __v._M_index = _Np;
     }
@@ -1285,6 +1369,7 @@ namespace __variant
     visit(_Visitor&&, _Variants&&...);
 
   template<typename... _Types>
+    _GLIBCXX20_CONSTEXPR
     inline enable_if_t<(is_move_constructible_v<_Types> && ...)
 			&& (is_swappable_v<_Types> && ...)>
     swap(variant<_Types...>& __lhs, variant<_Types...>& __rhs)
@@ -1342,9 +1427,11 @@ namespace __variant
     {
     private:
       template <typename... _UTypes, typename _Tp>
-	friend decltype(auto) __variant_cast(_Tp&&);
+	friend _GLIBCXX20_CONSTEXPR decltype(auto)
+	__variant_cast(_Tp&&);
+
       template<size_t _Np, typename _Variant, typename... _Args>
-	friend void
+	friend _GLIBCXX20_CONSTEXPR void
 	__detail::__variant::__construct_by_index(_Variant& __v,
 						  _Args&&... __args);
 
@@ -1402,7 +1489,7 @@ namespace __variant
       variant(variant&&) = default;
       variant& operator=(const variant&) = default;
       variant& operator=(variant&&) = default;
-      ~variant() = default;
+      _GLIBCXX20_CONSTEXPR ~variant() = default;
 
       template<typename _Tp,
 	       typename = enable_if_t<sizeof...(_Types) != 0>,
@@ -1459,6 +1546,7 @@ namespace __variant
 	{ }
 
       template<typename _Tp>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
 		    && is_constructible_v<__accepted_type<_Tp&&>, _Tp>
 		    && is_assignable_v<__accepted_type<_Tp&&>&, _Tp>,
@@ -1483,6 +1571,7 @@ namespace __variant
 	}
 
       template<typename _Tp, typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<is_constructible_v<_Tp, _Args...> && __exactly_once<_Tp>,
 		    _Tp&>
 	emplace(_Args&&... __args)
@@ -1492,6 +1581,7 @@ namespace __variant
 	}
 
       template<typename _Tp, typename _Up, typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>
 		    && __exactly_once<_Tp>,
 		    _Tp&>
@@ -1502,6 +1592,7 @@ namespace __variant
 	}
 
       template<size_t _Np, typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
 				       _Args...>,
 		    variant_alternative_t<_Np, variant>&>
@@ -1548,6 +1639,7 @@ namespace __variant
 	}
 
       template<size_t _Np, typename _Up, typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
 				       initializer_list<_Up>&, _Args...>,
 		    variant_alternative_t<_Np, variant>&>
@@ -1601,6 +1693,7 @@ namespace __variant
 	  return size_t(__index_type(this->_M_index + 1)) - 1;
       }
 
+      _GLIBCXX20_CONSTEXPR
       void
       swap(variant& __rhs)
       noexcept((__is_nothrow_swappable<_Types>::value && ...)

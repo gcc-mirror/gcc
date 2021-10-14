@@ -16,6 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++17 } }
+// FIXME: Need increased timeout due to PR c++/102780
+// { dg-timeout-factor 2 { target c++20 } }
 
 #include <variant>
 #include <utility>
