@@ -1,3 +1,108 @@
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/28_regex/match_results/102667.C: Moved to...
+	* testsuite/28_regex/match_results/102667.cc: ...here.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string_view/requirements/trivially_copyable.cc:
+	Use -std=gnu++17 option.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90787
+	* testsuite/27_io/filesystem/iterators/directory_iterator.cc:
+	Use new __gnu_test::permissions_are_testable() function.
+	* testsuite/27_io/filesystem/iterators/recursive_directory_iterator.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/exists.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/is_empty.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/status.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/symlink_status.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/iterators/recursive_directory_iterator.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/exists.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/is_empty.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/remove.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/remove_all.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+	* testsuite/util/testsuite_fs.h (__gnu_test::permissions_are_testable):
+	New function to guess whether testing permissions will work.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Remove
+	test directory after making it writable again.
+	* testsuite/experimental/filesystem/operations/remove_all.cc:
+	Likewise.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (seed_seq): Constrain initializer-list
+	constructor.
+	* include/bits/random.tcc (seed_seq): Add template parameter.
+	* testsuite/26_numerics/random/seed_seq/cons/default.cc: Check
+	for noexcept.
+	* testsuite/26_numerics/random/seed_seq/cons/initlist.cc: Check
+	constraints.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc:
+	Increase dg-timeout-factor to 4. Fix -Wunused-parameter
+	warnings. Replace bitwise AND with logical AND in loop
+	condition.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/search_n.cc:
+	Replace bitwise AND with logical AND in loop condition.
+	* testsuite/util/pstl/test_utils.h: Remove unused parameter
+	names.
+
+2021-10-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100187
+	PR libstdc++/100237
+	PR libstdc++/100249
+	PR libstdc++/100287
+	* include/bits/ranges_algo.h (__search_n_fn::operator()): Give
+	the __value_comp lambda an explicit bool return type.
+	(__is_permutation_fn::operator()): Give the __proj_scan local
+	variable auto&& return type.  Give the __comp_scan lambda an
+	explicit bool return type.
+	(__remove_fn::operator()): Give the __pred lambda an explicit
+	bool return type.
+	(__partition_fn::operator()): Don't std::move __first twice
+	when returning an empty subrange.
+	(__min_fn::operator()): Don't std::move __comp.
+	(__max_fn::operator()): Likewise.
+	(__minmax_fn::operator()): Likewise.
+
 2021-10-12  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
