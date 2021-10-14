@@ -18,6 +18,14 @@ _Dmain
 D main
 #
 --format=dlang
+_D8demangleZ
+demangle
+#
+--format=dlang
+_D8demangle4testZ
+demangle.test
+#
+--format=dlang
 _D8demangle4testPFLAiYi
 demangle.test
 #
