@@ -77,7 +77,7 @@ private:
 class back_threader
 {
 public:
-  back_threader (bool speed_p);
+  back_threader (bool speed_p, bool resolve);
   ~back_threader ();
   void maybe_thread_block (basic_block bb);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
@@ -112,17 +112,22 @@ private:
   tree m_name;
   // Marker to differentiate unreachable edges.
   static const edge UNREACHABLE_EDGE;
+  // Set to TRUE if unknown SSA names along a path should be resolved
+  // with the ranger.  Otherwise, unknown SSA names are assumed to be
+  // VARYING.  Setting to true more precise but slower.
+  bool m_resolve;
 };
 
 // Used to differentiate unreachable edges, so we may stop the search
 // in a the given direction.
 const edge back_threader::UNREACHABLE_EDGE = (edge) -1;
 
-back_threader::back_threader (bool speed_p)
+back_threader::back_threader (bool speed_p, bool resolve)
   : m_profit (speed_p),
-    m_solver (m_ranger, /*resolve=*/false)
+    m_solver (m_ranger, resolve)
 {
   m_last_stmt = NULL;
+  m_resolve = resolve;
 }
 
 back_threader::~back_threader ()
@@ -295,7 +300,23 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
 
 	  bitmap_set_bit (interesting, v);
 	  bitmap_set_bit (m_imports, v);
-	  done |= find_paths_to_names (e->src, interesting);
+
+	  // When resolving unknowns, see if the incoming SSA can be
+	  // resolved on entry without having to keep looking back.
+	  bool keep_looking = true;
+	  if (m_resolve)
+	    {
+	      m_path.safe_push (e->src);
+	      if (maybe_register_path ())
+		{
+		  keep_looking = false;
+		  m_visited_bbs.add (e->src);
+		}
+	      m_path.pop ();
+	    }
+	  if (keep_looking)
+	    done |= find_paths_to_names (e->src, interesting);
+
 	  bitmap_clear_bit (interesting, v);
 	}
       else if (TREE_CODE (arg) == INTEGER_CST)
@@ -358,6 +379,14 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
       m_path.pop ();
       m_visited_bbs.remove (bb);
       return false;
+    }
+
+  // Try to resolve the path with nothing but ranger knowledge.
+  if (m_resolve && m_path.length () > 1 && maybe_register_path ())
+    {
+      m_path.pop ();
+      m_visited_bbs.remove (bb);
+      return true;
     }
 
   auto_bitmap processed;
@@ -936,7 +965,7 @@ static bool
 try_thread_blocks (function *fun)
 {
   /* Try to thread each block with more than one successor.  */
-  back_threader threader (/*speed_p=*/true);
+  back_threader threader (/*speed=*/true, /*resolve=*/false);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -1005,7 +1034,7 @@ pass_early_thread_jumps::execute (function *fun)
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
   /* Try to thread each block with more than one successor.  */
-  back_threader threader (/*speed_p=*/false);
+  back_threader threader (/*speed_p=*/false, /*resolve=*/false);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
