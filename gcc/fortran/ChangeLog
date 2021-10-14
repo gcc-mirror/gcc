@@ -1,3 +1,9 @@
+2021-10-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle ancestor modifier,
+	avoid ICE for GFC_OMP_ATOMIC_SWAP.
+	* gfortran.h (gfc_omp_clauses): Change 'anecestor' into a bitfield.
+
 2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/102541

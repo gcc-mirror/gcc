@@ -1,3 +1,12 @@
+2021-10-13  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/90364
+	* libgcov-driver.c (merge_one_data): Skip timestamp and verify
+	checksums.
+	(write_one_data): Write also checksum.
+	* libgcov-util.c (read_gcda_file): Read also checksum field.
+	* libgcov.h (struct gcov_info): Add new field.
+
 2021-10-08  Ian Lance Taylor  <iant@golang.org>
 
 	* config/i386/morestack.S: Use .init_array for constructor if

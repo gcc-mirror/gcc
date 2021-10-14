@@ -1,3 +1,34 @@
+2021-10-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102630
+	* gcc.target/i386/addr-space-2.c: Add -Wall.
+	* gcc.target/i386/addr-space-3.c: New test.
+
+2021-10-13  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/mve.exp: Make it test main directory.
+	* gcc.target/arm/mve/mve_load_memory_modes.c: New test.
+	* gcc.target/arm/mve/mve_store_memory_modes.c: New test.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102659
+	* gcc.dg/torture/pr69760.c: Adjust the testcase.
+	* gcc.target/i386/avx2-vect-mask-store-move1.c: Expect to move
+	the conversions to unsigned as well.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102714
+	* gcc.dg/ipa/pr102714.c: New testcase.
+
+2021-10-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/102658
+	* gcc.target/powerpc/dform-1.c: Adjust as vectorization enabled at O2.
+	* gcc.target/powerpc/dform-2.c: Likewise.
+	* gcc.target/powerpc/pr80510-2.c: Likewise.
+
 2021-10-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/format/c11-printf-1.c, gcc.dg/format/c11-scanf-1.c,

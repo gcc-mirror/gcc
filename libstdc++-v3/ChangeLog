@@ -1,3 +1,44 @@
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (__detail::__is_contiguous): Add
+	partial specializations for pointers and __normal_iterator.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/path/construct/102592.C: Moved to...
+	* testsuite/27_io/filesystem/path/construct/102592.cc: ...here.
+	* testsuite/28_regex/match_results/102667.C: Moved to...
+	* testsuite/28_regex/match_results/102667.cc: ...here.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (__detail::__is_contiguous): New
+	variable template to identify contiguous iterators.
+	(__detail::__unified_char8_t): New alias template to decide when
+	to treat char8_t as char without encoding conversion.
+	(__detail::__effective_range(const basic_string<C,T>&)): Use
+	std::char_traits<C> for returned string view.
+	(__detail::__effective_range(const basic_string_view<C,T>&)):
+	Likewise.
+	(__detail::__effective_range(const Source&)): Use
+	__is_contiguous to detect mode cases of contiguous iterators.
+	Use __unified_char8_t to return a std::string instead of
+	std::u8string.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102592
+	* include/bits/fs_path.h (path::path(Iter, Iter, format))
+	(path::append(Iter, Iter), path::concat(Iter, Iter)): Call
+	__string_from_range directly, instead of two-argument overload
+	of _S_convert.
+	(path::_S_convert(Iter, Iter)): Remove.
+	* testsuite/27_io/filesystem/path/construct/102592.C: New test.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (__terminate): Add extern "C++".
+
 2021-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/tuple/comparison_operators/overloaded.cc:
