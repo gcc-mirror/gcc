@@ -148,7 +148,8 @@ struct GTY(()) modref_access_node
 	       poly_int64 offset1, poly_int64 size1, poly_int64 max_size1,
 	       bool record_adjustments)
     {
-      if (known_eq (offset, offset1)
+      if (known_eq (parm_offset, parm_offset1)
+	  && known_eq (offset, offset1)
 	  && known_eq (size, size1)
 	  && known_eq (max_size, max_size1))
 	return;
@@ -404,13 +405,9 @@ private:
 	new_max_size = max_size2;
       else
 	{
-	  max_size2 = max_size2 + offset2 - offset1;
-	  if (known_le (max_size, max_size2))
-	    new_max_size = max_size2;
-	  else if (known_le (max_size2, max_size))
-	    new_max_size = max_size;
-	  else
-	    gcc_unreachable ();
+	  new_max_size = max_size2 + offset2 - offset1;
+	  if (known_le (new_max_size, max_size1))
+	    new_max_size = max_size1;
 	}
 
       update (parm_offset1, offset1,
@@ -577,6 +574,9 @@ struct GTY((user)) modref_ref_node
 	  }
 	(*accesses)[best1].forced_merge (best2 < 0 ? a : (*accesses)[best2],
 					 record_adjustments);
+	/* Check that merging indeed merged ranges.  */
+	gcc_checking_assert ((*accesses)[best1].contains
+				 (best2 < 0 ? a : (*accesses)[best2]));
 	if (!(*accesses)[best1].useful_p ())
 	  {
 	    collapse ();
