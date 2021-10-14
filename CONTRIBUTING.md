@@ -12,7 +12,7 @@
 
 * Ensure the PR description clearly describes the problem and solution. Include the relevant issue number if applicable.
 
-* Before submitting, GCC development requires copyright assignment or the Developer's Certificate of Origin sign-off. Please read the [Contributing to GCC guide](https://gcc.gnu.org/contribute.html) or [DCO Guide](https://gcc.gnu.org/dco.html) guide to know more.
+* Before submitting, GCC development requires copyright assignment or the Developer's Certificate of Origin sign-off. Please see the [Contributing to GCC](https://gcc.gnu.org/contribute.html) guide or [Developer's Certificate of Origin (DCO) Sign-off](https://gcc.gnu.org/dco.html) guide.
 
 * Patches sent to the [`gcc-rust` mailing list](https://gcc.gnu.org/mailman/listinfo/gcc-rust) are likewise welcome.
 These will be imported into a GitHub PR to follow the normal review process, and the link to the GitHub PR sent to the submitter.
