@@ -981,6 +981,10 @@ demangle.test(char)
 _D8demangle000000004testFaZv
 demangle.test(char)
 #
+--format=dlang
+_D8demangle__T3abcS_DQt10__lambda13FNaNbNiNfZiZQBhFZi
+demangle.abc!(demangle.__lambda13()).abc()
+#
 # Unittests
 #
 --format=dlang
