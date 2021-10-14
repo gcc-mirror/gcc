@@ -51,7 +51,7 @@ public:
 	// 2. try ref
 	TyTy::ReferenceType *r1
 	  = new TyTy::ReferenceType (r->get_ref (), TyTy::TyVar (r->get_ref ()),
-				     TyTy::TypeMutability::IMMUT);
+				     Mutability::Imm);
 	c = Try (candidates, r1);
 	if (c != nullptr)
 	  {
@@ -63,7 +63,7 @@ public:
 	// 3. try mut ref
 	TyTy::ReferenceType *r2
 	  = new TyTy::ReferenceType (r->get_ref (), TyTy::TyVar (r->get_ref ()),
-				     TyTy::TypeMutability::MUT);
+				     Mutability::Mut);
 	c = Try (candidates, r2);
 	if (c != nullptr)
 	  {

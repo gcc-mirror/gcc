@@ -604,7 +604,7 @@ public:
 
 	  infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
 					     TyTy::TyVar (base->get_ref ()),
-					     TyTy::TypeMutability::IMMUT);
+					     Mutability::Imm);
 	}
 	break;
 
@@ -651,7 +651,7 @@ public:
 
 	  infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
 					     TyTy::TyVar (array->get_ref ()),
-					     TyTy::TypeMutability::IMMUT);
+					     Mutability::Imm);
 	}
 	break;
 
@@ -1094,9 +1094,7 @@ public:
 
     infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
 				       TyTy::TyVar (resolved_base->get_ref ()),
-				       expr.get_is_mut ()
-					 ? TyTy::TypeMutability::MUT
-					 : TyTy::TypeMutability::IMMUT);
+				       expr.get_mut ());
   }
 
   void visit (HIR::DereferenceExpr &expr) override

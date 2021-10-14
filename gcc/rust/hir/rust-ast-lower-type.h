@@ -247,7 +247,9 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    translated = new HIR::ReferenceType (mapping, type.get_has_mut (),
+    translated = new HIR::ReferenceType (mapping,
+					 type.get_has_mut () ? Mutability::Mut
+							     : Mutability::Imm,
 					 std::unique_ptr<HIR::Type> (base_type),
 					 type.get_locus (), lifetime);
 
@@ -268,7 +270,9 @@ public:
     translated
       = new HIR::RawPointerType (mapping,
 				 type.get_pointer_type ()
-				   == AST::RawPointerType::PointerType::MUT,
+				     == AST::RawPointerType::PointerType::MUT
+				   ? Mutability::Mut
+				   : Mutability::Imm,
 				 std::unique_ptr<HIR::Type> (base_type),
 				 type.get_locus ());
 

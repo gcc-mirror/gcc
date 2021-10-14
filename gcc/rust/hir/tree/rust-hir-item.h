@@ -404,6 +404,14 @@ public:
 
   Analysis::NodeMapping get_mappings () { return mappings; }
 
+  Mutability get_mut () const
+  {
+    return (self_kind == ImplicitSelfKind::MUT
+	    || self_kind == ImplicitSelfKind::MUT_REF)
+	     ? Mutability::Mut
+	     : Mutability::Imm;
+  }
+
   bool is_mut () const
   {
     return self_kind == ImplicitSelfKind::MUT
@@ -2033,7 +2041,7 @@ protected:
  * duration? */
 class StaticItem : public VisItem
 {
-  bool has_mut;
+  Mutability mut;
   Identifier name;
   std::unique_ptr<Type> type;
   std::unique_ptr<Expr> expr;
@@ -2042,17 +2050,17 @@ class StaticItem : public VisItem
 public:
   std::string as_string () const override;
 
-  StaticItem (Analysis::NodeMapping mappings, Identifier name, bool is_mut,
+  StaticItem (Analysis::NodeMapping mappings, Identifier name, Mutability mut,
 	      std::unique_ptr<Type> type, std::unique_ptr<Expr> expr,
 	      Visibility vis, AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      has_mut (is_mut), name (std::move (name)), type (std::move (type)),
+      mut (mut), name (std::move (name)), type (std::move (type)),
       expr (std::move (expr)), locus (locus)
   {}
 
   // Copy constructor with clone
   StaticItem (StaticItem const &other)
-    : VisItem (other), has_mut (other.has_mut), name (other.name),
+    : VisItem (other), mut (other.mut), name (other.name),
       type (other.type->clone_type ()), expr (other.expr->clone_expr ()),
       locus (other.locus)
   {}
@@ -2062,7 +2070,7 @@ public:
   {
     VisItem::operator= (other);
     name = other.name;
-    has_mut = other.has_mut;
+    mut = other.mut;
     type = other.type->clone_type ();
     expr = other.expr->clone_expr ();
     locus = other.locus;
@@ -2080,7 +2088,9 @@ public:
 
   Identifier get_identifier () const { return name; }
 
-  bool is_mutable () const { return has_mut; }
+  Mutability get_mut () const { return mut; }
+
+  bool is_mut () const { return mut == Mutability::Mut; }
 
   Expr *get_expr () { return expr.get (); }
 
@@ -2726,21 +2736,21 @@ protected:
 // A static item used in an extern block
 class ExternalStaticItem : public ExternalItem
 {
-  bool has_mut;
+  Mutability mut;
   std::unique_ptr<Type> item_type;
 
 public:
   ExternalStaticItem (Analysis::NodeMapping mappings, Identifier item_name,
-		      std::unique_ptr<Type> item_type, bool is_mut,
+		      std::unique_ptr<Type> item_type, Mutability mut,
 		      Visibility vis, AST::AttrVec outer_attrs, Location locus)
     : ExternalItem (std::move (mappings), std::move (item_name),
 		    std::move (vis), std::move (outer_attrs), locus),
-      has_mut (is_mut), item_type (std::move (item_type))
+      mut (mut), item_type (std::move (item_type))
   {}
 
   // Copy constructor
   ExternalStaticItem (ExternalStaticItem const &other)
-    : ExternalItem (other), has_mut (other.has_mut),
+    : ExternalItem (other), mut (other.mut),
       item_type (other.item_type->clone_type ())
   {}
 
@@ -2749,7 +2759,7 @@ public:
   {
     ExternalItem::operator= (other);
     item_type = other.item_type->clone_type ();
-    has_mut = other.has_mut;
+    mut = other.mut;
 
     return *this;
   }
@@ -2761,6 +2771,10 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  bool is_mut () const { return mut == Mutability::Mut; }
+
+  Mutability get_mut () { return mut; }
 
   std::unique_ptr<Type> &get_item_type () { return item_type; }
 

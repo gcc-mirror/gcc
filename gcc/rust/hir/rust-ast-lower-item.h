@@ -339,11 +339,12 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    translated
-      = new HIR::StaticItem (mapping, var.get_identifier (), var.is_mutable (),
-			     std::unique_ptr<HIR::Type> (type),
-			     std::unique_ptr<HIR::Expr> (expr), vis,
-			     var.get_outer_attrs (), var.get_locus ());
+    translated = new HIR::StaticItem (mapping, var.get_identifier (),
+				      var.is_mutable () ? Mutability::Mut
+							: Mutability::Imm,
+				      std::unique_ptr<HIR::Type> (type),
+				      std::unique_ptr<HIR::Expr> (expr), vis,
+				      var.get_outer_attrs (), var.get_locus ());
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),

@@ -221,7 +221,7 @@ StaticItem::as_string () const
 
   str += indent_spaces (stay) + "static";
 
-  if (has_mut)
+  if (is_mut ())
     {
       str += " mut";
     }
@@ -1200,7 +1200,7 @@ BorrowExpr::as_string () const
       str += "&";
     }
 
-  if (is_mut)
+  if (is_mut ())
     {
       str += "mut ";
     }
@@ -2463,7 +2463,7 @@ StructPatternFieldIdent::as_string () const
       str += "ref ";
     }
 
-  if (has_mut)
+  if (is_mut ())
     {
       str += "mut ";
     }
@@ -2570,7 +2570,7 @@ ReferencePattern::as_string () const
       str += "&";
     }
 
-  if (is_mut)
+  if (is_mut ())
     {
       str += "mut ";
     }
@@ -2590,7 +2590,7 @@ IdentifierPattern::as_string () const
       str += "ref ";
     }
 
-  if (is_mut)
+  if (is_mut ())
     {
       str += "mut ";
     }
@@ -2776,7 +2776,7 @@ ReferenceType::as_string () const
       str += lifetime.as_string () + " ";
     }
 
-  if (has_mut)
+  if (is_mut ())
     {
       str += "mut ";
     }
@@ -3249,7 +3249,7 @@ ExternalStaticItem::as_string () const
 
   str += "static ";
 
-  if (has_mut)
+  if (is_mut ())
     {
       str += "mut ";
     }

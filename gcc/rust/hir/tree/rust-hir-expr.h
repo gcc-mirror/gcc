@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_EXPR_H
 #define RUST_HIR_EXPR_H
 
+#include "rust-common.h"
 #include "rust-ast-full-decls.h"
 #include "rust-hir.h"
 #include "rust-hir-path.h"
@@ -171,23 +172,24 @@ public:
  * overloaded. */
 class BorrowExpr : public OperatorExpr
 {
-  bool is_mut;
+  Mutability mut;
   bool double_borrow;
 
 public:
   std::string as_string () const override;
 
   BorrowExpr (Analysis::NodeMapping mappings,
-	      std::unique_ptr<Expr> borrow_lvalue, bool is_mut_borrow,
+	      std::unique_ptr<Expr> borrow_lvalue, Mutability mut,
 	      bool is_double_borrow, AST::AttrVec outer_attribs, Location locus)
     : OperatorExpr (std::move (mappings), std::move (borrow_lvalue),
 		    std::move (outer_attribs), locus),
-      is_mut (is_mut_borrow), double_borrow (is_double_borrow)
+      mut (mut), double_borrow (is_double_borrow)
   {}
 
   void accept_vis (HIRVisitor &vis) override;
 
-  bool get_is_mut () const { return is_mut; }
+  Mutability get_mut () const { return mut; }
+  bool is_mut () const { return mut == Mutability::Mut; }
   bool get_is_double_borrow () const { return double_borrow; }
 
 protected:

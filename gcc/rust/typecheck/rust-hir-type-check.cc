@@ -526,7 +526,8 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
       HIR::IdentifierPattern *self_pattern
 	= new HIR::IdentifierPattern ("self", self_param.get_locus (),
 				      self_param.is_ref (),
-				      self_param.is_mut (),
+				      self_param.is_mut () ? Mutability::Mut
+							   : Mutability::Imm,
 				      std::unique_ptr<HIR::Pattern> (nullptr));
       // might have a specified type
       TyTy::BaseType *self_type = nullptr;
@@ -547,13 +548,13 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	    case HIR::SelfParam::IMM_REF:
 	      self_type = new TyTy::ReferenceType (
 		self_param.get_mappings ().get_hirid (),
-		TyTy::TyVar (self->get_ref ()), TyTy::TypeMutability::IMMUT);
+		TyTy::TyVar (self->get_ref ()), Mutability::Imm);
 	      break;
 
 	    case HIR::SelfParam::MUT_REF:
 	      self_type = new TyTy::ReferenceType (
 		self_param.get_mappings ().get_hirid (),
-		TyTy::TyVar (self->get_ref ()), TyTy::TypeMutability::MUT);
+		TyTy::TyVar (self->get_ref ()), Mutability::Mut);
 	      break;
 
 	    default:

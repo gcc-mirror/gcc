@@ -45,7 +45,9 @@ public:
     translated
       = new HIR::IdentifierPattern (pattern.get_ident (), pattern.get_locus (),
 				    pattern.get_is_ref (),
-				    pattern.get_is_mut (), std::move (to_bind));
+				    pattern.get_is_mut () ? Mutability::Mut
+							  : Mutability::Imm,
+				    std::move (to_bind));
   }
 
 private:

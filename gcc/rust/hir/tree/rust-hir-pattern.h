@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_PATTERN_H
 #define RUST_HIR_PATTERN_H
 
+#include "rust-common.h"
 #include "rust-hir.h"
 
 namespace Rust {
@@ -70,7 +71,7 @@ class IdentifierPattern : public Pattern
 public:
   Identifier variable_ident;
   bool is_ref;
-  bool is_mut;
+  Mutability mut;
 
   // bool has_pattern;
   std::unique_ptr<Pattern> to_bind;
@@ -84,16 +85,16 @@ public:
 
   // Constructor
   IdentifierPattern (Identifier ident, Location locus, bool is_ref = false,
-		     bool is_mut = false,
+		     Mutability mut = Mutability::Imm,
 		     std::unique_ptr<Pattern> to_bind = nullptr)
-    : variable_ident (std::move (ident)), is_ref (is_ref), is_mut (is_mut),
+    : variable_ident (std::move (ident)), is_ref (is_ref), mut (mut),
       to_bind (std::move (to_bind)), locus (locus)
   {}
 
   // Copy constructor with clone
   IdentifierPattern (IdentifierPattern const &other)
     : variable_ident (other.variable_ident), is_ref (other.is_ref),
-      is_mut (other.is_mut), locus (other.locus)
+      mut (other.mut), locus (other.locus)
   {
     // fix to get prevent null pointer dereference
     if (other.to_bind != nullptr)
@@ -105,7 +106,7 @@ public:
   {
     variable_ident = other.variable_ident;
     is_ref = other.is_ref;
-    is_mut = other.is_mut;
+    mut = other.mut;
     locus = other.locus;
 
     // fix to get prevent null pointer dereference
@@ -120,6 +121,8 @@ public:
   IdentifierPattern &operator= (IdentifierPattern &&other) = default;
 
   Location get_locus () const { return locus; }
+
+  bool is_mut () const { return mut == Mutability::Mut; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -327,22 +330,22 @@ protected:
 class ReferencePattern : public Pattern
 {
   bool has_two_amps;
-  bool is_mut;
+  Mutability mut;
   std::unique_ptr<Pattern> pattern;
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  ReferencePattern (std::unique_ptr<Pattern> pattern, bool is_mut_reference,
+  ReferencePattern (std::unique_ptr<Pattern> pattern, Mutability reference_mut,
 		    bool ref_has_two_amps, Location locus)
-    : has_two_amps (ref_has_two_amps), is_mut (is_mut_reference),
+    : has_two_amps (ref_has_two_amps), mut (reference_mut),
       pattern (std::move (pattern)), locus (locus)
   {}
 
   // Copy constructor requires clone
   ReferencePattern (ReferencePattern const &other)
-    : has_two_amps (other.has_two_amps), is_mut (other.is_mut),
+    : has_two_amps (other.has_two_amps), mut (other.mut),
       pattern (other.pattern->clone_pattern ()), locus (other.locus)
   {}
 
@@ -350,7 +353,7 @@ public:
   ReferencePattern &operator= (ReferencePattern const &other)
   {
     pattern = other.pattern->clone_pattern ();
-    is_mut = other.is_mut;
+    mut = other.mut;
     has_two_amps = other.has_two_amps;
     locus = other.locus;
 
@@ -360,6 +363,8 @@ public:
   // default move semantics
   ReferencePattern (ReferencePattern &&other) = default;
   ReferencePattern &operator= (ReferencePattern &&other) = default;
+
+  bool is_mut () const { return mut == Mutability::Mut; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -527,17 +532,19 @@ protected:
 class StructPatternFieldIdent : public StructPatternField
 {
   bool has_ref;
-  bool has_mut;
+  Mutability mut;
   Identifier ident;
 
 public:
-  StructPatternFieldIdent (Identifier ident, bool is_ref, bool is_mut,
+  StructPatternFieldIdent (Identifier ident, bool is_ref, Mutability mut,
 			   AST::AttrVec outer_attrs, Location locus)
     : StructPatternField (std::move (outer_attrs), locus), has_ref (is_ref),
-      has_mut (is_mut), ident (std::move (ident))
+      mut (mut), ident (std::move (ident))
   {}
 
   std::string as_string () const override;
+
+  bool is_mut () const { return mut == Mutability::Mut; }
 
   void accept_vis (HIRVisitor &vis) override;
 

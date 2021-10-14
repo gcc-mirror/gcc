@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_TYPE_H
 #define RUST_HIR_TYPE_H
 
+#include "rust-common.h"
 #include "rust-hir.h"
 #include "rust-hir-path.h"
 
@@ -448,21 +449,20 @@ public:
 class RawPointerType : public TypeNoBounds
 {
 private:
-  bool is_mutable;
+  Mutability mut;
   std::unique_ptr<Type> type;
   Location locus;
 
 public:
   // Constructor requires pointer for polymorphism reasons
-  RawPointerType (Analysis::NodeMapping mappings, bool is_mutable,
+  RawPointerType (Analysis::NodeMapping mappings, Mutability mut,
 		  std::unique_ptr<Type> type, Location locus)
-    : TypeNoBounds (mappings), is_mutable (is_mutable), type (std::move (type)),
-      locus (locus)
+    : TypeNoBounds (mappings), mut (mut), type (std::move (type)), locus (locus)
   {}
 
   // Copy constructor calls custom polymorphic clone function
   RawPointerType (RawPointerType const &other)
-    : TypeNoBounds (other.mappings), is_mutable (other.is_mutable),
+    : TypeNoBounds (other.mappings), mut (other.mut),
       type (other.type->clone_type ()), locus (other.locus)
   {}
 
@@ -470,7 +470,7 @@ public:
   RawPointerType &operator= (RawPointerType const &other)
   {
     mappings = other.mappings;
-    is_mutable = other.is_mutable;
+    mut = other.mut;
     type = other.type->clone_type ();
     locus = other.locus;
     return *this;
@@ -488,9 +488,11 @@ public:
 
   std::unique_ptr<Type> &get_type () { return type; }
 
-  bool is_mut () const { return is_mutable; }
+  Mutability get_mut () const { return mut; }
 
-  bool is_const () const { return !is_mutable; }
+  bool is_mut () const { return mut == Mutability::Mut; }
+
+  bool is_const () const { return mut == Mutability::Imm; }
 
   std::unique_ptr<Type> &get_base_type () { return type; }
 
@@ -516,30 +518,29 @@ class ReferenceType : public TypeNoBounds
   // bool has_lifetime; // TODO: handle in lifetime or something?
   Lifetime lifetime;
 
-  bool has_mut;
+  Mutability mut;
   std::unique_ptr<Type> type;
   Location locus;
 
 public:
   // Returns whether the reference is mutable or immutable.
-  bool is_mut () const { return has_mut; }
+  bool is_mut () const { return mut == Mutability::Mut; }
 
   // Returns whether the reference has a lifetime.
   bool has_lifetime () const { return !lifetime.is_error (); }
 
   // Constructor
-  ReferenceType (Analysis::NodeMapping mappings, bool is_mut,
+  ReferenceType (Analysis::NodeMapping mappings, Mutability mut,
 		 std::unique_ptr<Type> type_no_bounds, Location locus,
 		 Lifetime lifetime)
-    : TypeNoBounds (mappings), lifetime (std::move (lifetime)),
-      has_mut (is_mut), type (std::move (type_no_bounds)), locus (locus)
+    : TypeNoBounds (mappings), lifetime (std::move (lifetime)), mut (mut),
+      type (std::move (type_no_bounds)), locus (locus)
   {}
 
   // Copy constructor with custom clone method
   ReferenceType (ReferenceType const &other)
-    : TypeNoBounds (other.mappings), lifetime (other.lifetime),
-      has_mut (other.has_mut), type (other.type->clone_type ()),
-      locus (other.locus)
+    : TypeNoBounds (other.mappings), lifetime (other.lifetime), mut (other.mut),
+      type (other.type->clone_type ()), locus (other.locus)
   {}
 
   // Operator overload assignment operator to custom clone the unique pointer
@@ -547,7 +548,7 @@ public:
   {
     mappings = other.mappings;
     lifetime = other.lifetime;
-    has_mut = other.has_mut;
+    mut = other.mut;
     type = other.type->clone_type ();
     locus = other.locus;
 
@@ -566,7 +567,7 @@ public:
 
   Lifetime &get_lifetime () { return lifetime; }
 
-  bool get_has_mut () const { return has_mut; }
+  Mutability get_mut () const { return mut; }
 
   std::unique_ptr<Type> &get_base_type () { return type; }
 
