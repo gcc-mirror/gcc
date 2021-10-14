@@ -20145,6 +20145,7 @@ package body Sem_Ch3 is
 
       case Nkind (Original_Node (Exp)) is
          when N_Aggregate
+            | N_Delta_Aggregate
             | N_Extension_Aggregate
             | N_Function_Call
             | N_Op
