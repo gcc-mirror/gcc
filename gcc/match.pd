@@ -7156,6 +7156,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
         && element_precision (type) == element_precision (op_type))
     (view_convert (cond_op @2 @3 @4 @5 (view_convert:op_type @1)))))))
 
+/* Detect simplication for a conditional reduction where
+
+   a = mask1 ? b : 0
+   c = mask2 ? d + a : d
+
+   is turned into
+
+   c = mask1 && mask2 ? d + b : d.  */
+(simplify
+  (IFN_COND_ADD @0 @1 (vec_cond @2 @3 integer_zerop) @1)
+   (IFN_COND_ADD (bit_and @0 @2) @1 @3 @1))
+
 /* For pointers @0 and @2 and nonnegative constant offset @1, look for
    expressions like:
 
