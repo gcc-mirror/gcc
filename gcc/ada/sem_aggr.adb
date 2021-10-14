@@ -3531,7 +3531,18 @@ package body Sem_Aggr is
                Next (Choice);
             end loop;
 
-            Analyze_And_Resolve (Expression (Assoc), Component_Type (Typ));
+            --  For an array_delta_aggregate, the array_component_association
+            --  shall not use the box symbol <>; RM 4.3.4(11/5).
+
+            pragma Assert
+              (Box_Present (Assoc) xor Present (Expression (Assoc)));
+
+            if Box_Present (Assoc) then
+               Error_Msg_N
+                 ("'<'> in array delta aggregate is not allowed", Assoc);
+            else
+               Analyze_And_Resolve (Expression (Assoc), Component_Type (Typ));
+            end if;
          end if;
 
          Next (Assoc);
