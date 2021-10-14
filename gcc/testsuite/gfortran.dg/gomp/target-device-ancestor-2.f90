@@ -4,11 +4,11 @@ implicit none
 
 integer :: a, b, c
 
-!$omp requires reverse_offload  ! { dg-error "Sorry, 'reverse_offload' clause at \\(1\\) on REQUIRES directive is not yet supported" }
+!$omp requires reverse_offload
 
 
-! The following test case is marked with 'xfail' because a previous 'sorry' from
-! 'reverse_offload' suppresses the 'sorry' for 'ancestor'.
+! The following test case is marked with 'xfail' because of the front-end
+! error 'the 'device' clause expression must evaluate to 1' below.
 
 !$omp target device (ancestor: 1)  ! { dg-message "" "sorry, unimplemented: 'ancestor' not yet supported" { xfail *-*-* } }
 !$omp end target
