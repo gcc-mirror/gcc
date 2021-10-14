@@ -3746,7 +3746,17 @@ package body Sem_Aggr is
               ("'<'> in record delta aggregate is not allowed", Assoc);
          else
             Analyze_And_Resolve (Expression (Assoc), Comp_Type);
+
+            --  The expression must not be of a limited type; RM 4.3.1(17.4/5)
+
+            if Is_Limited_Type (Etype (Expression (Assoc))) then
+               Error_Msg_N
+                 ("expression of a limited type in record delta aggregate " &
+                    "is not allowed",
+                  Expression (Assoc));
+            end if;
          end if;
+
          Next (Assoc);
       end loop;
    end Resolve_Delta_Record_Aggregate;
