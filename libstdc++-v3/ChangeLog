@@ -1,3 +1,77 @@
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/28_regex/match_results/102667.C: Moved to...
+	* testsuite/28_regex/match_results/102667.cc: ...here.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/valarray/dr630-3.C: Moved to...
+	* testsuite/26_numerics/valarray/dr630-3.cc: ...here.
+	* testsuite/27_io/basic_iostream/cons/16251.C: Moved to...
+	* testsuite/27_io/basic_iostream/cons/16251.cc: ...here.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (advance): Remove non-deducible
+	template parameter.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102425
+	* src/c++11/system_error.cc
+	(system_error_category::default_error_condition): Add 0 to
+	switch.
+	* testsuite/19_diagnostics/error_category/102425.cc: New test.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdErrorCodePrinter): Define.
+	(build_libstdcxx_dictionary): Register printer for
+	std::error_code and std::error_condition.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Test it.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/Makefile.am [GLIBCXX_BUILD_DEBUG] (install-data-local):
+	Install another copy of the GDB hook.
+	* python/Makefile.in: Regenerate.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Remove
+	test directory after making it writable again.
+	* testsuite/experimental/filesystem/operations/remove_all.cc:
+	Likewise.
+
+2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102667
+	* include/bits/regex.h (match_result::empty()): Optimize by
+	calling the base function directly.
+	(match_results::end()): Check _Base_type::empty() not empty().
+	* testsuite/28_regex/match_results/102667.C: New test.
+
 2021-08-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

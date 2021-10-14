@@ -1,3 +1,53 @@
+2021-10-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (muldi3): Add support for inlining 64-bit
+	multiplication on 32-bit PA 1.1 and 2.0 targets.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101173
+	PR tree-optimization/101280
+	* gimple-loop-interchange.cc
+	(tree_loop_interchange::valid_data_dependences): Properly
+	guard all dependence checks with DDR_REVERSED_P or its
+	inverse.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101394
+	* tree-ssa-pre.c (do_pre_regular_insertion): Avoid inserting
+	copies from abnormals for a full redundancy.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101105
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list):
+	Only ignore steps when they are equal or scalar order is preserved.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100934
+	* tree-ssa-dom.c (pass_dominator::execute): Properly
+	mark irreducible regions.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100509
+	* gimple-fold.c (fold_gimple_assign): Only call
+	get_symbol_constant_value on register type symbols.
+
 2021-10-11  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
