@@ -14246,6 +14246,10 @@ Maximum depth of recursive cloning for self-recursive function.
 Recursive cloning only when the probability of call being executed exceeds
 the parameter.
 
+@item ipa-cp-recursive-freq-factor
+The number of times interprocedural copy propagation expects recursive
+functions to call themselves.
+
 @item ipa-cp-recursion-penalty
 Percentage penalty the recursive functions will receive when they
 are evaluated for cloning.
