@@ -1,3 +1,10 @@
+2021-10-14  Tobias Burnus <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/target-device-ancestor-2.f90: Remove dg-error
+	for the requires-reverse_offload sorry.
+	* gfortran.dg/gomp/target-device-ancestor-3.f90: Likewise.
+	* gfortran.dg/gomp/target-device-ancestor-4.f90: Likewise.
+
 2021-09-24  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	This patch removes the expectation that 'requires reverse_offload' is
