@@ -5289,20 +5289,19 @@ struct rs6000_cost_data
 static void
 rs6000_density_test (rs6000_cost_data *data)
 {
-  struct loop *loop = data->loop_info;
-  basic_block *bbs = get_loop_body (loop);
-  int nbbs = loop->num_nodes;
-  loop_vec_info loop_vinfo = loop_vec_info_for_loop (data->loop_info);
-  int vec_cost = data->cost[vect_body], not_vec_cost = 0;
-  int i, density_pct;
-
   /* This density test only cares about the cost of vector version of the
      loop, so immediately return if we are passed costing for the scalar
      version (namely computing single scalar iteration cost).  */
   if (data->costing_for_scalar)
     return;
 
-  for (i = 0; i < nbbs; i++)
+  struct loop *loop = data->loop_info;
+  basic_block *bbs = get_loop_body (loop);
+  int nbbs = loop->num_nodes;
+  loop_vec_info loop_vinfo = loop_vec_info_for_loop (data->loop_info);
+  int vec_cost = data->cost[vect_body], not_vec_cost = 0;
+
+  for (int i = 0; i < nbbs; i++)
     {
       basic_block bb = bbs[i];
       gimple_stmt_iterator gsi;
@@ -5322,7 +5321,7 @@ rs6000_density_test (rs6000_cost_data *data)
     }
 
   free (bbs);
-  density_pct = (vec_cost * 100) / (vec_cost + not_vec_cost);
+  int density_pct = (vec_cost * 100) / (vec_cost + not_vec_cost);
 
   if (density_pct > rs6000_density_pct_threshold
       && vec_cost + not_vec_cost > rs6000_density_size_threshold)
