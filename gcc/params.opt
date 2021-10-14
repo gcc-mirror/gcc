@@ -173,10 +173,6 @@ Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 9
 Maximum depth of logical expression evaluation ranger will look through when
 evaluating outgoing edge ranges.
 
--param=fsm-maximum-phi-arguments=
-Common Joined UInteger Var(param_fsm_maximum_phi_arguments) Init(100) IntegerRange(1, 999999) Param Optimization
-Maximum number of arguments a PHI may have before the FSM threader will not try to thread through its block.
-
 -param=fsm-scale-path-blocks=
 Common Joined UInteger Var(param_fsm_scale_path_blocks) Init(3) IntegerRange(1, 10) Param Optimization
 Scale factor to apply to the number of blocks in a threading path when comparing to the number of (scaled) statements.
@@ -537,17 +533,9 @@ The maximum number of nested indirect inlining performed by early inliner.
 Common Joined UInteger Var(param_max_fields_for_field_sensitive) Param
 Maximum number of fields in a structure before pointer analysis treats the structure as a single variable.
 
--param=max-fsm-thread-length=
-Common Joined UInteger Var(param_max_fsm_thread_length) Init(10) IntegerRange(1, 999999) Param Optimization
-Maximum number of basic blocks on a finite state automaton jump thread path.
-
 -param=max-fsm-thread-path-insns=
 Common Joined UInteger Var(param_max_fsm_thread_path_insns) Init(100) IntegerRange(1, 999999) Param Optimization
 Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path.
-
--param=max-fsm-thread-paths=
-Common Joined UInteger Var(param_max_fsm_thread_paths) Init(50) IntegerRange(1, 999999) Param Optimization
-Maximum number of new jump thread paths to create for a finite state automaton.
 
 -param=max-gcse-insertion-ratio=
 Common Joined UInteger Var(param_max_gcse_insertion_ratio) Init(20) Param Optimization

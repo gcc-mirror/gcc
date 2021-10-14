@@ -52,12 +52,11 @@ along with GCC; see the file COPYING3.  If not see
 class back_threader_registry
 {
 public:
-  back_threader_registry (int max_allowable_paths);
+  back_threader_registry ();
   bool register_path (const vec<basic_block> &, edge taken);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   back_jt_path_registry m_lowlevel_registry;
-  const int m_max_allowable_paths;
   int m_threaded_paths;
 };
 
@@ -120,8 +119,7 @@ private:
 const edge back_threader::UNREACHABLE_EDGE = (edge) -1;
 
 back_threader::back_threader (bool speed_p)
-  : m_registry (param_max_fsm_thread_paths),
-    m_profit (speed_p),
+  : m_profit (speed_p),
     m_solver (m_ranger, /*resolve=*/false)
 {
   m_last_stmt = NULL;
@@ -547,8 +545,7 @@ back_threader::debug ()
   dump (stderr);
 }
 
-back_threader_registry::back_threader_registry (int max_allowable_paths)
-  : m_max_allowable_paths (max_allowable_paths)
+back_threader_registry::back_threader_registry ()
 {
   m_threaded_paths = 0;
 }
@@ -593,15 +590,6 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      reject that case.  */
   if (m_path.length () <= 1)
       return false;
-
-  if (m_path.length () > (unsigned) param_max_fsm_thread_length)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
-		 "the number of basic blocks on the path "
-		 "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
-      return false;
-    }
 
   int n_insns = 0;
   gimple_stmt_iterator gsi;
@@ -885,15 +873,6 @@ bool
 back_threader_registry::register_path (const vec<basic_block> &m_path,
 				       edge taken_edge)
 {
-  if (m_threaded_paths > m_max_allowable_paths)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
-		 "the number of previously recorded paths to "
-		 "thread exceeds PARAM_MAX_FSM_THREAD_PATHS.\n");
-      return false;
-    }
-
   vec<jump_thread_edge *> *jump_thread_path
     = m_lowlevel_registry.allocate_thread_path ();
 
