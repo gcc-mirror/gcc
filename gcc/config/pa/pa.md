@@ -1383,7 +1383,7 @@
                         (match_operand:SF 2 "reg_or_0_operand" "")])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "
 {
   pa_emit_bcond_fp (operands);
@@ -1398,7 +1398,7 @@
                         (match_operand:DF 2 "reg_or_0_operand" "")])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "
 {
   pa_emit_bcond_fp (operands);
@@ -2235,6 +2235,29 @@
   [(set_attr "type" "load,move,move,move,shift,load,store,move,move,fpalu,fpload,fpstore")
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4,4,4,4,4")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "move_dest_operand"
+			  "=r,r,r,r,r,r,Q,!*q,!r")
+	(match_operand:SI 1 "move_src_operand"
+			  "A,r,J,N,K,RQ,rM,!rM,!*q"))]
+  "(register_operand (operands[0], SImode)
+    || reg_or_0_operand (operands[1], SImode))
+   && TARGET_SOFT_FLOAT
+   && TARGET_64BIT"
+  "@
+   ldw RT'%A1,%0
+   copy %1,%0
+   ldi %1,%0
+   ldil L'%1,%0
+   {zdepi|depwi,z} %Z1,%0
+   ldw%M1 %1,%0
+   stw%M0 %r1,%0
+   mtsar %r1
+   {mfctl|mfctl,w} %%sar,%0"
+  [(set_attr "type" "load,move,move,move,shift,load,store,move,move")
+   (set_attr "pa_combine_type" "addmove")
+   (set_attr "length" "4,4,4,4,4,4,4,4,4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "indexed_memory_operand" "=R")
@@ -4042,6 +4065,25 @@
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4,4")])
 
+(define_insn ""
+  [(set (match_operand:DF 0 "move_dest_operand"
+			  "=!*r,*r,*r,*r,*r,Q")
+	(match_operand:DF 1 "move_src_operand"
+			  "!*r,J,N,K,RQ,*rG"))]
+  "(register_operand (operands[0], DFmode)
+    || reg_or_0_operand (operands[1], DFmode))
+   && TARGET_SOFT_FLOAT && TARGET_64BIT"
+  "@
+   copy %1,%0
+   ldi %1,%0
+   ldil L'%1,%0
+   depdi,z %z1,%0
+   ldd%M1 %1,%0
+   std%M0 %r1,%0"
+  [(set_attr "type" "move,move,move,shift,load,store")
+   (set_attr "pa_combine_type" "addmove")
+   (set_attr "length" "4,4,4,4,4,4")])
+
 
 (define_expand "movdi"
   [(set (match_operand:DI 0 "general_operand" "")
@@ -4199,6 +4241,28 @@
   [(set_attr "type" "load,move,move,move,shift,load,store,move,move,fpalu,fpload,fpstore")
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4,4,4,4,4")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "move_dest_operand"
+			  "=r,r,r,r,r,r,Q,!*q,!r")
+	(match_operand:DI 1 "move_src_operand"
+			  "A,r,J,N,K,RQ,rM,!rM,!*q"))]
+  "(register_operand (operands[0], DImode)
+    || reg_or_0_operand (operands[1], DImode))
+   && TARGET_SOFT_FLOAT && TARGET_64BIT"
+  "@
+   ldd RT'%A1,%0
+   copy %1,%0
+   ldi %1,%0
+   ldil L'%1,%0
+   depdi,z %z1,%0
+   ldd%M1 %1,%0
+   std%M0 %r1,%0
+   mtsar %r1
+   {mfctl|mfctl,w} %%sar,%0"
+  [(set_attr "type" "load,move,move,move,shift,load,store,move,move")
+   (set_attr "pa_combine_type" "addmove")
+   (set_attr "length" "4,4,4,4,4,4,4,4,4")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "indexed_memory_operand" "=R")
@@ -4404,6 +4468,23 @@
   [(set_attr "type" "fpalu,move,fpload,load,fpstore,store")
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "move_dest_operand"
+			  "=!*r,*r,Q")
+	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+			  "!*rG,RQ,*rG"))]
+  "(register_operand (operands[0], SFmode)
+    || reg_or_0_operand (operands[1], SFmode))
+   && TARGET_SOFT_FLOAT
+   && TARGET_64BIT"
+  "@
+   copy %r1,%0
+   ldw%M1 %1,%0
+   stw%M0 %r1,%0"
+  [(set_attr "type" "move,load,store")
+   (set_attr "pa_combine_type" "addmove")
+   (set_attr "length" "4,4,4")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "indexed_memory_operand" "=R")
