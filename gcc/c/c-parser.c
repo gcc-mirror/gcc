@@ -21694,7 +21694,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
   tree ctx = c_parser_omp_context_selector_specification (parser, parms);
   if (ctx == error_mark_node)
     goto fail;
-  ctx = c_omp_check_context_selector (match_loc, ctx);
+  ctx = omp_check_context_selector (match_loc, ctx);
   if (ctx != error_mark_node && variant != error_mark_node)
     {
       if (TREE_CODE (variant) != FUNCTION_DECL)
@@ -21724,7 +21724,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	{
 	  C_DECL_USED (variant) = 1;
 	  tree construct = omp_get_context_selector (ctx, "construct", NULL);
-	  c_omp_mark_declare_variant (match_loc, variant, construct);
+	  omp_mark_declare_variant (match_loc, variant, construct);
 	  if (omp_context_selector_matches (ctx))
 	    {
 	      tree attr

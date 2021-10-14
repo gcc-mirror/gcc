@@ -7768,7 +7768,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
       else
 	{
 	  tree construct = omp_get_context_selector (ctx, "construct", NULL);
-	  c_omp_mark_declare_variant (match_loc, variant, construct);
+	  omp_mark_declare_variant (match_loc, variant, construct);
 	  if (!omp_context_selector_matches (ctx))
 	    return true;
 	  TREE_PURPOSE (TREE_VALUE (attr)) = variant;

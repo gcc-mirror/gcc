@@ -2362,9 +2362,13 @@ module_sym:
     pushdecl_top_level (fndecl);
 
   if (sym->formal_ns
-      && sym->formal_ns->proc_name == sym
-      && sym->formal_ns->omp_declare_simd)
-    gfc_trans_omp_declare_simd (sym->formal_ns);
+      && sym->formal_ns->proc_name == sym)
+    {
+      if (sym->formal_ns->omp_declare_simd)
+	gfc_trans_omp_declare_simd (sym->formal_ns);
+      if (flag_openmp)
+	gfc_trans_omp_declare_variant (sym->formal_ns);
+    }
 
   return fndecl;
 }
@@ -3112,6 +3116,12 @@ gfc_create_function_decl (gfc_namespace * ns, bool global)
 
   if (ns->omp_declare_simd)
     gfc_trans_omp_declare_simd (ns);
+
+  /* Handle 'declare variant' directives.  The applicable directives might
+     be declared in a parent namespace, so this needs to be called even if
+     there are no local directives.  */
+  if (flag_openmp)
+    gfc_trans_omp_declare_variant (ns);
 }
 
 /* Return the decl used to hold the function return value.  If

@@ -1095,6 +1095,146 @@ omp_maybe_offloaded (void)
   return false;
 }
 
+
+/* Diagnose errors in an OpenMP context selector, return CTX if
+   it is correct or error_mark_node otherwise.  */
+
+tree
+omp_check_context_selector (location_t loc, tree ctx)
+{
+  /* Each trait-set-selector-name can only be specified once.
+     There are just 4 set names.  */
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    for (tree t2 = TREE_CHAIN (t1); t2; t2 = TREE_CHAIN (t2))
+      if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	{
+	  error_at (loc, "selector set %qs specified more than once",
+		    IDENTIFIER_POINTER (TREE_PURPOSE (t1)));
+	  return error_mark_node;
+	}
+  for (tree t = ctx; t; t = TREE_CHAIN (t))
+    {
+      /* Each trait-selector-name can only be specified once.  */
+      if (list_length (TREE_VALUE (t)) < 5)
+	{
+	  for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
+	    for (tree t2 = TREE_CHAIN (t1); t2; t2 = TREE_CHAIN (t2))
+	      if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+		{
+		  error_at (loc,
+			    "selector %qs specified more than once in set %qs",
+			    IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+			    IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+		  return error_mark_node;
+		}
+	}
+      else
+	{
+	  hash_set<tree> pset;
+	  for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
+	    if (pset.add (TREE_PURPOSE (t1)))
+	      {
+		error_at (loc,
+			  "selector %qs specified more than once in set %qs",
+			  IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+			  IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+		return error_mark_node;
+	      }
+	}
+
+      static const char *const kind[] = {
+	"host", "nohost", "cpu", "gpu", "fpga", "any", NULL };
+      static const char *const vendor[] = {
+	"amd", "arm", "bsc", "cray", "fujitsu", "gnu", "ibm", "intel",
+	"llvm", "nvidia", "pgi", "ti", "unknown", NULL };
+      static const char *const extension[] = { NULL };
+      static const char *const atomic_default_mem_order[] = {
+	"seq_cst", "relaxed", "acq_rel", NULL };
+      struct known_properties { const char *set; const char *selector;
+				const char *const *props; };
+      known_properties props[] = {
+	{ "device", "kind", kind },
+	{ "implementation", "vendor", vendor },
+	{ "implementation", "extension", extension },
+	{ "implementation", "atomic_default_mem_order",
+	  atomic_default_mem_order } };
+      for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
+	for (unsigned i = 0; i < ARRAY_SIZE (props); i++)
+	  if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+					   props[i].selector)
+	      && !strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t)),
+					      props[i].set))
+	    for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	      for (unsigned j = 0; ; j++)
+		{
+		  if (props[i].props[j] == NULL)
+		    {
+		      if (TREE_PURPOSE (t2)
+			  && !strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				      " score"))
+			break;
+		      if (props[i].props == atomic_default_mem_order)
+			{
+			  error_at (loc,
+				    "incorrect property %qs of %qs selector",
+				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    "atomic_default_mem_order");
+			  return error_mark_node;
+			}
+		      else if (TREE_PURPOSE (t2))
+			warning_at (loc, 0,
+				    "unknown property %qs of %qs selector",
+				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    props[i].selector);
+		      else
+			warning_at (loc, 0,
+				    "unknown property %qE of %qs selector",
+				    TREE_VALUE (t2), props[i].selector);
+		      break;
+		    }
+		  else if (TREE_PURPOSE (t2) == NULL_TREE)
+		    {
+		      const char *str = TREE_STRING_POINTER (TREE_VALUE (t2));
+		      if (!strcmp (str, props[i].props[j])
+			  && ((size_t) TREE_STRING_LENGTH (TREE_VALUE (t2))
+			      == strlen (str) + (lang_GNU_Fortran () ? 0 : 1)))
+			break;
+		    }
+		  else if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    props[i].props[j]))
+		    break;
+		}
+    }
+  return ctx;
+}
+
+
+/* Register VARIANT as variant of some base function marked with
+   #pragma omp declare variant.  CONSTRUCT is corresponding construct
+   selector set.  */
+
+void
+omp_mark_declare_variant (location_t loc, tree variant, tree construct)
+{
+  tree attr = lookup_attribute ("omp declare variant variant",
+				DECL_ATTRIBUTES (variant));
+  if (attr == NULL_TREE)
+    {
+      attr = tree_cons (get_identifier ("omp declare variant variant"),
+			unshare_expr (construct),
+			DECL_ATTRIBUTES (variant));
+      DECL_ATTRIBUTES (variant) = attr;
+      return;
+    }
+  if ((TREE_VALUE (attr) != NULL_TREE) != (construct != NULL_TREE)
+      || (construct != NULL_TREE
+	  && omp_context_selector_set_compare ("construct", TREE_VALUE (attr),
+					       construct)))
+    error_at (loc, "%qD used as a variant with incompatible %<construct%> "
+		   "selector sets", variant);
+}
+
+
 /* Return a name from PROP, a property in selectors accepting
    name lists.  */
 
@@ -1106,7 +1246,8 @@ omp_context_name_list_prop (tree prop)
   else
     {
       const char *ret = TREE_STRING_POINTER (TREE_VALUE (prop));
-      if ((size_t) TREE_STRING_LENGTH (TREE_VALUE (prop)) == strlen (ret) + 1)
+      if ((size_t) TREE_STRING_LENGTH (TREE_VALUE (prop))
+	  == strlen (ret) + (lang_GNU_Fortran () ? 0 : 1))
 	return ret;
       return NULL;
     }
