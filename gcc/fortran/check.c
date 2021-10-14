@@ -5086,6 +5086,13 @@ gfc_check_shape (gfc_expr *source, gfc_expr *kind)
   if (gfc_invalid_null_arg (source))
     return false;
 
+  if (!kind_check (kind, 1, BT_INTEGER))
+    return false;
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
+			       "with KIND argument at %L",
+			       gfc_current_intrinsic, &kind->where))
+    return false;
+
   if (source->rank == 0 || source->expr_type != EXPR_VARIABLE)
     return true;
 
@@ -5097,13 +5104,6 @@ gfc_check_shape (gfc_expr *source, gfc_expr *kind)
 		 "an assumed size array", &source->where);
       return false;
     }
-
-  if (!kind_check (kind, 1, BT_INTEGER))
-    return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
-			       "with KIND argument at %L",
-			       gfc_current_intrinsic, &kind->where))
-    return false;
 
   return true;
 }
