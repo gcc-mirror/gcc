@@ -105,7 +105,7 @@ private:
   hash_set<basic_block> m_visited_bbs;
   // The set of SSA names, any of which could potentially change the
   // value of the final conditional in a path.
-  bitmap m_imports;
+  auto_bitmap m_imports;
   // The last statement in the path.
   gimple *m_last_stmt;
   // This is a bit of a wart.  It's used to pass the LHS SSA name to
@@ -125,13 +125,10 @@ back_threader::back_threader (bool speed_p)
     m_solver (m_ranger, /*resolve=*/false)
 {
   m_last_stmt = NULL;
-  m_imports = BITMAP_ALLOC (NULL);
 }
 
 back_threader::~back_threader ()
 {
-  m_path.release ();
-  BITMAP_FREE (m_imports);
 }
 
 // Register the current path for jump threading if it's profitable to
