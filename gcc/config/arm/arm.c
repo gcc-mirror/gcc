@@ -304,11 +304,6 @@ static bool aarch_macro_fusion_pair_p (rtx_insn*, rtx_insn*);
 static int arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 					   tree vectype,
 					   int misalign ATTRIBUTE_UNUSED);
-static unsigned arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
-				   enum vect_cost_for_stmt kind,
-				   struct _stmt_vec_info *stmt_info,
-				   tree vectype, int misalign,
-				   enum vect_cost_model_location where);
 
 static void arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 					 bool op0_preserve_value);
@@ -769,8 +764,6 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
   arm_builtin_vectorization_cost
-#undef TARGET_VECTORIZE_ADD_STMT_COST
-#define TARGET_VECTORIZE_ADD_STMT_COST arm_add_stmt_cost
 
 #undef TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON \
@@ -12240,39 +12233,6 @@ arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       default:
         gcc_unreachable ();
     }
-}
-
-/* Implement targetm.vectorize.add_stmt_cost.  */
-
-static unsigned
-arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
-		   enum vect_cost_for_stmt kind,
-		   struct _stmt_vec_info *stmt_info, tree vectype,
-		   int misalign, enum vect_cost_model_location where)
-{
-  unsigned *cost = (unsigned *) data;
-  unsigned retval = 0;
-
-  if (flag_vect_cost_model)
-    {
-      int stmt_cost = arm_builtin_vectorization_cost (kind, vectype, misalign);
-
-      /* Statements in an inner loop relative to the loop being
-	 vectorized are weighted more heavily.  The value here is
-	 arbitrary and could potentially be improved with analysis.  */
-      if (where == vect_body && stmt_info
-	  && stmt_in_inner_loop_p (vinfo, stmt_info))
-	{
-	  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
-	  gcc_assert (loop_vinfo);
-	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /* FIXME.  */
-	}
-
-      retval = (unsigned) (count * stmt_cost);
-      cost[where] += retval;
-    }
-
-  return retval;
 }
 
 /* Return true if and only if this insn can dual-issue only as older.  */
