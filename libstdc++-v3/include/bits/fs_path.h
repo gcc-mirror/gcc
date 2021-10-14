@@ -625,7 +625,7 @@ namespace __detail
       static auto
       _S_convert(_Tp __str)
       {
-	if constexpr (is_same_v<_Tp, typename _Tp::value_type>)
+	if constexpr (is_same_v<typename _Tp::value_type, value_type>)
 	  return __str; // No conversion needed.
 #if !defined _GLIBCXX_FILESYSTEM_IS_WINDOWS && defined _GLIBCXX_USE_CHAR8_T
 	else if constexpr (is_same_v<_Tp, std::u8string>)
