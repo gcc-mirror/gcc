@@ -4450,11 +4450,13 @@ const pass_data pass_data_vrp =
   ( TODO_cleanup_cfg | TODO_update_ssa ), /* todo_flags_finish */
 };
 
+static int vrp_pass_num = 0;
 class pass_vrp : public gimple_opt_pass
 {
 public:
   pass_vrp (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_vrp, ctxt), warn_array_bounds_p (false)
+    : gimple_opt_pass (pass_data_vrp, ctxt), warn_array_bounds_p (false),
+      my_pass (++vrp_pass_num)
   {}
 
   /* opt_pass methods: */
@@ -4466,10 +4468,16 @@ public:
     }
   virtual bool gate (function *) { return flag_tree_vrp != 0; }
   virtual unsigned int execute (function *fun)
-    { return execute_vrp (fun, warn_array_bounds_p); }
+    {
+      if ((my_pass == 1 && param_vrp1_mode == VRP_MODE_RANGER)
+	  || (my_pass == 2 && param_vrp2_mode == VRP_MODE_RANGER))
+	return execute_ranger_vrp (fun, warn_array_bounds_p);
+      return execute_vrp (fun, warn_array_bounds_p);
+    }
 
  private:
   bool warn_array_bounds_p;
+  int my_pass;
 }; // class pass_vrp
 
 } // anon namespace

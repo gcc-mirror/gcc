@@ -463,6 +463,13 @@ enum evrp_mode
   EVRP_MODE_DEBUG = (EVRP_MODE_GORI | EVRP_MODE_CACHE)
 };
 
+/* VRP modes.  */
+enum vrp_mode
+{
+  VRP_MODE_VRP,
+  VRP_MODE_RANGER
+};
+
 /* Modes of OpenACC 'kernels' constructs handling.  */
 enum openacc_kernels
 {
