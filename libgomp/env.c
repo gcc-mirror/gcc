@@ -701,6 +701,11 @@ parse_places_var (const char *name, bool ignore)
       env += 9;
       level = 4;
     }
+  else if (strncasecmp (env, "numa_domains", 12) == 0)
+    {
+      env += 12;
+      level = 5;
+    }
   if (level)
     {
       count = ULONG_MAX;

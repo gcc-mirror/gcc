@@ -3,6 +3,18 @@
 	Backported from master:
 	2021-10-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* env.c (parse_places_var): Handle numa_domains as level 5.
+	* config/linux/affinity.c (gomp_affinity_init_numa_domains): New
+	function.
+	(gomp_affinity_init_level): Use it instead of
+	gomp_affinity_init_level_1 for level == 5.
+	* testsuite/libgomp.c/places-5.c: New test.
+
+2021-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
 	* env.c (parse_places_var): Handle ll_caches as level 4.
 	* config/linux/affinity.c (gomp_affinity_find_last_cache_level): New
 	function.

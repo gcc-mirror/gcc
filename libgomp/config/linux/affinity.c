@@ -355,6 +355,102 @@ gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
   free (line);
 }
 
+static void
+gomp_affinity_init_numa_domains (unsigned long count, cpu_set_t *copy,
+				 char *name)
+{
+  FILE *f;
+  char *nline = NULL, *line = NULL;
+  size_t nlinelen = 0, linelen = 0;
+  char *q;
+  size_t prefix_len = sizeof ("/sys/devices/system/node/") - 1;
+
+  strcpy (name, "/sys/devices/system/node/online");
+  f = fopen (name, "r");
+  if (f == NULL || getline (&nline, &nlinelen, f) <= 0)
+    {
+      if (f)
+	fclose (f);
+      return;
+    }
+  fclose (f);
+  q = nline;
+  while (*q && *q != '\n' && gomp_places_list_len < count)
+    {
+      unsigned long nfirst, nlast;
+
+      errno = 0;
+      nfirst = strtoul (q, &q, 10);
+      if (errno)
+	break;
+      nlast = nfirst;
+      if (*q == '-')
+	{
+	  errno = 0;
+	  nlast = strtoul (q + 1, &q, 10);
+	  if (errno || nlast < nfirst)
+	    break;
+	}
+      for (; nfirst <= nlast; nfirst++)
+	{
+	  sprintf (name + prefix_len, "node%lu/cpulist", nfirst);
+	  f = fopen (name, "r");
+	  if (f == NULL)
+	    continue;
+	  if (getline (&line, &linelen, f) > 0)
+	    {
+	      char *p = line;
+	      void *pl = NULL;
+
+	      while (*p && *p != '\n')
+		{
+		  unsigned long first, last;
+		  bool seen = false;
+
+		  errno = 0;
+		  first = strtoul (p, &p, 10);
+		  if (errno)
+		    break;
+		  last = first;
+		  if (*p == '-')
+		    {
+		      errno = 0;
+		      last = strtoul (p + 1, &p, 10);
+		      if (errno || last < first)
+			break;
+		    }
+		  for (; first <= last; first++)
+		    {
+		      if (!CPU_ISSET_S (first, gomp_cpuset_size, copy))
+			continue;
+		      if (pl == NULL)
+			{
+			  pl = gomp_places_list[gomp_places_list_len];
+			  gomp_affinity_init_place (pl);
+			}
+		      if (gomp_affinity_add_cpus (pl, first, 1, 0, true))
+			{
+			  CPU_CLR_S (first, gomp_cpuset_size, copy);
+			  if (!seen)
+			    {
+			      gomp_places_list_len++;
+			      seen = true;
+			    }
+			}
+		    }
+		  if (*p == ',')
+		    ++p;
+		}
+	    }
+	  fclose (f);
+	}
+      if (*q == ',')
+	++q;
+    }
+  free (line);
+  free (nline);
+}
+
 bool
 gomp_affinity_init_level (int level, unsigned long count, bool quiet)
 {
@@ -377,8 +473,11 @@ gomp_affinity_init_level (int level, unsigned long count, bool quiet)
   copy = gomp_alloca (gomp_cpuset_size);
   strcpy (name, "/sys/devices/system/cpu/cpu");
   memcpy (copy, gomp_cpusetp, gomp_cpuset_size);
-  gomp_affinity_init_level_1 (level, level > 3 ? level : 3, count, copy, name,
-			      quiet);
+  if (level == 5)
+    gomp_affinity_init_numa_domains (count, copy, name);
+  else
+    gomp_affinity_init_level_1 (level, level > 3 ? level : 3, count, copy,
+				name, quiet);
   if (gomp_places_list_len == 0)
     {
       if (!quiet)
