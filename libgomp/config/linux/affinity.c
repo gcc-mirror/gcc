@@ -281,8 +281,13 @@ gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
 		      if (gomp_affinity_add_cpus (pl, first, 1, 0, true))
 			{
 			  CPU_CLR_S (first, gomp_cpuset_size, copy);
-			  if (level == 1)
-			    gomp_places_list_len++;
+			  if (level == 1
+			      && ++gomp_places_list_len >= count)
+			    {
+			      fclose (f);
+			      free (line);
+			      return;
+			    }
 			}
 		    }
 		if (*p == ',')
