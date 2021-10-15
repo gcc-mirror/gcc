@@ -1,3 +1,17 @@
+2021-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101583
+	* include/bits/hashtable.h (_Hashtable): Replace mixin with
+	_Enable_default_ctor. Construct it explicitly in all
+	non-forwarding, non-defaulted constructors.
+	* testsuite/23_containers/unordered_map/cons/default.cc: Check
+	non-default constructors can be used.
+	* testsuite/23_containers/unordered_set/cons/default.cc:
+	Likewise.
+
 2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,8 @@
+2021-10-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102627
+	* gcc.target/i386/pr102627.c: New test.
+
 2021-10-11  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
