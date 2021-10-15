@@ -1094,18 +1094,20 @@ namespace __variant
 	>;
     }
 
-} // namespace __variant
-} // namespace __detail
-
   template<size_t _Np, typename _Variant, typename... _Args>
-    void __variant_construct_by_index(_Variant& __v, _Args&&... __args)
+    inline void
+    __construct_by_index(_Variant& __v, _Args&&... __args)
     {
-      __v._M_index = _Np;
       auto&& __storage = __detail::__variant::__get<_Np>(__v);
       ::new ((void*)std::addressof(__storage))
         remove_reference_t<decltype(__storage)>
 	  (std::forward<_Args>(__args)...);
+      // Construction didn't throw, so can set the new index now:
+      __v._M_index = _Np;
     }
+
+} // namespace __variant
+} // namespace __detail
 
   template<typename _Tp, typename... _Types>
     constexpr bool
@@ -1342,8 +1344,9 @@ namespace __variant
       template <typename... _UTypes, typename _Tp>
 	friend decltype(auto) __variant_cast(_Tp&&);
       template<size_t _Np, typename _Variant, typename... _Args>
-	friend void __variant_construct_by_index(_Variant& __v,
-						 _Args&&... __args);
+	friend void
+	__detail::__variant::__construct_by_index(_Variant& __v,
+						  _Args&&... __args);
 
       static_assert(sizeof...(_Types) > 0,
 		    "variant must have at least one alternative");
@@ -1507,12 +1510,13 @@ namespace __variant
 	  static_assert(_Np < sizeof...(_Types),
 			"The index must be in [0, number of alternatives)");
 	  using type = variant_alternative_t<_Np, variant>;
+	  namespace __variant = std::__detail::__variant;
 	  // Provide the strong exception-safety guarantee when possible,
 	  // to avoid becoming valueless.
 	  if constexpr (is_nothrow_constructible_v<type, _Args...>)
 	    {
 	      this->_M_reset();
-	      __variant_construct_by_index<_Np>(*this,
+	      __variant::__construct_by_index<_Np>(*this,
 		  std::forward<_Args>(__args)...);
 	    }
 	  else if constexpr (is_scalar_v<type>)
@@ -1521,9 +1525,9 @@ namespace __variant
 	      const type __tmp(std::forward<_Args>(__args)...);
 	      // But these steps won't throw:
 	      this->_M_reset();
-	      __variant_construct_by_index<_Np>(*this, __tmp);
+	      __variant::__construct_by_index<_Np>(*this, __tmp);
 	    }
-	  else if constexpr (__detail::__variant::_Never_valueless_alt<type>()
+	  else if constexpr (__variant::_Never_valueless_alt<type>()
 	      && _Traits::_S_move_assign)
 	    {
 	      // This construction might throw:
@@ -1537,17 +1541,8 @@ namespace __variant
 	      // This case only provides the basic exception-safety guarantee,
 	      // i.e. the variant can become valueless.
 	      this->_M_reset();
-	      __try
-		{
-		  __variant_construct_by_index<_Np>(*this,
-		    std::forward<_Args>(__args)...);
-		}
-	      __catch (...)
-		{
-		  using __index_type = decltype(this->_M_index);
-		  this->_M_index = static_cast<__index_type>(variant_npos);
-		  __throw_exception_again;
-		}
+	      __variant::__construct_by_index<_Np>(*this,
+		std::forward<_Args>(__args)...);
 	    }
 	  return std::get<_Np>(*this);
 	}
@@ -1561,6 +1556,7 @@ namespace __variant
 	  static_assert(_Np < sizeof...(_Types),
 			"The index must be in [0, number of alternatives)");
 	  using type = variant_alternative_t<_Np, variant>;
+	  namespace __variant = std::__detail::__variant;
 	  // Provide the strong exception-safety guarantee when possible,
 	  // to avoid becoming valueless.
 	  if constexpr (is_nothrow_constructible_v<type,
@@ -1568,10 +1564,10 @@ namespace __variant
 						   _Args...>)
 	    {
 	      this->_M_reset();
-	      __variant_construct_by_index<_Np>(*this, __il,
+	      __variant::__construct_by_index<_Np>(*this, __il,
 		  std::forward<_Args>(__args)...);
 	    }
-	  else if constexpr (__detail::__variant::_Never_valueless_alt<type>()
+	  else if constexpr (__variant::_Never_valueless_alt<type>()
 	      && _Traits::_S_move_assign)
 	    {
 	      // This construction might throw:
@@ -1585,17 +1581,8 @@ namespace __variant
 	      // This case only provides the basic exception-safety guarantee,
 	      // i.e. the variant can become valueless.
 	      this->_M_reset();
-	      __try
-		{
-		  __variant_construct_by_index<_Np>(*this, __il,
-		    std::forward<_Args>(__args)...);
-		}
-	      __catch (...)
-		{
-		  using __index_type = decltype(this->_M_index);
-		  this->_M_index = static_cast<__index_type>(variant_npos);
-		  __throw_exception_again;
-		}
+	      __variant::__construct_by_index<_Np>(*this, __il,
+		std::forward<_Args>(__args)...);
 	    }
 	  return std::get<_Np>(*this);
 	}
