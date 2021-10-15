@@ -14468,14 +14468,6 @@ Emit instrumentation calls to __tsan_func_entry() and __tsan_func_exit().
 Maximum number of instructions to copy when duplicating blocks on a
 finite state automaton jump thread path.
 
-@item max-fsm-thread-length
-Maximum number of basic blocks on a finite state automaton jump thread
-path.
-
-@item max-fsm-thread-paths
-Maximum number of new jump thread paths to create for a finite state
-automaton.
-
 @item parloops-chunk-size
 Chunk size of omp schedule for loops parallelized by parloops.
 
@@ -14629,10 +14621,6 @@ The maximum depth of recursive inlining for non-inline functions.
 @item fsm-scale-path-stmts
 Scale factor to apply to the number of statements in a threading path
 when comparing to the number of (scaled) blocks.
-
-@item fsm-maximum-phi-arguments
-Maximum number of arguments a PHI may have before the FSM threader
-will not try to thread through its block.
 
 @item uninit-control-dep-attempts
 Maximum number of nested calls to search for control dependencies

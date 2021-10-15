@@ -1,3 +1,84 @@
+2021-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/format/c11-dfp-printf-1.c,
+	gcc.dg/format/c11-dfp-scanf-1.c, gcc.dg/format/c2x-dfp-printf-1.c,
+	gcc.dg/format/c2x-dfp-scanf-1.c: New tests.
+
+2021-10-14  Raphael Moreira Zinsly  <rzinsly@linux.ibm.com>
+
+	* gcc.target/powerpc/unwind-backchain.c: New test.
+
+2021-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102717
+	* gfortran.dg/reshape_shape_2.f90: New test.
+
+2021-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102716
+	* gfortran.dg/shape_10.f90: New test.
+
+2021-10-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102738
+	* gcc.dg/pr102738.c: New.
+
+2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-variant-1.f90: New test.
+	* gfortran.dg/gomp/declare-variant-10.f90: New test.
+	* gfortran.dg/gomp/declare-variant-11.f90: New test.
+	* gfortran.dg/gomp/declare-variant-12.f90: New test.
+	* gfortran.dg/gomp/declare-variant-13.f90: New test.
+	* gfortran.dg/gomp/declare-variant-14.f90: New test.
+	* gfortran.dg/gomp/declare-variant-15.f90: New test.
+	* gfortran.dg/gomp/declare-variant-16.f90: New test.
+	* gfortran.dg/gomp/declare-variant-17.f90: New test.
+	* gfortran.dg/gomp/declare-variant-18.f90: New test.
+	* gfortran.dg/gomp/declare-variant-19.f90: New test.
+	* gfortran.dg/gomp/declare-variant-2.f90: New test.
+	* gfortran.dg/gomp/declare-variant-2a.f90: New test.
+	* gfortran.dg/gomp/declare-variant-3.f90: New test.
+	* gfortran.dg/gomp/declare-variant-4.f90: New test.
+	* gfortran.dg/gomp/declare-variant-5.f90: New test.
+	* gfortran.dg/gomp/declare-variant-6.f90: New test.
+	* gfortran.dg/gomp/declare-variant-7.f90: New test.
+	* gfortran.dg/gomp/declare-variant-8.f90: New test.
+	* gfortran.dg/gomp/declare-variant-9.f90: New test.
+
+2021-10-14  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/mips/msa-insert-split.c: Turn off vectorizer.
+
+2021-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/pred-cond-reduc.c: New test.
+
+2021-10-14  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.dg/tree-ssa/predcom-3.c: Disable vectorizer.
+
+2021-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102736
+	* gcc.dg/tree-ssa/pr102736.c: New test.
+
+2021-10-14  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new mask3 builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfcmaddcsh-1a.c: Add scanning for
+	mask/mask3 intrinsic.
+	* gcc.target/i386/avx512fp16-vfmaddcsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfcmaddcsh-1c.c: New test for
+	-mavx512vl.
+	* gcc.target/i386/avx512fp16-vfmaddcsh-1c.c: Ditto.
+
+2021-10-14  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.dg/warn/Wuninitialized-13.C: Add -fno-tree-vectorize.
+
 2021-10-13  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/102630

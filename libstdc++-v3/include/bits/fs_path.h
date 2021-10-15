@@ -316,10 +316,7 @@ namespace __detail
 
     path(const path& __p) = default;
 
-    path(path&& __p)
-#if _GLIBCXX_USE_CXX11_ABI || _GLIBCXX_FULLY_DYNAMIC_STRING == 0
-      noexcept
-#endif
+    path(path&& __p) noexcept
     : _M_pathname(std::move(__p._M_pathname)),
       _M_cmpts(std::move(__p._M_cmpts))
     { __p.clear(); }
@@ -624,6 +621,7 @@ namespace __detail
     template<typename _Tp>
       static auto
       _S_convert(_Tp __str)
+      noexcept(is_same_v<typename _Tp::value_type, value_type>)
       {
 	if constexpr (is_same_v<typename _Tp::value_type, value_type>)
 	  return __str; // No conversion needed.

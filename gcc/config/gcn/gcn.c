@@ -5226,27 +5226,21 @@ output_file_start (void)
 #ifndef HAVE_GCN_XNACK_FIJI
       use_xnack_attr = false;
 #endif
-#ifndef HAVE_GCN_SRAM_ECC_FIJI
       use_sram_attr = false;
-#endif
       break;
     case PROCESSOR_VEGA10:
       cpu = "gfx900";
 #ifndef HAVE_GCN_XNACK_GFX900
       use_xnack_attr = false;
 #endif
-#ifndef HAVE_GCN_SRAM_ECC_GFX900
       use_sram_attr = false;
-#endif
       break;
     case PROCESSOR_VEGA20:
       cpu = "gfx906";
 #ifndef HAVE_GCN_XNACK_GFX906
       use_xnack_attr = false;
 #endif
-#ifndef HAVE_GCN_SRAM_ECC_GFX906
       use_sram_attr = false;
-#endif
       break;
     case PROCESSOR_GFX908:
       cpu = "gfx908";

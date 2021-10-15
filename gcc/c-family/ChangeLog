@@ -1,3 +1,17 @@
+2021-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-format.c (printf_length_specs, scanf_length_specs)
+	(print_char_table, scan_char_table): Support DFP formats for C2X.
+	* c-format.h (TEX_D32, TEX_D64, TEX_D128): Remove.
+	(T2X_D32, T2X_D64, T2X_D128): New macros.
+
+2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-omp.c (c_omp_check_context_selector): Rename to
+	omp_check_context_selector and move to omp-general.c.
+	(c_omp_mark_declare_variant): Rename to omp_mark_declare_variant and
+	move to omp-general.c.
+
 2021-10-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-format.c (print_char_table): Add %b and %B formats.

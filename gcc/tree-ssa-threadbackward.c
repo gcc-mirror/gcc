@@ -52,12 +52,11 @@ along with GCC; see the file COPYING3.  If not see
 class back_threader_registry
 {
 public:
-  back_threader_registry (int max_allowable_paths);
+  back_threader_registry ();
   bool register_path (const vec<basic_block> &, edge taken);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   back_jt_path_registry m_lowlevel_registry;
-  const int m_max_allowable_paths;
   int m_threaded_paths;
 };
 
@@ -78,7 +77,7 @@ private:
 class back_threader
 {
 public:
-  back_threader (bool speed_p);
+  back_threader (bool speed_p, bool resolve);
   ~back_threader ();
   void maybe_thread_block (basic_block bb);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
@@ -105,7 +104,7 @@ private:
   hash_set<basic_block> m_visited_bbs;
   // The set of SSA names, any of which could potentially change the
   // value of the final conditional in a path.
-  bitmap m_imports;
+  auto_bitmap m_imports;
   // The last statement in the path.
   gimple *m_last_stmt;
   // This is a bit of a wart.  It's used to pass the LHS SSA name to
@@ -113,25 +112,26 @@ private:
   tree m_name;
   // Marker to differentiate unreachable edges.
   static const edge UNREACHABLE_EDGE;
+  // Set to TRUE if unknown SSA names along a path should be resolved
+  // with the ranger.  Otherwise, unknown SSA names are assumed to be
+  // VARYING.  Setting to true more precise but slower.
+  bool m_resolve;
 };
 
 // Used to differentiate unreachable edges, so we may stop the search
 // in a the given direction.
 const edge back_threader::UNREACHABLE_EDGE = (edge) -1;
 
-back_threader::back_threader (bool speed_p)
-  : m_registry (param_max_fsm_thread_paths),
-    m_profit (speed_p),
-    m_solver (m_ranger, /*resolve=*/false)
+back_threader::back_threader (bool speed_p, bool resolve)
+  : m_profit (speed_p),
+    m_solver (m_ranger, resolve)
 {
   m_last_stmt = NULL;
-  m_imports = BITMAP_ALLOC (NULL);
+  m_resolve = resolve;
 }
 
 back_threader::~back_threader ()
 {
-  m_path.release ();
-  BITMAP_FREE (m_imports);
 }
 
 // Register the current path for jump threading if it's profitable to
@@ -300,7 +300,23 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
 
 	  bitmap_set_bit (interesting, v);
 	  bitmap_set_bit (m_imports, v);
-	  done |= find_paths_to_names (e->src, interesting);
+
+	  // When resolving unknowns, see if the incoming SSA can be
+	  // resolved on entry without having to keep looking back.
+	  bool keep_looking = true;
+	  if (m_resolve)
+	    {
+	      m_path.safe_push (e->src);
+	      if (maybe_register_path ())
+		{
+		  keep_looking = false;
+		  m_visited_bbs.add (e->src);
+		}
+	      m_path.pop ();
+	    }
+	  if (keep_looking)
+	    done |= find_paths_to_names (e->src, interesting);
+
 	  bitmap_clear_bit (interesting, v);
 	}
       else if (TREE_CODE (arg) == INTEGER_CST)
@@ -363,6 +379,14 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
       m_path.pop ();
       m_visited_bbs.remove (bb);
       return false;
+    }
+
+  // Try to resolve the path with nothing but ranger knowledge.
+  if (m_resolve && m_path.length () > 1 && maybe_register_path ())
+    {
+      m_path.pop ();
+      m_visited_bbs.remove (bb);
+      return true;
     }
 
   auto_bitmap processed;
@@ -550,8 +574,7 @@ back_threader::debug ()
   dump (stderr);
 }
 
-back_threader_registry::back_threader_registry (int max_allowable_paths)
-  : m_max_allowable_paths (max_allowable_paths)
+back_threader_registry::back_threader_registry ()
 {
   m_threaded_paths = 0;
 }
@@ -596,15 +619,6 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      reject that case.  */
   if (m_path.length () <= 1)
       return false;
-
-  if (m_path.length () > (unsigned) param_max_fsm_thread_length)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
-		 "the number of basic blocks on the path "
-		 "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
-      return false;
-    }
 
   int n_insns = 0;
   gimple_stmt_iterator gsi;
@@ -888,15 +902,6 @@ bool
 back_threader_registry::register_path (const vec<basic_block> &m_path,
 				       edge taken_edge)
 {
-  if (m_threaded_paths > m_max_allowable_paths)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
-		 "the number of previously recorded paths to "
-		 "thread exceeds PARAM_MAX_FSM_THREAD_PATHS.\n");
-      return false;
-    }
-
   vec<jump_thread_edge *> *jump_thread_path
     = m_lowlevel_registry.allocate_thread_path ();
 
@@ -960,7 +965,7 @@ static bool
 try_thread_blocks (function *fun)
 {
   /* Try to thread each block with more than one successor.  */
-  back_threader threader (/*speed_p=*/true);
+  back_threader threader (/*speed=*/true, /*resolve=*/false);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -1029,7 +1034,7 @@ pass_early_thread_jumps::execute (function *fun)
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
   /* Try to thread each block with more than one successor.  */
-  back_threader threader (/*speed_p=*/false);
+  back_threader threader (/*speed_p=*/false, /*resolve=*/false);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {

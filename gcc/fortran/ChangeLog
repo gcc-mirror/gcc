@@ -1,3 +1,54 @@
+2021-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102717
+	* simplify.c (gfc_simplify_reshape): Replace assert by error
+	message for negative elements in SHAPE array.
+
+2021-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102716
+	* check.c (gfc_check_shape): Reorder checks so that invalid KIND
+	arguments can be detected.
+
+2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.h (enum gfc_statement): Add ST_OMP_DECLARE_VARIANT.
+	(enum gfc_omp_trait_property_kind): New.
+	(struct gfc_omp_trait_property): New.
+	(gfc_get_omp_trait_property): New macro.
+	(struct gfc_omp_selector): New.
+	(gfc_get_omp_selector): New macro.
+	(struct gfc_omp_set_selector): New.
+	(gfc_get_omp_set_selector): New macro.
+	(struct gfc_omp_declare_variant): New.
+	(gfc_get_omp_declare_variant): New macro.
+	(struct gfc_namespace): Add omp_declare_variant field.
+	(gfc_free_omp_declare_variant_list): New prototype.
+	* match.h (gfc_match_omp_declare_variant): New prototype.
+	* openmp.c (gfc_free_omp_trait_property_list): New.
+	(gfc_free_omp_selector_list): New.
+	(gfc_free_omp_set_selector_list): New.
+	(gfc_free_omp_declare_variant_list): New.
+	(gfc_match_omp_clauses): Add extra optional argument.  Handle end of
+	clauses for context selectors.
+	(omp_construct_selectors, omp_device_selectors,
+	omp_implementation_selectors, omp_user_selectors): New.
+	(gfc_match_omp_context_selector): New.
+	(gfc_match_omp_context_selector_specification): New.
+	(gfc_match_omp_declare_variant): New.
+	* parse.c: Include tree-core.h and omp-general.h.
+	(decode_omp_directive): Handle 'declare variant'.
+	(case_omp_decl): Include ST_OMP_DECLARE_VARIANT.
+	(gfc_ascii_statement): Handle ST_OMP_DECLARE_VARIANT.
+	(gfc_parse_file): Initialize omp_requires_mask.
+	* symbol.c (gfc_free_namespace): Call
+	gfc_free_omp_declare_variant_list.
+	* trans-decl.c (gfc_get_extern_function_decl): Call
+	gfc_trans_omp_declare_variant.
+	(gfc_create_function_decl): Call gfc_trans_omp_declare_variant.
+	* trans-openmp.c (gfc_trans_omp_declare_variant): New.
+	* trans-stmt.h (gfc_trans_omp_declare_variant): New prototype.
+
 2021-10-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.c (show_omp_clauses): Handle ancestor modifier,

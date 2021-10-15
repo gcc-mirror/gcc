@@ -333,11 +333,11 @@ struct format_kind_info
 #define T99_UIM	{ STD_C99, "uintmax_t", T_UIM }
 #define T2X_UIM	{ STD_C2X, "uintmax_t", T_UIM }
 #define T_D32   &dfloat32_type_node
-#define TEX_D32 { STD_EXT, "_Decimal32", T_D32 }
+#define T2X_D32 { STD_C2X, "_Decimal32", T_D32 }
 #define T_D64   &dfloat64_type_node
-#define TEX_D64 { STD_EXT, "_Decimal64", T_D64 }
+#define T2X_D64 { STD_C2X, "_Decimal64", T_D64 }
 #define T_D128  &dfloat128_type_node
-#define TEX_D128 { STD_EXT, "_Decimal128", T_D128 }
+#define T2X_D128 { STD_C2X, "_Decimal128", T_D128 }
 
 /* Structure describing how format attributes such as "printf" are
    interpreted as "gnu_printf" or "ms_printf" on a particular system.

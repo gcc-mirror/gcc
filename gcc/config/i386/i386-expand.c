@@ -4846,6 +4846,16 @@ ix86_expand_vec_perm (rtx operands[])
   e = GET_MODE_UNIT_SIZE (mode);
   gcc_assert (w <= 64);
 
+  /* For HF mode vector, convert it to HI using subreg.  */
+  if (GET_MODE_INNER (mode) == HFmode)
+    {
+      machine_mode orig_mode = mode;
+      mode = mode_for_vector (HImode, w).require ();
+      target = lowpart_subreg (mode, target, orig_mode);
+      op0 = lowpart_subreg (mode, op0, orig_mode);
+      op1 = lowpart_subreg (mode, op1, orig_mode);
+    }
+
   if (TARGET_AVX512F && one_operand_shuffle)
     {
       rtx (*gen) (rtx, rtx, rtx) = NULL;
@@ -15122,7 +15132,8 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
 	  rtx ops[2] = { XVECEXP (vals, 0, 0), XVECEXP (vals, 0, 1) };
 	  if (inner_mode == QImode
 	      || inner_mode == HImode
-	      || inner_mode == TImode)
+	      || inner_mode == TImode
+	      || inner_mode == HFmode)
 	    {
 	      unsigned int n_bits = n_elts * GET_MODE_SIZE (inner_mode);
 	      scalar_mode elt_mode = inner_mode == TImode ? DImode : SImode;
@@ -21137,6 +21148,20 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   unsigned char perm[MAX_VECT_LEN];
   unsigned int i, nelt, which;
   bool two_args;
+
+  /* For HF mode vector, convert it to HI using subreg.  */
+  if (GET_MODE_INNER (vmode) == HFmode)
+    {
+      machine_mode orig_mode = vmode;
+      vmode = mode_for_vector (HImode,
+			       GET_MODE_NUNITS (vmode)).require ();
+      if (target)
+	target = lowpart_subreg (vmode, target, orig_mode);
+      if (op0)
+	op0 = lowpart_subreg (vmode, op0, orig_mode);
+      if (op1)
+	op1 = lowpart_subreg (vmode, op1, orig_mode);
+    }
 
   d.target = target;
   d.op0 = op0;

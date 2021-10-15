@@ -1,3 +1,48 @@
+2021-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__variant::__get(in_place_index_t<N>, U&&)):
+	Rename to __get_n and remove first argument. Replace pair of
+	overloads with a single function using 'if constexpr'.
+	(__variant::__get(Variant&&)): Adjust to use __get_n.
+
+2021-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path(path&&)): Make unconditionally
+	noexcept.
+	(path::_S_convert(T)): Add condtional noexcept.
+
+2021-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102743
+	* include/bits/fs_path.h (path::_S_convert(T)): Fix condition
+	for returning the same string unchanged.
+
+2021-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h: Check __cpp_inline_variables instead of
+	__cplusplus.
+
+2021-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/is_layout_compatible/version.cc: Check
+	correct macro.
+
+2021-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_construct.h (_Construct): Use
+	std::construct_at when constant evaluated.
+	* include/std/optional (_Storage, _Optional_payload, optional):
+	Add constexpr as specified by P2231R1.
+	* include/std/version (__cpp_lib_optional): Update value for
+	C++20.
+	* testsuite/20_util/optional/requirements.cc: Check feature test
+	macro.
+	* testsuite/20_util/optional/constexpr/assign.cc: New test.
+	* testsuite/20_util/optional/constexpr/cons/conv.cc: New test.
+	* testsuite/20_util/optional/constexpr/modifiers.cc: New test.
+	* testsuite/20_util/optional/constexpr/swap.cc: New test.
+	* testsuite/20_util/optional/version.cc: New test.
+
 2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_path.h (__detail::__is_contiguous): Add

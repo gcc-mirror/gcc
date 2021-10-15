@@ -666,6 +666,7 @@ case ${target} in
 *-*-darwin*)
   tmake_file="t-darwin "
   tm_file="${tm_file} darwin.h"
+  tm_d_file="${tm_d_file} tm-dwarf2.h"
   darwin_os=`echo ${target} | sed 's/.*darwin\([0-9.]*\).*$/\1/'`
   darwin_maj=`expr "$darwin_os" : '\([0-9]*\).*'`
   macos_min=`expr "$darwin_os" : '[0-9]*\.\([0-9]*\).*'`

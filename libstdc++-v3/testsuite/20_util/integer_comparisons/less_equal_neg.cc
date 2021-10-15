@@ -20,17 +20,17 @@
 
 #include <utility>
 
-bool a = std::cmp_less_equal('1', 49); // { dg-error "here" }
-bool b = std::cmp_less_equal(50, '2'); // { dg-error "here" }
-bool c = std::cmp_less_equal(2, L'2'); // { dg-error "here" }
-bool d = std::cmp_less_equal(L'2', 2); // { dg-error "here" }
-bool e = std::cmp_less_equal(true, 1); // { dg-error "here" }
-bool f = std::cmp_less_equal(0, false); // { dg-error "here" }
-bool g = std::cmp_less_equal(97, u8'a'); // { dg-error "here" }
-bool h = std::cmp_less_equal(u8'a', 97); // { dg-error "here" }
-bool i = std::cmp_less_equal(97, u'a'); // { dg-error "here" }
-bool j = std::cmp_less_equal(u'a', 97); // { dg-error "here" }
-bool k = std::cmp_less_equal(97, U'a'); // { dg-error "here" }
-bool l = std::cmp_less_equal(U'a', 97); // { dg-error "here" }
+bool a = std::cmp_less_equal('1', 49); // { dg-error "constexpr" }
+bool b = std::cmp_less_equal(50, '2'); // { dg-error "constexpr" }
+bool c = std::cmp_less_equal(2, L'2'); // { dg-error "constexpr" }
+bool d = std::cmp_less_equal(L'2', 2); // { dg-error "constexpr" }
+bool e = std::cmp_less_equal(true, 1); // { dg-error "constexpr" }
+bool f = std::cmp_less_equal(0, false); // { dg-error "constexpr" }
+bool g = std::cmp_less_equal(97, u8'a'); // { dg-error "constexpr" }
+bool h = std::cmp_less_equal(u8'a', 97); // { dg-error "constexpr" }
+bool i = std::cmp_less_equal(97, u'a'); // { dg-error "constexpr" }
+bool j = std::cmp_less_equal(u'a', 97); // { dg-error "constexpr" }
+bool k = std::cmp_less_equal(97, U'a'); // { dg-error "constexpr" }
+bool l = std::cmp_less_equal(U'a', 97); // { dg-error "constexpr" }
 
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }

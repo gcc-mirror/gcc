@@ -182,7 +182,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Iterators @tab Y @tab
 @item @code{metadirective} directive @tab N @tab
 @item @code{declare variant} directive
-      @tab P @tab Only C and C++, simd traits not handled correctly
+      @tab P @tab simd traits not handled correctly
 @item @emph{target-offload-var} ICV and @code{OMP_TARGET_OFFLOAD}
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
@@ -309,7 +309,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{present} argument to @code{defaultmap} clause @tab N @tab
 @item @code{omp_set_num_teams}, @code{omp_set_teams_thread_limit},
       @code{omp_get_max_teams}, @code{omp_get_teams_thread_limit} runtime
-      routines @tab N @tab
+      routines @tab Y @tab
 @item @code{omp_target_is_accessible} runtime routine @tab N @tab
 @item @code{omp_target_memcpy_async} and @code{omp_target_memcpy_rect_async}
       runtime routines @tab N @tab
@@ -328,9 +328,9 @@ The OpenMP 4.5 specification is fully supported.
       @code{ompt_callback_target_emi_t}, @code{ompt_callback_target_map_emi_t}
       and @code{ompt_callback_target_submit_emi_t} @tab N @tab
 @item @code{ompt_callback_error_t} type @tab N @tab
-@item @code{OMP_PLACES} syntax was extension @tab N @tab
+@item @code{OMP_PLACES} syntax extensions @tab Y @tab
 @item @code{OMP_NUM_TEAMS} and @code{OMP_TEAMS_THREAD_LIMIT} environment
-      variables @tab N @tab
+      variables @tab Y @tab
 @end multitable
 
 @unnumberedsubsec Other new OpenMP 5.1 features

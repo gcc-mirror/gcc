@@ -4281,6 +4281,28 @@ simplify_using_ranges::simplify (gimple_stmt_iterator *gsi)
 	case MAX_EXPR:
 	  return simplify_min_or_max_using_ranges (gsi, stmt);
 
+	case RSHIFT_EXPR:
+	  {
+	    tree op0 = gimple_assign_rhs1 (stmt);
+	    tree type = TREE_TYPE (op0);
+	    int_range_max range;
+	    if (TYPE_SIGN (type) == SIGNED
+		&& query->range_of_expr (range, op0, stmt))
+	      {
+		unsigned prec = TYPE_PRECISION (TREE_TYPE (op0));
+		int_range<2> nzm1 (type, wi::minus_one (prec), wi::zero (prec),
+				   VR_ANTI_RANGE);
+		range.intersect (nzm1);
+		// If there are no ranges other than [-1, 0] remove the shift.
+		if (range.undefined_p ())
+		  {
+		    gimple_assign_set_rhs_from_tree (gsi, op0);
+		    return true;
+		  }
+		return false;
+	      }
+	    break;
+	  }
 	default:
 	  break;
 	}

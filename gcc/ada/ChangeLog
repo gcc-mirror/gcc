@@ -1,3 +1,8 @@
+2021-10-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* par-ch10.adb (P_Compilation_Unit): Reenable ada83 library
+	unit renaming test and error.
+
 2021-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (resolve_atomic_size): Declare.
