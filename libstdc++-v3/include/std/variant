@@ -434,13 +434,6 @@ namespace __variant
       ~_Variant_storage()
       { _M_reset(); }
 
-      void*
-      _M_storage() const noexcept
-      {
-	return const_cast<void*>(static_cast<const void*>(
-	    std::addressof(_M_u)));
-      }
-
       constexpr bool
       _M_valid() const noexcept
       {
@@ -471,13 +464,6 @@ namespace __variant
 
       void _M_reset() noexcept
       { _M_index = static_cast<__index_type>(variant_npos); }
-
-      void*
-      _M_storage() const noexcept
-      {
-	return const_cast<void*>(static_cast<const void*>(
-	    std::addressof(_M_u)));
-      }
 
       constexpr bool
       _M_valid() const noexcept
@@ -808,11 +794,6 @@ namespace __variant
     struct __accepted_index<_Tp, _Variant, void_t<_FUN_type<_Tp, _Variant>>>
     : _FUN_type<_Tp, _Variant>
     { };
-
-  // Returns the raw storage for __v.
-  template<typename _Variant>
-    void* __get_storage(_Variant&& __v) noexcept
-    { return __v._M_storage(); }
 
   template <typename _Maybe_variant_cookie, typename _Variant>
     struct _Extra_visit_slot_needed
@@ -1689,10 +1670,6 @@ namespace __variant
       template<size_t _Np, typename _Vp>
 	friend constexpr decltype(auto)
 	__detail::__variant::__get(_Vp&& __v) noexcept;
-
-      template<typename _Vp>
-	friend void*
-	__detail::__variant::__get_storage(_Vp&& __v) noexcept;
 
 #define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP) \
       template<typename... _Tp> \
