@@ -1,3 +1,9 @@
+2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-parser.c (c_finish_omp_declare_variant): Change call from
+	c_omp_check_context_selector to omp_check_context_selector. Change
+	call from c_omp_mark_declare_variant to omp_mark_declare_variant.
+
 2021-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_structured_block_sequence): New function.

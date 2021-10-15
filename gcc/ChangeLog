@@ -1,3 +1,203 @@
+2021-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (class back_threader): Add m_resolve.
+	(back_threader::back_threader): Same.
+	(back_threader::resolve_phi): Try to solve without looking back if
+	possible.
+	(back_threader::find_paths_to_names): Same.
+	(try_thread_blocks): Pass resolve argument to back threader.
+	(pass_early_thread_jumps::execute): Same.
+
+2021-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/invoke.texi: Remove max-fsm-thread-length,
+	max-fsm-thread-paths, and fsm-maximum-phi-arguments.
+	* params.opt: Same.
+	* tree-ssa-threadbackward.c (back_threader::back_threader): Remove
+	argument.
+	(back_threader_registry::back_threader_registry): Same.
+	(back_threader_profitability::profitable_path_p): Remove
+	param_max_fsm_thread-length.
+	(back_threader_registry::register_path): Remove
+	m_max_allowable_paths.
+
+2021-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (class back_threader): Make m_imports
+	an auto_bitmap.
+	(back_threader::~back_threader): Do not release m_path.
+
+2021-10-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102738
+	* vr-values.c (simplify_using_ranges::simplify): Handle RSHIFT_EXPR.
+
+2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-general.c (omp_check_context_selector):  Move from c-omp.c.
+	(omp_mark_declare_variant): Move from c-omp.c.
+	(omp_context_name_list_prop): Update for Fortran strings.
+	* omp-general.h (omp_check_context_selector): New prototype.
+	(omp_mark_declare_variant): New prototype.
+
+2021-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/rs6000/rs6000.c (rs6000_density_test): Move early
+	exit test further up the function.
+
+2021-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm.c (arm_add_stmt_cost): Delete.
+	(TARGET_VECTORIZE_ADD_STMT_COST): Delete.
+
+2021-10-14  Martin Jambor  <mjambor@suse.cz>
+
+	* doc/invoke.texi (Optimize Options): Add entry for
+	ipa-cp-recursive-freq-factor.
+
+2021-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* match.pd: New rule.
+
+2021-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/102557
+	* ipa-modref-tree.h (modref_access_node::update2):
+	Also check that parm_offset is unchanged.
+	(modref_ref_node::insert_access): Fix updating of
+	parameter.
+
+2021-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::resolve_phi): Add
+	FIXME note.
+
+2021-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102659
+	* tree-if-conv.c (if_convertible_gimple_assign_stmt_p): Also
+	rewrite pointer typed undefined overflow operations.
+	(predicate_statements): Likewise.  Make sure to emit invariant
+	conversions in the preheader.
+	* tree-vectorizer.c (vect_loop_vectorized_call): Look through
+	non-empty preheaders.
+	* tree-data-ref.c (dr_analyze_indices): Strip useless
+	conversions to the MEM_REF base type.
+
+2021-10-14  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Stop using AUTODETECT_VALUE
+	and use EnabledBy where possible.
+	* opts.c: Enable OPT_fvar_tracking with optimize >= 1.
+	* toplev.c (AUTODETECT_VALUE): Remove macro.
+	(process_options): Simplify by using EnabledBy and
+	OPT_fvar_tracking.  Use OPTION_SET_P macro instead of
+	AUTODETECT_VALUE.
+
+2021-10-14  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vld1_s8_x3): Use signed type for
+	pointer parameter.
+	(vld1_s32_x3): Likewise.
+
+2021-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102736
+	PR tree-optimization/102736
+	* gimple-range-path.cc (path_range_query::range_on_path_entry):
+	Assert that the requested range is defined outside the path.
+	(path_range_query::ssa_range_in_phi): Do not call
+	range_on_path_entry for SSA names that are defined within the
+	path.
+
+2021-10-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (darwin_find_version_from_kernel):
+	Quote internal identifiers and avoid contractions in
+	warnings.
+	(darwin_default_min_version): Likewise.
+	(darwin_driver_init): Likewise.
+
+2021-10-14  Martin Jambor  <mjambor@suse.cz>
+
+	* params.opt (ipa-cp-recursive-freq-factor): New.
+	* ipa-cp.c (ipcp_value): Switch to inline initialization.  New members
+	scc_no, self_recursion_generated_level, same_scc and
+	self_recursion_generated_p.
+	(ipcp_lattice::add_value): Replaced parameter unlimited with
+	same_lat_gen_level, usit it determine limit of values and store it to
+	the value.
+	(ipcp_lattice<valtype>::print): Dump the new fileds.
+	(allocate_and_init_ipcp_value): Take same_lat_gen_level as a new
+	parameter and store it to the new value.
+	(self_recursively_generated_p): Removed.
+	(propagate_vals_across_arith_jfunc): Use self_recursion_generated_p
+	instead of self_recursively_generated_p, store self generation level
+	to such values.
+	(value_topo_info<valtype>::add_val): Set scc_no.
+	(value_topo_info<valtype>::propagate_effects): Multiply frequencies of
+	recursively feeding values and self generated values by appropriate
+	new factors.
+
+2021-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_add_stmt_cost): Remove
+	redundant test for flag_vect_cost_model.
+
+2021-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* bitmap.c (debug): New overloaded function for auto_bitmaps.
+	* bitmap.h (debug): Same.
+
+2021-10-14  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_mask_fcmadd_pch):
+	Adjust builtin call.
+	(_mm512_mask3_fcmadd_pch): Likewise.
+	(_mm512_mask_fmadd_pch): Likewise
+	(_mm512_mask3_fmadd_pch): Likewise
+	(_mm512_mask_fcmadd_round_pch): Likewise
+	(_mm512_mask3_fcmadd_round_pch): Likewise
+	(_mm512_mask_fmadd_round_pch): Likewise
+	(_mm512_mask3_fmadd_round_pch): Likewise
+	(_mm_mask_fcmadd_sch): Likewise
+	(_mm_mask3_fcmadd_sch): Likewise
+	(_mm_mask_fmadd_sch): Likewise
+	(_mm_mask3_fmadd_sch): Likewise
+	(_mm_mask_fcmadd_round_sch): Likewise
+	(_mm_mask3_fcmadd_round_sch): Likewise
+	(_mm_mask_fmadd_round_sch): Likewise
+	(_mm_mask3_fmadd_round_sch): Likewise
+	(_mm_fcmadd_round_sch): Likewise
+	* config/i386/avx512fp16vlintrin.h (_mm_mask_fmadd_pch):
+	Adjust builtin call.
+	(_mm_mask3_fmadd_pch): Likewise
+	(_mm256_mask_fmadd_pch): Likewise
+	(_mm256_mask3_fmadd_pch): Likewise
+	(_mm_mask_fcmadd_pch): Likewise
+	(_mm_mask3_fcmadd_pch): Likewise
+	(_mm256_mask_fcmadd_pch): Likewise
+	(_mm256_mask3_fcmadd_pch): Likewise
+	* config/i386/i386-builtin.def: Add mask3 builtin for complex
+	fma, and adjust mask_builtin to corresponding expander.
+	* config/i386/i386-expand.c (ix86_expand_round_builtin):
+	Skip eraseing embedded rounding for expanders that emits
+	multiple insns.
+	* config/i386/sse.md (complexmove): New mode_attr.
+	(<avx512>_fmaddc_<mode>_mask1<round_expand_name>): New expander.
+	(<avx512>_fcmaddc_<mode>_mask1<round_expand_name>): Likewise.
+	(avx512fp16_fmaddcsh_v8hf_mask1<round_expand_name>): Likewise.
+	(avx512fp16_fcmaddcsh_v8hf_mask1<round_expand_name>): Likewise.
+	(avx512fp16_fcmaddcsh_v8hf_mask3<round_expand_name>): Likewise.
+	(avx512fp16_fmaddcsh_v8hf_mask3<round_expand_name>): Likewise.
+	* config/i386/subst.md (round_embedded_complex): New subst.
+
+2021-10-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (cbranchsf4): Disable if TARGET_SOFT_FLOAT.
+	(cbranchdf4): Likewise.
+	Add missing move patterns for TARGET_SOFT_FLOAT.
+
 2021-10-13  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386-expand.c (ix86_expand_vector_move):  Use a

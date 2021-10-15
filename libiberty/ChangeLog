@@ -1,3 +1,12 @@
+2021-10-14  Luís Ferreira  <contact@lsferreira.net>
+
+	* testsuite/d-demangle-expected: Add test case for function literals.
+
+2021-10-14  Luís Ferreira  <contact@lsferreira.net>
+
+	* testsuite/d-demangle-expected: Add test cases for simple special
+	mangles.
+
 2021-10-12  Luís Ferreira  <contact@lsferreira.net>
 
 	* d-demangle.c (dlang_parse_qualified): Remove redudant parenthesis

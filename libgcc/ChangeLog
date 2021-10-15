@@ -1,3 +1,14 @@
+2021-10-14  Raphael Moreira Zinsly  <rzinsly@linux.ibm.com>
+
+	* config/rs6000/linux-unwind.h (struct rt_sigframe): Move it to
+	outside of get_regs() in order to use it in another function, this
+	is done twice: for __powerpc64__ and for !__powerpc64__.
+	(struct trace_arg): New struct.
+	(struct layout): New struct.
+	(ppc_backchain_fallback): New function.
+	* unwind.inc (_Unwind_Backtrace): Look for _URC_NORMAL_STOP code
+	state and call MD_BACKCHAIN_FALLBACK.
+
 2021-10-13  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/90364
