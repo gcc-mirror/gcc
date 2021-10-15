@@ -1,3 +1,14 @@
+2021-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-general.c (omp_check_context_selector):  Move from c-omp.c.
+	(omp_mark_declare_variant): Move from c-omp.c.
+	(omp_context_name_list_prop): Update for Fortran strings.
+	* omp-general.h (omp_check_context_selector): New prototype.
+	(omp_mark_declare_variant): New prototype.
+
 2021-10-12  Julian Brown  <julian@codesourcery.com>
 
 	Revert:

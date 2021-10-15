@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <setjmp.h>
 #include "match.h"
 #include "parse.h"
+#include "tree-core.h"
 #include "omp-general.h"
 
 /* Current statement label.  Zero means no statement label.  Because new_st
@@ -862,6 +863,8 @@ decode_omp_directive (void)
 	       ST_OMP_DECLARE_SIMD);
       matchdo ("declare target", gfc_match_omp_declare_target,
 	       ST_OMP_DECLARE_TARGET);
+      matchdo ("declare variant", gfc_match_omp_declare_variant,
+	       ST_OMP_DECLARE_VARIANT);
       break;
     case 's':
       matchs ("simd", gfc_match_omp_simd, ST_OMP_SIMD);
@@ -1720,6 +1723,7 @@ next_statement (void)
 
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
+  case ST_OMP_DECLARE_VARIANT: \
   case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
 
 /* Block end statements.  Errors associated with interchanging these
@@ -2362,6 +2366,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_DECLARE_TARGET:
       p = "!$OMP DECLARE TARGET";
+      break;
+    case ST_OMP_DECLARE_VARIANT:
+      p = "!$OMP DECLARE VARIANT";
       break;
     case ST_OMP_DEPOBJ:
       p = "!$OMP DEPOBJ";
@@ -6810,6 +6817,24 @@ done:
 	omp_requires_mask
 	  = (enum omp_requires) (omp_requires_mask
 				 | OMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+    }
+
+  /* Populate omp_requires_mask (needed for resolving OpenMP
+     metadirectives and declare variant).  */
+  switch (omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+    {
+    case OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_SEQ_CST);
+      break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQ_REL);
+      break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELAXED);
+      break;
     }
 
   /* Do the parse tree dump.  */
