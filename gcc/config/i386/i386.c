@@ -19303,7 +19303,9 @@ ix86_hardreg_mov_ok (rtx dst, rtx src)
   /* Avoid complex sets of likely_spilled hard registers before reload.  */
   if (REG_P (dst) && HARD_REGISTER_P (dst)
       && !REG_P (src) && !MEM_P (src)
-      && !x86_64_immediate_operand (src, GET_MODE (dst))
+      && !(VECTOR_MODE_P (GET_MODE (dst))
+	   ? standard_sse_constant_p (src, GET_MODE (dst))
+	   : x86_64_immediate_operand (src, GET_MODE (dst)))
       && ix86_class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dst)))
       && !reload_completed)
     return false;
