@@ -896,9 +896,6 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
       expr->ts = *ts;
       expr->value.constructor = array_head;
 
-      expr->rank = as->rank;
-      expr->shape = gfc_get_shape (expr->rank);
-
       /* Validate sizes.  We built expr ourselves, so cons_size will be
 	 constant (we fail above for non-constant expressions).
 	 We still need to verify that the sizes match.  */
@@ -911,6 +908,12 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
       mpz_clear (cons_size);
       if (cmp)
 	goto cleanup;
+
+      /* Set the rank/shape to match the LHS as auto-reshape is implied. */
+      expr->rank = as->rank;
+      expr->shape = gfc_get_shape (as->rank);
+      for (int i = 0; i < as->rank; ++i)
+	spec_dimen_size (as, i, &expr->shape[i]);
     }
 
   /* Make sure scalar types match. */
