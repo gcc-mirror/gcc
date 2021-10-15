@@ -1,3 +1,9 @@
+2021-10-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (cbranchsf4): Disable if TARGET_SOFT_FLOAT.
+	(cbranchdf4): Likewise.
+	Add missing move patterns for TARGET_SOFT_FLOAT.
+
 2021-10-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (muldi3): Add support for inlining 64-bit
