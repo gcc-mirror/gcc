@@ -251,7 +251,7 @@ gomp_affinity_find_last_cache_level (char *name, size_t prefix_len,
 	  char *p;
 	  errno = 0;
 	  val = strtoul (line, &p, 10);
-	  if (!errno && val >= maxval)
+	  if (!errno && p > line && val >= maxval)
 	    {
 	      ret = l;
 	      maxval = val;
@@ -303,7 +303,7 @@ gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
 	  }
 	if (getline (&line, &linelen, f) > 0)
 	  {
-	    char *p = line;
+	    char *p = line, *end;
 	    void *pl = gomp_places_list[gomp_places_list_len];
 	    if (level == this_level)
 	      gomp_affinity_init_place (pl);
@@ -311,16 +311,18 @@ gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
 	      {
 		unsigned long first, last;
 		errno = 0;
-		first = strtoul (p, &p, 10);
-		if (errno)
+		first = strtoul (p, &end, 10);
+		if (errno || end == p)
 		  break;
+		p = end;
 		last = first;
 		if (*p == '-')
 		  {
 		    errno = 0;
-		    last = strtoul (p + 1, &p, 10);
-		    if (errno || last < first)
+		    last = strtoul (p + 1, &end, 10);
+		    if (errno || end == p + 1 || last < first)
 		      break;
+		    p = end;
 		  }
 		for (; first <= last; first++)
 		  if (!CPU_ISSET_S (first, gomp_cpuset_size, copy))
@@ -383,18 +385,21 @@ gomp_affinity_init_numa_domains (unsigned long count, cpu_set_t *copy,
   while (*q && *q != '\n' && gomp_places_list_len < count)
     {
       unsigned long nfirst, nlast;
+      char *end;
 
       errno = 0;
-      nfirst = strtoul (q, &q, 10);
-      if (errno)
+      nfirst = strtoul (q, &end, 10);
+      if (errno || end == q)
 	break;
+      q = end;
       nlast = nfirst;
       if (*q == '-')
 	{
 	  errno = 0;
-	  nlast = strtoul (q + 1, &q, 10);
-	  if (errno || nlast < nfirst)
+	  nlast = strtoul (q + 1, &end, 10);
+	  if (errno || end == q + 1 || nlast < nfirst)
 	    break;
+	  q = end;
 	}
       for (; nfirst <= nlast; nfirst++)
 	{
@@ -413,16 +418,18 @@ gomp_affinity_init_numa_domains (unsigned long count, cpu_set_t *copy,
 		  bool seen = false;
 
 		  errno = 0;
-		  first = strtoul (p, &p, 10);
-		  if (errno)
+		  first = strtoul (p, &end, 10);
+		  if (errno || end == p)
 		    break;
+		  p = end;
 		  last = first;
 		  if (*p == '-')
 		    {
 		      errno = 0;
-		      last = strtoul (p + 1, &p, 10);
-		      if (errno || last < first)
+		      last = strtoul (p + 1, &end, 10);
+		      if (errno || end == p + 1 || last < first)
 			break;
+		      p = end;
 		    }
 		  for (; first <= last; first++)
 		    {
