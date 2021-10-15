@@ -9228,7 +9228,7 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "------>vectorizing statement: %G", stmt_info->stmt);
 
-  if (MAY_HAVE_DEBUG_BIND_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
+  if (flag_var_tracking_assignments && !STMT_VINFO_LIVE_P (stmt_info))
     vect_loop_kill_debug_uses (loop, stmt_info);
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info)
@@ -9602,7 +9602,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	  if (!stmt_info)
 	    continue;
 
-	  if (MAY_HAVE_DEBUG_BIND_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
+	  if (flag_var_tracking_assignments && !STMT_VINFO_LIVE_P (stmt_info))
 	    vect_loop_kill_debug_uses (loop, stmt_info);
 
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)

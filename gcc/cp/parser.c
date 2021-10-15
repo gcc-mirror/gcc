@@ -11684,7 +11684,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 static void
 add_debug_begin_stmt (location_t loc)
 {
-  if (!MAY_HAVE_DEBUG_MARKER_STMTS)
+  if (!debug_nonbind_markers_p)
     return;
   if (DECL_DECLARED_CONCEPT_P (current_function_decl))
     /* A concept is never expanded normally.  */

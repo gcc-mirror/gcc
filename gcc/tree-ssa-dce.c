@@ -1143,7 +1143,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb,
 
   /* If this is a store into a variable that is being optimized away,
      add a debug bind stmt if possible.  */
-  if (MAY_HAVE_DEBUG_BIND_STMTS
+  if (flag_var_tracking_assignments
       && gimple_assign_single_p (stmt)
       && is_gimple_val (gimple_assign_rhs1 (stmt)))
     {

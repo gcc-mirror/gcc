@@ -2403,7 +2403,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
     }
   update_stmt (use_stmt);
 
-  if (MAY_HAVE_DEBUG_BIND_STMTS)
+  if (flag_var_tracking_assignments)
     {
       use_operand_p use_p;
       imm_use_iterator iter;
