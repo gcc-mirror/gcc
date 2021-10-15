@@ -696,6 +696,11 @@ parse_places_var (const char *name, bool ignore)
       env += 7;
       level = 3;
     }
+  else if (strncasecmp (env, "ll_caches", 9) == 0)
+    {
+      env += 9;
+      level = 4;
+    }
   if (level)
     {
       count = ULONG_MAX;

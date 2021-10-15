@@ -1,6 +1,22 @@
 2021-10-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (parse_places_var): Handle ll_caches as level 4.
+	* config/linux/affinity.c (gomp_affinity_find_last_cache_level): New
+	function.
+	(gomp_affinity_init_level_1): Handle level 4 as logical cpus sharing
+	last level cache.
+	(gomp_affinity_init_level): Likewise.
+	* testsuite/libgomp.c/places-1.c: New test.
+	* testsuite/libgomp.c/places-2.c: New test.
+	* testsuite/libgomp.c/places-3.c: New test.
+	* testsuite/libgomp.c/places-4.c: New test.
+
+2021-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.0): Update entry for declare variant
