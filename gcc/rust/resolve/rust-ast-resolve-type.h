@@ -189,7 +189,6 @@ class ResolveRelativeTypePath : public ResolveTypeToCanonicalPath
 
 public:
   static NodeId go (AST::TypePath &path, NodeId parent,
-		    const CanonicalPath &prefix,
 		    bool canonicalize_type_with_generics)
   {
     CanonicalPath canonical_path
@@ -202,10 +201,6 @@ public:
 		       "Failed to resolve canonical path for TypePath");
 	return UNKNOWN_NODEID;
       }
-
-    CanonicalPath lookup = canonical_path;
-    if (!prefix.is_empty ())
-      lookup = prefix.append (canonical_path);
 
     auto resolver = Resolver::get ();
     NodeId resolved_node = UNKNOWN_NODEID;
@@ -223,11 +218,10 @@ public:
   }
 
   static NodeId go (AST::QualifiedPathInType &path, NodeId parent,
-		    const CanonicalPath &prefix,
 		    bool canonicalize_type_with_generics)
   {
     auto &qualified_path = path.get_qualified_path_type ();
-    CanonicalPath result = prefix;
+    CanonicalPath result = CanonicalPath::create_empty ();
     if (!resolve_qual_seg (qualified_path, result))
       return UNKNOWN_NODEID;
 
@@ -324,7 +318,6 @@ public:
   {
     resolved_node
       = ResolveRelativeTypePath::go (path, parent,
-				     CanonicalPath::create_empty (),
 				     canonicalize_type_with_generics);
     ok = resolved_node != UNKNOWN_NODEID;
     if (ok)
@@ -340,7 +333,6 @@ public:
   {
     resolved_node
       = ResolveRelativeTypePath::go (path, parent,
-				     CanonicalPath::create_empty (),
 				     canonicalize_type_with_generics);
     ok = resolved_node != UNKNOWN_NODEID;
   }
