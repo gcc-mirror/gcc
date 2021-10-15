@@ -78,22 +78,25 @@ parse_thread_pools (char *env, unsigned long *count, unsigned long *priority,
 {
   size_t len;
   int i;
+  char *end;
 
   if (*env == ':')
     ++env;
 
   errno = 0;
-  *count = strtoul (env, &env, 10);
-  if (errno != 0)
+  *count = strtoul (env, &end, 10);
+  if (errno != 0 || end == env)
     gomp_fatal ("Invalid thread pool count");
+  env = end;
 
   if (*env == '$')
     {
       ++env;
       errno = 0;
-      *priority = strtoul (env, &env, 10);
-      if (errno != 0)
+      *priority = strtoul (env, &end, 10);
+      if (errno != 0 || end == env)
 	gomp_fatal ("Invalid thread pool priority");
+      env = end;
     }
   else
     *priority = -1;

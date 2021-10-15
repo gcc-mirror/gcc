@@ -3,6 +3,30 @@
 	Backported from master:
 	2021-10-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* env.c (parse_schedule): For strtoul or strtoull calls which don't
+	clearly reject return value 0 as invalid handle the case where end
+	pointer is the same as first argument as invalid.
+	(parse_unsigned_long_1): Likewise.
+	(parse_one_place): Likewise.
+	(parse_places_var): Likewise.
+	(parse_stacksize): Likewise.
+	(parse_spincount): Likewise.
+	(parse_affinity): Likewise.
+	(parse_gomp_openacc_dim): Likewise.  Avoid strict aliasing violation.
+	Make code valid C89.
+	* config/linux/affinity.c (gomp_affinity_find_last_cache_level):
+	For strtoul calls which don't clearly reject return value 0 as
+	invalid handle the case where end pointer is the same as first
+	argument as invalid.
+	(gomp_affinity_init_level_1): Likewise.
+	(gomp_affinity_init_numa_domains): Likewise.
+	* config/rtems/proc.c (parse_thread_pools): Likewise.
+
+2021-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/linux/affinity.c (gomp_affinity_init_level_1): For level 1
 	after creating count places clean up and return immediately.
 	* testsuite/libgomp.c/places-6.c: New test.
