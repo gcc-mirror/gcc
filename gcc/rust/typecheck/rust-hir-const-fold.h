@@ -193,6 +193,8 @@ public:
 
   void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
 
+  void visit (TyTy::ClosureType &) override { gcc_unreachable (); }
+
 private:
   ConstFoldType (::Backend *backend)
     : backend (backend), translated (backend->error_type ())

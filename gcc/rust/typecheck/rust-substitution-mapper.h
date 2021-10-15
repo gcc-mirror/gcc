@@ -138,6 +138,7 @@ public:
   void visit (TyTy::StrType &) override { gcc_unreachable (); }
   void visit (TyTy::NeverType &) override { gcc_unreachable (); }
   void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
+  void visit (TyTy::ClosureType &) override { gcc_unreachable (); }
 
 private:
   SubstMapper (HirId ref, HIR::GenericArgs *generics, Location locus)
@@ -217,6 +218,11 @@ public:
     resolved = type.handle_substitions (mappings);
   }
 
+  void visit (TyTy::ClosureType &type) override
+  {
+    resolved = type.handle_substitions (mappings);
+  }
+
   // nothing to do for these
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
@@ -271,6 +277,14 @@ public:
     resolved = to_sub->handle_substitions (type.get_substitution_arguments ());
   }
 
+  void visit (TyTy::ClosureType &type) override
+  {
+    rust_assert (type.was_substituted ());
+
+    TyTy::ClosureType *to_sub = static_cast<TyTy::ClosureType *> (receiver);
+    resolved = to_sub->handle_substitions (type.get_substitution_arguments ());
+  }
+
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
   void visit (TyTy::TupleType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
@@ -319,6 +333,11 @@ public:
   }
 
   void visit (TyTy::ADTType &type) override
+  {
+    args = type.get_substitution_arguments ();
+  }
+
+  void visit (TyTy::ClosureType &type) override
   {
     args = type.get_substitution_arguments ();
   }

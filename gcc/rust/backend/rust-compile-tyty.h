@@ -239,6 +239,8 @@ public:
 
   void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
 
+  void visit (TyTy::ClosureType &) override { gcc_unreachable (); }
+
 private:
   TyTyCompile (::Backend *backend)
     : backend (backend), translated (nullptr),

@@ -61,6 +61,7 @@ enum TypeKind
   PLACEHOLDER,
   PROJECTION,
   DYNAMIC,
+  CLOSURE,
   // there are more to add...
   ERROR
 };
@@ -134,6 +135,9 @@ public:
 
       case TypeKind::DYNAMIC:
 	return "Dynamic";
+
+      case TypeKind::CLOSURE:
+	return "Closure";
 
       case TypeKind::ERROR:
 	return "ERROR";
@@ -1271,6 +1275,73 @@ public:
 private:
   std::vector<TyVar> params;
   TyVar result_type;
+};
+
+class ClosureType : public BaseType, public SubstitutionRef
+{
+public:
+  ClosureType (HirId ref, DefId id, std::vector<TyVar> parameter_types,
+	       TyVar result_type,
+	       std::vector<SubstitutionParamMapping> subst_refs,
+	       std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::CLOSURE, refs),
+      SubstitutionRef (std::move (subst_refs),
+		       SubstitutionArgumentMappings::error ()),
+      parameter_types (std::move (parameter_types)),
+      result_type (std::move (result_type)), id (id)
+  {
+    LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
+    rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
+  }
+
+  ClosureType (HirId ref, HirId ty_ref, DefId id,
+	       std::vector<TyVar> parameter_types, TyVar result_type,
+	       std::vector<SubstitutionParamMapping> subst_refs,
+	       std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::CLOSURE, refs),
+      SubstitutionRef (std::move (subst_refs),
+		       SubstitutionArgumentMappings::error ()),
+      parameter_types (std::move (parameter_types)),
+      result_type (std::move (result_type)), id (id)
+  {
+    LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
+    rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
+  }
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+  std::string get_name () const override final { return as_string (); }
+
+  BaseType *unify (BaseType *other) override;
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
+  BaseType *cast (BaseType *other) override;
+
+  bool is_equal (const BaseType &other) const override;
+
+  BaseType *clone () const final override;
+
+  bool needs_generic_substitutions () const override final
+  {
+    return needs_substitution ();
+  }
+
+  bool supports_substitutions () const override final { return true; }
+
+  bool has_subsititions_defined () const override final
+  {
+    return has_substitutions ();
+  }
+
+  ClosureType *
+  handle_substitions (SubstitutionArgumentMappings mappings) override final;
+
+private:
+  std::vector<TyVar> parameter_types;
+  TyVar result_type;
+  DefId id;
 };
 
 class ArrayType : public BaseType
