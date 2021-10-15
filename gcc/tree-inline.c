@@ -2105,7 +2105,13 @@ copy_bb (copy_body_data *id, basic_block bb,
 	      size_t n;
 
 	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
-		nargs--;
+		{
+		  /* Avoid crashing on invalid IL that doesn't have a
+		     varargs function or that passes not enough arguments.  */
+		  if (nargs == 0)
+		    break;
+		  nargs--;
+		}
 
 	      /* Create the new array of arguments.  */
 	      n = nargs + gimple_call_num_args (call_stmt);
