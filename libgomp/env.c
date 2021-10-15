@@ -546,6 +546,7 @@ parse_one_place (char **envp, bool *negatep, unsigned long *lenp,
   long stride = 1;
   int pass;
   bool any_negate = false;
+  bool has_braces = true;
   *negatep = false;
   while (isspace ((unsigned char) *env))
     ++env;
@@ -557,12 +558,28 @@ parse_one_place (char **envp, bool *negatep, unsigned long *lenp,
 	++env;
     }
   if (*env != '{')
-    return false;
-  ++env;
-  while (isspace ((unsigned char) *env))
-    ++env;
+    {
+      char *end;
+      unsigned long this_num;
+
+      errno = 0;
+      this_num = strtoul (env, &end, 10);
+      if (errno || end == env)
+	return false;
+      env = end - 1;
+      has_braces = false;
+      if (gomp_places_list
+	  && !gomp_affinity_add_cpus (p, this_num, 1, 1, false))
+	return false;
+    }
+  else
+    {
+      ++env;
+      while (isspace ((unsigned char) *env))
+	++env;
+    }
   start = env;
-  for (pass = 0; pass < (any_negate ? 2 : 1); pass++)
+  for (pass = 0; pass < (any_negate ? 2 : has_braces); pass++)
     {
       env = start;
       do
@@ -590,6 +607,8 @@ parse_one_place (char **envp, bool *negatep, unsigned long *lenp,
 	  if (*env == ':')
 	    {
 	      ++env;
+	      if (this_negate)
+		return false;
 	      while (isspace ((unsigned char) *env))
 		++env;
 	      errno = 0;
@@ -612,8 +631,6 @@ parse_one_place (char **envp, bool *negatep, unsigned long *lenp,
 		    ++env;
 		}
 	    }
-	  if (this_negate && this_len != 1)
-	    return false;
 	  if (gomp_places_list && pass == this_negate)
 	    {
 	      if (this_negate)
@@ -640,6 +657,8 @@ parse_one_place (char **envp, bool *negatep, unsigned long *lenp,
   if (*env == ':')
     {
       char *end;
+      if (*negatep)
+	return false;
       ++env;
       while (isspace ((unsigned char) *env))
 	++env;
@@ -663,8 +682,6 @@ parse_one_place (char **envp, bool *negatep, unsigned long *lenp,
 	    ++env;
 	}
     }
-  if (*negatep && len != 1)
-    return false;
   *envp = env;
   *lenp = len;
   *stridep = stride;
