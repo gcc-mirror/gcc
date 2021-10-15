@@ -182,7 +182,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Iterators @tab Y @tab
 @item @code{metadirective} directive @tab N @tab
 @item @code{declare variant} directive
-      @tab P @tab Only C and C++, simd traits not handled correctly
+      @tab P @tab simd traits not handled correctly
 @item @emph{target-offload-var} ICV and @code{OMP_TARGET_OFFLOAD}
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
