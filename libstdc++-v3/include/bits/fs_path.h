@@ -630,7 +630,8 @@ namespace __detail
 	  // Calling _S_convert<char8_t> will return a u8string_view that
 	  // refers to __str and would dangle after this function returns.
 	  // Return a string_type instead, to avoid dangling.
-	  return string_type(_S_convert(std::u8string_view(__str)));
+	  return string_type(_S_convert(__str.data(),
+					__str.data() + __str.size()));
 #endif
 	else
 	  return _S_convert(__str.data(), __str.data() + __str.size());
