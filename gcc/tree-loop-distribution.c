@@ -3425,12 +3425,12 @@ generate_strlen_builtin_using_rawmemchr (loop_p loop, tree reduction_var,
 
 /* Return true if we can count at least as many characters by taking pointer
    difference as we can count via reduction_var without an overflow.  Thus
-   compute 2^n < (2^(m-1) / s) where n = TYPE_PRECISION (reduction_var),
+   compute 2^n < (2^(m-1) / s) where n = TYPE_PRECISION (reduction_var_type),
    m = TYPE_PRECISION (ptrdiff_type_node), and s = size of each character.  */
 static bool
-reduction_var_overflows_first (tree reduction_var, tree load_type)
+reduction_var_overflows_first (tree reduction_var_type, tree load_type)
 {
-  widest_int n2 = wi::lshift (1, TYPE_PRECISION (reduction_var));;
+  widest_int n2 = wi::lshift (1, TYPE_PRECISION (reduction_var_type));;
   widest_int m2 = wi::lshift (1, TYPE_PRECISION (ptrdiff_type_node) - 1);
   widest_int s = wi::to_widest (TYPE_SIZE_UNIT (load_type));
   return wi::ltu_p (n2, wi::udiv_trunc (m2, s));
@@ -3654,6 +3654,7 @@ loop_distribution::transform_reduction_loop (loop_p loop)
       && integer_onep (reduction_iv.step))
     {
       location_t loc = gimple_location (DR_STMT (load_dr));
+      tree reduction_var_type = TREE_TYPE (reduction_var);
       /* While determining the length of a string an overflow might occur.
 	 If an overflow only occurs in the loop implementation and not in the
 	 strlen implementation, then either the overflow is undefined or the
@@ -3680,8 +3681,8 @@ loop_distribution::transform_reduction_loop (loop_p loop)
 	  && TYPE_PRECISION (load_type) == TYPE_PRECISION (char_type_node)
 	  && ((TYPE_PRECISION (sizetype) >= TYPE_PRECISION (ptr_type_node) - 1
 	       && TYPE_PRECISION (ptr_type_node) >= 32)
-	      || (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (reduction_var))
-		  && TYPE_PRECISION (reduction_var) <= TYPE_PRECISION (sizetype)))
+	      || (TYPE_OVERFLOW_UNDEFINED (reduction_var_type)
+		  && TYPE_PRECISION (reduction_var_type) <= TYPE_PRECISION (sizetype)))
 	  && builtin_decl_implicit (BUILT_IN_STRLEN))
 	generate_strlen_builtin (loop, reduction_var, load_iv.base,
 				 reduction_iv.base, loc);
@@ -3689,8 +3690,8 @@ loop_distribution::transform_reduction_loop (loop_p loop)
 	       != CODE_FOR_nothing
 	       && ((TYPE_PRECISION (ptrdiff_type_node) == TYPE_PRECISION (ptr_type_node)
 		    && TYPE_PRECISION (ptrdiff_type_node) >= 32)
-		   || (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (reduction_var))
-		       && reduction_var_overflows_first (reduction_var, load_type))))
+		   || (TYPE_OVERFLOW_UNDEFINED (reduction_var_type)
+		       && reduction_var_overflows_first (reduction_var_type, load_type))))
 	generate_strlen_builtin_using_rawmemchr (loop, reduction_var,
 						 load_iv.base,
 						 load_type,
