@@ -16644,7 +16644,8 @@ package body Sem_Util is
             --  Predicate_Failure aspect, for which we do not construct a
             --  wrapper procedure. The subtype will be replaced by the
             --  expression being tested when the corresponding predicate
-            --  check is expanded.
+            --  check is expanded. It may also appear in the pragma Predicate
+            --  expression during legality checking.
 
             elsif Nkind (P) = N_Aspect_Specification
               and then Nkind (Parent (P)) = N_Subtype_Declaration
@@ -16652,7 +16653,8 @@ package body Sem_Util is
                return True;
 
             elsif Nkind (P) = N_Pragma
-              and then Get_Pragma_Id (P) = Pragma_Predicate_Failure
+              and then Get_Pragma_Id (P) in Pragma_Predicate
+                                          | Pragma_Predicate_Failure
             then
                return True;
             end if;

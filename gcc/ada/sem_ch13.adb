@@ -13144,6 +13144,28 @@ package body Sem_Ch13 is
                   else
                      Check_Aspect_At_Freeze_Point (Ritem);
                   end if;
+
+               --  A pragma Predicate should be checked like one of the
+               --  corresponding aspects, wrt possible misuse of ghost
+               --  entities.
+
+               elsif Nkind (Ritem) = N_Pragma
+                 and then No (Corresponding_Aspect (Ritem))
+                 and then
+                   Get_Pragma_Id (Pragma_Name (Ritem)) = Pragma_Predicate
+               then
+                  --  Retrieve the visibility to components and discriminants
+                  --  in order to properly analyze the pragma.
+
+                  declare
+                     Arg : constant Node_Id :=
+                        Next (First (Pragma_Argument_Associations (Ritem)));
+                  begin
+                     Push_Type (E);
+                     Preanalyze_Spec_Expression
+                       (Expression (Arg), Standard_Boolean);
+                     Pop_Type (E);
+                  end;
                end if;
 
                Next_Rep_Item (Ritem);
