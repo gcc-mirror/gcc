@@ -223,6 +223,46 @@ gomp_affinity_finalize_place_list (bool quiet)
   return true;
 }
 
+/* Find the index of the last level cache.  We assume the index
+   of the last level cache is the same for all logical CPUs.
+   Also, if there are multiple caches with the same highest level,
+   assume they have the same shared_cpu_list and pick the last one
+   from them (highest index number).  */
+
+static int
+gomp_affinity_find_last_cache_level (char *name, size_t prefix_len,
+				     unsigned long cpu)
+{
+  int ret = -1;
+  unsigned long maxval = 0;
+  char *line = NULL;
+  size_t linelen = 0;
+  FILE *f;
+
+  for (int l = 0; l < 128; l++)
+    {
+      sprintf (name + prefix_len, "%lu/cache/index%u/level", cpu, l);
+      f = fopen (name, "r");
+      if (f == NULL)
+	break;
+      if (getline (&line, &linelen, f) > 0)
+	{
+	  unsigned long val;
+	  char *p;
+	  errno = 0;
+	  val = strtoul (line, &p, 10);
+	  if (!errno && val >= maxval)
+	    {
+	      ret = l;
+	      maxval = val;
+	    }
+	}
+      fclose (f);
+    }
+  free (line);
+  return ret;
+}
+
 static void
 gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
 			    cpu_set_t *copy, char *name, bool quiet)
@@ -232,12 +272,29 @@ gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
   char *line = NULL;
   size_t linelen = 0;
   unsigned long i, max = 8 * gomp_cpuset_size;
+  int init = -1;
 
   for (i = 0; i < max && gomp_places_list_len < count; i++)
     if (CPU_ISSET_S (i, gomp_cpuset_size, copy))
       {
-	sprintf (name + prefix_len, "%lu/topology/%s_siblings_list",
-		 i, this_level == 3 ? "core" : "thread");
+	if (level == 4)
+	  {
+	    if (init == -1)
+	      {
+		init = gomp_affinity_find_last_cache_level (name, prefix_len,
+							    i);
+		if (init == -1)
+		  {
+		    CPU_CLR_S (i, gomp_cpuset_size, copy);
+		    continue;
+		  }
+		sprintf (name + prefix_len,
+			 "%lu/cache/index%u/shared_cpu_list", i, init);
+	      }
+	  }
+	else
+	  sprintf (name + prefix_len, "%lu/topology/%s_siblings_list",
+		   i, this_level == 3 ? "core" : "thread");
 	f = fopen (name, "r");
 	if (f == NULL)
 	  {
@@ -302,7 +359,7 @@ bool
 gomp_affinity_init_level (int level, unsigned long count, bool quiet)
 {
   char name[sizeof ("/sys/devices/system/cpu/cpu/topology/"
-		    "thread_siblings_list") + 3 * sizeof (unsigned long)];
+		    "thread_siblings_list") + 6 * sizeof (unsigned long)];
   cpu_set_t *copy;
 
   if (gomp_cpusetp)
@@ -320,7 +377,8 @@ gomp_affinity_init_level (int level, unsigned long count, bool quiet)
   copy = gomp_alloca (gomp_cpuset_size);
   strcpy (name, "/sys/devices/system/cpu/cpu");
   memcpy (copy, gomp_cpusetp, gomp_cpuset_size);
-  gomp_affinity_init_level_1 (level, 3, count, copy, name, quiet);
+  gomp_affinity_init_level_1 (level, level > 3 ? level : 3, count, copy, name,
+			      quiet);
   if (gomp_places_list_len == 0)
     {
       if (!quiet)
