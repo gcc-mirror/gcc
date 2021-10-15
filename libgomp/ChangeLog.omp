@@ -3,6 +3,16 @@
 	Backported from master:
 	2021-10-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c/affinity-1.c (struct places): Change name field
+	type from char [50] to const char *.
+	(places_array): Add a testcase for simplified syntax place followed
+	by length or length and stride.
+
+2021-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
 	* env.c (parse_one_place): Handle non-negative-number the same
 	as { non-negative-number }.  Reject even !number:1 and
 	!number:1:stride or !place:1 or !place:1:stride instead of just
