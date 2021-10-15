@@ -515,6 +515,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __n;
     }
 
+#if __cplusplus > 202002L
+  template<typename _CharT, typename _Traits, typename _Alloc>
+  template<typename _Operation>
+    constexpr void
+    basic_string<_CharT, _Traits, _Alloc>::
+    resize_and_overwrite(size_type __n, _Operation __op)
+    {
+      const size_type __capacity = capacity();
+      _CharT* __p;
+      if (__n > __capacity)
+	{
+	  __p = _M_create(__n, __capacity);
+	  this->_S_copy(__p, _M_data(), length()); // exclude trailing null
+	  _M_dispose();
+	  _M_data(__p);
+	  _M_capacity(__n);
+	}
+      else
+	__p = _M_data();
+      struct _Terminator {
+	~_Terminator() { _M_this->_M_set_length(_M_r); }
+	basic_string* _M_this;
+	size_type _M_r;
+      };
+      _Terminator __term{this};
+      const size_type __n2 [[maybe_unused]] = __n;
+      __term._M_r = std::move(__op)(__p, __n);
+      _GLIBCXX_DEBUG_ASSERT(__term._M_r >= 0 && __term._M_r <= __n2);
+    }
+#endif // C++23
+
 #endif  // _GLIBCXX_USE_CXX11_ABI
    
   template<typename _CharT, typename _Traits, typename _Alloc>

@@ -971,6 +971,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #pragma GCC diagnostic pop
 #endif
 
+#if __cplusplus > 202002L
+#define __cpp_lib_string_resize_and_overwrite 202110L
+      template<typename _Operation>
+	constexpr void
+	resize_and_overwrite(size_type __n, _Operation __op);
+#endif
+
       /**
        *  Returns the total number of characters that the %string can hold
        *  before needing to allocate more memory.

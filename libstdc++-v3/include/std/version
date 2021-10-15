@@ -294,6 +294,9 @@
 #define __cpp_lib_is_scoped_enum 202011L
 #define __cpp_lib_move_only_function 202110L
 #define __cpp_lib_string_contains 202011L
+#if _GLIBCXX_USE_CXX11_ABI // Only supported with cxx11-abi
+# define __cpp_lib_string_resize_and_overwrite 202110L
+#endif
 #define __cpp_lib_to_underlying 202102L
 #endif // C++2b
 #endif // C++20
