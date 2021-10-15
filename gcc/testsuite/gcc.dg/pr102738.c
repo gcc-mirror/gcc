@@ -1,5 +1,6 @@
 /* PR tree-optimization/102738 */
 /* { dg-options "-O2 -fdump-tree-evrp" } */
+/* { dg-do compile { target int128 } } */
 
 /* Remove arithmetic shift right when the LHS is known to be 0 or -1.  */
 
