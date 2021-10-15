@@ -420,6 +420,11 @@ public:
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
   const PathIdentSegment &get_ident_segment () const { return ident_segment; }
+
+  bool is_generic_segment () const
+  {
+    return get_type () == SegmentType::GENERIC;
+  }
 };
 
 // Segment used in type path with generic args

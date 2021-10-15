@@ -188,35 +188,6 @@ class ResolveRelativeTypePath : public ResolveTypeToCanonicalPath
   using ResolveTypeToCanonicalPath::visit;
 
 public:
-  static NodeId go (AST::TypePath &path, NodeId parent,
-		    bool canonicalize_type_with_generics)
-  {
-    CanonicalPath canonical_path
-      = ResolveTypeToCanonicalPath::resolve (path,
-					     canonicalize_type_with_generics,
-					     true);
-    if (canonical_path.is_empty ())
-      {
-	rust_error_at (path.get_locus (),
-		       "Failed to resolve canonical path for TypePath");
-	return UNKNOWN_NODEID;
-      }
-
-    auto resolver = Resolver::get ();
-    NodeId resolved_node = UNKNOWN_NODEID;
-
-    // We may need to change how names are resolved, like described in :
-    // https://github.com/rust-lang/rust/blob/1f94abcda6884893d4723304102089198caa0839/compiler/rustc_resolve/src/lib.rs#L1722
-    if (!resolver->get_type_scope ().lookup (canonical_path, &resolved_node))
-      {
-	rust_error_at (path.get_locus (), "failed to resolve TypePath: %s",
-		       canonical_path.get ().c_str ());
-	return UNKNOWN_NODEID;
-      }
-
-    return resolved_node;
-  }
-
   static NodeId go (AST::QualifiedPathInType &path, NodeId parent,
 		    bool canonicalize_type_with_generics)
   {
@@ -316,11 +287,58 @@ public:
 
   void visit (AST::TypePath &path) override
   {
-    resolved_node
-      = ResolveRelativeTypePath::go (path, parent,
-				     canonicalize_type_with_generics);
-    ok = resolved_node != UNKNOWN_NODEID;
-    if (ok)
+    auto canonical_path
+      = ResolveTypeToCanonicalPath::resolve (path,
+					     canonicalize_type_with_generics,
+					     true);
+    if (canonical_path.is_empty ())
+      {
+	rust_error_at (path.get_locus (),
+		       "Failed to resolve canonical path for TypePath");
+	return;
+      }
+
+    ok = !canonical_path.is_empty ();
+
+    // lets try and resolve in one go else leave it up to the type resolver to
+    // figure outer
+
+    if (resolver->get_type_scope ().lookup (canonical_path, &resolved_node))
+      {
+	resolver->insert_resolved_type (path.get_node_id (), resolved_node);
+	resolver->insert_new_definition (path.get_node_id (),
+					 Definition{path.get_node_id (),
+						    parent});
+	return;
+      }
+
+    // lets resolve as many segments as we can and leave it up to the type
+    // resolver otherwise
+    size_t nprocessed = 0;
+    canonical_path.iterate ([&] (const CanonicalPath &seg) -> bool {
+      resolved_node = UNKNOWN_NODEID;
+
+      if (!resolver->get_type_scope ().lookup (seg, &resolved_node))
+	return false;
+
+      resolver->insert_resolved_type (seg.get_node_id (), resolved_node);
+      resolver->insert_new_definition (seg.get_node_id (),
+				       Definition{path.get_node_id (), parent});
+      nprocessed++;
+      return true;
+    });
+
+    if (nprocessed == 0)
+      {
+	rust_error_at (path.get_locus (), "failed to resolve TypePath: %s",
+		       path.as_string ().c_str ());
+	return;
+      }
+
+    // its ok if this fails since the type resolver sometimes will need to
+    // investigate the bounds of a type for the associated type for example see:
+    // https://github.com/Rust-GCC/gccrs/issues/746
+    if (nprocessed == canonical_path.size ())
       {
 	resolver->insert_resolved_type (path.get_node_id (), resolved_node);
 	resolver->insert_new_definition (path.get_node_id (),

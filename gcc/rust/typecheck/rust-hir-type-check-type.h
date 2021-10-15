@@ -185,8 +185,11 @@ private:
       }
   }
 
-  void resolve_segments (
-    NodeId root_resolved_node_id,
+  TyTy::BaseType *resolve_root_path (HIR::TypePath &path, size_t *offset,
+				     NodeId *root_resolved_node_id);
+
+  TyTy::BaseType *resolve_segments (
+    NodeId root_resolved_node_id, HirId expr_id,
     std::vector<std::unique_ptr<HIR::TypePathSegment>> &segments, size_t offset,
     TyTy::BaseType *tyseg, const Analysis::NodeMapping &expr_mappings,
     Location expr_locus);

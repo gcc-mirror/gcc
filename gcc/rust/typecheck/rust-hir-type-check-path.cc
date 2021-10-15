@@ -41,6 +41,7 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 
       resolve_segments (root_resolved_node_id, expr.get_segments (), 0, root,
 			expr.get_mappings (), expr.get_locus ());
+      return;
     }
 
   // Resolve the trait now

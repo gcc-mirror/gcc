@@ -591,7 +591,7 @@ public:
 
     // Self is an implicit TypeParam so lets mark it as such
     resolver->get_type_scope ().append_reference_for_def (
-      Self.get_id (), implicit_self->get_node_id ());
+      Self.get_node_id (), implicit_self->get_node_id ());
 
     if (trait.has_type_param_bounds ())
       {
