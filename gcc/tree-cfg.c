@@ -9666,6 +9666,38 @@ make_pass_warn_unused_result (gcc::context *ctxt)
   return new pass_warn_unused_result (ctxt);
 }
 
+/* Maybe Remove stores to variables we marked write-only.
+   Return true if a store was removed. */
+static bool
+maybe_remove_writeonly_store (gimple_stmt_iterator &gsi, gimple *stmt)
+{
+  /* Keep access when store has side effect, i.e. in case when source
+     is volatile.  */  
+  if (!gimple_store_p (stmt)
+      || gimple_has_side_effects (stmt)
+      || optimize_debug)
+    return false;
+
+  tree lhs = get_base_address (gimple_get_lhs (stmt));
+
+  if (!VAR_P (lhs)
+      || (!TREE_STATIC (lhs) && !DECL_EXTERNAL (lhs))
+      || !varpool_node::get (lhs)->writeonly)
+    return false;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Removing statement, writes"
+	       " to write only var:\n");
+      print_gimple_stmt (dump_file, stmt, 0,
+			 TDF_VOPS|TDF_MEMSYMS);
+    }
+  unlink_stmt_vdef (stmt);
+  gsi_remove (&gsi, true);
+  release_defs (stmt);
+  return true;
+}
+
 /* IPA passes, compilation of earlier functions or inlining
    might have changed some properties, such as marked functions nothrow,
    pure, const or noreturn.
@@ -9721,33 +9753,13 @@ execute_fixup_cfg (void)
 		todo |= TODO_cleanup_cfg;
 	     }
 
-	  /* Remove stores to variables we marked write-only.
-	     Keep access when store has side effect, i.e. in case when source
-	     is volatile.  */
-	  if (gimple_store_p (stmt)
-	      && !gimple_has_side_effects (stmt)
-	      && !optimize_debug)
+	  /* Remove stores to variables we marked write-only. */
+	  if (maybe_remove_writeonly_store (gsi, stmt))
 	    {
-	      tree lhs = get_base_address (gimple_get_lhs (stmt));
-
-	      if (VAR_P (lhs)
-		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
-		  && varpool_node::get (lhs)->writeonly)
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file, "Removing statement, writes"
-		               " to write only var:\n");
-		      print_gimple_stmt (dump_file, stmt, 0,
-					 TDF_VOPS|TDF_MEMSYMS);
-		    }
-		  unlink_stmt_vdef (stmt);
-		  gsi_remove (&gsi, true);
-		  release_defs (stmt);
-	          todo |= TODO_update_ssa | TODO_cleanup_cfg;
-	          continue;
-		}
+	      todo |= TODO_update_ssa | TODO_cleanup_cfg;
+	      continue;
 	    }
+
 	  /* For calls we can simply remove LHS when it is known
 	     to be write-only.  */
 	  if (is_gimple_call (stmt)
