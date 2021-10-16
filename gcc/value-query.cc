@@ -296,7 +296,7 @@ get_ssa_name_ptr_info_nonnull (const_tree name)
     return false;
   /* TODO Now pt->null is conservatively set to true in PTA
      analysis. vrp is the only pass (including ipa-vrp)
-     that clears pt.null via set_ptr_nonull when it knows
+     that clears pt.null via set_ptr_nonnull when it knows
      for sure. PTA will preserves the pt.null value set by VRP.
 
      When PTA analysis is improved, pt.anything, pt.nonlocal
