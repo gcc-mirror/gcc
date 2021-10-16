@@ -1,3 +1,72 @@
+2021-10-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51851
+	PR c++/101402
+	PR c++/102033
+	PR c++/102034
+	PR c++/102039
+	PR c++/102044
+	* g++.dg/template/fnspec2.C: New test.
+	* g++.dg/template/parm-cv1.C: New test.
+	* g++.dg/template/parm-cv2.C: New test.
+	* g++.dg/template/parm-cv3.C: New test.
+
+2021-10-15  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102685
+	* gfortran.dg/derived_constructor_char_1.f90: Fix invalid code.
+	* gfortran.dg/pr70931.f90: Likewise.
+	* gfortran.dg/transfer_simplify_2.f90: Likewise.
+	* gfortran.dg/pr102685.f90: New test.
+
+2021-10-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/pr102736.c: Make sign explicit.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	* lib/prune.exp: Prune STABS obsoletion message.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/102763
+	* gcc.dg/gimplefe-error-12.c: New testcase.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102762
+	* gcc.dg/torture/pr102762.c: New testcase.
+
+2021-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-builtin_shuffle-1.c: New test.
+	* gcc.target/i386/avx512fp16-pr101846.c: Ditto.
+	* gcc.target/i386/avx512fp16-pr94680.c: Ditto.
+
+2021-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-v4hf-concat.c: New test.
+
+2021-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-vfcmaddcph-1a.c: Add scan for
+	vblendmps.
+	* gcc.target/i386/avx512fp16-vfmaddcph-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16vl-vfcmaddcph-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16vl-vfmaddcph-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16-vfmaddcsh-1a.c: Add -mno-avx512vl.
+	* gcc.target/i386/avx512fp16-vfcmaddcsh-1a.c: Likewise.
+
+2021-10-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/vla22.C: Don't expect a narrowing error.
+	* g++.dg/cpp0x/constexpr-inst1.C: New test.
+
+2021-10-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr102738.c: Add target int128.
+
 2021-10-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/format/c11-dfp-printf-1.c,

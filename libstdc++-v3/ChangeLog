@@ -1,3 +1,80 @@
+2021-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::_S_convert(T)): Avoid recursive
+	call to function with deduced return type.
+
+2021-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (__cpp_lib_string_resize_and_overwrite):
+	Define for C++23.
+	(basic_string::resize_and_overwrite): Declare.
+	* include/bits/basic_string.tcc (basic_string::resize_and_overwrite):
+	Define.
+	* include/std/version (__cpp_lib_resize_and_overwrite): Define
+	for C++23.
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite.cc:
+	New test.
+
+2021-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101263
+	* include/std/ranges (__cached): New wrapper struct.
+	(__non_propagating_cache): Use __cached for contained value.
+	(__non_propagating_cache::_M_emplace_deref): Add constexpr. Use
+	std::construct_at instead of placement new.
+	* testsuite/std/ranges/adaptors/join.cc: Check constexpr works.
+
+2021-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__cpp_lib_variant): Update value for
+	C++20.
+	(__variant_cast, __variant_construct): Add constexpr for C++20.
+	(__variant_construct_single, __construct_by_index) Likewise. Use
+	std::_Construct instead of placement new.
+	(_Uninitialized<T, false>) [__cplusplus >= 202002]: Replace
+	buffer with a union and define a destructor.
+	(_Variadic_union) [__cplusplus >= 202002]: Add a specialization
+	for non-trivial destruction.
+	(_Variant_storage::__index_of): New helper variable template.
+	(_Variant_storage::~_Variant_storage()): Add constexpr.
+	(_Variant_storage::_M_reset()): Likewise.
+	(_Copy_ctor_base, _Move_ctor_base): Likewise.
+	(_Copy_assign_base, _Move_assign_base): Likewise.
+	(variant, swap): Likewise.
+	* include/std/version (__cpp_lib_variant): Update value for
+	C++20.
+	* testsuite/20_util/optional/version.cc: Check for exact value
+	in C++17.
+	* testsuite/20_util/variant/87619.cc: Increase timeout for
+	C++20 mode.
+	* testsuite/20_util/variant/constexpr.cc: New test.
+	* testsuite/20_util/variant/version.cc: New test.
+
+2021-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__detail::__variant::__get_storage):
+	Remove unused function.
+	(__variant_construct_by_index): Set index after construction is
+	complete. Rename to ...
+	(__detail::__variant::__construct_by_index): ... this.
+	(variant): Use new name for __variant_construct_by_index friend
+	declaration. Remove __get_storage friend declaration.
+	(variant::emplace): Use new name and remove try-blocks.
+
+2021-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_Variant_storage::_M_storage()): Remove.
+	(__detail::__variant::__get_storage): Remove.
+	(variant): Remove friend declaration of __get_storage.
+
+2021-10-15  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/integer_comparisons/greater_equal_neg.cc:
+	* testsuite/20_util/integer_comparisons/greater_neg.cc:
+	* testsuite/20_util/integer_comparisons/less_equal_neg.cc:
+	Adjust expected message.
+	* testsuite/lib/prune.exp: Prune 'in constexpr expansion'.
+
 2021-10-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (__variant::__get(in_place_index_t<N>, U&&)):

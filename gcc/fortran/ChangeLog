@@ -1,3 +1,12 @@
+2021-10-15  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102685
+	* decl.c (match_clist_expr): Set rank/shape of clist initializer
+	to match LHS.
+	* resolve.c (resolve_structure_cons): In a structure constructor,
+	compare shapes of array components against declared shape.
+
 2021-10-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102717

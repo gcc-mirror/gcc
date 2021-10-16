@@ -1,3 +1,116 @@
+2021-10-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Update 'r' handling to
+	skip gomp and itm when r or nodefaultlibs is given.
+	(DSYMUTIL_SPEC): Do not call dsymutil for '-r' link lines.
+	Update ordering of exclusions, remove duplicate 'v' addition
+	(collect2 will add this from the main command line).
+
+2021-10-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (darwin_driver_init): Revise comments, handle
+	filelist and framework options in specs instead of code.
+	* config/darwin.h (SUBTARGET_DRIVER_SELF_SPECS): Update to handle link
+	specs that are really driver ones.
+	(DARWIN_CC1_SPEC): Likewise.
+	(CPP_SPEC): Likewise.
+	(SYSROOT_SPEC): Append space.
+	(LINK_SYSROOT_SPEC): Remove most driver link specs.
+	(STANDARD_STARTFILE_PREFIX_2): Update link-related specs.
+	(STARTFILE_SPEC): Likewise.
+	(ASM_MMACOSX_VERSION_MIN_SPEC): Fix line wrap.
+	(ASM_SPEC): Update driver-related specs.
+	(ASM_FINAL_SPEC): Likewise.
+	* config/darwin.opt: Remove now unused option aliases.
+	* config/i386/darwin.h (EXTRA_ASM_OPTS): Ensure space after opt.
+	(ASM_SPEC): Update driver-related specs.
+
+2021-10-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.c (ix86_hardreg_mov_ok): For vector modes,
+	allow standard_sse_constant_p immediate constants.
+
+2021-10-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc: Add tm-dwarf2.h to tm_d-file.
+
+2021-10-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.h (gimple_range_ssa_p): Don't process names
+	that occur in abnormal phis.
+	* gimple-range.cc (gimple_ranger::range_on_edge): Return false for
+	abnormal and EH edges.
+	* gimple-ssa-evrp.c (rvrp_folder::value_of_expr): Ditto.
+	(rvrp_folder::value_on_edge): Ditto.
+	(rvrp_folder::value_of_stmt): Ditto.
+	(hybrid_folder::value_of_expr): Ditto for ranger queries.
+	(hybrid_folder::value_on_edge): Ditto.
+	(hybrid_folder::value_of_stmt): Ditto.
+	* value-query.cc (gimple_range_global): Always return a range if
+	the type is supported.
+
+2021-10-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md: Consistently use "rG" constraint for copy
+	instruction in move patterns.
+
+2021-10-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (S_FIJI): Set unconditionally.
+	(S_900): Likewise.
+	(S_906): Likewise.
+	* config/gcn/gcn.c: Hard code SRAM ECC settings for old architectures.
+	* config/gcn/mkoffload.c (ELFABIVERSION_AMDGPU_HSA): Rename to ...
+	(ELFABIVERSION_AMDGPU_HSA_V3): ... this.
+	(ELFABIVERSION_AMDGPU_HSA_V4): New.
+	(SET_SRAM_ECC_UNSUPPORTED): New.
+	(copy_early_debug_info): Create elf flags to match the other objects.
+	(main): Just let the attribute flags pass through.
+
+2021-10-15  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* tree-loop-distribution.c (reduction_var_overflows_first):
+	Pass the type of reduction_var as first argument as it is also
+	done for the load type.
+	(loop_distribution::transform_reduction_loop): Add missing
+	TREE_TYPE while determining precission of reduction_var.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	* defaults.h (PREFERRED_DEBUGGING_TYPE): Choose DWARF2_DEBUG
+	when not set.
+	* toplev.c (process_options): Warn when STABS debugging is
+	enabled but not the preferred format.
+	* config/pa/som.h (PREFERRED_DEBUGGING_TYPE): Define to
+	DBX_DEBUG.
+	* config/pdp11/pdp11.h (PREFERRED_DEBUGGING_TYPE): Likewise.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102762
+	* tree-inline.c (copy_bb): Avoid underflowing nargs.
+
+2021-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-expand.c (ix86_expand_vec_perm): Convert
+	HFmode input operand to HImode.
+	(ix86_vectorize_vec_perm_const): Likewise.
+	* config/i386/sse.md (*avx512bw_permvar_truncv16siv16hi_1_hf):
+	New define_insn.
+	(*avx512f_permvar_truncv8siv8hi_1_hf):
+	Likewise.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102682
+	* expmed.c (store_bit_field_1): Ensure a LHS subreg would
+	not create a paradoxical subreg.
+
+2021-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-expand.c (ix86_expand_vector_init):
+	For half_vector concat for HFmode, handle them like HImode.
+
 2021-10-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-ssa-threadbackward.c (class back_threader): Add m_resolve.
