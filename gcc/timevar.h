@@ -247,13 +247,53 @@ class auto_timevar
       m_timer->pop (m_tv);
   }
 
- private:
+  // Disallow copies.
+  auto_timevar (const auto_timevar &) = delete;
 
-  // Private to disallow copies.
-  auto_timevar (const auto_timevar &);
+ private:
+  timer *m_timer;
+  timevar_id_t m_tv;
+};
+
+// As above, but use cond_start/stop.
+class auto_cond_timevar
+{
+ public:
+  auto_cond_timevar (timer *t, timevar_id_t tv)
+    : m_timer (t),
+      m_tv (tv)
+  {
+    start ();
+  }
+
+  explicit auto_cond_timevar (timevar_id_t tv)
+    : m_timer (g_timer)
+    , m_tv (tv)
+  {
+    start ();
+  }
+
+  ~auto_cond_timevar ()
+  {
+    if (m_timer && !already_running)
+      m_timer->cond_stop (m_tv);
+  }
+
+  // Disallow copies.
+  auto_cond_timevar (const auto_cond_timevar &) = delete;
+
+ private:
+  void start()
+  {
+    if (m_timer)
+      already_running = m_timer->cond_start (m_tv);
+    else
+      already_running = false;
+  }
 
   timer *m_timer;
   timevar_id_t m_tv;
+  bool already_running;
 };
 
 extern void print_time (const char *, long);

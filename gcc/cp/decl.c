@@ -598,7 +598,7 @@ poplevel (int keep, int reverse, int functionbody)
   tree decl;
   scope_kind kind;
 
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
  restart:
 
   block = NULL_TREE;
@@ -830,7 +830,6 @@ poplevel (int keep, int reverse, int functionbody)
   if (kind == sk_cleanup)
     goto restart;
 
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return block;
 }
 
@@ -909,7 +908,7 @@ static GTY((deletable)) vec<tree, va_gc> *local_entities;
 void
 determine_local_discriminator (tree decl)
 {
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
   retrofit_lang_decl (decl);
   tree ctx = DECL_CONTEXT (decl);
   tree name = (TREE_CODE (decl) == TYPE_DECL
@@ -944,8 +943,6 @@ determine_local_discriminator (tree decl)
       local_entities->quick_push (decl);
       local_entities->quick_push (name);
     }
-
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
 
@@ -3284,6 +3281,8 @@ named_label_hash::equal (const value_type entry, compare_type name)
 static named_label_entry *
 lookup_label_1 (tree id, bool making_local_p)
 {
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
+
   /* You can't use labels at global scope.  */
   if (current_function_decl == NULL_TREE)
     {
@@ -3346,18 +3345,14 @@ lookup_label_1 (tree id, bool making_local_p)
 tree
 lookup_label (tree id)
 {
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   named_label_entry *ent = lookup_label_1 (id, false);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ent ? ent->label_decl : NULL_TREE;
 }
 
 tree
 declare_local_label (tree id)
 {
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   named_label_entry *ent = lookup_label_1 (id, true);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ent ? ent->label_decl : NULL_TREE;
 }
 
@@ -3688,9 +3683,11 @@ check_omp_return (void)
 /* Define a label, specifying the location in the source file.
    Return the LABEL_DECL node for the label.  */
 
-static tree
-define_label_1 (location_t location, tree name)
+tree
+define_label (location_t location, tree name)
 {
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
+
   /* After labels, make any new cleanups in the function go into their
      own new (temporary) binding contour.  */
   for (cp_binding_level *p = current_binding_level;
@@ -3723,18 +3720,6 @@ define_label_1 (location_t location, tree name)
 
   return decl;
 }
-
-/* Wrapper for define_label_1.  */
-
-tree
-define_label (location_t location, tree name)
-{
-  bool running = timevar_cond_start (TV_NAME_LOOKUP);
-  tree ret = define_label_1 (location, name);
-  timevar_cond_stop (TV_NAME_LOOKUP, running);
-  return ret;
-}
-
 
 struct cp_switch
 {
@@ -15499,12 +15484,14 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
    TEMPLATE_HEADER_P is true when this declaration is preceded by
    a set of template parameters.  */
 
-static tree
-xref_tag_1 (enum tag_types tag_code, tree name,
-            TAG_how how, bool template_header_p)
+tree
+xref_tag (enum tag_types tag_code, tree name,
+	  TAG_how how, bool template_header_p)
 {
   enum tree_code code;
   tree context = NULL_TREE;
+
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
 
   gcc_assert (identifier_p (name));
 
@@ -15652,18 +15639,6 @@ xref_tag_1 (enum tag_types tag_code, tree name,
     }
 
   return t;
-}
-
-/* Wrapper for xref_tag_1.  */
-
-tree
-xref_tag (enum tag_types tag_code, tree name,
-	  TAG_how how, bool template_header_p)
-{
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  tree ret = xref_tag_1 (tag_code, name, how, template_header_p);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
 }
 
 /* Create the binfo hierarchy for REF with (possibly NULL) base list
