@@ -7541,17 +7541,18 @@ compute_points_to_sets (void)
 	      determine_global_memory_access (stmt, NULL,
 					      &reads_global_memory,
 					      &uses_global_memory);
-	      if (!uses_global_memory)
-		;
-	      else if ((vi = lookup_call_use_vi (stmt)) != NULL)
+	      if ((vi = lookup_call_use_vi (stmt)) != NULL)
 		{
 		  *pt = find_what_var_points_to (cfun->decl, vi);
 		  /* Escaped (and thus nonlocal) variables are always
 		     implicitly used by calls.  */
 		  /* ???  ESCAPED can be empty even though NONLOCAL
 		     always escaped.  */
-		  pt->nonlocal = uses_global_memory;
-		  pt->escaped = uses_global_memory;
+		  if (uses_global_memory)
+		    {
+		      pt->nonlocal = uses_global_memory;
+		      pt->escaped = uses_global_memory;
+		    }
 		}
 	      else if (uses_global_memory)
 		{
@@ -7572,17 +7573,18 @@ compute_points_to_sets (void)
 	      determine_global_memory_access (stmt, &writes_global_memory,
 					      NULL, NULL);
 
-	      if (!writes_global_memory)
-		;
-	      else if ((vi = lookup_call_clobber_vi (stmt)) != NULL)
+	      if ((vi = lookup_call_clobber_vi (stmt)) != NULL)
 		{
 		  *pt = find_what_var_points_to (cfun->decl, vi);
 		  /* Escaped (and thus nonlocal) variables are always
 		     implicitly clobbered by calls.  */
 		  /* ???  ESCAPED can be empty even though NONLOCAL
 		     always escaped.  */
-		  pt->nonlocal = writes_global_memory;
-		  pt->escaped = writes_global_memory;
+		  if (writes_global_memory)
+		    {
+		      pt->nonlocal = writes_global_memory;
+		      pt->escaped = writes_global_memory;
+		    }
 		}
 	      else if (writes_global_memory)
 		{
