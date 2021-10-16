@@ -9669,10 +9669,7 @@ make_pass_warn_unused_result (gcc::context *ctxt)
 /* IPA passes, compilation of earlier functions or inlining
    might have changed some properties, such as marked functions nothrow,
    pure, const or noreturn.
-   Remove redundant edges and basic blocks, and create new ones if necessary.
-
-   This pass can't be executed as stand alone pass from pass manager, because
-   in between inlining and this fixup the verify_flow_info would fail.  */
+   Remove redundant edges and basic blocks, and create new ones if necessary. */
 
 unsigned int
 execute_fixup_cfg (void)
