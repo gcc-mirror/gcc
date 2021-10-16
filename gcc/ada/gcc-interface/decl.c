@@ -4490,7 +4490,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* Likewise for the RM size, if any.  */
       if (!Known_RM_Size (gnat_entity) && TYPE_SIZE (gnu_type))
 	Set_RM_Size (gnat_entity,
-		     No_Uint_To_0 (annotate_value (rm_size (gnu_type))));
+		     annotate_value (rm_size (gnu_type)));
 
       /* If we are at global level, GCC applied variable_size to the size but
 	 this has done nothing.  So, if it's not constant or self-referential,
