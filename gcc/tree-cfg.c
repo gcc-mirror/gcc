@@ -9737,6 +9737,13 @@ execute_fixup_cfg (void)
 		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
 		  && varpool_node::get (lhs)->writeonly)
 		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Removing statement, writes"
+		               " to write only var:\n");
+		      print_gimple_stmt (dump_file, stmt, 0,
+					 TDF_VOPS|TDF_MEMSYMS);
+		    }
 		  unlink_stmt_vdef (stmt);
 		  gsi_remove (&gsi, true);
 		  release_defs (stmt);
