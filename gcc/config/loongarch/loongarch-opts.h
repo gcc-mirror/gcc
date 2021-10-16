@@ -79,11 +79,6 @@ extern const char* loongarch_abi_float_strings[];
 #define DEFAULT_ABI_FLOAT M_OPTION_NOT_SEEN
 #endif
 
-/* Default-default values for ISA extensions */
-#ifndef DEFAULT_EXT_fix_lns3_llsc
-#define DEFAULT_EXT_fix_lns3_llsc M_OPTION_NOT_SEEN
-#endif
-
 #ifndef IN_LIBGCC2
 /* Handler for "-m" option combinations,
    shared by the driver and the compiler proper.
@@ -91,8 +86,7 @@ extern const char* loongarch_abi_float_strings[];
 void
 loongarch_handle_m_option_combinations (
   int* cpu_arch, int* cpu_tune, int* isa_int, int* isa_float,
-  int* abi_int, int* abi_float, int* native_cpu_type,
-  int* ext_fix_lns3_llsc);
+  int* abi_int, int* abi_float, int* native_cpu_type);
 #endif
 
 
@@ -131,7 +125,5 @@ loongarch_handle_m_option_combinations (
 #define TARGET_TUNE_NATIVE          (loongarch_cpu_tune == CPU_NATIVE)
 #define TARGET_TUNE_LOONGARCH64     (loongarch_cpu_tune == CPU_LOONGARCH64)
 #define TARGET_TUNE_GS464V          (loongarch_cpu_tune == CPU_GS464V)
-
-#define TARGET_FIX_LOONGSON3_LLSC   (loongarch_ext_fix_lns3_llsc)
 
 #endif /* LOONGARCH_OPTS_H */

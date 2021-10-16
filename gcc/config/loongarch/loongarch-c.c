@@ -96,9 +96,6 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   if (TARGET_SINGLE_FLOAT)
     builtin_define ("__loongarch_single_float");
 
-  if (TARGET_FIX_LOONGSON3_LLSC)
-    builtin_define ("__fix_loongson3_llsc");
-
   /* Macros dependent on the C dialect.  */
   if (preprocessing_asm_p ())
     {

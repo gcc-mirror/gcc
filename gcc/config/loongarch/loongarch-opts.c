@@ -54,8 +54,7 @@ const char* loongarch_abi_float_strings[] = {
 void
 loongarch_handle_m_option_combinations (
   int* cpu_arch, int* cpu_tune, int* isa_int, int* isa_float,
-  int* abi_int, int* abi_float, int* native_cpu_type,
-  int* ext_fix_lns3_llsc)
+  int* abi_int, int* abi_float, int* native_cpu_type)
 {
   /* Rules for handling machine-specific options:
 
@@ -133,23 +132,7 @@ loongarch_handle_m_option_combinations (
     *native_cpu_type = *cpu_arch;
 #endif
 
-
-  /* 2. Compute ISA Extensions */
-
-#define SET_EXT_FLAG(name)                                   \
-  if (ext_##name != NULL)                                    \
-  if (LARCH_OPT_ABSENT (*ext_##name))                        \
-    {                                                        \
-      if (!LARCH_OPT_ABSENT ( DEFAULT_EXT_##name ))          \
-	*ext_##name = DEFAULT_EXT_##name ;                   \
-      else                                                   \
-	*ext_##name                                          \
-	  = loongarch_cpu_default_config[*cpu_arch].ext.name ; \
-    }
-
-  SET_EXT_FLAG(fix_lns3_llsc)
-
-  /* 3. Compute integer ISA */
+  /* 2. Compute integer ISA */
   int int_isa_was_absent = 0;
   if (LARCH_OPT_ABSENT(*isa_int))
     {
@@ -182,7 +165,7 @@ loongarch_handle_m_option_combinations (
 	*isa_int = loongarch_cpu_default_config[*cpu_arch].isa_int;
     }
 
-  /* 4. Compute integer ABI */
+  /* 3. Compute integer ABI */
   if (LARCH_OPT_ABSENT(*abi_int))
     {
       /* Try inferring int abi from -march first
@@ -217,7 +200,7 @@ loongarch_handle_m_option_combinations (
 	  }
     }
 
-  /* 5. Check integer ABI-ISA for conflicts */
+  /* 4. Check integer ABI-ISA for conflicts */
   switch(*isa_int)
     {
     case ISA_LA64:
@@ -232,7 +215,7 @@ loongarch_handle_m_option_combinations (
 	    );
     }
 
-  /* 6. Compute floating-point ISA */
+  /* 5. Compute floating-point ISA */
   int float_isa_was_absent = 0;
   if (LARCH_OPT_ABSENT(*isa_float))
     {
@@ -272,7 +255,7 @@ loongarch_handle_m_option_combinations (
 	*isa_float = loongarch_cpu_default_config[*cpu_arch].isa_float;
     }
 
-  /* 7. Compute floating-point ABI */
+  /* 6. Compute floating-point ABI */
   if (LARCH_OPT_ABSENT(*abi_float))
     {
       /* Try inferring fp abi from cpu_arch first
@@ -315,7 +298,7 @@ loongarch_handle_m_option_combinations (
 	    gcc_unreachable();
 	  }
     }
-  /* 8. Check floating-point ABI-ISA for conflicts */
+  /* 7. Check floating-point ABI-ISA for conflicts */
   else if (!float_isa_was_absent)
     {
       switch(*isa_float)

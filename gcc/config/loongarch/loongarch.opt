@@ -183,11 +183,6 @@ mmax-inline-memcpy-size=
 Target Joined RejectNegative UInteger Var(loongarch_max_inline_memcpy_size) Init(1024)
 -mmax-inline-memcpy-size=SIZE	Set the max size of memcpy to inline, default is 1024.
 
-mfix-loongson3-llsc
-Target Var(loongarch_ext_fix_lns3_llsc) Init(M_OPTION_NOT_SEEN)
-Work around an Loongson3 llsc errata.
-
-
 ; The code model option names for -mcmodel.
 Enum
 Name(cmodel) Type(int)

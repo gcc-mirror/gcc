@@ -125,7 +125,6 @@ driver_get_normalized_m_opts (int argc, const char **argv)
     & loongarch_isa_float_driver,
     & loongarch_abi_int_driver,
     & loongarch_abi_float_driver,
-    NULL,
     NULL
   );
 

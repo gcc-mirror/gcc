@@ -129,13 +129,24 @@
    (clobber (match_scratch:GPR 6 "=&r"))]
   ""
 {
-  if (TARGET_FIX_LOONGSON3_LLSC)
-    return "%G5\n\t1:\n\tll.<amo>\t%0,%1\n\tbne\t%0,%z2,2f\n\tor%i3\t%6,$zero,%3\n\tsc.<amo>\t%6,%1\n\tbeq\t$zero,%6,1b\n\t2:\n\tdbar\t0";
-  else
-    return "%G5\n\t1:\n\tll.<amo>\t%0,%1\n\tbne\t%0,%z2,2f\n\tor%i3\t%6,$zero,%3\n\tsc.<amo>\t%6,%1\n\tbeq\t$zero,%6,1b\n\t2:";
+  static char buff[256] = {0};
 
+  buff[0] = '\0';
+  sprintf (buff + strlen (buff), "%%G5\\n\\t");
+  sprintf (buff + strlen (buff), "1:\\n\\t");
+  sprintf (buff + strlen (buff), "ll.<amo>\\t%%0,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "bne\\t%%0,%%z2,2f\\n\\t");
+  sprintf (buff + strlen (buff), "or%%i3\\t%%6,$zero,%%3\\n\\t");
+  sprintf (buff + strlen (buff), "sc.<amo>\\t%%6,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "beq\\t$zero,%%6,1b\\n\\t");
+  sprintf (buff + strlen (buff), "b\\t3f\\n\\t");
+  sprintf (buff + strlen (buff), "2:\\n\\t");
+  sprintf (buff + strlen (buff), "dbar\\t0x700\\n\\t");
+  sprintf (buff + strlen (buff), "3:\\n\\t");
+
+  return buff;
 }
-  [(set (attr "length") (const_int 20))])
+  [(set (attr "length") (const_int 24))])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
@@ -227,12 +238,28 @@
    (clobber (match_scratch:GPR 7 "=&r"))]
   ""
 {
-  if (TARGET_FIX_LOONGSON3_LLSC)
-    return "%G6\n\t1:\n\tll.<amo>\t%0,%1\n\tand\t%7,%0,%2\n\tbne\t%7,%z4,2f\n\tand\t%7,%0,%z3\n\tor%i5\t%7,%7,%5\n\tsc.<amo>\t%7,%1\n\tbeq\t$zero,%7,1b\n\t2:\n\tdbar\t0";
-  else
-    return "%G6\n\t1:\n\tll.<amo>\t%0,%1\n\tand\t%7,%0,%2\n\tbne\t%7,%z4,2f\n\tand\t%7,%0,%z3\n\tor%i5\t%7,%7,%5\n\tsc.<amo>\t%7,%1\n\tbeq\t$zero,%7,1b\n\t2:";
+
+  static char buff[256] = {0};
+
+  buff[0] = '\0';
+  sprintf (buff + strlen (buff), "%%G6\\n\\t");
+  sprintf (buff + strlen (buff), "1:\\n\\t");
+  sprintf (buff + strlen (buff), "ll.<amo>\\t%%0,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%7,%%0,%%2\\n\\t");
+  sprintf (buff + strlen (buff), "bne\\t%%7,%%z4,2f\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%7,%%0,%%z3\\n\\t");
+  sprintf (buff + strlen (buff), "or%%i5\\t%%7,%%7,%%5\\n\\t");
+  sprintf (buff + strlen (buff), "sc.<amo>\\t%%7,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "beq\\t$zero,%%7,1b\\n\\t");
+  sprintf (buff + strlen (buff), "b\\t3f\\n\\t");
+  sprintf (buff + strlen (buff), "2:\\n\\t");
+  sprintf (buff + strlen (buff), "dbar\\t0x700\\n\\t");
+  sprintf (buff + strlen (buff), "3:\\n\\t");
+
+  return buff;
+
 }
-  [(set (attr "length") (const_int 20))])
+  [(set (attr "length") (const_int 32))])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
@@ -289,7 +316,25 @@
    (clobber (match_scratch:GPR 7 "=&r"))
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
-  "%G6\n\t1:\n\tll.<amo>\t%0,%1\n\tand\t%7,%0,%3\n\tadd.w\t%8,%0,%z5\n\tand\t%8,%8,%z2\n\tor%i8\t%7,%7,%8\n\tsc.<amo>\t%7,%1\n\tbeq\t$zero,%7,1b"
+{
+
+  static char buff[256] = {0};
+
+  buff[0] = '\0';
+  sprintf (buff + strlen (buff), "%%G6\\n\\t");
+  sprintf (buff + strlen (buff), "1:\\n\\t");
+  sprintf (buff + strlen (buff), "ll.<amo>\\t%%0,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%7,%%0,%%3\\n\\t");
+  sprintf (buff + strlen (buff), "add.w\\t%%8,%%0,%%z5\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%8,%%8,%%z2\\n\\t");
+  sprintf (buff + strlen (buff), "or%%i8\\t%%7,%%7,%%8\\n\\t");
+  sprintf (buff + strlen (buff), "sc.<amo>\\t%%7,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "beq\\t$zero,%%7,1b");
+
+  return buff;
+
+}
+
   [(set (attr "length") (const_int 20))])
 
 (define_insn "atomic_cas_value_sub_7_<mode>"
@@ -305,8 +350,25 @@
    (clobber (match_scratch:GPR 7 "=&r"))
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
-  "%G6\n\t1:\n\tll.<amo>\t%0,%1\n\tand\t%7,%0,%3\n\tsub.w\t%8,%0,%z5\n\tand\t%8,%8,%z2\n\tor%i8\t%7,%7,%8\n\tsc.<amo>\t%7,%1\n\tbeq\t$zero,%7,1b"
-  [(set (attr "length") (const_int 20))])
+{
+
+  static char buff[256] = {0};
+
+  buff[0] = '\0';
+  sprintf (buff + strlen (buff), "%%G6\\n\\t");
+  sprintf (buff + strlen (buff), "1:\\n\\t");
+  sprintf (buff + strlen (buff), "ll.<amo>\\t%%0,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%7,%%0,%%3\\n\\t");
+  sprintf (buff + strlen (buff), "sub.w\\t%%8,%%0,%%z5\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%8,%%8,%%z2\\n\\t");
+  sprintf (buff + strlen (buff), "or%%i8\\t%%7,%%7,%%8\\n\\t");
+  sprintf (buff + strlen (buff), "sc.<amo>\\t%%7,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "beq\\t$zero,%%7,1b");
+
+  return buff;
+
+}
+  [(set (attr "length") (const_int 32))])
 
 (define_insn "atomic_cas_value_and_7_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
@@ -321,7 +383,24 @@
    (clobber (match_scratch:GPR 7 "=&r"))
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
-  "%G6\n\t1:\n\tll.<amo>\t%0,%1\n\tand\t%7,%0,%3\n\tand\t%8,%0,%z5\n\tand\t%8,%8,%z2\n\tor%i8\t%7,%7,%8\n\tsc.<amo>\t%7,%1\n\tbeq\t$zero,%7,1b"
+{
+
+  static char buff[256] = {0};
+
+  buff[0] = '\0';
+  sprintf (buff + strlen (buff), "%%G6\\n\\t");
+  sprintf (buff + strlen (buff), "1:\\n\\t");
+  sprintf (buff + strlen (buff), "ll.<amo>\\t%%0,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%7,%%0,%%3\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%8,%%0,%%z5\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%8,%%8,%%z2\\n\\t");
+  sprintf (buff + strlen (buff), "or%%i8\\t%%7,%%7,%%8\\n\\t");
+  sprintf (buff + strlen (buff), "sc.<amo>\\t%%7,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "beq\\t$zero,%%7,1b");
+
+  return buff;
+
+}
   [(set (attr "length") (const_int 20))])
 
 (define_insn "atomic_cas_value_xor_7_<mode>"
@@ -337,7 +416,25 @@
    (clobber (match_scratch:GPR 7 "=&r"))
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
-  "%G6\n\t1:\n\tll.<amo>\t%0,%1\n\tand\t%7,%0,%3\n\txor\t%8,%0,%z5\n\tand\t%8,%8,%z2\n\tor%i8\t%7,%7,%8\n\tsc.<amo>\t%7,%1\n\tbeq\t$zero,%7,1b"
+{
+
+  static char buff[256] = {0};
+
+  buff[0] = '\0';
+  sprintf (buff + strlen (buff), "%%G6\\n\\t");
+  sprintf (buff + strlen (buff), "1:\\n\\t");
+  sprintf (buff + strlen (buff), "ll.<amo>\\t%%0,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%7,%%0,%%3\\n\\t");
+  sprintf (buff + strlen (buff), "xor\\t%%8,%%0,%%z5\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%8,%%8,%%z2\\n\\t");
+  sprintf (buff + strlen (buff), "or%%i8\\t%%7,%%7,%%8\\n\\t");
+  sprintf (buff + strlen (buff), "sc.<amo>\\t%%7,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "beq\\t$zero,%%7,1b");
+
+  return buff;
+
+}
+
   [(set (attr "length") (const_int 20))])
 
 (define_insn "atomic_cas_value_or_7_<mode>"
@@ -353,7 +450,25 @@
    (clobber (match_scratch:GPR 7 "=&r"))
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
-  "%G6\n\t1:\n\tll.<amo>\t%0,%1\n\tand\t%7,%0,%3\n\tor\t%8,%0,%z5\n\tand\t%8,%8,%z2\n\tor%i8\t%7,%7,%8\n\tsc.<amo>\t%7,%1\n\tbeq\t$zero,%7,1b"
+{
+
+  static char buff[256] = {0};
+
+  buff[0] = '\0';
+  sprintf (buff + strlen (buff), "%%G6\\n\\t");
+  sprintf (buff + strlen (buff), "1:\\n\\t");
+  sprintf (buff + strlen (buff), "ll.<amo>\\t%%0,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%7,%%0,%%3\\n\\t");
+  sprintf (buff + strlen (buff), "or\\t%%8,%%0,%%z5\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%8,%%8,%%z2\\n\\t");
+  sprintf (buff + strlen (buff), "or%%i8\\t%%7,%%7,%%8\\n\\t");
+  sprintf (buff + strlen (buff), "sc.<amo>\\t%%7,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "beq\\t$zero,%%7,1b");
+
+  return buff;
+
+}
+
   [(set (attr "length") (const_int 20))])
 
 (define_insn "atomic_cas_value_nand_7_<mode>"
@@ -369,7 +484,24 @@
    (clobber (match_scratch:GPR 7 "=&r"))
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
-  "%G6\n\t1:\n\tll.<amo>\t%0,%1\n\tand\t%7,%0,%3\n\tand\t%8,%0,%z5\n\txor\t%8,%8,%z2\n\tor%i8\t%7,%7,%8\n\tsc.<amo>\t%7,%1\n\tbeq\t$zero,%7,1b"
+{
+
+  static char buff[256] = {0};
+
+  buff[0] = '\0';
+  sprintf (buff + strlen (buff), "%%G6\\n\\t");
+  sprintf (buff + strlen (buff), "1:\\n\\t");
+  sprintf (buff + strlen (buff), "ll.<amo>\\t%%0,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%7,%%0,%%3\\n\\t");
+  sprintf (buff + strlen (buff), "and\\t%%8,%%0,%%z5\\n\\t");
+  sprintf (buff + strlen (buff), "xor\\t%%8,%%8,%%z2\\n\\t");
+  sprintf (buff + strlen (buff), "or%%i8\\t%%7,%%7,%%8\\n\\t");
+  sprintf (buff + strlen (buff), "sc.<amo>\\t%%7,%%1\\n\\t");
+  sprintf (buff + strlen (buff), "beq\\t$zero,%%7,1b");
+
+  return buff;
+
+}
   [(set (attr "length") (const_int 20))])
 
 (define_expand "atomic_exchange<mode>"
