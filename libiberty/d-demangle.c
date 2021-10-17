@@ -1650,12 +1650,18 @@ dlang_parse_qualified (string *decl, const char *mangled,
   size_t n = 0;
   do
     {
+      /* Skip over anonymous symbols.  */
+      if (*mangled == '0')
+      {
+	do
+	  mangled++;
+	while (*mangled == '0');
+
+	continue;
+      }
+
       if (n++)
 	string_append (decl, ".");
-
-      /* Skip over anonymous symbols.  */
-      while (*mangled == '0')
-	mangled++;
 
       mangled = dlang_identifier (decl, mangled, info);
 
