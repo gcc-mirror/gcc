@@ -157,11 +157,11 @@ v0_simple_type_prefix (const TyTy::BaseType *ty)
 
 // FIXME: Is this present somewhere in libbiberty already?
 static std::string
-v0_base62_integer(uint64_t x)
+v0_base62_integer (uint64_t x)
 {
   const static std::string base_64
     = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@$";
-  std::string buffer(128, '\0');
+  std::string buffer (128, '\0');
   size_t idx = 0;
   size_t base = 62;
 
@@ -169,29 +169,70 @@ v0_base62_integer(uint64_t x)
     {
       buffer[idx] = base_64[(x % base)];
       idx++;
-      x /= base;
-  } while (x != 0);
+      x = x / base;
+    }
+  while (x != 0);
 
-  std::reverse(buffer.begin(), buffer.begin() + idx);
-  return buffer.substr(0, idx);
+  std::reverse (buffer.begin (), buffer.begin () + idx);
+  return buffer.substr (0, idx);
 }
 
-static std::string
-v0_add_integer_62 (std::string mangled, std::string tag, uint64_t x)
+// Add an underscore-terminated base62 integer to the mangling string.
+// This corresponds to the `<base-62-number>` grammar in the v0 mangling RFC:
+//  - 0 is encoded as "_"
+//  - any other value is encoded as itself minus one in base 62, followed by "_"
+static void
+v0_add_integer_62 (std::string &mangled, uint64_t x)
 {
-    // /// Push a `_`-terminated base 62 integer, using the format
-    // /// specified in the RFC as `<base-62-number>`, that is:
-    // /// * `x = 0` is encoded as just the `"_"` terminator
-    // /// * `x > 0` is encoded as `x - 1` in base 62, followed by `"_"`,
-    // ///   e.g. `1` becomes `"0_"`, `62` becomes `"Z_"`, etc.
-    // fn push_integer_62(&mut self, x: u64) {
-    //     if let Some(x) = x.checked_sub(1) {
-    //         base_n::push_str(x as u128, 62, &mut self.out);
-    //     }
-    //     self.push("_");
-    // }
+  if (x > 0)
+    mangled.append (v0_base62_integer (x - 1));
+
+  mangled.append ("_");
 }
 
+// Add a tag-prefixed base62 integer to the mangling string when the
+// integer is greater than 0:
+//  - 0 is encoded as "" (nothing)
+//  - any other value is encoded as <tag> + v0_add_integer_62(itself), that is
+//  <tag> + base62(itself - 1) + '_'
+static void
+v0_add_opt_integer_62 (std::string &mangled, std::string tag, uint64_t x)
+{
+  if (x > 0)
+    {
+      mangled.append (tag);
+      v0_add_integer_62 (mangled, x);
+    }
+}
+
+static void
+v0_add_disambiguator (std::string &mangled, uint64_t dis)
+{
+  v0_add_opt_integer_62 (mangled, "s", dis);
+}
+
+// Add an identifier to the mangled string. This corresponds to the
+// `<identifier>` grammar in the v0 mangling RFC.
+static void
+v0_add_identifier (std::string &mangled, const std::string &identifier)
+{
+  // FIXME: gccrs cannot handle unicode identifiers yet, so we never have to
+  // create mangling for unicode values for now. However, this is handled
+  // by the v0 mangling scheme. The grammar for unicode identifier is contained
+  // in <undisambiguated-identifier>, right under the <identifier> one. If the
+  // identifier contains unicode values, then an extra "u" needs to be added
+  // to the mangling string and `punycode` must be used to encode the
+  // characters.
+
+  mangled += std::to_string (identifier.size ());
+
+  // If the first character of the identifier is a digit or an underscore, we
+  // add an extra underscore
+  if (identifier[0] == '_')
+    mangled.append ("_");
+
+  mangled.append (identifier);
+}
 
 static std::string
 v0_type_prefix (const TyTy::BaseType *ty)
@@ -233,10 +274,12 @@ static std::string
 v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
 		const std::string &crate_name)
 {
-  auto def_id = ty->get_ref();
-  auto ty_prefix = v0_type_prefix (ty);
-  auto prefix = "_R";
+  std::string mangled;
 
+  // FIXME: Add real algorithm once all pieces are implemented
+  auto ty_prefix = v0_type_prefix (ty);
+  v0_add_identifier (mangled, crate_name);
+  v0_add_disambiguator (mangled, 62);
 
   gcc_unreachable ();
 }
