@@ -1,5 +1,6 @@
 #include "rust-mangle.h"
 #include "fnv-hash.h"
+#include <algorithm>
 
 // FIXME: Rename those to legacy_*
 static const std::string kMangledSymbolPrefix = "_ZN";
@@ -154,6 +155,44 @@ v0_simple_type_prefix (const TyTy::BaseType *ty)
   gcc_unreachable ();
 }
 
+// FIXME: Is this present somewhere in libbiberty already?
+static std::string
+v0_base62_integer(uint64_t x)
+{
+  const static std::string base_64
+    = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@$";
+  std::string buffer(128, '\0');
+  size_t idx = 0;
+  size_t base = 62;
+
+  do
+    {
+      buffer[idx] = base_64[(x % base)];
+      idx++;
+      x /= base;
+  } while (x != 0);
+
+  std::reverse(buffer.begin(), buffer.begin() + idx);
+  return buffer.substr(0, idx);
+}
+
+static std::string
+v0_add_integer_62 (std::string mangled, std::string tag, uint64_t x)
+{
+    // /// Push a `_`-terminated base 62 integer, using the format
+    // /// specified in the RFC as `<base-62-number>`, that is:
+    // /// * `x = 0` is encoded as just the `"_"` terminator
+    // /// * `x > 0` is encoded as `x - 1` in base 62, followed by `"_"`,
+    // ///   e.g. `1` becomes `"0_"`, `62` becomes `"Z_"`, etc.
+    // fn push_integer_62(&mut self, x: u64) {
+    //     if let Some(x) = x.checked_sub(1) {
+    //         base_n::push_str(x as u128, 62, &mut self.out);
+    //     }
+    //     self.push("_");
+    // }
+}
+
+
 static std::string
 v0_type_prefix (const TyTy::BaseType *ty)
 {
@@ -194,7 +233,11 @@ static std::string
 v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
 		const std::string &crate_name)
 {
+  auto def_id = ty->get_ref();
   auto ty_prefix = v0_type_prefix (ty);
+  auto prefix = "_R";
+
+
   gcc_unreachable ();
 }
 
