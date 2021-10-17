@@ -1,3 +1,20 @@
+2021-10-16  Piotr Kubaj  <pkubaj@FreeBSD.org>
+
+	* configure.ac: Treat powerpc64*-*-freebsd* the same as
+	powerpc64-*-freebsd*.
+	* configure: Regenerate.
+
+2021-10-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	* value-query.cc (get_ssa_name_ptr_info_nonnull): Change
+	set_ptr_nonull to set_ptr_nonnull in comments.
+
+2021-10-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/102720
+	* tree-ssa-structalias.c (compute_points_to_sets): Fix producing
+	of call used and clobbered sets.
+
 2021-10-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Update 'r' handling to
