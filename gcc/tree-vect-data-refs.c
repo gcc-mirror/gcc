@@ -4564,7 +4564,8 @@ vect_create_addr_base_for_vector_ref (stmt_vec_info stmt_info,
 
   if (DR_PTR_INFO (dr)
       && TREE_CODE (addr_base) == SSA_NAME
-      && !SSA_NAME_PTR_INFO (addr_base))
+      /* We should only duplicate pointer info to newly created SSA names.  */
+      && SSA_NAME_VAR (addr_base) == dest)
     {
       vect_duplicate_ssa_name_ptr_info (addr_base, dr_info);
       if (offset || byte_offset)
