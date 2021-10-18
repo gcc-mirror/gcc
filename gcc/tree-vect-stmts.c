@@ -2109,6 +2109,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 			   bool masked_p, vec_load_store_type vls_type,
 			   vect_memory_access_type *memory_access_type,
 			   dr_alignment_support *alignment_support_scheme,
+			   int *misalignment,
 			   gather_scatter_info *gs_info)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -2294,10 +2295,16 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (*memory_access_type == VMAT_GATHER_SCATTER
       || *memory_access_type == VMAT_ELEMENTWISE)
-    *alignment_support_scheme = dr_unaligned_supported;
+    {
+      *alignment_support_scheme = dr_unaligned_supported;
+      *misalignment = DR_MISALIGNMENT_UNKNOWN;
+    }
   else
-    *alignment_support_scheme
-      = vect_supportable_dr_alignment (vinfo, first_dr_info, vectype);
+    {
+      *alignment_support_scheme
+	= vect_supportable_dr_alignment (vinfo, first_dr_info, vectype);
+      *misalignment = dr_misalignment (first_dr_info, vectype);
+    }
 
   if (vls_type != VLS_LOAD && first_stmt_info == stmt_info)
     {
@@ -2337,7 +2344,9 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
    storing it in *MEMORY_ACCESS_TYPE if so.  If we decide to use gathers
    or scatters, fill in GS_INFO accordingly.  In addition
    *ALIGNMENT_SUPPORT_SCHEME is filled out and false is returned if
-   the target does not support the alignment scheme.
+   the target does not support the alignment scheme.  *MISALIGNMENT
+   is set according to the alignment of the access (including
+   DR_MISALIGNMENT_UNKNOWN when it is unknown).
 
    SLP says whether we're performing SLP rather than loop vectorization.
    MASKED_P is true if the statement is conditional on a vectorized mask.
@@ -2351,10 +2360,12 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 		     unsigned int ncopies,
 		     vect_memory_access_type *memory_access_type,
 		     dr_alignment_support *alignment_support_scheme,
+		     int *misalignment,
 		     gather_scatter_info *gs_info)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  *misalignment = DR_MISALIGNMENT_UNKNOWN;
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       *memory_access_type = VMAT_GATHER_SCATTER;
@@ -2402,7 +2413,8 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       if (!get_group_load_store_type (vinfo, stmt_info, vectype, slp_node,
 				      masked_p,
 				      vls_type, memory_access_type,
-				      alignment_support_scheme, gs_info))
+				      alignment_support_scheme,
+				      misalignment, gs_info))
 	return false;
     }
   else if (STMT_VINFO_STRIDED_P (stmt_info))
@@ -2439,6 +2451,8 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	    = vect_supportable_dr_alignment (vinfo,
 					     STMT_VINFO_DR_INFO (stmt_info),
 					     vectype);
+	  *misalignment = dr_misalignment (STMT_VINFO_DR_INFO (stmt_info),
+					   vectype);
 	}
     }
 
@@ -7337,9 +7351,10 @@ vectorizable_store (vec_info *vinfo,
 
   vect_memory_access_type memory_access_type;
   enum dr_alignment_support alignment_support_scheme;
+  int misalignment;
   if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, vls_type,
 			    ncopies, &memory_access_type,
-			    &alignment_support_scheme, &gs_info))
+			    &alignment_support_scheme, &misalignment, &gs_info))
     return false;
 
   if (mask)
@@ -8218,14 +8233,13 @@ vectorizable_store (vec_info *vinfo,
 		  gcc_assert (aligned_access_p (first_dr_info, vectype));
 		  misalign = 0;
 		}
-	      else if (dr_misalignment (first_dr_info, vectype)
-		       == DR_MISALIGNMENT_UNKNOWN)
+	      else if (misalignment == DR_MISALIGNMENT_UNKNOWN)
 		{
 		  align = dr_alignment (vect_dr_behavior (vinfo, first_dr_info));
 		  misalign = 0;
 		}
 	      else
-		misalign = dr_misalignment (first_dr_info, vectype);
+		misalign = misalignment;
 	      if (dataref_offset == NULL_TREE
 		  && TREE_CODE (dataref_ptr) == SSA_NAME)
 		set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
@@ -8693,9 +8707,10 @@ vectorizable_load (vec_info *vinfo,
 
   vect_memory_access_type memory_access_type;
   enum dr_alignment_support alignment_support_scheme;
+  int misalignment;
   if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, VLS_LOAD,
 			    ncopies, &memory_access_type,
-			    &alignment_support_scheme, &gs_info))
+			    &alignment_support_scheme, &misalignment, &gs_info))
     return false;
 
   if (mask)
@@ -9553,14 +9568,14 @@ vectorizable_load (vec_info *vinfo,
 			gcc_assert (aligned_access_p (first_dr_info, vectype));
 			misalign = 0;
 		      }
-		    else if (dr_misalignment (first_dr_info, vectype) == -1)
+		    else if (misalignment == DR_MISALIGNMENT_UNKNOWN)
 		      {
 			align = dr_alignment
 			  (vect_dr_behavior (vinfo, first_dr_info));
 			misalign = 0;
 		      }
 		    else
-		      misalign = dr_misalignment (first_dr_info, vectype);
+		      misalign = misalignment;
 		    if (dataref_offset == NULL_TREE
 			&& TREE_CODE (dataref_ptr) == SSA_NAME)
 		      set_ptr_info_alignment (get_ptr_info (dataref_ptr),
