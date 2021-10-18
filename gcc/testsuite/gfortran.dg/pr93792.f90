@@ -14,4 +14,4 @@ end
 ! { dg-error "Parameterized type 't' does not have a component"  " " { target *-*-* } 5 }
 ! { dg-error "BOZ literal constant at .1. cannot appear"  " " { target *-*-* } 6 }
 ! { dg-error "Cannot open module file"  " " { target *-*-* } 10 }
-! { dg-excess-errors "compilation terminated" }
+! { dg-prune-output "compilation terminated" }

@@ -11,7 +11,7 @@ program testit
   implicit none
 
   interface
-    subroutine ctest (a) bind (c) ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+    subroutine ctest (a) bind (c)
       use iso_c_binding
       character(len=*,kind=C_CHAR) :: a
     end subroutine

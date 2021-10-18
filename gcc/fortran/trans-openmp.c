@@ -72,7 +72,8 @@ gfc_omp_is_allocatable_or_ptr (const_tree decl)
 static bool
 gfc_omp_is_optional_argument (const_tree decl)
 {
-  return (TREE_CODE (decl) == PARM_DECL
+  /* Note: VAR_DECL can occur with BIND(C) and array descriptors.  */
+  return ((TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == VAR_DECL)
 	  && DECL_LANG_SPECIFIC (decl)
 	  && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
 	  && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl)))
@@ -105,8 +106,9 @@ gfc_omp_check_optional_argument (tree decl, bool for_present_check)
 	  || GFC_ARRAY_TYPE_P (TREE_TYPE (decl))))
     decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
 
+  /* Note: With BIND(C), array descriptors are converted to a VAR_DECL.  */
   if (decl == NULL_TREE
-      || TREE_CODE (decl) != PARM_DECL
+      || (TREE_CODE (decl) != PARM_DECL && TREE_CODE (decl) != VAR_DECL)
       || !DECL_LANG_SPECIFIC (decl)
       || !GFC_DECL_OPTIONAL_ARGUMENT (decl))
     return NULL_TREE;

@@ -27,11 +27,21 @@ program testit
       character(kind=ucs4) :: arg_ucs4(:)
     end subroutine
 
+    subroutine ctest_5 (arg_cchar, arg_ucs4) bind (c)
+      use iso_c_binding
+      integer, parameter :: ucs4  = selected_char_kind ('ISO_10646')
+      character(kind=C_CHAR,len=*) :: arg_cchar(:)
+      character(kind=ucs4,len=*) :: arg_ucs4(:)
+    end subroutine
+
   end interface
 
   character(kind=C_CHAR) :: var_cchar(4)
   character(kind=ucs4) :: var_ucs4(4)
+  character(kind=C_CHAR,len=5) :: var_cchar_5(4)
+  character(kind=ucs4,len=5) :: var_ucs4_5(4)
 
   call ctest_1 (var_cchar, var_ucs4)
+  call ctest_5 (var_cchar_5, var_ucs4_5)
 
 end program

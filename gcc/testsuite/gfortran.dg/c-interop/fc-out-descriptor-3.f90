@@ -1,5 +1,5 @@
 ! PR 101308
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 ! { dg-additional-sources "fc-out-descriptor-3-c.c dump-descriptors.c" }
 ! { dg-additional-options "-g" }
 !

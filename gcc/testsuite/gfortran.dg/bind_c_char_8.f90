@@ -28,7 +28,7 @@ subroutine s3 (xn, n) bind(C) ! { dg-error "Character dummy argument 'xn' at .1.
   character(len=n) :: xn
 end
 
-subroutine s4 (xstar) bind(C) ! { dg-error "Sorry, character dummy argument 'xstar' at .1. with assumed length is not yet supported for procedure 's4' with BIND\\(C\\) attribute" }
+subroutine s4 (xstar) bind(C)
   character(len=*) :: xstar
 end
 
@@ -85,7 +85,7 @@ subroutine az3 (xn, n) bind(C) ! { dg-error "Character dummy argument 'xn' at .1
   character(len=n) :: xn(*)
 end
 
-subroutine az4 (xstar) bind(C)  ! { dg-error "Sorry, character dummy argument 'xstar' at .1. with assumed length is not yet supported for procedure 'az4' with BIND\\(C\\) attribute" }
+subroutine az4 (xstar) bind(C)
   character(len=*) :: xstar(*)
 end
 
@@ -104,7 +104,7 @@ subroutine ae3 (xn, n) bind(C) ! { dg-error "Character dummy argument 'xn' at .1
   character(len=n) :: xn(9)
 end
 
-subroutine ae4 (xstar) bind(C) ! { dg-error "Sorry, character dummy argument 'xstar' at .1. with assumed length is not yet supported for procedure 'ae4' with BIND\\(C\\) attribute" }
+subroutine ae4 (xstar) bind(C)
   character(len=*) :: xstar(3)
 end
 
@@ -128,7 +128,7 @@ subroutine s4a (xstar) bind(C) ! { dg-error "Allocatable character dummy argumen
   character(len=*), allocatable :: xstar
 end
 
-subroutine s5a (xcolon) bind(C) ! { dg-error "Sorry, deferred-length scalar character dummy argument 'xcolon' at .1. of procedure 's5a' with BIND\\(C\\) not yet supported" }
+subroutine s5a (xcolon) bind(C)
   character(len=:), allocatable :: xcolon
 end
 
@@ -198,7 +198,7 @@ subroutine s4p (xstar) bind(C) ! { dg-error "Pointer character dummy argument 'x
   character(len=*), pointer :: xstar
 end
 
-subroutine s5p (xcolon) bind(C) ! { dg-error "Sorry, deferred-length scalar character dummy argument 'xcolon' at .1. of procedure 's5p' with BIND\\(C\\) not yet supported" }
+subroutine s5p (xcolon) bind(C)
   character(len=:), pointer :: xcolon
 end
 

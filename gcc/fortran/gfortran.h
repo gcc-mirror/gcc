@@ -105,6 +105,40 @@ typedef struct
 }
 mstring;
 
+/* ISO_Fortran_binding.h
+   CAUTION: This has to be kept in sync with libgfortran.  */
+
+#define CFI_type_kind_shift 8
+#define CFI_type_mask 0xFF
+#define CFI_type_from_type_kind(t, k) (t + (k << CFI_type_kind_shift))
+
+/* Constants, defined as macros. */
+#define CFI_VERSION 1
+#define CFI_MAX_RANK 15
+
+/* Attributes. */
+#define CFI_attribute_pointer 0
+#define CFI_attribute_allocatable 1
+#define CFI_attribute_other 2
+
+#define CFI_type_mask 0xFF
+#define CFI_type_kind_shift 8
+
+/* Intrinsic types. Their kind number defines their storage size. */
+#define CFI_type_Integer 1
+#define CFI_type_Logical 2
+#define CFI_type_Real 3
+#define CFI_type_Complex 4
+#define CFI_type_Character 5
+
+/* Combined type (for more, see ISO_Fortran_binding.h).  */
+#define CFI_type_ucs4_char (CFI_type_Character + (4 << CFI_type_kind_shift))
+
+/* Types with no kind. */
+#define CFI_type_struct 6
+#define CFI_type_cptr 7
+#define CFI_type_cfunptr 8
+#define CFI_type_other -1
 
 
 /*************************** Enums *****************************/

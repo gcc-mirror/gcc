@@ -1,6 +1,6 @@
 ! PR 101308
 ! PR 92621(?)
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 ! { dg-additional-sources "allocatable-dummy-c.c dump-descriptors.c" }
 ! { dg-additional-options "-g" }
 !

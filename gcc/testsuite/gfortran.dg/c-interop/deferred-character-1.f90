@@ -16,12 +16,12 @@ module m
   interface
 
     ! These are supposed to be OK
-    subroutine good1 (x, n) bind (c)  ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+    subroutine good1 (x, n) bind (c)
       use iso_c_binding
       character (kind=C_CHAR, len=:), allocatable :: x
       integer(C_INT), value :: n
     end subroutine
-    subroutine good2 (x, n) bind (c)  ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+    subroutine good2 (x, n) bind (c)
       use iso_c_binding
       character (kind=C_CHAR, len=:), pointer :: x
       integer(C_INT), value :: n

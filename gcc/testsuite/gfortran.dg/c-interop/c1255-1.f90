@@ -56,7 +56,7 @@ module m
     end subroutine
 
     ! dummy is assumed length character variable
-    subroutine s6 (x) bind (c)  ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+    subroutine s6 (x) bind (c)
       use ISO_C_BINDING
       implicit none
       character(len=*) :: x

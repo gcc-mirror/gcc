@@ -17,7 +17,7 @@ contains
 
   ! C binding version
 
-  subroutine checkc (a) bind (c) ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+  subroutine checkc (a) bind (c)
     use iso_c_binding
     character(len=*,kind=C_CHAR) :: a
 
@@ -37,7 +37,7 @@ contains
   end subroutine
 
   ! C binding version
-  subroutine testc (a) bind (c) ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+  subroutine testc (a) bind (c)
     use iso_c_binding
     character(len=*,kind=C_CHAR) :: a
 
