@@ -20801,6 +20801,13 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	*total = cost->sse_op;
       return true;
 
+    case MEM:
+      /* An insn that accesses memory is slightly more expensive
+         than one that does not.  */
+      if (speed)
+        *total += 1;
+      return false;
+
     default:
       return false;
     }
