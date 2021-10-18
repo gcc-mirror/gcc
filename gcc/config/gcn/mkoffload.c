@@ -1008,12 +1008,6 @@ main (int argc, char **argv)
   obstack_ptr_grow (&cc_argv_obstack, "-xlto");
   if (fopenmp)
     obstack_ptr_grow (&cc_argv_obstack, "-mgomp");
-  obstack_ptr_grow (&cc_argv_obstack,
-		    (elf_flags & EF_AMDGPU_XNACK
-		     ? "-mxnack" : "-mno-xnack"));
-  obstack_ptr_grow (&cc_argv_obstack,
-		    (elf_flags & EF_AMDGPU_SRAM_ECC
-		     ? "-msram-ecc=on" : "-msram-ecc=off"));
 
   for (int ix = 1; ix != argc; ix++)
     {
