@@ -1059,7 +1059,7 @@ public:
   {}
   opt_pass * clone (void) override
   {
-    return new pass_thread_jumps (m_ctxt);
+    return new pass_thread_jumps_full (m_ctxt);
   }
   bool gate (function *) override
   {
