@@ -3909,7 +3909,8 @@ static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
   T (BIT_IOR_EXPR, IFN_COND_IOR) \
   T (BIT_XOR_EXPR, IFN_COND_XOR) \
   T (LSHIFT_EXPR, IFN_COND_SHL) \
-  T (RSHIFT_EXPR, IFN_COND_SHR)
+  T (RSHIFT_EXPR, IFN_COND_SHR) \
+  T (NEGATE_EXPR, IFN_COND_NEG)
 
 /* Return a function that only performs CODE when a certain condition is met
    and that uses a given fallback value otherwise.  For example, if CODE is
