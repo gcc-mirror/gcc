@@ -843,7 +843,6 @@ get_cycles_count (line_info &linfo)
      Therefore, operating on a permuted order (i.e., non-sorted) only
      has the effect of permuting the output cycles.  */
 
-  bool loop_found = false;
   gcov_type count = 0;
   for (vector<block_info *>::iterator it = linfo.blocks.begin ();
        it != linfo.blocks.end (); it++)
@@ -851,8 +850,7 @@ get_cycles_count (line_info &linfo)
       arc_vector_t path;
       block_vector_t blocked;
       vector<block_vector_t > block_lists;
-      loop_found |= circuit (*it, path, *it, blocked, block_lists, linfo,
-			     count);
+      circuit (*it, path, *it, blocked, block_lists, linfo, count);
     }
 
   return count;
