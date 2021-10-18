@@ -1,3 +1,16 @@
+2021-10-17  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102716
+	* gfortran.dg/shape_10.f90: New test.
+
+2021-10-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102627
+	* gcc.target/i386/pr102627.c: New test.
+
 2021-10-11  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
