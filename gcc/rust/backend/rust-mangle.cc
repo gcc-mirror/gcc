@@ -1,5 +1,6 @@
 #include "rust-mangle.h"
 #include "fnv-hash.h"
+#include "rust-base62.h"
 #include <algorithm>
 
 // FIXME: Rename those to legacy_*
@@ -155,28 +156,6 @@ v0_simple_type_prefix (const TyTy::BaseType *ty)
   gcc_unreachable ();
 }
 
-// FIXME: Is this present somewhere in libbiberty already?
-static std::string
-v0_base62_integer (uint64_t x)
-{
-  const static std::string base_64
-    = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@$";
-  std::string buffer (128, '\0');
-  size_t idx = 0;
-  size_t base = 62;
-
-  do
-    {
-      buffer[idx] = base_64[(x % base)];
-      idx++;
-      x = x / base;
-    }
-  while (x != 0);
-
-  std::reverse (buffer.begin (), buffer.begin () + idx);
-  return buffer.substr (0, idx);
-}
-
 // Add an underscore-terminated base62 integer to the mangling string.
 // This corresponds to the `<base-62-number>` grammar in the v0 mangling RFC:
 //  - 0 is encoded as "_"
@@ -185,7 +164,7 @@ static void
 v0_add_integer_62 (std::string &mangled, uint64_t x)
 {
   if (x > 0)
-    mangled.append (v0_base62_integer (x - 1));
+    mangled.append (base62_integer (x - 1));
 
   mangled.append ("_");
 }
