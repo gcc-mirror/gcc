@@ -1,5 +1,7 @@
 #include "rust-mangle.h"
 #include "fnv-hash.h"
+#include "rust-base62.h"
+#include <algorithm>
 
 // FIXME: Rename those to legacy_*
 static const std::string kMangledSymbolPrefix = "_ZN";
@@ -154,6 +156,63 @@ v0_simple_type_prefix (const TyTy::BaseType *ty)
   gcc_unreachable ();
 }
 
+// Add an underscore-terminated base62 integer to the mangling string.
+// This corresponds to the `<base-62-number>` grammar in the v0 mangling RFC:
+//  - 0 is encoded as "_"
+//  - any other value is encoded as itself minus one in base 62, followed by "_"
+static void
+v0_add_integer_62 (std::string &mangled, uint64_t x)
+{
+  if (x > 0)
+    mangled.append (base62_integer (x - 1));
+
+  mangled.append ("_");
+}
+
+// Add a tag-prefixed base62 integer to the mangling string when the
+// integer is greater than 0:
+//  - 0 is encoded as "" (nothing)
+//  - any other value is encoded as <tag> + v0_add_integer_62(itself), that is
+//  <tag> + base62(itself - 1) + '_'
+static void
+v0_add_opt_integer_62 (std::string &mangled, std::string tag, uint64_t x)
+{
+  if (x > 0)
+    {
+      mangled.append (tag);
+      v0_add_integer_62 (mangled, x);
+    }
+}
+
+static void
+v0_add_disambiguator (std::string &mangled, uint64_t dis)
+{
+  v0_add_opt_integer_62 (mangled, "s", dis);
+}
+
+// Add an identifier to the mangled string. This corresponds to the
+// `<identifier>` grammar in the v0 mangling RFC.
+static void
+v0_add_identifier (std::string &mangled, const std::string &identifier)
+{
+  // FIXME: gccrs cannot handle unicode identifiers yet, so we never have to
+  // create mangling for unicode values for now. However, this is handled
+  // by the v0 mangling scheme. The grammar for unicode identifier is contained
+  // in <undisambiguated-identifier>, right under the <identifier> one. If the
+  // identifier contains unicode values, then an extra "u" needs to be added
+  // to the mangling string and `punycode` must be used to encode the
+  // characters.
+
+  mangled += std::to_string (identifier.size ());
+
+  // If the first character of the identifier is a digit or an underscore, we
+  // add an extra underscore
+  if (identifier[0] == '_')
+    mangled.append ("_");
+
+  mangled.append (identifier);
+}
+
 static std::string
 v0_type_prefix (const TyTy::BaseType *ty)
 {
@@ -194,7 +253,13 @@ static std::string
 v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
 		const std::string &crate_name)
 {
+  std::string mangled;
+
+  // FIXME: Add real algorithm once all pieces are implemented
   auto ty_prefix = v0_type_prefix (ty);
+  v0_add_identifier (mangled, crate_name);
+  v0_add_disambiguator (mangled, 62);
+
   gcc_unreachable ();
 }
 
