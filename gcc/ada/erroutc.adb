@@ -277,7 +277,9 @@ package body Erroutc is
    begin
       for J in 1 .. Errors.Last loop
          begin
-            if Errors.Table (J).Warn and Errors.Table (J).Compile_Time_Pragma
+            if Errors.Table (J).Warn
+               and then Errors.Table (J).Compile_Time_Pragma
+               and then not Errors.Table (J).Deleted
             then
                Result := Result + 1;
             end if;
