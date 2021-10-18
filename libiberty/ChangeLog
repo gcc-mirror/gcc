@@ -1,3 +1,11 @@
+2021-10-17  Luís Ferreira  <contact@lsferreira.net>
+
+	PR d/102618
+	* d-demangle.c (dlang_parse_qualified): Handle anonymous
+	symbols correctly.
+	* testsuite/d-demangle-expected: New tests to cover anonymous
+	symbols.
+
 2021-10-14  Luís Ferreira  <contact@lsferreira.net>
 
 	* testsuite/d-demangle-expected: Add test case for function literals.

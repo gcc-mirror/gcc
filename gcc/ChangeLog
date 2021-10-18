@@ -1,3 +1,16 @@
+2021-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-pass.h (make_pass_thread_jumps_full): New.
+	* tree-ssa-threadbackward.c (pass_thread_jumps::gate): Inline.
+	(try_thread_blocks): Add resolve and speed arguments.
+	(pass_thread_jumps::execute): Inline.
+	(do_early_thread_jumps): New.
+	(do_thread_jumps): New.
+	(make_pass_thread_jumps): Move.
+	(pass_early_thread_jumps::gate): Inline.
+	(pass_early_thread_jumps::execute): Inline.
+	(class pass_thread_jumps_full): New.
+
 2021-10-16  Piotr Kubaj  <pkubaj@FreeBSD.org>
 
 	* configure.ac: Treat powerpc64*-*-freebsd* the same as
