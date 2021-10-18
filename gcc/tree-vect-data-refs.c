@@ -1471,7 +1471,8 @@ vect_peeling_hash_insert (hash_table<peel_info_hasher> *peeling_htab,
   _vect_peel_info **new_slot;
   tree vectype = STMT_VINFO_VECTYPE (dr_info->stmt);
   bool supportable_dr_alignment
-    = vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype, true);
+    = (vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype, true)
+       != dr_unaligned_unsupported);
 
   elem.npeel = npeel;
   slot = peeling_htab->find (&elem);
@@ -1663,7 +1664,7 @@ vect_peeling_supportable (loop_vec_info loop_vinfo, dr_vec_info *dr0_info,
 	= vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype, false);
       SET_DR_MISALIGNMENT (dr_info, save_misalignment);
 
-      if (!supportable_dr_alignment)
+      if (supportable_dr_alignment == dr_unaligned_unsupported)
 	return false;
     }
 
@@ -1999,11 +2000,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
 	      /* Check for data refs with unsupportable alignment that
 	         can be peeled.  */
-	      if (!supportable_dr_alignment)
-	      {
-		one_dr_unsupportable = true;
-		unsupportable_dr_info = dr_info;
-	      }
+	      if (supportable_dr_alignment == dr_unaligned_unsupported)
+		{
+		  one_dr_unsupportable = true;
+		  unsupportable_dr_info = dr_info;
+		}
 
 	      if (!first_store && DR_IS_WRITE (dr))
 		{
@@ -2356,7 +2357,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  supportable_dr_alignment
 	    = vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype,
 					     false);
-          if (!supportable_dr_alignment)
+	  if (supportable_dr_alignment == dr_unaligned_unsupported)
             {
 	      if (known_alignment_for_access_p (dr_info, vectype)
                   || LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).length ()
@@ -6720,9 +6721,6 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 
   if (DR_IS_READ (dr))
     {
-      bool is_packed = false;
-      tree type = (TREE_TYPE (DR_REF (dr)));
-
       if (optab_handler (vec_realign_load_optab, mode) != CODE_FOR_nothing
 	  && (!targetm.vectorize.builtin_mask_for_load
 	      || targetm.vectorize.builtin_mask_for_load ()))
@@ -6744,26 +6742,15 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 	  else
 	    return dr_explicit_realign_optimized;
 	}
-      if (!known_alignment_for_access_p (dr_info, vectype))
-	is_packed = not_size_aligned (DR_REF (dr));
-
-      if (targetm.vectorize.support_vector_misalignment
-	    (mode, type, dr_misalignment (dr_info, vectype), is_packed))
-	/* Can't software pipeline the loads, but can at least do them.  */
-	return dr_unaligned_supported;
     }
-  else
-    {
-      bool is_packed = false;
-      tree type = (TREE_TYPE (DR_REF (dr)));
 
-      if (!known_alignment_for_access_p (dr_info, vectype))
-	is_packed = not_size_aligned (DR_REF (dr));
-
-     if (targetm.vectorize.support_vector_misalignment
-	   (mode, type, dr_misalignment (dr_info, vectype), is_packed))
-       return dr_unaligned_supported;
-    }
+  bool is_packed = false;
+  tree type = (TREE_TYPE (DR_REF (dr)));
+  if (!known_alignment_for_access_p (dr_info, vectype))
+    is_packed = not_size_aligned (DR_REF (dr));
+  if (targetm.vectorize.support_vector_misalignment
+	(mode, type, dr_misalignment (dr_info, vectype), is_packed))
+    return dr_unaligned_supported;
 
   /* Unsupported.  */
   return dr_unaligned_unsupported;

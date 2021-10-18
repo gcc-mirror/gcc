@@ -1027,7 +1027,7 @@ vect_get_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 {
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  int alignment_support_scheme
+  dr_alignment_support alignment_support_scheme
     = vect_supportable_dr_alignment (vinfo, dr_info, vectype, false);
 
   switch (alignment_support_scheme)
@@ -1218,7 +1218,7 @@ vect_get_load_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 {
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  int alignment_support_scheme
+  dr_alignment_support alignment_support_scheme
     = vect_supportable_dr_alignment (vinfo, dr_info, vectype, false);
 
   switch (alignment_support_scheme)
