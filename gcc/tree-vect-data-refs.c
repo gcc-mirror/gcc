@@ -1465,14 +1465,10 @@ peel_info_hasher::equal (const _vect_peel_info *a, const _vect_peel_info *b)
 static void
 vect_peeling_hash_insert (hash_table<peel_info_hasher> *peeling_htab,
 			  loop_vec_info loop_vinfo, dr_vec_info *dr_info,
-                          int npeel)
+			  int npeel, bool supportable_if_not_aligned)
 {
   struct _vect_peel_info elem, *slot;
   _vect_peel_info **new_slot;
-  tree vectype = STMT_VINFO_VECTYPE (dr_info->stmt);
-  bool supportable_dr_alignment
-    = (vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype, true)
-       != dr_unaligned_unsupported);
 
   elem.npeel = npeel;
   slot = peeling_htab->find (&elem);
@@ -1488,7 +1484,9 @@ vect_peeling_hash_insert (hash_table<peel_info_hasher> *peeling_htab,
       *new_slot = slot;
     }
 
-  if (!supportable_dr_alignment
+  /* If this DR is not supported with unknown misalignment then bias
+     this slot when the cost model is disabled.  */
+  if (!supportable_if_not_aligned
       && unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
     slot->count += VECT_MAX_COST;
 }
@@ -1661,7 +1659,7 @@ vect_peeling_supportable (loop_vec_info loop_vinfo, dr_vec_info *dr0_info,
       vect_update_misalignment_for_peel (dr_info, dr0_info, npeel);
       tree vectype = STMT_VINFO_VECTYPE (dr_info->stmt);
       supportable_dr_alignment
-	= vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype, false);
+	= vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype);
       SET_DR_MISALIGNMENT (dr_info, save_misalignment);
 
       if (supportable_dr_alignment == dr_unaligned_unsupported)
@@ -1803,7 +1801,6 @@ opt_result
 vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  enum dr_alignment_support supportable_dr_alignment;
   dr_vec_info *first_store = NULL;
   dr_vec_info *dr0_info = NULL;
   struct data_reference *dr;
@@ -1912,8 +1909,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       stmt_vec_info stmt_info = dr_info->stmt;
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-      supportable_dr_alignment
-	= vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype, true);
       do_peeling = vector_alignment_reachable_p (dr_info);
       if (do_peeling)
         {
@@ -1957,11 +1952,20 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 		}
 
 	      /* Save info about DR in the hash table.  Also include peeling
-	         amounts according to the explanation above.  */
+		 amounts according to the explanation above.  Indicate
+		 the alignment status when the ref is not aligned.
+		 ???  Rather than using unknown alignment here we should
+		 prune all entries from the peeling hashtable which cause
+		 DRs to be not supported.  */
+	      bool supportable_if_not_aligned
+		= targetm.vectorize.support_vector_misalignment
+		    (TYPE_MODE (vectype), TREE_TYPE (DR_REF (dr_info->dr)),
+		     DR_MISALIGNMENT_UNKNOWN, false);
 	      while (known_le (npeel_tmp, nscalars))
                 {
                   vect_peeling_hash_insert (&peeling_htab, loop_vinfo,
-					    dr_info, npeel_tmp);
+					    dr_info, npeel_tmp,
+					    supportable_if_not_aligned);
 		  npeel_tmp += MAX (1, target_align / dr_size);
                 }
 
@@ -2000,6 +2004,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
 	      /* Check for data refs with unsupportable alignment that
 	         can be peeled.  */
+	      enum dr_alignment_support supportable_dr_alignment
+		= vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype);
 	      if (supportable_dr_alignment == dr_unaligned_unsupported)
 		{
 		  one_dr_unsupportable = true;
@@ -2354,9 +2360,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      break;
 	    }
 
-	  supportable_dr_alignment
-	    = vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype,
-					     false);
+	  enum dr_alignment_support supportable_dr_alignment
+	    = vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype);
 	  if (supportable_dr_alignment == dr_unaligned_unsupported)
             {
 	      if (known_alignment_for_access_p (dr_info, vectype)
@@ -3305,7 +3310,7 @@ vect_vfa_access_size (vec_info *vinfo, dr_vec_info *dr_info)
     }
   tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
   if (STMT_VINFO_VEC_STMTS (stmt_vinfo).exists ()
-      && (vect_supportable_dr_alignment (vinfo, dr_info, vectype, false)
+      && (vect_supportable_dr_alignment (vinfo, dr_info, vectype)
 	  == dr_explicit_realign_optimized))
     {
       /* We might access a full vector's worth.  */
@@ -6630,7 +6635,7 @@ vect_can_force_dr_alignment_p (const_tree decl, poly_uint64 alignment)
 
 enum dr_alignment_support
 vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
-			       tree vectype, bool check_aligned_accesses)
+			       tree vectype)
 {
   data_reference *dr = dr_info->dr;
   stmt_vec_info stmt_info = dr_info->stmt;
@@ -6639,7 +6644,7 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
   class loop *vect_loop = NULL;
   bool nested_in_vect_loop = false;
 
-  if (aligned_access_p (dr_info, vectype) && !check_aligned_accesses)
+  if (aligned_access_p (dr_info, vectype))
     return dr_aligned;
 
   /* For now assume all conditional loads/stores support unaligned

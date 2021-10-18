@@ -1028,7 +1028,7 @@ vect_get_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   dr_alignment_support alignment_support_scheme
-    = vect_supportable_dr_alignment (vinfo, dr_info, vectype, false);
+    = vect_supportable_dr_alignment (vinfo, dr_info, vectype);
 
   switch (alignment_support_scheme)
     {
@@ -1219,7 +1219,7 @@ vect_get_load_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   dr_alignment_support alignment_support_scheme
-    = vect_supportable_dr_alignment (vinfo, dr_info, vectype, false);
+    = vect_supportable_dr_alignment (vinfo, dr_info, vectype);
 
   switch (alignment_support_scheme)
     {
@@ -1987,7 +1987,7 @@ get_negative_load_store_type (vec_info *vinfo,
     }
 
   alignment_support_scheme = vect_supportable_dr_alignment (vinfo, dr_info,
-							    vectype, false);
+							    vectype);
   if (alignment_support_scheme != dr_aligned
       && alignment_support_scheme != dr_unaligned_supported)
     {
@@ -2186,7 +2186,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	      && !masked_p
 	      && (((alignment_support_scheme
 		      = vect_supportable_dr_alignment (vinfo, first_dr_info,
-						       vectype, false)))
+						       vectype)))
 		   == dr_aligned
 		  || alignment_support_scheme == dr_unaligned_supported)
 	      && known_eq (nunits, (group_size - gap) * 2)
@@ -2297,7 +2297,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
     *alignment_support_scheme = dr_unaligned_supported;
   else
     *alignment_support_scheme
-      = vect_supportable_dr_alignment (vinfo, first_dr_info, vectype, false);
+      = vect_supportable_dr_alignment (vinfo, first_dr_info, vectype);
 
   if (vls_type != VLS_LOAD && first_stmt_info == stmt_info)
     {
@@ -2438,7 +2438,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	  *alignment_support_scheme
 	    = vect_supportable_dr_alignment (vinfo,
 					     STMT_VINFO_DR_INFO (stmt_info),
-					     vectype, false);
+					     vectype);
 	}
     }
 
