@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LOONGARCH_CPU_H
 #define LOONGARCH_CPU_H
 
-#include "loongarch-opts.h"
 #include "loongarch-rtx-cost.h"
 
 /* enum loongarch_cpu_type */
@@ -54,14 +53,4 @@ extern int loongarch_cpu_multipass_dfa_lookahead[];
 
 extern struct loongarch_rtx_cost_data loongarch_cpu_rtx_cost_data[];
 
-#ifndef IN_LIBGCC2
-/* Native CPU property detection */
-void cache_cpucfg ();
-int fill_native_cpu_config();
-
-#include "system.h"
-uint32_t get_native_prid();
-#endif
-
 #endif /* LOONGARCH_CPU_H */
-

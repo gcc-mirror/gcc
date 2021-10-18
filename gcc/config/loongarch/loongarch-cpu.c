@@ -17,12 +17,15 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
 
 #include "loongarch-cpu.h"
+#include "loongarch-cpucfg.h"
 
 /* CPU property tables */
 const char* loongarch_cpu_strings[] = {
@@ -88,7 +91,7 @@ read_cpucfg_word (int wordno)
   return ret;
 }
 
-void cache_cpucfg ()
+void cache_cpucfg (void)
 {
   for (int i = 0; i < LARCH_CPUCFG_WORDS; i++)
     cpucfg_cache[i] = read_cpucfg_word(i);
@@ -98,12 +101,12 @@ void cache_cpucfg ()
    see "Loongson Architecture Reference Manual"
    (Volume 1, Section 2.2.10.5) */
 
-uint32_t get_native_prid()
+uint32_t get_native_prid (void)
 {
   return cpucfg_cache[0];
 }
 
-int fill_native_cpu_config()
+int fill_native_cpu_config (void)
 {
   int int_isa = -1, int_abi = -1;
   int float_isa = -1, float_abi = -1;
