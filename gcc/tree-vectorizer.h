@@ -1980,7 +1980,7 @@ extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info, unsigned int = 0);
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
 extern enum dr_alignment_support vect_supportable_dr_alignment
-				   (vec_info *, dr_vec_info *, tree);
+				   (vec_info *, dr_vec_info *, tree, int);
 extern tree vect_get_smallest_scalar_type (stmt_vec_info, tree);
 extern opt_result vect_analyze_data_ref_dependences (loop_vec_info, unsigned int *);
 extern bool vect_slp_analyze_instance_dependence (vec_info *, slp_instance);

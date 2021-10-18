@@ -1986,8 +1986,9 @@ get_negative_load_store_type (vec_info *vinfo,
       return VMAT_ELEMENTWISE;
     }
 
-  alignment_support_scheme = vect_supportable_dr_alignment (vinfo, dr_info,
-							    vectype);
+  int misalignment = dr_misalignment (dr_info, vectype);
+  alignment_support_scheme
+    = vect_supportable_dr_alignment (vinfo, dr_info, vectype, misalignment);
   if (alignment_support_scheme != dr_aligned
       && alignment_support_scheme != dr_unaligned_supported)
     {
@@ -2184,15 +2185,15 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	     can do half-vector operations avoid the epilogue peeling
 	     by simply loading half of the vector only.  Usually
 	     the construction with an upper zero half will be elided.  */
-	  dr_alignment_support alignment_support_scheme;
+	  dr_alignment_support alss;
+	  int misalign = dr_misalignment (first_dr_info, vectype);
 	  tree half_vtype;
 	  if (overrun_p
 	      && !masked_p
-	      && (((alignment_support_scheme
-		      = vect_supportable_dr_alignment (vinfo, first_dr_info,
-						       vectype)))
+	      && (((alss = vect_supportable_dr_alignment (vinfo, first_dr_info,
+							  vectype, misalign)))
 		   == dr_aligned
-		  || alignment_support_scheme == dr_unaligned_supported)
+		  || alss == dr_unaligned_supported)
 	      && known_eq (nunits, (group_size - gap) * 2)
 	      && known_eq (nunits, group_size)
 	      && (vector_vector_composition_type (vectype, 2, &half_vtype)
@@ -2304,9 +2305,10 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
     }
   else
     {
-      *alignment_support_scheme
-	= vect_supportable_dr_alignment (vinfo, first_dr_info, vectype);
       *misalignment = dr_misalignment (first_dr_info, vectype);
+      *alignment_support_scheme
+	= vect_supportable_dr_alignment (vinfo, first_dr_info, vectype,
+					 *misalignment);
     }
 
   if (vls_type != VLS_LOAD && first_stmt_info == stmt_info)
@@ -2452,12 +2454,12 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	       (vinfo, stmt_info, vectype, vls_type, ncopies, poffset);
 	  else
 	    *memory_access_type = VMAT_CONTIGUOUS;
+	  *misalignment = dr_misalignment (STMT_VINFO_DR_INFO (stmt_info),
+					   vectype);
 	  *alignment_support_scheme
 	    = vect_supportable_dr_alignment (vinfo,
 					     STMT_VINFO_DR_INFO (stmt_info),
-					     vectype);
-	  *misalignment = dr_misalignment (STMT_VINFO_DR_INFO (stmt_info),
-					   vectype);
+					     vectype, *misalignment);
 	}
     }
 
