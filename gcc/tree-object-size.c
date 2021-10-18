@@ -1298,6 +1298,10 @@ object_sizes_execute (function *fun, bool insert_min_max_p)
 	  if (!gimple_call_builtin_p (call, BUILT_IN_OBJECT_SIZE))
 	    continue;
 
+	  tree lhs = gimple_call_lhs (call);
+	  if (!lhs)
+	    continue;
+
 	  init_object_sizes ();
 
 	  /* If insert_min_max_p, only attempt to fold
@@ -1312,11 +1316,9 @@ object_sizes_execute (function *fun, bool insert_min_max_p)
 		{
 		  unsigned HOST_WIDE_INT object_size_type = tree_to_uhwi (ost);
 		  tree ptr = gimple_call_arg (call, 0);
-		  tree lhs = gimple_call_lhs (call);
 		  if ((object_size_type == 1 || object_size_type == 3)
 		      && (TREE_CODE (ptr) == ADDR_EXPR
-			  || TREE_CODE (ptr) == SSA_NAME)
-		      && lhs)
+			  || TREE_CODE (ptr) == SSA_NAME))
 		    {
 		      tree type = TREE_TYPE (lhs);
 		      unsigned HOST_WIDE_INT bytes;
@@ -1338,10 +1340,6 @@ object_sizes_execute (function *fun, bool insert_min_max_p)
 		}
 	      continue;
 	    }
-
-	  tree lhs = gimple_call_lhs (call);
-	  if (!lhs)
-	    continue;
 
 	  result = gimple_fold_stmt_to_constant (call, do_valueize);
 	  if (!result)
