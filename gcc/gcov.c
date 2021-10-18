@@ -638,6 +638,9 @@ static int flag_preserve_paths = 0;
 
 static int flag_counts = 0;
 
+/* Return code of the tool invocation.  */
+static int return_code = 0;
+
 /* Forward declarations.  */
 static int process_args (int, char **);
 static void print_usage (int) ATTRIBUTE_NORETURN;
@@ -907,7 +910,7 @@ main (int argc, char **argv)
   if (!flag_use_stdout)
     executed_summary (total_lines, total_executed);
 
-  return 0;
+  return return_code;
 }
 
 /* Print a usage message and exit.  If ERROR_P is nonzero, this is an error,
@@ -1467,12 +1470,18 @@ output_gcov_file (const char *file_name, source_info *src)
 	  fnotice (stdout, "Creating '%s'\n", gcov_file_name);
 	  output_lines (gcov_file, src);
 	  if (ferror (gcov_file))
-	    fnotice (stderr, "Error writing output file '%s'\n",
-		     gcov_file_name);
+	    {
+	      fnotice (stderr, "Error writing output file '%s'\n",
+		       gcov_file_name);
+	      return_code = 6;
+	    }
 	  fclose (gcov_file);
 	}
       else
-	fnotice (stderr, "Could not open output file '%s'\n", gcov_file_name);
+	{
+	  fnotice (stderr, "Could not open output file '%s'\n", gcov_file_name);
+	  return_code = 6;
+	}
     }
   else
     {
@@ -1594,6 +1603,7 @@ generate_results (const char *file_name)
 	    {
 	      fnotice (stderr, "Cannot open JSON output file %s\n",
 		       gcov_intermediate_filename.c_str ());
+	      return_code = 6;
 	      return;
 	    }
 
@@ -1602,6 +1612,7 @@ generate_results (const char *file_name)
 	    {
 	      fnotice (stderr, "Error writing JSON output file %s\n",
 		       gcov_intermediate_filename.c_str ());
+	      return_code = 6;
 	      return;
 	    }
 	}
@@ -1790,12 +1801,14 @@ read_graph_file (void)
   if (!gcov_open (bbg_file_name, 1))
     {
       fnotice (stderr, "%s:cannot open notes file\n", bbg_file_name);
+      return_code = 1;
       return;
     }
   bbg_file_time = gcov_time ();
   if (!gcov_magic (gcov_read_unsigned (), GCOV_NOTE_MAGIC))
     {
       fnotice (stderr, "%s:not a gcov notes file\n", bbg_file_name);
+      return_code = 2;
       gcov_close ();
       return;
     }
@@ -1810,6 +1823,7 @@ read_graph_file (void)
 
       fnotice (stderr, "%s:version '%.4s', prefer '%.4s'\n",
 	       bbg_file_name, v, e);
+      return_code = 3;
     }
   bbg_stamp = gcov_read_unsigned ();
   /* Read checksum.  */
@@ -1977,6 +1991,7 @@ read_graph_file (void)
 	{
 	corrupt:;
 	  fnotice (stderr, "%s:corrupted\n", bbg_file_name);
+	  return_code = 4;
 	  break;
 	}
     }
@@ -2009,6 +2024,7 @@ read_count_file (void)
   if (!gcov_magic (gcov_read_unsigned (), GCOV_DATA_MAGIC))
     {
       fnotice (stderr, "%s:not a gcov data file\n", da_file_name);
+      return_code = 2;
     cleanup:;
       gcov_close ();
       return 1;
@@ -2023,11 +2039,13 @@ read_count_file (void)
 
       fnotice (stderr, "%s:version '%.4s', prefer version '%.4s'\n",
 	       da_file_name, v, e);
+      return_code = 3;
     }
   tag = gcov_read_unsigned ();
   if (tag != bbg_stamp)
     {
       fnotice (stderr, "%s:stamp mismatch with notes file\n", da_file_name);
+      return_code = 5;
       goto cleanup;
     }
 
@@ -2088,6 +2106,7 @@ read_count_file (void)
 		   ? N_("%s:overflowed\n")
 		   : N_("%s:corrupted\n"),
 		   da_file_name);
+	  return_code = 4;
 	  goto cleanup;
 	}
     }
