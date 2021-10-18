@@ -8213,8 +8213,11 @@ vectorizable_store (vec_info *vinfo,
 		vec_oprnd = result_chain[i];
 
 	      align = known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
-	      if (aligned_access_p (first_dr_info, vectype))
-		misalign = 0;
+	      if (alignment_support_scheme == dr_aligned)
+		{
+		  gcc_assert (aligned_access_p (first_dr_info, vectype));
+		  misalign = 0;
+		}
 	      else if (dr_misalignment (first_dr_info, vectype)
 		       == DR_MISALIGNMENT_UNKNOWN)
 		{
@@ -8299,8 +8302,8 @@ vectorizable_store (vec_info *vinfo,
 					  dataref_offset
 					  ? dataref_offset
 					  : build_int_cst (ref_type, 0));
-		  if (aligned_access_p (first_dr_info, vectype))
-		    ;
+		  if (alignment_support_scheme == dr_aligned)
+		    gcc_assert (aligned_access_p (first_dr_info, vectype));
 		  else
 		    TREE_TYPE (data_ref)
 		      = build_aligned_type (TREE_TYPE (data_ref),
