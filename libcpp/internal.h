@@ -769,6 +769,9 @@ extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 extern void _cpp_pop_buffer (cpp_reader *);
 extern char *_cpp_bracket_include (cpp_reader *);
 
+/* In errors.c  */
+extern location_t cpp_diagnostic_get_current_location (cpp_reader *);
+
 /* In traditional.c.  */
 extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *, bool);
 extern bool _cpp_read_logical_line_trad (cpp_reader *);
@@ -934,6 +937,26 @@ int linemap_get_expansion_line (class line_maps *,
    SET is the line map set LOCATION comes from.  */
 const char* linemap_get_expansion_filename (class line_maps *,
 					    location_t);
+
+/* A subclass of rich_location for emitting a diagnostic
+   at the current location of the reader, but flagging
+   it with set_escape_on_output (true).  */
+class encoding_rich_location : public rich_location
+{
+ public:
+  encoding_rich_location (cpp_reader *pfile)
+  : rich_location (pfile->line_table,
+		   cpp_diagnostic_get_current_location (pfile))
+  {
+    set_escape_on_output (true);
+  }
+
+  encoding_rich_location (cpp_reader *pfile, location_t loc)
+  : rich_location (pfile->line_table, loc)
+  {
+    set_escape_on_output (true);
+  }
+};
 
 #ifdef __cplusplus
 }

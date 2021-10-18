@@ -2734,6 +2734,10 @@ common_handle_option (struct gcc_options *opts,
       dc->column_origin = value;
       break;
 
+    case OPT_fdiagnostics_escape_format_:
+      dc->escape_format = (enum diagnostics_escape_format)value;
+      break;
+
     case OPT_fdiagnostics_show_cwe:
       dc->show_cwe = value;
       break;

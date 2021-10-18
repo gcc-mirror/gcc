@@ -1060,7 +1060,8 @@ make_location (location_t caret, source_range src_range)
    source line in order to calculate the display width.  If that cannot be done
    for any reason, then returns the byte column as a fallback.  */
 int
-location_compute_display_column (expanded_location exploc, int tabstop)
+location_compute_display_column (expanded_location exploc,
+				 const cpp_char_column_policy &policy)
 {
   if (!(exploc.file && *exploc.file && exploc.line && exploc.column))
     return exploc.column;
@@ -1068,7 +1069,7 @@ location_compute_display_column (expanded_location exploc, int tabstop)
   /* If line is NULL, this function returns exploc.column which is the
      desired fallback.  */
   return cpp_byte_column_to_display_column (line.get_buffer (), line.length (),
-					    exploc.column, tabstop);
+					    exploc.column, policy);
 }
 
 /* Dump statistics to stderr about the memory usage of the line_table
@@ -3767,43 +3768,50 @@ test_line_offset_overflow ()
 void test_cpp_utf8 ()
 {
   const int def_tabstop = 8;
+  cpp_char_column_policy policy (def_tabstop, cpp_wcwidth);
+
   /* Verify that wcwidth of invalid UTF-8 or control bytes is 1.  */
   {
-    int w_bad = cpp_display_width ("\xf0!\x9f!\x98!\x82!", 8, def_tabstop);
+    int w_bad = cpp_display_width ("\xf0!\x9f!\x98!\x82!", 8, policy);
     ASSERT_EQ (8, w_bad);
-    int w_ctrl = cpp_display_width ("\r\n\v\0\1", 5, def_tabstop);
+    int w_ctrl = cpp_display_width ("\r\n\v\0\1", 5, policy);
     ASSERT_EQ (5, w_ctrl);
   }
 
   /* Verify that wcwidth of valid UTF-8 is as expected.  */
   {
-    const int w_pi = cpp_display_width ("\xcf\x80", 2, def_tabstop);
+    const int w_pi = cpp_display_width ("\xcf\x80", 2, policy);
     ASSERT_EQ (1, w_pi);
-    const int w_emoji = cpp_display_width ("\xf0\x9f\x98\x82", 4, def_tabstop);
+    const int w_emoji = cpp_display_width ("\xf0\x9f\x98\x82", 4, policy);
     ASSERT_EQ (2, w_emoji);
     const int w_umlaut_precomposed = cpp_display_width ("\xc3\xbf", 2,
-							def_tabstop);
+							policy);
     ASSERT_EQ (1, w_umlaut_precomposed);
     const int w_umlaut_combining = cpp_display_width ("y\xcc\x88", 3,
-						      def_tabstop);
+						      policy);
     ASSERT_EQ (1, w_umlaut_combining);
-    const int w_han = cpp_display_width ("\xe4\xb8\xba", 3, def_tabstop);
+    const int w_han = cpp_display_width ("\xe4\xb8\xba", 3, policy);
     ASSERT_EQ (2, w_han);
-    const int w_ascii = cpp_display_width ("GCC", 3, def_tabstop);
+    const int w_ascii = cpp_display_width ("GCC", 3, policy);
     ASSERT_EQ (3, w_ascii);
     const int w_mixed = cpp_display_width ("\xcf\x80 = 3.14 \xf0\x9f\x98\x82"
 					   "\x9f! \xe4\xb8\xba y\xcc\x88",
-					   24, def_tabstop);
+					   24, policy);
     ASSERT_EQ (18, w_mixed);
   }
 
   /* Verify that display width properly expands tabs.  */
   {
     const char *tstr = "\tabc\td";
-    ASSERT_EQ (6, cpp_display_width (tstr, 6, 1));
-    ASSERT_EQ (10, cpp_display_width (tstr, 6, 3));
-    ASSERT_EQ (17, cpp_display_width (tstr, 6, 8));
-    ASSERT_EQ (1, cpp_display_column_to_byte_column (tstr, 6, 7, 8));
+    ASSERT_EQ (6, cpp_display_width (tstr, 6,
+				     cpp_char_column_policy (1, cpp_wcwidth)));
+    ASSERT_EQ (10, cpp_display_width (tstr, 6,
+				      cpp_char_column_policy (3, cpp_wcwidth)));
+    ASSERT_EQ (17, cpp_display_width (tstr, 6,
+				      cpp_char_column_policy (8, cpp_wcwidth)));
+    ASSERT_EQ (1,
+	       cpp_display_column_to_byte_column
+		 (tstr, 6, 7, cpp_char_column_policy (8, cpp_wcwidth)));
   }
 
   /* Verify that cpp_byte_column_to_display_column can go past the end,
@@ -3816,13 +3824,13 @@ void test_cpp_utf8 ()
       /* 111122223456
 	 Byte columns.  */
 
-    ASSERT_EQ (5, cpp_display_width (str, 6, def_tabstop));
+    ASSERT_EQ (5, cpp_display_width (str, 6, policy));
     ASSERT_EQ (105,
-	       cpp_byte_column_to_display_column (str, 6, 106, def_tabstop));
+	       cpp_byte_column_to_display_column (str, 6, 106, policy));
     ASSERT_EQ (10000,
-	       cpp_byte_column_to_display_column (NULL, 0, 10000, def_tabstop));
+	       cpp_byte_column_to_display_column (NULL, 0, 10000, policy));
     ASSERT_EQ (0,
-	       cpp_byte_column_to_display_column (NULL, 10000, 0, def_tabstop));
+	       cpp_byte_column_to_display_column (NULL, 10000, 0, policy));
   }
 
   /* Verify that cpp_display_column_to_byte_column can go past the end,
@@ -3836,25 +3844,25 @@ void test_cpp_utf8 ()
       /* 000000000000000000000000000000000111111
 	 111122223333444456666777788889999012345
 	 Byte columns.  */
-    ASSERT_EQ (4, cpp_display_column_to_byte_column (str, 15, 2, def_tabstop));
+    ASSERT_EQ (4, cpp_display_column_to_byte_column (str, 15, 2, policy));
     ASSERT_EQ (15,
-	       cpp_display_column_to_byte_column (str, 15, 11, def_tabstop));
+	       cpp_display_column_to_byte_column (str, 15, 11, policy));
     ASSERT_EQ (115,
-	       cpp_display_column_to_byte_column (str, 15, 111, def_tabstop));
+	       cpp_display_column_to_byte_column (str, 15, 111, policy));
     ASSERT_EQ (10000,
-	       cpp_display_column_to_byte_column (NULL, 0, 10000, def_tabstop));
+	       cpp_display_column_to_byte_column (NULL, 0, 10000, policy));
     ASSERT_EQ (0,
-	       cpp_display_column_to_byte_column (NULL, 10000, 0, def_tabstop));
+	       cpp_display_column_to_byte_column (NULL, 10000, 0, policy));
 
     /* Verify that we do not interrupt a UTF-8 sequence.  */
-    ASSERT_EQ (4, cpp_display_column_to_byte_column (str, 15, 1, def_tabstop));
+    ASSERT_EQ (4, cpp_display_column_to_byte_column (str, 15, 1, policy));
 
     for (int byte_col = 1; byte_col <= 15; ++byte_col)
       {
 	const int disp_col
-	  = cpp_byte_column_to_display_column (str, 15, byte_col, def_tabstop);
+	  = cpp_byte_column_to_display_column (str, 15, byte_col, policy);
 	const int byte_col2
-	  = cpp_display_column_to_byte_column (str, 15, disp_col, def_tabstop);
+	  = cpp_display_column_to_byte_column (str, 15, disp_col, policy);
 
 	/* If we ask for the display column in the middle of a UTF-8
 	   sequence, it will return the length of the partial sequence,

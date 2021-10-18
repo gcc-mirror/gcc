@@ -192,6 +192,21 @@ temp_source_file::temp_source_file (const location &loc,
   fclose (out);
 }
 
+/* As above, but with a size, to allow for NUL bytes in CONTENT.  */
+
+temp_source_file::temp_source_file (const location &loc,
+				    const char *suffix,
+				    const char *content,
+				    size_t sz)
+: named_temp_file (suffix)
+{
+  FILE *out = fopen (get_filename (), "w");
+  if (!out)
+    fail_formatted (loc, "unable to open tempfile: %s", get_filename ());
+  fwrite (content, sz, 1, out);
+  fclose (out);
+}
+
 /* Avoid introducing locale-specific differences in the results
    by hardcoding open_quote and close_quote.  */
 

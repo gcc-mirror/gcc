@@ -230,6 +230,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->column_unit = DIAGNOSTICS_COLUMN_UNIT_DISPLAY;
   context->column_origin = 1;
   context->tabstop = 8;
+  context->escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
   context->edit_context_ptr = NULL;
   context->diagnostic_group_nesting_depth = 0;
   context->diagnostic_group_emission_count = 0;
@@ -393,7 +394,10 @@ convert_column_unit (enum diagnostics_column_unit column_unit,
       gcc_unreachable ();
 
     case DIAGNOSTICS_COLUMN_UNIT_DISPLAY:
-      return location_compute_display_column (s, tabstop);
+      {
+	cpp_char_column_policy policy (tabstop, cpp_wcwidth);
+	return location_compute_display_column (s, policy);
+      }
 
     case DIAGNOSTICS_COLUMN_UNIT_BYTE:
       return s.column;
@@ -2373,8 +2377,8 @@ test_diagnostic_get_location_text ()
     const char *const content = "smile \xf0\x9f\x98\x82\n";
     const int line_bytes = strlen (content) - 1;
     const int def_tabstop = 8;
-    const int display_width = cpp_display_width (content, line_bytes,
-						 def_tabstop);
+    const cpp_char_column_policy policy (def_tabstop, cpp_wcwidth);
+    const int display_width = cpp_display_width (content, line_bytes, policy);
     ASSERT_EQ (line_bytes - 2, display_width);
     temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
     const char *const fname = tmp.get_filename ();

@@ -38,6 +38,20 @@ enum diagnostics_column_unit
   DIAGNOSTICS_COLUMN_UNIT_BYTE
 };
 
+/* An enum for controlling how to print non-ASCII characters/bytes when
+   a diagnostic suggests escaping the source code on output.  */
+
+enum diagnostics_escape_format
+{
+  /* Escape non-ASCII Unicode characters in the form <U+XXXX> and
+     non-UTF-8 bytes in the form <XX>.  */
+  DIAGNOSTICS_ESCAPE_FORMAT_UNICODE,
+
+  /* Escape non-ASCII bytes in the form <XX> (thus showing the underlying
+     encoding of non-ASCII Unicode characters).  */
+  DIAGNOSTICS_ESCAPE_FORMAT_BYTES
+};
+
 /* Enum for overriding the standard output format.  */
 
 enum diagnostics_output_format
@@ -339,6 +353,10 @@ struct diagnostic_context
 
   /* The size of the tabstop for tab expansion.  */
   int tabstop;
+
+  /* How should non-ASCII/non-printable bytes be escaped when
+     a diagnostic suggests escaping the source code on output.  */
+  enum diagnostics_escape_format escape_format;
 
   /* If non-NULL, an edit_context to which fix-it hints should be
      applied, for generating patches.  */
