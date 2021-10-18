@@ -440,4 +440,9 @@ private
    function Get_Stack_Info (Stack : SS_Stack_Ptr) return Stack_Info;
    --  Obtain the information attributes of secondary stack Stack
 
+   pragma Machine_Attribute (SS_Allocate, "strub", "callable");
+   pragma Machine_Attribute (SS_Mark, "strub", "callable");
+   pragma Machine_Attribute (SS_Release, "strub", "callable");
+   --  Enable these to be called from within strub contexts.
+
 end System.Secondary_Stack;

@@ -1,3 +1,89 @@
+2021-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94070
+	* intrinsics/size.c (size0, size1): Comment that now not
+	used by newer compiler code.
+
+2021-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/101334
+	* intrinsics/associated.c (associated): Also check for same rank.
+
+2021-09-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* configure.ac (AM_FCFLAGS): Revert r12-3722 by removing
+	-Wno-missing-include-dirs.
+	* configure: Regenerate.
+
+2021-09-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/55534
+	* configure.ac (AM_FCFLAGS): Add -Wno-missing-include-dirs.
+	* configure: Regenerate.
+
+2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* ISO_Fortran_binding.h: Update comments.
+	* runtime/ISO_Fortran_binding.c: Likewise.
+
+2021-09-17  Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* ISO_Fortran_binding.h: Only include float.h if the C compiler
+	doesn't have predefined __LDBL_* and __DBL_* macros. Handle
+	LDBL_MANT_DIG == 53 for FreeBSD.
+
+2021-09-13  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* ISO_Fortran_binding.h (CFI_type_long_double)
+	(CFI_type_long_double_Complex) [LDBL_MANT_DIG == 64 &&
+	LDBL_MIN_EXP == -16382 && LDBL_MAX_EXP == 16384]: Define.
+
+2021-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* Makefile.am (gfor_built_src): Depend on
+	include/ISO_Fortran_binding.h not on ISO_Fortran_binding.h.
+	(ISO_Fortran_binding.h): Rename make target to ...
+	(include/ISO_Fortran_binding.h): ... this.
+	* Makefile.in: Regenerate.
+
+2021-09-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* ISO_Fortran_binding-1-tmpl.h: Deleted.
+	* ISO_Fortran_binding-2-tmpl.h: Deleted.
+	* ISO_Fortran_binding-3-tmpl.h: Deleted.
+	* ISO_Fortran_binding.h: New file to replace the above.
+	* Makefile.am (gfor_cdir): Remove MULTISUBDIR.
+	(ISO_Fortran_binding.h): Simplify to just copy the file.
+	* Makefile.in: Regenerated.
+	* mk-kinds-h.sh: Revert pieces no longer needed for
+	ISO_Fortran_binding.h.
+
+2021-09-02  Sandra Loosemore  <sandra@codesourcery.com>
+	    José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100907
+	PR fortran/100911
+	PR fortran/100914
+	PR fortran/100915
+	PR fortran/100917
+	* ISO_Fortran_binding-1-tmpl.h (CFI_type_cfunptr): Make equivalent
+	to CFI_type_cptr.
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Fix
+	handling of CFI_type_cptr and CFI_type_cfunptr.  Additional error
+	checking and code cleanup.
+	(gfc_desc_to_cfi_desc): Likewise.  Also correct kind mapping
+	for character, complex, and long double types.
+
+2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Use configured libm availability.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use libtool macro to find libm availability.
+	* libgfortran.spec.in: Use configured libm availability.
+
 2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR libfortran/101305

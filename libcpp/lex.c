@@ -1306,6 +1306,9 @@ warn_about_normalization (cpp_reader *pfile,
       if (NORMALIZE_STATE_RESULT (s) == normalized_C)
 	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
 			       "`%.*s' is not in NFKC", (int) sz, buf);
+      else if (CPP_OPTION (pfile, cxx23_identifiers))
+	cpp_pedwarning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
+				  "`%.*s' is not in NFC", (int) sz, buf);
       else
 	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
 			       "`%.*s' is not in NFC", (int) sz, buf);

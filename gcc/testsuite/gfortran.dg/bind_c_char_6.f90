@@ -9,11 +9,11 @@ subroutine s1 (x1) bind(C)
   character(len=1) :: x1
 end
 
-subroutine s2 (x2) bind(C) ! { dg-error "Fortran 2008: Character dummy argument 'x2' at .1. with length greater than 1 for procedure 's2' with BIND\\(C\\) attribute" }
+subroutine s2 (x2) bind(C) ! { dg-error "Character dummy argument 'x2' at .1. must be of constant length of one or assumed length, unless it has assumed shape or assumed rank, as procedure 's2' has the BIND\\(C\\) attribute" }
   character(len=2) :: x2
 end
 
-subroutine s3 (xn, n) bind(C) ! { dg-error "Character dummy argument 'xn' at .1. must be of constant length or assumed length, unless it has assumed shape or assumed rank, as procedure 's3' has the BIND\\(C\\) attribute" }
+subroutine s3 (xn, n) bind(C) ! { dg-error "Character dummy argument 'xn' at .1. must be of constant length of one or assumed length, unless it has assumed shape or assumed rank, as procedure 's3' has the BIND\\(C\\) attribute" }
   integer :: n
   character(len=n) :: xn
 end
@@ -28,19 +28,17 @@ subroutine as1 (x1) bind(C)  ! { dg-error "Fortran 2018: Assumed-shape array 'x1
   character(len=1) :: x1(:)
 end
 
-subroutine as2 (x2) bind(C) ! { dg-error "Fortran 2008: Character dummy argument 'x2' at .1. with length greater than 1 for procedure 'as2' with BIND\\(C\\) attribute" }
-                            ! { dg-error "Fortran 2018: Assumed-shape array 'x2' at .1. as dummy argument to the BIND\\(C\\) procedure 'as2' at .2." "" { target *-*-* } .-1 }
+subroutine as2 (x2) bind(C) ! { dg-error "Fortran 2018: Assumed-shape array 'x2' at .1. as dummy argument to the BIND\\(C\\) procedure 'as2' at .2." }
   character(len=2) :: x2(:,:)
 end
 
-subroutine as3 (xn, n) bind(C) ! { dg-error "Fortran 2018: Character dummy argument 'xn' at .1. with nonconstant length as procedure 'as3' is BIND\\(C\\)" }
-                            ! { dg-error "Fortran 2018: Assumed-shape array 'xn' at .1. as dummy argument to the BIND\\(C\\) procedure 'as3' at .2." "" { target *-*-* } .-1 }
+subroutine as3 (xn, n) bind(C) ! { dg-error "Fortran 2018: Assumed-shape array 'xn' at .1. as dummy argument to the BIND\\(C\\) procedure 'as3' at .2." }
   integer :: n
   character(len=n) :: xn(:,:,:)
 end
 
-subroutine as4 (xstar) bind(C) ! { dg-error "Fortran 2018: Assumed-length character dummy argument 'xstar' at .1. of procedure 'as4' with BIND\\(C\\) attribute" }
-                            ! { dg-error "Fortran 2018: Assumed-shape array 'xstar' at .1. as dummy argument to the BIND\\(C\\) procedure 'as4' at .2." "" { target *-*-* } .-1 }
+subroutine as4 (xstar) bind(C) ! { dg-error "Fortran 2018: Assumed-length character dummy argument 'xstar' at .1. of procedure 'as4' with BIND\\(C\\) attribute"  }
+                               ! { dg-error "Fortran 2018: Assumed-shape array 'xstar' at .1. as dummy argument to the BIND\\(C\\) procedure 'as4' at .2." "" { target *-*-* } .-1 }
   character(len=*) :: xstar(:,:,:,:)
 end
 
@@ -69,11 +67,11 @@ subroutine az1 (x1) bind(C)
   character(len=1) :: x1(*)
 end
 
-subroutine az2 (x2) bind(C) ! { dg-error "Fortran 2008: Character dummy argument 'x2' at .1. with length greater than 1 for procedure 'az2' with BIND\\(C\\) attribute" }
+subroutine az2 (x2) bind(C) ! { dg-error "Character dummy argument 'x2' at .1. must be of constant length of one or assumed length, unless it has assumed shape or assumed rank, as procedure 'az2' has the BIND\\(C\\) attribute" }
   character(len=2) :: x2(*)
 end
                                              
-subroutine az3 (xn, n) bind(C) ! { dg-error "Character dummy argument 'xn' at .1. must be of constant length or assumed length, unless it has assumed shape or assumed rank, as procedure 'az3' has the BIND\\(C\\) attribute" }
+subroutine az3 (xn, n) bind(C) ! { dg-error "Character dummy argument 'xn' at .1. must be of constant length of one or assumed length, unless it has assumed shape or assumed rank, as procedure 'az3' has the BIND\\(C\\) attribute" }
   integer :: n
   character(len=n) :: xn(*)
 end
@@ -88,11 +86,11 @@ subroutine ae1 (x1) bind(C)
   character(len=1) :: x1(5)
 end
 
-subroutine ae2 (x2) bind(C) ! { dg-error "Fortran 2008: Character dummy argument 'x2' at .1. with length greater than 1 for procedure 'ae2' with BIND\\(C\\) attribute" }
+subroutine ae2 (x2) bind(C) ! { dg-error "Character dummy argument 'x2' at .1. must be of constant length of one or assumed length, unless it has assumed shape or assumed rank, as procedure 'ae2' has the BIND\\(C\\) attribute" }
   character(len=2) :: x2(7)
 end
 
-subroutine ae3 (xn, n) bind(C) ! { dg-error "Character dummy argument 'xn' at .1. must be of constant length or assumed length, unless it has assumed shape or assumed rank, as procedure 'ae3' has the BIND\\(C\\) attribute" }
+subroutine ae3 (xn, n) bind(C) ! { dg-error "Character dummy argument 'xn' at .1. must be of constant length of one or assumed length, unless it has assumed shape or assumed rank, as procedure 'ae3' has the BIND\\(C\\) attribute" }
   integer :: n
   character(len=n) :: xn(9)
 end

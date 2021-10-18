@@ -964,6 +964,9 @@ class auto_bitmap
   bitmap_head m_bits;
 };
 
+extern void debug (const auto_bitmap &ref);
+extern void debug (const auto_bitmap *ptr);
+
 /* Base class for bitmap_view; see there for details.  */
 template<typename T, typename Traits = array_traits<T> >
 class base_bitmap_view

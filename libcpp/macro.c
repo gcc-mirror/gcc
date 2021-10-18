@@ -2035,7 +2035,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 
       /* __VA_OPT__ handling.  */
       vaopt_state::update_type vostate = vaopt_tracker.update (src);
-      if (vostate != vaopt_state::INCLUDE)
+      if (__builtin_expect (vostate != vaopt_state::INCLUDE, false))
 	{
 	  if (vostate == vaopt_state::BEGIN)
 	    {
@@ -2058,14 +2058,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	      const cpp_token **start = vaopt_start;
 	      vaopt_start = NULL;
 
-	      /* Remove any tail padding from inside the __VA_OPT__.  */
 	      paste_flag = tokens_buff_last_token_ptr (buff);
-	      while (paste_flag && paste_flag != start
-		     && (*paste_flag)->type == CPP_PADDING)
-		{
-		  tokens_buff_remove_last_token (buff);
-		  paste_flag = tokens_buff_last_token_ptr (buff);
-		}
 
 	      if (vaopt_tracker.stringify ())
 		{
@@ -2086,6 +2079,14 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		}
 	      else if (src->flags & PASTE_LEFT)
 		{
+		  /* Don't avoid paste after all.  */
+		  while (paste_flag && paste_flag != start
+			 && *paste_flag == &pfile->avoid_paste)
+		    {
+		      tokens_buff_remove_last_token (buff);
+		      paste_flag = tokens_buff_last_token_ptr (buff);
+		    }
+
 		  /* With a non-empty __VA_OPT__ on the LHS of ##, the last
 		     token should be flagged PASTE_LEFT.  */
 		  if (paste_flag && (*paste_flag)->type != CPP_PADDING)
@@ -2181,11 +2182,8 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		  else
 		    paste_flag = tmp_token_ptr;
 		}
-	      /* Remove the paste flag if the RHS is a placemarker, unless the
-		 previous emitted token is at the beginning of __VA_OPT__;
-		 placemarkers within __VA_OPT__ are ignored in that case.  */
-	      else if (arg_tokens_count == 0
-		       && tmp_token_ptr != vaopt_start)
+	      /* Remove the paste flag if the RHS is a placemarker.  */
+	      else if (arg_tokens_count == 0)
 		paste_flag = tmp_token_ptr;
 	    }
 	}
@@ -2215,7 +2213,8 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 
       /* Padding on the left of an argument (unless RHS of ##).  */
       if ((!pfile->state.in_directive || pfile->state.directive_wants_padding)
-	  && src != macro->exp.tokens && !(src[-1].flags & PASTE_LEFT)
+	  && src != macro->exp.tokens
+	  && !(src[-1].flags & PASTE_LEFT)
 	  && !last_token_is (buff, vaopt_start))
 	{
 	  const cpp_token *t = padding_token (pfile, src);
@@ -2260,8 +2259,8 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		token_index += j;
 
 	      index = expanded_token_index (pfile, macro, src, token_index);
-	      tokens_buff_add_token (buff, virt_locs,
-				     macro_arg_token_iter_get_token (&from),
+	      const cpp_token *tok = macro_arg_token_iter_get_token (&from);
+	      tokens_buff_add_token (buff, virt_locs, tok,
 				     macro_arg_token_iter_get_location (&from),
 				     src->src_loc, map, index);
 	      macro_arg_token_iter_forward (&from);
@@ -2301,8 +2300,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		     NODE_NAME (node), src->val.macro_arg.arg_no);
 
       /* Avoid paste on RHS (even case count == 0).  */
-      if (!pfile->state.in_directive && !(src->flags & PASTE_LEFT)
-	  && !last_token_is (buff, vaopt_start))
+      if (!pfile->state.in_directive && !(src->flags & PASTE_LEFT))
 	{
 	  const cpp_token *t = &pfile->avoid_paste;
 	  tokens_buff_add_token (buff, virt_locs,

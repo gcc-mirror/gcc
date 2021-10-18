@@ -25,7 +25,8 @@
 // libstdc++/50118
 template class std::multiset<int, std::less<int>,
 			     __gnu_test::ExplicitConsAlloc<int> >;
-#if !defined __STRICT_ANSI__ && __cplusplus <= 201703L
+#if !defined __STRICT_ANSI__ && __cplusplus <= 201703L \
+    && !defined _GLIBCXX_CONCEPT_CHECKS
 template class std::multiset<int, std::less<int>,
 			     __gnu_test::ExplicitConsAlloc<char> >;
 #endif

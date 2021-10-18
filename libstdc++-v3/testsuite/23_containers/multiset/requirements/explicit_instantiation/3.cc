@@ -22,7 +22,7 @@
 
 // { dg-do compile }
 // The extension that implicitly rebinds allocators is in gnu++98/11/14/17 only
-// { dg-skip-if "" { *-*-* } { "-std=c++*" "-std=gnu++2*" } }
+// { dg-skip-if "" { *-*-* } { "-std=c++*" "-std=gnu++2*" "-D_GLIBCXX_CONCEPT_CHECKS*" } }
 
 // libstdc++/21770
 template class std::multiset<int, std::less<int>, std::allocator<char> >;

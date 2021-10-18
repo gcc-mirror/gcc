@@ -585,31 +585,137 @@ record_edge_info (basic_block bb)
     }
 }
 
-class dom_jump_threader_simplifier : public jump_threader_simplifier
+class dom_jt_state : public jt_state
 {
 public:
-  dom_jump_threader_simplifier (vr_values *v,
-				avail_exprs_stack *avails)
-    : jump_threader_simplifier (v), m_avail_exprs_stack (avails) { }
+  dom_jt_state (const_and_copies *copies, avail_exprs_stack *avails,
+		evrp_range_analyzer *evrp)
+    : m_copies (copies), m_avails (avails), m_evrp (evrp)
+  {
+  }
+  void push (edge e) override
+  {
+    m_copies->push_marker ();
+    m_avails->push_marker ();
+    m_evrp->push_marker ();
+    jt_state::push (e);
+  }
+  void pop () override
+  {
+    m_copies->pop_to_marker ();
+    m_avails->pop_to_marker ();
+    m_evrp->pop_to_marker ();
+    jt_state::pop ();
+  }
+  void register_equivs_edge (edge e) override
+  {
+    record_temporary_equivalences (e, m_copies, m_avails);
+  }
+  void record_ranges_from_stmt (gimple *stmt, bool temporary) override
+  {
+    m_evrp->record_ranges_from_stmt (stmt, temporary);
+  }
+  void register_equiv (tree dest, tree src, bool update) override;
+private:
+  const_and_copies *m_copies;
+  avail_exprs_stack *m_avails;
+  evrp_range_analyzer *m_evrp;
+};
+
+void
+dom_jt_state::register_equiv (tree dest, tree src, bool update)
+{
+  m_copies->record_const_or_copy (dest, src);
+
+  /* If requested, update the value range associated with DST, using
+     the range from SRC.  */
+  if (update)
+    {
+      /* Get new VR we can pass to push_value_range.  */
+      value_range_equiv *new_vr = m_evrp->allocate_value_range_equiv ();
+      new (new_vr) value_range_equiv ();
+
+      /* There are three cases to consider:
+
+	 First if SRC is an SSA_NAME, then we can copy the value range
+	 from SRC into NEW_VR.
+
+	 Second if SRC is an INTEGER_CST, then we can just set NEW_VR
+	 to a singleton range.  Note that even if SRC is a constant we
+	 need to set a suitable output range so that VR_UNDEFINED
+	 ranges do not leak through.
+
+	 Otherwise set NEW_VR to varying.  This may be overly
+	 conservative.  */
+      if (TREE_CODE (src) == SSA_NAME)
+	new_vr->deep_copy (m_evrp->get_value_range (src));
+      else if (TREE_CODE (src) == INTEGER_CST)
+	new_vr->set (src);
+      else
+	new_vr->set_varying (TREE_TYPE (src));
+
+      /* This is a temporary range for DST, so push it.  */
+      m_evrp->push_value_range (dest, new_vr);
+    }
+}
+
+class dom_jt_simplifier : public jt_simplifier
+{
+public:
+  dom_jt_simplifier (vr_values *v, avail_exprs_stack *avails)
+    : m_vr_values (v), m_avails (avails) { }
 
 private:
   tree simplify (gimple *, gimple *, basic_block, jt_state *) override;
-  avail_exprs_stack *m_avail_exprs_stack;
+  vr_values *m_vr_values;
+  avail_exprs_stack *m_avails;
 };
 
 tree
-dom_jump_threader_simplifier::simplify (gimple *stmt,
-					gimple *within_stmt,
-					basic_block bb,
-					jt_state *state)
+dom_jt_simplifier::simplify (gimple *stmt, gimple *within_stmt,
+			     basic_block, jt_state *)
 {
   /* First see if the conditional is in the hash table.  */
-  tree cached_lhs =  m_avail_exprs_stack->lookup_avail_expr (stmt,
-							     false, true);
+  tree cached_lhs =  m_avails->lookup_avail_expr (stmt, false, true);
   if (cached_lhs)
     return cached_lhs;
 
-  return jump_threader_simplifier::simplify (stmt, within_stmt, bb, state);
+  if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+    {
+      simplify_using_ranges simplifier (m_vr_values);
+      return simplifier.vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+						  gimple_cond_lhs (cond_stmt),
+						  gimple_cond_rhs (cond_stmt),
+						  within_stmt);
+    }
+  if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
+    {
+      tree op = gimple_switch_index (switch_stmt);
+      if (TREE_CODE (op) != SSA_NAME)
+	return NULL_TREE;
+
+      const value_range_equiv *vr = m_vr_values->get_value_range (op);
+      return find_case_label_range (switch_stmt, vr);
+    }
+  if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
+    {
+      tree lhs = gimple_assign_lhs (assign_stmt);
+      if (TREE_CODE (lhs) == SSA_NAME
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	  && stmt_interesting_for_vrp (stmt))
+	{
+	  edge dummy_e;
+	  tree dummy_tree;
+	  value_range_equiv new_vr;
+	  m_vr_values->extract_range_from_stmt (stmt, &dummy_e, &dummy_tree,
+						&new_vr);
+	  tree singleton;
+	  if (new_vr.singleton_p (&singleton))
+	    return singleton;
+	}
+    }
+  return NULL;
 }
 
 class dom_opt_dom_walker : public dom_walker
@@ -752,8 +858,8 @@ pass_dominator::execute (function *fun)
 
   /* Recursively walk the dominator tree optimizing statements.  */
   evrp_range_analyzer analyzer (true);
-  dom_jump_threader_simplifier simplifier (&analyzer, avail_exprs_stack);
-  jt_state state (const_and_copies, avail_exprs_stack, &analyzer);
+  dom_jt_simplifier simplifier (&analyzer, avail_exprs_stack);
+  dom_jt_state state (const_and_copies, avail_exprs_stack, &analyzer);
   jump_threader threader (&simplifier, &state);
   dom_opt_dom_walker walker (CDI_DOMINATORS,
 			     &threader,
@@ -1704,7 +1810,7 @@ record_equivalences_from_stmt (gimple *stmt, int may_optimize_p,
    CONST_AND_COPIES.  */
 
 static void
-cprop_operand (gimple *stmt, use_operand_p op_p, vr_values *vr_values)
+cprop_operand (gimple *stmt, use_operand_p op_p, range_query *query)
 {
   tree val;
   tree op = USE_FROM_PTR (op_p);
@@ -1714,7 +1820,12 @@ cprop_operand (gimple *stmt, use_operand_p op_p, vr_values *vr_values)
      CONST_AND_COPIES.  */
   val = SSA_NAME_VALUE (op);
   if (!val)
-    val = vr_values->op_with_constant_singleton_value_range (op);
+    {
+      value_range r;
+      tree single;
+      if (query->range_of_expr (r, op, stmt) && r.singleton_p (&single))
+	val = single;
+    }
 
   if (val && val != op)
     {
@@ -1772,7 +1883,7 @@ cprop_operand (gimple *stmt, use_operand_p op_p, vr_values *vr_values)
    vdef_ops of STMT.  */
 
 static void
-cprop_into_stmt (gimple *stmt, vr_values *vr_values)
+cprop_into_stmt (gimple *stmt, range_query *query)
 {
   use_operand_p op_p;
   ssa_op_iter iter;
@@ -1789,7 +1900,7 @@ cprop_into_stmt (gimple *stmt, vr_values *vr_values)
 	 operands.  */
       if (old_op != last_copy_propagated_op)
 	{
-	  cprop_operand (stmt, op_p, vr_values);
+	  cprop_operand (stmt, op_p, query);
 
 	  tree new_op = USE_FROM_PTR (op_p);
 	  if (new_op != old_op && TREE_CODE (new_op) == SSA_NAME)
@@ -1891,6 +2002,66 @@ dom_opt_dom_walker::test_for_singularity (gimple *stmt,
     }
 }
 
+/* If STMT is a comparison of two uniform vectors reduce it to a comparison
+   of scalar objects, otherwise leave STMT unchanged.  */
+
+static void
+reduce_vector_comparison_to_scalar_comparison (gimple *stmt)
+{
+  if (gimple_code (stmt) == GIMPLE_COND)
+    {
+      tree lhs = gimple_cond_lhs (stmt);
+      tree rhs = gimple_cond_rhs (stmt);
+
+      /* We may have a vector comparison where both arms are uniform
+	 vectors.  If so, we can simplify the vector comparison down
+	 to a scalar comparison.  */
+      if (TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE
+	  && TREE_CODE (TREE_TYPE (rhs)) == VECTOR_TYPE)
+	{
+	  /* If either operand is an SSA_NAME, then look back to its
+	     defining statement to try and get at a suitable source.  */
+	  if (TREE_CODE (rhs) == SSA_NAME)
+	    {
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (rhs);
+	      if (gimple_assign_single_p (def_stmt))
+		rhs = gimple_assign_rhs1 (def_stmt);
+	    }
+
+	  if (TREE_CODE (lhs) == SSA_NAME)
+	    {
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (lhs);
+	      if (gimple_assign_single_p (def_stmt))
+		lhs = gimple_assign_rhs1 (def_stmt);
+	    }
+
+	  /* Now see if they are both uniform vectors and if so replace
+	     the vector comparison with a scalar comparison.  */
+	  tree rhs_elem = rhs ? uniform_vector_p (rhs) : NULL_TREE;
+	  tree lhs_elem = lhs ? uniform_vector_p (lhs) : NULL_TREE;
+	  if (rhs_elem && lhs_elem)
+	    {
+	      if (dump_file && dump_flags & TDF_DETAILS)
+		{
+		  fprintf (dump_file, "Reducing vector comparison: ");
+		  print_gimple_stmt (dump_file, stmt, 0);
+		}
+
+	      gimple_cond_set_rhs (as_a <gcond *>(stmt), rhs_elem);
+	      gimple_cond_set_lhs (as_a <gcond *>(stmt), lhs_elem);
+	      gimple_set_modified (stmt, true);
+
+	      if (dump_file && dump_flags & TDF_DETAILS)
+		{
+		  fprintf (dump_file, "To scalar equivalent: ");
+		  print_gimple_stmt (dump_file, stmt, 0);
+		  fprintf (dump_file, "\n");
+		}
+	    }
+	}
+    }
+}
+
 /* Optimize the statement in block BB pointed to by iterator SI.
 
    We try to perform some simplistic global redundancy elimination and
@@ -1929,6 +2100,11 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
       fprintf (dump_file, "Optimizing statement ");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
+
+  /* STMT may be a comparison of uniform vectors that we can simplify
+     down to a comparison of scalars.  Do that transformation first
+     so that all the scalar optimizations from here onward apply.  */
+  reduce_vector_comparison_to_scalar_comparison (stmt);
 
   update_stmt_if_modified (stmt);
   opt_stats.num_stmts++;
@@ -2032,8 +2208,8 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
 		 SSA_NAMES.  */
 	      update_stmt_if_modified (stmt);
 	      edge taken_edge = NULL;
-	      m_evrp_range_analyzer->vrp_visit_cond_stmt
-		(as_a <gcond *> (stmt), &taken_edge);
+	      simplify_using_ranges simpl (m_evrp_range_analyzer);
+	      simpl.vrp_visit_cond_stmt (as_a <gcond *> (stmt), &taken_edge);
 	      if (taken_edge)
 		{
 		  if (taken_edge->flags & EDGE_TRUE_VALUE)

@@ -481,10 +481,10 @@ GLIBCXX_CHECK_FILESYSTEM_DEPS
 
 # For Networking TS.
 AC_CHECK_HEADERS([fcntl.h sys/ioctl.h sys/socket.h sys/uio.h poll.h netdb.h arpa/inet.h netinet/in.h netinet/tcp.h])
-AC_CHECK_DECL(F_GETFL,[],[],[fcntl.h])
-AC_CHECK_DECL(F_SETFL,[],[],[fcntl.h])
-if [ "$ac_cv_have_decl_F_GETFL$ac_cv_have_decl_F_SETFL" = 11 ]; then
-  AC_CHECK_DECL(O_NONBLOCK,[],[],[fcntl.h])
+AC_CHECK_DECL(F_GETFL,,,[#include <fcntl.h>])
+AC_CHECK_DECL(F_SETFL,,,[#include <fcntl.h>])
+if test "$ac_cv_have_decl_F_GETFL$ac_cv_have_decl_F_SETFL" = yesyes ; then
+  AC_CHECK_DECL(O_NONBLOCK,,,[#include <fcntl.h>])
 fi
 
 # For Transactional Memory TS

@@ -318,7 +318,7 @@ package body Sem_Dim is
       (N                  : Node_Id;
        Description_Needed : Boolean := False) return String;
    --  Given a node N, return the dimension symbols of N, preceded by "has
-   --  dimension" if Description_Needed. if N is dimensionless, return "'[']",
+   --  dimension" if Description_Needed. If N is dimensionless, return "'[']",
    --  or "is dimensionless" if Description_Needed.
 
    function Dimension_System_Root (T : Entity_Id) return Entity_Id;

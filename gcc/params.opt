@@ -130,6 +130,10 @@ Maximal estimated growth of function body caused by early inlining of single cal
 Common Joined UInteger Var(param_evrp_sparse_threshold) Init(800) Optimization Param
 Maximum number of basic blocks before EVRP uses a sparse cache.
 
+-param=evrp-switch-limit=
+Common Joined UInteger Var(param_evrp_switch_limit) Init(50) Optimization Param
+Maximum number of outgoing edges in a switch before EVRP will not process it.
+
 -param=evrp-mode=
 Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_RVRP_ONLY) Param Optimization
 --param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|trace|gori|cache|tracegori|debug] Specifies the mode Early VRP should operate in.
@@ -168,10 +172,6 @@ Enum(evrp_mode) String(debug) Value(EVRP_MODE_DEBUG)
 Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 999) Param Optimization
 Maximum depth of logical expression evaluation ranger will look through when
 evaluating outgoing edge ranges.
-
--param=fsm-maximum-phi-arguments=
-Common Joined UInteger Var(param_fsm_maximum_phi_arguments) Init(100) IntegerRange(1, 999999) Param Optimization
-Maximum number of arguments a PHI may have before the FSM threader will not try to thread through its block.
 
 -param=fsm-scale-path-blocks=
 Common Joined UInteger Var(param_fsm_scale_path_blocks) Init(3) IntegerRange(1, 10) Param Optimization
@@ -269,6 +269,10 @@ Maximum depth of recursive cloning for self-recursive function.
 Common Joined UInteger Var(param_ipa_cp_min_recursive_probability) Init(2) Param Optimization
 Recursive cloning only when the probability of call being executed exceeds the parameter.
 
+-param=ipa-cp-recursive-freq-factor=
+Common Joined UInteger Var(param_ipa_cp_recursive_freq_factor) Init(6) Param Optimization
+When propagating IPA-CP effect estimates, multiply frequencies of recursive edges that that bring back an unchanged value by this factor.
+
 -param=ipa-cp-recursion-penalty=
 Common Joined UInteger Var(param_ipa_cp_recursion_penalty) Init(40) IntegerRange(0, 100) Param Optimization
 Percentage penalty the recursive functions will receive when they are evaluated for cloning.
@@ -360,6 +364,22 @@ The maximum code size growth ratio when expanding into a jump table (in percent)
 -param=l1-cache-line-size=
 Common Joined UInteger Var(param_l1_cache_line_size) Init(32) Param Optimization
 The size of L1 cache line.
+
+-param=destructive-interference-size=
+Common Joined UInteger Var(param_destruct_interfere_size) Init(0) Param Optimization
+The minimum recommended offset between two concurrently-accessed objects to
+avoid additional performance degradation due to contention introduced by the
+implementation.  Typically the L1 cache line size, but can be larger to
+accommodate a variety of target processors with different cache line sizes.
+C++17 code might use this value in structure layout, but is strongly
+discouraged from doing so in public ABIs.
+
+-param=constructive-interference-size=
+Common Joined UInteger Var(param_construct_interfere_size) Init(0) Param Optimization
+The maximum recommended size of contiguous memory occupied by two objects
+accessed with temporal locality by concurrent threads.  Typically the L1 cache
+line size, but can be smaller to accommodate a variety of target processors with
+different cache line sizes.
 
 -param=l1-cache-size=
 Common Joined UInteger Var(param_l1_cache_size) Init(64) Param Optimization
@@ -513,17 +533,9 @@ The maximum number of nested indirect inlining performed by early inliner.
 Common Joined UInteger Var(param_max_fields_for_field_sensitive) Param
 Maximum number of fields in a structure before pointer analysis treats the structure as a single variable.
 
--param=max-fsm-thread-length=
-Common Joined UInteger Var(param_max_fsm_thread_length) Init(10) IntegerRange(1, 999999) Param Optimization
-Maximum number of basic blocks on a finite state automaton jump thread path.
-
 -param=max-fsm-thread-path-insns=
 Common Joined UInteger Var(param_max_fsm_thread_path_insns) Init(100) IntegerRange(1, 999999) Param Optimization
 Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path.
-
--param=max-fsm-thread-paths=
-Common Joined UInteger Var(param_max_fsm_thread_paths) Init(50) IntegerRange(1, 999999) Param Optimization
-Maximum number of new jump thread paths to create for a finite state automaton.
 
 -param=max-gcse-insertion-ratio=
 Common Joined UInteger Var(param_max_gcse_insertion_ratio) Init(20) Param Optimization

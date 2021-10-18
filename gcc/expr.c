@@ -236,8 +236,27 @@ convert_move (rtx to, rtx from, int unsignedp)
 	  >= GET_MODE_PRECISION (to_int_mode))
       && SUBREG_CHECK_PROMOTED_SIGN (from, unsignedp))
     {
+      scalar_int_mode int_orig_mode;
+      scalar_int_mode int_inner_mode;
+      machine_mode orig_mode = GET_MODE (from);
+
       from = gen_lowpart (to_int_mode, SUBREG_REG (from));
       from_mode = to_int_mode;
+
+      /* Preserve SUBREG_PROMOTED_VAR_P if the new mode is wider than
+	 the original mode, but narrower than the inner mode.  */
+      if (GET_CODE (from) == SUBREG
+	  && is_a <scalar_int_mode> (orig_mode, &int_orig_mode)
+	  && GET_MODE_PRECISION (to_int_mode)
+	     > GET_MODE_PRECISION (int_orig_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (from)),
+				     &int_inner_mode)
+	  && GET_MODE_PRECISION (int_inner_mode)
+	     > GET_MODE_PRECISION (to_int_mode))
+	{
+	  SUBREG_PROMOTED_VAR_P (from) = 1;
+	  SUBREG_PROMOTED_SET (from, unsignedp);
+	}
     }
 
   gcc_assert (GET_CODE (to) != SUBREG || !SUBREG_PROMOTED_VAR_P (to));
@@ -688,7 +707,27 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
       && (GET_MODE_PRECISION (subreg_promoted_mode (x))
 	  >= GET_MODE_PRECISION (int_mode))
       && SUBREG_CHECK_PROMOTED_SIGN (x, unsignedp))
-    x = gen_lowpart (int_mode, SUBREG_REG (x));
+    {
+      scalar_int_mode int_orig_mode;
+      scalar_int_mode int_inner_mode;
+      machine_mode orig_mode = GET_MODE (x);
+      x = gen_lowpart (int_mode, SUBREG_REG (x));
+
+      /* Preserve SUBREG_PROMOTED_VAR_P if the new mode is wider than
+	 the original mode, but narrower than the inner mode.  */
+      if (GET_CODE (x) == SUBREG
+	  && is_a <scalar_int_mode> (orig_mode, &int_orig_mode)
+	  && GET_MODE_PRECISION (int_mode)
+	     > GET_MODE_PRECISION (int_orig_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)),
+				     &int_inner_mode)
+	  && GET_MODE_PRECISION (int_inner_mode)
+	     > GET_MODE_PRECISION (int_mode))
+	{
+	  SUBREG_PROMOTED_VAR_P (x) = 1;
+	  SUBREG_PROMOTED_SET (x, unsignedp);
+	}
+    }
 
   if (GET_MODE (x) != VOIDmode)
     oldmode = GET_MODE (x);
@@ -5266,7 +5305,7 @@ get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
    has non-BLKmode.  DECL_RTL must not be a MEM; if
    DECL_RTL was not set yet, return false.  */
 
-static inline bool
+bool
 non_mem_decl_p (tree base)
 {
   if (!DECL_P (base)
@@ -5283,7 +5322,7 @@ non_mem_decl_p (tree base)
 /* Returns true if REF refers to an object that does not
    reside in memory and has non-BLKmode.  */
 
-static inline bool
+bool
 mem_ref_refers_to_non_mem_p (tree ref)
 {
   tree base;

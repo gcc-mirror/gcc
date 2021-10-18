@@ -26,6 +26,7 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
+with Contracts;      use Contracts;
 with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
@@ -260,6 +261,19 @@ package body Sem_Ch13 is
      (E : Entity_Id; N : Node_Id; Class_Present : Boolean);
    --  Check legality of functions given in the Ada 2022 Stable_Properties
    --  (or Stable_Properties'Class) aspect.
+
+   procedure Validate_Storage_Model_Type_Aspect
+     (Typ : Entity_Id; ASN : Node_Id);
+   --  Check legality and completeness of the aggregate associations given in
+   --  the Storage_Model_Type aspect associated with Typ.
+
+   procedure Resolve_Storage_Model_Type_Argument
+     (N         : Node_Id;
+      Typ       : Entity_Id;
+      Addr_Type : in out Entity_Id;
+      Nam       : Name_Id);
+   --  Resolve argument N to be of the proper kind (when a type or constant)
+   --  or to have the proper profile (when a subprogram).
 
    procedure Resolve_Aspect_Stable_Properties
     (Typ_Or_Subp   : Entity_Id;
@@ -860,9 +874,10 @@ package body Sem_Ch13 is
 
       if Known_Alignment (Typ)
         and then not Has_Alignment_Clause (Typ)
+        and then Present (Size)
         and then Size mod (Alignment (Typ) * SSU) /= 0
       then
-         Init_Alignment (Typ);
+         Reinit_Alignment (Typ);
       end if;
    end Alignment_Check_For_Size_Change;
 
@@ -1455,9 +1470,17 @@ package body Sem_Ch13 is
                      --  Aspect Full_Access_Only must be analyzed last so that
                      --  aspects Volatile and Atomic, if any, are analyzed.
 
+                     --  Skip creation of pragma Preelaborable_Initialization
+                     --  in the case where the aspect has an expression,
+                     --  because the pragma is only needed for setting flag
+                     --  Known_To_Have_Preelab_Init, which is set by other
+                     --  means following resolution of the aspect expression.
+
                      if A_Id not in Aspect_Export
                                   | Aspect_Full_Access_Only
                                   | Aspect_Import
+                       and then (A_Id /= Aspect_Preelaborable_Initialization
+                                  or else not Present (Expression (ASN)))
                      then
                         Make_Pragma_From_Boolean_Aspect (ASN);
                      end if;
@@ -1506,6 +1529,32 @@ package body Sem_Ch13 is
 
                   when Aspect_Iterable =>
                      Validate_Iterable_Aspect (E, ASN);
+
+                  when Aspect_Designated_Storage_Model =>
+                     Analyze_And_Resolve (Expression (ASN));
+
+                     if not Is_Entity_Name (Expression (ASN))
+                       or else not Is_Object (Entity (Expression (ASN)))
+                       or else
+                         not Present (Find_Aspect (Etype (Expression (ASN)),
+                                                   Aspect_Storage_Model_Type))
+                     then
+                        Error_Msg_N
+                          ("must specify name of stand-alone object of type "
+                            & "with aspect Storage_Model_Type",
+                           Expression (ASN));
+
+                     --  Set access type's Associated_Storage_Pool to denote
+                     --  the Storage_Model_Type object given for the aspect
+                     --  (even though that isn't actually an Ada storage pool).
+
+                     else
+                        Set_Associated_Storage_Pool
+                          (E, Entity (Expression (ASN)));
+                     end if;
+
+                  when Aspect_Storage_Model_Type =>
+                     Validate_Storage_Model_Type_Aspect (E, ASN);
 
                   when Aspect_Aggregate =>
                      null;
@@ -1875,6 +1924,11 @@ package body Sem_Ch13 is
             --  and raise Aspect_Exit. If Typ is left Empty, then any static
             --  expression is allowed. Includes checking that the expression
             --  does not raise Constraint_Error.
+
+            function Directly_Specified
+              (Id : Entity_Id; A : Aspect_Id) return Boolean;
+            --  Returns True if the given aspect is directly (as opposed to
+            --  via any form of inheritance) specified for the given entity.
 
             function Make_Aitem_Pragma
               (Pragma_Argument_Associations : List_Id;
@@ -2769,6 +2823,18 @@ package body Sem_Ch13 is
                end if;
             end Check_Expr_Is_OK_Static_Expression;
 
+            ------------------------
+            -- Directly_Specified --
+            ------------------------
+
+            function Directly_Specified
+              (Id : Entity_Id; A : Aspect_Id) return Boolean
+            is
+               Aspect_Spec : constant Node_Id := Find_Aspect (Id, A);
+            begin
+               return Present (Aspect_Spec) and then Entity (Aspect_Spec) = Id;
+            end Directly_Specified;
+
             -----------------------
             -- Make_Aitem_Pragma --
             -----------------------
@@ -2915,6 +2981,7 @@ package body Sem_Ch13 is
                             | Aspect_Async_Writers
                             | Aspect_Effective_Reads
                             | Aspect_Effective_Writes
+                            | Aspect_Preelaborable_Initialization
             then
                Error_Msg_Name_1 := Nam;
 
@@ -2951,6 +3018,7 @@ package body Sem_Ch13 is
                                   | Aspect_Async_Writers
                                   | Aspect_Effective_Reads
                                   | Aspect_Effective_Writes
+                                  | Aspect_Preelaborable_Initialization
                   then
                      Error_Msg_N
                        ("aspect % not allowed for formal type declaration",
@@ -2962,7 +3030,15 @@ package body Sem_Ch13 is
             --  Copy expression for later processing by the procedures
             --  Check_Aspect_At_[Freeze_Point | End_Of_Declarations]
 
-            Set_Entity (Id, New_Copy_Tree (Expr));
+            --  The expression may be a subprogram name, and can
+            --  be an operator name that appears as a string, but
+            --  requires its own analysis procedure (see sem_ch6).
+
+            if Nkind (Expr) = N_Operator_Symbol then
+               Set_Entity (Id, Expr);
+            else
+               Set_Entity (Id, New_Copy_Tree (Expr));
+            end if;
 
             --  Set Delay_Required as appropriate to aspect
 
@@ -3028,10 +3104,11 @@ package body Sem_Ch13 is
 
             if Delay_Required
 
-               and then A_Id = Aspect_Stable_Properties
+               and then (A_Id = Aspect_Stable_Properties
+                          or else A_Id = Aspect_Designated_Storage_Model
+                          or else A_Id = Aspect_Storage_Model_Type)
                --  ??? It seems like we should do this for all aspects, not
-               --  just Stable_Properties, but that causes as-yet-undiagnosed
-               --  regressions.
+               --  just these, but that causes as-yet-undiagnosed regressions.
 
             then
                Set_Has_Delayed_Aspects (E);
@@ -3331,6 +3408,15 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("Predicate_Failure requires previous predicate" &
                         " specification", Aspect);
+                     goto Continue;
+
+                  elsif not (Directly_Specified (E, Aspect_Dynamic_Predicate)
+                    or else Directly_Specified (E, Aspect_Static_Predicate)
+                    or else Directly_Specified (E, Aspect_Predicate))
+                  then
+                     Error_Msg_N
+                       ("Predicate_Failure requires accompanying" &
+                        " noninherited predicate specification", Aspect);
                      goto Continue;
                   end if;
 
@@ -4322,6 +4408,44 @@ package body Sem_Ch13 is
                   Record_Rep_Item (E, Aspect);
                   goto Continue;
 
+               when Aspect_Designated_Storage_Model =>
+                  if not Extensions_Allowed then
+                     Error_Msg_N
+                       ("aspect only allowed if extensions enabled",
+                        Aspect);
+                     Error_Msg_N
+                       ("\unit must be compiled with -gnatX switch", Aspect);
+
+                  elsif not Is_Type (E)
+                    or else Ekind (E) /= E_Access_Type
+                  then
+                     Error_Msg_N
+                       ("can only be specified for pool-specific access type",
+                        Aspect);
+                  end if;
+
+                  Record_Rep_Item (E, Aspect);
+                  goto Continue;
+
+               when Aspect_Storage_Model_Type =>
+                  if not Extensions_Allowed then
+                     Error_Msg_N
+                       ("aspect only allowed if extensions enabled",
+                        Aspect);
+                     Error_Msg_N
+                       ("\unit must be compiled with -gnatX switch", Aspect);
+
+                  elsif not Is_Type (E)
+                    or else not Is_Immutably_Limited_Type (E)
+                  then
+                     Error_Msg_N
+                       ("can only be specified for immutably limited type",
+                        Aspect);
+                  end if;
+
+                  Record_Rep_Item (E, Aspect);
+                  goto Continue;
+
                when Aspect_Integer_Literal
                   | Aspect_Real_Literal
                   | Aspect_String_Literal
@@ -4407,6 +4531,38 @@ package body Sem_Ch13 is
                         & "operation of a tagged type", Aspect);
 
                      goto Continue;
+                  end if;
+
+                  --  Remember class-wide conditions; they will be merged
+                  --  with inherited conditions.
+
+                  if Class_Present (Aspect)
+                    and then A_Id in Aspect_Pre | Aspect_Post
+                    and then Is_Subprogram (E)
+                    and then not Is_Ignored_Ghost_Entity (E)
+                  then
+                     if A_Id = Aspect_Pre then
+                        if Is_Ignored (Aspect) then
+                           Set_Ignored_Class_Preconditions (E,
+                             New_Copy_Tree (Expr));
+                        else
+                           Set_Class_Preconditions (E, New_Copy_Tree (Expr));
+                        end if;
+
+                     --  Postconditions may split into separate aspects, and we
+                     --  remember the expression before such split (i.e. when
+                     --  the first postcondition is processed).
+
+                     elsif No (Class_Postconditions (E))
+                       and then No (Ignored_Class_Postconditions (E))
+                     then
+                        if Is_Ignored (Aspect) then
+                           Set_Ignored_Class_Postconditions (E,
+                             New_Copy_Tree (Expr));
+                        else
+                           Set_Class_Postconditions (E, New_Copy_Tree (Expr));
+                        end if;
+                     end if;
                   end if;
 
                   --  If the expressions is of the form A and then B, then
@@ -6621,7 +6777,7 @@ package body Sem_Ch13 is
             elsif Duplicate_Clause then
                null;
 
-            elsif Align /= No_Uint then
+            elsif Present (Align) then
                Set_Has_Alignment_Clause (U_Ent);
 
                --  Tagged type case, check for attempt to set alignment to a
@@ -6711,7 +6867,7 @@ package body Sem_Ch13 is
             elsif Rep_Item_Too_Early (Btype, N) then
                null;
 
-            elsif Csize /= No_Uint then
+            elsif Present (Csize) then
                Check_Size (Expr, Ctyp, Csize, Biased);
 
                --  For the biased case, build a declaration for a subtype that
@@ -6736,9 +6892,9 @@ package body Sem_Ch13 is
                   Analyze (Decl, Suppress => All_Checks);
 
                   Set_Has_Delayed_Freeze        (New_Ctyp, False);
-                  Init_Esize                    (New_Ctyp);
+                  Reinit_Esize                  (New_Ctyp);
                   Set_RM_Size                   (New_Ctyp, Csize);
-                  Init_Alignment                (New_Ctyp);
+                  Reinit_Alignment              (New_Ctyp);
                   Set_Is_Itype                  (New_Ctyp, True);
                   Set_Associated_Node_For_Itype (New_Ctyp, U_Ent);
 
@@ -7051,7 +7207,7 @@ package body Sem_Ch13 is
             elsif Duplicate_Clause then
                null;
 
-            elsif Radix /= No_Uint then
+            elsif Present (Radix) then
                Set_Has_Machine_Radix_Clause (U_Ent);
                Set_Has_Non_Standard_Rep (Base_Type (U_Ent));
 
@@ -7089,7 +7245,7 @@ package body Sem_Ch13 is
             else
                Check_Size (Expr, U_Ent, Size, Biased);
 
-               if Size <= 0 then
+               if No (Size) or else Size <= 0 then
                   Error_Msg_N ("Object_Size must be positive", Expr);
 
                elsif Is_Scalar_Type (U_Ent) then
@@ -7264,7 +7420,7 @@ package body Sem_Ch13 is
                Error_Msg_N
                  (Attr_Name & " cannot be given for unconstrained array", Nam);
 
-            elsif Size /= No_Uint then
+            elsif Present (Size) then
                declare
                   Etyp : constant Entity_Id :=
                     (if Is_Type (U_Ent) then U_Ent else Etype (U_Ent));
@@ -7312,13 +7468,14 @@ package body Sem_Ch13 is
                      if Is_First_Subtype (U_Ent) then
                         if Is_Elementary_Type (U_Ent) then
                            if Size <= System_Storage_Unit then
-                              Init_Esize (U_Ent, System_Storage_Unit);
+                              Set_Esize
+                                (U_Ent, UI_From_Int (System_Storage_Unit));
                            elsif Size <= 16 then
-                              Init_Esize (U_Ent, 16);
+                              Set_Esize (U_Ent, Uint_16);
                            elsif Size <= 32 then
-                              Init_Esize (U_Ent, 32);
+                              Set_Esize (U_Ent, Uint_32);
                            else
-                              Set_Esize  (U_Ent, (Size + 63) / 64 * 64);
+                              Set_Esize (U_Ent, (Size + 63) / 64 * 64);
                            end if;
 
                            Alignment_Check_For_Size_Change
@@ -7788,11 +7945,16 @@ package body Sem_Ch13 is
                null;
 
             elsif Is_Elementary_Type (U_Ent) then
-               if Size /= System_Storage_Unit
-                 and then Size /= System_Storage_Unit * 2
-                 and then Size /= System_Storage_Unit * 3
-                 and then Size /= System_Storage_Unit * 4
-                 and then Size /= System_Storage_Unit * 8
+               --  Size will be empty if we already detected an error
+               --  (e.g. Expr is of the wrong type); we might as well
+               --  give the useful hint below even in that case.
+
+               if No (Size) or else
+                 (Size /= System_Storage_Unit
+                  and then Size /= System_Storage_Unit * 2
+                  and then Size /= System_Storage_Unit * 3
+                  and then Size /= System_Storage_Unit * 4
+                  and then Size /= System_Storage_Unit * 8)
                then
                   Error_Msg_N
                     ("stream size for elementary type must be 8, 16, 24, " &
@@ -8095,7 +8257,7 @@ package body Sem_Ch13 is
             --  the list. The final checks for completeness and ordering are
             --  skipped in this case.
 
-            if Val = No_Uint then
+            if No (Val) then
                Err := True;
 
             elsif Val < Lo or else Hi < Val then
@@ -8174,7 +8336,7 @@ package body Sem_Ch13 is
                         Expr := Expression (Assoc);
                         Val := Static_Integer (Expr);
 
-                        if Val = No_Uint then
+                        if No (Val) then
                            Err := True;
 
                         elsif Val < Lo or else Hi < Val then
@@ -8209,12 +8371,12 @@ package body Sem_Ch13 is
             else
                Val := Enumeration_Rep (Elit);
 
-               if Min = No_Uint then
+               if No (Min) then
                   Min := Val;
                end if;
 
-               if Val /= No_Uint then
-                  if Max /= No_Uint and then Val <= Max then
+               if Present (Val) then
+                  if Present (Max) and then Val <= Max then
                      Error_Msg_NE
                        ("enumeration value for& not ordered!",
                         Enumeration_Rep_Expr (Elit), Elit);
@@ -8499,9 +8661,9 @@ package body Sem_Ch13 is
             Fbit  := Static_Integer (First_Bit (CC));
             Lbit  := Static_Integer (Last_Bit  (CC));
 
-            if Posit /= No_Uint
-              and then Fbit /= No_Uint
-              and then Lbit /= No_Uint
+            if Present (Posit)
+              and then Present (Fbit)
+              and then Present (Lbit)
             then
                if Posit < 0 then
                   Error_Msg_N ("position cannot be negative", Position (CC));
@@ -8642,9 +8804,6 @@ package body Sem_Ch13 is
                         Set_Normalized_First_Bit (Comp, Fbit mod SSU);
                         Set_Normalized_Position  (Comp, Fbit / SSU);
 
-                        Set_Normalized_Position_Max
-                          (Comp, Normalized_Position (Comp));
-
                         if Warn_On_Overridden_Size
                           and then Has_Size_Clause (Etype (Comp))
                           and then RM_Size (Etype (Comp)) /= Esize (Comp)
@@ -8675,9 +8834,6 @@ package body Sem_Ch13 is
                            Set_Esize                (Ocomp, 1 + (Lbit - Fbit));
                            Set_Normalized_First_Bit (Ocomp, Fbit mod SSU);
                            Set_Normalized_Position  (Ocomp, Fbit / SSU);
-
-                           Set_Normalized_Position_Max
-                             (Ocomp, Normalized_Position (Ocomp));
 
                            --  Note: we don't use Set_Biased here, because we
                            --  already gave a warning above if needed, and we
@@ -10067,7 +10223,10 @@ package body Sem_Ch13 is
          --  If the type is private, check whether full view has inherited
          --  predicates.
 
-         if Is_Private_Type (Typ) and then No (Ritem) then
+         if Is_Private_Type (Typ)
+           and then No (Ritem)
+           and then Present (Full_View (Typ))
+         then
             Ritem := First_Rep_Item (Full_View (Typ));
          end if;
 
@@ -10155,6 +10314,9 @@ package body Sem_Ch13 is
         or else
           (Is_Itype (Typ)
            and then not Comes_From_Source (Typ)
+           and then Ekind (Typ) in E_Array_Subtype
+                                 | E_Record_Subtype
+                                 | E_Record_Subtype_With_Private
            and then Present (Predicated_Parent (Typ)))
       then
          return;
@@ -11145,6 +11307,34 @@ package body Sem_Ch13 is
 
          --  Here is the list of aspects that don't require delay analysis
 
+         when Aspect_Designated_Storage_Model =>
+            return;
+
+         when Aspect_Storage_Model_Type =>
+            T := Entity (ASN);
+
+            declare
+               Assoc     : Node_Id;
+               Expr      : Node_Id;
+               Addr_Type : Entity_Id := Empty;
+
+            begin
+               Assoc := First (Component_Associations (Expression (ASN)));
+               while Present (Assoc) loop
+                  Expr := Expression (Assoc);
+                  Analyze (Expr);
+
+                  if not Error_Posted (Expr) then
+                     Resolve_Storage_Model_Type_Argument
+                       (Expr, T, Addr_Type, Chars (First (Choices (Assoc))));
+                  end if;
+
+                  Next (Assoc);
+               end loop;
+            end;
+
+            return;
+
          when Aspect_Abstract_State
             | Aspect_Annotate
             | Aspect_Async_Readers
@@ -11872,9 +12062,23 @@ package body Sem_Ch13 is
                --------
 
                function Lt (Op1, Op2 : Natural) return Boolean is
+                  K1 : constant Boolean :=
+                    Known_Component_Bit_Offset (Comps (Op1));
+                  K2 : constant Boolean :=
+                    Known_Component_Bit_Offset (Comps (Op2));
+                  --  Record representation clauses can be incomplete, so the
+                  --  Component_Bit_Offsets can be unknown.
                begin
-                  return Component_Bit_Offset (Comps (Op1))
-                       < Component_Bit_Offset (Comps (Op2));
+                  if K1 then
+                     if K2 then
+                        return Component_Bit_Offset (Comps (Op1))
+                             < Component_Bit_Offset (Comps (Op2));
+                     else
+                        return True;
+                     end if;
+                  else
+                     return K2;
+                  end if;
                end Lt;
 
                ----------
@@ -11938,7 +12142,7 @@ package body Sem_Ch13 is
                   begin
                      --  Skip components with unknown offsets
 
-                     if CBO /= No_Uint and then CBO >= 0 then
+                     if Present (CBO) and then CBO >= 0 then
                         Error_Msg_Uint_1 := CBO - Nbit;
 
                         if Warn and then Error_Msg_Uint_1 > 0 then
@@ -12053,7 +12257,7 @@ package body Sem_Ch13 is
             Pcomp := First_Entity (Tagged_Parent);
             while Present (Pcomp) loop
                if Ekind (Pcomp) in E_Discriminant | E_Component then
-                  if Component_Bit_Offset (Pcomp) /= No_Uint
+                  if Present (Component_Bit_Offset (Pcomp))
                     and then Known_Static_Esize (Pcomp)
                   then
                      Parent_Last_Bit :=
@@ -12094,8 +12298,7 @@ package body Sem_Ch13 is
          Set_Component_Bit_Offset    (Fent, Uint_0);
          Set_Normalized_Position     (Fent, Uint_0);
          Set_Normalized_First_Bit    (Fent, Uint_0);
-         Set_Normalized_Position_Max (Fent, Uint_0);
-         Init_Esize                  (Fent, System_Address_Size);
+         Set_Esize                   (Fent, UI_From_Int (System_Address_Size));
 
          Set_Component_Clause (Fent,
            Make_Component_Clause (Loc,
@@ -12312,8 +12515,8 @@ package body Sem_Ch13 is
                   end if;
 
                   --  Outer level of record definition, check discriminants
-                  --  but be careful not to flag a non-girder discriminant
-                  --  and the girder discriminant it renames as overlapping.
+                  --  but be careful not to flag a non-stored discriminant
+                  --  and the stored discriminant it renames as overlapping.
 
                   if Nkind (Clist) in N_Full_Type_Declaration
                                     | N_Private_Type_Declaration
@@ -13113,6 +13316,13 @@ package body Sem_Ch13 is
             end if;
          end Check_Variant_Part;
       end if;
+
+      if not In_Generic_Scope (E)
+        and then Ekind (E) = E_Record_Type
+        and then Is_Tagged_Type (E)
+      then
+         Process_Class_Conditions_At_Freeze_Point (E);
+      end if;
    end Freeze_Entity_Checks;
 
    -------------------------
@@ -13123,7 +13333,7 @@ package body Sem_Ch13 is
       Align : constant Uint := Static_Integer (Expr);
 
    begin
-      if Align = No_Uint then
+      if No (Align) then
          return No_Uint;
 
       elsif Align < 0 then
@@ -13700,6 +13910,7 @@ package body Sem_Ch13 is
                                       | Attribute_Iterable
                                       | Attribute_Iterator_Element
                                       | Attribute_Output
+                                      | Attribute_Put_Image
                                       | Attribute_Read
                                       | Attribute_Variable_Indexing
                                       | Attribute_Write;
@@ -13979,7 +14190,7 @@ package body Sem_Ch13 is
 
    function Minimum_Size
      (T      : Entity_Id;
-      Biased : Boolean := False) return Nat
+      Biased : Boolean := False) return Int
    is
       Lo     : Uint    := No_Uint;
       Hi     : Uint    := No_Uint;
@@ -13993,17 +14204,17 @@ package body Sem_Ch13 is
       R_Typ  : constant Entity_Id := Root_Type (T);
 
    begin
-      --  If bad type, return 0
+      --  Bad type
 
       if T = Any_Type then
-         return 0;
+         return Unknown_Minimum_Size;
 
-      --  For generic types, just return zero. There cannot be any legitimate
-      --  need to know such a size, but this routine may be called with a
-      --  generic type as part of normal processing.
+      --  For generic types, just return unknown. There cannot be any
+      --  legitimate need to know such a size, but this routine may be
+      --  called with a generic type as part of normal processing.
 
       elsif Is_Generic_Type (R_Typ) or else R_Typ = Any_Type then
-         return 0;
+         return Unknown_Minimum_Size;
 
          --  Access types (cannot have size smaller than System.Address)
 
@@ -14026,7 +14237,7 @@ package body Sem_Ch13 is
          Ancest := T;
          loop
             if Ancest = Any_Type or else Etype (Ancest) = Any_Type then
-               return 0;
+               return Unknown_Minimum_Size;
             end if;
 
             if not LoSet then
@@ -14051,7 +14262,7 @@ package body Sem_Ch13 is
                Ancest := Base_Type (T);
 
                if Is_Generic_Type (Ancest) then
-                  return 0;
+                  return Unknown_Minimum_Size;
                end if;
             end if;
          end loop;
@@ -14072,7 +14283,7 @@ package body Sem_Ch13 is
          Ancest := T;
          loop
             if Ancest = Any_Type or else Etype (Ancest) = Any_Type then
-               return 0;
+               return Unknown_Minimum_Size;
             end if;
 
             --  Note: In the following two tests for LoSet and HiSet, it may
@@ -14112,7 +14323,7 @@ package body Sem_Ch13 is
                Ancest := Base_Type (T);
 
                if Is_Generic_Type (Ancest) then
-                  return 0;
+                  return Unknown_Minimum_Size;
                end if;
             end if;
          end loop;
@@ -14142,7 +14353,7 @@ package body Sem_Ch13 is
       --  type case, since that's the odd case that came up. Probably we should
       --  also do this in the fixed-point case, but doing so causes peculiar
       --  gigi failures, and it is not worth worrying about this incredibly
-      --  marginal case (explicit null-range fixed-point type declarations)???
+      --  marginal case (explicit null-range fixed-point type declarations).
 
       if Lo > Hi and then Is_Discrete_Type (T) then
          S := 0;
@@ -15681,17 +15892,16 @@ package body Sem_Ch13 is
    ------------------------------
 
    procedure Resolve_Aspect_Aggregate
-    (Typ :  Entity_Id;
+    (Typ  : Entity_Id;
      Expr : Node_Id)
    is
+      function Valid_Empty          (E : Entity_Id) return Boolean;
+      function Valid_Add_Named      (E : Entity_Id) return Boolean;
+      function Valid_Add_Unnamed    (E : Entity_Id) return Boolean;
+      function Valid_New_Indexed    (E : Entity_Id) return Boolean;
+      function Valid_Assign_Indexed (E : Entity_Id) return Boolean;
       --  Predicates that establish the legality of each possible operation in
       --  an Aggregate aspect.
-
-      function Valid_Empty             (E : Entity_Id) return Boolean;
-      function Valid_Add_Named         (E : Entity_Id) return Boolean;
-      function Valid_Add_Unnamed       (E : Entity_Id) return Boolean;
-      function Valid_New_Indexed       (E : Entity_Id) return Boolean;
-      function Valid_Assign_Indexed    (E : Entity_Id) return Boolean;
 
       generic
         with function Pred (Id : Node_Id) return Boolean;
@@ -15715,7 +15925,7 @@ package body Sem_Ch13 is
       end Valid_Assign_Indexed;
 
       -----------------
-      -- Valid_Emoty --
+      -- Valid_Empty --
       -----------------
 
       function Valid_Empty (E :  Entity_Id) return Boolean is
@@ -15740,7 +15950,7 @@ package body Sem_Ch13 is
       -- Valid_Add_Named --
       ---------------------
 
-      function Valid_Add_Named  (E : Entity_Id) return Boolean is
+      function Valid_Add_Named (E : Entity_Id) return Boolean is
          F2, F3 : Entity_Id;
       begin
          if Ekind (E) = E_Procedure
@@ -15839,6 +16049,9 @@ package body Sem_Ch13 is
       procedure Resolve_Assign_Indexed
                                 is new Resolve_Operation
                                                       (Valid_Assign_Indexed);
+
+   --  Start of processing for Resolve_Aspect_Aggregate
+
    begin
       Assoc := First (Component_Associations (Expr));
 
@@ -16092,6 +16305,334 @@ package body Sem_Ch13 is
       Set_Analyzed (Expr);
    end Resolve_Aspect_Stable_Properties;
 
+   -----------------------------------------
+   -- Resolve_Storage_Model_Type_Argument --
+   -----------------------------------------
+
+   procedure Resolve_Storage_Model_Type_Argument
+     (N         : Node_Id;
+      Typ       : Entity_Id;
+      Addr_Type : in out Entity_Id;
+      Nam       : Name_Id)
+   is
+
+      type Formal_Profile is record
+         Subt : Entity_Id;
+         Mode : Formal_Kind;
+      end record;
+
+      type Formal_Profiles is array (Positive range <>) of Formal_Profile;
+
+      function Aspect_Argument_Profile_Matches
+        (Subp            : Entity_Id;
+         Profiles        : Formal_Profiles;
+         Result_Subt     : Entity_Id;
+         Err_On_Mismatch : Boolean) return Boolean;
+      --  Checks that the formal parameters of subprogram Subp conform to the
+      --  subtypes and modes specified by Profiles, as well as to the result
+      --  subtype Result_Subt when that is nonempty.
+
+      function Aspect_Argument_Profile_Matches
+        (Subp            : Entity_Id;
+         Profiles        : Formal_Profiles;
+         Result_Subt     : Entity_Id;
+         Err_On_Mismatch : Boolean) return Boolean
+      is
+
+         procedure Report_Argument_Error
+           (Msg    : String;
+            Formal : Entity_Id := Empty;
+            Subt   : Entity_Id := Empty);
+         --  If Err_On_Mismatch is True, reports an argument error given by Msg
+         --  associated with Formal and/or Subt.
+
+         procedure Report_Argument_Error
+           (Msg    : String;
+            Formal : Entity_Id := Empty;
+            Subt   : Entity_Id := Empty)
+         is
+         begin
+            if Err_On_Mismatch then
+               if Present (Formal) then
+                  if Present (Subt) then
+                     Error_Msg_Node_2 := Subt;
+                  end if;
+                  Error_Msg_NE (Msg, N, Formal);
+
+               elsif Present (Subt) then
+                  Error_Msg_NE (Msg, N, Subt);
+
+               else
+                  Error_Msg_N (Msg, N);
+               end if;
+            end if;
+         end Report_Argument_Error;
+
+         --  Local variables
+
+         Formal    : Entity_Id := First_Formal (Subp);
+         Is_Error  : Boolean   := False;
+
+      --  Start of processing for Aspect_Argument_Profile_Matches
+
+      begin
+         for FP of Profiles loop
+            if not Present (Formal) then
+               Is_Error := True;
+               Report_Argument_Error ("missing formal of }", Subt => FP.Subt);
+               exit;
+
+            elsif not Subtypes_Statically_Match
+                        (Etype (Formal), FP.Subt)
+            then
+               Is_Error := True;
+               Report_Argument_Error
+                 ("formal& must be of subtype&",
+                  Formal => Formal, Subt => FP.Subt);
+               exit;
+
+            elsif Ekind (Formal) /= FP.Mode then
+               Is_Error := True;
+               Report_Argument_Error
+                 ("formal& has wrong mode", Formal => Formal);
+               exit;
+            end if;
+
+            Formal := Next_Formal (Formal);
+         end loop;
+
+         if not Is_Error
+           and then Present (Formal)
+         then
+            Is_Error := True;
+            Report_Argument_Error
+              ("too many formals for subprogram in aspect");
+         end if;
+
+         if not Is_Error
+           and then Present (Result_Subt)
+           and then not Subtypes_Statically_Match (Etype (Subp), Result_Subt)
+         then
+            Is_Error := True;
+            Report_Argument_Error
+              ("subprogram must have result}", Subt => Result_Subt);
+         end if;
+
+         return not Is_Error;
+      end Aspect_Argument_Profile_Matches;
+
+      --  Local variables
+
+      Ent : Entity_Id;
+
+      Storage_Count_Type  : constant Entity_Id := RTE (RE_Storage_Count);
+      System_Address_Type : constant Entity_Id := RTE (RE_Address);
+
+   --  Start of processing for Resolve_Storage_Model_Type_Argument
+
+   begin
+      if Nam = Name_Address_Type then
+         if not Is_Entity_Name (N)
+           or else not Is_Type (Entity (N))
+           or else (Root_Type (Entity (N)) /= System_Address_Type
+                     and then not Is_Integer_Type (Entity (N)))
+         then
+            Error_Msg_N ("named entity must be a descendant of System.Address "
+                         & "or an integer type", N);
+         end if;
+
+         Addr_Type := Entity (N);
+
+         return;
+
+      elsif not Present (Addr_Type) then
+         Error_Msg_N ("argument association for Address_Type missing; "
+                         & "must be specified as first aspect argument", N);
+         return;
+
+      elsif Nam = Name_Null_Address then
+         if not Is_Entity_Name (N)
+           or else not Is_Constant_Object (Entity (N))
+           or else
+             not Subtypes_Statically_Match (Etype (Entity (N)), Addr_Type)
+         then
+            Error_Msg_NE
+              ("named entity must be constant of subtype}", N, Addr_Type);
+         end if;
+
+         return;
+
+      elsif not Is_Overloaded (N) then
+         if not Is_Entity_Name (N)
+           or else Ekind (Entity (N)) not in E_Function | E_Procedure
+           or else Scope (Entity (N)) /= Scope (Typ)
+         then
+            Error_Msg_N ("argument must be local subprogram name", N);
+            return;
+         end if;
+
+         Ent := Entity (N);
+
+         if Nam = Name_Allocate then
+            if not Aspect_Argument_Profile_Matches
+                     (Ent,
+                      Profiles        =>
+                        ((Typ,                E_In_Out_Parameter),
+                         (Addr_Type,          E_Out_Parameter),
+                         (Storage_Count_Type, E_In_Parameter),
+                         (Storage_Count_Type, E_In_Parameter)),
+                      Result_Subt     => Empty,
+                      Err_On_Mismatch => True)
+            then
+               Error_Msg_N ("no match for Allocate operation", N);
+            end if;
+
+         elsif Nam = Name_Deallocate then
+            if not Aspect_Argument_Profile_Matches
+                     (Ent,
+                      Profiles        =>
+                        ((Typ,                E_In_Out_Parameter),
+                         (Addr_Type,          E_In_Parameter),
+                         (Storage_Count_Type, E_In_Parameter),
+                         (Storage_Count_Type, E_In_Parameter)),
+                      Result_Subt     => Empty,
+                      Err_On_Mismatch => True)
+            then
+               Error_Msg_N ("no match for Deallocate operation", N);
+            end if;
+
+         elsif Nam = Name_Copy_From then
+            if not Aspect_Argument_Profile_Matches
+                     (Ent,
+                      Profiles        =>
+                        ((Typ,                 E_In_Out_Parameter),
+                         (System_Address_Type, E_In_Parameter),
+                         (Addr_Type,           E_In_Parameter),
+                         (Storage_Count_Type,  E_In_Parameter)),
+                      Result_Subt     => Empty,
+                      Err_On_Mismatch => True)
+            then
+               Error_Msg_N ("no match for Copy_From operation", N);
+            end if;
+
+         elsif Nam = Name_Copy_To then
+            if not Aspect_Argument_Profile_Matches
+                     (Ent,
+                      Profiles        =>
+                        ((Typ,                 E_In_Out_Parameter),
+                         (Addr_Type,           E_In_Parameter),
+                         (System_Address_Type, E_In_Parameter),
+                         (Storage_Count_Type,  E_In_Parameter)),
+                      Result_Subt     => Empty,
+                      Err_On_Mismatch => True)
+            then
+               Error_Msg_N ("no match for Copy_To operation", N);
+            end if;
+
+         elsif Nam = Name_Storage_Size then
+            if not Aspect_Argument_Profile_Matches
+                     (Ent,
+                      Profiles        => (1 => (Typ, E_In_Parameter)),
+                      Result_Subt     => Storage_Count_Type,
+                      Err_On_Mismatch => True)
+            then
+               Error_Msg_N ("no match for Storage_Size operation", N);
+            end if;
+
+         else
+            null; -- Error will be caught in Validate_Storage_Model_Type_Aspect
+         end if;
+
+      else
+         --  Overloaded case: find subprogram with proper signature
+
+         declare
+            I  : Interp_Index;
+            It : Interp;
+            Found_Match : Boolean := False;
+
+         begin
+            Get_First_Interp (N, I, It);
+            while Present (It.Typ) loop
+               if Ekind (It.Nam) in E_Function | E_Procedure
+                  and then Scope (It.Nam) = Scope (Typ)
+               then
+                  if Nam = Name_Allocate then
+                     Found_Match :=
+                       Aspect_Argument_Profile_Matches
+                         (It.Nam,
+                          Profiles        =>
+                            ((Typ,                E_In_Out_Parameter),
+                             (Addr_Type,          E_Out_Parameter),
+                             (Storage_Count_Type, E_In_Parameter),
+                             (Storage_Count_Type, E_In_Parameter)),
+                          Result_Subt     => Empty,
+                          Err_On_Mismatch => False);
+
+                  elsif Nam = Name_Deallocate then
+                     Found_Match :=
+                       Aspect_Argument_Profile_Matches
+                         (It.Nam,
+                          Profiles        =>
+                            ((Typ,                E_In_Out_Parameter),
+                             (Addr_Type,          E_In_Parameter),
+                             (Storage_Count_Type, E_In_Parameter),
+                             (Storage_Count_Type, E_In_Parameter)),
+                          Result_Subt     => Empty,
+                          Err_On_Mismatch => False);
+
+                  elsif Nam = Name_Copy_From then
+                     Found_Match :=
+                       Aspect_Argument_Profile_Matches
+                         (It.Nam,
+                          Profiles        =>
+                            ((Typ,                 E_In_Out_Parameter),
+                             (System_Address_Type, E_In_Parameter),
+                             (Addr_Type,           E_In_Parameter),
+                             (Storage_Count_Type,  E_In_Parameter),
+                             (Storage_Count_Type,  E_In_Parameter)),
+                          Result_Subt     => Empty,
+                          Err_On_Mismatch => False);
+
+                  elsif Nam = Name_Copy_To then
+                     Found_Match :=
+                       Aspect_Argument_Profile_Matches
+                         (It.Nam,
+                          Profiles        =>
+                            ((Typ,                 E_In_Out_Parameter),
+                             (Addr_Type,           E_In_Parameter),
+                             (Storage_Count_Type,  E_In_Parameter),
+                             (System_Address_Type, E_In_Parameter),
+                             (Storage_Count_Type,  E_In_Parameter)),
+                          Result_Subt     => Empty,
+                          Err_On_Mismatch => False);
+
+                  elsif Nam = Name_Storage_Size then
+                     Found_Match :=
+                       Aspect_Argument_Profile_Matches
+                         (It.Nam,
+                          Profiles        => (1 => (Typ, E_In_Parameter)),
+                          Result_Subt     => Storage_Count_Type,
+                          Err_On_Mismatch => False);
+                  end if;
+
+                  if Found_Match then
+                     Set_Entity (N, It.Nam);
+                     exit;
+                  end if;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+
+            if not Found_Match then
+               Error_Msg_N
+                 ("no match found for Storage_Model_Type operation", N);
+            end if;
+         end;
+      end if;
+   end Resolve_Storage_Model_Type_Argument;
+
    ----------------
    -- Set_Biased --
    ----------------
@@ -16120,10 +16661,10 @@ package body Sem_Ch13 is
    procedure Set_Enum_Esize (T : Entity_Id) is
       Lo : Uint;
       Hi : Uint;
-      Sz : Nat;
+      Sz : Unat;
 
    begin
-      Init_Alignment (T);
+      Reinit_Alignment (T);
 
       --  Find the minimum standard size (8,16,32,64,128) that fits
 
@@ -16131,37 +16672,38 @@ package body Sem_Ch13 is
       Hi := Enumeration_Rep (Entity (Type_High_Bound (T)));
 
       if Lo < 0 then
-         if Lo >= -Uint_2**07 and then Hi < Uint_2**07 then
-            Sz := Standard_Character_Size;  -- May be > 8 on some targets
+         if Lo >= -Uint_2**7 and then Hi < Uint_2**7 then
+            Sz := UI_From_Int (Standard_Character_Size);
+            --  Might be > 8 on some targets
 
          elsif Lo >= -Uint_2**15 and then Hi < Uint_2**15 then
-            Sz := 16;
+            Sz := Uint_16;
 
          elsif Lo >= -Uint_2**31 and then Hi < Uint_2**31 then
-            Sz := 32;
+            Sz := Uint_32;
 
          elsif Lo >= -Uint_2**63 and then Hi < Uint_2**63 then
-            Sz := 64;
+            Sz := Uint_64;
 
          else pragma Assert (Lo >= -Uint_2**127 and then Hi < Uint_2**127);
-            Sz := 128;
+            Sz := Uint_128;
          end if;
 
       else
-         if Hi < Uint_2**08 then
-            Sz := Standard_Character_Size;  -- May be > 8 on some targets
+         if Hi < Uint_2**8 then
+            Sz := UI_From_Int (Standard_Character_Size);
 
          elsif Hi < Uint_2**16 then
-            Sz := 16;
+            Sz := Uint_16;
 
          elsif Hi < Uint_2**32 then
-            Sz := 32;
+            Sz := Uint_32;
 
          elsif Hi < Uint_2**64 then
-            Sz := 64;
+            Sz := Uint_64;
 
          else pragma Assert (Hi < Uint_2**128);
-            Sz := 128;
+            Sz := Uint_128;
          end if;
       end if;
 
@@ -16177,9 +16719,9 @@ package body Sem_Ch13 is
 
         and then not Target_Short_Enums
       then
-         Init_Esize (T, Standard_Integer_Size);
+         Set_Esize (T, UI_From_Int (Standard_Integer_Size));
       else
-         Init_Esize (T, Sz);
+         Set_Esize (T, Sz);
       end if;
    end Set_Enum_Esize;
 
@@ -16262,7 +16804,7 @@ package body Sem_Ch13 is
 
             elsif Nkind (N) = N_Selected_Component then
                Off := Component_Bit_Offset (Entity (Selector_Name (N)));
-               if Off /= No_Uint and then Off >= Uint_0 then
+               if Present (Off) and then Off >= Uint_0 then
                   Val := Val + Off;
                   N   := Prefix (N);
                else
@@ -16271,7 +16813,7 @@ package body Sem_Ch13 is
 
             elsif Nkind (N) = N_Indexed_Component then
                Off := Indexed_Component_Bit_Offset (N);
-               if Off /= No_Uint then
+               if Present (Off) then
                   Val := Val + Off;
                   N   := Prefix (N);
                else
@@ -16319,7 +16861,8 @@ package body Sem_Ch13 is
 
                if Present (ACCR.Y) then
                   Y_Alignment := Alignment (ACCR.Y);
-                  Y_Size      := Esize (ACCR.Y);
+                  Y_Size :=
+                    (if Known_Esize (ACCR.Y) then Esize (ACCR.Y) else Uint_0);
                end if;
 
                if ACCR.Off
@@ -16567,7 +17110,15 @@ package body Sem_Ch13 is
       end if;
 
       if not Overloaded and then not Present (Entity (Func_Name)) then
-         Analyze (Func_Name);
+         --  The aspect is specified by a subprogram name, which
+         --  may be an operator name given originally by a string.
+
+         if Is_Operator_Name (Chars (Func_Name)) then
+            Analyze_Operator_Symbol (Func_Name);
+         else
+            Analyze (Func_Name);
+         end if;
+
          Overloaded := Is_Overloaded (Func_Name);
       end if;
 
@@ -16664,6 +17215,116 @@ package body Sem_Ch13 is
       end if;
    end Validate_Literal_Aspect;
 
+   ----------------------------------------
+   -- Validate_Storage_Model_Type_Aspect --
+   ----------------------------------------
+
+   procedure Validate_Storage_Model_Type_Aspect
+     (Typ : Entity_Id; ASN : Node_Id)
+   is
+      Assoc  : Node_Id;
+      Choice : Entity_Id;
+      Expr   : Node_Id;
+
+      Address_Type_Id : Entity_Id := Empty;
+      Null_Address_Id : Entity_Id := Empty;
+      Allocate_Id     : Entity_Id := Empty;
+      Deallocate_Id   : Entity_Id := Empty;
+      Copy_From_Id    : Entity_Id := Empty;
+      Copy_To_Id      : Entity_Id := Empty;
+      Storage_Size_Id : Entity_Id := Empty;
+
+   begin
+      --  Each expression must resolve to an entity of the right kind or proper
+      --  profile.
+
+      Assoc := First (Component_Associations (Expression (ASN)));
+      while Present (Assoc) loop
+         Expr := Expression (Assoc);
+         Analyze (Expr);
+
+         Choice := First (Choices (Assoc));
+
+         if Nkind (Choice) /= N_Identifier or else Present (Next (Choice)) then
+            Error_Msg_N ("illegal name in association", Choice);
+
+         elsif Chars (Choice) = Name_Address_Type then
+            if Assoc /= First (Component_Associations (Expression (ASN))) then
+               Error_Msg_N ("Address_Type must be first association", Choice);
+            end if;
+
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Address_Type);
+            Address_Type_Id := Entity (Expr);
+
+         --  Shouldn't we check for duplicates of the same subaspect name,
+         --  and issue an error in such cases???
+
+         elsif not Present (Address_Type_Id) then
+            Error_Msg_N
+              ("Address_Type missing, must be first association", Choice);
+
+         elsif Chars (Choice) = Name_Null_Address then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Null_Address);
+            Null_Address_Id := Entity (Expr);
+
+         elsif Chars (Choice) = Name_Allocate then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Allocate);
+            Allocate_Id := Entity (Expr);
+
+         elsif Chars (Choice) = Name_Deallocate then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Deallocate);
+            Deallocate_Id := Entity (Expr);
+
+         elsif Chars (Choice) = Name_Copy_From then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Copy_From);
+            Copy_From_Id := Entity (Expr);
+
+         elsif Chars (Choice) = Name_Copy_To then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Copy_To);
+            Copy_To_Id := Entity (Expr);
+
+         elsif Chars (Choice) = Name_Storage_Size then
+            Resolve_Storage_Model_Type_Argument
+              (Expr, Typ, Address_Type_Id, Name_Storage_Size);
+            Storage_Size_Id := Entity (Expr);
+
+         else
+            Error_Msg_N
+              ("invalid name for Storage_Model_Type argument", Choice);
+         end if;
+
+         Next (Assoc);
+      end loop;
+
+      if No (Address_Type_Id) then
+         Error_Msg_N ("match for Address_Type not found", ASN);
+
+      elsif No (Null_Address_Id) then
+         Error_Msg_N ("match for Null_Address primitive not found", ASN);
+
+      elsif No (Allocate_Id) then
+         Error_Msg_N ("match for Allocate primitive not found", ASN);
+
+      elsif No (Deallocate_Id) then
+         Error_Msg_N ("match for Deallocate primitive not found", ASN);
+
+      elsif No (Copy_From_Id) then
+         Error_Msg_N ("match for Copy_From primitive not found", ASN);
+
+      elsif No (Copy_To_Id) then
+         Error_Msg_N ("match for Copy_To primitive not found", ASN);
+
+      elsif No (Storage_Size_Id) then
+         Error_Msg_N ("match for Storage_Size primitive not found", ASN);
+      end if;
+   end Validate_Storage_Model_Type_Aspect;
+
    -----------------------------------
    -- Validate_Unchecked_Conversion --
    -----------------------------------
@@ -16674,7 +17335,31 @@ package body Sem_Ch13 is
    is
       Source : Entity_Id;
       Target : Entity_Id;
+
+      procedure Warn_Nonportable (RE : RE_Id);
+      --  Warn if either source or target of the conversion is a predefined
+      --  private type, whose representation might differ between releases and
+      --  targets of the compiler.
+
+      ----------------------
+      -- Warn_Nonportable --
+      ----------------------
+
+      procedure Warn_Nonportable (RE : RE_Id) is
+      begin
+         if Is_RTE (Source, RE) or else Is_RTE (Target, RE) then
+            pragma Assert (Is_Private_Type (RTE (RE)));
+            Error_Msg_NE
+              ("?z?representation of & values may change between "
+               & "'G'N'A'T versions", N, RTE (RE));
+         end if;
+      end Warn_Nonportable;
+
+      --  Local variables
+
       Vnode  : Node_Id;
+
+   --  Start of processing for Validate_Unchecked_Conversion
 
    begin
       --  Obtain source and target types. Note that we call Ancestor_Subtype
@@ -16690,6 +17375,18 @@ package body Sem_Ch13 is
 
       if Is_Generic_Type (Source) or else Is_Generic_Type (Target) then
          return;
+      end if;
+
+      --  Warn if one of the operands is a private type declared in
+      --  Ada.Calendar or Ada.Real_Time. Do not emit a warning when compiling
+      --  GNAT-related sources.
+
+      if Warn_On_Unchecked_Conversion
+        and then not In_Predefined_Unit (N)
+      then
+         Warn_Nonportable (RO_CA_Time);
+         Warn_Nonportable (RO_RT_Time);
+         Warn_Nonportable (RE_Time_Span);
       end if;
 
       --  If we are dealing with private types, then do the check on their
@@ -16736,32 +17433,6 @@ package body Sem_Ch13 is
               ("?z?conversion between pointers with different conventions!",
                N);
          end if;
-      end if;
-
-      --  Warn if one of the operands is Ada.Calendar.Time. Do not emit a
-      --  warning when compiling GNAT-related sources.
-
-      if Warn_On_Unchecked_Conversion
-        and then not In_Predefined_Unit (N)
-        and then RTU_Loaded (Ada_Calendar)
-        and then (Chars (Source) = Name_Time
-                    or else
-                  Chars (Target) = Name_Time)
-      then
-         --  If Ada.Calendar is loaded and the name of one of the operands is
-         --  Time, there is a good chance that this is Ada.Calendar.Time.
-
-         declare
-            Calendar_Time : constant Entity_Id := Full_View (RTE (RO_CA_Time));
-         begin
-            pragma Assert (Present (Calendar_Time));
-
-            if Source = Calendar_Time or else Target = Calendar_Time then
-               Error_Msg_N
-                 ("?z?representation of 'Time values may change between "
-                  & "'G'N'A'T versions", N);
-            end if;
-         end;
       end if;
 
       --  Make entry in unchecked conversion table for later processing by

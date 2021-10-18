@@ -2448,6 +2448,21 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       return false;
     }
 
+  /* TS29113 C407c; F2018 C711.  */
+  if (actual->ts.type == BT_ASSUMED
+      && symbol_rank (formal) == -1
+      && actual->rank != -1
+      && !(actual->symtree->n.sym->as
+	   && actual->symtree->n.sym->as->type == AS_ASSUMED_SHAPE))
+    {
+      if (where)
+	gfc_error ("Assumed-type actual argument at %L corresponding to "
+		   "assumed-rank dummy argument %qs must be "
+		   "assumed-shape or assumed-rank",
+		   &actual->where, formal->name);
+      return false;
+    }
+
   /* F2008, 12.5.2.5; IR F08/0073.  */
   if (formal->ts.type == BT_CLASS && formal->attr.class_ok
       && actual->expr_type != EXPR_NULL
@@ -2634,7 +2649,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		   && formal->as->type == AS_ASSUMED_SHAPE))
 	  && actual->expr_type != EXPR_NULL)
       || (actual->rank == 0 && formal->attr.dimension
-	  && gfc_is_coindexed (actual)))
+	  && gfc_is_coindexed (actual))
+      /* Assumed-rank actual argument; F2018 C838.  */
+      || actual->rank == -1)
     {
       if (where
 	  && (!formal->attr.artificial || (!formal->maybe_array
@@ -3044,6 +3061,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   unsigned long actual_size, formal_size;
   bool full_array = false;
   gfc_array_ref *actual_arr_ref;
+  gfc_array_spec *fas, *aas;
+  bool pointer_dummy, pointer_arg, allocatable_arg;
 
   actual = *ap;
 
@@ -3181,21 +3200,21 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			      is_elemental, where))
 	return false;
 
-      /* TS 29113, 6.3p2.  */
+      /* TS 29113, 6.3p2; F2018 15.5.2.4.  */
       if (f->sym->ts.type == BT_ASSUMED
 	  && (a->expr->ts.type == BT_DERIVED
 	      || (a->expr->ts.type == BT_CLASS && CLASS_DATA (a->expr))))
 	{
-	  gfc_namespace *f2k_derived;
-
-	  f2k_derived = a->expr->ts.type == BT_DERIVED
-			? a->expr->ts.u.derived->f2k_derived
-			: CLASS_DATA (a->expr)->ts.u.derived->f2k_derived;
-
-	  if (f2k_derived
-	      && (f2k_derived->finalizers || f2k_derived->tb_sym_root))
+	  gfc_symbol *derived = (a->expr->ts.type == BT_DERIVED
+				 ? a->expr->ts.u.derived
+				 : CLASS_DATA (a->expr)->ts.u.derived);
+	  gfc_namespace *f2k_derived = derived->f2k_derived;
+	  if (derived->attr.pdt_type
+	      || (f2k_derived
+		  && (f2k_derived->finalizers || f2k_derived->tb_sym_root)))
 	    {
-	      gfc_error ("Actual argument at %L to assumed-type dummy is of "
+	      gfc_error ("Actual argument at %L to assumed-type dummy "
+			 "has type parameters or is of "
 			 "derived type with type-bound or FINAL procedures",
 			 &a->expr->where);
 	      return false;
@@ -3312,13 +3331,60 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return false;
 	}
 
-      if (f->sym->as
-	  && (f->sym->as->type == AS_ASSUMED_SHAPE
-	      || f->sym->as->type == AS_DEFERRED
-	      || (f->sym->as->type == AS_ASSUMED_RANK && f->sym->attr.pointer))
-	  && a->expr->expr_type == EXPR_VARIABLE
-	  && a->expr->symtree->n.sym->as
-	  && a->expr->symtree->n.sym->as->type == AS_ASSUMED_SIZE
+      /* Class array variables and expressions store array info in a
+	 different place from non-class objects; consolidate the logic
+	 to access it here instead of repeating it below.  Note that
+	 pointer_arg and allocatable_arg are not fully general and are
+	 only used in a specific situation below with an assumed-rank
+	 argument.  */
+      if (f->sym->ts.type == BT_CLASS && CLASS_DATA (f->sym))
+	{
+	  gfc_component *classdata = CLASS_DATA (f->sym);
+	  fas = classdata->as;
+	  pointer_dummy = classdata->attr.class_pointer;
+	}
+      else
+	{
+	  fas = f->sym->as;
+	  pointer_dummy = f->sym->attr.pointer;
+	}
+
+      if (a->expr->expr_type != EXPR_VARIABLE)
+	{
+	  aas = NULL;
+	  pointer_arg = false;
+	  allocatable_arg = false;
+	}
+      else if (a->expr->ts.type == BT_CLASS
+	       && a->expr->symtree->n.sym
+	       && CLASS_DATA (a->expr->symtree->n.sym))
+	{
+	  gfc_component *classdata = CLASS_DATA (a->expr->symtree->n.sym);
+	  aas = classdata->as;
+	  pointer_arg = classdata->attr.class_pointer;
+	  allocatable_arg = classdata->attr.allocatable;
+	}
+      else
+	{
+	  aas = a->expr->symtree->n.sym->as;
+	  pointer_arg = a->expr->symtree->n.sym->attr.pointer;
+	  allocatable_arg = a->expr->symtree->n.sym->attr.allocatable;
+	}
+
+      /* F2018:9.5.2(2) permits assumed-size whole array expressions as
+	 actual arguments only if the shape is not required; thus it
+	 cannot be passed to an assumed-shape array dummy.
+	 F2018:15.5.2.(2) permits passing a nonpointer actual to an
+	 intent(in) pointer dummy argument and this is accepted by
+	 the compare_pointer check below, but this also requires shape
+	 information.
+	 There's more discussion of this in PR94110.  */
+      if (fas
+	  && (fas->type == AS_ASSUMED_SHAPE
+	      || fas->type == AS_DEFERRED
+	      || (fas->type == AS_ASSUMED_RANK && pointer_dummy))
+	  && aas
+	  && aas->type == AS_ASSUMED_SIZE
 	  && (a->expr->ref == NULL
 	      || (a->expr->ref->type == REF_ARRAY
 		  && a->expr->ref->u.ar.type == AR_FULL)))
@@ -3326,6 +3392,35 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Actual argument for %qs cannot be an assumed-size"
 		       " array at %L", f->sym->name, where);
+	  return false;
+	}
+
+      /* Diagnose F2018 C839 (TS29113 C535c).  Here the problem is
+	 passing an assumed-size array to an INTENT(OUT) assumed-rank
+	 dummy when it doesn't have the size information needed to run
+	 initializers and finalizers.  */
+      if (f->sym->attr.intent == INTENT_OUT
+	  && fas
+	  && fas->type == AS_ASSUMED_RANK
+	  && aas
+	  && ((aas->type == AS_ASSUMED_SIZE
+	       && (a->expr->ref == NULL
+		   || (a->expr->ref->type == REF_ARRAY
+		       && a->expr->ref->u.ar.type == AR_FULL)))
+	      || (aas->type == AS_ASSUMED_RANK
+		  && !pointer_arg
+		  && !allocatable_arg))
+	  && (a->expr->ts.type == BT_CLASS
+	      || (a->expr->ts.type == BT_DERIVED
+		  && (gfc_is_finalizable (a->expr->ts.u.derived, NULL)
+		      || gfc_has_ultimate_allocatable (a->expr)
+		      || gfc_has_default_initializer
+			   (a->expr->ts.u.derived)))))
+	{
+	  if (where)
+	    gfc_error ("Actual argument to assumed-rank INTENT(OUT) "
+		       "dummy %qs at %L cannot be of unknown size",
+		       f->sym->name, where);
 	  return false;
 	}
 
@@ -3462,7 +3557,7 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && a->expr->expr_type == EXPR_VARIABLE
 	  && a->expr->symtree->n.sym->as
 	  && a->expr->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
-	  && !(f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
+	  && !(fas && fas->type == AS_ASSUMED_SHAPE))
 	{
 	  if (where)
 	    gfc_error ("Assumed-shape actual argument at %L is "
@@ -3479,7 +3574,7 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
       if (f->sym->attr.volatile_
 	  && actual_arr_ref && actual_arr_ref->type == AR_SECTION
-	  && !(f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
+	  && !(fas && fas->type == AS_ASSUMED_SHAPE))
 	{
 	  if (where)
 	    gfc_error ("Array-section actual argument at %L is "
@@ -3497,8 +3592,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && a->expr->expr_type == EXPR_VARIABLE
 	  && a->expr->symtree->n.sym->attr.pointer
 	  && a->expr->symtree->n.sym->as
-	  && !(f->sym->as
-	       && (f->sym->as->type == AS_ASSUMED_SHAPE
+	  && !(fas
+	       && (fas->type == AS_ASSUMED_SHAPE
 		   || f->sym->attr.pointer)))
 	{
 	  if (where)
@@ -3529,8 +3624,13 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "at %L", where);
 	  return false;
 	}
-      if (!f->sym->attr.optional
-	  || (in_statement_function && f->sym->attr.optional))
+      /* For CLASS, the optional attribute might be set at either location. */
+      if (((f->sym->ts.type != BT_CLASS || !CLASS_DATA (f->sym)->attr.optional)
+	   && !f->sym->attr.optional)
+	  || (in_statement_function
+	      && (f->sym->attr.optional
+		  || (f->sym->ts.type == BT_CLASS
+		      && CLASS_DATA (f->sym)->attr.optional))))
 	{
 	  if (where)
 	    gfc_error ("Missing actual argument for argument %qs at %L",

@@ -53,11 +53,13 @@ private with Ada.Strings.Text_Buffers;
 --  and selector operations are provided.
 
 package Ada.Strings.Unbounded with
+  SPARK_Mode,
   Initial_Condition => Length (Null_Unbounded_String) = 0
 is
    pragma Preelaborate;
 
-   type Unbounded_String is private;
+   type Unbounded_String is private with
+     Default_Initial_Condition => Length (Unbounded_String) = 0;
    pragma Preelaborable_Initialization (Unbounded_String);
 
    Null_Unbounded_String : constant Unbounded_String;
@@ -73,7 +75,7 @@ is
    --  Provides a (nonprivate) access type for explicit processing of
    --  unbounded-length strings.
 
-   procedure Free (X : in out String_Access);
+   procedure Free (X : in out String_Access) with SPARK_Mode => Off;
    --  Performs an unchecked deallocation of an object of type String_Access
 
    --------------------------------------------------------
@@ -732,6 +734,8 @@ is
    --  strings applied to the string represented by Source's original value.
 
 private
+   pragma SPARK_Mode (Off);  --  Controlled types are not in SPARK
+
    pragma Inline (Length);
 
    package AF renames Ada.Finalization;

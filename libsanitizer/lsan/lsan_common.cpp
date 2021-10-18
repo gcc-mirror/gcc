@@ -30,7 +30,7 @@ namespace __lsan {
 
 // This mutex is used to prevent races between DoLeakCheck and IgnoreObject, and
 // also to protect the global list of root regions.
-BlockingMutex global_mutex(LINKER_INITIALIZED);
+Mutex global_mutex;
 
 Flags lsan_flags;
 
@@ -79,7 +79,8 @@ class LeakSuppressionContext {
                          int suppression_types_num)
       : context(supprression_types, suppression_types_num) {}
 
-  Suppression *GetSuppressionForStack(u32 stack_trace_id);
+  Suppression *GetSuppressionForStack(u32 stack_trace_id,
+                                      const StackTrace &stack);
 
   const InternalMmapVector<u32> &GetSortedSuppressedStacks() {
     if (!suppressed_stacks_sorted) {
@@ -477,9 +478,7 @@ static void CollectIgnoredCb(uptr chunk, void *arg) {
   }
 }
 
-static uptr GetCallerPC(u32 stack_id, StackDepotReverseMap *map) {
-  CHECK(stack_id);
-  StackTrace stack = map->Get(stack_id);
+static uptr GetCallerPC(const StackTrace &stack) {
   // The top frame is our malloc/calloc/etc. The next frame is the caller.
   if (stack.size >= 2)
     return stack.trace[1];
@@ -488,7 +487,7 @@ static uptr GetCallerPC(u32 stack_id, StackDepotReverseMap *map) {
 
 struct InvalidPCParam {
   Frontier *frontier;
-  StackDepotReverseMap *stack_depot_reverse_map;
+  const StackDepotReverseMap *stack_depot;
   bool skip_linker_allocations;
 };
 
@@ -503,7 +502,7 @@ static void MarkInvalidPCCb(uptr chunk, void *arg) {
     u32 stack_id = m.stack_trace_id();
     uptr caller_pc = 0;
     if (stack_id > 0)
-      caller_pc = GetCallerPC(stack_id, param->stack_depot_reverse_map);
+      caller_pc = GetCallerPC(param->stack_depot->Get(stack_id));
     // If caller_pc is unknown, this chunk may be allocated in a coroutine. Mark
     // it as reachable, as we can't properly report its allocation stack anyway.
     if (caller_pc == 0 || (param->skip_linker_allocations &&
@@ -534,11 +533,11 @@ static void MarkInvalidPCCb(uptr chunk, void *arg) {
 // which we don't care about).
 // On all other platforms, this simply checks to ensure that the caller pc is
 // valid before reporting chunks as leaked.
-void ProcessPC(Frontier *frontier) {
-  StackDepotReverseMap stack_depot_reverse_map;
+static void ProcessPC(Frontier *frontier,
+                      const StackDepotReverseMap &stack_depot) {
   InvalidPCParam arg;
   arg.frontier = frontier;
-  arg.stack_depot_reverse_map = &stack_depot_reverse_map;
+  arg.stack_depot = &stack_depot;
   arg.skip_linker_allocations =
       flags()->use_tls && flags()->use_ld_allocations && GetLinker() != nullptr;
   ForEachChunk(MarkInvalidPCCb, &arg);
@@ -546,6 +545,7 @@ void ProcessPC(Frontier *frontier) {
 
 // Sets the appropriate tag on each chunk.
 static void ClassifyAllChunks(SuspendedThreadsList const &suspended_threads,
+                              const StackDepotReverseMap &stack_depot,
                               Frontier *frontier) {
   const InternalMmapVector<u32> &suppressed_stacks =
       GetSuppressionContext()->GetSortedSuppressedStacks();
@@ -560,7 +560,7 @@ static void ClassifyAllChunks(SuspendedThreadsList const &suspended_threads,
   FloodFillTag(frontier, kReachable);
 
   CHECK_EQ(0, frontier->size());
-  ProcessPC(frontier);
+  ProcessPC(frontier, stack_depot);
 
   // The check here is relatively expensive, so we do this in a separate flood
   // fill. That way we can skip the check for chunks that are reachable
@@ -584,11 +584,6 @@ static void ResetTagsCb(uptr chunk, void *arg) {
     m.set_tag(kDirectlyLeaked);
 }
 
-static void PrintStackTraceById(u32 stack_trace_id) {
-  CHECK(stack_trace_id);
-  StackDepotGet(stack_trace_id).Print();
-}
-
 // ForEachChunk callback. Aggregates information about unreachable chunks into
 // a LeakReport.
 static void CollectLeaksCb(uptr chunk, void *arg) {
@@ -598,16 +593,7 @@ static void CollectLeaksCb(uptr chunk, void *arg) {
   LsanMetadata m(chunk);
   if (!m.allocated()) return;
   if (m.tag() == kDirectlyLeaked || m.tag() == kIndirectlyLeaked) {
-    u32 resolution = flags()->resolution;
-    u32 stack_trace_id = 0;
-    if (resolution > 0) {
-      StackTrace stack = StackDepotGet(m.stack_trace_id());
-      stack.size = Min(stack.size, resolution);
-      stack_trace_id = StackDepotPut(stack);
-    } else {
-      stack_trace_id = m.stack_trace_id();
-    }
-    leak_report->AddLeakedChunk(chunk, stack_trace_id, m.requested_size(),
+    leak_report->AddLeakedChunk(chunk, m.stack_trace_id(), m.requested_size(),
                                 m.tag());
   }
 }
@@ -668,7 +654,8 @@ static void CheckForLeaksCallback(const SuspendedThreadsList &suspended_threads,
   CHECK(param);
   CHECK(!param->success);
   ReportUnsuspendedThreads(suspended_threads);
-  ClassifyAllChunks(suspended_threads, &param->frontier);
+  ClassifyAllChunks(suspended_threads, param->leak_report.stack_depot(),
+                    &param->frontier);
   ForEachChunk(CollectLeaksCb, &param->leak_report);
   // Clean up for subsequent leak checks. This assumes we did not overwrite any
   // kIgnored tags.
@@ -742,7 +729,7 @@ static bool has_reported_leaks = false;
 bool HasReportedLeaks() { return has_reported_leaks; }
 
 void DoLeakCheck() {
-  BlockingMutexLock l(&global_mutex);
+  Lock l(&global_mutex);
   static bool already_done;
   if (already_done) return;
   already_done = true;
@@ -751,7 +738,7 @@ void DoLeakCheck() {
 }
 
 static int DoRecoverableLeakCheck() {
-  BlockingMutexLock l(&global_mutex);
+  Lock l(&global_mutex);
   bool have_leaks = CheckForLeaks();
   return have_leaks ? 1 : 0;
 }
@@ -780,9 +767,8 @@ Suppression *LeakSuppressionContext::GetSuppressionForAddr(uptr addr) {
 }
 
 Suppression *LeakSuppressionContext::GetSuppressionForStack(
-    u32 stack_trace_id) {
+    u32 stack_trace_id, const StackTrace &stack) {
   LazyInit();
-  StackTrace stack = StackDepotGet(stack_trace_id);
   for (uptr i = 0; i < stack.size; i++) {
     Suppression *s = GetSuppressionForAddr(
         StackTrace::GetPreviousInstructionPc(stack.trace[i]));
@@ -807,6 +793,13 @@ const uptr kMaxLeaksConsidered = 5000;
 void LeakReport::AddLeakedChunk(uptr chunk, u32 stack_trace_id,
                                 uptr leaked_size, ChunkTag tag) {
   CHECK(tag == kDirectlyLeaked || tag == kIndirectlyLeaked);
+
+  if (u32 resolution = flags()->resolution) {
+    StackTrace stack = stack_depot_.Get(stack_trace_id);
+    stack.size = Min(stack.size, resolution);
+    stack_trace_id = StackDepotPut(stack);
+  }
+
   bool is_directly_leaked = (tag == kDirectlyLeaked);
   uptr i;
   for (i = 0; i < leaks_.size(); i++) {
@@ -869,7 +862,8 @@ void LeakReport::PrintReportForLeak(uptr index) {
          leaks_[index].total_size, leaks_[index].hit_count);
   Printf("%s", d.Default());
 
-  PrintStackTraceById(leaks_[index].stack_trace_id);
+  CHECK(leaks_[index].stack_trace_id);
+  stack_depot_.Get(leaks_[index].stack_trace_id).Print();
 
   if (flags()->report_objects) {
     Printf("Objects leaked above:\n");
@@ -905,8 +899,8 @@ uptr LeakReport::ApplySuppressions() {
   LeakSuppressionContext *suppressions = GetSuppressionContext();
   uptr new_suppressions = false;
   for (uptr i = 0; i < leaks_.size(); i++) {
-    Suppression *s =
-        suppressions->GetSuppressionForStack(leaks_[i].stack_trace_id);
+    Suppression *s = suppressions->GetSuppressionForStack(
+        leaks_[i].stack_trace_id, stack_depot_.Get(leaks_[i].stack_trace_id));
     if (s) {
       s->weight += leaks_[i].total_size;
       atomic_store_relaxed(&s->hit_count, atomic_load_relaxed(&s->hit_count) +
@@ -954,7 +948,7 @@ void __lsan_ignore_object(const void *p) {
     return;
   // Cannot use PointsIntoChunk or LsanMetadata here, since the allocator is not
   // locked.
-  BlockingMutexLock l(&global_mutex);
+  Lock l(&global_mutex);
   IgnoreObjectResult res = IgnoreObjectLocked(p);
   if (res == kIgnoreObjectInvalid)
     VReport(1, "__lsan_ignore_object(): no heap object found at %p", p);
@@ -969,7 +963,7 @@ void __lsan_ignore_object(const void *p) {
 SANITIZER_INTERFACE_ATTRIBUTE
 void __lsan_register_root_region(const void *begin, uptr size) {
 #if CAN_SANITIZE_LEAKS
-  BlockingMutexLock l(&global_mutex);
+  Lock l(&global_mutex);
   CHECK(root_regions);
   RootRegion region = {reinterpret_cast<uptr>(begin), size};
   root_regions->push_back(region);
@@ -980,7 +974,7 @@ void __lsan_register_root_region(const void *begin, uptr size) {
 SANITIZER_INTERFACE_ATTRIBUTE
 void __lsan_unregister_root_region(const void *begin, uptr size) {
 #if CAN_SANITIZE_LEAKS
-  BlockingMutexLock l(&global_mutex);
+  Lock l(&global_mutex);
   CHECK(root_regions);
   bool removed = false;
   for (uptr i = 0; i < root_regions->size(); i++) {

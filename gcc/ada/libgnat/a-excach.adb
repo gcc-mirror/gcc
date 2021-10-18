@@ -41,7 +41,7 @@ pragma Warnings (On);
 separate (Ada.Exceptions)
 procedure Call_Chain (Excep : EOA) is
 
-   Exception_Tracebacks : Integer;
+   Exception_Tracebacks : constant Integer;
    pragma Import (C, Exception_Tracebacks, "__gl_exception_tracebacks");
    --  Boolean indicating whether tracebacks should be stored in exception
    --  occurrences.

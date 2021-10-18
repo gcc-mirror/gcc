@@ -893,7 +893,7 @@ sh_option_override (void)
     }
 
   /* Set -mzdcbranch for SH4 / SH4A if not otherwise specified by the user.  */
-  if (! global_options_set.x_TARGET_ZDCBRANCH && TARGET_HARD_SH4)
+  if (! OPTION_SET_P (TARGET_ZDCBRANCH) && TARGET_HARD_SH4)
     TARGET_ZDCBRANCH = 1;
 
   /* FDPIC code is a special form of PIC, and the vast majority of code
@@ -932,13 +932,13 @@ sh_option_override (void)
 	 <http://gcc.gnu.org/ml/gcc-patches/2005-10/msg00816.html>.  */
       else if (flag_exceptions)
 	{
-	  if (flag_schedule_insns && global_options_set.x_flag_schedule_insns)
+	  if (flag_schedule_insns && OPTION_SET_P (flag_schedule_insns))
 	    warning (0, "ignoring %<-fschedule-insns%> because of exception "
 			"handling bug");
 	  flag_schedule_insns = 0;
 	}
       else if (flag_schedule_insns
-	       && !global_options_set.x_flag_schedule_insns)
+	       && !OPTION_SET_P (flag_schedule_insns))
 	flag_schedule_insns = 0;
     }
 
@@ -958,12 +958,12 @@ sh_option_override (void)
   if (flag_unsafe_math_optimizations)
     {
       /* Enable fsca insn for SH4A if not otherwise specified by the user.  */
-      if (global_options_set.x_TARGET_FSCA == 0
+      if (OPTION_SET_P (TARGET_FSCA) == 0
 	  && (TARGET_SH4A_FP || TARGET_FPU_SH4_300))
 	TARGET_FSCA = 1;
 
       /* Enable fsrra insn for SH4A if not otherwise specified by the user.  */
-      if (global_options_set.x_TARGET_FSRRA == 0
+      if (OPTION_SET_P (TARGET_FSRRA) == 0
 	  && (TARGET_SH4A_FP || TARGET_FPU_SH4_300))
 	TARGET_FSRRA = 1;
     }
@@ -976,7 +976,7 @@ sh_option_override (void)
 
   /* If the -mieee option was not explicitly set by the user, turn it on
      unless -ffinite-math-only was specified.  See also PR 33135.  */
-  if (! global_options_set.x_TARGET_IEEE)
+  if (! OPTION_SET_P (TARGET_IEEE))
     TARGET_IEEE = ! flag_finite_math_only;
 
   if (sh_fixed_range_str)

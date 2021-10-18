@@ -4162,8 +4162,7 @@ package body Sem_Ch10 is
       end if;
 
       if Ekind (P_Name) = E_Generic_Package
-        and then Nkind (Lib_Unit) not in N_Generic_Subprogram_Declaration
-                                       | N_Generic_Package_Declaration
+        and then Nkind (Lib_Unit) not in N_Generic_Declaration
                                        | N_Generic_Renaming_Declaration
       then
          Error_Msg_N
@@ -5610,9 +5609,8 @@ package body Sem_Ch10 is
    --  demand, at the point of instantiation (see ch12).
 
    procedure Load_Needed_Body
-     (N          : Node_Id;
-      OK         : out Boolean;
-      Do_Analyze : Boolean := True)
+     (N  : Node_Id;
+      OK : out Boolean)
    is
       Body_Name : Unit_Name_Type;
       Unum      : Unit_Number_Type;
@@ -5646,9 +5644,8 @@ package body Sem_Ch10 is
                Write_Eol;
             end if;
 
-            if Do_Analyze then
-               Semantics (Cunit (Unum));
-            end if;
+            --  We always perform analyses
+            Semantics (Cunit (Unum));
          end if;
 
          OK := True;
@@ -5825,7 +5822,7 @@ package body Sem_Ch10 is
          Set_Is_First_Subtype   (Ent);
          Set_Scope              (Ent, Scop);
          Set_Stored_Constraint  (Ent, No_Elist);
-         Init_Size_Align        (Ent);
+         Reinit_Size_Align      (Ent);
 
          if From_Limited_With (Ent) then
             Set_Private_Dependents (Ent, New_Elmt_List);
@@ -5865,7 +5862,7 @@ package body Sem_Ch10 is
             Set_Is_Tagged_Type            (CW_Typ);
             Set_Materialize_Entity        (CW_Typ, Materialize);
             Set_Scope                     (CW_Typ, Scop);
-            Init_Size_Align               (CW_Typ);
+            Reinit_Size_Align             (CW_Typ);
          end if;
       end Decorate_Type;
 
@@ -6195,9 +6192,7 @@ package body Sem_Ch10 is
               ("subprogram not allowed in `LIMITED WITH` clause", N);
             return;
 
-         when N_Generic_Package_Declaration
-            | N_Generic_Subprogram_Declaration
-         =>
+         when N_Generic_Declaration =>
             Error_Msg_N ("generic not allowed in `LIMITED WITH` clause", N);
             return;
 

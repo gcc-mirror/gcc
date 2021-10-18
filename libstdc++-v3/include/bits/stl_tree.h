@@ -637,9 +637,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_clone_node(_Link_type __x, _NodeGen& __node_gen)
 	{
 #if __cplusplus >= 201103L
-	  using _Vp = typename conditional<_MoveValue,
-					   value_type&&,
-					   const value_type&>::type;
+	  using _Vp = __conditional_t<_MoveValue,
+				      value_type&&,
+				      const value_type&>;
 #endif
 	  _Link_type __tmp
 	    = __node_gen(_GLIBCXX_FORWARD(_Vp, *__x->_M_valptr()));
@@ -821,7 +821,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201402L
       using node_type = _Node_handle<_Key, _Val, _Node_allocator>;
       using insert_return_type = _Node_insert_return<
-	conditional_t<is_same_v<_Key, _Val>, const_iterator, iterator>,
+	__conditional_t<is_same_v<_Key, _Val>, const_iterator, iterator>,
 	node_type>;
 #endif
 

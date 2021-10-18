@@ -256,6 +256,9 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   /* Excess precision other than "fast" requires front-end support.  */
   if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
     sorry ("%<-fexcess-precision=standard%> for Ada");
+  else if (flag_excess_precision == EXCESS_PRECISION_FLOAT16)
+    sorry ("%<-fexcess-precision=16%> for Ada");
+
   flag_excess_precision = EXCESS_PRECISION_FAST;
 
   /* No psABI change warnings for Ada.  */
@@ -268,14 +271,8 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   warn_stringop_overflow = 0;
 
   /* No caret by default for Ada.  */
-  if (!global_options_set.x_flag_diagnostics_show_caret)
+  if (!OPTION_SET_P (flag_diagnostics_show_caret))
     global_dc->show_caret = false;
-
-  /* Warn only if STABS is not the default: we don't want to emit a warning if
-     the user did not use a -gstabs option.  */
-  if (PREFERRED_DEBUGGING_TYPE != DBX_DEBUG && write_symbols == DBX_DEBUG)
-    warning (0, "STABS debugging information for Ada is obsolete and not "
-		"supported anymore");
 
   /* Copy global settings to local versions.  */
   gnat_encodings = global_options.x_gnat_encodings;
@@ -419,12 +416,12 @@ gnat_init_gcc_eh (void)
   flag_delete_dead_exceptions = 1;
   if (Suppress_Checks)
     {
-      if (!global_options_set.x_flag_non_call_exceptions)
+      if (!OPTION_SET_P (flag_non_call_exceptions))
 	flag_non_call_exceptions = Machine_Overflows_On_Target && GNAT_Mode;
     }
   else
     {
-      if (!global_options_set.x_flag_non_call_exceptions)
+      if (!OPTION_SET_P (flag_non_call_exceptions))
         flag_non_call_exceptions = 1;
       flag_aggressive_loop_optimizations = 0;
       warn_aggressive_loop_optimizations = 0;
@@ -442,14 +439,14 @@ gnat_init_gcc_fp (void)
      S'Signed_Zeros is true, but don't override the user if not.  */
   if (Signed_Zeros_On_Target)
     flag_signed_zeros = 1;
-  else if (!global_options_set.x_flag_signed_zeros)
+  else if (!OPTION_SET_P (flag_signed_zeros))
     flag_signed_zeros = 0;
 
   /* Assume that FP operations can trap if S'Machine_Overflow is true,
      but don't override the user if not.  */
   if (Machine_Overflows_On_Target)
     flag_trapping_math = 1;
-  else if (!global_options_set.x_flag_trapping_math)
+  else if (!OPTION_SET_P (flag_trapping_math))
     flag_trapping_math = 0;
 }
 

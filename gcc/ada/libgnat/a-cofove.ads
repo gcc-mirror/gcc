@@ -50,6 +50,7 @@ is
 
    pragma Assertion_Policy (Pre => Ignore);
    pragma Assertion_Policy (Post => Ignore);
+   pragma Assertion_Policy (Contract_Cases => Ignore);
    pragma Annotate (CodePeer, Skip_Analysis);
 
    subtype Extended_Index is Index_Type'Base

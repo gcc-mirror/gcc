@@ -104,8 +104,12 @@ package System.Parameters is
    -- Characteristics of time_t type --
    ------------------------------------
 
-   time_t_bits : constant := Long_Integer'Size;
-   --  Number of bits in type time_t
+   --  IMPORTANT NOTE:
+   --  time_t_bits must match the size specified in the VSB.
+
+   time_t_bits : constant := Long_Long_Integer'Size;
+   --  Number of bits in type time_t for SR0660 and newer,
+   --  with the default configuration of the VSB.
 
    ----------------------------------------------
    -- Characteristics of types in Interfaces.C --

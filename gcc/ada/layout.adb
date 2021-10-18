@@ -155,7 +155,7 @@ package body Layout is
             exit when Esize (E) mod Abits = 0;
          end loop;
 
-         Init_Alignment (E, Abits / SSU);
+         Set_Alignment (E, UI_From_Int (Abits / SSU));
          return;
       end if;
 
@@ -243,8 +243,8 @@ package body Layout is
       --  like or need the size to be set.
 
       if Ekind (E) = E_String_Literal_Subtype then
-         Set_Esize (E, Uint_0);
-         Set_RM_Size (E, Uint_0);
+         Reinit_Esize (E);
+         Reinit_RM_Size (E);
          return;
       end if;
 
@@ -287,7 +287,7 @@ package body Layout is
 
          elsif Ekind (E) = E_Access_Subtype then
             Set_Size_Info (E, Base_Type (E));
-            Set_RM_Size   (E, RM_Size (Base_Type (E)));
+            Copy_RM_Size (To => E, From => Base_Type (E));
 
          --  For other access types, we use either address size, or, if a fat
          --  pointer is used (pointer-to-unconstrained array case), twice the
@@ -379,7 +379,7 @@ package body Layout is
                      --  If size is big enough, set it and exit
 
                      if S >= RM_Size (E) then
-                        Init_Esize (E, S);
+                        Set_Esize (E, UI_From_Int (S));
                         exit;
 
                      --  If the RM_Size is greater than System_Max_Integer_Size
@@ -426,15 +426,15 @@ package body Layout is
 
             begin
                if not Known_Esize (E) then
-                  Set_Esize     (E, Esize     (PAT));
+                  Copy_Esize (To => E, From => PAT);
                end if;
 
                if not Known_RM_Size (E) then
-                  Set_RM_Size   (E, RM_Size   (PAT));
+                  Copy_RM_Size (To => E, From => PAT);
                end if;
 
-               if not Known_Alignment (E) and then Known_Alignment (PAT) then
-                  Set_Alignment (E, Alignment (PAT));
+               if not Known_Alignment (E) then
+                  Copy_Alignment (To => E, From => PAT);
                end if;
             end;
          end if;
@@ -624,13 +624,13 @@ package body Layout is
 
                if Is_Scalar_Type (E) then
                   if Size <= SSU then
-                     Init_Esize (E, SSU);
+                     Set_Esize (E, UI_From_Int (SSU));
                   elsif Size <= 16 then
-                     Init_Esize (E, 16);
+                     Set_Esize (E, Uint_16);
                   elsif Size <= 32 then
-                     Init_Esize (E, 32);
+                     Set_Esize (E, Uint_32);
                   else
-                     Set_Esize  (E, (Size + 63) / 64 * 64);
+                     Set_Esize (E, (Size + 63) / 64 * 64);
                   end if;
 
                   --  Finally, make sure that alignment is consistent with
@@ -899,7 +899,7 @@ package body Layout is
       --  nothing to do with code.
 
       if Is_Generic_Type (Root_Type (FST)) then
-         Set_RM_Size (Def_Id, Uint_0);
+         Reinit_RM_Size (Def_Id);
 
       --  If the subtype statically matches the first subtype, then it is
       --  required to have exactly the same layout. This is required by
@@ -1021,7 +1021,7 @@ package body Layout is
          --  this new calculated value.
 
          if not Known_Alignment (E) then
-            Init_Alignment (E, A);
+            Set_Alignment (E, UI_From_Int (A));
 
          --  Cases where we have inherited an alignment
 
@@ -1030,7 +1030,7 @@ package body Layout is
          --  sure that no constructed types have weird alignments.
 
          elsif not Comes_From_Source (E) then
-            Init_Alignment (E, A);
+            Set_Alignment (E, UI_From_Int (A));
 
          --  If this inherited alignment is the same as the one we computed,
          --  then obviously everything is fine, and we do not need to reset it.
@@ -1136,7 +1136,7 @@ package body Layout is
                   --  ACATS problem which seems to have disappeared anyway, and
                   --  in any case, this peculiarity was never documented.
 
-                  Init_Alignment (E, A);
+                  Set_Alignment (E, UI_From_Int (A));
 
                --  If no Size (or Object_Size) was specified, then we have
                --  inherited the object size, so we should also inherit the

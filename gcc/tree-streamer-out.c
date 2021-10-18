@@ -219,7 +219,10 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, DECL_PACKED (expr), 1);
       bp_pack_value (bp, DECL_NONADDRESSABLE_P (expr), 1);
       bp_pack_value (bp, DECL_PADDING_P (expr), 1);
-      bp_pack_value (bp, DECL_FIELD_ABI_IGNORED (expr), 1);
+      if (DECL_BIT_FIELD (expr))
+	bp_pack_value (bp, DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (expr), 1);
+      else
+	bp_pack_value (bp, DECL_FIELD_ABI_IGNORED (expr), 1);
       bp_pack_value (bp, expr->decl_common.off_align, 8);
     }
 

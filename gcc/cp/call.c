@@ -175,17 +175,17 @@ static struct z_candidate *splice_viable (struct z_candidate *, bool, bool *);
 static bool any_strictly_viable (struct z_candidate *);
 static struct z_candidate *add_template_candidate
 	(struct z_candidate **, tree, tree, tree, tree, const vec<tree, va_gc> *,
-	 tree, tree, tree, int, unification_kind_t, tsubst_flags_t);
+	 tree, tree, tree, int, unification_kind_t, bool, tsubst_flags_t);
 static struct z_candidate *add_template_candidate_real
 	(struct z_candidate **, tree, tree, tree, tree, const vec<tree, va_gc> *,
-	 tree, tree, tree, int, tree, unification_kind_t, tsubst_flags_t);
+	 tree, tree, tree, int, tree, unification_kind_t, bool, tsubst_flags_t);
 static bool is_complete (tree);
 static struct z_candidate *add_conv_candidate
 	(struct z_candidate **, tree, tree, const vec<tree, va_gc> *, tree,
 	 tree, tsubst_flags_t);
 static struct z_candidate *add_function_candidate
 	(struct z_candidate **, tree, tree, tree, const vec<tree, va_gc> *, tree,
-	 tree, int, conversion**, tsubst_flags_t);
+	 tree, int, conversion**, bool, tsubst_flags_t);
 static conversion *implicit_conversion (tree, tree, tree, bool, int,
 					tsubst_flags_t);
 static conversion *reference_binding (tree, tree, tree, bool, int,
@@ -455,8 +455,8 @@ struct rejection_reason {
       int expected;
       /* The actual number of arguments in the call.  */
       int actual;
-      /* Whether the call was a varargs call.  */
-      bool call_varargs_p;
+      /* Whether EXPECTED should be treated as a lower bound.  */
+      bool least_p;
     } arity;
     /* Information about an argument conversion mismatch.  */
     struct conversion_info conversion;
@@ -628,12 +628,13 @@ alloc_rejection (enum rejection_reason_code code)
 }
 
 static struct rejection_reason *
-arity_rejection (tree first_arg, int expected, int actual)
+arity_rejection (tree first_arg, int expected, int actual, bool least_p = false)
 {
   struct rejection_reason *r = alloc_rejection (rr_arity);
   int adjust = first_arg != NULL_TREE;
   r->u.arity.expected = expected - adjust;
   r->u.arity.actual = actual - adjust;
+  r->u.arity.least_p = least_p;
   return r;
 }
 
@@ -2241,6 +2242,56 @@ conv_flags (int i, int nargs, tree fn, tree arg, int flags)
   return lflags;
 }
 
+/* Build an appropriate 'this' conversion for the method FN and class
+   type CTYPE from the value ARG (having type ARGTYPE) to the type PARMTYPE.
+   This function modifies PARMTYPE, ARGTYPE and ARG.  */
+
+static conversion *
+build_this_conversion (tree fn, tree ctype,
+		       tree& parmtype, tree& argtype, tree& arg,
+		       int flags, tsubst_flags_t complain)
+{
+  gcc_assert (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	      && !DECL_CONSTRUCTOR_P (fn));
+
+  /* The type of the implicit object parameter ('this') for
+     overload resolution is not always the same as for the
+     function itself; conversion functions are considered to
+     be members of the class being converted, and functions
+     introduced by a using-declaration are considered to be
+     members of the class that uses them.
+
+     Since build_over_call ignores the ICS for the `this'
+     parameter, we can just change the parm type.  */
+  parmtype = cp_build_qualified_type (ctype,
+				      cp_type_quals (TREE_TYPE (parmtype)));
+  bool this_p = true;
+  if (FUNCTION_REF_QUALIFIED (TREE_TYPE (fn)))
+    {
+      /* If the function has a ref-qualifier, the implicit
+	 object parameter has reference type.  */
+      bool rv = FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (fn));
+      parmtype = cp_build_reference_type (parmtype, rv);
+      /* The special handling of 'this' conversions in compare_ics
+	 does not apply if there is a ref-qualifier.  */
+      this_p = false;
+    }
+  else
+    {
+      parmtype = build_pointer_type (parmtype);
+      /* We don't use build_this here because we don't want to
+	 capture the object argument until we've chosen a
+	 non-static member function.  */
+      arg = build_address (arg);
+      argtype = lvalue_type (arg);
+    }
+  flags |= LOOKUP_ONLYCONVERTING;
+  conversion *t = implicit_conversion (parmtype, argtype, arg,
+				       /*c_cast_p=*/false, flags, complain);
+  t->this_p = this_p;
+  return t;
+}
+
 /* Create an overload candidate for the function or method FN called
    with the argument list FIRST_ARG/ARGS and add it to CANDIDATES.
    FLAGS is passed on to implicit_conversion.
@@ -2248,7 +2299,14 @@ conv_flags (int i, int nargs, tree fn, tree arg, int flags)
    This does not change ARGS.
 
    CTYPE, if non-NULL, is the type we want to pretend this function
-   comes from for purposes of overload resolution.  */
+   comes from for purposes of overload resolution.
+
+   SHORTCUT_BAD_CONVS controls how we handle "bad" argument conversions.
+   If true, we stop computing conversions upon seeing the first bad
+   conversion.  This is used by add_candidates to avoid computing
+   more conversions than necessary in the presence of a strictly viable
+   candidate, while preserving the defacto behavior of overload resolution
+   when it turns out there are only non-strictly viable candidates.  */
 
 static struct z_candidate *
 add_function_candidate (struct z_candidate **candidates,
@@ -2256,6 +2314,7 @@ add_function_candidate (struct z_candidate **candidates,
 			const vec<tree, va_gc> *args, tree access_path,
 			tree conversion_path, int flags,
 			conversion **convs,
+			bool shortcut_bad_convs,
 			tsubst_flags_t complain)
 {
   tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
@@ -2377,8 +2436,6 @@ add_function_candidate (struct z_candidate **candidates,
     {
       tree argtype, to_type;
       tree arg;
-      conversion *t;
-      int is_this;
 
       if (parmnode == void_list_node)
 	break;
@@ -2397,54 +2454,23 @@ add_function_candidate (struct z_candidate **candidates,
 		(*args)[i + skip - (first_arg != NULL_TREE ? 1 : 0)]);
       argtype = lvalue_type (arg);
 
-      is_this = (i == 0 && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
-		 && ! DECL_CONSTRUCTOR_P (fn));
-
+      conversion *t;
       if (parmnode)
 	{
 	  tree parmtype = TREE_VALUE (parmnode);
-
-	  parmnode = TREE_CHAIN (parmnode);
-
-	  /* The type of the implicit object parameter ('this') for
-	     overload resolution is not always the same as for the
-	     function itself; conversion functions are considered to
-	     be members of the class being converted, and functions
-	     introduced by a using-declaration are considered to be
-	     members of the class that uses them.
-
-	     Since build_over_call ignores the ICS for the `this'
-	     parameter, we can just change the parm type.  */
-	  if (ctype && is_this)
+	  if (i == 0
+	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	      && !DECL_CONSTRUCTOR_P (fn))
+	    t = build_this_conversion (fn, ctype, parmtype, argtype, arg,
+				       flags, complain);
+	  else
 	    {
-	      parmtype = cp_build_qualified_type
-		(ctype, cp_type_quals (TREE_TYPE (parmtype)));
-	      if (FUNCTION_REF_QUALIFIED (TREE_TYPE (fn)))
-		{
-		  /* If the function has a ref-qualifier, the implicit
-		     object parameter has reference type.  */
-		  bool rv = FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (fn));
-		  parmtype = cp_build_reference_type (parmtype, rv);
-		  /* The special handling of 'this' conversions in compare_ics
-		     does not apply if there is a ref-qualifier.  */
-		  is_this = false;
-		}
-	      else
-		{
-		  parmtype = build_pointer_type (parmtype);
-		  /* We don't use build_this here because we don't want to
-		     capture the object argument until we've chosen a
-		     non-static member function.  */
-		  arg = build_address (arg);
-		  argtype = lvalue_type (arg);
-		}
+	      int lflags = conv_flags (i, len-skip, fn, arg, flags);
+	      t = implicit_conversion (parmtype, argtype, arg,
+				       /*c_cast_p=*/false, lflags, complain);
 	    }
-
-	  int lflags = conv_flags (i, len-skip, fn, arg, flags);
-
-	  t = implicit_conversion (parmtype, argtype, arg,
-				   /*c_cast_p=*/false, lflags, complain);
 	  to_type = parmtype;
+	  parmnode = TREE_CHAIN (parmnode);
 	}
       else
 	{
@@ -2452,9 +2478,6 @@ add_function_candidate (struct z_candidate **candidates,
 	  t->ellipsis_p = true;
 	  to_type = argtype;
 	}
-
-      if (t && is_this)
-	t->this_p = true;
 
       convs[i] = t;
       if (! t)
@@ -2470,7 +2493,8 @@ add_function_candidate (struct z_candidate **candidates,
 	  viable = -1;
 	  reason = bad_arg_conversion_rejection (first_arg, i, arg, to_type,
 						 EXPR_LOCATION (arg));
-
+	  if (shortcut_bad_convs)
+	    break;
 	}
     }
 
@@ -3354,7 +3378,9 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
    This does not change ARGLIST.  The RETURN_TYPE is the desired type
    for conversion operators.  If OBJ is NULL_TREE, FLAGS and CTYPE are
    as for add_function_candidate.  If an OBJ is supplied, FLAGS and
-   CTYPE are ignored, and OBJ is as for add_conv_candidate.  */
+   CTYPE are ignored, and OBJ is as for add_conv_candidate.
+
+   SHORTCUT_BAD_CONVS is as in add_function_candidate.  */
 
 static struct z_candidate*
 add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
@@ -3362,7 +3388,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 			     const vec<tree, va_gc> *arglist, tree return_type,
 			     tree access_path, tree conversion_path,
 			     int flags, tree obj, unification_kind_t strict,
-			     tsubst_flags_t complain)
+			     bool shortcut_bad_convs, tsubst_flags_t complain)
 {
   int ntparms = DECL_NTPARMS (tmpl);
   tree targs = make_tree_vec (ntparms);
@@ -3452,9 +3478,73 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
     }
   gcc_assert (ia == nargs_without_in_chrg);
 
+  if (!obj && explicit_targs)
+    {
+      /* Check that there's no obvious arity mismatch before proceeding with
+	 deduction.  This avoids substituting explicit template arguments
+	 into the template (which could result in an error outside the
+	 immediate context) when the resulting candidate would be unviable
+	 anyway.  */
+      int min_arity = 0, max_arity = 0;
+      tree parms = TYPE_ARG_TYPES (TREE_TYPE (tmpl));
+      parms = skip_artificial_parms_for (tmpl, parms);
+      for (; parms != void_list_node; parms = TREE_CHAIN (parms))
+	{
+	  if (!parms || PACK_EXPANSION_P (TREE_VALUE (parms)))
+	    {
+	      max_arity = -1;
+	      break;
+	    }
+	  if (TREE_PURPOSE (parms))
+	    /* A parameter with a default argument.  */
+	    ++max_arity;
+	  else
+	    ++min_arity, ++max_arity;
+	}
+      if (ia < (unsigned)min_arity)
+	{
+	  /* Too few arguments.  */
+	  reason = arity_rejection (NULL_TREE, min_arity, ia,
+				    /*least_p=*/(max_arity == -1));
+	  goto fail;
+	}
+      else if (max_arity != -1 && ia > (unsigned)max_arity)
+	{
+	  /* Too many arguments.  */
+	  reason = arity_rejection (NULL_TREE, max_arity, ia);
+	  goto fail;
+	}
+    }
+
   errs = errorcount+sorrycount;
   if (!obj)
-    convs = alloc_conversions (nargs);
+    {
+      convs = alloc_conversions (nargs);
+
+      if (shortcut_bad_convs
+	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (tmpl)
+	  && !DECL_CONSTRUCTOR_P (tmpl))
+	{
+	  /* Check the 'this' conversion before proceeding with deduction.
+	     This is effectively an extension of the DR 1391 resolution
+	     that we perform in check_non_deducible_conversions, though it's
+	     convenient to do this extra check here instead of there.  */
+	  tree parmtype = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (tmpl)));
+	  tree argtype = lvalue_type (first_arg);
+	  tree arg = first_arg;
+	  conversion *t = build_this_conversion (tmpl, ctype,
+						 parmtype, argtype, arg,
+						 flags, complain);
+	  convs[0] = t;
+	  if (t->bad_p)
+	    {
+	      reason = bad_arg_conversion_rejection (first_arg, 0,
+						     arg, parmtype,
+						     EXPR_LOCATION (arg));
+	      goto fail;
+	    }
+	}
+    }
   fn = fn_type_unification (tmpl, explicit_targs, targs,
 			    args_without_in_chrg,
 			    nargs_without_in_chrg,
@@ -3501,7 +3591,8 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   else
     cand = add_function_candidate (candidates, fn, ctype,
 				   first_arg, arglist, access_path,
-				   conversion_path, flags, convs, complain);
+				   conversion_path, flags, convs,
+				   shortcut_bad_convs, complain);
   if (DECL_TI_TEMPLATE (fn) != tmpl)
     /* This situation can occur if a member template of a template
        class is specialized.  Then, instantiate_template might return
@@ -3527,8 +3618,9 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 
   return cand;
  fail:
-  return add_candidate (candidates, tmpl, first_arg, arglist, nargs, NULL,
-			access_path, conversion_path, 0, reason, flags);
+  int viable = (reason->code == rr_bad_arg_conversion ? -1 : 0);
+  return add_candidate (candidates, tmpl, first_arg, arglist, nargs, convs,
+			access_path, conversion_path, viable, reason, flags);
 }
 
 
@@ -3537,13 +3629,15 @@ add_template_candidate (struct z_candidate **candidates, tree tmpl, tree ctype,
 			tree explicit_targs, tree first_arg,
 			const vec<tree, va_gc> *arglist, tree return_type,
 			tree access_path, tree conversion_path, int flags,
-			unification_kind_t strict, tsubst_flags_t complain)
+			unification_kind_t strict, bool shortcut_bad_convs,
+			tsubst_flags_t complain)
 {
   return
     add_template_candidate_real (candidates, tmpl, ctype,
 				 explicit_targs, first_arg, arglist,
 				 return_type, access_path, conversion_path,
-				 flags, NULL_TREE, strict, complain);
+				 flags, NULL_TREE, strict, shortcut_bad_convs,
+				 complain);
 }
 
 /* Create an overload candidate for the conversion function template TMPL,
@@ -3569,7 +3663,7 @@ add_template_conv_candidate (struct z_candidate **candidates, tree tmpl,
     add_template_candidate_real (candidates, tmpl, NULL_TREE, NULL_TREE,
 				 NULL_TREE, arglist, return_type, access_path,
 				 conversion_path, 0, obj, DEDUCE_CALL,
-				 complain);
+				 /*shortcut_bad_convs=*/false, complain);
 }
 
 /* The CANDS are the set of candidates that were considered for
@@ -3725,12 +3819,19 @@ print_conversion_rejection (location_t loc, struct conversion_info *info,
    HAVE.  */
 
 static void
-print_arity_information (location_t loc, unsigned int have, unsigned int want)
+print_arity_information (location_t loc, unsigned int have, unsigned int want,
+			 bool least_p)
 {
-  inform_n (loc, want,
-	    "  candidate expects %d argument, %d provided",
-	    "  candidate expects %d arguments, %d provided",
-	    want, have);
+  if (least_p)
+    inform_n (loc, want,
+	      "  candidate expects at least %d argument, %d provided",
+	      "  candidate expects at least %d arguments, %d provided",
+	      want, have);
+  else
+    inform_n (loc, want,
+	      "  candidate expects %d argument, %d provided",
+	      "  candidate expects %d arguments, %d provided",
+	      want, have);
 }
 
 /* Print information about one overload candidate CANDIDATE.  MSGSTR
@@ -3794,7 +3895,8 @@ print_z_candidate (location_t loc, const char *msgstr,
 	{
 	case rr_arity:
 	  print_arity_information (cloc, r->u.arity.actual,
-				   r->u.arity.expected);
+				   r->u.arity.expected,
+				   r->u.arity.least_p);
 	  break;
 	case rr_arg_conversion:
 	  print_conversion_rejection (cloc, &r->u.conversion, fn);
@@ -4073,6 +4175,9 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   flags |= LOOKUP_NO_CONVERSION;
   if (BRACE_ENCLOSED_INITIALIZER_P (expr))
     flags |= LOOKUP_NO_NARROWING;
+  /* Prevent add_candidates from treating a non-strictly viable candidate
+     as unviable.  */
+  complain |= tf_conv;
 
   /* It's OK to bind a temporary for converting constructor arguments, but
      not in converting the return value of a conversion operator.  */
@@ -6013,6 +6118,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
     /* Delay creating the implicit this parameter until it is needed.  */
     non_static_args = NULL;
 
+  bool seen_strictly_viable = any_strictly_viable (*candidates);
   /* If there's a non-template perfect match, we don't need to consider
      templates.  So check non-templates first.  This optimization is only
      really needed for the defaulted copy constructor of tuple and the like
@@ -6023,6 +6129,19 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
     which = templates;
   else /*if (flags & LOOKUP_DEFAULTED)*/
     which = non_templates;
+
+  /* During overload resolution, we first consider each function under the
+     assumption that we'll eventually find a strictly viable candidate.
+     This allows us to circumvent our defacto behavior when checking
+     argument conversions and shortcut consideration of the candidate
+     upon encountering the first bad conversion.  If this assumption
+     turns out to be false, and all candidates end up being non-strictly
+     viable, then we reconsider such candidates under the defacto behavior.
+     This trick is important for pruning member function overloads according
+     to their const/ref-qualifiers (since all 'this' conversions are at
+     worst bad) without breaking -fpermissive.  */
+  tree bad_fns = NULL_TREE;
+  bool shortcut_bad_convs = true;
 
  again:
   for (tree fn : lkp_range (fns))
@@ -6070,18 +6189,22 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	}
 
       if (TREE_CODE (fn) == TEMPLATE_DECL)
-	add_template_candidate (candidates,
-				fn,
-				ctype,
-				explicit_targs,
-				fn_first_arg,
-				fn_args,
-				return_type,
-				access_path,
-				conversion_path,
-				flags,
-				strict,
-				complain);
+	{
+	  if (!add_template_candidate (candidates,
+				       fn,
+				       ctype,
+				       explicit_targs,
+				       fn_first_arg,
+				       fn_args,
+				       return_type,
+				       access_path,
+				       conversion_path,
+				       flags,
+				       strict,
+				       shortcut_bad_convs,
+				       complain))
+	    continue;
+	}
       else
 	{
 	  add_function_candidate (candidates,
@@ -6093,14 +6216,55 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 				  conversion_path,
 				  flags,
 				  NULL,
+				  shortcut_bad_convs,
 				  complain);
 	  if (perfect_candidate_p (*candidates))
 	    seen_perfect = true;
+	}
+
+      z_candidate *cand = *candidates;
+      if (cand->viable == 1)
+	seen_strictly_viable = true;
+
+      if (cand->viable == -1
+	  && shortcut_bad_convs
+	  && !cand->convs[cand->reversed () ? 0 : cand->num_convs - 1])
+	{
+	  /* This candidate has been tentatively marked non-strictly viable,
+	     and we didn't compute all argument conversions for it (having
+	     stopped at the first bad conversion).  Add the function to BAD_FNS
+	     to fully reconsider later if we don't find any strictly viable
+	     candidates.  */
+	  if (complain & (tf_error | tf_conv))
+	    {
+	      bad_fns = lookup_add (fn, bad_fns);
+	      *candidates = (*candidates)->next;
+	    }
+	  else
+	    /* But if we're in a SFINAE context, just mark this candidate as
+	       unviable outright and avoid potentially reconsidering it.
+	       This is safe to do because in a SFINAE context, performing a bad
+	       conversion is always an error (even with -fpermissive), so a
+	       non-strictly viable candidate is effectively unviable anyway.  */
+	    cand->viable = 0;
 	}
     }
   if (which == non_templates && !seen_perfect)
     {
       which = templates;
+      goto again;
+    }
+  else if (which == templates
+	   && !seen_strictly_viable
+	   && shortcut_bad_convs
+	   && bad_fns)
+    {
+      /* None of the candidates are strictly viable, so consider again those
+	 functions in BAD_FNS, this time without shortcutting bad conversions
+	 so that all their argument conversions are computed.  */
+      which = either;
+      fns = bad_fns;
+      shortcut_bad_convs = false;
       goto again;
     }
 }
@@ -9459,7 +9623,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  already_used = true;
 	}
       else
-	cp_warn_deprecated_use (fn, complain);
+	cp_handle_deprecated_or_unavailable (fn, complain);
 
       if (eliding_temp && DECL_BASE_CONSTRUCTOR_P (fn)
 	  && !make_base_init_ok (arg))
@@ -9533,7 +9697,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
           suppress_warning (val, OPT_Wunused);
 	}
 
-      cp_warn_deprecated_use (fn, complain);
+      cp_handle_deprecated_or_unavailable (fn, complain);
 
       return val;
     }

@@ -39,9 +39,7 @@ static_assert( std::integral<bool> );
 static_assert( std::integral<char> );
 static_assert( std::integral<char16_t> );
 static_assert( std::integral<char32_t> );
-#ifdef _GLIBCXX_USE_WCHAR_T
 static_assert( std::integral<wchar_t> );
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
 static_assert( std::integral<char8_t> );
 #endif

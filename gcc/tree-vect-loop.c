@@ -1850,7 +1850,7 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
 
   /* If using the "very cheap" model. reject cases in which we'd keep
      a copy of the scalar code (even if we might be able to vectorize it).  */
-  if (flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP
+  if (loop_cost_model (loop) == VECT_COST_MODEL_VERY_CHEAP
       && (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
 	  || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
 	  || LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)))
@@ -1922,7 +1922,7 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
   /* If the vector loop needs multiple iterations to be beneficial then
      things are probably too close to call, and the conservative thing
      would be to stick with the scalar code.  */
-  if (flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP
+  if (loop_cost_model (loop) == VECT_COST_MODEL_VERY_CHEAP
       && min_profitable_estimate > (int) vect_vf_for_cost (loop_vinfo))
     {
       if (dump_enabled_p ())
@@ -2047,6 +2047,7 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
       if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	{
 	  stmt_vec_info first_element = DR_GROUP_FIRST_ELEMENT (stmt_info);
+	  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (first_element);
 	  unsigned int group_size = DR_GROUP_SIZE (first_element);
 
 	  /* Check if SLP-only groups.  */
@@ -2067,6 +2068,24 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
 		    DR_GROUP_GAP (vinfo) = 0;
 		  else
 		    DR_GROUP_GAP (vinfo) = group_size - 1;
+		  /* Duplicate and adjust alignment info, it needs to
+		     be present on each group leader, see dr_misalignment.  */
+		  if (vinfo != first_element)
+		    {
+		      dr_vec_info *dr_info2 = STMT_VINFO_DR_INFO (vinfo);
+		      dr_info2->target_alignment = dr_info->target_alignment;
+		      int misalignment = dr_info->misalignment;
+		      if (misalignment != DR_MISALIGNMENT_UNKNOWN)
+			{
+			  HOST_WIDE_INT diff
+			    = (TREE_INT_CST_LOW (DR_INIT (dr_info2->dr))
+			       - TREE_INT_CST_LOW (DR_INIT (dr_info->dr)));
+			  unsigned HOST_WIDE_INT align_c
+			    = dr_info->target_alignment.to_constant ();
+			  misalignment = (misalignment + diff) % align_c;
+			}
+		      dr_info2->misalignment = misalignment;
+		    }
 		  vinfo = next;
 		}
 	    }
@@ -7755,9 +7774,18 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 						  (reduc_info),
 						&stmts);
 	    }
+	  /* The epilogue loop might use a different vector mode, like
+	     VNx2DI vs. V2DI.  */
+	  if (TYPE_MODE (vectype_out) != TYPE_MODE (TREE_TYPE (def)))
+	    {
+	      tree reduc_type = build_vector_type_for_mode
+		(TREE_TYPE (TREE_TYPE (def)), TYPE_MODE (vectype_out));
+	      def = gimple_convert (&stmts, reduc_type, def);
+	    }
 	  /* Adjust the input so we pick up the partially reduced value
 	     for the skip edge in vect_create_epilog_for_reduction.  */
 	  accumulator->reduc_input = def;
+	  /* And the reduction could be carried out using a different sign.  */
 	  if (!useless_type_conversion_p (vectype_out, TREE_TYPE (def)))
 	    def = gimple_convert (&stmts, vectype_out, def);
 	  if (loop_vinfo->main_loop_edge)

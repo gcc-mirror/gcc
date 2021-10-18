@@ -3454,6 +3454,34 @@ range_fits_type_p (const value_range *vr,
   return true;
 }
 
+// Clear edge E of EDGE_EXECUTABLE (it is unexecutable). If it wasn't
+// previously clear, propagate to successor blocks if appropriate.
+
+void
+simplify_using_ranges::set_and_propagate_unexecutable (edge e)
+{
+  // If not_executable is already set, we're done.
+  // This works in the absence of a flag as well.
+  if ((e->flags & m_not_executable_flag) == m_not_executable_flag)
+    return;
+
+  e->flags |= m_not_executable_flag;
+  m_flag_set_edges.safe_push (e);
+
+  // Check if the destination block needs to propagate the property.
+  basic_block bb = e->dest;
+
+  // If any incoming edge is executable, we are done.
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if ((e->flags & m_not_executable_flag) == 0)
+      return;
+
+  // This block is also unexecutable, propagate to all exit edges as well.
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    set_and_propagate_unexecutable (e);
+}
+
 /* If COND can be folded entirely as TRUE or FALSE, rewrite the
    conditional as such, and return TRUE.  */
 
@@ -3467,18 +3495,27 @@ simplify_using_ranges::fold_cond (gcond *cond)
       if (TREE_CODE (gimple_cond_lhs (cond)) != SSA_NAME
 	  && TREE_CODE (gimple_cond_rhs (cond)) != SSA_NAME)
 	return false;
-
+      edge e0 = EDGE_SUCC (gimple_bb (cond), 0);
+      edge e1 = EDGE_SUCC (gimple_bb (cond), 1);
       if (r.zero_p ())
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "\nPredicate evaluates to: 0\n");
 	  gimple_cond_make_false (cond);
+	  if (e0->flags & EDGE_TRUE_VALUE)
+	    set_and_propagate_unexecutable (e0);
+	  else
+	    set_and_propagate_unexecutable (e1);
 	}
       else
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "\nPredicate evaluates to: 1\n");
 	  gimple_cond_make_true (cond);
+	  if (e0->flags & EDGE_FALSE_VALUE)
+	    set_and_propagate_unexecutable (e0);
+	  else
+	    set_and_propagate_unexecutable (e1);
 	}
       update_stmt (cond);
       return true;
@@ -3769,6 +3806,7 @@ simplify_using_ranges::simplify_switch_using_ranges (gswitch *stmt)
 	  fprintf (dump_file, "removing unreachable case label\n");
 	}
       to_remove_edges.safe_push (e);
+      set_and_propagate_unexecutable (e);
       e->flags &= ~EDGE_EXECUTABLE;
       e->flags |= EDGE_IGNORE;
     }
@@ -3787,6 +3825,12 @@ simplify_using_ranges::cleanup_edges_and_switches (void)
   edge e;
   switch_update *su;
 
+  /* Clear any edges marked as not executable.  */
+  if (m_not_executable_flag)
+    {
+      FOR_EACH_VEC_ELT (m_flag_set_edges, i, e)
+	e->flags &= ~m_not_executable_flag;
+    }
   /* Remove dead edges from SWITCH_EXPR optimization.  This leaves the
      CFG in a broken state and requires a cfg_cleanup run.  */
   FOR_EACH_VEC_ELT (to_remove_edges, i, e)
@@ -4089,11 +4133,14 @@ simplify_using_ranges::two_valued_val_range_p (tree var, tree *a, tree *b,
   return false;
 }
 
-simplify_using_ranges::simplify_using_ranges (range_query *query)
+simplify_using_ranges::simplify_using_ranges (range_query *query,
+					      int not_executable_flag)
   : query (query)
 {
   to_remove_edges = vNULL;
   to_update_switch_stmts = vNULL;
+  m_not_executable_flag = not_executable_flag;
+  m_flag_set_edges = vNULL;
 }
 
 simplify_using_ranges::~simplify_using_ranges ()
@@ -4234,6 +4281,28 @@ simplify_using_ranges::simplify (gimple_stmt_iterator *gsi)
 	case MAX_EXPR:
 	  return simplify_min_or_max_using_ranges (gsi, stmt);
 
+	case RSHIFT_EXPR:
+	  {
+	    tree op0 = gimple_assign_rhs1 (stmt);
+	    tree type = TREE_TYPE (op0);
+	    int_range_max range;
+	    if (TYPE_SIGN (type) == SIGNED
+		&& query->range_of_expr (range, op0, stmt))
+	      {
+		unsigned prec = TYPE_PRECISION (TREE_TYPE (op0));
+		int_range<2> nzm1 (type, wi::minus_one (prec), wi::zero (prec),
+				   VR_ANTI_RANGE);
+		range.intersect (nzm1);
+		// If there are no ranges other than [-1, 0] remove the shift.
+		if (range.undefined_p ())
+		  {
+		    gimple_assign_set_rhs_from_tree (gsi, op0);
+		    return true;
+		  }
+		return false;
+	      }
+	    break;
+	  }
 	default:
 	  break;
 	}

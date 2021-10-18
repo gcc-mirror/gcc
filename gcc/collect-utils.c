@@ -57,6 +57,43 @@ fatal_signal (int signum)
      so its normal effect occurs.  */
   kill (getpid (), signum);
 }
+
+/* Setup the signal handlers for the utils. */
+void
+setup_signals (void)
+{
+#ifdef SIGQUIT
+  if (signal (SIGQUIT, SIG_IGN) != SIG_IGN)
+    signal (SIGQUIT, fatal_signal);
+#endif
+  if (signal (SIGINT, SIG_IGN) != SIG_IGN)
+    signal (SIGINT, fatal_signal);
+#ifdef SIGALRM
+  if (signal (SIGALRM, SIG_IGN) != SIG_IGN)
+    signal (SIGALRM, fatal_signal);
+#endif
+#ifdef SIGHUP
+  if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
+    signal (SIGHUP, fatal_signal);
+#endif
+  if (signal (SIGSEGV, SIG_IGN) != SIG_IGN)
+    signal (SIGSEGV, fatal_signal);
+  if (signal (SIGTERM, SIG_IGN) != SIG_IGN)
+    signal (SIGTERM, fatal_signal);
+#ifdef SIGPIPE
+  if (signal (SIGPIPE, SIG_IGN) != SIG_IGN)
+    signal (SIGPIPE, fatal_signal);
+#endif
+#ifdef SIGBUS
+  if (signal (SIGBUS, SIG_IGN) != SIG_IGN)
+    signal (SIGBUS, fatal_signal);
+#endif
+#ifdef SIGCHLD
+  /* We *MUST* set SIGCHLD to SIG_DFL so that the wait4() call will
+     receive the signal.  A different setting is inheritable */
+  signal (SIGCHLD, SIG_DFL);
+#endif
+}
 
 /* Wait for a process to finish, and exit if a nonzero status is found.  */
 

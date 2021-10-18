@@ -38,7 +38,7 @@
 
 #if __cplusplus >= 201402L
 
-#include <chrono>
+#include <bits/chrono.h> // Only the C++14 parts of <chrono>
 #include <experimental/bits/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)

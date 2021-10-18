@@ -260,10 +260,7 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 	  return gimple_build_call_internal (IFN_VCONDEQ, 5, op0a, op0b, op1,
 					     op2, tcode_tree);
 	}
-    }
 
-  if (icode == CODE_FOR_nothing)
-    {
       gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0))
 		  && can_compute_op0
 		  && (get_vcond_mask_icode (mode, TYPE_MODE (TREE_TYPE (op0)))

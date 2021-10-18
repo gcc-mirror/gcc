@@ -67,6 +67,10 @@ ialias_redirect (omp_get_thread_limit)
 ialias_redirect (omp_set_max_active_levels)
 ialias_redirect (omp_get_max_active_levels)
 ialias_redirect (omp_get_supported_active_levels)
+ialias_redirect (omp_set_num_teams)
+ialias_redirect (omp_get_max_teams)
+ialias_redirect (omp_set_teams_thread_limit)
+ialias_redirect (omp_get_teams_thread_limit)
 ialias_redirect (omp_get_level)
 ialias_redirect (omp_get_ancestor_thread_num)
 ialias_redirect (omp_get_team_size)
@@ -96,6 +100,7 @@ ialias_redirect (omp_destroy_allocator)
 ialias_redirect (omp_set_default_allocator)
 ialias_redirect (omp_get_default_allocator)
 ialias_redirect (omp_display_env)
+ialias_redirect (omp_fulfill_event)
 #endif
 
 #ifndef LIBGOMP_GNU_SYMBOL_VERSIONING
@@ -475,6 +480,42 @@ int32_t
 omp_in_final_ (void)
 {
   return omp_in_final ();
+}
+
+void
+omp_set_num_teams_ (const int32_t *num_teams)
+{
+  omp_set_num_teams (*num_teams);
+}
+
+void
+omp_set_num_teams_8_ (const int64_t *num_teams)
+{
+  omp_set_max_active_levels (TO_INT (*num_teams));
+}
+
+int32_t
+omp_get_max_teams_ (void)
+{
+  return omp_get_max_teams ();
+}
+
+void
+omp_set_teams_thread_limit_ (const int32_t *thread_limit)
+{
+  omp_set_teams_thread_limit (*thread_limit);
+}
+
+void
+omp_set_teams_thread_limit_8_ (const int64_t *thread_limit)
+{
+  omp_set_teams_thread_limit (TO_INT (*thread_limit));
+}
+
+int32_t
+omp_get_teams_thread_limit_ (void)
+{
+  return omp_get_teams_thread_limit ();
 }
 
 int32_t

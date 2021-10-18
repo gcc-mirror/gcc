@@ -5776,11 +5776,13 @@ multiplication.
 @item @samp{smul@var{m}3_highpart}
 Perform a signed multiplication of operands 1 and 2, which have mode
 @var{m}, and store the most significant half of the product in operand 0.
-The least significant half of the product is discarded.
+The least significant half of the product is discarded.  This may be
+represented in RTL using a @code{smul_highpart} RTX expression.
 
 @cindex @code{umul@var{m}3_highpart} instruction pattern
 @item @samp{umul@var{m}3_highpart}
-Similar, but the multiplication is unsigned.
+Similar, but the multiplication is unsigned.  This may be represented
+in RTL using an @code{umul_highpart} RTX expression.
 
 @cindex @code{madd@var{m}@var{n}4} instruction pattern
 @item @samp{madd@var{m}@var{n}4}
@@ -6694,6 +6696,13 @@ a @code{mem} referring to the first character of the string,
 operand 2 is the character to search for (normally zero),
 and operand 3 is a constant describing the known alignment
 of the beginning of the string.
+
+@cindex @code{rawmemchr@var{m}} instruction pattern
+@item @samp{rawmemchr@var{m}}
+Scan memory referred to by operand 1 for the first occurrence of operand 2.
+Operand 1 is a @code{mem} and operand 2 a @code{const_int} of mode @var{m}.
+Operand 0 is the result, i.e., a pointer to the first occurrence of operand 2
+in the memory block given by operand 1.
 
 @cindex @code{float@var{m}@var{n}2} instruction pattern
 @item @samp{float@var{m}@var{n}2}
@@ -11074,6 +11083,8 @@ The syntax is as follows:
 (define_c_enum "@var{name}" [
   @var{value0}
   @var{value1}
+  (@var{value32} 32)
+  @var{value33}
   @dots{}
   @var{valuen}
 ])
@@ -11086,6 +11097,8 @@ in @file{insn-constants.h}:
 enum @var{name} @{
   @var{value0} = 0,
   @var{value1} = 1,
+  @var{value32} = 32,
+  @var{value33} = 33,
   @dots{}
   @var{valuen} = @var{n}
 @};

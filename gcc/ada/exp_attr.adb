@@ -165,8 +165,7 @@ package body Exp_Attr is
    --  the appropriate instantiation of System.Fat_Gen. Float arguments in Args
    --  have already been converted to the floating-point type for which Pkg was
    --  instantiated. The Nam argument is the relevant attribute processing
-   --  routine to be called. This is the same as the attribute name, except in
-   --  the Unaligned_Valid case.
+   --  routine to be called. This is the same as the attribute name.
 
    procedure Expand_Fpt_Attribute_R (N : Node_Id);
    --  This procedure expands a call to a floating-point attribute function
@@ -2216,6 +2215,20 @@ package body Exp_Attr is
             if Is_Access_Protected_Subprogram_Type (Btyp) then
                Expand_Access_To_Protected_Op (N, Pref, Typ);
 
+            --  If prefix is a subprogram that has class-wide preconditions and
+            --  an indirect-call wrapper (ICW) of such subprogram is available
+            --  then replace the prefix by the ICW.
+
+            elsif Is_Access_Subprogram_Type (Btyp)
+              and then Is_Entity_Name (Pref)
+              and then Present (Class_Preconditions (Entity (Pref)))
+              and then Present (Indirect_Call_Wrapper (Entity (Pref)))
+            then
+               Rewrite (Pref,
+                 New_Occurrence_Of
+                   (Indirect_Call_Wrapper (Entity (Pref)), Loc));
+               Analyze_And_Resolve (N, Typ);
+
             --  If prefix is a type name, this is a reference to the current
             --  instance of the type, within its initialization procedure.
 
@@ -3252,14 +3265,15 @@ package body Exp_Attr is
          --  If not constant-folded, Enum_Type'Enum_Rep (X) or X'Enum_Rep
          --  expands to
 
-         --    target-type (X)
+         --    target-type!(X)
 
-         --  This is simply a direct conversion from the enumeration type to
-         --  the target integer type, which is treated by the back end as a
-         --  normal integer conversion, treating the enumeration type as an
-         --  integer, which is exactly what we want. We set Conversion_OK to
-         --  make sure that the analyzer does not complain about what otherwise
-         --  might be an illegal conversion.
+         --  This is an unchecked conversion from the enumeration type to the
+         --  target integer type, which is treated by the back end as a normal
+         --  integer conversion, treating the enumeration type as an integer,
+         --  which is exactly what we want. Unlike for the Pos attribute, we
+         --  cannot use a regular conversion since the associated check would
+         --  involve comparing the converted bounds, i.e. would involve the use
+         --  of 'Pos instead 'Enum_Rep for these bounds.
 
          --  However the target type is universal integer in most cases, which
          --  is a very large type, so in the case of an enumeration type, we
@@ -3267,11 +3281,13 @@ package body Exp_Attr is
          --  the size information.
 
          if Is_Enumeration_Type (Ptyp) then
-            Rewrite (N, OK_Convert_To (Get_Integer_Type (Ptyp), Expr));
+            Rewrite (N, Unchecked_Convert_To (Get_Integer_Type (Ptyp), Expr));
             Convert_To_And_Rewrite (Typ, N);
 
+         --  Deal with integer types (replace by conversion)
+
          else
-            Rewrite (N, OK_Convert_To (Typ, Expr));
+            Rewrite (N, Convert_To (Typ, Expr));
          end if;
 
          Analyze_And_Resolve (N, Typ);
@@ -5420,7 +5436,7 @@ package body Exp_Attr is
 
          --  Deal with integer types (replace by conversion)
 
-         elsif Is_Integer_Type (Etyp) then
+         else
             Rewrite (N, Convert_To (Typ, Expr));
          end if;
 
@@ -5526,6 +5542,21 @@ package body Exp_Attr is
             Expand_Pred_Succ_Attribute (N);
          end if;
       end Pred;
+
+      ----------------------------------
+      -- Preelaborable_Initialization --
+      ----------------------------------
+
+      when Attribute_Preelaborable_Initialization =>
+
+         --  This attribute should already be folded during analysis, but if
+         --  for some reason it hasn't been, we fold it now.
+
+         Fold_Uint
+           (N,
+            UI_From_Int
+              (Boolean'Pos (Has_Preelaborable_Initialization (Ptyp))),
+            Static => False);
 
       --------------
       -- Priority --
@@ -7336,7 +7367,7 @@ package body Exp_Attr is
                if Nkind (P) in N_Has_Entity
                  and then Present (Entity (P))
                  and then Is_Object (Entity (P))
-                 and then Esize (Entity (P)) /= Uint_0
+                 and then Known_Esize (Entity (P))
                then
                   if Esize (Entity (P)) <= System_Max_Integer_Size then
                      Size := Esize (Entity (P));
@@ -8025,7 +8056,7 @@ package body Exp_Attr is
 
       --  Common processing for record and array component case
 
-      if Siz /= No_Uint and then Siz /= 0 then
+      if Present (Siz) and then Siz /= 0 then
          declare
             CS : constant Boolean := Comes_From_Source (N);
 

@@ -85,8 +85,11 @@ extern __attribute__ ((weak)) int i;
 constexpr int *p1 = &i + 1;
 
 #pragma GCC diagnostic push
+// Suppress warning: ordered comparison of pointer with integer zero.
 #pragma GCC diagnostic ignored "-Wextra"
-// Suppress warning: ordered comparison of pointer with integer zero
+// Also suppress -Waddress for comparisons of constant addresses to
+// to null.
+#pragma GCC diagnostic ignored "-Waddress"
 
 constexpr bool b0  = p1;        // { dg-error "not a constant expression" }
 constexpr bool b1  = p1 == 0;   // { dg-error "not a constant expression" }

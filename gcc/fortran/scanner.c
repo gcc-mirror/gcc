@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"	/* For set_src_pwd.  */
 #include "debug.h"
 #include "options.h"
+#include "diagnostic-core.h"  /* For fatal_error. */
 #include "cpp.h"
 #include "scanner.h"
 
@@ -298,17 +299,75 @@ gfc_scanner_done_1 (void)
     }
 }
 
+static bool
+gfc_do_check_include_dir (const char *path, bool warn)
+{
+  struct stat st;
+  if (stat (path, &st))
+    {
+      if (errno != ENOENT)
+	gfc_warning_now (0, "Include directory %qs: %s",
+			 path, xstrerror(errno));
+      else if (warn)
+	  gfc_warning_now (OPT_Wmissing_include_dirs,
+			   "Nonexistent include directory %qs", path);
+      return false;
+    }
+  else if (!S_ISDIR (st.st_mode))
+    {
+      gfc_fatal_error ("%qs is not a directory", path);
+      return false;
+    }
+  return true;
+}
+
+/* In order that -W(no-)missing-include-dirs works, the diagnostic can only be
+   run after processing the commandline.  */
+static void
+gfc_do_check_include_dirs (gfc_directorylist **list, bool do_warn)
+{
+  gfc_directorylist *prev, *q, *n;
+  prev = NULL;
+  n = *list;
+  while (n)
+    {
+      q = n; n = n->next;
+      if (gfc_do_check_include_dir (q->path, q->warn && do_warn))
+	{
+	  prev = q;
+	  continue;
+	}
+      if (prev == NULL)
+	*list = n;
+      else
+	prev->next = n;
+      free (q->path);
+      free (q);
+    }
+}
+
+void
+gfc_check_include_dirs (bool verbose_missing_dir_warn)
+{
+  /* This is a bit convoluted: If gfc_cpp_enabled () and
+     verbose_missing_dir_warn, the warning is shown by libcpp. Otherwise,
+     it is shown here, still conditional on OPT_Wmissing_include_dirs.  */
+  bool warn = !gfc_cpp_enabled () || !verbose_missing_dir_warn;
+  gfc_do_check_include_dirs (&include_dirs, warn);
+  gfc_do_check_include_dirs (&intrinsic_modules_dirs, verbose_missing_dir_warn);
+  if (gfc_option.module_dir && gfc_cpp_enabled ())
+    gfc_do_check_include_dirs (&include_dirs, true);
+}
 
 /* Adds path to the list pointed to by list.  */
 
 static void
 add_path_to_list (gfc_directorylist **list, const char *path,
-		  bool use_for_modules, bool head, bool warn)
+		  bool use_for_modules, bool head, bool warn, bool defer_warn)
 {
   gfc_directorylist *dir;
   const char *p;
   char *q;
-  struct stat st;
   size_t len;
   int i;
   
@@ -326,21 +385,8 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   while (i >=0 && IS_DIR_SEPARATOR (q[i]))
     q[i--] = '\0';
 
-  if (stat (q, &st))
-    {
-      if (errno != ENOENT)
-	gfc_warning_now (0, "Include directory %qs: %s", path,
-			 xstrerror(errno));
-      else if (warn)
-	gfc_warning_now (OPT_Wmissing_include_dirs,
-			 "Nonexistent include directory %qs", path);
-      return;
-    }
-  else if (!S_ISDIR (st.st_mode))
-    {
-      gfc_fatal_error ("%qs is not a directory", path);
-      return;
-    }
+  if (!defer_warn && !gfc_do_check_include_dir (q, warn))
+    return;
 
   if (head || *list == NULL)
     {
@@ -362,17 +408,20 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   if (head)
     *list = dir;
   dir->use_for_modules = use_for_modules;
+  dir->warn = warn;
   dir->path = XCNEWVEC (char, strlen (p) + 2);
   strcpy (dir->path, p);
   strcat (dir->path, "/");	/* make '/' last character */
 }
 
+/* defer_warn is set to true while parsing the commandline.  */
 
 void
 gfc_add_include_path (const char *path, bool use_for_modules, bool file_dir,
-		      bool warn)
+		      bool warn, bool defer_warn)
 {
-  add_path_to_list (&include_dirs, path, use_for_modules, file_dir, warn);
+  add_path_to_list (&include_dirs, path, use_for_modules, file_dir, warn,
+		    defer_warn);
 
   /* For '#include "..."' these directories are automatically searched.  */
   if (!file_dir)
@@ -383,7 +432,7 @@ gfc_add_include_path (const char *path, bool use_for_modules, bool file_dir,
 void
 gfc_add_intrinsic_modules_path (const char *path)
 {
-  add_path_to_list (&intrinsic_modules_dirs, path, true, false, false);
+  add_path_to_list (&intrinsic_modules_dirs, path, true, false, false, false);
 }
 
 
@@ -2182,7 +2231,7 @@ preprocessor_line (gfc_char_t *c)
 }
 
 
-static bool load_file (const char *, const char *, bool);
+static void load_file (const char *, const char *, bool);
 
 /* include_line()-- Checks a line buffer to see if it is an include
    line.  If so, we call load_file() recursively to load the included
@@ -2348,9 +2397,7 @@ include_line (gfc_char_t *line)
 		   read by anything else.  */
 
   filename = gfc_widechar_to_char (begin, -1);
-  if (!load_file (filename, NULL, false))
-    exit (FATAL_EXIT_CODE);
-
+  load_file (filename, NULL, false);
   free (filename);
   return 1;
 }
@@ -2457,9 +2504,7 @@ include_stmt (gfc_linebuf *b)
       filename[i] = (unsigned char) c;
     }
   filename[length] = '\0';
-  if (!load_file (filename, NULL, false))
-    exit (FATAL_EXIT_CODE);
-
+  load_file (filename, NULL, false);
   free (filename);
 
 do_ret:
@@ -2477,9 +2522,11 @@ do_ret:
   return ret;
 }
 
+
+
 /* Load a file into memory by calling load_line until the file ends.  */
 
-static bool
+static void
 load_file (const char *realfilename, const char *displayedname, bool initial)
 {
   gfc_char_t *line;
@@ -2501,13 +2548,8 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 
   for (f = current_file; f; f = f->up)
     if (filename_cmp (filename, f->filename) == 0)
-      {
-	fprintf (stderr, "%s:%d: Error: File '%s' is being included "
-		 "recursively\n", current_file->filename, current_file->line,
-		 filename);
-	return false;
-      }
-
+      fatal_error (linemap_line_start (line_table, current_file->line, 0),
+		   "File %qs is being included recursively", filename);
   if (initial)
     {
       if (gfc_src_file)
@@ -2519,10 +2561,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	input = gfc_open_file (realfilename);
 
       if (input == NULL)
-	{
-	  gfc_error_now ("Cannot open file %qs", filename);
-	  return false;
-	}
+	gfc_fatal_error ("Cannot open file %qs", filename);
     }
   else
     {
@@ -2531,22 +2570,20 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	{
 	  /* For -fpre-include file, current_file is NULL.  */
 	  if (current_file)
-	    fprintf (stderr, "%s:%d: Error: Can't open included file '%s'\n",
-		     current_file->filename, current_file->line, filename);
+	    fatal_error (linemap_line_start (line_table, current_file->line, 0),
+			 "Cannot open included file %qs", filename);
 	  else
-	    fprintf (stderr, "Error: Can't open pre-included file '%s'\n",
-		     filename);
-
-	  return false;
+	    gfc_fatal_error ("Cannot open pre-included file %qs", filename);
 	}
       stat_result = stat (realfilename, &st);
-      if (stat_result == 0 && !S_ISREG(st.st_mode))
+      if (stat_result == 0 && !S_ISREG (st.st_mode))
 	{
-	  fprintf (stderr, "%s:%d: Error: Included path '%s'"
-		   " is not a regular file\n",
-		   current_file->filename, current_file->line, filename);
 	  fclose (input);
-	  return false;
+	  if (current_file)
+	    fatal_error (linemap_line_start (line_table, current_file->line, 0),
+			 "Included file %qs is not a regular file", filename);
+	  else
+	    gfc_fatal_error ("Included file %qs is not a regular file", filename);
 	}
     }
 
@@ -2720,7 +2757,6 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
     add_file_change (NULL, current_file->inclusion_line + 1);
   current_file = current_file->up;
   linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
-  return true;
 }
 
 
@@ -2729,23 +2765,20 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
    it tries to determine the source form from the filename, defaulting
    to free form.  */
 
-bool
+void
 gfc_new_file (void)
 {
-  bool result;
-
-  if (flag_pre_include != NULL
-      && !load_file (flag_pre_include, NULL, false))
-    exit (FATAL_EXIT_CODE);
+  if (flag_pre_include != NULL)
+    load_file (flag_pre_include, NULL, false);
 
   if (gfc_cpp_enabled ())
     {
-      result = gfc_cpp_preprocess (gfc_source_file);
+      gfc_cpp_preprocess (gfc_source_file);
       if (!gfc_cpp_preprocess_only ())
-        result = load_file (gfc_cpp_temporary_file (), gfc_source_file, true);
+	load_file (gfc_cpp_temporary_file (), gfc_source_file, true);
     }
   else
-    result = load_file (gfc_source_file, NULL, true);
+    load_file (gfc_source_file, NULL, true);
 
   gfc_current_locus.lb = line_head;
   gfc_current_locus.nextc = (line_head == NULL) ? NULL : line_head->line;
@@ -2757,8 +2790,6 @@ gfc_new_file (void)
 
   exit (SUCCESS_EXIT_CODE);
 #endif
-
-  return result;
 }
 
 static char *

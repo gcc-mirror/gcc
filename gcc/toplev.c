@@ -104,8 +104,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 static void general_init (const char *, bool);
-static void do_compile ();
-static void process_options (void);
 static void backend_init (void);
 static int lang_dependent_init (const char *);
 static void init_asm_output (const char *);
@@ -114,16 +112,12 @@ static void finalize (bool);
 static void crash_signal (int) ATTRIBUTE_NORETURN;
 static void compile_file (void);
 
-/* True if we don't need a backend (e.g. preprocessing only).  */
-static bool no_backend;
-
 /* Decoded options, and number of such options.  */
 struct cl_decoded_option *save_decoded_options;
 unsigned int save_decoded_options_count;
 
-/* Used to enable -fvar-tracking, -fweb and -frename-registers according
-   to optimize in process_options ().  */
-#define AUTODETECT_VALUE 2
+/* Vector of saved Optimization decoded command line options.  */
+vec<cl_decoded_option> *save_opt_decoded_options;
 
 /* Debug hooks - dependent upon command line options.  */
 
@@ -1230,7 +1224,7 @@ parse_alignment_opts (void)
 
 /* Process the options that have been parsed.  */
 static void
-process_options (void)
+process_options (bool no_backend)
 {
   const char *language_string = lang_hooks.name;
   /* Just in case lang_hooks.post_options ends up calling a debug_hook.
@@ -1238,12 +1232,6 @@ process_options (void)
   debug_hooks = &do_nothing_debug_hooks;
 
   maximum_field_alignment = initial_max_fld_align * BITS_PER_UNIT;
-
-  /* Allow the front end to perform consistency checks and do further
-     initialization based on the command line options.  This hook also
-     sets the original filename if appropriate (e.g. foo.i -> foo.c)
-     so we can correctly initialize debug output.  */
-  no_backend = lang_hooks.post_options (&main_input_filename);
 
   /* Some machines may reject certain combinations of options.  */
   location_t saved_location = input_location;
@@ -1327,7 +1315,7 @@ process_options (void)
     }
 
   /* One region RA really helps to decrease the code size.  */
-  if (flag_ira_region == IRA_REGION_AUTODETECT)
+  if (!OPTION_SET_P (flag_ira_region))
     flag_ira_region
       = optimize_size || !optimize ? IRA_REGION_ONE : IRA_REGION_MIXED;
 
@@ -1338,13 +1326,6 @@ process_options (void)
 		"%<-fabi-version=1%> is no longer supported");
       flag_abi_version = 2;
     }
-
-  /* web and rename-registers help when run after loop unrolling.  */
-  if (flag_web == AUTODETECT_VALUE)
-    flag_web = flag_unroll_loops;
-
-  if (flag_rename_registers == AUTODETECT_VALUE)
-    flag_rename_registers = flag_unroll_loops;
 
   if (flag_non_call_exceptions)
     flag_asynchronous_unwind_tables = 1;
@@ -1416,14 +1397,16 @@ process_options (void)
 	debug_info_level = DINFO_LEVEL_NONE;
     }
 
-  /* CTF is supported for only C at this time.
-     Compiling with -flto results in frontend language of GNU GIMPLE.  */
+  /* CTF is supported for only C at this time.  */
   if (!lang_GNU_C ()
       && ctf_debug_info_level > CTFINFO_LEVEL_NONE)
     {
-      inform (UNKNOWN_LOCATION,
-	      "CTF debug info requested, but not supported for %qs frontend",
-	      language_string);
+      /* Compiling with -flto results in frontend language of GNU GIMPLE.  It
+	 is not useful to warn in that case.  */
+      if (!startswith (lang_hooks.name, "GNU GIMPLE"))
+	inform (UNKNOWN_LOCATION,
+		"CTF debug info requested, but not supported for %qs frontend",
+		language_string);
       ctf_debug_info_level = CTFINFO_LEVEL_NONE;
     }
 
@@ -1451,6 +1434,11 @@ process_options (void)
   if (debug_info_level == DINFO_LEVEL_NONE
       && ctf_debug_info_level == CTFINFO_LEVEL_NONE)
     write_symbols = NO_DEBUG;
+
+  /* Warn if STABS debug gets enabled and is not the default.  */
+  if (PREFERRED_DEBUGGING_TYPE != DBX_DEBUG && (write_symbols & DBX_DEBUG))
+    warning (0, "STABS debugging information is obsolete and not "
+	     "supported anymore");
 
   if (write_symbols == NO_DEBUG)
     ;
@@ -1496,8 +1484,9 @@ process_options (void)
       || !dwarf_debuginfo_p ()
       || debug_hooks->var_location == do_nothing_debug_hooks.var_location)
     {
-      if (flag_var_tracking == 1
-	  || flag_var_tracking_uninit == 1)
+      if ((OPTION_SET_P (flag_var_tracking) && flag_var_tracking == 1)
+	  || (OPTION_SET_P (flag_var_tracking_uninit)
+	      && flag_var_tracking_uninit == 1))
         {
 	  if (debug_info_level < DINFO_LEVEL_NORMAL)
 	    warning_at (UNKNOWN_LOCATION, 0,
@@ -1518,19 +1507,11 @@ process_options (void)
   if (flag_dump_go_spec != NULL)
     debug_hooks = dump_go_spec_init (flag_dump_go_spec, debug_hooks);
 
-  /* If the user specifically requested variable tracking with tagging
-     uninitialized variables, we need to turn on variable tracking.
-     (We already determined above that variable tracking is feasible.)  */
-  if (flag_var_tracking_uninit == 1)
-    flag_var_tracking = 1;
+  /* One could use EnabledBy, but it would lead to a circular dependency.  */
+  if (!OPTION_SET_P (flag_var_tracking_uninit))
+     flag_var_tracking_uninit = flag_var_tracking;
 
-  if (flag_var_tracking == AUTODETECT_VALUE)
-    flag_var_tracking = optimize >= 1;
-
-  if (flag_var_tracking_uninit == AUTODETECT_VALUE)
-    flag_var_tracking_uninit = flag_var_tracking;
-
-  if (flag_var_tracking_assignments == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (flag_var_tracking_assignments))
     flag_var_tracking_assignments
       = (flag_var_tracking
 	 && !(flag_selective_scheduling || flag_selective_scheduling2));
@@ -1546,21 +1527,19 @@ process_options (void)
     warning_at (UNKNOWN_LOCATION, 0,
 		"var-tracking-assignments changes selective scheduling");
 
-  if (debug_nonbind_markers_p == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (debug_nonbind_markers_p))
     debug_nonbind_markers_p
       = (optimize
 	 && debug_info_level >= DINFO_LEVEL_NORMAL
 	 && dwarf_debuginfo_p ()
 	 && !(flag_selective_scheduling || flag_selective_scheduling2));
 
-  if (dwarf2out_as_loc_support == AUTODETECT_VALUE)
-    dwarf2out_as_loc_support
-      = dwarf2out_default_as_loc_support ();
-  if (dwarf2out_as_locview_support == AUTODETECT_VALUE)
-    dwarf2out_as_locview_support
-      = dwarf2out_default_as_locview_support ();
+  if (!OPTION_SET_P (dwarf2out_as_loc_support))
+    dwarf2out_as_loc_support = dwarf2out_default_as_loc_support ();
+  if (!OPTION_SET_P (dwarf2out_as_locview_support))
+    dwarf2out_as_locview_support = dwarf2out_default_as_locview_support ();
 
-  if (debug_variable_location_views == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (debug_variable_location_views))
     {
       debug_variable_location_views
 	= (flag_var_tracking
@@ -1594,7 +1573,7 @@ process_options (void)
       debug_internal_reset_location_views = 0;
     }
 
-  if (debug_inline_points == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (debug_inline_points))
     debug_inline_points = debug_variable_location_views;
   else if (debug_inline_points && !debug_nonbind_markers_p)
     {
@@ -1604,7 +1583,7 @@ process_options (void)
       debug_inline_points = 0;
     }
 
-  if (flag_tree_cselim == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (flag_tree_cselim))
     {
       if (HAVE_conditional_move)
 	flag_tree_cselim = 1;
@@ -1695,14 +1674,6 @@ process_options (void)
       flag_stack_check = NO_STACK_CHECK;
     }
 
-  /* With -fcx-limited-range, we do cheap and quick complex arithmetic.  */
-  if (flag_cx_limited_range)
-    flag_complex_method = 0;
-
-  /* With -fcx-fortran-rules, we do something in-between cheap and C99.  */
-  if (flag_cx_fortran_rules)
-    flag_complex_method = 1;
-
   /* Targets must be able to place spill slots at lower addresses.  If the
      target already uses a soft frame pointer, the transition is trivial.  */
   if (!FRAME_GROWS_DOWNWARD && flag_stack_protect)
@@ -1767,7 +1738,7 @@ process_options (void)
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error
      have not been set.  */
-  if (!global_options_set.x_warnings_are_errors)
+  if (!OPTION_SET_P (warnings_are_errors))
     {
       if (warn_coverage_mismatch
 	  && (global_dc->classify_diagnostic[OPT_Wcoverage_mismatch] ==
@@ -2150,10 +2121,8 @@ standard_type_bitsize (int bitsize)
 
 /* Initialize the compiler, and compile the input file.  */
 static void
-do_compile ()
+do_compile (bool no_backend)
 {
-  process_options ();
-
   /* Don't do any more if an error has already occurred.  */
   if (!seen_error ())
     {
@@ -2282,11 +2251,6 @@ toplev::start_timevars ()
 void
 toplev::run_self_tests ()
 {
-  if (no_backend)
-    {
-      error_at (UNKNOWN_LOCATION, "self-tests incompatible with %<-E%>");
-      return;
-    }
 #if CHECKING_P
   /* Reset some state.  */
   input_location = UNKNOWN_LOCATION;
@@ -2342,6 +2306,13 @@ toplev::main (int argc, char **argv)
 						&save_decoded_options,
 						&save_decoded_options_count);
 
+  /* Save Optimization decoded options.  */
+  save_opt_decoded_options = new vec<cl_decoded_option> ();
+  for (unsigned i = 1; i < save_decoded_options_count; ++i)
+    if (save_decoded_options[i].opt_index < cl_options_count
+	&& cl_options[save_decoded_options[i].opt_index].flags & CL_OPTIMIZATION)
+      save_opt_decoded_options->safe_push (save_decoded_options[i]);
+
   /* Perform language-specific options initialization.  */
   lang_hooks.init_options (save_decoded_options_count, save_decoded_options);
 
@@ -2367,16 +2338,29 @@ toplev::main (int argc, char **argv)
   /* Exit early if we can (e.g. -help).  */
   if (!exit_after_options)
     {
+      /* Allow the front end to perform consistency checks and do further
+	 initialization based on the command line options.  This hook also
+	 sets the original filename if appropriate (e.g. foo.i -> foo.c)
+	 so we can correctly initialize debug output.  */
+      bool no_backend = lang_hooks.post_options (&main_input_filename);
+
+      process_options (no_backend);
+
       if (m_use_TV_TOTAL)
 	start_timevars ();
-      do_compile ();
+      do_compile (no_backend);
+
+      if (flag_self_test)
+	{
+	  if (no_backend)
+	    error_at (UNKNOWN_LOCATION, "self-tests incompatible with %<-E%>");
+	  else
+	    run_self_tests ();
+	}
     }
 
   if (warningcount || errorcount || werrorcount)
     print_ignored_options ();
-
-  if (flag_self_test)
-    run_self_tests ();
 
   /* Invoke registered plugin callbacks if any.  Some plugins could
      emit some diagnostics here.  */

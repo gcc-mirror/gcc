@@ -181,11 +181,11 @@ endif
 locale_init.lo: locale_init.cc
 	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
 locale_init.o: locale_init.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+	$(CXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
 localename.lo: localename.cc
 	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
 localename.o: localename.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+	$(CXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.

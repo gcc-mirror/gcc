@@ -257,6 +257,11 @@ public:
      Otherwise return NULL_TREE.  */
   virtual tree is_zero_assignment (const gimple *stmt) = 0;
 
+  virtual path_context *get_path_context () const
+  {
+    return NULL;
+  }
+
 protected:
   sm_context (int sm_idx, const state_machine &sm)
   : m_sm_idx (sm_idx), m_sm (sm) {}

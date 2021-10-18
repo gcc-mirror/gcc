@@ -34,10 +34,14 @@
 #include "stringpool.h"
 #include "attribs.h"
 #include "gimple-fold.h"
+#include "gimple-ssa.h"
 #include "intl.h"
 #include "attr-fnspec.h"
 #include "gimple-range.h"
 #include "pointer-query.h"
+#include "tree-pretty-print.h"
+#include "tree-ssanames.h"
+#include "target.h"
 
 static bool compute_objsize_r (tree, int, access_ref *, ssa_name_limit_t &,
 			       pointer_query *);
@@ -307,7 +311,7 @@ get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
   enum value_range_kind range_type;
 
   if (!query)
-    query = get_global_range_query ();
+    query = get_range_query (cfun);
 
   if (integral)
     {
@@ -628,7 +632,7 @@ access_ref::phi () const
     return NULL;
 
   gimple *def_stmt = SSA_NAME_DEF_STMT (ref);
-  if (gimple_code (def_stmt) != GIMPLE_PHI)
+  if (!def_stmt || gimple_code (def_stmt) != GIMPLE_PHI)
     return NULL;
 
   return as_a <gphi *> (def_stmt);
@@ -1038,6 +1042,9 @@ access_ref::inform_access (access_mode mode) const
   if (TREE_CODE (ref) == SSA_NAME)
     {
       gimple *stmt = SSA_NAME_DEF_STMT (ref);
+      if (!stmt)
+	return;
+
       if (is_gimple_call (stmt))
 	{
 	  loc = gimple_location (stmt);
@@ -1081,6 +1088,34 @@ access_ref::inform_access (access_mode mode) const
       else if (gimple_nop_p (stmt))
 	/* Handle DECL_PARM below.  */
 	ref = SSA_NAME_VAR (ref);
+      else if (is_gimple_assign (stmt)
+	       && (gimple_assign_rhs_code (stmt) == MIN_EXPR
+		   || gimple_assign_rhs_code (stmt) == MAX_EXPR))
+	{
+	  /* MIN or MAX_EXPR here implies a reference to a known object
+	     and either an unknown or distinct one (the latter being
+	     the result of an invalid relational expression).  Determine
+	     the identity of the former and point to it in the note.
+	     TODO: Consider merging with PHI handling.  */
+	  access_ref arg_ref[2];
+	  tree arg = gimple_assign_rhs1 (stmt);
+	  compute_objsize (arg, /* ostype = */ 1 , &arg_ref[0]);
+	  arg = gimple_assign_rhs2 (stmt);
+	  compute_objsize (arg, /* ostype = */ 1 , &arg_ref[1]);
+
+	  /* Use the argument that references a known object with more
+	     space remaining.  */
+	  const bool idx
+	    = (!arg_ref[0].ref || !arg_ref[0].base0
+	       || (arg_ref[0].base0 && arg_ref[1].base0
+		   && (arg_ref[0].size_remaining ()
+		       < arg_ref[1].size_remaining ())));
+
+	  arg_ref[idx].offrng[0] = offrng[0];
+	  arg_ref[idx].offrng[1] = offrng[1];
+	  arg_ref[idx].inform_access (mode);
+	  return;
+	}
     }
 
   if (DECL_P (ref))
@@ -1339,7 +1374,7 @@ pointer_query::put_ref (tree ptr, const access_ref &ref, int ostype /* = 1 */)
   if (var_cache->access_refs.length () <= cache_idx)
     var_cache->access_refs.safe_grow_cleared (cache_idx + 1);
 
-  access_ref cache_ref = var_cache->access_refs[cache_idx - 1];
+  access_ref &cache_ref = var_cache->access_refs[cache_idx];
   if (cache_ref.ref)
   {
     gcc_checking_assert (cache_ref.ref == ref.ref);
@@ -1360,16 +1395,115 @@ pointer_query::flush_cache ()
   var_cache->access_refs.release ();
 }
 
+/* Dump statistics and, optionally, cache contents to DUMP_FILE.  */
+
+void
+pointer_query::dump (FILE *dump_file, bool contents /* = false */)
+{
+  unsigned nused = 0, nrefs = 0;
+  unsigned nidxs = var_cache->indices.length ();
+  for (unsigned i = 0; i != nidxs; ++i)
+    {
+      unsigned ari = var_cache->indices[i];
+      if (!ari)
+	continue;
+
+      ++nused;
+
+      const access_ref &aref = var_cache->access_refs[ari];
+      if (!aref.ref)
+	continue;
+
+      ++nrefs;
+    }
+
+  fprintf (dump_file, "pointer_query counters:\n"
+	   "  index cache size:   %u\n"
+	   "  index entries:      %u\n"
+	   "  access cache size:  %u\n"
+	   "  access entries:     %u\n"
+	   "  hits:               %u\n"
+	   "  misses:             %u\n"
+	   "  failures:           %u\n"
+	   "  max_depth:          %u\n",
+	   nidxs, nused,
+	   var_cache->access_refs.length (), nrefs,
+	   hits, misses, failures, max_depth);
+
+  if (!contents || !nidxs)
+    return;
+
+  fputs ("\npointer_query cache contents:\n", dump_file);
+
+  for (unsigned i = 0; i != nidxs; ++i)
+    {
+      unsigned ari = var_cache->indices[i];
+      if (!ari)
+	continue;
+
+      const access_ref &aref = var_cache->access_refs[ari];
+      if (!aref.ref)
+	continue;
+
+      /* The level-1 cache index corresponds to the SSA_NAME_VERSION
+	 shifted left by one and ORed with the Object Size Type in
+	 the lowest bit.  Print the two separately.  */
+      unsigned ver = i >> 1;
+      unsigned ost = i & 1;
+
+      fprintf (dump_file, "  %u.%u[%u]: ", ver, ost, ari);
+      if (tree name = ssa_name (ver))
+	{
+	  print_generic_expr (dump_file, name);
+	  fputs (" = ", dump_file);
+	}
+      else
+	fprintf (dump_file, "  _%u = ", ver);
+
+      if (gphi *phi = aref.phi ())
+	{
+	  fputs ("PHI <", dump_file);
+	  unsigned nargs = gimple_phi_num_args (phi);
+	  for (unsigned i = 0; i != nargs; ++i)
+	    {
+	      tree arg = gimple_phi_arg_def (phi, i);
+	      print_generic_expr (dump_file, arg);
+	      if (i + 1 < nargs)
+		fputs (", ", dump_file);
+	    }
+	  fputc ('>', dump_file);
+	}
+      else
+	print_generic_expr (dump_file, aref.ref);
+
+      if (aref.offrng[0] != aref.offrng[1])
+	fprintf (dump_file, " + [%lli, %lli]",
+		 (long long) aref.offrng[0].to_shwi (),
+		 (long long) aref.offrng[1].to_shwi ());
+      else if (aref.offrng[0] != 0)
+	fprintf (dump_file, " %c %lli",
+		 aref.offrng[0] < 0 ? '-' : '+',
+		 (long long) aref.offrng[0].to_shwi ());
+
+      fputc ('\n', dump_file);
+    }
+
+  fputc ('\n', dump_file);
+}
+
 /* A helper of compute_objsize_r() to determine the size from an assignment
-   statement STMT with the RHS of either MIN_EXPR or MAX_EXPR.  */
+   statement STMT with the RHS of either MIN_EXPR or MAX_EXPR.  On success
+   set PREF->REF to the operand with more or less space remaining,
+   respectively, if both refer to the same (sub)object, or to PTR if they
+   might not, and return true.  Otherwise, if the identity of neither
+   operand can be determined, return false.  */
 
 static bool
-handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
+handle_min_max_size (tree ptr, int ostype, access_ref *pref,
 		     ssa_name_limit_t &snlim, pointer_query *qry)
 {
-  tree_code code = gimple_assign_rhs_code (stmt);
-
-  tree ptr = gimple_assign_rhs1 (stmt);
+  const gimple *stmt = SSA_NAME_DEF_STMT (ptr);
+  const tree_code code = gimple_assign_rhs_code (stmt);
 
   /* In a valid MAX_/MIN_EXPR both operands must refer to the same array.
      Determine the size/offset of each and use the one with more or less
@@ -1377,7 +1511,8 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
      determined from the other instead, adjusted up or down as appropriate
      for the expression.  */
   access_ref aref[2] = { *pref, *pref };
-  if (!compute_objsize_r (ptr, ostype, &aref[0], snlim, qry))
+  tree arg1 = gimple_assign_rhs1 (stmt);
+  if (!compute_objsize_r (arg1, ostype, &aref[0], snlim, qry))
     {
       aref[0].base0 = false;
       aref[0].offrng[0] = aref[0].offrng[1] = 0;
@@ -1385,8 +1520,8 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
       aref[0].set_max_size_range ();
     }
 
-  ptr = gimple_assign_rhs2 (stmt);
-  if (!compute_objsize_r (ptr, ostype, &aref[1], snlim, qry))
+  tree arg2 = gimple_assign_rhs2 (stmt);
+  if (!compute_objsize_r (arg2, ostype, &aref[1], snlim, qry))
     {
       aref[1].base0 = false;
       aref[1].offrng[0] = aref[1].offrng[1] = 0;
@@ -1415,6 +1550,13 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
 	    *pref = aref[i1];
 	  else
 	    *pref = aref[i0];
+
+	  if (aref[i0].ref != aref[i1].ref)
+	    /* If the operands don't refer to the same (sub)object set
+	       PREF->REF to the SSA_NAME from which STMT was obtained
+	       so that both can be identified in a diagnostic.  */
+	    pref->ref = ptr;
+
 	  return true;
 	}
 
@@ -1435,6 +1577,10 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
       pref->offrng[0] = aref[i0].offrng[0];
       pref->offrng[1] = aref[i0].offrng[1];
     }
+
+  /* Replace PTR->REF with the SSA_NAME to indicate the expression
+     might not refer to the same (sub)object.  */
+  pref->ref = ptr;
   return true;
 }
 
@@ -1724,13 +1870,24 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
   if (code == INTEGER_CST)
     {
       /* Pointer constants other than null are most likely the result
-	 of erroneous null pointer addition/subtraction.  Set size to
-	 zero.  For null pointers, set size to the maximum for now
-	 since those may be the result of jump threading.  */
+	 of erroneous null pointer addition/subtraction.  Unless zero
+	 is a valid address set size to zero.  For null pointers, set
+	 size to the maximum for now since those may be the result of
+	 jump threading.  */
       if (integer_zerop (ptr))
 	pref->set_max_size_range ();
+      else if (POINTER_TYPE_P (TREE_TYPE (ptr)))
+	{
+	  tree deref_type = TREE_TYPE (TREE_TYPE (ptr));
+	  addr_space_t as = TYPE_ADDR_SPACE (deref_type);
+	  if (targetm.addr_space.zero_address_valid (as))
+	    pref->set_max_size_range ();
+	  else
+	    pref->sizrng[0] = pref->sizrng[1] = 0;
+	}
       else
 	pref->sizrng[0] = pref->sizrng[1] = 0;
+
       pref->ref = ptr;
 
       return true;
@@ -1782,8 +1939,14 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 	  if (const access_ref *cache_ref = qry->get_ref (ptr))
 	    {
 	      /* If the pointer is in the cache set *PREF to what it refers
-		 to and return success.  */
+		 to and return success.
+		 FIXME: BNDRNG is determined by each access and so it doesn't
+		 belong in access_ref.  Until the design is changed, keep it
+		 unchanged here.  */
+	      const offset_int bndrng[2] = { pref->bndrng[0], pref->bndrng[1] };
 	      *pref = *cache_ref;
+	      pref->bndrng[0] = bndrng[0];
+	      pref->bndrng[1] = bndrng[1];
 	      return true;
 	    }
 	}
@@ -1901,8 +2064,9 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 
       if (code == MAX_EXPR || code == MIN_EXPR)
 	{
-	  if (!handle_min_max_size (stmt, ostype, pref, snlim, qry))
+	  if (!handle_min_max_size (ptr, ostype, pref, snlim, qry))
 	    return false;
+
 	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
@@ -1928,13 +2092,18 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 	    pref->add_offset (orng[0], orng[1]);
 	  else
 	    pref->add_max_offset ();
+
 	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
 
-      if (code == ADDR_EXPR
-	  || code == SSA_NAME)
-	return compute_objsize_r (rhs, ostype, pref, snlim, qry);
+      if (code == ADDR_EXPR || code == SSA_NAME)
+	{
+	  if (!compute_objsize_r (rhs, ostype, pref, snlim, qry))
+	    return false;
+	  qry->put_ref (ptr, *pref);
+	  return true;
+	}
 
       /* (This could also be an assignment from a nonlocal pointer.)  Save
 	 PTR to mention in diagnostics but otherwise treat it as a pointer

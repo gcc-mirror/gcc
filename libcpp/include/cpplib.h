@@ -482,6 +482,10 @@ struct cpp_options
      in C11 and C++11.  */
   unsigned char c11_identifiers;
 
+  /* Nonzero means extended identifiers allow the characters specified
+     in C++23.  */
+  unsigned char cxx23_identifiers;
+
   /* Nonzero for C++ 2014 Standard binary constants.  */
   unsigned char binary_constants;
 

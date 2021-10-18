@@ -1625,18 +1625,21 @@ gen_highpart (machine_mode mode, rtx x)
   gcc_assert (known_le (msize, (unsigned int) UNITS_PER_WORD)
 	      || known_eq (msize, GET_MODE_UNIT_SIZE (GET_MODE (x))));
 
+  /* gen_lowpart_common handles a lot of special cases due to needing to handle
+     paradoxical subregs; it only calls simplify_gen_subreg when certain that
+     it will produce something meaningful.  The only case we need to handle
+     specially here is MEM.  */
+  if (MEM_P (x))
+    {
+      poly_int64 offset = subreg_highpart_offset (mode, GET_MODE (x));
+      return adjust_address (x, mode, offset);
+    }
+
   result = simplify_gen_subreg (mode, x, GET_MODE (x),
 				subreg_highpart_offset (mode, GET_MODE (x)));
-  gcc_assert (result);
-
-  /* simplify_gen_subreg is not guaranteed to return a valid operand for
-     the target if we have a MEM.  gen_highpart must return a valid operand,
-     emitting code if necessary to do so.  */
-  if (MEM_P (result))
-    {
-      result = validize_mem (result);
-      gcc_assert (result);
-    }
+  /* Since we handle MEM directly above, we should never get a MEM back
+     from simplify_gen_subreg.  */
+  gcc_assert (result && !MEM_P (result));
 
   return result;
 }

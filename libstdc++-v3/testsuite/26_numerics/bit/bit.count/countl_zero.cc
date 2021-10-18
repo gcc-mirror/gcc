@@ -71,7 +71,7 @@ static_assert( test( X{} ).did_not_match() );
 enum E : unsigned { e };
 static_assert( test( e ).did_not_match() );
 
-#if !defined(__STRICT_ANSI__) && defined _GLIBCXX_USE_INT128
+#if !defined(__STRICT_ANSI__) && defined __SIZEOF_INT128__
 static_assert( test( (unsigned __int128)0 ) );
 static_assert( test( (__int128)0 ).did_not_match() );
 #endif
@@ -86,6 +86,10 @@ static_assert( test( (__GLIBCXX_TYPE_INT_N_1)0 ).did_not_match() );
 #if defined(__GLIBCXX_TYPE_INT_N_2)
 static_assert( test( (unsigned __GLIBCXX_TYPE_INT_N_2)0 ) );
 static_assert( test( (__GLIBCXX_TYPE_INT_N_2)0 ).did_not_match() );
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+static_assert( test( (unsigned __GLIBCXX_TYPE_INT_N_3)0 ) );
+static_assert( test( (__GLIBCXX_TYPE_INT_N_3)0 ).did_not_match() );
 #endif
 
 #include <cstddef>

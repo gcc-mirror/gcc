@@ -483,8 +483,10 @@ begin
    Write_Line ("        .B   turn off warnings for biased representation");
    Write_Line ("        c+   turn on warnings for constant conditional");
    Write_Line ("        C*   turn off warnings for constant conditional");
-   Write_Line ("        .c+  turn on warnings for unrepped components");
-   Write_Line ("        .C*  turn off warnings for unrepped components");
+   Write_Line ("        .c+  turn on warnings for components without " &
+                                                     "representation clauses");
+   Write_Line ("        .C*  turn off warnings for components without " &
+                                                     "representation clauses");
    Write_Line ("        _c*  turn on warnings for unknown " &
                                                  "Compile_Time_Warning");
    Write_Line ("        _C   turn off warnings for unknown " &

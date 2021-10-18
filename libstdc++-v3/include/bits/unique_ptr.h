@@ -169,10 +169,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      pointer&   _M_ptr() { return std::get<0>(_M_t); }
-      pointer    _M_ptr() const { return std::get<0>(_M_t); }
-      _Dp&       _M_deleter() { return std::get<1>(_M_t); }
-      const _Dp& _M_deleter() const { return std::get<1>(_M_t); }
+      pointer&   _M_ptr() noexcept { return std::get<0>(_M_t); }
+      pointer    _M_ptr() const noexcept { return std::get<0>(_M_t); }
+      _Dp&       _M_deleter() noexcept { return std::get<1>(_M_t); }
+      const _Dp& _M_deleter() const noexcept { return std::get<1>(_M_t); }
 
       void reset(pointer __p) noexcept
       {
@@ -338,9 +338,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _Up, typename _Ep, typename = _Require<
                __safe_conversion_up<_Up, _Ep>,
-	       typename conditional<is_reference<_Dp>::value,
-				    is_same<_Ep, _Dp>,
-				    is_convertible<_Ep, _Dp>>::type>>
+	       __conditional_t<is_reference<_Dp>::value,
+			       is_same<_Ep, _Dp>,
+			       is_convertible<_Ep, _Dp>>>>
 	unique_ptr(unique_ptr<_Up, _Ep>&& __u) noexcept
 	: _M_t(__u.release(), std::forward<_Ep>(__u.get_deleter()))
 	{ }
@@ -605,9 +605,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up, typename _Ep, typename = _Require<
 	       __safe_conversion_up<_Up, _Ep>,
-	       typename conditional<is_reference<_Dp>::value,
-				    is_same<_Ep, _Dp>,
-				    is_convertible<_Ep, _Dp>>::type>>
+	       __conditional_t<is_reference<_Dp>::value,
+			       is_same<_Ep, _Dp>,
+			       is_convertible<_Ep, _Dp>>>>
 	unique_ptr(unique_ptr<_Up, _Ep>&& __u) noexcept
 	: _M_t(__u.release(), std::forward<_Ep>(__u.get_deleter()))
 	{ }

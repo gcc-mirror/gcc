@@ -35,15 +35,13 @@
 --
 --  Files must be compiled with at least minimal debugging information (-g1).
 
-with Ada.Exceptions.Traceback;
-
-with System.Object_Reader;
-with System.Storage_Elements;
 with System.Bounded_Strings;
+with System.Object_Reader;
+with System.Traceback_Entries;
 
 package System.Dwarf_Lines is
 
-   package AET renames Ada.Exceptions.Traceback;
+   package STE renames System.Traceback_Entries;
    package SOR renames System.Object_Reader;
 
    type Dwarf_Context (In_Exception : Boolean := False) is private;
@@ -58,19 +56,19 @@ package System.Dwarf_Lines is
       C         : out Dwarf_Context;
       Success   : out Boolean);
    procedure Close (C : in out Dwarf_Context);
-   --  Open and close files
+   --  Open and close a file
 
    procedure Set_Load_Address (C : in out Dwarf_Context; Addr : Address);
-   --  Set the load address of a file. This is used to rebase PIE (Position
+   --  Set the run-time load address of a file. Used to rebase PIE (Position
    --  Independent Executable) binaries.
 
    function Is_Inside (C : Dwarf_Context; Addr : Address) return Boolean;
    pragma Inline (Is_Inside);
-   --  Return true iff a run-time address Addr is within the module
+   --  Return whether a run-time address Addr lies within the file
 
-   function Low_Address (C : Dwarf_Context) return System.Address;
+   function Low_Address (C : Dwarf_Context) return Address;
    pragma Inline (Low_Address);
-   --  Return the lowest address of C, accounting for the module load address
+   --  Return the lowest run-time address of the file
 
    procedure Dump (C : in out Dwarf_Context);
    --  Dump each row found in the object's .debug_lines section to standard out
@@ -83,7 +81,7 @@ package System.Dwarf_Lines is
 
    procedure Symbolic_Traceback
      (Cin          :        Dwarf_Context;
-      Traceback    :        AET.Tracebacks_Array;
+      Traceback    :        STE.Tracebacks_Array;
       Suppress_Hex :        Boolean;
       Symbol_Found :    out Boolean;
       Res          : in out System.Bounded_Strings.Bounded_String);
@@ -175,13 +173,13 @@ private
    type Search_Array_Access is access Search_Array;
 
    type Dwarf_Context (In_Exception : Boolean := False) is record
-      Low, High  : System.Storage_Elements.Storage_Offset;
-      --  Bounds of the module, per the module object file
+      Low, High : Address;
+      --  Address bounds for executable code
 
       Obj : SOR.Object_File_Access;
       --  The object file containing dwarf sections
 
-      Load_Address : System.Address := System.Null_Address;
+      Load_Address : Address := Null_Address;
       --  The address at which the object file was loaded at run time
 
       Has_Debug : Boolean;

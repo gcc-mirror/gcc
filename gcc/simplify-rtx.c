@@ -1249,7 +1249,8 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
          than HOST_BITS_PER_WIDE_INT.  */
       if (HWI_COMPUTABLE_MODE_P (mode)
 	  && COMPARISON_P (op)
-	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0)
+	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0
+	  && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op)))
 	{
 	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
 	  if (temp)
@@ -1511,12 +1512,28 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	 target mode is the same as the variable's promotion.  */
       if (GET_CODE (op) == SUBREG
 	  && SUBREG_PROMOTED_VAR_P (op)
-	  && SUBREG_PROMOTED_SIGNED_P (op)
-	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (op))))
+	  && SUBREG_PROMOTED_SIGNED_P (op))
 	{
-	  temp = rtl_hooks.gen_lowpart_no_emit (mode, SUBREG_REG (op));
-	  if (temp)
-	    return temp;
+	  rtx subreg = SUBREG_REG (op);
+	  machine_mode subreg_mode = GET_MODE (subreg);
+	  if (!paradoxical_subreg_p (mode, subreg_mode))
+	    {
+	      temp = rtl_hooks.gen_lowpart_no_emit (mode, subreg);
+	      if (temp)
+		{
+		  /* Preserve SUBREG_PROMOTED_VAR_P.  */
+		  if (partial_subreg_p (temp))
+		    {
+		      SUBREG_PROMOTED_VAR_P (temp) = 1;
+		      SUBREG_PROMOTED_SET (temp, 1);
+		    }
+		  return temp;
+		}
+	    }
+	  else
+	    /* Sign-extending a sign-extended subreg.  */
+	    return simplify_gen_unary (SIGN_EXTEND, mode,
+				       subreg, subreg_mode);
 	}
 
       /* (sign_extend:M (sign_extend:N <X>)) is (sign_extend:M <X>).
@@ -1630,12 +1647,28 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	 target mode is the same as the variable's promotion.  */
       if (GET_CODE (op) == SUBREG
 	  && SUBREG_PROMOTED_VAR_P (op)
-	  && SUBREG_PROMOTED_UNSIGNED_P (op)
-	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (op))))
+	  && SUBREG_PROMOTED_UNSIGNED_P (op))
 	{
-	  temp = rtl_hooks.gen_lowpart_no_emit (mode, SUBREG_REG (op));
-	  if (temp)
-	    return temp;
+	  rtx subreg = SUBREG_REG (op);
+	  machine_mode subreg_mode = GET_MODE (subreg);
+	  if (!paradoxical_subreg_p (mode, subreg_mode))
+	    {
+	      temp = rtl_hooks.gen_lowpart_no_emit (mode, subreg);
+	      if (temp)
+		{
+		  /* Preserve SUBREG_PROMOTED_VAR_P.  */
+		  if (partial_subreg_p (temp))
+		    {
+		      SUBREG_PROMOTED_VAR_P (temp) = 1;
+		      SUBREG_PROMOTED_SET (temp, 0);
+		    }
+		  return temp;
+		}
+	    }
+	  else
+	    /* Zero-extending a zero-extended subreg.  */
+	    return simplify_gen_unary (ZERO_EXTEND, mode,
+				       subreg, subreg_mode);
 	}
 
       /* Extending a widening multiplication should be canonicalized to
@@ -1991,6 +2024,20 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 
 	case SIGN_EXTEND:
 	  result = wide_int::from (op0, width, SIGNED);
+	  break;
+
+	case SS_NEG:
+	  if (wi::only_sign_bit_p (op0))
+	    result = wi::max_value (GET_MODE_PRECISION (imode), SIGNED);
+	  else
+	    result = wi::neg (op0);
+	  break;
+
+	case SS_ABS:
+	  if (wi::only_sign_bit_p (op0))
+	    result = wi::max_value (GET_MODE_PRECISION (imode), SIGNED);
+	  else
+	    result = wi::abs (op0);
 	  break;
 
 	case SQRT:
@@ -4109,11 +4156,36 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
     case US_PLUS:
     case SS_MINUS:
     case US_MINUS:
+      /* Simplify x +/- 0 to x, if possible.  */
+      if (trueop1 == CONST0_RTX (mode))
+	return op0;
+      return 0;
+
     case SS_MULT:
     case US_MULT:
+      /* Simplify x * 0 to 0, if possible.  */
+      if (trueop1 == CONST0_RTX (mode)
+	  && !side_effects_p (op0))
+	return op1;
+
+      /* Simplify x * 1 to x, if possible.  */
+      if (trueop1 == CONST1_RTX (mode))
+	return op0;
+      return 0;
+
+    case SMUL_HIGHPART:
+    case UMUL_HIGHPART:
+      /* Simplify x * 0 to 0, if possible.  */
+      if (trueop1 == CONST0_RTX (mode)
+	  && !side_effects_p (op0))
+	return op1;
+      return 0;
+
     case SS_DIV:
     case US_DIV:
-      /* ??? There are simplifications that can be done.  */
+      /* Simplify x / 1 to x, if possible.  */
+      if (trueop1 == CONST1_RTX (mode))
+	return op0;
       return 0;
 
     case VEC_SERIES:
@@ -4554,7 +4626,8 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	if (GET_CODE (trueop0) == VEC_SELECT
 	    && GET_CODE (trueop1) == VEC_SELECT
 	    && rtx_equal_p (XEXP (trueop0, 0), XEXP (trueop1, 0))
-	    && GET_MODE (XEXP (trueop0, 0)) == mode)
+	    && GET_MODE_INNER (GET_MODE (XEXP (trueop0, 0)))
+	       == GET_MODE_INNER(mode))
 	  {
 	    rtx par0 = XEXP (trueop0, 1);
 	    rtx par1 = XEXP (trueop1, 1);
@@ -4978,6 +5051,51 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	      }
 	    break;
 	  }
+
+	case SS_PLUS:
+	  result = wi::add (pop0, pop1, SIGNED, &overflow);
+ clamp_signed_saturation:
+	  if (overflow == wi::OVF_OVERFLOW)
+	    result = wi::max_value (GET_MODE_PRECISION (int_mode), SIGNED);
+	  else if (overflow == wi::OVF_UNDERFLOW)
+	    result = wi::min_value (GET_MODE_PRECISION (int_mode), SIGNED);
+	  else if (overflow != wi::OVF_NONE)
+	    return NULL_RTX;
+	  break;
+
+	case US_PLUS:
+	  result = wi::add (pop0, pop1, UNSIGNED, &overflow);
+ clamp_unsigned_saturation: 
+	  if (overflow != wi::OVF_NONE)
+	    result = wi::max_value (GET_MODE_PRECISION (int_mode), UNSIGNED);
+	  break;
+
+	case SS_MINUS:
+	  result = wi::sub (pop0, pop1, SIGNED, &overflow);
+	  goto clamp_signed_saturation;
+
+	case US_MINUS:
+	  result = wi::sub (pop0, pop1, UNSIGNED, &overflow);
+	  if (overflow != wi::OVF_NONE)
+	    result = wi::min_value (GET_MODE_PRECISION (int_mode), UNSIGNED);
+	  break;
+
+	case SS_MULT:
+	  result = wi::mul (pop0, pop1, SIGNED, &overflow);
+	  goto clamp_signed_saturation;
+
+	case US_MULT:
+	  result = wi::mul (pop0, pop1, UNSIGNED, &overflow);
+	  goto clamp_unsigned_saturation;
+
+	case SMUL_HIGHPART:
+	  result = wi::mul_high (pop0, pop1, SIGNED);
+	  break;
+
+	case UMUL_HIGHPART:
+	  result = wi::mul_high (pop0, pop1, UNSIGNED);
+	  break;
+
 	default:
 	  return NULL_RTX;
 	}

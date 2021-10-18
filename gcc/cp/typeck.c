@@ -2618,36 +2618,14 @@ rationalize_conditional_expr (enum tree_code code, tree t,
    that are directly reachable.  */
 
 tree
-lookup_anon_field (tree t, tree type)
+lookup_anon_field (tree, tree type)
 {
   tree field;
 
-  t = TYPE_MAIN_VARIANT (t);
-
-  for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
-    {
-      if (TREE_STATIC (field))
-	continue;
-      if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
-	continue;
-
-      /* If we find it directly, return the field.  */
-      if (DECL_NAME (field) == NULL_TREE
-	  && type == TYPE_MAIN_VARIANT (TREE_TYPE (field)))
-	{
-	  return field;
-	}
-
-      /* Otherwise, it could be nested, search harder.  */
-      if (DECL_NAME (field) == NULL_TREE
-	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-	{
-	  tree subfield = lookup_anon_field (TREE_TYPE (field), type);
-	  if (subfield)
-	    return subfield;
-	}
-    }
-  return NULL_TREE;
+  type = TYPE_MAIN_VARIANT (type);
+  field = ANON_AGGR_TYPE_FIELD (type);
+  gcc_assert (field);
+  return field;
 }
 
 /* Build an expression representing OBJECT.MEMBER.  OBJECT is an
@@ -2709,7 +2687,10 @@ build_class_member_access_expr (cp_expr object, tree member,
       member_scope = DECL_CLASS_CONTEXT (member);
       if (!mark_used (member, complain) && !(complain & tf_error))
 	return error_mark_node;
-      if (TREE_DEPRECATED (member))
+
+      if (TREE_UNAVAILABLE (member))
+	error_unavailable_use (member, NULL_TREE);
+      else if (TREE_DEPRECATED (member))
 	warn_deprecated_use (member, NULL_TREE);
     }
   else
@@ -3424,7 +3405,9 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	}
     }
 
-  if (TREE_DEPRECATED (member))
+  if (TREE_UNAVAILABLE (member))
+    error_unavailable_use (member, NULL_TREE);
+  else if (TREE_DEPRECATED (member))
     warn_deprecated_use (member, NULL_TREE);
 
   if (template_p)
@@ -4620,25 +4603,93 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
       || warning_suppressed_p (op, OPT_Waddress))
     return;
 
+  if (TREE_CODE (op) == NON_DEPENDENT_EXPR)
+    op = TREE_OPERAND (op, 0);
+
   tree cop = fold_for_warn (op);
 
-  if (TREE_CODE (cop) == ADDR_EXPR
-      && decl_with_nonnull_addr_p (TREE_OPERAND (cop, 0))
-      && !warning_suppressed_p (cop, OPT_Waddress))
-    warning_at (location, OPT_Waddress, "the address of %qD will never "
-		"be NULL", TREE_OPERAND (cop, 0));
+  if (TREE_CODE (cop) == NON_LVALUE_EXPR)
+    /* Unwrap the expression for C++ 98.  */
+    cop = TREE_OPERAND (cop, 0);
 
-  if (CONVERT_EXPR_P (op)
+  if (TREE_CODE (cop) == PTRMEM_CST)
+    {
+      /* The address of a nonstatic data member is never null.  */
+      warning_at (location, OPT_Waddress,
+		  "the address %qE will never be NULL",
+		  cop);
+      return;
+    }
+
+  if (TREE_CODE (cop) == NOP_EXPR)
+    {
+      /* Allow casts to intptr_t to suppress the warning.  */
+      tree type = TREE_TYPE (cop);
+      if (TREE_CODE (type) == INTEGER_TYPE)
+	return;
+
+      STRIP_NOPS (cop);
+    }
+
+  bool warned = false;
+  if (TREE_CODE (cop) == ADDR_EXPR)
+    {
+      cop = TREE_OPERAND (cop, 0);
+
+      /* Set to true in the loop below if OP dereferences its operand.
+	 In such a case the ultimate target need not be a decl for
+	 the null [in]equality test to be necessarily constant.  */
+      bool deref = false;
+
+      /* Get the outermost array or object, or member.  */
+      while (handled_component_p (cop))
+	{
+	  if (TREE_CODE (cop) == COMPONENT_REF)
+	    {
+	      /* Get the member (its address is never null).  */
+	      cop = TREE_OPERAND (cop, 1);
+	      break;
+	    }
+
+	  /* Get the outer array/object to refer to in the warning.  */
+	  cop = TREE_OPERAND (cop, 0);
+	  deref = true;
+	}
+
+      if ((!deref && !decl_with_nonnull_addr_p (cop))
+	  || from_macro_expansion_at (location)
+	  || warning_suppressed_p (cop, OPT_Waddress))
+	return;
+
+      warned = warning_at (location, OPT_Waddress,
+			   "the address of %qD will never be NULL", cop);
+      op = cop;
+    }
+  else if (TREE_CODE (cop) == POINTER_PLUS_EXPR)
+    {
+      /* Adding zero to the null pointer is well-defined in C++.  When
+	 the offset is unknown (i.e., not a constant) warn anyway since
+	 it's less likely that the pointer operand is null than not.  */
+      tree off = TREE_OPERAND (cop, 1);
+      if (!integer_zerop (off)
+	  && !warning_suppressed_p (cop, OPT_Waddress))
+	warning_at (location, OPT_Waddress, "comparing the result of pointer "
+		    "addition %qE and NULL", cop);
+      return;
+    }
+  else if (CONVERT_EXPR_P (op)
       && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (op, 0))))
     {
-      tree inner_op = op;
-      STRIP_NOPS (inner_op);
+      STRIP_NOPS (op);
 
-      if (DECL_P (inner_op))
-	warning_at (location, OPT_Waddress,
-		    "the compiler can assume that the address of "
-		    "%qD will never be NULL", inner_op);
+      if (DECL_P (op))
+	warned = warning_at (location, OPT_Waddress,
+			     "the compiler can assume that the address of "
+			     "%qD will never be NULL", op);
     }
+
+  if (warned && DECL_P (op))
+    inform (DECL_SOURCE_LOCATION (op), "%qD declared here", op);
 }
 
 /* Warn about [expr.arith.conv]/2: If one operand is of enumeration type and
@@ -5306,6 +5357,11 @@ cp_build_binary_op (const op_location_t &location,
 	    warning_at (location, OPT_Waddress,
 			"comparison with string literal results in "
 			"unspecified behavior");
+	  else if (warn_array_compare
+		   && TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
+		   && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE)
+	    do_warn_array_compare (location, code, stripped_orig_op0,
+				   stripped_orig_op1);
 	}
 
       build_type = boolean_type_node;
@@ -5428,6 +5484,8 @@ cp_build_binary_op (const op_location_t &location,
 	      op1 = cp_convert (TREE_TYPE (op0), op1, complain);
 	    }
 	  result_type = TREE_TYPE (op0);
+
+	  warn_for_null_address (location, orig_op0, complain);
 	}
       else if (TYPE_PTRMEMFUNC_P (type1) && null_ptr_cst_p (orig_op0))
 	return cp_build_binary_op (location, code, op1, op0, complain);
@@ -5576,6 +5634,14 @@ cp_build_binary_op (const op_location_t &location,
 			"comparison with string literal results "
 			"in unspecified behavior");
 	}
+      else if (warn_array_compare
+	       && TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
+	       && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE
+	       && code != SPACESHIP_EXPR
+	       && (complain & tf_warning))
+	do_warn_array_compare (location, code,
+			       tree_strip_any_location_wrapper (orig_op0),
+			       tree_strip_any_location_wrapper (orig_op1));
 
       if (gnu_vector_type_p (type0) && gnu_vector_type_p (type1))
 	{
@@ -6055,7 +6121,9 @@ cp_build_binary_op (const op_location_t &location,
     }
 
   if (sanitize_flags_p ((SANITIZE_SHIFT
-			 | SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
+			 | SANITIZE_DIVIDE
+			 | SANITIZE_FLOAT_DIVIDE
+			 | SANITIZE_SI_OVERFLOW))
       && current_function_decl != NULL_TREE
       && !processing_template_decl
       && (doing_div_or_mod || doing_shift))
@@ -6067,7 +6135,9 @@ cp_build_binary_op (const op_location_t &location,
       op1 = fold_non_dependent_expr (op1, complain);
       tree instrument_expr1 = NULL_TREE;
       if (doing_div_or_mod
-	  && sanitize_flags_p (SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
+	  && sanitize_flags_p (SANITIZE_DIVIDE
+			       | SANITIZE_FLOAT_DIVIDE
+			       | SANITIZE_SI_OVERFLOW))
 	{
 	  /* For diagnostics we want to use the promoted types without
 	     shorten_binary_op.  So convert the arguments to the

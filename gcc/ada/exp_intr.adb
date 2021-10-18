@@ -1151,7 +1151,7 @@ package body Exp_Intr is
 
          else
             Set_Procedure_To_Call
-              (Free_Nod, Find_Prim_Op (Etype (Pool), Name_Deallocate));
+              (Free_Nod, Find_Storage_Op (Etype (Pool), Name_Deallocate));
          end if;
       end if;
 

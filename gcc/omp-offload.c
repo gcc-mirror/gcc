@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "context.h"
 #include "convert.h"
+#include "opts.h"
 
 /* Describe the OpenACC looping structure of a function.  The entire
    function is held in a 'NULL' loop.  */
@@ -633,7 +634,7 @@ oacc_xform_loop (gcall *call)
 	  /* If not -fno-tree-loop-vectorize, hint that we want to vectorize
 	     the loop.  */
 	  && (flag_tree_loop_vectorize
-	      || !global_options_set.x_flag_tree_loop_vectorize))
+	      || !OPTION_SET_P (flag_tree_loop_vectorize)))
 	{
 	  basic_block bb = gsi_bb (gsi);
 	  class loop *parent = bb->loop_father;

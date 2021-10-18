@@ -804,6 +804,15 @@ resolve_entries (gfc_namespace *ns)
 	     the same string length, i.e. both len=*, or both len=4.
 	     Having both len=<variable> is also possible, but difficult to
 	     check at compile time.  */
+	  else if (ts->type == BT_CHARACTER
+		   && (el->sym->result->attr.allocatable
+		       != ns->entries->sym->result->attr.allocatable))
+	    {
+	      gfc_error ("Function %s at %L has entry %s with mismatched "
+			 "characteristics", ns->entries->sym->name,
+			 &ns->entries->sym->declared_at, el->sym->name);
+	      goto cleanup;
+	    }
 	  else if (ts->type == BT_CHARACTER && ts->u.cl && fts->u.cl
 		   && (((ts->u.cl->length && !fts->u.cl->length)
 			||(!ts->u.cl->length && fts->u.cl->length))
@@ -908,6 +917,8 @@ resolve_entries (gfc_namespace *ns)
 	    }
 	}
     }
+
+cleanup:
   proc->attr.access = ACCESS_PRIVATE;
   proc->attr.entry_master = 1;
 
@@ -970,7 +981,7 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
 	}
 
       if (UNLIMITED_POLY (csym))
-	gfc_error_now ("%qs in cannot appear in COMMON at %L "
+	gfc_error_now ("%qs at %L cannot appear in COMMON "
 		       "[F2008:C5100]", csym->name, &csym->declared_at);
 
       if (csym->ts.type != BT_DERIVED)
@@ -1441,6 +1452,34 @@ resolve_structure_cons (gfc_expr *expr, int init)
 			     " %s", comp->name, &cons->expr->where, err);
 	      return false;
 	    }
+	}
+
+      /* Validate shape, except for dynamic or PDT arrays.  */
+      if (cons->expr->expr_type == EXPR_ARRAY && rank == cons->expr->rank
+	  && comp->as && !comp->attr.allocatable && !comp->attr.pointer
+	  && !comp->attr.pdt_array)
+	{
+	  mpz_t len;
+	  mpz_init (len);
+	  for (int n = 0; n < rank; n++)
+	    {
+	      gcc_assert (comp->as->upper[n]->expr_type == EXPR_CONSTANT
+			  && comp->as->lower[n]->expr_type == EXPR_CONSTANT);
+	      mpz_set_ui (len, 1);
+	      mpz_add (len, len, comp->as->upper[n]->value.integer);
+	      mpz_sub (len, len, comp->as->lower[n]->value.integer);
+	      if (mpz_cmp (cons->expr->shape[n], len) != 0)
+		{
+		  gfc_error ("The shape of component %qs in the structure "
+			     "constructor at %L differs from the shape of the "
+			     "declared component for dimension %d (%ld/%ld)",
+			     comp->name, &cons->expr->where, n+1,
+			     mpz_get_si (cons->expr->shape[n]),
+			     mpz_get_si (len));
+		  t = false;
+		}
+	    }
+	  mpz_clear (len);
 	}
 
       if (!comp->attr.pointer || comp->attr.proc_pointer
@@ -7820,8 +7859,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	}
     }
 
-  /* Check for F08:C628.  */
-  if (allocatable == 0 && pointer == 0 && !unlimited)
+  /* Check for F08:C628 (F2018:C932).  Each allocate-object shall be a data
+     pointer or an allocatable variable.  */
+  if (allocatable == 0 && pointer == 0)
     {
       gfc_error ("Allocate-object at %L must be ALLOCATABLE or a POINTER",
 		 &e->where);
@@ -12339,7 +12379,7 @@ resolve_values (gfc_symbol *sym)
   if (sym->value == NULL)
     return;
 
-  if (sym->attr.ext_attr & (1 << EXT_ATTR_DEPRECATED))
+  if (sym->attr.ext_attr & (1 << EXT_ATTR_DEPRECATED) && sym->attr.referenced)
     gfc_warning (OPT_Wdeprecated_declarations,
 		 "Using parameter %qs declared at %L is deprecated",
 		 sym->name, &sym->declared_at);
@@ -12664,7 +12704,8 @@ can_generate_init (gfc_symbol *sym)
     || a->cray_pointer
     || sym->assoc
     || (!a->referenced && !a->result)
-    || (a->dummy && a->intent != INTENT_OUT)
+    || (a->dummy && (a->intent != INTENT_OUT
+		     || sym->ns->proc_name->attr.if_source == IFSRC_IFBODY))
     || (a->function && sym != sym->result)
   );
 }
@@ -12901,7 +12942,9 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
 
   /* Assign default initializer.  */
   if (!(sym->value || sym->attr.pointer || sym->attr.allocatable)
-      && (!no_init_flag || sym->attr.intent == INTENT_OUT))
+      && (!no_init_flag
+	  || (sym->attr.intent == INTENT_OUT
+	      && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY)))
     sym->value = gfc_generate_initializer (&sym->ts, can_generate_init (sym));
 
   return true;
@@ -16142,7 +16185,8 @@ resolve_symbol (gfc_symbol *sym)
 		    || sym->ts.u.derived->attr.alloc_comp
 		    || sym->ts.u.derived->attr.pointer_comp))
 	   && !(a->function && sym != sym->result))
-	  || (a->dummy && a->intent == INTENT_OUT && !a->pointer))
+	  || (a->dummy && !a->pointer && a->intent == INTENT_OUT
+	      && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY))
 	apply_default_init (sym);
       else if (a->function && sym->result && a->access != ACCESS_PRIVATE
 	       && (sym->ts.u.derived->attr.alloc_comp
@@ -16154,6 +16198,7 @@ resolve_symbol (gfc_symbol *sym)
 
   if (sym->ts.type == BT_CLASS && sym->ns == gfc_current_ns
       && sym->attr.dummy && sym->attr.intent == INTENT_OUT
+      && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY
       && !CLASS_DATA (sym)->attr.class_pointer
       && !CLASS_DATA (sym)->attr.allocatable)
     apply_default_init (sym);

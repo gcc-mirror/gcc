@@ -61,36 +61,35 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(MYFILE, MYSTRING, MYLENGTH) \
   do {									      \
-    FILE *_hide_asm_out_file = (MYFILE);				      \
+    FILE *_my_file = (MYFILE);				      \
     const unsigned char *_hide_p = (const unsigned char *) (MYSTRING);	      \
     int _hide_thissize = (MYLENGTH);					      \
     {									      \
-      FILE *asm_out_file = _hide_asm_out_file;				      \
       const unsigned char *p = _hide_p;					      \
       int thissize = _hide_thissize;					      \
       int i;								      \
-      fprintf (asm_out_file, "\t.ascii \"");				      \
+      fprintf (_my_file, "\t.ascii \"");				      \
 									      \
       for (i = 0; i < thissize; i++)					      \
 	{								      \
 	  int c = p[i];			   				      \
 	  if (c == '\"' || c == '\\')					      \
-	    putc ('\\', asm_out_file);					      \
+	    putc ('\\', _my_file);					      \
 	  if (ISPRINT (c))						      \
-	    putc (c, asm_out_file);					      \
+	    putc (c, _my_file);						      \
 	  else								      \
 	    {								      \
-	      fprintf (asm_out_file, "\\%o", c);			      \
+	      fprintf (_my_file, "\\%o", c);				      \
 	      /* After an octal-escape, if a digit follows,		      \
 		 terminate one string constant and start another.	      \
 		 The VAX assembler fails to stop reading the escape	      \
 		 after three digits, so this is the only way we		      \
 		 can get it to parse the data properly.  */		      \
 	      if (i < thissize - 1 && ISDIGIT (p[i + 1]))		      \
-		fprintf (asm_out_file, "\"\n\t.ascii \"");		      \
+		fprintf (_my_file, "\"\n\t.ascii \"");			      \
 	  }								      \
 	}								      \
-      fprintf (asm_out_file, "\"\n");					      \
+      fprintf (_my_file, "\"\n");					      \
     }									      \
   }									      \
   while (0)
@@ -900,33 +899,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DEFAULT_GDB_EXTENSIONS 1
 #endif
 
-/* If more than one debugging type is supported, you must define
-   PREFERRED_DEBUGGING_TYPE to choose the default.  */
-
-#if 1 < (defined (DBX_DEBUGGING_INFO) \
-         + defined (DWARF2_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO) \
-         + defined (VMS_DEBUGGING_INFO))
+/* Default to DWARF2_DEBUGGING_INFO.  Legacy targets can choose different
+   by defining PREFERRED_DEBUGGING_TYPE.  */
 #ifndef PREFERRED_DEBUGGING_TYPE
-#error You must define PREFERRED_DEBUGGING_TYPE
-#endif /* no PREFERRED_DEBUGGING_TYPE */
-
-/* If only one debugging format is supported, define PREFERRED_DEBUGGING_TYPE
-   here so other code needn't care.  */
-#elif defined DBX_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#elif defined DWARF2_DEBUGGING_INFO || defined DWARF2_LINENO_DEBUGGING_INFO
+#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_LINENO_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
-#elif defined VMS_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE VMS_AND_DWARF2_DEBUG
-
-#elif defined XCOFF_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE XCOFF_DEBUG
-
 #else
-/* No debugging format is supported by this target.  */
-#define PREFERRED_DEBUGGING_TYPE NO_DEBUG
+#error You must define PREFERRED_DEBUGGING_TYPE if DWARF is not supported
+#endif
 #endif
 
 #ifndef FLOAT_LIB_COMPARE_RETURNS_BOOL

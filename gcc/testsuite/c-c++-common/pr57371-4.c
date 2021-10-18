@@ -13,25 +13,25 @@ void nonfinite(unsigned short x) {
   {
     volatile int nonfinite_1;
     nonfinite_1 = (float) x > QNAN;
-    /* { dg-final { scan-tree-dump "nonfinite_1 = \\(float\\)" "original" } } */
+    /* { dg-final { scan-tree-dump "nonfinite_1 = 0" "original" } } */
   }
 
   {
     volatile int nonfinite_2;
     nonfinite_2 = (float) x >= QNAN;
-    /* { dg-final { scan-tree-dump "nonfinite_2 = \\(float\\)" "original" } } */
+    /* { dg-final { scan-tree-dump "nonfinite_2 = 0" "original" } } */
   }
 
   {
     volatile int nonfinite_3;
     nonfinite_3 = (float) x < QNAN;
-    /* { dg-final { scan-tree-dump "nonfinite_3 = \\(float\\)" "original" } } */
+    /* { dg-final { scan-tree-dump "nonfinite_3 = 0" "original" } } */
   }
 
   {
     volatile int nonfinite_4;
     nonfinite_4 = (float) x <= QNAN;
-    /* { dg-final { scan-tree-dump "nonfinite_4 = \\(float\\)" "original" } } */
+    /* { dg-final { scan-tree-dump "nonfinite_4 = 0" "original" } } */
   }
 
   {

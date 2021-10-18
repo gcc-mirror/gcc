@@ -1,6 +1,6 @@
 /* PR target/26915 */
 /* { dg-do compile } */
-/* { dg-options "-O -mfpmath=387 -mfancy-math-387" } */
+/* { dg-options "-O -m32 -mfpmath=387 -mfancy-math-387" } */
 
 double testm0(void)
 {

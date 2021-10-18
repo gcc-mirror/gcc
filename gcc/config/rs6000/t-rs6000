@@ -44,15 +44,11 @@ rs6000-logue.o: $(srcdir)/config/rs6000/rs6000-logue.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-rs6000-gen-builtins.o: $(srcdir)/config/rs6000/rs6000-gen-builtins.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
+build/rs6000-gen-builtins.o: $(srcdir)/config/rs6000/rs6000-gen-builtins.c
+build/rbtree.o: $(srcdir)/config/rs6000/rbtree.c
 
-rbtree.o: $(srcdir)/config/rs6000/rbtree.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
-
-rs6000-gen-builtins: rs6000-gen-builtins.o rbtree.o
+build/rs6000-gen-builtins$(build_exeext): build/rs6000-gen-builtins.o \
+					  build/rbtree.o $(BUILD_LIBDEPS)
 	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
@@ -62,10 +58,11 @@ rs6000-gen-builtins: rs6000-gen-builtins.o rbtree.o
 #       <recipe>
 # For now, the header files depend on rs6000-builtins.c, which avoids
 # races because the .c file is closed last in rs6000-gen-builtins.c.
-rs6000-builtins.c: rs6000-gen-builtins \
+rs6000-builtins.c: build/rs6000-gen-builtins$(build_exeext) \
 		   $(srcdir)/config/rs6000/rs6000-builtin-new.def \
 		   $(srcdir)/config/rs6000/rs6000-overload.def
-	./rs6000-gen-builtins $(srcdir)/config/rs6000/rs6000-builtin-new.def \
+	$(RUN_GEN) ./build/rs6000-gen-builtins$(build_exeext) \
+		$(srcdir)/config/rs6000/rs6000-builtin-new.def \
 		$(srcdir)/config/rs6000/rs6000-overload.def rs6000-builtins.h \
 		rs6000-builtins.c rs6000-vecdefines.h
 

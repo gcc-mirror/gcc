@@ -1,7 +1,7 @@
 /* PR tree-optimization/98508 - Sanitizer disable -Wall and -Wextra
    { dg-do compile }
-   { dg-require-effective-target no_fsanitize_address }
-   { dg-options "-O0 -Wall -fsanitize=address" } */
+   { dg-options "-O0 -Wall -fsanitize=address" }
+   { dg-skip-if "no address sanitizer" { no_fsanitize_address } } */
 
 struct S
 {

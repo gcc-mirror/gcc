@@ -3416,6 +3416,7 @@ register_vector_type (vector_type_index type)
      installing an incorrect type.  */
   if (decl
       && TREE_CODE (decl) == TYPE_DECL
+      && TREE_TYPE (decl) != error_mark_node
       && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == vectype)
     vectype = TREE_TYPE (decl);
   acle_vector_types[0][type] = vectype;

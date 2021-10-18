@@ -89,6 +89,12 @@ namespace ip
     host_not_found = EAI_NONAME,
     host_not_found_try_again = EAI_AGAIN,
     service_not_found = EAI_SERVICE
+    // N.B. POSIX defines additional errors that have no enumerator here:
+    // EAI_BADFLAGS, EAI_FAIL, EAI_FAMILY, EAI_MEMORY, EAI_SOCKTYPE, EAI_SYSTEM
+    // Some C libraries define additional errors:
+    // EAI_BADHINTS, EAI_OVERFLOW, EAI_PROTOCOL
+    // Some C libraries define additional (obsolete?) errors:
+    // EAI_ADDRFAMILY, EAI_NODATA
 #endif
   };
 
@@ -116,6 +122,19 @@ namespace ip
 
   inline error_condition make_error_condition(resolver_errc __e) noexcept
   { return error_condition(static_cast<int>(__e), resolver_category()); }
+
+  /// @cond undocumented
+  inline error_code
+  __make_resolver_error_code(int __ai_err,
+			     [[__maybe_unused__]] int __sys_err) noexcept
+  {
+#ifdef EAI_SYSTEM
+    if (__builtin_expect(__ai_err == EAI_SYSTEM, 0))
+      return error_code(__sys_err, std::generic_category());
+#endif
+    return error_code(__ai_err, resolver_category());
+  }
+  /// @endcond
 
   /// @}
 
@@ -2011,7 +2030,7 @@ namespace ip
 
       if (int __err = ::getaddrinfo(__h, __s, &__hints, &__sai._M_p))
 	{
-	  __ec.assign(__err, resolver_category());
+	  __ec = ip::__make_resolver_error_code(__err, errno);
 	  return;
 	}
       __ec.clear();
@@ -2040,8 +2059,8 @@ namespace ip
     basic_resolver_results(const endpoint_type& __ep, error_code& __ec)
     {
 #ifdef _GLIBCXX_HAVE_NETDB_H
-      char __host_name[256];
-      char __service_name[128];
+      char __host_name[1025];	// glibc NI_MAXHOST
+      char __service_name[32];  // glibc NI_MAXSERV
       int __flags = 0;
       if (__ep.protocol().type() == SOCK_DGRAM)
 	__flags |= NI_DGRAM;
@@ -2059,7 +2078,7 @@ namespace ip
 				__flags);
 	}
       if (__err)
-	__ec.assign(__err, resolver_category());
+	__ec = ip::__make_resolver_error_code(__err, errno);
       else
 	{
 	  __ec.clear();

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dom2-details -w --param logical-op-non-short-circuit=1" } */
+/* { dg-options "-O2 -fdump-tree-dom2-details -w --param logical-op-non-short-circuit=1 -fdisable-tree-vrp-thread1" } */
 unsigned char
 validate_subreg (unsigned int offset, unsigned int isize, unsigned int osize, int zz, int qq)
 {

@@ -132,6 +132,11 @@ along with GCC; see the file COPYING3.  If not see
    predicate_statements for the kinds of predication we support.  */
 static bool need_to_predicate;
 
+/* True if we have to rewrite stmts that may invoke undefined behavior
+   when a condition C was false so it doesn't if it is always executed.
+   See predicate_statements for the kinds of predication we support.  */
+static bool need_to_rewrite_undefined;
+
 /* Indicate if there are any complicated PHIs that need to be handled in
    if-conversion.  Complicated PHI has more than two arguments and can't
    be degenerated to two arguments PHI.  See more information in comment
@@ -1042,6 +1047,13 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
 	fprintf (dump_file, "tree could trap...\n");
       return false;
     }
+  else if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	    || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs))
+	   && arith_code_with_undefined_signed_overflow
+				(gimple_assign_rhs_code (stmt)))
+    /* We have to rewrite stmts with undefined overflow.  */
+    need_to_rewrite_undefined = true;
 
   /* When if-converting stores force versioning, likewise if we
      ended up generating store data races.  */
@@ -2509,6 +2521,7 @@ predicate_statements (loop_p loop)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gassign *stmt = dyn_cast <gassign *> (gsi_stmt (gsi));
+	  tree lhs;
 	  if (!stmt)
 	    ;
 	  else if (is_false_predicate (cond)
@@ -2563,6 +2576,37 @@ predicate_statements (loop_p loop)
 
 	      gsi_replace (&gsi, new_stmt, true);
 	    }
+	  else if (((lhs = gimple_assign_lhs (stmt)), true)
+		   && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+		       || POINTER_TYPE_P (TREE_TYPE (lhs)))
+		   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs))
+		   && arith_code_with_undefined_signed_overflow
+						(gimple_assign_rhs_code (stmt)))
+	    {
+	      gsi_remove (&gsi, true);
+	      gimple_seq stmts = rewrite_to_defined_overflow (stmt);
+	      bool first = true;
+	      for (gimple_stmt_iterator gsi2 = gsi_start (stmts);
+		   !gsi_end_p (gsi2);)
+		{
+		  gassign *stmt2 = as_a <gassign *> (gsi_stmt (gsi2));
+		  gsi_remove (&gsi2, false);
+		  /* Make sure to move invariant conversions out of the
+		     loop.  */
+		  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt2))
+		      && expr_invariant_in_loop_p (loop,
+						   gimple_assign_rhs1 (stmt2)))
+		    gsi_insert_on_edge_immediate (loop_preheader_edge (loop),
+						  stmt2);
+		  else if (first)
+		    {
+		      gsi_insert_before (&gsi, stmt2, GSI_NEW_STMT);
+		      first = false;
+		    }
+		  else
+		    gsi_insert_after (&gsi, stmt2, GSI_NEW_STMT);
+		}
+	    }
 	  else if (gimple_vdef (stmt))
 	    {
 	      tree lhs = gimple_assign_lhs (stmt);
@@ -2580,7 +2624,7 @@ predicate_statements (loop_p loop)
 	      gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	      update_stmt (stmt);
 	    }
-	  tree lhs = gimple_get_lhs (gsi_stmt (gsi));
+	  lhs = gimple_get_lhs (gsi_stmt (gsi));
 	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	    ssa_names.add (lhs);
 	  gsi_next (&gsi);
@@ -2647,7 +2691,7 @@ combine_blocks (class loop *loop)
   insert_gimplified_predicates (loop);
   predicate_all_scalar_phis (loop);
 
-  if (need_to_predicate)
+  if (need_to_predicate || need_to_rewrite_undefined)
     predicate_statements (loop);
 
   /* Merge basic blocks.  */
@@ -3148,6 +3192,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   rloop = NULL;
   ifc_bbs = NULL;
   need_to_predicate = false;
+  need_to_rewrite_undefined = false;
   any_complicated_phi = false;
 
   /* Apply more aggressive if-conversion when loop or its outer loop were

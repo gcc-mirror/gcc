@@ -22,5 +22,5 @@ int bar (int b)
   return *foo (&q);
 }
 
-/* { dg-final { scan-tree-dump "CALLUSED\\(\[0-9\]+\\) = { f.* i q }" "alias" } } */
+/* { dg-final { scan-tree-dump "CALLUSED\\(\[0-9\]+\\) = { NONLOCAL f.* i q }" "alias" } } */
 

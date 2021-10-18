@@ -215,7 +215,7 @@ case ${host} in
 *-*-darwin*)
   asm_hidden_op=.private_extern
   tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic t-slibgcc-darwin"
-  extra_parts="crt3.o d10-uwfef.o crttms.o crttme.o"
+  extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o"
   ;;
 *-*-dragonfly*)
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
@@ -926,12 +926,6 @@ m32r-*-elf*)
 m32rle-*-elf*)
 	tmake_file=t-fdpbit
 	;;
-m32r-*-linux*)
-	tmake_file="$tmake_file m32r/t-linux t-fdpbit"
- 	;;
-m32rle-*-linux*)
-	tmake_file="$tmake_file m32r/t-linux t-fdpbit"
-	;;
 m68k-*-elf* | fido-*-elf)
 	tmake_file="$tmake_file m68k/t-floatlib"
 	;;
@@ -1539,10 +1533,7 @@ i[34567]86-*-elfiamcu | i[34567]86-*-rtems*)
 	;;
 i[34567]86-*-* | x86_64-*-*)
   	tmake_file="${tmake_file} t-softfp-tf"
-	if test "${host_address}" = 32; then
-		tmake_file="${tmake_file} i386/${host_address}/t-softfp"
-	fi
-	tmake_file="${tmake_file} i386/t-softfp t-softfp"
+	tmake_file="${tmake_file} i386/${host_address}/t-softfp i386/t-softfp t-softfp"
 	;;
 esac
 

@@ -161,8 +161,11 @@ void warn_memset_reversed_range (void)
 
   /* Since the offset is excessive, either starting before &a11[0]
      ot just past &a[11], the region size in the warning should
-     probably be zero, but accept other sizes too.  */
-  T1 (p, SAR (INT_MIN, -11), n11);      // { dg-warning "writing 11 or more bytes into a region of size \\d+" }
+     probably be zero, but accept other sizes too.
+
+     The problem isn't detected anymore because the offset is in
+     the anti-range ~[INT_MIN, -11] which isn't handled.  */
+  T1 (p, SAR (INT_MIN, -11), n11);      // { dg-warning "writing 11 or more bytes into a region of size \\d+" "" { xfail *-*-* } }
 
   /* The following are represented as ordinary ranges with reversed bounds
      and those are handled. */
@@ -170,7 +173,7 @@ void warn_memset_reversed_range (void)
   T1 (p, SAR (INT_MIN,   1), n11);      // { dg-warning "writing 11 or more bytes into a region of size 0" }
   T1 (p, SAR (INT_MIN,   0), n11);      // { dg-warning "writing 11 or more bytes into a region of size 0" }
   /* Also represented as a true anti-range.  */
-  T1 (p, SAR (    -12, -11), n11);      // { dg-warning "writing 11 or more bytes into a region of size \\d+" }
+  T1 (p, SAR (    -12, -11), n11);      // { dg-warning "writing 11 or more bytes into a region of size \\d+" "" { xfail *-*-* } }
   T1 (p, SAR (    -12,  -1), n11);      // { dg-warning "writing 11 or more bytes into a region of size 0" }
   T1 (p, SAR (    -11,   0), n11);      // { dg-warning "writing 11 or more bytes into a region of size 0" }
   T1 (p, SAR (    -11,  11), n11);      // { dg-warning "writing 11 or more bytes into a region of size 0" }

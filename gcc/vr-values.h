@@ -30,9 +30,11 @@ along with GCC; see the file COPYING3.  If not see
 class simplify_using_ranges
 {
 public:
-  simplify_using_ranges (class range_query *query = NULL);
+  simplify_using_ranges (range_query *query = NULL,
+			 int not_executable_flag = 0);
   ~simplify_using_ranges ();
-  void set_range_query (class range_query *q) { query = q; }
+  void set_range_query (class range_query *q, int not_executable_flag = 0)
+      { query = q; m_not_executable_flag = not_executable_flag; }
 
   bool simplify (gimple_stmt_iterator *);
 
@@ -66,6 +68,7 @@ private:
   tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
 							     tree, tree,
 							     bool *, gimple *s);
+  void set_and_propagate_unexecutable (edge e);
   void cleanup_edges_and_switches (void);
 
   /* Vectors of edges that need removing and switch statements that
@@ -81,6 +84,8 @@ private:
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;
   class range_query *query;
+  int m_not_executable_flag;   // Non zero if not_executable flag exists.
+  vec<edge> m_flag_set_edges;  // List of edges with flag to be cleared.
 };
 
 /* The VR_VALUES class holds the current view of range information

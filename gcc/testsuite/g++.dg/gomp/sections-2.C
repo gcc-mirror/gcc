@@ -19,11 +19,11 @@ void foo(void)
     {
     #pragma omp section
       bar(2);
-      bar(3);		// { dg-error "expected" }
+      bar(3);
       bar(4);
     #pragma omp section
       bar(5);
-      bar(6);		// { dg-error "expected" }
+      bar(6);
       bar(7);
     }
 }

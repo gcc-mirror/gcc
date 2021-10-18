@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-vrp1-details -fdump-tree-thread1-details -std=gnu89 --param logical-op-non-short-circuit=0" } */
+/* { dg-options "-O2 -fdump-tree-vrp-thread1-details -std=gnu89 --param logical-op-non-short-circuit=0" } */
 
 #include "ssa-dom-thread-4.c"
 
@@ -21,5 +21,7 @@
 	 condition.
 
    All the cases are picked up by VRP1 as jump threads.  */
-/* { dg-final { scan-tree-dump-times "Registering FSM jump" 6 "thread1" } } */
-/* { dg-final { scan-tree-dump-times "Threaded" 2 "vrp1" } } */
+
+/* There used to be 6 jump threads found by thread1, but they all
+   depended on threading through distinct loops in ethread.  */
+/* { dg-final { scan-tree-dump-times "Threaded" 2 "vrp-thread1" } } */

@@ -507,7 +507,8 @@ vec_info_shared::check_datarefs ()
     return;
   gcc_assert (datarefs.length () == datarefs_copy.length ());
   for (unsigned i = 0; i < datarefs.length (); ++i)
-    if (memcmp (&datarefs_copy[i], datarefs[i], sizeof (data_reference)) != 0)
+    if (memcmp (&datarefs_copy[i], datarefs[i],
+		offsetof (data_reference, alt_indices)) != 0)
       gcc_unreachable ();
 }
 
@@ -851,7 +852,8 @@ vect_loop_vectorized_call (class loop *loop, gcond **cond)
   do
     {
       g = last_stmt (bb);
-      if (g)
+      if ((g && gimple_code (g) == GIMPLE_COND)
+	  || !single_succ_p (bb))
 	break;
       if (!single_pred_p (bb))
 	break;

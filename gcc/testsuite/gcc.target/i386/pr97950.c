@@ -1,10 +1,10 @@
 /* PR target/95950 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mtune=generic" } */
-/* { dg-final { scan-assembler-times "\tseta\t" 4 } } */
+/* { dg-final { scan-assembler-times "\tset\[ab]\t" 4 } } */
 /* { dg-final { scan-assembler-times "\tseto\t" 16 } } */
 /* { dg-final { scan-assembler-times "\tsetc\t" 4 } } */
-/* { dg-final { scan-assembler-not "\tjn?a\t" } } */
+/* { dg-final { scan-assembler-not "\tjn?\[ab]\t" } } */
 /* { dg-final { scan-assembler-not "\tjn?o\t" } } */
 /* { dg-final { scan-assembler-not "\tjn?c\t" } } */
 

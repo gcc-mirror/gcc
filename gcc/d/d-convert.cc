@@ -613,9 +613,8 @@ convert_for_rvalue (tree expr, Type *etype, Type *totype)
   Type *ebtype = etype->toBasetype ();
   Type *tbtype = totype->toBasetype ();
 
-  switch (ebtype->ty)
+  if (ebtype->ty == Tbool)
     {
-    case Tbool:
       /* If casting from bool, the result is either 0 or 1, any other value
 	 violates @safe code, so enforce that it is never invalid.  */
       if (CONSTANT_CLASS_P (expr))
@@ -633,7 +632,6 @@ convert_for_rvalue (tree expr, Type *etype, Type *totype)
 	}
 
       result = convert (build_ctype (tbtype), result);
-      break;
     }
 
   return result ? result : convert_expr (expr, etype, totype);

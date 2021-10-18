@@ -1,3 +1,9 @@
+2021-08-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	* inclhack.def (hpux_c99_inttypes5): New hack to define PRIdPTR, etc.
+	* fixincl.x: Regenerate.
+	* tests/base/inttypes.h: Update.
+
 2021-07-06  Clément Chigot  <clement.chigot@atos.net>
 
 	* inclhack.def (aix_externcpp1): Improve select regexp.

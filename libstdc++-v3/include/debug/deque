@@ -108,10 +108,10 @@ namespace __debug
       deque(const deque&) = default;
       deque(deque&&) = default;
 
-      deque(const deque& __d, const _Allocator& __a)
+      deque(const deque& __d, const __type_identity_t<_Allocator>& __a)
       : _Base(__d, __a) { }
 
-      deque(deque&& __d, const _Allocator& __a)
+      deque(deque&& __d, const __type_identity_t<_Allocator>& __a)
       : _Safe(std::move(__d)), _Base(std::move(__d), __a) { }
 
       deque(initializer_list<value_type> __l,

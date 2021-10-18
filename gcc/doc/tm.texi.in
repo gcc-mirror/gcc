@@ -929,6 +929,9 @@ Do not define this macro if it would never modify @var{m}.
 @end defmac
 
 @hook TARGET_C_EXCESS_PRECISION
+Return a value, with the same meaning as the C99 macro
+@code{FLT_EVAL_METHOD} that describes which excess precision should be
+applied.
 
 @hook TARGET_PROMOTE_FUNCTION_MODE
 
@@ -4224,6 +4227,8 @@ address;  but often a machine-dependent strategy can generate better code.
 @hook TARGET_GOACC_EXPAND_VAR_DECL
 
 @hook TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD
+
+@hook TARGET_GOACC_SHARED_MEM_LAYOUT
 
 @node Anchored Addresses
 @section Anchored Addresses

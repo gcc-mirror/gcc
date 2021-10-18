@@ -132,7 +132,7 @@ ctf_dtd_insert (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 
 /* Lookup CTF type given a DWARF die for the type.  */
 
-static ctf_dtdef_ref
+ctf_dtdef_ref
 ctf_dtd_lookup (const ctf_container_ref ctfc, const dw_die_ref type)
 {
   ctf_dtdef_t entry;
@@ -791,6 +791,22 @@ ctf_add_sou (ctf_container_ref ctfc, uint32_t flag, const char * name,
   return type;
 }
 
+/* Given a TREE_TYPE node, return the CTF type ID for that type.  */
+
+ctf_id_t
+ctf_lookup_tree_type (ctf_container_ref ctfc, const tree type)
+{
+  dw_die_ref die = lookup_type_die (type);
+  if (die == NULL)
+    return CTF_NULL_TYPEID;
+
+  ctf_dtdef_ref dtd = ctf_dtd_lookup (ctfc, die);
+  if (dtd == NULL)
+    return CTF_NULL_TYPEID;
+
+  return dtd->dtd_type;
+}
+
 /* Check if CTF for TYPE has already been generated.  Mainstay for
    de-duplication.  If CTF type already exists, returns TRUE and updates
    the TYPE_ID for the caller.  */
@@ -928,11 +944,14 @@ ctfc_delete_strtab (ctf_strtable_t * strtab)
 void
 ctfc_delete_container (ctf_container_ref ctfc)
 {
-  /* FIXME - CTF container can be cleaned up now.
-     Will the ggc machinery take care of cleaning up the container structure
-     including the hash_map members etc. ?  */
   if (ctfc)
     {
+      ctfc->ctfc_types->empty ();
+      ctfc->ctfc_types = NULL;
+
+      ctfc->ctfc_vars->empty ();
+      ctfc->ctfc_types = NULL;
+
       ctfc_delete_strtab (&ctfc->ctfc_strtable);
       ctfc_delete_strtab (&ctfc->ctfc_aux_strtable);
       if (ctfc->ctfc_vars_list)

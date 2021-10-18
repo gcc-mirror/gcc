@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target store_merge } */
-/* { dg-options "-O2 -fdump-tree-store-merging" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-store-merging" } */
 
 /* Check that we can merge consecutive array members through the pointer.
    PR rtl-optimization/23684.  */

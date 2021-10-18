@@ -63,17 +63,9 @@ namespace __detail
 {
   template<typename _TraitsT>
     _Compiler<_TraitsT>::
-    _Compiler(_IterT __b, _IterT __e,
+    _Compiler(const _CharT* __b, const _CharT* __e,
 	      const typename _TraitsT::locale_type& __loc, _FlagT __flags)
-    : _M_flags((__flags
-		& (regex_constants::ECMAScript
-		   | regex_constants::basic
-		   | regex_constants::extended
-		   | regex_constants::grep
-		   | regex_constants::egrep
-		   | regex_constants::awk))
-	       ? __flags
-	       : __flags | regex_constants::ECMAScript),
+    : _M_flags(_S_validate(__flags)),
       _M_scanner(__b, __e, _M_flags, __loc),
       _M_nfa(make_shared<_RegexT>(__loc, _M_flags)),
       _M_traits(_M_nfa->_M_traits),
@@ -140,7 +132,8 @@ namespace __detail
 	return true;
       if (this->_M_atom())
 	{
-	  while (this->_M_quantifier());
+	  while (this->_M_quantifier())
+	    ;
 	  return true;
 	}
       return false;
@@ -440,7 +433,8 @@ namespace __detail
 	      __last_char.second = '-';
 	    }
 	}
-      while (_M_expression_term(__last_char, __matcher));
+      while (_M_expression_term(__last_char, __matcher))
+	;
       if (__last_char.first)
 	__matcher._M_add_char(__last_char.second);
       __matcher._M_ready();

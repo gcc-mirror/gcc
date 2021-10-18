@@ -491,14 +491,6 @@ static struct table_elt *table[HASH_SIZE];
 
 static struct table_elt *free_element_chain;
 
-/* Set to the cost of a constant pool reference if one was found for a
-   symbolic constant.  If this was found, it means we should try to
-   convert constants into constant pool entries if they don't fit in
-   the insn.  */
-
-static int constant_pool_entries_cost;
-static int constant_pool_entries_regcost;
-
 /* Trace a patch through the CFG.  */
 
 struct branch_path
@@ -4609,9 +4601,6 @@ cse_insn (rtx_insn *insn)
       int src_folded_regcost = MAX_COST;
       int src_related_regcost = MAX_COST;
       int src_elt_regcost = MAX_COST;
-      /* Set nonzero if we need to call force_const_mem on with the
-	 contents of src_folded before using it.  */
-      int src_folded_force_flag = 0;
       scalar_int_mode int_mode;
 
       dest = SET_DEST (sets[i].rtl);
@@ -5166,15 +5155,7 @@ cse_insn (rtx_insn *insn)
 			     src_related_cost, src_related_regcost) <= 0
 	      && preferable (src_folded_cost, src_folded_regcost,
 			     src_elt_cost, src_elt_regcost) <= 0)
-	    {
-	      trial = src_folded, src_folded_cost = MAX_COST;
-	      if (src_folded_force_flag)
-		{
-		  rtx forced = force_const_mem (mode, trial);
-		  if (forced)
-		    trial = forced;
-		}
-	    }
+	    trial = src_folded, src_folded_cost = MAX_COST;
 	  else if (src
 		   && preferable (src_cost, src_regcost,
 				  src_eqv_cost, src_eqv_regcost) <= 0
@@ -5361,23 +5342,24 @@ cse_insn (rtx_insn *insn)
 	      break;
 	    }
 
-	  /* If we previously found constant pool entries for
-	     constants and this is a constant, try making a
-	     pool entry.  Put it in src_folded unless we already have done
-	     this since that is where it likely came from.  */
+	  /* If the current function uses a constant pool and this is a
+	     constant, try making a pool entry. Put it in src_folded
+	     unless we already have done this since that is where it
+	     likely came from.  */
 
-	  else if (constant_pool_entries_cost
+	  else if (crtl->uses_const_pool
 		   && CONSTANT_P (trial)
-		   && (src_folded == 0
-		       || (!MEM_P (src_folded)
-			   && ! src_folded_force_flag))
+		   && !CONST_INT_P (trial)
+		   && (src_folded == 0 || !MEM_P (src_folded))
 		   && GET_MODE_CLASS (mode) != MODE_CC
 		   && mode != VOIDmode)
 	    {
-	      src_folded_force_flag = 1;
-	      src_folded = trial;
-	      src_folded_cost = constant_pool_entries_cost;
-	      src_folded_regcost = constant_pool_entries_regcost;
+	      src_folded = force_const_mem (mode, trial);
+	      if (src_folded)
+		{
+		  src_folded_cost = COST (src_folded, mode);
+		  src_folded_regcost = approx_reg_cost (src_folded);
+		}
 	    }
 	}
 
@@ -6630,8 +6612,6 @@ cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
   cse_cfg_altered = false;
   cse_jumps_altered = false;
   recorded_label_ref = false;
-  constant_pool_entries_cost = 0;
-  constant_pool_entries_regcost = 0;
   ebb_data.path_size = 0;
   ebb_data.nsets = 0;
   rtl_hooks = cse_rtl_hooks;

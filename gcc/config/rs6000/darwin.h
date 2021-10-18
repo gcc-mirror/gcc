@@ -203,7 +203,7 @@
 
 /* Make both r2 and r13 available for allocation.  */
 #define FIXED_R2 0
-#define FIXED_R13 0
+#define FIXED_R13 TARGET_64BIT
 
 /* Base register for access to local variables of the function.  */
 
@@ -212,6 +212,9 @@
 
 #undef  RS6000_PIC_OFFSET_TABLE_REGNUM
 #define RS6000_PIC_OFFSET_TABLE_REGNUM 31
+
+#undef FIRST_SAVED_GP_REGNO
+#define FIRST_SAVED_GP_REGNO 13
 
 /* Darwin's stack must remain 16-byte aligned for both 32 and 64 bit
    ABIs.  */
@@ -504,8 +507,12 @@
 #define SUBTARGET_INIT_BUILTINS						\
 do {									\
   darwin_patch_builtins ();						\
-  rs6000_builtin_decls[(unsigned) (RS6000_BUILTIN_CFSTRING)]		\
-    = darwin_init_cfstring_builtins ((unsigned) (RS6000_BUILTIN_CFSTRING)); \
+  if (new_builtins_are_live)						\
+    rs6000_builtin_decls_x[(unsigned) (RS6000_BIF_CFSTRING)]		\
+      = darwin_init_cfstring_builtins ((unsigned) (RS6000_BIF_CFSTRING)); \
+  else									\
+    rs6000_builtin_decls[(unsigned) (RS6000_BUILTIN_CFSTRING)]		\
+      = darwin_init_cfstring_builtins ((unsigned) (RS6000_BUILTIN_CFSTRING)); \
 } while(0)
 
 /* So far, there is no rs6000_fold_builtin, if one is introduced, then

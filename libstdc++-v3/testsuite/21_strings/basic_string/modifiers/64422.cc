@@ -34,7 +34,6 @@ main ()
   x.replace (x.begin (), x.end (), best, best + 4);
   x.replace (x.begin (), x.end (), x);
   x.erase (x.begin (), x.end ());
-#ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring w;
   w.insert (w.begin (), 10, L'x');
   const wchar_t west[] = L"west";
@@ -44,6 +43,5 @@ main ()
   w.replace (w.begin (), w.end (), rest, rest + 4);
   w.replace (w.begin (), w.end (), w);
   w.erase (w.begin (), w.end ());
-#endif
   return 0;
 }

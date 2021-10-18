@@ -806,7 +806,8 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	    }
 	}
       else if (constant_multiple_p (bitnum, regsize * BITS_PER_UNIT, &regnum)
-	       && multiple_p (bitsize, regsize * BITS_PER_UNIT))
+	       && multiple_p (bitsize, regsize * BITS_PER_UNIT)
+	       && known_ge (GET_MODE_BITSIZE (GET_MODE (op0)), bitsize))
 	{
 	  sub = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
 				     regnum * regsize);
@@ -1571,14 +1572,16 @@ extract_bit_field_using_extv (const extraction_insn *extv, rtx op0,
 
   if (GET_MODE (target) != ext_mode)
     {
+      rtx temp;
       /* Don't use LHS paradoxical subreg if explicit truncation is needed
 	 between the mode of the extraction (word_mode) and the target
 	 mode.  Instead, create a temporary and use convert_move to set
 	 the target.  */
       if (REG_P (target)
-	  && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (target), ext_mode))
+	  && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (target), ext_mode)
+	  && (temp = gen_lowpart_if_possible (ext_mode, target)))
 	{
-	  target = gen_lowpart (ext_mode, target);
+	  target = temp;
 	  if (partial_subreg_p (GET_MODE (spec_target), ext_mode))
 	    spec_target_subreg = target;
 	}

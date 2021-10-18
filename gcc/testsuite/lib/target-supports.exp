@@ -1576,6 +1576,22 @@ proc check_effective_target_fortran_real_10 { } {
     }]
 }
 
+# Return 1 if the target supports Fortran real kind C_FLOAT128,
+# 0 otherwise.  This differs from check_effective_target_fortran_real_16
+# because _Float128 has the additional requirement that it be the
+# 128-bit IEEE encoding; even if _Float128 is available in C, it may not
+# have a corresponding Fortran kind on targets (PowerPC) that use some 
+# other encoding for long double/TFmode/real(16).
+proc check_effective_target_fortran_real_c_float128 { } {
+    return [check_no_compiler_messages fortran_real_c_float128 executable {
+	! Fortran
+	use iso_c_binding
+	real(kind=c_float128) :: x
+	x = cos (x)
+	end
+    }]
+}
+
 # Return 1 if the target supports Fortran's IEEE modules,
 # 0 otherwise.
 #
@@ -3148,7 +3164,7 @@ proc check_effective_target_has_q_floating_suffix { } {
 
 proc check_effective_target_float16 {} {
     return [check_no_compiler_messages_nocache float16 object {
-        _Float16 x;
+        _Float16 foo (_Float16 x) { return x; }
     } [add_options_for_float16 ""]]
 }
 
@@ -8058,7 +8074,7 @@ proc check_effective_target_sync_int_128_runtime { } {
 # Note: 32bit s390 targets require -mzarch in dg-options.
 
 proc check_effective_target_sync_long_long { } {
-    if { [istarget i?86-*-*] || [istarget x86_64-*-*])
+    if { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	 || [istarget aarch64*-*-*]
 	 || [istarget arm*-*-*]
 	 || [istarget alpha*-*-*]
@@ -8861,6 +8877,17 @@ proc check_prefer_avx128 { } {
 }
 
 
+# Return 1 if avx512fp16 instructions can be compiled.
+
+proc check_effective_target_avx512fp16 { } {
+    return [check_no_compiler_messages avx512fp16 object {
+	void foo (void)
+	{
+	  asm volatile ("vmovw %edi, %xmm0");
+	}
+    } "-O2 -mavx512fp16" ]
+}
+
 # Return 1 if avx512f instructions can be compiled.
 
 proc check_effective_target_avx512f { } {
@@ -9601,7 +9628,14 @@ proc check_effective_target_gas { } {
 	set status [remote_exec host "$gcc_as" "-v /dev/null"]
 	set as_output [lindex $status 1]
 	if { [ string first "GNU" $as_output ] >= 0 } {
-	    set use_gas_saved 1
+	    # Some Darwin versions have an assembler which is based on an old
+	    # version of GAS (and reports GNU assembler in its -v output) but
+	    # but doesn't support many of the modern GAS features.
+	    if { [ string first "cctools" $as_output ] >= 0 } {
+	        set use_gas_saved 0
+	    } else {
+	        set use_gas_saved 1
+	    }
 	} else {
 	    set use_gas_saved 0
 	}
@@ -11217,14 +11251,15 @@ proc check_effective_target_movdir { } {
     } "-mmovdiri -mmovdir64b" ]
 }
 
-# Return 1 if target is not support address sanitize, 1 otherwise.
+# Return 1 if the target does not support address sanitizer, 0 otherwise
 
 proc check_effective_target_no_fsanitize_address {} {
     if ![check_no_compiler_messages fsanitize_address executable {
 	int main (void) { return 0; }
-    }] {
+    } "-fsanitize=address" ] {
 	return 1;
     }
+
     return 0;
 }
 

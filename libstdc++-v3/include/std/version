@@ -140,6 +140,9 @@
 #define __cpp_lib_filesystem 201703
 #define __cpp_lib_gcd 201606
 #define __cpp_lib_gcd_lcm 201606
+#ifdef __GCC_DESTRUCTIVE_SIZE
+# define __cpp_lib_hardware_interference_size 201703L
+#endif
 #define __cpp_lib_hypot 201603
 #define __cpp_lib_invoke 201411L
 #define __cpp_lib_lcm 201606
@@ -154,7 +157,9 @@
 #define __cpp_lib_node_extract 201606
 #define __cpp_lib_nonmember_container_access 201411
 #define __cpp_lib_not_fn 201603
-#define __cpp_lib_optional 201606L
+#if __cplusplus == 201703L // N.B. updated value in C++20
+# define __cpp_lib_optional 201606L
+#endif
 #define __cpp_lib_parallel_algorithm 201603L
 #define __cpp_lib_raw_memory_algorithms 201606L
 #define __cpp_lib_sample 201603
@@ -168,7 +173,9 @@
 # define __cpp_lib_to_chars 201611L
 #endif
 #define __cpp_lib_unordered_map_try_emplace 201411
-#define __cpp_lib_variant 201606L
+#if __cplusplus == 201703L || ! __cpp_concepts // N.B. updated value in C++20
+# define __cpp_lib_variant 202102L
+#endif
 #endif
 
 #if __cplusplus >= 202002L
@@ -252,6 +259,7 @@
 # define __cpp_lib_make_obj_using_allocator 201811L
 #endif
 #define __cpp_lib_math_constants 201907L
+#define __cpp_lib_optional 202106L
 #define __cpp_lib_polymorphic_allocator 201902L
 #if __cpp_lib_concepts
 # define __cpp_lib_ranges 202106L
@@ -274,12 +282,21 @@
 # endif
 #define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array 201907L
+#if __cpp_concepts
+# define __cpp_lib_variant 202106L
+#endif
 #endif
 
 #if __cplusplus > 202002L
 // c++2b
+#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
+#define __cpp_lib_invoke_r 202106L
 #define __cpp_lib_is_scoped_enum 202011L
+#define __cpp_lib_move_only_function 202110L
 #define __cpp_lib_string_contains 202011L
+#if _GLIBCXX_USE_CXX11_ABI // Only supported with cxx11-abi
+# define __cpp_lib_string_resize_and_overwrite 202110L
+#endif
 #define __cpp_lib_to_underlying 202102L
 #endif // C++2b
 #endif // C++20

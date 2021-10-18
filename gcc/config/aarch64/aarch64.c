@@ -9770,7 +9770,6 @@ aarch64_classify_address (struct aarch64_address_info *info,
 			    || mode == TImode
 			    || mode == TFmode
 			    || (BYTES_BIG_ENDIAN && advsimd_struct_p));
-
   /* If we are dealing with ADDR_QUERY_LDP_STP_N that means the incoming mode
      corresponds to the actual size of the memory being loaded/stored and the
      mode of the corresponding addressing mode is half of that.  */
@@ -9779,12 +9778,14 @@ aarch64_classify_address (struct aarch64_address_info *info,
     mode = DFmode;
 
   bool allow_reg_index_p = (!load_store_pair_p
-			    && (known_lt (GET_MODE_SIZE (mode), 16)
+			    && ((vec_flags == 0
+				 && known_lt (GET_MODE_SIZE (mode), 16))
 				|| vec_flags == VEC_ADVSIMD
 				|| vec_flags & VEC_SVE_DATA));
 
-  /* For SVE, only accept [Rn], [Rn, Rm, LSL #shift] and
-     [Rn, #offset, MUL VL].  */
+  /* For SVE, only accept [Rn], [Rn, #offset, MUL VL] and [Rn, Rm, LSL #shift].
+     The latter is not valid for SVE predicates, and that's rejected through
+     allow_reg_index_p above.  */
   if ((vec_flags & (VEC_SVE_DATA | VEC_SVE_PRED)) != 0
       && (code != REG && code != PLUS))
     return false;
@@ -15486,124 +15487,120 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 		       int misalign, enum vect_cost_model_location where)
 {
   auto *costs = static_cast<aarch64_vector_costs *> (data);
-  unsigned retval = 0;
 
-  if (flag_vect_cost_model)
+  fractional_cost stmt_cost
+    = aarch64_builtin_vectorization_cost (kind, vectype, misalign);
+
+  bool in_inner_loop_p = (where == vect_body
+			  && stmt_info
+			  && stmt_in_inner_loop_p (vinfo, stmt_info));
+
+  /* Do one-time initialization based on the vinfo.  */
+  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
+  bb_vec_info bb_vinfo = dyn_cast<bb_vec_info> (vinfo);
+  if (!costs->analyzed_vinfo && aarch64_use_new_vector_costs_p ())
     {
-      fractional_cost stmt_cost
-	= aarch64_builtin_vectorization_cost (kind, vectype, misalign);
-
-      bool in_inner_loop_p = (where == vect_body
-			      && stmt_info
-			      && stmt_in_inner_loop_p (vinfo, stmt_info));
-
-      /* Do one-time initialization based on the vinfo.  */
-      loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
-      bb_vec_info bb_vinfo = dyn_cast<bb_vec_info> (vinfo);
-      if (!costs->analyzed_vinfo && aarch64_use_new_vector_costs_p ())
-	{
-	  if (loop_vinfo)
-	    aarch64_analyze_loop_vinfo (loop_vinfo, costs);
-	  else
-	    aarch64_analyze_bb_vinfo (bb_vinfo, costs);
-	  costs->analyzed_vinfo = true;
-	}
-
-      /* Try to get a more accurate cost by looking at STMT_INFO instead
-	 of just looking at KIND.  */
-      if (stmt_info && aarch64_use_new_vector_costs_p ())
-	{
-	  if (vectype && aarch64_sve_only_stmt_p (stmt_info, vectype))
-	    costs->saw_sve_only_op = true;
-
-	  /* If we scalarize a strided store, the vectorizer costs one
-	     vec_to_scalar for each element.  However, we can store the first
-	     element using an FP store without a separate extract step.  */
-	  if (vect_is_store_elt_extraction (kind, stmt_info))
-	    count -= 1;
-
-	  stmt_cost = aarch64_detect_scalar_stmt_subtype
-	    (vinfo, kind, stmt_info, stmt_cost);
-
-	  if (vectype && costs->vec_flags)
-	    stmt_cost = aarch64_detect_vector_stmt_subtype (vinfo, kind,
-							    stmt_info, vectype,
-							    where, stmt_cost);
-	}
-
-      /* Do any SVE-specific adjustments to the cost.  */
-      if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
-	stmt_cost = aarch64_sve_adjust_stmt_cost (vinfo, kind, stmt_info,
-						  vectype, stmt_cost);
-
-      if (stmt_info && aarch64_use_new_vector_costs_p ())
-	{
-	  /* Account for any extra "embedded" costs that apply additively
-	     to the base cost calculated above.  */
-	  stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
-						stmt_cost);
-
-	  /* If we're recording a nonzero vector loop body cost for the
-	     innermost loop, also estimate the operations that would need
-	     to be issued by all relevant implementations of the loop.  */
-	  auto *issue_info = aarch64_tune_params.vec_costs->issue_info;
-	  if (loop_vinfo
-	      && issue_info
-	      && costs->vec_flags
-	      && where == vect_body
-	      && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
-	      && vectype
-	      && stmt_cost != 0)
-	    {
-	      /* Record estimates for the scalar code.  */
-	      aarch64_count_ops (vinfo, costs, count, kind, stmt_info, vectype,
-				 0, &costs->scalar_ops, issue_info->scalar,
-				 vect_nunits_for_cost (vectype));
-
-	      if (aarch64_sve_mode_p (vinfo->vector_mode) && issue_info->sve)
-		{
-		  /* Record estimates for a possible Advanced SIMD version
-		     of the SVE code.  */
-		  aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
-				     vectype, VEC_ADVSIMD, &costs->advsimd_ops,
-				     issue_info->advsimd,
-				     aarch64_estimated_sve_vq ());
-
-		  /* Record estimates for the SVE code itself.  */
-		  aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
-				     vectype, VEC_ANY_SVE, &costs->sve_ops,
-				     issue_info->sve, 1);
-		}
-	      else
-		/* Record estimates for the Advanced SIMD code.  Treat SVE like
-		   Advanced SIMD if the CPU has no specific SVE costs.  */
-		aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
-				   vectype, VEC_ADVSIMD, &costs->advsimd_ops,
-				   issue_info->advsimd, 1);
-	    }
-
-	  /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
-	     estimate the number of statements in the unrolled Advanced SIMD
-	     loop.  For simplicitly, we assume that one iteration of the
-	     Advanced SIMD loop would need the same number of statements
-	     as one iteration of the SVE loop.  */
-	  if (where == vect_body && costs->unrolled_advsimd_niters)
-	    costs->unrolled_advsimd_stmts
-	      += count * costs->unrolled_advsimd_niters;
-	}
-
-      /* Statements in an inner loop relative to the loop being
-	 vectorized are weighted more heavily.  The value here is
-	 arbitrary and could potentially be improved with analysis.  */
-      if (in_inner_loop_p)
-	{
-	  gcc_assert (loop_vinfo);
-	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /*  FIXME  */
-	}
-
-      retval = (count * stmt_cost).ceil ();
-      costs->region[where] += retval;
+      if (loop_vinfo)
+	aarch64_analyze_loop_vinfo (loop_vinfo, costs);
+      else
+	aarch64_analyze_bb_vinfo (bb_vinfo, costs);
+      costs->analyzed_vinfo = true;
     }
+
+  /* Try to get a more accurate cost by looking at STMT_INFO instead
+     of just looking at KIND.  */
+  if (stmt_info && aarch64_use_new_vector_costs_p ())
+    {
+      if (vectype && aarch64_sve_only_stmt_p (stmt_info, vectype))
+	costs->saw_sve_only_op = true;
+
+      /* If we scalarize a strided store, the vectorizer costs one
+	 vec_to_scalar for each element.  However, we can store the first
+	 element using an FP store without a separate extract step.  */
+      if (vect_is_store_elt_extraction (kind, stmt_info))
+	count -= 1;
+
+      stmt_cost = aarch64_detect_scalar_stmt_subtype
+	(vinfo, kind, stmt_info, stmt_cost);
+
+      if (vectype && costs->vec_flags)
+	stmt_cost = aarch64_detect_vector_stmt_subtype (vinfo, kind,
+							stmt_info, vectype,
+							where, stmt_cost);
+    }
+
+  /* Do any SVE-specific adjustments to the cost.  */
+  if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
+    stmt_cost = aarch64_sve_adjust_stmt_cost (vinfo, kind, stmt_info,
+					      vectype, stmt_cost);
+
+  if (stmt_info && aarch64_use_new_vector_costs_p ())
+    {
+      /* Account for any extra "embedded" costs that apply additively
+	 to the base cost calculated above.  */
+      stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
+					    stmt_cost);
+
+      /* If we're recording a nonzero vector loop body cost for the
+	 innermost loop, also estimate the operations that would need
+	 to be issued by all relevant implementations of the loop.  */
+      auto *issue_info = aarch64_tune_params.vec_costs->issue_info;
+      if (loop_vinfo
+	  && issue_info
+	  && costs->vec_flags
+	  && where == vect_body
+	  && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
+	  && vectype
+	  && stmt_cost != 0)
+	{
+	  /* Record estimates for the scalar code.  */
+	  aarch64_count_ops (vinfo, costs, count, kind, stmt_info, vectype,
+			     0, &costs->scalar_ops, issue_info->scalar,
+			     vect_nunits_for_cost (vectype));
+
+	  if (aarch64_sve_mode_p (vinfo->vector_mode) && issue_info->sve)
+	    {
+	      /* Record estimates for a possible Advanced SIMD version
+		 of the SVE code.  */
+	      aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
+				 vectype, VEC_ADVSIMD, &costs->advsimd_ops,
+				 issue_info->advsimd,
+				 aarch64_estimated_sve_vq ());
+
+	      /* Record estimates for the SVE code itself.  */
+	      aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
+				 vectype, VEC_ANY_SVE, &costs->sve_ops,
+				 issue_info->sve, 1);
+	    }
+	  else
+	    /* Record estimates for the Advanced SIMD code.  Treat SVE like
+	       Advanced SIMD if the CPU has no specific SVE costs.  */
+	    aarch64_count_ops (vinfo, costs, count, kind, stmt_info,
+			       vectype, VEC_ADVSIMD, &costs->advsimd_ops,
+			       issue_info->advsimd, 1);
+	}
+
+      /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
+	 estimate the number of statements in the unrolled Advanced SIMD
+	 loop.  For simplicitly, we assume that one iteration of the
+	 Advanced SIMD loop would need the same number of statements
+	 as one iteration of the SVE loop.  */
+      if (where == vect_body && costs->unrolled_advsimd_niters)
+	costs->unrolled_advsimd_stmts
+	  += count * costs->unrolled_advsimd_niters;
+    }
+
+  /* Statements in an inner loop relative to the loop being
+     vectorized are weighted more heavily.  The value here is
+     arbitrary and could potentially be improved with analysis.  */
+  if (in_inner_loop_p)
+    {
+      gcc_assert (loop_vinfo);
+      count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /*  FIXME  */
+    }
+
+  unsigned retval = (count * stmt_cost).ceil ();
+  costs->region[where] += retval;
 
   return retval;
 }
@@ -16539,6 +16536,28 @@ aarch64_override_options_internal (struct gcc_options *opts)
     SET_OPTION_IF_UNSET (opts, &global_options_set,
 			 param_l1_cache_line_size,
 			 aarch64_tune_params.prefetch->l1_cache_line_size);
+
+  if (aarch64_tune_params.prefetch->l1_cache_line_size >= 0)
+    {
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_destruct_interfere_size,
+			   aarch64_tune_params.prefetch->l1_cache_line_size);
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_construct_interfere_size,
+			   aarch64_tune_params.prefetch->l1_cache_line_size);
+    }
+  else
+    {
+      /* For a generic AArch64 target, cover the current range of cache line
+	 sizes.  */
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_destruct_interfere_size,
+			   256);
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_construct_interfere_size,
+			   64);
+    }
+
   if (aarch64_tune_params.prefetch->l2_cache_size >= 0)
     SET_OPTION_IF_UNSET (opts, &global_options_set,
 			 param_l2_cache_size,
@@ -23367,7 +23386,8 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 }
 
 /* Expand cpymem, as if from a __builtin_memcpy.  Return true if
-   we succeed, otherwise return false.  */
+   we succeed, otherwise return false, indicating that a libcall to
+   memcpy should be emitted.  */
 
 bool
 aarch64_expand_cpymem (rtx *operands)
@@ -23384,11 +23404,13 @@ aarch64_expand_cpymem (rtx *operands)
 
   unsigned HOST_WIDE_INT size = INTVAL (operands[2]);
 
-  /* Inline up to 256 bytes when optimizing for speed.  */
+  /* Try to inline up to 256 bytes.  */
   unsigned HOST_WIDE_INT max_copy_size = 256;
 
-  if (optimize_function_for_size_p (cfun))
-    max_copy_size = 128;
+  bool size_p = optimize_function_for_size_p (cfun);
+
+  if (size > max_copy_size)
+    return false;
 
   int copy_bits = 256;
 
@@ -23398,13 +23420,14 @@ aarch64_expand_cpymem (rtx *operands)
       || !TARGET_SIMD
       || (aarch64_tune_params.extra_tuning_flags
 	  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
-    {
-      copy_bits = 128;
-      max_copy_size = max_copy_size / 2;
-    }
+    copy_bits = 128;
 
-  if (size > max_copy_size)
-    return false;
+  /* Emit an inline load+store sequence and count the number of operations
+     involved.  We use a simple count of just the loads and stores emitted
+     rather than rtx_insn count as all the pointer adjustments and reg copying
+     in this function will get optimized away later in the pipeline.  */
+  start_sequence ();
+  unsigned nops = 0;
 
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   dst = adjust_automodify_address (dst, VOIDmode, base, 0);
@@ -23433,7 +23456,8 @@ aarch64_expand_cpymem (rtx *operands)
 	cur_mode = V4SImode;
 
       aarch64_copy_one_block_and_progress_pointers (&src, &dst, cur_mode);
-
+      /* A single block copy is 1 load + 1 store.  */
+      nops += 2;
       n -= mode_bits;
 
       /* Emit trailing copies using overlapping unaligned accesses - this is
@@ -23448,7 +23472,16 @@ aarch64_expand_cpymem (rtx *operands)
 	  n = n_bits;
 	}
     }
+  rtx_insn *seq = get_insns ();
+  end_sequence ();
 
+  /* A memcpy libcall in the worst case takes 3 instructions to prepare the
+     arguments + 1 for the call.  */
+  unsigned libcall_cost = 4;
+  if (size_p && libcall_cost < nops)
+    return false;
+
+  emit_insn (seq);
   return true;
 }
 
@@ -23511,17 +23544,10 @@ aarch64_expand_setmem (rtx *operands)
   if (!CONST_INT_P (operands[1]))
     return false;
 
-  bool speed_p = !optimize_function_for_size_p (cfun);
+  bool size_p = optimize_function_for_size_p (cfun);
 
   /* Default the maximum to 256-bytes.  */
   unsigned max_set_size = 256;
-
-  /* In case we are optimizing for size or if the core does not
-     want to use STP Q regs, lower the max_set_size.  */
-  max_set_size = (!speed_p
-		  || (aarch64_tune_params.extra_tuning_flags
-		      & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
-		  ? max_set_size / 2 : max_set_size;
 
   len = INTVAL (operands[1]);
 
@@ -23529,22 +23555,26 @@ aarch64_expand_setmem (rtx *operands)
   if (len > max_set_size)
     return false;
 
+  /* Attempt a sequence with a vector broadcast followed by stores.
+     Count the number of operations involved to see if it's worth it for
+     code size.  */
+  start_sequence ();
+  unsigned nops = 0;
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   dst = adjust_automodify_address (dst, VOIDmode, base, 0);
 
   /* Prepare the val using a DUP/MOVI v0.16B, val.  */
   src = expand_vector_broadcast (V16QImode, val);
   src = force_reg (V16QImode, src);
-
+  nops++;
   /* Convert len to bits to make the rest of the code simpler.  */
   n = len * BITS_PER_UNIT;
 
   /* Maximum amount to copy in one go.  We allow 256-bit chunks based on the
      AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS tuning parameter.  setmem expand
      pattern is only turned on for TARGET_SIMD.  */
-  const int copy_limit = (speed_p
-			  && (aarch64_tune_params.extra_tuning_flags
-			      & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
+  const int copy_limit = (aarch64_tune_params.extra_tuning_flags
+			  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
 			  ? GET_MODE_BITSIZE (TImode) : 256;
 
   while (n > 0)
@@ -23560,14 +23590,14 @@ aarch64_expand_setmem (rtx *operands)
 
       mode_bits = GET_MODE_BITSIZE (cur_mode).to_constant ();
       aarch64_set_one_block_and_progress_pointer (src, &dst, cur_mode);
-
+      nops++;
       n -= mode_bits;
 
       /* Do certain trailing copies as overlapping if it's going to be
 	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
 	 byte copy it's more efficient to do two overlapping 8 byte copies than
-	 8 + 4 + 2 + 1.  */
-      if (n > 0 && n < copy_limit / 2)
+	 8 + 4 + 2 + 1.  Only do this when -mstrict-align is not supplied.  */
+      if (n > 0 && n < copy_limit / 2 && !STRICT_ALIGNMENT)
 	{
 	  next_mode = smallest_mode_for_size (n, MODE_INT);
 	  int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
@@ -23576,7 +23606,15 @@ aarch64_expand_setmem (rtx *operands)
 	  n = n_bits;
 	}
     }
+  rtx_insn *seq = get_insns ();
+  end_sequence ();
+  /* A call to memset in the worst case requires 3 instructions to prepare
+     the arguments + 1 for the call.  Prefer the inline sequence for size if
+     it is no longer than that.  */
+  if (size_p && nops > 4)
+    return false;
 
+  emit_insn (seq);
   return true;
 }
 
@@ -25045,6 +25083,7 @@ aarch64_excess_precision (enum excess_precision_type type)
 		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
 		: FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
       case EXCESS_PRECISION_TYPE_IMPLICIT:
+      case EXCESS_PRECISION_TYPE_FLOAT16:
 	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
       default:
 	gcc_unreachable ();

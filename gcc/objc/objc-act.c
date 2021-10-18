@@ -1302,6 +1302,7 @@ objc_add_property_declaration (location_t location, tree decl,
   TREE_TYPE (property_decl) = p_type;
   DECL_SOURCE_LOCATION (property_decl) = DECL_SOURCE_LOCATION (decl);
   TREE_DEPRECATED (property_decl) = TREE_DEPRECATED (decl);
+  TREE_UNAVAILABLE (property_decl) = TREE_UNAVAILABLE (decl);
 
   /* Add property-specific information.  */
   PROPERTY_NAME (property_decl) = DECL_NAME (decl);
@@ -1439,6 +1440,7 @@ maybe_make_artificial_property_decl (tree interface, tree implementation,
       TREE_TYPE (property_decl) = type;
       DECL_SOURCE_LOCATION (property_decl) = input_location;
       TREE_DEPRECATED (property_decl) = 0;
+      TREE_UNAVAILABLE (property_decl) = 0;
       DECL_ARTIFICIAL (property_decl) = 1;
 
       /* Add property-specific information.  Note that one of
@@ -1717,7 +1719,7 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
     {
       tree expression;
       tree getter_call;
-      tree deprecated_method_prototype = NULL_TREE;
+      tree method_prototype_avail = NULL_TREE;
 
       /* We have an additional nasty problem here; if this
 	 PROPERTY_REF needs to become a 'getter', then the conversion
@@ -1751,10 +1753,10 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 	      is deprecated, but record the fact that the getter is
 	      deprecated by setting PROPERTY_REF_DEPRECATED_GETTER to
 	      the method prototype.  */
-	   &deprecated_method_prototype);
+	   &method_prototype_avail);
 
       expression = build4 (PROPERTY_REF, TREE_TYPE(x), object, x, getter_call,
-			   deprecated_method_prototype);
+			   method_prototype_avail);
       SET_EXPR_LOCATION (expression, input_location);
       TREE_SIDE_EFFECTS (expression) = 1;
 
@@ -1804,7 +1806,9 @@ objc_build_class_component_ref (tree class_name, tree property_ident)
     }
   else
     {
-      if (TREE_DEPRECATED (rtype))
+      if (TREE_UNAVAILABLE (rtype))
+	error ("class %qE is unavailable", class_name);
+      else if (TREE_DEPRECATED (rtype))
 	warning (OPT_Wdeprecated_declarations, "class %qE is deprecated", class_name);
     }
 
@@ -1816,17 +1820,17 @@ objc_build_class_component_ref (tree class_name, tree property_ident)
     {
       tree expression;
       tree getter_call;
-      tree deprecated_method_prototype = NULL_TREE;
+      tree method_prototype_avail = NULL_TREE;
 
       if (PROPERTY_HAS_NO_GETTER (x))
 	getter_call = NULL_TREE;
       else
 	getter_call = objc_finish_message_expr
 	  (object, PROPERTY_GETTER_NAME (x), NULL_TREE,
-	   &deprecated_method_prototype);
+	   &method_prototype_avail);
 
       expression = build4 (PROPERTY_REF, TREE_TYPE(x), object, x, getter_call,
-			   deprecated_method_prototype);
+			   method_prototype_avail);
       SET_EXPR_LOCATION (expression, input_location);
       TREE_SIDE_EFFECTS (expression) = 1;
 
@@ -4598,6 +4602,8 @@ build_private_template (tree klass)
       /* Copy the attributes from the class to the type.  */
       if (TREE_DEPRECATED (klass))
 	TREE_DEPRECATED (record) = 1;
+      if (TREE_UNAVAILABLE (klass))
+	TREE_UNAVAILABLE (record) = 1;
     }
 }
 
@@ -5023,6 +5029,7 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 	  tree name = TREE_PURPOSE (attribute);
 
 	  if (is_attribute_p  ("deprecated", name)
+	      || is_attribute_p ("unavailable", name)
 	      || is_attribute_p ("sentinel", name)
 	      || is_attribute_p ("noreturn", name))
 	    {
@@ -5488,9 +5495,9 @@ lookup_method_in_hash_lists (tree sel_name, int is_class)
    C++ template functions, it is called from 'build_expr_from_tree'
    (in decl2.c) after RECEIVER and METHOD_PARAMS have been expanded.
 
-   If the DEPRECATED_METHOD_PROTOTYPE argument is NULL, then we warn
+   If the method_prototype_avail argument is NULL, then we warn
    if the method being used is deprecated.  If it is not NULL, instead
-   of deprecating, we set *DEPRECATED_METHOD_PROTOTYPE to the method
+   of deprecating, we set *method_prototype_avail to the method
    prototype that was used and is deprecated.  This is useful for
    getter calls that are always generated when compiling dot-syntax
    expressions, even if they may not be used.  In that case, we don't
@@ -5499,7 +5506,7 @@ lookup_method_in_hash_lists (tree sel_name, int is_class)
    used.  */
 tree
 objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
-			  tree *deprecated_method_prototype)
+			  tree *method_prototype_avail)
 {
   tree method_prototype = NULL_TREE, rprotos = NULL_TREE, rtype;
   tree retval, class_tree;
@@ -5811,10 +5818,17 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
 	 In practice this makes sense since casting an object to 'id'
 	 is often used precisely to turn off warnings associated with
 	 the object being of a particular class.  */
-      if (TREE_DEPRECATED (method_prototype) && rtype != NULL_TREE)
+      if (TREE_UNAVAILABLE (method_prototype) && rtype != NULL_TREE)
 	{
-	  if (deprecated_method_prototype)
-	    *deprecated_method_prototype = method_prototype;
+	  if (method_prototype_avail)
+	    *method_prototype_avail = method_prototype;
+	  else
+	    error_unavailable_use (method_prototype, NULL_TREE);
+	}
+      else if (TREE_DEPRECATED (method_prototype) && rtype != NULL_TREE)
+	{
+	  if (method_prototype_avail)
+	    *method_prototype_avail = method_prototype;
 	  else
 	    warn_deprecated_use (method_prototype, NULL_TREE);
 	}
@@ -6986,7 +7000,9 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	}
       else
 	{
-	  if (TREE_DEPRECATED (super_interface))
+	  if (TREE_UNAVAILABLE (super_interface))
+	    error ("class %qE is not available", super);
+	  else if (TREE_DEPRECATED (super_interface))
 	    warning (OPT_Wdeprecated_declarations, "class %qE is deprecated",
 		     super);
 	  super_name = super;
@@ -7096,7 +7112,9 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	      /* TODO: Document what the objc_exception attribute is/does.  */
 	      /* We handle the 'deprecated', 'visibility' and (undocumented)
 		 'objc_exception' attributes.  */
-	      if (is_attribute_p  ("deprecated", name))
+	      if (is_attribute_p  ("unavailable", name))
+		TREE_UNAVAILABLE (klass) = 1;
+	      else if (is_attribute_p  ("deprecated", name))
 		TREE_DEPRECATED (klass) = 1;
 	      else if (is_attribute_p  ("objc_exception", name))
 		CLASS_HAS_EXCEPTION_ATTR (klass) = 1;
@@ -7127,7 +7145,9 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	  }
 	else
 	  {
-	    if (TREE_DEPRECATED (class_category_is_assoc_with))
+	    if (TREE_UNAVAILABLE (class_category_is_assoc_with))
+	      error ("class %qE is unavailable", class_name);
+	    else if (TREE_DEPRECATED (class_category_is_assoc_with))
 	      warning (OPT_Wdeprecated_declarations, "class %qE is deprecated",
 		       class_name);
 
@@ -8154,6 +8174,7 @@ finish_class (tree klass)
 		else
 		  objc_add_method (objc_interface_context, getter_decl, false, false);
 		TREE_DEPRECATED (getter_decl) = TREE_DEPRECATED (x);
+		TREE_UNAVAILABLE (getter_decl) = TREE_UNAVAILABLE (x);
 		METHOD_PROPERTY_CONTEXT (getter_decl) = x;
 	      }
 
@@ -8198,6 +8219,7 @@ finish_class (tree klass)
 		    else
 		      objc_add_method (objc_interface_context, setter_decl, false, false);
 		    TREE_DEPRECATED (setter_decl) = TREE_DEPRECATED (x);
+		    TREE_UNAVAILABLE (setter_decl) = TREE_UNAVAILABLE (x);
 		    METHOD_PROPERTY_CONTEXT (setter_decl) = x;
 		  }
 	      }
@@ -8251,7 +8273,9 @@ lookup_protocol (tree ident, bool warn_if_deprecated, bool definition_required)
   for (chain = protocol_chain; chain; chain = TREE_CHAIN (chain))
     if (ident == PROTOCOL_NAME (chain))
       {
-	if (warn_if_deprecated && TREE_DEPRECATED (chain))
+	if (TREE_UNAVAILABLE (chain))
+	  error ("protocol %qE is unavailable", PROTOCOL_NAME (chain));
+	else if (warn_if_deprecated && TREE_DEPRECATED (chain))
 	  {
 	    /* It would be nice to use warn_deprecated_use() here, but
 	       we are using TREE_CHAIN (which is supposed to be the
@@ -8276,6 +8300,7 @@ void
 objc_declare_protocol (tree name, tree attributes)
 {
   bool deprecated = false;
+  bool unavailable = false;
 
 #ifdef OBJCPLUS
   if (current_namespace != global_namespace) {
@@ -8294,6 +8319,8 @@ objc_declare_protocol (tree name, tree attributes)
 
 	  if (is_attribute_p  ("deprecated", name))
 	    deprecated = true;
+	  else if (is_attribute_p  ("unavailable", name))
+	    unavailable = true;
 	  else
 	    warning (OPT_Wattributes, "%qE attribute directive ignored", name);
 	}
@@ -8318,6 +8345,8 @@ objc_declare_protocol (tree name, tree attributes)
 	  TYPE_ATTRIBUTES (protocol) = attributes;
 	  if (deprecated)
 	    TREE_DEPRECATED (protocol) = 1;
+	  if (unavailable)
+	    TREE_UNAVAILABLE (protocol) = 1;
 	}
     }
 }
@@ -8327,6 +8356,7 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
 {
   tree protocol;
   bool deprecated = false;
+  bool unavailable = false;
 
 #ifdef OBJCPLUS
   if (current_namespace != global_namespace) {
@@ -8345,6 +8375,8 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
 
 	  if (is_attribute_p  ("deprecated", name))
 	    deprecated = true;
+	  else if (is_attribute_p  ("unavailable", name))
+	    unavailable = true;
 	  else
 	    warning (OPT_Wattributes, "%qE attribute directive ignored", name);
 	}
@@ -8384,6 +8416,8 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
       TYPE_ATTRIBUTES (protocol) = attributes;
       if (deprecated)
 	TREE_DEPRECATED (protocol) = 1;
+      if (unavailable)
+	TREE_UNAVAILABLE (protocol) = 1;
     }
 
   return protocol;
@@ -8913,6 +8947,8 @@ really_start_method (tree method,
 		 warnings are produced), but just in case.  */
 	      if (TREE_DEPRECATED (proto))
 		TREE_DEPRECATED (method) = 1;
+	      if (TREE_UNAVAILABLE (proto))
+		TREE_UNAVAILABLE (method) = 1;
 
 	      /* If the method in the @interface was marked as
 		 'noreturn', mark the function implementing the method
@@ -9644,12 +9680,17 @@ objc_gimplify_property_ref (tree *expr_p)
       return;
     }
 
+  /* FIXME, this should be a label indicating availability in general.  */
   if (PROPERTY_REF_DEPRECATED_GETTER (*expr_p))
     {
-      /* PROPERTY_REF_DEPRECATED_GETTER contains the method prototype
+      if (TREE_UNAVAILABLE (PROPERTY_REF_DEPRECATED_GETTER (*expr_p)))
+	error_unavailable_use (PROPERTY_REF_DEPRECATED_GETTER (*expr_p),
+			       NULL_TREE);
+      else
+	/* PROPERTY_REF_DEPRECATED_GETTER contains the method prototype
 	 that is deprecated.  */
-      warn_deprecated_use (PROPERTY_REF_DEPRECATED_GETTER (*expr_p),
-			   NULL_TREE);
+	warn_deprecated_use (PROPERTY_REF_DEPRECATED_GETTER (*expr_p),
+			     NULL_TREE);
     }
 
   call_exp = getter;

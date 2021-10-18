@@ -23,7 +23,7 @@ void f1(void)
   #pragma omp atomic
     bar() += 1;		/* { dg-error "lvalue required" } */
   #pragma omp atomic a	/* { dg-error "expected end of line" } */
-    x++;		/* { dg-error "expected 'read', 'write', 'update', 'capture', 'seq_cst', 'acq_rel', 'release', 'relaxed' or 'hint' clause" "" { target *-*-* } .-1 } */
+    x++;		/* { dg-error "expected 'read', 'write', 'update', 'capture', 'compare', 'weak', 'fail', 'seq_cst', 'acq_rel', 'release', 'relaxed' or 'hint' clause" "" { target *-*-* } .-1 } */
   #pragma omp atomic
     ;			/* { dg-error "expected primary-expression" } */
   #pragma omp atomic

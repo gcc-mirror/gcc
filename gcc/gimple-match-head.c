@@ -870,6 +870,10 @@ try_conditional_simplification (internal_fn ifn, gimple_match_op *res_op,
   memcpy (cond_op.ops, res_op->ops + 1, (num_ops - 1) * sizeof *cond_op.ops);
   switch (num_ops - 2)
     {
+    case 1:
+      if (!gimple_resimplify1 (seq, &cond_op, valueize))
+	return false;
+      break;
     case 2:
       if (!gimple_resimplify2 (seq, &cond_op, valueize))
 	return false;

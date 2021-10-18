@@ -18,17 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define DBX_DEBUGGING_INFO 1
-#if TARGET_64BIT_DEFAULT || defined (HAVE_GAS_PE_SECREL32_RELOC)
 #define DWARF2_DEBUGGING_INFO 1
-#endif
 
 #undef PREFERRED_DEBUGGING_TYPE
-#if (DWARF2_DEBUGGING_INFO)
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-#else
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-#endif
 
 #undef TARGET_SEH
 #define TARGET_SEH  (TARGET_64BIT_MS_ABI && flag_unwind_tables)
@@ -97,7 +90,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef DWARF_FRAME_REGISTERS
 #define DWARF_FRAME_REGISTERS (TARGET_64BIT ? 33 : 17)
 
-#ifdef HAVE_GAS_PE_SECREL32_RELOC
 /* Use section relative relocations for debugging offsets.  Unlike
    other targets that fake this by putting the section VMA at 0, PE
    won't allow it.  */
@@ -129,7 +121,6 @@ along with GCC; see the file COPYING3.  If not see
 	gcc_unreachable ();					\
       }								\
   } while (0)
-#endif
 
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 

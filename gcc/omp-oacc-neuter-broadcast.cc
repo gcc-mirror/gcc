@@ -53,6 +53,8 @@
 #include "tree-cfg.h"
 #include "omp-offload.h"
 #include "attribs.h"
+#include "targhooks.h"
+#include "diagnostic-core.h"
 
 /* Loop structure of the function.  The entire function is described as
    a NULL loop.  */
@@ -767,16 +769,19 @@ static void
 find_local_vars_to_propagate (parallel_g *par, unsigned outer_mask,
 			      hash_set<tree> *partitioned_var_uses,
 			      hash_set<tree> *gang_private_vars,
+			      bitmap writes_gang_private,
 			      vec<propagation_set *> *prop_set)
 {
   unsigned mask = outer_mask | par->mask;
 
   if (par->inner)
     find_local_vars_to_propagate (par->inner, mask, partitioned_var_uses,
-				  gang_private_vars, prop_set);
+				  gang_private_vars, writes_gang_private,
+				  prop_set);
   if (par->next)
     find_local_vars_to_propagate (par->next, outer_mask, partitioned_var_uses,
-				  gang_private_vars, prop_set);
+				  gang_private_vars, writes_gang_private,
+				  prop_set);
 
   if (!(mask & GOMP_DIM_MASK (GOMP_DIM_WORKER)))
     {
@@ -797,8 +802,7 @@ find_local_vars_to_propagate (parallel_g *par, unsigned outer_mask,
 		  if (!VAR_P (var)
 		      || is_global_var (var)
 		      || AGGREGATE_TYPE_P (TREE_TYPE (var))
-		      || !partitioned_var_uses->contains (var)
-		      || gang_private_vars->contains (var))
+		      || !partitioned_var_uses->contains (var))
 		    continue;
 
 		  if (stmt_may_clobber_ref_p (stmt, var))
@@ -810,6 +814,14 @@ find_local_vars_to_propagate (parallel_g *par, unsigned outer_mask,
 				   mask_name (mask));
 			  print_generic_expr (dump_file, var, TDF_SLIM);
 			  fprintf (dump_file, "\n");
+			}
+
+		      if (gang_private_vars->contains (var))
+			{
+			  /* If we write a gang-private variable, we want a
+			     barrier at the end of the block.  */
+			  bitmap_set_bit (writes_gang_private, block->index);
+			  continue;
 			}
 
 		      if (!(*prop_set)[block->index])
@@ -923,14 +935,6 @@ worker_single_simple (basic_block from, basic_block to,
 	    }
 	}
     }
-
-  gsi = gsi_start_bb (skip_block);
-
-  decl = builtin_decl_explicit (BUILT_IN_GOACC_BARRIER);
-  gimple *acc_bar = gimple_build_call (decl, 0);
-
-  gsi_insert_before (&gsi, acc_bar, GSI_SAME_STMT);
-  update_stmt (acc_bar);
 }
 
 /* Build COMPONENT_REF and set TREE_THIS_VOLATILE and TREE_READONLY on it
@@ -968,6 +972,8 @@ build_receiver_ref (tree var, tree receiver_decl, field_map_t *fields)
 static tree
 build_sender_ref (tree var, tree sender_decl, field_map_t *fields)
 {
+  if (POINTER_TYPE_P (TREE_TYPE (sender_decl)))
+    sender_decl = build_simple_mem_ref (sender_decl);
   tree field = *fields->get (var);
   return oacc_build_component_ref (sender_decl, field);
 }
@@ -1005,7 +1011,9 @@ static void
 worker_single_copy (basic_block from, basic_block to,
 		    hash_set<tree> *def_escapes_block,
 		    hash_set<tree> *worker_partitioned_uses,
-		    tree record_type, record_field_map_t *record_field_map)
+		    tree record_type, record_field_map_t *record_field_map,
+		    unsigned HOST_WIDE_INT placement,
+		    bool isolate_broadcasts, bool has_gang_private_write)
 {
   /* If we only have virtual defs, we'll have no record type, but we still want
      to emit single_copy_start and (particularly) single_copy_end to act as
@@ -1016,10 +1024,12 @@ worker_single_copy (basic_block from, basic_block to,
 
   tree sender_decl
     = targetm.goacc.create_worker_broadcast_record (record_type, true,
-						    ".oacc_worker_o");
+						    ".oacc_worker_o",
+						    placement);
   tree receiver_decl
     = targetm.goacc.create_worker_broadcast_record (record_type, false,
-						    ".oacc_worker_i");
+						    ".oacc_worker_i",
+						    placement);
 
   gimple_stmt_iterator gsi = gsi_last_bb (to);
   if (EDGE_COUNT (to->succs) > 1)
@@ -1033,11 +1043,22 @@ worker_single_copy (basic_block from, basic_block to,
 
   tree lhs = create_tmp_var (TREE_TYPE (TREE_TYPE (decl)));
 
-  gimple *call = gimple_build_call (decl, 1,
-				    build_fold_addr_expr (sender_decl));
+  gimple *call
+    = gimple_build_call (decl, 1,
+			 POINTER_TYPE_P (TREE_TYPE (sender_decl))
+			 ? sender_decl : build_fold_addr_expr (sender_decl));
   gimple_call_set_lhs (call, lhs);
   gsi_insert_before (&start, call, GSI_NEW_STMT);
   update_stmt (call);
+
+  /* The shared-memory range for this block overflowed.  Add a barrier before
+     the GOACC_single_copy_start call.  */
+  if (isolate_broadcasts)
+    {
+      decl = builtin_decl_explicit (BUILT_IN_GOACC_BARRIER);
+      gimple *acc_bar = gimple_build_call (decl, 0);
+      gsi_insert_before (&start, acc_bar, GSI_SAME_STMT);
+    }
 
   tree conv_tmp = make_ssa_name (TREE_TYPE (receiver_decl));
 
@@ -1075,14 +1096,19 @@ worker_single_copy (basic_block from, basic_block to,
   edge ef = make_edge (from, barrier_block, EDGE_FALSE_VALUE);
   ef->probability = et->probability.invert ();
 
-  decl = builtin_decl_explicit (BUILT_IN_GOACC_BARRIER);
-  gimple *acc_bar = gimple_build_call (decl, 0);
-
   gimple_stmt_iterator bar_gsi = gsi_start_bb (barrier_block);
-  gsi_insert_before (&bar_gsi, acc_bar, GSI_NEW_STMT);
-
   cond = gimple_build_cond (NE_EXPR, recv_tmp, zero_ptr, NULL_TREE, NULL_TREE);
-  gsi_insert_after (&bar_gsi, cond, GSI_NEW_STMT);
+
+  if (record_type != char_type_node || has_gang_private_write)
+    {
+      decl = builtin_decl_explicit (BUILT_IN_GOACC_BARRIER);
+      gimple *acc_bar = gimple_build_call (decl, 0);
+
+      gsi_insert_before (&bar_gsi, acc_bar, GSI_NEW_STMT);
+      gsi_insert_after (&bar_gsi, cond, GSI_NEW_STMT);
+    }
+  else
+    gsi_insert_before (&bar_gsi, cond, GSI_NEW_STMT);
 
   edge et2 = split_block (barrier_block, cond);
   et2->flags &= ~EDGE_FALLTHRU;
@@ -1206,13 +1232,26 @@ worker_single_copy (basic_block from, basic_block to,
 	}
     }
 
+  /* The shared-memory range for this block overflowed.  Add a barrier at the
+     end.  */
+  if (isolate_broadcasts)
+    {
+      gsi = gsi_start_bb (exit_block);
+      decl = builtin_decl_explicit (BUILT_IN_GOACC_BARRIER);
+      gimple *acc_bar = gimple_build_call (decl, 0);
+      gsi_insert_before (&gsi, acc_bar, GSI_SAME_STMT);
+    }
+
   /* It's possible for the ET->DEST block (the work done by the active thread)
      to finish with a control-flow insn, e.g. a UNIQUE function call.  Split
      the block and add SENDER_SEQ in the latter part to avoid having control
      flow in the middle of a BB.  */
 
   decl = builtin_decl_explicit (BUILT_IN_GOACC_SINGLE_COPY_END);
-  call = gimple_build_call (decl, 1, build_fold_addr_expr (sender_decl));
+  call = gimple_build_call (decl, 1,
+			    POINTER_TYPE_P (TREE_TYPE (sender_decl))
+			    ? sender_decl
+			    : build_fold_addr_expr (sender_decl));
   gimple_seq_add_stmt (&sender_seq, call);
 
   gsi = gsi_last_bb (body);
@@ -1222,12 +1261,17 @@ worker_single_copy (basic_block from, basic_block to,
   gsi_insert_seq_after (&gsi, sender_seq, GSI_CONTINUE_LINKING);
 }
 
+typedef hash_map<basic_block, std::pair<unsigned HOST_WIDE_INT, bool> >
+  blk_offset_map_t;
+
 static void
 neuter_worker_single (parallel_g *par, unsigned outer_mask,
 		      bitmap worker_single, bitmap vector_single,
 		      vec<propagation_set *> *prop_set,
 		      hash_set<tree> *partitioned_var_uses,
-		      record_field_map_t *record_field_map)
+		      record_field_map_t *record_field_map,
+		      blk_offset_map_t *blk_offset_map,
+		      bitmap writes_gang_private)
 {
   unsigned mask = outer_mask | par->mask;
 
@@ -1313,12 +1357,72 @@ neuter_worker_single (parallel_g *par, unsigned outer_mask,
 	      (*prop_set)[block->index] = 0;
 	    }
 
-	  tree record_type = (tree) block->aux;
+	  bool only_marker_fns = true;
+	  bool join_block = false;
+
+	  for (gimple_stmt_iterator gsi = gsi_start_bb (block);
+	       !gsi_end_p (gsi);
+	       gsi_next (&gsi))
+	    {
+	      gimple *stmt = gsi_stmt (gsi);
+	      if (gimple_code (stmt) == GIMPLE_CALL
+		  && gimple_call_internal_p (stmt, IFN_UNIQUE))
+		{
+		  enum ifn_unique_kind k = ((enum ifn_unique_kind)
+		    TREE_INT_CST_LOW (gimple_call_arg (stmt, 0)));
+		  if (k != IFN_UNIQUE_OACC_PRIVATE
+		      && k != IFN_UNIQUE_OACC_JOIN
+		      && k != IFN_UNIQUE_OACC_FORK
+		      && k != IFN_UNIQUE_OACC_HEAD_MARK
+		      && k != IFN_UNIQUE_OACC_TAIL_MARK)
+		    only_marker_fns = false;
+		  else if (k == IFN_UNIQUE_OACC_JOIN)
+		    /* The JOIN marker is special in that it *cannot* be
+		       predicated for worker zero, because it may be lowered
+		       to a barrier instruction and all workers must typically
+		       execute that barrier.  We shouldn't be doing any
+		       broadcasts from the join block anyway.  */
+		    join_block = true;
+		}
+	      else if (gimple_code (stmt) == GIMPLE_CALL
+		       && gimple_call_internal_p (stmt, IFN_GOACC_LOOP))
+		/* Empty.  */;
+	      else if (gimple_nop_p (stmt))
+		/* Empty.  */;
+	      else
+		only_marker_fns = false;
+	    }
+
+	  /* We can skip predicating this block for worker zero if the only
+	     thing it contains is marker functions that will be removed in the
+	     oaccdevlow pass anyway.
+	     Don't do this if the block has (any) phi nodes, because those
+	     might define SSA names that need broadcasting.
+	     TODO: We might be able to skip transforming blocks that only
+	     contain some other trivial statements too.  */
+	  if (only_marker_fns && !phi_nodes (block))
+	    continue;
+
+	  gcc_assert (!join_block);
 
 	  if (has_defs)
-	    worker_single_copy (block, block, &def_escapes_block,
-				&worker_partitioned_uses, record_type,
-				record_field_map);
+	    {
+	      tree record_type = (tree) block->aux;
+	      std::pair<unsigned HOST_WIDE_INT, bool> *off_rngalloc
+		= blk_offset_map->get (block);
+	      gcc_assert (!record_type || off_rngalloc);
+	      unsigned HOST_WIDE_INT offset
+		= off_rngalloc ? off_rngalloc->first : 0;
+	      bool range_allocated
+		= off_rngalloc ? off_rngalloc->second : true;
+	      bool has_gang_private_write
+		= bitmap_bit_p (writes_gang_private, block->index);
+	      worker_single_copy (block, block, &def_escapes_block,
+				  &worker_partitioned_uses, record_type,
+				  record_field_map,
+				  offset, !range_allocated,
+				  has_gang_private_write);
+	    }
 	  else
 	    worker_single_simple (block, block, &def_escapes_block);
 	}
@@ -1354,14 +1458,159 @@ neuter_worker_single (parallel_g *par, unsigned outer_mask,
 
   if (par->inner)
     neuter_worker_single (par->inner, mask, worker_single, vector_single,
-			  prop_set, partitioned_var_uses, record_field_map);
+			  prop_set, partitioned_var_uses, record_field_map,
+			  blk_offset_map, writes_gang_private);
   if (par->next)
     neuter_worker_single (par->next, outer_mask, worker_single, vector_single,
-			  prop_set, partitioned_var_uses, record_field_map);
+			  prop_set, partitioned_var_uses, record_field_map,
+			  blk_offset_map, writes_gang_private);
+}
+
+static void
+dfs_broadcast_reachable_1 (basic_block bb, sbitmap reachable)
+{
+  if (bb->flags & BB_VISITED)
+    return;
+
+  bb->flags |= BB_VISITED;
+
+  if (bb->succs)
+    {
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  basic_block dest = e->dest;
+	  if (dest->aux)
+	    bitmap_set_bit (reachable, dest->index);
+	  else
+	    dfs_broadcast_reachable_1 (dest, reachable);
+	}
+    }
+}
+
+typedef std::pair<int, tree> idx_decl_pair_t;
+
+typedef auto_vec<splay_tree> used_range_vec_t;
+
+static int
+sort_size_descending (const void *a, const void *b)
+{
+  const idx_decl_pair_t *pa = (const idx_decl_pair_t *) a;
+  const idx_decl_pair_t *pb = (const idx_decl_pair_t *) b;
+  unsigned HOST_WIDE_INT asize = tree_to_uhwi (TYPE_SIZE_UNIT (pa->second));
+  unsigned HOST_WIDE_INT bsize = tree_to_uhwi (TYPE_SIZE_UNIT (pb->second));
+  return bsize - asize;
+}
+
+class addr_range
+{
+public:
+  addr_range (unsigned HOST_WIDE_INT addr_lo, unsigned HOST_WIDE_INT addr_hi)
+    : lo (addr_lo), hi (addr_hi)
+    { }
+  addr_range (const addr_range &ar) : lo (ar.lo), hi (ar.hi)
+    { }
+  addr_range () : lo (0), hi (0)
+    { }
+
+  bool invalid () { return lo == 0 && hi == 0; }
+
+  unsigned HOST_WIDE_INT lo;
+  unsigned HOST_WIDE_INT hi;
+};
+
+static int
+splay_tree_compare_addr_range (splay_tree_key a, splay_tree_key b)
+{
+  addr_range *ar = (addr_range *) a;
+  addr_range *br = (addr_range *) b;
+  if (ar->lo == br->lo && ar->hi == br->hi)
+    return 0;
+  if (ar->hi <= br->lo)
+    return -1;
+  else if (ar->lo >= br->hi)
+    return 1;
+  return 0;
+}
+
+static void
+splay_tree_free_key (splay_tree_key k)
+{
+  addr_range *ar = (addr_range *) k;
+  delete ar;
+}
+
+static addr_range
+first_fit_range (splay_tree s, unsigned HOST_WIDE_INT size,
+		 unsigned HOST_WIDE_INT align, addr_range *bounds)
+{
+  splay_tree_node min = splay_tree_min (s);
+  if (min)
+    {
+      splay_tree_node next;
+      while ((next = splay_tree_successor (s, min->key)))
+	{
+	  unsigned HOST_WIDE_INT lo = ((addr_range *) min->key)->hi;
+	  unsigned HOST_WIDE_INT hi = ((addr_range *) next->key)->lo;
+	  unsigned HOST_WIDE_INT base = (lo + align - 1) & ~(align - 1);
+	  if (base + size <= hi)
+	    return addr_range (base, base + size);
+	  min = next;
+	}
+
+      unsigned HOST_WIDE_INT base = ((addr_range *)min->key)->hi;
+      base = (base + align - 1) & ~(align - 1);
+      if (base + size <= bounds->hi)
+	return addr_range (base, base + size);
+      else
+	return addr_range ();
+    }
+  else
+    {
+      unsigned HOST_WIDE_INT lo = bounds->lo;
+      lo = (lo + align - 1) & ~(align - 1);
+      if (lo + size <= bounds->hi)
+	return addr_range (lo, lo + size);
+      else
+	return addr_range ();
+    }
 }
 
 static int
-execute_omp_oacc_neuter_broadcast ()
+merge_ranges_1 (splay_tree_node n, void *ptr)
+{
+  splay_tree accum = (splay_tree) ptr;
+  addr_range ar = *(addr_range *) n->key;
+
+  splay_tree_node old = splay_tree_lookup (accum, n->key);
+
+  /* We might have an overlap.  Create a new range covering the
+     overlapping parts.  */
+  if (old)
+    {
+      addr_range *old_ar = (addr_range *) old->key;
+      ar.lo = MIN (old_ar->lo, ar.lo);
+      ar.hi = MAX (old_ar->hi, ar.hi);
+      splay_tree_remove (accum, old->key);
+    }
+
+  addr_range *new_ar = new addr_range (ar);
+
+  splay_tree_insert (accum, (splay_tree_key) new_ar, n->value);
+
+  return 0;
+}
+
+static void
+merge_ranges (splay_tree accum, splay_tree sp)
+{
+  splay_tree_foreach (sp, merge_ranges_1, (void *) accum);
+}
+
+static void
+oacc_do_neutering (unsigned HOST_WIDE_INT bounds_lo,
+		   unsigned HOST_WIDE_INT bounds_hi)
 {
   bb_stmt_map_t bb_stmt_map;
   auto_bitmap worker_single, vector_single;
@@ -1378,18 +1627,17 @@ execute_omp_oacc_neuter_broadcast ()
 
   /* If this is a routine, calculate MASK as if the outer levels are already
      partitioned.  */
-  tree attr = oacc_get_fn_attrib (current_function_decl);
-  if (attr)
-    {
-      tree dims = TREE_VALUE (attr);
-      unsigned ix;
-      for (ix = 0; ix != GOMP_DIM_MAX; ix++, dims = TREE_CHAIN (dims))
-	{
-	  tree allowed = TREE_PURPOSE (dims);
-	  if (allowed && integer_zerop (allowed))
-	    mask |= GOMP_DIM_MASK (ix);
-	}
-    }
+  {
+    tree attr = oacc_get_fn_attrib (current_function_decl);
+    tree dims = TREE_VALUE (attr);
+    unsigned ix;
+    for (ix = 0; ix != GOMP_DIM_MAX; ix++, dims = TREE_CHAIN (dims))
+      {
+	tree allowed = TREE_PURPOSE (dims);
+	if (allowed && integer_zerop (allowed))
+	  mask |= GOMP_DIM_MASK (ix);
+      }
+  }
 
   parallel_g *par = omp_sese_discover_pars (&bb_stmt_map);
   populate_single_mode_bitmaps (par, worker_single, vector_single, mask, 0);
@@ -1406,11 +1654,13 @@ execute_omp_oacc_neuter_broadcast ()
 
   hash_set<tree> partitioned_var_uses;
   hash_set<tree> gang_private_vars;
+  auto_bitmap writes_gang_private;
 
   find_gang_private_vars (&gang_private_vars);
   find_partitioned_var_uses (par, mask, &partitioned_var_uses);
   find_local_vars_to_propagate (par, mask, &partitioned_var_uses,
-				&gang_private_vars, &prop_set);
+				&gang_private_vars, writes_gang_private,
+				&prop_set);
 
   record_field_map_t record_field_map;
 
@@ -1451,8 +1701,122 @@ execute_omp_oacc_neuter_broadcast ()
 	}
     }
 
+  sbitmap *reachable
+    = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+			    last_basic_block_for_fn (cfun));
+
+  bitmap_vector_clear (reachable, last_basic_block_for_fn (cfun));
+
+  auto_vec<std::pair<int, tree> > priority;
+
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      if (bb->aux)
+	{
+	  tree record_type = (tree) bb->aux;
+
+	  basic_block bb2;
+	  FOR_ALL_BB_FN (bb2, cfun)
+	    bb2->flags &= ~BB_VISITED;
+
+	  priority.safe_push (std::make_pair (bb->index, record_type));
+	  dfs_broadcast_reachable_1 (bb, reachable[bb->index]);
+	}
+    }
+
+  sbitmap *inverted
+    = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+			    last_basic_block_for_fn (cfun));
+
+  bitmap_vector_clear (inverted, last_basic_block_for_fn (cfun));
+
+  for (int i = 0; i < last_basic_block_for_fn (cfun); i++)
+    {
+      sbitmap_iterator bi;
+      unsigned int j;
+      EXECUTE_IF_SET_IN_BITMAP (reachable[i], 0, j, bi)
+	bitmap_set_bit (inverted[j], i);
+    }
+
+  for (int i = 0; i < last_basic_block_for_fn (cfun); i++)
+    bitmap_ior (reachable[i], reachable[i], inverted[i]);
+
+  sbitmap_vector_free (inverted);
+
+  used_range_vec_t used_ranges;
+
+  used_ranges.safe_grow_cleared (last_basic_block_for_fn (cfun));
+
+  blk_offset_map_t blk_offset_map;
+
+  addr_range worker_shm_bounds (bounds_lo, bounds_hi);
+
+  priority.qsort (sort_size_descending);
+  for (unsigned int i = 0; i < priority.length (); i++)
+    {
+      idx_decl_pair_t p = priority[i];
+      int blkno = p.first;
+      tree record_type = p.second;
+      HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE_UNIT (record_type));
+      HOST_WIDE_INT align = TYPE_ALIGN_UNIT (record_type);
+
+      splay_tree conflicts = splay_tree_new (splay_tree_compare_addr_range,
+					     splay_tree_free_key, NULL);
+
+      if (!used_ranges[blkno])
+	used_ranges[blkno] = splay_tree_new (splay_tree_compare_addr_range,
+					     splay_tree_free_key, NULL);
+      else
+	merge_ranges (conflicts, used_ranges[blkno]);
+
+      sbitmap_iterator bi;
+      unsigned int j;
+      EXECUTE_IF_SET_IN_BITMAP (reachable[blkno], 0, j, bi)
+	if (used_ranges[j])
+	  merge_ranges (conflicts, used_ranges[j]);
+
+      addr_range ar
+	= first_fit_range (conflicts, size, align, &worker_shm_bounds);
+
+      splay_tree_delete (conflicts);
+
+      if (ar.invalid ())
+	{
+	  unsigned HOST_WIDE_INT base
+	    = (bounds_lo + align - 1) & ~(align - 1);
+	  if (base + size > bounds_hi)
+	    error_at (UNKNOWN_LOCATION, "shared-memory region overflow");
+	  std::pair<unsigned HOST_WIDE_INT, bool> base_inrng
+	    = std::make_pair (base, false);
+	  blk_offset_map.put (BASIC_BLOCK_FOR_FN (cfun, blkno), base_inrng);
+	}
+      else
+	{
+	  splay_tree_node old = splay_tree_lookup (used_ranges[blkno],
+						   (splay_tree_key) &ar);
+	  if (old)
+	    {
+	      fprintf (stderr, "trying to map [%d..%d] but [%d..%d] is "
+		       "already mapped in block %d\n", (int) ar.lo,
+		       (int) ar.hi, (int) ((addr_range *) old->key)->lo,
+		       (int) ((addr_range *) old->key)->hi, blkno);
+	      abort ();
+	    }
+
+	  addr_range *arp = new addr_range (ar);
+	  splay_tree_insert (used_ranges[blkno], (splay_tree_key) arp,
+			     (splay_tree_value) blkno);
+	  std::pair<unsigned HOST_WIDE_INT, bool> base_inrng
+	    = std::make_pair (ar.lo, true);
+	  blk_offset_map.put (BASIC_BLOCK_FOR_FN (cfun, blkno), base_inrng);
+	}
+    }
+
+  sbitmap_vector_free (reachable);
+
   neuter_worker_single (par, mask, worker_single, vector_single, &prop_set,
-			&partitioned_var_uses, &record_field_map);
+			&partitioned_var_uses, &record_field_map,
+			&blk_offset_map, writes_gang_private);
 
   for (auto it : record_field_map)
     delete it.second;
@@ -1479,6 +1843,107 @@ execute_omp_oacc_neuter_broadcast ()
       fprintf (dump_file, "\n\nAfter neutering:\n\n");
       dump_function_to_file (current_function_decl, dump_file, dump_flags);
     }
+}
+
+static int
+execute_omp_oacc_neuter_broadcast ()
+{
+  unsigned HOST_WIDE_INT reduction_size[GOMP_DIM_MAX];
+  unsigned HOST_WIDE_INT private_size[GOMP_DIM_MAX];
+
+  for (unsigned i = 0; i < GOMP_DIM_MAX; i++)
+    {
+      reduction_size[i] = 0;
+      private_size[i] = 0;
+    }
+
+  /* Calculate shared memory size required for reduction variables and
+     gang-private memory for this offloaded function.  */
+  basic_block bb;
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (!is_gimple_call (stmt))
+	    continue;
+	  gcall *call = as_a <gcall *> (stmt);
+	  if (!gimple_call_internal_p (call))
+	    continue;
+	  enum internal_fn ifn_code = gimple_call_internal_fn (call);
+	  switch (ifn_code)
+	    {
+	    default: break;
+	    case IFN_GOACC_REDUCTION:
+	      if (integer_minus_onep (gimple_call_arg (call, 3)))
+		continue;
+	      else
+		{
+		  unsigned code = TREE_INT_CST_LOW (gimple_call_arg (call, 0));
+		  /* Only count reduction variables once: the choice to pick
+		     the setup call is fairly arbitrary.  */
+		  if (code == IFN_GOACC_REDUCTION_SETUP)
+		    {
+		      int level = TREE_INT_CST_LOW (gimple_call_arg (call, 3));
+		      tree var = gimple_call_arg (call, 2);
+		      tree offset = gimple_call_arg (call, 5);
+		      tree var_type = TREE_TYPE (var);
+		      unsigned HOST_WIDE_INT limit
+			= (tree_to_uhwi (offset)
+			   + tree_to_uhwi (TYPE_SIZE_UNIT (var_type)));
+		      reduction_size[level]
+			= MAX (reduction_size[level], limit);
+		    }
+		}
+	      break;
+	    case IFN_UNIQUE:
+	      {
+		enum ifn_unique_kind kind
+		  = ((enum ifn_unique_kind)
+		     TREE_INT_CST_LOW (gimple_call_arg (call, 0)));
+
+		if (kind == IFN_UNIQUE_OACC_PRIVATE)
+		  {
+		    HOST_WIDE_INT level
+		      = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
+		    if (level == -1)
+		      break;
+		    for (unsigned i = 3;
+			 i < gimple_call_num_args (call);
+			 i++)
+		      {
+			tree arg = gimple_call_arg (call, i);
+			gcc_assert (TREE_CODE (arg) == ADDR_EXPR);
+			tree decl = TREE_OPERAND (arg, 0);
+			unsigned HOST_WIDE_INT align = DECL_ALIGN_UNIT (decl);
+			private_size[level] = ((private_size[level] + align - 1)
+					       & ~(align - 1));
+			unsigned HOST_WIDE_INT decl_size
+			  = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (decl)));
+			private_size[level] += decl_size;
+		      }
+		  }
+	      }
+	      break;
+	    }
+	}
+    }
+
+  int dims[GOMP_DIM_MAX];
+  for (unsigned i = 0; i < GOMP_DIM_MAX; i++)
+    dims[i] = oacc_get_fn_dim_size (current_function_decl, i);
+
+  /* Find bounds of shared-memory buffer space we can use.  */
+  unsigned HOST_WIDE_INT bounds_lo = 0, bounds_hi = 0;
+  if (targetm.goacc.shared_mem_layout)
+    targetm.goacc.shared_mem_layout (&bounds_lo, &bounds_hi, dims,
+				     private_size, reduction_size);
+
+  /* Perform worker partitioning unless we know 'num_workers(1)'.  */
+  if (dims[GOMP_DIM_WORKER] != 1)
+    oacc_do_neutering (bounds_lo, bounds_hi);
 
   return 0;
 }
@@ -1506,11 +1971,21 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  virtual bool gate (function *fun)
   {
-    return (flag_openacc
-	    && targetm.goacc.create_worker_broadcast_record);
-  };
+    if (!flag_openacc)
+      return false;
+
+    if (!targetm.goacc.create_worker_broadcast_record)
+      return false;
+
+    /* Only relevant for OpenACC offloaded functions.  */
+    tree attr = oacc_get_fn_attrib (fun->decl);
+    if (!attr)
+      return false;
+
+    return true;
+  }
 
   virtual unsigned int execute (function *)
     {

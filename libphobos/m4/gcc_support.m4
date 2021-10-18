@@ -27,7 +27,7 @@ AC_DEFUN([PHOBOS_ABS_SRCDIR], [
 AC_DEFUN([WITH_LOCAL_DRUNTIME], [
   AC_REQUIRE([PHOBOS_ABS_SRCDIR])
   gdc_save_DFLAGS=$GDCFLAGS
-  GDCFLAGS="-fno-moduleinfo -nostdinc -I $phobos_cv_abs_srcdir/libdruntime $2 $GDCFLAGS"
+  GDCFLAGS="-fno-druntime -nostdinc -I $phobos_cv_abs_srcdir/libdruntime $2 $GDCFLAGS"
   $1
   GDCFLAGS=$gdc_save_DFLAGS
 ])

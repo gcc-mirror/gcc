@@ -37,8 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 
 non_null_ref::non_null_ref ()
 {
-  m_nn.create (0);
-  m_nn.safe_grow_cleared (num_ssa_names);
+  m_nn.create (num_ssa_names);
+  m_nn.quick_grow_cleared (num_ssa_names);
   bitmap_obstack_initialize (&m_bitmaps);
 }
 
@@ -61,6 +61,9 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb, bool search_dom)
     return false;
 
   unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_nn.length ())
+    m_nn.safe_grow_cleared (num_ssa_names + 1);
+
   if (!m_nn[v])
     process_name (name);
 
@@ -98,15 +101,16 @@ non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
     return false;
 
   // We only care about the null / non-null property of pointers.
-  if (!POINTER_TYPE_P (TREE_TYPE (name)) || r.zero_p () || r.nonzero_p ())
+  if (!POINTER_TYPE_P (TREE_TYPE (name)))
     return false;
-
+  if (r.undefined_p () || r.lower_bound () != 0 || r.upper_bound () == 0)
+    return false;
   // Check if pointers have any non-null dereferences.
   if (non_null_deref_p (name, bb, search_dom))
     {
-      int_range<2> nz;
-      nz.set_nonzero (TREE_TYPE (name));
-      r.intersect (nz);
+      // Remove zero from the range.
+      unsigned prec = TYPE_PRECISION (TREE_TYPE (name));
+      r.intersect (wi::one (prec), wi::max_value (prec, UNSIGNED));
       return true;
     }
   return false;
@@ -750,7 +754,8 @@ temporal_cache::set_always_current (tree name)
 
 // --------------------------------------------------------------------------
 
-ranger_cache::ranger_cache ()
+ranger_cache::ranger_cache (int not_executable_flag)
+						: m_gori (not_executable_flag)
 {
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
@@ -760,7 +765,7 @@ ranger_cache::ranger_cache ()
   m_temporal = new temporal_cache;
   // If DOM info is available, spawn an oracle as well.
   if (dom_info_available_p (CDI_DOMINATORS))
-      m_oracle = new relation_oracle ();
+      m_oracle = new dom_oracle ();
     else
       m_oracle = NULL;
 

@@ -138,8 +138,7 @@
    ;; Distinguish a 32-bit version of an insn from a 16-bit version.
    (UNSPEC_32BIT 11)
    (UNSPEC_NOP 12)
-   (UNSPEC_ONES 13)
-   (UNSPEC_ATOMIC 14)])
+   (UNSPEC_ATOMIC 13)])
 
 (define_constants
   [(UNSPEC_VOLATILE_CSYNC 1)
@@ -1398,11 +1397,31 @@
 
 (define_insn "ones"
   [(set (match_operand:HI 0 "register_operand" "=d")
-	(unspec:HI [(match_operand:SI 1 "register_operand" "d")]
-		UNSPEC_ONES))]
+	(truncate:HI
+	 (popcount:SI (match_operand:SI 1 "register_operand" "d"))))]
   ""
   "%h0 = ONES %1;"
   [(set_attr "type" "alu0")])
+
+(define_expand "popcountsi2"
+  [(set (match_dup 2)
+	(truncate:HI (popcount:SI (match_operand:SI 1 "register_operand" ""))))
+   (set (match_operand:SI 0 "register_operand")
+	(zero_extend:SI (match_dup 2)))]
+  ""
+{
+  operands[2] = gen_reg_rtx (HImode);
+})
+
+(define_expand "popcounthi2"
+  [(set (match_dup 2)
+	(zero_extend:SI (match_operand:HI 1 "register_operand" "")))
+   (set (match_operand:HI 0 "register_operand") 
+	(truncate:HI (popcount:SI (match_dup 2))))]
+  ""
+{
+  operands[2] = gen_reg_rtx (SImode);
+})
 
 (define_insn "smaxsi3"
   [(set (match_operand:SI 0 "register_operand" "=d")

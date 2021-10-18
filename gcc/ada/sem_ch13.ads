@@ -81,9 +81,11 @@ package Sem_Ch13 is
    --  the setting of the RM_Size field is not affected. This routine also
    --  initializes the alignment field to zero.
 
+   Unknown_Minimum_Size : constant Nonzero_Int := -1;
+
    function Minimum_Size
      (T      : Entity_Id;
-      Biased : Boolean := False) return Nat;
+      Biased : Boolean := False) return Int;
    --  Given an elementary type, determines the minimum number of bits required
    --  to represent all values of the type. This function may not be called
    --  with any other types. If the flag Biased is set True, then the minimum
@@ -96,7 +98,7 @@ package Sem_Ch13 is
    --  the type is already biased, then Minimum_Size returns the biased size,
    --  regardless of the setting of Biased. Also, fixed-point types are never
    --  biased in the current implementation. If the size is not known at
-   --  compile time, this function returns 0.
+   --  compile time, this function returns Unknown_Minimum_Size.
 
    procedure Check_Constant_Address_Clause (Expr : Node_Id; U_Ent : Entity_Id);
    --  Expr is an expression for an address clause. This procedure checks

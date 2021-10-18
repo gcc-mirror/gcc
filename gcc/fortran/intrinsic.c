@@ -5237,12 +5237,13 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag,
   /* In building an array constructor, gfortran can end up here when no
      conversion is required for an intrinsic type.  We need to let derived
      types drop through.  */
-  if (from_ts.type != BT_DERIVED
+  if (from_ts.type != BT_DERIVED && from_ts.type != BT_CLASS
       && (from_ts.type == ts->type && from_ts.kind == ts->kind))
     return true;
 
-  if (expr->ts.type == BT_DERIVED && ts->type == BT_DERIVED
-      && gfc_compare_types (&expr->ts, ts))
+  if ((expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS)
+      && (ts->type == BT_DERIVED || ts->type == BT_CLASS)
+      && gfc_compare_types (ts, &expr->ts))
     return true;
 
   /* If array is true then conversion is in an array constructor where

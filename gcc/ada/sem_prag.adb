@@ -6678,9 +6678,7 @@ package body Sem_Prag is
                   then
                      Pragma_Misplaced;
 
-                  elsif (Nkind (Parent_Node) = N_Generic_Package_Declaration
-                          or else Nkind (Parent_Node) =
-                                             N_Generic_Subprogram_Declaration)
+                  elsif Nkind (Parent_Node) in N_Generic_Declaration
                     and then Plist = Generic_Formal_Declarations (Parent_Node)
                   then
                      Pragma_Misplaced;
@@ -7562,7 +7560,7 @@ package body Sem_Prag is
             end if;
 
             if not Has_Alignment_Clause (Ent) then
-               Init_Alignment (Ent);
+               Reinit_Alignment (Ent);
             end if;
          end Set_Atomic_VFA;
 
@@ -9532,7 +9530,11 @@ package body Sem_Prag is
 
             Process_Import_Predefined_Type;
 
-         else
+         --  Emit an error unless Relaxed_RM_Semantics since some legacy Ada
+         --  compilers may accept more cases, e.g. JGNAT allowed importing
+         --  a Java package.
+
+         elsif not Relaxed_RM_Semantics then
             if From_Aspect_Specification (N) then
                Error_Pragma_Arg
                   ("entity for aspect% must be object, subprogram "
@@ -13400,11 +13402,11 @@ package body Sem_Prag is
             Obj_Or_Type_Id := Defining_Entity (Obj_Or_Type_Decl);
 
             --  Perform minimal verification to ensure that the argument is at
-            --  least a variable or a type. Subsequent finer grained checks
-            --  will be done at the end of the declarative region that
-            --  contains the pragma.
+            --  least an object or a type. Subsequent finer grained checks will
+            --  be done at the end of the declarative region that contains the
+            --  pragma.
 
-            if Ekind (Obj_Or_Type_Id) = E_Variable
+            if Ekind (Obj_Or_Type_Id) in E_Constant | E_Variable
               or else Is_Type (Obj_Or_Type_Id)
             then
 
@@ -14202,6 +14204,16 @@ package body Sem_Prag is
 
          when Pragma_Compile_Time_Error | Pragma_Compile_Time_Warning =>
             GNAT_Pragma;
+
+            --  These pragmas rely on the context. In adc files they raise
+            --  Constraint_Error. Ban them from use as configuration pragmas
+            --  even in cases where such a use could work.
+
+            if Is_Configuration_Pragma then
+               Error_Pragma
+                  ("pragma% is not allowed as a configuration pragma");
+            end if;
+
             Process_Compile_Time_Warning_Or_Error;
 
          ---------------------------
@@ -14835,9 +14847,41 @@ package body Sem_Prag is
                   & "effect?j?", N);
             end if;
 
-         --------------------
+         -----------------
+         -- CUDA_Device --
+         -----------------
+
+         when Pragma_CUDA_Device => CUDA_Device : declare
+            Arg_Node      : Node_Id;
+            Device_Entity : Entity_Id;
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Library_Level_Local_Name (Arg1);
+
+            Arg_Node := Get_Pragma_Arg (Arg1);
+            Device_Entity := Entity (Arg_Node);
+
+            if Ekind (Device_Entity) in E_Variable
+                                      | E_Constant
+                                      | E_Procedure
+                                      | E_Function
+            then
+               Add_CUDA_Device_Entity
+                 (Package_Specification_Of_Scope (Scope (Device_Entity)),
+                  Device_Entity);
+
+            else
+               Error_Msg_NE ("& must be constant, variable or subprogram",
+                 N,
+                 Device_Entity);
+            end if;
+
+         end CUDA_Device;
+
+         ------------------
          -- CUDA_Execute --
-         --------------------
+         ------------------
 
          --    pragma CUDA_Execute (PROCEDURE_CALL_STATEMENT,
          --                         EXPRESSION,
@@ -25892,23 +25936,6 @@ package body Sem_Prag is
                        ("operation in class-wide condition must be primitive "
                         & "of &", Nod, Disp_Typ);
                   end if;
-
-               --  Otherwise we have a call to an overridden primitive, and we
-               --  will create a common class-wide clone for the body of
-               --  original operation and its eventual inherited versions. If
-               --  the original operation dispatches on result it is never
-               --  inherited and there is no need for a clone. There is not
-               --  need for a clone either in GNATprove mode, as cases that
-               --  would require it are rejected (when an inherited primitive
-               --  calls an overridden operation in a class-wide contract), and
-               --  the clone would make proof impossible in some cases.
-
-               elsif not Is_Abstract_Subprogram (Spec_Id)
-                 and then No (Class_Wide_Clone (Spec_Id))
-                 and then not Has_Controlling_Result (Spec_Id)
-                 and then not GNATprove_Mode
-               then
-                  Build_Class_Wide_Clone_Decl (Spec_Id);
                end if;
             end;
 
@@ -26027,15 +26054,6 @@ package body Sem_Prag is
 
       if Restore_Scope then
          End_Scope;
-      end if;
-
-      --  If analysis of the condition indicates that a class-wide clone
-      --  has been created, build and analyze its declaration.
-
-      if Is_Subprogram (Spec_Id)
-        and then Present (Class_Wide_Clone (Spec_Id))
-      then
-         Analyze (Unit_Declaration_Node (Class_Wide_Clone (Spec_Id)));
       end if;
 
       --  Currently it is not possible to inline pre/postconditions on a
@@ -29524,9 +29542,6 @@ package body Sem_Prag is
       Msg_Arg    : Node_Id;
       Nam        : Name_Id;
 
-      Needs_Wrapper : Boolean;
-      pragma Unreferenced (Needs_Wrapper);
-
    --  Start of processing for Build_Pragma_Check_Equivalent
 
    begin
@@ -29553,11 +29568,10 @@ package body Sem_Prag is
          --  Build the inherited class-wide condition
 
          Build_Class_Wide_Expression
-           (Prag          => Check_Prag,
-            Subp          => Subp_Id,
-            Par_Subp      => Inher_Id,
-            Adjust_Sloc   => True,
-            Needs_Wrapper => Needs_Wrapper);
+           (Pragma_Or_Expr => Check_Prag,
+            Subp           => Subp_Id,
+            Par_Subp       => Inher_Id,
+            Adjust_Sloc    => True);
 
       --  If not an inherited condition simply copy the original pragma
 
@@ -31274,6 +31288,7 @@ package body Sem_Prag is
       Pragma_C_Pass_By_Copy                 =>  0,
       Pragma_Comment                        => -1,
       Pragma_Common_Object                  =>  0,
+      Pragma_CUDA_Device                    => -1,
       Pragma_CUDA_Execute                   => -1,
       Pragma_CUDA_Global                    => -1,
       Pragma_Compile_Time_Error             => -1,

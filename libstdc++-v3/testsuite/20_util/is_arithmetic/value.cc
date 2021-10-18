@@ -30,9 +30,7 @@ void test01()
   static_assert(test_category<is_arithmetic, char>(true), "");
   static_assert(test_category<is_arithmetic, signed char>(true), "");
   static_assert(test_category<is_arithmetic, unsigned char>(true), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_arithmetic, wchar_t>(true), "");
-#endif
   static_assert(test_category<is_arithmetic, short>(true), "");
   static_assert(test_category<is_arithmetic, unsigned short>(true), "");
   static_assert(test_category<is_arithmetic, int>(true), "");

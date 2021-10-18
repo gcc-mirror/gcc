@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread1-details -fdump-tree-dce2" } */
+/* { dg-options "-O2 -fdump-tree-thread1-details -fdump-tree-thread4" } */
 
 extern int status, pt;
 extern int count;
@@ -32,10 +32,15 @@ foo (int N, int c, int b, int *a)
    pt--;
 }
 
-/* There are 4 FSM jump threading opportunities, all of which will be
-   realized, which will eliminate testing of FLAG, completely.  */
-/* { dg-final { scan-tree-dump-times "Registering FSM" 4 "thread1"} } */
+/* There are 2 jump threading opportunities (which don't cross loops),
+   all of which will be realized, which will eliminate testing of
+   FLAG, completely.  */
+/* { dg-final { scan-tree-dump-times "Registering jump" 2 "thread1"} } */
 
-/* There should be no assignments or references to FLAG, verify they're
-   eliminated as early as possible.  */
-/* { dg-final { scan-tree-dump-not "if .flag" "dce2"} } */
+/* We used to remove references to FLAG by DCE2, but this was
+   depending on early threaders threading through loop boundaries
+   (which we shouldn't do).  However, the late threading passes, which
+   run after loop optimizations , can successfully eliminate the
+   references to FLAG.  Verify that ther are no references by the late
+   threading passes.  */
+/* { dg-final { scan-tree-dump-not "if .flag" "thread4"} } */

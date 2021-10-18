@@ -1520,7 +1520,9 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
   t = true;
   if (!same_type_check (pointer, 0, target, 1, true))
     t = false;
-  if (!rank_check (target, 0, pointer->rank))
+  /* F2018 C838 explicitly allows an assumed-rank variable as the first
+     argument of intrinsic inquiry functions.  */
+  if (pointer->rank != -1 && !rank_check (target, 0, pointer->rank))
     t = false;
   if (target->rank > 0)
     {
@@ -4528,7 +4530,9 @@ gfc_check_present (gfc_expr *a)
       return false;
     }
 
-  if (!sym->attr.optional)
+  /* For CLASS, the optional attribute might be set at either location. */
+  if ((sym->ts.type != BT_CLASS || !CLASS_DATA (sym)->attr.optional)
+      && !sym->attr.optional)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be of "
 		 "an OPTIONAL dummy variable",
@@ -5082,6 +5086,13 @@ gfc_check_shape (gfc_expr *source, gfc_expr *kind)
   if (gfc_invalid_null_arg (source))
     return false;
 
+  if (!kind_check (kind, 1, BT_INTEGER))
+    return false;
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
+			       "with KIND argument at %L",
+			       gfc_current_intrinsic, &kind->where))
+    return false;
+
   if (source->rank == 0 || source->expr_type != EXPR_VARIABLE)
     return true;
 
@@ -5093,13 +5104,6 @@ gfc_check_shape (gfc_expr *source, gfc_expr *kind)
 		 "an assumed size array", &source->where);
       return false;
     }
-
-  if (!kind_check (kind, 1, BT_INTEGER))
-    return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
-			       "with KIND argument at %L",
-			       gfc_current_intrinsic, &kind->where))
-    return false;
 
   return true;
 }

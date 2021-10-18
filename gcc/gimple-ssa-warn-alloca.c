@@ -221,10 +221,9 @@ alloca_call_type (gimple *stmt, bool is_vla)
       && !r.varying_p ())
     {
       // The invalid bits are anything outside of [0, MAX_SIZE].
-      static int_range<2> invalid_range (build_int_cst (size_type_node, 0),
-					 build_int_cst (size_type_node,
-							max_size),
-					 VR_ANTI_RANGE);
+      int_range<2> invalid_range (build_int_cst (size_type_node, 0),
+				  build_int_cst (size_type_node, max_size),
+				  VR_ANTI_RANGE);
 
       r.intersect (invalid_range);
       if (r.undefined_p ())

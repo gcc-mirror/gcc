@@ -78,6 +78,7 @@
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
 #include "rs6000-internal.h"
+#include "rs6000-builtins.h"
 #include "opts.h"
 
 /* This file should be included last.  */
@@ -3391,7 +3392,7 @@ darwin_rs6000_override_options (void)
       && !flag_apple_kext
       && strverscmp (darwin_macosx_version_min, "10.5") >= 0
       && ! (rs6000_isa_flags_explicit & OPTION_MASK_ALTIVEC)
-      && ! global_options_set.x_rs6000_cpu_index)
+      && ! OPTION_SET_P (rs6000_cpu_index))
     {
       rs6000_isa_flags |= OPTION_MASK_ALTIVEC;
     }
@@ -3470,18 +3471,18 @@ rs6000_override_options_after_change (void)
 {
   /* Explicit -funroll-loops turns -munroll-only-small-loops off, and
      turns -frename-registers on.  */
-  if ((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
-       || (global_options_set.x_flag_unroll_all_loops
+  if ((OPTION_SET_P (flag_unroll_loops) && flag_unroll_loops)
+       || (OPTION_SET_P (flag_unroll_all_loops)
 	   && flag_unroll_all_loops))
     {
-      if (!global_options_set.x_unroll_only_small_loops)
+      if (!OPTION_SET_P (unroll_only_small_loops))
 	unroll_only_small_loops = 0;
-      if (!global_options_set.x_flag_rename_registers)
+      if (!OPTION_SET_P (flag_rename_registers))
 	flag_rename_registers = 1;
-      if (!global_options_set.x_flag_cunroll_grow_size)
+      if (!OPTION_SET_P (flag_cunroll_grow_size))
 	flag_cunroll_grow_size = 1;
     }
-  else if (!global_options_set.x_flag_cunroll_grow_size)
+  else if (!OPTION_SET_P (flag_cunroll_grow_size))
     flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
 }
 
@@ -3489,7 +3490,7 @@ rs6000_override_options_after_change (void)
 static void
 rs6000_linux64_override_options ()
 {
-  if (!global_options_set.x_rs6000_alignment_flags)
+  if (!OPTION_SET_P (rs6000_alignment_flags))
     rs6000_alignment_flags = MASK_ALIGN_NATURAL;
   if (rs6000_isa_flags & OPTION_MASK_64BIT)
     {
@@ -3525,11 +3526,11 @@ rs6000_linux64_override_options ()
 	  rs6000_isa_flags |= OPTION_MASK_POWERPC64;
 	  error ("%<-m64%> requires a PowerPC64 cpu");
 	}
-      if (!global_options_set.x_rs6000_current_cmodel)
+      if (!OPTION_SET_P (rs6000_current_cmodel))
 	SET_CMODEL (CMODEL_MEDIUM);
       if ((rs6000_isa_flags_explicit & OPTION_MASK_MINIMAL_TOC) != 0)
 	{
-	  if (global_options_set.x_rs6000_current_cmodel
+	  if (OPTION_SET_P (rs6000_current_cmodel)
 	      && rs6000_current_cmodel != CMODEL_SMALL)
 	    error ("%<-mcmodel incompatible with other toc options%>");
 	  if (TARGET_MINIMAL_TOC)
@@ -3544,14 +3545,14 @@ rs6000_linux64_override_options ()
 	}
       if (rs6000_current_cmodel != CMODEL_SMALL)
 	{
-	  if (!global_options_set.x_TARGET_NO_FP_IN_TOC)
+	  if (!OPTION_SET_P (TARGET_NO_FP_IN_TOC))
 	    TARGET_NO_FP_IN_TOC = rs6000_current_cmodel == CMODEL_MEDIUM;
-	  if (!global_options_set.x_TARGET_NO_SUM_IN_TOC)
+	  if (!OPTION_SET_P (TARGET_NO_SUM_IN_TOC))
 	    TARGET_NO_SUM_IN_TOC = 0;
 	}
       if (TARGET_PLTSEQ && DEFAULT_ABI != ABI_ELFv2)
 	{
-	  if (global_options_set.x_rs6000_pltseq)
+	  if (OPTION_SET_P (rs6000_pltseq))
 	    warning (0, "%qs unsupported for this ABI",
 		     "-mpltseq");
 	  rs6000_pltseq = false;
@@ -3566,7 +3567,7 @@ rs6000_linux64_override_options ()
 	  profile_kernel = 0;
 	  error (INVALID_32BIT, "profile-kernel");
 	}
-      if (global_options_set.x_rs6000_current_cmodel)
+      if (OPTION_SET_P (rs6000_current_cmodel))
 	{
 	  SET_CMODEL (CMODEL_SMALL);
 	  error (INVALID_32BIT, "cmodel");
@@ -3626,7 +3627,7 @@ glibc_supports_ieee_128bit (void)
      includes OPTION_TARGET_CPU_DEFAULT, representing the name of the
      default CPU specified at build configure time, TARGET_DEFAULT,
      representing the default set of option flags for the default
-     target, and global_options_set.x_rs6000_isa_flags, representing
+     target, and OPTION_SET_P (rs6000_isa_flags), representing
      which options were requested on the command line.
 
    Upon return from this function:
@@ -3675,13 +3676,13 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Remember the explicit arguments.  */
   if (global_init_p)
-    rs6000_isa_flags_explicit = global_options_set.x_rs6000_isa_flags;
+    rs6000_isa_flags_explicit = OPTION_SET_P (rs6000_isa_flags);
 
   /* On 64-bit Darwin, power alignment is ABI-incompatible with some C
      library functions, so warn about it. The flag may be useful for
      performance studies from time to time though, so don't disable it
      entirely.  */
-  if (global_options_set.x_rs6000_alignment_flags
+  if (OPTION_SET_P (rs6000_alignment_flags)
       && rs6000_alignment_flags == MASK_ALIGN_POWER
       && DEFAULT_ABI == ABI_DARWIN
       && TARGET_64BIT)
@@ -3694,20 +3695,20 @@ rs6000_option_override_internal (bool global_init_p)
      with enough (>= 32) registers.  It is an expensive optimization.
      So it is on only for peak performance.  */
   if (optimize >= 3 && global_init_p
-      && !global_options_set.x_flag_ira_loop_pressure)
+      && !OPTION_SET_P (flag_ira_loop_pressure))
     flag_ira_loop_pressure = 1;
 
   /* -fsanitize=address needs to turn on -fasynchronous-unwind-tables in order
      for tracebacks to be complete but not if any -fasynchronous-unwind-tables
      options were already specified.  */
   if (flag_sanitize & SANITIZE_USER_ADDRESS
-      && !global_options_set.x_flag_asynchronous_unwind_tables)
+      && !OPTION_SET_P (flag_asynchronous_unwind_tables))
     flag_asynchronous_unwind_tables = 1;
 
   /* -fvariable-expansion-in-unroller is a win for POWER whenever the
      loop unroller is active.  It is only checked during unrolling, so
      we can just set it on by default.  */
-  if (!global_options_set.x_flag_variable_expansion_in_unroller)
+  if (!OPTION_SET_P (flag_variable_expansion_in_unroller))
     flag_variable_expansion_in_unroller = 1;
 
   /* Set the pointer size.  */
@@ -3904,7 +3905,7 @@ rs6000_option_override_internal (bool global_init_p)
 
 #ifdef XCOFF_DEBUGGING_INFO
   /* For AIX default to 64-bit DWARF.  */
-  if (!global_options_set.x_dwarf_offset_size)
+  if (!OPTION_SET_P (dwarf_offset_size))
     dwarf_offset_size = POINTER_SIZE_UNITS;
 #endif
 
@@ -4128,7 +4129,7 @@ rs6000_option_override_internal (bool global_init_p)
   else if (TARGET_ALLOW_MOVMISALIGN && !TARGET_VSX)
     {
       if (TARGET_ALLOW_MOVMISALIGN > 0
-	  && global_options_set.x_TARGET_ALLOW_MOVMISALIGN)
+	  && OPTION_SET_P (TARGET_ALLOW_MOVMISALIGN))
 	error ("%qs requires %qs", "-mallow-movmisalign", "-mvsx");
 
       TARGET_ALLOW_MOVMISALIGN = 0;
@@ -4183,7 +4184,7 @@ rs6000_option_override_internal (bool global_init_p)
 				  : FLOAT_PRECISION_TFmode);
 
   /* Set long double size before the IEEE 128-bit tests.  */
-  if (!global_options_set.x_rs6000_long_double_type_size)
+  if (!OPTION_SET_P (rs6000_long_double_type_size))
     {
       if (main_target_opt != NULL
 	  && (main_target_opt->x_rs6000_long_double_type_size
@@ -4196,7 +4197,7 @@ rs6000_option_override_internal (bool global_init_p)
     ; /* The option value can be seen when cl_target_option_restore is called.  */
   else if (rs6000_long_double_type_size == 128)
     rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
-  else if (global_options_set.x_rs6000_ieeequad)
+  else if (OPTION_SET_P (rs6000_ieeequad))
     {
       if (global_options.x_rs6000_ieeequad)
 	error ("%qs requires %qs", "-mabi=ieeelongdouble", "-mlong-double-128");
@@ -4209,7 +4210,7 @@ rs6000_option_override_internal (bool global_init_p)
      explicitly redefine TARGET_IEEEQUAD and TARGET_IEEEQUAD_DEFAULT to 0, so
      those systems will not pick up this default.  Warn if the user changes the
      default unless -Wno-psabi.  */
-  if (!global_options_set.x_rs6000_ieeequad)
+  if (!OPTION_SET_P (rs6000_ieeequad))
     rs6000_ieeequad = TARGET_IEEEQUAD_DEFAULT;
 
   else
@@ -4394,7 +4395,7 @@ rs6000_option_override_internal (bool global_init_p)
   /* Enable Altivec ABI for AIX -maltivec.  */
   if (TARGET_XCOFF
       && (TARGET_ALTIVEC || TARGET_VSX)
-      && !global_options_set.x_rs6000_altivec_abi)
+      && !OPTION_SET_P (rs6000_altivec_abi))
     {
       if (main_target_opt != NULL && !main_target_opt->x_rs6000_altivec_abi)
 	error ("target attribute or pragma changes AltiVec ABI");
@@ -4407,7 +4408,7 @@ rs6000_option_override_internal (bool global_init_p)
      be explicitly overridden in either case.  */
   if (TARGET_ELF)
     {
-      if (!global_options_set.x_rs6000_altivec_abi
+      if (!OPTION_SET_P (rs6000_altivec_abi)
 	  && (TARGET_64BIT || TARGET_ALTIVEC || TARGET_VSX))
 	{
 	  if (main_target_opt != NULL &&
@@ -4437,7 +4438,7 @@ rs6000_option_override_internal (bool global_init_p)
   /* Place FP constants in the constant pool instead of TOC
      if section anchors enabled.  */
   if (flag_section_anchors
-      && !global_options_set.x_TARGET_NO_FP_IN_TOC)
+      && !OPTION_SET_P (TARGET_NO_FP_IN_TOC))
     TARGET_NO_FP_IN_TOC = 1;
 
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
@@ -4497,6 +4498,10 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_POWER10
       && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2ADD) == 0)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2ADD;
+
+  if (TARGET_POWER10
+      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2STORE) == 0)
+    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2STORE;
 
   /* Turn off vector pair/mma options on non-power10 systems.  */
   else if (!TARGET_POWER10 && TARGET_MMA)
@@ -4590,7 +4595,7 @@ rs6000_option_override_internal (bool global_init_p)
     }
 
   /* Handle stack protector */
-  if (!global_options_set.x_rs6000_stack_protector_guard)
+  if (!OPTION_SET_P (rs6000_stack_protector_guard))
 #ifdef TARGET_THREAD_SSP_OFFSET
     rs6000_stack_protector_guard = SSP_TLS;
 #else
@@ -4602,7 +4607,7 @@ rs6000_option_override_internal (bool global_init_p)
   rs6000_stack_protector_guard_reg = TARGET_64BIT ? 13 : 2;
 #endif
 
-  if (global_options_set.x_rs6000_stack_protector_guard_offset_str)
+  if (OPTION_SET_P (rs6000_stack_protector_guard_offset_str))
     {
       char *endp;
       const char *str = rs6000_stack_protector_guard_offset_str;
@@ -4621,7 +4626,7 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_stack_protector_guard_offset = offset;
     }
 
-  if (global_options_set.x_rs6000_stack_protector_guard_reg_str)
+  if (OPTION_SET_P (rs6000_stack_protector_guard_reg_str))
     {
       const char *str = rs6000_stack_protector_guard_reg_str;
       int reg = decode_reg_name (str);
@@ -4649,7 +4654,7 @@ rs6000_option_override_internal (bool global_init_p)
       /* Set aix_struct_return last, after the ABI is determined.
 	 If -maix-struct-return or -msvr4-struct-return was explicitly
 	 used, don't override with the ABI default.  */
-      if (!global_options_set.x_aix_struct_return)
+      if (!OPTION_SET_P (aix_struct_return))
 	aix_struct_return = (DEFAULT_ABI != ABI_V4 || DRAFT_V4_STRUCT_RET);
 
 #if 0
@@ -5258,16 +5263,22 @@ rs6000_preferred_simd_mode (scalar_mode mode)
   return word_mode;
 }
 
-typedef struct _rs6000_cost_data
+struct rs6000_cost_data
 {
   struct loop *loop_info;
   unsigned cost[3];
+  /* Total number of vectorized stmts (loop only).  */
+  unsigned nstmts;
+  /* Total number of loads (loop only).  */
+  unsigned nloads;
+  /* Possible extra penalized cost on vector construction (loop only).  */
+  unsigned extra_ctor_cost;
   /* For each vectorized loop, this var holds TRUE iff a non-memory vector
      instruction is needed by the vectorization.  */
   bool vect_nonmem;
   /* Indicates this is costing for the scalar version of a loop or block.  */
   bool costing_for_scalar;
-} rs6000_cost_data;
+};
 
 /* Test for likely overcommitment of vector hardware resources.  If a
    loop iteration is relatively large, and too large a percentage of
@@ -5278,23 +5289,19 @@ typedef struct _rs6000_cost_data
 static void
 rs6000_density_test (rs6000_cost_data *data)
 {
-  const int DENSITY_PCT_THRESHOLD = 85;
-  const int DENSITY_SIZE_THRESHOLD = 70;
-  const int DENSITY_PENALTY = 10;
-  struct loop *loop = data->loop_info;
-  basic_block *bbs = get_loop_body (loop);
-  int nbbs = loop->num_nodes;
-  loop_vec_info loop_vinfo = loop_vec_info_for_loop (data->loop_info);
-  int vec_cost = data->cost[vect_body], not_vec_cost = 0;
-  int i, density_pct;
-
   /* This density test only cares about the cost of vector version of the
      loop, so immediately return if we are passed costing for the scalar
      version (namely computing single scalar iteration cost).  */
   if (data->costing_for_scalar)
     return;
 
-  for (i = 0; i < nbbs; i++)
+  struct loop *loop = data->loop_info;
+  basic_block *bbs = get_loop_body (loop);
+  int nbbs = loop->num_nodes;
+  loop_vec_info loop_vinfo = loop_vec_info_for_loop (data->loop_info);
+  int vec_cost = data->cost[vect_body], not_vec_cost = 0;
+
+  for (int i = 0; i < nbbs; i++)
     {
       basic_block bb = bbs[i];
       gimple_stmt_iterator gsi;
@@ -5314,17 +5321,51 @@ rs6000_density_test (rs6000_cost_data *data)
     }
 
   free (bbs);
-  density_pct = (vec_cost * 100) / (vec_cost + not_vec_cost);
+  int density_pct = (vec_cost * 100) / (vec_cost + not_vec_cost);
 
-  if (density_pct > DENSITY_PCT_THRESHOLD
-      && vec_cost + not_vec_cost > DENSITY_SIZE_THRESHOLD)
+  if (density_pct > rs6000_density_pct_threshold
+      && vec_cost + not_vec_cost > rs6000_density_size_threshold)
     {
-      data->cost[vect_body] = vec_cost * (100 + DENSITY_PENALTY) / 100;
+      data->cost[vect_body] = vec_cost * (100 + rs6000_density_penalty) / 100;
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "density %d%%, cost %d exceeds threshold, penalizing "
-			 "loop body cost by %d%%", density_pct,
-			 vec_cost + not_vec_cost, DENSITY_PENALTY);
+			 "loop body cost by %u%%\n", density_pct,
+			 vec_cost + not_vec_cost, rs6000_density_penalty);
+    }
+
+  /* Check whether we need to penalize the body cost to account
+     for excess strided or elementwise loads.  */
+  if (data->extra_ctor_cost > 0)
+    {
+      gcc_assert (data->nloads <= data->nstmts);
+      unsigned int load_pct = (data->nloads * 100) / data->nstmts;
+
+      /* It's likely to be bounded by latency and execution resources
+	 from many scalar loads which are strided or elementwise loads
+	 into a vector if both conditions below are found:
+	   1. there are many loads, it's easy to result in a long wait
+	      for load units;
+	   2. load has a big proportion of all vectorized statements,
+	      it's not easy to schedule other statements to spread among
+	      the loads.
+	 One typical case is the innermost loop of the hotspot of SPEC2017
+	 503.bwaves_r without loop interchange.  */
+      if (data->nloads > (unsigned int) rs6000_density_load_num_threshold
+	  && load_pct > (unsigned int) rs6000_density_load_pct_threshold)
+	{
+	  data->cost[vect_body] += data->extra_ctor_cost;
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Found %u loads and "
+			     "load pct. %u%% exceed "
+			     "the threshold, "
+			     "penalizing loop body "
+			     "cost by extra cost %u "
+			     "for ctor.\n",
+			     data->nloads, load_pct,
+			     data->extra_ctor_cost);
+	}
     }
 }
 
@@ -5333,12 +5374,15 @@ rs6000_density_test (rs6000_cost_data *data)
 static void *
 rs6000_init_cost (struct loop *loop_info, bool costing_for_scalar)
 {
-  rs6000_cost_data *data = XNEW (struct _rs6000_cost_data);
+  rs6000_cost_data *data = XNEW (rs6000_cost_data);
   data->loop_info = loop_info;
   data->cost[vect_prologue] = 0;
   data->cost[vect_body]     = 0;
   data->cost[vect_epilogue] = 0;
   data->vect_nonmem = false;
+  data->nstmts = 0;
+  data->nloads = 0;
+  data->extra_ctor_cost = 0;
   data->costing_for_scalar = costing_for_scalar;
   return data;
 }
@@ -5366,6 +5410,70 @@ rs6000_adjust_vect_cost_per_stmt (enum vect_cost_for_stmt kind,
   return 0;
 }
 
+/* Helper function for add_stmt_cost.  Check each statement cost
+   entry, gather information and update the target_cost fields
+   accordingly.  */
+static void
+rs6000_update_target_cost_per_stmt (rs6000_cost_data *data,
+				    enum vect_cost_for_stmt kind,
+				    struct _stmt_vec_info *stmt_info,
+				    enum vect_cost_model_location where,
+				    int stmt_cost,
+				    unsigned int orig_count)
+{
+
+  /* Check whether we're doing something other than just a copy loop.
+     Not all such loops may be profitably vectorized; see
+     rs6000_finish_cost.  */
+  if (kind == vec_to_scalar
+      || kind == vec_perm
+      || kind == vec_promote_demote
+      || kind == vec_construct
+      || kind == scalar_to_vec
+      || (where == vect_body && kind == vector_stmt))
+    data->vect_nonmem = true;
+
+  /* Gather some information when we are costing the vectorized instruction
+     for the statements located in a loop body.  */
+  if (!data->costing_for_scalar && data->loop_info && where == vect_body)
+    {
+      data->nstmts += orig_count;
+
+      if (kind == scalar_load || kind == vector_load
+	  || kind == unaligned_load || kind == vector_gather_load)
+	data->nloads += orig_count;
+
+      /* Power processors do not currently have instructions for strided
+	 and elementwise loads, and instead we must generate multiple
+	 scalar loads.  This leads to undercounting of the cost.  We
+	 account for this by scaling the construction cost by the number
+	 of elements involved, and saving this as extra cost that we may
+	 or may not need to apply.  When finalizing the cost of the loop,
+	 the extra penalty is applied when the load density heuristics
+	 are satisfied.  */
+      if (kind == vec_construct && stmt_info
+	  && STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
+	  && (STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
+	      || STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_STRIDED_SLP))
+	{
+	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+	  unsigned int nunits = vect_nunits_for_cost (vectype);
+	  unsigned int extra_cost = nunits * stmt_cost;
+	  /* As function rs6000_builtin_vectorization_cost shows, we have
+	     priced much on V16QI/V8HI vector construction as their units,
+	     if we penalize them with nunits * stmt_cost, it can result in
+	     an unreliable body cost, eg: for V16QI on Power8, stmt_cost
+	     is 20 and nunits is 16, the extra cost is 320 which looks
+	     much exaggerated.  So let's use one maximum bound for the
+	     extra penalized cost for vector construction here.  */
+	  const unsigned int MAX_PENALIZED_COST_FOR_CTOR = 12;
+	  if (extra_cost > MAX_PENALIZED_COST_FOR_CTOR)
+	    extra_cost = MAX_PENALIZED_COST_FOR_CTOR;
+	  data->extra_ctor_cost += extra_cost;
+	}
+    }
+}
+
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
 static unsigned
@@ -5385,6 +5493,7 @@ rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
+      unsigned int orig_count = count;
       if (where == vect_body && stmt_info
 	  && stmt_in_inner_loop_p (vinfo, stmt_info))
 	{
@@ -5396,14 +5505,8 @@ rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
       retval = (unsigned) (count * stmt_cost);
       cost_data->cost[where] += retval;
 
-      /* Check whether we're doing something other than just a copy loop.
-	 Not all such loops may be profitably vectorized; see
-	 rs6000_finish_cost.  */
-      if ((kind == vec_to_scalar || kind == vec_perm
-	   || kind == vec_promote_demote || kind == vec_construct
-	   || kind == scalar_to_vec)
-	  || (where == vect_body && kind == vector_stmt))
-	cost_data->vect_nonmem = true;
+      rs6000_update_target_cost_per_stmt (cost_data, kind, stmt_info, where,
+					  stmt_cost, orig_count);
     }
 
   return retval;
@@ -5495,6 +5598,255 @@ rs6000_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
     }
 
   return nunroll;
+}
+
+/* Returns a function decl for a vectorized version of the builtin function
+   with builtin function code FN and the result vector type TYPE, or NULL_TREE
+   if it is not available.
+
+   Implement targetm.vectorize.builtin_vectorized_function.  */
+
+static tree
+rs6000_new_builtin_vectorized_function (unsigned int fn, tree type_out,
+					tree type_in)
+{
+  machine_mode in_mode, out_mode;
+  int in_n, out_n;
+
+  if (TARGET_DEBUG_BUILTIN)
+    fprintf (stderr, "rs6000_new_builtin_vectorized_function (%s, %s, %s)\n",
+	     combined_fn_name (combined_fn (fn)),
+	     GET_MODE_NAME (TYPE_MODE (type_out)),
+	     GET_MODE_NAME (TYPE_MODE (type_in)));
+
+  /* TODO: Should this be gcc_assert?  */
+  if (TREE_CODE (type_out) != VECTOR_TYPE
+      || TREE_CODE (type_in) != VECTOR_TYPE)
+    return NULL_TREE;
+
+  out_mode = TYPE_MODE (TREE_TYPE (type_out));
+  out_n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+
+  switch (fn)
+    {
+    CASE_CFN_COPYSIGN:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_CPSGNDP];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_CPSGNSP];
+      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_COPYSIGN_V4SF];
+      break;
+    CASE_CFN_CEIL:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIP];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIP];
+      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VRFIP];
+      break;
+    CASE_CFN_FLOOR:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIM];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIM];
+      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VRFIM];
+      break;
+    CASE_CFN_FMA:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVMADDDP];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVMADDSP];
+      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VMADDFP];
+      break;
+    CASE_CFN_TRUNC:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIZ];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIZ];
+      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VRFIZ];
+      break;
+    CASE_CFN_NEARBYINT:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && flag_unsafe_math_optimizations
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPI];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && flag_unsafe_math_optimizations
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPI];
+      break;
+    CASE_CFN_RINT:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && !flag_trapping_math
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIC];
+      if (VECTOR_UNIT_VSX_P (V4SFmode)
+	  && !flag_trapping_math
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIC];
+      break;
+    default:
+      break;
+    }
+
+  /* Generate calls to libmass if appropriate.  */
+  if (rs6000_veclib_handler)
+    return rs6000_veclib_handler (combined_fn (fn), type_out, type_in);
+
+  return NULL_TREE;
+}
+
+/* Implement targetm.vectorize.builtin_md_vectorized_function.  */
+
+static tree
+rs6000_new_builtin_md_vectorized_function (tree fndecl, tree type_out,
+					   tree type_in)
+{
+  machine_mode in_mode, out_mode;
+  int in_n, out_n;
+
+  if (TARGET_DEBUG_BUILTIN)
+    fprintf (stderr,
+	     "rs6000_new_builtin_md_vectorized_function (%s, %s, %s)\n",
+	     IDENTIFIER_POINTER (DECL_NAME (fndecl)),
+	     GET_MODE_NAME (TYPE_MODE (type_out)),
+	     GET_MODE_NAME (TYPE_MODE (type_in)));
+
+  /* TODO: Should this be gcc_assert?  */
+  if (TREE_CODE (type_out) != VECTOR_TYPE
+      || TREE_CODE (type_in) != VECTOR_TYPE)
+    return NULL_TREE;
+
+  out_mode = TYPE_MODE (TREE_TYPE (type_out));
+  out_n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+
+  enum rs6000_gen_builtins fn
+    = (enum rs6000_gen_builtins) DECL_MD_FUNCTION_CODE (fndecl);
+  switch (fn)
+    {
+    case RS6000_BIF_RSQRTF:
+      if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VRSQRTFP];
+      break;
+    case RS6000_BIF_RSQRT:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_RSQRT_2DF];
+      break;
+    case RS6000_BIF_RECIPF:
+      if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
+	  && out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return rs6000_builtin_decls_x[RS6000_BIF_VRECIPFP];
+      break;
+    case RS6000_BIF_RECIP:
+      if (VECTOR_UNIT_VSX_P (V2DFmode)
+	  && out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
+	return rs6000_builtin_decls_x[RS6000_BIF_RECIP_V2DF];
+      break;
+    default:
+      break;
+    }
+
+  machine_mode in_vmode = TYPE_MODE (type_in);
+  machine_mode out_vmode = TYPE_MODE (type_out);
+
+  /* Power10 supported vectorized built-in functions.  */
+  if (TARGET_POWER10
+      && in_vmode == out_vmode
+      && VECTOR_UNIT_ALTIVEC_OR_VSX_P (in_vmode))
+    {
+      machine_mode exp_mode = DImode;
+      machine_mode exp_vmode = V2DImode;
+      enum rs6000_gen_builtins bif;
+      switch (fn)
+	{
+	case RS6000_BIF_DIVWE:
+	case RS6000_BIF_DIVWEU:
+	  exp_mode = SImode;
+	  exp_vmode = V4SImode;
+	  if (fn == RS6000_BIF_DIVWE)
+	    bif = RS6000_BIF_VDIVESW;
+	  else
+	    bif = RS6000_BIF_VDIVEUW;
+	  break;
+	case RS6000_BIF_DIVDE:
+	case RS6000_BIF_DIVDEU:
+	  if (fn == RS6000_BIF_DIVDE)
+	    bif = RS6000_BIF_VDIVESD;
+	  else
+	    bif = RS6000_BIF_VDIVEUD;
+	  break;
+	case RS6000_BIF_CFUGED:
+	  bif = RS6000_BIF_VCFUGED;
+	  break;
+	case RS6000_BIF_CNTLZDM:
+	  bif = RS6000_BIF_VCLZDM;
+	  break;
+	case RS6000_BIF_CNTTZDM:
+	  bif = RS6000_BIF_VCTZDM;
+	  break;
+	case RS6000_BIF_PDEPD:
+	  bif = RS6000_BIF_VPDEPD;
+	  break;
+	case RS6000_BIF_PEXTD:
+	  bif = RS6000_BIF_VPEXTD;
+	  break;
+	default:
+	  return NULL_TREE;
+	}
+
+      if (in_mode == exp_mode && in_vmode == exp_vmode)
+	return rs6000_builtin_decls_x[bif];
+    }
+
+  return NULL_TREE;
 }
 
 /* Handler for the Mathematical Acceleration Subsystem (mass) interface to a
@@ -5615,6 +5967,9 @@ rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
+
+  if (new_builtins_are_live)
+    return rs6000_new_builtin_vectorized_function (fn, type_out, type_in);
 
   if (TARGET_DEBUG_BUILTIN)
     fprintf (stderr, "rs6000_builtin_vectorized_function (%s, %s, %s)\n",
@@ -5746,6 +6101,10 @@ rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
+
+  if (new_builtins_are_live)
+    return rs6000_new_builtin_md_vectorized_function (fndecl, type_out,
+						      type_in);
 
   if (TARGET_DEBUG_BUILTIN)
     fprintf (stderr, "rs6000_builtin_md_vectorized_function (%s, %s, %s)\n",
@@ -5912,14 +6271,14 @@ rs6000_file_start (void)
 	  start = "";
 	}
 
-      if (global_options_set.x_rs6000_cpu_index)
+      if (OPTION_SET_P (rs6000_cpu_index))
 	{
 	  fprintf (file, "%s -mcpu=%s", start,
 		   processor_target_table[rs6000_cpu_index].name);
 	  start = "";
 	}
 
-      if (global_options_set.x_rs6000_tune_index)
+      if (OPTION_SET_P (rs6000_tune_index))
 	{
 	  fprintf (file, "%s -mtune=%s", start,
 		   processor_target_table[rs6000_tune_index].name);
@@ -18933,6 +19292,89 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
   return cached_can_issue_more;
 }
 
+/* Determine if INSN is a store to memory that can be fused with a similar
+   adjacent store.  */
+
+static bool
+is_fusable_store (rtx_insn *insn, rtx *str_mem)
+{
+  /* Insn must be a non-prefixed base+disp form store.  */
+  if (is_store_insn (insn, str_mem)
+      && get_attr_prefixed (insn) == PREFIXED_NO
+      && get_attr_update (insn) == UPDATE_NO
+      && get_attr_indexed (insn) == INDEXED_NO)
+    {
+      /* Further restrictions by mode and size.  */
+      if (!MEM_SIZE_KNOWN_P (*str_mem))
+	return false;
+
+      machine_mode mode = GET_MODE (*str_mem);
+      HOST_WIDE_INT size = MEM_SIZE (*str_mem);
+
+      if (INTEGRAL_MODE_P (mode))
+	/* Must be word or dword size.  */
+	return (size == 4 || size == 8);
+      else if (FLOAT_MODE_P (mode))
+	/* Must be dword size.  */
+	return (size == 8);
+    }
+
+  return false;
+}
+
+/* Do Power10 specific reordering of the ready list.  */
+
+static int
+power10_sched_reorder (rtx_insn **ready, int lastpos)
+{
+  rtx mem1;
+
+  /* Do store fusion during sched2 only.  */
+  if (!reload_completed)
+    return cached_can_issue_more;
+
+  /* If the prior insn finished off a store fusion pair then simply
+     reset the counter and return, nothing more to do.  */
+  if (load_store_pendulum != 0)
+    {
+      load_store_pendulum = 0;
+      return cached_can_issue_more;
+    }
+
+  /* Try to pair certain store insns to adjacent memory locations
+     so that the hardware will fuse them to a single operation.  */
+  if (TARGET_P10_FUSION && TARGET_P10_FUSION_2STORE
+      && is_fusable_store (last_scheduled_insn, &mem1))
+    {
+
+      /* A fusable store was just scheduled.  Scan the ready list for another
+	 store that it can fuse with.  */
+      int pos = lastpos;
+      while (pos >= 0)
+	{
+	  rtx mem2;
+	  /* GPR stores can be ascending or descending offsets, FPR/VSR stores
+	     must be ascending only.  */
+	  if (is_fusable_store (ready[pos], &mem2)
+	      && ((INTEGRAL_MODE_P (GET_MODE (mem1))
+		   && adjacent_mem_locations (mem1, mem2))
+		  || (FLOAT_MODE_P (GET_MODE (mem1))
+		   && (adjacent_mem_locations (mem1, mem2) == mem1))))
+	    {
+	      /* Found a fusable store.  Move it to the end of the ready list
+		 so it is scheduled next.  */
+	      move_to_end_of_ready (ready, pos, lastpos);
+
+	      load_store_pendulum = -1;
+	      break;
+	    }
+	  pos--;
+	}
+    }
+
+  return cached_can_issue_more;
+}
+
 /* We are about to begin issuing insns for this clock cycle. */
 
 static int
@@ -18959,6 +19401,10 @@ rs6000_sched_reorder (FILE *dump ATTRIBUTE_UNUSED, int sched_verbose,
   if (rs6000_tune == PROCESSOR_POWER6)
     load_store_pendulum = 0;
 
+  /* Do Power10 dependent reordering.  */
+  if (rs6000_tune == PROCESSOR_POWER10 && last_scheduled_insn)
+    power10_sched_reorder (ready, n_ready - 1);
+
   return rs6000_issue_rate ();
 }
 
@@ -18979,6 +19425,10 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx_insn **ready,
   if (rs6000_tune == PROCESSOR_POWER9 && last_scheduled_insn
       && recog_memoized (last_scheduled_insn) >= 0)
     return power9_sched_reorder2 (ready, *pn_ready - 1);
+
+  /* Do Power10 dependent reordering.  */
+  if (rs6000_tune == PROCESSOR_POWER10 && last_scheduled_insn)
+    return power10_sched_reorder (ready, *pn_ready - 1);
 
   return cached_can_issue_more;
 }
@@ -20602,7 +21052,7 @@ rs6000_darwin_file_start (void)
   if (rs6000_default_cpu != 0 && rs6000_default_cpu[0] != '\0')
     cpu_id = rs6000_default_cpu;
 
-  if (global_options_set.x_rs6000_cpu_index)
+  if (OPTION_SET_P (rs6000_cpu_index))
     cpu_id = processor_target_table[rs6000_cpu_index].name;
 
   /* Look through the mapping array.  Pick the first name that either
@@ -21526,7 +21976,8 @@ rs6000_xcoff_encode_section_info (tree decl, rtx rtl, int first)
   if (decl
       && DECL_P (decl)
       && VAR_OR_FUNCTION_DECL_P (decl)
-      && symtab_node::get (decl)->alias == 0
+      && (symtab_node::get (decl) == NULL
+	  || symtab_node::get (decl)->alias == 0)
       && symname[strlen (symname) - 1] != ']')
     {
       const char *smclass = NULL;
@@ -21972,7 +22423,7 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
       break;
 
     case UNSPEC:
-      if (XINT (x, 1) == UNSPEC_MMA_XXSETACCZ)
+      if (XINT (x, 1) == UNSPECV_MMA_XXSETACCZ)
 	{
 	  *total = 0;
 	  return true;

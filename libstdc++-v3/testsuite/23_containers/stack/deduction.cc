@@ -20,6 +20,7 @@
 #include <stack>
 #include <deque>
 #include <list>
+#include <testsuite_allocator.h>
 
 template<typename T, typename U> struct require_same;
 template<typename T> struct require_same<T, T> { using type = void; };
@@ -58,7 +59,7 @@ test01()
 
 void
 test02()
-  {
+{
   std::deque<unsigned> d;
   std::list<long> l;
 

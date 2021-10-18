@@ -677,11 +677,18 @@ dump_gimple_assign (pretty_printer *buffer, const gassign *gs, int spc,
 	}
 
       if (gimple_num_ops (gs) == 2)
-        dump_unary_rhs (buffer, gs, spc, flags);
+	dump_unary_rhs (buffer, gs, spc,
+			((flags & TDF_GIMPLE)
+			 && gimple_assign_rhs_class (gs) != GIMPLE_SINGLE_RHS)
+			? (flags | TDF_GIMPLE_VAL) : flags);
       else if (gimple_num_ops (gs) == 3)
-        dump_binary_rhs (buffer, gs, spc, flags);
+	dump_binary_rhs (buffer, gs, spc,
+			 (flags & TDF_GIMPLE)
+			 ? (flags | TDF_GIMPLE_VAL) : flags);
       else if (gimple_num_ops (gs) == 4)
-        dump_ternary_rhs (buffer, gs, spc, flags);
+	dump_ternary_rhs (buffer, gs, spc,
+			  (flags & TDF_GIMPLE)
+			  ? (flags | TDF_GIMPLE_VAL) : flags);
       else
         gcc_unreachable ();
       if (!(flags & TDF_RHS_ONLY))
@@ -1085,11 +1092,15 @@ dump_gimple_cond (pretty_printer *buffer, const gcond *gs, int spc,
     {
       if (!(flags & TDF_RHS_ONLY))
 	pp_string (buffer, "if (");
-      dump_generic_node (buffer, gimple_cond_lhs (gs), spc, flags, false);
+      dump_generic_node (buffer, gimple_cond_lhs (gs), spc,
+			 flags | ((flags & TDF_GIMPLE) ? TDF_GIMPLE_VAL : TDF_NONE),
+			 false);
       pp_space (buffer);
       pp_string (buffer, op_symbol_code (gimple_cond_code (gs)));
       pp_space (buffer);
-      dump_generic_node (buffer, gimple_cond_rhs (gs), spc, flags, false);
+      dump_generic_node (buffer, gimple_cond_rhs (gs), spc,
+			 flags | ((flags & TDF_GIMPLE) ? TDF_GIMPLE_VAL : TDF_NONE),
+			 false);
       if (!(flags & TDF_RHS_ONLY))
 	{
 	  edge_iterator ei;
@@ -2563,6 +2574,8 @@ dump_gimple_omp_atomic_load (pretty_printer *buffer, const gomp_atomic_load *gs,
 				    gimple_omp_atomic_memory_order (gs));
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, " [needed]");
+      if (gimple_omp_atomic_weak_p (gs))
+	pp_string (buffer, " [weak]");
       newline_and_indent (buffer, spc + 2);
       dump_generic_node (buffer, gimple_omp_atomic_load_lhs (gs),
 	  		 spc, flags, false);
@@ -2597,6 +2610,8 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer,
       pp_space (buffer);
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, "[needed] ");
+      if (gimple_omp_atomic_weak_p (gs))
+	pp_string (buffer, "[weak] ");
       pp_left_paren (buffer);
       dump_generic_node (buffer, gimple_omp_atomic_store_val (gs),
 	  		 spc, flags, false);

@@ -409,7 +409,9 @@ package body Exp_Dbug is
             when N_Expanded_Name
                | N_Identifier
             =>
-               if not Present (Renamed_Object (Entity (Ren))) then
+               if No (Entity (Ren))
+                 or else not Present (Renamed_Object (Entity (Ren)))
+               then
                   exit;
                end if;
 
@@ -438,7 +440,7 @@ package body Exp_Dbug is
                     Enable
                       or else Is_Packed
                                 (Underlying_Type (Etype (Prefix (Ren))))
-                      or else (First_Bit /= No_Uint
+                      or else (Present (First_Bit)
                                 and then First_Bit /= Uint_0);
                end;
 

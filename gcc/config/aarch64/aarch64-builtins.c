@@ -29,6 +29,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "ssa.h"
 #include "memmodel.h"
 #include "tm_p.h"
 #include "expmed.h"
@@ -181,6 +182,10 @@ static enum aarch64_type_qualifiers
 aarch64_types_binopp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_poly, qualifier_poly, qualifier_poly };
 #define TYPES_BINOPP (aarch64_types_binopp_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_binop_ppu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_poly, qualifier_unsigned };
+#define TYPES_BINOP_PPU (aarch64_types_binop_ppu_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_ternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -206,6 +211,10 @@ aarch64_types_ternopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_unsigned, qualifier_immediate };
 #define TYPES_TERNOPUI (aarch64_types_ternopu_imm_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_ternop_sssu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_unsigned };
+#define TYPES_TERNOP_SSSU (aarch64_types_ternop_sssu_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_ternop_ssus_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_none };
 #define TYPES_TERNOP_SSUS (aarch64_types_ternop_ssus_qualifiers)
@@ -213,6 +222,10 @@ static enum aarch64_type_qualifiers
 aarch64_types_ternop_suss_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_unsigned, qualifier_none, qualifier_none };
 #define TYPES_TERNOP_SUSS (aarch64_types_ternop_suss_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_binop_pppu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_poly, qualifier_poly, qualifier_unsigned };
+#define TYPES_TERNOP_PPPU (aarch64_types_binop_pppu_qualifiers)
 
 
 static enum aarch64_type_qualifiers
@@ -593,7 +606,7 @@ enum aarch64_simd_type
 };
 #undef ENTRY
 
-struct aarch64_simd_type_info
+struct GTY(()) aarch64_simd_type_info
 {
   enum aarch64_simd_type type;
 
@@ -625,14 +638,14 @@ struct aarch64_simd_type_info
 
 #define ENTRY(E, M, Q, G)  \
   {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, E_##M##mode, qualifier_##Q},
-static struct aarch64_simd_type_info aarch64_simd_types [] = {
+static GTY(()) struct aarch64_simd_type_info aarch64_simd_types [] = {
 #include "aarch64-simd-builtin-types.def"
 };
 #undef ENTRY
 
-static tree aarch64_simd_intOI_type_node = NULL_TREE;
-static tree aarch64_simd_intCI_type_node = NULL_TREE;
-static tree aarch64_simd_intXI_type_node = NULL_TREE;
+static GTY(()) tree aarch64_simd_intOI_type_node = NULL_TREE;
+static GTY(()) tree aarch64_simd_intCI_type_node = NULL_TREE;
+static GTY(()) tree aarch64_simd_intXI_type_node = NULL_TREE;
 
 /* The user-visible __fp16 type, and a pointer to that type.  Used
    across the back-end.  */
@@ -2333,6 +2346,27 @@ aarch64_general_builtin_rsqrt (unsigned int fn)
   return NULL_TREE;
 }
 
+/* Return true if the lane check can be removed as there is no
+   error going to be emitted.  */
+static bool
+aarch64_fold_builtin_lane_check (tree arg0, tree arg1, tree arg2)
+{
+  if (TREE_CODE (arg0) != INTEGER_CST)
+    return false;
+  if (TREE_CODE (arg1) != INTEGER_CST)
+    return false;
+  if (TREE_CODE (arg2) != INTEGER_CST)
+    return false;
+
+  auto totalsize = wi::to_widest (arg0);
+  auto elementsize = wi::to_widest (arg1);
+  if (totalsize == 0 || elementsize == 0)
+    return false;
+  auto lane = wi::to_widest (arg2);
+  auto high = wi::udiv_trunc (totalsize, elementsize);
+  return wi::ltu_p (lane, high);
+}
+
 #undef VAR1
 #define VAR1(T, N, MAP, FLAG, A) \
   case AARCH64_SIMD_BUILTIN_##T##_##N##A:
@@ -2353,6 +2387,11 @@ aarch64_general_fold_builtin (unsigned int fcode, tree type,
       VAR1 (UNOP, floatv4si, 2, ALL, v4sf)
       VAR1 (UNOP, floatv2di, 2, ALL, v2df)
 	return fold_build1 (FLOAT_EXPR, type, args[0]);
+      case AARCH64_SIMD_BUILTIN_LANE_CHECK:
+	gcc_assert (n_args == 3);
+	if (aarch64_fold_builtin_lane_check (args[0], args[1], args[2]))
+	  return void_node;
+	break;
       default:
 	break;
     }
@@ -2440,6 +2479,14 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt)
 	    }
 	  break;
 	}
+    case AARCH64_SIMD_BUILTIN_LANE_CHECK:
+      if (aarch64_fold_builtin_lane_check (args[0], args[1], args[2]))
+	{
+	  unlink_stmt_vdef (stmt);
+	  release_defs (stmt);
+	  new_stmt = gimple_build_nop ();
+	}
+      break;
     default:
       break;
     }

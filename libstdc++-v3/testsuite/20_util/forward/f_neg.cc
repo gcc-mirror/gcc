@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "must not be an lvalue reference" "" { target *-*-* } 0 }
+// { dg-error "convert an rvalue to an lvalue" "" { target *-*-* } 0 }
 
 #include <utility>
 

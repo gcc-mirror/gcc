@@ -1,12 +1,12 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -w -fdump-tree-vrp1-details -fdump-tree-vrp2-details -fdump-tree-dom2-details -fdump-tree-dom3-details" } */
 
-/* All the threads found by the FSM threader should have too
-   many statements to be profitable.  */
-/* { dg-final { scan-tree-dump-not "Registering FSM " "dom2"} } */
-/* { dg-final { scan-tree-dump-not "Registering FSM " "dom3"} } */
-/* { dg-final { scan-tree-dump-not "Registering FSM " "vrp1"} } */
-/* { dg-final { scan-tree-dump-not "Registering FSM " "vrp2"} } */
+/* All the threads found by the threader should have too many
+   statements to be profitable.  */
+/* { dg-final { scan-tree-dump-not "Registering jump " "dom2"} } */
+/* { dg-final { scan-tree-dump-not "Registering jump " "dom3"} } */
+/* { dg-final { scan-tree-dump-not "Registering jump " "vrp1"} } */
+/* { dg-final { scan-tree-dump-not "Registering jump " "vrp2"} } */
 
 typedef _Bool bool;
 typedef unsigned char uint8_t;

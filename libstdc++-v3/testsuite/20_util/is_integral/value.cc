@@ -28,13 +28,11 @@ void test01()
   using namespace __gnu_test;
 
   static_assert(test_category<is_integral, void>(false), "");
-  
+
   static_assert(test_category<is_integral, char>(true), "");
   static_assert(test_category<is_integral, signed char>(true), "");
   static_assert(test_category<is_integral, unsigned char>(true), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_integral, wchar_t>(true), "");
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
   static_assert(test_category<is_integral, char8_t>(true), "");
 #endif
@@ -55,7 +53,7 @@ void test01()
 
 #ifndef __STRICT_ANSI__
   // GNU Extensions.
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   static_assert(test_category<is_integral, __int128>(true), "");
   static_assert(test_category<is_integral, unsigned __int128>(true), "");
 #endif

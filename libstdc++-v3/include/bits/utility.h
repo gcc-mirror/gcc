@@ -184,17 +184,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr in_place_index_t<_Idx> in_place_index{};
 
   template<typename>
-    struct __is_in_place_type_impl : false_type
-    { };
+    inline constexpr bool __is_in_place_type_v = false;
 
   template<typename _Tp>
-    struct __is_in_place_type_impl<in_place_type_t<_Tp>> : true_type
-    { };
+    inline constexpr bool __is_in_place_type_v<in_place_type_t<_Tp>> = true;
 
   template<typename _Tp>
-    struct __is_in_place_type
-      : public __is_in_place_type_impl<_Tp>
-    { };
+    using __is_in_place_type = bool_constant<__is_in_place_type_v<_Tp>>;
+
 #endif // C++17
 #endif // C++14
 

@@ -196,16 +196,25 @@ END MODULE
 
 
 ! Check assumed rank calls
-  call foobar (u3, 0)
-  call foobar (u4, 1)
+  call foobar (u3, 0, is_u3=.true.)
+  call foobar (u4, 1, is_u3=.false.)
 contains
 
-  subroutine foobar (arg, ranki)
+  subroutine foobar (arg, ranki, is_u3)
     class(*) :: arg (..)
     integer :: ranki
+    logical, value :: is_u3
     integer i
     i = rank (arg)
     if (i .ne. ranki) STOP 1
+    if (is_u3) then
+      if (EXTENDS_TYPE_OF (arg, obj1) .neqv. .FALSE.) STOP 1
+    else
+      ! arg == u4
+      if (EXTENDS_TYPE_OF (arg, obj1) .neqv. .FALSE.) STOP 1
+    end if
+  !  if (.NOT. SAME_TYPE_AS (arg, u3)) STOP 1
+  !  if (.NOT. SAME_TYPE_AS (arg, u4)) STOP 1
   end subroutine
 
 END

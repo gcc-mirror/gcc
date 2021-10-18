@@ -978,6 +978,7 @@ delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, const char *type)
       fprintf (dump_file, "\n");
     }
 
+  basic_block bb = gimple_bb (stmt);
   tree lhs = gimple_call_lhs (stmt);
   if (lhs)
     {
@@ -985,7 +986,7 @@ delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, const char *type)
       gimple *new_stmt = gimple_build_assign (lhs, ptr);
       unlink_stmt_vdef (stmt);
       if (gsi_replace (gsi, new_stmt, true))
-        bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
+	bitmap_set_bit (need_eh_cleanup, bb->index);
     }
   else
     {
@@ -994,7 +995,7 @@ delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, const char *type)
 
       /* Remove the dead store.  */
       if (gsi_remove (gsi, true))
-	bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
+	bitmap_set_bit (need_eh_cleanup, bb->index);
       release_defs (stmt);
     }
 }

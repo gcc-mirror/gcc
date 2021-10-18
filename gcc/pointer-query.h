@@ -186,6 +186,9 @@ public:
   /* Flush the cache.  */
   void flush_cache ();
 
+  /* Dump statistics and optionally cache contents to DUMP_FILE.  */
+  void dump (FILE *, bool = false);
+
   /* A Ranger instance.  May be null to use global ranges.  */
   range_query *rvals;
   /* Cache of SSA_NAMEs.  May be null to disable caching.  */

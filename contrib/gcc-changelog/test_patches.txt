@@ -3464,3 +3464,28 @@ index 6f67552d075..32478f070e8 100644
 +
 -- 
 2.25.1
+
+=== non-ascii-email.patch ===
+From f42e95a830ab48e59389065ce79a013a519646f1 Mon Sep 17 00:00:00 2001
+From: Jan-Benedict Glaw <jbglaw@ług-owl.de>
+Date: Mon, 13 Sep 2021 12:08:25 +0200
+Subject: [PATCH] Fix multi-statment macro
+
+INIT_CUMULATIVE_ARGS() expands to multiple statements, which will break right
+after an `if` statement. Wrap it into a block.
+
+gcc/ChangeLog:
+
+	* config/alpha/vms.h (INIT_CUMULATIVE_ARGS): Wrap multi-statment
+	define into a block.
+---
+ gcc/config/alpha/vms.h | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/gcc/config/alpha/vms.h b/gcc/config/alpha/vms.h
+index 2a9917cde62..0033b0004b3 100644
+--- a/gcc/config/alpha/vms.h
++++ b/gcc/config/alpha/vms.h
+@@ -0,0 +1,1 @@
++
+-- 

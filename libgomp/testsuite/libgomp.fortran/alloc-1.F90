@@ -117,7 +117,7 @@
         q(1) = 7
         q(768 / c_sizeof (i)) = 8
         cr = omp_alloc (512_c_size_t, a2)
-        if (mod (transfer (cr, intptr), 16_c_intptr_t) /= 0) stop 13
+        if (mod (transfer (cr, intptr), 4_c_intptr_t) /= 0) stop 13
         call c_f_pointer (cr, r, [512 / c_sizeof (i)])
         r(1) = 9
         r(512 / c_sizeof (i)) = 10

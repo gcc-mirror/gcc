@@ -43,7 +43,9 @@
 #ifdef __GNUC__
 	.abicalls
 #endif
+#if !defined(__mips_isa_rev) || (__mips_isa_rev<6)
 	.set mips4
+#endif
 	.text
 	.align	2
 	.globl	ffi_call_N32

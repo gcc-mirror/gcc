@@ -45,8 +45,12 @@ libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES)
 libgphobos_la_LIBTOOLFLAGS =
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
     -version-info $(libtool_VERSION)
+if ENABLE_LIBDRUNTIME_ONLY
+libgphobos_la_LIBADD = ../libdruntime/libgdruntime_convenience.la
+else
 libgphobos_la_LIBADD = \
     ../libdruntime/libgdruntime_convenience.la $(LIBZ)
+endif
 libgphobos_la_DEPENDENCIES = \
     ../libdruntime/libgdruntime_convenience.la libgphobos.spec
 

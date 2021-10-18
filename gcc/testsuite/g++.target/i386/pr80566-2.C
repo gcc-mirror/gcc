@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -march=haswell" }
+// { dg-options "-O2 -march=haswell -mtune-ctrl=avx256_move_by_pieces" }
 
 #include <cstring>
 

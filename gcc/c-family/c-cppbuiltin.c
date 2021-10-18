@@ -628,6 +628,31 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
       cpp_define_unused (pfile, "__FINITE_MATH_ONLY__=0");
     }
+
+  if (!prev->x_flag_reciprocal_math && cur->x_flag_reciprocal_math)
+    cpp_define_unused (pfile, "__RECIPROCAL_MATH__");
+  else if (prev->x_flag_reciprocal_math && !cur->x_flag_reciprocal_math)
+    cpp_undef (pfile, "__RECIPROCAL_MATH__");
+
+  if (!prev->x_flag_signed_zeros && cur->x_flag_signed_zeros)
+    cpp_undef (pfile, "__NO_SIGNED_ZEROS__");
+  else if (prev->x_flag_signed_zeros && !cur->x_flag_signed_zeros)
+    cpp_define_unused (pfile, "__NO_SIGNED_ZEROS__");
+
+  if (!prev->x_flag_trapping_math && cur->x_flag_trapping_math)
+    cpp_undef (pfile, "__NO_TRAPPING_MATH__");
+  else if (prev->x_flag_trapping_math && !cur->x_flag_trapping_math)
+    cpp_define_unused (pfile, "__NO_TRAPPING_MATH__");
+
+  if (!prev->x_flag_associative_math && cur->x_flag_associative_math)
+    cpp_define_unused (pfile, "__ASSOCIATIVE_MATH__");
+  else if (prev->x_flag_associative_math && !cur->x_flag_associative_math)
+    cpp_undef (pfile, "__ASSOCIATIVE_MATH__");
+
+  if (!prev->x_flag_rounding_math && cur->x_flag_rounding_math)
+    cpp_define_unused (pfile, "__ROUNDING_MATH__");
+  else if (prev->x_flag_rounding_math && !cur->x_flag_rounding_math)
+    cpp_undef (pfile, "__ROUNDING_MATH__");
 }
 
 
@@ -741,6 +766,20 @@ cpp_atomic_builtins (cpp_reader *pfile)
   builtin_define_with_int_value ("__GCC_ATOMIC_TEST_AND_SET_TRUEVAL",
 				 targetm.atomic_test_and_set_trueval);
 
+  /* Macros for C++17 hardware interference size constants.  Either both or
+     neither should be set.  */
+  gcc_assert (!param_destruct_interfere_size
+	      == !param_construct_interfere_size);
+  if (param_destruct_interfere_size)
+    {
+      /* FIXME The way of communicating these values to the library should be
+	 part of the C++ ABI, whether macro or builtin.  */
+      builtin_define_with_int_value ("__GCC_DESTRUCTIVE_SIZE",
+				     param_destruct_interfere_size);
+      builtin_define_with_int_value ("__GCC_CONSTRUCTIVE_SIZE",
+				     param_construct_interfere_size);
+    }
+
   /* ptr_type_node can't be used here since ptr_mode is only set when
      toplev calls backend_init which is not done with -E  or pch.  */
   psize = POINTER_SIZE_UNITS;
@@ -753,7 +792,7 @@ cpp_atomic_builtins (cpp_reader *pfile)
 /* Return TRUE if the implicit excess precision in which the back-end will
    compute floating-point calculations is not more than the explicit
    excess precision that the front-end will apply under
-   -fexcess-precision=[standard|fast].
+   -fexcess-precision=[standard|fast|16].
 
    More intuitively, return TRUE if the excess precision proposed by the
    front-end is the excess precision that will actually be used.  */
@@ -764,7 +803,9 @@ c_cpp_flt_eval_method_iec_559 (void)
   enum excess_precision_type front_end_ept
     = (flag_excess_precision == EXCESS_PRECISION_STANDARD
        ? EXCESS_PRECISION_TYPE_STANDARD
-       : EXCESS_PRECISION_TYPE_FAST);
+       : (flag_excess_precision == EXCESS_PRECISION_FLOAT16
+	  ? EXCESS_PRECISION_TYPE_FLOAT16
+	  : EXCESS_PRECISION_TYPE_FAST));
 
   enum flt_eval_method back_end
     = targetm.c.excess_precision (EXCESS_PRECISION_TYPE_IMPLICIT);
@@ -1011,7 +1052,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_init_captures=201803L");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201707L");
 	  cpp_define (pfile, "__cpp_designated_initializers=201707L");
-	  cpp_define (pfile, "__cpp_constexpr=201907L");
+	  if (cxx_dialect <= cxx20)
+	    cpp_define (pfile, "__cpp_constexpr=201907L");
 	  cpp_define (pfile, "__cpp_constexpr_in_decltype=201711L");
 	  cpp_define (pfile, "__cpp_conditional_explicit=201806L");
 	  cpp_define (pfile, "__cpp_consteval=201811L");
@@ -1030,6 +1072,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  /* Set feature test macros for C++23.  */
 	  cpp_define (pfile, "__cpp_size_t_suffix=202011L");
 	  cpp_define (pfile, "__cpp_if_consteval=202106L");
+	  cpp_define (pfile, "__cpp_constexpr=202110L");
 	}
       if (flag_concepts)
         {

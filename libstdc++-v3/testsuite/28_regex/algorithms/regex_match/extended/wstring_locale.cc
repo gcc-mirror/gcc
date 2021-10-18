@@ -35,12 +35,14 @@ using namespace std;
 void
 test01()
 {
+#ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring str2 = L"ÜBER";
   std::wregex re2;
   re2.imbue(std::locale("de_DE.UTF-8"));
   re2.assign(L"[[:upper:]]*", std::regex::extended);
   std::wsmatch m2;
   VERIFY(regex_match_debug(str2, m2, re2));
+#endif
 }
 
 int

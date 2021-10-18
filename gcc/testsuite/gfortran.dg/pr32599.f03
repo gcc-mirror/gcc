@@ -14,7 +14,7 @@ module pr32599
        character(len=*,kind=c_char), intent(IN) :: path
      end subroutine destroy
 
-     subroutine create(path) BIND(C) ! { dg-error "Fortran 2008: Character dummy argument 'path' at .1. with length greater than 1 for procedure 'create' with BIND\\(C\\) attribute" }
+     subroutine create(path) BIND(C) ! { dg-error "Character dummy argument 'path' at .1. must be of constant length of one or assumed length, unless it has assumed shape or assumed rank, as procedure 'create' has the BIND\\(C\\) attribute" }
        use iso_c_binding
        implicit none
        character(len=5,kind=c_char), intent(IN) :: path

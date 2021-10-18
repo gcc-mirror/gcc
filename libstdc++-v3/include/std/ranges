@@ -770,11 +770,11 @@ namespace __detail
   // Data members using this alias should use [[no_unique_address]] so that
   // they take no space when not needed.
   template<bool _Present, typename _Tp>
-    using __maybe_present_t = conditional_t<_Present, _Tp, _Empty>;
+    using __maybe_present_t = __conditional_t<_Present, _Tp, _Empty>;
 
   // Alias for a type that is conditionally const.
   template<bool _Const, typename _Tp>
-    using __maybe_const_t = conditional_t<_Const, const _Tp, _Tp>;
+    using __maybe_const_t = __conditional_t<_Const, const _Tp, _Tp>;
 
 } // namespace __detail
 
@@ -1160,8 +1160,33 @@ namespace views::__adaptor
       };
 
     template<typename _Tp>
+      struct __cached
+      {
+	struct _Deref_t { };
+	static constexpr _Deref_t __deref{};
+
+	// Initialize _M_t directly from the result of dereferencing __i.
+	// This avoids any unwanted temporary materialization that would
+	// occur if *__i was bound to a reference before initializing _M_t.
+	template<typename _Iter>
+	  constexpr explicit
+	  __cached(_Deref_t, _Iter&& __i)
+	  : _M_t(*__i)
+	  { }
+
+	template<typename... _Args>
+	  constexpr explicit
+	  __cached(_Args&&... __args)
+	  : _M_t(std::forward<_Args>(__args)...)
+	  { }
+
+	_Tp _M_t;
+      };
+
+    template<typename _Tp>
       requires is_object_v<_Tp>
-      struct __non_propagating_cache<_Tp> : protected _Optional_base<_Tp>
+      struct __non_propagating_cache<_Tp>
+      : protected _Optional_base<__cached<_Tp>>
       {
 	__non_propagating_cache() = default;
 
@@ -1205,23 +1230,22 @@ namespace views::__adaptor
 
 	constexpr _Tp&
 	operator*() noexcept
-	{ return this->_M_get(); }
+	{ return this->_M_get()._M_t; }
 
 	constexpr const _Tp&
 	operator*() const noexcept
-	{ return this->_M_get(); }
+	{ return this->_M_get()._M_t; }
 
 	template<typename _Iter>
-	  _Tp&
+	  constexpr _Tp&
 	  _M_emplace_deref(const _Iter& __i)
 	  {
 	    this->_M_reset();
-	    // Using _Optional_base::_M_construct to initialize from '*__i'
-	    // would incur an extra move due to the indirection, so we instead
-	    // use placement new directly.
-	    ::new ((void *) std::__addressof(this->_M_payload._M_payload)) _Tp(*__i);
+	    // Use the special constructor of __cached<_Tp> that does *__i.
+	    std::construct_at(std::__addressof(this->_M_payload._M_payload),
+			      std::in_place, __cached<_Tp>::__deref, __i);
 	    this->_M_payload._M_engaged = true;
-	    return this->_M_get();
+	    return **this;
 	  }
       };
 
@@ -2920,9 +2944,9 @@ namespace views::__adaptor
 	  bool _M_trailing_empty = false;
 
 	public:
-	  using iterator_concept = conditional_t<forward_range<_Base>,
-						 forward_iterator_tag,
-						 input_iterator_tag>;
+	  using iterator_concept = __conditional_t<forward_range<_Base>,
+						   forward_iterator_tag,
+						   input_iterator_tag>;
 	  // iterator_category defined in __lazy_split_view_outer_iter_cat
 	  using difference_type = range_difference_t<_Base>;
 

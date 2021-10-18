@@ -486,11 +486,11 @@ package body Exp_Ch7 is
    function Make_Deep_Proc
      (Prim  : Final_Primitives;
       Typ   : Entity_Id;
-      Stmts : List_Id) return Node_Id;
+      Stmts : List_Id) return Entity_Id;
    --  This function generates the tree for Deep_Initialize, Deep_Adjust or
-   --  Deep_Finalize procedures according to the first parameter, these
-   --  procedures operate on the type Typ. The Stmts parameter gives the body
-   --  of the procedure.
+   --  Deep_Finalize procedures according to the first parameter. These
+   --  procedures operate on the type Typ. The Stmts parameter gives the
+   --  body of the procedure.
 
    function Make_Deep_Array_Body
      (Prim : Final_Primitives;
@@ -5918,12 +5918,7 @@ package body Exp_Ch7 is
             Build_Static_Dispatch_Tables (N);
          end if;
 
-         --  If procedures marked with CUDA_Global have been defined within N,
-         --  we need to register them with the CUDA runtime at program startup.
-         --  This requires multiple declarations and function calls which need
-         --  to be appended to N's declarations.
-
-         Build_And_Insert_CUDA_Initialization (N);
+         Expand_CUDA_Package (N);
 
          Build_Task_Activation_Call (N);
 
@@ -6072,7 +6067,7 @@ package body Exp_Ch7 is
          Pop_Scope;
       end if;
 
-      --  Build dispatch tables of library level tagged types
+      --  Build dispatch tables of library-level tagged types
 
       if Tagged_Type_Expansion
         and then (Is_Compilation_Unit (Id)
@@ -9560,8 +9555,11 @@ package body Exp_Ch7 is
 
       --  If initialization procedure for an array of controlled objects is
       --  trivial, do not generate a useless call to it.
+      --  The initialization procedure may be missing altogether in the case
+      --  of a derived container whose components have trivial initialization.
 
-      if (Is_Array_Type (Utyp) and then Is_Trivial_Subprogram (Proc))
+      if No (Proc)
+        or else (Is_Array_Type (Utyp) and then Is_Trivial_Subprogram (Proc))
         or else
           (not Comes_From_Source (Proc)
             and then Present (Alias (Proc))

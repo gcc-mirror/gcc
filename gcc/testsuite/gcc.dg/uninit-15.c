@@ -20,7 +20,7 @@ void baz (void);
 void
 bar (void)
 {
-  int j; /* { dg-message "note: 'j' was declared here" "" { xfail *-*-* } } */
+  int j;                /* { dg-message "note: 'j' was declared here" } */
   for (; foo (j); ++j)  /* { dg-warning "'j' is used uninitialized" } */
     baz ();
 }

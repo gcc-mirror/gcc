@@ -317,7 +317,8 @@ test_map_of_type_with_ctor_and_dtor ()
   }
 }
 
-/* Verify aspects of 'hash_table::expand'.  */
+/* Verify aspects of 'hash_table::expand', in particular that it doesn't leak
+   Value objects.  */
 
 static void
 test_map_of_type_with_ctor_and_dtor_expand (bool remove_some_inline)
@@ -400,9 +401,9 @@ test_map_of_type_with_ctor_and_dtor_expand (bool remove_some_inline)
       ASSERT_EQ (val_t::ncopy, n_expand_moved);
       ASSERT_EQ (val_t::nassign, 0);
       if (remove_some_inline)
-	ASSERT_EQ (val_t::ndtor, (i + 2) / 3);
+	ASSERT_EQ (val_t::ndtor, n_expand_moved + (i + 2) / 3);
       else
-	ASSERT_EQ (val_t::ndtor, 0);
+	ASSERT_EQ (val_t::ndtor, n_expand_moved);
 
       /* Remove some inline.  This never triggers an 'expand' here, but via
 	 'm_n_deleted' does influence any following one.  */
@@ -416,7 +417,7 @@ test_map_of_type_with_ctor_and_dtor_expand (bool remove_some_inline)
 	  ASSERT_EQ (val_t::ndefault, 1 + i);
 	  ASSERT_EQ (val_t::ncopy, n_expand_moved);
 	  ASSERT_EQ (val_t::nassign, 0);
-	  ASSERT_EQ (val_t::ndtor, 1 + (i + 2) / 3);
+	  ASSERT_EQ (val_t::ndtor, n_expand_moved + 1 + (i + 2) / 3);
 	}
     }
   ASSERT_EQ (expand_c, expand_c_expected);
@@ -439,6 +440,7 @@ test_map_of_type_with_ctor_and_dtor_expand (bool remove_some_inline)
       ASSERT_EQ (val_t::nassign, nassign);
       ASSERT_EQ (val_t::ndtor, ndtor);
     }
+  ASSERT_EQ (val_t::ndefault + val_t::ncopy, val_t::ndtor);
 }
 
 /* Test calling empty on a hash_map that has a key type with non-zero

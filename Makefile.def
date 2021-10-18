@@ -89,8 +89,10 @@ host_modules= { module= libcody; bootstrap=true;
 		missing= info;
 		missing= install-pdf;
 		missing= install-html;
-		missing= install-info; };
-host_modules= { module= libdecnumber; bootstrap=true; };
+		missing= install-info;
+		missing=TAGS; };
+host_modules= { module= libdecnumber; bootstrap=true;
+		missing=TAGS; };
 host_modules= { module= libgui; };
 host_modules= { module= libiberty; bootstrap=true;
 	        extra_configure_flags='@extra_host_libiberty_configure_flags@';};
@@ -134,7 +136,8 @@ host_modules= { module= libtermcap; no_check=true;
                 missing=distclean;
                 missing=maintainer-clean; };
 host_modules= { module= utils; no_check=true; };
-host_modules= { module= c++tools; };
+host_modules= { module= c++tools;
+                missing=TAGS; };
 host_modules= { module= gnattools; };
 host_modules= { module= lto-plugin; bootstrap=true;
 		extra_configure_flags='--enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@';
@@ -160,11 +163,13 @@ target_modules = { module= liboffloadmic;
 		   extra_configure_flags='@extra_liboffloadmic_configure_flags@'; };
 target_modules = { module= libssp; lib_path=.libs; };
 target_modules = { module= newlib; };
-target_modules = { module= libgcc; bootstrap=true; no_check=true; };
+target_modules = { module= libgcc; bootstrap=true; no_check=true;
+		  missing=TAGS; };
 target_modules = { module= libbacktrace; };
 target_modules = { module= libquadmath; };
 target_modules = { module= libgfortran; };
-target_modules = { module= libobjc; };
+target_modules = { module= libobjc;
+		  missing=TAGS; };
 target_modules = { module= libgo; };
 target_modules = { module= libphobos;
 		   lib_path=src/.libs; };
@@ -423,6 +428,7 @@ dependencies = { module=all-gdb; on=all-sim; };
 dependencies = { module=all-gdb; on=all-libdecnumber; };
 dependencies = { module=all-gdb; on=all-libtermcap; };
 dependencies = { module=all-gdb; on=all-libctf; };
+dependencies = { module=all-gdb; on=all-libbacktrace; };
 
 // Host modules specific to gdbserver.
 dependencies = { module=configure-gdbserver; on=all-gnulib; };
@@ -469,6 +475,14 @@ dependencies = { module=all-ld; on=all-libctf; };
 // library.
 dependencies = { module=install-binutils; on=install-opcodes; };
 dependencies = { module=install-strip-binutils; on=install-strip-opcodes; };
+
+// Likewise for ld, libctf, and bfd.
+dependencies = { module=install-libctf; on=install-bfd; };
+dependencies = { module=install-ld; on=install-bfd; };
+dependencies = { module=install-ld; on=install-libctf; };
+dependencies = { module=install-strip-libctf; on=install-strip-bfd; };
+dependencies = { module=install-strip-ld; on=install-strip-bfd; };
+dependencies = { module=install-strip-ld; on=install-strip-libctf; };
 
 // libopcodes depends on libbfd
 dependencies = { module=install-opcodes; on=install-bfd; };
@@ -563,6 +577,12 @@ dependencies = { module=configure-libctf; on=all-zlib; };
 dependencies = { module=configure-libctf; on=all-libiconv; };
 dependencies = { module=check-libctf; on=all-ld; };
 
+// The Makefiles in gdb and gdbserver pull in a file that configure
+// generates in the gnulib directory, so distclean gnulib only after
+// gdb and gdbserver.
+dependencies = { module=distclean-gnulib; on=distclean-gdb; };
+dependencies = { module=distclean-gnulib; on=distclean-gdbserver; };
+
 // Warning, these are not well tested.
 dependencies = { module=all-bison; on=all-intl; };
 dependencies = { module=all-bison; on=all-build-texinfo; };
@@ -591,6 +611,7 @@ dependencies = { module=configure-target-fastjar; on=configure-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-zlib; };
 dependencies = { module=configure-target-libgo; on=configure-target-libffi; };
 dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
+dependencies = { module=configure-target-libffi; on=all-target-libstdc++-v3; };
 dependencies = { module=all-target-libgo; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libgo; on=all-target-libffi; };
 dependencies = { module=all-target-libgo; on=all-target-libatomic; };
@@ -654,6 +675,7 @@ languages = { language=go;	gcc-check-target=check-go;
 				lib-check-target=check-gotools; };
 languages = { language=d;	gcc-check-target=check-d;
 				lib-check-target=check-target-libphobos; };
+languages = { language=jit;	gcc-check-target=check-jit; };
 
 // Toplevel bootstrap
 bootstrap_stage = { id=1 ; };

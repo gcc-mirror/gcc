@@ -414,7 +414,9 @@ find_obviously_necessary_stmts (bool aggressive)
   if ((flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE))
     return;
 
-  /* Prevent the empty possibly infinite loops from being removed.  */
+  /* Prevent the empty possibly infinite loops from being removed.  This is
+     needed to make the logic in remove_dead_stmt work to identify the
+     correct edge to keep when removing a controlling condition.  */
   if (aggressive)
     {
       if (mark_irreducible_loops ())
@@ -426,17 +428,19 @@ find_obviously_necessary_stmts (bool aggressive)
 		  && (e->flags & EDGE_IRREDUCIBLE_LOOP))
 		{
 	          if (dump_file)
-	            fprintf (dump_file, "Marking back edge of irreducible loop %i->%i\n",
-		    	     e->src->index, e->dest->index);
+		    fprintf (dump_file, "Marking back edge of irreducible "
+			     "loop %i->%i\n", e->src->index, e->dest->index);
 		  mark_control_dependent_edges_necessary (e->dest, false);
 		}
 	  }
 
       for (auto loop : loops_list (cfun, 0))
-	if (!finite_loop_p (loop))
+	/* For loops without an exit do not mark any condition.  */
+	if (loop->exits->next && !finite_loop_p (loop))
 	  {
 	    if (dump_file)
-	      fprintf (dump_file, "cannot prove finiteness of loop %i\n", loop->num);
+	      fprintf (dump_file, "cannot prove finiteness of loop %i\n",
+		       loop->num);
 	    mark_control_dependent_edges_necessary (loop->latch, false);
 	  }
     }

@@ -1084,7 +1084,8 @@ xtensa_emit_move_sequence (rtx *operands, machine_mode mode)
 	{
 	  /* Try to emit MOVI + SLLI sequence, that is smaller
 	     than L32R + literal.  */
-	  if (optimize_size && mode == SImode && register_operand (dst, mode))
+	  if (optimize_size && mode == SImode && CONST_INT_P (src)
+	      && register_operand (dst, mode))
 	    {
 	      HOST_WIDE_INT srcval = INTVAL (src);
 	      int shift = ctz_hwi (srcval);

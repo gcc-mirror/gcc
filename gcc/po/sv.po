@@ -28,7 +28,7 @@ msgstr ""
 "Project-Id-Version: gcc 11.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-07-26 15:21+0000\n"
-"PO-Revision-Date: 2021-07-28 21:12+0200\n"
+"PO-Revision-Date: 2021-08-30 11:58+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -12962,7 +12962,7 @@ msgstr "Aktivera instruktioner som skyddar mot returorienterade programattacker.
 #: config/rs6000/rs6000.opt:641
 #, no-c-format
 msgid "Generate code that will run in privileged state."
-msgstr "Generera kod som kommer köra i priviligerat tillstånd."
+msgstr "Generera kod som kommer köra i priviligierat tillstånd."
 
 #: config/rs6000/sysv4.opt:24
 #, no-c-format
@@ -60513,7 +60513,7 @@ msgstr "%qs-argumentet till inbyggd %qs vid %L är inte ett giltigt dimensionsin
 #: fortran/check.c:5704
 #, gcc-internal-format
 msgid "%qs argument of %qs intrinsic at %L must have length at least 1"
-msgstr "%qs-argumentet till inbyggd %qs vid %L måste åtminstone längden 1"
+msgstr "%qs-argumentet till inbyggd %qs vid %L måste åtminstone ha längden 1"
 
 #: fortran/check.c:5968
 #, gcc-internal-format, gfc-internal-format

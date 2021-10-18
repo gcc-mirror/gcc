@@ -56,8 +56,9 @@ with System.File_Control_Block;
 with System.WCh_Con;
 
 package Ada.Text_IO with
-  Abstract_State    => (File_System),
-  Initializes       => (File_System),
+  SPARK_Mode,
+  Abstract_State    => File_System,
+  Initializes       => File_System,
   Initial_Condition => Line_Length = 0 and Page_Length = 0
 is
    pragma Elaborate_Body;
@@ -547,6 +548,7 @@ is
    Layout_Error : exception renames IO_Exceptions.Layout_Error;
 
 private
+   pragma SPARK_Mode (Off);
 
    --  The following procedures have a File_Type formal of mode IN OUT because
    --  they may close the original file. The Close operation may raise an

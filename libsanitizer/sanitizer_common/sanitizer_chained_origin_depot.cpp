@@ -14,7 +14,7 @@
 namespace __sanitizer {
 
 bool ChainedOriginDepot::ChainedOriginDepotNode::eq(
-    u32 hash, const args_type &args) const {
+    hash_type hash, const args_type &args) const {
   return here_id == args.here_id && prev_id == args.prev_id;
 }
 
@@ -36,7 +36,8 @@ uptr ChainedOriginDepot::ChainedOriginDepotNode::storage_size(
    split, or one of two reserved values (-1) or (-2). Either case can
    dominate depending on the workload.
 */
-u32 ChainedOriginDepot::ChainedOriginDepotNode::hash(const args_type &args) {
+ChainedOriginDepot::ChainedOriginDepotNode::hash_type
+ChainedOriginDepot::ChainedOriginDepotNode::hash(const args_type &args) {
   const u32 m = 0x5bd1e995;
   const u32 seed = 0x9747b28c;
   const u32 r = 24;
@@ -67,7 +68,7 @@ bool ChainedOriginDepot::ChainedOriginDepotNode::is_valid(
 }
 
 void ChainedOriginDepot::ChainedOriginDepotNode::store(const args_type &args,
-                                                       u32 other_hash) {
+                                                       hash_type other_hash) {
   here_id = args.here_id;
   prev_id = args.prev_id;
 }
@@ -85,7 +86,9 @@ ChainedOriginDepot::ChainedOriginDepotNode::get_handle() {
 
 ChainedOriginDepot::ChainedOriginDepot() {}
 
-StackDepotStats *ChainedOriginDepot::GetStats() { return depot.GetStats(); }
+StackDepotStats ChainedOriginDepot::GetStats() const {
+  return depot.GetStats();
+}
 
 bool ChainedOriginDepot::Put(u32 here_id, u32 prev_id, u32 *new_id) {
   ChainedOriginDepotDesc desc = {here_id, prev_id};

@@ -1437,6 +1437,11 @@ string_concat_db::record_string_concatenation (int num, location_t *locs)
   gcc_assert (locs);
 
   location_t key_loc = get_key_loc (locs[0]);
+  /* We don't record data for 'RESERVED_LOCATION_P (key_loc)' key values:
+     any data now recorded under key 'key_loc' would be overwritten by a
+     subsequent call with the same key 'key_loc'.  */
+  if (RESERVED_LOCATION_P (key_loc))
+    return;
 
   string_concat *concat
     = new (ggc_alloc <string_concat> ()) string_concat (num, locs);
@@ -1460,6 +1465,10 @@ string_concat_db::get_string_concatenation (location_t loc,
   gcc_assert (out_locs);
 
   location_t key_loc = get_key_loc (loc);
+  /* We don't record data for 'RESERVED_LOCATION_P (key_loc)' key values; see
+     discussion in 'string_concat_db::record_string_concatenation'.  */
+  if (RESERVED_LOCATION_P (key_loc))
+    return false;
 
   string_concat **concat = m_table->get (key_loc);
   if (!concat)

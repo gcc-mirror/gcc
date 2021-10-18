@@ -75,7 +75,7 @@
 #define ALLOCA_THRESHOLD 1000
 
 /* Pointers to front-end tables accessed through macros.  */
-Field_Offset *Node_Offsets_Ptr;
+Node_Header *Node_Offsets_Ptr;
 any_slot *Slots_Ptr;
 Node_Id *Next_Node_Ptr;
 Node_Id *Prev_Node_Ptr;
@@ -279,7 +279,7 @@ void
 gigi (Node_Id gnat_root,
       int max_gnat_node,
       int number_name ATTRIBUTE_UNUSED,
-      Field_Offset *node_offsets_ptr,
+      Node_Header *node_offsets_ptr,
       any_slot *slots_ptr,
       Node_Id *next_node_ptr,
       Node_Id *prev_node_ptr,
@@ -3893,7 +3893,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* If the body comes from an expression function, arrange it to be inlined
      in almost all cases.  */
-  if (Was_Expression_Function (gnat_node))
+  if (Was_Expression_Function (gnat_node) && !Debug_Flag_Dot_8)
     DECL_DISREGARD_INLINE_LIMITS (gnu_subprog_decl) = 1;
 
   /* Try to create a bona-fide thunk and hand it over to the middle-end.  */
@@ -7872,21 +7872,24 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Pop_Constraint_Error_Label:
       gnat_temp = gnu_constraint_error_label_stack.pop ();
       if (Present (gnat_temp)
-	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false))
+	  && No_Exception_Propagation_Active ())
 	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
     case N_Pop_Storage_Error_Label:
       gnat_temp = gnu_storage_error_label_stack.pop ();
       if (Present (gnat_temp)
-	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false))
+	  && No_Exception_Propagation_Active ())
 	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
     case N_Pop_Program_Error_Label:
       gnat_temp = gnu_program_error_label_stack.pop ();
       if (Present (gnat_temp)
-	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false))
+	  && No_Exception_Propagation_Active ())
 	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
@@ -8261,6 +8264,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE
       && Nkind (Parent (gnat_node)) != N_Attribute_Reference
+      && Nkind (Parent (gnat_node)) != N_Pragma_Argument_Association
       && Nkind (Parent (gnat_node)) != N_Variant_Part
       && !lvalue_required_p (gnat_node, gnu_result_type, false, false))
     {
@@ -9279,10 +9283,10 @@ process_freeze_entity (Node_Id gnat_node)
 	Copy_Alignment (gnat_entity, full_view);
 
       if (!Known_Esize (gnat_entity))
-	Set_Esize (gnat_entity, Esize (full_view));
+	Copy_Esize (gnat_entity, full_view);
 
       if (!Known_RM_Size (gnat_entity))
-	Set_RM_Size (gnat_entity, RM_Size (full_view));
+	Copy_RM_Size (gnat_entity, full_view);
 
       /* The above call may have defined this entity (the simplest example
 	 of this is when we have a private enumeral type since the bounds
@@ -10507,10 +10511,15 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
     case N_Package_Body:
     case N_Subprogram_Body:
     case N_Block_Statement:
-      gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+      if (Present (Handled_Statement_Sequence (gnat_node)))
+	gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+      else
+	gnat_end_label = Empty;
+
       break;
 
     case N_Package_Declaration:
+      gcc_checking_assert (Present (Specification (gnat_node)));
       gnat_end_label = End_Label (Specification (gnat_node));
       break;
 

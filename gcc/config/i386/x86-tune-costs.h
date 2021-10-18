@@ -2734,6 +2734,130 @@ struct processor_costs slm_cost = {
   "16",					/* Func alignment.  */
 };
 
+static stringop_algs tremont_memcpy[2] = {
+  {libcall,
+   {{256, rep_prefix_1_byte, true},
+    {256, loop, false},
+    {-1, libcall, false}}},
+  {libcall,
+   {{256, rep_prefix_1_byte, true},
+    {256, loop, false},
+    {-1, libcall, false}}}};
+static stringop_algs tremont_memset[2] = {
+  {libcall,
+   {{256, rep_prefix_1_byte, true},
+    {256, loop, false},
+    {-1, libcall, false}}},
+  {libcall,
+   {{256, rep_prefix_1_byte, true},
+    {256, loop, false},
+    {-1, libcall, false}}}};
+static const
+struct processor_costs tremont_cost = {
+  {
+  /* Start of register allocator costs.  integer->integer move cost is 2. */
+  6,				     /* cost for loading QImode using movzbl */
+  {6, 6, 6},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {6, 6, 6},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {6, 6, 12},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {6, 6, 12},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
+  2,					/* cost of moving MMX register */
+  {6, 6},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {6, 6},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2, 3, 4,				/* cost of moving XMM,YMM,ZMM register */
+  {6, 6, 6, 10, 15},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {6, 6, 6, 10, 15},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  6, 6,				/* SSE->integer and integer->SSE moves */
+  6, 6,				/* mask->integer and integer->mask moves */
+  {6, 6, 6},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {6, 6, 6},			/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
+  /* End of register allocator costs.  */
+  },
+
+  COSTS_N_INSNS (1),			/* cost of an add instruction */
+  /* Setting cost to 2 makes our current implementation of synth_mult result in
+     use of unnecessary temporary registers causing regression on several
+     SPECfp benchmarks.  */
+  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
+  COSTS_N_INSNS (1),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* constant shift costs */
+  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (4)},			/*			      other */
+  0,					/* cost of multiply per each bit set */
+  {COSTS_N_INSNS (16),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (22),			/*			    HI */
+   COSTS_N_INSNS (30),			/*			    SI */
+   COSTS_N_INSNS (74),			/*			    DI */
+   COSTS_N_INSNS (74)},			/*			    other */
+  COSTS_N_INSNS (1),			/* cost of movsx */
+  COSTS_N_INSNS (1),			/* cost of movzx */
+  8,					/* "large" insn */
+  17,					/* MOVE_RATIO */
+  17,					/* CLEAR_RATIO */
+  {6, 6, 6},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {6, 6, 6},				/* cost of storing integer registers */
+  {6, 6, 6, 10, 15},			/* cost of loading SSE register
+					   in 32bit, 64bit, 128bit, 256bit and 512bit */
+  {6, 6, 6, 10, 15},			/* cost of storing SSE register
+					   in 32bit, 64bit, 128bit, 256bit and 512bit */
+  {6, 6, 6, 10, 15},			/* cost of unaligned loads.  */
+  {6, 6, 6, 10, 15},			/* cost of unaligned storess.  */
+  2, 3, 4,				/* cost of moving XMM,YMM,ZMM register */
+  6,					/* cost of moving SSE register to integer.  */
+  18, 6,				/* Gather load static, per_elt.  */
+  18, 6,				/* Gather store static, per_elt.  */
+  32,					/* size of l1 cache.  */
+  512,					/* size of l2 cache.  */
+  64,					/* size of prefetch block */
+  6,					/* number of parallel prefetches */
+  /* Benchmarks shows large regressions on K8 sixtrack benchmark when this
+     value is increased to perhaps more appropriate value of 5.  */
+  3,					/* Branch cost */
+  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (17),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (14),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (4),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (13),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (17),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (14),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (18),			/* cost of SQRTSD instruction.  */
+  1, 4, 3, 3,				/* reassoc int, fp, vec_int, vec_fp.  */
+  tremont_memcpy,
+  tremont_memset,
+  COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:11:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
+};
+
 static stringop_algs intel_memcpy[2] = {
   {libcall, {{11, loop, false}, {-1, rep_prefix_4_byte, false}}},
   {libcall, {{32, loop, false}, {64, rep_prefix_4_byte, false},

@@ -283,30 +283,6 @@ package Sem_Util is
    --  take care of constructing declaration and body of the clone, and
    --  building the calls to it within the appropriate wrappers.
 
-   procedure Build_Class_Wide_Clone_Body
-     (Spec_Id  : Entity_Id;
-      Bod      : Node_Id);
-   --  Build body of subprogram that has a class-wide condition that contains
-   --  calls to other primitives. Spec_Id is the Id of the subprogram, and B
-   --  is its source body, which becomes the body of the clone.
-
-   function Build_Class_Wide_Clone_Call
-    (Loc      : Source_Ptr;
-     Decls    : List_Id;
-     Spec_Id  : Entity_Id;
-     Spec     : Node_Id) return Node_Id;
-   --  Build a call to the common class-wide clone of a subprogram with
-   --  class-wide conditions. The body of the subprogram becomes a wrapper
-   --  for a call to the clone. The inherited operation becomes a similar
-   --  wrapper to which modified conditions apply, and the call to the
-   --  clone includes the proper conversion in a call the parent operation.
-
-   procedure Build_Class_Wide_Clone_Decl (Spec_Id : Entity_Id);
-   --  For a subprogram that has a class-wide condition that contains calls
-   --  to other primitives, build an internal subprogram that is invoked
-   --  through a type-specific wrapper for all inherited subprograms that
-   --  may have a modified condition.
-
    procedure Build_Constrained_Itype
      (N              : Node_Id;
       Typ            : Entity_Id;
@@ -356,7 +332,7 @@ package Sem_Util is
    --  carries the name of the reference discriminant.
 
    function Build_Overriding_Spec
-     (Op  : Node_Id;
+     (Op  : Entity_Id;
       Typ : Entity_Id) return Node_Id;
    --  Build a subprogram specification for the wrapper of an inherited
    --  operation with a modified pre- or postcondition (See AI12-0113).
@@ -527,6 +503,18 @@ package Sem_Util is
    --  reasons these nodes have a different structure even though they play
    --  similar roles in array aggregates.
 
+   type Condition_Kind is
+     (Ignored_Class_Precondition,
+      Ignored_Class_Postcondition,
+      Class_Precondition,
+      Class_Postcondition);
+   --  Kind of class-wide conditions
+
+   function Class_Condition
+     (Kind : Condition_Kind;
+      Subp : Entity_Id) return Node_Id;
+   --  Class-wide Kind condition of Subp
+
    function Collect_Body_States (Body_Id : Entity_Id) return Elist_Id;
    --  Gather the entities of all abstract states and objects declared in the
    --  body state space of package body Body_Id.
@@ -637,6 +625,13 @@ package Sem_Util is
    --  the generic parent unit. There is no direct link in the tree for this
    --  attribute, except in the case of formal private and derived types.
    --  Possible optimization???
+
+   function Corresponding_Primitive_Op
+       (Ancestor_Op     : Entity_Id;
+        Descendant_Type : Entity_Id) return Entity_Id;
+   --  Given a primitive subprogram of a tagged type and a (distinct)
+   --  descendant type of that type, find the corresponding primitive
+   --  subprogram of the descendant type.
 
    function Current_Entity (N : Node_Id) return Entity_Id;
    pragma Inline (Current_Entity);
@@ -1530,9 +1525,16 @@ package Sem_Util is
    --  non-null), which causes the type to not have preelaborable
    --  initialization.
 
-   function Has_Preelaborable_Initialization (E : Entity_Id) return Boolean;
+   function Has_Preelaborable_Initialization
+     (E                 : Entity_Id;
+      Preelab_Init_Expr : Node_Id := Empty) return Boolean;
    --  Return True iff type E has preelaborable initialization as defined in
    --  Ada 2005 (see AI-161 for details of the definition of this attribute).
+   --  If Preelab_Init_Expr is present, indicates that the function should
+   --  presume that for any subcomponent of E that is of a formal private or
+   --  derived type that is referenced by a Preelaborable_Initialization
+   --  attribute within the expression Preelab_Init_Expr, the formal type has
+   --  preelaborable initialization (RM 10.2.1(11.8/5) and AI12-0409).
 
    function Has_Prefix (N : Node_Id) return Boolean;
    --  Return True if N has attribute Prefix
@@ -1828,6 +1830,13 @@ package Sem_Util is
    --  Returns true if the two specifications of the given
    --  nonoverridable aspect are compatible.
 
+   function Is_Conjunction_Of_Formal_Preelab_Init_Attributes
+     (Expr : Node_Id) return Boolean;
+   --  Returns True if Expr is a Preelaborable_Initialization attribute applied
+   --  to a formal type, or a sequence of two or more such attributes connected
+   --  by "and" operators, or if the Original_Node of Expr or its constituents
+   --  is such an attribute.
+
    function Is_Constant_Bound (Exp : Node_Id) return Boolean;
    --  Exp is the expression for an array bound. Determines whether the
    --  bound is a compile-time known value, or a constant entity, or an
@@ -2038,11 +2047,17 @@ package Sem_Util is
    --    3) An if expression with at least one EVF dependent_expression
    --    4) A case expression with at least one EVF dependent_expression
 
-   function Is_False (U : Uint) return Boolean;
+   function Is_False (U : Opt_Ubool) return Boolean;
    pragma Inline (Is_False);
-   --  The argument is a Uint value which is the Boolean'Pos value of a Boolean
-   --  operand (i.e. is either 0 for False, or 1 for True). This function tests
-   --  if it is False (i.e. zero).
+   --  True if U is Boolean'Pos (False) (i.e. Uint_0)
+
+   function Is_True (U : Opt_Ubool) return Boolean;
+   pragma Inline (Is_True);
+   --  True if U is Boolean'Pos (True) (i.e. Uint_1). Also True if U is
+   --  No_Uint; we allow No_Uint because Static_Boolean returns that in
+   --  case of error. It doesn't really matter whether the error case is
+   --  considered True or False, but we don't want this to blow up in that
+   --  case.
 
    function Is_Fixed_Model_Number (U : Ureal; T : Entity_Id) return Boolean;
    --  Returns True iff the number U is a model number of the fixed-point type
@@ -2406,12 +2421,6 @@ package Sem_Util is
    --  unconditional transfer of control at run time, i.e. the following
    --  statement definitely will not be executed.
 
-   function Is_True (U : Uint) return Boolean;
-   pragma Inline (Is_True);
-   --  The argument is a Uint value which is the Boolean'Pos value of a Boolean
-   --  operand (i.e. is either 0 for False, or 1 for True). This function tests
-   --  if it is True (i.e. non-zero).
-
    function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean;
    --  Determine whether an arbitrary entity denotes an instance of function
    --  Ada.Unchecked_Conversion.
@@ -2597,6 +2606,12 @@ package Sem_Util is
    --  True if evaluation of N might raise an exception. This is conservative;
    --  if we're not sure, we return True. If N is a subprogram body, this is
    --  about whether execution of that body can raise.
+
+   function Nearest_Class_Condition_Subprogram
+     (Kind    : Condition_Kind;
+      Spec_Id : Entity_Id) return Entity_Id;
+   --  Return the nearest ancestor containing the merged class-wide conditions
+   --  that statically apply to Spec_Id; return Empty otherwise.
 
    function Nearest_Enclosing_Instance (E : Entity_Id) return Entity_Id;
    --  Return the entity of the nearest enclosing instance which encapsulates
@@ -2844,6 +2859,10 @@ package Sem_Util is
    --  or overrides an inherited dispatching primitive S2, the original
    --  corresponding operation of S is the original corresponding operation of
    --  S2. Otherwise, it is S itself.
+
+   function Original_View_In_Visible_Part (Typ : Entity_Id) return Boolean;
+   --  Returns True if the type Typ has a private view or if the public view
+   --  appears in the visible part of a package spec.
 
    procedure Output_Entity (Id : Entity_Id);
    --  Print entity Id to standard output. The name of the entity appears in
@@ -3199,7 +3218,7 @@ package Sem_Util is
    --  predefined unit. The _Par version should be called only from the parser;
    --  the _Sem version should be called only during semantic analysis.
 
-   function Static_Boolean (N : Node_Id) return Uint;
+   function Static_Boolean (N : Node_Id) return Opt_Ubool;
    --  This function analyzes the given expression node and then resolves it
    --  as Standard.Boolean. If the result is static, then Uint_1 or Uint_0 is
    --  returned corresponding to the value, otherwise an error message is
@@ -3531,4 +3550,76 @@ package Sem_Util is
 
       end Indirect_Temps;
    end Old_Attr_Util;
+
+   package Storage_Model_Support is
+
+      --  This package provides a set of utility functions related to support
+      --  for the Storage_Model feature. These functions provide an interface
+      --  that the compiler (in particular back-end phases such as gigi and
+      --  GNAT-LLVM) can use to easily obtain entities and operations that
+      --  are specified for types in the aspects Storage_Model_Type and
+      --  Designated_Storage_Model.
+
+      function Get_Storage_Model_Type_Entity
+        (Typ : Entity_Id;
+         Nam : Name_Id) return Entity_Id;
+      --  Given type Typ with aspect Storage_Model_Type, returns the Entity_Id
+      --  corresponding to the entity associated with Nam in the aspect. If the
+      --  type does not specify the aspect, or such an entity is not present,
+      --  then returns Empty. (Note: This function is modeled on function
+      --  Get_Iterable_Type_Primitive.)
+
+      function Has_Designated_Storage_Model_Aspect
+        (Typ : Entity_Id) return Boolean;
+      --  Returns True iff Typ specifies aspect Designated_Storage_Model
+
+      function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean;
+      --  Returns True iff Typ specifies aspect Storage_Model_Type
+
+      function Storage_Model_Object (Typ : Entity_Id) return Entity_Id;
+      --  Given an access type with aspect Designated_Storage_Model, returns
+      --  the storage-model object associated with that type; returns Empty
+      --  if there is no associated object.
+
+      function Storage_Model_Type (Obj : Entity_Id) return Entity_Id;
+      --  Given an object Obj of a type specifying aspect Storage_Model_Type,
+      --  returns that type; otherwise returns Empty.
+
+      function Storage_Model_Address_Type (Typ : Entity_Id) return Entity_Id;
+      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
+      --  the type specified for the Address_Type choice in that aspect;
+      --  returns Empty if the aspect or the type isn't specified.
+
+      function Storage_Model_Null_Address (Typ : Entity_Id) return Entity_Id;
+      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
+      --  constant specified for Null_Address choice in that aspect; returns
+      --  Empty if the aspect or the constant object isn't specified.
+
+      function Storage_Model_Allocate (Typ : Entity_Id) return Entity_Id;
+      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
+      --  procedure specified for the Allocate choice in that aspect; returns
+      --  Empty if the aspect or the procedure isn't specified.
+
+      function Storage_Model_Deallocate (Typ : Entity_Id) return Entity_Id;
+      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
+      --  procedure specified for the Deallocate choice in that aspect; returns
+      --  Empty if the aspect or the procedure isn't specified.
+
+      function Storage_Model_Copy_From (Typ : Entity_Id) return Entity_Id;
+      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
+      --  procedure specified for the Copy_From choice in that aspect; returns
+      --  Empty if the aspect or the procedure isn't specified.
+
+      function Storage_Model_Copy_To (Typ : Entity_Id) return Entity_Id;
+      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
+      --  procedure specified for the Copy_To choice in that aspect; returns
+      --  Empty if the aspect or the procedure isn't specified.
+
+      function Storage_Model_Storage_Size (Typ : Entity_Id) return Entity_Id;
+      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
+      --  function specified for Storage_Size choice in that aspect; returns
+      --  Empty if the aspect or the procedure isn't specified.
+
+   end Storage_Model_Support;
+
 end Sem_Util;

@@ -68,7 +68,7 @@ using std::string;
 using std::string_view;
 using std::vector;
 
-struct B { };
+struct B { bool operator<(const B&) const; };
 
 static_assert( output_iterator< array<int, 1>::iterator, int > );
 static_assert( output_iterator< array<B, 1>::iterator, B > );

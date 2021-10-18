@@ -66,6 +66,8 @@ s390_asm_declare_function_size (FILE *asm_out_file,
 				const char *fnname ATTRIBUTE_UNUSED, tree decl);
 #endif
 
+extern void s390_rawmemchr (machine_mode elt_mode, rtx dst, rtx src, rtx pat);
+
 #ifdef RTX_CODE
 extern int s390_extra_constraint_str (rtx, int, const char *);
 extern int s390_const_ok_for_constraint_p (HOST_WIDE_INT, int, const char *);

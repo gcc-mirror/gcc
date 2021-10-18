@@ -128,15 +128,16 @@ along with GCC; see the file COPYING3.  If not see
 /* This is a workaround for a tool bug: see PR100340.  */
 
 #ifdef HAVE_AS_MLLVM_X86_PAD_FOR_ALIGN
-#define EXTRA_ASM_OPTS " -mllvm -x86-pad-for-align=false"
+#define EXTRA_ASM_OPTS " -mllvm -x86-pad-for-align=false "
 #else
 #define EXTRA_ASM_OPTS ""
 #endif
 
 #undef ASM_SPEC
-#define ASM_SPEC "-arch %(darwin_arch) \
-  " ASM_OPTIONS " -force_cpusubtype_ALL \
-  %{static}" ASM_MMACOSX_VERSION_MIN_SPEC EXTRA_ASM_OPTS
+#define ASM_SPEC \
+"%{static} -arch %(darwin_arch) " \
+ ASM_OPTIONS ASM_MMACOSX_VERSION_MIN_SPEC EXTRA_ASM_OPTS \
+"%{!force_cpusubtype_ALL:-force_cpusubtype_ALL} "
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
@@ -264,17 +265,6 @@ along with GCC; see the file COPYING3.  If not see
       target_flags &= ~MASK_MACHO_DYNAMIC_NO_PIC;			\
   } while (0)
 
-/* Darwin on x86_64 uses dwarf-2 by default.  Pre-darwin9 32-bit
-   compiles default to stabs+.  darwin9+ defaults to dwarf-2.  */
-#ifndef DARWIN_PREFER_DWARF
-#undef PREFERRED_DEBUGGING_TYPE
-#ifdef HAVE_AS_STABS_DIRECTIVE
-#define PREFERRED_DEBUGGING_TYPE (TARGET_64BIT ? DWARF2_DEBUG : DBX_DEBUG)
-#else
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-#endif
-#endif
-
 /* Darwin uses the standard DWARF register numbers but the default
    register numbers for STABS.  Fortunately for 64-bit code the
    default and the standard are the same.  */
@@ -344,3 +334,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUBTARGET_SHADOW_OFFSET
 #define SUBTARGET_SHADOW_OFFSET	\
   (TARGET_LP64 ? HOST_WIDE_INT_1 << 44 : HOST_WIDE_INT_1 << 29)
+
+#undef CLEAR_INSN_CACHE
+#define CLEAR_INSN_CACHE(beg, end)				\
+  extern void sys_icache_invalidate(void *start, size_t len);	\
+  sys_icache_invalidate ((beg), (size_t)((end)-(beg)))

@@ -33,7 +33,4 @@ using check4_t = std::experimental::fundamentals_v1::u16string_view;
 using check5_t = std::experimental::fundamentals_v1::u32string_view;
 #endif
 
-#ifdef _GLIBCXX_USE_WCHAR_T
 using check6_t = std::experimental::fundamentals_v1::wstring_view;
-#endif
-

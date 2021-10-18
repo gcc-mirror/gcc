@@ -265,6 +265,7 @@ dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
 dataflow		Kenneth Zadeck		<zadeck@naturalbridge.com>
 driver			Joseph Myers		<joseph@codesourcery.com>
+Fortran			Harald Anlauf		<anlauf@gmx.de>
 Fortran			Janne Blomqvist		<jb@gcc.gnu.org>
 Fortran			Tobias Burnus		<tobias@codesourcery.com>
 Fortran			François-Xavier Coudert	<fxcoudert@gcc.gnu.org>
@@ -307,7 +308,6 @@ from other maintainers or reviewers.
 
 Mark G. Adams					<mark.g.adams@sympatico.ca>
 Pedro Alves					<palves@redhat.com>
-Harald Anlauf					<anlauf@gmx.de>
 Raksit Ashok					<raksit@google.com>
 Matt Austern					<austern@google.com>
 David Ayers					<ayers@fsfe.org>
@@ -569,7 +569,7 @@ Nicolas Pitre					<nico@cam.org>
 Michael Ploujnikov				<michael.ploujnikov@oracle.com>
 Paul Pluzhnikov					<ppluzhnikov@google.com>
 Antoniu Pop					<antoniu.pop@gmail.com>
-Siddhesh Poyarekar				<siddhesh@sourceware.org>
+Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Vidya Praveen					<vidyapraveen@arm.com>
 Thomas Preud'homme				<thomas.preudhomme@celest.fr>
 Vladimir Prus					<vladimir@codesourcery.com>
@@ -635,6 +635,7 @@ Dinar Temirbulatov				<dtemirbulatov@gmail.com>
 Kresten Krab Thorup				<krab@gcc.gnu.org>
 Kai Tietz					<ktietz70@googlemail.com>
 Ilya Tocar					<tocarip@gmail.com>
+Petter Tomner					<tomner@kth.se>
 Philipp Tomsich					<philipp.tomsich@vrull.eu>
 Daniel Towner					<dant@picochip.com>
 Konrad Trifunovic				<konrad.trifunovic@inria.fr>
@@ -688,6 +689,7 @@ Shujing Zhao					<pearly.zhao@oracle.com>
 Jon Ziegler					<jonz@apple.com>
 Roman Zippel					<zippel@linux-m68k.org>
 Josef Zlomek					<josef.zlomek@email.cz>
+YunQiang Su					<yunqiang.su@cipunited.com>
 
 			Bug database only accounts
 
@@ -706,5 +708,8 @@ information.
  Matthias Kretz					<m.kretz@gsi.de>
  Jeff Law					<jeffreyalaw@gmail.com>
  Jeff Law					<jlaw@tachyum.com>
+ Jonathan Wakely				<jwakely@redhat.com>
  Gaius Mulley					<gaius.mulley@southwales.ac.uk>
+ Siddhesh Poyarekar				<siddhesh@gotplt.org>
  Trevor Saunders				<tbsaunde+gcc@tbsaunde.org>
+ Petter Tomner					<tomner@kth.se>

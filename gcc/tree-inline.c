@@ -2117,7 +2117,13 @@ copy_bb (copy_body_data *id, basic_block bb,
 	      size_t nargs = nargs_caller;
 
 	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
-		nargs--;
+		{
+		  /* Avoid crashing on invalid IL that doesn't have a
+		     varargs function or that passes not enough arguments.  */
+		  if (nargs == 0)
+		    break;
+		  nargs--;
+		}
 
 	      /* Create the new array of arguments.  */
 	      size_t nargs_callee = gimple_call_num_args (call_stmt);
@@ -3490,7 +3496,11 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
       /* We may produce non-gimple trees by adding NOPs or introduce invalid
 	 sharing when the value is not constant or DECL.  And we need to make
 	 sure that it cannot be modified from another path in the callee.  */
-      if ((is_gimple_min_invariant (value)
+      if (((is_gimple_min_invariant (value)
+	    /* When the parameter is used in a context that forces it to
+	       not be a GIMPLE register avoid substituting something that
+	       is not a decl there.  */
+	    && ! DECL_NOT_GIMPLE_REG_P (p))
 	   || (DECL_P (value) && TREE_READONLY (value))
 	   || (auto_var_in_fn_p (value, id->dst_fn)
 	       && !TREE_ADDRESSABLE (value)))
@@ -4436,8 +4446,8 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
 	    /* Do not special case builtins where we see the body.
 	       This just confuse inliner.  */
 	    struct cgraph_node *node;
-	    if (!(node = cgraph_node::get (decl))
-		|| node->definition)
+	    if ((node = cgraph_node::get (decl))
+		&& node->definition)
 	      ;
 	    /* For buitins that are likely expanded to nothing or
 	       inlined do not account operand costs.  */

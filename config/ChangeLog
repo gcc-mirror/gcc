@@ -1,3 +1,9 @@
+2021-09-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/102389
+	* bootstrap-lto-lean.mk: Handle NM like RANLIB AND AR.
+	* bootstrap-lto.mk: Likewise.
+
 2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* mh-darwin: Require a non-shared host configuration to

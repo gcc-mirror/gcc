@@ -50,9 +50,9 @@ using namespace __gnu_pbds;
 // A simple hash functor.
 // hash could serve instead of this functor, but it is not yet
 // standard everywhere.
-struct int_hash : public unary_function<int, size_t>
+struct int_hash
 {
-  inline size_t
+  size_t
   operator()(const int& r_i) const
   { return r_i; }
 };

@@ -992,7 +992,7 @@ public:
 
   void visit (SwitchErrorStatement *s)
   {
-    add_stmt (d_assert_call (s->loc, LIBCALL_SWITCH_ERROR));
+    add_stmt (build_assert_call (s->loc, LIBCALL_SWITCH_ERROR));
   }
 
   /* A return statement exits the current function and supplies its return

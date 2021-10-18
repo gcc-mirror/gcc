@@ -299,6 +299,11 @@ procedure Gnatxref is
    end Write_Usage;
 
 begin
+   Put_Line
+     ("WARNING: gnatxref is obsolete and will be removed in the next release");
+   Put_Line
+     ("Consider using Libadalang or GNAT Studio python scripting instead");
+
    Parse_Cmd_Line;
 
    if not Have_File then

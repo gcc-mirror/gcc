@@ -35,7 +35,6 @@
 #if __cplusplus >= 201402L
 
 #include <atomic>
-#include <chrono>
 #include <forward_list>
 #include <functional>
 #include <system_error>
@@ -43,6 +42,7 @@
 #include <vector>
 #include <experimental/netfwd>
 #include <experimental/executor>
+#include <bits/chrono.h>
 #if _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 #endif

@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "varasm.h"
 #include "output.h"
+#include "opts.h"
 
 tree solaris_pending_aligns, solaris_pending_inits, solaris_pending_finis;
 
@@ -296,6 +297,6 @@ solaris_override_options (void)
 {
   /* Older versions of Solaris ld cannot handle CIE version 3 in .eh_frame.
      Don't emit DWARF3/4 unless specifically selected if so.  */
-  if (!HAVE_LD_EH_FRAME_CIEV3 && !global_options_set.x_dwarf_version)
+  if (!HAVE_LD_EH_FRAME_CIEV3 && !OPTION_SET_P (dwarf_version))
     dwarf_version = 2;
 }

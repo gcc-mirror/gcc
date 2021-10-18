@@ -119,8 +119,9 @@ vect_init_pattern_stmt (vec_info *vinfo, gimple *pattern_stmt,
     = STMT_VINFO_DEF_TYPE (orig_stmt_info);
   if (!STMT_VINFO_VECTYPE (pattern_stmt_info))
     {
-      gcc_assert (VECTOR_BOOLEAN_TYPE_P (vectype)
-		  == vect_use_mask_type_p (orig_stmt_info));
+      gcc_assert (!vectype
+		  || (VECTOR_BOOLEAN_TYPE_P (vectype)
+		      == vect_use_mask_type_p (orig_stmt_info)));
       STMT_VINFO_VECTYPE (pattern_stmt_info) = vectype;
       pattern_stmt_info->mask_precision = orig_stmt_info->mask_precision;
     }
@@ -1268,11 +1269,31 @@ vect_recog_widen_op_pattern (vec_info *vinfo,
   /* Check target support  */
   tree vectype = get_vectype_for_scalar_type (vinfo, half_type);
   tree vecitype = get_vectype_for_scalar_type (vinfo, itype);
+  tree ctype = itype;
+  tree vecctype = vecitype;
+  if (orig_code == MINUS_EXPR
+      && TYPE_UNSIGNED (itype)
+      && TYPE_PRECISION (type) > TYPE_PRECISION (itype))
+    {
+      /* Subtraction is special, even if half_type is unsigned and no matter
+	 whether type is signed or unsigned, if type is wider than itype,
+	 we need to sign-extend from the widening operation result to the
+	 result type.
+	 Consider half_type unsigned char, operand 1 0xfe, operand 2 0xff,
+	 itype unsigned short and type either int or unsigned int.
+	 Widened (unsigned short) 0xfe - (unsigned short) 0xff is
+	 (unsigned short) 0xffff, but for type int we want the result -1
+	 and for type unsigned int 0xffffffff rather than 0xffff.  */
+      ctype = build_nonstandard_integer_type (TYPE_PRECISION (itype), 0);
+      vecctype = get_vectype_for_scalar_type (vinfo, ctype);
+    }
+
   enum tree_code dummy_code;
   int dummy_int;
   auto_vec<tree> dummy_vec;
   if (!vectype
       || !vecitype
+      || !vecctype
       || !supportable_widening_operation (vinfo, wide_code, last_stmt_info,
 					  vecitype, vectype,
 					  &dummy_code, &dummy_code,
@@ -1291,8 +1312,12 @@ vect_recog_widen_op_pattern (vec_info *vinfo,
   gimple *pattern_stmt = gimple_build_assign (var, wide_code,
 					      oprnd[0], oprnd[1]);
 
+  if (vecctype != vecitype)
+    pattern_stmt = vect_convert_output (vinfo, last_stmt_info, ctype,
+					pattern_stmt, vecitype);
+
   return vect_convert_output (vinfo, last_stmt_info,
-			      type, pattern_stmt, vecitype);
+			      type, pattern_stmt, vecctype);
 }
 
 /* Try to detect multiplication on widened inputs, converting MULT_EXPR
@@ -4259,8 +4284,6 @@ vect_recog_bool_pattern (vec_info *vinfo,
 	  || VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (lhs)))
 	return NULL;
       vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
-      if (vectype == NULL_TREE)
-	return NULL;
 
       if (check_bool_pattern (var, vinfo, bool_stmts))
 	{
@@ -5672,7 +5695,6 @@ vect_pattern_recog_1 (vec_info *vinfo,
     }
 
   loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  gcc_assert (pattern_vectype);
  
   /* Found a vectorizable pattern.  */
   if (dump_enabled_p ())

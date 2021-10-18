@@ -2270,8 +2270,15 @@ of GNAT specific extensions are recognized as follows:
   values of the composite type shall be covered. The composite type of the
   selector shall be a nonlimited untagged (but possibly discriminated)
   record type, all of whose subcomponent subtypes are either static discrete
-  subtypes or record types that meet the same restrictions. Support for arrays
-  is planned, but not yet implemented.
+  subtypes or record types that meet the same restrictions.
+
+  Support for casing on arrays (and on records that contain arrays) is
+  currently subject to some restrictions. Non-positional
+  array aggregates are not supported as (or within) case choices. Likewise
+  for array type and subtype names. The current implementation exceeds
+  compile-time capacity limits in some annoyingly common scenarios; the
+  message generated in such cases is usually "Capacity exceeded in compiling
+  case statement with composite selector type".
 
   In addition, pattern bindings are supported. This is a mechanism
   for binding a name to a component of a matching value for use within
@@ -2280,7 +2287,8 @@ of GNAT specific extensions are recognized as follows:
   "is <identifier>". In the special case of a "box" component association,
   the identifier may instead be provided within the box. Either of these
   indicates that the given identifer denotes (a constant view of) the matching
-  subcomponent of the case selector.
+  subcomponent of the case selector. Binding is not yet supported for arrays
+  or subcomponents thereof.
 
   Consider this example (which uses type Rec from the previous example):
 
@@ -4908,43 +4916,6 @@ aspects, but is prepared to ignore the pragmas. The assertion
 policy that controls this pragma is ``Post'Class``, not
 ``Post_Class``.
 
-Pragma Rename_Pragma
-============================
-.. index:: Pragmas, synonyms
-
-Syntax:
-
-
-::
-
-  pragma Rename_Pragma (
-           [New_Name =>] IDENTIFIER,
-           [Renamed  =>] pragma_IDENTIFIER);
-
-This pragma provides a mechanism for supplying new names for existing
-pragmas. The ``New_Name`` identifier can subsequently be used as a synonym for
-the Renamed pragma. For example, suppose you have code that was originally
-developed on a compiler that supports Inline_Only as an implementation defined
-pragma. And suppose the semantics of pragma Inline_Only are identical to (or at
-least very similar to) the GNAT implementation defined pragma
-Inline_Always. You could globally replace Inline_Only with Inline_Always.
-
-However, to avoid that source modification, you could instead add a
-configuration pragma:
-
-.. code-block:: ada
-
-  pragma Rename_Pragma (
-           New_Name => Inline_Only,
-           Renamed  => Inline_Always);
-
-
-Then GNAT will treat "pragma Inline_Only ..." as if you had written
-"pragma Inline_Always ...".
-
-Pragma Inline_Only will not necessarily mean the same thing as the other Ada
-compiler; it's up to you to make sure the semantics are close enough.
-
 Pragma Pre
 ==========
 .. index:: Pre
@@ -5728,6 +5699,43 @@ same generic declaration.
 In the generic unit, the formal type is subject to all restrictions
 pertaining to remote access to class-wide types. At instantiation, the
 actual type must be a remote access to class-wide type.
+
+Pragma Rename_Pragma
+============================
+.. index:: Pragmas, synonyms
+
+Syntax:
+
+
+::
+
+  pragma Rename_Pragma (
+           [New_Name =>] IDENTIFIER,
+           [Renamed  =>] pragma_IDENTIFIER);
+
+This pragma provides a mechanism for supplying new names for existing
+pragmas. The ``New_Name`` identifier can subsequently be used as a synonym for
+the Renamed pragma. For example, suppose you have code that was originally
+developed on a compiler that supports Inline_Only as an implementation defined
+pragma. And suppose the semantics of pragma Inline_Only are identical to (or at
+least very similar to) the GNAT implementation defined pragma
+Inline_Always. You could globally replace Inline_Only with Inline_Always.
+
+However, to avoid that source modification, you could instead add a
+configuration pragma:
+
+.. code-block:: ada
+
+  pragma Rename_Pragma (
+           New_Name => Inline_Only,
+           Renamed  => Inline_Always);
+
+
+Then GNAT will treat "pragma Inline_Only ..." as if you had written
+"pragma Inline_Always ...".
+
+Pragma Inline_Only will not necessarily mean the same thing as the other Ada
+compiler; it's up to you to make sure the semantics are close enough.
 
 Pragma Restricted_Run_Time
 ==========================

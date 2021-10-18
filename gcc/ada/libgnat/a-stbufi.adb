@@ -45,7 +45,7 @@ package body Ada.Strings.Text_Buffers.Files is
    end Put_UTF_8_Implementation;
 
    function Create_From_FD
-     (FD                      : GNAT.OS_Lib.File_Descriptor;
+     (FD                      : System.OS_Lib.File_Descriptor;
       Close_Upon_Finalization : Boolean := True) return File_Buffer
    is
       use OS;

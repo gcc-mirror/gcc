@@ -30,8 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines for supporting the Image attribute for
---  signed integer types larger Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+--  signed integer types larger than Integer, and also for conversion
+--  operations required in Text_IO.Integer_IO for such types.
 
 with System.Image_I;
 

@@ -1403,11 +1403,18 @@ cp_build_qualified_type_real (tree type,
   /* A reference or method type shall not be cv-qualified.
      [dcl.ref], [dcl.fct].  This used to be an error, but as of DR 295
      (in CD1) we always ignore extra cv-quals on functions.  */
+
+  /* [dcl.ref/1] Cv-qualified references are ill-formed except when
+     the cv-qualifiers are introduced through the use of a typedef-name
+     ([dcl.typedef], [temp.param]) or decltype-specifier
+     ([dcl.type.decltype]),in which case the cv-qualifiers are
+     ignored.  */
   if (type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)
       && (TYPE_REF_P (type)
 	  || FUNC_OR_METHOD_TYPE_P (type)))
     {
-      if (TYPE_REF_P (type))
+      if (TYPE_REF_P (type)
+	  && (!typedef_variant_p (type) || FUNC_OR_METHOD_TYPE_P (type)))
 	bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
       type_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
     }
@@ -1492,9 +1499,9 @@ apply_identity_attributes (tree result, tree attribs, bool *remove_attributes)
 	      p = &TREE_CHAIN (*p);
 	    }
 	}
-      else if (first_ident)
+      else if (first_ident && first_ident != error_mark_node)
 	{
-	  for (tree a2 = first_ident; a2; a2 = TREE_CHAIN (a2))
+	  for (tree a2 = first_ident; a2 != a; a2 = TREE_CHAIN (a2))
 	    {
 	      *p = tree_cons (TREE_PURPOSE (a2), TREE_VALUE (a2), NULL_TREE);
 	      p = &TREE_CHAIN (*p);

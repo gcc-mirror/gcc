@@ -524,7 +524,20 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 			      NULL_TREE);
 
-	      if (!split_nonconstant_init_1 (sub, value, true))
+	      if (!split_nonconstant_init_1 (sub, value, true)
+		      /* For flexible array member with initializer we
+			 can't remove the initializer, because only the
+			 initializer determines how many elements the
+			 flexible array member has.  */
+		  || (!array_type_p
+		      && TREE_CODE (inner_type) == ARRAY_TYPE
+		      && TYPE_DOMAIN (inner_type) == NULL
+		      && TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
+		      && COMPLETE_TYPE_P (TREE_TYPE (value))
+		      && !integer_zerop (TYPE_SIZE (TREE_TYPE (value)))
+		      && idx == CONSTRUCTOR_NELTS (init) - 1
+		      && TYPE_HAS_TRIVIAL_DESTRUCTOR
+				(strip_array_types (inner_type))))
 		complete_p = false;
 	      else
 		{
@@ -879,7 +892,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
 
   /* Even non-dependent expressions can still have template
      codes like CAST_EXPR, so use *_non_dependent_expr to cope.  */
-  init = fold_non_dependent_expr (init, complain);
+  init = fold_non_dependent_expr (init, complain, /*manifest*/true);
   if (init == error_mark_node)
     return ok;
 
@@ -1913,11 +1926,17 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 
   if (processing_template_decl)
     {
-      if (type && TYPE_PTR_P (type)
-	  && !dependent_scope_p (TREE_TYPE (type)))
+      tree ttype = NULL_TREE;
+      if (type && TYPE_PTR_P (type))
+	ttype = TREE_TYPE (type);
+      if (ttype && !dependent_scope_p (ttype))
 	/* Pointer to current instantiation, don't treat as dependent.  */;
       else if (type_dependent_expression_p (expr))
-	return build_min_nt_loc (loc, ARROW_EXPR, expr);
+	{
+	  expr = build_min_nt_loc (loc, ARROW_EXPR, expr);
+	  TREE_TYPE (expr) = ttype;
+	  return expr;
+	}
       expr = build_non_dependent_expr (expr);
     }
 
@@ -2157,7 +2176,7 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
       type = TREE_TYPE (exp);
 
       if (DECL_ARTIFICIAL (exp))
-	cp_warn_deprecated_use (type);
+	cp_handle_deprecated_or_unavailable (type);
     }
   else
     type = exp;

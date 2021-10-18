@@ -35,12 +35,28 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "gimple-range.h"
 
-gimple_ranger::gimple_ranger () : tracer ("")
+gimple_ranger::gimple_ranger () :
+	non_executable_edge_flag (cfun),
+	m_cache (non_executable_edge_flag),
+	tracer ("")
 {
   // If the cache has a relation oracle, use it.
   m_oracle = m_cache.oracle ();
   if (dump_file && (param_evrp_mode & EVRP_MODE_TRACE))
     tracer.enable_trace ();
+
+  // Ensure the not_executable flag is clear everywhere.
+  if (flag_checking)
+    {
+      basic_block bb;
+      FOR_ALL_BB_FN (bb, cfun)
+	{
+	  edge_iterator ei;
+	  edge e;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    gcc_checking_assert ((e->flags & non_executable_edge_flag) == 0);
+	}
+    }
 }
 
 bool
@@ -164,9 +180,9 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
   int_range_max edge_range;
   gcc_checking_assert (irange::supports_type_p (TREE_TYPE (name)));
 
-  // PHI arguments can be constants, catch these here.
-  if (!gimple_range_ssa_p (name))
-    return range_of_expr (r, name);
+  // Do not process values along abnormal or EH edges.
+  if (e->flags & (EDGE_ABNORMAL|EDGE_EH))
+    return false;
 
   unsigned idx;
   if ((idx = tracer.header ("range_on_edge (")))
@@ -175,16 +191,32 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
       fprintf (dump_file, ") on edge %d->%d\n", e->src->index, e->dest->index);
     }
 
-  range_on_exit (r, e->src, name);
-  gcc_checking_assert  (r.undefined_p ()
-			|| range_compatible_p (r.type(), TREE_TYPE (name)));
+  // Check to see if the edge is executable.
+  if ((e->flags & non_executable_edge_flag))
+    {
+      r.set_undefined ();
+      if (idx)
+	tracer.trailer (idx, "range_on_edge [Unexecutable] ", true,
+			name, r);
+      return true;
+    }
 
-  // Check to see if NAME is defined on edge e.
-  if (m_cache.range_on_edge (edge_range, e, name))
-    r.intersect (edge_range);
+  bool res = true;
+  if (!gimple_range_ssa_p (name))
+    res = range_of_expr (r, name);
+  else
+    {
+      range_on_exit (r, e->src, name);
+      gcc_checking_assert  (r.undefined_p ()
+			    || range_compatible_p (r.type(), TREE_TYPE (name)));
+
+      // Check to see if NAME is defined on edge e.
+      if (m_cache.range_on_edge (edge_range, e, name))
+	r.intersect (edge_range);
+    }
 
   if (idx)
-    tracer.trailer (idx, "range_on_edge", true, name, r);
+    tracer.trailer (idx, "range_on_edge", res, name, r);
   return true;
 }
 
@@ -382,6 +414,12 @@ gimple_ranger::dump (FILE *f)
     dump_bb (f, bb);
 
   m_cache.dump (f);
+}
+
+void
+gimple_ranger::debug ()
+{
+  dump (stderr);
 }
 
 /* Create a new ranger instance and associate it with function FUN.

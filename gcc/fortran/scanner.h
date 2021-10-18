@@ -23,8 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 typedef struct gfc_directorylist
 {
   char *path;
-  bool use_for_modules;
   struct gfc_directorylist *next;
+  bool use_for_modules, warn;
 }
 gfc_directorylist;
 

@@ -18,3 +18,12 @@ LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/config/unwind-dw2-fde-darwin.c \
 # Patch to __Unwind_Find_Enclosing_Function for Darwin10.
 d10-uwfef.o: $(srcdir)/config/darwin10-unwind-find-enc-func.c
 	$(crt_compile) -mmacosx-version-min=10.6 -c $<
+
+# Using this crt as a library means that it will not be added to an exe
+# (or module) unless needed.
+libd10-uwfef.a: d10-uwfef.o
+	$(AR_CREATE_FOR_TARGET) $@ d10-uwfef.o
+	$(RANLIB_FOR_TARGET) $@
+
+# Symbols for all the sub-ports.
+SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/libgcc-libsystem.ver

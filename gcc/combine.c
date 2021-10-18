@@ -3063,6 +3063,16 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       return 0;
     }
 
+  /* We cannot safely duplicate volatile references in any case.  */
+
+  if ((added_sets_2 && volatile_refs_p (PATTERN (i2)))
+      || (added_sets_1 && volatile_refs_p (PATTERN (i1)))
+      || (added_sets_0 && volatile_refs_p (PATTERN (i0))))
+    {
+      undo_all ();
+      return 0;
+    }
+
   /* Count how many auto_inc expressions there were in the original insns;
      we need to have the same number in the resulting patterns.  */
 
@@ -5903,7 +5913,8 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
       if (HWI_COMPUTABLE_MODE_P (mode)
 	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0
 	  && (temp = get_last_value (XEXP (x, 0)))
-	  && COMPARISON_P (temp))
+	  && COMPARISON_P (temp)
+	  && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (XEXP (x, 0))))
 	return gen_lowpart (mode, XEXP (x, 0));
       break;
 
@@ -11556,7 +11567,27 @@ recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
   bool changed = false;
 
   if (GET_CODE (pat) == SET)
-    changed = change_zero_ext (pat);
+    {
+      /* For an unrecognized single set of a constant, try placing it in
+	 the constant pool, if this function already uses one.  */
+      rtx src = SET_SRC (pat);
+      if (CONSTANT_P (src)
+	  && !CONST_INT_P (src)
+	  && crtl->uses_const_pool)
+	{
+	  machine_mode mode = GET_MODE (src);
+	  if (mode == VOIDmode)
+	    mode = GET_MODE (SET_DEST (pat));
+	  src = force_const_mem (mode, src);
+	  if (src)
+	    {
+	      SUBST (SET_SRC (pat), src);
+	      changed = true;
+	    }
+	}
+      else
+	changed = change_zero_ext (pat);
+    }
   else if (GET_CODE (pat) == PARALLEL)
     {
       int i;

@@ -130,9 +130,7 @@ package body Treepr is
    procedure Capitalize (S : in out String);
    --  Turns an identifier into Mixed_Case
 
-   function Image (F : Node_Field) return String;
-
-   function Image (F : Entity_Field) return String;
+   function Image (F : Node_Or_Entity_Field) return String;
 
    procedure Print_Init;
    --  Initialize for printing of tree with descendants
@@ -281,7 +279,7 @@ package body Treepr is
    -- Image --
    -----------
 
-   function Image (F : Node_Field) return String is
+   function Image (F : Node_Or_Entity_Field) return String is
    begin
       case F is
          when F_Alloc_For_BIP_Return =>
@@ -321,18 +319,6 @@ package body Treepr is
          when F_TSS_Elist =>
             return "TSS_Elist";
 
-         when others =>
-            declare
-               Result : constant String := Capitalize (F'Img);
-            begin
-               return Result (3 .. Result'Last); -- Remove "F_"
-            end;
-      end case;
-   end Image;
-
-   function Image (F : Entity_Field) return String is
-   begin
-      case F is
          when F_BIP_Initialization_Call =>
             return "BIP_Initialization_Call";
          when F_Body_Needed_For_SAL =>
@@ -614,7 +600,7 @@ package body Treepr is
       Write_Str (UI_Image (Val));
       Write_Str (")  ");
 
-      if Val /= No_Uint then
+      if Present (Val) then
          Write_Location (End_Location (N));
       end if;
    end Print_End_Span;
@@ -666,7 +652,7 @@ package body Treepr is
             for Field_Index in Fields'Range loop
                declare
                   FD : Field_Descriptor renames
-                    Entity_Field_Descriptors (Fields (Field_Index));
+                    Field_Descriptors (Fields (Field_Index));
                begin
                   if Should_Print (Fields (Field_Index))
                     and then (FD.Kind = Flag_Field) = Print_Flags
@@ -1198,7 +1184,6 @@ package body Treepr is
       Prefix : constant String := Prefix_Str & Prefix_Char;
 
       Sfile : Source_File_Index;
-      Fmt   : UI_Format;
 
    begin
       if Phase /= Printing then
@@ -1266,14 +1251,21 @@ package body Treepr is
 
       --  Print Chars field if present
 
-      if Nkind (N) in N_Has_Chars and then Chars (N) /= No_Name then
-         Print_Str (Prefix);
-         Print_Str ("Chars = ");
-         Print_Name (Chars (N));
-         Write_Str (" (Name_Id=");
-         Write_Int (Int (Chars (N)));
-         Write_Char (')');
-         Print_Eol;
+      if Nkind (N) in N_Has_Chars then
+         if Field_Is_Initial_Zero (N, F_Chars) then
+            Print_Str (Prefix);
+            Print_Str ("Chars = initial zero");
+            Print_Eol;
+
+         elsif Chars (N) /= No_Name then
+            Print_Str (Prefix);
+            Print_Str ("Chars = ");
+            Print_Name (Chars (N));
+            Write_Str (" (Name_Id=");
+            Write_Int (Int (Chars (N)));
+            Write_Char (')');
+            Print_Eol;
+         end if;
       end if;
 
       --  Special field print operations for non-entity nodes
@@ -1407,12 +1399,6 @@ package body Treepr is
          end if;
       end if;
 
-      if Nkind (N) = N_Integer_Literal and then Print_In_Hex (N) then
-         Fmt := Hex;
-      else
-         Fmt := Auto;
-      end if;
-
       declare
          Fields : Node_Field_Array renames Node_Field_Table (Nkind (N)).all;
          Should_Print : constant Node_Field_Set :=
@@ -1447,6 +1433,12 @@ package body Treepr is
               => False,
 
             others => True);
+
+         Fmt : constant UI_Format :=
+           (if Nkind (N) = N_Integer_Literal and then Print_In_Hex (N)
+            then Hex
+            else Auto);
+
       begin
          --  Outer loop makes flags come out last
 
@@ -1454,7 +1446,7 @@ package body Treepr is
             for Field_Index in Fields'Range loop
                declare
                   FD : Field_Descriptor renames
-                    Node_Field_Descriptors (Fields (Field_Index));
+                    Field_Descriptors (Fields (Field_Index));
                begin
                   if Should_Print (Fields (Field_Index))
                     and then (FD.Kind = Flag_Field) = Print_Flags
@@ -1624,7 +1616,14 @@ package body Treepr is
 
          if Nkind (N) in N_Has_Chars then
             Write_Char (' ');
-            Print_Name (Chars (N));
+
+            if Field_Is_Initial_Zero (N, F_Chars) then
+               Print_Str ("Chars = initial zero");
+               Print_Eol;
+
+            else
+               Print_Name (Chars (N));
+            end if;
          end if;
 
          if Nkind (N) in N_Entity then
@@ -2054,25 +2053,16 @@ package body Treepr is
       New_Prefix : String (Prefix_Str'First .. Prefix_Str'Last + 2);
       --  Prefix string for printing referenced fields
 
-      procedure Visit_Descendant
-        (D         : Union_Id;
-         No_Indent : Boolean := False);
+      procedure Visit_Descendant (D : Union_Id);
       --  This procedure tests the given value of one of the Fields referenced
       --  by the current node to determine whether to visit it recursively.
-      --  Normally No_Indent is false, which means that the visited node will
-      --  be indented using New_Prefix. If No_Indent is set to True, then
-      --  this indentation is skipped, and Prefix_Str is used for the call
-      --  to print the descendant. No_Indent is effective only if the
-      --  referenced descendant is a node.
+      --  The visited node will be indented using New_Prefix.
 
       ----------------------
       -- Visit_Descendant --
       ----------------------
 
-      procedure Visit_Descendant
-        (D         : Union_Id;
-         No_Indent : Boolean := False)
-      is
+      procedure Visit_Descendant (D : Union_Id) is
       begin
          --  Case of descendant is a node
 
@@ -2145,11 +2135,7 @@ package body Treepr is
                --  execute a return if the node is not to be visited), we can
                --  go ahead and visit the node.
 
-               if No_Indent then
-                  Visit_Node (Nod, Prefix_Str, Prefix_Char);
-               else
-                  Visit_Node (Nod, New_Prefix, ' ');
-               end if;
+               Visit_Node (Nod, New_Prefix, ' ');
             end;
 
          --  Case of descendant is a list
@@ -2265,7 +2251,7 @@ package body Treepr is
          for Field_Index in A'Range loop
             declare
                F : constant Node_Field := A (Field_Index);
-               FD : Field_Descriptor renames Node_Field_Descriptors (F);
+               FD : Field_Descriptor renames Field_Descriptors (F);
             begin
                if FD.Kind in Node_Id_Field | List_Id_Field | Elist_Id_Field
                   --  For all other kinds of descendants (strings, names, uints
@@ -2293,7 +2279,7 @@ package body Treepr is
             for Field_Index in A'Range loop
                declare
                   F : constant Entity_Field := A (Field_Index);
-                  FD : Field_Descriptor renames Entity_Field_Descriptors (F);
+                  FD : Field_Descriptor renames Field_Descriptors (F);
                begin
                   if FD.Kind in Node_Id_Field | List_Id_Field | Elist_Id_Field
                   then

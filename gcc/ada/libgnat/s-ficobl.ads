@@ -39,7 +39,7 @@ with Ada.Streams;
 with Interfaces.C_Streams;
 with System.CRTL;
 
-package System.File_Control_Block is
+package System.File_Control_Block with SPARK_Mode => Off is
    pragma Preelaborate;
 
    ----------------------------

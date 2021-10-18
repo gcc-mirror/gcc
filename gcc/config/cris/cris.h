@@ -901,24 +901,6 @@ struct cum_args {int regs;};
 /* FIXME: Investigate DEBUGGER_AUTO_OFFSET, DEBUGGER_ARG_OFFSET.  */
 
 
-/* Node: DBX Options */
-
-/* Is this correct? Check later.  */
-#define DBX_NO_XREFS
-
-#define DBX_CONTIN_LENGTH 0
-
-/* FIXME: Is this needed when we have 0 DBX_CONTIN_LENGTH?  */
-#define DBX_CONTIN_CHAR '?'
-
-
-/* Node: DBX Hooks */
-/* (no definitions) */
-
-/* Node: File names and DBX */
-/* (no definitions) */
-
-
 /* Node: DWARF */
 /* (no definitions) */
 

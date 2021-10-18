@@ -1,6 +1,6 @@
 /* PR tree-optimization/61839.  */
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-vrp1 -fdisable-tree-evrp -fdump-tree-optimized -fdisable-tree-ethread -fdisable-tree-thread1" } */
+/* { dg-options "-O2 -fdump-tree-vrp-thread1 -fdisable-tree-evrp -fdump-tree-optimized -fdisable-tree-ethread -fdisable-tree-thread1" } */
 /* { dg-require-effective-target int32plus } */
 
 __attribute__ ((noinline))
@@ -38,7 +38,11 @@ int main ()
 }
 
 /* Scan for c = 972195717) >> [0, 1] in function foo.  */
-/* { dg-final { scan-tree-dump-times "486097858 : 972195717" 1  "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "486097858 : 972195717" 1  "vrp-thread1" } } */
+
+/* Previously we were checking for two ?: with constant PHI arguments,
+   but now we collapse them into one.  */
 /* Scan for c = 972195717) >> [2, 3] in function bar.  */
-/* { dg-final { scan-tree-dump-times "243048929 : 121524464" 2  "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "243048929 : 121524464" 1  "vrp-thread1" } } */
+
 /* { dg-final { scan-tree-dump-times "486097858" 0  "optimized" } } */

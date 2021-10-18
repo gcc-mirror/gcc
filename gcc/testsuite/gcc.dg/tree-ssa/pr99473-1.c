@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fallow-store-data-races -fdump-tree-cselim-details" } */
+/* { dg-options "-O2 -ftree-cselim -fallow-store-data-races -fdump-tree-cselim-details" } */
 
 void f (int*);
 

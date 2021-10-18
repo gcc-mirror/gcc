@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-O2 -fdump-tree-vrp-details -fdump-tree-thread1-details --param logical-op-non-short-circuit=1" }  */
-/* { dg-final { scan-tree-dump-times "Registering FSM jump" 8 "thread1" } }  */
+/* { dg-final { scan-tree-dump-times "Registering jump" 8 "thread1" } }  */
 
 /* Copied from ssa-thread-14.  */
 

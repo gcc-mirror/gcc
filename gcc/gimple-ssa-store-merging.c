@@ -1020,7 +1020,8 @@ public:
    first.  */
 
 static tree
-bswap_view_convert (gimple_stmt_iterator *gsi, tree type, tree val)
+bswap_view_convert (gimple_stmt_iterator *gsi, tree type, tree val,
+		    bool before)
 {
   gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (val))
 	      || POINTER_TYPE_P (TREE_TYPE (val)));
@@ -1032,12 +1033,18 @@ bswap_view_convert (gimple_stmt_iterator *gsi, tree type, tree val)
 	  gimple *g
 	    = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
 				   NOP_EXPR, val);
-	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	  if (before)
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	  else
+	    gsi_insert_after (gsi, g, GSI_NEW_STMT);
 	  val = gimple_assign_lhs (g);
 	}
       tree itype = build_nonstandard_integer_type (prec, 1);
       gimple *g = gimple_build_assign (make_ssa_name (itype), NOP_EXPR, val);
-      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      if (before)
+	gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      else
+	gsi_insert_after (gsi, g, GSI_NEW_STMT);
       val = gimple_assign_lhs (g);
     }
   return build1 (VIEW_CONVERT_EXPR, type, val);
@@ -1165,7 +1172,8 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	      gimple_set_vuse (load_stmt, n->vuse);
 	      gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 	      if (conv_code == VIEW_CONVERT_EXPR)
-		val_tmp = bswap_view_convert (&gsi, TREE_TYPE (tgt), val_tmp);
+		val_tmp = bswap_view_convert (&gsi, TREE_TYPE (tgt), val_tmp,
+					      true);
 	      gimple_assign_set_rhs_with_ops (&gsi, conv_code, val_tmp);
 	      update_stmt (cur_stmt);
 	    }
@@ -1209,7 +1217,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	  if (!is_gimple_val (src))
 	    return NULL_TREE;
 	  if (conv_code == VIEW_CONVERT_EXPR)
-	    src = bswap_view_convert (&gsi, TREE_TYPE (tgt), src);
+	    src = bswap_view_convert (&gsi, TREE_TYPE (tgt), src, true);
 	  g = gimple_build_assign (tgt, conv_code, src);
 	}
       else if (cur_stmt)
@@ -1296,14 +1304,13 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
   /* Convert the result if necessary.  */
   if (!useless_type_conversion_p (TREE_TYPE (tgt), bswap_type))
     {
-      gimple *convert_stmt;
-
       tmp = make_temp_ssa_name (bswap_type, NULL, "bswapdst");
       tree atmp = tmp;
+      gimple_stmt_iterator gsi2 = gsi;
       if (conv_code == VIEW_CONVERT_EXPR)
-	atmp = bswap_view_convert (&gsi, TREE_TYPE (tgt), tmp);
-      convert_stmt = gimple_build_assign (tgt, conv_code, atmp);
-      gsi_insert_after (&gsi, convert_stmt, GSI_SAME_STMT);
+	atmp = bswap_view_convert (&gsi2, TREE_TYPE (tgt), tmp, false);
+      gimple *convert_stmt = gimple_build_assign (tgt, conv_code, atmp);
+      gsi_insert_after (&gsi2, convert_stmt, GSI_SAME_STMT);
     }
 
   gimple_set_lhs (mask_stmt ? mask_stmt : bswap_stmt, tmp);

@@ -98,6 +98,7 @@
 
 #ifdef __QNX__
 #include <sys/syspage.h>
+#include <sys/time.h>
 #endif
 
 #ifdef IN_RTS
@@ -3541,6 +3542,9 @@ __gnat_get_executable_load_address (void)
   struct link_map *map = _r_debug.r_map;
 
   return (const void *)map->l_addr;
+
+#elif defined (_WIN32)
+  return GetModuleHandle (NULL);
 
 #else
   return NULL;

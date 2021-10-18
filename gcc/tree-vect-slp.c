@@ -779,56 +779,6 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
   return 0;
 }
 
-/* Try to assign vector type VECTYPE to STMT_INFO for BB vectorization.
-   Return true if we can, meaning that this choice doesn't conflict with
-   existing SLP nodes that use STMT_INFO.  */
-
-bool
-vect_update_shared_vectype (stmt_vec_info stmt_info, tree vectype)
-{
-  tree old_vectype = STMT_VINFO_VECTYPE (stmt_info);
-  if (old_vectype)
-    return useless_type_conversion_p (vectype, old_vectype);
-
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    {
-      /* We maintain the invariant that if any statement in the group is
-	 used, all other members of the group have the same vector type.  */
-      stmt_vec_info first_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-      stmt_vec_info member_info = first_info;
-      for (; member_info; member_info = DR_GROUP_NEXT_ELEMENT (member_info))
-	if (is_pattern_stmt_p (member_info)
-	    && !useless_type_conversion_p (vectype,
-					   STMT_VINFO_VECTYPE (member_info)))
-	  break;
-
-      if (!member_info)
-	{
-	  for (member_info = first_info; member_info;
-	       member_info = DR_GROUP_NEXT_ELEMENT (member_info))
-	    STMT_VINFO_VECTYPE (member_info) = vectype;
-	  return true;
-	}
-    }
-  else if (!is_pattern_stmt_p (stmt_info))
-    {
-      STMT_VINFO_VECTYPE (stmt_info) = vectype;
-      return true;
-    }
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-		       "Build SLP failed: incompatible vector"
-		       " types for: %G", stmt_info->stmt);
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "    old vector type: %T\n", old_vectype);
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "    new vector type: %T\n", vectype);
-    }
-  return false;
-}
-
 /* Return true if call statements CALL1 and CALL2 are similar enough
    to be combined into the same SLP group.  */
 
@@ -1811,6 +1761,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 				       bit_field_size (bfref), &lane))
 	    {
 	      lperm.release ();
+	      matches[0] = false;
 	      return NULL;
 	    }
 	  lperm.safe_push (std::make_pair (0, (unsigned)lane));
@@ -4508,15 +4459,6 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
     return vectorizable_slp_permutation (vinfo, NULL, node, cost_vec);
 
   gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
-  if (is_a <bb_vec_info> (vinfo)
-      && !vect_update_shared_vectype (stmt_info, SLP_TREE_VECTYPE (node)))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "desired vector type conflicts with earlier one "
-			 "for %G", stmt_info->stmt);
-      return false;
-    }
 
   bool dummy;
   return vect_analyze_stmt (vinfo, stmt_info, &dummy,
@@ -5104,6 +5046,42 @@ vect_bb_partition_graph (bb_vec_info bb_vinfo)
     }
 }
 
+/* Compute the set of scalar stmts participating in internal and external
+   nodes.  */
+
+static void
+vect_slp_gather_vectorized_scalar_stmts (vec_info *vinfo, slp_tree node,
+					 hash_set<slp_tree> &visited,
+					 hash_set<stmt_vec_info> &vstmts,
+					 hash_set<stmt_vec_info> &estmts)
+{
+  int i;
+  stmt_vec_info stmt_info;
+  slp_tree child;
+
+  if (visited.add (node))
+    return;
+
+  if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
+    {
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
+	vstmts.add (stmt_info);
+
+      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+	if (child)
+	  vect_slp_gather_vectorized_scalar_stmts (vinfo, child, visited,
+						   vstmts, estmts);
+    }
+  else
+    for (tree def : SLP_TREE_SCALAR_OPS (node))
+      {
+	stmt_vec_info def_stmt = vinfo->lookup_def (def);
+	if (def_stmt)
+	  estmts.add (def_stmt);
+      }
+}
+
+
 /* Compute the scalar cost of the SLP node NODE and its children
    and return it.  Do not account defs that are marked in LIFE and
    update LIFE according to uses of NODE.  */
@@ -5112,6 +5090,7 @@ static void
 vect_bb_slp_scalar_cost (vec_info *vinfo,
 			 slp_tree node, vec<bool, va_heap> *life,
 			 stmt_vector_for_cost *cost_vec,
+			 hash_set<stmt_vec_info> &vectorized_scalar_stmts,
 			 hash_set<slp_tree> &visited)
 {
   unsigned i;
@@ -5148,8 +5127,7 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 		  {
 		    stmt_vec_info use_stmt_info = vinfo->lookup_stmt (use_stmt);
 		    if (!use_stmt_info
-			|| !PURE_SLP_STMT
-			      (vect_stmt_to_vectorize (use_stmt_info)))
+			|| !vectorized_scalar_stmts.contains (use_stmt_info))
 		      {
 			(*life)[i] = true;
 			break;
@@ -5212,7 +5190,7 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	      subtree_life.safe_splice (*life);
 	    }
 	  vect_bb_slp_scalar_cost (vinfo, child, &subtree_life, cost_vec,
-				   visited);
+				   vectorized_scalar_stmts, visited);
 	  subtree_life.truncate (0);
 	}
     }
@@ -5254,11 +5232,33 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 			      SLP_INSTANCE_TREE (instance), visited);
     }
 
+  /* Compute the set of scalar stmts we know will go away 'locally' when
+     vectorizing.  This used to be tracked with just PURE_SLP_STMT but that's
+     not accurate for nodes promoted extern late or for scalar stmts that
+     are used both in extern defs and in vectorized defs.  */
+  hash_set<stmt_vec_info> vectorized_scalar_stmts;
+  hash_set<stmt_vec_info> scalar_stmts_in_externs;
+  hash_set<slp_tree> visited;
+  FOR_EACH_VEC_ELT (slp_instances, i, instance)
+    {
+      vect_slp_gather_vectorized_scalar_stmts (bb_vinfo,
+					       SLP_INSTANCE_TREE (instance),
+					       visited,
+					       vectorized_scalar_stmts,
+					       scalar_stmts_in_externs);
+      for (stmt_vec_info rstmt : SLP_INSTANCE_ROOT_STMTS (instance))
+	vectorized_scalar_stmts.add (rstmt);
+    }
+  /* Scalar stmts used as defs in external nodes need to be preseved, so
+     remove them from vectorized_scalar_stmts.  */
+  for (stmt_vec_info stmt : scalar_stmts_in_externs)
+    vectorized_scalar_stmts.remove (stmt);
+
   /* Calculate scalar cost and sum the cost for the vector stmts
      previously collected.  */
   stmt_vector_for_cost scalar_costs = vNULL;
   stmt_vector_for_cost vector_costs = vNULL;
-  hash_set<slp_tree> visited;
+  visited.empty ();
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       auto_vec<bool, 20> life;
@@ -5271,38 +5271,11 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 			  SLP_INSTANCE_ROOT_STMTS (instance)[0], 0, vect_body);
       vect_bb_slp_scalar_cost (bb_vinfo,
 			       SLP_INSTANCE_TREE (instance),
-			       &life, &scalar_costs, visited);
+			       &life, &scalar_costs, vectorized_scalar_stmts,
+			       visited);
       vector_costs.safe_splice (instance->cost_vec);
       instance->cost_vec.release ();
     }
-  /* When we're vectorizing an if-converted loop body with the
-     very-cheap cost model make sure we vectorized all if-converted
-     code.  */
-  bool force_not_profitable = false;
-  if (orig_loop && flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP)
-    {
-      gcc_assert (bb_vinfo->bbs.length () == 1);
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bb_vinfo->bbs[0]);
-	   !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  /* The costing above left us with DCEable vectorized scalar
-	     stmts having the visited flag set.  */
-	  if (gimple_visited_p (gsi_stmt (gsi)))
-	    continue;
-
-	  if (gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi)))
-	    if (gimple_assign_rhs_code (ass) == COND_EXPR)
-	      {
-		force_not_profitable = true;
-		break;
-	      }
-	}
-    }
-
-  /* Unset visited flag.  */
-  stmt_info_for_cost *cost;
-  FOR_EACH_VEC_ELT (scalar_costs, i, cost)
-    gimple_set_visited  (cost->stmt_info->stmt, false);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "Cost model analysis: \n");
@@ -5319,6 +5292,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
     li_scalar_costs (scalar_costs.length ());
   auto_vec<std::pair<unsigned, stmt_info_for_cost *> >
     li_vector_costs (vector_costs.length ());
+  stmt_info_for_cost *cost;
   FOR_EACH_VEC_ELT (scalar_costs, i, cost)
     {
       unsigned l = gimple_bb (cost->stmt_info->stmt)->loop_father->num;
@@ -5341,6 +5315,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
   /* Now cost the portions individually.  */
   unsigned vi = 0;
   unsigned si = 0;
+  bool profitable = true;
   while (si < li_scalar_costs.length ()
 	 && vi < li_vector_costs.length ())
     {
@@ -5407,30 +5382,29 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 	 example).  */
       if (vec_outside_cost + vec_inside_cost > scalar_cost)
 	{
-	  scalar_costs.release ();
-	  vector_costs.release ();
-	  return false;
+	  profitable = false;
+	  break;
 	}
     }
-  if (vi < li_vector_costs.length ())
+  if (profitable && vi < li_vector_costs.length ())
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Excess vector cost for part in loop %d:\n",
 			 li_vector_costs[vi].first);
-      scalar_costs.release ();
-      vector_costs.release ();
-      return false;
+      profitable = false;
     }
 
-  if (dump_enabled_p () && force_not_profitable)
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "not profitable because of unprofitable if-converted "
-		     "scalar code\n");
+  /* Unset visited flag.  This is delayed when the subgraph is profitable
+     and we process the loop for remaining unvectorized if-converted code.  */
+  if (!orig_loop || !profitable)
+    FOR_EACH_VEC_ELT (scalar_costs, i, cost)
+      gimple_set_visited  (cost->stmt_info->stmt, false);
 
   scalar_costs.release ();
   vector_costs.release ();
-  return !force_not_profitable;
+
+  return profitable;
 }
 
 /* qsort comparator for lane defs.  */
@@ -5884,9 +5858,8 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 
 	  bb_vinfo->shared->check_datarefs ();
 
-	  unsigned i;
-	  slp_instance instance;
-	  FOR_EACH_VEC_ELT (BB_VINFO_SLP_INSTANCES (bb_vinfo), i, instance)
+	  auto_vec<slp_instance> profitable_subgraphs;
+	  for (slp_instance instance : BB_VINFO_SLP_INSTANCES (bb_vinfo))
 	    {
 	      if (instance->subgraph_entries.is_empty ())
 		continue;
@@ -5894,9 +5867,7 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 	      vect_location = instance->location ();
 	      if (!unlimited_cost_model (NULL)
 		  && !vect_bb_vectorization_profitable_p
-			(bb_vinfo,
-			 orig_loop ? BB_VINFO_SLP_INSTANCES (bb_vinfo)
-			 : instance->subgraph_entries, orig_loop))
+			(bb_vinfo, instance->subgraph_entries, orig_loop))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5908,15 +5879,54 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 	      if (!dbg_cnt (vect_slp))
 		continue;
 
+	      profitable_subgraphs.safe_push (instance);
+	    }
+
+	  /* When we're vectorizing an if-converted loop body with the
+	     very-cheap cost model make sure we vectorized all if-converted
+	     code.  */
+	  if (!profitable_subgraphs.is_empty ()
+	      && orig_loop)
+	    {
+	      gcc_assert (bb_vinfo->bbs.length () == 1);
+	      for (gimple_stmt_iterator gsi = gsi_start_bb (bb_vinfo->bbs[0]);
+		   !gsi_end_p (gsi); gsi_next (&gsi))
+		{
+		  /* The costing above left us with DCEable vectorized scalar
+		     stmts having the visited flag set on profitable
+		     subgraphs.  Do the delayed clearing of the flag here.  */
+		  if (gimple_visited_p (gsi_stmt (gsi)))
+		    {
+		      gimple_set_visited (gsi_stmt (gsi), false);
+		      continue;
+		    }
+		  if (flag_vect_cost_model != VECT_COST_MODEL_VERY_CHEAP)
+		    continue;
+
+		  if (gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi)))
+		    if (gimple_assign_rhs_code (ass) == COND_EXPR)
+		      {
+			if (!profitable_subgraphs.is_empty ()
+			    && dump_enabled_p ())
+			  dump_printf_loc (MSG_NOTE, vect_location,
+					   "not profitable because of "
+					   "unprofitable if-converted scalar "
+					   "code\n");
+			profitable_subgraphs.truncate (0);
+		      }
+		}
+	    }
+
+	  /* Finally schedule the profitable subgraphs.  */
+	  for (slp_instance instance : profitable_subgraphs)
+	    {
 	      if (!vectorized && dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "Basic block will be vectorized "
 				 "using SLP\n");
 	      vectorized = true;
 
-	      vect_schedule_slp (bb_vinfo,
-				 orig_loop ? BB_VINFO_SLP_INSTANCES (bb_vinfo)
-				 : instance->subgraph_entries);
+	      vect_schedule_slp (bb_vinfo, instance->subgraph_entries);
 
 	      unsigned HOST_WIDE_INT bytes;
 	      if (dump_enabled_p ())
@@ -5931,11 +5941,6 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 				     "basic block part vectorized using "
 				     "variable length vectors\n");
 		}
-
-	      /* When we're called from loop vectorization we're considering
-		 all subgraphs at once.  */
-	      if (orig_loop)
-		break;
 	    }
 	}
       else

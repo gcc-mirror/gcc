@@ -37,10 +37,23 @@ struct GTY(()) modref_summary
   ~modref_summary ();
   void dump (FILE *);
   bool useful_p (int ecf_flags, bool check_flags = true);
+  bool global_memory_read_p ();
+  bool global_memory_written_p ();
 };
 
 modref_summary *get_modref_function_summary (cgraph_node *func);
 void ipa_modref_c_finalize ();
 void ipa_merge_modref_summary_after_inlining (cgraph_edge *e);
+
+/* All flags that are implied by the ECF_CONST functions.  */
+static const int implicit_const_eaf_flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE
+				     | EAF_NODIRECTESCAPE | EAF_NOREAD;
+/* All flags that are implied by the ECF_PURE function.  */
+static const int implicit_pure_eaf_flags = EAF_NOCLOBBER | EAF_NOESCAPE
+				    | EAF_NODIRECTESCAPE;
+/* All flags implied when we know we can ignore stores (i.e. when handling
+   call to noreturn).  */
+static const int ignore_stores_eaf_flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE
+				    | EAF_NODIRECTESCAPE;
 
 #endif

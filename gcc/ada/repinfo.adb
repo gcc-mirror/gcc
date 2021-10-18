@@ -35,6 +35,7 @@ with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
 with Output;         use Output;
+with Osint.C;        use Osint.C;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Eval;       use Sem_Eval;
 with Sinfo;          use Sinfo;
@@ -422,7 +423,8 @@ package body Repinfo is
             Write_Line (";");
          end if;
 
-      --  Alignment is not always set for task and protected types
+      --  Alignment is not always set for task, protected, and class-wide
+      --  types.
 
       else
          pragma Assert
@@ -807,7 +809,7 @@ package body Repinfo is
    --  Start of processing for List_GCC_Expression
 
    begin
-      if U = No_Uint then
+      if No (U) then
          Write_Unknown_Val;
       else
          Print_Expr (U);
@@ -1188,13 +1190,7 @@ package body Repinfo is
             Write_Str (" .. ");
          end if;
 
-         --  Allowing Uint_0 here is an annoying special case. Really this
-         --  should be a fine Esize value but currently it means unknown,
-         --  except that we know after gigi has back annotated that a size
-         --  of zero is real, since otherwise gigi back annotates using
-         --  No_Uint as the value to indicate unknown.
-
-         if (Esize (Ent) = Uint_0 or else Known_Static_Esize (Ent))
+         if Known_Static_Esize (Ent)
            and then Known_Static_Normalized_First_Bit (Ent)
          then
             Lbit := Sbit + Esiz - 1;
@@ -1209,14 +1205,7 @@ package body Repinfo is
                UI_Write (Lbit, Decimal);
             end if;
 
-         --  The test for Esize (Ent) not Uint_0 here is an annoying special
-         --  case. Officially a value of zero for Esize means unknown, but
-         --  here we use the fact that we know that gigi annotates Esize with
-         --  No_Uint, not Uint_0. Really everyone should use No_Uint???
-
-         elsif List_Representation_Info < 3
-           or else (Esize (Ent) /= Uint_0 and then not Known_Esize (Ent))
-         then
+         elsif List_Representation_Info < 3 or else not Known_Esize (Ent) then
             Write_Unknown_Val;
 
          --  List_Representation >= 3 and Known_Esize (Ent)
@@ -1736,7 +1725,7 @@ package body Repinfo is
                --  List representation information to file
 
                else
-                  Create_Repinfo_File_Access.all
+                  Create_Repinfo_File
                     (Get_Name_String (File_Name (Source_Index (U))));
                   Set_Special_Output (Write_Info_Line'Access);
                   if List_Representation_Info_To_JSON then
@@ -1748,7 +1737,7 @@ package body Repinfo is
                      Write_Line ("]");
                   end if;
                   Cancel_Special_Output;
-                  Close_Repinfo_File_Access.all;
+                  Close_Repinfo_File;
                end if;
             end if;
          end loop;
@@ -2116,7 +2105,7 @@ package body Repinfo is
 
    function Rep_Not_Constant (Val : Node_Ref_Or_Val) return Boolean is
    begin
-      if Val = No_Uint or else Val < 0 then
+      if No (Val) or else Val < 0 then
          return True;
       else
          return False;
@@ -2315,7 +2304,7 @@ package body Repinfo is
    --  Start of processing for Rep_Value
 
    begin
-      if Val = No_Uint then
+      if No (Val) then
          return No_Uint;
 
       else
@@ -2340,7 +2329,7 @@ package body Repinfo is
 
    procedure Write_Info_Line (S : String) is
    begin
-      Write_Repinfo_Line_Access.all (S (S'First .. S'Last - 1));
+      Write_Repinfo_Line (S (S'First .. S'Last - 1));
    end Write_Info_Line;
 
    ---------------------
@@ -2401,7 +2390,7 @@ package body Repinfo is
    procedure Write_Val (Val : Node_Ref_Or_Val; Paren : Boolean := False) is
    begin
       if Rep_Not_Constant (Val) then
-         if List_Representation_Info < 3 or else Val = No_Uint then
+         if List_Representation_Info < 3 or else No (Val) then
             Write_Unknown_Val;
 
          else

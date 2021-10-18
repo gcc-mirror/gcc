@@ -1,3 +1,176 @@
+2021-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-format.c (printf_length_specs, scanf_length_specs)
+	(print_char_table, scan_char_table): Support DFP formats for C2X.
+	* c-format.h (TEX_D32, TEX_D64, TEX_D128): Remove.
+	(T2X_D32, T2X_D64, T2X_D128): New macros.
+
+2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-omp.c (c_omp_check_context_selector): Rename to
+	omp_check_context_selector and move to omp-general.c.
+	(c_omp_mark_declare_variant): Rename to omp_mark_declare_variant and
+	move to omp-general.c.
+
+2021-10-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-format.c (print_char_table): Add %b and %B formats.
+	(scan_char_table): Add %b format.
+	* c-format.h (T2X_UI, T2X_UL, T2X_ULL, T2X_US, T2X_UC, T2X_ST)
+	(T2X_UPD, T2X_UIM): New macros.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_finish_omp_atomic): Use
+	clear_padding_type_may_have_padding_p.
+
+2021-10-08  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_post_options): Use new macro
+	OPTION_SET_P.
+
+2021-10-07  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (parse_optimize_options): Make
+	save_opt_decoded_options a pointer type.
+
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102571
+	* c-omp.c (c_finish_omp_atomic): Optimize the case where type has
+	padding, but the non-padding bits are contiguous set of bytes
+	by adjusting the memcmp call arguments instead of emitting
+	__builtin_clear_padding and then comparing all the type's bytes.
+
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102612
+	* c-cppbuiltin.c (c_cpp_builtins): For -std=c++23 predefine
+	__cpp_constexpr to 202110L rather than 201907L.
+
+2021-10-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* c-common.h (do_warn_array_compare): Declare.
+	* c-warn.c (do_warn_array_compare): New.
+	* c.opt (Warray-compare): New option.
+
+2021-10-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-format.c: Remove a test of TARGET_FORMAT_TYPES with
+	NULL, this is not needed.
+
+2021-10-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/102103
+	* c-common.c (decl_with_nonnull_addr_p): Handle members.
+	Check and perform warning suppression.
+	(c_common_truthvalue_conversion): Enhance warning suppression.
+
+2021-10-01  Martin Liska  <mliska@suse.cz>
+
+	PR target/102552
+	* c-common.c (parse_optimize_options): decoded_options[0] is
+	  used for program name, so merged_decoded_options should also
+	  respect that.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* c-ubsan.c (ubsan_instrument_division): Check the right
+	flag_sanitize_recover bit, depending on which sanitization
+	is done.  Sanitize INT_MIN / -1 under SANITIZE_SI_OVERFLOW
+	rather than SANITIZE_DIVIDE.  If both SANITIZE_SI_OVERFLOW
+	and SANITIZE_DIVIDE is enabled, neither check is known
+	to be false and flag_sanitize_recover bits for those two
+	aren't the same, emit both __ubsan_handle_divrem_overflow
+	and __ubsan_handle_divrem_overflow_abort calls.
+
+2021-10-01  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (parse_optimize_options): Combine optimize
+	options with what was provided on the command line.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses): Also copy
+	OMP_CLAUSE_ORDER_REPRODUCIBLE.
+
+2021-09-27  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_init_options_struct): Set also
+	  x_flag_default_complex_method.
+
+2021-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses): Copy over OMP_CLAUSE_ALLOCATE_ALIGN.
+
+2021-09-20  Matthias Kretz  <m.kretz@gsi.de>
+
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Define or
+	undefine __RECIPROCAL_MATH__, __NO_SIGNED_ZEROS__,
+	__NO_TRAPPING_MATH__, __ASSOCIATIVE_MATH__, and
+	__ROUNDING_MATH__ according to the new optimization flags.
+
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses): Split order clause also to
+	distribute construct.  Copy over OMP_CLAUSE_ORDER_UNCONSTRAINED.
+
+2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_finish_omp_atomic): Avoid creating
+	TARGET_EXPR if test is true, use create_tmp_var_raw instead of
+	create_tmp_var and add a zero initializer to TARGET_EXPRs that
+	had NULL initializer.  When omitting operands after v = x,
+	use type of v rather than type of x.  Fix type of vtmp
+	TARGET_EXPR.
+
+2021-09-13  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Winterference-size.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Add __GCC_DESTRUCTIVE_SIZE
+	and __GCC_CONSTRUCTIVE_SIZE.
+
+2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_atomic): Add r and weak arguments.
+	* c-omp.c: Include gimple-fold.h.
+	(c_finish_omp_atomic): Add r and weak arguments.  Add support for
+	OpenMP 5.1 atomics.
+
+2021-09-09  qing zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.c (handle_uninitialized_attribute): New function.
+	(c_common_attribute_table): Add "uninitialized" attribute.
+
+2021-09-08  liuhongt  <hongtao.liu@intel.com>
+
+	* c-common.c (excess_precision_mode_join): Update below comments.
+	(c_ts18661_flt_eval_method): Set excess_precision_type to
+	EXCESS_PRECISION_TYPE_FLOAT16 when -fexcess-precision=16.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Update below comments.
+	(c_cpp_flt_eval_method_iec_559): Set excess_precision_type to
+	EXCESS_PRECISION_TYPE_FLOAT16 when -fexcess-precision=16.
+
+2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-omp.c (c_finish_omp_flush): Handle MEMMODEL_SEQ_CST.
+
+2021-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ads): Generate pragmas to disable style checks
+	and -gnatwu warning for the package specification.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-attribs.c (handle_unavailable_attribute): New.
+
+2021-08-30  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Wmissing-requires.
+
 2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR other/93067

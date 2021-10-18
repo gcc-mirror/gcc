@@ -37,5 +37,5 @@ expand_shift_1 (int code, int unsignedp, int rotate,
    we will enter the TRUE arm of the conditional and we can thread
    the test to compute the first first argument of the expand_binop
    call if we look backwards through the boolean logicals.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 1 "dom2"} } */
+/* { dg-final { scan-tree-dump-times "Threaded" 2 "dom2"} } */
 

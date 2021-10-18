@@ -256,7 +256,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  for advice on how to make use of this class for @a unusual character
    *  types. Also, check out include/ext/pod_char_traits.h.
   */
-  template<class _CharT>
+  template<typename _CharT>
     struct char_traits : public __gnu_cxx::char_traits<_CharT>
     { };
 
@@ -507,6 +507,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       not_eof(const int_type& __c) _GLIBCXX_NOEXCEPT
       { return eq_int_type(__c, eof()) ? 0 : __c; }
   };
+#else // _GLIBCXX_USE_WCHAR_T
+  template<>
+    struct char_traits<wchar_t> : public __gnu_cxx::char_traits<wchar_t>
+    { };
 #endif //_GLIBCXX_USE_WCHAR_T
 
 #ifdef _GLIBCXX_USE_CHAR8_T

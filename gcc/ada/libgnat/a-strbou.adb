@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Ada.Strings.Bounded is
+package body Ada.Strings.Bounded with SPARK_Mode is
 
    package body Generic_Bounded_Length is
 

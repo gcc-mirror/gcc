@@ -100,8 +100,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Metaprogramming helper types.
 
-  template<bool, typename, typename>
-    struct conditional;
+  template<bool>
+    struct __conditional
+    {
+      template<typename _Tp, typename>
+	using type = _Tp;
+    };
+
+  template<>
+    struct __conditional<false>
+    {
+      template<typename, typename _Up>
+	using type = _Up;
+    };
+
+  // More efficient version of std::conditional_t for internal use (and C++11)
+  template<bool _Cond, typename _If, typename _Else>
+    using __conditional_t
+      = typename __conditional<_Cond>::template type<_If, _Else>;
 
   /// @cond undocumented
   template <typename _Type>
@@ -126,12 +142,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _B1, typename _B2>
     struct __or_<_B1, _B2>
-    : public conditional<_B1::value, _B1, _B2>::type
+    : public __conditional_t<_B1::value, _B1, _B2>
     { };
 
   template<typename _B1, typename _B2, typename _B3, typename... _Bn>
     struct __or_<_B1, _B2, _B3, _Bn...>
-    : public conditional<_B1::value, _B1, __or_<_B2, _B3, _Bn...>>::type
+    : public __conditional_t<_B1::value, _B1, __or_<_B2, _B3, _Bn...>>
     { };
 
   template<typename...>
@@ -149,12 +165,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _B1, typename _B2>
     struct __and_<_B1, _B2>
-    : public conditional<_B1::value, _B2, _B1>::type
+    : public __conditional_t<_B1::value, _B2, _B1>
     { };
 
   template<typename _B1, typename _B2, typename _B3, typename... _Bn>
     struct __and_<_B1, _B2, _B3, _Bn...>
-    : public conditional<_B1::value, __and_<_B2, _B3, _Bn...>, _B1>::type
+    : public __conditional_t<_B1::value, __and_<_B2, _B3, _Bn...>, _B1>
     { };
 
   template<typename _Pp>
@@ -293,12 +309,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // We want is_integral<wchar_t> to be true (and make_signed/unsigned to work)
   // even when libc doesn't provide working <wchar.h> and related functions,
-  // so check __WCHAR_TYPE__ instead of _GLIBCXX_USE_WCHAR_T.
-#ifdef __WCHAR_TYPE__
+  // so don't check _GLIBCXX_USE_WCHAR_T here.
   template<>
     struct __is_integral_helper<wchar_t>
     : public true_type { };
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   template<>
@@ -1812,14 +1826,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // neither signed integer types nor unsigned integer types, so must be
   // transformed to the unsigned integer type with the smallest rank.
   // Use the partial specialization for enumeration types to do that.
-#ifdef __WCHAR_TYPE__
   template<>
     struct __make_unsigned<wchar_t>
     {
       using __type
 	= typename __make_unsigned_selector<wchar_t, false, true>::__type;
     };
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   template<>
@@ -1944,14 +1956,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // signed integer types nor unsigned integer types, so must be
   // transformed to the signed integer type with the smallest rank.
   // Use the partial specialization for enumeration types to do that.
-#if defined(__WCHAR_TYPE__)
   template<>
     struct __make_signed<wchar_t>
     {
       using __type
 	= typename __make_signed_selector<wchar_t, false, true>::__type;
     };
-#endif
 
 #if defined(_GLIBCXX_USE_CHAR8_T)
   template<>
@@ -2491,11 +2501,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef __remove_cvref_t<_Arg> _Argval;
       typedef _Res _Class::* _MemPtr;
-      typedef typename conditional<__or_<is_same<_Argval, _Class>,
+      typedef typename __conditional_t<__or_<is_same<_Argval, _Class>,
         is_base_of<_Class, _Argval>>::value,
         __result_of_memobj_ref<_MemPtr, _Arg>,
         __result_of_memobj_deref<_MemPtr, _Arg>
-      >::type::type type;
+      >::type type;
     };
 
   template<typename _MemPtr, typename _Arg, typename... _Args>
@@ -2506,10 +2516,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef typename remove_reference<_Arg>::type _Argval;
       typedef _Res _Class::* _MemPtr;
-      typedef typename conditional<is_base_of<_Class, _Argval>::value,
+      typedef typename __conditional_t<is_base_of<_Class, _Argval>::value,
         __result_of_memfun_ref<_MemPtr, _Arg, _Args...>,
         __result_of_memfun_deref<_MemPtr, _Arg, _Args...>
-      >::type::type type;
+      >::type type;
     };
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS

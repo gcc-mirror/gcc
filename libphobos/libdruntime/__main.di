@@ -20,7 +20,17 @@
 
 module __main;
 
-int main(char[][])
+version (D_BetterC)
 {
-    return 0;
+    extern (C) int main(int, char**)
+    {
+        return 0;
+    }
+}
+else
+{
+    int main(char[][])
+    {
+        return 0;
+    }
 }

@@ -73,37 +73,37 @@ along with GCC; see the file COPYING3.  If not see
       VXWORKS_OS_CPP_BUILTINS ();			\
       if (TARGET_64BIT)					\
 	VX_CPUDEF (X86_64);				\
-      else if (TARGET_PENTIUM4)				\
+      else if (TARGET_CPU_P (PENTIUM4))			\
 	{						\
 	  VX_CPUDEF (PENTIUM4);				\
 	  VX_CPUVDEF (PENTIUM4);			\
 	}						\
-      else if (TARGET_CORE2)				\
+      else if (TARGET_CPU_P (CORE2))			\
 	VX_CPUDEF (CORE2);				\
-      else if (TARGET_NEHALEM)				\
+      else if (TARGET_CPU_P (NEHALEM))			\
 	VX_CPUDEF (NEHALEM);				\
-      else if (TARGET_SANDYBRIDGE)			\
+      else if (TARGET_CPU_P (SANDYBRIDGE))		\
 	VX_CPUDEF (SANDYBRIDGE);			\
-      else if (TARGET_HASWELL)				\
+      else if (TARGET_CPU_P (HASWELL))			\
 	VX_CPUDEF (HASWELL);				\
-      else if (TARGET_SILVERMONT)			\
+      else if (TARGET_CPU_P (SILVERMONT))		\
 	VX_CPUDEF (SILVERMONT);				\
-      else if (TARGET_SKYLAKE || TARGET_SKYLAKE_AVX512) \
+      else if (TARGET_CPU_P (SKYLAKE) || TARGET_CPU_P (SKYLAKE_AVX512)) \
 	VX_CPUDEF (SKYLAKE);				\
-      else if (TARGET_GOLDMONT)				\
+      else if (TARGET_CPU_P (GOLDMONT))			\
 	VX_CPUDEF (GOLDMONT);				\
       else if (TARGET_VXWORKS7)				\
 	VX_CPUDEF (PENTIUM4);				\
-      else if (TARGET_386)				\
+      else if (TARGET_CPU_P (I386))			\
 	VX_CPUDEF (I80386);				\
-      else if (TARGET_486)				\
+      else if (TARGET_CPU_P (I486))			\
 	VX_CPUDEF (I80486);				\
-      else if (TARGET_PENTIUM)				\
+      else if (TARGET_CPU_P (PENTIUM))			\
 	{						\
 	  VX_CPUDEF (PENTIUM);				\
 	  VX_CPUVDEF (PENTIUM);				\
 	}						\
-      else if (TARGET_PENTIUMPRO)			\
+      else if (TARGET_CPU_P (PENTIUMPRO))		\
 	{						\
 	  VX_CPUDEF (PENTIUM2);				\
 	  VX_CPUVDEF (PENTIUMPRO);			\

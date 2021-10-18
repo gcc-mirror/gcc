@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/ctfe.h"
 #include "dmd/declaration.h"
 #include "dmd/identifier.h"
+#include "dmd/module.h"
 #include "dmd/target.h"
 #include "dmd/template.h"
 
@@ -1831,48 +1832,147 @@ void_okay_p (tree t)
   return t;
 }
 
+/* Builds a STRING_CST representing the filename of location LOC.  When the
+   location is not valid, the name of the source module is used instead.  */
+
+static tree
+build_filename_from_loc (const Loc &loc)
+{
+  const char *filename = loc.filename
+    ? loc.filename : d_function_chain->module->srcfile->toChars ();
+
+  unsigned length = strlen (filename);
+  tree str = build_string (length, filename);
+  TREE_TYPE (str) = make_array_type (Type::tchar, length + 1);
+
+  return build_address (str);
+}
+
+/* Builds a CALL_EXPR at location LOC in the source file to call LIBCALL when
+   an assert check fails.  When calling the msg variant functions, MSG is the
+   error message supplied by the user.  */
+
+tree
+build_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
+{
+  tree file;
+  tree line = size_int (loc.linnum);
+
+  switch (libcall)
+    {
+    case LIBCALL_ASSERT_MSG:
+    case LIBCALL_UNITTEST_MSG:
+    case LIBCALL_SWITCH_ERROR:
+      /* File location is passed as a D string.  */
+      if (loc.filename)
+	{
+	  unsigned len = strlen (loc.filename);
+	  tree str = build_string (len, loc.filename);
+	  TREE_TYPE (str) = make_array_type (Type::tchar, len);
+
+	  file = d_array_value (build_ctype (Type::tchar->arrayOf ()),
+				size_int (len), build_address (str));
+	}
+      else
+	file = null_array_node;
+      break;
+
+    case LIBCALL_ASSERTP:
+    case LIBCALL_UNITTESTP:
+      file = build_filename_from_loc (loc);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+
+  if (msg != NULL_TREE)
+    return build_libcall (libcall, Type::tvoid, 3, msg, file, line);
+  else
+    return build_libcall (libcall, Type::tvoid, 2, file, line);
+}
+
 /* Builds a CALL_EXPR at location LOC in the source file to execute when an
    array bounds check fails.  */
 
 tree
 build_array_bounds_call (const Loc &loc)
 {
-  switch (global.params.checkAction)
+  /* Terminate the program with a trap if no D runtime present.  */
+  if (checkaction_trap_p ())
+    return build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  else
     {
-    case CHECKACTION_D:
-      return d_assert_call (loc, LIBCALL_ARRAY_BOUNDS);
-
-    case CHECKACTION_C:
-    case CHECKACTION_halt:
-      return build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
-
-    default:
-      gcc_unreachable ();
+      return build_libcall (LIBCALL_ARRAYBOUNDSP, Type::tvoid, 2,
+			    build_filename_from_loc (loc),
+			    size_int (loc.linnum));
     }
 }
 
-/* Builds a bounds condition checking that INDEX is between 0 and LEN.
-   The condition returns the INDEX if true, or throws a RangeError.
-   If INCLUSIVE, we allow INDEX == LEN to return true also.  */
+/* Builds a bounds condition checking that INDEX is between 0 and LENGTH
+   in the index expression IE.  The condition returns the INDEX if true, or
+   throws a `RangeError`.  */
 
 tree
-build_bounds_condition (const Loc &loc, tree index, tree len, bool inclusive)
+build_bounds_index_condition (IndexExp *ie, tree index, tree length)
 {
-  if (!array_bounds_check ())
+  if (ie->indexIsInBounds || !array_bounds_check ())
     return index;
 
   /* Prevent multiple evaluations of the index.  */
   index = d_save_expr (index);
 
-  /* Generate INDEX >= LEN && throw RangeError.
+  /* Generate INDEX >= LENGTH && throw RangeError.
      No need to check whether INDEX >= 0 as the front-end should
      have already taken care of implicit casts to unsigned.  */
-  tree condition = fold_build2 (inclusive ? GT_EXPR : GE_EXPR,
-				d_bool_type, index, len);
-  /* Terminate the program with a trap if no D runtime present.  */
-  tree boundserr = build_array_bounds_call (loc);
+  tree condition = fold_build2 (GE_EXPR, d_bool_type, index, length);
+  tree boundserr = build_array_bounds_call (ie->e2->loc);
 
   return build_condition (TREE_TYPE (index), condition, boundserr, index);
+}
+
+/* Builds a bounds condition checking that the range LOWER..UPPER do not overlap
+   the slice expression SE of the source array length LENGTH.  The condition
+   returns the new array length if true, or throws an `ArraySliceError`.  */
+
+tree
+build_bounds_slice_condition (SliceExp *se, tree lower, tree upper, tree length)
+{
+  if (array_bounds_check ())
+    {
+      tree condition = NULL_TREE;
+
+      /* Enforces that `upper <= length`.  */
+      if (!se->upperIsInBounds && length != NULL_TREE)
+	condition = fold_build2 (GT_EXPR, d_bool_type, upper, length);
+      else
+	length = integer_zero_node;
+
+      /* Enforces that `lower <= upper`.  No need to check `lower <= length` as
+	 we've already ensured that `upper <= length`.  */
+      if (!se->lowerIsLessThanUpper)
+	{
+	  tree lwr_cond = fold_build2 (GT_EXPR, d_bool_type, lower, upper);
+
+	  if (condition != NULL_TREE)
+	    condition = build_boolop (TRUTH_ORIF_EXPR, condition, lwr_cond);
+	  else
+	    condition = lwr_cond;
+	}
+
+      if (condition != NULL_TREE)
+	{
+	  tree boundserr = build_array_bounds_call (se->loc);
+	  upper = build_condition (TREE_TYPE (upper), condition,
+				   boundserr, upper);
+	}
+    }
+
+  /* Need to ensure lower always gets evaluated first, as it may be a function
+     call.  Generates (lower, upper) - lower.  */
+  return fold_build2 (MINUS_EXPR, TREE_TYPE (upper),
+		      compound_expr (lower, upper), lower);
 }
 
 /* Returns TRUE if array bounds checking code generation is turned on.  */
@@ -1899,6 +1999,26 @@ array_bounds_check (void)
 	    return true;
 	}
       return false;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Returns TRUE if we terminate the program with a trap if an array bounds or
+   contract check fails.  */
+
+bool
+checkaction_trap_p (void)
+{
+  switch (global.params.checkAction)
+    {
+    case CHECKACTION_D:
+      return false;
+
+    case CHECKACTION_C:
+    case CHECKACTION_halt:
+      return true;
 
     default:
       gcc_unreachable ();
@@ -2091,33 +2211,6 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
     }
 
   return compound_expr (saved_args, result);
-}
-
-/* Builds a call to AssertError or AssertErrorMsg.  */
-
-tree
-d_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
-{
-  tree file;
-  tree line = size_int (loc.linnum);
-
-  /* File location is passed as a D string.  */
-  if (loc.filename)
-    {
-      unsigned len = strlen (loc.filename);
-      tree str = build_string (len, loc.filename);
-      TREE_TYPE (str) = make_array_type (Type::tchar, len);
-
-      file = d_array_value (build_ctype (Type::tchar->arrayOf ()),
-			    size_int (len), build_address (str));
-    }
-  else
-    file = null_array_node;
-
-  if (msg != NULL)
-    return build_libcall (libcall, Type::tvoid, 3, msg, file, line);
-  else
-    return build_libcall (libcall, Type::tvoid, 2, file, line);
 }
 
 /* Build and return the correct call to fmod depending on TYPE.
@@ -2563,6 +2656,7 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 
   TYPE_FIELDS (frame_rec_type) = fields;
   TYPE_READONLY (frame_rec_type) = 1;
+  TYPE_CXX_ODR_P (frame_rec_type) = 1;
   layout_type (frame_rec_type);
   d_keep (frame_rec_type);
 

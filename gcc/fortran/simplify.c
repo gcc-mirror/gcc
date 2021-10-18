@@ -4533,14 +4533,7 @@ substring_has_constant_len (gfc_expr *e)
       || !ref->u.ss.start
       || ref->u.ss.start->expr_type != EXPR_CONSTANT
       || !ref->u.ss.end
-      || ref->u.ss.end->expr_type != EXPR_CONSTANT
-      || !ref->u.ss.length)
-    return false;
-
-  /* For non-deferred strings the given length shall be constant.  */
-  if (!e->ts.deferred
-      && (!ref->u.ss.length->length
-	  || ref->u.ss.length->length->expr_type != EXPR_CONSTANT))
+      || ref->u.ss.end->expr_type != EXPR_CONSTANT)
     return false;
 
   /* Basic checks on substring starting and ending indices.  */
@@ -4551,27 +4544,7 @@ substring_has_constant_len (gfc_expr *e)
   iend = gfc_mpz_get_hwi (ref->u.ss.end->value.integer);
 
   if (istart <= iend)
-    {
-      if (istart < 1)
-	{
-	  gfc_error ("Substring start index (%wd) at %L below 1",
-		     istart, &ref->u.ss.start->where);
-	  return false;
-	}
-
-      /* For deferred strings use end index as proxy for length.  */
-      if (e->ts.deferred)
-	length = iend;
-      else
-	length = gfc_mpz_get_hwi (ref->u.ss.length->length->value.integer);
-      if (iend > length)
-	{
-	  gfc_error ("Substring end index (%wd) at %L exceeds string length",
-		     iend, &ref->u.ss.end->where);
-	  return false;
-	}
-      length = iend - istart + 1;
-    }
+    length = iend - istart + 1;
   else
     length = 0;
 
@@ -6867,7 +6840,13 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
       gfc_extract_int (e, &shape[rank]);
 
       gcc_assert (rank >= 0 && rank < GFC_MAX_DIMENSIONS);
-      gcc_assert (shape[rank] >= 0);
+      if (shape[rank] < 0)
+	{
+	  gfc_error ("The SHAPE array for the RESHAPE intrinsic at %L has a "
+		     "negative value %d for dimension %d",
+		     &shape_exp->where, shape[rank], rank+1);
+	  return &gfc_bad_expr;
+	}
 
       rank++;
     }
@@ -7498,6 +7477,7 @@ simplify_size (gfc_expr *array, gfc_expr *dim, int k)
   mpz_t size;
   gfc_expr *return_value;
   int d;
+  gfc_ref *ref;
 
   /* For unary operations, the size of the result is given by the size
      of the operand.  For binary ones, it's the size of the first operand
@@ -7553,6 +7533,10 @@ simplify_size (gfc_expr *array, gfc_expr *dim, int k)
 	}
       return simplified;
     }
+
+  for (ref = array->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.as)
+      gfc_resolve_array_spec (ref->u.ar.as, 0);
 
   if (dim == NULL)
     {

@@ -281,8 +281,8 @@
 })
 
 (define_expand "movmisalign<mode>"
- [(set (match_operand:VDQX 0 "neon_perm_struct_or_reg_operand")
-	(unspec:VDQX [(match_operand:VDQX 1 "neon_perm_struct_or_reg_operand")]
+ [(set (match_operand:VDQ 0 "neon_perm_struct_or_reg_operand")
+	(unspec:VDQ [(match_operand:VDQ 1 "neon_perm_struct_or_reg_operand")]
 	 UNSPEC_MISALIGNED_ACCESS))]
  "ARM_HAVE_<MODE>_LDST && !BYTES_BIG_ENDIAN
   && unaligned_access && !TARGET_REALLY_IWMMXT"

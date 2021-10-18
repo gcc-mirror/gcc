@@ -1750,7 +1750,17 @@ of REC to place the new variable in shared GPU memory.\n\
 \n\
 Presence of this target hook indicates that middle end neutering/broadcasting\n\
 be used.",
-tree, (tree rec, bool sender, const char *name),
+tree, (tree rec, bool sender, const char *name, unsigned HOST_WIDE_INT offset),
+NULL)
+
+DEFHOOK
+(shared_mem_layout,
+"Lay out a fixed shared-memory region on the target.  The LO and HI\n\
+arguments should be set to a range of addresses that can be used for worker\n\
+broadcasting. The dimensions, reduction size and gang-private size\n\
+arguments are for the current offload region.",
+void, (unsigned HOST_WIDE_INT *, unsigned HOST_WIDE_INT *, int[],
+       unsigned HOST_WIDE_INT[], unsigned HOST_WIDE_INT[]),
 NULL)
 
 HOOK_VECTOR_END (goacc)
@@ -6211,18 +6221,21 @@ DEFHOOK
  "Return a value, with the same meaning as the C99 macro\n\
 @code{FLT_EVAL_METHOD} that describes which excess precision should be\n\
 applied.  @var{type} is either @code{EXCESS_PRECISION_TYPE_IMPLICIT},\n\
-@code{EXCESS_PRECISION_TYPE_FAST}, or\n\
-@code{EXCESS_PRECISION_TYPE_STANDARD}.  For\n\
+@code{EXCESS_PRECISION_TYPE_FAST},\n\
+@code{EXCESS_PRECISION_TYPE_STANDARD}, or\n\
+@code{EXCESS_PRECISION_TYPE_FLOAT16}.  For\n\
 @code{EXCESS_PRECISION_TYPE_IMPLICIT}, the target should return which\n\
 precision and range operations will be implictly evaluated in regardless\n\
 of the excess precision explicitly added.  For\n\
-@code{EXCESS_PRECISION_TYPE_STANDARD} and\n\
+@code{EXCESS_PRECISION_TYPE_STANDARD}, \n\
+@code{EXCESS_PRECISION_TYPE_FLOAT16}, and\n\
 @code{EXCESS_PRECISION_TYPE_FAST}, the target should return the\n\
 explicit excess precision that should be added depending on the\n\
 value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{]}}.\n\
 Note that unpredictable explicit excess precision does not make sense,\n\
 so a target should never return @code{FLT_EVAL_METHOD_UNPREDICTABLE}\n\
-when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD} or\n\
+when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD},\n\
+@code{EXCESS_PRECISION_TYPE_FLOAT16} or\n\
 @code{EXCESS_PRECISION_TYPE_FAST}.",
  enum flt_eval_method, (enum excess_precision_type type),
  default_excess_precision)

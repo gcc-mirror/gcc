@@ -3256,30 +3256,8 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands, rtx_
   return length;
 }
 
-
 #if 0
-/* Expand a conditional branch.  */
-
-void
-h8300_expand_branch (rtx operands[])
-{
-  enum rtx_code code = GET_CODE (operands[0]);
-  rtx op0 = operands[1];
-  rtx op1 = operands[2];
-  rtx label = operands[3];
-  rtx tmp;
-
-  tmp = gen_rtx_COMPARE (VOIDmode, op0, op1);
-  emit_insn (gen_rtx_SET (cc0_rtx, tmp));
-
-  tmp = gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
-  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
-			      gen_rtx_LABEL_REF (VOIDmode, label),
-			      pc_rtx);
-  emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
-}
-
-
+
 /* Expand a conditional store.  */
 
 void

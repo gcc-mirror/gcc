@@ -36,6 +36,7 @@ with Interfaces.C;
 with System.CRTL;
 
 package body System.Object_Reader is
+
    use Interfaces;
    use Interfaces.C;
    use System.Mmap;
@@ -220,7 +221,6 @@ package body System.Object_Reader is
          Characteristics      : uint16;
          Variant              : uint16;
       end record;
-
       pragma Pack (Header);
 
       type Optional_Header_PE32 is record
@@ -306,7 +306,6 @@ package body System.Object_Reader is
          NumberOfLinenumbers  : uint16;
          Characteristics      : uint32;
       end record;
-
       pragma Pack (Section_Header);
 
       IMAGE_SCN_CNT_CODE : constant := 16#0020#;
@@ -319,7 +318,6 @@ package body System.Object_Reader is
          StorageClass          : uint8;
          NumberOfAuxSymbols    : uint8;
       end record;
-
       pragma Pack (Symtab_Entry);
 
       type Auxent_Section is record
@@ -435,7 +433,6 @@ package body System.Object_Reader is
          s_nlnno   : uint16;
          s_flags   : uint32;
       end record;
-
       pragma Pack (Section_Header);
 
       STYP_TEXT : constant := 16#0020#;
@@ -460,7 +457,6 @@ package body System.Object_Reader is
          x_snstab   : uint16;
       end record;
       for Aux_Entry'Size use 18 * 8;
-
       pragma Pack (Aux_Entry);
 
       C_EXT     : constant := 2;
@@ -549,6 +545,7 @@ package body System.Object_Reader is
          Shnum : uint32) return Object_Section
       is
          SHdr : constant Section_Header := Read_Section_Header (Obj, Shnum);
+
       begin
          return (Shnum,
                  Offset (SHdr.Sh_Offset),
@@ -680,6 +677,7 @@ package body System.Object_Reader is
 
       function Read_Header (F : in out Mapped_Stream) return Header is
          Hdr : Header;
+
       begin
          Seek (F, 0);
          Read_Raw (F, Hdr'Address, uint32 (Hdr'Size / SSU));
@@ -695,6 +693,7 @@ package body System.Object_Reader is
          Shnum : uint32) return Section_Header
       is
          Shdr : Section_Header;
+
       begin
          Seek (Obj.Sectab_Stream, Offset (Shnum * Section_Header'Size / SSU));
          Read_Raw (Obj.Sectab_Stream, Shdr'Address, Section_Header'Size / SSU);
@@ -749,6 +748,7 @@ package body System.Object_Reader is
          Sec : Object_Section) return String
       is
          SHdr : Section_Header;
+
       begin
          SHdr := Read_Section_Header (Obj, Sec.Num);
          return Offset_To_String (Obj.Secstr_Stream, Offset (SHdr.Sh_Name));
@@ -861,7 +861,8 @@ package body System.Object_Reader is
       ------------------
 
       function First_Symbol
-        (Obj : in out PECOFF_Object_File) return Object_Symbol is
+        (Obj : in out PECOFF_Object_File) return Object_Symbol
+      is
       begin
          --  Return Null_Symbol in the case that the symbol table is empty
 
@@ -881,6 +882,7 @@ package body System.Object_Reader is
          Index : uint32) return Object_Section
       is
          Sec : constant Section_Header := Read_Section_Header (Obj, Index);
+
       begin
          --  Use VirtualSize instead of SizeOfRawData. The latter is rounded to
          --  the page size, so it may add garbage to the content. On the other
@@ -938,6 +940,7 @@ package body System.Object_Reader is
          Hdr_Offset : Offset;
          Opt_Offset : File_Size;
          Opt_Stream : Mapped_Stream;
+
       begin
          Res.MF := F;
          Res.In_Exception := In_Exception;
@@ -1180,7 +1183,8 @@ package body System.Object_Reader is
 
       function String_Table
         (Obj   : in out PECOFF_Object_File;
-         Index : Offset) return String is
+         Index : Offset) return String
+      is
       begin
          --  An index of zero is used to represent an empty string, as the
          --  first word of the string table is specified to contain the length
@@ -1361,6 +1365,7 @@ package body System.Object_Reader is
       is
          Res : XCOFF32_Object_File (Format => XCOFF32);
          Strtab_Sz : uint32;
+
       begin
          Res.Mf := F;
          Res.In_Exception := In_Exception;
@@ -1401,6 +1406,7 @@ package body System.Object_Reader is
          Index : uint32) return Object_Section
       is
          Sec : constant Section_Header := Read_Section_Header (Obj, Index);
+
       begin
          return (Index, Offset (Sec.s_scnptr),
                  uint64 (Sec.s_vaddr),
@@ -1414,6 +1420,7 @@ package body System.Object_Reader is
 
       function Read_Header (F : in out Mapped_Stream) return Header is
          Hdr : Header;
+
       begin
          Seek (F, 0);
          Read_Raw (F, Hdr'Address, uint32 (Hdr'Size / SSU));
@@ -1428,7 +1435,7 @@ package body System.Object_Reader is
         (Obj   : in out XCOFF32_Object_File;
          Index : uint32) return Section_Header
       is
-         Sec     : Section_Header;
+         Sec : Section_Header;
 
       begin
          --  Seek to the end of the object header
@@ -1451,6 +1458,7 @@ package body System.Object_Reader is
          Sec : Object_Section) return String
       is
          Hdr : Section_Header;
+
       begin
          Hdr := Read_Section_Header (Obj, Sec.Num);
          return Trim_Trailing_Nuls (Hdr.s_name);
@@ -1520,7 +1528,8 @@ package body System.Object_Reader is
 
    function Create_Stream
      (Obj : Object_File;
-      Sec : Object_Section) return Mapped_Stream is
+      Sec : Object_Section) return Mapped_Stream
+   is
    begin
       return Create_Stream (Obj.Mf, File_Size (Sec.Off), File_Size (Sec.Size));
    end Create_Stream;
@@ -1573,7 +1582,8 @@ package body System.Object_Reader is
 
    function Strip_Leading_Char
      (Obj : in out Object_File;
-      Sym : String_Ptr_Len) return Positive is
+      Sym : String_Ptr_Len) return Positive
+   is
    begin
       if (Obj.Format = PECOFF  and then Sym.Ptr (1) = '_')
         or else
@@ -1605,6 +1615,7 @@ package body System.Object_Reader is
         String (Sym.Ptr (1 .. Sym.Len)) & ASCII.NUL;
       Decoded : char_array (0 .. size_t (Sym.Len) * 2 + 60);
       Off     : Natural;
+
    begin
       --  In the PECOFF case most but not all symbol table entries have an
       --  extra leading underscore. In this case we trim it.
@@ -1645,8 +1656,11 @@ package body System.Object_Reader is
 
    function Get_Load_Address (Obj : Object_File) return uint64 is
    begin
-      raise Format_Error with "Get_Load_Address not implemented";
-      return 0;
+      case Obj.Format is
+         when ELF        => return 0;
+         when Any_PECOFF => return Obj.ImageBase;
+         when XCOFF32    => raise Format_Error;
+      end case;
    end Get_Load_Address;
 
    -----------------
@@ -1655,7 +1669,8 @@ package body System.Object_Reader is
 
    function Get_Section
      (Obj   : in out Object_File;
-      Shnum : uint32) return Object_Section is
+      Shnum : uint32) return Object_Section
+   is
    begin
       case Obj.Format is
          when ELF32      => return ELF32_Ops.Get_Section   (Obj, Shnum);
@@ -1692,9 +1707,11 @@ package body System.Object_Reader is
    ----------------------
 
    procedure Get_Xcode_Bounds
-     (Obj   : in out Object_File;
-      Low, High : out uint64) is
+     (Obj       : in out Object_File;
+      Low, High : out uint64)
+   is
       Sec : Object_Section;
+
    begin
       --  First set as an empty range
       Low := uint64'Last;
@@ -1721,7 +1738,8 @@ package body System.Object_Reader is
 
    function Name
      (Obj : in out Object_File;
-      Sec : Object_Section) return String is
+      Sec : Object_Section) return String
+   is
    begin
       case Obj.Format is
          when ELF32      => return ELF32_Ops.Name   (Obj, Sec);
@@ -1733,7 +1751,8 @@ package body System.Object_Reader is
 
    function Name
      (Obj : in out Object_File;
-      Sym : Object_Symbol) return String_Ptr_Len is
+      Sym : Object_Symbol) return String_Ptr_Len
+   is
    begin
       case Obj.Format is
          when ELF32      => return ELF32_Ops.Name   (Obj, Sym);
@@ -1749,7 +1768,8 @@ package body System.Object_Reader is
 
    function Next_Symbol
      (Obj  : in out Object_File;
-      Prev : Object_Symbol) return Object_Symbol is
+      Prev : Object_Symbol) return Object_Symbol
+   is
    begin
       --  Test whether we've reached the end of the symbol table
 
@@ -1801,6 +1821,7 @@ package body System.Object_Reader is
       Off : Offset) return String
    is
       Buf     : Buffer;
+
    begin
       Seek (S, Off);
       Read_C_String (S, Buf);
@@ -1922,10 +1943,10 @@ package body System.Object_Reader is
    -- Read --
    ----------
 
-   function Read (S : in out Mapped_Stream) return Mmap.Str_Access
-   is
+   function Read (S : in out Mapped_Stream) return Mmap.Str_Access is
       function To_Str_Access is
          new Ada.Unchecked_Conversion (Address, Str_Access);
+
    begin
       return To_Str_Access (Data (S.Region) (Natural (S.Off + 1))'Address);
    end Read;
@@ -1949,8 +1970,8 @@ package body System.Object_Reader is
    is
       function To_Str_Access is
          new Ada.Unchecked_Conversion (Address, Str_Access);
-
       Sz : constant Offset := Offset (Size);
+
    begin
       --  Check size
 
@@ -2027,7 +2048,8 @@ package body System.Object_Reader is
    ------------------
 
    function Read_Address
-     (Obj : Object_File; S : in out Mapped_Stream) return uint64 is
+     (Obj : Object_File; S : in out Mapped_Stream) return uint64
+   is
       Address_32 : uint32;
       Address_64 : uint64;
 
@@ -2147,7 +2169,8 @@ package body System.Object_Reader is
 
    function Read_Symbol
      (Obj : in out Object_File;
-      Off : Offset) return Object_Symbol is
+      Off : Offset) return Object_Symbol
+   is
    begin
       case Obj.Format is
          when ELF32      => return ELF32_Ops.Read_Symbol   (Obj, Off);
@@ -2221,7 +2244,8 @@ package body System.Object_Reader is
 
    function To_String_Ptr_Len
      (Ptr : Mmap.Str_Access;
-      Max_Len : Natural := Natural'Last) return String_Ptr_Len is
+      Max_Len : Natural := Natural'Last) return String_Ptr_Len
+   is
    begin
       for I in 1 .. Max_Len loop
          if Ptr (I) = ASCII.NUL then

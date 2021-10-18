@@ -2558,7 +2558,9 @@ build_component_ref (location_t loc, tree datum, tree component,
 	      || (use_datum_quals && TREE_THIS_VOLATILE (datum)))
 	    TREE_THIS_VOLATILE (ref) = 1;
 
-	  if (TREE_DEPRECATED (subdatum))
+	  if (TREE_UNAVAILABLE (subdatum))
+	    error_unavailable_use (subdatum, NULL_TREE);
+	  else if (TREE_DEPRECATED (subdatum))
 	    warn_deprecated_use (subdatum, NULL_TREE);
 
 	  datum = ref;
@@ -2843,7 +2845,9 @@ build_external_ref (location_t loc, tree id, bool fun, tree *type)
   if (TREE_TYPE (ref) == error_mark_node)
     return error_mark_node;
 
-  if (TREE_DEPRECATED (ref))
+  if (TREE_UNAVAILABLE (ref))
+    error_unavailable_use (ref, NULL_TREE);
+  else if (TREE_DEPRECATED (ref))
     warn_deprecated_use (ref, NULL_TREE);
 
   /* Recursive call does not count as usage.  */
@@ -3936,7 +3940,14 @@ parser_build_binary_op (location_t location, enum tree_code code,
   else if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && (code1 == STRING_CST || code2 == STRING_CST))
     warning_at (location, OPT_Waddress,
-		"comparison with string literal results in unspecified behavior");
+		"comparison with string literal results in unspecified "
+		"behavior");
+
+  if (warn_array_compare
+      && TREE_CODE_CLASS (code) == tcc_comparison
+      && TREE_CODE (type1) == ARRAY_TYPE
+      && TREE_CODE (type2) == ARRAY_TYPE)
+    do_warn_array_compare (location, code, arg1.value, arg2.value);
 
   if (TREE_OVERFLOW_P (result.value)
       && !TREE_OVERFLOW_P (arg1.value)
@@ -4957,6 +4968,10 @@ lvalue_p (const_tree ref)
     case STRING_CST:
       return true;
 
+    case MEM_REF:
+    case TARGET_MEM_REF:
+      /* MEM_REFs can appear from -fgimple parsing or folding, so allow them
+	 here as well.  */
     case INDIRECT_REF:
     case ARRAY_REF:
     case VAR_DECL:
@@ -10779,10 +10794,19 @@ c_finish_goto_label (location_t loc, tree label)
    the GOTO.  */
 
 tree
-c_finish_goto_ptr (location_t loc, tree expr)
+c_finish_goto_ptr (location_t loc, c_expr val)
 {
+  tree expr = val.value;
   tree t;
   pedwarn (loc, OPT_Wpedantic, "ISO C forbids %<goto *expr;%>");
+  if (expr != error_mark_node
+      && !POINTER_TYPE_P (TREE_TYPE (expr))
+      && !null_pointer_constant_p (expr))
+    {
+      error_at (val.get_location (),
+		"computed goto must be pointer type");
+      expr = build_zero_cst (ptr_type_node);
+    }
   expr = c_fully_fold (expr, false, NULL);
   expr = convert (ptr_type_node, expr);
   t = build1 (GOTO_EXPR, void_type_node, expr);
@@ -11541,6 +11565,110 @@ build_vec_cmp (tree_code code, tree type,
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }
 
+/* Possibly warn about an address of OP never being NULL in a comparison
+   operation CODE involving null.  */
+
+static void
+maybe_warn_for_null_address (location_t loc, tree op, tree_code code)
+{
+  if (!warn_address || warning_suppressed_p (op, OPT_Waddress))
+    return;
+
+  if (TREE_CODE (op) == NOP_EXPR)
+    {
+      /* Allow casts to intptr_t to suppress the warning.  */
+      tree type = TREE_TYPE (op);
+      if (TREE_CODE (type) == INTEGER_TYPE)
+	return;
+      op = TREE_OPERAND (op, 0);
+    }
+
+  if (TREE_CODE (op) == POINTER_PLUS_EXPR)
+    {
+      /* Allow a cast to void* to suppress the warning.  */
+      tree type = TREE_TYPE (TREE_TYPE (op));
+      if (VOID_TYPE_P (type))
+	return;
+
+      /* Adding any value to a null pointer, including zero, is undefined
+	 in C.  This includes the expression &p[0] where p is the null
+	 pointer, although &p[0] will have been folded to p by this point
+	 and so not diagnosed.  */
+      if (code == EQ_EXPR)
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<false%> "
+		    "for the pointer operand in %qE must not be NULL",
+		    op);
+      else
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<true%> "
+		    "for the pointer operand in %qE must not be NULL",
+		    op);
+
+      return;
+    }
+
+  if (TREE_CODE (op) != ADDR_EXPR)
+    return;
+
+  op = TREE_OPERAND (op, 0);
+
+  if (TREE_CODE (op) == IMAGPART_EXPR
+      || TREE_CODE (op) == REALPART_EXPR)
+    {
+      /* The address of either complex part may not be null.  */
+      if (code == EQ_EXPR)
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<false%> "
+		    "for the address of %qE will never be NULL",
+		    op);
+      else
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<true%> "
+		    "for the address of %qE will never be NULL",
+		    op);
+      return;
+    }
+
+  /* Set to true in the loop below if OP dereferences is operand.
+     In such a case the ultimate target need not be a decl for
+     the null [in]equality test to be constant.  */
+  bool deref = false;
+
+  /* Get the outermost array or object, or member.  */
+  while (handled_component_p (op))
+    {
+      if (TREE_CODE (op) == COMPONENT_REF)
+	{
+	  /* Get the member (its address is never null).  */
+	  op = TREE_OPERAND (op, 1);
+	  break;
+	}
+
+      /* Get the outer array/object to refer to in the warning.  */
+      op = TREE_OPERAND (op, 0);
+      deref = true;
+    }
+
+  if ((!deref && !decl_with_nonnull_addr_p (op))
+      || from_macro_expansion_at (loc))
+    return;
+
+  if (code == EQ_EXPR)
+    warning_at (loc, OPT_Waddress,
+		"the comparison will always evaluate as %<false%> "
+		"for the address of %qE will never be NULL",
+		op);
+  else
+    warning_at (loc, OPT_Waddress,
+		"the comparison will always evaluate as %<true%> "
+		"for the address of %qE will never be NULL",
+		op);
+
+  if (DECL_P (op))
+    inform (DECL_SOURCE_LOCATION (op), "%qD declared here", op);
+}
+
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    LOCATION is the operator's location.
@@ -12176,44 +12304,12 @@ build_binary_op (location_t location, enum tree_code code,
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && null_pointer_constant_p (orig_op1))
 	{
-	  if (TREE_CODE (op0) == ADDR_EXPR
-	      && decl_with_nonnull_addr_p (TREE_OPERAND (op0, 0))
-	      && !from_macro_expansion_at (location))
-	    {
-	      if (code == EQ_EXPR)
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<false%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op0, 0));
-	      else
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<true%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op0, 0));
-	    }
+	  maybe_warn_for_null_address (location, op0, code);
 	  result_type = type0;
 	}
       else if (code1 == POINTER_TYPE && null_pointer_constant_p (orig_op0))
 	{
-	  if (TREE_CODE (op1) == ADDR_EXPR
-	      && decl_with_nonnull_addr_p (TREE_OPERAND (op1, 0))
-	      && !from_macro_expansion_at (location))
-	    {
-	      if (code == EQ_EXPR)
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<false%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op1, 0));
-	      else
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<true%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op1, 0));
-	    }
+	  maybe_warn_for_null_address (location, op1, code);
 	  result_type = type1;
 	}
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
@@ -12420,6 +12516,13 @@ build_binary_op (location_t location, enum tree_code code,
 	  ^ (TREE_CODE (TREE_TYPE (orig_op1)) == BOOLEAN_TYPE
 	     || truth_value_p (TREE_CODE (orig_op1))))
 	maybe_warn_bool_compare (location, code, orig_op0, orig_op1);
+      break;
+
+    case MIN_EXPR:
+    case MAX_EXPR:
+      /* Used for OpenMP atomics.  */
+      gcc_assert (flag_openmp);
+      common = 1;
       break;
 
     default:
@@ -12713,7 +12816,9 @@ build_binary_op (location_t location, enum tree_code code,
     }
 
   if (sanitize_flags_p ((SANITIZE_SHIFT
-			 | SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
+			 | SANITIZE_DIVIDE
+			 | SANITIZE_FLOAT_DIVIDE
+			 | SANITIZE_SI_OVERFLOW))
       && current_function_decl != NULL_TREE
       && (doing_div_or_mod || doing_shift)
       && !require_constant_value)
@@ -12724,7 +12829,8 @@ build_binary_op (location_t location, enum tree_code code,
       op0 = c_fully_fold (op0, false, NULL);
       op1 = c_fully_fold (op1, false, NULL);
       if (doing_div_or_mod && (sanitize_flags_p ((SANITIZE_DIVIDE
-						  | SANITIZE_FLOAT_DIVIDE))))
+						  | SANITIZE_FLOAT_DIVIDE
+						  | SANITIZE_SI_OVERFLOW))))
 	instrument_expr = ubsan_instrument_division (location, op0, op1);
       else if (doing_shift && sanitize_flags_p (SANITIZE_SHIFT))
 	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);

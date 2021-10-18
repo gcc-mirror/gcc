@@ -2050,6 +2050,10 @@ wi::arshift_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 int
 wi::clz (const wide_int_ref &x)
 {
+  if (x.sign_mask () < 0)
+    /* The upper bit is set, so there are no leading zeros.  */
+    return 0;
+
   /* Calculate how many bits there above the highest represented block.  */
   int count = x.precision - x.len * HOST_BITS_PER_WIDE_INT;
 
@@ -2058,9 +2062,6 @@ wi::clz (const wide_int_ref &x)
     /* The upper -COUNT bits of HIGH are not part of the value.
        Clear them out.  */
     high = (high << -count) >> -count;
-  else if (x.sign_mask () < 0)
-    /* The upper bit is set, so there are no leading zeros.  */
-    return 0;
 
   /* We don't need to look below HIGH.  Either HIGH is nonzero,
      or the top bit of the block below is nonzero; clz_hwi is

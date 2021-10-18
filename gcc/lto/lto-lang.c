@@ -813,6 +813,7 @@ lto_init_options_struct (struct gcc_options *opts)
      safe choice.  This will pessimize Fortran code with LTO unless
      people specify a complex method manually or use -ffast-math.  */
   opts->x_flag_complex_method = 2;
+  opts->x_flag_default_complex_method = opts->x_flag_complex_method;
 }
 
 /* Handle command-line option SCODE.  If the option takes an argument, it is
@@ -991,6 +992,9 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
   if (mode == TYPE_MODE (intTI_type_node))
     return unsigned_p ? unsigned_intTI_type_node : intTI_type_node;
 #endif
+
+  if (float16_type_node && mode == TYPE_MODE (float16_type_node))
+    return float16_type_node;
 
   if (mode == TYPE_MODE (float_type_node))
     return float_type_node;

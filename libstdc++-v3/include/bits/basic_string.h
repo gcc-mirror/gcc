@@ -623,6 +623,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  _M_construct(__str.begin(), __str.end());
       }
 
+      basic_string(nullptr_t) = delete;
+      basic_string& operator=(nullptr_t) = delete;
 #endif // C++11
 
       /**
@@ -967,6 +969,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       shrink_to_fit() noexcept
       { reserve(); }
 #pragma GCC diagnostic pop
+#endif
+
+#if __cplusplus > 202002L
+#define __cpp_lib_string_resize_and_overwrite 202110L
+      template<typename _Operation>
+	constexpr void
+	resize_and_overwrite(size_type __n, _Operation __op);
 #endif
 
       /**
@@ -3718,6 +3727,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline string
   to_string(int __val)
+#if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_INT__) <= 32
+  noexcept // any 32-bit value fits in the SSO buffer
+#endif
   {
     const bool __neg = __val < 0;
     const unsigned __uval = __neg ? (unsigned)~__val + 1u : __val;
@@ -3729,6 +3741,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline string
   to_string(unsigned __val)
+#if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_INT__) <= 32
+  noexcept // any 32-bit value fits in the SSO buffer
+#endif
   {
     string __str(__detail::__to_chars_len(__val), '\0');
     __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
@@ -3737,6 +3752,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline string
   to_string(long __val)
+#if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_LONG__) <= 32
+  noexcept // any 32-bit value fits in the SSO buffer
+#endif
   {
     const bool __neg = __val < 0;
     const unsigned long __uval = __neg ? (unsigned long)~__val + 1ul : __val;
@@ -3748,6 +3766,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline string
   to_string(unsigned long __val)
+#if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_LONG__) <= 32
+  noexcept // any 32-bit value fits in the SSO buffer
+#endif
   {
     string __str(__detail::__to_chars_len(__val), '\0');
     __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
@@ -3940,7 +3961,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_fast_hash<hash<string>> : std::false_type
     { };
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   /// std::hash specialization for wstring.
   template<>
     struct hash<wstring>
@@ -3955,7 +3975,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<wstring>> : std::false_type
     { };
-#endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
 #ifdef _GLIBCXX_USE_CHAR8_T
@@ -4020,12 +4039,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator""s(const char* __str, size_t __len)
     { return basic_string<char>{__str, __len}; }
 
-#ifdef _GLIBCXX_USE_WCHAR_T
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<wchar_t>
     operator""s(const wchar_t* __str, size_t __len)
     { return basic_string<wchar_t>{__str, __len}; }
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
     _GLIBCXX_DEFAULT_ABI_TAG

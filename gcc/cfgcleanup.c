@@ -3239,7 +3239,8 @@ pass_jump::execute (function *)
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
-	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
+	       | (flag_thread_jumps && flag_expensive_optimizations
+		  ? CLEANUP_THREADING : 0));
   return 0;
 }
 
@@ -3274,7 +3275,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_thread_jumps; }
+  virtual bool gate (function *)
+  {
+    return flag_thread_jumps && flag_expensive_optimizations;
+  }
   virtual unsigned int execute (function *);
 
 }; // class pass_jump_after_combine

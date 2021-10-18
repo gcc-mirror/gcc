@@ -312,7 +312,8 @@ struct GTY(()) function {
 
   /* Range query mechanism for functions.  The default is to pick up
      global ranges.  If a pass wants on-demand ranges OTOH, it must
-     call enable/disable_ranger().  */
+     call enable/disable_ranger().  The pointer is never null.  It
+     should be queried by calling get_range_query().  */
   range_query * GTY ((skip)) x_range_query;
 
   /* Last statement uid.  */
@@ -719,10 +720,10 @@ extern const char *current_function_name (void);
 extern void used_types_insert (tree);
 
 /* Returns the currently active range access class.  When there is no active
-   range class, global ranges are used.  */
+   range class, global ranges are used.  Never returns null.  */
 
-inline range_query *
-get_range_query (struct function *fun)
+ATTRIBUTE_RETURNS_NONNULL inline range_query *
+get_range_query (const struct function *fun)
 {
   return fun->x_range_query;
 }

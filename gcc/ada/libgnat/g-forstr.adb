@@ -420,11 +420,11 @@ package body GNAT.Formatted_String is
 
       --  Zero padding if required and possible
 
-      if F_Spec.Left_Justify = False
+      if not F_Spec.Left_Justify
         and then F_Spec.Zero_Pad
         and then F_Spec.Width > Len + Value'First - S
       then
-         Append (Res, String'((F_Spec.Width - Len + Value'First - S) * '0'));
+         Append (Res, String'((F_Spec.Width - (Len + Value'First - S)) * '0'));
       end if;
 
       --  Add the value now
@@ -519,7 +519,7 @@ package body GNAT.Formatted_String is
          J := J + 1;
       end loop;
 
-      if F (J) /= '%' or else J = F'Last then
+      if J >= F'Last or else F (J) /= '%'  then
          raise Format_Error with "no format specifier found for parameter"
            & Positive'Image (Format.D.Current);
       end if;

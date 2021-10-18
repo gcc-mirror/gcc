@@ -176,6 +176,9 @@ EnumValue
 Enum(sparc_processor) String(leon3v7) Value(PROCESSOR_LEON3V7)
 
 EnumValue
+Enum(sparc_processor) String(leon5) Value(PROCESSOR_LEON5)
+
+EnumValue
 Enum(sparc_processor) String(sparclite) Value(PROCESSOR_SPARCLITE)
 
 EnumValue

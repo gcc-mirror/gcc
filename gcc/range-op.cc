@@ -1372,13 +1372,14 @@ operator_minus::wi_fold (irange &r, tree type,
 }
 
 // Check to see if the relation REL between OP1 and OP2 has any effect on the
-// LHS of the expression.  If so, apply it to LHS_RANGE.
+// LHS of the expression.  If so, apply it to LHS_RANGE.  This is a helper
+// function for both MINUS_EXPR and POINTER_DIFF_EXPR.
 
-bool
-operator_minus::op1_op2_relation_effect (irange &lhs_range, tree type,
-				      const irange &op1_range ATTRIBUTE_UNUSED,
-				      const irange &op2_range ATTRIBUTE_UNUSED,
-				      relation_kind rel) const
+static bool
+minus_op1_op2_relation_effect (irange &lhs_range, tree type,
+			       const irange &op1_range ATTRIBUTE_UNUSED,
+			       const irange &op2_range ATTRIBUTE_UNUSED,
+			       relation_kind rel)
 {
   if (rel == VREL_NONE)
     return false;
@@ -1441,6 +1442,16 @@ operator_minus::op1_op2_relation_effect (irange &lhs_range, tree type,
 }
 
 bool
+operator_minus::op1_op2_relation_effect (irange &lhs_range, tree type,
+					 const irange &op1_range,
+					 const irange &op2_range,
+					 relation_kind rel) const
+{
+  return minus_op1_op2_relation_effect (lhs_range, type, op1_range, op2_range,
+					rel);
+}
+
+bool
 operator_minus::op1_range (irange &r, tree type,
 			   const irange &lhs,
 			   const irange &op2,
@@ -1456,6 +1467,26 @@ operator_minus::op2_range (irange &r, tree type,
 			   relation_kind rel ATTRIBUTE_UNUSED) const
 {
   return fold_range (r, type, op1, lhs);
+}
+
+
+class operator_pointer_diff : public range_operator
+{
+  virtual bool op1_op2_relation_effect (irange &lhs_range,
+					tree type,
+					const irange &op1_range,
+					const irange &op2_range,
+					relation_kind rel) const;
+} op_pointer_diff;
+
+bool
+operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
+						const irange &op1_range,
+						const irange &op2_range,
+						relation_kind rel) const
+{
+  return minus_op1_op2_relation_effect (lhs_range, type, op1_range, op2_range,
+					rel);
 }
 
 
@@ -2047,6 +2078,12 @@ operator_lshift::op1_range (irange &r,
 			    relation_kind rel ATTRIBUTE_UNUSED) const
 {
   tree shift_amount;
+
+  if (!lhs.contains_p (build_zero_cst (type)))
+    r.set_nonzero (type);
+  else
+    r.set_varying (type);
+
   if (op2.singleton_p (&shift_amount))
     {
       wide_int shift = wi::to_wide (shift_amount);
@@ -2058,21 +2095,22 @@ operator_lshift::op1_range (irange &r,
 	return false;
       if (shift == 0)
 	{
-	  r = lhs;
+	  r.intersect (lhs);
 	  return true;
 	}
 
       // Work completely in unsigned mode to start.
       tree utype = type;
+      int_range_max tmp_range;
       if (TYPE_SIGN (type) == SIGNED)
 	{
 	  int_range_max tmp = lhs;
 	  utype = unsigned_type_for (type);
 	  range_cast (tmp, utype);
-	  op_rshift.fold_range (r, utype, tmp, op2);
+	  op_rshift.fold_range (tmp_range, utype, tmp, op2);
 	}
       else
-	op_rshift.fold_range (r, utype, lhs, op2);
+	op_rshift.fold_range (tmp_range, utype, lhs, op2);
 
       // Start with ranges which can produce the LHS by right shifting the
       // result by the shift amount.
@@ -2088,16 +2126,19 @@ operator_lshift::op1_range (irange &r,
       unsigned low_bits = TYPE_PRECISION (utype)
 			  - TREE_INT_CST_LOW (shift_amount);
       wide_int up_mask = wi::mask (low_bits, true, TYPE_PRECISION (utype));
-      wide_int new_ub = wi::bit_or (up_mask, r.upper_bound ());
-      wide_int new_lb = wi::set_bit (r.lower_bound (), low_bits);
+      wide_int new_ub = wi::bit_or (up_mask, tmp_range.upper_bound ());
+      wide_int new_lb = wi::set_bit (tmp_range.lower_bound (), low_bits);
       int_range<2> fill_range (utype, new_lb, new_ub);
-      r.union_ (fill_range);
+      tmp_range.union_ (fill_range);
 
       if (utype != type)
-	range_cast (r, type);
+	range_cast (tmp_range, type);
+
+      r.intersect (tmp_range);
       return true;
     }
-  return false;
+
+  return !r.varying_p ();
 }
 
 bool
@@ -4017,7 +4058,8 @@ integral_table::integral_table ()
   set (PAREN_EXPR, op_identity);
   set (OBJ_TYPE_REF, op_identity);
   set (IMAGPART_EXPR, op_unknown);
-  set (POINTER_DIFF_EXPR, op_unknown);
+  set (REALPART_EXPR, op_unknown);
+  set (POINTER_DIFF_EXPR, op_pointer_diff);
   set (ABS_EXPR, op_abs);
   set (ABSU_EXPR, op_absu);
   set (NEGATE_EXPR, op_negate);

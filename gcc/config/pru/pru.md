@@ -36,6 +36,8 @@
    (MULSRC0_REGNUM		112) ; Multiply source register.
    (MULSRC1_REGNUM		116) ; Multiply source register.
    (LAST_NONIO_GP_REGNUM	119) ; Last non-I/O general purpose register.
+   (R30_REGNUM			120) ; R30 I/O register.
+   (R31_REGNUM			124) ; R31 I/O register.
    (LOOPCNTR_REGNUM		128) ; internal LOOP counter register
    (LAST_GP_REGNUM		132) ; Last general purpose register.
 
@@ -46,6 +48,13 @@
    (FRAME_POINTER_REGNUM	136)
    (ARG_POINTER_REGNUM		140)
    (FIRST_PSEUDO_REGISTER	144)
+  ]
+)
+
+;; Enumerate address spaces.
+(define_constants
+  [
+   (ADDR_SPACE_REGIO		1) ; Access to R30 and R31 I/O registers.
   ]
 )
 
@@ -68,6 +77,9 @@
   UNSPECV_HALT
 
   UNSPECV_BLOCKAGE
+
+  UNSPECV_REGIO_READ
+  UNSPECV_REGIO_WRITE
 ])
 
 ; Length of an instruction (in bytes).
@@ -129,11 +141,62 @@
 	(match_operand:MOV8_16_32 1 "general_operand"))]
   ""
 {
-  /* It helps to split constant loading and memory access
-     early, so that the LDI/LDI32 instructions can be hoisted
-     outside a loop body.  */
-  if (MEM_P (operands[0]))
-    operands[1] = force_reg (<MODE>mode, operands[1]);
+  if (MEM_P (operands[0])
+      && MEM_ADDR_SPACE (operands[0]) == ADDR_SPACE_REGIO)
+
+    {
+      /* Intercept writes to the SImode register I/O "address space".  */
+      gcc_assert (<MODE>mode == SImode);
+
+      if (!SYMBOL_REF_P (XEXP (operands[0], 0)))
+	{
+	  error ("invalid access to %<__regio_symbol%> address space");
+	  FAIL;
+	}
+
+      if (!REG_P (operands[1]))
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+
+      int regiono = pru_symref2ioregno (XEXP (operands[0], 0));
+      gcc_assert (regiono >= 0);
+      rtx regio = gen_rtx_REG (<MODE>mode, regiono);
+      rtx unspecv = gen_rtx_UNSPEC_VOLATILE (<MODE>mode,
+					     gen_rtvec (1, operands[1]),
+					     UNSPECV_REGIO_WRITE);
+      emit_insn (gen_rtx_SET (regio, unspecv));
+      DONE;
+    }
+  else if (MEM_P (operands[1])
+	   && MEM_ADDR_SPACE (operands[1]) == ADDR_SPACE_REGIO)
+    {
+      /* Intercept reads from the SImode register I/O "address space".  */
+      gcc_assert (<MODE>mode == SImode);
+
+      if (!SYMBOL_REF_P (XEXP (operands[1], 0)))
+	{
+	  error ("invalid access to %<__regio_symbol%> address space");
+	  FAIL;
+	}
+
+      if (MEM_P (operands[0]))
+	operands[0] = force_reg (<MODE>mode, operands[0]);
+
+      int regiono = pru_symref2ioregno (XEXP (operands[1], 0));
+      gcc_assert (regiono >= 0);
+      rtx regio = gen_rtx_REG (<MODE>mode, regiono);
+      rtx unspecv = gen_rtx_UNSPEC_VOLATILE (<MODE>mode,
+					     gen_rtvec (1, regio),
+					     UNSPECV_REGIO_READ);
+      emit_insn (gen_rtx_SET (operands[0], unspecv));
+      DONE;
+    }
+  else if (MEM_P (operands[0]))
+    {
+    /* It helps to split constant loading and memory access
+       early, so that the LDI/LDI32 instructions can be hoisted
+       outside a loop body.  */
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+    }
 })
 
 ;; Keep a single pattern for 32 bit MOV operations.  LRA requires that the
@@ -545,6 +608,35 @@
 ;; the real insns are defined.
 
 (include "alu-zext.md")
+
+;; Patterns for accessing the R30/R31 I/O registers.
+
+(define_insn "*regio_readsi"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+    (unspec_volatile:SI
+      [(match_operand:SI 1 "regio_operand" "Rrio")]
+      UNSPECV_REGIO_READ))]
+  ""
+  "mov\\t%0, %1"
+  [(set_attr "type"     "alu")])
+
+(define_insn "*regio_nozext_writesi"
+  [(set (match_operand:SI 0 "regio_operand" "=Rrio")
+    (unspec_volatile:SI
+      [(match_operand:SI 1 "register_operand" "r")]
+      UNSPECV_REGIO_WRITE))]
+  ""
+  "mov\\t%0, %1"
+  [(set_attr "type"     "alu")])
+
+(define_insn "*regio_zext_write_r30<EQS0:mode>"
+  [(set (match_operand:SI 0 "regio_operand" "=Rrio")
+    (unspec_volatile:SI
+      [(zero_extend:SI (match_operand:EQS0 1 "register_operand" "r"))]
+      UNSPECV_REGIO_WRITE))]
+  ""
+  "mov\\t%0, %1"
+  [(set_attr "type"     "alu")])
 
 ;; DI logical ops could be automatically split into WORD-mode ops in
 ;; expand_binop().  But then we'll miss an opportunity to use SI mode

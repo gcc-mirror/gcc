@@ -1,5 +1,0 @@
-# Turn off the SDA while compiling libgcc2.  There are no headers for it
-# and we want maximal upward compatibility here.
-HOST_LIBGCC2_CFLAGS += -G 0
-
-SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/m32r/libgcc-glibc.ver

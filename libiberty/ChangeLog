@@ -1,3 +1,66 @@
+2021-10-17  Luís Ferreira  <contact@lsferreira.net>
+
+	PR d/102618
+	* d-demangle.c (dlang_parse_qualified): Handle anonymous
+	symbols correctly.
+	* testsuite/d-demangle-expected: New tests to cover anonymous
+	symbols.
+
+2021-10-14  Luís Ferreira  <contact@lsferreira.net>
+
+	* testsuite/d-demangle-expected: Add test case for function literals.
+
+2021-10-14  Luís Ferreira  <contact@lsferreira.net>
+
+	* testsuite/d-demangle-expected: Add test cases for simple special
+	mangles.
+
+2021-10-12  Luís Ferreira  <contact@lsferreira.net>
+
+	* d-demangle.c (dlang_parse_qualified): Remove redudant parenthesis
+	around lhs and rhs of assignments.
+
+2021-10-01  Luís Ferreira  <contact@lsferreira.net>
+
+	* testsuite/d-demangle-expected: Add missing format for new test
+
+2021-09-23  Luís Ferreira  <contact@lsferreira.net>
+
+	* d-demangle.c (dlang_Type): Validate MANGLED is nonnull.
+	* testsuite/d-demangle-expected: New test.
+
+2021-09-23  Luís Ferreira  <contact@lsferreira.net>
+
+	* d-demangle.c (dlang_symbol_backref): Ensure strlen of
+	string is less than length computed by dlang_number.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Do not search for sbrk on Darwin.
+	* xmalloc.c: Do not declare sbrk unless it has been found
+	by configure.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_identifier): Skip over fake parent manglings.
+	* testsuite/d-demangle-expected: Add tests.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_arrayliteral): Add 'info' parameter.
+	(dlang_parse_assocarray): Likewise.
+	(dlang_parse_structlit): Likewise.
+	(dlang_value): Likewise.  Handle function literal symbols.
+	(dlang_template_args): Pass 'info' to dlang_value.
+	* testsuite/d-demangle-expected: Add new test.
+
+2021-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_attributes): Handle typeof(*null).
+	(dlang_type): Likewise.  Demangle 'n' as typeof(null).
+	* testsuite/d-demangle-expected: Update tests.
+
 2021-08-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* simple-object-mach-o.c (simple_object_mach_o_write_segment):

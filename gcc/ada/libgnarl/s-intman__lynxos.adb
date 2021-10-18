@@ -68,7 +68,7 @@ package body System.Interrupt_Management is
    Exception_Interrupts : constant Interrupt_List :=
      (SIGFPE, SIGILL, SIGSEGV, SIGBUS);
 
-   Unreserve_All_Interrupts : Interfaces.C.int;
+   Unreserve_All_Interrupts : constant Interfaces.C.int;
    pragma Import
      (C, Unreserve_All_Interrupts, "__gl_unreserve_all_interrupts");
 

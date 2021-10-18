@@ -32,9 +32,7 @@ void test01()
   VERIFY( (test_category<is_fundamental, char>(true)) );
   VERIFY( (test_category<is_fundamental, signed char>(true)) );
   VERIFY( (test_category<is_fundamental, unsigned char>(true)) );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( (test_category<is_fundamental, wchar_t>(true)) );
-#endif
   VERIFY( (test_category<is_fundamental, short>(true)) );
   VERIFY( (test_category<is_fundamental, unsigned short>(true)) );
   VERIFY( (test_category<is_fundamental, int>(true)) );

@@ -55,7 +55,7 @@ __cxxabiv1::__terminate (std::terminate_handler handler) throw ()
 void
 std::terminate () throw()
 {
-  __terminate (get_terminate ());
+  __cxxabiv1::__terminate (get_terminate ());
 }
 
 void

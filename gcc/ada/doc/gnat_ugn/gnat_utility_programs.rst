@@ -4294,10 +4294,13 @@ building specialized scripts.
     Standard Output. Has no effect otherwise.
 
   :switch:`--count={N}`
-    If specified, compute the symbolic traceback ``N`` times in a row.
-    This option is mostly useful for measuring the performance of
-    ``gnatsymbolize``, particularly in the case where the cache is
-    being used.
+    Compute the symbolic traceback ``N`` times in a row. This option
+    is mostly useful for measuring the performance of ``gnatsymbolize``,
+    particularly in the case where the cache is being used.
+
+  :switch:`--load`
+    Interpret the first address as the load address of the executable.
+    This is needed for position-independent executables on Windows.
 
   Requirements for Correct Operation
   ----------------------------------
@@ -4311,12 +4314,7 @@ building specialized scripts.
   This program provides a functionality similar to ``addr2line``.
   It has fewer options to tailor its output, but has been designed
   to require fewer of the DWARF sections to be present in the
-  executable. In particular, the following sections can be
-  stripped from the executable without impact to ``gnatsymbolize``'s
-  functionality:
-
-    * ``.debug_str``
-    * ``.debug_ranges``
+  executable. In particular, it works for code compiled with ``-g1``.
 
 
 .. only:: PRO or GPL

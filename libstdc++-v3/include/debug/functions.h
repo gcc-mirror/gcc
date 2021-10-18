@@ -33,7 +33,7 @@
 
 #if __cplusplus >= 201103L
 # include <bits/stl_iterator.h>	// for __miter_base
-# include <type_traits>		// for is_lvalue_reference and conditional.
+# include <type_traits>		// for is_lvalue_reference and __conditional_t.
 #endif
 
 #include <debug/helper_functions.h>
@@ -158,8 +158,8 @@ namespace __gnu_debug
       using __lvalref = std::is_lvalue_reference<
 	typename std::iterator_traits<_InputIterator>::reference>;
       using __contiguous = _Is_contiguous_sequence<_Sequence>;
-      using __tag = typename std::conditional<__lvalref::value, __contiguous,
-					      std::__false_type>::type;
+      using __tag = std::__conditional_t<__lvalref::value, __contiguous,
+					 std::__false_type>;
 #endif
       return __foreign_iterator_aux3(__it, __other, __other_end, __tag());
     }

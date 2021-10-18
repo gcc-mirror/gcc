@@ -71,6 +71,7 @@
 #include "gimple.h"
 #include "selftest.h"
 #include "tree-vectorizer.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -303,11 +304,6 @@ static bool aarch_macro_fusion_pair_p (rtx_insn*, rtx_insn*);
 static int arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 					   tree vectype,
 					   int misalign ATTRIBUTE_UNUSED);
-static unsigned arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
-				   enum vect_cost_for_stmt kind,
-				   struct _stmt_vec_info *stmt_info,
-				   tree vectype, int misalign,
-				   enum vect_cost_model_location where);
 
 static void arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 					 bool op0_preserve_value);
@@ -768,8 +764,6 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
   arm_builtin_vectorization_cost
-#undef TARGET_VECTORIZE_ADD_STMT_COST
-#define TARGET_VECTORIZE_ADD_STMT_COST arm_add_stmt_cost
 
 #undef TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON \
@@ -3468,7 +3462,7 @@ arm_option_override (void)
 
   arm_active_target.isa = sbitmap_alloc (isa_num_bits);
 
-  if (!global_options_set.x_arm_fpu_index)
+  if (!OPTION_SET_P (arm_fpu_index))
     {
       bool ok;
       int fpu_index;
@@ -3528,7 +3522,7 @@ arm_option_override (void)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
 
   /* Override the default structure alignment for AAPCS ABI.  */
-  if (!global_options_set.x_arm_structure_size_boundary)
+  if (!OPTION_SET_P (arm_structure_size_boundary))
     {
       if (TARGET_AAPCS_BASED)
 	arm_structure_size_boundary = 8;
@@ -3553,12 +3547,12 @@ arm_option_override (void)
 
   if (TARGET_VXWORKS_RTP)
     {
-      if (!global_options_set.x_arm_pic_data_is_text_relative)
+      if (!OPTION_SET_P (arm_pic_data_is_text_relative))
 	arm_pic_data_is_text_relative = 0;
     }
   else if (flag_pic
 	   && !arm_pic_data_is_text_relative
-	   && !(global_options_set.x_target_flags & MASK_SINGLE_PIC_BASE))
+	   && !(OPTION_SET_P (target_flags) & MASK_SINGLE_PIC_BASE))
     /* When text & data segments don't have a fixed displacement, the
        intended use is with a single, read only, pic base register.
        Unless the user explicitly requested not to do that, set
@@ -3669,6 +3663,28 @@ arm_option_override (void)
     SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 			 param_l1_cache_line_size,
 			 current_tune->prefetch.l1_cache_line_size);
+  if (current_tune->prefetch.l1_cache_line_size >= 0)
+    {
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_destruct_interfere_size,
+			   current_tune->prefetch.l1_cache_line_size);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_construct_interfere_size,
+			   current_tune->prefetch.l1_cache_line_size);
+    }
+  else
+    {
+      /* For a generic ARM target, JF Bastien proposed using 64 for both.  */
+      /* ??? Cortex A9 has a 32-byte cache line, so why not 32 for
+	 constructive?  */
+      /* More recent Cortex chips have a 64-byte cache line, but are marked
+	 ARM_PREFETCH_NOT_BENEFICIAL, so they get these defaults.  */
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_destruct_interfere_size, 64);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_construct_interfere_size, 64);
+    }
+
   if (current_tune->prefetch.l1_cache_size >= 0)
     SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 			 param_l1_cache_size,
@@ -8508,8 +8524,7 @@ thumb2_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
   bool use_ldrd;
   enum rtx_code code = GET_CODE (x);
 
-  if (TARGET_HAVE_MVE
-      && (mode == V8QImode || mode == E_V4QImode || mode == V4HImode))
+  if (TARGET_HAVE_MVE && VALID_MVE_MODE (mode))
     return mve_vector_mem_operand (mode, x, strict_p);
 
   if (arm_address_register_rtx_p (x, strict_p))
@@ -12220,39 +12235,6 @@ arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
-/* Implement targetm.vectorize.add_stmt_cost.  */
-
-static unsigned
-arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
-		   enum vect_cost_for_stmt kind,
-		   struct _stmt_vec_info *stmt_info, tree vectype,
-		   int misalign, enum vect_cost_model_location where)
-{
-  unsigned *cost = (unsigned *) data;
-  unsigned retval = 0;
-
-  if (flag_vect_cost_model)
-    {
-      int stmt_cost = arm_builtin_vectorization_cost (kind, vectype, misalign);
-
-      /* Statements in an inner loop relative to the loop being
-	 vectorized are weighted more heavily.  The value here is
-	 arbitrary and could potentially be improved with analysis.  */
-      if (where == vect_body && stmt_info
-	  && stmt_in_inner_loop_p (vinfo, stmt_info))
-	{
-	  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
-	  gcc_assert (loop_vinfo);
-	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /* FIXME.  */
-	}
-
-      retval = (unsigned) (count * stmt_cost);
-      cost[where] += retval;
-    }
-
-  return retval;
-}
-
 /* Return true if and only if this insn can dual-issue only as older.  */
 static bool
 cortexa7_older_only (rtx_insn *insn)
@@ -13411,53 +13393,49 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
       || code == PRE_INC || code == POST_DEC)
     {
       reg_no = REGNO (XEXP (op, 0));
-      return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
-	       ? reg_no <= LAST_LO_REGNUM
-	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
-	      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+      return ((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
+	      ? reg_no <= LAST_LO_REGNUM
+	      :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
+	|| reg_no >= FIRST_PSEUDO_REGISTER;
     }
-  else if ((code == POST_MODIFY || code == PRE_MODIFY)
-	   && GET_CODE (XEXP (op, 1)) == PLUS && REG_P (XEXP (XEXP (op, 1), 1)))
+  else if (((code == POST_MODIFY || code == PRE_MODIFY)
+	    && GET_CODE (XEXP (op, 1)) == PLUS
+	    && XEXP (op, 0) == XEXP (XEXP (op, 1), 0)
+	    && REG_P (XEXP (op, 0))
+	    && GET_CODE (XEXP (XEXP (op, 1), 1)) == CONST_INT)
+	   /* Make sure to only accept PLUS after reload_completed, otherwise
+	      this will interfere with auto_inc's pattern detection.  */
+	   || (reload_completed && code == PLUS && REG_P (XEXP (op, 0))
+	       && GET_CODE (XEXP (op, 1)) == CONST_INT))
     {
       reg_no = REGNO (XEXP (op, 0));
-      val = INTVAL (XEXP ( XEXP (op, 1), 1));
+      if (code == PLUS)
+	val = INTVAL (XEXP (op, 1));
+      else
+	val = INTVAL (XEXP(XEXP (op, 1), 1));
+
       switch (mode)
 	{
 	  case E_V16QImode:
-	    if (abs (val) <= 127)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
-	    return FALSE;
-	  case E_V8HImode:
-	  case E_V8HFmode:
-	    if (abs (val) <= 255)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
-	    return FALSE;
 	  case E_V8QImode:
 	  case E_V4QImode:
 	    if (abs (val) <= 127)
-	      return (reg_no <= LAST_LO_REGNUM
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	      return (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
+		|| reg_no >= FIRST_PSEUDO_REGISTER;
 	    return FALSE;
+	  case E_V8HImode:
+	  case E_V8HFmode:
 	  case E_V4HImode:
 	  case E_V4HFmode:
 	    if (val % 2 == 0 && abs (val) <= 254)
-	      return (reg_no <= LAST_LO_REGNUM
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	      return reg_no <= LAST_LO_REGNUM
+		|| reg_no >= FIRST_PSEUDO_REGISTER;
 	    return FALSE;
 	  case E_V4SImode:
 	  case E_V4SFmode:
 	    if (val % 4 == 0 && abs (val) <= 508)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
-	    return FALSE;
-	  case E_V2DImode:
-	  case E_V2DFmode:
-	  case E_TImode:
-	    if (val % 4 == 0 && val >= 0 && val <= 1020)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	      return (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
+		|| reg_no >= FIRST_PSEUDO_REGISTER;
 	    return FALSE;
 	  default:
 	    return FALSE;
@@ -24254,7 +24232,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	else if (code == POST_MODIFY || code == PRE_MODIFY)
 	  {
 	    asm_fprintf (stream, "[%r", REGNO (XEXP (addr, 0)));
-	    postinc_reg = XEXP ( XEXP (x, 1), 1);
+	    postinc_reg = XEXP (XEXP (addr, 1), 1);
 	    if (postinc_reg && CONST_INT_P (postinc_reg))
 	      {
 		if (code == POST_MODIFY)
@@ -25612,6 +25590,7 @@ arm_excess_precision (enum excess_precision_type type)
 		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
 		: FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
       case EXCESS_PRECISION_TYPE_IMPLICIT:
+      case EXCESS_PRECISION_TYPE_FLOAT16:
 	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
       default:
 	gcc_unreachable ();

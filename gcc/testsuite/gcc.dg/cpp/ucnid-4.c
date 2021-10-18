@@ -9,9 +9,9 @@
 \u00D6
 \u0384
 
-\u0669 /* { dg-error "not valid at the start of an identifier" } */
+\u0669
 A\u0669
 0\u00BA
 0\u0669
-\u0E59 /* { dg-error "not valid at the start of an identifier" } */
+\u0E59
 A\u0E59

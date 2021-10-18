@@ -113,7 +113,7 @@ md5_check() {
   md5_checksum_output=$(md5 -r "${file_to_check}")
   # Grab the text before the first space
   md5_checksum_detected="${md5_checksum_output%% *}"
-  [ "${md5_checksum_expected}" == "${md5_checksum_detected}" ] \
+  [ "${md5_checksum_expected}" = "${md5_checksum_detected}" ] \
     || die "Cannot verify integrity of possibly corrupted file ${file_to_check}"
   echo "${file_to_check}: OK"
 }

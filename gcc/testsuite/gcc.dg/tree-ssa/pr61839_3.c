@@ -1,6 +1,6 @@
 /* PR tree-optimization/61839.  */
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-vrp1 -fdump-tree-optimized -fdisable-tree-ethread -fdisable-tree-thread1" } */
+/* { dg-options "-O2 -fdump-tree-vrp-thread1 -fdump-tree-optimized -fdisable-tree-ethread -fdisable-tree-thread1" } */
 
 __attribute__ ((noinline))
 int foo (int a, unsigned b)
@@ -22,5 +22,5 @@ int main ()
 }
 
 /* Scan for c [12, 13] << 8 in function foo.  */
-/* { dg-final { scan-tree-dump-times "3072 : 3328" 2  "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "3072 : 3328" 1  "vrp-thread1" } } */
 /* { dg-final { scan-tree-dump-times "3072" 0  "optimized" } } */

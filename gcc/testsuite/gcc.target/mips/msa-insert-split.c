@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mfp64 -mhard-float -mmsa" } */
+/* { dg-options "-fno-tree-vectorize -mfp64 -mhard-float -mmsa" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
 typedef double v2f64 __attribute__ ((vector_size (16)));

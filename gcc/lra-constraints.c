@@ -1276,7 +1276,7 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
   sclass = dclass = NO_REGS;
   if (REG_P (dreg))
     dclass = get_reg_class (REGNO (dreg));
-  gcc_assert (dclass < LIM_REG_CLASSES);
+  gcc_assert (dclass < LIM_REG_CLASSES && dclass >= NO_REGS);
   if (dclass == ALL_REGS)
     /* ALL_REGS is used for new pseudos created by transformations
        like reload of SUBREG_REG (see function
@@ -1288,7 +1288,7 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
     return false;
   if (REG_P (sreg))
     sclass = get_reg_class (REGNO (sreg));
-  gcc_assert (sclass < LIM_REG_CLASSES);
+  gcc_assert (sclass < LIM_REG_CLASSES && sclass >= NO_REGS);
   if (sclass == ALL_REGS)
     /* See comments above.  */
     return false;
@@ -5799,11 +5799,12 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 	 part of a multi-word register.  In that case, just use the reg_rtx
 	 mode.  Do the same also if the biggest mode was larger than a register
 	 or we can not compare the modes.  Otherwise, limit the size to that of
-	 the biggest access in the function.  */
+	 the biggest access in the function or to the natural mode at least.  */
       if (mode == VOIDmode
 	  || !ordered_p (GET_MODE_PRECISION (mode),
 			 GET_MODE_PRECISION (reg_rtx_mode))
-	  || paradoxical_subreg_p (mode, reg_rtx_mode))
+	  || paradoxical_subreg_p (mode, reg_rtx_mode)
+	  || maybe_gt (GET_MODE_PRECISION (reg_rtx_mode), GET_MODE_PRECISION (mode)))
 	{
 	  original_reg = regno_reg_rtx[hard_regno];
 	  mode = reg_rtx_mode;

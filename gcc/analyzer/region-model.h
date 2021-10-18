@@ -487,10 +487,14 @@ public:
 
   unsigned num_args () const;
 
+  const gcall *get_call_stmt () const { return m_call; }
+
   tree get_arg_tree (unsigned idx) const;
   tree get_arg_type (unsigned idx) const;
   const svalue *get_arg_svalue (unsigned idx) const;
   const char *get_arg_string_literal (unsigned idx) const;
+
+  tree get_fndecl_for_call () const;
 
   void dump_to_pp (pretty_printer *pp, bool simple) const;
   void dump (bool simple) const;
@@ -732,6 +736,11 @@ class region_model
 
   const svalue *get_capacity (const region *reg) const;
 
+  /* Implemented in sm-malloc.cc  */
+  void on_realloc_with_move (const call_details &cd,
+			     const svalue *old_ptr_sval,
+			     const svalue *new_ptr_sval);
+
  private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
   const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt) const;
@@ -867,6 +876,21 @@ class region_model_context
 
   /* Hook for clients to purge state involving SVAL.  */
   virtual void purge_state_involving (const svalue *sval) = 0;
+
+  /* Hook for clients to split state with a non-standard path.
+     Take ownership of INFO.  */
+  virtual void bifurcate (custom_edge_info *info) = 0;
+
+  /* Hook for clients to terminate the standard path.  */
+  virtual void terminate_path () = 0;
+
+  virtual const extrinsic_state *get_ext_state () const = 0;
+
+  /* Hook for clients to access the "malloc" state machine in
+     any underlying program_state.  */
+  virtual bool get_malloc_map (sm_state_map **out_smap,
+			       const state_machine **out_sm,
+			       unsigned *out_sm_idx) = 0;
 };
 
 /* A "do nothing" subclass of region_model_context.  */
@@ -899,6 +923,18 @@ public:
   uncertainty_t *get_uncertainty () OVERRIDE { return NULL; }
 
   void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) OVERRIDE {}
+
+  void bifurcate (custom_edge_info *info) OVERRIDE;
+  void terminate_path () OVERRIDE;
+
+  const extrinsic_state *get_ext_state () const OVERRIDE { return NULL; }
+
+  bool get_malloc_map (sm_state_map **,
+		       const state_machine **,
+		       unsigned *) OVERRIDE
+  {
+    return false;
+  }
 };
 
 /* A subclass of region_model_context for determining if operations fail

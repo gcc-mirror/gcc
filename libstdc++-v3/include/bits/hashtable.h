@@ -317,8 +317,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Ht>
 	static constexpr
-	typename conditional<std::is_lvalue_reference<_Ht>::value,
-			     const value_type&, value_type&&>::type
+	__conditional_t<std::is_lvalue_reference<_Ht>::value,
+			const value_type&, value_type&&>
 	__fwd_value_for(value_type& __val) noexcept
 	{ return std::move(__val); }
 
@@ -328,14 +328,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // access it.
       struct __hash_code_base_access : __hash_code_base
       { using __hash_code_base::_M_bucket_index; };
-
-      // Getting a bucket index from a node shall not throw because it is used
-      // in methods (erase, swap...) that shall not throw.
-      static_assert(noexcept(declval<const __hash_code_base_access&>()
-			._M_bucket_index(declval<const __node_value_type&>(),
-					 (std::size_t)0)),
-		    "Cache the hash code or qualify your functors involved"
-		    " in hash code and bucket index computation with noexcept");
 
       // To get bucket index we need _RangeHash not to throw.
       static_assert(is_nothrow_default_constructible<_RangeHash>::value,
@@ -875,10 +867,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_insert_unique(_Kt&&, _Arg&&, const _NodeGenerator&);
 
       template<typename _Kt>
-	static typename conditional<
+	static __conditional_t<
 	  __and_<__is_nothrow_invocable<_Hash&, const key_type&>,
 		 __not_<__is_nothrow_invocable<_Hash&, _Kt>>>::value,
-	  key_type, _Kt&&>::type
+	  key_type, _Kt&&>
 	_S_forward_key(_Kt&& __k)
 	{ return std::forward<_Kt>(__k); }
 
@@ -1540,9 +1532,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __alloc_node_gen_t __alloc_gen(*this);
 
-	  using _Fwd_Ht = typename
-	    conditional<__move_if_noexcept_cond<value_type>::value,
-			const _Hashtable&, _Hashtable&&>::type;
+	  using _Fwd_Ht = __conditional_t<
+	    __move_if_noexcept_cond<value_type>::value,
+	    const _Hashtable&, _Hashtable&&>;
 	  _M_assign(std::forward<_Fwd_Ht>(__ht), __alloc_gen);
 	  __ht.clear();
 	}
@@ -1556,6 +1548,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
     ~_Hashtable() noexcept
     {
+      // Getting a bucket index from a node shall not throw because it is used
+      // in methods (erase, swap...) that shall not throw. Need a complete
+      // type to check this, so do it in the destructor not at class scope.
+      static_assert(noexcept(declval<const __hash_code_base_access&>()
+			._M_bucket_index(declval<const __node_value_type&>(),
+					 (std::size_t)0)),
+		    "Cache the hash code or qualify your functors involved"
+		    " in hash code and bucket index computation with noexcept");
+
       clear();
       _M_deallocate_buckets();
     }

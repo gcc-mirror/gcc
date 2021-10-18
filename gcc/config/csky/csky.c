@@ -67,6 +67,7 @@
 #include "pass_manager.h"
 #include "tree-pass.h"
 #include "context.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2757,15 +2758,15 @@ csky_option_override (void)
 #ifdef ENABLE_TPF_DEBUG
   /* Don't emit DWARF4 unless specifically selected.  The TPF
      debuggers do not yet support DWARF 3/4.  */
-  if (!global_options_set.x_dwarf_strict)
+  if (!OPTION_SET_P (dwarf_strict))
     dwarf_strict = 1;
-  if (!global_options_set.x_dwarf_version)
+  if (!OPTION_SET_P (dwarf_version))
     dwarf_version = 3;
 #endif
 
   /* Don't run the scheduler before reload by default,
      since it tends to increase register pressure.  */
-  if (!global_options_set.x_flag_schedule_insns)
+  if (!OPTION_SET_P (flag_schedule_insns))
     flag_schedule_insns = 0;
 
   csky_add_gc_roots ();

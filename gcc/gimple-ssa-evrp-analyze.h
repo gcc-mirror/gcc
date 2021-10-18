@@ -38,13 +38,6 @@ class evrp_range_analyzer : public vr_values
   /* Record a new unwindable range.  */
   void push_value_range (tree var, value_range_equiv *vr);
 
-  /* A bit of a wart.  This should ideally go away.  */
-  void vrp_visit_cond_stmt (gcond *cond, edge *e)
-  {
-    simplify_using_ranges simpl (this);
-    simpl.vrp_visit_cond_stmt (cond, e);
-  }
-
  private:
   DISABLE_COPY_AND_ASSIGN (evrp_range_analyzer);
 

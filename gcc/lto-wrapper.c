@@ -1983,7 +1983,9 @@ cont:
 	  output_name = XOBFINISH (&env_obstack, char *);
 
 	  /* Adjust the dumpbase if the linker output file was seen.  */
-	  int dumpbase_len = (strlen (dumppfx) + sizeof (DUMPBASE_SUFFIX));
+	  int dumpbase_len = (strlen (dumppfx)
+			      + sizeof (DUMPBASE_SUFFIX)
+			      + sizeof (".ltrans"));
 	  char *dumpbase = (char *) xmalloc (dumpbase_len + 1);
 	  snprintf (dumpbase, dumpbase_len, "%sltrans%u.ltrans", dumppfx, i);
 	  argv_ptr[0] = dumpbase;
@@ -2009,9 +2011,11 @@ cont:
 	    }
 	  else
 	    {
-	      char argsuffix[sizeof (DUMPBASE_SUFFIX) + 1];
+	      char argsuffix[sizeof (DUMPBASE_SUFFIX)
+			     + sizeof (".ltrans_args") + 1];
 	      if (save_temps)
-		snprintf (argsuffix, sizeof (DUMPBASE_SUFFIX),
+		snprintf (argsuffix,
+			  sizeof (DUMPBASE_SUFFIX) + sizeof (".ltrans_args"),
 			  "ltrans%u.ltrans_args", i);
 	      fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
 			    true, save_temps ? argsuffix : NULL);
@@ -2125,23 +2129,7 @@ main (int argc, char *argv[])
   if (atexit (lto_wrapper_cleanup) != 0)
     fatal_error (input_location, "%<atexit%> failed");
 
-  if (signal (SIGINT, SIG_IGN) != SIG_IGN)
-    signal (SIGINT, fatal_signal);
-#ifdef SIGHUP
-  if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
-    signal (SIGHUP, fatal_signal);
-#endif
-  if (signal (SIGTERM, SIG_IGN) != SIG_IGN)
-    signal (SIGTERM, fatal_signal);
-#ifdef SIGPIPE
-  if (signal (SIGPIPE, SIG_IGN) != SIG_IGN)
-    signal (SIGPIPE, fatal_signal);
-#endif
-#ifdef SIGCHLD
-  /* We *MUST* set SIGCHLD to SIG_DFL so that the wait4() call will
-     receive the signal.  A different setting is inheritable */
-  signal (SIGCHLD, SIG_DFL);
-#endif
+  setup_signals ();
 
   /* We may be called with all the arguments stored in some file and
      passed with @file.  Expand them into argv before processing.  */

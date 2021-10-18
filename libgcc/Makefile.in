@@ -314,7 +314,7 @@ MULTIOSSUBDIR := $(shell if test $(MULTIOSDIR) != .; then echo /$(MULTIOSDIR); f
 inst_libdir = $(libsubdir)$(MULTISUBDIR)
 inst_slibdir = $(slibdir)$(MULTIOSSUBDIR)
 
-gcc_compile_bare = $(CC) $(INTERNAL_CFLAGS)
+gcc_compile_bare = $(CC) $(INTERNAL_CFLAGS) $(CFLAGS-$(<F))
 compile_deps = -MT $@ -MD -MP -MF $(basename $@).dep
 gcc_compile = $(gcc_compile_bare) -o $@ $(compile_deps)
 gcc_s_compile = $(gcc_compile) -DSHARED

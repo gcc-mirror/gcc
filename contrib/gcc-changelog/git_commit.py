@@ -217,7 +217,7 @@ class ChangeLogEntry:
         self.lines = []
         self.files = []
         self.file_patterns = []
-        self.opened_parentheses = 0
+        self.parentheses_stack = []
 
     def parse_file_names(self):
         # Whether the content currently processed is between a star prefix the
@@ -325,6 +325,8 @@ class GitCommit:
         # The following happens for get_email.py:
         if not self.info:
             return
+
+        self.check_commit_email()
 
         # Extract PR numbers form the subject line
         # Match either [PRnnnn] / (PRnnnn) or PR component/nnnn
@@ -549,7 +551,7 @@ class GitCommit:
                     m = star_prefix_regex.match(line)
                     if m:
                         if (len(m.group('spaces')) != 1 and
-                                last_entry.opened_parentheses == 0):
+                                not last_entry.parentheses_stack):
                             msg = 'one space should follow asterisk'
                             self.errors.append(Error(msg, line))
                         else:
@@ -574,13 +576,13 @@ class GitCommit:
     def process_parentheses(self, last_entry, line):
         for c in line:
             if c == '(':
-                last_entry.opened_parentheses += 1
+                last_entry.parentheses_stack.append(line)
             elif c == ')':
-                if last_entry.opened_parentheses == 0:
+                if not last_entry.parentheses_stack:
                     msg = 'bad wrapping of parenthesis'
                     self.errors.append(Error(msg, line))
                 else:
-                    last_entry.opened_parentheses -= 1
+                    del last_entry.parentheses_stack[-1]
 
     def parse_file_names(self):
         for entry in self.changelog_entries:
@@ -606,9 +608,9 @@ class GitCommit:
 
     def check_for_broken_parentheses(self):
         for entry in self.changelog_entries:
-            if entry.opened_parentheses != 0:
+            if entry.parentheses_stack:
                 msg = 'bad parentheses wrapping'
-                self.errors.append(Error(msg, entry.lines[0]))
+                self.errors.append(Error(msg, entry.parentheses_stack[-1]))
 
     def get_file_changelog_location(self, changelog_file):
         for file in self.info.modified_files:
@@ -803,3 +805,12 @@ class GitCommit:
         print('Errors:')
         for error in self.errors:
             print(error)
+
+    def check_commit_email(self):
+        # Parse 'Martin Liska  <mliska@suse.cz>'
+        email = self.info.author.split(' ')[-1].strip('<>')
+
+        # Verify that all characters are ASCII
+        # TODO: Python 3.7 provides a nicer function: isascii
+        if len(email) != len(email.encode()):
+            self.errors.append(Error(f'non-ASCII characters in git commit email address ({email})'))

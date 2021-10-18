@@ -3393,14 +3393,16 @@ c_wrap_maybe_const (tree expr, bool non_const)
   return expr;
 }
 
-/* Return whether EXPR is a declaration whose address can never be
-   NULL.  */
+/* Return whether EXPR is a declaration whose address can never be NULL.
+   The address of the first struct member could be NULL only if it were
+   accessed through a NULL pointer, and such an access would be invalid.  */
 
 bool
 decl_with_nonnull_addr_p (const_tree expr)
 {
   return (DECL_P (expr)
-	  && (TREE_CODE (expr) == PARM_DECL
+	  && (TREE_CODE (expr) == FIELD_DECL
+	      || TREE_CODE (expr) == PARM_DECL
 	      || TREE_CODE (expr) == LABEL_DECL
 	      || !DECL_WEAK (expr)));
 }
@@ -3488,13 +3490,17 @@ c_common_truthvalue_conversion (location_t location, tree expr)
     case ADDR_EXPR:
       {
  	tree inner = TREE_OPERAND (expr, 0);
-	if (decl_with_nonnull_addr_p (inner))
+	if (decl_with_nonnull_addr_p (inner)
+	    /* Check both EXPR and INNER for suppression.  */
+	    && !warning_suppressed_p (expr, OPT_Waddress)
+	    && !warning_suppressed_p (inner, OPT_Waddress))
 	  {
-	    /* Common Ada programmer's mistake.  */
+	    /* Common Ada programmer's mistake.	 */
 	    warning_at (location,
 			OPT_Waddress,
 			"the address of %qD will always evaluate as %<true%>",
 			inner);
+	    suppress_warning (inner, OPT_Waddress);
 	    return truthvalue_true_node;
 	  }
 	break;
@@ -3627,8 +3633,17 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	  break;
 	/* If this isn't narrowing the argument, we can ignore it.  */
 	if (TYPE_PRECISION (totype) >= TYPE_PRECISION (fromtype))
-	  return c_common_truthvalue_conversion (location,
-						 TREE_OPERAND (expr, 0));
+	  {
+	    tree op0 = TREE_OPERAND (expr, 0);
+	    if ((TREE_CODE (fromtype) == POINTER_TYPE
+		 && TREE_CODE (totype) == INTEGER_TYPE)
+		|| warning_suppressed_p (expr, OPT_Waddress))
+	      /* Suppress -Waddress for casts to intptr_t, propagating
+		 any suppression from the enclosing expression to its
+		 operand.  */
+	      suppress_warning (op0, OPT_Waddress);
+	    return c_common_truthvalue_conversion (location, op0);
+	  }
       }
       break;
 
@@ -5904,9 +5919,23 @@ parse_optimize_options (tree args, bool attr_p)
       j++;
     }
   decoded_options_count = j;
-  /* And apply them.  */
+
+  /* Merge the decoded options with save_decoded_options.  */
+  unsigned save_opt_count = save_opt_decoded_options->length ();
+  unsigned merged_decoded_options_count
+    = save_opt_count + decoded_options_count;
+  cl_decoded_option *merged_decoded_options
+    = XNEWVEC (cl_decoded_option, merged_decoded_options_count);
+
+  /* Note the first decoded_options is used for the program name.  */
+  for (unsigned i = 0; i < save_opt_count; ++i)
+    merged_decoded_options[i + 1] = (*save_opt_decoded_options)[i];
+  for (unsigned i = 1; i < decoded_options_count; ++i)
+    merged_decoded_options[save_opt_count + i] = decoded_options[i];
+
+   /* And apply them.  */
   decode_options (&global_options, &global_options_set,
-		  decoded_options, decoded_options_count,
+		  merged_decoded_options, merged_decoded_options_count,
 		  input_location, global_dc, NULL);
   free (decoded_options);
 
@@ -8778,7 +8807,7 @@ excess_precision_mode_join (enum flt_eval_method x,
 
    This relates to the effective excess precision seen by the user,
    which is the join point of the precision the target requests for
-   -fexcess-precision={standard,fast} and the implicit excess precision
+   -fexcess-precision={standard,fast,16} and the implicit excess precision
    the target uses.  */
 
 static enum flt_eval_method
@@ -8790,7 +8819,9 @@ c_ts18661_flt_eval_method (void)
   enum excess_precision_type flag_type
     = (flag_excess_precision == EXCESS_PRECISION_STANDARD
        ? EXCESS_PRECISION_TYPE_STANDARD
-       : EXCESS_PRECISION_TYPE_FAST);
+       : (flag_excess_precision == EXCESS_PRECISION_FLOAT16
+	  ? EXCESS_PRECISION_TYPE_FLOAT16
+	  : EXCESS_PRECISION_TYPE_FAST));
 
   enum flt_eval_method requested
     = targetm.c.excess_precision (flag_type);

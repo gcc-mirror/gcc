@@ -344,7 +344,16 @@ dump_function_name (pretty_printer *pp, tree node, dump_flags_t flags)
   if (CONVERT_EXPR_P (node))
     node = TREE_OPERAND (node, 0);
   if (DECL_NAME (node) && (flags & TDF_ASMNAME) == 0)
-    pp_string (pp, lang_hooks.decl_printable_name (node, 1));
+    {
+      pp_string (pp, lang_hooks.decl_printable_name (node, 1));
+      if (flags & TDF_UID)
+	{
+	  char uid_sep = (flags & TDF_GIMPLE) ? '_' : '.';
+	  pp_character (pp, 'D');
+	  pp_character (pp, uid_sep);
+	  pp_scalar (pp, "%u", DECL_UID (node));
+	}
+    }
   else
     dump_decl_name (pp, node, flags);
 }
@@ -735,10 +744,23 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "allocate(");
       if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause))
 	{
+	  pp_string (pp, "allocator(");
 	  dump_generic_node (pp, OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause),
 			     spc, flags, false);
-	  pp_colon (pp);
+	  pp_right_paren (pp);
 	}
+      if (OMP_CLAUSE_ALLOCATE_ALIGN (clause))
+	{
+	  if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause))
+	    pp_comma (pp);
+	  pp_string (pp, "align(");
+	  dump_generic_node (pp, OMP_CLAUSE_ALLOCATE_ALIGN (clause),
+			     spc, flags, false);
+	  pp_right_paren (pp);
+	}
+      if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause)
+	  || OMP_CLAUSE_ALLOCATE_ALIGN (clause))
+	pp_colon (pp);
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
@@ -986,6 +1008,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_DEVICE:
       pp_string (pp, "device(");
+      if (OMP_CLAUSE_DEVICE_ANCESTOR (clause))
+	pp_string (pp, "ancestor:");
       dump_generic_node (pp, OMP_CLAUSE_DEVICE_ID (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
@@ -1147,7 +1171,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       break;
 
     case OMP_CLAUSE_ORDER:
-      pp_string (pp, "order(concurrent)");
+      pp_string (pp, "order(");
+      if (OMP_CLAUSE_ORDER_UNCONSTRAINED (clause))
+	pp_string (pp, "unconstrained:");
+      else if (OMP_CLAUSE_ORDER_REPRODUCIBLE (clause))
+	pp_string (pp, "reproducible:");
+      pp_string (pp, "concurrent)");
       break;
 
     case OMP_CLAUSE_BIND:
@@ -1490,7 +1519,7 @@ dump_block_node (pretty_printer *pp, tree block, int spc, dump_flags_t flags)
 void
 dump_omp_atomic_memory_order (pretty_printer *pp, enum omp_memory_order mo)
 {
-  switch (mo)
+  switch (mo & OMP_MEMORY_ORDER_MASK)
     {
     case OMP_MEMORY_ORDER_RELAXED:
       pp_string (pp, " relaxed");
@@ -1508,6 +1537,22 @@ dump_omp_atomic_memory_order (pretty_printer *pp, enum omp_memory_order mo)
       pp_string (pp, " release");
       break;
     case OMP_MEMORY_ORDER_UNSPECIFIED:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  switch (mo & OMP_FAIL_MEMORY_ORDER_MASK)
+    {
+    case OMP_FAIL_MEMORY_ORDER_RELAXED:
+      pp_string (pp, " fail(relaxed)");
+      break;
+    case OMP_FAIL_MEMORY_ORDER_SEQ_CST:
+      pp_string (pp, " fail(seq_cst)");
+      break;
+    case OMP_FAIL_MEMORY_ORDER_ACQUIRE:
+      pp_string (pp, " fail(acquire)");
+      break;
+    case OMP_FAIL_MEMORY_ORDER_UNSPECIFIED:
       break;
     default:
       gcc_unreachable ();
@@ -2828,17 +2873,28 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
       /* Unary arithmetic and logic expressions.  */
+    case ADDR_EXPR:
+      if (flags & TDF_GIMPLE_VAL)
+	{
+	  pp_string (pp, "_Literal (");
+	  dump_generic_node (pp, TREE_TYPE (node), spc,
+			     flags & ~TDF_GIMPLE_VAL, false);
+	  pp_character (pp, ')');
+	}
+      /* Fallthru.  */
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
-    case ADDR_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case INDIRECT_REF:
-      if (TREE_CODE (node) == ADDR_EXPR
+      if (!(flags & TDF_GIMPLE)
+	  && TREE_CODE (node) == ADDR_EXPR
 	  && (TREE_CODE (TREE_OPERAND (node, 0)) == STRING_CST
 	      || TREE_CODE (TREE_OPERAND (node, 0)) == FUNCTION_DECL))
-	;	/* Do not output '&' for strings and function pointers.  */
+	/* Do not output '&' for strings and function pointers when not
+	   dumping GIMPLE FE syntax.  */
+	;
       else
 	pp_string (pp, op_symbol (node));
 
@@ -3627,6 +3683,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_ATOMIC:
       pp_string (pp, "#pragma omp atomic");
+      if (OMP_ATOMIC_WEAK (node))
+	pp_string (pp, " weak");
       dump_omp_atomic_memory_order (pp, OMP_ATOMIC_MEMORY_ORDER (node));
       newline_and_indent (pp, spc + 2);
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
@@ -3647,6 +3705,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
       pp_string (pp, "#pragma omp atomic capture");
+      if (OMP_ATOMIC_WEAK (node))
+	pp_string (pp, " weak");
       dump_omp_atomic_memory_order (pp, OMP_ATOMIC_MEMORY_ORDER (node));
       newline_and_indent (pp, spc + 2);
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);

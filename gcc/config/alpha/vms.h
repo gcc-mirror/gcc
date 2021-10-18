@@ -145,9 +145,13 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 
 #undef INIT_CUMULATIVE_ARGS
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
-  (CUM).num_args = 0;						\
-  (CUM).atypes[0] = (CUM).atypes[1] = (CUM).atypes[2] = I64;	\
-  (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;
+  do                                                                       \
+    {                                                                      \
+      (CUM).num_args = 0;                                                  \
+      (CUM).atypes[0] = (CUM).atypes[1] = (CUM).atypes[2] = I64;           \
+      (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;           \
+    }                                                                      \
+  while (0)
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
@@ -244,7 +248,7 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
  while (0)
 
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE VMS_AND_DWARF2_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 #define ASM_PN_FORMAT "%s___%lu"
 

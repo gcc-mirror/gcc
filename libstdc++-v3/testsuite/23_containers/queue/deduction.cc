@@ -20,6 +20,7 @@
 #include <queue>
 #include <deque>
 #include <list>
+#include <testsuite_allocator.h>
 
 template<typename T, typename U> struct require_same;
 template<typename T> struct require_same<T, T> { using type = void; };
@@ -85,4 +86,37 @@ test02()
 
   std::queue s8(std::move(l), l.get_allocator());
   check_type<std::queue<long, std::list<long>>>(s8);
+}
+
+struct Pool;
+
+template<typename T>
+struct Alloc : __gnu_test::SimpleAllocator<T>
+{
+  Alloc(Pool*) { }
+
+  template<typename U>
+    Alloc(const Alloc<U>&) { }
+};
+
+void
+test_p1518r2()
+{
+  // P1518R2 - Stop overconstraining allocators in container deduction guides.
+  // This is a C++23 feature but we support it for C++17 too.
+
+  using Deque = std::deque<unsigned, Alloc<unsigned>>;
+  using List = std::list<long, Alloc<long>>;
+  Pool* p = nullptr;
+  Deque d(p);
+  List l(p);
+
+  std::queue q1(d, p);
+  check_type<std::queue<unsigned, Deque>>(q1);
+
+  std::queue q2(l, p);
+  check_type<std::queue<long, List>>(q2);
+
+  std::queue q3(q2, p);
+  check_type<std::queue<long, List>>(q3);
 }

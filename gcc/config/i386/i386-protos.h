@@ -135,10 +135,7 @@ extern void ix86_expand_fp_absneg_operator (enum rtx_code, machine_mode,
 extern void ix86_split_fp_absneg_operator (enum rtx_code, machine_mode,
 					   rtx[]);
 extern void ix86_expand_copysign (rtx []);
-extern void ix86_split_copysign_const (rtx []);
-extern void ix86_split_copysign_var (rtx []);
 extern void ix86_expand_xorsign (rtx []);
-extern void ix86_split_xorsign (rtx []);
 extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[]);
 extern bool ix86_match_ccmode (rtx, machine_mode);
 extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);
@@ -323,12 +320,12 @@ struct ix86_address
   addr_space_t seg;
 };
 
-extern int ix86_decompose_address (rtx, struct ix86_address *);
+extern bool ix86_decompose_address (rtx, struct ix86_address *);
 extern int memory_address_length (rtx, bool);
 extern void x86_output_aligned_bss (FILE *, tree, const char *,
-				    unsigned HOST_WIDE_INT, int);
+				    unsigned HOST_WIDE_INT, unsigned);
 extern void x86_elf_aligned_decl_common (FILE *, tree, const char *,
-					 unsigned HOST_WIDE_INT, int);
+					 unsigned HOST_WIDE_INT, unsigned);
 
 #ifdef RTX_CODE
 extern void ix86_fp_comparison_codes (enum rtx_code code, enum rtx_code *,

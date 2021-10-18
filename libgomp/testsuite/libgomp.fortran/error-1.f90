@@ -73,15 +73,15 @@ contains
    end subroutine
 end
 
-! { dg-output "(\n|\r|\n\r)" }
-! { dg-output "libgomp: error directive encountered: Polonius(\n|\r|\n\r)(\n|\r|\n\r)" }
-! { dg-output "libgomp: error directive encountered: Laertes(\n|\r|\n\r)(\n|\r|\n\r)" }
-! { dg-output "libgomp: error directive encountered: Paris(\n|\r|\n\r)(\n|\r|\n\r)" }
-! { dg-output "libgomp: error directive encountered: To thine own self be true(\n|\r|\n\r)(\n|\r|\n\r)" }
-! { dg-output "libgomp: error directive encountered(\n|\r|\n\r)(\n|\r|\n\r)" }
-! { dg-output "libgomp: error directive encountered: message(\n|\r|\n\r)(\n|\r|\n\r)" }
-! { dg-output "libgomp: error directive encountered: Farewell(\n|\r|\n\r)(\n|\r|\n\r)" }
-! { dg-output "libgomp: error directive encountered: from a distance(\n|\r|\n\r)(\n|\r|\n\r)" }
-! { dg-output "libgomp: error directive encountered: Hello World(\n|\r|\n\r)(\n|\r|\n\r)" }
-! { dg-output "libgomp: error directive encountered: mes(\n|\r|\n\r)(\n|\r|\n\r)" }
-! { dg-output "libgomp: fatal error: error directive encountered: my message   (\n|\r|\n\r)" }
+! { dg-output "(\n|\r|\r\n)" }
+! { dg-output "libgomp: error directive encountered: Polonius(\n|\r|\r\n)(\n|\r|\r\n)" }
+! { dg-output "libgomp: error directive encountered: Laertes(\n|\r|\r\n)(\n|\r|\r\n)" }
+! { dg-output "libgomp: error directive encountered: Paris(\n|\r|\r\n)(\n|\r|\r\n)" }
+! { dg-output "libgomp: error directive encountered: To thine own self be true(\n|\r|\r\n)(\n|\r|\r\n)" }
+! { dg-output "libgomp: error directive encountered(\n|\r|\r\n)(\n|\r|\r\n)" }
+! { dg-output "libgomp: error directive encountered: message(\n|\r|\r\n)(\n|\r|\r\n)" }
+! { dg-output "libgomp: error directive encountered: Farewell(\n|\r|\r\n)(\n|\r|\r\n)" }
+! { dg-output "libgomp: error directive encountered: from a distance(\n|\r|\r\n)(\n|\r|\r\n)" }
+! { dg-output "libgomp: error directive encountered: Hello World(\n|\r|\r\n)(\n|\r|\r\n)" }
+! { dg-output "libgomp: error directive encountered: mes(\n|\r|\r\n)(\n|\r|\r\n)" }
+! { dg-output "libgomp: fatal error: error directive encountered: my message   (\n|\r|\r\n)" }
