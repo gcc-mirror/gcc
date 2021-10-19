@@ -532,6 +532,7 @@ namespace ranges
       private:
 	_Winc _M_value = _Winc();
 
+	friend iota_view;
         friend _Sentinel;
       };
 
@@ -568,6 +569,8 @@ namespace ranges
 	operator-(const _Sentinel& __x, const _Iterator& __y)
 	  requires sized_sentinel_for<_Bound, _Winc>
 	{ return __x._M_distance_from(__y); }
+
+	friend iota_view;
       };
 
       _Winc _M_value = _Winc();
@@ -589,6 +592,24 @@ namespace ranges
 	if constexpr (totally_ordered_with<_Winc, _Bound>)
 	  __glibcxx_assert( bool(__value <= __bound) );
       }
+
+      constexpr
+      iota_view(_Iterator __first, _Iterator __last)
+	requires same_as<_Winc, _Bound>
+	: iota_view(__first._M_value, __last._M_value)
+      { }
+
+      constexpr
+      iota_view(_Iterator __first, unreachable_sentinel_t __last)
+	requires same_as<_Bound, unreachable_sentinel_t>
+	: iota_view(__first._M_value, __last)
+      { }
+
+      constexpr
+      iota_view(_Iterator __first, _Sentinel __last)
+	requires (!same_as<_Winc, _Bound>) && (!same_as<_Bound, unreachable_sentinel_t>)
+	: iota_view(__first._M_value, __last._M_bound)
+      { }
 
       constexpr _Iterator
       begin() const { return _Iterator{_M_value}; }
