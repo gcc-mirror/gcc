@@ -1483,9 +1483,9 @@ namespace views::__adaptor
 	{ return __y.__equal(__x); }
       };
 
+      _Vp _M_base = _Vp();
       [[no_unique_address]] __detail::__box<_Pred> _M_pred;
       [[no_unique_address]] __detail::_CachedPosition<_Vp> _M_cached_begin;
-      _Vp _M_base = _Vp();
 
     public:
       filter_view() requires (default_initializable<_Vp>
@@ -1494,7 +1494,7 @@ namespace views::__adaptor
 
       constexpr
       filter_view(_Vp __base, _Pred __pred)
-	: _M_pred(std::move(__pred)), _M_base(std::move(__base))
+	: _M_base(std::move(__base)), _M_pred(std::move(__pred))
       { }
 
       constexpr _Vp
@@ -1850,8 +1850,8 @@ namespace views::__adaptor
 	  friend _Sentinel<!_Const>;
 	};
 
-      [[no_unique_address]] __detail::__box<_Fp> _M_fun;
       _Vp _M_base = _Vp();
+      [[no_unique_address]] __detail::__box<_Fp> _M_fun;
 
     public:
       transform_view() requires (default_initializable<_Vp>
@@ -1860,7 +1860,7 @@ namespace views::__adaptor
 
       constexpr
       transform_view(_Vp __base, _Fp __fun)
-	: _M_fun(std::move(__fun)), _M_base(std::move(__base))
+	: _M_base(std::move(__base)), _M_fun(std::move(__fun))
       { }
 
       constexpr _Vp
@@ -1987,15 +1987,15 @@ namespace views::__adaptor
 	  friend _Sentinel<!_Const>;
 	};
 
-      range_difference_t<_Vp> _M_count = 0;
       _Vp _M_base = _Vp();
+      range_difference_t<_Vp> _M_count = 0;
 
     public:
       take_view() requires default_initializable<_Vp> = default;
 
       constexpr
       take_view(_Vp base, range_difference_t<_Vp> __count)
-	: _M_count(std::move(__count)), _M_base(std::move(base))
+	: _M_base(std::move(base)), _M_count(std::move(__count))
       { }
 
       constexpr _Vp
@@ -2171,8 +2171,8 @@ namespace views::__adaptor
 	  friend _Sentinel<!_Const>;
 	};
 
-      [[no_unique_address]] __detail::__box<_Pred> _M_pred;
       _Vp _M_base = _Vp();
+      [[no_unique_address]] __detail::__box<_Pred> _M_pred;
 
     public:
       take_while_view() requires (default_initializable<_Vp>
@@ -2181,7 +2181,7 @@ namespace views::__adaptor
 
       constexpr
       take_while_view(_Vp base, _Pred __pred)
-	: _M_pred(std::move(__pred)), _M_base(std::move(base))
+	: _M_base(std::move(base)), _M_pred(std::move(__pred))
       { }
 
       constexpr _Vp
@@ -2252,8 +2252,8 @@ namespace views::__adaptor
     class drop_view : public view_interface<drop_view<_Vp>>
     {
     private:
-      range_difference_t<_Vp> _M_count = 0;
       _Vp _M_base = _Vp();
+      range_difference_t<_Vp> _M_count = 0;
 
       // ranges::next(begin(base), count, end(base)) is O(1) if _Vp satisfies
       // both random_access_range and sized_range. Otherwise, cache its result.
@@ -2269,7 +2269,7 @@ namespace views::__adaptor
 
       constexpr
       drop_view(_Vp __base, range_difference_t<_Vp> __count)
-	: _M_count(__count), _M_base(std::move(__base))
+	: _M_base(std::move(__base)), _M_count(__count)
       { __glibcxx_assert(__count >= 0); }
 
       constexpr _Vp
@@ -2376,9 +2376,9 @@ namespace views::__adaptor
     class drop_while_view : public view_interface<drop_while_view<_Vp, _Pred>>
     {
     private:
+      _Vp _M_base = _Vp();
       [[no_unique_address]] __detail::__box<_Pred> _M_pred;
       [[no_unique_address]] __detail::_CachedPosition<_Vp> _M_cached_begin;
-      _Vp _M_base = _Vp();
 
     public:
       drop_while_view() requires (default_initializable<_Vp>
@@ -2387,7 +2387,7 @@ namespace views::__adaptor
 
       constexpr
       drop_while_view(_Vp __base, _Pred __pred)
-	: _M_pred(std::move(__pred)), _M_base(std::move(__base))
+	: _M_base(std::move(__base)), _M_pred(std::move(__pred))
       { }
 
       constexpr _Vp
@@ -2723,9 +2723,9 @@ namespace views::__adaptor
 	  friend _Sentinel<!_Const>;
 	};
 
+      _Vp _M_base = _Vp();
       [[no_unique_address]]
 	__detail::__non_propagating_cache<remove_cv_t<_InnerRange>> _M_inner;
-      _Vp _M_base = _Vp();
 
     public:
       join_view() requires default_initializable<_Vp> = default;
@@ -3161,12 +3161,12 @@ namespace views::__adaptor
 	  { ranges::iter_swap(__x._M_i_current(), __y._M_i_current()); }
 	};
 
+      _Vp _M_base = _Vp();
       _Pattern _M_pattern = _Pattern();
       // XXX: _M_current is "present only if !forward_range<V>"
       [[no_unique_address]]
 	__detail::__maybe_present_t<!forward_range<_Vp>,
 	  __detail::__non_propagating_cache<iterator_t<_Vp>>> _M_current;
-      _Vp _M_base = _Vp();
 
 
     public:
@@ -3176,7 +3176,7 @@ namespace views::__adaptor
 
       constexpr
       lazy_split_view(_Vp __base, _Pattern __pattern)
-	: _M_pattern(std::move(__pattern)), _M_base(std::move(__base))
+	: _M_base(std::move(__base)), _M_pattern(std::move(__pattern))
       { }
 
       template<input_range _Range>
@@ -3184,8 +3184,8 @@ namespace views::__adaptor
 	  && constructible_from<_Pattern, single_view<range_value_t<_Range>>>
 	constexpr
 	lazy_split_view(_Range&& __r, range_value_t<_Range> __e)
-	  : _M_pattern(views::single(std::move(__e))),
-	    _M_base(views::all(std::forward<_Range>(__r)))
+	  : _M_base(views::all(std::forward<_Range>(__r))),
+	    _M_pattern(views::single(std::move(__e)))
 	{ }
 
       constexpr _Vp
@@ -3283,9 +3283,9 @@ namespace views::__adaptor
   class split_view : public view_interface<split_view<_Vp, _Pattern>>
   {
   private:
+    _Vp _M_base = _Vp();
     _Pattern _M_pattern = _Pattern();
     __detail::__non_propagating_cache<subrange<iterator_t<_Vp>>> _M_cached_begin;
-    _Vp _M_base = _Vp();
 
     struct _Iterator;
     struct _Sentinel;
@@ -3297,8 +3297,7 @@ namespace views::__adaptor
 
     constexpr
     split_view(_Vp __base, _Pattern __pattern)
-      : _M_pattern(std::move(__pattern)),
-	_M_base(std::move(__base))
+      : _M_base(std::move(__base)), _M_pattern(std::move(__pattern))
     { }
 
     template<forward_range _Range>
@@ -3306,8 +3305,8 @@ namespace views::__adaptor
 	&& constructible_from<_Pattern, single_view<range_value_t<_Range>>>
     constexpr
     split_view(_Range&& __r, range_value_t<_Range> __e)
-      : _M_pattern(views::single(std::move(__e))),
-	_M_base(views::all(std::forward<_Range>(__r)))
+      : _M_base(views::all(std::forward<_Range>(__r))),
+	_M_pattern(views::single(std::move(__e)))
     { }
 
     constexpr _Vp
@@ -3630,11 +3629,11 @@ namespace views::__adaptor
 				  && sized_sentinel_for<sentinel_t<_Vp>,
 							iterator_t<_Vp>>);
 
+      _Vp _M_base = _Vp();
       [[no_unique_address]]
 	__detail::__maybe_present_t<_S_needs_cached_begin,
 				    __detail::_CachedPosition<_Vp>>
 				      _M_cached_begin;
-      _Vp _M_base = _Vp();
 
     public:
       reverse_view() requires default_initializable<_Vp> = default;

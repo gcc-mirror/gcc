@@ -61,7 +61,7 @@ namespace ranges
   /// The ranges::view_interface class template
   template<typename _Derived>
     requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
-    class view_interface : public view_base
+    class view_interface
     {
     private:
       constexpr _Derived& _M_derived() noexcept
