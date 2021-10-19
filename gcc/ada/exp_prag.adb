@@ -563,9 +563,9 @@ package body Exp_Prag is
             null;
 
          elsif Nam = Name_Assert then
-            Error_Msg_N ("?A?assertion will fail at run time", N);
+            Error_Msg_N ("?.a?assertion will fail at run time", N);
          else
-            Error_Msg_N ("?A?check will fail at run time", N);
+            Error_Msg_N ("?.a?check will fail at run time", N);
          end if;
       end if;
    end Expand_Pragma_Check;

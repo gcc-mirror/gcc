@@ -4854,17 +4854,17 @@ package body Sem_Util is
                if Pragma_Name (Prag) = Name_Contract_Cases then
                   Error_Msg_NE (Adjust_Message
                     ("contract case does not check the outcome of calling "
-                     & "&?T?"), Expr, Subp_Id);
+                     & "&?.t?"), Expr, Subp_Id);
 
                elsif Pragma_Name (Prag) = Name_Refined_Post then
                   Error_Msg_NE (Adjust_Message
                     ("refined postcondition does not check the outcome of "
-                     & "calling &?T?"), Err_Node, Subp_Id);
+                     & "calling &?.t?"), Err_Node, Subp_Id);
 
                else
                   Error_Msg_NE (Adjust_Message
                     ("postcondition does not check the outcome of calling "
-                     & "&?T?"), Err_Node, Subp_Id);
+                     & "&?.t?"), Err_Node, Subp_Id);
                end if;
             end if;
          end Check_Conjunct;
@@ -5132,20 +5132,20 @@ package body Sem_Util is
       then
          Error_Msg_N
            ("neither postcondition nor contract cases mention function "
-            & "result?T?", Post_Prag);
+            & "result?.t?", Post_Prag);
 
       --  The function has contract cases only and they do not mention
       --  attribute 'Result.
 
       elsif Present (Case_Prag) and then not Seen_In_Case then
-         Error_Msg_N ("contract cases do not mention result?T?", Case_Prag);
+         Error_Msg_N ("contract cases do not mention result?.t?", Case_Prag);
 
       --  The function has postconditions only and they do not mention
       --  attribute 'Result.
 
       elsif Present (Post_Prag) and then not Seen_In_Post then
          Error_Msg_N
-           ("postcondition does not mention function result?T?", Post_Prag);
+           ("postcondition does not mention function result?.t?", Post_Prag);
       end if;
    end Check_Result_And_Post_State;
 

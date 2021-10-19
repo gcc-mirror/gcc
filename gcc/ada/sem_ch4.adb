@@ -3229,7 +3229,7 @@ package body Sem_Ch4 is
         and then Intval (Right_Opnd (Parent (N))) <= Uint_128
       then
          Error_Msg_N
-           ("suspicious MOD value, was '*'* intended'??M?", Parent (N));
+           ("suspicious MOD value, was '*'* intended'??.m?", Parent (N));
       end if;
 
       --  Remaining processing is same as for other arithmetic operators
@@ -4334,7 +4334,7 @@ package body Sem_Ch4 is
                     (if Kind = Conjunct then "conjunct" else "disjunct");
                begin
                   Error_Msg_NE
-                    ("?T?unused variable & in " & Sub, Expr, Loop_Id);
+                    ("?.t?unused variable & in " & Sub, Expr, Loop_Id);
                   Error_Msg_NE
                     ("\consider extracting " & Sub & " from quantified "
                      & "expression", Expr, Loop_Id);
@@ -4354,7 +4354,7 @@ package body Sem_Ch4 is
            and then not (Modify_Tree_For_C and In_Inlined_Body)
          then
             if not Referenced (Loop_Id, Cond) then
-               Error_Msg_N ("?T?unused variable &", Loop_Id);
+               Error_Msg_N ("?.t?unused variable &", Loop_Id);
             else
                Check_Subexpr (Cond, Kind => Full);
             end if;
@@ -4375,7 +4375,7 @@ package body Sem_Ch4 is
         and then Nkind (Cond) = N_If_Expression
         and then No_Else_Or_Trivial_True (Cond)
       then
-         Error_Msg_N ("?T?suspicious expression", N);
+         Error_Msg_N ("?.t?suspicious expression", N);
          Error_Msg_N ("\\did you mean (for all X ='> (if P then Q))", N);
          Error_Msg_N ("\\or (for some X ='> P and then Q) instead'?", N);
       end if;

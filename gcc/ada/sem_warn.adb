@@ -3293,21 +3293,21 @@ package body Sem_Warn is
 
             elsif Warnings_Off_Used_Unmodified (E) then
                Error_Msg_NE
-                 ("?W?could use Unmodified instead of "
+                 ("?.w?could use Unmodified instead of "
                   & "Warnings Off for &", Pragma_Identifier (N), E);
 
             --  Used only in context where Unreferenced would have worked
 
             elsif Warnings_Off_Used_Unreferenced (E) then
                Error_Msg_NE
-                 ("?W?could use Unreferenced instead of "
+                 ("?.w?could use Unreferenced instead of "
                   & "Warnings Off for &", Pragma_Identifier (N), E);
 
             --  Not used at all
 
             else
                Error_Msg_NE
-                 ("?W?pragma Warnings Off for & unused, "
+                 ("?.w?pragma Warnings Off for & unused, "
                   & "could be omitted", N, E);
             end if;
          end;
@@ -3863,7 +3863,7 @@ package body Sem_Warn is
                      --  This is one of the messages
 
                      Error_Msg_FE
-                       ("<I<writable actual for & overlaps with actual for &",
+                       ("<.i<writable actual for & overlaps with actual for &",
                         Act1, Form1);
                   end if;
                end if;
@@ -4220,11 +4220,11 @@ package body Sem_Warn is
                if Nkind (Par) = N_Op_Eq then
                   Error_Msg_N
                     ("suspicious equality test with modified version of "
-                     & "same object?T?", Par);
+                     & "same object?.t?", Par);
                else
                   Error_Msg_N
                     ("suspicious inequality test with modified version of "
-                     & "same object?T?", Par);
+                     & "same object?.t?", Par);
                end if;
             end if;
          end if;

@@ -483,16 +483,16 @@ package body Sem_Ch13 is
                      if Warn_On_Reverse_Bit_Order then
                         Error_Msg_N
                           ("info: multi-byte field specified with "
-                           & "non-standard Bit_Order?V?", CC);
+                           & "non-standard Bit_Order?.v?", CC);
 
                         if Bytes_Big_Endian then
                            Error_Msg_N
                              ("\bytes are not reversed "
-                              & "(component is big-endian)?V?", CC);
+                              & "(component is big-endian)?.v?", CC);
                         else
                            Error_Msg_N
                              ("\bytes are not reversed "
-                              & "(component is little-endian)?V?", CC);
+                              & "(component is little-endian)?.v?", CC);
                         end if;
                      end if;
 
@@ -707,17 +707,18 @@ package body Sem_Ch13 is
                      Error_Msg_Uint_1 := MSS;
                      Error_Msg_N
                        ("info: reverse bit order in machine scalar of "
-                        & "length^?V?", First_Bit (CC));
+                        & "length^?.v?", First_Bit (CC));
                      Error_Msg_Uint_1 := NFB;
                      Error_Msg_Uint_2 := NLB;
 
                      if Bytes_Big_Endian then
                         Error_Msg_NE
-                          ("\big-endian range for component & is ^ .. ^?V?",
+                          ("\big-endian range for component & is ^ .. ^?.v?",
                            First_Bit (CC), Comp);
                      else
                         Error_Msg_NE
-                          ("\little-endian range for component & is ^ .. ^?V?",
+                          ("\little-endian range for component " &
+                           "& is ^ .. ^?.v?",
                            First_Bit (CC), Comp);
                      end if;
                   end if;
@@ -782,16 +783,16 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_N
                        ("info: multi-byte field specified with non-standard "
-                        & "Bit_Order?V?", CLC);
+                        & "Bit_Order?.v?", CLC);
 
                      if Bytes_Big_Endian then
                         Error_Msg_N
                           ("\bytes are not reversed "
-                           & "(component is big-endian)?V?", CLC);
+                           & "(component is big-endian)?.v?", CLC);
                      else
                         Error_Msg_N
                           ("\bytes are not reversed "
-                           & "(component is little-endian)?V?", CLC);
+                           & "(component is little-endian)?.v?", CLC);
                      end if;
 
                   --  Do not allow non-contiguous field
@@ -815,13 +816,13 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_N
                        ("info: Bit_Order clause does not affect byte "
-                        & "ordering?V?", Pos);
+                        & "ordering?.v?", Pos);
                      Error_Msg_Uint_1 :=
                        Intval (Pos) + Intval (FB) /
                        System_Storage_Unit;
                      Error_Msg_N
                        ("info: position normalized to ^ before bit order "
-                        & "interpreted?V?", Pos);
+                        & "interpreted?.v?", Pos);
                   end if;
 
                   --  Here is where we fix up the Component_Bit_Offset value
@@ -6911,7 +6912,7 @@ package body Sem_Ch13 is
                  and then RM_Size (Ctyp) /= Csize
                then
                   Error_Msg_NE
-                    ("component size overrides size clause for&?S?", N, Ctyp);
+                    ("component size overrides size clause for&?.s?", N, Ctyp);
                end if;
 
                Set_Has_Component_Size_Clause (Btype, True);
@@ -8809,7 +8810,7 @@ package body Sem_Ch13 is
                           and then RM_Size (Etype (Comp)) /= Esize (Comp)
                         then
                            Error_Msg_NE
-                             ("?S?component size overrides size clause for&",
+                             ("?.s?component size overrides size clause for&",
                               Component_Name (CC), Etype (Comp));
                         end if;
 
@@ -8918,7 +8919,7 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_Sloc := Sloc (Comp);
                      Error_Msg_NE
-                       ("?C?no component clause given for & declared #",
+                       ("?.c?no component clause given for & declared #",
                         N, Comp);
                   end if;
 
@@ -10125,7 +10126,7 @@ package body Sem_Ch13 is
             then
                Error_Msg_Sloc := Sloc (Predicate_Function (T));
                Error_Msg_Node_2 := T;
-               Error_Msg_N ("info: & inherits predicate from & #?L?", Typ);
+               Error_Msg_N ("info: & inherits predicate from & #?.l?", Typ);
             end if;
          end if;
       end Add_Call;
@@ -11910,7 +11911,7 @@ package body Sem_Ch13 is
          Clause : Node_Id := First (Component_Clauses (N));
          Prev_Bit_Offset : Uint := Uint_0;
          OOO : constant String :=
-           "?component clause out of order with respect to declaration";
+           "?_r?component clause out of order with respect to declaration";
 
       begin
          --  Step Comp through components and Clause through component clauses,
@@ -11936,7 +11937,7 @@ package body Sem_Ch13 is
                  and then not Reverse_Storage_Order (Rectype)
                  and then Component_Bit_Offset (Comp) < Prev_Bit_Offset
                then
-                  Error_Msg_N ("?memory layout out of order", Clause);
+                  Error_Msg_N ("?_r?memory layout out of order", Clause);
                   exit;
                end if;
 
@@ -12176,7 +12177,7 @@ package body Sem_Ch13 is
 
                         if Warn and then Error_Msg_Uint_1 > 0 then
                            Error_Msg_NE
-                             ("?H?^-bit gap before component&",
+                             ("?.h?^-bit gap before component&",
                               Component_Name (Component_Clause (CEnt)),
                               CEnt);
                         end if;
@@ -16700,7 +16701,7 @@ package body Sem_Ch13 is
 
          if Warn_On_Biased_Representation then
             Error_Msg_NE
-              ("?B?" & Msg & " forces biased representation for&", N, E);
+              ("?.b?" & Msg & " forces biased representation for&", N, E);
          end if;
       end if;
    end Set_Biased;

@@ -2854,7 +2854,7 @@ package body Sem_Attr is
          if Bad_Unordered_Enumeration_Reference (N, P_Base_Type) then
             Error_Msg_Sloc := Sloc (P_Base_Type);
             Error_Msg_NE
-              ("comparison on unordered enumeration type& declared#?U?",
+              ("comparison on unordered enumeration type& declared#?.u?",
                N, P_Base_Type);
          end if;
       end Min_Max;

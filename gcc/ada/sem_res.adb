@@ -3712,7 +3712,7 @@ package body Sem_Res is
 
                if Wrong_Order then
                   Error_Msg_N
-                    ("?P?actuals for this call may be in wrong order", N);
+                    ("?.p?actuals for this call may be in wrong order", N);
                end if;
             end;
          end;
@@ -7488,7 +7488,7 @@ package body Sem_Res is
       if Bad_Unordered_Enumeration_Reference (N, Etype (L)) then
          Error_Msg_Sloc := Sloc (Etype (L));
          Error_Msg_NE
-           ("comparison on unordered enumeration type& declared#?U?",
+           ("comparison on unordered enumeration type& declared#?.u?",
             N, Etype (L));
       end if;
 
@@ -10647,7 +10647,7 @@ package body Sem_Res is
       then
          Error_Msg_Sloc := Sloc (Typ);
          Error_Msg_NE
-           ("subrange of unordered enumeration type& declared#?U?", N, Typ);
+           ("subrange of unordered enumeration type& declared#?.u?", N, Typ);
       end if;
 
       Check_Unset_Reference (L);
@@ -11163,7 +11163,7 @@ package body Sem_Res is
                      --  of the First_Node call here.
 
                      Error_Msg_F
-                       ("?A?assertion would fail at run time!",
+                       ("?.a?assertion would fail at run time!",
                         Expression
                           (First (Pragma_Argument_Associations (Orig))));
                   end if;
@@ -11194,7 +11194,7 @@ package body Sem_Res is
                      --  comment above for an explanation of why we do this.
 
                      Error_Msg_F
-                       ("?A?check would fail at run time!",
+                       ("?.a?check would fail at run time!",
                         Expression
                           (Last (Pragma_Argument_Associations (Orig))));
                   end if;
@@ -12185,7 +12185,7 @@ package body Sem_Res is
         and then Expr_Value (R) > Uint_1
       then
          Error_Msg_N
-           ("?M?negative literal of modular type is in fact positive", N);
+           ("?.m?negative literal of modular type is in fact positive", N);
          Error_Msg_Uint_1 := (-Expr_Value (R)) mod Modulus (B_Typ);
          Error_Msg_Uint_2 := Expr_Value (R);
          Error_Msg_N ("\do you really mean^ when writing -^ '?", N);

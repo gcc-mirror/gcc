@@ -3371,7 +3371,7 @@ package body Freeze is
 
                            Error_Msg_Uint_1 := Modv;
                            Error_Msg_N
-                             ("?M?2 '*'*^' may have been intended here",
+                             ("?.m?2 '*'*^' may have been intended here",
                               Modulus);
                         end;
                      end if;
@@ -6412,7 +6412,7 @@ package body Freeze is
                         then
                            Error_Msg_NE
                              ("useless postcondition, & is marked "
-                              & "No_Return?T?", Exp, E);
+                              & "No_Return?.t?", Exp, E);
                         end if;
                      end if;
 
@@ -6793,24 +6793,24 @@ package body Freeze is
                   if Sloc (SC) > Sloc (AC) then
                      Loc := SC;
                      Error_Msg_NE
-                       ("?Z?size is not a multiple of alignment for &",
+                       ("?.z?size is not a multiple of alignment for &",
                         Loc, E);
                      Error_Msg_Sloc := Sloc (AC);
                      Error_Msg_Uint_1 := Alignment (E);
-                     Error_Msg_N ("\?Z?alignment of ^ specified #", Loc);
+                     Error_Msg_N ("\?.z?alignment of ^ specified #", Loc);
 
                   else
                      Loc := AC;
                      Error_Msg_NE
-                       ("?Z?size is not a multiple of alignment for &",
+                       ("?.z?size is not a multiple of alignment for &",
                         Loc, E);
                      Error_Msg_Sloc := Sloc (SC);
                      Error_Msg_Uint_1 := RM_Size (E);
-                     Error_Msg_N ("\?Z?size of ^ specified #", Loc);
+                     Error_Msg_N ("\?.z?size of ^ specified #", Loc);
                   end if;
 
                   Error_Msg_Uint_1 := ((RM_Size (E) / Abits) + 1) * Abits;
-                  Error_Msg_N ("\?Z?Object_Size will be increased to ^", Loc);
+                  Error_Msg_N ("\?.z?Object_Size will be increased to ^", Loc);
                end if;
             end;
          end if;

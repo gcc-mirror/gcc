@@ -847,7 +847,7 @@ package body Checks is
             else
                Error_Msg_N
                  ("\address value may be incompatible with alignment of "
-                  & "object?X?", AC);
+                  & "object?.x?", AC);
             end if;
          end if;
 

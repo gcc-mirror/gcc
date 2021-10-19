@@ -211,12 +211,9 @@ package body Errout is
    --  This is called for warning messages only (so Warning_Msg_Char is set)
    --  and returns a corresponding string to use at the beginning of generated
    --  auxiliary messages, such as "in instantiation at ...".
-   --    'a' .. 'z'   returns "?x?"
-   --    'A' .. 'Z'   returns "?X?"
-   --    '*'          returns "?*?"
-   --    '$'          returns "?$?info: "
-   --    ' '          returns " "
-   --  No other settings are valid
+   --    "?"     returns "??"
+   --    " "     returns "?"
+   --    other   trimmed, prefixed and suffixed with "?".
 
    -----------------------
    -- Change_Error_Text --
@@ -1177,7 +1174,7 @@ package body Errout is
                   Errors.Table (Cur_Msg).Warn := True;
                   Errors.Table (Cur_Msg).Warn_Chr := Warning_Msg_Char;
 
-               elsif Warning_Msg_Char /= ' ' then
+               elsif Warning_Msg_Char /= "  " then
                   Errors.Table (Cur_Msg).Warn_Chr := Warning_Msg_Char;
                end if;
             end if;
@@ -3927,12 +3924,15 @@ package body Errout is
       P : Natural;     -- Current index;
 
       procedure Skip_Msg_Insertion_Warning (C : Character);
-      --  Deal with ? ?? ?x? ?X? ?*? ?$? insertion sequences (and the same
+      --  Skip the ? ?? ?x? ?*? ?$? insertion sequences (and the same
       --  sequences using < instead of ?). The caller has already bumped
       --  the pointer past the initial ? or < and C is set to this initial
       --  character (? or <). This procedure skips past the rest of the
       --  sequence. We do not need to set Msg_Insertion_Char, since this
       --  was already done during the message prescan.
+      --  No validity check is performed as the insertion sequence is
+      --  supposed to be sane. See Prescan_Message.Parse_Message_Class in
+      --  erroutc.adb for the validity checks.
 
       --------------------------------
       -- Skip_Msg_Insertion_Warning --
@@ -3943,17 +3943,16 @@ package body Errout is
          if P <= Text'Last and then Text (P) = C then
             P := P + 1;
 
-         elsif P + 1 <= Text'Last
-           and then (Text (P) in 'a' .. 'z'
-                       or else
-                     Text (P) in 'A' .. 'Z'
-                       or else
-                     Text (P) = '*'
-                       or else
-                     Text (P) = '$')
-           and then Text (P + 1) = C
+         elsif P < Text'Last and then Text (P + 1) = C
+           and then Text (P) in 'a' .. 'z' | '*' | '$'
          then
             P := P + 2;
+
+         elsif P + 1 < Text'Last and then Text (P + 2) = C
+           and then Text (P) in '.' | '_'
+           and then Text (P + 1) in 'a' .. 'z'
+         then
+            P := P + 3;
          end if;
       end Skip_Msg_Insertion_Warning;
 
@@ -4404,19 +4403,15 @@ package body Errout is
 
    function Warn_Insertion return String is
    begin
-      case Warning_Msg_Char is
-         when '?' =>
-            return "??";
-
-         when 'a' .. 'z' | 'A' .. 'Z' | '*' | '$' =>
-            return '?' & Warning_Msg_Char & '?';
-
-         when ' ' =>
-            return "?";
-
-         when others =>
-            raise Program_Error;
-      end case;
+      if Warning_Msg_Char = "? " then
+         return "??";
+      elsif Warning_Msg_Char = "  " then
+         return "?";
+      elsif Warning_Msg_Char (2) = ' ' then
+         return '?' & Warning_Msg_Char (1) & '?';
+      else
+         return '?' & Warning_Msg_Char & '?';
+      end if;
    end Warn_Insertion;
 
 end Errout;

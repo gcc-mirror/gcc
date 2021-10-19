@@ -1327,13 +1327,13 @@ package body Sem_Ch8 is
                  and then Comes_From_Source (Nam)
                then
                   Error_Msg_N
-                    ("renaming function result object is suspicious?R?", Nam);
+                    ("renaming function result object is suspicious?.r?", Nam);
                   Error_Msg_NE
-                    ("\function & will be called only once?R?", Nam,
+                    ("\function & will be called only once?.r?", Nam,
                      Entity (Name (Nam)));
                   Error_Msg_N -- CODEFIX
                     ("\suggest using an initialized constant object "
-                     & "instead?R?", Nam);
+                     & "instead?.r?", Nam);
                end if;
          end case;
       end if;

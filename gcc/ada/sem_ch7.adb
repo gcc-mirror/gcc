@@ -3363,12 +3363,12 @@ package body Sem_Ch7 is
       --  Body required if library package with pragma Elaborate_Body
 
       elsif Has_Pragma_Elaborate_Body (Pack_Id) then
-         Error_Msg_N ("info: & requires body (Elaborate_Body)?Y?", Pack_Id);
+         Error_Msg_N ("info: & requires body (Elaborate_Body)?.y?", Pack_Id);
 
       --  Body required if subprogram
 
       elsif Is_Subprogram_Or_Generic_Subprogram (Pack_Id) then
-         Error_Msg_N ("info: & requires body (subprogram case)?Y?", Pack_Id);
+         Error_Msg_N ("info: & requires body (subprogram case)?.y?", Pack_Id);
 
       --  Body required if generic parent has Elaborate_Body
 
@@ -3381,7 +3381,7 @@ package body Sem_Ch7 is
          begin
             if Has_Pragma_Elaborate_Body (G_P) then
                Error_Msg_N
-                 ("info: & requires body (generic parent Elaborate_Body)?Y?",
+                 ("info: & requires body (generic parent Elaborate_Body)?.y?",
                   Pack_Id);
             end if;
          end;
@@ -3399,7 +3399,7 @@ package body Sem_Ch7 is
                        (Node (First_Elmt (Abstract_States (Pack_Id))))
       then
          Error_Msg_N
-           ("info: & requires body (non-null abstract state aspect)?Y?",
+           ("info: & requires body (non-null abstract state aspect)?.y?",
             Pack_Id);
       end if;
 
@@ -3410,7 +3410,8 @@ package body Sem_Ch7 is
          if Requires_Completion_In_Body (E, Pack_Id) then
             Error_Msg_Node_2 := E;
             Error_Msg_NE
-              ("info: & requires body (& requires completion)?Y?", E, Pack_Id);
+              ("info: & requires body (& requires completion)?.y?", E,
+               Pack_Id);
          end if;
 
          Next_Entity (E);

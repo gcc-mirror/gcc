@@ -816,7 +816,7 @@ package body Util is
             C : constant Entity_Id := Current_Entity (N);
          begin
             if Present (C) and then Sloc (C) = Standard_Location then
-               Error_Msg_N ("redefinition of entity& in Standard?K?", N);
+               Error_Msg_N ("redefinition of entity& in Standard?.k?", N);
             end if;
          end;
       end if;

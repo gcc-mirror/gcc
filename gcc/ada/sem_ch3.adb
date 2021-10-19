@@ -19890,7 +19890,7 @@ package body Sem_Ch3 is
         and then Intval (Right_Opnd (Mod_Expr)) <= Uint_128
       then
          Error_Msg_N
-           ("suspicious MOD value, was '*'* intended'??M?", Mod_Expr);
+           ("suspicious MOD value, was '*'* intended'??.m?", Mod_Expr);
       end if;
 
       --  Proceed with analysis of mod expression

@@ -60,13 +60,13 @@ package Errout is
    --  Exception raised if Raise_Exception_On_Error is true
 
    Warning_Doc_Switch : Boolean renames Err_Vars.Warning_Doc_Switch;
-   --  If this is set True, then the ??/?*?/?$?/?x?/?X? insertion sequences in
-   --  error messages generate appropriate tags for the output error messages.
-   --  If this switch is False, then these sequences are still recognized (for
-   --  the purposes of implementing the pattern matching in pragmas Warnings
-   --  (Off,..) and Warning_As_Pragma(...) but do not result in adding the
-   --  error message tag. The -gnatw.d switch sets this flag True, -gnatw.D
-   --  sets this flag False.
+   --  If this is set True, then the ??/?*?/?$?/?x?/?.x?/?_x? insertion
+   --  sequences in error messages generate appropriate tags for the output
+   --  error messages. If this switch is False, then these sequences are still
+   --  recognized (for the purposes of implementing the pattern matching in
+   --  pragmas Warnings (Off,..) and Warning_As_Pragma(...) but do not result
+   --  in adding the error message tag. The -gnatw.d switch sets this flag
+   --  True, -gnatw.D sets this flag False.
 
    Current_Node : Node_Id := Empty;
    --  Used by Error_Msg as a default Node_Id.
@@ -302,28 +302,23 @@ package Errout is
    --      clear that the continuation is part of a warning message, but it is
    --      not necessary to go through any computational effort to include it.
    --
-   --      Note: this usage is obsolete, use ?? ?*? ?$? ?x? ?X? to specify
-   --      the string to be added when Warn_Doc_Switch is set to True. If this
-   --      switch is True, then for simple ? messages it has no effect. This
-   --      simple form is to ease transition and may be removed later except
-   --      for GNATprove-specific messages (info and warnings) which are not
-   --      subject to the same GNAT warning switches.
+   --      Note: this usage is obsolete, use ?? ?*? ?$? ?x? ?.x? ?_x? to
+   --      specify the string to be added when Warn_Doc_Switch is set to True.
+   --      If this switch is True, then for simple ? messages it has no effect.
+   --      This simple form is to ease transition and may be removed later
+   --      except for GNATprove-specific messages (info and warnings) which are
+   --      not subject to the same GNAT warning switches.
 
    --    Insertion character ?? (Two question marks: default warning)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
    --      "[enabled by default]" at the end of the warning message. For
    --      continuations, use this in each continuation message.
 
-   --    Insertion character ?x? (warning with switch)
+   --    Insertion character ?x? ?.x? ?_x? (warning with switch)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
-   --      "[-gnatwx]" at the end of the warning message. x is a lower case
-   --      letter. For continuations, use this on each continuation message.
-
-   --    Insertion character ?X? (warning with dot switch)
-   --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
-   --      "[-gnatw.x]" at the end of the warning message. X is an upper case
-   --      letter corresponding to the lower case letter x in the message.
-   --      For continuations, use this on each continuation message.
+   --      "[-gnatwx]", "[-gnatw.x]", or "[-gnatw_x]", at the end of the
+   --      warning message. x must be lower case. For continuations, use this
+   --      on each continuation message.
 
    --    Insertion character ?*? (restriction warning)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
@@ -339,8 +334,8 @@ package Errout is
    --    Insertion character < (Less Than: conditional warning message)
    --      The character < appearing anywhere in a message is used for a
    --      conditional error message. If Error_Msg_Warn is True, then the
-   --      effect is the same as ? described above, and in particular << <X<
-   --      <x< <$< <*< have the effect of ?? ?X? ?x? ?$? ?*? respectively. If
+   --      effect is the same as ? described above, and in particular << <x<
+   --      <$< <*< have the effect of ?? ?x? ?$? ?*? respectively. If
    --      Error_Msg_Warn is False, then the < << or <X< sequence is ignored
    --      and the message is treated as a error rather than a warning.
 
