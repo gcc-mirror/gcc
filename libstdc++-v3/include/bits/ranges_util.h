@@ -184,11 +184,16 @@ namespace ranges
 
   namespace __detail
   {
-    template<class _From, class _To>
+    template<typename _From, typename _To>
+      concept __uses_nonqualification_pointer_conversion
+	= is_pointer_v<_From> && is_pointer_v<_To>
+	  && !convertible_to<remove_pointer_t<_From>(*)[],
+			     remove_pointer_t<_To>(*)[]>;
+
+    template<typename _From, typename _To>
       concept __convertible_to_non_slicing = convertible_to<_From, _To>
-	&& !(is_pointer_v<decay_t<_From>> && is_pointer_v<decay_t<_To>>
-	    && __different_from<remove_pointer_t<decay_t<_From>>,
-				remove_pointer_t<decay_t<_To>>>);
+	&& !__uses_nonqualification_pointer_conversion<decay_t<_From>,
+						       decay_t<_To>>;
 
     template<typename _Tp>
       concept __pair_like
