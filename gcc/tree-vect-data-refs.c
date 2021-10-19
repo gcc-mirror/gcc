@@ -1396,7 +1396,9 @@ vector_alignment_reachable_p (dr_vec_info *dr_info)
 
 static void
 vect_get_data_access_cost (vec_info *vinfo, dr_vec_info *dr_info,
-                           unsigned int *inside_cost,
+			   dr_alignment_support alignment_support_scheme,
+			   int misalignment,
+			   unsigned int *inside_cost,
                            unsigned int *outside_cost,
 			   stmt_vector_for_cost *body_cost_vec,
 			   stmt_vector_for_cost *prologue_cost_vec)
@@ -1411,10 +1413,12 @@ vect_get_data_access_cost (vec_info *vinfo, dr_vec_info *dr_info,
     ncopies = vect_get_num_copies (loop_vinfo, STMT_VINFO_VECTYPE (stmt_info));
 
   if (DR_IS_READ (dr_info->dr))
-    vect_get_load_cost (vinfo, stmt_info, ncopies, true, inside_cost,
+    vect_get_load_cost (vinfo, stmt_info, ncopies, alignment_support_scheme,
+			misalignment, true, inside_cost,
 			outside_cost, prologue_cost_vec, body_cost_vec, false);
   else
-    vect_get_store_cost (vinfo,stmt_info, ncopies, inside_cost, body_cost_vec);
+    vect_get_store_cost (vinfo,stmt_info, ncopies, alignment_support_scheme,
+			 misalignment, inside_cost, body_cost_vec);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -1545,7 +1549,15 @@ vect_get_peeling_costs_all_drs (loop_vec_info loop_vinfo,
 			     vect_dr_misalign_for_aligned_access (dr0_info));
       else
 	vect_update_misalignment_for_peel (dr_info, dr0_info, npeel);
-      vect_get_data_access_cost (loop_vinfo, dr_info, inside_cost, outside_cost,
+      /* ???  We should be able to avoid both the adjustment before and the
+	 call to vect_supportable_dr_alignment below.  */
+      tree vectype = STMT_VINFO_VECTYPE (dr_info->stmt);
+      int misalignment = dr_misalignment (dr_info, vectype);
+      dr_alignment_support alignment_support_scheme
+	= vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype);
+      vect_get_data_access_cost (loop_vinfo, dr_info,
+				 alignment_support_scheme, misalignment,
+				 inside_cost, outside_cost,
 				 body_cost_vec, prologue_cost_vec);
       SET_DR_MISALIGNMENT (dr_info, save_misalignment);
     }

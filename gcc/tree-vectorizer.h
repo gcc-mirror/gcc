@@ -1957,11 +1957,13 @@ extern bool vect_nop_conversion_p (stmt_vec_info);
 extern opt_result vect_analyze_stmt (vec_info *, stmt_vec_info, bool *,
 				     slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
-extern void vect_get_load_cost (vec_info *, stmt_vec_info, int, bool,
+extern void vect_get_load_cost (vec_info *, stmt_vec_info, int,
+				dr_alignment_support, int, bool,
 				unsigned int *, unsigned int *,
 				stmt_vector_for_cost *,
 				stmt_vector_for_cost *, bool);
 extern void vect_get_store_cost (vec_info *, stmt_vec_info, int,
+				 dr_alignment_support, int,
 				 unsigned int *, stmt_vector_for_cost *);
 extern bool vect_supportable_shift (vec_info *, enum tree_code, tree);
 extern tree vect_gen_perm_mask_any (tree, const vec_perm_indices &);

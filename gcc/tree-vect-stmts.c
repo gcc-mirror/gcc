@@ -909,6 +909,8 @@ cfun_returns (tree decl)
 static void
 vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 		       vect_memory_access_type memory_access_type,
+		       dr_alignment_support alignment_support_scheme,
+		       int misalignment,
 		       vec_load_store_type vls_type, slp_tree slp_node,
 		       stmt_vector_for_cost *cost_vec)
 {
@@ -969,7 +971,8 @@ vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 				       scalar_store, stmt_info, 0, vect_body);
     }
   else
-    vect_get_store_cost (vinfo, stmt_info, ncopies, &inside_cost, cost_vec);
+    vect_get_store_cost (vinfo, stmt_info, ncopies, alignment_support_scheme,
+			 misalignment, &inside_cost, cost_vec);
 
   if (memory_access_type == VMAT_ELEMENTWISE
       || memory_access_type == VMAT_STRIDED_SLP)
@@ -1021,15 +1024,12 @@ vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 
 /* Calculate cost of DR's memory access.  */
 void
-vect_get_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
+vect_get_store_cost (vec_info *, stmt_vec_info stmt_info, int ncopies,
+		     dr_alignment_support alignment_support_scheme,
+		     int misalignment,
 		     unsigned int *inside_cost,
 		     stmt_vector_for_cost *body_cost_vec)
 {
-  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  dr_alignment_support alignment_support_scheme
-    = vect_supportable_dr_alignment (vinfo, dr_info, vectype);
-
   switch (alignment_support_scheme)
     {
     case dr_aligned:
@@ -1049,8 +1049,7 @@ vect_get_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
         /* Here, we assign an additional cost for the unaligned store.  */
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies,
 					  unaligned_store, stmt_info,
-					  dr_misalignment (dr_info, vectype),
-					  vect_body);
+					  misalignment, vect_body);
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
                            "vect_model_store_cost: unaligned supported by "
@@ -1085,6 +1084,8 @@ static void
 vect_model_load_cost (vec_info *vinfo,
 		      stmt_vec_info stmt_info, unsigned ncopies, poly_uint64 vf,
 		      vect_memory_access_type memory_access_type,
+		      dr_alignment_support alignment_support_scheme,
+		      int misalignment,
 		      gather_scatter_info *gs_info,
 		      slp_tree slp_node,
 		      stmt_vector_for_cost *cost_vec)
@@ -1144,7 +1145,8 @@ vect_model_load_cost (vec_info *vinfo,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "vect_model_load_cost: %d unused vectors.\n",
 			     gaps);
-	  vect_get_load_cost (vinfo, stmt_info, ncopies * gaps, false,
+	  vect_get_load_cost (vinfo, stmt_info, ncopies * gaps,
+			      alignment_support_scheme, misalignment, false,
 			      &inside_cost, &prologue_cost,
 			      cost_vec, cost_vec, true);
 	}
@@ -1190,7 +1192,8 @@ vect_model_load_cost (vec_info *vinfo,
 				       scalar_load, stmt_info, 0, vect_body);
     }
   else
-    vect_get_load_cost (vinfo, stmt_info, ncopies, first_stmt_p,
+    vect_get_load_cost (vinfo, stmt_info, ncopies,
+			alignment_support_scheme, misalignment, first_stmt_p,
 			&inside_cost, &prologue_cost, 
 			cost_vec, cost_vec, true);
   if (memory_access_type == VMAT_ELEMENTWISE
@@ -1209,18 +1212,15 @@ vect_model_load_cost (vec_info *vinfo,
 
 /* Calculate cost of DR's memory access.  */
 void
-vect_get_load_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
+vect_get_load_cost (vec_info *, stmt_vec_info stmt_info, int ncopies,
+		    dr_alignment_support alignment_support_scheme,
+		    int misalignment,
 		    bool add_realign_cost, unsigned int *inside_cost,
 		    unsigned int *prologue_cost,
 		    stmt_vector_for_cost *prologue_cost_vec,
 		    stmt_vector_for_cost *body_cost_vec,
 		    bool record_prologue_costs)
 {
-  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  dr_alignment_support alignment_support_scheme
-    = vect_supportable_dr_alignment (vinfo, dr_info, vectype);
-
   switch (alignment_support_scheme)
     {
     case dr_aligned:
@@ -1239,8 +1239,7 @@ vect_get_load_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
         /* Here, we assign an additional cost for the unaligned load.  */
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies,
 					  unaligned_load, stmt_info,
-					  dr_misalignment (dr_info, vectype),
-					  vect_body);
+					  misalignment, vect_body);
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
@@ -7443,7 +7442,8 @@ vectorizable_store (vec_info *vinfo,
 
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
       vect_model_store_cost (vinfo, stmt_info, ncopies,
-			     memory_access_type, vls_type, slp_node, cost_vec);
+			     memory_access_type, alignment_support_scheme,
+			     misalignment, vls_type, slp_node, cost_vec);
       return true;
     }
   gcc_assert (memory_access_type == STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
@@ -8779,6 +8779,7 @@ vectorizable_load (vec_info *vinfo,
 
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
       vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
+			    alignment_support_scheme, misalignment,
 			    &gs_info, slp_node, cost_vec);
       return true;
     }
