@@ -1,3 +1,31 @@
+2021-10-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/102761
+	* gcc.target/i386/pr102761.c: New test.
+
+2021-10-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2021-10-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/100316
+	* gcc.c-torture/compile/pr100316.c: New.
+
+2021-10-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2021-07-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/100208
+	* gcc.target/gcn/sram-ecc-1.c: New test.
+	* gcc.target/gcn/sram-ecc-2.c: New test.
+	* gcc.target/gcn/sram-ecc-3.c: New test.
+	* gcc.target/gcn/sram-ecc-4.c: New test.
+	* gcc.target/gcn/sram-ecc-5.c: New test.
+	* gcc.target/gcn/sram-ecc-6.c: New test.
+	* gcc.target/gcn/sram-ecc-7.c: New test.
+	* gcc.target/gcn/sram-ecc-8.c: New test.
+
 2021-10-17  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

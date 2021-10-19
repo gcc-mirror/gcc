@@ -1,3 +1,157 @@
+2021-10-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/102761
+	* config/i386/i386.c (ix86_print_operand_address):
+	Error out for non-address_operand asm operands.
+
+2021-10-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2021-10-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/100316
+	* builtins.c (maybe_emit_call_builtin___clear_cache): Allow
+	CONST_INT for BEGIN and END, and use gcc_assert rather than
+	error.
+
+2021-10-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2021-10-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (S_FIJI): Set unconditionally.
+	(S_900): Likewise.
+	(S_906): Likewise.
+	* config/gcn/gcn.c: Hard code SRAM ECC settings for old architectures.
+	* config/gcn/mkoffload.c (ELFABIVERSION_AMDGPU_HSA): Rename to ...
+	(ELFABIVERSION_AMDGPU_HSA_V3): ... this.
+	(ELFABIVERSION_AMDGPU_HSA_V4): New.
+	(SET_SRAM_ECC_UNSUPPORTED): New.
+	(copy_early_debug_info): Create elf flags to match the other objects.
+	(main): Just let the attribute flags pass through.
+
+2021-10-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2021-10-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (gather<mode>_insn_2offsets<exec>): Apply
+	HAVE_GCN_ASM_GLOBAL_LOAD_FIXED.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+
+2021-10-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2021-10-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (SRAMOPT): Include the whole option string.
+	Adjust for new -msram-ecc=any behaviour.
+	(ASM_SPEC): Adjust -mxnack and -msram-ecc usage.
+	* config/gcn/gcn.c (output_file_start): Implement -msram-ecc=any.
+	* config/gcn/mkoffload.c (EF_AMDGPU_XNACK): Rename to ...
+	(EF_AMDGPU_XNACK_V3): ... this.
+	(EF_AMDGPU_SRAM_ECC): Rename to ...
+	(EF_AMDGPU_SRAM_ECC_V3): ... this.
+	(EF_AMDGPU_FEATURE_XNACK_V4): New.
+	(EF_AMDGPU_FEATURE_XNACK_UNSUPPORTED_V4): New.
+	(EF_AMDGPU_FEATURE_XNACK_ANY_V4): New.
+	(EF_AMDGPU_FEATURE_XNACK_OFF_V4): New.
+	(EF_AMDGPU_FEATURE_XNACK_ON_V4): New.
+	(EF_AMDGPU_FEATURE_SRAMECC_V4): New.
+	(EF_AMDGPU_FEATURE_SRAMECC_UNSUPPORTED_V4): New.
+	(EF_AMDGPU_FEATURE_SRAMECC_ANY_V4): New.
+	(EF_AMDGPU_FEATURE_SRAMECC_OFF_V4): New.
+	(EF_AMDGPU_FEATURE_SRAMECC_ON_V4): New.
+	(SET_XNACK_ON): New.
+	(SET_XNACK_OFF): New.
+	(TEST_XNACK): New.
+	(SET_SRAM_ECC_ON): New.
+	(SET_SRAM_ECC_ANY): New.
+	(SET_SRAM_ECC_OFF): New.
+	(TEST_SRAM_ECC_ANY): New.
+	(TEST_SRAM_ECC_ON): New.
+	(main): Implement HSACOv4 and -msram-ecc=any.
+
+2021-10-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2021-10-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.in: Regenerate.
+	* config/gcn/gcn-hsa.h (X_FIJI): New macro.
+	(X_900): New macro.
+	(X_906): New macro.
+	(X_908): New macro.
+	(A_FIJI): Rename to ...
+	(S_FIJI): ... this.
+	(A_900): Rename to ...
+	(S_900): ... this.
+	(A_906): Rename to ...
+	(S_906): ... this.
+	(A_908): Rename to ...
+	(S_908): ... this.
+	(SRAMOPT): New macro.
+	(ASM_SPEC): Adjust xnack option usage.
+	* config/gcn/gcn.c (output_file_start): Adjust amdgcn_target usage.
+	* configure: Regenerate.
+	* configure.ac: Detect LLVM assembler dialect.
+
+2021-10-18  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2021-06-29  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.md (mulsi3): Make s_mulk_i32 variant clobber SCC.
+
+2021-10-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/100208
+	* config.in: Regenerate.
+	* config/gcn/gcn-hsa.h (A_FIJI): New define.
+	(A_900): New define.
+	(A_906): New define.
+	(A_908): New define.
+	(ASM_SPEC): Use A_FIJI, A_900, A_906 and A_908.
+	* config/gcn/gcn.c (output_file_start): Adjust attributes according
+	to the assembler capabilities.
+	* config/gcn/mkoffload.c (main): Likewise.
+	* configure: Regenerate.
+	* configure.ac: Add tests for LLVM assembler attribute features.
+
+2021-10-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2021-07-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/100208
+	* config/gcn/gcn-hsa.h (DRIVER_SELF_SPECS): New.
+	(ASM_SPEC): Set -mattr for xnack and sram-ecc.
+	* config/gcn/gcn-opts.h (enum sram_ecc_type): New.
+	* config/gcn/gcn-valu.md: Add a warning comment.
+	* config/gcn/gcn.c (gcn_option_override): Add "sorry" for -mxnack.
+	(output_file_start): Add xnack and sram-ecc state to ".amdgcn_target".
+	* config/gcn/gcn.md: Add a warning comment.
+	* config/gcn/gcn.opt: Add -mxnack and -msram-ecc.
+	* config/gcn/mkoffload.c (EF_AMDGPU_MACH_AMDGCN_GFX908): Remove
+	SRAM-ECC flag.
+	(EF_AMDGPU_XNACK): New.
+	(EF_AMDGPU_SRAM_ECC): New.
+	(elf_flags): New.
+	(copy_early_debug_info): Use elf_flags.
+	(main): Handle -mxnack and -msram-ecc options.
+	* doc/invoke.texi: Document -mxnack and -msram-ecc.
+
+2021-10-18  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	Backported from master:
+	2021-06-18  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* config.in: Regenerate.
+	* config/gcn/gcn.c (print_operand_address): Fix for global_load assembler
+	functions.
+	* configure: Regenerate.
+	* configure.ac: Fix for global_load assembler functions.
+
 2021-10-15  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md: Consistently use "rG" constraint for copy
