@@ -1,3 +1,11 @@
+2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/affinity.c (gomp_affinity_init_numa_domains): Add
+	&& gomp_places_list_len < count after nfirst <= nlast loop condition.
+
 2021-10-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
