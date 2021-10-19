@@ -17633,6 +17633,7 @@ aarch64_process_one_target_attr (char *arg_str)
 
   char *str_to_check = (char *) alloca (len + 1);
   strcpy (str_to_check, arg_str);
+  str_to_check = strip_whitespaces (str_to_check, &len);
 
   /* We have something like __attribute__ ((target ("+fp+nosimd"))).
      It is easier to detect and handle it explicitly here rather than going
