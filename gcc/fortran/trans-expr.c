@@ -6640,7 +6640,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		    {
 		      tmp = parmse.expr;
 		      if (TREE_CODE (tmp) == ADDR_EXPR)
-			tmp = build_fold_indirect_ref_loc (input_location, tmp);
+			tmp = TREE_OPERAND (tmp, 0);
 		      parmse.expr = gfc_conv_scalar_to_descriptor (&parmse, tmp,
 								   fsym->attr);
 		      parmse.expr = gfc_build_addr_expr (NULL_TREE,
