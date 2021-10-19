@@ -2490,7 +2490,7 @@ predicate_rhs_code (gassign *stmt, tree mask, tree cond,
 */
 
 static void
-predicate_statements (loop_p loop)
+predicate_statements (loop_p loop, edge pe)
 {
   unsigned int i, orig_loop_num_nodes = loop->num_nodes;
   auto_vec<int, 1> vect_sizes;
@@ -2596,8 +2596,7 @@ predicate_statements (loop_p loop)
 		  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt2))
 		      && expr_invariant_in_loop_p (loop,
 						   gimple_assign_rhs1 (stmt2)))
-		    gsi_insert_on_edge_immediate (loop_preheader_edge (loop),
-						  stmt2);
+		    gsi_insert_on_edge_immediate (pe, stmt2);
 		  else if (first)
 		    {
 		      gsi_insert_before (&gsi, stmt2, GSI_NEW_STMT);
@@ -2679,7 +2678,7 @@ remove_conditions_and_labels (loop_p loop)
    blocks.  Replace PHI nodes with conditional modify expressions.  */
 
 static void
-combine_blocks (class loop *loop)
+combine_blocks (class loop *loop, edge pe)
 {
   basic_block bb, exit_bb, merge_target_bb;
   unsigned int orig_loop_num_nodes = loop->num_nodes;
@@ -2692,7 +2691,7 @@ combine_blocks (class loop *loop)
   predicate_all_scalar_phis (loop);
 
   if (need_to_predicate || need_to_rewrite_undefined)
-    predicate_statements (loop);
+    predicate_statements (loop, pe);
 
   /* Merge basic blocks.  */
   exit_bb = NULL;
@@ -3187,6 +3186,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   bool aggressive_if_conv;
   class loop *rloop;
   bitmap exit_bbs;
+  edge pe;
 
  again:
   rloop = NULL;
@@ -3217,6 +3217,9 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
       && ((!flag_tree_loop_vectorize && !loop->force_vectorize)
 	  || loop->dont_vectorize))
     goto cleanup;
+
+  /* The edge to insert invariant stmts on.  */
+  pe = loop_preheader_edge (loop);
 
   /* Since we have no cost model, always version loops unless the user
      specified -ftree-loop-if-convert or unless versioning is required.
@@ -3255,12 +3258,18 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
 	  gcc_assert (nloop->inner && nloop->inner->next == NULL);
 	  rloop = nloop->inner;
 	}
+      else
+	/* If we versioned loop then make sure to insert invariant
+	   stmts before the .LOOP_VECTORIZED check since the vectorizer
+	   will re-use that for things like runtime alias versioning
+	   whose condition can end up using those invariants.  */
+	pe = single_pred_edge (gimple_bb (preds->last ()));
     }
 
   /* Now all statements are if-convertible.  Combine all the basic
      blocks into one huge basic block doing the if-conversion
      on-the-fly.  */
-  combine_blocks (loop);
+  combine_blocks (loop, pe);
 
   /* Perform local CSE, this esp. helps the vectorizer analysis if loads
      and stores are involved.  CSE only the loop body, not the entry
