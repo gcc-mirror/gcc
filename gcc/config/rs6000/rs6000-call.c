@@ -9959,7 +9959,7 @@ altivec_expand_lxvr_builtin (enum insn_code icode, tree exp, rtx target, bool bl
 
   if (sign_extend)
     {
-      rtx discratch = gen_reg_rtx (DImode);
+      rtx discratch = gen_reg_rtx (V2DImode);
       rtx tiscratch = gen_reg_rtx (TImode);
 
       /* Emit the lxvr*x insn.  */
@@ -9968,20 +9968,31 @@ altivec_expand_lxvr_builtin (enum insn_code icode, tree exp, rtx target, bool bl
 	return 0;
       emit_insn (pat);
 
-      /* Emit a sign extension from QI,HI,WI to double (DI).  */
-      rtx scratch = gen_lowpart (smode, tiscratch);
+      /* Emit a sign extension from V16QI,V8HI,V4SI to V2DI.  */
+      rtx temp1, temp2;
       if (icode == CODE_FOR_vsx_lxvrbx)
-	emit_insn (gen_extendqidi2 (discratch, scratch));
+	{
+	  temp1  = simplify_gen_subreg (V16QImode, tiscratch, TImode, 0);
+	  emit_insn (gen_vsx_sign_extend_qi_v2di (discratch, temp1));
+	}
       else if (icode == CODE_FOR_vsx_lxvrhx)
-	emit_insn (gen_extendhidi2 (discratch, scratch));
+	{
+	  temp1  = simplify_gen_subreg (V8HImode, tiscratch, TImode, 0);
+	  emit_insn (gen_vsx_sign_extend_hi_v2di (discratch, temp1));
+	}
       else if (icode == CODE_FOR_vsx_lxvrwx)
-	emit_insn (gen_extendsidi2 (discratch, scratch));
-      /*  Assign discratch directly if scratch is already DI.  */
-      if (icode == CODE_FOR_vsx_lxvrdx)
-	discratch = scratch;
+	{
+	  temp1  = simplify_gen_subreg (V4SImode, tiscratch, TImode, 0);
+	  emit_insn (gen_vsx_sign_extend_si_v2di (discratch, temp1));
+	}
+      else if (icode == CODE_FOR_vsx_lxvrdx)
+	discratch = simplify_gen_subreg (V2DImode, tiscratch, TImode, 0);
+      else
+	gcc_unreachable ();
 
-      /* Emit the sign extension from DI (double) to TI (quad).  */
-      emit_insn (gen_extendditi2 (target, discratch));
+      /* Emit the sign extension from V2DI (double) to TI (quad).  */
+      temp2 = simplify_gen_subreg (TImode, discratch, V2DImode, 0);
+      emit_insn (gen_extendditi2_vector (target, temp2));
 
       return target;
     }
