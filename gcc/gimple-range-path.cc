@@ -698,7 +698,15 @@ path_range_query::compute_phi_relations (basic_block bb, basic_block prev)
 	    tree arg = gimple_phi_arg_def (phi, i);
 
 	    if (gimple_range_ssa_p (arg))
-	      m_oracle->register_relation (entry, EQ_EXPR, arg, result);
+	      {
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  fprintf (dump_file, "  from bb%d:", bb->index);
+
+		// Throw away any previous relation.
+		get_path_oracle ()->killing_def (result);
+
+		m_oracle->register_relation (entry, EQ_EXPR, arg, result);
+	      }
 
 	    break;
 	  }
