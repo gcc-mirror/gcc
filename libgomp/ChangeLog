@@ -1,3 +1,14 @@
+2021-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/affinity.c (gomp_affinity_init_level_1): For level 1
+	after creating count places clean up and return immediately.
+	* testsuite/libgomp.c/places-6.c: New test.
+	* testsuite/libgomp.c/places-7.c: New test.
+	* testsuite/libgomp.c/places-8.c: New test.
+
 2021-09-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
