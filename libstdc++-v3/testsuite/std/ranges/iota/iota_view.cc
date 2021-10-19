@@ -18,6 +18,7 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
 
+#include <algorithm>
 #include <ranges>
 #include <testsuite_hooks.h>
 
@@ -90,6 +91,25 @@ test05()
   VERIFY( r.begin() - r.end() == -3 );
 }
 
+void
+test06()
+{
+  // Verify LWG 3523 changes.
+  auto v1 = std::views::iota(0, 5);
+  auto w1 = decltype(v1)(v1.begin(), v1.end());
+  VERIFY( std::ranges::equal(v1, w1) );
+
+  auto v2 = std::views::iota(0);
+  auto w2 = decltype(v2)(v2.begin(), v2.end());
+  static_assert(std::same_as<decltype(w2.end()), std::unreachable_sentinel_t>);
+  VERIFY( *w2.begin() == 0 );
+
+  auto v3 = std::views::iota(0, 5l);
+  auto w3 = decltype(v3)(v3.begin(), v3.end());
+  static_assert(!std::ranges::common_range<decltype(w3)>);
+  VERIFY( std::ranges::equal(v3, w3) );
+}
+
 int
 main()
 {
@@ -98,4 +118,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }
