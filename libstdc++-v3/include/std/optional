@@ -1,6 +1,7 @@
 // <optional> -*- C++ -*-
 
 // Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright The GNU Toolchain Authors.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,6 +45,10 @@
 #include <bits/utility.h> // in_place_t
 #if __cplusplus > 201703L
 # include <compare>
+# include <bits/invoke.h> // std::__invoke
+#endif
+#if __cplusplus > 202002L
+# include <concepts>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -80,6 +85,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Tag to disengage optional objects.
   inline constexpr nullopt_t nullopt { nullopt_t::_Construct::_Token };
+
+  template<typename _Fn> struct _Optional_func { _Fn& _M_f; };
 
   /**
    *  @brief Exception class thrown when a disengaged optional object is
@@ -211,6 +218,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    : _M_value(__il, std::forward<_Args>(__args)...)
 	    { }
 
+#if __cplusplus >= 202002L
+	  template<typename _Fn, typename _Arg>
+	    constexpr
+	    _Storage(_Optional_func<_Fn> __f, _Arg&& __arg)
+	    : _M_value(std::__invoke(std::forward<_Fn>(__f._M_f),
+				     std::forward<_Arg>(__arg)))
+	    { }
+#endif
+
 	  _Empty_byte _M_empty;
 	  _Up _M_value;
 	};
@@ -231,6 +247,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _Storage(std::initializer_list<_Vp> __il, _Args&&... __args)
 	    : _M_value(__il, std::forward<_Args>(__args)...)
 	    { }
+
+#if __cplusplus >= 202002L
+	  template<typename _Fn, typename _Arg>
+	    constexpr
+	    _Storage(_Optional_func<_Fn> __f, _Arg&& __arg)
+	    : _M_value(std::__invoke(std::forward<_Fn>(__f._M_f),
+				     std::forward<_Arg>(__arg)))
+	    { }
+#endif
 
 	  // User-provided destructor is needed when _Up has non-trivial dtor.
 	  _GLIBCXX20_CONSTEXPR ~_Storage() { }
@@ -259,6 +284,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_engaged = false;
 	_M_payload._M_value.~_Stored_type();
       }
+
+#if __cplusplus >= 202002L
+      template<typename _Fn, typename _Up>
+	constexpr void
+	_M_apply(_Optional_func<_Fn> __f, _Up&& __x)
+	{
+	  std::construct_at(std::__addressof(this->_M_payload),
+			    __f, std::forward<_Up>(__x));
+	  _M_engaged = true;
+	}
+#endif
 
       // The _M_get() operations have _M_engaged as a precondition.
       // They exist to access the contained value with the appropriate
@@ -637,6 +673,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
   class optional;
 
+  template<typename _Tp>
+    inline constexpr bool __is_optional_v = false;
+  template<typename _Tp>
+    inline constexpr bool __is_optional_v<optional<_Tp>> = true;
+
   template<typename _Tp, typename _Up>
     using __converts_from_optional =
       __or_<is_constructible<_Tp, const optional<_Up>&>,
@@ -1002,7 +1043,143 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
+#if __cplusplus > 202002L && __cpp_lib_concepts
+#define __cpp_lib_monadic_optional 202110L
+
+      // [optional.monadic]
+
+      template<typename _Fn> requires invocable<_Fn, _Tp&>
+	constexpr auto
+	and_then(_Fn&& __f) &
+	{
+	  using _Up = remove_cvref_t<invoke_result_t<_Fn, _Tp&>>;
+	  static_assert(__is_optional_v<remove_cvref_t<_Up>>);
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f), **this);
+	  else
+	    return _Up();
+	}
+
+      template<typename _Fn> requires invocable<_Fn, const _Tp&>
+	constexpr auto
+	and_then(_Fn&& __f) const &
+	{
+	  using _Up = remove_cvref_t<invoke_result_t<_Fn, const _Tp&>>;
+	  static_assert(__is_optional_v<_Up>);
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f), **this);
+	  else
+	    return _Up();
+	}
+
+      template<typename _Fn> requires invocable<_Fn, _Tp>
+	constexpr auto
+	and_then(_Fn&& __f) &&
+	{
+	  using _Up = remove_cvref_t<invoke_result_t<_Fn, _Tp>>;
+	  static_assert(__is_optional_v<remove_cvref_t<_Up>>);
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f), std::move(**this));
+	  else
+	    return _Up();
+	}
+
+      template<typename _Fn> requires invocable<_Fn, const _Tp>
+	constexpr auto
+	and_then(_Fn&& __f) const &&
+	{
+	  using _Up = remove_cvref_t<invoke_result_t<_Fn, const _Tp>>;
+	  static_assert(__is_optional_v<remove_cvref_t<_Up>>);
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f), std::move(**this));
+	  else
+	    return _Up();
+	}
+
+      template<typename _Fn> requires invocable<_Fn, _Tp&>
+	constexpr auto
+	transform(_Fn&& __f) &
+	{
+	  using _Up = invoke_result_t<_Fn, _Tp&>;
+	  if (has_value())
+	    return optional<_Up>(_Optional_func<_Fn>{__f}, **this);
+	  else
+	    return optional<_Up>();
+	}
+
+      template<typename _Fn> requires invocable<_Fn, const _Tp&>
+	constexpr auto
+	transform(_Fn&& __f) const &
+	{
+	  using _Up = invoke_result_t<_Fn, const _Tp&>;
+	  if (has_value())
+	    return optional<_Up>(_Optional_func<_Fn>{__f}, **this);
+	  else
+	    return optional<_Up>();
+	}
+
+      template<typename _Fn> requires invocable<_Fn, _Tp>
+	constexpr auto
+	transform(_Fn&& __f) &&
+	{
+	  using _Up = invoke_result_t<_Fn, _Tp>;
+	  if (has_value())
+	    return optional<_Up>(_Optional_func<_Fn>{__f}, std::move(**this));
+	  else
+	    return optional<_Up>();
+	}
+
+      template<typename _Fn> requires invocable<_Fn, const _Tp>
+	constexpr auto
+	transform(_Fn&& __f) const &&
+	{
+	  using _Up = invoke_result_t<_Fn, const _Tp>;
+	  if (has_value())
+	    return optional<_Up>(_Optional_func<_Fn>{__f}, std::move(**this));
+	  else
+	    return optional<_Up>();
+	}
+
+      template<typename _Fn> requires invocable<_Fn> && copy_constructible<_Tp>
+	constexpr optional
+	or_else(_Fn&& __f) const&
+	{
+	  using _Up = invoke_result_t<_Fn>;
+	  static_assert( is_same_v<remove_cvref_t<_Up>, optional> );
+
+	  if (has_value())
+	    return *this;
+	  else
+	    return std::forward<_Fn>(__f)();
+	}
+
+      template<typename _Fn> requires invocable<_Fn> && move_constructible<_Tp>
+	constexpr optional
+	or_else(_Fn&& __f) &&
+	{
+	  using _Up = invoke_result_t<_Fn>;
+	  static_assert( is_same_v<remove_cvref_t<_Up>, optional> );
+
+	  if (has_value())
+	    return std::move(*this);
+	  else
+	    return std::forward<_Fn>(__f)();
+	}
+#endif
+
       _GLIBCXX20_CONSTEXPR void reset() noexcept { this->_M_reset(); }
+
+    private:
+#if __cplusplus >= 202002L
+      template<typename _Up> friend class optional;
+
+      template<typename _Fn, typename _Value>
+	explicit constexpr
+	optional(_Optional_func<_Fn> __f, _Value&& __v)
+	{
+	  this->_M_payload._M_apply(__f, std::forward<_Value>(__v));
+	}
+#endif
     };
 
   template<typename _Tp>
@@ -1241,11 +1418,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !__rhs || __lhs >= *__rhs; }
 
 #ifdef __cpp_lib_three_way_comparison
-  template<typename _Tp>
-    inline constexpr bool __is_optional_v = false;
-  template<typename _Tp>
-    inline constexpr bool __is_optional_v<optional<_Tp>> = true;
-
   template<typename _Tp, typename _Up>
     requires (!__is_optional_v<_Up>)
       && three_way_comparable_with<_Tp, _Up>
