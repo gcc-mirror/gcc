@@ -327,7 +327,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- From_String --
    -----------------
 
-   function From_String (Arg : String) return Big_Integer is
+   function From_String (Arg : String) return Valid_Big_Integer is
       function mpz_set_str
         (this : access mpz_t;
          str  : System.Address;
