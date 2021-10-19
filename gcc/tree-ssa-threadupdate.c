@@ -2295,12 +2295,6 @@ back_jt_path_registry::adjust_paths_after_duplication (unsigned curr_path_num)
 {
   vec<jump_thread_edge *> *curr_path = m_paths[curr_path_num];
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "just threaded: ");
-      debug_path (dump_file, curr_path_num);
-    }
-
   /* Iterate through all the other paths and adjust them.  */
   for (unsigned cand_path_num = 0; cand_path_num < m_paths.length (); )
     {
@@ -2408,12 +2402,6 @@ back_jt_path_registry::duplicate_thread_path (edge entry,
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "\nabout to thread: ");
-      debug_path (dump_file, current_path_no);
-    }
 
   /* Some sanity checking.  Note that we do not check for all possible
      missuses of the functions.  I.e. if you ask to copy something weird,
