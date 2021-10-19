@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mcpu=generic+sve" } */
+/* { dg-options "-O3" } */
 
 typedef unsigned char uint8_t;
 
