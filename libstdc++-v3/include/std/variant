@@ -293,8 +293,10 @@ namespace __variant
       constexpr _Type&& _M_get() && noexcept
       { return std::move(_M_storage); }
 
+      struct _Empty_byte { };
+
       union {
-	char _M_nope;
+	_Empty_byte _M_empty;
 	_Type _M_storage;
       };
 #else
