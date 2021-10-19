@@ -497,7 +497,10 @@ namespace ranges
 	friend constexpr _Iterator
 	operator+(_Iterator __i, difference_type __n)
 	  requires __detail::__advanceable<_Winc>
-	{ return __i += __n; }
+	{
+	  __i += __n;
+	  return __i;
+	}
 
 	friend constexpr _Iterator
 	operator+(difference_type __n, _Iterator __i)
@@ -507,7 +510,10 @@ namespace ranges
 	friend constexpr _Iterator
 	operator-(_Iterator __i, difference_type __n)
 	  requires __detail::__advanceable<_Winc>
-	{ return __i -= __n; }
+	{
+	  __i -= __n;
+	  return __i;
+	}
 
 	friend constexpr difference_type
 	operator-(const _Iterator& __x, const _Iterator& __y)
