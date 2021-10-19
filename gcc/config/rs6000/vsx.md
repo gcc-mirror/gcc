@@ -4688,7 +4688,7 @@
   [(set_attr "type" "vecperm")])
 
 ;; V4SF/V4SI interleave
-(define_insn "vsx_xxmrghw_<mode>"
+(define_expand "vsx_xxmrghw_<mode>"
   [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
         (vec_select:VSX_W
 	  (vec_concat:<VS_double>
@@ -4698,14 +4698,17 @@
 		     (const_int 1) (const_int 5)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  if (BYTES_BIG_ENDIAN)
-    return "xxmrghw %x0,%x1,%x2";
-  else
-    return "xxmrglw %x0,%x2,%x1";
+  rtx (*fun) (rtx, rtx, rtx);
+  fun = BYTES_BIG_ENDIAN ? gen_altivec_vmrghw_direct_<mode>
+			 : gen_altivec_vmrglw_direct_<mode>;
+  if (!BYTES_BIG_ENDIAN)
+    std::swap (operands[1], operands[2]);
+  emit_insn (fun (operands[0], operands[1], operands[2]));
+  DONE;
 }
   [(set_attr "type" "vecperm")])
 
-(define_insn "vsx_xxmrglw_<mode>"
+(define_expand "vsx_xxmrglw_<mode>"
   [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
 	(vec_select:VSX_W
 	  (vec_concat:<VS_double>
@@ -4715,10 +4718,13 @@
 		     (const_int 3) (const_int 7)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  if (BYTES_BIG_ENDIAN)
-    return "xxmrglw %x0,%x1,%x2";
-  else
-    return "xxmrghw %x0,%x2,%x1";
+  rtx (*fun) (rtx, rtx, rtx);
+  fun = BYTES_BIG_ENDIAN ? gen_altivec_vmrglw_direct_<mode>
+			 : gen_altivec_vmrghw_direct_<mode>;
+  if (!BYTES_BIG_ENDIAN)
+    std::swap (operands[1], operands[2]);
+  emit_insn (fun (operands[0], operands[1], operands[2]));
+  DONE;
 }
   [(set_attr "type" "vecperm")])
 

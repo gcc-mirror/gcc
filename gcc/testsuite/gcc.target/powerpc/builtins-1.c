@@ -317,10 +317,10 @@ int main ()
 /* { dg-final { scan-assembler-times "vctuxs" 2 } } */
 
 /* { dg-final { scan-assembler-times "vmrghb" 4 { target be } } } */
-/* { dg-final { scan-assembler-times "vmrghb" 5 { target le } } } */
+/* { dg-final { scan-assembler-times "vmrghb" 6 { target le } } } */
 /* { dg-final { scan-assembler-times "vmrghh" 8 } } */
-/* { dg-final { scan-assembler-times "xxmrghw" 8 } } */
-/* { dg-final { scan-assembler-times "xxmrglw" 8 } } */
+/* { dg-final { scan-assembler-times "xxmrghw" 4 } } */
+/* { dg-final { scan-assembler-times "xxmrglw" 4 } } */
 /* { dg-final { scan-assembler-times "vmrglh" 8 } } */
 /* { dg-final { scan-assembler-times "xxlnor" 6 } } */
 /* { dg-final { scan-assembler-times {\mvpkudus\M} 1 } } */
@@ -347,7 +347,7 @@ int main ()
 /* { dg-final { scan-assembler-times "vspltb" 6 } } */
 /* { dg-final { scan-assembler-times "vspltw" 0 } } */
 /* { dg-final { scan-assembler-times "vmrgow" 8 } } */
-/* { dg-final { scan-assembler-times "vmrglb" 5 { target le } } } */
+/* { dg-final { scan-assembler-times "vmrglb" 4 { target le } } } */
 /* { dg-final { scan-assembler-times "vmrglb" 6 { target be } } } */
 /* { dg-final { scan-assembler-times "vmrgew" 8 } } */
 /* { dg-final { scan-assembler-times "vsplth" 8 } } */
