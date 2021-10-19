@@ -726,7 +726,7 @@ namespace views
 
     private:
       basic_istream<_CharT, _Traits>* _M_stream;
-      _Val _M_object;
+      _Val _M_object = _Val();
 
       struct _Iterator
       {
