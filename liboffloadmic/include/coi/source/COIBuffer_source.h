@@ -373,7 +373,7 @@ typedef struct arr_desc
 {
     int64_t base;       // Base address
     int64_t rank;       // Rank of array, i.e. number of dimensions
-    dim_desc dim[3];    // This array has as many elements as “rank”
+    dim_desc dim[3];    // This array has as many elements as 'rank'
     // currently limited to 3.
 } arr_desc;
 
