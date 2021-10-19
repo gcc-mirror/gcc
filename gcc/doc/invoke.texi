@@ -14510,6 +14510,9 @@ Specifies the mode VRP pass 1 should operate in.
 @item vrp2-mode
 Specifies the mode VRP pass 2 should operate in.
 
+@item ranger-debug
+Specifies the type of debug output to be issued for ranges.
+
 @item evrp-switch-limit
 Specifies the maximum number of switch cases before EVRP ignores a switch.
 

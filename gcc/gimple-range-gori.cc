@@ -644,7 +644,7 @@ gori_compute::gori_compute (int not_executable_flag)
   // Create a boolean_type true and false range.
   m_bool_zero = int_range<2> (boolean_false_node, boolean_false_node);
   m_bool_one = int_range<2> (boolean_true_node, boolean_true_node);
-  if (dump_file && (param_evrp_mode & EVRP_MODE_GORI))
+  if (dump_file && (param_ranger_debug & RANGER_DEBUG_GORI))
     tracer.enable_trace ();
 }
 

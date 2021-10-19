@@ -300,7 +300,7 @@ hybrid_folder::choose_value (tree evrp_val, tree ranger_val)
     return evrp_val;
 
   // If values are different, return the first calculated value.
-  if ((param_evrp_mode & EVRP_MODE_RVRP_FIRST) == EVRP_MODE_RVRP_FIRST)
+  if (param_evrp_mode == EVRP_MODE_RVRP_FIRST)
     return ranger_val;
   return evrp_val;
 }
@@ -312,7 +312,7 @@ hybrid_folder::choose_value (tree evrp_val, tree ranger_val)
 static unsigned int
 execute_early_vrp ()
 {
-  if ((param_evrp_mode & EVRP_MODE_RVRP_FIRST) == EVRP_MODE_RVRP_ONLY)
+  if (param_evrp_mode == EVRP_MODE_RVRP_ONLY)
     return execute_ranger_vrp (cfun, false);
 
   /* Ideally this setup code would move into the ctor for the folder
@@ -325,7 +325,7 @@ execute_early_vrp ()
   calculate_dominance_info (CDI_DOMINATORS);
 
   // Only the last 2 bits matter for choosing the folder.
-  switch (param_evrp_mode & EVRP_MODE_RVRP_FIRST)
+  switch (param_evrp_mode)
     {
     case EVRP_MODE_EVRP_ONLY:
       {
