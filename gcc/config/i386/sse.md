@@ -5958,6 +5958,58 @@
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
+(define_insn_and_split "fma_<mode>_fadd_fmul"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand")
+	(plus:VF_AVX512FP16VL
+	  (unspec:VF_AVX512FP16VL
+		[(match_operand:VF_AVX512FP16VL 1 "vector_operand")
+		 (match_operand:VF_AVX512FP16VL 2 "vector_operand")]
+		 UNSPEC_COMPLEX_FMUL)
+	  (match_operand:VF_AVX512FP16VL 3 "vector_operand")))]
+  "TARGET_AVX512FP16 && flag_unsafe_math_optimizations
+  && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VF_AVX512FP16VL
+	  [(match_dup 1) (match_dup 2) (match_dup 3)]
+	   UNSPEC_COMPLEX_FMA))])
+
+(define_insn_and_split "fma_<mode>_fadd_fcmul"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand")
+	(plus:VF_AVX512FP16VL
+	  (unspec:VF_AVX512FP16VL
+		[(match_operand:VF_AVX512FP16VL 1 "vector_operand")
+		 (match_operand:VF_AVX512FP16VL 2 "vector_operand")]
+		 UNSPEC_COMPLEX_FCMUL)
+	  (match_operand:VF_AVX512FP16VL 3 "vector_operand")))]
+  "TARGET_AVX512FP16 && flag_unsafe_math_optimizations
+  && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VF_AVX512FP16VL
+	  [(match_dup 1) (match_dup 2) (match_dup 3)]
+	   UNSPEC_COMPLEX_FCMA))])
+
+(define_insn_and_split "fma_<complexopname>_<mode>_fma_zero"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand")
+	(plus:VF_AVX512FP16VL
+	  (unspec:VF_AVX512FP16VL
+		[(match_operand:VF_AVX512FP16VL 1 "vector_operand")
+		 (match_operand:VF_AVX512FP16VL 2 "vector_operand")
+		 (match_operand:VF_AVX512FP16VL 3 "const0_operand")]
+		 UNSPEC_COMPLEX_F_C_MA)
+	  (match_operand:VF_AVX512FP16VL 4 "vector_operand")))]
+  "TARGET_AVX512FP16 && flag_unsafe_math_optimizations
+  && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VF_AVX512FP16VL
+	  [(match_dup 1) (match_dup 2) (match_dup 4)]
+	   UNSPEC_COMPLEX_F_C_MA))])
+
 (define_insn "<avx512>_<complexopname>_<mode>_mask<round_name>"
   [(set (match_operand:VF_AVX512FP16VL 0 "register_operand" "=&v")
 	(vec_merge:VF_AVX512FP16VL
